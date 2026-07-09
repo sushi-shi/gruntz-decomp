@@ -347,6 +347,74 @@ i32 CBrickzGrid::UpdateDiagonals(i32 unused) {
 }
 
 // ---------------------------------------------------------------------------
+// CBrickzGrid::LineIsClear (0x082250) - DDA line-of-sight probe between (x0,y0)
+// and (x1,y1). Pick the major axis (larger absolute delta), step the minor axis
+// with a 16.16 fixed-point slope, and bail out with 0 the moment any traversed
+// cell's terrain flags are non-zero; a clear line (or a zero-length segment)
+// returns 1.
+RVA(0x00082250, 0x17c)
+i32 CBrickzGrid::LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1) {
+    if (x0 == x1 && y0 == y1) {
+        return 1;
+    }
+    i32 dx = x1 - x0;
+    i32 dy = y1 - y0;
+    if (abs(dx) > abs(dy)) {
+        i32 slope = (dy << 16) / dx;
+        i32 yacc = y0 << 16;
+        if (dx > 0) {
+            for (i32 x = x0; x < x1; x++) {
+                if (m_rows[yacc >> 16][x].m_0 != 0) {
+                    return 0;
+                }
+                yacc += slope;
+            }
+        } else {
+            for (i32 x = x0; x > x1; x--) {
+                if (m_rows[yacc >> 16][x].m_0 != 0) {
+                    return 0;
+                }
+                yacc += slope;
+            }
+        }
+    } else {
+        i32 slope = (dx << 16) / dy;
+        i32 xacc = x0 << 16;
+        if (dy > 0) {
+            for (i32 y = y0; y < y1; y++) {
+                if (m_rows[y][xacc >> 16].m_0 != 0) {
+                    return 0;
+                }
+                xacc += slope;
+            }
+        } else {
+            for (i32 y = y0; y > y1; y--) {
+                if (m_rows[y][xacc >> 16].m_0 != 0) {
+                    return 0;
+                }
+                xacc += slope;
+            }
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CBrickzGrid::IsCellClear (0x0853f0) - in-bounds cell probe: return whether the
+// cell at (x,y) is inside the grid AND has zero terrain flags. Out-of-bounds is
+// treated as occupied (occ=1), so the shared `return occ == 0` tail is duplicated.
+RVA(0x000853f0, 0x46)
+i32 CBrickzGrid::IsCellClear(i32 x, i32 y) {
+    i32 occ;
+    if ((u32)x >= m_width || (u32)y >= m_height) {
+        occ = 1;
+    } else {
+        occ = m_rows[y][x].m_0;
+    }
+    return occ == 0;
+}
+
+// ---------------------------------------------------------------------------
 // CBrickzGrid::Serialize (0x09356c) - thin wrapper: MapSerializeCurve(a0,a1,a2,a3) and,
 // on success, the +0x7c sub-object's Serialize(a0,a1,a2,a3); returns the latter as
 // a bool. The +0x7c object is reached through the LAST arg (a3), not `this`.

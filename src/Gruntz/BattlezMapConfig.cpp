@@ -200,6 +200,11 @@ struct GridUnit {
     // GridUnit, not the spawn mgr): recycle every occupied-coord node's payload onto
     // g_freeList, then RemoveAll the +0x31c CObList. Defined out-of-line (retail RVA below).
     void RecycleCoords(); // 0x0343f0
+
+    // The unit-side tile-switch/place (thunk 0x1640 -> 0x04b320, __thiscall this=unit,
+    // 6 stack args). Same body as the free CGrunt_TileSwitch, but dispatched ON the
+    // unit (the ecx=this the free-form sites drop). Declared-only, reloc-masked.
+    i32 TileSwitch(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5); // 0x04b320
 };
 
 // The level's CTriggerMgr, held at this->m_triggerMgr (the real class, <Gruntz/TriggerMgr.h>:
@@ -4816,6 +4821,46 @@ void GridUnit::RecycleCoords() {
         } while (n != 0);
     }
     ((CObList*)&m_coordList)->RemoveAll();
+}
+
+// ===========================================================================
+// CBattlezMapConfig::Method_035210  @0x035210
+// Is there an unoccupied candidate cell at grid (x,y)? Walk the trigger-mgr's
+// candidate list (reached via m_ctx->m_triggerMgr->m_objListHead) and return 1 the
+// moment a candidate matches (x,y) and is not flagged occupied; else 0.
+// ===========================================================================
+RVA(0x00035210, 0x4f)
+i32 CBattlezMapConfig::Method_035210(i32 x, i32 y) {
+    GridCandNode* node = m_ctx->m_triggerMgr->m_objListHead;
+    while (node != 0) {
+        GridCandNode* cur = node;
+        node = node->m_next;
+        GridCand* cand = (GridCand*)cur->m_payload;
+        if (cand != 0 && cand->m_gridX == x && cand->m_gridY == y && cand->m_occupied == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// ===========================================================================
+// CBattlezMapConfig::Method_035550  @0x035550
+// Spend-the-reserve place: for an idle unit (m_coordCount==0) whose idle timer has
+// exceeded the reserve budget, force a tile place at its queued target coord and
+// clear the idle timer. Always returns 1.
+// ===========================================================================
+RVA(0x00035550, 0x52)
+i32 CBattlezMapConfig::Method_035550(i32 unitArg) {
+    GridUnit* unit = (GridUnit*)unitArg;
+    if (unit->m_coordCount != 0) {
+        return 1;
+    }
+    if ((u32)unit->m_idleTimer <= (u32)m_reserveBudget) {
+        return 1;
+    }
+    unit->TileSwitch(unit->m_targetX, unit->m_targetY, 0, 0xd87, 0, 0);
+    unit->m_idleTimer = 0;
+    return 1;
 }
 
 // ===========================================================================

@@ -206,3 +206,45 @@ i32 StateMgrBZ::Reset() {
     m_latchedKeys = 0;
     return 1;
 }
+
+// StateMgrBZ::GetDirBits (0x38730; __thiscall, ret 0). Pack the four top-nibble
+// direction bits of m_edgeKeys (0x10000000..0x80000000) into a 4-bit code.
+RVA(0x00038730, 0x2e)
+u8 StateMgrBZ::GetDirBits() {
+    u32 k = m_edgeKeys;
+    u8 r = 0;
+    if (k & 0x10000000) {
+        r = 1;
+    }
+    if (k & 0x20000000) {
+        r |= 2;
+    }
+    if (k & 0x40000000) {
+        r |= 4;
+    }
+    if (k & 0x80000000) {
+        r |= 8;
+    }
+    return r;
+}
+
+// StateMgrBZ::SetDirBits (0x38770; __thiscall, ret 4). Unpack a 4-bit direction
+// code into the top nibble of m_edgeKeys; clear m_currentKeys. Returns 1.
+RVA(0x00038770, 0x40)
+i32 StateMgrBZ::SetDirBits(i32 flags) {
+    m_edgeKeys = 0;
+    m_currentKeys = 0;
+    if (flags & 1) {
+        m_edgeKeys = 0x10000000;
+    }
+    if (flags & 2) {
+        m_edgeKeys |= 0x20000000;
+    }
+    if (flags & 4) {
+        m_edgeKeys |= 0x40000000;
+    }
+    if (flags & 8) {
+        m_edgeKeys |= 0x80000000;
+    }
+    return 1;
+}

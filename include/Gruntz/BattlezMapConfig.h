@@ -89,6 +89,8 @@ public:
     i32 Method_030730(i32, i32, i32, i32);
     i32 Method_030990(i32, i32);
     i32 Method_0350d0(i32);
+    i32 Method_035210(i32, i32); // 0x035210  unoccupied-candidate-at-(x,y) probe
+    i32 Method_035550(i32);      // 0x035550  spend-reserve forced place
     void* Method_030f20(void*, i32, i32);
     i32 Method_0300c0(i32, i32, i32, i32, i32, i32);
     i32 Method_0302c0(i32, i32, i32, i32, i32);

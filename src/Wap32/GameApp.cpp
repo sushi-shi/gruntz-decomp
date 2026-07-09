@@ -212,6 +212,17 @@ i32 CGameApp::Init(
 }
 
 // -------------------------------------------------------------------------
+// CGameApp::InitDefault (vtbl +0x0c) - the one-name convenience overload: forward
+// to the virtual Init using `szName` for BOTH the window name and the game
+// identifier, an empty command line, no flags, and default (CW_USEDEFAULT) size.
+extern "C" char g_emptyString[]; // 0x6293f4 (empty command-line default)
+
+RVA(0x00080d20, 0x24)
+i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {
+    return Init(hInstance, szName, szName, g_emptyString, 0, (i32)0x80000000, (i32)0x80000000);
+}
+
+// -------------------------------------------------------------------------
 // CGameApp::InitializeDefaultCreateStruct
 // Fills the embedded CREATESTRUCTA (m_createStruct @ +0x210) with default
 // window geometry/style derived from the GameInfo windowClassFlags:

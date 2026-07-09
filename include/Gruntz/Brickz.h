@@ -133,6 +133,16 @@ public:
     // unused arg) ; ret 0x4. Returns 1.
     i32 UpdateDiagonals(i32 unused); // 0x082030
 
+    // Straight-line grid probe (0x082250): DDA-walk the cells between (x0,y0) and
+    // (x1,y1); return 0 the moment any cell's terrain flags are non-zero, else 1
+    // (a clear line of sight). __thiscall(x0,y0,x1,y1) ; ret 0x10.
+    i32 LineIsClear(i32 x0, i32 y0, i32 x1, i32 y1); // 0x082250
+
+    // Point-in-bounds cell probe (0x0853f0): clear iff (x,y) is in [0,m_width) x
+    // [0,m_height) AND its cell's flags are 0. CMapMgr vtable slot 5.
+    // __thiscall(x,y) ; ret 0x8.
+    i32 IsCellClear(i32 x, i32 y); // 0x0853f0
+
     // The thin Serialize wrapper (0x09356c): MapSerializeCurve(...) then, on success,
     // the +0x7c sub-object's Serialize(...). __thiscall(4 args) ; ret 0x10.
     i32 Serialize(i32 a0, i32 a1, i32 a2, i32 a3); // 0x09356c

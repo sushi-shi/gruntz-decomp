@@ -97,6 +97,12 @@ public:
     // array, then clear the latched flags.
     i32 Reset(); // 0x386b0
 
+    // 0x38730 - GetDirBits(): pack m_edgeKeys' top nibble (0x10000000..0x80000000)
+    // into a 4-bit code. 0x38770 - SetDirBits(): the inverse (also clears
+    // m_currentKeys). The demo/replay direction-state (de)serialisers.
+    u8 GetDirBits();           // 0x38730
+    i32 SetDirBits(i32 flags); // 0x38770
+
     // --- layout (0x28) --------------------------------------------------------
     SbzInputDevice* m_device;    // +0x00  primary device (single combined source)
     SbzInputDevice* m_keyboard;  // +0x04  keyboard source (manager m_deviceA)

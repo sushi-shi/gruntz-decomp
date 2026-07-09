@@ -223,7 +223,7 @@ public:
         i32 windowWidth,
         i32 windowHeight
     );                                                      // +0x08
-    virtual void VirtualUnknownMethod04() {}                // +0x0c
+    virtual i32 InitDefault(HINSTANCE hInstance, char* szName); // +0x0c  0x080d20
     virtual void CloseResources();                          // +0x10
     virtual void VirtualUnknownMethod06() {}                // +0x14
     virtual i32 RunMessageLoop();                           // +0x18

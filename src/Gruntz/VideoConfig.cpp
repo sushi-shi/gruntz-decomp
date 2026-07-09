@@ -166,6 +166,35 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo) {
     SetWindowTextA(hCaption, szCaption);
 }
 
+// The WM_INITDIALOG handler (0x37870, boundarymisc): seed the video option
+// checkboxes from the settings singleton. External, reloc-masked (no body).
+void DialogInit37870(HWND hDlg);
+void SaveVideoCheckboxes(HWND hDlg); // fwd (defined below, 0x378c0)
+
+// 0x377e0: VideoOptionsDlgProc - the video-options dialog procedure. WM_INITDIALOG
+// seeds the checkboxes (DialogInit37870); WM_COMMAND/IDOK latches them
+// (SaveVideoCheckboxes) and closes with 1, IDCANCEL closes with 0.
+RVA(0x000377e0, 0x6a)
+BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_INITDIALOG:
+            DialogInit37870(hDlg);
+            return TRUE;
+        case WM_COMMAND:
+            switch (wParam) {
+                case IDOK:
+                    SaveVideoCheckboxes(hDlg);
+                    EndDialog(hDlg, TRUE);
+                    return TRUE;
+                case IDCANCEL:
+                    EndDialog(hDlg, FALSE);
+                    return TRUE;
+            }
+            break;
+    }
+    return FALSE;
+}
+
 // 0x378c0: SaveVideoCheckboxes(hDlg) - latch the two video option checkboxes
 // (IDC 0x46f smooth-scroll, 0x4d5 show-fps) into the settings singleton. No-op
 // when the singleton is not yet live.
