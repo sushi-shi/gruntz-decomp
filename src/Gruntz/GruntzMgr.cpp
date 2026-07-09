@@ -938,6 +938,58 @@ i32 CGruntzMgr::ToggleBaseLayer() {
 }
 
 // -------------------------------------------------------------------------
+// LaunchWebBrowser (0x08f120; free __stdcall(url)) - read the HKCR http\shell\open
+// \command browser command line, strip any leading flags / IEXPLORE.EXE prefix and
+// trailing -/ switches, then CreateProcess it with the supplied URL appended. A free
+// helper CGruntzMgr::HandleCommand (0x862f0) calls; RVA-contiguous with the manager
+// methods (in the gruntzmgr .obj). Re-homed from src/Stub/ApiWrappers.cpp.
+// func_2e6e (0x2e6e, cdecl): normalises an argv token in-place (reloc-masked).
+extern "C" i32 func_2e6e(const char* tok, i32 flag, i32* out);
+RVA(0x0008f120, 0x264)
+i32 __stdcall LaunchWebBrowser(char* url) {
+    LONG len = 0x104;
+    char cmd[0x104];
+    if (RegQueryValueA((HKEY)0x80000000, "http\\shell\\open\\command", cmd, &len)) {
+        return 0;
+    }
+    if (strlen(cmd) < 3) {
+        return 0;
+    }
+    i32 quoted = 0;
+    _strlwr(cmd);
+    if (strstr(cmd, "IEXPLORE.EXE")) {
+        func_2e6e("IEXPLORE.EXE", 1, &quoted);
+    }
+    char* dash = strchr(cmd, '-');
+    i32 dn = dash - cmd + 1;
+    if (dash) {
+        if (dn <= 2) {
+            return 0;
+        }
+    }
+    if (dash) {
+        cmd[dn - 2] = 0;
+    }
+    char* slash = strchr(cmd, '/');
+    i32 sn = slash - cmd + 1;
+    if (slash) {
+        if (sn <= 2) {
+            return 0;
+        }
+    }
+    if (slash) {
+        cmd[sn - 2] = 0;
+    }
+    char cmdline[0x104];
+    sprintf(cmdline, "%s %s", cmd, url);
+    STARTUPINFOA si;
+    memset(&si, 0, sizeof(si));
+    PROCESS_INFORMATION pi;
+    si.cb = sizeof(si);
+    return CreateProcessA(0, cmdline, 0, 0, FALSE, 0, 0, 0, &si, &pi);
+}
+
+// -------------------------------------------------------------------------
 // CGruntzMgr::PollUnlessIdle (0x08f2f0; ret). Unless the live state is the idle
 // state (id 5), runs the play-state poll (CheckPlayState, result discarded);
 // always returns 0.
@@ -1307,6 +1359,20 @@ i32 CGruntzMgr::CheckMovieFileExists() {
 RVA(0x000901d0, 0x16)
 i32 CGruntzMgr::IsMoviePathValid() {
     return Utils::WinAPI::FileExists((char*)(const char*)m_strMoviePath) != 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::Post (0x090220; thiscall(code), ret 4). Clamp `code` into (0,0x29]
+// and PostMessageA WM_COMMAND 0x807f to the game window (wParam = code, or 1 when
+// code == 0x29). Re-homed from the ApiCaller stubs (was CmdHost_090220::Post): the
+// receiver is the CGruntzMgr singleton, reached by CPlay::Dispatch (0xcfbd0) as
+// m_4->Post via the CState owner back-ptr.
+RVA(0x00090220, 0x2f)
+void CGruntzMgr::Post(i32 code) {
+    if (code > 0 && code <= 0x29) {
+        i32 v = (code == 0x29) ? 1 : code;
+        g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x807f, v);
+    }
 }
 
 // -------------------------------------------------------------------------

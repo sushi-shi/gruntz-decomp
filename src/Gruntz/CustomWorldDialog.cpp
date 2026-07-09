@@ -7,8 +7,12 @@
 // selected-world name CString.
 #include <Mfc.h> // CString (Empty / copy ctor / operator=)
 
+#include <Wwd/WwdFile.h> // WwdHeader (validated 0x5f4-byte .WWD header; FillLevelInfoDialog)
+#include <Gruntz/CustomWorldInfoDlg.h> // WwdWorldHolder/WwdLevelInfoSrc (IsValidWwd receiver)
 #include <Ints.h>
 #include <Globals.h>
+#include <stdio.h>  // sprintf (FillLevelInfoDialog)
+#include <stdlib.h> // atoi (FillLevelInfoDialog)
 
 // The CUSTOM_WORLD picker dialog procedure (0x3ae60, defined below) handed to
 // RunModalDialog as a pushed code address (reloc-masked DIR32).
@@ -25,9 +29,9 @@ extern HWND g_customLevelList; // 0x62c274
 
 // The dialog proc's command dispatchers (reloc-masked externals): fill the level
 // list / info pane, load the picked world's info popup, commit the selection.
-i32 FillCustomLevelList(HWND hDlg);  // 0x3af90 (CustomLevelList.cpp)
-i32 LoadCustomWorldInfo(HWND hDlg);  // 0x3b7c0 (CustomWorldInfoDlg.cpp)
-i32 FillLevelInfoDialog(HWND hDlg);  // 0x3b1a0
+i32 FillCustomLevelList(HWND hDlg);      // 0x3af90 (CustomLevelList.cpp)
+i32 LoadCustomWorldInfo(HWND hDlg);      // 0x3b7c0 (CustomWorldInfoDlg.cpp)
+i32 FillLevelInfoDialog(HWND hDlg);      // 0x3b1a0
 i32 LoadCustomWorldSelection(HWND hWnd); // 0x3b310 (below)
 
 // The custom-world exchange block (separate engine globals; each reloc-masks to its
@@ -147,6 +151,63 @@ extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND hDlg, UINT msg, WPARAM wPara
             break;
     }
     return 0;
+}
+
+// FillLevelInfoDialog reaches USER32 through the game's cached fn-pointers (bare
+// 0x6c45xx absolutes, no import symbols) - the same pattern as g_pPostMessageA.
+DATA(0x002c4564)
+extern HWND(WINAPI* g_pGetDlgItem)(HWND, int);
+DATA(0x002c4554)
+extern BOOL(WINAPI* g_pSetDlgItemTextA)(HWND, int, LPCSTR);
+// The listbox-selection precheck (0x2176, cdecl).
+extern "C" i32 func_2176(HWND hDlg);
+
+// ===========================================================================
+// FillLevelInfoDialog @0x3b1a0 - populate the four level-info dialog items from the
+// selected world's .WWD header (path in g_str62c25c); on a bad/invalid file, stamp
+// every item "Bad Level File". A free __cdecl(HWND) helper the picker DlgProc's
+// LBN_SELCHANGE notification calls. Re-homed from src/Stub/ApiWrappers.cpp; the
+// LevelInfo placeholder view folded onto the real WwdHeader (the +0x10 levelName
+// block, sliced +0x40/+0x80) and the IsValidWwd call restored to its true form:
+// a __thiscall on g_mgrSettings->m_world->m_24 (the sibling CustomWorldInfoDlgProc
+// pattern), with the USER32 calls routed through the cached fn-pointers.
+// ===========================================================================
+// @early-stop
+// regalloc/scheduling wall (~94%): the IsValidWwd this-chain + method call and every
+// cached-ptr USER32 call now match retail's instruction selection (llvm-objdump -dr).
+// Residual is a symmetric esi<->edi coloring swap (retail edi=hDlg / esi=SetDlgItemTextA
+// ptr; cl picks esi=hDlg / edi=ptr) plus the ptr load being hoisted to the `setText`
+// local vs retail's lazy per-branch CSE. Binary-correct shape kept over the coincidentally
+// higher-% free-call+import form the stub carried (correctness-not-artifacts).
+RVA(0x0003b1a0, 0x118)
+i32 FillLevelInfoDialog(HWND hDlg) {
+    if (!g_pGetDlgItem(hDlg, 0x3fc)) {
+        return 0;
+    }
+    if (!func_2176(hDlg)) {
+        return 0;
+    }
+    char num[0x20];
+    WwdHeader info;
+    BOOL(WINAPI * setText)(HWND, int, LPCSTR) = g_pSetDlgItemTextA;
+    if (((WwdWorldHolder*)g_mgrSettings->m_world)
+            ->m_24->IsValidWwd((const char*)g_str62c25c, &info)) {
+        char* p = info.levelName;
+        while (*p && (*p < '0' || *p > '9')) {
+            p++;
+        }
+        sprintf(num, "%d", atoi(p));
+        setText(hDlg, 0x408, (const char*)g_str62c264);
+        setText(hDlg, 0x428, info.levelName + 0x40);
+        setText(hDlg, 0x40c, num);
+        setText(hDlg, 0x429, info.levelName + 0x80);
+    } else {
+        setText(hDlg, 0x408, "Bad Level File");
+        setText(hDlg, 0x428, "Bad Level File");
+        setText(hDlg, 0x40c, "Bad Level File");
+        setText(hDlg, 0x429, "Bad Level File");
+    }
+    return 1;
 }
 
 // The game-root-dir resolver + the OpenFile(OF_EXIST) probe RunCustomWorldSelection

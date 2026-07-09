@@ -34,10 +34,6 @@ public:
     i32 StoreInputState(i32 a);
 };
 
-// WwdFile_IsValidWwd(path, out) @0x160530: a free __stdcall (verified by disasm - reads
-// arg1 at esp+0x28, never touches ecx), NOT a method on the m_levelInfoSrc receiver.
-i32 __stdcall WwdFile_IsValidWwd(const char* path, void* out);
-
 // The combat-scan grunts are CGrunts; Method_243c @0x243c is CGrunt::CreateHealthSprite.
 // TU-local method-decl (Grunt.h is heavy), cast at the call.
 SIZE_UNKNOWN(CGrunt);
@@ -57,57 +53,9 @@ public:
 
 namespace m4 {
 
-    // -------------------------------------------------------------------------
-    // LaunchWebBrowser (0x0008f120) - read HKCR\http\shell\open\command, sanitise
-    // the browser command line, and CreateProcess it with the supplied URL.
-    // A free __stdcall(char* url) helper.
-
-    // Game helper at RVA 0x2e6e (cdecl): normalises an argv token in-place.
-    extern "C" i32 func_2e6e(const char* tok, i32 flag, i32* out);
-
-    RVA(0x0008f120, 0x264)
-    i32 __stdcall LaunchWebBrowser(char* url) {
-        LONG len = 0x104;
-        char cmd[0x104];
-        if (RegQueryValueA((HKEY)0x80000000, "http\\shell\\open\\command", cmd, &len)) {
-            return 0;
-        }
-        if (strlen(cmd) < 3) {
-            return 0;
-        }
-        i32 quoted = 0;
-        _strlwr(cmd);
-        if (strstr(cmd, "IEXPLORE.EXE")) {
-            func_2e6e("IEXPLORE.EXE", 1, &quoted);
-        }
-        char* dash = strchr(cmd, '-');
-        i32 dn = dash - cmd + 1;
-        if (dash) {
-            if (dn <= 2) {
-                return 0;
-            }
-        }
-        if (dash) {
-            cmd[dn - 2] = 0;
-        }
-        char* slash = strchr(cmd, '/');
-        i32 sn = slash - cmd + 1;
-        if (slash) {
-            if (sn <= 2) {
-                return 0;
-            }
-        }
-        if (slash) {
-            cmd[sn - 2] = 0;
-        }
-        char cmdline[0x104];
-        sprintf(cmdline, "%s %s", cmd, url);
-        STARTUPINFOA si;
-        memset(&si, 0, sizeof(si));
-        PROCESS_INFORMATION pi;
-        si.cb = sizeof(si);
-        return CreateProcessA(0, cmdline, 0, 0, FALSE, 0, 0, 0, &si, &pi);
-    }
+    // (0x8f120 LaunchWebBrowser re-homed to src/Gruntz/GruntzMgr.cpp - a free
+    // __stdcall helper RVA-contiguous with the CGruntzMgr methods (gruntzmgr .obj),
+    // called by CGruntzMgr::HandleCommand @0x862f0. func_2e6e moved with it.)
 
     // -------------------------------------------------------------------------
     // GruntCombatMgr::CheckCombatRegion (0x00078060) - transform a world rect to
@@ -328,12 +276,6 @@ namespace m4 {
         i32 m_width;    // +0xc  width
         i32 m_height;   // +0x10 height
     };
-    struct LevelInfo { // filled by the config accessor at RVA 0x160530 (0x5f4 B)
-        char m_pad0[0x10];
-        char m_versionStr[0x40]; // +0x10  version/number string (scanned for a digit)
-        char m_50[0x40];         // +0x50  (dialog item 0x428)
-        char m_90[0x5f4 - 0x90]; // +0x90  (dialog item 0x429)
-    };
     struct SoundCue { // config-section result handed back by GetSection
         char m_pad0[0x10];
         CSoundCueMgr* m_player; // +0x10
@@ -448,43 +390,11 @@ namespace m4 {
         return 0;
     }
 
-    // -------------------------------------------------------------------------
-    // FillLevelInfoDialog (0x0003b1a0) - populate the level-info dialog items from
-    // the config store; on a bad level file, stamp every item "Bad Level File".
-    // A free __cdecl(HWND) helper.
-
-    extern "C" i32 func_2176(HWND hDlg); // RVA 0x2176 (cdecl game helper)
-    extern "C" void* g_62c25c;           // 0x62c25c  config key value
-    extern "C" char* g_62c264;           // 0x62c264  dialog item 0x408 text
-
-    RVA(0x0003b1a0, 0x118)
-    i32 FillLevelInfoDialog(HWND hDlg) {
-        if (!GetDlgItem(hDlg, 0x3fc)) {
-            return 0;
-        }
-        if (!func_2176(hDlg)) {
-            return 0;
-        }
-        char num[0x20];
-        LevelInfo info;
-        if (WwdFile_IsValidWwd((const char*)g_62c25c, &info)) {
-            char* p = info.m_versionStr;
-            while (*p && (*p < '0' || *p > '9')) {
-                p++;
-            }
-            sprintf(num, "%d", atoi(p));
-            SetDlgItemTextA(hDlg, 0x408, g_62c264);
-            SetDlgItemTextA(hDlg, 0x428, info.m_50);
-            SetDlgItemTextA(hDlg, 0x40c, num);
-            SetDlgItemTextA(hDlg, 0x429, info.m_90);
-        } else {
-            SetDlgItemTextA(hDlg, 0x408, "Bad Level File");
-            SetDlgItemTextA(hDlg, 0x428, "Bad Level File");
-            SetDlgItemTextA(hDlg, 0x40c, "Bad Level File");
-            SetDlgItemTextA(hDlg, 0x429, "Bad Level File");
-        }
-        return 1;
-    }
+    // (0x3b1a0 FillLevelInfoDialog re-homed to src/Gruntz/CustomWorldDialog.cpp - its
+    // only caller is CustomWorldDlgProc @0x3ae60 (LBN_SELCHANGE), which lives there, and
+    // it is RVA-adjacent (0x3ae60 < 0x3b1a0 < 0x3b310). The LevelInfo view folded onto
+    // the real WwdHeader; g_62c25c/g_62c264 are the CString exchange globals that TU
+    // already models.)
 
     // -------------------------------------------------------------------------
     // SetupDlgCommand (0x0009e390) - the Battlez setup dialog's WM_COMMAND

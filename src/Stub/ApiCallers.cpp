@@ -206,6 +206,8 @@ namespace ApiCallerStubs {
         void Pick0183f0();        // thiscall, RVA 0x183f0
     };
     // __thiscall(): send 0x188 to item 0x516; if it returned != -1, run OnPick().
+    // @orphan: only inbound edge is a fn-ptr-table slot (~g_5e8e98+0x1c, via thunk
+    // 0x3d5f) - no class vtable / new-site trace, so the owning dialog class is unrecovered.
     RVA(0x000183f0, 0x2e)
     void DlgHost::Pick0183f0() {
         HWND h = GetItem(0x516)->m_hwnd;
@@ -238,6 +240,8 @@ namespace ApiCallerStubs {
         i32 m_1b8; // +0x1b8
         i32 Check();
     };
+    // @orphan: only caller is the adjacent unrecovered fn @~0x1f8d0 (no named/attributable
+    // caller, no vtable ref) - owning class of the +0x1b8 key cache unrecovered.
     RVA(0x0001f8a0, 0x30)
     i32 KeyHost_01f8a0::Check() {
         if (m_1b8 == 0xc7) {
@@ -400,6 +404,9 @@ namespace ApiCallerStubs {
         ViewObj_08e3a0* m_30; // +0x30
         void GetRect(RECT* out);
     };
+    // @orphan: a shared viewport-rect helper called on divergent `this` from many
+    // owners (CSingleFrameMessage ctor, CPlay::Render/DrawDebugStats/Profile*) - no
+    // single class owns it; RVA-adjacent .obj not pinned. Left carved.
     RVA(0x0008e3a0, 0x94)
     void RectQuery_08e3a0::GetRect(RECT* out) {
         RECT local;
@@ -503,6 +510,8 @@ namespace ApiCallerStubs {
         i32 Notify();
     };
     // __thiscall(): if the mode is 2/3/5, reset and post a 0x8005 command. Returns 1.
+    // @orphan: no direct rel32 caller (reached only as a data/command-table slot) -
+    // owning class of the +0x2c mode object unrecovered.
     RVA(0x0008f480, 0x49)
     i32 ModeHost_08f480::Notify() {
         i32 mode = m_2c->GetMode();
@@ -514,35 +523,11 @@ namespace ApiCallerStubs {
         return 0;
     }
 
-    // __thiscall(int code): clamp code into (0,0x29] and post a 0x111 command.
-    // This 0x90220 body is also what Dispatcher_0cfbd0::Dispatch (@0xcfbd0) reaches
-    // as `m_4->Post(m_1c+1)` -- so the old DispOwner_0cfbd0 was a SECOND placeholder
-    // view of this same class; merged here. The +0x48/0x54/0x60 sub-managers are the
-    // extra fields Dispatch touches (leaf types fwd-declared just below).
-    struct CmdHostSub54_0cfbd0; // unidentified sub-mgr (reset @0x40b660)
-    struct CmdHostSub60_0cfbd0; // unidentified sub-mgr (reset @0x51af90)
-    struct WndOwner_090220 {
-        i32 m_0;
-        HWND m_4; // +0x04 = HWND  (also the old DispWnd_0cfbd0: top-window holder)
-    };
-    struct CmdHost_090220 {
-        i32 m_0;
-        WndOwner_090220* m_4;      // +0x04
-        char m_pad8[0x48 - 8];     // +0x08..0x47
-        CGruntzSoundZ* m_48;       // +0x48  audio bank (flushed on Dispatch quiesce)
-        char m_pad4c[0x54 - 0x4c]; // +0x4c..0x53
-        CmdHostSub54_0cfbd0* m_54; // +0x54
-        char m_pad58[0x60 - 0x58]; // +0x58..0x5f
-        CmdHostSub60_0cfbd0* m_60; // +0x60
-        void Post(i32 code);
-    };
-    RVA(0x00090220, 0x2f)
-    void CmdHost_090220::Post(i32 code) {
-        if (code > 0 && code <= 0x29) {
-            i32 v = (code == 0x29) ? 1 : code;
-            PostMessageA(m_4->m_4, 0x111, 0x807f, v);
-        }
-    }
+    // (0x90220 Post re-homed to src/Gruntz/GruntzMgr.cpp as the real CGruntzMgr::Post -
+    // the WM_COMMAND 0x807f advance dispatch on the game-manager singleton (reached by
+    // CPlay::Dispatch @0xcfbd0 as m_4->Post via the CState owner back-ptr). The old
+    // CmdHost_090220/WndOwner_090220 views folded onto CGruntzMgr; the +0x48/0x54/0x60
+    // sub-managers are CWorld::m_48/m_54/m_60 in <Gruntz/Play.h>.)
 
     // (0x92710 Quickload re-homed to src/Gruntz/GruntzMgr.cpp as the real
     // CGruntzMgr::Quickload - HandleCommand (0x862f0) calls it on `this`=CGruntzMgr;
@@ -606,68 +591,13 @@ namespace ApiCallerStubs {
     // duplicates of it. See that file's header for the CNetGameDlg/CNetConnCoord
     // same-dialog dedup note.)
 
-    // One RVA (0x0cfbd0) = a single __thiscall state-pump on an UNIDENTIFIED owner.
-    // On state 0x20 it quiesces the level -- stop the streaming voice (SoundStream::
-    // Stop @0x137a80, minervainner), flush the sound bank (CGruntzSoundZ::StopAndFlush
-    // @0x138530), reset the 0x40b660 / 0x51af90 sub-mgrs -- then posts WM_COMMAND
-    // 0x8023 to the top HWND; else advances the counter via CmdHost_090220::Post
-    // (m_1c+1).  The WM_COMMAND host is the already-modeled CmdHost_090220 (the old
-    // DispOwner_0cfbd0 dedup'd into it above; its m_4 top-window holder is
-    // WndOwner_090220 == the old DispWnd_0cfbd0).  All sub-object calls are direct/
-    // reloc-masked, so the leaf typing is matching-neutral.
-    // unidentified: the owner (`this`) + the +0xc context chain (DispCtx/DispInner)
-    // + the 0x40b660/0x51af90 reset targets -- only inbound edge is ILT thunk 0x1c17
-    // (no clean ctor/new trace).
-    struct CmdHostSub54_0cfbd0 { // unidentified sub-mgr, reset @0x40b660
-        void Reset40b660();
-    };
-    struct CmdHostSub60_0cfbd0 { // unidentified sub-mgr, reset @0x51af90
-        void Reset51af90();
-    };
-    struct DispInner_0cfbd0 { // unidentified +0xc->+0x28 context node
-        char m_pad0[0x2c];
-        SoundStream* m_2c; // +0x2c
-    };
-    struct DispCtx_0cfbd0 { // unidentified +0xc context holder
-        char m_pad0[0x28];
-        DispInner_0cfbd0* m_28; // +0x28
-    };
-    struct Dispatcher_0cfbd0 { // unidentified: owner of Dispatch @0xcfbd0
-        char m_pad0[4];
-        CmdHost_090220* m_4; // +0x04  WM_COMMAND host + audio/net/ui subs
-        char m_pad8[0xc - 8];
-        DispCtx_0cfbd0* m_c; // +0x0c
-        char m_pad10[0x1c - 0x10];
-        i32 m_1c; // +0x1c  pump state (0x20 => quiesce)
-        char m_pad20[0x40 - 0x20];
-        i32 m_40; // +0x40
-        char m_pad44[0x1bc - 0x44];
-        i32 m_1bc; // +0x1bc
-        i32 m_1c0; // +0x1c0
-        i32 Dispatch();
-    };
-    RVA(0x000cfbd0, 0x8f)
-    i32 Dispatcher_0cfbd0::Dispatch() {
-        if (m_1c == 0x20) {
-            m_1c0 = 1;
-            m_40 = 1;
-            DispInner_0cfbd0* inner = m_c->m_28;
-            if (inner->m_2c) {
-                inner->m_2c->Stop();
-            }
-            m_4->m_48->StopAndFlush();
-            m_4->m_54->Reset40b660();
-            m_4->m_60->Reset51af90();
-            PostMessageA((HWND)m_4->m_4->m_4, 0x111, 0x8023, 0);
-            return 1;
-        }
-        if (m_1bc) {
-            PostMessageA((HWND)m_4->m_4->m_4, 0x111, 0x8023, 0);
-            return 1;
-        }
-        m_4->Post(m_1c + 1);
-        return 1;
-    }
+    // (0x0cfbd0 re-homed to src/Gruntz/Play.cpp as the real CPlay::Vslot15 - vtable
+    // slot 21 (override of CState; ??_7CPlay@@6B@+0x54 -> ILT thunk 0x1c17). The
+    // "unidentified owner" was CPlay: m_1c=CState::m_levelIndex, m_c=CState::m_c
+    // (CSpriteFactoryHolder; ->m_28 CSndHost ->m_2c SoundStream::Stop @0x137a80),
+    // m_4=CState::m_4 (CGruntzMgr) whose m_48/m_54/m_60 are the CWorld sound-bank/
+    // draw/reset subs, and m_1bc/m_1c0 are carved CPlay members. Post = CGruntzMgr::
+    // Post (re-homed above). PostMessageA goes via the cached g_pPostMessageA ptr.)
 
     // (0xd00a0 BlitHost::Show re-homed to src/Io/SaveGame.cpp (BlitHost) - the
     // save-flow "show" blit reached from the savegame temp-file path.)
@@ -861,6 +791,8 @@ namespace ApiCallerStubs {
         void* m_2c; // +0x2c
     };
     // __cdecl(host, src, x, y, useFront, mode): blit src into the active layer node.
+    // @orphan: a free __cdecl blit helper (no class receiver); callers are CPlay::
+    // BuildHelpReveal + Gap_0d1650 but the helper's own .obj/owner is unrecovered.
     RVA(0x00115300, 0xf5)
     i32 winapi_115300_SetRect(
         LayerHost_115300* host,

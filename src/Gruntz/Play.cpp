@@ -71,10 +71,15 @@ public:
     i32 HasKeyEqual_155550(const char* k);
     i32 RemoveKeysEqual_155360(const char* a, const char* b);
 }; // 0x155550/0x155360
-class CSymTab; // ScanTree_152ad0's real 1st arg (the anim namespace tree); cast at the void* call sites
+class
+    CSymTab; // ScanTree_152ad0's real 1st arg (the anim namespace tree); cast at the void* call sites
 class CDDrawSubMgrAni {
 public:
-    i32 ScanTree_152ad0(CSymTab* n, const char* a, const char* b); // 0x152ad0 (real: i32 ret, CSymTab* arg)
+    i32 ScanTree_152ad0(
+        CSymTab* n,
+        const char* a,
+        const char* b
+    ); // 0x152ad0 (real: i32 ret, CSymTab* arg)
 }; // 0x152ad0
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
@@ -98,6 +103,7 @@ public:
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
 #include <rva.h>
 #include <Gruntz/ResMgr.h>      // CResMgr + its image/sound/anim registries (m_10/m_28/m_2c)
+#include <Gruntz/SoundCue.h>    // CSndHost (m_c->m_28) + SoundStream (m_2c; Vslot15 quiesce stop)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface: Fill/Restore)
 
 // The zoned sound-bank manager (CWorld::m_48); RegionEnter/RegionLeave pause +
@@ -2312,6 +2318,46 @@ i32 CPlay::ResumeGame() {
     return 1;
 }
 
+// CPlay::Vslot15 (0x0cfbd0) - vtable slot 21 (override of CState), the level-quiesce
+// dispatch. On level index 0x20: latch the quiesce flags (m_1c0/m_40), stop the current
+// zoned sound stream (m_c->m_28->m_2c, SoundStream::Stop) + flush the sound bank
+// (m_4->m_48, CGruntzSoundZ::StopAndFlush), reset the two world teardown sub-objects
+// (m_4->m_54/m_60), then PostMessageA WM_COMMAND 0x8023. Otherwise re-post 0x8023 while
+// the m_1bc gate is set, else advance via the manager (m_4->Post, level index + 1). The
+// PostMessageA calls go through the cached g_pPostMessageA fn-ptr (bare 0x6c44c8, no
+// import symbol). Re-homed from the ApiCaller stubs (was Dispatcher_0cfbd0::Dispatch).
+DATA(0x002c44c8)
+extern i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM);
+// @early-stop
+// regalloc-rotation wall (98.4%): logic, instruction selection, hop counts and
+// order are byte-identical (llvm-objdump -dr / sema disasm --diff). The only
+// residual is the scratch register that holds the reloaded m_4 (CWorld) pointer
+// across the three quiesce sub-calls - retail colors it ecx/edx/eax, cl picks
+// edx/eax/ecx (a symmetric reload coin-flip); the same rotation shifts the
+// PostMessageA HWND chain's registers. Not source-steerable.
+RVA(0x000cfbd0, 0x8f)
+i32 CPlay::Vslot15() {
+    if (m_levelIndex == 0x20) {
+        m_1c0 = 1;
+        m_40 = 1;
+        SoundStream* stream = m_c->m_28->m_2c;
+        if (stream) {
+            stream->Stop();
+        }
+        m_4w()->m_48->StopAndFlush();
+        m_4w()->m_54->Reset();
+        m_4w()->m_60->Reset();
+        g_pPostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8023, 0);
+        return 1;
+    }
+    if (m_1bc) {
+        g_pPostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8023, 0);
+        return 1;
+    }
+    m_4->Post(m_levelIndex + 1);
+    return 1;
+}
+
 // LoadCursorSprites (0xd0120): select + load the on-screen cursor sprite set for a tool
 // `frame`. Early-outs when the requested (frame,flag) already matches the loaded pair.
 // Frame 1..0x26 = the numeric chip cursor; 0 = the plain pointer; 0x66 = the flailing-grunt
@@ -3329,7 +3375,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_DEATHZ", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+            ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_DEATHZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -3340,7 +3387,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_ENTRANCEZ", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+            ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_ENTRANCEZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -3350,7 +3398,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_EXITZ", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+            ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_EXITZ", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -3372,7 +3421,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_PICKUPS", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+            ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_PICKUPS", "_");
         if (notify) {
             notify->AckJoinFailure();
         }
@@ -3383,7 +3433,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
         if (!s) {
             return 0;
         }
-        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_BOMBGRUNT", "_");
+        ((CDDrawSubMgrAni*)self->m_c->m_animRegistry)
+            ->ScanTree_152ad0((CSymTab*)s, "GRUNTZ_BOMBGRUNT", "_");
         if (notify) {
             notify->AckJoinFailure();
         }

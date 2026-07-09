@@ -65,10 +65,13 @@ struct CWarlordCounters {
 // The world/level draw object at m_4->m_54 (the camera blit thiscall).
 struct CWorldDraw {
     void Blit(i32 a, i32 b);
+    void Reset(); // 0x40b660 (Dispatch level-quiesce teardown)
 };
 
 // The sub-object at m_4->m_60 (a no-arg reset; ResetForMode third teardown).
-struct CWorldSub60 {};
+struct CWorldSub60 {
+    void Reset(); // 0x51af90 (Dispatch level-quiesce teardown)
+};
 
 // The plane/render geom block reached as m_4->m_30->m_24->m_5c (ResetGoals'
 // float target). +0x8 flags bit0 gates the scale-multiply; +0x10/+0x14 receive
@@ -517,8 +520,11 @@ public:
     i32 m_inputHalfSel; // +0x1b0  StepInputA mirrored-half selector (0/1)
     // +0x1b4: the first of five destructible MFC members ~CPlay tears down (reverse
     // decl order); typed here so the dtor's /GX member fold falls out (CPlayDtor.cpp).
-    CString m_1b4; // +0x1b4
-    char m_pad1b8[0x1cc - 0x1b8];
+    CString m_1b4;                // +0x1b4
+    char m_pad1b8[0x1bc - 0x1b8]; // +0x1b8
+    i32 m_1bc;                    // +0x1bc  Dispatch re-post gate (WM_COMMAND 0x8023 while set)
+    i32 m_1c0; // +0x1c0  Dispatch level-quiesce latch (set 1 on level index 0x20)
+    char m_pad1c4[0x1cc - 0x1c4]; // +0x1c4
     i32 m_savedClock; // +0x1cc  saved game clock (PauseGame stashes / ResumeGame + teardown restore to g_645588)
     char m_pad1d0[0x2d0 - 0x1d0];
     i32 m_packetsRcvd; // +0x2d0  net packets received (debug HUD "Rcvd = %i")
