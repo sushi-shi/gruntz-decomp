@@ -22,6 +22,7 @@
 #include <Gruntz/UserLogic.h> // CGameObject (the scanned live objects: m_screenX/Y, m_collCategory)
 #include <Image/ImageFrame.h> // CImageFrame/CImageFormat (the "Gruntz" set's frames the cheats read)
 #include <Gruntz/BoundaryUpperViews.h>
+#include <DDrawMgr/DirectDrawMgr.h> // CDirectDrawMgr::FindFwd/FindBack (display-mode pool)
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/GruntSpawnConfig.h>
@@ -3731,7 +3732,7 @@ i32 CGruntzMgr::CheckDisplayBoundsA() {
         return 1;
     }
     CPointXY pt;
-    ((ModeArr*)m_world->m_1c)->FindFwd((Pair2*)&pt, m_modeW, m_modeH, m_colorDepth);
+    ((CDirectDrawMgr*)m_world->m_1c)->FindFwd((CDdModePair*)&pt, m_modeW, m_modeH, m_colorDepth);
     CPointXY* p = &pt;
     i32 x = p->x;
     i32 y = p->y;
@@ -3758,7 +3759,7 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
         return 1;
     }
     CPointXY pt;
-    ((ModeArr*)m_world->m_1c)->FindBack((Pair2*)&pt, m_modeW, m_modeH, m_colorDepth);
+    ((CDirectDrawMgr*)m_world->m_1c)->FindBack((CDdModePair*)&pt, m_modeW, m_modeH, m_colorDepth);
     CPointXY* p = &pt;
     i32 x = p->x;
     i32 y = p->y;

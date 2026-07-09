@@ -585,6 +585,20 @@ RVA(0x00142a40, 0x53)
 CPoolItemAB8::~CPoolItemAB8() {}
 
 // ---------------------------------------------------------------------------
+// CPoolItemAB8::Init1 (0x148b50, vtable slot 2 override): run the base
+// CDDSurface::Init1, and on success install the color format (slot 10). Folded
+// from Stub/BoundaryUpper.cpp (ImgOwned::Commit).
+// ---------------------------------------------------------------------------
+RVA(0x00148b50, 0x2c)
+i32 CPoolItemAB8::Init1(CDDrawPtrCollections* h, i32 a) {
+    if (CDDSurface::Init1(h, a) == 0) {
+        return 0;
+    }
+    InstallColorFormat();
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CPoolItemAB8::InstallColorFormat (0x148b80, slot 10, __thiscall, no args).
 // The sibling of ComputeColorMasks (0x143b20) below: derives the live screen
 // RGB-format shift/loss globals, but reads the channel bitmasks straight from
@@ -714,6 +728,15 @@ CDDSurface* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e,
 // ---------------------------------------------------------------------------
 RVA(0x00142d40, 0x53)
 CPoolItemAE8::~CPoolItemAE8() {}
+
+// ---------------------------------------------------------------------------
+// CPoolItemAE8::Init1 (0x148cc0, vtable slot 2 override): boolify the base
+// CDDSurface::Init1 result. Folded from Stub/BoundaryUpper.cpp (ImgOwned::Forward).
+// ---------------------------------------------------------------------------
+RVA(0x00148cc0, 0x18)
+i32 CPoolItemAE8::Init1(CDDrawPtrCollections* h, i32 a) {
+    return CDDSurface::Init1(h, a) != 0;
+}
 
 // ---------------------------------------------------------------------------
 // Createae8_1 (0x142da0).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x08]

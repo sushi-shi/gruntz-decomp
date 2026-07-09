@@ -374,6 +374,18 @@ CFaderRadial::~CFaderRadial() {
     FreeBuffer17fc40();
 }
 
+// 0x17fc40 - CFaderRadial::FreeBuffer17fc40: release the owned +0x50 buffer (no
+// zero-out). Re-homed from matcher-5's BoundaryUpper re-attack; its target file
+// (BoundaryUpperEh.cpp) was deleted by the parallel fader-dtor fold, so the body
+// lands here on the real class (the ~CFaderRadial self-call proved the identity).
+extern "C" void RezFree(void* p); // 0x1b9b82 (also declared below; needed here)
+RVA(0x0017fc40, 0x11)
+void CFaderRadial::FreeBuffer17fc40() {
+    if (m_50) {
+        RezFree((void*)m_50);
+    }
+}
+
 // ===========================================================================
 // CFaderShape - subtype ctor 0x1816c0 (size 0x494): zeroes m_478/m_44/m_48/m_4c/
 // m_488/m_48c and the CFader base field m_20. vftable 0x5f0890.

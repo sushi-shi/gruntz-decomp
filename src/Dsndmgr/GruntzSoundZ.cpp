@@ -510,6 +510,25 @@ i32 CGruntzSoundInnerZ::StopBank(i32 bank) {
 }
 
 // ---------------------------------------------------------------------------
+// Retrigger (0x138f20, vtable slot 13): if the bank is started but idle (not
+// busy), clear the pause depth and re-Play on the saved driver/mode; return 1.
+// Folded from Stub/BoundaryUpper.cpp (Snd138f20::Gate) - that view IS this class
+// (v8=IsStarted, Helper=IsBusy, v9=Play, m_44/m_48/m_4c = m_pauseDepth/m_playMode/
+// m_playDriver). Declared in GruntzSoundZ.h slot 13.
+RVA(0x00138f20, 0x3a)
+i32 CGruntzSoundInnerZ::Retrigger() {
+    if (!IsStarted()) {
+        return 0;
+    }
+    if (IsBusy()) {
+        return 0;
+    }
+    m_pauseDepth = 0;
+    Play(m_playDriver, m_playMode);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // IsBusy: if the bank's "is started" gate (slot 8) is clear, not busy; otherwise
 // query the AIL sequence status and report busy for PLAYING (4) / PLAYINGBUTRELEASED
 // (0x10).

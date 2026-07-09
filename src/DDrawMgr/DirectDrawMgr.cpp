@@ -1894,6 +1894,114 @@ void CDirectDrawMgr::SetupCaps() {
     }
 }
 
+// ===========================================================================
+// The display-mode pool comparator + searches over m_poolItems (each m_pData[i]
+// is a CDdMode*). Folded from Stub/BoundaryUpper.cpp (Compare_1433d0 + ModeArr::
+// Find*) - ModeArr IS CDirectDrawMgr (m_4b8/m_4bc = m_poolItems.m_pData/m_nSize).
+// Compare's the selection-sort predicate (used by SetupCaps above); FindFwd/FindBack
+// are reached via CGruntzMgr::CheckDisplayBoundsA/B.
+// ===========================================================================
+
+// Ordered compare: unsigned m_c then m_8, then m_54 as a 0/1 tie-break. __stdcall.
+RVA(0x001433d0, 0x4f)
+i32 __stdcall CDirectDrawMgr::Compare(void* pa, void* pb) {
+    CDdMode* a = (CDdMode*)pa;
+    CDdMode* b = (CDdMode*)pb;
+    if (a->m_c > b->m_c) {
+        return 1;
+    }
+    if (a->m_c < b->m_c) {
+        return 0;
+    }
+    if (a->m_8 > b->m_8) {
+        return 1;
+    }
+    if (a->m_8 < b->m_8) {
+        return 0;
+    }
+    return a->m_54 > b->m_54;
+}
+
+// >= range search from the end (last matching index), else -1.
+RVA(0x00143470, 0x47)
+i32 CDirectDrawMgr::FindLast(u32 k0, u32 k1, i32 k2) {
+    i32 r = -1;
+    for (i32 i = m_poolItems.m_nSize - 1; i >= 0; i--) {
+        CDdMode* e = (CDdMode*)m_poolItems.m_pData[i];
+        if (e->m_c >= k0 && e->m_8 >= k1 && e->m_54 == k2) {
+            r = i;
+        }
+    }
+    return r;
+}
+
+// Exact 3-key match, else -1.
+RVA(0x001434c0, 0x45)
+i32 CDirectDrawMgr::FindIndex(i32 k0, i32 k1, i32 k2) {
+    for (i32 i = 0; i < m_poolItems.m_nSize; i++) {
+        CDdMode* e = (CDdMode*)m_poolItems.m_pData[i];
+        if (e->m_c == (u32)k0 && e->m_8 == (u32)k1 && e->m_54 == k2) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+// @early-stop
+// ~82.5% regalloc wall: body + guards + FindIndex call byte-exact; in the scan loop
+// retail pins the strength-reduced iterator pointer in edx and the loaded entry in
+// ecx, while cl swaps them (entry in edx), cascading into the found-path field reads.
+// No source spelling (index/hoisted-base/explicit pointer-walk) flips the pair.
+RVA(0x00143510, 0x71)
+void CDirectDrawMgr::FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
+    i32 idx = FindIndex(k0, k1, k2);
+    if (idx != -1 && idx < m_poolItems.m_nSize) {
+        idx++;
+        if (idx < m_poolItems.m_nSize) {
+            for (; idx < m_poolItems.m_nSize; idx++) {
+                CDdMode* e = (CDdMode*)m_poolItems.m_pData[idx];
+                if (e->m_54 == k2) {
+                    out->a = e->m_c;
+                    out->b = e->m_8;
+                    return;
+                }
+            }
+        }
+    }
+    out->a = -1;
+    out->b = -1;
+}
+
+// @early-stop
+// ~72.8% regalloc wall: same iterator/entry register swap as FindFwd (mirror,
+// descending scan). Logic complete.
+RVA(0x00143590, 0x7e)
+void CDirectDrawMgr::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
+    i32 idx = FindIndex(k0, k1, k2);
+    if (idx != -1 && idx < m_poolItems.m_nSize) {
+        idx--;
+        if (idx >= 0) {
+            for (; idx >= 0; idx--) {
+                CDdMode* e = (CDdMode*)m_poolItems.m_pData[idx];
+                if (e->m_54 == k2) {
+                    out->a = e->m_c;
+                    out->b = e->m_8;
+                    return;
+                }
+            }
+        }
+    }
+    out->a = -1;
+    out->b = -1;
+}
+
+// Global-mode-array teardown tail-forward (0x141c80): mov ecx,&g_modeArray; jmp
+// RemoveAll. Folded from Stub/BoundaryUpper.cpp (ClearModeArray_141c80).
+RVA(0x00141c80, 0xa)
+void ClearModeArray_141c80() {
+    g_modeArray.RemoveAll();
+}
+
 // ---------------------------------------------------------------------------
 // CDirectDrawMgr::CreatePoolItem (0x143630) - EH-framed factory.  Pulls a
 // descriptor out of arg0's source object (slot +0x30), reports a failure through

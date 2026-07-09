@@ -17,8 +17,25 @@
 #include <rva.h>
 #include <Globals.h>
 
-// is-power-of-two gate (0x145e00): returns 1 iff exactly one bit of n is set.
-extern i32 WarpIsPow2(i32 n); // 0x145e00
+// is-power-of-two gate (0x145e00): returns 1 iff exactly one bit of n is set
+// (popcount(x) == 1 over all 32 bits). Folded from Stub/BoundaryUpper.cpp
+// (PopcountIsOne_145e00); its sole caller is WarpTextureBlit @0x146a20 below.
+// @early-stop
+// frame-pointer wall (~82%): the popcount loop + parity result are byte-identical,
+// but retail is frameless (arg at [esp+4], /Oy applied) while cl keeps the ebp frame
+// (push ebp / arg at [ebp+8]) - a whole-function /Oy decision not source-steerable.
+RVA(0x00145e00, 0x26)
+i32 WarpIsPow2(i32 x) {
+    i32 c = 0;
+    i32 i = 0x20;
+    do {
+        if ((x & 1) == 1) {
+            c++;
+        }
+        x >>= 1;
+    } while (--i);
+    return c == 1;
+}
 
 // A polygon vertex (0x1c bytes): x, y, u, v as floats.
 struct WarpVtx {

@@ -1408,6 +1408,26 @@ CWwdGameObjectB::~CWwdGameObjectB() {
 }
 
 // ---------------------------------------------------------------------------
+// CWwdGameObjectB::Clear_166810 (0x166810): walk the +0x1dc CObList's raw nodes
+// (m_listHead = its m_pNodeHead), scalar-delete each node's owned CDDrawGroupChild,
+// then RemoveAll the list. Called by ~CWwdGameObjectB (this) + CWwdFactoryObject::
+// Reset. Folded from Stub/BoundaryUpper.cpp (B_166810 - the Node/payload walk-view
+// IS the CObList CNode / CDDrawGroupChild pair). Same delete idiom as ResetAndSetup.
+// ---------------------------------------------------------------------------
+RVA(0x00166810, 0x32)
+void CWwdGameObjectB::Clear_166810() {
+    CDDrawGroupNode* n = m_listHead;
+    while (n) {
+        CDDrawGroupNode* cur = n;
+        n = n->m_next;
+        if (cur->m_obj) {
+            delete cur->m_obj;
+        }
+    }
+    ((CObList*)&m_1dc)->RemoveAll();
+}
+
+// ---------------------------------------------------------------------------
 // 0x15c070 - the 0x159250-final variant: thin derived class (vtable 0x5effd0) on top
 // of Mid; clears the byte flag m_18c, re-runs the worker pass + groupX, then folds
 // Mid + wap-object base.

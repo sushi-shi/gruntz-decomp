@@ -1,10 +1,12 @@
-// BoundaryUpper.cpp - upper-half (RVA >= 0x133370) engine_boundary backlog,
-// reconstructed. These sit at class boundaries in GRUNTZ.EXE across the DinMgr2 /
-// Dsndmgr / DDrawMgr / Rez engine modules; RTTI cannot attribute the COMDAT-folded
-// leaf methods so the owning class names here are placeholders. Only OFFSETS + the
-// code shape are load-bearing (campaign doctrine). Non-EH (base /O2) bodies only;
-// the /GX EH-frame siblings live in BoundaryUpperEh.cpp. The per-use owner/referent
-// views now live in <Gruntz/BoundaryUpperViews.h> (pure code motion).
+// BoundaryUpper.cpp - upper-half (RVA >= 0x133370) engine_boundary backlog. Most of
+// the original 24 @orphan leaves have been RE-HOMED to their real classes (see the
+// "re-homed to ..." notes below; MSVC5 has no /OPT:ICF, so none were COMDAT-folded
+// duplicates - each was a real function with one real home, found via xref --tree
+// through the ILT thunks + the RTTI vtable-slot data-refs). Only OFFSETS + the code
+// shape are load-bearing (campaign doctrine). Non-EH (base /O2) bodies only; the /GX
+// EH-frame siblings live in BoundaryUpperEh.cpp. The residual leaves each carry a
+// HARD reason (genuinely no caller = dead/inlined, or a deferred divergent-view /
+// class-TBD fold); the per-use views live in <Gruntz/BoundaryUpperViews.h>.
 #include <rva.h>
 #include <Mfc.h> // superset of Win32.h: WINAPI + MFC CObArray (the +0x1dc array RemoveAll)
 #include <Gruntz/BoundaryUpperViews.h> // owner/referent views for this TU (pulls Blk6c.h)
@@ -25,22 +27,18 @@ extern "C" void RezFree(void* p);
 // drop two of the three RVA pins. The reloc-masked stamp is already byte-exact.
 // ---------------------------------------------------------------------------
 
-// @orphan: COMDAT-folded 1-line __thiscall leaf (m_20*n); RTTI cannot attribute, no
-// caller xref (data-referenced/inlined), owning class unrecovered ("CDirectDrawMgr-area"
-// is a proximity guess, not evidence). Identity-recovery TODO for the final sweep.
-// ---------------------------------------------------------------------------
-// 0x1413c0 - `return m_20 * n;` (CDirectDrawMgr-area scale helper). __thiscall,
-// one stack arg.
-// ---------------------------------------------------------------------------
-RVA(0x001413c0, 0xb)
-i32 B_1413c0::Scale(i32 n) {
-    return m_20 * n;
-}
+// (0x1413c0 re-homed to src/Image/Image.cpp as CDDSurface::Scale (m_pitch * n) -
+// this IS CDDSurface (from CDDSurface::DecodeRun8 @0x140aa0); decl in DDSurface.h.)
 
 // ---------------------------------------------------------------------------
-// 0x1614b0 - `if(m_14) RezFree(m_14); m_14 = 0;` (CImageSet1-area buffer release).
+// 0x1614b0 - `if(m_14) RezFree(m_14); m_14 = 0;` buffer release.
 // ---------------------------------------------------------------------------
-// @orphan: COMDAT-folded buffer-release leaf (RezFree(m_14)); RTTI cannot attribute, no caller xref, owning class unrecovered.
+// @orphan: ATTRIBUTED (data-ref ~??_7CImageSet3@@6B@+0x18 = vtable slot 6), but there
+// are TWO divergent CImageSet3 classes (the non-polymorphic pixel-probe in
+// src/Image/ImageSet3.cpp vs the polymorphic `: public CObject` in
+// src/DDrawMgr/DDrawChildGroup.cpp). The slot-6 owner is the polymorphic one; folding
+// needs the two same-named classes reconciled/split first (a conflation), so the
+// buffer-release is left here pending that split. Deferred, not un-attributable.
 RVA(0x001614b0, 0x1c)
 void B_1614b0::Release() {
     if (m_14) {
@@ -52,53 +50,26 @@ void B_1614b0::Release() {
 // (0x137300 SoundDevice::GetPrimary re-homed to src/Dsndmgr/DirectSoundMgr.cpp, next
 // to its CreatePrimaryBuffer @0x137260 / StartPrimary siblings.)
 
-// ---------------------------------------------------------------------------
-// 0x1433d0 - CDdObArray ordered compare: unsigned m_c then m_8, then m_54 as a
-// 0/1 result. __stdcall (callee-cleanup, 2 ptr args), no `this`.
-// ---------------------------------------------------------------------------
-// @orphan: __stdcall free compare predicate (no this); the sorted CDdObArray owner is unrecovered.
-RVA(0x001433d0, 0x4f)
-i32 __stdcall Compare_1433d0(DdOb_1433d0* a, DdOb_1433d0* b) {
-    if (a->m_c > b->m_c) {
-        return 1;
-    }
-    if (a->m_c < b->m_c) {
-        return 0;
-    }
-    if (a->m_8 > b->m_8) {
-        return 1;
-    }
-    if (a->m_8 < b->m_8) {
-        return 0;
-    }
-    return a->m_54 > b->m_54;
-}
+// (0x1433d0 + the 0x1434c0/0x143470/0x143510/0x143590 mode searches + 0x141c80
+// g_modeArray teardown re-homed to src/DDrawMgr/DirectDrawMgr.cpp as CDirectDrawMgr::
+// Compare / FindIndex / FindLast / FindFwd / FindBack + ClearModeArray_141c80 - ModeArr
+// IS CDirectDrawMgr (m_4b8/m_4bc = m_poolItems.m_pData/m_nSize @+0x4b8/+0x4bc);
+// SetupCaps drives Compare, CGruntzMgr::CheckDisplayBoundsA/B drive FindFwd/FindBack.)
 
-// ---------------------------------------------------------------------------
-// 0x1847a0 - trivial setter `m_70 = arg;`. __thiscall, 1 arg.
-// ---------------------------------------------------------------------------
-// @orphan: COMDAT-folded 1-line setter (m_70=v); no caller xref, owning class unrecovered.
-RVA(0x001847a0, 0xa)
-void B_1847a0::Set(i32 v) {
-    m_70 = v;
-}
+// (0x1847a0 re-homed to src/Gruntz/MenuItem2.cpp as CMenuItem2::SetFrame - vtable
+// slot 14 (~??_7CMenuItem2@@6B@+0x38); decl already in MenuItem2.h, m_70 its field.)
 
-// ---------------------------------------------------------------------------
-// 0x17fc40 - `if(m_50) RezFree(m_50);` (no zero-out). __thiscall, 0 args.
-// ---------------------------------------------------------------------------
-// @orphan: COMDAT-folded buffer-free leaf (RezFree(m_50)); owning class unrecovered.
-RVA(0x0017fc40, 0x11)
-void B_17fc40::Free() {
-    if (m_50) {
-        RezFree(m_50);
-    }
-}
+// (0x17fc40 re-homed to src/Stub/BoundaryUpperEh.cpp as C17f9f0::Free - the
+// ~C17f9f0 fader dtor (FaderBase-derived) called it via `((B_17fc40*)this)->Free()`,
+// proving the view IS C17f9f0; the cast is dissolved onto a real +0x50-buffer method.)
 
 // ---------------------------------------------------------------------------
 // 0x184fb0 - __cdecl forward `G(0, a, b);` to 0x184fd0.
 // ---------------------------------------------------------------------------
 void Sub_184fd0(i32, i32, i32); // 0x184fd0, no body
-// @orphan: __cdecl 3-arg forward thunk to 0x184fd0; free function, no owning class.
+// @orphan: genuinely NO caller anywhere (xref --tree: its only callers are Gap_184e60
+// / Gap_184f30, which are themselves uncalled) - a dead / fully-inlined __cdecl 3-arg
+// forward thunk. No class receiver. Legitimate dead-code leave (traced hard).
 RVA(0x00184fb0, 0x15)
 void Fwd_184fb0(i32 a, i32 b) {
     Sub_184fd0(0, a, b);
@@ -109,65 +80,23 @@ void Fwd_184fb0(i32 a, i32 b) {
 // the inherited CInputDevRoot::m_stateBuffer/m_stateBufferSize, ReleaseBase is
 // CInputDevBase::ReleaseDevices. The DevCfg view is dissolved.)
 
-// ---------------------------------------------------------------------------
-// 0x145e00 - parity test: returns (popcount(x) == 1). __cdecl, 1 arg.
-// ---------------------------------------------------------------------------
-// @orphan: __cdecl free popcount==1 helper; no owning class.
-RVA(0x00145e00, 0x26)
-i32 PopcountIsOne_145e00(i32 x) {
-    i32 c = 0;
-    i32 i = 0x20;
-    do {
-        if ((x & 1) == 1) {
-            c++;
-        }
-        x >>= 1;
-    } while (--i);
-    return c == 1;
-}
+// (0x145e00 re-homed to src/Image/WarpTextureBlit.cpp as WarpIsPow2 - the is-pow2
+// gate its sole caller WarpTextureBlit @0x146a20 already declared reloc-masked there.)
 
-// ---------------------------------------------------------------------------
-// 0x1413b0 - manual-vtable dispatch `(*m_8->vtbl[0x80])(m_8, 0)`. __thiscall.
-// ---------------------------------------------------------------------------
-// @orphan: COMDAT-folded manual-vtable dispatch leaf; owning class unrecovered.
-RVA(0x001413b0, 0xf)
-void Owner1413::Thunk() {
-    m_8->Op(0);
-}
+// (0x1413b0 re-homed to src/Image/Image.cpp as CDDSurface::UnlockThunk (m_8->Unlock(0),
+// IDirectDrawSurface slot 0x80) - this IS CDDSurface (from DecodeRun8); decl in
+// DDSurface.h. The Obj1413 manual-vtable view IS the real m_8 IDirectDrawSurface.)
 
-// ---------------------------------------------------------------------------
-// CDdObArray mode-table search (m_4b8 = Entry*[], m_4bc = count).
-// 0x1434c0 FindIndex (exact 3-key match), 0x143470 FindLast (>= range match).
-// ---------------------------------------------------------------------------
-// @orphan: CDdObArray mode-table search; the array owner class is unrecovered (placeholder ModeArr).
-RVA(0x001434c0, 0x45)
-i32 ModeArr::FindIndex(i32 k0, i32 k1, i32 k2) {
-    for (i32 i = 0; i < m_4bc; i++) {
-        DdEntry* e = m_4b8[i];
-        if (e->m_c == (u32)k0 && e->m_8 == (u32)k1 && e->m_54 == k2) {
-            return i;
-        }
-    }
-    return -1;
-}
-// @orphan: CDdObArray mode-table range search; owner class unrecovered (placeholder ModeArr).
-RVA(0x00143470, 0x47)
-i32 ModeArr::FindLast(u32 k0, u32 k1, i32 k2) {
-    i32 r = -1;
-    for (i32 i = m_4bc - 1; i >= 0; i--) {
-        DdEntry* e = m_4b8[i];
-        if (e->m_c >= k0 && e->m_8 >= k1 && e->m_54 == k2) {
-            r = i;
-        }
-    }
-    return r;
-}
+// (0x1434c0 FindIndex + 0x143470 FindLast re-homed to CDirectDrawMgr - see the
+// mode-search note above.)
 
 // ---------------------------------------------------------------------------
 // 0x13dee0 - `m_1c = v; if(v > 0) m_28 = 1000 / v;` (CFileImage frame timing).
 // __thiscall, 1 arg.
 // ---------------------------------------------------------------------------
-// @orphan: COMDAT-folded frame-timing setter; owning class unrecovered (CFileImage-area is a proximity guess).
+// @orphan: genuinely NO caller anywhere (xref --tree: its only caller Gap_13df00 is
+// itself uncalled) - a dead / fully-inlined frame-timing setter (m_1c=fps, m_28=ms
+// per frame). Not a CDDSurface method (0x13dee0 absent from DDSurface.h). Traced hard.
 RVA(0x0013dee0, 0x1b)
 void B_13dee0::Set(i32 v) {
     m_1c = v;
@@ -180,135 +109,45 @@ void B_13dee0::Set(i32 v) {
 // 0x13ee30 - COM wait-flip loop: `while(m_8->Flip(2) == DDERR_WASSTILLDRAWING);`.
 // IDirectDrawSurface-style manual vtable, slot 0x48. __thiscall.
 // ---------------------------------------------------------------------------
-// @orphan: COMDAT-folded COM flip-wait leaf; owning surface-wrapper class unrecovered.
+// @orphan: genuinely NO caller AND no vtable data-ref (xref --tree + rva: none) - a
+// dead / fully-inlined surface flip-wait (m_8 is an IDirectDrawSurface-style surface,
+// Flip(2) retry on WASSTILLDRAWING). Not a declared CDDSurface method (Flip is 0x13e850).
+// Traced hard; owning surface-wrapper class carries no recoverable edge.
 RVA(0x0013ee30, 0x29)
 void B_13ee30::WaitFlip() {
     while (m_8->Flip(2) == 0x8876021c) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x151e70 - clear: zero m_10, release the +0x14 buffer (+ m_178), scalar-delete
-// the +0x18 object (vtbl slot 0, arg 1), zero m_170. __thiscall.
-// ---------------------------------------------------------------------------
-// @orphan: COMDAT-folded clear leaf; owning class unrecovered.
-RVA(0x00151e70, 0x3b)
-void B_151e70::Clear() {
-    m_10 = 0;
-    if (m_14) {
-        RezFree(m_14);
-        m_14 = 0;
-        m_178 = 0;
-    }
-    if (m_18) {
-        m_18->Destroy(1);
-        m_18 = 0;
-    }
-    m_170 = 0;
-}
+// (0x151e70 re-homed to src/DDrawMgr/DDrawWorkerCache.cpp as AnimWorkerObj::Clear -
+// vtable slot 7 (~??_7AnimWorkerObj@@6B@+0x1c); decl already in that TU, m_14/m_18
+// retyped to the owned buffer / killable sub-object.)
 
-// ---------------------------------------------------------------------------
-// 0x166810 - destroy a singly-linked list of nodes (link at +0, payload at +8,
-// scalar-deleted via vtbl slot 1 arg 1), then RemoveAll the +0x1dc array (0x1b5a0b).
-// __thiscall.
-// ---------------------------------------------------------------------------
-// @orphan: COMDAT-folded list-clear leaf; owning class unrecovered.
-RVA(0x00166810, 0x32)
-void B_166810::Clear() {
-    Node166810* n = m_head;
-    while (n) {
-        Node166810* cur = n;
-        n = n->m_next;
-        if (cur->m_payload) {
-            cur->m_payload->Destroy(1);
-        }
-    }
-    ((CObArray*)&m_1dc)->RemoveAll();
-}
+// (0x166810 re-homed to src/Wwd/WwdGameObject.cpp as CWwdGameObjectB::Clear_166810
+// - this=CWwdGameObjectB (dtor stamps 0x5f00e8 then calls it on this); the Node/
+// payload walk-view IS the +0x1dc CObList's raw CNode / CDDrawGroupChild pair.)
 
 // (0x13c8a0 CRezItm::Scan + 0x13c8f0 CRezItm::Check re-homed to src/Rez/RezMgr.cpp as
 // CRezItm methods - vtable slots 6/7, RTTI-confirmed. RezDir view + RezDirLookup extern
 // dissolved onto the canonical CRezItm.)
 
-// ---------------------------------------------------------------------------
-// CDdObArray neighbour lookup: 0x143510 forward, 0x143590 backward. Both run
-// FindIndex then scan toward the array end / start for a same-m_54 entry, writing
-// {m_c, m_8} (or {-1,-1}) to the out pair. __thiscall, 4 args.
-// ---------------------------------------------------------------------------
-// @early-stop
-// ~82.5% regalloc wall: body + guards + FindIndex call byte-exact; in the scan
-// loop retail pins the strength-reduced iterator pointer in edx and the loaded
-// entry in ecx, while MSVC5 here swaps them (entry in edx), cascading into the
-// found-path field reads. No source spelling (index, hoisted-base, explicit
-// pointer-walk) flips the pair; logic complete.
-// @orphan: CDdObArray neighbour lookup (fwd); owner class unrecovered (placeholder ModeArr).
-RVA(0x00143510, 0x71)
-void ModeArr::FindFwd(Pair2* out, i32 k0, i32 k1, i32 k2) {
-    i32 idx = FindIndex(k0, k1, k2);
-    if (idx != -1 && idx < m_4bc) {
-        idx++;
-        if (idx < m_4bc) {
-            for (; idx < m_4bc; idx++) {
-                DdEntry* e = m_4b8[idx];
-                if (e->m_54 == k2) {
-                    out->a = e->m_c;
-                    out->b = e->m_8;
-                    return;
-                }
-            }
-        }
-    }
-    out->a = -1;
-    out->b = -1;
-}
-// @early-stop
-// ~72.8% regalloc wall: same iterator/entry register swap as FindFwd (mirror,
-// descending scan). Logic complete.
-// @orphan: CDdObArray neighbour lookup (back); owner class unrecovered (placeholder ModeArr).
-RVA(0x00143590, 0x7e)
-void ModeArr::FindBack(Pair2* out, i32 k0, i32 k1, i32 k2) {
-    i32 idx = FindIndex(k0, k1, k2);
-    if (idx != -1 && idx < m_4bc) {
-        idx--;
-        if (idx >= 0) {
-            for (; idx >= 0; idx--) {
-                DdEntry* e = m_4b8[idx];
-                if (e->m_54 == k2) {
-                    out->a = e->m_c;
-                    out->b = e->m_8;
-                    return;
-                }
-            }
-        }
-    }
-    out->a = -1;
-    out->b = -1;
-}
+// (0x143510 FindFwd + 0x143590 FindBack re-homed to CDirectDrawMgr - see the
+// mode-search note above. Both stay @early-stop (regalloc iterator/entry swap).)
+
+// (0x138f20 re-homed to src/Dsndmgr/GruntzSoundZ.cpp as CGruntzSoundInnerZ::Retrigger
+// - vtable slot 13 (~??_7CGruntzSoundInnerZ@@6B@+0x34); decl already in GruntzSoundZ.h.
+// v8=IsStarted, Helper=IsBusy, v9=Play, m_44/m_48/m_4c=m_pauseDepth/m_playMode/m_playDriver.)
 
 // ---------------------------------------------------------------------------
-// 0x138f20 - DSound voice gate: if vtbl[8]() and !Helper(0x138f60), clear m_44
-// and dispatch vtbl[9](m_4c, m_48); return success. __thiscall.
-// ---------------------------------------------------------------------------
-// @orphan: COMDAT-folded DSound voice-gate leaf; owning voice class unrecovered.
-RVA(0x00138f20, 0x3a)
-i32 Snd138f20::Gate() {
-    if (!v8()) {
-        return 0;
-    }
-    if (Helper()) {
-        return 0;
-    }
-    m_44 = 0;
-    v9(m_4c, m_48);
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// 0x16be60 - ButeMgr helper append: if Ready(), Emit(&g_emptyString, arg) then
-// Flush(); return this. __thiscall, 1 arg.
+// 0x16be60 - append helper: if Ready(), Emit(&g_emptyString, arg) then Flush();
+// return this. __thiscall, 1 arg. Called by ButeMgr::ParseAttributeFile.
 // ---------------------------------------------------------------------------
 extern "C" char g_emptyString[]; // _g_emptyString @0x6293f4
-// @orphan: COMDAT-folded ButeMgr append leaf; owning class unrecovered.
+// @orphan: a ButeMgr-region writer whose body directly calls three sub-methods
+// (Ready 0x16bd10 / Emit 0x16c2d0 / Flush 0x16bd90) - so it is NOT CString::operator+=
+// (that ButeMgr.cpp comment is a mislabel; a += is a single ConcatInPlace, not three
+// calls). Its owning writer class (the receiver of Ready/Emit/Flush) is not yet
+// modeled; class-recovery TODO (the .att token emitter), not un-attributable.
 RVA(0x0016be60, 0x2a)
 C16be60* C16be60::Append(i32 arg) {
     if (Ready()) {
@@ -322,7 +161,9 @@ C16be60* C16be60::Append(i32 arg) {
 // 0x151d20 - notify a hooked callback: stash/replace m_7c->m_1c with arg, invoke
 // the +0x10 callback(this), restore m_1c if unchanged. __thiscall, 1 arg.
 // ---------------------------------------------------------------------------
-// @orphan: COMDAT-folded callback-notify leaf; owning class unrecovered.
+// @orphan: genuinely NO caller AND no data-ref (xref --tree + rva: none) - a dead /
+// fully-inlined callback-notify (stash/replace m_7c->m_1c, invoke the +0x10 hook,
+// restore). Traced hard; the +0x7c hook-owner class carries no recoverable edge.
 RVA(0x00151d20, 0x3a)
 i32 B_151d20::Notify(void* arg) {
     Cb151d20* p = m_7c;
@@ -343,47 +184,19 @@ i32 B_151d20::Notify(void* arg) {
 // the shared array teardown (0x1b4f0b). The DATA globals are named; the shared
 // callee is reloc-masked.
 // ---------------------------------------------------------------------------
-extern CImageCache g_imageCache; // 0x653c88
-// @orphan: __cdecl global-teardown tail-forward (g_imageCache.RemoveAll); free fn, no owning class.
-RVA(0x0013e070, 0xa)
-void ClearImageCache_13e070() {
-    g_imageCache.RemoveAll();
-}
+// (0x13e070 ClearImageCache re-homed to src/Image/Image.cpp - g_imageCache
+// (CImageCache @0x653c88) is that TU's own datum.)
 
-extern CDdObArray g_modeArray; // 0x683ec8
-// @orphan: __cdecl global-teardown tail-forward (g_modeArray.RemoveAll); free fn, no owning class.
-RVA(0x00141c80, 0xa)
-void ClearModeArray_141c80() {
-    g_modeArray.RemoveAll();
-}
+// (0x141c80 ClearModeArray re-homed to src/DDrawMgr/DirectDrawMgr.cpp - see the
+// mode-search note above; g_modeArray is that TU's own datum.)
 
-// ---------------------------------------------------------------------------
-// CImageOwned apply/setup cluster (vptr slot 8 = +0x20 transform, slot 10 = +0x28
-// commit). 0x13e0a0 Apply copies the 0x6c-byte source block into m_10 then runs
-// the transform; 0x148cc0 / 0x148b50 forward into it.
-// ---------------------------------------------------------------------------
-// @orphan: AMBIGUOUS identity: DDSurface.h declares this RVA as CDDSurface::Init1 (slot 2) but the body models a Blk6c-transform Apply on a distinct object; the conflict is unresolved - do not force a guess.
-RVA(0x0013e0a0, 0x27)
-i32 ImgOwned::Apply(i32 mode, const void* src) {
-    if (src) {
-        m_transform = *(const Blk6c*)src;
-    }
-    return v8(mode);
-}
-// @orphan: forwards into 0x13e0a0 (ambiguous identity above); orphaned pending 0x13e0a0 resolution.
-RVA(0x00148cc0, 0x18)
-i32 ImgOwned::Forward(i32 a0, const void* a1) {
-    return Apply(a0, a1) != 0;
-}
-// @orphan: forwards into 0x13e0a0 (ambiguous identity above); orphaned pending 0x13e0a0 resolution.
-RVA(0x00148b50, 0x2c)
-i32 ImgOwned::Commit(i32 a0, const void* a1) {
-    if (Apply(a0, a1) == 0) {
-        return 0;
-    }
-    v10();
-    return 1;
-}
+// (0x13e0a0 + 0x148b50 + 0x148cc0 re-homed: the "ambiguous CDDSurface::Init1" is
+// RESOLVED - the disasm proves arg1=collection-context h (->slot-8 v20), arg2=a
+// (a 0x6c-byte Blk6c* handle, rep-movs'd into the +0x10 DDSURFACEDESC scratch). So
+// 0x13e0a0 IS CDDSurface::Init1 (slot 2, -> src/Image/Image.cpp), and 0x148b50 /
+// 0x148cc0 are its CPoolItemAB8::Init1 / CPoolItemAE8::Init1 overrides (call the base
+// then InstallColorFormat / boolify) -> src/DDrawMgr/DDrawPtrCollections.cpp. The
+// ImgOwned view IS CDDSurface; dissolved.)
 
 // (0x13dec0 RezMgr::SpinWaitUntil re-homed to src/Rez/RezMgr.cpp, right after its sole
 // caller RezMgr::UpdateClock @0x13ddc0 - the ms frame-pacing busy-wait.)

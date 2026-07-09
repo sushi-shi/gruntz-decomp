@@ -643,6 +643,21 @@ i32 CRezImage::LoadDefault(char* name, void* a2, void* a3) {
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
+// CDDSurface::Init1 (0x13e0a0, vtable slot 2): if the descriptor arg (a, a 0x6c-byte
+// Blk6c* passed as an int handle) is non-null, copy it into the +0x10 DDSURFACEDESC
+// scratch, then dispatch the surface's own slot-8 v20 with the collection context h;
+// return its result. Folded from Stub/BoundaryUpper.cpp (ImgOwned::Apply - the view
+// IS CDDSurface; the "ambiguous CDDSurface::Init1" note is resolved). Decl in DDSurface.h.
+// ---------------------------------------------------------------------------
+RVA(0x0013e0a0, 0x27)
+i32 CDDSurface::Init1(CDDrawPtrCollections* h, i32 a) {
+    if (a != 0) {
+        memcpy((char*)this + 0x10, (const void*)a, 0x6c);
+    }
+    return v20(h);
+}
+
+// ---------------------------------------------------------------------------
 // CDDSurface::BlitSurf
 // The DecodePcxData destination setup: zero the surface's DDSURFACEDESC, stash
 // the colour-key arg (m_78), record width/height into the desc, set dwSize/
@@ -893,6 +908,23 @@ CDDSurface::~CDDSurface() {
     FreeSurfaces();
 }
 
+// CDDSurface::UnlockThunk (0x1413b0): unlock the held DirectDraw surface
+// (IDirectDrawSurface::Unlock(0), vtable slot 0x80). Folded from Stub/BoundaryUpper.cpp
+// (Owner1413::Thunk - the m_8 sub-object IS the real m_8 IDirectDrawSurface); decl in
+// DDSurface.h. The DecodeRun8 (FileImageRunDecode.cpp) run-decoder calls it on `this`.
+RVA(0x001413b0, 0xf)
+void CDDSurface::UnlockThunk() {
+    m_8->Unlock(0);
+}
+
+// CDDSurface::Scale (0x1413c0): the pitch-scaled row offset (m_pitch * n). Folded
+// from Stub/BoundaryUpper.cpp (B_1413c0::Scale - this IS CDDSurface, from DecodeRun8);
+// decl in DDSurface.h.
+RVA(0x001413c0, 0xb)
+i32 CDDSurface::Scale(i32 n) {
+    return m_pitch * n;
+}
+
 // ---------------------------------------------------------------------------
 // CDDSurface::FreeSurfaces (vtable slot 4, @+0x10) - the shared surface teardown.
 // Walk the +0x94 CPtrArray (m_pData@0x98, count@0x9c, unsigned) running each
@@ -1017,9 +1049,19 @@ public:
 class CImageCache {
 public:
     void SetAtGrow(i32 index, CRezSurfaceItem* item); // 0x1b5144
+    void RemoveAll();                                 // 0x1b4f0b (out-of-line array teardown)
 };
+SIZE_UNKNOWN(CImageCache);
 DATA(0x00253c88)
 extern CImageCache g_imageCache; // 0x653c88
+
+// Global image-cache teardown tail-forward (0x13e070): mov ecx,&g_imageCache; jmp
+// RemoveAll. Folded from Stub/BoundaryUpper.cpp (ClearImageCache_13e070); g_imageCache
+// is this TU's own datum.
+RVA(0x0013e070, 0xa)
+void ClearImageCache_13e070() {
+    g_imageCache.RemoveAll();
+}
 
 // The owner of the factory (this) is not touched by the body; modeled as an
 // opaque shell so the call lowers to the retail __thiscall frame.

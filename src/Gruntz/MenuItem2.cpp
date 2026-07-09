@@ -13,6 +13,14 @@
 
 // ===========================================================================
 
+// CMenuItem2::SetFrame (0x1847a0, vtable slot 14): trivial frame-index setter.
+// Folded from Stub/BoundaryUpper.cpp (B_1847a0::Set - ~??_7CMenuItem2@@6B@+0x38);
+// declared in MenuItem2.h slot 14, m_70 already a CMenuItem2 field.
+RVA(0x001847a0, 0xa)
+void CMenuItem2::SetFrame(i32 v) {
+    m_70 = v;
+}
+
 // configure from a template + strings (chaining CMenuItem::Init), then
 // resolve the three per-state sprites by "<key>_NORMAL/_SELECTED/_DISABLED".
 // @early-stop

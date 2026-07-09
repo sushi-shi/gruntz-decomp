@@ -33,6 +33,15 @@ class CObject;
 // NAFXCW thunk (reloc-masked rel32 call).
 #include <Gruntz/MapStringToOb.h>
 
+// The engine __cdecl deallocator (operator delete; reloc-masked rel32). 0x1b9b82.
+extern "C" void RezFree(void* p);
+
+// The worker's +0x18 owned sub-object, torn down via its vtable slot 0 in Clear.
+struct AnimWorkerKillable {
+    virtual void Destroy(i32 flags); // slot 0
+};
+SIZE_UNKNOWN(AnimWorkerKillable);
+
 // The worker virtual interface. Slots laid out so the dispatched method lands
 // at byte offset +0x24. Declarations only - never defined, so no ??_7 emitted.
 class AnimWorker : public CObject {
@@ -60,10 +69,10 @@ struct AnimWorkerObj : public AnimWorker {
     i32 m_04; // +0x04  = parent->m_1c
     i32 m_08; // +0x08  = 0
     i32 m_0c; // +0x0c  = parent->m_0c
-    i32 m_10; // +0x10  = 0
-    i32 m_14; // +0x14  = 0
-    i32 m_18; // +0x18  = 0
-    i32 m_1c; // +0x1c  = 0
+    i32 m_10;               // +0x10  = 0
+    void* m_14;             // +0x14  = 0  owned buffer (RezFree'd in Clear)
+    AnimWorkerKillable* m_18; // +0x18  = 0  owned sub-object (Destroy(1)'d in Clear)
+    i32 m_1c;               // +0x1c  = 0
     char m_pad20[0x170 - 0x20];
     i32 m_170; // +0x170 = 0
     i32 m_174; // +0x174 = 0
@@ -142,6 +151,27 @@ static inline AnimWorkerObj* MakeAnimWorker(const CDDrawWorkerCache* parent) {
         w->m_178 = 0;
     }
     return w;
+}
+
+// ---------------------------------------------------------------------------
+// AnimWorkerObj::Clear (0x151e70, vtable slot 7): reset the worker - zero m_10,
+// release the owned +0x14 buffer (+ its m_178 size), scalar-delete the +0x18
+// sub-object (slot 0, arg 1), zero m_170. Folded from Stub/BoundaryUpper.cpp
+// (B_151e70 - ~??_7AnimWorkerObj@@6B@+0x1c); the view IS this class.
+// ---------------------------------------------------------------------------
+RVA(0x00151e70, 0x3b)
+void AnimWorkerObj::Clear() {
+    m_10 = 0;
+    if (m_14) {
+        RezFree(m_14);
+        m_14 = 0;
+        m_178 = 0;
+    }
+    if (m_18) {
+        m_18->Destroy(1);
+        m_18 = 0;
+    }
+    m_170 = 0;
 }
 
 // ---------------------------------------------------------------------------

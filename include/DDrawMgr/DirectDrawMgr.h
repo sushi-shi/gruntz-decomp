@@ -65,8 +65,26 @@ struct CDdObArray {
     i32 m_nGrowBy;  // +0x10
     void SetSize(i32 n, i32 grow);  // 0x1b4f75
     void SetAtGrow(i32 n, void* x); // 0x1b5144
+    void RemoveAll();               // 0x1b4f0b (out-of-line array teardown)
 };
 SIZE(CDdObArray, 0x14);
+
+// One enumerated display-mode / pool record (stored as void* in m_poolItems); the
+// mode search + sort key on the width/height (m_8/m_c) and a mode tag (m_54).
+struct CDdMode {
+    char _0[8];
+    u32 m_8;  // +0x08  key part A (height)
+    u32 m_c;  // +0x0c  key part B (width)
+    char _10[0x54 - 0x10];
+    u32 m_54; // +0x54  mode tag / bpp (Compare's tie-break is unsigned)
+};
+SIZE_UNKNOWN(CDdMode);
+
+// The {m_c, m_8} pair CheckDisplayBounds' neighbour lookup writes out.
+struct CDdModePair {
+    i32 a, b;
+};
+SIZE_UNKNOWN(CDdModePair);
 
 // ---------------------------------------------------------------------------
 // CDirectDrawMgr (DDRAWMGR.CPP) - the top-level device manager. NON-polymorphic;
@@ -105,8 +123,17 @@ public:
     void SetupCaps();                                                 // 0x143240
     void* CreatePoolItem(void* arg0, void* arg1);                     // 0x143630
     i32 SetVideoMode(i32 width, i32 height, i32 bpp, i32 a4, i32 a5); // 0x143c20
-    i32 Compare(void* a, void* b); // 0x1433d0  pool comparator (reloc-masked)
-    void AddPoolItem(void* item);  // 0x142100  pool publisher (reloc-masked)
+    // Pool/mode comparator - the selection-sort predicate (free __stdcall, no this).
+    static i32 __stdcall Compare(void* a, void* b); // 0x1433d0
+    void AddPoolItem(void* item);                   // 0x142100  pool publisher (reloc-masked)
+
+    // Display-mode pool searches over m_poolItems (m_pData[i] == a CDdMode*). FindIndex
+    // = exact 3-key match; FindLast = >= range match; FindFwd/FindBack = nearest same-m_54
+    // neighbour toward the pool end/start, writing {m_c,m_8} (or {-1,-1}) to out.
+    i32 FindIndex(i32 k0, i32 k1, i32 k2);                       // 0x1434c0
+    i32 FindLast(u32 k0, u32 k1, i32 k2);                        // 0x143470
+    void FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2);      // 0x143510
+    void FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2);     // 0x143590
 
     // --- layout (only touched offsets pinned) ---------------------------------
     IDirectDraw2* m_device; // +0x00  the held IDirectDraw2 device
