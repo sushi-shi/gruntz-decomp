@@ -148,7 +148,7 @@ i32 CLogicRecord::Dispatch(i32 a, i32 mode, void* c, void* d) {
         case 8:
             if (m_174) {
                 void* out = 0;
-                CMapPtrToPtr* res = (CMapPtrToPtr*)(((LogicContext*)m_0c)->m_08 + 0x48);
+                CMapPtrToPtr* res = (CMapPtrToPtr*)(m_0c->m_08 + 0x48);
                 m_170 = res->Lookup((void*)m_174, out) ? out : (void*)0;
             }
             break;
@@ -159,6 +159,22 @@ i32 CLogicRecord::Dispatch(i32 a, i32 mode, void* c, void* d) {
         if (m_18->Step(a, mode, c, d) == 0) {
             return 0;
         }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CacheTargetId (0x164920, __thiscall). The standalone Dispatch-case-3 hook:
+// refresh the cached reference id (m_174) from the resolved target's +0x188.
+// Returns 0 on a null argument, 1 otherwise.
+RVA(0x00164920, 0x35)
+i32 CLogicRecord::CacheTargetId(void* a) {
+    if (a == 0) {
+        return 0;
+    }
+    m_174 = 0;
+    if (m_170) {
+        m_174 = ((LogicTarget*)m_170)->m_188;
     }
     return 1;
 }
@@ -331,6 +347,35 @@ i32 CLogicRecord::Save(LogicArchive* ar) {
     if (m_178 > 0) {
         m_14 = ::operator new(m_178);
         ar->Write(m_14, m_178);
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// ResolveTarget (0x1651b0, __thiscall). The standalone Dispatch-case-8 hook:
+// when a cached reference id (m_174) is present, re-resolve the target pointer
+// (m_170) by looking the id up in the level grid's CMapPtrToPtr resolver.
+// Returns 0 on a null argument, 1 otherwise.
+// @early-stop
+// 99.33% - regalloc coin-flip wall (docs/patterns/zero-register-pinning.md):
+// body byte-identical (the out=0 store schedule, push order, and if/else branch
+// polarity all match after computing `res` before `out`), but retail pins m_0c in
+// edx and &out in ecx (`mov edx,[esi+0xc]; lea ecx,[esp+8]`) while cl pins m_0c in
+// ecx and &out in edx - a 3-instruction operand-register choice the permuter can't
+// flip. Not source-steerable.
+RVA(0x001651b0, 0x5d)
+i32 CLogicRecord::ResolveTarget(void* a) {
+    if (a == 0) {
+        return 0;
+    }
+    if (m_174) {
+        CMapPtrToPtr* res = (CMapPtrToPtr*)(m_0c->m_08 + 0x48);
+        void* out = 0;
+        if (!res->Lookup((void*)m_174, out)) {
+            m_170 = 0;
+        } else {
+            m_170 = out;
+        }
     }
     return 1;
 }

@@ -312,6 +312,36 @@ i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen)
 }
 
 // ===========================================================================
+// WwdFile_CompressMainBlock (0x160870, __stdcall, ret 0x10) - the deflate
+// counterpart of InflateMainBlock: WAP-compress src[srcLen] into dest[destCap]
+// (via WapUncompress, which despite its name is the compress/deflate side) and
+// return the produced compressed length, or 0 on a null buffer / deflate failure.
+// ===========================================================================
+// WapUncompress (0x1853b0, __cdecl) - the engine deflate helper; reloc-masked.
+int WapUncompress(
+    unsigned char* dest,
+    unsigned long* pDestLen,
+    unsigned char* src,
+    unsigned long srcLen
+);
+RVA(0x00160870, 0x43)
+i32 __stdcall WwdFile_CompressMainBlock(
+    unsigned char* src,
+    unsigned long srcLen,
+    unsigned char* dest,
+    unsigned long destCap
+) {
+    if (src == 0) {
+        return 0;
+    }
+    if (dest == 0) {
+        return 0;
+    }
+    unsigned long outLen = destCap;
+    return WapUncompress(dest, &outLen, src, srcLen) == 0 ? (i32)outLen : 0;
+}
+
+// ===========================================================================
 // CPlaneRender::SetTileSize (__thiscall, ret 8) - given the tile pixel
 // size (tileW, tileH), derive the plane's pixel-wrap dims (grid count * tile px),
 // the tile px size, the (0,0,tileW,tileH) default fill rect, and the two log2

@@ -195,6 +195,7 @@ struct CWwdSpatialMgr {
     void RemoveObject(CWwdObject* obj);
     i32 FlushAll();
     i32 FlushGrid(CWwdGrid* grid);
+    i32 ForEach(void(__cdecl* cb)(CWwdObject*));
     i32 ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdObject*));
     CWwdObject* GetFirstObject();
     CWwdObject* GetNextObject();
@@ -400,6 +401,21 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
         ++count;
     }
     return count;
+}
+
+// ===========================================================================
+// 0x168a20 - ForEach(cb): fire the __cdecl callback on every object across all
+// three plane grids (via ForEachGrid), summing the counts. Null cb -> 0.
+// ===========================================================================
+RVA(0x00168a20, 0x46)
+i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CWwdObject*)) {
+    if (cb == 0) {
+        return 0;
+    }
+    i32 n = ForEachGrid(m_grid0, cb);
+    n += ForEachGrid(m_grid1, cb);
+    n += ForEachGrid(m_grid2, cb);
+    return n;
 }
 
 // ===========================================================================

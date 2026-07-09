@@ -174,6 +174,9 @@ public:
     void ResetSlots();
     // 0x165c40: scan m_map1 for the entry whose value == obj; remove + delete it.
     i32 RemoveByValue(CObject* obj);
+    // 0x165d30: look `key` up in m_map1; if found, drop the +0x64 cache when it
+    // points at the value, RemoveKey it, and destroy the value.
+    i32 RemoveByKey(const char* key);
 };
 
 // CMapStringToOb internal field at parent+0x1c (seeds worker->m_04). Read off the
@@ -302,6 +305,37 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
         }
     }
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x165d30 (__thiscall): remove a worker from m_map1 by its `key`. Look it up;
+// if absent return 0, else drop the +0x64 cache when it holds the value, RemoveKey
+// it, run the value's scalar-deleting destructor (vtbl +0x4, arg 1), return 1.
+// Keyed twin of RemoveByValue (0x165c40); no /GX frame (no CString iteration).
+// @early-stop
+// ~77.7% - MSVC5 `delete`-null-check wall: the body is logically byte-exact
+// (Lookup / m_64-clear / RemoveKey / destroy), but retail runs the value's
+// scalar-deleting destructor DIRECTLY (`mov edx,[edi]; push 1; mov ecx,edi;
+// call [edx+4]`) with no null-check, keeping val pinned in edi across all three
+// calls. `delete w` (the only MSVC5-expressible form) emits an unconditional
+// null-check + reloads val, which also flips the val/map register pair (ebx<->edi)
+// and the out=0 store schedule. A __thiscall fn-ptr dispatch to slot 1 that would
+// omit the check is rejected by MSVC5 (C4234); a scalar-dtor view is doctrine-
+// abolished. Same mechanism the CWwdGrid view note in WwdSpatialMgr.cpp records.
+RVA(0x00165d30, 0x5f)
+i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
+    CObject* val = 0;
+    m_map1.Lookup(key, val);
+    if (val == 0) {
+        return 0;
+    }
+    CDDrawMapWorker* w = (CDDrawMapWorker*)val;
+    if (m_64 == (i32)w) {
+        m_64 = 0;
+    }
+    m_map1.RemoveKey(key);
+    delete w;
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

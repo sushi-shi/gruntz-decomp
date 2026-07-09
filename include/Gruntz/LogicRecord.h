@@ -55,6 +55,8 @@ public:
     virtual i32 Step(i32 a, i32 mode, void* c, void* d); // slot 0x04
 };
 
+struct LogicContext; // owner context held at m_0c (defined below)
+
 SIZE_UNKNOWN(CLogicRecord);
 class CLogicRecord {
 public:
@@ -66,14 +68,16 @@ public:
     i32 Init(void* pData, i32 frame);                // 0x151e20
     i32 Consume(i32 amount);                         // 0x15b340
     i32 Dispatch(i32 a, i32 mode, void* c, void* d); // 0x164830
+    i32 CacheTargetId(void* a);                      // 0x164920 (Dispatch case 3)
     i32 Load(LogicArchive* ar);                      // 0x164960
     i32 Save(LogicArchive* ar);                      // 0x164d80 (external here)
+    i32 ResolveTarget(void* a);                      // 0x1651b0 (Dispatch case 8)
 
     // --- layout (offsets confirmed from ctor 0x150eb0 + Load 0x164960) ---
     char _vft0[4];  // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     i32 m_04;       // 0x04
     i32 m_08;       // 0x08  set by Init (frame), copied from owner+0x0c in ctor
-    i32 m_0c;       // 0x0c  owner context (LogicContext*, used in Dispatch)
+    LogicContext* m_0c; // 0x0c  owner context (grid resolver at m_08+0x48)
     void* m_10;     // 0x10  primary data pointer (Init arg / zeroed by dtor)
     void* m_14;     // 0x14  owned heap block (freed in dtor)
     LogicSub* m_18; // 0x18  owned polymorphic sub-record (destroyed in dtor)
