@@ -407,10 +407,10 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
         w->m_04 = MapReadField1c(this);
         w->m_0c = m_0c;
     }
-    if (((CDDrawMapWorker*)w)->Vfunc28(data, a3) == 0) {
+    if (w->Vfunc28(data, a3) == 0) {
         ((CParseSource*)a1)->EndParse();
         if (w != 0) {
-            delete ((CDDrawMapWorker*)w);
+            delete w;
         }
         return 0;
     }
@@ -448,9 +448,9 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
         w->m_0c = m_0c;
         w->m_10 = 0;
     }
-    if (((CDDrawMapWorker*)w)->Vfunc30(data, (i32)a1, a3) == 0) {
+    if (w->Vfunc30(data, (i32)a1, a3) == 0) {
         if (w != 0) {
-            delete ((CDDrawMapWorker*)w);
+            delete w;
         }
         return 0;
     }
