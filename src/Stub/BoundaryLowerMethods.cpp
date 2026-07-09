@@ -72,68 +72,6 @@ void C77dc0::Set(i32 base, i32 idx, i32 value) {
     m_20[m_24[idx] + base] = value;
 }
 
-// ===========================================================================
-// 0x08e880 - debug command hook: if the +0x2c sub-object's state slot (vtbl +0x10)
-// reports 3, register the DEBUG_SETSKILL command. __thiscall, returns 0.
-// ===========================================================================
-extern void Lab401947(); // 0x401947 (code address passed as a ptr; reloc-masked)
-RVA(0x0008e880, 0x27)
-i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
-    if (m_curState->Update() == GAMESTATE_PLAY) {
-        RegisterDebugCommand("DEBUG_SETSKILL", (void*)&Lab401947, 1);
-    }
-    return 0;
-}
-
-// ===========================================================================
-// 0x0915d0 / 0x091620 - guarded dispatch: when +0x48 and +0x14 are live and the
-// +0x48 sub's +0x1c probe (0x138f60) succeeds, hand (const, arg) to its handler
-// (0x138fd0). __thiscall(arg). The two differ only in the constant (0 vs 0x64).
-// ===========================================================================
-RVA(0x000915d0, 0x3f)
-void CGruntzMgr::MuteMusicIfActive(i32 ms) {
-    if (m_sound == 0) {
-        return;
-    }
-    if (m_musicEnabled == 0) {
-        return;
-    }
-    i32 ok;
-    if (m_sound->m_pCurrent != 0) {
-        ok = m_sound->m_pCurrent->IsBusy();
-    } else {
-        ok = 0;
-    }
-    if (ok == 0) {
-        return;
-    }
-    if (m_sound->m_pCurrent == 0) {
-        return;
-    }
-    m_sound->m_pCurrent->SetVolume(0, ms);
-}
-RVA(0x00091620, 0x3f)
-void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
-    if (m_sound == 0) {
-        return;
-    }
-    if (m_musicEnabled == 0) {
-        return;
-    }
-    i32 ok;
-    if (m_sound->m_pCurrent != 0) {
-        ok = m_sound->m_pCurrent->IsBusy();
-    } else {
-        ok = 0;
-    }
-    if (ok == 0) {
-        return;
-    }
-    if (m_sound->m_pCurrent == 0) {
-        return;
-    }
-    m_sound->m_pCurrent->SetVolume(0x64, ms);
-}
 
 // (0x099ba0 C99ba0::Ctor re-homed to src/Gruntz/AreaMgr.cpp as the real
 // CAreaMgr::CAreaMgr - C99ba0 was a view of CAreaMgr {index, CSpawnList@+4};

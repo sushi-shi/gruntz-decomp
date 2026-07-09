@@ -2099,6 +2099,66 @@ i32 CGruntzMgr::IsLobbyHostReady() {
     return m_curState->Vslot07() != 0;
 }
 
+// ---------------------------------------------------------------------------
+// 0x08e880 - when in the PLAY state, register the DEBUG_SETSKILL cheat command.
+// (re-homed from src/Stub/BoundaryLowerMethods.cpp; dissolves the C8e880 view.)
+extern void Lab401947(); // 0x401947 (code address passed as a ptr; reloc-masked)
+RVA(0x0008e880, 0x27)
+i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
+    if (m_curState->Update() == GAMESTATE_PLAY) {
+        RegisterDebugCommand("DEBUG_SETSKILL", (void*)&Lab401947, 1);
+    }
+    return 0;
+}
+
+// 0x0915d0 - fade the current music track to silence over `ms` when it is playing.
+RVA(0x000915d0, 0x3f)
+void CGruntzMgr::MuteMusicIfActive(i32 ms) {
+    if (m_sound == 0) {
+        return;
+    }
+    if (m_musicEnabled == 0) {
+        return;
+    }
+    i32 ok;
+    if (m_sound->m_pCurrent != 0) {
+        ok = m_sound->m_pCurrent->IsBusy();
+    } else {
+        ok = 0;
+    }
+    if (ok == 0) {
+        return;
+    }
+    if (m_sound->m_pCurrent == 0) {
+        return;
+    }
+    m_sound->m_pCurrent->SetVolume(0, ms);
+}
+
+// 0x091620 - restore the current music track to full volume over `ms`.
+RVA(0x00091620, 0x3f)
+void CGruntzMgr::RestoreMusicVolumeIfActive(i32 ms) {
+    if (m_sound == 0) {
+        return;
+    }
+    if (m_musicEnabled == 0) {
+        return;
+    }
+    i32 ok;
+    if (m_sound->m_pCurrent != 0) {
+        ok = m_sound->m_pCurrent->IsBusy();
+    } else {
+        ok = 0;
+    }
+    if (ok == 0) {
+        return;
+    }
+    if (m_sound->m_pCurrent == 0) {
+        return;
+    }
+    m_sound->m_pCurrent->SetVolume(0x64, ms);
+}
+
 // -------------------------------------------------------------------------
 // CGruntzMgr::StoreInputState (0x091a10; ret 4). Stores v at +0x120, and when the
 // +0x60 sub-object is present mirrors it into that object's +0x2c.
