@@ -25,7 +25,7 @@ public:
     TILE_LOGIC_TAIL
 public:
     virtual ~CGruntToyTimeSprite() OVERRIDE; // 0x012130 (folds the CUserLogic teardown)
-    virtual i32 Vslot16() OVERRIDE;          // slot 16 (stat-time getter)
+    virtual i32 Vslot16(CGruntEntry* grunt) OVERRIDE; // slot 16 (stat-time getter)
     char m_pad40[0x54 - 0x40];
 };
 VTBL(CGruntToyTimeSprite, 0x1e79ec);

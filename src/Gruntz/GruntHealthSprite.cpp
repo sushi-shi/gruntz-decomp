@@ -31,6 +31,17 @@ void CGruntHealthSprite::InitActReg() {
     ((CZDArrayDerived*)&g_healthActReg)->Construct(2000, 2010);
 }
 
+// CGruntHealthSprite::RunAct @0x07ed70 - resolve the coordinate-registry entry for `id`
+// (inline CActReg::ResolveEntry) and, if it holds a registered handler PMF, re-resolve the
+// entry and dispatch the PMF on `this`. Two inline ResolveEntry expansions (side effects,
+// no CSE across the guard).
+RVA(0x0007ed70, 0x102)
+void CGruntHealthSprite::RunAct(i32 id) {
+    if (((CHealthActEntry*)g_healthActReg.ResolveEntry(id))->m_fn != 0) {
+        (this->*((CHealthActEntry*)g_healthActReg.ResolveEntry(id))->m_fn)();
+    }
+}
+
 // CGruntHealthSprite::RegisterActs @0x07eed0 - bind the class's per-frame handler
 // (HealthUpdate @0x07f180) to the activation key "A". The key is first resolved
 // to an id via the bute-tree name map (g_buteTree.Find); a fresh key gets the
@@ -98,4 +109,76 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
     }
     m_health = health;
     return 1;
+}
+
+// CGruntHealthSprite::HealthUpdate @0x07f180 - the registered per-frame handler. Resolve
+// the grunt for cell (m_cellX,m_cellY) from the game registry's grunt table; if absent,
+// return 0. Otherwise poll the per-class stat getter (Vslot16, the grunt entry) for the
+// current health; when it changed, round it to a glyph slot (0x15 - (int)(v*0.2+0.5)) and
+// republish the glyph/slot through the bound renderable's [m_64..m_68]-gated +0x194 table
+// (the SAME resolve as SetHealthGlyph), then stash the health. Finally sync the bound
+// renderable's screen position from the grunt (y biased by this->m_60). Returns 0.
+//
+// @early-stop
+// regalloc/scheduling wall (zero-register-pinning class, 96.67%): logic byte-faithful
+// end-to-end (the grunt-table resolve, the Vslot16 stat dispatch, the *0.2+0.5 __ftol
+// glyph round + the [m_64..m_68]-gated republish, the health stash, the screen-pos sync
+// with the m_60 y-bias). The SOLE residual is the entry-lookup's whole-function register
+// allocation: retail pins g_mgrSettings in edx and schedules reg->m_68 AFTER the index
+// lea-chain (add ecx,eax; [eax+ecx*4+0x1c]); cl pins it in ecx and materializes reg->m_68
+// BEFORE the chain (add eax,edx; [ecx+4*eax+0x1c]) - the same pin the sibling
+// CGruntSelectedSprite::Update / CGruntPowerupSprite::Update carry. Not source-steerable
+// (the `reg` local + idx-split + cellY-first add spellings + the permuter all leave it);
+// see docs/patterns/zero-register-pinning.md. Deferred to the final sweep.
+RVA(0x0007f180, 0xb4)
+i32 CGruntHealthSprite::HealthUpdate() {
+    CGameRegistry* reg = g_mgrSettings;
+    CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
+    if (e == 0) {
+        return 0;
+    }
+    i32 result = Vslot16(e);
+    if (m_health != result) {
+        i32 slot = 0x15 - (i32)((double)result * 0.2 + 0.5);
+        CGruntRenderable* obj = (CGruntRenderable*)m_object;
+        CGruntLayerHolder* holder = obj->m_layerHolder;
+        if (holder != 0) {
+            i32 glyph;
+            if (slot >= holder->m_layerLo && slot <= holder->m_layerHi) {
+                glyph = holder->m_layerTable[slot];
+            } else {
+                glyph = 0;
+            }
+            obj->m_mappedLayer = glyph;
+            obj->m_resolvedLayer = slot;
+        }
+        m_health = result;
+    }
+    m_object->m_screenX = e->m_renderable->m_screenX;
+    m_object->m_screenY = m_60 + e->m_renderable->m_screenY;
+    return 0;
+}
+
+// CGruntHealthSprite::Serialize @0x07f270 - round-trip the own leaf state (m_cellX/m_cellY
+// = 8 B, m_health = 4 B, m_60 = 4 B) per mode (4 = write @+0x30, 7 = read @+0x2c), then
+// chain the base CUserLogic::SerializeChain (bail 0 on failure) and the +0x34 serialized-
+// object-reference (CSerialObjRef::Chain via the 0x1aff thunk); return whether it chained.
+RVA(0x0007f270, 0xa3)
+i32 CGruntHealthSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) {
+    switch (mode) {
+        case 4:
+            ar->Write(&m_cellX, 8);
+            ar->Write(&m_health, 4);
+            ar->Write(&m_60, 4);
+            break;
+        case 7:
+            ar->Read(&m_cellX, 8);
+            ar->Read(&m_health, 4);
+            ar->Read(&m_60, 4);
+            break;
+    }
+    if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CSerialObj*)a4) != 0;
 }

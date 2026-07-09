@@ -35,6 +35,17 @@ void CGruntPowerupSprite::InitActReg() {
     ((CZDArrayDerived*)&g_powerupActReg)->Construct(2000, 2010);
 }
 
+// CGruntPowerupSprite::RunAct @0x080020 - resolve the coordinate-registry entry for `id`
+// (inline CActReg::ResolveEntry) and, if it holds a registered handler PMF, re-resolve the
+// entry and dispatch the PMF on `this`. Two inline ResolveEntry expansions (side effects,
+// no CSE across the guard).
+RVA(0x00080020, 0x102)
+void CGruntPowerupSprite::RunAct(i32 id) {
+    if (((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn != 0) {
+        (this->*((CPowerupActEntry*)g_powerupActReg.ResolveEntry(id))->m_fn)();
+    }
+}
+
 // CGruntPowerupSprite::RegisterActs @0x080180 - bind the class's per-frame handler
 // (Update @0x080410) to the activation key "A" (the SAME activation-name-intern
 // archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).

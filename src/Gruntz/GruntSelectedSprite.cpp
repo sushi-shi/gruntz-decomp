@@ -29,6 +29,18 @@ void CGruntSelectedSprite::InitActReg() {
     ((CZDArrayDerived*)&g_selectedActReg)->Construct(2000, 2010);
 }
 
+// CGruntSelectedSprite::RunAct @0x07e660 - resolve the coordinate-registry entry for
+// `id` (the inline CActReg::ResolveEntry fast [lo,hi] range + slow Find/Insert rebuild),
+// and if it holds a registered handler PMF, re-resolve the entry and dispatch the PMF on
+// `this`. ResolveEntry has side effects (m_scratch=0, may grow) so cl re-evaluates it for
+// the guarded call rather than CSE-ing - hence the two inline expansions.
+RVA(0x0007e660, 0x102)
+void CGruntSelectedSprite::RunAct(i32 id) {
+    if (((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn != 0) {
+        (this->*((CSelectedActEntry*)g_selectedActReg.ResolveEntry(id))->m_fn)();
+    }
+}
+
 // CGruntSelectedSprite::RegisterActs @0x07e7c0 - bind the class's per-frame handler
 // (Update @0x07e9f0) to the activation key "A" (the SAME activation-name-intern
 // archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).

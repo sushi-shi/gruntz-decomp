@@ -19,6 +19,7 @@ public:
     virtual ~CGruntPowerupSprite() OVERRIDE; // 0x012370 (folds the CUserLogic teardown)
 
     static void InitActReg();   // 0x07ffa0 (construct g_powerupActReg over [2000,2010])
+    void RunAct(i32 id);        // 0x080020 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x080180 (register the class's activation handlers)
 
     i32 SetCell(i32 x, i32 y, i32 powerup); // 0x080380

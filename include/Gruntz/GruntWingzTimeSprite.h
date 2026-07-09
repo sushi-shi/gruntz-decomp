@@ -44,7 +44,7 @@ public:
     RVA(0x000121a0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_GRUNTWINGZTIMESPRITE; }
     virtual ~CGruntWingzTimeSprite() OVERRIDE; // 0x0121f0 (folds the CUserLogic teardown)
-    virtual i32 Vslot16() OVERRIDE;            // slot 16 (stat-time getter)
+    virtual i32 Vslot16(CGruntEntry* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };
 
 // GetWingzTime (0x07fd90): free __stdcall accessor (ret 4) reading the bound

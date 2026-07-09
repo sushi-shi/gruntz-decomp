@@ -23,6 +23,17 @@ void CGruntToySprite::InitActReg() {
     ((CZDArrayDerived*)&g_toyActReg)->Construct(2000, 2010);
 }
 
+// CGruntToySprite::RunAct @0x07f5c0 - resolve the coordinate-registry entry for `id`
+// (inline CActReg::ResolveEntry) and, if it holds a registered handler PMF, re-resolve
+// the entry and dispatch the PMF on `this`. Two inline ResolveEntry expansions because
+// it has side effects and cl cannot CSE it across the guard. See RunAct notes elsewhere.
+RVA(0x0007f5c0, 0x102)
+void CGruntToySprite::RunAct(i32 id) {
+    if (((CToyActEntry*)g_toyActReg.ResolveEntry(id))->m_fn != 0) {
+        (this->*((CToyActEntry*)g_toyActReg.ResolveEntry(id))->m_fn)();
+    }
+}
+
 // CGruntToySprite::RegisterActs @0x07f720 - bind the class's per-frame handler
 // (Update @0x07f960) to the activation key "A" (the SAME activation-name-intern
 // archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).
@@ -87,4 +98,26 @@ i32 CGruntToySprite::Update() {
     m_object->m_screenX = e->m_renderable->m_screenX;
     m_object->m_screenY = e->m_renderable->m_screenY - 0x20;
     return 0;
+}
+
+// CGruntToySprite::Serialize @0x07fa20 - round-trip the own leaf state (m_cellX/m_cellY
+// = 8 B, m_lastLayer = 4 B) per mode (4 = write @+0x30, 7 = read @+0x2c), then chain the
+// base CUserLogic::SerializeChain (bail 0 on failure) and the +0x34 serialized-object-
+// reference (CSerialObjRef::Chain via the 0x1aff thunk); return whether the ref chained.
+RVA(0x0007fa20, 0x89)
+i32 CGruntToySprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) {
+    switch (mode) {
+        case 4:
+            ar->Write(&m_cellX, 8);
+            ar->Write(&m_lastLayer, 4);
+            break;
+        case 7:
+            ar->Read(&m_cellX, 8);
+            ar->Read(&m_lastLayer, 4);
+            break;
+    }
+    if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CSerialObj*)a4) != 0;
 }

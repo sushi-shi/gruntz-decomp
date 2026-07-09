@@ -19,6 +19,7 @@ public:
     virtual ~CGruntSelectedSprite() OVERRIDE; // 0x011e80 (folds the CUserLogic teardown)
 
     static void InitActReg();   // 0x07e5e0 (construct g_selectedActReg over [2000,2010])
+    void RunAct(i32 id);        // 0x07e660 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x07e7c0 (register the class's activation handlers)
 
     RVA(0x0007e9c0, 0x16)

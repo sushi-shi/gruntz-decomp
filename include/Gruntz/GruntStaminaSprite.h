@@ -40,7 +40,7 @@ public:
     RVA(0x00012020, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_GRUNTSTAMINASPRITE; }
     virtual ~CGruntStaminaSprite() OVERRIDE; // 0x00012070 (folds the CUserLogic teardown)
-    virtual i32 Vslot16() OVERRIDE;          // slot 16 (stat-time getter)
+    virtual i32 Vslot16(CGruntEntry* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };
 
 // GetStaminaTime (0x07fbb0): free __stdcall accessor (ret 4) reading the bound
