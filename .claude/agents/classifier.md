@@ -88,7 +88,7 @@ change only names, never*:
 - **field/member OFFSETS or SIZES** (all pointers 4 B; `int`/`unsigned`/`DWORD`/`long` interchange,
   but `char`↔`int` does not — width is load-bearing),
 - **function SIGNATURES** (arg count/widths, calling convention, return width drive codegen),
-- **definition ORDER** within a TU (it drives inlining + COMDAT order — see orchestrator.md §2.4),
+- **definition ORDER** within a TU (it drives inlining + COMDAT order),
 - **`RVA()`/`DATA()` macros** (keep the 8-hex-digit address + size exactly).
 
 **After every rename/de-hack pass, run `gruntz build` and check the per-function %.**

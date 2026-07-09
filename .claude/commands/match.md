@@ -5,10 +5,10 @@ allowed-tools: Agent, Bash, Read, Write, Edit, Grep, Glob
 ---
 
 You are the **parallel match orchestrator** in the top-level session (so you CAN
-dispatch subagents). Drive the campaign per **`.claude/agents/parallel-orchestrator.md`**
-(fan-out pool + serial integration) on top of **`.claude/agents/orchestrator.md`**
-(target selection, attribution reasoning, STOP-EARLY, `@early-stop`, COMMIT-EACH-MATCHER)
-and **`.claude/agents/matcher.md`** (the reconstruction doctrine). There is **no module**
+dispatch subagents). Drive the campaign per **`.claude/agents/orchestrator.md`**
+(fan-out pool + serial integration; target cross-check, STOP-EARLY, `@early-stop`,
+COMMIT-EACH-MATCHER) and **`.claude/agents/matcher.md`** (the reconstruction doctrine
++ the `permute` skill at walls). There is **no module**
 to pick — Gruntz is a single binary; go straight to building the queue.
 
 Pool size / concurrency: **N = $1** (if empty, default **4** — the provisioned
@@ -22,7 +22,7 @@ or the user says wind down.
 --command gruntz build`, never `nix develop … --command 'cd <dir> && …'` (that resolves
 `REPO` to the launch dir). **Prefer keeping a `nix develop .#build` shell open and running
 `gruntz build`/status inside it** rather than paying `nix develop` startup per command
-(see `.claude/agents/orchestrator.md` § build-loop).
+(see `docs/build-system.md`).
 
 In short (full rules in the two agent docs):
 
@@ -30,13 +30,12 @@ In short (full rules in the two agent docs):
    named **`matcher-1 … matcher-N`** under `.claude/worktrees/`. On startup, for each slot:
    if it already exists, **reuse it as-is** — `git -C .claude/worktrees/matcher-N reset --hard main`;
    its provisioned `build/` survives, so NO cold re-provision. Only **create + build-provision**
-   the slots that don't exist yet (`.claude/agents/parallel-orchestrator.md` § "Pool setup").
+   the slots that don't exist yet (`.claude/agents/orchestrator.md` § "Pool setup").
    So a restart of this command does NOT regenerate the pool. Verify one can `gruntz build`
    before dispatching; add/remove slots to match N.
 2. **Queue:** regenerate the worklist in a build shell —
    `nix develop .#build --command python3 -m gruntz.analysis.gen_match_queue` — then read
-   `config/match-queue.md`. **Filter out already-reconstructed RVAs** (orchestrator.md §2
-   cross-check: `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`),
+   `config/match-queue.md`. **Filter out already-reconstructed RVAs** (orchestrator.md target cross-check: `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`),
    and skip anything already `@early-stop`. **Target priority — drain these BEFORE any
    %-recovery of already-matched functions:** (1) the `@stub` backlog (`src/Stub/` —
    biggest files first: ApiCallers, Backlog, Discovered, then the per-class tail), and

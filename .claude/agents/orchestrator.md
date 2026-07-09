@@ -1,489 +1,190 @@
 ---
 name: orchestrator
-description: Decomposes the Gruntz binary-matching decompilation into matcher/labeler worker tasks and dispatches them effectively. Encodes the dispatch strategy and the hard-won labeling/codegen facts. Use when planning or running a wave of function-matching work; pairs with docs/patterns/ (codegen idioms) and config/match-queue.md (the worklist).
+description: Runs the Gruntz matching campaign as a FAN-OUT pipeline — a fixed pool of reused git worktrees, always N matchers in flight, matchers reused to ~650k tokens, but every result integrated SERIALLY into main so the commit history stays a single linear line. Use to drive a sustained wave of function-matching (home stubs to their real TUs, then permute to 100%). The reconstruction doctrine (match-by-shape, STOP-EARLY, @early-stop, the permute skill at walls) lives in matcher.md.
 ---
 
-# Orchestration guide — dispatching matchers & labelers
+# orchestrator — fan out the work, serialize the history
 
-Audience: the **orchestrator** (agent or human) that decomposes the Gruntz
-decompilation into worker tasks. This encodes the strategy and the hard-won
-facts so dispatch is effective. Companion docs: `matching-patterns.md` (codegen
-idioms), `build-system.md` (the loop), `zlib-matching.md` (compile flags),
-`link-order-investigation.md` (TU layout + the `gruntz link` phase — **define a
-TU's functions in retail-RVA order; see §2.4**), `linker-flags.md` (link flags),
-`runtime-dlls.md`
-(imports + the DX label seed). Data: `build/gen/symbol_names.csv` (matched set),
-`src/` (`@stub` metadata), `config/units.toml` (build manifest),
-`config/library_labels.csv` (exclusions).
+You drive the matching campaign with **parallelism in the work** and a **single
+linear commit history**. The reconstruction doctrine — match-by-shape, STOP-EARLY,
+`@early-stop`, and the **`permute` skill** at walls — lives in
+`.claude/agents/matcher.md`. This doc covers the orchestration: **how to run many
+matchers at once without tangling main**, and how to pick/skip targets.
 
----
+**Target cross-check — dispatch only genuinely-unmatched work.** A function already
+reconstructed in a real `src/` TU (even sitting at a fuzzy plateau) is done — skip it;
+a true new target lives only in `src/Stub/`. The already-done RVA set is
+`grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`
+(addresses are 8-hex zero-padded EVERYWHERE, so this is a direct string subtraction).
+Also skip anything already marked `@early-stop` (`rg '@early-stop' src`).
 
-## 1. The surface is stratified — don't treat 14,411 functions as uniform
+## The invariant
 
-- **Excluded (never match):** ~1,743 library (CRT `LIBCMT` / MFC `NAFXCW` / zlib,
-  FID-labeled) + ~1,269 LOW generic stubs ≈ **3,012 (~21% count / ~15% bytes)**.
-  Byte-matched-by-construction or trivial. Filter these out via
-  `config/library_labels.csv` before dispatching anything.
-- **Real target:** ~11,400 engine+game functions (~85% of bytes).
-- **Effort is wildly non-uniform (the central planning fact):** median function
-  is **11 bytes**; ~10k functions are ≤32 B (a cheap tail); but
-  **~1,400 functions >128 B hold ~71% of the code, ~455 >512 B hold ~47%, the
-  largest 1% (144) hold 29%.** Matching *effort* ≈ understanding a few-hundred-to-
-  ~1,400 **big** functions; the tiny tail is volume, not difficulty.
+- **Fan out:** keep **N matchers in flight** at all times (default **4**, the
+  provisioned pool). Each runs in **its own worktree** from a **fixed, reused,
+  persistently-named pool** (`matcher-1 … matcher-N` under `.claude/worktrees/`) —
+  never spawn a fresh worktree per task.
+- **Serialize integration:** results land in **main one at a time**. Only ONE
+  integration (apply → build → bless → commit) is in progress at any moment.
+  → main's history is a **single linear line of `match:` commits**, even though
+  the work was fanned out. No per-matcher branches merged into main.
+- **Refill immediately:** the instant a matcher's result is integrated, reset its
+  worktree to the new main HEAD and launch the next target into that same slot.
+  The pool stays full until the worklist is dry.
 
-**Progress is measured in BYTES matched, not function count.** Count is
-misleading (Pareto) — a "47% by bytes" milestone is ~455 functions, not 7,000.
+```
+       matcher-1 ─ matcher A ─┐
+       matcher-2 ─ matcher B ─┼─► integration queue (SERIAL) ─► main: c1─c2─c3─…
+       matcher-3 ─ matcher C ─┤        build → bless → commit
+       matcher-4 ─ matcher D ─┘
+   (as A lands, reset matcher-1 to main, launch matcher E into matcher-1)
+```
 
----
+## Pool setup (provision once — the worktrees PERSIST across restarts)
 
-## 2. Prioritization — how to sequence dispatch
+The pool is N long-lived worktrees named **`matcher-1 … matcher-N`** that are
+**reused** across many matchers AND across orchestrator restarts. Each carries its
+OWN gitignored `build/` (incl. its own wineprefix — `GRUNTZ_DIR=$PWD` ⇒
+`WINEPREFIX=$PWD/build/wineprefix`), so its `gruntz build` is incremental, not a
+cold `gruntz init`. Provisioning is a **full one-time `build/` copy** from main; a
+copied wineprefix relocates fine (measured: all 4 worktrees build green in-place,
+no regressions).
 
-> **Campaign mode (autonomous matching loop):** the worklist is
-> `config/match-queue.md`, generated by `gruntz.analysis.gen_match_queue` and ordered
-> **middle-small first (~64–512 B), leaf-first** — readiness (count of unmatched
-> engine callees) is the primary key. This deliberately front-loads the cheap,
-> self-contained wins to build a corpus of matched leaves that *unlock* the big
-> functions below (whose verifiability depends on their callees being matched).
-> The big-first guidance in this section still governs once the leaf frontier is
-> exhausted / for deep deliberate dives. Re-run the generator to refill the queue
-> as matches land. Progress is still measured in **bytes** (§1).
->
-> **Dispatch only genuinely-unmatched NEW leaves — filter the queue first.** The
-> generator marks a candidate "unmatched" unless it is **100%-exact**, so a function
-> already reconstructed in a real TU but sitting at a *fuzzy plateau* (jump-table /
-> reloc-typing artifacts, §6) reappears as `ready` and wastes a dispatch — *measured*:
-> `CDirectDrawMgr::GetErrorString` was already done at its 96.24% plateau yet showed
-> `ready`. Before dispatching, cross-check each candidate's RVA against the `RVA()`
-> macros already in `src/` **excluding `src/Stub/`**; if it lives in a real unit it is
-> done (or at its plateau) — skip it. A true new leaf appears only in `src/Stub/`
-> (a 0% stub to reconstruct) or nowhere yet. One-liner:
-> `grep -rlE 'RVA\(0x' src --include=*.cpp | grep -v /Stub/ | xargs grep -ohE '0x[0-9a-f]{8}' | sort -u`
-> gives the already-reconstructed set to subtract from the queue. **Addresses are
-> zero-padded to 8 hex digits EVERYWHERE** — every `RVA()`/`DATA()` macro in `src/`
-> AND every RVA in `config/match-queue.md` (gen_match_queue emits `:08x`) — so the
-> set-subtraction is a direct string match: no leading-zero normalization, and the
-> `{8}` width naturally excludes the ≤4-digit RVA size arg. Keep the convention when
-> writing new labels: `RVA(0x00xxxxxx, 0x..)`, `DATA(0x00xxxxxx)`.
-> **Caveat:** `gen_match_queue` needs the Ghidra-named DB (built by `gruntz init`);
-> run before `gruntz init` has built it, it writes **0 candidates** and clobbers the
-> committed queue — `git checkout config/match-queue.md` to restore.
->
-> **CURRENT MODE — breadth-first, PREFER-NEW, STOP-EARLY (the default until further
-> notice):** dispatch workers at **NEW untried functions**; do **NOT** re-dispatch a
-> function that already plateaued on a documented wall (regalloc / EH-state / scheduling /
-> jump-table / reloc-typing — §2a, §6). Taking a fresh function 0%→exact (or →high-fuzzy)
-> is worth far more than squeezing a stuck one 80%→82%, and looping on walls burns workers
-> for ~0 net (measured this campaign).
->
-> **Tell every matcher to GIVE UP QUICKLY and accept a partial.** A logically-correct
-> function stuck at a plateau (e.g. ~70%) on a documented wall is an **acceptable, complete
-> outcome** — not a failure. The matcher should hit a wall at most twice, confirm the
-> residual is a documented wall (grep INDEX; write the one-line pattern if new), record the
-> % + wall, and move on. **A FINAL SWEEP comes later** — once we have more `docs/patterns/`
-> and better TU/class structure, a dedicated sweep re-attacks today's walls when they're
-> steerable. So **defer the "second sweep"**: when a worker reports a function stuck (no
-> local source diff; residual is a documented wall), mark it **done-enough**, record the
-> wall, and point the next worker at a NEW target — never re-queue it now. (This stop-early
-> rule is also in `.claude/agents/matcher.md` § "STOP EARLY"; put it in every matcher
-> prompt.)
->
-> **`@early-stop` marks the parked set in source.** A method the matcher stops below 100%
-> keeps its complete body but gets an `// @early-stop` marker line above its `RVA()` (reason
-> on the next comment line — see matcher.md § "STOP EARLY"). Invariant: a reconstructed
-> method is either ~100% (unmarked) or `@early-stop`, so the **final sweep's worklist is
-> exactly `rg '@early-stop' src`** — no need to re-derive plateaus from the baseline. When
-> you accept a worker's stuck result, make sure its file carries the marker before you commit.
+**Idempotent setup — skip any slot that already exists (this is what makes a
+restart free; the four slots are already provisioned):**
 
+```bash
+for n in 1 2 3 4; do
+  wt=.claude/worktrees/matcher-$n
+  if [ -d "$wt" ]; then
+    git -C "$wt" reset --hard main          # REUSE: build/ (+ wineprefix) survives
+  else
+    git worktree add -B matcher/$n "$wt" main
+    cp -a build "$wt"/build                 # provision heavy gitignored state ONCE
+  fi
+done
+```
 
-1. **Big-first for understanding.** Target functions >~256 B first; they hold most
-   of the code and carry the semantics. A matcher on a big function is a
-   high-value deep task worth a dedicated worker.
-2. **Leaf-first within that (dependencies).** A function that calls many *unmatched*
-   engine functions is hard to verify in isolation. Prefer targets whose callees
-   are already matched / library / tiny leaves. Among the big functions, start
-   with the most self-contained.
-3. **The tiny tail: batch, never deep-dive.** ≤32 B functions (accessors, thunks,
-   trivial getters/setters, vtable-slot stubs) are cheap — many per worker, or
-   generated from the class layout. Never spend a deep worker on a 6-byte stub.
-   **MEASURED ROI — prefer a uniform medium cluster over a partial megafunction.**
-   A coherent class of ~5–18 structurally-similar medium methods (the DX-manager
-   error-thunks: DirectSound 16/18, CDirectDraw 10/14, DirectInput 7/7; the CImage
-   loaders 5/5) goes mostly byte-EXACT once one member of the cluster cracks the
-   shared idiom — *measured* ~2,900 fully-matched bytes per ~113k matcher tokens.
-   A single megafunction is a token-sink by contrast (a 7,629 B loader → only 16.7%
-   fuzzy for 263k tokens) because a big function's register/EH allocation only
-   **converges when the body is COMPLETE** — a partial under-counts AND diverges
-   (wrong regalloc), so you pay full price for little credit. So sequence: clear the
-   uniform clusters first; defer a megafunction until its callees are matched (leaf
-   corpus eases convergence) and then reconstruct it whole in one dedicated worker,
-   not in partial slices. The error-formatter / COM-error-thunk archetype is the
-   single most reliable cluster (`GetErrorString`/`ReportError` + per-callsite
-   `__FILE__`/`__LINE__`); split a "cluster" by its `$SG __FILE__` strings — one RVA
-   range often spans several real classes (DDraw → CDDSurface/CDDPalette/CDDPageMgr).
-4. **By TU (contiguity) for locality.** Functions cluster contiguously by source
-   file. Dispatch a worker per **TU / manager region** — it matches a whole
-   `.cpp`'s functions together (shared headers/types, one `src/` file), far more
-   efficient than scattered functions. (This also **contains compiler-entropy
-   blast radius** — see below — by keeping a TU's symbol set self-contained.)
+Verify a slot can build before dispatching — **cd-first** so `GRUNTZ_DIR`/`REPO`
+resolve to the worktree, NOT main:
+`cd .claude/worktrees/matcher-1 && nix develop .#build --command gruntz build`.
+**`cd` AFTER `nix develop` builds *main*** (`GRUNTZ_DIR` is fixed at shell entry).
+Better: open ONE `nix develop .#build` shell per slot and run `gruntz build`/status
+inside it — avoids `nix develop` startup per command.
 
-**Order the TU's functions by retail RVA.** MSVC `/O2` emits COMDATs in
-source-definition order, and that order **changes per-function codegen** (an
-earlier-defined callee gets inlined into a later caller; defined after, it
-doesn't). This is not cosmetic — **measured**: in the byte-exact `trees` TU,
-moving one small helper (`pqdownheap`) from before its callers to after them
-dropped it from **17/17 exact to 10/17** (7 functions flipped). So within a `.cpp`,
-define functions in ascending retail RVA. `gruntz link --analyze`
-(`scripts/gruntz/analysis/link_order.py`) prints the per-TU "REORDER" worklist; the zlib
-TUs are the reference (faithful order ⇒ 100%). Order only matters between functions
-that **interact** (a call/inline-candidate or a shared pooled constant): reordering
-empty `@stub`s relative to real functions is a measured no-op (`grunt`: 21.67% →
-21.67%).
+(Filesystem is ext4 → no reflink; `cp -a` is a full ~680 MB copy per slot, seconds
+each. If ever too heavy, copy only `build/{exe,gen,ghidra-named,ghidra-enrich,clangd,
+delink,objdiff,pdb,wineprefix}` — but the whole-`build/` copy is simplest and pays
+off over many reused dispatches.)
 
----
+## Dispatching a matcher into a pool slot
 
-## 2a. Entropy expectation — calibrate "done" before dispatching
+Spawn a **matcher** agent (subagent_type `matcher`), **`run_in_background: true`**,
+**NOT** `isolation: worktree` (you manage the worktree yourself). The prompt MUST:
 
-Encode this in **every matcher prompt** (full detail + mitigations in
-`matching-patterns.md` § "Compiler entropy — set expectations FIRST"):
+1. Name the assigned **absolute** worktree path and say *do ALL work there*.
+2. **Work cd-first, inside ONE open shell.** Tell the matcher: `cd <abs worktree>`
+   FIRST, then enter a single `nix develop .#build` shell and run every `gruntz
+   build`/status *inside it* — `GRUNTZ_DIR` is fixed at shell entry, so `cd`-after
+   or a fresh `nix develop` per command builds/scores the **wrong tree** AND pays
+   startup each time. Use absolute paths for every file/build command — relative
+   paths can leak into the main repo (see `[[subagent-bash-cwd-leaks-to-main]]`).
+   Never operate on the repo root.
+3. Carry the standard matcher task (target RVA/name/size/file), the 8-digit
+   address convention, and the STOP-EARLY + `@early-stop` rule (marker line + reason
+   on the next line, **no percentage** — the baseline tracks %).
+4. **Forbid `gruntz format` in the worktree.** It reflows trailing-comment
+   alignment across *unrelated* clean files (measured: ~9 files swept in), which
+   you then have to discard at integration. Tell the matcher: edit only its
+   target file(s); leave formatting to the orchestrator.
+5. **Allow migrations.** A stub is often mis-attributed (a placeholder
+   `ErrorThunk_*`/`Stub_*` name routinely hides the real owner). If the matcher
+   recovers the true owner, it SHOULD migrate the body into the real class's TU,
+   remove the stub, and update the header — report every file touched.
+6. Report: final per-function % + a one-line summary + the **complete
+   `git diff`** of its worktree changes (so integration is a clean `git apply`).
 
-- **A high-90s plateau is success, not failure.** The MSVC5 backend
-  pseudo-randomly varies codegen of unrelated functions in response to *any*
-  header/source edit (it behaves "like it uses the file as the random seed");
-  ~5% of functions fluctuate at any time and isle plateaued at ~98%
-  instruction-accuracy. Do **not** read the last few percent on a near-green
-  function as a bug — the objdiff number on the **entropy tail is advisory, not a
-  verdict**.
-- **Don't chase entropy and don't sacrifice a correct function to chase another.**
-  If two functions can't both be green, annotate the green-enough one and move on;
-  ping-ponging ("whack-a-mole") burns workers for no net gain.
-- When a **previously-green** function regresses after an *unrelated* edit,
-  suspect entropy first (revert/re-scope), not a logic bug.
-- **"Entropy" has a deterministic core: definition order.** A chunk of what reads
-  as random fluctuation is function-definition-**order coupling** — editing a
-  `.cpp` often changes the ORDER or inline-ability of its functions, which
-  *deterministically* shifts the codegen of *interacting* siblings (an inlined
-  callee, a shared pooled constant). **Measured:** moving one helper in the
-  byte-exact `trees` TU flipped 7 functions (§2.4). So before charging a miss to
-  entropy, **isolate it** — compile the function alone in a one-function TU:
-    * matches alone but fuzzy in-TU → a **neighbor/order effect**: fix the TU order
-      or the interacting preceding function (the proper fix may be the function
-      *before* it, not the one you're staring at);
-    * fuzzy alone too → a **local** problem (struct offsets, CFG) or genuine entropy.
-- This is the **same family of symbol-table sensitivity** as our reverse-engineered
-  `/Od` 16-bucket name-hash — the compiler's symbol table leaking into codegen.
-  Per-TU dispatch (§2.4) is the structural mitigation: keep each TU's symbol
-  **set + include order** matching the original so an edit's blast radius stays
-  inside one TU.
+Run the 3 dispatches in the background and let the harness notify you as each
+finishes.
 
-If a logically identical function won't match, suspect in order: (1) a real
-source diff, (2) a **definition-order / interacting-neighbor effect** (a missing
-or misordered caller/inline-callee in the same TU — isolate to confirm, above),
-(3) entropy, (4) wrong toolchain SP/version (we target VC5 SP3 —
-`matching-patterns.md` § "Service-pack sensitivity").
+### Lane discipline (avoid same-file collisions)
 
----
+Two matchers editing the **same file** collide at integration (duplicate
+top-of-file class/extern decls → a build error, not a clean merge). So keep each
+multi-stub file a **single lane**: route all of one file's targets (e.g. all of
+`src/Stub/ApiCallers.cpp`'s) through ONE slot, another file's through another.
+Cluster siblings in one file also share idioms — feeding the next sibling to the
+same lane lets the matcher reference the just-landed one (a later sibling can even
+*correct* a prior one's misdiagnosed `@early-stop`). The other slots take
+distinct-file targets — prefer methods/loaders over ctors/dtors, which
+systematically plateau ~60% on the `flags="base"` EH wall.
 
-## 3. Two worker types — label broadly, then match deeply
+## Integration protocol (SERIAL — the heart of this doc)
 
-- **Labeler** — attributes a function to its class/TU and names it, *without*
-  necessarily byte-matching. Sources (Section 4). Output: `@stub` metadata in
-  `src/` + names applied to the `build/ghidra-named` DB.
-  Cheap, fans out wide, grows the partition and the roadmap. **Dispatch labelers
-  first/broadly to map the territory.**
-- **Matcher** — byte-matches a function: writes `src/<Module>/<TU>.cpp` (+ headers),
-  runs the `gruntz build` (cl→labels→delink→objdiff) loop to byte-exact. Expensive, deep.
-  **Dispatch matchers on *labeled* targets** (so the worker knows the function's
-  identity + prototype before reading it), prioritized by Section 2.
-  **Batch each matcher with a whole TU / contiguous cluster of related new-leaf
-  functions — target ≥20 functions per matcher, never one tiny function.** A cluster
-  shares headers/types/symbol-set, so the worker amortizes the dispatch and contains
-  the entropy blast radius (§2.4); matcher cost is ~flat regardless of batch size
-  (measured — see the batch-size experiment), so bigger batches mean more yield per
-  dispatch. A lone 6-byte stub is never worth a deep dispatch (§2.3). If one TU can't
-  supply 20, extend the batch to a sibling TU / related class cluster to reach it.
-  Commit the batch centrally (§7), never inside the worker.
+Process completed matchers **one at a time** (queue them; never integrate two at
+once — main has a single `build/` and a single HEAD):
 
-Labels make matching faster — a matcher handed `CGruntzMgr::Init(...)` with a
-prototype starts far ahead of one staring at `FUN_00482f50`.
+1. **Guard:** `git -C <main> status --porcelain` must be clean before you start.
+   If a matcher leaked into main (relative-path bug), `git -C <main> restore` the
+   stray files first and note it.
+2. **Apply** the matcher's distinct file(s) to main. For a single-file stub fill,
+   `cp <worktree>/<file> <main>/<file>`. For a **migration** (real TU + header +
+   stub removal) copy each of those files. **Never copy the matcher's `README.md`
+   or `config/match_baseline.tsv`** — those are regenerated/blessed in main. If
+   the matcher ran `gruntz format` and swept unrelated files, copy ONLY its real
+   targets (confirm each is unchanged in main since the worktree's base:
+   `git diff --quiet <base> HEAD -- <file>`). Touch only that matcher's file(s).
+3. **Build + measure** in main: `nix develop .#build --command gruntz build`.
+   Confirm the target hit its reported %, and read the before→after exact count.
+4. **Bless** the baseline: `gruntz` status `update` (records new best% + handles
+   same-RVA symbol renames). Three cases need `update --accept-regressions`:
+   (a) a **migration** — the old stub symbol goes LOST at its RVA (intended
+   rename); (b) a **trivial cross-function fuzzy drift** (measured: a neighbor in
+   the same aggregate obj dropping <0.1% when you add a new function/string
+   literal — its code+relocs are unchanged, pure objdiff scoring noise);
+   (c) a **cleanup-phase correct-shape drop the worker REPORTED** with its
+   mechanism (regalloc / header-fattening / reordering) — accepted per the
+   clean-room mandate (docs/cleanup-plan.md). A `best%` drop
+   with NO reported cause on an untouched function is NOT acceptable —
+   investigate instead. Keep the bless in the same commit.
+5. **Commit** atomically: `git add` ONLY this matcher's file(s) +
+   `config/match_baseline.tsv`, message `match: <fn> -> <result>` with the
+   `Co-Authored-By: Claude Opus 4.8 (1M context)` trailer. One matcher = one
+   commit. (A clean `@early-stop` partial is a legitimate commit too; a
+   mis-attributed / wrong-shape reconstruction is NOT — keep it stubbed,
+   `[[correctness-not-artifacts]]`.)
+6. **Refresh the slot:** `git -C .claude/worktrees/matcher-N fetch` is not needed
+   (same repo); instead `git -C .claude/worktrees/matcher-N reset --hard main` then
+   re-provision build state if needed (the worktree's own `build/` survives the
+   reset — only tracked source is reset, so the next build stays incremental).
+   Now the slot is at the latest main (it SEES the just-landed match as a possible
+   dependency).
+7. **Refill:** pick the next target (target cross-check at the top of this doc: skip
+   anything already reconstructed or `@early-stop`). **REUSE the same matcher agent** for the
+   next batch — SendMessage it the new worklist — **until it has spent ~650k tokens**
+   cumulatively (sum the `subagent_tokens` across its completion reports); a warm
+   matcher carries the idioms it just cracked. Only once it crosses ~650k do you
+   **retire it and spawn a FRESH** matcher into the slot (a new agent starts with a
+   clean budget). Either way the worktree is reused; only the agent identity rotates.
 
----
+Repeat until the worklist is dry. **Leave the `matcher-N` worktrees in place** so
+the next run reuses them (their `build/` stays warm); `git worktree remove` only if
+the user asks.
 
-## 3a. ALWAYS write the attribution reasoning when choosing functions (MANDATORY)
+## Why serial integration (not parallel merges)
 
-Before dispatching a matcher, the orchestrator MUST state, **in writing**, WHICH
-functions it is matching and WHY they belong to a specific class/TU — the evidence
-chain, named explicitly. Cite the concrete signal(s) from §4:
+- One `build/` and one HEAD in main → concurrent integrations would race the
+  objdiff report and the index. Serial keeps each `match:` commit independently
+  verified and revertible.
+- A **single linear history** is the artifact the user wants: `git log --oneline`
+  reads as a clean sequence of matches, not a thicket of merged worker branches —
+  even though the matching itself was fanned out 3-wide.
 
-- **RTTI vptr-store** — the ctor/dtor stores `??_7Class@@6B@` into `[this]`; give the
-  vtable RVA.
-- **`this`+offset fingerprint** — the decomp's `this+0x..` member reads/writes hit a
-  known class's established layout; name the offsets/members.
-- **tomalla name/prototype**, **string / `__FILE__` xref**, **discriminating-import
-  caller**, or **address contiguity** (a neighbor of an already-anchored TU).
+## Don't
 
-Required shape (this is the template):
-
-> Next: CGruntzMgr continuation. These are CGruntzMgr methods because (1) **RTTI
-> vptr-store** — the ctor stores `??_7CGruntzMgr@@6B@` (vtable `0x5e9b64`) into
-> `[this]`; (2) **`this`+offset fingerprint** on the 0xa30 layout (m_strC8 CString,
-> m_d0 drive-char, m_arrD8 CByteArray, m_options150). Picking a contiguous cluster
-> (TU-aware) and applying the patterns catalog.
-
-This is mandatory because attribution is **inference and is sometimes wrong**
-(BuildVersionString was really `CMenuState`; `0x8fea0`'s `CByteArray@+0x138`
-contradicts the CGruntzMgr ctor → not a CGruntzMgr method). Writing the evidence
-makes a bad guess catchable *before* a worker burns a dispatch, and records the
-reasoning for review. A worker that finds the attribution contradicted by the disasm
-must STOP and report, not force the wrong class.
-
----
-
-## 4. Label sources, ranked by leverage (for picking targets)
-
-1. **tomalla re-anchored (~250)** — real names + prototypes (mostly the bootstrap
-   path). Highest head-start: named *and* partly understood. (v0.77 → v0.76 via the
-   patch offset map; **skip the 52 v1.01-changed functions**.)
-2. **RTTI** — real **class names** (231) + **ctors/dtors** (functions that store
-   `??_7Class@@6B@` into `[this]` — the vptr-store xref) + **virtuals**
-   (`vfunc_N`, vtable slots). Dense on a class's virtual interface; *sparse* on its
-   non-virtual methods.
-3. **Import-caller seed (any DISCRIMINATING import).** Callers of a
-   subsystem-specific imported function attribute to that subsystem's TU.
-   Verified seeds:
-   - DirectX/audio creators → managers: `DirectDrawCreate`→`CDirectDrawMgr`/DDrawMgr
-     (`0x141dc0`,`0x17c040`), `DirectSoundCreate`→Dsndmgr (`0x136550`),
-     `DirectInputCreateA`→DinMgr2 (`0x132ce0`), DirectPlay→`CNetMgr`/NetMgr
-     (`0x178280`/`0x1780b0`/`0x1782d0` contiguous + `0x8eca0`); `mss32!AIL_*`→sound,
-     `smackw32!Smack*`→cutscenes.
-   - `ADVAPI32!Reg*` (`RegQueryValueExA`/`RegSetValueExA`/`RegCreateKeyExA`…) →
-     config/options: **13 fns tightly clustered at `0x139xxx` = the `RegistryHelper`
-     TU** (+ writers at `0x1ccxxx`/`0x1c7`/`0x1d4`; tomalla's `RegistryHelper::
-     GetRegistryKey` at `0x13axxx` confirms the region).
-   - `KERNEL32` file I/O (`CreateFileA`/`ReadFile`/`WriteFile`/`FindFirstFileA`/
-     `SetFilePointer`/`OpenFile`) → RezMgr/save-load/file wrappers: ~19 fns, broader
-     (a file-heavy cluster at `0x1bfxxx`).
-   - Networking = DirectPlay (`DPLAYX`) here — there is no winsock in this binary.
-   - **CAVEAT — discriminating vs broad:** a *rare* subsystem API pins a TU tightly
-     (`DirectDrawCreate` = 2 callers; `Reg*` clusters at `RegistryHelper`); a *common*
-     one (file I/O, and especially generic `memcpy`/`HeapAlloc`/`GetTickCount`) is
-     used everywhere and attributes a broad set or nothing useful — weight by import
-     rarity.
-   - **CODEGEN (scan BOTH forms):** Win32 imports are `__declspec(dllimport)` →
-     called directly as `FF15 [IAT]`; non-dllimport SDKs (DirectX) → `FF25 [IAT]`
-     thunk + `E8` callers. See `runtime-dlls.md`.
-4. **String/format xrefs** — functions referencing distinctive literals (leaked
-   `C:\Proj\` paths, format/debug strings, WWD/REZ tokens) → name/attribute.
-   Tooled: `gruntz sema strings <rva>` / `--find <text>` (`gruntz.analysis.string_xref`)
-   recovers the per-function string set (scans `.text` for 4-byte LE string-VA
-   immediates over the Ghidra function boundaries — no disassembler needed) and
-   ranks bare `FUN_` funcs by taxonomy distinctiveness (DX error formatters that
-   self-ID their module string, the WWD object factory, sprite/asset loaders).
-   **Verify against the decompiler** before trusting a string-only guess:
-   `scripts/gruntz/ghidra/scripts/decomp_export.py` (read-only, run on a *copy* of the named DB)
-   dumps the Ghidra decompiler C + caller/callee xrefs for a target list, exposing
-   calling convention, arg count, virtual-slot identity (`vfunc_N` callers), and
-   `this+offset` member writes / `.att` reads — and catches library/CRT funcs a
-   string-only guess would mislabel (CRT `_heapwalk`, the C++ Tools error handler).
-5. **Contiguity** — once a TU's anchor is found, its address neighbors are the same
-   TU. (NB: blind data/call-graph clustering does NOT work here — boundaries come
-   from labels, not graph analysis. See the TU-clustering note.)
-
----
-
-## 5. The matching workflow (put this in every matcher prompt)
-
-> **The goal is to recover the original source the developers wrote — one class,
-> one header, included where it's used — NOT to chase a match %.** A high % on a
-> per-TU reconstruction that re-declares a class inline (a different shape in each
-> TU) is a means, not the end: the real code had a single definition. So prefer
-> the true class/signature even when consolidating temporarily dips the score —
-> the % is recovered by re-matching against the correct shared header. (Headers
-> live under `include/<Module>/`, mirroring `src/`; angle-bracket includes.)
->
-> **Phase policy (clean-room mandate, docs/cleanup-plan.md): reconstruction
-> maximizes %; cleanup maximizes correctness-of-shape and ACCEPTS % cost.** During
-> cleanup phases a regalloc / definition-reordering / header-fattening drop from a
-> correct-shape change is accepted: the worker reports it (with the mechanism), the
-> orchestrator blesses it at integration (`status update --accept-regressions`) —
-> never instruct a cleanup worker to revert a correct-shape change to protect %.
-> The % is pushed back up in a dedicated final phase (P6) after the source is
-> clean. (Worker-side detail: matcher.md "Two work modes" — incl. the one surviving
-> %-driven revert, the localized-drop shape-disproof.)
-
-> **Inline ctors and their out-of-line COMDAT copy.** A class whose ctor must be
-> *inline* (because a derived ctor folds it — e.g. `CSBI_RectOnly` inlines
-> `CStatusBarItem`'s ctor and the optimiser elides the now-dead base store) still
-> has *one* definition: the inline ctor in the header. Retail may *also* hold an
-> out-of-line COMDAT copy of that same ctor (the standalone `??0…` at its own
-> RVA). Recover the single inline ctor in the header — that is the canonical class
-> (CSBI_RectOnly folds it). MSVC 5.0 inlines such a tiny ctor at *every*
-> instantiation we can synthesize (scalar/array/runtime-count `new` all inline or
-> bury it — measured), so the canonical form cannot emit a labelable standalone
-> `??0`. To keep the standalone byte-match, use a small **stand-in TU** that does
-> NOT include the header and locally redeclares the class with an out-of-line ctor
-> purely as a labeling device (`src/Gruntz/StatusBarItem.cpp`). Frame it as the
-> tooling workaround it is — not as a second class the developers wrote.
-
-1. Locate the target's RVA; confirm it's a real function start.
-2. Add/extend the unit in `config/units.toml` with its `src/<Module>/<TU>.cpp`
-   source. (`build/gen/symbol_names.csv`, the matched set, is generated from the
-   `RVA()`/`DATA()` annotation macros in `src/` — don't hand-edit it.)
-3. Write the source: reconstruct the class(es)/struct(s) (offsets are load-bearing;
-   names are placeholders) and the function body. `#include "../rva.h"` and annotate
-   **each** function with an `RVA(0x<rva>, 0x<size>)` macro on the line directly
-   above the definition (worked example in `build-system.md` "Add a translation
-   unit"). `labels.py` reads it from LLVM IR (the mangled symbol is paired directly
-   with the annotation — no positional join). **Define the functions in ascending
-   retail-RVA order in the file** (§2.4) — definition order is part of the match
-   (it drives inlining + COMDAT order), not cosmetic.
-4. **`nix develop .#build --command gruntz build` — this ONE command IS the inner
-   loop.** It does everything, incrementally: `configure.py` regenerates
-   `build.ninja`, then ninja recompiles the base obj (`cl`), regenerates the label
-   map from your `RVA()` macros (`gen_labels`), re-delinks the target obj
-   (`delink` → synth_pdb → vostok-delinker), and `objdiff` rescores. You never run
-   configure / ninja / delink / objdiff by hand. (What re-delinks and the exact
-   chain: build-system.md "What triggers a re-delink".)
-   **Run a wave of builds INSIDE one open `nix develop .#build` shell** — don't pay
-   `nix develop` startup per command. For the campaign / parallel matchers, enter the
-   shell once and run `gruntz build`/`status` *inside* it. When the work is in a
-   worktree, **`cd` into that worktree BEFORE entering the shell**: `GRUNTZ_DIR`/
-   `WINEPREFIX`/`REPO` are fixed at shell entry to `$PWD`, so a shell opened in main
-   (or a `cd` *after* `nix develop`) builds and scores **main, not the worktree**.
-5. **Read the per-unit match %** (`gruntz status` reprints the last report without
-   rebuilding). Then iterate: edit `src/` → `gruntz build` → read → repeat until
-   **byte-exact**. When a diff row is stuck, grep **`docs/patterns/INDEX.md`**
-   (one file per MSVC5 /O2 codegen idiom — steerable fixes vs. walls/scoring
-   artifacts) and use `matching-patterns.md`; locked flags `/O2 /MT` — do not
-   recalibrate. Found a new idiom? Add a pattern file + an INDEX line. A vtable/global-store function tops out at
-   ~99.5% *fuzzy*, not 100% *exact* (the reloc-typing artifact, §6) — that's
-   matched; confirm by direct byte-compare and move on, don't chase it (§2a). If a
-   function plateaus below exact with no *local* source diff, check the function
-   **defined before it** in the TU (a stubbed/un-reconstructed or misordered
-   inline-callee can poison it) and run the §2a isolation test before charging it
-   to entropy.
-6. Navigate with `gruntz sema def|refs|hover|symbol` (+ `xref`/`rva`/`class`/`disasm`).
-7. **Name the externs the function references.** Its `call`/data-load targets to
-   *unreconstructed* engine functions/globals are named `FUN_<rva>`/`DAT_`/`s_…`
-   by the delinker, so those relocs don't pair and the caller stays
-   **fuzzy-not-exact**. `python -m gruntz.analysis.extern_harvest` correlates each
-   matched (fuzzy-100) function's base-obj relocs (real `cl` names) with the
-   retail call target, recovering `rva → symbol` + a consensus audit. Stub each in
-   `src/Stub/` (empty body + `RVA()` + the `@confidence`/`@source: reloc-correlation`
-   /`@stub` block), reproducing the EXACT mangling (`SYMBOL(_name)` for C-linkage).
-   **Heed the ALIAS report:** an address already labeled under another name means
-   our caller MISNAMES an already-matched function → rename the *caller*, don't
-   stub (e.g. `WwdInputStream`==`CFileIO`). A caller goes exact only when its WHOLE
-   referent set is named (incl. `$S` string constants), so expect match_percent to
-   rise before the exact count does; the new stubs grow the 0% backlog (§3, §8).
-
----
-
-## 6. Gotchas the orchestrator MUST encode in worker prompts
-
-- **Match by *shape*, not names.** Stack-local order is name-independent at `/O2`
-  (renaming is a byte-identical no-op); match offsets via types/sizes/address-
-  escaping/live-ranges/declaration-order. (The "name order" heuristic was refuted.)
-- **Reloc-typing scoring artifact.** vtable/global stores show ~99.5% *fuzzy* (not
-  100% exact) due to the delinker emitting REL32-vs-`cl`'s DIR32 against differently-
-  named symbols — **the code bytes match**; confirm by direct byte-compare. Don't
-  chase the phantom diff.
-- **Do NOT match the 52 v1.01-changed functions** against tomalla's v0.77 annotations.
-- **DirectX/Win32/COM calls are external** — never match the implementation (it's in
-  system DLLs). The DX6 SDK (`dx/Include`) supplies the COM vtable layouts so
-  `pIface->Method()` compiles to the right slot.
-- **Win32/MFC types & imports come from the real headers, not hand-rolled decls.**
-  Include `<Mfc.h>` (MFC TUs → `<afx.h>` → `<windows.h>`) or `<Win32.h>` (pure-Win32/DirectX
-  TUs); don't re-`typedef` `BOOL`/`HWND`/`INT_PTR`/… or re-`extern` `PostMessageA`/`timeGetTime`/…
-  The real decls keep the signature/mangling from drifting, and pulling windows.h via the
-  umbrellas is matching-neutral (PR #44). See `docs/patterns/win32-import-decl-stdcall.md`.
-- **The matcher owns the source-writing doctrine** — see `.claude/agents/matcher.md`
-  (almost-never-cast / model-the-real-type, real Win32/MFC headers, match-by-shape,
-  reloc-masking, no `(T*)0xADDR`). Spawn matchers against that manual; the §6 facts here are
-  orchestrator-side context to fold into the worker prompt, not a substitute for it.
-- **Ghidra scripting:** the headless enrichment/export run under **PyGhidra**
-  (Ghidra 12.0.4 + `jpype1`, both from the flake) via `scripts/gruntz/ghidra/ghidra_metadata_apply.py`
-  - `pyghidra.start()` + `ghidra_script(...)`.
-
----
-
-## 7. Concurrency & commit discipline
-
-- **Read-only / Ghidra labelers fan out wide** (many concurrent) — they write
-  scratch + propose; the orchestrator integrates.
-- **Matchers can run several concurrently** (the `wineserver` mediates shared-prefix
-  `cl` builds), but each owns a distinct `src/` file / unit.
-- **ONE committer at a time.** Concurrent `git commit`s race the index. Either keep
-  workers **non-committing** (they leave working-tree changes; the orchestrator
-  commits centrally in atomic batches) or serialize commits. Workers should
-  `git add` only their own files, never `git add -A` (gitignored scratch + other
-  workers' uncommitted work must not be swept in).
-- Don't run two heavy Ghidra operations on the same project concurrently; copy the
-  project (`build/ghidra-<x>`) per heavy job.
-
-### COMMIT EACH MATCHER'S WORK — do not forget (MANDATORY)
-
-Matchers do **not** commit. After a matcher reports, the orchestrator's job is not
-done until its result is **committed**. The required per-matcher closeout:
-
-1. **Verify** in the foreground: `nix develop .#build --command gruntz build`
-   (builds are fast, ~2–3 min). Confirm no duplicate-RVA error, `verify_stubs`
-   passes (it runs in the build), and read `gruntz status` for the before→after %.
-2. **Format** the matcher's files only: `nix develop --command gruntz format`, then
-   **`git checkout --`** any files it reformatted that were NOT part of this
-   matcher's change (pre-existing format drift in other TUs must not be swept in —
-   the pre-commit hook skips clang-format when not in the nix shell, so drift
-   accumulates; only stage your matcher's files).
-3. **Commit** `git add` ONLY the matcher's files (never `git add -A`) with a
-   `match: <fn/TU> -> <result>` message ending in the
-   `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>` trailer.
-   The campaign commits directly on `main` (this is the established workflow — see
-   recent `match:` commits); do NOT open a branch/PR unless the user asks.
-4. **One commit per matcher** (atomic) so a bad result is easy to revert and the
-   README progress block diffs cleanly per match.
-
-This is a standing rule: **every dispatched matcher gets verified + committed before
-moving on.** If a wave of matchers ran, commit each one's distinct files in its own
-atomic commit. (If you ever notice this was skipped, that is a process bug — fix the
-gap here.) Do **not** commit/push when the user explicitly said "don't commit"; in
-that case integrate into the working tree and say so.
-
----
-
-## 8. Definition of done
-
-- **Labeled** = attributed to class/TU + named with `@stub` metadata in `src/`.
-- **Matched** = objdiff byte-exact (reloc-masked); the ~99.5%-fuzzy reloc-typing
-  cases confirmed by direct byte-compare. Graduates from a label into `src/`
-  (with its `RVA()` macro) + `config/units.toml`; `build/gen/symbol_names.csv`
-  is regenerated from those. **For the entropy tail**
-  (§2a), a stable high-90s function with no identifiable source diff counts as
-  *done* — annotate it green-enough; the residual is compiler entropy, not a bug.
-- Report progress in **bytes matched** (and big-function count), not raw function
-  count — that's the metric that reflects real completion given the Pareto.
-- We use the **delink → `cl` → objdiff** loop; **`reccmp` is not used here**, so
-  its address-reconciliation and `FOLDED`/folding machinery do not apply (ICF is
-  measured OFF — see `docs/linker-flags.md`).
-
----
-
-## 9. Ideas worth trying [HEURISTIC] — and one parked future option
-
-Reference practice from isledecomp/reccmp, to fold into how we sequence work
-(unconfirmed for this project; try and report):
-
-1. **Recover TYPES first.** Reconstruct struct sizes and field offsets *before*
-   bodies — wrong offsets mismatch **every** member access in **every** function
-   that touches the struct, so types are the highest-leverage prerequisite. (We
-   already treat offsets as load-bearing — `matching-patterns.md`; this makes it a
-   sequencing rule: types before bodies in a TU.)
-2. **Match leaf functions first to anchor callers** (reinforces §2.2). A caller
-   whose callees are already matched is verifiable in isolation; a caller into
-   unmatched engine code is not.
-3. **Auto-sync Ghidra from the decomp (round-trip).** As types/names are solved in
-   `src/`, propagate them back into the Ghidra RE DB so the database doesn't rot —
-   solved struct layouts and names should flow both ways, not just delink → src.
-4. **PARKED (future — do NOT implement now): a max-score DB.** Track each
-   function's *max* score over time; adopting that for our progress-tracking
-   would let us **absorb entropy churn** (§2a) — record the best score a function
-   ever reached so a later entropy re-roll doesn't look like a regression.
-   Documented as an option; not built.
+- Don't let two integrations build main at once.
+- Don't `isolation: worktree` (that creates a *new* throwaway worktree per spawn —
+  the opposite of the reused pool).
+- Don't `git add -A` during integration — stage only the current matcher's files.
+- Don't merge worker branches into main (no merge commits) — apply diffs onto a
+  linear main instead.

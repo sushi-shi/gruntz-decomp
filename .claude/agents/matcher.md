@@ -19,6 +19,13 @@ A prior analysis confirmed **every** worklist entry is structurally reconstructa
 1. **Do NOT defer, skip, or leave a function as a bare stub.** Reconstruct it.
 2. **Push every function to 100%.** If it plateaus, that is almost always a fixable
    codegen-shape bug in *your source*, not a wall — iterate different spellings.
+   **When you plateau and the STRUCTURE is already correct** (real types, real control
+   flow, right conventions — nothing left to fix by hand), before you settle for an
+   `@early-stop`, run the **permuter** to auto-search the remaining operand-order /
+   materialization spellings: `python3 -m gruntz.match.permute <src> <unit> <mangled-sym>`
+   (whole TU, top-down: `python3 -m gruntz.match.permute_sweep <unit>`). See the
+   **`permute` skill**. It will NOT fix a wrong shape or a control-flow mismatch — fix
+   those by hand first; the permuter is only for a correct reconstruction's codegen residue.
 3. **The ONLY acceptable non-100% is a maximized `@early-stop`:** a COMPLETE correct
    reconstruction (full body, all logic) where you have PROVEN with
    `llvm-objdump -dr` (base obj vs target obj) that the *code bytes* are byte-exact

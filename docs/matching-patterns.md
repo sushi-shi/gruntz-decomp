@@ -49,8 +49,7 @@ Concretely:
   binary is considered unlikely "without reverse-engineering the compiler."
 
 **Calibrate accordingly: a high-90s plateau is success, not failure.** Do not
-read the last few percent as "the match is wrong." (See `.claude/agents/orchestrator.md` §
-"Entropy expectation" for how this folds into progress tracking — the objdiff
+read the last few percent as "the match is wrong." (See `.claude/agents/matcher.md` (push-to-100 doctrine) — the objdiff
 number on a near-green function is *advisory*, not a verdict.)
 
 Working theory: the old MSVC backend's symbol-table hash/bucket ordering plus its
@@ -60,7 +59,7 @@ visible in a TU** — not just the symbols a function actually *uses*. This is t
 `/Od` 16-bucket name-hash (the `/Od` symbol bucketing we reconstructed): both are
 the compiler's symbol table leaking into output. (At `/O2` the stack-local
 ordering is *name-independent* — see § "Match by shape" below and
-`.claude/agents/orchestrator.md` § 6 — but the *symbol-set* sensitivity that drives entropy is
+`.claude/agents/matcher.md` — but the *symbol-set* sensitivity that drives entropy is
 real at every opt level.)
 
 **Mitigations [HEURISTIC]** (none confirmed to fully eliminate it for VC5):
@@ -80,7 +79,7 @@ real at every opt level.)
    be green, annotate the green-enough one and move on — don't ping-pong.
 6. **Per-TU isolation**: group functions into their original translation units so
    an edit's blast radius stays inside one TU (this is also why we dispatch
-   matchers per-TU — `.claude/agents/orchestrator.md` § 2).
+   matchers per-TU — `.claude/agents/matcher.md`).
 
 ## [VERIFIED+HEURISTIC] Service-pack sensitivity
 
@@ -307,7 +306,7 @@ causes: the reloc-typing **scoring artifact** above, and **entropy** — § top.
 - **Loop direction** — counting **down to zero** (`dec`/`jnz`) is common and
   cheaper than counting up; match the direction you see.
 - **Local order/count.** At `/O2` stack slots are **name-INDEPENDENT** [VERIFIED —
-  see § "Match by shape" / `.claude/agents/orchestrator.md` § 6]; do **not** rename to move a
+  see § "Match by shape" / `.claude/agents/matcher.md`]; do **not** rename to move a
   slot. The `/O2` levers are **declaration order**, types, sizes, address-escaping
   and live-ranges — reorder *declarations* (never rename) to move slots.
 - **Short-circuit / operand order** in `&&`/`||` — swapping operands reorders the

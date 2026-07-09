@@ -1,6 +1,7 @@
 .claude/*
 !.claude/agents/
 !.claude/commands/
+!.claude/skills/
 
 # ---------------------------------------------------------------------------
 # Large / non-distributable artifacts — never committed.
