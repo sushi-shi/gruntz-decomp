@@ -57,9 +57,26 @@ struct CWorkerObArray {
 // the field-reset dtor + the grand-base 0x5e8cb4 re-stamp folded via ~CWapObj ->
 // ~CObject). Its ctor/dtor fold into the leaf's, giving retail's two-phase
 // vptr schedule + the destructible-base /GX frame.
+class CSymTab; // Bute/SymTab.h - the name->record table slots 10/15 iterate
+
 class CDDrawWorker : public CLoadable {
 public:
     virtual ~CDDrawWorker() OVERRIDE; // slot 1 (scalar-deleting dtor)
+    // slots 9-16: the 8 new virtuals CDDrawWorker adds over CLoadable's 9-slot base.
+    // Declared-only => cl emits the full 17-slot ??_7CDDrawWorker @0x1efbe8 (this
+    // realizes the vtable per the all-vtables mandate; was a bare VTBL() manual ref).
+    // Bodies live at their retail RVAs (reloc-masked). Slots 10 (0x1521f0) and 15
+    // (0x1522b0) build/validate frames from a CSymTab and self-dispatch InsertFrame
+    // (slot 14) / slot 16; homing their bodies is blocked on CLoadable::m_0c's
+    // per-derived pointer type (a )m_ cast the ratchet forbids) - deferred.
+    virtual i32 SymValue_155810(void* rec);                // slot 9  @0x155810
+    virtual i32 BuildFramesFromSymTab(CSymTab* tab);       // slot 10 @0x1521f0
+    virtual i32 CreateFrame24(i32 a, i32 b, i32 c, i32 d); // slot 11 @0x152110
+    virtual i32 CreateFrame28(i32 a, i32 b, i32 c, i32 d); // slot 12 @0x152060
+    virtual i32 CreateFrame30(i32 a, i32 b, i32 c);        // slot 13 @0x151fb0
+    virtual i32 InsertFrame(void* rec, i32 n, i32 flag);   // slot 14 @0x151f00
+    virtual i32 ValidateFramesFromSymTab(CSymTab* tab);    // slot 15 @0x1522b0
+    virtual i32 Slot40_1523b0(void* rec, i32 n, i32 flag); // slot 16 @0x1523b0
     void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
 
     CWorkerObArray m_items;    // +0x10  owned-pointer array (m_pData@+0x14, m_nSize@+0x18)
