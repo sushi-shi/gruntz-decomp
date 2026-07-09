@@ -352,10 +352,6 @@ RVA(0x00100660, 0x50)
 i32 Gap_100660(void) {
     return 0;
 } // @stub
-RVA(0x00106af0, 0x37)
-i32 Gap_106af0(void) {
-    return 0;
-} // @stub
 // @stub 0x10f6a0 = CCheckpointTrigger's "A" per-frame activation handler (the
 // g_tileSecretTriggerActReg group @0x10f160..0x10f970 is CCheckpointTrigger's, NOT
 // CTileSecretTrigger's - vtable slot 1 = 0x10f9a0, slot 4 = 0x10f1e0; CTileSecretTrigger
@@ -491,10 +487,6 @@ i32 Gap_148f50(void) {
 } // @stub
 RVA(0x00149780, 0x69)
 i32 Gap_149780(void) {
-    return 0;
-} // @stub
-RVA(0x0014fb40, 0x3e)
-i32 Gap_14fb40(void) {
     return 0;
 } // @stub
 RVA(0x00151b90, 0x70)
@@ -839,10 +831,6 @@ i32 Gap_17b950(void) {
 } // @stub
 RVA(0x0017f660, 0x2e6)
 i32 Gap_17f660(void) {
-    return 0;
-} // @stub
-RVA(0x0017f950, 0x24)
-i32 Gap_17f950(void) {
     return 0;
 } // @stub
 RVA(0x0017ff30, 0x4c2)

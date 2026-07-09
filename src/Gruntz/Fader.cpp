@@ -768,6 +768,15 @@ i32 CFaderElem::Apply(FaderArg* s) {
     return 1;
 }
 
+// 0x17f950 - CFaderFlat::v2 (vtable slot 2): the flat fader's total duration - the
+// source frame count scaled up by m_percent% (signed /100 via the 0x51eb851f
+// reciprocal-multiply idiom), plus the base frame count.
+RVA(0x0017f950, 0x24)
+i32 CFaderFlat::v2() {
+    i32 n = m_src->m_frameCount;
+    return n + (m_percent * n) / 100;
+}
+
 SIZE_UNKNOWN(FaderSrc);
 SIZE_UNKNOWN(FaderArg);
 SIZE_UNKNOWN(CFaderElem);

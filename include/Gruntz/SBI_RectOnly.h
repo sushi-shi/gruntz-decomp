@@ -303,6 +303,7 @@ public:
     void CommitSlot(i32 active);
     void ClearHlCell(i32 row, i32 group);
     i32 SetHlCell(i32 row, i32 handle, i32 group);
+    i32 SetHlCellByTier(i32 handle, i32 group); // 0x106af0  pick the hl row from the handle tier
     i32 FindReadySlot();
     void SetMode(i32 mode);
 

@@ -325,6 +325,19 @@ void CSBI_RectOnly::ClearHlCell(i32 row, i32 group) {
 }
 
 // Set highlight-grid cell [row,group] handle if its slot is free; 1 = set, 0 = busy.
+// 0x106af0 - map a handle to its highlight-grid tier row (>=0x22 -> 2, >=0x17 -> 1,
+// else 0), then arm that cell via SetHlCell.
+RVA(0x00106af0, 0x37)
+i32 CSBI_RectOnly::SetHlCellByTier(i32 handle, i32 group) {
+    i32 row;
+    if (handle >= 0x22) {
+        row = 2;
+    } else {
+        row = (handle >= 0x17);
+    }
+    return SetHlCell(row, handle, group);
+}
+
 RVA(0x00106b40, 0x44)
 i32 CSBI_RectOnly::SetHlCell(i32 row, i32 handle, i32 group) {
     i32 idx = group + row * 4;

@@ -106,6 +106,7 @@ public:
     CShadeTable* AddTable(float scale);                                       // 0x14f080
     CShadeTable* SubTable(i32 color);                                         // 0x14f310
     CShadeTable* AlphaTable(u8* pal);                                         // 0x14f5b0
+    CShadeTable* FindByKey(i32 key);                                          // 0x14fb40
     void FindRemove(CShadeTable* t);                                          // 0x14fb80
 
     // 0x14ed10 - __cdecl qsort comparator: sort palette indices by luma.

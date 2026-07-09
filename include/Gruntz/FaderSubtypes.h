@@ -32,6 +32,7 @@
 // (pInit is a CFxMode transition descriptor the caller passes through CFader*).
 // Defined in CFaderMgr.cpp.
 struct CFaderInit;
+struct FaderSrc; // animation frame source (frameCount @+0x18); defined in Fader.cpp
 
 // ===========================================================================
 // CFaderMesh (ctor 0x17e940, size 0x6c): embeds a nested polymorphic sub-object
@@ -124,7 +125,11 @@ public:
     i32 ApplyInit(CFaderInit* src); // 0x17f5e0 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x17f5e0 (same method; copy from the pInit descriptor)
 
-    char _pad38[0x4c - 0x38]; // +0x38..+0x4b
+    char _pad38[0x3c - 0x38]; // +0x38..+0x3b
+    FaderSrc* m_src;          // +0x3c  animation source (frame count at +0x18)
+    char _pad40[0x44 - 0x40]; // +0x40..+0x43
+    i32 m_percent;            // +0x44  duration-scale percent (v2)
+    char _pad48[0x4c - 0x48]; // +0x48..+0x4b
     i32 m_4c;                 // +0x4c
 };
 

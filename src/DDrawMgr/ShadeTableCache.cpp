@@ -836,6 +836,24 @@ i32 __cdecl CShadeTableCache::CompareHue(const void* a, const void* b) {
 // 0x14fb80 - FindRemove: locate the table whose +0 matches the key, destroy it,
 // and memmove the tail down one slot. __thiscall, one arg.
 // ===========================================================================
+// 0x14fb40 - linear-search the cache for the table whose m_key matches; return it
+// (or null). The index of the match materialises the returned m_pData[i].
+// @early-stop
+// ~78% regalloc coin-flip (permuter-confirmed, no operand-order fix): logic +
+// instruction multiset byte-exact. Retail walks m_pData in a caller-saved reg
+// (edx) and keeps `this` in ecx to RE-READ m_pData[i] on the hit; this cl caches
+// m_pData in a callee-saved reg (edi) and clobbers ecx for the walk. Not steerable
+// from C. Final sweep.
+RVA(0x0014fb40, 0x3e)
+CShadeTable* CShadeTableCache::FindByKey(i32 key) {
+    for (i32 i = 0; i < m_arr.m_nSize; i++) {
+        if (m_arr.m_pData[i]->m_key == key) {
+            return m_arr.m_pData[i];
+        }
+    }
+    return 0;
+}
+
 RVA(0x0014fb80, 0x68)
 void CShadeTableCache::FindRemove(CShadeTable* key) {
     i32 n = m_arr.m_nSize;
