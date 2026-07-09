@@ -128,7 +128,7 @@ struct CSymParser { // m_34 (0x94)
     char raw[0x94];
     i32 ParseBuffer(void*, i32, i32);           // 0x13ad00
     i32 Stub13b0c0(i32, const char*);           // 0x13b0c0
-    void* ResolveQualified(const char*, void*); // 0x13bff0
+    i32 ResolveQualified(const char*, void*); // 0x13bff0 (real returns i32; caller reinterprets as ptr)
     void* ResolvePath(const char*);             // 0x13c030
     i32 ResolveTab(const char*, void*);         // 0x13be40
 };
@@ -647,7 +647,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     // --- Phase 15: GAME_ATTRIBUTEZ blowfish-decoded bute parse -------
     {
         CSymParser* mgr = m_34;
-        void* node = mgr->ResolveQualified("GAME_ATTRIBUTEZ", &g_lab545854);
+        i32 node = mgr->ResolveQualified("GAME_ATTRIBUTEZ", &g_lab545854);
         g_buteMgr.SetErrCallback((ErrCallback)&cb_401bc2);
         i32 ok = 0;
         if (node) {

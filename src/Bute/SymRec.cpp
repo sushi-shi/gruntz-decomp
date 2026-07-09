@@ -58,7 +58,7 @@ struct CSymList {
 struct CSymParser {
     char pad0[0x6c];
     int m_6c; // 0x6c  leaf-ctor-variant flag (FindOrAddSym branches on it)
-    void AddNode(CSymPayload* n);
+    void AddNode(void* n); // real @0x13c210 takes void* (PAX); canonical is SymParser.h AddNode(void*)
 };
 // The owning CSymTab scope (CSymRec::m_2c): reached via `this` in FindOrAddSym.
 struct CSymTab {

@@ -375,8 +375,8 @@ void __stdcall Copy_16f6e0(Src_16f6e0* src, Dst_16f6e0* dst) {
 class CPoolItemA;
 class CDDrawPtrCollections {
 public:
-    void RemoveItemA(CPoolItemA* h);                            // 0x142160
-    CPoolItemA* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
+    void RemoveItemA(CDDSurface* h);                            // 0x142160 (real takes CDDSurface*)
+    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60 (real returns CDDSurface*)
 };
 struct Worker181x_181x {
     char _vft0[4];               // +0x00 foreign object vptr (reduced view; not owned/dispatched)
@@ -400,7 +400,7 @@ struct Worker181x_181x {
 RVA(0x00181660, 0x40)
 void Worker181x_181x::AddItem() {
     if (m_2060 > 0 && m_48 != 0) {
-        CPoolItemA* h = m_2c->MakeAndAddB(m_2064, m_2068, 0, 0, -1);
+        CPoolItemA* h = (CPoolItemA*)m_2c->MakeAndAddB(m_2064, m_2068, 0, 0, -1);
         m_40 = h;
         ((CDDSurface*)h)->Blt(m_38);
     }
@@ -409,7 +409,7 @@ void Worker181x_181x::AddItem() {
 RVA(0x001816a0, 0x1c)
 void Worker181x_181x::DropItem() {
     if (m_40) {
-        m_2c->RemoveItemA(m_40);
+        m_2c->RemoveItemA((CDDSurface*)m_40);
         m_40 = 0;
     }
 }

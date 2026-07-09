@@ -10,8 +10,7 @@
 // load-bearing. Engine callees / globals are reloc-masked (no body). See the
 // header for the recovered layout + the conflated-region note.
 #include <Gruntz/GruntSpawnConfig.h>
-class StreamVoice {
-public:
+struct StreamVoice { // struct (not class): retail OpenStream returns PAU (?OpenStream@SoundStream@@QAEPAUStreamVoice@@...)
     i32 Configure(i32 a, i32 b, i32 c, i32 d);
     i32 SetSource(i32 s);
 };

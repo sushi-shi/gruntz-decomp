@@ -245,9 +245,11 @@ class Recon:
     def sig_kind(self, emitted, R):
         """Classify a FAKE-VIEW mismatch by comparing the emitted view-method mangling
         to the real callee's mangling (everything after `@@`): RETURN-ONLY (safe,
-        matching-neutral to fix - only the return type / access char differs),
-        ARG-DIFF (arg list differs - needs disasm verification), or CROSS (the real
-        owner class name differs and no view of it - a genuine conflation)."""
+        matching-neutral to fix - only the return type / class-vs-struct keyword /
+        access char differs, args identical), ARG-POINTEE (args push-byte-identical -
+        same count, differences only in a pointer's pointee type or a V<->U keyword -
+        also matching-neutral to retype), or ARG-COUNT (arg count or a value-type size
+        differs - needs disasm verification before changing)."""
         real = self.rva2sym.get(R, (None,))[0]
         if not emitted or not real:
             return "UNKNOWN"
@@ -255,11 +257,12 @@ class Recon:
         rs = real.split("@@", 1)[-1]
         if es == rs:
             return "RETURN-ONLY"          # identical sig -> only the CLASS name differs
-        # strip the leading access+cv+call char (1 char) + return type token, compare args
         ea, ra = _args_of(es), _args_of(rs)
         if ea == ra:
             return "RETURN-ONLY"          # same args, differ only in return/access
-        return "ARG-DIFF"
+        if args_neutral(es, rs):
+            return "ARG-POINTEE"          # args push-identical (pointer-pointee / keyword) -> byte-neutral, mine
+        return "ARG-COUNT"                # arg count / value-size differs -> needs disasm (Agent A)
 
     def extra(self):
         """[(F, R)] our IR emits, retail lacks (both reconstructed)."""
@@ -309,6 +312,51 @@ def _args_of(sig):
     if tok is None:
         return None
     return body[j:]
+
+
+def _tokenize(argstr):
+    """List of MSVC type tokens for an arg-list string (None if unparseable)."""
+    if argstr is None:
+        return None
+    out, i = [], 0
+    n = len(argstr)
+    while i < n:
+        if argstr[i] == "@":                 # trailing @Z remnant
+            break
+        t, j = _tok(argstr, i)
+        if t is None or j <= i:
+            return None
+        out.append(t)
+        i = j
+    return out
+
+
+_PTR_PREFIX = "PQRAS"  # pointer/reference lead chars - a pointer arg is 4 bytes regardless of pointee
+
+
+def _slot_neutral(a, b):
+    """Two arg tokens are PUSH-byte-identical: equal, or both pointers/refs (any pointee),
+    or the same primitive differing only in the class-vs-struct keyword (V<->U in a named
+    type). NOT neutral if one is a value type and the other a pointer, or the value sizes
+    differ (short F vs int H)."""
+    if a == b:
+        return True
+    if a[0] in _PTR_PREFIX and b[0] in _PTR_PREFIX:
+        return True                          # pointer arg: 4-byte push either way
+    if a.replace("V", "U") == b.replace("V", "U"):
+        return True                          # class/struct keyword only
+    return False
+
+
+def args_neutral(sig_a, sig_b):
+    """True if two member signatures push IDENTICAL arg bytes: same arg count and every
+    arg slot is push-neutral (pointer-pointee / keyword diffs only). This is the line
+    between a byte-neutral shadow retype (mine) and an arg-count/value-size mismatch that
+    needs disasm (Agent A)."""
+    ta, tb = _tokenize(_args_of(sig_a)), _tokenize(_args_of(sig_b))
+    if ta is None or tb is None or len(ta) != len(tb):
+        return False
+    return all(_slot_neutral(x, y) for x, y in zip(ta, tb))
 
 
 def _rva2file():
@@ -389,7 +437,8 @@ def main():
         for F, R, v, e in fv:
             skc[rc.sig_kind(e, R)] = skc.get(rc.sig_kind(e, R), 0) + 1
         print(f"\n== FAKE-VIEW unreconciled edges ({len(fv)}) ==")
-        print("  by signature-mismatch kind (RETURN-ONLY = matching-neutral to fix):")
+        print("  by signature-mismatch kind (RETURN-ONLY + ARG-POINTEE = matching-neutral; "
+              "ARG-COUNT needs disasm):")
         for k in sorted(skc, key=lambda x: -skc[x]):
             print(f"      {skc[k]:5d}  {k}")
         vcount = {}

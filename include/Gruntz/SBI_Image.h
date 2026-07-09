@@ -38,7 +38,7 @@ public:
     virtual void SbiSlot2() OVERRIDE;  // slot 2
     virtual void SbiSlot3() OVERRIDE;  // slot 3
     virtual void SbiSlot4() OVERRIDE;  // slot 4
-    void InsertPtr(i32 a, i32 b);      // 0x... (plane-scan object sink)
+    i32 InsertPtr(i32 a, i32 b);       // 0x108410 (i32 ret, matches SBI_RectOnly.h + retail)
 };
 SIZE_UNKNOWN(CSBI_RectOnly);
 VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)
