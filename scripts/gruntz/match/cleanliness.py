@@ -55,6 +55,19 @@ def _count_placeholders(code: str) -> int:
     return sum(1 for n in _TYPEDEF.findall(code) if _is_placeholder(n))
 
 
+# The ".cpp-local views" metric enforces matcher.md rule 0: a struct/class DEFINITION inside
+# a .cpp is a per-TU view of a class whose one true shape belongs in a header - regardless of
+# its NAME (unlike "placeholder classes", which is name-based). Counts DEFINITIONS (name then
+# a body brace, optional base-clause), NOT forward-decls / elaborated uses / anonymous aggs.
+# cpp_only + scaffolding-excluded => only real main-tree .cpp files count; homing a view into
+# one trips it. Drive to ~0 by moving the type to include/<Module>/.
+_TYPEDEF_DEF = re.compile(r"\b(?:struct|class)\s+(\w+)\b(?:\s+final)?\s*(?::[^;{]*)?\{")
+
+
+def _count_cpp_local_defs(code: str) -> int:
+    return len(_TYPEDEF_DEF.findall(code))
+
+
 # The "placeholder vtable slots" metric (GAMEABLE, but tracked per request): a
 # virtual whose NAME is a placeholder for an unresolved vtable slot (dummyN / vNN /
 # vfunc / SlotN) - a real virtual with an un-recovered identity. Counts the DECL
@@ -76,6 +89,7 @@ METRICS = (
     ("g_<hex> globals", re.compile(r"\bg_[0-9a-f]{4,}\b"), False),
     ("Method/Stub/FUN", re.compile(r"\b(?:Method[0-9a-f]{3,}|Stub_[0-9a-f]+|vfunc_[0-9]+|FUN_[0-9a-f]+)\b"), False),
     ("placeholder classes", _count_placeholders, False),
+    (".cpp-local views", _count_cpp_local_defs, True),
     # --- manual-vtable residue (the de-hack / vtable-review targets) ---
     ("placeholder vtable slots", _VTSLOT, False),
     ("*Vtbl structs", re.compile(r"\b(?:struct|class)\s+\w*Vtbl\w*"), False),
@@ -96,8 +110,8 @@ METRICS = (
 # don't count toward the VIEW metrics below. A view only counts once a matcher HOMES it into
 # a real main-tree TU, where it must become a proper class (the ratchet: the main-tree view
 # count can only go down). Non-view metrics (casts, m_<hex>, ...) still count everywhere.
-_VIEW_METRICS = {"placeholder classes", "placeholder vtable slots", "*Vtbl structs",
-                 "->vtbl accesses", "g_*Vtbl globals", "m_vtbl/m_vptr members"}
+_VIEW_METRICS = {"placeholder classes", ".cpp-local views", "placeholder vtable slots",
+                 "*Vtbl structs", "->vtbl accesses", "g_*Vtbl globals", "m_vtbl/m_vptr members"}
 
 
 def _is_scaffolding(path) -> bool:
@@ -157,8 +171,8 @@ def report_lines(rows: list[tuple[str, int]] | None = None) -> list[str]:
     """Formatted scoreboard lines (two columns) for the build report."""
     rows = rows if rows is not None else count()
     base = load_baseline()
-    # three groups: naming (5) | manual-vtable residue (5) | casts (5)
-    naming, vtable, casts = rows[:5], rows[5:10], rows[10:]
+    # three groups: naming/views (6) | manual-vtable residue (5) | casts (5)
+    naming, vtable, casts = rows[:6], rows[6:11], rows[11:]
     width = max(len(lbl) for lbl, _ in rows) + 1
     lines = ["cleanliness (-> 0 where affordable; delta vs baseline, down = good):"]
     for i in range(max(len(naming), len(vtable), len(casts))):
