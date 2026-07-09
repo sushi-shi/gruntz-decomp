@@ -3,7 +3,8 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Mfc.h> // real MFC CObject (the object's grand-base) + CObList (m_subList @+0x1dc)
+#include <Mfc.h>                     // real MFC CObject (the object's grand-base) + CObList (m_subList @+0x1dc)
+#include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam - the real +0x1a0 command sub-object
 
 // CWwdGameObject - a runtime "plane object" deserialized from WWD level data.
 // WwdFile::ReadPlaneObjects (0x162af0) constructs one per record via the ctor
@@ -55,13 +56,11 @@ public:
     i32 m_1c;        // +0x1c  scratch state id (saved/forced 0x50..0x53/restored)
 };
 
-// The +0x1a0 command-dispatch sub-object. Ctor 0x15c290 (1 arg = owner),
-// Find 0x15c900 (4 args). A tiny class so the __thiscall dispatch lowers to
-// `lea ecx,[this+0x1a0]; call` with no cast.
-SIZE(CmdMap, 0x3c);
-struct CmdMap {
-    char m_body[0x3c]; // embedded sub-object body (+0x1a0..+0x1dc)
-};
+// The +0x1a0 command-dispatch sub-object is the real CDDrawBlitParam
+// (<DDrawMgr/DDrawBlitParam.h>, 0x3c bytes): Construct 0x15c290 (1 arg = owner),
+// Find 0x15c900 (4 args). The former per-TU `CmdMap` char-blob view is dissolved
+// onto it - m_cmdMap.Find()/Construct() lower to `lea ecx,[this+0x1a0]; call`
+// with no cast.
 
 // (The +0x1dc member is the real MFC CObList, folded below - the former
 // WwdSubList/WwdSubNode/WwdSubDel views are dissolved. ResetAndSetup walks it with
@@ -230,7 +229,7 @@ public:
     void* m_194;            // +0x194  resolved object ref
     i32 m_198;              // +0x198
     void* m_19c;            // +0x19c  resolved object ref
-    CmdMap m_cmdMap;        // +0x1a0  command-dispatch sub-object
+    CDDrawBlitParam m_cmdMap; // +0x1a0  command-dispatch sub-object (real class)
     CObList m_subList;      // +0x1dc  MFC CObList of owned sub-objects
 };
 

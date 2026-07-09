@@ -160,7 +160,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
+    if (g_nameReg.Find(id, 0)) { // CHaznColl::Find == _zvec::GrowTo @0x16da80
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -175,7 +175,7 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
     if (coord >= g_haznLo && coord <= g_haznHi) {
         return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
     }
-    if ((i32)((_zvec*)&g_haznColl)->GrowTo(coord, 0)) {
+    if (g_haznColl.Find(coord, 0)) { // CHaznColl::Find == _zvec::GrowTo @0x16da80
         return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
     }
     void* item = g_actCache;
@@ -451,10 +451,9 @@ i32 CStaticHazard::LoadAttributes() {
 dispatch:
     if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc) == 2) {
         i32 a = 0, b = 0;
-        if (((CTriggerMgr*)g_gameReg->m_cmdGrid)
-                ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
+        if (g_gameReg->m_cmdGrid->HitTestCell(m_object->m_screenX, m_object->m_screenY, &a, &b, 0)
             != 0) {
-            ((CTriggerMgr*)g_gameReg->m_cmdGrid)->CellDispatch(a, b, m_object->m_124, -1);
+            g_gameReg->m_cmdGrid->CellDispatch(a, b, m_object->m_124, -1);
         }
         if (m_object->m_latchedAnimId != m_object->m_placeMode) {
             m_object->m_latchedAnimId = m_object->m_placeMode;

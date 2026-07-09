@@ -44,7 +44,8 @@
 class CGameApp;              // WAP32 app (<Wap32/Wap32.h>); CMultiMgr::m_owner (+0x08)
 class CMultiSubDC;           // CMulti::m_fxOverlay
 class CTileTriggerContainer; // CMulti::m_2e4
-class CMultiSoundZ;          // CMultiMgr::m_48
+class CGruntzSoundZ;         // CMultiMgr::m_48 (real sound object; PlayByName/FindBank)
+class CFontConfig;           // CMultiMgr::m_5c (real chat/text-input config)
 class CMultiSub68;           // CMultiMgr::m_68
 class CChatBoxOwner;         // CMulti::m_2e0 (per-frame LoadChatBoxSprite sub)
 class CBrickzGrid;           // CMultiMgr::m_70
@@ -143,11 +144,11 @@ public:
     CGameApp* m_owner; // +0x08
     i32 m_c;           // +0x0c  active gate (PumpA)
     char m_pad10_48[0x48 - 0x10];
-    CMultiSoundZ* m_48; // +0x48  ambient slot manager (PumpA)
+    CGruntzSoundZ* m_48; // +0x48  ambient sound object (PumpA; PlayByName/FindBank/m_pCurrent)
     char m_pad4c_54[0x54 - 0x4c];
     CWorldSoundSet* m_54; // +0x54  (Retune)
     char m_pad58_5c[0x5c - 0x58];
-    CMultiLogicList* m_5c;  // +0x5c  list manager (StartSession poke target)
+    CFontConfig* m_5c;      // +0x5c  chat/text-input font config (FreeNodes/Scroll/TypeChar)
     CMultiDialogHook* m_60; // +0x60  the pre-dialog thiscall receiver
     char m_pad64_68[0x68 - 0x64];
     CMultiSub68* m_68;     // +0x68  per-frame sub (PumpA, Step3017)

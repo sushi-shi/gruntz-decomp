@@ -27,18 +27,30 @@
 // / 0x150190 free it. m_alloc(+0) gates teardown, m_size(+4) the byte size,
 // m_data(+8) the buffer, m_key(+c) the lookup key. (Bodies live in the sibling
 // element TU; declared here so the builder calls bind by shape, reloc-masked.)
+// CShadeTable is the shade-table role name for the real CDataBuffer class (same
+// 0x10-byte layout, same 0x150180 ctor / 0x1501a0 Set / 0x150190 Reset / 0x1503c0
+// Free / 0x150250 LoadFromFile / 0x150330 LoadFromMem cluster - see
+// Gruntz/DataBuffer.h). The buffer methods are declared here directly (external,
+// reloc-masked; bodies live in the CDataBuffer TU) so the builders call
+// t->Set()/Reset()/Free()/LoadFrom*() with no cross-view (CDataBuffer*) cast. This
+// header stays MFC-free (no <Mfc.h>) so the pure-Win32 includers still compile;
+// CShadeTable and CDataBuffer are a known dual-view of one class, deferred: full
+// unification would rename CShadeTable across Fader/LightFxMgr/SpriteRefTable etc.
 struct CShadeTable {
-    i32 m_alloc; // +0x00
+    i32 m_alloc; // +0x00  (CDataBuffer m_loaded)
     i32 m_size;  // +0x04
-    u8* m_data;  // +0x08
-    i32 m_key;   // +0x0c
+    u8* m_data;  // +0x08  (CDataBuffer m_data, void* - byte/pixel buffer here)
+    i32 m_key;   // +0x0c  (CDataBuffer m_id, used as the lookup key)
 
-    CShadeTable();
-    // The two AddFrom* element loaders (sibling element TU, reloc-masked). These
-    // are really CDataBuffer::LoadFromFile / LoadFromMem: Load takes a filesystem
-    // path (via a CString temp the caller builds), LoadFile a raw (buf,len,id)
-    // memory blob - it wraps the buffer in its OWN CMemFile internally, so the
-    // caller passes the raw pointer, not a CMemFile.
+    CShadeTable();                          // 0x150180
+    i32 Set(u32 size, i32 id);              // 0x1501a0
+    void Reset();                           // 0x150190
+    void Free();                            // 0x1503c0
+    // Element loaders: LoadFromFile takes a filesystem path (via a CString temp the
+    // caller builds); LoadFromMem takes a raw (buf,len,id) memory blob - it wraps
+    // the buffer in its OWN CMemFile internally, so the caller passes the raw ptr.
+    i32 LoadFromFile(const char* path, i32 id);  // 0x150250
+    i32 LoadFromMem(void* buf, u32 len, i32 id); // 0x150330
 };
 
 // The growable element-array subobject (lives at cache +0x04). CShadeTableArray is a

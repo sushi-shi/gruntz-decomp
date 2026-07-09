@@ -47,8 +47,16 @@
 // The name->object lookup maps each reader sub-object embeds at +0x10 (each a
 // distinct NAFXCW CMapStringTo* instantiation -> distinct Lookup body) and the
 // kill-cue map at +0x48. Reloc-masked no-body callees.
-struct MapLookupA {};         // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call
-struct CMapStringToObLite {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at the call
+// Reduced reloc-masked views of the real MFC map containers (only the +0 map base
+// is load-bearing here). The Lookup member is declared external so the call binds
+// directly (m_map.Lookup(...)) with no per-site container cast; the reloc masks the
+// real CMapStringToPtr/CMapPtrToPtr Lookup symbol.
+struct MapLookupA { // MFC CMapStringToPtr (Lookup @0x1b8008)
+    i32 Lookup(const char* key, void*& val);
+};
+struct CMapStringToObLite { // MFC CMapPtrToPtr (Lookup @0x1b8760)
+    i32 Lookup(void* key, void*& val);
+};
 
 // mgr+0x28 is the canonical CDDrawSubMgrLeafScan (<DDrawMgr/DDrawSubMgrLeafScan.h>,
 // included above). FindKeyOfValue_158570(LeafScanValue* target) reverse-looks-up a key
@@ -163,7 +171,7 @@ i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
         return 0;
     }
-    if (((CDDrawBlitParam*)&m_cmdMap)->Find((CSerialArchive*)a1, type, a3, a4) == 0) {
+    if (m_cmdMap.Find((CSerialArchive*)a1, type, a3, a4) == 0) {
         return 0;
     }
     switch (type) {
@@ -246,7 +254,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     if (strlen(name) != 0) {
         void* found = 0;
         WwdMgr* mgr = m_mgr;
-        ((CMapStringToPtr*)&mgr->m_10->m_map)->Lookup(name, (void*&)found);
+        mgr->m_10->m_map.Lookup(name, found);
         m_194 = found;
         if (found != 0 && flag == 1) {
             i32 idx = m_190;
@@ -409,8 +417,7 @@ i32 CWwdGameObject::Play(i32 a1, i32 type, i32 a3, i32 a4) {
             node = m_184;
             if (node != 0) {
                 void* found = 0;
-                CMapPtrToPtr* map = (CMapPtrToPtr*)&m_mgr->m_08->m_map;
-                if (map->Lookup((void*)node, found) == 0) {
+                if (m_mgr->m_08->m_map.Lookup((void*)node, found) == 0) {
                     m_98 = 0;
                 } else {
                     m_98 = found;
@@ -588,7 +595,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        ((CMapStringToPtr*)&m_mgr->m_14->m_map)->Lookup(name, (void*&)found);
+        m_mgr->m_14->m_map.Lookup(name, found);
         if (Resolve150eb0(found) == 0) {
             return 0;
         }
@@ -597,7 +604,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        ((CMapStringToPtr*)&m_mgr->m_14->m_map)->Lookup(name, (void*&)found);
+        m_mgr->m_14->m_map.Lookup(name, found);
         if (Resolve150f90(found) == 0) {
             return 0;
         }
@@ -606,7 +613,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
         void* found = 0;
-        ((CMapStringToPtr*)&m_mgr->m_14->m_map)->Lookup(name, (void*&)found);
+        m_mgr->m_14->m_map.Lookup(name, found);
         if (Resolve151070(found) == 0) {
             return 0;
         }
@@ -671,7 +678,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
 RVA(0x0015b940, 0x38)
 i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_19c = 0;
-    ((CDDrawBlitParam*)&m_cmdMap)->Construct(this);
+    m_cmdMap.Construct(this);
     return Setup(a1, a2, a3, a4);
 }
 
@@ -1241,13 +1248,8 @@ inline WwdBMid::~WwdBMid() {
     // m_dc (CString) auto-destroyed, then ~WwdBResolve folds.
 }
 
-// Level-2 (vtable 0x5f00a8): clears the m_18c block + runs SubB, then its embedded
-// WwdSub command object folds, then ~WwdBMid.
-// SubB @0x15b5d0 is CWwdFactoryObject::ReleaseSubs_15b5d0 (header-less ddrawsubmgr class); local decl.
-class CWwdFactoryObject {
-public:
-    void ReleaseSubs_15b5d0();
-};
+// Level-2 (vtable 0x5f00a8): clears the m_18c block + runs SubB (@0x15b5d0), then its
+// embedded WwdSub command object folds, then ~WwdBMid.
 struct WwdBLevel2 : public WwdBMid {
     virtual ~WwdBLevel2() OVERRIDE;
     void SubB(); // 0x15b5d0
@@ -1264,7 +1266,7 @@ inline WwdBLevel2::~WwdBLevel2() {
     m_190 = -1;
     m_198 = 0;
     m_194 = 0;
-    ((CWwdFactoryObject*)this)->ReleaseSubs_15b5d0();
+    SubB(); // 0x15b5d0 (ReleaseSubs); same-class call, no cast-to-view of this
     // m_1a0 (WwdSub) auto-destroyed, then ~WwdBMid folds.
 }
 
@@ -1283,6 +1285,7 @@ public:
     virtual void Slot13_166910(i32 a1, i32 a2, i32 a3); // slot 13 0x166910 (broadcast Vfunc34)
     virtual void Slot14_166950(i32 a1, i32 a2, i32 a3); // slot 14 0x166950 (broadcast Vfunc38)
     virtual void Slot15_150a70();                     // slot 15 0x150a70
+    void Clear_166810();                              // 0x166810 (destroy m_1dc list + RemoveAll)
     i32 AddChild_1667e0(CDDrawGroupChild* child);     // 0x1667e0
     i32 RemoveChild_166850(CDDrawGroupChild* child);  // 0x166850
     WwdObList m_1dc;                                  // +0x1dc  CObList (vptr only in view)
@@ -1299,7 +1302,7 @@ public:
 // variants) - not source-steerable.
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObjectB::~CWwdGameObjectB() {
-    ((B_166810*)this)->Clear();
+    Clear_166810(); // 0x166810; same-class call, no cast-to-view of this
     WORKER_FREE(m_7c);
     m_1f8 = 0;
     m_18c = -1;

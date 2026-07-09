@@ -264,7 +264,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_5e4 = timeGetTime();
     m_curSlotId = m_session->m_10 - 1;
     m_574 = 0;
-    ((CFontConfig*)Mgr()->m_5c)->FreeNodes();
+    Mgr()->m_5c->FreeNodes();
     m_session->StartTick();
     Mgr()->m_60->StartTitleHook();
     return 1;
@@ -457,17 +457,19 @@ struct McHost { // CMulti::m_view
 };
 
 // Per-frame receivers (thiscall, out-of-line -> reloc-masked).
-// CMultiMgr::m_48 is the CMultiSoundZ sound object (RECOVERED via xref: 0x138840
-// = CMultiSoundZ::Play_138840, 0x138730 = CMultiSoundZ::Lookup_138730 which
-// returns a CGruntzSoundInnerZ* - the +0x1c inner, same shape as GruntzMgr.h).
-class CMultiSoundZ { // CMultiMgr::m_48
-public:
-    char m_pad0[0x1c];
-    CGruntzSoundInnerZ* m_1c; // +0x1c
-};
+// CMultiMgr::m_48 IS the real CGruntzSoundZ (<Dsndmgr/GruntzSoundZ.h>): the former
+// CMultiSoundZ view is dissolved - PlayByName (0x138840) / FindBank (0x138730) and
+// the +0x1c inner (m_pCurrent) are CGruntzSoundZ's own members.
+//
+// CMultiSub68 (m_68): the single per-frame FX-driver object, merged with the former
+// PBSub68 view (Step3017 poke + the +0x230 armed gate / Fire1398 / Reset2b85).
 class CMultiSub68 { // CMultiMgr::m_68
 public:
     void Step3017(i32 dt); // 0x3017
+    char m_pad00_230[0x230];
+    i32 m_armed;      // +0x230  armed gate
+    void Fire1398();  // 0x00001398
+    void Reset2b85(); // 0x00002b85
 };
 class CMultiSubDC { // CMulti::m_fxOverlay (the primary FX overlay)
 public:
@@ -499,14 +501,14 @@ i32 CMulti::PumpA() {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
             if (g_64556c->m_14 != 0) {
-                ((CGruntzSoundZ*)Mgr()->m_48)->PlayByName(name, 1);
+                Mgr()->m_48->PlayByName(name, 1);
             } else {
-                CGruntzSoundInnerZ* p = ((CGruntzSoundZ*)Mgr()->m_48)->FindBank(name);
+                CGruntzSoundInnerZ* p = Mgr()->m_48->FindBank(name);
                 if (p) {
-                    Mgr()->m_48->m_1c = p;
+                    Mgr()->m_48->m_pCurrent = p;
                 }
-                if (Mgr()->m_48->m_1c) {
-                    Mgr()->m_48->m_1c->SetLoop(1);
+                if (Mgr()->m_48->m_pCurrent) {
+                    Mgr()->m_48->m_pCurrent->SetLoop(1);
                 }
             }
             m_ambientInitDone = 1;
@@ -606,21 +608,14 @@ public:
 class PBMgr { // CMulti::m_view
 public:
     void* m_0;
-    PBSub4* m_4;    // +0x04
-    void* m_8;      // +0x08
-    PBVfnHost* m_c; // +0x0c
+    PBSub4* m_4;            // +0x04
+    CGameObjChain* m_8;     // +0x08  world object chain (VisitVisible arg)
+    PBVfnHost* m_c;         // +0x0c
     char m_pad10_24[0x24 - 0x10];
     CGameLevel* m_24; // +0x24
 };
 // The output sink hung off CMultiMgr::m_54 (thiscall 2-arg blit).
-// CMultiMgr::m_5c poll target (per-frame tick) and m_68 FX driver.
-class PBSub68 {
-public:
-    char m_pad00_230[0x230];
-    i32 m_armed;      // +0x230  armed gate
-    void Fire1398();  // 0x00001398
-    void Reset2b85(); // 0x00002b85
-};
+// (CMultiMgr::m_68's FX-driver view PBSub68 is folded into CMultiSub68 above.)
 class PBSub320 { // CMulti::m_attractOverlay (attract-mode overlay)
 public:
     void Tick1fa0(u32 clock, i32 flag);    // 0x00001fa0
@@ -642,7 +637,7 @@ void CMulti::PumpB() {
     PBMgr* mgr = (PBMgr*)m_c;
     if (m_594 == 0 && Mgr()->m_c != 0) {
         StepInputA();
-        mgr->m_24->VisitVisible(mgr->m_4->m_14, (CGameObjChain*)mgr->m_8);
+        mgr->m_24->VisitVisible(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
         ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = mgr->m_4->m_14;
@@ -661,8 +656,8 @@ void CMulti::PumpB() {
         ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->Deactivate();
     }
     if (m_worldReady == 0) {
-        if (((PBSub68*)Mgr()->m_68)->m_armed != 0) {
-            ((PBSub68*)Mgr()->m_68)->Fire1398();
+        if (Mgr()->m_68->m_armed != 0) {
+            Mgr()->m_68->Fire1398();
         } else {
             LoadScrollSpeedOptions();
         }
@@ -676,7 +671,7 @@ void CMulti::PumpB() {
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();
     } else {
-        mgr->m_24->VisitVisible(mgr->m_4->m_14, (CGameObjChain*)mgr->m_8);
+        mgr->m_24->VisitVisible(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
     }
     ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
@@ -697,14 +692,14 @@ void CMulti::PumpB() {
             ov->Render14dd(mgr->m_4->m_14, &rc);
         }
     }
-    ((CFontConfig*)Mgr()->m_5c)->Scroll(g_645584);
+    Mgr()->m_5c->Scroll(g_645584);
     CDDrawSurfacePair* h = mgr->m_4->m_14;
     if (h == 0) {
         return;
     }
     m_hitTest->LoadChatBoxSprite((i32)h);
     DrawDebugStats();
-    ((PBSub68*)Mgr()->m_68)->Reset2b85();
+    Mgr()->m_68->Reset2b85();
     StepGridWalk(g_645584);
     CopyRect(h);
     if (m_worldReady != 0) {
@@ -988,15 +983,15 @@ RVA(0x000bd210, 0x14d)
 i32 CMulti::Vslot0b(i32 arg0, i32 arg1) {
     if (m_hitTest && m_hitTest->m_10) {
         if (m_connected) {
-            if (((CFontConfig*)Mgr()->m_5c)->TypeChar(arg0, arg1)) {
-                CString line = ((CFontConfig*)Mgr()->m_5c)->GetInputText();
+            if (Mgr()->m_5c->TypeChar(arg0, arg1)) {
+                CString line = Mgr()->m_5c->GetInputText();
                 i32 n = line.GetLength();
                 if (n > 9) {
                     CString text = line.Right(n - 9);
                     char buf[0x100];
                     strcpy(buf, text);
                     BroadcastChatLine(buf, 1, 1, 0);
-                    ((CFontConfig*)Mgr()->m_5c)->m_inputText.Empty();
+                    Mgr()->m_5c->m_inputText.Empty();
                 }
             }
         }
@@ -1019,7 +1014,6 @@ SIZE_UNKNOWN(CMultiLogicList);
 SIZE_UNKNOWN(CMultiLogicNode);
 SIZE_UNKNOWN(CMultiPlayer);
 SIZE_UNKNOWN(CMultiReportGate);
-SIZE_UNKNOWN(CMultiSoundZ);
 SIZE_UNKNOWN(CMultiStateBase);
 SIZE_UNKNOWN(CMultiSub68);
 SIZE_UNKNOWN(CMultiSubDC);
@@ -1034,7 +1028,6 @@ SIZE_UNKNOWN(PBListSink);
 SIZE_UNKNOWN(PBMgr);
 SIZE_UNKNOWN(PBSub320);
 SIZE_UNKNOWN(PBSub4);
-SIZE_UNKNOWN(PBSub68);
 SIZE_UNKNOWN(PBVfnHost);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
