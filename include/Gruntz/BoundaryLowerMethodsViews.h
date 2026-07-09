@@ -226,7 +226,7 @@ SIZE_UNKNOWN(Cdb2f0);
 // 0x0db750 - "LEVEL" config sync through the +0x0c owner's +0x2c config.
 struct CDDrawSubMgrLeaf : public CObject {
     i32 HasKeyPrefix_152c50(const char* key);                  // 0x152c50 (i32 ret; caller tests != 0)
-    void RemoveKeysEqual_1527d0(const char* key, void* v);     // 0x1527d0
+    i32 RemoveKeysEqual_1527d0(const char* key, const char* v); // 0x1527d0 (i32 ret, 2nd arg const char*)
     void ScanTree_152ad0(void* val, const char* key, void* v); // 0x152ad0
     class CString KeyOfValue_152d30(void* v);                  // 0x152d30 (id->name; ret CString)
     void* LookupValue_06b2a0(const char* key);                 // 0x6b2a0  (id lookup; main's fold)

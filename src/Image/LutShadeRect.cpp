@@ -75,7 +75,7 @@ struct CDDSurface {
     i32 m_height;                       // +0x18 surface height (clip bottom bound)
     i32 m_width;                        // +0x1c surface width  (clip right bound)
     i32 m_pitch;                        // +0x20 surface pitch (bytes; /2 = pixels per row)
-    u16* Lock(i32);                     // 0x13e6d0 __thiscall -> locked source pixel buffer
+    i32 Lock(void*);                    // 0x13e6d0 __thiscall -> locked source pixel buffer (real: i32 ret, void* arg)
     i32 ShadeRect(i32 pct, RECT* clip); // 0x13f460
 };
 
@@ -116,7 +116,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
         rc.bottom = m_height;
     }
     i32 scale = pct * 32 / 100;
-    u16* src = Lock(0);
+    u16* src = (u16*)Lock(0);
     i32 rowPix = m_pitch / 2;
     u16* srcPix = src + rc.top * rowPix + rc.left;
     i32 stride = rc.left - rc.right + rowPix;

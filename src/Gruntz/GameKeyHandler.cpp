@@ -70,7 +70,7 @@ struct CGroupSel {
 #include <Gruntz/FontConfig.h> // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
 #include <Gruntz/GruntzMgr.h>  // canonical CGruntzMgr (score/run/finish helpers)
 struct CObj23d90 {
-    void Blit(i32 a, i32 b, i16 c, i16 d, i32 e);
+    void Blit(i32 a, i32 b, i32 c, i32 d, i32 e); // real @0x23d90 takes i32 args (caller widens the i16 word reads)
 };
 struct EngineLabelBacklog {
     i32 LoadExplosionSprites(i32 a, i32 b, i32 c, i32 d);

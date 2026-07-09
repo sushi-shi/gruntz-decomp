@@ -22,7 +22,7 @@
 #include <rva.h>
 class CTriggerMgr {
 public:
-    i32 ResetGroup(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h);
+    i32 ResetGroup(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g); // real @0x79520 = 7 args (ret 0x1c)
 }; // 0x79520
 class CPlay {
 public:
@@ -1697,7 +1697,7 @@ i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
         return 0;
     }
     ((CTriggerMgr*)g_gameReg->m_cmdGrid)
-        ->ResetGroup(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1, 0);
+        ->ResetGroup(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1);
     return 1;
 }
 

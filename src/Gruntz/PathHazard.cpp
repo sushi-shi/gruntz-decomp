@@ -32,7 +32,7 @@ namespace m4 {
 } // namespace m4
 class CTriggerMgr {
 public:
-    i32 CellDispatch(i32 a, i32 b, i32 c, i32 d, i32 e);
+    i32 CellDispatch(i32 a, i32 b, i32 c, i32 d); // real @0x6bcb0 = 4 args (ret 0x10)
 };
 
 // CPathHazard's own Tick / ForwardTick now dispatch its added virtuals directly
@@ -470,7 +470,7 @@ i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     m_strikeArmed = 1;
     m_strikeWindow = (i64)(u32)g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0);
     m_strikeDeadline = (i64)(u32)g_strikeClock;
-    ((CTriggerMgr*)g_lightGameReg->m_cmdGrid)->CellDispatch(a, b, 9, -1, 0);
+    ((CTriggerMgr*)g_lightGameReg->m_cmdGrid)->CellDispatch(a, b, 9, -1);
 
     CGameObject* obj = m_object;
     CGameRegistry* reg = g_lightGameReg;

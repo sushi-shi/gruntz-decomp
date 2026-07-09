@@ -12,7 +12,7 @@
 #include <Gruntz/GruntSpawnConfig.h>
 struct StreamVoice { // struct (not class): retail OpenStream returns PAU (?OpenStream@SoundStream@@QAEPAUStreamVoice@@...)
     i32 Configure(i32 a, i32 b, i32 c, i32 d);
-    i32 SetSource(i32 s);
+    i32 SetSource(CParseSource* s); // real @0x1374c0 takes CParseSource* (src is the parse-source handle)
 };
 class DirectSoundMgr {
 public:
@@ -271,7 +271,7 @@ BOOL CGruntSpawnConfig::LoadGruntSpawnConfig(
     CSpawnStream* stream = streams[chosen];
     i32 vol = m_2c;
     ((StreamFeeder*)&stream->m_6c)->Pause();
-    if (((StreamVoice*)stream)->SetSource(src) != 0) {
+    if (((StreamVoice*)stream)->SetSource((CParseSource*)src) != 0) {
         ((StreamVoice*)stream)->Configure(vol, 0, 0, 0);
     }
     CGruntVoice* voice = voices[chosen];

@@ -199,7 +199,7 @@ i32 Cdb750::M(void* arg) {
             return 1;
         }
     }
-    m_c->m_2c->RemoveKeysEqual_1527d0("LEVEL", &g_dat60b588);
+    m_c->m_2c->RemoveKeysEqual_1527d0("LEVEL", (const char*)&g_dat60b588);
     void* e = (void*)m_28->ResolvePath(&g_dat613054);
     if (e == 0) {
         return 0;

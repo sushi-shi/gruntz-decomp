@@ -134,7 +134,7 @@ namespace m4 {
 } // namespace m4
 class CGruntSpawnConfig {
 public:
-    i32 SpawnVoiceDriver(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g);
+    i32 SpawnVoiceDriver(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // real @0x11b3b0 = 6 args (ret 0x18)
 };
 struct CVoiceSink {
     // QueryAt(x, y, &m_object->m_134, &outA, &outB, &m_object->m_144) -> entity* (or 0).
@@ -353,8 +353,7 @@ i32 CVoiceTrigger::Tick() {
                         m_object->m_placeMode,
                         0,
                         -1,
-                        -1,
-                        0
+                        -1
                     )) {
                 m_38->m_flags |= 0x10000;
             }
