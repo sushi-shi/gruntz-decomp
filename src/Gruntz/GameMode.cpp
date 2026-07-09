@@ -47,7 +47,7 @@ public:
     i32 CloneAndPlay(i32 a, i32 b, i32 c);
 }; // 0x1353f0/0x135660
 #include <Gruntz/BattlezData.h> // canonical CBattlezData (InBounds @0xfcd70; non-virtual)
-#include <Io/MoviePlayer.h>     // canonical CMoviePlayer (~/CloseSmacker; non-virtual, cast-neutral)
+#include <Io/MoviePlayer.h> // canonical CMoviePlayer (~/CloseSmacker; non-virtual, cast-neutral)
 #include <Gruntz/SoundCueMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
@@ -135,9 +135,7 @@ CState::CState() {
 
 // CState::Update (0x0008c4b0) is now an inline member in the header.
 
-
 // CState::Render (0x0008c4d0) is now an inline member in the header.
-
 
 // The intervening vtable slots (1,2) - out-of-line stubs that anchor the vftable
 // order so Update lands at slot 4 (+0x10) and Render at slot 5 (+0x14).
@@ -148,9 +146,7 @@ void CState::ReleaseResources() {}
 
 // CState::Vfunc3 (0x0008c490) is now an inline member in the header.
 
-
 // CState::Vslot11 (0x0008c610) is now an inline member in the header.
-
 
 // ===========================================================================
 // CState-derived leaf teardown / per-frame poll methods (trace-discovered).
@@ -280,12 +276,9 @@ void CBootyState::ReleaseResources() {
 
 // CMenuState::Update (0x0008ce10) is now an inline member in the header.
 
-
 // CCreditsState::Update (0x0008d590) is now an inline member in the header.
 
-
 // CBootyState::Update (0x0008d3f0) is now an inline member in the header.
-
 
 // ===========================================================================
 // The concrete Render overrides (vtable slot +0x14) - the real per-frame
@@ -1432,9 +1425,9 @@ void CMenuState::ReleaseResources() {
         ((CDDrawWorkerList*)m_c->m_rendererB)->ClearWorkers();
     }
     // m_1b4 IS cached (retail holds it in edi across the pre-delete + delete).
-    CGMMenuUI* ui = m_1b4;
+    CChatBox* ui = m_1b4;
     if (ui) {
-        ui->PreDelete();
+        ui->~CChatBox();
         operator delete(ui);
         m_1b4 = 0;
     }
@@ -1740,7 +1733,6 @@ i32 CMultiBootyState::ReadyAndPaint() {
 
 // CMultiBootyState::ForwardIdleAnim (0x0001d420) is now an inline member in the header.
 
-
 // CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry
 // pooled resource (if set), release the "BOOTY" set on the leaf registry, run a teardown
 // on the owner's m_4->m_60 sub-object, then chain BaseCleanup.
@@ -1759,7 +1751,6 @@ void CMultiBootyState::ReleaseResources() {
 }
 
 // CMultiBootyState::Update (0x0008d4c0) is now an inline member in the header.
-
 
 // CMultiBootyState::Vslot09() (slot 9 / +0x24, 0x1e570): on entry build the "multi"
 // title page (fade + page) then, if the menu is live, push the "BOOTY_LOOP" cue into the

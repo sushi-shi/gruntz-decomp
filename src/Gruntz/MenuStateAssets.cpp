@@ -166,14 +166,14 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     rc.top = 8;
     rc.right = 0x27f;
     rc.bottom = 0x1df;
-    m_1b4 = (CGMMenuUI*)new MenuHudObj();
+    m_1b4 = (CChatBox*)new MenuHudObj();
 
     if (!MenuLayout((MenuAssetMgr*)m_c, ((MenuRoot*)m_4)->m_4->m_4, &rc, 0x14, 0xa, 1)) {
         return 0;
     }
 
-    if (((CChatBox*)m_1b4)->AdvanceRow0((void*)"MENU_CURSOR", 0x64, 0x20)) {
-        ((CChatBox*)m_1b4)->AdvanceRow1((void*)"MENU_CURSOR", 0x64, 0x20);
+    if (m_1b4->AdvanceRow0((void*)"MENU_CURSOR", 0x64, 0x20)) {
+        m_1b4->AdvanceRow1((void*)"MENU_CURSOR", 0x64, 0x20);
     }
     ((MenuHudObj*)m_1b4)->m_44 = "MENU_SELECT";
     ((MenuHudObj*)m_1b4)->m_48 = "MENU_ACTIVATE";

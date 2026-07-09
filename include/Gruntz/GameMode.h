@@ -154,28 +154,11 @@ extern "C" void __stdcall GM_SimpleAnim(i32 z); // (stdcall, 1 arg)
 // block m_c->m_4->{m_10->m_2c (Draw), m_14 (Blit), m_18 (blit arg)}, m_28->m_2c
 // (cursor gate). Reached through m_c directly (no cast).
 
-// The CMenuState UI object (m_1b4): each entity-flag scan fires a distinct no-arg
-// method on it; the tail steps it (one arg = g_645584) + draws the version RECT.
-SIZE_UNKNOWN(CGMMenuUI);
-struct CGMMenuUI {
-    void OnFlag80000000();
-    void OnFlag40000000();
-    void OnFlag20000000();
-    void OnFlag10000000();
-    void OnFlag00000003();
-    i32 OnFlag00000100(); // (-> int)
-    void Step(u32 dt);    // (1 arg)
-    void Pre();           // (no arg)
-    void Post();          // (no arg)
-    void PreDelete();     // FUN_004a0360 - pre-delete release (ReleaseResources teardown)
-    // Arrow-key navigation handlers (Vslot0c keydown dispatch); the same RVAs as
-    // CChatBox::HitTest1..4 (the m_1b4 object IS a CChatBox - fold deferred).
-    i32 HitTest0(i32 x, i32 y); // 0x1831a0  (mouse hit test - Vslot0e/Vslot10 forward)
-    i32 HitTest1(); // 0x183210  VK_UP
-    i32 HitTest2(); // 0x183230  VK_DOWN
-    i32 HitTest3(); // 0x1831d0  VK_LEFT
-    i32 HitTest4(); // 0x1831f0  VK_RIGHT
-};
+// CMenuState's m_1b4 menu-UI object IS a CChatBox (the entity-flag scans fire its
+// OnFlag*/Step/Pre/Post/HitTest* front-end drive; the delete path runs ~CChatBox).
+// The former CGMMenuUI view is folded onto the canonical class here.
+#include <Gruntz/ChatBox.h>
+
 // The version-string RECT source globals (4 ints copied to a stack RECT by value).
 SIZE_UNKNOWN(CGMVerRect);
 struct CGMVerRect {
@@ -239,7 +222,9 @@ public:
     // distinct `??1` the `??_G` deleting dtor dispatches to.
     virtual ~CMenuState() OVERRIDE;
     RVA(0x0008ce10, 0x6)
-    virtual GameStateId Update() OVERRIDE { return GAMESTATE_MENU; }
+    virtual GameStateId Update() OVERRIDE {
+        return GAMESTATE_MENU;
+    }
     virtual i32 Render() OVERRIDE;             // the per-frame menu draw (this TU)
     virtual void ReleaseResources() OVERRIDE;  // slot 2 (+0x8) - menu teardown
     virtual i32 FrameSlot28(i32 arg) OVERRIDE; // slot 10 (+0x28) - per-frame poll
@@ -272,7 +257,7 @@ public:
     i32 LoadGameAssetNamespaces(i32, i32, i32);
 
     char m_pad1a8[0x1b4 - 0x1a8];
-    CGMMenuUI* m_1b4;  // +0x1b4 the menu UI object the scans drive
+    CChatBox* m_1b4;   // +0x1b4 the menu UI object the scans drive (the real CChatBox)
     i32 m_1b8;         // +0x1b8 fade/poll duration
     CMenuMusic* m_1bc; // +0x1bc menu music controller (player + draw-clock gate)
     char m_pad1c0[0x1d0 - 0x1c0];
@@ -320,8 +305,10 @@ public:
     virtual ~CCreditsState() OVERRIDE;        // slot 0  0x08d5e0 (??1) / 0x08d5b0 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x038f00 credits teardown
     RVA(0x0008d590, 0x6)
-    virtual GameStateId Update() OVERRIDE { return GAMESTATE_CREDITS; }
-    virtual i32 Render() OVERRIDE;            // slot 5  (+0x14) 0x0391d0 per-frame credits draw
+    virtual GameStateId Update() OVERRIDE {
+        return GAMESTATE_CREDITS;
+    }
+    virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x0391d0 per-frame credits draw
     virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x039400 (declared-only: Vfunc3-gated roll)
     virtual i32 InputVirtual()
         OVERRIDE;                      // slot 8  (+0x20) 0x0393b0 per-frame input poll (title gate)
@@ -391,7 +378,9 @@ public:
     virtual ~CBootyState() OVERRIDE;          // slot 0  0x08d440 (??1) / 0x08d410 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x018c90 booty teardown
     RVA(0x0008d3f0, 0x6)
-    virtual GameStateId Update() OVERRIDE { return GAMESTATE_BOOTY; }
+    virtual GameStateId Update() OVERRIDE {
+        return GAMESTATE_BOOTY;
+    }
     virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x01c210 per-frame booty draw (stub)
     virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x01ce10 (declared-only)
     virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x01ce30 (declared-only; sib ReadyAndPaint)
@@ -448,7 +437,9 @@ public:
     virtual ~CMultiBootyState() OVERRIDE;     // slot 0  0x08d510 (??1) / 0x08d4e0 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x01e520 booty teardown
     RVA(0x0008d4c0, 0x6)
-    virtual GameStateId Update() OVERRIDE { return GAMESTATE_MULTIBOOTY; }
+    virtual GameStateId Update() OVERRIDE {
+        return GAMESTATE_MULTIBOOTY;
+    }
     virtual i32 Render() OVERRIDE;       // slot 5  (+0x14) 0x01f480 (declared-only; per-frame draw)
     virtual i32 Vslot06() OVERRIDE;      // slot 6  (+0x18) 0x01f850 (declared-only)
     virtual i32 Vslot07() OVERRIDE;      // slot 7  (+0x1c) 0x01f870 (declared-only)
@@ -479,7 +470,7 @@ public:
 
     // Ready-gate + paint (0x1ce30): if the active/ready virtual (CState slot 3) fires,
     // run the per-frame paint and return its normalized result, else 0.
-    i32 ReadyAndPaint();                // 0x1ce30
+    i32 ReadyAndPaint(); // 0x1ce30
     RVA(0x0001d420, 0x8)
     i32 ForwardIdleAnim(i32 a, i32 b) {
         return BuildBootyGruntIdleAnimation();
