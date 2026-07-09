@@ -43,6 +43,7 @@
 
 class CDDSurface;       // +0x2c held surface (CPoolItemA); <DDrawMgr/DDSurface.h>
 class CDDrawSurfaceMgr; // +0x0c parent manager (surface pool at +0x1c)
+class CParseSource;     // LoadImage_163e50 arg (the 0x139xxx byte-reader)
 
 // ---------------------------------------------------------------------------
 // CSurfacePairBase - the polymorphic CWapObj-derived base. Slots 0..4 come from
@@ -95,7 +96,7 @@ public:
     virtual i32 SetGeom_164250(i32 w, i32 h, i32 bpp); // slot 10 (@0x28) 0x164250
     virtual void InitFromSurface_163db0();             // slot 11 (@0x2c) 0x163db0
     virtual i32 Create(i32 w, i32 h, i32 bpp, i32 a3); // slot 12 (@0x30) 0x163c90
-    virtual i32 LoadImage_163e50(i32 a);               // slot 13 (@0x34) 0x163e50
+    virtual i32 LoadImage_163e50(CParseSource* src);   // slot 13 (@0x34) 0x163e50
     virtual i32 ResolveImage_163ee0();                 // slot 14 (@0x38) 0x163ee0
 
     virtual ~CDDrawSurfacePair() OVERRIDE; // 0x1590f0  slot 1 (scalar-deleting dtor)

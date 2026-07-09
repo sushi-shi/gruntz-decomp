@@ -45,8 +45,16 @@ public:
         return m_b0->GetSize_168430();
     }
     void Cleanup_161bf0(); // 0x161bf0
+    // 0x166e00 (vtable slot 10): scan left from (x,y) along the row for the first pixel
+    // that differs from the pixel at (x,y); report its column + value. m_14 is the pixel
+    // buffer, m_c the row-stride shift (row width == 1<<m_c).
+    i32 ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal);
 
-    char m_pad00[0x20];        // +0x00 .. +0x1f (vptr + CLoadable base + ...)
+    char m_pad00[0x0c];        // +0x00 .. +0x0b (vptr + CLoadable base)
+    i32 m_c;                   // +0x0c  row-stride shift (log2 of the row width)
+    char m_pad10[0x14 - 0x10]; // +0x10 .. +0x13
+    u8* m_14;                  // +0x14  pixel buffer base
+    char m_pad18[0x20 - 0x18]; // +0x18 .. +0x1f
     void* m_20;                // +0x20  RezAlloc'd buffer
     void* m_24;                // +0x24  RezAlloc'd buffer
     char m_pad28[0xb0 - 0x28]; // +0x28 .. +0xaf
@@ -87,6 +95,33 @@ void CImageSet3::Cleanup_161bf0() {
         RezFree(m_24);
         m_24 = 0;
     }
+}
+
+// ---------------------------------------------------------------------------
+// 0x166e00: from the pixel at (x,y), walk LEFT along the row while the pixel value
+// stays equal to that start pixel. On the first differing pixel, record its column
+// in *outX and its value in *outVal and return 1; if the row edge (x reaches 0) is
+// hit first, return 0. __thiscall, 4 args (ret 0x10).
+// @early-stop
+// 99.778% - logic/CFG/loop/offsets all byte-exact. The lone residual is ONE SIB
+// base/index swap in the cold `*outVal = m_14[off]` tail: retail keeps `off` as the
+// base and re-loaded m_14 as the index ([eax+ecx], matching the hot loop's [eax+esi]),
+// our cl picks m_14 as base ([ecx+eax]). Same address, same byte. Not source-steerable
+// (the permuter found no change). docs/patterns/zero-register-pinning.md family.
+RVA(0x00166e00, 0xa8)
+i32 CImageSet3::ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal) {
+    i32 off = (y << m_c) + x;
+    i32 target = m_14[off];
+    while (x > 0) {
+        --x;
+        --off;
+        if (m_14[off] != target) {
+            *outX = x;
+            *outVal = m_14[off];
+            return 1;
+        }
+    }
+    return 0;
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

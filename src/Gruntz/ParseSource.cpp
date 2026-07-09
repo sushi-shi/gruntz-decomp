@@ -14,7 +14,15 @@
 extern "C" void* RezAlloc(u32 size);
 extern "C" void RezFree(void* p);
 
-// CParseSource::GetEntryTag (0x00139800) is now an inline member in the header.
+// ===========================================================================
+// 0x139800 - GetEntryTag: return the first dword of the keyed-store entry (the
+// packed 4-char format tag). Out-of-line (retail keeps a real body here that
+// every consumer TU calls, never inlines).
+// ===========================================================================
+RVA(0x00139800, 0x6)
+i32 CParseSource::GetEntryTag() {
+    return *(i32*)m_entry;
+}
 
 
 // ===========================================================================

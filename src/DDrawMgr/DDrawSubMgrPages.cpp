@@ -3,6 +3,8 @@
 #include <Wap32/WapObj.h>              // CWapObj : CObject - real base for the "A" spawned child
 #include <DDrawMgr/DDrawSurfacePair.h> // single-source CDDrawSurfacePair (the "B" spawned child)
 #include <DDrawMgr/DDrawSurfaceMgr.h> // canonical CDDrawSurfaceMgr (m_0c parent, m_lastError @+0x38)
+#include <DDrawMgr/DDrawPtrCollections.h> // the surface pool (RemoveItemA/ConfigureSurface/Createab8_24_3)
+#include <DDrawMgr/DDSurface.h>           // CDDSurface (child A's held surface; IsValid slot 5)
 #include <DDrawMgr/DDrawSubMgrPages.h> // THE single-source CDDrawSubMgrPages shape (23-slot vtable)
 // CDDrawSubMgrPages.cpp - the page/child factory + teardown half of CDDrawSubMgrPages
 // (a CDirectDrawMgr surface/page sub-manager in the "DDraw surface manager" family;
@@ -45,10 +47,17 @@ public:
     virtual void Slot07_1591d0();            // slot 7 (@0x1c) 0x1591d0
     virtual void Slot08_159180();            // slot 8 (@0x20) 0x159180
     virtual i32 CreateModeSurface_1644a0(i32 a1, i32 a2, i32 a3); // slot 9 (@0x24) 0x1644a0
-    virtual void Slot10_1646b0();                                 // slot 10 (@0x28) 0x1646b0
+    virtual i32 SetGeom_1646b0(i32 w, i32 h, i32 bpp);           // slot 10 (@0x28) 0x1646b0
     CDDrawSurfaceChildA(i32 handle, i32 a2, i32 a3);              // 0x158f30
-    char m_pad04[0x2c - 0x04];
-    i32 m_2c; // +0x2c
+    // Same field layout as CDDrawSurfacePair (SetGeom_1646b0/CreateModeSurface share
+    // the offsets): parent mgr @+0x0c, pixel geometry @+0x10..0x18, src rect @+0x1c.
+    char m_pad04[0x0c - 0x04];
+    CDDrawSurfaceMgr* m_mgr; // +0x0c  parent surface manager (its pool at +0x1c)
+    i32 m_width;             // +0x10
+    i32 m_height;            // +0x14
+    i32 m_bpp;               // +0x18
+    i32 m_srcRect[4];        // +0x1c  {x,y,w,h}
+    CDDSurface* m_surface;   // +0x2c  held surface
 }; // 0x30
 SIZE(CDDrawSurfaceChildA, 0x30);
 VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11-slot CWapObj-derived)
@@ -132,7 +141,7 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
         *(
              i32**
         ) // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-         a->m_2c = 0;
+         a->m_surface = 0;
     }
     m_frontPair = (CDDrawSurfacePair*)a;
 
@@ -181,6 +190,50 @@ i32 CDDrawSubMgrPages::CreateChildren(i32 a1, i32 a2, i32 a3, i32 a4) {
         }
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x1646b0 (vtable slot 10): re-set the child surface geometry to {w,h,bpp}. If the
+// cached geometry already matches, return 1. Otherwise drop the current surface from
+// the parent manager's pool, reconfigure the pool for {w,h,bpp}, then attach a mode
+// surface (double-buffer bit from the manager's caps flags) and validate it; cache the
+// new geometry + a {0,0,w,h} src rect. __thiscall, 3 args (ret 0xc).
+RVA(0x001646b0, 0xde)
+i32 CDDrawSurfaceChildA::SetGeom_1646b0(i32 w, i32 h, i32 bpp) {
+    if (m_width == w && m_height == h && m_bpp == bpp) {
+        return 1;
+    }
+    CDDrawPtrCollections* pool = m_mgr->m_ptrColl;
+    if (pool == 0) {
+        return 0;
+    }
+    pool->RemoveItemA(m_surface);
+    m_surface = 0;
+    if (pool->ConfigureSurface(w, h, bpp, 0, 0) != 0) {
+        return 0;
+    }
+    i32 amode = 1;
+    if (m_mgr->m_flags & 2) {
+        amode = 2;
+    }
+    m_surface = pool->Createab8_24_3(amode);
+    if (m_surface == 0) {
+        return 0;
+    }
+    if (!m_surface->IsValid()) {
+        return 0;
+    }
+    if (w > 0 && h > 0 && (bpp == 8 || bpp == 16 || bpp == 24 || bpp == 32)) {
+        m_bpp = bpp;
+        m_width = w;
+        m_height = h;
+        m_srcRect[0] = 0;
+        m_srcRect[1] = 0;
+        m_srcRect[2] = w;
+        m_srcRect[3] = h;
+        return 1;
+    }
+    return 0;
 }
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

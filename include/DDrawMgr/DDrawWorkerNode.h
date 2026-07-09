@@ -36,6 +36,11 @@ struct CDDrawWorkerCtx;
 // in CDDrawWorkers.cpp where Vfunc30 reads its fields.
 struct CDDrawFrameSource;
 
+// The two surface-pair render targets slot 10 (CDDrawWorkerA::PlotMarker, 0x165fa0)
+// plots the worker's marker pixel onto (its held CDDSurface @+0x2c). Full def in
+// <DDrawMgr/DDrawSurfacePair.h>, pulled by CDDrawWorkers.cpp for the method body.
+class CDDrawSurfacePair;
+
 // The shared base (slots 0..11). Slots 0/2/3/4 are the WAP CObject-interface
 // thunks (0x1bef01 / 0x0028ec / 0x00106e / 0x004034); slot 1 is the scalar-
 // deleting destructor; slots 5..10 are engine virtuals; slot 11 is Vfunc2C, which
@@ -98,7 +103,8 @@ struct CDDrawWorkerA : public CObject {
     virtual void Slot07_157310();      // [7]  0x157310 (B)
     virtual void Slot08_157210();      // [8]  0x157210 (B)
     virtual void Slot09_157080();      // [9]  0x157080
-    virtual void Slot10_1660b0();      // [10] 0x1660b0 (B)
+    // [10] 0x165fa0: plot the marker pixel (m_78) at (m_5c,m_60) onto both surface pairs.
+    virtual void PlotMarker_165fa0(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
     // Non-virtual: reset/arm the worker from (a, b); seeds m_3c off the owner ctx.
     i32 Helper_164790(i32 a, i32 b); // 0x164790
     i32 m_04;                        // +0x04

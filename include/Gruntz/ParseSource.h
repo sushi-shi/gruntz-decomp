@@ -38,10 +38,10 @@ public:
     // Ghidra placeholder-named these two "CParseSource::BeginParse/EndParse"
     // (0x139960 / 0x1399d0); same 0x139xxx class + identical layout as SetPos/Read.
     // 0x139800: return the first dword of the keyed-store entry (*(int*)m_entry).
-    RVA(0x00139800, 0x6)
-    i32 GetEntryTag() {
-        return *(i32*)m_entry;
-    }
+    // NON-inline (declared here, defined in ParseSource.cpp): retail keeps it a
+    // real out-of-line 6-byte function CALLED at all 8 sites (CImage::Resolve,
+    // LoadImage_163e50, ...), never inlined - an inline body here would inline it.
+    i32 GetEntryTag();
     i32 BeginParse();
     i32 EndParse();
     RVA(0x00139ae0, 0xf)

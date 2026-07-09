@@ -19,9 +19,10 @@
 // ---------------------------------------------------------------------------
 
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDSurface.h> // the held CDDSurface (m_surface) full def (Lock/BltFast/IsValid/m_8/m_pitch/m_b0)
+#include <DDrawMgr/DDSurface.h>  // the held CDDSurface (m_surface) full def (Lock/BltFast/IsValid/m_8/m_pitch/m_b0)
+#include <Gruntz/ParseSource.h>  // CParseSource (LoadImage's byte-reader arg: GetEntryTag/BeginParse/EndParse)
 #include <Win32.h>  // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h>  // real IDirectDrawSurface dispatch (IsLost/Restore/Unlock)
+#include <ddraw.h>  // real IDirectDrawSurface dispatch (IsLost/Restore/Unlock/GetCaps)
 #include <string.h> // memset for the edge-row fills (inline rep-stos CRT)
 class CDDSurface;
 class CDDrawPtrCollections {
@@ -198,6 +199,40 @@ void CDDrawSurfacePair::TeardownSurface() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x163e50 (vtable slot 13): load an image from a parse source into the held
+// surface. Read the source's 4-char magic tag ('BMP'/'PCX'/'DIR'/'DIP' -> type
+// 1/2/3/4; anything else fails), pull the live source pointer (BeginParse), hand
+// it to CDDSurface::Resolve(pool, buf, type, length, 0), release the parse buffer
+// (EndParse), and return Resolve's status. __thiscall, 1 ptr arg (ret 0x4).
+RVA(0x00163e50, 0x8b)
+i32 CDDrawSurfacePair::LoadImage_163e50(CParseSource* src) {
+    i32 type;
+    switch ((u32)src->GetEntryTag()) {
+        case 0x424d50: // 'BMP'
+            type = 1;
+            break;
+        case 0x504358: // 'PCX'
+            type = 2;
+            break;
+        case 0x524944: // 'DIR'
+            type = 3;
+            break;
+        case 0x504944: // 'DIP'
+            type = 4;
+            break;
+        default:
+            return 0;
+    }
+    i32 buf = src->BeginParse();
+    if (buf == 0) {
+        return 0;
+    }
+    i32 r = m_surface->Resolve((void*)m_mgr->m_pool, (void*)buf, type, src->m_length, 0);
+    src->EndParse();
+    return r;
+}
+
+// ---------------------------------------------------------------------------
 // 0x163f00: restore the held surface if it was lost. With no surface, report OK
 // (1). Otherwise, when the held IDirectDrawSurface is present and not lost
 // (IsLost, slot 24 @+0x60, returns DD_OK), report OK; else Restore it (slot 27
@@ -364,6 +399,70 @@ void CDDrawSurfacePair::DrawCross(i32 x, i32 y) {
 
     CDDSurface* sv = m_surface;
     sv->m_8->Unlock(0);
+}
+
+// ---------------------------------------------------------------------------
+// 0x164250 (vtable slot 10): re-set the surface geometry to {w,h,bpp}. If the
+// cached geometry already matches, do nothing (return 1). Otherwise, when the
+// surface is in the "attached" state (m_status==2) probe whether the held surface
+// lives in system memory (GetCaps & DDSCAPS_SYSTEMMEMORY); drop the current surface
+// from the pool, then re-acquire one: via CreatePoolItem when m_status==1, else via
+// MakeAndAddB (system-memory) / CreateB (video). Cache the new geometry + a {0,0,w,h}
+// src rect and return 1 on a valid {w>0,h>0,bpp in {8,16,24,32}}. __thiscall, 3 args.
+// @early-stop
+// ~78.5% block-layout/tail-merge wall. Logic/CFG/offsets/calls/geometry-set all
+// reproduced (incl. the bpp-hoist to ebp after the MakeAndAddB bpp-arg fix). Residual
+// is MSVC5's basic-block layout: retail keeps each surface-alloc failure `return 0`
+// INLINE (fall-through, reusing eax==null-surface, no xor) and places the geometry-
+// equal `return 1` at a cold tail; our cl tail-MERGES the three `return 0`s into one
+// shared `xor eax,eax` block and inlines the equal `return 1`. The sibling Create
+// (0x163c90) hits the same family. Not source-steerable (invert-condition + permuter
+// both no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
+RVA(0x00164250, 0x12b)
+i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
+    if (m_width != w || m_height != h || m_bpp != bpp) {
+        i32 sysmem;
+        if (m_status == 2) {
+            DDSCAPS caps;
+            if (0 == m_surface->m_8->GetCaps(&caps)) {
+                sysmem = 0x800 & caps.dwCaps;
+            } else {
+                sysmem = 0;
+            }
+        }
+        ((CDDrawPtrCollections*)m_mgr->m_pool)->RemoveItemA(m_surface);
+        m_surface = 0;
+        if (m_status == 1) {
+            CDDrawSurfaceMgr* mgr = m_mgr;
+            m_surface = (CDDSurface*)((CDirectDrawMgr*)mgr->m_pool)
+                            ->CreatePoolItem((void*)mgr->m_fmtChain->m_next->m_pixelFormat, (void*)4);
+            if (m_surface == 0) {
+                return 0;
+            }
+        }
+        if (m_status != 1) {
+            if (sysmem != 0) {
+                m_surface = ((CDDrawPtrCollections*)m_mgr->m_pool)->MakeAndAddB(w, h, bpp, 0, -1);
+            } else {
+                m_surface = ((CDDrawPtrCollections*)m_mgr->m_pool)->CreateB(w, h, bpp, 0, -1);
+            }
+            if (m_surface == 0) {
+                return 0;
+            }
+        }
+        if (w > 0 && h > 0 && (8 == bpp || bpp == 16 || bpp == 24 || 32 == bpp)) {
+            m_srcRect[0] = 0;
+            m_srcRect[1] = 0;
+            m_width = w;
+            m_height = h;
+            m_bpp = bpp;
+            m_srcRect[2] = w;
+            m_srcRect[3] = h;
+            return 1;
+        }
+        return 0;
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

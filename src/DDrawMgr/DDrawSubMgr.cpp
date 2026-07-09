@@ -303,7 +303,7 @@ i32 CDDrawSubMgrPages::Method_158b40(i32 arg1, i32 arg2) {
             return 0;
         }
     }
-    return p->LoadImage_163e50(arg1);
+    return p->LoadImage_163e50((CParseSource*)arg1);
 }
 
 // 0x158b90: flip m_frontPair's surface, then broadcast (back-pair, overlay-pair)

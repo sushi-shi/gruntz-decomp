@@ -1,6 +1,9 @@
 #include <Mfc.h> // real MFC CString (FindKeyOfValue returns it by value; ~CString 0x1b9cde)
 #include <Gruntz/BoundaryUpperViews.h>
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDrawSurfacePair.h> // Slot30/34/38 render targets (held surface @+0x2c)
+#include <Win32.h>                     // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>                     // IDirectDrawSurface::Unlock for the pixel plots
 #include <DDrawMgr/DDrawBlitParam.h>
 #include <rva.h>
 #include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
@@ -904,13 +907,16 @@ public:
     virtual i32 Slot24_164790();  // slot 9  @0x164790
     virtual i32 Setup28();        // slot 10 @0x150d60
     virtual void Slot2C();        // slot 11 @0x11fec0 (__purecall)
-    virtual void Slot30();        // slot 12 @0x11fec0 (__purecall)
-    virtual void Slot34();        // slot 13 @0x11fec0 (__purecall)
-    virtual void Slot38();        // slot 14 @0x11fec0 (__purecall)
+    // slots 12-14: dirty-rect blit ops on the two render surface-pairs (front/back).
+    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b);        // slot 12 @0x11fec0 (__purecall)
+    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 13 @0x11fec0 (__purecall)
+    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 14 @0x11fec0 (__purecall)
     virtual i32 Play3C();         // slot 15 @0x151150
 
     WwdEdgeB m_04; // 0x04
-    char _p10[0x20 - 0x10];
+    char _p10[0x18 - 0x10];
+    i32 m_18; // 0x18  live position x (start of the 9-dword state block copied to m_b8)
+    i32 m_1c; // 0x1c  live position y
     WwdEdgeA m_20; // 0x20
     char _p60[0x7c - 0x60];
     WwdWorker* m_7c; // 0x7c
@@ -919,7 +925,9 @@ public:
     WwdWorker* m_88; // 0x88
     char _p8c[0x90 - 0x8c];
     WwdWorker* m_90; // 0x90
-    char _p94[0xc0 - 0x94];
+    char _p94[0xb8 - 0x94];
+    i32 m_b8; // 0xb8  shadow position x (the previous-frame copy of the 0x18 block)
+    i32 m_bc; // 0xbc  shadow position y
     i32 m_c0; // 0xc0
     char _pc4[0xd8 - 0xc4];
     i32 m_d8;     // 0xd8
@@ -956,9 +964,9 @@ public:
     virtual i32 Vfunc20() OVERRIDE;      // slot 8  @0x15b760
     virtual i32 Setup28() OVERRIDE;      // slot 10 @0x15b940 (Init)
     virtual void Slot2C() OVERRIDE;      // slot 11 @0x15ba20
-    virtual void Slot30() OVERRIDE;      // slot 12 @0x150660
-    virtual void Slot34() OVERRIDE;      // slot 13 @0x1506b0
-    virtual void Slot38() OVERRIDE;      // slot 14 @0x1508a0
+    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;      // slot 12 @0x150660
+    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 13 @0x1506b0
+    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 14 @0x1508a0
     virtual i32 Play3C() OVERRIDE;       // slot 15 @0x150a70 (Dispatch)
 
     char _pe0[0x18c - 0xe0];
@@ -1004,9 +1012,9 @@ public:
     virtual void ReleaseSubs() OVERRIDE;   // slot 7  @0x15bc50
     virtual i32 Vfunc20() OVERRIDE;        // slot 8  @0x15ba60
     virtual void Slot2C() OVERRIDE;        // slot 11 @0x15ba70
-    virtual void Slot30() OVERRIDE;        // slot 12 @0x15ba80
-    virtual void Slot34() OVERRIDE;        // slot 13 @0x15ba90
-    virtual void Slot38() OVERRIDE;        // slot 14 @0x15baa0
+    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;        // slot 12 @0x15ba80
+    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 13 @0x15ba90
+    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 14 @0x15baa0
     virtual void SetupDeferredV();         // slot 16 @0x15bc30 (new)
 };
 
@@ -1196,9 +1204,9 @@ public:
     virtual void ReleaseSubs() OVERRIDE;   // slot 7  @0x15c200
     virtual i32 Vfunc20() OVERRIDE;        // slot 8  @0x15c020
     virtual void Slot2C() OVERRIDE;        // slot 11 @0x1660f0 (RenderDot)
-    virtual void Slot30() OVERRIDE;        // slot 12 @0x1661d0
-    virtual void Slot34() OVERRIDE;        // slot 13 @0x1662a0
-    virtual void Slot38() OVERRIDE;        // slot 14 @0x1664a0
+    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE;        // slot 12 @0x1661d0
+    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 13 @0x1662a0
+    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) OVERRIDE; // slot 14 @0x1664a0
     // Slots 16-18 unique to the C variant (0x5effd0 is a 19-slot table).
     virtual i32 SetupFlagged16(); // slot 16 @0x15c1d0
     virtual void Slot44();        // slot 17 @0x15c030
@@ -1224,6 +1232,46 @@ CWwdGameObjectC::~CWwdGameObjectC() {
     m_20.a = (i32)0x80000000; // 0x20
     m_20.b = -1;              // 0x38
     // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + base-vtable stamp.
+}
+
+// ---------------------------------------------------------------------------
+// 0x1661d0 (vtable slot 12): snapshot the live 9-dword state block (@0x18) into the
+// shadow block (@0xb8), then - if the shadow's just-copied flag (m_d8, == old m_38)
+// is still armed - restore the background pixel at the shadow position (m_b8,m_bc):
+// read it from the back pair `b`'s surface and write it onto the front pair `a`'s,
+// then disarm the live flag (m_38 = -1). __thiscall, 2 ptr args (ret 0x8).
+// @early-stop
+// ~73% zero-register-pinning regalloc wall. Logic/CFG/offsets/the 9-dword rep-movs
+// snapshot/both lock-read-unlock + lock-write-unlock pixel ops/m_38 disarm all
+// reproduced. Residual: retail dedicates the callee-saved ebp to `this` for the whole
+// body (surviving the rep-movs + both Lock calls) and spills the restored pixel to a
+// stack local (ebx is reused for m_b8); our cl keeps `this` in caller-saved eax and
+// spills IT instead, keeping the pixel in bl - so the register operands differ
+// throughout. Same values/stores. The permuter found no source spelling that flips
+// the this/pixel spill choice. docs/patterns/zero-register-pinning.md.
+RVA(0x001661d0, 0xc2)
+void CWwdGameObjectC::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+    memcpy(&m_b8, &m_18, 36);
+    if (m_d8 != -1) {
+        i32 x = m_b8;
+        i32 y = m_bc;
+        char pixel;
+        CDDSurface* sb = b->m_surface;
+        char* base = (char*)sb->Lock(0);
+        if (base != 0) {
+            pixel = base[sb->m_b0 * x + sb->m_pitch * y];
+            sb->m_8->Unlock(0);
+        } else {
+            pixel = 0;
+        }
+        CDDSurface* sa = a->m_surface;
+        char* base2 = (char*)sa->Lock(0);
+        if (base2 != 0) {
+            base2[sa->m_b0 * x + sa->m_pitch * y] = pixel;
+            sa->m_8->Unlock(0);
+        }
+        m_20.b = -1; // m_38
+    }
 }
 // Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:
 // A=0x166640 (0x1dc), B=0x1598d0 (0x1fc), C=0x159250 (0x190), F=0x159440 (0x18c).
