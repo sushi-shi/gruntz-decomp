@@ -2,9 +2,14 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WellGoo.h>
-#include <Image/CImage.h>            // CImage::RenderFrame (0x153790) - the m_40/m_3c frames
-#include <DDrawMgr/DDrawShadeBlit.h> // CDDrawShadeBlit::Blit (0x1497f0) - the m_38 blitter
+#include <Image/CImage.h>            // CImage::RenderFrame (0x153790) - the m_40/m_3c frames + m_owned
+#include <DDrawMgr/DDrawShadeBlit.h> // CDDrawShadeBlit::Blit (0x1497f0) - the m_38 blitter; Notify + m_1c
 #include <DDrawMgr/DDSurface.h>      // CDDSurface::BltEx (0x13eef0) - the goo/back-buffer surfaces
+#include <DDrawMgr/DDrawWorkerRegistry.h> // AnyValueMatches_155630 + the +0x10 name map (Serialize)
+#include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections::MakeAndAddB (Serialize mode-8)
+#include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable::GetSel (Serialize mode-8)
+#include <Gruntz/SerialArchive.h>         // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <string.h>                       // strlen / memset (inline repne-scas / rep-stos)
 // SBI_WellGoo.cpp - Gruntz CSBI_WellGoo (C:\Proj\Gruntz), the frameless method.
 // RTTI .?AVCSBI_WellGoo@@; the most-derived leaf of the SBI image chain
 //   CSBI_WellGoo : CSBI_Image : CSBI_RectOnly : CStatusBarItem. Vtable @0x5eadfc.
@@ -71,5 +76,145 @@ i32 CSBI_WellGoo::Tick() {
     m_drawGuard--;
 
     m_fgFrame->RenderFrame((void*)ctx, (void*)m_drawX, (void*)(m_fgTop - 2), 0);
+    return 1;
+}
+
+// The serialize record counter (bumped before each name+index frame slot) + the
+// focused-grunt sentinel keying the mode-8 selector table.
+DATA(0x00229ad0)
+extern "C" i32 g_serialCounter;
+DATA(0x00244c54)
+extern i32 g_644c54;
+
+// CSBI_WellGoo::Serialize (0xe64c0) - vtable slot 1. Bail on a null archive / no
+// game manager; chain the base CSBI_Image serialize; then mode 4/7 round-trip the
+// fill scale + draw origin + src/dst rects, plus the fg/base frame handles by
+// name(+0x80)+index(4) through the m_30->m_10 registry (write: reverse-lookup the
+// frame's key via AnyValueMatches; read: Lookup the key + bounds-index into the
+// resolved frame set). Mode 8 (post-load) re-makes the goo surface + rebinds each
+// frame's owned-blitter shade node from the sprite-ref selector.
+//
+// @early-stop
+// ~83%: logic byte-shaped end to end (the mode sub-chain dispatch - mode 8 is the
+// fall-through `switch` case, key to the block layout; the field round-trips; the two
+// name+index frame legs with the g_serialCounter bumps + inline strlen/memset; the
+// mode-8 MakeAndAddB / GetSel / Notify rebind). The `mgr` cache reproduces retail's
+// spill of g_gameReg->m_30 (frame 0x8c, without it the 4-byte-smaller frame shifted
+// every displacement -> 0%). Residue is the megafunction tail: the mgr spill lands in
+// [esp+0x18] vs retail [esp+0x14] (regalloc), several engine-call relocs reached
+// direct where retail uses ILT thunks + the differently-named folded base leg, and
+// the inline repne-scas/rep-stos scheduling. Not source-steerable; final sweep.
+RVA(0x000e64c0, 0x3e7)
+i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+    if (arc == 0) {
+        return 0;
+    }
+    CGooGameMgr* mgr = g_gameReg->m_30; // cached across the calls (retail spills it @[esp+0x14])
+    if (mgr == 0) {
+        return 0;
+    }
+    if (SerializeChain(arc, mode, a3, a4) == 0) {
+        return 0;
+    }
+    switch (mode) {
+        case 4: {
+            // WRITE
+            arc->Write(&m_fillScale, 4);
+            arc->Write(&m_drawX, 4);
+            arc->Write(&m_srcRect, 0x10);
+            arc->Write(&m_dstRect, 0x10);
+            char buf[0x80];
+            i32 idx;
+            g_serialCounter++;
+            memset(buf, 0, 0x80);
+            idx = 0;
+            if (m_fgFrame != 0) {
+                mgr->m_10->AnyValueMatches_155630((i32)m_fgFrame, (i32)buf, (i32)&idx);
+            }
+            arc->Write(buf, 0x80);
+            arc->Write(&idx, 4);
+            g_serialCounter++;
+            memset(buf, 0, 0x80);
+            idx = 0;
+            if (m_baseFrame != 0) {
+                mgr->m_10->AnyValueMatches_155630((i32)m_baseFrame, (i32)buf, (i32)&idx);
+            }
+            arc->Write(buf, 0x80);
+            arc->Write(&idx, 4);
+            return 1;
+        }
+        case 7: {
+            // READ
+            arc->Read(&m_fillScale, 4);
+            arc->Read(&m_drawX, 4);
+            arc->Read(&m_srcRect, 0x10);
+            arc->Read(&m_dstRect, 0x10);
+            char buf[0x80];
+            i32 idx;
+            g_serialCounter++;
+            arc->Read(buf, 0x80);
+            arc->Read(&idx, 4);
+            if (strlen(buf) != 0) {
+                CSbiFrameSet* set = 0;
+                ((CMapStringToPtr*)((char*)mgr->m_10 + 0x10))->Lookup(buf, (void*&)set);
+                if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
+                    m_fgFrame = set->m_14[idx];
+                } else {
+                    m_fgFrame = 0;
+                }
+            } else {
+                m_fgFrame = 0;
+            }
+            g_serialCounter++;
+            arc->Read(buf, 0x80);
+            arc->Read(&idx, 4);
+            if (strlen(buf) != 0) {
+                CSbiFrameSet* set = 0;
+                ((CMapStringToPtr*)((char*)mgr->m_10 + 0x10))->Lookup(buf, (void*&)set);
+                if (set != 0 && idx >= set->m_64 && idx <= set->m_68) {
+                    m_baseFrame = set->m_14[idx];
+                } else {
+                    m_baseFrame = 0;
+                }
+            } else {
+                m_baseFrame = 0;
+            }
+            return 1;
+        }
+        case 8: {
+            // RESOLVE (post-load): remake the goo surface + rebind each frame's shade node.
+            m_gooSrc = mgr->m_1c->MakeAndAddB(0x14, 5, 0x10, 0, -1);
+            if (m_gooSrc == 0) {
+                return 0;
+            }
+            i32 sel = *(i32*)((char*)g_gameReg + 0x158 + (g_644c54 * 71) * 8);
+            i32 node = g_gameReg->m_74->GetSel(sel, 0);
+            if (node == 0) {
+                node = g_gameReg->m_74->GetSel(1, 0);
+            }
+            CImage* fr = (CImage*)m_30;
+            if (fr->m_owned != 0) {
+                fr->m_owned->Notify(0xa, 0);
+            }
+            if (node != 0 && ((CImage*)m_30)->m_owned != 0) {
+                ((CImage*)m_30)->m_owned->m_palDescr = (ShadeDescr*)node;
+            }
+            fr = m_baseFrame;
+            if (fr->m_owned != 0) {
+                fr->m_owned->Notify(0xa, 0);
+            }
+            if (node != 0 && m_baseFrame->m_owned != 0) {
+                m_baseFrame->m_owned->m_palDescr = (ShadeDescr*)node;
+            }
+            fr = m_fgFrame;
+            if (fr->m_owned != 0) {
+                fr->m_owned->Notify(0xa, 0);
+            }
+            if (node != 0 && m_fgFrame->m_owned != 0) {
+                m_fgFrame->m_owned->m_palDescr = (ShadeDescr*)node;
+            }
+            break;
+        }
+    }
     return 1;
 }

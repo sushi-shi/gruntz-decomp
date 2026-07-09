@@ -54,14 +54,42 @@ struct CGooDrawable {
     CGooRenderCtx* m_14; // +0x14  render context
 };
 SIZE_UNKNOWN(CGooDrawable);
+
+// Serialize (0xe64c0) callee facets on the same game-manager chain: m_30->m_10 the
+// name->frame-set registry (Serialize's Lookup + AnyValueMatches reverse-lookup),
+// m_30->m_1c the surface pool (mode-8 MakeAndAddB), m_74 the sprite-ref table
+// (mode-8 GetSel). (These extend the goo view of the canonical CGameRegistry; the
+// fold onto it is deferred.)
+class CDDrawWorkerRegistry; // <DDrawMgr/DDrawWorkerRegistry.h>
+class CDDrawPtrCollections; // <DDrawMgr/DDrawPtrCollections.h>
+class CSpriteRefTable;      // <Gruntz/SpriteRefTable.h>
+
+// The name->frame-set map value: a frame-pointer array (+0x14) bounded by the
+// inclusive frame-index range [m_64, m_68] the read path indexes into.
+SIZE_UNKNOWN(CSbiFrameSet);
+struct CSbiFrameSet {
+    char m_pad0[0x14];
+    CImage** m_14; // +0x14  frame pointer array (indexed by the serialized frame index)
+    char m_pad18[0x64 - 0x18];
+    i32 m_64; // +0x64  low frame index
+    i32 m_68; // +0x68  high frame index
+};
+
 struct CGooGameMgr {
     char m_pad0[0x4];
     CGooDrawable* m_4; // +0x04  active drawable
+    char m_pad8[0x10 - 0x8];
+    CDDrawWorkerRegistry* m_10; // +0x10  name->frame-set registry (Serialize)
+    char m_pad14[0x1c - 0x14];
+    CDDrawPtrCollections* m_1c; // +0x1c  surface pool (Serialize mode-8 MakeAndAddB)
 };
 SIZE_UNKNOWN(CGooGameMgr);
 struct CGooGameReg {
     char m_pad0[0x30];
     CGooGameMgr* m_30; // +0x30  active game manager
+    char m_pad34[0x74 - 0x34];
+    CSpriteRefTable* m_74; // +0x74  sprite/animation ref table (Serialize mode-8 GetSel)
+    // +0x158  the g_focusedGruntSentinel-keyed selector table (mode-8; raw offset access)
 };
 SIZE_UNKNOWN(CGooGameReg);
 
@@ -76,6 +104,13 @@ public:
     // vtable slot 5 (0xe6380): the per-frame goo Tick. Goo state reuses the base
     // region: fillBase=m_rect14.m_4 (@0x18), fillTop=m_rect14.m_c (@0x20), countdown=m_28.
     i32 Tick();
+
+    // vtable slot 1 (0xe64c0): the goo serialize. Chains the base SerializeChain
+    // (0xe6e40, the CSBI_Image leg the delinker labels CSBI_MenuItem::SerializeChain),
+    // round-trips the fill/rect fields + two frame handles by name+index, and (mode 8)
+    // re-resolves the goo surface + rebinds the frames' shade nodes.
+    i32 Serialize(struct CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x0e64c0
+    i32 SerializeChain(void* arc, i32 mode, i32 a3, i32 a4);             // 0x0e6e40 (base leg)
 
     // ----- own fields (after CSBI_Image @0x34) -----
     CDDSurface* m_gooSrc;       // +0x34  goo source surface (Blit + BltEx `src`)

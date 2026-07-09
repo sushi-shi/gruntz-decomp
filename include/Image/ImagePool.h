@@ -22,6 +22,21 @@ using ApiCallerStubs::CImagePaletteNode;
 SIZE_UNKNOWN(CImagePool);
 class CImagePool {
 public:
+    // Inline ctor/dtor: the preview dialog is the only site that `new`s/`delete`s the
+    // pool (g_previewMgr), and retail inlines both there - the two CObList(10) member
+    // ctors + the five zeroed scalar fields, and a dtor that runs Clear() before the
+    // member CObList teardowns. Modeled inline so MSVC folds them into that dialog proc.
+    CImagePool() : m_surfaces(0xa), m_palettes(0xa) {
+        m_resourceModuleHandle = 0;
+        m_sourceHwnd = 0;
+        m_08 = 0;
+        m_48 = 0;
+        m_selectedPalette = 0;
+    }
+    ~CImagePool() {
+        Clear();
+    }
+
     i32 SetHandles(i32 a, i32 b, i32 c);                                          // 0x174e90
     void Clear();                                                                 // 0x174eb0
     void Free(CRezImage* node);                                                   // 0x174ed0

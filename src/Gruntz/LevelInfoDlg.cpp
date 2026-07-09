@@ -14,10 +14,116 @@
 #include <Io/FileStream.h>    // CFileIO (Open/Read/Seek/Close, all reloc-masked)
 #include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (arg3; shared with LoadConfig)
 #include <Image/ImagePool.h>  // the canonical CImagePool (g_previewMgr; AddSurfaceOp)
+#include <Image/Image.h>      // CRezImage (g_previewImage; the DIB StretchDIBits reads)
+#include <Gruntz/GameRegistry.h> // g_gameReg (m_owner res-module handle, m_saveSink)
 #include <string.h>           // strrchr/strchr (out-of-line) + strcat (inline /Oi)
 
 #include <rva.h>
 #include <Globals.h>
+
+// The game registry singleton + the queried save-slot state (the previewed level).
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg;
+DATA(0x0064c864)
+extern i32 g_slotState;
+
+// Defined below (same TU); the WM_INITDIALOG path calls it on the fresh preview mgr.
+void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev);
+
+// LevelPreviewDlgProc (0x0e3690) - the level-select preview dialog proc. WM_INITDIALOG
+// builds the g_previewMgr image pool + the level title; WM_COMMAND (IDOK/IDCANCEL)
+// frees the preview image + destroys the pool + closes; WM_PAINT centre-stretch-blits
+// the previewed DIB (g_previewImage, 8bpp -> DIB_PAL_COLORS else DIB_RGB_COLORS) into
+// a 320x240 box inside the preview item (0x51d). /GX EH frame (the pool ctor/dtor).
+// @early-stop
+// ~81%: logic byte-faithful (the msg sub-chain dispatch, the pool new/SetHandles/
+// BuildLevelTitleString init, the Free+delete teardown, the rect-centre math, the
+// 8bpp/rgb StretchDIBits branch). Residue is three codegen walls, not logic:
+// (1) the /GX SEH prologue order (`push -1` vs `mov eax,fs:0` first + esi/edi
+// shrink-wrap; docs/patterns/shrink-wrapped-callee-save-push.md, topic:wall);
+// (2) epilogue tail-merge - retail funnels every return to ONE shared `mov eax,1` +
+// epilogue via jmp, cl duplicates the epilogue per return (single-return `r` var
+// tried: regressed to 77%); (3) the pool local coloring - cl reuses the hDlg-arg
+// stack slot [esp+0x78] where retail reuses the msg slot [esp+0x7c], shifting the
+// front-half displacements. None are source-steerable.
+RVA(0x000e3690, 0x2ec)
+i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_PAINT: {
+            HWND item = GetDlgItem(hDlg, 0x51d);
+            if (g_previewMgr == 0 || g_previewImage == 0 || item == 0) {
+                return 1;
+            }
+            RECT wr;
+            GetWindowRect(item, &wr);
+            POINT pt;
+            pt.x = wr.left;
+            pt.y = wr.top;
+            ScreenToClient(hDlg, &pt);
+            i32 w = wr.right - wr.left - 1;
+            i32 h = wr.bottom - wr.top - 1;
+            i32 dx = pt.x;
+            i32 dy = pt.y;
+            if (w >= 0x140) {
+                dx += (w - 0x140) / 2;
+                w = 0x140;
+            }
+            if (h >= 0xf0) {
+                dy += (h - 0xf0) / 2;
+                h = 0xf0;
+            }
+            PAINTSTRUCT ps;
+            BeginPaint(hDlg, &ps);
+            SetStretchBltMode(ps.hdc, 3);
+            CRezImage* img = (CRezImage*)g_previewImage;
+            if (img->m_bitCount == 8) {
+                StretchDIBits(
+                    ps.hdc, dx, dy, w, h, 0, 0, img->m_width, img->m_height, img->m_pixels,
+                    (BITMAPINFO*)img, DIB_PAL_COLORS, SRCCOPY
+                );
+            } else {
+                StretchDIBits(
+                    ps.hdc, dx, dy, w, h, 0, 0, img->m_width, img->m_height, img->m_pixels,
+                    (BITMAPINFO*)img, DIB_RGB_COLORS, SRCCOPY
+                );
+            }
+            EndPaint(hDlg, &ps);
+            return 1;
+        }
+        case WM_INITDIALOG: {
+            if (g_slotState == 0) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            g_previewMgr = new CImagePool;
+            if (g_previewMgr->SetHandles(
+                    (i32) * (HINSTANCE*)((char*)g_gameReg->m_owner + 0xc), (i32)g_previewMgr, 0
+                )
+                == 0) {
+                return 0;
+            }
+            BuildLevelTitleString(
+                (HWND)g_previewMgr, (i32)g_gameReg->m_saveSink, (CLevelInfo*)g_slotState
+            );
+            return 1;
+        }
+        case WM_COMMAND: {
+            if (wParam != 2 && wParam != 1) {
+                return 0;
+            }
+            if (g_previewMgr != 0) {
+                if (g_previewImage != 0) {
+                    g_previewMgr->Free((CRezImage*)g_previewImage);
+                }
+                delete g_previewMgr;
+                g_previewMgr = 0;
+            }
+            EndDialog(hDlg, 0);
+            return 1;
+        }
+    }
+    return 0;
+}
 
 // The 11-entry area-name table (questz "Stage %d of <area>"). An array of char*
 // indexed by (level-1)/4; modeled by-address so the load is reloc-masked.
