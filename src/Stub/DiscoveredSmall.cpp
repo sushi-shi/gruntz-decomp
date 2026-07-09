@@ -7,24 +7,12 @@
 #include <Ints.h>
 #include <Wap32/Object.h> // CObject grand-base (real virtual dtor)
 #include <rva.h>
-#include <Gruntz/FreeNodePool.h> // canonical FreeNodePool (Push + fields)
 
 // The engine __cdecl deallocator (operator delete; reloc-masked rel32). 0x1b9b82.
 extern "C" void RezFree(void* p);
 
 // The wap-object teardown grand-base vtable (0x5e8cb4); stamped by address.
-
-// ---------------------------------------------------------------------------
-// FreeNodePool @0x0311b0 - a typed free-list push: subtract the node's link
-// offset (m_c) from the freed pointer, chain it onto the head (m_4). __thiscall,
-// 1 stack arg.
-// ---------------------------------------------------------------------------
-RVA(0x000311b0, 0x14)
-void FreeNodePool::Push(void* p) {
-    char* node = (char*)p - m_c;
-    *(void**)node = m_4;
-    m_4 = node;
-}
+// (FreeNodePool::Push @0x0311b0 re-homed to src/Gruntz/FreeNodePool.cpp.)
 
 // ---------------------------------------------------------------------------
 // ListNodeAdvance @0x029a30 - a list iterator advance: read the current node
@@ -41,6 +29,8 @@ void* __stdcall ListNodeAdvance(void** it) {
 // ---------------------------------------------------------------------------
 // QuadIntRecord @0x029ac0 - 4-field initializer (ctor returning this).
 // __thiscall, 4 stack args, ret 0x10.
+// @orphan: identity unrecovered - a generic 4-int record ctor called broadly across
+// CBattlezMapConfig / CGrunt / CArriveMgr / FontRenderer (xref); no single owning TU.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(QuadIntRecord);
 class QuadIntRecord {
@@ -61,6 +51,8 @@ QuadIntRecord::QuadIntRecord(i32 a, i32 b, i32 c, i32 d) {
 
 // ---------------------------------------------------------------------------
 // Obj15b2b0 @0x15b2b0 - zero three fields (ctor returning this).
+// @orphan: a CWwdGameObject subclass new'd by CWwdObjMgr::CreateObject_159600 (xref),
+// but the concrete game-object class carries no recoverable RTTI name (hex identity).
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(Obj15b2b0);
 class Obj15b2b0 {
@@ -81,6 +73,8 @@ Obj15b2b0::Obj15b2b0() {
 
 // ---------------------------------------------------------------------------
 // Obj15b270 @0x15b270 - seed two fields (ctor returning this).
+// @orphan: a CWwdGameObject subclass new'd by CWwdObjMgr::CreateObject_159250/440/600
+// (xref); concrete game-object class has no recoverable RTTI name (hex identity).
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(Obj15b270);
 class Obj15b270 {
@@ -97,28 +91,9 @@ Obj15b270::Obj15b270() {
     m_20 = -1;
 }
 
-// ---------------------------------------------------------------------------
-// DualBufferOwner @0x148d10 - free two owned heap blocks (m_c, m_20) if set.
-// __thiscall, void.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(DualBufferOwner);
-class DualBufferOwner {
-public:
-    void FreeBuffers();
-    char m_pad0[0xc];
-    void* m_c;
-    char m_pad10[0x20 - 0x10];
-    void* m_20;
-};
-RVA(0x00148d10, 0x25)
-void DualBufferOwner::FreeBuffers() {
-    if (m_c) {
-        RezFree(m_c);
-    }
-    if (m_20) {
-        RezFree(m_20);
-    }
-}
+// (DualBufferOwner::FreeBuffers @0x148d10 re-homed to src/Image/ImageOwned.cpp as
+// CDDrawShadeBlit::Teardown - the +0x30 owned shaded sprite of CImage; xref-proven
+// via CImage::FreeAll's owned->Teardown() call, fields m_rleData/m_palette.)
 
 // ---------------------------------------------------------------------------
 // WapObjBase @0x1591b0 - wap-object base init: seed m_4=-1, zero m_8/m_c/m_10,
@@ -127,6 +102,8 @@ void DualBufferOwner::FreeBuffers() {
 // TERMINAL manual stamp (not convertible to `: public CObject`): this is a
 // standalone void re-init method, not a ctor, so the store IS retail's own body -
 // cl's auto-stamp only lands in a ctor. Identity is a placeholder besides.
+// @orphan: only caller is an UNMATCHED scalar-deleting-destructor @0x159190; no RTTI
+// name - owning wap-object class identity unrecoverable.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(WapObjBase);
 class WapObjBase : public CObject {
@@ -150,6 +127,9 @@ void WapObjBase::BaseInit() {
 // Obj1397a0 @0x1397a0 - teardown: free m_0; then free m_38 unless the
 // m_10 target is live (m_10 && m_10->m_48 != 0); then clear nine fields.
 // __thiscall, void. (The two `if (m_38) free` arms tail-merge to one call.)
+// @orphan: a Bute-symbol payload torn down from ~CSymRec via CSymListNode::m_14, but it
+// is NOT CSymRec (accesses +0x38, past CSymRec's size 0x30); identity unrecovered and
+// the Bute CSymRec/CSymList models still diverge - do not fold here.
 // ---------------------------------------------------------------------------
 struct Obj49Target {
     char m_pad[0x48];
@@ -221,20 +201,8 @@ i32 FirstDiffBit(const char* a, const char* b) {
     return c + n;
 }
 
-// ---------------------------------------------------------------------------
-// CU35Host @0x021c40 - tail-call the CString dtor (0x1b9cde) on the embedded
-// CString member at +8 (`add ecx,8; jmp ~CString`). The dtor is external (no
-// body) so its `jmp rel32` reloc-masks. Re-homed from Discovered.cpp.
-// ---------------------------------------------------------------------------
-struct CU35Host {
-    char m_pad0[8];
-    CString m_8; // +0x08
-    void DestroyStr();
-};
-RVA(0x00021c40, 0x8)
-void CU35Host::DestroyStr() {
-    m_8.CString::~CString();
-}
+// (CU35Host::DestroyStr @0x021c40 re-homed to src/Gruntz/FontConfig.cpp as
+// FontItem::~FontItem - the out-of-line dtor of CFontConfig's {type,data,CString name}
+// list record; xref-proven via CFontConfig::FreeNodes/Scroll deleting FontItem.)
 
 SIZE_UNKNOWN(Obj49Target);
-SIZE_UNKNOWN(CU35Host);

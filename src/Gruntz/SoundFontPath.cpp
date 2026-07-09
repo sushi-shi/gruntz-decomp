@@ -18,16 +18,19 @@
 #include <string.h>            // strlen (inline repne scas)
 
 // The config blocks A (0x64dacc) and the load token (0x64dd28) are the same WORD
-// globals SfDeviceInitKeys (ReconBatch2.cpp) seeds; reference its names so the
-// reloc symbols line up (their DATA() binding lives there).
-extern WORD g_sfCfgA0;    // 0x64dacc  config block A +0 (=1)
-extern WORD g_sfCfgA2;    // 0x64dace  config block A +2 (=0)
-extern WORD g_sfDeviceId; // 0x64dd28  soundfont load token
+// globals SfDeviceInitKeys (below) seeds; this TU owns their DATA() binding now.
+DATA(0x0024dacc)
+extern WORD g_sfCfgA0; // config block A +0 (=1)
+DATA(0x0024dace)
+extern WORD g_sfCfgA2; // config block A +2 (=0)
+DATA(0x0024dd28)
+extern WORD g_sfDeviceId; // soundfont load token
 
 // The soundfont path/state globals.
 
-// 0xf8ec0 (via ILT thunk 0x3382): re-seed the music device key table.
-int SfDeviceInitKeys();
+// 0xf8ec0: re-seed the music device key table (defined below, in RVA order between
+// CloseSoundFontDevice and BuildSoundFontPath; forward-declared here for Close).
+i32 SfDeviceInitKeys();
 // 0xf90f0 (via ILT thunk 0x3d32): OpenFile(OF_EXIST) probe. The real function is
 // Utils::WinAPI::FileExistsCopyF90F0 (src/Utils/WinAPI.cpp); reloc-masked callee.
 namespace Utils {
@@ -49,6 +52,26 @@ void CloseSoundFontDevice() {
         g_sfDll = 0;
         g_sfReady = 0;
     }
+}
+
+// SfDeviceInitKeys (0xf8ec0): if the device is up, seed the music device's key table
+// by walking key codes 1..0x7f through its SF_GetLoadedBankPathname slot (invoked
+// 2-arg via the SfGetLoadedBankPathname2 cast), leaving the config word at 1.
+// __cdecl; returns 0 when the device is down else 1. Re-homed from
+// src/Stub/ReconBatch2.cpp (xref-proven: only Close + BuildSoundFontPath call it).
+RVA(0x000f8ec0, 0x50)
+i32 SfDeviceInitKeys() {
+    if (g_sfReady == 0) {
+        return 0;
+    }
+    g_sfCfgA2 = 0;
+    for (i32 i = 1; i <= 0x7f; i++) {
+        g_sfCfgA0 = (WORD)i;
+        ((SfGetLoadedBankPathname2)
+             g_sfDevice->SF_GetLoadedBankPathname)(g_sfDeviceId, (PSFMIDILOCATION)&g_sfCfgA0);
+    }
+    g_sfCfgA0 = 1;
+    return 1;
 }
 
 RVA(0x000f8f30, 0x160)

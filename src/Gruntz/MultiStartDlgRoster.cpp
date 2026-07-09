@@ -16,6 +16,7 @@
 // placeholders (m_<hexoffset>); only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
 #include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Gruntz/NetDlgHost.h>   // CNetDlgHost (m_host +0x5c facet; FindOptionsSlot @0x92e80)
 #include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
 #include <rva.h>
 #include <string.h> // strcat (inline CRT, reloc-masked)
@@ -213,6 +214,19 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     g_pInvalidateRect(this->GetDlgItem(0x505)->m_hWnd, 0, 1);
     g_pInvalidateRect(this->GetDlgItem(0x507)->m_hWnd, 0, 1);
     return 1;
+}
+
+// GetSlotIndex (0xc4b30): resolve the local player's options slot through the host
+// facet (m_host->FindOptionsSlot(g_64bd5c->m_hostIndex)); return the stored slot value
+// or -1 when absent. __thiscall. Re-homed from src/Stub/ReconBatch2.cpp (was the
+// OptOwner_c4b30::Resolve view; m_5c is CMultiStartDlg::m_host, xref-proven).
+RVA(0x000c4b30, 0x1f)
+i32 CMultiStartDlg::GetSlotIndex() {
+    i32* slot = (i32*)((CNetDlgHost*)m_host)->FindOptionsSlot(g_64bd5c->m_hostIndex);
+    if (slot == 0) {
+        return -1;
+    }
+    return *slot;
 }
 
 // __thiscall(): cache list N's current selection (+1) into the Nth player-slot's combo

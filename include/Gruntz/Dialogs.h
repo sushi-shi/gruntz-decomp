@@ -372,6 +372,13 @@ public:
     VerifyCustomLevel(); // 0xc4c00  confirm every player has the same custom level (was CNetGameDlg)
     void
     ConnectStep(); // 0xc2a20  one connect step: reconcile slot 1 then Drive (was CNetConnCoord::Step)
+    // Message-map handlers: reconcile channel 2 / 3 (SyncChannelSlot) then re-drive
+    // the connect state. Twins of ConnectStep (channel 1); PROVEN CMultiStartDlg (they
+    // call this->SyncChannelSlot(0xc2ab0) + this->Drive(0xc40b0)). Bodies in
+    // NetMgrMisc.cpp. Were the Cluster0c.cpp CCluster0c::Run / ReconBatch2.cpp
+    // Host_c2a80::Run placeholder views.
+    void Method_c2a50(); // 0xc2a50  reconcile channel 2 then Drive
+    void Method_c2a80(); // 0xc2a80  reconcile channel 3 then Drive
     // this-side MFC forwarders the net facet reaches (CWnd/CDialog methods,
     // reloc-masked; CDialog is modeled without its CWnd base so declare here).
     void EnableWindow(i32 bEnable); // 0x1be6a7 (CWnd::EnableWindow on this)

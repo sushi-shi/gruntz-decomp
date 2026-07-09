@@ -20,34 +20,15 @@
 #include <Dsndmgr/SfManager.h>            // real SFMANL101API device (was the sfman32.h shadow)
 #include <Globals.h>
 
-// ===========================================================================
-// 0x000be820 (73B) - EnableWindow(GetDlgItem(hDlg, id), obj->m_528) for ids
-// 0x4d0 and 0x4d1. __cdecl(hDlg, obj). Clean Win32 idiom.
-// ===========================================================================
-struct DlgData_be820 {
-    char m_pad0[0x528];
-    i32 m_528; // +0x528 enable flag
-};
-RVA(0x000be820, 0x49)
-void EnableButtons_be820(HWND hDlg, DlgData_be820* obj) {
-    if (hDlg && obj) {
-        EnableWindow(GetDlgItem(hDlg, 0x4d0), obj->m_528);
-        EnableWindow(GetDlgItem(hDlg, 0x4d1), obj->m_528);
-    }
-}
+// (EnableButtons_be820 @0x000be820 re-homed to src/Net/LobbyDialogs.cpp as
+// NetLobby::Init_2ed7 - the drop-in dialog's accept/reject button enabler; obj is a
+// CMulti and m_528 == CMulti::m_isHost. xref-proven via NetLobby::DropInDlgProc /
+// NetDlgInitDropIn.)
 
-// ===========================================================================
-// 0x000bf580 (16B) - `g_pool.AddTail(arg0)` on the global recycled-node pool at
-// 0x64aca8: the real MFC CPtrList `g_pool` (canonical ?g_pool@@3VCPtrList@@A, owned by
-// LobbySync.cpp). Reachable directly now that this TU is MFC (wall broken); AddTail is
-// the real NAFXCW CPtrList::AddTail (reloc-masked).
-// ===========================================================================
-DATA(0x0024aca8)
-extern CPtrList g_pool;
-RVA(0x000bf580, 0x10)
-void AddTail_bf580(void* p) {
-    g_pool.AddTail(p);
-}
+// (AddTail_bf580 @0x000bf580 re-homed to src/Gruntz/LobbySync.cpp as RecycleCmd - the
+// g_pool command-recycle helper; g_pool (0x64aca8) is LobbySync.cpp's own datum and
+// 0xbf580 sits inside its RVA span, drained by CLobbySync::Reset. NetCmdSlot's callers
+// already reference it as RecycleCmd.)
 
 // ===========================================================================
 // 0x000c0460 (46B) - scan 4 embedded 0x64-byte entries; return the first whose
@@ -65,6 +46,13 @@ struct EntryOwner_c0460 {
     Entry_c0460 m_entries[4]; // +0x20
     Entry_c0460* Find(u32 key);
 };
+// ATTRIBUTED (xref, not yet homed): this IS CNetSession::FindSlot (declared in
+// <Gruntz/Multi.h> as CNetSession2::FindSlot @0x004c0460) - CMulti::DropTimeout calls
+// m_session->FindSlot(0x1388/0x2710); the 4x0x64 entries at +0x20 are the session's
+// CNetCmdSlot command slots (m_0==CNetCmdSlot::m_state). The fold onto the canonical
+// CNetSession (src/Net/NetSession2.cpp) is DEFERRED: it needs the CNetSession2<->
+// CNetSession / CLobbySlot<->CNetCmdSlot reconciliation Multi.h flags as an
+// identity-recovery TODO (touches the reserved CMulti domain). Kept here meanwhile.
 // @early-stop
 // regalloc wall (topic:wall topic:regalloc): structure byte-identical to retail
 // (lea/loop/guards/ja/ret all match); residual is the key<->counter register
@@ -81,43 +69,14 @@ Entry_c0460* EntryOwner_c0460::Find(u32 key) {
     return 0;
 }
 
-// ===========================================================================
-// 0x000c2a80 (19B) - call two sibling __thiscall methods on `this`
-// (Sub0c2ab0(3) then Sub0c40b0()).
-// ===========================================================================
-struct Host_c2a80 {
-    void Sub0c2ab0(i32 a);
-    void Sub0c40b0();
-    void Run();
-};
-RVA(0x000c2a80, 0x13)
-void Host_c2a80::Run() {
-    Sub0c2ab0(3);
-    Sub0c40b0();
-}
+// (Host_c2a80::Run @0x000c2a80 re-homed to src/Net/NetMgrMisc.cpp as
+// CMultiStartDlg::Method_c2a80 - reconcile channel 3 (SyncChannelSlot) then Drive;
+// PROVEN CMultiStartDlg (self-calls this->SyncChannelSlot(0xc2ab0) + this->Drive(0xc40b0)).)
 
-// ===========================================================================
-// 0x000c4b30 (31B) - resolve an options slot for a global config id; return the
-// stored value or -1 when absent.
-// ===========================================================================
-// The multiplayer game-state singleton at 0x64bd5c is the real CMulti (xref-proven;
-// <Gruntz/Multi.h>, included above now that this TU is MFC -- the old <Win32.h> wall is
-// broken). This TU owns the canonical DATA; Resolve reads CMulti::m_hostIndex directly.
-DATA(0x0024bd5c)
-extern CMulti* g_64bd5c;
-struct OptOwner_c4b30 {
-    char m_pad0[0x5c];
-    CGruntzMgr* m_5c; // +0x5c
-    i32 Resolve();
-};
-RVA(0x000c4b30, 0x1f)
-i32 OptOwner_c4b30::Resolve() {
-    i32* slot = (i32*)m_5c->FindOptionsSlot(g_64bd5c->m_hostIndex);
-    if (slot == 0) {
-        return -1;
-    }
-    return *slot;
-}
+// (OptOwner_c4b30::Resolve @0x000c4b30 re-homed to src/Gruntz/MultiStartDlgRoster.cpp
+// as CMultiStartDlg::GetSlotIndex - the local player's options-slot index via the
+// m_host (+0x5c) CNetDlgHost facet; xref-proven (all callers are CMultiStartDlg
+// methods invoking it on `this`).)
 
 // ===========================================================================
 // 0x000f9840 / 0x000de140 (cleanup pair, CGameModeBase) - stop the owned sub-
@@ -131,31 +90,10 @@ i32 OptOwner_c4b30::Resolve() {
 // (CGameModeBase::ResetPreview @0xde140 re-homed to src/Gruntz/GameMode.cpp;
 // the Holder_f9840 context view is hoisted to <Gruntz/GameModeBase.h>.)
 
-// ===========================================================================
-// 0x000f8ec0 (80B) - if the init flag is set, walk key codes 1..0x7f dispatching
-// vtable slot +0x34 on a global receiver; set the scratch word each iteration.
-// __cdecl(); returns 0 if the flag is clear else 1.
-// ===========================================================================
-DATA(0x0024dace)
-extern WORD g_sfCfgA2;
-DATA(0x0024dacc)
-extern WORD g_sfCfgA0;
-DATA(0x0024dd28)
-extern WORD g_sfDeviceId;
-RVA(0x000f8ec0, 0x50)
-i32 SfDeviceInitKeys() {
-    if (g_sfReady == 0) {
-        return 0;
-    }
-    g_sfCfgA2 = 0;
-    for (i32 i = 1; i <= 0x7f; i++) {
-        g_sfCfgA0 = (WORD)i;
-        ((SfGetLoadedBankPathname2)
-             g_sfDevice->SF_GetLoadedBankPathname)(g_sfDeviceId, (PSFMIDILOCATION)&g_sfCfgA0);
-    }
-    g_sfCfgA0 = 1;
-    return 1;
-}
+// (SfDeviceInitKeys @0x000f8ec0 re-homed to src/Gruntz/SoundFontPath.cpp - the
+// SFMAN32 device key-table re-seed; xref-proven (only CloseSoundFontDevice +
+// BuildSoundFontPath, both in that TU, call it). Its g_sfCfgA0/A2/DeviceId DATA()
+// bindings moved there too.)
 
 // (CGameModeBase::Reset @0xf9840 re-homed to src/Gruntz/GameMode.cpp.)
 
@@ -164,6 +102,9 @@ i32 SfDeviceInitKeys() {
 // suppress flag is set, clear it and return; else Refresh the sub-view, blit the
 // front surface with arg0, Flip the back surface, then Refresh again.
 // __thiscall(arg0). m_c->m_4 is reloaded each statement (not cached across).
+// @orphan: reached only from CGruntzMgr::RunModalDialog/ExitModalUI (xref) on an
+// unidentified modal-UI presenter object; the `this` owner class has no recoverable
+// identity (only inbound edge is ILT thunk 0x1ec9, no ctor/new trace).
 //
 // NOT a one-class-many-views over-split: it is a genuine 4-deep pointer chain into
 // distinct real DDraw objects (every sub-object call is direct/reloc-masked, so the
@@ -232,6 +173,8 @@ i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
 // ===========================================================================
 // 0x001104f0 (86B) - one-shot init: if already initialized (m_20) return 0; else
 // scatter the 8 __stdcall args into member fields, set m_20=1, m_1c=0; return 1.
+// @orphan: no retail caller (empty xref tree) and no RTTI/vtable ref - owning class
+// identity unrecoverable.
 // ===========================================================================
 struct Init8_1104f0 {
     i32 m_0;
@@ -340,12 +283,15 @@ void __stdcall Copy_16f6e0(Src_16f6e0* src, Dst_16f6e0* dst) {
 // ===========================================================================
 // 0x001816a0 (28B) - if a held item handle is present, remove it from the owned
 // list and clear it. Sibling of 0x00181660 (same class: m_2c list, m_40 handle).
+// @orphan: an unidentified DDraw overlay worker (m_2c CDDrawPtrCollections, m_38
+// CDDSurface, m_40 CPoolItemA); no retail caller (empty xref) - owning class unknown.
 // ===========================================================================
 class CPoolItemA;
 class CDDrawPtrCollections {
 public:
-    void RemoveItemA(CDDSurface* h);                            // 0x142160 (real takes CDDSurface*)
-    CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60 (real returns CDDSurface*)
+    void RemoveItemA(CDDSurface* h); // 0x142160 (real takes CDDSurface*)
+    CDDSurface*
+    MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60 (real returns CDDSurface*)
 };
 struct Worker181x_181x {
     char _vft0[4];               // +0x00 foreign object vptr (reduced view; not owned/dispatched)
@@ -387,6 +333,8 @@ void Worker181x_181x::DropItem() {
 // 0x00193340 (97B) - recursive tree walk. For each node call cb(node->m_c,
 // node->m_10, ctx); recurse on the left child then iterate to the right child
 // while the child's key (m_8) exceeds the node's. __thiscall(cb, ctx, node).
+// @orphan: a generic binary-tree callback-walk reached from CButeMgr::ParseGroup
+// (xref); the owning container class (a bute symbol tree) has no recoverable identity.
 // ===========================================================================
 typedef void(__cdecl* WalkCb_193340)(i32, i32, i32);
 struct TNode_193340 {
@@ -433,16 +381,12 @@ void** Get_1b9b8d() {
 }
 
 SIZE_UNKNOWN(Desc_16f6e0);
-SIZE_UNKNOWN(DlgData_be820);
 SIZE_UNKNOWN(Dst_16f6e0);
 SIZE_UNKNOWN(EntryOwner_c0460);
 SIZE_UNKNOWN(Entry_c0460);
-SIZE_UNKNOWN(Host_c2a80);
 SIZE_UNKNOWN(Init8_1104f0);
 SIZE_UNKNOWN(Mid_faec0);
 SIZE_UNKNOWN(Obj_11e8dc);
-SIZE_UNKNOWN(OptOwner_c4b30);
-SIZE_UNKNOWN(OptionsSlotHost_c4b30);
 SIZE_UNKNOWN(PresentHost_faec0);
 SIZE_UNKNOWN(Src_16f6e0);
 SIZE_UNKNOWN(TNode_193340);

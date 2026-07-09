@@ -483,6 +483,14 @@ void CLobbySync::Reset() {
     }
 }
 
+// RecycleCmd (0xbf580, __cdecl): return a finished command node to the global recycle
+// pool (g_pool.AddTail). Called by CNetCmdSlot::RemoveCmd / ClearCmds. Re-homed from
+// src/Stub/ReconBatch2.cpp (was the AddTail_bf580 view); g_pool is this TU's own datum.
+RVA(0x000bf580, 0x10)
+void RecycleCmd(void* cmd) {
+    g_pool.AddTail(cmd);
+}
+
 // @early-stop
 // regalloc cascade (~63%): logic byte-faithful; retail pins `this` in edi, hoists
 // the slot `== 3` test constant into esi, and parks `len` in the reused incoming

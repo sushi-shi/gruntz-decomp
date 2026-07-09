@@ -2231,6 +2231,12 @@ unit = "gruntpathscan"
 source = "src/Gruntz/GruntPathScan.cpp"
 flags = "eh"
 
+# FreeNodePool::Push (0x0311b0), the g_coordPool recycler (re-homed from DiscoveredSmall.cpp).
+[[unit]]
+unit = "freenodepool"
+source = "src/Gruntz/FreeNodePool.cpp"
+flags = "base"
+
 
 [[unit]]
 unit = "heapdiag"

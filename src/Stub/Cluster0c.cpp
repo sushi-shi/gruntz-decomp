@@ -1,7 +1,12 @@
-// Cluster0c.cpp - three methods of an anonymous class living in the 0x0c00xx
-// cluster: a field-init (0xc0c20) that zeroes a span of members then constructs
-// two embedded sub-objects at +0x4c/+0x58, a two-step driver (0xc2a50), and a
-// teardown (0xc5240) that releases+frees the +0x60 child then runs a final method.
+// Cluster0c.cpp - two methods of an unidentified NETWORK object living in the 0x0c00xx
+// cluster: a field-init (0xc0c20) that zeroes a span of members then constructs two
+// embedded sub-objects at +0x4c/+0x58, and a teardown (0xc5240) that releases+frees the
+// +0x60 CNetThing child then runs a final method. Init is called by CNetMgr::AckDropPlayer
+// / CNetSession::Reset / CLobbySync::Reconcile (net-reset), so this is a per-session net
+// object, NOT the multiplayer dialog. (The former "Run" @0xc2a50 was a CONFLATION: it is
+// really CMultiStartDlg::Method_c2a50 - it self-calls SyncChannelSlot(0xc2ab0)+Drive(0xc40b0),
+// both CMultiStartDlg methods - and has been re-homed to src/Net/NetMgrMisc.cpp.)
+// @orphan: real class identity of Init/Cleanup unrecovered (a net-session sub-object).
 #include <rva.h>
 
 extern "C" void RezFree(void*); // 0x1b9b82
@@ -31,12 +36,9 @@ struct CCluster0c {
 
     void Init12e0();        // 0xc12e0
     void Init10a0(void* p); // 0xc10a0
-    void M_c2ab0(int n);    // 0xc2ab0
-    void M_c40b0();         // 0xc40b0
     void Destroy_1bbb7c();  // 0x1bbb7c
 
     void Init();    // 0xc0c20
-    void Run();     // 0xc2a50
     void Cleanup(); // 0xc5240
 };
 
@@ -65,12 +67,9 @@ void CCluster0c::Init() {
     Init10a0(&m_58);
 }
 
-// 0xc2a50
-RVA(0x000c2a50, 0x13)
-void CCluster0c::Run() {
-    M_c2ab0(2);
-    M_c40b0();
-}
+// (CCluster0c::Run @0xc2a50 re-homed to src/Net/NetMgrMisc.cpp as
+// CMultiStartDlg::Method_c2a50 - a conflated CMultiStartDlg message handler, not this
+// net object. See the file-header note.)
 
 // 0xc5240
 RVA(0x000c5240, 0x2c)

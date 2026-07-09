@@ -40,6 +40,22 @@ CDDrawShadeBlit::CDDrawShadeBlit() {
     m_colorKey = -1;
 }
 
+// ---------------------------------------------------------------------------
+// Teardown - free the two owned heap buffers (the decoded RLE stream m_rleData
+// and the 256-entry palette m_palette) if present. __thiscall, void. Called by
+// CImage::FreeAll (0x153260) on its owned +0x30 CDDrawShadeBlit. Re-homed from
+// src/Stub/DiscoveredSmall.cpp (was the DualBufferOwner::FreeBuffers view).
+// ---------------------------------------------------------------------------
+RVA(0x00148d10, 0x25)
+void CDDrawShadeBlit::Teardown() {
+    if (m_rleData) {
+        RezFree(m_rleData);
+    }
+    if (m_palette) {
+        RezFree(m_palette);
+    }
+}
+
 // The transient RLE-output buffer: an MFC CByteArray (ctor 0x1b527e, SetSize
 // 0x1b52e8, SetAtGrow 0x1b5485, ~CByteArray 0x1b52b1 - all NAFXCW, reloc-masked).
 // Layout: vptr@0, data@+4, size@+8, alloc@+0xc. Modeled as a tiny host so the

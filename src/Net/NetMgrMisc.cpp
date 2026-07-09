@@ -87,6 +87,24 @@ void CMultiStartDlg::ConnectStep() {
 }
 
 // ---------------------------------------------------------------------------
+// Channel 2 / 3 handlers: reconcile the channel's player slot (0xc2ab0) then re-drive
+// the connect state (0xc40b0). Twins of ConnectStep (channel 1). Re-homed here from
+// src/Stub/Cluster0c.cpp (CCluster0c::Run) and src/Stub/ReconBatch2.cpp (Host_c2a80::Run) -
+// both PROVEN CMultiStartDlg: they self-call SyncChannelSlot + Drive on `this`.
+// ---------------------------------------------------------------------------
+RVA(0x000c2a50, 0x13)
+void CMultiStartDlg::Method_c2a50() {
+    SyncChannelSlot(2);
+    Drive();
+}
+
+RVA(0x000c2a80, 0x13)
+void CMultiStartDlg::Method_c2a80() {
+    SyncChannelSlot(3);
+    Drive();
+}
+
+// ---------------------------------------------------------------------------
 // Drive the connect state off the file-scope CMulti: if this is the host, broadcast
 // the channel table + refresh players; else transform the local id and submit it.
 // ---------------------------------------------------------------------------

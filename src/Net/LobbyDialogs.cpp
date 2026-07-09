@@ -77,10 +77,10 @@ namespace NetLobby {
     void OnLobbyCancel_2ae0(HWND, CMulti*);          // RVA 0x2ae0
     // WM_INITDIALOG init helpers defined later in this TU (forward-declared so the
     // sibling wait/drop DlgProcs below can call them before their definitions).
-    void NetDlgInit_bda00(HWND hWnd, void* ctx);  // 0xbda00
-    void NetDlgInit_bdb90(HWND hWnd, void* ctx);  // 0xbdb90
-    void NetDlgInit_bdfe0(HWND hWnd, void* ctx);  // 0xbdfe0
-    void NetDlgInitDropIn(HWND hWnd, void* ctx);  // 0xbe760
+    void NetDlgInit_bda00(HWND hWnd, void* ctx); // 0xbda00
+    void NetDlgInit_bdb90(HWND hWnd, void* ctx); // 0xbdb90
+    void NetDlgInit_bdfe0(HWND hWnd, void* ctx); // 0xbdfe0
+    void NetDlgInitDropIn(HWND hWnd, void* ctx); // 0xbe760
 } // namespace NetLobby
 
 // __thiscall(id, dest): load string `strId` from the app instance
@@ -495,6 +495,18 @@ namespace NetLobby {
             Init_2ed7(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
             g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+        }
+    }
+
+    // Init_2ed7 (0xbe820, reached via ILT thunk 0x2ed7): enable/disable the accept
+    // (0x4d0) and reject (0x4d1) drop-in buttons per the game-state's host flag. ctx
+    // is the current CMulti (g_curMulti). __cdecl. Re-homed from src/Stub/ReconBatch2.cpp
+    // (was the EnableButtons_be820 / DlgData_be820 view; obj->m_528 == CMulti::m_isHost).
+    RVA(0x000be820, 0x49)
+    void Init_2ed7(HWND hWnd, void* ctx) {
+        if (hWnd && ctx) {
+            EnableWindow(GetDlgItem(hWnd, 0x4d0), ((CMulti*)ctx)->m_isHost);
+            EnableWindow(GetDlgItem(hWnd, 0x4d1), ((CMulti*)ctx)->m_isHost);
         }
     }
 } // namespace NetLobby

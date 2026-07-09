@@ -62,6 +62,7 @@ struct FontItem {
     i32 type;     // +0x00
     i32 data;     // +0x04
     CString name; // +0x08
+    ~FontItem();  // 0x21c40  out-of-line member dtor (destroys name; add ecx,8; jmp ~CString)
 };
 
 // ---------------------------------------------------------------------------
@@ -201,6 +202,15 @@ void CFontConfig::FreeNodes() {
     m_inputText.Empty();
     m_inputActive = 0;
 }
+
+// ---------------------------------------------------------------------------
+// FontItem::~FontItem (0x21c40) - the out-of-line record dtor: destroy the +8
+// CString name member (add ecx,8; jmp ~CString). Referenced by FreeNodes/AddItem's
+// `delete item` and Scroll's explicit `item->FontItem::~FontItem()`. Re-homed from
+// src/Stub/DiscoveredSmall.cpp (was the CU35Host::DestroyStr view).
+// ---------------------------------------------------------------------------
+RVA(0x00021c40, 0x8)
+FontItem::~FontItem() {}
 
 // ---------------------------------------------------------------------------
 // CFontConfig::AddItem - append/prepend a new FontItem; optionally clear first.
