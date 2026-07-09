@@ -1011,6 +1011,97 @@ CWwdGameObjectA::~CWwdGameObjectA() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x1506b0 (vtable slot 13): CWwdGameObjectA's dirty-rect BltEx dispatch. Same
+// two-record (live m_38 / shadow m_d8) structure as CWwdGameObjectC::Slot34, but
+// the "both armed" combine uses the Win32 rect API: IntersectRect tests overlap
+// and, if they overlap, UnionRect gives the covering rect {left,top,right+1,
+// bottom+1}; if disjoint, blit each record separately. Only one armed -> that
+// record. Each rect is {x,y,x+w,y+h}. Arg `c` unused. __thiscall, 3 args (ret 0xc).
+// @early-stop
+// ~74% tail-merge + regalloc wall (twin of CWwdGameObjectC::Slot34 @76%): logic/CFG/
+// the IntersectRect/UnionRect union path + the four {x,y,x+w,y+h} BltEx sites over the
+// one shared rc buffer all reproduced, but cl cross-jumps (tail-merges) the identical
+// BltEx(rc,b->m_surface,rc,...) calls where retail keeps them inline, plus a callee-saved
+// record-base coloring swap. Not source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x001506b0, 0x1ec)
+void CWwdGameObjectA::Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+    i32 rc[4]; // reused src+dst blit rect buffer
+    if (m_20.b != -1 && m_d8 != -1) {
+        RECT ir;
+        if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
+            UnionRect(&ir, (RECT*)&m_20, (RECT*)&m_c0);
+            i32 w = ir.right - ir.left + 1;
+            i32 h = ir.bottom - ir.top + 1;
+            rc[0] = ir.left;
+            rc[1] = ir.top;
+            rc[2] = ir.left + w;
+            rc[3] = ir.top + h;
+            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+        } else {
+            rc[0] = m_18;
+            rc[1] = m_1c;
+            rc[2] = m_18 + m_20.m_w;
+            rc[3] = m_1c + m_20.m_h;
+            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+            rc[0] = m_b8;
+            rc[1] = m_bc;
+            rc[2] = m_b8 + m_d0;
+            rc[3] = m_bc + m_d4;
+            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+        }
+    } else if (m_20.b != -1) {
+        rc[0] = m_18;
+        rc[1] = m_1c;
+        rc[2] = m_18 + m_20.m_w;
+        rc[3] = m_1c + m_20.m_h;
+        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+    } else if (m_d8 != -1) {
+        rc[0] = m_b8;
+        rc[1] = m_bc;
+        rc[2] = m_b8 + m_d0;
+        rc[3] = m_bc + m_d4;
+        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x1508a0 (vtable slot 14): CWwdGameObjectA's dirty-rect blit-hook dispatch. Same
+// as Slot34 but dispatches the empty 0x164650 hook per (pos,size) region instead of
+// BltEx. "Both armed" combine again via IntersectRect/UnionRect: one region over the
+// union {pos={left,top}, size={w,h}} when they overlap, else both records. Only one
+// armed -> that record. Arg `c` unused. __thiscall, 3 args (ret 0xc).
+// @early-stop
+// ~91% zero-register-pinning wall (twin of CWwdGameObjectC::Slot38 @99.7%): logic/CFG/
+// the union pos/size build + all four BlitDirtyRect sites byte-exact. Residual is the
+// callee-saved coloring of the two hoisted record bases (&m_18,&m_b8) -> retail edi/ebx
+// vs cl ebx/edi, cascading a few push operands; the extra IntersectRect/UnionRect path
+// (absent in the twin) adds the register pressure that keeps this below the twin's 99.7%.
+// Permuter found no operand-order gain. docs/patterns/zero-register-pinning.md.
+RVA(0x001508a0, 0x117)
+void CWwdGameObjectA::Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+    if (m_20.b != -1 && m_d8 != -1) {
+        RECT ir;
+        if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
+            UnionRect(&ir, (RECT*)&m_20, (RECT*)&m_c0);
+            i32 pos[2];
+            i32 size[2];
+            pos[0] = ir.left;
+            size[0] = ir.right - ir.left + 1;
+            size[1] = ir.bottom - ir.top + 1;
+            pos[1] = ir.top;
+            a->BlitDirtyRect_164650(b, pos, size);
+        } else {
+            a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record
+            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);     // shadow record
+        }
+    } else if (m_20.b != -1) {
+        a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record only
+    } else if (m_d8 != -1) {
+        a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only
+    }
+}
+
+// ---------------------------------------------------------------------------
 // 0x15bad0 - the 0x159440-final variant: thin derived class (vtable 0x5f0060) on top
 // of Mid. Re-runs the worker pass + groupX, then folds Mid + wap-object base.
 // ---------------------------------------------------------------------------

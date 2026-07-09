@@ -9,6 +9,7 @@
 // external/reloc-masked.
 #include <DDrawMgr/ShadeTableCache.h>
 #include <Gruntz/DataBuffer.h>
+#include <Wap32/MfcArchive.h> // CShadeTableArray::Serialize archive accessor
 
 #include <math.h> // pow (__CIpow) in HsvShiftTable
 #include <rva.h>
@@ -52,7 +53,6 @@ struct Hsv {
 // luma comparator referenced by address by the luma-sort builder.
 extern "C" Hsv* RgbToHsv(Hsv* out, i32 packedRgb);                     // 0x14fcc0
 extern "C" u8 NearestPaletteIndex(i32 r, PalEntry* pal, i32 g, i32 b); // 0x14fbf0
-extern "C" i32 __cdecl CompareLuma(const void* a, const void* b);      // 0x14ed10
 
 // Rez heap (reloc-masked): operator new is RezAlloc-backed; RezFree frees the
 // element-array buffer in the inlined SetSize of the AddFrom* loaders.
@@ -440,6 +440,35 @@ CShadeTable* CShadeTableCache::LumaSortTable(PalEntry* pal) {
         }
     }
     return t;
+}
+
+// ===========================================================================
+// 0x14ed10 - CompareLuma: __cdecl qsort comparator. Converts the two palette
+// entries (indexed by the byte each arg points at) to a luminance byte
+// (b*lumaB + g*lumaG + r*lumaR, __ftol) and orders them ascending by luma.
+// ===========================================================================
+// @early-stop
+// regalloc wall (~69%): logic + the cmp/jbe/or-eax,-1/sbb-eax/neg comparison tail
+// byte-exact. Retail spills BOTH index bytes to stack locals (mov [esp+c],cl;
+// mov [esp+10],al) and reloads/zero-extends per use, whereas MSVC5 here keeps
+// them in registers (xor eax,eax; mov al,[ptr]); that cascades the x87 fild
+// schedule of the two inlined luma sums. Permuter found no operand-order gain.
+// Same wall class as sibling CompareHue (89%) / FindNearestColor (64%).
+RVA(0x0014ed10, 0xcc)
+i32 __cdecl CShadeTableCache::CompareLuma(const void* a, const void* b) {
+    u8 ia = *(const u8*)a;
+    u8 ib = *(const u8*)b;
+    PalEntry* pa = &g_pal[ia];
+    u8 la = (u8)(i32)((float)pa->b * g_lumaB + (float)pa->g * g_lumaG + (float)pa->r * g_lumaR);
+    PalEntry* pb = &g_pal[ib];
+    u8 lb = (u8)(i32)((float)pb->b * g_lumaB + (float)pb->g * g_lumaG + (float)pb->r * g_lumaR);
+    if (lb > la) {
+        return -1;
+    }
+    if (lb < la) {
+        return 1;
+    }
+    return 0;
 }
 
 // ===========================================================================
@@ -871,6 +900,74 @@ i32 __cdecl CShadeTableCache::FindNearestColor(PalEntry* pal, i32 r, i32 g, i32 
         }
     }
     return best;
+}
+
+// ===========================================================================
+// 0x14fe90 - CShadeTableArray::Serialize (CObject vtable slot 2): the MFC
+// CArray<CShadeTable*>::Serialize shape with SetSize inlined, but the element
+// buffer is Rez-heap (RezAlloc/RezFree) not operator new/delete. Storing: write
+// the element count then the raw pointer block. Loading: read the count, (re)size
+// the buffer (alloc / grow-with-copy / shrink-in-place per the MFC grow heuristic
+// m_nSize/8 clamped to [4,0x400]), then read the raw block.
+// ===========================================================================
+// @early-stop
+// regalloc/scheduling wall (~73%, twin of the identical CArray<DWORD>::Serialize
+// at 0x39fa0 / ArraySerialize.cpp): the SetSize-inlined load/grow/shrink logic is
+// byte-faithful, but MSVC pins this->ebx / arg->esi where retail interleaves the
+// prologue push/mov and register coloring differently. Not source-steerable.
+RVA(0x0014fe90, 0x188)
+void CShadeTableArray::Serialize(CArchive& arc) {
+    MfcArchive* ar = (MfcArchive*)&arc;
+    if (!ar->IsStoring()) {
+        i32 n = ar->ReadCount();
+        if (n == 0) {
+            if (m_pData != 0) {
+                RezFree(m_pData);
+                m_pData = 0;
+            }
+            m_nMaxSize = 0;
+            m_nSize = 0;
+        } else if (m_pData == 0) {
+            m_pData = (CShadeTable**)RezAlloc(n * 4);
+            memset(m_pData, 0, n * 4);
+            m_nMaxSize = n;
+            m_nSize = n;
+        } else if (n <= m_nMaxSize) {
+            if (n > m_nSize) {
+                memset(m_pData + m_nSize, 0, (n - m_nSize) * 4);
+            }
+            m_nSize = n;
+        } else {
+            i32 grow = m_nGrowBy;
+            if (grow == 0) {
+                grow = m_nSize / 8;
+                if (grow < 4) {
+                    grow = 4;
+                } else if (grow > 0x400) {
+                    grow = 0x400;
+                }
+            }
+            i32 newcap = m_nMaxSize + grow;
+            if (n >= newcap) {
+                newcap = n;
+            }
+            CShadeTable** nd = (CShadeTable**)RezAlloc(newcap * 4);
+            memcpy(nd, m_pData, m_nSize * 4);
+            memset(nd + m_nSize, 0, (n - m_nSize) * 4);
+            RezFree(m_pData);
+            m_pData = nd;
+            m_nSize = n;
+            m_nMaxSize = newcap;
+        }
+    } else {
+        ar->WriteCount(m_nSize);
+    }
+
+    if (ar->IsStoring()) {
+        ar->WriteData(m_pData, m_nSize * 4);
+    } else {
+        ar->ReadData(m_pData, m_nSize * 4);
+    }
 }
 
 // SIZE tracking for this TU's modeling-view locals (placed at EOF: any

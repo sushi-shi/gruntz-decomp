@@ -108,6 +108,9 @@ public:
     CShadeTable* AlphaTable(u8* pal);                                         // 0x14f5b0
     void FindRemove(CShadeTable* t);                                          // 0x14fb80
 
+    // 0x14ed10 - __cdecl qsort comparator: sort palette indices by luma.
+    static i32 __cdecl CompareLuma(const void* a, const void* b);
+
     // 0x14fa60 - __cdecl qsort comparator: sort palette indices by hue.
     static i32 __cdecl CompareHue(const void* a, const void* b);
 

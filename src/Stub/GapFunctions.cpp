@@ -1052,28 +1052,12 @@ RVA(0x00149780, 0x69)
 i32 Gap_149780(void) {
     return 0;
 } // @stub
-RVA(0x0014ed10, 0xcc)
-i32 Gap_14ed10(void) {
-    return 0;
-} // @stub
 RVA(0x0014fb40, 0x3e)
 i32 Gap_14fb40(void) {
     return 0;
 } // @stub
-RVA(0x0014fe90, 0x188)
-i32 Gap_14fe90(void) {
-    return 0;
-} // @stub
 RVA(0x00150660, 0x49)
 i32 Gap_150660(void) {
-    return 0;
-} // @stub
-RVA(0x001506b0, 0x1ec)
-i32 Gap_1506b0(void) {
-    return 0;
-} // @stub
-RVA(0x001508a0, 0x117)
-i32 Gap_1508a0(void) {
     return 0;
 } // @stub
 RVA(0x00151b90, 0x70)
