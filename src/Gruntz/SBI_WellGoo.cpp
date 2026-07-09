@@ -2,9 +2,9 @@
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WellGoo.h>
-#include <Image/CImage.h>            // CImage::RenderFrame (0x153790) - the m_40/m_3c frames + m_owned
+#include <Image/CImage.h> // CImage::RenderFrame (0x153790) - the m_40/m_3c frames + m_owned
 #include <DDrawMgr/DDrawShadeBlit.h> // CDDrawShadeBlit::Blit (0x1497f0) - the m_38 blitter; Notify + m_1c
-#include <DDrawMgr/DDSurface.h>      // CDDSurface::BltEx (0x13eef0) - the goo/back-buffer surfaces
+#include <DDrawMgr/DDSurface.h> // CDDSurface::BltEx (0x13eef0) - the goo/back-buffer surfaces
 #include <DDrawMgr/DDrawWorkerRegistry.h> // AnyValueMatches_155630 + the +0x10 name map (Serialize)
 #include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections::MakeAndAddB (Serialize mode-8)
 #include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable::GetSel (Serialize mode-8)
@@ -217,4 +217,19 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         }
     }
     return 1;
+}
+
+// vtable slot 3 (0x104c80): release the owned goo source surface (+0x34) through the
+// cached manager's (+0x24) surface pool (RemoveItemA @0x142160), then clear it.
+// Re-homed from src/Stub/BoundaryLowerMethods.cpp (was the C104c80 placeholder view);
+// the vtable slot-3 thunk 0x30b7 jmps here, so this IS CSBI_WellGoo's slot-3 override.
+// The +0x24 cache holds the CGooGameMgr (== g_gameReg->m_30); the FLAT CStatusBarItem
+// base models it as an int (Setup arg2), so reinterpret to reach its pool - a
+// heterogeneous base field (@flag: int/ptr overlay at +0x24).
+RVA(0x00104c80, 0x1f)
+void CSBI_WellGoo::Free() {
+    if (m_gooSrc != 0) {
+        ((CGooGameMgr*)m_24)->m_1c->RemoveItemA(m_gooSrc);
+        m_gooSrc = 0;
+    }
 }

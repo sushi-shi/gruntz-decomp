@@ -10,48 +10,56 @@
 // @ +0x2c / Write @ +0x30).
 // AXE WORKLIST (user mandate 2026-07-05: every struct here is a fake view to be
 // dissolved onto its real class). Folded so far: C99ba0/C9a420 -> CAreaMgr/
-// CSpawnList, C8e880/C915d0 -> CGruntzMgr. Caller evidence gathered for the rest
-// (sema xref --tree; VERIFY before folding - the post-rename xref cache was
-// degraded when captured):
+// CSpawnList, C8e880/C915d0 -> CGruntzMgr.
+//
+// HOMED (matcher-1 re-home pass, raw-vtable/thunk-verified):
+//   Cd5e20   -> CImage::Slot17 (src/Image/CImage.cpp): vtbl slot 17 (+0x44) thunk
+//                0x1d1b jmps to 0xd5e20; forwards arg to Slot15/Slot16.
+//   Gate113860 -> src/Gruntz/TileTriggerContainer.cpp (the __stdcall mode-gate).
+//   Fwd114ec0 -> src/Gruntz/GruntzMgrCmd.cpp (the __cdecl 6-arg toolbar forwarder).
+//   C113e70  -> CTileTriggerSwitchLogic::DeserializeMatrix (the READ mirror of
+//                SerializeMatrix; ApplyByType's ApplyType7 target, thunk 0x3cd3).
+//   (C104c80 -> CSBI_WellGoo::Free and ParseSerial/0xd210 -> GruntzMgrCmd.cpp also
+//    homed; their views/bodies already removed from this TU.)
+//
+// VERIFIED-BUT-BLOCKED (raw-vtable/this proof gathered; home needs a base-model or
+// conflict resolution the re-home pass left to a follow-up):
+//   Ceb970   IS CSBI_WarlordHead::Serialize (vtbl slot 1, thunk 0x3cd8 -> 0xeb970);
+//                CONFLICT: SBI_WarlordHead.cpp claims that name at 0xe7cd0 (EXACT,
+//                thunk 0x2829, NOT in the vtable). Reconcile with that TU's owner.
+//   C0b4c40  IS CUFO::SerializeMove (vtbl slot 1, thunk 0x3fb7 -> 0xb4c40); BLOCKED:
+//                its 4-arg shape can't override the CPathHazard/CUserBase placeholder
+//                slot-1 sig (Ufo.h note) - needs the base slot-1 re-signature first.
+//   C112bf0  IS CCheckpointTriggerSwitchLogic::M (vtbl slot 3, thunk 0x36fc ->
+//                0x112bf0); BLOCKED: CheckpointSwitchBuild.cpp holds a g_statzGameReg
+//                dual-view at DATA 0x24556c that would collide with M's g_mgrSettings.
+//   C104dd0  this == CSBI_RectOnly::m_2c (a sub-object; SetState calls it via
+//                `mov ecx,[ecx+0x2c]; call 0x3f8a`), NOT CSBI_RectOnly itself - its
+//                real owner is the +0x2c status-bar-sprite holder's class (unmodeled).
+//
+// CALLER-GATHERED (this-verification still needed before homing; each lands in an
+// incomplete TU so a home would drop its % until that TU is complete):
 //   C213a0   <- CChatBoxOwner::ProcessCheatInput (vbtable getter; cheat family)
 //   CTypeColl464 <- RegisterWarlordActions/RegisterActs_* (act/logic type coll;
-//                sibling of CTypeKeyColl : CZArray2D - unify there)
+//                sibling of CTypeKeyColl : CZArray2D)
 //   C50ca0   <- CGrunt::RunEntranceMove (grunt-sized owner, +0x1a0/1a4 pair)
-//   C77dc0   <- CTerrainTileLoader::Load + CPlayLevelLoad::LoadPyramidBridge
-//                (tile-plane cell setter; candidate CTileGrid/plane facet)
-//   C9cab0   == the logic-type registry (its m_10 sub's Get @0x1b8008 is
-//                CLogicTypeMap::Lookup) - THIRD dup of the CLogicRegistry views in
-//                LogicTypeTable.cpp + UserLogicCtorEmit.cpp; unify all three.
-//                Callers: CLevelTime/CLightFx 1-arg ctors.
-//   C0b4c40  <- thunk band names it CVoiceTrigger (voice-trigger family)
-//   Cbd450   <- RegisterGameObjectTypes (the c:\gruntz.log opener init)
-//   Ccef50   <- ~CLobbySlot + CPlay::ResetForMode (view/world teardown w/
-//                CDDrawWorkerMgr - matcher-4 stamp-family adjacency, coordinate)
-//   Cd5e20   <- HandlerAF0A0/CRollingBall (slot +0x3c/+0x40 forwarder - likely a
-//                CUserLogic-family virtual pair)
-//   Cdb200   <- CNetMgr::DispatchRecvMsg (net holder swap)
-//   Cdb2f0   == IsBattlezMapFile per the thunk label <- CustomLevelDlg::Populate +
-//                FillCustomLevelList (the custom-level map-file object)
-//   Cdb750   <- CPlayLevelLoad::LoadByMode; its CSymTab (ResolvePath 0x13bae0) is
-//                the SAME class as LoadObjectResources.cpp's ObjResLookup - unify.
-//   Cea170   <- CStatusBarMgr::LoadTabSprites + LoadStatzTabToggleSprite (SBI family)
-//   Ceb970 + C113e70 <- CTileTriggerSwitchLogic::ApplyByType (tile-trigger
-//                serializers; CSerialArchive already canonical)
-//   Cfa150   == CState/CGameModeBase::BaseCleanup (the thunk band names it
-//                BaseCleanup; callers CAttract/CBootyState::ReleaseResources; see
-//                State.h's dtor `((CGameModeBase*)this)->BaseCleanup()`) - STRONG.
-//   C104c80  <- FillGameInfoDialog (savegame blit release)
-//   C104dd0  <- CSBI_RectOnly::SetState/TryActivate (its lazy StatusBarSprite
-//                creator - fold onto the CSBI_RectOnly canonical)
-//   C10bbe0  <- CGrunt::LoadPickupSprites (+0x528 table on a CPlay-sized object -
-//                candidate CPlay method; check Play.h +0x528)
-//   C112bf0  <- CTriggerMgr::ClearGridRange/ResetCell (matcher-3's TriggerMgr
-//                domain - DEFER to that worker)
-//   Gate113860 <- SerializeApplyA/CTileTriggerFactory::Build (trigger factory)
-//   Fwd114ec0/Fwd114f00 <- CGruntzMgr::HandleCommand thunk ShowHudMessageAlt
-//                (HUD-message forwarders; candidate CGruntzMgr cmd family)
-//   C1181d0  <- CMenuState::LoadAssets (thunk BuildMainMenuTree)
-//   C118260  <- ScrollDialog (thunk SaveVideoCheckboxes; video-options dialog)
+//   C77dc0   <- CTerrainTileLoader::Load (tile-plane cell setter)
+//   C9cab0   registry Lookup (m_10 sub's Get @0x1b8008 = CMapStringToPtr::Lookup);
+//                callers CLevelTime/CLightFx/CWayPoint/CGuardPoint ctors - the
+//                registry class identity is still unrecovered (NOT the CMapStringToOb
+//                LogicTypeTable registry, which uses 0x1b8438).
+//   Cbd450   <- RegisterGameObjectTypes (no direct caller; c:\gruntz.log opener init)
+//   Ccef50   <- Gap_0b63f0/Gap_0c8b80 (unresolved gaps; ~CLobbySlot/CPlay teardown)
+//   Cdb200   <- CNetMgr::DispatchRecvMsg (net holder swap; this= unverified)
+//   Cdb2f0   no direct caller (custom-level map-file object per the thunk label)
+//   Cdb750   <- CPlayLevelLoad::LoadByMode (LEVEL config sync)
+//   Cea170   <- CStatusBarMgr::LoadTabSprites (2-bit selector over a +0x38 virtual)
+//   Cfa150   IS CGameModeBase::BaseCleanup (GameModeBase.h declares it; callers
+//                CAttract/CBootyState/CMultiBootyState/CCreditsState ReleaseResources
+//                - all cross-module, so it lives in its own retail .obj; a home must
+//                keep it cross-.obj (not gamemode) to preserve those reloc-masked calls)
+//   C10bbe0  <- CGrunt::LoadPickupSprites (+0x528 table getter)
+//   C1181d0 / C118260  no direct caller (bounds-grow updaters; orphans)
 #ifndef GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H
 #define GRUNTZ_BOUNDARYLOWERMETHODSVIEWS_H
 
@@ -178,28 +186,8 @@ struct Ccef50 {
 };
 SIZE_UNKNOWN(Ccef50);
 
-// 0x0d5e20 - forward an arg through two virtuals (vtbl +0x3c then +0x40).
-struct Cd5e20 {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual void v8();
-    virtual void v9();
-    virtual void v10();
-    virtual void v11();
-    virtual void v12();
-    virtual void v13();
-    virtual void v14();
-    virtual void v15(void* a); // slot +0x3c
-    virtual void v16(void* a); // slot +0x40
-    void M(void* arg);
-};
-SIZE_UNKNOWN(Cd5e20);
+// (0x0d5e20 Cd5e20 re-homed to src/Image/CImage.cpp as CImage::Slot17 - vtable
+// slot-17 thunk 0x1d1b jmps to 0xd5e20. See <Image/CImage.h>.)
 
 // 0x0db200 - swap the +0x08 holder to `arg` (validate + toggle old/new).
 struct Cdb200 {
@@ -306,20 +294,8 @@ struct Cfa150 {
 };
 SIZE_UNKNOWN(Cfa150);
 
-// 0x104c80 - release the +0x34 blit through the +0x24 owner's +0x1c allocator.
-struct CMid104 {
-    char pad0[0x1c];
-    CDDrawPtrCollections* m_1c; // +0x1c
-};
-SIZE_UNKNOWN(CMid104);
-struct C104c80 {
-    char pad0[0x24];
-    CMid104* m_24; // +0x24
-    char pad28[0x34 - 0x28];
-    void* m_34; // +0x34
-    void Free();
-};
-SIZE_UNKNOWN(C104c80);
+// (0x104c80 C104c80 re-homed to src/Gruntz/SBI_WellGoo.cpp as CSBI_WellGoo::Free -
+// vtable slot-3 thunk 0x30b7 jmps to 0x104c80. See <Gruntz/SBI_WellGoo.h>.)
 
 // 0x104dd0 - lazy-create the StatusBarSprite (clamp then factory-build) through
 // the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>; the former local
@@ -385,16 +361,8 @@ struct C112bf0 {
 };
 SIZE_UNKNOWN(C112bf0);
 
-// 0x113e70 - Serialize: transfer +0xc0/+0xc4 and the 3x3 dword block via the archive
-// Read slot (+0x2c).
-struct C113e70 {
-    char pad0[0x9c];
-    i32 m_9c[9]; // +0x9c .. +0xbc
-    i32 m_c0;    // +0xc0
-    i32 m_c4;    // +0xc4
-    i32 Serialize(CSerialArchive* ar);
-};
-SIZE_UNKNOWN(C113e70);
+// (0x113e70 C113e70 re-homed to src/Gruntz/TileTriggerSwitchLogic.cpp as
+// CTileTriggerSwitchLogic::DeserializeMatrix. See <Gruntz/TileTriggerSwitchLogic.h>.)
 
 // 0x114f00 - guarded forwarder: resolve a2->m_30->m_4->m_10->m_2c and forward.
 struct CObj114f {

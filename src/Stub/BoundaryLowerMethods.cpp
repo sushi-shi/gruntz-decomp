@@ -138,15 +138,9 @@ i32 Ccef50::M() {
     return 1;
 }
 
-// ===========================================================================
-// 0x0d5e20 - forward an arg through two virtuals (vtbl +0x3c then +0x40).
-// __thiscall(arg).
-// ===========================================================================
-RVA(0x000d5e20, 0x1b)
-void Cd5e20::M(void* arg) {
-    v15(arg);
-    v16(arg);
-}
+// (0x0d5e20 Cd5e20::M re-homed to src/Image/CImage.cpp as CImage::Slot17 - the
+// vtable slot-17 thunk 0x1d1b jmps to 0xd5e20, so this IS CImage's slot-17 virtual
+// that forwards its arg through Slot15 (+0x3c) then Slot16 (+0x40).)
 
 // ===========================================================================
 // 0x0db200 - swap the +0x08 holder to `arg`: no-op when already equal, else
@@ -233,6 +227,16 @@ void Cea170::M(i32 a1, i32 a2) {
 // 0x0eb970 - Serialize: when the manager is live, transfer +0x3c via arg1's
 // vtbl +0x30 (mode 4) or +0x2c (mode 7), then chain the base serializer (0x3ca1)
 // normalized to a bool. __thiscall(ar, mode, a3, a4). ret 0x10.
+//
+// @flag: ATTRIBUTION-CONFLICT (defer to the SBI_WarlordHead owner). Raw-vtable proof:
+// ??_7CSBI_WarlordHead@@6B@ slot 1 (+0x04) holds thunk 0x3cd8 which jmps to THIS
+// (0xeb970) - so 0xeb970 IS the real CSBI_WarlordHead::Serialize (slot-1 override of
+// CStatusBarItem::Serialize). BUT src/Gruntz/SBI_WarlordHead.cpp already claims the
+// name ?Serialize@CSBI_WarlordHead@@... at a DIFFERENT rva (0xe7cd0, reached via thunk
+// 0x2829, NOT in the vtable) and it is EXACT there. One of the two is mis-attributed;
+// homing 0xeb970 as CSBI_WarlordHead::Serialize would collide with that exact match.
+// Reconciling requires re-attributing 0xe7cd0 (its real owner is whatever class's
+// vtable slot 1 = thunk 0x2829) - an SBI_WarlordHead-owner task, out of this slice.
 // ===========================================================================
 extern "C" CGameRegistry* g_mgrSettings;
 // @early-stop
@@ -285,17 +289,9 @@ void Cfa150::Cleanup() {
     m_3c = 0;
 }
 
-// ===========================================================================
-// 0x104c80 - release the +0x34 blit through the +0x24 owner's +0x1c allocator
-// (0x142160) and clear it. __thiscall.
-// ===========================================================================
-RVA(0x00104c80, 0x1f)
-void C104c80::Free() {
-    if (m_34 != 0) {
-        m_24->m_1c->Free(m_34);
-        m_34 = 0;
-    }
-}
+// (0x104c80 C104c80::Free re-homed to src/Gruntz/SBI_WellGoo.cpp as
+// CSBI_WellGoo::Free - vtable slot-3 thunk 0x30b7 jmps to 0x104c80. See
+// <Gruntz/SBI_WellGoo.h>.)
 
 // ===========================================================================
 // 0x104dd0 - lazy-create the StatusBarSprite: clamp +0x24/+0x28 to the manager's
@@ -357,77 +353,21 @@ i32 C112bf0::M() {
     return 1;
 }
 
-// ===========================================================================
-// 0x113860 - mode gate: validate `obj` against mode (4 -> 0x4499, 7 -> 0x1893),
-// passing through otherwise. __stdcall(obj, mode, a3, a4) ret 0x10.
-// ===========================================================================
-extern i32 __stdcall Func1893(void* p); // 0x1893
-extern i32 __stdcall Func4499(void* p); // 0x4499
-// @early-stop
-// regalloc wall: retail keeps obj in eax (so the obj==0 return 0 is free); cl pins
-// it in ecx and adds xor eax. switch(mode) recovers the case layout (93%); the eax
-// vs ecx pick is not steerable.
-RVA(0x00113860, 0x3b)
-i32 __stdcall Gate113860(void* obj, i32 mode, i32 a3, i32 a4) {
-    if (obj == 0) {
-        return 0;
-    }
-    switch (mode) {
-        case 4:
-            if (!Func4499(obj)) {
-                return 0;
-            }
-            break;
-        case 7:
-            if (!Func1893(obj)) {
-                return 0;
-            }
-            break;
-    }
-    return 1;
-}
+// (0x113860 Gate113860 re-homed to src/Gruntz/TileTriggerContainer.cpp - the
+// __stdcall mode-gate helper SerializeApplyA / CTileTriggerFactory::Build call.)
 
-// ===========================================================================
-// 0x113e70 - Serialize: when the manager is live, transfer +0xc0/+0xc4 and the
-// nine +0x9c.. dwords (3x3) through arg1's vtbl +0x2c. __thiscall(ar) ret 4.
-// ===========================================================================
-// @early-stop
-// esi/edi regalloc wall: cl assigns ar->esi, this->edi; retail swaps (this->esi,
-// ar->edi). The two header transfers + the 3x3 nested-loop transfer are byte-faithful.
-RVA(0x00113e70, 0x7b)
-i32 C113e70::Serialize(CSerialArchive* ar) {
-    if (ar == 0) {
-        return 0;
-    }
-    if (g_mgrSettings->m_world == 0) {
-        return 0;
-    }
-    ar->Read(&m_c0, 4);
-    ar->Read(&m_c4, 4);
-    i32* p = m_9c;
-    i32 i = 3;
-    do {
-        i32 j = 3;
-        do {
-            ar->Read(p, 4);
-            p++;
-        } while (--j);
-    } while (--i);
-    return 1;
-}
+// (0x113e70 C113e70::Serialize re-homed to src/Gruntz/TileTriggerSwitchLogic.cpp as
+// CTileTriggerSwitchLogic::DeserializeMatrix - the READ mirror of SerializeMatrix
+// (0x113dd0); ApplyByType dispatches to it as ApplyType7 (thunk 0x3cd3 -> 0x113e70).)
 
-// ===========================================================================
-// 0x114ec0 - straight 6-arg forwarder to 0x21c1. __cdecl.
-// ===========================================================================
-extern "C" void Func21c1(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x21c1
-RVA(0x00114ec0, 0x27)
-void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    Func21c1(a1, a2, a3, a4, a5, a6);
-}
+// (0x114ec0 Fwd114ec0 re-homed to src/Gruntz/GruntzMgrCmd.cpp - the __cdecl 6-arg
+// forwarder the HandleCommand toolbar path calls; it tail-forwards to Fwd114f00.)
 
 // ===========================================================================
 // 0x114f00 - guarded forwarder: resolve a2->m_30->m_4->m_10->m_2c and, when live,
-// forward it plus the six args to 0x267b. __cdecl(6 args).
+// forward it plus the six args to 0x267b. __cdecl(6 args). NOTE: this is the
+// 0x21c1-thunk target that GruntzMgrCmd.cpp's Fwd114ec0 forwards to; its deref
+// chain still needs real command-context types before it can home there.
 // ===========================================================================
 extern "C" void Func267b(void* v, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x267b
 // @early-stop

@@ -175,42 +175,9 @@ void DialogInit37870(void* hwnd) {
     fn(hwnd, 0x4d5, g_mgrSettings->m_isEffectsEnabled);
 }
 
-// ===========================================================================
-// 0x00d210 - validate a serial/key string: reject null obj/string or empty
-// string, clear the save scratch buffer (g_saveBuf, 0x24 dwords) and the serial
-// counter (g_serialCounter), then (only if the obj's +0x30 slot is live) run the
-// parse callback (0x156530) over the fixed code-table entry (0x4024e6) and the
-// string, returning success as a bool. __cdecl, two args.
-// ===========================================================================
-extern int g_saveBuf[];     // ?g_saveBuf@@3PAHA       (VA 0x629930)
-extern int g_serialCounter; // ?g_serialCounter@@3HA   (VA 0x629ad0)
-extern void Lab4024e6();    // VA 0x4024e6 (code-table entry passed as a ptr)
-int __stdcall Parse156530(void* table, char* s, int z); // 0x156530
-// @early-stop
-// 97.55% - regalloc wall: the test-only mgr->m_world temp lands in eax; retail uses
-// ecx (both are 0/free after the rep-stosd). Logic + the inline strlen/memset +
-// the parse-callback dispatch are byte-exact; the single reg pick is not
-// source-steerable. (The former local `CSerialObj {+0x30}` view was the game
-// manager itself - the +0x30 gate is CGameRegistry::m_world; the WM_COMMAND 0x807e
-// path calls this with the CGruntzMgr `this`.)
-RVA(0x0000d210, 0x65)
-i32 ParseSerial(CGameRegistry* mgr, char* s) {
-    if (mgr == 0) {
-        return 0;
-    }
-    if (s == 0) {
-        return 0;
-    }
-    if (strlen(s) == 0) {
-        return 0;
-    }
-    g_serialCounter = 0;
-    memset(g_saveBuf, 0, 0x90);
-    if (mgr->m_world == 0) {
-        return 0;
-    }
-    return Parse156530((void*)&Lab4024e6, s, 0) != 0;
-}
+// (0x00d210 ParseSerial re-homed to src/Gruntz/GruntzMgrCmd.cpp - the __cdecl
+// serial/key validator the WM_COMMAND 0x807e path (HandleCommand) calls with the
+// CGruntzMgr `this`; GruntzMgrCmd.cpp already declared it as an extern.)
 
 // ===========================================================================
 // 0x0212a0 - reset: recursively clear a child table (0x16e070) then null members

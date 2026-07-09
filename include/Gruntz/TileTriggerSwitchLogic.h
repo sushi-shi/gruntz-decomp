@@ -55,7 +55,7 @@ public:
     RVA(0x00115f00, 0x13)
     i32 GetFlag74() {
         if (m_block[18] != 0) {
-        return 0;
+            return 0;
         }
         m_block[18] = 1;
         return 1;
@@ -68,8 +68,9 @@ public:
     i32 TransferFlag74(CSerialArchive* s);                   // 0x117e20
     i32 LoadFlag74(CSerialArchive* s);                       // 0x117e70 (read via slot +0x2c)
     i32 ApplyByType(void* obj, i32 type, i32 a3, i32 a4);    // 0x113d40
-    i32 SerializeMatrix(CSerialArchive* s);                  // 0x113dd0
-    i32 LoadState(CSerialArchive* s);                        // 0x1139a0 (read via slot +0x2c)
+    i32 SerializeMatrix(CSerialArchive* s);   // 0x113dd0 (write; == ApplyType4 target)
+    i32 DeserializeMatrix(CSerialArchive* s); // 0x113e70 (read; == ApplyType7 target)
+    i32 LoadState(CSerialArchive* s);         // 0x1139a0 (read via slot +0x2c)
 
     // __thiscall validators/appliers used by ApplyByType (reloc-masked).
     i32 ApplyBase(void* obj, i32 type, i32 a3, i32 a4);

@@ -384,6 +384,17 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
 }
 
 // ---------------------------------------------------------------------------
+// slot 17 (0x0d5e20): forward the arg through two later virtuals - Slot15
+// (vtable +0x3c) then Slot16 (vtable +0x40). __thiscall, ret 4. Re-homed from
+// src/Stub/BoundaryLowerMethods.cpp (was the Cd5e20 placeholder view); the vtable
+// slot-17 thunk 0x1d1b jmps here, so this IS CImage's slot-17 virtual.
+RVA(0x000d5e20, 0x1b)
+void CImage::Slot17(void* arg) {
+    Slot15(arg);
+    Slot16(arg);
+}
+
+// ---------------------------------------------------------------------------
 // The virtual destructor. MSVC stamps this class's own vtable
 // (??_7CImage, catalog auto-named) at entry, runs the cleanup virtual (FreeAll),
 // then the CObject base subobject dtor folds in (sets m_status=-1, zeroes

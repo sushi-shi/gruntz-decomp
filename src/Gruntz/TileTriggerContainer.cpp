@@ -20,7 +20,37 @@
 #include <Gruntz/TileGridCommand.h>
 #include <Mfc.h>
 #include <Gruntz/TileTriggerContainer.h>
-i32 __stdcall Gate113860(void* a, i32 b, i32 c, i32 d); // 0x113860 (TtcTrigElem::Reg* view)
+
+// 0x113860 - Gate113860: mode gate over a container element - validate `obj`
+// against the mode (4 -> the write-check 0x4499, 7 -> the read-check 0x1893, both
+// TileTriggerSwitchLogic-family helpers), passing through otherwise. __stdcall,
+// ret 0x10. The __stdcall helper SerializeApplyA / CTileTriggerFactory::Build call.
+// Re-homed from src/Stub/BoundaryLowerMethods.cpp (was the Gate113860 placeholder).
+extern i32 __stdcall Func1893(void* p); // 0x1893 -> 0x1139a0
+extern i32 __stdcall Func4499(void* p); // 0x4499 -> 0x1138b0
+// @early-stop
+// regalloc wall (~93%): retail keeps obj in eax (so the obj==0 return 0 is free); cl
+// pins it in ecx and adds xor eax. switch(mode) recovers the case layout; the eax vs
+// ecx pick is not source-steerable.
+RVA(0x00113860, 0x3b)
+i32 __stdcall Gate113860(void* obj, i32 mode, i32 a3, i32 a4) {
+    if (obj == 0) {
+        return 0;
+    }
+    switch (mode) {
+        case 4:
+            if (!Func4499(obj)) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (!Func1893(obj)) {
+                return 0;
+            }
+            break;
+    }
+    return 1;
+}
 
 // The list1/list2 command element: its data is compared against an arg by the
 // CTileGridCommand classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).

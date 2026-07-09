@@ -104,14 +104,43 @@ extern CString g_brickText1;
 DATA(0x00645528)
 extern CString g_brickText2;
 
-// The serial/key validator (ParseSerial @0x0000d210, BoundaryMisc.cpp): __cdecl
-// (mgr, string). Takes the manager through its MFC-free CGameRegistry view (the
-// dual-view bridge cast at the call site - same object as `this`).
-i32 ParseSerial(CGameRegistry* mgr, char* s);
+// The serial/key validator (ParseSerial @0x0000d210): __cdecl (mgr, string). Takes
+// the manager through its MFC-free CGameRegistry view (the dual-view bridge cast at
+// the call site - same object as `this`). Re-homed from src/Stub/BoundaryMisc.cpp;
+// the WM_COMMAND 0x807e path (HandleCommand) calls it with the CGruntzMgr `this`.
+extern int g_saveBuf[];     // ?g_saveBuf@@3PAHA       (VA 0x629930)
+extern int g_serialCounter; // ?g_serialCounter@@3HA   (VA 0x629ad0)
+extern void Lab4024e6();    // VA 0x4024e6 (code-table entry passed as a ptr)
+int __stdcall Parse156530(void* table, char* s, int z); // 0x156530
+// @early-stop
+// 97.55% - regalloc wall: the test-only mgr->m_world temp lands in eax; retail uses
+// ecx (both are 0/free after the rep-stosd). Logic + the inline strlen/memset + the
+// parse-callback dispatch are byte-exact; the single reg pick is not source-steerable.
+RVA(0x0000d210, 0x65)
+i32 ParseSerial(CGameRegistry* mgr, char* s) {
+    if (mgr == 0) {
+        return 0;
+    }
+    if (s == 0) {
+        return 0;
+    }
+    if (strlen(s) == 0) {
+        return 0;
+    }
+    g_serialCounter = 0;
+    memset(g_saveBuf, 0, 0x90);
+    if (mgr->m_world == 0) {
+        return 0;
+    }
+    return Parse156530((void*)&Lab4024e6, s, 0) != 0;
+}
 // The world-present toolbar builder chain (thunk 0x277a -> the 6-arg __cdecl
-// forwarder Fwd114ec0 @0x114ec0, BoundaryLowerMethods.cpp -> 0x21c1). The real
-// param shapes are unrecovered; the i32 tuple mirrors the forwarder.
+// forwarder Fwd114ec0 @0x114ec0 -> the guarded forwarder Fwd114f00 @0x114f00, via
+// the 0x21c1 thunk). The real param shapes are unrecovered; the i32 tuple mirrors
+// the forwarder. Fwd114f00 is still carried in BoundaryLowerMethods.cpp (its
+// a2->m_30->m_4->m_10->m_2c deref chain needs real command-context types).
 void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
+void Fwd114f00(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114f00 (0x21c1 thunk target)
 
 // Play a named cue when the world's cue host is not muted: resolve via the
 // host's CueLookup (a real CSndHost __thiscall @0x05b7e0 - ecx is the host at
@@ -1202,3 +1231,11 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
 #undef BRICKABILITY
 #undef RESTART
 #undef RESTART2
+
+// 0x114ec0 - straight 6-arg forwarder to the guarded forwarder Fwd114f00 (via the
+// 0x21c1 thunk). The HandleCommand toolbar-builder path (thunk 0x277a) calls this.
+// __cdecl. Re-homed from src/Stub/BoundaryLowerMethods.cpp (was Fwd114ec0).
+RVA(0x00114ec0, 0x27)
+void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
+    Fwd114f00(a1, a2, a3, a4, a5, a6);
+}

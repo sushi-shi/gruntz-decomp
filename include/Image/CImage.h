@@ -181,9 +181,9 @@ public:
     virtual i32 Create(CImageFrameDesc* desc, i32 keyed);                      // slot 12 0x152e90
     virtual i32 Reload(CParseSource* src, i32 arg);                            // slot 13 0x153380
     virtual void RenderImage(CResolveNode* clip, void* a); // slot 14 0x153470 (external)
-    virtual void Slot15();                                 // slot 15 0x153370 (external)
-    virtual void* Slot16();                                // slot 16 0x002d6a (ILT)
-    virtual void* Slot17();                                // slot 17 0x001d1b (ILT)
+    virtual void Slot15(void* a);                          // slot 15 0x153370 (external)
+    virtual void Slot16(void* a);                          // slot 16 0x002d6a (ILT)
+    virtual void Slot17(void* a); // slot 17 0x0d5e20: forward arg to Slot15 then Slot16
 
     // Non-virtual members (direct-called; not in the vtable).
     i32

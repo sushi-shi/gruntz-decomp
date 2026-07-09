@@ -316,8 +316,37 @@ i32 CTileTriggerSwitchLogic::SerializeMatrix(CSerialArchive* s) {
     return 1;
 }
 
-// CTileTriggerSwitchLogic::GetFlag74 (0x00115f00) is now an inline member in the header.
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::DeserializeMatrix (0x113e70) - the READ mirror of
+// SerializeMatrix: streams two header dwords (+0xc0, +0xc4) then a 3x3 dword matrix
+// (+0x9c..) via the stream's Read slot. Returns 0 if the stream or the active
+// game-manager (g_gameReg+0x30) is null, else 1. This is the type-7 (load) apply
+// ApplyByType dispatches to as ApplyType7 (thunk 0x3cd3). Re-homed from
+// src/Stub/BoundaryLowerMethods.cpp (was the C113e70 placeholder view).
+// @early-stop
+// esi/edi regalloc wall (~95%, same as SerializeMatrix): whole body byte-identical;
+// retail pins this->esi / stream->edi vs our this->edi / stream->esi. Reg-pair swap.
+RVA(0x00113e70, 0x7b)
+i32 CTileTriggerSwitchLogic::DeserializeMatrix(CSerialArchive* s) {
+    if (s == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_world == 0) {
+        return 0;
+    }
+    s->Read(&m_block[37], 4); // +0xc0
+    s->Read(&m_block[38], 4); // +0xc4
+    i32* p = &m_block[28];    // +0x9c
+    for (i32 r = 0; r < 3; r++) {
+        for (i32 c = 0; c < 3; c++) {
+            s->Read(p, 4);
+            p++;
+        }
+    }
+    return 1;
+}
 
+// CTileTriggerSwitchLogic::GetFlag74 (0x00115f00) is now an inline member in the header.
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::RemoveByKeys
