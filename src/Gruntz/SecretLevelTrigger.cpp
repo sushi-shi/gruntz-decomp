@@ -18,6 +18,7 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/Trigger.h>            // shared point-probe result object
 #include <Gruntz/SecretLevelTrigger.h> // canonical CSecretLevelTrigger : CUserLogic
+#include <Gruntz/SerialObjRef.h>       // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
@@ -62,6 +63,19 @@ SIZE_UNKNOWN(CTrigger);
 // label); only the on-screen-cue receiver at +0x68 is touched.
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
+
+// CSecretLevelTrigger::Serialize @0x010bb0 - the vtable slot-1 override: chain the
+// shared CUserLogic serialize helper on `this`, and (only on success) the +0x34
+// serializable sub-object's chain; normalize the second chain's success to a strict
+// bool. The byte-identical chain-Serialize archetype (differs only in the two call
+// displacements) - the direct sibling of CSecretTeleporterTrigger::Serialize (0x010a10).
+RVA(0x00010bb0, 0x47)
+i32 CSecretLevelTrigger::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
 
 // CSecretLevelTrigger::~CSecretLevelTrigger @0x010c50 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic

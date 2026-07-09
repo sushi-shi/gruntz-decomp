@@ -2,11 +2,24 @@
 // The /GX leaf dtor and the 1-arg ctor (the shared CUserLogic(obj) prologue + the
 // per-class eyecandy tail).
 #include <Gruntz/Explosion.h>
+#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the `A` node lookup masks.
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
+
+// CExplosion::Serialize @0x012e20 - the vtable slot-1 override: chain the shared
+// CUserLogic serialize helper on `this`, and (only on success) the +0x34 serializable
+// sub-object's chain; normalize the second chain's success to a strict bool. The
+// byte-identical chain-Serialize archetype (differs only in the two call displacements).
+RVA(0x00012e20, 0x47)
+i32 CExplosion::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
 
 // CExplosion::~CExplosion (0x12ec0) - the /GX leaf dtor folds the bare CUserLogic
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link

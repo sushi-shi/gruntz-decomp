@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/Particlez.h>
+#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -129,6 +130,18 @@ static inline CPartEntry* PartLookup(i32 coord) {
     g_retAddrBreadcrumb = GetRetAddr();
     g_partColl2->Set(&g_partColl, (i32)item, 0xc);
     return g_partCur;
+}
+
+// CParticlez::Serialize @0x012cf0 - the vtable slot-1 override: chain the shared
+// CUserLogic serialize helper on `this`, and (only on success) the +0x34 serializable
+// sub-object's chain; normalize the second chain's success to a strict bool. The
+// byte-identical chain-Serialize archetype (differs only in the two call displacements).
+RVA(0x00012cf0, 0x47)
+i32 CParticlez::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
 }
 
 // CParticlez::~CParticlez @0x012d90 - the leaf adds no destructible members

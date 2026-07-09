@@ -28,6 +28,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_VOICETRIGGER; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x0134e0 (vtable slot 1: serialize chain)
     static void InitActReg();          // 0x11a320 (constructs g_vtrigColl @0x651500)
     void FireActivation(i32 coord);    // 0x11a3a0 (vtable slot 4 body: per-coord PMF dispatch)
     void RegisterActs();               // 0x11a500 (binds Tick to the activation key "A")

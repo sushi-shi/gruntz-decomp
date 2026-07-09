@@ -14,6 +14,7 @@ public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x012e20 (vtable slot 1: serialize chain)
     TILE_LOGIC_TAIL
 public:
     CExplosion(CGameObject* obj); // 0x470e0

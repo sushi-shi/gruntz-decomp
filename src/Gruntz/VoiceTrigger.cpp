@@ -13,6 +13,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/VoiceTrigger.h> // canonical CVoiceTrigger : CUserLogic
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
+#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -173,6 +174,18 @@ extern CGameRegistry* g_gameReg;
 // only fires for the active area. extern "C" so the load reloc-masks against the
 // already-named global.
 extern "C" i32 g_644c54;
+
+// CVoiceTrigger::Serialize @0x0134e0 - the vtable slot-1 override: chain the shared
+// CUserLogic serialize helper on `this`, and (only on success) the +0x34 serializable
+// sub-object's chain; normalize the second chain's success to a strict bool. The
+// byte-identical chain-Serialize archetype (differs only in the two call displacements).
+RVA(0x000134e0, 0x47)
+i32 CVoiceTrigger::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
 
 // CVoiceTrigger::~CVoiceTrigger @0x0135a0 - the leaf adds no destructible members
 // beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
