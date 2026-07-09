@@ -76,7 +76,9 @@ public:
 
     CChatPage* m_page; // +0x00 parent/page back pointer (render set / catalog / roster)
     i32 m_4;           // +0x04  (only ever zeroed; role unproven)
-    char m_pad8[0x24 - 0x08];
+    char m_pad8[0x20 - 0x08];
+    char m_wrapFlag; // +0x20  focus-wrap-enable flag (owned CMenuPage reads via m_host->CanWrap)
+    char m_pad21[0x24 - 0x21];
     CPtrList m_nodeList;     // +0x24 message-node list (head at +0x28)
     CMenuPage* m_activeNode; // +0x40 queued/active node slot (a CMenuPage)
     CString m_row0Key;       // +0x44 row0 font/asset key

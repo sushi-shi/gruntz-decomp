@@ -168,9 +168,6 @@ struct DecodeObj {
     void* M169700b(void*, i32);          // 0x169700 (2-arg overload site)
     void* M1698c0(void*, i32, i32, i32); // 0x1698c0
 };
-SIZE_UNKNOWN(MovieLookup);
-struct MovieLookup {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
-
 SIZE_UNKNOWN(RezSync);
 struct RezSync {
     u32 m_00;

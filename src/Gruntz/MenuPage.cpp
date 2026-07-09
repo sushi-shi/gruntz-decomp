@@ -60,12 +60,9 @@ extern CString* MenuPage_KeyFwd(CMenuPage* p, CString* out);  // 0x184610
 extern CString* MenuPage_KeyBack(CMenuPage* p, CString* out); // 0x184630
 
 // The host (m_host) the page renders selected items through and asks to switch
-// pages (CChatBox region, __thiscall). Its +0x20 byte gates focus-wrapping.
-struct CMenuRenderHost {
-    char pad0[0x20];
-    char m_wrapFlag; // +0x20  wrap-enable flag (read as signed char by CanWrap)
-};
-SIZE_UNKNOWN(CMenuRenderHost);
+// pages IS the owning CChatBox (<Gruntz/ChatBox.h>, __thiscall Draw/ReplaceNode/
+// ScrollRow1); its +0x20 byte (CChatBox::m_wrapFlag) gates focus-wrapping. The
+// former CMenuRenderHost fake view is gone - m_host is the real class now.
 // The sub-page's current item placer (0x153790, __thiscall on the head item).
 SIZE_UNKNOWN(CMenuPlacer);
 
@@ -104,7 +101,7 @@ i32 CMenuPage::Configure(
     }
     i32* t = (i32*)tmpl;
     m_owner = (CMenuHost*)t[0];
-    m_host = (CMenuRenderHost*)tmpl;
+    m_host = (CChatBox*)tmpl;
     m_key = label;
     m_switchKey = parent;
     m_rowSpacing = t[7]; // tmpl+0x1c
@@ -437,7 +434,7 @@ i32 CMenuPage::Layout(i32 ctx) {
             y += item->GetWidth() / 2;
             item->Place(ctx, x, y);
             if (item->m_state == 2 && !(m_flags & 8)) {
-                ((CChatBox*)m_host)->Draw(ctx, (i32)item, x, y);
+                m_host->Draw(ctx, (i32)item, x, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;
@@ -462,11 +459,11 @@ i32 CMenuPage::Switch(i32 refocus) {
     if (m_switchKey.GetLength() == 0) {
         return 0;
     }
-    if (!((CChatBox*)m_host)->ReplaceNode((void*)(const char*)m_switchKey)) {
+    if (!m_host->ReplaceNode((void*)(const char*)m_switchKey)) {
         return 0;
     }
     if (refocus) {
-        ((CChatBox*)m_host)->ScrollRow1();
+        m_host->ScrollRow1();
     }
     return 1;
 }
@@ -489,7 +486,7 @@ i32 CMenuPage::CanWrap() {
     if (f & 1) {
         return 1;
     }
-    return m_host->m_wrapFlag & 1;
+    return m_host->m_wrapFlag & 1; // m_host is the owning CChatBox (m_wrapFlag @+0x20)
 }
 
 // single-list grid layout: center each child in the page rect, place
@@ -529,7 +526,7 @@ i32 CMenuPage::LayoutOne(i32 ctx) {
             y += item->GetWidth() / 2;
             item->Place(ctx, col, y);
             if (item->m_state == 2 && !(m_flags & 8)) {
-                ((CChatBox*)m_host)->Draw(ctx, (i32)item, col, y);
+                m_host->Draw(ctx, (i32)item, col, y);
             }
             y += item->GetWidth() / 2;
             y += m_rowSpacing;

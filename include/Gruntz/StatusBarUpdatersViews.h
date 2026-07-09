@@ -12,16 +12,10 @@
 #include <Gruntz/Sprite.h>      // CSprite (frame-data value) + CSpriteHashTable
 #include <Gruntz/SoundCue.h> // the ONE +0x28 status/cue holder (CSndHost; folds the former CStatusBarHolder)
 
-// The status-bar item the named Lookup resolves: it holds the CSoundCueMgr to push
-// the configuration into at +0x10, a draw-clock latch (+0x14) and a window width
-// (+0x18).
-struct CStatusBarTab {
-    char m_pad00[0x10];
-    CSoundCueMgr* m_cueMgr; // +0x10  the mgr ConfigureItem pushes into
-    u32 m_drawClock;        // +0x14  draw-clock latch
-    u32 m_window;           // +0x18  window width
-};
-SIZE_UNKNOWN(CStatusBarTab);
+// The status-bar item the named cue Lookup resolves IS the canonical LeafCue
+// (<Gruntz/LeafCue.h>): the CSoundCueMgr ConfigureItem pushes into at m_10 (+0x10,
+// == cueMgr), a draw-clock latch m_14 (+0x14, == drawClock) and a window width m_18
+// (+0x18, == window). The former CStatusBarTab view was a duplicate of it, folded away.
 
 // The +0x28 status-bar holder is the canonical CSndHost (SoundCue.h) - the former
 // CStatusBarHolder/sprite-keyed copies were views of it (same +0x10 name->object map

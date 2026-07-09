@@ -63,6 +63,12 @@ class CHashBase;
 struct CHashSlotList {
     CHashLink* m_head; // +0x00  (slot+0x08)
     CHashLink* m_tail; // +0x04  (slot+0x0c)
+
+    // The intrusive-list splice/unsplice ops (reloc-masked engine __thiscall on the
+    // {head,tail} pair). Own methods so standalone m_nodes users reach them cast-free
+    // (the old (DSoundList*) reinterpret was a cross-module fake view of this list).
+    void Link(CHashLink* node);   // 0x1390e0  (== the InsertHead splice)
+    void Unlink(CHashLink* node); // 0x1391e0
 };
 SIZE(CHashSlotList, 0x8);
 

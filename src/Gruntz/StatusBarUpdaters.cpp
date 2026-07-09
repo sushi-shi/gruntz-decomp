@@ -2,6 +2,7 @@
 #include <Bute/ButeMgr.h>
 #include <Gruntz/GameRegistry.h>           // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/LeafCue.h>                // the canonical cue record (was the CStatusBarTab view)
 #include <Gruntz/Sprite.h>                 // CSprite (frame-data value) + CSpriteHashTable
 #include <Gruntz/StatusBarUpdatersViews.h> // referent views + EngineLabelBacklog host
 
@@ -87,13 +88,12 @@ void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
                 frame = 0x1a;
                 CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
                 if (h->m_emitGate == 0) {
-                    CSprite* spr = 0;
+                    LeafCue* spr = 0;
                     h->m_10.Lookup("GAME_COOKINGCOMPLETE", &spr);
                     if (spr) {
-                        CStatusBarTab* t = (CStatusBarTab*)spr;
-                        if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
-                            t->m_drawClock = g_6bf3c0;
-                            t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
+                        if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                            spr->m_14 = g_6bf3c0;
+                            spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
                         }
                     }
                 }
@@ -212,13 +212,12 @@ void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
                 if (m[0x10c / 4] == 3 && m[0] != 2) {
                     CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
                     if (h->m_emitGate == 0) {
-                        CSprite* spr = 0;
+                        LeafCue* spr = 0;
                         h->m_10.Lookup("GAME_REZGRINDING", &spr);
                         if (spr) {
-                            CStatusBarTab* t = (CStatusBarTab*)spr;
-                            if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
-                                t->m_drawClock = g_6bf3c0;
-                                t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
+                            if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                                spr->m_14 = g_6bf3c0;
+                                spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
                             }
                         }
                     }
@@ -302,13 +301,12 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
             ((CStatzTabSub*)m[idx + 0x18c / 4])->Toggle(m[0], one);
             CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
             if (h->m_emitGate == 0) {
-                CSprite* spr = 0;
+                LeafCue* spr = 0;
                 h->m_10.Lookup("GAME_STATZTABTOGGLE", &spr);
                 if (spr) {
-                    CStatusBarTab* t = (CStatusBarTab*)spr;
-                    if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
-                        t->m_drawClock = g_6bf3c0;
-                        t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
+                    if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                        spr->m_14 = g_6bf3c0;
+                        spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
                     }
                 }
             }
@@ -348,13 +346,12 @@ i32 EngineLabelBacklog::LoadSwitchDownSprite() {
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
         CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
         if (h->m_emitGate == 0) {
-            CSprite* spr = 0;
+            LeafCue* spr = 0;
             h->m_10.Lookup("GAME_SWITCHDOWN", &spr);
             if (spr) {
-                CStatusBarTab* t = (CStatusBarTab*)spr;
-                if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
-                    t->m_drawClock = g_6bf3c0;
-                    t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
+                if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                    spr->m_14 = g_6bf3c0;
+                    spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
                 }
             }
         }
@@ -386,13 +383,12 @@ i32 EngineLabelBacklog::LoadSwitchUpSprite() {
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
         CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
         if (h->m_emitGate == 0) {
-            CSprite* spr = 0;
+            LeafCue* spr = 0;
             h->m_10.Lookup("GAME_SWITCHUP", &spr);
             if (spr) {
-                CStatusBarTab* t = (CStatusBarTab*)spr;
-                if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
-                    t->m_drawClock = g_6bf3c0;
-                    t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
+                if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                    spr->m_14 = g_6bf3c0;
+                    spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
                 }
             }
         }
@@ -474,13 +470,12 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
 
     CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
     if (h->m_emitGate == 0) {
-        CSprite* fly = 0;
+        LeafCue* fly = 0;
         h->m_10.Lookup("GAME_WARPSTONEFLY", &fly);
         if (fly) {
-            CStatusBarTab* t = (CStatusBarTab*)fly;
-            if (g_61ab20 != 0 && g_6bf3c0 - t->m_drawClock >= t->m_window) {
-                t->m_drawClock = g_6bf3c0;
-                t->m_cueMgr->ConfigureItem(g_61ab24, 0, 0, 0);
+            if (g_61ab20 != 0 && g_6bf3c0 - fly->m_14 >= fly->m_18) {
+                fly->m_14 = g_6bf3c0;
+                fly->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
             }
         }
     }

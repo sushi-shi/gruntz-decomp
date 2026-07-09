@@ -34,8 +34,6 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_stateFlags |= 1;
 }
 
-// CActionArea::GetTypeTag (0x00007f80) is now an inline member in the class header.
-
 // CActionArea::~CActionArea (0x7fd0) - the leaf adds no destructible members beyond
 // CUserLogic (its own +0x54.. state is plain ints), so its dtor folds the bare
 // CUserLogic teardown (store CUserLogic vptr, inline-destruct the +0x18 link via

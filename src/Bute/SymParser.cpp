@@ -5,7 +5,6 @@
 // (its own abstract sub-object vtable 0x5ef760) and an engine hash table at +0x80.
 // See include/Bute/SymParser.h for the layout + the call-graph evidence.
 #include <rva.h>
-#include <Dsndmgr/SoundVoiceList.h>
 #include <stdlib.h> // atoi (0x11ff10) / _splitpath (0x18c530)
 #include <string.h> // strlen/strcpy/strcmp (inline) / _strlwr (0x18d330)
 #include <io.h>     // _finddata_t / _findfirst / _findnext / _findclose
@@ -57,10 +56,14 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
 // CSymTab + the owned buffers, drain the +0x88 node list, then RemoveAll the +0x80
 // hash member (the trylevel-0 /GX member-teardown) and re-stamp the +0x10 list
 // sub-object vtable. The +0x80 CHashBase auto-destructs after the body.
-// 100% (ALL-VTABLES phase): making CSymParser real-polymorphic lets cl auto-stamp
+// 99.99% (ALL-VTABLES phase): making CSymParser real-polymorphic lets cl auto-stamp
 // the vptr @+0 at dtor entry (into EH-state 0, early) - which is exactly the retail
 // schedule, closing the old eh-dtor-vptr-stamp-vs-trylevel-order wall that capped
-// this at ~98% while the vptr was a hand-rolled store.
+// this at ~98% while the vptr was a hand-rolled store. Code bytes are byte-identical;
+// the sole 0.009% residual is a reloc-NAME artifact: the +0x88 node-list Unlink is now
+// the cast-free m_nodes.Unlink (CHashSlotList's own op) instead of the old cross-module
+// (DSoundList*) reinterpret, and the delinker had 0x1391e0 blessed under the DSoundList
+// name - the operand is reloc-masked, so this is a scoring artifact, not a code diff.
 RVA(0x0013abc0, 0x13f)
 CSymParser::~CSymParser() {
     // cl auto-stamps ??_7CSymParser @+0 at dtor entry (polymorphic class).
@@ -111,7 +114,7 @@ CSymParser::~CSymParser() {
     if (node) {
         do {
             RezFree(node->m_buffer);
-            ((DSoundList*)&m_nodes)->Unlink((DSoundLink*)&node->m_link);
+            m_nodes.Unlink(&node->m_link);
             RezFree(node);
             node = (CSlotNode*)m_nodes.m_head;
         } while (node);
@@ -586,7 +589,7 @@ void* CSymParser::PopParseSlot() {
             el->m_node.m_record = el;
             m_hash.Insert(&el->m_node);
         }
-        ((DSoundList*)&m_nodes)->InsertHead((DSoundLink*)&node->m_link);
+        m_nodes.Link(&node->m_link);
         e = m_hash.First();
         rec = e->m_record;
     }

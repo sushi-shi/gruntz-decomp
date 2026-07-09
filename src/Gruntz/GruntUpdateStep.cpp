@@ -398,7 +398,7 @@ i32 CGrunt::SeekTarget() {
             } while (i < 0xf);
             if (bestIdx != -1) {
                 this->m_arrivalCol = bestIdx;
-                CGruntHud* base = ((CGrunt*)slots[bestIdx])->m_10;
+                CGruntHud* base = slots[bestIdx]->m_10;
                 if (TileSwitch6(base->m_5c >> 5, base->m_60 >> 5, 0, this->m_arrivalFlags, 1, 0)
                     != 0) {
                     i32 by = this->m_10->m_60;

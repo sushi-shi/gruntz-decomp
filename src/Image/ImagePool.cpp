@@ -150,7 +150,7 @@ void CImagePool::RemovePalette(CImagePaletteNode* node) {
     if (node->m_listPosition) {
         m_palettes.RemoveAt(node->m_listPosition);
     }
-    ((CImagePaletteNode*)node)->Run();
+    node->Run();
     RezFree(node);
 }
 
@@ -452,7 +452,7 @@ CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
     }
     if (node->Build(entries, flags) == 0) {
         if (node) {
-            ((CImagePaletteNode*)node)->Run();
+            node->Run();
             RezFree(node);
         }
         return 0;
@@ -478,7 +478,7 @@ CImagePaletteNode* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
     }
     if (node->ProcessPal(rgb, flags) == 0) {
         if (node) {
-            ((CImagePaletteNode*)node)->Run();
+            node->Run();
             RezFree(node);
         }
         return 0;
@@ -502,7 +502,7 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
     }
     if (((CImageExtLoader*)node)->LoadByExtension(path, arg) == 0) {
         if (node) {
-            ((CImagePaletteNode*)node)->Run();
+            node->Run();
             RezFree(node);
         }
         return 0;
@@ -528,7 +528,7 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
     }
     if (node->ParseDispatch(buf, size, type, ctrl) == 0) {
         if (node) {
-            ((CImagePaletteNode*)node)->Run();
+            node->Run();
             RezFree(node);
         }
         return 0;

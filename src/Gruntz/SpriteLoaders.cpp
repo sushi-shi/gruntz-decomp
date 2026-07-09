@@ -259,7 +259,7 @@ i32 CTimer::Tick(i32 dt) {
         ls->m_cueIntervalHi = 0;
         ls->m_cueTimerLo = g_645588;
         ls->m_cueTimerHi = 0;
-        ((CTriggerMgr*)g_gameReg->m_cmdGrid)->ClearRowAndRefresh(g_644c54);
+        g_gameReg->m_cmdGrid->ClearRowAndRefresh(g_644c54);
         CFocusSlot* slot = &g_gameReg->m_focusSlots[g_644c54];
         if (slot != 0) {
             slot->m_24 = 1;
@@ -501,7 +501,7 @@ i32 CTimer::Serialize(CSerialArchive* ar) {
     g_serialCounter++;
     memset(tmp, 0, sizeof(tmp));
     if (m_sprite) {
-        strcpy(tmp, (char*)m_sprite + 0x24);
+        strcpy(tmp, m_sprite->m_name);
     }
     ar->Write(tmp, 0x80);
 
