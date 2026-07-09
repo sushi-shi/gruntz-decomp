@@ -3196,6 +3196,36 @@ void CGrunt::ClearSubB() {
     }
 }
 
+// CGrunt::ReapplyVoiceParams() @0x57d10 - when the registry sound gate
+// (g_gameReg->m_10) is set, re-apply the current sound-channel params
+// (g_gameReg->m_11c) to both the struck-slot (+0x424) and struck-voice (+0x428)
+// samples via DirectSoundMgr::ApplyAndPlay. __thiscall, no args. Same sample-play
+// shape as EnsureStruckSlot/EnsureStruckVoice.
+//
+// @early-stop  (~99.9%, logic/control-flow/reloc-set byte-exact)
+// FLAGGED for the cleanup loop, NOT a codegen wall: the two m_424/m_428 member
+// reads compile to [esi+0x544]/[esi+0x548] instead of retail's +0x424/+0x428 - the
+// SHARED pre-existing CGrunt layout drift. CMovingLogic (the base) already declares
+// the 0x30..0x14c field band, and CGrunt REDECLARES the same band from +0x30, so
+// CGrunt's own fields start at the base sizeof (0x150) instead of 0x30 - every
+// CGrunt own-member >= 0x30 lands +0x120 high (sizeof CGrunt = 2552). Identical
+// state to EnsureStruckSlot/EnsureStruckVoice/ClearSubA/ClearSubB; all flip to 100%
+// together once the CMovingLogic/CGrunt field duplication is reconciled.
+RVA(0x00057d10, 0x4e)
+void CGrunt::ReapplyVoiceParams() {
+    if (*(i32*)((char*)g_gameReg + 0x10) == 0) {
+        return;
+    }
+    DirectSoundMgr* a = *(DirectSoundMgr**)&m_424;
+    if (a != 0) {
+        a->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
+    }
+    DirectSoundMgr* b = *(DirectSoundMgr**)&m_428;
+    if (b != 0) {
+        b->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
+    }
+}
+
 // CGrunt::DestroyAnims() @0x57d80 - the two-step anim teardown (both this-calls
 // reach engine cleanup; reloc-masked).
 RVA(0x00057d80, 0x11)

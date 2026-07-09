@@ -1623,6 +1623,7 @@ public:
     i32 CommitArrival();                    // @0x4b130
     void ClearSubA();                       // @0x57c10
     void ClearSubB();                       // @0x57ce0
+    void ReapplyVoiceParams();              // @0x57d10 replay both voices on the registry gate
     void DestroyAnims();                    // @0x57d80
     // @0x31c70 (ret 4) - write the grunt's HUD tile coords (m_10->m_5c/m_60 >> 5)
     // into the caller's {x,y} out slot and return it.

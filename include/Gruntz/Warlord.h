@@ -111,6 +111,10 @@ public:
     // re-arm the moving animation off the global geo source (0x44bb0).
     i32 RearmMoving(); // 0x44bb0
 
+    // a second per-state moving-anim re-arm handler dispatched from the warlord
+    // anim-state table; byte-identical body to RearmMoving. (0x44f30)
+    i32 RearmMoving2(); // 0x44f30
+
     // per-frame moving-state action handler (0x44e70): advance the +0x1a0 anim
     // sub-mgr, and once it goes idle (m_28!=0 && m_20==0), when the fort cue is
     // armed for the current player re-stamp the battle-cue timer (m_290 clock,

@@ -331,6 +331,23 @@ i32 CWarlord::AdvanceMovingAnim() {
 }
 
 // ===========================================================================
+// CWarlord::RearmMoving2  (0x044f30)
+// ===========================================================================
+// A second per-state moving-anim re-arm handler dispatched from the warlord
+// anim-state table; the body is byte-identical to RearmMoving (0x44bb0): re-arm
+// the +0x1a0 geo sub-player off the global geo source, then resolve the moving
+// animation when the sub's state words say it is ready. Returns 0.
+RVA(0x00044f30, 0x38)
+i32 CWarlord::RearmMoving2() {
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo);
+    CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
+    if (sub->m_28 != 0 && sub->m_20 == 0) {
+        ResolveMovingAnimation();
+    }
+    return 0;
+}
+
+// ===========================================================================
 // CWarlord::BuildFortSplashParticles  (0x044f80)
 // ===========================================================================
 // Re-arm the geo sub-player, and when ready-to-move, spawn the fort splash
