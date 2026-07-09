@@ -93,10 +93,7 @@ namespace m4 {
         HitGrunt* FindGruntAt(i32 x, i32 y, HitTileRect* r, i32* a, i32* b, struct tagRECT* rect);
     };
 } // namespace m4
-class CTriggerMgr {
-public:
-    i32 CellDispatch(i32 a, i32 b, i32 c, i32 d);
-};
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (CellDispatch)
 struct CSlimeCueGate {
     // QueryAt(level->m_5c, level->m_60, &level->m_144, &outA, &outB, 0) -> entity*.
     // QueryAt IS m4::GruntHitMgr::FindGruntAt; cast at the call.

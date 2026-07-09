@@ -37,10 +37,7 @@
 
 // The cmd-grid probed by the warlord-head builders is a CTriggerMgr; ByteTableHas @0x79b30.
 // TU-local decl, cast at each call.
-class CTriggerMgr {
-public:
-    i32 ByteTableHas(i32 a);
-};
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (ByteTableHas)
 
 // ---------------------------------------------------------------------------
 // The builder-facet base CSbConfigItem, its concrete SBI leaves (CSBI_Image /

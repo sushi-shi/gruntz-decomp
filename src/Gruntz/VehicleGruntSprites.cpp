@@ -19,10 +19,7 @@
 #include <Gruntz/TileGrid.h>   // the registry +0x70 tile occupancy grid
 #include <Gruntz/GruntzMgr.h>  // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/PickupType.h> // the shared object/pickup/grunt-kind type id space
-class CTriggerMgr {
-public:
-    i32 ApplySwitch(i32 a, i32 b);
-};
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (ApplySwitch)
 class CTileWireLogic {
 public:
     i32 WireTileSwitchLogic(void* a, i32 b, i32 c);

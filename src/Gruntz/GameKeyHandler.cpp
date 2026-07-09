@@ -63,16 +63,7 @@ struct CSBI_RectOnly {
     i32 SetTab(i32 a, i32 b);
     i32 HlClickGroup0(i32 a);
 };
-struct CTriggerMgr {
-    i32 EnqueueGroupCells();
-    i32 CenterSelectionGroup(i32 a);
-    i32 ToggleRegionB();
-    i32 RebuildSelectionList(i32 a);
-    i32 ToggleRegionA();
-    i32 CellDispatch(i32 a, i32 b, i32 c, i32 d);
-    i32 SpawnPuddle(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
-    void* ScreenToCell(i32 a, i32 b, void* c, void* d, i32 e);
-};
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (group/cell/puddle dispatch)
 struct CGroupSel {
     i32 CenterOnGroup(i32 a);
 };
