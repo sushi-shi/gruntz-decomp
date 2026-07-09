@@ -2884,18 +2884,17 @@ i32 CGameLevel::RemovePlane(i32 index) {
 // a clear span returns the proposed row y. (4th arg unused.)
 //
 // @early-stop
-// register-scheduling wall: same 4-saved-reg PROBE_TILE-shape entropy as the
-// StepAxis siblings (the spilled this/fixedY/hiX slots and the strided step); logic
-// + offsets + CFG + the probe dispatch are exact. Deferred to the final sweep.
+// ~95.6%: the top-tested `while (col <= hiX)` form (not `if(col>hiX)return;do{}while`)
+// reproduced retail's loop rotation - the `jg exit; jmp into-body; back-edge reloads
+// fixedY` layout (was 85.5% with the do-while, which reloaded fixedY every iteration).
+// Residual is the prologue arg-load order (a3 vs a2 into ebx/edx) + the shared
+// PROBE_TILE Y-clamp mainPlane-temp register (eax vs ecx). Not source-steerable.
 RVA(0x0015e9c0, 0x139)
 i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
     i32 fixedY = t->m_extentT + y;
     i32 hiX = t->m_extentR + x;
     i32 col = t->m_extentL + x;
-    if (col > hiX) {
-        return y;
-    }
-    do {
+    while (col <= hiX) {
         i32 result;
         PROBE_TILE(this, col, fixedY, result);
         if (result == kTileSoft) {
@@ -2906,7 +2905,7 @@ i32 CGameLevel::ScanSpanTop(CGameObject* t, i32 x, i32 y, i32 unused) {
         } else {
             col += t->m_strideX;
         }
-    } while (col <= hiX);
+    }
     return y;
 }
 
@@ -2961,38 +2960,44 @@ i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
 // the object mode 1 and re-bases the cursor. Returns the resolved cursor.
 //
 // @early-stop
-// register-scheduling wall: AdvanceA + two AxisProbe calls + the inlined span scan
-// pin the saved regs / spilled cursor & bound slots in an order MSVC reproduces only
-// for one allocation; logic + offsets + CFG + conventions exact. Deferred.
+// ~83.6%: the `goto done` shared-exit merged retail's four `return cursor` paths onto
+// the one 0x15f795 block (cursor in ebp). Residual is regalloc/frame: cursor spills to
+// [esp+0x14] (ours) vs [esp+0x28] (retail), and retail recomputes b as
+// `screenY - cursor + headRow` reusing headRow while our cl computes it directly (the
+// literal `screenY - cursor + headRow` spelling regresses to 82.3% - not steerable).
+// AdvanceA + two AxisProbe calls + inlined span scan otherwise byte-exact. Deferred.
 RVA(0x0015f610, 0x191)
 i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 cursor = AdvanceA(t, x, y, flags);
     i32 headRow = t->m_extentB + cursor + 1;
     i32 footRow = t->m_extentT + cursor - 1;
     if (AxisProbe(x, footRow) == kTileHard) {
-        return cursor;
+        goto done;
     }
     if (AxisProbe(x, headRow) == kTileHard) {
-        return cursor;
+        goto done;
     }
-    i32 b = t->m_screenY + t->m_extentB + 1;
-    if (b > headRow) {
-        i32 cur = b - 1;
-        if (cur >= headRow) {
-            do {
-                i32 result;
-                PROBE_TILE(this, x, cur, result);
-                if (result != kTileHard) {
-                    if (cur + 1 > cursor) {
-                        t->m_moveMode = 1;
-                        cursor = cur + 1 - t->m_extentB - 1;
+    {
+        i32 b = t->m_screenY + t->m_extentB + 1;
+        if (b > headRow) {
+            i32 cur = b - 1;
+            if (cur >= headRow) {
+                do {
+                    i32 result;
+                    PROBE_TILE(this, x, cur, result);
+                    if (result != kTileHard) {
+                        if (cur + 1 > cursor) {
+                            t->m_moveMode = 1;
+                            cursor = cur + 1 - t->m_extentB - 1;
+                        }
+                        goto done;
                     }
-                    return cursor;
-                }
-                --cur;
-            } while (cur >= headRow);
+                    --cur;
+                } while (cur >= headRow);
+            }
         }
     }
+done:
     return cursor;
 }
 
@@ -3002,9 +3007,12 @@ i32 CGameLevel::ResolveMoveDown(CGameObject* t, i32 x, i32 y, i32 flags) {
 // hard, turn the object mode 4. Returns the cursor.
 //
 // @early-stop
-// register-scheduling wall: the conditional ebp-push (mode-1 fast path) + mixed
-// inline-probe/AxisProbe-call schedule pins the spill slots in an order MSVC only
-// reproduces for one allocation; logic + offsets + CFG exact. Deferred.
+// ~91.3%: logic byte-faithful (AdvanceB + moveMode gate + footRow inline-probe +
+// headRow AxisProbe, verified). Residual is regalloc/frame, NOT reloc: the this/t
+// pair lands this->esi,t->edi (ours) vs this->edi,t->esi (retail) - a free-list swap -
+// and the mode-1 fast path's `push ebp` is shrink-wrapped past the moveMode test in
+// retail but hoisted upfront by our cl (docs/patterns/shrink-wrapped-callee-save-push).
+// Neither is source-steerable. Deferred to the final sweep.
 RVA(0x0015f7b0, 0x11f)
 i32 CGameLevel::ResolveMoveUp(CGameObject* t, i32 x, i32 y, i32 flags) {
     i32 cursor = AdvanceB(t, x, y, flags);
@@ -3098,22 +3106,26 @@ i32 CGameLevel::ProbeStepEdge(i32 x, i32 y) {
 // re-probes the same tile per compare - two inlined copies.)
 //
 // @early-stop
-// register-scheduling wall: the twin inlined PROBE_TILE copies pin the spill slots;
-// logic + offsets + CFG exact. Deferred to the final sweep.
+// ~98.6%: the `goto yes` shared-exit reproduced retail's single `return 1` block
+// reached by `je` from each probe (was 90.9% with per-probe inline `return 1`).
+// Residual is the PROBE_TILE Y-clamp mainPlane-temp register (eax vs ecx) entropy
+// tail. Not source-steerable. Deferred to the final sweep.
 RVA(0x00160080, 0x187)
 i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
     i32 row = t->m_screenY + t->m_extentB + 1;
     i32 r1;
     PROBE_TILE(this, dx + t->m_screenX, row, r1);
     if (r1 == kTileSoft) {
-        return 1;
+        goto yes;
     }
     i32 r2;
     PROBE_TILE(this, dx + t->m_screenX, row, r2);
     if (r2 == kTileSoft2) {
-        return 1;
+        goto yes;
     }
     return 0;
+yes:
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -3121,27 +3133,34 @@ i32 CGameLevel::ProbeFootSoft(CGameObject* t, i32 dx) {
 // is any blocking kind (soft 1, soft2 2, or hard 3), else 0. Three inlined probes.
 //
 // @early-stop
-// register-scheduling wall: three inlined PROBE_TILE copies pin the spill slots;
-// logic + offsets + CFG exact. Deferred to the final sweep.
+// ~82.6% (was 73.9%): the `goto yes` shared-exit fixed the block order (retail's
+// single `return 1` reached by `je` from all three probes; the per-probe inline
+// `return 1` inverted every branch). Residual is a genuine regalloc THRESHOLD: with
+// three probes MSVC pins `this` in the callee-saved ebx (mov ebx,ecx) where retail
+// keeps `row` in ebx and spills `this` to [esp+0x10] (reloaded per probe) - the same
+// source at two probes (ProbeFootSoft) matches at 98.6%, so it is the 3-probe
+// register pressure, not the shape. Not source-steerable. Deferred to the final sweep.
 RVA(0x00160210, 0x234)
 i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
     i32 row = t->m_screenY + t->m_extentB + 1;
     i32 r1;
     PROBE_TILE(this, dx + t->m_screenX, row, r1);
     if (r1 == kTileSoft) {
-        return 1;
+        goto yes;
     }
     i32 r2;
     PROBE_TILE(this, dx + t->m_screenX, row, r2);
     if (r2 == kTileSoft2) {
-        return 1;
+        goto yes;
     }
     i32 r3;
     PROBE_TILE(this, dx + t->m_screenX, row, r3);
     if (r3 == kTileHard) {
-        return 1;
+        goto yes;
     }
     return 0;
+yes:
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -3150,8 +3169,11 @@ i32 CGameLevel::ProbeFootBlocked(CGameObject* t, i32 dx) {
 // x1 and return whether it is non-soft. A pure tile-line clearance test.
 //
 // @early-stop
-// register-scheduling wall: the bidirectional scan + final probe pin the PROBE_TILE
-// spill slots; logic + offsets + CFG exact. Deferred to the final sweep.
+// ~91.7%: the two directional for-loops + final probe are byte-faithful in shape.
+// Residual is a free-register swap in the PROBE_TILE clamp: the col (X-loop var) and
+// y (fixed row) land in ebx/edi (ours) vs edi/ebx (retail), cascading the clamp temp
+// choices; a shared `goto`-return for the two `return 0` paths was matching-neutral
+// (retail already merges them). Not source-steerable. Deferred to the final sweep.
 RVA(0x00160c50, 0x289)
 i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
     if (x1 > x0) {
@@ -3186,79 +3208,70 @@ i32 CGameLevel::ScanRowSpan(i32 x0, i32 y, i32 x1, i32 step) {
 // ===========================================================================
 
 // @early-stop
-// register-scheduling wall: the single inlined PROBE_TILE per iteration pins the
-// spilled this/limit/col slots (same PROBE_TILE-shape entropy as ProbeColumn);
-// logic + offsets + CFG exact. Deferred to the final sweep.
+// ~93%: the `for` form fixed the exit-block order (jg loop + two distinct screenX
+// exits). Residual is two byte-level codegen picks, NOT reloc: (1) the scheduler
+// hoists the `x-1` init above the limit computation and materializes col via
+// `lea ebx,[edx-1]` (x kept live) instead of retail's `mov ebx,[esp+N]; dec ebx`;
+// (2) the PROBE_TILE Y-clamp reads m_mainPlane into eax (our cl) vs ecx (retail) -
+// a free-register pick for a dead temp (the X-clamp matches at eax in both). Neither
+// is source-steerable. Deferred to the final sweep.
 RVA(0x00167a20, 0x11b)
 i32 CGameLevel::ResolveRightX(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenX + t->m_extentR;
-    i32 col = x - 1;
-    if (col > limit) {
-        do {
-            i32 result;
-            PROBE_TILE(this, col, y, result);
-            if (result == kTilePassable) {
-                return col - t->m_extentR;
-            }
-            col--;
-        } while (col > limit);
+    for (i32 col = x - 1; col > limit; col--) {
+        i32 result;
+        PROBE_TILE(this, col, y, result);
+        if (result == kTilePassable) {
+            return col - t->m_extentR;
+        }
     }
     return t->m_screenX;
 }
 
 // @early-stop
-// register-scheduling wall (PROBE_TILE-shape spill entropy). Deferred.
+// ~93%: `for`-form fixed exit-block order; residual = the x+1 init hoisted above the
+// limit compute + the Y-clamp mainPlane-temp register (eax vs ecx). See ResolveRightX.
 RVA(0x00167b40, 0x11b)
 i32 CGameLevel::ResolveLeftX(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenX + t->m_extentL;
-    i32 col = x + 1;
-    if (col < limit) {
-        do {
-            i32 result;
-            PROBE_TILE(this, col, y, result);
-            if (result == kTilePassable) {
-                return col - t->m_extentL;
-            }
-            col++;
-        } while (col < limit);
+    for (i32 col = x + 1; col < limit; col++) {
+        i32 result;
+        PROBE_TILE(this, col, y, result);
+        if (result == kTilePassable) {
+            return col - t->m_extentL;
+        }
     }
     return t->m_screenX;
 }
 
 // @early-stop
-// register-scheduling wall (PROBE_TILE-shape spill entropy). Deferred.
+// ~96.8%: `for`-form fixed exit-block order; residual = the y-1 init hoist + the
+// Y-clamp mainPlane-temp register (eax vs ecx). See ResolveRightX.
 RVA(0x00167c60, 0x11b)
 i32 CGameLevel::ResolveBottomY(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenY + t->m_extentB;
-    i32 row = y - 1;
-    if (row > limit) {
-        do {
-            i32 result;
-            PROBE_TILE(this, x, row, result);
-            if (result == kTilePassable) {
-                return row - t->m_extentB;
-            }
-            row--;
-        } while (row > limit);
+    for (i32 row = y - 1; row > limit; row--) {
+        i32 result;
+        PROBE_TILE(this, x, row, result);
+        if (result == kTilePassable) {
+            return row - t->m_extentB;
+        }
     }
     return t->m_screenY;
 }
 
 // @early-stop
-// register-scheduling wall (PROBE_TILE-shape spill entropy). Deferred.
+// ~96.8%: `for`-form fixed exit-block order; residual = the y+1 init hoist + the
+// Y-clamp mainPlane-temp register (eax vs ecx). See ResolveRightX.
 RVA(0x00167d80, 0x11b)
 i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
     i32 limit = t->m_screenY + t->m_extentT;
-    i32 row = y + 1;
-    if (row < limit) {
-        do {
-            i32 result;
-            PROBE_TILE(this, x, row, result);
-            if (result == kTilePassable) {
-                return row - t->m_extentT;
-            }
-            row++;
-        } while (row < limit);
+    for (i32 row = y + 1; row < limit; row++) {
+        i32 result;
+        PROBE_TILE(this, x, row, result);
+        if (result == kTilePassable) {
+            return row - t->m_extentT;
+        }
     }
     return t->m_screenY;
 }
