@@ -16,8 +16,10 @@
 
 class CFrontCandyAni : public CUserLogic {
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0xfa60 body)
     TILE_LOGIC_TAIL
 public:
+    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00fa60 (slot-1 body)
     // Construct the class's activation-coordinate registry (g_frontCandyActReg
     // @0x6460b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.
     static void InitActReg(); // 0x0ad130

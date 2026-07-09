@@ -19,6 +19,17 @@
 #include <Gruntz/NameVec.h>      // g_buteNameVec's scratch zDArray<CString> view
 #include <Globals.h>
 #include <Gruntz/AnimSink.h>
+#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
+
+// CSimpleAnimation::Serialize @0x00f930 - the vtable slot-1 override: base CUserLogic
+// chain + the +0x34 sub-object chain. Byte-identical to CEyeCandy::Serialize (0x00fcc0).
+RVA(0x0000f930, 0x47)
+i32 CSimpleAnimation::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"

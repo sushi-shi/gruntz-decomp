@@ -32,6 +32,7 @@ public:
     RVA(0x0000f6b0, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_DONOTHING; }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0x2b26)
+    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00f6d0 (slot-1 body)
     virtual ~CDoNothing() OVERRIDE; // 0x00f770 (folds the CUserLogic teardown)
     char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CDoNothing` @0xa9cc0)
 };

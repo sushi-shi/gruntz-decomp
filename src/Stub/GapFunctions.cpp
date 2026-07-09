@@ -20,26 +20,6 @@ RVA(0x0000ba00, 0xc6)
 i32 Gap_00ba00(void) {
     return 0;
 } // @stub
-RVA(0x0000f5a0, 0x47)
-i32 Gap_00f5a0(void) {
-    return 0;
-} // @stub
-RVA(0x0000f6d0, 0x47)
-i32 Gap_00f6d0(void) {
-    return 0;
-} // @stub
-RVA(0x0000f800, 0x47)
-i32 Gap_00f800(void) {
-    return 0;
-} // @stub
-RVA(0x0000f930, 0x47)
-i32 Gap_00f930(void) {
-    return 0;
-} // @stub
-RVA(0x0000fa60, 0x47)
-i32 Gap_00fa60(void) {
-    return 0;
-} // @stub
 RVA(0x00010f20, 0x47)
 i32 Gap_010f20(void) {
     return 0;

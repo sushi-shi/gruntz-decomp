@@ -27,6 +27,7 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
     TILE_LOGIC_TAIL
 public:
+    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00f800 (slot-1 body)
     virtual ~CDoNothingNormal() OVERRIDE; // 0x0000f8a0 (folds the CUserLogic teardown)
 };
 VTBL(CDoNothingNormal, 0x1e859c);

@@ -16,6 +16,7 @@
 #include <Gruntz/DoNothing.h>
 #include <Gruntz/DoNothingNormalDtor.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 
 #include <Ints.h>
 #include <rva.h>
@@ -125,6 +126,17 @@ inline DnnRec::DnnRec(Owner* owner) : CUserLogicOOL(owner) {
 
 // CDoNothing::GetTypeTag (0x0000f6b0) is now an inline member in the class header.
 
+// CDoNothing::Serialize @0x00f6d0 - the vtable slot-1 override: chain the shared
+// CUserLogic serialize helper on `this`, then (on success) the +0x34 sub-object's
+// chain; normalize to a bool. Byte-identical to CEyeCandy::Serialize (0x00fcc0).
+RVA(0x0000f6d0, 0x47)
+i32 CDoNothing::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
+
 // CDoNothing::~CDoNothing @0x00f770 - the leaf adds no destructible members beyond
 // CUserLogic, so its dtor folds the bare CUserLogic teardown: store the CUserLogic
 // vptr (0x5e705c), inline-destruct the +0x18 link (the embedded ~EngStr call
@@ -133,6 +145,16 @@ inline DnnRec::DnnRec(Owner* owner) : CUserLogicOOL(owner) {
 // enough for cl.
 RVA(0x0000f770, 0x44)
 CDoNothing::~CDoNothing() {}
+
+// CDoNothingNormal::Serialize @0x00f800 - the vtable slot-1 override (same shape as
+// CDoNothing::Serialize): base CUserLogic chain + the +0x34 sub-object chain.
+RVA(0x0000f800, 0x47)
+i32 CDoNothingNormal::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
 
 // CDoNothingNormal::~CDoNothingNormal @0x0000f8a0 - folds the bare CUserLogic
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link

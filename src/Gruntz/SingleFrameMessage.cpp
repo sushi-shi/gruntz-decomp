@@ -8,6 +8,19 @@
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleFrameMessage.h>
+#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
+
+// CSingleFrameMessage::Serialize @0x00f5a0 - the vtable slot-1 override: chain the
+// shared CUserLogic serialize helper on `this`, and (only on success) the +0x34
+// sub-object's chain, both over the same (ar, tag, c, d) tuple; normalize the second
+// chain's result to a bool. Byte-identical to CEyeCandy::Serialize (0x00fcc0).
+RVA(0x0000f5a0, 0x47)
+i32 CSingleFrameMessage::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
