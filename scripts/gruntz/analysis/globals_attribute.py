@@ -35,7 +35,9 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from gruntz.analysis.xref import EXE, _load, _names, _owner, ILT_LO, ILT_HI
+import statistics
+
+from gruntz.analysis.xref import EXE, SYMCSV, _load, _names, _owner, ILT_LO, ILT_HI
 
 REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
             Path(__file__).resolve().parents[3])
@@ -117,6 +119,82 @@ def build_db():
     return db, names
 
 
+def stacking_report():
+    """Verify the linker's one-order-per-section stacking, anchored ONLY on globals
+    with a single owning module (confident file-statics) in .data/.rdata - shared/
+    multi-xref globals pollute a module's data position and fake inversions. Sort units
+    by median .text RVA, check each data section's private-anchor median is
+    correspondingly ascending. Residual inversions = conflated god-TUs (median is an
+    average over the real .objs they lump) or a mis-homed private. Same invariant as
+    tu_order_check's inter-TU .text contiguity, on the data side."""
+    db, names = build_db()
+    d, secs = _load()
+
+    def sec_of(rva):
+        for name, va, vsz, rp, rsz in secs:
+            if va <= rva < va + max(vsz, rsz):
+                return name
+        return None
+
+    # per-unit .text funcs (from symbol_names) + private-only .data/.rdata anchors (from db).
+    tfunc = defaultdict(list)
+    for r in _csv_rows():
+        try:
+            rva = int(r["rva"], 16)
+        except Exception:
+            continue
+        u = r.get("unit", "") or "?"
+        if u in ("globals", "?", "engine_label_stubs"):
+            continue
+        if (r.get("kind") or "func") == "func" and sec_of(rva) == ".text":
+            tfunc[u].append(rva)
+
+    priv = defaultdict(lambda: defaultdict(list))  # unit -> section -> [rva]
+    for g, units in db.items():
+        real = [u for u in units if u not in ("(unrecovered)", "?", "ghidra", "")]
+        # SINGLE-XREF only: exactly one reference site, resolving to one real unit.
+        # These are the gold file-static anchors (.data 89% / .rdata 98.8% concordance
+        # vs 68% / 94.5% for the looser single-module filter). Shared or multi-ref
+        # globals pollute a module's data-median and fake inversions.
+        if sum(units.values()) != 1 or len(real) != 1:
+            continue
+        s = sec_of(g)
+        if s in (".data", ".rdata"):
+            priv[real[0]][s].append(g)
+
+    tmed = {u: int(statistics.median(v)) for u, v in tfunc.items() if len(v) >= 2}
+    tspan = {u: max(v) - min(v) for u, v in tfunc.items()}
+    print("stacking (private-anchored): does each data section follow the .text order?\n")
+    for datasec in (".data", ".rdata"):
+        dmed = {u: int(statistics.median(ss[datasec])) for u, ss in priv.items()
+                if len(ss.get(datasec, [])) >= 2}
+        pairs = sorted([(u, tmed[u], dmed[u]) for u in dmed if u in tmed],
+                       key=lambda x: x[1])
+        n = len(pairs)
+        inv = sum(1 for i in range(n) for j in range(i + 1, n) if pairs[i][2] > pairs[j][2])
+        mx = n * (n - 1) // 2 or 1
+        print(f"  {datasec:<7} {n:>3} units (private-anchored) | concordance "
+              f"{100*(1-inv/mx):5.1f}%  ({inv}/{mx} inversions)")
+        prev, bad = 0, []
+        for u, t, dd in pairs:
+            if dd < prev:
+                bad.append((u, tspan.get(u, 0)))
+            prev = max(prev, dd)
+        god = sum(1 for u, sp in bad if sp > 0x8000)
+        if bad:
+            print(f"          inversions: {len(bad)} ({god} god-TUs) -> "
+                  + ", ".join(u for u, _ in bad[:10]) + ("..." if len(bad) > 10 else ""))
+    return 0
+
+
+def _csv_rows():
+    import csv
+    if not SYMCSV.exists():
+        return []
+    with open(SYMCSV) as f:
+        return list(csv.DictReader(f))
+
+
 def _pooled_rvas():
     if not POOL.exists():
         return set()
@@ -128,8 +206,14 @@ def main():
     ap.add_argument("rva", nargs="?", help="one global RVA (0x..) to explain")
     ap.add_argument("--pooled", action="store_true",
                     help="restrict to the src/Globals.cpp catch-all pool")
+    ap.add_argument("--stacking", action="store_true",
+                    help="verify .data/.rdata follow the .text module order "
+                         "(private-anchored); inversions = god-TUs / mis-homes")
     ap.add_argument("--csv", help="write global,owner_unit,kind,n_units,total_refs,units")
     args = ap.parse_args()
+
+    if args.stacking:
+        return stacking_report()
 
     db, names = build_db()
     pooled = _pooled_rvas()
