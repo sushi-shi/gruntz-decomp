@@ -221,7 +221,7 @@
         objdiff-cli
         vostok-delinker
       ] ++ (with pkgs; [
-        (python3.withPackages (ps: [ ps.pyghidra ]))   # pyghidra + jpype1: headless Ghidra scripting
+        (python3.withPackages (ps: [ ps.pyghidra ps.libclang ]))   # pyghidra (Ghidra scripting) + libclang (clang.cindex: the permuter's precedence-correct AST mutations)
         ghidra
         ninja
 
@@ -262,6 +262,7 @@
           export GRUNTZ_DIR="$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")"
           export GRUNTZ_EXE="${gruntz-exe}"
           export GRUNTZ_CLANG="${pkgs.llvmPackages.clang-unwrapped}/bin/clang"
+          export LIBCLANG_PATH="${pkgs.llvmPackages.libclang.lib}/lib"   # clang.cindex finds libclang.so (permuter AST)
           # scripts/ is THE package root: on PYTHONPATH so `python -m gruntz` and
           # every `python -m gruntz.<x>` (cli/match/analysis tools) import it.
           export PYTHONPATH="$GRUNTZ_DIR/scripts''${PYTHONPATH:+:$PYTHONPATH}"
