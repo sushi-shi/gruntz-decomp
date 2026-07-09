@@ -155,6 +155,7 @@ struct TimerObj; // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
 // 0x3b1b IS ~CTriggerMgr; the +0x20c/+0x21c delta tables == m_rowStateB/C, the
 // +0x288 scored flag == m_288).
 class CTriggerMgr;
+class CPlay;        // PickPlayOrPausedState's concrete return (the PLAY state; Play.h)
 struct CmdSink;     // +0x6c command sub-manager sink (Command)
 class CmdSinkV;     // +0x70 polymorphic command sink (slot 1) + cell-height notify
 class CBattlezData; // +0x7c HUD/score accumulator + command sink (BattlezData.h)
@@ -336,8 +337,11 @@ public:
         return ChangeState_8fab0(1);
     }
     RVA(0x00092990, 0x8)
-    CState* PickPlayOrPausedState() {
-        return FindStateById(3);
+    // Returns the concrete PLAY/paused state (FindStateById(3) is always a CPlay);
+    // typed CPlay* so the ~12 cheat-dispatch callers drop their (CPlay*) downcast.
+    // CState is CPlay's offset-0 base -> the cast is a no-op reinterpret (byte-neutral).
+    CPlay* PickPlayOrPausedState() {
+        return (CPlay*)FindStateById(3);
     }
     CState* PickPausedThenPlayState(); // @0x0929b0 (FindStateById(0x11)|| (3))
 

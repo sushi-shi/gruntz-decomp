@@ -12,9 +12,6 @@
 #include <stdio.h>  // sprintf (reloc-masked)
 #include <string.h> // _strcmpi (reloc-masked)
 
-SIZE_UNKNOWN(CSaveGameMenu);
-struct CSaveGameMenu { // arg3: the save-game record
-};
 DATA(0x0024556c)
 extern CGruntzMgr* g_saveMenuMgr; // *0x64556c
 DATA(0x00213a9c)
@@ -23,7 +20,7 @@ DATA(0x0024c864)
 extern i32 g_slotState; // DAT_0064c864  last-queried slot state
 // FUN_00002694 __cdecl / FUN_00002e05 __cdecl (thunks): slot-used test / delete.
 i32 SlotHasSave(i32 state);
-void DeleteSaveSlot(HWND hDlg, CSaveGameMenu* obj);
+void DeleteSaveSlot(HWND hDlg, CSaveGame* obj);
 // The three dialog sub-proc thunks passed as callbacks (reloc-masked code ptrs).
 extern "C" void SaveInfoProc();
 extern "C" void SaveDeleteProc();
@@ -38,7 +35,7 @@ extern "C" void SaveOverwriteProc();
 // so the four `jmp [id*4+table]` base relocs + the table data don't pair (see
 // docs/patterns/switch-jumptable-separate-comdat.md + jumptable-data-overlap.md).
 RVA(0x000e3f40, 0x3d6)
-i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj) {
+i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     i32 c;
     if (cmd == 1) {
         c = g_savedMenuCmd;
@@ -123,7 +120,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj) {
             break;
     }
     if (info != -1) {
-        g_slotState = (i32)((CSaveGame*)obj)->GetSlot(info);
+        g_slotState = (i32)obj->GetSlot(info);
         if (g_slotState == 0) {
             return 0;
         }
@@ -171,7 +168,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj) {
             break;
     }
     if (del != -1) {
-        g_slotState = (i32)((CSaveGame*)obj)->GetSlot(del);
+        g_slotState = (i32)obj->GetSlot(del);
         if (g_slotState == 0) {
             return 0;
         }
@@ -228,8 +225,8 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj) {
     if (_strcmpi(name, "(Empty)") == 0) {
         sprintf(name, "Saved Game #%i", slot + 1);
     }
-    if (SlotHasSave((i32)((CSaveGame*)obj)->GetSlot(slot))) {
-        g_slotState = (i32)((CSaveGame*)obj)->GetSlot(slot);
+    if (SlotHasSave((i32)obj->GetSlot(slot))) {
+        g_slotState = (i32)obj->GetSlot(slot);
         if (g_slotState != 0) {
             EnableWindow(hDlg, FALSE);
             i32 ok = g_saveMenuMgr->RunModalDialog("GAME_OVERWRITE", (void*)SaveOverwriteProc, 0);
@@ -239,10 +236,10 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGameMenu* obj) {
             }
         }
     }
-    ((CSaveGame*)obj)->FillSlotByIndex(slot, (i32)name, g_saveMenuMgr);
-    g_saveMenuMgr->FillSaveInfo((SaveInfo*)(i32)((CSaveGame*)obj)->GetSlot(slot), (void*)name);
+    obj->FillSlotByIndex(slot, (i32)name, g_saveMenuMgr);
+    g_saveMenuMgr->FillSaveInfo((SaveInfo*)(i32)obj->GetSlot(slot), (void*)name);
     EndDialog(hDlg, 1);
-    if (!((CSaveGame*)obj)->Save((i32)((CSaveGame*)obj)->GetSlot(slot) + 0x35, 0x81a6)) {
+    if (!obj->Save((i32)obj->GetSlot(slot) + 0x35, 0x81a6)) {
         g_saveMenuMgr->EnterModalUI((i32) "ERROR - Cannot Save Game.");
     }
     return 1;

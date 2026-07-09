@@ -48,16 +48,10 @@ namespace Utils {
     }
 } // namespace Utils
 
-// FaderRun is the concrete CFader subclass CFaderMgr::Add(1|2, ..) mints (base at
-// +0x00; RunFade @0x17e620 drives the timed fade). Add's matched retail signature is
-// CFader* Add(int, CFader*) - it takes the init descriptor and returns the new fader
-// both as the base CFader*, so the emitter downcasts the return to the concrete
-// FaderRun once at the Add site (address-preserving, base at 0) and then calls its
-// non-virtual RunFade directly. FaderRun is never constructed here, so no ??_7FaderRun
-// is emitted. (The descriptor-side (CFader*)&t upcast is likewise Add's API: the
-// CFxModeDesc family is a distinct non-polymorphic root, so it cannot derive CFader.)
-struct FaderRun : public CFader {};
-SIZE_UNKNOWN(FaderRun); // CFader subclass, no new members (size == CFader)
+// CFaderMgr::Add(1|2, ..) returns the new fader as CFader* (RunFade @0x17e620 is a
+// non-virtual CFader method), so the emitter holds the result directly as CFader*
+// (no FaderRun view). The descriptor-side (CFader*)&t reinterpret is Add's API: the
+// CFxModeDesc family is a distinct non-polymorphic root, so it cannot derive CFader.
 
 // The DDraw surface pair CDDrawSubMgrPages holds at +0x10/+0x14/+0x18 (front/back/
 // overlay). Only its +0x2c channel surface (m_surface) is read here; the ONE

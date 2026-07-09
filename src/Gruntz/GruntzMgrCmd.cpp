@@ -133,7 +133,7 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
     }
 #define ITEMCHEAT(N, MSG)                                                                          \
     {                                                                                              \
-        CPlay* _g = (CPlay*)PickPlayOrPausedState();                                               \
+        CPlay* _g = PickPlayOrPausedState();                                                       \
         if (!_g)                                                                                   \
             return 0;                                                                              \
         _g->SetCursorFrame(N);                                                                     \
@@ -345,8 +345,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         ShowToggleMessage("Elapsed Time Display", g_debugDisplayFlags & 0x80);
                         return 1;
                     case 0x8086: {
-                        CPlay* _g =
-                            (CPlay*)PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
+                        CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 1;
                         }
@@ -463,8 +462,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         return 1;
                     }
                     case 0x8107: {
-                        CPlay* _g =
-                            (CPlay*)PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
+                        CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
                         }
@@ -513,8 +511,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         AppendChatMessage("How about a little color in your Gruntz?");
                         return 1;
                     case 0x8137: {
-                        CPlay* _g =
-                            (CPlay*)PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
+                        CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
                         }
@@ -524,8 +521,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         return 1;
                     }
                     case 0x8138: {
-                        CPlay* _g =
-                            (CPlay*)PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
+                        CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
                         }
@@ -535,8 +531,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         return 1;
                     }
                     case 0x8139: {
-                        CPlay* _g =
-                            (CPlay*)PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
+                        CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
                         }
@@ -574,8 +569,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                     case 0x807a:
                     case 0x807b:
                     case 0x8246: {
-                        CPlay* _g =
-                            (CPlay*)PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
+                        CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
                         }
@@ -595,8 +589,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         ShowToggleMessage("Goo puddlez", g_gooPuddlez);
                         return 1;
                     case 0x81a4: {
-                        CPlay* _g =
-                            (CPlay*)PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
+                        CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                         if (!_g) {
                             return 0;
                         }
@@ -750,7 +743,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             return 1;
         case 0x80cf:
             if (m_curState->Update() == GAMESTATE_PLAY) {
-                CPlay* _g = (CPlay*)PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
+                CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                 if (_g->CanQuickSave()) {
                     LoadSaveMessageSprite();
                 }
@@ -758,7 +751,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             return 1;
         case 0x80d8:
             if (m_curState->Update() == GAMESTATE_PLAY) {
-                CPlay* _g = (CPlay*)PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
+                CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
                 if (_g->CanQuickSave()) {
                     Quicksave();
                 }
@@ -1188,7 +1181,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             return 1;
         }
         case 0x806b: {
-            CPlay* _g = (CPlay*)PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
+            CPlay* _g = PickPlayOrPausedState(); // FindStateById(3) - the PLAY state
             if (!_g) {
                 return 1;
             }

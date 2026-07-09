@@ -29,7 +29,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_1c = a2;
     t.m_04 = (i32)chan;
     t.m_08 = 0;
-    FaderRun* f = (FaderRun*)mgr->Add(1, (CFader*)&t);
+    CFader* f = mgr->Add(1, (CFader*)&t);
     if (f == 0) {
         return 0;
     }
@@ -39,7 +39,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
         Utils::WinAPI::ActiveWait(a3);
         m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
     } else {
-        ((CFader*)f)->RunFade(a3, a4, 0);
+        f->RunFade(a3, a4, 0);
     }
     m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
@@ -77,7 +77,7 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_18 = a1;
     t.m_04 = (i32)chanA;
     t.m_08 = (i32)chanB;
-    FaderRun* f = (FaderRun*)mgr->Add(1, (CFader*)&t);
+    CFader* f = mgr->Add(1, (CFader*)&t);
     if (f == 0) {
         return 0;
     }
@@ -87,7 +87,7 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
         Utils::WinAPI::ActiveWait(a3);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
-        ((CFader*)f)->RunFade(a3, a4, 0);
+        f->RunFade(a3, a4, 0);
     }
     m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
@@ -126,7 +126,7 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
     t.m_10 = a1;
     t.m_04 = (i32)chanA;
     t.m_08 = (i32)chanB;
-    FaderRun* f = (FaderRun*)mgr->Add(2, (CFader*)&t);
+    CFader* f = mgr->Add(2, (CFader*)&t);
     if (f == 0) {
         return 0;
     }
@@ -136,7 +136,7 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
         Utils::WinAPI::ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
-        ((CFader*)f)->RunFade(a2, a3, 0);
+        f->RunFade(a2, a3, 0);
     }
     m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
@@ -179,7 +179,7 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
     t.m_10 = a1;
     t.m_04 = (i32)chanA;
     t.m_08 = (i32)chanB;
-    FaderRun* f = (FaderRun*)mgr->Add(2, (CFader*)&t);
+    CFader* f = mgr->Add(2, (CFader*)&t);
     if (f == 0) {
         return 0;
     }
@@ -188,7 +188,7 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
         Utils::WinAPI::ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
-        ((CFader*)f)->RunFade(a2, a3, 0);
+        f->RunFade(a2, a3, 0);
     }
     mgr->Remove(f);
     return 1;
@@ -215,7 +215,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     t.m_10 = a1;
     t.m_04 = (i32)chan;
     t.m_08 = 0;
-    FaderRun* f = (FaderRun*)mgr->Add(2, (CFader*)&t);
+    CFader* f = mgr->Add(2, (CFader*)&t);
     if (f == 0) {
         return 0;
     }
@@ -225,7 +225,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
         Utils::WinAPI::ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
     } else {
-        ((CFader*)f)->RunFade(a2, a3, 0);
+        f->RunFade(a2, a3, 0);
     }
     m_gameMgr->StopBank0IfActive();
     mgr->Remove(f);
