@@ -55,30 +55,10 @@ CVtEmit_1ef7d0::~CVtEmit_1ef7d0() {
 SIZE_UNKNOWN(CVtEmit_1ef7d0);
 VTBL(CVtEmit_1ef7d0, 0x001ef7d0);
 
-// ---------------------------------------------------------------------------
-// 0x5efc58 (RVA 0x1efc58) - 8 slots. CObject-derived (slots 0/2/3/4 are the shared
-// CObject base thunks), slot 1 dtor 0x155890. Slots 5/6/7 = CDDrawSurfaceMgr
-// IsReady/Init/Cleanup -> this is CDDrawSurfaceMgr's own vtable.
-// ---------------------------------------------------------------------------
-struct CVtEmit_1efc58 : CObject {
-    virtual ~CVtEmit_1efc58()
-        OVERRIDE;                  // [1] 0x155890 scalar-deleting dtor (anchor, overrides slot 1)
-    virtual void IsReady();        // [5] 0x155f00 = CDDrawSurfaceMgr::IsReady
-    virtual void Init();           // [6] 0x155900 = CDDrawSurfaceMgr::Init
-    virtual void Cleanup_155e20(); // [7] 0x155e20 = CDDrawSurfaceMgr::Cleanup_155e20
-    i32 m_0;
-    i32 Anchor();
-};
-i32 CVtEmit_1efc58::Anchor() {
-    return m_0 != 0;
-}
-CVtEmit_1efc58::~CVtEmit_1efc58() {
-    if (Anchor()) {
-        m_0 = 0;
-    }
-}
-SIZE_UNKNOWN(CVtEmit_1efc58);
-VTBL(CVtEmit_1efc58, 0x001efc58);
+// NOTE: 0x1efc58 is now bound by its REAL class CDDrawSurfaceMgr (DDrawSurfaceMgr.cpp,
+// VTBL there): the per-slot vtable audit proved this 8-slot vtable IS CDDrawSurfaceMgr's
+// own (slots 5/6/7 = IsReady/Init/Cleanup_155e20), so the CVtEmit_1efc58 tracking shim
+// was a redundant placeholder and is removed.
 
 // NOTE: the other four residual vtables (0x1efd28/0x1efd88/0x1efdc0/0x1eff70) are now
 // bound by their REAL classes and no longer need a CVtEmit_ tracking shim:

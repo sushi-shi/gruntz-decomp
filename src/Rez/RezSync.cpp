@@ -95,23 +95,32 @@ struct Mfc {
     void C_11f5a0(i32, i32, void*, void*);
 };
 
-struct CDDrawSurfaceMgr { // m_30 (0x40); polymorphic - VInit at vtable slot 6
-    // vptr @ +0 (extern ctor 0x155840 stamps the real vtable)
+// Partial call-view of CDDrawSurfaceMgr (canonical shape in <DDrawMgr/DDrawSurfaceMgr.h>).
+// Modeled CObject-derived so its 8-slot vtable matches the real class (CObject slots 0-4 +
+// dtor override@1 + IsReady@5 + slot-6 Init); VInit is that slot-6 5-arg Init (+0x18). The
+// slot-5 filler is declared-only. TODO(framework-B): fold onto the canonical header (needs
+// m_24/m_resolveSubMgr member re-typing to CGameLevel).
+struct CDDrawSurfaceMgr : CObject { // m_30 (0x40)
+    // CObject vptr @ +0 (extern ctor 0x155840 stamps the real ??_7CDDrawSurfaceMgr)
     CDDrawSubMgrPages* m_04; // +4
     char _p08[0x24 - 0x08];
     CGameLevel* m_24;           // +0x24
     CDDrawSubMgrLeafScan* m_28; // +0x28
     char _p2c[0x40 - 0x2c];
+    // `new CDDrawSurfaceMgr` needs an accessible operator new; MFC CObject's PASCAL
+    // one is not usable under MSVC5, so forward to global new (byte-identical to the
+    // former flat view's allocation - a `call ??2@YAPAXI@Z`).
+    void* operator new(size_t n) {
+        return ::operator new(n);
+    }
+    void operator delete(void* p) {
+        ::operator delete(p);
+    }
     CDDrawSurfaceMgr();
-    ~CDDrawSurfaceMgr();
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual i32 VInit(void*, i32, i32, i32, i32); // slot 6 (+0x18)
-    void VMethod155f50(void*);                    // 0x155f50
+    virtual ~CDDrawSurfaceMgr();                  // slot 1 (override)
+    virtual i32 IsReady();                        // slot 5 (declared-only filler)
+    virtual i32 VInit(void*, i32, i32, i32, i32); // slot 6 (+0x18): the 5-arg Init
+    void VMethod155f50(void*);                    // 0x155f50 (= SetHwnd)
 };
 struct CSymParser { // m_34 (0x94)
     CSymParser();
@@ -303,8 +312,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         reg->m_open = 0;
     }
     m_38 = reg;
-    if (!m_38
-             ->Open("Monolith Productions", "Gruntz", "1.0", 0, (HKEY)0x80000002, 0)) {
+    if (!m_38->Open("Monolith Productions", "Gruntz", "1.0", 0, (HKEY)0x80000002, 0)) {
         Error2(0x800a, 0x406);
         return 0;
     }
@@ -312,8 +320,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     m_height = 0x1e0;
     m_numRuns = m_38->GetValueDword("Num Runs", 0);
     m_numMovies = m_38->GetValueDword("Num Movies", 0);
-    g_2455d4 =
-        m_38->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
+    g_2455d4 = m_38->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
     g_2455b4 = m_38->GetValueDword("Disable Audio", 0);
     g_2455bc = m_38->GetValueDword("Disable Sound", 0);
     g_2455c0 = m_38->GetValueDword("Disable Music", 0);
@@ -325,8 +332,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     g_2455dc = m_38->GetValueDword("Enable HiColor", 0);
     g_2455e0 = m_38->GetValueDword("Enable TrueColor", 0);
     g_2455e4 = m_38->GetValueDword("Enable Emulation", 0);
-    m_checkpointPrompts =
-        m_38->GetValueDword("Checkpoint Prompts", 1);
+    m_checkpointPrompts = m_38->GetValueDword("Checkpoint Prompts", 1);
     g_2455dc = 1;
     g_64526c = 0;
     g_6452d0 = 0;
@@ -346,8 +352,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     i32 vSound = m_38->GetValueDword("Sound", m_sound);
     i32 vVoice = m_38->GetValueDword("Voice", m_voice);
     i32 vAmbient = m_38->GetValueDword("Ambient", m_ambient);
-    i32 vInterlaced =
-        m_38->GetValueDword("Interlaced", m_interlaced);
+    i32 vInterlaced = m_38->GetValueDword("Interlaced", m_interlaced);
     i32 vHigh1 = m_38->GetValueDword("High Detail", m_highDetail);
     m_highDetail = m_38->GetValueDword("High Detail", m_110);
     i32 vEasy = m_38->GetValueDword("Easy Mode", m_118);
@@ -723,8 +728,7 @@ i32 RezSync::Init(void* a1, char* a2) {
     Fn1ed8();
     if (!Fn2112()) {
         if (m_numMovies > 0 && m_numRuns > 1) {
-            if (m_38->GetValueDword("Skip Logo Movies", 0) == 0
-                && noLogo == 0) {
+            if (m_38->GetValueDword("Skip Logo Movies", 0) == 0 && noLogo == 0) {
                 Fn2cc5();
             }
         } else {

@@ -57,6 +57,12 @@ CDDrawSurfaceMgr::CDDrawSurfaceMgr() {
     g_6bf3bc = 0;
 }
 
+// The class's own vtable datum: cl emits ??_7CDDrawSurfaceMgr@@6B@ (8 slots, real
+// polymorphism) and the ctor/dtor stamp it; VTBL names it at the retail RVA. This
+// REPLACES the CVtEmit_1efc58 tracking shim (FinalVtables.cpp) - proven CDDrawSurfaceMgr's
+// own vtable by the per-slot audit (slots 5/6/7 = IsReady/Init/Cleanup_155e20).
+VTBL(CDDrawSurfaceMgr, 0x001efc58);
+
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::~CDDrawSurfaceMgr() (0x1558b0, __thiscall, /GX)
 // Real polymorphic with the CObject base subobject now: cl emits the implicit
@@ -236,22 +242,6 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4) {
         return 0;
     }
     return m_callback(this, arg1, arg2, arg3, arg4) != 0;
-}
-
-// Out-of-line stubs so the vftable is emitted in this TU. They are not claimed
-// as matched in symbol_names.csv.
-i32 CDDrawSurfaceMgr::Init(HWND, i32, i32, i32, i32) {
-    return 0;
-}
-void CDDrawSurfaceMgr::Slot1C() {}
-i32 CDDrawSurfaceMgr::Slot2C(i32) {
-    return 0;
-}
-i32 CDDrawSurfaceMgr::Slot30(i32, i32, i32, i32, void*) {
-    return 0;
-}
-i32 CDDrawSurfaceMgr::Slot34(i32, i32, i32, i32, void*) {
-    return 0;
 }
 
 // Engine-label backlog stubs (moved from src/Stub/DDrawSurfaceMgr.cpp).

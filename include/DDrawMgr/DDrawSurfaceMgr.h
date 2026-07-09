@@ -73,23 +73,20 @@ SIZE(CDDrawSurfaceMgr, 0x40);
 class CDDrawSurfaceMgr : public CObject {
 public:
     CDDrawSurfaceMgr();
-    virtual ~CDDrawSurfaceMgr() OVERRIDE;
-    virtual i32 IsReady();
-    virtual i32 Init(HWND hWnd, i32 width, i32 height, i32 bpp, i32 flags);
-    virtual void Slot1C();
-    virtual void FreeContext();
-    virtual i32 SetDimensions(i32 x, i32 y, i32 flags);
-    virtual void SetHwnd(void* hWnd);
-    virtual i32 Slot2C(i32 arg);
-    virtual i32 Slot30(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
-    virtual i32 Slot34(i32 width, i32 height, i32 bpp, i32 flags, void* callback);
-    virtual i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4);
+    // The real 8-slot retail vtable @0x1efc58 (== ??_7CDDrawSurfaceMgr@@6B@): CObject's
+    // 5 slots (0-4, dtor override @1) + THREE CDDrawSurfaceMgr-own slots. The per-slot
+    // vtable audit proves IsReady/Init/Cleanup are the ONLY new virtuals; FreeContext/
+    // SetDimensions/SetHwnd/InvokeCallback occupy NO retail slot -> plain methods.
+    virtual ~CDDrawSurfaceMgr() OVERRIDE; // slot 1  0x1558b0 (scalar-del ??_G 0x155890)
+    virtual i32 IsReady();                // slot 5  0x155f00
+    virtual void Init();                  // slot 6  0x155900 (the 5-arg SurfaceMgr Init; @stub)
+    virtual void Cleanup_155e20();        // slot 7  0x155e20 (owned-child teardown; ~ calls it)
 
-    // Engine-label backlog stub (0x155900, the 5-arg Init that news all 11 children).
-    void Init();
-
-    // Owned-child teardown helper, called by ~CDDrawSurfaceMgr (0x1558b0).
-    void Cleanup_155e20();
+    // Non-virtual methods (census-proven OFF the retail vtable - plain, not slots):
+    void FreeContext();                                           // 0x155fc0
+    i32 SetDimensions(i32 x, i32 y, i32 flags);                   // 0x155f60
+    void SetHwnd(void* hWnd);                                     // 0x155f50
+    i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4); // 0x156a90
 
     // The recursive child serializer / deserializer (owner-TU DDrawSurfaceMgrSerialize
     // holds the bodies; GameSave drives SnapshotChildren). Non-virtual __thiscall /GX.
