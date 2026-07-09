@@ -88,6 +88,7 @@ public:
     i32 RemoveKeysEqual_157c70(const char* base, const char* str);
     i32 SumField_1580b0(const char* str);
     LeafScanValue* GetFirstValue_158210();
+    LeafScanValue* NextValueAfter_1582c0(LeafScanValue* target);
     i32 ProbeFirst_1584a0(i32 arg);
     i32 HasKeyEqual_1583c0(const char* str);
     CString FindKeyOfValue_158570(LeafScanValue* target);

@@ -48,6 +48,9 @@ public:
     i32 PruneOrphans_15b1d0();
     void InsertSorted_159e40(CWwdObject* obj, i32 addToMaps);
     void TickKillCues_159a70(i32 advance); // vtable slot 9 (per-frame kill-cue tick)
+    i32 CheckSortOrder_15a780();
+    CWwdObject* FindByType04_15a7f0(i32 type);
+    CWwdObject* FindByTypeProbe_15a810(i32 type);
     CWwdObject* FindByWorker_15a860(i32 type, void* key);
     CWwdObject* FindByField_15a940(i32 type, void* key);
 

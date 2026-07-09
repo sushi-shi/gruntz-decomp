@@ -803,7 +803,7 @@ public:
     virtual void Slot34();
     virtual void Slot38();
     virtual i32 Slot3C(i32 a1, i32 a2, i32 a3, void* obj); // +0x3c
-    char m_pad04[0x08 - 0x04];
+    i32 m_04;                  // +0x04 type/kind key (FindBy* match field)
     i32 m_flags;               // +0x08 flag word
     char m_pad0c[0x74 - 0x0c]; // +0x0c..0x73
     i32 m_sortKey;             // +0x74 sort key
@@ -1194,6 +1194,104 @@ void CWwdObjMgr::InsertSorted_159e40(CWwdObject* obj, i32 addToMaps) {
         }
     }
     obj->m_posCache = (i32)m_10.AddTail(obj);
+}
+
+// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 0x15a780: walk the sorted list; advance past the leading run of objects that
+// carry the 0x20000 flag to the first object WITHOUT it (the "anchor", with its
+// +0x74 sort key), then scan the rest.  Each subsequent un-flagged object with a
+// sort key >= the anchor's becomes the new anchor; one with a SMALLER key (an
+// out-of-order pair) triggers a status-probe (slot +0x20) on BOTH the anchor and
+// the offender.  Always returns 1.  __thiscall, no args.
+// @early-stop
+// 78.7% - loop B, the phase-2 setup and the epilogue are byte-exact; the residual is
+// the loop-A rotation only: retail keeps the anchor null-test as the loop HEADER
+// (`test ebx; je ret1` at the top, sharing the single return-1) whereas cl rotates the
+// loop so the 0x20000 flag-test becomes the header and the anchor re-test moves to the
+// latch, spilling a duplicate `mov eax,1; pop*; ret` tail.  Tried while / for(;;) /
+// do-while / explicit-goto spellings - cl normalizes all four to the same rotation, so
+// this is a codegen loop-rotation wall, not a source-shape bug.
+RVA(0x0015a780, 0x70)
+i32 CWwdObjMgr::CheckSortOrder_15a780() {
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
+    CWwdObject* anchor = node->m_obj;
+    node = node->m_next;
+    if (anchor == 0) {
+        return 1;
+    }
+    if (node != 0) {
+        do {
+            if (anchor == 0) {
+                return 1;
+            }
+            if ((anchor->m_flags & 0x20000) == 0) {
+                break;
+            }
+            CWwdNode* cur = node;
+            node = node->m_next;
+            anchor = cur->m_obj;
+        } while (node != 0);
+    }
+    if (anchor == 0) {
+        return 1;
+    }
+    i32 key = anchor->m_sortKey;
+    if (node == 0) {
+        return 1;
+    }
+    do {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        if ((obj->m_flags & 0x20000) == 0) {
+            i32 curKey = obj->m_sortKey;
+            if (key > curKey) {
+                anchor->Slot20();
+                obj->Slot20();
+            } else {
+                key = curKey;
+                anchor = obj;
+            }
+        }
+    } while (node != 0);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15a7f0: scan the sorted list for the first object whose +0x04 key matches
+// `type`; return it, or 0 when none.  No status probe (twin of FindByWorker
+// without the slot-20/geometry checks); single merged return-0 path.
+RVA(0x0015a7f0, 0x20)
+CWwdObject* CWwdObjMgr::FindByType04_15a7f0(i32 type) {
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
+    while (node != 0) {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        if (obj->m_04 == type) {
+            return obj;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15a810: scan the sorted list for the first object whose status probe (slot
+// +0x20) is 5 AND whose +0x04 key matches `type`; return it, or 0 when none.
+// Twin of FindByWorker_15a860 minus the worker-geometry check.
+RVA(0x0015a810, 0x42)
+CWwdObject* CWwdObjMgr::FindByTypeProbe_15a810(i32 type) {
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
+    while (node != 0) {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        if (obj->Slot20() == 5 && obj->m_04 == type) {
+            return obj;
+        }
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

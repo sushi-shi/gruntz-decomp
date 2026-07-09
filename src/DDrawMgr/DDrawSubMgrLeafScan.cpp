@@ -583,6 +583,40 @@ LeafScanValue* CDDrawSubMgrLeafScan::GetFirstValue_158210() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x1582c0: find the map entry whose VALUE POINTER equals `target`, and return the
+// value of the entry that IMMEDIATELY FOLLOWS it in iteration order. Returns 0 when
+// target is null, the map is busy (m_30) or empty, target is not found, or the match
+// was the last entry. Guarded like GetFirstValue (m_30 + GetCount()!=0?-1:0 start
+// position); the second GetNextAssoc reads the successor value. /GX EH frame for key.
+RVA(0x001582c0, 0xf6)
+LeafScanValue* CDDrawSubMgrLeafScan::NextValueAfter_1582c0(LeafScanValue* target) {
+    if (target == 0) {
+        return 0;
+    }
+    if (m_30 != 0) {
+        return 0;
+    }
+    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
+    if (pos == 0) {
+        return 0;
+    }
+    CObject* val = 0;
+    CString key;
+    while (pos != 0) {
+        m_10.GetNextAssoc(pos, key, val);
+        if (val == (CObject*)target) {
+            if (pos == 0) {
+                return 0;
+            }
+            val = 0;
+            m_10.GetNextAssoc(pos, key, val);
+            return (LeafScanValue*)val;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // 0x1583c0: return 1 if any map key strncmp-equals `str` over strlen(str), else
 // 0. Twin of CDDrawWorkerRegistry::HasKeyEqual_155550. /GX EH frame for the local
 // CString key.
