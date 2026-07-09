@@ -22,15 +22,14 @@ struct MgrSettings30 {
 DATA(0x0024556c)
 extern "C" MgrSettings30* g_mgrSettings;
 
-// the registry-active predicate the read pass gates on (an out-of-line
-// twin of IsActive at 0x024a90; same body). External to this TU, reloc-masked.
-i32 IsActive2(i32 enable);
+// the registry-active predicate the read pass gates on (0x024ac0, an out-of-line
+// free __stdcall twin of the IsActive member at 0x024a90; same body). Defined below
+// (re-homed from src/Stub/BoundaryMisc.cpp, where it was the HasMgrSlot30 placeholder).
+i32 __stdcall IsActive2(void* enable);
 
 // CGruntzCmdMgr::SetMgr (0x000239d0) is now an inline member in the header.
 
-
 // CGruntzCmdMgr::ClearAndReset (0x000239f0) is now an inline member in the header.
-
 
 // ---------------------------------------------------------------------------
 // ScanTargets: walk the base queue (by index, removing each as it is
@@ -241,7 +240,7 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
         return 1;
     }
     // read
-    if (!IsActive2((i32)stream)) {
+    if (!IsActive2(stream)) {
         return 0;
     }
     Clear();
@@ -278,6 +277,17 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
 RVA(0x00024a90, 0x20)
 i32 CGruntzCmdMgr::IsActive(i32 enable) {
     if (!enable) {
+        return 0;
+    }
+    return g_mgrSettings->m_world != 0;
+}
+
+// 0x24ac0 (re-homed from src/Stub/BoundaryMisc.cpp): IsActive2 - the free __stdcall
+// twin of IsActive above, called from Serialize's mode-7 read gate. Null arg -> 0,
+// else the same g_mgrSettings->m_world predicate. __stdcall, ret 4.
+RVA(0x00024ac0, 0x20)
+i32 __stdcall IsActive2(void* enable) {
+    if (enable == 0) {
         return 0;
     }
     return g_mgrSettings->m_world != 0;

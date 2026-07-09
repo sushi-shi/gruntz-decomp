@@ -152,6 +152,7 @@ public:
     }
     i32 ApplyInit(CFaderInit* src); // 0x1804a0 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x1804a0 (same method; copy from the pInit descriptor)
+    void SubFree180630();           // 0x180630 (dtor member teardown; reloc-masked)
 
     char _pad38[0x40 - 0x38]; // +0x38..+0x3f
     i32 m_40;                 // +0x40
@@ -174,6 +175,7 @@ public:
     }
     i32 ApplyInit(CFaderInit* src); // 0x17fa40 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x17fa40 (same method; copy from the pInit descriptor)
+    void FreeBuffer17fc40();        // 0x17fc40 (dtor: `if(m_50) RezFree(m_50)`; reloc-masked)
 
     char _pad38[0x40 - 0x38]; // +0x38..+0x3f
     i32 m_40;                 // +0x40

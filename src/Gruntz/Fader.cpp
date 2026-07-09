@@ -87,9 +87,7 @@ void CFader::Wait(i32 delay) {
 
 // CFader::SetTimers (0x0017e760) is now an inline member in the header.
 
-
 // CFader::Set2c (0x0017e780) is now an inline member in the header.
-
 
 // ===========================================================================
 // CFaderMesh - a CFader subtype (ctor 0x17e940, size 0x6c) that embeds a nested
@@ -103,6 +101,45 @@ void CFader::Wait(i32 delay) {
 // ===========================================================================
 RVA(0x0017e940, 0x27)
 CFaderMesh::CFaderMesh() {}
+
+// 0x17e990 (re-homed from src/Stub/BoundaryUpperEh.cpp): a /GX leaf dtor that aliases
+// CFaderMesh's vtable (0x5f07c0) and destructs an embedded sub-object at +0x58 (own
+// vtable 0x5f07d8, owned buffer at +0x5c). Kept a DISTINCT placeholder identity
+// (C17e990) rather than folded onto ~CFaderMesh: the real CFaderMeshSub (m_58) is
+// modeled with a non-destructible int layout, and giving it a buffer-freeing virtual
+// dtor would change CFaderMeshSub's vtable and crater the matched CFaderMesh ctor
+// (0x17e940). Members destruct before the CFader base. RezFreeEh kept C++-linkage
+// (potentially-throwing) so cl keeps the /GX base-subobject unwind frame (this TU's
+// own RezFree is declared extern "C" further down, treated non-throwing).
+void RezFreeEh(void* p); // 0x1b9b82 (C++ linkage; reloc-masked)
+struct EmbedBase17e990 {
+    virtual ~EmbedBase17e990();
+};
+SIZE_UNKNOWN(EmbedBase17e990);
+inline EmbedBase17e990::~EmbedBase17e990() {}
+struct EmbedSub17e990 : EmbedBase17e990 {
+    char* m_4; // +0x4 (outer +0x5c)
+    virtual ~EmbedSub17e990() OVERRIDE;
+};
+SIZE_UNKNOWN(EmbedSub17e990);
+inline EmbedSub17e990::~EmbedSub17e990() {
+    if (m_4) {
+        RezFreeEh(m_4);
+    }
+}
+struct FaderBaseC17e990 {
+    virtual ~FaderBaseC17e990(); // out-of-line @0x17e4a0 (== ~CFader; reloc-masked)
+};
+SIZE_UNKNOWN(FaderBaseC17e990);
+struct C17e990 : FaderBaseC17e990 {
+    char _4[0x58 - 0x4];
+    EmbedSub17e990 m_58; // +0x58
+    virtual ~C17e990() OVERRIDE;
+};
+SIZE_UNKNOWN(C17e990);
+RELOC_VTBL(C17e990, 0x001f07c0); // aliases CFaderMesh (dtor-stamp verified)
+RVA(0x0017e990, 0x6b)
+C17e990::~C17e990() {}
 
 // ===========================================================================
 // 0x17ef00 - CFaderMesh::v1(frame): the mesh-warp blit. Prime the dest surface
@@ -224,6 +261,14 @@ CFaderLight::CFaderLight() {
     m_40 = 0;
 }
 
+// 0x180450 - ~CFaderLight() (re-homed/folded from src/Stub/BoundaryUpperEh.cpp, the
+// C180450 placeholder): stamp the subtype vftable, run the member teardown (SubFree
+// @0x180630), then tail-call ~CFader. cl emits the /GX base-subobject unwind frame.
+RVA(0x00180450, 0x4f)
+CFaderLight::~CFaderLight() {
+    SubFree180630();
+}
+
 // ===========================================================================
 // CFaderRadial - subtype ctor 0x17f9a0: m_44/m_40/m_50 = 0, m_48 = 1. vftable
 // 0x5f0810.
@@ -237,6 +282,14 @@ CFaderRadial::CFaderRadial() {
     m_40 = 0;
     m_50 = 0;
     m_48 = 1;
+}
+
+// 0x17f9f0 - ~CFaderRadial() (re-homed/folded from src/Stub/BoundaryUpperEh.cpp, the
+// C17f9f0 placeholder): stamp the subtype vftable, free m_50 (FreeBuffer17fc40:
+// `if(m_50) RezFree(m_50)`), then tail-call ~CFader. cl emits the /GX unwind frame.
+RVA(0x0017f9f0, 0x4f)
+CFaderRadial::~CFaderRadial() {
+    FreeBuffer17fc40();
 }
 
 // ===========================================================================
@@ -961,10 +1014,10 @@ void CFaderRadial::v1(i32 frame) {
     CDDSurface* dst = (CDDSurface*)self->m_palette; // +0x3c (dest surface in the v1 path)
     void* scratch = RezAlloc(dst->m_width);         // per-width scratch (alloc'd, unused)
     dst->Clear(0);
-    self->m_srcSurface->Lock(0);                     // lock source (base unused here)
-    i32 base = dst->Lock(0);                          // locked dest pixel base
+    self->m_srcSurface->Lock(0);                        // lock source (base unused here)
+    i32 base = dst->Lock(0);                            // locked dest pixel base
     if (((CDDSurface*)self->m_workSurface)->m_8 == 0) { // gate: work-surface COM present?
-        return;                                       // retail bails w/o unlock/free (matched)
+        return;                                         // retail bails w/o unlock/free (matched)
     }
 
     i32 total = self->m_srcSurface->m_width * self->m_srcSurface->m_height;

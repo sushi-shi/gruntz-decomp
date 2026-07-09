@@ -1,37 +1,28 @@
-// BoundaryMisc.cpp - small non-EH leaf methods recovered from the engine_boundary
-// backlog (C:\Proj\Gruntz). Each sits at a class boundary in GRUNTZ.EXE; RTTI
-// cannot attribute them, so the owning class names here are placeholders. Only the
-// OFFSETS + code bytes are load-bearing. Unmodeled engine callees are declared
-// NO-body so their rel32/DIR32 operands reloc-mask.
+// BoundaryMisc.cpp - the residual UN-ATTRIBUTABLE small non-EH leaves of the
+// engine_boundary backlog (C:\Proj\Gruntz). The attributable bodies here were
+// re-homed to their real class TUs (matcher-2):
+//   0x24ac0 IsActive2         -> src/Gruntz/GruntzCmdMgr.cpp (twin already used there)
+//   0x37870 DialogInit37870   -> src/Gruntz/VideoConfig.cpp  (already declared/called)
+//   0x212a0 CButeStore::Reset -> src/Bute/ButeStoreClear.cpp (out-of-line twin placeholder)
+//   0x29af0 TileSwitch29af0   -> src/Gruntz/GruntMoveStep.cpp (CGruntMover::Step caller)
+//   0x87b0  ~CUserBase / 0xb940 CUserBaseSubB940 -> src/Gruntz/WorldSoundSet.cpp
+//           (CUserBase-family; 0xb940 is RVA-inside that TU's band)
+// The six that remain have a genuinely UNRECOVERED owner (only-a-stub / unrecovered /
+// no caller) - flagged @orphan for the identity-recovery sweep. Only OFFSETS + code
+// bytes are load-bearing. Unmodeled engine callees are declared NO-body so their
+// rel32/DIR32 operands reloc-mask.
 #include <Ints.h>
 #include <rva.h>
-#include <stdlib.h> // rand (CRT PRNG, reloc-masked)
-#include <string.h> // inline strlen / memset intrinsics
-#include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)               // WINAPI (windows.h) for the g_p* import-pointer types
-#include <Gruntz/GameRegistry.h> // canonical Win32-safe game-manager singleton view
-#include <Globals.h>
-
-// ===========================================================================
-// 0x0087b0 - CUserBase base destructor: cl's implicit vptr-restore stamps
-// ??_7CUserBase@@6B@ (0x5e70b4, config/vtable_names.csv) then returns (7-byte
-// `mov [ecx],offset ??_7CUserBase + ret`, the empty final-base dtor). Real
-// polymorphic dtor; 3 vtable slots (0xc) so the emitted ??_7 pairs the retail vtable.
-// __thiscall, no args.
-// ===========================================================================
-struct CUserBase {
-    virtual ~CUserBase(); // 0x87b0  slot 0 (+0x00)
-    virtual void s1();
-    virtual void s2();
-};
-SIZE_UNKNOWN(CUserBase);
-VTBL(CUserBase, 0x001e70b4); // vtable_names -> code (RTTI game class)
-RVA(0x000087b0, 0x7)
+#include <Mfc.h>     // AfxGetModuleState / CWinThread (0x18430); afx-first umbrella
+#include <Globals.h> // g_dat6295d8 (0xaf50)
 
 // ===========================================================================
 // 0x008b90 - a finalize/teardown that fires up to two registered __thiscall
 // callbacks (m_4, m_8) passing `this`, the m_8 one guarded by m_14->m_1c == m_28,
 // nulls each fired slot, and resets m_28 to 0x3e9 (1001). __thiscall, one unused
 // stack arg (ret 4). Self-contained (the callbacks are indirect).
+// @orphan: only caller is Gap_05ecd0 (an engine_label_stubs placeholder); `this`
+// class genuinely unrecovered.
 // ===========================================================================
 struct CFinalizeSub8b90 {
     char m_pad0[0x1c];
@@ -67,6 +58,7 @@ void CFinalize8b90::Finalize(i32 arg) {
 // ===========================================================================
 // 0x00af50 - reset a global DWORD to 0 (the global at VA 0x6295d8 / RVA 0x2295d8).
 // __cdecl free function.
+// @orphan: only caller is an unrecovered fn (~0xaa92); free reset with no owner.
 // ===========================================================================
 RVA(0x0000af50, 0xb)
 void ResetDat6295d8() {
@@ -74,29 +66,10 @@ void ResetDat6295d8() {
 }
 
 // ===========================================================================
-// 0x00b940 - a CUserBase-derived vptr restore: cl's implicit vptr-restore stamps the
-// CUserBase base vtable (0x5e70b4) then zeros members at +0x04 and +0x3c. Placeholder
-// polymorphic class (a distinct restore, not the 0x87b0 final-base dtor, so its ??_7
-// reloc-masks by shape). __thiscall (no return-this).
-// ===========================================================================
-struct CUserBaseSubB940 {
-    i32 m_4; // +0x04
-    char m_pad8[0x3c - 0x08];
-    i32 m_3c; // +0x3c
-    virtual ~CUserBaseSubB940();
-};
-SIZE_UNKNOWN(CUserBaseSubB940);
-RELOC_VTBL(CUserBaseSubB940, 0x001e70b4); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x0000b940, 0xf)
-CUserBaseSubB940::~CUserBaseSubB940() {
-    m_4 = 0;
-    m_3c = 0;
-}
-
-// ===========================================================================
 // 0x01f870 - guarded virtual dispatch: if the 4th virtual (vtbl slot +0xc) reports
 // nonzero, run the non-virtual handler (0xfac70) and return its success as a bool
 // (the retail neg/sbb/neg idiom); else return 0. __thiscall, no args.
+// @orphan: no .text caller; `this` class genuinely unrecovered.
 // ===========================================================================
 struct CGuardedDispatch1f870 {
     virtual i32 v0();
@@ -118,6 +91,7 @@ i32 CGuardedDispatch1f870::Run() {
 // ===========================================================================
 // 0x0238d0 / 0x023960 - register thunks: invoke a 1-int method (0x1b4867) on a
 // global container object (VA 0x62b5d0 / 0x62b640) with arg 0xa. __cdecl free fns.
+// @orphan: both callers are unrecovered fns; free init thunks with no owner class.
 // ===========================================================================
 struct CGlobalContainer {
     void Register(i32 n); // 0x1b4867 (reloc-masked)
@@ -139,71 +113,10 @@ void Init23960() {
 }
 
 // ===========================================================================
-// 0x024ac0 - predicate: returns whether the manager-settings singleton's +0x30
-// slot is non-null (0 when the arg is null). __stdcall, one arg (ret 4). The
-// singleton is the already-pinned _g_mgrSettings (VA 0x64556c / RVA 0x24556c).
-// ===========================================================================
-extern "C" CGameRegistry* g_mgrSettings;
-RVA(0x00024ac0, 0x20)
-i32 __stdcall HasMgrSlot30(void* a) {
-    if (a == 0) {
-        return 0;
-    }
-    return g_mgrSettings->m_world != 0;
-}
-
-// ===========================================================================
-// 0x037870 - dialog init: when the settings singleton is live, push its +0x10c /
-// +0x110 flags into two dialog check-boxes (IDs 0x46f / 0x4d5) via the cached
-// CheckDlgButton import pointer (VA 0x6c44b4). __cdecl, one HWND arg.
-// ===========================================================================
-typedef int(WINAPI* PFN_CheckDlgButton)(void* hwnd, int id, unsigned check);
-DATA(0x002c44b4)
-extern PFN_CheckDlgButton p_CheckDlgButton;
-// @early-stop
-// 93.33% - regalloc wall: cl pins hwnd in edi and the cached import ptr in esi;
-// retail swaps them (ptr in edi, hwnd in esi). The cached-pointer shape, both
-// CheckDlgButton calls, the arg tuples and the null guard are byte-exact; the
-// edi/esi assignment is not source-steerable.
-RVA(0x00037870, 0x3c)
-void DialogInit37870(void* hwnd) {
-    if (g_mgrSettings == 0) {
-        return;
-    }
-    PFN_CheckDlgButton fn = p_CheckDlgButton; // retail caches the import ptr in edi
-    fn(hwnd, 0x46f, g_mgrSettings->m_isHighDetail);
-    fn(hwnd, 0x4d5, g_mgrSettings->m_isEffectsEnabled);
-}
-
-// (0x00d210 ParseSerial re-homed to src/Gruntz/GruntzMgrCmd.cpp - the __cdecl
-// serial/key validator the WM_COMMAND 0x807e path (HandleCommand) calls with the
-// CGruntzMgr `this`; GruntzMgrCmd.cpp already declared it as an extern.)
-
-// ===========================================================================
-// 0x0212a0 - reset: recursively clear a child table (0x16e070) then null members
-// at +0x18, +0x28, +0x14 (in that order). __thiscall, no args.
-// ===========================================================================
-struct CButeStore {
-    char m_pad0[0x14];
-    void* m_14; // +0x14
-    i32 m_18;   // +0x18
-    char m_pad1c[0x28 - 0x1c];
-    i32 m_28;                 // +0x28
-    void ClearRecursive(i32); // 0x16e070 (reloc-masked)
-    void Reset();
-};
-SIZE_UNKNOWN(CButeStore);
-RVA(0x000212a0, 0x21)
-void CButeStore::Reset() {
-    ClearRecursive(0);
-    m_18 = 0;
-    m_28 = 0;
-    m_14 = 0;
-}
-
-// ===========================================================================
 // 0x018430 - tail-call wrapper: end the wait cursor on the current MFC thread
 // (((CWinThread*)AfxGetModuleState()->m_thread)->EndWaitCursor()). __cdecl, no args.
+// @orphan: called from many EH unwind funclets (no single owning class); a shared
+// MFC wait-cursor helper.
 // ===========================================================================
 // Real MFC AfxGetModuleState() (@0x1d3631) from <Mfc.h>; its +0x04 word is the current
 // CWinThread*. CWinThread's full definition lives in the GUI-heavy <afxwin.h> (NOT pulled
@@ -219,27 +132,3 @@ void EndWaitCursor18430() {
     CWinThread* thread = *(CWinThread**)((char*)AfxGetModuleState() + 4);
     thread->EndWaitCursor();
 }
-
-// ===========================================================================
-// 0x029af0 - conditionally consume two random draws (the CRT rand() LCG) then
-// dispatch a tile-switch (0x4b320 via the 0x1640 thunk) with a fixed
-// (a2, a3, 0, 0x9c7, 0, 0) tuple. __stdcall, 6 args (ret 0x18).
-// ===========================================================================
-// The tile-switch dispatch (0x4b320 via the 0x1640 thunk) is the free __stdcall
-// CGrunt_TileSwitch(a=tileX, b=tileY, 4 more) - 6 args; the a1 receiver is loaded into
-// ecx but the __stdcall callee ignores it (verified by disasm at 0x29af0), so it's dropped.
-i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
-RVA(0x00029af0, 0x3b)
-void __stdcall TileSwitch29af0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    if (a4) {
-        rand();
-    }
-    if (a5) {
-        rand();
-    }
-    CGrunt_TileSwitch(a2, a3, 0, 0x9c7, 0, 0);
-}
-
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---

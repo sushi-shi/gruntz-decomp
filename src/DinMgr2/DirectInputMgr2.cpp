@@ -533,6 +533,32 @@ void DICfgC::DtorC() {
     ((CInputDevRoot*)this)->CInputDevRoot::ReleaseDevices();
 }
 
+// 0x1333b0 (re-homed from src/Stub/BoundaryUpper2Eh.cpp): CInputDevBase's standalone
+// /GX base-subobject destructor (the middle level of the DirectInput device chain):
+// stamp base vftable B @0x5ef680, ReleaseBase (0x1342b0), stamp grand-base C @0x5ef670,
+// BaseDtorC (0x134d50). Kept a distinct placeholder identity (DICfgD): the leaf dtors
+// (keyboard/mouse/joystick) inline this base unwind, so binding a real ~CInputDevBase
+// here would dup DinMgr2's inline base dtor.
+// @early-stop
+// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
+// body byte-correct (stamp B / ReleaseBase / stamp C / BaseDtorC) but retail wraps it
+// in a /GX frame with [esp+0x10] try-level stamps (0 / -1) from real base-subobject
+// dtors, unreachable under this manual-vptr shape; ~34% (the dropped device-chain
+// vptr stamps 0x5ef680/0x5ef670 reloc-name-mismatch the cl-emitted CInputDevBase/Root
+// tables). Deferred to a final sweep that reunifies the whole chain in one TU.
+struct DICfgD {
+    char _vft0[4];      // +0x00 foreign object vptr (reduced view; not owned/dispatched)
+    void ReleaseBase(); // 0x1342b0
+    void BaseDtorC();   // 0x134d50
+    void DtorD1();
+};
+SIZE_UNKNOWN(DICfgD);
+RVA(0x001333b0, 0x55)
+void DICfgD::DtorD1() {
+    ReleaseBase();
+    BaseDtorC();
+}
+
 // ---------------------------------------------------------------------------
 // 0x133560 - set the four GetErrorString reporting-mode flags (log / message-box /
 // beep / third) from the four args. __cdecl free helper (sibling of DDraw's).

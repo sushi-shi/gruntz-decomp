@@ -17,8 +17,9 @@
 #include <Gruntz/GameLevel.h>
 #include <rva.h>
 #include <Ints.h>
-#include <Mfc.h>          // CString + the MFC collection ctors/dtors (reloc-masked)
-#include <Bute/ButeMgr.h> // canonical CButeMgr / CButeStore (one shape)
+#include <Mfc.h>                      // CString + the MFC collection ctors/dtors (reloc-masked)
+#include <Bute/ButeMgr.h>             // canonical CButeMgr / CButeStore (one shape)
+#include <Gruntz/BoundaryTailViews.h> // Obj85500 (fuzzy-identity 0x85500 CString getter)
 #include <string.h>
 #include <stdlib.h> // srand (0x11fed0)
 
@@ -126,11 +127,12 @@ struct CSymParser { // m_34 (0x94)
     CSymParser();
     ~CSymParser();
     char raw[0x94];
-    i32 ParseBuffer(void*, i32, i32);           // 0x13ad00
-    i32 Stub13b0c0(i32, const char*);           // 0x13b0c0
-    i32 ResolveQualified(const char*, void*); // 0x13bff0 (real returns i32; caller reinterprets as ptr)
-    void* ResolvePath(const char*);             // 0x13c030
-    i32 ResolveTab(const char*, void*);         // 0x13be40
+    i32 ParseBuffer(void*, i32, i32); // 0x13ad00
+    i32 Stub13b0c0(i32, const char*); // 0x13b0c0
+    i32
+    ResolveQualified(const char*, void*); // 0x13bff0 (real returns i32; caller reinterprets as ptr)
+    void* ResolvePath(const char*);       // 0x13c030
+    i32 ResolveTab(const char*, void*);   // 0x13be40
 };
 struct CFaderMgr { // m_40 (0x28)
     CFaderMgr();
@@ -755,4 +757,18 @@ i32 RezSync::Init(void* a1, char* a2) {
         }
     }
     return 1;
+}
+
+// 0x85500 (re-homed from src/Stub/BoundaryTail.cpp): return a CString member (offset
+// 0xec) BY VALUE. Called by RezSync::Init (above, RVA-contiguous 0x83450) and
+// CGruntzMgr::LoadWorldMode; `this` identity genuinely unrecovered (kept placeholder
+// Obj85500 in BoundaryTailViews.h).
+// @early-stop
+// /O2 dead-local wall (~74%): the copyctor-into-retslot logic is exact, but retail
+// reserves + zeroes one extra stack dword (`push reg; mov [slot],0`) that our /O2
+// elides as dead. Confirmed NOT /O1 (o1 profile scored 40%). The origin of the kept
+// zero store is not yet spellable; the copy itself is byte-exact.
+RVA(0x00085500, 0x23)
+CString Obj85500::GetName() {
+    return m_ec;
 }

@@ -1864,8 +1864,9 @@ public:
     i32 TeleportMove(i32 dx, i32 dy, i32 a, i32 b); // 0x2f3b
     void FreezeApply();                             // 0x28d8
 };
-// No VTBL(CGrunt): its RTTI vtable 0x1e8754 is referenced by scored CGrunt/CSpotLight
-// code, so cataloguing it (renaming the delinked datum) shifts their fuzzy %.
+// VTBL(CGrunt) for its RTTI vtable 0x1e8754 is bound in src/Gruntz/Grunt.cpp (CGrunt's
+// home; moved there from the deleted ApiWrappers stub). It is referenced by scored
+// CGrunt/CSpotLight code, so the catalogue was kept as-is (pre-existing binding).
 
 // The per-class activation-registry entry (g_reg_644af0 slot): a 4-byte PMF handler
 // on this complete single-inheritance class. RunAct dispatches it on `this`.

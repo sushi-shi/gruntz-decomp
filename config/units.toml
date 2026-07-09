@@ -590,6 +590,11 @@ source = "src/Wwd/AniAdvanceCursor.cpp"
 flags = "base"
 
 [[unit]]
+unit = "aniadvancecursoreh"
+source = "src/Wwd/AniAdvanceCursorEh.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gamelevel"
 source = "src/Gruntz/GameLevel.cpp"
 flags = "eh"
@@ -1970,11 +1975,6 @@ source = "src/Stub/BoundaryUpper.cpp"
 flags = "base"
 
 [[unit]]
-unit = "boundaryuppereh"
-source = "src/Stub/BoundaryUpperEh.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "boundarylowerthunks"
 source = "src/Stub/BoundaryLowerThunks.cpp"
 flags = "base"
@@ -1993,11 +1993,6 @@ flags = "eh"
 unit = "boundaryupper2"
 source = "src/Stub/BoundaryUpper2.cpp"
 flags = "base"
-
-[[unit]]
-unit = "boundaryupper2eh"
-source = "src/Stub/BoundaryUpper2Eh.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "boundarytail"
@@ -2078,6 +2073,11 @@ flags = "base"
 unit = "imageset3"
 source = "src/Image/ImageSet3.cpp"
 flags = "base"
+
+[[unit]]
+unit = "imageset3eh"
+source = "src/Image/ImageSet3Eh.cpp"
+flags = "eh"
 
 
 [[unit]]

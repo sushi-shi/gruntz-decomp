@@ -166,10 +166,17 @@ void SaveVideoResolutionConfig(HWND hDlg, HWND hCombo) {
     SetWindowTextA(hCaption, szCaption);
 }
 
-// The WM_INITDIALOG handler (0x37870, boundarymisc): seed the video option
-// checkboxes from the settings singleton. External, reloc-masked (no body).
+// The WM_INITDIALOG handler (0x37870): seed the video option checkboxes from the
+// settings singleton. Defined below (re-homed from src/Stub/BoundaryMisc.cpp);
+// forward-declared here for VideoOptionsDlgProc (0x377e0, earlier RVA) below.
 void DialogInit37870(HWND hDlg);
 void SaveVideoCheckboxes(HWND hDlg); // fwd (defined below, 0x378c0)
+
+// The cached CheckDlgButton import pointer (VA 0x6c44b4) DialogInit37870 loads once
+// and calls for both checkboxes.
+typedef int(WINAPI* PFN_CheckDlgButton)(void* hwnd, int id, unsigned check);
+DATA(0x002c44b4)
+extern PFN_CheckDlgButton p_CheckDlgButton;
 
 // 0x377e0: VideoOptionsDlgProc - the video-options dialog procedure. WM_INITDIALOG
 // seeds the checkboxes (DialogInit37870); WM_COMMAND/IDOK latches them
@@ -193,6 +200,24 @@ BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
             break;
     }
     return FALSE;
+}
+
+// 0x37870 (re-homed from src/Stub/BoundaryMisc.cpp): DialogInit37870 - seed the two
+// video option checkboxes (IDC 0x46f / 0x4d5) from the settings singleton's
+// m_isHighDetail / m_isEffectsEnabled flags, via the cached CheckDlgButton import.
+// @early-stop
+// 93.33% - regalloc wall: cl pins hDlg in edi and the cached import ptr in esi;
+// retail swaps them (ptr in edi, hDlg in esi). The cached-pointer shape, both
+// CheckDlgButton calls, the arg tuples and the null guard are byte-exact; the
+// edi/esi assignment is not source-steerable.
+RVA(0x00037870, 0x3c)
+void DialogInit37870(HWND hDlg) {
+    if (g_mgrSettings == 0) {
+        return;
+    }
+    PFN_CheckDlgButton fn = p_CheckDlgButton; // retail caches the import ptr in edi
+    fn(hDlg, 0x46f, g_mgrSettings->m_isHighDetail);
+    fn(hDlg, 0x4d5, g_mgrSettings->m_isEffectsEnabled);
 }
 
 // 0x378c0: SaveVideoCheckboxes(hDlg) - latch the two video option checkboxes

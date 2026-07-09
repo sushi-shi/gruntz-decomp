@@ -26,9 +26,10 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/GameRegistry.h> // g_64556c singleton (0x24556c) canonical view
-#include <stdio.h>               // engine sprintf (reloc-masked)
-#include <stdlib.h>              // srand (reloc-masked)
+#include <Gruntz/GameRegistry.h>      // g_64556c singleton (0x24556c) canonical view
+#include <Gruntz/BoundaryTailViews.h> // CSnd788d0 (fuzzy-identity 0x788d0 sound emitter)
+#include <stdio.h>                    // engine sprintf (reloc-masked)
+#include <stdlib.h>                   // srand (reloc-masked)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -131,6 +132,35 @@ public:
 
 // The MULTI_JOIN dialog handler whose address is pushed into RunErrorDialog.
 extern void MultiJoinHandler(); // 0x004b8020 (reloc-masked function address)
+
+// 0x788d0 (re-homed from src/Stub/BoundaryTail.cpp): sound-emitter screen-position
+// update, called by CMulti::PumpB/Tick (and CPlay::Render). `this` is a sound-emitter
+// object (m_1c emitter array, m_22c listener) with a genuinely unrecovered identity
+// (kept placeholder CSnd788d0 in BoundaryTailViews.h); homed here next to its CMulti
+// caller.
+// @early-stop
+// /O2 x87 scheduling wall (~63%): logic byte-for-byte identical, but retail
+// materialises m_5c/m_60 in GP regs and spills them to stack temps for the int->float
+// `fild` (register pressure from the m_22c->m_24->m_5c walk reusing edx), then uses
+// `fmul mem`+fxch; our /O2 emits the shorter `fild [struct]` direct + `fmulp`.
+// Confirmed NOT /O1 (o1 profile 45%). Pure instruction scheduling/regalloc.
+RVA(0x000788d0, 0x64)
+i32 CSnd788d0::PositionUpdate() {
+    ElemSrc788d0* src = m_1c[m_234 * 15 + m_238]->m_10;
+    i32 v60 = src->m_60;
+    i32 v5c = src->m_5c;
+    Emitter788d0* t = m_22c->m_24->m_5c;
+    float f60 = (float)v60;
+    float f5c = (float)v5c;
+    if (!(t->m_8 & 1)) {
+        f5c *= t->m_18;
+        f60 *= t->m_1c;
+    }
+    t->m_10 = f5c;
+    t->m_14 = f60;
+    ((CLevelPlane*)t)->RecomputePlaneCoords();
+    return 1;
+}
 
 // ===========================================================================
 // CMulti::~CMulti  @ 0x08d270  - the most-derived /GX dtor. Runs Teardown()
@@ -239,9 +269,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
             return 0;
         }
         ((CBattlezMapConfig*)&e->m_inner)->FreeArrays();
-        if (((CBattlezMapConfig*)&e->m_inner)
-                ->LoadConfig((CLevelInfo*)Mgr(), i, e->m_10)
-            == 0) {
+        if (((CBattlezMapConfig*)&e->m_inner)->LoadConfig((CLevelInfo*)Mgr(), i, e->m_10) == 0) {
             return 0;
         }
         if (e->m_14 && e->m_20) {
@@ -608,9 +636,9 @@ public:
 class PBMgr { // CMulti::m_view
 public:
     void* m_0;
-    PBSub4* m_4;            // +0x04
-    CGameObjChain* m_8;     // +0x08  world object chain (VisitVisible arg)
-    PBVfnHost* m_c;         // +0x0c
+    PBSub4* m_4;        // +0x04
+    CGameObjChain* m_8; // +0x08  world object chain (VisitVisible arg)
+    PBVfnHost* m_c;     // +0x0c
     char m_pad10_24[0x24 - 0x10];
     CGameLevel* m_24; // +0x24
 };
@@ -663,11 +691,10 @@ void CMulti::PumpB() {
         }
     }
     StepScroll();
-    Mgr()
-        ->m_54->Retune(
-            ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_84,
-            ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_88
-        );
+    Mgr()->m_54->Retune(
+        ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_84,
+        ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_88
+    );
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();
     } else {
@@ -832,9 +859,7 @@ CString& CMulti::ClearString5a0(CString& s) {
 
 // CMulti::GetString59c (0x000b7a90) is now an inline member in the header.
 
-
 // CMulti::GetString5a0 (0x000b7ad0) is now an inline member in the header.
-
 
 // ===========================================================================
 // CMulti::ReportVersionMsg  @ 0x0b7e30  - log a message line to the logic object

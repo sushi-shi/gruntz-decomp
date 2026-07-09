@@ -69,12 +69,8 @@ struct CSnd788d0 {
 };
 SIZE_UNKNOWN(CSnd788d0);
 
-// 0x38120 / 0x85500 - return a CString member BY VALUE (offset 0 / 0xec).
-struct Obj38120 {
-    CString m_0; // 0x0
-    CString GetName();
-};
-SIZE_UNKNOWN(Obj38120);
+// 0x85500 - return a CString member BY VALUE (offset 0xec). (0x38120 was folded onto
+// the real CLatencyItem::GetName in src/Gruntz/SlotComboFill.cpp - view removed.)
 struct Obj85500 {
     char _0[0xec];
     CString m_ec; // 0xec

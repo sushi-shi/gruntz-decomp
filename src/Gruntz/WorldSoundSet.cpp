@@ -16,7 +16,8 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
-#include <Gruntz/UserLogic.h> // CUserBase (real base of CAmbientSound)
+#include <Gruntz/UserLogic.h>         // CUserBase (real base of CAmbientSound)
+#include <Gruntz/BoundaryTailViews.h> // CObj_bdd0/Arg1_bdd0/Entry_bdd0 (fuzzy-identity 0xbdd0)
 
 // ALL-VTABLES mandate: the three channel classes are REAL polymorphic classes.
 // RTTI derivation CAmbientPosSound / CRandomAmbientSound : CAmbientSound (: CUserBase)
@@ -386,6 +387,56 @@ SoundChannelNew* CWorldSoundSet::
     obj->Init2(a4, a5, a6, a7);
     obj->m_listNode = (i32)m_list.AddTail(obj);
     return (SoundChannelNew*)obj;
+}
+
+// 0xbdd0 (re-homed from src/Stub/BoundaryTail.cpp): CObj_bdd0::Dispatch - look a key
+// up in arg1's embedded CMapStringToOb (at +0x10) into a zero-initialised out slot; on
+// miss return the (null) slot, on hit dispatch this->DispatchEntry with the found
+// entry's m_10 plus the four trailing args. __thiscall, 6 stack args (ret 0x18).
+// Called by CWorldSoundSet::CreateAmbient6_b6a0 (ambient-sound entry dispatch);
+// `this` identity is genuinely unrecovered (kept placeholder CObj_bdd0). 100% EXACT.
+RVA(0x0000bdd0, 0x53)
+void* CObj_bdd0::Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5, i32 a6) {
+    Entry_bdd0* out = 0;
+    ((CMapStringToOb*)&a1->m_10)->Lookup(key, (CObject*&)out);
+    if (out == 0) {
+        return (void*)out;
+    }
+    return DispatchEntry(out->m_10, a3, a4, a5, a6);
+}
+
+// 0x87b0 / 0xb940 (re-homed from src/Stub/BoundaryMisc.cpp): the CUserBase base-dtor
+// family. CUserBase (the game-object base of CAmbientSound in this TU) has an INLINE
+// ~CUserBase in <Gruntz/UserLogic.h> that folds into leaf dtors, so these OUT-OF-LINE
+// instances keep distinct placeholder identities. 0xb940 is RVA-inside this TU's band.
+
+// 0x87b0 - the empty final-base out-of-line ~CUserBase: stamp ??_7CUserBase (0x5e70b4)
+// and return (7-byte `mov [ecx],offset ??_7 + ret`). 3 vtable slots (0xc).
+struct CUserBase87b0 {
+    virtual ~CUserBase87b0(); // 0x87b0  slot 0 (+0x00)
+    virtual void s1();
+    virtual void s2();
+};
+SIZE_UNKNOWN(CUserBase87b0);
+RELOC_VTBL(CUserBase87b0, 0x001e70b4); // reloc-masks the CUserBase RTTI vtable (bound
+                                       // by VTBL(CUserBase) in <Gruntz/UserLogic.h>)
+RVA(0x000087b0, 0x7)
+CUserBase87b0::~CUserBase87b0() {}
+
+// 0xb940 - a CUserBase-derived vptr restore: stamp the CUserBase base vtable (0x5e70b4)
+// then zero members at +0x04 and +0x3c. __thiscall (no return-this).
+struct CUserBaseSubB940 {
+    i32 m_4; // +0x04
+    char m_pad8[0x3c - 0x08];
+    i32 m_3c; // +0x3c
+    virtual ~CUserBaseSubB940();
+};
+SIZE_UNKNOWN(CUserBaseSubB940);
+RELOC_VTBL(CUserBaseSubB940, 0x001e70b4); // reloc-masks the bound CUserBase vtable
+RVA(0x0000b940, 0xf)
+CUserBaseSubB940::~CUserBaseSubB940() {
+    m_4 = 0;
+    m_3c = 0;
 }
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at

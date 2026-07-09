@@ -123,7 +123,6 @@ CShadeTableCache::~CShadeTableCache() {
 
 // CShadeTableCache::Init (0x0014dec0) is now an inline member in the header.
 
-
 // ===========================================================================
 // 0x14ded0 - FreeNodes: destroy + free every element, then drop the array.
 // ===========================================================================
@@ -984,6 +983,33 @@ void CShadeTableArray::Serialize(CArchive& arc) {
         ar->WriteData(m_pData, m_nSize * 4);
     } else {
         ar->ReadData(m_pData, m_nSize * 4);
+    }
+}
+
+// 0x14fe30 (re-homed from src/Stub/BoundaryUpperEh.cpp): the standalone OUT-OF-LINE
+// ~CShadeTableArray - stamp ??_7CShadeTableArray (0x5efb28), free the +0x4 element
+// buffer, fold the CObject base. Kept a DISTINCT placeholder identity (C14fe30) next
+// to CShadeTableArray here: the real CShadeTableArray::~ is INLINE (folds into
+// ~CShadeTableCache @0x14de50, 100%); making it out-of-line makes 0x14de50 CALL it
+// (0x14de50 100% -> ~61%), so this out-of-line ??1 can't be the real dtor (inline XOR
+// out-of-line). RezFreeEh kept C++-linkage (potentially-throwing) so cl keeps the /GX
+// base-subobject unwind frame (the extern "C" RezFree above is treated non-throwing).
+void RezFreeEh(void* p); // 0x1b9b82 (C++ linkage; reloc-masked)
+struct Sev14fe30 {
+    virtual ~Sev14fe30();
+};
+SIZE_UNKNOWN(Sev14fe30);
+inline Sev14fe30::~Sev14fe30() {}
+struct C14fe30 : Sev14fe30 {
+    char* m_4; // +0x4
+    virtual ~C14fe30() OVERRIDE;
+};
+SIZE_UNKNOWN(C14fe30);
+RELOC_VTBL(C14fe30, 0x001efb28); // aliases CShadeTableArray (dtor-stamp verified)
+RVA(0x0014fe30, 0x51)
+C14fe30::~C14fe30() {
+    if (m_4) {
+        RezFreeEh(m_4);
     }
 }
 

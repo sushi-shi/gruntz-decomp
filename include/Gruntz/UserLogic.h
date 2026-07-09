@@ -392,6 +392,10 @@ public:
     virtual LogicTypeId
     GetTypeTag(); // slot 2 (per-class logic-type id)                                           // slot 2
 };
+SIZE_UNKNOWN(CUserBase); // (was covered by the BoundaryMisc placeholder before its rename)
+VTBL(CUserBase, 0x001e70b4); // ??_7CUserBase@@6B@ (the RTTI base vtable; catalog only,
+                             // GRUNTZ_META no-op in the compile - was on the old
+                             // BoundaryMisc placeholder, now on the real class)
 
 // ---------------------------------------------------------------------------
 // CUserLogic : CUserBase (vftable 0x5e705c, 16 slots; ALL 16 modeled here -

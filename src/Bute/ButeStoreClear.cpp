@@ -18,6 +18,30 @@
 // The engine __cdecl deallocator (reloc-masked rel32). _RezFree @0x1b9b82.
 extern "C" void RezFree(void* p); // 0x1b9b82
 
+// 0x212a0 (re-homed from src/Stub/BoundaryMisc.cpp): the OUT-OF-LINE CButeStore::Reset
+// - the copy CChatBoxOwner::ProcessCheatInput calls non-inlined. The real
+// CButeStore::Reset is INLINE in <Bute/ButeMgr.h> (folded into CButeMgr::Parse, matched);
+// a member can be inline XOR out-of-line, so this out-of-line twin keeps a distinct
+// placeholder identity (CButeStore212a0) next to its class here. ClearRecursive
+// (0x16e070) is the real CButeStore method below, reached reloc-masked.
+struct CButeStore212a0 {
+    char m_pad0[0x14];
+    void* m_14; // +0x14
+    i32 m_18;   // +0x18  tree root
+    char m_pad1c[0x28 - 0x1c];
+    i32 m_28;                 // +0x28
+    void ClearRecursive(i32); // 0x16e070 (reloc-masked external)
+    void Reset();
+};
+SIZE_UNKNOWN(CButeStore212a0);
+RVA(0x000212a0, 0x21)
+void CButeStore212a0::Reset() {
+    ClearRecursive(0);
+    m_18 = 0;
+    m_28 = 0;
+    m_14 = 0;
+}
+
 RVA(0x0016e070, 0x7b)
 void CButeStore::ClearRecursive(CButeStoreNode* node) {
     CButeStoreNode* n = node;

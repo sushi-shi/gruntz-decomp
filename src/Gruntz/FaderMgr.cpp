@@ -83,7 +83,6 @@ CFaderMgr::~CFaderMgr() {
 
 // CFaderMgr::SetConfig (0x0017d980) is now an inline member in the header.
 
-
 // ===========================================================================
 // 0x17d9a0 - FreeAll: DeleteAll, then clear m_active.
 // ===========================================================================
@@ -307,7 +306,6 @@ struct CFaderTail {
 };
 // CFaderMgr::Flush (0x0017e160) is now an inline member in the header.
 
-
 // ===========================================================================
 // 0x17e170 - Remove(pFader): find pFader in the array; on hit, memmove the tail
 // down one slot, drop the count, and delete the fader (its scalar-deleting dtor).
@@ -362,6 +360,33 @@ void CFaderMgr::DeleteAll() {
     }
     m_arr.m_nMaxSize = 0;
     m_arr.m_nSize = 0;
+}
+
+// The Rez heap free (0x1b9b82). C++ linkage (NOT extern "C") so cl treats it as
+// potentially-throwing and keeps the /GX base-subobject unwind frame in C17e240.
+void RezFree(void* p);
+
+// 0x17e240 (re-homed from src/Stub/BoundaryUpperEh.cpp): a /GX leaf dtor that aliases
+// CFaderArray's vtable (0x5f0790) and frees the +0x4 heap buffer. Kept a DISTINCT
+// placeholder identity (C17e240): the real ~CFaderArray is INLINE (folds into
+// CFaderMgr callers, 0x17e430), so this out-of-line twin can't be ~CFaderArray
+// (inline XOR out-of-line). Empty base subobject + owned buffer at +0x4.
+struct Sev17e240 {
+    virtual ~Sev17e240();
+};
+SIZE_UNKNOWN(Sev17e240);
+inline Sev17e240::~Sev17e240() {}
+struct C17e240 : Sev17e240 {
+    char* m_4; // +0x4
+    virtual ~C17e240() OVERRIDE;
+};
+SIZE_UNKNOWN(C17e240);
+RELOC_VTBL(C17e240, 0x001f0790); // aliases CFaderArray (dtor-stamp verified)
+RVA(0x0017e240, 0x51)
+C17e240::~C17e240() {
+    if (m_4) {
+        RezFree(m_4);
+    }
 }
 
 // ===========================================================================

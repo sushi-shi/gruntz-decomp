@@ -49,3 +49,16 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
     }
     return m_nCount;
 }
+
+// 0x38120 (re-homed from src/Stub/BoundaryTail.cpp): CLatencyItem::GetName - return
+// the row-label CString member (offset 0) by value. Called by FillCombo above.
+// @early-stop
+// /O2 dead-local wall (~66%): the copyctor-into-retslot logic is exact, but retail
+// reserves + zeroes one extra stack dword (`push reg; mov [slot],0`) that our /O2
+// elides as dead. Confirmed NOT /O1 (o1 profile scored 34%). The origin of the kept
+// zero store (a return-value cookie / source temp) is not yet spellable; the copy
+// itself is byte-exact.
+RVA(0x00038120, 0x1d)
+CString CLatencyItem::GetName() {
+    return m_text;
+}
