@@ -2634,7 +2634,7 @@ i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    if (((CGruntzMgr*)g_gameReg)->m_world == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     g_629ad0++;

@@ -124,6 +124,11 @@ struct RockMgr { // g_mgrSettings (*0x64556c), this method's typed alias
     CBrickzGrid* m_tileGrid; // +0x70
     char m_pad74[0x13c - 0x74];
     RECT m_13c; // +0x13c  visible rect
+    // *g_64556c's own game-mgr methods (== CGruntzMgr's, reloc-masked) - call direct,
+    // no cross-cast. Full fold onto canonical CGameRegistry deferred (RockSettingsRoot/
+    // RockMapHost sub-object views diverge from CState/CWorldZ).
+    void EnterModalUI(i32 arg);        // 0x08ef10
+    void ReportError(i32 id, i32 tag); // 0x08dc60
 };
 DATA(0x0024556c)
 extern "C" RockMgr* g_mgrSettings; // _g_mgrSettings
@@ -203,8 +208,8 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                     if (gr == 0) {
                         CString msg;
                         FormatStr(&msg, "No giant rock logic found around: x=%d, y=%d", cx, cy);
-                        ((CGruntzMgr*)g_mgrSettings)->EnterModalUI((i32)(const char*)(msg));
-                        ((CGruntzMgr*)g_mgrSettings)->ReportError(0x80dd, 0x403);
+                        g_mgrSettings->EnterModalUI((i32)(const char*)(msg));
+                        g_mgrSettings->ReportError(0x80dd, 0x403);
                         return 0;
                     }
                     ((CTileTriggerSwitchLogic*)gr)->BuildRockBreakInGameText();

@@ -101,6 +101,9 @@ struct BzGameReg {
     BzSelSource* m_selSource; // +0x74
     char m_pad78[0x7c - 0x78];
     BzLevelRecord* m_levelRecord; // +0x7c
+    // *g_64556c's own game-mgr method (== CGruntzMgr::ChangeState_8fab0, reloc-masked)
+    // so g_mgrSettings->ChangeState_8fab0() calls direct - no cross-cast to CGruntzMgr*.
+    i32 ChangeState_8fab0(i32 arg); // 0x08fab0
 };
 SIZE_UNKNOWN(BzGameReg);
 extern "C" BzGameReg* g_mgrSettings; // *0x64556c

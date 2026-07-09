@@ -278,6 +278,13 @@ struct CTmGameReg {
     CTmScoreBoard* m_scoreBoard; // +0x7c  HUD/score board (reused per-mode)
     char p3[0x134 - 0x80];       // +0x80
     i32 m_134;                   // +0x134  gate/outcome discriminator (==1 live play)
+    // *g_64556c's own game-mgr methods (== CGruntzMgr's, reloc-masked to the shared
+    // RVAs) so g_gameReg->M() calls direct - no cross-cast to an unrelated CGruntzMgr*.
+    // (Folding this whole view onto canonical CGameRegistry is deferred: its sub-object
+    // fields CTmWorld/CTmRegSub30/... diverge from CState/CWorldZ - needs a sub-object
+    // class reconciliation. See the matcher report.)
+    class CState* PickPausedThenPlayState(); // 0x0929b0
+    void ReportError(i32 id, i32 tag);       // 0x08dc60
 };
 extern CTmGameReg* g_gameReg;
 
@@ -912,7 +919,7 @@ void CTriggerMgr::DestroyAllAnims() {
         ch1->StopAndRewind();
         m_soundChanB = 0;
     }
-    void* state = ((CGruntzMgr*)g_gameReg)->PickPausedThenPlayState();
+    void* state = g_gameReg->PickPausedThenPlayState();
     if (state != 0) {
         char* sub = *(char**)((char*)state + 0x2dc);
         if (sub != 0) {
@@ -977,7 +984,7 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
     CSpriteFactory* fac = m_level->m_8;
     CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == 0) {
-        ((CGruntzMgr*)g_gameReg)->ReportError(0x8009, 0x400);
+        g_gameReg->ReportError(0x8009, 0x400);
         return 0;
     }
     sprite->m_7c->Init(sprite);
@@ -1025,7 +1032,7 @@ i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
     }
     if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
         tgt->m_38->m_8 |= 0x10000;
-        ((CGruntzMgr*)g_gameReg)->ReportError(0x8009, 0x401);
+        g_gameReg->ReportError(0x8009, 0x401);
         return 0;
     }
     CTmRecNode* n = (CTmRecNode*)m_baseList.m_head;
@@ -2726,7 +2733,7 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
     if (obj == 0) {
         CString msg;
         msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
-        ((CGruntzMgr*)g_gameReg)->ReportError(0x80dd, 0x3f7);
+        g_gameReg->ReportError(0x80dd, 0x3f7);
         return 0;
     }
     obj->UserLogicVfunc1(); // Run = vtbl slot 3 (+0xc)
@@ -2754,7 +2761,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
                 operator delete(o2);
                 m_overlay = 0;
             }
-            ((CGruntzMgr*)g_gameReg)->ReportError(0x800a, 0x3ff);
+            g_gameReg->ReportError(0x800a, 0x3ff);
         }
         return 0;
     }

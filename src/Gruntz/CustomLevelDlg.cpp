@@ -64,11 +64,9 @@ namespace m4dlg {
     };
     extern "C" WalkOwner* GetWalkOwner1d3631(); // 0x001d3631
 
-    // The settings-manager query: takes the display name by value (callee destroys).
-    struct LevelSettings {
-        i32 IsHidden13a2(CString name); // 0x000013a2 (thiscall, by-value CString)
-    };
-    extern "C" LevelSettings* g_mgrSettings; // 0x0064556c
+    // The settings-manager singleton == *g_64556c (the real CGruntzMgr); IsBattlezMapFile
+    // takes the display name by value (callee destroys). No local view, no cross-cast.
+    extern "C" CGruntzMgr* g_mgrSettings; // 0x0064556c
 
     // @early-stop
     // stack-buffer-placement wall (same as sibling m4::FillCustomLevelList @0x3af90):
@@ -95,7 +93,7 @@ namespace m4dlg {
                 static CString s_custom("custom\\");
                 if (h != -1) {
                     do {
-                        if (((CGruntzMgr*)g_mgrSettings)->IsBattlezMapFile(s_custom + fd.name)) {
+                        if (g_mgrSettings->IsBattlezMapFile(s_custom + fd.name)) {
                             g_pSendMessageA(
                                 item->m_hwnd,
                                 0x180,

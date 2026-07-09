@@ -353,7 +353,7 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
         if (sub != 0) {
             ((SoundStream*)sub)->Stop();
         }
-        ((CGruntzMgr*)g_mgrSettings)->ChangeState_8fab0(3);
+        g_mgrSettings->ChangeState_8fab0(3);
         PostMessageA((HWND)g_mgrSettings->m_wnd->m_hwnd, 0x111, 0x8021, 0);
     } else {
         PassClickToPlayState((rec2->m_levelIndex % 0x28) + 1, 0, 1);

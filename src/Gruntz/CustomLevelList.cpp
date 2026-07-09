@@ -38,11 +38,9 @@ namespace m4 {
     };
     extern "C" WalkOwner* GetWalkOwner1d3631(); // 0x001d3631
 
-    // The settings-manager query: takes the display name by value (callee destroys).
-    struct LevelSettings {
-        // IsHidden13a2 @0x13a2 IS CGruntzMgr::IsBattlezMapFile; cast at the call.
-    };
-    extern "C" LevelSettings* g_mgrSettings; // 0x0064556c
+    // The settings-manager singleton == *g_64556c (the real CGruntzMgr); IsBattlezMapFile
+    // takes the display name by value (callee destroys). No local view, no cross-cast.
+    extern "C" CGruntzMgr* g_mgrSettings; // 0x0064556c
 
     // The custom-level glob + display-name format + "already loaded" strings.
     extern char g_customGlob[]; // 0x0060cf94
@@ -78,7 +76,7 @@ namespace m4 {
             do {
                 char disp[260];
                 sprintf(disp, g_nameFmt, fd.name);
-                if (!((CGruntzMgr*)g_mgrSettings)->IsBattlezMapFile(CString(disp))) {
+                if (!g_mgrSettings->IsBattlezMapFile(CString(disp))) {
                     i32 len = strlen(disp);
                     if (len > 4) {
                         disp[len - 4] = 0;
