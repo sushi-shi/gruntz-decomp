@@ -161,6 +161,15 @@ i32 CDDSurface::Flip(CDDSurface* target) {
     return hr;
 }
 
+// CDDSurface::GetElementAt (__thiscall): bounds-checked m_elements[i], or 0.
+RVA(0x0013ea70, 0x21)
+void* CDDSurface::GetElementAt(i32 i) {
+    if (i >= 0 && i < m_elements.GetSize()) {
+        return m_elements.GetAt(i);
+    }
+    return 0;
+}
+
 // CDDSurface::SetColorKey (__thiscall). m_8->SetColorKey(flags, key).
 RVA(0x0013eaa0, 0x39)
 i32 CDDSurface::SetColorKey(u32 flags, void* key) {
@@ -170,6 +179,30 @@ i32 CDDSurface::SetColorKey(u32 flags, void* key) {
         return hr;
     }
     return 0;
+}
+
+// CDDSurface color-key convenience overloads (0x13eae0/0x13eb10/0x13eb80): build a
+// DDCOLORKEY {low,high} on the stack and forward to SetColorKey.
+RVA(0x0013eae0, 0x24)
+i32 CDDSurface::SetColorKeyVal(u32 flags, u32 key) {
+    DDCOLORKEY ck;
+    ck.dwColorSpaceLowValue = key;
+    ck.dwColorSpaceHighValue = key;
+    return SetColorKey(flags, &ck);
+}
+RVA(0x0013eb10, 0x28)
+i32 CDDSurface::SetColorKeyRange(u32 flags, u32 lo, u32 hi) {
+    DDCOLORKEY ck;
+    ck.dwColorSpaceLowValue = lo;
+    ck.dwColorSpaceHighValue = hi;
+    return SetColorKey(flags, &ck);
+}
+RVA(0x0013eb80, 0x21)
+i32 CDDSurface::SetDestColorKey(u32 key) {
+    DDCOLORKEY ck;
+    ck.dwColorSpaceLowValue = key;
+    ck.dwColorSpaceHighValue = key;
+    return SetColorKey(DDCKEY_DESTBLT, &ck);
 }
 
 // CDDSurface::Blt (__thiscall, ret 4 => 1 arg). Blts src's RECT (src->m_80) into
@@ -314,6 +347,21 @@ void BuildColorChannelTables() {
             a++;
         } while (--stepA > 0);
     }
+}
+
+// CDDSurface::RestoreLost (__thiscall, slot 7, 0x13f960): if a per-surface restore
+// callback is installed (m_b8) and succeeds, done (1); otherwise run the shared
+// CDDrawPtrCollections restore trampoline and report failure (0).
+extern i32 RestoreLostSurfaces_1437f0(); // 0x1437f0 (BoundaryUpper2.cpp)
+RVA(0x0013f960, 0x22)
+i32 CDDSurface::RestoreLost() {
+    if (m_b8 != 0) {
+        if (m_b8(this) != 0) {
+            return 1;
+        }
+    }
+    RestoreLostSurfaces_1437f0();
+    return 0;
 }
 
 // CDDSurface::Tile (__thiscall, ret 8 => 2 args). Tile the source surface across

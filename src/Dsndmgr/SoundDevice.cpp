@@ -294,6 +294,35 @@ i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size
 }
 
 // ---------------------------------------------------------------------------
+// ReloadFile: fopen a file and re-load it into an EXISTING looping buffer (the
+// AcquireFile sibling that funnels through ReloadRiff). Skip (return 1) unless the
+// buffer is looping; on any I/O failure return 0.
+RVA(0x00136b00, 0xc2)
+i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 reserved) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    if (buf->IsLooping() == 0) {
+        return 1;
+    }
+    FILE* fp = Eng_fopen(path, s_rb);
+    if (fp == 0) {
+        return 0;
+    }
+    u32 size = Eng_filelength(fp->_file);
+    void* data = operator new(size);
+    if (RezFRead(data, size, 1, fp) != 1) {
+        RezFClose(fp);
+        operator delete(data);
+        return 0;
+    }
+    RezFClose(fp);
+    i32 r = ReloadRiff(buf, data, reserved);
+    operator delete(data);
+    return r;
+}
+
+// ---------------------------------------------------------------------------
 // ReloadRiff: re-load a RIFF into an EXISTING buffer (Acquire sibling). Gate on init +
 // non-null RIFF + buffer looping; parse, optional 16->8 downconvert, Restore, LockConvert.
 // @early-stop

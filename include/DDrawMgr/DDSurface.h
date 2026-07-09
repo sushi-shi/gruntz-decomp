@@ -104,7 +104,12 @@ public:
     i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
     i32 Restore(void* arg1, i32 arg2);           // 0x13e7d0 (BoundaryUpper2.cpp)
     i32 Flip(CDDSurface* target);                // 0x13e850
+    void* GetElementAt(i32 i);                   // 0x13ea70  m_elements[i] (bounds-checked)
     i32 SetColorKey(u32 flags, void* key);       // 0x13eaa0
+    // Convenience SetColorKey overloads that build a DDCOLORKEY on the stack + forward.
+    i32 SetColorKeyVal(u32 flags, u32 key);        // 0x13eae0  key={v,v}
+    i32 SetColorKeyRange(u32 flags, u32 lo, u32 hi); // 0x13eb10  key={lo,hi}
+    i32 SetDestColorKey(u32 key);                  // 0x13eb80  SetColorKey(DDCKEY_DESTBLT,{v,v})
     i32 Blt(CDDSurface* src);                    // 0x13ee60
     i32 BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
     i32 BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans);          // 0x13ef90
@@ -255,7 +260,10 @@ public:
     i32 m_ac;                  // +0xac  bytes-per-row factor
     i32 m_b0;                  // +0xb0  pixels-per-unit divisor
     i32 m_b4;                  // +0xb4  lPitch/divisor
-    i32 m_b8;                  // +0xb8  cleared by the surface teardown
+    // +0xb8  per-surface restore callback (__cdecl fn-ptr taking `this`); RestoreLost
+    // (slot 7) tail-dispatches through it. A fn-ptr is 4 bytes = layout-identical to the
+    // former i32 slot; cleared by the surface teardown.
+    i32(__cdecl* m_b8)(CDDSurface*);
     i32 m_bc;                  // +0xbc  cleared
 };
 SIZE(CDDSurface, 0xc0); // DIRSURF.CPP surface item (both surface ctors 0x13e9a0/0x1421a0

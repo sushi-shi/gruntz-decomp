@@ -245,7 +245,8 @@ public:
     virtual i32 IsValid() { return m_device2 != 0; }
 
     // Shared non-virtual COM helpers.
-    i32 Unacquire(); // 0x134fe0
+    i32 Unacquire();       // 0x134fe0
+    i32 Escape(void* data); // 0x135000  IDirectInputDevice2::Escape
 
     // Shared COM device-config thunks: they touch only the root-owned m_device2 /
     // m_hwnd, so every device leaf (keyboard/mouse/joystick) reaches them directly.

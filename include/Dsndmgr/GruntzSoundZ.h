@@ -54,7 +54,8 @@ public:
     // this class (like the sibling slots, no PDB name survives): named descriptively for
     // the MIDI/XMIDI sequence object it interrogates; exact original identity unrecovered.
     virtual i32 IsMidi();
-    virtual i32 LoadSpecial(const char* path, const char* name); // [15] 0x138d50 ".." AIL-file load
+    virtual i32
+    LoadSpecial(const char* resName, const char* name); // [15] 0x138d50 load a "MIDI" resource
 
     // Inline ctor: cl stamps ??_7 then seeds the fields in retail store order.
     CGruntzSoundInnerZ() {

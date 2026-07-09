@@ -497,6 +497,17 @@ CDeviceConfigB::~CDeviceConfigB() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x133560 - set the four GetErrorString reporting-mode flags (log / message-box /
+// beep / third) from the four args. __cdecl free helper (sibling of DDraw's).
+RVA(0x00133560, 0x27)
+void SetDInputReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
+    g_logEnabled = log;
+    g_msgBoxEnabled = msgBox;
+    g_beepEnabled = beep;
+    g_thirdEnabled = third;
+}
+
+// ---------------------------------------------------------------------------
 // DirectInputMgr2::GetErrorString
 RVA(0x00133590, 0x5be)
 void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
@@ -1350,6 +1361,21 @@ RVA(0x00134fe0, 0x13)
 i32 CInputDevRoot::Unacquire() {
     i32 hr = m_device2->Unacquire();
     return hr == 0;
+}
+
+// CInputDevRoot::Escape (__thiscall, ret 4 => 1 arg). Pass-through to
+// IDirectInputDevice2::Escape (slot +0x60); report on failure.
+RVA(0x00135000, 0x3b)
+i32 CInputDevRoot::Escape(void* data) {
+    if (data == 0) {
+        return 0;
+    }
+    i32 hr = m_device2->Escape((LPDIEFFESCAPE)data);
+    if (hr != 0) {
+        DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0x1b8, hr);
+        return 0;
+    }
+    return 1;
 }
 
 // CInputDevice::PollDevice (__thiscall, no args). The PollJoystick pre-step:

@@ -81,10 +81,16 @@ public:
         void* riff,
         u32 reserved
     ); // 0x136bd0  re-parse RIFF, optionally downconvert, into an existing buffer
+    i32 ReloadFile(
+        DirectSoundMgr* buf,
+        char* path,
+        u32 reserved
+    ); // 0x136b00  fopen whole file -> ReloadRiff (only when the buffer is looping)
 
     // Device bring-up (DSNDMGR.CPP; defined in DirectSoundMgr.cpp - they fall in that
     // RVA range): DirectSoundCreate + cooperative level, then lazy primary buffer.
     i32 Create(void* hwnd, u32 level, u32 flags);   // 0x136550  DirectSoundCreate + coop
+    i32 Compact();                                  // 0x136650  IDirectSound::Compact
     i32 ReacquireViaCallback();                     // 0x1365e0  dispatch m_reacquireProc
     i32 SetCooperativeLevel(void* hwnd, u32 level); // 0x1365f0
     // Per-tick device-list housekeeping (also defined in DirectSoundMgr.cpp).

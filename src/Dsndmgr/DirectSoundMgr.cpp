@@ -347,6 +347,25 @@ i32 DirectSoundMgr::GetPan() {
 }
 
 // ---------------------------------------------------------------------------
+// GetPanPercent (0x135840): gated on init; read the raw DSound pan via GetPan and
+// map it to a signed -100..100 percent through ConvertVolumeToPercent (0x135110):
+// right pan (>0) -> 100 - convert(-pan), left pan (<0) -> convert(pan) - 100.
+RVA(0x00135840, 0x3b)
+i32 DirectSoundMgr::GetPanPercent() {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    i32 pan = GetPan();
+    if (pan == 0) {
+        return 0;
+    }
+    if (pan > 0) {
+        return 100 - ConvertVolumeToPercent(-pan);
+    }
+    return ConvertVolumeToPercent(pan) - 100;
+}
+
+// ---------------------------------------------------------------------------
 // SetFrequency: gated on init + freq-cap bit (m_caps & 0x20); SetFrequency, report
 // (HRESULT tested directly, not normalized), cache in m_setFreq on success.
 RVA(0x00135880, 0x60)
@@ -766,6 +785,22 @@ i32 SoundDevice::SetCooperativeLevel(void* hwnd, u32 level) {
 }
 
 // ---------------------------------------------------------------------------
+// Compact (0x136650): gated on init; IDirectSound::Compact (slot +0x1c) the device,
+// report + fail on a non-zero HRESULT.
+RVA(0x00136650, 0x37)
+i32 SoundDevice::Compact() {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    i32 hr = m_device->Compact() != 0;
+    if (hr) {
+        DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x3dc, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // StartPrimary (0x137200, re-homed from BoundaryUpper2): gated on init, lazily
 // (re)create the primary buffer, then start it looping (IDirectSoundBuffer::Play
 // slot 12, DSBPLAY_LOOPING); report + fail on a non-zero HRESULT. (The
@@ -810,6 +845,17 @@ i32 SoundDevice::CreatePrimaryBuffer() {
         }
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x138120 - set the four GetErrorString reporting-mode flags (log / message-box /
+// beep / third) from the four args. __cdecl free helper (sibling of DDraw's / DInput's).
+RVA(0x00138120, 0x27)
+void SetDSoundReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
+    g_logEnabled = log;
+    g_msgBoxEnabled = msgBox;
+    g_beepEnabled = beep;
+    g_thirdEnabled = third;
 }
 
 // ---------------------------------------------------------------------------

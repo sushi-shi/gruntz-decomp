@@ -61,6 +61,45 @@ void DSoundList::InsertHead(DSoundLink* node) {
 }
 
 // ---------------------------------------------------------------------------
+// InsertAfter (0x139140, __thiscall, 2 stack args). Splice `node` in right after
+// `after` (fixing the successor's prev, or the tail if `after` was last). The
+// null-`after` arm calls InsertHead but shares the tail codegen (retail shape - no
+// early return; callers only pass a live `after`).
+RVA(0x00139140, 0x41)
+void DSoundList::InsertAfter(DSoundLink* after, DSoundLink* node) {
+    if (after == 0) {
+        InsertHead(node);
+    }
+    if (after->m_next) {
+        after->m_next->m_prev = node;
+    } else {
+        m_tail = node;
+    }
+    node->m_prev = after;
+    node->m_next = after->m_next;
+    after->m_next = node;
+}
+
+// ---------------------------------------------------------------------------
+// InsertBefore (0x139190, __thiscall, 2 stack args). Splice `node` in right before
+// `before` (fixing the predecessor's next, or the head if `before` was first). The
+// null-`before` arm calls InsertTail but shares the tail codegen (retail shape).
+RVA(0x00139190, 0x44)
+void DSoundList::InsertBefore(DSoundLink* before, DSoundLink* node) {
+    if (before == 0) {
+        InsertTail(node);
+    }
+    if (before->m_prev) {
+        before->m_prev->m_next = node;
+    } else {
+        m_head = node;
+    }
+    node->m_next = before;
+    node->m_prev = before->m_prev;
+    before->m_prev = node;
+}
+
+// ---------------------------------------------------------------------------
 // InsertTail (0x139110, __thiscall, 1 stack arg). Append `node`: node->next = 0;
 // node->prev = tail; fix the old tail's next (or the head if empty); tail = node.
 RVA(0x00139110, 0x27)

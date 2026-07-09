@@ -401,6 +401,28 @@ i32 CGruntzSoundInnerZ::DecodeBuf(const void* buf, u32 len, const char* name) {
 }
 
 // ---------------------------------------------------------------------------
+// LoadSpecial (vtable slot 15, 0x138d50): load a named "MIDI"-type Win32 resource out
+// of the AIL driver module (g_ailDriver64 doubles as the resource HMODULE) and hand
+// the locked bytes to DecodeBuf. Returns 0 on any resource-load failure.
+RVA(0x00138d50, 0x74)
+i32 CGruntzSoundInnerZ::LoadSpecial(const char* resName, const char* name) {
+    HRSRC rsrc = FindResourceA((HMODULE)g_ailDriver64, resName, "MIDI");
+    if (rsrc == 0) {
+        return 0;
+    }
+    HGLOBAL hRes = ::LoadResource((HMODULE)g_ailDriver64, rsrc);
+    if (hRes == 0) {
+        return 0;
+    }
+    void* p = LockResource(hRes);
+    if (p == 0) {
+        return 0;
+    }
+    u32 size = SizeofResource((HMODULE)g_ailDriver64, rsrc);
+    return DecodeBuf(p, size, name);
+}
+
+// ---------------------------------------------------------------------------
 // ReleaseHandle (vtable slot 7): stop the sequence (Stop, +0x30), release the AIL
 // sequence handle, and free the owned load buffer.
 RVA(0x00138dd0, 0x36)

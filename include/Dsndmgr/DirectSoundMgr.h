@@ -96,6 +96,7 @@ public:
     i32 SetVolumeByIndex(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx])
     i32 GetVolume();               // 0x1355f0  GetVolume
     i32 GetVolumePercent();        // 0x135640  GetVolume -> percent (0x135110)
+    i32 GetPanPercent();           // 0x135840  GetPan -> signed percent (0x135110)
     i32 CloneAndPlay(i32 key, i32 mode, i32 slot); // 0x135660  reap + spawn a voice
     i32 SetPan(i32 pan);                           // 0x135740  SetPan (caps DSBCAPS_CTRLPAN)
     i32 SetPanByIndex(i32 idx);                    // 0x1357a0  SetPan(+/-g_panTable[idx]) by sign

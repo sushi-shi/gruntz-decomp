@@ -35,6 +35,7 @@ public:
     StreamVoice* CreateStreamBuffer(WaveFormatX* fmt, u32 bytes, i32 a, i32 b, i32 c);
     // 0x137780
     StreamVoice* OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5);
+    StreamVoice* PlayStream(CParseSource* src, i32 a2, i32 a3, i32 a4); // 0x137a30 open + resume
     // 0x137900
     void DestroyVoice(StreamVoice* voice); // 0x1379d0 (SoundDevice.h's RemoveSub decl
                                            // is a caller-side alias of this same RVA)

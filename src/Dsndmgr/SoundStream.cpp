@@ -187,6 +187,23 @@ void SoundStream::DestroyVoice(StreamVoice* voice) {
 }
 
 // ---------------------------------------------------------------------------
+// SoundStream::PlayStream (__thiscall, ret 0x10 => 4 args, 0x137a30). Open a streaming
+// voice for `src` (auto-priming: OpenStream p4=0/p5=1), resume its feeder; on success
+// return the voice, else destroy it and return 0.
+RVA(0x00137a30, 0x4b)
+StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 a2, i32 a3, i32 a4) {
+    StreamVoice* voice = OpenStream(src, a2, a3, a4, 0, 1);
+    if (voice == 0) {
+        return 0;
+    }
+    if (voice->m_feeder.Resume() != 0) {
+        return voice;
+    }
+    DestroyVoice(voice);
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // SoundStream::ParseWave (__thiscall - the implicit `this` is unused).
 // Walk the RIFF/WAVE chunks of `src`: verify the RIFF+WAVE magic, then loop the
 // fmt/data chunks, copying the 18-byte PCM header into fmtBuf and reporting the
