@@ -122,11 +122,12 @@ public:
     i32 m_tileOriginY; // +0x44  out: near tile-origin Y
     i32 m_tileExtentX; // +0x48  out: far tile-extent X
     i32 m_tileExtentY; // +0x4c  out: far tile-extent Y
-    u8 pad_50[0x70 - 0x50];
-    i32 m_viewW;   // +0x70  viewport tiles across
-    i32 m_viewH;   // +0x74  viewport tiles down
-    i32 m_anchorX; // +0x78  view-anchor X
-    i32 m_anchorY; // +0x7c  view-anchor Y
+    LevelCoordRect m_bounds50; // +0x50  level coord bounds (Build copies coords here)
+    u8 pad_60[0x70 - 0x60];
+    i32 m_viewW;   // +0x70  viewport tiles across (= bounds width)
+    i32 m_viewH;   // +0x74  viewport tiles down (= bounds height)
+    i32 m_anchorX; // +0x78  view-anchor X (= half width)
+    i32 m_anchorY; // +0x7c  view-anchor Y (= half height)
     i32 m_zBound;  // +0x80  plane z bound (VisitVisible draws objects with z-key < this)
     i32 m_originX; // +0x84  out: integer scaledX (snapped)
     i32 m_originY; // +0x88  out: integer scaledY

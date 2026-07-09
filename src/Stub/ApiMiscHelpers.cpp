@@ -76,33 +76,11 @@ namespace ApiMisc {
     // StreamFeeder::Tick / StreamFeeder::TickPump in src/Dsndmgr/StreamFeeder.cpp -
     // their placeholder fields were a documented 1:1 map onto StreamFeeder.)
 
-    // __thiscall(RECT*): cache the bounds rect + derived size/center, then recompute.
-    struct GeoHost_161e80 {
-        char m_pad0[0x50];
-        RECT m_50; // +0x50 bounds
-        char m_pad60[0x70 - 0x60];
-        i32 m_70; // +0x70 width
-        i32 m_74; // +0x74 height
-        i32 m_78; // +0x78 half-width
-        i32 m_7c; // +0x7c half-height
-        void Build(RECT* pRect);
-        void Recompute(); // RVA 0x161c90
-    };
-    RVA(0x00161e80, 0x79)
-    void GeoHost_161e80::Build(RECT* pRect) {
-        if (pRect->left != (LONG)0x80000000) {
-            RECT local;
-            CopyRect(&local, pRect);
-            m_50 = local;
-            i32 width = m_50.right - m_50.left + 1;
-            i32 height = m_50.bottom - m_50.top + 1;
-            m_70 = width;
-            m_74 = height;
-            m_78 = width / 2;
-            m_7c = height / 2;
-            Recompute();
-        }
-    }
+    // (GeoHost_161e80::Build @0x161e80 re-homed to src/Gruntz/GameLevel.cpp as
+    // CLevelPlane::Build - the local view IS CLevelPlane (a CGameLevel per-plane
+    // object, m_planes[i]); xref-proven (CGameLevel::SetExtentsAndBuildAll /
+    // BuildAllPlanes call it on esi->m_38[i]). Build was already declared @0x161e80
+    // in GameLevel.h with the sibling RecomputePlaneCoords @0x161c90 matched there.)
 
     // __thiscall: free the owned module handle if present.
     struct LibHost_1bf577 {

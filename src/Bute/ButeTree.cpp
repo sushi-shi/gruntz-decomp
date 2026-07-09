@@ -220,3 +220,27 @@ void* CButeTree::Insert(const char* key, void* value) {
     m_errorSink->Set(this, (i32)cache, 0xc);
     return 0;
 }
+
+// ===========================================================================
+// FirstDiffBit (0x16e480) - the crit-bit index (bit-level common-prefix length)
+// of two byte keys: 8 per matching leading byte, plus the trailing-zero-bit count
+// of the first differing pair's xor. __cdecl free helper; Insert (above) and
+// CProjActMap::Insert (projactcache) both call it. Folded from Stub/DiscoveredSmall.
+// ===========================================================================
+RVA(0x0016e480, 0x3e)
+i32 FirstDiffBit(const char* a, const char* b) {
+    i32 n = 0;
+    while (*a == *b) {
+        n += 8;
+        ++a;
+        ++b;
+    }
+    i32 x = *a;
+    x ^= *b;
+    i32 c = 0;
+    while (!(x & 1)) {
+        x >>= 1;
+        ++c;
+    }
+    return c + n;
+}

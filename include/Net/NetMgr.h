@@ -418,6 +418,10 @@ struct CNetSession {
     // accepted scoring artifact).
     void Reset();      // bf150  re-init header/slots/scratch/entries (session-level reset)
     i32 Verify(i32 n); // c0290  slot-window validation against sequence n
+    // Scan the four inline command slots for the first active (m_state==3),
+    // un-reset (m_resetGuard==0) slot whose latency exceeds key (unsigned). The
+    // Multi.h CNetSession2 lobby view named this FindSlot; it is a CNetSession method.
+    CNetCmdSlot* FindSlot(u32 key); // c0460
     // Wiring init (retail symbol ?Init@CNetSession2@@; the folded RVA owner): caches the
     // owner pointers then Reset()s. Returns TRUE on success. a1=command-buffer array.
     i32 Init(void* a1, class CNetMgr* a2, void* a3); // bef80

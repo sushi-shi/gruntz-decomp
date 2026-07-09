@@ -30,44 +30,10 @@
 // 0xbf580 sits inside its RVA span, drained by CLobbySync::Reset. NetCmdSlot's callers
 // already reference it as RecycleCmd.)
 
-// ===========================================================================
-// 0x000c0460 (46B) - scan 4 embedded 0x64-byte entries; return the first whose
-// type==3, field4==0 and field10 > key (unsigned), else 0. __thiscall(1 arg).
-// ===========================================================================
-struct Entry_c0460 {
-    i32 m_0; // +0x00 type
-    i32 m_4; // +0x04
-    char m_pad8[0x10 - 0x8];
-    u32 m_10; // +0x10
-    char m_pad14[0x64 - 0x14];
-};
-struct EntryOwner_c0460 {
-    char m_pad0[0x20];
-    Entry_c0460 m_entries[4]; // +0x20
-    Entry_c0460* Find(u32 key);
-};
-// ATTRIBUTED (xref, not yet homed): this IS CNetSession::FindSlot (declared in
-// <Gruntz/Multi.h> as CNetSession2::FindSlot @0x004c0460) - CMulti::DropTimeout calls
-// m_session->FindSlot(0x1388/0x2710); the 4x0x64 entries at +0x20 are the session's
-// CNetCmdSlot command slots (m_0==CNetCmdSlot::m_state). The fold onto the canonical
-// CNetSession (src/Net/NetSession2.cpp) is DEFERRED: it needs the CNetSession2<->
-// CNetSession / CLobbySlot<->CNetCmdSlot reconciliation Multi.h flags as an
-// identity-recovery TODO (touches the reserved CMulti domain). Kept here meanwhile.
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc): structure byte-identical to retail
-// (lea/loop/guards/ja/ret all match); residual is the key<->counter register
-// swap (retail key=ecx/counter=edx, cl here key=edx/counter=ecx) driven by the
-// key-load vs lea schedule order, not source-steerable, ~88.75%.
-RVA(0x000c0460, 0x2e)
-Entry_c0460* EntryOwner_c0460::Find(u32 key) {
-    Entry_c0460* p = &m_entries[0];
-    for (i32 i = 0; i < 4; i++, p++) {
-        if (p && p->m_0 == 3 && p->m_4 == 0 && p->m_10 > key) {
-            return p;
-        }
-    }
-    return 0;
-}
+// (EntryOwner_c0460::Find @0x000c0460 re-homed to src/Net/NetSession2.cpp as
+// CNetSession::FindSlot - the +0x20 4x0x64 slot table IS m_slots[4] of CNetCmdSlot
+// (m_0==m_state, m_4==m_resetGuard, m_10==m_latency). The old EntryOwner_c0460 view
+// folded onto the canonical CNetSession (<Net/NetMgr.h>); no Multi.h edit needed.)
 
 // (Host_c2a80::Run @0x000c2a80 re-homed to src/Net/NetMgrMisc.cpp as
 // CMultiStartDlg::Method_c2a80 - reconcile channel 3 (SyncChannelSlot) then Drive;
@@ -218,17 +184,9 @@ i32 Probe_112840() {
     return LoadSwitchDownSprite_2e0f() != 0;
 }
 
-// ===========================================================================
-// 0x00115630 (10B) - construct the medium-font global in place via the
-// explicit-ctor-call tail-jmp (mov ecx,&g_mediumFont; jmp ??0Font@@QAE@XZ 0x179700 -
-// no placement-new null-guard). Font is the real engine font class (<Font/Font.h>).
-// ===========================================================================
-DATA(0x0024eae8)
-extern Font g_mediumFont;
-RVA(0x00115630, 0xa)
-void Forward_115630() {
-    g_mediumFont.Font::Font();
-}
+// (Forward_115630 @0x00115630 re-homed to src/Gruntz/Fonts.cpp - the
+// compiler-generated dynamic initializer that constructs the g_mediumFont global;
+// Fonts.cpp is the TU that owns the four font globals.)
 
 // ===========================================================================
 // 0x0011e8dc (7B) - __thiscall vptr re-stamp: store the base dtor vtable
@@ -382,8 +340,6 @@ void** Get_1b9b8d() {
 
 SIZE_UNKNOWN(Desc_16f6e0);
 SIZE_UNKNOWN(Dst_16f6e0);
-SIZE_UNKNOWN(EntryOwner_c0460);
-SIZE_UNKNOWN(Entry_c0460);
 SIZE_UNKNOWN(Init8_1104f0);
 SIZE_UNKNOWN(Mid_faec0);
 SIZE_UNKNOWN(Obj_11e8dc);

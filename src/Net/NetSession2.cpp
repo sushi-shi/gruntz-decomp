@@ -89,3 +89,24 @@ i32 CNetSession::Verify(i32 n) {
     }
     return 1;
 }
+
+// Scan the four inline command slots for the first active (m_state==3), un-reset
+// (m_resetGuard==0) slot whose latency exceeds key (unsigned). Folded from the
+// former Stub/ReconBatch2.cpp EntryOwner_c0460 view (the +0x20 4x0x64 slot table
+// IS m_slots[4] of CNetCmdSlot); the CMulti lobby view (Multi.h CNetSession2) also
+// named this FindSlot - it is a CNetSession method.
+// @early-stop
+// regalloc wall (topic:wall topic:regalloc): structure byte-identical to retail
+// (lea/loop/guards/ja/ret all match); residual is the key<->counter register swap
+// (retail key=ecx/counter=edx, cl here key=edx/counter=ecx) driven by the key-load
+// vs lea schedule order, not source-steerable, ~88.75%.
+RVA(0x000c0460, 0x2e)
+CNetCmdSlot* CNetSession::FindSlot(u32 key) {
+    CNetCmdSlot* p = &m_slots[0];
+    for (i32 i = 0; i < 4; i++, p++) {
+        if (p && p->m_state == 3 && p->m_resetGuard == 0 && (u32)p->m_latency > key) {
+            return p;
+        }
+    }
+    return 0;
+}

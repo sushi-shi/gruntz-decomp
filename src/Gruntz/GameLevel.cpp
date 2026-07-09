@@ -1215,6 +1215,35 @@ void CLevelPlane::RecomputePlaneCoords() {
 }
 
 // ===========================================================================
+// CLevelPlane::Build (0x161e80) - re-place one plane from the level coord rect.
+// Unless the rect is unset (minX == INT_MIN sentinel), copy it into the plane's
+// +0x50 bounds, derive the view size (w/h = max-min+1) and the half-size anchor,
+// then RecomputePlaneCoords. CGameLevel::SetExtentsAndBuildAll / BuildAllPlanes
+// drive it per plane (m_planes[i]). Folded from Stub/ApiMiscHelpers.cpp
+// (GeoHost_161e80::Build) - the local view IS CLevelPlane.
+// @early-stop
+// codegen wall (~90.4%): the sentinel gate, the CopyRect(&local, coords) IAT call,
+// the 4-dword copy to m_bounds50, the max-min+1 size + cdq/sar half-size and the
+// RecomputePlaneCoords tail are all byte-faithful; the residual is a local /O2
+// scheduling of the width/height derivation. Complete + correct logic.
+// ===========================================================================
+RVA(0x00161e80, 0x79)
+void CLevelPlane::Build(LevelCoordRect* coords) {
+    if (coords->minX != (i32)0x80000000) {
+        LevelCoordRect local;
+        CopyRect((RECT*)&local, (RECT*)coords);
+        m_bounds50 = local;
+        i32 width = m_bounds50.maxX - m_bounds50.minX + 1;
+        i32 height = m_bounds50.maxY - m_bounds50.minY + 1;
+        m_viewW = width;
+        m_viewH = height;
+        m_anchorX = width / 2;
+        m_anchorY = height / 2;
+        RecomputePlaneCoords();
+    }
+}
+
+// ===========================================================================
 // The trace-discovered CGameLevel cluster (13 leaves). All are plain /O2 /MT
 // leaves touching only member offsets, the per-plane objects, and engine sibling
 // callees that reloc-mask (no string/global relocations except the jump tables).

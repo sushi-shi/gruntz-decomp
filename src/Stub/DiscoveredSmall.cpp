@@ -178,28 +178,9 @@ void Obj1397a0::Teardown() {
     m_30 = 0;
 }
 
-// ---------------------------------------------------------------------------
-// FirstDiffBit @0x16e480 - the bit-level common-prefix length of two byte
-// keys: 8 per matching leading byte, plus the trailing-zero-bit count of the
-// first differing pair's xor. __cdecl.
-// ---------------------------------------------------------------------------
-RVA(0x0016e480, 0x3e)
-i32 FirstDiffBit(const char* a, const char* b) {
-    i32 n = 0;
-    while (*a == *b) {
-        n += 8;
-        ++a;
-        ++b;
-    }
-    i32 x = *a;
-    x ^= *b;
-    i32 c = 0;
-    while (!(x & 1)) {
-        x >>= 1;
-        ++c;
-    }
-    return c + n;
-}
+// (FirstDiffBit @0x16e480 re-homed to src/Bute/ButeTree.cpp - the crit-bit index
+// helper CButeTree::Insert + CProjActMap::Insert both call; ButeTree.cpp already
+// declared it reloc-masked, so the definition lands in the canonical trie TU.)
 
 // (CU35Host::DestroyStr @0x021c40 re-homed to src/Gruntz/FontConfig.cpp as
 // FontItem::~FontItem - the out-of-line dtor of CFontConfig's {type,data,CString name}

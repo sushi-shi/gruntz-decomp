@@ -35,6 +35,16 @@ extern Font g_tinyFont;
 #define s_tiny_fnt "tiny.fnt"
 
 // ---------------------------------------------------------------------------
+// The compiler-generated dynamic initializer for the g_mediumFont global (the
+// _initterm entry): construct it in place via the explicit-ctor-call tail-jmp
+// (mov ecx,&g_mediumFont; jmp ??0Font@@QAE@XZ - no placement-new null-guard).
+// Folded here from Stub/ReconBatch2.cpp (g_mediumFont is this TU's font global).
+RVA(0x00115630, 0xa)
+void Forward_115630() {
+    g_mediumFont.Font::Font();
+}
+
+// ---------------------------------------------------------------------------
 // One-shot load of the four bitmap fonts. Each Font::LoadFont takes a CString by
 // value (a stack temp constructed from the literal); a 0 return aborts the load
 // (returns the 0 the failed LoadFont left in eax). Once all four load, the flag
