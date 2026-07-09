@@ -16,10 +16,13 @@
 
 class CFrontCandyAni : public CUserLogic {
 public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (0xfa60 body)
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (body 0xfdf0, still S_fdf0 placeholder)
     TILE_LOGIC_TAIL
 public:
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00fa60 (slot-1 body)
+    // NOTE: 0xfa60 was mis-attributed here; the vtable read proves it is
+    // CFrontCandy::Serialize (??_7CFrontCandy slot 1). CFrontCandyAni's real slot-1
+    // body is 0xfdf0 (currently the S_fdf0 placeholder in BoundaryLeafLogic.cpp,
+    // fold blocked by this class's UserLogic.cpp/FrontCandyAni.h double-def).
     // Construct the class's activation-coordinate registry (g_frontCandyActReg
     // @0x6460b0) over the fixed [2000,2010] range; free init thunk, reloc-masked.
     static void InitActReg(); // 0x0ad130

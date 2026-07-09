@@ -24,8 +24,14 @@
 // hold the RVA-less vtable-emission copies.
 #include <Gruntz/AniCycle.h>
 #include <Gruntz/EyeCandyAni.h>
+#include <Gruntz/FrontCandy.h>
+#include <Gruntz/WarpStonePad.h>
 #include <Gruntz/SingleFrameMessage.h>
+#include <Gruntz/GruntStartingPoint.h>
+#include <Gruntz/MenuSparkle.h>
+#include <Gruntz/SingleAnimation.h>
 #include <Gruntz/SpotLight.h>
+#include <Gruntz/StatusBarSprite.h>
 #include <Gruntz/ToyPeek.h>
 #include <Gruntz/BoundaryLeafLogicViews.h> // placeholder CUserLogic leaf classes (pulls UserLogic.h)
 #include <Gruntz/SerialObjRef.h>           // the shared serialized-object-reference (Chain @0x8c00)
@@ -57,17 +63,19 @@ CAniCycle::~CAniCycle() {}
 RVA(0x0000f640, 0x44)
 CSingleFrameMessage::~CSingleFrameMessage() {}
 
-// L_fb00 (0x0000fb00) IS CFrontCandy::~CFrontCandy (??_7CFrontCandy slot 0). Foldable
-// like CAniCycle, but CFrontCandy is a .cpp-local class in UserLogic.cpp (no header) -
-// extract it to include/Gruntz/ first, then fold (kills placeholder + a .cpp-local view).
+// CFrontCandy::~CFrontCandy @0xfb00 (??_7CFrontCandy slot 0). Extracted to
+// <Gruntz/FrontCandy.h>; UserLogic.cpp holds the RVA-less vtable-emission copy.
 RVA(0x0000fb00, 0x44)
-L_fb00::~L_fb00() {}
+CFrontCandy::~CFrontCandy() {}
 
-// S_fdf0 (0x0000fdf0) is a slot-1 SerializeMove; xref --tree puts it at
-// ??_7CFrontCandyAni+0x4, but CFrontCandyAni already claims 0xfa60 as its slot-1
-// override - the +0x4 data-ref likely lands in the NEXT unlabeled vtable after
-// ??_7CFrontCandyAni. Attribution is AMBIGUOUS; verify the vtable contents before
-// folding (do not trust the nearest-preceding-symbol +0x4).
+// S_fdf0 (0x0000fdf0) VERIFIED = CFrontCandyAni::Serialize (slot-1). Read the retail
+// vtable directly: ??_7CFrontCandyAni (0x1e83e4) slot1 = thunk 0x19a6 -> 0xfdf0. The
+// existing FrontCandyAni.cpp "CFrontCandyAni::Serialize @0xfa60" is a MIS-ATTRIBUTION:
+// 0xfa60's data-ref is ??_7CFrontCandy (0x1e84ec) slot1 -> it is CFrontCandy's slot-1,
+// not CFrontCandyAni's. FOLD BLOCKED: CFrontCandyAni is double-defined (UserLogic.cpp
+// local "genuine ctor" facet + FrontCandyAni.h "acts" facet, documented NOT-foldable);
+// folding needs those merged to one header def first (+ correcting the 0xfa60 owner to
+// CFrontCandy) - a 5-file reconcile on a 100%-matched fn, deferred to avoid a match-cost.
 RVA(0x0000fdf0, 0x47)
 i32 S_fdf0::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
@@ -78,9 +86,10 @@ i32 S_fdf0::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
            != 0;
 }
 
-// L_fe90 (0x0000fe90) IS CFrontCandyAni::~CFrontCandyAni (??_7CFrontCandyAni slot 0).
-// CFrontCandyAni is double-defined (UserLogic.cpp local + FrontCandyAni.h) with a
-// conflicting slot-1 attribution - reconcile the two class defs before folding.
+// L_fe90 (0x0000fe90) VERIFIED = CFrontCandyAni::~CFrontCandyAni (??_7CFrontCandyAni
+// slot 0 -> sdd 0xfe60 -> this). FOLD BLOCKED by the same CFrontCandyAni double-def as
+// S_fdf0 above (the UserLogic.cpp def has the dtor but is .cpp-local; FrontCandyAni.h
+// lacks it and has no VTBL) - reconcile the two defs to one header first.
 RVA(0x0000fe90, 0x44)
 L_fe90::~L_fe90() {}
 
@@ -88,41 +97,43 @@ L_fe90::~L_fe90() {}
 RVA(0x0000ffc0, 0x44)
 CEyeCandyAni::~CEyeCandyAni() {}
 
-// L_101b0 (0x000101b0) IS CMenuSparkle::~CMenuSparkle (??_7CMenuSparkle slot 0).
-// CMenuSparkle is a documented dual-model (canonical CTileLogic in UserLogic.cpp vs
-// Grunt.h-world CUserLogic view in MenuSparkleSerial.h) - reconcile before folding.
+// CMenuSparkle::~CMenuSparkle @0x101b0 (??_7CMenuSparkle slot 0 -> sdd 0x10180). The
+// canonical CMenuSparkle extracted to <Gruntz/MenuSparkle.h>; UserLogic.cpp holds the
+// RVA-less vtable-emission copy. (The Grunt.h-world MenuSparkleSerial.h view is a
+// separate TU-local model; the two never coexist in a TU, so no redefinition.)
 RVA(0x000101b0, 0x44)
-L_101b0::~L_101b0() {}
+CMenuSparkle::~CMenuSparkle() {}
 
+// CSingleAnimation::Serialize @0x104a0 - the vtable slot-1 body (thunk 0x3602 in
+// ??_7CSingleAnimation slot 1). The two-chain serialize (base chain + the +0x34
+// CSerialObjRef), same archetype as CFrontCandyAni::Serialize.
 RVA(0x000104a0, 0x47)
-i32 S_104a0::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+i32 CSingleAnimation::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)((char*)this + 0x34))
-               ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)
-           != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
 }
 
+// CGruntStartingPoint::Serialize @0x105d0 - slot-1 body (thunk 0x4291 in
+// ??_7CGruntStartingPoint slot 1).
 RVA(0x000105d0, 0x47)
-i32 S_105d0::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+i32 CGruntStartingPoint::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)((char*)this + 0x34))
-               ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)
-           != 0;
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
 }
 
-// L_10fc0 (0x00010fc0) IS CWarpStonePad::~CWarpStonePad (??_7CWarpStonePad slot 0).
-// Foldable; CWarpStonePad is a .cpp-local class in UserLogic.cpp - extract to a header first.
+// CWarpStonePad::~CWarpStonePad @0x10fc0 (??_7CWarpStonePad slot 0). Extracted to
+// <Gruntz/WarpStonePad.h>; UserLogic.cpp holds the RVA-less vtable-emission copy.
 RVA(0x00010fc0, 0x44)
-L_10fc0::~L_10fc0() {}
+CWarpStonePad::~CWarpStonePad() {}
 
-// L_11b80 (0x00011b80) IS CStatusBarSprite::~CStatusBarSprite (??_7CStatusBarSprite slot 0).
-// Foldable; CStatusBarSprite is a .cpp-local class in StatusBarSpriteActs.cpp - extract first.
+// CStatusBarSprite::~CStatusBarSprite @0x11b80 (??_7CStatusBarSprite slot 0). Extracted
+// to <Gruntz/StatusBarSprite.h>; StatusBarSpriteActs.cpp holds the vtable-emission copy.
 RVA(0x00011b80, 0x44)
-L_11b80::~L_11b80() {}
+CStatusBarSprite::~CStatusBarSprite() {}
 
 // CToyPeek::~CToyPeek @0x11c40 (??_7CToyPeek slot 0).
 RVA(0x00011c40, 0x44)

@@ -13,14 +13,17 @@
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+#include <Gruntz/FrontCandy.h> // 0xfa60 is CFrontCandy's slot-1 (??_7CFrontCandy+0x4), not CFrontCandyAni's
 #include <Gruntz/FrontCandyAni.h>
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 
-// CFrontCandyAni::Serialize @0x00fa60 - the vtable slot-1 override: base CUserLogic
-// chain + the +0x34 sub-object chain. Byte-identical to CEyeCandy::Serialize (0x00fcc0).
+// CFrontCandy::Serialize @0x00fa60 - the vtable slot-1 body (??_7CFrontCandy slot 1,
+// via thunk 0x2e46). Was MIS-ATTRIBUTED to CFrontCandyAni; the retail vtable read proves
+// 0xfa60's data-ref is ??_7CFrontCandy+0x4 (CFrontCandyAni's slot-1 is 0xfdf0). Same
+// two-chain body: base CUserLogic chain + the +0x34 sub-object chain.
 RVA(0x0000fa60, 0x47)
-i32 CFrontCandyAni::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+i32 CFrontCandy::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }

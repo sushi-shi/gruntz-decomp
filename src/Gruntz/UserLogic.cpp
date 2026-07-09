@@ -23,6 +23,9 @@
 #include <Gruntz/BehindCandy.h>        // the canonical CBehindCandy class (ctor defined below)
 #include <Gruntz/BehindCandyAni.h>     // the canonical CBehindCandyAni class (ctor defined below)
 #include <Gruntz/EyeCandy.h>           // the canonical CEyeCandy class (ctor defined below)
+#include <Gruntz/FrontCandy.h>         // the canonical CFrontCandy class (ctor defined below)
+#include <Gruntz/MenuSparkle.h>        // the canonical CMenuSparkle class (ctor defined below)
+#include <Gruntz/WarpStonePad.h>       // the canonical CWarpStonePad class (ctor defined below)
 #include <Gruntz/Particlez.h>          // the canonical CParticlez class (ctor defined below)
 #include <Gruntz/SimpleAnimation.h>    // the canonical CSimpleAnimation class (ctor defined below)
 #include <Gruntz/SingleAnimation.h>    // the canonical CSingleAnimation class (ctor defined below)
@@ -212,24 +215,7 @@ public:
 // out-of-line bodies (ctor/Serialize/FireActivation/SpawnTeleporter) stay here.
 #include <Gruntz/SecretTeleporterTrigger.h>
 
-SIZE(CWarpStonePad, 0x54);
-VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
-class CWarpStonePad : public CUserLogic {
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-public:
-    TILE_LOGIC_TAIL
-public:
-    CWarpStonePad(CGameObject* obj); // 0x10d650
-    virtual ~CWarpStonePad() OVERRIDE;
-    static void InitActReg();   // 0x10d840
-    void FireWarp(i32 coord);   // 0x10d8c0 (vtable slot 4)
-    static void RegisterActs(); // 0x10da20
-    i32 AdvanceAnim();          // 0x10dc20
-    char m_pad40[0x54 - 0x40];  // +0x40  (unmodeled leaf tail; size 0x54 proven from
-                                //         the state pump's `new CWarpStonePad` = new(0x54))
-};
+// CWarpStonePad comes from <Gruntz/WarpStonePad.h> (folded; ctor 0x10d650 defined below).
 
 SIZE(CTileTriggerSwitch, 0x54);
 class CTileTriggerSwitch : public CUserLogic {
@@ -317,17 +303,7 @@ VTBL(CGruntPowerupSprite, 0x1e76c4);
 
 // CSimpleAnimation comes from <Gruntz/SimpleAnimation.h> (folded; ctor 0x0ab940 defined below).
 
-SIZE_UNKNOWN(CFrontCandy);
-class CFrontCandy : public CUserLogic {
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    TILE_LOGIC_TAIL
-public:
-    CFrontCandy(CGameObject* obj); // 0x0abfa0
-    virtual ~CFrontCandy() OVERRIDE;
-};
-VTBL(CFrontCandy, 0x1e84ec);
+// CFrontCandy comes from <Gruntz/FrontCandy.h> (folded; ctor 0x0abfa0 defined below).
 
 // CBehindCandy comes from <Gruntz/BehindCandy.h> (folded; ctor 0x0ac3f0 defined below).
 
@@ -358,21 +334,7 @@ VTBL(CFrontCandyAni, 0x1e83e4);
 
 // CBehindCandyAni comes from <Gruntz/BehindCandyAni.h> (folded; ctor 0x0ad540 below).
 
-class CMenuSparkle : public CUserLogic {
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    TILE_LOGIC_TAIL
-public:
-    CMenuSparkle(CGameObject* obj); // 0x0adbe0
-    virtual ~CMenuSparkle() OVERRIDE;
-    // The per-frame handler (@0x0ae2a0): tick the aux flicker countdown, advance the
-    // +0x1a0 anim on expiry, then re-arm the random flicker delay.
-    i32 AdvanceAnim();
-    i32 m_40; // +0x40
-};
-VTBL(CMenuSparkle, 0x1e82dc);
+// CMenuSparkle comes from <Gruntz/MenuSparkle.h> (folded; ctor 0x0adbe0 defined below).
 
 // CPathHazard (0x13170, no-arg): same folded base schedule, then zeroes its own
 // eight pointer fields at +0x108..+0x12c.

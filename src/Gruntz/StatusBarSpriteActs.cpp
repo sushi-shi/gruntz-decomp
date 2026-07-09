@@ -19,26 +19,8 @@
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
-class CStatusBarSprite : public CUserLogic {
-public:
-    virtual ~CStatusBarSprite() OVERRIDE;                              // slot 0
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    TILE_LOGIC_TAIL
-public:
-    CStatusBarSprite(CGameObject* obj); // 0x10c230
-    static void InitActReg();           // 0x10c430
-    void FireActivation(i32 coord);     // 0x10c4b0 (vtable slot 4 body: per-coord PMF dispatch)
-    static void RegisterActs();         // 0x10c610
-    i32 AdvanceAnim();                  // 0x10c810 (the per-frame handler PMF; body in the stub TU)
-
-    i32 m_40;                  // +0x40  geometry id (m_38->m_1b4 snapshot)
-    char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled leaf tail; size 0x54 proven from
-    //         the state pump's `new CStatusBarSprite` = operator new(0x54))
-};
-VTBL(CStatusBarSprite, 0x1e7fc4);
-SIZE(CStatusBarSprite, 0x54);
+// CStatusBarSprite comes from <Gruntz/StatusBarSprite.h> (folded; ctor 0x10c230 below).
+#include <Gruntz/StatusBarSprite.h>
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
