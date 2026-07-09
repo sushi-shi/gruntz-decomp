@@ -71,6 +71,82 @@ i32 CSBI_StatzTabGruntBar::Poll(i32 arg) {
 // flips the slot numbering or the base spill (the table is used twice so the compiler
 // is free either way). Plus the reloc-masked SelectionListFind rel32 + g_gameReg/
 // g_645588 DIR32. Logic complete; deferred to the final sweep (whole-hierarchy model).
+// 0xea4e0: draw the tab (slot +0x14). Blit each column's background glyph (status/
+// ability/override/select at x-offsets 0/0x14/0x28/0x3c) and, overlaid on it, the
+// resolved value glyph - all onto g_gameReg->m_30->m_4->m_14 (the active render
+// context) at the item's screen anchor + each glyph's own draw anchor. The four
+// background glyphs + select-value are gated by m_28 (a countdown); the timer glyph
+// always draws. Returns 1.
+RVA(0x000ea4e0, 0x172)
+i32 CSBI_StatzTabGruntBar::Blit() {
+    void* ctx = g_gameReg->m_30->m_4->m_14;
+    if (m_28 > 0) {
+        m_28--;
+        m_statusGlyph->RenderFrame(
+            ctx,
+            (void*)(m_rect14.m_0 + m_statusGlyph->m_anchorX),
+            (void*)(m_rect14.m_4 + m_statusGlyph->m_anchorY),
+            0);
+        m_abilityGlyph->RenderFrame(
+            ctx,
+            (void*)(m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14),
+            (void*)(m_rect14.m_4 + m_abilityGlyph->m_anchorY),
+            0);
+        m_overrideGlyph->RenderFrame(
+            ctx,
+            (void*)(m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28),
+            (void*)(m_rect14.m_4 + m_overrideGlyph->m_anchorY),
+            0);
+        if (m_selectKey != 0) {
+            m_selectKey->RenderFrame(
+                ctx,
+                (void*)(m_rect14.m_0 + m_selectKey->m_anchorX + 0x3c),
+                (void*)(m_rect14.m_4 + m_selectKey->m_anchorY),
+                0);
+        }
+        if (m_statusGlyphLatched != 0) {
+            m_statusGlyphLatched->RenderFrame(
+                ctx,
+                (void*)(m_rect14.m_0 + m_statusGlyph->m_anchorX + 1),
+                (void*)(m_rect14.m_4 + m_statusGlyph->m_anchorY),
+                0);
+        }
+        if (m_abilityGlyphLatched != 0) {
+            m_abilityGlyphLatched->RenderFrame(
+                ctx,
+                (void*)(m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14),
+                (void*)(m_rect14.m_4 + m_abilityGlyph->m_anchorY),
+                0);
+        }
+        i32 adj = -1;
+        if (m_selectKey != 0) {
+            adj = 0;
+        }
+        if (m_overrideGlyphLatched != 0) {
+            m_overrideGlyphLatched->RenderFrame(
+                ctx,
+                (void*)(m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28 + adj),
+                (void*)(m_rect14.m_4 + m_overrideGlyph->m_anchorY),
+                0);
+        }
+        if (m_selectGlyph != 0) {
+            m_selectGlyph->RenderFrame(
+                ctx,
+                (void*)(m_rect14.m_0 + m_selectKey->m_anchorX + 0x3b),
+                (void*)(m_rect14.m_4 + m_selectKey->m_anchorY),
+                0);
+        }
+    }
+    if (m_timerGlyph != 0) {
+        m_timerGlyph->RenderFrame(
+            ctx,
+            (void*)(m_rect14.m_0 + m_timerGlyph->m_anchorX),
+            (void*)(m_rect14.m_4 + m_timerGlyph->m_anchorY),
+            0);
+    }
+    return 1;
+}
+
 RVA(0x000ea6c0, 0x237)
 i32 CSBI_StatzTabGruntBar::Update() {
     i32 dirty = 0;
@@ -173,7 +249,7 @@ i32 CSBI_StatzTabGruntBar::Update() {
     // value 3: selection (glyph/value, main glyph map; +0x28 row offset on lookup)
     if (m_selectValue != selectVal) {
         if (selectVal == 0) {
-            m_selectGlyph = selectVal;
+            m_selectGlyph = (CImage*)selectVal; // selectVal == 0 (store the reg, not imm)
         } else {
             CStatzGlyphMap* gm = m_glyphMap;
             i32 key = selectVal + 0x28;

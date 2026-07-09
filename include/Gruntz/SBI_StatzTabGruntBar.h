@@ -20,6 +20,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base (real RTTI base)
+#include <Image/CImage.h>         // the glyph handles ARE CImage (RenderFrame @0x153790)
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
@@ -49,10 +50,27 @@ SIZE_UNKNOWN(CStatzGruntRec);
 struct CStatzSelHost {};
 SIZE_UNKNOWN(CStatzSelHost);
 
-// The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only
-// the +0x68 unit-table base the Statz tab samples is modeled (rows of 15 dwords).
+// The active drawable reached via g_gameReg->m_30->m_4: its +0x14 is the render
+// context (the RenderFrame arg the Blit passes through). Same chain SBI_WellGoo's
+// Tick uses (g_gameReg->m_30->m_4->m_14).
+struct CStatzDrawable {
+    char m_pad0[0x14];
+    void* m_14; // +0x14  render context (RenderFrame arg0)
+};
+struct CStatzGameMgr {
+    char m_pad0[0x04];
+    CStatzDrawable* m_4; // +0x04  active drawable
+};
+SIZE_UNKNOWN(CStatzDrawable);
+SIZE_UNKNOWN(CStatzGameMgr);
+
+// The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). The
+// +0x30 render-mgr chain (Blit's target) and the +0x68 unit-table base the Statz
+// tab samples are modeled (rows of 15 dwords).
 struct CStatzGameReg {
-    char m_pad0[0x68];
+    char m_pad0[0x30];
+    CStatzGameMgr* m_30; // +0x30  active game-mode/renderer
+    char m_pad34[0x68 - 0x34];
     CStatzSelHost* m_unitTable; // +0x68  unit/record table base + selection host
 };
 SIZE_UNKNOWN(CStatzGameReg);
@@ -83,7 +101,7 @@ SIZE_UNKNOWN(CStatzSelf);
 // table at m_glyphs.
 struct CStatzGlyphMap {
     char m_pad0[0x14];
-    i32* m_glyphs; // +0x14  glyph table
+    CImage** m_glyphs; // +0x14  glyph table (frame handles)
     char m_pad18[0x64 - 0x18];
     i32 m_minIndex; // +0x64  glyph-index range lo gate
     i32 m_maxIndex; // +0x68  glyph-index range hi gate
@@ -102,27 +120,28 @@ public:
     virtual void SbiSlot5() OVERRIDE;          // slot 5
     void Reset();      // 0xea470  drop the five tracked values (also the dtor teardown)
     i32 Poll(i32 arg); // 0xea4b0  Update + conditional vfunc-10 redraw (arg unused)
+    i32 Blit();        // 0xea4e0  draw the tab's background + value glyphs (slot +0x14)
     i32 Update();      // 0xea6c0  resample the grunt and latch any changed value
 
     // ----- layout (offsets are the load-bearing fact) -----
     // base region m_0..0x2b comes from CStatusBarItem; leaf fields start at +0x30.
     char m_pad2c[0x30 - 0x2c];
-    i32 m_statusGlyph;               // +0x30  status glyph
-    i32 m_statusGlyphLatched;        // +0x34  status glyph (resolved by Update)
+    CImage* m_statusGlyph;           // +0x30  status background glyph
+    CImage* m_statusGlyphLatched;    // +0x34  status value glyph (resolved by Update)
     i32 m_statusValue;               // +0x38  status value (tracked)
-    i32 m_abilityGlyph;              // +0x3c  ability glyph
-    i32 m_abilityGlyphLatched;       // +0x40  ability glyph (resolved by Update)
+    CImage* m_abilityGlyph;          // +0x3c  ability background glyph
+    CImage* m_abilityGlyphLatched;   // +0x40  ability value glyph (resolved by Update)
     i32 m_abilityValue;              // +0x44  ability value (tracked)
-    i32 m_overrideGlyph;             // +0x48  override glyph
-    i32 m_overrideGlyphLatched;      // +0x4c  override glyph (resolved by Update)
+    CImage* m_overrideGlyph;         // +0x48  override background glyph
+    CImage* m_overrideGlyphLatched;  // +0x4c  override value glyph (resolved by Update)
     i32 m_overrideValue;             // +0x50  override value (tracked)
-    i32 m_selectKey;                 // +0x54  selection key (0 => skip selection sample)
-    i32 m_selectGlyph;               // +0x58  selection glyph (resolved by Update)
+    CImage* m_selectKey;             // +0x54  selection background glyph (0 => no selection)
+    CImage* m_selectGlyph;           // +0x58  selection value glyph (resolved by Update)
     i32 m_selectValue;               // +0x5c  selection value (tracked)
     i32 m_unitRow;                   // +0x60  unit-table row index (stride 15 records)
     i32 m_unitCol;                   // +0x64  unit-table column index (within the 15-dword record)
     CStatzGlyphMap* m_timerGlyphMap; // +0x68  timer glyph map
-    i32 m_timerGlyph;                // +0x6c  timer glyph (resolved by Update)
+    CImage* m_timerGlyph;            // +0x6c  timer glyph (resolved by Update)
     i32 m_timerValue;                // +0x70  timer value (tracked)
     CStatzGlyphMap* m_glyphMap;      // +0x74  glyph map for the first four values
     i32 m_timerAnchorLo;             // +0x78  timer anchor lo (g_645588 at last bump)

@@ -1112,6 +1112,11 @@ source = "src/Gruntz/VideoConfig.cpp"
 flags = "base"
 
 [[unit]]
+unit = "gameoptionsdialog"
+source = "src/Gruntz/GameOptionsDialog.cpp"
+flags = "base"
+
+[[unit]]
 unit = "spriteloaders"
 source = "src/Gruntz/SpriteLoaders.cpp"
 flags = "base"
