@@ -63,6 +63,29 @@ CGruntzWnd::~CGruntzWnd() {
 }
 
 // -------------------------------------------------------------------------
+// CGruntzWnd::OnChar (WM_CHAR, vtable slot 8). Forwards (wParam, lParam) to the
+// game manager's per-state notifier.
+RVA(0x000948a0, 0x21)
+i32 CGruntzWnd::OnChar(WPARAM wParam, LPARAM lParam) {
+    CGruntzMgr* mgr = GameMgr();
+    if (!mgr) {
+        return 0;
+    }
+    return mgr->NotifyState0b(wParam, lParam);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzWnd::OnKeyDown (WM_KEYDOWN, vtable slot 9).
+RVA(0x000948e0, 0x21)
+i32 CGruntzWnd::OnKeyDown(WPARAM wParam, LPARAM lParam) {
+    CGruntzMgr* mgr = GameMgr();
+    if (!mgr) {
+        return 0;
+    }
+    return mgr->NotifyState0c(wParam, lParam);
+}
+
+// -------------------------------------------------------------------------
 // CGruntzWnd::OnKeyUp (WM_KEYUP, vtable slot 10). Forwards (wParam, lParam) to the
 // game manager's per-state notifier; no manager => not handled (0).
 RVA(0x00094920, 0x21)
@@ -72,6 +95,40 @@ i32 CGruntzWnd::OnKeyUp(WPARAM wParam, LPARAM lParam) {
         return 0;
     }
     return mgr->NotifyState0d(wParam, lParam);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzWnd::OnLButtonDown (WM_LBUTTONDOWN, vtable slot 14). Forwards (keys, x, y)
+// to the manager's per-state notifier.
+RVA(0x00094960, 0x26)
+i32 CGruntzWnd::OnLButtonDown(WPARAM keys, i32 x, i32 y) {
+    CGruntzMgr* mgr = GameMgr();
+    if (!mgr) {
+        return 0;
+    }
+    return mgr->NotifyState0e(keys, x, y);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzWnd::OnLButtonUp (WM_LBUTTONUP, vtable slot 16).
+RVA(0x000949a0, 0x26)
+i32 CGruntzWnd::OnLButtonUp(WPARAM keys, i32 x, i32 y) {
+    CGruntzMgr* mgr = GameMgr();
+    if (!mgr) {
+        return 0;
+    }
+    return mgr->NotifyState0f(keys, x, y);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzWnd::OnMouseMove (WM_MOUSEMOVE, vtable slot 18).
+RVA(0x000949e0, 0x26)
+i32 CGruntzWnd::OnMouseMove(WPARAM keys, i32 x, i32 y) {
+    CGruntzMgr* mgr = GameMgr();
+    if (!mgr) {
+        return 0;
+    }
+    return mgr->NotifyState14(keys, x, y);
 }
 
 // -------------------------------------------------------------------------
@@ -95,6 +152,17 @@ i32 CGruntzWnd::OnRButtonUp(WPARAM keys, i32 x, i32 y) {
         return 0;
     }
     return mgr->NotifyState12(keys, x, y);
+}
+
+// -------------------------------------------------------------------------
+// CGruntzWnd::OnLButtonDblClk (WM_LBUTTONDBLCLK, vtable slot 19).
+RVA(0x00094aa0, 0x26)
+i32 CGruntzWnd::OnLButtonDblClk(WPARAM keys, i32 x, i32 y) {
+    CGruntzMgr* mgr = GameMgr();
+    if (!mgr) {
+        return 0;
+    }
+    return mgr->NotifyState10(keys, x, y);
 }
 
 // -------------------------------------------------------------------------
