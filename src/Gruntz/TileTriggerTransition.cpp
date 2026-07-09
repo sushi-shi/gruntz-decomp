@@ -19,9 +19,14 @@
 // elsewhere). Only OFFSETS + emitted bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // shared activation-name registry archetype (g_buteTree etc.)
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (the m_38+0x1a0 anim sub-object)
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/TileTriggerTransition.h>
+
+// The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
+DATA(0x002bf3bc)
+extern "C" u32 g_6bf3bc;
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
@@ -195,6 +200,22 @@ i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
     m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)
     m_objAux->m_1c = g_buteTree.Find("A");
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// Handler_110110 (0x110110) - the per-frame handler bound by RegisterActs. Advance
+// the bound object's +0x1a0 anim sub-object to the current draw-delta (g_6bf3bc);
+// if the sub-mgr is active (m_1c8 != 0) but not idle (m_1c0 == 0), mark the object
+// stalled/handled this frame. Always returns 0. Same AdvanceAnim archetype as
+// CFortressFlag::AdvanceAnim, plus the active/idle flag gate.
+// ---------------------------------------------------------------------------
+RVA(0x00110110, 0x39)
+i32 CTileTriggerTransition::Handler_110110() {
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
+        m_38->m_flags |= 0x10000;
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------

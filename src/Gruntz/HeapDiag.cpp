@@ -91,3 +91,43 @@ namespace ApiCallerStubs {
         }
     }
 } // namespace ApiCallerStubs
+
+// 0x118bf0: HeapStats - the engine's heap-statistics probe (sibling of
+// HeapCheckDump). Run the CRT heap check, report the status through the sibling
+// reporter (0x118b50), then - when the heap is _HEAPOK - walk every block summing
+// its total/used/free byte totals and dump them to the debugger. __cdecl, no args,
+// returns the _heapchk status. (Retail labels the %lu args "Total/Free/Used" but
+// passes total/used/free in that arg order - the swapped labels are reproduced
+// verbatim.) The CRT heap primitives + OutputDebugStringA are external/reloc-masked.
+RVA(0x00118bf0, 0xb4)
+int HeapStats() {
+    _HEAPINFO hinfo;
+    char buf[80];
+    int status = _heapchk();
+    OutputDebugStringA("Getting heap statistics...");
+    ApiCallerStubs::winapi_118b50_OutputDebugStringA(status);
+    unsigned long total = 0, used = 0, free = 0;
+    if (status == _HEAPOK) {
+        hinfo._pentry = 0;
+        hinfo._size = 0;
+        hinfo._useflag = 0;
+        ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(&hinfo);
+        hinfo._pentry = 0;
+        int r =
+            ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(&hinfo);
+        while (r == status) {
+            total += hinfo._size;
+            if (hinfo._useflag == _USEDENTRY) {
+                used += hinfo._size;
+            } else {
+                free += hinfo._size;
+            }
+            r = ((HeapWalkFn)ApiCallerStubs::winapi_1206b0_GetLastError_HeapValidate_HeapWalk)(
+                &hinfo
+            );
+        }
+    }
+    sprintf(buf, "Heap stats: Total = %lu, Free = %lu, Used = %lu", total, used, free);
+    OutputDebugStringA(buf);
+    return status;
+}

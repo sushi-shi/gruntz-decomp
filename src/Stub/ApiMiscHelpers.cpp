@@ -73,6 +73,24 @@ namespace ApiMisc {
         SetFocus(hWnd);
     }
 
+    // __cdecl(hWnd): OR WS_EX_TOPMOST into the window's extended style (when nonzero).
+    RVA(0x00118960, 0x20)
+    void winapi_118960_SetTopmostExStyle(HWND hWnd) {
+        LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
+        if (s) {
+            SetWindowLongA(hWnd, GWL_EXSTYLE, s | WS_EX_TOPMOST);
+        }
+    }
+
+    // __cdecl(hWnd): clear WS_EX_TOPMOST from the window's extended style (when nonzero).
+    RVA(0x00118990, 0x20)
+    void winapi_118990_ClearTopmostExStyle(HWND hWnd) {
+        LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
+        if (s) {
+            SetWindowLongA(hWnd, GWL_EXSTYLE, s & ~WS_EX_TOPMOST);
+        }
+    }
+
     // __cdecl(hWnd, msg, wParam): block screen-saver / monitor-power while not iconic.
     RVA(0x001192d0, 0x39)
     i32 winapi_1192d0_IsIconic(HWND hWnd, i32 msg, i32 wParam) {

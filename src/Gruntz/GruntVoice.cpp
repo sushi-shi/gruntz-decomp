@@ -11,11 +11,55 @@
 // reloc-masked (no body). Confirmed CGruntVoice by its CUserLogic teardown
 // shape and the FireActivation-twin dispatch (see the header).
 #include <Gruntz/GruntVoice.h>
+#include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Dsndmgr/StreamVoice.h>
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+
+// GruntVoiceStep @0x119620 - the CGruntVoice worker-pump (free __cdecl, /GX): the
+// controller lives at obj->m_7c; dispatch on its state id, building the CGruntVoice
+// state object on state 0 and dispatching to the state object's vtable slots otherwise.
+// Byte-identical to StepController @0x10d150 bar the leaf `new`d on state 0 (CGruntVoice
+// is 0x78).
+RVA(0x00119620, 0xf1)
+i32 GruntVoiceStep(CGameObject* obj) {
+    CTileTransitionController* ctl = (CTileTransitionController*)obj->m_7c;
+    switch (ctl->m_stateId) {
+        case 0: {
+            ctl->m_stateId = 0x3e8;
+            CGruntVoice* t = new CGruntVoice(obj);
+            ((CTileTransitionState*)t)->Activate();
+            ctl->m_state = (CTileTransitionState*)t;
+            break;
+        }
+        case 0x1d:
+            ctl->m_state->Vfunc2C();
+            break;
+        case 0x1e:
+            ctl->m_state->Vfunc28();
+            break;
+        case 0x50:
+            ctl->m_state->Vfunc38();
+            break;
+        case 0x51:
+            ctl->m_state->Vfunc34();
+            break;
+        case 0x52:
+            ctl->m_state->Vfunc30();
+            break;
+        case 0x53:
+            ctl->m_state->Vfunc3C();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            TileTransitionDefaultStep(ctl->m_state);
+            break;
+    }
+    return 1;
+}
 
 // ===========================================================================
 // CGruntVoice::CGruntVoice(CGameObject*)  (0x1198a0)

@@ -101,7 +101,7 @@ extern void* g_retAddrBreadcrumb;
 // call [entry]`. An incomplete type forces the 8-byte general PMF representation
 // (an extra adjust-load + `add this`), which diverges the first dispatch call.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CGruntVoice);
+SIZE(CGruntVoice, 0x78);
 class CGruntVoice : public CUserLogic {
 public:
     virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
@@ -125,6 +125,8 @@ public:
     i32 m_source;     // +0x68  the play request's source (Setup arg0, cleared by Reset)
     i32 m_playFlags;  // +0x6c  the play request's flag word (Setup arg2, cleared by Reset)
     i32 m_owner;      // +0x70  the play request's owner (Setup arg3)
+    char m_pad74[0x78 - 0x74]; // +0x74  (size 0x78 proven from the state pump's
+                               //         `new CGruntVoice` = operator new(0x78))
 };
 VTBL(CGruntVoice, 0x1eaf6c);
 

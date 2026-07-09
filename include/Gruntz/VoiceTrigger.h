@@ -15,7 +15,7 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CVoiceTrigger : CUserLogic)
 
-SIZE_UNKNOWN(CVoiceTrigger);
+SIZE(CVoiceTrigger, 0x54);
 class CVoiceTrigger : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -29,9 +29,12 @@ public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     static void InitActReg();          // 0x11a320 (constructs g_vtrigColl @0x651500)
+    void FireActivation(i32 coord);    // 0x11a3a0 (vtable slot 4 body: per-coord PMF dispatch)
     void RegisterActs();               // 0x11a500 (binds Tick to the activation key "A")
     i32 Tick();                        // 0x11a700
     virtual ~CVoiceTrigger() OVERRIDE; // 0x0135a0 (folds the CUserLogic teardown)
+    char m_pad40[0x54 - 0x40];         // +0x40  (unmodeled leaf tail; size 0x54 proven from
+                                       //         the state pump's `new CVoiceTrigger` = new(0x54))
 };
 VTBL(CVoiceTrigger, 0x001e885c);
 

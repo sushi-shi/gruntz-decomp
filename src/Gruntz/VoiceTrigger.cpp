@@ -12,6 +12,7 @@
 // plain __thiscall member whose codegen depends only on its body + offsets).
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/VoiceTrigger.h> // canonical CVoiceTrigger : CUserLogic
+#include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/TypeKeyColl.h>
@@ -184,6 +185,49 @@ extern "C" i32 g_644c54;
 RVA(0x000135a0, 0x44)
 CVoiceTrigger::~CVoiceTrigger() {}
 
+// VoiceTriggerStep @0x119760 - the CVoiceTrigger worker-pump (free __cdecl, /GX):
+// the controller lives at obj->m_7c; dispatch on its state id, building the
+// CVoiceTrigger state object on state 0 and dispatching to the state object's vtable
+// slots otherwise. Byte-identical to StepController @0x10d150 bar the leaf `new`d on
+// state 0 (CVoiceTrigger is 0x54).
+RVA(0x00119760, 0xf1)
+i32 VoiceTriggerStep(CGameObject* obj) {
+    CTileTransitionController* ctl = (CTileTransitionController*)obj->m_7c;
+    switch (ctl->m_stateId) {
+        case 0: {
+            ctl->m_stateId = 0x3e8;
+            CVoiceTrigger* t = new CVoiceTrigger(obj);
+            ((CTileTransitionState*)t)->Activate();
+            ctl->m_state = (CTileTransitionState*)t;
+            break;
+        }
+        case 0x1d:
+            ctl->m_state->Vfunc2C();
+            break;
+        case 0x1e:
+            ctl->m_state->Vfunc28();
+            break;
+        case 0x50:
+            ctl->m_state->Vfunc38();
+            break;
+        case 0x51:
+            ctl->m_state->Vfunc34();
+            break;
+        case 0x52:
+            ctl->m_state->Vfunc30();
+            break;
+        case 0x53:
+            ctl->m_state->Vfunc3C();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            TileTransitionDefaultStep(ctl->m_state);
+            break;
+    }
+    return 1;
+}
+
 // CVoiceTrigger::CVoiceTrigger(CGameObject*) @0x119b50 - the 1-arg leaf ctor: the
 // standard CUserLogic(obj) init (folded inline) plus the voice-trigger tail - cl
 // emits the implicit leaf vftable (??_7CVoiceTrigger @0x5e885c) stamp, then raise
@@ -221,6 +265,20 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
 RVA(0x0011a320, 0x15)
 void CVoiceTrigger::InitActReg() {
     ((CZDArrayDerived*)&g_vtrigColl)->Construct(2000, 2010);
+}
+
+// CVoiceTrigger::FireActivation @0x11a3a0 - vtable slot 4. Look the activation
+// coordinate up in the trigger's OWN registry (g_vtrigColl, via VTrigLookup); if the
+// resolved entry carries a registered handler PMF, resolve it again and dispatch it
+// __thiscall on `this`. Same double-lookup + PMF-dispatch archetype as
+// CSecretTeleporterTrigger::FireActivation.
+RVA(0x0011a3a0, 0x102)
+void CVoiceTrigger::FireActivation(i32 coord) {
+    CVTrigEntry* e = VTrigLookup(coord);
+    if (e->m_fn != 0) {
+        CVTrigEntry* e2 = VTrigLookup(coord);
+        (this->*(e2->m_fn))();
+    }
 }
 
 // CVoiceTrigger::RegisterActs @0x11a500 - bind the per-frame Tick handler to the
