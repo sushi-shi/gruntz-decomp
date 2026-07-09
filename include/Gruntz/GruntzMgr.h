@@ -247,7 +247,17 @@ public:
     i32 IsMoviePathValid();        // @0x0901d0 (bool-normalized FileExists(m_strMoviePath))
     void ReportWorldStatus(i32 a); // @0x090ac0 (map m_world->m_38 status to ReportError)
     i32 LoadMonologoSprite();      // @0x090d10 (PLAY-only: find/toggle/create the MONOLITH logo)
+    i32 CheatRevealTreasures();    // @0x090f10 (PLAY-only: color all treasure/collectible rows)
     i32 SetGruntColor(i32 sink, i32 key, i32 idx); // @0x0910d0 (recolor a sink cell)
+    void CheatSkeletonToggle(); // @0x091250 (toggle the grunt "skeleton" image type + cue)
+    void CheatEclipseToggle();  // @0x091390 (toggle the grunt "eclipse" image type + cue)
+    i32 WarpCheat();            // @0x08eaf0 (per-level warp X/Y registry set/apply)
+    // World-object scans: walk m_world's live game-object list, invoking a __cdecl
+    // callback(obj, user) for each object matching `mask` whose screen position falls
+    // inside a radius / rect; return the hit count. The cb/rect pointers are passed
+    // as i32 (the consumers cast) to keep this widely-included header dependency-free.
+    i32 ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, i32 cb, i32 user);   // @0x092180
+    i32 ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, i32 cb, i32 user); // @0x092250
     i32 SetColorDepth(i32 depth);    // @0x091170 (set the packed g_surfaceColorKey color by depth)
     i32 LoadWorldMode(i32 mode);     // @0x091a40 (switch the world video/color mode + reload)
     i32 ResetWorldState(i32 notify); // @0x091e20 (idle/exit-prep the world, reset cursor)

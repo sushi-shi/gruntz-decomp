@@ -43,10 +43,12 @@
 // dummy0/2/3/4/6/7 are the CObject-family + unused engine slots (never called by the
 // level; roles unrecovered - left as placeholders).
 // ---------------------------------------------------------------------------
+class CImageFrame; // Image/ImageFrame.h (the set's frame element; consumers include it)
 class CImageSet {
 public:
-    i32 SetAllTypes(i32 type);  // real CImageSet::SetAllTypes (Image/ImageSet.cpp)
-    i32 SetAllFormats(i32 fmt); // real CImageSet::SetAllFormats
+    i32 SetAllTypes(i32 type);    // real CImageSet::SetAllTypes (Image/ImageSet.cpp)
+    i32 SetAllField18(i32 value); // real CImageSet::SetAllField18 (0x1524d0)
+    i32 SetAllFormats(i32 fmt);   // real CImageSet::SetAllFormats
     virtual i32 dummy0();
     virtual void Release(i32 arg);   // +0x04  release/free hook (scalar-deleting dtor)
     virtual i32 dummy2();            // +0x08
@@ -63,6 +65,10 @@ public:
     virtual i32 GetStride();                  // +0x24  record byte length (cursor advance)
 
     i32 m_width; // +0x04  tile/column width (ClampSpan span extent)
+    char m_pad08[0x14 - 0x08];
+    CImageFrame** m_frames; // +0x14  frame pointer array (== Image/ImageSet.h m_frames)
+    char m_pad18[0x64 - 0x18];
+    i32 m_minIndex; // +0x64  lowest populated frame index
 };
 
 // The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer

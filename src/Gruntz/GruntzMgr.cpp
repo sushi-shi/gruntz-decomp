@@ -18,6 +18,9 @@
 #include <Mfc.h>
 #include <new>
 #include <Gruntz/LeafCue.h>
+#include <Gruntz/SpriteFactory.h> // CSpriteFactory/CSpriteListNode (m_world->m_8 live-object list)
+#include <Gruntz/UserLogic.h> // CGameObject (the scanned live objects: m_screenX/Y, m_collCategory)
+#include <Image/ImageFrame.h> // CImageFrame/CImageFormat (the "Gruntz" set's frames the cheats read)
 #include <Gruntz/BoundaryUpperViews.h>
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
@@ -80,6 +83,7 @@ namespace Utils {
     SIZE_UNKNOWN(RegistryHelper);
     class RegistryHelper {
     public:
+        unsigned long GetValueDword(char* k, unsigned long def); // 0x1395d0
         i32 SetValueDword(char* k, unsigned long v);
     };
     namespace WinAPI {
@@ -256,7 +260,9 @@ extern "C" {
 
 // The reentrancy/run-state gate SetRunState mirrors the new run-state into
 // (?g_sndEnabled@@3HA; reloc-masked DATA store - the same global ChatBox/GameMode touch).
-extern i32 g_sndEnabled; // DAT_0061ab20 (?g_sndEnabled@@3HA)
+extern i32 g_sndEnabled;       // DAT_0061ab20 (?g_sndEnabled@@3HA)
+extern i32 g_sndCueTag;        // DAT_0061ab24 (?g_sndCueTag@@3HA)
+extern "C" u32 g_killCueClock; // DAT_006bf3c0 (wrap-safe draw clock)
 
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A), modeled here with
 // the offsets UpdateScoreHud touches (a per-TU view; the DATA pin reloc-masks the
@@ -1523,6 +1529,285 @@ i32 CGruntzMgr::SetGruntColor(i32 sinkArg, i32 key, i32 idx) {
         }
     }
     return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::WarpCheat (0x08eaf0; __thiscall; ret). Reads the per-level warp
+// target (registry keys "Level %i Warp X"/"Level %i Warp Y" for the current level)
+// through m_settings. If either is unset (-1) it bails. When the live state is PLAY
+// (id 3) it just records the current level as "Last Warp Level" (arming the return
+// warp) and returns 1. Otherwise it reads back "Last Warp Level" and warps there via
+// PassClickToPlayState, posting WM_COMMAND 0x80ca to the game window on success; a
+// failed warp surfaces (0x8005, 0x43b) and returns 0. The two format sprintf reads
+// use the g_gameReg singleton view (ds:g_gameReg) exactly as retail does.
+RVA(0x0008eaf0, 0x10b)
+i32 CGruntzMgr::WarpCheat() {
+    char key[64];
+    sprintf(key, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
+    i32 wx = ((Utils::RegistryHelper*)m_settings)->GetValueDword(key, -1);
+    sprintf(key, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
+    i32 wy = ((Utils::RegistryHelper*)m_settings)->GetValueDword(key, -1);
+    if (wx != -1 && wy != -1) {
+        if (m_curState->Update() != 3) {
+            i32 last = ((Utils::RegistryHelper*)m_settings)->GetValueDword("Last Warp Level", -1);
+            if (last != -1) {
+                if (!PassClickToPlayState(last, 0, 1)) {
+                    ReportError(0x8005, 0x43b);
+                    return 0;
+                }
+                g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80ca, 0);
+                return 1;
+            }
+        } else {
+            ((Utils::RegistryHelper*)m_settings)
+                ->SetValueDword("Last Warp Level", m_curState->m_levelIndex);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::CheatRevealTreasures (0x090f10; __thiscall; ret). PLAY-state only
+// (m_curState->Update() == 3, world loaded): looks the "GAME_DEVHEADS" row up in the
+// world's +0x10 color-lookup table and, when found, recolors every treasure/
+// collectible sink through SetGruntColor - the geckos/scepters group 0, crosses
+// group 1, chalices group 2. Returns 1 on a hit, 0 on any missing precondition.
+RVA(0x00090f10, 0x151)
+i32 CGruntzMgr::CheatRevealTreasures() {
+    if (m_curState == 0) {
+        return 0;
+    }
+    if (m_curState->Update() != 3) {
+        return 0;
+    }
+    if (m_world == 0) {
+        return 0;
+    }
+    void* found = 0;
+    ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("GAME_DEVHEADS", (void*&)found);
+    void* out = found;
+    if (out == 0) {
+        return 0;
+    }
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_GECKOS_RED", 0);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_GECKOS_GREEN", 0);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_GECKOS_BLUE", 0);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_GECKOS_PURPLE", 0);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_SCEPTERS_RED", 0);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_SCEPTERS_GREEN", 0);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_SCEPTERS_BLUE", 0);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_SCEPTERS_PURPLE", 0);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_CROSSES_RED", 1);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_CROSSES_GREEN", 1);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_CROSSES_BLUE", 1);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_CROSSES_PURPLE", 1);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_CHALICES_RED", 2);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_CHALICES_GREEN", 2);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_CHALICES_BLUE", 2);
+    SetGruntColor((i32)out, (i32) "GAME_TREASURE_CHALICES_PURPLE", 2);
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::CheatSkeletonToggle (0x091250; __thiscall). PLAY-state only. Looks the
+// "Gruntz" image set up in the world's +0x10 lookup table and, from its lowest-index
+// frame's format state (m_format->m_14), toggles all grunt frames between the normal
+// (SetAllTypes(2), "You're scaring me...") and skeleton (SetAllTypes(1), "Back from
+// the dead?") image type, logs the taunt, then - if the sound gate is open - plays
+// the throttled "GAME_MINORCHEAT" cue. Every missing precondition falls straight
+// through to the shared exit (retail sets no return value there -> void).
+// @early-stop
+// codegen-tie wall (~98%): flow (nested guards, void fall-through exit, per-branch
+// SetAllTypes + shared AppendChatMessage cross-jump, cooldown + cue) is byte-exact. The
+// lone residual is the `fmt->m_14 == 2` test - retail loads it (`mov eax,[eax+0x14];
+// cmp eax,2`) where MSVC5 folds to `cmp [mem],2` (2 B shorter). Retail itself picks the
+// OTHER form for the identical test in 0x091390, so it is a pure instruction-selection
+// tie with no source spelling that flips it.
+RVA(0x00091250, 0x100)
+void CGruntzMgr::CheatSkeletonToggle() {
+    if (m_curState && m_curState->Update() == 3 && m_world) {
+        void* found = 0;
+        ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("Gruntz", (void*&)found);
+        CImageSet* set = (CImageSet*)found;
+        if (set) {
+            CImageFrame* fr = set->m_frames[set->m_minIndex];
+            if (fr) {
+                CImageFormat* fmt = fr->m_format;
+                if (fmt) {
+                    i32 st = fmt->m_14;
+                    if (st != 2) {
+                        set->SetAllTypes(2);
+                        AppendChatMessage((char*)"You're scaring me...");
+                    } else {
+                        set->SetAllTypes(1);
+                        AppendChatMessage((char*)"Back from the dead?");
+                    }
+                    CSndHost* host = m_world->m_28;
+                    if (host->m_emitGate == 0) {
+                        found = 0;
+                        host->m_10.Lookup("GAME_MINORCHEAT", (LeafCue**)&found);
+                        LeafCue* cue = (LeafCue*)found;
+                        if (cue) {
+                            i32 tag = g_sndCueTag;
+                            if (g_sndEnabled) {
+                                if ((u32)(g_killCueClock - cue->m_14) >= (u32)cue->m_18) {
+                                    cue->m_14 = g_killCueClock;
+                                    cue->m_10->ConfigureItem(tag, 0, 0, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // Deliberate fall-through: retail's single shared exit (0x9134c) leaves eax unset
+    // on every non-emit path (only the ConfigureItem emit path defines the result); an
+    // explicit `return` would add a divergent eax-setting tail. MSVC5 emits the bare
+    // `pop; ret` here; the clang label step's -Wreturn-type is a warning, not an error.
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::CheatEclipseToggle (0x091390; __thiscall). The dusk/eclipse twin of
+// CheatSkeletonToggle: keyed on m_format->m_14 == 3, it either restores the normal
+// image type (SetAllTypes(1), "Where did the sun go?") or applies a random shade
+// (SetAllTypes(3) + SetAllField18(rand() % 256), "Me and my...") before logging the
+// taunt and playing the same "GAME_MINORCHEAT" cue.
+// @early-stop
+// regalloc-swap wall (~94%): the flow (nested guards, rand()%256 signed-mod idiom, the
+// per-branch SetAllTypes/SetAllField18 + shared AppendChatMessage, cooldown + cue) is
+// byte-exact. The residual is a two-callee-saved-register tiebreak: retail assigns
+// this->edi / set->esi where MSVC5 here picks this->esi / set->edi (the extra
+// SetAllField18+rand live range shifts the pick), recolouring every this/set modrm
+// downstream. No source spelling forces MSVC's esi/edi assignment (regalloc family).
+RVA(0x00091390, 0x11d)
+void CGruntzMgr::CheatEclipseToggle() {
+    if (m_curState && m_curState->Update() == 3 && m_world) {
+        void* found = 0;
+        ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("Gruntz", (void*&)found);
+        CImageSet* set = (CImageSet*)found;
+        if (set) {
+            CImageFrame* fr = set->m_frames[set->m_minIndex];
+            if (fr) {
+                CImageFormat* fmt = fr->m_format;
+                if (fmt) {
+                    i32 st = fmt->m_14;
+                    if (st != 3) {
+                        set->SetAllTypes(3);
+                        set->SetAllField18(rand() % 256);
+                        AppendChatMessage((char*)"Me and my...");
+                    } else {
+                        set->SetAllTypes(1);
+                        AppendChatMessage((char*)"Where did the sun go?");
+                    }
+                    CSndHost* host = m_world->m_28;
+                    if (host->m_emitGate == 0) {
+                        found = 0;
+                        host->m_10.Lookup("GAME_MINORCHEAT", (LeafCue**)&found);
+                        LeafCue* cue = (LeafCue*)found;
+                        if (cue) {
+                            i32 tag = g_sndCueTag;
+                            if (g_sndEnabled) {
+                                if ((u32)(g_killCueClock - cue->m_14) >= (u32)cue->m_18) {
+                                    cue->m_14 = g_killCueClock;
+                                    cue->m_10->ConfigureItem(tag, 0, 0, 0);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // Deliberate fall-through: retail's single shared exit (0x9134c) leaves eax unset
+    // on every non-emit path (only the ConfigureItem emit path defines the result); an
+    // explicit `return` would add a divergent eax-setting tail. MSVC5 emits the bare
+    // `pop; ret` here; the clang label step's -Wreturn-type is a warning, not an error.
+}
+
+// The live game objects are dispatched to a __cdecl callback (obj, user).
+typedef i32(__cdecl* ScanCb)(CGameObject* obj, i32 user);
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ScanObjectsInRadius (0x092180; __thiscall; ret 0x18). Walks the live
+// game-object list (m_world->m_8->m_liveObjects) and, for each object whose
+// collision-category bits (m_collCategory) intersect `mask`, tests a game-space reach
+// metric (|dx|^2 + 2*|dy|) against radius^2. Every in-range object is counted and
+// passed to cb(obj, user); the walk stops early if cb returns 0. Returns the hit
+// count. A null cb returns 0.
+RVA(0x00092180, 0x98)
+i32 CGruntzMgr::ScanObjectsInRadius(i32 x, i32 y, i32 radius, i32 mask, i32 cb, i32 user) {
+    if (cb == 0) {
+        return 0;
+    }
+    i32 r2 = radius * radius;
+    i32 count = 0;
+    CSpriteListNode* node = m_world->m_8->m_liveObjects;
+    while (node) {
+        CSpriteListNode* cur = node;
+        node = node->next;
+        CGameObject* obj = cur->m_sprite;
+        if (obj->m_collCategory & mask) {
+            i32 adx = abs(obj->m_screenX - x);
+            i32 ady = abs(obj->m_screenY - y);
+            if (adx * adx + ady + ady < r2) {
+                count++;
+                if (((ScanCb)cb)(obj, user) == 0) {
+                    return count;
+                }
+            }
+        }
+    }
+    return count;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ScanObjectsInRect (0x092250; __thiscall; ret 0x18). The bounding-box
+// twin of ScanObjectsInRadius: `rect` (left/top/right/bottom) is offset by (offX,
+// offY), then every live game object matching `mask` whose screen position falls in
+// the offset box is counted and passed to cb(obj, user). Stops early if cb returns 0.
+// @early-stop
+// regalloc/frame wall (~84.7%): the object-list walk, the four offset-rect bounds,
+// the bounding-box test, the callback and the count are byte-exact. Retail keeps all
+// four bounds in registers (edi/ebp/ebx/edx) and reserves a dedicated `sub esp,0x10`
+// spill frame; MSVC 5.0 here proves offX dead after the X bounds and reuses its
+// incoming arg slot ([esp+0x14]) to spill hiY, comparing against memory (`cmp ecx,
+// [mem]`) instead of a register - so no frame is reserved. No source spelling flips
+// MSVC's dead-arg-slot reuse back to a fresh frame (regalloc family).
+RVA(0x00092250, 0xba)
+i32 CGruntzMgr::ScanObjectsInRect(i32 offX, i32 offY, i32 rect, i32 mask, i32 cb, i32 user) {
+    if (cb == 0) {
+        return 0;
+    }
+    RECT* r = (RECT*)rect;
+    if (r == 0) {
+        return 0;
+    }
+    i32 loX = r->left + offX;
+    i32 hiX = r->right + offX;
+    i32 loY = r->top + offY;
+    i32 hiY = r->bottom + offY;
+    i32 count = 0;
+    CSpriteListNode* node = m_world->m_8->m_liveObjects;
+    while (node) {
+        CSpriteListNode* cur = node;
+        node = node->next;
+        CGameObject* obj = cur->m_sprite;
+        if (obj->m_collCategory & mask) {
+            i32 ox = obj->m_screenX;
+            if (ox >= loX && ox <= hiX) {
+                i32 oy = obj->m_screenY;
+                if (oy >= loY && oy <= hiY) {
+                    count++;
+                    if (((ScanCb)cb)(obj, user) == 0) {
+                        return count;
+                    }
+                }
+            }
+        }
+    }
+    return count;
 }
 
 // -------------------------------------------------------------------------

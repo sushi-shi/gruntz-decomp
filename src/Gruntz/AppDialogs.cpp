@@ -108,5 +108,52 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
     return 0;
 }
 
+// ---------------------------------------------------------------------------
+// LevelNumberDialogProc (0x0008e7c0 / 0x0008e8c0) - two byte-identical developer
+// "go to level" dialog callbacks. On WM_INITDIALOG the current level number
+// (g_gameReg->m_curState->m_1c) seeds edit control 0x40c; on WM_COMMAND IDCANCEL
+// (2) ends the dialog with 0, IDOK (1) ends it with the entered level number
+// (GetDlgItemInt of 0x40c). The two procs back two separate dialog resources with
+// the same layout, so the compiler emits them identically.
+RVA(0x0008e7c0, 0x86)
+INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_INITDIALOG:
+            SetDlgItemInt(hDlg, 0x40c, ((CGameRegLevel*)g_gameReg->m_curState)->m_1c, 0);
+            return 1;
+        case WM_COMMAND:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, 0, 0));
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
+
+RVA(0x0008e8c0, 0x86)
+INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_INITDIALOG:
+            SetDlgItemInt(hDlg, 0x40c, ((CGameRegLevel*)g_gameReg->m_curState)->m_1c, 0);
+            return 1;
+        case WM_COMMAND:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, 0, 0));
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
+
 SIZE_UNKNOWN(CGameRegLevel);
 SIZE_UNKNOWN(CGameRegWarp);
