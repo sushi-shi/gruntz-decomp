@@ -23,14 +23,20 @@
 #include <Ints.h>
 #include <rva.h>
 
-// zErrHandling subobject: the error reporter the accessor invokes on overflow.
+// zErrHandling subobject: kept as the (empty) base <Bute/ButeMgr.h>'s zPTree derives
+// from. NOTE: distinct from the RTTI-real polymorphic zErrHandling in <Bute/PTreeNode.h>
+// (a pending dedup); do not use it for m_err.
 class zErrHandling {
 public:
 };
 
+// The error-slot the accessor invokes on overflow: m_err points to a CVariantSlot
+// (its Set @0x16d850 is called at every overflow site). Was mis-typed as the empty
+// `zErrHandling` placeholder above; typed to the real pointee here.
+struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call sites)
+
 // The dynamic-vector base; `zDArray<T>` adds the per-element relocation override.
 // REAL-POLYMORPHIC (implicit vptr@0): the virtual dtor drains the manual vptr field.
-class zErrHandling; // fwd (pointer member m_err; wider inclusion via ActColl.h)
 class _zvec {
 public:
     void* GrowTo(i32 idx, i32 at); // 0x16da80
@@ -38,7 +44,7 @@ public:
     virtual ~_zvec();              // 0x16da60 (base scalar dtor, external TU; implicit vptr@0)
 
     // vptr @+0x00 (implicit, polymorphic)
-    zErrHandling* m_err; // +0x04
+    CVariantSlot* m_err; // +0x04
     i32 m_lo;            // +0x08
     i32 m_hi;            // +0x0c
     i32 m_base;          // +0x10

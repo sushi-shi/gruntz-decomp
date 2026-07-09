@@ -870,11 +870,7 @@ void CWwdObjMgr::AddToMap48_15aba0(CWwdObject* obj) {
 // docs/patterns/linked-list-walk-node-eax-rotation.md.
 RVA(0x0015aa90, 0x5d)
 void CWwdObjMgr::PruneList_15aa90() {
-    struct HLayout {
-        char _pad[0x14];
-        CWwdNode* m_head;
-    };
-    CWwdNode* node = ((HLayout*)this)->m_head;
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
     while (node != 0) {
         CWwdNode* cur = node;
         node = node->m_next;
@@ -1103,11 +1099,7 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
         g_6bf3bc = delta;
     }
 
-    struct HLayout {
-        char _pad[0x14];
-        CWwdNode* m_head;
-    };
-    CWwdNode* node = ((HLayout*)this)->m_head;
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
     while (node != 0) {
         CWwdNode* cur = node;
         node = node->m_next;
@@ -1206,11 +1198,7 @@ void CWwdObjMgr::InsertSorted_159e40(CWwdObject* obj, i32 addToMaps) {
         m_2c[obj->m_key] = obj;
         m_48[obj->m_key] = obj;
     }
-    struct HLayout {
-        char _pad[0x14];
-        CWwdNode* m_head;
-    };
-    CWwdNode* node = ((HLayout*)this)->m_head;
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
     i32 key = obj->m_sortKey;
     while (node != 0) {
         CWwdNode* cur = node;
@@ -1334,11 +1322,7 @@ CWwdObject* CWwdObjMgr::FindByTypeProbe_15a810(i32 type) {
 // (same as CWwdObjMgr::ForEachSerialize_15b020); no source lever splits it.
 RVA(0x0015a860, 0x57)
 CWwdObject* CWwdObjMgr::FindByWorker_15a860(i32 type, void* key) {
-    struct HLayout {
-        char _pad[0x14];
-        CWwdNode* m_head;
-    };
-    CWwdNode* node = ((HLayout*)this)->m_head;
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
     if (node == 0) {
         return 0;
     }
@@ -1363,11 +1347,7 @@ CWwdObject* CWwdObjMgr::FindByWorker_15a860(i32 type, void* key) {
 // 85% — same loop-epilogue-merge wall as FindByWorker_15a860 (logic/offsets exact).
 RVA(0x0015a940, 0x52)
 CWwdObject* CWwdObjMgr::FindByField_15a940(i32 type, void* key) {
-    struct HLayout {
-        char _pad[0x14];
-        CWwdNode* m_head;
-    };
-    CWwdNode* node = ((HLayout*)this)->m_head;
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
     if (node == 0) {
         return 0;
     }

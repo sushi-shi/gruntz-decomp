@@ -195,7 +195,7 @@ static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
     } else {
         i32 sentinel = g_zvecErrSentinel;
         g_retAddrBreadcrumb = GetRetAddr();
-        ((CVariantSlot*)v->m_err)->Set((void*)v, sentinel, 0xc);
+        v->m_err->Set((void*)v, sentinel, 0xc);
         r = v->m_spare;
     }
     CString* slot = (CString*)v->m_alloc;
@@ -221,7 +221,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
     }
     i32 sentinel = g_zvecErrSentinel;
     g_retAddrBreadcrumb = GetRetAddr();
-    ((CVariantSlot*)v->m_err)->Set((void*)v, sentinel, 0xc);
+    v->m_err->Set((void*)v, sentinel, 0xc);
     return v->m_spare;
 }
 
