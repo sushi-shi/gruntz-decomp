@@ -3,13 +3,17 @@
 
 On /O2 TUs the match plateaus on block ordering / register coloring / instruction
 scheduling that C++ source cannot directly pin. This applies SEMANTICS-PRESERVING
-text mutations to the real .cpp (commutative-operand swaps, independent-line
-reorders, additive reassociation, decl splits), recompiles each variant with the
-REAL MSVC 5.0 under wine (the compiler - not a C parser - handles the C++), scores
-the resulting COFF against the delinked target with objdiff-cli, and keeps
-improvements. Every mutation is value-preserving by construction, so a higher
-byte-score can never come from a semantically-wrong program. Unlike the classic
-pycparser-based decomp-permuter, it never parses the language, so C++ (class /
+mutations to the real .cpp, recompiles each variant with the REAL MSVC 5.0 under wine
+(the compiler handles the C++), scores the resulting COFF against the delinked target
+with objdiff-cli, and keeps improvements.
+
+WARNING: the operand-swap and additive-reassociation mutations are DISABLED - the
+regex form was operator-precedence-BLIND (it swapped `a + b` inside `a + b*c`, crossing
+the tighter `*` and computing a different value that still scored higher = banking WRONG
+code). Only the two provably-safe mutations run today: independent-line reorder and
+scalar decl-split. The swaps are being restored on a real clang AST (which knows each
+operator's true operand sub-expressions). Unlike the classic pycparser-based
+decomp-permuter, it never parses the language, so C++ (class /
 reinterpret_cast / templates) is fine.
 
 Ported from the HoMM2 sibling decomp (same pipeline: units.toml + cc_wrap + objdiff-cli).
@@ -158,15 +162,13 @@ def gen_variants(full):
 
 def _mutate(text):
     out = []
-    # 1) commutative-operand swaps
-    for op in COMM:
-        esc = re.escape(op)
-        pat = re.compile(r'(?<![\w>&|^=!<+*-])(' + OPD + r') ' + esc + r' (' + OPD + r')(?![\w])')
-        for m in pat.finditer(text):
-            a, b = m.group(1), m.group(2)
-            if a == b:
-                continue
-            out.append(text[:m.start()] + f"{b} {op} {a}" + text[m.end():])
+    # 1) commutative-operand swaps + 3) additive reassociation: DISABLED - they were
+    #    operator-precedence-BLIND. OPD matches ONE primary, so in `a + b*c` the regex
+    #    swapped `a + b`, crossing the tighter-binding `*` and computing a DIFFERENT value
+    #    (e.g. `cells + width*y + x` -> `cells + y*x + width`) that still scored higher -
+    #    banking WRONG code. A correct swap needs the real operand sub-expression extents,
+    #    which only a parser gives; restored in the clang-AST rewrite. Until then only the
+    #    two provably-safe, precedence-independent mutations below run.
     # 2) reorder adjacent independent scalar/global assignment lines (value-preserving)
     lines = text.split("\n")
     for i in range(len(lines) - 1):
@@ -186,11 +188,7 @@ def _mutate(text):
         nl = lines[:]
         nl[i], nl[i + 1] = lines[i + 1], lines[i]
         out.append("\n".join(nl))
-    # 3) reassociation of 3-term additive chains  a + b + c  (int + is assoc mod 2^32)
-    for m in re.finditer(r'(?<![\w>])(' + OPD + r') \+ (' + OPD + r') \+ (' + OPD + r')(?![\w])', text):
-        a, b, c = m.groups()
-        for perm in (f"{a} + {c} + {b}", f"{b} + {a} + {c}", f"{c} + {b} + {a}"):
-            out.append(text[:m.start()] + perm + text[m.end():])
+    # (3) additive reassociation: DISABLED with (1) above - same precedence-blindness.
     # 4) declaration split: `TYPE V = E;` -> `TYPE V;` + `V = E;` (moves materialisation point)
     for i, ln in enumerate(lines):
         m = DECL.match(ln)
