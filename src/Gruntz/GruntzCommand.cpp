@@ -116,6 +116,64 @@ i32 CGruntzCommand::SetMaskFromList(char a0, char a1, char a2, i16 a3, i16 a4, i
 }
 
 // ---------------------------------------------------------------------------
+// CGruntzSingleCommand::Parse() - 0x023f90 (vtable slot 7). The inverse of Pack:
+// deserialize the flat byte buffer back into the five scalar params + m_10, plus the
+// conditional m_11 byte (when m_5 >= 8). The tag byte is skipped. Returns the byte
+// count consumed. The `len` arg is unused (the record is self-delimiting).
+// @early-stop
+// walker-register coin-flip (~86.4%, docs/patterns/zero-register-pinning.md family):
+// the running-pointer deserialize is byte-faithful instruction-for-instruction (the
+// tag skip, the m_4/m_5/m_6 byte reads, the m_8/m_a word reads, m_10, the m_5>=8
+// m_11 tail, and the buf-start byte count), verified vs target with sema disasm
+// --diff. The sole residual is which register holds the running buffer pointer:
+// retail loads `data` into eax BEFORE `push esi` and walks eax (esi=start copy); cl
+// pins the walker in esi and derives eax, cascading the modrm register field through
+// every read. Not source-steerable (three spellings + the permuter: no change).
+// ---------------------------------------------------------------------------
+RVA(0x00023f90, 0x48)
+i32 CGruntzSingleCommand::Parse(void* data, i32 /*len*/) {
+    char* buf = (char*)data + 1; // skip the tag byte
+    m_4 = *buf++;
+    m_5 = *buf++;
+    m_6 = *buf++;
+    m_8 = *(i16*)buf;
+    buf += 2;
+    m_a = *(i16*)buf;
+    buf += 2;
+    m_10 = *buf++;
+    // read m_5 as an unsigned byte (retail `cmp byte,8; jb`) via the &-address form so
+    // the codegen is identical to an unsigned member conversion without a member cast.
+    if (*(u8*)&m_5 >= 8) {
+        m_11 = *buf++;
+    }
+    return buf - (char*)data;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzMultiCommand::Parse() - 0x024000 (vtable slot 7). The multi-target twin: the
+// +0x10 field is read as a full 16-bit flag mask (a WORD) rather than the conditional
+// byte pair. Returns the byte count consumed.
+// @early-stop
+// walker-register coin-flip (~83.2%): same wall as CGruntzSingleCommand::Parse above -
+// the running-pointer deserialize is byte-faithful except the walker register (retail
+// eax, cl esi). Not source-steerable.
+// ---------------------------------------------------------------------------
+RVA(0x00024000, 0x3e)
+i32 CGruntzMultiCommand::Parse(void* data, i32 /*len*/) {
+    char* buf = (char*)data + 1; // skip the tag byte
+    m_4 = *buf++;
+    m_5 = *buf++;
+    m_6 = *buf++;
+    m_8 = *(i16*)buf;
+    buf += 2;
+    m_a = *(i16*)buf;
+    buf += 2;
+    *(i16*)&m_10 = *(i16*)buf;
+    buf += 2;
+    return buf - (char*)data;
+}
+
+// ---------------------------------------------------------------------------
 // CGruntzSingleCommand::Pack() - 0x024050. Serialize the command into a flat
 // byte buffer: the tag byte (vtable slot 6), the kind/sub/aux byte triple
 // (m_4/m_5/m_6), the two words (m_8/m_a), the m_10 byte, and - only when the kind

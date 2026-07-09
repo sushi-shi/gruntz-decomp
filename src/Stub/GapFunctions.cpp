@@ -124,14 +124,6 @@ RVA(0x00023590, 0x31)
 i32 Gap_023590(void) {
     return 0;
 } // @stub
-RVA(0x00023f90, 0x48)
-i32 Gap_023f90(void) {
-    return 0;
-} // @stub
-RVA(0x00024000, 0x3e)
-i32 Gap_024000(void) {
-    return 0;
-} // @stub
 RVA(0x000244d0, 0x3b)
 i32 Gap_0244d0(void) {
     return 0;
@@ -420,18 +412,6 @@ RVA(0x000b9490, 0x42)
 i32 Gap_0b9490(void) {
     return 0;
 } // @stub
-RVA(0x000c0320, 0x37)
-i32 Gap_0c0320(void) {
-    return 0;
-} // @stub
-RVA(0x000c0370, 0x28)
-i32 Gap_0c0370(void) {
-    return 0;
-} // @stub
-RVA(0x000c03b0, 0x28)
-i32 Gap_0c03b0(void) {
-    return 0;
-} // @stub
 RVA(0x000c10d0, 0x7c)
 i32 Gap_0c10d0(void) {
     return 0;
@@ -446,10 +426,6 @@ i32 Gap_0c28c0(void) {
 } // @stub
 RVA(0x000c2900, 0x2a)
 i32 Gap_0c2900(void) {
-    return 0;
-} // @stub
-RVA(0x000c2940, 0x2b)
-i32 Gap_0c2940(void) {
     return 0;
 } // @stub
 RVA(0x000c52f0, 0x43)

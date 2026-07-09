@@ -390,6 +390,7 @@ public:
     CWnd* GetCtrlB(i32 index); // 0xc2740
     CWnd* GetCtrlC(i32 index); // 0xc27c0
     CWnd* GetCtrlD(i32 index); // 0xc2840
+    i32 GetComboSelC(i32 id);  // 0xc2940  GetCtrlC combo cur-sel + 1 (-1 if missing)
 
     // The GetSafeHwnd-style accessor the builders fold inline: (this != 0) ?
     // (handle @ +0x1c) : 0. Inline member so MSVC inlines it and keeps the null

@@ -407,6 +407,18 @@ CWnd* CMultiStartDlg::GetCtrlD(i32 index) {
     return result;
 }
 
+// GetComboSelC (0xc2940): the GetCtrlC combo's cur-sel + 1 (CB_GETCURSEL 0x147), or
+// -1 when the control is missing. The GetCtrlC sibling of CBattlezDlg::Query015d30
+// (which lacks the null guard).
+RVA(0x000c2940, 0x2b)
+i32 CMultiStartDlg::GetComboSelC(i32 id) {
+    CWnd* c = GetCtrlC(id);
+    if (c == 0) {
+        return -1;
+    }
+    return SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+}
+
 // ---------------------------------------------------------------------------
 RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}

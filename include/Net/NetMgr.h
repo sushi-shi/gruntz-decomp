@@ -405,6 +405,9 @@ struct CNetSession {
 
     CNetCmdSlot* FindCmdSlot(i32 playerId);        // c00a0
     void ResetCmdBuffers();                        // c0070
+    i32 AllSlotsReachedSeq(i32 seq);               // c0320  1 unless an active slot's m_maxSeq < seq
+    void AdvanceAllSlots(i32 id);                  // c0370  AdvanceSeq(id) over every active slot
+    void RaiseAllSlotsMax(i32 v);                  // c03b0  RaiseMax(v) over every active slot
     i32 CheckLatency(i32 cap);                     // c04a0  any active slot with m_10 > cap?
     CNetCmdSlot* CreateSlot(i32 index, i32 owner); // bfff0  init slot[index]
     i32 Verify();                                  // c04f0  resync consistency check (0-arg)

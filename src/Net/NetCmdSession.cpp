@@ -103,6 +103,52 @@ CNetCmdSlot* CNetSession::FindCmdSlot(i32 playerId) {
 }
 
 // ---------------------------------------------------------------------------
+// CNetSession::AllSlotsReachedSeq (0xc0320, __thiscall) - 0 if any active
+// (m_state==3), unreset (m_resetGuard==0) slot's high-water m_maxSeq is still below
+// `seq`; 1 otherwise. The CheckLatency-shaped slot scan.
+// ---------------------------------------------------------------------------
+RVA(0x000c0320, 0x37)
+i32 CNetSession::AllSlotsReachedSeq(i32 seq) {
+    for (i32 i = 0; i < 4; i++) {
+        CNetCmdSlot* slot = &m_slots[i];
+        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0 && slot->m_maxSeq < seq) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::AdvanceAllSlots (0xc0370, __thiscall) - fold ack `id` into every
+// active slot's sequence window (down-counting slot cursor, no null guard).
+// ---------------------------------------------------------------------------
+RVA(0x000c0370, 0x28)
+void CNetSession::AdvanceAllSlots(i32 id) {
+    CNetCmdSlot* slot = m_slots;
+    for (i32 i = 4; i != 0; i--) {
+        if (slot->m_state == 3) {
+            slot->AdvanceSeq(id);
+        }
+        slot++;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::RaiseAllSlotsMax (0xc03b0, __thiscall) - keep `v` as the high-water
+// sequence in every active slot (same slot-scan as AdvanceAllSlots).
+// ---------------------------------------------------------------------------
+RVA(0x000c03b0, 0x28)
+void CNetSession::RaiseAllSlotsMax(i32 v) {
+    CNetCmdSlot* slot = m_slots;
+    for (i32 i = 4; i != 0; i--) {
+        if (slot->m_state == 3) {
+            slot->RaiseMax(v);
+        }
+        slot++;
+    }
+}
+
+// ---------------------------------------------------------------------------
 // CNetSession::CheckLatency (0xc04a0, __thiscall) - 0 if any active (m_state==3),
 // unreset (m_resetGuard==0) slot's latency (m_latency) exceeds the cap; 1 otherwise.
 // ---------------------------------------------------------------------------
