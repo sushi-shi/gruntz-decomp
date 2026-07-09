@@ -603,6 +603,11 @@ source = "src/Io/FileMem.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "filemembasedtor"
+source = "src/Io/FileMemBaseDtor.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "rezmgr"
 source = "src/Rez/RezMgr.cpp"
 flags = "eh"
@@ -1984,11 +1989,6 @@ flags = "eh"
 unit = "boundarytail"
 source = "src/Stub/BoundaryTail.cpp"
 flags = "base"
-
-[[unit]]
-unit = "boundarytaileh"
-source = "src/Stub/BoundaryTailEh.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "statusbarspriteacts"

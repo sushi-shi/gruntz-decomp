@@ -12,6 +12,11 @@ extern CButeTree g_buteTree;
 DATA(0x00245588)
 extern i32 g_645588;
 
+// CToyPeek::~CToyPeek @0x11c40 - empty vtable-anchor dtor; folds the CUserLogic
+// teardown (the /GX leaf-dtor archetype).
+RVA(0x00011c40, 0x44)
+CToyPeek::~CToyPeek() {}
+
 // CToyPeek::CToyPeek (0x98140) - fold the shared CUserLogic(obj) init, then nudge
 // the owner up 0x18 px, lock its draw order to 0xdbba0, apply the small-icon
 // status-bar sprite, seed the +0x58..+0x64 countdown state and bind the "A" node.

@@ -2,9 +2,27 @@
 // CString/CSymParser/CImage tail of the boundary vein). These sit at class
 // boundaries across the DinMgr2 / Dsndmgr / DDrawMgr / Rez engine modules; RTTI
 // cannot attribute the COMDAT-folded leaf methods, so the owning class names are
-// placeholders. Only OFFSETS + code shape are load-bearing. The /GX EH-frame
-// siblings live in BoundaryTailEh.cpp. The per-use owner/referent views now live in
-// <Gruntz/BoundaryTailViews.h> (pure code motion).
+// placeholders. Only OFFSETS + code shape are load-bearing. The per-use
+// owner/referent views live in <Gruntz/BoundaryTailViews.h> (a *Views.h scaffolding
+// header, metric-exempt).
+//
+// @flag: identity-recovery TODO. Each `this`/owner class here is a genuinely
+// UNRECOVERED identity (hex placeholder, no RTTI) - NOT a view of a KNOWN class, so
+// it cannot be folded onto a canonical yet. Homing is also blocked by the delinker's
+// offset-0 packing (each is isolated in the boundarytail unit; moving into a
+// populated real TU re-packs + craters, cf. the CFileMemBase split). Caller-graph
+// attribution hints (gruntz sema xref --tree) to seed the identity recovery:
+//   0x176d20 CImg176d20::Fill      <- Gap_176da0 (stub); RAW-PIXEL image (+0x42c base
+//                                     / +0x430 row table). NOT CImage (0x13e760, DDraw).
+//   0x788d0  CSnd788d0::PositionUpdate <- CMulti::PumpB/Tick, CPlay::Render (sound
+//                                     emitter screen-pos update; m_1c emitter array).
+//   0x23d90  CObj23d90::Blit        <- CGamePlayInput::DispatchKey (grid-snap blit).
+//   0xbdd0   CObj_bdd0::Dispatch    <- CWorldSoundSet::CreateAmbient6 (100% EXACT;
+//                                     ambient-sound entry dispatch via CMapStringToOb).
+//   0x118330 BuildRecord118330      <- C1181d0::Update (iterator record builder).
+//   0x38120  Obj38120::GetName      <- CLatencyList::FillCombo (network slot name).
+//   0x85500  Obj85500::GetName      <- CGruntzMgr::LoadWorldMode, RezSync::Init.
+//   0x13df30 WaitKeyEdge            <- (no .text caller; free __cdecl key busy-wait).
 #include <rva.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/BoundaryTailViews.h> // owner/referent views for this TU (pulls Mfc.h)

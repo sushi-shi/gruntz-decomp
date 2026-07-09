@@ -2,11 +2,23 @@
 // CUserLogic leaf. The /GX leaf dtor + the 1-arg ctor (shared CUserLogic(obj)
 // prologue + the per-class tail).
 #include <Gruntz/GruntStartingPoint.h>
+#include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
+
+// CGruntStartingPoint::Serialize @0x105d0 - the vtable slot-1 override: chain the
+// shared CUserLogic serialize helper on `this`, then (only on success) the +0x34
+// sub-object's chain. Returns the second chain's success normalized to a bool.
+RVA(0x000105d0, 0x47)
+i32 CGruntStartingPoint::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
 
 // CGruntStartingPoint::~CGruntStartingPoint (0x10670) - the /GX leaf dtor folds
 // the bare CUserLogic teardown: store the CUserLogic vptr (0x5e705c), inline-

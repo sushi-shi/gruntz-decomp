@@ -13,8 +13,8 @@
 // placeholders; the OFFSETS + code bytes are the load-bearing facts. The throwing
 // CUserBaseLink in the CUserLogic base forces the /GX EH frame -> eh.
 #include <Mfc.h>
-#include <Gruntz/UserLogic.h>    // CUserLogic / CGameObject base init + g_buteMgr
-#include <Bute/ButeMgr.h>        // CButeTree / CButeMgr
+#include <Gruntz/UserLogic.h>     // CUserLogic / CGameObject base init + g_buteMgr
+#include <Bute/ButeMgr.h>         // CButeTree / CButeMgr
 #include <Gruntz/GameRegistry.h>  // canonical *0x24556c singleton (color table via m_78)
 #include <Gruntz/ActReg.h>        // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
@@ -48,8 +48,10 @@ extern CGameRegistry* g_gameReg;
 // base (+0x40) - the rotation/offset doubles + the per-tick state ints.
 #include <Gruntz/SpotLight.h>
 
-// Out-of-line vtable anchor (gives CSpotLight a real vftable so the ctor's vptr
-// store falls out). Body not matched.
+// CSpotLight::~CSpotLight @0x13040 - empty vtable-anchor dtor; folds the CUserLogic
+// teardown (the /GX leaf-dtor archetype). Gives CSpotLight a real vftable so the
+// ctor's vptr store falls out.
+RVA(0x00013040, 0x44)
 CSpotLight::~CSpotLight() {}
 
 RVA(0x000b1200, 0x2cb)
@@ -317,8 +319,8 @@ i32 CSpotLight::Tick_0b1af0() {
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || *(i32*)((char*)reg + 0x134) != 1) {
         char* o = (char*)m_object;
-        CSpotTarget* tgt = (CSpotTarget*)Probe_32ce(
-            *(i32*)(o + 0x5c), *(i32*)(o + 0x60), o + 0x144, &m_9c, &m_a0, 0);
+        CSpotTarget* tgt = (CSpotTarget*)
+            Probe_32ce(*(i32*)(o + 0x5c), *(i32*)(o + 0x60), o + 0x144, &m_9c, &m_a0, 0);
         if (tgt != 0 && tgt->m_258 != 0x38 && !(m_a4 != 0 && m_9c != 0)) {
             m_prevAnimSetNode = m_objAux->m_1c;
             m_objAux->m_1c = g_buteTree.Find(s_actKeyB);

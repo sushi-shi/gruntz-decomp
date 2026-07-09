@@ -22,6 +22,11 @@ i32 CSingleFrameMessage::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
 }
 
+// CSingleFrameMessage::~CSingleFrameMessage @0x0f640 - empty vtable-anchor dtor;
+// folds the CUserLogic teardown (the /GX leaf-dtor archetype).
+RVA(0x0000f640, 0x44)
+CSingleFrameMessage::~CSingleFrameMessage() {}
+
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
 // class).

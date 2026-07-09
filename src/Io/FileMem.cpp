@@ -27,8 +27,10 @@ CFileMemBase::CFileMemBase() {
     m_name.Empty();
 }
 
-// ~CFileMemBase - base teardown (unpinned; real body 0x157960 not reconstructed).
-// Empty so cl emits ??_GCFileMemBase for the base vtable slot 0.
+// ~CFileMemBase - base teardown. The RVA'd (scored) copy at 0x1578b0 lives in its own
+// isolated TU src/Io/FileMemBaseDtor.cpp (delinker offset-0 pairing preserves its
+// match; homing it into this multi-fn unit re-packs + craters CFileMem::~CFileMem).
+// Empty here so cl emits ??_GCFileMemBase for the base vtable slot 0.
 CFileMemBase::~CFileMemBase() {}
 
 // ---------------------------------------------------------------------------
@@ -50,9 +52,7 @@ CFileMem::~CFileMem() {
 
 // CFileMemBase::Reset (0x00157a40) is now an inline member in the header.
 
-
 // CFileMem::Reset (0x00157a50) is now an inline member in the header.
-
 
 // ---------------------------------------------------------------------------
 // CFileMemBase::SetName  (0x00165e30)  (slot 1, shared by both vtables)

@@ -30,6 +30,26 @@ i32 CFrontCandy::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
 }
 
+// CFrontCandy::~CFrontCandy @0x0fb00 - empty vtable-anchor dtor; folds the CUserLogic
+// teardown (the /GX leaf-dtor archetype). Adjacent to CFrontCandy::Serialize (0xfa60).
+RVA(0x0000fb00, 0x44)
+CFrontCandy::~CFrontCandy() {}
+
+// CFrontCandyAni::Serialize @0xfdf0 - the vtable slot-1 two-chain body (??_7CFrontCandyAni
+// slot 1, via thunk 0x19a6): base CUserLogic chain + the +0x34 sub-object chain.
+RVA(0x0000fdf0, 0x47)
+i32 CFrontCandyAni::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
+
+// CFrontCandyAni::~CFrontCandyAni @0xfe90 - empty vtable-anchor dtor (??_7CFrontCandyAni
+// slot 0 -> sdd 0xfe60); folds the CUserLogic teardown (the /GX leaf-dtor archetype).
+RVA(0x0000fe90, 0x44)
+CFrontCandyAni::~CFrontCandyAni() {}
+
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
 // class). FireActivation invokes it __thiscall on the trigger.

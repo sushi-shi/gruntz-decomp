@@ -25,25 +25,6 @@ public:
 SIZE_UNKNOWN(L_8860);
 RELOC_VTBL(L_8860, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 
-// Serialize override (the two-chain archetype).
-class S_fdf0 : public CUserLogic {
-public:
-    TILE_LOGIC_TAIL
-public:
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d);
-};
-SIZE_UNKNOWN(S_fdf0);
-
-class L_fe90 : public CUserLogic {
-public:
-    TILE_LOGIC_TAIL
-public:
-    virtual ~L_fe90() OVERRIDE;
-};
-SIZE_UNKNOWN(L_fe90);
-RELOC_VTBL(L_fe90, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
-
-
 class L_13400 : public CUserLogic {
 public:
     TILE_LOGIC_TAIL

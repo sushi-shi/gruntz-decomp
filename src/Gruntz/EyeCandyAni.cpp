@@ -50,6 +50,11 @@ i32 CEyeCandyAni::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
 }
 
+// CEyeCandyAni::~CEyeCandyAni @0x0ffc0 - empty vtable-anchor dtor; folds the
+// CUserLogic teardown (the /GX leaf-dtor archetype).
+RVA(0x0000ffc0, 0x44)
+CEyeCandyAni::~CEyeCandyAni() {}
+
 // CEyeCandyAni::CEyeCandyAni (0xac870) - fold the shared CUserLogic(obj) init, bind
 // the "A" bute node, apply the cycle geometry, then run the shared eyecandy z-clamp
 // + BigActHeight de-prioritize tail (the SAME archetype as CEyeCandy/CBehindCandyAni).

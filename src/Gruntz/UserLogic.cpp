@@ -24,6 +24,7 @@
 #include <Gruntz/BehindCandyAni.h>     // the canonical CBehindCandyAni class (ctor defined below)
 #include <Gruntz/EyeCandy.h>           // the canonical CEyeCandy class (ctor defined below)
 #include <Gruntz/FrontCandy.h>         // the canonical CFrontCandy class (ctor defined below)
+#include <Gruntz/FrontCandyAni.h>      // the canonical CFrontCandyAni class (ctor defined below)
 #include <Gruntz/MenuSparkle.h>        // the canonical CMenuSparkle class (ctor defined below)
 #include <Gruntz/WarpStonePad.h>       // the canonical CWarpStonePad class (ctor defined below)
 #include <Gruntz/Particlez.h>          // the canonical CParticlez class (ctor defined below)
@@ -309,28 +310,10 @@ VTBL(CGruntPowerupSprite, 0x1e76c4);
 
 // CEyeCandy comes from <Gruntz/EyeCandy.h> (folded; ctor 0x0ac620 defined below).
 
-// This local is ONLY the genuine CFrontCandyAni ctor 0x0acf40 (vptr 0x5e83e4, Ghidra
-// RTTI-confirmed) - a partial view, NOT foldable into <Gruntz/FrontCandyAni.h>. The
-// RegisterActs 0x0acd10 (registry 0x646060) + AdvanceAnim 0x0acf10 that used to sit
-// here were a MIS-ATTRIBUTION: layout order proves they belong to CEyeCandyAni (ctor
-// 0xac870) - the candy cluster runs {ctor 0xac870, InitActReg 0xacb30 -> 0x646060,
-// FireActivation, RegisterActs 0xacd10, AdvanceAnim 0xacf10} contiguously, all in
-// CEyeCandyAni's run BEFORE this ctor. They have been re-homed to src/Gruntz/
-// CEyeCandyAni.cpp (0x646060 is CEyeCandyAni's registry). The real CFrontCandyAni
-// acts (registry 0x6460b0) stay in src/Gruntz/FrontCandyAni.cpp at 0x0ad310/0x0ad510,
-// so ?RegisterActs@CFrontCandyAni@@SAXXZ is now emitted at ONE RVA (0x0ad310), not two.
-class CFrontCandyAni : public CUserLogic {
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    TILE_LOGIC_TAIL
-public:
-    CFrontCandyAni(CGameObject* obj); // 0x0acf40
-    virtual ~CFrontCandyAni() OVERRIDE;
-    i32 m_40; // +0x40
-};
-VTBL(CFrontCandyAni, 0x1e83e4);
+// CFrontCandyAni comes from the canonical <Gruntz/FrontCandyAni.h> (unified: the
+// genuine ctor 0x0acf40 view + the acts facet). The ctor 0x0acf40 + RVA-less vtable-
+// anchor dtor are defined below; the slot-1 Serialize (0xfdf0) + RVA'd dtor (0xfe90)
+// live in FrontCandyAni.cpp with the rest of the class band.
 
 // CBehindCandyAni comes from <Gruntz/BehindCandyAni.h> (folded; ctor 0x0ad540 below).
 
@@ -1064,6 +1047,9 @@ CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj) {
 }
 
 // --- CMenuSparkle (0x0adbe0), vptr 0x5e82dc ---
+// ~CMenuSparkle @0x101b0 - empty vtable-anchor dtor (folds the CUserLogic teardown);
+// homed here (band sibling of the leaf dtors below) from BoundaryLeafLogic.cpp.
+RVA(0x000101b0, 0x44)
 CMenuSparkle::~CMenuSparkle() {}
 RVA(0x000adbe0, 0x178)
 CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
@@ -1265,6 +1251,9 @@ RVA(0x0010d510, 0xf1)
 i32 WarpStonePadStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
 
 // --- CWarpStonePad (0x10d650), vptr 0x5e71ac ---
+// ~CWarpStonePad @0x10fc0 - empty vtable-anchor dtor (folds the CUserLogic teardown);
+// 0x10fc0 sits inside this TU's retail .obj RVA cluster (0x10f20..0x11050).
+RVA(0x00010fc0, 0x44)
 CWarpStonePad::~CWarpStonePad() {}
 RVA(0x0010d650, 0x16c)
 CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
