@@ -146,7 +146,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     if (!((CDDrawWorkerRegistry*)((MenuAssetMgr*)m_c)->m_10)->HasKeyEqual_155550("MENU")) {
-        void* set = ((CSymTab*)m_2c)->ResolvePath("IMAGEZ");
+        void* set = SymTab2c()->ResolvePath("IMAGEZ");
         if (set == 0) {
             return 0;
         }
@@ -156,7 +156,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     }
 
     if (!((MenuAssetMgr*)m_c)->m_28->HasKeyEqual_1583c0("MENU")) {
-        void* set = ((CSymTab*)m_2c)->ResolvePath("SOUNDZ");
+        void* set = SymTab2c()->ResolvePath("SOUNDZ");
         if (set == 0) {
             return 0;
         }

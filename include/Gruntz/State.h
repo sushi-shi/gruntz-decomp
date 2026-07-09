@@ -31,6 +31,7 @@ struct CSpriteFactoryHolder; // +0x0c render/resource holder == CGameRegistry::m
                              // facets CRenderer/CDrawSurface in <Gruntz/View.h>). Opaque here.
 struct CBankMgr;             // +0x08 asset-bank manager (resolves a "GRUNTZ"/"GAME"/level bank)
 struct CResSource;           // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
+class CSymTab;               // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
 class CGruntzMgr;            // +0x04 owner back-ptr: the game-manager singleton (*g_64556c).
                              // Forward-declared (MFC-free) so this widely-included header stays
                              // afx-neutral; GruntzMgr.h/GameRegistry.h complete the two views.
@@ -123,6 +124,11 @@ public:
     // (splash) LoadGroup its "SOUNDZ" set; the attract path stashes its resolved
     // TITLE state here. A 4-byte pointer slot (was modeled i32 + per-site casts).
     CResSource* m_2c;         // +0x2c
+    // The cached asset source (m_2c) is a Bute CSymTab; one typed accessor for that
+    // facet so the state loaders drop the (CSymTab*)m_2c casts. <Bute/SymTab.h>.
+    CSymTab* SymTab2c() {
+        return (CSymTab*)m_2c;
+    }
     CResSource* m_gruntzBank; // +0x30  GRUNTZ asset bank (LoadImageBanks caches here)
     CResSource* m_gameBank;   // +0x34  GAME asset bank (GAME-namespace loaders' source)
     i32 m_38;                 // +0x38

@@ -986,17 +986,17 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
 // ===========================================================================
 RVA(0x000bd210, 0x14d)
 i32 CMulti::Vslot0b(i32 arg0, i32 arg1) {
-    if (m_hitTest && ((CChatBoxOwner*)m_hitTest)->m_10) {
+    if (m_hitTest && m_hitTest->m_10) {
         if (m_connected) {
-            if (((CFontConfig*)((CMultiMgr*)m_4)->m_5c)->TypeChar(arg0, arg1)) {
-                CString line = ((CFontConfig*)((CMultiMgr*)m_4)->m_5c)->GetInputText();
+            if (((CFontConfig*)Mgr()->m_5c)->TypeChar(arg0, arg1)) {
+                CString line = ((CFontConfig*)Mgr()->m_5c)->GetInputText();
                 i32 n = line.GetLength();
                 if (n > 9) {
                     CString text = line.Right(n - 9);
                     char buf[0x100];
                     strcpy(buf, text);
                     BroadcastChatLine(buf, 1, 1, 0);
-                    ((CFontConfig*)((CMultiMgr*)m_4)->m_5c)->m_inputText.Empty();
+                    ((CFontConfig*)Mgr()->m_5c)->m_inputText.Empty();
                 }
             }
         }

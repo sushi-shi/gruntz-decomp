@@ -86,7 +86,7 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
         return 0;
     }
 
-    void* soundz = ((CSymTab*)m_2c)->FindSub("SOUNDZ");
+    void* soundz = SymTab2c()->FindSub("SOUNDZ");
     if (soundz) {
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)soundz, g_emptyString, "_");
     }

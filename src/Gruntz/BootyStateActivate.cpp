@@ -118,7 +118,7 @@ i32 CMultiBootyState::InputVirtual() {
     while (ShowCursor(FALSE) >= 0)
         ;
 
-    void* tree = ((CSymTab*)m_2c)->ResolvePath("IMAGEZ");
+    void* tree = SymTab2c()->ResolvePath("IMAGEZ");
     if (!tree) {
         return 0;
     }

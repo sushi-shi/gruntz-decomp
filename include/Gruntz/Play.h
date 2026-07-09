@@ -98,6 +98,8 @@ struct CWorldLayer {
     void Forward3508(i32 a, i32 b); // 0x521e20 (thiscall) reloc-masked
 };
 
+class CGameWnd; // the game window facet of CWorld::m_4 (PumpMessages; <Wap32/Wap32.h>)
+
 // m_4 (the CState owner back-ptr -> the world/level object).
 struct CWorld {
     // ClampApply @0x8f7f0 IS CGruntzMgr::RecomputeViewScale; cast at the call.
@@ -108,6 +110,11 @@ struct CWorld {
     // ReportError @0x346d IS CGruntzMgr::ReportError; cast at the call.
     char p0[0x4];
     CInputDispatch* m_4; // +0x04  the input dispatcher (RegisterInputBindings)
+    // The same object is the game window (PumpMessages) - one typed accessor for
+    // that facet so the play loop drops the (CGameWnd*)m_4w()->m_4 downcasts.
+    CGameWnd* Wnd() {
+        return (CGameWnd*)m_4;
+    }
     char p8[0xc - 0x8];
     void* m_c; // +0x0c  a "active grunt"/selection ptr (==0 selects overlay path)
     char p10[0x30 - 0x10];

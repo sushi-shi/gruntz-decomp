@@ -7,11 +7,7 @@
 
 // The sound/anim object registries dispatch each op to a distinct real class (verified by RVA);
 // TU-local decls with the exact pointer arg types (load-bearing for the mangled names).
-class CSoundRes;
-class CSoundResMap {
-public:
-    void RemoveByValue(CSoundRes* v); // 0x157b00
-};
+#include <Dsndmgr/SoundResMap.h> // canonical CSoundResMap (RemoveByValue @0x157b00) + CSoundRes
 class DirNode;
 class CDDrawSubMgrLeafScan {
 public:

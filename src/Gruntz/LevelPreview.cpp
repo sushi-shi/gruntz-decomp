@@ -111,7 +111,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
         return 0;
     }
     if (g_gate_2455b4 == 0 && g_gate_2455bc == 0) {
-        void* set = ((CSymTab*)m_2c)->FindSub("SOUNDZ");
+        void* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != 0) {
             ((CDDrawSubMgrLeafScan*)((CRegHolder*)m_c)->m_statusBar)
                 ->ScanTree_157ee0((DirNode*)set, "PREVIEW", (const char*)&g_dat60b588);
@@ -222,7 +222,7 @@ void CPreviewState::LoadLevelPreviewScreen() {
     sprintf(buf, "PREVIEW%i", idx);
     m_1bc = buf;
     sprintf(buf, "\\SCREENZ\\%s", (const char*)m_1bc);
-    ((CSymTab*)m_2c)->ResolveQualified(buf, &g_screenTag);
+    SymTab2c()->ResolveQualified(buf, &g_screenTag);
     i32 failed = 0;
     if (FadeInTitle((char*)(const char*)m_1bc, 0, 0, 0, 0, 1) == 0) {
         failed = 1;
@@ -274,7 +274,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
     }
     char buf[64];
     sprintf(buf, "\\SCREENZ\\%s", name);
-    i32 sym = ((CSymTab*)m_2c)->ResolveQualified(buf, &g_screenTag);
+    i32 sym = SymTab2c()->ResolveQualified(buf, &g_screenTag);
     if (sym == 0) {
         return 0;
     }

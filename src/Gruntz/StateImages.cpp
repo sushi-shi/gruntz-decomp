@@ -44,7 +44,7 @@ i32 CImageState::LoadStateImages() {
     if (Unmatched_0face0() == 0) {
         return 0;
     }
-    void* tree = ((CSymTab*)m_2c)->ResolvePath("IMAGEZ");
+    void* tree = SymTab2c()->ResolvePath("IMAGEZ");
     if (tree == 0) {
         return 0;
     }
@@ -77,7 +77,7 @@ i32 CBootyState::InputVirtual() {
     while (r >= 0) {
         r = sc(0);
     }
-    void* booty = ((CSymTab*)m_2c)->ResolvePath("IMAGEZ");
+    void* booty = SymTab2c()->ResolvePath("IMAGEZ");
     if (booty == 0) {
         return 0;
     }

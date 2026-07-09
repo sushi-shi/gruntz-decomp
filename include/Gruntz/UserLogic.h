@@ -43,9 +43,10 @@
 //   AddLogicHit/Attack/Bump = 0x150f50 / 0x151030 / 0x151110  (__thiscall, char*)
 //   m_7c                    = a sub-object pointer copied into the trigger.
 // ---------------------------------------------------------------------------
-struct CGameObjAux; // the sub-object reached through CGameObject::m_7c
-struct CGameObject; // fwd (CAnimWorker's collide callback takes the object)
-class CUserLogic;   // fwd (CGameObjAux::m_logic is the object's bound logic leaf)
+struct CGameObjAux;  // the sub-object reached through CGameObject::m_7c
+struct CGameObject;  // fwd (CAnimWorker's collide callback takes the object)
+class CUserLogic;    // fwd (CGameObjAux::m_logic is the object's bound logic leaf)
+class CSerialObjRef; // fwd (the +0x34 serialize-ref facet; <Gruntz/SerialObjRef.h>)
 
 // The lazily-built per-object worker held at CGameObject::m_88 / +0x90 (the same
 // 0x17c-byte anim worker AnimWorkerHandlers.cpp models): foreign vtable
@@ -432,6 +433,15 @@ public:
     // `this` by the leaf Serialize overrides. External/no-body (reloc-masked;
     // pinned in src/Stub/Discovered.cpp).
     i32 SerializeChain(i32 a, i32 b, i32 c, i32 d); // 0x16e7f0
+
+    // The serialize-object-reference facet embedded at +0x34 of every tile-logic
+    // leaf: a CSerialObjRef (its m_00/m_04/m_08 overlay the tail m_34/m_38/m_3c)
+    // whose Chain (0x8c00) the leaf Serialize overrides drive to persist the
+    // referenced registry object by name. Centralizes the +0x34 facet access so
+    // the leaves don't each `(CSerialObjRef*)((char*)this + 0x34)`. <Gruntz/SerialObjRef.h>.
+    CSerialObjRef* SerialRef34() {
+        return (CSerialObjRef*)((char*)this + 0x34);
+    }
 
     // Copies the bound object's screen position into the out point (m_object->m_5c
     // = x, m_object->m_60 = y). 0x29a50, __thiscall ret 4.

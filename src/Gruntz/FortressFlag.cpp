@@ -221,7 +221,7 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    if (!((CSerialObjRef*)((char*)this + 0x34))
+    if (!SerialRef34()
              ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
         return 0;
     }

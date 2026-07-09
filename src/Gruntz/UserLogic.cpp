@@ -623,7 +623,7 @@ i32 CSecretTeleporterTrigger::Serialize(i32 a, i32 b, i32 c, i32 d) {
     if (!SerializeChain(a, b, c, d)) {
         return 0;
     }
-    return ((CSerialObjRef*)((char*)this + 0x34))->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d)
+    return SerialRef34()->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d)
            != 0;
 }
 

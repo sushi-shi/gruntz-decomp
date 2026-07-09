@@ -1663,15 +1663,15 @@ i32 CPlay::ResetGoals(i32 x, i32 y) {
 // ===========================================================================
 RVA(0x000d9160, 0xac)
 i32 CPlay::RegisterInputBindings() {
-    ((CGameWnd*)m_4w()->m_4)->PumpMessages(0x102, 0x40);
-    ((CGameWnd*)m_4w()->m_4)->PumpMessages(0x100, 0x40);
-    ((CGameWnd*)m_4w()->m_4)->PumpMessages(0x200, 0x40);
-    ((CGameWnd*)m_4w()->m_4)->PumpMessages(0x201, 0x40);
-    ((CGameWnd*)m_4w()->m_4)->PumpMessages(0x202, 0x40);
-    ((CGameWnd*)m_4w()->m_4)->PumpMessages(0x203, 0x40);
-    ((CGameWnd*)m_4w()->m_4)->PumpMessages(0x204, 0x40);
-    ((CGameWnd*)m_4w()->m_4)->PumpMessages(0x205, 0x40);
-    ((CGameWnd*)m_4w()->m_4)->PumpMessages(0x206, 0x40);
+    m_4w()->Wnd()->PumpMessages(0x102, 0x40);
+    m_4w()->Wnd()->PumpMessages(0x100, 0x40);
+    m_4w()->Wnd()->PumpMessages(0x200, 0x40);
+    m_4w()->Wnd()->PumpMessages(0x201, 0x40);
+    m_4w()->Wnd()->PumpMessages(0x202, 0x40);
+    m_4w()->Wnd()->PumpMessages(0x203, 0x40);
+    m_4w()->Wnd()->PumpMessages(0x204, 0x40);
+    m_4w()->Wnd()->PumpMessages(0x205, 0x40);
+    m_4w()->Wnd()->PumpMessages(0x206, 0x40);
     return 1;
 }
 
