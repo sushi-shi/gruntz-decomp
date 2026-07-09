@@ -227,7 +227,7 @@ void ChannelSlots_InitAll(); // 0xdb1d0
 // The Win32 dialog procedures handed to RunModalDialog. Their pushed code
 // addresses reloc-mask (DIR32 against the named LAB_ symbols); only the push
 // shape is load-bearing.
-extern "C" void GruntzLoadGameDlgProc();    // LAB_00402167
+i32 CALLBACK GruntzLoadGameDlgProc(HWND, UINT, WPARAM, LPARAM); // 0x9dff0 (LoadGameMenu.cpp)
 extern "C" void GruntzDebugGruntTypeProc(); // LAB_004021e9
 extern "C" void GruntzSaveGameDlgProc();    // LAB_00401041 (GAME_SAVE)
 extern "C" void GruntzSaveMsgDlgProc();     // LAB_004011d1 (GAME_SAVEMSG)

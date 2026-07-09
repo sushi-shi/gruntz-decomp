@@ -240,6 +240,88 @@ RVA(0x0017fdf0, 0xb)
 CFaderSine::~CFaderSine() {}
 
 // ===========================================================================
+// 0x17fe00 - CFaderSine::ApplyInit(desc): copy the source-box geometry out of the
+// descriptor (falling back to the shared timer fields the manager primed), range-
+// check the 0..100 intensity, compute the scaled magnitude via the FP pipeline, then
+// fill four parallel 2000-int arrays (three zeroed, one seeded with rand()%count) and
+// scatter the last one via ScatterSamples (0x182940, ScatterSamples.cpp).
+// ===========================================================================
+// The inlined game RNG (a THIRD LCG instance: own seed-flag + state, distinct from
+// the 0x6c127d/0x6c1288 and 0x6c2798 pairs), seeded lazily from timeGetTime.
+extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
+extern u8 g_fxRandSeeded;                 // 0x6c279c  seed-init flag (bit 0)
+extern i32 g_fxRandSeed;                  // 0x6c27a8  LCG seed
+
+static __inline i32 FxRand(i32 range) {
+    u32 x;
+    if (!(g_fxRandSeeded & 1)) {
+        g_fxRandSeeded |= 1;
+        x = g_pTimeGetTime();
+    } else {
+        x = g_fxRandSeed;
+    }
+    g_fxRandSeed = x * 214013 + 2531011;
+    return (((i32)g_fxRandSeed >> 16) & 0x7fff) % range;
+}
+
+extern const float g_faderScale_5f085c;       // 0x5f085c  intensity->magnitude scale
+void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
+
+// @early-stop
+// regalloc coin-flip wall (73.5% fuzzy). Full body is byte-shape-identical to retail;
+// the residual is a callee-saved coloring swap that touches every ModRM byte: retail
+// colors this->ebx and the reused const-0/count->edi, while cl picks this->edi /
+// const-0->ebx (a symmetric loop-weight tie broken the other way). Verified via
+// llvm-objdump -dr base vs target - the only mnemonic-level diffs are the ebx/edi
+// register columns.
+RVA(0x0017fe00, 0x12d)
+i32 CFaderSine::ApplyInit(CFaderInit* desc) {
+    i32 w;
+    i32 p;
+    i32 i;
+    m_20 = 0;
+    m_40 = desc->m_0c;
+    FaderSrc* src = (FaderSrc*)desc->m_04;
+    if (!src) {
+        src = (FaderSrc*)m_timerA;
+    }
+    m_38 = src;
+    i32 alt = desc->m_08;
+    if (!alt) {
+        alt = m_timerB;
+    }
+    m_3c = (FaderSrc*)alt;
+    if (!m_38) {
+        goto fail;
+    }
+    if (!m_3c) {
+        m_40 = 1;
+    }
+    m_50 = m_38->m_1c;
+    w = m_38->m_frameCount;
+    m_4c = w;
+    p = desc->m_10;
+    if (p < 0) {
+        goto fail;
+    }
+    if (p > 100) {
+        goto fail;
+    }
+    m_58 = p;
+    m_54 = (i32)((float)p * g_faderScale_5f085c * w);
+    for (i = 0; i < 2000; i++) {
+        m_arr0[i] = 0;
+        m_arr2[i] = 0;
+        m_arr3[i] = 0;
+        m_arr1[i] = FxRand(m_50);
+    }
+    ScatterSamples(m_arr3, 0, m_50, 1);
+    return 1;
+fail:
+    return 0;
+}
+
+// ===========================================================================
 // CFaderFlat - the fader subtype whose ctor (0x17f530) only clears m_4c. Its
 // vftable is 0x5f07f8. Same modeling as CFaderSine.
 // ===========================================================================
@@ -765,10 +847,7 @@ SIZE_UNKNOWN(FxMeshBuffer);
 
 extern "C" void* RezAlloc(i32 n); // 0x1b9b46
 
-struct FaderSrc {
-    char pad00[0x18];
-    i32 m_frameCount; // +0x18 frame count
-};
+// FaderSrc is now the canonical <Gruntz/FaderSubtypes.h> struct (frameCount @+0x18).
 
 struct FaderArg {
     char pad00[4];
@@ -830,7 +909,6 @@ i32 CFaderFlat::v2() {
     return n + (m_percent * n) / 100;
 }
 
-SIZE_UNKNOWN(FaderSrc);
 SIZE_UNKNOWN(FaderArg);
 SIZE_UNKNOWN(CFaderElem);
 

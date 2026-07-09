@@ -9,123 +9,10 @@
 // DIR32 references reloc-mask.
 #include <Win32.h>
 
-// The inlined game RNG used by the 0x17fe00 fader-noise init. This is a THIRD
-// LCG instance (its own seed-flag + state globals, distinct from the 0x6c127d/
-// 0x6c1288 and 0x6c2798 pairs), seeded lazily from timeGetTime.
-extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
-extern u8 g_fxRandSeeded;                 // 0x6c279c  seed-init flag (bit 0)
-extern i32 g_fxRandSeed;                  // 0x6c27a8  LCG seed
-
-static __inline i32 FxRand(i32 range) {
-    u32 x;
-    if (!(g_fxRandSeeded & 1)) {
-        g_fxRandSeeded |= 1;
-        x = g_pTimeGetTime();
-    } else {
-        x = g_fxRandSeed;
-    }
-    g_fxRandSeed = x * 214013 + 2531011;
-    return (((i32)g_fxRandSeed >> 16) & 0x7fff) % range;
-}
-
-// ===========================================================================
-// 0x0017fe00 (301B) - a fader/noise-effect initializer (proximity: CFaderSine).
-// __thiscall(desc): copy geometry out of the descriptor + its source object,
-// range-check the intensity (0..100), compute a scaled magnitude via the FP
-// pipeline, then fill four parallel 2000-int arrays (three zeroed, one seeded
-// with rand()%count) and hand the last one to the tick registrar 0x182940.
-// ===========================================================================
-extern const float g_faderScale_5f085c;       // 0x5f085c  intensity->magnitude scale
-void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPAHHHH@Z
-
-// @early-stop
-// regalloc coin-flip wall (73.5% fuzzy, was 1.96% stub; the goto-fail single exit
-// already recovered the shared `return 0` tail). Full body is byte-shape-identical
-// to retail; the residual is a callee-saved coloring swap that touches every
-// ModRM byte: retail colors this->ebx and the reused const-0/count->edi, while cl
-// picks this->edi / const-0->ebx (a symmetric loop-weight tie broken the other
-// way). Verified via llvm-objdump -dr base vs target - the only mnemonic-level
-// diffs are the ebx/edi register columns.
-
-struct FxDesc_17fe00 {
-    char m_pad0[4];
-    i32 m_4;  // +0x04
-    i32 m_8;  // +0x08
-    i32 m_c;  // +0x0c
-    i32 m_10; // +0x10
-};
-struct FxSrc_17fe00 {
-    char m_pad0[0x18];
-    i32 m_18; // +0x18
-    i32 m_1c; // +0x1c
-};
-struct Fx_17fe00 {
-    char m_pad0[0x20];
-    i32 m_20;           // +0x20
-    FxSrc_17fe00* m_24; // +0x24 fallback source
-    FxSrc_17fe00* m_28; // +0x28 fallback source
-    char m_pad2c[0x38 - 0x2c];
-    FxSrc_17fe00* m_38; // +0x38
-    FxSrc_17fe00* m_3c; // +0x3c
-    i32 m_40;           // +0x40
-    char m_pad44[0x4c - 0x44];
-    i32 m_4c;         // +0x4c
-    i32 m_50;         // +0x50 element count
-    i32 m_54;         // +0x54
-    i32 m_58;         // +0x58 intensity
-    i32 m_arr0[2000]; // +0x5c
-    i32 m_arr1[2000]; // +0x1f9c
-    i32 m_arr2[2000]; // +0x3edc
-    i32 m_arr3[2000]; // +0x5e1c
-    i32 Init(FxDesc_17fe00* desc);
-};
-
-RVA(0x0017fe00, 0x12d)
-i32 Fx_17fe00::Init(FxDesc_17fe00* desc) {
-    i32 w;
-    i32 p;
-    i32 i;
-    m_20 = 0;
-    m_40 = desc->m_c;
-    FxSrc_17fe00* src = (FxSrc_17fe00*)desc->m_4;
-    if (!src) {
-        src = m_24;
-    }
-    m_38 = src;
-    i32 alt = desc->m_8;
-    if (!alt) {
-        alt = (i32)m_28;
-    }
-    m_3c = (FxSrc_17fe00*)alt;
-    if (!m_38) {
-        goto fail;
-    }
-    if (!m_3c) {
-        m_40 = 1;
-    }
-    m_50 = m_38->m_1c;
-    w = m_38->m_18;
-    m_4c = w;
-    p = desc->m_10;
-    if (p < 0) {
-        goto fail;
-    }
-    if (p > 100) {
-        goto fail;
-    }
-    m_58 = p;
-    m_54 = (i32)((float)p * g_faderScale_5f085c * w);
-    for (i = 0; i < 2000; i++) {
-        m_arr0[i] = 0;
-        m_arr2[i] = 0;
-        m_arr3[i] = 0;
-        m_arr1[i] = FxRand(m_50);
-    }
-    ScatterSamples(m_arr3, 0, m_50, 1);
-    return 1;
-fail:
-    return 0;
-}
+// (0x0017fe00 fader-noise init re-homed to src/Gruntz/Fader.cpp as CFaderSine::
+// ApplyInit - the CFaderSine subtype's default-init apply; the FxDesc/FxSrc views
+// folded onto the canonical CFaderInit/FaderSrc, and the third LCG RNG + its seed
+// globals + the ScatterSamples extern moved alongside it.)
 
 // ===========================================================================
 // 0x00168080 (502B) - a compound-widget builder (proximity: CGameLevel/CWwdGrid).
@@ -133,6 +20,23 @@ fail:
 // widgets (operator new + vtable stamp), lay each out over the RECT *rc with its
 // own size-pair, then derive the widget's own extents (min-1 + half-centers) from
 // three more size-pairs and finish with a SetRect over rc's corners.
+//
+// ATTRIBUTION (proven, sema xref + disasm): this IS WwdPlaneRender::Init - the
+// 0xb8-byte plane-render worker's init, and its ONLY caller is WwdFile::RebuildPlanes
+// (@0x1628f0, src/Wwd/WwdFile.cpp) which `new`s the 0xb8 worker (stamps the +0x70
+// CObList vtable 0x5f02a8) then calls this at 0x168080. Builder_168080 is a partial
+// (+0x00..+0x6c) view of WwdPlaneRender; SubWidget_168080 (0x44 B, vtable 0x5f0310)
+// is the sub-render-object it allocates x3.
+//   DEFERRED (not moved this batch): the real Init takes 8 args (this ret 0x20) -
+//   src + a RECT* (arg2, a 4-int region: `Setup(*rc)` + `SetRect(rc->l..b)`) + 6 Pt*.
+//   But RebuildPlanes' @early-stop reconstruction passes only 7 args (`Init(src,
+//   p0..p5)`) and builds its 6 pairs with a SIMPLIFIED geo mapping, whereas retail
+//   interleaves 12 header ints (hdr+0xb0..0xdc) into a RECT + 6 pairs via a SCRAMBLED
+//   stack layout (disasm 0x1629b1..0x162a69: pairs mix non-adjacent geo, e.g.
+//   [esp+0x18]=geo@0xdc with [esp+0x1c]=geo@0xd0). Homing Init as an 8-arg
+//   WwdPlaneRender::Init forces rewriting RebuildPlanes' call + its scrambled arg-
+//   build, which risks regressing that @early-stop match; that arg-build recovery is
+//   the prerequisite move. Left here with the attribution recorded for the final sweep.
 // ===========================================================================
 extern "C" int(WINAPI* g_pSetRect_6c44b8)(RECT*, int, int, int, int);
 
@@ -432,9 +336,6 @@ i32 Handler_17c3f0::Init(
 }
 
 SIZE_UNKNOWN(Builder_168080);
-SIZE_UNKNOWN(FxDesc_17fe00);
-SIZE_UNKNOWN(FxSrc_17fe00);
-SIZE_UNKNOWN(Fx_17fe00);
 SIZE_UNKNOWN(Handler_17c3f0);
 SIZE_UNKNOWN(ObjA2_17c3f0);
 SIZE_UNKNOWN(ObjA3_17c3f0);

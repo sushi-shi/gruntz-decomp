@@ -543,39 +543,11 @@ namespace ApiCallerStubs {
 
     // (0x953f0 CmdHost_0953f0::Key re-homed to CHelpState::Vslot0c in HelpState.cpp.)
 
-    DATA(0x00245ca4)
-    extern i32 g_dlg645ca4; // DAT_00645ca4 (the active dialog HWND)
-    i32 __cdecl DlgFallback_215d(HWND hDlg, i32 wParam, i32 cur); // RVA 0x215d
-    void __cdecl DlgInit_2ee6(HWND hDlg, i32 v);                  // RVA 0x2ee6
-    // __stdcall DlgProc(hDlg, msg, wParam, lParam).
-    RVA(0x0009dff0, 0x8c)
-    i32 CALLBACK winapi_09dff0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-        switch (msg) {
-            case 0x111:
-                if (wParam == 2 || wParam == 1) {
-                    // PickPlayOrPausedState (FindStateById(3)) returns the concrete
-                    // CPlay via its CState* base; set its +0x510 step-countdown to 2.
-                    CPlay* obj = (CPlay*)g_gameReg->PickPlayOrPausedState();
-                    if (obj) {
-                        obj->m_stepCountdown = 2;
-                    }
-                    EndDialog(hDlg, 0);
-                    return 1;
-                }
-                if (DlgFallback_215d(hDlg, wParam, g_dlg645ca4) != 0) {
-                    return 1;
-                }
-                // falls through to the shared "return 0" default
-            default:
-                return 0;
-            case 0x110: {
-                i32 v = (i32)g_gameReg->m_saveSink;
-                g_dlg645ca4 = v;
-                DlgInit_2ee6(hDlg, v);
-                return 1;
-            }
-        }
-    }
+    // (0x9dff0 GruntzLoadGameDlgProc + 0x9e390 LoadGameCommand re-homed to
+    // src/Gruntz/LoadGameMenu.cpp - the in-game "GAME_LOAD" modal dialog its opener
+    // CGruntzMgr::RunLoadGameDialog (@0x92500) drives; the load-side sibling of
+    // SaveGameMenu.cpp. The DlgFallback_215d thunk decl folded into a direct
+    // LoadGameCommand call, g_dlg645ca4 renamed g_dlgLoadSink (typed CSaveGame*).)
 
     // (0xc2980 winapi_0c2980 -> SetListCurSel in src/Gruntz/MultiStartDlgRoster.cpp,
     // a CMultiStartDlg roster listbox helper.)

@@ -558,6 +558,7 @@ void CBootyState::StateOnEnter() {}
 extern "C" i32 g_62bf74; // clip-region enable gate
 extern double g_5e96f8;  // 480.0 (screen height) - extern-loaded so the reseed division
 extern double g_5e96f0;  // 0.025 (scroll rate)   - is fld/fdiv, not a folded immediate
+extern double g_5e9708;  // scroll-step scale (SetupTitle's m_200 reseed)
 // The credits scroll's DirectDraw surface (prov->m_8): the game's real
 // IDirectDrawSurface (<ddraw.h>). Only GetDC (slot 17, +0x44) and ReleaseDC
 // (slot 26, +0x68) are used; both __stdcall with the surface as the hidden `this`,
@@ -1073,6 +1074,9 @@ struct CCreditzStateCore { // this->m_c->m_4 (the ready/init pump)
     // IsReady @0x158d20 IS CDDrawSubMgrPages::Method_158d20; cast at the call.
     // Init @0x158cb0 IS CDDrawSubMgrPages::Method_158cb0; cast at the call.
     i32 IsLoaded(); // FUN_00558bc0 __thiscall, ret BOOL (ready-3 predicate)
+
+    char m_pad00[0x14];
+    CreditsView4M14* m_14; // +0x14  DC-chain link (== CreditsView4::m_14; SetupTitle's HDC prov)
 };
 struct CCreditzImageRoot { // this->m_4 points here; +0x48 is the registry
     char m_pad00[0x48];
@@ -1098,17 +1102,27 @@ struct CCreditzOwner {
     CCreditzRegSet* m_8;    // +0x08
     CCreditzSoundMgr* m_c;  // +0x0c
     char m_pad10[0x2c - 0x10];
-    CCreditzRegObj* m_2c; // +0x2c
+    CCreditzRegObj*
+        m_2c; // +0x2c  STATEZ_CREDITZ object (dispatched as CSymTab: Insert/FindSub/ResolvePath)
     char m_pad30[0x1b4 - 0x30];
     i32 m_1b4; // +0x1b4
     i32 m_1b8; // +0x1b8
     i32 m_1bc; // +0x1bc
     i32 m_1c0; // +0x1c0
     i32 m_1c4; // +0x1c4
-    char m_pad1c8[0x20c - 0x1c8];
-    i32 m_20c;                                  // +0x20c
-    void SetupTitle();                          // RVA 0x39a60 __thiscall
-    i32 FinishState();                          // RVA 0x439c40 __thiscall
+    // SetupTitle's credits-scroll fields (== the CreditsScrollSelf view's m_src/m_dst/
+    // m_1e8/m_1f0/m_1f4/m_1f8/m_200; the ApiWrappers CreditzScreen view folded here).
+    RECT m_scrollRect; // +0x1c8  scroll caption rect (SetRect target)
+    RECT m_textRect;   // +0x1d8  DrawTextA measure rect
+    CRgn m_clipRgn;    // +0x1e8  clip region (real MFC CRgn; Attach)
+    CString m_text;    // +0x1f0  credits caption CString (m_pszData read as LPCTSTR)
+    i32 m_1f4;         // +0x1f4  reseed timer A
+    double m_1f8;      // +0x1f8  scroll accumulator (reset to 0.0)
+    double m_200;      // +0x200  scroll step (reseeded)
+    char m_pad208[0x20c - 0x208];
+    i32 m_20c;         // +0x20c
+    i32 SetupTitle();  // RVA 0x39a60 __thiscall (credits title/scroll setup)
+    i32 FinishState(); // RVA 0x439c40 __thiscall
     i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked near call
 };
 
@@ -1184,6 +1198,56 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     i32 r = self->FinishState();
     self->m_1b4 = 0;
     return r;
+}
+
+// CCreditzOwner::SetupTitle (0x39a60, __thiscall, ret BOOL) - build the credits
+// scroll: pull the "CREDITZ" TXT section from the STATEZ_CREDITZ store (m_2c,
+// dispatched as CSymTab) into the m_text CString, build the clip region, measure the
+// text against the offscreen DDraw surface's HDC to set the scroll rect, then seed the
+// scroll accumulator/step. (Re-homed from ApiWrappers CreditzScreen::BuildText; the
+// CreditzScreen view folded onto this canonical CCreditzOwner - +0x2c resolved to the
+// CSymTab-dispatched section source, the DC chain reuses CreditsHdcProv.)
+//
+// @early-stop
+// scheduling tail (~99.7%): for the final (double)(unsigned)m_1f4 conversion the int64
+// temp's two halves (low=eax, high=0) are emitted in the opposite order relative to the
+// fld/fmul (retail stores high=0 before the fld, low after the fmul; cl reverses). All
+// other bytes identical (llvm-objdump -dr). GetDC/ReleaseDC region is byte-exact via the
+// real IDirectDrawSurface COM slots.
+RVA(0x00039a60, 0x179)
+i32 CCreditzOwner::SetupTitle() {
+    // CSymTab::Insert resolves the "CREDITZ" section of FOURCC type 'TXT'
+    // (== 0x545854, a tag value not an address); returns the section CParseSource as H.
+    CParseSource* sect = (CParseSource*)((CSymTab*)m_2c)->Insert("CREDITZ", (void*)'TXT');
+    if (sect) {
+        char* src = (char*)sect->BeginParse();
+        if (!src) {
+            return 0;
+        }
+        i32 len = sect->m_length;
+        char* buf = (char*)operator new(len + 1);
+        if (!buf) {
+            return 0;
+        }
+        memcpy(buf, src, len);
+        buf[len] = 0;
+        m_text = buf;
+        sect->EndParse();
+        operator delete(buf);
+    }
+    m_clipRgn.Attach(CreateRectRgn(0x32, 0, 0x24e, 0x1e0));
+    CreditsHdcProv* prov = m_c->m_4->m_14->m_2c;
+    HDC hdc = 0;
+    prov->m_8->GetDC(&hdc);
+    if (hdc) {
+        i32 h = DrawTextA(hdc, m_text, -1, &m_textRect, 0x450);
+        SetRect(&m_scrollRect, 0x32, 0x1e0, 0x24e, h + 0x1e0);
+        prov->m_8->ReleaseDC(hdc);
+    }
+    m_1f8 = 0.0;
+    m_1f4 = (i32)(g_5e96f8 / g_5e96f0);
+    m_200 = (g_5e96f8 * g_5e9708) / (double)(unsigned)m_1f4;
+    return 1;
 }
 
 // CCreditsState::InputVirtual (slot 8 / +0x20, @0x393b0, formerly ShowAttractTitle) -

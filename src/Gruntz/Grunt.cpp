@@ -86,6 +86,12 @@ extern WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the 
 #include <stdlib.h>
 #include <string.h>
 
+// CGrunt's RTTI vtable (??_7CGrunt@@6B@ @0x1e8754): catalogued here, CGrunt's real
+// home (was bound in the now-deleted src/Stub/ApiWrappers.cpp). Grunt.h omits VTBL(
+// CGrunt) because it's referenced by scored CGrunt/CSpotLight code; the binding is
+// pre-existing (moved, not new), so the catalogue state is unchanged.
+VTBL(CGrunt, 0x001e8754);
+
 // The sprite class-name string the factory is asked to build, per creator. These
 // are literal .rodata strings in the binary (the reloc-masked DIR32 operand).
 static const char s_GruntHealthSprite[] = "GruntHealthSprite";

@@ -291,6 +291,12 @@ public:
     // it to (row,col), bounds-test the cell object, write (row,col). (ret 0x14.)
     i32 HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact);
 
+    // 0x75c60: FindGruntAt(px, py, span, outCol, outRow, src) - scan the tile cells
+    // around a pixel point (bounded by the tile-span rect, or an explicit source rect)
+    // through the tile grid's packed owner word into m_grid; return the first live cell
+    // (m_1fc) whose 15x15 display box hits the rect, reporting its (col,row). (ret 0x18.)
+    CTmCell* FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src);
+
     // 0x78520 / 0x78680: the two record-table reporters - scan the record list (+0x244)
     // for nodes of the magic group, collect their bytes, then call a world report helper
     // with one of two messages depending on the count. (__stdcall: ret 0xc / ret 0x10.)

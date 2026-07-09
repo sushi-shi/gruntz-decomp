@@ -30,22 +30,9 @@
 // match by content (reloc-masked).
 extern "C" void Fader_Trace(const char* msg); // 0x1b9d4c - CString(const char*)/TRACE
 
-// The default-init descriptor built on the Add stack when pInit is null: an
-// embedded CString forces the /GX frame, and the subtype's default parameters are
-// filled by one of the six reloc-masked default builders (__thiscall on the
-// descriptor), one per fader type (0..5).
-SIZE_UNKNOWN(CFaderInit);
-struct CFaderInit {
-    char m_blob[0x24]; // +0x00..+0x23
-    CString m_str;     // +0x24  destructible member (forces /GX)
-
-    void BuildDefaultInit0(); // 0x17e7c0  fader type 0
-    void BuildDefaultInit1(); // 0x17e840  fader type 1
-    void BuildDefaultInit2(); // 0x17e880  fader type 2
-    void BuildDefaultInit3(); // 0x17e8b0  fader type 3
-    void BuildDefaultInit4(); // 0x17e8e0  fader type 4
-    void BuildDefaultInit5(); // 0x17e910  fader type 5
-};
+// The default-init descriptor built on the Add stack when pInit is null (CFaderInit,
+// embedded CString forces the /GX frame) is now the canonical <Gruntz/FaderSubtypes.h>
+// shape; its six reloc-masked default builders fill the subtype's default parameters.
 
 // pInit (when non-null) is a CFxMode transition descriptor the caller passes
 // through the retail CFader* interface; Add validates its type-id (stored at the

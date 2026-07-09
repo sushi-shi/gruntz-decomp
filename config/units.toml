@@ -967,6 +967,13 @@ source = "src/Gruntz/SaveGameMenu.cpp"
 flags = "base"
 
 [[unit]]
+# GruntzLoadGameDlgProc (0x9dff0) + LoadGameCommand (0x9e390) - the "GAME_LOAD" dialog
+# (load-side sibling of savegamemenu; opened by CGruntzMgr::RunLoadGameDialog).
+unit = "loadgamemenu"
+source = "src/Gruntz/LoadGameMenu.cpp"
+flags = "base"
+
+[[unit]]
 # CGruntResurrector::LoadGruntResurrectTuning (0x7be60) - sibling of CRockBreakMgr.
 unit = "gruntresurrectradius"
 source = "src/Gruntz/GruntResurrectRadius.cpp"
@@ -2595,13 +2602,6 @@ flags = "eh"
 unit = "apihicallers"
 source = "src/Stub/ApiHiCallers.cpp"
 flags = "base"
-
-[[unit]]
-# matcher-4: game API-wrapper helpers re-homed from src/Stub/ApiCallers.cpp
-# (low-RVA half). base+/GX mirrors the original stub-unit environment.
-unit = "apiwrappers"
-source = "src/Stub/ApiWrappers.cpp"
-flags = "eh"
 
 [[unit]]
 # matcher-4: the two dialog flash-rect helpers (EH + severus/imgHolder scratch).

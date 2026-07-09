@@ -3,6 +3,7 @@
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_mgrSettings singleton)
 #include <Gruntz/GruntzMgr.h>    // CGruntzMgr (IsInPlayState / CheckSavedMode)
 #include <Gruntz/State.h>        // CState::Update (m_curState state probe)
+#include <Gruntz/LeafCue.h>      // LeafCue (the config-cue leaf: m_10/m_14/m_18) for ScrollDialog
 #include <Net/NetMgr.h>          // CNetMgr::SendChannelStat422/423 (dispatched on m_curState)
 #include <Win32.h>               // GetDlgItem / EnableWindow / EndDialog / HWND
 
@@ -67,13 +68,13 @@ extern HWND g_optHwndCk8; // IDC 0x476
 
 // Option-handler free functions (MenuState.cpp / Play.cpp / VideoConfig.cpp /
 // ApiWrappers), referenced by their real symbols (reloc-masked, no body here).
-void LoadGameOptionsToDialog(HWND hDlg); // 0x036860
-void ReadMenuOptionsDialog(HWND hDlg);   // 0x036a30
-void OnToggleMusicOption(HWND hDlg);     // 0x036d00
-void OnToggleVoiceOption(HWND hDlg);     // 0x036d50
-void OnToggleSpeechOption(HWND hDlg);    // 0x036da0
-void OnToggleEasyModeOption(HWND hDlg);  // 0x036e10
-void OnToggleCk5Option(HWND hDlg);       // 0x036df0 (thunk 0x19b5)
+void LoadGameOptionsToDialog(HWND hDlg);                                  // 0x036860
+void ReadMenuOptionsDialog(HWND hDlg);                                    // 0x036a30
+void OnToggleMusicOption(HWND hDlg);                                      // 0x036d00
+void OnToggleVoiceOption(HWND hDlg);                                      // 0x036d50
+void OnToggleSpeechOption(HWND hDlg);                                     // 0x036da0
+void OnToggleEasyModeOption(HWND hDlg);                                   // 0x036e10
+void OnToggleCk5Option(HWND hDlg);                                        // 0x036df0 (thunk 0x19b5)
 void SaveVideoResolutionConfig(HWND hDlg, HWND hCtrl, i32 code, i32 pos); // 0x0370a0
 void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos);              // 0x037260
 
@@ -193,4 +194,126 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         }
     }
     return FALSE;
+}
+
+// ---------------------------------------------------------------------------
+// ScrollDialog (0x037260) - the options-dialog slider handler. Reads the control's
+// SCROLLINFO, adjusts nPos by the SB_* code, writes it back, then routes the new
+// value to the matching setting: 0x472/0x478 store directly (XMidi volume / scroll
+// speed); 0x476/0x470 store the flag AND (re)trigger a GAME_VOICE / GAME_CHIPFALLOUT
+// config cue if the kill-cue clock has elapsed. A free __cdecl(hDlg, hCtrl, code, pos)
+// helper GameOptionsDlgProc's WM_HSCROLL dispatches to.
+//
+// The config-cue chain matches PathHazard's: the CSndHost at m_world->m_28 gates on
+// m_emitGate, CSndFinder::Lookup resolves the named LeafCue, the g_sndEnabled/kill-
+// clock cooldown gate throttles, then LeafCue::m_10->ConfigureItem plays it.
+
+extern i32 g_sndEnabled;       // 0x61ab20 (?g_sndEnabled@@3HA)
+extern i32 g_sndCueTag;        // 0x61ab24 (?g_sndCueTag@@3HA)
+extern "C" i32 g_killCueClock; // 0x6bf3c0 (_g_killCueClock)
+
+// @early-stop
+// regalloc wall + jump-table-data artifact (docs/patterns/jumptable-data-overlap.md).
+// Logic + instruction selection identical, but MSVC5 caches `code` in ebp and `newpos`
+// in edi across the whole body, whereas retail keeps `newpos` in ebp, holds `code` in
+// eax only for the switch, and RE-READS code from the stack in the voice/chip blocks;
+// that register permutation shifts most operand bytes (consistent ebp<->edi/eax swap,
+// llvm-objdump -dr). ~85%.
+RVA(0x00037260, 0x1fd)
+void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
+    if (!hCtrl) {
+        return;
+    }
+    SCROLLINFO si;
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_POS;
+    GetScrollInfo(hCtrl, SB_CTL, &si);
+    i32 newpos;
+    if (code == 5) {
+        newpos = pos;
+    } else {
+        newpos = si.nPos;
+        if (code == 4) {
+            newpos = pos;
+        }
+    }
+    switch (code) {
+        case 0:
+            newpos--;
+            break;
+        case 1:
+            newpos++;
+            break;
+        case 2:
+            newpos -= 10;
+            break;
+        case 3:
+            newpos += 10;
+            break;
+        case 4:
+            break;
+        case 5:
+            break;
+        default:
+            return;
+    }
+    si.fMask = SIF_POS;
+    si.nPos = newpos;
+    SetScrollInfo(hCtrl, SB_CTL, &si, TRUE);
+    if (hCtrl == GetDlgItem(hDlg, 0x472)) {
+        ((CGruntzSoundZ*)g_mgrSettings->m_sound)->SetXMidiVolume(newpos);
+        return;
+    }
+    if (hCtrl == GetDlgItem(hDlg, 0x478)) {
+        g_mgrSettings->m_scrollSpeed = newpos;
+        return;
+    }
+    if (hCtrl == GetDlgItem(hDlg, 0x476)) {
+        ((CGruntzMgr*)g_mgrSettings)->StoreInputState(newpos);
+        if (code == 5) {
+            return;
+        }
+        CSndHost* host = g_mgrSettings->m_world->m_28;
+        if (host->m_emitGate) {
+            return;
+        }
+        LeafCue* cue = 0;
+        host->m_10.Lookup("GAME_VOICE", &cue);
+        if (!cue) {
+            return;
+        }
+        if (!g_sndEnabled) {
+            return;
+        }
+        if ((u32)(g_killCueClock - cue->m_14) < (u32)cue->m_18) {
+            return;
+        }
+        cue->m_14 = g_killCueClock;
+        cue->m_10->ConfigureItem(newpos, 0, 0, 0);
+        return;
+    }
+    if (hCtrl == GetDlgItem(hDlg, 0x470)) {
+        ((CGruntzMgr*)g_mgrSettings)->StoreInputFlag(newpos);
+        if (code == 5) {
+            return;
+        }
+        CSndHost* host = g_mgrSettings->m_world->m_28;
+        if (host->m_emitGate) {
+            return;
+        }
+        LeafCue* cue = 0;
+        host->m_10.Lookup("GAME_CHIPFALLOUT", &cue);
+        if (!cue) {
+            return;
+        }
+        if (!g_sndEnabled) {
+            return;
+        }
+        if ((u32)(g_killCueClock - cue->m_14) < (u32)cue->m_18) {
+            return;
+        }
+        cue->m_14 = g_killCueClock;
+        cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+        return;
+    }
 }

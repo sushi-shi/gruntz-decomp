@@ -332,7 +332,6 @@ struct CTmLevel {
 
 // CTriggerMgr::SetLevel (0x0006b640) is now an inline member in the header.
 
-
 // 0x6b680: Cleanup - destruct+free the overlay sub-object (+0x25c) when present, then
 // drain the record and selection lists. The overlay's Clear runs the in-place dtor,
 // then __cdecl operator delete frees it.
@@ -476,6 +475,77 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
             }
         }
         row++;
+    }
+    return 0;
+}
+
+// 0x75c60: CTriggerMgr::FindGruntAt - given a pixel point + tile-span rect (or an
+// explicit source rect), scan the surrounding tile cells: read each cell's packed
+// owner word out of the tile grid, index the placed-object grid (m_grid[col+row*15]),
+// and return the first live cell (m_1fc) whose 15x15 display box hits the rect, with
+// its (col,row) reported via out-params. The sibling of CellHitTest (same m_grid /
+// m_10->m_5c scan). (Re-homed from ApiWrappers; the GruntHitMgr/HitGrunt/HitTileRect/
+// HitGrid views folded onto CTmCell / CTmDisplay / CTileGrid.)
+//
+// @early-stop
+// 75% - nested-loop regalloc wall: identical instruction selection/logic, but MSVC5
+// assigns the point/rect args to a permuted register set (a0->edi, a1->esi vs retail
+// a0->ebx/a1->edi) and spills one fewer local, so the frame is 0x1c vs retail 0x20 and
+// every [esp+N] stack offset shifts. Not steerable from source (llvm-objdump -dr: same
+// mnemonics, shifted operands).
+RVA(0x00075c60, 0x1ba)
+CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src) {
+    i32 tcol = px >> 5;
+    i32 trow = py >> 5;
+    RECT rc;
+    if (src) {
+        CopyRect(&rc, src);
+    } else {
+        SetRect(
+            &rc,
+            px - span->left * 32 - 7,
+            py - span->top * 32 - 7,
+            span->right * 32 + px + 7,
+            span->bottom * 32 + py + 7
+        );
+    }
+    i32 xEnd = span->right + tcol + 1;
+    for (i32 x = tcol - span->left - 1; (u32)x <= (u32)xEnd; x++) {
+        i32 yEnd = span->bottom + trow + 1;
+        for (i32 y = trow - span->top - 1; (u32)y <= (u32)yEnd; y++) {
+            if ((u32)x >= (u32)g_gameReg->m_tileGrid->m_c) {
+                continue;
+            }
+            CTileGrid* grid = g_gameReg->m_tileGrid;
+            if ((u32)y >= (u32)grid->m_10) {
+                continue;
+            }
+            i32 val;
+            if ((u32)x < (u32)grid->m_c && (u32)y < (u32)grid->m_10) {
+                val = *(i32*)((char*)grid->m_8[y] + x * 0x1c + 4);
+            } else {
+                val = -1;
+            }
+            if (val == -1) {
+                continue;
+            }
+            i32 col = val & 0xff;
+            i32 row = (val >> 8) & 0xff;
+            CTmCell* g = m_grid[col + row * 15];
+            if (!g) {
+                continue;
+            }
+            if (!g->m_1fc) {
+                continue;
+            }
+            i32 sx = g->m_10->m_5c - 7;
+            i32 sy = g->m_10->m_60 - 7;
+            if (rc.left <= sx + 0xe && rc.right >= sx && rc.top <= sy + 0xe && rc.bottom >= sy) {
+                *outCol = row;
+                *outRow = col;
+                return g;
+            }
+        }
     }
     return 0;
 }
@@ -1336,7 +1406,6 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
 }
 
 // CTriggerMgr::GetOriginXY (0x000759e0) is now an inline member in the header.
-
 
 // 0x75a90: TmFlagsAllow(a, b, c) - a __cdecl trigger-flag compatibility test on the
 // shared bits m = a & b: bit 0x20000000 vetoes outright; with no shared bits, allow;

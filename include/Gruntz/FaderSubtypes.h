@@ -20,6 +20,8 @@
 #ifndef GRUNTZ_GRUNTZ_CFADERSUBTYPES_H
 #define GRUNTZ_GRUNTZ_CFADERSUBTYPES_H
 
+#include <Mfc.h> // afx-first: CFaderInit embeds a CString (breakable-MFC-wall; all 3
+                 // includers already pull <Mfc.h>, so this is matching-neutral)
 #include <Ints.h>
 #include <rva.h>
 
@@ -31,8 +33,43 @@
 // supplied instead, the same engine method is reached through CopyFrom(CFader*)
 // (pInit is a CFxMode transition descriptor the caller passes through CFader*).
 // Defined in CFaderMgr.cpp.
-struct CFaderInit;
-struct FaderSrc; // animation frame source (frameCount @+0x18); defined in Fader.cpp
+// The default-init descriptor CFaderMgr::Add builds on its stack when pInit is null:
+// nine int parameter words + an embedded CString (the destructible member that forces
+// the /GX frame), filled by one of the six reloc-masked default builders (one per
+// fader type 0..5). Each subtype's ApplyInit reads a different subset of the int words
+// (they overlay the same bytes): CFaderSine reads m_04(src)/m_08(alt)/m_0c(count)/
+// m_10(intensity); CFaderMesh casts to its local FxTransDesc view of the same offsets.
+// +0x00 is the type discriminator. Was a per-TU FxDesc_17fe00 view + a FaderMgr.cpp-
+// local blob; folded to this one canonical shape.
+SIZE_UNKNOWN(CFaderInit);
+struct CFaderInit {
+    i32 m_00;      // +0x00  type discriminator
+    i32 m_04;      // +0x04  src override (FaderSrc*, else this->m_timerA)
+    i32 m_08;      // +0x08  alt/dst override (else this->m_timerB)
+    i32 m_0c;      // +0x0c  count/param -> m_40
+    i32 m_10;      // +0x10  intensity (Sine) / gate (Mesh)
+    i32 m_14;      // +0x14
+    i32 m_18;      // +0x18
+    i32 m_1c;      // +0x1c
+    i32 m_20;      // +0x20
+    CString m_str; // +0x24  destructible member (forces /GX)
+
+    void BuildDefaultInit0(); // 0x17e7c0  fader type 0
+    void BuildDefaultInit1(); // 0x17e840  fader type 1
+    void BuildDefaultInit2(); // 0x17e880  fader type 2
+    void BuildDefaultInit3(); // 0x17e8b0  fader type 3
+    void BuildDefaultInit4(); // 0x17e8e0  fader type 4
+    void BuildDefaultInit5(); // 0x17e910  fader type 5
+};
+
+// Animation frame source (the CFaderSine/Flat active src/dst box): +0x18 the frame
+// count, +0x1c the per-frame element count. Was FxSrc_17fe00 / a Fader.cpp-local view.
+SIZE_UNKNOWN(FaderSrc);
+struct FaderSrc {
+    char pad00[0x18];
+    i32 m_frameCount; // +0x18  frame count (w)
+    i32 m_1c;         // +0x1c  element count
+};
 
 // ===========================================================================
 // CFaderMesh (ctor 0x17e940, size 0x6c): embeds a nested polymorphic sub-object
@@ -99,12 +136,24 @@ public:
     void* operator new(u32) {
         return ::operator new(0x7d5c);
     }
-    i32 ApplyInit(CFaderInit* src); // 0x17fe00 (apply the built default init)
+    i32 ApplyInit(CFaderInit* src); // 0x17fe00 (apply the built default init; body in Fader.cpp)
     i32 CopyFrom(CFader* src);      // 0x17fe00 (same method; copy from the pInit descriptor)
 
-    char _pad38[0x4c - 0x38]; // +0x38..+0x4b
-    i32 m_4c;                 // +0x4c
-    i32 m_50;                 // +0x50
+    // ApplyInit latches the source boxes + geometry, range-checks the 0..100 intensity,
+    // computes the scaled magnitude (m_54) via the FP pipeline, then fills four parallel
+    // 2000-int arrays (three zeroed, one seeded with rand()%count) and scatters the last.
+    FaderSrc* m_38;           // +0x38  active source box (else CFader::m_timerA)
+    FaderSrc* m_3c;           // +0x3c  active alt/dst source box (else CFader::m_timerB)
+    i32 m_40;                 // +0x40  count/param (=1 when m_3c is null)
+    char _pad44[0x4c - 0x44]; // +0x44..+0x4b
+    i32 m_4c;                 // +0x4c  frame count (source +0x18)
+    i32 m_50;                 // +0x50  element count (source +0x1c)
+    i32 m_54;                 // +0x54  scaled magnitude (intensity * scale * frames)
+    i32 m_58;                 // +0x58  intensity (0..100)
+    i32 m_arr0[2000];         // +0x5c
+    i32 m_arr1[2000];         // +0x1f9c  seeded with rand()%count
+    i32 m_arr2[2000];         // +0x3edc
+    i32 m_arr3[2000];         // +0x5e1c  scattered, handed to ScatterSamples
 };
 
 // ===========================================================================
