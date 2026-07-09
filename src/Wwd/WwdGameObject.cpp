@@ -5,6 +5,7 @@
 #include <Win32.h>                     // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                     // IDirectDrawSurface::Unlock for the pixel plots
 #include <DDrawMgr/DDrawBlitParam.h>
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawGroupChild/Node - the broadcast child interface
 #include <rva.h>
 #include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
 #include <stdlib.h>               // abs() (cdq/xor/sub) for the Slot34/38 dirty-rect deltas
@@ -1174,6 +1175,9 @@ struct WwdObList {
     ~WwdObList() {
         ((CString*)this)->~CString();
     }
+    // CObList AddTail/RemoveAt (reloc-masked rel32 callees 0x1b5af6 / 0x1b5c2c).
+    POSITION AddTail(CObject* p);
+    void RemoveAt(POSITION pos);
     i32 m_head; // +0x1dc
 };
 
@@ -1272,14 +1276,17 @@ public:
     virtual void VtSlotFill0() OVERRIDE; // slot 5  0x15bcd0
     virtual void VtSlotFill2() OVERRIDE; // slot 7  0x15bf00
     virtual void VtSlotFill3() OVERRIDE; // slot 8  0x15bce0
-    virtual void Slot10_1665e0();        // slot 10 0x1665e0
-    virtual void Slot11_1668b0();        // slot 11 0x1668b0
-    virtual void Slot12_1668e0();        // slot 12 0x1668e0
-    virtual void Slot13_166910();        // slot 13 0x166910
-    virtual void Slot14_166950();        // slot 14 0x166950
-    virtual void Slot15_150a70();        // slot 15 0x150a70
-    WwdObList m_1dc;                     // +0x1dc  CObList
-    char _p1e0[0x1f8 - 0x1e0];
+    virtual void Slot10_1665e0();                     // slot 10 0x1665e0
+    virtual void Slot11_1668b0(i32 a1);               // slot 11 0x1668b0 (broadcast Slot2C)
+    virtual void Slot12_1668e0(i32 a1, i32 a2);       // slot 12 0x1668e0 (broadcast Slot30)
+    virtual void Slot13_166910(i32 a1, i32 a2, i32 a3); // slot 13 0x166910 (broadcast Vfunc34)
+    virtual void Slot14_166950(i32 a1, i32 a2, i32 a3); // slot 14 0x166950 (broadcast Vfunc38)
+    virtual void Slot15_150a70();                     // slot 15 0x150a70
+    i32 AddChild_1667e0(CDDrawGroupChild* child);     // 0x1667e0
+    i32 RemoveChild_166850(CDDrawGroupChild* child);  // 0x166850
+    WwdObList m_1dc;                                  // +0x1dc  CObList (vptr only in view)
+    CDDrawGroupNode* m_listHead;                      // +0x1e0  CObList m_pNodeHead (broadcast list)
+    char _p1e4[0x1f8 - 0x1e4];
     i32 m_1f8; // +0x1f8
 };
 
@@ -1489,6 +1496,90 @@ void CWwdGameObjectC::Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) 
         a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only
     }
 }
+
+// ---------------------------------------------------------------------------
+// CWwdGameObjectB broadcast slots 11-14 (0x1668b0/0x1668e0/0x166910/0x166950): walk
+// the +0x1e0 child list, dispatching each child's matching broadcast virtual with the
+// forwarded args. No post-loop dispatch. __thiscall.
+RVA(0x001668b0, 0x26)
+void CWwdGameObjectB::Slot11_1668b0(i32 a1) {
+    CDDrawGroupNode* n = m_listHead;
+    if (n != 0) {
+        do {
+            CDDrawGroupNode* cur = n;
+            n = n->m_next;
+            cur->m_obj->Slot2C(a1);
+        } while (n != 0);
+    }
+}
+RVA(0x001668e0, 0x2d)
+void CWwdGameObjectB::Slot12_1668e0(i32 a1, i32 a2) {
+    CDDrawGroupNode* n = m_listHead;
+    if (n != 0) {
+        do {
+            CDDrawGroupNode* cur = n;
+            n = n->m_next;
+            cur->m_obj->Slot30(a1, a2);
+        } while (n != 0);
+    }
+}
+RVA(0x00166910, 0x34)
+void CWwdGameObjectB::Slot13_166910(i32 a1, i32 a2, i32 a3) {
+    CDDrawGroupNode* n = m_listHead;
+    if (n != 0) {
+        do {
+            CDDrawGroupNode* cur = n;
+            n = n->m_next;
+            cur->m_obj->Vfunc34(a1, a2, a3);
+        } while (n != 0);
+    }
+}
+RVA(0x00166950, 0x34)
+void CWwdGameObjectB::Slot14_166950(i32 a1, i32 a2, i32 a3) {
+    CDDrawGroupNode* n = m_listHead;
+    if (n != 0) {
+        do {
+            CDDrawGroupNode* cur = n;
+            n = n->m_next;
+            cur->m_obj->Vfunc38(a1, a2, a3);
+        } while (n != 0);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x1667e0: link `child` into the broadcast child list (CObList::AddTail) and cache
+// its returned POSITION in child->m_78. Rejects a null child or a failed insert.
+// __thiscall, 1 arg (ret 4).
+RVA(0x001667e0, 0x2f)
+i32 CWwdGameObjectB::AddChild_1667e0(CDDrawGroupChild* child) {
+    if (child == 0) {
+        return 0;
+    }
+    POSITION pos = m_1dc.AddTail((CObject*)child);
+    if (pos == 0) {
+        return 0;
+    }
+    child->m_78 = (i32)pos;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x166850: unlink `child` from the broadcast child list at its cached POSITION
+// (CObList::RemoveAt). Rejects a null child or an unlinked one (m_78 == 0).
+// __thiscall, 1 arg (ret 4).
+RVA(0x00166850, 0x29)
+i32 CWwdGameObjectB::RemoveChild_166850(CDDrawGroupChild* child) {
+    if (child == 0) {
+        return 0;
+    }
+    POSITION pos = (POSITION)child->m_78;
+    if (pos == 0) {
+        return 0;
+    }
+    m_1dc.RemoveAt(pos);
+    return 1;
+}
+
 // Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:
 // A=0x166640 (0x1dc), B=0x1598d0 (0x1fc), C=0x159250 (0x190), F=0x159440 (0x18c).
 // E (Mid) is the shared base subobject, not directly allocated -> size unresolved.

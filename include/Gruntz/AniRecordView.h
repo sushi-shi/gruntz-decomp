@@ -54,6 +54,7 @@ struct CAniRecordView : public CObject {
     }
     void ResolveIndices_168d00(CAniMapOwner* owner, const char* str); // 0x168d00
     void* Alloc168ee0(i32 size, i32 flag);                            // 0x168ee0
+    void* Alloc168f20(i32 handle, i32 flag);                          // 0x168f20 (slot 9)
     void* Alloc168ea0(i32 size, i32 flag);                            // 0x168ea0
     void* Alloc168f60(i32 a, i32 size, i32 flag);                     // 0x168f60
     void FreeBuf_168fb0();                                            // 0x168fb0

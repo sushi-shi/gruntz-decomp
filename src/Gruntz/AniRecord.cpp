@@ -63,6 +63,7 @@ public:
     void* Alloc1_142fc0(i32 handle, i32 size);        // 0x142fc0
     void* Alloc2_142f40(i32 handle, i32 size);        // 0x142f40
     void* Alloc3_1430c0(i32 a, i32 handle, i32 size); // 0x1430c0
+    void* Create_143040(i32 handle, i32 size);        // 0x143040
     void Free_142f10(void* p);                        // 0x142f10
 };
 
@@ -269,6 +270,22 @@ void* CAniRecordView::Alloc168ea0(i32 size, i32 flag) {
 RVA(0x00168ee0, 0x40)
 void* CAniRecordView::Alloc168ee0(i32 size, i32 flag) {
     DirPal* buf = (DirPal*)m_owner->m_pool->Alloc1_142fc0(size, 0x44);
+    m_buf = (i32)buf;
+    if (buf == 0) {
+        return (void*)0;
+    }
+    if (flag & 0x1) {
+        m_08 |= 0x1;
+        buf->CaptureSystemPalette();
+    }
+    return (void*)1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x168f20 (slot 9): as 0x168ea0 but through the Create_143040 allocator. Frameless leaf.
+RVA(0x00168f20, 0x40)
+void* CAniRecordView::Alloc168f20(i32 handle, i32 flag) {
+    DirPal* buf = (DirPal*)m_owner->m_pool->Create_143040(handle, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;

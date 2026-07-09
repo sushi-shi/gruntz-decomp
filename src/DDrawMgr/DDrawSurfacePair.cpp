@@ -219,6 +219,40 @@ i32 CDDrawSurfacePair::Create(i32 w, i32 h, i32 bpp, i32 a3) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x163db0 (slot 11): adopt an existing (already-created) surface - cache its
+// geometry (w/h from the surface desc, bpp from its raw bit depth) + a {0,0,w,h}
+// src rect, mark active (m_status=0x63), latch the surface (not owned). Rejects a
+// null surface or non-positive geometry. __thiscall, 1 arg (ret 4).
+// @early-stop
+// ~77.7% - logic/CFG/offsets/store-order all byte-faithful. Residual is the mirror-
+// register wall: retail keeps the `src` pointer in edx (loaded for the null test,
+// reused as the geometry base, stored to m_surface LAST); MSVC on this identical
+// source pins src in eax and schedules the m_surface store early. Same values/order.
+// Not source-steerable (permuter 180-iter marginal). docs/patterns/zero-register-pinning.md.
+RVA(0x00163db0, 0x64)
+i32 CDDrawSurfacePair::InitFromSurface_163db0(CDDSurface* src) {
+    if (src != 0) {
+        i32 w = src->m_width;
+        i32 bpp = src->m_bitDepth;
+        i32 h = src->m_height;
+        if (w > 0 && h > 0) {
+            m_width = w;
+            m_srcRect[2] = w;
+            m_bpp = bpp;
+            m_height = h;
+            m_srcRect[0] = 0;
+            m_srcRect[1] = 0;
+            m_srcRect[3] = h;
+            m_status = 0x63;
+            m_surface = src;
+            m_ownsSurface = 0;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // 0x163e20: the surface teardown (vtable slot 7). When the held surface is
 // present AND owned (m_ownsSurface set), remove it from the parent manager's surface pool;
 // then zero m_surface. Always zero the width (m_width).

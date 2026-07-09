@@ -50,9 +50,12 @@ public:
     virtual void Vfunc34(i32 a1, i32 a2, i32 a3); // +0x34
     virtual void Vfunc38(i32 a1, i32 a2, i32 a3); // +0x38
 
-    // Data member used by ResetChildD8 (write to +0xd8).
-    // vtable pointer at +0x00 (4 B); pad from +0x04 to +0xd7.
-    char m_pad04[0xd8 - 4];
+    // vtable pointer at +0x00 (4 B); m_78 caches the child's CObList POSITION when it
+    // is linked into a broadcast list (CWwdGameObjectB Add/RemoveChild); m_d8 written
+    // by ResetChildD8.
+    char m_pad04[0x78 - 4];
+    i32 m_78; // +0x78  cached CObList POSITION
+    char m_pad7c[0xd8 - 0x7c];
     i32 m_d8; // +0xd8
 };
 
