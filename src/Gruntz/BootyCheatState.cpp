@@ -16,7 +16,7 @@
 // <Bute/ButeMgr.h> pulls <Mfc.h> (afx-first windows.h) - MUST precede any other
 // header that reaches windows.h, so it comes first.
 #include <Bute/ButeMgr.h>
-#include <Bute/SymTab.h>
+#include <Bute/SymParser.h> // canonical CSymParser (pulls CSymTab)
 #include <Io/MoviePlayer.h>
 
 #include <rva.h>
@@ -34,11 +34,7 @@ public:
     void Method_159ef0();
 }; // 0x159ef0
 
-// BcRegSet::Register @0x13c030 IS CSymParser::ResolvePath; minimal decl (completes the fwd decl).
-class CSymParser {
-public:
-    void* ResolvePath(const char* p);
-};
+// BcRegSet::Register @0x13c030 IS CSymParser::ResolvePath (canonical <Bute/SymParser.h>).
 
 // The global CButeMgr instance the cheat table reads from (0x6453d8).
 DATA(0x002453d8)

@@ -194,7 +194,7 @@ void CMulti::Teardown() {
         RezFree(p320);
         m_overlayActive = 0;
     }
-    ((CMultiMgr*)m_4)->m_110 = m_590;
+    Mgr()->m_110 = m_590;
     CPlayDtorBody();
 }
 
@@ -209,7 +209,7 @@ void CMulti::Teardown() {
 RVA(0x000b6580, 0x1eb)
 i32 CMulti::StartSession(i32 mode, i32 unused) {
     g_6455fc = 0;
-    i32* host = ((CMultiMgr*)m_4)->ResolveHost(m_hostIndex);
+    i32* host = Mgr()->ResolveHost(m_hostIndex);
     if (!host) {
         return 0;
     }
@@ -234,13 +234,13 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
-        CMultiMgrOptions* e = &((CMultiMgr*)m_4)->m_150[i];
+        CMultiMgrOptions* e = &Mgr()->m_150[i];
         if (e == 0) {
             return 0;
         }
         ((CBattlezMapConfig*)&e->m_inner)->FreeArrays();
         if (((CBattlezMapConfig*)&e->m_inner)
-                ->LoadConfig((CLevelInfo*)((CMultiMgr*)m_4), i, e->m_10)
+                ->LoadConfig((CLevelInfo*)Mgr(), i, e->m_10)
             == 0) {
             return 0;
         }
@@ -264,9 +264,9 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_5e4 = timeGetTime();
     m_curSlotId = m_session->m_10 - 1;
     m_574 = 0;
-    ((CFontConfig*)((CMultiMgr*)m_4)->m_5c)->FreeNodes();
+    ((CFontConfig*)Mgr()->m_5c)->FreeNodes();
     m_session->StartTick();
-    ((CMultiMgr*)m_4)->m_60->StartTitleHook();
+    Mgr()->m_60->StartTitleHook();
     return 1;
 }
 
@@ -286,8 +286,8 @@ RVA(0x000b67f0, 0x74)
 i32 CMulti::Connect(i32 mode) {
     m_connected = 0;
     m_534 = 0;
-    if (((CMultiMgr*)m_4)->ProbeSession(mode, 0, 0) == 0) {
-        ((CMultiMgr*)m_4)->ReportError(0x8005, 0x446);
+    if (Mgr()->ProbeSession(mode, 0, 0) == 0) {
+        Mgr()->ReportError(0x8005, 0x446);
         return 0;
     }
     m_pumpGuard = 1;
@@ -326,7 +326,7 @@ i32 CMulti::Tick() {
     i32 newId = m_session->m_10;
     if (m_curSlotId != newId) {
         m_curSlotId = newId;
-        CMultiLogicList* lst = ((CMultiMgr*)m_4)->m_6c;
+        CMultiLogicList* lst = Mgr()->m_6c;
         CMultiLogicNode* node;
         if (lst->m_28 == 0) {
             node = 0;
@@ -485,7 +485,7 @@ public:
 RVA(0x000b6b40, 0x29e)
 i32 CMulti::PumpA() {
     i32 ready = PumpAReady();
-    if (m_594 == 0 && ((CMultiMgr*)m_4)->m_c != 0 && ready == 0) {
+    if (m_594 == 0 && Mgr()->m_c != 0 && ready == 0) {
         PumpAReset();
         return 1;
     }
@@ -499,20 +499,20 @@ i32 CMulti::PumpA() {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
             if (g_64556c->m_14 != 0) {
-                ((CGruntzSoundZ*)((CMultiMgr*)m_4)->m_48)->PlayByName(name, 1);
+                ((CGruntzSoundZ*)Mgr()->m_48)->PlayByName(name, 1);
             } else {
-                CGruntzSoundInnerZ* p = ((CGruntzSoundZ*)((CMultiMgr*)m_4)->m_48)->FindBank(name);
+                CGruntzSoundInnerZ* p = ((CGruntzSoundZ*)Mgr()->m_48)->FindBank(name);
                 if (p) {
-                    ((CMultiMgr*)m_4)->m_48->m_1c = p;
+                    Mgr()->m_48->m_1c = p;
                 }
-                if (((CMultiMgr*)m_4)->m_48->m_1c) {
-                    ((CMultiMgr*)m_4)->m_48->m_1c->SetLoop(1);
+                if (Mgr()->m_48->m_1c) {
+                    Mgr()->m_48->m_1c->SetLoop(1);
                 }
             }
             m_ambientInitDone = 1;
         }
     }
-    ((CMultiMgr*)m_4)->m_6c->Step20b3(m_curSlotId % 128);
+    Mgr()->m_6c->Step20b3(m_curSlotId % 128);
     m_session->Step2437();
     g_64558c++;
     u32 t1 = g_645590 ? g_645590 : 0x32;
@@ -547,7 +547,7 @@ i32 CMulti::PumpA() {
     }
     ((McHost*)m_c)->m_8->CallSlot24();
     ((McHost*)m_c)->m_8->CallSlot40();
-    ((CMultiMgr*)m_4)->m_68->Step3017(g_645584);
+    Mgr()->m_68->Step3017(g_645584);
     ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->LoadDestructButtonSprite(g_645584);
     CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_c + 0x20);
     if (win) {
@@ -556,11 +556,11 @@ i32 CMulti::PumpA() {
         win->TickWinB(now);
     }
     ((CTileTriggerContainer*)m_beginMarker)->FilterList2((void*)g_645584);
-    ((CMultiMgr*)m_4)->m_70->UpdateDiagonals((i32)((CMultiMgr*)m_4));
+    Mgr()->m_70->UpdateDiagonals((i32)Mgr());
     if (ready == 0) {
         PumpAReset();
     }
-    ((CMultiMgr*)m_4)->Step2d33();
+    Mgr()->Step2d33();
     return 1;
 }
 
@@ -640,7 +640,7 @@ extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
     PBMgr* mgr = (PBMgr*)m_c;
-    if (m_594 == 0 && ((CMultiMgr*)m_4)->m_c != 0) {
+    if (m_594 == 0 && Mgr()->m_c != 0) {
         StepInputA();
         mgr->m_24->VisitVisible(mgr->m_4->m_14, (CGameObjChain*)mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
@@ -661,14 +661,14 @@ void CMulti::PumpB() {
         ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->Deactivate();
     }
     if (m_worldReady == 0) {
-        if (((PBSub68*)((CMultiMgr*)m_4)->m_68)->m_armed != 0) {
-            ((PBSub68*)((CMultiMgr*)m_4)->m_68)->Fire1398();
+        if (((PBSub68*)Mgr()->m_68)->m_armed != 0) {
+            ((PBSub68*)Mgr()->m_68)->Fire1398();
         } else {
             LoadScrollSpeedOptions();
         }
     }
     StepScroll();
-    ((CMultiMgr*)m_4)
+    Mgr()
         ->m_54->Retune(
             ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_84,
             ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_88
@@ -697,14 +697,14 @@ void CMulti::PumpB() {
             ov->Render14dd(mgr->m_4->m_14, &rc);
         }
     }
-    ((CFontConfig*)((CMultiMgr*)m_4)->m_5c)->Scroll(g_645584);
+    ((CFontConfig*)Mgr()->m_5c)->Scroll(g_645584);
     CDDrawSurfacePair* h = mgr->m_4->m_14;
     if (h == 0) {
         return;
     }
-    ((CChatBoxOwner*)m_hitTest)->LoadChatBoxSprite((i32)h);
+    m_hitTest->LoadChatBoxSprite((i32)h);
     DrawDebugStats();
-    ((PBSub68*)((CMultiMgr*)m_4)->m_68)->Reset2b85();
+    ((PBSub68*)Mgr()->m_68)->Reset2b85();
     StepGridWalk(g_645584);
     CopyRect(h);
     if (m_worldReady != 0) {
@@ -750,7 +750,7 @@ public:
 // correct, byte-match deferred to the final sweep.
 RVA(0x000b72c0, 0x30b)
 i32 CMulti::StartTitle() {
-    ((CMultiMgr*)m_4)->m_9c = 0;
+    Mgr()->m_9c = 0;
     m_588 = 1;
     if (!m_netGate) {
         return 0;
@@ -774,10 +774,10 @@ i32 CMulti::StartTitle() {
     m_2c = saved;
     while (g_ShowCursor(1) < 0) {
     }
-    if (!((CMultiMgr*)m_4)->m_c0) {
+    if (!Mgr()->m_c0) {
         return 0;
     }
-    CMultiLogicDesc* desc = ((CMultiMgr*)m_4)->m_c4;
+    CMultiLogicDesc* desc = Mgr()->m_c4;
     if (!desc) {
         return 0;
     }
@@ -848,12 +848,12 @@ CString& CMulti::ClearString5a0(CString& s) {
 RVA(0x000b7e30, 0x63)
 void CMulti::ReportVersionMsg(char* msg, i32 code) {
     char buf[512];
-    if (msg && *msg && ((CMultiMgr*)m_4)) {
+    if (msg && *msg && Mgr()) {
         if (code > 0) {
             sprintf(buf, "%s (%i)", msg, code);
-            ((CMultiMgr*)m_4)->LogLine(buf);
+            Mgr()->LogLine(buf);
         } else {
-            ((CMultiMgr*)m_4)->LogLine(msg);
+            Mgr()->LogLine(msg);
         }
     }
 }
@@ -866,7 +866,7 @@ void CMulti::ReportVersionMsg(char* msg, i32 code) {
 RVA(0x000b7f60, 0x52)
 void CMulti::ReportNetError(i32 level) {
     char buf[512];
-    if (((CMultiMgr*)m_4) && g_code != 0x118) {
+    if (Mgr() && g_code != 0x118) {
         sprintf(buf, "Error: %s - %i", g_szCode, g_code);
         ReportVersionMsg(buf, level);
     }
@@ -892,12 +892,12 @@ i32 CMulti::JoinSession() {
 // ===========================================================================
 RVA(0x000bc250, 0x55)
 i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
-    if (!((CMultiMgr*)m_4)) {
+    if (!Mgr()) {
         return 2;
     }
-    ((CMultiMgr*)m_4)->m_60->PreDialog();
-    i32 r = ((CMultiMgr*)m_4)->RunDialog(tmpl, handler, lparam);
-    MultiRestoreFocus(((CMultiMgr*)m_4)->m_4->m_4);
+    Mgr()->m_60->PreDialog();
+    i32 r = Mgr()->RunDialog(tmpl, handler, lparam);
+    MultiRestoreFocus(Mgr()->m_4->m_4);
     AckJoinFailure();
     return r;
 }

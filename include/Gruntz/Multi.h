@@ -313,6 +313,12 @@ public:
     CMultiSlotView* vtbl() {
         return *(CMultiSlotView**)this;
     }
+    // The owner back-ptr (CState::m_4, generic CGruntzMgr*) is the multiplayer
+    // manager for a CMulti state; the lobby methods need it as CMultiMgr*. One
+    // typed accessor centralizes the downcast (was ~28 scattered (CMultiMgr*)m_4).
+    CMultiMgr* Mgr() {
+        return (CMultiMgr*)m_4;
+    }
 
     // Teardown helper run first by the dtor (and standalone @0xb6110): drains the
     // lobby sub-objects and pushes the final stat flags.

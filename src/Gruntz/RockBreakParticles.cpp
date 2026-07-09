@@ -15,39 +15,18 @@
 // accessed by raw this+offset; strings are $SG literals reloc-masked against the
 // matched symbols. Only offsets / code bytes are load-bearing.
 #include <Gruntz/Brickz.h>
-class CSoundCueMgr {
-public:
-    i32 ConfigureItem(i32 a, i32 b, i32 c, i32 d);
-}; // 0x1360d0
+#include <Gruntz/SoundCueMgr.h> // canonical CSoundCueMgr (ConfigureItem @0x1360d0)
 #include <Gruntz/GruntzMgr.h>
 #include <Mfc.h>   // MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde)
 #include <Win32.h> // PtInRect / RECT / POINT
 
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/UserLogic.h>     // CGameObject (the created sprite)
+#include <Gruntz/SpriteFactory.h>            // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/UserLogic.h>                // CGameObject (the created sprite)
+#include <Gruntz/TileTriggerContainer.h>     // canonical CTileTriggerContainer (Find/DelFromList; non-virtual)
+#include <Gruntz/TileActionEvent.h>          // canonical CTileActionEvent (Process; non-virtual)
+#include <Gruntz/TileTriggerSwitchLogic.h>   // canonical CTileTriggerSwitchLogic (Scan/Find/BuildRockBreakInGameText; non-virtual)
+#include <Gruntz/TileGridCommand.h>          // canonical CTileGridCommand (ApplyMove @0x112590; non-virtual)
 #include <rva.h>
-class CTileTriggerContainer {
-public:
-    void* FindInLists12(i32 a, i32 b);
-    i32 DelFromList3(void* a);
-    i32 DelFromList1(void* a);
-};
-class CTileActionEvent {
-public:
-    i32 Process(i32 a);
-};
-class CTileTriggerSwitchLogic {
-public:
-    i32 ScanNeighborhood(i32 a, i32 b);
-    void* FindByField0C(i32 a);
-
-public:
-    void BuildRockBreakInGameText();
-};
-class CTileGridCommand {
-public:
-    i32 ApplyMove(i32 a);
-};
 
 // FUN_001b2cf5 __cdecl: format into a CString (the LoadBootyCheatState FormatStr).
 void FormatStr(CString* out, const char* fmt, ...);

@@ -83,9 +83,7 @@ struct CGruntzMgr {
     void SetSoundLevelState(i32 a);
     i32 FinishLevel(i32 a, i32 b);
 };
-struct CFontConfig {
-    void EndInput();
-};
+#include <Gruntz/FontConfig.h> // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
 struct CObj23d90 {
     void Blit(i32 a, i32 b, i16 c, i16 d, i32 e);
 };

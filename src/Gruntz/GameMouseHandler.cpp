@@ -153,9 +153,9 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
         }
         ((CSBI_RectOnly*)m_guts)->RefreshState();
         if (((SbiChild*)m_guts)->m_0 == 1) {
-            ((CChatBoxOwner*)m_hitTest)->Configure(2);
+            m_hitTest->Configure(2);
         } else {
-            ((CChatBoxOwner*)m_hitTest)->Configure(1);
+            m_hitTest->Configure(1);
         }
         return 1;
     }

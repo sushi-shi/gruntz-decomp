@@ -9,12 +9,8 @@
 // (reloc-masked); the singleton is a file-scope object.
 #include <Ints.h>
 #include <Gruntz/TokenMgr.h> // canonical CTokenMgr (Reset/Dispatch on g_tokenMgr)
+#include <Gruntz/AreaMgr.h> // canonical CAreaMgr (Reset @0x9a0b0 / Dispatch @0x99d40; non-virtual)
 #include <rva.h>
-class CAreaMgr {
-public:
-    void Reset();
-    i32 Dispatch(i32 a);
-}; // 0x9a0b0/0x99d40
 
 // g_0x6459b0 - the manager singleton (ecx for both calls). Reloc-masked.
 DATA(0x002459b0)

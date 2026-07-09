@@ -33,6 +33,7 @@
 // the TUs that dispatch on them); forward-declared here so the members can be typed.
 class CGruntzSoundZ;
 class CGruntzSoundInnerZ;
+class CChatBoxOwner; // +0x2e0 hit-test/region sink (real type; deref TUs include ChatBoxOwner.h)
 
 // The per-namespace load-notify sink passed to the GRUNTZ_* installers; its
 // OnLoaded() (0x4bc420 thiscall) posts a load-progress tick. Full def in CPlay.cpp.
@@ -562,13 +563,9 @@ public:
         char r578[0x614 - 0x578];
         i32 m_614; // +0x614  mode height (SetVideoMode)
     }* m_guts;     // +0x2dc guts/UI subsystem
-    // +0x2e0: a hit-test/region sink (HandleDragMove: m_hitTest->HitTest(x, y)).
-    struct HitTestSink {
-        // HitTest @? IS CChatBoxOwner::HitTest; cast at the call.
-        // StepZoom @? IS CChatBoxOwner::Configure; cast at the call.
-        char p0[0x10];
-        i32 m_10; // +0x10  active-overlay gate (OnKeyCommand forward)
-    }* m_hitTest;
+    // +0x2e0: a hit-test/region sink; the real CChatBoxOwner (HandleDragMove:
+    // m_hitTest->HitTest(x, y); m_10 = the +0x10 active-overlay gate).
+    CChatBoxOwner* m_hitTest;
     CPlaySerialChild* m_beginMarker; // +0x2e4  begin-marker sink (MarkerBegin; SyncState serialize)
     i32 m_dragSnapActive;            // +0x2e8  drag-snap-active latch (HandleDragMove snap path)
     i32 m_dragInProgress;            // +0x2ec  box-drag-in-progress latch (HandleDragMove)

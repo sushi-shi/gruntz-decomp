@@ -6,6 +6,7 @@
 #include <Win32.h>
 #include <ddraw.h> // IDirectDrawSurface (the counter window's GetDC/ReleaseDC source)
 #include <Dsndmgr/DirectSoundMgr.h> // real DirectSoundMgr (the WAVE-load looping gate)
+#include <Gruntz/ResLoadersViews.h> // shared CounterWnd/DrawHost counter-draw views
 #include <rva.h>
 #include <string.h>
 #include <stdio.h> // sprintf (0x11f890)
@@ -171,19 +172,11 @@ namespace ResLoaders {
         return Apply(a, pal, c);
     }
 
+    // CounterWnd_164380 / DrawHost_164380 view structs live in
+    // <Gruntz/ResLoadersViews.h> (shared so the 0x15a650 homer can use them).
     // The counter window's DC source at +0x08 is a real IDirectDrawSurface COM
-    // interface (<ddraw.h>): GetDC (slot 17, +0x44) and ReleaseDC (slot 26, +0x68)
-    // are the standard __stdcall COM slots (self pushed on the stack), so the calls
-    // fold to `push arg; push surface; call [vtbl+slot]` cast-free.
-    struct CounterWnd_164380 {
-        char m_pad0[8];
-        IDirectDrawSurface* m_8; // +0x08  DC-capable DirectDraw surface
-    };
-    struct DrawHost_164380 {
-        char m_pad0[0x2c];
-        CounterWnd_164380* m_2c; // +0x2c
-        void DrawCount(RECT* rc, i32 n);
-    };
+    // interface: GetDC (slot 17, +0x44) and ReleaseDC (slot 26, +0x68) are the
+    // standard __stdcall COM slots (self pushed on the stack).
     // __thiscall(rc, n): print n centred into rc using the counter window's DC.
     RVA(0x00164380, 0x98)
     void DrawHost_164380::DrawCount(RECT* rc, i32 n) {
@@ -204,11 +197,7 @@ namespace ResLoaders {
         w->m_8->ReleaseDC(hdc);
     }
 
-    struct DrawHost2_164420 {
-        char m_pad0[0x2c];
-        CounterWnd_164380* m_2c; // +0x2c
-        void DrawLabel(RECT* rc, char* text);
-    };
+    // DrawHost2_164420 view struct lives in <Gruntz/ResLoadersViews.h>.
     // __thiscall(rc, text): print text centred into rc using the counter window's DC.
     RVA(0x00164420, 0x79)
     void DrawHost2_164420::DrawLabel(RECT* rc, char* text) {

@@ -1,12 +1,5 @@
-#include <Mfc.h> // CObList/CString machinery (reloc-masked); /GX EH frame
-class CSymTab {
-public:
-    void* ResolvePath(const char* p);
-}; // 0x13bae0
-class CSymParser {
-public:
-    void* ResolvePath(const char* p);
-}; // 0x13c030
+#include <Mfc.h>            // CObList/CString machinery (reloc-masked); /GX EH frame
+#include <Bute/SymParser.h> // canonical CSymParser + CSymTab (ResolvePath @0x13c030/0x13bae0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 

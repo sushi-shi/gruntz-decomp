@@ -46,16 +46,8 @@ public:
     i32 IsPlaying();
     i32 CloneAndPlay(i32 a, i32 b, i32 c);
 }; // 0x1353f0/0x135660
-class CBattlezData {
-public:
-    i32 InBounds(i32 z);
-}; // 0xfcd70
-class CMoviePlayer {
-public:
-    ~CMoviePlayer();
-    i32 CloseSmacker(); // 0x17c9b0
-}; // 0x38fc0
-SIZE_UNKNOWN(CMoviePlayer);
+#include <Gruntz/BattlezData.h> // canonical CBattlezData (InBounds @0xfcd70; non-virtual)
+#include <Io/MoviePlayer.h>     // canonical CMoviePlayer (~/CloseSmacker; non-virtual, cast-neutral)
 #include <Gruntz/SoundCueMgr.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>

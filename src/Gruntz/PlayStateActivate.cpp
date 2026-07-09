@@ -12,11 +12,8 @@
 // Following CPlay's documented loader idiom (<Gruntz/Play.h>): the routine casts
 // `this` once to a typed activation facet (the +0xc resource root, +0x28/+0x30
 // bank sources, +0x2dc guts, the region gates), keeping the sub-object views local.
-#include <Mfc.h> // ShowCursor (afx-first)
-class CSymTab {
-public:
-    void* ResolvePath(const char* p);
-}; // 0x13bae0
+#include <Mfc.h>         // ShowCursor (afx-first)
+#include <Bute/SymTab.h> // canonical CSymTab (ResolvePath @0x13bae0)
 
 #include <Gruntz/Play.h>       // the real CPlay : CState (method owner)
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)

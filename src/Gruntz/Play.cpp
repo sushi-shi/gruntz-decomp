@@ -858,7 +858,7 @@ i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
     }
     if (key == 0x3d || key == 0x2b) {
         m_guts->Guts123f();
-        ((CChatBoxOwner*)m_hitTest)->Configure(m_guts->m_state == 1 ? 2 : 1);
+        m_hitTest->Configure(m_guts->m_state == 1 ? 2 : 1);
         return 1;
     }
     return 0;
@@ -1932,7 +1932,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
         }
 
         // m_worldReady == 0: the hit-test / world-post branch.
-        if (((CChatBoxOwner*)m_hitTest)->HitTest(x, y) != 0 || m_4w()->m_c != 0 || m_inGame != 0
+        if (m_hitTest->HitTest(x, y) != 0 || m_4w()->m_c != 0 || m_inGame != 0
             || m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
             // (a second, distinct re-arm landing pad in retail.)
             ScrollSink* s2 = m_scrollSink;

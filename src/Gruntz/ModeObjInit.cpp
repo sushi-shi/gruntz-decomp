@@ -38,12 +38,8 @@ public:
     i32 GetFlag74();
 };
 
-// Rec50::Init286f @0x286f IS CTimer::Init (header-less here); minimal local decl.
-SIZE_UNKNOWN(CTimer);
-class CTimer {
-public:
-    CTimer* Init();
-};
+// Rec50::Init286f @0x286f IS CTimer::Init (canonical <Gruntz/Timer.h>).
+#include <Gruntz/Timer.h>
 
 namespace modeinit {
 
