@@ -313,6 +313,14 @@ The mandate is the OPPOSITE of chasing %: **reduce all views to real `struct`/`c
   as a proper method of its real class and put every type it touches in a shared header with a real
   identity **before** you commit. Never move a view from stub into the main tree — that trades a free
   backlog view for a counted one. Both numbers must not go UP when you home; they only ratchet down.
+- **CAST RATCHET (the fake-view VECTOR).** `)this casts` and `)m_ casts` are ALSO ratcheted down now —
+  a `((SomeView*)this)->x` or `(CFoo*)m_54` cast is *how* a fake view propagates. When you home a
+  function, do NOT reach for these: give `this`'s class / the member its REAL engine type so the cast
+  is unnecessary. `)this` has **no exception** — casting `this` is always a mis-modelled class. `)m_`
+  has ONE allowed exception: a **string cast** `(char*)m_x` / `(const char*)m_x` on a byte-buffer member
+  (excluded from the ratchet, tracked under `(char*) casts`). Every other `)m_` cast must dissolve by
+  typing the member. If your homed function needs a cast to compile, the referent's class is wrong —
+  fix the type, don't cast.
 - When a fn dereferences a real class, `#include` that class's header and use the real type — never
   a local shadow. If the real class isn't modeled yet, define it **in `include/<Module>/`** (a real
   header other TUs share), not inline in your `.cpp`.

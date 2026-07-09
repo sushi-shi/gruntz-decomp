@@ -81,6 +81,19 @@ _VTSLOT = re.compile(
 )
 
 
+# ")m_ casts" (a C-style cast applied to a member, `(CFoo*)m_54`) is a VECTOR of fake-view
+# propagation - a caller casts an untyped/placeholder member to a fake view. RATCHETED down.
+# EXCLUDES the legit string casts (char*)/(const char*)m_x (a member byte-buffer): those are the
+# allowed exception and already counted under "(char*) casts". ")this casts" (casting `this` to a
+# fake view) is ALWAYS the vector - ratcheted with no exception. Killing these dissolves the views.
+_M_CAST = re.compile(r"\)m_[A-Za-z0-9_]")
+_STR_M_CAST = re.compile(r"\((?:const |unsigned |signed )*char ?\*\)m_[A-Za-z0-9_]")
+
+
+def _count_nonstring_m_casts(code: str) -> int:
+    return len(_M_CAST.findall(code)) - len(_STR_M_CAST.findall(code))
+
+
 # (label, matcher, cpp_only). matcher = compiled regex (findall count) OR a callable
 # code->int for structural counts. Occurrences summed over stripped code.
 METRICS = (
@@ -98,20 +111,23 @@ METRICS = (
     ("m_vtbl/m_vptr members", re.compile(r"\bm_v(?:tbl|ptr)\w*"), False),
     # --- casts ---
     (")this casts", re.compile(r"\)this\b"), False),
-    (")m_ casts", re.compile(r"\)m_[A-Za-z0-9_]"), False),
+    (")m_ casts", _count_nonstring_m_casts, False),  # string-cast-excluded; ratcheted
     ("(char*) casts", re.compile(r"\(char ?\*\)"), False),
     ("(const char*) casts", re.compile(r"\(const char ?\*\)"), False),
     ("void* m_ members", re.compile(r"\bvoid ?\* m_"), False),
 )
 
 
-# The stub backlog (src/Stub/ TUs) and their *Views.h view-scaffolding are reconstruction
-# machinery, NOT main-tree code - their fake-view/placeholder shells are EXPECTED, so they
-# don't count toward the VIEW metrics below. A view only counts once a matcher HOMES it into
-# a real main-tree TU, where it must become a proper class (the ratchet: the main-tree view
-# count can only go down). Non-view metrics (casts, m_<hex>, ...) still count everywhere.
+# The RATCHET set: metrics that only go DOWN (main-tree). The stub backlog (src/Stub/ TUs) and
+# their *Views.h view-scaffolding are reconstruction machinery, NOT main-tree code - their
+# fake-view/placeholder shells (and their casts) are EXPECTED, so they don't count here. A view
+# (or a `)this`/`)m_` cast that props a view) only counts once it lands in a real main-tree TU,
+# where it must resolve to a proper class. Includes the two cast VECTORS of fake-view propagation:
+# `)this casts` (always) and `)m_ casts` (string-cast-excluded). Other metrics (m_<hex>, string
+# casts, ...) still count everywhere and are tracked, not ratcheted.
 _VIEW_METRICS = {"placeholder classes", ".cpp-local views", "placeholder vtable slots",
-                 "*Vtbl structs", "->vtbl accesses", "g_*Vtbl globals", "m_vtbl/m_vptr members"}
+                 "*Vtbl structs", "->vtbl accesses", "g_*Vtbl globals", "m_vtbl/m_vptr members",
+                 ")this casts", ")m_ casts"}
 
 
 def _is_scaffolding(path) -> bool:
