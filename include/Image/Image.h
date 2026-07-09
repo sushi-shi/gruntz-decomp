@@ -106,7 +106,7 @@ public:
     u16 m_pal[256];               // +0x28  DIB_PAL_COLORS index table
     char m_pad228[0x428 - 0x228]; // +0x228
     HBITMAP m_dibSection;         // +0x428  HBITMAP from CreateDIBSection (the DIB section)
-    void* m_pixels;               // +0x42c  decoded pixel plane (CreateDIBSection's bits)
+    u8* m_pixels;                 // +0x42c  decoded pixel plane (CreateDIBSection's bits)
     i32* m_rowOffsets;            // +0x430  bottom-up per-row byte-offset table (operator new'd)
     i32 m_434;                    // +0x434  0 (write-only; role unproven, decoded by DecodeBlit)
     i32 m_width;                  // +0x438  image width (bytes/row of the source)

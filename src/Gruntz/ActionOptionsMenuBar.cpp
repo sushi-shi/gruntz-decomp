@@ -209,9 +209,6 @@ void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     }
 }
 
-// CActionOptionsMenuBar::Clear (0x000092e0) is now an inline member in the header.
-
-
 RVA(0x00009300, 0x14)
 i32 CActionOptionsMenuBar::Activate(i32 a) {
     if (m_active) {

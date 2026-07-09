@@ -140,6 +140,7 @@ public:
 };
 SIZE(CSBI_Image, 0x34);
 
+class CImageSet; // the icon-set the GRUNTOVEN item drives (SetAllTypes/SetAllFormats)
 class CSBI_ImageSet : public CSbConfigItem { // vtable 0x5eac4c, size 0x3c
 public:
     CSBI_ImageSet() {
@@ -147,7 +148,7 @@ public:
         m_8 = 4;
         m_34 = 0;
     }
-    i32 m_34; // +0x34
+    CImageSet* m_34; // +0x34  owned/resolved icon-set
     char _pad38[0x3c - 0x38];
 };
 SIZE(CSBI_ImageSet, 0x3c);
@@ -343,7 +344,8 @@ public:
     i32 LoadTabSprites();
     void BuildGameMenu(); // 0x101580 (the GAMETAB menu builder; called at the Game-tab tail)
 
-    char m_pad00[0xc];
+    i32 m_00; // +0x00  status-bar side/mode selector (Statz arrow x-span + arrow dir gate)
+    char m_pad04[0xc - 4];
     i32 m_code; // +0x0c  the Configure `code` arg (== BuildGameMenu m_code)
     i32 m_10;   // +0x10  base x
     i32 m_14;   // +0x14  base y

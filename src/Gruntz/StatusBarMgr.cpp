@@ -125,7 +125,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
     //   (retail: the saved m_code @[esp+0x10]).
     switch (m_10c) {
         case 2: // ---- Gruntz tab ----
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -156,7 +156,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32* bptr = &m_224;
                 i32 y = by + 0xfe;
                 for (i = 0; i < 5; i++) {
-                    it = (CSbConfigItem*)new CSBI_ImageSet;
+                    it = new CSBI_ImageSet;
                     r.left = bx + 0xe;
                     r.top = y - 0x32;
                     r.right = bx + 0x39;
@@ -185,14 +185,14 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (sel == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
-                    ((CImageSet*)((CSBI_ImageSet*)it)->m_34)->SetAllTypes(10);
-                    ((CImageSet*)((CSBI_ImageSet*)it)->m_34)->SetAllFormats(sel);
+                    ((CSBI_ImageSet*)it)->m_34->SetAllTypes(10);
+                    ((CSBI_ImageSet*)it)->m_34->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;
                     y += 0x36;
                 }
             }
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx + 0x4c;
             r.top = by + 0xc8;
             r.right = bx + 0x97;
@@ -214,7 +214,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_64.AddTail(it);
             m_218 = (i32)it;
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx + 0x1e;
             r.top = by + 0xc4;
             r.right = bx + 0x3d;
@@ -235,7 +235,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_64.AddTail(it);
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx + 0x68;
             r.top = by + 0x1cf;
             r.right = bx + 0x87;
@@ -256,7 +256,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_64.AddTail(it);
-            it = (CSbConfigItem*)new CSBI_WellGoo;
+            it = new CSBI_WellGoo;
             r.left = bx + 0x6e;
             r.top = by + 0xf8;
             r.right = bx + 0xef;
@@ -281,7 +281,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 3: // ---- Resource tab ----
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -302,7 +302,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 return 0;
             }
             m_80.AddTail(it);
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx;
             r.top = by + 0x135;
             r.right = bx + 0x9f;
@@ -324,7 +324,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_80.AddTail(it);
             m_364 = (i32)it;
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx;
             r.top = by + 0xfb;
             r.right = bx + 0x9f;
@@ -346,7 +346,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_80.AddTail(it);
             m_36c = (i32)it;
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx + 0x48;
             r.top = by + 0xd3;
             r.right = bx + 0x67;
@@ -370,7 +370,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_370 = (i32)it;
             // BELT: 3 unrolled CSBI_ImageSet belt segments (config-d from m_2c4/m_2dc/m_2f4,
             // cached to m_308/m_30c/m_310).
-            it = (CSbConfigItem*)new CSBI_ImageSet;
+            it = new CSBI_ImageSet;
             r.left = bx + 0x19;
             r.top = by + 0x11c;
             r.right = bx + 0x3c;
@@ -392,7 +392,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_80.AddTail(it);
             m_308 = (i32)it;
-            it = (CSbConfigItem*)new CSBI_ImageSet;
+            it = new CSBI_ImageSet;
             r.left = bx + 0x40;
             r.top = by + 0x11c;
             r.right = bx + 0x63;
@@ -414,7 +414,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_80.AddTail(it);
             m_30c = (i32)it;
-            it = (CSbConfigItem*)new CSBI_ImageSet;
+            it = new CSBI_ImageSet;
             r.left = bx + 0x68;
             r.top = by + 0x11c;
             r.right = bx + 0x8b;
@@ -438,7 +438,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_310 = (i32)it;
             // GREYCHIPZ: one CSBI_ImageSet whose rect is built from the cached
             // rect members m_514..m_520 + bx/by; config source m_4cc, id 0xdf.
-            it = (CSbConfigItem*)new CSBI_ImageSet;
+            it = new CSBI_ImageSet;
             r.left = m_514 + bx;
             r.top = m_518 + by;
             r.right = m_51c + bx;
@@ -464,7 +464,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 y = by + 0x155;
                 i32 c = 0xd7;
                 for (i = 0; i < 4; i++) {
-                    it = (CSbConfigItem*)new CSBI_ImageSet;
+                    it = new CSBI_ImageSet;
                     r.left = bx + 0x1d;
                     r.top = y - 0x17;
                     r.right = bx + 0x34;
@@ -486,7 +486,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     }
                     m_80.AddTail(it);
                     cachep[-4] = (i32)it;
-                    it = (CSbConfigItem*)new CSBI_ImageSet;
+                    it = new CSBI_ImageSet;
                     r.left = bx + 0x45;
                     r.top = y - 0x17;
                     r.right = bx + 0x5c;
@@ -508,7 +508,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     }
                     m_80.AddTail(it);
                     cachep[0] = (i32)it;
-                    it = (CSbConfigItem*)new CSBI_ImageSet;
+                    it = new CSBI_ImageSet;
                     r.left = bx + 0x6d;
                     r.top = y - 0x17;
                     r.right = bx + 0x84;
@@ -585,7 +585,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_80.AddTail(it);
             m_368 = (i32)it;
             // Conveyor top (CSBI_ImageSetAni via ConfigureEx).
-            it = (CSbConfigItem*)new CSBI_ImageSetAni;
+            it = new CSBI_ImageSetAni;
             r.left = bx;
             r.top = by + 0x1bf;
             r.right = bx + 0x9f;
@@ -610,7 +610,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_80.AddTail(it);
             // Machine chip well (CSBI_ImageSet, rect from cached m_504..m_510, cache m_500).
-            it = (CSbConfigItem*)new CSBI_ImageSet;
+            it = new CSBI_ImageSet;
             r.left = m_504 + bx;
             r.top = m_508 + by;
             r.right = m_50c + bx;
@@ -625,7 +625,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_500 = (i32)it;
             it->m_4 = 0;
             // Conveyor bottom (CSBI_ImageSetAni via ConfigureEx).
-            it = (CSbConfigItem*)new CSBI_ImageSetAni;
+            it = new CSBI_ImageSetAni;
             r.left = bx;
             r.top = by + 0x1c7;
             r.right = bx + 0x9f;
@@ -652,7 +652,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 4: // ---- Multiplayer tab ----
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -674,7 +674,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_9c.AddTail(it);
             // 4 player HEAD slots (CSBI_WarlordHead, y steps 0x43; cached m_61c..m_628).
-            it = (CSbConfigItem*)new CSBI_WarlordHead;
+            it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0xcf;
             r.right = bx + 0x8e;
@@ -696,7 +696,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_9c.AddTail(it);
             m_61c = (i32)it;
-            it = (CSbConfigItem*)new CSBI_WarlordHead;
+            it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x112;
             r.right = bx + 0x8e;
@@ -718,7 +718,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_9c.AddTail(it);
             m_620 = (i32)it;
-            it = (CSbConfigItem*)new CSBI_WarlordHead;
+            it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x155;
             r.right = bx + 0x8e;
@@ -740,7 +740,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_9c.AddTail(it);
             m_624 = (i32)it;
-            it = (CSbConfigItem*)new CSBI_WarlordHead;
+            it = new CSBI_WarlordHead;
             r.left = bx + 0x53;
             r.top = by + 0x197;
             r.right = bx + 0x8e;
@@ -826,7 +826,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 1: // ---- Statz tab ----
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -853,7 +853,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // mode-gated on *this; the id p = 0x13b + k. arrows cache to m_18c[k].
             {
                 i32 aOff, cOff;
-                if (*(i32*)this == 1) {
+                if (m_00 == 1) {
                     aOff = 0x7d;
                     cOff = 0x95;
                 } else {
@@ -866,7 +866,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32* p = &m_114;
                 for (i = 0; i < 15; i++) {
                     i32 id = 0x13b + i;
-                    it = (CSbConfigItem*)new CSBI_StatzTabArrow;
+                    it = new CSBI_StatzTabArrow;
                     r.left = arrowL;
                     r.top = y - 0x11;
                     r.right = arrowR;
@@ -892,9 +892,9 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_48.AddTail(it);
                     p[0x1e] = (i32)it;
                     if (p[0] != 0) {
-                        it->SetArrowMode(*(i32*)this, 0);
+                        it->SetArrowMode(m_00, 0);
                     } else {
-                        it->SetDirection(*(i32*)this, 0);
+                        it->SetDirection(m_00, 0);
                     }
                     it = (CSbConfigItem*)new CSBI_StatzTabGruntBar;
                     r.left = bx + 0x28;
@@ -925,7 +925,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             return 1;
 
         case 5: // ---- Game tab ----
-            it = (CSbConfigItem*)new CSBI_Image;
+            it = new CSBI_Image;
             r.left = bx + 0x18;
             r.top = by + 0xaf;
             r.right = bx + 0x70;
@@ -947,7 +947,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_b8.AddTail(it);
             // WARPSTONE: item 0 unconditional, items 1..4 each gated on m_cmdGrid->Probe(i).
-            it = (CSbConfigItem*)new CSBI_ImageSet;
+            it = new CSBI_ImageSet;
             r.left = bx;
             r.top = by;
             r.right = bx + 0x9f;
@@ -969,7 +969,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_b8.AddTail(it);
             if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->ByteTableHas(1)) {
-                it = (CSbConfigItem*)new CSBI_ImageSet;
+                it = new CSBI_ImageSet;
                 r.left = bx + 0x17;
                 r.top = by + 0xe;
                 r.right = bx + 0x52;
@@ -991,7 +991,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 }
                 m_b8.AddTail(it);
                 if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->ByteTableHas(2)) {
-                    it = (CSbConfigItem*)new CSBI_ImageSet;
+                    it = new CSBI_ImageSet;
                     r.left = bx + 0x4c;
                     r.top = by + 0xf;
                     r.right = bx + 0x87;
@@ -1013,7 +1013,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     }
                     m_b8.AddTail(it);
                     if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->ByteTableHas(3)) {
-                        it = (CSbConfigItem*)new CSBI_ImageSet;
+                        it = new CSBI_ImageSet;
                         r.left = bx + 0x1b;
                         r.top = by + 0x3b;
                         r.right = bx + 0x52;
@@ -1035,7 +1035,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         }
                         m_b8.AddTail(it);
                         if (((CTriggerMgr*)g_gameReg->m_cmdGrid)->ByteTableHas(4)) {
-                            it = (CSbConfigItem*)new CSBI_ImageSet;
+                            it = new CSBI_ImageSet;
                             r.left = bx + 0x4a;
                             r.top = by + 0x35;
                             r.right = bx + 0x89;

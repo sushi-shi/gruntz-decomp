@@ -69,5 +69,3 @@ i32 CActionArea::ApplyColor(i32 owner) {
     m_38->m_stateFlags &= ~1;
     return 1;
 }
-
-#include <rva.h>

@@ -142,10 +142,10 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, vo
             m_pal[i] = (u16)i;
         }
         m_dibSection =
-            CreateDIBSection((HDC)a2, (BITMAPINFO*)&m_bih, DIB_PAL_COLORS, &m_pixels, 0, 0);
+            CreateDIBSection((HDC)a2, (BITMAPINFO*)&m_bih, DIB_PAL_COLORS, (void**)&m_pixels, 0, 0);
     } else {
         m_dibSection =
-            CreateDIBSection((HDC)a2, (BITMAPINFO*)&m_bih, DIB_RGB_COLORS, &m_pixels, 0, 0);
+            CreateDIBSection((HDC)a2, (BITMAPINFO*)&m_bih, DIB_RGB_COLORS, (void**)&m_pixels, 0, 0);
     }
     if (!m_dibSection) {
         return 0;
@@ -179,7 +179,7 @@ i32 CRezImage::DecodeBlit(void* src, void* a2, i32 width, i32 height, i32 bitcou
     }
     char* s = (char*)src;
     for (i32 row = 0; row < m_height; row++) {
-        memcpy((char*)m_pixels + m_rowOffsets[row], s, m_width);
+        memcpy(m_pixels + m_rowOffsets[row], s, m_width);
         s += m_width;
     }
     return 1;
@@ -392,7 +392,7 @@ i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
     u8* scan = (u8*)operator new(scanBytes);
 
     for (i32 y = 0; y < height; y++) {
-        u8* dst = (u8*)m_pixels + m_rowOffsets[y];
+        u8* dst = m_pixels + m_rowOffsets[y];
         i32 n = width * (i8)hdr[0x41];
         while (n > 0) {
             u8 c = *src++;
@@ -535,7 +535,7 @@ i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
 
     if (flags & PID_COMPRESSION) {
         m_transparent = 1;
-        u8* dstRow = (u8*)m_pixels + m_rowOffsets[0];
+        u8* dstRow = m_pixels + m_rowOffsets[0];
         i32 x = 0;
         i32 y = 0;
         i32 i = 0;
@@ -558,12 +558,12 @@ i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
                 if (y >= m_height) {
                     break;
                 }
-                dstRow = (u8*)m_pixels + m_rowOffsets[y];
+                dstRow = m_pixels + m_rowOffsets[y];
             }
         }
     } else {
         for (i32 y = 0; (u32)y < (u32)height; y++) {
-            u8* dst = (u8*)m_pixels + m_rowOffsets[y];
+            u8* dst = m_pixels + m_rowOffsets[y];
             i32 n = width;
             while (n > 0) {
                 u8 c = *src++;
