@@ -66,115 +66,15 @@ namespace ApiMisc {
         return this;
     }
 
-    // __cdecl: activate + focus the same window.
-    RVA(0x00118930, 0x15)
-    void winapi_118930_SetActiveWindow_SetFocus(HWND hWnd) {
-        SetActiveWindow(hWnd);
-        SetFocus(hWnd);
-    }
+    // (0x118930/0x118960/0x118990 SetActiveWindow_SetFocus / Set/ClearTopmostExStyle
+    // re-homed to Utils::WinAPI in src/Utils/WinAPI.cpp.)
 
-    // __cdecl(hWnd): OR WS_EX_TOPMOST into the window's extended style (when nonzero).
-    RVA(0x00118960, 0x20)
-    void winapi_118960_SetTopmostExStyle(HWND hWnd) {
-        LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
-        if (s) {
-            SetWindowLongA(hWnd, GWL_EXSTYLE, s | WS_EX_TOPMOST);
-        }
-    }
+    // (0x1192d0 winapi_1192d0_IsIconic re-homed to BlockScreenSaver in
+    // src/Utils/TimeSplit.cpp (RVA-adjacent free helper).)
 
-    // __cdecl(hWnd): clear WS_EX_TOPMOST from the window's extended style (when nonzero).
-    RVA(0x00118990, 0x20)
-    void winapi_118990_ClearTopmostExStyle(HWND hWnd) {
-        LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
-        if (s) {
-            SetWindowLongA(hWnd, GWL_EXSTYLE, s & ~WS_EX_TOPMOST);
-        }
-    }
-
-    // __cdecl(hWnd, msg, wParam): block screen-saver / monitor-power while not iconic.
-    RVA(0x001192d0, 0x39)
-    i32 winapi_1192d0_IsIconic(HWND hWnd, i32 msg, i32 wParam) {
-        if (msg == 0x112) {
-            i32 sc = wParam & 0xfff0;
-            if (sc == 0xf140 || sc == 0xf170) {
-                if (!IsIconic(hWnd)) {
-                    return 1;
-                }
-            }
-        }
-        return 0;
-    }
-
-    // __thiscall(timestamp): throttle to >0x64 ms since the last tick, query the
-    // source (m_8), wrap localC against m_c into the window, then run the work pass.
-    struct Throttle_137e30 {
-        char m_pad0[8];
-        DirectSoundMgr* m_8; // +0x08  DS play-cursor timing source
-        i32 m_c;             // +0x0c
-        i32 m_10;            // +0x10
-        i32 m_14;            // +0x14
-        char m_pad18[0x1c - 0x18];
-        i32 m_1c; // +0x1c
-        char m_pad20[0x28 - 0x20];
-        i32 m_28; // +0x28
-        i32 Tick(i32 timestamp);
-        i32 Work(i32 a, i32 b); // RVA 0x137f30
-    };
-    RVA(0x00137e30, 0x98)
-    i32 Throttle_137e30::Tick(i32 timestamp) {
-        if (!m_1c) {
-            return 1;
-        }
-        i32 t = (timestamp == -1) ? (i32)timeGetTime() : timestamp;
-        if ((u32)t <= (u32)(m_28 + 0x64)) {
-            return 1;
-        }
-        m_28 = t;
-        u32 hi, lo;
-        if (!m_8->GetCurrentPosition(&hi, &lo)) {
-            return 0;
-        }
-        i32 v;
-        if ((u32)hi >= (u32)m_c) {
-            if (hi == m_c) {
-                v = m_10;
-            } else {
-                v = hi - m_c;
-            }
-        } else {
-            v = m_10 + hi - m_c;
-        }
-        if ((u32)v < (u32)m_14) {
-            return 1;
-        }
-        return Work(m_c, v) != 0;
-    }
-
-    // __thiscall(timestamp) host: timestamp -1 means "now"; prep the device, then
-    // run the work pass (RVA 0x137f30) over m_c/m_10. Returns whether it ran.
-    struct Timer_1380d0 {
-        char m_pad0[0x8];
-        DirectSoundMgr* m_8; // +0x08  DS buffer (SetCurrentPosition(0))
-        i32 m_c;             // +0x0c
-        i32 m_10;            // +0x10
-        char m_pad14[0x20 - 0x14];
-        i32 m_20; // +0x20
-        char m_pad24[0x28 - 0x24];
-        i32 m_28; // +0x28
-        i32 Tick(i32 timestamp);
-        i32 Work(i32 a, i32 b); // RVA 0x137f30
-    };
-    RVA(0x001380d0, 0x4e)
-    i32 Timer_1380d0::Tick(i32 timestamp) {
-        i32 t = (timestamp == -1) ? (i32)timeGetTime() : timestamp;
-        m_28 = t;
-        m_c = 0;
-        if (!m_8->SetCurrentPosition(0)) {
-            return 0;
-        }
-        m_20 = 0;
-        return Work(m_c, m_10) != 0;
-    }
+    // (0x137e30 Throttle_137e30::Tick + 0x1380d0 Timer_1380d0::Tick re-homed to
+    // StreamFeeder::Tick / StreamFeeder::TickPump in src/Dsndmgr/StreamFeeder.cpp -
+    // their placeholder fields were a documented 1:1 map onto StreamFeeder.)
 
     // __thiscall(RECT*): cache the bounds rect + derived size/center, then recompute.
     struct GeoHost_161e80 {

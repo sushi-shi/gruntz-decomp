@@ -265,3 +265,55 @@ i32 StreamFeeder::FillBuffer(u32 writePos, u32 bytes) {
     m_buffer->Unlock(p1, n1, p2, n2);
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::Tick (0x137e30, __thiscall). The per-frame throttled pump
+// SoundDevice::TickSubManagers drives: gate on m_drained, 100ms-throttle via
+// m_lastTickMs, read the buffer play position and FillBuffer-refill the consumed
+// span. (Re-homed from ApiMiscHelpers Throttle_137e30.)
+RVA(0x00137e30, 0x98)
+i32 StreamFeeder::Tick(i32 timestamp) {
+    if (!m_drained) {
+        return 1;
+    }
+    i32 t = (timestamp == -1) ? (i32)timeGetTime() : timestamp;
+    if ((u32)t <= (u32)(m_lastTickMs + 0x64)) {
+        return 1;
+    }
+    m_lastTickMs = t;
+    u32 hi, lo;
+    if (!m_buffer->GetCurrentPosition(&hi, &lo)) {
+        return 0;
+    }
+    i32 v;
+    if ((u32)hi >= (u32)m_bufferCursor) {
+        if (hi == m_bufferCursor) {
+            v = m_bufferLength;
+        } else {
+            v = hi - m_bufferCursor;
+        }
+    } else {
+        v = m_bufferLength + hi - m_bufferCursor;
+    }
+    if ((u32)v < (u32)m_format) {
+        return 1;
+    }
+    return FillBuffer(m_bufferCursor, v) != 0;
+}
+
+// ---------------------------------------------------------------------------
+// StreamFeeder::TickPump (0x1380d0, __thiscall). The reset-and-reprime pump
+// (TickSubManagers fires it with -1 on idle+stop): zero the read cursor, rewind
+// the buffer, and FillBuffer the whole window. (Re-homed from ApiMiscHelpers
+// Timer_1380d0.)
+RVA(0x001380d0, 0x4e)
+i32 StreamFeeder::TickPump(i32 now) {
+    i32 t = (now == -1) ? (i32)timeGetTime() : now;
+    m_lastTickMs = t;
+    m_bufferCursor = 0;
+    if (!m_buffer->SetCurrentPosition(0)) {
+        return 0;
+    }
+    m_pendingBytes = 0;
+    return FillBuffer(m_bufferCursor, m_bufferLength) != 0;
+}

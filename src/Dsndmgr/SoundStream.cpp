@@ -55,6 +55,19 @@ SoundStream::SoundStream() {
 RVA(0x00137710, 0xb)
 SoundStream::~SoundStream() {}
 
+// PlaySoundDefaulted (0x137720, __stdcall): thin wrapper defaulting the 3rd flag arg
+// to 0 over the shared play helper (0x136550). (Re-homed from ApiCallers; RVA-adjacent
+// free helper in this .obj.)
+// @early-stop
+// regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
+// body byte-exact except retail loads `a` into edx while cl picks ecx after eax is
+// taken by `b` - a single free-list register pick, not source-steerable (~98.6%).
+i32 __stdcall PlaySound3_136550(i32 a, i32 b, i32 flag); // RVA 0x136550
+RVA(0x00137720, 0x14)
+i32 __stdcall PlaySoundDefaulted(i32 a, i32 b) {
+    return PlaySound3_136550(a, b, 0);
+}
+
 // ---------------------------------------------------------------------------
 // SoundStream::CreateStreamBuffer (__thiscall, /GX EH frame). Validate
 // the PCM WAVEFORMATEX, build a DSBUFFERDESC and ask the inherited IDirectSound

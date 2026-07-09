@@ -361,6 +361,17 @@ i32 CAttract::Vslot07() {
 // CAttract::Update (0x0008cd40) is now an inline member in the header.
 
 
+// CAttract::Vslot0c (slot 12 / +0x30, 0x14720): keydown handler - on ESC/SPACE/ENTER
+// post the exit WM_COMMAND (0x8023) to the top-level HWND. (Re-homed from ApiCallers
+// CmdHost_014720.)
+RVA(0x00014720, 0x37)
+i32 CAttract::Vslot0c(i32 code, i32 unused) {
+    if (code == 0x20 || code == 0xd || code == 0x1b) {
+        g_pPostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+    }
+    return 1;
+}
+
 // CAttract::Vslot0e(a, b, c) (slot 14 / +0x38, 0x14770): post the exit WM_COMMAND
 // (0x8023) to the top-level HWND (m_4->m_gameWnd->m_hwnd) unconditionally, then return 1.
 RVA(0x00014770, 0x24)

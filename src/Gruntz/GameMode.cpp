@@ -1171,6 +1171,21 @@ i32 CCreditsState::InputVirtual() {
     return 1;
 }
 
+// CCreditsState::Vslot0c (slot 12 / +0x30, 0x39440): keydown handler - on ESC/SPACE/
+// ENTER post a WM_COMMAND to the top-level window (0x8023 in active-selection mode
+// m_24==5, else 0x8027). (Re-homed from ApiCallers CmdHost_039440.)
+RVA(0x00039440, 0x46)
+i32 CCreditsState::Vslot0c(i32 code, i32 unused) {
+    if (code == 0x1b || code == 0x20 || code == 0xd) {
+        if (m_24 == 5) {
+            PostMessageA(((CGMOwner*)m_4)->m_4->m_4, 0x111, 0x8023, 0);
+        } else {
+            PostMessageA(((CGMOwner*)m_4)->m_4->m_4, 0x111, 0x8027, 0);
+        }
+    }
+    return 1;
+}
+
 // InitAttractTitle (0x39570): the credits/attract title (re)init - the twin of
 // CAttract::LoadTitleConfig (CAttract.cpp). If the title view is already live (m_videoPlaying),
 // just run the menu-page frame sub-steps (0x158dc0 / TransTitle / 0x158d50 + the

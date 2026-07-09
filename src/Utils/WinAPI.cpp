@@ -17,6 +17,33 @@ namespace Utils {
         char GetGruntzDriveLetter();
 
         // -------------------------------------------------------------------------
+        // SetActiveAndFocus (0x118930): activate + focus the same window.
+        // (Re-homed from ApiMiscHelpers.)
+        RVA(0x00118930, 0x15)
+        void SetActiveAndFocus(HWND hWnd) {
+            SetActiveWindow(hWnd);
+            SetFocus(hWnd);
+        }
+
+        // SetTopmostStyle (0x118960): OR WS_EX_TOPMOST into the window's extended style.
+        RVA(0x00118960, 0x20)
+        void SetTopmostStyle(HWND hWnd) {
+            LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
+            if (s) {
+                SetWindowLongA(hWnd, GWL_EXSTYLE, s | WS_EX_TOPMOST);
+            }
+        }
+
+        // ClearTopmostStyle (0x118990): clear WS_EX_TOPMOST from the extended style.
+        RVA(0x00118990, 0x20)
+        void ClearTopmostStyle(HWND hWnd) {
+            LONG s = GetWindowLongA(hWnd, GWL_EXSTYLE);
+            if (s) {
+                SetWindowLongA(hWnd, GWL_EXSTYLE, s & ~WS_EX_TOPMOST);
+            }
+        }
+
+        // -------------------------------------------------------------------------
         // FileExists
         // Tests a path via OpenFile(OF_EXIST). Returns false for a null/empty path.
         RVA(0x001189c0, 0x45)

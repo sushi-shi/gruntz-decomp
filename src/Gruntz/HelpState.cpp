@@ -63,4 +63,14 @@ i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
+// CHelpState::Vslot0c (0x953f0, slot 12) - keydown handler: on ESC/SPACE/ENTER post a
+// WM_COMMAND 0x8036 to the top-level window. (Re-homed from ApiCallers CmdHost_0953f0.)
+RVA(0x000953f0, 0x37)
+i32 CHelpState::Vslot0c(i32 code, i32 unused) {
+    if (code == 0x1b || code == 0x20 || code == 0xd) {
+        PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
+    }
+    return 1;
+}
+
 SIZE_UNKNOWN(CHelpState);

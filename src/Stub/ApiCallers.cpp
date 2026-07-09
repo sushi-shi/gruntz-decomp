@@ -170,23 +170,7 @@ namespace ApiCallerStubs {
     // (0xcd00/0xcd70/0x19f50/0x15cbe0 RNG helpers re-homed to Rng in
     // src/Gruntz/Random.cpp.)
 
-    // __thiscall(code, _): on ESC/SPACE/ENTER post a 0x8023 command. Returns 1.
-    struct CmdChain_014720 {
-        i32 m_0;
-        CmdChain_014720* m_4; // +0x04
-    };
-    struct CmdHost_014720 {
-        i32 m_0;
-        CmdChain_014720* m_4; // +0x04
-        i32 Key(i32 code, i32 unused);
-    };
-    RVA(0x00014720, 0x37)
-    i32 CmdHost_014720::Key(i32 code, i32 unused) {
-        if (code == 0x20 || code == 0xd || code == 0x1b) {
-            PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8023, 0);
-        }
-        return 1;
-    }
+    // (0x14720 CmdHost_014720::Key re-homed to CAttract::Vslot0c in Attract.cpp.)
 
     // @confidence: low
     // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
@@ -269,30 +253,7 @@ namespace ApiCallerStubs {
     // (0x38220 winapi_038220 -> GetSelItemData in src/Gruntz/MultiStartDlgRoster.cpp,
     // a CMultiStartDlg roster listbox helper.)
 
-    // __thiscall(code, _): on ESC/SPACE/ENTER post a 0x8023/0x8027 command (by m_24
-    // mode). Always returns 1.
-    struct CmdWnd_039440 {
-        i32 m_0;
-        CmdWnd_039440* m_4; // +0x04
-    };
-    struct CmdHost_039440 {
-        i32 m_0;
-        CmdWnd_039440* m_4; // +0x04
-        char m_pad8[0x24 - 8];
-        i32 m_24; // +0x24
-        i32 Key(i32 code, i32 unused);
-    };
-    RVA(0x00039440, 0x46)
-    i32 CmdHost_039440::Key(i32 code, i32 unused) {
-        if (code == 0x1b || code == 0x20 || code == 0xd) {
-            if (m_24 == 5) {
-                PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8023, 0);
-            } else {
-                PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8027, 0);
-            }
-        }
-        return 1;
-    }
+    // (0x39440 CmdHost_039440::Key re-homed to CCreditsState::Vslot0c in GameMode.cpp.)
 
     // __thiscall(x, _, y): if (x,y) is in the 0..0x64 box, run the click handler
     // (0x3d41); otherwise post a 0x111 command (0x8023/0x8027 by mode). Always ret 1.
@@ -595,23 +556,7 @@ namespace ApiCallerStubs {
     // (0x94bc0 VrHost::Validate re-homed to src/Gruntz/TerrainTileLoader.cpp
     // (ValidateHost) - the window-validate poll CTerrainTileLoader::Load drives.)
 
-    // __thiscall(int code, int): on ESC/SPACE/ENTER post a 0x111 command. Returns 1.
-    struct WndChain_0953f0 {
-        i32 m_0;
-        WndChain_0953f0* m_4; // +0x04
-    };
-    struct CmdHost_0953f0 {
-        i32 m_0;
-        WndChain_0953f0* m_4; // +0x04
-        i32 Key(i32 code, i32 unused);
-    };
-    RVA(0x000953f0, 0x37)
-    i32 CmdHost_0953f0::Key(i32 code, i32 unused) {
-        if (code == 0x1b || code == 0x20 || code == 0xd) {
-            PostMessageA((HWND)(m_4->m_4->m_4), 0x111, 0x8036, 0);
-        }
-        return 1;
-    }
+    // (0x953f0 CmdHost_0953f0::Key re-homed to CHelpState::Vslot0c in HelpState.cpp.)
 
     DATA(0x00245ca4)
     extern i32 g_dlg645ca4; // DAT_00645ca4 (the active dialog HWND)
@@ -979,17 +924,8 @@ namespace ApiCallerStubs {
     // (0x136a30 WaveHost::LoadWave + 0x136ce0 WaveHost2::LoadWave re-homed to
     // ResLoaders in src/Gruntz/ResourceLoaders.cpp.)
 
-    i32 __stdcall PlaySound3_136550(i32 a, i32 b, i32 flag); // RVA 0x136550
-    // __stdcall(a, b): default the 3rd arg to 0.
-    // @early-stop
-    // regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
-    // body byte-exact except retail loads `a` into edx (`mov edx,[esp+4]`) while our
-    // cl picks ecx after eax is taken by `b` - a single free-list register pick, not
-    // source-steerable (~98.6%).
-    RVA(0x00137720, 0x14)
-    i32 __stdcall directx_wrapper_caller_137720_DSOUND_1_DirectSoundCreate(i32 a, i32 b) {
-        return PlaySound3_136550(a, b, 0);
-    }
+    // (0x137720 DSOUND play wrapper re-homed to PlaySoundDefaulted in
+    // src/Dsndmgr/SoundStream.cpp (RVA-adjacent free helper in that .obj).)
 
     // (0x137e30 Throttle::Tick + 0x1380d0 Timer::Tick re-homed to ApiMisc in
     // src/Gruntz/ApiMiscHelpers.cpp.)
