@@ -25,10 +25,7 @@
 #include <Globals.h>
 #include <Gruntz/ResMgr.h> // canonical CImageRegistry (the +0x10 image registrar)
 class DirNode;
-class CDDrawSubMgrLeafScan {
-public:
-    i32 ScanTree_157ee0(DirNode* n, const char* a, const char* b);
-}; // 0x157ee0
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 class CDDrawSubMgrPages {
 public:
     void Method_159ef0();

@@ -22,12 +22,13 @@
 // powered-up recheck DCE (same artifact as ChargeStep/UpdateArrival - dead because the
 // switch runs only with m_220==0), (3) the shared-return tail-merge cl won't permute.
 // Final-sweep candidate.
+#include <Mfc.h> // afx-first: <Gruntz/GruntSpawnConfig.h> pulls MFC; keep windows.h MFC-safe
 #include <Ints.h>
 #include <string.h>
 
-#include <Win32.h> // RECT / POINT / PtInRect
 #include <rva.h>
 #include <Gruntz/ScanGrid.h>
+#include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (SpawnVoiceDriver)
 #include <stdlib.h> // engine rand (0x11fee0)
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
@@ -120,10 +121,6 @@ struct CScanTileMgr {
 
 // The on-screen cue mgr (g_gameReg->m_cueSink): fires the grunt entrance cue (0x4039f4).
 // CScanCueMgr::PlayCue @0x39f4 IS CGruntSpawnConfig::SpawnVoiceDriver (header-less); local decl.
-class CGruntSpawnConfig {
-public:
-    i32 SpawnVoiceDriver(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
-};
 struct CScanCueMgr {
     // PlayCue @0x39f4 IS CGruntSpawnConfig::SpawnVoiceDriver; cast at the call.
 };

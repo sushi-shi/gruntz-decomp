@@ -20,26 +20,15 @@
 #include <Gruntz/ResMgr.h>     // canonical CImageRegistry (+0x10 image registrar)
 #include <Gruntz/View.h>       // canonical CSpriteFactoryHolder sub-objects (CRenderer @+0xc)
 #include <rva.h>
-#include <Globals.h> // g_glsResetMgr (DAT_00645570)
+#include <Globals.h>                  // g_glsResetMgr (DAT_00645570)
+#include <Gruntz/GameLevel.h>         // canonical CGameLevel (VisitVisible)
+#include <DinMgr2/DirectInputMgr2.h>  // canonical DirectInputMgr2 (ReadAll)
+#include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (Method_158e90/159ef0)
 class CSBI_RectOnly {
 public:
     i32 LoadMainStatusBarSprite();
     i32 Deactivate();
 };
-class CGameObjChain;
-class CGameLevel {
-public:
-    void VisitVisible(void* a, CGameObjChain* b);
-}; // 0x15dc90
-class DirectInputMgr2 {
-public:
-    i32 ReadAll();
-}; // 0x133110
-class CDDrawSubMgrPages {
-public:
-    i32 Method_158e90();
-    void Method_159ef0();
-}; // pages
 class CDDSurface {
 public:
     i32 Fill(unsigned int c);

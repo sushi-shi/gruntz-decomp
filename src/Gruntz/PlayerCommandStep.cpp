@@ -12,14 +12,8 @@
 
 #include <rva.h>
 #include <Globals.h>
-class LeafCue {
-public:
-    i32 PlayIfElapsed_01f940(i32 a, i32 b, i32 c, i32 d);
-};
-class CGrunt {
-public:
-    void SetEntrancePos(i32 a, i32 b);
-};
+#include <Gruntz/LeafCue.h> // canonical LeafCue (PlayIfElapsed_01f940)
+#include <Gruntz/Grunt.h> // canonical CGrunt (SetEntrancePos)
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))

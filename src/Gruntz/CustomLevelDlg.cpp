@@ -11,10 +11,7 @@
 
 #include <Ints.h>
 #include <rva.h>
-class CGruntzMgr {
-public:
-    i32 IsBattlezMapFile(CString p);
-};
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (IsBattlezMapFile)
 
 namespace m4dlg {
 

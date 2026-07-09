@@ -5,18 +5,10 @@
 
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/GameMode.h> // canonical CMenuState : CState (the one true shape)
-#include <Gruntz/ResMgr.h>   // canonical CImageRegistry (this->m_c->m_10)
-class CChatBox {
-public:
-    i32 AdvanceRow1(void* a, i32 b, i32 c);
-    i32 AdvanceRow0(void* a, i32 b, i32 c);
-    void Init();
-};
-class CGruntzMgr {
-public:
-    i32 RestoreVideoMode(i32 a);
-};
+#include <Gruntz/GameMode.h>  // canonical CMenuState : CState (the one true shape)
+#include <Gruntz/ResMgr.h>    // canonical CImageRegistry (this->m_c->m_10)
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (m_4 owner; RestoreVideoMode)
+#include <Gruntz/ChatBox.h>   // canonical CChatBox (MenuHudObj facet)
 class CDDrawWorkerRegistry {
 public:
     i32 HasKeyEqual_155550(const char* k);
@@ -139,7 +131,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     if (!LoadGameAssetNamespaces(a2, a3, a3)) {
         return 0;
     }
-    ((CGruntzMgr*)m_4)->RestoreVideoMode(0);
+    m_4->RestoreVideoMode(0);
     m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_MENU");
     if (m_2c == 0) {
         return 0;

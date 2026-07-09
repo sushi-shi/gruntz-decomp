@@ -32,11 +32,7 @@ public:
     CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e);
     CDDSurface* Createab8_24_3(i32 m);
 };
-class CDirectDrawMgr {
-public:
-    void* CreatePoolItem(void* a, void* b);
-    i32 CreateDevice(void* a, void* b, i32 w, i32 h, i32 bpp, unsigned int m);
-};
+#include <DDrawMgr/DirectDrawMgr.h> // canonical CDirectDrawMgr (CreatePoolItem/CreateDevice)
 
 // The locked-surface pixel geometry is read straight off the held CDDSurface:
 // its byte-pitch (m_pitch @+0x20), its bytes-per-pixel divisor (m_b0 @+0xb0), and

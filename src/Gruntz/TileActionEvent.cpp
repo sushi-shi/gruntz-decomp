@@ -16,13 +16,11 @@
 
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TileActionEvent.h>
+#include <Gruntz/LeafCue.h> // canonical LeafCue (PlayIfElapsed_01f940)
 #include <Gruntz/UserLogic.h> // CGameObject (the created break sprite)
 
 #include <rva.h>
-class CGruntTileMgr {
-public:
-    i32 CombatCue(i32 a, i32 b, i32 c, i32 d, i32 e);
-};
+#include <Gruntz/Grunt.h> // canonical CGruntTileMgr (CombatCue)
 class EngineLabelBacklog {
 public:
     i32 LoadExplosionSprites(i32 a, i32 b, i32 c, i32 d);
@@ -106,10 +104,6 @@ SIZE_UNKNOWN(CBrickTile);
 
 // The impact one-shot emitter vtable slot used on g->m_30->m_28->m_30==0.
 // CImpactSound::Play @0x25fe IS LeafCue::PlayIfElapsed_01f940 (header-less); local decl.
-class LeafCue {
-public:
-    i32 PlayIfElapsed_01f940(i32 a, i32 b, i32 c, i32 d);
-};
 struct CImpactSound {
     // Play @0x25fe IS LeafCue::PlayIfElapsed_01f940; cast at the call.
 };

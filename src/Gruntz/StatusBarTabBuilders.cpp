@@ -16,13 +16,7 @@
 
 // The name maps are the real MFC CMapStringToPtr (Lookup @0x1b8008, from <Mfc.h>); no local view.
 #include <Gruntz/StatusBarTabBuildersViews.h> // CSbGeom/CSbOwner/.../CSbTab (namespace views)
-
-// The image-set nodes' SetAllTypes/SetAllFormats ARE CImageSet's (@0x152480/0x152520); local decl.
-class CImageSet {
-public:
-    void SetAllTypes(i32 type);
-    void SetAllFormats(i32 format);
-};
+#include <Image/ImageSet.h>                   // canonical CImageSet (SetAllTypes/SetAllFormats)
 
 namespace StatusBarTabBuilders {
 

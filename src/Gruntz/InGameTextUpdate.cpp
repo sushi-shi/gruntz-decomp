@@ -33,10 +33,7 @@ struct HbCellMgr { // g_mgrSettings->m_68
 // CAniAdvanceCursor::Advance_15c360 (header-less; the canonical class is a CLoadable,
 // see <Gruntz/AniAdvanceCursor.h>). Local minimal decl - only the non-virtual advance
 // call is reached here (via a cast), no fields/vtable.
-class CAniAdvanceCursor {
-public:
-    i32 Advance_15c360(i32 clock);
-};
+#include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance_15c360)
 // The shared sound chain (the CBootyState ambient-cue idiom, reused here).
 SIZE_UNKNOWN(HbSndPlayer);
 struct HbSndPlayer {

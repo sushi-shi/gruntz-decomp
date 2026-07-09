@@ -20,12 +20,8 @@
 #include <rva.h>
 #include <string.h> // strcat (inline CRT, reloc-masked)
 
-// A roster slot's FormatName_3e54 @0x3e54 IS GruntzPlayer::GetName (header-less gruntzplayer class);
-// TU-local decl, cast at the call.
-class GruntzPlayer {
-public:
-    class CString GetName();
-};
+// A roster slot's FormatName_3e54 @0x3e54 IS GruntzPlayer::GetName; cast at the call.
+#include <Gruntz/GruntzPlayer.h> // canonical GruntzPlayer (GetName)
 
 // --- shared globals (canonical homes elsewhere; reloc-masked references here) ---
 // The game-manager singleton (VA 0x64556c); the SelHost/roster handlers cache each

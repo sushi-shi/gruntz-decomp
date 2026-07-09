@@ -133,10 +133,7 @@ extern CGameRegistry* g_gameReg;
 // The bound object's +0x1a0 per-frame animator (Advance_15c360 @0x55c360).
 SIZE_UNKNOWN(DropperAnim);
 // DropperAnim::Advance @0x15c360 IS CAniAdvanceCursor::Advance_15c360 (header-less); local decl.
-class CAniAdvanceCursor {
-public:
-    i32 Advance_15c360(i32 clock);
-};
+#include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance_15c360)
 struct DropperAnim {
     // Advance @0x15c360 IS CAniAdvanceCursor::Advance_15c360; cast at the call.
 };

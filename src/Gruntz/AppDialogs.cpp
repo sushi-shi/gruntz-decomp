@@ -17,19 +17,12 @@
 
 // The USER32 dialog API (EndDialog / GetDlgItemInt / SetDlgItemInt /
 // IsDlgButtonChecked), the HWND/UINT/WPARAM/LPARAM/INT_PTR types, and the
-// WM_INITDIALOG/WM_COMMAND ids all come from the real <windows.h> (via Win32.h;
-// pure-Win32 TU, no MFC).
-#include <Win32.h>
+// WM_INITDIALOG/WM_COMMAND ids come from the real <windows.h>, pulled the
+// afx-first way via <Mfc.h> (superset of Win32.h) so <Utils/RegistryHelper.h>'s
+// MFC winreg types coexist without the C1189 windows.h-before-afx wall.
+#include <Mfc.h>
 #include <Globals.h>
-
-// The engine's registry/config helper (Utils::RegistryHelper) - only the one
-// method this proc calls is declared, to keep the symbol set tiny.
-namespace Utils {
-    class RegistryHelper {
-    public:
-        i32 SetValueDword(char* szValueName, u32 value);
-    };
-} // namespace Utils
+#include <Utils/RegistryHelper.h> // canonical Utils::RegistryHelper
 
 // The game-registry singleton (CGameRegistry.h). This proc reaches three owned
 // slots through AUTHENTIC per-site downcasts (their concrete class lives in other

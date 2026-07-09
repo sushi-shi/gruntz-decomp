@@ -34,11 +34,7 @@ public:
 
 // The attract-cue registrar IS a CDDrawSubMgrLeafScan (header-less); local decl (exact arg types).
 class DirNode;
-class CDDrawSubMgrLeafScan {
-public:
-    i32 ScanTree_157ee0(DirNode* n, const char* key, const char* g); // 0x157ee0
-    i32 RemoveKeysEqual_157c70(const char* key, const char* g);      // 0x157c70
-};
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
 
 // ---------------------------------------------------------------------------
 // External engine globals (reloc-masked DATA symbols).

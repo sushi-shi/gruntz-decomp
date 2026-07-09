@@ -15,13 +15,7 @@
 
 #include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h) // wsprintfA
 #include <Gruntz/GameRegistry.h>
-namespace Utils {
-    class RegistryHelper {
-    public:
-        unsigned long GetValueDword(char* k, unsigned long d);
-        i32 SetValueDword(char* k, unsigned long v);
-    };
-} // namespace Utils
+#include <Utils/RegistryHelper.h> // canonical Utils::RegistryHelper
 
 // The registry/config object (arg2). GetInt/WriteInt are 2-arg __thiscall helpers.
 struct ScrConfig {

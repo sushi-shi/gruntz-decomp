@@ -1269,8 +1269,9 @@ public:
     // sprite, fire the on-screen spawn cue, then re-run the type-table step.
     i32 BuildGruntLoseItemAnimation();
     // The big CUserLogic-base step driver reached via thunk 0x3bd9 -> 0x4dd50
-    // (LoadGruntTypeTable / SelfImpact); external/reloc-masked here.
-    void LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d);
+    // (LoadGruntTypeTable / SelfImpact); external/reloc-masked here. Returns i32
+    // (InGameIcon reads the result; return type is mangling-neutral).
+    i32 LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d);
 
     // --- arrival / move-step helper cluster (proximity-attributed targets) ---
     void PlayMoveSoundAtTile(i32 tx, i32 ty); // @0x514e0 (ret 8) tile->pixel + PlayMoveSound

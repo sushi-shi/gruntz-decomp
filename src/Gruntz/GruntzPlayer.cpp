@@ -42,13 +42,8 @@ extern i32 g_serialCounter;
 // `mov eax,[ar]; push n; push buf; mov ecx,ar; call [eax+0x30]` __thiscall dispatch.
 
 // The embedded CBattlezMapConfig bundle at this+0x38: Serialize forwards its 4-arg command
-// to CBattlezMapConfig::Method_02bfc0 (0x2bfc0). TU-local method-only decl of the real class
-// (full def in <Gruntz/BattlezMapConfig.h>, deliberately not pulled here) so the `mov ecx,
-// this+0x38; call` lowers + reloc-masks against the real symbol.
-class CBattlezMapConfig {
-public:
-    i32 Method_02bfc0(i32 a1, void* a2, i32 a3, i32 a4);
-};
+// to CBattlezMapConfig::Method_02bfc0 (0x2bfc0), the embedded config subobject at +0x38.
+#include <Gruntz/BattlezMapConfig.h> // canonical CBattlezMapConfig (Method_02bfc0)
 
 // GruntzPlayer::GetName (0x0001f450) is now an inline member in the header.
 

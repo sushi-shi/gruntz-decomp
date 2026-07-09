@@ -9,10 +9,7 @@
 // TU-local decls with the exact pointer arg types (load-bearing for the mangled names).
 #include <Dsndmgr/SoundResMap.h> // canonical CSoundResMap (RemoveByValue @0x157b00) + CSoundRes
 class DirNode;
-class CDDrawSubMgrLeafScan {
-public:
-    i32 ScanTree_157ee0(DirNode* n, const char* key, const char* g); // 0x157ee0
-};
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 class CCatalogNode;
 class CDDrawSubMgrLeaf {
 public:

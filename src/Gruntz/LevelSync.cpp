@@ -16,10 +16,7 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
 #include <rva.h>
-class CPlay {
-public:
-    i32 ResetViewport();
-};
+#include <Gruntz/Play.h> // canonical CPlay (ResetViewport)
 
 // The stream/archive object is the shared WAP32 CSerialArchive (Read @ vtable +0x2c /
 // Write @ +0x30), now the one modeled class in <Gruntz/SerialArchive.h> - the former

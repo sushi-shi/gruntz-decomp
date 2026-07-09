@@ -76,14 +76,8 @@ struct CTriggerMgr {
 struct CGroupSel {
     i32 CenterOnGroup(i32 a);
 };
-struct CGruntzMgr {
-    void AccrueScoreTime();
-    void UpdateScoreHud();
-    void SetRunState(i32 a);
-    void SetSoundLevelState(i32 a);
-    i32 FinishLevel(i32 a, i32 b);
-};
 #include <Gruntz/FontConfig.h> // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
+#include <Gruntz/GruntzMgr.h>  // canonical CGruntzMgr (score/run/finish helpers)
 struct CObj23d90 {
     void Blit(i32 a, i32 b, i16 c, i16 d, i32 e);
 };

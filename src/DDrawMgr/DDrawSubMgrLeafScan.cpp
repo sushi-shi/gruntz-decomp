@@ -34,15 +34,7 @@
 #include <Dsndmgr/SoundDevice.h>
 #include <Gruntz/ParseSource.h>           // canonical CParseSource (BeginParse/EndParse)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan + LeafScanBase
-class CSymTab {
-public:
-    void* FirstSub();
-    void* NextSub(void* n);
-    void* FirstSym();
-    void* NextSym(void* n);
-    void* NextSym2(void* n);
-    void* NextSym3(void* n);
-}; // DirNode views
+#include <Bute/SymTab.h> // canonical CSymTab (FirstSub/NextSub/FirstSym/NextSym enumerators)
 
 // The map value: only the scalar-deleting destructor slot (+0x04) is load-
 // bearing for the RemoveKeysEqual/FindKey teardown dispatch. Declared only -

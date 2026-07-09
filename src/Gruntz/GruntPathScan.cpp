@@ -53,10 +53,7 @@ struct CScanPlane { // grid (settings->m_70)
     i32 m_70, m_74;             // +0x70 width, +0x74 height
     // Probe20f4 @0x20f4 = CBrickzGrid::SearchEdge, SetStepFlag @0x43ea = ApiMisc::ClipHost_02b340::Clip.
 };
-class CBrickzGrid {
-public:
-    i32 SearchEdge(i32 a, i32 b, i32 col, i32 row, void* out, i32 one, i32 f, i32 g); // 0x20f4
-};
+#include <Gruntz/Brickz.h> // canonical CBrickzGrid (SearchEdge)
 namespace ApiMisc {
     class ClipHost_02b340 {
     public:

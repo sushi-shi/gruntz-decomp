@@ -61,10 +61,7 @@
 #include <stdlib.h> // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
 #include <string.h> // strcmp (anim-name dispatch -> inline sbb/sbb byte compare)
 #include <new>      // placement new (QuadIntRecord in-place ctor)
-class CTileTriggerContainer {
-public:
-    void* FindInLists12(i32 a, i32 b);
-}; // 0x116f20
+#include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (FindInLists12 0x116f20)
 
 // The coord-list walk step @0x29a30 is the free __stdcall ListNodeAdvance(void**).
 void* __stdcall ListNodeAdvance(void** pos);

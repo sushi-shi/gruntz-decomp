@@ -13,11 +13,8 @@
 #include <rva.h>
 #include <string.h>
 #include <stdio.h> // sprintf (0x11f890)
-#include <io.h>    // _finddata_t / _findfirst (0x11f900) / _findnext (0x11fa30)
-class CGruntzMgr {
-public:
-    i32 IsBattlezMapFile(CString p);
-};
+#include <io.h>                // _finddata_t / _findfirst (0x11f900) / _findnext (0x11fa30)
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (IsBattlezMapFile)
 
 namespace m4 {
 

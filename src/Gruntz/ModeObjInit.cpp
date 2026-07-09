@@ -13,10 +13,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
-class CGruntzMgr {
-public:
-    void ResetClockGlobals();
-};
+#include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ResetClockGlobals)
 class CSBI_RectOnly {
 public:
     i32 LoadBattlezItemConfig(i32 a);
@@ -29,14 +26,8 @@ public:
     void Attach(void* a, CChatBoxTextHost* b);
     void Configure(i32 a);
 };
-class CTileTriggerContainer {
-public:
-    ~CTileTriggerContainer();
-};
-class CTileTriggerSwitchLogic {
-public:
-    i32 GetFlag74();
-};
+#include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (dtor 0xc8640)
+#include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (GetFlag74)
 
 // Rec50::Init286f @0x286f IS CTimer::Init (canonical <Gruntz/Timer.h>).
 #include <Gruntz/Timer.h>

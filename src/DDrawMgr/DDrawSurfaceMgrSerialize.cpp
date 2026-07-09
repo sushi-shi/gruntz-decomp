@@ -50,15 +50,7 @@ public:
     virtual i32 Ready();
 };
 struct CSerialArchive;
-class CWwdObjMgr {
-public:
-    i32 CountActive_15abc0();
-    i32 ForEachProbe_15acb0(i32 a, i32 b);
-    i32 ForEachDispatch_15ac20(i32 a, i32 b, i32 c);
-    i32 ForEachSerialize_15b020(CSerialArchive* a, i32 b);
-    i32 LoadObjects(CSerialArchive* a, unsigned int b, i32 c);
-    i32 Deserialize_15b0e0(CSerialArchive* a, unsigned int b, i32 c);
-};
+#include <Gruntz/WwdObjMgr.h> // canonical CWwdObjMgr (CountActive/ForEach*/LoadObjects/Deserialize)
 class CDDrawSubMgrPages {
 public:
     void Method_159ef0();

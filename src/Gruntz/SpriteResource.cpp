@@ -337,10 +337,7 @@ class CDDrawBlitParam {
 public:
     void Setup_15c2d0(CDDrawBlitParamSrc* src);
 };
-class CAniAdvanceCursor {
-public:
-    i32 Advance_15c360(i32 clock);
-};
+#include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance_15c360)
 class CGruntAnimSub2 {
 public:
 };

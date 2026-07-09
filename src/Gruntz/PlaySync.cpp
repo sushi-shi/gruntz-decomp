@@ -13,11 +13,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
 #include <Gruntz/SerialArchive.h>  // shared CSerialArchive stream (Read @ +0x2c, Write @ +0x30)
-class CImageSet {
-public:
-    i32 SetAllTypes(i32 a);
-    i32 SetAllFormats(i32 a);
-}; // 0x152480/0x152520
+#include <Image/ImageSet.h> // canonical CImageSet (SetAllTypes/SetAllFormats @0x152480/0x152520)
 
 // Round-trip a 16-byte (two 4-int halves) timer block through the archive; `p` is
 // an i32* into the block, so `p + 2` is the second 8-byte half. The mode-4 (write)

@@ -4,16 +4,13 @@
 #include <Gruntz/GruntzMgr.h> // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/SBI_MenuItem.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world (m_world) view (CResMgr + CDrawTarget + CImageRegistry + CSprite)
-#include <Gruntz/SbiConfig.h> // canonical config-host family (one shape)
+#include <Gruntz/SbiConfig.h>           // canonical config-host family (one shape)
+#include <Gruntz/StatusBarMgrBuilders.h> // canonical CStatusBarMgr (LoadTabSprites)
 #include <Image/CImage.h>     // canonical frame-record class (CImage::RenderFrame @0x153790)
 class CSBI_RectOnly {
 public:
     void ClearTabGroup();
     i32 Deactivate();
-};
-class CStatusBarMgr {
-public:
-    i32 LoadTabSprites();
 };
 class CDDrawWorkerRegistry {
 public:
