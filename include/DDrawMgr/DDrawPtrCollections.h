@@ -44,6 +44,14 @@ public:
     CDDSurface* CreateB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1423c0
     CDDSurface* Createa58_1(i32 a);                         // 0x1424a0 (vtbl a58, slot 2)
     CDDSurface* Createa58_3(i32 a, i32 b, i32 c);           // 0x142560 (vtbl a58, slot 10)
+
+    // CreateRange (0x142630). Create a numbered sequence of a58 pool items: for each
+    // index in [start, start+count) build the name "<base><index>" (or, when a suffix
+    // is given, ".." + suffix, or base-name + suffix when the suffix itself starts with
+    // '.'), Createa58_3 it, and collect the non-null results into `out`. Returns the
+    // number created (stops at the first failure).
+    i32 CreateRange(CDDSurface** out, i32 start, i32 count, char* baseName, char* suffix,
+                    i32 a6, i32 a7); // 0x142630
     CDDSurface* Createa88_3(i32 a, i32 b, i32 c);           // 0x142730 (vtbl a88, slot 9)
     CDDSurface* Createa88_1(i32 a);                         // 0x142880 (vtbl a88, slot 2)
     CDDSurface* Createab8_3(i32 a, i32 b, i32 c);           // 0x142940 (vtbl ab8, slot 9, +538)

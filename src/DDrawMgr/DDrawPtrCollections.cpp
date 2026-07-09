@@ -452,6 +452,55 @@ CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
     return 0;
 }
 
+// The engine CRT sprintf (0x11f890) + the shared ".." $SG constant (0x5ee8ec).
+extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
+extern char g_dotDot[];                                  // 0x5ee8ec  ".."
+
+// ---------------------------------------------------------------------------
+// CreateRange (0x142630). Build a numbered sequence of a58 pool items named
+// "<base><index>" over [start, start+count); an optional suffix overrides the name
+// (".." + suffix, or the numbered name + suffix when the suffix starts with '.').
+// Createa58_3 each and gather the non-null results into `out`; return the count.
+// __thiscall, ret 0x1c => 7 args.
+// @early-stop
+// regalloc/spill wall (~80%): logic is complete + correct (the numbered-name build,
+// the ".."/suffix override, the Createa58_3 loop + non-null collect). The inline
+// strlen/strcpy/strcat clobber the caller-saved regs, forcing heavy spilling; retail
+// spills n/end/output-ptr and keeps the suffix in ebp (frame 0x28), while cl assigns
+// the callee-saved regs differently (frame 0x20). The permuter finds no operand fix;
+// same MSVC5 coin-flip its sibling factories carry. Banked for the final sweep.
+RVA(0x00142630, 0xfe)
+i32 CDDrawPtrCollections::CreateRange(
+    CDDSurface** out,
+    i32 start,
+    i32 count,
+    char* baseName,
+    char* suffix,
+    i32 a6,
+    i32 a7
+) {
+    i32 n = 0;
+    i32 end = start + count;
+    CDDSurface** p = out;
+    for (i32 i = start; i < end; i++) {
+        char buf[32];
+        sprintf(buf, "%s%i", baseName, i);
+        if (suffix != 0) {
+            if (suffix[0] != '.') {
+                strcpy(buf, g_dotDot);
+            }
+            strcat(buf, suffix);
+        }
+        CDDSurface* item = Createa58_3((i32)buf, a6, a7);
+        if (item == 0) {
+            break;
+        }
+        *p++ = item;
+        n++;
+    }
+    return n;
+}
+
 // ---------------------------------------------------------------------------
 // Createa88_3 (0x142730).  new 0xc0 item; ctor (vtbl 0x5efa88); dispatch vtbl[0x24]
 // with 3 args; AddItemA on success. /GX. ret 0xc.

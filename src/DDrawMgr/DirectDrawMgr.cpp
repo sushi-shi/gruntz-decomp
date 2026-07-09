@@ -42,7 +42,7 @@ DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
 // The engine logger that consumes the formatted line (DDrawMgr-local helper).
-extern void __cdecl DDrawLogLine(char* line); // 0x141cb0
+extern void __cdecl DDrawLogLine(char* fmt, ...); // 0x141cb0 (printf-style TRACE)
 
 // The DDERR_NAME line numbers all reference these source-path $SG constants.
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
@@ -343,6 +343,136 @@ i32 CDDSurface::GetColorKey() {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x695, hr);
     }
     return -1;
+}
+
+// CDDSurface::DumpSurfaceInfo (__thiscall, ret 4 => 1 arg). Re-fetch the surface
+// desc into the scratch, then TRACE it: `detailed==0` prints one line; otherwise
+// dump the geometry, 16-bit bitmasks, colour key, Z-buffer depth and every set
+// DDSCAPS flag. The DDBD_* -> bit-count and DDBD_* -> name mappings are MSVC
+// binary-search branch trees (sparse cases, no jump table).
+// @early-stop
+// codegen block-layout wall (96.68%): all logic is correct and ALL THREE DDBD
+// branch-trees + every TRACE call match byte-for-byte; the sole residual is the
+// Z-buffer-name switch tail - retail duplicates `lea edx,[esp+0x10]` (&buf) into each
+// switch case, cl hoists the loop-invariant address once before the shared strcpy.
+// Not source-steerable (buf scope / decl order don't move it); the rest of the diff
+// is disasm-spelling only (rep movsd/rep movs, test bl,0x80). Entropy tail.
+RVA(0x00140770, 0x326)
+void CDDSurface::DumpSurfaceInfo(i32 detailed) {
+    i32 i;
+    i32* p = (i32*)m_desc;
+    for (i = 0x1b; i != 0; i--) {
+        *p++ = 0;
+    }
+    m_descSize = 0x6c;
+    LPDDSURFACEDESC desc = (LPDDSURFACEDESC)m_desc;
+    m_8->GetSurfaceDesc(desc);
+    if (desc == 0) {
+        return;
+    }
+
+    if (detailed == 0) {
+        i32 depth = 0;
+        switch (desc->ddpfPixelFormat.dwRGBBitCount) {
+            case DDBD_32: depth = 32; break;
+            case DDBD_16: depth = 16; break;
+            case DDBD_8: depth = 8; break;
+            case DDBD_4: depth = 4; break;
+            case DDBD_2: depth = 2; break;
+            case DDBD_1: depth = 1; break;
+        }
+        DDrawLogLine(
+            "Surface: width = %i, height = %i, depth = %i, pitch = %i\n",
+            m_width,
+            m_height,
+            depth,
+            m_pitch
+        );
+        return;
+    }
+
+    u32 caps = desc->ddsCaps.dwCaps;
+    i32 colorKey = GetColorKey();
+    i32 depth = 0;
+    switch (desc->ddpfPixelFormat.dwRGBBitCount) {
+        case DDBD_32: depth = 32; break;
+        case DDBD_16: depth = 16; break;
+        case DDBD_8: depth = 8; break;
+        case DDBD_4: depth = 4; break;
+        case DDBD_2: depth = 2; break;
+        case DDBD_1: depth = 1; break;
+    }
+    DDrawLogLine("Surface Information for surface pointer %p:\n", this);
+    DDrawLogLine(
+        "width = %i, height = %i, depth = %i, pitch = %i\n",
+        m_width,
+        m_height,
+        depth,
+        m_pitch
+    );
+    if (depth == 16) {
+        DDrawLogLine(
+            "16-bit color bitmasks are: R = %04X, G = %04X, B = %04X\n",
+            desc->ddpfPixelFormat.dwRBitMask,
+            desc->ddpfPixelFormat.dwGBitMask,
+            desc->ddpfPixelFormat.dwBBitMask
+        );
+    }
+    if (colorKey != -1) {
+        DDrawLogLine("Source color key = %lu", colorKey);
+    }
+    u32 zbuf = caps & DDSCAPS_ZBUFFER;
+    if (zbuf != 0) {
+        char* name;
+        switch (desc->dwZBufferBitDepth) {
+            case DDBD_32: name = "DDBD_32"; break;
+            case DDBD_16: name = "DDBD_16"; break;
+            case DDBD_8: name = "DDBD_8"; break;
+            case DDBD_4: name = "DDBD_4"; break;
+            case DDBD_2: name = "DDBD_2"; break;
+            case DDBD_1: name = "DDBD_1"; break;
+            default: name = "Unknown"; break;
+        }
+        char buf[32];
+        strcpy(buf, name);
+        DDrawLogLine("Z Buffer bit depth = %s\n", buf);
+    }
+    if (caps & DDSCAPS_ALPHA) {
+        DDrawLogLine("DDSCAPS_ALPHA is set\n");
+    }
+    if (caps & DDSCAPS_BACKBUFFER) {
+        DDrawLogLine("DDSCAPS_BACKBUFFER is set\n");
+    }
+    if (caps & DDSCAPS_COMPLEX) {
+        DDrawLogLine("DDSCAPS_COMPLEX is set\n");
+    }
+    if (caps & DDSCAPS_FLIP) {
+        DDrawLogLine("DDSCAPS_FLIP is set\n");
+    }
+    if (caps & DDSCAPS_FRONTBUFFER) {
+        DDrawLogLine("DDSCAPS_FRONTBUFFER is set\n");
+    }
+    if (caps & DDSCAPS_OFFSCREENPLAIN) {
+        DDrawLogLine("DDSCAPS_OFFSCREENPLAIN\tis set\n");
+    }
+    if (caps & DDSCAPS_OVERLAY) {
+        DDrawLogLine("DDSCAPS_OVERLAY is set\n");
+    }
+    if (caps & DDSCAPS_PALETTE) {
+        DDrawLogLine("DDSCAPS_PALETTE is set\n");
+    }
+    if (caps & DDSCAPS_PRIMARYSURFACE) {
+        DDrawLogLine("DDSCAPS_PRIMARYSURFACE is set\n");
+    }
+    if (caps & DDSCAPS_SYSTEMMEMORY) {
+        DDrawLogLine("DDSCAPS_SYSTEMMEMORY is set\n");
+    }
+    if (caps & DDSCAPS_VIDEOMEMORY) {
+        DDrawLogLine("DDSCAPS_VIDEOMEMORY is set\n");
+    }
+    if (zbuf != 0) {
+        DDrawLogLine("DDSCAPS_ZBUFFER is set\n");
+    }
 }
 
 // CDDSurface::Refresh (__thiscall, ret 4 => 1 arg). GetSurfaceDesc into the
