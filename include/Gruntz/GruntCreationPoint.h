@@ -35,6 +35,10 @@ public:
     // Bind the per-frame handler (AdvanceAnim) to the activation key "A" via the
     // shared name registry (the same archetype as CBehindCandyAni::RegisterActs).
     static void RegisterActs(); // 0x03eac0
+    // Serialize (0x3e7a0): two-chain serialize (CUserLogic base + the +0x34 sub-
+    // object); on the post-load tag (8) re-resolve the selected sprite from the game
+    // registry's ref-index array (same selector as the ctor) into the draw trio.
+    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d);
     // Per-coordinate activation dispatcher: look the coordinate up in the class
     // registry (g_creationPointActReg) and, if it has a registered handler PMF,
     // dispatch it on `this`. Same archetype as CParticlez::FireActivation.

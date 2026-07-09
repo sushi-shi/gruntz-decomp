@@ -96,6 +96,19 @@ void CTeleporter::InitActReg() {
     ((CZDArrayDerived*)&g_teleporterActReg)->Construct(2000, 2010);
 }
 
+// CTeleporter::FireActivation @0x041520 - look the activation coordinate up in
+// g_teleporterActReg; if the resolved entry carries a registered handler, resolve
+// it again and dispatch it __thiscall on `this`. Same archetype as
+// CParticlez::FireActivation (double ResolveEntry + dispatch).
+RVA(0x00041520, 0x102)
+void CTeleporter::FireActivation(i32 coord) {
+    CTeleporterActEntry* e = (CTeleporterActEntry*)g_teleporterActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CTeleporterActEntry* e2 = (CTeleporterActEntry*)g_teleporterActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
 // CTeleporter::Begin @0x0419e0 - advance the +0x1a0 anim sub-mgr to the current
 // draw-delta; once it reports idle (m_28==0 && m_20!=0), run the one-shot
 // finalize: snapshot the bound object's per-tile-time / running-clock / bound

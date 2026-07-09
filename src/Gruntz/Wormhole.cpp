@@ -235,6 +235,25 @@ void InitWormholeDispatch() {
     ((CZDArrayDerived*)&g_wormholeDispatch)->Construct(0x7d0, 0x7da);
 }
 
+// The stored handler is a CUserLogic member-fn-ptr (the shared LogicFnTable
+// element type; see CSimpleAnimation::Dispatch).
+typedef i32 (CUserLogic::*LogicFn)();
+
+// ===========================================================================
+// CWormhole::Dispatch  (0x040050)
+// Index g_wormholeDispatch by idx; if the resolved slot holds a non-null member
+// function, invoke it on this. The bounds-check + grow of the table accessor is
+// inlined (ResolveSlot), computed once for the null-test and once for the call.
+// Same archetype as CSimpleAnimation::Dispatch (0x0abc10).
+// ===========================================================================
+RVA(0x00040050, 0x102)
+void CWormhole::Dispatch(i32 idx) {
+    if (*(void**)ResolveSlot(&g_wormholeDispatch, idx) != 0) {
+        LogicFn fn = *(LogicFn*)ResolveSlot(&g_wormholeDispatch, idx);
+        (this->*fn)();
+    }
+}
+
 // ===========================================================================
 // RegisterWormholeLogic  (0x0401b0)
 // Register the wormhole-logic handler into g_wormholeDispatch: look the key up in

@@ -12,6 +12,7 @@
 #include <Gruntz/GruntPuddle.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
+#include <Gruntz/SerialObjRef.h>   // CSerialArchive (Read/Write) + the +0x34 sub-object chain
 
 #include <rva.h>
 
@@ -158,6 +159,59 @@ i32 CGruntPuddle::Remove() {
         }
     }
     return 0;
+}
+
+// ===========================================================================
+// CGruntPuddle::Serialize  (0x040e50)
+// Chain the shared CUserLogic serialize helper + the +0x34 sub-object's chain, then
+// tag-dispatch the 7 own i32 fields: tag 4 writes / tag 7 reads them through the
+// archive vtable; tag 8 (post-load) re-resolves the placed sprite from g_gameReg's
+// ref table (GetSel on m_placeIndex, fallback GetSel(1,0)) into the draw trio. Same
+// archetype as CGruntHealthSprite::Serialize.
+// @early-stop
+// GetSel inline-vs-call wall (same as the ctor/CGruntCreationPoint::Serialize): the
+// body is byte-faithful (two-chain + the tag 4/7/8 switch + the 7-field round-trip +
+// the GetSel fallback + the draw-trio store); residual is retail calling the out-of-
+// line CSpriteRefTable::GetSel (0xe23c0) where MSVC inlines the header copy here.
+RVA(0x00040e50, 0x170)
+i32 CGruntPuddle::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain((i32)ar, tag, c, d)) {
+        return 0;
+    }
+    if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CSerialObj*)d)) {
+        return 0;
+    }
+    switch (tag) {
+        case 4:
+            ar->Write(&m_tileX, 4);
+            ar->Write(&m_tileY, 4);
+            ar->Write(&m_pending, 4);
+            ar->Write(&m_placed, 4);
+            ar->Write(&m_placeArg3, 4);
+            ar->Write(&m_placeArg0, 4);
+            ar->Write(&m_placeIndex, 4);
+            break;
+        case 7:
+            ar->Read(&m_tileX, 4);
+            ar->Read(&m_tileY, 4);
+            ar->Read(&m_pending, 4);
+            ar->Read(&m_placed, 4);
+            ar->Read(&m_placeArg3, 4);
+            ar->Read(&m_placeArg0, 4);
+            ar->Read(&m_placeIndex, 4);
+            break;
+        case 8: {
+            i32 sel = g_gameReg->m_spriteFactory->GetSel(m_placeIndex, 0);
+            if (sel == 0) {
+                sel = g_gameReg->m_spriteFactory->GetSel(1, sel);
+            }
+            m_object->m_drawFillArg = sel;
+            m_object->m_drawActive = 1;
+            m_object->m_drawFillCmd = 0xa;
+            break;
+        }
+    }
+    return 1;
 }
 
 // ===========================================================================

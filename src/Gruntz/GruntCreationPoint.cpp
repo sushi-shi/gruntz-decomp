@@ -124,6 +124,54 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
 }
 
+// ChannelSlots_FindFree (0x33e1 thunk) - the ref-slot fallback selector when the
+// ref-index array has no armed row. External/no-body (reloc-masked).
+extern "C" i32 ChannelSlots_FindFree();
+
+#include <Gruntz/SerialObjRef.h> // the +0x34 sub-object's serialize chain
+
+// CGruntCreationPoint::Serialize @0x03e7a0 - chain the shared CUserLogic serialize
+// helper, then the +0x34 sub-object's chain; on the post-load tag (tag == 8),
+// re-resolve the selected sprite from g_gameReg's ref-index array (the SAME selector
+// as the ctor: direct when m_134==1, else the +0x158 row (stride 71), else a free
+// channel slot) and re-seed the bound object's draw trio.
+// @early-stop
+// GetSel inline-vs-call + regalloc wall (~72%): the body is byte-faithful (the
+// SerializeChain + the +0x34 Chain + the m_134-first / ref-array (stride 71) / free-
+// channel selector + the sel==0 fallback + the draw-trio store all match retail).
+// Residual: retail CALLS the out-of-line CSpriteRefTable::GetSel (0xe23c0) here while
+// MSVC inlines the header-inline copy into this small fn (an inlining-heuristic
+// difference, not source-steerable), and it pins `this` in edi vs retail's esi. The
+// ctor @0x3e520 shares the same wall (~80%).
+RVA(0x0003e7a0, 0xd7)
+i32 CGruntCreationPoint::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    if (!((CSerialObjRef*)((char*)this + 0x34))
+             ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
+        return 0;
+    }
+    if (tag != 4 && tag == 8) {
+        i32 idx;
+        if (g_gameReg->m_134 == 1) {
+            idx = m_object->m_124;
+        } else if (g_gameReg->m_158[m_object->m_124 * 71 + 3].m_idx != 0) {
+            idx = g_gameReg->m_158[m_object->m_124 * 71].m_idx;
+        } else {
+            idx = ChannelSlots_FindFree();
+        }
+        i32 sel = g_gameReg->m_74->GetSel(idx, 0);
+        if (sel == 0) {
+            sel = g_gameReg->m_74->GetSel(1, sel);
+        }
+        m_object->m_drawActive = 1;
+        m_object->m_drawFillCmd = 0xa;
+        m_object->m_drawFillArg = sel;
+    }
+    return 1;
+}
+
 // CGruntCreationPoint::InitActReg @0x03e8e0 - construct the class's activation-
 // coordinate registry singleton (g_creationPointActReg @0x644700) over the fixed
 // range [2000, 2010] via the shared registry ctor (0x408710, through the 0x3742

@@ -30,6 +30,7 @@
 
 // The real CUserLogic game-object leaves each contiguous handler (0x3d2b0..0x3ddf0,
 // 0x46990) builds in its state-0 case. Sizes are proven from the `new` immediates.
+#include <Gruntz/CursorSnapSprite.h>
 #include <Gruntz/Explosion.h>
 #include <Gruntz/ExitTrigger.h>
 #include <Gruntz/FortressFlag.h>
@@ -139,6 +140,48 @@ extern "C" void Worker_DefaultPump(CUserLogic* sub);
             break;                                                                                   \
     }                                                                                                \
     return 1;
+
+// The earliest member of the state-0 dispatch family (builds a CCursorSnapSprite,
+// a real header leaf whose ctor takes CGameObject* -> full body with the cast, like
+// the 0x3d2b0.. cluster below rather than the Owner*-ctor macro form).
+RVA(0x0003a200, 0xf1)
+i32 Handler03a200(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CCursorSnapSprite((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
 // The state-0 anim-worker dispatch family (0x3d2b0..0x3ddf0, 0x46990). Each is a
 // __cdecl free function byte-identical to Handler03d670 bar the CUserLogic leaf it
 // `new`s in state 0 (hence the `new` size immediate + ctor symbol). Every switch

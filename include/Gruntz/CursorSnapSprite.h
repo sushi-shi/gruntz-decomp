@@ -27,7 +27,6 @@
 // the CUserLogic layout. The CUserLogic base gives the +0x18 destructible link,
 // so the dtor folds the shared teardown.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CCursorSnapSprite);
 class CCursorSnapSprite : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -43,7 +42,10 @@ public:
     virtual ~CCursorSnapSprite() OVERRIDE; // 0x11920 (folds the CUserLogic teardown)
 
     i32 m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_geoId)
+    char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled tail; size proven 0x54 from the
+                               //         anim-worker `new CCursorSnapSprite`)
 };
 VTBL(CCursorSnapSprite, 0x1e8074);
+SIZE(CCursorSnapSprite, 0x54);
 
 #endif // GRUNTZ_CCURSORSNAPSPRITE_H

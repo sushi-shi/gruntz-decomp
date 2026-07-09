@@ -23,6 +23,8 @@
 #include <Gruntz/UserLogic.h>  // CUserLogic : CUserBase, EngStr, CGameObject
 #include <Gruntz/InGameIcon.h> // CGameReg / g_gameReg / CIconFactory / CIconTileGrid
 
+struct CSerialArchive; // <Gruntz/SerialObjRef.h> (Serialize's archive param)
+
 // The bute store the place/set paths query (mov ecx,&g_buteTree; call Find).
 // Declared extern in <Gruntz/InGameIcon.h>'s sibling; redeclared here so the
 // Find call reloc-masks. g_buteTree is owned by another TU.
@@ -82,6 +84,11 @@ public:
     i32 Place(i32 a0, i32 a1, i32 a2, i32 a3); // 0x040c30
     i32 Remove();                              // 0x040d20
     void SetBute(char* key);                   // 0x07d810
+    // Serialize (0x40e50): two-chain (CUserLogic base + the +0x34 sub-object) then a
+    // tag-dispatched field round-trip - tag 4 writes / tag 7 reads the 7 own i32
+    // fields via the archive vtable, tag 8 re-resolves the placed sprite from the
+    // game registry. Same archetype as CGruntHealthSprite::Serialize.
+    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d);
 
     // --- CGruntPuddle own fields (placeholders; offsets load-bearing) ---
     i32 m_savedGeoId; // +0x40  geometry id (m_38->m_geoId snapshot)

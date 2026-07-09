@@ -72,6 +72,10 @@ public:
     // InitActReg (0x414a0): construct the class's activation-coordinate registry
     // singleton (g_teleporterActReg @0x6446b0) over the fixed [2000, 2010] range.
     static void InitActReg();
+    // FireActivation (0x41520): per-coordinate activation dispatcher - look coord up
+    // in g_teleporterActReg; if the entry has a registered handler, dispatch it on
+    // `this`. Same archetype as CParticlez::FireActivation (double ResolveEntry).
+    void FireActivation(i32 coord);
     // Begin (0x419e0): advance the anim sub-mgr; on its first idle frame, snapshot
     // the bound geometry, apply the teleporter lookup-geometry and re-bind the "B"
     // bute node. Returns 0.
@@ -105,5 +109,15 @@ public:
                                //         AnimWorkerHandlers `new CTeleporter`)
 };
 SIZE(CTeleporter, 0x70);
+
+// The registry entry FireActivation dispatches: its first dword is the registered
+// handler (stored as a free-fn ptr by CTeleporter_RegisterActs, dispatched on
+// `this` -> modeled as a 4-byte single-inheritance PMF so the call lowers to
+// `mov ecx,this; call [entry]`).
+typedef i32 (CTeleporter::*TeleporterHandler)();
+struct CTeleporterActEntry {
+    TeleporterHandler m_fn;
+};
+SIZE_UNKNOWN(CTeleporterActEntry); // only the first dword (the handler) is modeled
 
 #endif // GRUNTZ_CTELEPORTER_H

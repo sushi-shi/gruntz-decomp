@@ -25,6 +25,9 @@ public:
     static void InitActReg();                     // 0x03f210
     static void RegisterActs();                   // 0x03f3f0
     void FireActivation(i32 coord);               // 0x03f290 (per-coord PMF dispatcher)
+    void Dispatch(i32 idx);                       // 0x040050 (logic-command dispatch via
+                                                  //           g_wormholeDispatch; same as
+                                                  //           CSimpleAnimation::Dispatch)
     i32 AdvanceAnim();                            // 0x03f5f0 (the per-frame handler PMF)
     CWormhole(CGameObject* obj);                  // 0x03fc70 (1-arg leaf ctor, /GX frame)
     void SpawnPartners();                         // 0x0403b0
