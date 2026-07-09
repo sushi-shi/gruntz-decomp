@@ -201,12 +201,19 @@ def main() -> None:
             "arguments": ["clang-cl", "/c", src, *shared],
         })
 
-    with OUT_FILE.open("w", encoding="utf-8") as f:
-        json.dump(entries, f, indent=2)
-        f.write("\n")
+    # Write ONLY if the content changed. An unconditional rewrite bumps the file
+    # mtime on every `gruntz init` (which runs on each `nix develop` shell entry);
+    # every gen_labels ninja edge depends on this compdb, so a bumped mtime forces
+    # a full ~503-TU LLVM-IR re-emit (~30s) on each build. Entries are emitted in a
+    # deterministic order, so byte-identical input => identical payload => no write.
+    payload = json.dumps(entries, indent=2) + "\n"
+    changed = not (OUT_FILE.exists()
+                   and OUT_FILE.read_text(encoding="utf-8") == payload)
+    if changed:
+        OUT_FILE.write_text(payload, encoding="utf-8")
 
     # Print the exact flag line so it is easy to reproduce a single-file check.
-    print(f"[clangd] wrote {OUT_FILE.relative_to(REPO)} "
+    print(f"[clangd] {'wrote' if changed else 'unchanged'} {OUT_FILE.relative_to(REPO)} "
           f"({len(entries)} units)")
     print(f"[clangd] include dirs ({source}):")
     print(f"    MSVC/MFC : {msvc_inc}")
