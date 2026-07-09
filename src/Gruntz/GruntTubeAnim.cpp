@@ -24,12 +24,9 @@
 #include <string.h> // intrinsic strcmp ("D")
 
 // --- modeled externs (reloc-masked, no body) -------------------------------
-// The +0x154 tube-anim sub-object; CacheFirstFrame @0x150540 IS CGruntSprite::CacheFirstFrame
-// (TU-local decl of the header-less spriteresource class), reached via a CGruntSprite cast.
-class CGruntSprite {
-public:
-    void CacheFirstFrame(const char* name);
-};
+// The +0x154 tube-anim sub-object; CacheFirstFrame @0x150540 IS CGruntSprite::CacheFirstFrame,
+// reached via a CGruntSprite cast (canonical class now in the shared header).
+#include <Gruntz/GruntSprite.h>
 struct CTubeAnimPlayer { // CGrunt::m_154
     char _00[0x1a0];
     i32 m_1a0; // +0x1a0 CDDrawBlitParam sub-descriptor (Setup_15c2d0)

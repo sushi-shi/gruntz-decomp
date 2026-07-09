@@ -111,18 +111,8 @@ struct CFrameWorker {
 // `CSpriteObj` are placeholder field-views); folding all of B onto CGameObject is
 // deferred (it would touch several @early-stop leaves here) and is orthogonal to the
 // HUD-family split resolved above.
-class CGruntSprite {
-public:
-    void CacheFirstFrame(const char* name);
-    void CacheFrame(const char* name, i32 frame);
-
-    char m_pad00[0xc];
-    CResMgr* m_c; // +0x0c
-    char m_pad10[0x190 - 0x10];
-    i32 m_frameNum;    // +0x190  first frame number
-    CSprite* m_sprite; // +0x194  the looked-up sprite
-    i32* m_framePtr;   // +0x198  the first frame's pointer (or 0)
-};
+// CGruntSprite / CGruntAnimPlayer now live in the shared <Gruntz/GruntSprite.h>.
+#include <Gruntz/GruntSprite.h>
 
 RVA(0x00150540, 0x65)
 void CGruntSprite::CacheFirstFrame(const char* name) {
@@ -338,26 +328,10 @@ public:
     void Setup_15c2d0(CDDrawBlitParamSrc* src);
 };
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (Advance_15c360)
-class CGruntAnimSub2 {
-public:
-};
 
 // The global default geometry source the second setter consumes.
 DATA(0x002bf3bc)
 extern i32 g_defaultGeo; // VA 0x6bf3bc (RVA 0x2bf3bc)
-
-class CGruntAnimPlayer {
-public:
-    i32 ApplyLookupGeometry(const char* name, i32 applyDefault);
-    void ApplyGeometryDirect(i32 srcSprite, i32 applyDefault);
-    i32 LookupAnimSprite(const char* name); // 0x150610
-
-    char m_pad00[0xc];
-    CResMgr* m_c; // +0x0c
-    char m_pad10[0x19c - 0x10];
-    CSprite* m_19c;       // +0x19c  cached looked-up sprite
-    CGruntAnimSub2 m_1a0; // +0x1a0  geometry sub-player
-};
 
 RVA(0x001505b0, 0x5c)
 i32 CGruntAnimPlayer::ApplyLookupGeometry(const char* name, i32 applyDefault) {
