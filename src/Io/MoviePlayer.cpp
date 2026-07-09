@@ -79,8 +79,8 @@ VTBL(CMovieScratch, 0x001e971c); // retail 0x5e971c (5-slot CObject shape)
 // Marked inline so the worker dtor folds it (the embed is not a standalone retail
 // function); the vptr stamps are compiler-emitted now.
 inline CMovieScratch::~CMovieScratch() {
-    if (m_4) {
-        RezFree(m_4);
+    if (m_pData) {
+        RezFree(m_pData);
     }
 }
 

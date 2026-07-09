@@ -74,6 +74,21 @@ struct CMovieDecodeStore {
     ~CMovieDecodeStore();
 };
 
+// One movie-clip descriptor the playlist array (CMovieScratch) holds by pointer.
+// PlayList walks the array opening + pumping each clip. m_src==0 aborts the run;
+// m_openArg==0 selects the OpenLo path, else the full Open path.
+struct CMovieClip {
+    i32 m_src;     // +0x00  source handle (0 => stop the run / invalid entry)
+    i32 m_openArg; // +0x04  0 => OpenLo, else Open's second arg
+    i32 m_08;      // +0x08
+    i32 m_useDS;   // +0x0c
+    i32 m_10;      // +0x10
+    i32 m_14;      // +0x14
+    i32 m_flags;   // +0x18  Pump flags
+    i32 m_count;   // +0x1c  Pump loop count
+};
+SIZE(CMovieClip, 0x20);
+
 // The Rez-owned scratch embed at worker+0x868c: REAL polymorphic (ALL-VTABLES).
 // Retail vtable 0x5e971c is the 5-slot CObject shape with two own slots -
 // slot 1 dtor (thunk 0x4040f7) + slot 2 override (thunk 0x401e56); slots 0/3/4
@@ -82,11 +97,18 @@ struct CMovieDecodeStore {
 // grand-base restamp (masks 0x5e8cb4) at exit - the exact retail stamp pair the
 // old manual `m_vptr = &g_*Vtbl` stores hand-rolled. Slot 2 is declared-only
 // (unreconstructed body behind the 0x401e56 thunk; reloc-masked slot).
+//
+// A CObArray-shaped playlist of CMovieClip* (proven by PlayList @0x17d720: it reads
+// m_pData(+0x04) + the count/maxsize/growby at worker+0x8694.. and indexes the pointer
+// array). Kept as the 8-byte {vptr, m_pData} subobject the dtor actually touches
+// (RezFrees m_pData); the array's nSize/nMaxSize/nGrowby live as CMoviePlayer fields
+// just past the embed (worker+0x8694..) so growing this subobject doesn't perturb the
+// ~CMoviePlayer /GX member-teardown frame.
 struct CMovieScratch : public CObject {
     virtual ~CMovieScratch() OVERRIDE;             // slot 1 override (retail thunk 0x4040f7)
     virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2 (0x001e56, declared-only)
 
-    void* m_4; // +0x04 (worker+0x8690)  Rez-owned buffer
+    CMovieClip** m_pData; // +0x04 (worker+0x8690)  Rez-owned clip-pointer array
 };
 
 class CMoviePlayer {
@@ -103,6 +125,7 @@ public:
     i32 Pump(i32 flags, i32 count);                         // 0x17c790
     i32 Advance(i32 cmd, i32 loops);                        // 0x17c8e0
     i32 CloseSmacker();                                     // 0x17c9b0
+    i32 PlayList(i32 loops);                               // 0x17d720
     i32 Begin(i32 a2, i32 useDS, i32 a4, i32 a5);           // 0x17cfc0 (external)
     i32 Frame();                                            // 0x17caa0
     void SnapshotPalette();                     // 0x17ca10 (Frame: new-palette snapshot)
@@ -141,9 +164,11 @@ public:
     CWnd* m_videoWnd;        // +0x53c  the video window (real MFC CWnd)
     CMovieDecodeStore m_540; // +0x540  embedded decode store
     char m_pad740[0x868c - (0x540 + 0x200)];
-    CMovieScratch m_868c; // +0x868c  Rez-owned scratch embed
-    char _8694[0x86a0 - 0x8694];
-    i32 m_loopCount; // +0x86a0  loop counter
+    CMovieScratch m_868c; // +0x868c  Rez-owned scratch embed (8 bytes, ends +0x8694)
+    i32 m_clipCount;      // +0x8694  playlist clip count (m_868c array's nSize)
+    i32 m_8698;           // +0x8698  (nMaxSize)
+    i32 m_869c;           // +0x869c  (nGrowBy)
+    i32 m_loopCount;      // +0x86a0  loop counter
 };
 
 #endif // GRUNTZ_CMOVIEPLAYER_H

@@ -37,10 +37,16 @@ public:
     virtual void Slot20();
     virtual void Slot24();
     virtual i32 Open(const char* name, i32 a2, i32 a3); // +0x28
+    virtual void Slot2C();                              // +0x2c
     virtual i32 Seek(i32 off, i32 origin);              // +0x30
     virtual void Slot34();
     virtual void Slot38();
-    virtual i32 Read(void* buf, i32 size); // +0x3c
+    virtual i32 Read(void* buf, i32 size);        // +0x3c
+    virtual i32 Write(const void* buf, i32 size); // +0x40
+    virtual void Slot44();
+    virtual void Slot48();
+    virtual void Slot4C();
+    virtual void Close(); // +0x50
 };
 
 // The helper at CFecFile+0x138 (its Op at 0x1b4d7c is a reloc-masked rel32 call).
@@ -56,8 +62,9 @@ extern "C" int FecLog(char* buf, const char* fmt, ...);
 
 class CFecFile {
 public:
-    i32 ReadArchive(const char* name); // 0x17b5f0
-    void OnFail();                     // 0x17b5a0 (reloc-masked)
+    i32 CreateArchive(const char* name); // 0x17b8a0
+    i32 ReadArchive(const char* name);   // 0x17b5f0
+    void OnFail();                       // 0x17b5a0 (reloc-masked)
 
     i32 m_00;           // +0x00  open-gate (must be nonzero)
     i32 m_04;           // +0x04  already-open flag
@@ -145,6 +152,35 @@ i32 CFecFile::ReadArchive(const char* name) {
 
 fail:
     OnFail();
+    return 0;
+}
+
+// ===========================================================================
+// 0x17b8a0 - CFecFile::CreateArchive(name): open `name` for writing (mode 0x1002),
+// emit the "FEC" magic + a 12-byte {major=1, minor=1, count=0} header, then flush
+// the stream. Gated by the shared m_00 open-gate + the m_08 write-open flag (distinct
+// from ReadArchive's m_04 read-open flag). __thiscall; returns 1 on success, 0 on any
+// gate/open failure.
+// ===========================================================================
+RVA(0x0017b8a0, 0xa2)
+i32 CFecFile::CreateArchive(const char* name) {
+    if (name != 0 && m_08 == 0 && m_00 != 0 && m_stream.Open(name, 0x1002, 0) != 0) {
+        m_08 = 1;
+
+        char magic[3];
+        magic[0] = 'F';
+        magic[1] = 'E';
+        magic[2] = 'C';
+        m_stream.Write(magic, 3);
+
+        memset(&m_0c, 0, 0xc);
+        m_14 = 0;
+        m_0c = 1;
+        m_10 = 1;
+        m_stream.Write(&m_0c, 0xc);
+        m_stream.Close();
+        return 1;
+    }
     return 0;
 }
 

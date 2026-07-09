@@ -184,6 +184,55 @@ CFaderShape::CFaderShape() {
     m_20 = 0;
 }
 
+// ===========================================================================
+// 0x17e540 - CFader::RunFadeStepped(step, lead, notify): the stepped counterpart
+// of RunFade. Primes frame 0, busy-waits the lead-in, then renders every `step`-th
+// frame from 1..count back-to-back (no elapsed/duration mapping), poking the
+// m_set2cArg fade sink + v1(frame) each step. Finalizes v1(count)/v4() and records
+// the achieved frame rate in m_34. NON-EH (base /O2) frame.
+// ===========================================================================
+// @early-stop
+// Complete + correct (~87%). Same x87-schedule + regalloc wall as the sibling
+// RunFade (0x17e620): retail pins `count` in ebx and `loops` in ebp, cl swaps them
+// (count->ebp, loops->ebx) - a callee-saved recolor changing every ModRM through the
+// body; and retail spills `(float)loops` to memory BEFORE the GetTickCount call
+// (fild/fstp [esp+0x20], then fdivrs memory), while cl schedules the fild after the
+// call and keeps it on the x87 stack (fdivrp register). The loop, the sink COM-call,
+// all guards, and the m_34 frame-rate store are byte-exact; the reg-swap + fp-spill
+// schedule are not source-steerable (docs/patterns/x87-fp-stack-schedule.md).
+RVA(0x0017e540, 0xd8)
+void CFader::RunFadeStepped(i32 step, i32 lead, i32 notify) {
+    i32 count = v2();
+    if (count < 1) {
+        return;
+    }
+    v3();
+    v1(0);
+    Wait(lead);
+    DWORD startTick = GetTickCount();
+    i32 loops = 0;
+    i32 frame = 1;
+    if (count >= 1) {
+        do {
+            if (notify && m_set2cArg) {
+                IFadeSink* o = *(IFadeSink**)m_set2cArg;
+                o->FadeNotify(1, 0);
+            }
+            v1(frame);
+            loops++;
+            frame += step;
+        } while (frame <= count);
+    }
+    if (frame != count) {
+        v1(count);
+        loops++;
+    }
+    float fLoops = (float)loops;
+    DWORD elapsed = GetTickCount() - startTick;
+    m_34 = (i32)(fLoops / ((float)elapsed * 0.001f));
+    v4();
+}
+
 // ============================================================================
 // section: FaderRun.cpp
 // ============================================================================

@@ -18,6 +18,8 @@
 
 #include <rva.h>
 #include <Mfc.h>
+#include <Wap32/MfcArchive.h> // CFaderArray::Serialize's reloc-masked CArchive accessor
+#include <string.h>           // memcpy/memset -> rep movs/stos in the inlined SetSize
 
 // ===========================================================================
 // Reloc-masked externals.
@@ -360,4 +362,71 @@ void CFaderMgr::DeleteAll() {
     }
     m_arr.m_nMaxSize = 0;
     m_arr.m_nSize = 0;
+}
+
+// ===========================================================================
+// 0x17e2a0 - CFaderArray::Serialize (slot 2): the MFC CObArray<CFader*>::Serialize
+// with SetSize inlined. Storing: WriteCount then Write the raw 4-byte-element block;
+// loading: ReadCount, resize the buffer (alloc / grow-with-copy / shrink-in-place per
+// the m_nSize/8 clamped-[4,0x400] grow heuristic), then Read the raw block. Elements
+// are 4-byte pointers stored as raw dwords. Archive helpers + operator new/delete are
+// reloc-masked. (Was a declared-only slot in <Gruntz/FaderMgr.h>.)
+// ===========================================================================
+// @early-stop
+// regalloc wall (~81%, same family as TArray::Serialize @0x39fa0 / the ArraySerialize
+// twin): the SetSize load/grow/shrink logic + the store/load branch senses are byte-
+// faithful, but retail pins this->ebx / ar->esi while cl lands ebp/edi, cascading the
+// scratch edx/ecx picks through the realloc lea chains. Not source-steerable.
+RVA(0x0017e2a0, 0x188)
+void CFaderArray::Serialize(CArchive& ar) {
+    MfcArchive* a = (MfcArchive*)&ar;
+    if (a->IsStoring()) {
+        a->WriteCount(m_nSize);
+    } else {
+        i32 n = a->ReadCount();
+        if (n == 0) {
+            if (m_pData != 0) {
+                ::operator delete(m_pData);
+                m_pData = 0;
+            }
+            m_nMaxSize = 0;
+            m_nSize = 0;
+        } else if (m_pData == 0) {
+            m_pData = (CFader**)::operator new(n * 4);
+            memset(m_pData, 0, n * 4);
+            m_nMaxSize = n;
+            m_nSize = n;
+        } else if (n <= m_nMaxSize) {
+            if (n > m_nSize) {
+                memset(m_pData + m_nSize, 0, (n - m_nSize) * 4);
+            }
+            m_nSize = n;
+        } else {
+            i32 grow = m_nGrowBy;
+            if (grow == 0) {
+                grow = m_nSize / 8;
+                if (grow < 4) {
+                    grow = 4;
+                } else if (grow > 0x400) {
+                    grow = 0x400;
+                }
+            }
+            i32 newMax = m_nMaxSize + grow;
+            if (n >= newMax) {
+                newMax = n;
+            }
+            CFader** nd = (CFader**)::operator new(newMax * 4);
+            memcpy(nd, m_pData, m_nSize * 4);
+            memset(nd + m_nSize, 0, (n - m_nSize) * 4);
+            ::operator delete(m_pData);
+            m_pData = nd;
+            m_nSize = n;
+            m_nMaxSize = newMax;
+        }
+    }
+    if (a->IsStoring()) {
+        a->WriteData(m_pData, m_nSize * 4);
+    } else {
+        a->ReadData(m_pData, m_nSize * 4);
+    }
 }

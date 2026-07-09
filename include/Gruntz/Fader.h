@@ -55,6 +55,12 @@ public:
     void Set2c(i32 v) {
         m_set2cArg = v;
     }
+    // 0x17e540 - the stepped counterpart of RunFade: prime frame 0, busy-wait the
+    // lead-in, then render every `step`-th frame from 1..v2() back-to-back (no timing;
+    // poke the fade sink + v1(frame) each step), then finalize v1(count)/v4() and record
+    // the achieved frame rate in m_34. Used for the non-timed / max-speed transition.
+    void RunFadeStepped(i32 step, i32 lead, i32 notify); // 0x17e540
+
     // 0x17e620 - drive the whole timed fade: prime frame 0, busy-wait the lead-in,
     // then map elapsed/duration onto the [0..v2()] frame index, poking the m_set2cArg
     // fade sink + v1(frame) per newly-reached frame; records the achieved frame rate

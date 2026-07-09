@@ -344,3 +344,64 @@ afterLock:
     SmackNextFrame(s);
     return 1;
 }
+
+// __thiscall(loops): play the whole m_868c clip playlist `loops` times. Each pass
+// walks the CMovieClip* array (m_pData/m_nSize): opens each clip (OpenLo when its
+// m_openArg is 0, else the full Open), pumps it, and - when a command surface
+// (m_command) is set - flips it (Blt DDFX) then color-fills it black (Blt COLORFILL),
+// closing the stream after each. A null clip source or any Open/Pump early-out
+// returns before completion; a full run returns 0x11111111.
+RVA(0x0017d720, 0x188)
+i32 CMoviePlayer::PlayList(i32 loops) {
+    if (!m_active || loops < -1 || loops == 0) {
+        return 0;
+    }
+    i32 iter = 1;
+    do {
+        for (i32 i = 0; i < m_clipCount; i++) {
+            CMovieClip* clip = m_868c.m_pData[i];
+            if (clip->m_src == 0) {
+                return 0;
+            }
+            if (clip->m_openArg == 0) {
+                if (OpenLo(clip->m_src, clip->m_08, clip->m_useDS, clip->m_10, clip->m_14) == 0) {
+                    return 0;
+                }
+            } else {
+                if (Open(
+                        clip->m_src,
+                        clip->m_openArg,
+                        clip->m_08,
+                        clip->m_useDS,
+                        clip->m_10,
+                        clip->m_14
+                    )
+                    == 0) {
+                    return 0;
+                }
+            }
+            CMovieClip* c2 = m_868c.m_pData[i];
+            i32 result = Pump(c2->m_flags, c2->m_count);
+            if (result != 0x11111111) {
+                CloseSmacker();
+                return result;
+            }
+            if (m_command != 0) {
+                DDBLTFX fx;
+                memset(&fx, 0, sizeof(fx));
+                fx.dwSize = sizeof(fx);
+                fx.dwROP = 0x42;
+                i32 hr = ((IDirectDrawSurface*)m_command)->Blt(0, 0, 0, 0x1020000, &fx);
+                if (hr != 0) {
+                    memset(&fx, 0, sizeof(fx));
+                    fx.dwSize = sizeof(fx);
+                    fx.dwFillColor = 0;
+                    ((IDirectDrawSurface*)m_command)->Blt(0, 0, 0, 0x1000400, &fx);
+                }
+            }
+            CloseSmacker();
+        }
+        iter++;
+    } while (iter <= loops);
+    return 0x11111111;
+}
