@@ -2,7 +2,8 @@
 // a CUserLogic leaf. The 1-arg leaf ctor + the /GX leaf dtor are reconstructed here.
 #include <Gruntz/DroppedObjectShadow.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
+#include <Gruntz/LightFxMgr.h>   // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
+#include <Gruntz/SerialObjRef.h> // SerialRef34()->Chain (0x8c00) + CSerialArchive/CSerialObj fwd
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190) the leaf interns "A"
 // into; named by mangled symbol so the Find call reloc-masks.
@@ -46,6 +47,29 @@ CDroppedObjectShadow::CDroppedObjectShadow(CGameObject* obj) : CUserLogic(obj) {
         m_object->m_latchedAnimId = 0xcf84f;
         m_object->m_flags |= 0x20000;
     }
+}
+
+// CDroppedObjectShadow::SerializeMove (0xc7b40), vtable slot 1 - chain the shared
+// serialize helper + the +0x34 CSerialObjRef gate (both early-return 0 on failure);
+// adds no streamed leaf fields. Mode 8 instead re-seeds the bound object's draw-fill
+// render state (same shade-table source as the ctor). The CObjectDropper::Serialize
+// mode-8 archetype (DroppedObjectSerialize.cpp).
+RVA(0x000c7b40, 0x76)
+i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
+    if (!SerializeChain((i32)ar, mode, c, d)) {
+        return 0;
+    }
+    if (!SerialRef34()->Chain((CSerialArchive*)ar, mode, c, (CSerialObj*)d)) {
+        return 0;
+    }
+    if (mode == 8) {
+        i32 fill = (i32)g_gameReg->m_logicPump->m_tables[5];
+        CGameObject* o = m_object;
+        o->m_drawActive = 1;
+        o->m_drawFillCmd = 7;
+        o->m_drawFillArg = fill;
+    }
+    return 1;
 }
 
 // CDroppedObjectShadow::~CDroppedObjectShadow (0x12670) - the /GX leaf dtor folds

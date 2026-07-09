@@ -378,6 +378,19 @@ i32 CDroppedObject::ActA() {
     return 0;
 }
 
+// CDroppedObject::UserLogicVfunc5 (0xc7350), vtable slot 7 - the per-frame draw-
+// cursor step: advance the bound object's +0x1a0 anim cursor by the frame draw-
+// delta, then latch the object's dirty bit (0x10000) when its anim sub-mgr is
+// active (m_1c8) but idle (m_1c0 == 0).
+RVA(0x000c7350, 0x39)
+i32 CDroppedObject::UserLogicVfunc5() {
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
+        m_38->m_flags |= 0x10000;
+    }
+    return 0;
+}
+
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
