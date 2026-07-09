@@ -1285,12 +1285,8 @@ i32 CCreditsState::InitAttractTitle() {
 // CCreditsState teardown / per-frame video + flash steps (trace-discovered).
 // ===========================================================================
 
-// The video-handle (m_videoHandle) sub-object: its EH-framed destructor (0x38fc0) is a
-// __thiscall on the handle, reached by the cleanup before RezFree. Reloc-masked.
-struct CCreditsVideo {
-    // Teardown @0x38fc0 IS CMoviePlayer::~CMoviePlayer; cast at each call.
-    // Close @0x17c9b0 IS CMoviePlayer::CloseSmacker; cast at the call.
-};
+// The video-handle (m_videoHandle) is a real CMoviePlayer (~CMoviePlayer @0x38fc0,
+// CloseSmacker @0x17c9b0); its EH-framed dtor runs before RezFree. Reloc-masked.
 
 // The Smacker frame-step wrapper (FUN_0057c8e0): __stdcall(handle, frame); ret
 // nonzero while more frames remain (PTR__SmackGoto@8). Reloc-masked.
@@ -1340,9 +1336,9 @@ void CCreditsState::ReleaseResources() {
     }
     // Cache the video handle in a local so it stays pinned in edi across the
     // Teardown call (retail reuses the same register for the RezFree push).
-    CCreditsVideo* vh = m_videoHandle;
+    CMoviePlayer* vh = m_videoHandle;
     if (vh) {
-        ((CMoviePlayer*)vh)->~CMoviePlayer();
+        vh->~CMoviePlayer();
         RezFree(vh);
         m_videoHandle = 0;
     }
@@ -1391,7 +1387,7 @@ i32 CCreditsState::StepVideo() {
         CCreditsDrawHolder* dst = v->m_18;
         CCreditsDrawHolder* src = v->m_14;
         if (!Eng_SmackStep(dst->m_2c->m_8, -1)) {
-            ((CMoviePlayer*)m_videoHandle)->CloseSmacker();
+            m_videoHandle->CloseSmacker();
             ret = FinishState();
         }
         if (dst && src) {
@@ -2052,7 +2048,6 @@ SIZE_UNKNOWN(CCreditzImageRoot);
 SIZE_UNKNOWN(CCreditzSoundMgr);
 SIZE_UNKNOWN(CCreditzRegSet);
 SIZE_UNKNOWN(CCreditzOwner);
-SIZE_UNKNOWN(CCreditsVideo);
 SIZE_UNKNOWN(CCreditsSurface);
 SIZE_UNKNOWN(CCreditsDrawHolder);
 SIZE_UNKNOWN(CCreditsDrawView);

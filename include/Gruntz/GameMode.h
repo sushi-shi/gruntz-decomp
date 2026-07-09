@@ -186,7 +186,7 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 // declared so the leaf members below are typed to their real class (no per-site
 // cast). Each is a pointer slot, so the typing is codegen-neutral.
 struct CMenuMusic;       // CMenuState::m_1bc       - menu music controller
-struct CCreditsVideo;    // CCreditsState::m_videoHandle - Smacker video handle
+class CMoviePlayer;      // CCreditsState::m_videoHandle - real Smacker video player
 struct CBootyBonusState; // CMultiBootyState::m_bonusState - bonus scroll/flags object
 struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
                     // (the created "SimpleAnimation" sprite - the shared CGameObject; the booty
@@ -350,7 +350,7 @@ public:
     char m_pad1f4[0x208 - 0x1f4];
     i32 m_videoPlaying; // +0x208 video playing gate
     char m_pad20c[0x210 - 0x20c];
-    CCreditsVideo* m_videoHandle; // +0x210 Smacker video handle
+    CMoviePlayer* m_videoHandle; // +0x210 Smacker video player (real CMoviePlayer)
 
     i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3); // 0x38d20 (slot 1, called non-virtually)
     i32 InitAttractTitle();
