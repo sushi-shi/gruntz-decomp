@@ -128,27 +128,8 @@ i32 OptOwner_c4b30::Resolve() {
 // Local placeholder view of the real SoundStream (include/Dsndmgr/SoundStream.h);
 // 0x137a80 is canonically SoundStream::Stop (minervainner / SoundStreamTeardown.cpp),
 // so name the method Stop here too (was the mislabel "Free").
-// The map holder: ClearMap lives in the CDDrawMapHolder base; the keyed
-// prune RemoveKeysEqual_157c70 is on the CDDrawSubMgrLeafScan view. m_2c is the
-// freeable inner at +0x2c.
-// CDDrawSubMgrLeafScan (the RemoveKeysEqual_157c70 reader) now comes from the shared
-// <DDrawMgr/DDrawSubMgrLeafScan.h> (included below the file's other headers).
-struct Holder_f9840 {
-    char m_pad0[0x28];
-    CDDrawSubMgrLeafScan* m_28; // +0x28
-};
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc): same m_28-intermediate register
-// micro-diff as Reset; logic + named callees + the "_" string literal match
-// retail, ~98.8%.
-RVA(0x000de140, 0x33)
-void CGameModeBase::ResetPreview() {
-    if (m_c->m_28->m_2c != 0) {
-        ((SoundStream*)m_c->m_28->m_2c)->Stop();
-    }
-    m_c->m_28->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
-    BaseCleanup();
-}
+// (CGameModeBase::ResetPreview @0xde140 re-homed to src/Gruntz/GameMode.cpp;
+// the Holder_f9840 context view is hoisted to <Gruntz/GameModeBase.h>.)
 
 // ===========================================================================
 // 0x000f8ec0 (80B) - if the init flag is set, walk key codes 1..0x7f dispatching
@@ -176,19 +157,7 @@ i32 SfDeviceInitKeys() {
     return 1;
 }
 
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc): logic byte-faithful (every load/
-// call/offset + the 3 named callees match); residual is the m_28 intermediate
-// register choice in the pointer chain (retail reuses eax: eax->eax->ecx; cl
-// here picks fresh ecx/edx) - a 2-3 byte modrm-field micro-diff, ~98.7%.
-RVA(0x000f9840, 0x29)
-void CGameModeBase::Reset() {
-    if (m_c->m_28->m_2c != 0) {
-        ((SoundStream*)m_c->m_28->m_2c)->Stop();
-    }
-    m_c->m_28->ClearMap();
-    BaseCleanup();
-}
+// (CGameModeBase::Reset @0xf9840 re-homed to src/Gruntz/GameMode.cpp.)
 
 // ===========================================================================
 // 0x000faec0 (103B) - per-frame present/refresh of the bound view. If the
@@ -468,7 +437,6 @@ SIZE_UNKNOWN(DlgData_be820);
 SIZE_UNKNOWN(Dst_16f6e0);
 SIZE_UNKNOWN(EntryOwner_c0460);
 SIZE_UNKNOWN(Entry_c0460);
-SIZE_UNKNOWN(Holder_f9840);
 SIZE_UNKNOWN(Host_c2a80);
 SIZE_UNKNOWN(Init8_1104f0);
 SIZE_UNKNOWN(Mid_faec0);

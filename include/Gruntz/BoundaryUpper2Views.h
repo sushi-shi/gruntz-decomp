@@ -163,41 +163,8 @@ struct CDDSurface {
 };
 SIZE_UNKNOWN(CDDSurface);
 
-// 0x143040 - CDDrawPtrCollections factory (allocate+zero a 0x38-byte node, Init, Add).
-struct CDDPalette {
-    i32 m_0;
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-    i32 m_10;
-    i32 m_14;
-    i32 m_18;
-    i32 _1c[(0x2c - 0x1c) / 4];
-    i32 m_2c;
-    i32 m_30;
-    i32 m_34;
-    CDDPalette() {
-        m_4 = 0;
-        m_0 = 0;
-        m_8 = 0;
-        m_c = 0;
-        m_10 = 0;
-        m_34 = 0;
-        m_18 = 0;
-        m_14 = 0;
-        m_2c = 0;
-        m_30 = 0;
-    }
-    i32 Init(i32, i32, i32); // 0x147390
-    void Cleanup();          // 0x147530
-};
-SIZE_UNKNOWN(CDDPalette);
-struct CDDrawPtrCollections {
-    i32 m_0;               // +0x00
-    void Add(CDDPalette*); // 0x142eb0
-    CDDPalette* Create(i32 a, i32 b);
-};
-SIZE_UNKNOWN(CDDrawPtrCollections);
+// (CDDPalette / CDDrawPtrCollections factory views dissolved: Create @0x143040
+// re-homed to src/DDrawMgr/DDrawPtrCollections.cpp onto the canonical classes.)
 
 // 0x1509c0 - CWwdGameObject visibility test.
 struct WwdExtent {

@@ -206,6 +206,7 @@ struct CDDPalette {
     inline void* operator new(u32);
 
     void Teardown();                           // 0x147530  == CDDPalette::Destroy
+    i32 Init390(void* dd, i32 a, i32 b);       // 0x147390  == CDDPalette::Create (DirectDrawMgr.h)
     i32 Init(void* dd, void* rgb, i32 flags);  // 0x1474d0  == CDDPalette::CreateRGB
     i32 Init2(void* arg, i32 a, i32 b);        // 0x147410  == CDDPalette::LoadFromFile
     i32 Init3(void* arg, i32 a, i32 b, i32 c); // 0x147840  == CDDPalette::CreateFromTrailing
@@ -788,6 +789,27 @@ RVA(0x00142f40, 0x7c)
 CDDPalette* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
     CDDPalette* item = new CDDPalette;
     if (!item->Init2(m_surf0, a, b)) {
+        if (item) {
+            item->Teardown();
+            RezFree(item);
+        }
+        return 0;
+    }
+    AddItemB(item);
+    return item;
+}
+
+// ---------------------------------------------------------------------------
+// Create (0x143040).  Sibling of MakeB2: RezAlloc a 0x38-byte CDDPalette, init it
+// via CDDPalette::Create (0x147390) with (m_surf0, a, b); on success add to pool B
+// and return it, else tear down + RezFree and return 0.
+// (re-homed from src/Stub/BoundaryUpper2.cpp; dissolves the CDDPalette/
+// CDDrawPtrCollections placeholder views.)
+// ---------------------------------------------------------------------------
+RVA(0x00143040, 0x7c)
+CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
+    CDDPalette* item = new CDDPalette;
+    if (!item->Init390(m_surf0, a, b)) {
         if (item) {
             item->Teardown();
             RezFree(item);

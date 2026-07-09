@@ -269,6 +269,38 @@ void CBootyState::ReleaseResources() {
 }
 
 // ===========================================================================
+// CGameModeBase cleanup pair (re-homed from src/Stub/ReconBatch2.cpp; the base
+// the game-state classes chain their teardown to). Stop the owned sound
+// (SoundStream::Stop), clear/prune the sub-manager map, then BaseCleanup.
+// m_c->m_28 is re-read each statement (retail does not cache it).
+// ===========================================================================
+// 0x0f9840 - Reset: ClearMap the whole sub-manager map.
+// @early-stop
+// ~98.7% m_28-intermediate regalloc wall (retail reuses eax->eax->ecx; cl picks
+// fresh ecx/edx) - a 2-3 byte modrm micro-diff, not source-steerable.
+RVA(0x000f9840, 0x29)
+void CGameModeBase::Reset() {
+    if (m_c->m_28->m_2c != 0) {
+        ((SoundStream*)m_c->m_28->m_2c)->Stop();
+    }
+    m_c->m_28->ClearMap();
+    BaseCleanup();
+}
+
+// 0x0de140 - ResetPreview: prune the PREVIEW-prefixed keys instead of clearing.
+// @early-stop
+// ~98.8% - same m_28-intermediate regalloc wall as Reset.
+extern char s_PREVIEW_6135e8[]; // "PREVIEW" (bound in Globals.cpp; reloc-masked)
+RVA(0x000de140, 0x33)
+void CGameModeBase::ResetPreview() {
+    if (m_c->m_28->m_2c != 0) {
+        ((SoundStream*)m_c->m_28->m_2c)->Stop();
+    }
+    m_c->m_28->RemoveKeysEqual_157c70(s_PREVIEW_6135e8, "_");
+    BaseCleanup();
+}
+
+// ===========================================================================
 // The concrete states - each overrides Update() to return its state-ID tag.
 // ===========================================================================
 

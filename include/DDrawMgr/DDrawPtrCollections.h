@@ -62,6 +62,7 @@ public:
     CDDSurface* Createae8_1(i32 a);                             // 0x142da0 (vtbl ae8, slot 2)
     CDDSurface* MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60
     CDDPalette* MakeB(void* rgb, i32 flags);                    // 0x142fc0
+    CDDPalette* Create(i32 a, i32 b);                          // 0x143040 (init via 0x147390)
     CDDPalette* MakeB2(i32 a, i32 b);                           // 0x142f40 (init via 0x147410)
     CDDPalette* MakeB3(i32 a, i32 b, i32 c);                    // 0x1430c0 (init via 0x147840)
 

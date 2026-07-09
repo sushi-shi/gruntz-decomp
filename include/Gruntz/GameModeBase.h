@@ -6,7 +6,17 @@
 
 #include <rva.h>
 
-class Holder_f9840;
+class CDDrawSubMgrLeafScan; // m_28 sub-manager (full type in DDrawSubMgrLeafScan.h)
+
+// The mode's context holder (CGameModeBase::m_c). Identity unrecovered (the
+// _f9840 suffix is a placeholder); only the +0x28 leafscan sub-manager the
+// Reset/ResetPreview cleanup pair touches is modeled.
+SIZE_UNKNOWN(Holder_f9840);
+struct Holder_f9840 {
+    char m_pad0[0x28];
+    CDDrawSubMgrLeafScan* m_28; // +0x28  map sub-manager (ClearMap / RemoveKeysEqual_157c70)
+};
+
 SIZE_UNKNOWN(CGameModeBase);
 struct CGameModeBase {
     char m_pad0[0xc];

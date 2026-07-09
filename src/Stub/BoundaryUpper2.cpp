@@ -318,24 +318,9 @@ i32 CDDSurface::Restore(void* arg1, i32 arg2) {
     return hr == 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x143040 - CDDrawPtrCollections factory: allocate+zero a 0x38-byte node, Init it
-// (this->m_0, a, b); on success Add it to this and return it, else Cleanup+free and
-// return 0. __thiscall, 2 args.
-// ---------------------------------------------------------------------------
-RVA(0x00143040, 0x7c)
-CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
-    CDDPalette* o = new CDDPalette();
-    if (!o->Init(m_0, a, b)) {
-        if (o) {
-            o->Cleanup();
-            RezFree(o);
-        }
-        return 0;
-    }
-    Add(o);
-    return o;
-}
+// (CDDrawPtrCollections::Create @0x143040 re-homed to
+// src/DDrawMgr/DDrawPtrCollections.cpp as a sibling of MakeB2; the CDDPalette /
+// CDDrawPtrCollections placeholder views are dissolved onto the canonicals.)
 
 // ---------------------------------------------------------------------------
 // 0x1509c0 - CWwdGameObject visibility test: derive the four edges from the
