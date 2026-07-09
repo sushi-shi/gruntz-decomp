@@ -63,7 +63,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     if (key >= g_typeLo && key <= g_typeHi) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
+    if (g_typeColl.Find(key, 0)) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
     void* item = g_projActCache;

@@ -90,7 +90,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
+    if (g_nameReg.Find(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -120,7 +120,7 @@ static inline CDropEntry* DropLookup(i32 coord) {
     if (coord >= g_dropLo && coord <= g_dropHi) {
         return (CDropEntry*)(g_dropBase + (coord - g_dropLo) * g_dropStride);
     }
-    if ((i32)((_zvec*)&g_dropColl)->GrowTo(coord, 0)) {
+    if (g_dropColl.Find(coord, 0)) {
         return (CDropEntry*)(g_dropBase + (coord - g_dropLo) * g_dropStride);
     }
     void* item = g_actCache;

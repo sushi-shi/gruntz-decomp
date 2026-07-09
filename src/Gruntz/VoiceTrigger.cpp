@@ -11,7 +11,7 @@
 // only on the CUserLogic base hierarchy from <Gruntz/UserLogic.h>, and Tick is a
 // plain __thiscall member whose codegen depends only on its body + offsets).
 // Only offsets / code bytes are load-bearing; names are placeholders.
-#include <Gruntz/VoiceTrigger.h> // canonical CVoiceTrigger : CUserLogic
+#include <Gruntz/VoiceTrigger.h>          // canonical CVoiceTrigger : CUserLogic
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 #include <Wap32/ZVec.h>
@@ -59,7 +59,7 @@ static inline CVTrigEntry* VTrigLookup(i32 coord) {
     if (coord >= g_vtrigLo && coord <= g_vtrigHi) {
         return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
     }
-    if ((i32)((_zvec*)&g_vtrigColl)->GrowTo(coord, 0)) {
+    if (g_vtrigColl.Find(coord, 0)) {
         return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
     }
     void* item = g_actCache;
@@ -106,7 +106,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
+    if (g_nameReg.Find(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -134,7 +134,14 @@ namespace m4 {
 } // namespace m4
 class CGruntSpawnConfig {
 public:
-    i32 SpawnVoiceDriver(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // real @0x11b3b0 = 6 args (ret 0x18)
+    i32 SpawnVoiceDriver(
+        i32 a,
+        i32 b,
+        i32 c,
+        i32 d,
+        i32 e,
+        i32 f
+    ); // real @0x11b3b0 = 6 args (ret 0x18)
 };
 struct CVoiceSink {
     // QueryAt(x, y, &m_object->m_134, &outA, &outB, &m_object->m_144) -> entity* (or 0).

@@ -129,7 +129,7 @@ static inline CToobEntry* ToobLookup(i32 coord) {
     if (coord >= g_toobLo && coord <= g_toobHi) {
         return (CToobEntry*)(g_toobBase + (coord - g_toobLo) * g_toobStride);
     }
-    if ((i32)((_zvec*)&g_toobColl)->GrowTo(coord, 0)) {
+    if (g_toobColl.Find(coord, 0)) {
         return (CToobEntry*)(g_toobBase + (coord - g_toobLo) * g_toobStride);
     }
     void* item = g_actCache;
@@ -187,7 +187,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
+    if (g_nameReg.Find(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;

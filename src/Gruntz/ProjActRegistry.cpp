@@ -30,7 +30,9 @@ public:
 // is the slow binary-search probe the coordinate->entry lookup falls back to.
 // SetActiveRange @0x3742 = CZDArrayDerived::Construct, Find @0x16da80 = _zvec::GrowTo (both from
 // the shared <Wap32/ZVec.h> + <Wap32/ZDArrayDerived.h> headers, added above); cast at each call.
-struct CProjReg {};
+struct CProjReg {
+    i32 Find(i32 coord, i32 z); // 0x16da80 (== _zvec::GrowTo; external, reloc-masked)
+};
 DATA(0x00229388)
 extern CProjReg g_projReg;
 
@@ -65,7 +67,7 @@ static inline R3Entry* R3Lookup(i32 coord) {
     if (coord >= g_projRegLo && coord <= g_projRegHi) {
         return (R3Entry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
-    if (((_zvec*)&g_projReg)->GrowTo(coord, 0)) {
+    if (g_projReg.Find(coord, 0)) {
         return (R3Entry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
     void* item = g_projActCache;
@@ -138,7 +140,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     if (key >= g_typeLo && key <= g_typeHi) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
-    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
+    if (g_typeColl.Find(key, 0)) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
     void* item = g_projActCache;

@@ -60,8 +60,6 @@ public:
 // CDDrawSurfaceMgr (partial view): only the members these two methods touch.
 typedef i32(__cdecl* SnapRunCallback)(void* mgr, void* ser, i32 mode, i32, i32);
 
-struct CDDrawChildGroupOps; // defined below (m_08's blit-op target)
-
 class CDDrawSurfaceMgr {
 public:
     i32 SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name, i32 arg3);
@@ -69,8 +67,12 @@ public:
     // but reads the stream back (Read instead of Write) and replays modes 2/6/7/8.
     i32 RestoreChildren(SnapRunCallback cb, char* name, i32 arg3);
 
-    char m_pad00[0x08];        // +0x00..+0x07 (vptr + slot)
-    CDDrawChildGroupOps* m_08; // +0x08  CDDrawChildGroup child (the blit-op target)
+    char m_pad00[0x08]; // +0x00..+0x07 (vptr + slot)
+    // The m_08 child (CDDrawChildGroup) IS the canonical CWwdObjMgr: the blit-op
+    // ladder drives its CountActive/ForEach*/LoadObjects/Deserialize on this as `this`
+    // (was the CDDrawChildGroupOps cast-at-each-call view). Its Refresh @0x159ef0 is a
+    // CDDrawSubMgrPages method (cross-call, still cast at the single Method_159ef0 site).
+    CWwdObjMgr* m_08; // +0x08  CWwdObjMgr child (the blit-op target)
     char m_pad0c[0x24 - 0x0c];
     CGameLevel* m_24; // +0x24  CGameLevel child (the blit-op target)
     char m_pad28[0x3c - 0x28];
@@ -107,18 +109,11 @@ public:
     char m_pad20[0x0c];  // +0x20..+0x2b (cursors + tail)
 };
 
-// The child blit-op targets. m_08 child (CDDrawChildGroup) carries ops 0x15abc0 /
-// 0x15acb0 / 0x15ac20 / 0x15b020; the m_24 child (CGameLevel) carries 0x160f70.
-SIZE_UNKNOWN(CDDrawChildGroupOps);
-struct CDDrawChildGroupOps {
-    // Probe @0x15abc0 IS CWwdObjMgr::CountActive_15abc0; cast at the call.
-    // BlitA @0x15acb0 IS CWwdObjMgr::ForEachProbe_15acb0; cast at the call.
-    // BlitB @0x15ac20 IS CWwdObjMgr::ForEachDispatch_15ac20; cast at the call.
-    // BlitC @0x15b020 IS CWwdObjMgr::ForEachSerialize_15b020; cast at the call.
-    // Refresh @0x159ef0 IS CDDrawSubMgrPages::Method_159ef0; cast at the call.
-    // LoadA @0x15ad30 IS CWwdObjMgr::LoadObjects; cast at the call.
-    // LoadB @0x15b0e0 IS CWwdObjMgr::Deserialize_15b0e0; cast at the call.
-};
+// The m_08 child's blit ops are the canonical CWwdObjMgr methods (CountActive_15abc0
+// / ForEachProbe_15acb0 / ForEachDispatch_15ac20 / ForEachSerialize_15b020 /
+// LoadObjects / Deserialize_15b0e0, reached cast-free through the CWwdObjMgr* m_08);
+// its Refresh @0x159ef0 is CDDrawSubMgrPages::Method_159ef0 (the one remaining
+// cross-class cast). The m_24 child (CGameLevel) carries 0x160f70.
 
 // CTime helpers come from MFC (<Mfc.h>): CTime::CTime() (0x1b30b1) and
 // CTime::GetLocalTm(struct tm*) (0x1b30f0).
@@ -154,7 +149,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_mday;
     *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_year + 0x76c;
     strcpy(header + 0x10, name);
-    i32 probe = ((CWwdObjMgr*)m_08)->CountActive_15abc0();
+    i32 probe = m_08->CountActive_15abc0();
     *(u32*)(header + 0x114) = g_61ab14;
     *(i32*)(header + 0x118) = probe;
     ((CFileMem*)&S)->Write((const void*)header, 0x120);
@@ -163,13 +158,13 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_3c && cb(this, &S, 1, 0, 0) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_08)->ForEachProbe_15acb0((i32)&S, arg3) == 0) {
+    if (m_08->ForEachProbe_15acb0((i32)&S, arg3) == 0) {
         return 0;
     }
     if (m_3c && cb(this, &S, 3, 0, 0) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_08)->ForEachDispatch_15ac20((i32)&S, 3, arg3) == 0) {
+    if (m_08->ForEachDispatch_15ac20((i32)&S, 3, arg3) == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 3, 0, 0) == 0) {
@@ -178,7 +173,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_3c && cb(this, &S, 4, 0, 0) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_08)->ForEachSerialize_15b020((CSerialArchive*)&S, arg3) == 0) {
+    if (m_08->ForEachSerialize_15b020((CSerialArchive*)&S, arg3) == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 4, 0, 0) == 0) {
@@ -187,7 +182,7 @@ i32 CDDrawSurfaceMgr::SnapshotChildren(SnapRunCallback cb, i32 arg1, char* name,
     if (m_3c && cb(this, &S, 5, 0, 0) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_08)->ForEachDispatch_15ac20((i32)&S, 5, arg3) == 0) {
+    if (m_08->ForEachDispatch_15ac20((i32)&S, 5, arg3) == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 5, 0, 0) == 0) {
@@ -247,15 +242,13 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     }
     g_61ab14 = *(u32*)(header + 0x114);
     ((CDDrawSubMgrPages*)m_08)->Method_159ef0();
-    if (((CWwdObjMgr*)m_08)
-            ->LoadObjects((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)
-        == 0) {
+    if (m_08->LoadObjects((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3) == 0) {
         return 0;
     }
     if (m_3c == 0 || m_3c(this, &S, 6, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_08)->ForEachDispatch_15ac20((i32)&S, 6, arg3) == 0) {
+    if (m_08->ForEachDispatch_15ac20((i32)&S, 6, arg3) == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 6, 0, 0) == 0) {
@@ -264,8 +257,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (m_3c == 0 || m_3c(this, &S, 7, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_08)
-            ->Deserialize_15b0e0((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)
+    if (m_08->Deserialize_15b0e0((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)
         == 0) {
         return 0;
     }
@@ -275,7 +267,7 @@ i32 CDDrawSurfaceMgr::RestoreChildren(SnapRunCallback cb, char* name, i32 arg3) 
     if (m_3c == 0 || m_3c(this, &S, 8, arg3, (i32)header) == 0) {
         return 0;
     }
-    if (((CWwdObjMgr*)m_08)->ForEachDispatch_15ac20((i32)&S, 8, arg3) == 0) {
+    if (m_08->ForEachDispatch_15ac20((i32)&S, 8, arg3) == 0) {
         return 0;
     }
     if (m_24->EditDispatch((void*)&S, 8, 0, 0) == 0) {
