@@ -12,6 +12,8 @@
 #include <Mfc.h> // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
+#include <Gruntz/SerialArchive.h>  // CSerialArchive (Read +0x2c / Write +0x30) for SerializeMove
+#include <Gruntz/SerialObjRef.h>   // the +0x34 serialized-object-reference (Chain @0x8c00)
 
 #include <rva.h>
 
@@ -580,6 +582,21 @@ i32 CInGameIcon::HandleInput() {
 }
 
 // ===========================================================================
+// CInGameIcon::RunAction  (0x097880)
+// ===========================================================================
+// Resolve g_iconActionTable's slot for `id` (the inline zvec ResolveSlot fast
+// [lo,hi] range + slow GrowTo/GetRetAddr/Set rebuild) and, if it holds a registered
+// handler PMF, re-resolve the slot and dispatch the PMF on `this`. ResolveSlot has
+// side effects (m_grown=0, may grow) so cl re-evaluates it for the guarded call
+// rather than CSE-ing - hence the two inline expansions.
+RVA(0x00097880, 0x102)
+void CInGameIcon::RunAction(i32 id) {
+    if (*(IconActHandler*)ResolveSlot(&g_iconActionTable, id) != 0) {
+        (this->*(*(IconActHandler*)ResolveSlot(&g_iconActionTable, id)))();
+    }
+}
+
+// ===========================================================================
 // InitIconActionTable  (0x097800)
 // ===========================================================================
 // File-scope static-init thunk: construct the action dispatch table over the
@@ -637,6 +654,19 @@ void InitIconStateTable() {
 }
 
 // ===========================================================================
+// CInGameIcon::RunState  (0x097de0)
+// ===========================================================================
+// Same dispatcher archetype as RunAction, over g_iconStateTable: resolve the slot
+// for `id` (inline zvec ResolveSlot) and, if it holds a registered handler PMF,
+// re-resolve and dispatch the PMF on `this` (two inline ResolveSlot expansions).
+RVA(0x00097de0, 0x102)
+void CInGameIcon::RunState(i32 id) {
+    if (*(IconActHandler*)ResolveSlot(&g_iconStateTable, id) != 0) {
+        (this->*(*(IconActHandler*)ResolveSlot(&g_iconStateTable, id)))();
+    }
+}
+
+// ===========================================================================
 // RegisterIconState  (0x097f40)
 // ===========================================================================
 // Register one icon-state handler into g_iconStateTable (key A -> 0x40370b):
@@ -690,6 +720,41 @@ i32 CInGameIcon::RefreshCell() {
     CGameObject* r = m_38;
     r->m_flags |= 0x10000;
     return 0;
+}
+
+// ===========================================================================
+// CInGameIcon::SerializeMove  (0x0983e0)  -- vtable slot 1 (the in-level serialize)
+// ===========================================================================
+// The tile-logic-leaf slot-1 serialize: chain the base CUserLogic::SerializeChain
+// (bail 0), the +0x34 serialized-object-reference (CSerialObjRef::Chain, bail 0),
+// then round-trip the icon's two i64 drift fields (m_driftPos @+0x58, m_driftThresh
+// @+0x60; 8 bytes each) per mode (4 = write @+0x30, 7 = read @+0x2c). Returns 1.
+// The archive is the slot-1 CGruntArchive; its Read/Write live at the shared
+// CSerialArchive slots (+0x2c/+0x30), reached by that view at the calls.
+RVA(0x000983e0, 0x98)
+i32 CInGameIcon::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
+        return 0;
+    }
+    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) == 0) {
+        return 0;
+    }
+    // The two i64 drift fields sit contiguous (m_driftPos @+0x58, m_driftThresh @+0x60);
+    // retail walks one pointer over the blob (edi += 0x58 hoisted, then edi += 8).
+    char* p = (char*)&m_driftPos;
+    switch (mode) {
+        case 4:
+            ((CSerialArchive*)ar)->Write(p, 8);
+            p += 8;
+            ((CSerialArchive*)ar)->Write(p, 8);
+            break;
+        case 7:
+            ((CSerialArchive*)ar)->Read(p, 8);
+            p += 8;
+            ((CSerialArchive*)ar)->Read(p, 8);
+            break;
+    }
+    return 1;
 }
 
 // Clear the "occupied" bit (0x40000) in the tile cell the owning object stands

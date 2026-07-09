@@ -118,6 +118,8 @@ public:
     i32 Check(); // -> 0x1fb4
 
     i32 HandleInput();                                  // 0x097680
+    void RunAction(i32 id);                             // 0x097880 (dispatch g_iconActionTable[id] on this)
+    void RunState(i32 id);                              // 0x097de0 (dispatch g_iconStateTable[id] on this)
     i32 RefreshCell();                                  // 0x098340
     i32 PlaceAt(i32 idx, i32 gridBase);                 // 0x0986b0
     i32 Serialize(CArchive* ar, i32 tag, i32 a, i32 b); // 0x098c90
@@ -138,5 +140,9 @@ public:
     CGameObject* m_glitterSprite; // +0x78  glitter overlay FX sprite (powerup/curse)
 };
 VTBL(CInGameIcon, 0x1e7d04);
+
+// The handler PMF stored in each g_icon*Table slot (a 4-byte code pointer on this
+// complete single-inheritance class; RunAction/RunState dispatch it on `this`).
+typedef i32 (CInGameIcon::*IconActHandler)();
 
 #endif // GRUNTZ_GRUNTZ_CINGAMEICON_H
