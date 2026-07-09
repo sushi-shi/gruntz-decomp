@@ -89,6 +89,14 @@ static const char s_extPal[] = ".PAL";
 DATA(0x00283ee8)
 extern "C" IDirectDraw2* g_DirectDraw; // 0x683ee8
 
+// The global enumerated-display-mode array (CObArray of 0x6c-byte mode records).
+DATA(0x00283ec8)
+extern CDdObArray g_modeArray; // 0x683ec8
+
+// The context (owner window) that produced the current g_DirectDraw object.
+DATA(0x00283ee4)
+extern void* g_ddCreateCtx; // 0x683ee4
+
 // ===========================================================================
 // CDDSurface (DIRSURF.CPP) - the IDirectDrawSurface wrapper thunks.
 // ===========================================================================
@@ -705,6 +713,16 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
 // CDirectDrawMgr (DDRAWMGR.CPP) - the device manager.
 // ===========================================================================
 
+// 0x1413d0 - set the four GetErrorString reporting-mode flags (log / message-box /
+// beep / third) from the four args. __cdecl free helper.
+RVA(0x001413d0, 0x27)
+void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
+    g_logEnabled = log;
+    g_msgBoxEnabled = msgBox;
+    g_beepEnabled = beep;
+    g_thirdEnabled = third;
+}
+
 // CDirectDrawMgr::GetErrorString
 RVA(0x00141400, 0x835)
 void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
@@ -1045,6 +1063,22 @@ i32 CDirectDrawMgr::CreateDevice(
     return 1;
 }
 
+// 0x143390 - copy a 0x6c-byte enumerated display-mode record and append it to the
+// global mode array. __stdcall (arg1 unused). Returns 1.
+// @early-stop
+// regalloc/scheduling wall (permuter-confirmed no-improvement, operand-order search
+// exhausted): logic byte-faithful (operator new(0x6c) + the 0x1b-dword rep-movs copy +
+// g_modeArray.SetAtGrow(m_nSize, rec)). Residual is (a) MSVC scheduling the operator-new
+// `add esp,4` cleanup after `mov esi,[mode]` vs retail after `mov edi,eax`, and (b) the
+// m_nSize arg materialized in eax vs retail's ecx - both pure regalloc, not source-steerable.
+RVA(0x00143390, 0x35)
+i32 __stdcall AddDisplayMode(void* mode, i32 a1) {
+    void* rec = operator new(0x6c);
+    memcpy(rec, mode, 0x6c);
+    g_modeArray.SetAtGrow(g_modeArray.m_nSize, rec);
+    return 1;
+}
+
 // CDirectDrawMgr::GetDisplayMode (__thiscall, ret 0xc => 3 args). Zero a scratch
 // DDSURFACEDESC, query IDirectDraw2::GetDisplayMode and hand back width / height /
 // bit-depth through the out-pointers; on failure zero all three, report and fail.
@@ -1068,6 +1102,23 @@ i32 CDirectDrawMgr::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     *pWidth = desc.dwWidth;
     *pHeight = desc.dwHeight;
     *pBpp = desc.ddpfPixelFormat.dwRGBBitCount;
+    return 1;
+}
+
+// 0x143880 - create the process DirectDraw object via a supplied factory callback and,
+// on success, cache it (g_DirectDraw) with its owner context (g_ddCreateCtx); returns 0
+// on success, 1 if the factory is null or fails. __stdcall (ret 0x10 => 4 args).
+RVA(0x00143880, 0x3b)
+i32 __stdcall CreateDirectDrawVia(void* ctx, i32 a1, i32 a2,
+                                  IDirectDraw2*(__cdecl* factory)(void*, i32, i32)) {
+    if (factory != 0) {
+        IDirectDraw2* dd = factory(ctx, a1, a2);
+        if (dd != 0) {
+            g_DirectDraw = dd;
+            g_ddCreateCtx = ctx;
+            return 0;
+        }
+    }
     return 1;
 }
 
