@@ -88,9 +88,9 @@ struct CSpawnOwner {
 // ---------------------------------------------------------------------------
 class CGruntSpawnConfig {
 public:
-    BOOL Init(CSpawnOwner* owner);                           // 0x11adc0
-    void Clear();                                            // 0x11ae30
-    BOOL LoadGruntVoices();                                  // 0x11af00
+    BOOL Init(CSpawnOwner* owner); // 0x11adc0
+    void Clear();                  // 0x11ae30
+    BOOL LoadGruntVoices();        // 0x11af00
     RVA(0x0011af90, 0xb)
     void ClearSprites() {
         m_08 = 0;
@@ -109,17 +109,19 @@ public:
     // a file-scope __stdcall sibling (see the .cpp).
     i32 SpawnVoiceDriver(i32, i32, i32, i32, i32, i32); // 0x11b3b0
     CSpawnList* BuildVoiceSoundList(i32 i);             // 0x11c210 (defined in VoiceSoundList.cpp)
-    void StopVoice(i32 id); // 0x11c730 (selective per-id voice teardown)
-    void DtorBody();        // 0x11c7b0 (the 2-iter pair teardown; == m_timer->Flush)
-    void Stop();            // reloc-masked (per-frame poll stop, via CGruntzMgr::m_timer)
-    void Tick();            // reloc-masked (BroadcastCmd 4/7)
-    void Teardown();        // reloc-masked (Close)
-    void ResetPicks();      // 0x11c7f0 (DtorBody + reset entry m_20s)
+    i32 AnyVoicePlaying();   // 0x11c6c0 (either slot m_08/m_0c has a non-zero m_playFlags)
+    i32 VoicePlaying(i32 i); // 0x11c700 (slot i's m_playFlags is non-zero)
+    void StopVoice(i32 id);  // 0x11c730 (selective per-id voice teardown)
+    void DtorBody();         // 0x11c7b0 (the 2-iter pair teardown; == m_timer->Flush)
+    void Stop();             // reloc-masked (per-frame poll stop, via CGruntzMgr::m_timer)
+    void Tick();             // reloc-masked (BroadcastCmd 4/7)
+    void Teardown();         // reloc-masked (Close)
+    void ResetPicks();       // 0x11c7f0 (DtorBody + reset entry m_20s)
     RVA(0x0011c830, 0x12)
     BOOL IsReady() {
         return m_00->m_100 != 0;
     }
-    ~CGruntSpawnConfig();   // 0x85df0
+    ~CGruntSpawnConfig(); // 0x85df0
 
     // --- fields (placeholders; offsets load-bearing) ---
     CSpawnOwner* m_00;  // +0x00

@@ -19,7 +19,9 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/StaticHazard.h>
 #include <Gruntz/GameRegistry.h>
-#include <Bute/ButeMgr.h> // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
+#include <Gruntz/SerialObjRef.h>  // SerialRef34()->Chain (0x8c00)
+#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
 #include <Globals.h>
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190).
@@ -509,3 +511,35 @@ SIZE_UNKNOWN(HazSndRoot);
 SIZE_UNKNOWN(HazStrMap);
 SIZE_UNKNOWN(HazSwitchSrc);
 SIZE_UNKNOWN(WwdAnimSub);
+
+// CStaticHazard::SerializeMove (0x0fc5b0), vtable slot 1 - stream the leaf pulse
+// state (m_54..m_68, six DWORDs) through the archive first, THEN chain the shared
+// serialize helper on `this` (gate) + the +0x34 CSerialObjRef sub-object; normalize
+// the ref result to a strict bool. The RollingBall::Serialize field-streaming
+// archetype, but with the field block emitted before the chain gates.
+RVA(0x000fc5b0, 0xf5)
+i32 CStaticHazard::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    CSerialArchive* arc = (CSerialArchive*)ar;
+    switch (mode) {
+        case 4:
+            arc->Write(&m_pulseEpoch, 4);
+            arc->Write(&m_activeWindow, 4);
+            arc->Write(&m_idleWindow, 4);
+            arc->Write(&m_fired, 4);
+            arc->Write(&m_tileCol, 4);
+            arc->Write(&m_tileRow, 4);
+            break;
+        case 7:
+            arc->Read(&m_pulseEpoch, 4);
+            arc->Read(&m_activeWindow, 4);
+            arc->Read(&m_idleWindow, 4);
+            arc->Read(&m_fired, 4);
+            arc->Read(&m_tileCol, 4);
+            arc->Read(&m_tileRow, 4);
+            break;
+    }
+    if (!SerializeChain((i32)ar, mode, a3, a4)) {
+        return 0;
+    }
+    return SerialRef34()->Chain(arc, mode, a3, (CSerialObj*)a4) != 0;
+}

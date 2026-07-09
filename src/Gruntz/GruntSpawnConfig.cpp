@@ -137,7 +137,6 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
 
 // CGruntSpawnConfig::ClearSprites (0x0011af90) is now an inline member in the header.
 
-
 // The bute manager singleton (?g_buteMgr, RVA 0x2453d8); DATA label owned by the
 // bute TU, declared extern here so the `ecx=&g_buteMgr; call GetIntDef` reloc-masks.
 extern CButeMgr g_buteMgr;
@@ -458,6 +457,33 @@ void CSpawnList::AddVoiceSound(CString s, i32 flag) {
 }
 
 // ===========================================================================
+// CGruntSpawnConfig::AnyVoicePlaying (0x11c6c0) / VoicePlaying (0x11c700)
+// ===========================================================================
+// Poll the two voice slots (m_08/m_0c) for a live play request: a slot is playing
+// when it is set and its play-flag word (+0x6c, CGruntVoice::m_playFlags) is
+// non-zero. AnyVoicePlaying walks both; VoicePlaying tests slot i.
+RVA(0x0011c6c0, 0x27)
+i32 CGruntSpawnConfig::AnyVoicePlaying() {
+    i32 i = 0;
+    CGruntVoice** p = &m_08;
+    for (; i < 2; i++, p++) {
+        if (*p != 0 && (*p)->m_playFlags != 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+RVA(0x0011c700, 0x20)
+i32 CGruntSpawnConfig::VoicePlaying(i32 i) {
+    CGruntVoice* v = (&m_08)[i];
+    if (v != 0 && v->m_playFlags != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+// ===========================================================================
 // CGruntSpawnConfig::StopVoice  (0x11c730)
 // ===========================================================================
 // Selective per-id teardown: of the two voice slots (m_08, m_0c), find the one
@@ -522,7 +548,6 @@ void CGruntSpawnConfig::ResetPicks() {
 }
 
 // CGruntSpawnConfig::IsReady (0x0011c830) is now an inline member in the header.
-
 
 SIZE_UNKNOWN(CGruntSpawnConfig);
 SIZE_UNKNOWN(CSpawnButeConfig);
