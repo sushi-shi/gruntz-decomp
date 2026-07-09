@@ -111,23 +111,28 @@ struct CFrameWorker {
 // `CSpriteObj` are placeholder field-views); folding all of B onto CGameObject is
 // deferred (it would touch several @early-stop leaves here) and is orthogonal to the
 // HUD-family split resolved above.
-// CGruntSprite / CGruntAnimPlayer now live in the shared <Gruntz/GruntSprite.h>.
-#include <Gruntz/GruntSprite.h>
+// These frame-cache / geometry methods are the created game sprite's own: they are
+// methods of the canonical CGameObject (<Gruntz/UserLogic.h>). CGameObject's fields
+// m_0c/+0x194(m_194)/+0x198(m_layer)/m_19c are ROLE-UNION - for a WwdFile-loaded object
+// they are world / source-def / layer / stamp, but for a CreateSprite'd sprite they are
+// the resource holder / cached CSprite / frame ptr / frame number. The reinterpreting
+// casts below are the authentic union access (one CGameObject, no RTTI to split it).
+#include <Gruntz/UserLogic.h>
 
 RVA(0x00150540, 0x65)
-void CGruntSprite::CacheFirstFrame(const char* name) {
+void CGameObject::ApplyName(const char* name) {
     CSprite* spr = 0;
-    ((CMapStringToOb*)&m_c->m_10->m_10map)->Lookup(name, (CObject*&)spr);
-    m_sprite = spr;
+    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_10->m_10map)->Lookup(name, (CObject*&)spr);
+    m_194 = (char*)spr; // +0x194 role-union: the cached sprite (vs a trigger's source-def)
     if (spr) {
         i32 n = spr->m_firstFrame;
-        m_frameNum = n;
+        m_190 = n; // +0x190 role-union: the cached frame number
         if (n >= spr->m_firstFrame && n <= spr->m_lastFrame) {
-            m_framePtr = spr->m_frames.m_pData[n];
+            m_layer = (CGameObjLayer*)spr->m_frames.m_pData[n]; // +0x198 union: the frame ptr
             return;
         }
     }
-    m_framePtr = 0;
+    m_layer = 0;
 }
 
 // ===========================================================================
@@ -145,17 +150,17 @@ void CGruntSprite::CacheFirstFrame(const char* name) {
 // sprite/frame eax<->ecx allocation; identical instruction multiset, ~84%. Same
 // wall as the sibling CacheFirstFrame (89%). Logic complete.
 RVA(0x001504d0, 0x6c)
-void CGruntSprite::CacheFrame(const char* name, i32 frame) {
+void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
     CSprite* spr = 0;
-    ((CMapStringToOb*)&m_c->m_10->m_10map)->Lookup(name, (CObject*&)spr);
-    m_sprite = spr;
+    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_10->m_10map)->Lookup(name, (CObject*&)spr);
+    m_194 = (char*)spr; // +0x194 union: cached sprite
     if (spr) {
         if (frame >= spr->m_firstFrame && frame <= spr->m_lastFrame) {
-            m_frameNum = frame;
-            m_framePtr = spr->m_frames.m_pData[frame];
+            m_190 = frame;
+            m_layer = (CGameObjLayer*)spr->m_frames.m_pData[frame]; // +0x198 union: frame ptr
         } else {
-            m_frameNum = frame;
-            m_framePtr = 0;
+            m_190 = frame;
+            m_layer = 0;
         }
     }
 }
@@ -334,15 +339,16 @@ DATA(0x002bf3bc)
 extern i32 g_defaultGeo; // VA 0x6bf3bc (RVA 0x2bf3bc)
 
 RVA(0x001505b0, 0x5c)
-i32 CGruntAnimPlayer::ApplyLookupGeometry(const char* name, i32 applyDefault) {
+i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     CSprite* spr = 0;
-    ((CMapStringToOb*)&m_c->m_2c->m_10map)->Lookup(name, (CObject*&)spr);
+    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_2c->m_10map)->Lookup(name, (CObject*&)spr);
     if (!spr) {
         return 0;
     }
-    ((CDDrawBlitParam*)&m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)(i32)spr);
+    // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
+    ((CDDrawBlitParam*)((char*)this + 0x1a0))->Setup_15c2d0((CDDrawBlitParamSrc*)(i32)spr);
     if (applyDefault) {
-        ((CAniAdvanceCursor*)&m_1a0)->Advance_15c360(g_defaultGeo);
+        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_defaultGeo);
     }
     return 1;
 }
@@ -359,11 +365,11 @@ i32 CGruntAnimPlayer::ApplyLookupGeometry(const char* name, i32 applyDefault) {
 // CacheFirstFrame 89%); the `mov [&spr],0` sinks past the arg pushes. ~73%; logic
 // complete, deferred to the final sweep.
 RVA(0x00150610, 0x41)
-i32 CGruntAnimPlayer::LookupAnimSprite(const char* name) {
+i32 CGameObject::LookupAnimSprite(const char* name) {
     CSprite* spr = 0;
-    ((CMapStringToOb*)&m_c->m_28->m_10map)->Lookup(name, (CObject*&)spr);
+    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_28->m_10map)->Lookup(name, (CObject*&)spr);
     if (spr != 0) {
-        m_19c = spr;
+        m_19c = (i32)spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
         return 1;
     }
     return 0;
@@ -378,10 +384,10 @@ i32 CGruntAnimPlayer::LookupAnimSprite(const char* name) {
 // SetGeometry(srcSprite), then - when the second arg is set - applies the global
 // default geometry source g_defaultGeo via the sibling setter. __thiscall, ret 8.
 RVA(0x00058b60, 0x2d)
-void CGruntAnimPlayer::ApplyGeometryDirect(i32 srcSprite, i32 applyDefault) {
-    ((CDDrawBlitParam*)&m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)srcSprite);
+void CGameObject::ApplyGeometryDirect(i32 srcSprite, i32 applyDefault) {
+    ((CDDrawBlitParam*)((char*)this + 0x1a0))->Setup_15c2d0((CDDrawBlitParamSrc*)srcSprite);
     if (applyDefault) {
-        ((CAniAdvanceCursor*)&m_1a0)->Advance_15c360(g_defaultGeo);
+        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_defaultGeo);
     }
 }
 
@@ -433,9 +439,6 @@ CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
 // SHARED ??_7CImage@@6B@ (0x1eaa2c) - no per-class VTBL (would collide/misname). Exact
 // size 0x34: the insert allocates the 0x34-byte raw CImage (ctor writes to m_30+0x30).
 SIZE(CFrameWorker, 0x34);
-SIZE_UNKNOWN(CGruntAnimPlayer);
-SIZE_UNKNOWN(CGruntAnimSub2);
-SIZE_UNKNOWN(CGruntSprite);
 SIZE_UNKNOWN(CSprite2);
 SIZE_UNKNOWN(CSprite2SubTable);
 

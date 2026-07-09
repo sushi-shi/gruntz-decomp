@@ -123,17 +123,22 @@ class CLogicHandlerMap {
 SIZE(CGameObject, 0x1dc);
 RELOC_VTBL(CGameObject, 0x001efb80); // vtable reloc-masks a bound datum (dtor-stamp verified)
 struct CGameObject {
-    void Construct(void* owner, i32 id, i32 z);        // 0x15b390  the engine ctor (base subobject)
-    void AddLogicHit(char* key);                       // 0x150f50
-    void AddLogicAttack(char* key);                    // 0x151030
-    void AddLogicBump(char* key);                      // 0x151110
-    void ApplyLookupSprite(const char* key, i32 flag); // 0x1504d0
-    void ApplyName(const char* name);                  // 0x150540
-    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
-    void LookupAnimSprite(const char* name);            // 0x150610  (anim-set cache)
-    i32 EnsureWorker80(CGameObject* src);               // 0x150eb0  (lazy worker @ +0x80, dispatch)
-    void EnsureWorker88(CGameObject* src);              // 0x150f90  (lazy worker @ +0x88, dispatch)
-    void EnsureWorker90(CGameObject* src);              // 0x151070  (lazy worker @ +0x90, dispatch)
+    void Construct(void* owner, i32 id, i32 z); // 0x15b390  the engine ctor (base subobject)
+    void AddLogicHit(char* key);                // 0x150f50
+    void AddLogicAttack(char* key);             // 0x151030
+    void AddLogicBump(char* key);               // 0x151110
+    // The created game-sprite's frame-cache + geometry methods (bodies in
+    // SpriteResource.cpp). They reinterpret the role-union fields m_0c/m_194/m_198(m_layer)
+    // /m_19c as the resource holder / cached sprite / frame ptr / frame number (see the
+    // field comments) - authentic union access, cast in the bodies.
+    void ApplyLookupSprite(const char* key, i32 flag);         // 0x1504d0 (frame-cache, 2-arg)
+    void ApplyName(const char* name);                          // 0x150540 (first-frame cache)
+    i32 ApplyLookupGeometry(const char* key, i32 flag);        // 0x1505b0
+    i32 LookupAnimSprite(const char* name);                    // 0x150610  (anim-set cache)
+    void ApplyGeometryDirect(i32 srcSprite, i32 applyDefault); // 0x58b60
+    i32 EnsureWorker80(CGameObject* src);  // 0x150eb0  (lazy worker @ +0x80, dispatch)
+    void EnsureWorker88(CGameObject* src); // 0x150f90  (lazy worker @ +0x88, dispatch)
+    void EnsureWorker90(CGameObject* src); // 0x151070  (lazy worker @ +0x90, dispatch)
 
     // The world's logic-handler name map (m_0c -> +0x14 -> +0x10). m_0c is the
     // family's generically-typed world/context slot; reached by documented offset.
@@ -466,7 +471,7 @@ public:
         CGameObject* o = m_object;
         i32 sx = *(i32*)((char*)this + 0x17c);
         if (o->m_screenX == sx && o->m_screenY == *(i32*)((char*)this + 0x180)) {
-        return 1;
+            return 1;
         }
         return 0;
     }

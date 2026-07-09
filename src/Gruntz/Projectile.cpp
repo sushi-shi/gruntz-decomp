@@ -741,11 +741,11 @@ void CProjectile::MovingSlot16() {
             // water tile: spill a splash then hide the projectile
             if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
                 && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
-                CProjRenderObj* fx =
-                    (CProjRenderObj*)reg->m_world->m_8
+                CGameObject* fx =
+                    reg->m_world->m_8
                         ->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
                 if (fx != 0) {
-                    fx->CacheFirstFrame("GAME_WATER");
+                    fx->ApplyName("GAME_WATER");
                     fx->ApplyLookupGeometry("GAME_WATER", 0);
                 }
             }
@@ -768,7 +768,7 @@ void CProjectile::MovingSlot16() {
                         // level death tile: spill the death-splash then hide
                         if (m_targetX < reg->m_viewOriginR && m_targetX >= reg->m_viewOriginL
                             && m_targetY < reg->m_viewOriginB && m_targetY >= reg->m_viewOriginT) {
-                            CProjRenderObj* fx = (CProjRenderObj*)reg->m_world->m_8->CreateSprite(
+                            CGameObject* fx = reg->m_world->m_8->CreateSprite(
                                 0,
                                 m_targetX,
                                 m_targetY,
@@ -777,7 +777,7 @@ void CProjectile::MovingSlot16() {
                                 0x40003
                             );
                             if (fx != 0) {
-                                fx->CacheFirstFrame("LEVEL_DEATHSPLASH");
+                                fx->ApplyName("LEVEL_DEATHSPLASH");
                                 fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
                             }
                         }
