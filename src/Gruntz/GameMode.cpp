@@ -82,6 +82,14 @@ public:
     void ClearWorkers();
 };
 
+// The owning game-manager (CState::m_4, a real CGruntzMgr*) reached through the
+// gamemode-local CGMOwner reduced view. One helper centralizes the downcast so the
+// leaf-state methods reach it cast-free (Owner(this)->...), was ~10 scattered
+// downcasts of m_4. Inlines to the identical single member downcast.
+static inline CGMOwner* Owner(CState* s) {
+    return (CGMOwner*)s->m_4;
+}
+
 // ===========================================================================
 // CState - the base game-state class.
 // ===========================================================================
@@ -336,7 +344,7 @@ i32 CCreditsState::Render() {
     CGMInputObj* in = m_c->m_drawTarget->m_10->m_2c->m_8;
     if (!in || in->Poll()) {
         if (!InputVirtual()) {
-            ((CGMOwner*)m_4)->Post(0x8006, 0xfa0);
+            Owner(this)->Post(0x8006, 0xfa0);
             return 0;
         }
     }
@@ -368,8 +376,8 @@ i32 CCreditsState::Render() {
                 if (m_24 == 5) {
                     wp = 0x8023;
                 }
-                PostMessageA(((CGMOwner*)m_4)->m_4->m_4, 0x111, wp, 0);
-                ((CGMOwner*)m_4)->m_8->m_244 = 0;
+                PostMessageA(Owner(this)->m_4->m_4, 0x111, wp, 0);
+                Owner(this)->m_8->m_244 = 0;
                 break;
             }
         }
@@ -383,13 +391,13 @@ i32 CCreditsState::Render() {
     v4->m_10->m_2c->Draw(0);
     v4->m_14->Blit((i32)v4->m_18);
 
-    if (!m_1b4 && ((CGMOwner*)m_4)->m_14) {
-        ((CGMOwner*)m_4)->m_48->Play(g_60ce90, 1);
+    if (!m_1b4 && Owner(this)->m_14) {
+        Owner(this)->m_48->Play(g_60ce90, 1);
         m_1b4 = 1;
     }
 
     if (m_1c4) {
-        i32 s = ((CGMOwner*)m_4)->m_48->Find(g_60ce74);
+        i32 s = Owner(this)->m_48->Find(g_60ce74);
         if (s && !((CMultiBootyState*)s)->QueryGruntSlots()) {
             Sub3();
         }
@@ -452,7 +460,7 @@ i32 CMenuState::Render() {
     for (c = 0; c < n; c++) {
         if (L->m_elems[c]->m_2ac & 0x100) {
             if (!m_1b4->OnFlag00000100()) {
-                PostMessageA(((CGMOwner*)m_4)->m_4->m_4, 0x111, 0x8036, 0);
+                PostMessageA(Owner(this)->m_4->m_4, 0x111, 0x8036, 0);
             }
             goto tail;
         }
@@ -484,7 +492,7 @@ i32 CMenuState::Vslot0c(i32 key, i32 arg2) {
     } else if (key == 0x1b) {
         if (m_1b4->OnFlag00000100() == 0) {
             m_1b8 = 0;
-            PostMessageA(((CGMOwner*)m_4)->m_4->m_4, 0x111, 0x8027, 0);
+            PostMessageA(Owner(this)->m_4->m_4, 0x111, 0x8027, 0);
         }
     }
     return 1;
@@ -1203,9 +1211,9 @@ RVA(0x00039440, 0x46)
 i32 CCreditsState::Vslot0c(i32 code, i32 unused) {
     if (code == 0x1b || code == 0x20 || code == 0xd) {
         if (m_24 == 5) {
-            PostMessageA(((CGMOwner*)m_4)->m_4->m_4, 0x111, 0x8023, 0);
+            PostMessageA(Owner(this)->m_4->m_4, 0x111, 0x8023, 0);
         } else {
-            PostMessageA(((CGMOwner*)m_4)->m_4->m_4, 0x111, 0x8027, 0);
+            PostMessageA(Owner(this)->m_4->m_4, 0x111, 0x8027, 0);
         }
     }
     return 1;
@@ -1849,7 +1857,8 @@ CMultiBootyState::~CMultiBootyState() {
 // The menu music controller (CMenuState+0x1bc): a player @+0x10 with a draw-clock
 // gate (last @+0x14, interval @+0x18). The player has IsPlaying / Stop /
 // ConfigureItem __thiscall slots (reloc-masked externs).
-class DirectSoundMgr; // m_1bc->m_10 IS a DirectSoundMgr (IsPlaying 0x1353f0 / CloneAndPlay 0x135660)
+class
+    DirectSoundMgr; // m_1bc->m_10 IS a DirectSoundMgr (IsPlaying 0x1353f0 / CloneAndPlay 0x135660)
 struct CMenuMusic {
     char m_pad00[0x10];
     DirectSoundMgr* m_10; // +0x10  player (real DirectSoundMgr)
