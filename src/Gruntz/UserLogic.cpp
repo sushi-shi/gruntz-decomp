@@ -36,6 +36,7 @@
 #include <Gruntz/SerialObjRef.h>       // the shared serialized-object-reference (Chain @0x8c00)
 #include <Bute/SymTab.h>
 #include <Gruntz/LogicTypeId.h>
+#include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
@@ -145,10 +146,11 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
     CTileSecretTrigger(CGameObject* obj);      // 0x10fa60
     virtual ~CTileSecretTrigger() OVERRIDE;
-    static void InitActReg();   // 0x10f160 (construct g_tileSecretTriggerActReg over [2000,2010])
-    static void RegisterActs(); // 0x10f340 (binds "A"/"B" handlers)
-    i32 Act_10f6a0();           // 0x10f6a0 ("A" handler)
-    i32 Act_10f970();           // 0x10f970 ("B" handler)
+    static void InitActReg();       // 0x10f160 (construct g_tileSecretTriggerActReg over [2000,2010])
+    void FireActivation(i32 coord); // 0x10f1e0 (vtable slot 4 body: per-coord PMF dispatch)
+    static void RegisterActs();     // 0x10f340 (binds "A"/"B" handlers)
+    i32 Act_10f6a0();               // 0x10f6a0 ("A" handler)
+    i32 Act_10f970();               // 0x10f970 ("B" handler)
 };
 
 SIZE_UNKNOWN(CGiantRock);
@@ -210,7 +212,7 @@ public:
 // out-of-line bodies (ctor/Serialize/FireActivation/SpawnTeleporter) stay here.
 #include <Gruntz/SecretTeleporterTrigger.h>
 
-SIZE_UNKNOWN(CWarpStonePad);
+SIZE(CWarpStonePad, 0x54);
 VTBL(CWarpStonePad, 0x001e71ac); // vtable_names -> code (RTTI game class)
 class CWarpStonePad : public CUserLogic {
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -221,13 +223,15 @@ public:
 public:
     CWarpStonePad(CGameObject* obj); // 0x10d650
     virtual ~CWarpStonePad() OVERRIDE;
-    static void InitActReg();   // 0x10d840
-    void FireWarp(i32 coord);   // 0x10d8c0 (vtable slot 4)
-    static void RegisterActs(); // 0x10da20
-    i32 AdvanceAnim();          // 0x10dc20
+    static void InitActReg();  // 0x10d840
+    void FireWarp(i32 coord);  // 0x10d8c0 (vtable slot 4)
+    static void RegisterActs();// 0x10da20
+    i32 AdvanceAnim();         // 0x10dc20
+    char m_pad40[0x54 - 0x40]; // +0x40  (unmodeled leaf tail; size 0x54 proven from
+                               //         the state pump's `new CWarpStonePad` = new(0x54))
 };
 
-SIZE_UNKNOWN(CTileTriggerSwitch);
+SIZE(CTileTriggerSwitch, 0x54);
 class CTileTriggerSwitch : public CUserLogic {
     virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
 public:
@@ -237,9 +241,12 @@ public:
 public:
     CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
     virtual ~CTileTriggerSwitch() OVERRIDE;
-    static void InitActReg();   // 0x10de20
-    static void RegisterActs(); // 0x10e000
-    i32 AdvanceAnim();          // 0x10e200
+    static void InitActReg();       // 0x10de20
+    void FireActivation(i32 coord); // 0x10dea0 (vtable slot 4 body: per-coord PMF dispatch)
+    static void RegisterActs();     // 0x10e000
+    i32 AdvanceAnim();              // 0x10e200
+    char m_pad40[0x54 - 0x40];      // +0x40  (unmodeled leaf tail; size 0x54 proven from
+                                    //         the state pump's `new CTileTriggerSwitch` = new(0x54))
 };
 VTBL(CTileTriggerSwitch, 0x1e7f6c);
 
@@ -1222,6 +1229,68 @@ void CSingleAnimation::RegisterActs() {
         &CSingleAnimation::AdvanceAnim;
 }
 
+// ---------------------------------------------------------------------------
+// The tile-logic worker-pump family (0x10cb10..0x10d510). Each is a free __cdecl
+// /GX pump byte-identical to StepController @0x10d150 (src/Gruntz/TileTrigger
+// Transition.cpp) bar the leaf TYPE `new`d on state 0: read the controller at
+// obj->m_7c, dispatch on its state id, build the leaf on state 0 and dispatch to
+// the state object's vtable slots otherwise. Shared via a macro; only the leaf +
+// its `new`-size differ. In ascending retail-RVA order.
+// ---------------------------------------------------------------------------
+#define TILE_LOGIC_WORKER_PUMP(LEAF)                                                                \
+    CTileTransitionController* ctl = (CTileTransitionController*)obj->m_7c;                          \
+    switch (ctl->m_stateId) {                                                                       \
+        case 0: {                                                                                   \
+            ctl->m_stateId = 0x3e8;                                                                  \
+            LEAF* t = new LEAF(obj);                                                                 \
+            ((CTileTransitionState*)t)->Activate();                                                  \
+            ctl->m_state = (CTileTransitionState*)t;                                                 \
+            break;                                                                                   \
+        }                                                                                           \
+        case 0x1d:                                                                                   \
+            ctl->m_state->Vfunc2C();                                                                 \
+            break;                                                                                   \
+        case 0x1e:                                                                                   \
+            ctl->m_state->Vfunc28();                                                                 \
+            break;                                                                                   \
+        case 0x50:                                                                                   \
+            ctl->m_state->Vfunc38();                                                                 \
+            break;                                                                                   \
+        case 0x51:                                                                                   \
+            ctl->m_state->Vfunc34();                                                                 \
+            break;                                                                                   \
+        case 0x52:                                                                                   \
+            ctl->m_state->Vfunc30();                                                                 \
+            break;                                                                                   \
+        case 0x53:                                                                                   \
+            ctl->m_state->Vfunc3C();                                                                 \
+            break;                                                                                   \
+        case 0x3e8:                                                                                  \
+            break;                                                                                   \
+        default:                                                                                     \
+            TileTransitionDefaultStep(ctl->m_state);                                                 \
+            break;                                                                                   \
+    }                                                                                               \
+    return 1;
+
+RVA(0x0010cb10, 0xf1)
+i32 TileTriggerStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CTileTrigger) }
+
+RVA(0x0010cc50, 0xf1)
+i32 TileTriggerSwitchStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CTileTriggerSwitch) }
+
+RVA(0x0010cd90, 0xf1)
+i32 TileSecretTriggerStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CTileSecretTrigger) }
+
+RVA(0x0010ced0, 0xf1)
+i32 GiantRockStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CGiantRock) }
+
+RVA(0x0010d010, 0xf1)
+i32 CoveredPowerupStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CCoveredPowerup) }
+
+RVA(0x0010d510, 0xf1)
+i32 WarpStonePadStep(CGameObject* obj) { TILE_LOGIC_WORKER_PUMP(CWarpStonePad) }
+
 // --- CWarpStonePad (0x10d650), vptr 0x5e71ac ---
 CWarpStonePad::~CWarpStonePad() {}
 RVA(0x0010d650, 0x16c)
@@ -1319,6 +1388,21 @@ void CTileTriggerSwitch::InitActReg() {
     ((CZDArrayDerived*)&g_tileTriggerSwitchActReg)->Construct(2000, 2010);
 }
 
+// --- CTileTriggerSwitch::FireActivation (0x10dea0), vtable slot 4 ---
+// Look the activation coordinate up in the class registry (g_tileTriggerSwitchActReg);
+// if the resolved entry carries a registered handler PMF, resolve it again and dispatch
+// it __thiscall on `this`. Same archetype as CWarpStonePad::FireWarp.
+RVA(0x0010dea0, 0x102)
+void CTileTriggerSwitch::FireActivation(i32 coord) {
+    CTileTriggerSwitchActEntry* e =
+        (CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CTileTriggerSwitchActEntry* e2 =
+            (CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
 // --- CTileTriggerSwitch::RegisterActs (0x10e000) ---
 // Bind the per-frame handler (AdvanceAnim @0x10e200) to the activation key "A"
 // via the shared name registry + the class's coordinate registry
@@ -1375,6 +1459,19 @@ void CTileTrigger::InitActReg() {
     ((CZDArrayDerived*)&g_tileTriggerActReg)->Construct(2000, 2010);
 }
 
+// --- CTileTrigger::FireActivation (0x10e4a0), vtable slot 4 ---
+// Look the activation coordinate up in the class registry (g_tileTriggerActReg); if the
+// resolved entry carries a registered handler PMF, resolve it again and dispatch it
+// __thiscall on `this`. Same archetype as CWarpStonePad::FireWarp.
+RVA(0x0010e4a0, 0x102)
+void CTileTrigger::FireActivation(i32 coord) {
+    CTileTriggerActEntry* e = (CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CTileTriggerActEntry* e2 = (CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
 // --- CTileTrigger::RegisterActs (0x10e600) ---
 // Bind the per-frame handler (AdvanceAnim @0x10ee00) to the activation key "A"
 // via the shared name registry + the class's coordinate registry
@@ -1415,6 +1512,21 @@ void CTileTrigger::RegisterActs() {
 RVA(0x0010f160, 0x15)
 void CTileSecretTrigger::InitActReg() {
     ((CZDArrayDerived*)&g_tileSecretTriggerActReg)->Construct(2000, 2010);
+}
+
+// --- CTileSecretTrigger::FireActivation (0x10f1e0), vtable slot 4 ---
+// Look the activation coordinate up in the class registry (g_tileSecretTriggerActReg);
+// if the resolved entry carries a registered handler PMF, resolve it again and dispatch
+// it __thiscall on `this`. Same archetype as CWarpStonePad::FireWarp.
+RVA(0x0010f1e0, 0x102)
+void CTileSecretTrigger::FireActivation(i32 coord) {
+    CTileSecretTriggerActEntry* e =
+        (CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CTileSecretTriggerActEntry* e2 =
+            (CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
 }
 
 // --- CTileSecretTrigger::RegisterActs (0x10f340) ---

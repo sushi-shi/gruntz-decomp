@@ -684,68 +684,17 @@ RVA(0x00106af0, 0x37)
 i32 Gap_106af0(void) {
     return 0;
 } // @stub
-RVA(0x0010c0f0, 0xf1)
-i32 Gap_10c0f0(void) {
-    return 0;
-} // @stub
-RVA(0x0010c4b0, 0x102)
-i32 Gap_10c4b0(void) {
-    return 0;
-} // @stub
-RVA(0x0010cb10, 0xf1)
-i32 Gap_10cb10(void) {
-    return 0;
-} // @stub
-RVA(0x0010cc50, 0xf1)
-i32 Gap_10cc50(void) {
-    return 0;
-} // @stub
-RVA(0x0010cd90, 0xf1)
-i32 Gap_10cd90(void) {
-    return 0;
-} // @stub
-RVA(0x0010ced0, 0xf1)
-i32 Gap_10ced0(void) {
-    return 0;
-} // @stub
-RVA(0x0010d010, 0xf1)
-i32 Gap_10d010(void) {
-    return 0;
-} // @stub
-RVA(0x0010d290, 0xf4)
-i32 Gap_10d290(void) {
-    return 0;
-} // @stub
-RVA(0x0010d510, 0xf1)
-i32 Gap_10d510(void) {
-    return 0;
-} // @stub
-RVA(0x0010dea0, 0x102)
-i32 Gap_10dea0(void) {
-    return 0;
-} // @stub
-RVA(0x0010e4a0, 0x102)
-i32 Gap_10e4a0(void) {
-    return 0;
-} // @stub
-RVA(0x0010ea80, 0x102)
-i32 Gap_10ea80(void) {
-    return 0;
-} // @stub
-RVA(0x0010f1e0, 0x102)
-i32 Gap_10f1e0(void) {
-    return 0;
-} // @stub
+// @stub 0x10f6a0 = CCheckpointTrigger's "A" per-frame activation handler (the
+// g_tileSecretTriggerActReg group @0x10f160..0x10f970 is CCheckpointTrigger's, NOT
+// CTileSecretTrigger's - vtable slot 1 = 0x10f9a0, slot 4 = 0x10f1e0; CTileSecretTrigger
+// is proven 0x54 and inherits slot 4). Operates on the 0x94 checkpoint layout (m_state[15]
+// @+0x54, m_firstEmpty @+0x90). 565 B / ~10 callees (FindChild, CButeTree::Find,
+// ApplyLookupGeometry, LeafCue::PlayIfElapsed, OnCheckpointReached, SpawnVoiceDriver +
+// inline rand + a level sprite-ref hit-test). Deferred to a leaf-first final sweep: needs
+// the un-modeled CGameRegistry deep fields (m_2c->m_2e4/m_3f4, m_60/68/70/118/134) + the
+// FindChild return type first (big-function defer doctrine, >512 B).
 RVA(0x0010f6a0, 0x235)
 i32 Gap_10f6a0(void) {
-    return 0;
-} // @stub
-RVA(0x0010f9a0, 0x8f)
-i32 Gap_10f9a0(void) {
-    return 0;
-} // @stub
-RVA(0x0010fd10, 0x102)
-i32 Gap_10fd10(void) {
     return 0;
 } // @stub
 RVA(0x00110110, 0x39)

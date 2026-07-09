@@ -1,6 +1,9 @@
 // CheckpointTrigger.cpp - the checkpoint-trigger tile-logic object
 // (C:\Proj\Gruntz), a CUserLogic leaf. Only the /GX leaf dtor is reconstructed.
 #include <Gruntz/CheckpointTrigger.h>
+#include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
+#include <Gruntz/SerialArchive.h>         // CSerialArchive (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialObjRef.h>          // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
@@ -13,6 +16,50 @@
 // link forces the /GX EH frame; the empty body is enough for cl.
 RVA(0x00011480, 0x44)
 CCheckpointTrigger::~CCheckpointTrigger() {}
+
+// CheckpointTriggerStep @0x10d290 - the CCheckpointTrigger worker-pump (free __cdecl,
+// /GX): the controller lives at obj->m_7c; dispatch on its state id, building the
+// CCheckpointTrigger state object on state 0 and dispatching to the state object's
+// vtable slots otherwise. Byte-identical to StepController @0x10d150 bar the leaf
+// TYPE `new`d on state 0 (CCheckpointTrigger is 0x94, so `new` pushes 0x94 imm32 -
+// the 3-byte-longer body, size 0xf4).
+RVA(0x0010d290, 0xf4)
+i32 CheckpointTriggerStep(CGameObject* obj) {
+    CTileTransitionController* ctl = (CTileTransitionController*)obj->m_7c;
+    switch (ctl->m_stateId) {
+        case 0: {
+            ctl->m_stateId = 0x3e8;
+            CCheckpointTrigger* t = new CCheckpointTrigger(obj);
+            ((CTileTransitionState*)t)->Activate();
+            ctl->m_state = (CTileTransitionState*)t;
+            break;
+        }
+        case 0x1d:
+            ctl->m_state->Vfunc2C();
+            break;
+        case 0x1e:
+            ctl->m_state->Vfunc28();
+            break;
+        case 0x50:
+            ctl->m_state->Vfunc38();
+            break;
+        case 0x51:
+            ctl->m_state->Vfunc34();
+            break;
+        case 0x52:
+            ctl->m_state->Vfunc30();
+            break;
+        case 0x53:
+            ctl->m_state->Vfunc3C();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            TileTransitionDefaultStep(ctl->m_state);
+            break;
+    }
+    return 1;
+}
 
 // The class's activation-coordinate registry singleton (@0x64e7c0), built by the
 // shared registry ctor (0x408710) over the fixed [2000,2010] range. CCheckpointActReg
@@ -108,4 +155,28 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
             break;
         }
     }
+}
+
+// CCheckpointTrigger::SerializeMove @0x10f9a0 - vtable slot 1. Read/Write the captured
+// checkpoint state (the 15-dword m_state block @+0x54 + the m_firstEmpty index @+0x90)
+// through the archive's mode-keyed slots (mode 4 = Write @+0x30, mode 7 = Read @+0x2c),
+// then chain the shared CUserLogic serialize helper (SerializeChain, 0x16e7f0) and the
+// +0x34 CSerialObjRef sub-object's Chain (0x8c00). Same two-chain archetype as
+// CTimeBomb::SerializeMove. (The g_tileSecretTriggerActReg registry group @0x10f160..
+// 0x10f970 is CCheckpointTrigger's - it holds this class's real slot-1/slot-4 bodies -
+// currently mislabeled as CTileSecretTrigger in UserLogic.cpp; see the batch report.)
+RVA(0x0010f9a0, 0x8f)
+i32 CCheckpointTrigger::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
+    CSerialArchive* sa = (CSerialArchive*)arc;
+    if (mode == 4) {
+        sa->Write(m_state, 0x3c);
+        sa->Write(&m_firstEmpty, 4);
+    } else if (mode == 7) {
+        sa->Read(m_state, 0x3c);
+        sa->Read(&m_firstEmpty, 4);
+    }
+    if (!SerializeChain((i32)arc, mode, a3, a4)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CSerialObj*)a4) ? 1 : 0;
 }

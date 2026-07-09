@@ -127,6 +127,19 @@ struct CCheckpointActEntry {
     i32 (CCheckpointTrigger::*m_fn)();
 };
 
+// CCheckpointTrigger::FireActivation (0x10ea80), vtable slot 4: look the activation
+// coordinate up in the class registry (g_checkpointActReg); if the resolved entry
+// carries a registered handler PMF, resolve it again and dispatch it __thiscall on
+// `this`. Same double-ResolveEntry + PMF-fire archetype as the two siblings above.
+RVA(0x0010ea80, 0x102)
+void CCheckpointTrigger::FireActivation(i32 coord) {
+    CCheckpointActEntry* e = (CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CCheckpointActEntry* e2 = (CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
 // CCheckpointTrigger::RegisterActs: same archetype, registry @0x64e7c0.
 //
 // @early-stop

@@ -56,6 +56,7 @@ public:
     RVA(0x00011730, 0x6)
     virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_TILETRIGGERTRANSITION; }
     void Register_10fc90();                       // 0x10fc90
+    void FireActivation(i32 coord);               // 0x10fd10 (vtable slot 4: per-coord PMF dispatch)
     void RegisterActs();                          // 0x10fe70  intern "A", bind Handler
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
     i32 Handler_110110();                         // 0x110110  the per-frame handler bound here
@@ -124,6 +125,21 @@ CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(ob
 RVA(0x0010fc90, 0x15)
 void CTileTriggerTransition::Register_10fc90() {
     ((CZDArrayDerived*)&g_tileActReg)->Construct(0x7d0, 0x7da);
+}
+
+// ---------------------------------------------------------------------------
+// FireActivation (0x10fd10), vtable slot 4 - look the activation coordinate up in the
+// class registry (g_tileActReg); if the resolved entry carries a registered handler
+// PMF, resolve it again and dispatch it __thiscall on `this`. Same double-ResolveEntry
+// + PMF-fire archetype as CWormhole::FireActivation.
+// ---------------------------------------------------------------------------
+RVA(0x0010fd10, 0x102)
+void CTileTriggerTransition::FireActivation(i32 coord) {
+    TileActEntry* e = (TileActEntry*)g_tileActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        TileActEntry* e2 = (TileActEntry*)g_tileActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
 }
 
 // ---------------------------------------------------------------------------

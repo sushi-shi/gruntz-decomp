@@ -659,7 +659,7 @@ inline CTileLogic::CTileLogic(CGameObject* obj) : CUserLogic(obj) {
 // they get a single class definition. Ctors/dtor are out-of-line in
 // src/Gruntz/UserLogic.cpp (no-arg 0x011160, 1-arg 0x10e220, dtor 0x011290).
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CTileTrigger);
+SIZE(CTileTrigger, 0x54);
 class CTileTrigger : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -670,8 +670,13 @@ public:
     CTileTrigger();                 // 0x011160 (no-arg)
     CTileTrigger(CGameObject* obj); // 0x10e220 (1-arg)
     static void InitActReg();       // 0x10e420
+    void FireActivation(i32 coord); // 0x10e4a0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs();     // 0x10e600
     i32 AdvanceAnim();              // 0x10ee00
+    // Leaf tail: TILE_LOGIC_TAIL ends at +0x40; the three leaves (CTileSecretTrigger/
+    // CGiantRock/CCoveredPowerup) add no data. Size 0x54 proven from the state pumps'
+    // `new CTileTrigger`/`new CTileSecretTrigger`/... = operator new(0x54).
+    char m_pad40[0x54 - 0x40]; // +0x40
     // Inline & trivial so it folds into the three leaf dtors (0x11540/0x11600/
     // 0x116c0) rather than being called. MSVC still emits one out-of-line COMDAT
     // copy (called by CTileTrigger's scalar-deleting dtor); it lands at 0x011290

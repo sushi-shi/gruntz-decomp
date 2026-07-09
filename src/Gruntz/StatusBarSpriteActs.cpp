@@ -9,8 +9,9 @@
 // this lives in a dedicated TU so it can pull the shared
 // <Gruntz/ActNameRegistry.h> view of the registry globals without colliding with
 // the stub TU's class model.
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActNameRegistry.h>      // the shared activation-name registry archetype
+#include <Gruntz/ActReg.h>               // the shared CActReg coordinate-registry archetype
+#include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/UserLogic.h>
 
 #include <rva.h>
@@ -27,13 +28,16 @@ public:
 public:
     CStatusBarSprite(CGameObject* obj); // 0x10c230
     static void InitActReg();           // 0x10c430
+    void FireActivation(i32 coord);     // 0x10c4b0 (vtable slot 4 body: per-coord PMF dispatch)
     static void RegisterActs();         // 0x10c610
     i32 AdvanceAnim();                  // 0x10c810 (the per-frame handler PMF; body in the stub TU)
 
-    i32 m_40; // +0x40  geometry id (m_38->m_1b4 snapshot)
+    i32 m_40;                  // +0x40  geometry id (m_38->m_1b4 snapshot)
+    char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled leaf tail; size 0x54 proven from
+                               //         the state pump's `new CStatusBarSprite` = operator new(0x54))
 };
 VTBL(CStatusBarSprite, 0x1e7fc4);
-SIZE_UNKNOWN(CStatusBarSprite);
+SIZE(CStatusBarSprite, 0x54);
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -53,6 +57,49 @@ struct CStatusBarSpriteActReg : public CActReg {};
 SIZE_UNKNOWN(CStatusBarSpriteActReg);
 DATA(0x0024e670)
 extern CStatusBarSpriteActReg g_statusBarSpriteActReg; // 0x64e670
+
+// StatusBarSpriteStep @0x10c0f0 - the CStatusBarSprite worker-pump (free __cdecl,
+// /GX): the controller lives at obj->m_7c; dispatch on its state id, building the
+// CStatusBarSprite state object on state 0 and dispatching to the state object's
+// vtable slots otherwise. Byte-identical to StepController @0x10d150 bar the leaf
+// TYPE `new`d on state 0 (hence the size 0x54 + ctor target).
+RVA(0x0010c0f0, 0xf1)
+i32 StatusBarSpriteStep(CGameObject* obj) {
+    CTileTransitionController* ctl = (CTileTransitionController*)obj->m_7c;
+    switch (ctl->m_stateId) {
+        case 0: {
+            ctl->m_stateId = 0x3e8;
+            CStatusBarSprite* t = new CStatusBarSprite(obj);
+            ((CTileTransitionState*)t)->Activate();
+            ctl->m_state = (CTileTransitionState*)t;
+            break;
+        }
+        case 0x1d:
+            ctl->m_state->Vfunc2C();
+            break;
+        case 0x1e:
+            ctl->m_state->Vfunc28();
+            break;
+        case 0x50:
+            ctl->m_state->Vfunc38();
+            break;
+        case 0x51:
+            ctl->m_state->Vfunc34();
+            break;
+        case 0x52:
+            ctl->m_state->Vfunc30();
+            break;
+        case 0x53:
+            ctl->m_state->Vfunc3C();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            TileTransitionDefaultStep(ctl->m_state);
+            break;
+    }
+    return 1;
+}
 
 // CStatusBarSprite::CStatusBarSprite @0x10c230 - fold the shared CUserLogic(obj)
 // init, name the bound object "GAME_STATUSBARSPRITE", snapshot the geometry id,
@@ -81,6 +128,21 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj) {
 RVA(0x0010c430, 0x15)
 void CStatusBarSprite::InitActReg() {
     ((CZDArrayDerived*)&g_statusBarSpriteActReg)->Construct(2000, 2010);
+}
+
+// CStatusBarSprite::FireActivation @0x10c4b0 - look the activation coordinate up in
+// the class registry (g_statusBarSpriteActReg); if the resolved entry carries a
+// registered handler PMF, resolve it again and dispatch it __thiscall on `this`. Same
+// archetype as CWormhole::FireActivation (double ResolveEntry + PMF dispatch).
+RVA(0x0010c4b0, 0x102)
+void CStatusBarSprite::FireActivation(i32 coord) {
+    CStatusBarSpriteActEntry* e =
+        (CStatusBarSpriteActEntry*)g_statusBarSpriteActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CStatusBarSpriteActEntry* e2 =
+            (CStatusBarSpriteActEntry*)g_statusBarSpriteActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
 }
 
 // CStatusBarSprite::RegisterActs @0x10c610 - bind the per-frame handler (AdvanceAnim
