@@ -23,18 +23,12 @@
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
 
-// Advance @0x15c2d0 is CDDrawBlitParam::Setup_15c2d0, SetAnim @0x15c360 is
-// CAniAdvanceCursor::Advance_15c360; TU-local decls, cast at each call.
-class CDDrawBlitParamSrc;
-class CDDrawBlitParam {
-public:
-    void Setup_15c2d0(CDDrawBlitParamSrc* src);
+// The anim sub-player's geometry setter/probe (external/reloc-masked); folded onto its
+// own type (the former per-TU CDDrawBlitParam / CAniAdvanceCursor facet views are gone).
+struct CAnimSink2 {
+    void SetGeometry(i32 src);     // 0x15c2d0
+    i32 Advance_15c360(i32 clock); // 0x15c360
 };
-class CAniAdvanceCursor {
-public:
-    i32 Advance_15c360(i32 clock);
-};
-struct CAnimSink2 {};
 struct CAnimOwner6b {
     char _00[0x1b4];
     i32 m_1b4; // +0x1b4
@@ -44,9 +38,9 @@ RVA(0x0006b2e0, 0x39)
 void CEffect6b::Apply(i32 a, i32 b) {
     CAnimSink2* anim = (CAnimSink2*)((char*)m_4 + 0x1a0);
     m_c = m_4->m_1b4;
-    ((CDDrawBlitParam*)anim)->Setup_15c2d0((CDDrawBlitParamSrc*)a);
+    anim->SetGeometry(a);
     if (b != 0) {
-        ((CAniAdvanceCursor*)anim)->Advance_15c360((i32)g_6bf3bc);
+        anim->Advance_15c360((i32)g_6bf3bc);
     }
 }
 

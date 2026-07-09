@@ -28,25 +28,18 @@
 // CSprite (frame-data value) comes from <Gruntz/Sprite.h>.
 
 // The sub-object embedded in the anim player at +0x1a0 (a CSubMgr-style member);
-// Tick advances it once per frame via its 0x55c360 method (one int arg).
-// CSlimeSubMgr::Advance @0x15c360 IS CAniAdvanceCursor::Advance_15c360 (header-less); local decl.
-class CAniAdvanceCursor {
-public:
-    i32 Advance_15c360(i32 clock);
-};
+// Tick advances it once per frame via its 0x15c360 method (one int arg). External/
+// reloc-masked (the former per-TU CAniAdvanceCursor facet view is gone).
 struct CSlimeSubMgr {
-    // Advance @0x15c360 IS CAniAdvanceCursor::Advance_15c360; cast at the call.
+    i32 Advance_15c360(i32 clock); // 0x15c360
 };
 
 // The animation player @this+0x38 that holds the current direction sprite at
-// +0x194 and the cached first-frame trio at +0x190/+0x194/+0x198.
-// CSlimeAnimPlayer::CacheFirstFrame @0x150540 IS CGruntSprite::CacheFirstFrame (header-less); local decl.
-class CGruntSprite {
-public:
-    void CacheFirstFrame(const char* name);
-};
+// +0x194 and the cached first-frame trio at +0x190/+0x194/+0x198. Its CGameObject-base
+// CacheFirstFrame (0x150540) is folded here (external/reloc-masked; the former per-TU
+// CGruntSprite facet view is gone).
 struct CSlimeAnimPlayer {
-    // CacheFirstFrame @0x150540 IS CGruntSprite::CacheFirstFrame; cast at each call.
+    void CacheFirstFrame(const char* name); // 0x150540
 
     char m_pad0[0x8];
     i32 m_8; // +0x08  status/flags word (Tick sets bit 0x10000 when stalled)
@@ -440,7 +433,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    ((CAniAdvanceCursor*)&Anim()->m_1a0)->Advance_15c360((i32)g_slimeTick);
+    Anim()->m_1a0.Advance_15c360((i32)g_slimeTick);
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
@@ -653,7 +646,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0;
             *((i32*)&m_dirY + 1) = 0xbff00000;
             if (changed) {
-                ((CGruntSprite*)Anim())->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
@@ -664,7 +657,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0x3ff00000;
             *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                ((CGruntSprite*)Anim())->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
@@ -675,7 +668,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirY + 1) = 0x3ff00000;
             *((i32*)&m_dirX + 1) = 0;
             if (changed) {
-                ((CGruntSprite*)Anim())->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case 3: // west
@@ -685,7 +678,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0xbff00000;
             *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                ((CGruntSprite*)Anim())->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
+                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
