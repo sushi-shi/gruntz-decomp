@@ -67,6 +67,9 @@ def main() -> None:
                     help="dir to collect the per-unit <unit>.c.obj into.")
     ap.add_argument("--unit", action="append", default=[],
                     help="in-scope unit stem to collect (repeatable).")
+    ap.add_argument("--stamp", default=None,
+                    help="stamp file to (re)write after collecting; delink's single "
+                         "ninja output. Must live OUTSIDE --target-dir (which is wiped).")
     args = ap.parse_args()
 
     exe = Path(args.exe)
@@ -134,6 +137,16 @@ def main() -> None:
         f"{', '.join(collected) if collected else '(none)'}")
     if missing:
         log(f"  no named functions yet for: {', '.join(missing)}")
+
+    # Stamp = delink's single ninja output. Written every run (content reflects the
+    # collected set + obj sizes) so the report step re-runs after a real delink,
+    # while ninja skips delink entirely when GEN_NAMES (its trigger) is unchanged.
+    if args.stamp:
+        stamp = Path(args.stamp)
+        stamp.parent.mkdir(parents=True, exist_ok=True)
+        sig = "\n".join(f"{u} {(target_dir / f'{u}.c.obj').stat().st_size}"
+                        for u in sorted(collected))
+        stamp.write_text(sig + "\n")
 
 
 if __name__ == "__main__":

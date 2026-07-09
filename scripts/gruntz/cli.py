@@ -131,7 +131,7 @@ def _pct(n: int, d: int) -> float:
     return 100.0 * n / d if d else 0.0
 
 
-def summarize(report: dict) -> None:
+def summarize(report: dict, full: bool = True) -> None:
     m = report.get("measures", {})
     named = {u["unit"] for u in units() if (TARGET_DIR / f"{u['unit']}.c.obj").exists()}
     print()
@@ -153,6 +153,8 @@ def summarize(report: dict) -> None:
           f"{m.get('fuzzy_match_percent', 0.0):.2f}% fuzzy across "
           f"{len(named)} named unit(s).")
     print(f"  Report: {REPORT}")
+    if not full:   # --fast: just the objdiff %, skip the high-water/cleanliness/vtable probes
+        return
     # MAX % high-water. The fuzzy % is a RATIO, so it barely moves even when structural
     # work (e.g. the inline-header migration) drops matched+total together - the quality
     # held. Track/print the peak so matchers judge by MAX %, not the raw count, and don't
@@ -232,6 +234,10 @@ def cmd_build(args) -> None:
     # longer kill it after each build - that re-paid wineboot on every rebuild.
     _start_wine_session()                 # ensure the session is up (cheap if already running)
 
+    if getattr(args, "force_delink", False):
+        (OBJDIFF_DIR / ".delink.stamp").unlink(missing_ok=True)
+        log("force-delink: removed delink stamp -> delink will re-run this build.")
+
     # ninja builds the objs AND report.json in-graph (only what changed). Gate the
     # feedback tail on whether report.json actually moved: a no-op build refreshes
     # nothing, so there is nothing to summarize/check and `gruntz build` returns
@@ -240,6 +246,16 @@ def cmd_build(args) -> None:
     run([ninja, *args.ninja_args])        # incremental: rebuilds only what changed
     if (REPORT.stat().st_mtime if REPORT.exists() else 0) == before:
         log("up to date - nothing rebuilt.")
+        return
+
+    # Fast inner loop: show the objdiff %% and stop. The structural gates below
+    # (verify_stubs / class_sizes / vtable_* / uniqueness, ~20s of fresh-interpreter
+    # analysis) validate the ANNOTATION/vtable/class-size invariants - none of which
+    # a pure function-body edit can change. Matchers iterate with --fast and run one
+    # full `gruntz build` (all gates) before committing.
+    if getattr(args, "fast", False):
+        summarize(json.loads(REPORT.read_text()), full=False)
+        log("fast build: skipped structural gates - run a full `gruntz build` before committing.")
         return
 
     # Gate: the src/Stub @stub backlog is skipped by labels.py (engine_label_stubs),
@@ -1428,6 +1444,13 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     b = sub.add_parser("build", help="compile -> labels -> delink -> objdiff")
+    b.add_argument("--fast", action="store_true",
+                   help="matcher inner loop: compile + delink + objdiff %% only, "
+                        "SKIP the structural gate tail (verify/vtable/class-size, "
+                        "~20s). Run a full `gruntz build` before committing.")
+    b.add_argument("--force-delink", action="store_true",
+                   help="re-delink the target objs even if symbol_names.csv is "
+                        "unchanged (removes the delink stamp).")
     b.add_argument("ninja_args", nargs=argparse.REMAINDER,
                    help="extra ninja args after `--` (e.g. -j8).")
     b.set_defaults(func=cmd_build)

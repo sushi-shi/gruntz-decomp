@@ -308,15 +308,23 @@ def emit_ninja(manifest: dict, out: Path) -> None:
         # TARGET (delink) half: one rule produces all in-scope <unit>.c.obj.
         w.comment("=== TARGET: delink GRUNTZ.EXE -> named per-unit .c.obj ===")
         unit_args = " ".join(f"--unit {u['unit']}" for u in units)
+        # The declared output is a single STAMP, NOT the ~500 per-unit .c.obj. Some
+        # units have no named symbol yet (they pair with dummy.obj below), so
+        # declaring every <unit>.c.obj as an output made ninja treat delink as
+        # perpetually unbuilt - re-running the full ~24s delink on EVERY build,
+        # including no-ops. Keyed on GEN_NAMES (symbol_names.csv, written
+        # content-idempotently by labels.py), delink now fires ONLY when a symbol
+        # changes (name / RVA / size / kind) - never on a pure code-body edit.
+        # `gruntz build --force-delink` removes the stamp to force a re-delink.
+        delink_stamp = f"{OBJDIFF_DIR}/.delink.stamp"
         w.rule("delink",
                command=(f"{PY} {DELINK} --exe {EXE} --functions {FUNCTIONS} "
                         f"--symbols {SYMBOLS} --names-map {GEN_NAMES} "
                         f"--pdb-dir {PDB_DIR} --delink-dir {DELINK_RAW} "
-                        f"--target-dir {TARGET_DIR} {unit_args}"),
-               description="delink GRUNTZ.EXE -> target objs",
-               restat=True)
+                        f"--target-dir {TARGET_DIR} --stamp {delink_stamp} {unit_args}"),
+               description="delink GRUNTZ.EXE -> target objs")
         target_objs = [f"{TARGET_DIR}/{u['unit']}.c.obj" for u in units]
-        w.build(target_objs, "delink",
+        w.build(delink_stamp, "delink",
                 inputs=[EXE, FUNCTIONS, SYMBOLS, GEN_NAMES],
                 implicit=[DELINK, "scripts/gruntz/build/synth_pdb.py"])
         w.newline()
@@ -350,15 +358,15 @@ def emit_ninja(manifest: dict, out: Path) -> None:
                command=f"objdiff-cli report generate -p {OBJDIFF_DIR} -o {report_json}",
                description="objdiff report -> report.json")
         w.build(report_json, "report",
-                inputs=base_objs + target_objs + [objdiff_json])
+                inputs=base_objs + [delink_stamp, objdiff_json])
         w.newline()
 
         # Convenience aliases.
         w.comment("=== aliases ===")
         w.build("base", "phony", inputs=base_objs)
-        w.build("target", "phony", inputs=target_objs)
+        w.build("target", "phony", inputs=[delink_stamp])
         w.build("all", "phony",
-                inputs=base_objs + target_objs + [objdiff_json, report_json])
+                inputs=base_objs + [delink_stamp, objdiff_json, report_json])
         w.default(["all"])
         w.newline()
 
