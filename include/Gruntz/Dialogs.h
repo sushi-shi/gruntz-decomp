@@ -325,6 +325,25 @@ public:
     void OnSlotSelect2();           // 0xc4f80  slot 2 (list via GetCtrlC)
     void OnSlotSelect3();           // 0xc4fd0  slot 3
     void ToggleReady(i32 idx);      // 0xc50f0  toggle slot idx's ready flag from its box
+
+    // --- Per-slot colour handlers (bodies in MultiStartDlgColor.cpp) ---
+    // Double-click a colour swatch (controls 0x501/0x503/0x505/0x507): if the slot is
+    // pickable, run the modal CBattlezDlgColors picker, and on IDOK claim the colour
+    // for the slot (SelectColor, the CNetSessHost +0x5c facet), re-drive, invalidate.
+    void OnColorSlot0(); // 0xc3830
+    void OnColorSlot1(); // 0xc3950
+    void OnColorSlot2(); // 0xc3a70
+    void OnColorSlot3(); // 0xc3b90
+    // Double-click the world combo (0x4ff): run the modal CBattlezDlgCustom name dialog,
+    // and on IDOK push the uppercased custom name into the combo's edit child + commit it
+    // as the game's custom world name into the CMulti game-state.
+    void OnCustomWorld(); // 0xc3cb0
+    // Send the chat input (0x42d): prefix the local player's name, append to the log,
+    // and broadcast the line to every peer, then clear the input.
+    void OnChatSend(); // 0xc3f70
+    // Commit the selected battle-latency option (list 0x527) into the CMulti session
+    // config, or flag "none selected".
+    void CommitLatencyOption(); // 0xc5020
     // Roster helpers (own methods reached through ILT thunks; reloc-masked, RVAs
     // live in sibling units / ApiCaller stubs).
     void Drive();                  // 0xc40b0  re-drive the connect state (body in NetMgrMisc.cpp)

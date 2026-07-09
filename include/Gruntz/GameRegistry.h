@@ -169,7 +169,10 @@ struct CFocusSlot {
     i32 m_24; // +0x24  "already cleared this round" mark / timer-expiry flag
     i32 m_28; // +0x28  joined
     i32 m_2c; // +0x2c  done
-    char m_pad30[0x16c - 0x30];
+    char m_pad30[0x164 - 0x30];
+    i32 m_164; // +0x164  roster: colour-pick gate (CMultiStartDlg::OnColorSlotN skips the
+               //          m_1c/m_18 check when the host set this)
+    i32 m_168; // +0x168  roster: colour owner index (compared against CMulti::m_hostIndex)
     i32 m_16c; // +0x16c  roster: colour/lock value (UpdatePlayers reads the LOCAL
                //          slot's m_16c as its per-refresh colour gate)
     char m_pad170[0x220 - 0x170];

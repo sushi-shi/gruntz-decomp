@@ -363,6 +363,11 @@ source = "src/Gruntz/MultiStartDlgRoster.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "multistartdlgcolor"
+source = "src/Gruntz/MultiStartDlgColor.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "lobbygrouplist"
 source = "src/Gruntz/LobbyGroupList.cpp"
 flags = "eh"
@@ -2093,6 +2098,14 @@ flags = "base"
 unit = "statedispatch"
 source = "src/Gruntz/StateDispatch.cpp"
 flags = "base"
+[[unit]]
+unit = "objectlogicpump"
+source = "src/Gruntz/ObjectLogicPump.cpp"
+flags = "base"
+[[unit]]
+unit = "droppedobjectserialize"
+source = "src/Gruntz/DroppedObjectSerialize.cpp"
+flags = "eh"
 [[unit]]
 unit = "groupops"
 source = "src/Gruntz/GroupOps.cpp"

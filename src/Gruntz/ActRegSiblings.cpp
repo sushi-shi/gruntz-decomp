@@ -31,11 +31,23 @@ DATA(0x0024bf00)
 extern CNetSingletonBf00 g_64bf00; // 0x64bf00
 struct CNetSingletonBf00 : CSiblingActReg {};
 struct CSiblingActorB {
-    i32 Advance(); // 0xc7ab0
+    i32 Advance();          // 0xc7ab0
+    void Activate(i32 actId); // 0xc7750 (fire the registered act handler)
 };
 struct CSiblingActorBEntry {
     i32 (CSiblingActorB::*m_fn)();
 };
+
+// CObjectDropper::Activate (0xc5f80): the runtime side of the registry - resolve the
+// handler for act `actId` and, if bound, fire it on `this`. ResolveEntry has side
+// effects (m_scratch reset + GrowTo-on-miss), so it is re-run for the actual call
+// rather than cached; the null-slot path just returns (eax = the entry ptr).
+RVA(0x000c5f80, 0x102)
+void CObjectDropper::FireAct(i32 actId) {
+    if (((CSiblingActorAEntry*)g_netBe90.ResolveEntry(actId))->m_fn != 0) {
+        (this->*(((CSiblingActorAEntry*)g_netBe90.ResolveEntry(actId))->m_fn))();
+    }
+}
 
 // CObjectDropper::RegisterActs: register "A" in the shared name registry
 // (first caller only), then bind Update into the class registry slot.
@@ -68,6 +80,15 @@ void CSiblingActorA_RegisterActs() {
         g_nextActId++;
     }
     ((CSiblingActorAEntry*)g_netBe90.ResolveEntry(id))->m_fn = &CObjectDropper::Update;
+}
+
+// CSiblingActorB::Activate (0xc7750): runtime dispatch for registry @0x64bf00 - same
+// double-ResolveEntry + PMF-fire archetype as CObjectDropper::Activate.
+RVA(0x000c7750, 0x102)
+void CSiblingActorB::Activate(i32 actId) {
+    if (((CSiblingActorBEntry*)g_64bf00.ResolveEntry(actId))->m_fn != 0) {
+        (this->*(((CSiblingActorBEntry*)g_64bf00.ResolveEntry(actId))->m_fn))();
+    }
 }
 
 // CSiblingActorB::RegisterActs: same archetype, registry @0x64bf00.

@@ -35,6 +35,9 @@ public:
     void FireActivation(i32 coord);     // 0x0c6bd0
     i32 ActA();                         // 0x0c7090 (per-frame "A" activation handler)
     virtual ~CDroppedObject() OVERRIDE; // 0x0125b0 (folds the CUserLogic teardown)
+    // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
+    // slot reloc-masked, like CRollingBall::Serialize).
+    i32 Serialize(struct CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc73a0
 
     i32 m_savedGeoId; // +0x40  m_38->m_geoId snapshot
     char m_pad44[0x58 - 0x44];

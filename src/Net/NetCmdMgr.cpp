@@ -6,17 +6,10 @@
 // field is at +0x158. All callees/globals are external (reloc-masked). Field names
 // are placeholders; only offsets + code bytes are load-bearing.
 #include <Ints.h>
-#include <Net/NetMgr.h>   // shared CNetCmdBuf / CColorSlot (0x238-byte command buffer)
-#include <Gruntz/Multi.h> // the g_64bd5c singleton is a CMulti (xref-proven)
+#include <Net/NetMgr.h>      // shared CNetCmdBuf / CColorSlot (0x238-byte command buffer)
+#include <Net/NetSessHost.h> // the shared CNetSessHost session-host facet
+#include <Gruntz/Multi.h>    // the g_64bd5c singleton is a CMulti (xref-proven)
 #include <rva.h>
-
-struct CNetSessHost {
-    char m_pad0[0x5c];
-    CNetCmdBuf* m_cmdBuffers; // +0x5c  base of the per-player command-buffer array
-
-    i32 SelectColor(i32 colorIndex, i32 playerId); // 0xc4b60
-};
-SIZE_UNKNOWN(CNetSessHost); // session-host view (only +0x5c pinned); size TBD
 
 // The multiplayer game-state singleton (g_64bd5c) is a CMulti: its +0x528 is-host
 // latch and the ReportVersionMsg chat-error method (0xb7e30) reached off it are both
