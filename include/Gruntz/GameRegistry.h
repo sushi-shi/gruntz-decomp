@@ -102,18 +102,44 @@ class CLightFxMgr;
 struct CRenderer;     // +0x0c  renderer B (present) / resource worker holder (View.h)
 struct CAnimRegistry; // +0x2c  anim/third registry (ResMgr.h, real class)
 
-// The level/view object reached as g->m_30->m_24: +0x10 the on-screen bar RECT
-// (the action/option menu bar), +0x5c the world->screen viewport (WrapCoord;
-// its +0x40 is the rect base the on-screen cue gate's visibility helper reads).
-// Used by the menu bar and the entrance-reset focused-grunt cue path.
+// The level/view object reached as g->m_30->m_24 (== CState::m_c holder's +0x24): the
+// on-screen bar RECT / viewport at +0x10, the world->screen camera geom at +0x5c
+// (WrapCoord; its +0x40 is the rect base the on-screen cue gate's visibility helper
+// reads). This is the ONE real +0x24 draw-surface/viewport class: the afx-neutral
+// menu bar / CGrunt cue path AND the MFC render TUs (CPlay Render draw chain) share it
+// - the former per-TU `CDrawSurface` render-facet view (View.h) is folded away here.
 struct CGameViewport {
+    // Render sub-steps the MFC state TUs drive (external/reloc-masked __thiscall):
+    void PushView(void* view, void* renderer); // 0x15dc90
+    void PreStep();                            // per-frame view pre-step
+    void PostStep();                           // per-frame view post-step
+    void SetClipRect(void* r);                 // 0x15da80 (ClampViewport apply-tail; RECT*)
+
+    // +0x10 viewport rect. Named two ways over the same 16 bytes: the afx-neutral menu
+    // bar reads the raw i32[4] (m_barRect); the MFC render TUs read the named
+    // {left,top,right,bottom} viewport fields.
+    struct SViewRect {
+        i32 left, top, right, bottom;
+    };
+    // +0x5c world->screen camera geom (reached as a raw int base by the CGrunt cue
+    // helpers via (m_5c + 0x40), cast to CViewport by the menu bar, and to this by the
+    // render TUs). +0x40 is the on-screen visible rect; +0x84/+0x88 the world blit src.
+    struct CameraGeom {
+        char p0[0x40];
+        i32 m_originX; // +0x40
+        i32 m_originY; // +0x44
+        char p48[0x84 - 0x48];
+        i32 m_84; // +0x84
+        i32 m_88; // +0x88
+    };
+
     char m_pad0[0x10];
-    i32 m_barRect[4]; // +0x10  on-screen bar RECT (left,top,right,bottom)
+    union {
+        i32 m_barRect[4]; // +0x10  on-screen bar RECT (left,top,right,bottom)
+        SViewRect m_viewport;
+    };
     char m_pad20[0x5c - 0x20];
-    // A CViewport* (world->screen transform; base +0x40 = clip rect). Modeled i32
-    // because the CGrunt visibility helpers take it as a raw address (int) arg;
-    // the menu bar casts it to CViewport at the two sites it calls methods on.
-    i32 m_5c; // +0x5c
+    i32 m_5c; // +0x5c  camera-geom base (int; cast to CameraGeom*/CViewport* at deref)
 };
 
 // The +0x30 game resource/level manager (the retail CResMgr; ResMgr.h models the

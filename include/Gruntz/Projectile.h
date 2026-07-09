@@ -35,7 +35,11 @@ class CLightFx; // folded CProjShadowActivate
 // sub-object == CProjRenderObj::m_1c0/m_1c8.
 SIZE_UNKNOWN(CProjAnim);
 struct CProjAnim {
-}; // Setup=CDDrawBlitParam::Setup_15c2d0, Tick=CAniAdvanceCursor::Advance_15c360; cast at calls
+    // The +0x1a0 geometry sub-player setter/probe (external/reloc-masked; formerly reached
+    // by per-TU CDDrawBlitParam / CAniAdvanceCursor facet casts on &renderObj->m_1a0).
+    void SetGeometry(void* src);     // 0x15c2d0  (src == a CProjRenderObj::m_frameN slot)
+    i32 Advance_15c360(i32 clock);   // 0x15c360
+};
 
 // The name->sprite geometry map the sprite object owns (the CMapStringToOb the
 // loaders Lookup by frame name). Reached via m_154->m_c->m_2c, map embedded @+0x10.
@@ -78,7 +82,10 @@ struct CProjRenderObj {
     char m_pad1c4[0x1c8 - 0x1c4];
     i32 m_1c8; // +0x1c8
 
-    // CacheFirstFrame @0x150540 / ApplyLookupGeometry @0x1505b0 ARE CGruntSprite's; cast at the calls.
+    // The CGameObject-base name/sprite setters, folded here (external/reloc-masked; the
+    // former per-TU CGruntSprite facet view is gone). The render object IS the game object.
+    void CacheFirstFrame(const char* name);              // 0x150540
+    i32 ApplyLookupGeometry(const char* key, i32 flag);  // 0x1505b0
 };
 
 // The shadow companion's post-create sub-table (m_1fc->m_7c): an Init fn-ptr at

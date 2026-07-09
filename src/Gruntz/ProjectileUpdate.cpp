@@ -63,11 +63,8 @@
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite + the bound object)
 #include <rva.h>
 
-// The +0x1a0 anim sub-object's Tick @0x15c360 is CAniAdvanceCursor::Advance_15c360; TU-local decl.
-class CAniAdvanceCursor {
-public:
-    i32 Advance_15c360(i32 clock);
-};
+// The +0x1a0 anim sub-object's Tick is CProjAnim::Advance_15c360 (<Gruntz/Projectile.h>),
+// reached as m_154->m_1a0.Advance_15c360; the per-TU CAniAdvanceCursor facet view is gone.
 
 DATA(0x002bf3bc)
 extern "C" i32 g_6bf3bc; // the sub-logic clock fed to the tick
@@ -176,7 +173,7 @@ SIZE_UNKNOWN(CGruntFireView);
 RVA(0x00061cb0, 0x34a)
 i32 CGruntFireView::Update() {
     i32 flag = 0;
-    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((i32)g_6bf3bc) == 2) {
+    if (m_154->m_1a0.Advance_15c360((i32)g_6bf3bc) == 2) {
         switch (m_toolKind) {
             case 9:
             case 10:

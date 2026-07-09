@@ -310,23 +310,23 @@ i32 CPlay::Render() {
         // =================================================================
         StepInputA();                          // poll/sim sub-step A
         StepWorldB();                          // world/camera sub-step B
-        ((CDrawSurface*)m_c->m_24)->PreStep(); // on m_c->m_24 (view pre-step)
+        m_c->m_24->PreStep(); // on m_c->m_24 (view pre-step)
 
         g_6bf3c0 = g_645580; // mirror the draw clock
         g_6bf3bc = g_645584;
 
         // --- shared world-draw block #1 ---
         ((CRenderer*)m_c->m_8)->BeginScene(0); // m_c->m_8->vtbl[+0x24](0)
-        ((CDrawSurface*)m_c->m_24)
+        m_c->m_24
             ->PushView(
                 m_c->m_drawTarget->m_14,
-                ((CRenderer*)m_c->m_8)
+                m_c->m_8
             ); // (thiscall on m_24)
         m_c->m_rendererB->Present(m_c->m_drawTarget->m_14,
                                   m_c->m_drawTarget->m_18); // vtbl[+0x34]
         m_4w()->m_54->Blit(
-            ((CDrawSurface*)m_c->m_24)->m_5c->m_84,
-            ((CDrawSurface*)m_c->m_24)->m_5c->m_88
+            ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_84,
+            ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_88
         );
         if (m_c->m_frameProfiler != 0) { // frame profiler
             u32 t = timeGetTime();
@@ -361,7 +361,7 @@ i32 CPlay::Render() {
         // GutsStepX(m_region0Gate, m_guts, reg) -> the post-draw step (modeled via
         // the same external; here as the marker/guts step):
         GutsStep();                             // (post-draw guts)
-        ((CDrawSurface*)m_c->m_24)->PostStep(); // on m_c->m_24
+        m_c->m_24->PostStep(); // on m_c->m_24
         return 1;                               // -> draw tail
     }
 
@@ -448,12 +448,12 @@ i32 CPlay::Render() {
         }
 
         // --- shared world-draw block #2 ---
-        ((CDrawSurface*)m_c->m_24)->PushView(m_c->m_drawTarget->m_14, ((CRenderer*)m_c->m_8));
+        m_c->m_24->PushView(m_c->m_drawTarget->m_14, m_c->m_8);
         m_c->m_rendererB->Present(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18); // present
         if (m_region1Gate != 0) {
             StepC(); // alt-input draw
         } else {
-            ((CDrawSurface*)m_c->m_24)->PushView(m_c->m_drawTarget->m_14, ((CRenderer*)m_c->m_8));
+            m_c->m_24->PushView(m_c->m_drawTarget->m_14, m_c->m_8);
             m_c->m_rendererB->Present(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
         }
         MarkerBegin((i32)g_645584);
@@ -578,7 +578,7 @@ alt2:
         }
         if (m_paused != 0) {
             // ---- the paused frame: draw-only ----
-            ((CDrawSurface*)m_c->m_24)->PushView(m_c->m_drawTarget->m_14, ((CRenderer*)m_c->m_8));
+            m_c->m_24->PushView(m_c->m_drawTarget->m_14, m_c->m_8);
             m_c->m_rendererB->Present(m_c->m_drawTarget->m_14,
                                       m_c->m_drawTarget->m_18); // present
             GutsStep();
@@ -590,8 +590,8 @@ alt2:
             // ---- the active short frame: entity step + cues ----
             if (m_stepCountdown > 0) {
                 m_stepCountdown = m_stepCountdown - 1;
-                ((CDrawSurface*)m_c->m_24)
-                    ->PushView(m_c->m_drawTarget->m_14, ((CRenderer*)m_c->m_8));
+                m_c->m_24
+                    ->PushView(m_c->m_drawTarget->m_14, m_c->m_8);
                 m_c->m_rendererB->Present(
                     m_c->m_drawTarget->m_14,
                     m_c->m_drawTarget->m_18
@@ -829,7 +829,7 @@ i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
         if (ResetPlayState()) {
             return 1;
         }
-        ((CGruntzMgr*)m_4w())->ReportError(0x800a, 0x456);
+        m_4->ReportError(0x800a, 0x456);
         return 1;
     }
     if (m_paused != 0) {
@@ -900,8 +900,8 @@ i32 CPlay::ResetViewport() {
         r.bottom = r.bottom + (0x60 - halfH);
     }
     m_viewMode = VIEW_MODE_IDLE;
-    ((CDrawSurface*)m_c->m_24)->SetClipRect(&r);
-    ((CGruntzMgr*)m_4w())->RecomputeViewScale();
+    m_c->m_24->SetClipRect(&r);
+    m_4->RecomputeViewScale();
     return 1;
 }
 
@@ -940,7 +940,7 @@ void CPlay::StepC() {
 RVA(0x000d8dc0, 0xce)
 i32 CPlay::ClampViewport(i32 inset) {
     CSpriteFactoryHolder* v = m_c;
-    RECT* vp = &((CDrawSurface*)v->m_24)->m_viewport;
+    CGameViewport::SViewRect* vp = &v->m_24->m_viewport;
     RECT r;
     r.left = vp->left;
     r.top = vp->top;
@@ -963,10 +963,10 @@ i32 CPlay::ClampViewport(i32 inset) {
         return 0;
     }
 
-    ((CDrawSurface*)m_c->m_24)->SetClipRect(&r);
+    m_c->m_24->SetClipRect(&r);
     m_c->m_drawTarget->m_14->m_2c->Fill(0);
     m_guts->ClampApply();
-    ((CGruntzMgr*)m_4w())->RecomputeViewScale();
+    m_4->RecomputeViewScale();
     return 1;
 }
 
@@ -994,7 +994,7 @@ i32 CPlay::ClampViewport2(i32 stride) {
     CWorld* w = m_4w();
     GutsSubsystem* guts = m_guts;
 
-    i32* rp = (i32*)&((CDrawSurface*)v->m_24)->m_viewport;
+    i32* rp = (i32*)&v->m_24->m_viewport;
     RECT r;
     r.left = rp[0];
     r.top = rp[1];
@@ -1032,10 +1032,10 @@ i32 CPlay::ClampViewport2(i32 stride) {
         return 0;
     }
 
-    ((CDrawSurface*)m_c->m_24)->SetClipRect(&r);
+    m_c->m_24->SetClipRect(&r);
     m_c->m_drawTarget->m_14->m_2c->Fill(0);
     m_guts->ClampApply();
-    ((CGruntzMgr*)m_4w())->RecomputeViewScale();
+    m_4->RecomputeViewScale();
     return 1;
 }
 
@@ -1221,7 +1221,7 @@ extern "C" {
 RVA(0x000d9050, 0xc7)
 i32 CPlay::NotifyVisibleEntities() {
     CSpriteFactoryHolder* v = m_c;
-    i32* vp = (i32*)&((CDrawSurface*)v->m_24)->m_viewport;
+    i32* vp = (i32*)&v->m_24->m_viewport;
     CDrawTarget::SurfaceB* held = v->m_drawTarget->m_14;
     CVisNode* node = *(CVisNode**)((char*)((CRenderer*)v->m_8) + 0x14);
 
@@ -1263,8 +1263,8 @@ i32 CPlay::NotifyVisibleEntities() {
 // See docs/patterns/zero-register-pinning.md.
 RVA(0x000d1ac0, 0x4f)
 void CPlay::StepScroll() {
-    CDrawSurface* v = ((CDrawSurface*)m_c->m_24);
-    CDrawSurface::CameraGeom* geom = v->m_5c;
+    CGameViewport* v = m_c->m_24;
+    CGameViewport::CameraGeom* geom = (CGameViewport::CameraGeom*)v->m_5c;
 
     i32 y = m_cursorY + (geom->m_originY - v->m_viewport.top);  // [edx+4]-m_14; +=m_cursorY
     i32 x = geom->m_originX + (m_cursorX - v->m_viewport.left); // [edx]; +=m_cursorX-m_10
@@ -1337,7 +1337,7 @@ void CPlay::LoadSBITextEdges(char* name) {
     s = name;
 
     RECT rect;
-    RECT& vp = ((CDrawSurface*)m_c->m_24)->m_viewport;
+    CGameViewport::SViewRect& vp = m_c->m_24->m_viewport;
     i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
     i32 bottom = b - g_buteText->GetInt("Font", "TextBottomEdge");
     i32 right = r - g_buteText->GetInt("Font", "TextRightEdge");
@@ -1377,9 +1377,9 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
         i32 left = src[0] + g_buteText->GetInt("Font", "TextLeftEdge");
         SetRect(&rect, left, top, right, bottom);
     } else {
-        // the viewport rect (((CDrawSurface*)m_c->m_24)->m_viewport) ptr (edx) does not survive
+        // the viewport rect (m_c->m_24->m_viewport) ptr (edx) does not survive
         // the GetInt calls, so all 4 corners are read up front.
-        RECT& vp = ((CDrawSurface*)m_c->m_24)->m_viewport;
+        CGameViewport::SViewRect& vp = m_c->m_24->m_viewport;
         i32 l = vp.left, t = vp.top, r = vp.right, b = vp.bottom;
         i32 bottom = b - g_buteText->GetInt("Font", "TextBottomEdge");
         i32 right = r - g_buteText->GetInt("Font", "TextRightEdge");
@@ -1408,8 +1408,8 @@ void CPlay::PlayCueAt(i32 cueId, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7,
 RVA(0x000c9c20, 0x79)
 void CPlay::DrawWorldFrame() {
     Vslot26(); // this->vtbl[+0x98]()  (begin-frame virtual, thiscall)
-    if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollA();
+    if (m_c->m_24->m_5c != 0) {
+        ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollA();
     }
     g_6bf3c0 = g_645580;
     g_6bf3bc = g_645584;
@@ -1455,13 +1455,13 @@ i32 CPlay::DrawWorldFrames() {
             now += dt;
             m_4w()->m_68->StepFull(now, dt, accum);
             if (i > 0 && i < last) {
-                if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-                    ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollB();
+                if (m_c->m_24->m_5c != 0) {
+                    ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollB();
                 }
             }
             Vslot26(); // this->vtbl[+0x98]()
-            if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-                ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollA();
+            if (m_c->m_24->m_5c != 0) {
+                ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollA();
             }
             ((CRenderer*)m_c->m_8)->BeginScene(0);
             m_4w()->m_68->Step((i32)g_645584);
@@ -1515,11 +1515,11 @@ i32 CPlay::ProfileDeltaFrame() {
     }
     i32 renderMs = (i32)(tg() - t0);
     m_4w()->m_54->Blit(
-        ((CDrawSurface*)m_c->m_24)->m_5c->m_84,
-        ((CDrawSurface*)m_c->m_24)->m_5c->m_88
+        ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_84,
+        ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_88
     );
     u32 t2 = tg();
-    ((CDrawSurface*)m_c->m_24)->PushView(m_c->m_drawTarget->m_14, ((CRenderer*)m_c->m_8));
+    m_c->m_24->PushView(m_c->m_drawTarget->m_14, m_c->m_8);
     m_c->m_rendererB->Present(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
     i32 presentMs = (i32)(tg() - t2);
     ProfLog(
@@ -1532,8 +1532,8 @@ i32 CPlay::ProfileDeltaFrame() {
     );
     DrawDebugStats();
     ((CDDSurface*)m_c->m_drawTarget->m_10->m_2c)->Flip(0);
-    if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollB();
+    if (m_c->m_24->m_5c != 0) {
+        ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollB();
     }
     return 1;
 }
@@ -1564,8 +1564,8 @@ extern "C" void ProfReport(void* mgr, void* guts, i32 gate);
 RVA(0x000c9e40, 0x1d7)
 i32 CPlay::ProfileInputFrame() {
     m_4w()->m_54->Blit(
-        ((CDrawSurface*)m_c->m_24)->m_5c->m_84,
-        ((CDrawSurface*)m_c->m_24)->m_5c->m_88
+        ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_84,
+        ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_88
     ); // untimed
     u32(WINAPI * tg)() = g_pTimeGetTime;
 
@@ -1574,8 +1574,8 @@ i32 CPlay::ProfileInputFrame() {
     i32 activateMs = (i32)(tg() - t1);
 
     u32 t3 = tg();
-    if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollA();
+    if (m_c->m_24->m_5c != 0) {
+        ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollA();
     }
     i32 deactMs = (i32)(tg() - t3);
 
@@ -1589,7 +1589,7 @@ i32 CPlay::ProfileInputFrame() {
     i32 hitTestMs = (i32)(tg() - t7);
 
     u32 t9 = tg();
-    ((CDrawSurface*)m_c->m_24)->PushView(m_c->m_drawTarget->m_14, ((CRenderer*)m_c->m_8));
+    m_c->m_24->PushView(m_c->m_drawTarget->m_14, m_c->m_8);
     i32 drawMs = (i32)(tg() - t9);
 
     u32 t11 = tg();
@@ -1620,8 +1620,8 @@ i32 CPlay::ProfileInputFrame() {
     ((CDDSurface*)m_c->m_drawTarget->m_10->m_2c)->Flip(0);
     g_profAccB = (i32)(tg() - (u32)g_profAccB);
     g_profAccA = (i32)tg();
-    if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollB();
+    if (m_c->m_24->m_5c != 0) {
+        ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollB();
     }
     g_profAccA = (i32)(tg() - (u32)g_profAccA);
     ProfReport(g_64556c, m_guts, m_region0Gate);
@@ -1791,7 +1791,7 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
     if (m_guts->m_state == 2) {
         return 1;
     }
-    RECT& vp = ((CDrawSurface*)m_c->m_24)->m_viewport;
+    CGameViewport::SViewRect& vp = m_c->m_24->m_viewport;
     if (x >= vp.left && x <= vp.right && y >= vp.top && y <= vp.bottom) {
         return 1;
     }
@@ -1911,7 +1911,7 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
     //  bottom from [esp+0x14/0x18/0x1c] across the DragSelect call. The INSIDE
     //  path is the fall-through "success" so the OUTSIDE block floats to the
     //  tail; see docs/patterns/nested-if-success-deepest-error-tail.md.)
-    RECT box = ((CDrawSurface*)m_c->m_24)->m_viewport;
+    CGameViewport::SViewRect box = m_c->m_24->m_viewport;
     left = box.left;
     top = box.top;
     right = box.right;
@@ -1951,9 +1951,9 @@ i32 CPlay::HandleDragMove(i32 a, i32 x, i32 y) {
                 m_scrollSink->m_flags &= ~1;
             }
         }
-        CDrawSurface* v = ((CDrawSurface*)m_c->m_24);
-        i32 wx = v->m_5c->m_originX - v->m_viewport.left + x;
-        i32 wy = v->m_5c->m_originY - v->m_viewport.top + y;
+        CGameViewport* v = m_c->m_24;
+        i32 wx = ((CGameViewport::CameraGeom*)v->m_5c)->m_originX - v->m_viewport.left + x;
+        i32 wy = ((CGameViewport::CameraGeom*)v->m_5c)->m_originY - v->m_viewport.top + y;
         m_4w()->m_68->WorldPost(wx, wy);
         return 1;
     }
@@ -2104,7 +2104,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
         if (ResetPlayState()) {
             return 1;
         }
-        ((CGruntzMgr*)m_4w())->ReportError(0x800a, 0x458);
+        m_4->ReportError(0x800a, 0x458);
         return 1;
     }
     if (m_paused != 0) {
@@ -2147,8 +2147,8 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
     CWorld::RenderStateHolder::PlaneGeomHolder* ph = m_4w()->m_30->m_24;
     if (x < ph->m_rect10.right && x >= ph->m_rect10.left && y < ph->m_rect10.bottom
         && y >= ph->m_rect10.top) {
-        CDrawSurface* ds = ((CDrawSurface*)m_c->m_24);
-        CDrawSurface::CameraGeom* geom = ds->m_5c;
+        CGameViewport* ds = m_c->m_24;
+        CGameViewport::CameraGeom* geom = (CGameViewport::CameraGeom*)ds->m_5c;
         i32 rawX = geom->m_originX - ds->m_viewport.left + x;
         i32 rawY = geom->m_originY - ds->m_viewport.top + y;
         i32 snapX = (rawX & ~0x1f) + 0x10;
@@ -2186,23 +2186,23 @@ i32 CPlay::winapi_0d0b30_CopyRect(i32) {
 // ManagerTick) which pair once those engine fns are named.
 RVA(0x000cefc0, 0xa2)
 i32 CPlay::DrawWorldPresent() {
-    if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollB();
+    if (m_c->m_24->m_5c != 0) {
+        ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollB();
     }
-    if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollA();
-    }
-    ((CRenderer*)m_c->m_8)->BeginScene(1);
-    if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollB();
-    }
-    if (((CDrawSurface*)m_c->m_24)->m_5c != 0) {
-        ((CPlaneRender*)((CDrawSurface*)m_c->m_24)->m_5c)->CenterScrollA();
+    if (m_c->m_24->m_5c != 0) {
+        ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollA();
     }
     ((CRenderer*)m_c->m_8)->BeginScene(1);
-    ((CDrawSurface*)m_c->m_24)->PushView(m_c->m_drawTarget->m_14, ((CRenderer*)m_c->m_8));
+    if (m_c->m_24->m_5c != 0) {
+        ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollB();
+    }
+    if (m_c->m_24->m_5c != 0) {
+        ((CPlaneRender*)m_c->m_24->m_5c)->CenterScrollA();
+    }
+    ((CRenderer*)m_c->m_8)->BeginScene(1);
+    m_c->m_24->PushView(m_c->m_drawTarget->m_14, m_c->m_8);
     m_c->m_rendererB->Present(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
-    ((CGruntzMgr*)m_4w())->PerFrameTick();
+    m_4->PerFrameTick();
     return 1;
 }
 
@@ -2235,7 +2235,7 @@ i32 CPlay::PresentAndFlush() {
         if (m_region1Gate != 0) {
             NotifyVisibleEntities();
         } else {
-            ((CDrawSurface*)m_c->m_24)->PushView(m_c->m_drawTarget->m_14, ((CRenderer*)m_c->m_8));
+            m_c->m_24->PushView(m_c->m_drawTarget->m_14, m_c->m_8);
             m_c->m_rendererB->Present(m_c->m_drawTarget->m_14, m_c->m_drawTarget->m_18);
         }
         Eng_SurfaceFlush(m_c->m_drawTarget->m_10->m_2c, 0);
@@ -4972,7 +4972,6 @@ SIZE_UNKNOWN(AgThis);
 SIZE_UNKNOWN(AgWorld);
 SIZE_UNKNOWN(CAnimRegistry);
 SIZE_UNKNOWN(CCueState);
-SIZE_UNKNOWN(CDrawSurface);
 SIZE_UNKNOWN(CDtorThis);
 SIZE_UNKNOWN(CEffDesc);
 SIZE_UNKNOWN(CEffMap);

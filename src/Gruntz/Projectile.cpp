@@ -27,25 +27,11 @@
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
-// The +0x1a0 anim sub-object is viewed two ways: Setup @0x15c2d0 is CDDrawBlitParam::Setup_15c2d0,
-// Tick @0x15c360 is CAniAdvanceCursor::Advance_15c360. TU-local decls, cast at each call.
-class CDDrawBlitParamSrc;
-class CDDrawBlitParam {
-public:
-    void Setup_15c2d0(CDDrawBlitParamSrc* src);
-};
-class CAniAdvanceCursor {
-public:
-    i32 Advance_15c360(i32 clock);
-};
-
-// CProjRenderObj's CacheFirstFrame/ApplyLookupGeometry ARE the header-less spriteresource
-// CGruntSprite's; TU-local decl, cast at each call.
-class CGruntSprite {
-public:
-    void CacheFirstFrame(const char* name);
-    i32 ApplyLookupGeometry(const char* key, i32 flag);
-};
+// The +0x1a0 anim sub-object's setter/probe (CProjAnim::SetGeometry / Advance_15c360) and
+// the render object's CGameObject-base name/sprite setters (CProjRenderObj::CacheFirstFrame /
+// ApplyLookupGeometry) are folded onto the real classes (<Gruntz/Projectile.h>), reached
+// directly; the former per-TU CDDrawBlitParam / CAniAdvanceCursor / CGruntSprite facet
+// views are gone.
 
 // StepMotion's two motion-phase thresholds (.rdata doubles) + the int amplitude
 // global it folds into the trajectory (loaded as a double via fild). DATA pins so
@@ -391,8 +377,8 @@ i32 CProjectile::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i
     m_fallSprite = out;
 
     m_savedFrameGeo = m_sprite->m_1b4;
-    ((CDDrawBlitParam*)&m_sprite->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame1);
-    ((CGruntSprite*)m_sprite)->CacheFirstFrame(key + "_OBJECT");
+    m_sprite->m_1a0.SetGeometry(m_frame1);
+    m_sprite->CacheFirstFrame(key + "_OBJECT");
 
     // Normalise the launch trajectory into the per-frame velocity + sign vectors.
     u32 totalTime = (u32)(count * m_timePerTile);
@@ -672,11 +658,9 @@ void CProjectile::MovingSlot16() {
                 offY = -0x4;
                 if (m_sprite->m_1b4 != (i32)m_frame1) {
                     m_savedFrameGeo = m_sprite->m_1b4;
-                    ((CDDrawBlitParam*)&m_sprite->m_1a0)
-                        ->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame1);
+                    m_sprite->m_1a0.SetGeometry(m_frame1);
                     if (m_shadow != 0) {
-                        ((CDDrawBlitParam*)&m_shadow->m_1a0)
-                            ->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame1);
+                        m_shadow->m_1a0.SetGeometry(m_frame1);
                     }
                 }
             } else if (dist >= mag * 0.8 || dist < mag * 0.2) {
@@ -684,11 +668,9 @@ void CProjectile::MovingSlot16() {
                 offY = -0x8;
                 if (m_sprite->m_1b4 != (i32)m_frame2) {
                     m_savedFrameGeo = m_sprite->m_1b4;
-                    ((CDDrawBlitParam*)&m_sprite->m_1a0)
-                        ->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame2);
+                    m_sprite->m_1a0.SetGeometry(m_frame2);
                     if (m_shadow != 0) {
-                        ((CDDrawBlitParam*)&m_shadow->m_1a0)
-                            ->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame2);
+                        m_shadow->m_1a0.SetGeometry(m_frame2);
                     }
                 }
             } else if (dist >= mag * 0.7 || dist < mag * 0.3) {
@@ -696,11 +678,9 @@ void CProjectile::MovingSlot16() {
                 offY = -0xc;
                 if (m_sprite->m_1b4 != (i32)m_frame3) {
                     m_savedFrameGeo = m_sprite->m_1b4;
-                    ((CDDrawBlitParam*)&m_sprite->m_1a0)
-                        ->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame3);
+                    m_sprite->m_1a0.SetGeometry(m_frame3);
                     if (m_shadow != 0) {
-                        ((CDDrawBlitParam*)&m_shadow->m_1a0)
-                            ->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame3);
+                        m_shadow->m_1a0.SetGeometry(m_frame3);
                     }
                 }
             } else if (dist >= mag * 0.6 || dist < mag * 0.4) {
@@ -708,11 +688,9 @@ void CProjectile::MovingSlot16() {
                 offY = -0x10;
                 if (m_sprite->m_1b4 != (i32)m_frame4) {
                     m_savedFrameGeo = m_sprite->m_1b4;
-                    ((CDDrawBlitParam*)&m_sprite->m_1a0)
-                        ->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame4);
+                    m_sprite->m_1a0.SetGeometry(m_frame4);
                     if (m_shadow != 0) {
-                        ((CDDrawBlitParam*)&m_shadow->m_1a0)
-                            ->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame4);
+                        m_shadow->m_1a0.SetGeometry(m_frame4);
                     }
                 }
             } else {
@@ -720,11 +698,9 @@ void CProjectile::MovingSlot16() {
                 offY = -0x14;
                 if (m_sprite->m_1b4 != (i32)m_frame5) {
                     m_savedFrameGeo = m_sprite->m_1b4;
-                    ((CDDrawBlitParam*)&m_sprite->m_1a0)
-                        ->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame5);
+                    m_sprite->m_1a0.SetGeometry(m_frame5);
                     if (m_shadow != 0) {
-                        ((CDDrawBlitParam*)&m_shadow->m_1a0)
-                            ->Setup_15c2d0((CDDrawBlitParamSrc*)m_frame5);
+                        m_shadow->m_1a0.SetGeometry(m_frame5);
                     }
                 }
             }
@@ -769,8 +745,8 @@ void CProjectile::MovingSlot16() {
                     (CProjRenderObj*)reg->m_world->m_8
                         ->CreateSprite(0, m_targetX, m_targetY, 0xcf84f, "Particlez", 0x40003);
                 if (fx != 0) {
-                    ((CGruntSprite*)fx)->CacheFirstFrame("GAME_WATER");
-                    ((CGruntSprite*)fx)->ApplyLookupGeometry("GAME_WATER", 0);
+                    fx->CacheFirstFrame("GAME_WATER");
+                    fx->ApplyLookupGeometry("GAME_WATER", 0);
                 }
             }
             m_sprite->m_08 |= 0x10000;
@@ -801,8 +777,8 @@ void CProjectile::MovingSlot16() {
                                 0x40003
                             );
                             if (fx != 0) {
-                                ((CGruntSprite*)fx)->CacheFirstFrame("LEVEL_DEATHSPLASH");
-                                ((CGruntSprite*)fx)->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
+                                fx->CacheFirstFrame("LEVEL_DEATHSPLASH");
+                                fx->ApplyLookupGeometry("LEVEL_DEATHSPLASH", 0);
                             }
                         }
                         m_sprite->m_08 |= 0x10000;
@@ -817,7 +793,7 @@ void CProjectile::MovingSlot16() {
         return;
     }
     m_savedFrameGeo = m_sprite->m_1b4;
-    ((CDDrawBlitParam*)&m_sprite->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)sprite);
+    m_sprite->m_1a0.SetGeometry(sprite);
 }
 
 // ---------------------------------------------------------------------------
@@ -828,7 +804,7 @@ void CProjectile::MovingSlot16() {
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_sprite->m_40 &= ~1u;
-    ((CAniAdvanceCursor*)&m_sprite->m_1a0)->Advance_15c360((i32)g_6bf3bc);
+    m_sprite->m_1a0.Advance_15c360((i32)g_6bf3bc);
     CProjRenderObj* r = m_sprite;
     if (r->m_1c8 != 0 && r->m_1c0 == 0) {
         r->m_08 |= 0x10000;

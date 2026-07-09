@@ -77,7 +77,7 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
     if (g_debugFlags & 0x4) {
-        CDrawSurface::CameraGeom* p = ((CDrawSurface*)m_c->m_24)->m_5c;
+        CGameViewport::CameraGeom* p = (CGameViewport::CameraGeom*)m_c->m_24->m_5c;
         sprintf(scratch, " Pos = %i,%i", p->m_84, p->m_88);
         strcat(buf, scratch);
     }

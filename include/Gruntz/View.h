@@ -143,43 +143,23 @@ struct CRenderer {
     i32 m_1c; // +0x1c  live game-object count (CPlay::DrawDebugStats "Objs = %i")
 };
 
-// The draw-surface object at m_c->m_24 (the target of the thiscall PushView +
-// the ViewPreStep/PostStep sub-steps). Its +0x5c holds the camera geometry the
-// world blit reads (+0x84 / +0x88).
-struct CDrawSurface {
-    void PushView(void* view, void* renderer);
-    void PreStep();
-    void PostStep();
-    void SetClipRect(RECT* r); // 0x15da80 (thiscall) ClampViewport apply-tail
-    char p0[0x10];
-    // +0x10: the viewport rect {left,top,right,bottom}; StepScroll reads .left/.top
-    // as the scroll origin, DispatchHudClick reads all four as the bounds box.
-    RECT m_viewport; // +0x10  viewport rect (also the scroll origin .left/.top)
-    char p20[0x5c - 0x20];
-    // +0x5c -> a geom block: StepScroll reads (m_5c+0x40).{m_originX,m_originY};
-    // the world blit reads (m_5c).{m_84,m_88}.
-    struct CameraGeom {
-        // DrawA @0x163300 IS CPlaneRender::CenterScrollA; cast at each call.
-        // DrawB @0x163370 IS CPlaneRender::CenterScrollB; cast at each call.
-        char p0[0x40];
-        i32 m_originX; // +0x40
-        i32 m_originY; // +0x44
-        char p48[0x84 - 0x48];
-        i32 m_84;
-        i32 m_88;
-    }* m_5c; // +0x5c camera geom
-};
+// The draw-surface object at m_c->m_24 is the ONE real CGameViewport
+// (<Gruntz/GameRegistry.h>) - the former per-TU CDrawSurface render-facet view is
+// folded onto it (PushView/PreStep/PostStep/SetClipRect + the SViewRect viewport +
+// the CameraGeom camera block all live there now, afx-neutral). The render TUs reach
+// m_24->m_5c's CameraGeom by cast (m_5c is a raw int base shared with the CGrunt cue
+// helpers). No separate view here.
 
 // The remaining shared sub-objects of CSpriteFactoryHolder are the ONE real classes,
 // NOT View.h views (all former CSpriteFactoryHolder facet views are folded away):
 //   * +0x04 render-pump / draw target -> CDrawTarget      (<Gruntz/ResMgr.h>)
 //   * +0x08 renderer A / +0x0c renderer B -> CRenderer    (below; polymorphic engine class)
 //   * +0x10 image/name registry -> CImageRegistry         (<Gruntz/ResMgr.h>)
-//   * +0x24 draw surface / viewport -> CDrawSurface        (below; the RECT/CameraGeom view)
+//   * +0x24 draw surface / viewport -> CGameViewport       (<Gruntz/GameRegistry.h>)
 //   * +0x28 sound registry (+0x2c pooled res) -> CSoundRegistry (<Gruntz/ResMgr.h>)
 //   * +0x2c anim registry -> CAnimRegistry                 (<Gruntz/ResMgr.h>)
-// The two classes kept here need the MFC/RECT + the polymorphic renderer vtable, so they
-// stay in this afx-pulling header (the ResMgr.h classes are afx-neutral).
+// The one class kept here (CRenderer) needs the polymorphic renderer vtable; it stays
+// in this afx-pulling header (the ResMgr.h + GameRegistry.h classes are afx-neutral).
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 VTBL(CRenderer, 0x001ee1c4);

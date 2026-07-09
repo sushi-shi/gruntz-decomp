@@ -86,7 +86,11 @@ struct CHudSprite {
     // The CGameObject-base name/geometry setters the one-shot "SingleAnimation"
     // sprite (BuildGruntLoseItemAnimation) drives: ApplyName(key) (0x150540, ret 4)
     // and ApplyLookupGeometry(key, frame) (0x1505b0, ret 8). External/reloc-masked.
-    // ApplyName @0x150540 / ApplyLookupGeometry @0x1505b0 ARE CGruntSprite's; cast at each call.
+    // The CGameObject-base name/sprite setters, folded here (the former per-TU CGruntSprite
+    // facet view is gone); the created sprite IS this game object.
+    void CacheFirstFrame(const char* name);              // 0x1504d0
+    void CacheFrame(const char* key, i32 frame);         // 0x150540 (ApplyName)
+    void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
 
     char m_pad0[0x8];
     i32 m_8; // +0x08  (sprite flag word; arrival sets |= 0x10000 to retire it)
@@ -228,7 +232,9 @@ struct CAnimElem {
 SIZE_UNKNOWN(CGruntAnimSub);
 class CGruntAnimSub {
 public:
-    // SetGeometry @0x15c2d0 IS CDDrawBlitParam::Setup_15c2d0; cast at each call.
+    // The geometry sub-player setter (0x15c2d0, external/reloc-masked; formerly reached
+    // by a per-TU CDDrawBlitParam facet cast on &state->m_1a0).
+    void SetGeometry(i32 src);
 };
 
 SIZE_UNKNOWN(CGruntAnimState);
@@ -313,7 +319,8 @@ SIZE_UNKNOWN(CEntranceSpriteMgr);
 struct CEntranceSpriteMgr {
     // 1-arg lookup returning the resolved sprite directly (the EXIT/RUN loaders
     // use this form; the 2-arg m_10map.Lookup writes through an out-param instead).
-    // LookupValue @0x6b2a0 IS CDDrawSubMgrLeaf::LookupValue_06b2a0; cast at each call.
+    // (Formerly reached by a per-TU CDDrawSubMgrLeaf facet cast; folded here.)
+    void* LookupValue_06b2a0(const char* key); // 0x6b2a0 (external/reloc-masked)
 
     char m_pad0[0x10];
     CEntranceHashTable m_10map; // +0x10
@@ -334,6 +341,9 @@ SIZE_UNKNOWN(CEntranceAnimSub);
 class CEntranceAnimSub {
 public:
     void SetGeometry(i32 srcSprite); // FUN_0055c2d0 (this = player+0x1a0, ret 4)
+    // The geometry-source ready probe (0x15c360, ret 4; formerly reached by a per-TU
+    // CAniAdvanceCursor facet cast on &player->m_1a0). External/reloc-masked.
+    i32 Advance_15c360(unsigned int i);
     // The geometry-state setter LoadEntranceConfig calls on entry; returns 1 when
     // the player is ready (FUN_0055c360, __thiscall ret 4 = 1 stack arg). Same
     // engine fn as SpriteResource's SetGeoSource, but the int return is used here.
@@ -367,6 +377,15 @@ public:
     // entrance forms). External/no-body so the call rel32 reloc-masks.
     // The CGameObject-base lookup-geometry setter (same 0x1505b0 slot CHudSprite
     // uses) the death/freeze finalize drives with the DEATHZ_SPARKLE/UNFREEZE keys.
+    //
+    // The CGameObject-base name/sprite/geometry setters the asset loaders drive on the
+    // player directly (external/reloc-masked so the call rel32 masks; the former per-TU
+    // CGruntSprite/CGruntAnimPlayer facet views are folded here). The player IS the
+    // created game object.
+    void CacheFirstFrame(const char* name);              // 0x1504d0
+    void CacheFrame(const char* key, i32 frame);         // 0x150540
+    void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
+    void ApplyGeometryDirect(i32 src, i32 flag);         // 0x58b60
 
     char m_pad0[0x8];
     i32 m_8;              // +0x08  state-flag word (death loader |= 1 / |= 0x10000)

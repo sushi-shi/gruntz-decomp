@@ -257,7 +257,7 @@ i32 CPlay::ScanBuildTiles() {
             }
             p->m_flags |= 0x10000;
         } else if (vf == PlaneType_Covered) {
-            DrawSurf* ds = (DrawSurf*)(((CDrawSurface*)v->m_24));
+            DrawSurf* ds = (DrawSurf*)v->m_24;
             i32 x = p->m_x;
             i32 y = p->m_y;
             if (x < 0) {
