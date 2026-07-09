@@ -88,6 +88,12 @@ public:
         u32 coopFlags
     ); // 0x141dc0
 
+    // Queries the current display mode via IDirectDraw2::GetDisplayMode into a
+    // scratch DDSURFACEDESC and returns width / height / bpp through the three
+    // out-pointers; on a failed COM call it zeroes them, reports the HRESULT and
+    // returns 0. (__thiscall, ret 0xc => 3 args.)
+    i32 GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp); // 0x143740
+
     // Diagnostic error reporter. Given a calling site's __FILE__/__LINE__ and a
     // DirectDraw HRESULT, builds a "<DDERR_NAME> (<code>) - <description>" string
     // and (per three reporting-mode globals) beeps, logs and/or message-boxes it.

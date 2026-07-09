@@ -154,6 +154,56 @@ i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
     return put;
 }
 
+// The lazy-open helpers. Eng_fopen + the three fopen mode strings live in
+// RezFile.cpp (CRezFile::Open uses the identical mode ladder); referenced here
+// by name so their relocs reloc-mask against the shared symbols.
+extern "C" void* Eng_fopen(const char* path, const char* mode); // 0x11f870
+extern const char s_rb[];                                       // 0x20b668  "rb"
+extern const char s_rPlusB[];                                   // 0x21a0a4  "r+b"
+extern const char s_wPlusB[];                                   // 0x21a0a8  "w+b"
+
+// ---------------------------------------------------------------------------
+// CRezItm::Open(filename, readonly, write)
+// Pick the fopen mode from the readonly/write flags (write+readonly is invalid),
+// (re)open the FILE* recovering through the owner's Retry() gate, then stash the
+// readonly flag (m_18), keep a RezAlloc'd copy of the filename (m_readBuf) and
+// reset the position cursor. Same mode ladder as CRezFile::Open.
+RVA(0x0013c760, 0xc1)
+i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
+    for (;;) {
+        if (write) {
+            if (readonly) {
+                return 0;
+            }
+            m_fp = Eng_fopen(filename, s_wPlusB);
+        } else if (readonly) {
+            m_fp = Eng_fopen(filename, s_rb);
+        } else {
+            m_fp = Eng_fopen(filename, s_rPlusB);
+        }
+        if (m_fp != 0) {
+            break;
+        }
+        if (m_parent->Retry() == 0) {
+            return 0;
+        }
+        if (m_fp != 0) {
+            break;
+        }
+    }
+
+    m_18 = readonly;
+    if (m_readBuf != 0) {
+        RezFree(m_readBuf);
+    }
+    m_readBuf = RezAlloc(strlen(filename) + 1);
+    if (m_readBuf != 0) {
+        strcpy((char*)m_readBuf, filename);
+    }
+    m_pos = -1;
+    return 1;
+}
+
 // ---------------------------------------------------------------------------
 // CRezItm::Close()  (vtable slot 5)
 // fclose the FILE*, retrying through the owner's Retry() gate; then free the

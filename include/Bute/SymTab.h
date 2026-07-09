@@ -206,6 +206,13 @@ public:
     // variant chosen by m_owner->m_6c) and insert it into m_symbols. Returns it.
     CSymRec* FindOrAddSym(i32 key);
 
+    // AddNamedValue (0x13a400): find/create the int-keyed record (FindOrAddSym), then
+    // if `name` is not already in that record's value sub-table, pop a parse-slot,
+    // build a leaf record for it and splice it into the record's +0x24 sub-table,
+    // bumping the parser's longest-leaf-name counter. Returns the slot (0 if the name
+    // already existed or the slot pop failed). Higher-level twin of AddNodeEntry.
+    i32 AddNamedValue(void* a1, void* name, i32 key); // 0x13a400
+
     // ApplyRecursive (0x13a580): clear each child's m_04, run the range operation
     // (0x13a640) over this scope, then recurse into children whose m_04 was set.
     // Returns 1 unless a recursion failed. (a2 == 0 is a no-op returning 1.)

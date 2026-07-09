@@ -300,6 +300,36 @@ void BuildColorChannelTables() {
     }
 }
 
+// CDDSurface::Tile (__thiscall, ret 8 => 2 args). Tile the source surface across
+// this surface with raw IDirectDrawSurface::BltFast (DDBLTFAST_WAIT, +SRCCOLORKEY
+// when useColorKey), clipping the source rect for the right/bottom edge tiles.
+RVA(0x0013f990, 0xc4)
+void CDDSurface::Tile(CDDSurface* src, i32 useColorKey) {
+    i32 dwTrans = 0x10 + (useColorKey != 0); // DDBLTFAST_WAIT (+DDBLTFAST_SRCCOLORKEY)
+    for (i32 y = 0; y < m_height; y += src->m_height) {
+        for (i32 x = 0; x < m_width; x += src->m_width) {
+            RECT rect;
+            RECT* pRect = 0;
+            if (x + src->m_width >= m_width || y + src->m_height >= m_height) {
+                rect.left = 0;
+                rect.top = 0;
+                i32 w = m_width - x;
+                if (w >= src->m_width) {
+                    w = src->m_width;
+                }
+                rect.right = w;
+                i32 h = m_height - y;
+                if (h >= src->m_height) {
+                    h = src->m_height;
+                }
+                rect.bottom = h;
+                pRect = &rect;
+            }
+            m_8->BltFast(x, y, src->m_8, pRect, dwTrans);
+        }
+    }
+}
+
 // CDDSurface::GetColorKey (__thiscall). GetColorKey(8, &local); NOCOLORKEY is a
 // non-error returning -1; on success returns the key, on error reports + -1.
 RVA(0x0013fa60, 0x40)
@@ -727,6 +757,32 @@ i32 CDirectDrawMgr::CreateDevice(
     }
 
     g_DirectDrawMgr = this;
+    return 1;
+}
+
+// CDirectDrawMgr::GetDisplayMode (__thiscall, ret 0xc => 3 args). Zero a scratch
+// DDSURFACEDESC, query IDirectDraw2::GetDisplayMode and hand back width / height /
+// bit-depth through the out-pointers; on failure zero all three, report and fail.
+RVA(0x00143740, 0x93)
+i32 CDirectDrawMgr::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
+    DDSURFACEDESC desc;
+    i32 j;
+    i32* d = (i32*)&desc;
+    for (j = 0x1b; j != 0; j--) {
+        *d++ = 0;
+    }
+    desc.dwSize = 0x6c;
+    i32 hr = m_device->GetDisplayMode(&desc);
+    if (hr != 0) {
+        *pWidth = 0;
+        *pHeight = 0;
+        *pBpp = 0;
+        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x6e5, hr);
+        return 0;
+    }
+    *pWidth = desc.dwWidth;
+    *pHeight = desc.dwHeight;
+    *pBpp = desc.ddpfPixelFormat.dwRGBBitCount;
     return 1;
 }
 

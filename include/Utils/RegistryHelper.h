@@ -51,6 +51,13 @@ namespace Utils {
             u32* pValueBufferSize,
             char* szDefault
         );
+        void* GetValueBinary(
+            char* szValueName,
+            void* pBuffer,
+            u32* pBufferSize,
+            void* pDefault,
+            u32 defaultSize
+        );
         DWORD GetValueDword(char* szValueName, DWORD valueDefault);
         i32 SetValueString(char* szValueName, char* szValue);
         i32 SetValueDword(char* szValueName, DWORD value);

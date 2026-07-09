@@ -148,11 +148,17 @@ public:
     // (vtable slot 5)
     i32 Close();
 
+    // (Re)open the FILE* with an fopen mode picked from the readonly/write flags
+    // (write+readonly is rejected), recovering through the owner's Retry() gate;
+    // stashes the readonly flag in m_18 and a RezAlloc'd copy of the filename in
+    // m_readBuf, then resets the cursor. (0x13c760)
+    i32 Open(char* filename, i32 readonly, i32 write);
+
     // Opaque handles kept as void* (RezMgr.h is pulled into /O2-sensitive TUs like
     // Image.cpp, so <stdio.h>/FILE cannot be injected without rescheduling them):
     void* m_fp;      // +0x10  opaque CRT FILE* (= 0); passed to RezF* by value
     void* m_readBuf; // +0x14  raw heap read buffer (= 0); RezAlloc'd / RezFree'd
-    i32 m_18;        // +0x18  (set by the virtual load, not this TU; role unproven)
+    i32 m_18;        // +0x18  readonly flag (Open stores its readonly arg here)
     i32 m_1c;        // +0x1c  (set by the virtual load, not this TU; role unproven)
     i32 m_pos;       // +0x20  position cursor (= -1)
     virtual void VtSlotFill0() OVERRIDE; // vtable-slot filler (real slot; declared-only)

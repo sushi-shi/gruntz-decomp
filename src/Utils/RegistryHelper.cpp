@@ -104,6 +104,46 @@ namespace Utils {
     }
 
     // -------------------------------------------------------------------------
+    // RegistryHelper::GetValueBinary
+    // Reads a REG_BINARY value into pBuffer (with *pBufferSize the in/out byte
+    // count); on any failure copies defaultSize bytes from pDefault (reporting the
+    // count via *pBufferSize), or clears the size and returns 0 when there is no
+    // default.
+    RVA(0x00139540, 0x8a)
+    void* RegistryHelper::GetValueBinary(
+        char* szValueName,
+        void* pBuffer,
+        u32* pBufferSize,
+        void* pDefault,
+        u32 defaultSize
+    ) {
+        DWORD dwType;
+
+        if (m_open && szValueName && pBuffer && *pBufferSize > 0) {
+            if (RegQueryValueExA(
+                    m_valueKey,
+                    szValueName,
+                    0,
+                    &dwType,
+                    (LPBYTE)pBuffer,
+                    (LPDWORD)pBufferSize
+                ) == 0
+                && dwType == 3 /*REG_BINARY*/) {
+                return pBuffer;
+            }
+        }
+
+        if (pDefault && defaultSize > 0) {
+            memcpy(pBuffer, pDefault, defaultSize);
+            *pBufferSize = defaultSize;
+            return pBuffer;
+        }
+
+        *pBufferSize = 0;
+        return 0;
+    }
+
+    // -------------------------------------------------------------------------
     // RegistryHelper::GetValueDword
     // Reads a REG_DWORD value, returning valueDefault on any failure.
     RVA(0x001395d0, 0x50)

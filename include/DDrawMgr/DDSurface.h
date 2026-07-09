@@ -108,6 +108,7 @@ public:
     i32 Blt(CDDSurface* src);                    // 0x13ee60
     i32 BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
     i32 BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans);          // 0x13ef90
+    void Tile(CDDSurface* src, i32 useColorKey); // 0x13f990 (tile src across this via BltFast)
     i32 GetColorKey();                                                             // 0x13fa60
 
     // The colour-fill / geometry accessors (DIRSURF.CPP; some external no-body/reloc-

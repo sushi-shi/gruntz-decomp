@@ -389,6 +389,50 @@ CSymTab* CSymTab::CreateSub(const char* name) {
     return child;
 }
 
+// AddNamedValue (0x13a400): find/create the int-keyed record for `key`, and if `name`
+// is not already present in that record's value sub-table (+0x24), pop a parse-slot,
+// build a leaf record into it (the same 11-arg MakeSeed leftover-args trick as
+// AddNodeEntry: str2/f3/f1 = 0, f2 = the seed, f6/arr = 0, stream = m_owner's active
+// node), splice it in and bump the parser's longest-leaf-name counter. Returns the
+// slot (0 when the name already existed / the pop failed). __thiscall, ret 0xc.
+// @early-stop
+// regalloc wall (~88%): every instruction is structurally byte-exact (verified via
+// --diff); the residual is the MSVC5 callee-save coin-flip - retail keeps `rec` in ebp
+// and re-`lea`s &rec->m_valTable + puts m_owner in edx, while cl keeps &m_valTable in
+// ebp + m_owner in ecx, cascading the reg names through the body. The permuter finds no
+// operand-order fix (not source-steerable); same wall its siblings CreateSub/
+// ApplyRecursive @early-stop on. Banked for the final sweep.
+RVA(0x0013a400, 0xa9)
+i32 CSymTab::AddNamedValue(void* a1, void* name, i32 key) {
+    CSymRec* rec = FindOrAddSym(key);
+    if (rec->m_valTable.Walk((const char*)name, m_owner->m_68 == 0) != 0) {
+        return 0;
+    }
+    CSymLeafBuilder* slot = (CSymLeafBuilder*)m_owner->PopParseSlot();
+    slot->Build(
+        this,
+        (const char*)name,
+        &rec->m_valTable,
+        rec,
+        0,
+        0,
+        0,
+        (void*)m_owner->MakeSeed(),
+        0,
+        0,
+        m_owner->m_activeNode
+    );
+    if (slot == 0) {
+        return 0;
+    }
+    rec->m_valTable.Insert(&slot->m_node);
+    u32 len = strlen((char*)name);
+    if ((u32)m_owner->m_longestLeafNameLen <= len) {
+        m_owner->m_longestLeafNameLen = len + 1;
+    }
+    return (i32)slot;
+}
+
 // AddNodeEntry (0x13a4b0): pop a fresh parse-slot record out of the owner's pool, fill it
 // from this leaf record (the 11-arg CSymLeafBuilder::Build with the MakeSymSeed leftover-
 // args trick: f2 = the seed, str2/f3/f1 = 0, f6/arr/stream the carried leftover slots),
