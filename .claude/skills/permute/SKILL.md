@@ -73,8 +73,15 @@ semantics-preserving. If a function did not move, that residual is a genuine wal
 (regalloc-coloring or a control-flow shape) — leave the `@early-stop` with its
 byte-level reason.
 
-## How it works (two seams that matter)
+## How it works (three seams that matter)
 
+- **Mutations come from a real clang AST (libclang), so they are precedence-correct.**
+  For a commutative binary operator the two operand SUB-EXPRESSIONS are read from the
+  parse tree — the RHS of `a + b*c` is the whole `b*c` — so swapping is value-preserving
+  by construction. (The earlier regex form was operator-precedence-blind and banked WRONG
+  code, e.g. `cells + width*y + x` → `cells + y*x + width`; that is why it is AST-based.)
+  Source is handled as BYTES to match clang's byte offsets (one non-ASCII byte would
+  otherwise drift char offsets and splice wrong). Needs `ps.libclang` in the flake.
 - **Scoring is per-symbol.** `objdiff-cli` ignores its `<symbol>` arg for JSON output
   and emits every symbol in the TU; the tool pulls the TARGET symbol's `match_percent`
   by exact mangled name. (A global max would saturate at 100 the instant any sibling
@@ -83,4 +90,5 @@ byte-level reason.
   `build/gen/symbol_names.csv`), so a run is fast and **cannot regress a 100% sibling**
   (a stacked mutation otherwise could, since scoring only reads the target).
 
-Ported from the HoMM2 sibling decomp (same units.toml + cc_wrap + objdiff-cli pipeline).
+Ported from the HoMM2 sibling decomp (same units.toml + cc_wrap + objdiff-cli pipeline),
+then hardened onto a clang AST — HoMM2's version is still the precedence-blind regex.
