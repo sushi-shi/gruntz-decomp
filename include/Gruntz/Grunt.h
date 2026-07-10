@@ -1187,8 +1187,89 @@ extern u32 g_gruntSpawnClock;          // 0x645588 (spawn-seed clock; reloc-mask
 class CProjectile; // canonical full model in <Gruntz/Projectile.h> (MFC-full); pointer-only here
 
 // ---------------------------------------------------------------------------
+// CGruntMovingBase - CGrunt's LEAN moving-object base: the CGrunt-world expression
+// of CMovingLogic. It derives from the canonical 0x30 CUserLogic, adds EXACTLY the
+// one new virtual (slot 16, MovingSlot16 / Update @0x16ea90) and NO data of its own,
+// so CGrunt's own members land at their true +0x30.. offsets.
+//
+// The canonical CMovingLogic (<Gruntz/MovingLogic.h>) embeds the 0x108-byte
+// CMotionState band + the twelve bound doubles as REAL members, making it a fat
+// 0x150 class. That view is correct for CProjectile, but as CGrunt's base it pushes
+// every CGrunt member +0x120 too far (m_400 -> +0x520, etc.), silently capping the
+// whole CGrunt high-member/FP family - the +0x120 header-layout bug. The two cannot
+// share the CMovingLogic name in the four dual-include TUs (Projectile/Boomerang/
+// ProjectileUpdate/GruntEntranceArrival), so CGrunt rides its own lean base.
+//
+// The 1-arg ctor is inlined into CGrunt::CGrunt @0x47a10: it seeds the CTileLogic
+// back-pointers, builds the +0x38 CMotionState band via Motion()->Init(), seeds the
+// four coordinate bounds from the per-type config (m_14), and runs SetParams. The
+// band + bounds are the real CMotionState fields, reached through the Motion()
+// sub-object accessor (the blessed +0x38 cast the canonical CMovingLogic uses);
+// they OVERLAY CGrunt's own named members (m_38/m_activeAnimDesc/m_animResolved/...),
+// keeping CGrunt's overlay layout put (the same idiom CProjectile.cpp uses).
+SIZE_UNKNOWN(CGruntMovingBase);
+class CGruntMovingBase : public CUserLogic {
+public:
+    CGruntMovingBase(CGameObject* owner);
+    virtual void MovingSlot16(); // slot 16 (offset 0x40) 0x16ea90 - the ONE new virtual
+    CMotionState* Motion() {
+        return (CMotionState*)((char*)this + 0x38);
+    }
+};
+
+inline CGruntMovingBase::CGruntMovingBase(CGameObject* owner) : CUserLogic(owner) {
+    // Build the +0x38 CMotionState band, then seed its per-axis bounds. The band +
+    // the bounds physically OVERLAY CGrunt's own members (m_animResolved etc.); they
+    // are the real CMotionState fields, reached through the Motion() sub-object
+    // accessor (the same blessed +0x38 cast the canonical CMovingLogic uses), so no
+    // raw-offset store is needed. Each bound: 0 => the shared MIN/MAX double copied
+    // dword-wise; else the per-type-config int widened via fild (if/else, not ?:, so
+    // the constant branch stays a mov/mov copy instead of a folded fld/fstp).
+    CMotionState* m = Motion();
+    m->Init();
+    i32 lo0 = ((CProjBoundCfg*)m_objAux)->m_2c;
+    if (lo0 == 0) {
+        m->m_70 = g_movingLogicMin;
+    } else {
+        m->m_70 = (double)lo0;
+    }
+    i32 lo1 = ((CProjBoundCfg*)m_objAux)->m_34;
+    if (lo1 == 0) {
+        m->m_78 = g_movingLogicMin;
+    } else {
+        m->m_78 = (double)lo1;
+    }
+    i32 hi0 = ((CProjBoundCfg*)m_objAux)->m_30;
+    if (hi0 == 0) {
+        m->m_88 = g_movingLogicMax;
+    } else {
+        m->m_88 = (double)hi0;
+    }
+    i32 hi1 = ((CProjBoundCfg*)m_objAux)->m_38;
+    if (hi1 == 0) {
+        m->m_90 = g_movingLogicMax;
+    } else {
+        m->m_90 = (double)hi1;
+    }
+    m->SetParams(
+        (double)m_object->m_screenX,
+        (double)m_object->m_screenY,
+        0.0,
+        (double)m_object->m_164,
+        (double)m_object->m_168,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        (double)g_645588 * g_gruntSpawnScale,
+        0.0
+    );
+    m->SetZ((double)g_5f04e8);
+}
+
+// ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CGrunt);
-class CGrunt : public CMovingLogic {
+class CGrunt : public CGruntMovingBase {
 public:
     // vtable overrides in slot order (see the base chain above):
     virtual ~CGrunt() OVERRIDE; // slot 0  @0xf2f0

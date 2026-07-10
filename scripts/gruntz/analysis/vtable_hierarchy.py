@@ -886,7 +886,16 @@ def cmd_audit(aud):
                 seen.add(b)
                 b = sb.get(b)
             return False
-        if truth and source_base != truth and not _reaches(source_base, truth):
+        # Documented dual-world lean-base alias. RTTI records CGrunt : CMovingLogic, but
+        # the CMotionState-embedding CMovingLogic is a fat 0x150 class - correct for
+        # CProjectile (whose own members start at +0x150), WRONG as CGrunt's base (CGrunt
+        # overlays its members on the motion-band region, so its base must be a lean 0x30).
+        # The two sizes of the same RTTI base cannot share the name in the TUs where both
+        # derived classes are laid out (Projectile/ProjectileUpdate/Boomerang), so CGrunt
+        # rides a distinctly-named lean base (CGruntMovingBase) that IS its CMovingLogic.
+        _LEAN_BASE_ALIAS = {"CGruntMovingBase": "CMovingLogic"}
+        if truth and source_base != truth and not _reaches(source_base, truth) \
+                and _LEAN_BASE_ALIAS.get(source_base) != truth:
             note = " [uncataloged intermediate - model it]" if (
                 via == "intermediate" or (ci.is_rtti and meta["base_inferred"])) else ""
             F["INHERIT"].append((name, "source=%s -> derive %s (%s)%s"

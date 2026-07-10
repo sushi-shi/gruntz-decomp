@@ -619,21 +619,23 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
 // CGrunt::Update() @0x16ea90 (__thiscall) the ctor fires after the motion setup.
 
 // @early-stop
-// member-init/body-split + Projectile-ctor residue wall (~78%, up from a 0% stub):
-// logic/CFG/offsets/moving-init/field-block all byte-faithful (the CMovingLogic base
-// now emits the CMotionState band + coordinate bounds + SetParams/SetZ FIRST and the
-// CMovingLogic->CGrunt vptr restamp pair, taking 74%->78% with ~CGrunt held at 94.9%).
-// Residue is codegen ordering the source cannot steer: (a) MSVC runs the six owned
-// value-member ctors (m_animSetName/m_31c/m_338/m_448/m_44c/m_468[9]) in the member-init
-// PHASE (grouped after the base ctor, before the body) while retail interleaves them
-// among the scalar inits - but the members must stay value-typed for ~CGrunt's auto
-// __ehvec_dtor/~CString/~CObList teardown (94.9%), and manual body construction would
-// regress the dtor; (b) the +0x38 CMotionState ctor emits AFTER the CMovingLogic vptr
-// stamp, retail before it (the documented CProjectile 1-arg-ctor residue,
-// docs/patterns Init-after-vptr); (c) the resulting regalloc coin-flip pins `owner` in
-// ebx not ebp, shifting the prologue param-load + every owner use; (d) the +0x810 timer
-// band's lo/hi dword interleave + the /GX EH-state numbering. All entropy/ordering
-// class, no source lever; deferred to the final sweep.
+// lean-base vptr-stamp residue + member-init/body-split wall (~67%): logic/CFG/field
+// offsets/moving-init all byte-faithful. CGrunt now rides the LEAN CGruntMovingBase
+// (0x30) - the +0x120 header-layout fix, so every field-init hits its true retail
+// offset (m_400 @+0x400 etc.) and the whole CGrunt high-member family lifted. Residue
+// the source cannot steer: (a) the INTERMEDIATE CMovingLogic vptr stamp (0x5e87ac):
+// retail's CMovingLogic subobject ctor stamps ??_7CMovingLogic before CGrunt's own
+// 0x5e8754 stamp, but the lean CGruntMovingBase has no CMovingLogic vtable to emit
+// (its one slot-16 virtual is declared-only), so cl stamps an unbound
+// ??_7CGruntMovingBase there instead - the stamp reloc cannot map to 0x5e87ac. A real
+// CMovingLogic base would re-introduce the fat 0x150 layout (the bug), so this is an
+// inherent dual-world cost. (b) MSVC runs the six owned value-member ctors
+// (m_animSetName/m_31c/m_338/m_448/m_44c/m_468[9]) in the member-init PHASE while retail
+// interleaves them among the scalar inits - but they must stay value-typed for ~CGrunt's
+// auto __ehvec_dtor/~CString/~CObList teardown (94.9%). (c) the +0x810 timer band's
+// lo/hi dword interleave + the /GX EH-state numbering. All entropy/ordering class; the
+// vptr residue is byte-verified (llvm-objdump: only the intermediate stamp reloc differs).
+// Deferred to the final sweep.
 
 // The +0x810..+0x8cc timer band (12 x 16-byte = 24 doubles) zeroed twice; MSVC
 // schedules each 16-byte block's four dword stores in {+0,+8,+4,+c} column order.
@@ -661,16 +663,22 @@ static const char s_NORMALGRUNT[] = "NORMALGRUNT"; // 0x60d404
     } while (0)
 
 RVA(0x00047a10, 0x770)
-CGrunt::CGrunt(void* owner) : CMovingLogic((CGameObject*)owner) {
+CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     // --- CGrunt field-init block (retail offset order; the inlined CMovingLogic
     // base ctor above did the CMotionState band @+0x38 + coordinate bounds) ---
     m_148 = 0;
     m_14c = 0;
     m_10->m_e4 = 7;
+    // The base moving-object per-frame update (CMovingLogic::MovingSlot16 / Update
+    // @0x16ea90) fired once at spawn. It is the CANONICAL CMovingLogic slot-16 body
+    // (bound in MovingLogic.cpp); CGrunt rides the lean CGruntMovingBase, so the base
+    // slot is reached through the shared canonical CMovingLogic view (same object at
+    // offset 0) to reloc-mask against 0x16ea90.
     ((CMovingLogic*)this)->MovingSlot16();
-    m_150 = owner;
-    m_154 = (CEntranceAnimPlayer*)owner;
-    m_158 = (CGruntSndResMgr*)*(void**)((char*)owner + 0x7c);
+    CGameObject* obj = (CGameObject*)owner; // owner is void* (ctor mangling ??0CGrunt@@QAE@PAX@Z)
+    m_150 = obj;
+    m_154 = (CEntranceAnimPlayer*)owner; // the owner object doubles as the entrance player
+    m_158 = (CGruntSndResMgr*)obj->m_7c;
     m_struckClockLo = 0;
     m_struckTimerLo = 0;
     m_struckClockHi = 0;
