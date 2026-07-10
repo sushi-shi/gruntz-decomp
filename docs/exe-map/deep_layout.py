@@ -328,11 +328,23 @@ def partition(frva, units_map, exempt):
     out = []
     for sg in segs:
         us = Counter(f[2] for f in sg)
-        out.append({"lo": sg[0][0], "hi": sg[-1][0] + sg[-1][1], "n": len(sg),
-                    "units": dict(us.most_common()),
-                    "core": {u: c for u, c in us.items() if c >= 3},
-                    "strays": [{"rva": f[0], "unit": f[2], "name": f[3]}
-                               for f in sg if us[f[2]] < 3]})
+        core = {u: c for u, c in us.items() if c >= 3}
+        rec = {"lo": sg[0][0], "hi": sg[-1][0] + sg[-1][1], "n": len(sg),
+               "units": dict(us.most_common()), "core": core,
+               "strays": [{"rva": f[0], "unit": f[2], "name": f[3]}
+                          for f in sg if us[f[2]] < 3]}
+        if len(core) > 1:
+            # weave: do the member units interleave THROUGHOUT (impossible across
+            # objs at first link => genuinely ONE original TU), or sit in blocks
+            # with a dirty seam (either two TUs + misattributed seam fns, or one
+            # TU whose methods are class-grouped - anchors/semantics decide)?
+            mem = [f for f in sg if f[2] in core]
+            runs = 1 + sum(1 for a, b in zip(mem, mem[1:]) if a[2] != b[2])
+            k, n = len(core), len(mem)
+            rec["weave"] = round((runs - k) / max(1, n - k), 2)
+            rec["merge"] = ("WOVEN" if rec["weave"] > 0.25 and runs >= 2 * k
+                            else "seam-glued" if runs <= 2 * k else "mixed")
+        out.append(rec)
     return out
 
 
@@ -542,15 +554,25 @@ def write_migration(out, units_map, itab):
     L.append("Outlier mechanisms: " + ", ".join(
         "%s %d" % (k, v) for k, v in sorted(vc.items(), key=lambda kv: -kv[1])) + ".\n")
 
-    L.append("\n## MERGE — units that form ONE original TU (multi-core intervals)\n")
-    L.append("One row per reconstructed original TU; combine the listed src "
-             "files into a single .cpp (order = RVA order inside the interval).\n")
-    L.append("| interval | fns | combine these units (count) |")
-    L.append("|---|---|---|")
+    L.append("\n## MERGE candidates — multi-core intervals (VERIFY per group)\n")
+    L.append("**WOVEN** (units interleave throughout — impossible across objs at "
+             "first link) = confirmed single original TU: combine, order = RVA "
+             "order. **seam-glued/mixed** (block arrangement) is ambiguous: either "
+             "two adjacent TUs glued by misattributed seam functions (re-home the "
+             "seam and the boundary reappears — e.g. netmgr+font, where "
+             "`FontInterfaceObject::IsInterface1-5` is really NetMgr's "
+             "InterfaceObject), or one TU with class-grouped sections (e.g. "
+             "ddpalette+dirpal, __FILE__-anchored as one DIRPAL.CPP). Decide by: "
+             "__FILE__ anchors, init-fragment table runs (2 separate runs = 2 "
+             "objs), and a seam-function xref audit.\n")
+    L.append("| interval | fns | verdict | weave | combine/verify these units |")
+    L.append("|---|---|---|---|---|")
     for s in sorted(multi, key=lambda s: -s["n"]):
         us = ", ".join("%s (%d)" % (u, c) for u, c in
                        sorted(s["core"].items(), key=lambda kv: -kv[1]))
-        L.append("| `%#08x-%#08x` | %d | %s |" % (s["lo"], s["hi"], s["n"], us))
+        L.append("| `%#08x-%#08x` | %d | %s | %.2f | %s |"
+                 % (s["lo"], s["hi"], s["n"], s.get("merge", "?"),
+                    s.get("weave", 0), us))
 
     L.append("\n## SPLIT — units with core presence in several intervals "
              "(conflated)\n")

@@ -7,60 +7,60 @@
 Outlier mechanisms: REHOME-CANDIDATE 275, COMDAT-POOL-EXILE 46, COMDAT-AT-USAGE 30, ILINK-MOVED 3.
 
 
-## MERGE — units that form ONE original TU (multi-core intervals)
+## MERGE candidates — multi-core intervals (VERIFY per group)
 
-One row per reconstructed original TU; combine the listed src files into a single .cpp (order = RVA order inside the interval).
+**WOVEN** (units interleave throughout — impossible across objs at first link) = confirmed single original TU: combine, order = RVA order. **seam-glued/mixed** (block arrangement) is ambiguous: either two adjacent TUs glued by misattributed seam functions (re-home the seam and the boundary reappears — e.g. netmgr+font, where `FontInterfaceObject::IsInterface1-5` is really NetMgr's InterfaceObject), or one TU with class-grouped sections (e.g. ddpalette+dirpal, __FILE__-anchored as one DIRPAL.CPP). Decide by: __FILE__ anchors, init-fragment table runs (2 separate runs = 2 objs), and a seam-function xref audit.
 
-| interval | fns | combine these units (count) |
-|---|---|---|
-| `0x1396f0-0x145e00` | 236 | ddrawptrcollections (34), image (27), symtab (23), directdrawmgr (21), ddsurface (20), rezmgr (18), gameapp (18), symparser (16), fileimage (13), gamewnd (10), cremusreadstream (9), hash (6), rezfile (6), fileimageblit (5), fileimagerundecode (4) |
-| `0x154aa0-0x15ccc8` | 183 | ddrawsubmgr (69), ddrawworkerregistry (23), ddrawsubmgrleafscan (17), ddrawsurfacemgr (10), ddrawchildgroup (10), ddrawworkerlist (7), ddrawsubmgrpages (7), wwdobjmgrfactories (7), ddrawworkermapsmall (4), ddrawworkers (4), ddrawsubmgrleaf (3), filemem (3), wwdgameobject (3) |
-| `0x08b8c0-0x093ce7` | 137 | gruntzmgr (112), playdtor (5), appdialogs (3) |
-| `0x0b5380-0x0bd35d` | 94 | netmgrgame (60), multi (23) |
-| `0x1350b0-0x13848b` | 91 | directsoundmgr (46), sounddevice (15), streamfeeder (11), soundstream (7), streamvoice (4) |
-| `0x15ccd0-0x163a00` | 91 | gamelevel (62), wwdfile (18), ddrawworkerhost (3), levelplane (3), imageset3 (3) |
-| `0x1832d0-0x185a0e` | 84 | menupage (35), menuitem (11), debugprintf (10), menuitem2 (7), hash (7), rezlist (4), rangeset (3) |
-| `0x0d5960-0x0ddcc8` | 70 | play (38), gruntzplayer (9), channelslots (6), gamemodeobjlifecycle (3) |
-| `0x1780b0-0x17b508` | 65 | netmgr (38), font (24) |
-| `0x104d60-0x10bc14` | 58 | sbi_rectonly (46), statusbarupdaters (5), warpstonefly (3) |
-| `0x042d40-0x04d7c6` | 56 | grunt (25), warlord (12), fortressflag (6), particlez (5) |
-| `0x174e90-0x177476` | 53 | imagepool (29), rezimage (15), scanlinesurface (4) |
-| `0x132ce0-0x1350a5` | 51 | directinputmgr2 (47), fixedptrarray32 (3) |
-| `0x077f80-0x07d7ca` | 48 | triggermgr (37), iconloaders (4) |
-| `0x0bef80-0x0c13a5` | 48 | netcmdslot (18), lobbysync (12), netcmdsession (8), netsession2 (4) |
-| `0x110430-0x1140e2` | 45 | tiletriggerderivedctors (12), tileswitchlogic (10), tilegridcommand (6), tileactionevent (5) |
-| `0x17e450-0x182935` | 42 | fader (28), fxmodedesc (7), lighteffectsetup (5) |
-| `0x1504d0-0x152636` | 40 | wwdgameobject (13), imageset (9), userbaselink (6), spriteresource (5), ddrawworker (5) |
-| `0x03ac30-0x03e135` | 39 | animworkerhandlers (10), customworlddialog (5), democameratools (5), orphanleaves (4), customworldinfodlg (3) |
-| `0x0c2980-0x0c5f15` | 35 | multistartdlgroster (10), netmgrmisc (5), multistartdlgcolor (5), netgamedlg (3), multistartdlgnet (3), objectlogicpump (3) |
-| `0x10cb10-0x10fad9` | 33 | tiletrigger (10), tilelogicpump (6), checkpointtrigger (4), warpstonepad (4), tiletriggerswitch (4) |
-| `0x0239d0-0x024ae0` | 32 | gruntzcommand (20), gruntzcmdmgr (11) |
-| `0x0e3690-0x0e579e` | 32 | savegame (26), levelinfodlg (5) |
-| `0x00b5e0-0x00cc98` | 27 | worldsoundset (14), randomambientsound (10), ambientsound (3) |
-| `0x16d000-0x16e7e8` | 25 | typekeycoll (12), butetree (3), userbaselink (3) |
-| `0x115b60-0x118001` | 23 | tiletriggercontainer (12), tileswitchlogic (8) |
-| `0x147390-0x148837` | 23 | ddpalette (17), dirpal (4) |
-| `0x09e700-0x09fe39` | 22 | brickz (12), mapmgr (9) |
-| `0x0e5ad0-0x0e8733` | 22 | aniplayer (9), sbi_menuitem (8), sbi_rectonly (3) |
-| `0x17c040-0x17d8a8` | 22 | smackervideowindow (10), ddpagemgr (4), ddscreen (3) |
-| `0x0616e0-0x065df5` | 21 | grunt (13), gruntentrancearrival (5) |
-| `0x03fc70-0x041db2` | 19 | wormhole (7), teleporter (5), gruntpuddle (4) |
-| `0x095b10-0x099b46` | 19 | ingameicon (13), ingametext (4) |
-| `0x0363a0-0x037900` | 18 | menustate (9), videoconfig (6) |
-| `0x0dec60-0x0e2213` | 18 | projectile (10), timebomb (5) |
-| `0x0fa1f0-0x0fb328` | 17 | soundfxemitter (5), attract (4), statedrawtext (3), mgrobjserialize (3) |
-| `0x099ba0-0x09b479` | 15 | areamgr (9), loadobjectresources (5) |
-| `0x0a9a40-0x0aacd1` | 15 | logicworkerhandlers (10), msgdispatch (3) |
-| `0x0c16b0-0x0c296b` | 15 | multistartdlg (11), multistartdlgworld (3) |
-| `0x0c5f80-0x0c7b17` | 14 | droppedobject (6), actregsiblings (5) |
-| `0x0e8a70-0x0ea3ea` | 14 | sbi_sidetab (5), sbi_gruntmachine (4), statusbartabbuilders (3) |
-| `0x119620-0x11aa78` | 14 | gruntvoice (7), voicetrigger (6) |
-| `0x0abfa0-0x0ad527` | 13 | frontcandyani (6), eyecandyani (4) |
-| `0x0218e0-0x022a3a` | 12 | fontconfig (8), drawtext (4) |
-| `0x041e90-0x042cd3` | 10 | secretteleportertrigger (5), secretleveltrigger (5) |
-| `0x148840-0x148cd8` | 10 | ddrawptrcollections (6), image (3) |
-| `0x152640-0x152e04` | 10 | ddrawsubmgrleaf (7), ddrawsubmgrani (3) |
-| `0x007c60-0x0085de` | 7 | actionarea (3), projactregistry (3) |
+| interval | fns | verdict | weave | combine/verify these units |
+|---|---|---|---|---|
+| `0x1396f0-0x145e00` | 236 | mixed | 0.21 | ddrawptrcollections (34), image (27), symtab (23), directdrawmgr (21), ddsurface (20), rezmgr (18), gameapp (18), symparser (16), fileimage (13), gamewnd (10), cremusreadstream (9), hash (6), rezfile (6), fileimageblit (5), fileimagerundecode (4) |
+| `0x154aa0-0x15ccc8` | 183 | mixed | 0.19 | ddrawsubmgr (69), ddrawworkerregistry (23), ddrawsubmgrleafscan (17), ddrawsurfacemgr (10), ddrawchildgroup (10), ddrawworkerlist (7), ddrawsubmgrpages (7), wwdobjmgrfactories (7), ddrawworkermapsmall (4), ddrawworkers (4), ddrawsubmgrleaf (3), filemem (3), wwdgameobject (3) |
+| `0x08b8c0-0x093ce7` | 137 | mixed | 0.05 | gruntzmgr (112), playdtor (5), appdialogs (3) |
+| `0x0b5380-0x0bd35d` | 94 | mixed | 0.14 | netmgrgame (60), multi (23) |
+| `0x1350b0-0x13848b` | 91 | mixed | 0.13 | directsoundmgr (46), sounddevice (15), streamfeeder (11), soundstream (7), streamvoice (4) |
+| `0x15ccd0-0x163a00` | 91 | mixed | 0.12 | gamelevel (62), wwdfile (18), ddrawworkerhost (3), levelplane (3), imageset3 (3) |
+| `0x1832d0-0x185a0e` | 84 | seam-glued | 0.07 | menupage (35), menuitem (11), debugprintf (10), menuitem2 (7), hash (7), rezlist (4), rangeset (3) |
+| `0x0d5960-0x0ddcc8` | 70 | seam-glued | 0.08 | play (38), gruntzplayer (9), channelslots (6), gamemodeobjlifecycle (3) |
+| `0x1780b0-0x17b508` | 65 | seam-glued | 0.03 | netmgr (38), font (24) |
+| `0x104d60-0x10bc14` | 58 | mixed | 0.20 | sbi_rectonly (46), statusbarupdaters (5), warpstonefly (3) |
+| `0x042d40-0x04d7c6` | 56 | seam-glued | 0.07 | grunt (25), warlord (12), fortressflag (6), particlez (5) |
+| `0x174e90-0x177476` | 53 | mixed | 0.22 | imagepool (29), rezimage (15), scanlinesurface (4) |
+| `0x132ce0-0x1350a5` | 51 | seam-glued | 0.02 | directinputmgr2 (47), fixedptrarray32 (3) |
+| `0x077f80-0x07d7ca` | 48 | mixed | 0.18 | triggermgr (37), iconloaders (4) |
+| `0x0bef80-0x0c13a5` | 48 | mixed | 0.24 | netcmdslot (18), lobbysync (12), netcmdsession (8), netsession2 (4) |
+| `0x110430-0x1140e2` | 45 | WOVEN | 0.34 | tiletriggerderivedctors (12), tileswitchlogic (10), tilegridcommand (6), tileactionevent (5) |
+| `0x17e450-0x182935` | 42 | seam-glued | 0.05 | fader (28), fxmodedesc (7), lighteffectsetup (5) |
+| `0x1504d0-0x152636` | 40 | seam-glued | 0.12 | wwdgameobject (13), imageset (9), userbaselink (6), spriteresource (5), ddrawworker (5) |
+| `0x03ac30-0x03e135` | 39 | seam-glued | 0.23 | animworkerhandlers (10), customworlddialog (5), democameratools (5), orphanleaves (4), customworldinfodlg (3) |
+| `0x0c2980-0x0c5f15` | 35 | WOVEN | 0.43 | multistartdlgroster (10), netmgrmisc (5), multistartdlgcolor (5), netgamedlg (3), multistartdlgnet (3), objectlogicpump (3) |
+| `0x10cb10-0x10fad9` | 33 | seam-glued | 0.22 | tiletrigger (10), tilelogicpump (6), checkpointtrigger (4), warpstonepad (4), tiletriggerswitch (4) |
+| `0x0239d0-0x024ae0` | 32 | seam-glued | 0.03 | gruntzcommand (20), gruntzcmdmgr (11) |
+| `0x0e3690-0x0e579e` | 32 | seam-glued | 0.07 | savegame (26), levelinfodlg (5) |
+| `0x00b5e0-0x00cc98` | 27 | mixed | 0.17 | worldsoundset (14), randomambientsound (10), ambientsound (3) |
+| `0x16d000-0x16e7e8` | 25 | WOVEN | 0.33 | typekeycoll (12), butetree (3), userbaselink (3) |
+| `0x115b60-0x118001` | 23 | WOVEN | 0.50 | tiletriggercontainer (12), tileswitchlogic (8) |
+| `0x147390-0x148837` | 23 | seam-glued | 0.11 | ddpalette (17), dirpal (4) |
+| `0x09e700-0x09fe39` | 22 | mixed | 0.16 | brickz (12), mapmgr (9) |
+| `0x0e5ad0-0x0e8733` | 22 | mixed | 0.24 | aniplayer (9), sbi_menuitem (8), sbi_rectonly (3) |
+| `0x17c040-0x17d8a8` | 22 | seam-glued | 0.14 | smackervideowindow (10), ddpagemgr (4), ddscreen (3) |
+| `0x0616e0-0x065df5` | 21 | WOVEN | 0.38 | grunt (13), gruntentrancearrival (5) |
+| `0x03fc70-0x041db2` | 19 | seam-glued | 0.15 | wormhole (7), teleporter (5), gruntpuddle (4) |
+| `0x095b10-0x099b46` | 19 | seam-glued | 0.07 | ingameicon (13), ingametext (4) |
+| `0x0363a0-0x037900` | 18 | mixed | 0.23 | menustate (9), videoconfig (6) |
+| `0x0dec60-0x0e2213` | 18 | seam-glued | 0.08 | projectile (10), timebomb (5) |
+| `0x0fa1f0-0x0fb328` | 17 | WOVEN | 0.36 | soundfxemitter (5), attract (4), statedrawtext (3), mgrobjserialize (3) |
+| `0x099ba0-0x09b479` | 15 | WOVEN | 0.42 | areamgr (9), loadobjectresources (5) |
+| `0x0a9a40-0x0aacd1` | 15 | WOVEN | 0.27 | logicworkerhandlers (10), msgdispatch (3) |
+| `0x0c16b0-0x0c296b` | 15 | seam-glued | 0.17 | multistartdlg (11), multistartdlgworld (3) |
+| `0x0c5f80-0x0c7b17` | 14 | seam-glued | 0.11 | droppedobject (6), actregsiblings (5) |
+| `0x0e8a70-0x0ea3ea` | 14 | seam-glued | 0.22 | sbi_sidetab (5), sbi_gruntmachine (4), statusbartabbuilders (3) |
+| `0x119620-0x11aa78` | 14 | WOVEN | 0.45 | gruntvoice (7), voicetrigger (6) |
+| `0x0abfa0-0x0ad527` | 13 | seam-glued | 0.12 | frontcandyani (6), eyecandyani (4) |
+| `0x0218e0-0x022a3a` | 12 | seam-glued | 0.20 | fontconfig (8), drawtext (4) |
+| `0x041e90-0x042cd3` | 10 | seam-glued | 0.12 | secretteleportertrigger (5), secretleveltrigger (5) |
+| `0x148840-0x148cd8` | 10 | WOVEN | 0.29 | ddrawptrcollections (6), image (3) |
+| `0x152640-0x152e04` | 10 | seam-glued | 0.12 | ddrawsubmgrleaf (7), ddrawsubmgrani (3) |
+| `0x007c60-0x0085de` | 7 | seam-glued | 0.25 | actionarea (3), projactregistry (3) |
 
 ## SPLIT — units with core presence in several intervals (conflated)
 
