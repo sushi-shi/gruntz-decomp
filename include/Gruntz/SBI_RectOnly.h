@@ -440,7 +440,8 @@ public:
     void FinishReset16ea();     // call 0x16ea (__thiscall, no args)
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
-    i32 m_2c; // +0x2c  Setup arg1 (vtable-slot-2 setup target)
+    // +0x2c is the inherited base CStatusBarItem::m_2c (Setup arg1 target); the base
+    // owns it (its slot-2 Setup @0x100660 stores arg1 there), so leaf fields start @0x30.
     i32 m_30; // +0x30
     i32 m_34; // +0x34
     char m_pad38[0xb8 - 0x38];

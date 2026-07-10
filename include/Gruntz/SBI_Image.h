@@ -38,16 +38,17 @@ public:
     virtual i32
     Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10)
         OVERRIDE; // slot 2 (0xe86e0, declared-only here; body in SBI_RectOnly.cpp)
-    virtual void SbiSlot3() OVERRIDE;  // slot 3
-    virtual void SbiSlot4() OVERRIDE;  // slot 4
-    i32 InsertPtr(i32 a, i32 b);       // 0x108410 (i32 ret, matches SBI_RectOnly.h + retail)
+    virtual void SbiSlot3() OVERRIDE; // slot 3
+    virtual void SbiSlot4() OVERRIDE; // slot 4
+    i32 InsertPtr(i32 a, i32 b);      // 0x108410 (i32 ret, matches SBI_RectOnly.h + retail)
 };
 SIZE_UNKNOWN(CSBI_RectOnly);
 VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)
 
 // CSBI_Image - the image status-bar item. Inherits the CStatusBarItem base-region
-// fields (via CSBI_RectOnly); adds the vslot-11 image setup (ConfigureRect @ +0x2c)
-// plus the id/latched-value pair.
+// fields (via CSBI_RectOnly), INCLUDING the id slot at +0x2c (base CStatusBarItem::m_2c,
+// which SetupImage latches the id into - the base owns +0x2c, proven by its slot-2
+// CStatusBarItem::Setup @0x100660 storing arg1 there); adds only the latched-value m_30.
 class CSBI_Image : public CSBI_RectOnly {
 public:
     virtual ~CSBI_Image() OVERRIDE;   // slot 0
@@ -72,7 +73,7 @@ public:
         i32 a11
     );
 
-    i32 m_2c; // +0x2c  Setup id (== a1)
+    // +0x2c is the inherited base CStatusBarItem::m_2c (the id slot SetupImage latches).
     i32 m_30; // +0x30  latched config value
 };
 SIZE(CSBI_Image, 0x34);

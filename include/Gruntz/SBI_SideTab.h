@@ -34,10 +34,6 @@ struct CSideTabGruntRec {
 };
 SIZE_UNKNOWN(CSideTabGruntRec);
 
-// The fallback notified (m_2c) when the sampled unit slot is empty (__thiscall, 1 arg).
-struct CSideTabFallback {};
-SIZE_UNKNOWN(CSideTabFallback);
-
 // The per-frame unit-record table (g_gameReg->m_68): a flat array of grunt-record
 // pointers at +0x1c indexed by (col + 15*row).
 struct CSideTabUnitTable {
@@ -74,21 +70,22 @@ public:
         m_30 = 0;
         m_34 = 0;
     }
-    i32 Refresh(i32 unused);          // vslot 4 (0xe9820)  rebuild the +0x58 draw gate (ret int 0)
-    i32 Render(i32 z);                // vslot 5 (0xe99c0)  draw the two side frames
-    i32 BuildHandle();                // 0xe9850  sibling: build the +0x58 draw gate
+    i32 Refresh(i32 unused); // vslot 4 (0xe9820)  rebuild the +0x58 draw gate (ret int 0)
+    i32 Render(i32 z);       // vslot 5 (0xe99c0)  draw the two side frames
+    i32 BuildHandle();       // 0xe9850  sibling: build the +0x58 draw gate
 
-    // base region m_0..0x2b comes from CStatusBarItem; leaf fields start at +0x2c.
-    CSideTabFallback* m_2c; // +0x2c  empty-slot fallback notify target
-    CImage* m_30;           // +0x30  top frame handle
-    CImage* m_34;           // +0x34  bottom frame handle (resolved glyph)
-    i32 m_38;               // +0x38  tracked sampled value
-    i32 m_3c;               // +0x3c  unit-table row index (stride 15)
-    i32 m_40;               // +0x40  unit-table column index
-    i32 m_44;               // +0x44  sample mode (0 idle / 2 ability / 3 badge / 1 health)
-    i32 m_48;               // +0x48  draw x
-    i32 m_4c;               // +0x4c  draw y
-    i32 m_50;               // +0x50  bottom-frame y delta
+    // base region m_0..0x2f comes from CStatusBarItem (incl. m_2c, the owner slot that
+    // inherited slot-2 Setup fills - BuildHandle reads it as the empty-slot fallback
+    // notify target via ((CSBI_RectOnly*)m_2c)); leaf fields start at +0x30.
+    CImage* m_30; // +0x30  top frame handle
+    CImage* m_34; // +0x34  bottom frame handle (resolved glyph)
+    i32 m_38;     // +0x38  tracked sampled value
+    i32 m_3c;     // +0x3c  unit-table row index (stride 15)
+    i32 m_40;     // +0x40  unit-table column index
+    i32 m_44;     // +0x44  sample mode (0 idle / 2 ability / 3 badge / 1 health)
+    i32 m_48;     // +0x48  draw x
+    i32 m_4c;     // +0x4c  draw y
+    i32 m_50;     // +0x50  bottom-frame y delta
     char m_pad54[0x58 - 0x54];
     i32 m_58; // +0x58  draw gate (0 => not built)
 };

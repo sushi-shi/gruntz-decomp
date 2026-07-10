@@ -175,6 +175,11 @@ void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     }
 }
 
+RVA(0x000092e0, 0x8)
+void CActionOptionsMenuBar::Clear() {
+    m_loaded = 0;
+}
+
 RVA(0x00009300, 0x14)
 i32 CActionOptionsMenuBar::Activate(i32 a) {
     if (m_active) {
@@ -373,8 +378,10 @@ i32 CActionOptionsMenuBar::HitHover(i32 mx, i32 my) {
     return 0;
 }
 
-// CActionOptionsMenuBar::Deactivate (0x000097f0) is now an inline member in the header.
-
+RVA(0x000097f0, 0x8)
+void CActionOptionsMenuBar::Deactivate() {
+    m_active = 0;
+}
 
 // ---------------------------------------------------------------------------
 // CActionOptionsMenuBar::Serialize - read this bar's state from an archive.

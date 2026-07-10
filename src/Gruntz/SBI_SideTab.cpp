@@ -31,13 +31,14 @@
 // its m_10 image registry (+0x10) embeds the name->sprite hash (m_10map) the glyph
 // builder resolves the tab sprite through. The resolved value is a CSprite.
 
-// CSideTabGruntRec/CSideTabFallback/CSideTabUnitTable/CSideTabGameReg + the
-// CSBI_SideTab method-view class moved to <Gruntz/SBI_SideTab.h>.
+// CSideTabGruntRec/CSideTabUnitTable/CSideTabGameReg + the CSBI_SideTab method-view
+// class moved to <Gruntz/SBI_SideTab.h>. The former CSideTabFallback empty view is
+// gone: +0x2c is the inherited base CStatusBarItem::m_2c (owner slot), read by
+// BuildHandle as ((CSBI_RectOnly*)m_2c).
 DATA(0x0024556c)
 extern CSideTabGameReg* g_gameReg;
 
 // CSBI_SideTab::Reset (0x000e9800) is now an inline member in the header.
-
 
 // vslot 4: (re)build the +0x58 draw gate from a sibling builder (BuildHandle, now
 // co-named in this TU). The single stack arg is unused (the `ret 4` discards it);

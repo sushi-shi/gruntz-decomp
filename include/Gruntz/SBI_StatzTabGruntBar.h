@@ -124,8 +124,8 @@ public:
     i32 Update();      // 0xea6c0  resample the grunt and latch any changed value
 
     // ----- layout (offsets are the load-bearing fact) -----
-    // base region m_0..0x2b comes from CStatusBarItem; leaf fields start at +0x30.
-    char m_pad2c[0x30 - 0x2c];
+    // base region m_0..0x2f comes from CStatusBarItem (0x30, incl. m_2c); leaf fields
+    // start at +0x30.
     CImage* m_statusGlyph;           // +0x30  status background glyph
     CImage* m_statusGlyphLatched;    // +0x34  status value glyph (resolved by Update)
     i32 m_statusValue;               // +0x38  status value (tracked)

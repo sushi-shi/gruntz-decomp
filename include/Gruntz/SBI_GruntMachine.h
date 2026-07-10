@@ -70,19 +70,18 @@ public:
     RVA(0x000e8dc0, 0x22)
     void SetFrames(i32 idxA, i32 idxB) {
         if (idxA != -1) {
-        m_38 = idxA;
+            m_38 = idxA;
         }
         if (idxB != -1) {
-        m_40 = idxB;
+            m_40 = idxB;
         }
         m_28 = 2;
     }
     // vtable slot 5 (0xe8cb0): the per-frame render of the machine's frames.
     i32 Render(i32 z);
 
-    // ----- own fields (after CStatusBarItem @0x2c); base draw origins reuse
-    // m_rect14.m_0/m_4 (@0x14/0x18), the frame countdown reuses the inherited m_28.
-    char m_pad2c[0x30 - 0x2c];
+    // ----- own fields (after CStatusBarItem @0x30, which now owns m_2c); base draw
+    // origins reuse m_rect14.m_0/m_4 (@0x14/0x18), the frame countdown reuses m_28.
     CGmConfig* m_30; // +0x30  resolved config record (frame table host)
     CImage* m_34;    // +0x34  resolved frame for index m_38
     i32 m_38;        // +0x38  frame index A (resolved into m_34)

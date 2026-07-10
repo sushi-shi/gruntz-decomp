@@ -8,19 +8,13 @@ class CActionOptionsMenuBar {
 public:
     CActionOptionsMenuBar();
     void Init(i32 a, i32 b, i32 x, i32 y, i32 gx, i32 gy);
-    RVA(0x000092e0, 0x8)
-    void Clear() {
-        m_loaded = 0;
-    }
+    void Clear();
     i32 Activate(i32 a);
     i32 Refresh();
     i32 Render();
     i32 HitClick(i32 mx, i32 my);
     i32 HitHover(i32 mx, i32 my);
-    RVA(0x000097f0, 0x8)
-    void Deactivate() {
-        m_active = 0;
-    }
+    void Deactivate();
     i32 Serialize(CSerialArchive* ar);
     void Dtor();                  // in-place dtor (DestroyGroup teardown, reloc-masked)
     i32 LoadAssets();
