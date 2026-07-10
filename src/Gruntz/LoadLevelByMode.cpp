@@ -63,8 +63,16 @@
 
 #include <Mfc.h> // CString (the /GX EH temps) + PtInRect/UpdateWindow/ShowCursor
 
-#include <Gruntz/Play.h>          // the real CPlay (`this` derives from it)
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Bute/SymParser.h>          // CSymParser (ResolvePath)
+#include <Bute/SymTab.h>             // CSymTab (Insert)
+#include <Gruntz/AreaMgr.h>          // CAreaMgr (g_61139c)
+#include <Gruntz/FontConfig.h>       // CFontConfig (m_4->m_5c)
+#include <Gruntz/WorldSoundSet.h>    // CWorldSoundSet (m_4->m_54)
+#include <Io/SaveGame.h>             // CSaveGame (m_4->m_58)
+#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig (m_4->m_60)
+#include <Gruntz/GruntzMgr.h>        // CGruntzMgr (m_4)
+#include <Gruntz/Play.h>             // the real CPlay (`this` derives from it)
+#include <Gruntz/SpriteFactory.h>    // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <rva.h>
 #include <stdio.h>  // sprintf (0x11f890)
 #include <stdlib.h> // atoi (0x11ffb0) + srand (0x11fed0)
@@ -81,55 +89,48 @@ extern "C" i32 g_64e35c;            // DAT_0064e35c
 extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c
 extern void* g_612618;              // DAT_00612618 (last-level cache)
 extern void* g_61139c;              // PTR_DAT_0061139c
-extern void* g_buteMgr;             // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
 extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 
 // ---------------------------------------------------------------------------
-// A declared-only view of the engine sub-objects reached by raw this+offset.
-// Every method is __thiscall (default for member fns) and bodyless, so each call
-// lowers to `mov ecx,ptr; call <reloc-masked symbol>` exactly like retail. The
-// method identities (real retail names in comments) are reloc-masked, so the
-// view name is not load-bearing.
+// RESIDUAL carcass (9 classes already folded onto their real canonical headers:
+// CGruntzMgr/CGruntSpawnConfig/CButeMgr/CAreaMgr/CSymTab/CSymParser/CSaveGame/
+// CFontConfig/CWorldSoundSet). The methods below are the DEFERRED remainder,
+// grouped by why they aren't folded yet (all reloc-masked, so byte-neutral):
+//   (a) cross-module canonical header + retype (SoundStream Dsndmgr[Teardown/grid];
+//       CGruntzSoundZ Dsndmgr[Reset0]; CGruntzCmdMgr Net[ClearList]; DirectInputMgr2
+//       StateMgrBZ[HideMenu]; CDDSurface ResMgr[ShadeRect]; CSBI_RectOnly SBI_Image
+//       [ClearTiles/PostMap]);
+//   (b) needs a byte-neutral declared-only method added to its Gruntz header first
+//       (CParseSource CImage.h[BeginParse/EndParse]; CBrickz/CBrickzGrid[LoadAttributes/
+//       UpdateDiagonals]; CLightFxRender[InstallLightFx/BuildLightShape]; CTimer
+//       [TimerEqSet/TimerReset]; CBattlezData[BattlezInit=Init]);
+//   (c) Teardown-on-savedThis is CMulti::AckJoinFailure (a cross-cast of the CPlay
+//       `this`); WorkerReset is the GruntzPlayer(int) ctor (placement-new);
+//   (d) @identity-TODO - genuinely unrecovered (no xref/header): ObListInit 0x1b48a6,
+//       ButeStore 0x1b5485, GetBool 0x1bedde, CImageSet3::GetSize 0x1633e0 (no header).
 // ---------------------------------------------------------------------------
 struct Eng {
-    void Teardown();                               // 0x137a80  (grid)
-    void Reset0();                                 // 0x138530  (m_4->m_48)
-    void Reset1();                                 // 0x28ab    (m_4->m_54)
-    void Reset2();                                 // 0x20a4    (m_4->m_60)
-    void Reset3();                                 // 0x244b    (m_4->m_60)
-    void Reset4(i32 a);                            // 0x34ef    (m_4)
-    void Scrub(i32 v, i32 one);                    // 0x409d    (g_gameReg)
-    void WorkerReset(i32 a);                       // 0x40a7    (team)
-    i32 SameGroup(i32 a);                          // 0x2f2c    CAreaMgr::SameGroup (g_61139c)
-    void BattlezInit();                            // 0x2e3c    CBattlezData::Init (g_gameReg->m_7c)
-    void ObListInit();                             // 0x1b48a6  (g_gameReg->m_6c+0x1c)
-    void ClearList();                              // 0x2c11    (g_gameReg->m_6c)
-    CString GetWorldFileName();                    // 0x2531    CGruntzMgr, returns CString by value
-    i32 Insert(const char* name, void* p);         // 0x13a000  CSymTab::Insert (set)
-    i32 BeginParse();                              // 0x139960  CParseSource (set)
-    i32 EndParse();                                // 0x1399d0  CParseSource (set)
-    void* ResolvePath(const char* key);            // 0x13c030  CSymParser (returns set)
-    void SyncOptionsState();                       // 0x2e14    CGruntzMgr (m_4)
-    void RecomputeViewScale();                     // 0x1db6    CGruntzMgr (m_4)
-    void CheckSavedMode();                         // 0x12ee    CGruntzMgr (m_4)
-    void PerFrameTick();                           // 0x3d23    CGruntzMgr (m_4, virtual, direct)
-    void FreeFontNodes();                          // 0x128a    CFontConfig (m_4->m_5c)
-    i32 LoadAttributes(i32 a, i32 b);              // 0x3d19    CBrickz (m_4->m_70)
-    i32 UpdateDiagonals(void* a);                  // 0x3562    CBrickzGrid (m_4->m_70)
-    i32 InstallLightFx(void* mgr, i32 id);         // 0x3bf2    CLightFxRender (ctx)
-    i32 BuildLightShape(i32 a);                    // 0x3bca    CLightFxRender (ctx)
-    i32 GetSize();                                 // 0x1633e0/0x163300 CImageSet3
-    void FillSlot2(void* out, i32 n, void* p);     // 0x175d CSaveGame (m_4->m_58)
-    void ClearTiles(i32 n);                        // 0x130c    CSBI_RectOnly (m_2dc)
-    void PostMap();                                // 0x26a3    CSBI_RectOnly (m_2dc)
-    void HideMenu();                               // 0x133110  (g_645570)
-    void FinalizeLevel();                          // 0x3d23-adj (m_4)  -> PerFrameTick
-    void ShadeRect(i32 a, void* rect);             // 0x13f460  CDDSurface (map surface)
-    i32 TimerEqSet(i32 a, i32 b);                  // 0x2eaa    CTimer::LoadTimerSprite (m_3f4)
-    void TimerReset();                             // 0x14ce    CTimer::Reset (m_3f4)
-    i32 GetBool(i32 key, void* out, i32 dflt);     // 0x1bedde  GetBool (bute)
-    i32 GetInt(const char* key, const char* sect); // 0x171af0 CButeMgr::GetInt (g_buteMgr)
-    void ButeStore(void* key, void* val);          // 0x1b5485  (g_gameReg->m_68+0x260)
+    void Teardown();                           // 0x137a80  (grid)
+    void Reset0();                             // 0x138530  (m_4->m_48)
+    void WorkerReset(i32 a);                   // 0x40a7    (team)
+    void BattlezInit();                        // 0x2e3c    CBattlezData::Init (g_gameReg->m_7c)
+    void ObListInit();                         // 0x1b48a6  (g_gameReg->m_6c+0x1c)
+    void ClearList();                          // 0x2c11    (g_gameReg->m_6c)
+    i32 BeginParse();                          // 0x139960  CParseSource (set)
+    i32 EndParse();                            // 0x1399d0  CParseSource (set)
+    i32 LoadAttributes(i32 a, i32 b);          // 0x3d19    CBrickz (m_4->m_70)
+    i32 UpdateDiagonals(void* a);              // 0x3562    CBrickzGrid (m_4->m_70)
+    i32 InstallLightFx(void* mgr, i32 id);     // 0x3bf2    CLightFxRender (ctx)
+    i32 BuildLightShape(i32 a);                // 0x3bca    CLightFxRender (ctx)
+    i32 GetSize();                             // 0x1633e0/0x163300 CImageSet3
+    void ClearTiles(i32 n);                    // 0x130c    CSBI_RectOnly (m_2dc)
+    void PostMap();                            // 0x26a3    CSBI_RectOnly (m_2dc)
+    void HideMenu();                           // 0x133110  (g_645570)
+    void ShadeRect(i32 a, void* rect);         // 0x13f460  CDDSurface (map surface)
+    i32 TimerEqSet(i32 a, i32 b);              // 0x2eaa    CTimer::LoadTimerSprite (m_3f4)
+    void TimerReset();                         // 0x14ce    CTimer::Reset (m_3f4)
+    i32 GetBool(i32 key, void* out, i32 dflt); // 0x1bedde  GetBool (bute)
+    void ButeStore(void* key, void* val);      // 0x1b5485  (g_gameReg->m_68+0x260)
 };
 
 // ---------------------------------------------------------------------------
@@ -232,10 +233,10 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
         E(grid)->Teardown();
     }
     E(PTR(PTR(self, 0x4), 0x48))->Reset0();
-    E(PTR(PTR(self, 0x4), 0x54))->Reset1();
-    E(PTR(PTR(self, 0x4), 0x60))->Reset2();
-    E(PTR(PTR(self, 0x4), 0x60))->Reset3();
-    E(PTR(self, 0x4))->Reset4(0);
+    ((CWorldSoundSet*)PTR(PTR(self, 0x4), 0x54))->Teardown();
+    ((CGruntSpawnConfig*)PTR(PTR(self, 0x4), 0x60))->DtorBody();
+    ((CGruntSpawnConfig*)PTR(PTR(self, 0x4), 0x60))->ClearSprites();
+    ((CGruntzMgr*)PTR(self, 0x4))->RestoreVideoMode(0);
 
     gameReg = g_64556c;
     if (I32(gameReg, 0x134) != 2) {
@@ -243,7 +244,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
         if (I32(gameReg, 0xc) != 0) {
             i32 v = I32(gameReg, 0xc) ^ 1;
             I32(gameReg, 0xc) = v;
-            E(g_64556c)->Scrub(v, 1);
+            ((CGruntzMgr*)g_64556c)->FinishLevel(v, 1);
         }
     }
 
@@ -309,12 +310,15 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     if (I32(PTR(host, 0xc8), -8) != 0) {
         if (I32(host, 0x128) != 0) {
             // BATTLEZ: resolve the level number from the level name's digit run.
-            set = E(PTR(host, 0x34))->ResolvePath("GAME_BATTLEZ");
+            set = ((CSymParser*)PTR(host, 0x34))->ResolvePath("GAME_BATTLEZ");
             if (set == 0) {
                 goto fail0;
             }
-            i32 ins =
-                E(set)->Insert((const char*)E(PTR(self, 0x4))->GetWorldFileName(), g_emptyString);
+            i32 ins = ((CSymTab*)set)
+                          ->Insert(
+                              (const char*)((CGruntzMgr*)PTR(self, 0x4))->GetWorldFileName(),
+                              g_emptyString
+                          );
             if (ins == 0) {
                 return 0;
             }
@@ -337,12 +341,15 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
             level = num;
         } else if (I32(host, 0x12c) != 0) {
             // MULTI: same digit resolve off "GAME_MULTI".
-            set = E(PTR(host, 0x34))->ResolvePath("GAME_MULTI");
+            set = ((CSymParser*)PTR(host, 0x34))->ResolvePath("GAME_MULTI");
             if (set == 0) {
                 goto fail0;
             }
-            i32 ins =
-                E(set)->Insert((const char*)E(PTR(self, 0x4))->GetWorldFileName(), g_emptyString);
+            i32 ins = ((CSymTab*)set)
+                          ->Insert(
+                              (const char*)((CGruntzMgr*)PTR(self, 0x4))->GetWorldFileName(),
+                              g_emptyString
+                          );
             if (ins == 0) {
                 return 0;
             }
@@ -365,7 +372,9 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
             level = num;
         } else {
             // default: bute-driven level number (ValidateMainBlock(CString)).
-            level = ValidateMainBlock((void*)(const char*)E(PTR(self, 0x4))->GetWorldFileName());
+            level = ValidateMainBlock(
+                (void*)(const char*)((CGruntzMgr*)PTR(self, 0x4))->GetWorldFileName()
+            );
             I32(self, 0x1bc) = 0;
             I32(PTR(self, 0x4), 0x130) = 0;
         }
@@ -378,7 +387,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
 
     // ---- 3) build the level name + look it up ----
     sprintf(nameBuf, "AREA%i", I32(self, 0x20));
-    set = E(PTR(self, 0x8))->ResolvePath(nameBuf);
+    set = ((CSymParser*)PTR(self, 0x8))->ResolvePath(nameBuf);
     I32(self, 0x28) = (i32)set;
     if (set == 0) {
         goto fail0;
@@ -472,7 +481,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     // the warp-stone / last-level cache comparison (612618 / 61139c)
     {
         void* cached = g_612618;
-        i32 eq = E(g_61139c)->SameGroup((i32)cached); // 0x2f2c
+        i32 eq = ((CAreaMgr*)g_61139c)->SameGroup((i32)cached); // 0x2f2c
         reload = (eq == 0) ? 1 : 0;
         i32 diff = (level != (i32)g_612618) ? 1 : 0;
         if (g_61139c == 0) {
@@ -584,7 +593,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     RegisterInputBindings();
 
     // finalize the world planes
-    E(PTR(self, 0x4))->RecomputeViewScale();
+    ((CGruntzMgr*)PTR(self, 0x4))->RecomputeViewScale();
     if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
         E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
     }
@@ -639,7 +648,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
         CString warp; // [esp+0x14]
         i32 same = 0;
         if (E(&warp)->GetBool(0x81ab, &warp, 2)) {
-            char* a = (char*)(const char*)E(g_64556c)->GetWorldFileName();
+            char* a = (char*)(const char*)((CGruntzMgr*)g_64556c)->GetWorldFileName();
             char* b = (char*)(const char*)warp;
             i32 eq = 1;
             while (*b == *a) {
@@ -663,7 +672,8 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     if (I32(PTR(self, 0x4), 0x134) == 3) {
         AfterTitle();
     }
-    E(PTR(PTR(self, 0x4), 0x58))->FillSlot2((char*)self + 0x1d0, I32(self, 0x1c), 0);
+    ((CSaveGame*)PTR(PTR(self, 0x4), 0x58))
+        ->FillSlot2((SaveSlot*)((char*)self + 0x1d0), I32(self, 0x1c), 0);
     {
         CString key; // [esp+0x18]
         gameReg = g_64556c;
@@ -674,7 +684,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
             // key.Format("Level%i", i) -> wsprintf-into-CString (0x1b2cf5)
             key.Format("Level%i", i);
             void* bm = PTR(g_64556c, 0x68);
-            i32 v = E(g_buteMgr)->GetInt((const char*)key, "WarpStone");
+            i32 v = g_buteMgr.GetInt((const char*)key, "WarpStone");
             E((char*)bm + 0x260)->ButeStore(PTR(bm, 0x268), (void*)v);
         }
     }
@@ -709,7 +719,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
                 E(g_645570)->HideMenu();
                 while (ShowCursor(0) >= 0)
                     ;
-                E(PTR(self, 0x4))->PerFrameTick();
+                ((CGruntzMgr*)PTR(self, 0x4))->CGruntzMgr::PerFrameTick();
                 if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
                     E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
                 }
@@ -790,8 +800,8 @@ okContinue:
     if (I32(g_64556c, 0x134) == 2) {
         g_64e35c = 1;
         I32(self, 0x4ec) = 0;
-        E(PTR(self, 0x4))->CheckSavedMode();
-        E(PTR(PTR(self, 0x4), 0x5c))->FreeFontNodes();
+        ((CGruntzMgr*)PTR(self, 0x4))->CheckSavedMode();
+        ((CFontConfig*)PTR(PTR(self, 0x4), 0x5c))->FreeNodes();
     }
     return 1;
 

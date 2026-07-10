@@ -2708,7 +2708,7 @@ lightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.8956	73.8956	2	67db6c9338be	0xa7
 lightfxrender	?Shape8@CLightFxRender@@QAEHXZ	67.6819	67.6819	2	d25b846364de	0xa8900
 loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	2af7b016eb66	0x9dff0
 loadgamemenu	?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	79.2708	79.2708	1	77f602689a4a	0x9e390
-loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHHH@Z	78.8290	78.8290	2	72ec06b5d90d	0xca200
+loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHHH@Z	78.8338	78.8338	3	f8cec62ae2bf	0xca200
 loadobjectresources	?GetName@CSpawnEntry@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:d63a959bf6b0	0x9a260
 loadobjectresources	?LoadObjectAnimResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	88.3103	88.3103	2	750f5fd8641d	0x9ac20
 loadobjectresources	?LoadObjectImageResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	88.3889	88.3889	1	6da67c03ba5b	0x9a510
