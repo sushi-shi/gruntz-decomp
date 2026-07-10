@@ -8,34 +8,69 @@
 // real class TU, deleting the row here. See gruntz.analysis.discover_gaps.
 #include <rva.h>
 
+// @stub 0x7c60 = the CActionArea command dispatcher (FREE __cdecl(CGameObject* obj),
+// /GX; lives in the actionarea TU, just before the ctor 0x7da0). FULLY DECODED: switch
+// on obj->m_7c->m_1c (a callback-state slot: tag @+0x1c, active CActionArea record @+0x18):
+//   tag 0    -> m_1c=0x3e8; rec = new CActionArea(obj) (operator new == RezAlloc(0x68),
+//               nothrow; ctor thunk 0x2478 -> 0x7da0); rec->Slot06(); m_7c->m_18 = rec.
+//   tag 0x1d -> rec->Slot11();  0x1e -> rec->Slot10();  0x50 -> rec->Slot14();
+//   tag 0x51 -> rec->Slot13();  0x52 -> rec->Slot12();  0x53 -> rec->Slot15();
+//   tag 0x3e8-> no-op; default -> ProjTypeXfer((CXferArchive*)m_7c->m_18) [0x16e4f0]. ret 1.
+// BLOCKER: canonical CUserLogic (UserLogic.h) under-declares its 16-slot vtable (only
+// Slot00..Slot09); calling inherited slots 10-15 needs those 6 virtuals added to
+// CUserLogic - a shared-base change reshaping every leaf's emitted vtable (focused
+// CUserLogic-vtable pass; avoid a .cpp-local 16-slot view + `)m_18` cast).
 RVA(0x00007c60, 0xf1)
 i32 Gap_007c60(void) {
     return 0;
 } // @stub
+// @stub 0x14120 = CAttract::Vslot09 (slot 9, +0x24; declared-only in Attract.h, home
+// Attract.cpp). /GX attract title-screen entry. DECODED: while(ShowCursor(0)>=0); idx =
+// (g_gameReg->m_numRuns(+0x80) % g_attractStateCount) + 1; CString t; t.Format("TITLE%d",
+// idx); this->RunTitleSeq(t, 0, 0, 1, 0) [thunk 0x3445->0xfa350]; ((CDDrawSubMgrPages*)
+// menuRoot()->m_04)->Method_158c70(menuRoot()->m_04->m_14) [0x158c70]; then the MSVC LCG
+// rand (g_randSeeded/g_randSeed @0x6c127d/0x6c1288, seed*0x343fd+0x269ec3, seed via
+// g_pTimeGetTime), s = (rand()&1) ? DAT_0060b5bc : g_emptyString; wsprintfA(buf,
+// "ATTRACT_TITLE%s", s); look up (m_c->m_28+0x10) [0x1b8438] -> m_1b8; if(m_1b8 && m_1bc):
+// if(g_sndEnabled) DirectSoundMgr::ApplyAndPlay(m_1b8->m_10, 0x64,0,0,0)[0x136300];
+// m_1b4 = m_1b8->m_10->m_28 + 0x2710; else m_1b4 = 0x1f40; for each g_actorList(0x645574
+// AttractActorList: cnt@+4, arr@+8) actor: actor->vtable[5](); ~t; ret 1.
 RVA(0x00014120, 0x1a9)
 i32 Gap_014120(void) {
     return 0;
 } // @stub
+// @stub 0x1f480 = CMultiBootyState::Render (slot 5, +0x14; declared-only in GameMode.h,
+// home BootyStateActivate.cpp). /GX booty-countdown display. DECODED: m_c is the
+// CSpriteFactoryHolder. r = m_c->m_drawTarget->m_10->m_2c->m_8; if(r && r->vtable[0x18](r)==0
+// || this->InputVirtual()!=0){ m_4->ReportError(0x8006,0x459)[thunk 0x346d]; return 0; }
+// if(m_1b8==0x64){ this->OnActivated()[thunk 0x3fdf->0x1ed30 == CBattleStatsView::
+// DrawBattleStats]; m_1b8=0xc7; } m_c->m_8->vtable[9](1); m_c->m_8->vtable[10](m_c->m_4->m_14);
+// secs = g_mgrSettings->m_7c->m_10 / 1000; CString s; SetRect(&rc,8,0x41,0xcb,0xae);
+// if(secs>=3600) s.Format("%d:%2.2d:%2.2d", h, m, sec) else s.Format("%d:%2.2d", m, sec)
+// [0x1b2cf5]; ShowHudMessageAlt(m_c, &s, &rc, 0x6e, 1,0xff,0xff,0,1)[thunk 0x31d9->0x115520];
+// CDDSurface::Flip(m_c->m_4->m_10->m_2c, 0)[0x13e850]; CDDSurface::BltFast(m_c->m_4->m_14->m_2c,
+// 0,0, m_c->m_4->m_18->m_2c, &(...+0x1c), 0x10)[0x13ef90]; if(m_c->m_28->m_2c) SoundDevice::
+// PurgeVoiceList(-1)[0x136e20]; ~s; ret 1. Needs CDrawTarget m_10/m_14/m_18(->m_2c) +
+// CSpriteFactory vtable slots 9/10 modeled (deep member chain) + the DrawBattleStats
+// reloc-name (cast this to CBattleStatsView for the exact `?DrawBattleStats@` symbol).
 RVA(0x0001f480, 0x1e9)
 i32 Gap_01f480(void) {
     return 0;
 } // @stub
-RVA(0x0003bfa0, 0x42)
-i32 Gap_03bfa0(void) {
-    return 0;
-} // @stub
-RVA(0x0003c300, 0x183)
-i32 Gap_03c300(void) {
-    return 0;
-} // @stub
-RVA(0x0003c850, 0x38)
-i32 Gap_03c850(void) {
-    return 0;
-} // @stub
-RVA(0x0003c8a0, 0x38)
-i32 Gap_03c8a0(void) {
-    return 0;
-} // @stub
+// @stub 0x3c990 / 0x3cdd0 = twin bute-config debug DialogProcs (INT_PTR CALLBACK, /GX;
+// belong in DemoCameraTools.cpp with the rest of the 0x3c300 block). Editors for
+// "Attributez.txt" (0x3c990) / "dwrects.txt" (0x3cdd0). DECODED (identical shape, differing
+// only in the key strings + the DAT_ edit buffers 0x62c458/0x62c450 vs 0x63f790/0x643790):
+//   uMsg==WM_INITDIALOG(0x110): build CString from the lowercase key ("attributez.txt")
+//     via g_pButeDefaults [0x169fb0], read the buffer, SetDlgItemTextA(0x435, ...).
+//   uMsg==WM_COMMAND(0x111): wParam==1(OK): GetDlgItemTextA(hDlg,0x435, DAT buf, 0xffff/
+//     0x4000); strlen->DAT len; CString from the mixed-case key [0x16a670]; CButeMgr::Parse
+//     (CString, 1) on g_resButeMgr [thunk 0x38e6->0x3cc20]; EndDialog(hDlg,1). wParam==2
+//     (Cancel): EndDialog(hDlg,0). BLOCKER: the CString/ResButeMgr helper callees (0x169fb0/
+//     0x16a670/0x16ab20/0x16aa50/0x16a8e0/0x16a510/0x16a3b0/0x16a240/0x169d70/0x1b9d4c) are
+//     unreconstructed, and the /GX EH trylevel machine ([esp+0x6c] = 1/-1/0) is driven by
+//     the exact CString-temp lifetimes; reproduce with real MFC CString locals + the real
+//     ResButeMgr method identities first (finicky EH; a focused bute-editor pass).
 RVA(0x0003c990, 0x1bc)
 i32 Gap_03c990(void) {
     return 0;
@@ -44,16 +79,12 @@ RVA(0x0003cdd0, 0x19f)
 i32 Gap_03cdd0(void) {
     return 0;
 } // @stub
+// @stub 0x43670 = CWarlord::SerializeMove (vtable slot 1, +0x4; origin CUserBase; home
+// Warlord.cpp). LARGE (3104 B) bute/archive serialize round-trip (uses g_serialCounter).
+// Deferred to a dedicated leaf-first pass (>512 B big-function doctrine): reconstruct the
+// per-field archive read/write chain bottom-up. Attribution vtable-proven (~??_7CWarlord+0x4).
 RVA(0x00043670, 0xc20)
 i32 Gap_043670(void) {
-    return 0;
-} // @stub
-RVA(0x000476b0, 0x69)
-i32 Gap_0476b0(void) {
-    return 0;
-} // @stub
-RVA(0x0004a780, 0x1ec)
-i32 Gap_04a780(void) {
     return 0;
 } // @stub
 RVA(0x0005ecd0, 0x4f3)

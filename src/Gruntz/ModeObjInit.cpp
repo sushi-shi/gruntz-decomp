@@ -14,6 +14,7 @@
 #include <rva.h>
 #include <string.h>
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ResetClockGlobals)
+#include <Gruntz/Play.h>      // canonical CPlay: 0xc7ec0 IS CPlay::Vfunc1 (slot 1)
 class CSBI_RectOnly {
 public:
     i32 LoadBattlezItemConfig(i32 a);
@@ -26,7 +27,7 @@ public:
     void Attach(void* a, CChatBoxTextHost* b);
     void Configure(i32 a);
 };
-#include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (dtor 0xc8640)
+#include <Gruntz/TileTriggerContainer.h>   // canonical CTileTriggerContainer (dtor 0xc8640)
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (GetFlag74)
 
 // Rec50::Init286f @0x286f IS CTimer::Init (canonical <Gruntz/Timer.h>).
@@ -191,70 +192,91 @@ namespace modeinit {
         }
     };
 
-    // @early-stop
-    // EH-frame-absence wall (~55%, RE-PROVEN 2026-07-05). Root cause pinned via --diff:
-    // retail emits the full /GX C++-EH frame (mov eax,fs:0; push handler; push scope;
-    // mov fs:0,esp) because the 0x630 worker's field arrays are REAL C++ array members
-    // whose element ctors (__ehvec_ctor 0x11f5a0) register per-element unwind cleanup;
-    // this reconstruction builds them via manual RezAlloc + extern-"C" EhVecCtor/VecCtor
-    // CALLS, which carry no EH semantics, so MSVC5 emits NO fs:0 frame at all (the unit
-    // is already `eh`/​/GX - the flag can't help without a destructible C++ construct).
-    // That absent frame shifts every arg/[esp+N] and flips the this/zero regalloc
-    // (retail this=ebx/zero=ebp vs base this=ebp/zero=ebx).
-    //
-    // FULL RETAIL RECIPE MAPPED (matcher-5 2026-07-05, from the complete 0x5f5-byte
-    // disasm; the rewrite was scoped out at session end - execute it verbatim):
-    //  * IDENTITY: 0xc7ec0 is CPlay's vtable slot 1 override `Init0c7ec0` (origin
-    //    CState; `gruntz sema class CPlay`) -> ModeObj IS CPlay, a1 IS the game
-    //    manager (a1+0x164/+0x170 == CNetGameMgr::m_channels[0].m_14/m_20, and the
-    //    0x1d98 callee == CNetGameMgr::ResetClockGlobals). Fold to <Gruntz/Play.h>
-    //    as the follow-up.
-    //  * FIELD MAP CONFIRMED vs canonical CPlay (Play.h, 2026-07-05 - matcher-6):
-    //    ModeObj m_2dc==CPlay m_guts (guts/UI subsystem = Worker630 0x630),
-    //    m_2e0==m_hitTest (Ctl1c 0x1c control/hit-test sink), m_320==m_overlayActive,
-    //    m_3f4==m_frameMarker (CPlaySerialChild = Rec50 0x50), m_470==m_region0Gate,
-    //    m_4e4==m_scrollSink (Peer). The FOLD BLOCKER is a leaf-first cascade: CPlay
-    //    holds m_guts/m_hitTest/m_frameMarker as ANONYMOUS struct-ptr members, so the
-    //    typed sub-object construction here (Worker630::Init10b4/Ctl1c::Init3e77/
-    //    Rec78 4xStrRec/Rec50::Init286f + the EhVecCtor arrays) needs those 5 sub-
-    //    object classes MODELED as real canonicals first (else the fold re-introduces
-    //    casts). Do it WITH the scoped-out /GX-frame rewrite above (both leaf-first).
-    //  * All four allocations are genuine `new T` with class operator new/delete ==
-    //    RezAlloc/RezFree: Ctl1c (inline nothrow ctor: m_18,m_14,m_c,m_10,m_0,m_4,
-    //    m_8=1 -> NO EH state), Worker630 (inline ctor -> states 0/1; inline dtor
-    //    { PreDtor248c(); } used by a real `delete` in the fail path -> states 3/2),
-    //    Rec78 (inline ctor : 4x StrRec(0xa) members each WITH out-of-line dtor ->
-    //    states 4..7; body m_74=0; fail path = EXPLICIT ~Rec78() + RezFree, one null
-    //    check), Rec50 (out-of-line ctor 0x286f -> state 8; `if (!(m_3f4=new Rec50))
-    //    return 0`).
-    //  * Worker630 member kinds by construction order: Elem1c m_2c[8] (out-of-line
-    //    ctor 0x403774 + dtor 0x5b48c6 -> __ehvec_ctor); Elem18z m_228[5] (INLINE
-    //    ctor zeroing m_0,m_8,m_4,m_c of 0x18 -> the count-5 store loop; body also
-    //    pokes m_228[4].m_14/m_10 = 0); Elem10z (0x10, inline ctor zeroing
-    //    m_0,m_8,m_4,m_c) singles at 0x2a0,0x2b0,0x320,0x338,0x4d0,0x4f0,0x560;
-    //    Elem18c m_2c0[3]/m_378[12] (out-of-line ctor 0x403a3a, no dtor -> 4-arg
-    //    vector-ctor iterator); Sub530 @0x530 is 0x14 BYTES (0x544..0x554 are
-    //    Worker fields the ctor body writes: m_544=1). Ctor body store order == the
-    //    current w[] sequence with 0x1c8..0x200 as FIFTEEN INDIVIDUAL stores (not a
-    //    loop; m_618=0 scheduled between m_1f0/m_1f4) and memsets only at
-    //    0x114/0x150/0x18c (0xf dwords, rep stosd), 0x204 (5, unrolled), 0x498
-    //    (0xc, rep stosd); 0x308 x3 and 0x61c x4 are individual stores.
-    //  * Two BUGS in this body vs retail: the 0x1d98 call receiver is
-    //    ecx=[esp+0x20] == the A1 ARG SLOT (a1->ResetClockGlobals()), NOT
-    //    ((CGruntzMgr*)m_2dc)->ResetClockGlobals(); and m_40 is a DWORD store (i32 field), not u8.
-    //  * The a1 gate stores are (a1+0x150)-relative disp8: model an Arg1Sub at
-    //    +0x150 (m_14/m_20) and write `sub->m_20=1; sub->m_14=1` off &a1->m_150.
-    //  * ShowCursor/timeGetTime go through the CACHED import pointers
-    //    ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4) / _g_pTimeGetTime (0x6c4650), not the
-    //    import thunks.
-    //  * Fail paths: `if (m_X == 0) return 0;` FIRST (je to the shared xor-eax
-    //    tail), then dtor+free; only Worker630's uses `delete` (keeps its own
-    //    second null check, je to the m_2dc=0 store).
-    // The logic (owner-flag stamps, 4 owned sub-objects with per-step
-    // teardown-and-return-0, ShowCursor drain, geometry/timer reset, the two
-    // vtable inits + bind + peer flag) is complete + correct by shape.
-    RVA(0x000c7ec0, 0x5f5)
-    i32 ModeObj::Init0c7ec0(Arg1* a1, i32 a2, i32 a3) {
+} // namespace modeinit
+
+// @early-stop
+// REPARENTED 2026-07-10: 0xc7ec0 is now the real CPlay::Vfunc1 (slot 1) so
+// CDemo::Vfunc1 (0x3bfa0) reloc-pairs its base call (Demo.cpp, now byte-exact).
+// The whole body is still driven through the modeinit::ModeObj foreign view via a
+// single byte-neutral (ModeObj*)this reinterpret; folding it onto CPlay's real
+// m_guts/m_hitTest/m_frameMarker members is the documented 5-sub-object leaf-first
+// cascade below. Including <Gruntz/Play.h> here (needed to define CPlay::Vfunc1)
+// shifted the fwd-decl/type-table state and re-colored the regalloc, dropping the
+// fuzzy% ~55 -> ~48 (header-fwd-decl-count-regalloc-butterfly); still the EH wall:
+// EH-frame-absence wall (~55%, RE-PROVEN 2026-07-05). Root cause pinned via --diff:
+// retail emits the full /GX C++-EH frame (mov eax,fs:0; push handler; push scope;
+// mov fs:0,esp) because the 0x630 worker's field arrays are REAL C++ array members
+// whose element ctors (__ehvec_ctor 0x11f5a0) register per-element unwind cleanup;
+// this reconstruction builds them via manual RezAlloc + extern-"C" EhVecCtor/VecCtor
+// CALLS, which carry no EH semantics, so MSVC5 emits NO fs:0 frame at all (the unit
+// is already `eh`/​/GX - the flag can't help without a destructible C++ construct).
+// That absent frame shifts every arg/[esp+N] and flips the this/zero regalloc
+// (retail this=ebx/zero=ebp vs base this=ebp/zero=ebx).
+//
+// FULL RETAIL RECIPE MAPPED (matcher-5 2026-07-05, from the complete 0x5f5-byte
+// disasm; the rewrite was scoped out at session end - execute it verbatim):
+//  * IDENTITY: 0xc7ec0 is CPlay's vtable slot 1 override `Init0c7ec0` (origin
+//    CState; `gruntz sema class CPlay`) -> ModeObj IS CPlay, a1 IS the game
+//    manager (a1+0x164/+0x170 == CNetGameMgr::m_channels[0].m_14/m_20, and the
+//    0x1d98 callee == CNetGameMgr::ResetClockGlobals). Fold to <Gruntz/Play.h>
+//    as the follow-up.
+//  * FIELD MAP CONFIRMED vs canonical CPlay (Play.h, 2026-07-05 - matcher-6):
+//    ModeObj m_2dc==CPlay m_guts (guts/UI subsystem = Worker630 0x630),
+//    m_2e0==m_hitTest (Ctl1c 0x1c control/hit-test sink), m_320==m_overlayActive,
+//    m_3f4==m_frameMarker (CPlaySerialChild = Rec50 0x50), m_470==m_region0Gate,
+//    m_4e4==m_scrollSink (Peer). The FOLD BLOCKER is a leaf-first cascade: CPlay
+//    holds m_guts/m_hitTest/m_frameMarker as ANONYMOUS struct-ptr members, so the
+//    typed sub-object construction here (Worker630::Init10b4/Ctl1c::Init3e77/
+//    Rec78 4xStrRec/Rec50::Init286f + the EhVecCtor arrays) needs those 5 sub-
+//    object classes MODELED as real canonicals first (else the fold re-introduces
+//    casts). Do it WITH the scoped-out /GX-frame rewrite above (both leaf-first).
+//  * All four allocations are genuine `new T` with class operator new/delete ==
+//    RezAlloc/RezFree: Ctl1c (inline nothrow ctor: m_18,m_14,m_c,m_10,m_0,m_4,
+//    m_8=1 -> NO EH state), Worker630 (inline ctor -> states 0/1; inline dtor
+//    { PreDtor248c(); } used by a real `delete` in the fail path -> states 3/2),
+//    Rec78 (inline ctor : 4x StrRec(0xa) members each WITH out-of-line dtor ->
+//    states 4..7; body m_74=0; fail path = EXPLICIT ~Rec78() + RezFree, one null
+//    check), Rec50 (out-of-line ctor 0x286f -> state 8; `if (!(m_3f4=new Rec50))
+//    return 0`).
+//  * Worker630 member kinds by construction order: Elem1c m_2c[8] (out-of-line
+//    ctor 0x403774 + dtor 0x5b48c6 -> __ehvec_ctor); Elem18z m_228[5] (INLINE
+//    ctor zeroing m_0,m_8,m_4,m_c of 0x18 -> the count-5 store loop; body also
+//    pokes m_228[4].m_14/m_10 = 0); Elem10z (0x10, inline ctor zeroing
+//    m_0,m_8,m_4,m_c) singles at 0x2a0,0x2b0,0x320,0x338,0x4d0,0x4f0,0x560;
+//    Elem18c m_2c0[3]/m_378[12] (out-of-line ctor 0x403a3a, no dtor -> 4-arg
+//    vector-ctor iterator); Sub530 @0x530 is 0x14 BYTES (0x544..0x554 are
+//    Worker fields the ctor body writes: m_544=1). Ctor body store order == the
+//    current w[] sequence with 0x1c8..0x200 as FIFTEEN INDIVIDUAL stores (not a
+//    loop; m_618=0 scheduled between m_1f0/m_1f4) and memsets only at
+//    0x114/0x150/0x18c (0xf dwords, rep stosd), 0x204 (5, unrolled), 0x498
+//    (0xc, rep stosd); 0x308 x3 and 0x61c x4 are individual stores.
+//  * Two BUGS in this body vs retail: the 0x1d98 call receiver is
+//    ecx=[esp+0x20] == the A1 ARG SLOT (a1->ResetClockGlobals()), NOT
+//    ((CGruntzMgr*)m_2dc)->ResetClockGlobals(); and m_40 is a DWORD store (i32 field), not u8.
+//  * The a1 gate stores are (a1+0x150)-relative disp8: model an Arg1Sub at
+//    +0x150 (m_14/m_20) and write `sub->m_20=1; sub->m_14=1` off &a1->m_150.
+//  * ShowCursor/timeGetTime go through the CACHED import pointers
+//    ?g_ShowCursor@@3P6GHH@ZA (0x6c44c4) / _g_pTimeGetTime (0x6c4650), not the
+//    import thunks.
+//  * Fail paths: `if (m_X == 0) return 0;` FIRST (je to the shared xor-eax
+//    tail), then dtor+free; only Worker630's uses `delete` (keeps its own
+//    second null check, je to the m_2dc=0 store).
+// The logic (owner-flag stamps, 4 owned sub-objects with per-step
+// teardown-and-return-0, ShowCursor drain, geometry/timer reset, the two
+// vtable inits + bind + peer flag) is complete + correct by shape.
+// 0xc7ec0 IS CPlay's vtable slot-1 override (origin CState; the mode/object
+// initializer CDemo::Vfunc1 delegates to). The whole body is still modeled through
+// the `modeinit::ModeObj` foreign view (the 5-sub-object leaf-first cascade to fold
+// it onto CPlay's real m_guts/m_hitTest/m_frameMarker members is the documented
+// deferred work); `this` is reinterpret-cast to that view once - byte-neutral (both
+// are single-inheritance with the vptr at +0), reparenting only the emitted symbol
+// from ?Init0c7ec0@ModeObj to ?Vfunc1@CPlay so CDemo::Vfunc1's base call reloc-pairs.
+RVA(0x000c7ec0, 0x5f5)
+i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
+    using namespace modeinit;
+    ModeObj* t = (ModeObj*)this;
+    Arg1* a1 = (Arg1*)a1_i;
+    {
         if (a1 == 0) {
             return 0;
         }
@@ -264,22 +286,22 @@ namespace modeinit {
         }
         sub->m_170 = 1;
         sub->m_164 = 1;
-        m_470 = 0;
-        m_474 = 0;
-        m_478 = 0;
-        m_47c = 0;
-        m_480 = 0;
-        m_484 = 1;
-        m_49c = -1;
-        m_4b0 = 0;
-        m_4b4 = 0;
-        m_4b8 = 0;
-        m_3f4 = 0;
-        if (!Setup43a9(a1, a2, a3)) {
+        t->m_470 = 0;
+        t->m_474 = 0;
+        t->m_478 = 0;
+        t->m_47c = 0;
+        t->m_480 = 0;
+        t->m_484 = 1;
+        t->m_49c = -1;
+        t->m_4b0 = 0;
+        t->m_4b4 = 0;
+        t->m_4b8 = 0;
+        t->m_3f4 = 0;
+        if (!t->Setup43a9(a1, a2, a3)) {
             return 0;
         }
 
-        Ctl1c* ctl = (Ctl1c*)RezAlloc(0x1c);
+        Ctl1c* ctl = (Ctl1c*)modeinit::RezAlloc(0x1c);
         if (ctl) {
             ctl->m_18 = 0;
             ctl->m_14 = 0;
@@ -291,19 +313,20 @@ namespace modeinit {
         } else {
             ctl = 0;
         }
-        m_2e0 = ctl;
-        if ((((CChatBoxOwner*)m_2e0)->Attach((void*)m_c, (CChatBoxTextHost*)m_4->m_5c), 0)) {
-            if (m_2e0) {
-                ((CChatBoxOwner*)m_2e0)->Deactivate();
-                RezFree(m_2e0);
+        t->m_2e0 = ctl;
+        if ((((CChatBoxOwner*)t->m_2e0)->Attach((void*)t->m_c, (CChatBoxTextHost*)t->m_4->m_5c),
+             0)) {
+            if (t->m_2e0) {
+                ((CChatBoxOwner*)t->m_2e0)->Deactivate();
+                modeinit::RezFree(t->m_2e0);
             }
-            m_2e0 = 0;
+            t->m_2e0 = 0;
             return 0;
         }
-        m_2e0->m_10 = 0;
-        ((CChatBoxOwner*)m_2e0)->Configure(1);
+        t->m_2e0->m_10 = 0;
+        ((CChatBoxOwner*)t->m_2e0)->Configure(1);
 
-        Worker630* wk = (Worker630*)RezAlloc(0x630);
+        Worker630* wk = (Worker630*)modeinit::RezAlloc(0x630);
         if (wk) {
             char* p = (char*)wk;
             i32 i;
@@ -395,19 +418,25 @@ namespace modeinit {
         } else {
             wk = 0;
         }
-        m_2dc = wk;
-        if (((CSBI_RectOnly*)m_2dc)->LoadBattlezItemConfig((i32)m_c) == 0) {
-            if (m_2dc) {
-                ((CSBI_RectOnly*)m_2dc)->Teardown();
-                ((Worker630::Sub530*)((char*)m_2dc + 0x530))->Dtor1b4f3e();
-                EhVecCtor((char*)m_2dc + 0x2c, 0, 0, 0, 0); // __ehvec_dtor 0x11f640 (reloc-masked)
-                RezFree(m_2dc);
+        t->m_2dc = wk;
+        if (((CSBI_RectOnly*)t->m_2dc)->LoadBattlezItemConfig((i32)t->m_c) == 0) {
+            if (t->m_2dc) {
+                ((CSBI_RectOnly*)t->m_2dc)->Teardown();
+                ((Worker630::Sub530*)((char*)t->m_2dc + 0x530))->Dtor1b4f3e();
+                EhVecCtor(
+                    (char*)t->m_2dc + 0x2c,
+                    0,
+                    0,
+                    0,
+                    0
+                ); // __ehvec_dtor 0x11f640 (reloc-masked)
+                modeinit::RezFree(t->m_2dc);
             }
-            m_2dc = 0;
+            t->m_2dc = 0;
             return 0;
         }
 
-        Rec78* r78 = (Rec78*)RezAlloc(0x78);
+        Rec78* r78 = (Rec78*)modeinit::RezAlloc(0x78);
         if (r78) {
             char* p = (char*)r78;
             new (p + 0x00) CObList(0xa);
@@ -418,23 +447,23 @@ namespace modeinit {
         } else {
             r78 = 0;
         }
-        m_2e4 = r78;
-        if (((CTileTriggerSwitchLogic*)m_2e4)->GetFlag74() == 0) {
-            if (m_2e4) {
-                ((CTileTriggerContainer*)m_2e4)->~CTileTriggerContainer();
-                RezFree(m_2e4);
+        t->m_2e4 = r78;
+        if (((CTileTriggerSwitchLogic*)t->m_2e4)->GetFlag74() == 0) {
+            if (t->m_2e4) {
+                ((CTileTriggerContainer*)t->m_2e4)->~CTileTriggerContainer();
+                modeinit::RezFree(t->m_2e4);
             }
-            m_2e4 = 0;
+            t->m_2e4 = 0;
             return 0;
         }
 
-        Rec50* r50 = (Rec50*)RezAlloc(0x50);
+        Rec50* r50 = (Rec50*)modeinit::RezAlloc(0x50);
         if (r50) {
             ((CTimer*)r50)->Init();
         } else {
             r50 = 0;
         }
-        m_3f4 = r50;
+        t->m_3f4 = r50;
         if (r50 == 0) {
             return 0;
         }
@@ -443,32 +472,31 @@ namespace modeinit {
             while (ShowCursor(0) >= 0) {
             }
         }
-        m_1c4 = 1;
-        m_40 = 0;
-        m_1c0 = 0;
-        memset(m_1d0, 0, 0x40 * 4);
-        ((CGruntzMgr*)m_2dc)->ResetClockGlobals();
-        m_1cc = 0;
-        m_2d8 = timeGetTime();
-        m_320 = 0;
-        if (m_4->m_114 == 0) {
-            m_4->m_bc = 0;
+        t->m_1c4 = 1;
+        t->m_40 = 0;
+        t->m_1c0 = 0;
+        memset(t->m_1d0, 0, 0x40 * 4);
+        ((CGruntzMgr*)t->m_2dc)->ResetClockGlobals();
+        t->m_1cc = 0;
+        t->m_2d8 = timeGetTime();
+        t->m_320 = 0;
+        if (t->m_4->m_114 == 0) {
+            t->m_4->m_bc = 0;
         }
-        if (!CallV74()) {
+        if (!t->CallV74()) {
             return 0;
         }
-        CallV90();
-        if (!CallV78(a2, 1)) {
+        t->CallV90();
+        if (!t->CallV78(a2, 1)) {
             return 0;
         }
-        if (!IsModeReady(0, 0)) {
+        if (!t->IsModeReady(0, 0)) {
             return 0;
         }
-        Peer* peer = m_4e4;
+        Peer* peer = t->m_4e4;
         if (peer) {
             peer->m_40 |= 1;
         }
         return 1;
     }
-
-} // namespace modeinit
+}

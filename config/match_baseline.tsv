@@ -120,11 +120,14 @@ ddrawworkers	8	5
 ddscreen	3	2
 debugprintf	6	4
 deflate	15	15
+demo	1	1
+democameratools	3	0
 demosetup	1	1
 destructbutton	1	1
 dialogs	53	29
 directdrawmgr	59	32
 directinputmgr2	50	43
+directionclassify	1	0
 directsoundmgr	49	40
 dirpal	4	0
 discoveredarray	1	0
@@ -138,7 +141,7 @@ droppedobject	7	4
 droppedobjectserialize	2	2
 droppedobjectshadow	3	2
 dsoundvoice	2	1
-engine_label_stubs	69	8
+engine_label_stubs	63	8
 engstr	3	1
 engstrrendertext	1	0
 exittrigger	4	2
@@ -377,6 +380,7 @@ rezlist	4	2
 rezmgr	22	15
 rezsync	2	1
 rezutil	1	1
+rockbreakeffectupdate	1	0
 rockbreakparticles	1	0
 rollingball	7	4
 savegame	26	20
@@ -1296,6 +1300,10 @@ deflate	_lm_init	100.0000	100.0000	1	92f427e44f84	0x186a50
 deflate	_longest_match	100.0000	100.0000	1	18824b519e86	0x187000
 deflate	_putShortMSB	100.0000	100.0000	1	6f59b6af4108	0x1868e0
 deflate	_read_buf	100.0000	100.0000	1	b66aa815658a	0x186d30
+demo	?Vfunc1@CDemo@@UAEHHHH@Z	100.0000	100.0000	1	7569a15ec175	0x3bfa0
+democameratools	?DemoAutoScrollStep@@YAHPAUScrollOwner@@@Z	74.6786	74.6786	1	f637bdf38cbe	0x3c300
+democameratools	?StepA@Orient3@@QAEXH@Z	67.6957	67.6957	1	ed89b6f780ab	0x3c850
+democameratools	?StepB@Orient3@@QAEXH@Z	67.6957	67.6957	1	f5971c7aacc0	0x3c8a0
 demosetup	?SetupDemoActors@CDemoSetup@@QAEHXZ	100.0000	100.0000	2	58cb170404f4	0x3c070
 destructbutton	?UpdateDestructButton@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	5	539fa6914fa1	0x10bc30
 dialogs	??0CBattlezDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	8	d79f509aae6c	0x14b30
@@ -1460,6 +1468,7 @@ directinputmgr2	?Shutdown@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	6	be42e49f5d
 directinputmgr2	?Teardown@CInputDevice@@QAEXXZ	100.0000	100.0000	4	d30d9c7cb236	0x133bf0
 directinputmgr2	?Unacquire@CInputDevRoot@@QAEHXZ	100.0000	100.0000	3	76689dc0b4a6	0x134fe0
 directinputmgr2	_DinEnumDevicesCallback@8	93.7692	93.7692	1	9e43df8d2bc7	0x132fc0
+directionclassify	?Classify@MotionEntity@@QAEPAUDirDesc@@PAU1@D@Z	96.2060	96.2060	1	5399fff1ee9f	0x4a780
 directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	2	189d80982083	0x136230
 directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	2	189d80982083	0x136180
 directsoundmgr	??0DSoundCloneInst@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	84.0312	84.0312	2	a89881487883	0x135b10
@@ -1554,15 +1563,9 @@ engine_label_stubs	?FindNearest@Grid_77df0@ApiCallerStubs@@QAEPAUCell_77df0@2@PA
 engine_label_stubs	?Gap_007c60@@YAHXZ	2.2619	2.2619	1	cpp:0cd3d8fa5bea	0x7c60
 engine_label_stubs	?Gap_014120@@YAHXZ	1.0075	1.0075	1	cpp:0cd3d8fa5bea	0x14120
 engine_label_stubs	?Gap_01f480@@YAHXZ	1.2270	1.2270	1	cpp:0cd3d8fa5bea	0x1f480
-engine_label_stubs	?Gap_03bfa0@@YAHXZ	3.4783	3.4783	1	cpp:0cd3d8fa5bea	0x3bfa0
-engine_label_stubs	?Gap_03c300@@YAHXZ	1.3929	1.3929	1	cpp:0cd3d8fa5bea	0x3c300
-engine_label_stubs	?Gap_03c850@@YAHXZ	3.4783	3.4783	1	cpp:0cd3d8fa5bea	0x3c850
-engine_label_stubs	?Gap_03c8a0@@YAHXZ	3.4783	3.4783	1	cpp:0cd3d8fa5bea	0x3c8a0
 engine_label_stubs	?Gap_03c990@@YAHXZ	1.2069	1.2069	1	cpp:0cd3d8fa5bea	0x3c990
 engine_label_stubs	?Gap_03cdd0@@YAHXZ	1.2963	1.2963	1	cpp:0cd3d8fa5bea	0x3cdd0
 engine_label_stubs	?Gap_043670@@YAHXZ	0.1353	0.1353	1	cpp:0cd3d8fa5bea	0x43670
-engine_label_stubs	?Gap_0476b0@@YAHXZ	6.0606	6.0606	1	cpp:0cd3d8fa5bea	0x476b0
-engine_label_stubs	?Gap_04a780@@YAHXZ	0.6533	0.6533	1	cpp:0cd3d8fa5bea	0x4a780
 engine_label_stubs	?Gap_05ecd0@@YAHXZ	0.3194	0.3194	1	cpp:0cd3d8fa5bea	0x5ecd0
 engine_label_stubs	?Gap_063b60@@YAHXZ	1.2102	1.2102	1	cpp:0cd3d8fa5bea	0x63b60
 engine_label_stubs	?Gap_08dc20@@YAHXZ	4.7059	4.7059	1	cpp:0cd3d8fa5bea	0x8dc20
@@ -2355,7 +2358,7 @@ gruntzmgr	?winapi_092a30_EndDialog@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	c988
 gruntzmgrcmd	?Fwd114ec0@@YAXHHHHHH@Z	100.0000	100.0000	1	6e3eaa7b5f8a	0x114ec0
 gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHHH@Z	68.3992	68.3992	2	c3eaab59033e	0x862f0
 gruntzmgrcmd	?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z	97.5532	97.5532	1	7c305eac392e	0xd210
-gruntzmgrtransition	?TransitionState@CGruntzMgr@@QAEHHHHH@Z	41.1066	41.1066	6	3355774ba798	0x8b960
+gruntzmgrtransition	?TransitionState@CGruntzMgr@@QAEHHHHH@Z	41.1088	41.1088	6	3355774ba798	0x8b960
 gruntzmgrtransition	?Vslot15@CDemo@@UAEHXZ	100.0000	100.0000	1	1e57c056f6a2	0x3c030
 gruntzplayer	??0GruntzPlayer@@QAE@H@Z	42.4510	42.4510	3	0074760cd41f	0xda870
 gruntzplayer	??0GruntzPlayer@@QAE@XZ	0.0000	0.0000	3	0074760cd41f	0xda960
@@ -2846,7 +2849,7 @@ mgrsettings	?Serialize@CMgrSettings@@QAEHPAUCSerialArchive@@HHH@Z	89.0526	89.052
 mgrslotswap	?DoSwap@CSlotHolder@@QAEHXZ	87.6226	87.6226	6	b85d74a68bae	0x1128b0
 mgrtokenquery	?QueryToken@@YAHH@Z	100.0000	100.0000	2	3407d38b8f3a	0x99d10
 mgrtokenquery	?TokenMgrReset99b80@@YAXXZ	100.0000	100.0000	1	23664502a602	0x99b80
-modeobjinit	?Init0c7ec0@ModeObj@modeinit@@QAEHPAUArg1@2@HH@Z	47.6943	47.6943	5	3e5e0128765b	0xc7ec0
+modeobjinit	?Vfunc1@CPlay@@UAEHHHH@Z	47.6943	47.6943	1	cc32bdb2cf76	0xc7ec0
 motionstate	??0CMotionState@@QAE@XZ	100.0000	100.0000	2	97e1709adf3c	0x136d0
 motionstate	?ArrivalVelX@CMotionState@@QAENN@Z	100.0000	100.0000	3	e7a9b26c0b01	0x16f3c0
 motionstate	?ArrivalVelY@CMotionState@@QAENN@Z	100.0000	100.0000	3	605a0a4bba7e	0x16f430
@@ -3313,6 +3316,7 @@ rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	5	abf7957a6525	0x13c6c0
 rezsync	?GetName@Obj85500@@QAE?AVCString@@XZ	100.0000	100.0000	1	a603b2ac0b4f	0x85500
 rezsync	?Init@RezSync@@QAEHPAXPAD@Z	62.7073	62.7073	6	a1f8a93d5917	0x83450
 rezutil	_RezFree	100.0000	100.0000	2	bdc6fe3ec315	0x1b9b82
+rockbreakeffectupdate	?Update@RbEffect@@QAEHXZ	98.4848	98.4848	1	f4915d1b337e	0x476b0
 rockbreakparticles	?BuildRockBreakParticles@CRockBreakMgr@@QAEHHHHH@Z	81.0936	81.0936	6	546b432d2293	0x7b440
 rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	78.6220	78.6220	8	5fb053993078	0xaf820
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	2	83acba8c2baa	0x12f80

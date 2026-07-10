@@ -1106,6 +1106,32 @@ source = "src/Gruntz/PlayDtor.cpp"
 flags = "eh"
 
 [[unit]]
+# CDemo (CPlay-derived demo/attract-playback state) own methods (Vfunc1 0x3bfa0);
+# non-EH (no destructible locals).
+unit = "demo"
+source = "src/Gruntz/Demo.cpp"
+flags = "base"
+
+[[unit]]
+# Ghidra-missed 0x3c300.. block: demo auto-scroll camera + orphan orientation
+# steppers + the bute-config debug DialogProcs (CString temps -> /GX).
+unit = "democameratools"
+source = "src/Gruntz/DemoCameraTools.cpp"
+flags = "eh"
+
+[[unit]]
+# Ghidra-missed 0x476b0: per-frame rock-break effect Update (identity-TODO).
+unit = "rockbreakeffectupdate"
+source = "src/Gruntz/RockBreakEffectUpdate.cpp"
+flags = "base"
+
+[[unit]]
+# Ghidra-missed 0x4a780: 8-way direction classifier (identity-TODO, FP).
+unit = "directionclassify"
+source = "src/Gruntz/DirectionClassify.cpp"
+flags = "base"
+
+[[unit]]
 unit = "playsync"
 source = "src/Gruntz/PlaySync.cpp"
 flags = "base"

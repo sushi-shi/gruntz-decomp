@@ -30,6 +30,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <DinMgr2/DirectInputMgr2.h>
 #include <Gruntz/Play.h> // canonical CPlay (the case-3 `new CPlay` uses the one shape)
+#include <Gruntz/Demo.h> // canonical CDemo (the case-6 `new CDemo` + CDemo::Vslot15)
 #include <rva.h>
 
 // operator new / the game heap (0x1b9b46), reloc-masked.
@@ -183,19 +184,8 @@ struct CSplashState : CState { // param 14, 0x1bc
         m_1b4 = 0;
     }
 };
-struct CDemo : CPlay {
-    virtual ~CDemo() OVERRIDE;                   // slot 0
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot15() OVERRIDE;              // slot 21
-    virtual void BuildWorldLevelPath() OVERRIDE; // slot 42 // param 7, 0x528
-    char m_pad[0x528 - 0x520];
-    CDemo() {
-        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-    }
-};
+// CDemo is the canonical <Gruntz/Demo.h> class (included below); its ctor + the
+// `new CDemo` factory case + CDemo::Vslot15 (0x3c030) live in this TU.
 struct CMultiBootyState : CState { // param 18, 0x244
     i32 m_1b4;                     // +0x1b4
     i32 m_1b8;                     // +0x1b8

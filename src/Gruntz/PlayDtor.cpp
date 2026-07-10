@@ -17,16 +17,8 @@
 // cl auto-emits ??_7CPlay@@6B@ (masks retail 0x5ea0bc, paired via vtable_names.csv) +
 // ??_7CDemo@@6B@ (masks 0x5e9f0c). Only OFFSETS + code shape are load-bearing.
 #include <Gruntz/Play.h> // canonical CPlay (typed MFC members -> the /GX dtor fold)
+#include <Gruntz/Demo.h> // canonical CDemo (was a dual .cpp-local view; DerivedCleanup 0x3c010)
 #include <rva.h>
-
-// CDemo - the CPlay-derived sibling state (its own most-derived vtable 0x5e9f0c).
-// Adds the leading derived-cleanup (0x3c010) then folds CPlay's whole teardown inline
-// (the inline CPlay::~CPlay below lets cl inline the base-subobject teardown, matching
-// retail). cl auto-emits ??_7CDemo (masks 0x5e9f0c).
-struct CDemo : CPlay {
-    void DerivedCleanup(); // 0x3c010
-    virtual ~CDemo() OVERRIDE;
-};
 
 // 0x8c830 - CPlay::~CPlay (/GX): stamp the CPlay vtable (prologue), run CPlayDtorBody
 // at the top trylevel, fold the five members (reverse decl order, descending /GX
