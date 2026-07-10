@@ -7,6 +7,7 @@
 #include <rva.h>
 #include <Wap32/ZDArrayDerived.h> // CZDArrayDerived::Construct (the 0x82aa0 register thunk)
 #include <Globals.h>              // g_desc60aac8 (the registered descriptor)
+#include <Bute/ButeSection.h>     // real CButeSection (g_resButeMgr's dynamic init @0x82b20)
 
 // ---------------------------------------------------------------------------
 // The two name tables are file-scope arrays of CString with brace-initializers.
@@ -51,6 +52,58 @@ extern CMgr6451a8 g_mgr6451a8;
 RVA(0x00082aa0, 0x10)
 void Register82aa0() {
     ((CZDArrayDerived*)&g_mgr6451a8)->Construct((i32)(void*)&g_desc60aac8, 0);
+}
+
+// ---------------------------------------------------------------------------
+// 0x082b20..0x082d20 (RVA-homed from src/Stub/BoundaryThunks.cpp) - compiler-
+// generated dynamic-initializer (_$E) thunks for file-scope globals of the
+// resource-config / debug-overlay subsystem, RVA-contiguous with the g_worldName
+// initializer @0x82990. Each is a tail-jmp `mov ecx,&g; jmp <ctor>` - the object's
+// in-place default construction (docs/patterns/explicit-ctor-call-inplace-tail-jmp.md).
+// The callee 0x1b9b93 IS CString::CString() (NAFXCW default ctor, NOT the dtor);
+// 0x170210 is CButeSection::CButeSection(). All callees + global addresses are
+// reloc-masked, so only the OFFSETS + code bytes are load-bearing.
+// ---------------------------------------------------------------------------
+
+// g_resButeMgr (?g_resButeMgr@@3UResButeMgr@@A @0x6453d8): the resource-config bute
+// manager the game reads via ((CButeMgr*)&g_resButeMgr)->GetInt(...) (canonical decl
+// in GruntResurrectRadius.cpp). Its dynamic init constructs the section in place; the
+// global IS a CButeSection (its ctor 0x170210 is CButeSection::CButeSection - the real
+// class, <Bute/ButeSection.h>). Reloc-masked.
+extern CButeSection g_resButeMgr;
+RVA(0x00082b20, 0xa)
+void InitResButeMgr82b20() {
+    g_resButeMgr.CButeSection::CButeSection();
+}
+
+// The debug-overlay / profiler text-sink CString globals (0x645524..0x645530).
+// g_profSink is the shared text sink Play.cpp logs through (== GruntzMgrCmd's
+// g_brickText1); the g_str6455xx names are the still-anonymous siblings. Externs
+// (storage lives in the owning subsystem TU); the DATA pins name the ones this
+// cluster owns.
+extern CString g_profSink; // 0x645524 (?..@@3VCString@@A; pinned as g_profSink in Play.cpp)
+DATA(0x00245528)
+extern CString g_str645528; // 0x645528 (== GruntzMgrCmd's g_brickText2)
+DATA(0x0024552c)
+extern CString g_str64552c; // 0x64552c
+DATA(0x00245530)
+extern CString g_str645530; // 0x645530
+
+RVA(0x00082ba0, 0xa)
+void InitStr645524() {
+    g_profSink.CString::CString();
+}
+RVA(0x00082c20, 0xa)
+void InitStr645528() {
+    g_str645528.CString::CString();
+}
+RVA(0x00082ca0, 0xa)
+void InitStr64552c() {
+    g_str64552c.CString::CString();
+}
+RVA(0x00082d20, 0xa)
+void InitStr645530() {
+    g_str645530.CString::CString();
 }
 
 // ---------------------------------------------------------------------------

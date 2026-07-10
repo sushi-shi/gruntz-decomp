@@ -122,6 +122,19 @@ namespace NetLobby {
         SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 
+    // ---------------------------------------------------------------------------
+    // 0x0bd7f0 (RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - the compiler-
+    // generated dynamic initializer for the pending drop-in player-name CString
+    // g_str649618: tail-construct it empty in place (CString::CString @0x1b9b93, the
+    // NAFXCW default ctor - reloc-masked). The SAME 4 bytes are read as the char*
+    // g_playerName_649618 (the CString's m_pszData) by NetDlgInitDropIn below.
+    DATA(0x00249618)
+    extern CString g_str649618;
+    RVA(0x000bd7f0, 0xa)
+    void InitPlayerNameStr() {
+        g_str649618.CString::CString();
+    }
+
     // __stdcall DlgProc: the host-wait dialog. WM_TIMER polls the PAUSE key
     // (GetAsyncKeyState(VK_PAUSE) & down|pressed) and re-posts the 0x4d2 abort;
     // WM_COMMAND ends on 0x4d2 / 2 (pushing the abort stat) or cancels on 0x4c6.

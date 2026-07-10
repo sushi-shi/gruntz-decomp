@@ -825,6 +825,44 @@ void B_13dee0::Set(i32 v) {
     }
 }
 
+// ---------------------------------------------------------------------------
+// WaitKeyEdge (0x13df30; RVA-homed from src/Stub/BoundaryTail.cpp) - busy-wait for a
+// key down-then-up edge on virtual-key `vk`, with an optional `timeoutMs` deadline
+// (through the game-owned timeGetTime fn-ptr g_pTimeGetTime, above). __cdecl, two
+// stack args. Reads the OS key state through the engine's cached GetAsyncKeyState
+// fn-ptr (g_pGetAsyncKeyState @0x6c4500).
+// @orphan: no .text caller (a free __cdecl busy-wait); no owning class.
+// @early-stop
+// regalloc-swap wall (~97%): byte-identical except retail pins `vk` in esi and the
+// cached GetAsyncKeyState ptr in edi, while our /O2 picks the reverse (ptr->esi,
+// vk->edi). Only the modrm reg fields differ; tried direct global calls (77%, no
+// caching) and an `int k = vk` copy (no change). Pure register assignment.
+extern "C" i16(WINAPI* g_pGetAsyncKeyState)(int vk); // 0x6c4500 (PTR_GetAsyncKeyState)
+RVA(0x0013df30, 0xaf)
+void WaitKeyEdge(int vk, int timeoutMs) {
+    if (timeoutMs == 0) {
+        i16(WINAPI * gaks)(int) = g_pGetAsyncKeyState;
+        while (!((i32)gaks(vk) & 0x80000000))
+            ;
+        while ((i32)gaks(vk) & 0x80000000)
+            ;
+    } else {
+        u32(WINAPI * tgt)() = g_pTimeGetTime;
+        u32 deadline = tgt() + timeoutMs;
+        i16(WINAPI * gaks)(int) = g_pGetAsyncKeyState;
+        while (!((i32)gaks(vk) & 0x80000000)) {
+            if (tgt() > deadline) {
+                return;
+            }
+        }
+        while ((i32)gaks(vk) & 0x80000000) {
+            if (tgt() > deadline) {
+                return;
+            }
+        }
+    }
+}
+
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------

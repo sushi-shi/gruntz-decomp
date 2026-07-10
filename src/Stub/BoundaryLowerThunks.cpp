@@ -112,21 +112,8 @@ CGameApp::~CGameApp() {
 // (0x082aa0 Register82aa0 (+ its g_mgr6451a8 DATA pin) re-homed to src/Gruntz/
 // GameText.cpp, RVA-contiguous with that TU's g_worldName initializer @0x82990.)
 
-// ===========================================================================
-// 0x082fa0 - reset the grunt coordinate free-pool: zero the four consecutive
-// pool globals (head @0x645540, freelist @0x645544, scratch @0x645548, bias
-// @0x64554c). __cdecl. The three pinned-elsewhere globals reuse their names.
-// ===========================================================================
-extern FreeNodePool g_coordPool; // 0x645540 (the BattlezMapConfig RUN-phase unit)
-extern void* g_freeList;         // 0x645544 (Projectile.cpp)
-extern i32 g_freeListNodeBias;   // 0x64554c (Projectile.cpp)
-RVA(0x00082fa0, 0x17)
-void ResetCoordPool82fa0() {
-    *(i32*)&g_coordPool = 0;
-    g_freeList = 0;
-    g_poolScratch645548 = 0;
-    g_freeListNodeBias = 0;
-}
+// (0x082fa0 ResetCoordPool re-homed to src/Gruntz/FreeNodePool.cpp - the non-freeing
+// counterpart of ClearCoordPool, modeled through the canonical g_coordPool.)
 
 // (0x085540 ~CGameMgr (the GLOBAL-namespace ??1CGameMgr@@ base dtor) re-homed to
 // src/Rez/RezSync.cpp - that TU IS the CGameMgr-derived bootstrap; its scalar-deleting
@@ -155,6 +142,28 @@ RELOC_VTBL(
     0x001e9b8c
 ); // aliases CGameMgr (slot-fn RVAs match its vtable, 100% majority)
 // @rva-symbol: ??_GCObj855a0@@UAEPAXI@Z 0x000855a0 0x24  (cl-auto-gen scalar-deleting dtor)
+
+// ===========================================================================
+// 0x08c470 - the out-of-line CState base-subobject destructor (byte-necessary keep,
+// like the CGameApp/CGameWnd base dtors here): restamp the CState dtor vftable
+// (??_7CState@@6B@ @0x5ea21c) then tail-call the base cleanup (CGameModeBase::BaseCleanup
+// @0xfa150, via ILT 0x3f53). xref/RTTI-proven: this IS CState::~CState (State.h) - but
+// State.h models CState's dtor INLINE so CPlay/CDemo/... FOLD the base teardown into
+// their own dtors (matching retail's inlined base teardown). Emitting a real out-of-line
+// CState::~CState() would de-inline the base and regress every CState-derived dtor, so
+// the standalone ??1 at this RVA stays a distinct byte-necessary emitter (borrows CState's
+// retail vtable, reloc-masked). Self-contained (the base-cleanup callee is a view method).
+// ===========================================================================
+struct CStateSub8c470 {
+    void BaseCleanup(); // 0x0fa150 (reloc-masked, via ILT 0x3f53)
+    virtual ~CStateSub8c470();
+};
+SIZE_UNKNOWN(CStateSub8c470);
+RELOC_VTBL(CStateSub8c470, 0x001ea21c); // borrows ??_7CState@@6B@ (dtor-stamp verified)
+RVA(0x0008c470, 0xb)
+CStateSub8c470::~CStateSub8c470() {
+    BaseCleanup();
+}
 
 // ===========================================================================
 // 0x094c10 - CGameWnd base destructor: cl's implicit vptr-restore stamps
@@ -195,23 +204,20 @@ CGameWnd::~CGameWnd() {
     g_singleton653c68 = 0;
 }
 
-// ===========================================================================
-// 0x0bd7f0 - tail-forward a CString teardown (0x1b9b93) onto the global at
-// 0x649618. __thiscall.
-// ===========================================================================
-DATA(0x00249618)
-extern CString g_str649618;
-RVA(0x000bd7f0, 0xa)
-void StrFreebd7f0() {
-    g_str649618.CString::CString();
-}
+// (0x0bd7f0 StrFreebd7f0 re-homed to src/Net/LobbyDialogs.cpp as InitPlayerNameStr -
+// the CString g_str649618 dynamic initializer, next to that TU's g_playerName_649618
+// char* view of the same 4 bytes.)
 
 // ===========================================================================
-// 0x0d5d70 - init/restamp: seed members (+0x04 = -1, +0x08/+0x0c = 0) then stamp
-// the worker-dtor vtable (0x5e8cb4, reuse the pinned name). __thiscall.
+// 0x0d5d70 - a CImage-family base-subobject destructor (byte-necessary keep): mark the
+// object inactive (m_4 = -1), clear m_8/m_c, then re-stamp the CObject grand-base dtor
+// vftable (0x5e8cb4). xref: reached ONLY via ctor-unwind thunks (EH cleanup); the
+// +0x04/+0x08/+0x0c header it resets is the one CImage + its CDDrawSurfacePair sibling
+// share (CImage.h), but the exact owning family member is unrecovered (IDENTITY-TODO,
+// hence still a src/Stub placeholder). CObject re-stamp auto-folds via the base.
 // ===========================================================================
 struct CInitd5d70 : CObject {
-    i32 m_4; // +0x04
+    i32 m_4; // +0x04  status word (-1 inactive)
     i32 m_8; // +0x08
     i32 m_c; // +0x0c
     void Init();
@@ -225,29 +231,8 @@ void CInitd5d70::Init() {
     // base vptr auto-stamped via CObject (manual stamp dropped, % ok)
 }
 
-// ===========================================================================
-
-// ===========================================================================
-// 0x1182f0 - predicate: is +0x08 equal to 1? __thiscall.
-// ===========================================================================
-struct CPred1182f0 {
-    char pad0[8];
-    i32 m_8; // +0x08
-    i32 IsOne();
-};
-SIZE_UNKNOWN(CPred1182f0);
-RVA(0x001182f0, 0xc)
-i32 CPred1182f0::IsOne() {
-    return m_8 == 1;
-}
-
-// ===========================================================================
-// 0x118310 - predicate: is the arg non-null? __cdecl(void*).
-// ===========================================================================
-RVA(0x00118310, 0xc)
-i32 NotNull118310(void* p) {
-    return p != 0;
-}
+// (0x1182f0 CPred1182f0::IsOne -> src/Gruntz/GameInfoString.cpp as CGameInfo::Check1;
+// 0x118310 NotNull118310 -> src/Gruntz/GameInfoString.cpp as ValidateGameTime.)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 VTBL(CStatusBarItem, 0x001eabcc);

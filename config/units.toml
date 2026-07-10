@@ -2036,11 +2036,6 @@ source = "src/Stub/BoundaryMisc.cpp"
 flags = "base"
 
 [[unit]]
-unit = "boundarythunks"
-source = "src/Stub/BoundaryThunks.cpp"
-flags = "base"
-
-[[unit]]
 unit = "boundaryupper"
 source = "src/Stub/BoundaryUpper.cpp"
 flags = "base"
@@ -2059,11 +2054,6 @@ flags = "base"
 unit = "boundarylowerdtors"
 source = "src/Stub/BoundaryLowerDtors.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "boundarytail"
-source = "src/Stub/BoundaryTail.cpp"
-flags = "base"
 
 [[unit]]
 unit = "statusbarspriteacts"

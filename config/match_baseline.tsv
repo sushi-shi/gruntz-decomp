@@ -49,10 +49,8 @@ bootystateactivate	3	2
 bootywalkanim	2	0
 boundarylowerdtors	1	1
 boundarylowermethods	3	2
-boundarylowerthunks	7	6
+boundarylowerthunks	4	3
 boundarymisc	2	2
-boundarytail	2	0
-boundarythunks	10	10
 boundaryupper	2	2
 bracketvalue	1	1
 brickz	20	6
@@ -159,14 +157,14 @@ font	19	12
 fontconfig	10	5
 fonts	5	4
 fortressflag	10	5
-freenodepool	2	2
+freenodepool	7	7
 frontcandyani	8	7
 fxmodedesc	8	6
 gameapp	21	19
 gameassetnamespaces	1	0
 gamechecksum	1	0
 gameiconflasheffect	1	1
-gameinfostring	1	1
+gameinfostring	4	3
 gamekeyhandler	2	0
 gamelevel	100	39
 gamemode	52	25
@@ -178,7 +176,7 @@ gameobjectfactory	2	2
 gameoptionsdialog	2	0
 gamesave	1	1
 gamestaterecordload	1	0
-gametext	5	2
+gametext	10	7
 gamewnd	11	10
 glyphstr	4	2
 goowellmgr	1	0
@@ -325,7 +323,7 @@ netcmdsession	9	7
 netcmdslot	18	11
 netgamedlg	3	0
 netgamedlgwatch	1	0
-netlobbydialogs	17	17
+netlobbydialogs	18	18
 netmgr	99	59
 netmgrerror	2	2
 netmgrmenuselect	1	1
@@ -372,7 +370,7 @@ rezbufferobjectdtor	2	1
 rezcoll	2	2
 rezfile	6	6
 rezlist	4	2
-rezmgr	24	17
+rezmgr	25	17
 rezsync	4	3
 rezutil	2	2
 rockbreakeffectupdate	1	0
@@ -745,25 +743,10 @@ boundarylowermethods	?Init@Cbd450@@QAEXXZ	100.0000	100.0000	2	ac4c7a8ea3cc	0xbd4
 boundarylowermethods	?Update@C118260@@QAEHPAUCRect118@@H@Z	100.0000	100.0000	3	a260b7dcea4f	0x118260
 boundarylowerthunks	??1CGameApp@@UAE@XZ	100.0000	100.0000	2	013747a02009	0x80cf0
 boundarylowerthunks	??1CGameWnd@@UAE@XZ	100.0000	100.0000	2	c9ff587dcd4d	0x94c10
+boundarylowerthunks	??1CStateSub8c470@@UAE@XZ	100.0000	100.0000	1	2f6c6cd45bcf	0x8c470
 boundarylowerthunks	?Init@CInitd5d70@@QAEXXZ	83.3333	83.3333	3	9dabcbf83850	0xd5d70
-boundarylowerthunks	?IsOne@CPred1182f0@@QAEHXZ	100.0000	100.0000	2	b295027c14ba	0x1182f0
-boundarylowerthunks	?NotNull118310@@YAHPAX@Z	100.0000	100.0000	2	16e03909cb8b	0x118310
-boundarylowerthunks	?ResetCoordPool82fa0@@YAXXZ	100.0000	100.0000	2	c721a4bec991	0x82fa0
-boundarylowerthunks	?StrFreebd7f0@@YAXXZ	100.0000	100.0000	4	0c44bb657b9d	0xbd7f0
 boundarymisc	?EndWaitCursor18430@@YAXXZ	100.0000	100.0000	3	e0175d907306	0x18430
 boundarymisc	?Init23960@@YAXXZ	100.0000	100.0000	2	f0158a07a720	0x23960
-boundarytail	?BuildRecord118330@@YAHPAUOut118330@@@Z	92.6667	92.6667	3	ae62b88d098f	0x118330
-boundarytail	?WaitKeyEdge@@YAXHH@Z	97.0422	97.0422	4	e5333596230e	0x13df30
-boundarythunks	??1CStateSub8c470@@UAE@XZ	100.0000	100.0000	3	268f9637e5b0	0x8c470
-boundarythunks	?ButeMgrFlush82b20@@YAXXZ	100.0000	100.0000	3	a67e053f24c2	0x82b20
-boundarythunks	?ProfSinkTick82ba0@@YAXXZ	100.0000	100.0000	2	e8f1ae3073b2	0x82ba0
-boundarythunks	?ProfSinkTick82c20@@YAXXZ	100.0000	100.0000	2	2890d95e97fa	0x82c20
-boundarythunks	?ProfSinkTick82ca0@@YAXXZ	100.0000	100.0000	2	ad0703138716	0x82ca0
-boundarythunks	?ProfSinkTick82d20@@YAXXZ	100.0000	100.0000	2	75c9ae059632	0x82d20
-boundarythunks	?ProfSinkTick82da0@@YAXXZ	100.0000	100.0000	2	c36baab973e9	0x82da0
-boundarythunks	?ProfSinkTick82e20@@YAXXZ	100.0000	100.0000	2	6b2fe27da9d6	0x82e20
-boundarythunks	?ProfSinkTick82ea0@@YAXXZ	100.0000	100.0000	2	35e1c9d929a2	0x82ea0
-boundarythunks	?ProfSinkTick82f20@@YAXXZ	100.0000	100.0000	2	d4ccb1f47593	0x82f20
 boundaryupper	?Append@C16be60@@QAEPAU1@H@Z	100.0000	100.0000	2	aa2d1dbc89e0	0x16be60
 boundaryupper	?TrySet@B_13dee0@@QAEHH@Z	100.0000	100.0000	1	4f3ecf2d6bf2	0x13df00
 bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	100.0000	100.0000	2	621add35a117	0xf9160
@@ -1719,7 +1702,12 @@ fortressflag	?RegisterActs@CFortressFlag@@SAXXZ	92.9130	92.9130	2	0f0eac5a0481	0
 fortressflag	?Resolve@CTypeColl464@@QAEPAXH@Z	83.7778	83.7778	1	9515d99437c2	0x464e0
 fortressflag	?Serialize@CFortressFlag@@QAEHHHHH@Z	82.9138	82.9138	3	28c658ec5293	0x46410
 freenodepool	?ClearCoordPool@@YAXXZ	100.0000	100.0000	1	25d95e28ac12	0x82ff0
+freenodepool	?InitStr645514@@YAXXZ	100.0000	100.0000	1	4e805c0a0d19	0x82da0
+freenodepool	?InitStr645518@@YAXXZ	100.0000	100.0000	1	d4db0877660a	0x82e20
+freenodepool	?InitStr64551c@@YAXXZ	100.0000	100.0000	1	f7728b7060b1	0x82ea0
+freenodepool	?InitStr645520@@YAXXZ	100.0000	100.0000	1	d8fce3224603	0x82f20
 freenodepool	?Push@FreeNodePool@@QAEXPAX@Z	100.0000	100.0000	1	39bf36925a4b	0x311b0
+freenodepool	?ResetCoordPool@@YAXXZ	100.0000	100.0000	1	4c41e74c8561	0x82fa0
 frontcandyani	??1CFrontCandy@@UAE@XZ	100.0000	100.0000	1	6a402adb4285	0xfb00
 frontcandyani	??1CFrontCandyAni@@UAE@XZ	100.0000	100.0000	1	94da003b07c5	0xfe90
 frontcandyani	?AdvanceAnim@CFrontCandyAni@@QAEHXZ	100.0000	100.0000	2	375ca9728317	0xad510
@@ -1760,7 +1748,10 @@ gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEPAXI@Z	100.0000	100.0000	
 gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z	72.7569	72.7569	6	36218ee3669a	0xf9ea0
 gamechecksum	?ComputeSignature@CGameSyncSig@@QAEHXZ	57.6960	57.6960	3	866540f0e362	0xc0590
 gameiconflasheffect	?GameIconFlashEffect@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	0bb1b808ef3c	0xae360
+gameinfostring	?BuildGameDate@@YAHPAUCGameInfoTime@@@Z	92.6667	92.6667	1	4f350faa4de0	0x118330
+gameinfostring	?Check1@CGameInfo@@QAEHXZ	100.0000	100.0000	1	b83b42b69830	0x1182f0
 gameinfostring	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	2	ed47a2c5b35a	0x1183b0
+gameinfostring	?ValidateGameTime@@YAHPAUCGameInfoTime@@@Z	100.0000	100.0000	1	4d1fb65b7c41	0x118310
 gamekeyhandler	?Blit@CObj23d90@@QAEXHHHHH@Z	50.4211	50.4211	1	00b5755e343d	0x23d90
 gamekeyhandler	?DispatchKey@CGamePlayInput@@QAEHHH@Z	78.3903	78.3903	5	c428e8b29f77	0xcbcc0
 gamelevel	??0CGameLevel@@QAE@HHH@Z	61.7736	61.7736	9	96f914167f60	0x15ccd0
@@ -1940,6 +1931,11 @@ gamesave	?SaveGame@@YAHPAUCGameSaveHost@@PAD@Z	100.0000	100.0000	3	f99d28195d50	
 gamestaterecordload	?Load@CGameStateRecord@@QAEHPAUCSerialArchive@@@Z	90.9083	90.9083	5	235d68b3da37	0x555e0
 gametext	??0CContainerErr@@QAE@PBD@Z	85.2632	85.2632	5	cebb8940e752	0x16d9c0
 gametext	?GetWarlordName@@YG?AVCString@@H@Z	89.2553	89.2553	5	6d699a7c4ad7	0x1ec20
+gametext	?InitResButeMgr82b20@@YAXXZ	100.0000	100.0000	1	41ecdc3f4a37	0x82b20
+gametext	?InitStr645524@@YAXXZ	100.0000	100.0000	1	e70b2989a923	0x82ba0
+gametext	?InitStr645528@@YAXXZ	100.0000	100.0000	1	f0f1bed8658a	0x82c20
+gametext	?InitStr64552c@@YAXXZ	100.0000	100.0000	1	ab3fb730eac5	0x82ca0
+gametext	?InitStr645530@@YAXXZ	100.0000	100.0000	1	1157c0aa231b	0x82d20
 gametext	?Register82aa0@@YAXXZ	73.7500	73.7500	1	09b1d93120b5	0x82aa0
 gametext	_$E1	100.0000	100.0000	1	cpp:a7f73c40eefc	0x82990
 gametext	_$E4	100.0000	100.0000	1	cpp:a7f73c40eefc	0x18740
@@ -2934,6 +2930,7 @@ netgamedlgwatch	?Watchdog@CMultiStartDlg@@QAEXXZ	93.9344	93.9344	2	f00b9a088a4f	
 netlobbydialogs	?AppendEditLine@NetLobby@@YGXPAUHWND__@@PAD@Z	100.0000	100.0000	2	8f398035d70f	0xbb3e0
 netlobbydialogs	?DropInDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	53fe1f0ebad5	0xbe550
 netlobbydialogs	?HostWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	5e111c26b4bd	0xbd850
+netlobbydialogs	?InitPlayerNameStr@NetLobby@@YAXXZ	100.0000	100.0000	1	9ae43a8858a1	0xbd7f0
 netlobbydialogs	?Init_2ed7@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	43909c964dcb	0xbe820
 netlobbydialogs	?JoinWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	93e994f4991f	0xbda70
 netlobbydialogs	?LobbyDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	89596c285beb	0xbdc00
@@ -3298,6 +3295,7 @@ rezmgr	?Scan@CRezItm@@QAEHXZ	100.0000	100.0000	1	b7eabf9960c5	0x13c8a0
 rezmgr	?Set@B_13dee0@@QAEXH@Z	100.0000	100.0000	1	68ff44590fd6	0x13dee0
 rezmgr	?SpinWaitUntil@RezMgr@@QAEXH@Z	83.9286	83.9286	1	f2a78ab930ab	0x13dec0
 rezmgr	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	4	73a249346bc9	0x13ddc0
+rezmgr	?WaitKeyEdge@@YAXHH@Z	97.0422	97.0422	1	e5333596230e	0x13df30
 rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	5	abf7957a6525	0x13c6c0
 rezsync	??1CGameMgr@@UAE@XZ	100.0000	100.0000	1	f087e28e2647	0x85540
 rezsync	?GetName@Obj85500@@QAE?AVCString@@XZ	100.0000	100.0000	1	a603b2ac0b4f	0x85500
