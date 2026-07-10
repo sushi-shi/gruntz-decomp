@@ -703,23 +703,9 @@ void* CSymParser::PopParseSlot() {
     return rec;
 }
 
-// CObjList::Remove (0x1852e0): unlink `node` from the intrusive {head@+4,tail@+8}
-// chain (m_list at CSymParser+0x10). The node's links are m_next@+4 / m_prev@+8; a
-// null prev/next means `node` was the head/tail. __thiscall on the list head,
-// callee-cleanup of the single arg.
-RVA(0x001852e0, 0x35)
-void CObjList::Remove(CObjNode* node) {
-    if (node->m_prev) {
-        node->m_prev->m_next = node->m_next;
-    } else {
-        m_head = node->m_next;
-    }
-    if (node->m_next) {
-        node->m_next->m_prev = node->m_prev;
-    } else {
-        m_tail = node->m_prev;
-    }
-}
+// CObjList::Remove (0x1852e0) moved to src/Rez/RezList.cpp (wave1-E: its retail
+// emission sits at the rezlist obj's tail in the 0x1832d0 engine-util pocket, far
+// from this TU's 0x13axxx core; callers here reference it externally).
 
 // ---------------------------------------------------------------------------
 // CSymParser::CSymParser() (0x13aa10) - the DEFAULT ctor (Ghidra-mislabeled

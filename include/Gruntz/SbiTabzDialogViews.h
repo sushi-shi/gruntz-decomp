@@ -76,10 +76,15 @@ public:
 }; // size 0x34
 SIZE(CSBI_Image, 0x34);
 
-// tag 2 menu item: m_8=2, clear m_34/m_30/m_38.  vtable 0x5eab4c
-class CSBI_MenuItem : public CSbDialogItem {
+// tag 2 menu item: m_8=2, clear m_34/m_30/m_38.  vtable 0x5eab4c.
+// == retail CSBI_MenuItem; renamed apart (Dlg suffix) because the merged
+// SBI_RectOnly TU (which hosts BuildTabzDialog since the wave1-E one-TU merge)
+// already defines the CSbiTab-based CSBI_MenuItem view (SBI_RectOnly.h) - a
+// redefinition-merge TODO; until unified the emitted ??_7CSBI_MenuItemDlg vtable
+// name mismatches the target's ??_7CSBI_MenuItem (reloc-masked).
+class CSBI_MenuItemDlg : public CSbDialogItem {
 public:
-    CSBI_MenuItem() {
+    CSBI_MenuItemDlg() {
         m_8 = 2;
         m_34 = 0;
         m_30 = 0;
@@ -88,7 +93,7 @@ public:
     i32 m_34; // +0x34
     i32 m_38; // +0x38
 }; // size 0x3c
-SIZE(CSBI_MenuItem, 0x3c);
+SIZE(CSBI_MenuItemDlg, 0x3c);
 
 // tag 4 image-set item: clear m_30, m_8=4, clear m_34.  vtable 0x5eac4c
 class CSBI_ImageSet : public CSbDialogItem {

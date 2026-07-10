@@ -174,16 +174,6 @@ source = "src/Gruntz/SBI_RectOnly.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "sbi_sidetab"
-source = "src/Gruntz/SBI_SideTab.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "sbi_sidetab_build"
-source = "src/Gruntz/SBI_SideTabBuild.cpp"
-flags = "base"
-
-[[unit]]
 unit = "sbi_image"
 source = "src/Gruntz/SBI_Image.cpp"
 flags = "eh"
@@ -216,11 +206,6 @@ source = "src/Gruntz/SBI_ImageSet.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "warpstonefly"
-source = "src/Gruntz/WarpStoneFly.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "sbi_warlordhead"
 source = "src/Gruntz/SBI_WarlordHead.cpp"
 flags = "eh"
@@ -233,11 +218,6 @@ flags = "eh"
 [[unit]]
 unit = "sbi_statztabgruntbar"
 source = "src/Gruntz/SBI_StatzTabGruntBar.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "sbi_gruntmachine"
-source = "src/Gruntz/SBI_GruntMachine.cpp"
 flags = "eh"
 
 [[unit]]
@@ -290,6 +270,7 @@ source = "src/Gruntz/MenuPage.cpp"
 flags = "eh"
 
 [[unit]]
+# ONE original TU (dossier 0x1832d0: MenuItem.cpp [0x185460..0x185a0e]): absorbed menuitem2.
 unit = "menuitem"
 source = "src/Gruntz/MenuItem.cpp"
 flags = "eh"
@@ -465,9 +446,11 @@ source = "src/Gruntz/GruntSpawnConfig.cpp"
 flags = "eh"
 
 [[unit]]
+# ONE original /GX TU (dossier 0x0e8a70-0x0ea3ea): absorbed sbi_gruntmachine +
+# sbi_sidetab + the SetDirection seam pair (ex statusbarmgr).
 unit = "statusbartabbuilders"
 source = "src/Gruntz/StatusBarTabBuilders.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "statusbargamemenu"
@@ -627,13 +610,6 @@ unit = "image"
 source = "src/Image/Image.cpp"
 flags = "eh"
 
-# CRezImage/CImageExtLoader REZ-image loaders (RVA band 0x1757c0-0x1772e0), split out
-# of the former `image` god-TU so each class de-fragments into its own contiguous TU.
-[[unit]]
-unit = "rezimage"
-source = "src/Image/RezImage.cpp"
-flags = "eh"
-
 [[unit]]
 unit = "cimage"
 source = "src/Image/CImage.cpp"
@@ -642,11 +618,6 @@ flags = "eh"
 [[unit]]
 unit = "imagespriteblit"
 source = "src/Image/ImageSpriteBlit.cpp"
-flags = "base"
-
-[[unit]]
-unit = "scanlinesurface"
-source = "src/Image/ScanlineSurface.cpp"
 flags = "base"
 
 [[unit]]
@@ -1635,8 +1606,15 @@ source = "src/DDrawMgr/DDrawSurfacePair.cpp"
 flags = "eh"
 
 [[unit]]
+# TWO original files (__FILE__-anchored; wave1-E split at 0x134cb0): DinMgr2.cpp
+# (absorbed fixedptrarray32) + InputDevice.cpp below.
 unit = "directinputmgr2"
-source = "src/DinMgr2/DirectInputMgr2.cpp"
+source = "src/DinMgr2/DinMgr2.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "inputdevice"
+source = "src/DinMgr2/InputDevice.cpp"
 flags = "eh"
 
 # The two original Dsndmgr TUs (docs/exe-map/interval-dossiers.md, split @0x137330):
@@ -1880,16 +1858,6 @@ source = "src/Gruntz/ZDArrayDerived.cpp"
 flags = "base"
 
 [[unit]]
-unit = "imagerectfill"
-source = "src/Image/ImageRectFill.cpp"
-flags = "base"
-
-[[unit]]
-unit = "imagevflip"
-source = "src/Image/ImageVFlip.cpp"
-flags = "base"
-
-[[unit]]
 unit = "typecollruntime"
 source = "src/Gruntz/TypeCollRuntime.cpp"
 flags = "base"
@@ -1978,11 +1946,6 @@ flags = "eh"
 [[unit]]
 unit = "engstrrendertext"
 source = "src/Wap32/EngStrRenderText.cpp"
-flags = "base"
-
-[[unit]]
-unit = "fixedptrarray32"
-source = "src/Gruntz/FixedPtrArray32.cpp"
 flags = "base"
 
 [[unit]]
@@ -2076,11 +2039,6 @@ source = "src/Rez/RezFile.cpp"
 flags = "base"
 
 [[unit]]
-unit = "menuitem2"
-source = "src/Gruntz/MenuItem2.cpp"
-flags = "base"
-
-[[unit]]
 unit = "rezlist"
 source = "src/Rez/RezList.cpp"
 flags = "base"
@@ -2111,11 +2069,6 @@ source = "src/Crypto/FecCrypt.cpp"
 # /GX: AddFile/ExtractArchive have destructible CFile/CString locals (retail's SEH
 # frame). Neutral for the frameless leaf methods (no destructible locals).
 flags = "eh"
-
-[[unit]]
-unit = "rangeset"
-source = "src/Gruntz/RangeSet.cpp"
-flags = "base"
 
 [[unit]]
 unit = "ddpagemgr"
@@ -2151,9 +2104,11 @@ source = "src/Net/LobbyDialogs.cpp"
 flags = "eh"
 
 [[unit]]
+# ONE original TU (dossier 0x174e90-0x177476): absorbed rezimage/scanlinesurface/
+# imagevflip/scanlinesurfacesave/imagerectfill. /GX (CFileIO/CFile stack dtors).
 unit = "imagepool"
 source = "src/Image/ImagePool.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "wwdobjmgrfactories"
@@ -2203,11 +2158,6 @@ unit = "soundfxemitter"
 source = "src/Gruntz/SoundFxEmitter.cpp"
 flags = "base"
 [[unit]]
-unit = "mgrsettings"
-source = "src/Gruntz/MgrSettings.cpp"
-flags = "base"
-
-[[unit]]
 unit = "colorhsv"
 source = "src/DDrawMgr/ColorHsv.cpp"
 flags = "base"
@@ -2251,11 +2201,6 @@ flags = "eh"
 unit = "ddrawpolyfill"
 source = "src/DDrawMgr/DDrawPolyFill.cpp"
 flags = "framed"
-[[unit]]
-unit = "scanlinesurfacesave"
-source = "src/Image/ScanlineSurfaceSave.cpp"
-flags = "eh"
-
 [[unit]]
 unit = "customwwdpath"
 source = "src/Wwd/CustomWwdPath.cpp"
@@ -2303,11 +2248,6 @@ flags = "base"
 unit = "heapdiag"
 source = "src/Gruntz/HeapDiag.cpp"
 flags = "base"
-
-[[unit]]
-unit = "levelsync"
-source = "src/Gruntz/LevelSync.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "gruntupdatestep"
@@ -2530,6 +2470,7 @@ source = "src/Gruntz/CreditzAssets.cpp"
 flags = "base"
 
 [[unit]]
+# ONE original TU (dossier 0x1832d0 pocket, oracle-proven): absorbed rangeset.
 unit = "debugprintf"
 source = "src/Gruntz/DebugPrintf.cpp"
 flags = "base"
@@ -2605,11 +2546,6 @@ flags = "eh"
 unit = "cmdscrollapply"
 source = "src/Gruntz/CmdScrollApply.cpp"
 flags = "base"
-
-[[unit]]
-unit = "sbi_tabzdialog_eh"
-source = "src/Gruntz/SBI_TabzDialogEh.cpp"
-flags = "eh"
 
 [[unit]]
 # matcher-4: the two dialog flash-rect helpers (EH + severus/imgHolder scratch).

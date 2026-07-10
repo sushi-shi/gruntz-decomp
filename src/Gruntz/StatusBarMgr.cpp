@@ -54,49 +54,10 @@ extern CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 DATA(0x00244c54)
 extern i32 g_curPlayer; // DAT_00644c54
 
-// ===========================================================================
-// CSbConfigItem::SetDirection  (0x0ea0f0)
-// ===========================================================================
-// Two boolean selectors (a,b) pick one of four direction tuples, forwarded to
-// the +0x38 virtual. Reached via thunk 0x1573 from LoadTabSprites + FUN_00504f90.
-RVA(0x000ea0f0, 0x5c)
-void CSbConfigItem::SetDirection(i32 a, i32 b) {
-    if (a == 0) {
-        if (b == 0) {
-            ApplyDir(4, -1, 0, 0, -1);
-        } else {
-            ApplyDir(-1, -1, 1, 0, -1);
-        }
-    } else {
-        if (b == 0) {
-            ApplyDir(1, -1, 0, 0, -1);
-        } else {
-            ApplyDir(-1, -1, -1, 0, -1);
-        }
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 0x0ea170 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). The mirror
-// sibling of SetDirection: the same four ApplyDir (+0x38 virtual, slot 14) tuples,
-// re-keyed on (a1,a2). RTTI-confirmed CSbConfigItem (slots 0-13 + ApplyDir @+0x38
-// match); the Views.h Cea170 placeholder dissolved onto the canonical class.
-RVA(0x000ea170, 0x5c)
-void CSbConfigItem::SetDirectionAlt(i32 a1, i32 a2) {
-    if (a1 == 0) {
-        if (a2 == 0) {
-            ApplyDir(1, -1, 0, 0, -1);
-        } else {
-            ApplyDir(-1, -1, -1, 0, -1);
-        }
-    } else {
-        if (a2 == 0) {
-            ApplyDir(4, -1, 0, 0, -1);
-        } else {
-            ApplyDir(-1, -1, 1, 0, -1);
-        }
-    }
-}
+// CSbConfigItem::SetDirection (0x0ea0f0) / SetDirectionAlt (0x0ea170) re-homed to
+// src/Gruntz/StatusBarTabBuilders.cpp (interval dossier 0x0e8a70: the config-item
+// setters sit inside the tab-builders TU, between the side-tab block and
+// BuildMultiplayerTabStatusBar).
 
 // ===========================================================================
 // CStatusBarMgr::LoadTabSprites  @0x102250

@@ -1,3 +1,4 @@
+#include <Mfc.h> // afx-first umbrella (wave1-E one-TU merge: CByteArray/CObList consumers below)
 #include <Gruntz/SBI_RectOnly.h>  // canonical CSBI_RectOnly + engine-referent views
 #include <Gruntz/SpriteFactory.h> // real CSpriteFactory::CreateSprite (0x1597b0); 0x104dd0
 #include <Gruntz/WarpStoneFly.h>
@@ -17,6 +18,20 @@
 #include <Gruntz/TriggerMgr.h>
 #include <Utils/RegistryHelper.h>
 #include <Globals.h>
+// wave1-E one-TU merge (interval dossier 0x104d60-0x10bc14): this TU absorbed
+// StatusBarUpdaters' five in-interval updaters, WarpStoneFly.cpp, SBI_SideTabBuild.cpp
+// (CStatzTabBuilder::Build), LevelSync.cpp (CLevelSync::Sync), MgrSettings.cpp
+// (CMgrSettings::Serialize) and SBI_TabzDialogEh.cpp (CTabzBuilder::BuildTabzDialog) -
+// the updater family / warpstone fly / serialize cluster are one original /GX obj
+// (single sbi_rectonly init-frag region; ??0CWarpStoneFly abuts UpdateWarpStoneStatusBar).
+#include <Gruntz/StatusBarUpdatersViews.h> // EngineLabelBacklog host + updater referent views
+#include <Gruntz/Sprite.h>                 // CSprite (frame-data value) + CSpriteHashTable
+#include <Gruntz/SbiSideTabBuildViews.h>   // CSBI_SideTab (ctor view) + CStatzTabBuilder
+#include <Gruntz/MgrSettings.h>            // CMgrSettings + the g_gameReg/g_serialCount externs
+#include <Gruntz/SbiTabzDialogViews.h>     // CSbDialogItem leaves + CTabzBuilder (TABZ_DIALOG)
+#include <Rez/RezMgr.h>                    // RezFree (the per-frame warpstone overlay free)
+#include <math.h>   // sqrt - intrinsified to inline fsqrt under VC5 /O2 (warpstone fly)
+#include <string.h> // strlen / memset (inlined repne scas / rep stos; CMgrSettings::Serialize)
 // SBI_RectOnly.cpp - Gruntz CSBI_RectOnly (C:\Proj\Gruntz).
 // The constructor is matched byte-exact.
 //
@@ -1114,6 +1129,1195 @@ i32 StatusBarSpriteHolder::Create() {
     return m_sprite != 0;
 }
 SIZE_UNKNOWN(StatusBarSpriteHolder);
+
+// ===========================================================================
+// wave1-E one-TU merge block [0x104e60 .. 0x10b320] - see the include-block note.
+// Referent decls carried over from the absorbed TUs:
+// ===========================================================================
+
+// The running game clock (the updaters' 64-bit elapsed clamps; canonical in CPlay.h).
+extern "C" u32 g_645588;
+
+// The flying-warpstone overlay's registry views (ex WarpStoneFly.cpp): m_cmdGrid+0x260
+// is a CByteArray (the registry tab-state array; SetAtGrow @0x1b5485 == the real MFC
+// CByteArray::SetAtGrow, cast at the call); m_world->m_drawable->m_context is the
+// draw surface context.
+struct CWsfTabArray {
+    char m_pad0[0x8];
+    i32 m_index; // +0x08  array index
+};
+struct CWsfDrawable {
+    char m_pad0[0x14];
+    i32 m_context; // +0x14  surface context
+};
+struct CWsfGameMgr {
+    char m_pad0[0x4];
+    CWsfDrawable* m_drawable; // +0x04  active drawable
+};
+SIZE_UNKNOWN(CWsfTabArray);
+SIZE_UNKNOWN(CWsfDrawable);
+SIZE_UNKNOWN(CWsfGameMgr);
+
+// The lazily-allocated CLevelSync +0x54c child + the vtable-slot-1 sub-object shape
+// (ex LevelSync.cpp).
+// An owned serializable sub-object: vtable slot 1 (+0x4) is its Serialize.
+struct SyncSub {
+    virtual void v0() = 0;
+    virtual i32 Serialize(CSerialArchive* s, i32 op, i32 p4, i32 p5) = 0; // slot 1 / +0x4
+};
+
+// The lazily-allocated +0x54c child (operator new(0x40) + ctor 0x401271).
+class CLevelSync; // owner (defined below); m_3c back-links to it
+struct CLevelSyncChild {
+    char pad[0x3c];
+    CLevelSync* m_3c; // +0x3c back-link to the owner (= `this` in Sync)
+    CLevelSyncChild();
+};
+
+class CLevelSync {
+public:
+    i32 Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5);
+
+    // Reloc-masked engine helpers (this-methods unless noted):
+    i32 PreWriteValidate(CSerialArchive* s);                  // 0x4016b8
+    i32 PreReadValidate(CSerialArchive* s);                   // 0x402b53
+    void SubResetA();                                         // 0x402b8a
+    void SubResetB();                                         // 0x402d5b
+    i32 ChildSync(CSerialArchive* s, i32 op, i32 p4, i32 p5); // 0x402306 (child __thiscall)
+    void PostBlockFixup();                                    // 0x403a08
+    void Finalize();                                          // 0x40125d
+
+    i32 m[0x160];
+};
+SIZE_UNKNOWN(CLevelSync);
+SIZE_UNKNOWN(CLevelSyncChild);
+SIZE_UNKNOWN(SyncSub);
+
+// The ?g_pCopyRect@@3P6GXPAUtagRECT@@PBU1@@ZA global fn-pointer (VA 0x6c44bc): a
+// __stdcall RECT copier called `call ds:[g_pCopyRect]` (ex SBI_TabzDialogEh.cpp).
+DATA(0x002c44bc)
+extern void(WINAPI* g_pCopyRect)(RECT* dst, const RECT* src);
+
+// ===========================================================================
+// EngineLabelBacklog::LoadStatzTabToggleSprite @0x104e60
+// ===========================================================================
+//
+// Toggles the per-statz-tab indicator `idx` to `value`: a no-op if it already
+// holds `value`; otherwise, gated on the tab's group-record being live, it stamps
+// the toggle item (this[idx]+0x150), kicks the tab sub-helper when the view mode
+// is 3, runs the STATZTABTOGGLE status-bar advance, and latches the new value.
+// __thiscall ret 8. Always returns 1.
+
+// RegUnitTable moved to <Gruntz/StatusBarUpdatersViews.h>.
+// @early-stop
+// ~80.8%: logic + offsets + the advance-tail are byte-faithful. Residual is a
+// constant/register-pinning coin-flip: retail keeps a 4th callee-saved reg (ebp) live
+// and PINS the constant 1 in ecx, reusing it for `item->m_active=1`, the `==1` gate
+// and the Toggle(...,1) arg (`mov ecx,1; ... push ecx`); this toolchain uses fewer
+// registers and emits the 1 as inline immediates instead. Already spelled with a
+// shared `i32 one=1` local, which MSVC5 declines to keep in a register - a regalloc
+// pressure coin-flip, not source-steerable; deferred to the final sweep.
+RVA(0x00104e60, 0xed)
+i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
+    i32* m = (i32*)this;
+    if (m[idx + 0x114 / 4] == value) {
+        return 1;
+    }
+
+    i32 slot = idx + 15 * g_644c54;
+    // m_68 is the registry's poly per-mode slot (void* in the shared view); in the
+    // in-game status-bar context it is always the unit-record table. One authentic
+    // downcast to the concrete view, then cast-free field access.
+    RegUnitTable* units = (RegUnitTable*)g_gameReg->m_cmdGrid;
+    if (units->m_slots[slot] == 0) {
+        return 0;
+    }
+
+    CStatzTabItem* item = (CStatzTabItem*)m[idx + 0x150 / 4];
+    i32 one = 1;
+    if (item) {
+        item->m_toggleValue = value;
+        item->m_active = one;
+        if (m[0x10c / 4] == one) {
+            ((CStatzTabSub*)m[idx + 0x18c / 4])->Toggle(m[0], one);
+            CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
+            if (h->m_emitGate == 0) {
+                LeafCue* spr = 0;
+                h->m_10.Lookup("GAME_STATZTABTOGGLE", &spr);
+                if (spr) {
+                    if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                        spr->m_14 = g_6bf3c0;
+                        spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                    }
+                }
+            }
+        }
+    }
+    m[idx + 0x114 / 4] = value;
+    return 1;
+}
+
+// @early-stop
+// this/newobj callee-saved register-pinning wall (docs/patterns/
+// zero-register-pinning.md) + the vptr-position wall: the loop body - geometry-base
+// branch, the CSBI_SideTab item field-init + auto-stamped 0x5eae3c vptr, the 13-arg
+// BuildStatzTabStatusBar call, the AddTail + slot store and the failure-path
+// scalar-delete - is logic byte-faithful. Residuals: a regalloc coin-flip (retail pins
+// this->edi and newobj->esi, reusing the zeroed newobj as a zero-constant; cl pins
+// this->esi / newobj->edi) and the vptr stamped FIRST by the real ctor vs MIDDLE in
+// retail's inline init. No source lever flips either. Deferred to the final sweep.
+RVA(0x00105070, 0x10e)
+i32 CStatzTabBuilder::Build() {
+    i32 i = 0;
+    for (i32 strid = 0xd9; strid < 0x1e7; strid += 0x12) {
+        i32 geomBase;
+        i32 geomVal;
+        if (m_0 == 0) {
+            geomBase = m_10 - 0x1c;
+            geomVal = m_10;
+        } else {
+            geomBase = m_18;
+            geomVal = m_18 + 0x1c;
+        }
+        CSBI_SideTab* newobj = new CSBI_SideTab;
+        i32 ok = newobj->BuildStatzTabStatusBar(
+            (CSBI_SideTab*)this,
+            g_mgrSettings->m_world,
+            i + 0xb,
+            0,
+            geomBase,
+            strid - 0x11,
+            geomVal,
+            strid,
+            "GAME_STATUSBAR_TABZ_STATZTAB_TAB",
+            g_644c54,
+            i,
+            m_114[i],
+            m_0 == 0
+        );
+        if (ok == 0) {
+            delete newobj;
+            return 0;
+        }
+        m_2c.AddTail((CObject*)newobj);
+        m_150[i] = newobj;
+        i++;
+    }
+    return 1;
+}
+
+// ===========================================================================
+// EngineLabelBacklog::UpdateGruntOvenStatusBar @0x105310
+// ===========================================================================
+//
+// Walks the 5 grunt-oven cooking tabs: while a tab is COOKING (m_state==1) it derives
+// the cooking-progress frame index from the elapsed clock / GruntOvenDelay, caps
+// at 0x1a (completion - flips m_state to 2 and runs the COOKINGCOMPLETE advance), and
+// pushes the new frame into the widget when it changes (the +0x30 virtual).
+// @early-stop
+// ~79.9%: logic + every store/offset/advance-tail is byte-faithful. Residual is the
+// 64-bit signed-clamp `elapsed = (d>=0)?(i32)d:0` codegen: retail emits the un-folded
+// `cmp hi,ebx(0); jg; jl; cmp lo,ebx; jae` compare then a branch-select `xor esi,esi;
+// jmp / mov esi,eax(lo)` keeping the raw lo in a temp, whereas this toolchain FOLDS it
+// to the sbb sign-flag (`js`) and fuses lo directly into the elapsed reg (esi) - i.e.
+// cl here is MORE optimized than retail's exact MSVC5 build. A toolchain-microversion
+// codegen wall, not source-steerable; deferred to the final sweep.
+RVA(0x00105310, 0x11a)
+void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
+    CTabWidget** slot = m_slots;
+    CTabRec* tab = m_tabs;
+    i32 n = 5;
+    do {
+        if (tab->m_state == 1) {
+            i64 d = (i64)(u32)g_645588 - *(i64*)&tab->m_startLo;
+            i32 elapsed = (d >= 0) ? (i32)d : 0;
+            u32 delay = g_buteMgr.GetDwordDef("StatusBar", "GruntOvenDelay", 0xc8);
+            i32 frame = (i32)((u32)elapsed / delay) + 1;
+            if (frame >= 0x1a) {
+                tab->m_state = 2;
+                frame = 0x1a;
+                CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
+                if (h->m_emitGate == 0) {
+                    LeafCue* spr = 0;
+                    h->m_10.Lookup("GAME_COOKINGCOMPLETE", &spr);
+                    if (spr) {
+                        if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                            spr->m_14 = g_6bf3c0;
+                            spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                        }
+                    }
+                }
+            }
+            if (frame != tab->m_frame) {
+                tab->m_frame = frame;
+                CTabWidget* w = *slot;
+                if (w) {
+                    w->SetFrame(frame);
+                }
+            }
+        }
+        ++slot;
+        ++tab;
+    } while (--n != 0);
+}
+
+// ===========================================================================
+// EngineLabelBacklog::UpdateChipGrinderStatusBar @0x1076a0
+// ===========================================================================
+//
+// Drives the rez chip-grinder conveyor while it is RUNNING (m_4e8 != 0): it pulls
+// the FallingItem delay/speed (then the ShredderDelay/Speed once the conveyor
+// reaches the shredder at m_510 >= 0x1bf, where it also runs the one-shot
+// REZGRINDING status-bar advance and flips to phase 2), advances the two conveyor
+// extents (m_508/m_510) by the speed each time the retrigger clock elapses, and
+// re-stamps the grinder rect-target widget (m_500) from the scroll origin. When
+// the conveyor runs out (m_508 >= 0x1c7) it stops (m_4e8 = 0). A final
+// ChipGrinderFinishStep runs while the widget is live and a step happened.
+// @early-stop
+// ~80.7%: instruction count matches retail exactly (164==164); logic + all offsets/
+// stores/advance-tail are byte-faithful. Residual is a pervasive zero-register-pinning
+// role swap (docs/patterns/zero-register-pinning.md): retail pins 0 in ebx and the
+// phase-constant 3 in edi, this toolchain pins 0 in edi + spills a second zero into
+// ebp - a 1-instr phase shift cascading through every `mov [field],0` store. A
+// regalloc coin-flip, not source-steerable; deferred to the final sweep.
+RVA(0x001076a0, 0x1f3)
+void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
+    i32* m = (i32*)this;
+    if (m[0x4e8 / 4] == 0) {
+        return;
+    }
+
+    i32 stepped = 0;
+    if (m[0x4e8 / 4] == 1 || m[0x4e8 / 4] == 2) {
+        u32 delay = g_buteMgr.GetDwordDef("StatusBar", "FallingItemDelay", 0x32);
+        i32 speed = g_buteMgr.GetIntDef("StatusBar", "FallingItemSpeed", 4);
+
+        if (m[0x508 / 4] >= 0x1c7) {
+            m[0x4e8 / 4] = 0;
+            m[0x4ec / 4] = 0;
+        } else if (m[0x510 / 4] >= 0x1bf) {
+            if (m[0x4e8 / 4] != 2) {
+                if (m[0x10c / 4] == 3 && m[0] != 2) {
+                    CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
+                    if (h->m_emitGate == 0) {
+                        LeafCue* spr = 0;
+                        h->m_10.Lookup("GAME_REZGRINDING", &spr);
+                        if (spr) {
+                            if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                                spr->m_14 = g_6bf3c0;
+                                spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                            }
+                        }
+                    }
+                }
+                m[0x4e8 / 4] = 2;
+            }
+            delay = g_buteMgr.GetDwordDef("StatusBar", "FallingItemShredderDelay", 0x64);
+            speed = g_buteMgr.GetIntDef("StatusBar", "FallingItemShredderSpeed", 2);
+        }
+
+        i64 d = (i64)(u32)g_645588 - *(i64*)&m[0x4f0 / 4];
+        if (d >= *(i64*)&m[0x4f8 / 4]) {
+            i32 newLo = m[0x508 / 4] + speed;
+            m[0x508 / 4] = newLo;
+            i32 newHi = m[0x510 / 4] + speed;
+            m[0x510 / 4] = newHi;
+            CGrinderRect* w = (CGrinderRect*)m[0x500 / 4];
+            if (w) {
+                i32 sx = m[0x10 / 4];
+                i32 sy = m[0x14 / 4];
+                i32* p = &w->m_left;
+                p[0] = m[0x504 / 4] + sx;
+                p[1] = sy + newLo;
+                p[2] = m[0x50c / 4] + sx;
+                p[3] = sy + newHi;
+            }
+            m[0x4f8 / 4] = delay;
+            m[0x4fc / 4] = 0;
+            m[0x4f0 / 4] = g_645588;
+            m[0x4f4 / 4] = 0;
+            stepped = 1;
+        }
+    }
+
+    if (m[0x500 / 4] != 0 && stepped) {
+        ChipGrinderFinishStep();
+    }
+}
+
+// @early-stop
+// /GX EH serialize: ~50 vtable-slot sub-object Serialize calls + an inline field
+// block + the lazy operator-new/ctor child path. Logic reconstructed faithfully
+// (direction split, the per-array sub walks, the child new+back-link, the finalize),
+// but the EH state numbering of the new/ctor unwind region + the deep spill schedule
+// across the ~80 member reloads do not reproduce instruction-for-instruction.
+// Final-sweep candidate (eh-state-numbering + serialize-reload regalloc walls).
+RVA(0x001084d0, 0x96c)
+i32 CLevelSync::Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5) {
+    if (s == 0) {
+        return 0;
+    }
+    if (op == 4) {
+        if (PreWriteValidate(s) == 0) {
+            return 0;
+        }
+    } else if (op == 7) {
+        if (PreReadValidate(s) == 0) {
+            return 0;
+        }
+    } else if (op == 8) {
+        ((CPlay*)g_gameReg->m_curState)->ResetViewport();
+        if (m[0] == 0) {
+            SubResetA();
+            SubResetB();
+        }
+    }
+
+    if (m[0x153] == 0) {
+        i32 tmp = 0;
+        if (op == 4) {
+            s->Write(&tmp, 4);
+        } else if (op == 7) {
+            s->Read(&tmp, 4);
+            if (tmp != 0) {
+                CLevelSyncChild* c = new CLevelSyncChild();
+                m[0x153] = (i32)c;
+                c->m_3c = this;
+            }
+        }
+    } else {
+        i32 tmp = 1;
+        if (op == 4) {
+            s->Write(&tmp, 4);
+        }
+    }
+
+    if (m[0x153] != 0) {
+        if (((CLevelSync*)m[0x153])->ChildSync(s, op, p4, p5) == 0) {
+            return 0;
+        }
+    }
+
+    if (op == 4) {
+        s->Write(&m[0x134], 8);
+        s->Write(&m[0x136], 8);
+    } else if (op == 7) {
+        s->Read(&m[0x134], 8);
+        s->Read(&m[0x136], 8);
+    }
+    if (op == 4) {
+        s->Write(&m[0x13c], 8);
+        s->Write(&m[0x13e], 8);
+    } else if (op == 7) {
+        s->Read(&m[0x13c], 8);
+        s->Read(&m[0x13e], 8);
+    }
+    if (op == 4) {
+        s->Write(&m[200], 8);
+        s->Write(&m[0xca], 8);
+    } else if (op == 7) {
+        s->Read(&m[200], 8);
+        s->Read(&m[0xca], 8);
+    }
+    if (op == 4) {
+        s->Write(&m[0xce], 8);
+        s->Write(&m[0xd0], 8);
+    } else if (op == 7) {
+        s->Read(&m[0xce], 8);
+        s->Read(&m[0xd0], 8);
+    }
+    if (op == 4) {
+        s->Write(&m[0x158], 8);
+        s->Write(&m[0x15a], 8);
+    } else if (op == 7) {
+        s->Read(&m[0x158], 8);
+        s->Read(&m[0x15a], 8);
+    }
+
+    i32* p = &m[0x8a];
+    i32 n = 5;
+    do {
+        if (op == 4) {
+            s->Write(p, 8);
+            s->Write(p + 2, 8);
+        } else if (op == 7) {
+            s->Read(p, 8);
+            s->Read(p + 2, 8);
+        }
+        p += 6;
+        n--;
+    } while (n != 0);
+
+    n = 3;
+    p = &m[0xb2];
+    do {
+        if (op == 4) {
+            s->Write(p, 8);
+            s->Write(p + 2, 8);
+        } else if (op == 7) {
+            s->Read(p, 8);
+            s->Read(p + 2, 8);
+        }
+        p += 6;
+        n--;
+    } while (n != 0);
+
+    i32 outer = 3;
+    p = &m[0xe0];
+    do {
+        n = 4;
+        do {
+            if (op == 4) {
+                s->Write(p, 8);
+                s->Write(p + 2, 8);
+            } else if (op == 7) {
+                s->Read(p, 8);
+                s->Read(p + 2, 8);
+            }
+            p += 6;
+            n--;
+        } while (n != 0);
+        outer--;
+    } while (outer != 0);
+
+    if (op == 4) {
+        s->Write(&m[0xa8], 8);
+        s->Write(&m[0xaa], 8);
+    } else if (op == 7) {
+        s->Read(&m[0xa8], 8);
+        s->Read(&m[0xaa], 8);
+    }
+    if (op == 7 && m[0] != 2) {
+        PostBlockFixup();
+    }
+
+#define SER(idx)                                                                                   \
+    if (SyncSub* _o = (SyncSub*)m[idx]) {                                                          \
+        if (_o->Serialize(s, op, p4, p5) == 0)                                                     \
+            return 0;                                                                              \
+    }
+
+    {
+        i32 i = 0;
+        i32* q = &m[99];
+        do {
+            if (SyncSub* a = (SyncSub*)q[-0xf]) {
+                if (a->Serialize(s, op, p4, p5) == 0) {
+                    return 0;
+                }
+            }
+            if (SyncSub* b = (SyncSub*)*q) {
+                if (b->Serialize(s, op, p4, p5) == 0) {
+                    return 0;
+                }
+            }
+            i++;
+            q++;
+        } while (i < 0xf);
+    }
+    {
+        i32 i = 0;
+        i32* q = &m[0x81];
+        do {
+            if (SyncSub* a = (SyncSub*)*q) {
+                if (a->Serialize(s, op, p4, p5) == 0) {
+                    return 0;
+                }
+            }
+            i++;
+            q++;
+        } while (i < 5);
+    }
+    {
+        i32 i = 0;
+        i32* q = &m[0xc2];
+        do {
+            if (SyncSub* a = (SyncSub*)*q) {
+                if (a->Serialize(s, op, p4, p5) == 0) {
+                    return 0;
+                }
+            }
+            i++;
+            q++;
+        } while (i < 3);
+    }
+    {
+        i32 row = 0;
+        i32* base = &m[0x126];
+        do {
+            i32 i = 0;
+            i32* q = base;
+            do {
+                if (SyncSub* a = (SyncSub*)*q) {
+                    if (a->Serialize(s, op, p4, p5) == 0) {
+                        return 0;
+                    }
+                }
+                i++;
+                q++;
+            } while (i < 4);
+            row++;
+            base += 4;
+        } while (row < 3);
+    }
+    {
+        i32 i = 0;
+        i32* q = &m[0x187];
+        do {
+            if (SyncSub* a = (SyncSub*)*q) {
+                if (a->Serialize(s, op, p4, p5) == 0) {
+                    return 0;
+                }
+            }
+            i++;
+            q++;
+        } while (i < 4);
+    }
+
+    SER(0x72)
+    SER(0x73)
+    SER(0x74)
+    SER(0x75)
+    SER(0x76)
+    SER(0x77)
+    SER(0x78)
+    SER(0x79)
+    SER(0x7a)
+    SER(0x7b)
+    SER(0x7c)
+    SER(0x7c)
+    SER(0x7d)
+    SER(0x7e)
+    SER(0x7f)
+    SER(0x80)
+    SER(0x86)
+    SER(0x87)
+    SER(0xd2)
+    SER(0xd9)
+    SER(0xda)
+    SER(0xdb)
+    SER(0xdc)
+    SER(0x138)
+    SER(0x140)
+    SER(0x15c)
+#undef SER
+
+    Finalize();
+    return 1;
+}
+
+// 0x109bb0: constructor. Clears the sprite + owner back-pointer; returns this.
+RVA(0x00109bb0, 0xb)
+CWarpStoneFly::CWarpStoneFly() {
+    m_sprite = 0;
+    m_owner = 0;
+}
+
+// ===========================================================================
+// EngineLabelBacklog::UpdateWarpStoneStatusBar @0x109bd0
+// ===========================================================================
+//
+// Sets up the warp-stone "fly" animation toward the warp tab. It records arg0 at
+// m_3c, resolves the frame for (phase+1) out of the GAME_STATUSBAR_TABZ_GAMETAB_WARP
+// sprite (m_38), and on success computes the screen target (m_4/m_8) for the phase
+// (a per-phase pixel offset off the tab base m_3c->m_10/m_14), the euclidean
+// distance to the source (srcX/srcY), and the per-axis fly velocity scaled by
+// FlyTime, then runs the GAME_WARPSTONEFLY status-bar advance. __thiscall ret 0x10.
+// @early-stop
+// ~81.2%: logic + the sqrt/fly-velocity FP block + the advance-tail are byte-faithful.
+// Residuals are two regalloc/scheduling coin-flips: (1) the prologue orders the
+// `mov [esp+X],0` stack-init vs the `lea ecx,[esp+X]` differently, and (2) the frame
+// lookup `(spr && n in range) ? spr->m_frames[n] : 0` keeps the loaded pointer in a
+// temp (eax) and branch-selects into edi in retail, where this toolchain fuses the
+// load directly into edi (`mov edi,[ecx+4*edi]`). Same select-register-fusion family
+// as the 64-bit clamp; not source-steerable; deferred to the final sweep.
+RVA(0x00109bd0, 0x1b5)
+i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i32 srcY) {
+    i32* m = (i32*)this;
+    m[0x3c / 4] = a0;
+
+    CSprite* spr = 0;
+    i32 n = phase + 1;
+    ((CRegHolder*)g_gameReg->m_world)
+        ->m_statusBar->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", &spr);
+    i32* frame =
+        (spr && n >= spr->m_firstFrame && n <= spr->m_lastFrame) ? spr->m_frames.m_pData[n] : 0;
+    m[0x38 / 4] = (i32)frame;
+    if (frame == 0) {
+        return 1;
+    }
+
+    m[0] = phase;
+    i32 cx, dy;
+    switch (phase) {
+        case 2:
+            cx = 0x69;
+            dy = 0x26;
+            break;
+        case 3:
+            cx = 0x65;
+            dy = 0x50;
+            break;
+        case 4:
+            cx = 0x69;
+            dy = 0x54;
+            break;
+        default:
+            cx = 0x34;
+            dy = 0x29;
+            break;
+    }
+
+    i32* base = (i32*)m[0x3c / 4];
+    i32 tx = base[0x10 / 4] + cx;
+    m[0x4 / 4] = tx;
+    i32 ty = base[0x14 / 4] + dy;
+    m[0x8 / 4] = ty;
+
+    i32 dxv = tx - srcX;
+    i32 dyv = ty - srcY;
+    i32 dist2 = dxv * dxv + dyv * dyv;
+    double dist = sqrt((double)dist2);
+    u32 flyTime = g_buteMgr.GetDwordDef("WarpStone", "FlyTime", 0x5dc);
+
+    *(double*)&m[0x20 / 4] = (double)flyTime / dist;
+    *(double*)&m[0x28 / 4] = (double)dist2 / dist;
+    *(double*)&m[0x30 / 4] = (double)dxv / dist;
+
+    CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
+    if (h->m_emitGate == 0) {
+        LeafCue* fly = 0;
+        h->m_10.Lookup("GAME_WARPSTONEFLY", &fly);
+        if (fly) {
+            if (g_61ab20 != 0 && g_6bf3c0 - fly->m_14 >= fly->m_18) {
+                fly->m_14 = g_6bf3c0;
+                fly->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+            }
+        }
+    }
+
+    *(double*)&m[0x10 / 4] = (double)dxv;
+    *(double*)&m[0x18 / 4] = (double)dyv;
+    return 1;
+}
+
+// @early-stop
+// 89.1% - logic byte-faithful: the mode-4/7 dispatch, the eight scalar Read/Write
+// virtual calls, g_serialCount bump, inline strlen/memset, the Lookup + indexed
+// record resolve, and the AnyValueMatches reverse-probe all match. Residual is one
+// regalloc choice in the lookup range-check: retail keeps `index` in callee-saved
+// esi across the Lookup and materializes the out-init 0 transiently, while cl pins
+// the constant 0 in esi and spills `index` (docs/patterns/zero-register-pinning.md
+// + pin-local-for-callee-saved-reg). Not source-steerable (& and || forms both
+// normalize to the same fail-first regalloc). Logic complete; final-sweep deferred.
+RVA(0x00109e00, 0x245)
+i32 CMgrSettings::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
+    if (arc == 0) {
+        return 0;
+    }
+    CMgrActiveHolder* lvl = (CMgrActiveHolder*)g_gameReg->m_world;
+    if (lvl == 0) {
+        return 0;
+    }
+    if (mode != 4) {
+        if (mode == 7) {
+            // READ the scalar block, then resolve the object reference.
+            arc->Read(&m_00, 4);
+            arc->Read(&m_04, 4);
+            arc->Read(&m_08, 4);
+            arc->Read(&m_10, 8);
+            arc->Read(&m_18, 8);
+            arc->Read(&m_20, 8);
+            arc->Read(&m_28, 8);
+            arc->Read(&m_30, 8);
+            g_serialCount++;
+
+            char name[0x80];
+            i32 index;
+            arc->Read(name, 0x80);
+            arc->Read(&index, 4);
+            if (strlen(name) == 0) {
+                m_38 = 0;
+                return 1;
+            }
+            CObject* out = 0;
+            lvl->m_10->m_10.Lookup(name, out);
+            CMgrLookupRec* rec = (CMgrLookupRec*)out;
+            if (rec == 0 || index < rec->m_64 || index > rec->m_68) {
+                m_38 = 0;
+            } else {
+                m_38 = rec->m_14[index];
+            }
+            return 1;
+        }
+    } else {
+        // WRITE the scalar block, then the resolved object's name + index.
+        arc->Write(&m_00, 4);
+        arc->Write(&m_04, 4);
+        arc->Write(&m_08, 4);
+        arc->Write(&m_10, 8);
+        arc->Write(&m_18, 8);
+        arc->Write(&m_20, 8);
+        arc->Write(&m_28, 8);
+        arc->Write(&m_30, 8);
+        g_serialCount++;
+
+        void* obj = m_38;
+        char name[0x80];
+        i32 index = 0;
+        memset(name, 0, 0x80);
+        if (obj != 0) {
+            lvl->m_10->AnyValueMatches_155630((i32)obj, (i32)name, (i32)&index);
+        }
+        arc->Write(name, 0x80);
+        arc->Write(&index, 4);
+    }
+    return 1;
+}
+
+// 0x10a0f0: the per-frame motion tick. If the rounded position already equals the
+// integer target, poke the mode byte into the registry tab array, clear the owner's
+// busy flag, run the mode-5 tab switch, free the overlay off the owner and return.
+// Otherwise integrate the velocity into the float position and, per the sign of
+// each velocity gate, snap to the target on overshoot.
+// @early-stop
+// x87 FP-stack schedule wall (docs/patterns/x87-fp-stack-schedule.md): the integer
+// scaffolding + control flow + member stores + every __ftol round are byte-exact;
+// only the dense fld/fxch/fmul/fadd choreography of the velocity-integration block
+// diverges. ~60-75% plateau, deferred to the final sweep.
+RVA(0x0010a0f0, 0x184)
+i32 CWarpStoneFly::Tick(i32 dt) {
+    if ((i32)m_currentX == m_targetX && (i32)m_currentY == m_targetY) {
+        CWsfTabArray* arr = (CWsfTabArray*)((char*)g_gameReg->m_cmdGrid + 0x260);
+        ((CByteArray*)arr)->SetAtGrow(arr->m_index, (BYTE)m_arrivalMode);
+        m_owner->m_busy = 0;
+        if (m_owner->m_mode != 2 && m_owner->m_activeTabId == 5) {
+            ((CSBI_RectOnly*)m_owner)->ResetWidgets(0);
+            ((CSBI_RectOnly*)m_owner)->TryActivate();
+        }
+        if (m_owner->m_warpStoneFly != 0) {
+            RezFree(m_owner->m_warpStoneFly);
+            m_owner->m_warpStoneFly = 0;
+        }
+        return 1;
+    }
+
+    double t = (double)dt;
+    double newX = m_currentX + (t * m_velocityScale) * m_xDirection;
+    double newY = m_currentY + (t * m_yDirection) * m_velocityScale;
+    m_currentX = newX;
+    m_currentY = newY;
+
+    if (m_xDirection > 0.0) {
+        if ((i32)newX > m_targetX) {
+            m_currentX = (double)m_targetX;
+        }
+    } else if (m_xDirection < 0.0) {
+        if ((i32)newX < m_targetX) {
+            m_currentX = (double)m_targetX;
+        }
+    }
+
+    if (m_yDirection > 0.0) {
+        if ((i32)newY > m_targetY) {
+            m_currentY = (double)m_targetY;
+        }
+    } else if (m_yDirection < 0.0) {
+        if ((i32)newY < m_targetY) {
+            m_currentY = (double)m_targetY;
+        }
+    }
+    return 1;
+}
+
+// 0x10a2f0: blit the overlay sprite at the rounded current position with flag 0.
+RVA(0x0010a2f0, 0x35)
+i32 CWarpStoneFly::Draw() {
+    ((CImage*)m_sprite)
+        ->RenderFrame(
+            (void*)((CWsfGameMgr*)g_gameReg->m_world)->m_drawable->m_context,
+            (void*)(i32)m_currentX,
+            (void*)(i32)m_currentY,
+            (void*)0
+        );
+    return 1;
+}
+
+// ===========================================================================
+// CTabzBuilder::BuildTabzDialog  @0x10a340
+// ===========================================================================
+RVA(0x0010a340, 0xbcb)
+i32 CTabzBuilder::BuildTabzDialog() {
+    if (m_550 == 0) {
+        return 1;
+    }
+
+    RECT src = m_c->m_24->m_10;
+    RECT dst;
+    g_pCopyRect(&dst, &src);
+    i32 cx = dst.left + (dst.right - dst.left) / 2;
+    i32 cy = dst.top + (dst.bottom - dst.top) / 2;
+
+    if (m_554 != 0) {
+        // ---- confirm dialog: AREYOUSURE + YES/NO ----
+        CSBI_Image* areYouSure = new CSBI_Image;
+        if (!areYouSure->Setup(
+                this,
+                m_c,
+                0x321,
+                6,
+                SbRect(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
+                "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
+                -1,
+                0
+            )) {
+            delete areYouSure;
+            return 0;
+        }
+        m_d4.AddTail((CObject*)areYouSure);
+
+        CSBI_MenuItemDlg* yes = new CSBI_MenuItemDlg;
+        if (!yes->Setup(
+                this,
+                m_c,
+                0x327,
+                6,
+                SbRect(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
+                "GAME_STATUSBAR_TABZ_DIALOG_YES",
+                -1,
+                0
+            )) {
+            delete yes;
+            return 0;
+        }
+        m_d4.AddTail((CObject*)yes);
+        m_1fc = yes;
+
+        CSBI_MenuItemDlg* no = new CSBI_MenuItemDlg;
+        if (!no->Setup(
+                this,
+                m_c,
+                0x328,
+                6,
+                SbRect(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
+                "GAME_STATUSBAR_TABZ_DIALOG_NO",
+                -1,
+                0
+            )) {
+            delete no;
+            return 0;
+        }
+        m_d4.AddTail((CObject*)no);
+        m_200 = no;
+        return 1;
+    }
+
+    // ---- main tabz dialog: DIALOG then a mission/mode decision tree ----
+    CSBI_Image* dialog = new CSBI_Image;
+    if (!dialog->Setup(
+            this,
+            m_c,
+            0x321,
+            6,
+            SbRect(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
+            "GAME_STATUSBAR_TABZ_DIALOG",
+            -1,
+            0
+        )) {
+        delete dialog;
+        return 0;
+    }
+    m_d4.AddTail((CObject*)dialog);
+
+    i32 reason = ((TabzGmFactory*)g_gameReg->m_cmdGrid)->m_3ec;
+
+    if (((TabzGmFactory*)g_gameReg->m_cmdGrid)->m_288 == 1) {
+        // mission accomplished
+        CSBI_ImageSet* status = new CSBI_ImageSet;
+        if (!status->Setup(
+                this,
+                m_c,
+                0x322,
+                6,
+                SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
+                "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
+                1,
+                0
+            )) {
+            delete status;
+            return 0;
+        }
+        m_d4.AddTail((CObject*)status);
+
+        CSBI_ImageSet* rsn = new CSBI_ImageSet;
+        if (!rsn->Setup(
+                this,
+                m_c,
+                0x326,
+                6,
+                SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
+                "GAME_STATUSBAR_TABZ_DIALOG_REASON",
+                reason,
+                0
+            )) {
+            delete rsn;
+            return 0;
+        }
+        m_d4.AddTail((CObject*)rsn);
+
+        if (g_gameReg->m_134 == 1) {
+            CSBI_MenuItemDlg* next = new CSBI_MenuItemDlg;
+            if (!next->Setup(
+                    this,
+                    m_c,
+                    0x324,
+                    6,
+                    SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                    "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
+                    -1,
+                    0
+                )) {
+                delete next;
+                return 0;
+            }
+            m_d4.AddTail((CObject*)next);
+            m_1f4 = next;
+
+            CSBI_MenuItemDlg* quit = new CSBI_MenuItemDlg;
+            if (!quit->Setup(
+                    this,
+                    m_c,
+                    0x325,
+                    6,
+                    SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                    "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
+                    -1,
+                    0
+                )) {
+                delete quit;
+                return 0;
+            }
+            m_d4.AddTail((CObject*)quit);
+            m_1f8 = quit;
+        } else {
+            CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
+            if (!statz->Setup(
+                    this,
+                    m_c,
+                    0x325,
+                    6,
+                    SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
+                    "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+                    -1,
+                    0
+                )) {
+                delete statz;
+                return 0;
+            }
+            m_d4.AddTail((CObject*)statz);
+            m_1f8 = statz;
+        }
+        return 1;
+    }
+
+    // mission not complete
+    CSBI_ImageSet* status = new CSBI_ImageSet;
+    if (!status->Setup(
+            this,
+            m_c,
+            0x322,
+            6,
+            SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
+            "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
+            2,
+            0
+        )) {
+        delete status;
+        return 0;
+    }
+    m_d4.AddTail((CObject*)status);
+
+    CSBI_ImageSet* rsn = new CSBI_ImageSet;
+    if (!rsn->Setup(
+            this,
+            m_c,
+            0x326,
+            6,
+            SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
+            "GAME_STATUSBAR_TABZ_DIALOG_REASON",
+            reason,
+            0
+        )) {
+        delete rsn;
+        return 0;
+    }
+    m_d4.AddTail((CObject*)rsn);
+
+    if (g_gameReg->m_134 == 1) {
+        CSBI_MenuItemDlg* replay = new CSBI_MenuItemDlg;
+        if (!replay->Setup(
+                this,
+                m_c,
+                0x324,
+                6,
+                SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
+                -1,
+                0
+            )) {
+            delete replay;
+            return 0;
+        }
+        m_d4.AddTail((CObject*)replay);
+        m_1f4 = replay;
+
+        CSBI_MenuItemDlg* quit = new CSBI_MenuItemDlg;
+        if (!quit->Setup(
+                this,
+                m_c,
+                0x325,
+                6,
+                SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
+                -1,
+                0
+            )) {
+            delete quit;
+            return 0;
+        }
+        m_d4.AddTail((CObject*)quit);
+        m_1f8 = quit;
+        return 1;
+    }
+
+    // count active players (m_178!=0 && m_17c==0 && m_174==0) over the 4 slots.
+    i32 count = 0;
+    for (i32 i = 0; i < 4; i++) {
+        if (((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_178 != 0
+            && ((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_17c == 0
+            && ((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_174 == 0) {
+            count++;
+        }
+    }
+
+    if (count >= 2) {
+        CSBI_MenuItemDlg* observe = new CSBI_MenuItemDlg;
+        if (!observe->Setup(
+                this,
+                m_c,
+                0x324,
+                6,
+                SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
+                -1,
+                0
+            )) {
+            delete observe;
+            return 0;
+        }
+        m_d4.AddTail((CObject*)observe);
+        m_1f4 = observe;
+        m_578 = 1;
+
+        CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
+        if (!statz->Setup(
+                this,
+                m_c,
+                0x325,
+                6,
+                SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+                -1,
+                0
+            )) {
+            delete statz;
+            return 0;
+        }
+        m_d4.AddTail((CObject*)statz);
+        m_1f8 = statz;
+    } else {
+        m_578 = 0;
+        CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
+        if (!statz->Setup(
+                this,
+                m_c,
+                0x325,
+                6,
+                SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
+                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
+                -1,
+                0
+            )) {
+            delete statz;
+            return 0;
+        }
+        m_d4.AddTail((CObject*)statz);
+        m_1f8 = statz;
+    }
+    return 1;
+}
+
+// ===========================================================================
+// EngineLabelBacklog::UpdateDestructButtonStatusBar @0x10b320
+// ===========================================================================
+//
+// The destruct-button warning blinker: in state 1 it counts the warning frame UP
+// toward 6 (then latches state 2), in state 2 it counts DOWN toward 2 (then
+// latches state 1); each step is gated on the retrigger clock having elapsed past
+// DestructButtonWarningDelay, after which the 64-bit retrigger clock is restamped
+// and the new frame pushed into the widget (the +0x30 virtual). State 0 = idle.
+// @early-stop
+// ~94.7%: logic + the 64-bit compare + every field store are byte-exact. The sole
+// residual (in BOTH symmetric cases) is a store-scheduling coin-flip: retail emits
+// `mov [+560],retriggerLo; mov [+564],0; mov ecx,[+570](widget)` in source order,
+// while MSVC's scheduler hoists the widget load between the two retrigger stores and
+// defers the `m_retriggerHi=0` store past it. Tried a single 64-bit retrigger store
+// and an inlined widget test; neither pins the store order. Not source-steerable;
+// deferred to the final sweep.
+RVA(0x0010b320, 0x167)
+void EngineLabelBacklog::UpdateDestructButtonStatusBar() {
+    CDestructBlock* b = &m_destruct;
+    switch (b->m_state) {
+        case 1: {
+            i64 d = (i64)(u32)g_645588 - *(i64*)&b->m_retriggerLo;
+            if (d >= *(i64*)&b->m_delayLo) {
+                if (++b->m_frame >= 6) {
+                    b->m_frame = 6;
+                    b->m_state = 2;
+                }
+                b->m_delayLo =
+                    g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
+                b->m_delayHi = 0;
+                b->m_retriggerLo = g_645588;
+                b->m_retriggerHi = 0;
+                CTabWidget* w = b->m_widget;
+                if (w) {
+                    w->SetFrame(b->m_frame);
+                }
+            }
+            break;
+        }
+        case 2: {
+            i64 d = (i64)(u32)g_645588 - *(i64*)&b->m_retriggerLo;
+            if (d >= *(i64*)&b->m_delayLo) {
+                if (--b->m_frame <= 2) {
+                    b->m_frame = 2;
+                    b->m_state = 1;
+                }
+                b->m_delayLo =
+                    g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
+                b->m_delayHi = 0;
+                b->m_retriggerLo = g_645588;
+                b->m_retriggerHi = 0;
+                CTabWidget* w = b->m_widget;
+                if (w) {
+                    w->SetFrame(b->m_frame);
+                }
+            }
+            break;
+        }
+    }
+}
 
 // Enter mode: latch m_modeArmed, conditionally reset the toggle pair, notify m_modeNotify.
 RVA(0x0010bb90, 0x3f)
@@ -2554,6 +3758,9 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
 // MainBarDrawFrame arg-block register allocation (the documented MSVC5 cross-function
 // codegen leak), dropping the byte-match 95.6%->88.6% with NO source change here; the
 // frame-draw args are still byte-content-correct. Accepted per the de-cast mandate.
+// SECOND TRIGGER (wave1-E one-TU merge): absorbing the updater/warpstone/serialize
+// cluster into this TU re-fired the same stack-store/arg-block reshuffle
+// (95.6% -> 88.6% again, no source change here). Accepted per the merge mandate.
 RVA(0x000fe6b0, 0x145)
 i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
     if (*(i32*)this != kSubtypeTag) {

@@ -848,44 +848,11 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
     return scope->Insert(qual, arg);
 }
 
-// ---------------------------------------------------------------------------
-// CSymList::Construct (0x184960) - the sym-subsystem's array-backed list container
-// ctor, re-homed from src/Stub/MallocConstructors. op-news (count<<4)+4 bytes (an
-// int header + count 16-byte elements), stores count at +0x00 and the data ptr at
-// +0x04, element-constructs via 0x11f5a0. xref (gruntz.analysis.xref): built by the
-// CSymTab entry ctors (0x139bf0/0x139c80), CSymTab::CSymTab (0x139de0),
-// CSymParser::CSymParser (0x13ab00) and CSymParseConfig (0x13aa10) - i.e. the
-// list members throughout the symbol table/parser. Modeled as a plain shell;
-// reconstruction deferred.
-struct CSymList {
-    CSymList* Construct(int count); // 0x184960
-};
-SIZE(CSymList, 0x8); // array-backed list container { count, data }
-// @confidence: high
-// @source: xref
-// @stub
-RVA(0x00184960, 0x70)
-CSymList* CSymList::Construct(int count) {
-    return this;
-}
-
+// CSymList::Construct (0x184960) + the 0x184900 hash reverse-iterator gap moved to
+// src/Rez/RezColl.cpp (wave1-E: the 0x1832d0-pocket rez/sym/hash utility obj is ONE
+// original TU; this file keeps the 0x139xxx/0x13axxx CSymTab core).
 // All SIZE()s are annotated atop their class definitions (this TU's .cpp-local
 // structs above, SymTab.h for CHashTable/CHashTableEntry/CSymRec/CSymTab,
 // Rez/RezColl.h for RezColl/RezNode). CSymParser is annotated in SymParser.h.
 
 // --- vtable catalog ---
-
-// @identity-TODO (matcher-5): 0x184900 is a hash reverse-iterator "current/last" method:
-// if the cached chain link @this+0x08 resolves (CHashBase::FromLink, container_of -4) return
-// its element; else scan the table (CHashBase* @this+0x0c, its m_buckets @+0x04) from the
-// highest bucket index (count @this+0x10) down, returning the tail element
-// (FromLink(slot.m_chain.m_tail)) of the first non-empty bucket, or 0. The receiver is a
-// 2-level iterator (NOT a bare 8-byte CHashBase) and is a ZERO-REF ORPHAN - no rel32/vtable/
-// data-ref caller anywhere in the image (full-binary VA byte-scan), so its class is
-// unrecoverable. Homed as a stub rather than fabricate a per-TU view of an un-xref-able
-// receiver (no-fake-view rule); the CHashBase::Insert/Last SIB coin-flip wall applies once
-// the real iterator class surfaces.
-RVA(0x00184900, 0x43)
-i32 Gap_184900(void) {
-    return 0;
-}

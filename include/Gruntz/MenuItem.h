@@ -79,7 +79,16 @@ public:
     CMenuItem();          // inlined leaf ctor (CStrings + implicit vptr + sentinels)
     virtual ~CMenuItem(); // 0x184690  slot 0 (scalar-deleting-dtor thunk @0x184670)
     virtual i32 Init(i32, i32, i32, i32, i32, i32); // 0x185460  slot 1
+// The 0x185510 label is emitted ONLY from MenuItem.cpp (which defines
+// GRUNTZ_MENUITEM_TU before including this header): the inline body below is a
+// COMDAT every includer emits, and the labels merge keeps the LAST duplicate row
+// (menupage would win by unit-name sort). Retail's linked instance belongs to the
+// MenuItem obj (interval dossier 0x1832d0 seam: it sits between Init@0x185460 and
+// the CMenuItem vfunc block). Guarding the annotation is tooling-only (the
+// attribute never affects codegen; MSVC sees nothing either way).
+#ifdef GRUNTZ_MENUITEM_TU
     RVA(0x00185510, 0x5)
+#endif
     virtual void Dispatch0c() {
         Reset();
     }

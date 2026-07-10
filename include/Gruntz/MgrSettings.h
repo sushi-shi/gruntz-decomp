@@ -18,6 +18,7 @@
 
 // The registry leaf reached as g_gameReg->m_world->m_10: a CDDrawWorkerRegistry with
 // the name map at +0x10 (read path) and the reverse name+index probe (write path).
+SIZE_UNKNOWN(CDDrawWorkerRegistry);
 class CDDrawWorkerRegistry {
 public:
     char _00[0x10];
@@ -26,6 +27,7 @@ public:
 };
 
 // The record CMapStringToOb::Lookup yields, viewed as a bounded element array.
+SIZE_UNKNOWN(CMgrLookupRec);
 struct CMgrLookupRec {
     char _00[0x14];
     void** m_14; // +0x14 element array
@@ -36,6 +38,7 @@ struct CMgrLookupRec {
 
 // g_gameReg singleton chain (CGameRegistry* @ RVA 0x24556c; +0x30 active holder; its
 // +0x10 is the registry leaf).
+SIZE_UNKNOWN(CMgrActiveHolder);
 struct CMgrActiveHolder {
     char _00[0x10];
     CDDrawWorkerRegistry* m_10; // +0x10
@@ -48,6 +51,7 @@ DATA(0x00229ad0)
 extern i32 g_serialCount;
 
 // The settings record itself.
+SIZE_UNKNOWN(CMgrSettings);
 class CMgrSettings {
 public:
     i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x109e00
