@@ -26,6 +26,13 @@ namespace ApiMisc {
         i32 m_h74;   // +0x74
         void Clip(const RECT* src);
     };
+    // @early-stop
+    // regalloc-rotation + scheduling wall (~81%): the clip logic (IntersectRect the
+    // (0,0,m_c,m_10) box against src+1, store at m_rc60, derive w/h) is faithful, but
+    // retail keeps the `src` arg in eax and interleaves the four rect-field loads/
+    // stores differently, while cl pins `src` in edx - a whole-function register
+    // rotation (eax<->edx, ecx<->edx) with a scheduling shift on the field build.
+    // Not source-steerable (arg-register + /O2 scheduling choice).
     RVA(0x0002b340, 0xaa)
     void ClipHost_02b340::Clip(const RECT* src) {
         RECT a, b;

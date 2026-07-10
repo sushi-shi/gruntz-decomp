@@ -26,33 +26,19 @@ void* __stdcall ListNodeAdvance(void** it) {
     return cur + 8;
 }
 
-// ---------------------------------------------------------------------------
-// QuadIntRecord @0x029ac0 - 4-field initializer (ctor returning this).
-// __thiscall, 4 stack args, ret 0x10.
-// @orphan: identity unrecovered - a generic 4-int record ctor called broadly across
-// CBattlezMapConfig / CGrunt / CArriveMgr / FontRenderer (xref); no single owning TU.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(QuadIntRecord);
-class QuadIntRecord {
-public:
-    QuadIntRecord(i32 a, i32 b, i32 c, i32 d);
-    i32 m_0;
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-};
-RVA(0x00029ac0, 0x20)
-QuadIntRecord::QuadIntRecord(i32 a, i32 b, i32 c, i32 d) {
-    m_0 = a;
-    m_4 = b;
-    m_8 = c;
-    m_c = d;
-}
+// (QuadIntRecord @0x029ac0 re-homed to src/Wap32/Rect.cpp as CRect::CRect(i32,i32,
+// i32,i32) - Ghidra/FID attests ??0CRect@@QAE@HHHH@Z for this direct-store 4-int
+// ctor; the "generic 4-int record" was the engine CRect. The m_0..m_c fields are
+// tagRECT's left/top/right/bottom.)
 
 // ---------------------------------------------------------------------------
 // Obj15b2b0 @0x15b2b0 - zero three fields (ctor returning this).
-// @orphan: a CWwdGameObject subclass new'd by CWwdObjMgr::CreateObject_159600 (xref),
-// but the concrete game-object class carries no recoverable RTTI name (hex identity).
+// @identity-TODO: an EMBEDDED sub-object ctor of the CWwdGameObject the factory
+// CWwdObjMgr::CreateObject_159600 builds (disasm: one operator-new, then the
+// ??_7CWwdGameObjectE/??_7CWwdGameObjectA vptr stamps + this + 0x15b2c0/0x15b270/
+// 0x15b300 sub-object ctors called back-to-back). It stamps no vtable of its own,
+// so the sub-object's concrete class has no recoverable RTTI name (hex identity);
+// owner known (CWwdGameObject), member-class TODO for a wwdgameobject depth pass.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(Obj15b2b0);
 class Obj15b2b0 {
@@ -73,8 +59,11 @@ Obj15b2b0::Obj15b2b0() {
 
 // ---------------------------------------------------------------------------
 // Obj15b270 @0x15b270 - seed two fields (ctor returning this).
-// @orphan: a CWwdGameObject subclass new'd by CWwdObjMgr::CreateObject_159250/440/600
-// (xref); concrete game-object class has no recoverable RTTI name (hex identity).
+// @identity-TODO: an EMBEDDED sub-object ctor of the CWwdGameObject built by the
+// factories CWwdObjMgr::CreateObject_159250/440/600 (xref; each new+stamps
+// ??_7CWwdGameObjectE/A then calls this among the member ctors). No vtable of its
+// own -> the sub-object's concrete class has no recoverable RTTI name (hex
+// identity); owner known (CWwdGameObject), member-class TODO for a depth pass.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(Obj15b270);
 class Obj15b270 {

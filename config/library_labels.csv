@@ -3419,3 +3419,12 @@ rva,name,lib,confidence,source
 0x1ce973,ComAtexit_5ce97f,MSVC-THUNK,HIGH,asm-carveout
 0x1d4239,ComAtexit_5d4245,MSVC-THUNK,HIGH,asm-carveout
 0x1d4c16,ComAtexit_5d4c22,MSVC-THUNK,HIGH,asm-carveout
+0x11e4d0,??0CImageList@@QAE@XZ,NAFXCW,HIGH,manual-stub-reclass
+0x1c0fa8,?AfxLockTempMaps@@YGXXZ,NAFXCW,HIGH,manual-stub-reclass
+0x1bae9b,msc_cwnd_static_init_1bae9b,NAFXCW,MEDIUM,manual-stub-reclass
+0x1d31bc,ComAtexit_5d31c8,MSVC-THUNK,HIGH,asm-carveout
+0x1d4bc1,ComAtexit_5d4bcd,MSVC-THUNK,HIGH,asm-carveout
+0x16c9c0,msc_lock_init_16c9c0,LIBCIMT,HIGH,manual-stub-reclass
+0x16c9d0,msc_lock_term_16c9d0,LIBCIMT,HIGH,manual-stub-reclass
+0x16c9e0,msc_lock_enter_16c9e0,LIBCIMT,HIGH,manual-stub-reclass
+0x16c9f0,msc_lock_leave_16c9f0,LIBCIMT,HIGH,manual-stub-reclass

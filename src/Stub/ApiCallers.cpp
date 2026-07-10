@@ -848,32 +848,13 @@ namespace ApiCallerStubs {
     // 0x164380 DrawCount + 0x164420 DrawLabel re-homed to ResLoaders in
     // src/Gruntz/ResourceLoaders.cpp.)
 
-    // The four CriticalSection thunks (0x16c9c0/d0/e0/f0) are the intended residual:
-    // per game-not-CRT matcher policy they wrap the Win32 CRITICAL_SECTION primitives
-    // and are not game code to re-home, so they stay here (no owning game class).
-    // __cdecl thunk over InitializeCriticalSection.
-    RVA(0x0016c9c0, 0xc)
-    void winapi_16c9c0_InitializeCriticalSection(CRITICAL_SECTION* cs) {
-        InitializeCriticalSection(cs);
-    }
-
-    // __cdecl(cs): thin wrapper over DeleteCriticalSection.
-    RVA(0x0016c9d0, 0xc)
-    void winapi_16c9d0_DeleteCriticalSection(LPCRITICAL_SECTION cs) {
-        DeleteCriticalSection(cs);
-    }
-
-    // __cdecl thunk over EnterCriticalSection.
-    RVA(0x0016c9e0, 0xc)
-    void winapi_16c9e0_EnterCriticalSection(CRITICAL_SECTION* cs) {
-        EnterCriticalSection(cs);
-    }
-
-    // __cdecl thunk over LeaveCriticalSection.
-    RVA(0x0016c9f0, 0xc)
-    void winapi_16c9f0_LeaveCriticalSection(CRITICAL_SECTION* cs) {
-        LeaveCriticalSection(cs);
-    }
+    // (The four CriticalSection thunks (0x16c9c0/d0/e0/f0) are FID-carved as library
+    // (config/library_labels.csv, LIBCIMT). They sit inside the LIBCIMT iostream text
+    // region (0x16c800..0x16ca80: iostream/filebuf ctors+dtors) and their retail
+    // callers are iostream internals (streambuf/setbuf/open/close via `sema xref`),
+    // i.e. they are the C++ library's own critical-section locking wrappers, not game
+    // code. Carved per the game-not-CRT matcher policy; game callers reach them
+    // reloc-masked through the library.)
 
     // (0x1775f0 PalHost::Apply (with g_palModule_6bf6e0) re-homed to ResLoaders in
     // src/Gruntz/ResourceLoaders.cpp.)

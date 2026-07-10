@@ -14,11 +14,12 @@
 // Big /base body (0xbc3, ~30 internal calls). Shares the CGrunt coord-pool / grid
 // family with GruntMoveStep.cpp + GruntTileScan.cpp.
 #include <rva.h>
-#include <new> // placement QuadIntRecord ctor
+#include <new> // placement CRect ctor
 #include <Wap32/ZVec.h>
 
 #include <Ints.h>
-#include <Mfc.h>    // RECT + IntersectRect (superset of Win32.h; Grunt.h needs MFC)
+#include <Mfc.h>        // RECT + IntersectRect (superset of Win32.h; Grunt.h needs MFC)
+#include <Wap32/Rect.h> // canonical CRect (0x29ac0 direct-store ctor, was local QuadIntRecord); after Mfc.h (windows.h-first C1189)
 #include <math.h>   // fild/fsqrt/__ftol board distance
 #include <string.h> // inline strcmp type-name gate
 #include <stdlib.h> // engine rand (0x11fee0)
@@ -93,11 +94,9 @@ struct CStepMgr {                                      // this (ebp)
     i32 Step33520(CGrunt* g);
 };
 
-// CStepRectInit::Set34a4 @0x34a4->0x29ac0 IS the QuadIntRecord(i32x4) in-place ctor.
-struct QuadIntRecord {
-    QuadIntRecord(i32 l, i32 t, i32 r, i32 b);
-};
-struct CStepRectInit {};
+// @0x29ac0 (thunk 0x34a4) IS the engine CRect(l,t,r,b) direct-store ctor (Ghidra/
+// FID: ??0CRect@@QAE@HHHH@Z), out-of-line so it is CALLed here. Modeled by the
+// canonical CRect (<Wap32/Rect.h>); the old local QuadIntRecord view folded onto it.
 
 extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles a node
 
@@ -123,8 +122,8 @@ extern FreeNodePool g_coordPool; // ?g_coordPool@@... (0x645540): Drop recycles 
     {                                                                                              \
         RECT ra;                                                                                   \
         RECT rb;                                                                                   \
-        (RECT*)new (&ra) QuadIntRecord(0, 0, (grid)->m_c, (grid)->m_10);                           \
-        RECT* pb = (RECT*)new (&rb) QuadIntRecord(0, 0, (grid)->m_c, (grid)->m_10);                \
+        (RECT*)new (&ra) CRect(0, 0, (grid)->m_c, (grid)->m_10);                           \
+        RECT* pb = (RECT*)new (&rb) CRect(0, 0, (grid)->m_c, (grid)->m_10);                \
         ra.left = pb->left;                                                                        \
         ra.top = pb->top;                                                                          \
         ra.right = pb->right;                                                                      \
@@ -187,7 +186,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
                 box.right = (b2.x >> 5) + 5;
                 box.bottom = (b3.y >> 5) + 5;
                 RECT gb;
-                (RECT*)new (&gb) QuadIntRecord(0, 0, grid->m_c, grid->m_10);
+                (RECT*)new (&gb) CRect(0, 0, grid->m_c, grid->m_10);
                 if (!IntersectRect((RECT*)&grid->m_60, &box, &gb)) {
                     *(RECT*)&grid->m_60 = box;
                 }
@@ -290,7 +289,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
             box.right = (d2.x >> 5) + 5;
             box.bottom = (d3.y >> 5) + 5;
             RECT gb;
-            (RECT*)new (&gb) QuadIntRecord(0, 0, grid->m_c, grid->m_10);
+            (RECT*)new (&gb) CRect(0, 0, grid->m_c, grid->m_10);
             if (!IntersectRect((RECT*)&grid->m_60, &box, &gb)) {
                 *(RECT*)&grid->m_60 = box;
             }

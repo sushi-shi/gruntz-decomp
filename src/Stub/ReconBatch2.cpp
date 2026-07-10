@@ -216,6 +216,12 @@ void __stdcall Copy_16f6e0(Src_16f6e0* src, Dst_16f6e0* dst) {
 // ===========================================================================
 // 0x001b9b8d (6B) - getter that returns the address of a global descriptor
 // (PTR_DAT_006156f4). `mov eax, OFFSET g; ret`.
+// @identity-TODO -> likely NAFXCW library: it sits in the MFC CString/collection
+// text region (immediate neighbors 0x1b9b46 ??2@YAPAXI@Z operator new, 0x1b9b93
+// ??0CString@@QAE@XZ) and its only retail callers are MFC template-collection
+// helpers (ConstructElements / CList::NewNode / CMap::NewAssoc / CString, via xref).
+// Carve to config/library_labels.csv once the exact MFC symbol for the &0x6156f4
+// descriptor getter is pinned (kept as a src claim meanwhile; EXACT).
 // ===========================================================================
 RVA(0x001b9b8d, 0x6)
 void** Get_1b9b8d() {

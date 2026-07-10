@@ -2439,12 +2439,6 @@ source = "src/Stub/ReconBatch2.cpp"
 flags = "base"
 
 [[unit]]
-unit = "reconbatch2o1"
-source = "src/Stub/ReconBatch2O1.cpp"
-flags = "o1"
-
-
-[[unit]]
 unit = "bitarray"
 source = "src/Utils/BitArray.cpp"
 flags = "base"

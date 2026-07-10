@@ -60,7 +60,8 @@
 
 #include <stdlib.h> // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
 #include <string.h> // strcmp (anim-name dispatch -> inline sbb/sbb byte compare)
-#include <new>      // placement new (QuadIntRecord in-place ctor)
+#include <new>          // placement new (CRect in-place ctor)
+#include <Wap32/Rect.h> // canonical CRect (0x29ac0 direct-store ctor, was local QuadIntRecord)
 #include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (FindInLists12 0x116f20)
 
 // The coord-list walk step @0x29a30 is the free __stdcall ListNodeAdvance(void**).
@@ -310,16 +311,11 @@ struct CoordListWalk {
 };
 
 // The shared rect-init helper (RVA 0x029ac0, thunk 0x034a4): a __thiscall that
-// fills a RECT (left/top/right/bottom from the four args) and returns it. The
-// board-clamp idiom builds two of these and IntersectRects them against the board
-// dirty-rect. RECT comes from <Mfc.h> (windows.h). External, reloc-masked.
-// RectInit::Set @0x29ac0 IS the QuadIntRecord(l,t,r,b) in-place ctor; local decl.
-struct QuadIntRecord {
-    QuadIntRecord(i32 l, i32 t, i32 r, i32 b);
-};
-struct RectInit {
-    // Set @0x29ac0 IS the QuadIntRecord(i32x4) ctor; placement-new at each call.
-};
+// fills a RECT (left/top/right/bottom from the four args) and returns it. Ghidra/
+// FID attests ??0CRect@@QAE@HHHH@Z; it IS the engine CRect(l,t,r,b) direct-store
+// ctor (out-of-line, so the board-clamp idiom below CALLs it rather than inlining
+// four stores). Modeled by the canonical CRect (<Wap32/Rect.h>); the old local
+// QuadIntRecord/RectInit view folded onto it. External, reloc-masked.
 
 // A coord-occupancy query (RVA 0x051850, thunk 0x03c4c): a __thiscall on a unit
 // taking a packed (x,y) pair; nonzero => the cell is occupied. Used by the grid
@@ -1261,7 +1257,7 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     i32 cx = center.m_x >> 5;
     i32 cy = center.m_y >> 5;
     RECT bounds;
-    (RECT*)new (&bounds) QuadIntRecord(0, 0, board->m_width, board->m_height);
+    (RECT*)new (&bounds) CRect(0, 0, board->m_width, board->m_height);
     RECT box;
     box.left = cx - 6;
     box.top = cy - 6;
@@ -1351,9 +1347,9 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
                 }
                 // Re-clamp the board dirty-rect to the board bounds.
                 RECT b1;
-                (RECT*)new (&b1) QuadIntRecord(0, 0, board->m_width, board->m_height);
+                (RECT*)new (&b1) CRect(0, 0, board->m_width, board->m_height);
                 RECT b2;
-                RECT* p2 = (RECT*)new (&b2) QuadIntRecord(0, 0, board->m_width, board->m_height);
+                RECT* p2 = (RECT*)new (&b2) CRect(0, 0, board->m_width, board->m_height);
                 RECT rc;
                 rc.left = p2->left;
                 rc.top = p2->top;
@@ -1376,9 +1372,9 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     }
     // No route: re-clamp the board dirty-rect to the board bounds.
     RECT f1;
-    (RECT*)new (&f1) QuadIntRecord(0, 0, board->m_width, board->m_height);
+    (RECT*)new (&f1) CRect(0, 0, board->m_width, board->m_height);
     RECT f2;
-    RECT* pf = (RECT*)new (&f2) QuadIntRecord(0, 0, board->m_width, board->m_height);
+    RECT* pf = (RECT*)new (&f2) CRect(0, 0, board->m_width, board->m_height);
     RECT fc;
     fc.left = pf->left;
     fc.top = pf->top;
@@ -1989,7 +1985,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     box.left = (c4.m_x >> 5) - 3;
     CBrickzGrid* board = m_board;
     RECT bounds;
-    (RECT*)new (&bounds) QuadIntRecord(0, 0, board->m_width, board->m_height);
+    (RECT*)new (&bounds) CRect(0, 0, board->m_width, board->m_height);
     RECT clamp;
     clamp.left = box.left;
     clamp.top = box.top;
@@ -2040,7 +2036,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                         mb.right = bd->m_width;
                         mb.bottom = bd->m_height;
                         RECT tmp;
-                        RECT* p = (RECT*)new (&tmp) QuadIntRecord(0, 0, bd->m_width, bd->m_height);
+                        RECT* p = (RECT*)new (&tmp) CRect(0, 0, bd->m_width, bd->m_height);
                         RECT bx;
                         bx.left = p->left;
                         bx.top = p->top;
@@ -2062,10 +2058,10 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                         if (Method_0300c0(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
                             CBrickzGrid* bd = m_board;
                             RECT r1;
-                            (RECT*)new (&r1) QuadIntRecord(0, 0, bd->m_width, bd->m_height);
+                            (RECT*)new (&r1) CRect(0, 0, bd->m_width, bd->m_height);
                             RECT r2;
                             RECT* p2r =
-                                (RECT*)new (&r2) QuadIntRecord(0, 0, bd->m_width, bd->m_height);
+                                (RECT*)new (&r2) CRect(0, 0, bd->m_width, bd->m_height);
                             RECT rc;
                             rc.left = p2r->left;
                             rc.top = p2r->top;
@@ -2138,7 +2134,7 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
     i32 left = (g2.m_x >> 5) - 8;
     CBrickzGrid* board = m_board;
     RECT bounds;
-    (RECT*)new (&bounds) QuadIntRecord(0, 0, board->m_width, board->m_height);
+    (RECT*)new (&bounds) CRect(0, 0, board->m_width, board->m_height);
     RECT box;
     box.left = left;
     box.top = top;
@@ -2347,7 +2343,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     }
     CBrickzGrid* board = m_board;
     RECT bounds;
-    (RECT*)new (&bounds) QuadIntRecord(0, 0, board->m_width, board->m_height);
+    (RECT*)new (&bounds) CRect(0, 0, board->m_width, board->m_height);
     RECT* boxp = &box;
     RECT rc;
     if (boxp != 0) {
@@ -2357,7 +2353,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         rc.bottom = box.bottom + 1;
     } else {
         RECT r0;
-        RECT* p0 = (RECT*)new (&r0) QuadIntRecord(0, 0, board->m_width, board->m_height);
+        RECT* p0 = (RECT*)new (&r0) CRect(0, 0, board->m_width, board->m_height);
         rc.left = p0->left;
         rc.top = p0->top;
         rc.right = p0->right;
@@ -2399,7 +2395,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         fb.left = 0;
         fb.top = 0;
         RECT fr;
-        RECT* fp = (RECT*)new (&fr) QuadIntRecord(0, 0, board->m_width, board->m_height);
+        RECT* fp = (RECT*)new (&fr) CRect(0, 0, board->m_width, board->m_height);
         fb.right = board->m_width;
         fb.bottom = board->m_height;
         RECT frc;
@@ -2440,9 +2436,9 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     }
     // Re-clamp the board dirty-rect to the board bounds, clear the cooldown, ret 1.
     RECT gb;
-    (RECT*)new (&gb) QuadIntRecord(0, 0, board->m_width, board->m_height);
+    (RECT*)new (&gb) CRect(0, 0, board->m_width, board->m_height);
     RECT gr2;
-    RECT* gp = (RECT*)new (&gr2) QuadIntRecord(0, 0, board->m_width, board->m_height);
+    RECT* gp = (RECT*)new (&gr2) CRect(0, 0, board->m_width, board->m_height);
     RECT grc;
     grc.left = gp->left;
     grc.top = gp->top;
@@ -3340,9 +3336,9 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
             // copy-back idiom (shared with GruntPathScan's SCAN_BOUNDS).
             CBrickzGrid* board = m_board;
             RECT r1;
-            (RECT*)new (&r1) QuadIntRecord(0, 0, board->m_width, board->m_height);
+            (RECT*)new (&r1) CRect(0, 0, board->m_width, board->m_height);
             RECT r2;
-            RECT* p2 = (RECT*)new (&r2) QuadIntRecord(0, 0, board->m_width, board->m_height);
+            RECT* p2 = (RECT*)new (&r2) CRect(0, 0, board->m_width, board->m_height);
             RECT rc;
             rc.left = p2->left;
             rc.top = p2->top;
@@ -3665,7 +3661,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
     box2.left = 0;
     box2.top = 0;
     RECT bounds;
-    RECT* bp = (RECT*)new (&bounds) QuadIntRecord(0, 0, board->m_width, board->m_height);
+    RECT* bp = (RECT*)new (&bounds) CRect(0, 0, board->m_width, board->m_height);
     box2.right = board->m_width;
     box2.bottom = board->m_height;
     RECT rc;
