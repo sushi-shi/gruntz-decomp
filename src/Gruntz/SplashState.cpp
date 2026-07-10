@@ -22,13 +22,15 @@
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::Method_158bc0 (m_c->m_04 page gate)
 
 #include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CResSource::LoadGroup (m_8/m_2c)
 #include <Gruntz/State.h>        // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
 #include <Gruntz/View.h>         // CState::m_c render sub-object facets
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the m_c holder)
 #include <Gruntz/ResMgr.h>       // CSoundRegistry (m_c->m_28 Install facet)
-#include <Gruntz/GruntzMgr.h>    // CGruntzMgr::RestoreVideoMode (m_4 facet)
+#include <Gruntz/GruntzMgr.h>    // CGruntzMgr::RestoreVideoMode (m_4 facet) + m_gameWnd->m_hwnd
+#include <Gruntz/StatusBarUpdatersViews.h> // CRegHolder view of CState::m_c (m_04 page mgr)
 #include <rva.h>
 
 // The global empty C string the sound loader's prefix is seeded from (0x6293f4).
@@ -90,6 +92,49 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
     if (soundz) {
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)soundz, g_emptyString, "_");
     }
+    return 1;
+}
+
+// CSplashState::InputVirtual (0xf9a80, slot 8) - per-frame poll: gate on the page
+// manager's readiness, hide the cursor, roll the splash title sequence with the
+// current asset-root name, return its result.
+RVA(0x000f9a80, 0x44)
+i32 CSplashState::InputVirtual() {
+    if (((CRegHolder*)m_c)->m_04->Method_158bc0() == 0) {
+        return 0;
+    }
+    while (ShowCursor(FALSE) >= 0) {
+    }
+    return RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0);
+}
+
+// CSplashState::Vslot06 (0xf9af0, slot 6) - activation-ready poll: gate on the state's
+// own readiness virtual (Vfunc3), hide the cursor, roll the splash title sequence.
+RVA(0x000f9af0, 0x3e)
+i32 CSplashState::Vslot06() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    while (ShowCursor(FALSE) >= 0) {
+    }
+    return RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0);
+}
+
+// CSplashState::Vslot0c (0xf9b40, slot 12) - key handler: on ESC/SPACE/ENTER post a
+// WM_COMMAND 0x8023 to the top-level window.
+RVA(0x000f9b40, 0x37)
+i32 CSplashState::Vslot0c(i32 code, i32) {
+    if (code == 0x1b || code == 0x20 || code == 0xd) {
+        PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+    }
+    return 1;
+}
+
+// CSplashState::Vslot0e (0xf9b90, slot 14) - unconditional command post: notify the
+// top-level window with WM_COMMAND 0x8023.
+RVA(0x000f9b90, 0x24)
+i32 CSplashState::Vslot0e(i32, i32, i32) {
+    PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     return 1;
 }
 

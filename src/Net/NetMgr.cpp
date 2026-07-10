@@ -282,6 +282,26 @@ void CNetMgr::ApplyCmdDelayDefaults() {
 }
 
 // ---------------------------------------------------------------------------
+// CNetMgr::PollSessionGated  (__thiscall).
+// With both args non-null: if the session done-latch (m_534) is already set report
+// success; otherwise poll the session once (PollSession) and report whether the poll
+// set the latch.
+RVA(0x000b9180, 0x4a)
+i32 CNetMgr::PollSessionGated(i32 a1, i32 a2) {
+    if (a1 == 0) {
+        return 0;
+    }
+    if (a2 == 0) {
+        return 0;
+    }
+    if (m_534 != 0) {
+        return 1;
+    }
+    PollSession();
+    return m_534 != 0;
+}
+
+// ---------------------------------------------------------------------------
 // CNetMgr::SendStatBuf  (__thiscall).
 // Core stat sender: sets the packet's bit7 flag, then ships the 0x10-byte
 // packet to the local player's peer group via the DirectPlay set-data wrapper
@@ -377,6 +397,22 @@ i32 CNetMgr::SendStat3(i32 id, u32 value, i32 flag) {
     pkt.m_8 = m_localPlayer->m_4;
     i32 hr = m_peer->SetData(m_localPlayer->m_4, id, flag, (i32)&pkt, 0x10);
     return hr == 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::SendNetStatTo  (__thiscall).
+// SendStatTo's explicit-value twin: null-recipient -> 0; otherwise builds the 0x10-byte
+// stat header {id, value} on the stack and ships it to that one player via SendStatPair.
+RVA(0x000b9490, 0x42)
+i32 CNetMgr::SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c) {
+    if (recipient == 0) {
+        return 0;
+    }
+    CNetStatPacket pkt;
+    pkt.m_0 |= 0x80;
+    pkt.m_4 = id;
+    pkt.m_8 = value;
+    return SendStatPair(recipient, &pkt, c);
 }
 
 // ---------------------------------------------------------------------------
@@ -481,12 +517,9 @@ i32 CNetMgr::PollSession() {
 
 // CNetMgr::GetConfigNameA (0x000b6090) is now an inline member in the header.
 
-
 // CNetMgr::GetConfigNameB (0x000b60d0) is now an inline member in the header.
 
-
 // CNetMgr::GetName (0x000ba170) is now an inline member in the header.
-
 
 // CNetPlayerEntry::GetName - identical +0x8 read; COMDAT-folds with CNetMgr::GetName @0xba170
 // in retail (one address). Defined (not RVA-annotated: cannot dup the RVA).

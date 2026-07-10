@@ -242,10 +242,12 @@ public:
     virtual i32 Create(IDirectInputA* di, const void* deviceGuid, void* hwnd); // slot 1  0x134cb0
     virtual void ReleaseDevices();                                             // slot 2  0x134d50
     RVA(0x001332b0, 0xb)
-    virtual i32 IsValid() { return m_device2 != 0; }
+    virtual i32 IsValid() {
+        return m_device2 != 0;
+    }
 
     // Shared non-virtual COM helpers.
-    i32 Unacquire();       // 0x134fe0
+    i32 Unacquire();        // 0x134fe0
     i32 Escape(void* data); // 0x135000  IDirectInputDevice2::Escape
 
     // Shared COM device-config thunks: they touch only the root-owned m_device2 /
@@ -286,7 +288,9 @@ public:
     // 0x133d00), the mouse/joystick leaf slots reloc-mask to their own poll. ResetState
     // (slot 5, 0x1332c0) clears the edge-latch; CreateDeviceWrap dispatches it.
     RVA(0x00133410, 0x3)
-    virtual i32 Poll() { return 0; }
+    virtual i32 Poll() {
+        return 0;
+    }
     virtual i32 ResetState(); // +0x14  slot 5  clear the press-edge latch
 
     // CreateDeviceWrap (0x134260): validates (di, hwnd), runs Create, then dispatches
@@ -328,7 +332,7 @@ public:
     virtual void ReleaseDevices() OVERRIDE; // slot 2  0x134360 (Free360)
     virtual i32 Poll() OVERRIDE;            // slot 4  0x1343b0 (PollMouse)
 
-    i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags);         // 0x1342c0
+    i32 CreateDev(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x1342c0
     RVA(0x001343a0, 0xb)
     i32 IsReady() {
         return m_device2 != 0;
@@ -348,10 +352,14 @@ public:
 SIZE_UNKNOWN(CDeviceConfigC);
 class CDeviceConfigC : public CInputDevBase {
 public:
+    CDeviceConfigC(); // inline; the enum callback new's it (zeroes m_flags, stamps ??_7)
     virtual ~CDeviceConfigC() OVERRIDE;     // 0x133460 (the /GX multilevel deleting-dtor)
     virtual void ReleaseDevices() OVERRIDE; // slot 2  0x1346d0 (Free6d0)
     virtual i32 Poll() OVERRIDE;            // slot 4  (joystick poll override)
+    i32 CreateDevJoystick(IDirectInputA* di, const void* cfg, void* owner, u32 flags); // 0x134630
     void Free6d0(); // 0x1346d0 (joystick leaf teardown; body in BoundaryUpper.cpp)
+
+    i32 m_flags; // +0x2b4
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

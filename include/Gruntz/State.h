@@ -102,6 +102,14 @@ public:
     // Non-virtual exit notification (reloc-masked; called by ExitModalUI).
     void NotifyExit(i32 code);
 
+    // RunTitleSeq (0x0fa350): the title-roll helper. Its body reads ONLY CState
+    // members (m_c/m_8/m_2c), and the sibling states (CHelpState/CSplashState/...)
+    // call it directly on their own `this`, so it is a CState-level helper. Its
+    // single definition is currently attributed to CAttract (Ghidra RTTI) in
+    // Attract.cpp; declared here so the callers stay cast-free (folding the 0xfa350
+    // body's owner onto CState is deferred - Attract.cpp owns it). Reloc-masked.
+    i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);
+
     // --- scalar members, at the offsets CState::CState pins ---
     // +0x04  owner back-ptr == the game-manager singleton (*g_64556c). PROVEN one
     // object: m_4->m_c is the SAME field as g_64556c->m_c (the active-selection gate),

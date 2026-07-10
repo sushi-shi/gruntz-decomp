@@ -17,9 +17,12 @@
 #include <Mfc.h> // ShowCursor (afx-first)
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::Method_158bc0 (m_c->m_04 page gate)
 
 #include <Gruntz/BankMgr.h>   // CBankMgr::Lookup (inherited m_8) -> CResSource
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
+#include <Gruntz/StatusBarUpdatersViews.h> // CRegHolder view of CState::m_c (m_04 page mgr)
+#include <Globals.h>                       // g_6111b0 (the RunTitleSeq title name buffer)
 #include <rva.h>
 
 // The 11 overridden CState slots (vtbl@0x1e9dfc; the other slots inherited). The
@@ -63,6 +66,34 @@ i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
+// CHelpState::InputVirtual (0x95320, slot 8) - the per-frame poll: gate on the page
+// manager's readiness, hide the cursor, roll the help title sequence, hide the cursor
+// again, return the sequence result.
+RVA(0x00095320, 0x56)
+i32 CHelpState::InputVirtual() {
+    if (((CRegHolder*)m_c)->m_04->Method_158bc0() == 0) {
+        return 0;
+    }
+    while (ShowCursor(FALSE) >= 0) {
+    }
+    i32 r = RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0);
+    while (ShowCursor(FALSE) >= 0) {
+    }
+    return r;
+}
+
+// CHelpState::Vslot06 (0x953a0, slot 6) - activation-ready poll: gate on the state's
+// own readiness virtual (Vfunc3), hide the cursor, roll the help title sequence.
+RVA(0x000953a0, 0x3c)
+i32 CHelpState::Vslot06() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    while (ShowCursor(FALSE) >= 0) {
+    }
+    return RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0);
+}
+
 // CHelpState::Vslot0c (0x953f0, slot 12) - keydown handler: on ESC/SPACE/ENTER post a
 // WM_COMMAND 0x8036 to the top-level window. (Re-homed from ApiCallers CmdHost_0953f0.)
 RVA(0x000953f0, 0x37)
@@ -70,6 +101,14 @@ i32 CHelpState::Vslot0c(i32 code, i32 unused) {
     if (code == 0x1b || code == 0x20 || code == 0xd) {
         PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
     }
+    return 1;
+}
+
+// CHelpState::Vslot0e (0x95440, slot 14) - unconditional command post: notify the
+// top-level window with WM_COMMAND 0x8036.
+RVA(0x00095440, 0x24)
+i32 CHelpState::Vslot0e(i32, i32, i32) {
+    PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
     return 1;
 }
 

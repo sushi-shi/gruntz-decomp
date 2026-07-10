@@ -403,12 +403,12 @@ struct CNetSession {
     i32 m_1b0[0x80];                 // +0x1b0  0x200-byte scratch block ResetAll/Reset memsets to 0
     CNetResyncEntry m_entries[0x80]; // +0x3b0  resync entries (indexed signed, base here)
 
-    CNetCmdSlot* FindCmdSlot(i32 playerId);        // c00a0
-    void ResetCmdBuffers();                        // c0070
-    i32 AllSlotsReachedSeq(i32 seq);               // c0320  1 unless an active slot's m_maxSeq < seq
-    void AdvanceAllSlots(i32 id);                  // c0370  AdvanceSeq(id) over every active slot
-    void RaiseAllSlotsMax(i32 v);                  // c03b0  RaiseMax(v) over every active slot
-    i32 CheckLatency(i32 cap);                     // c04a0  any active slot with m_10 > cap?
+    CNetCmdSlot* FindCmdSlot(i32 playerId); // c00a0
+    void ResetCmdBuffers();                 // c0070
+    i32 AllSlotsReachedSeq(i32 seq);        // c0320  1 unless an active slot's m_maxSeq < seq
+    void AdvanceAllSlots(i32 id);           // c0370  AdvanceSeq(id) over every active slot
+    void RaiseAllSlotsMax(i32 v);           // c03b0  RaiseMax(v) over every active slot
+    i32 CheckLatency(i32 cap);              // c04a0  any active slot with m_10 > cap?
     CNetCmdSlot* CreateSlot(i32 index, i32 owner); // bfff0  init slot[index]
     i32 Verify();                                  // c04f0  resync consistency check (0-arg)
     void ResetAll();                               // bbf80  full reset: header + 4 slots + entries
@@ -742,11 +742,11 @@ SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size T
 // CNetMgr::ResolveLocalPlayer; cast at that call. The full type-identity merge of the
 // sub-object fields into CGruntzMgr is a separate reconciliation - see the report.)
 struct CNetGameMgr {
-    i32 CountReadyOptionsSlots(i32 anyState);  // 0x092e30 (== CGruntzMgr::CountReadyOptionsSlots)
-    void ResetClockGlobals();                  // 0x08f4f0
-    void ClearOptionsSlots();                  // 0x092ec0
-    i32 InitializeLobbyConnectionSettings();   // 0x08eca0
-    CString GetWorldFileName();                // 0x0928c0
+    i32 CountReadyOptionsSlots(i32 anyState); // 0x092e30 (== CGruntzMgr::CountReadyOptionsSlots)
+    void ResetClockGlobals();                 // 0x08f4f0
+    void ClearOptionsSlots();                 // 0x092ec0
+    i32 InitializeLobbyConnectionSettings();  // 0x08eca0
+    CString GetWorldFileName();               // 0x0928c0
     // Resolve the local player slot on the game mgr (looks the local id up in the peer
     // list, returns the GruntzPlayer). Declared here so callers use m_4->FindPlayer()
     // instead of the (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer() cross-cast;
@@ -757,7 +757,7 @@ struct CNetGameMgr {
     // path calls g_mgrSettings->BuildRezPath / ->ShowModal. Reloc-masked externs.
     void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
     void ShowModal(const char* msg);                                  // 0x8ef10
-    char m_pad0[4];     // +0x00
+    char m_pad0[4];                                                   // +0x00
     CNetGameWnd* m_wnd; // +0x04  the window (its +0x4 is the engine HWND)
     char m_pad8[0x38 - 8];
     Utils::RegistryHelper* m_configStore; // +0x38  registry/config store (Service/Player_Name/...)
@@ -1006,9 +1006,15 @@ public:
     // Three more stat-send variants in this cluster: each builds a 0x10-byte stat
     // header on the stack (or forwards a caller packet) and ships it through one
     // of the DirectPlay set-data wrappers.
-    i32 SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c);                   // 0xb93a0
+    i32 SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c); // 0xb93a0
+    // SendStatPair sibling: builds {m_4=id, m_8=value} to a specific recipient (the
+    // explicit-value form of SendStatTo, which uses localPlayer.id for m_8). // 0xb9490
+    i32 SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c);
     i32 SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c); // 0xb9500
     i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);                  // 0xb9570
+    // Session-ready gate (0xb9180): with both args set, polls the session once if the
+    // done-latch (m_534) is clear, then reports whether it is now set.
+    i32 PollSessionGated(i32 a1, i32 a2); // 0xb9180
     // The two config-name accessors: return the m_5b4 / m_5b8 CStrings by value.
     RVA(0x000b6090, 0x23)
     CString GetConfigNameA() {

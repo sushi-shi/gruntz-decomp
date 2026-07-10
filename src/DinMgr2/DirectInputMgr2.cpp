@@ -38,11 +38,13 @@
 // (Free360/Free6d0 device-leaf teardowns re-homed onto CDeviceConfigB/CDeviceConfigC
 // below; the DevCfg placeholder view is dissolved.)
 
-// CDevicePtrArray::SetSize @0x1b4f75 IS MFC CObArray::SetSize; minimal local decl.
+// CDevicePtrArray::SetSize @0x1b4f75 IS MFC CObArray::SetSize; SetAtGrow @0x1b5144 IS
+// CDWordArray::SetAtGrow (stores the device ptr as a DWORD). Minimal local decl.
 SIZE_UNKNOWN(CObArray);
 class CObArray {
 public:
     void SetSize(i32 n, i32 grow);
+    void SetAtGrow(i32 nIndex, u32 newElement);
 };
 
 // The DInput SDK constants (DIRECTINPUT_VERSION / DIDEVTYPE_JOYSTICK / DIEDFL_* /
@@ -164,6 +166,10 @@ inline CInputDevice::CInputDevice() {
 }
 
 inline CDeviceConfigB::CDeviceConfigB() {
+    m_flags = 0;
+}
+
+inline CDeviceConfigC::CDeviceConfigC() {
     m_flags = 0;
 }
 
@@ -331,6 +337,44 @@ i32 DirectInputMgr2::EnumGameControllers(u32) {
     if (hr != 0) {
         GetErrorString(DINMGR2_FILE, 0xfb, hr);
         return 0;
+    }
+    return 1;
+}
+
+// DinEnumDevicesCallback (0x132fc0) - the IDirectInput::EnumDevices callback
+// EnumGameControllers installs. For each attached game controller it new's a joystick
+// CDeviceConfigC, CreateDevJoystick's it with the enumerated GUID (lpddi->guidInstance,
+// at +4) + the manager's cached DInput/owner/flags, and on success appends the device
+// pointer to the manager's m_devices array (as a DWORD). Returns TRUE to keep enumerating.
+// @early-stop
+// regalloc/scheduling wall on the SetAtGrow tail (93.8%): logic + offsets byte-exact,
+// residual is the index-temp register + this-lea ordering (target `mov edx,[edi+0x20];
+// lea ecx,[edi+0x18]` before the pushes vs cl's `mov ecx,[edi+0x20]; push; push; lea
+// ecx`). Permuter FINAL: no source spelling flips it.
+RVA(0x00132fc0, 0xb8)
+i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
+    if (instance == 0) {
+        return 1;
+    }
+    DirectInputMgr2* mgr = (DirectInputMgr2*)ref;
+    if (mgr == 0) {
+        return 1;
+    }
+    CDeviceConfigC* dev = new CDeviceConfigC;
+    if (dev->CreateDevJoystick(
+            mgr->m_directInput,
+            (const char*)instance + 4,
+            mgr->m_owner,
+            mgr->m_flags
+        )
+        == 0) {
+        if (dev != 0) {
+            delete dev;
+        }
+        return 1;
+    }
+    if (dev != 0) {
+        ((CObArray*)&mgr->m_devices)->SetAtGrow(mgr->m_devices.m_size, (u32)dev);
     }
     return 1;
 }
