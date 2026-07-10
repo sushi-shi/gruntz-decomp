@@ -1,45 +1,31 @@
-// BitStreamBlowfish.cpp (0x16f760): the function never reads `this` (ecx) and
-// cleans 2 stack args (ret 8) -> despite the RTTI attribution it is a __stdcall
-// free function. It is a Blowfish-ECB/CBC bit decode loop: pull 8 "bits" from the
-// reader (m_16a510), emit the PREVIOUS decrypted right-half through the sink
-// (m_16ab20) skipping the priming block, Blowfish_decipher the (xl,xr) pair, then
-// chain. Loops until the reader's end-flag byte (at this+desc->m_4+8) is set.
-// Field names are placeholders; reader/sink methods are external (reloc-masked);
-// Blowfish_decipher resolves to the matched `blowfish` unit.
+// BitStreamBlowfish.cpp (0x16f760): a __stdcall free function that decodes a
+// Blowfish-ciphered sample stream. It pulls 8-byte blocks from a CRT <iostream.h>
+// `istream`, emits the PREVIOUS decrypted right-half through a CRT `ostream` (skipping
+// the priming block), Blowfish_decipher's the (xl,xr) pair, then chains. It loops until
+// the reader hits EOF (`istream::eof()`, the ios virtual-base state & eofbit).
+//
+// The stream classes are the statically-linked CRT iostreams (recovered identity):
+// istream::read @0x16a510, ostream::write @0x16ab20, and `x_gcount` (istream+0x8, read
+// via gcount()) is the count of bytes the last read() consumed. Blowfish_decipher
+// resolves to the matched `blowfish` unit (reloc-masked).
 #include <rva.h>
-#include <Mfc.h>
-
-struct Desc {
-    char pad0[4];
-    int m_4; // 0x4 - dynamic byte offset of the end-flag within the reader
-};
-
-struct BitReader {
-    Desc* m_0; // 0x0
-    char pad4[4];
-    int m_8; // 0x8 - sample mode (==1 => sign-extend a byte)
-    void Read16a510(unsigned int* out, int n);
-};
-
-struct Sink {
-    void Emit16ab20(unsigned int* prevBlock, int sample);
-};
+#include <iostream.h>
 
 // matched in the `blowfish` unit (?Blowfish_decipher@@YAXPAI0@Z)
 void Blowfish_decipher(unsigned int* xl, unsigned int* xr);
 
 RVA(0x0016f760, 0x82)
-void __stdcall BitStreamBlowfishDecode(BitReader* r, Sink* out) {
+void __stdcall BitStreamBlowfishDecode(istream* in, ostream* out) {
     unsigned int blk[4];
     bool first = true;
-    while (!(*((char*)r + r->m_0->m_4 + 8) & 1)) {
-        r->Read16a510(&blk[0], 8);
-        int sample = r->m_8;
+    while (!in->eof()) {
+        in->read((char*)&blk[0], 8);
+        int sample = in->gcount();
         if (sample == 1) {
             sample = *(signed char*)&blk[0];
         }
         if (!first) {
-            out->Emit16ab20(&blk[3], sample);
+            out->write((const char*)&blk[3], sample);
         } else {
             first = false;
         }
@@ -48,7 +34,3 @@ void __stdcall BitStreamBlowfishDecode(BitReader* r, Sink* out) {
         blk[3] = blk[1];
     }
 }
-
-SIZE_UNKNOWN(BitReader);
-SIZE_UNKNOWN(Desc);
-SIZE_UNKNOWN(Sink);

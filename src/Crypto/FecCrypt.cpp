@@ -11,17 +11,17 @@
 // load-bearing fact.
 #include <Ints.h>
 #include <rva.h>
-#include <string.h> // strlen (inlined as repnz scasb at /O2 /Oi)
+#include <string.h> // strlen (inlined as repnz scasb at /O2 /Oi), memset/memcpy
+#include <stdio.h>  // sprintf (the "Opened FEC File" diagnostics, 0x11f890)
+#include <stdlib.h> // rand (0x17bf60, obfuscation padding)
+#include <direct.h> // _getcwd / _chdir (ExtractArchive dir save/restore)
 
-#include <Crypto/FecCrypt.h> // the unified CFecFile / FecStream / FecIndex shape
+#include <Crypto/FecCrypt.h> // the unified CFecFile / FecStream / CDWordArray shape
 
-// The diagnostics sink (0x11f890): variadic cdecl `(buf, fmt, ...)` logger.
-extern "C" int FecLog(char* buf, const char* fmt, ...);
-
-// The version WORD (0x11e) + per-entry seek stride (0x120) live inside the m_18
-// record buffer (0x18 + 0x106 / 0x108).
-#define FEC_W(p) (*(u16*)((char*)(p) + 0x11e))
-#define FEC_STRIDE(p) (*(i32*)((char*)(p) + 0x120))
+// The alternating-byte name cipher (defined below at 0x17bf70 / 0x17bfe0); AddFile
+// encodes the entry name and ExtractArchive decodes it.
+void __stdcall FecEncode(const char* src, char* dst);
+void __stdcall FecDecode(const char* src, char* dst, unsigned short len);
 
 // ---------------------------------------------------------------------------
 // The CMoviePlayer decode-store lifecycle (this same object is CMoviePlayer's m_540).
@@ -39,7 +39,7 @@ i32 CFecFile::Init() {
     }
     m_04 = 0;
     m_08 = 0;
-    m_index.RemoveAt(0, -1);
+    m_index.SetSize(0, -1);
     memset(&m_0c, 0, 12); // m_0c, m_10, m_14
     memset(m_18, 0, sizeof(m_18));
     m_134 = 0;
@@ -55,16 +55,16 @@ void CFecFile::Close() {
         return;
     }
     OnFail();
-    m_index.RemoveAt(0, -1);
+    m_index.SetSize(0, -1);
     m_00 = 0;
 }
 
-// 0x17b5a0 - OnFail: drop the active stream (m_stream.Discard, slot 0x54) and clear the
+// 0x17b5a0 - OnFail: drop the active stream (m_stream.Abort, slot 0x54) and clear the
 // open flags when the store is armed and open; returns whether it did work. __thiscall.
 RVA(0x0017b5a0, 0x48)
 i32 CFecFile::OnFail() {
     if (m_00 && (m_04 || m_08)) {
-        m_stream.Discard();
+        m_stream.Abort();
         m_04 = 0;
         m_08 = 0;
         m_134 = 0;
@@ -74,9 +74,11 @@ i32 CFecFile::OnFail() {
 }
 
 // @early-stop
-// validation-reader wall: virtual stream dispatch + the per-entry index walk
-// reproduce, but the loop's intricate stack-slot reuse around the two Seek
-// checks is not source-steerable (intermediate live ranges differ).
+// ~82.8% regalloc wall: layout/logic byte-correct (CDWordArray index, single sprintf
+// buffer, the two m_11e re-reads, (u32)m_14 loop bound), but retail colours `name`->ebp
+// and `&m_stream`->ebx while cl swaps them, so every m_stream vtable dispatch differs by
+// the base register (mov ecx,ebx vs ebp). A pure register-coloring tie-break; not
+// source-steerable.
 RVA(0x0017b5f0, 0x249)
 i32 CFecFile::ReadArchive(const char* name) {
     if (name == 0) {
@@ -104,36 +106,35 @@ i32 CFecFile::ReadArchive(const char* name) {
         goto fail;
     }
 
-    char buf1[0x80];
-    char buf2[0x80];
-    FecLog(buf1, "Opened FEC File %s", name);
-    FecLog(buf2, "FEC File Version: %d.%d Number o", m_0c, m_10, m_14);
+    char buf[0x100];
+    sprintf(buf, "Opened FEC File %s\n", name);
+    sprintf(buf, "FEC File Version: %d.%d\nNumber of Files: %d\n", m_0c, m_10, m_14);
 
     if (m_stream.Read(m_18, 0x10c) != 0x10c) {
         goto fail;
     }
     {
-        u16 w = FEC_W(this);
-        if (m_stream.Seek(w - 0x2b8, 1) != w - 0x19d) {
+        i32 tail = FEC_W(this) - 0x19d;
+        if (m_stream.Seek(FEC_W(this) - 0x2b8, 1) != tail) {
             goto fail;
         }
-        m_index.Op(m_140, w - 0x19d);
+        m_index.Add(tail);
 
-        for (u16 i = 1; i < (u16)m_14; i++) {
-            i32 base = m_13c[i - 1];
+        for (u16 i = 1; i < (u32)m_14; i++) {
             i32 stride = FEC_STRIDE(this);
-            if (m_stream.Seek(stride, 1) != base + stride) {
+            if (m_stream.Seek(stride, 1) != (i32)m_index.GetData()[i - 1] + stride) {
                 goto fail;
             }
             memset(m_18, 0, 0x10c);
             if (m_stream.Read(m_18, 0x10c) != 0x10c) {
                 goto fail;
             }
-            u16 w2 = FEC_W(this);
-            if (m_stream.Seek(w2 - 0x2b8, 1) != base + stride + w2 - 0x1ac) {
+            i32 w2 = FEC_W(this);
+            if (m_stream.Seek(w2 - 0x2b8, 1)
+                != (i32)m_index.GetData()[i - 1] + stride + w2 - 0x1ac) {
                 goto fail;
             }
-            m_index.Op(m_index.m_08, base + stride + m_13c[i - 1] - 0x1ac);
+            m_index.Add((i32)m_index.GetData()[i - 1] + stride + w2 - 0x1ac);
         }
     }
     return 1;
@@ -150,7 +151,7 @@ fail:
 RVA(0x0017b840, 0x53)
 i32 CFecFile::Lookup(u32 idx) {
     if (m_04 && m_00 && idx <= (u32)m_14 && idx != 0) {
-        i32* slot = &m_13c[idx - 1];
+        i32* slot = (i32*)&m_index.GetData()[idx - 1];
         if (m_stream.Seek(*slot, 0) == *slot) {
             return m_128;
         }
@@ -188,25 +189,184 @@ i32 CFecFile::CreateArchive(const char* name) {
 }
 
 // ===========================================================================
-// Homed from src/Stub/GapFunctions.cpp (matcher-5): two large CFecFile archive
-// methods in this TU's .text block (RVA-first; neighbourhood is all CFecFile).
-// The gap tool had over-spanned 0x17b950 (size 0x60b) so it swallowed the whole
-// 0x17bcd0 function; 0x17b950's true size is 0x380 (it ends at 0x17bcd0). Split.
+// 0x17b950 - CFecFile::AddFile(name, pCancel, pProgress): append the disk file `name`
+// to an open (m_08) write-archive. Builds the 0x10c entry record (index=++m_134,
+// FecEncode'd basename + random padding, scramble word m_11e = rand()%0x400 + 0x2b8,
+// payload length m_120), writes the record + (m_11e - 0x2b8) random bytes, then streams
+// the file in 32 KB chunks (pumping messages while pProgress, aborting on *pCancel), and
+// finally patches the header file-count at offset 0xb. __thiscall; 1 on success.
 // ===========================================================================
 // @early-stop
-// 0x17b950 (895 B) = a CFecFile archive read/write worker (falls between
-// CreateArchive @0x17b8a0 and FecEncode @0x17bf70; ends at 0x17bcd0 via a backward
-// jmp out of the span). Homed pending leaf-first reconstruction (large body).
+// ~82% regalloc/scheduling wall: full control flow + /GX EH frame + record build + copy
+// loop + finalize are reconstructed and reloc-match retail. Residuals are the `this`
+// register colouring (ebp vs ebx), the seek-fail/abort undo tail-merge layout, and the
+// name-padding `mov dh,dl` byte-extract scheduling residue. Not source-steerable.
 RVA(0x0017b950, 0x380)
-i32 Gap_17b950(void) {
-    return 0;
+i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
+    if (m_08 == 0 || m_00 == 0) {
+        return 0;
+    }
+
+    CFile file;
+    if (file.Open(name, 0, 0) == 0) {
+        return 0;
+    }
+
+    m_134++;
+
+    CString base = name;
+    i32 slash = base.Find('\\');
+    if (slash != -1) {
+        base = base.Right(base.GetLength() - slash - 1);
+    }
+
+    memset(m_18, 0, 0x10c);
+    *(i32*)m_18 = m_134;
+    FEC_NAMELEN(this) = (u16)base.GetLength();
+
+    char* enc = (char*)operator new(base.GetLength() + 1);
+    FecEncode(base, enc);
+    memcpy(FEC_NAME(this), enc, base.GetLength());
+    operator delete(enc);
+
+    if (base.GetLength() < 0x100) {
+        char* p = FEC_NAME(this) + base.GetLength();
+        for (i32 c = 0x100 - base.GetLength(); c != 0; c--) {
+            *p++ = (char)(rand() % 0xff);
+        }
+    }
+
+    FEC_W(this) = (u16)(rand() % 0x400 + 0x2b8);
+    FEC_STRIDE(this) = file.Seek(0, 2);
+    if (file.Seek(0, 0) != 0) {
+        m_134--;
+        return 0;
+    }
+
+    m_stream.Seek(0, 2);
+    m_stream.Write(m_18, 0x10c);
+
+    char* pad = (char*)operator new(FEC_W(this) - 0x2b8);
+    for (i32 i = 0; i < FEC_W(this) - 0x2b8; i++) {
+        pad[i] = (char)(rand() % 0xff);
+    }
+    m_stream.Write(pad, FEC_W(this) - 0x2b8);
+    operator delete(pad);
+
+    memset(m_14c, 0, 0x8000);
+    u32 copied = 0;
+    i32 done = 0;
+    while (done == 0) {
+        if (pProgress != 0) {
+            MSG msg;
+            if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
+                TranslateMessage(&msg);
+                DispatchMessageA(&msg);
+            }
+        }
+        if (*pCancel != 0) {
+            m_134--;
+            return 0;
+        }
+        u32 chunk = 0x8000;
+        if (copied + 0x8000 > (u32)FEC_STRIDE(this)) {
+            chunk = FEC_STRIDE(this) - copied;
+        }
+        file.Read(m_14c, chunk);
+        m_stream.Write(m_14c, chunk);
+        copied += chunk;
+        if (copied == (u32)FEC_STRIDE(this)) {
+            done = 1;
+        }
+    }
+
+    m_stream.Seek(0xb, 0);
+    m_stream.Write(&m_134, 4);
+    m_stream.Close();
+    return 1;
 }
 
+// ===========================================================================
+// 0x17bcd0 - CFecFile::ExtractArchive(dir, pCancel, pProgress): unpack an open (m_04)
+// read-archive into directory `dir`. Saves the cwd, chdirs into `dir`, seeks the stream
+// past the 0xf-byte header, then for each of m_14 entries reads the 0x10c record,
+// FecDecode's the name, opens the output file, seeks the stream to the entry's recorded
+// offset (m_index[i]) and streams m_120 bytes out in 32 KB chunks (message-pumping while
+// pProgress, aborting on *pCancel). Restores the cwd on success/failure. __thiscall.
+// ===========================================================================
 // @early-stop
-// 0x17bcd0 (651 B, /GX EH frame) = the sibling CFecFile archive method that the
-// over-span had hidden. Homed pending leaf-first reconstruction (large EH body).
+// ~84.5% regalloc wall: full logic + /GX EH frame + per-entry decode/extract + copy loop
+// reconstructed and reloc-match retail. Residual is register colouring - retail reuses
+// ebp for both the zero-constant (the m_04/m_00/version gates) and the `copied` counter,
+// while cl splits them across esi/ebp - plus the chunk-branch polarity. Not
+// source-steerable.
 RVA(0x0017bcd0, 0x28b)
-i32 Gap_17bcd0(void) {
+i32 CFecFile::ExtractArchive(const char* dir, i32* pCancel, void* pProgress) {
+    if (m_04 == 0 || m_00 == 0) {
+        return 0;
+    }
+    if (m_0c == 1 && m_10 == 0) {
+        return 0;
+    }
+
+    char cwd[0x104];
+    if (_getcwd(cwd, 0x104) == 0) {
+        return 0;
+    }
+    if (_chdir(dir) != 0) {
+        return 0;
+    }
+
+    CFile file;
+    m_stream.Seek(0xf, 0);
+
+    for (u16 i = 0; i < (u32)m_14; i++) {
+        if (m_stream.Read(m_18, 0x10c) != 0x10c) {
+            goto fail;
+        }
+        char decoded[0x100];
+        FecDecode(FEC_NAME(this), decoded, FEC_NAMELEN(this));
+        if (file.Open(decoded, 0x1002, 0) == 0) {
+            goto fail;
+        }
+        if (m_stream.Seek((i32)m_index.GetData()[i], 0) != (i32)m_index.GetData()[i]) {
+            goto fail;
+        }
+        u32 copied = 0;
+        i32 done = 0;
+        while (done == 0) {
+            if (pProgress != 0) {
+                MSG msg;
+                if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
+                    TranslateMessage(&msg);
+                    DispatchMessageA(&msg);
+                }
+            }
+            if (*pCancel != 0) {
+                return 0;
+            }
+            u32 chunk = FEC_STRIDE(this);
+            if (copied + 0x8000 <= chunk) {
+                chunk = 0x8000;
+            } else {
+                chunk -= copied;
+            }
+            m_stream.Read(m_14c, chunk);
+            file.Write(m_14c, chunk);
+            copied += chunk;
+            if (copied == (u32)FEC_STRIDE(this)) {
+                done = 1;
+            }
+        }
+        file.Flush();
+        file.Close();
+    }
+
+    _chdir(cwd);
+    return 1;
+
+fail:
+    _chdir(cwd);
     return 0;
 }
 
@@ -248,7 +408,6 @@ void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
 }
 
 SIZE_UNKNOWN(FecStream);
-SIZE_UNKNOWN(FecIndex);
-SIZE_UNKNOWN(CFecFile);
+SIZE(CFecFile, 0x814c);
 
 // --- vtable catalog ---

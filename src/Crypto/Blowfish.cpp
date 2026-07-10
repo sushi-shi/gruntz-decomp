@@ -157,46 +157,5 @@ void __stdcall Blowfish_InitKey(u8* key) {
     InitializeBlowfish(key, 4);
 }
 
-// ---------------------------------------------------------------------------
-// 0x16f6e0 - the key-file record encipher loop: while the descriptor-defined flag bit
-// of src is clear, read an 8-byte record from src, Blowfish_encipher it, and write it
-// to dst; remember src->m_8; finally Finish dst with the last m_8. __stdcall(src, dst).
-// The src/dst record streams are placeholder I/O views. Re-homed from
-// src/Stub/ReconBatch2.cpp (it calls Blowfish_encipher above).
-struct Desc_16f6e0 {
-    char m_pad0[4];
-    i32 m_4; // +0x04 byte offset of the flag within the object
-};
-struct Src_16f6e0 {
-    Desc_16f6e0* m_0; // +0x00 descriptor
-    char m_pad4[0x8 - 0x4];
-    i32 m_8;                           // +0x08
-    void ReadRecord(void* buf, i32 n); // 0x16a510
-};
-struct Dst_16f6e0 {
-    void WriteRecord(void* buf, i32 n); // 0x16ab20
-    void Finish(i32 last);              // 0x16aab0
-};
-SIZE_UNKNOWN(Desc_16f6e0);
-SIZE_UNKNOWN(Src_16f6e0);
-SIZE_UNKNOWN(Dst_16f6e0);
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc, const-materialize-into-reg-vs-immediate):
-// the whole control flow + record read/encipher/write + Blowfish reloc match retail;
-// residual is that retail pins the test mask 1 in bl (`movb $1,%bl; testb %bl,mem`) and
-// re-zeros the record buffer with a fresh `xor edx` inside the loop, while cl tests with
-// an immediate `$1` and hoists the zero into ebx outside the loop. ~84.9%.
-RVA(0x0016f6e0, 0x76)
-void __stdcall Copy_16f6e0(Src_16f6e0* src, Dst_16f6e0* dst) {
-    i32 last = 0;
-    while ((*((char*)src + src->m_0->m_4 + 8) & 1) == 0) {
-        unsigned int rec[2];
-        rec[0] = 0;
-        rec[1] = 0;
-        src->ReadRecord(rec, 8);
-        last = src->m_8;
-        Blowfish_encipher(&rec[0], &rec[1]);
-        dst->WriteRecord(rec, 8);
-    }
-    dst->Finish(last);
-}
+// Copy_16f6e0 (0x16f6e0) lives in its own TU (BlowfishCopy.cpp) so its <iostream.h>
+// dependency does not perturb Blowfish_decipher's fragile mirror schedule in this unit.

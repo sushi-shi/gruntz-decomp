@@ -2128,6 +2128,11 @@ source = "src/Crypto/Blowfish.cpp"
 flags = "base"
 
 [[unit]]
+unit = "blowfishcopy"
+source = "src/Crypto/BlowfishCopy.cpp"
+flags = "base"
+
+[[unit]]
 unit = "simpleanimation"
 source = "src/Gruntz/SimpleAnimation.cpp"
 flags = "eh"
@@ -2230,7 +2235,9 @@ flags = "eh"
 [[unit]]
 unit = "feccrypt"
 source = "src/Crypto/FecCrypt.cpp"
-flags = "base"
+# /GX: AddFile/ExtractArchive have destructible CFile/CString locals (retail's SEH
+# frame). Neutral for the frameless leaf methods (no destructible locals).
+flags = "eh"
 
 [[unit]]
 unit = "rangeset"
