@@ -196,18 +196,6 @@ RVA(0x000e9a30, 0x31e)
 i32 Gap_0e9a30(void) {
     return 0;
 } // @stub
-RVA(0x000f9920, 0x108)
-i32 Gap_0f9920(void) {
-    return 0;
-} // @stub
-RVA(0x000fa6b0, 0xa7)
-i32 Gap_0fa6b0(void) {
-    return 0;
-} // @stub
-RVA(0x000faf50, 0x31)
-i32 Gap_0faf50(void) {
-    return 0;
-} // @stub
 RVA(0x00100660, 0x50)
 i32 Gap_100660(void) {
     return 0;
@@ -231,10 +219,6 @@ i32 Gap_115b60(void) {
 } // @stub
 RVA(0x001164a0, 0x116)
 i32 Gap_1164a0(void) {
-    return 0;
-} // @stub
-RVA(0x00118130, 0x44)
-i32 Gap_118130(void) {
     return 0;
 } // @stub
 // @stub 0x139810 = __thiscall (dst, size) -> dst: builds a `\`-joined qualified

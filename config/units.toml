@@ -1078,6 +1078,14 @@ source = "src/Gruntz/Attract.cpp"
 flags = "eh"
 
 [[unit]]
+# CState frame-surface render helpers (Vslot17 GDI text overlay + ShadeScreen dim),
+# RVA-contiguous with attract but kept standalone so they don't perturb attract's /GX
+# matches (the EngStrRenderText.cpp split precedent). Non-EH.
+unit = "statedrawtext"
+source = "src/Gruntz/StateDrawText.cpp"
+flags = "base"
+
+[[unit]]
 unit = "play"
 source = "src/Gruntz/Play.cpp"
 flags = "eh"

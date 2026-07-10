@@ -19,9 +19,10 @@
 #include <rva.h>
 #include <Gruntz/Sprite.h> // CSpriteHashTable (each registry's +0x10 map)
 
-struct CMenuViewObj; // the level/view object at CResMgr+0x24 (ActionOptionsMenuBar-local)
-struct CGMInputObj;  // CDrawTarget::SurfaceA::Surface2c::m_8 (per-frame input obj; GameMode.h)
-class CDDSurface;    // CDrawTarget::SurfaceB::m_2c (the real DDraw view surface; DDSurface.h)
+struct CMenuViewObj;       // the level/view object at CResMgr+0x24 (ActionOptionsMenuBar-local)
+struct IDirectDrawSurface; // CDrawTarget::SurfaceA::Surface2c::m_8 (the real DDraw surface: the
+                           // credits/splash "poll" is IsLost (slot 24); GetDC/ReleaseDC at 17/26)
+class CDDSurface;          // CDrawTarget::SurfaceB::m_2c (the real DDraw view surface; DDSurface.h)
 
 // The pooled resource the leaf states free before releasing their namespaces
 // (m_28->m_2c). Reloc-masked __thiscall. (Was View.h's CViewPooledRes.)
@@ -47,7 +48,10 @@ struct CDrawTarget {
             void Flip(i32 z); // FUN_0013e850 (resource-facet flip, ret 4)
             void Draw(i32 z); // credits draw-target draw (thiscall)
             char p0[0x8];
-            CGMInputObj* m_8; // +0x08  input obj (credits input poll source)
+            // +0x08  the real IDirectDrawSurface (the render/credits path polls its
+            // IsLost slot 24 (was the CGMInputObj "Poll" misnomer); CState::Vslot17
+            // draws text through its GetDC (slot 17) / ReleaseDC (slot 26)).
+            IDirectDrawSurface* m_8;
         }* m_2c;
     }* m_10;
     struct SurfaceB {       // +0x14  draw-surface view (the loaders' "draw context" handle)

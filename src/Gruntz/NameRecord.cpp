@@ -12,6 +12,10 @@
 class CNameRecord {
 public:
     i32 SetNames(char* name, char* name2, i32 unused); // 0x118040
+    i32 CopyBody(char* body);                          // 0x118130
+    // Sibling predicate (0x1182f0, == the m_08==1 success check, reloc-masked near
+    // call): the CPred1182f0::IsOne view in BoundaryLowerThunks.cpp is this same field.
+    i32 IsOne(); // 0x1182f0
 
     char _vft0[4];              // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     i32 m_04;                   // +0x04 (head of the zeroed body)
@@ -51,6 +55,27 @@ i32 CNameRecord::SetNames(char* name, char* name2, i32 unused) {
     }
     m_08 = 1;
     return 1;
+}
+
+// ===========================================================================
+// CNameRecord::CopyBody (0x118130) - copy a 212-byte record body into m_04..m_d7
+// (the whole record body) from an external source buffer, gated on the source's
+// embedded name (at body+0x10, i.e. the m_name field position within the body)
+// being 1..15 chars; then run the m_08==1 predicate (side-effect call, discarded)
+// and return 1. Rejects a null source or an out-of-range name (returns 0). Inline
+// /Oi CRT (repnz scasb strlen + rep movsd), no relocations except the near IsOne call.
+// ===========================================================================
+RVA(0x00118130, 0x44)
+i32 CNameRecord::CopyBody(char* body) {
+    if (body != 0) {
+        i32 len = (i32)strlen(body + 0x10);
+        if (len > 0 && len < 16) {
+            memcpy(&m_04, body, 212);
+            IsOne();
+            return 1;
+        }
+    }
+    return 0;
 }
 
 SIZE_UNKNOWN(CNameRecord);

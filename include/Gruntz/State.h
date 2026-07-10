@@ -88,7 +88,9 @@ public:
     // (`if (m_curState->Vslot15()) return 1;`) - the i32 return is proven there.
     virtual i32 Vslot15();
     virtual void Vslot16();
-    virtual void Vslot17();
+    // slot 23 (+0x5c, 0x0fa6b0): the frame-surface GDI text overlay (all states inherit
+    // it). GetDC on the frame surface, SetBkMode/SetTextColor, TextOutA(x,y,str), ReleaseDC.
+    virtual i32 Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode);
     virtual void Vslot18();
     virtual void Vslot19();
 
@@ -101,6 +103,11 @@ public:
     }
     // Non-virtual exit notification (reloc-masked; called by ExitModalUI).
     void NotifyExit(i32 code);
+
+    // ShadeScreen (0x0fa6b0's sibling @0x0faf50): the once-suppressed screen dim. On the
+    // first call after the g_suppress latch is armed it consumes the latch (returns it);
+    // otherwise it shades the draw surface (m_c->m_drawTarget->m_14->m_2c->ShadeRect(pct,0)).
+    i32 ShadeScreen(i32 pct); // 0x0faf50 (reloc-masked; defined in StateDrawText.cpp)
 
     // RunTitleSeq (0x0fa350): the title-roll helper. Its body reads ONLY CState
     // members (m_c/m_8/m_2c), and the sibling states (CHelpState/CSplashState/...)

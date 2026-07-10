@@ -19,12 +19,14 @@
 // to GetData()->nDataLength == m_pchData[-2], byte-identical to the load's `mov
 // eax,ds:g; mov ecx,[eax-8]; test ecx,ecx` guard.
 #include <Mfc.h> // CString + <windows.h> (SetCursor)
+#include <ddraw.h> // IDirectDrawSurface (the frame surface's IsLost poll, m_c->...->m_2c->m_8)
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::Method_158bc0 (m_c->m_04 page gate)
 
 #include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CResSource::LoadGroup (m_8/m_2c)
+#include <Gruntz/GameMode.h>     // CGMEntity/CGMEntityList/g_645574/CGMInputObj/GM_SimpleAnim (Render spine)
 #include <Gruntz/State.h>        // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
 #include <Gruntz/View.h>         // CState::m_c render sub-object facets
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the m_c holder)
@@ -39,6 +41,10 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // The global asset-root CString whose emptiness gates the load (0x64e25c).
 DATA(0x0064e25c)
 extern CString g_assetRoot;
+
+// The engine's just-refreshed per-frame clock delta (?g_wap32FrameDelta@@3HA); the
+// splash title timer counts down by it (0x653c74).
+extern i32 g_wap32FrameDelta; // 0x653c74
 
 class CSplashState : public CState {
 public:
@@ -62,6 +68,9 @@ public:
     // The base asset-namespace loader chained first (reloc-masked external, called
     // on `this`; the same 0x43a9 ILT thunk the other state loaders enter).
     i32 LoadGameAssetNamespaces(i32 a, i32 b, i32 c);
+
+    char m_pad1a8[0x1b8 - 0x1a8];
+    i32 m_1b8; // +0x1b8 splash-title countdown timer (frame-delta decremented, clamped 0)
 };
 
 // @confidence: high
@@ -92,6 +101,68 @@ i32 CSplashState::LoadSounds(i32 a, i32 b, i32 c) {
     if (soundz) {
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)soundz, g_emptyString, "_");
     }
+    return 1;
+}
+
+// CSplashState::Render (0xf9920, slot 5) - the per-frame splash draw spine (the
+// canonical CState Render shape, cf. CCreditsState::Render): input poll -> input-
+// virtual bail -> cursor anim -> title-timer countdown -> per-entity Update loop
+// -> flagged-entity/timer-expiry command post. The +0x1b8 timer counts down by the
+// frame delta (clamped at 0); when an entity latches flag&1 OR the timer has expired
+// (m_1b8==0), post WM_COMMAND 0x8023 to the game window and clear the app run gate.
+//
+// @early-stop
+// Byte-exact except the cursor-anim gate `if(((CSoundRegistry*)m_c->m_28)->m_2c)`:
+// retail materializes the chain reusing eax (`mov eax,[eax+0x28]; mov ecx,[eax+0x2c];
+// cmp ecx,esi`), cl keeps m_c in eax and folds the m_2c load into the cmp
+// (`mov ecx,[eax+0x28]; cmp [ecx+0x2c],esi`) - the reread-member-view-pointer
+// register wall (docs/patterns/reread-member-view-pointer.md). The direct analog
+// CCreditsState::Render (identical source line) hits the same wall at 97% and
+// LevelPreview::Tick @early-stops on it too. Logic + control flow + all externs
+// byte-exact; final sweep.
+RVA(0x000f9920, 0x108)
+i32 CSplashState::Render() {
+    IDirectDrawSurface* in = m_c->m_drawTarget->m_10->m_2c->m_8;
+    if (!in || in->IsLost()) {
+        if (!InputVirtual()) {
+            m_4->ReportError(0x8006, 0x447);
+            return 0;
+        }
+    }
+
+    if (((CSoundRegistry*)m_c->m_28)->m_2c) {
+        GM_SimpleAnim(-1);
+    }
+
+    if ((u32)g_wap32FrameDelta >= m_1b8) {
+        m_1b8 = 0;
+    } else {
+        m_1b8 = m_1b8 - g_wap32FrameDelta;
+    }
+
+    {
+        CGMEntityList* L = g_645574;
+        for (i32 i = 0; i < L->m_count; i++) {
+            L->m_elems[i]->Update();
+        }
+    }
+
+    {
+        CGMEntityList* L = g_645574;
+        i32 n = L->m_count;
+        i32 j;
+        for (j = 0; j < n; j++) {
+            if (L->m_elems[j]->m_2ac & 1) {
+                goto post;
+            }
+        }
+        if (m_1b8) {
+            return 1;
+        }
+    }
+post:
+    PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+    m_4->m_owner->m_running = 0;
     return 1;
 }
 
