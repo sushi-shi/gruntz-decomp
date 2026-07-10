@@ -36,9 +36,10 @@
 // (docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md;
 // eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
-#include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
-#include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
-#include <Gruntz/RollingBall.h>     // CRollingBall : CUserLogic (+ the /GX CString temps)
+#include <Gruntz/ActNameRegistry.h>  // the shared activation-name registry archetype
+#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sub-update Advance_15c360)
+#include <Gruntz/RollingBall.h>      // CRollingBall : CUserLogic (+ the /GX CString temps)
 
 #include <rva.h>
 #include <string.h> // inline strcmp for the ctor's direction-name match
@@ -72,12 +73,11 @@ extern void* g_64556c; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 extern "C" i32 g_645588;    // DAT_00645588 @0x645588 (world clock ms)
 extern "C" i32 g_645584;    // DAT_00645584 @0x645584 (frame delta ms)
 extern "C" double g_5ea3e8; // DAT_005ea3e8 @0x5ea3e8 (1000.0 ms->tiles divisor)
-extern "C" void* g_6bf3bc;  // _g_6bf3bc @0x6bf3bc (the EH frame's pushed global)
+extern "C" u32 g_6bf3bc;    // _g_6bf3bc @0x6bf3bc (the per-frame draw-delta; Advance arg)
 
 // ---------------------------------------------------------------------------
 // Engine helpers reached through reloc-masked thunks (no body).
 // ---------------------------------------------------------------------------
-void RbSubUpdate(void* anim1a0); // 0x15c360 [this+0x38]+0x1a0 sub-update
 void RbCacheFirst(
     void* anim,
     const char* name
@@ -319,17 +319,21 @@ void CRollingBall::RegisterActs() {
 
 // CRollingBall::Update - the per-tick rolling-ball state machine (__thiscall).
 // @early-stop
-// /GX branchy nested-jump-table megafunction wall (~35%): complete, correct
-// reconstruction (prologue, explosion/fall latches, action/direction/sink
-// switches, x87 interpolation tail); the EH-state numbering + jump-table reloc
-// typing across 2682 B is the documented wall. See file header; final-sweep.
+// /GX branchy nested-jump-table megafunction wall (~38%): complete, correct
+// reconstruction (prologue, explosion/fall latches, action/direction/sink switches,
+// x87 interpolation tail). Two binary-proven structural fixes landed the prologue
+// exactly (36.4%->38.0%): the m_38+0x1a0 sub-update is the real CAniAdvanceCursor::
+// Advance_15c360(g_6bf3bc) __thiscall (was a fake free-fn RbSubUpdate + a dead
+// g_6bf3bc load), and g_64556c is re-loaded per use (retail does not cache the game
+// registry in a callee-saved reg - ~15 fresh ds:0x64556c loads). Residual is the
+// documented wall: MSVC5's constant-materialization (test eax,eax vs cmp [mem],ebx),
+// the +8B frame spill count, the EH-state numbering + the three nested jump-table
+// reloc-typings across 2682 B. See file header; final-sweep.
 RVA(0x000b0140, 0xa7a)
 i32 CRollingBall::Update() {
     void* self = this;
-    void* gr = g_64556c;
-    (void)g_6bf3bc;
 
-    RbSubUpdate((char*)PTR(self, 0x38) + 0x1a0);
+    ((CAniAdvanceCursor*)((char*)PTR(self, 0x38) + 0x1a0))->Advance_15c360(g_6bf3bc);
 
     void* anim = PTR(self, 0x38);
     if (I32(anim, 0x1c8) != 0 && I32(anim, 0x1c0) == 0) {
@@ -347,7 +351,7 @@ i32 CRollingBall::Update() {
             RbCacheFirst(PTR(self, 0x38), "LEVEL_ROLLINGBALL_EXPLOSION");
             I32(self, 0x40) = I32(PTR(self, 0x38), 0x1b4);
             RbApplyLookup(PTR(self, 0x38), "LEVEL_ROLLINGBALLEXPLOSION", 0);
-            void* map = PTR(gr, 0x70);
+            void* map = PTR(g_64556c, 0x70);
             i32 cx = I32(logic, 0x5c) >> 5;
             i32 cy = I32(logic, 0x60) >> 5;
             if ((u32)cx < (u32)I32(map, 0xc) && (u32)cy < (u32)I32(map, 0x10)) {
@@ -365,14 +369,14 @@ i32 CRollingBall::Update() {
         void* logic = PTR(self, 0x10);
         i32 cx = I32(logic, 0x5c);
         i32 cy = I32(logic, 0x60);
-        if (cx < I32(gr, 0x144) && cx >= I32(gr, 0x13c) && cy < I32(gr, 0x148)
-            && cy >= I32(gr, 0x140)) {
-            I32(PTR(gr, 0x68), 0x3f8) = 1;
+        if (cx < I32(g_64556c, 0x144) && cx >= I32(g_64556c, 0x13c) && cy < I32(g_64556c, 0x148)
+            && cy >= I32(g_64556c, 0x140)) {
+            I32(PTR(g_64556c, 0x68), 0x3f8) = 1;
         }
         void* logic2 = PTR(self, 0x10);
         i32 outA, outB;
         if (RbProbeRect(
-                PTR(gr, 0x68),
+                PTR(g_64556c, 0x68),
                 I32(logic2, 0x5c),
                 I32(logic2, 0x60),
                 (i32*)((char*)logic2 + 0x144),
@@ -380,7 +384,7 @@ i32 CRollingBall::Update() {
                 &outA,
                 0
             )) {
-            RbMarkRect(PTR(gr, 0x68), outA, outB, 2, -1);
+            RbMarkRect(PTR(g_64556c, 0x68), outA, outB, 2, -1);
         }
     }
 
@@ -389,9 +393,9 @@ i32 CRollingBall::Update() {
     if (I32(logic, 0x5c) == I32(self, 0x78) && I32(logic, 0x60) == I32(self, 0x7c)) {
         // arrived at the target cell: clear the cell, read its terrain id and
         // dispatch on the rolling-ball action.
-        RbClearCell(PTR(gr, 0x68), I32(self, 0x7c), I32(self, 0x78), 0);
+        RbClearCell(PTR(g_64556c, 0x68), I32(self, 0x7c), I32(self, 0x78), 0);
 
-        void* map = PTR(gr, 0x70);
+        void* map = PTR(g_64556c, 0x70);
         i32 cx = I32(self, 0x78) >> 5;
         i32 cy = I32(self, 0x7c) >> 5;
         i32 terrain;
@@ -407,7 +411,7 @@ i32 CRollingBall::Update() {
             CString fall;      // [esp+0x14]
             CString explosion; // [esp+0x10]
             // resolve the action id from the second grid plane.
-            void* m2 = PTR(gr, 0x30);
+            void* m2 = PTR(g_64556c, 0x30);
             void* lvl = PTR(m2, 0x24);
             i32 ax = I32(self, 0x7c) >> 5;
             i32 ay = I32(self, 0x78) >> 5;

@@ -187,6 +187,12 @@ public:
     // CMultiBootyState (GameMode.h); LoadGruntEffectSprites (0x1a040) is a
     // CPlay-layout method the trace mis-homed on the base (kept CState-homed).
     i32 LoadGruntEffectSprites();
+    // LevelMsgHudDriver (0x1a700): the per-frame level-message HUD + explosion driver
+    // (only caller CBootyState::Render on its own `this` -> __thiscall on this base).
+    i32 LevelMsgHudDriver();
+    // The slot's formatted stat-line builder, shared with the derived states (retail
+    // symbol is ?FormatHudText@CMenuState@@; external no-body -> reloc-masked here).
+    void FormatHudText(class CString* buf, i32 sel);
     // BuildBootyWalkingGruntz (0x1b450) re-homed to BzState (BootyWalkAnim.cpp).
 };
 

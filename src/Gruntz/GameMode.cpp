@@ -10,18 +10,20 @@
 // Functions in this TU (ascending retail-RVA order):
 //   GenMenuRandPos            @0x019cd0 - free __stdcall edge-spawn RNG helper.
 //   CState::LoadGruntEffectSprites @0x01a040 - preload the in-game effect sprite set.
-//   LevelMsgHudDriver         @0x01a700 - the level-message HUD + explosion driver (stub).
+//   CState::LevelMsgHudDriver @0x01a700 - the per-frame level-message HUD + explosion driver.
 //   CState::~CState (??_G)     @0x08c710 - the slot-0 scalar-deleting dtor.
 //   CState::CState()          @0x08c750 - the base ctor (scalar zero/seed).
 //   CGameModeBase::ResetPreview @0x0de140 / ::Reset @0x0f9840 - the base cleanup pair.
-#include <Bute/SymTab.h>                   // CSymTab (LoadGruntEffectSprites m_30 ResolvePath)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>  // RemoveKeysEqual_157c70 (CGameModeBase::ResetPreview)
-#include <Gruntz/SpriteRefTable.h>         // CSpriteRefTable (LoadGruntEffectSprites m_74 GetSel)
-#include <Gruntz/GameMode.h>               // CState / CGameModeBase / CSpriteFactoryHolder
-#include <Bute/ButeMgr.h>                  // CButeMgr g_buteMgr (SecretColor wormhole tint)
-#include <Gruntz/SpriteFactory.h>          // CSpriteFactory (m_world->m_8 CreateSprite)
-#include <Gruntz/UserLogic.h>              // CGameObject (the created effect sprites)
-#include <Gruntz/WwdGameReg.h>             // g_gameReg (GenMenuRandPos Rand/RandRange)
+#include <Bute/SymTab.h>                  // CSymTab (LoadGruntEffectSprites m_30 ResolvePath)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (CGameModeBase::ResetPreview)
+#include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable (LoadGruntEffectSprites m_74 GetSel)
+#include <Gruntz/GameMode.h>              // CState / CGameModeBase / CSpriteFactoryHolder
+#include <Bute/ButeMgr.h>                 // CButeMgr g_buteMgr (SecretColor wormhole tint)
+#include <Gruntz/SpriteFactory.h>         // CSpriteFactory (m_world->m_8 CreateSprite)
+#include <Gruntz/UserLogic.h>             // CGameObject (the created effect sprites)
+#include <Gruntz/WwdGameReg.h>            // g_gameReg (GenMenuRandPos Rand/RandRange)
+#include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/CSoundCueMgr (LevelMsgHudDriver cue)
+#include <Gruntz/LeafCue.h>  // LeafCue (PlayIfElapsed_01f940 + m_10/m_14/m_18)
 #include <rva.h>
 
 // The scalar-deleting dtor's `operator delete` (reached by the synthesized `??_G`);
@@ -87,22 +89,23 @@ extern CEffGeomRow g_effGeom[8]; // 0x60b8fc
 SIZE_UNKNOWN(CEffLoaderSelf);
 struct CEffLoaderSelf {
     char m_pad00[0xc];
-    CSpriteFactoryHolder* m_c; // +0x0c  the shared view/render/resource context
+    CSpriteFactoryHolder* m_c; // +0x0c  shared view/render/resource ctx + HUD-message sink
     char m_pad10[0x30 - 0x10];
     CSymTab* m_30; // +0x30  image namespace
-    char m_pad34[0x224 - 0x34];
+    char m_pad34[0x1b4 - 0x34];
+    i32 m_hudPhase; // +0x1b4  LevelMsgHudDriver phase gate (0 = reveal pass, != 0 = drive/finalize)
+    char m_pad1b8[0x224 - 0x1b8];
     CGameObject* m_bomb[8];   // +0x224  bomb-grunt sprites
     CGameObject* m_gokart[8]; // +0x244  go-kart sprites
     CGameObject* m_expl[8];   // +0x264  explosion sprites
-    char m_pad284[0x2fc - 0x284];
-    CGameObject* m_2fc; // +0x2fc  stopwatch
-    CGameObject* m_300; // +0x300  exit
-    CGameObject* m_304; // +0x304  death twitch
-    CGameObject* m_308; // +0x308  gauntletz
-    CGameObject* m_30c; // +0x30c  beachballz
-    CGameObject* m_310; // +0x310  roidz
-    CGameObject* m_314; // +0x314  coin
-    CGameObject* m_318; // +0x318  wormhole/teleporter
+    i32 m_shownA[8];          // +0x284  per-slot "text-box message shown" latch (rectsB pass)
+    i32 m_shownB[8];          // +0x2a4  per-slot "level-message shown" latch (rectsA pass)
+    i32 m_slot;               // +0x2c4  active reveal-slot / phase counter
+    char m_pad2c8[0x2fc - 0x2c8];
+    // +0x2fc  the eight in-game effect icons LoadGruntEffectSprites populated
+    // ([0]=stopwatch [1]=exit [2]=deathtwitch [3]=gauntletz [4]=beachballz [5]=roidz
+    //  [6]=coin [7]=wormhole/teleporter); LevelMsgHudDriver indexes them by m_slot.
+    CGameObject* m_icons[8];
 };
 
 // ===========================================================================
@@ -214,105 +217,105 @@ i32 CState::LoadGruntEffectSprites() {
     CSpriteFactory* f = g_mgrSettings->m_world->m_8;
 
     CGameObject* sw = f->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_2fc = sw;
+    self->m_icons[0] = sw;
     if (sw == 0) {
         return 0;
     }
     sw->ApplyName("GAME_INGAMEICONZ_POWERUPZ_STOPWATCH");
-    self->m_2fc->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    self->m_2fc->m_stateFlags |= 1;
+    self->m_icons[0]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    self->m_icons[0]->m_stateFlags |= 1;
 
     CGameObject* wh = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_318 = wh;
+    self->m_icons[7] = wh;
     if (wh == 0) {
         return 0;
     }
     i32 tint =
         g_mgrSettings->m_78->m_arr14[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "SecretColor", 1)];
-    self->m_318->ApplyName("GAME_WORMHOLE");
-    self->m_318->ApplyLookupGeometry("GAME_TELEPORTER", 0);
-    CGameObject* p318 = self->m_318;
+    self->m_icons[7]->ApplyName("GAME_WORMHOLE");
+    self->m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
+    CGameObject* p318 = self->m_icons[7];
     p318->m_drawActive = 1;
     p318->m_drawFillCmd = 7;
     p318->m_drawFillArg = tint;
 
     CGameObject* ex = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_300 = ex;
+    self->m_icons[1] = ex;
     if (ex == 0) {
         return 0;
     }
     ex->ApplyName("GRUNTZ_EXITZ");
-    self->m_300->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
-    CGameObject* p300 = self->m_300;
+    self->m_icons[1]->ApplyLookupGeometry("GAME_GRUNTFLEX", 0);
+    CGameObject* p300 = self->m_icons[1];
     p300->m_drawActive = 1;
     p300->m_drawFillCmd = 0xa;
     p300->m_drawFillArg = handleA;
-    self->m_300->m_stateFlags |= 1;
+    self->m_icons[1]->m_stateFlags |= 1;
 
     CGameObject* dt = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_304 = dt;
+    self->m_icons[2] = dt;
     if (dt == 0) {
         return 0;
     }
     dt->ApplyName("GRUNTZ_NORMALGRUNT_DEATH");
-    self->m_304->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
-    CGameObject* p304 = self->m_304;
+    self->m_icons[2]->ApplyLookupGeometry("GAME_GRUNTTWITCH", 0);
+    CGameObject* p304 = self->m_icons[2];
     p304->m_drawActive = 1;
     p304->m_drawFillCmd = 0xa;
     p304->m_drawFillArg = handleA;
-    self->m_304->m_stateFlags |= 1;
+    self->m_icons[2]->m_stateFlags |= 1;
 
     CGameObject* gl = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_308 = gl;
+    self->m_icons[3] = gl;
     if (gl == 0) {
         return 0;
     }
     gl->ApplyName("GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ");
-    self->m_308->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p308 = self->m_308;
+    self->m_icons[3]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p308 = self->m_icons[3];
     p308->m_drawActive = 1;
     p308->m_drawFillCmd = 0xa;
     p308->m_drawFillArg = handleA;
-    self->m_308->m_stateFlags |= 1;
+    self->m_icons[3]->m_stateFlags |= 1;
 
     CGameObject* bb = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_30c = bb;
+    self->m_icons[4] = bb;
     if (bb == 0) {
         return 0;
     }
     bb->ApplyName("GAME_INGAMEICONZ_TOYZ_BEACHBALLZ");
-    self->m_30c->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p30c = self->m_30c;
+    self->m_icons[4]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p30c = self->m_icons[4];
     p30c->m_drawActive = 1;
     p30c->m_drawFillCmd = 0xa;
     p30c->m_drawFillArg = handleA;
-    self->m_30c->m_stateFlags |= 1;
+    self->m_icons[4]->m_stateFlags |= 1;
 
     CGameObject* rz = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_310 = rz;
+    self->m_icons[5] = rz;
     if (rz == 0) {
         return 0;
     }
     rz->ApplyName("GAME_INGAMEICONZ_POWERUPZ_ROIDZ");
-    self->m_310->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p310 = self->m_310;
+    self->m_icons[5]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p310 = self->m_icons[5];
     p310->m_drawActive = 1;
     p310->m_drawFillCmd = 0xa;
     p310->m_drawFillArg = handleA;
-    self->m_310->m_stateFlags |= 1;
+    self->m_icons[5]->m_stateFlags |= 1;
 
     CGameObject* cn = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
-    self->m_314 = cn;
+    self->m_icons[6] = cn;
     if (cn == 0) {
         return 0;
     }
     cn->ApplyName("GAME_INGAMEICONZ_POWERUPZ_COIN");
-    self->m_314->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    CGameObject* p314 = self->m_314;
+    self->m_icons[6]->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    CGameObject* p314 = self->m_icons[6];
     p314->m_drawActive = 1;
     p314->m_drawFillCmd = 0xa;
     p314->m_drawFillArg = handleA;
-    self->m_314->m_stateFlags |= 1;
+    self->m_icons[6]->m_stateFlags |= 1;
 
     // The three per-direction sprite arrays sit contiguously (bomb/go-kart/explosion),
     // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
@@ -362,15 +365,188 @@ i32 CState::LoadGruntEffectSprites() {
     return 1;
 }
 
-// @confidence: low
-// @source: winapi:CopyRect
+// ===========================================================================
+// CState::LevelMsgHudDriver (0x1a700): the per-frame level-message HUD + explosion
+// eye-candy driver (really a CBootyState/CPlay-layout method - the only caller is
+// CBootyState::Render @0x1c210 on its own `this`, so it is __thiscall; Ghidra mislabeled
+// it as the free `?LevelMsgHudDriver@@YAHXZ`). It runs the eight message slots: on the
+// reveal pass (m_hudPhase == 0) it walks the current slot (m_slot), sliding the
+// bomb/gokart sprites toward the icon and, as each crosses its box, popping the level-
+// message text (rectsA) then the formatted stat line (rectsB) via ShowHudMessage and
+// firing the explosion cue; on the drive/finalize pass (m_hudPhase != 0) it re-draws all
+// slots and, once every slot has landed, latches the explosion sprites active.
+//
+// The message-slot .rdata tables (named so the DIR32 datum reloc-masks): rectsA the
+// level-message text box, rectsB the stat/formatted-text box, iconPos the icon {x,y},
+// strings the CString message set. g_pCopyRect is the engine's CopyRect trampoline.
+DATA(0x0020b838)
+extern RECT g_levelMsgRectsA[8]; // 0x60b838
+DATA(0x0020b8b8)
+extern i32 g_levelMsgIconPos[16]; // 0x60b8b8 ({x,y} pairs)
+DATA(0x0020b8f8)
+extern RECT g_levelMsgRectsB[8]; // 0x60b8f8
+DATA(0x00229ef8)
+extern CString g_levelMsgStrings[8]; // 0x629ef8
+DATA(0x002c44bc)
+extern void(__stdcall* g_pCopyRect)(RECT*, const RECT*); // 0x6c44bc
+DATA(0x0021ab24)
+extern i32 g_sndCueTag; // 0x61ab24
+DATA(0x0021ab20)
+extern i32 g_sndEnabled; // 0x61ab20
+DATA(0x002bf3c0)
+extern "C" u32 g_killCueClock; // 0x6bf3c0
+
+// ShowHudMessage (0x1154b0, glyphstr): draw a CString into a RECT via the render/HUD
+// sink (m_c). FormatHudText (0x1af70, shared with CMenuState; called on this): fill the
+// CString with the slot's formatted stat line. Both external, reloc-masked.
+extern void ShowHudMessage(
+    CSpriteFactoryHolder* sink,
+    RECT* box,
+    CString* text,
+    i32 a,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e,
+    i32 f
+); // 0x1154b0
+
 // @early-stop
-// LevelMsgHudDriver @0x1a700 - the level-message HUD + explosion eye-candy driver (GAME
-// code, 1718 B). Deferred to the leaf-first final sweep: a >512B body over the CString
-// array + sprite-create + sound callee set; a partial under-counts AND diverges its
-// regalloc, so the return-0 normalization artifact is kept per the >512B REVERT rule.
+// /GX branchy megafunction wall (~complete reconstruction): the whole body - the reveal
+// pass (m_hudPhase == 0) slot slide + rectsA/rectsB ShowHudMessage pops + explosion cue,
+// and the drive pass (m_hudPhase != 0) redraw loop + explosion-active finalize - matches
+// retail's logic (all externs/strings/tables named). Residual is the documented /GX
+// EH-state numbering + the parallel-induction-pointer loop shape (retail hoists the
+// rectsA/rectsB/iconPos/strings/icon walks into 6 induction pointers with a data-address
+// bound `cmp ebp,offset g_effGeom`) that MSVC5 will not reproduce from counted C loops.
+// Final-sweep candidate (docs/patterns/big-seh-fuzzy-desync.md; jumptable-data-overlap.md).
 RVA(0x0001a700, 0x6b6)
-i32 LevelMsgHudDriver() {
+i32 CState::LevelMsgHudDriver() {
+    CEffLoaderSelf* self = (CEffLoaderSelf*)this;
+
+    if (self->m_hudPhase != 0) {
+        // ---- drive/finalize pass ----
+        if (self->m_slot == 8) {
+            // every slot landed: latch the explosion sprites visible once their anim
+            // sub-mgr reports active-but-not-idle, then done.
+            for (i32 i = 0; i < 8; i++) {
+                CGameObject* e = self->m_expl[i];
+                if (e->m_1c8 != 0 && e->m_1c0 == 0) {
+                    e->m_stateFlags |= 1;
+                }
+            }
+            return 1;
+        }
+        // redraw every slot's level message (rectsA) + stat line (rectsB), sliding the
+        // explosion sprite into place once the slot has scrolled far enough.
+        i32 shown = 0;
+        for (i32 i = 0; i < 8; i++) {
+            RECT box;
+            self->m_bomb[i]->m_stateFlags |= 1;
+            self->m_gokart[i]->m_stateFlags |= 1;
+            self->m_icons[i]->m_stateFlags &= ~1;
+            self->m_icons[i]->m_screenX = g_levelMsgIconPos[i * 2];
+            self->m_icons[i]->m_screenY = g_levelMsgIconPos[i * 2 + 1];
+            g_pCopyRect(&box, &g_levelMsgRectsA[i]);
+            CString text = g_levelMsgStrings[i];
+            self->m_shownB[i] = 1;
+            ShowHudMessage(self->m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            g_pCopyRect(&box, &g_levelMsgRectsB[i]);
+            this->FormatHudText(&text, i);
+            self->m_shownA[i] = 1;
+            ShowHudMessage(self->m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            if (i >= self->m_slot && (i != self->m_slot || self->m_expl[i]->m_geoId == 0)) {
+                CGameObject* e = self->m_expl[i];
+                e->m_stateFlags &= ~1;
+                e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
+                e->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
+                e->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2 - 0x10;
+                if (shown == 0) {
+                    CSndHost* host = ((CSndSubMgr*)g_mgrSettings->m_world)->m_28;
+                    if (host->m_emitGate == 0) {
+                        LeafCue* cue = 0;
+                        host->m_10.Lookup("GAME_EXPLOSION1", &cue);
+                        if (cue != 0) {
+                            cue->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+                        }
+                    }
+                    shown = 1;
+                }
+            }
+        }
+        self->m_slot = 8;
+        return 1;
+    }
+
+    // ---- reveal pass (m_hudPhase == 0) ----
+    if (self->m_slot < 8) {
+        if (self->m_slot == 0
+            && ((self->m_bomb[0]->m_stateFlags & 1) || (self->m_gokart[0]->m_stateFlags & 1))) {
+            self->m_bomb[0]->m_stateFlags &= ~1;
+            self->m_gokart[0]->m_stateFlags &= ~1;
+        }
+        self->m_bomb[self->m_slot]->m_screenX -= 10;
+        i32 gx = self->m_gokart[self->m_slot]->m_screenX + 10;
+        self->m_gokart[self->m_slot]->m_screenX = gx;
+        i32 s = self->m_slot;
+        if (self->m_shownB[s] == 0
+            && (g_levelMsgRectsA[s].left + g_levelMsgRectsA[s].right) / 2 <= gx) {
+            RECT box;
+            self->m_shownB[s] = 1;
+            g_pCopyRect(&box, &g_levelMsgRectsA[self->m_slot]);
+            CString text = g_levelMsgStrings[self->m_slot];
+            self->m_shownB[self->m_slot] = 1;
+            ShowHudMessage(self->m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+        }
+        s = self->m_slot;
+        if (self->m_shownA[s] == 0 && g_levelMsgIconPos[s * 2] <= gx) {
+            self->m_shownA[s] = 1;
+            self->m_icons[self->m_slot]->m_stateFlags &= ~1;
+            self->m_icons[self->m_slot]->m_screenX = g_levelMsgIconPos[self->m_slot * 2];
+            self->m_icons[self->m_slot]->m_screenY = g_levelMsgIconPos[self->m_slot * 2 + 1];
+        }
+    }
+    // latch the already-landed explosion sprites active.
+    for (i32 j = 0; j < self->m_slot; j++) {
+        CGameObject* e = self->m_expl[j];
+        if (e->m_1c8 != 0 && e->m_1c0 == 0) {
+            e->m_stateFlags |= 1;
+        }
+    }
+    // finalize the slots from m_slot onward once the bomb/gokart pair has crossed.
+    for (i32 i = self->m_slot; i < 8; i++) {
+        if (self->m_bomb[i]->m_screenX <= self->m_gokart[i]->m_screenX) {
+            RECT box;
+            CString text;
+            g_pCopyRect(&box, &g_levelMsgRectsB[i]);
+            this->FormatHudText(&text, i);
+            self->m_shownA[i] = 1;
+            ShowHudMessage(self->m_c, &box, &text, 0x78, 1, 0xff, 0xff, 0, 1);
+            CGameObject* e = self->m_expl[i];
+            e->m_stateFlags &= ~1;
+            e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
+            e->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
+            e->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2 - 0x10;
+            self->m_bomb[i]->m_stateFlags |= 1;
+            self->m_gokart[i]->m_stateFlags |= 1;
+            self->m_slot++;
+            CSndHost* host = ((CSndSubMgr*)g_mgrSettings->m_world)->m_28;
+            if (host->m_emitGate == 0) {
+                LeafCue* cue = 0;
+                host->m_10.Lookup("GAME_EXPLOSION1", &cue);
+                if (cue != 0 && g_sndEnabled != 0
+                    && (u32)(g_killCueClock - cue->m_14) >= (u32)cue->m_18) {
+                    cue->m_14 = g_killCueClock;
+                    cue->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                }
+            }
+            if (self->m_slot >= 8) {
+                return 1;
+            }
+            self->m_bomb[self->m_slot]->m_stateFlags &= ~1;
+            self->m_gokart[self->m_slot]->m_stateFlags &= ~1;
+        }
+    }
     return 0;
 }
 

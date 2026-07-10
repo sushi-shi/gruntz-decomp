@@ -1901,8 +1901,8 @@ gamelevel	?WalkColumnDown@CGameLevel@@QAEHPAUCGameObject@@H@Z	92.7579	92.7579	3	
 gamemode	??0CState@@QAE@XZ	100.0000	100.0000	6	15a8ff66e66e	0x8c750
 gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496	0x8c710
 gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	4	a7117d0311d6	0x19cd0
-gamemode	?LevelMsgHudDriver@@YAHXZ	0.3934	0.3934	1	572ddd2b7e44	0x1a700
-gamemode	?LoadGruntEffectSprites@CState@@QAEHXZ	96.3379	96.3379	7	c351834d5fef	0x1a040
+gamemode	?LevelMsgHudDriver@CState@@QAEHXZ	84.0207	84.0207	1	f341321f0329	0x1a700
+gamemode	?LoadGruntEffectSprites@CState@@QAEHXZ	96.3379	96.3379	8	2ea22bce1b29	0x1a040
 gamemode	?Reset@CGameModeBase@@QAEXXZ	98.6667	98.6667	1	484f4f40f1d1	0xf9840
 gamemode	?ResetPreview@CGameModeBase@@QAEXXZ	98.8235	98.8235	1	8dd14f2c8d69	0xde140
 gamemodebase	?BaseCleanup@CGameModeBase@@QAEXXZ	94.5238	94.5238	1	5bfe4ee0f89b	0xfa150
@@ -1947,7 +1947,7 @@ glyphtable	?Get@GlyphTable@@QAEHH@Z	100.0000	100.0000	1	d0cea9d03908	0xc0430
 glyphtable	?Set@GlyphTable@@QAEXHH@Z	100.0000	100.0000	1	ba6ede0151a5	0xc03f0
 goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.0566	96.0566	10	9fad1cc54970	0x6eb80
 groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2818	84.2818	5	36a3c2e418d3	0x112080
-groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	86.6460	86.6460	7	0b09210b0595	0x7cf40
+groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	86.7788	86.7788	7	0b09210b0595	0x7cf40
 grunt	??0CGrunt@@QAE@PAX@Z	67.3985	67.3985	8	1298c995a918	0x47a10
 grunt	??1CGrunt@@UAE@XZ	94.9091	94.9091	3	4e0675312829	0xf2f0
 grunt	?Activate@CGrunt@@UAEHXZ	37.3000	37.3000	1	f735d4f8e816	0x5caa0
@@ -3236,7 +3236,7 @@ play	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	4	9567653c832a	0xcffe0
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	5	1d7fd4fc8082	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	5	fd1ac9b2399d	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	4	8309f61d38e2	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.9200	85.9200	3	b94f48adc376	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.8450	85.8450	3	b94f48adc376	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	4	eb3839ea341e	0xd65d0
 play	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	3	cfa5101aa629	0xcb740
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	76.3529	76.3529	5	5c7e2ae1589a	0xd9050
@@ -3282,7 +3282,7 @@ playdtor	?Update@CPlay@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:8e23ad750
 playdtor	?Update@CState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:8e23ad750bdb	0x8c4b0
 playdtor	?Vfunc3@CState@@UAEHXZ	100.0000	100.0000	1	cpp:8e23ad750bdb	0x8c490
 playdtor	?Vslot11@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:8e23ad750bdb	0x8c610
-playercommandstep	?Dispatch@CCmdHandler@@QAEHIIIIIII@Z	15.8678	15.8678	5	0a1742cacf01	0xd1b60
+playercommandstep	?Dispatch@CCmdHandler@@QAEHIIIIIII@Z	17.9051	17.9051	6	492c1d77ece3	0xd1b60
 playmessageimage	?DrawMessageFrame@CPlay@@QAEXHH@Z	87.9677	87.9677	2	5a48e6585acb	0xd1650
 playmessageimage	?Vslot23@CPlay@@UAEHXZ	95.1807	95.1807	1	977c52ded96e	0xcfef0
 playplanescan	?ScanBuildTiles@CPlay@@QAEHXZ	95.8323	95.8323	5	98e9524a9b01	0xd53d0
@@ -3422,7 +3422,7 @@ rollingball	?InitActReg@CRollingBall@@SAXXZ	100.0000	100.0000	2	121701a735e6	0xa
 rollingball	?RegisterActs@CRollingBall@@SAXXZ	92.9130	92.9130	2	955ddf4f0c9d	0xaff40
 rollingball	?RunAct@CRollingBall@@QAEHH@Z	100.0000	100.0000	1	da0a6bd7ad73	0xafde0
 rollingball	?Serialize@CRollingBall@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	3	a62df9914df4	0xb0fe0
-rollingball	?Update@CRollingBall@@QAEHXZ	36.4479	36.4479	4	590b01558b6d	0xb0140
+rollingball	?Update@CRollingBall@@QAEHXZ	38.0270	38.0270	5	8d38f5e3cae6	0xb0140
 savegame	??1CSaveGame@@QAE@XZ	100.0000	100.0000	2	1fbe17019cb5	0x85b50
 savegame	?CheckMagic@CSaveGame@@QAEHXZ	100.0000	100.0000	2	b7399aaa69ee	0xe5690
 savegame	?CloseTempFile_e5550@@YGHPAUSaveTempRec@@@Z	100.0000	100.0000	3	c440d6252883	0xe5550
@@ -3470,7 +3470,7 @@ sbi_imagesetani_eh	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	2	19b9537bd704	
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	2	c243a91ef3a4	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	0438e44a3a76	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	1ea67e5c1a99	0xe6d90
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	74.0714	74.0714	8	53dd4b502046	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	92.0357	92.0357	8	53dd4b502046	0xe82a0
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	4	e7644e6b9f97	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	2	316d4a1ee9fa	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	44.6226	44.6226	4	411d086d9e71	0xe81e0

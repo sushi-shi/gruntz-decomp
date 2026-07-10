@@ -13,7 +13,7 @@
 #include <rva.h>
 #include <Globals.h>
 #include <Gruntz/LeafCue.h> // canonical LeafCue (PlayIfElapsed_01f940)
-#include <Gruntz/Grunt.h> // canonical CGrunt (SetEntrancePos)
+#include <Gruntz/Grunt.h>   // canonical CGrunt (SetEntrancePos)
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
@@ -93,22 +93,28 @@ extern "C" {
 }
 
 // @early-stop
-// 11-case command switch + the shared jump table (switchdataD_004d2790, a scoring
-// artifact) + ~16 reloc-masked engine calls whose precise receivers/arg reuse
-// (the &a4/&a8 path-probe outputs threaded into the reach calls, the per-case
-// pixel-vs-grid arg overloading) MSVC5 schedules through registers the decomp can't
-// fully attribute. The grunt-state reset blocks + slot lookups are faithful; the
-// call arg-staging + cold-case placement park it. Final-sweep candidate.
+// De-hoisted to match retail's register discipline (localP + grid read lazily
+// per-case so `world` stays live in a reg across the switch, case-0 Refresh reloads
+// g_mgrSettings->m_68) -> 15.9%->17.9%. Residual is a global-regalloc wall MSVC5 will
+// not steer from C source: retail pins `this` in ebx and `world` in eax with NO frame
+// (it reuses the ret-0x1c'd param slots for the address-taken PathProbe outputs
+// oa/ob == &a4/&a8), whereas cl parks `this` in ebp + spills it and reserves
+// `sub esp,0x8` for oa/ob. Taking &a4/&a8 directly would clobber the case-3-vs-4
+// discriminator (cases 3/4 are distinct jump-table targets), so it is not source-
+// expressible. The 11-case logic + grunt-state reset blocks + slot lookups are
+// byte-faithful; the this/world callee-saved assignment + frame park it.
+// Final-sweep permuter candidate (structure now correct -> pure /O2 regalloc residue).
 RVA(0x000d1b60, 0xc2f)
 i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8) {
-    i32 localP = g_localPlayer;
     char* world = P(this, 4);
     if (F(world, 0xc) != 0) {
         return 0;
     }
-    CGrid* grid = (CGrid*)P(world, 0x68);
     i32 res;
 
+// grid is read lazily per case from world->m_68 (retail keeps world in a reg across
+// the switch and re-loads the grid inside each case; CSE collapses repeats).
+#define grid ((CGrid*)P(world, 0x68))
     switch (a4 & 0xff) {
         default:
             return 1;
@@ -130,8 +136,9 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 0
             );
             if (r != -1) {
-                if ((a2 & 0xff) == (u32)localP) {
-                    grid->Refresh();
+                if ((a2 & 0xff) == (u32)g_localPlayer) {
+                    // retail re-loads the grid from g_mgrSettings (0x64556c), not world.
+                    ((CGrid*)P(g_mgrSettings, 0x68))->Refresh();
                 }
                 return 1;
             }
@@ -151,7 +158,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             }
             res = grid->MoveTo(a2, a3 & 0xff, a5 & 0xffff, a6 & 0xffff, 0);
             if (res != 0) {
-                if (a2 != (u32)localP) {
+                if (a2 != (u32)g_localPlayer) {
                     return 1;
                 }
                 if (g != 0 && F(g, 0x1fc) != 0) {
@@ -159,7 +166,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 }
                 return 1;
             }
-            if (a2 != (u32)localP || g == 0 || F(g, 0x1fc) == 0) {
+            if (a2 != (u32)g_localPlayer || g == 0 || F(g, 0x1fc) == 0) {
                 return 0;
             }
             GruntCue(g, 0x324, -1, 0, -1, -1);
@@ -199,7 +206,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                                      : grid->ReachB(player, oa, ob, 0);
             if (res != 0) {
                 if (res != -1) {
-                    if (player != (u32)localP) {
+                    if (player != (u32)g_localPlayer) {
                         return 1;
                     }
                     if (F(g, 0x1fc) != 0) {
@@ -209,7 +216,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 }
                 res = grid->MoveTo(player, oa, ob, 0, ((a4 & 0xff) == 3) ? 2 : 3);
                 if (res != 0) {
-                    if (player != (u32)localP) {
+                    if (player != (u32)g_localPlayer) {
                         return 1;
                     }
                     if (F(g, 0x1fc) != 0) {
@@ -217,13 +224,13 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                     }
                     return 1;
                 }
-                if (player != (u32)localP || F(g, 0x1fc) == 0) {
+                if (player != (u32)g_localPlayer || F(g, 0x1fc) == 0) {
                     return 0;
                 }
                 GruntCue(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (player != (u32)localP) {
+            if (player != (u32)g_localPlayer) {
                 return 0;
             }
             res = F(g, 0x1fc);
@@ -312,7 +319,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
 
         case 8: {
             a2 &= 0xff;
-            if (a2 == (u32)localP) {
+            if (a2 == (u32)g_localPlayer) {
                 F(this, 0x4f0) = 0;
             }
             i32 idx = (a3 & 0xff) + a2 * 0xf;
@@ -338,12 +345,12 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             if (r == 0) {
                 sel = 0;
             } else {
-                if (a2 == (u32)localP) {
+                if (a2 == (u32)g_localPlayer) {
                     grid->Convert(a2, a3 & 0xff, 0, 0);
                 }
                 sel = 1;
             }
-            if (a2 == (u32)localP) {
+            if (a2 == (u32)g_localPlayer) {
                 F(this, 0x36c) = 0;
                 Defended(sel, F(this, 0x2f4));
                 NotifySelect(0);
@@ -380,29 +387,29 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                 if (res == -1) {
                     res = grid->MoveTo(player, a8, a2, 0, 2);
                     if (res == 0) {
-                        if (player != (u32)localP || F(g, 0x1fc) == 0) {
+                        if (player != (u32)g_localPlayer || F(g, 0x1fc) == 0) {
                             return 0;
                         }
                         GruntCue(g, 0x324, -1, 0, -1, -1);
                         return 0;
                     }
-                    if ((a2 & 0xff) != (u32)localP) {
+                    if ((a2 & 0xff) != (u32)g_localPlayer) {
                         return 1;
                     }
-                    if ((u32)localP != a4 && F(g, 0x1fc) != 0) {
+                    if ((u32)g_localPlayer != a4 && F(g, 0x1fc) != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
-                if ((a2 & 0xff) != (u32)localP) {
+                if ((a2 & 0xff) != (u32)g_localPlayer) {
                     return 1;
                 }
-                if ((u32)localP != a8 && F(g, 0x1fc) != 0) {
+                if ((u32)g_localPlayer != a8 && F(g, 0x1fc) != 0) {
                     GruntCue(g, 0x325, -1, 0, -1, -1);
                 }
                 return 1;
             }
-            if (player != (u32)localP) {
+            if (player != (u32)g_localPlayer) {
                 return 0;
             }
             res = F(g, 0x1fc);
@@ -440,31 +447,31 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             res = grid->ReachB(player, a7, row, 0);
             if (res != 0) {
                 if (res != -1) {
-                    if ((a2 & 0xff) != (u32)localP) {
+                    if ((a2 & 0xff) != (u32)g_localPlayer) {
                         return 1;
                     }
-                    if ((u32)localP != a8 && F(g, 0x1fc) != 0) {
+                    if ((u32)g_localPlayer != a8 && F(g, 0x1fc) != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
                 res = grid->MoveTo(player, a8, a2, 0, 3);
                 if (res != 0) {
-                    if ((a2 & 0xff) != (u32)localP) {
+                    if ((a2 & 0xff) != (u32)g_localPlayer) {
                         return 1;
                     }
-                    if ((u32)localP != a4 && F(g, 0x1fc) != 0) {
+                    if ((u32)g_localPlayer != a4 && F(g, 0x1fc) != 0) {
                         GruntCue(g, 0x325, -1, 0, -1, -1);
                     }
                     return 1;
                 }
-                if (player != (u32)localP || F(g, 0x1fc) == 0) {
+                if (player != (u32)g_localPlayer || F(g, 0x1fc) == 0) {
                     return 0;
                 }
                 GruntCue(g, 0x324, -1, 0, -1, -1);
                 return 0;
             }
-            if (player != (u32)localP) {
+            if (player != (u32)g_localPlayer) {
                 return 0;
             }
             res = F(g, 0x1fc);
@@ -477,6 +484,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
     }
     return 0;
 }
+#undef grid
 SIZE_UNKNOWN(CCmdHandler);
 SIZE_UNKNOWN(CCueTag);
 SIZE_UNKNOWN(CGrid);
