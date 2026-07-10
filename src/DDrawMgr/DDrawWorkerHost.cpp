@@ -105,3 +105,17 @@ SIZE_UNKNOWN(CDDrawWorkerHost);
 // vtbl-cluster-56). cl auto-emits it from the real-polymorphic host;
 // retail's 12-slot datum is reloc-masked -> matching-neutral catalog tracking.
 VTBL(CDDrawWorkerHost, 0x001f0270);
+
+// @early-stop
+// 0x161640 (930 B) = CLevelPlane::ReadPlaneBlock - the plane object's vtable slot +0x28
+// (??_7CDDrawWorkerHost @0x1f0270+0x28; this multi-view object drives CLevelPlane/
+// CPlaneRender/WwdFile). __thiscall(a1 plane-source record, a2 buffer offset, a3
+// LevelCoordRect* bounds), ret 0xc. Parses a token stream, copies a1->this geometry,
+// SetTileSize, then steps 6-9 byte-identical to CLevelPlane::InitGeometry_1619f0. Homed
+// from GapFunctions.cpp (matcher-5) by RVA neighbourhood (this TU's 0x1615a0 block, and it
+// IS this class's slot). Homed pending SetTileSize/RebuildPlanes/SetAtGrow declared on
+// CLevelPlane + the spatial-grid element modelled.
+RVA(0x00161640, 0x3a2)
+i32 Gap_161640(void) {
+    return 0;
+}

@@ -82,3 +82,13 @@ i32 CSBI_GruntMachine::Render(i32 z) {
 
 // CSBI_GruntMachine::SetFrames (0x000e8dc0) is now an inline member in the header.
 
+
+// @early-stop
+// 0x0e8e00 (1.0 KB) - homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
+// neighbourhood (this TU owns the 0xe8cb0 SBI_GruntMachine block). __thiscall(4 args,
+// 0x88-byte frame) status-bar grunt-machine tab worker over g_gameReg->m_30. Homed
+// pending leaf-first reconstruction (>512 B).
+RVA(0x000e8e00, 0x41a)
+i32 Gap_0e8e00(void) {
+    return 0;
+}

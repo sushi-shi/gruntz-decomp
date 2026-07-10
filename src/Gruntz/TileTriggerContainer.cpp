@@ -663,3 +663,13 @@ i32 __stdcall SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrig
             return 0;
     }
 }
+
+// @early-stop
+// 0x115b60 (151 B) = a __thiscall predicate walking this->m_2c's chain and dispatching a
+// vtable slot (+0x44/+0x68) - a tile-trigger container query. Homed from GapFunctions.cpp
+// (matcher-5) by RVA neighbourhood (this TU's .text block brackets 0x115b60). Homed pending
+// full reconstruction of the receiver's field/vtable model.
+RVA(0x00115b60, 0x97)
+i32 Gap_115b60(void) {
+    return 0;
+}

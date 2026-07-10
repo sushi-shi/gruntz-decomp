@@ -1669,3 +1669,34 @@ bool CButeMgr::Exists(const char* tag, const char* key) {
 // clang-only carrier - invisible to the MSVC base objects - so placing it in the
 // header is matching-neutral (the old "hot header reschedules neighbours" caveat
 // applied to real declarations, not to a compiled-out annotation).
+
+// ---------------------------------------------------------------------------
+// Homed from src/Stub/GapFunctions.cpp (matcher-5): three ButeMgr TU leaves that
+// Ghidra never carved, homed by RVA neighbourhood (all inside ButeMgr's .text).
+// ---------------------------------------------------------------------------
+// @early-stop
+// 0x1714e0 (102 B) - a small ButeMgr helper; homed pending reconstruction.
+RVA(0x001714e0, 0x66)
+i32 Gap_1714e0(void) {
+    return 0;
+}
+
+// @early-stop
+// 0x171640 (1010 B) - a large ButeMgr worker (contains a small 0x52-byte leaf head
+// then the body); homed pending leaf-first reconstruction (>512 B).
+RVA(0x00171640, 0x3f2)
+i32 Gap_171640(void) {
+    return 0;
+}
+
+// @early-stop
+// 0x173dd0 (911 B) = a Bute value-store / projectile-action-map builder (attributed via
+// callee xref: CButeTree::Find/Insert, CButeValue::CopyValue/~CButeValue, CButeCfgNode174d
+// @0x174d00 ctor, CProjActMap::Insert, and the value-node ctor 0x1741b0 which it new(8)s;
+// it is 0x1741b0's ONLY caller). A switch jump-table (jmpl *0x574184) function - single fn,
+// NOT a merge. Homed pending leaf-first reconstruction (>512 B; owner class a CButeMgr/
+// CProjActMap loader, TBD).
+RVA(0x00173dd0, 0x38f)
+i32 Gap_173dd0(void) {
+    return 0;
+}

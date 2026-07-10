@@ -359,6 +359,19 @@ void DynInitButeTree() {
     // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
 }
 
+// @early-stop
+// `atexit destructor for g_buteTree' (??__F, 0x16e6e0) - homed from GapFunctions.cpp
+// (matcher-5); the teardown thunk MSVC registers via atexit for the DynInit above. It
+// restamps g_buteTree's dtor vptrs (0x5e94ac / 0x5e949c), runs the member-dtor chain
+// (0x16e070 on &g_buteTree, 0x16cfc0 on the +8 subobject via the `p?&p->m8:0` neg/sbb/and
+// idiom) and tail-jmps the base dtor 0x16ca60. A COMPILER-GENERATED atexit thunk: emitting
+// it byte-exact needs g_buteTree defined (not extern) with the real ~CButeTree chain, which
+// conflicts with the hand-written DynInit; homed pending that restructure.
+RVA(0x0016e6e0, 0x3e)
+i32 Gap_16e6e0(void) {
+    return 0;
+}
+
 // Placement new (construct g_typeColl in place; no allocation, so it just runs the
 // CTypeKeyColl ctor on the existing global, exactly as the retail in-place build).
 inline void* operator new(u32, void* p) {
@@ -413,6 +426,18 @@ void DynInitTypeColl() {
             } while (--cnt);
         }
     }
+}
+
+// @early-stop
+// `atexit destructor for g_typeColl' (??__F, 0x16e7a0) - homed from GapFunctions.cpp
+// (matcher-5); the teardown thunk atexit-registered for DynInitTypeColl above. It restamps
+// g_typeColl's runtime vptr (0x5f04e4), frees the node array (the same count-down loop
+// calling the element dtor 0x1b8cde), then drains g_typeColl @0x6bf650 via 0x16cf40. A
+// COMPILER-GENERATED atexit thunk (same restructure blocker as ??__Fg_buteTree above);
+// homed pending g_typeColl defined with its real ~CTypeKeyColl chain.
+RVA(0x0016e7a0, 0x48)
+i32 Gap_16e7a0(void) {
+    return 0;
 }
 
 // ===========================================================================

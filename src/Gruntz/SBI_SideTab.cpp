@@ -137,3 +137,12 @@ i32 CSBI_SideTab::BuildHandle() {
     m_34 = (CImage*)glyph;
     return 1;
 }
+
+// @early-stop
+// 0x0e9a30 (798 B) - homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
+// neighbourhood (this TU owns the 0xe9820/0xe99c0/0xe9850 SBI_SideTab block).
+// A status-bar side-tab worker; homed pending leaf-first reconstruction (>512 B).
+RVA(0x000e9a30, 0x31e)
+i32 Gap_0e9a30(void) {
+    return 0;
+}

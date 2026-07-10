@@ -1821,3 +1821,28 @@ i32 CFaderShape::v2() {
     }
     return 0;
 }
+
+// ---------------------------------------------------------------------------
+// Homed from src/Stub/GapFunctions.cpp (matcher-5): three Fader TU leaves, homed
+// by RVA neighbourhood (all inside Fader's .text block).
+// ---------------------------------------------------------------------------
+// @early-stop
+// 0x17f660 (742 B) - a Fader worker; homed pending leaf-first reconstruction (>512 B).
+RVA(0x0017f660, 0x2e6)
+i32 Gap_17f660(void) {
+    return 0;
+}
+
+// @early-stop
+// 0x17ff30 (1218 B) - a large Fader worker; homed pending leaf-first reconstruction (>512 B).
+RVA(0x0017ff30, 0x4c2)
+i32 Gap_17ff30(void) {
+    return 0;
+}
+
+// @early-stop
+// 0x181b00 (847 B) - a Fader worker; homed pending leaf-first reconstruction (>512 B).
+RVA(0x00181b00, 0x34f)
+i32 Gap_181b00(void) {
+    return 0;
+}

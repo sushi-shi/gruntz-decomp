@@ -200,6 +200,18 @@ i32 CDDSurface::Flip(CDDSurface* target) {
     return hr;
 }
 
+// @early-stop
+// 0x13e8f0 (176 B) = a DIRSURF image-cache reload (__thiscall): scalar-deletes each
+// g_imageCache element, clears this->m_94 (CDdObArray) + g_imageCache, rebuilds via
+// this->m_8->vtbl[9](0, &CImageFactory::Build_13e9a0), reports through
+// CDirectDrawMgr::GetErrorString, then repopulates m_94 from g_imageCache. Homed from
+// GapFunctions.cpp (matcher-5); lives in the DIRSURF block (DDSurface.cpp) by RVA.
+// Homed pending the owning class (m_8 vtable + m_94 array) + the Build PMF push modelled.
+RVA(0x0013e8f0, 0xb0)
+i32 Gap_13e8f0(void) {
+    return 0;
+}
+
 // CDDSurface::GetElementAt (__thiscall): bounds-checked m_elements[i], or 0.
 RVA(0x0013ea70, 0x21)
 void* CDDSurface::GetElementAt(i32 i) {

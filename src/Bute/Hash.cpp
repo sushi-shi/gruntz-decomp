@@ -10,6 +10,34 @@
 #include <Bute/Hash.h>
 
 // ---------------------------------------------------------------------------
+// CHashSlot - the 16-byte bucket slot (ctor + its vector deleting destructor).
+// Homed from src/Stub/GapFunctions.cpp (matcher-5); the gap tool had merged the
+// two into one 0x5b-byte span (0x1849d0 dtor 0x50 + 0x184a20 ctor 0xb).
+// ---------------------------------------------------------------------------
+
+// @early-stop
+// 0x1849d0 = CHashSlot's `vector deleting destructor' (??_ECHashSlot@@QAEPAXI@Z): the
+// COMPILER-GENERATED array-delete helper (flags&2 -> ehvec over the array with the no-op
+// element dtor 0x584a30 + RezFree the cookie; else run the element dtor + flags&1 free).
+// It is a ZERO-REF orphan COMDAT (full-binary VA byte-scan: no caller anywhere; CHashBase::
+// RemoveAll @0x184a40 inlines its OWN ehvec rather than call this). MSVC only emits ??_E
+// from a live `delete[] CHashSlot` site, which this TU does not have (RemoveAll uses a
+// direct Tm_DestroyArray, matching retail), so there is no source construct to regenerate
+// it at this RVA without spuriously reshaping RemoveAll. Homed as a stub (not a hand-written
+// method masquerading as the compiler thunk).
+RVA(0x001849d0, 0x50)
+i32 Gap_1849d0(void) {
+    return 0;
+}
+
+// CHashSlot ctor (0x184a20): zero the {head,tail} chain head, return this.
+RVA(0x00184a20, 0xb)
+CHashSlot::CHashSlot() {
+    m_chain.m_head = 0;
+    m_chain.m_tail = 0;
+}
+
+// ---------------------------------------------------------------------------
 // CHashBase - the shared slot machinery (one physical copy each).
 // ---------------------------------------------------------------------------
 

@@ -874,3 +874,18 @@ CSymList* CSymList::Construct(int count) {
 // Rez/RezColl.h for RezColl/RezNode). CSymParser is annotated in SymParser.h.
 
 // --- vtable catalog ---
+
+// @identity-TODO (matcher-5): 0x184900 is a hash reverse-iterator "current/last" method:
+// if the cached chain link @this+0x08 resolves (CHashBase::FromLink, container_of -4) return
+// its element; else scan the table (CHashBase* @this+0x0c, its m_buckets @+0x04) from the
+// highest bucket index (count @this+0x10) down, returning the tail element
+// (FromLink(slot.m_chain.m_tail)) of the first non-empty bucket, or 0. The receiver is a
+// 2-level iterator (NOT a bare 8-byte CHashBase) and is a ZERO-REF ORPHAN - no rel32/vtable/
+// data-ref caller anywhere in the image (full-binary VA byte-scan), so its class is
+// unrecoverable. Homed as a stub rather than fabricate a per-TU view of an un-xref-able
+// receiver (no-fake-view rule); the CHashBase::Insert/Last SIB coin-flip wall applies once
+// the real iterator class surfaces.
+RVA(0x00184900, 0x43)
+i32 Gap_184900(void) {
+    return 0;
+}

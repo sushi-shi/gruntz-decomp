@@ -50,6 +50,37 @@ i32 CParseSource::GetEntryTag() {
 }
 
 // ===========================================================================
+// Homed from src/Stub/GapFunctions.cpp (matcher-5): both physically sit inside
+// CParseSource's .text block (RVA-first home) but belong to a DISTINCT, unresolved
+// scope-chain class (holds a CSymTab* at +0x10; NOT CParseSource, whose +0x10 is
+// the mapped source). The gap tool had over-spanned 0x139810 by 6 bytes into the
+// 0x139950 getter (its true size is 0x140, not 0x146) - now split.
+// ===========================================================================
+// @identity-TODO (matcher-5): 0x139810 (__thiscall(dst, size)) builds the `\`-joined
+// qualified path of the scope at this->+0x10 into dst by walking the CSymTab scope chain up
+// via parent(+0x1c): scratch=RezAlloc(size); dst=""; for(node=this->m_10; node; node=node->
+// +0x1c){ strcpy(scratch,dst); dst = node->+0x1c ? g_sepSlash : ""; strcat(dst,node->m_name);
+// strcat(dst,scratch);} RezFree(scratch); a lone root returns strcpy(dst, g_sepSlash "\").
+// The WALKED NODE is the real CSymTab (its ctor @0x139de0 proves m_name@+0, parent@+0x1c);
+// g_sepSlash @0x60cff0, g_emptyString @0x6293f4. But `this`'s OWN class - the holder of a
+// current-scope CSymTab* at +0x10 - is a ZERO-REF ORPHAN (no rel32/vtable/data-ref caller
+// anywhere in the image; verified by a full-binary VA byte-scan), so its identity is
+// unrecoverable and NOT CParseSource/CSymTab (their +0x10 roles are disproven). Homed as a
+// stub rather than fabricate a per-TU view of an un-xref-able receiver (no-fake-view rule).
+RVA(0x00139810, 0x140)
+i32 Gap_139810(void) {
+    return 0;
+}
+
+// @identity-TODO (matcher-5): 0x139950 == the same orphan holder's `return this->m_10->m_name`
+// (mov eax,[ecx+0x10]; mov eax,[eax]; ret) - the current scope's (CSymTab) name. Same
+// unrecoverable receiver as 0x139810; homed as a stub, no fabricated view.
+RVA(0x00139950, 0x6)
+i32 Gap_139950(void) {
+    return 0;
+}
+
+// ===========================================================================
 // 0x139960 - BeginParse: resolve the live source pointer for a parse pass. If
 // the mapped source is active, return its mapped address adjusted for the stream
 // base. Otherwise lazily allocate the +0x38 inline buffer and fill it with one

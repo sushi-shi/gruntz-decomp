@@ -75,6 +75,10 @@ SIZE(CHashSlotList, 0x8);
 // A 16-byte bucket slot: two opaque words then the intrusive chain head. Its
 // per-element destructor (0x584a30) is a bare `ret` (the slot owns nothing).
 struct CHashSlot {
+    // ctor (0x184a20): zero the intrusive {head,tail} chain head; the two opaque
+    // words at +0x00 are left uninitialised (RezAlloc'd array).
+    CHashSlot(); // 0x184a20
+
     char m_pad00[0x8];     // +0x00
     CHashSlotList m_chain; // +0x08  { head, tail }
 };

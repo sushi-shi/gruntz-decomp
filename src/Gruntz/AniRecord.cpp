@@ -383,3 +383,17 @@ SIZE_UNKNOWN(CAniRecordPool);
 
 VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
 VTBL(CAniRecordView, 0x001f02c0);  // ??_7CAniRecordPrimary@@6B@ (5-slot CObject-derived)
+
+// @identity-TODO (matcher-5): 0x16b230 (503 B, __thiscall, ret 0x20, 8 args) == a PLANE
+// geometry Init on a CLevelPlane/CPlaneRender (the RecomputePlaneCoords @0x161c90 CLevelPlane
+// call on ecx=this proves it - NOT CDDrawWorkerHost). Stores the 8 args into the plane's
+// tile/wrap/origin fields, derives wrap/grid dims + log2 shift amounts, strcpy's a name into
+// +0xb4, calls a global coord transform [0x6c44bc] when arg-struct[0] != 0x80000000, fills
+// m_24[i]=i*m_28, tail-calls RecomputePlaneCoords(). Homed here from GapFunctions.cpp by RVA
+// neighbourhood (nearest-below named TU; sits in an unowned 0x168fd0..0x16cdd0 stretch - the
+// plane object's methods are spread across DDrawWorkerHost/LevelPlane/GameLevel, none of which
+// bracket this RVA). Homed pending the +0x6c44bc fn-ptr named + ~30 CPlaneRender fields modelled.
+RVA(0x0016b230, 0xe1)
+i32 Gap_16b230(void) {
+    return 0;
+}

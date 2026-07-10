@@ -188,6 +188,29 @@ i32 CFecFile::CreateArchive(const char* name) {
 }
 
 // ===========================================================================
+// Homed from src/Stub/GapFunctions.cpp (matcher-5): two large CFecFile archive
+// methods in this TU's .text block (RVA-first; neighbourhood is all CFecFile).
+// The gap tool had over-spanned 0x17b950 (size 0x60b) so it swallowed the whole
+// 0x17bcd0 function; 0x17b950's true size is 0x380 (it ends at 0x17bcd0). Split.
+// ===========================================================================
+// @early-stop
+// 0x17b950 (895 B) = a CFecFile archive read/write worker (falls between
+// CreateArchive @0x17b8a0 and FecEncode @0x17bf70; ends at 0x17bcd0 via a backward
+// jmp out of the span). Homed pending leaf-first reconstruction (large body).
+RVA(0x0017b950, 0x380)
+i32 Gap_17b950(void) {
+    return 0;
+}
+
+// @early-stop
+// 0x17bcd0 (651 B, /GX EH frame) = the sibling CFecFile archive method that the
+// over-span had hidden. Homed pending leaf-first reconstruction (large EH body).
+RVA(0x0017bcd0, 0x28b)
+i32 Gap_17bcd0(void) {
+    return 0;
+}
+
+// ===========================================================================
 // Encode(src, dst): dst[i] = src[i] + (i odd ? 0x53 : 0x4f), for the
 // whole NUL-terminated src (strlen recomputed each iteration). __stdcall.
 // ===========================================================================

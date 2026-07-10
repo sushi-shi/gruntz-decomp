@@ -52,6 +52,30 @@ C168c10::~C168c10() {
 }
 
 // ===========================================================================
+// Homed from src/Stub/GapFunctions.cpp (matcher-5): the gap tool had merged the
+// BucketHead `??_E` (0x191720, size 0x50) with the CWwdGrid span-ctor forwarder
+// (0x191770, size 0x8d) into one 0xdd-byte span - now split.
+// ===========================================================================
+// 0x191720 = BucketHead's `vector deleting destructor' (??_E): the COMPILER-GENERATED
+// vector deleting destructor for BucketHead, emitted from the `new BucketHead[m_cellCount]`
+// in the ctor above (the array-cookie alloc + ehvec ctor/dtor pair). Not a hand-written
+// method: cl auto-emits ??_EBucketHead@@QAEPAXI@Z; @rva-symbol names it at this RVA so the
+// delinker pairs the retail orphan (a zero-ref COMDAT; FreeBuckets inlines its own ehvec).
+// @rva-symbol: ??_EBucketHead@@QAEPAXI@Z 0x00191720 0x50
+
+// @early-stop
+// 0x191770 = a __thiscall(this; x0,y0,x1,y1) helper that derives the cell sizes
+// (cellW = |x1-x0|/5, cellH = |y1-y0|/5 via the 0x66666667 /5 magic-divide) and
+// tail-calls CWwdGrid::CWwdGrid(x0,y0,x1,y1,cellW,cellH) @0x1915c0 on `this` (a
+// re-init / 4-arg ctor overload). Body parked: invoking a ctor as a function on an
+// existing object (and CWwdGrid being abstract - the pure OnFound - forbids placement
+// new) is not expressible in MSVC5 C++, so the delegating call cannot be regenerated.
+RVA(0x00191770, 0x8d)
+i32 Gap_191770(void) {
+    return 0;
+}
+
+// ===========================================================================
 // 0x191800 - FreeBuckets: if allocated, run the vector dtor over the node array
 // and release the backing block; then clear the alloc-OK flag.
 // ===========================================================================

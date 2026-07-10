@@ -1115,3 +1115,13 @@ SIZE_UNKNOWN(PBSub4);
 SIZE_UNKNOWN(PBVfnHost);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+
+// @early-stop
+// 0x0b8020 (559 B) = a multiplayer window/dialog proc (LRESULT CALLBACK, switch on the
+// message param with many `ret 0x10` case exits; drives g_gameReg net-session slots via
+// the *0x6c44xx import table). Homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
+// neighbourhood (this TU owns the 0xb7fe0 Multi block). Homed pending leaf-first reconstruction.
+RVA(0x000b8020, 0x22f)
+i32 Gap_0b8020(void) {
+    return 0;
+}

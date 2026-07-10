@@ -299,3 +299,16 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4) {
 // @stub
 RVA(0x00155900, 0x519)
 void CDDrawSurfaceMgr::Init() {}
+
+// @identity-TODO (matcher-5): 0x156ad0 (466 B, free __stdcall 5 args, /GX) == a CFileMem
+// "load file into buffer" helper (RVA-adjacent to CFileMemBase @0x157850; belongs to
+// src/Io/FileMem.cpp once that TU carries an explicit inline CFileMem ctor). Homed here
+// from GapFunctions.cpp by RVA neighbourhood (immediately after this TU's 0x156a90 block).
+// DECODED: if(arg1==0) return 0; construct a local CFileMem (base+derived ctors inlined,
+// Reset()); CFileMemBase::SetName; CFileMem::Open; CFileMem::Read(header 0x120); if(readLen
+// && size) Read(buf2, size); Ready(); dtor; return 1. Byte-match BLOCKED on the inlined
+// CFileMem ctor (retail re-inits all fields via a Reset()-body ctor).
+RVA(0x00156ad0, 0x1d2)
+i32 Gap_156ad0(void) {
+    return 0;
+}

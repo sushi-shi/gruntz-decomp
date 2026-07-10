@@ -8,6 +8,21 @@
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
+// @early-stop
+// 0x7c60 = the CActionArea command dispatcher (FREE __cdecl(CGameObject* obj), /GX;
+// homed from src/Stub/GapFunctions.cpp, matcher-5). Switches on obj->m_7c->m_1c (a
+// callback-state slot @+0x1c, active CActionArea record @+0x18): tag 0 -> new
+// CActionArea(obj) (RezAlloc 0x68, nothrow; ctor thunk 0x2478->0x7da0), rec->Slot06(),
+// m_7c->m_18 = rec; tag 0x1d->Slot11; 0x1e->Slot10; 0x50->Slot14; 0x51->Slot13;
+// 0x52->Slot12; 0x53->Slot15; 0x3e8->no-op; default->ProjTypeXfer((CXferArchive*)
+// m_7c->m_18) [0x16e4f0]. ret 1. BLOCKER: canonical CUserLogic (UserLogic.h) declares
+// only slots 00..09; dispatching inherited slots 10-15 needs those 6 virtuals added to
+// the shared CUserLogic base (a base-vtable reshape) before a cast-free reconstruction.
+RVA(0x00007c60, 0xf1)
+i32 Gap_007c60(void) {
+    return 0;
+}
+
 // CActionArea::CActionArea (0x7da0) - fold the shared CUserLogic(obj) init, then
 // name the bound object "GAME_ACTIONAREA_RED", bind the "A" bute node, lock the
 // draw order to 6, seed the leaf state (+0x54=1) and flag the sub-object.

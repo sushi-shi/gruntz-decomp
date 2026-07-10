@@ -164,3 +164,35 @@ void Orient3::StepB(i32 count) {
         } while (--count);
     }
 }
+
+// ---------------------------------------------------------------------------
+// The two bute-config debug editor DialogProcs (homed from GapFunctions.cpp by
+// matcher-5; the file header already names them as this block's residents).
+// INT_PTR CALLBACK, /GX. Identical shape, differing only in the key strings +
+// the DAT_ edit buffers (0x62c458/0x62c450 vs 0x63f790/0x643790):
+//   WM_INITDIALOG(0x110): CString from the lowercase key ("attributez.txt" /
+//     "dwrects.txt") via g_pButeDefaults [0x169fb0], read the buffer,
+//     SetDlgItemTextA(0x435, ...).
+//   WM_COMMAND(0x111): wParam==1(OK): GetDlgItemTextA(hDlg,0x435, DAT buf, 0xffff/
+//     0x4000); strlen->DAT len; CString from the mixed-case key [0x16a670];
+//     CButeMgr::Parse(CString, 1) on g_resButeMgr [thunk 0x38e6->0x3cc20];
+//     EndDialog(hDlg,1). wParam==2 (Cancel): EndDialog(hDlg,0).
+// ---------------------------------------------------------------------------
+// @early-stop
+// 0x3c990 ("Attributez.txt" editor). BLOCKER: the CString/ResButeMgr helper callees
+// (0x169fb0/0x16a670/0x16ab20/0x16aa50/0x16a8e0/0x16a510/0x16a3b0/0x16a240/0x169d70/
+// 0x1b9d4c) are unreconstructed, and the /GX EH trylevel machine ([esp+0x6c]=1/-1/0)
+// is driven by the exact CString-temp lifetimes - needs real MFC CString locals + the
+// real ResButeMgr method identities first (finicky EH; a focused bute-editor pass).
+RVA(0x0003c990, 0x1bc)
+i32 Gap_03c990(void) {
+    return 0;
+}
+
+// @early-stop
+// 0x3cdd0 ("dwrects.txt" editor) - twin of 0x3c990 (0x4000-byte edit buffer variant);
+// same CString/ResButeMgr + /GX-trylevel blocker.
+RVA(0x0003cdd0, 0x19f)
+i32 Gap_03cdd0(void) {
+    return 0;
+}

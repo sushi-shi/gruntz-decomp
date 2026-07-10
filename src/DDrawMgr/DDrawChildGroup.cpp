@@ -253,3 +253,17 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
 }
 
 SIZE_UNKNOWN(CImageSet3);
+
+// @early-stop
+// 0x15a210 (1074 B) = a CDDrawChildGroup-family debug OVERLAY, twin of
+// CDDrawChildGroup::DrawObjectCounts_15a650 (same subsystem, both dead-in-retail).
+// __thiscall, gated on a +0x08 debug flag; walks the +0x14 child list and per object draws
+// debug geometry via CViewport::WrapCoord: CDDrawSurfacePair::DrawBox(RECT*,color) x3,
+// DrawCross(x,y), ResLoaders::DrawHost2_164420::DrawLabel(RECT*,char*) (falling back to
+// "???" @0x1f0a94). Draws gated by g_dbg61ab28/2c/30. Homed from GapFunctions.cpp
+// (matcher-5). Homed pending reconstruction (>512 B, novel per-object geometry; the
+// WrapCoord/DrawHost scaffolding is proven by 15a650).
+RVA(0x0015a210, 0x432)
+i32 Gap_15a210(void) {
+    return 0;
+}

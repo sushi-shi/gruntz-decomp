@@ -69,6 +69,17 @@ CWarlord::~CWarlord() {}
 RVA(0x00042d40, 0x73e)
 CWarlord::CWarlord(i32) {}
 
+// @early-stop
+// 0x43670 = CWarlord::SerializeMove (vtable slot 1, +0x4; origin CUserBase). Homed
+// from src/Stub/GapFunctions.cpp (matcher-5); attribution vtable-proven (??_7CWarlord
+// +0x4). LARGE (3104 B) bute/archive serialize round-trip (uses g_serialCounter): a
+// deep switch + engine string-table + inline bute-config expansion. Homed pending a
+// dedicated leaf-first pass (>512 B, per-field archive read/write chain bottom-up).
+RVA(0x00043670, 0xc20)
+i32 Gap_043670(void) {
+    return 0;
+}
+
 // The file-static per-action handler dispatch array (g_actionTable @0x644610) is
 // the shared CActReg archetype (<Gruntz/ActReg.h>): InitActReg builds it over the
 // fixed [2000, 2010] range via Construct (0x408710); Lookup (0x3864) resolves a

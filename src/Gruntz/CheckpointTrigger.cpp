@@ -157,6 +157,19 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
     }
 }
 
+// @early-stop
+// 0x10f6a0 (565 B) = CCheckpointTrigger's per-frame "A" activation handler (homed from
+// src/Stub/GapFunctions.cpp, matcher-5; the g_tileSecretTriggerActReg group @0x10f160..
+// 0x10f970 is THIS class's - slot 1 = 0x10f9a0, slot 4 = 0x10f1e0). Operates on the 0x94
+// checkpoint layout (m_state[15] @+0x54, m_firstEmpty @+0x90); ~10 callees (FindChild,
+// CButeTree::Find, ApplyLookupGeometry, LeafCue::PlayIfElapsed, OnCheckpointReached,
+// SpawnVoiceDriver + inline rand + a level sprite-ref hit-test). Homed pending leaf-first
+// reconstruction (>512 B; needs the un-modeled CGameRegistry deep fields + FindChild ret type).
+RVA(0x0010f6a0, 0x235)
+i32 Gap_10f6a0(void) {
+    return 0;
+}
+
 // CCheckpointTrigger::SerializeMove @0x10f9a0 - vtable slot 1. Read/Write the captured
 // checkpoint state (the 15-dword m_state block @+0x54 + the m_firstEmpty index @+0x90)
 // through the archive's mode-keyed slots (mode 4 = Write @+0x30, mode 7 = Read @+0x2c),

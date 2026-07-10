@@ -5255,3 +5255,19 @@ SIZE_UNKNOWN(EmThis);
 SIZE_UNKNOWN(EmWorld);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+
+// @early-stop
+// 0x0cf0a0 (1.4 KB) - homed from src/Stub/GapFunctions.cpp (matcher-5); a large Play
+// worker in this TU's .text block, no vtable-ref. Homed pending leaf-first reconstruction.
+RVA(0x000cf0a0, 0x567)
+i32 Gap_0cf0a0(void) {
+    return 0;
+}
+
+// @early-stop
+// 0x0cfc90 (465 B) - homed from src/Stub/GapFunctions.cpp (matcher-5); a Play leaf,
+// no vtable-ref. Homed pending leaf-first reconstruction.
+RVA(0x000cfc90, 0x1d1)
+i32 Gap_0cfc90(void) {
+    return 0;
+}

@@ -641,3 +641,13 @@ SIZE_UNKNOWN(DecodeSrc);
 SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record
 SIZE_UNKNOWN(BmpFileHeader);
 SIZE_UNKNOWN(TgaHeader);
+
+// @early-stop
+// 0x141080 (372 B) = a CDDSurface rotated-blit transform builder: fild/fxch-heavy x87
+// assembly of a corner-transform record on a 0x8c-byte local, then call 0x146550
+// (RotateRasterize). Homed from GapFunctions.cpp (matcher-5) by RVA neighbourhood.
+// Homed pending reconstruction (x87 fld/fxch scheduling wall; sibling of ImageRotateBlit).
+RVA(0x00141080, 0x174)
+i32 Gap_141080(void) {
+    return 0;
+}

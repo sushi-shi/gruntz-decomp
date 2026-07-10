@@ -556,6 +556,16 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
     info->m_outRect.m_0c = dbottom;
 }
 
+// @early-stop
+// 0x0d5c10 (269 B) - homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
+// neighbourhood: it sits between LevelTileValidation (ends 0xd5bdb) and this file's
+// low-RVA CImage block (0xd5e20+). A leaf image-loader helper, no vtable-ref; homed
+// pending leaf-first reconstruction (its identity within the CImage family is TBD).
+RVA(0x000d5c10, 0x10d)
+i32 Gap_0d5c10(void) {
+    return 0;
+}
+
 // ---------------------------------------------------------------------------
 // slot 17 (0x0d5e20): forward the arg through two later virtuals - Slot15
 // (vtable +0x3c) then Slot16 (vtable +0x40). __thiscall, ret 4. Re-homed from

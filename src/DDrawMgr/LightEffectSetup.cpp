@@ -250,3 +250,12 @@ void CFaderLight::v4() {
         m_40 = 0;
     }
 }
+
+// @early-stop
+// 0x180640 (2412 B) - homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
+// neighbourhood (this TU's 0x1804a0 block brackets it). A large light/circle-shade blit
+// worker; homed pending leaf-first reconstruction (>512 B).
+RVA(0x00180640, 0x96c)
+i32 Gap_180640(void) {
+    return 0;
+}
