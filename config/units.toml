@@ -1494,6 +1494,26 @@ source = "src/Gruntz/TileTriggerSwitch.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "tiletrigger"
+source = "src/Gruntz/TileTrigger.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "secretteleportertrigger"
+source = "src/Gruntz/SecretTeleporterTrigger.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "tilelogicpump"
+source = "src/Gruntz/TileLogicPump.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "actionbeginhost"
+source = "src/Gruntz/ActionBeginHost.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "gruntbehaviorleaf"
 source = "src/Gruntz/GruntBehaviorLeaf.cpp"
 flags = "eh"

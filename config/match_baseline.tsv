@@ -13,6 +13,7 @@
 # Query: python -m gruntz.match.status check | status | summary | diff <revA> [<revB>]
 # [units]	unit	n_functions	matched
 actionarea	3	2
+actionbeginhost	1	1
 actionoptionsmenubar	9	1
 actreg4	2	1
 actregsiblings	7	3
@@ -414,6 +415,7 @@ scanlinesurfacesave	2	0
 scattersamples	2	1
 screenregionmgr	2	2
 secretleveltrigger	8	6
+secretteleportertrigger	7	5
 serializesyncmarker	1	1
 serialobjref	1	0
 sfselectdevice	1	0
@@ -464,8 +466,10 @@ teleporter	8	6
 terraintileloader	2	1
 tileactionevent	6	3
 tilegridcommand	7	3
+tilelogicpump	6	6
 tilescan	1	0
 tileswitchlogic	18	10
+tiletrigger	16	13
 tiletriggercontainer	16	2
 tiletriggerderivedctors	12	12
 tiletriggerfactory	1	0
@@ -488,7 +492,7 @@ typekeycoll	10	2
 uncompr	1	1
 unknownfileioctor	1	1
 userbaselink	10	2
-userlogic	35	25
+userlogic	5	0
 userlogicctoremit	2	1
 vehiclegruntsprites	1	0
 videoconfig	6	2
@@ -526,6 +530,7 @@ zvec	5	2
 actionarea	??0CActionArea@@QAE@PAUCGameObject@@@Z	92.5094	92.5094	3	936a5b50a26f	0x7da0
 actionarea	?ApplyColor@CActionArea@@QAEHH@Z	100.0000	100.0000	1	d62ce707b5fc	0x8580
 actionarea	?GetTypeTag@CActionArea@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:d969ab47eace	0x7f80
+actionbeginhost	?Begin@ActionBeginHost@@QAEHH@Z	100.0000	100.0000	1	98fc9510fed5	0xd7220
 actionoptionsmenubar	??0CActionOptionsMenuBar@@QAE@XZ	64.3500	64.3500	3	b1396faa5989	0x9090
 actionoptionsmenubar	?Activate@CActionOptionsMenuBar@@QAEHH@Z	100.0000	100.0000	4	08f36f03c780	0x9300
 actionoptionsmenubar	?HitClick@CActionOptionsMenuBar@@QAEHHH@Z	75.1728	75.1728	6	2a659cff289f	0x9650
@@ -3506,6 +3511,13 @@ secretleveltrigger	?InitActReg@CSecretLevelTrigger@@SAXXZ	100.0000	100.0000	2	2b
 secretleveltrigger	?RegisterActs@CSecretLevelTrigger@@SAXXZ	92.9130	92.9130	2	ced8d899dc44	0x428c0
 secretleveltrigger	?Serialize@CSecretLevelTrigger@@QAEHHHHH@Z	100.0000	100.0000	1	e640d0c5f425	0x10bb0
 secretleveltrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	4	9a327f99296f	0x42ac0
+secretteleportertrigger	??0CSecretTeleporterTrigger@@QAE@PAUCGameObject@@@Z	92.5455	92.5455	1	e815b3136e75	0x41e90
+secretteleportertrigger	??1CSecretTeleporterTrigger@@UAE@XZ	100.0000	100.0000	1	5f20cf7a2595	0x10ab0
+secretteleportertrigger	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	1	bebe8ef48cc4	0x42150
+secretteleportertrigger	?InitActReg@CSecretTeleporterTrigger@@SAXXZ	100.0000	100.0000	1	e680b02316d1	0x420d0
+secretteleportertrigger	?RegisterActs@CSecretTeleporterTrigger@@SAXXZ	92.9130	92.9130	1	489c2825fa74	0x422b0
+secretteleportertrigger	?Serialize@CSecretTeleporterTrigger@@QAEHHHHH@Z	100.0000	100.0000	1	d9e496f9c676	0x10a10
+secretteleportertrigger	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	1	19935c40cbdb	0x42b80
 serializesyncmarker	?SerializeSyncMarker@@YAHPAUCSerialArchive@@HPBDH@Z	100.0000	100.0000	1	1d81acfd4bde	0x13610
 serialobjref	?Chain@CSerialObjRef@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z	88.0496	88.0496	2	365bf0bebf01	0x8c00
 sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	72.9488	72.9488	7	21efe3fa97ea	0xf8970
@@ -3793,6 +3805,12 @@ tilegridcommand	?DecrementCell@CDecrementCellHost@@QAEHXZ	73.1351	73.1351	1	8383
 tilegridcommand	?Deserialize@CTileGridCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	2	327593c1afbb	0x113c10
 tilegridcommand	?RecordMove@CTileGridCommand@@QAEXXZ	100.0000	100.0000	2	569590a2ae20	0x112880
 tilegridcommand	?Serialize@CTileGridCommand@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	2	3634b92f3411	0x113ae0
+tilelogicpump	?CoveredPowerupStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	d2a2b973a243	0x10d010
+tilelogicpump	?GiantRockStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	198bc9d20457	0x10ced0
+tilelogicpump	?TileSecretTriggerStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	a77721399cb4	0x10cd90
+tilelogicpump	?TileTriggerStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	237892a7fbe2	0x10cb10
+tilelogicpump	?TileTriggerSwitchStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	f9b30f544d07	0x10cc50
+tilelogicpump	?WarpStonePadStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	05926269dafd	0x10d510
 tilescan	?Scan@CTileScan@@QAEHPAUCScanArg@@@Z	69.9832	69.9832	2	3dac3c5a85b8	0x35f10
 tileswitchlogic	??0CTileTriggerSwitchLogic@@QAE@XZ	100.0000	100.0000	7	82a2b34ac645	0x110430
 tileswitchlogic	?ApplyByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	100.0000	100.0000	4	28aa61a1b056	0x113d40
@@ -3812,6 +3830,22 @@ tileswitchlogic	?ValidateByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	93.3333	93
 tileswitchlogic	?VerifyBlockLinks@CTileTriggerSwitchLogic@@QAEHXZ	85.9080	85.9080	4	b5981750eda5	0x112c70
 tileswitchlogic	?VerifyBlockLinksB@CTileTriggerSwitchLogic@@QAEHXZ	85.9080	85.9080	4	6995ea121e10	0x111f40
 tileswitchlogic	?Vf0@CTileTriggerSwitchLogic@@UAEHHHHHHHHH@Z	100.0000	100.0000	1	c221ba369f17	0x1104f0
+tiletrigger	??0CCoveredPowerup@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	ee3b05c7a050	0x10fac0
+tiletrigger	??0CGiantRock@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	1cd859721edb	0x10fa90
+tiletrigger	??0CTileSecretTrigger@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	1a06ef28c279	0x10fa60
+tiletrigger	??0CTileTrigger@@QAE@PAUCGameObject@@@Z	88.3611	88.3611	1	0a660e908969	0x10e220
+tiletrigger	??0CTileTrigger@@QAE@XZ	100.0000	100.0000	1	0a660e908969	0x11160
+tiletrigger	??1CCoveredPowerup@@UAE@XZ	100.0000	100.0000	1	5a8ab2c385db	0x116c0
+tiletrigger	??1CGiantRock@@UAE@XZ	100.0000	100.0000	1	67c7ae118b81	0x11600
+tiletrigger	??1CTileSecretTrigger@@UAE@XZ	100.0000	100.0000	1	63a900150158	0x11540
+tiletrigger	??1CTileTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:be7daa73268f	0x11290
+tiletrigger	?FireActivation@CTileSecretTrigger@@QAEXH@Z	100.0000	100.0000	1	777af0bbacf3	0x10f1e0
+tiletrigger	?FireActivation@CTileTrigger@@QAEXH@Z	100.0000	100.0000	1	bade00570af9	0x10e4a0
+tiletrigger	?InitActReg@CTileSecretTrigger@@SAXXZ	100.0000	100.0000	1	8162fa386c80	0x10f160
+tiletrigger	?InitActReg@CTileTrigger@@SAXXZ	100.0000	100.0000	1	406b3c9ff1bf	0x10e420
+tiletrigger	?RegisterActs@CTileSecretTrigger@@SAXXZ	78.5970	78.5970	1	95983ae3d017	0x10f340
+tiletrigger	?RegisterActs@CTileTrigger@@SAXXZ	92.9130	92.9130	1	05c8a65a7450	0x10e600
+tiletrigger	?SerializeMove@CTileTrigger@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	3547fce29cb0	0x111f0
 tiletriggercontainer	??1CTileTriggerContainer@@QAE@XZ	85.7143	85.7143	2	918efab0d5aa	0xc8640
 tiletriggercontainer	?AddToList1@CTileTriggerContainer@@QAEPAUTtcBaseElem@@HHPAHHHHH@Z	30.3291	30.3291	6	17e3b658aa36	0x116cf0
 tiletriggercontainer	?AddToList3@CTileTriggerContainer@@QAEPAUTtcMark@@HHHHHHHH@Z	42.8816	42.8816	6	44fbf149306a	0x116a40
@@ -3985,38 +4019,8 @@ userbaselink	?AddLogicHit@CGameObject@@QAEXPAD@Z	89.4737	89.4737	4	66c13e37368b	
 userbaselink	?EnsureWorker80@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	5	58df7d894e94	0x150eb0
 userbaselink	?EnsureWorker88@CGameObject@@QAEXPAU1@@Z	64.1579	64.1579	5	c30849a1348d	0x150f90
 userbaselink	?EnsureWorker90@CGameObject@@QAEXPAU1@@Z	64.1579	64.1579	5	bb7cf80cb0f8	0x151070
-userlogic	??0CCoveredPowerup@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	4	64634afdf960	0x10fac0
-userlogic	??0CGiantRock@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	4	9d2059ea5a3a	0x10fa90
-userlogic	??0CSecretTeleporterTrigger@@QAE@PAUCGameObject@@@Z	92.5455	92.5455	9	e815b3136e75	0x41e90
-userlogic	??0CTileSecretTrigger@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	4	cd7d086009c8	0x10fa60
-userlogic	??0CTileTrigger@@QAE@PAUCGameObject@@@Z	88.3611	88.3611	7	0a660e908969	0x10e220
-userlogic	??0CTileTrigger@@QAE@XZ	100.0000	100.0000	8	0a660e908969	0x11160
-userlogic	??1CCoveredPowerup@@UAE@XZ	100.0000	100.0000	2	589b41499965	0x116c0
-userlogic	??1CGiantRock@@UAE@XZ	100.0000	100.0000	2	c40b4f586bfd	0x11600
-userlogic	??1CSecretTeleporterTrigger@@UAE@XZ	100.0000	100.0000	3	5f20cf7a2595	0x10ab0
-userlogic	??1CTileSecretTrigger@@UAE@XZ	100.0000	100.0000	2	299af42dbdb0	0x11540
-userlogic	??1CTileTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:69062e3bf126	0x11290
-userlogic	?Begin@ActionBeginHost@@QAEHH@Z	100.0000	100.0000	2	b4556a087aec	0xd7220
-userlogic	?CoveredPowerupStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	d2a2b973a243	0x10d010
-userlogic	?FireActivation@CSecretTeleporterTrigger@@QAEXH@Z	100.0000	100.0000	3	bebe8ef48cc4	0x42150
-userlogic	?FireActivation@CTileSecretTrigger@@QAEXH@Z	100.0000	100.0000	1	777af0bbacf3	0x10f1e0
-userlogic	?FireActivation@CTileTrigger@@QAEXH@Z	100.0000	100.0000	1	bade00570af9	0x10e4a0
-userlogic	?GiantRockStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	198bc9d20457	0x10ced0
-userlogic	?InitActReg@CSecretTeleporterTrigger@@SAXXZ	100.0000	100.0000	3	e680b02316d1	0x420d0
-userlogic	?InitActReg@CTileSecretTrigger@@SAXXZ	100.0000	100.0000	3	8162fa386c80	0x10f160
-userlogic	?InitActReg@CTileTrigger@@SAXXZ	100.0000	100.0000	3	406b3c9ff1bf	0x10e420
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	3	6997bbd3ffc7	0x5d210
 userlogic	?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z	0.0415	0.0415	3	0cf4fef43b2a	0x4dd50
-userlogic	?RegisterActs@CSecretTeleporterTrigger@@SAXXZ	92.9130	92.9130	3	489c2825fa74	0x422b0
-userlogic	?RegisterActs@CTileSecretTrigger@@SAXXZ	78.5970	78.5970	4	95983ae3d017	0x10f340
-userlogic	?RegisterActs@CTileTrigger@@SAXXZ	92.9130	92.9130	4	05c8a65a7450	0x10e600
-userlogic	?Serialize@CSecretTeleporterTrigger@@QAEHHHHH@Z	100.0000	100.0000	5	d9e496f9c676	0x10a10
-userlogic	?SerializeMove@CTileTrigger@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	3547fce29cb0	0x111f0
-userlogic	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	11	19935c40cbdb	0x42b80
-userlogic	?TileSecretTriggerStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	a77721399cb4	0x10cd90
-userlogic	?TileTriggerStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	237892a7fbe2	0x10cb10
-userlogic	?TileTriggerSwitchStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	f9b30f544d07	0x10cc50
-userlogic	?WarpStonePadStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	05926269dafd	0x10d510
 userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	4	ea5a56c47dbc	0x4d800
 userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	86.4156	86.4156	7	196a7ddcef0b	0x64540
 userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2585	3	95fdfa115d6d	0xee800
