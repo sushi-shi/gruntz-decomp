@@ -66,6 +66,7 @@ namespace ApiCallerStubs {
         i32 Build(PALETTEENTRY* entries, i32 flags);                // 0x176df0 (this TU)
         void Tune1770e0();                                          // 0x1770e0 (this TU)
         i32 ProcessPal(void* rgb, i32 flags);                       // 0x176e70 (this TU)
+        i32 ProcessPalBGR(void* bgr, i32 flags);                    // 0x176f30 (this TU)
         i32 ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x177040 (this TU)
         i32 ParsePaletteTail(void* buf, u32 size, i32 ctrl);        // 0x177400 (this TU)
         void Run();                                                 // 0x177070 (this TU)
@@ -567,6 +568,33 @@ i32 ApiCallerStubs::CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
         d->peRed = *s++;
         d->peGreen = *s++;
         d->peBlue = *s++;
+        d++;
+    }
+    return Build(pal, flags);
+}
+
+// ===========================================================================
+// CImagePaletteNode::ProcessPalBGR (0x176f30, ret 8) - same as ProcessPal but the
+// source triples are BGR-ordered (peBlue = s[0] ... peRed = s[2]); expand into a
+// PALETTEENTRY[256] (peFlags untouched) then realize.
+// @early-stop
+// dst-pointer-anchor tie (~95.6%): source side byte-identical (eax bias +1, the
+// [eax+1]/[eax-3]/[eax-4] BGR reads, the add eax,3 mid-body); the sole residue is the
+// dst induction anchor - retail centres edx on peGreen (lea edx,[esp+1], writes
+// [edx-1]/[edx]/[edx+1]), the recompile centres on peBlue (lea edx,[esp+2]). A pure
+// MSVC5 strength-reduction bias choice; the permuter + read-interleave reshuffles
+// don't flip it. Logic complete.
+// ===========================================================================
+RVA(0x00176f30, 0x51)
+i32 ApiCallerStubs::CImagePaletteNode::ProcessPalBGR(void* bgr, i32 flags) {
+    PALETTEENTRY pal[256];
+    u8* s = (u8*)bgr;
+    PALETTEENTRY* d = pal;
+    for (i32 i = 0; i < 256; i++) {
+        d->peRed = s[2];
+        d->peGreen = s[1];
+        d->peBlue = s[0];
+        s += 3;
         d++;
     }
     return Build(pal, flags);
