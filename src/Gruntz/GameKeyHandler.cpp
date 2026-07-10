@@ -126,25 +126,9 @@ public:
     char m_pad[4];
 };
 
-// 0x23d90 (re-homed from src/Stub/BoundaryTail.cpp): snap a draw rectangle to the
-// 0x20 grid and dispatch a blit. Called by CGamePlayInput::DispatchKey (below, via a
-// (CObj23d90*)(P(h,0x6c)) receiver); `this` is a graphics/blit object of genuinely
-// unrecovered identity (kept placeholder CObj23d90 in BoundaryTailViews.h).
-// The blit primitive reached through ILT thunk 0x2095 (__stdcall, callee-clean).
-void __stdcall Func2095(i32, i32, i32, i32, i32, i32, i32, i32);
-// @early-stop
-// scheduling wall (~50%): logic exact, but retail interleaves the sx/sy compute
-// sharing the R/P loads and snaps sx with a byte `and al,0xe0` (proven high bits 0)
-// vs our full `and eax,~0x1f`; our /O2 evaluates sy fully then sx and pushes args
-// eagerly. Pure x86 instruction scheduling/regalloc.
-RVA(0x00023d90, 0x64)
-void CObj23d90::Blit(i32 a1, i32 a2, i32 x, i32 y, i32 a5) {
-    P23d90* p = m_38->m_30->m_24;
-    R23d90* r = p->m_5c;
-    i32 sx = ((r->m_40 - p->m_10 + (x & 0xffff)) & ~0x1f) + 0x10;
-    i32 sy = ((r->m_44 - p->m_14 + (y & 0xffff)) & ~0x1f) + 0x10;
-    Func2095(a1, a2, 0, 0, sx, sy, 0, a5);
-}
+// 0x23d90 (CObj23d90::Blit, the grid-snap blit DispatchKey drives via a
+// (CObj23d90*)(P(h,0x6c)) receiver) lives in its home TU per the interval
+// dossier: src/Gruntz/GruntzCmdMgr.cpp (the command-TU sandwich).
 
 // ===========================================================================
 // @early-stop

@@ -72,24 +72,14 @@ struct CSoundChannelList {
     ~CSoundChannelList();   // 0x1b48c6
 };
 
-// The new sound-channel object the Create* factories allocate + add to the list.
-// Modeled minimally: a polymorphic scalar-deleting dtor at vtable slot 0, the
-// fields the factories seed (m_voice/m_level/m_14/m_listNode), and the non-virtual one-time
-// Init overloads (reached by direct rel32 -> ILT thunk, reloc-masked). The retail
-// vtable is referenced only by address when an instance is created.
-struct SoundChannelNew {
-    virtual ~SoundChannelNew(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    i32 m_voice;                // +0x04  DirectSound handle
-    i32 m_level;                // +0x08  level (default 100)
-    char m_pad0c[0x14 - 0x0c];
-    i32 m_14; // +0x14
-    char m_pad18[0x3c - 0x18];
-    i32 m_listNode; // +0x3c  the m_list node this channel was added at
-
-    i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);
-    i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
-    void Init2(i32 a0, i32 a1, i32 a2, i32 a3);
-};
+// The sound-channel objects the Create* factories allocate + add to the list are
+// the REAL RTTI channel classes (<Gruntz/AmbientSound.h> / RandomAmbientSound.h);
+// forward-declared here so the factory signatures carry the real types without
+// fattening this header's includers. (The old SoundChannelNew shell view of the
+// same family is dissolved.)
+class CAmbientSound;
+class CAmbientPosSound;
+class CRandomAmbientSound;
 
 // The world/level object the sound hangs off. Only its +0x2c slot is read here
 // (the SoundDevice sub-object), then poked via FreeSamples / PurgeVoiceList.
@@ -109,18 +99,18 @@ public:
     void Deactivate();             // 0x00b620  (sibling, defined elsewhere)
     ~CWorldSoundSet();             // 0x085ed0
 
-    // Factories: allocate + seed a sound channel, run its one-time Init, and (on
-    // success) append it to m_list. The rtti-vptr heuristic mislabeled these as
-    // CAmbientSound / CAmbientPosSound / CRandomAmbientSound members (they only
-    // reference those classes' vtables); the `this` is this CWorldSoundSet owner.
-    SoundChannelNew* CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
-    SoundChannelNew* CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
-    SoundChannelNew* CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
-    SoundChannelNew* CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
-    SoundChannelNew*
+    // Factories: allocate + seed a sound channel (the real RTTI channel classes),
+    // run its one-time Init, and (on success) append it to m_list. The `this` is
+    // this CWorldSoundSet owner (the rtti-vptr heuristic once mislabeled them onto
+    // the channel classes whose vtables their inlined ctors stamp).
+    CAmbientSound* CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    CAmbientSound* CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    CAmbientPosSound* CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    CAmbientPosSound* CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
+    CRandomAmbientSound*
     CreateRandom_bb60(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8);
     // 0xba00: CRandomAmbientSound with a validated (x,y) bounding box; ::operator new.
-    SoundChannelNew*
+    CRandomAmbientSound*
     CreateRandomBox_ba00(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8);
 
     CRandomAmbientWorld* m_world; // +0x00

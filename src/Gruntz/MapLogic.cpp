@@ -164,29 +164,6 @@ i32 CMapLogic::SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     return ((CMapVisitTarget*)this)->Visit(ar, mode, a2, a3) != 0;
 }
 
-// ===========================================================================
-// CMapVisitTarget::Visit  (0x09f7f0) - __thiscall
-// ===========================================================================
-// Probe the visited object through its own vtable: mode 4 calls slot +0x08, mode 7
-// calls slot +0x0c, each with the buffer arg. Returns 1 unless the probe returned
-// non-zero (then the slot's truthiness short-circuits to a 0 return). A null buffer
-// returns 0; any other mode returns 1.
-RVA(0x0009f7f0, 0x3b)
-i32 CMapVisitTarget::Visit(void* buf, i32 mode, i32 a2, i32 a3) {
-    if (buf == 0) {
-        return 0;
-    }
-    switch (mode) {
-        case 4:
-            if (Slot08(buf) == 0) {
-                return 0;
-            }
-            break;
-        case 7:
-            if (Slot0C(buf) == 0) {
-                return 0;
-            }
-            break;
-    }
-    return 1;
-}
+// CMapVisitTarget::Visit (0x9f7f0) lives in its home TU per the interval dossier
+// (#10a seam): src/Gruntz/MapMgr.cpp - the single fn between the CBrickzGrid
+// block and CMapMgr::Save/Load.

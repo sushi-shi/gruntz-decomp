@@ -8,68 +8,9 @@
 #include <Net/NetMgr.h>
 #include <rva.h>
 #include <string.h> // memset (inlined rep stos over the resync scratch block)
-
-// CNetCmdSlot helper reached only here (0xc0bb0, __thiscall, external).
-
-// ---------------------------------------------------------------------------
-// CNetSession::ResetAll (0xbbf80, __thiscall) - full session reset: zero the
-// scalar header (m_1c latched to 1), reset every one of the four inline command
-// slots (the same field-wipe + ClearCmds + ResetTriple sequence as
-// CNetCmdSlot::ResetAll, inlined here), clear the 0x200-byte resync scratch
-// block, then zero all 0x80 resync entries.
-// ---------------------------------------------------------------------------
-// @early-stop
-// loop induction-variable / regalloc wall (71.5%): every operation is byte-faithful
-// (header zero, the inlined per-slot wipe + ClearCmds + both ResetTriple calls, the
-// rep stos over m_1b0, the 0x80-entry zero loop). Retail strength-reduces the slot
-// loop into TWO induction vars (edi=slot passed as `this`, esi=slot+8 for the field
-// stores) and SPILLS the down-counter to a stack slot (the leading `push ecx`),
-// also basing the entry loop at entry+8; cl uses one IV (esi=slot) and keeps the
-// counter in edi. A pure induction-var-selection coin-flip (same family as
-// CNetSyncCheck::AllSlotsReady ~79%); not source-steerable. Final sweep.
-RVA(0x000bbf80, 0xb7)
-void CNetSession::ResetAll() {
-    m_0 = 0;
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
-    m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
-    m_1c = 1;
-
-    i32 i;
-    CNetCmdSlot* slot = m_slots;
-    for (i = 4; i != 0; i--) {
-        slot->m_state = 0;
-        slot->m_resetGuard = 0;
-        slot->m_latchedSeq = 0;
-        slot->m_cmdHead = 0;
-        slot->m_latency = 0;
-        slot->m_baseSeq = 0;
-        slot->m_maxSeq = 0;
-        slot->m_owner = 0;
-        slot->ClearCmds();
-        slot->m_ackFlags[0] = 0;
-        slot->m_ackFlags[1] = 0;
-        slot->m_ackFlags[2] = 0;
-        slot->m_ackFlags[3] = 0;
-        slot->ResetTriple(slot->m_rangeA);
-        slot->ResetTriple(slot->m_rangeB);
-        slot++;
-    }
-
-    memset(m_1b0, 0, sizeof(m_1b0));
-
-    CNetResyncEntry* e = m_entries;
-    for (i = 0x80; i != 0; i--) {
-        e->m_0 = 0;
-        e->m_8 = 0;
-        e->m_c = 0;
-        e->m_4 = 0;
-        e++;
-    }
-}
+// CNetSession::ResetAll (0xbbf80) lives in its home TU per the interval dossier
+// (#4b): src/Gruntz/Multi.cpp (compiled there by position; this TU keeps the
+// 0xbef80-interval core).
 
 // ---------------------------------------------------------------------------
 // CNetSession::CreateSlot (0xbfff0, __thiscall) - reset slot[index] and seed it

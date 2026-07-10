@@ -84,6 +84,11 @@ public:
     // world is live. Inlines SetLevel(m_08, 0, 0)'s scale+clamp then SetVolumeByIndex.
     void Restart(); // 0xbfb0
 
+    // One-time inits run by the CWorldSoundSet::Create* factories right after
+    // construction (unreconstructed; declared NO-body so the `call` reloc-masks).
+    i32 Init6(void* world, i32 a1, i32 a2, void* a3, i32 a4, i32 a5);
+    i32 Init5(i32 a0, i32 a1, void* a2, i32 a3, i32 a4);
+
     // +0x00  vptr provided by CUserBase base
     DirectSoundMgr* m_voice; // +0x04  the sound-mgr voice handle it drives
     i32 m_level;             // +0x08  current level (0..100), scaling base
@@ -93,8 +98,27 @@ public:
     AmbientBox m_box1;       // +0x18  primary audible box
     AmbientBox m_box2;       // +0x28  secondary audible box
     i32 m_panIndex;          // +0x38  pan index (ApplyAndPlay pan arg; matches CRandomAmbientSound)
-    i32 m_3c;                // +0x3c  zero-init in dtor; role unproven
+    void* m_listNode;        // +0x3c  the CWorldSoundSet::m_list node this channel was
+                             //        appended at (Create* factories store AddTail's
+                             //        return here); zeroed in the dtor
 };
 SIZE(CAmbientSound, 0x40);
+
+// ---------------------------------------------------------------------------
+// CAmbientPosSound : CAmbientSound (RTTI, vftable 0x5e7124, sizeof 0x48). The
+// positional sibling built by CWorldSoundSet::CreatePos6_b850/CreatePos5_b960;
+// overrides slot 0 (scalar dtor) + slot 3 (Update). Its two own fields
+// (+0x40/+0x44, the anchor position) are untouched by reconstructed code.
+// ---------------------------------------------------------------------------
+VTBL(CAmbientPosSound, 0x001e7124);
+class CAmbientPosSound : public CAmbientSound {
+public:
+    virtual ~CAmbientPosSound() OVERRIDE;                  // slot 0
+    virtual void Update(i32 x, i32 y, i32 force) OVERRIDE; // slot 3 override
+
+    i32 m_40; // +0x40  anchor position x (seeded by Init6/Init5; role by analogy
+    i32 m_44; // +0x44  anchor position y  with CRandomAmbientSound's +0x40/+0x44)
+};
+SIZE(CAmbientPosSound, 0x48);
 
 #endif // GRUNTZ_CAMBIENTSOUND_H

@@ -320,11 +320,6 @@ source = "src/Gruntz/DrawDebugStats.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "multistartdlgworld"
-source = "src/Gruntz/MultiStartDlgWorld.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "multistartdlgroster"
 source = "src/Gruntz/MultiStartDlgRoster.cpp"
 flags = "eh"
@@ -347,11 +342,6 @@ flags = "eh"
 [[unit]]
 unit = "slotcombofill"
 source = "src/Gruntz/SlotComboFill.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "netmgrwait"
-source = "src/Net/NetMgrWait.cpp"
 flags = "eh"
 
 [[unit]]
@@ -502,11 +492,6 @@ flags = "eh"
 [[unit]]
 unit = "worldsoundset"
 source = "src/Gruntz/WorldSoundSet.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "randomambientsound"
-source = "src/Gruntz/RandomAmbientSound.cpp"
 flags = "eh"
 
 [[unit]]
@@ -663,11 +648,6 @@ flags = "base"
 unit = "scanlinesurface"
 source = "src/Image/ScanlineSurface.cpp"
 flags = "base"
-
-[[unit]]
-unit = "lobbyobjb"
-source = "src/Gruntz/LobbyObjB.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "imageowned"
@@ -900,11 +880,6 @@ source = "src/Gruntz/GruntDataRecord.cpp"
 flags = "base"
 
 [[unit]]
-unit = "gruntzcommand"
-source = "src/Gruntz/GruntzCommand.cpp"
-flags = "base"
-
-[[unit]]
 # trace-discovered ShadeDescr* global selector pair (re-homed from Discovered.cpp).
 unit = "shadedescrtable"
 source = "src/DDrawMgr/ShadeDescrTable.cpp"
@@ -942,13 +917,6 @@ flags = "eh"
 # CGruntzMgr; true owner not identified, so its own TU.
 unit = "unknownfileioctor"
 source = "src/Gruntz/UnknownFileIOCtor.cpp"
-flags = "eh"
-
-[[unit]]
-# CNetMgr::LoadMenuSelectSprite (0xba620); own TU (its sub-object calling shape
-# conflicts with NetMgr.cpp's byte-exact CNetMgr view).
-unit = "netmgrmenuselect"
-source = "src/Net/NetMgrMenuSelect.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1071,11 +1039,6 @@ flags = "eh"
 # game-state cluster, really CMulti); split out of the netmgr god-TU (2026-07-10).
 # Separate retail object from the engine CNetMgr at 0x178xxx (~0xbaf30 .text gap).
 [[unit]]
-unit = "netmgrgame"
-source = "src/Net/NetMgrGame.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "netmgrerror"
 source = "src/Net/NetMgrReportError.cpp"
 flags = "base"
@@ -1133,11 +1096,6 @@ flags = "eh"
 [[unit]]
 unit = "playmessageimage"
 source = "src/Gruntz/PlayMessageImage.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "multiresumeslots"
-source = "src/Gruntz/MultiResumeSlots.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1224,11 +1182,6 @@ flags = "eh"
 [[unit]]
 unit = "videoconfig"
 source = "src/Gruntz/VideoConfig.cpp"
-flags = "base"
-
-[[unit]]
-unit = "gameoptionsdialog"
-source = "src/Gruntz/GameOptionsDialog.cpp"
 flags = "base"
 
 [[unit]]
@@ -1493,11 +1446,6 @@ flags = "eh"
 [[unit]]
 unit = "actionoptionsmenubar"
 source = "src/Gruntz/ActionOptionsMenuBar.cpp"
-flags = "base"
-
-[[unit]]
-unit = "ambientsound"
-source = "src/Gruntz/AmbientSound.cpp"
 flags = "base"
 
 [[unit]]
@@ -2195,11 +2143,6 @@ source = "src/Net/NetSessionNode.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "netsessionopen"
-source = "src/Net/NetSessionOpen.cpp"
-flags = "eh"
-
-[[unit]]
 # NetMgr lobby / in-game network DialogProcs + their init helpers, re-homed from
 # src/Stub/ApiCallers.cpp. A destructible CString status-banner local (0xbe2f0)
 # forces the /GX EH frame -> "eh" (== the engine_label_stubs base+/GX it came from).
@@ -2672,18 +2615,6 @@ flags = "eh"
 # matcher-4: the two dialog flash-rect helpers (EH + severus/imgHolder scratch).
 unit = "flashrect"
 source = "src/Gruntz/FlashRect.cpp"
-flags = "eh"
-
-[[unit]]
-# matcher-4: dialog label text measure/render helper (EH + CString + scratch).
-unit = "drawtext"
-source = "src/Gruntz/DrawText.cpp"
-flags = "eh"
-
-[[unit]]
-# matcher-4: multiplayer color-selection dialog item updater (EH + MFC CString).
-unit = "multicolordlg"
-source = "src/Gruntz/MultiColorDlg.cpp"
 flags = "eh"
 
 [[unit]]

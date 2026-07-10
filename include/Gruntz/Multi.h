@@ -259,17 +259,9 @@ public:
     void Teardown(); // 0x004a3360
 };
 
-// A CNetSession2 slot element (returned by FindSlot, stride 0x64) -- carries an
-// inner manager at +0xc. Its FUN_004bc3f0 method (NOT a CMulti method) appends
-// the host name into the inner manager. Placeholder.
-class CLobbySlot {
-public:
-    // Fill `out` with the slot's host name and return it (FUN_004bc3f0; NOT a
-    // CMulti method - it lives on this slot/player class).
-    CString* BuildHostName(CString* out); // 0x004bc3f0
-    char m_pad00_0c[0xc];
-    void* m_c; // +0x0c  inner manager (sub-object at +0x18 read by the dropper)
-};
+// A CNetSession2 slot element (returned by FindSlot, stride 0x64): the canonical
+// CLobbySlot lives in <Gruntz/LobbyObjB.h> (BuildHostName @0xbc3f0, ~ @0xb62a0,
+// m_mgr @+0xc); only the fwd-decl above is needed here.
 
 // CMulti's own (manually-stamped) vtable. Only the two slots the per-frame Tick
 // dispatches through are typed; the rest are opaque. The slots are thiscall in

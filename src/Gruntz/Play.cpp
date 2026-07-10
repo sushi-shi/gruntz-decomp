@@ -234,87 +234,10 @@ enum {
     VIEW_MODE_B = 2,    // mode-B sub-step
 };
 
-// ===========================================================================
-// ApplyGameOptions (0x036be0) operates entirely on the global game manager
-// (*g_64556c, a CGruntzMgr) -- it ignores `this` (the first instruction reloads
-// the singleton into ecx), so it compiles byte-identically whether modeled as a
-// free fn or a CPlay method (the trace's this/ecx is dead here). Modeled as a
-// CPlay method per the runtime attribution.
-//
-// A minimal VIEW of the CGruntzMgr game-manager singleton (0x64556c) this function
-// touches (the one true shape lives in <Gruntz/GruntzMgr.h>: ApplyOpt==SetRunState
-// @0x092340, StoreInputFlag @0x0919d0, StoreInputState @0x091a10, m_48==m_sound).
-// NOT merged to the canonical header here: this TU includes the real
-// <Dsndmgr/GruntzSoundZ.h>, whose CGruntzSoundZ would be redefined by GruntzMgr.h's
-// inline CGruntzSoundZ (a separate triplication to resolve first). All the sinks are
-// external/no-body so the call rel32 displacements reloc-mask; local view retained.
-SIZE_UNKNOWN(CGameMgrSettings);
-struct CGameMgrSettings {
-
-    struct CSound {
-        char p0[0x28];
-        i32 m_28; // +0x28  gate (skip the XMIDI push when 0)
-    };
-
-    char p0[0x48];
-    CSound* m_48; // +0x48  sound object
-    char p4c[0x100 - 0x4c];
-    i32 m_isVoiceEnabled; // +0x100
-    char p104[0x118 - 0x104];
-    i32 m_isEasyMode; // +0x118
-    char p11c[0x124 - 0x11c];
-    i32 m_scrollSpeed; // +0x124
-};
-
-// The option-source globals ApplyGameOptions pushes/stores (uninitialized .bss).
-extern "C" {
-    DATA(0x0024556c)
-    extern CGameMgrSettings* g_mgrSettings; // = g_64556c (the CGruntzMgr singleton)
-    DATA(0x0020ccc4)
-    extern i32 g_videoResolutionMode;
-    DATA(0x002455b4)
-    extern i32 g_gate_2455b4;
-}
-
-// A free helper (FUN_004923b0, cdecl/1 arg) run on the XMIDI-active path before
-// the sound-object volume push. External/no-body -> reloc-masked.
-extern "C" void Eng_OptCommit(i32 v); // 0x4923b0
-
-// ===========================================================================
-// CPlay::ApplyGameOptions (0x036be0) - push the current option/registry values
-// into the game manager (*g_64556c). Mirrors the video-resolution mode global,
-// stamps three manager words (+0x118/+0x100/+0x124), and - unless the runtime
-// gates g_gate_2455b4/bc/c0 say otherwise - forwards the input flag/state options
-// and (when the sound object's +0x28 gate is live) commits the XMIDI volume.
-// ===========================================================================
-// @early-stop
-// register-coloring wall (~76%). Control flow, all member offsets
-// (+0x118/+0x100/+0x124/+0x48/+0x28), the 12 option/gate globals, the 5 callees
-// and the redundant g_gate_2455b4 re-test are byte-faithful and all relocs pair;
-// the residual is the non-steerable eax-vs-ecx coloring of the reloaded manager
-// pointer (retail pins it in ecx, our cl picks eax) which cascades into the temp
-// regs + the top videomode/b4-load schedule. See docs/patterns/zero-register-pinning.md.
-RVA(0x00036be0, 0xd3)
-void CPlay::ApplyGameOptions() {
-    if (g_mgrSettings == 0) {
-        return;
-    }
-    g_mgrSettings->m_isEasyMode = g_opt_22bd70;
-    g_videoResolutionMode = g_opt_22bdc8;
-    if (g_gate_2455b4 == 0) {
-        if (g_gate_2455bc == 0) {
-            ((CGruntzMgr*)g_mgrSettings)->SetRunState(g_opt_22bd84);
-            ((CGruntzMgr*)g_mgrSettings)->StoreInputFlag(g_opt_22bd6c);
-            g_mgrSettings->m_isVoiceEnabled = g_opt_22bdd4;
-            ((CGruntzMgr*)g_mgrSettings)->StoreInputState(g_opt_22bdc4);
-        }
-        if (g_gate_2455b4 == 0 && g_gate_2455c0 == 0 && g_mgrSettings->m_48->m_28 != 0) {
-            Eng_OptCommit(g_opt_22bdd0);
-            ((CGruntzSoundZ*)g_mgrSettings->m_48)->SetXMidiVolume(g_opt_22bdcc);
-        }
-    }
-    g_mgrSettings->m_scrollSpeed = g_opt_22bd68;
-}
+// CPlay::ApplyGameOptions (0x036be0) lives in its home TU per the interval
+// dossier (#10c seam): src/Gruntz/VideoConfig.cpp (the options-dialogs TU).
+// Its former CGameMgrSettings local view dissolved with it (the canonical
+// CGruntzMgr shape serves there).
 
 // CPlay::Update (0x0008c910) is now an inline member in the header.
 

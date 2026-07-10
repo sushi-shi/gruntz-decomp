@@ -438,7 +438,7 @@ public:
     void SnapWalk();
 
     // --- the trace-discovered CPlay sub-steps reconstructed in this TU ---
-    void ApplyGameOptions(); // 0x036be0 (THIS TU)
+    void ApplyGameOptions(); // 0x036be0 (options-dialogs TU: VideoConfig.cpp)
     void DrawWorldFrame();   // 0x0c9c20 (THIS TU)
     i32 DrawWorldFrames();   // 0x0c9cc0 (THIS TU)
     // The two timeGetTime-instrumented frame variants (the dev profiler builds the

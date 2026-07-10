@@ -75,6 +75,7 @@ struct AmbSoundRecord {
     DirectSoundMgr* m_mgr; // +0x10
 };
 
+VTBL(CRandomAmbientSound, 0x001e713c);
 class CRandomAmbientSound : public CAmbientSound {
 public:
     CRandomAmbientSound(); // 0x00bb40  base init (cl auto-stamps the vptr)
@@ -95,18 +96,16 @@ public:
     // Step(x, y, force): the per-frame tick (vtable slot 3). 0x00cb30.
     void Step(i32 x, i32 y, i32 force);      // 0x00cb30
     virtual ~CRandomAmbientSound() OVERRIDE; // slot 0  0x00bb60
+    // Init2(lo, hi, lo2, hi2): the interval-roller seed run by the box factory
+    // (CWorldSoundSet::CreateRandomBox_ba00; unreconstructed, reloc-masked).
+    void Init2(i32 a0, i32 a1, i32 a2, i32 a3);
 
     // --- layout (sizeof 0x58) -------------------------------------------------
-    // +0x00  vptr (compiler ??_7CRandomAmbientSound; was the manual m_vptr slot)
-    DirectSoundMgr* m_mgr; // +0x04  the sound-mgr handle (mgr->...)
-    i32 m_lastPosition;    // +0x08  last play position / pan base
-    i32 m_scaleA;          // +0x0c  scale A (compared to 5; -0xf above)
-    i32 m_scaleB;          // +0x10  scale B (>0 gate)
-    i32 m_isPlaying;       // +0x14  "is playing" flag
-    AmbientBox m_box1;     // +0x18  primary visibility box
-    AmbientBox m_box2;     // +0x28  secondary visibility box
-    i32 m_panIndex;        // +0x38  pan/reseed parameter
-    i32 m_3c;              // +0x3c  zero-init in ctor
+    // +0x00..+0x3f come from the CAmbientSound base (vptr, m_voice, m_level,
+    // m_scaleA/m_scaleB, m_isPlaying, m_box1/m_box2, m_panIndex, m_listNode).
+    // (An earlier revision re-declared the base fields here, shadowing them at
+    // +0x40.. - a proven layout bug: retail Setup/Update write +0x04..+0x38.)
+    //
     // +0x40/+0x44 are a union: the random path (Setup/Step) uses them as the
     // phase-A interval bounds [lo,hi]; the positional path (SetupPos/UpdateAt) uses
     // them as the (x,y) anchor. Left as raw offsets since the role forks by instance.

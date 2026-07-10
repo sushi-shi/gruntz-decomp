@@ -1,85 +1,55 @@
-// Brickz.cpp - reconstruction of the trace-discovered "CBrickzGrid" cluster.
+// Brickz.cpp - the scattered OUT-OF-LINE CBrickzGrid singletons (Tier B of the
+// de-fragmentation assessment below). The Tier-A out-of-line pathfinding core
+// (block F, 0x9ea60..0x9f7b7: AllocGrid/Search/Expand/Insert/PopFront/CellPush/
+// Find/FindCellNode/Drain/Reset/Unlink/CellPop) is homed in src/Gruntz/MapMgr.cpp
+// per docs/exe-map/interval-dossiers.md #10a (mapmgr + brickz-interval = ONE
+// original TU; A-B-A-B weave + one bracketing init-frag run).
 //
 // Placeholder class name (see <Gruntz/Brickz.h>): these are __thiscall pointer-
 // shuffle ops over a self-contained graph/grid container's intrusive node lists.
 // They match by shape; field names are placeholders, offsets are load-bearing.
 //
 // ---------------------------------------------------------------------------
-// DE-FRAGMENTATION ASSESSMENT (matcher-2, 2026-07-10): NOT a .cpp split. CBrickzGrid is
-// TWO tiers - an OUT-OF-LINE core (stays here) + HEADER-INLINE singletons whose correct
-// home is Brickz.h but whose migration is DEFERRED on delinker attribution work (below).
+// DE-FRAGMENTATION ASSESSMENT (matcher-2, 2026-07-10; Tier A since re-homed):
+// One dominant class, CBrickzGrid (non-polymorphic grid/pathfinding container,
+// all QAE), + two tiny homed helpers (BrickzGridDesc::SetCell @0x77dc0,
+// Grid_77df0::FindNearest @0x77df0). Game object CBrickz is its own TU
+// (src/Gruntz/CBrickz.cpp).
 //
-// One dominant class, CBrickzGrid (19 methods, non-polymorphic grid/pathfinding
-// container, all QAE), + two tiny homed helpers (BrickzGridDesc::SetCell @0x77dc0,
-// Grid_77df0::FindNearest @0x77df0). Game object CBrickz is already its own TU
-// (src/Gruntz/CBrickz.cpp). Methods sit in six disjoint whole-binary .text clusters
-// (34-396 foreign fns between each) - so NOT a per-class .cpp split (vs SPLIT_PLAN cat-B
-// "confirm before splitting": it is COMDAT scatter, not two .objs).
+// TIER B - the scattered singletons here (Clip 0x2b340 | ComputeCellFlags 0x77790 |
+//   SetCell 0x77dc0 | FindNearest 0x77df0 | SearchEdge/UpdDiag/Line 0x81e10.. |
+//   IsCellClear 0x853f0 | Serialize 0x9356c) are OUT-OF-LINE functions that retail
+//   CALLS: each has its own rva, reached from other TUs via incremental-link
+//   thunks, and the delinked target references them as an `U <name>` extern (= a
+//   linked CALL). They STAY OUT-OF-LINE here. DO NOT move them to Brickz.h.
+//   PROVEN (2026-07-10, measured end-to-end): making ComputeCellFlags an `inline`
+//   header member makes MSVC5 /O2 INLINE it into its callers (BuildRockBreakParticles
+//   doubled 1008->2096B, the switch body folded in, 0 calls left) ->
+//   RockBreakParticles 81->0, ApplyMove 70->0. The DELINKER IS NOT THE CAUSE -
+//   re-attributing the rva alone (no recompile) craters nothing. Retail inlines
+//   these SELECTIVELY: ComputeCellFlags is inlined ONLY into CBrickz::LoadAttributes
+//   @0x810f0 (the switch consts appear at exactly 2 rvas: 0x77790 + 0x8150c) and
+//   CALLED from the other 3 sites. We mirror that by hand: out-of-line member +
+//   hand-written inlined body where retail inlined it (see BrickzLoad.cpp), NEVER
+//   the `inline` keyword. IsCellClear is data-ref'd ONLY from vtable slots
+//   ??_7CMapMgr@@6B@+0x14 & ??_7CGruntzMapMgr@@6B@+0x14 => an inline VIRTUAL of
+//   CMapMgr (slot 5), mislabeled CBrickzGrid::IsCellClear (@owner-TODO). Virtuals
+//   ARE safe as header-inline (vtable dispatch = `call *(%eax)`, never inlined at
+//   the call site) - that is the ONLY safe header-inline case. See docs/patterns/
+//   nonvirtual-inline-header-craters-delinker-packing.md (corrected: root cause is
+//   MSVC inlining, not the delinker).
 //
-// TIER A - block F (0x9ea60..0x9f7b7: AllocGrid,Search,Expand,Insert,PopFront,CellPush,
-//   Find,FindCellNode,Drain,Reset,Unlink,CellPop) = the OUT-OF-LINE .cpp core (one
-//   roughly-contiguous .obj block). PROVEN out-of-line: forcing Find (0x9f500) inline
-//   -> MSVC5 inlined it into its sole caller Expand (Find vanished, Expand -2.5); moving
-//   Find out-of-line BEFORE Expand -> NOT inlined (stays 100%). MSVC5 auto-inlines only
-//   inline-MARKED fns; retail keeps Find standalone+called => out-of-line. Stays here.
-// TIER B - the scattered singletons (Clip 0x2b340 | ComputeCellFlags 0x77790 |
-//   SearchEdge/UpdDiag/Line 0x81e10.. | IsCellClear 0x853f0 | Serialize 0x9356c) are
-//   OUT-OF-LINE functions that retail CALLS: each has its own rva, reached from other
-//   TUs via incremental-link thunks, and the delinked target references them as an
-//   `U <name>` extern (= a linked CALL). They STAY OUT-OF-LINE here, same as Tier A.
-//   DO NOT move them to Brickz.h. PROVEN (2026-07-10, measured end-to-end): making
-//   ComputeCellFlags an `inline` header member makes MSVC5 /O2 INLINE it into its callers
-//   (BuildRockBreakParticles doubled 1008->2096B, the switch body folded in, 0 calls
-//   left) -> RockBreakParticles 81->0, ApplyMove 70->0. The DELINKER IS NOT THE CAUSE -
-//   re-attributing the rva alone (no recompile) craters nothing. Retail inlines these
-//   SELECTIVELY: ComputeCellFlags is inlined ONLY into CBrickz::LoadAttributes @0x810f0
-//   (the switch consts appear at exactly 2 rvas: 0x77790 + 0x8150c) and CALLED from the
-//   other 3 sites. We mirror that by hand: out-of-line member + hand-written inlined body
-//   where retail inlined it (see BrickzLoad.cpp), NEVER the `inline` keyword.
-//   IsCellClear is data-ref'd ONLY from vtable slots ??_7CMapMgr@@6B@+0x14 &
-//   ??_7CGruntzMapMgr@@6B@+0x14 => an inline VIRTUAL of CMapMgr (slot 5), mislabeled
-//   CBrickzGrid::IsCellClear (@owner-TODO). Virtuals ARE safe as header-inline (vtable
-//   dispatch = `call *(%eax)`, never inlined at the call site) - that is the ONLY safe
-//   header-inline case. See docs/patterns/nonvirtual-inline-header-craters-delinker-
-//   packing.md (corrected: root cause is MSVC inlining, not the delinker).
-//
-// Remaining work: per-method @early-stop residue (final sweep); Grid_77df0 identity via
-// xref (@identity-TODO); IsCellClear -> CMapMgr slot 5 (real virtual, header-inline-safe).
-// Tier B needs NO delinker work - it is out-of-line and faithful. Also 3 trivial
-// intra-file-order violations (CellPush/Find/SetCell not ascending) per tu_order_check.
+// Remaining work: per-method @early-stop residue (final sweep); Grid_77df0 identity
+// via xref (@identity-TODO); IsCellClear -> CMapMgr slot 5 (real virtual,
+// header-inline-safe); the CBrickzGrid<->CMapMgr identity reconcile (see MapMgr.cpp).
 // ---------------------------------------------------------------------------
 #include <rva.h>
 #include <Gruntz/BattlezData.h>
-#include <Rez/RezList.h>
-#include <Gruntz/MapMgr.h>
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
-#include <string.h> // memset (/Oi intrinsic: shr/rep stosd/and/rep stosb)
 
 #include <Gruntz/Brickz.h>
-#include <Win32.h> // RECT + IntersectRect (AllocGrid seeds the grid bounding rect)
+#include <Win32.h> // RECT + IntersectRect (Clip) + PtInRect (FindNearest)
 
-// The pool allocator the container new's its cell pool + column table off
-// (0x1b9b46, __cdecl). Modeled no-body so the call reloc-masks.
-extern "C" void* __cdecl RezAlloc(u32 n); // 0x1b9b46
-
-// The two intrusive node-pool sub-objects embedded at +0x30 and +0x3c: AllocGrid
-// seeds each with count*5 nodes through its __thiscall init (reloc-masked thunks).
-// A recycled result record off the shared free-list: m_0 = next-free link,
-// m_4/m_8 = the path cell (col,row) handed to the result list.
-struct BrickzFreeRec {
-    i32 m_0; // +0x00  next-free link
-    i32 m_4; // +0x04  path col
-    i32 m_8; // +0x08  path row
-};
-
-// The intrusive free-list the search nodes recycle into when a goal node is
-// reached (shared global pool; modeled extern + DATA() so the load reloc-masks).
-// ?g_freeList@@3PAXA at VA 0x645544.
-DATA(0x00245544)
-extern BrickzFreeRec* g_brickzFreeList;
-
-// CPtrList::AddHead (0x1b4967, __thiscall) - the list the matched search records
-// are handed off to as the result path; modeled no-body so the call reloc-masks.
 // MapSerializeCurve (0x0ec230) - declared 4-arg __cdecl here: the Serialize
 // wrapper forwards all four of its args unchanged (the callee only reads the first
 // two). Modeled no-body so the call reloc-masks. Same symbol as the 2-arg form in
@@ -314,6 +284,104 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     }
 }
 
+// 0x077dc0 - flat cell setter: m_20[ m_24[y] + x ] = id (re-homed from
+// src/Stub/BoundaryLowerMethods.cpp; CTerrainTileLoader::Load reaches this via
+// loader->m_24 (BrickzAttrMgr) -> m_5c). __thiscall(x, y, id).
+RVA(0x00077dc0, 0x1d)
+void BrickzGridDesc::SetCell(i32 x, i32 y, i32 id) {
+    m_20[m_24[y] + x] = id;
+}
+
+// ---------------------------------------------------------------------------
+// 0x77df0 (RVA-homed from src/Stub/ApiCallers.cpp) - __thiscall(w): of the live,
+// non-kind-0x36 cells in the 4x15 grid (skipping row w->m_1ec), pick the one nearest
+// the reference tile; null it unless it lands inside the reference object's
+// +/-(m_298+m_2dc+1) tile box. Tile coords are 1/32-pixel units (>>5).
+// @early-stop
+// regalloc wall: logic + the distance/rect math are byte-exact, but MSVC spills
+// colPtr/rowPtr to the stack where retail keeps them in edi/ecx (it instead reloads
+// `w` per outer iter). A spill-weight choice; the loop body matches.
+struct GridSpatial_77df0 {
+    char m_pad0[0x5c];
+    i32 m_5c; // +0x5c x
+    i32 m_60; // +0x60 y
+};
+struct GridCell_77df0 {
+    char m_pad0[0x10];
+    GridSpatial_77df0* m_10; // +0x10
+    char m_pad14[0x1fc - 0x14];
+    i32 m_1fc; // +0x1fc live flag
+    char m_pad200[0x258 - 0x200];
+    i32 m_258; // +0x258 kind
+};
+struct GridWorld_77df0 {
+    char m_pad0[0x10];
+    GridSpatial_77df0* m_10; // +0x10 reference object
+    char m_pad14[0x17c - 0x14];
+    i32 m_17c; // +0x17c reference x
+    i32 m_180; // +0x180 reference y
+    char m_pad184[0x1ec - 0x184];
+    i32 m_1ec; // +0x1ec row to skip
+    char m_pad1f0[0x298 - 0x1f0];
+    i32 m_298; // +0x298 radius part
+    char m_pad29c[0x2dc - 0x29c];
+    i32 m_2dc; // +0x2dc radius part
+};
+struct Grid_77df0 {
+    char m_pad0[0x1c];
+    GridCell_77df0* m_cells[4][15]; // +0x1c (row stride 0x3c)
+    GridCell_77df0* FindNearest(GridWorld_77df0* w);
+};
+SIZE_UNKNOWN(GridSpatial_77df0);
+SIZE_UNKNOWN(GridCell_77df0);
+SIZE_UNKNOWN(GridWorld_77df0);
+SIZE_UNKNOWN(Grid_77df0);
+RVA(0x00077df0, 0x13d)
+GridCell_77df0* Grid_77df0::FindNearest(GridWorld_77df0* w) {
+    GridCell_77df0* best = 0;
+    i32 bestDist = 0x7fffffff;
+    i32 tileX = w->m_17c >> 5;
+    i32 tileY = w->m_180 >> 5;
+    GridCell_77df0** rowPtr = &m_cells[0][0];
+    for (i32 i = 0; i < 4; i++) {
+        if (i != w->m_1ec) {
+            GridCell_77df0** colPtr = rowPtr;
+            i32 j = 15;
+            do {
+                GridCell_77df0* cell = *colPtr;
+                if (cell && cell->m_1fc != 0 && cell->m_258 != 0x36) {
+                    i32 dx = (cell->m_10->m_5c >> 5) - tileX;
+                    i32 dy = (cell->m_10->m_60 >> 5) - tileY;
+                    i32 dist = dx * dx + dy * dy;
+                    if (dist < bestDist) {
+                        best = cell;
+                        bestDist = dist;
+                    }
+                }
+                colPtr++;
+            } while (--j != 0);
+        }
+        rowPtr += 15;
+    }
+    i32 k = w->m_298 + w->m_2dc + 1;
+    i32 px = w->m_10->m_5c >> 5;
+    i32 py = w->m_10->m_60 >> 5;
+    RECT rc;
+    rc.left = px - k;
+    rc.top = py - k;
+    rc.right = px + k + 1;
+    rc.bottom = py + k + 1;
+    if (best) {
+        POINT pt;
+        pt.x = best->m_10->m_5c >> 5;
+        pt.y = best->m_10->m_60 >> 5;
+        if (!PtInRect(&rc, pt)) {
+            best = 0;
+        }
+    }
+    return best;
+}
+
 // ---------------------------------------------------------------------------
 // CBrickzGrid::SearchEdge (0x081e10) - run a Search between two adjacent cells with
 // their edge state temporarily punched open, then restore. Bounds-check both
@@ -517,704 +585,9 @@ i32 CBrickzGrid::Serialize(i32 a0, i32 a1, i32 a2, i32 a3) {
     return ((CBattlezData*)a3)->Serialize((CSerialArchive*)a0, a1, a2, a3) != 0;
 }
 
-// ---------------------------------------------------------------------------
-// CBrickzGrid::AllocGrid (0x09ea60) - allocate + initialize the width x height grid:
-// new the flat cell pool (0x1c bytes/cell) + the per-row column table, zero the
-// pool, thread each row pointer, seed the two intrusive node pools (count*5
-// nodes each), record the per-step callback, and compute the grid bounding rect
-// (m_60) via the Win32 IntersectRect (of the {0,0,width,height} box with itself),
-// from which m_70/m_74 = the rect width/height. Returns 1, or 0 on any alloc fail.
-// @early-stop
-// alloc/loop spill wall: logic byte-correct (the two new's + null gates, the
-// inline memset, the row-pointer accumulate loop, the two pool inits, the
-// IntersectRect rect build + the m_70/m_74 size compute), but the count*0x1c temp
-// + the rect stack slots spill against retail's slot schedule. Parked for sweep.
-RVA(0x0009ea60, 0x168)
-i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
-    i32 count = height * width;
-    m_width = width;
-    m_height = height;
-    m_cellCount = count;
-    m_cellPool = (BrickzCell*)RezAlloc(count * 0x1c);
-    if (m_cellPool == 0) {
-        return 0;
-    }
-    m_rows = (BrickzCell**)RezAlloc(height * 4);
-    if (m_rows == 0) {
-        return 0;
-    }
-    memset(m_cellPool, 0, count * 0x1c);
-    i32 stride = width * 0x1c;
-    i32 off = 0;
-    for (i32 i = 0; i < height; i++) {
-        m_rows[i] = (BrickzCell*)((char*)m_cellPool + off);
-        off += stride;
-    }
-    if (((CMapArrayA*)&m_nodePool)->Allocate(count * 5) == 0) {
-        return 0;
-    }
-    if (((CMapArrayB*)((char*)this + 0x3c))->Allocate(count * 5) == 0) {
-        return 0;
-    }
-    m_stepCb = (void (*)())callback;
-    // Build the grid bounding rect: intersect the {0,0,width,height} box with
-    // itself into m_60 (the {left,top,right,bottom} at +0x60); on an empty result
-    // fall back to the box. m_70/m_74 = the resulting width/height.
-    RECT a;
-    RECT b;
-    a.left = 0;
-    a.top = 0;
-    a.right = width;
-    a.bottom = height;
-    b.left = 0;
-    b.top = 0;
-    b.right = width;
-    b.bottom = height;
-    RECT* out = (RECT*)&m_originX;
-    if (!IntersectRect(out, &a, &b)) {
-        *out = a;
-    }
-    m_gridW = out->right - out->left;
-    m_gridH = out->bottom - out->top;
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::Search (0x09eca0) - the A*-style grid search driver. Bounds-check the
-// start (x1,y1) and goal (x2,y2) against the grid origin (m_60,m_64) / size
-// (m_70,m_74); reject if the start cell fails the passability masks; reset the
-// per-cell open counts; seed the open list with the start record and expand
-// neighbours via Expand until the open list empties or the goal is popped. On
-// success the result path is recycled to g_brickzFreeList + handed to `list`.
-// @early-stop
-// regalloc wall, ~91%: logic byte-correct (BFS loop + path-walk + free-list pop
-// all match). Residual is the opening bounds-gate's callee-saved assignment
-// (retail pins x1 in ebx for the whole fn, reused at m_20=x1) and the cell-clear
-// loop's reg/zero choice; no source spelling flips MSVC5's allocator here.
-RVA(0x0009eca0, 0x2bd)
-i32 CBrickzGrid::Search(
-    i32 x1,
-    i32 y1,
-    i32 x2,
-    i32 y2,
-    void* list,
-    i32 maskA,
-    i32 maskB,
-    i32 maskC
-) {
-    i32 ox = m_originX;
-    if ((u32)(x1 - ox) >= (u32)m_gridW) {
-        return 0;
-    }
-    i32 oy = m_originY;
-    i32 hgt = m_gridH;
-    if ((u32)(y1 - oy) >= (u32)hgt) {
-        return 0;
-    }
-    if ((u32)(x2 - ox) >= (u32)m_gridW) {
-        return 0;
-    }
-    if ((u32)(y2 - oy) >= (u32)hgt) {
-        return 0;
-    }
-    m_maskC = maskC;
-    m_maskB = maskB;
-    m_maskA = maskA;
-    i32 flags = *(i32*)&m_rows[y2][x2];
-    if ((maskA & flags) != 0 && (maskC & flags) != 0) {
-        return 0;
-    }
-    // Reset the per-cell open counts across all m_14 cells.
-    if (m_cellCount != 0) {
-        u32 i = 0;
-        i32 off = 0;
-        do {
-            *(i32*)((char*)m_cellPool + off + 0x14) = 0;
-            i++;
-            off += 0x1c;
-        } while (i < m_cellCount);
-    }
-    if (x1 == x2 && y1 == y2) {
-        return 1;
-    }
-    m_goalX = x2;
-    m_startX = x1;
-    m_goalY = y2;
-    m_startY = y1;
-    // Pop the seed record off the closed (m_30) list head.
-    BrickzNode* seed = m_nodePool;
-    BrickzNode* slot = seed->m_14;
-    if (slot == 0) {
-        m_nodePool = 0;
-    } else {
-        m_nodePool = slot;
-        slot->m_18 = 0;
-    }
-    if (seed == 0) {
-        return 0;
-    }
-    seed->m_0 = x1;
-    seed->m_4 = y1;
-    seed->m_8 = 0;
-    i32 dx = abs(m_goalY - y1);
-    i32 dxx = abs(m_goalX - x1);
-    i32 h = (dx + dxx) * 2;
-    seed->m_c = h;
-    seed->m_10 = h;
-    seed->m_14 = 0;
-    seed->m_18 = 0;
-    seed->m_1c = 0;
-    Insert(seed);
-    (&m_rows[y1][x1])->m_count++;
-    BrickzNode* node = 0;
-    while (m_openList != 0) {
-        node = PopFront();
-        (&m_rows[node->m_4][node->m_0])->m_count--;
-        if (node->m_0 == m_goalX && node->m_4 == m_goalY) {
-            goto reached;
-        }
-        Expand(node, 0, 1, 2, 0);
-        Expand(node, 1, 0, 2, 0);
-        Expand(node, 0, -1, 2, 0);
-        Expand(node, -1, 0, 2, 0);
-        Expand(node, 1, 1, 3, 1);
-        Expand(node, 1, -1, 3, 1);
-        Expand(node, -1, -1, 3, 1);
-        Expand(node, -1, 1, 3, 1);
-        CellPush(node);
-    }
-    node = 0;
-    Drain();
-    Reset();
-    if (m_stepCb != 0) {
-        m_stepCb();
-    }
-    return 0;
-
-reached:
-    BrickzNode* p = node;
-    do {
-        BrickzFreeRec* rec = (BrickzFreeRec*)g_brickzFreeList;
-        i32* slot = 0;
-        if (rec->m_0 != 0) {
-            slot = &rec->m_4;
-            rec->m_4 = p->m_0;
-            rec->m_8 = p->m_4;
-            g_brickzFreeList = (BrickzFreeRec*)rec->m_0;
-        }
-        ((CRezList*)list)->AddHead((CRezListNode*)slot);
-        p = (BrickzNode*)p->m_1c;
-    } while (p != 0);
-    if (m_stepCb != 0) {
-        m_stepCb();
-    }
-    node->m_18 = 0;
-    node->m_14 = m_nodePool;
-    m_nodePool->m_18 = node;
-    m_nodePool = node;
-    Drain();
-    Reset();
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::Expand (0x09f010) - relax one neighbour of `node` in the (dx,dy)
-// direction. Bounds-check the target cell, reject it on the passability masks
-// (m_4c / m_50&m_54), and for a diagonal step (diag) reject corner-cutting via
-// the two orthogonal cells (m_58). If the cell is unvisited / improvable, take a
-// search record (reusing an open Find()ed record, a closed CellPop'd record, or
-// a fresh one off the m_30 pool), set its g = node->g + cost and f = g + h
-// (h = 2*(|gx-ncol| + |gy-nrow|)), parent = node, and Insert() it. Returns 1
-// (the open-list is unchanged only when out of records => 0).
-// @early-stop
-// spill-scheduling + sibling-retest wall, ~79%: logic byte-correct (bounds gate,
-// 4-quadrant corner check, open/closed-record relax, heuristic abs() all match).
-// Residual is the prologue's local-spill count (retail spills ng/ncol/nrow to 4
-// stack slots; MSVC5 rematerializes into 2) + the redundant open-node re-tests;
-// neither flips with a local-pin here. Parked for the final sweep.
-RVA(0x0009f010, 0x2a1)
-i32 CBrickzGrid::Expand(BrickzNode* node, i32 dx, i32 dy, i32 cost, i32 diag) {
-    i32 ng = (i32)node->m_8 + cost;
-    i32 ncol = node->m_0 + dx;
-    i32 nrow = node->m_4 + dy;
-    BrickzNode* found0 = 0;
-    if ((u32)(ncol - m_originX) >= (u32)m_gridW) {
-        return 1;
-    }
-    if ((u32)(nrow - m_originY) >= (u32)m_gridH) {
-        return 1;
-    }
-    i32* ncell = (i32*)&m_rows[nrow][ncol];
-    i32 nflags = *ncell;
-    i32* cell = (i32*)&m_rows[node->m_4][node->m_0];
-    if ((m_edgeMask & nflags) != 0) {
-        return 1;
-    }
-    if ((m_maskA & nflags) != 0 && (m_maskC & nflags) == 0) {
-        return 1;
-    }
-    if (diag != 0 && m_maskB != 0) {
-        i32 *cellA, *cellB;
-        if (dx > 0 && dy > 0) {
-            cellB = cell + (m_width * 7);
-            cellA = cell + 7;
-        } else if (dx < 0 && dy > 0) {
-            cellB = cell + (m_width * 7);
-            cellA = cell - 7;
-        } else if (dx > 0 && dy < 0) {
-            cellB = cell - (m_width * 7);
-            cellA = cell + 7;
-        } else if (dx < 0 && dy < 0) {
-            cellB = cell - (m_width * 7);
-            cellA = cell - 7;
-        } else {
-            goto relax;
-        }
-        if ((m_maskB & *cellA) != 0 || (m_maskB & *cellB) != 0) {
-            return 1;
-        }
-    }
-relax:
-    BrickzNode* closed = 0;
-    BrickzNode* head = ((BrickzCell*)ncell)->m_head;
-    if (head != 0) {
-        closed = (BrickzNode*)head->m_0;
-    }
-    if (closed != 0) {
-        if (ng >= (i32)closed->m_8) {
-            return 1;
-        }
-    }
-    BrickzNode* open;
-    if (((BrickzCell*)ncell)->m_count != 0) {
-        open = Find(ncol, nrow);
-    } else {
-        open = found0;
-    }
-    if (open != 0) {
-        i32 og = (i32)open->m_8;
-        if (ng >= og) {
-            return 1;
-        }
-        if (open != 0 && ng < og) {
-            if (closed != 0) {
-                CellPop(closed, 1);
-            }
-            Unlink(open);
-            open->m_10 = ng + open->m_c;
-            open->m_1c = (i32)node;
-            open->m_8 = (BrickzNode*)ng;
-            Insert(open);
-            return 1;
-        }
-    }
-    if (closed != 0) {
-        if (ng < (i32)closed->m_8) {
-            CellPop(closed, 0);
-            closed->m_1c = (i32)node;
-            closed->m_8 = (BrickzNode*)ng;
-            closed->m_10 = closed->m_c + ng;
-            Insert(closed);
-            ((BrickzCell*)ncell)->m_count++;
-            return 1;
-        }
-        CellPop(closed, 1);
-    }
-    if (open != 0) {
-        return 1;
-    }
-    BrickzNode* rec = m_nodePool;
-    BrickzNode* nx = rec->m_14;
-    if (nx == 0) {
-        rec = 0;
-    } else {
-        m_nodePool = nx;
-        nx->m_18 = 0;
-    }
-    if (rec == 0) {
-        return 0;
-    }
-    rec->m_0 = ncol;
-    rec->m_4 = nrow;
-    rec->m_8 = (BrickzNode*)ng;
-    i32 hy = abs(m_goalY - nrow);
-    i32 hx = abs(m_goalX - ncol);
-    i32 h = (hy + hx) * 2;
-    rec->m_1c = (i32)node;
-    rec->m_c = h;
-    rec->m_10 = ng + h;
-    rec->m_14 = 0;
-    rec->m_18 = 0;
-    rec->m_20 = 0;
-    Insert(rec);
-    ((BrickzCell*)ncell)->m_count++;
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::Insert - insert node into the m_18-headed list, kept ascending by
-// m_10. Links: m_14 = forward (next), m_18 = backward (prev). Always returns 1.
-RVA(0x0009f370, 0x8a)
-i32 CBrickzGrid::Insert(BrickzNode* node) {
-    BrickzNode* cur = m_openList;
-    node->m_18 = 0;
-    node->m_14 = 0;
-    if (cur == 0) {
-        m_openList = node;
-        return 1;
-    }
-    i32 key = node->m_10;
-    while (cur != 0) {
-        if (key < cur->m_10) {
-            if (cur->m_18 != 0) {
-                node->m_18 = cur->m_18;
-                node->m_14 = cur;
-                cur->m_18->m_14 = node;
-                cur->m_18 = node;
-            } else {
-                m_openList = node;
-                node->m_14 = cur;
-                cur->m_18 = node;
-            }
-            return 1;
-        }
-        if (cur->m_14 == 0) {
-            cur->m_14 = node;
-            node->m_18 = cur;
-            return 1;
-        }
-        cur = cur->m_14;
-    }
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::PopFront - detach the head of the m_18 list; promote its m_14
-// successor (clearing the successor's back-link) and clear the popped links.
-// Returns the popped head (eax, consumed by Search). The return type does not
-// affect the callee's own bytes - head is already materialized in eax.
-// @early-stop
-// regalloc wall: only residual is a head<->next register swap (retail pins head
-// in eax, recompile lands it in edx); logic byte-correct, 97% (no source steer).
-RVA(0x0009f430, 0x2a)
-BrickzNode* CBrickzGrid::PopFront() {
-    BrickzNode* head = m_openList;
-    if (head != 0) {
-        BrickzNode* next = head->m_14;
-        if (next != 0) {
-            m_openList = next;
-            next->m_18 = 0;
-        } else {
-            m_openList = 0;
-        }
-        head->m_14 = 0;
-        head->m_18 = 0;
-    }
-    return head;
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::Unlink - remove node from the m_18-headed doubly-linked list
-// (m_14 = next, m_18 = prev), repairing the neighbours and the head, then
-// clearing the node's links.
-// @early-stop
-// sibling-guard-retest + regalloc wall: retail keeps redundant `cmp prev,0`
-// re-tests (4-way dispatch from a sequential-if source) and uses 2 callee-saved
-// regs; with no calls to pin the flag MSVC5 folds the re-tests + uses 1 reg.
-// Logic byte-correct, ~75%.
-RVA(0x0009f690, 0x5d)
-void CBrickzGrid::Unlink(BrickzNode* node) {
-    if (node->m_18 != 0) {
-        if (node->m_14 != 0) {
-            node->m_18->m_14 = node->m_14;
-            node->m_14->m_18 = node->m_18;
-        }
-    } else if (node->m_14 == 0) {
-        m_openList = 0;
-    } else if (node->m_18 == 0) {
-        BrickzNode* next = node->m_14;
-        if (next != 0) {
-            m_openList = next;
-            next->m_18 = 0;
-        }
-    }
-    if (node->m_18 != 0 && node->m_14 == 0) {
-        node->m_18->m_14 = 0;
-    }
-    node->m_18 = 0;
-    node->m_14 = 0;
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::CellPush - allocate a bucket node from the m_40 free list and link it
-// into the grid cell m_8[node->m_4][node->m_0]; record the slot in node->m_20.
-// @early-stop
-// regalloc/scheduling wall: branch shape + free-list pop byte-match; only the
-// arg-pointer register (retail defers the `node` load past the 3 pushes -> edi;
-// recompile loads it pre-push -> edx) and the dependent reg chain differ, ~86%.
-RVA(0x0009f470, 0x62)
-void CBrickzGrid::CellPush(BrickzNode* node) {
-    BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
-    BrickzNode* slot = m_freeList;
-    BrickzNode* nx = slot->m_8;
-    if (nx == 0) {
-        slot = 0;
-    } else {
-        m_freeList = nx;
-        nx->m_4 = 0;
-    }
-    BrickzNode* old = *head;
-    if (old == 0) {
-        *head = slot;
-        slot->m_4 = 0;
-        slot->m_8 = 0;
-        slot->m_0 = (i32)node;
-        node->m_20 = slot;
-    } else {
-        slot->m_4 = (i32)old;
-        slot->m_8 = (*head)->m_8;
-        *head = slot;
-        node->m_20 = slot;
-    }
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::Reset - empty every grid cell: each bucket node's child (m_0) is
-// pushed onto the m_30 active list and the bucket node itself onto the m_40
-// free list; then the cell head is cleared.
-// @early-stop
-// regalloc/addressing wall (same family as Drain): retail materializes
-// &node->m_8 as a callee-saved base ptr (lea + extra reg) and commutes the
-// m_10*m_c imul operand order; recompile uses direct offsets. Logic
-// byte-correct (loop structure + unsigned counter match), ~65%.
-RVA(0x0009f5d0, 0x81)
-void CBrickzGrid::Reset() {
-    BrickzCell* cell = m_cellPool;
-    for (u32 i = 0; i < m_height * m_width; i++) {
-        BrickzNode* node = cell->m_head;
-        while (node != 0) {
-            BrickzNode** link = &node->m_8;
-            BrickzNode* next = *link;
-            BrickzNode* child = (BrickzNode*)node->m_0;
-            child->m_14 = m_nodePool;
-            child->m_18 = 0;
-            m_nodePool->m_18 = child;
-            m_nodePool = child;
-            node->m_4 = 0;
-            *link = m_freeList;
-            m_freeList->m_4 = (i32)node;
-            m_freeList = node;
-            node = next;
-        }
-        cell->m_head = 0;
-        cell++;
-    }
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::CellPop - remove node's bucket slot (node->m_20) from its grid cell's
-// doubly-linked bucket list (m_4 = prev, m_8 = next), clear node's links, return
-// the slot to the m_40 free list, and (if flag) push node onto the m_30 list.
-// @early-stop
-// sibling-guard-retest wall (same as Unlink): the 4-way prev/next dispatch keeps
-// redundant `cmp prev,0` re-tests in retail that MSVC5 folds with no call to pin
-// the flag. Logic byte-correct, container shape proven; parked for the sweep.
-RVA(0x0009f710, 0xa7)
-void CBrickzGrid::CellPop(BrickzNode* node, i32 flag) {
-    BrickzNode** head = &m_rows[node->m_4][node->m_0].m_head;
-    BrickzNode* slot = node->m_20;
-    if ((BrickzNode*)slot->m_4 != 0) {
-        if (slot->m_8 != 0) {
-            ((BrickzNode*)slot->m_4)->m_8 = slot->m_8;
-            slot->m_8->m_4 = slot->m_4;
-        }
-    } else if (slot->m_8 == 0) {
-        *head = 0;
-    } else if ((BrickzNode*)slot->m_4 == 0) {
-        BrickzNode* next = slot->m_8;
-        if (next != 0) {
-            *head = next;
-            next->m_4 = 0;
-        }
-    }
-    if ((BrickzNode*)slot->m_4 != 0 && slot->m_8 == 0) {
-        ((BrickzNode*)slot->m_4)->m_8 = 0;
-    }
-    node->m_18 = 0;
-    node->m_14 = 0;
-    node->m_20 = 0;
-    slot->m_8 = m_freeList;
-    slot->m_4 = 0;
-    m_freeList->m_4 = (i32)slot;
-    m_freeList = slot;
-    if (flag != 0) {
-        node->m_18 = 0;
-        node->m_14 = m_nodePool;
-        m_nodePool->m_18 = node;
-        m_nodePool = node;
-    }
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::Find - walk the m_18 lookup list (linked via m_14), return the node
-// whose (m_0,m_4) pair equals (key1,key2); 0 if absent.
-RVA(0x0009f500, 0x24)
-BrickzNode* CBrickzGrid::Find(i32 key1, i32 key2) {
-    BrickzNode* p = m_openList;
-    if (p == 0) {
-        return 0;
-    }
-    do {
-        if (p->m_0 == key1 && p->m_4 == key2) {
-            return p;
-        }
-        p = p->m_14;
-    } while (p != 0);
-    return 0;
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::FindCellNode - look up the (col,row) search-record threaded through
-// grid cell m_rows[row][col]'s bucket list (each bucket node's m_0 is the child
-// record; walk the bucket via m_8). Return the matching child record, else 0.
-RVA(0x0009f540, 0x40)
-BrickzNode* CBrickzGrid::FindCellNode(i32 col, i32 row) {
-    BrickzNode* n = m_rows[row][col].m_head;
-    while (n != 0) {
-        BrickzNode* child = (BrickzNode*)n->m_0;
-        if (child->m_0 == col && child->m_4 == row) {
-            return (BrickzNode*)n->m_0;
-        }
-        n = n->m_8;
-    }
-    return 0;
-}
-
-// ---------------------------------------------------------------------------
-// CBrickzGrid::Drain - move every node off the m_18 list onto the front of the m_30
-// list (re-threaded via m_14/m_18), then clear the m_18 head.
-// @early-stop
-// regalloc wall: retail materializes &node->m_14 as a base ptr in a callee-saved
-// reg (lea + 3 pushes); recompile uses a direct offset + 2 pushes. Logic
-// byte-correct, ~67% (no source spelling forces the 3rd reg / lea base).
-RVA(0x0009f590, 0x2f)
-void CBrickzGrid::Drain() {
-    BrickzNode* p = m_openList;
-    if (p != 0) {
-        do {
-            BrickzNode* next = p->m_14;
-            p->m_14 = m_nodePool;
-            p->m_18 = 0;
-            m_nodePool->m_18 = p;
-            m_nodePool = p;
-            p = next;
-        } while (p != 0);
-    }
-    m_openList = 0;
-}
-
-// 0x077dc0 - flat cell setter: m_20[ m_24[y] + x ] = id (re-homed from
-// src/Stub/BoundaryLowerMethods.cpp; CTerrainTileLoader::Load reaches this via
-// loader->m_24 (BrickzAttrMgr) -> m_5c). __thiscall(x, y, id).
-RVA(0x00077dc0, 0x1d)
-void BrickzGridDesc::SetCell(i32 x, i32 y, i32 id) {
-    m_20[m_24[y] + x] = id;
-}
-
-// ---------------------------------------------------------------------------
-// 0x77df0 (RVA-homed from src/Stub/ApiCallers.cpp) - __thiscall(w): of the live,
-// non-kind-0x36 cells in the 4x15 grid (skipping row w->m_1ec), pick the one nearest
-// the reference tile; null it unless it lands inside the reference object's
-// +/-(m_298+m_2dc+1) tile box. Tile coords are 1/32-pixel units (>>5).
-// @early-stop
-// regalloc wall: logic + the distance/rect math are byte-exact, but MSVC spills
-// colPtr/rowPtr to the stack where retail keeps them in edi/ecx (it instead reloads
-// `w` per outer iter). A spill-weight choice; the loop body matches.
-struct GridSpatial_77df0 {
-    char m_pad0[0x5c];
-    i32 m_5c; // +0x5c x
-    i32 m_60; // +0x60 y
-};
-struct GridCell_77df0 {
-    char m_pad0[0x10];
-    GridSpatial_77df0* m_10; // +0x10
-    char m_pad14[0x1fc - 0x14];
-    i32 m_1fc; // +0x1fc live flag
-    char m_pad200[0x258 - 0x200];
-    i32 m_258; // +0x258 kind
-};
-struct GridWorld_77df0 {
-    char m_pad0[0x10];
-    GridSpatial_77df0* m_10; // +0x10 reference object
-    char m_pad14[0x17c - 0x14];
-    i32 m_17c; // +0x17c reference x
-    i32 m_180; // +0x180 reference y
-    char m_pad184[0x1ec - 0x184];
-    i32 m_1ec; // +0x1ec row to skip
-    char m_pad1f0[0x298 - 0x1f0];
-    i32 m_298; // +0x298 radius part
-    char m_pad29c[0x2dc - 0x29c];
-    i32 m_2dc; // +0x2dc radius part
-};
-struct Grid_77df0 {
-    char m_pad0[0x1c];
-    GridCell_77df0* m_cells[4][15]; // +0x1c (row stride 0x3c)
-    GridCell_77df0* FindNearest(GridWorld_77df0* w);
-};
-SIZE_UNKNOWN(GridSpatial_77df0);
-SIZE_UNKNOWN(GridCell_77df0);
-SIZE_UNKNOWN(GridWorld_77df0);
-SIZE_UNKNOWN(Grid_77df0);
-RVA(0x00077df0, 0x13d)
-GridCell_77df0* Grid_77df0::FindNearest(GridWorld_77df0* w) {
-    GridCell_77df0* best = 0;
-    i32 bestDist = 0x7fffffff;
-    i32 tileX = w->m_17c >> 5;
-    i32 tileY = w->m_180 >> 5;
-    GridCell_77df0** rowPtr = &m_cells[0][0];
-    for (i32 i = 0; i < 4; i++) {
-        if (i != w->m_1ec) {
-            GridCell_77df0** colPtr = rowPtr;
-            i32 j = 15;
-            do {
-                GridCell_77df0* cell = *colPtr;
-                if (cell && cell->m_1fc != 0 && cell->m_258 != 0x36) {
-                    i32 dx = (cell->m_10->m_5c >> 5) - tileX;
-                    i32 dy = (cell->m_10->m_60 >> 5) - tileY;
-                    i32 dist = dx * dx + dy * dy;
-                    if (dist < bestDist) {
-                        best = cell;
-                        bestDist = dist;
-                    }
-                }
-                colPtr++;
-            } while (--j != 0);
-        }
-        rowPtr += 15;
-    }
-    i32 k = w->m_298 + w->m_2dc + 1;
-    i32 px = w->m_10->m_5c >> 5;
-    i32 py = w->m_10->m_60 >> 5;
-    RECT rc;
-    rc.left = px - k;
-    rc.top = py - k;
-    rc.right = px + k + 1;
-    rc.bottom = py + k + 1;
-    if (best) {
-        POINT pt;
-        pt.x = best->m_10->m_5c >> 5;
-        pt.y = best->m_10->m_60 >> 5;
-        if (!PtInRect(&rc, pt)) {
-            best = 0;
-        }
-    }
-    return best;
-}
-
 SIZE_UNKNOWN(BrickzAttrMgr);
 SIZE_UNKNOWN(BrickzButeObj);
 SIZE_UNKNOWN(BrickzCell);
-SIZE_UNKNOWN(BrickzFreeRec);
 SIZE_UNKNOWN(BrickzGridDesc);
 SIZE_UNKNOWN(BrickzNode);
 SIZE_UNKNOWN(BrickzNodePoolB);

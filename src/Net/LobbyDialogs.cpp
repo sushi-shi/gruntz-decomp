@@ -82,45 +82,10 @@ namespace NetLobby {
     void NetDlgInit_bdfe0(HWND hWnd, void* ctx); // 0xbdfe0
     void NetDlgInitDropIn(HWND hWnd, void* ctx); // 0xbe760
 } // namespace NetLobby
-
-// __thiscall(id, dest): load string `strId` from the app instance
-// (m_logic->m_owner->m_hInstance), defaulting to "Error", then push it through
-// ReportVersionMsg. A CMulti method (receiver-proven: called by WaitForConnect /
-// the lobby watchdog on the same `this`); its RVA-order home is this TU.
-RVA(0x000b7ec0, 0x7d)
-void CMulti::ReportStatusId(u32 strId, i32 level) {
-    char buf[0x12a];
-    if (Mgr() && Mgr()->m_owner->m_hInstance) {
-        if (!LoadStringA(Mgr()->m_owner->m_hInstance, strId, buf, 0xfa)) {
-            strcpy(buf, "Error");
-        }
-        ReportVersionMsg(buf, level);
-    }
-}
+// CMulti::ReportStatusId (0xb7ec0) + NetLobby::AppendEditLine (0xbb3e0) live in
+// their home TU per the interval dossier (#4b): src/Gruntz/Multi.cpp.
 
 namespace NetLobby {
-    // __stdcall(edit, str): append `str` to an edit control, prefixing a CRLF when
-    // the control is non-empty, then scroll to keep the caret in view.
-    RVA(0x000bb3e0, 0xe5)
-    void __stdcall AppendEditLine(HWND edit, char* str) {
-        if (!edit || !str || !str[0]) {
-            return;
-        }
-        i32 len = GetWindowTextLengthA(edit);
-        if (len == 0) {
-            SendMessageA(edit, 0xb1, len, -1);
-        } else {
-            SendMessageA(edit, 0xb1, len, len);
-        }
-        char buf[0x80];
-        buf[0] = 0;
-        if (len > 0) {
-            strcat(buf, "\r\n");
-        }
-        strcat(buf, str);
-        SendMessageA(edit, 0xc2, 0, (LPARAM)buf);
-        SendMessageA(edit, 0xb6, 0, 0x270f);
-    }
 
     // ---------------------------------------------------------------------------
     // 0x0bd7f0 (RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - the compiler-
