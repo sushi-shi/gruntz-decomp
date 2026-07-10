@@ -31,13 +31,12 @@ extern WORD g_sfDeviceId; // soundfont load token
 // 0xf8ec0: re-seed the music device key table (defined below, in RVA order between
 // CloseSoundFontDevice and BuildSoundFontPath; forward-declared here for Close).
 i32 SfDeviceInitKeys();
-// 0xf90f0 (via ILT thunk 0x3d32): OpenFile(OF_EXIST) probe. The real function is
-// Utils::WinAPI::FileExistsCopyF90F0 (src/Utils/WinAPI.cpp); reloc-masked callee.
-namespace Utils {
-    namespace WinAPI {
-        i32 FileExistsCopyF90F0(char* szPath);
-    }
-} // namespace Utils
+// 0xf90f0: OpenFile(OF_EXIST) probe. The inline FileExists helper BuildSoundFontPath
+// calls; MSVC emits this TU's out-of-line COMDAT copy at 0xf90f0 (defined below, in
+// RVA order after BuildSoundFontPath). Byte-identical to the sibling copies in
+// WinAPICdRom (FileExistsCopy1FD70) / HeapDiag (FileExists); the per-copy name is
+// load-bearing (one-name-one-RVA delinker model forbids three symbols named FileExists).
+i32 FileExistsCopyF90F0(char* szPath);
 
 // CloseSoundFontDevice (0xf8e20): if a device is selected (init flag set, receiver
 // present, at least one device counted), re-seed the key table, deselect the chosen
@@ -101,7 +100,7 @@ i32 BuildSoundFontPath(char drive) {
         hiVer = 1;
     }
     g_sfCurPath = hiVer ? g_sfLocal4 : g_sfLocal;
-    if (Utils::WinAPI::FileExistsCopyF90F0(g_sfCurPath)) {
+    if (FileExistsCopyF90F0(g_sfCurPath)) {
         res = g_sfDevice->SF_LoadBank(
             g_sfDeviceId,
             (PSFMIDILOCATION)&g_sfCfgA0,
@@ -117,4 +116,20 @@ i32 BuildSoundFontPath(char drive) {
         );
     }
     return res == 0;
+}
+
+// FileExistsCopyF90F0 (0xf90f0): OpenFile(OF_EXIST) probe; false for a null/empty path.
+// The out-of-line COMDAT copy of the inline helper BuildSoundFontPath calls (see fwd
+// decl above). Re-homed from the deleted src/Utils/WinAPI.cpp.
+RVA(0x000f90f0, 0x45)
+i32 FileExistsCopyF90F0(char* szPath) {
+    OFSTRUCT of;
+
+    if (!szPath) {
+        return 0;
+    }
+    if (!*szPath) {
+        return 0;
+    }
+    return OpenFile(szPath, &of, 0x4000 /*OF_EXIST*/) != -1;
 }

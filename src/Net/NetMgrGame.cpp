@@ -2257,7 +2257,7 @@ u32 CNetMgr::FrameSyncWait() {
     m_lastFrameTime = now;
 
     if (delta <= 0x1e) {
-        Utils::WinAPI::ActiveWait(0x1f - delta);
+        ActiveWait(0x1f - delta);
         m_lastFrameTime = (now - m_lastFrameDelta) + 0x1f;
         return 0;
     }

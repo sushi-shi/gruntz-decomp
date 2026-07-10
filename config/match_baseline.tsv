@@ -108,6 +108,7 @@ ddrawworkerregistry	23	15
 ddrawworkers	8	5
 ddscreen	3	2
 debugprintf	7	5
+debugtiming	2	2
 deflate	15	15
 demo	1	1
 democameratools	3	0
@@ -226,7 +227,7 @@ gruntzsoundz	30	27
 gruntzwnd	16	15
 guardpoint	4	3
 hash	8	2
-heapdiag	3	0
+heapdiag	8	4
 helperhost	2	0
 helpstate	8	7
 iconloaders	6	1
@@ -417,7 +418,7 @@ slotcombofill	2	1
 smackervideowindow	10	7
 soundbankload	1	0
 sounddevice	17	9
-soundfontpath	3	3
+soundfontpath	4	4
 soundfxemitter	5	2
 soundresmap	1	0
 soundstream	8	2
@@ -496,8 +497,7 @@ warpstonefly	3	2
 warpstonepad	7	5
 warptextureblit	2	0
 waypoint	4	3
-winapi	11	9
-winapicdrom	1	0
+winapicdrom	4	3
 winapimodule	1	0
 winmain	2	2
 worldlevelkey	1	1
@@ -1236,6 +1236,8 @@ debugprintf	?MonoClear@@YAXXZ	60.5000	60.5000	1	bb45a8919cfc	0x184db0
 debugprintf	?MonoNewline@@YAXXZ	90.9524	90.9524	1	e65e5d8748bf	0x184d50
 debugprintf	?RezDebugInit@@YAXXZ	100.0000	100.0000	1	b24f25ad6ccf	0x184b70
 debugprintf	_RezAssertFail	100.0000	100.0000	2	e4dfd15df8e4	0x184e00
+debugtiming	?ActiveWait@@YAXI@Z	100.0000	100.0000	1	ce35ad37620d	0x13dfe0
+debugtiming	?DebugTrace@@YAXPBDZZ	100.0000	100.0000	1	c41411bd66ab	0x13e010
 deflate	_deflate	100.0000	100.0000	1	3bf3a6c067ea	0x186620
 deflate	_deflateCopy	100.0000	100.0000	1	c03be3834a59	0x186a20
 deflate	_deflateEnd	100.0000	100.0000	1	7a3037d9ca01	0x186990
@@ -2213,7 +2215,7 @@ gruntzmgr	?AdvanceFrame@CGruntzMgr@@QAEXHH@Z	96.2245	96.2245	7	d472d929c764	0x8f
 gruntzmgr	?AdvanceOptionsCycle@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	bf9fb8c1e80e	0x933e0
 gruntzmgr	?AppendChatMessage@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	4	08795f41e508	0x8f9c0
 gruntzmgr	?BroadcastCmd@CGruntzMgr@@QAEHHHHH@Z	77.8582	77.8582	9	fcf6b71dba42	0x93460
-gruntzmgr	?BuildMoviePath@CGruntzMgr@@QAE?AVCString@@H@Z	88.0630	88.0630	6	3bcaa934521e	0x8ff30
+gruntzmgr	?BuildMoviePath@CGruntzMgr@@QAE?AVCString@@H@Z	88.0630	88.0630	7	5ed2178090b6	0x8ff30
 gruntzmgr	?CaptureWorldFile@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	2b86486e82b2	0x8f340
 gruntzmgr	?ChangeState_8fab0@CGruntzMgr@@QAEHH@Z	1.1236	1.1236	3	4c4eae7fc535	0x8fab0
 gruntzmgr	?CheatEclipseToggle@CGruntzMgr@@QAEXXZ	93.9561	93.9561	1	051bdc3f8944	0x91390
@@ -2221,7 +2223,7 @@ gruntzmgr	?CheatRevealTreasures@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	c6e8087ef
 gruntzmgr	?CheatSkeletonToggle@CGruntzMgr@@QAEXXZ	98.0000	98.0000	1	42e5e4548b8c	0x91250
 gruntzmgr	?CheckDisplayBoundsA@CGruntzMgr@@QAEHXZ	93.8983	93.8983	6	3fd39dfbf4db	0x8e1d0
 gruntzmgr	?CheckDisplayBoundsB@CGruntzMgr@@QAEHXZ	93.6066	93.6066	6	5d3e46229df2	0x8e2b0
-gruntzmgr	?CheckMovieFileExists@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	e62b51bd436e	0x90aa0
+gruntzmgr	?CheckMovieFileExists@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	5f955e0a67c5	0x90aa0
 gruntzmgr	?CheckPlayState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	6	b3a8bbf1479a	0x8ec50
 gruntzmgr	?CheckSavedMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	565c6b3e57e4	0x8de70
 gruntzmgr	?ClearOptionsSlots@CGruntzMgr@@QAEXXZ	100.0000	100.0000	5	781505e6d173	0x92ec0
@@ -2236,14 +2238,14 @@ gruntzmgr	?FillSaveInfo@CGruntzMgr@@QAEHPAUSaveInfo@@PAX@Z	100.0000	100.0000	8	d
 gruntzmgr	?FindOptionsSlot@CGruntzMgr@@QAEPAUOptionsSlot@@H@Z	82.6923	82.6923	3	ec793a289245	0x92e80
 gruntzmgr	?FindStateById@CGruntzMgr@@QAEPAVCState@@H@Z	100.0000	100.0000	4	ea906ac4ed47	0x92900
 gruntzmgr	?FinishLevel@CGruntzMgr@@QAEHHH@Z	84.1471	84.1471	7	402966ba2037	0x8e980
-gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	5	687d7dbe2ac9	0x8fa70
+gruntzmgr	?GetGruntzDriveLetter@CGruntzMgr@@QAEDXZ	100.0000	100.0000	6	49082d3f5f31	0x8fa70
 gruntzmgr	?GetRect@RectQuery_08e3a0@@QAEXPAUtagRECT@@@Z	78.2200	78.2200	1	803ca483669c	0x8e3a0
 gruntzmgr	?GoToNextLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	bd87d50e701e	0x8d850
 gruntzmgr	?GoToPrevLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	4	663995bcfc48	0x8d910
 gruntzmgr	?InitializeLobbyConnectionSettings@CGruntzMgr@@QAEHXZ	100.0000	100.0000	11	641ad5731958	0x8eca0
 gruntzmgr	?IsBattlezMapFile@CGruntzMgr@@QAEHVCString@@@Z	32.3667	32.3667	2	52853f965831	0x93be0
 gruntzmgr	?IsLobbyHostReady@CGruntzMgr@@QAEHXZ	100.0000	100.0000	6	35657dc716f5	0x91500
-gruntzmgr	?IsMoviePathValid@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	9524d9e9ea8b	0x901d0
+gruntzmgr	?IsMoviePathValid@CGruntzMgr@@QAEHXZ	100.0000	100.0000	3	c3369d762a48	0x901d0
 gruntzmgr	?IsStandardMode@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	7fc29695d012	0x8f980
 gruntzmgr	?LaunchPortal@CGruntzMgr@@QAEHH@Z	97.3684	97.3684	1	9d5b16c053e8	0x907c0
 gruntzmgr	?LaunchWebBrowser@@YGHPAD@Z	100.0000	100.0000	1	aab9b7feef24	0x8f120
@@ -2404,8 +2406,13 @@ hash	?Remove@CHashBase@@QAEXPAVCHashElement@@@Z	99.2308	99.2308	2	ec71052b7ffe	0
 hash	?RemoveAll@CHashBase@@QAEXXZ	100.0000	100.0000	3	9a7263e7a33f	0x184a40
 hash	?Walk@CHash@@QAEPAXPBDH@Z	86.4362	86.4362	4	aefbda46e84b	0x13c270
 hash	?Walk@CHashB@@QAEPAXPBDH@Z	86.4362	86.4362	4	0602a3dba501	0x13c3f0
+heapdiag	?ClearTopmostStyle@@YAXPAX@Z	100.0000	100.0000	1	3b7f1a1e01c6	0x118990
+heapdiag	?FileExists@@YAHPAD@Z	100.0000	100.0000	1	9e685c2965e8	0x1189c0
+heapdiag	?FindProcessByName@@YAHPBDHPAPAX@Z	86.1364	86.1364	1	c9ca09b45e25	0x118ce0
 heapdiag	?HeapCheckDump@@YAHH@Z	96.7042	96.7042	3	34d903c2636b	0x118a30
 heapdiag	?HeapStats@@YAHXZ	97.3125	97.3125	1	7a4fc587f12d	0x118bf0
+heapdiag	?SetActiveAndFocus@@YAXPAX@Z	100.0000	100.0000	1	8e5154eb9db2	0x118930
+heapdiag	?SetTopmostStyle@@YAXPAX@Z	100.0000	100.0000	1	f6ead0a5db84	0x118960
 heapdiag	?winapi_118b50_OutputDebugStringA@ApiCallerStubs@@YAXH@Z	69.3478	69.3478	2	04ebf11d303a	0x118b50
 helperhost	?Helper_164790@CDDrawWorkerBase@@QAEHHH@Z	90.5556	90.5556	2	66f051185968	0x164790
 helperhost	?Helper_166040@CDDrawWorkerB@@QAEHHH@Z	95.0000	95.0000	2	a40af1357079	0x166040
@@ -2997,7 +3004,7 @@ netmgrgame	?CreateSession@CNetMgr@@QAEHXZ	95.3546	95.3546	1	4719bb49af6d	0xbbc90
 netmgrgame	?DetectConnectionConfig@CNetMgr@@QAEHXZ	85.8924	85.8924	1	ccb9dc6cba33	0xb82e0
 netmgrgame	?DispatchRecvMsg@CNetMgr@@QAEHHPADH@Z	75.3913	75.3913	1	b5807b56f58c	0xb9750
 netmgrgame	?DropChannelPlayer@CNetMgr@@QAEHH@Z	97.8814	97.8814	1	9929c65edd8e	0xbb510
-netmgrgame	?FrameSyncWait@CNetMgr@@QAEIXZ	70.7250	70.7250	1	543ba33d07dd	0xbc070
+netmgrgame	?FrameSyncWait@CNetMgr@@QAEIXZ	70.7250	70.7250	2	e05d0e6fff7e	0xbc070
 netmgrgame	?GetConfigNameA@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:5a3f3468c223	0xb6090
 netmgrgame	?GetConfigNameB@CNetMgr@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:5a3f3468c223	0xb60d0
 netmgrgame	?GetMaxAckLatency@CNetMgr@@QAEIXZ	100.0000	100.0000	1	176699654fbb	0xbd030
@@ -3571,14 +3578,15 @@ sounddevice	?StopAll@SoundDevice@@QAEXXZ	100.0000	100.0000	5	e1d6352b4701	0x136d
 sounddevice	?ValidateRestore@SoundDevice@@QAEHPAVDirectSoundMgr@@PAUWaveFormatX@@I@Z	100.0000	100.0000	3	3bf62fd5494c	0x136ab0
 sounddevice	?VolumeToAttenuation@SoundDevice@@SAHH@Z	58.1111	58.1111	2	8f49e80952af	0x1350b0
 sounddevice	_ParseWaveChunks	98.2281	98.2281	2	de77505f71a7	0x137110
-soundfontpath	?BuildSoundFontPath@@YAHD@Z	100.0000	100.0000	7	dad100c01f25	0xf8f30
+soundfontpath	?BuildSoundFontPath@@YAHD@Z	100.0000	100.0000	8	b916d72ee325	0xf8f30
 soundfontpath	?CloseSoundFontDevice@@YAXXZ	100.0000	100.0000	3	bd9a1fd7d5ea	0xf8e20
+soundfontpath	?FileExistsCopyF90F0@@YAHPAD@Z	100.0000	100.0000	1	8e3f75eebb96	0xf90f0
 soundfontpath	?SfDeviceInitKeys@@YAHXZ	100.0000	100.0000	1	f257ee15b6b4	0xf8ec0
-soundfxemitter	?Method_fa410@CSoundFxEmitter@@QAEHHHHH@Z	100.0000	100.0000	3	636dfa9c7942	0xfa410
-soundfxemitter	?Method_fa550@CSoundFxEmitter@@QAEHHHHH@Z	98.6759	98.6759	3	6a132d5c54ef	0xfa550
-soundfxemitter	?Method_fa790@CSoundFxEmitter@@QAEHHHH@Z	99.0566	99.0566	3	267ba91ae02c	0xfa790
-soundfxemitter	?Method_fa8f0@CSoundFxEmitter@@QAEHHHHH@Z	98.3913	98.3913	3	c90ff62bd683	0xfa8f0
-soundfxemitter	?Method_faa60@CSoundFxEmitter@@QAEHHHH@Z	100.0000	100.0000	3	70943b4248c1	0xfaa60
+soundfxemitter	?Method_fa410@CSoundFxEmitter@@QAEHHHHH@Z	100.0000	100.0000	4	57400620ae41	0xfa410
+soundfxemitter	?Method_fa550@CSoundFxEmitter@@QAEHHHHH@Z	98.6759	98.6759	4	d3060c458c2d	0xfa550
+soundfxemitter	?Method_fa790@CSoundFxEmitter@@QAEHHHH@Z	99.0566	99.0566	4	897d297d4323	0xfa790
+soundfxemitter	?Method_fa8f0@CSoundFxEmitter@@QAEHHHHH@Z	98.3913	98.3913	4	25ab196408ef	0xfa8f0
+soundfxemitter	?Method_faa60@CSoundFxEmitter@@QAEHHHH@Z	100.0000	100.0000	4	23d16cee8c9f	0xfaa60
 soundresmap	?RemoveByValue@CSoundResMap@@QAEXPAVCSoundRes@@@Z	74.8000	74.8000	2	ba2b8e7e359f	0x157b00
 soundstream	??0SoundStream@@QAE@XZ	96.9000	96.9000	4	77bdc9871b3e	0x1376d0
 soundstream	??1SoundStream@@UAE@XZ	100.0000	100.0000	2	c747f9f00c89	0x137710
@@ -4066,18 +4074,10 @@ waypoint	??0CWayPoint@@QAE@PAUCGameObject@@@Z	95.7273	95.7273	3	4b9f29bee794	0xa
 waypoint	??1CWayPoint@@UAE@XZ	100.0000	100.0000	2	09beea4573e8	0x102e0
 waypoint	?GetTypeTag@CWayPoint@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:4dae83886a0a	0x10220
 waypoint	?Serialize@CWayPoint@@QAEHHHHH@Z	100.0000	100.0000	2	7d31e57e8947	0x10240
-winapi	?ActiveWait@WinAPI@Utils@@YAXI@Z	100.0000	100.0000	8	f8eef55c6161	0x13dfe0
-winapi	?ClearTopmostStyle@WinAPI@Utils@@YAXPAUHWND__@@@Z	100.0000	100.0000	1	b25c8402c918	0x118990
-winapi	?DebugTrace@WinAPI@Utils@@YAXPBDZZ	100.0000	100.0000	1	26d7e378b5d4	0x13e010
-winapi	?FileExists@WinAPI@Utils@@YAHPAD@Z	100.0000	100.0000	8	edc6b176500d	0x1189c0
-winapi	?FileExistsCopy1FD70@WinAPI@Utils@@YAHPAD@Z	100.0000	100.0000	2	71dd6115f40f	0x1fd70
-winapi	?FileExistsCopyF90F0@WinAPI@Utils@@YAHPAD@Z	100.0000	100.0000	2	c909c5da8227	0xf90f0
-winapi	?FindProcessByName@WinAPI@Utils@@YAHPBDHPAPAX@Z	86.1364	86.1364	2	8570d1414539	0x118ce0
-winapi	?GetGruntzDriveLetter@WinAPI@Utils@@YADXZ	98.4234	98.4234	8	cf4838352207	0x1ffe0
-winapi	?IsGruntzCDInAnyDrive@WinAPI@Utils@@YAHXZ	100.0000	100.0000	8	10789c67be22	0x1fd50
-winapi	?SetActiveAndFocus@WinAPI@Utils@@YAXPAUHWND__@@@Z	100.0000	100.0000	1	8a4ef60cb41a	0x118930
-winapi	?SetTopmostStyle@WinAPI@Utils@@YAXPAUHWND__@@@Z	100.0000	100.0000	1	366054e8093d	0x118960
-winapicdrom	?CheckCdRomRegistry@WinAPI@Utils@@YADXZ	76.1429	76.1429	5	b9a1fbfb277b	0x1fde0
+winapicdrom	?CheckCdRomRegistry@@YADXZ	100.0000	100.0000	1	eb603b0a5c3e	0x1fde0
+winapicdrom	?FileExistsCopy1FD70@@YAHPAD@Z	100.0000	100.0000	1	a45dd9189bd6	0x1fd70
+winapicdrom	?GetGruntzDriveLetter@@YADXZ	98.4234	98.4234	1	647a797273b0	0x1ffe0
+winapicdrom	?IsGruntzCDInAnyDrive@@YAHXZ	100.0000	100.0000	1	cd3aa3f5108b	0x1fd50
 winapimodule	?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z	99.9000	99.9000	5	8a43b3da83f6	0x118f60
 winmain	??1CObjStamp11e8dc@@UAE@XZ	100.0000	100.0000	1	7f69ced209c9	0x11e8dc
 winmain	_WinMain@16	100.0000	100.0000	9	a03b3b19839f	0x11c860

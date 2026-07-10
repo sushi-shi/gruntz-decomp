@@ -789,8 +789,8 @@ source = "src/Bute/ButeNode.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "winapi"
-source = "src/Utils/WinAPI.cpp"
+unit = "debugtiming"
+source = "src/Utils/DebugTiming.cpp"
 flags = "eh"
 
 [[unit]]

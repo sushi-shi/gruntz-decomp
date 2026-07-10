@@ -42,11 +42,8 @@ extern i32 g_fxDirectGate;
 #include <DDrawMgr/DDrawSurfacePair.h> // the ONE CDDrawSurfacePair shape (m_surface @+0x2c)
 #include <DDrawMgr/DDrawSubMgrPages.h>
 
-namespace Utils {
-    namespace WinAPI {
-        void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
-    }
-} // namespace Utils
+// The engine busy-wait (plain file-scope free function; Utils/DebugTiming.cpp).
+void ActiveWait(u32 milliseconds); // 0x13dfe0 busy-wait
 
 // CFaderMgr::Add(1|2, ..) returns the new fader as CFader* (RunFade @0x17e620 is a
 // non-virtual CFader method), so the emitter holds the result directly as CFader*

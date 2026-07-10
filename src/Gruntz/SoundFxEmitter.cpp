@@ -36,7 +36,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
 
     m_gameMgr->StopBankIfActive();
     if (g_fxDirectGate != 0) {
-        Utils::WinAPI::ActiveWait(a3);
+        ActiveWait(a3);
         m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
     } else {
         f->RunFade(a3, a4, 0);
@@ -84,7 +84,7 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
 
     m_gameMgr->StopBankIfActive();
     if (g_fxDirectGate != 0) {
-        Utils::WinAPI::ActiveWait(a3);
+        ActiveWait(a3);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
         f->RunFade(a3, a4, 0);
@@ -133,7 +133,7 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
 
     m_gameMgr->StopBankIfActive();
     if (g_fxDirectGate != 0) {
-        Utils::WinAPI::ActiveWait(a2);
+        ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
         f->RunFade(a2, a3, 0);
@@ -185,7 +185,7 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
     }
 
     if (g_fxDirectGate != 0) {
-        Utils::WinAPI::ActiveWait(a2);
+        ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
         f->RunFade(a2, a3, 0);
@@ -222,7 +222,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
 
     m_gameMgr->StopBankIfActive();
     if (g_fxDirectGate != 0) {
-        Utils::WinAPI::ActiveWait(a2);
+        ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
     } else {
         f->RunFade(a2, a3, 0);

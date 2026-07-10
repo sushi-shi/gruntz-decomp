@@ -63,14 +63,10 @@
 #include <Rez/RezMgr.h> // RezAlloc - the engine heap allocator the node factories use
 
 // ---------------------------------------------------------------------------
-// Utils::WinAPI::ActiveWait - the engine busy-wait (?ActiveWait@WinAPI@Utils@@YAXI@Z,
-// __cdecl). Defined in another TU (Utils/WinAPI.cpp); here it is an external
-// no-body decl so the FrameSyncWait `call rel32` reloc-masks.
-namespace Utils {
-    namespace WinAPI {
-        void ActiveWait(u32 milliseconds);
-    }
-} // namespace Utils
+// ActiveWait - the engine busy-wait (__cdecl). A plain file-scope free function
+// defined in another TU (Utils/DebugTiming.cpp); here it is an external no-body decl
+// so the FrameSyncWait `call rel32` reloc-masks.
+void ActiveWait(u32 milliseconds); // 0x13dfe0
 
 // ---------------------------------------------------------------------------
 // CString - the minimal MFC CString model (a single char* @+0). The config

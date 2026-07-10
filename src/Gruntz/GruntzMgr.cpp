@@ -90,11 +90,13 @@ namespace Utils {
         unsigned long GetValueDword(char* k, unsigned long def); // 0x1395d0
         i32 SetValueDword(char* k, unsigned long v);
     };
-    namespace WinAPI {
-        char GetGruntzDriveLetter();
-        i32 FileExists(char* szPath);
-    } // namespace WinAPI
 } // namespace Utils
+
+// The free CD-ROM / file-probe helpers CGruntzMgr calls (plain file-scope free
+// functions; reloc-masked). GetGruntzDriveLetter (0x1ffe0, WinAPICdRom.cpp) collides
+// by name with the CGruntzMgr member below, so its call site qualifies with `::`.
+char GetGruntzDriveLetter();  // 0x1ffe0 (WinAPICdRom.cpp)
+i32 FileExists(char* szPath); // 0x1189c0 (HeapDiag.cpp)
 
 // DirectPlayLobbyCreate (DPLAYX ordinal 4) now comes from the real <dplobby.h>
 // (macro -> DirectPlayLobbyCreateA); reached as [IAT] - the displacement reloc-masks,
@@ -890,7 +892,7 @@ i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
 // CGruntzMgr::GetGruntzDriveLetter  (__thiscall)
 // Returns the CD-ROM drive letter holding the Gruntz disc, memoised in the
 // pair (m_driveLetter = letter, m_driveLetterProbed = probed-flag): once probed, return the cached
-// letter; otherwise call Utils::WinAPI::GetGruntzDriveLetter(), cache + set the
+// letter; otherwise call the free ::GetGruntzDriveLetter() (WinAPICdRom.cpp), cache + set the
 // flag. (The result is discarded by the engine on the first/uncached path - the
 // store IS the return, the cached path returns the byte.)
 RVA(0x0008fa70, 0x2c)
@@ -898,7 +900,7 @@ char CGruntzMgr::GetGruntzDriveLetter() {
     if (m_driveLetterProbed) {
         return m_driveLetter;
     }
-    m_driveLetter = Utils::WinAPI::GetGruntzDriveLetter();
+    m_driveLetter = ::GetGruntzDriveLetter();
     m_driveLetterProbed = 1;
     return m_driveLetter;
 }
@@ -1344,7 +1346,7 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
     // First try the working directory ("<cwd>\<name>").
     if (GetCurrentDirectoryA(0xff, szDir)) {
         Format(&path, "%s\\%s", szDir, (const char*)name);
-        if (!Utils::WinAPI::FileExists((char*)(const char*)path)) {
+        if (!FileExists((char*)(const char*)path)) {
             path.Empty();
         }
     }
@@ -1357,7 +1359,7 @@ CString CGruntzMgr::BuildMoviePath(i32 movie) {
         }
     }
 
-    if (!Utils::WinAPI::FileExists((char*)(const char*)path)) {
+    if (!FileExists((char*)(const char*)path)) {
         path.Empty();
     }
 
@@ -1590,7 +1592,7 @@ void CGruntzMgr::ClearStateStack() {
 // resolved movie path (m_strMoviePath) exists on disk.
 RVA(0x00090aa0, 0x10)
 i32 CGruntzMgr::CheckMovieFileExists() {
-    return Utils::WinAPI::FileExists((char*)(const char*)m_strMoviePath);
+    return FileExists((char*)(const char*)m_strMoviePath);
 }
 
 // -------------------------------------------------------------------------
@@ -1599,7 +1601,7 @@ i32 CGruntzMgr::CheckMovieFileExists() {
 // 0/1 canonicalizer (the result is consumed as a boolean here).
 RVA(0x000901d0, 0x16)
 i32 CGruntzMgr::IsMoviePathValid() {
-    return Utils::WinAPI::FileExists((char*)(const char*)m_strMoviePath) != 0;
+    return FileExists((char*)(const char*)m_strMoviePath) != 0;
 }
 
 // -------------------------------------------------------------------------
