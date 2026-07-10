@@ -33,6 +33,20 @@
 // eh unit). External callees (the sub-object ctor/find, archive Read/Write
 // virtual [+0x30], CString dtor, NAFXCW Lookup, sibling readers) are modeled
 // with no body so their rel32 calls reloc-mask.
+//
+// DE-FRAGMENTATION ASSESSMENT (matcher-1, misplacement-flatline pass): NOT
+// splittable - this TU is /Gy-COMDAT function-level scattered, the case-(b)
+// verdict (cf. LightFxRender). Its two class families - CWwdGameObject (plane
+// object, :CObject) and the render-worker family CWwdGameObjectE -> A/F/C +
+// CWwdGameObjectB - are BOTH independently threaded across three far-apart .text
+// bands (0x150xxx live methods + A slots / 0x15bxxx all six dtors + Init /
+// 0x166xxx RenderDot + C slots + B methods), and WITHIN each band the linker
+// interleaves foreign COMDATs (UserBaseLink CGameObject splits Setup..Play;
+// DDrawSubMgr CWwdFactoryObject + WwdObjMgrFactories + AniAdvanceCursor thread
+// between the dtors; WwdObjMgrFactories splits ResetAndSetup..B). Splitting by
+// class/family leaves BOTH resulting TUs still spanning the full ~88KB range
+// (0x150660..0x166984) - zero contiguity gained. The scatter is the /Gy linker's,
+// not a source misplacement; one .cpp already = one .obj here.
 
 // CmdMap (+0x1a0), the CObList m_subList (+0x1dc) and the CWwdGameObject class
 // itself now live in the canonical <Gruntz/WwdGameObject.h> (included above). The
