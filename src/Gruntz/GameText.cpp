@@ -5,6 +5,8 @@
 // .rdata consts (reloc-masked); only the per-fn code bytes are load-bearing.
 #include <Gruntz/GameText.h>
 #include <rva.h>
+#include <Wap32/ZDArrayDerived.h> // CZDArrayDerived::Construct (the 0x82aa0 register thunk)
+#include <Globals.h>              // g_desc60aac8 (the registered descriptor)
 
 // ---------------------------------------------------------------------------
 // The two name tables are file-scope arrays of CString with brace-initializers.
@@ -33,6 +35,23 @@ static CString g_worldName[8] = {
     "The Miniature Masterz",
     "Gruntz in Space",
 };
+
+// ---------------------------------------------------------------------------
+// 0x082aa0 (RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - register thunk: hand
+// the address of a global descriptor (0x60aac8) to a manager singleton (0x6451a8)
+// method (0x1d38c5 == CZDArrayDerived::Construct, __thiscall). __cdecl. RVA-contiguous
+// with the g_worldName initializer @0x82990.
+// @orphan: COMDAT-folded one-liner whose owning class is unrecovered.
+struct CMgr6451a8 {
+    // Register @0x3742 IS CZDArrayDerived::Construct (2nd arg reloc-masked); cast at the call.
+};
+SIZE_UNKNOWN(CMgr6451a8);
+DATA(0x002451a8)
+extern CMgr6451a8 g_mgr6451a8;
+RVA(0x00082aa0, 0x10)
+void Register82aa0() {
+    ((CZDArrayDerived*)&g_mgr6451a8)->Construct((i32)(void*)&g_desc60aac8, 0);
+}
 
 // ---------------------------------------------------------------------------
 // The 8 end-of-level stat labels, in order:

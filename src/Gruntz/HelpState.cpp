@@ -21,6 +21,8 @@
 
 #include <Gruntz/BankMgr.h>   // CBankMgr::Lookup (inherited m_8) -> CResSource
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
+#include <Gruntz/GameModeBase.h> // CGameModeBase::Reset (the 0x8d000 dtor teardown body)
+#include <Gruntz/BoundaryLowerDtorsViews.h> // CMenuState8d000 (the 0x8d000 /GX leaf dtor)
 #include <Gruntz/StatusBarUpdatersViews.h> // CRegHolder view of CState::m_c (m_04 page mgr)
 #include <Gruntz/Attract.h> // CMenuRoot chain (m_c): Render's busy surface + attract registrar
 #include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
@@ -52,6 +54,21 @@ public:
 RVA(0x0008cf30, 0x55)
 CHelpState::~CHelpState() {
     Teardown();
+}
+
+// ---------------------------------------------------------------------------
+// 0x08d000 - ~CMenuState8d000 (/GX): stamp the derived vtable (0x5e9d74), run the
+// teardown body (0x2919 == CGameModeBase::Reset), then fold the CState base subobject
+// (restamp 0x5ea21c + base dtor 0x3f53). __thiscall. RVA-homed here (RVA-contiguous
+// with ~CHelpState @0x8cf30; a distinct unrecovered CState-derived menu/state).
+// @early-stop
+// EH-dtor base-stamp idiom wall (95.2%): retail stamps the CState base vtable in the
+// DERIVED dtor (mov [esi],0x5ea21c) just before the base cleanup call (0x3f53); the
+// polymorphic-base model stamps it inside the base dtor instead, so our derived omits
+// that one 6-byte store. Derived-vtable stamp, Reset body, /GX frame + states faithful.
+RVA(0x0008d000, 0x55)
+CMenuState8d000::~CMenuState8d000() {
+    ((CGameModeBase*)this)->Reset();
 }
 
 RVA(0x00095090, 0x6e)

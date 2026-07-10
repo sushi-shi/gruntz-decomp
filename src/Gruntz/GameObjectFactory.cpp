@@ -7,6 +7,7 @@
 // load-bearing; every create-fn / follow-up helper is a reloc-masked external
 // (an unnamed ILT jmp-thunk to the real ctor/helper).
 #include <rva.h>
+#include <Globals.h> // g_dat6295d8 (the 0xaf50 reset thunk's target global)
 
 typedef void* (*ObjCreateFn)();
 
@@ -292,6 +293,16 @@ void RegisterGameObjectTypes(GameObjFactoryCtx* ctx) {
     RegHelper_17e9();
     ctx->m_14->RegisterType(CreateDemoMover, "DemoMover", 0);
     ctx->m_14->RegisterType(CreateDemoSign, "DemoSign", 0);
+}
+
+// ---------------------------------------------------------------------------
+// 0x00af50 - reset a global DWORD to 0 (the global at VA 0x6295d8 / RVA 0x2295d8).
+// __cdecl free function. RVA-homed here (RVA-contiguous with the factory registrar).
+// @orphan: only caller is an unrecovered fn (~0xaa92); free reset with no owner.
+// ---------------------------------------------------------------------------
+RVA(0x0000af50, 0xb)
+void ResetDat6295d8() {
+    g_dat6295d8 = 0;
 }
 
 SIZE_UNKNOWN(GameObjFactoryCtx);

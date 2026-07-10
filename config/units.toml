@@ -2031,11 +2031,6 @@ source = "src/Gruntz/LevelTimeDtor.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "boundaryleaflogic"
-source = "src/Stub/BoundaryLeafLogic.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "boundarymisc"
 source = "src/Stub/BoundaryMisc.cpp"
 flags = "base"

@@ -13,6 +13,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/VoiceTrigger.h>          // canonical CVoiceTrigger : CUserLogic
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
+#include <Gruntz/BoundaryLeafLogicViews.h> // L_13400 (CUFO fold-flat leaf dtor, RVA-homed here)
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
@@ -181,6 +182,18 @@ extern CGameRegistry* g_gameReg;
 // only fires for the active area. extern "C" so the load reloc-masks against the
 // already-named global.
 extern "C" i32 g_644c54;
+
+// @early-stop
+// @flag: MSVC5 /O2 dead-vptr-store elimination wall (byte-proven). 0x13400 IS CUFO::
+// ~CUFO, but retail's /O2 collapsed the CUFO:CPathHazard:CUserLogic dtor chain to a
+// FLAT CUserLogic teardown - it stamps ONLY 0x5e705c (CUserLogic vtable) then 0x5e70b4
+// (CUserBase vtable), never CUFO's (0x5e72b4) or CPathHazard's vptr (the intermediate
+// stamps are dead stores, eliminated). The real CUFO:CPathHazard model (Ufo.h) emits
+// those intermediate stamps -> byte-proven crater to 4.7%. This flat `: CUserLogic`
+// L_13400 model is the SAME faithful shape as the sibling CPathHazard leaf. 100%
+// byte-exact. A future pass could rename to CUFO by remodeling Ufo.h as a flat leaf.
+RVA(0x00013400, 0x44)
+L_13400::~L_13400() {}
 
 // CVoiceTrigger::Serialize @0x0134e0 - the vtable slot-1 override: chain the shared
 // CUserLogic serialize helper on `this`, and (only on success) the +0x34 serializable

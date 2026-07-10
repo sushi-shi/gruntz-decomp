@@ -16,47 +16,9 @@ namespace ApiMisc {
     // It is called directly (not a vtable slot) on divergent `this` from map/movement
     // methods (CBattlezMapConfig / CGruntMover::Step / CStepMgr::Step / CGrunt::PathScan,
     // xref) with no ctor/new/RTTI trace, so the owning class identity is unrecovered.
-    struct ClipHost_02b340 {
-        char m_pad0[0xc];
-        i32 m_c;  // +0x0c
-        i32 m_10; // +0x10
-        char m_pad14[0x60 - 0x14];
-        RECT m_rc60; // +0x60
-        i32 m_w70;   // +0x70
-        i32 m_h74;   // +0x74
-        void Clip(const RECT* src);
-    };
-    // @early-stop
-    // regalloc-rotation + scheduling wall (~81%): the clip logic (IntersectRect the
-    // (0,0,m_c,m_10) box against src+1, store at m_rc60, derive w/h) is faithful, but
-    // retail keeps the `src` arg in eax and interleaves the four rect-field loads/
-    // stores differently, while cl pins `src` in edx - a whole-function register
-    // rotation (eax<->edx, ecx<->edx) with a scheduling shift on the field build.
-    // Not source-steerable (arg-register + /O2 scheduling choice).
-    RVA(0x0002b340, 0xaa)
-    void ClipHost_02b340::Clip(const RECT* src) {
-        RECT a, b;
-        b.left = 0;
-        b.top = 0;
-        b.right = m_c;
-        b.bottom = m_10;
-        if (src) {
-            a.left = src->left;
-            a.top = src->top;
-            a.right = src->right + 1;
-            a.bottom = src->bottom + 1;
-        } else {
-            a.left = 0;
-            a.top = 0;
-            a.right = m_c;
-            a.bottom = m_10;
-        }
-        if (!IntersectRect(&m_rc60, &a, &b)) {
-            m_rc60 = a;
-        }
-        m_w70 = m_rc60.right - m_rc60.left;
-        m_h74 = m_rc60.bottom - m_rc60.top;
-    }
+    // (0x2b340 ClipHost_02b340::Clip re-homed to src/Gruntz/BattlezMapConfig.cpp - a
+    // clip-context box-clamp, RVA-contiguous with that TU's 0x24dc0-0x358a0 .text block;
+    // one of its divergent-`this` callers is CBattlezMapConfig itself.)
 
     // (0x8c380 CRect::SetRect + 0x115b30 CRect::operator= re-homed to the real
     // WAP32 engine rectangle class CRect in src/Wap32/Rect.cpp - `this` IS the

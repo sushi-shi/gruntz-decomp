@@ -154,3 +154,26 @@ i32 CMultiBootyState::InputVirtual() {
     BuildPage(0x50, 0x3e8, 0, 1);
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// 0x01f870 - guarded virtual dispatch: if the 4th virtual (vtbl slot +0xc) reports
+// nonzero, run the non-virtual handler (0xfac70) and return its success as a bool
+// (the retail neg/sbb/neg idiom); else return 0. __thiscall, no args. RVA-homed here.
+// @orphan: no .text caller; `this` class genuinely unrecovered.
+// ---------------------------------------------------------------------------
+struct CGuardedDispatch1f870 {
+    virtual i32 v0();
+    virtual i32 v1();
+    virtual i32 v2();
+    virtual i32 IsActive(); // slot +0x0c
+    i32 Handle();           // 0xfac70 (non-virtual; reloc-masked)
+    i32 Run();
+};
+SIZE_UNKNOWN(CGuardedDispatch1f870);
+RVA(0x0001f870, 0x1d)
+i32 CGuardedDispatch1f870::Run() {
+    if (!IsActive()) {
+        return 0;
+    }
+    return Handle() != 0;
+}

@@ -19,32 +19,9 @@
 #include <Ints.h>
 #include <rva.h>
 
-// DeleteImageList @0x1c6a5c IS MFC CImageList::DeleteImageList (afxcmn); minimal local decl.
-SIZE_UNKNOWN(CImageList);
-class CImageList {
-public:
-    void DeleteImageList();
-};
-
-// ---------------------------------------------------------------------------
-// tomalla-55 @0x016460 - a byte-identical twin of ~CImgHolder (0x16500,
-// Dialogs.cpp): a derived holder whose /GX dtor frees an embedded CImageList
-// (DeleteImageList 0x1c6a5c) between the implicit own vptr stamp (0x5e8cd4) and the
-// folded base re-stamp (0x5e8cb4). The empty inline base dtor folds as the LAST
-// store; the non-trivial base earns the /GX frame. Real-virtual model
-// (docs/patterns/eh-dtor-implicit-vptr-stamp-first.md sub-case 2); cl emits the
-// ??_7 stamps, which reloc-mask.
-struct CU55Base {
-    virtual ~CU55Base() {}
-};
-struct CU55 : CU55Base {
-    void DeleteImageList();   // 0x1c6a5c (NAFXCW CImageList::DeleteImageList)
-    virtual ~CU55() OVERRIDE; // 0x016460
-};
-RVA(0x00016460, 0x46)
-CU55::~CU55() {
-    ((CImageList*)this)->DeleteImageList();
-}
+// (tomalla-55 @0x016460 re-homed to src/Gruntz/Dialogs.cpp as CImgHolder2 - a SECOND
+// byte-identical dialog image-holder, dissolved onto that TU's existing CImgHolderBase
+// grand-base + shared CImageList shim (twin of the ~CImgHolder @0x16500 already there).)
 
 // ---------------------------------------------------------------------------
 // BoomerangCmdDispatch @0x0de9e0 - a __cdecl /GX command dispatcher over the
@@ -154,9 +131,6 @@ SIZE_UNKNOWN(BoomObj);
 SIZE(CBoomerang, 0x260);
 SIZE_UNKNOWN(BoomState);
 SIZE_UNKNOWN(BoomHost);
-SIZE_UNKNOWN(CU55Base);
-SIZE_UNKNOWN(CU55);
-RELOC_VTBL(CU55, 0x001e8cd4); // vtable reloc-masks a bound datum (dtor-stamp verified)
 SIZE_UNKNOWN(CObj50);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

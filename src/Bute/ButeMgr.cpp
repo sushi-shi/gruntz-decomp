@@ -48,6 +48,7 @@
 #include <Bute/ButeMgr.h>
 #include <rva.h>
 #include <Globals.h>
+#include <Gruntz/BoundaryLowerDtorsViews.h> // CButeTree21b (the 0x21570 /GX MI leaf dtor)
 
 #include <stdio.h>  // vsprintf (NAFXCW varargs formatter)
 #include <stdlib.h> // atoi (0x11ffb0)
@@ -232,6 +233,19 @@ static const char s_strRBrack[] = "]";
 // from an inlined manual-vtable member dtor; deferred to the final sweep.
 RVA(0x000213c0, 0x14c)
 CButeMgr::~CButeMgr() {}
+
+// ---------------------------------------------------------------------------
+// 0x021570 - ~CButeTree21b (/GX, multiple inheritance): stamp both base vtables
+// (0x5e94ac @+0, 0x5e949c @+8), run the body teardown (0x16e070 == CButeStore::
+// ClearRecursive), then fold the +0x08 second base (dtor 0x16dfc0, MI this-adjust null
+// guard) and the +0x00 first base (dtor 0x16da60). __thiscall. RVA-homed here (its
+// ClearRecursive callee is the canonical CButeStore in <Bute/ButeMgr.h>). A distinct
+// derived class sharing CButeStore's base vtables; RTTI name unrecovered (its
+// RVA-contiguous twin CButeTree21a @0x21310 stays in BoundaryLowerDtors.cpp).
+RVA(0x00021570, 0x70)
+CButeTree21b::~CButeTree21b() {
+    ((CButeStore*)this)->ClearRecursive(0);
+}
 
 // ---------------------------------------------------------------------------
 // CButeMgr::ReportError

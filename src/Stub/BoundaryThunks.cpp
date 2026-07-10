@@ -157,15 +157,8 @@ RELOC_VTBL(CAbstract13ca30, 0x001ef760); // vtable reloc-masks a bound datum (dt
 RVA(0x0013ca30, 0x7)
 CAbstract13ca30::~CAbstract13ca30() {}
 
-// ===========================================================================
-// 0x0853d0 - __stdcall forwarder: hand the single arg to the __cdecl rez-free
-// helper (0x1b9b82). Returns void; one arg (ret 4).
-// ===========================================================================
-extern "C" void RezFree(void* p); // 0x1b9b82 (__cdecl; reloc-masked)
-RVA(0x000853d0, 0x10)
-void __stdcall Forward853d0(void* a) {
-    RezFree(a);
-}
+// (0x0853d0 Forward853d0 re-homed to src/Rez/RezSync.cpp as RezFreeStdcall - a
+// standalone __stdcall RezFree wrapper, homed next to that TU's rez-managed bootstrap.)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 

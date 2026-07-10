@@ -759,6 +759,15 @@ i32 RezSync::Init(void* a1, char* a2) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// 0x0853d0 (RVA-homed from src/Stub/BoundaryThunks.cpp) - __stdcall forwarder: hand
+// the single arg to the __cdecl rez-free helper (0x1b9b82). Returns void; one arg
+// (ret 4). A standalone forwarder with no owning class.
+RVA(0x000853d0, 0x10)
+void __stdcall RezFreeStdcall(void* a) {
+    RezFree(a);
+}
+
 // 0x85500 (re-homed from src/Stub/BoundaryTail.cpp): return a CString member (offset
 // 0xec) BY VALUE. Called by RezSync::Init (above, RVA-contiguous 0x83450) and
 // CGruntzMgr::LoadWorldMode; `this` identity genuinely unrecovered (kept placeholder
@@ -771,4 +780,30 @@ i32 RezSync::Init(void* a1, char* a2) {
 RVA(0x00085500, 0x23)
 CString Obj85500::GetName() {
     return m_ec;
+}
+
+// ---------------------------------------------------------------------------
+// 0x085540 (RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - the base CGameMgr
+// destructor: restamp the base vtable (0x5e9b8c) then tail-call the base teardown
+// (0x13ddb0 == Close). __thiscall. The delinker names its vtable ??_7CGameMgr@@6B@
+// globally (config/vtable_names.csv), so cl's implicit entry vptr-store emits it
+// (masks 0x5e9b8c). This is the GLOBAL-namespace ??1CGameMgr@@ that retail keeps at
+// 0x85540; the reconstruction's real manager is modeled as the namespaced
+// WAP32::CGameMgr (to disambiguate CGruntzMgr), so this distinct global placeholder is
+// the byte-necessary out-of-line emitter (its scalar-deleting twin 0x855a0 stays in
+// BoundaryLowerThunks). RVA-contiguous with RezSync::Init (this TU is the CGameMgr
+// bootstrap).
+struct CGameMgr {
+    virtual ~CGameMgr(); // 0x85540 (slot 0): implicit base-vtable restamp + Close
+    virtual void s1();
+    virtual void s2();
+    virtual void s3();
+    virtual void s4();
+    virtual void s5();
+    void Close(); // 0x13ddb0 (reloc-masked)
+};
+SIZE_UNKNOWN(CGameMgr);
+RVA(0x00085540, 0xb)
+CGameMgr::~CGameMgr() {
+    Close();
 }

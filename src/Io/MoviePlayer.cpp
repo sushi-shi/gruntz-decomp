@@ -2,6 +2,7 @@
 #include <Io/MoviePlayer.h>
 #include <Mfc.h>             // /GX EH-frame helpers
 #include <Crypto/FecCrypt.h> // the +0x540 decode store IS a CFecFile (Init/ReadArchive/Lookup/Close)
+#include <Gruntz/BoundaryLowerDtorsViews.h> // CCredits390a0 (the 0x390a0 /GX leaf dtor)
 // MoviePlayer.cpp - the frameless slice of the DDrawMgr "DDraw worker"
 // movie/stream decode object (placeholder name; see include/Io/MoviePlayer.h).
 // One reconstructed method from the 0x17b500..0x17c790 cluster:
@@ -102,4 +103,16 @@ RVA(0x00038fc0, 0xa5)
 CMoviePlayer::~CMoviePlayer() {
     Teardown();
     // ~m_868c (scratch embed) then ~m_540 (decode store) fold here.
+}
+
+// ---------------------------------------------------------------------------
+// 0x0390a0 - ~CCredits390a0 (/GX): run the explicit cleanup (0x17b570 ==
+// CFecFile::Close), then let the two owned members at +0x138 (~CByteArray) and +0x124
+// (~CFile) fold in reverse declaration order. __thiscall. RVA-homed here (RVA-contiguous
+// with ~CMoviePlayer @0x38fc0; a page/file store that owns an MFC CFile+CByteArray).
+// @identity-TODO: the "CCredits" class name is unconfirmed (a file/page loader whose
+// state owner is unrecovered); its cleanup casts through the canonical CFecFile.
+RVA(0x000390a0, 0x5d)
+CCredits390a0::~CCredits390a0() {
+    ((CFecFile*)this)->Close();
 }

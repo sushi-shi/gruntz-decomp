@@ -109,20 +109,8 @@ CGameApp::~CGameApp() {
     --g_instCount653c6c;
 }
 
-// ===========================================================================
-// 0x082aa0 - register thunk: hand the address of a global descriptor (0x60aac8)
-// to a manager singleton (0x6451a8) method (0x1d38c5, __thiscall(void*)). __cdecl.
-// ===========================================================================
-struct CMgr6451a8 {
-    // Register @0x3742 IS CZDArrayDerived::Construct (2nd arg reloc-masked); cast at the call.
-};
-SIZE_UNKNOWN(CMgr6451a8);
-DATA(0x002451a8)
-extern CMgr6451a8 g_mgr6451a8;
-RVA(0x00082aa0, 0x10)
-void Register82aa0() {
-    ((CZDArrayDerived*)&g_mgr6451a8)->Construct((i32)(void*)&g_desc60aac8, 0);
-}
+// (0x082aa0 Register82aa0 (+ its g_mgr6451a8 DATA pin) re-homed to src/Gruntz/
+// GameText.cpp, RVA-contiguous with that TU's g_worldName initializer @0x82990.)
 
 // ===========================================================================
 // 0x082fa0 - reset the grunt coordinate free-pool: zero the four consecutive
@@ -140,28 +128,9 @@ void ResetCoordPool82fa0() {
     g_freeListNodeBias = 0;
 }
 
-// ===========================================================================
-// 0x085540 - stamp the vtable (0x5e9b8c) then tail-call the base teardown
-// (0x13ddb0). __thiscall.
-// ===========================================================================
-// REALIZED: model the base WAP32::CGameMgr as a global 6-slot (0x18) polymorphic
-// CGameMgr - the delinker names its vtable ??_7CGameMgr@@6B@ globally (config/
-// vtable_names.csv). 0x85540 IS that dtor (restamp the base vtable + Close),
-// so cl's implicit entry vptr-store emits ??_7CGameMgr@@6B@ (masks 0x5e9b8c).
-struct CGameMgr {
-    virtual ~CGameMgr(); // 0x85540 (slot 0): implicit base-vtable restamp + Close
-    virtual void s1();
-    virtual void s2();
-    virtual void s3();
-    virtual void s4();
-    virtual void s5();
-    void Close(); // 0x13ddb0 (reloc-masked)
-};
-SIZE_UNKNOWN(CGameMgr);
-RVA(0x00085540, 0xb)
-CGameMgr::~CGameMgr() {
-    Close();
-}
+// (0x085540 ~CGameMgr (the GLOBAL-namespace ??1CGameMgr@@ base dtor) re-homed to
+// src/Rez/RezSync.cpp - that TU IS the CGameMgr-derived bootstrap; its scalar-deleting
+// twin 0x855a0 stays here.)
 
 // ===========================================================================
 // 0x0855a0 - the scalar-deleting-destructor twin of CGameMgr::~CGameMgr (0x85540):

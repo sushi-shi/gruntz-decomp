@@ -1039,6 +1039,96 @@ void BrickzGridDesc::SetCell(i32 x, i32 y, i32 id) {
     m_20[m_24[y] + x] = id;
 }
 
+// ---------------------------------------------------------------------------
+// 0x77df0 (RVA-homed from src/Stub/ApiCallers.cpp) - __thiscall(w): of the live,
+// non-kind-0x36 cells in the 4x15 grid (skipping row w->m_1ec), pick the one nearest
+// the reference tile; null it unless it lands inside the reference object's
+// +/-(m_298+m_2dc+1) tile box. Tile coords are 1/32-pixel units (>>5).
+// @early-stop
+// regalloc wall: logic + the distance/rect math are byte-exact, but MSVC spills
+// colPtr/rowPtr to the stack where retail keeps them in edi/ecx (it instead reloads
+// `w` per outer iter). A spill-weight choice; the loop body matches.
+struct GridSpatial_77df0 {
+    char m_pad0[0x5c];
+    i32 m_5c; // +0x5c x
+    i32 m_60; // +0x60 y
+};
+struct GridCell_77df0 {
+    char m_pad0[0x10];
+    GridSpatial_77df0* m_10; // +0x10
+    char m_pad14[0x1fc - 0x14];
+    i32 m_1fc; // +0x1fc live flag
+    char m_pad200[0x258 - 0x200];
+    i32 m_258; // +0x258 kind
+};
+struct GridWorld_77df0 {
+    char m_pad0[0x10];
+    GridSpatial_77df0* m_10; // +0x10 reference object
+    char m_pad14[0x17c - 0x14];
+    i32 m_17c; // +0x17c reference x
+    i32 m_180; // +0x180 reference y
+    char m_pad184[0x1ec - 0x184];
+    i32 m_1ec; // +0x1ec row to skip
+    char m_pad1f0[0x298 - 0x1f0];
+    i32 m_298; // +0x298 radius part
+    char m_pad29c[0x2dc - 0x29c];
+    i32 m_2dc; // +0x2dc radius part
+};
+struct Grid_77df0 {
+    char m_pad0[0x1c];
+    GridCell_77df0* m_cells[4][15]; // +0x1c (row stride 0x3c)
+    GridCell_77df0* FindNearest(GridWorld_77df0* w);
+};
+SIZE_UNKNOWN(GridSpatial_77df0);
+SIZE_UNKNOWN(GridCell_77df0);
+SIZE_UNKNOWN(GridWorld_77df0);
+SIZE_UNKNOWN(Grid_77df0);
+RVA(0x00077df0, 0x13d)
+GridCell_77df0* Grid_77df0::FindNearest(GridWorld_77df0* w) {
+    GridCell_77df0* best = 0;
+    i32 bestDist = 0x7fffffff;
+    i32 tileX = w->m_17c >> 5;
+    i32 tileY = w->m_180 >> 5;
+    GridCell_77df0** rowPtr = &m_cells[0][0];
+    for (i32 i = 0; i < 4; i++) {
+        if (i != w->m_1ec) {
+            GridCell_77df0** colPtr = rowPtr;
+            i32 j = 15;
+            do {
+                GridCell_77df0* cell = *colPtr;
+                if (cell && cell->m_1fc != 0 && cell->m_258 != 0x36) {
+                    i32 dx = (cell->m_10->m_5c >> 5) - tileX;
+                    i32 dy = (cell->m_10->m_60 >> 5) - tileY;
+                    i32 dist = dx * dx + dy * dy;
+                    if (dist < bestDist) {
+                        best = cell;
+                        bestDist = dist;
+                    }
+                }
+                colPtr++;
+            } while (--j != 0);
+        }
+        rowPtr += 15;
+    }
+    i32 k = w->m_298 + w->m_2dc + 1;
+    i32 px = w->m_10->m_5c >> 5;
+    i32 py = w->m_10->m_60 >> 5;
+    RECT rc;
+    rc.left = px - k;
+    rc.top = py - k;
+    rc.right = px + k + 1;
+    rc.bottom = py + k + 1;
+    if (best) {
+        POINT pt;
+        pt.x = best->m_10->m_5c >> 5;
+        pt.y = best->m_10->m_60 >> 5;
+        if (!PtInRect(&rc, pt)) {
+            best = 0;
+        }
+    }
+    return best;
+}
+
 SIZE_UNKNOWN(BrickzAttrMgr);
 SIZE_UNKNOWN(BrickzButeObj);
 SIZE_UNKNOWN(BrickzCell);

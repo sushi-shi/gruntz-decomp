@@ -881,6 +881,18 @@ void CBattlezMapConfig::FreeArrays() {
     m_13c = 0;
 }
 
+// ---------------------------------------------------------------------------
+// 0x29a30 (RVA-homed from src/Stub/DiscoveredSmall.cpp) - a list iterator advance:
+// read the current node (*it), step the cursor to its link (*cur), return a pointer
+// into the current node's payload (cur+8). __stdcall, 1 stack arg.
+// ---------------------------------------------------------------------------
+RVA(0x00029a30, 0x10)
+void* __stdcall ListNodeAdvance(void** it) {
+    char* cur = (char*)*it;
+    *it = *(void**)cur;
+    return cur + 8;
+}
+
 // ===========================================================================
 // CBattlezMapConfig::Method_02ad40  @0x02ad40
 // Pick a random idle unit from one of the four cell-bands: roll a band [0..3]
@@ -1570,6 +1582,56 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     Method_0300c0(targetArg, xcoord, ycoord, 0x20000d87, 0, 0);
     ((ApiMisc::ClipHost_02b340*)board)->Clip((const RECT*)0);
     return 1;
+}
+
+// ===========================================================================
+// ===========================================================================
+// 0x2b340 (RVA-homed from src/Stub/ApiMiscHelpers.cpp) - __thiscall(src): clip the
+// (0,0,m_c,m_10) box against the optional src rect (right/bottom inclusive -> +1),
+// store the clipped rect at +0x60 and its w/h.
+// @identity-TODO: NOT the CRect engine-rect class. `this` is a bigger clip-CONTEXT
+// object (source dims m_c/m_10, clip rect @+0x60, clipped dims @+0x70/+0x74), called
+// directly on divergent `this` from map/movement methods (CBattlezMapConfig /
+// CGruntMover::Step / CStepMgr::Step / CGrunt::PathScan) with no ctor/RTTI trace.
+// @early-stop
+// regalloc-rotation + scheduling wall (~81%): the clip logic is faithful, but retail
+// keeps `src` in eax and interleaves the rect field loads/stores differently, while cl
+// pins `src` in edx - a whole-function register rotation + a scheduling shift. Not
+// source-steerable.
+struct ClipHost_02b340 {
+    char m_pad0[0xc];
+    i32 m_c;  // +0x0c
+    i32 m_10; // +0x10
+    char m_pad14[0x60 - 0x14];
+    RECT m_rc60; // +0x60
+    i32 m_w70;   // +0x70
+    i32 m_h74;   // +0x74
+    void Clip(const RECT* src);
+};
+SIZE_UNKNOWN(ClipHost_02b340);
+RVA(0x0002b340, 0xaa)
+void ClipHost_02b340::Clip(const RECT* src) {
+    RECT a, b;
+    b.left = 0;
+    b.top = 0;
+    b.right = m_c;
+    b.bottom = m_10;
+    if (src) {
+        a.left = src->left;
+        a.top = src->top;
+        a.right = src->right + 1;
+        a.bottom = src->bottom + 1;
+    } else {
+        a.left = 0;
+        a.top = 0;
+        a.right = m_c;
+        a.bottom = m_10;
+    }
+    if (!IntersectRect(&m_rc60, &a, &b)) {
+        m_rc60 = a;
+    }
+    m_w70 = m_rc60.right - m_rc60.left;
+    m_h74 = m_rc60.bottom - m_rc60.top;
 }
 
 // ===========================================================================

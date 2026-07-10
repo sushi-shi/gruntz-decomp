@@ -4091,6 +4091,36 @@ i32 CGruntzMgr::CheckDisplayBoundsB() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x8e3a0 (RVA-homed from src/Stub/ApiCallers.cpp) - __thiscall(out): default to the
+// full 0x280x0x1e0 screen rect, or the active viewport's rect (m_30->m_24 + 0x10) when
+// one is set; write it to *out.
+// @orphan: a shared viewport-rect helper called on divergent `this` from many owners
+// (CSingleFrameMessage ctor, CPlay::Render/DrawDebugStats/Profile*) - no single class
+// owns it; RVA-adjacent .obj not pinned. Kept as a placeholder view.
+struct ViewObj_08e3a0 {
+    char m_pad0[0x24];
+    char* m_24; // +0x24 (its +0x10 is a RECT)
+};
+struct RectQuery_08e3a0 {
+    char m_pad0[0x30];
+    ViewObj_08e3a0* m_30; // +0x30
+    void GetRect(RECT* out);
+};
+SIZE_UNKNOWN(ViewObj_08e3a0);
+SIZE_UNKNOWN(RectQuery_08e3a0);
+RVA(0x0008e3a0, 0x94)
+void RectQuery_08e3a0::GetRect(RECT* out) {
+    RECT local;
+    SetRect(&local, 0, 0, 0x27f, 0x1df);
+    if (!m_30) {
+        *out = local;
+        return;
+    }
+    local = *(RECT*)(m_30->m_24 + 0x10);
+    *out = local;
+}
+
+// ---------------------------------------------------------------------------
 // CGruntzMgr::SetVideoMode (0x08df00; ret 0xc). Switch the display to (w,h) at
 // the current bit depth (m_colorDepth). No-op if already at (w,h). When the live state is
 // playable (Update() in {3,0x11}) and the new size exceeds the loaded map's

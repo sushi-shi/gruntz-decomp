@@ -18,6 +18,7 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>         // CUserBase (real base of CAmbientSound)
 #include <Gruntz/BoundaryTailViews.h> // CObj_bdd0/Arg1_bdd0/Entry_bdd0 (fuzzy-identity 0xbdd0)
+#include <Gruntz/BoundaryLeafLogicViews.h> // L_8860 (CUserLogic leaf dtor, RVA-homed here)
 
 // ALL-VTABLES mandate: the three channel classes are REAL polymorphic classes.
 // RTTI derivation CAmbientPosSound / CRandomAmbientSound : CAmbientSound (: CUserBase)
@@ -463,6 +464,17 @@ RELOC_VTBL(CUserBase87b0, 0x001e70b4); // reloc-masks the CUserBase RTTI vtable 
                                        // by VTBL(CUserBase) in <Gruntz/UserLogic.h>)
 RVA(0x000087b0, 0x7)
 CUserBase87b0::~CUserBase87b0() {}
+
+// @early-stop
+// @flag: one-source/N-COMDAT residue (no MSVC5 ICF). 0x8860 IS a ~CUserLogic COMDAT
+// copy (its sdd 0x8a10 sits in ??_7CUserLogic slot 0); a SECOND byte-identical
+// ~CUserLogic copy at 0x117f0 already wears the real ??1CUserLogic@@UAE@XZ symbol
+// (TileTriggerTransition.cpp). ~CUserLogic is inline in the header (leaf dtors fold
+// the teardown), so both out-of-line copies are un-folded COMDATs; only ONE can wear
+// ??1CUserLogic. This copy therefore REQUIRES the distinct synthetic L_8860 symbol -
+// folding it onto CUserLogic would collide with 0x117f0's match. 100% byte-exact.
+RVA(0x00008860, 0x44)
+L_8860::~L_8860() {}
 
 // 0xb940 - a CUserBase-derived vptr restore: stamp the CUserBase base vtable (0x5e70b4)
 // then zero members at +0x04 and +0x3c. __thiscall (no return-this).

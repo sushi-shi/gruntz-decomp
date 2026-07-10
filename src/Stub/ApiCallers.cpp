@@ -172,67 +172,14 @@ namespace ApiCallerStubs {
 
     // (0x14720 CmdHost_014720::Key re-homed to CAttract::Vslot0c in Attract.cpp.)
 
-    // @confidence: low
-    // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
-    // @early-stop
-    // Battlez multiplayer-setup dialog init (GAME code, 2664 B). Reads config via
-    // g_buteMgr ("Battlez_Setup" section: LastMaxGruntz%d / LastDiff%d / LastColour%d,
-    // DefaultMaxGruntz) + g_mgrSettings, populates the dialog controls (the
-    // "Computer (easy/normal/difficult)", "Human", "Player", "Serra", "Jebediah"
-    // combo/list strings) and drives them via the g_pSendMessageA / PTR_GetWindow /
-    // PTR_GetWindowLongA / PTR_SetWindowLongA function-pointer trampolines. Deferred
-    // to the leaf-first final sweep: a >512B body over ~20 CButeMgr/CString/CGameReg
-    // callees + a subclass window trampoline that must be modeled first; a partial
-    // under-counts AND diverges its regalloc, so the return-0 normalization artifact
-    // is kept per the >512B REVERT rule.
-    RVA(0x00014d00, 0xa68)
-    i32 __stdcall winapi_014d00_GetWindow_GetWindowLongA_SetWindowLongA(i32) {
-        return 0;
-    }
+    // (0x14d00 winapi_014d00 -> BattlezSetupDlgInit in src/Gruntz/Dialogs.cpp; 0x183f0
+    // DlgHost::Pick0183f0 -> DlgHost_183f0::PickIfSelected in src/Gruntz/OrphanLeaves.cpp;
+    // 0x1a700 winapi_01a700 -> LevelMsgHudDriver in src/Gruntz/GameMode.cpp - all
+    // RVA-homed to their linker-layout TUs.)
 
-    // A CWnd-ish object whose HWND lives at +0x1c (returned by the dialog-item
-    // resolver thunks that several wrappers below call).
-    struct WndItem {
-        char m_pad0[0x1c];
-        HWND m_hwnd; // +0x1c
-    };
     // (0x15cc0/d00/d30/d70 listbox helpers re-homed to CBattlezDlg in Dialogs.cpp.)
 
-    // A dialog-host class whose GetItem(id) (RVA 0x1be27d) returns a CWnd-ish
-    // whose HWND lives at +0x1c.
-    struct DlgHost {
-        WndItem* GetItem(i32 id); // thiscall, RVA 0x1be27d
-        void OnPick();            // thiscall, RVA 0x1bacc3
-        void Pick0183f0();        // thiscall, RVA 0x183f0
-    };
-    // __thiscall(): send 0x188 to item 0x516; if it returned != -1, run OnPick().
-    // @orphan: only inbound edge is a fn-ptr-table slot (~g_5e8e98+0x1c, via thunk
-    // 0x3d5f) - no class vtable / new-site trace, so the owning dialog class is unrecovered.
-    RVA(0x000183f0, 0x2e)
-    void DlgHost::Pick0183f0() {
-        HWND h = GetItem(0x516)->m_hwnd;
-        if (SendMessageA(h, 0x188, 0, 0) != -1) {
-            OnPick();
-        }
-    }
-
     // (0x19f50 RNG helper re-homed to Rng::RangeStd in src/Gruntz/Random.cpp.)
-
-    // @confidence: low
-    // @source: winapi:CopyRect
-    // @early-stop
-    // Level-message HUD + explosion eye-candy driver (GAME code, 1718 B). Walks the
-    // g_levelMsgStrings (CString[]) / g_levelMsgRectsA / g_levelMsgRectsB (RECT[])
-    // parallel arrays, copies rects via the g_pCopyRect function pointer, spawns a
-    // "GAME_EXPLOSION1" sprite gated on g_mgrSettings, and fires a rate-limited sound
-    // cue (g_sndCueTag / g_sndEnabled / g_killCueClock). Deferred to the leaf-first
-    // final sweep: a >512B body over the CString array + sprite-create + sound callee
-    // set; a partial under-counts AND diverges its regalloc, so the return-0
-    // normalization artifact is kept per the >512B REVERT rule.
-    RVA(0x0001a700, 0x6b6)
-    i32 winapi_01a700_CopyRect() {
-        return 0;
-    }
 
     // __thiscall(): if the cached key (m_1b8) is 0xc7, post a 0x8023 command. Returns 1.
     struct KeyHost_01f8a0 {
@@ -259,165 +206,12 @@ namespace ApiCallerStubs {
 
     // (0x39440 CmdHost_039440::Key re-homed to CCreditsState::Vslot0c in GameMode.cpp.)
 
-    // __thiscall(x, _, y): if (x,y) is in the 0..0x64 box, run the click handler
-    // (0x3d41); otherwise post a 0x111 command (0x8023/0x8027 by mode). Always ret 1.
-    // NOT re-homed: the worklist attributed this to CGruntzMgr on a thunk-band
-    // mis-read - the thunk that UpdateScoreHud/AccrueScoreTime actually call (0x1884
-    // "SetCount") jmps to 0xfcad0 (the real ScoreHud::Refresh, 1-arg), NOT here. This
-    // 3-arg (ret 0xc) hit-test is reached only via the adjacent 0x1889 thunk, which
-    // has no indexed rel32 caller, so its owning class is unrecovered. Left put.
-    // @early-stop
-    // owner unresolved (thunk-band mis-chase, see above) + RECT/POINT stack-frame
-    // codegen plateau; logic (PtInRect hit-test -> Activate else WM_COMMAND) is exact.
-    struct ClickWnd_0394b0 {
-        char m_pad0[4];
-        ClickWnd_0394b0* m_4; // +0x04 -> m_4 -> m_4 = HWND
-    };
-    struct ClickHost_0394b0 {
-        char m_pad0[4];
-        ClickWnd_0394b0* m_4; // +0x04
-        char m_pad8[0x24 - 8];
-        i32 m_24; // +0x24
-        i32 OnClick(i32 x, i32 unused, i32 y);
-        void Activate(); // RVA 0x3d41
-    };
-    RVA(0x000394b0, 0x86)
-    i32 ClickHost_0394b0::OnClick(i32 x, i32 unused, i32 y) {
-        RECT rc;
-        rc.left = 0;
-        rc.top = 0;
-        rc.right = 0x64;
-        rc.bottom = 0x64;
-        POINT pt;
-        pt.x = x;
-        pt.y = y;
-        if (PtInRect(&rc, pt)) {
-            Activate();
-            return 1;
-        }
-        i32 cmd;
-        if (m_24 == 5) {
-            cmd = 0x8023;
-        } else {
-            cmd = 0x8027;
-        }
-        PostMessageA((HWND)m_4->m_4->m_4, 0x111, cmd, 0);
-        return 1;
-    }
-
-    // A spatial object: its tile coords are m_5c/m_60 in 1/32-pixel units (>>5).
-    struct Spatial_77df0 {
-        char m_pad0[0x5c];
-        i32 m_5c; // +0x5c x
-        i32 m_60; // +0x60 y
-    };
-    struct Cell_77df0 {
-        char m_pad0[0x10];
-        Spatial_77df0* m_10; // +0x10
-        char m_pad14[0x1fc - 0x14];
-        i32 m_1fc; // +0x1fc live flag
-        char m_pad200[0x258 - 0x200];
-        i32 m_258; // +0x258 kind
-    };
-    struct World_77df0 {
-        char m_pad0[0x10];
-        Spatial_77df0* m_10; // +0x10 reference object
-        char m_pad14[0x17c - 0x14];
-        i32 m_17c; // +0x17c reference x
-        i32 m_180; // +0x180 reference y
-        char m_pad184[0x1ec - 0x184];
-        i32 m_1ec; // +0x1ec row to skip
-        char m_pad1f0[0x298 - 0x1f0];
-        i32 m_298; // +0x298 radius part
-        char m_pad29c[0x2dc - 0x29c];
-        i32 m_2dc; // +0x2dc radius part
-    };
-    // A 4x15 grid of cell slots starting at +0x1c.
-    struct Grid_77df0 {
-        char m_pad0[0x1c];
-        Cell_77df0* m_cells[4][15]; // +0x1c (row stride 0x3c)
-        Cell_77df0* FindNearest(World_77df0* w);
-    };
-    // __thiscall(w): of the live, non-kind-0x36 cells in the grid (skipping row
-    // w->m_1ec), pick the one nearest the reference tile; null it unless it lands
-    // inside the reference object's +/-(m_298+m_2dc+1) tile box.
-    // @early-stop
-    // regalloc wall: logic + the distance/rect math are byte-exact, but MSVC spills
-    // colPtr/rowPtr to the stack where retail keeps them in edi/ecx (it instead
-    // reloads `w` per outer iter). A spill-weight choice; the loop body matches.
-    RVA(0x00077df0, 0x13d)
-    Cell_77df0* Grid_77df0::FindNearest(World_77df0* w) {
-        Cell_77df0* best = 0;
-        i32 bestDist = 0x7fffffff;
-        i32 tileX = w->m_17c >> 5;
-        i32 tileY = w->m_180 >> 5;
-        Cell_77df0** rowPtr = &m_cells[0][0];
-        for (i32 i = 0; i < 4; i++) {
-            if (i != w->m_1ec) {
-                Cell_77df0** colPtr = rowPtr;
-                i32 j = 15;
-                do {
-                    Cell_77df0* cell = *colPtr;
-                    if (cell && cell->m_1fc != 0 && cell->m_258 != 0x36) {
-                        i32 dx = (cell->m_10->m_5c >> 5) - tileX;
-                        i32 dy = (cell->m_10->m_60 >> 5) - tileY;
-                        i32 dist = dx * dx + dy * dy;
-                        if (dist < bestDist) {
-                            best = cell;
-                            bestDist = dist;
-                        }
-                    }
-                    colPtr++;
-                } while (--j != 0);
-            }
-            rowPtr += 15;
-        }
-        i32 k = w->m_298 + w->m_2dc + 1;
-        i32 px = w->m_10->m_5c >> 5;
-        i32 py = w->m_10->m_60 >> 5;
-        RECT rc;
-        rc.left = px - k;
-        rc.top = py - k;
-        rc.right = px + k + 1;
-        rc.bottom = py + k + 1;
-        if (best) {
-            POINT pt;
-            pt.x = best->m_10->m_5c >> 5;
-            pt.y = best->m_10->m_60 >> 5;
-            if (!PtInRect(&rc, pt)) {
-                best = 0;
-            }
-        }
-        return best;
-    }
+    // (0x394b0 ClickHost_0394b0::OnClick -> src/Gruntz/GameMode.cpp; 0x77df0
+    // Grid_77df0::FindNearest -> src/Gruntz/Brickz.cpp; 0x8e3a0 RectQuery_08e3a0::GetRect
+    // -> src/Gruntz/GruntzMgr.cpp - all RVA-homed to their linker-layout TUs, with their
+    // placeholder view structs carried alongside.)
 
     // (0x8c380 RectHost::Set re-homed to ApiMisc in src/Gruntz/ApiMiscHelpers.cpp.)
-
-    // __thiscall(out): default to the full 0x280x0x1e0 screen rect, or the active
-    // viewport's rect (m_30->m_24 + 0x10) when one is set; write it to *out.
-    struct ViewObj_08e3a0 {
-        char m_pad0[0x24];
-        char* m_24; // +0x24 (its +0x10 is a RECT)
-    };
-    struct RectQuery_08e3a0 {
-        char m_pad0[0x30];
-        ViewObj_08e3a0* m_30; // +0x30
-        void GetRect(RECT* out);
-    };
-    // @orphan: a shared viewport-rect helper called on divergent `this` from many
-    // owners (CSingleFrameMessage ctor, CPlay::Render/DrawDebugStats/Profile*) - no
-    // single class owns it; RVA-adjacent .obj not pinned. Left carved.
-    RVA(0x0008e3a0, 0x94)
-    void RectQuery_08e3a0::GetRect(RECT* out) {
-        RECT local;
-        SetRect(&local, 0, 0, 0x27f, 0x1df);
-        if (!m_30) {
-            *out = local;
-            return;
-        }
-        local = *(RECT*)(m_30->m_24 + 0x10);
-        *out = local;
-    }
 
     // The shared caption buffer (DAT_0060aac8) passed as the MessageBoxA title.
     DATA(0x0020aac8)

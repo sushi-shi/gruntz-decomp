@@ -14,17 +14,8 @@ extern "C" void RezFree(void* p);
 // The wap-object teardown grand-base vtable (0x5e8cb4); stamped by address.
 // (FreeNodePool::Push @0x0311b0 re-homed to src/Gruntz/FreeNodePool.cpp.)
 
-// ---------------------------------------------------------------------------
-// ListNodeAdvance @0x029a30 - a list iterator advance: read the current node
-// (*it), step the cursor to its link (*cur), return a pointer into the current
-// node's payload (cur+8). __stdcall, 1 stack arg.
-// ---------------------------------------------------------------------------
-RVA(0x00029a30, 0x10)
-void* __stdcall ListNodeAdvance(void** it) {
-    char* cur = (char*)*it;
-    *it = *(void**)cur;
-    return cur + 8;
-}
+// (ListNodeAdvance @0x029a30 re-homed to src/Gruntz/BattlezMapConfig.cpp - a list
+// iterator advance, RVA-contiguous with that TU's 0x24dc0-0x358a0 .text block.)
 
 // (QuadIntRecord @0x029ac0 re-homed to src/Wap32/Rect.cpp as CRect::CRect(i32,i32,
 // i32,i32) - Ghidra/FID attests ??0CRect@@QAE@HHHH@Z for this direct-store 4-int

@@ -31,31 +31,10 @@ i32 C213a0::Get() {
     return *(i32*)((char*)this + disp + 4);
 }
 
-// ===========================================================================
-// 0x0464e0 - type-id -> entry resolver (the projectile/act fast-range + Find +
-// grow-on-miss lookup; same shape as TypeKeyColl's TypeResolve). __thiscall(key).
-// ===========================================================================
-extern void* g_projActCache;      // 0x6bf464 (pinned in CStaticHazard.cpp)
-extern void* g_retAddrBreadcrumb; // 0x6bf428 (pinned in CVoiceTrigger.cpp)
-extern void* GetRetAddr();        // 0x16d990
-// @early-stop
-// esi/edi regalloc wall: cl assigns this->esi, key->edi; retail swaps (key->esi,
-// this->edi). Full fast-range/Find/grow logic + offsets byte-faithful (same shape as
-// TypeKeyColl::TypeResolve); the esi/edi assignment is not source-steerable.
-RVA(0x000464e0, 0x74)
-void* CTypeColl464::Resolve(i32 key) {
-    m_20 = 0;
-    if (key >= m_lo && key <= m_hi) {
-        return m_buf + (key - m_lo) * m_stride;
-    }
-    if (Find(key, 0)) {
-        return m_buf + (key - m_lo) * m_stride;
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    m_4->Set(this, (i32)item, 0xc);
-    return (void*)m_buf2;
-}
+// (0x0464e0 CTypeColl464::Resolve re-homed to src/Gruntz/FortressFlag.cpp - the
+// projectile/act type-id resolver; its CVariantSlot grow-path inserter is the
+// canonical <Bute/ButeTree.h> CVariantSlot::Set. The CTypeColl464 class declaration
+// stays shared in <Gruntz/BoundaryLowerMethodsViews.h>.)
 
 // (0x050ca0 C50ca0::M re-homed to src/Gruntz/Grunt.cpp as
 // CGrunt::LoadTypeTableClearMove - this==CGrunt (RunEntranceMove: mov ecx,esi),

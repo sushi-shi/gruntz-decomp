@@ -19,6 +19,7 @@
 #include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
 #include <Gruntz/AnimSink.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
+#include <Bute/ButeTree.h> // CVariantSlot::Set (the grow-path node inserter m_4->Set)
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -235,6 +236,49 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
         spr->m_drawFillArg = sel;
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x0464e0 (RVA-homed from src/Stub/BoundaryLowerMethods.cpp) - type-id -> entry
+// resolver (the projectile/act fast-range + Find + grow-on-miss lookup; same shape as
+// CTypeKeyColl::TypeResolve). __thiscall(key).
+// @orphan: <- RegisterWarlordActions/RegisterActs_* (a CZArray2D-derived act/proj type
+// collection; the exact sibling class of CTypeKeyColl is unrecovered).
+// @early-stop
+// esi/edi regalloc wall: cl assigns this->esi, key->edi; retail swaps (key->esi,
+// this->edi). Full fast-range/Find/grow logic + offsets byte-faithful; not steerable.
+// Field layout is the attributed sibling CTypeKeyColl : CZArray2D (Find @0x16da80);
+// its grow-path node inserter m_4 is the canonical <Bute/ButeTree.h> CVariantSlot.
+struct CTypeColl464 {
+    void* m_0;                // +0x00  vptr
+    CVariantSlot* m_4;        // +0x04  grow-path node inserter
+    i32 m_lo;                 // +0x08  index low bound
+    i32 m_hi;                 // +0x0c  index high bound
+    char* m_buf;              // +0x10  primary element buffer (base)
+    i32 m_buf2;               // +0x14  scratch element (returned as the miss fallback)
+    i32 m_stride;             // +0x18  element size
+    char pad1c[0x20 - 0x1c];  // +0x1c cursor (== m_buf, unused here)
+    i32 m_20;                 // +0x20 (reset to 0 on entry)
+    i32 Find(i32 key, i32 z); // 0x16da80
+    void* Resolve(i32 key);
+};
+SIZE_UNKNOWN(CTypeColl464);
+extern void* g_projActCache;      // 0x6bf464 (pinned in CStaticHazard.cpp)
+extern void* g_retAddrBreadcrumb; // 0x6bf428 (pinned in CVoiceTrigger.cpp)
+extern void* GetRetAddr();        // 0x16d990
+RVA(0x000464e0, 0x74)
+void* CTypeColl464::Resolve(i32 key) {
+    m_20 = 0;
+    if (key >= m_lo && key <= m_hi) {
+        return m_buf + (key - m_lo) * m_stride;
+    }
+    if (Find(key, 0)) {
+        return m_buf + (key - m_lo) * m_stride;
+    }
+    void* item = g_projActCache;
+    g_retAddrBreadcrumb = GetRetAddr();
+    m_4->Set(this, (i32)item, 0xc);
+    return (void*)m_buf2;
 }
 
 #include <rva.h>

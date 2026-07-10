@@ -95,6 +95,24 @@ CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
 RVA(0x00014c90, 0x47)
 CBattlezDlg::~CBattlezDlg() {}
 
+// @confidence: low
+// @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
+// @early-stop
+// BattlezSetupDlgInit @0x14d00 (RVA-homed from src/Stub/ApiCallers.cpp) - the Battlez
+// multiplayer-setup dialog init (GAME code, 2664 B). Reads config via g_buteMgr
+// ("Battlez_Setup" section: LastMaxGruntz%d / LastDiff%d / LastColour%d,
+// DefaultMaxGruntz) + g_mgrSettings, populates the dialog controls (the "Computer
+// (easy/normal/difficult)", "Human", "Player", "Serra", "Jebediah" combo/list
+// strings) and drives them via the g_pSendMessageA / PTR_GetWindow / PTR_GetWindowLongA
+// / PTR_SetWindowLongA function-pointer trampolines. Deferred to the leaf-first final
+// sweep: a >512B body over ~20 CButeMgr/CString/CGameReg callees + a subclass window
+// trampoline that must be modeled first; a partial under-counts AND diverges its
+// regalloc, so the return-0 normalization artifact is kept per the >512B REVERT rule.
+RVA(0x00014d00, 0xa68)
+i32 __stdcall BattlezSetupDlgInit(i32) {
+    return 0;
+}
+
 // ---------------------------------------------------------------------------
 // Small CImageList-holder helper hierarchy compiled into the dialogs TU (its code
 // lands between the CBattlezDlg ctor and CBattlezDlgCustom). A trivial CObject-ish
@@ -120,6 +138,21 @@ struct CImgHolderBase {
     RVA(0x00016410, 0x7)
     virtual ~CImgHolderBase() {}
 };
+
+// CImgHolder2 (RVA-homed from src/Stub/DiscoveredEh.cpp, was the synthetic CU55) - a
+// SECOND byte-identical dialog image-holder: a derived holder whose /GX dtor frees an
+// embedded CImageList (DeleteImageList 0x1c6a5c) between the implicit own vptr stamp
+// (0x5e8cd4) and the folded CImgHolderBase re-stamp (0x5e8cb4). The RTTI name is
+// unrecovered (Ghidra ClassUnknown_55), but the shape is exactly CImgHolder's, so it
+// dissolves onto the same CImgHolderBase grand-base + shared CImageList shim above.
+struct CImgHolder2 : CImgHolderBase {
+    void DeleteImageList();          // 0x1c6a5c (NAFXCW CImageList::DeleteImageList)
+    virtual ~CImgHolder2() OVERRIDE; // 0x016460
+};
+RVA(0x00016460, 0x46)
+CImgHolder2::~CImgHolder2() {
+    ((CImageList*)this)->DeleteImageList();
+}
 
 // CImgHolder - the derived holder. Its virtual dtor's implicit vptr stamp lands
 // stamp-first, frees the embedded image list (CImageList::DeleteImageList @0x1c6a5c,
@@ -916,6 +949,23 @@ void CBattlezDlg::ReadCtrlBText(i32 index) {
     GetCtrlB(index)->GetWindowText(s);
 }
 
+// ---------------------------------------------------------------------------
+// 0x0238d0 - register thunk: invoke a 1-int method (0x1b4867) on a global container
+// object (VA 0x62b5d0) with arg 0xa. __cdecl free fn. RVA-homed from src/Stub/
+// BoundaryMisc.cpp (its RVA-contiguous sibling 0x23960 stays there).
+// @orphan: both callers are unrecovered fns; a free init thunk with no owner class.
+// ---------------------------------------------------------------------------
+struct CGlobalContainer238d0 {
+    void Register(i32 n); // 0x1b4867 (reloc-masked)
+};
+SIZE_UNKNOWN(CGlobalContainer238d0);
+DATA(0x0022b5d0)
+extern CGlobalContainer238d0 g_container62b5d0;
+RVA(0x000238d0, 0xd)
+void Init238d0() {
+    g_container62b5d0.Register(0xa);
+}
+
 // ===========================================================================
 // CNetMgr::ShowMultiStartDlg @0x0b86c0  (/GX EH frame)
 // Homed in the CMultiStartDlg TU: it STACK-constructs a CMultiStartDlg and runs
@@ -1055,6 +1105,8 @@ SIZE_UNKNOWN(CMultiSlot);
 SIZE_UNKNOWN(CImgHolderBase);
 SIZE_UNKNOWN(CImgHolder);
 RELOC_VTBL(CImgHolder, 0x001e8cd4); // vtable reloc-masks a bound datum (dtor-stamp verified)
+SIZE_UNKNOWN(CImgHolder2);
+RELOC_VTBL(CImgHolder2, 0x001e8cd4); // aliases CGdiObject vtable (dtor-stamp verified)
 SIZE_UNKNOWN(CCueEmitter);
 SIZE_UNKNOWN(CNetCueRec);
 SIZE_UNKNOWN(CRegBute);

@@ -21,6 +21,31 @@ void* GetGlobal5e8e98() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x183f0 (RVA-homed from src/Stub/ApiCallers.cpp) - a dialog list-item confirm:
+// send LB_GETCURSEL (0x188) to item 0x516; if it returned a valid selection
+// (!= LB_ERR), run OnPick(). __thiscall, no args.
+// @orphan: only inbound edge is a fn-ptr-table slot (~g_5e8e98+0x1c, via thunk
+// 0x3d5f) - no class vtable / new-site trace, so the owning dialog class is unrecovered.
+struct DlgHostItem_183f0 {
+    char m_pad0[0x1c];
+    HWND m_hwnd; // +0x1c
+};
+struct DlgHost_183f0 {
+    DlgHostItem_183f0* GetItem(i32 id); // thiscall, RVA 0x1be27d
+    void OnPick();                      // thiscall, RVA 0x1bacc3
+    void PickIfSelected();              // thiscall, RVA 0x183f0
+};
+RVA(0x000183f0, 0x2e)
+void DlgHost_183f0::PickIfSelected() {
+    HWND h = GetItem(0x516)->m_hwnd;
+    if (SendMessageA(h, 0x188, 0, 0) != -1) {
+        OnPick();
+    }
+}
+SIZE_UNKNOWN(DlgHostItem_183f0);
+SIZE_UNKNOWN(DlgHost_183f0);
+
+// ---------------------------------------------------------------------------
 // 0x3ac30: tear down a global CString-like object (tail-call its Free at 0x1b9b93).
 DATA(0x0022c25c)
 extern CString g_62c25c;

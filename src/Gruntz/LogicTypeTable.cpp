@@ -105,6 +105,45 @@ void __stdcall BuildLogicTypeTable(CLogicTypeBuilder* obj) {
     }
 }
 
+// ---------------------------------------------------------------------------
+// 0x008b90 - a finalize/teardown that fires up to two registered __thiscall
+// callbacks (m_4, m_8) passing `this`, the m_8 one guarded by m_14->m_1c == m_28,
+// nulls each fired slot, and resets m_28 to 0x3e9 (1001). __thiscall, one unused
+// stack arg (ret 4). Self-contained (the callbacks are indirect). RVA-homed here.
+// @orphan: only caller is Gap_05ecd0 (an engine_label_stubs placeholder); `this`
+// class genuinely unrecovered.
+// ---------------------------------------------------------------------------
+struct CFinalizeSub8b90 {
+    char m_pad0[0x1c];
+    i32 m_1c; // +0x1c
+};
+SIZE_UNKNOWN(CFinalizeSub8b90);
+struct CFinalize8b90 {
+    typedef void (CFinalize8b90::*PMF)(); // single-inheritance, non-virtual -> 4 bytes
+    void* m_0;                            // +0x00
+    PMF m_4;                              // +0x04  callback (called with `this`)
+    PMF m_8;                              // +0x08  callback (guarded)
+    char m_pad0c[0x14 - 0x0c];
+    CFinalizeSub8b90* m_14; // +0x14
+    char m_pad18[0x28 - 0x18];
+    i32 m_28; // +0x28
+    void Finalize(i32 arg);
+};
+SIZE_UNKNOWN(CFinalize8b90);
+RVA(0x00008b90, 0x40)
+void CFinalize8b90::Finalize(i32 arg) {
+    if (m_4 == 0) {
+        return;
+    }
+    if (m_8 != 0 && m_14->m_1c == m_28) {
+        (this->*m_8)();
+        m_8 = 0;
+    }
+    (this->*m_4)();
+    m_4 = 0;
+    m_28 = 0x3e9;
+}
+
 SIZE_UNKNOWN(CLogicCtx);
 SIZE_UNKNOWN(CLogicMap);
 SIZE_UNKNOWN(CLogicRegistry);

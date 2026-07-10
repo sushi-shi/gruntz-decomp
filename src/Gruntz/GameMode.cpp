@@ -258,6 +258,23 @@ void __stdcall GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
     }
 }
 
+// @confidence: low
+// @source: winapi:CopyRect
+// @early-stop
+// LevelMsgHudDriver @0x1a700 (RVA-homed from src/Stub/ApiCallers.cpp) - the
+// level-message HUD + explosion eye-candy driver (GAME code, 1718 B). Walks the
+// g_levelMsgStrings (CString[]) / g_levelMsgRectsA / g_levelMsgRectsB (RECT[]) parallel
+// arrays, copies rects via the g_pCopyRect function pointer, spawns a "GAME_EXPLOSION1"
+// sprite gated on g_mgrSettings, and fires a rate-limited sound cue (g_sndCueTag /
+// g_sndEnabled / g_killCueClock). Deferred to the leaf-first final sweep: a >512B body
+// over the CString array + sprite-create + sound callee set; a partial under-counts AND
+// diverges its regalloc, so the return-0 normalization artifact is kept per the >512B
+// REVERT rule.
+RVA(0x0001a700, 0x6b6)
+i32 LevelMsgHudDriver() {
+    return 0;
+}
+
 // CBootyState::ReleaseResources() (slot 2 / +0x8): release the BOOTY resource
 // set, then chain BaseCleanup. The `m_c` view's leaf registry (m_28) holds a
 // pooled resource (Free if set) and releases two named sound sets; the name
@@ -433,6 +450,53 @@ i32 CCreditsState::Render() {
             Sub3();
         }
     }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x394b0 (RVA-homed from src/Stub/ApiCallers.cpp) - __thiscall(x, _, y): if (x,y)
+// is in the 0..0x64 box, run the click handler (0x3d41); otherwise post a 0x111
+// command (0x8023/0x8027 by mode). Always ret 1.
+// @early-stop
+// owner unresolved (thunk-band mis-chase: the worklist's CGruntzMgr attribution was a
+// thunk-band mis-read - the 0x1889 thunk reaching this hit-test has no indexed rel32
+// caller) + RECT/POINT stack-frame codegen plateau; logic (PtInRect hit-test -> Activate
+// else WM_COMMAND) is exact.
+struct ClickWnd_0394b0 {
+    char m_pad0[4];
+    ClickWnd_0394b0* m_4; // +0x04 -> m_4 -> m_4 = HWND
+};
+struct ClickHost_0394b0 {
+    char m_pad0[4];
+    ClickWnd_0394b0* m_4; // +0x04
+    char m_pad8[0x24 - 8];
+    i32 m_24; // +0x24
+    i32 OnClick(i32 x, i32 unused, i32 y);
+    void Activate(); // RVA 0x3d41
+};
+SIZE_UNKNOWN(ClickWnd_0394b0);
+SIZE_UNKNOWN(ClickHost_0394b0);
+RVA(0x000394b0, 0x86)
+i32 ClickHost_0394b0::OnClick(i32 x, i32 unused, i32 y) {
+    RECT rc;
+    rc.left = 0;
+    rc.top = 0;
+    rc.right = 0x64;
+    rc.bottom = 0x64;
+    POINT pt;
+    pt.x = x;
+    pt.y = y;
+    if (PtInRect(&rc, pt)) {
+        Activate();
+        return 1;
+    }
+    i32 cmd;
+    if (m_24 == 5) {
+        cmd = 0x8023;
+    } else {
+        cmd = 0x8027;
+    }
+    PostMessageA((HWND)m_4->m_4->m_4, 0x111, cmd, 0);
     return 1;
 }
 
