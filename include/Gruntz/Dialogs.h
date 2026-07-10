@@ -188,6 +188,12 @@ public:
     i32 Query015d00(i32 slot);       // 0x015d00  LB_GETCURSEL(GetCtrlA)
     i32 Query015d30(i32 id);         // 0x015d30  LB_GETCURSEL(GetCtrlC) + 1
     i32 SetCurSelC(i32 id, i32 sel); // 0x015d70  LB_SETCURSEL(GetCtrlC, sel-1)
+    // Persist per-slot dropdown selection (CB_GETCURSEL(GetCtrlC(N)) + 1) into the
+    // game registry's option slot N (g_mgrSettings->m_options[N].m_comboSel).
+    i32 SaveOptionCombo0(); // 0x017560
+    i32 SaveOptionCombo1(); // 0x0175a0
+    i32 SaveOptionCombo2(); // 0x0175e0
+    i32 SaveOptionCombo3(); // 0x017620
     // SetCtrlBText - GetCtrlB(index)->SetWindowTextA(text).
     void SetCtrlBText(i32 index, const char* text);
     // SetSlotValue - store val into slot[index].field@0x158; returns TRUE.
@@ -263,6 +269,8 @@ public:
     // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl35() OVERRIDE;             // slot 35
+    // WM_MEASUREITEM handler (0x17ae0): fixes the owner-draw swatch item size.
+    void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
 
     i32 m_slots;       // +0x5c  (= a0; the CBattlezSlot* slot-array base, from parent)
     i32 m_slotIndex;   // +0x60  (= a1; the slot being colored)
@@ -427,6 +435,8 @@ public:
     // MFC GetMessageMap override (see CBattlezDlgColors): returns the static map.
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl35() OVERRIDE;             // slot 35
+    // Checkbox handler (0x23590): mirror control 0x53a into m_isCheckpointPrompts.
+    void OnToggleCheckpointPrompts();
 };
 
 // CMultiHelpDlg - the multiplayer help/info CDialog (vtable 0x5ea474, 54 slots =

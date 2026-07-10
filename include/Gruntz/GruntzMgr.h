@@ -48,7 +48,9 @@ SIZE_UNKNOWN(CGruntzMgrOptions);
 struct CGruntzMgrOptions {
     CGruntzMgrOptions();
     ~CGruntzMgrOptions();
-    char m_pad[0x238];
+    char m_pad0[0x228];
+    i32 m_comboSel; // +0x228  battlez-dialog dropdown selection (+1) for this slot
+    char m_pad22c[0x238 - 0x22c];
 };
 
 // A typed VIEW of the state-stack array at CGruntzMgr +0xd8. The member itself

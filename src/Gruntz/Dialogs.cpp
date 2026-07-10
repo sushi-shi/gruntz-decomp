@@ -21,6 +21,10 @@
 #include <rva.h>
 #include <Globals.h>
 
+// The game-manager view of the 0x64556c singleton (== g_gameReg); the battlez-setup
+// option handlers persist per-slot dropdowns into its m_options array.
+extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c
+
 // CImgHolder::DeleteImageList @0x1c6a5c IS MFC CImageList::DeleteImageList (afxcmn); minimal local
 // decl (links from MFC).
 SIZE_UNKNOWN(CImageList);
@@ -190,6 +194,23 @@ CBattlezDlgColors::CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent)
 RVA(0x00017ac0, 0x6)
 const void* CBattlezDlgColors::GetMessageMap() {
     return &g_msgmap_CBattlezDlgColors;
+}
+
+// CWnd::OnMeasureItem @0x1bbf18 - the NAFXCW default owner-draw measure handler,
+// not surfaced by the reduced afxwin.h CWnd; minimal shim so the __thiscall
+// reloc-masks (same reduced-MFC pattern as the CImageList shim above).
+SIZE_UNKNOWN(CWndOnMeasure);
+struct CWndOnMeasure {
+    void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
+};
+
+// CBattlezDlgColors::OnMeasureItem (0x17ae0): the owner-draw colour-swatch list
+// measures each item at 200x30, then chains the base CWnd handler.
+RVA(0x00017ae0, 0x20)
+void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
+    lpmis->itemWidth = 0xc8;
+    lpmis->itemHeight = 0x1e;
+    ((CWndOnMeasure*)this)->OnMeasureItem(nIDCtl, lpmis);
 }
 
 // ---------------------------------------------------------------------------
@@ -455,6 +476,19 @@ const void* CCheckpointDlg::GetMessageMap() {
     return &g_msgmap_CCheckpointDlg;
 }
 
+// CCheckpointDlg::OnToggleCheckpointPrompts (0x23590): mirror the "disable prompts"
+// checkbox (control 0x53a) into the game registry - checked -> prompts off.
+// @early-stop
+// zero-register-pinning regalloc coin-flip (~97.9%): instructions byte-identical,
+// only the g_mgr base vs bool result land in ecx/edx swapped (sete cl+[edx] vs
+// sete dl+[ecx]); not source-steerable, permuter no-change. See zero-register-pinning.md.
+RVA(0x00023590, 0x31)
+void CCheckpointDlg::OnToggleCheckpointPrompts() {
+    CWnd* c = GetDlgItem(0x53a);
+    i32 checked = SendMessageA(c->m_hWnd, 0xf0, 0, 0);
+    g_mgrSettings->m_isCheckpointPrompts = checked == 0;
+}
+
 // ---------------------------------------------------------------------------
 // CBattlezDlg control accessors: switch(index) over a 4-entry control-ID table,
 // each case tail-calling this->GetDlgItem(constID) (which returns the child
@@ -582,6 +616,39 @@ RVA(0x00015d70, 0x24)
 i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
     CWnd* c = GetCtrlC(id);
     return SendMessageA(c->m_hWnd, 0x14e, sel - 1, 0);
+}
+
+// SaveOptionCombo0..3 (0x17560/175a0/175e0/17620): read control N's combobox
+// selection (CB_GETCURSEL via GetCtrlC) and persist it (+1) into the game
+// registry's option slot N. g_mgrSettings is the CGruntzMgr view of the 0x64556c
+// singleton (folds the +0x150 options base + 0x228 into the mov displacement).
+RVA(0x00017560, 0x28)
+i32 CBattlezDlg::SaveOptionCombo0() {
+    CWnd* c = GetCtrlC(0);
+    i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    g_mgrSettings->m_options[0].m_comboSel = v;
+    return v;
+}
+RVA(0x000175a0, 0x28)
+i32 CBattlezDlg::SaveOptionCombo1() {
+    CWnd* c = GetCtrlC(1);
+    i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    g_mgrSettings->m_options[1].m_comboSel = v;
+    return v;
+}
+RVA(0x000175e0, 0x28)
+i32 CBattlezDlg::SaveOptionCombo2() {
+    CWnd* c = GetCtrlC(2);
+    i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    g_mgrSettings->m_options[2].m_comboSel = v;
+    return v;
+}
+RVA(0x00017620, 0x28)
+i32 CBattlezDlg::SaveOptionCombo3() {
+    CWnd* c = GetCtrlC(3);
+    i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    g_mgrSettings->m_options[3].m_comboSel = v;
+    return v;
 }
 
 // SetCtrlBText - resolve control `index` via GetCtrlB (through the thunk) and
@@ -741,7 +808,6 @@ void CBattlezDlg::CopyComboSelToChild() {
 }
 
 // CBattlezDlg::SetSlotValue (0x00017460) is now an inline member in the header.
-
 
 // ReadCtrlBText (0x17340): read the `index` control's text into a local CString via
 // GetCtrlB(index)->GetWindowText, then measure the resulting C-string. The /GX EH
