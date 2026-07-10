@@ -345,8 +345,8 @@ public:
     virtual void Vslot26();
     virtual void RenderSlow(); // slot 39 (+0x9c)
     virtual i32 RenderFast();  // slot 40 (+0xa0)  (the profiled frames read its update count)
-    virtual void BuildMusicCategoryTable(); // slot 41
-    virtual void BuildWorldLevelPath();     // slot 42
+    virtual i32 BuildMusicCategoryTable(i32); // slot 41 (+0xa4) 0x0dba30 (== the MIDIZ installer)
+    virtual i32 BuildWorldLevelPath(i32);     // slot 42 (+0xa8) -> CWorldState::BuildWorldLevelPath
 
     // typed views of the inherited CState owner back-ptr (+0x4):
     CWorld* m_4w() {
@@ -516,7 +516,6 @@ public:
     i32 LoadGameImages(i32 force);                // 0x0db8a0
     i32 LoadGameSounds(i32 force);                // 0x0db930
     i32 LoadGameAnims(i32 force);                 // 0x0db9b0
-    i32 BuildMusicCategoryTable(i32);             // 0x0dba30  (the MIDIZ category installer)
     i32 LoadGruntSoundNamespaces(CMulti* notify); // 0x0dd830 (GRUNTZ_* sound installer)
     i32 BuildSpriteImageKeyTable(CMulti* notify); // 0x0dd540 (GRUNTZ_* image installer)
     i32 BuildAnizKeyTable(CMulti* notify);        // 0x0ddaa0 (GRUNTZ_* anim installer)

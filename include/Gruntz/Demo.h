@@ -20,13 +20,13 @@ public:
     // (masks retail 0x5e9f0c). The factory's `new CDemo` (GruntzMgrTransition.cpp)
     // drives the out-of-line COMDAT vtable emission.
     CDemo() {}
-    virtual ~CDemo() OVERRIDE;                   // slot 0  0x8d0d0 (/GX dtor, PlayDtor.cpp)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1  0x3bfa0 (Demo.cpp)
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot15() OVERRIDE;              // slot 21 0x3c030 (GruntzMgrTransition.cpp)
-    virtual void BuildWorldLevelPath() OVERRIDE; // slot 42
+    virtual ~CDemo() OVERRIDE;                     // slot 0  0x8d0d0 (/GX dtor, PlayDtor.cpp)
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;    // slot 1  0x3bfa0 (Demo.cpp)
+    virtual void ReleaseResources() OVERRIDE;      // slot 2
+    virtual GameStateId Update() OVERRIDE;         // slot 4
+    virtual i32 Render() OVERRIDE;                 // slot 5
+    virtual i32 Vslot15() OVERRIDE;                // slot 21 0x3c030 (GruntzMgrTransition.cpp)
+    virtual i32 BuildWorldLevelPath(i32) OVERRIDE; // slot 42 (+0xa8) i32(i32)
 
     // The leading derived teardown ~CDemo runs before folding CPlay's teardown.
     void DerivedCleanup(); // 0x3c010

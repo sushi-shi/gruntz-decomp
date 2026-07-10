@@ -2708,7 +2708,7 @@ lightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.8956	73.8956	2	67db6c9338be	0xa7
 lightfxrender	?Shape8@CLightFxRender@@QAEHXZ	67.6819	67.6819	2	d25b846364de	0xa8900
 loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	2af7b016eb66	0x9dff0
 loadgamemenu	?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	79.2708	79.2708	1	77f602689a4a	0x9e390
-loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHHH@Z	78.8290	78.8290	1	9aa1cc58e716	0xca200
+loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHHH@Z	78.8290	78.8290	2	72ec06b5d90d	0xca200
 loadobjectresources	?GetName@CSpawnEntry@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:d63a959bf6b0	0x9a260
 loadobjectresources	?LoadObjectAnimResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	88.3103	88.3103	2	750f5fd8641d	0x9ac20
 loadobjectresources	?LoadObjectImageResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	88.3889	88.3889	1	6da67c03ba5b	0x9a510
@@ -3204,7 +3204,7 @@ play	?BuildAnizKeyTable@CPlay@@QAEHPAVCMulti@@@Z	100.0000	100.0000	1	730a1f30007
 play	?BuildGruntNamespaceList@CPlay@@QAEHH@Z	100.0000	100.0000	2	9c8441c55f76	0xdd050
 play	?BuildGruntTypeNameTable@CPlay@@QAEHHHHH@Z	33.2624	33.2624	2	7c7de8dcf85c	0xdc6d0
 play	?BuildHelpReveal@CPlay@@QAEHXZ	67.8125	67.8125	3	24f4f811bcd2	0xd72c0
-play	?BuildMusicCategoryTable@CPlay@@QAEHH@Z	100.0000	100.0000	4	47289460a213	0xdba30
+play	?BuildMusicCategoryTable@CPlay@@UAEHH@Z	100.0000	100.0000	1	cpp:0698013533fb	0xdba30
 play	?BuildSpriteImageKeyTable@CPlay@@QAEHPAVCMulti@@@Z	100.0000	100.0000	1	78ebb49edd86	0xdd540
 play	?BuildWarlordNameTable@CPlay@@QAEHH@Z	100.0000	100.0000	2	8358acc34928	0xdd340
 play	?CPlayDtorBody@CPlay@@QAEXXZ	89.3158	89.3158	4	29ba08c8462a	0xc8700

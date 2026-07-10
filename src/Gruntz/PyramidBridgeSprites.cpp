@@ -59,15 +59,14 @@
 
 #include <Mfc.h> // PtInRect (via <windows.h>); the two CString temps
 
+#include <Gruntz/Play.h>          // the real CPlay (`this` derives from it)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created transition trigger)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
-// Shared singleton (named so DIR32 reloc-mask).
+// g_64556c (the CGameRegistry singleton) comes from <Gruntz/Play.h>.
 // ---------------------------------------------------------------------------
-extern void* g_64556c; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-
 // The "TileTriggerTransition" class-name string (the CreateSprite lookup key;
 // named so the DIR32 operand reloc-masks).
 extern char g_60a848[]; // s_TileTriggerTransition_0060a848
@@ -128,10 +127,11 @@ enum PyramidSpriteType {
 };
 
 // The PLAY-state level object whose tile descriptor drives the transition.
-class CPlayLevelLoad {
+// `this` IS the canonical CPlay (same PLAY-state object as LoadByMode); modeled as
+// a thin CPlay-derived facet (LoadPyramidBridge isn't yet in the canonical Play.h).
+class CPlayLevelLoad : public CPlay {
 public:
     void LoadPyramidBridge(i32 spriteType); // ?LoadPyramidBridgeSprites@@ placeholder
-    char m_pad[4];
 };
 
 // ===========================================================================

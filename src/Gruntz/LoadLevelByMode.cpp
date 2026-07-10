@@ -63,6 +63,7 @@
 
 #include <Mfc.h> // CString (the /GX EH temps) + PtInRect/UpdateWindow/ShowCursor
 
+#include <Gruntz/Play.h>          // the real CPlay (`this` derives from it)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <rva.h>
 #include <stdio.h>  // sprintf (0x11f890)
@@ -72,17 +73,11 @@
 // ---------------------------------------------------------------------------
 // Shared singletons + the per-mode/per-area globals (named so DIR32 reloc-mask).
 // ---------------------------------------------------------------------------
-extern void* g_64556c;              // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-extern "C" i32 g_645580;            // DAT_00645580
-extern "C" i32 g_645584;            // DAT_00645584
-extern "C" i32 g_645588;            // DAT_00645588 (running game clock; cleared here)
 extern "C" i32 g_644c54;            // DAT_00644c54 (area index)
 extern "C" i32 g_645270;            // DAT_00645270 (area page size)
 extern void* g_645570;              // DAT_00645570
 extern "C" i32 g_64558c;            // DAT_0064558c
 extern "C" i32 g_64e35c;            // DAT_0064e35c
-extern "C" i32 g_6bf3c0;            // _g_6bf3c0 (draw-clock mirror)
-extern "C" i32 g_6bf3bc;            // _g_6bf3bc (default geo)
 extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c
 extern void* g_612618;              // DAT_00612618 (last-level cache)
 extern void* g_61139c;              // PTR_DAT_0061139c
@@ -158,57 +153,16 @@ void EngStr_DrawText(                                         // 0x1c5d  YAX...
 // The PLAY-state level loader (`this`). Its own init-chain steps are __thiscall
 // methods; raw-offset field access via the macros.
 // ---------------------------------------------------------------------------
-class CPlayLevelLoad {
+// `this` IS the canonical CPlay (proven by xref - the init-chain leaves are all
+// CPlay methods; the +0x10/+0x84/+0xa4/+0xa8 dispatches map to CPlay's real vtable
+// slots Update/Vslot21/BuildMusicCategoryTable/BuildWorldLevelPath). LoadByMode is
+// modeled on this thin CPlay-derived facet (its two big methods aren't yet in the
+// canonical Play.h owned by another unit); the init-chain steps are declared here
+// as reloc-masked leaves (real CPlay/CLevelValidator targets in comments).
+class CPlayLevelLoad : public CPlay {
 public:
-    // The polymorphic vtable (declared-only, no key fn -> no vtable emission). The
-    // four used slots: +0x10 GetKindTag, +0x84 Vf84, +0xa4 Vfa4, +0xa8 Vfa8.
-    virtual void vf0();
-    virtual void vf1();
-    virtual void vf2();
-    virtual void vf3();
-    virtual i32 GetKindTag(); // +0x10 (slot 4)
-    virtual void vf5();
-    virtual void vf6();
-    virtual void vf7();
-    virtual void vf8();
-    virtual void vf9();
-    virtual void vf10();
-    virtual void vf11();
-    virtual void vf12();
-    virtual void vf13();
-    virtual void vf14();
-    virtual void vf15();
-    virtual void vf16();
-    virtual void vf17();
-    virtual void vf18();
-    virtual void vf19();
-    virtual void vf20();
-    virtual void vf21();
-    virtual void vf22();
-    virtual void vf23();
-    virtual void vf24();
-    virtual void vf25();
-    virtual void vf26();
-    virtual void vf27();
-    virtual void vf28();
-    virtual void vf29();
-    virtual void vf30();
-    virtual void vf31();
-    virtual void vf32();
-    virtual void Vf84(); // +0x84 (slot 33)
-    virtual void vf34();
-    virtual void vf35();
-    virtual void vf36();
-    virtual void vf37();
-    virtual void vf38();
-    virtual void vf39();
-    virtual void vf40();
-    virtual i32 Vfa4(i32 a); // +0xa4 (slot 41)
-    virtual i32 Vfa8(i32 a); // +0xa8 (slot 42)
-
     i32 LoadByMode(i32 level, i32 unused); // ?LoadLevelByMode@@ placeholder
 
-    // self (__thiscall on `this`) init-chain steps (real retail names in comments)
     i32 BuildHelpReveal(i32 a);  // 0x1019
     i32 RegisterInputBindings(); // 0x3a71
     void AckJoinFailure();       // 0x35e4  (CMulti, on a saved-flag object)
@@ -237,12 +191,7 @@ public:
     i32 LoadStep2();                               // 0x345e  CLevelValidator::ValidateLevelTiles
     i32 LoadStep3();                               // 0x17ee  CPlay::AddLevelGruntz
     void StartGame();                              // 0x3d55
-
-    char m_pad[4];
 };
-
-// CString by-value helpers modeled on Eng; the "ScanWarpStone"/init chain call on
-// `this` so declare a same-named thiscall on the class too (reloc-masked).
 
 // ===========================================================================
 RVA(0x000ca200, 0xe34)
@@ -332,7 +281,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
 
     // ---- 2) mode/level-number resolve ----
-    i32 modeFlag = (GetKindTag() == 0x11) ? 1 : 0;
+    i32 modeFlag = ((i32)Update() == 0x11) ? 1 : 0;
     void* savedThis = modeFlag ? self : 0; // [esp+0x10] = (-modeFlag) & self
     I32(self, 0x1c4) = 1;
     I32(self, 0x1c) = level;
@@ -510,7 +459,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
     ZeroBlock();
     BuildHelpReveal(0);
-    Vf84(); // vtable +0x84
+    Vslot21(); // vtable +0x84 (CPlay slot 33)
     if (savedThis != 0) {
         E(savedThis)->Teardown(); // AckJoinFailure placeholder (0x35e4 on saved obj)
     }
@@ -625,7 +574,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
         E(savedThis)->Teardown();
     }
     RegisterInputBindings();
-    if (!Vfa8(1)) { // vtable +0xa8
+    if (!BuildWorldLevelPath(1)) { // vtable +0xa8 (CPlay slot 42)
         goto fail0;
     }
     BuildHelpReveal(0);
@@ -772,7 +721,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
                     E(savedThis)->Teardown();
                 }
                 RegisterInputBindings();
-                if (Vfa4(reload)) {
+                if (BuildMusicCategoryTable(reload)) { // vtable +0xa4 (CPlay slot 41)
                     goto okContinue;
                 }
             }
