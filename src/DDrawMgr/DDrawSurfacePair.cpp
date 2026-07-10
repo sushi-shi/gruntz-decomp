@@ -19,11 +19,13 @@
 // ---------------------------------------------------------------------------
 
 #include <DDrawMgr/DDrawSurfacePair.h>
-#include <DDrawMgr/DDSurface.h>  // the held CDDSurface (m_surface) full def (Lock/BltFast/IsValid/m_8/m_pitch/m_b0)
-#include <Gruntz/ParseSource.h>  // CParseSource (LoadImage's byte-reader arg: GetEntryTag/BeginParse/EndParse)
-#include <Win32.h>  // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h>  // real IDirectDrawSurface dispatch (IsLost/Restore/Unlock/GetCaps)
-#include <string.h> // memset for the edge-row fills (inline rep-stos CRT)
+#include <DDrawMgr/DDSurface.h> // the held CDDSurface (m_surface) full def (Lock/BltFast/IsValid/m_8/m_pitch/m_b0)
+#include <Gruntz/ParseSource.h> // CParseSource (LoadImage's byte-reader arg: GetEntryTag/BeginParse/EndParse)
+#include <Win32.h>              // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>              // real IDirectDrawSurface dispatch (IsLost/Restore/Unlock/GetCaps)
+#include <string.h>             // memset for the edge-row fills (inline rep-stos CRT)
+#include <Gruntz/ResLoadersViews.h> // shared CounterWnd/DrawHost counter-draw views (fns below)
+#include <stdio.h>                  // sprintf (DrawCount's itoa)
 class CDDSurface;
 class CDDrawPtrCollections {
 public:
@@ -502,8 +504,9 @@ i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
         m_surface = 0;
         if (m_status == 1) {
             CDDrawSurfaceMgr* mgr = m_mgr;
-            m_surface = (CDDSurface*)((CDirectDrawMgr*)mgr->m_pool)
-                            ->CreatePoolItem((void*)mgr->m_fmtChain->m_next->m_pixelFormat, (void*)4);
+            m_surface =
+                (CDDSurface*)((CDirectDrawMgr*)mgr->m_pool)
+                    ->CreatePoolItem((void*)mgr->m_fmtChain->m_next->m_pixelFormat, (void*)4);
             if (m_surface == 0) {
                 return 0;
             }
@@ -532,6 +535,61 @@ i32 CDDrawSurfacePair::SetGeom_164250(i32 w, i32 h, i32 bpp) {
     }
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// The counter-draw pair (0x164380 / 0x164420), re-homed from
+// src/Gruntz/ResourceLoaders.cpp: retail birth-positions both dead-center in the
+// CDDrawSurfacePair block (between SetGeom_164250 and the 0x1644a0 mode-surface
+// creator), so they compile in this TU (wave1-C).
+// @identity-TODO: ResLoaders::DrawHost view is fake - likely CDDrawSurfacePair
+// debug-draw helpers (the +0x2c counter window's surface is the same DC-capable
+// IDirectDrawSurface family this class owns); the shared view structs stay in
+// <Gruntz/ResLoadersViews.h> until the owner is proven.
+namespace ResLoaders {
+    // CounterWnd_164380 / DrawHost_164380 view structs live in
+    // <Gruntz/ResLoadersViews.h> (shared so the 0x15a650 homer can use them).
+    // The counter window's DC source at +0x08 is a real IDirectDrawSurface COM
+    // interface: GetDC (slot 17, +0x44) and ReleaseDC (slot 26, +0x68) are the
+    // standard __stdcall COM slots (self pushed on the stack).
+    // __thiscall(rc, n): print n centred into rc using the counter window's DC.
+    RVA(0x00164380, 0x98)
+    void DrawHost_164380::DrawCount(RECT* rc, i32 n) {
+        char buf[0x20];
+        sprintf(buf, "%i", n);
+        CounterWnd_164380* w = m_2c;
+        if (!w) {
+            return;
+        }
+        HDC hdc = 0;
+        w->m_8->GetDC(&hdc);
+        if (!hdc) {
+            return;
+        }
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, 0xffffff);
+        DrawTextA(hdc, buf, strlen(buf), rc, 0x25);
+        w->m_8->ReleaseDC(hdc);
+    }
+
+    // DrawHost2_164420 view struct lives in <Gruntz/ResLoadersViews.h>.
+    // __thiscall(rc, text): print text centred into rc using the counter window's DC.
+    RVA(0x00164420, 0x79)
+    void DrawHost2_164420::DrawLabel(RECT* rc, char* text) {
+        CounterWnd_164380* w = m_2c;
+        if (!w) {
+            return;
+        }
+        HDC hdc = 0;
+        w->m_8->GetDC(&hdc);
+        if (!hdc) {
+            return;
+        }
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, 0xffffff);
+        DrawTextA(hdc, text, strlen(text), rc, 0x25);
+        w->m_8->ReleaseDC(hdc);
+    }
+} // namespace ResLoaders
 
 // ---------------------------------------------------------------------------
 // 0x1644a0: create the DirectDraw mode surface. Cache {w,h,bpp}, build the device

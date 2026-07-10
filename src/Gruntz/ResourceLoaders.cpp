@@ -1,11 +1,12 @@
-// ResourceLoaders.cpp - Win32 resource (RT_BITMAP / PALETTE) loaders and
-// GDI counter-draw helpers re-homed out of the src/Stub/ApiCallers.cpp winapi
-// grab-bag. Each host struct is a local view onto its (not-yet-recovered) owning
-// class; offsets + emitted bytes are load-bearing. The moves are byte-neutral
-// (only FindResource/LoadResource/GDI + sprintf).
+// ResourceLoaders.cpp - Win32 resource (RT_BITMAP / PALETTE) loaders re-homed
+// out of the src/Stub/ApiCallers.cpp winapi grab-bag. Each host struct is a
+// local view onto its (not-yet-recovered) owning class; offsets + emitted
+// bytes are load-bearing. The WAVE pair (0x136a30/0x136ce0) moved onward to
+// src/Dsndmgr/DirectSoundMgr.cpp (wave1-B) and the GDI counter-draw pair
+// (0x164380/0x164420) to src/DDrawMgr/DDrawSurfacePair.cpp (wave1-C) - retail
+// birth-positions both inside those TUs' blocks.
 #include <Win32.h>
-#include <ddraw.h> // IDirectDrawSurface (the counter window's GetDC/ReleaseDC source)
-#include <Gruntz/ResLoadersViews.h> // shared CounterWnd/DrawHost counter-draw views
+#include <ddraw.h> // IDirectDrawSurface (the palette path's surface source)
 #include <rva.h>
 #include <string.h>
 #include <stdio.h> // sprintf (0x11f890)
@@ -114,50 +115,6 @@ namespace ResLoaders {
             src += 3;
         }
         return Apply(a, pal, c);
-    }
-
-    // CounterWnd_164380 / DrawHost_164380 view structs live in
-    // <Gruntz/ResLoadersViews.h> (shared so the 0x15a650 homer can use them).
-    // The counter window's DC source at +0x08 is a real IDirectDrawSurface COM
-    // interface: GetDC (slot 17, +0x44) and ReleaseDC (slot 26, +0x68) are the
-    // standard __stdcall COM slots (self pushed on the stack).
-    // __thiscall(rc, n): print n centred into rc using the counter window's DC.
-    RVA(0x00164380, 0x98)
-    void DrawHost_164380::DrawCount(RECT* rc, i32 n) {
-        char buf[0x20];
-        sprintf(buf, "%i", n);
-        CounterWnd_164380* w = m_2c;
-        if (!w) {
-            return;
-        }
-        HDC hdc = 0;
-        w->m_8->GetDC(&hdc);
-        if (!hdc) {
-            return;
-        }
-        SetBkMode(hdc, TRANSPARENT);
-        SetTextColor(hdc, 0xffffff);
-        DrawTextA(hdc, buf, strlen(buf), rc, 0x25);
-        w->m_8->ReleaseDC(hdc);
-    }
-
-    // DrawHost2_164420 view struct lives in <Gruntz/ResLoadersViews.h>.
-    // __thiscall(rc, text): print text centred into rc using the counter window's DC.
-    RVA(0x00164420, 0x79)
-    void DrawHost2_164420::DrawLabel(RECT* rc, char* text) {
-        CounterWnd_164380* w = m_2c;
-        if (!w) {
-            return;
-        }
-        HDC hdc = 0;
-        w->m_8->GetDC(&hdc);
-        if (!hdc) {
-            return;
-        }
-        SetBkMode(hdc, TRANSPARENT);
-        SetTextColor(hdc, 0xffffff);
-        DrawTextA(hdc, text, strlen(text), rc, 0x25);
-        w->m_8->ReleaseDC(hdc);
     }
 
     struct PalHost_1775f0 {

@@ -67,8 +67,20 @@ public:
     i32 m_width; // +0x04  tile/column width (ClampSpan span extent)
     char m_pad08[0x14 - 0x08];
     CImageFrame** m_frames; // +0x14  frame pointer array (== Image/ImageSet.h m_frames)
-    char m_pad18[0x64 - 0x18];
+    i32 m_count;            // +0x18  frame array element count (== Image/ImageSet.h m_count)
+    char m_pad1c[0x64 - 0x1c];
     i32 m_minIndex; // +0x64  lowest populated frame index
+    i32 m_maxIndex; // +0x68  highest populated frame index
+
+    // The bounds-checked accessor CPlaneRender::SetTileSizeFromImageSet inlines
+    // (== Image/ImageSet.h GetAt): an index outside [m_minIndex, m_maxIndex]
+    // yields a null frame. (Emitted only where called; matching-neutral here.)
+    CImageFrame* GetAt(i32 index) {
+        if (index < m_minIndex || index > m_maxIndex) {
+            return 0;
+        }
+        return m_frames[index];
+    }
 };
 
 // The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer
@@ -166,14 +178,12 @@ public:
 // SetCoordsAndLoad3C / LoadFromSource labels).
 struct CParseSource;
 
-// CGameLevel::GetClassId (slot 8) type tag. Mirrors the canonical
-// LoadableClassId enum in <Gruntz/Loadable.h> (CLASSID_GAMELEVEL = 0x19); named
-// here rather than pulled in because this TU keeps its own (B)-form CLoadable
-// struct below (a second `class CLoadable` would ODR-clash the canonical one).
-// A named enumerator lowers to the same `mov eax,0x19` immediate (matching-neutral).
-enum LoadableClassId {
-    CLASSID_GAMELEVEL = 0x19, // CGameLevel::GetClassId @0x1611b0 (mov eax,0x19)
-};
+// CGameLevel::GetClassId (slot 8) type tag: the canonical LoadableClassId enum
+// (CLASSID_GAMELEVEL = 0x19). Pulled from <Gruntz/Loadable.h> now that the former
+// (B)-form CLoadable mirror here is gone (the local mirror enum ODR-clashed the
+// canonical one once a TU included both headers - e.g. LevelPlane.cpp via
+// <DDrawMgr/DDrawWorkerHost.h>).
+#include <Gruntz/Loadable.h>
 
 // CGameLevel's CLoadable base (fields m_04/m_08/m_0c + the two-phase vptr schedule)
 // is MERGED INLINE into CGameLevel below (it derives CObject directly and carries the

@@ -394,88 +394,6 @@ CWwdObjMgr::CreateNamed_159a10(int a1, int a2, int a3, int a4, const char* name,
     return CreateObject_1598d0(a1, a2, a3, a4, (int)val, a6);
 }
 
-// ===========================================================================
-// 0x166640 - factory for the 0x1dc-byte kind, sibling of the above but published
-// into the manager's own CPtrList (AddTail) at +0x1dc rather than InsertSorted.
-// __thiscall, 6 stack args (ret 0x18).  Build slot +0x28 (4 args), dtor +0x04.
-// @early-stop
-// rezalloc-placement-new wall (same family as 0x1598d0): the object construction
-// + field stores + vtable stamps are byte-exact, but retail allocates the object
-// through the throwing class operator new and carries the /GX ctor-in-flight EH
-// frame (push -1/fs:0 + trylevel-0 cleanup), while the RezAlloc + placement body
-// emits no frame.  docs/patterns/rezalloc-placement-new-no-eh-frame.md.
-// ===========================================================================
-// The manager's own published-objects list (CPtrList) at +0x1dc; AddTail returns
-// the new node pointer (stored into the object's +0x78).  Reloc-masked thiscall.
-class CWwdObjMgrL {
-public:
-    CWwdGameObject* CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6);
-    CWwdGameObject*
-    CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
-    char m_pad00[0x0c];
-    WwdFile* m_0c; // +0x0c parent file handle (name-resolve map at m_14 + 0x10)
-    char m_pad10[0x1dc - 0x10];
-    CObList m_1dc; // +0x1dc published-objects list (real MFC, main's fold)
-};
-
-RVA(0x00166640, 0x13b)
-CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
-    char* obj = (char*)RezAlloc(0x1dc);
-    CWwdGameObject* result;
-    if (obj != 0) {
-        int root = (int)m_0c;
-        new (obj) CWwdGameObj15b390(root, a1, a6);
-        *(int*)(obj + 0x1a4) = a1;
-        *(int*)(obj + 0x1a8) = a6;
-        *(int*)(obj + 0x1ac) = root;
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(int*)(obj + 0x1b0) = 0;
-        *(int*)(obj + 0x1b4) = 0;
-        *(int*)(obj + 0x1b8) = 0;
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(int*)(obj + 0x18c) = -1;
-        *(int*)(obj + 0x190) = -1;
-        *(int*)(obj + 0x198) = 0;
-        *(int*)(obj + 0x194) = 0;
-        *(int*)(obj + 0x19c) = 0;
-        result = (CWwdGameObject*)obj;
-    } else {
-        result = 0;
-    }
-    if (result == 0) {
-        return 0;
-    }
-    if (((CWwdFactoryA*)result)->Build4(a2, a3, a4, a5) == 0) {
-        delete ((CWwdFactoryA*)result);
-        return 0;
-    }
-    void* node = m_1dc.AddTail((CObject*)result);
-    if (node == 0) {
-        delete ((CWwdFactoryA*)result);
-        return 0;
-    }
-    *(void**)(obj + 0x78) = node;
-    if (*(int*)(obj + 8) & 0x200000) {
-        ((CWwdWorker*)*(void**)(obj + 0x7c))->Kick(result);
-    }
-    return result;
-}
-
-// CreateNamed_166780 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
-// nothing resolved, bail; else create the 0x1dc-byte kind with the value as arg5.
-// @early-stop
-// 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
-RVA(0x00166780, 0x57)
-CWwdGameObject*
-CWwdObjMgrL::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6) {
-    void* val = 0;
-    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
-    if (val == 0) {
-        return 0;
-    }
-    return CreateObject_166640(a1, a2, a3, a4, (int)val, a6);
-}
-
 // ---------------------------------------------------------------------------
 // CWwdGameObj15b390::Construct (0x15b390) - the shared CWwdGameObject base-object
 // ctor the wide-object factories call (CreateObject_1598d0/166640 do
@@ -542,7 +460,6 @@ CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c)
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CWwdFactoryA);
 SIZE_UNKNOWN(CWwdFactoryB);
-SIZE_UNKNOWN(CWwdObjMgrL);
 SIZE_UNKNOWN(CWwdSlot9c);
 SIZE_UNKNOWN(CWwdGameObj15b390); // 0x15b390 per-kind wide-object ctor (CResolveNode base)
 SIZE_UNKNOWN(WwdCtorBase);       // CResolveNode base subobject (+0x00..+0xd8)

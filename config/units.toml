@@ -574,9 +574,21 @@ unit = "gamelevel"
 source = "src/Gruntz/GameLevel.cpp"
 flags = "eh"
 
-# Split out of the gamelevel god-TU (CGameLevel's per-plane / image-set variants).
-# Their vtables are still emitted (and VTBL-bound) in gamelevel via ReadImageSet's
-# `new CImageSetN`; these TUs carry only the out-of-line method bodies.
+# The movement/collision-resolution module (original TU at 0x167130-0x168276,
+# bracketed by the ImageSet TU before and CWwdSpatialMgr after; filename unknown -
+# candidates Move.cpp/Collide.cpp). CGameLevel's methods span several original
+# files; these 12 movement fns are birth-positioned in their own obj (wave1-C).
+[[unit]]
+unit = "gamelevelmove"
+source = "src/Gruntz/GameLevelMove.cpp"
+flags = "eh"
+
+# The plane/render module (original TU at [0x161350..0x163a00], @identity-TODO;
+# interval dossier 0x15ccd0, wave1-C): CLevelPlane + CPlaneRender + the WwdFile
+# plane methods (RebuildPlanes/ReadPlaneObjects) + the CImageSet3-helper and
+# CDDrawWorkerHost bodies woven into that range. The imageset1/2/3g TUs below
+# carry the CImageSet variant records' out-of-line bodies; their vtables are
+# still emitted (and VTBL-bound) in gamelevel via ReadImageSet's `new CImageSetN`.
 [[unit]]
 unit = "levelplane"
 source = "src/Gruntz/LevelPlane.cpp"

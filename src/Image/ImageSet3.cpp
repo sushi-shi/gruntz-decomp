@@ -5,10 +5,11 @@
 // held object-managers, GetSize sums them, and its dtor runs FreeGrids @0x1682f0)
 // plus two RezAlloc'd buffers at +0x20/+0x24.
 //
-// This TU carries the three NON-EH members in retail-RVA order:
-//   Prune_1628d0   (0x1628d0) - if(m_b0) tail-call CWwdGrid::Prune
-//   GetSize_1633e0 (0x1633e0) - if(m_b0) tail-call CWwdGrid::GetSize
-//   Cleanup_161bf0 (0x161bf0) - prune+destroy+free the grid, free m_20/m_24
+// This TU carries the object's out-of-line dtor + its 0x166e00 pixel scan. The
+// three non-EH leaves Cleanup_161bf0 (0x161bf0) / Prune_1628d0 (0x1628d0) /
+// GetSize_1633e0 (0x1633e0) are birth-positioned INSIDE the plane/render TU and
+// were re-homed to src/Gruntz/LevelPlane.cpp (interval dossier 0x15ccd0, wave1-C);
+// their declarations below stay as documentation of the same object.
 //
 // The /GX out-of-line ~CImageSet3 (0x161500) is defined below under its C161500
 // placeholder identity (collapsed from ImageSet3Eh.cpp; the split companion TU was
@@ -81,50 +82,6 @@ C161500::~C161500() {
         RezFree(m_14);
     }
     m_14 = 0;
-}
-
-// ---------------------------------------------------------------------------
-// 0x161bf0: tear down the owned resources.  Prune the grid, then destroy + free
-// it (no null-out), then free the two RezAlloc'd buffers at +0x20/+0x24 (nulled).
-RVA(0x00161bf0, 0x5e)
-void CImageSet3::Cleanup_161bf0() {
-    if (m_b0 != 0) {
-        m_b0->Prune_1688b0();
-    }
-    CWwdGrid* g = m_b0;
-    if (g != 0) {
-        g->Dtor_163a40();
-        RezFree(g);
-    }
-    if (m_20 != 0) {
-        RezFree(m_20);
-        m_20 = 0;
-    }
-    if (m_24 != 0) {
-        RezFree(m_24);
-        m_24 = 0;
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 0x1628d0: forward the grid's Prune when present (else 0).  __thiscall tail call.
-RVA(0x001628d0, 0x12)
-i32 CImageSet3::Prune_1628d0() {
-    if (m_b0 == 0) {
-        return 0;
-    }
-    return m_b0->Prune_1688b0();
-}
-
-// GetSize_1633e0 (0x1633e0): forward the grid's serialized size when present
-// (else 0). Out-of-line (retail emits it standalone, tail-forwarding to
-// CWwdGrid::GetSize; an inline member folds away and never emits).
-RVA(0x001633e0, 0x12)
-i32 CImageSet3::GetSize_1633e0() {
-    if (m_b0 == 0) {
-        return 0;
-    }
-    return m_b0->GetSize_168430();
 }
 
 // ---------------------------------------------------------------------------

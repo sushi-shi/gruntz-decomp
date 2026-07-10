@@ -1688,6 +1688,137 @@ void CWwdGameObjectC::Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) 
     }
 }
 
+// ===========================================================================
+// The CWwdObjMgr "L" factory pair (0x166640 / 0x166780), re-homed from
+// src/Wwd/WwdObjMgrFactories.cpp: retail birth-positions both INSIDE this
+// CWwdGameObject block (wave1-C). The wide-object base ctor they placement-call
+// (??0CWwdGameObj15b390 @0x15b390) stays defined in WwdObjMgrFactories.cpp -
+// declared-only here so the call reloc-masks, exactly as retail calls it
+// cross-obj. Support views duplicated from that TU (same honest minimal models).
+// ===========================================================================
+#include <Gruntz/WwdWorker.h> // the shared per-object worker (+0x7c; Kick at vtbl+0x10)
+
+inline void* operator new(u32, void* p) {
+    return p;
+} // placement (factory base-object ctor)
+
+// Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
+extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
+
+// The shared CWwdGameObject base-object ctor (0x15b390, defined in
+// src/Wwd/WwdObjMgrFactories.cpp with the full field view). Ctor-only decl here.
+struct CWwdGameObj15b390 {
+    CWwdGameObj15b390(int a, int b, int c); // 0x15b390
+};
+
+// The level-file handle CWwdObjMgrL::m_0c points at: the name->value resolve map
+// (a CMapStringToPtr) sits at m_14 + 0x10. Local completion (same view
+// WwdObjMgr.cpp / WwdObjMgrFactories.cpp use).
+struct WwdFile {
+    char m_pad0[0x14];
+    char* m_14; // +0x14  fronts the string-resolve map (CMapStringToPtr @ +0x10)
+};
+
+// The wide object's polymorphic interface (cast-only; declared-only virtuals so
+// cl emits no ??_7): Build slot +0x28 (4 args), scalar-deleting dtor at +0x04.
+class CWwdFactoryA {
+public:
+    virtual void Vs00();
+    virtual ~CWwdFactoryA(); // slot 1 (deleting dtor -> cl-emitted ??_G)
+    virtual void Vs08();
+    virtual void Vs0C();
+    virtual void Vs10();
+    virtual void Vs14();
+    virtual void Vs18();
+    virtual void Vs1C();
+    virtual void Vs20();
+    virtual void Vs24();
+    virtual int Build4(int a, int b, int c, int d); // +0x28
+};
+
+// ===========================================================================
+// 0x166640 - factory for the 0x1dc-byte kind, sibling of the above but published
+// into the manager's own CPtrList (AddTail) at +0x1dc rather than InsertSorted.
+// __thiscall, 6 stack args (ret 0x18).  Build slot +0x28 (4 args), dtor +0x04.
+// @early-stop
+// rezalloc-placement-new wall (same family as 0x1598d0): the object construction
+// + field stores + vtable stamps are byte-exact, but retail allocates the object
+// through the throwing class operator new and carries the /GX ctor-in-flight EH
+// frame (push -1/fs:0 + trylevel-0 cleanup), while the RezAlloc + placement body
+// emits no frame.  docs/patterns/rezalloc-placement-new-no-eh-frame.md.
+// ===========================================================================
+// The manager's own published-objects list (CPtrList) at +0x1dc; AddTail returns
+// the new node pointer (stored into the object's +0x78).  Reloc-masked thiscall.
+class CWwdObjMgrL {
+public:
+    CWwdGameObject* CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6);
+    CWwdGameObject*
+    CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
+    char m_pad00[0x0c];
+    WwdFile* m_0c; // +0x0c parent file handle (name-resolve map at m_14 + 0x10)
+    char m_pad10[0x1dc - 0x10];
+    CObList m_1dc; // +0x1dc published-objects list (real MFC, main's fold)
+};
+SIZE_UNKNOWN(CWwdObjMgrL);
+
+RVA(0x00166640, 0x13b)
+CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
+    char* obj = (char*)RezAlloc(0x1dc);
+    CWwdGameObject* result;
+    if (obj != 0) {
+        int root = (int)m_0c;
+        new (obj) CWwdGameObj15b390(root, a1, a6);
+        *(int*)(obj + 0x1a4) = a1;
+        *(int*)(obj + 0x1a8) = a6;
+        *(int*)(obj + 0x1ac) = root;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
+        *(int*)(obj + 0x1b0) = 0;
+        *(int*)(obj + 0x1b4) = 0;
+        *(int*)(obj + 0x1b8) = 0;
+        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
+        *(int*)(obj + 0x18c) = -1;
+        *(int*)(obj + 0x190) = -1;
+        *(int*)(obj + 0x198) = 0;
+        *(int*)(obj + 0x194) = 0;
+        *(int*)(obj + 0x19c) = 0;
+        result = (CWwdGameObject*)obj;
+    } else {
+        result = 0;
+    }
+    if (result == 0) {
+        return 0;
+    }
+    if (((CWwdFactoryA*)result)->Build4(a2, a3, a4, a5) == 0) {
+        delete ((CWwdFactoryA*)result);
+        return 0;
+    }
+    void* node = m_1dc.AddTail((CObject*)result);
+    if (node == 0) {
+        delete ((CWwdFactoryA*)result);
+        return 0;
+    }
+    *(void**)(obj + 0x78) = node;
+    if (*(int*)(obj + 8) & 0x200000) {
+        ((CWwdWorker*)*(void**)(obj + 0x7c))->Kick(result);
+    }
+    return result;
+}
+
+// CreateNamed_166780 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
+// nothing resolved, bail; else create the 0x1dc-byte kind with the value as arg5.
+// @early-stop
+// 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
+RVA(0x00166780, 0x57)
+CWwdGameObject*
+CWwdObjMgrL::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6) {
+    void* val = 0;
+    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
+    if (val == 0) {
+        return 0;
+    }
+    return CreateObject_166640(a1, a2, a3, a4, (int)val, a6);
+}
+
 // ---------------------------------------------------------------------------
 // CWwdGameObjectB broadcast slots 11-14 (0x1668b0/0x1668e0/0x166910/0x166950): walk
 // the +0x1e0 child list, dispatching each child's matching broadcast virtual with the
