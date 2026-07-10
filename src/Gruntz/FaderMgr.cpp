@@ -68,7 +68,15 @@ CFaderMgr::~CFaderMgr() {
     FreeAll();
 }
 
-// CFaderMgr::SetConfig (0x0017d980) is now an inline member in the header.
+// CFaderMgr::SetConfig (0x17d980) - store timer args + shared arg, arm, return 1.
+RVA(0x0017d980, 0x1f)
+i32 CFaderMgr::SetConfig(i32 a, i32 b, i32 c) {
+    m_timerArgA = a;
+    m_timerArgB = b;
+    m_sharedSet2cArg = c;
+    m_active = 1;
+    return 1;
+}
 
 // ===========================================================================
 // 0x17d9a0 - FreeAll: DeleteAll, then clear m_active.

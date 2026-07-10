@@ -71,18 +71,7 @@ public:
     virtual void SetFrame(i32 v); // 0x1847a0  slot 14 (new; body in BoundaryUpper)
 
     // Non-virtual __thiscall frame-cursor helpers (bodies in MenuItem2.cpp):
-    RVA(0x00185950, 0x1b)
-    CMenuSprite* GetCurrentSprite() {
-        switch (m_state) {
-        case 1:
-        return m_spriteNormal;
-        case 2:
-        return m_spriteSelected;
-        case 3:
-        return m_spriteDisabled;
-        }
-        return 0;
-    }
+    CMenuSprite* GetCurrentSprite(); // 0x185950
     CImage* GetCurrentFrame();       // 0x185970
     i32 NextFrame();                 // 0x1859c0
 

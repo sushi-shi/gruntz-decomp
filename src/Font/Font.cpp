@@ -249,14 +249,24 @@ void CWapNodeB::FreeStrings() {
     m_type = 0;
 }
 
-// Font::GetSurface (0x00179b60) is now an inline member in the header.
+// Font::GetSurface (0x179b60) - &m_surfaces[c].
+RVA(0x00179b60, 0x12)
+void** Font::GetSurface(u8 c) {
+    return &m_surfaces[c];
+}
 
+// Font::GetGlyph (0x179b80) - copy glyph metric c into out.
+RVA(0x00179b80, 0x22)
+Glyph& Font::GetGlyph(Glyph& out, u8 c) {
+    out = m_glyphs[c];
+    return out;
+}
 
-// Font::GetGlyph (0x00179b80) is now an inline member in the header.
-
-
-// Font::GetMaxHeight (0x00179bd0) is now an inline member in the header.
-
+// Font::GetMaxHeight (0x179bd0) - the font line-height.
+RVA(0x00179bd0, 0x4)
+i32 Font::GetMaxHeight() {
+    return m_maxHeight;
+}
 
 // =========================================================================
 // FontRenderer::FontRenderer
@@ -269,14 +279,19 @@ FontRenderer::FontRenderer() {
     m_surface = 0;
 }
 
-// FontRenderer::SetColor (0x00179c20) is now an inline member in the header.
-
+// FontRenderer::SetColor (0x179c20) - set the packed colour.
+RVA(0x00179c20, 0xa)
+void FontRenderer::SetColor(i32 color) {
+    m_color = color;
+}
 
 // CharCursor::GetChar (0x0017b4f0) is now an inline member in the header.
 
-
-// TextRange::Span (0x0017b500) is now an inline member in the header.
-
+// TextRange::Span (0x17b500) - byte distance end - begin.
+RVA(0x0017b500, 0x8)
+i32 TextRange::Span() {
+    return m_end - m_begin;
+}
 
 // =========================================================================
 // FontRenderer::MeasureText

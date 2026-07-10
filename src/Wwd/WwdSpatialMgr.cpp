@@ -182,13 +182,7 @@ struct CWwdSpatialMgr {
 
     void FreeGrids();
     i32 ScrollTo(i32 dx, i32 dy);
-    RVA(0x00168430, 0x2e)
-    i32 GetSize() {
-        i32 n = CountInRect(m_grid0);
-        n += CountInRect(m_grid1);
-        n += CountInRect(m_grid2);
-        return n;
-    }
+    i32 GetSize(); // 0x168430
     i32 CountInRect(CWwdGrid* grid);
     i32 Relocate(i32 newX, i32 newY);
     i32 PruneCount();
@@ -285,7 +279,14 @@ i32 CWwdSpatialMgr::ScrollTo(i32 dx, i32 dy) {
     return n;
 }
 
-// CWwdSpatialMgr::GetSize (0x00168430) is now an inline member in the header.
+// CWwdSpatialMgr::GetSize (0x168430) - total object count across the 3 grids.
+RVA(0x00168430, 0x2e)
+i32 CWwdSpatialMgr::GetSize() {
+    i32 n = CountInRect(m_grid0);
+    n += CountInRect(m_grid1);
+    n += CountInRect(m_grid2);
+    return n;
+}
 
 // ===========================================================================
 // 0x168460 - CountInRect(grid): walk the grid; for each object whose worker is

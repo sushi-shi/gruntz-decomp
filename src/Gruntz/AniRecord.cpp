@@ -243,7 +243,18 @@ void CAniRecordView::ResolveIndices_168d00(CAniMapOwner* owner, const char* str)
     }
 }
 
-// CAniRecordView::GetSize_168e50 (0x00168e50) is now an inline member in the header.
+// CAniRecordView::GetSize_168e50 (0x168e50) - packed byte size of the frame table.
+RVA(0x00168e50, 0x1e)
+i32 CAniRecordView::GetSize_168e50() {
+    i32 n = m_frameCount;
+    if (n <= 0) {
+        return 0x16;
+    }
+    if (m_flags & 0x1) {
+        return n * 22;
+    }
+    return n;
+}
 
 // ---------------------------------------------------------------------------
 // 0x168ea0: (re)allocate the +0x10 work buffer from the owner's pool with size
@@ -365,15 +376,16 @@ i32 CAniRecordView::Slot13_168fd0() {
 // copy-ctor 0x1b9ba3). xref (gruntz.analysis.xref): CAniRecordView::ResolveIndices
 // (0x168d00). Modeled as the small string-array view CAniRecord indexes.
 struct CAniStrArray {
-    char m_00[4];    // +0x00
-    CString* m_data; // +0x04  CString array base (4-byte elements)
-    RVA(0x00168e70, 0x27)
-    CString GetAt(int index) {
-        return m_data[index];
-    }
+    char m_00[4];             // +0x00
+    CString* m_data;          // +0x04  CString array base (4-byte elements)
+    CString GetAt(int index); // 0x168e70
 };
 SIZE_UNKNOWN(CAniStrArray);
-// CAniStrArray::GetAt (0x00168e70) is now an inline member in the header.
+// CAniStrArray::GetAt (0x168e70) - copy of the CString at m_data[index].
+RVA(0x00168e70, 0x27)
+CString CAniStrArray::GetAt(int index) {
+    return m_data[index];
+}
 
 SIZE_UNKNOWN(CAniMapOwner);
 SIZE_UNKNOWN(CAniRecordBase2);

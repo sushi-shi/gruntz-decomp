@@ -101,16 +101,17 @@ public:
     i32 EnsureSize(void* dc, i32 w, i32 h, i32 bitCount, void* flag); // 0x175ce0
     void Fill(i32 value);                                             // 0x175d50
     void Free();                                                      // 0x175c90 (pool: Cleanup)
-    RVA(0x00176ad0, 0x17)
-    void SetPalette(void* paletteNode, i32 scalar) {
-        m_paletteNode = paletteNode;
-        m_paletteScalar = scalar;
-    }
-    i32 Save(const char* filename, void* paletteObj);                // 0x176b00 (8bpp-only dispatch to SaveBmp)
-    i32 SaveBmp(const char* filename, void* paletteObj);              // 0x176b30
-    void FillRect(CRezFillRect* r, i32 color);                       // 0x176d20 (8bpp scanline rect fill)
-    void FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color);   // 0x176da0 (translate src rect to dx,dy, then FillRect)
-    void FlipVertical();                                             // 0x176840 (top-bottom row swap via scratch)
+    void SetPalette(void* paletteNode, i32 scalar);                   // 0x176ad0
+    i32 Save(const char* filename, void* paletteObj);    // 0x176b00 (8bpp-only dispatch to SaveBmp)
+    i32 SaveBmp(const char* filename, void* paletteObj); // 0x176b30
+    void FillRect(CRezFillRect* r, i32 color);           // 0x176d20 (8bpp scanline rect fill)
+    void FillRectAt(
+        i32 dx,
+        i32 dy,
+        CRezFillRect* src,
+        i32 color
+    );                   // 0x176da0 (translate src rect to dx,dy, then FillRect)
+    void FlipVertical(); // 0x176840 (top-bottom row swap via scratch)
 
     // Layout. The object opens with a BITMAPINFOHEADER (this+0,
     // biSize..biClrImportant) and a 256-entry WORD color table (this+0x28);

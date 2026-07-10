@@ -29,7 +29,7 @@
 #include <Ints.h>
 #include <Mfc.h> // real MFC CObject (the primary-facet base)
 
-class CAniMapOwner;
+struct CAniMapOwner;
 class CAniRecordOwner;
 
 // The ANI frame record. cl inherits GetRuntimeClass/Serialize/AssertValid/Dump (the
@@ -41,17 +41,7 @@ struct CAniRecordView : public CObject {
     virtual ~CAniRecordView() OVERRIDE; // [1] 0x1657a0 real primary-facet teardown dtor
 
     i32 Parse_168c60(void* ctx, const i16* src);                      // 0x168c60
-    RVA(0x00168e50, 0x1e)
-    i32 GetSize_168e50() {
-        i32 n = m_frameCount;
-        if (n > 0) {
-        if (m_flags & 0x1) {
-        return n * 22;
-        }
-        return n;
-        }
-        return 0x16;
-    }
+    i32 GetSize_168e50();                                             // 0x168e50
     void ResolveIndices_168d00(CAniMapOwner* owner, const char* str); // 0x168d00
     void* Alloc168ee0(i32 size, i32 flag);                            // 0x168ee0
     void* Alloc168f20(i32 handle, i32 flag);                          // 0x168f20 (slot 9)

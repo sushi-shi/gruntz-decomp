@@ -16,14 +16,14 @@ i32 ModuleStateField30() {
 struct CDdeView {
     char m_pad0[0x98];
     i32 m_active;    // +0x98  active flag (GetActive return)
-    RVA(0x001d047f, 0x7)
-    i32 GetActive() {
-        return m_active;
-    }
+    i32 GetActive(); // 0x1d047f
 };
 
-// CDdeView::GetActive (0x001d047f) is now an inline member in the header.
-
+// CDdeView::GetActive (0x1d047f) - plain +0x98 getter.
+RVA(0x001d047f, 0x7)
+i32 CDdeView::GetActive() {
+    return m_active;
+}
 
 // MFC DDE-view internal; only the +0x98 field is pinned, full size opaque (library).
 SIZE_UNKNOWN(CDdeView); // +0x98 getter view (pad-to-touched-field)

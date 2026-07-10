@@ -61,6 +61,7 @@ extern "C" {
 
     // 0x184e60 - channel-0 debug printf that first positions the cursor (x,y).
     RVA(0x00184e60, 0x6d)
+    SYMBOL(_RezDebugPrintfXY)
     void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
         char buf[256];
         if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(0)) {
@@ -72,6 +73,7 @@ extern "C" {
 
     // 0x184ed0 - debug printf gated on a caller-supplied channel.
     RVA(0x00184ed0, 0x5b)
+    SYMBOL(_RezDebugPrintfCh)
     void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
         char buf[256];
         if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(channel)) {
@@ -82,6 +84,7 @@ extern "C" {
 
     // 0x184f30 - channel-gated debug printf that positions the cursor (x,y) first.
     RVA(0x00184f30, 0x73)
+    SYMBOL(_RezDebugPrintfChXY)
     void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
         char buf[256];
         if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(channel)) {

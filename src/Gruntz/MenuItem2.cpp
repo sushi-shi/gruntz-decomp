@@ -104,8 +104,19 @@ i32 CMenuItem2::Place(i32 ctx, i32 x, i32 y) {
     return 1;
 }
 
-// CMenuItem2::GetCurrentSprite (0x00185950) is now an inline member in the header.
-
+// CMenuItem2::GetCurrentSprite (0x185950) - the sprite for the current state.
+RVA(0x00185950, 0x1b)
+CMenuSprite* CMenuItem2::GetCurrentSprite() {
+    switch (m_state) {
+        case 1:
+            return m_spriteNormal;
+        case 2:
+            return m_spriteSelected;
+        case 3:
+            return m_spriteDisabled;
+    }
+    return 0;
+}
 
 // resolve the frame at the current cursor; if absent, rewind the cursor
 // to the sprite's first index and try once more.

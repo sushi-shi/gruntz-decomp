@@ -85,9 +85,18 @@ void CFader::Wait(i32 delay) {
     }
 }
 
-// CFader::SetTimers (0x0017e760) is now an inline member in the header.
+// CFader::SetTimers (0x17e760) - store the two timer values.
+RVA(0x0017e760, 0x11)
+void CFader::SetTimers(i32 a, i32 b) {
+    m_timerA = a;
+    m_timerB = b;
+}
 
-// CFader::Set2c (0x0017e780) is now an inline member in the header.
+// CFader::Set2c (0x17e780) - store the +0x2c arg.
+RVA(0x0017e780, 0xa)
+void CFader::Set2c(i32 v) {
+    m_set2cArg = v;
+}
 
 // ===========================================================================
 // CFaderMesh - a CFader subtype (ctor 0x17e940, size 0x6c) that embeds a nested

@@ -79,8 +79,11 @@ CMenuPage::~CMenuPage() {
     Clear();
 }
 
-// CMenuPage::GetKey (0x001832d0) is now an inline member in the header.
-
+// CMenuPage::GetKey (0x1832d0) - return the page key CString by value.
+RVA(0x001832d0, 0x20)
+CString CMenuPage::GetKey() {
+    return m_key;
+}
 
 // configure this page from a template item, then resolve its catalog
 // slot via m_owner->m_catalog->m_map CMapStringToPtr::Lookup. The string args are

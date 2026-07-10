@@ -404,10 +404,7 @@ public:
     // Reset the line/position counters + clear the two scratch CStrings.
     void Init();
     // Store the optional error callback (+0x14).
-    RVA(0x00170380, 0xa)
-    void SetErrCallback(ErrCallback cb) {
-        m_errCallback = cb;
-    }
+    void SetErrCallback(ErrCallback cb); // 0x170380
     // Advance the input one char: pull the next byte from the source stream
     // (+0xa0), update line/position, set m_curChar (+0xa8).
     void NextChar();

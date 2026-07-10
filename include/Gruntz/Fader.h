@@ -46,15 +46,8 @@ public:
     virtual void v4();          // slot 4 (0x17e7a0, sibling TU) - end
 
     void Wait(i32 delay);         // 0x17e510 - busy-wait until GetTickCount >= now+delay
-    RVA(0x0017e760, 0x11)
-    void SetTimers(i32 a, i32 b) {
-        m_timerA = a;
-        m_timerB = b;
-    }
-    RVA(0x0017e780, 0xa)
-    void Set2c(i32 v) {
-        m_set2cArg = v;
-    }
+    void SetTimers(i32 a, i32 b); // 0x17e760
+    void Set2c(i32 v);            // 0x17e780
     // 0x17e540 - the stepped counterpart of RunFade: prime frame 0, busy-wait the
     // lead-in, then render every `step`-th frame from 1..v2() back-to-back (no timing;
     // poke the fade sink + v1(frame) each step), then finalize v1(count)/v4() and record

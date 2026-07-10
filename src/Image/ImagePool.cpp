@@ -541,8 +541,8 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
 
 // The engine's cached GDI fn-ptr globals (retail reaches GDI via `call ds:[0x6c44xx]`);
 // DATA-bound once in DirPal.cpp, re-declared here (extern only) so the calls reloc-mask.
-extern HDC(WINAPI* g_pGetDC)(HWND);                            // 0x6c4404
-extern int(WINAPI* g_pReleaseDC)(HWND, HDC);                   // 0x6c4408
+extern HDC(WINAPI* g_pGetDC)(HWND);                             // 0x6c4404
+extern int(WINAPI* g_pReleaseDC)(HWND, HDC);                    // 0x6c4408
 extern HPALETTE(WINAPI* g_pSelectPalette)(HDC, HPALETTE, BOOL); // 0x6c3f04
 
 // ===========================================================================
@@ -579,8 +579,12 @@ void CImagePool::B(CRezImage* node, i32 a, i32 b) {
     node->SetPalette((void*)a, b);
 }
 
-// CRezImage::SetPalette (0x00176ad0) is now an inline member in the header.
-
+// CRezImage::SetPalette (0x176ad0) - store the palette node + scalar.
+RVA(0x00176ad0, 0x17)
+void CRezImage::SetPalette(void* paletteNode, i32 scalar) {
+    m_paletteNode = paletteNode;
+    m_paletteScalar = scalar;
+}
 
 // ===========================================================================
 // CImagePaletteNode::ProcessPal (ret 8) - expand a packed RGB-triple
