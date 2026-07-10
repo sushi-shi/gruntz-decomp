@@ -330,7 +330,19 @@ struct CTmLevel {
 // (DestroyAllAnims compares a level-list object's descriptor slot-4 against it, reloc-
 // masked DIR32); &CTmCell::ReadConfigFromButeMgr carries that reloc.
 
-// CTriggerMgr::SetLevel (0x0006b640) is now an inline member in the header.
+// 0x6b640: SetLevel - store the supplied level at +0x22c, clear m_230 + m_pendingFx
+// and raise m_2a4; returns 1 (0 when arg is null).
+RVA(0x0006b640, 0x2f)
+i32 CTriggerMgr::SetLevel(CTmLevel* lvl) {
+    if (lvl == 0) {
+        return 0;
+    }
+    m_level = lvl;
+    m_230 = 0;
+    m_pendingFx = 0;
+    m_2a4 = 1;
+    return 1;
+}
 
 // 0x6b680: Cleanup - destruct+free the overlay sub-object (+0x25c) when present, then
 // drain the record and selection lists. The overlay's Clear runs the in-place dtor,
@@ -500,6 +512,15 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
         row++;
     }
     return 0;
+}
+
+// 0x759e0: GetOriginXY - copy the cached origin pair (m_cellFlag[0x16],[0x17] ==
+// +0x174,+0x178) into the caller's out-slot and return it.
+RVA(0x000759e0, 0x18)
+CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
+    out->x = m_cellFlag[0x16];
+    out->y = m_cellFlag[0x17];
+    return out;
 }
 
 // 0x75c60: CTriggerMgr::FindGruntAt - given a pixel point + tile-span rect (or an

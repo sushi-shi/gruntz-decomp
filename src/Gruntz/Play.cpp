@@ -299,7 +299,17 @@ void CPlay::ApplyGameOptions() {
 // The shared HUD message-sprite helper (0x1154b0, __cdecl): pushes a transient
 // text sprite carrying `text` into `rect` with the given duration/colour flags
 // (idiom shared with BootyMessages.cpp / DrawBattleStats.cpp). reloc-masked.
-void ShowHudMessage(void* sink, CString* text, RECT* rect, i32 dur, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1154b0
+void ShowHudMessage(
+    void* sink,
+    CString* text,
+    RECT* rect,
+    i32 dur,
+    i32 a,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e
+); // 0x1154b0
 
 // ===========================================================================
 // CPlay::FrameSlot28  (vtable slot 10 / +0x28) - the HUD status/pause overlay.
@@ -2174,7 +2184,13 @@ i32 CPlay::BuildHelpReveal() {
 RVA(0x0008c9d0, 0x2bd)
 void CPlay::PlayBacklog08c9d0() {}
 
-// CState::SetBeginClearParams (0x0008c970) is now an inline member in the header.
+// CState::SetBeginClearParams (0x8c970) - seed the begin-clear params.
+RVA(0x0008c970, 0x1c)
+i32 CState::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
+    m_cursorX = arg2;
+    m_cursorY = arg3;
+    return 1;
+}
 
 // @confidence: low
 // @source: winapi:PostMessageA

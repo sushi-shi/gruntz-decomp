@@ -58,8 +58,8 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Globals.h>
 
-#include <stdlib.h> // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
-#include <string.h> // strcmp (anim-name dispatch -> inline sbb/sbb byte compare)
+#include <stdlib.h>     // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
+#include <string.h>     // strcmp (anim-name dispatch -> inline sbb/sbb byte compare)
 #include <new>          // placement new (CRect in-place ctor)
 #include <Wap32/Rect.h> // canonical CRect (0x29ac0 direct-store ctor, was local QuadIntRecord)
 #include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (FindInLists12 0x116f20)
@@ -1222,6 +1222,27 @@ void* __stdcall ListNodeAdvance(void** it) {
 // timer advance are reconstructed in shape + order. Residual is the heavy stack
 // scheduling of the manual 7-dword tile-record copies (rep movs/stos) + the arm
 // regalloc; foreign unit/board chains are modeled by raw offset. Final sweep.
+// GetScreenPos (0x29a50) / IsAtSavedScreenPos (0x29a80) - CUserLogic leaf accessors
+// (declared in <Gruntz/UserLogic.h>); physically compiled in this TU.
+RVA(0x00029a50, 0x15)
+void CUserLogic::GetScreenPos(ScreenPoint* out) {
+    CGameObject* o = m_object;
+    i32 y = o->m_screenY;
+    i32 x = o->m_screenX;
+    out->x = x;
+    out->y = y;
+}
+
+RVA(0x00029a80, 0x29)
+i32 CUserLogic::IsAtSavedScreenPos() {
+    CGameObject* o = m_object;
+    i32 sx = *(i32*)((char*)this + 0x17c);
+    if (o->m_screenX == sx && o->m_screenY == *(i32*)((char*)this + 0x180)) {
+        return 1;
+    }
+    return 0;
+}
+
 RVA(0x00029b40, 0x813)
 i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
@@ -1705,6 +1726,12 @@ void* CBattlezMapConfig::Method_02ad40(i32) {
 // stack-slot schedule (the rand-offset dest coords + the dead maybe-null box branch
 // retail emits, shared with winapi_02c140/02dfa0) and the foreign unit/level chains
 // modeled by raw offset. Deferred to the final sweep.
+// Clear_02ade0 (0x2ade0) - clear the active flag.
+RVA(0x0002ade0, 0x7)
+void CBattlezMapConfig::Clear_02ade0() {
+    m_active = 0;
+}
+
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
     GridUnit* unit = (GridUnit*)unitArg;
@@ -2089,6 +2116,12 @@ i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
 // current cell-row are also state 3 and record that count on the unit.
 //   grid row = m_triggerMgr->m_grid[m_curCell*15 .. +15) (the CTriggerMgr 4x15 cell grid).
 // ===========================================================================
+// Method_02c080 (0x2c080) - always returns 1.
+RVA(0x0002c080, 0x8)
+i32 CBattlezMapConfig::Method_02c080(i32) {
+    return 1;
+}
+
 RVA(0x0002c0a0, 0x78)
 i32 CBattlezMapConfig::Method_02c0a0(i32 unitArg, i32 value) {
     GridUnit* unit = (GridUnit*)unitArg;
@@ -2283,8 +2316,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                             RECT r1;
                             (RECT*)new (&r1) CRect(0, 0, bd->m_width, bd->m_height);
                             RECT r2;
-                            RECT* p2r =
-                                (RECT*)new (&r2) CRect(0, 0, bd->m_width, bd->m_height);
+                            RECT* p2r = (RECT*)new (&r2) CRect(0, 0, bd->m_width, bd->m_height);
                             RECT rc;
                             rc.left = p2r->left;
                             rc.top = p2r->top;
@@ -2914,6 +2946,12 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
 // path-swap are reconstructed in shape + order. Residual is the 15-slot scan regalloc
 // (retail pins the slot index in [esp+0x4c] and the candidate in ebp) plus the /GX
 // cleanup epilogue funnel; foreign chains modeled by raw offset. Final sweep.
+// Method_02ed90 (0x2ed90) - always returns 0.
+RVA(0x0002ed90, 0x5)
+i32 CBattlezMapConfig::Method_02ed90(i32) {
+    return 0;
+}
+
 RVA(0x0002edb0, 0x6b4)
 i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
     GridUnit* unit = (GridUnit*)unitArg;

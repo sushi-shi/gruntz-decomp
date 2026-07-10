@@ -29,13 +29,7 @@ public:
     void RunAct(i32 id);        // 0x07f5c0 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x07f720 (register the class's activation handlers)
 
-    RVA(0x0007f920, 0x21)
-    i32 SetCell(i32 x, i32 y) {
-        m_cellX = x;
-        m_cellY = y;
-        m_38->m_stateFlags &= ~1;
-        return 1;
-    }
+    i32 SetCell(i32 x, i32 y); // 0x07f920
     i32 Update();              // 0x07f960
     // 0x07fa20: the serialize override - round-trip m_cellX/m_cellY (8 B) + m_lastLayer
     // (4 B) per mode (4=write @+0x30, 7=read @+0x2c), then chain CUserLogic::SerializeChain

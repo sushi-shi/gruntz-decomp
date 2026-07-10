@@ -14,7 +14,11 @@
 namespace m4 {
     class PwdHost {
     public:
-        i32 Render22160(void* hdc, i32 maxWidth, RECT* rect); // real @0x22160 arg is void* (Ghidra sym PAX)
+        i32 Render22160(
+            void* hdc,
+            i32 maxWidth,
+            RECT* rect
+        ); // real @0x22160 arg is void* (Ghidra sym PAX)
     };
 } // namespace m4
 
@@ -72,11 +76,11 @@ void CChatBoxOwner::Attach(void* reg, CChatBoxTextHost* host) {
     m_c = 1;
 }
 
-// CChatBoxOwner::Deactivate (0x00020510) is now an inline member in the header.
-
-
-// CChatBoxOwner::GetField1c (0x00020ef0) is now an inline member in the header.
-
+// Deactivate (0x00020510) - lower the active flag.
+RVA(0x00020510, 0x8)
+void CChatBoxOwner::Deactivate() {
+    m_c = 0;
+}
 
 // Configure - origin from the viewport for the given mode; mark dirty.
 // @early-stop
@@ -210,6 +214,12 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
 // at a shifted esp offset (same instruction multiset, /O2-invariant), plus the
 // frame guard `mov ecx,[..]; test` vs cl's `cmp [..],0` materialization. No local
 // source diff closes these (hoisting rect[0] regressed 83->82%). ~83%.
+// GetField1c (0x00020ef0) - return the box's caption/key CString (m_1c) by value.
+RVA(0x00020ef0, 0x20)
+CString CChatBoxOwner::GetField1c() {
+    return m_1c;
+}
+
 RVA(0x00020f40, 0x188)
 i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     CChatBoxOwner* self = this;

@@ -75,8 +75,13 @@ i32 CMotionState::SetParams(
     return 1;
 }
 
-// CMotionState::SetZ (0x00058ca0) is now an inline member in the header.
-
+// SetZ (0x58ca0) - set the z motion component into m_d8/m_e0/m_e8.
+RVA(0x00058ca0, 0x19)
+void CMotionState::SetZ(double z) {
+    m_d8 = z;
+    m_e0 = z;
+    m_e8 = z;
+}
 
 // ---------------------------------------------------------------------------
 // STEP_AXIS - the per-axis uniformly-accelerated 1D integrator, copy-pasted 3x

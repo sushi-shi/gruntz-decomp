@@ -224,7 +224,6 @@ static void GruntScratchTeardown();
 
 // CGrunt::GetTilePos (0x00031c70) is now an inline member in the header.
 
-
 // ---------------------------------------------------------------------------
 // CGrunt::ResolveMovingAnimation()
 // Gate: m_animResolved == 0 (else return 0). Feed key "GRUNTZ_<type>_MOVING" + geometry
@@ -3256,8 +3255,28 @@ void CGrunt::DestroyAnims() {
     AnimTeardownB();
 }
 
-// CGrunt::DispatchVtbl24 (0x0006b260) is now an inline member in the header.
+// CGrunt::GetTilePos (0x31c70) - write the HUD tile coords (m_10->m_5c/m_60 >> 5)
+// into the caller's {x,y} out slot and return it.
+// @early-stop
+// return-pointer regalloc wall (~58.9%): logic byte-faithful, but retail keeps `out`
+// in edx across the two stores and materializes the return via a trailing `mov eax,edx`,
+// where our cl pins `out` in eax and elides that move (cascading the m_5c/m_60 register
+// pair). Permuter found no closing spelling (operand-order invariant). Emits at 0x31c70.
+RVA(0x00031c70, 0x1d)
+GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
+    CGruntHud* h = m_10;
+    i32 x = h->m_5c >> 5;
+    i32 y = h->m_60 >> 5;
+    out->m_x = x;
+    out->m_y = y;
+    return out;
+}
 
+// CGrunt::DispatchVtbl24 (0x6b260) - tail-dispatch through virtual slot 9 (offset 0x24).
+RVA(0x0006b260, 0x5)
+void CGrunt::DispatchVtbl24() {
+    ((CVtSlot9*)this)->Slot9();
+}
 
 // @early-stop
 // reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified
@@ -4476,22 +4495,19 @@ i32 CGrunt::BuildGruntExitAnimation() {
     CSprite* found;
     i32 r = GruntRand() % 0x1e1;
     if (r > 0x140) {
-        found =
-            (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
+        found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
         CGameRegistry* g = g_pGameRegistry;
         if (GruntPointVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
             g->m_cueSink->CueA(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
-        found =
-            (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
+        found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
         CGameRegistry* g = g_pGameRegistry;
         if (GruntPointVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
             g->m_cueSink->CueA(this, 0x385, -1, 0, -1, -1);
         }
     } else {
-        found = (CSprite*)m_154->m_c->m_2c
-                    ->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
+        found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
         CGameRegistry* g = g_pGameRegistry;
         if (GruntPointVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
             g->m_cueSink->CueA(this, 0x386, -1, 0, -1, -1);

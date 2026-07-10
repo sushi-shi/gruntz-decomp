@@ -124,17 +124,18 @@ void Register6446d8Range() {
 struct CPairXY {
     i32 m_0;
     i32 m_4;
-    RVA(0x00075a10, 0x12)
-    CPairXY* Set(i32 a, i32 b) {
-        m_0 = a;
-        m_4 = b;
-        return this;
-    }
+    CPairXY* Set(i32 a, i32 b); // 0x75a10
 };
 
-// CPairXY::Set (0x00075a10) is now an inline member in the header.
-// RunHelper2914 (0xb4330) re-homed to src/Gruntz/Ufo.cpp as CUFO::Tick (matcher-6).
+// CPairXY::Set (0x75a10) - fill m_0/m_4 and return this. @identity-TODO: owner unrecovered.
+RVA(0x00075a10, 0x12)
+CPairXY* CPairXY::Set(i32 a, i32 b) {
+    m_0 = a;
+    m_4 = b;
+    return this;
+}
 
+// RunHelper2914 (0xb4330) re-homed to src/Gruntz/Ufo.cpp as CUFO::Tick (matcher-6).
 SIZE_UNKNOWN(CZDArrayDerived);
 SIZE_UNKNOWN(COwnerWithSubs);
 SIZE_UNKNOWN(CPairXY);

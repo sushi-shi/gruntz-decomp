@@ -19,15 +19,9 @@
 #include <Gruntz/LightFxRender.h>
 
 #include <Gruntz/GameRegistry.h> // the g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/TriggerMgr.h>   // g_gameReg->m_cmdGrid (+0x68): CTriggerMgr::ResetGroup @0x79520
+#include <Gruntz/Play.h>         // LfxMgr::m_2c draw context: CPlay::ResetGoals @0xd5f00
 #include <rva.h>
-class CTriggerMgr {
-public:
-    i32 ResetGroup(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g); // real @0x79520 = 7 args (ret 0x1c)
-}; // 0x79520
-class CPlay {
-public:
-    i32 ResetGoals(i32 a, i32 b);
-}; // 0xd5f00
 
 // The held surface (LfxBorderCtx::m_08 / CDDSurface::m_08) is the real
 // IDirectDrawSurface COM interface: `s->m_08->Unlock(0)` dispatches through slot 32
@@ -74,20 +68,9 @@ struct LfxSurfMgr {
     LfxView* m_24; // +0x24 the view/world-state object
 };
 
-// The draw context the apply-paths hand the pixel coords to (FUN_004d5f00).
-struct LfxDrawCtx {
-    // DrawAt @0xd5f00 IS CPlay::ResetGoals; cast at each call.
-};
-
-// The per-tile color/animation node returned by the ref table (GetA). The
-// renderer reads one of three 16-bit color slots (+0x8 / +0xa / +0xc) by the
-// alternate-set selector. Modeled NO-body; the GetA call reloc-masks.
-struct LfxColorNode {
-    char m_pad[0x8];
-    u16 m_08; // +0x08 color (alt==0 / default)
-    u16 m_0a; // +0x0a color (alt==2)
-    u16 m_0c; // +0x0c color (alt==1)
-};
+// The per-tile color node returned by the ref table (GetA) is the real
+// CSpriteRef (<Gruntz/SpriteRefTable.h>): the renderer reads one of its three
+// 16-bit team-color slots (+0x8 / +0xa / +0xc) by the alternate-set selector.
 
 // The game-registry sprite/animation reference table (g_gameReg+0x74). GetA maps
 // a kind index to its color node (FUN_004e2360, reloc-masked, ret 0x4).
@@ -96,7 +79,7 @@ struct LfxColorNode {
 // tile colors through +0x74 (the ref table).
 struct LfxMgr {
     char m_pad0[0x2c];
-    LfxDrawCtx* m_2c;    // +0x2c draw context
+    CPlay* m_2c;         // +0x2c draw context (CPlay::ResetGoals @0xd5f00)
     LfxSurfMgr* m_world; // +0x30 surface manager     -> this+0xc
     char m_pad34[0x68 - 0x34];
     LfxTileBank* m_68; // +0x68 tile-descriptor bank -> this+0x4
@@ -105,14 +88,9 @@ struct LfxMgr {
     CSpriteRefTable* m_74; // +0x74 sprite/animation ref table
 };
 
-// A surface the global-apply path blits through (g_gameReg->m_68). The 7-arg
-// engine entry FUN_00479520 is reloc-masked (no body).
-struct LfxBlitTarget {
-    // Blit @0x79520 IS CTriggerMgr::ResetGroup (8th arg reloc-masked, 0); cast at the call.
-};
-
-// g_gameReg singleton (*0x64556c) - the canonical CGameRegistry view; only the
-// +0x68 surface slot is read (cast locally to LfxBlitTarget at the deref site).
+// g_gameReg singleton (*0x64556c) - the canonical CGameRegistry view. The global
+// apply path blits through g_gameReg->m_cmdGrid (+0x68), the real CTriggerMgr
+// (<Gruntz/TriggerMgr.h>): CTriggerMgr::ResetGroup @0x79520.
 extern CGameRegistry* g_gameReg;
 
 // One tile cell of the grid row (stride 0x1c): +0x4 the tile id (-1 = empty),
@@ -178,7 +156,7 @@ extern i32 g_bDown; // blue  down-shift
 //   g_644c54 - the current area / world index
 //   g_645594 - a frame-quality / detail threshold (>=0x32 picks the live color)
 DATA(0x00245588)
-extern i32 g_645588;
+extern "C" u32 g_645588; // canonical ?g_clock@@3IA (unsigned; <Gruntz/TriggerMgr.h> et al.)
 DATA(0x00244c54)
 extern i32 g_644c54;
 DATA(0x00245594)
@@ -351,29 +329,29 @@ i32 CLightFxRender::Resize(i32 delta, i32 rebuild) {
                 alt = 1;
             }
             if ((i64)(u32)g_645588 - desc->m_870 >= desc->m_878 || desc->m_1ec != g_644c54) {
-                LfxColorNode* node = (LfxColorNode*)m_mgr->m_74->GetA(desc->m_1f4);
+                CSpriteRef* node = m_mgr->m_74->GetA(desc->m_1f4);
                 if (node == 0) {
                     *dst = 0;
                     continue;
                 }
                 if (alt == 0) {
-                    *dst = node->m_08;
+                    *dst = node->m_teamColor1;
                 } else if (alt == 1) {
-                    *dst = node->m_0c;
+                    *dst = node->m_teamColor2;
                 } else if (alt == 2) {
-                    *dst = node->m_0a;
+                    *dst = node->m_teamColor3;
                 } else {
-                    *dst = node->m_08;
+                    *dst = node->m_teamColor1;
                 }
                 continue;
             }
             if (g_645594 >= 0x32) {
-                LfxColorNode* node = (LfxColorNode*)m_mgr->m_74->GetA(desc->m_1f4);
+                CSpriteRef* node = m_mgr->m_74->GetA(desc->m_1f4);
                 if (node == 0) {
                     *dst = 0;
                     continue;
                 }
-                *dst = node->m_0c;
+                *dst = node->m_teamColor2;
                 continue;
             }
             i32 idx;
@@ -479,8 +457,7 @@ void CLightFxRender::DrawBorderRaw(LfxRect* r, void* base, i32 color) {
         tp[t] = (u16)color;
     }
     // Bottom edge.
-    u16* bp =
-        (u16*)((char*)base + r->bottom * m_surface->m_pitch + r->left * m_surface->m_b0);
+    u16* bp = (u16*)((char*)base + r->bottom * m_surface->m_pitch + r->left * m_surface->m_b0);
     for (i32 b = 0; b < w; b++) {
         bp[b] = (u16)color;
     }
@@ -1667,9 +1644,9 @@ i32 CLightFxRender::ApplyA(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    LfxDrawCtx* ctx = m_mgr->m_2c;
+    CPlay* ctx = m_mgr->m_2c;
     if (ctx != 0) {
-        ((CPlay*)ctx)->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
+        ctx->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
     m_handle = 1;
     return 1;
@@ -1696,8 +1673,7 @@ i32 CLightFxRender::ApplyGlobal(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    ((CTriggerMgr*)g_gameReg->m_cmdGrid)
-        ->ResetGroup(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1);
+    g_gameReg->m_cmdGrid->ResetGroup(cell[0] * 32 + 16, cell[1] * 32 + 16, 0, 0, 0, 0, 1);
     return 1;
 }
 
@@ -1713,9 +1689,9 @@ i32 CLightFxRender::ApplyB(i32, i32 x, i32 y) {
     if (!ClampRect(x, y, cell, 0x20)) {
         return 0;
     }
-    LfxDrawCtx* ctx = m_mgr->m_2c;
+    CPlay* ctx = m_mgr->m_2c;
     if (ctx != 0) {
-        ((CPlay*)ctx)->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
+        ctx->ResetGoals(cell[0] * 32 + 16, cell[1] * 32 + 16);
     }
     return 1;
 }
@@ -1759,17 +1735,13 @@ i32 CLightFxRender::ClampRect(i32 x, i32 y, i32* out, i32 margin) {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CLightFxRender);
-SIZE_UNKNOWN(LfxBlitTarget);
 SIZE_UNKNOWN(LfxBorderCtx);
 SIZE_UNKNOWN(LfxCell);
-SIZE_UNKNOWN(LfxColorNode);
-SIZE_UNKNOWN(LfxDrawCtx);
 SIZE_UNKNOWN(LfxGrid);
 SIZE_UNKNOWN(LfxMgr);
 SIZE_UNKNOWN(LfxRect);
 SIZE_UNKNOWN(LfxSurfMgr);
 SIZE_UNKNOWN(LfxTileBank);
 SIZE_UNKNOWN(LfxTileDesc);
-SIZE_UNKNOWN(LfxUnlockIface);
 SIZE_UNKNOWN(LfxView);
 SIZE_UNKNOWN(LfxWorldRect);

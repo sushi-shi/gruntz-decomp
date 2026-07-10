@@ -88,8 +88,8 @@ struct CHudSprite {
     // and ApplyLookupGeometry(key, frame) (0x1505b0, ret 8). External/reloc-masked.
     // The CGameObject-base name/sprite setters, folded here (the former per-TU CGruntSprite
     // facet view is gone); the created sprite IS this game object.
-    void CacheFirstFrame(const char* name);              // 0x1504d0
-    void CacheFrame(const char* key, i32 frame);         // 0x150540 (ApplyName)
+    void CacheFirstFrame(const char* name);               // 0x1504d0
+    void CacheFrame(const char* key, i32 frame);          // 0x150540 (ApplyName)
     void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
 
     char m_pad0[0x8];
@@ -382,14 +382,14 @@ public:
     // player directly (external/reloc-masked so the call rel32 masks; the former per-TU
     // CGruntSprite/CGruntAnimPlayer facet views are folded here). The player IS the
     // created game object.
-    void CacheFirstFrame(const char* name);              // 0x1504d0
+    void CacheFirstFrame(const char* name); // 0x1504d0
     // The 2-arg frame-cache form at the same 0x1504d0 slot (the CGameObject-base
     // ApplyLookupSprite(key, flag); the entrance re-stamp steps drive it with the
     // built cell-name buffer + the active descriptor's first-element frame index).
     void CacheFrameIndexed(const char* key, i32 frame);   // 0x1504d0 (2-arg)
-    void CacheFrame(const char* key, i32 frame);         // 0x150540
+    void CacheFrame(const char* key, i32 frame);          // 0x150540
     void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
-    void ApplyGeometryDirect(i32 src, i32 flag);         // 0x58b60
+    void ApplyGeometryDirect(i32 src, i32 flag);          // 0x58b60
 
     char m_pad0[0x8];
     i32 m_8;              // +0x08  state-flag word (death loader |= 1 / |= 0x10000)
@@ -1203,10 +1203,10 @@ public:
     // registry g_reg_644af0 and dispatches it as a PMF on `this`; else returns the
     // entry pointer. Same archetype as CPathHazard::RunAct.
     i32 RunAct(i32 id);
-    virtual i32 UserLogicVfunc3() OVERRIDE;    // slot 5  (0x5ecd0)
-    virtual i32 Activate() OVERRIDE;           // slot 6  @0x5caa0
-    virtual i32 UserLogicVfunc6() OVERRIDE;    // slot 8  (0x62b40)
-    virtual i32 UserLogicVfunc7() OVERRIDE;    // slot 9  @0x61cb0 (attack-fire step)
+    virtual i32 UserLogicVfunc3() OVERRIDE; // slot 5  (0x5ecd0)
+    virtual i32 Activate() OVERRIDE;        // slot 6  @0x5caa0
+    virtual i32 UserLogicVfunc6() OVERRIDE; // slot 8  (0x62b40)
+    virtual i32 UserLogicVfunc7() OVERRIDE; // slot 9  @0x61cb0 (attack-fire step)
     // slot 9 @0x61cb0 - the per-frame ATTACK-FIRE step (defined in
     // ProjectileUpdate.cpp): ticks the attack anim; at the fire cue spawns the
     // ranged projectile ("Projectile"/"Boomerang"/"TimeBomb" by tool kind) or
@@ -1642,15 +1642,7 @@ public:
     void DestroyAnims();                    // @0x57d80
     // @0x31c70 (ret 4) - write the grunt's HUD tile coords (m_10->m_5c/m_60 >> 5)
     // into the caller's {x,y} out slot and return it.
-    struct RVA(0x00031c70, 0x1d)
- GruntTilePos* GetTilePos(struct GruntTilePos* out) {
-     CGruntHud* h = m_10;
-     i32 x = h->m_5c >> 5;
-     i32 y = h->m_60 >> 5;
-     out->m_x = x;
-     out->m_y = y;
-     return out;
- }
+    struct GruntTilePos* GetTilePos(struct GruntTilePos* out); // 0x31c70 (out-of-line in Grunt.cpp)
     // @0x57c40 (ret 4) - lazily build + play the grunt's struck-voice sample for the
     // given sound key (stored into the +0x428 slot ClearSubB frees).
     void EnsureStruckVoice(const char* key);
@@ -1671,10 +1663,7 @@ public:
     void EntranceTileOffset(i32* out); // @0x56f80 (ret 4) adjacent-tile pixel pos
     void ComputeFacing(double dt);     // @0x57060 (ret 8)
     i32 ResetGeometry();               // @0x616e0
-    RVA(0x0006b260, 0x5)
-    void DispatchVtbl24() {
-        ((CVtSlot9*)this)->Slot9();
-    }
+    void DispatchVtbl24();             // 0x6b260 (out-of-line in Grunt.cpp)
 
     void PlayMoveSound(i32 x, i32 y);              // @0x511b0 (ret 8)
     void PlaySound(i32 range, CGruntVoiceRec rec); // @0x4ac10 (ret 0x10) external

@@ -26,12 +26,7 @@ public:
     void RunAct(i32 id);        // 0x07e660 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x07e7c0 (register the class's activation handlers)
 
-    RVA(0x0007e9c0, 0x16)
-    i32 SetCell(i32 x, i32 y) {
-        m_cellX = x;
-        m_cellY = y;
-        return 1;
-    }
+    i32 SetCell(i32 x, i32 y); // 0x07e9c0
     i32 Update();              // 0x07e9f0
 
     i32 m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_geoId)
