@@ -70,6 +70,9 @@ struct CSndHost {
     // miss). Reloc-masked (no body). Was mis-modeled as an extern "C" __stdcall
     // free fn (the bytes matched only because ecx was coincidentally the host at
     // every call site).
+    // Register a level asset-namespace key into the finder (@0x1580b0; reloc-masked;
+    // called by CGruntzMgr's level-asset-key register step with a null / prefix key).
+    i32 RegisterKey(const char* key); // 0x1580b0
 };
 SIZE_UNKNOWN(CSndHost);
 

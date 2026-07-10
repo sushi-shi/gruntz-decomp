@@ -71,6 +71,9 @@ struct CWorldDispatch {
     STDMETHOD_(void, v08)() PURE;
     STDMETHOD_(void, v09)() PURE;
     STDMETHOD_(void, Slot0a)() PURE; // slot 10 (+0x28)
+    // Non-virtual pre-level reset (@0x08dd80, reached via ILT thunk 0x1406); the
+    // asset-key register step calls it twice on the world dispatch object.
+    void Prepare(); // 0x08dd80
 };
 
 // CGruntzMgr::m_lobby is the REAL DirectPlay lobby COM interface (IDirectPlayLobby,
@@ -446,6 +449,9 @@ struct CColorRow {
 };
 // The object held in CWorldZ +0x10; its +0x10 is the embedded CColorLookup.
 struct CWorldLookupHolder {
+    // Register a level asset-namespace key (@0x155460, /GX; reloc-masked). Called
+    // with a null key or one of the "GRUNTZ"/"LEVEL"/"ACTION" prefixes + a flag.
+    i32 RegisterKey(const char* key, i32 flag); // 0x155460
     char m_pad0[0x10];
     CColorLookup m_10; // +0x10  (sub-object, NOT a pointer)
 };
@@ -750,6 +756,60 @@ void CGruntzMgr::ReportError(WPARAM wParam, LPARAM lParam) {
     if (pApp) {
         pApp->ReportError(wParam, lParam);
     }
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::XorLiveObjectFlags  (@0x08dc20, ret 4)
+// Toggle the given flag bits (m_stateFlags @+0x40) on every live object in the
+// world sprite factory's created-object list (m_world->m_8->m_liveObjects).
+// @early-stop
+// byte-proven (llvm-objdump -dr base vs target): the loop body is byte-identical;
+// the ONLY difference is the list-head access. Retail computes `m_8+0x10` then reads
+// `[+4]` with a dead null-preserving check (`add eax,0x10; je`), i.e. it reaches the
+// head through a CObList/CPtrList sub-object at factory+0x10 (head @+0x14 = the
+// sub-object's m_pNodeHead) rather than the flat `m_liveObjects@+0x14` field the
+// ScanObjects walkers use. No source spelling over the flat field reproduces the
+// +0x10 intermediate + its dead guard; the 3-instr shift cascades to 87.6%.
+RVA(0x0008dc20, 0x2b)
+void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
+    CSpriteListNode* node = m_world->m_8->m_liveObjects;
+    while (node) {
+        CSpriteListNode* cur = node;
+        node = node->next;
+        CGameObject* obj = cur->m_sprite;
+        if (obj) {
+            obj->m_stateFlags ^= mask;
+        }
+    }
+}
+
+// The asset-namespace key at 0x60ba44 (an unlabeled .rdata datum; reloc-masked).
+extern const char s_assetKeyBa44[]; // 0x60ba44
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::RegisterLevelAssetKeys  (@0x08dc90, ret 0)
+// (Re)register the level asset-namespace keys into the world's lookup holder
+// (m_10, with a flag) and its sound host (m_28), resetting the world coord
+// dispatch (m_1c) twice in between. No-op with no world loaded.
+RVA(0x0008dc90, 0xb1)
+void CGruntzMgr::RegisterLevelAssetKeys() {
+    CWorldZ* w = m_world;
+    if (w == 0) {
+        return;
+    }
+    w->m_10->RegisterKey(0, 1);
+    w->m_28->RegisterKey(0);
+    ((CWorldDispatch*)w->m_1c)->Prepare();
+    ((CWorldDispatch*)w->m_1c)->Prepare();
+    w->m_10->RegisterKey(0, 1);
+    w->m_10->RegisterKey("GRUNTZ", 1);
+    w->m_10->RegisterKey(s_assetKeyBa44, 1);
+    w->m_10->RegisterKey("LEVEL", 1);
+    w->m_10->RegisterKey("ACTION", 1);
+    w->m_28->RegisterKey(0);
+    w->m_28->RegisterKey("GRUNTZ");
+    w->m_28->RegisterKey(s_assetKeyBa44);
+    w->m_28->RegisterKey("LEVEL");
 }
 
 // -------------------------------------------------------------------------

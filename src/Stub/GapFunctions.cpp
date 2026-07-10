@@ -87,22 +87,6 @@ RVA(0x00043670, 0xc20)
 i32 Gap_043670(void) {
     return 0;
 } // @stub
-RVA(0x0005ecd0, 0x4f3)
-i32 Gap_05ecd0(void) {
-    return 0;
-} // @stub
-RVA(0x00063b60, 0x1cf)
-i32 Gap_063b60(void) {
-    return 0;
-} // @stub
-RVA(0x0008dc20, 0x2b)
-i32 Gap_08dc20(void) {
-    return 0;
-} // @stub
-RVA(0x0008dc90, 0xb1)
-i32 Gap_08dc90(void) {
-    return 0;
-} // @stub
 // @stub 0xb8020 (559 B) - large leaf-first body, no vtable-ref; deferred to a
 // dedicated hard-gaps pass (big-function bottom-up doctrine, >512 B).
 RVA(0x000b8020, 0x22f)

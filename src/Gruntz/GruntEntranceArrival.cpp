@@ -8,14 +8,153 @@
 // arrival-drop, entrance-reset and geometry-reset tails. Only offsets + code
 // bytes are load-bearing.
 #include <Gruntz/Grunt.h>
-#include <Gruntz/AniElement.h> // CAniElement::m_records (active-descriptor frame array)
-#include <Gruntz/InGameIcon.h> // CInGameIcon::PlaceAt (the tile-icon the map resolves)
+#include <Gruntz/AniElement.h>
 #include <rva.h>
+#include <string.h>
+
+// The tile-icon PlaceAt (@0x986b0, __thiscall(idx, gridBase); reloc-masked). Its
+// canonical class CInGameiCon lives in <Gruntz/InGameIcon.h>, but that header pulls
+// <Mfc.h> whose real MFC CString would replace CGrunt's lightweight String.h CString
+// bodies and shift CGrunt's layout - so the map-resolved icon is reached through this
+// minimal call-shape helper (only the reloc-masked `mov ecx,icon; call PlaceAt` shape
+// is load-bearing) instead of the MFC-pulling full class.
+SIZE_UNKNOWN(GruntTileIcon); // call-shape shim for CInGameiCon (unpinned; fold-target)
+struct GruntTileIcon {
+    i32 PlaceAt(i32 idx, i32 gridBase); // 0x0986b0
+};
 
 // The default geometry-source token (g_defaultGeo @0x6bf3bc; defined in
 // SpriteResource.cpp, reloc-masked here) each step arms the entrance sub-player with.
 extern i32 g_defaultGeo;
 // g_645588 (the running game clock) is declared by MovingLogic.h via Grunt.h.
+
+// The primary MS-CRT LCG generator state (inlined by the re-roll step; reloc-masked).
+extern u8 g_randSeeded;                   // 0x6c127d (bit 0 = seeded)
+extern i32 g_randSeed;                    // 0x6c1288 (32-bit LCG state)
+extern u32(__stdcall* g_pTimeGetTime)();  // 0x6c4650 (PTR_timeGetTime, the seed source)
+
+// The per-tick draw-clock delta the position interpolation scales by (reloc-masked).
+extern "C" u32 g_645584; // 0x645584
+// The FP sign threshold (0.0) the overshoot clamp compares the per-cell velocity to.
+extern double s_fpZero; // 0x5e9a68
+// The scratch-branch anim type code the position step latches on (reloc-masked).
+extern const char k_60df94[]; // 0x60df94
+
+// The g_animScratch[] CString teardown the scratch-resolve reject path runs (Release
+// each non-null slot, g_animScratchCount times). The shared loop-strength-reduction
+// wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
+static void GruntPosScratchTeardown() {
+    CAnimScratchString* slot = g_animScratch;
+    i32 cnt = g_animScratchCount;
+    while (cnt != 0) {
+        if (slot != 0) {
+            ((CString*)slot)->~CString();
+        }
+        slot++;
+        cnt--;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::RunPositionInterpStep(arg)   @0x5ecd0   (ret 4, vtable slot-5 body)
+// @early-stop
+// complete reconstruction (all logic + control flow: the Finalize + slot-16 tick,
+// the L/G ClearSubA gate, the off-screen ClearSubB gate, and BOTH the "O" and the
+// scratch-resolved position-interpolation arms with the per-cell velocity math +
+// overshoot clamp). A documented x87-scheduling wall (the fld/fmul/fadd/fcom + the
+// fnstsw/test-ah overshoot clamp is not source-steerable), compounded by the
+// strcmp-eq-setcc dispatch and the scratch-teardown loop-strength-reduction wall,
+// same family as StepEntranceReinit / StepCombatReaction in Grunt.cpp. Homed here
+// (out of the Gap stub) as a real CGrunt method so its 0x5ecd0 symbol resolves for
+// callers; the % is a codegen wall, not a shape error.
+RVA(0x0005ecd0, 0x4f3)
+i32 CGrunt::RunPositionInterpStep(i32 arg) {
+    FinalizeStep(arg);
+    MovingSlot16();
+    if (m_424 != 0) {
+        bool neL = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeL) != 0);
+        if (neL && strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeG) != 0) {
+            ClearSubA();
+        }
+    }
+    if (m_428 != 0) {
+        if (m_gruntKind == 0) {
+            ClearSubB();
+        } else {
+            CGameRegistry* g = g_pGameRegistry;
+            i32 x = m_10->m_5c;
+            i32 y = m_10->m_60;
+            if (!(x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
+                  && y >= g->m_viewOriginT)) {
+                ClearSubB();
+            }
+        }
+    }
+    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeO) == 0) {
+        // "O": flip the entrance cell col/row (0<->2), interpolate toward the target.
+        if (m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
+            return 0;
+        }
+        GruntEntranceCell c = *(GruntEntranceCell*)m_entranceCell;
+        i32 col = (c.col == 0) ? 2 : (c.col == 2 ? 0 : c.col);
+        i32 row = (c.row == 0) ? 2 : (c.row == 2 ? 0 : c.row);
+        i32 base = 3 * col + row;
+        char* cell = (char*)&m_cells[base];
+        double d48 = *(double*)(cell + 0x48);
+        double d50 = *(double*)(cell + 0x50);
+        m_408 = (double)(i64)(u32)g_645584 * d48 * m_400 + m_408;
+        m_410 = (double)(i64)(u32)g_645584 * d50 * m_400 + m_410;
+        i32 nx = (i32)(*(double*)(cell + 0x58) + m_408);
+        i32 ny = (i32)(*(double*)(cell + 0x60) + m_410);
+        if ((d48 > s_fpZero && nx > m_lastTilePxX) || (d48 < s_fpZero && nx < m_lastTilePxX)) {
+            nx = m_lastTilePxX;
+        }
+        if ((d50 > s_fpZero && ny > m_lastTilePxY) || (d50 < s_fpZero && ny < m_lastTilePxY)) {
+            ny = m_lastTilePxY;
+        }
+        m_10->m_5c = nx;
+        m_10->m_60 = ny;
+        CGruntHud* h = m_10;
+        i32 v = h->m_60 + 0x186a0;
+        if (h->m_74 != v) {
+            h->m_74 = v;
+            h->m_8 |= 0x20000;
+        }
+        return 0;
+    }
+    // scratch-resolved branch: tear down the scratch CString[], latch on k_60df94.
+    CAnimNameRecord* rec = g_animNameResolver.ScratchResolve(m_14->m_1c);
+    GruntPosScratchTeardown();
+    if (strcmp(rec->m_name, k_60df94) == 0) {
+        if (m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
+            return 0;
+        }
+        GruntEntranceCell c = *(GruntEntranceCell*)m_entranceCell;
+        i32 base = 3 * c.col + c.row;
+        char* cell = (char*)&m_cells[base];
+        double d48 = *(double*)(cell + 0x48);
+        double d50 = *(double*)(cell + 0x50);
+        m_408 = (double)(i64)(u32)g_645584 * d48 * m_400 + m_408;
+        m_410 = (double)(i64)(u32)g_645584 * d50 * m_400 + m_410;
+        i32 nx = (i32)(*(double*)(cell + 0x58) + m_408);
+        i32 ny = (i32)(*(double*)(cell + 0x60) + m_410);
+        if ((d48 > s_fpZero && nx > m_lastTilePxX) || (d48 < s_fpZero && nx < m_lastTilePxX)) {
+            nx = m_lastTilePxX;
+        }
+        if ((d50 > s_fpZero && ny > m_lastTilePxY) || (d50 < s_fpZero && ny < m_lastTilePxY)) {
+            ny = m_lastTilePxY;
+        }
+        m_10->m_5c = nx;
+        m_10->m_60 = ny;
+        CGruntHud* h = m_10;
+        i32 v = h->m_60 + 0x186a0;
+        if (h->m_74 != v) {
+            h->m_74 = v;
+            h->m_8 |= 0x20000;
+        }
+    }
+    return 0;
+}
 
 // The geometry sub-player's m_20/m_28 live PAST the player's own m_1b4, so they
 // are read via raw offsets off &player->m_1a0 (same as FinishEntranceMove) to keep
@@ -96,6 +235,89 @@ i32 CGrunt::StepEntranceRelatchA() {
     ClearSubA();
     if (ready == 1) {
         UpdateArrival(0, 0);
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::StepArrivalReroll()   @0x63b60   (ret 0)
+// The arrival re-roll idle timer: advance the entrance geometry, then once the
+// struck-cooldown timer (m_8c0) has elapsed past 10000ms on an exact 1000ms tick,
+// roll the MS-CRT LCG (inlined) against a shrinking window and, when it clears the
+// 0x7148 threshold, roll a 0..100 pick and fire the on-screen event/spawn cue
+// (CueEvent when pick>0x19, else CueSpawn) if the grunt is inside the visible rect.
+// @early-stop
+// complete reconstruction (all logic incl. the three inlined LCG rolls); ~76%
+// plateau. Residue is the saturated-elapsed i64 sbb/branch regalloc + the repeated
+// inline-rand seed materialization scheduling (not source-steerable) + reloc-masked
+// cue operands. Correct shape + control flow; a codegen wall.
+RVA(0x00063b60, 0x1cf)
+i32 CGrunt::StepArrivalReroll() {
+    m_154->m_1a0.Advance_15c360((u32)g_defaultGeo);
+    i64 diff = (i64)(u32)g_645588 - *(i64*)&m_8c0;
+    u32 elapsed;
+    if (diff >= 0) {
+        elapsed = (u32)diff;
+    } else {
+        elapsed = 0;
+    }
+    if (elapsed <= 0x2710) {
+        return 0;
+    }
+    if (elapsed % 1000 != 0) {
+        return 0;
+    }
+    i32 v;
+    i32 range = 0x7531 - elapsed;
+    u32 x;
+    if (range == 0) {
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
+            x = g_pTimeGetTime();
+        } else {
+            x = g_randSeed;
+        }
+        g_randSeed = x * 214013 + 2531011;
+        if (g_randSeed & 0x10000) {
+            v = elapsed;
+        } else {
+            v = 0x7530;
+        }
+    } else {
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
+            x = g_pTimeGetTime();
+        } else {
+            x = g_randSeed;
+        }
+        g_randSeed = x * 214013 + 2531011;
+        v = (((i32)g_randSeed >> 16) & 0x7fff) % range + elapsed;
+    }
+    if (v <= 0x7148) {
+        return 0;
+    }
+    u32 x2;
+    if (!(g_randSeeded & 1)) {
+        g_randSeeded |= 1;
+        x2 = g_pTimeGetTime();
+    } else {
+        x2 = g_randSeed;
+    }
+    g_randSeed = x2 * 214013 + 2531011;
+    i32 pick = (((i32)g_randSeed >> 16) & 0x7fff) % 0x65;
+    CGruntHud* h = m_10;
+    i32 y = h->m_60;
+    i32 xp = h->m_5c;
+    CGameRegistry* g = g_pGameRegistry;
+    CCueRect* r = (CCueRect*)(g->m_world->m_24->m_5c + 0x40);
+    if (pick > 0x19) {
+        if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
+            g->m_cueSink->CueEvent(this, 0x15d, -1, 0, -1, -1);
+        }
+    } else {
+        if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
+            g->m_cueSink->CueSpawn(this, 9, -1, -1, -1);
+        }
     }
     return 0;
 }
@@ -263,7 +485,7 @@ i32 CGrunt::StepEntranceRelatchB() {
     }
     if (result != 0) {
         void* aux = *(void**)((char*)result + 0x7c);
-        CInGameIcon* icon = *(CInGameIcon**)((char*)aux + 0x18);
+        GruntTileIcon* icon = *(GruntTileIcon**)((char*)aux + 0x18);
         icon->PlaceAt(m_tileOwnerHi, m_tileOwnerLo);
         return 0;
     }

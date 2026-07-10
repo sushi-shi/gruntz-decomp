@@ -191,6 +191,13 @@ public:
     void Post(i32 code); // @0x090220
     i32 SaveGameAs();    // @0x092f00 (save-as name dialog -> WM_COMMAND 0x80e3)
     void ReportError(WPARAM wParam, LPARAM lParam); // @0x08dc60  -> m_8->vtbl[0x1c]
+    // @0x08dc20 (ret 4) - XOR the flag bits (m_stateFlags) on every live world
+    // sprite-factory object (m_world->m_8->m_liveObjects).
+    void XorLiveObjectFlags(i32 mask);
+    // @0x08dc90 (ret 0) - (re)register the level asset-namespace keys ("GRUNTZ" /
+    // "LEVEL" / "ACTION") into the world's lookup holder (m_10) and sound host (m_28),
+    // resetting the world coord dispatch (m_1c) in between. No-op with no world.
+    void RegisterLevelAssetKeys();
     char GetGruntzDriveLetter();                    // @0x08fa70  (memoised CD letter)
     RVA(0x0008fa40, 0x16)
     i32 IsInPlayState() {

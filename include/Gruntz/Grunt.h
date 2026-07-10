@@ -1838,6 +1838,16 @@ public:
     // load RunningTimePerTile, fire the on-screen spawn cue, and re-stamp the cell frame.
     i32 StartBombGruntRun(); // @0x68520
 
+    // @0x5ecd0 (ret 4, vtable slot-5 body; 1-arg - the no-arg UserLogicVfunc3()
+    // base placeholder blocks the OVERRIDE spelling, so it is a plain RVA method
+    // like RunAct). Finalize + slot-16 tick, gated anim-code cleanups (L/G ->
+    // ClearSubA, off-screen -> ClearSubB), then on the "O" (or scratch-resolved)
+    // anim code smoothly interpolate the grunt's HUD position toward the target
+    // tile using the per-cell velocity records (m_cells[base] +0x48..+0x60 doubles),
+    // clamping on overshoot, and mark the HUD scroll dirty.
+    i32 RunPositionInterpStep(i32 arg);
+    void FinalizeStep(i32 a); // @0x8b90 (thunk 0x3913; run on `this`)
+
     // --- entrance/arrival per-tick steps (RunAct-dispatched; GruntEntranceArrival.cpp) ---
     // Each advances the entrance geometry sub-player (m_154->m_1a0.Advance_15c360),
     // and (once the sub-player is armed-but-not-running: m_1a0.m_28!=0 && m_1a0.m_20==0)
