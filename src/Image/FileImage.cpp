@@ -113,6 +113,52 @@ void CDDSurface::FlipVertical() {
 }
 
 // ---------------------------------------------------------------------------
+// The rotated-blit transform-setup worker (ImageRotate.cpp, 0x145f60). Declared
+// locally with the 9-arg tail these three thunks pass (retail under-passes the
+// 10th param); reloc-masked, so the decl shape only drives the push sequence.
+extern void ImageRotateBlit(
+    i32 a1,
+    i32 a2,
+    i32* pivot,
+    void* dst,
+    void* in,
+    i32 a6,
+    float angle,
+    float scale,
+    i32 a9
+);
+
+// RotateBlit / ScaleBlit / RotateScaleBlit (0x141040 / 0x141200 / 0x141240) - thin
+// arg-reorder thunks forwarding to ImageRotateBlit with `this` as the destination.
+// Each returns 1. Orphan copies (no caller); __thiscall.
+RVA(0x00141040, 0x36)
+i32 CDDSurface::RotateBlit(i32 rect, i32 pivot, i32 a1, i32 a2, float angle, float scale, i32 a9) {
+    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, 0, angle, scale, a9);
+    return 1;
+}
+
+RVA(0x00141200, 0x39)
+i32 CDDSurface::ScaleBlit(i32 rect, i32 pivot, i32 a1, i32 a2, i32 a6, float scale, i32 a9) {
+    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, a6, 1.0f, scale, a9);
+    return 1;
+}
+
+RVA(0x00141240, 0x39)
+i32 CDDSurface::RotateScaleBlit(
+    i32 rect,
+    i32 pivot,
+    i32 a1,
+    i32 a2,
+    i32 a6,
+    float angle,
+    float scale,
+    i32 a9
+) {
+    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, a6, angle, scale, a9);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // DecodeThunk - a glue forwarder that rebuilds a 16-byte rect/clip record
 // from its trailing args on the stack and tail-calls the image worker (0x1471d0) with
 // the six leading scalar args + that record passed by value, then cleans 0x2c of stack

@@ -60,6 +60,7 @@ struct B_13dee0 {
     char _20[0x28 - 0x20];
     i32 m_28; // 0x28
     void Set(i32 v);
+    i32 TrySet(i32 v); // 0x13df00
 };
 SIZE_UNKNOWN(B_13dee0);
 
@@ -102,7 +103,6 @@ SIZE_UNKNOWN(B_13ee30);
 
 // (0x13c8f0 CRezItm::Check re-homed to src/Rez/RezMgr.cpp; RezDir view dissolved onto
 // the canonical CRezItm.)
-
 
 // (0x138f20 re-homed to CGruntzSoundInnerZ::Retrigger in src/Dsndmgr/GruntzSoundZ.cpp; view dissolved.)
 

@@ -164,6 +164,21 @@ namespace Utils {
     }
 
     // -------------------------------------------------------------------------
+    // RegistryHelper::DeleteValue (0x139620) - RegDeleteValueA on the deepest key.
+    // Guards the open gate + a null name; returns success (LONG == ERROR_SUCCESS).
+    // Orphan copy (inlined at all call sites).
+    RVA(0x00139620, 0x28)
+    i32 RegistryHelper::DeleteValue(char* szValueName) {
+        if (!m_open) {
+            return 0;
+        }
+        if (!szValueName) {
+            return 0;
+        }
+        return RegDeleteValueA(m_valueKey, szValueName) == 0;
+    }
+
+    // -------------------------------------------------------------------------
     // RegistryHelper::SetValueString
     // Writes szValue as a REG_SZ value (length includes the terminator).
     // Returns nonzero on success.

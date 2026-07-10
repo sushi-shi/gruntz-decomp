@@ -281,68 +281,61 @@ RVA(0x00139410, 0x45)
 i32 Gap_139410(void) {
     return 0;
 } // @stub
-RVA(0x00139620, 0x28)
-i32 Gap_139620(void) {
-    return 0;
-} // @stub
+// @stub 0x139810 = CParseSource method (RVA-contiguous: 0x139800..0x139960 is
+// ParseSource.cpp). Walks this->m_10's linked list (node->m_1c=next, node->m_0=str,
+// _g_emptyString sentinel), concatenating strings into arg1 via inline strcpy/strlen
+// (rep movs / repne scas) + operator new. Deferred (defer-huge doctrine, 319 B of
+// inline string-copy scheduling is a rep-movs codegen minefield). Home: ParseSource.cpp.
 RVA(0x00139810, 0x146)
 i32 Gap_139810(void) {
     return 0;
 } // @stub
+// @stub 0x13ba20 = __thiscall (ecx=this): iterate this->m_14 linked list
+// (node->m_4=next), call virtual slot 7 (@+0x1c) on each node, AND the results,
+// return "all true". Bute/SymParser region (0x13b9..0x13be40 = SymTab.cpp/SymParser.cpp/
+// BoundaryUpper2 orphans); owning class not confidently resolved (orphan, no xref).
 RVA(0x0013ba20, 0x27)
 i32 Gap_13ba20(void) {
     return 0;
 } // @stub
+// @stub 0x13ba80 = __thiscall string setter: RezFree(this->m_4); this->m_4 =
+// operator new(strlen(arg)+1); strcpy(m_4, arg). Bute/SymTab region; owning class
+// with a char* @+0x4 not confidently resolved (orphan, no xref).
 RVA(0x0013ba80, 0x57)
 i32 Gap_13ba80(void) {
     return 0;
 } // @stub
+// @stub 0x13d3a0 = CGameWnd virtual (vtbl slots @0x1ea328 CGruntzWnd + @0x1ea398
+// CGameWnd, last slot). Unpacks a packed x/y (lo=x, hi=y) and offers (y,x,arg2) in
+// turn to this->m_owner's vtbl[10], this's own vtbl[2], and m_owner->m_8's vtbl[5];
+// returns on the first true. Deferred: needs CGameApp(m_owner) vtable slot-10 sig +
+// CGameWnd slot-2 re-typed to (y,x,arg2) + the m_8 sub-object vtable modeled first.
 RVA(0x0013d3a0, 0x6a)
 i32 Gap_13d3a0(void) {
     return 0;
 } // @stub
-RVA(0x0013d530, 0x55)
-i32 Gap_13d530(void) {
-    return 0;
-} // @stub
-RVA(0x0013df00, 0x25)
-i32 Gap_13df00(void) {
-    return 0;
-} // @stub
+// @stub 0x13e010 = __cdecl varargs debug-trace: char buf[256]; vsprintf(buf, fmt, ap)
+// (0x121770=vsprintf); OutputDebugStringA(buf). Free function; no confident owning
+// TU/module (DDrawMgr/Image region). Deferred pending a home.
 RVA(0x0013e010, 0x32)
 i32 Gap_13e010(void) {
     return 0;
 } // @stub
+// @stub 0x13e8f0 = __thiscall image-cache reload (DIRSURF.CPP): scalar-deletes each
+// g_imageCache element, clears this->m_94 (CDdObArray) + g_imageCache, rebuilds via
+// this->m_8->vtbl[9](0, &CImageFactory::Build_13e9a0), reports through
+// CDirectDrawMgr::GetErrorString, then repopulates m_94 from g_imageCache. Deferred:
+// needs the owning class (m_8 w/ vtable + m_94 array) + the Build PMF push modeled.
 RVA(0x0013e8f0, 0xb0)
 i32 Gap_13e8f0(void) {
     return 0;
 } // @stub
-RVA(0x00141040, 0x36)
-i32 Gap_141040(void) {
-    return 0;
-} // @stub
+// @stub 0x141080 = CDDSurface rotated-blit transform builder: fild/fxch-heavy x87
+// assembly of a corner-transform record on a 0x8c-byte local, then call 0x146550
+// (RotateRasterize). Deferred (x87 fld/fxch scheduling wall, sibling of the ~30%
+// ImageRotateBlit; not source-steerable).
 RVA(0x00141080, 0x174)
 i32 Gap_141080(void) {
-    return 0;
-} // @stub
-RVA(0x00141200, 0x39)
-i32 Gap_141200(void) {
-    return 0;
-} // @stub
-RVA(0x00141240, 0x39)
-i32 Gap_141240(void) {
-    return 0;
-} // @stub
-RVA(0x00141ff0, 0x6c)
-i32 Gap_141ff0(void) {
-    return 0;
-} // @stub
-RVA(0x00143420, 0x4b)
-i32 Gap_143420(void) {
-    return 0;
-} // @stub
-RVA(0x00143810, 0x2b)
-i32 Gap_143810(void) {
     return 0;
 } // @stub
 RVA(0x00148ac0, 0x2b)

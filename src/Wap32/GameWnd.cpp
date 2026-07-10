@@ -134,6 +134,20 @@ void CGameWnd::PumpMessages(u32 filterMsg, i32 count) {
     }
 }
 
+// CGameWnd::PumpMessagesRange - the [filterMin, filterMax] range variant of
+// PumpMessages (0x13d530). Orphan copy (inlined at every call site). The two
+// distinct filter args stay live across the loop, so /O2 hoists the PeekMessageA
+// IAT pointer into a callee-saved reg.
+RVA(0x0013d530, 0x55)
+void CGameWnd::PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count) {
+    MSG msg;
+    for (i32 i = 0; i < count; ++i) {
+        if (!PeekMessageA(&msg, m_hwnd, filterMin, filterMax, PM_REMOVE)) {
+            break;
+        }
+    }
+}
+
 // -------------------------------------------------------------------------
 // CGameApp::GameWindowProc - the static window procedure stored into
 // WNDCLASS.lpfnWndProc (so __stdcall, the Win32 WNDPROC ABI: ret 0x10). Its code

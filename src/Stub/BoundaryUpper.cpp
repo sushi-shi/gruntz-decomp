@@ -105,6 +105,19 @@ void B_13dee0::Set(i32 v) {
     }
 }
 
+// 0x13df00 - TrySet: if the timing is already configured (m_1c > 0) clear it and
+// fail (return 0); otherwise configure to v and succeed (return 1). Its only caller
+// is itself uncalled (orphan) - a fully-inlined frame-timing guard. __thiscall, 1 arg.
+RVA(0x0013df00, 0x25)
+i32 B_13dee0::TrySet(i32 v) {
+    if (m_1c > 0) {
+        Set(0);
+        return 0;
+    }
+    Set(v);
+    return 1;
+}
+
 // ---------------------------------------------------------------------------
 // 0x13ee30 - COM wait-flip loop: `while(m_8->Flip(2) == DDERR_WASSTILLDRAWING);`.
 // IDirectDrawSurface-style manual vtable, slot 0x48. __thiscall.

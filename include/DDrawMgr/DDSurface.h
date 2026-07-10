@@ -107,10 +107,10 @@ public:
     void* GetElementAt(i32 i);                   // 0x13ea70  m_elements[i] (bounds-checked)
     i32 SetColorKey(u32 flags, void* key);       // 0x13eaa0
     // Convenience SetColorKey overloads that build a DDCOLORKEY on the stack + forward.
-    i32 SetColorKeyVal(u32 flags, u32 key);        // 0x13eae0  key={v,v}
+    i32 SetColorKeyVal(u32 flags, u32 key);          // 0x13eae0  key={v,v}
     i32 SetColorKeyRange(u32 flags, u32 lo, u32 hi); // 0x13eb10  key={lo,hi}
-    i32 SetDestColorKey(u32 key);                  // 0x13eb80  SetColorKey(DDCKEY_DESTBLT,{v,v})
-    i32 Blt(CDDSurface* src);                    // 0x13ee60
+    i32 SetDestColorKey(u32 key);                    // 0x13eb80  SetColorKey(DDCKEY_DESTBLT,{v,v})
+    i32 Blt(CDDSurface* src);                        // 0x13ee60
     i32 BltEx(void* dstRect, CDDSurface* src, void* srcRect, u32 flags, void* fx); // 0x13eef0
     i32 BltFast(u32 x, u32 y, CDDSurface* src, void* srcRect, u32 trans);          // 0x13ef90
     void Tile(CDDSurface* src, i32 useColorKey); // 0x13f990 (tile src across this via BltFast)
@@ -120,8 +120,8 @@ public:
         CDDSurface* src,
         struct tagRECT* srcRect,
         i32 shade
-    ); // 0x13f020 (16bpp shade-LUT blend blit)
-    i32 GetColorKey();                                                             // 0x13fa60
+    );                 // 0x13f020 (16bpp shade-LUT blend blit)
+    i32 GetColorKey(); // 0x13fa60
 
     // The colour-fill / geometry accessors (DIRSURF.CPP; some external no-body/reloc-
     // masked, some carry real bodies in Image.cpp).
@@ -184,6 +184,32 @@ public:
     // surface; DecodeThunk forwards to Run (the inner blit/decode worker, external/reloc-
     // masked, taking a by-value ClipRect16).
     void FlipVertical(); // 0x13ebb0
+
+    // Rotated-blit forwarders onto ImageRotateBlit (0x145f60): thin arg-reorder
+    // thunks passing `this` as the destination. RotateBlit fixes a6=0; ScaleBlit
+    // fixes angle=1.0f; RotateScaleBlit passes all transform params. (Orphan copies.)
+    i32 RotateBlit(
+        i32 rect,
+        i32 pivot,
+        i32 a1,
+        i32 a2,
+        float angle,
+        float scale,
+        i32 a9
+    ); // 0x141040
+    i32 ScaleBlit(i32 rect, i32 pivot, i32 a1, i32 a2, i32 a6, float scale,
+                  i32 a9); // 0x141200
+    i32 RotateScaleBlit(
+        i32 rect,
+        i32 pivot,
+        i32 a1,
+        i32 a2,
+        i32 a6,
+        float angle,
+        float scale,
+        i32 a9
+    ); // 0x141240
+
     void DecodeThunk(
         i32 a1,
         i32 a2,
@@ -274,7 +300,7 @@ public:
     // (slot 7) tail-dispatches through it. A fn-ptr is 4 bytes = layout-identical to the
     // former i32 slot; cleared by the surface teardown.
     i32(__cdecl* m_b8)(CDDSurface*);
-    i32 m_bc;                  // +0xbc  cleared
+    i32 m_bc; // +0xbc  cleared
 };
 SIZE(CDDSurface, 0xc0); // DIRSURF.CPP surface item (both surface ctors 0x13e9a0/0x1421a0
                         // operator-new(0xc0); == the CImage held-surface pool item)

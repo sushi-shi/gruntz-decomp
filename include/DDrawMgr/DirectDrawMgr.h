@@ -73,8 +73,8 @@ SIZE(CDdObArray, 0x14);
 // mode search + sort key on the width/height (m_8/m_c) and a mode tag (m_54).
 struct CDdMode {
     char _0[8];
-    u32 m_8;  // +0x08  key part A (height)
-    u32 m_c;  // +0x0c  key part B (width)
+    u32 m_8; // +0x08  key part A (height)
+    u32 m_c; // +0x0c  key part B (width)
     char _10[0x54 - 0x10];
     u32 m_54; // +0x54  mode tag / bpp (Compare's tie-break is unsigned)
 };
@@ -138,10 +138,19 @@ public:
     // Display-mode pool searches over m_poolItems (m_pData[i] == a CDdMode*). FindIndex
     // = exact 3-key match; FindLast = >= range match; FindFwd/FindBack = nearest same-m_54
     // neighbour toward the pool end/start, writing {m_c,m_8} (or {-1,-1}) to out.
-    i32 FindIndex(i32 k0, i32 k1, i32 k2);                       // 0x1434c0
-    i32 FindLast(u32 k0, u32 k1, i32 k2);                        // 0x143470
-    void FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2);      // 0x143510
-    void FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2);     // 0x143590
+    i32 FindIndex(i32 k0, i32 k1, i32 k2);                   // 0x1434c0
+    i32 FindLast(u32 k0, u32 k1, i32 k2);                    // 0x143470
+    void FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2);  // 0x143510
+    void FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2); // 0x143590
+    // FindMatch = the last >= match's {m_c,m_8} dims (or {-1,-1}); via FindLast.
+    void FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2); // 0x143420
+
+    // Enumerate DirectDraw drivers (DirectDrawEnumerateA callback CreateDirectDrawVia
+    // caches g_ddCreateCtx), then bring up the device via CreateDevice.
+    i32 Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop); // 0x141ff0
+
+    // m_device->GetAvailableVidMem(&caps, total, free) == 0. (caps by value.)
+    i32 GetAvailableVidMem(u32 caps, u32* total, u32* free); // 0x143810
 
     // --- layout (only touched offsets pinned) ---------------------------------
     IDirectDraw2* m_device; // +0x00  the held IDirectDraw2 device

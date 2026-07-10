@@ -91,6 +91,9 @@ public:
     // the first empty peek. Returns nothing (retail leaves eax undefined).
     // @0x13d4e0 (13 callers across the engine).
     void PumpMessages(u32 filterMsg, i32 count);
+    // As PumpMessages but over a [filterMin, filterMax] message-id range. @0x13d530
+    // (orphan copy - fully inlined at all call sites).
+    void PumpMessagesRange(u32 filterMin, u32 filterMax, i32 count);
 
     HWND m_hwnd;       // +0x04  HWND (set by CreateAndShow / zeroed by ctor)
     CGameApp* m_owner; // +0x08  owning app (set by CreateAndShow; not touched by ctor)
@@ -222,12 +225,12 @@ public:
         i32 windowClassFlags,
         i32 windowWidth,
         i32 windowHeight
-    );                                                      // +0x08
+    );                                                          // +0x08
     virtual i32 InitDefault(HINSTANCE hInstance, char* szName); // +0x0c  0x080d20
-    virtual void CloseResources();                          // +0x10
-    virtual void VirtualUnknownMethod06() {}                // +0x14
-    virtual i32 RunMessageLoop();                           // +0x18
-    virtual void ReportError(WPARAM wParam, LPARAM lParam); // +0x1c
+    virtual void CloseResources();                              // +0x10
+    virtual void VirtualUnknownMethod06() {}                    // +0x14
+    virtual i32 RunMessageLoop();                               // +0x18
+    virtual void ReportError(WPARAM wParam, LPARAM lParam);     // +0x1c
     virtual void OnIdle();          // +0x20 idle virtual (tail-calls m_gameMgr->Tick)
     virtual void FreeGameManager(); // +0x24
     virtual i32 VirtualUnknownMethod11(i32, i32, i32) {

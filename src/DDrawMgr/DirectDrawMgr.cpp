@@ -1261,6 +1261,46 @@ IDirectDrawSurface* CDirectDrawMgr::GetGDISurface() {
     return surf;
 }
 
+// CDirectDrawMgr::GetAvailableVidMem (0x143810) - forward to the held device's
+// IDirectDraw2::GetAvailableVidMem (slot 0x5c); `caps` arrives by value and is
+// passed by address as LPDDSCAPS. Returns HRESULT == 0. __thiscall, ret 0xc.
+//
+// @early-stop
+// struct-by-value-param wall (~50%): logic/slot/offsets/CFG exact. Retail's `caps`
+// param is a DDSCAPS *struct* passed by value whose address escapes into the COM
+// call, so MSVC5 re-stores it into its own arg slot (mov [esp+8],eax; lea &caps)
+// with no frame setup, and that register pressure forces the xor/test/sete bool
+// form instead of neg/sbb/inc. Reproducing it needs `DDSCAPS caps` by value, but
+// this header is deliberately ddraw.h-free (widely included) - exposing DDSCAPS
+// by value would pollute every includer for a 43-byte forwarder. Deferred.
+RVA(0x00143810, 0x2b)
+i32 CDirectDrawMgr::GetAvailableVidMem(u32 caps, u32* total, u32* free) {
+    return m_device->GetAvailableVidMem((LPDDSCAPS)&caps, (LPDWORD)total, (LPDWORD)free) == 0;
+}
+
+// The driver factory helper defined below (0x143880); forward-declared so Init's
+// `push OFFSET CreateDirectDrawVia` reloc-masks against the enum callback cast.
+i32 __stdcall
+CreateDirectDrawVia(void* ctx, i32 a1, i32 a2, IDirectDraw2*(__cdecl* factory)(void*, i32, i32));
+
+// CDirectDrawMgr::Init (0x141ff0) - enumerate DirectDraw drivers (the supplied
+// factory becomes CreateDirectDrawVia's context, caching g_ddCreateCtx), then
+// bring the device up via CreateDevice. A null factory or a failed enum reports
+// and fails. __thiscall, ret 0x18 => 6 args.
+RVA(0x00141ff0, 0x6c)
+i32 CDirectDrawMgr::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp, u32 coop) {
+    if (factory == 0) {
+        return 0;
+    }
+    g_ddCreateCtx = 0;
+    i32 hr = DirectDrawEnumerateA((LPDDENUMCALLBACKA)CreateDirectDrawVia, factory);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0xf4, hr);
+        return 0;
+    }
+    return CreateDevice(a1, g_ddCreateCtx, width, height, bpp, coop);
+}
+
 // 0x143880 - create the process DirectDraw object via a supplied factory callback and,
 // on success, cache it (g_DirectDraw) with its owner context (g_ddCreateCtx); returns 0
 // on success, 1 if the factory is null or fails. __stdcall (ret 0x10 => 4 args).
@@ -1966,6 +2006,28 @@ i32 __stdcall CDirectDrawMgr::Compare(void* pa, void* pb) {
         return 0;
     }
     return a->m_54 > b->m_54;
+}
+
+// FindMatch (0x143420) - the last >= match's {m_c,m_8} dims via FindLast, or
+// {-1,-1} when none. __thiscall, ret 0x10 => 4 args.
+//
+// @early-stop
+// ~83.7% regalloc wall (sibling of FindFwd/FindBack, same archetype): body + guards
+// + FindLast call byte-exact. Residue: retail materializes the {-1,-1} store via the
+// leftover pushed-arg registers (or ecx,eax / or edx,eax) and loads the out-ptr last
+// in the found path, while cl uses immediate stores + an early out-ptr load. Permuter
+// ran (no change); not source-steerable, same as its two siblings.
+RVA(0x00143420, 0x4b)
+void CDirectDrawMgr::FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2) {
+    i32 idx = FindLast(k0, k1, k2);
+    if (idx == -1) {
+        out->a = -1;
+        out->b = -1;
+    } else {
+        CDdMode* e = (CDdMode*)m_poolItems.m_pData[idx];
+        out->a = e->m_c;
+        out->b = e->m_8;
+    }
 }
 
 // >= range search from the end (last matching index), else -1.
