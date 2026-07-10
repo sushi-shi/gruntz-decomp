@@ -10,9 +10,12 @@
 // load-bearing. Engine callees / globals are reloc-masked (no body). See the
 // header for the recovered layout + the conflated-region note.
 #include <Gruntz/GruntSpawnConfig.h>
-struct StreamVoice { // struct (not class): retail OpenStream returns PAU (?OpenStream@SoundStream@@QAEPAUStreamVoice@@...)
+struct
+    StreamVoice { // struct (not class): retail OpenStream returns PAU (?OpenStream@SoundStream@@QAEPAUStreamVoice@@...)
     i32 Configure(i32 a, i32 b, i32 c, i32 d);
-    i32 SetSource(CParseSource* s); // real @0x1374c0 takes CParseSource* (src is the parse-source handle)
+    i32 SetSource(
+        CParseSource* s
+    ); // real @0x1374c0 takes CParseSource* (src is the parse-source handle)
 };
 // DirectSoundMgr (SetVolumeByIndex) now comes from the real <Dsndmgr/SoundDevice.h>,
 // pulled through <Gruntz/SoundCue.h> (via GameRegistry.h below).
@@ -544,7 +547,13 @@ void CGruntSpawnConfig::ResetPicks() {
     }
 }
 
-// CGruntSpawnConfig::IsReady (0x0011c830) is now an inline member in the header.
+// IsReady (0x11c830): the owner "ready" probe - m_00->m_100 != 0. Out-of-line
+// (retail emits it standalone and calls it via thunk; the inline member folded
+// into its callers and never emitted).
+RVA(0x0011c830, 0x12)
+BOOL CGruntSpawnConfig::IsReady() {
+    return m_00->m_100 != 0;
+}
 
 SIZE_UNKNOWN(CGruntSpawnConfig);
 SIZE_UNKNOWN(CSpawnButeConfig);

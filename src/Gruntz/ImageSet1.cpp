@@ -5,6 +5,12 @@
 #include <Gruntz/ImageSets.h>
 #include <rva.h>
 
+// ~CImageSet1 (0x161370, vtable slot 1): the trivial derived dtor. cl stamps the
+// derived vptr then the base ~CObject stamps ??_7CObject; /O2 dead-store-elides the
+// derived stamp, leaving the single `mov [ecx], &??_7CObject; ret` (reloc-masked).
+RVA(0x00161370, 0x7)
+CImageSet1::~CImageSet1() {}
+
 // CImageSet1::Parse (0x166d40, ??_7CImageSet1 slot +0x14). Copies three dwords
 // from the WWD record at +0x08.. into m_04/m_08/m_0c via an advancing source
 // pointer (retail's `add eax,8; mov (eax); add eax,4` cursor walk) and returns TRUE.

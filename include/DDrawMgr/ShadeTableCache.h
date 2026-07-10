@@ -42,10 +42,10 @@ struct CShadeTable {
     u8* m_data;  // +0x08  (CDataBuffer m_data, void* - byte/pixel buffer here)
     i32 m_key;   // +0x0c  (CDataBuffer m_id, used as the lookup key)
 
-    CShadeTable();                          // 0x150180
-    i32 Set(u32 size, i32 id);              // 0x1501a0
-    void Reset();                           // 0x150190
-    void Free();                            // 0x1503c0
+    CShadeTable();             // 0x150180
+    i32 Set(u32 size, i32 id); // 0x1501a0
+    void Reset();              // 0x150190
+    void Free();               // 0x1503c0
     // Element loaders: LoadFromFile takes a filesystem path (via a CString temp the
     // caller builds); LoadFromMem takes a raw (buf,len,id) memory blob - it wraps
     // the buffer in its OWN CMemFile internally, so the caller passes the raw ptr.
@@ -97,11 +97,7 @@ class CShadeTableCache {
 public:
     CShadeTableCache();  // 0x14de30
     ~CShadeTableCache(); // 0x14de50
-    RVA(0x0014dec0, 0xc)
-    i32 Init() {
-        m_initialized = 1;
-        return 1;
-    }
+    i32 Init();          // 0x14dec0 (out-of-line: m_initialized = 1; return 1)
     void FreeNodes();    // 0x14ded0
     // 0x14df40 - a two-phase per-palette brightness-pulse ramp (fade-in over nA
     // steps, +16 highlight, fade-out over nB steps), mapped to nearest palette.

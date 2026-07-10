@@ -5,6 +5,12 @@
 #include <Gruntz/ImageSets.h>
 #include <rva.h>
 
+// ~CImageSet2 (0x161460, vtable slot 1): the trivial derived dtor. Same shape as
+// ~CImageSet1 - /O2 dead-store-elides the derived vptr stamp under the base
+// ~CObject stamp, leaving the single `mov [ecx], &??_7CObject; ret` (reloc-masked).
+RVA(0x00161460, 0x7)
+CImageSet2::~CImageSet2() {}
+
 // CImageSet2::GetCollisionAt (0x161470, slot 8): return the interior collision
 // kind m_10 when (x,y) is inside the {m_14..m_1c} x {m_18..m_20} box, else the
 // exterior kind m_0c. __thiscall, 2 args (ret 0x8).

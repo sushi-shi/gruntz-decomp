@@ -117,11 +117,8 @@ public:
     void Tick();             // reloc-masked (BroadcastCmd 4/7)
     void Teardown();         // reloc-masked (Close)
     void ResetPicks();       // 0x11c7f0 (DtorBody + reset entry m_20s)
-    RVA(0x0011c830, 0x12)
-    BOOL IsReady() {
-        return m_00->m_100 != 0;
-    }
-    ~CGruntSpawnConfig(); // 0x85df0
+    BOOL IsReady();          // 0x11c830 (out-of-line: m_00->m_100 != 0)
+    ~CGruntSpawnConfig();    // 0x85df0
 
     // --- fields (placeholders; offsets load-bearing) ---
     CSpawnOwner* m_00;  // +0x00

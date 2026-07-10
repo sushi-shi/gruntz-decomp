@@ -109,13 +109,7 @@ public:
     i32 Restart(i32 playMode);
     i32 StopAll();
     i32 StopBank(i32 bank);
-    RVA(0x00138920, 0xf)
-    i32 IsPlaying() {
-        if (m_pCurrent == 0) {
-        return 0;
-        }
-        return m_pCurrent->Stop();
-    }
+    i32 IsPlaying(); // RVA 0x138920 (out-of-line: m_pCurrent ? m_pCurrent->Stop() : 0)
 
     CGruntzSoundInnerZ* m_pCurrent; // +0x1c
     i32 m_digHandle;                // +0x20

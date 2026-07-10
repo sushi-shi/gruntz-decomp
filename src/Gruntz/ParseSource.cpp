@@ -109,7 +109,13 @@ i32 CParseSource::ReadAt(void* dst, i32 pos, u32 len) {
     return m_reader->Read(m_base, pos, len, dst) == (i32)len;
 }
 
-// CParseSource::SetPos (0x00139ae0) is now an inline member in the header.
+// SetPos (0x139ae0): seek the read cursor, report success. Out-of-line (retail
+// keeps it a real 15-byte function; an inline body folds into Read and never emits).
+RVA(0x00139ae0, 0xf)
+i32 CParseSource::SetPos(i32 pos) {
+    m_cursor = pos;
+    return 1;
+}
 
 // ===========================================================================
 // 0x139af0 - Read(dst, len, seekPos): optionally seek (seekPos != -1), clamp the

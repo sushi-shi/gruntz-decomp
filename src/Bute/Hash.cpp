@@ -88,8 +88,20 @@ CHashElement* CHashBase::Last() {
 // CHash (instantiation "_a"): HashStr / Walk / HashInt / FindInt.
 // ---------------------------------------------------------------------------
 
-// CHash::HashStr (0x0013c240) is now an inline member in the header.
-
+// HashStr (0x13c240): string key hash - the key's length modulo the bucket count.
+// A hand strlen (peek-ahead loop) then `len % m_count`; null key hashes to 0.
+RVA(0x0013c240, 0x29)
+u32 CHash::HashStr(const char* s) {
+    if (!s) {
+        return 0;
+    }
+    u32 len = 0;
+    while (*s) {
+        ++len;
+        ++s;
+    }
+    return len % m_count;
+}
 
 // Walk (0x13c270): hash the key, look up the bucket chain, scan for a matching
 // record. `ci` selects _strcmpi over the record key ([record+0]) vs the inline
@@ -121,8 +133,11 @@ void* CHash::Walk(const char* name, i32 ci) {
     return 0;
 }
 
-// CHash::HashInt (0x0013c350) is now an inline member in the header.
-
+// HashInt (0x13c350): int key hash - `key % m_count` (unsigned div, remainder).
+RVA(0x0013c350, 0xd)
+u32 CHash::HashInt(u32 key) {
+    return key % m_count;
+}
 
 // FindInt (0x13c360): hash the int key, look up the chain, return the first
 // record whose key int ([record+0]) equals `key`.
@@ -143,8 +158,19 @@ void* CHash::FindInt(u32 key) {
 // source; distinct RVAs).
 // ---------------------------------------------------------------------------
 
-// CHashB::HashStr (0x0013c3c0) is now an inline member in the header.
-
+// CHashB::HashStr (0x13c3c0): identical source to CHash::HashStr, distinct RVA.
+RVA(0x0013c3c0, 0x29)
+u32 CHashB::HashStr(const char* s) {
+    if (!s) {
+        return 0;
+    }
+    u32 len = 0;
+    while (*s) {
+        ++len;
+        ++s;
+    }
+    return len % m_count;
+}
 
 // Walk (0x13c3f0): identical to CHash::Walk.
 RVA(0x0013c3f0, 0xca)

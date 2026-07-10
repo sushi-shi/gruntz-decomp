@@ -60,11 +60,7 @@ struct CParseSource {
     // Parse-slot init (0x1396f0): stamp the embedded hash-node (m_node1c), null the
     // bookkeeping fields, self-link m_selfLink. Returns this. (CSymParser::PopParseSlot.)
     CParseSource* Init();
-    RVA(0x00139ae0, 0xf)
-    i32 SetPos(i32 pos) {
-        m_cursor = pos;
-        return 1;
-    }
+    i32 SetPos(i32 pos); // 0x139ae0 (out-of-line: m_cursor = pos; return 1)
     i32 ReadAt(void* dst, i32 pos, u32 len);
     i32 Read(void* dst, u32 len, i32 seekPos);
 

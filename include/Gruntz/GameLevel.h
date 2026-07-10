@@ -107,37 +107,45 @@ public:
     // 0x1619f0  geometry Init (CDDrawWorkerHost vtable slot +0x24): seed tile/wrap/
     // origin/shift fields from the 8 args, log2 the tile shifts, strcpy the name,
     // alloc the tile grid + column-offset table, tail-call RecomputePlaneCoords.
-    i32 InitGeometry_1619f0(i32 w, i32 h, i32 tileW, i32 tileH, i32 depthX, i32 depthY,
-                            LevelCoordRect* bounds, char* name);
+    i32 InitGeometry_1619f0(
+        i32 w,
+        i32 h,
+        i32 tileW,
+        i32 tileH,
+        i32 depthX,
+        i32 depthY,
+        LevelCoordRect* bounds,
+        char* name
+    );
 
     u8 pad_4[0x4]; // +0x04
     u32 m_flags;   // +0x08  bit0 = MAIN/origin-fixed; bit2/3 = wrap X/Y
     u8 pad_c[0x10 - 0xc];
-    float m_scaledX;   // +0x10  scroll origin X (RecomputePlaneCoords wrap target)
-    float m_scaledY;   // +0x14  scroll origin Y
-    float m_scaleX;    // +0x18  X parallax factor
-    float m_scaleY;    // +0x1c  Y parallax factor
-    i32* m_tileGrid;   // +0x20  tile-id grid (row-indexed)
-    i32* m_colOffsets; // +0x24  per-row column base offsets
-    i32 m_width;       // +0x28  tile-grid width (LookupTile clamp)
-    i32 m_height;      // +0x2c  tile-grid height
-    i32 m_wrapW;       // +0x30  tile count across (wrap/clamp modulus)
-    i32 m_wrapH;       // +0x34  tile count down
-    i32 m_tilePixW;    // +0x38  tile pixel width (log2 -> m_shiftX)
-    i32 m_tilePixH;    // +0x3c  tile pixel height
+    float m_scaledX;           // +0x10  scroll origin X (RecomputePlaneCoords wrap target)
+    float m_scaledY;           // +0x14  scroll origin Y
+    float m_scaleX;            // +0x18  X parallax factor
+    float m_scaleY;            // +0x1c  Y parallax factor
+    i32* m_tileGrid;           // +0x20  tile-id grid (row-indexed)
+    i32* m_colOffsets;         // +0x24  per-row column base offsets
+    i32 m_width;               // +0x28  tile-grid width (LookupTile clamp)
+    i32 m_height;              // +0x2c  tile-grid height
+    i32 m_wrapW;               // +0x30  tile count across (wrap/clamp modulus)
+    i32 m_wrapH;               // +0x34  tile count down
+    i32 m_tilePixW;            // +0x38  tile pixel width (log2 -> m_shiftX)
+    i32 m_tilePixH;            // +0x3c  tile pixel height
     i32 m_tileOriginX;         // +0x40  out: near tile-origin X
     i32 m_tileOriginY;         // +0x44  out: near tile-origin Y
     i32 m_tileExtentX;         // +0x48  out: far tile-extent X
     i32 m_tileExtentY;         // +0x4c  out: far tile-extent Y
     LevelCoordRect m_bounds50; // +0x50  level coord bounds (Build copies coords here)
-    i32 m_60;      // +0x60  (cleared by geometry Init)
-    i32 m_64;      // +0x64  (cleared by geometry Init)
-    i32 m_68;      // +0x68  tile pixel width copy (a3)
-    i32 m_6c;      // +0x6c  tile pixel height copy (a4)
-    i32 m_viewW;   // +0x70  viewport tiles across (= bounds width)
-    i32 m_viewH;   // +0x74  viewport tiles down (= bounds height)
-    i32 m_anchorX; // +0x78  view-anchor X (= half width)
-    i32 m_anchorY; // +0x7c  view-anchor Y (= half height)
+    i32 m_60;                  // +0x60  (cleared by geometry Init)
+    i32 m_64;                  // +0x64  (cleared by geometry Init)
+    i32 m_68;                  // +0x68  tile pixel width copy (a3)
+    i32 m_6c;                  // +0x6c  tile pixel height copy (a4)
+    i32 m_viewW;               // +0x70  viewport tiles across (= bounds width)
+    i32 m_viewH;               // +0x74  viewport tiles down (= bounds height)
+    i32 m_anchorX;             // +0x78  view-anchor X (= half width)
+    i32 m_anchorY;             // +0x7c  view-anchor Y (= half height)
     i32 m_zBound;  // +0x80  plane z bound (VisitVisible draws objects with z-key < this)
     i32 m_originX; // +0x84  out: integer scaledX (snapped)
     i32 m_originY; // +0x88  out: integer scaledY
@@ -152,8 +160,11 @@ public:
 
 // The parse-source object passed to LoadFromSource: the canonical CParseSource
 // (include/Gruntz/ParseSource.h); only the pointer type appears here so a
-// forward decl suffices.
-class CParseSource;
+// forward decl suffices. Declared `struct` (matching its definition) so MSVC
+// mangles the two CParseSource-taking methods as PAU, matching retail (a `class`
+// fwd decl mangled them PAV, diverging from the retail/clang PAU and dropping the
+// SetCoordsAndLoad3C / LoadFromSource labels).
+struct CParseSource;
 
 // CGameLevel::GetClassId (slot 8) type tag. Mirrors the canonical
 // LoadableClassId enum in <Gruntz/Loadable.h> (CLASSID_GAMELEVEL = 0x19); named

@@ -54,10 +54,9 @@ struct CImageSet1 : CObject {
     void operator delete(void* p) {
         RezFree(p);
     }
-    RVA(0x00161370, 0x7)
-    void DtorBase() {
-        // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
-    }
+    // ~CImageSet1 (0x161370) is the real virtual dtor: /O2 dead-store-elides the
+    // derived vptr stamp under the immediate base ~CObject stamp, lowering to the
+    // single `mov [ecx], &??_7CObject; ret` retail carries. Body in ImageSet1.cpp.
     i32 m_04; // +0x04
     i32 m_08; // +0x08
     i32 m_0c; // +0x0c

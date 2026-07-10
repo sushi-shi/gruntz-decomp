@@ -121,7 +121,13 @@ CShadeTableCache::~CShadeTableCache() {
     }
 }
 
-// CShadeTableCache::Init (0x0014dec0) is now an inline member in the header.
+// Init (0x14dec0): mark the cache live and report success. Out-of-line (retail
+// emits it standalone; the inline member folded away and never emitted).
+RVA(0x0014dec0, 0xc)
+i32 CShadeTableCache::Init() {
+    m_initialized = 1;
+    return 1;
+}
 
 // ===========================================================================
 // 0x14ded0 - FreeNodes: destroy + free every element, then drop the array.

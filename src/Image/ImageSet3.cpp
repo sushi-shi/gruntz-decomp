@@ -37,13 +37,7 @@ public:
 class CImageSet3 {
 public:
     i32 Prune_1628d0();    // 0x1628d0
-    RVA(0x001633e0, 0x12)
-    i32 GetSize_1633e0() {
-        if (m_b0 == 0) {
-        return 0;
-        }
-        return m_b0->GetSize_168430();
-    }
+    i32 GetSize_1633e0();  // 0x1633e0 (out-of-line: m_b0 ? m_b0->GetSize_168430() : 0)
     void Cleanup_161bf0(); // 0x161bf0
     // 0x166e00 (vtable slot 10): scan left from (x,y) along the row for the first pixel
     // that differs from the pixel at (x,y); report its column + value. m_14 is the pixel
@@ -71,8 +65,16 @@ i32 CImageSet3::Prune_1628d0() {
     return m_b0->Prune_1688b0();
 }
 
-// CImageSet3::GetSize_1633e0 (0x001633e0) is now an inline member in the header.
-
+// GetSize_1633e0 (0x1633e0): forward the grid's serialized size when present
+// (else 0). Out-of-line (retail emits it standalone, tail-forwarding to
+// CWwdGrid::GetSize; an inline member folds away and never emits).
+RVA(0x001633e0, 0x12)
+i32 CImageSet3::GetSize_1633e0() {
+    if (m_b0 == 0) {
+        return 0;
+    }
+    return m_b0->GetSize_168430();
+}
 
 // ---------------------------------------------------------------------------
 // 0x161bf0: tear down the owned resources.  Prune the grid, then destroy + free

@@ -142,23 +142,12 @@ SIZE(CHashBase, 0x8);
 // ---------------------------------------------------------------------------
 class CHash : public CHashBase {
 public:
-    RVA(0x0013c240, 0x29)
-    u32 HashStr(const char* s) {
-        if (!s) {
-        return 0;
-        }
-        u32 len = 0;
-        while (*s) {
-        ++len;
-        ++s;
-        }
-        return len % m_count;
-    }
+    // HashStr/HashInt are genuine OUT-OF-LINE functions in retail (called via
+    // `call` from Walk/FindInt at their own RVAs) - defining them inline here let
+    // /O2 fold them into their callers, so they never emitted. Out-of-line in Hash.cpp.
+    u32 HashStr(const char* s);           // 0x13c240
     void* Walk(const char* name, i32 ci); // 0x13c270
-    RVA(0x0013c350, 0xd)
-    u32 HashInt(u32 key) {
-        return key % m_count;
-    }
+    u32 HashInt(u32 key);                 // 0x13c350
     void* FindInt(u32 key);               // 0x13c360
 };
 SIZE(CHash, 0x8);
@@ -169,18 +158,7 @@ SIZE(CHash, 0x8);
 // ---------------------------------------------------------------------------
 class CHashB : public CHashBase {
 public:
-    RVA(0x0013c3c0, 0x29)
-    u32 HashStr(const char* s) {
-        if (!s) {
-        return 0;
-        }
-        u32 len = 0;
-        while (*s) {
-        ++len;
-        ++s;
-        }
-        return len % m_count;
-    }
+    u32 HashStr(const char* s);           // 0x13c3c0 (out-of-line; see CHash above)
     void* Walk(const char* name, i32 ci); // 0x13c3f0
 };
 SIZE(CHashB, 0x8);

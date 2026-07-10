@@ -21,13 +21,14 @@
 extern void* const Vtbl_5ec26c; // ??_7CNoTrackObject@@6B@
 struct CNoTrackObjectStamp {
     void* vptr;
-    RVA(0x0011d100, 0x7)
-    void Stamp() {
-        vptr = (void*)&Vtbl_5ec26c;
-    }
+    void Stamp(); // 0x11d100
 };
-// CNoTrackObjectStamp::Stamp (0x0011d100) is now an inline member in the header.
-
+// Out-of-line so it emits: an inline member of a leaf with no in-TU caller folds
+// away and never produces a standalone body at 0x11d100.
+RVA(0x0011d100, 0x7)
+void CNoTrackObjectStamp::Stamp() {
+    vptr = (void*)&Vtbl_5ec26c;
+}
 
 // --- 0x1155b0 : construct the g_largeFont global -----------------------------
 // A dynamic-initializer thunk that constructs the global font in place via the
