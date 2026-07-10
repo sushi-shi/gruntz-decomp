@@ -13,21 +13,9 @@
 #include <rva.h>
 #include <Mfc.h> // real MFC CString (copy-ctor 0x1b9ba3 / dtor 0x1b9cde, reloc-masked)
 
-// 0x176d20 - CImage scanline fill.
-struct FillRect176d20 {
-    i32 left;   // +0x0
-    i32 top;    // +0x4
-    i32 right;  // +0x8
-    i32 bottom; // +0xc
-};
-SIZE_UNKNOWN(FillRect176d20);
-struct CImg176d20 {
-    char _0[0x42c];
-    u8* m_42c;  // pixel base
-    i32* m_430; // row-offset table
-    void Fill(FillRect176d20* r, int color);
-};
-SIZE_UNKNOWN(CImg176d20);
+// 0x176d20 CImage scanline fill + 0x176da0 wrapper: folded onto the real CRezImage
+// (src/Image/ImageRectFill.cpp, <Image/Image.h>) - the delinker-guessed CImg176d20 /
+// FillRect176d20 placeholders removed.
 
 // 0x788d0 - sound-emitter screen-position update.
 struct Emitter788d0 {

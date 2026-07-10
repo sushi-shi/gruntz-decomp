@@ -53,7 +53,7 @@ boundarylowerdtors	6	6
 boundarylowermethods	15	8
 boundarylowerthunks	14	12
 boundarymisc	6	6
-boundarytail	3	1
+boundarytail	2	0
 boundarythunks	14	14
 boundaryupper	7	7
 bracketvalue	1	1
@@ -141,7 +141,7 @@ droppedobject	7	4
 droppedobjectserialize	2	2
 droppedobjectshadow	3	2
 dsoundvoice	2	1
-engine_label_stubs	63	8
+engine_label_stubs	59	8
 engstr	3	1
 engstrrendertext	1	0
 exittrigger	4	2
@@ -246,8 +246,9 @@ iconloaders	6	1
 image	46	30
 imageowned	8	5
 imagepolyclip	2	0
-imagepool	26	12
+imagepool	28	13
 imageprobe	1	1
+imagerectfill	2	1
 imagerle16encode	1	0
 imagerotate	1	0
 imagesavebmp	1	0
@@ -255,6 +256,7 @@ imageset	9	6
 imageset3	3	2
 imageset3eh	1	1
 imagespriteblit	7	0
+imagevflip	1	0
 infblock	5	4
 infcodes	3	2
 inffast	1	1
@@ -787,7 +789,6 @@ boundarymisc	?Init23960@@YAXXZ	100.0000	100.0000	2	f0158a07a720	0x23960
 boundarymisc	?ResetDat6295d8@@YAXXZ	100.0000	100.0000	2	dc9247fd7cfd	0xaf50
 boundarymisc	?Run@CGuardedDispatch1f870@@QAEHXZ	100.0000	100.0000	2	0da8565c41b1	0x1f870
 boundarytail	?BuildRecord118330@@YAHPAUOut118330@@@Z	92.6667	92.6667	3	ae62b88d098f	0x118330
-boundarytail	?Fill@CImg176d20@@QAEXPAUFillRect176d20@@H@Z	100.0000	100.0000	2	774e0f9855b2	0x176d20
 boundarytail	?WaitKeyEdge@@YAXHH@Z	97.0422	97.0422	4	e5333596230e	0x13df30
 boundarythunks	??1CAbstract137330@@UAE@XZ	100.0000	100.0000	2	0983cdefd890	0x137330
 boundarythunks	??1CAbstract13aaf0@@UAE@XZ	100.0000	100.0000	2	dc65c47e0f17	0x13aaf0
@@ -1594,10 +1595,6 @@ engine_label_stubs	?Gap_1714e0@@YAHXZ	4.5161	4.5161	1	cpp:0cd3d8fa5bea	0x1714e0
 engine_label_stubs	?Gap_171640@@YAHXZ	0.7246	0.7246	1	cpp:0cd3d8fa5bea	0x171640
 engine_label_stubs	?Gap_173dd0@@YAHXZ	0.4407	0.4407	1	cpp:0cd3d8fa5bea	0x173dd0
 engine_label_stubs	?Gap_1741b0@@YAHXZ	6.0870	6.0870	1	cpp:0cd3d8fa5bea	0x1741b0
-engine_label_stubs	?Gap_175710@@YAHXZ	3.1818	3.1818	1	cpp:0cd3d8fa5bea	0x175710
-engine_label_stubs	?Gap_176840@@YAHXZ	1.9192	1.9192	1	cpp:0cd3d8fa5bea	0x176840
-engine_label_stubs	?Gap_176da0@@YAHXZ	2.9630	2.9630	1	cpp:0cd3d8fa5bea	0x176da0
-engine_label_stubs	?Gap_176ec0@@YAHXZ	2.3529	2.3529	1	cpp:0cd3d8fa5bea	0x176ec0
 engine_label_stubs	?Gap_17b950@@YAHXZ	0.5036	0.5036	1	cpp:0cd3d8fa5bea	0x17b950
 engine_label_stubs	?Gap_17f660@@YAHXZ	0.4727	0.4727	1	cpp:0cd3d8fa5bea	0x17f660
 engine_label_stubs	?Gap_17ff30@@YAHXZ	0.3423	0.3423	1	cpp:0cd3d8fa5bea	0x17ff30
@@ -2520,12 +2517,14 @@ imagepool	?Build@CImagePaletteNode@ApiCallerStubs@@QAEHPAUtagPALETTEENTRY@@H@Z	6
 imagepool	?Clear@CImagePool@@QAEXXZ	100.0000	100.0000	3	5223b3b84f36	0x174eb0
 imagepool	?ClearPalettes@CImagePool@@QAEXXZ	100.0000	100.0000	3	a09bb0c45d12	0x174fa0
 imagepool	?ClearSurfaces@CImagePool@@QAEXXZ	100.0000	100.0000	4	d86286db7efb	0x174f60
+imagepool	?EnsureSurface@CImagePool@@QAEHPAVCRezImage@@HHHPAX@Z	100.0000	100.0000	1	0107fbaa30f0	0x175710
 imagepool	?Free@CImagePool@@QAEXPAVCRezImage@@@Z	100.0000	100.0000	2	74c7cbef07f0	0x174ed0
 imagepool	?Free@CRezImage@@QAEXXZ	100.0000	100.0000	2	720516603fbb	0x175c90
 imagepool	?ParseDispatch@CImagePaletteNode@ApiCallerStubs@@QAEHPAXIHH@Z	100.0000	100.0000	2	f163329852a3	0x177040
 imagepool	?ParsePaletteTail@CImagePaletteNode@ApiCallerStubs@@QAEHPAXIH@Z	88.5610	88.5610	2	95652a240ecb	0x177400
 imagepool	?ProcessPal@CImagePaletteNode@ApiCallerStubs@@QAEHPAXH@Z	99.8621	99.8621	2	ed12faf2fef6	0x176e70
 imagepool	?ProcessPalBGR@CImagePaletteNode@ApiCallerStubs@@QAEHPAXH@Z	95.6429	95.6429	1	567e93778d64	0x176f30
+imagepool	?ProcessPalQuad@CImagePaletteNode@ApiCallerStubs@@QAEHPAXH@Z	62.7059	62.7059	1	61819a35613d	0x176ec0
 imagepool	?RemovePalette@CImagePool@@QAEXPAUCImagePaletteNode@ApiCallerStubs@@@Z	100.0000	100.0000	3	181f87037d0c	0x174f30
 imagepool	?Run@CImagePaletteNode@ApiCallerStubs@@QAEXXZ	100.0000	100.0000	2	2036f3f99917	0x177070
 imagepool	?SetHandles@CImagePool@@QAEHHHH@Z	99.5000	99.5000	4	8ac0495f6a7c	0x174e90
@@ -2533,6 +2532,8 @@ imagepool	?Tune1770e0@CImagePaletteNode@ApiCallerStubs@@QAEXXZ	100.0000	100.0000
 imagepool	?winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps@ApiCallerStubs@@YAHXZ	100.0000	100.0000	2	9f768be9cdfd	0x1770a0
 imagepool	?winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD@ApiCallerStubs@@YAXXZ	100.0000	100.0000	2	43ead20aff2d	0x177160
 imageprobe	?Init@CImageProbe@@QAEHXZ	100.0000	100.0000	2	41d07a7f39b4	0x17cbe0
+imagerectfill	?FillRect@CRezImage@@QAEXPAUCRezFillRect@@H@Z	100.0000	100.0000	1	8a12f27ec459	0x176d20
+imagerectfill	?FillRectAt@CRezImage@@QAEXHHPAUCRezFillRect@@H@Z	66.4444	66.4444	1	c28ac783e527	0x176da0
 imagerle16encode	?EncodeRle16@CImageRle16@@QAEPAXPBE@Z	65.4286	65.4286	3	fd7f1823764f	0x1495d0
 imagerotate	?ImageRotateBlit@@YAXHHPAHHPAUImgRect@@HMMHH@Z	32.3353	32.3353	3	bd310940da97	0x145f60
 imagesavebmp	?SaveBmp@CImageSaver@@QAEHVCString@@HHHHHHHH@Z	98.0303	98.0303	5	7d014d4fa561	0x149250
@@ -2556,6 +2557,7 @@ imagespriteblit	?BlitShadeFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	83.9091	83.909
 imagespriteblit	?BlitShadeFlipHV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	71.4789	71.4789	2	6355a3e72e98	0x153ff0
 imagespriteblit	?BlitShadeFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	73.2440	73.2440	2	b3712e41155b	0x1544d0
 imagespriteblit	?BlitShadeNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	99.8571	99.8571	2	6818b7775993	0x154270
+imagevflip	?FlipVertical@CRezImage@@QAEXXZ	43.6162	43.6162	1	669d779ef6a2	0x176840
 infblock	_inflate_blocks	98.6518	98.6518	1	56f158ca58f1	0x1875a0
 infblock	_inflate_blocks_free	100.0000	100.0000	1	1618d6843d69	0x188250
 infblock	_inflate_blocks_new	100.0000	100.0000	1	fc0dd390fb8b	0x187530
@@ -3314,7 +3316,7 @@ rezmgr	?SpinWaitUntil@RezMgr@@QAEXH@Z	83.9286	83.9286	1	f2a78ab930ab	0x13dec0
 rezmgr	?UpdateClock@RezMgr@@QAEHXZ	100.0000	100.0000	4	73a249346bc9	0x13ddc0
 rezmgr	?Write@CRezItm@@QAEHHHIPAX@Z	100.0000	100.0000	5	abf7957a6525	0x13c6c0
 rezsync	?GetName@Obj85500@@QAE?AVCString@@XZ	100.0000	100.0000	1	a603b2ac0b4f	0x85500
-rezsync	?Init@RezSync@@QAEHPAXPAD@Z	62.7073	62.7073	6	a1f8a93d5917	0x83450
+rezsync	?Init@RezSync@@QAEHPAXPAD@Z	62.3781	62.3781	6	a1f8a93d5917	0x83450
 rezutil	_RezFree	100.0000	100.0000	2	bdc6fe3ec315	0x1b9b82
 rockbreakeffectupdate	?Update@RbEffect@@QAEHXZ	98.4848	98.4848	1	f4915d1b337e	0x476b0
 rockbreakparticles	?BuildRockBreakParticles@CRockBreakMgr@@QAEHHHHH@Z	81.0936	81.0936	6	546b432d2293	0x7b440

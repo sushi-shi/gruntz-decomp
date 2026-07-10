@@ -47,6 +47,7 @@ public:
     CImagePaletteNode* AddPaletteRGB(void* rgb, i32 flags);                       // 0x175570
     CImagePaletteNode* AddImageFile(char* path, i32 arg);                         // 0x1755f0
     CImagePaletteNode* AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x175680
+    i32 EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, void* flag);    // 0x175710
     void B(CRezImage* node, i32 a, i32 b);                                        // 0x175780
 
     CRezImage* AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag);           // 0x174fe0

@@ -55,27 +55,8 @@ void WaitKeyEdge(int vk, int timeoutMs) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x176d20 - CImage scanline fill: memset each row `[top..bottom]` of the rect
-// to `color`, the row base being m_42c (pixel base) + m_430[y] (row offset
-// table) + rect.left. __thiscall, rect ptr + byte color (ret 8).
-// @orphan: RAW-PIXEL image (+0x42c base / +0x430 row table), NOT CImage (0x13e760,
-// DDraw). Only caller is Gap_176da0 (an engine_label_stubs placeholder); no RTTI.
-// @early-stop
-// read-order scheduling wall (~91%): prologue + inline-memset body byte-identical;
-// retail reads rect.left then defers the m_42c pixel-base load to last (both this-
-// relative), while our /O2 groups the two this-relative loads (m_430,m_42c). Tried
-// `m_42c + m_430[y] + left`, `m_430[y] + left + m_42c`, and a hoisted `off` temp -
-// all keep the same grouping. Pure instruction scheduling.
-// ---------------------------------------------------------------------------
-RVA(0x00176d20, 0x71)
-void CImg176d20::Fill(FillRect176d20* r, int color) {
-    i32 width = r->right - r->left;
-    for (i32 y = r->top; y <= r->bottom; ++y) {
-        i32 off = m_430[y] + r->left;
-        memset(m_42c + off, color, width);
-    }
-}
+// 0x176d20 CImage scanline fill + 0x176da0 wrapper -> folded onto the real CRezImage
+// (CImg176d20/FillRect176d20 were delinker placeholders) in src/Image/ImageRectFill.cpp.
 
 // ---------------------------------------------------------------------------
 // 0x118330 - populate an output record `out` from three successive iterator

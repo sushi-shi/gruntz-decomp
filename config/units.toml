@@ -1850,6 +1850,16 @@ source = "src/Gruntz/ZDArrayDerived.cpp"
 flags = "base"
 
 [[unit]]
+unit = "imagerectfill"
+source = "src/Image/ImageRectFill.cpp"
+flags = "base"
+
+[[unit]]
+unit = "imagevflip"
+source = "src/Image/ImageVFlip.cpp"
+flags = "base"
+
+[[unit]]
 unit = "typecollruntime"
 source = "src/Gruntz/TypeCollRuntime.cpp"
 flags = "base"

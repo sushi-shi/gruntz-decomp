@@ -66,6 +66,7 @@ namespace ApiCallerStubs {
         i32 Build(PALETTEENTRY* entries, i32 flags);                // 0x176df0 (this TU)
         void Tune1770e0();                                          // 0x1770e0 (this TU)
         i32 ProcessPal(void* rgb, i32 flags);                       // 0x176e70 (this TU)
+        i32 ProcessPalQuad(void* bgr, i32 flags);                   // 0x176ec0 (this TU)
         i32 ProcessPalBGR(void* bgr, i32 flags);                    // 0x176f30 (this TU)
         i32 ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x177040 (this TU)
         i32 ParsePaletteTail(void* buf, u32 size, i32 ctrl);        // 0x177400 (this TU)
@@ -538,6 +539,32 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
     return node;
 }
 
+// The engine's cached GDI fn-ptr globals (retail reaches GDI via `call ds:[0x6c44xx]`);
+// DATA-bound once in DirPal.cpp, re-declared here (extern only) so the calls reloc-mask.
+extern HDC(WINAPI* g_pGetDC)(HWND);                            // 0x6c4404
+extern int(WINAPI* g_pReleaseDC)(HWND, HDC);                   // 0x6c4408
+extern HPALETTE(WINAPI* g_pSelectPalette)(HDC, HPALETTE, BOOL); // 0x6c3f04
+
+// ===========================================================================
+// CImagePool::EnsureSurface (0x175710, ret 0x14) - GetDC the pool's source window,
+// (re)size `img` to (w,h,bitCount) through CRezImage::EnsureSize, restore + clear any
+// selected palette, ReleaseDC, and return the resize result (0 if img is null).
+// ===========================================================================
+RVA(0x00175710, 0x69)
+i32 CImagePool::EnsureSurface(CRezImage* img, i32 w, i32 h, i32 bitCount, void* flag) {
+    if (img == 0) {
+        return 0;
+    }
+    HDC dc = g_pGetDC(m_sourceHwnd);
+    i32 result = img->EnsureSize(dc, w, h, bitCount, flag);
+    if (m_selectedPalette) {
+        g_pSelectPalette(dc, m_selectedPalette, FALSE);
+        m_selectedPalette = 0;
+    }
+    g_pReleaseDC(m_sourceHwnd, dc);
+    return result;
+}
+
 // ===========================================================================
 // CImagePool::B (ret 0xc, re-homed from BoundaryUpper2) - re-point a surface
 // node's palette: if it currently owns one, detach it (RemovePalette +
@@ -568,6 +595,35 @@ i32 ApiCallerStubs::CImagePaletteNode::ProcessPal(void* rgb, i32 flags) {
         d->peRed = *s++;
         d->peGreen = *s++;
         d->peBlue = *s++;
+        d++;
+    }
+    return Build(pal, flags);
+}
+
+// ===========================================================================
+// CImagePaletteNode::ProcessPalQuad (0x176ec0, ret 8) - same R/B swap as
+// ProcessPalBGR but the source is a 4-byte-per-entry RGBQUAD array (DIB palette
+// order: blue, green, red, reserved); stride 4, peFlags untouched, then realize.
+// @early-stop
+// stride-4 strength-reduction wall (~62.7%). Body/logic identical to ProcessPalBGR
+// (95.6%) apart from `s += 4` vs `s += 3`. That stride-4 makes this wine MSVC5 split
+// the source into TWO induction registers (a kept `s` in esi plus a walking edx, one
+// byte fetched via a merged `[esi+eax]` dst-relative address) instead of the clean
+// single-induction `[eax+1]/[eax-4]/[eax-5]` retail (and ProcessPalBGR) emit. Not
+// source-steerable (load-into-locals, `pal[i]` indexing, reordered stores all keep the
+// two-IV split) and the permuter finds no operand-order win. Prologue/counter/Build
+// tail + the palette bytes produced are exact.
+// ===========================================================================
+RVA(0x00176ec0, 0x64)
+i32 ApiCallerStubs::CImagePaletteNode::ProcessPalQuad(void* bgr, i32 flags) {
+    PALETTEENTRY pal[256];
+    u8* s = (u8*)bgr;
+    PALETTEENTRY* d = pal;
+    for (i32 i = 0; i < 256; i++) {
+        d->peRed = s[2];
+        d->peGreen = s[1];
+        d->peBlue = s[0];
+        s += 4;
         d++;
     }
     return Build(pal, flags);

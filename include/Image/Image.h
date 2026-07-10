@@ -44,6 +44,16 @@ class CDDrawPtrCollections;
 // The five sibling loaders and the per-format decoders are reconstructed in
 // Image.cpp; only the shared blitter DecodeBlit stays external/no-body.
 // ---------------------------------------------------------------------------
+// The {left,top,right,bottom} fill rectangle FillRect scan-fills and FillRectAt builds
+// (a plain rect record, not a class view).
+struct CRezFillRect {
+    i32 left;   // +0x00
+    i32 top;    // +0x04
+    i32 right;  // +0x08
+    i32 bottom; // +0x0c
+};
+SIZE(CRezFillRect, 0x10);
+
 SIZE_UNKNOWN(CRezImage);
 class CRezImage {
 public:
@@ -98,6 +108,9 @@ public:
     }
     i32 Save(const char* filename, void* paletteObj);                // 0x176b00 (8bpp-only dispatch to SaveBmp)
     i32 SaveBmp(const char* filename, void* paletteObj);              // 0x176b30
+    void FillRect(CRezFillRect* r, i32 color);                       // 0x176d20 (8bpp scanline rect fill)
+    void FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color);   // 0x176da0 (translate src rect to dx,dy, then FillRect)
+    void FlipVertical();                                             // 0x176840 (top-bottom row swap via scratch)
 
     // Layout. The object opens with a BITMAPINFOHEADER (this+0,
     // biSize..biClrImportant) and a 256-entry WORD color table (this+0x28);
