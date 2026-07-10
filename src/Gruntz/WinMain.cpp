@@ -233,3 +233,18 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
     g_pApp = 0;
     return rc;
 }
+
+// ---------------------------------------------------------------------------
+// 0x11e8dc - a 7-byte base-object vptr restamp: `mov [ecx], &??_7CObject@@6B@; ret`
+// (the reloc masks ??_7CObject @0x5e8cb4). Modeled as an empty-body virtual dtor of a
+// standalone placeholder class, which cl lowers to exactly the stamp+ret; RELOC_VTBL
+// binds its cl-emitted ??_7 to reloc-mask the CObject vtable (cataloged in
+// config/vtable_names.csv). Placeholder identity (a terminal restamp, no ctor to fold
+// an auto-stamp into). Re-homed from src/Stub/ReconBatch2.cpp (its RVA neighborhood).
+struct CObjStamp11e8dc {
+    virtual ~CObjStamp11e8dc();
+};
+SIZE_UNKNOWN(CObjStamp11e8dc);
+RELOC_VTBL(CObjStamp11e8dc, 0x001e8cb4); // reloc-masks ??_7CObject@@6B@ (dtor-stamp)
+RVA(0x0011e8dc, 0x7)
+CObjStamp11e8dc::~CObjStamp11e8dc() {}

@@ -137,8 +137,8 @@ i32 ParseSerial(CGameRegistry* mgr, char* s) {
 // The world-present toolbar builder chain (thunk 0x277a -> the 6-arg __cdecl
 // forwarder Fwd114ec0 @0x114ec0 -> the guarded forwarder Fwd114f00 @0x114f00, via
 // the 0x21c1 thunk). The real param shapes are unrecovered; the i32 tuple mirrors
-// the forwarder. Fwd114f00 is still carried in BoundaryLowerMethods.cpp (its
-// a2->m_30->m_4->m_10->m_2c deref chain needs real command-context types).
+// the forwarder. Fwd114f00's body lives at the tail of this TU now (its
+// a2->m_30->m_4->m_10->m_2c deref chain still uses placeholder command-context views).
 void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
 void Fwd114f00(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114f00 (0x21c1 thunk target)
 
@@ -1238,4 +1238,32 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
 RVA(0x00114ec0, 0x27)
 void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     Fwd114f00(a1, a2, a3, a4, a5, a6);
+}
+
+// 0x114f00 - the guarded forwarder Fwd114ec0 hands off to (via the 0x21c1 thunk): its
+// a2 IS `this` (a CGruntzMgr - Fwd114ec0's case-0x8070 caller passes `(i32)this`), so
+// the chain a2->m_30->m_4->m_10->m_2c dissolves onto the real m_world (CWorldZ) ->
+// m_4 (CWorldSub4) -> m_10 (the command-context object) -> +0x2c, which it forwards
+// plus the six args to 0x267b. __cdecl(6 args). Only the final +0x2c object's class is
+// unrecovered (a small placeholder). Re-homed from src/Stub/BoundaryLowerMethods.cpp.
+struct CObj114f { // the CWorldSub4::m_10 command-context object (identity-TODO)
+    char pad0[0x2c];
+    void* m_2c; // +0x2c
+};
+SIZE_UNKNOWN(CObj114f);
+extern "C" void Func267b(void* v, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x267b
+// @early-stop
+// identical-return-epilogue tail-merge wall (docs/patterns): cl shares one pop;ret
+// tail across the two null guards; retail emits the inline ret at each site. Deref
+// chain + 6-arg re-push forward are byte-faithful.
+RVA(0x00114f00, 0x3e)
+void Fwd114f00(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
+    CObj114f* obj = (CObj114f*)((CGruntzMgr*)a2)->m_world->m_4->m_10;
+    if (obj == 0) {
+        return;
+    }
+    if (obj->m_2c == 0) {
+        return;
+    }
+    Func267b(obj->m_2c, a1, a2, a3, a4, a5, a6);
 }

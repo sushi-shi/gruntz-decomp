@@ -19,3 +19,15 @@ extern "C" {
         free(block);
     }
 }
+
+// 0x1b9b8d - a getter that returns the address of a global descriptor (g_desc_6156f4,
+// VA 0x6156f4; `mov eax, OFFSET g; ret`). Sits in the MFC CString/collection text region
+// (immediate neighbours 0x1b9b46 operator new, 0x1b9b93 ??0CString), likely NAFXCW
+// library - identity-TODO: carve to config/library_labels.csv once the exact MFC symbol
+// for the &0x6156f4 descriptor getter is pinned. The g_desc_6156f4 DATA pin lives in
+// src/Globals.cpp. Re-homed from src/Stub/ReconBatch2.cpp.
+extern void* g_desc_6156f4; // 0x6156f4 (pinned in Globals.cpp)
+RVA(0x001b9b8d, 0x6)
+void** Get_1b9b8d() {
+    return &g_desc_6156f4;
+}

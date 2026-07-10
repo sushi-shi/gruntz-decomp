@@ -22,141 +22,20 @@ extern "C" void RezFree(void* p);
 // ctor; the "generic 4-int record" was the engine CRect. The m_0..m_c fields are
 // tagRECT's left/top/right/bottom.)
 
-// ---------------------------------------------------------------------------
-// Obj15b2b0 @0x15b2b0 - zero three fields (ctor returning this).
-// @identity-TODO: an EMBEDDED sub-object ctor of the CWwdGameObject the factory
-// CWwdObjMgr::CreateObject_159600 builds (disasm: one operator-new, then the
-// ??_7CWwdGameObjectE/??_7CWwdGameObjectA vptr stamps + this + 0x15b2c0/0x15b270/
-// 0x15b300 sub-object ctors called back-to-back). It stamps no vtable of its own,
-// so the sub-object's concrete class has no recoverable RTTI name (hex identity);
-// owner known (CWwdGameObject), member-class TODO for a wwdgameobject depth pass.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(Obj15b2b0);
-class Obj15b2b0 {
-public:
-    Obj15b2b0();
-    char m_pad0[0x8];
-    i32 m_8;
-    i32 m_c;
-    char m_pad10[0x18 - 0x10];
-    i32 m_18;
-};
-RVA(0x0015b2b0, 0xe)
-Obj15b2b0::Obj15b2b0() {
-    m_c = 0;
-    m_8 = 0;
-    m_18 = 0;
-}
-
-// ---------------------------------------------------------------------------
-// Obj15b270 @0x15b270 - seed two fields (ctor returning this).
-// @identity-TODO: an EMBEDDED sub-object ctor of the CWwdGameObject built by the
-// factories CWwdObjMgr::CreateObject_159250/440/600 (xref; each new+stamps
-// ??_7CWwdGameObjectE/A then calls this among the member ctors). No vtable of its
-// own -> the sub-object's concrete class has no recoverable RTTI name (hex
-// identity); owner known (CWwdGameObject), member-class TODO for a depth pass.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(Obj15b270);
-class Obj15b270 {
-public:
-    Obj15b270();
-    char m_pad0[0x8];
-    i32 m_8;
-    char m_pad0c[0x20 - 0xc];
-    i32 m_20;
-};
-RVA(0x0015b270, 0x11)
-Obj15b270::Obj15b270() {
-    m_8 = (i32)0x80000000;
-    m_20 = -1;
-}
+// (0x15b2b0 Obj15b2b0 + 0x15b270 Obj15b270 - the CWwdGameObject embedded sub-object
+// ctors - re-homed to src/DDrawMgr/DDrawSubMgr.cpp, next to their sibling CWwdSlot9c
+// (0x15b2a0) built by the same CWwdObjMgr::CreateObject factory cluster.)
 
 // (DualBufferOwner::FreeBuffers @0x148d10 re-homed to src/Image/ImageOwned.cpp as
 // CDDrawShadeBlit::Teardown - the +0x30 owned shaded sprite of CImage; xref-proven
 // via CImage::FreeAll's owned->Teardown() call, fields m_rleData/m_palette.)
 
-// ---------------------------------------------------------------------------
-// WapObjBase @0x1591b0 - wap-object base init: seed m_4=-1, zero m_8/m_c/m_10,
-// stamp the grand-base dtor vptr. A void METHOD (keeps this in ecx, eax=0; no
-// mov eax,ecx) - see vptr-stamp-void-init-not-ctor.
-// TERMINAL manual stamp (not convertible to `: public CObject`): this is a
-// standalone void re-init method, not a ctor, so the store IS retail's own body -
-// cl's auto-stamp only lands in a ctor. Identity is a placeholder besides.
-// @orphan: only caller is an UNMATCHED scalar-deleting-destructor @0x159190; no RTTI
-// name - owning wap-object class identity unrecoverable.
-// ---------------------------------------------------------------------------
-SIZE_UNKNOWN(WapObjBase);
-class WapObjBase : public CObject {
-public:
-    void BaseInit();
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-    i32 m_10;
-};
-RVA(0x001591b0, 0x19)
-void WapObjBase::BaseInit() {
-    m_4 = -1;
-    m_10 = 0;
-    m_8 = 0;
-    m_c = 0;
-    // base vptr auto-stamped via CObject (retail's manual stamp dropped, % ok)
-}
+// (0x1591b0 WapObjBase::BaseInit - the wap-object base re-init - re-homed to
+// src/DDrawMgr/DDrawSubMgrPages.cpp (its RVA neighborhood).)
 
-// ---------------------------------------------------------------------------
-// Obj1397a0 @0x1397a0 - teardown: free m_0; then free m_38 unless the
-// m_10 target is live (m_10 && m_10->m_48 != 0); then clear nine fields.
-// __thiscall, void. (The two `if (m_38) free` arms tail-merge to one call.)
-// @orphan: a Bute-symbol payload torn down from ~CSymRec via CSymListNode::m_14, but it
-// is NOT CSymRec (accesses +0x38, past CSymRec's size 0x30); identity unrecovered and
-// the Bute CSymRec/CSymList models still diverge - do not fold here.
-// ---------------------------------------------------------------------------
-struct Obj49Target {
-    char m_pad[0x48];
-    i32 m_48;
-};
-SIZE_UNKNOWN(Obj1397a0);
-class Obj1397a0 {
-public:
-    void Teardown();
-    void* m_0;
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-    Obj49Target* m_10;
-    i32 m_14;
-    i32 m_18;
-    char m_pad1c[0x30 - 0x1c];
-    i32 m_30;
-    char m_pad34[0x38 - 0x34];
-    void* m_38;
-};
-RVA(0x001397a0, 0x57)
-void Obj1397a0::Teardown() {
-    if (m_0) {
-        RezFree(m_0);
-    }
-    if (m_10 != 0) {
-        if (m_10->m_48 == 0) {
-            if (m_38) {
-                RezFree(m_38);
-            }
-        }
-    } else {
-        if (m_38) {
-            RezFree(m_38);
-        }
-    }
-    m_0 = 0;
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
-    m_38 = 0;
-    m_10 = 0;
-    m_14 = 0;
-    m_18 = 0;
-    m_30 = 0;
-}
+// (0x1397a0 Obj1397a0::Teardown - the Bute-symbol payload teardown - re-homed to
+// src/Bute/SymTab.cpp (its RVA neighborhood, next to CSymLeafBuilder::Build); the
+// Obj49Target/Obj1397a0 placeholder views moved with it.)
 
 // (FirstDiffBit @0x16e480 re-homed to src/Bute/ButeTree.cpp - the crit-bit index
 // helper CButeTree::Insert + CProjActMap::Insert both call; ButeTree.cpp already
@@ -165,5 +44,3 @@ void Obj1397a0::Teardown() {
 // (CU35Host::DestroyStr @0x021c40 re-homed to src/Gruntz/FontConfig.cpp as
 // FontItem::~FontItem - the out-of-line dtor of CFontConfig's {type,data,CString name}
 // list record; xref-proven via CFontConfig::FreeNodes/Scroll deleting FontItem.)
-
-SIZE_UNKNOWN(Obj49Target);

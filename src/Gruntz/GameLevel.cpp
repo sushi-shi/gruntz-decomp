@@ -674,7 +674,7 @@ struct CImageSet3 : CObject {
     virtual ~CImageSet3() OVERRIDE; // slot 1 (CObject dtor)
     // slots 0-4 inherited from CObject (slot 1 = its virtual dtor).
     virtual i32 Parse(void* record); // [5]  +0x14  0x166d70
-    virtual void s18();              // [6]  0x1614b0
+    virtual void FreePixels();       // [6]  0x1614b0  release the owned +0x14 pixel buffer
     virtual void s1c();              // [7]  0x1614d0
     virtual i32
     GetCollisionAt(i32 x, i32 y); // [8]  +0x20  0x161570  per-pixel collision-kind query
@@ -749,6 +749,19 @@ i32 CImageSet2::GetCollisionAt(i32 x, i32 y) {
     }
     return m_10;
 }
+
+// CImageSet3::FreePixels (0x1614b0, ??_7CImageSet3@@6B@ slot 6, +0x18): release the
+// owned pixel buffer (+0x14) and null it. Re-homed from src/Stub/BoundaryUpper.cpp,
+// where it was the placeholder B_1614b0::Release view - now dissolved onto CImageSet3
+// (the data-ref ~??_7CImageSet3@@6B@+0x18 attribution, m_14 == m_pixels).
+RVA(0x001614b0, 0x1c)
+void CImageSet3::FreePixels() {
+    if (m_pixels) {
+        RezFree(m_pixels);
+    }
+    m_pixels = 0;
+}
+
 // CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Copies three dwords
 // from the WWD record at +0x08.. into m_04/m_08/m_0c via an advancing source
 // pointer (retail's `add eax,8; mov (eax); add eax,4` cursor walk) and returns TRUE.
@@ -3841,6 +3854,129 @@ i32 CGameLevel::ResolveTopY(CGameObject* t, i32 x, i32 y) {
         }
     }
     return t->m_screenY;
+}
+
+// ===========================================================================
+// 0x168080 - a compound-widget builder (RVA-adjacent to this TU). __thiscall(a1, rc,
+// p3..p8): allocate three same-typed sub-widgets (operator new + vtable stamp), lay
+// each out over the RECT *rc with its own size-pair, then derive the widget's own
+// extents (min-1 + half-centers) from three more size-pairs and finish with a SetRect
+// over rc's corners.
+//
+// ATTRIBUTION (proven, sema xref + disasm): this IS WwdPlaneRender::Init - the 0xb8-byte
+// plane-render worker's init, and its ONLY caller is WwdFile::RebuildPlanes (@0x1628f0,
+// src/Wwd/WwdFile.cpp). Builder_168080 (+0x00..+0x6c) is a partial view of
+// WwdPlaneRender; SubWidget_168080 (0x44 B, vtable 0x5f0310) is the sub-render-object it
+// allocates x3. DEFERRED fold onto WwdPlaneRender::Init: the real Init takes 8 args
+// (this ret 0x20) with a RECT* + 6 Pt*, but RebuildPlanes' @early-stop reconstruction
+// passes 7 args with a simplified geo mapping - folding would force rewriting
+// RebuildPlanes' scrambled arg-build (risks regressing its match). Left as the placeholder
+// view here (spatial home). Re-homed from src/Stub/ApiHiCallers.cpp.
+extern "C" int(WINAPI* g_pSetRect_6c44b8)(RECT*, int, int, int, int);
+
+struct Pt_168080 {
+    i32 m_0; // +0x00
+    i32 m_4; // +0x04
+};
+SIZE_UNKNOWN(Pt_168080);
+// REAL-POLYMORPHIC: the 6-slot sub-widget vtable @0x5f0310 is cl-emitted
+// (??_7SubWidget_168080@@6B@, bound via VTBL below); the inline ctor AUTO-stamps the
+// vptr, so `new SubWidget_168080` keeps the retail `operator new(0x44); if (p) { stamp
+// vptr; m_4=0 }` shape. Slots 0/2/3/4 come from the CObject grand-base; slot 1 is the
+// class's own 0x168280 scalar dtor, slot 5 the 0x168060 new virtual (declared-only).
+struct SubWidget_168080 : public CObject {
+    virtual ~SubWidget_168080() OVERRIDE; // [1] +0x04 0x168280 scalar-deleting dtor
+    virtual void s14();                   // [5] 0x168060
+    i32 m_4;                              // +0x04
+    char m_pad8[0x44 - 8];
+    i32 Setup(RECT rc, i32 a, i32 b); // 0x1915c0 (reloc-masked)
+    SubWidget_168080() {
+        m_4 = 0; // cl auto-stamps &??_7SubWidget_168080 first
+    }
+};
+SIZE(SubWidget_168080, 0x44);
+VTBL(SubWidget_168080, 0x001f0310); // ??_7SubWidget_168080 (was g_subVtbl_5f0310)
+struct Builder_168080 {
+    void* m_0;             // +0x00
+    SubWidget_168080* m_4; // +0x04
+    SubWidget_168080* m_8; // +0x08
+    SubWidget_168080* m_c; // +0x0c
+    i32 m_10;              // +0x10
+    i32 m_14;              // +0x14
+    i32 m_18;              // +0x18
+    i32 m_1c;              // +0x1c
+    i32 m_20;              // +0x20
+    i32 m_24;              // +0x24
+    i32 m_28;              // +0x28
+    i32 m_2c;              // +0x2c
+    i32 m_30;              // +0x30
+    i32 m_34;              // +0x34
+    i32 m_38;              // +0x38
+    i32 m_3c;              // +0x3c
+    i32 m_40;              // +0x40
+    i32 m_44;              // +0x44
+    i32 m_48;              // +0x48
+    i32 m_4c;              // +0x4c
+    i32 m_50;              // +0x50
+    i32 m_54;              // +0x54
+    RECT m_58;             // +0x58
+    i32 m_68;              // +0x68
+    i32 m_6c;              // +0x6c
+    i32 Init(
+        void* a1,
+        RECT* rc,
+        Pt_168080* p3,
+        Pt_168080* p4,
+        Pt_168080* p5,
+        Pt_168080* p6,
+        Pt_168080* p7,
+        Pt_168080* p8
+    );
+};
+SIZE_UNKNOWN(Builder_168080);
+RVA(0x00168080, 0x1f6)
+i32 Builder_168080::Init(
+    void* a1,
+    RECT* rc,
+    Pt_168080* p3,
+    Pt_168080* p4,
+    Pt_168080* p5,
+    Pt_168080* p6,
+    Pt_168080* p7,
+    Pt_168080* p8
+) {
+    if (a1) {
+        m_4 = new SubWidget_168080;
+        m_8 = new SubWidget_168080;
+        m_c = new SubWidget_168080;
+        if (m_4 && m_8 && m_c && m_4->Setup(*rc, p3->m_0, p3->m_4)
+            && m_8->Setup(*rc, p4->m_0, p4->m_4) && m_c->Setup(*rc, p5->m_0, p5->m_4)) {
+            m_10 = 0;
+            m_14 = 0;
+            m_18 = p6->m_0 - 1;
+            m_1c = p6->m_4 - 1;
+            m_40 = p6->m_0 / 2;
+            m_44 = p6->m_4 / 2;
+            m_30 = 0;
+            m_34 = 0;
+            m_38 = p7->m_0 - 1;
+            m_3c = p7->m_4 - 1;
+            m_48 = p7->m_0 / 2;
+            m_4c = p7->m_4 / 2;
+            m_20 = 0;
+            m_24 = 0;
+            m_28 = p8->m_0 - 1;
+            m_2c = p8->m_4 - 1;
+            m_50 = p8->m_0 / 2;
+            m_54 = p8->m_4 / 2;
+            m_0 = a1;
+            g_pSetRect_6c44b8(&m_58, rc->left, rc->top, rc->right, rc->bottom);
+            m_68 = 0xffffa932;
+            m_6c = 0xffffa932;
+            return 1;
+        }
+    }
+    return 0;
 }
 
 // --- class-metadata: the FORCE-REALIZED vtables (were the g_gameLevelVtbl /

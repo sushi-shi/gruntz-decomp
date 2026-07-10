@@ -90,11 +90,13 @@ struct CWorldLookupHolder;
 // it; here CWorldZ::m_1c is a pointer, so a forward declaration suffices (keeps this
 // widely-included class header free of the COM/STDMETHOD (objbase.h) footprint).
 struct CWorldDispatch;
-// The world's +0x4 sub-object exposes a map-index field at +0x14.
+// The world's +0x4 sub-object exposes a map-index field at +0x14 and, at +0x10, the
+// command-context object the world-present toolbar forwarder (Fwd114f00) drills to.
 SIZE_UNKNOWN(CWorldSub4);
 struct CWorldSub4 {
-    char m_pad0[0x14];
-    i32 m_14; // +0x14
+    char m_pad0[0x10];
+    void* m_10; // +0x10  command-context object (its +0x2c is forwarded to 0x267b)
+    i32 m_14;   // +0x14
 };
 // The real loaded-world/map object (CGruntzMgr::m_world). One object; each manager
 // method that touches it reads a different facet: the +0x4 map sub-object, the +0x10

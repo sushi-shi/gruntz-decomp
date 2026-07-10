@@ -41,17 +41,8 @@ namespace ApiMisc {
     // BuildAllPlanes call it on esi->m_38[i]). Build was already declared @0x161e80
     // in GameLevel.h with the sibling RecomputePlaneCoords @0x161c90 matched there.)
 
-    // __thiscall: free the owned module handle if present.
-    struct LibHost_1bf577 {
-        HMODULE m_0; // +0x00
-        void Run();
-    };
-    RVA(0x001bf577, 0xe)
-    void LibHost_1bf577::Run() {
-        if (m_0) {
-            FreeLibrary(m_0);
-        }
-    }
+    // (0x1bf577 LibHost_1bf577::Run - free the owned module handle - re-homed to
+    // src/Wap32/WapMisc.cpp, its RVA neighborhood.)
 
     // __thiscall(): free the owned global handle at +0x00 if present.
     struct GlobalOwner_1c09de {

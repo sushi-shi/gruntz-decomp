@@ -26,13 +26,9 @@ SIZE_UNKNOWN(SW_163a10);
 
 // (0x1413c0 re-homed to CDDSurface::Scale in src/Image/Image.cpp; view dissolved.)
 
-// 0x1614b0 - `if(m_14) RezFree(m_14); m_14 = 0;` (CImageSet1-area buffer release).
-struct B_1614b0 {
-    i32 _0[5];
-    void* m_14; // 0x14
-    void Release();
-};
-SIZE_UNKNOWN(B_1614b0);
+// (0x1614b0 buffer-release re-homed to CImageSet3::FreePixels in src/Gruntz/GameLevel.cpp
+// - the polymorphic CImageSet3's slot-6 (~??_7CImageSet3@@6B@+0x18); view dissolved,
+// m_14 == CImageSet3::m_pixels.)
 
 // (0x137300 SoundDevice::GetPrimary re-homed to src/Dsndmgr/DirectSoundMgr.cpp;
 // SoundDevice view dissolved onto the canonical <Dsndmgr/SoundDevice.h>.)
@@ -53,46 +49,21 @@ SIZE_UNKNOWN(B_1614b0);
 
 // (ModeArr/DdEntry re-homed - see the Compare note above.)
 
-// 0x13dee0 - `m_1c = v; if(v > 0) m_28 = 1000 / v;` (CFileImage frame timing).
+// 0x13dee0 - `m_1c = v; if(v > 0) m_28 = 1000 / v;` frame-timing setter. Set (0x13dee0)
+// re-homed to src/Rez/RezMgr.cpp; only the sibling TrySet (0x13df00) still lives in
+// BoundaryUpper.cpp, so this view stays here for it (both methods declared).
 struct B_13dee0 {
     char _0[0x1c];
     i32 m_1c; // 0x1c
     char _20[0x28 - 0x20];
     i32 m_28; // 0x28
-    void Set(i32 v);
-    i32 TrySet(i32 v); // 0x13df00
+    void Set(i32 v);   // 0x13dee0 (now in RezMgr.cpp; called out-of-line by TrySet)
+    i32 TrySet(i32 v); // 0x13df00 (still here)
 };
 SIZE_UNKNOWN(B_13dee0);
 
-// 0x13ee30 - COM wait-flip loop (IDirectDrawSurface-style manual vtable, slot 0x48).
-struct IDDS_ee30 { // real polymorphic; Flip is slot 18 (+0x48)
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual u32 __stdcall Flip(i32); // slot 18 (+0x48)
-};
-SIZE_UNKNOWN(IDDS_ee30);
-struct B_13ee30 {
-    char _0[8];
-    IDDS_ee30* m_8; // 0x8
-    void WaitFlip();
-};
-SIZE_UNKNOWN(B_13ee30);
+// (0x13ee30 surface flip-wait re-homed to B_13ee30::WaitFlip in src/Image/Image.cpp,
+// next to CDDSurface::Clear; the IDDS_ee30/B_13ee30 views moved with it.)
 
 // (0x151e70 re-homed to AnimWorkerObj::Clear in src/DDrawMgr/DDrawWorkerCache.cpp; view dissolved.)
 

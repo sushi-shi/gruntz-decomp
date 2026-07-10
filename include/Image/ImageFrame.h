@@ -67,7 +67,9 @@ public:
     void* m_owner; // +0x0c  owner (the CImageSet's +0xc)
     i32 m_width;   // +0x10  width  (GetMemoryUsage: pixel-count factor)
     i32 m_height;  // +0x14  height (GetMemoryUsage: pixel-count factor)
-    char m_pad18[0x2c - 0x18];
+    i32 m_originX; // +0x18  blit-origin x (0x115300 layer-blit centers by it)
+    i32 m_originY; // +0x1c  blit-origin y
+    char m_pad20[0x2c - 0x20];
     CImageFrameSurface* m_surface; // +0x2c  held surface (its +0xa8 = bit depth)
     CImageFormat* m_format;        // +0x30  format/state helper (factory inits to null)
 };

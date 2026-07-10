@@ -5,7 +5,7 @@
 // of the set by a signed index, and blit it centered:
 //   * DrawMessageFrame (0x0d1650, non-virtual): index + useFront are caller args;
 //     the frame is blit into the active viewport via the shared 0x115300 layer
-//     blit helper (winapi_115300_SetRect), centered on the viewport rect.
+//     blit helper (LayerBlitFrame, glyphstr), centered on the viewport rect.
 //   * Vslot23 (0x0cfef0, vtable slot 35): presents the state's message screen -
 //     Present(0x3c), pick frame 3 (or 4 when Update()==7), CImage::RenderFrame it
 //     centered on the draw surface, then Flip.
@@ -18,14 +18,11 @@
 #include <DDrawMgr/DDSurface.h> // CDDSurface::Flip (0x13e850)
 #include <Globals.h>            // s_GameMessagez ("GAME_MESSAGEZ" @0x611ab8)
 
-// The shared __cdecl layer-blit helper (0x115300, ApiCallerStubs) - blits a rect
-// source into the active layer node. Declared here (namespace + fwd-decl structs)
-// so the reloc resolves to the retail symbol; body lives in src/Stub/ApiCallers.cpp.
-namespace ApiCallerStubs {
-    struct LayerHost_115300;
-    struct RectSrc_115300;
-    i32 winapi_115300_SetRect(LayerHost_115300*, RectSrc_115300*, i32, i32, i32, i32);
-} // namespace ApiCallerStubs
+// The shared __cdecl layer-blit helper (0x115300, in src/Gruntz/GlyphStringDraw.cpp):
+// blit a CImageFrame into the active draw-target layer. `m_c` is a CSpriteFactoryHolder,
+// the same real class ResMgr.h models as CResMgr (the helper's host param), so the cast
+// documents that conflation; `frame` is a CImageFrame (passed as-is).
+i32 LayerBlitFrame(CResMgr*, CImageFrame*, i32, i32, i32, i32); // 0x115300
 
 // The Present host (0xfaec0). Its class identity is unrecovered - the only inbound
 // edge is ILT thunk 0x1ec9, and Vslot23 invokes it on its own `this` (CPlay is
@@ -57,14 +54,7 @@ void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
             CGameViewport::SViewRect& vp = m_c->m_24->m_viewport;
             i32 cx = vp.left + (vp.right - vp.left) / 2;
             i32 cy = vp.top + (vp.bottom - vp.top) / 2;
-            ApiCallerStubs::winapi_115300_SetRect(
-                (ApiCallerStubs::LayerHost_115300*)m_c,
-                (ApiCallerStubs::RectSrc_115300*)frame,
-                cx,
-                cy,
-                useFront,
-                1
-            );
+            LayerBlitFrame((CResMgr*)m_c, frame, cx, cy, useFront, 1);
         }
     }
 }

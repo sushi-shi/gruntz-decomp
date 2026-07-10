@@ -108,58 +108,11 @@ void Cbd450::Init() {
 // (0x114ec0 Fwd114ec0 re-homed to src/Gruntz/GruntzMgrCmd.cpp - the __cdecl 6-arg
 // forwarder the HandleCommand toolbar path calls; it tail-forwards to Fwd114f00.)
 
-// ===========================================================================
-// 0x114f00 - guarded forwarder: resolve a2->m_30->m_4->m_10->m_2c and, when live,
-// forward it plus the six args to 0x267b. __cdecl(6 args). NOTE: this is the
-// 0x21c1-thunk target that GruntzMgrCmd.cpp's Fwd114ec0 forwards to; its deref
-// chain still needs real command-context types before it can home there.
-// ===========================================================================
-extern "C" void Func267b(void* v, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x267b
-// @early-stop
-// identical-return-epilogue tail-merge wall (docs/patterns): cl shares one pop;ret
-// tail across the two null guards; retail emits the inline ret at each site. Deref
-// chain + 6-arg re-push forward are byte-faithful.
-RVA(0x00114f00, 0x3e)
-void Fwd114f00(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    CObj114f* obj = ((CArg114f*)a2)->m_30->m_4->m_10;
-    if (obj == 0) {
-        return;
-    }
-    if (obj->m_2c == 0) {
-        return;
-    }
-    Func267b(obj->m_2c, a1, a2, a3, a4, a5, a6);
-}
+// (0x114f00 Fwd114f00 - the guarded 6-arg forwarder - re-homed to
+// src/Gruntz/GruntzMgrCmd.cpp, next to its Fwd114ec0 caller.)
 
-// ===========================================================================
-// 0x1181d0 - bounds-grow: reject when the new (+0x04,+0x08) pair does not exceed
-// the +0xb8 box; else store it, notify (0x3661) and stash +0xd4. __thiscall(3).
-// ===========================================================================
-extern "C" void Func3661(CBox118* p); // 0x3661
-RVA(0x001181d0, 0x70)
-i32 C1181d0::Update(i32 a1, i32 a2, i32 a3) {
-    if (a1 == 0) {
-        return 0;
-    }
-    if (a2 == 0) {
-        return 0;
-    }
-    CBox118* b = &m_bounds;
-    if (b == 0) {
-        return 0;
-    }
-    if (b->m_4 > a1) {
-        return 0;
-    }
-    if (b->m_4 == a1 && b->m_8 < a2) {
-        return 0;
-    }
-    b->m_4 = a1;
-    b->m_8 = a2;
-    Func3661(b);
-    m_d4 = a3;
-    return 1;
-}
+// (0x1181d0 C1181d0::Update - the bounds-grow store+notify - re-homed to
+// src/Gruntz/NameRecord.cpp (its RVA neighborhood), with its CBox118/C1181d0 view.)
 
 // ===========================================================================
 // 0x118260 - copy-if-grow: reject when the source box does not exceed +0xb8;

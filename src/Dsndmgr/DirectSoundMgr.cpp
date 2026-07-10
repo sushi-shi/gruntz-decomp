@@ -931,6 +931,22 @@ IDirectSoundBuffer* SoundDevice::GetPrimary() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x137330 - PureSoundElem's standalone base-object destructor (retail ??1PureSoundElem):
+// cl's implicit vptr-restore stamps the ??_7PureSoundElem pure-call vtable (0x5ef6c8)
+// into [this] and returns (7-byte `mov [ecx],offset ??_7 + ret`). Modeled as an empty
+// virtual dtor (emits exactly the stamp+ret). REQUIRED-SPLIT from the inline
+// `delete (PureSoundElem*)e` sites (0x136f60/e20/ed0) which inline the teardown - this
+// standalone COMDAT is forced only by the EH unwind funclet @0x1e0950 that references
+// it out-of-line, so the two models coexist. Re-homed from src/Stub/BoundaryThunks.cpp.
+struct CAbstract137330 {
+    virtual ~CAbstract137330();
+};
+SIZE_UNKNOWN(CAbstract137330);
+RELOC_VTBL(CAbstract137330, 0x001ef6c8); // vtable reloc-masks a bound datum (dtor-stamp verified)
+RVA(0x00137330, 0x7)
+CAbstract137330::~CAbstract137330() {}
+
+// ---------------------------------------------------------------------------
 // 0x138120 - set the four GetErrorString reporting-mode flags (log / message-box /
 // beep / third) from the four args. __cdecl free helper (sibling of DDraw's / DInput's).
 RVA(0x00138120, 0x27)

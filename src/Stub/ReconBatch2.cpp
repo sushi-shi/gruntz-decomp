@@ -77,55 +77,13 @@
 // compiler-generated dynamic initializer that constructs the g_mediumFont global;
 // Fonts.cpp is the TU that owns the four font globals.)
 
-// ===========================================================================
-// 0x0011e8dc (7B) - __thiscall vptr re-stamp: store the base dtor vtable
-// (g_wapObjectDtorVtbl) into [this]. TERMINAL manual stamp (not convertible to
-// `: public CObject`): this 7-byte fn IS the entire retail restamp - there is
-// no ctor for cl to fold an auto-stamp into, and Obj_11e8dc is a placeholder.
-// ===========================================================================
-struct Obj_11e8dc : CObject {};
-RVA(0x0011e8dc, 0x7)
-// ===========================================================================
-// 0x0016f6e0 (118B) - __stdcall(src, dst): while the descriptor-defined flag bit
-// of src is clear, read an 8-byte record from src, transform it (Fn16f7f0), and
-// write it to dst; remember src->m_8; finally Finish dst with the last m_8.
-// ===========================================================================
-struct Desc_16f6e0 {
-    char m_pad0[4];
-    i32 m_4; // +0x04 byte offset of the flag within the object
-};
-struct Src_16f6e0 {
-    Desc_16f6e0* m_0; // +0x00 descriptor
-    char m_pad4[0x8 - 0x4];
-    i32 m_8;                           // +0x08
-    void ReadRecord(void* buf, i32 n); // 0x16a510
-};
-struct Dst_16f6e0 {
-    void WriteRecord(void* buf, i32 n); // 0x16ab20
-    void Finish(i32 last);              // 0x16aab0
-};
-void Blowfish_encipher(unsigned int* lo, unsigned int* hi); // 0x16f7f0
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc, const-materialize-into-reg-vs-
-// immediate): the whole control flow + record read/encipher/write + Blowfish
-// reloc match retail; residual is that retail pins the test mask 1 in bl
-// (`movb $1,%bl; testb %bl,mem`) and re-zeros the record buffer with a fresh
-// `xor edx` inside the loop, while cl tests with an immediate `$1` and hoists the
-// zero into ebx outside the loop. Not source-steerable, ~84.9%.
-RVA(0x0016f6e0, 0x76)
-void __stdcall Copy_16f6e0(Src_16f6e0* src, Dst_16f6e0* dst) {
-    i32 last = 0;
-    while ((*((char*)src + src->m_0->m_4 + 8) & 1) == 0) {
-        unsigned int rec[2];
-        rec[0] = 0;
-        rec[1] = 0;
-        src->ReadRecord(rec, 8);
-        last = src->m_8;
-        Blowfish_encipher(&rec[0], &rec[1]);
-        dst->WriteRecord(rec, 8);
-    }
-    dst->Finish(last);
-}
+// (0x11e8dc - the CObject-vtable base restamp (7-byte `mov [ecx],&??_7CObject; ret`) -
+// re-homed to src/Gruntz/WinMain.cpp (its RVA neighborhood), modeled as a RELOC_VTBL
+// pure-stamp leaf.)
+
+// (0x16f6e0 Copy_16f6e0 - the Blowfish key-file record encipher loop - re-homed to
+// src/Crypto/Blowfish.cpp (it calls Blowfish_encipher there), with its Src/Dst/Desc
+// record-stream views.)
 
 // (0x00181660 + 0x001816a0 re-homed to src/DDrawMgr/LightEffectSetup.cpp as
 // CFaderLight::v3 (AddItem) / v4 (DropItem) - the overlay light-fader's pooled-surface
@@ -140,22 +98,6 @@ void __stdcall Copy_16f6e0(Src_16f6e0* src, Dst_16f6e0* dst) {
 // (child[0]/child[1]/bit/key/value). Filled the class's declared-only Walk slot; the
 // old Tree_193340/TNode_193340 views were CButeTree/CButeTreeNode.)
 
-// ===========================================================================
-// 0x001b9b8d (6B) - getter that returns the address of a global descriptor
-// (PTR_DAT_006156f4). `mov eax, OFFSET g; ret`.
-// @identity-TODO -> likely NAFXCW library: it sits in the MFC CString/collection
-// text region (immediate neighbors 0x1b9b46 ??2@YAPAXI@Z operator new, 0x1b9b93
-// ??0CString@@QAE@XZ) and its only retail callers are MFC template-collection
-// helpers (ConstructElements / CList::NewNode / CMap::NewAssoc / CString, via xref).
-// Carve to config/library_labels.csv once the exact MFC symbol for the &0x6156f4
-// descriptor getter is pinned (kept as a src claim meanwhile; EXACT).
-// ===========================================================================
-RVA(0x001b9b8d, 0x6)
-void** Get_1b9b8d() {
-    return &g_desc_6156f4;
-}
+// (0x1b9b8d Get_1b9b8d - the &g_desc_6156f4 descriptor getter - re-homed to
+// src/Rez/RezUtil.cpp (its RVA neighborhood, right after RezFree @0x1b9b82).)
 
-SIZE_UNKNOWN(Desc_16f6e0);
-SIZE_UNKNOWN(Dst_16f6e0);
-SIZE_UNKNOWN(Obj_11e8dc);
-SIZE_UNKNOWN(Src_16f6e0);

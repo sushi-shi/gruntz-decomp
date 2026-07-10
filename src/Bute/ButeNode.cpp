@@ -94,3 +94,33 @@ SIZE(CButeCfgNode174d, 0x2c); // derives zPTree (no new fields)
 // 100% hand-rolled; converted per the ALL-VTABLES mandate (regression OK).
 RVA(0x00174d00, 0x25)
 CButeCfgNode174d::CButeCfgNode174d(i32 kind) : zPTree(&g_node174df0Tag, kind) {}
+
+// ---------------------------------------------------------------------------
+// CButeStore @0x174d70 - a multiple-inheritance /GX dtor (RVA-adjacent to the config
+// nodes above). The most-derived class re-stamps its primary vptr (+0, 0x5e94ac) and
+// its secondary base vptr (+8, 0x5e949c) at entry, runs ClearRecursive(0) (0x16e070),
+// then destructs its bases in reverse declaration order: the secondary base @+8
+// (~CObj50 0x16dfc0, with the `this ? this+8 : 0` adjust) then the primary base @0
+// (~CContainerErr 0x16da60). Real-polymorphic MI model so cl emits both implicit vptr
+// stamps + both base-dtor CALLs (all reloc-mask). The non-trivial bases earn the /GX
+// frame (this TU is flags="eh"). This MI model cannot fold into ButeStoreClear.cpp's
+// flat <Bute/ButeMgr.h> CButeStore without reconciling the two models (deferred).
+// Re-homed from src/Stub/DiscoveredEh.cpp.
+struct CContainerErr {
+    virtual ~CContainerErr(); // 0x16da60 (external)
+    char m_pad[8 - 4];        // vptr@+0; CObj50 begins at +8
+};
+SIZE_UNKNOWN(CContainerErr);
+struct CObj50 {
+    virtual ~CObj50(); // 0x16dfc0 (external; stamps 0x5f04d8 internally)
+};
+SIZE_UNKNOWN(CObj50);
+struct CButeStore : CContainerErr, CObj50 {
+    virtual ~CButeStore() OVERRIDE;              // 0x174d70
+    void ClearRecursive(struct CButeStoreNode*); // 0x16e070 (real takes CButeStoreNode*; 0 = null)
+};
+SIZE_UNKNOWN(CButeStore);
+RVA(0x00174d70, 0x70)
+CButeStore::~CButeStore() {
+    ClearRecursive(0);
+}

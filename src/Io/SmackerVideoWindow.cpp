@@ -97,6 +97,198 @@ int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
     return Init(h, a0, a1);
 }
 
+// ===========================================================================
+// 0x17c3f0 - a page/cursor command handler (RVA-adjacent to this TU). __thiscall(a1,
+// src, dst, ..., kind, ..., a31): wire up the command, dispatch on `kind` (8 = blit
+// src->dst via the two hand-rolled vtable interfaces; 0x18 = abort; 0x10 = validate),
+// then commit the command block + hide the cursor. `src`/`dst` carry hand-rolled
+// __stdcall function tables (object passed explicitly; callee cleans), modeled as
+// __stdcall fn-ptr vtables. `this` is a STACK-LOCAL command block (CGruntzMgr::
+// ChangeState_8fab0 @0x8fab0 builds it on its own stack and Init()s it), so there is no
+// persistent owning class - the 0x520-byte command-block layout + its ObjA2/ObjA3
+// interfaces are the transient's own placeholder shape. Re-homed from
+// src/Stub/ApiHiCallers.cpp.
+struct ObjA2_17c3f0 { // real polymorphic; fn5 is slot 5 (+0x14)
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual i32 __stdcall fn5(i32, i32*, i32*, i32); // slot 5 (+0x14)
+};
+SIZE_UNKNOWN(ObjA2_17c3f0);
+struct ObjA3_17c3f0 { // real polymorphic; fn31 is slot 31 (+0x7c)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual void Slot18();
+    virtual void Slot19();
+    virtual void Slot20();
+    virtual void Slot21();
+    virtual void Slot22();
+    virtual void Slot23();
+    virtual void Slot24();
+    virtual void Slot25();
+    virtual void Slot26();
+    virtual void Slot27();
+    virtual void Slot28();
+    virtual void Slot29();
+    virtual void Slot30();
+    virtual void __stdcall fn31(i32); // slot 31 (+0x7c)
+};
+SIZE_UNKNOWN(ObjA3_17c3f0);
+extern "C" int(WINAPI* g_pShowCursor_6c44c4)(int); // 0x6c44c4
+
+struct Handler_17c3f0 {
+    void* m_0; // +0x00
+    i32 m_4;   // +0x04
+    void* m_8; // +0x08
+    i32 m_c;   // +0x0c
+    char m_pad10[0x14 - 0x10];
+    ObjA2_17c3f0* m_14; // +0x14
+    char m_pad18[0x1c - 0x18];
+    ObjA3_17c3f0* m_1c; // +0x1c
+    char m_pad20[0x24 - 0x20];
+    i32 m_24; // +0x24
+    i32 m_28; // +0x28
+    i32 m_2c; // +0x2c
+    char m_pad30[0x108 - 0x30];
+    i32 m_108; // +0x108
+    char m_pad10c[0x508 - 0x10c];
+    i32 m_508; // +0x508
+    char m_pad50c[0x510 - 0x50c];
+    i32 m_510; // +0x510
+    char m_pad514[0x518 - 0x514];
+    i32 m_518; // +0x518
+    i32 m_51c; // +0x51c
+    i32 m_520; // +0x520
+    void M_17cd90(void* a1);
+    void M_17cc80();
+    i32 M_17d2b0();
+    void M_17d6b0();
+    i32 Init(
+        void* a1,
+        ObjA2_17c3f0* a2,
+        ObjA3_17c3f0* a3,
+        i32 p4,
+        i32 p5,
+        i32 a6,
+        i32 a7,
+        i32 p8,
+        i32 p9,
+        i32 p10,
+        i32 p11,
+        i32 p12,
+        i32 p13,
+        i32 p14,
+        i32 p15,
+        i32 p16,
+        i32 p17,
+        i32 p18,
+        i32 p19,
+        i32 p20,
+        i32 p21,
+        i32 p22,
+        i32 p23,
+        i32 p24,
+        i32 kind,
+        i32 p26,
+        i32 p27,
+        i32 p28,
+        i32 p29,
+        i32 p30,
+        i32 a31
+    );
+};
+SIZE_UNKNOWN(Handler_17c3f0);
+RVA(0x0017c3f0, 0x14e)
+i32 Handler_17c3f0::Init(
+    void* a1,
+    ObjA2_17c3f0* a2,
+    ObjA3_17c3f0* a3,
+    i32 p4,
+    i32 p5,
+    i32 a6,
+    i32 a7,
+    i32 p8,
+    i32 p9,
+    i32 p10,
+    i32 p11,
+    i32 p12,
+    i32 p13,
+    i32 p14,
+    i32 p15,
+    i32 p16,
+    i32 p17,
+    i32 p18,
+    i32 p19,
+    i32 p20,
+    i32 p21,
+    i32 p22,
+    i32 p23,
+    i32 p24,
+    i32 kind,
+    i32 p26,
+    i32 p27,
+    i32 p28,
+    i32 p29,
+    i32 p30,
+    i32 a31
+) {
+    if (!a1 || !a2 || !a3) {
+        return 0;
+    }
+    m_14 = a2;
+    m_c = 1;
+    m_1c = a3;
+    M_17cd90(a1);
+    if (kind == 8) {
+        if (m_14->fn5(4, &m_108, &m_2c, 0)) {
+            M_17cc80();
+            return 0;
+        }
+        m_1c->fn31(m_2c);
+        m_510 = 0;
+    }
+    if (kind == 0x18) {
+        M_17cc80();
+        return 0;
+    }
+    if (kind == 0x10) {
+        if (!M_17d2b0()) {
+            M_17cc80();
+            return 0;
+        }
+    }
+    m_518 = a7;
+    m_51c = a6;
+    m_520 = kind;
+    m_0 = a1;
+    m_8 = 0;
+    m_24 = 0;
+    m_28 = 0;
+    m_508 = a31;
+    g_pShowCursor_6c44c4(0);
+    m_4 = 1;
+    M_17d6b0();
+    return 1;
+}
+
 // __thiscall(): tear the playback object down and restore the cursor. Re-homed
 // from ApiCallers (placeholder CursHost_17c510): its m_videoWnd (video window at +0x53c)
 // is the same CWnd CreateVideoWindow above `new`s, so this is the same CSmackWin.

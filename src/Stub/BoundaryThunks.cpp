@@ -116,46 +116,10 @@ CStateSub8c470::~CStateSub8c470() {
     ((CGameModeBase*)this)->BaseCleanup();
 }
 
-// ===========================================================================
-// 0x137330 / 0x13aaf0 / 0x13ca30 - abstract-base vptr restores: cl's implicit
-// vptr-restore stamps a pure-call vtable into [this] and returns (7-byte
-// `mov [ecx],offset ??_7 + ret`). 0x13aaf0 and 0x13ca30 share the 0x5ef760 pure-call
-// vtable; 0x137330 stamps ??_7PureSoundElem (0x5ef6c8, include/Dsndmgr/SoundVoiceList.h).
-// Real polymorphic: an empty virtual dtor emits exactly the stamp+ret. __thiscall.
-//
-// de-view CONFIRMED-SAME, REQUIRED-SPLIT (not foldable into PureSoundElem):
-// CAbstract137330 IS PureSoundElem's base-object destructor (retail ??1PureSoundElem,
-// a NON-virtual dtor). Retail emits this as a standalone COMDAT only because the EH
-// unwind funclet @0x1e0950 (its sole caller) references ~PureSoundElem out-of-line,
-// while every `delete (PureSoundElem*)e` site (0x136f60/0x136e20/0x136ed0) INLINES the
-// teardown (mov[e],0x5ef6c8; RezFree - see PurgeVoiceList @0x136ea8). A folded out-of-
-// line PureSoundElem dtor would convert those cross-TU inline sites to calls (regress);
-// an inline dtor would drop THIS standalone (we don't emit the EH funclet that forces
-// it). So the two models must coexist - kept a distinct emitter here.
-// ===========================================================================
-struct CAbstract137330 {
-    virtual ~CAbstract137330();
-};
-SIZE_UNKNOWN(CAbstract137330);
-RELOC_VTBL(CAbstract137330, 0x001ef6c8); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x00137330, 0x7)
-CAbstract137330::~CAbstract137330() {}
-
-struct CAbstract13aaf0 {
-    virtual ~CAbstract13aaf0();
-};
-SIZE_UNKNOWN(CAbstract13aaf0);
-RELOC_VTBL(CAbstract13aaf0, 0x001ef760); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x0013aaf0, 0x7)
-CAbstract13aaf0::~CAbstract13aaf0() {}
-
-struct CAbstract13ca30 {
-    virtual ~CAbstract13ca30();
-};
-SIZE_UNKNOWN(CAbstract13ca30);
-RELOC_VTBL(CAbstract13ca30, 0x001ef760); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x0013ca30, 0x7)
-CAbstract13ca30::~CAbstract13ca30() {}
+// (0x137330 / 0x13aaf0 / 0x13ca30 - abstract-base vptr-restore dtor thunks -
+// re-homed to their RVA-neighborhood TUs: 0x137330 -> src/Dsndmgr/DirectSoundMgr.cpp
+// (PureSoundElem base-object dtor), 0x13aaf0 -> src/Bute/SymParser.cpp,
+// 0x13ca30 -> src/Rez/RezMgr.cpp. Each keeps its RELOC_VTBL pure-call-vtable model.)
 
 // (0x0853d0 Forward853d0 re-homed to src/Rez/RezSync.cpp as RezFreeStdcall - a
 // standalone __stdcall RezFree wrapper, homed next to that TU's rez-managed bootstrap.)

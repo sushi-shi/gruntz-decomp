@@ -787,6 +787,27 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x151d20 - notify a hooked callback (placeholder-identity object RVA-adjacent to
+// this TU): stash/replace m_7c->m_1c with arg, invoke the +0x10 callback(this),
+// restore m_1c if unchanged. __thiscall, 1 arg. The +0x7c hook-owner class carries no
+// recoverable edge, so the B_151d20/Cb151d20 views (in BoundaryUpperViews.h, already
+// included above) stand in. Re-homed from src/Stub/BoundaryUpper.cpp.
+RVA(0x00151d20, 0x3a)
+i32 B_151d20::Notify(void* arg) {
+    Cb151d20* p = m_7c;
+    if (!p) {
+        return 0;
+    }
+    void* saved = p->m_1c;
+    p->m_1c = arg;
+    m_7c->fn(this);
+    if (m_7c->m_1c == arg) {
+        m_7c->m_1c = saved;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // Init (0x15b940): zero +0x19c, construct the +0x1a0 command map, then Setup.
 // ---------------------------------------------------------------------------
 RVA(0x0015b940, 0x38)

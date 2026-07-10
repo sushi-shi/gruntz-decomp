@@ -78,4 +78,50 @@ i32 CNameRecord::CopyBody(char* body) {
     return 0;
 }
 
+// ===========================================================================
+// 0x1181d0 - a spatially-adjacent bounds-grow object (NOT CNameRecord: its box is
+// at +0xb8, past this record's body). Reject when the new (+0x04,+0x08) pair does
+// not exceed the +0xb8 box; else store it, notify (0x3661) and stash +0xd4.
+// __thiscall(3). Placeholder identity. Re-homed from src/Stub/BoundaryLowerMethods.cpp.
+// ===========================================================================
+struct CBox118 {
+    void* m_0;
+    u32 m_4;
+    u32 m_8;
+};
+struct C1181d0 {
+    char pad0[0xb8];
+    CBox118 m_bounds; // +0xb8
+    char padd4[0xd4 - 0xb8 - 0xc];
+    i32 m_d4; // +0xd4
+    i32 Update(i32 a1, i32 a2, i32 a3);
+};
+extern "C" void Func3661(CBox118* p); // 0x3661
+RVA(0x001181d0, 0x70)
+i32 C1181d0::Update(i32 a1, i32 a2, i32 a3) {
+    if (a1 == 0) {
+        return 0;
+    }
+    if (a2 == 0) {
+        return 0;
+    }
+    CBox118* b = &m_bounds;
+    if (b == 0) {
+        return 0;
+    }
+    if (b->m_4 > a1) {
+        return 0;
+    }
+    if (b->m_4 == a1 && b->m_8 < a2) {
+        return 0;
+    }
+    b->m_4 = a1;
+    b->m_8 = a2;
+    Func3661(b);
+    m_d4 = a3;
+    return 1;
+}
+
 SIZE_UNKNOWN(CNameRecord);
+SIZE_UNKNOWN(CBox118);
+SIZE_UNKNOWN(C1181d0);

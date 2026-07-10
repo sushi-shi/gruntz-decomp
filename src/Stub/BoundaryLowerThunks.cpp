@@ -226,19 +226,6 @@ void CInitd5d70::Init() {
 }
 
 // ===========================================================================
-// 0x1157b0 - construct the global g_font64ead8 (a FontRenderer, ctor 0x179be0,
-// ??0FontRenderer@@QAE@XZ; DIFFERENT type from the bitmap Font globals) in place via
-// the explicit-ctor-call tail-jmp (docs/patterns/explicit-ctor-call-inplace-tail-jmp.md).
-// Its DATA symbol is owned here (no external pin). From <Font/Font.h>.
-// (The sibling g_tinyFont ctor thunk 0x115730 re-homed to Fonts.cpp, next to the
-// g_mediumFont one, where g_tinyFont's DATA pin lives.)
-// ===========================================================================
-DATA(0x0024ead8)
-extern FontRenderer g_font64ead8;
-RVA(0x001157b0, 0xa)
-void FontForward1157b0() {
-    g_font64ead8.FontRenderer::FontRenderer();
-}
 
 // ===========================================================================
 // 0x1182f0 - predicate: is +0x08 equal to 1? __thiscall.

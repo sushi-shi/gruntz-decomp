@@ -58,5 +58,20 @@ void Unmatched_c76d0() {
     ((CZDArrayDerived*)&g_64bf00)->Construct(0x7d0, 0x7da);
 }
 
+// --- 0x1bf577 : free the owned module handle if present ----------------------
+// A __thiscall leaf on a placeholder host that owns an HMODULE at +0x00. Re-homed
+// from src/Stub/ApiMiscHelpers.cpp.
+struct LibHost_1bf577 {
+    HMODULE m_0; // +0x00
+    void Run();
+};
+SIZE_UNKNOWN(LibHost_1bf577);
+RVA(0x001bf577, 0xe)
+void LibHost_1bf577::Run() {
+    if (m_0) {
+        FreeLibrary(m_0);
+    }
+}
+
 SIZE_UNKNOWN(CNoTrackObjectStamp); // CNoTrackObject vptr-stamp leaf
 SIZE_UNKNOWN(CWndFwd);             // MFC CWnd-family global forward (class not recoverable)

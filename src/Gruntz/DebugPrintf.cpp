@@ -29,10 +29,12 @@ extern i32 g_monoRow;
 DATA(0x006bf8d8)
 extern i32 g_monoCol;
 
-// The cursor-position forwarder (0x184fb0 -> 0x184fd0(0, x, y); BoundaryUpper.cpp)
-// and the CRT fclose (0x11f780) the printf variants / DebugClose reach; external
-// no-body so their call relocs mask.
+// The cursor-position forwarder (0x184fb0 -> 0x184fd0(0, x, y), defined at the tail of
+// this TU - the RezDebugPrintf*XY variants above position the cursor through it) and the
+// CRT fclose (0x11f780) the printf variants / DebugClose reach; external no-body so their
+// call relocs mask.
 void Fwd_184fb0(i32 x, i32 y);
+void Sub_184fd0(i32, i32, i32);     // 0x184fd0 (cursor set with mode; reloc-masked)
 extern "C" i32 RezFClose(void* fp); // 0x11f780 (CRT fclose)
 
 // ---------------------------------------------------------------------------
@@ -88,6 +90,13 @@ extern "C" {
             DebugSink_184df0(buf);
         }
     }
+}
+
+// 0x184fb0 - the cursor-position forwarder the XY printf variants above call:
+// `Sub_184fd0(0, x, y)` (mode 0). __cdecl. Re-homed from src/Stub/BoundaryUpper.cpp.
+RVA(0x00184fb0, 0x15)
+void Fwd_184fb0(i32 a, i32 b) {
+    Sub_184fd0(0, a, b);
 }
 
 SIZE_UNKNOWN(CDebugConfig);

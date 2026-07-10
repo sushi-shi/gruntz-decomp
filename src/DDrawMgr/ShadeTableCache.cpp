@@ -1013,6 +1013,65 @@ C14fe30::~C14fe30() {
     }
 }
 
+// CShadeTableArray::SetSizeGrow (0x150040) - the out-of-line MFC CArray::SetSize over
+// the 4-byte CShadeTable* element (its 6 callers are all CShadeTableCache table
+// builders). Re-homed from src/Stub/DiscoveredArray.cpp, where it was the placeholder
+// CDwArray::SetSize view - now dissolved onto the canonical CShadeTableArray (same 0x14
+// layout, m_pData/m_nSize/m_nMaxSize/m_nGrowBy at +4/+8/+c/+10).
+// @early-stop
+// inline-memset-codegen + zero-register-pinning wall (docs/patterns/zero-register-
+// pinning.md, topic:wall topic:regalloc): ~86%. Every op/offset/immediate/branch + the
+// fresh-alloc and realloc memcpy/memset (byte-count rep stosd+stosb) are byte-faithful;
+// the residual is (1) the within-capacity zero-fill, where retail emits a pure
+// element-count `rep stosd` but cl emits the generic byte-count split (shl/shr +
+// `rep stosb` remainder) for the same memset, and (2) the long-lived 0/null register
+// pin cascade the 40-byte twin (CArrayE40, 96%) also hits. Not source-steerable.
+RVA(0x00150040, 0x136)
+void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
+    if (nGrowBy != -1) {
+        m_nGrowBy = nGrowBy;
+    }
+    if (nNewSize == 0) {
+        if (m_pData != 0) {
+            RezFree(m_pData);
+            m_pData = 0;
+        }
+        m_nSize = m_nMaxSize = 0;
+    } else if (m_pData == 0) {
+        m_pData = (CShadeTable**)RezAlloc(nNewSize * sizeof(CShadeTable*));
+        memset(m_pData, 0, nNewSize * sizeof(CShadeTable*));
+        m_nSize = m_nMaxSize = nNewSize;
+    } else if (nNewSize <= m_nMaxSize) {
+        if (nNewSize > m_nSize) {
+            memset(&m_pData[m_nSize], 0, (nNewSize - m_nSize) * sizeof(CShadeTable*));
+        }
+        m_nSize = nNewSize;
+    } else {
+        i32 grow = m_nGrowBy;
+        if (grow == 0) {
+            grow = m_nSize / 8;
+            if (grow < 4) {
+                grow = 4;
+            } else if (grow > 1024) {
+                grow = 1024;
+            }
+        }
+        i32 nNewMax;
+        if (nNewSize < m_nMaxSize + grow) {
+            nNewMax = m_nMaxSize + grow;
+        } else {
+            nNewMax = nNewSize;
+        }
+        CShadeTable** pNewData = (CShadeTable**)RezAlloc(nNewMax * sizeof(CShadeTable*));
+        memcpy(pNewData, m_pData, m_nSize * sizeof(CShadeTable*));
+        memset(&pNewData[m_nSize], 0, (nNewSize - m_nSize) * sizeof(CShadeTable*));
+        RezFree(m_pData);
+        m_pData = pNewData;
+        m_nSize = nNewSize;
+        m_nMaxSize = nNewMax;
+    }
+}
+
 // SIZE tracking for this TU's modeling-view locals (placed at EOF: any
 // mid-file typedef reschedules the /O2 codegen of CompareHue/GammaTable).
 SIZE_UNKNOWN(Hsv);

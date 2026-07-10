@@ -337,79 +337,9 @@ namespace ApiCallerStubs {
     // class; the worklist's "0xfe600 -> play/sbi split" was a thunk-band mis-read, so
     // both are homed together in gruntzmgr. See that file for the disasm note.)
 
-    // The blit target reached through the layer node (node->m_2c); Blit13ef90 paints
-    // a rect-source into a destination rect with the given mode flags.
-    struct LayerNode_115300 {
-        char m_pad0[0x2c];
-        CDDSurface* m_2c; // +0x2c  the blit target (BltFast @0x13ef90)
-    };
-    struct LayerSet_115300 {
-        char m_pad0[0x10];
-        LayerNode_115300* m_10; // +0x10
-        LayerNode_115300* m_14; // +0x14
-    };
-    struct LayerHost_115300 {
-        char m_pad0[4];
-        LayerSet_115300* m_4; // +0x04
-    };
-    struct RectSrc_115300 {
-        char m_pad0[0x10];
-        i32 m_10; // +0x10 width
-        i32 m_14; // +0x14 height
-        i32 m_18; // +0x18 origin x
-        i32 m_1c; // +0x1c origin y
-        char m_pad20[0x2c - 0x20];
-        void* m_2c; // +0x2c
-    };
-    // __cdecl(host, src, x, y, useFront, mode): blit src into the active layer node.
-    // @orphan: a free __cdecl blit helper (no class receiver); callers are CPlay::
-    // BuildHelpReveal + Gap_0d1650 but the helper's own .obj/owner is unrecovered.
-    RVA(0x00115300, 0xf5)
-    i32 winapi_115300_SetRect(
-        LayerHost_115300* host,
-        RectSrc_115300* src,
-        i32 x,
-        i32 y,
-        i32 useFront,
-        i32 mode
-    ) {
-        if (!host) {
-            return 0;
-        }
-        if (!src) {
-            return 0;
-        }
-        LayerNode_115300* node;
-        if (useFront) {
-            node = host->m_4->m_10;
-            if (!node) {
-                return 0;
-            }
-        } else {
-            node = host->m_4->m_14;
-            if (!node) {
-                return 0;
-            }
-        }
-        CDDSurface* dst = node->m_2c;
-        if (!dst) {
-            return 0;
-        }
-        void* srcHandle = src->m_2c;
-        if (!srcHandle) {
-            return 0;
-        }
-        i32 dx = x - src->m_18;
-        i32 dy = y - src->m_1c;
-        RECT rc;
-        SetRect(&rc, 0, 0, src->m_10 - 1, src->m_14 - 1);
-        RECT rc2 = rc;
-        i32 flags = 0x10;
-        if (mode) {
-            flags = 0x11;
-        }
-        dst->BltFast(dx, dy, (CDDSurface*)srcHandle, &rc2, flags);
-        return 1;
-    }
+    // (0x115300 the __cdecl layer-blit helper (called cross-TU from
+    // src/Gruntz/PlayMessageImage.cpp) - re-homed to src/Gruntz/GlyphStringDraw.cpp
+    // (its RVA neighborhood) as LayerBlitFrame; its LayerHost/LayerSet/LayerNode/RectSrc
+    // fake views were dissolved onto the real CResMgr/CDrawTarget/CImageFrame classes.)
 
 } // namespace ApiCallerStubs

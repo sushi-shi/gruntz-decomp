@@ -357,6 +357,20 @@ CRezDir13c9b0::~CRezDir13c9b0() {
         m_20->Delete(1);
     }
 }
+
+// 0x13ca30 - an abstract-base vptr-restore dtor thunk (RVA-adjacent): cl's implicit
+// vptr-restore stamps the 0x5ef760 pure-call vtable (the same CObjListBase-aliasing
+// vtable CRezDir13c9b0 above uses) into [this] and returns (7-byte
+// `mov [ecx],offset ??_7 + ret`). Placeholder polymorphic class; an empty virtual dtor
+// emits exactly the stamp+ret. Re-homed from src/Stub/BoundaryThunks.cpp.
+struct CAbstract13ca30 {
+    virtual ~CAbstract13ca30();
+};
+SIZE_UNKNOWN(CAbstract13ca30);
+RELOC_VTBL(CAbstract13ca30, 0x001ef760); // vtable reloc-masks a bound datum (dtor-stamp verified)
+RVA(0x0013ca30, 0x7)
+CAbstract13ca30::~CAbstract13ca30() {}
+
 struct RezOwner18 {
     i32 _0[0x1c / 4];
     CObjList m_1c; // +0x1c
@@ -786,6 +800,28 @@ void RezMgr::SpinWaitUntil(i32 ms) {
         do {
             now = fn();
         } while (now <= end);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x13dee0 - `m_1c = v; if(v > 0) m_28 = 1000 / v;` a frame-timing setter (m_1c=fps,
+// m_28=ms per frame) on a placeholder-identity object RVA-adjacent to SpinWaitUntil.
+// __thiscall, 1 arg. Its sibling TrySet (0x13df00) stays in Stub/BoundaryUpper.cpp for
+// now, calling this Set out-of-line. Re-homed from src/Stub/BoundaryUpper.cpp.
+struct B_13dee0 {
+    char _0[0x1c];
+    i32 m_1c; // 0x1c
+    char _20[0x28 - 0x20];
+    i32 m_28; // 0x28
+    void Set(i32 v);
+    i32 TrySet(i32 v); // 0x13df00 (sibling, still in BoundaryUpper.cpp)
+};
+SIZE_UNKNOWN(B_13dee0);
+RVA(0x0013dee0, 0x1b)
+void B_13dee0::Set(i32 v) {
+    m_1c = v;
+    if (v > 0) {
+        m_28 = 1000 / v;
     }
 }
 

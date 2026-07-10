@@ -325,43 +325,11 @@ SIZE_UNKNOWN(C112bf0);
 // (0x113e70 C113e70 re-homed to src/Gruntz/TileTriggerSwitchLogic.cpp as
 // CTileTriggerSwitchLogic::DeserializeMatrix. See <Gruntz/TileTriggerSwitchLogic.h>.)
 
-// 0x114f00 - guarded forwarder: resolve a2->m_30->m_4->m_10->m_2c and forward.
-struct CObj114f {
-    char pad0[0x2c];
-    void* m_2c; // +0x2c
-};
-SIZE_UNKNOWN(CObj114f);
-struct CMid114f {
-    char pad0[0x10];
-    CObj114f* m_10; // +0x10
-};
-SIZE_UNKNOWN(CMid114f);
-struct CHolder114f {
-    char pad0[4];
-    CMid114f* m_4; // +0x04
-};
-SIZE_UNKNOWN(CHolder114f);
-struct CArg114f {
-    char pad0[0x30];
-    CHolder114f* m_30; // +0x30
-};
-SIZE_UNKNOWN(CArg114f);
+// (0x114f00 forwarder re-homed to src/Gruntz/GruntzMgrCmd.cpp with its CArg114f/
+// CObj114f command-context view chain; dissolved here.)
 
-// 0x1181d0 - bounds-grow (store the new (+0x04,+0x08) pair + notify).
-struct CBox118 {
-    void* m_0;
-    u32 m_4;
-    u32 m_8;
-};
-SIZE_UNKNOWN(CBox118);
-struct C1181d0 {
-    char pad0[0xb8];
-    CBox118 m_bounds; // +0xb8
-    char padd4[0xd4 - 0xb8 - 0xc];
-    i32 m_d4; // +0xd4
-    i32 Update(i32 a1, i32 a2, i32 a3);
-};
-SIZE_UNKNOWN(C1181d0);
+// (0x1181d0 bounds-grow re-homed to src/Gruntz/NameRecord.cpp with its CBox118/
+// C1181d0 view; dissolved here.)
 
 // 0x118260 - copy-if-grow (copy the 7-dword box in + stash +0xd4).
 struct CRect118 {

@@ -119,6 +119,62 @@ void CSymLeafBuilder::Build(
     m_node.m_record = this;
 }
 
+// ---------------------------------------------------------------------------
+// 0x1397a0 - a Bute-symbol payload teardown (RVA-adjacent to CSymLeafBuilder::Build):
+// free m_0; then free m_38 unless the m_10 target is live (m_10 && m_10->m_48 != 0);
+// then clear nine fields. __thiscall, void (the two `if (m_38) free` arms tail-merge).
+// It is torn down from ~CSymRec via CSymListNode::m_14 but is NOT CSymRec (accesses
+// +0x38, past CSymRec's size 0x30); identity unrecovered (placeholder view) and the
+// Bute CSymRec/CSymList models still diverge, so it is not folded onto them here.
+// Re-homed from src/Stub/DiscoveredSmall.cpp.
+struct Obj49Target {
+    char m_pad[0x48];
+    i32 m_48;
+};
+SIZE_UNKNOWN(Obj49Target);
+class Obj1397a0 {
+public:
+    void Teardown();
+    void* m_0;
+    i32 m_4;
+    i32 m_8;
+    i32 m_c;
+    Obj49Target* m_10;
+    i32 m_14;
+    i32 m_18;
+    char m_pad1c[0x30 - 0x1c];
+    i32 m_30;
+    char m_pad34[0x38 - 0x34];
+    void* m_38;
+};
+SIZE_UNKNOWN(Obj1397a0);
+RVA(0x001397a0, 0x57)
+void Obj1397a0::Teardown() {
+    if (m_0) {
+        RezFree(m_0);
+    }
+    if (m_10 != 0) {
+        if (m_10->m_48 == 0) {
+            if (m_38) {
+                RezFree(m_38);
+            }
+        }
+    } else {
+        if (m_38) {
+            RezFree(m_38);
+        }
+    }
+    m_0 = 0;
+    m_4 = 0;
+    m_8 = 0;
+    m_c = 0;
+    m_38 = 0;
+    m_10 = 0;
+    m_14 = 0;
+    m_18 = 0;
+    m_30 = 0;
+}
+
 // ctor (0x139de0): stamp the +0x20 hash-node vtable + a zeroed +0x34 (both in the
 // init list so they precede the member ctors), build the two embedded hash tables
 // (m_subTabs(subN) then m_symbols(symN) - the /GX member-construction trylevels go
@@ -457,13 +513,9 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
     return (i32)slot;
 }
 
-// The removed value-entry's teardown (0x1397a0 = Obj1397a0::Teardown, a header-less
-// placeholder class already matched in DiscoveredSmall.cpp; SymRec.cpp uses the same
-// local decl). `found`'s exact class is unrecovered - identity-recovery TODO.
-class Obj1397a0 {
-public:
-    void Teardown(); // 0x1397a0
-};
+// The removed value-entry's teardown (0x1397a0 = Obj1397a0::Teardown, now defined in
+// full above in this TU; SymRec.cpp keeps its own local decl). `found`'s exact class is
+// unrecovered - identity-recovery TODO.
 
 // CSymTab::AddNodeSubEntry (0x13a530, re-homed from src/Stub/BoundaryUpper2.cpp): the
 // leaf-merge helper ApplyRange calls when a value key already exists in a leaf record's

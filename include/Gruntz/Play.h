@@ -378,7 +378,7 @@ public:
         i32 rectSrc
     ); // (THIS TU)
     // DrawMessageFrame (0x0d1650): look up the GAME_MESSAGEZ image set, fetch frame
-    // `index`, and blit it centered in the active viewport (winapi_115300_SetRect).
+    // `index`, and blit it centered in the active viewport (LayerBlitFrame @0x115300).
     // Body in PlayMessageImage.cpp.
     void DrawMessageFrame(i32 index, i32 useFront);              // 0x0d1650
     void LoadSBITextEdges(char* name);                           // 0x0d1710 (THIS TU)

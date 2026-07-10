@@ -774,6 +774,20 @@ CSymParser::CSymParser() {
     m_parseSlotBlockCount = 0x64;
 }
 
+// ---------------------------------------------------------------------------
+// 0x13aaf0 - an abstract-base vptr-restore dtor thunk (RVA-adjacent to the CSymParser
+// ctor above): cl's implicit vptr-restore stamps the 0x5ef760 pure-call vtable into
+// [this] and returns (7-byte `mov [ecx],offset ??_7 + ret`). Placeholder polymorphic
+// class; an empty virtual dtor emits exactly the stamp+ret. Shares the 0x5ef760
+// pure-call vtable with 0x13ca30 (RezMgr). Re-homed from src/Stub/BoundaryThunks.cpp.
+struct CAbstract13aaf0 {
+    virtual ~CAbstract13aaf0();
+};
+SIZE_UNKNOWN(CAbstract13aaf0);
+RELOC_VTBL(CAbstract13aaf0, 0x001ef760); // vtable reloc-masks a bound datum (dtor-stamp verified)
+RVA(0x0013aaf0, 0x7)
+CAbstract13aaf0::~CAbstract13aaf0() {}
+
 // All Bute-module class SIZE()s are annotated atop their class definitions (this
 // TU's .cpp-local structs below, and SymParser.h / SymTab.cpp for the shared ones).
 

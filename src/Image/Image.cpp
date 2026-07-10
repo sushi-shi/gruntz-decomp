@@ -1120,6 +1120,46 @@ void CDDSurface::Clear(i32 white) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x13ee30 - a surface flip-wait: `while(m_8->Flip(2) == DDERR_WASSTILLDRAWING);`. The
+// +0x8 surface is an IDirectDrawSurface-STYLE object but NOT the ddraw.h one (retail's
+// Flip pushes ONE arg here, slot 0x48), so it is modeled as a minimal own-vtable view -
+// distinct from CDDSurface (whose Flip is 0x13e850). Placeholder identity, RVA-adjacent
+// to CDDSurface::Clear. Re-homed from src/Stub/BoundaryUpper.cpp.
+struct IDDS_ee30 { // real polymorphic; Flip is slot 18 (+0x48)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual u32 __stdcall Flip(i32); // slot 18 (+0x48)
+};
+SIZE_UNKNOWN(IDDS_ee30);
+struct B_13ee30 {
+    char _0[8];
+    IDDS_ee30* m_8; // 0x8
+    void WaitFlip();
+};
+SIZE_UNKNOWN(B_13ee30);
+RVA(0x0013ee30, 0x29)
+void B_13ee30::WaitFlip() {
+    while (m_8->Flip(2) == 0x8876021c) {
+    }
+}
+
+// ---------------------------------------------------------------------------
 // CDDSurface::SaveFile (ret 0x10) - the surface SAVE entry point. Bail (return 0)
 // unless the surface is valid (slot-5 IsValid), `buf` is non-null and non-empty
 // (*buf != 0), and `type` == 1. Then hand (buf, a3, a4) to the per-bit-depth

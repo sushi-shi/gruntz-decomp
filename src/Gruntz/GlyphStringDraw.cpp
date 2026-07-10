@@ -4,7 +4,10 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <string.h> // strlen
+#include <string.h>              // strlen
+#include <DDrawMgr/DDSurface.h> // CDDSurface (BltFast) + RECT/SetRect (via Mfc.h) for the layer-blit helper
+#include <Gruntz/ResMgr.h>      // CResMgr / CDrawTarget (SurfaceA/SurfaceB) - the 0x115300 blit host
+#include <Image/ImageFrame.h>   // CImageFrame - the 0x115300 blit source
 
 struct Drawable {
     virtual void v0();
@@ -67,6 +70,58 @@ i32 DrawGlyphString(DrawCtx* ctx, i32 x, i32 y, const char* str, GlyphFont* font
 SIZE_UNKNOWN(Drawable);
 SIZE_UNKNOWN(DrawCtx);
 SIZE_UNKNOWN(GlyphFont);
+
+// ---------------------------------------------------------------------------
+// LayerBlitFrame (0x115300) - blit a CImageFrame into the active draw-target layer,
+// centered by the frame origin. RVA-adjacent to DrawGlyphString; also called cross-TU
+// from src/Gruntz/PlayMessageImage.cpp (CPlay's GAME_MESSAGEZ overlay). Pick the front
+// (useFront) SurfaceA page or the back SurfaceB page off the CResMgr's CDrawTarget, get
+// its CDDSurface, compute the (x,y) offset from the frame's blit origin, and BltFast the
+// frame surface into it. The four ApiCallerStubs LayerHost/LayerSet/LayerNode/RectSrc
+// views were fake facets of CResMgr / CDrawTarget / its Surface pages / CImageFrame -
+// now dissolved onto those real classes. Re-homed from src/Stub/ApiCallers.cpp.
+RVA(0x00115300, 0xf5)
+i32 LayerBlitFrame(CResMgr* host, CImageFrame* src, i32 x, i32 y, i32 useFront, i32 mode) {
+    if (!host) {
+        return 0;
+    }
+    if (!src) {
+        return 0;
+    }
+    // Front page is the SurfaceA frame page, back is the SurfaceB draw page; both expose
+    // their target surface at +0x2c (SurfaceA's Surface2c* is used as a CDDSurface here).
+    CDrawTarget::SurfaceB* node;
+    if (useFront) {
+        node = (CDrawTarget::SurfaceB*)host->m_drawTarget->m_10;
+        if (!node) {
+            return 0;
+        }
+    } else {
+        node = host->m_drawTarget->m_14;
+        if (!node) {
+            return 0;
+        }
+    }
+    CDDSurface* dst = node->m_2c;
+    if (!dst) {
+        return 0;
+    }
+    CImageFrameSurface* srcHandle = src->m_surface;
+    if (!srcHandle) {
+        return 0;
+    }
+    i32 dx = x - src->m_originX;
+    i32 dy = y - src->m_originY;
+    RECT rc;
+    SetRect(&rc, 0, 0, src->m_width - 1, src->m_height - 1);
+    RECT rc2 = rc;
+    i32 flags = 0x10;
+    if (mode) {
+        flags = 0x11;
+    }
+    dst->BltFast(dx, dy, (CDDSurface*)srcHandle, &rc2, flags);
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // ShowHudMessage (0x1154b0) + its +0x14-slot twin (0x115520): the shared HUD

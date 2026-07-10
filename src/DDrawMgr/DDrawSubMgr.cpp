@@ -2184,15 +2184,24 @@ inline void* operator new(u32, void* p) {
 // The constructed wide object's first (CWwdGameObject) vtable, then its final
 // (g_wwdObjVtbl) vtable.  Reloc-masked DATA externs (RVA = VA - 0x400000).
 
-// Sub-object ctors hung off the wide object (all __thiscall, reloc-masked externs;
-// ctor-only TU-local views of the real classes defined in DiscoveredSmall/ResolveNode).
-class Obj15b2b0 { // the +0x9c sub-object
+// Sub-object ctors hung off the wide object (all __thiscall; the CWwdGameObject embedded
+// sub-object views - Obj15b2b0/Obj15b270 now homed in-TU below, CResolveNode in ResolveNode.cpp).
+class Obj15b2b0 { // the +0x9c sub-object (ctor 0x15b2b0)
 public:
-    Obj15b2b0(); // 0x15b2b0
+    Obj15b2b0();
+    char m_pad0[0x8];
+    i32 m_8;
+    i32 m_c;
+    char m_pad10[0x18 - 0x10];
+    i32 m_18;
 };
-class Obj15b270 { // the +0xb8 sub-object
+class Obj15b270 { // the +0xb8 sub-object (ctor 0x15b270)
 public:
-    Obj15b270(); // 0x15b270
+    Obj15b270();
+    char m_pad0[0x8];
+    i32 m_8;
+    char m_pad0c[0x20 - 0xc];
+    i32 m_20;
 };
 class CResolveNode { // the +0x00 base sub-object (3-arg ctor: root, a2, a3)
 public:
@@ -2443,6 +2452,17 @@ void CWwdFactoryObject::Notify_15b650(void* p) {
 // Small leaf ctors + a rect-overlap predicate from the same cluster.
 // ===========================================================================
 
+// 0x15b270 - an embedded sub-object ctor of the CWwdGameObject the CWwdObjMgr::
+// CreateObject_159250/440/600 factories build (placement-new'd at obj+0xb8 above);
+// seed +0x8 = INT_MIN and +0x20 = -1. Stamps no vtable of its own -> the concrete member
+// class has no recoverable RTTI name (identity-TODO). Re-homed from
+// src/Stub/DiscoveredSmall.cpp.
+RVA(0x0015b270, 0x11)
+Obj15b270::Obj15b270() {
+    m_8 = (i32)0x80000000;
+    m_20 = -1;
+}
+
 // The +0x9c sub-object built by the 0x159250 factory: two zeroed dword fields.
 class CWwdSlot9c {
 public:
@@ -2457,6 +2477,16 @@ RVA(0x0015b2a0, 0xb)
 CWwdSlot9c::CWwdSlot9c() {
     m_0c = 0;
     m_08 = 0;
+}
+
+// 0x15b2b0 - a sibling embedded sub-object ctor of the same CWwdGameObject factory
+// cluster (placement-new'd at obj+0x9c above); zero +0x0c, +0x08, +0x18. Stamps no
+// vtable of its own (identity-TODO). Re-homed from src/Stub/DiscoveredSmall.cpp.
+RVA(0x0015b2b0, 0xe)
+Obj15b2b0::Obj15b2b0() {
+    m_c = 0;
+    m_8 = 0;
+    m_18 = 0;
 }
 
 // The DDraw worker base vtable (stamped last in the wide-object dtors).

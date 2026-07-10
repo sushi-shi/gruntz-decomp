@@ -218,6 +218,31 @@ i32 CDDrawSurfaceChildA::IsLoaded() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x1591b0 - a wap-object base re-init: seed m_4=-1, zero m_8/m_c/m_10, and stamp the
+// grand-base dtor vptr. A standalone void METHOD (not a ctor), so retail's manual vptr
+// stamp is its own body; cl's auto-stamp only lands in a ctor, so the stamp is dropped
+// here (% ok). The owning wap-object class identity is unrecovered (its only caller is
+// an unmatched scalar-deleting-dtor @0x159190) -> placeholder view. Re-homed from
+// src/Stub/DiscoveredSmall.cpp.
+class WapObjBase : public CObject {
+public:
+    void BaseInit();
+    i32 m_4;
+    i32 m_8;
+    i32 m_c;
+    i32 m_10;
+};
+SIZE_UNKNOWN(WapObjBase);
+RVA(0x001591b0, 0x19)
+void WapObjBase::BaseInit() {
+    m_4 = -1;
+    m_10 = 0;
+    m_8 = 0;
+    m_c = 0;
+    // base vptr auto-stamped via CObject (retail's manual stamp dropped, % ok)
+}
+
+// ---------------------------------------------------------------------------
 // 0x1646b0 (vtable slot 10): re-set the child surface geometry to {w,h,bpp}. If the
 // cached geometry already matches, return 1. Otherwise drop the current surface from
 // the parent manager's pool, reconfigure the pool for {w,h,bpp}, then attach a mode
