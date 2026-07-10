@@ -34,12 +34,18 @@
 // CTileLogic reparent - stays `: CUserLogic` (Grunt.h's true-0x30) until stage 5.
 class CGruntStaminaSprite : public CGruntHealthSprite {
 public:
-    // GetTypeTag (0x12020, slot 2): inline body + RVA live in the constructing TU
-    // (GameObjectCtors.cpp) so cl+clang emit the COMDAT there; declared-only here.
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
-    virtual ~CGruntStaminaSprite() OVERRIDE; // 0x00012070 (folds the CUserLogic teardown)
+    CGruntStaminaSprite(CGameObject* obj); // 0x0007fae0 (body in GruntStaminaSprite.cpp)
+    // GetTypeTag (0x12020, slot 2): inline body + RVA in the header so cl emits the
+    // COMDAT wherever the ctor's vtable is emitted (GruntStaminaSprite.cpp).
+    RVA(0x00012020, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_GRUNTSTAMINASPRITE;
+    }
+    virtual ~CGruntStaminaSprite() OVERRIDE;          // 0x00012070 (folds the CUserLogic teardown)
     virtual i32 Vslot16(CGruntEntry* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };
+SIZE(CGruntStaminaSprite, 0x64);       // recovered from operator-new sites (gruntz.analysis.news)
+VTBL(CGruntStaminaSprite, 0x001e7a44); // vtable_names -> code (RTTI game class)
 
 // GetStaminaTime (0x07fbb0): free __stdcall accessor (ret 4) reading the bound
 // CGrunt's m_stamina (+0x3f0), the sibling of GetWingzTime (m_wingzTime +0x3f8).

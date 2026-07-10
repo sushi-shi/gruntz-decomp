@@ -27,7 +27,7 @@
 // (table @+0x14, [m_64..m_68] index gate - the shared gated-lookup archetype,
 // also seen as CStatzGlyphMap). No health-local duplicate view is kept.
 #include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg + CGruntRenderable/CGruntLayerHolder
-#include <Gruntz/UserLogic.h> // CUserLogic base (CGruntHealthSprite : CUserLogic)
+#include <Gruntz/UserLogic.h>     // CUserLogic base (CGruntHealthSprite : CUserLogic)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive (Read +0x2c / Write +0x30)
 #include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference (Chain @0x8c00)
 
@@ -44,14 +44,19 @@ public:
     static void RegisterActs(); // 0x07eed0 (register the class's activation handlers)
 
     i32 HealthUpdate(); // 0x07f180 (the registered per-frame handler; reconstructed in the .cpp)
-    i32 SetHealthGlyph(i32 x, i32 y, i32 health);               // 0x07f0d0
+    i32 SetHealthGlyph(i32 x, i32 y, i32 health);                // 0x07f0d0
     i32 Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4); // 0x07f270
     // slot 16 (new): the per-class stat-time getter (leaf overrides read the bound
     // grunt's stamina/wingz/toy timer); HealthUpdate dispatches it with the grunt entry.
     virtual i32 Vslot16(CGruntEntry* grunt);
     CGruntHealthSprite();                   // 0x011ef0 (no-arg ctor; body in GruntHealthSprite.cpp)
     CGruntHealthSprite(CGameObject* obj);   // 0x07eb00 (1-arg ctor; body in GruntHealthSprite.cpp)
-    virtual ~CGruntHealthSprite() OVERRIDE; // 0x011fb0 (folds the CUserLogic teardown)
+    virtual ~CGruntHealthSprite() OVERRIDE; // 0x011fb0 (folds the CUserLogic teardown; out-of-line
+                                            // so its 0x11fb0 COMDAT labels cleanly - an inline dtor
+                                            // can't hang RVA() without also tagging the synthesized
+    // ??_G, tripping the duplicate-RVA guard. The derived leaf
+    // dtors therefore tail-jump this base dtor rather than
+    // inlining the teardown - a pre-existing modeling gap.)
 
     // CUserLogic is 0x40; the leaf adds its own fields. SetHealthGlyph stashes the
     // two coordinates at +0x54/+0x58 and the health at +0x5c.

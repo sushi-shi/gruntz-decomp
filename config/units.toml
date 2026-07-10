@@ -530,8 +530,13 @@ source = "src/Gruntz/CheatMgr.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "gameobjectctors"
-source = "src/Gruntz/GameObjectCtors.cpp"
+unit = "raincloud"
+source = "src/Gruntz/RainCloud.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "ufo"
+source = "src/Gruntz/Ufo.cpp"
 flags = "eh"
 
 [[unit]]

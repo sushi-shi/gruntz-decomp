@@ -93,6 +93,7 @@ public:
     void ClearRecursive(i32 recurse); // 0x16e070
     void BaseDtor();                  // 0x16da60
 };
+SIZE_UNKNOWN(CButeTree);
 VTBL(CButeTree, 0x001f04e0); // ??_7CButeTree@@6B@ (1-slot scalar-deleting-dtor vtable)
 
 // --- vtable catalog ---

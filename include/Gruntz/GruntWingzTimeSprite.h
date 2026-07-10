@@ -38,12 +38,18 @@
 // no-op for its GetTypeTag + link-teardown dtor.
 class CGruntWingzTimeSprite : public CGruntHealthSprite {
 public:
-    // GetTypeTag (0x121a0, slot 2): inline body + RVA live in the constructing TU
-    // (GameObjectCtors.cpp) so cl+clang emit the COMDAT there; declared-only here.
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
-    virtual ~CGruntWingzTimeSprite() OVERRIDE; // 0x0121f0 (folds the CUserLogic teardown)
+    CGruntWingzTimeSprite(CGameObject* obj); // 0x0007fcc0 (body in GruntWingzTimeSprite.cpp)
+    // GetTypeTag (0x121a0, slot 2): inline body + RVA in the header so cl emits the
+    // COMDAT wherever the ctor's vtable is emitted (GruntWingzTimeSprite.cpp).
+    RVA(0x000121a0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_GRUNTWINGZTIMESPRITE;
+    }
+    virtual ~CGruntWingzTimeSprite() OVERRIDE;        // 0x0121f0 (folds the CUserLogic teardown)
     virtual i32 Vslot16(CGruntEntry* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };
+SIZE(CGruntWingzTimeSprite, 0x64);       // recovered from operator-new sites (gruntz.analysis.news)
+VTBL(CGruntWingzTimeSprite, 0x001e77cc); // vtable_names -> code (RTTI game class)
 
 // GetWingzTime (0x07fd90): free __stdcall accessor (ret 4) reading the bound
 // CGrunt's m_wingzTime (+0x3f8).

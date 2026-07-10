@@ -1,34 +1,40 @@
 // GruntToyTimeSprite.h - the grunt toy-timer HUD sprite (C:\Proj\Gruntz).
 //
 // RTTI (.?AVCGruntToyTimeSprite@@, vtbl 0x1e79ec) gives the true base as
-// CGruntHealthSprite (17 slots, slot 16 = origin CGruntHealthSprite overridden).
-// We DELIBERATELY model it as `: CUserLogic` DIRECTLY (documented held-base, the
-// CLightningHazard precedent). Reason: the leaf dtor @0x012130 (0x44 B, 100%)
-// INLINES the full CUserLogic teardown (stamp 0x5e705c, ~EngStr on +0x18, stamp
-// 0x5e70b4) and DEAD-STORE-ELIMINATES the intermediate CGruntHealthSprite/leaf vptr
-// stamps (dump 0x12130: `[esi]=0x5e705c` first, no CGruntHealthSprite vtable ref,
-// no ~CGruntHealthSprite call). Deriving CGruntHealthSprite (out-of-line dtor
-// @0x00011fb0 in another TU) would force cl to emit a CALL instead of the inlined
-// teardown, regressing the byte-exact dtor; the intermediate base adds no
-// destructible members, so direct-CUserLogic is byte-identical to the true chain.
-// Only the /GX leaf dtor is reconstructed here; offsets + code bytes are load-bearing.
+// CGruntHealthSprite (17 slots, slot 16 = origin CGruntHealthSprite overridden), so
+// the class is modeled `: CGruntHealthSprite` - the ctor (0x0007fbd0) chains the
+// out-of-line CGruntHealthSprite base ctor (0x7eb00) and the leaf dtor (0x012130)
+// folds the SAME CUserLogic teardown in-place (the intermediate leaf/health vptr
+// stamps dead-store-eliminate against the CUserLogic stamp - CGruntHealthSprite's dtor
+// is inline, see GruntHealthSprite.h). Adds no data members over the 0x64-byte base.
+// Only offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_CGRUNTTOYTIMESPRITE_H
 #define GRUNTZ_CGRUNTTOYTIMESPRITE_H
 
 #include <rva.h>
-#include <Gruntz/UserLogic.h>
 #include <Gruntz/GruntHealthSprite.h>
+#include <Gruntz/Grunt.h>       // CGrunt (the toy-time accessor's bound grunt)
+#include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 
 class CGruntToyTimeSprite : public CGruntHealthSprite {
 public:
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
-    TILE_LOGIC_TAIL
-public:
-    virtual ~CGruntToyTimeSprite() OVERRIDE; // 0x012130 (folds the CUserLogic teardown)
+    CGruntToyTimeSprite(CGameObject* obj); // 0x0007fbd0 (body in GruntToyTimeSprite.cpp)
+    // GetTypeTag (0x120e0, slot 2): inline body + RVA in the header so cl emits the
+    // COMDAT wherever the ctor's vtable is emitted (GruntToyTimeSprite.cpp).
+    RVA(0x000120e0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_GRUNTTOYTIMESPRITE;
+    }
+    virtual ~CGruntToyTimeSprite() OVERRIDE;          // 0x012130 (folds the CUserLogic teardown)
     virtual i32 Vslot16(CGruntEntry* grunt) OVERRIDE; // slot 16 (stat-time getter)
-    char m_pad40[0x54 - 0x40];
 };
-VTBL(CGruntToyTimeSprite, 0x1e79ec);
-SIZE(CGruntToyTimeSprite, 0x54);
+VTBL(CGruntToyTimeSprite, 0x001e79ec);
+SIZE(CGruntToyTimeSprite, 0x64); // recovered from operator-new sites (gruntz.analysis.news)
+
+// GetToyTime (0x07fca0): free __stdcall accessor (ret 4) reading the bound CGrunt's
+// m_toyTime (+0x3f4), the sibling of GetStaminaTime (+0x3f0) / GetWingzTime (+0x3f8).
+// Standalone helper, not a sprite member - stale-ecx trace mis-homing (the __stdcall
+// callee reads a foreign CGrunt, no fn-pointer storage). Declared free below.
+i32 __stdcall GetToyTime(CGrunt* o);
 
 #endif // GRUNTZ_CGRUNTTOYTIMESPRITE_H

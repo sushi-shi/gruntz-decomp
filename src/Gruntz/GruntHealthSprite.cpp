@@ -17,8 +17,8 @@
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
 // (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
-// destructible link forces the /GX EH frame. Byte-identical in shape to the
-// established leaf dtors; the empty body is enough for cl.
+// destructible link forces the /GX EH frame. Kept out-of-line so its 0x11fb0 COMDAT
+// labels cleanly (an inline dtor can't hang RVA() without tagging the synthesized ??_G).
 // --- CGruntHealthSprite no-arg ctor (0x011ef0) --- the deserialize-path ctor:
 // base prologue + link + leaf vptr stamp (the empty body is enough for cl).
 RVA(0x00011ef0, 0x4b)

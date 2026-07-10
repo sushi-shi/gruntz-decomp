@@ -170,7 +170,6 @@ gamemode	7	2
 gamemodebase	1	0
 gamemodeobjlifecycle	4	3
 gamemousehandler	1	0
-gameobjectctors	11	7
 gameobjectfactory	2	2
 gameoptionsdialog	2	0
 gamesave	1	1
@@ -206,18 +205,18 @@ gruntspawnconfig	17	9
 gruntspawnlevel	2	0
 gruntspawnpump	1	0
 gruntsprintanim	1	0
-gruntstaminasprite	2	0
+gruntstaminasprite	4	1
 gruntstartingpoint	3	2
 gruntstatestep	1	0
 grunttargetscan	1	0
 grunttilemgr	1	0
 grunttilescan	1	0
 grunttoysprite	7	5
-grunttoytimesprite	1	0
+grunttoytimesprite	4	1
 grunttubeanim	1	0
 gruntupdatestep	2	0
 gruntvoice	8	5
-gruntwingztimesprite	2	0
+gruntwingztimesprite	4	1
 gruntzapp	9	9
 gruntzcmdmgr	11	8
 gruntzcommand	21	17
@@ -368,6 +367,7 @@ projectile	14	5
 projectileupdate	1	0
 pulsehighlight	2	2
 pyramidbridgesprites	1	0
+raincloud	1	1
 randomambientsound	10	1
 rangeset	3	2
 recordfill	1	1
@@ -493,6 +493,7 @@ triggermgr	56	14
 trirecordserialize	2	2
 typecollruntime	1	0
 typekeycoll	12	2
+ufo	3	2
 uncompr	1	1
 unknownfileioctor	1	1
 userbaselink	10	2
@@ -1875,17 +1876,6 @@ gamemodeobjlifecycle	?FlushPendingOps@CGameModeObj@@QAEHXZ	100.0000	100.0000	2	f
 gamemodeobjlifecycle	?ReleaseLevelOverlay@CGameModeObj@@QAEHH@Z	100.0000	100.0000	2	ce67e993ae58	0xd6560
 gamemodeobjlifecycle	?SetCursorFrame@CGameModeObj@@QAEHH@Z	100.0000	100.0000	2	a9587c1953b1	0xd1b30
 gamemousehandler	?HandleMousePress@CPlay@@QAEHHHH@Z	84.2056	84.2056	5	e3f0ea106666	0xce660
-gameobjectctors	??0CGruntStaminaSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	7	00d08a2cd881	0x7fae0
-gameobjectctors	??0CGruntToyTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	7	f7059526603a	0x7fbd0
-gameobjectctors	??0CGruntWingzTimeSprite@@QAE@PAUCSpriteObj@@@Z	94.7619	94.7619	7	bd2ed0f0d0e2	0x7fcc0
-gameobjectctors	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	5	d83b81da40eb	0xb49b0
-gameobjectctors	??0CUFO@@QAE@PAUCGameObject@@@Z	84.9659	84.9659	7	caac8d4703eb	0xb4a90
-gameobjectctors	?GetToyTime@@YGHPAUCToyTimeHost@@@Z	100.0000	100.0000	3	99e1f12ca8a5	0x7fca0
-gameobjectctors	?GetTypeTag@CGruntStaminaSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	7db4190487e8	0x12020
-gameobjectctors	?GetTypeTag@CGruntToyTimeSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	e61ec26f6609	0x120e0
-gameobjectctors	?GetTypeTag@CGruntWingzTimeSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	900e4633db22	0x121a0
-gameobjectctors	?Serialize@CUFO@@QAEHPAXHHH@Z	100.0000	100.0000	3	023bd6ea680a	0xb4d30
-gameobjectctors	?SerializeMove@CUFO@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	73b5628269d7	0xb4c40
 gameobjectfactory	?RegisterGameObjectTypes@@YAXPAUGameObjFactoryCtx@@@Z	100.0000	100.0000	2	47c4c4b6a6fc	0xa3b0
 gameobjectfactory	?ResetDat6295d8@@YAXXZ	100.0000	100.0000	1	dc9247fd7cfd	0xaf50
 gameoptionsdialog	?GameOptionsDlgProc@@YGHPAUHWND__@@IIJ@Z	92.5350	92.5350	1	22a6f9efbd07	0x36410
@@ -2098,8 +2088,10 @@ gruntspawnlevel	??0CGruntSpawnLevel@@QAE@XZ	85.3478	85.3478	2	e734a2f7b150	0xda7
 gruntspawnlevel	??1CGruntSpawnLevel@@QAE@XZ	72.0909	72.0909	2	415e069594c7	0x83260
 gruntspawnpump	?GruntSpawnPump@@YAHPAUOwner@@@Z	99.9881	99.9881	1	5fe508738aed	0x5baf0
 gruntsprintanim	?BuildGruntSprintAnimation@CGruntSprintAnim@@QAEHXZ	67.0217	67.0217	7	189f694f3c69	0x19920
+gruntstaminasprite	??0CGruntStaminaSprite@@QAE@PAUCGameObject@@@Z	94.7619	94.7619	1	d37a201ac37e	0x7fae0
 gruntstaminasprite	??1CGruntStaminaSprite@@UAE@XZ	4.7059	4.7059	2	e7d384d91d80	0x12070
 gruntstaminasprite	?GetStaminaTime@@YGHPAVCGrunt@@@Z	99.6667	99.6667	2	db24d2fef66f	0x7fbb0
+gruntstaminasprite	?GetTypeTag@CGruntStaminaSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:f24821bd2f77	0x12020
 gruntstartingpoint	??0CGruntStartingPoint@@QAE@PAUCGameObject@@@Z	94.2626	94.2626	3	fa275c6097ae	0x3df30
 gruntstartingpoint	??1CGruntStartingPoint@@UAE@XZ	100.0000	100.0000	2	acbbcb9ac3ca	0x10670
 gruntstartingpoint	?Serialize@CGruntStartingPoint@@QAEHHHHH@Z	100.0000	100.0000	1	36d115edd5d6	0x105d0
@@ -2114,7 +2106,10 @@ grunttoysprite	?RegisterActs@CGruntToySprite@@SAXXZ	92.9130	92.9130	2	d759d7a2c7
 grunttoysprite	?RunAct@CGruntToySprite@@QAEXH@Z	100.0000	100.0000	1	edca49d5d25b	0x7f5c0
 grunttoysprite	?Serialize@CGruntToySprite@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	16a639fb4ea6	0x7fa20
 grunttoysprite	?Update@CGruntToySprite@@QAEHXZ	100.0000	100.0000	4	6b6baf3c1ebc	0x7f960
+grunttoytimesprite	??0CGruntToyTimeSprite@@QAE@PAUCGameObject@@@Z	94.7619	94.7619	1	c2c93400031e	0x7fbd0
 grunttoytimesprite	??1CGruntToyTimeSprite@@UAE@XZ	4.7059	4.7059	2	87752f9edfc8	0x12130
+grunttoytimesprite	?GetToyTime@@YGHPAVCGrunt@@@Z	99.6667	99.6667	1	e22dd904c96c	0x7fca0
+grunttoytimesprite	?GetTypeTag@CGruntToyTimeSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:b9e62c4596ee	0x120e0
 grunttubeanim	?SetupTubeAnim@CGruntTube@@QAEHH@Z	72.3636	72.3636	7	53ec3e65bc6c	0x50a50
 gruntupdatestep	?SeekTarget@CGrunt@@QAEHXZ	12.7907	12.7907	7	524fea2aa98e	0xf71c0
 gruntupdatestep	?UpdateArrival@CGrunt@@QAEHXZ	54.1004	54.1004	4	f1bfb29ef49d	0xf0130
@@ -2126,7 +2121,9 @@ gruntvoice	?InitActReg@CGruntVoice@@SAXXZ	100.0000	100.0000	3	752b0459e56b	0x119
 gruntvoice	?Reset@CGruntVoice@@QAEXXZ	100.0000	100.0000	4	884d193a2ffa	0x11a870
 gruntvoice	?Setup@CGruntVoice@@QAEHHPAXHH@Z	85.2500	85.2500	5	79a39a4d4483	0x11a7e0
 gruntvoice	?Update@CGruntVoice@@QAEHXZ	73.2416	73.2416	1	a6f605b07552	0x11a8e0
+gruntwingztimesprite	??0CGruntWingzTimeSprite@@QAE@PAUCGameObject@@@Z	94.7619	94.7619	1	80c08ed0ab82	0x7fcc0
 gruntwingztimesprite	??1CGruntWingzTimeSprite@@UAE@XZ	4.7059	4.7059	2	3dc6cbce7096	0x121f0
+gruntwingztimesprite	?GetTypeTag@CGruntWingzTimeSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:dd09a20bee76	0x121a0
 gruntwingztimesprite	?GetWingzTime@@YGHPAVCGrunt@@@Z	99.6667	99.6667	2	e29c7c585d04	0x7fd90
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	7	b346beed7561	0x80850
 gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	7	bd1af6290469	0x808b0
@@ -3250,6 +3247,7 @@ projectileupdate	?Update@CGruntFireView@@QAEHXZ	10.0117	10.0117	5	1ecd7fd88128	0
 pulsehighlight	?Serialize@CPulseHighlight@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	3	d46aa6f1b957	0x8600
 pulsehighlight	?Tick@CPulseHighlight@@QAEHXZ	100.0000	100.0000	3	fbb24a4a3d40	0x8440
 pyramidbridgesprites	?LoadPyramidBridge@CPlayLevelLoad@@QAEXH@Z	7.2893	7.2893	7	bcccbab0d296	0x110c10
+raincloud	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	12b5cb275854	0xb49b0
 randomambientsound	??0CRandomAmbientSound@@QAE@XZ	72.6000	72.6000	2	0a1aa6394167	0xbb40
 randomambientsound	?CommitSpriteAction@@YAHPAUPosSoundObj@@@Z	93.8598	93.8598	2	a92663ecaa40	0xc840
 randomambientsound	?Setup@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientBox@@H@Z	99.7660	99.7660	3	b2c6832f3032	0xbe50
@@ -4026,6 +4024,9 @@ typekeycoll	?LoadConfigFields@@YAPAVCConfigReader@@PAV1@PAD@Z	100.0000	100.0000	
 typekeycoll	?ProjTypeXfer@@YAHPAUCXferArchive@@@Z	87.1260	87.1260	3	ace47ce4846f	0x16e4f0
 typekeycoll	?Set@CVariantSlot@@QAEXPAXHH@Z	99.8526	99.8526	2	a103d70e36af	0x16d850
 typekeycoll	?TmErrorHandler@@YAXPADH@Z	98.2458	98.2458	1	f11d19a7b2bb	0x16e220
+ufo	??0CUFO@@QAE@PAUCGameObject@@@Z	84.8409	84.8409	1	212ec8a73970	0xb4a90
+ufo	?Serialize@CUFO@@QAEHPAXHHH@Z	100.0000	100.0000	1	023bd6ea680a	0xb4d30
+ufo	?SerializeMove@CUFO@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	73b5628269d7	0xb4c40
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320
 unknownfileioctor	??0FileIOOwner@@QAE@XZ	100.0000	100.0000	2	01b3d14d4690	0x8fea0
 userbaselink	??0CUserBaseLink@@QAE@XZ	100.0000	100.0000	4	cb7f1376f20c	0x16d710
