@@ -701,6 +701,28 @@ unit = "gruntzmgr"
 source = "src/Gruntz/GruntzMgr.cpp"
 flags = "eh"
 
+# CGruntzMgr::SetCellHeight (0x111ec0) - a lone CGruntzMgr retail-object contribution
+# far from the GruntzMgr.cpp block (interleaved with tile-trigger-switch-logic .text).
+# Same class, split into its own TU so each src file maps to one contiguous retail obj.
+[[unit]]
+unit = "gruntzmgr2"
+source = "src/Gruntz/GruntzMgr2.cpp"
+flags = "eh"
+
+# The screen/video-region manager (Open 0x0fe460 / Reset 0x0fe600) - a separate retail
+# object far from GruntzMgr.cpp, interleaved with the CSBI_RectOnly .text at 0x0fe4xx.
+[[unit]]
+unit = "screenregionmgr"
+source = "src/Gruntz/ScreenRegionMgr.cpp"
+flags = "eh"
+
+# SerializeSyncMarker (0x13610) - the free WAP32 serialize round validator, a separate
+# retail object far from GruntzMgr.cpp (among the CVoiceTrigger serialize .text).
+[[unit]]
+unit = "serializesyncmarker"
+source = "src/Gruntz/SerializeSyncMarker.cpp"
+flags = "eh"
+
 [[unit]]
 unit = "rezsync"
 source = "src/Rez/RezSync.cpp"

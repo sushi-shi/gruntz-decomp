@@ -47,6 +47,7 @@
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h> // engine strstr (reloc-masked) for the Battlez header probe
+#include <Utils/RegistryHelper.h> // Utils::RegistryHelper (the settings/registry writer)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -83,14 +84,6 @@ struct CWorldDispatch {
 // exactly (v01=AddRef, v03-v07=Connect/CreateAddress/EnumAddress/EnumAddressTypes/
 // EnumLocalApplications, slot 8=GetConnectionSettings), so dispatch is byte-identical.
 
-namespace Utils {
-    SIZE_UNKNOWN(RegistryHelper);
-    class RegistryHelper {
-    public:
-        unsigned long GetValueDword(char* k, unsigned long def); // 0x1395d0
-        i32 SetValueDword(char* k, unsigned long v);
-    };
-} // namespace Utils
 
 // The free CD-ROM / file-probe helpers CGruntzMgr calls (plain file-scope free
 // functions; reloc-masked). GetGruntzDriveLetter (0x1ffe0, WinAPICdRom.cpp) collides
@@ -3266,40 +3259,11 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
 }
 
 // -------------------------------------------------------------------------
-// The serialize-round sync counter (VA 0x629ad0; DATA home in Io/GameSave.cpp) + the
-// game-manager singleton + the wsprintfA scratch buffer (VA 0x629a50) the desync
-// path formats into.
-extern "C" i32 g_serialCounter; // 0x629ad0
+// The game-manager singleton (*0x64556c) - the CGruntzMgr view of the 0x24556c datum
+// used by the modal reporters below. (SerializeSyncMarker, the free 0x13610 serialize
+// validator that also used this, is split out to SerializeSyncMarker.cpp.)
 DATA(0x0024556c)
 extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c
-DATA(0x00229a50)
-extern "C" char g_629a50[]; // 0x629a50  wsprintfA scratch buffer
-
-// SerializeSyncMarker (0x13610, __cdecl): the WAP32 serialize round validator every
-// object's Serialize brackets its record with. WRITE (mode 4): stamp the current
-// round counter (+ the 0x1234666 magic) into the archive. READ (mode 7): read it
-// back, and if it does not match, format "save/load out of sync at <name>, <line>"
-// and pop it in a modal error box (CGruntzMgr::EnterModalUI). Returns 1 (ok) / 0
-// (desync). Home is fuzzy (no recovered caller; a shared serialize helper) - placed
-// with the EnterModalUI reporter it drives.
-RVA(0x00013610, 0x8c)
-i32 SerializeSyncMarker(CSerialArchive* arc, i32 mode, const char* name, i32 line) {
-    if (mode == 4) {
-        i32 marker = g_serialCounter + 0x1234666;
-        arc->Write(&marker, 4);
-        return 1;
-    }
-    if (mode == 7) {
-        i32 readVal;
-        arc->Read(&readVal, 4);
-        if (readVal != g_serialCounter + 0x1234666) {
-            wsprintfA(g_629a50, "save/load out of sync at %s, %d", name, line);
-            g_mgrSettings->EnterModalUI((i32)g_629a50);
-            return 0;
-        }
-    }
-    return 1;
-}
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::EnterModalUI (0x08ef10; ret 4). Suspends the in-game world for a
@@ -3628,16 +3592,8 @@ i32 CGruntzMgr::SyncOptionsState() {
 }
 
 // -------------------------------------------------------------------------
-// CGruntzMgr::SetCellHeight (0x111ec0; ret 0xc). Writes value into the loaded
-// world's height grid: idx = view->m_24[col] + row; view->m_20[idx] = value.
-// Then forwards (row, col, value) to the +0x70 notify object (reloc-masked).
-RVA(0x00111ec0, 0x37)
-void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
-    CViewport* grid = (CViewport*)m_world->m_24->m_mainPlane;
-    i32 idx = grid->m_rowBase[col] + row;
-    grid->m_cells[idx] = value;
-    RezFree((void*)m_cmdNotify);
-}
+// CGruntzMgr::SetCellHeight (0x111ec0) lives in GruntzMgr2.cpp (a separate retail
+// object far out at 0x111ec0 among the tile-trigger-switch-logic .text block).
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::Close (0x0855e0; vtbl slot 2). The full manager teardown the
@@ -4384,64 +4340,9 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
 // size 0xa30 recovered from operator-new sites (gruntz.analysis.news)
 
 // ---------------------------------------------------------------------------
-// The screen/video-region manager (a sub-object reached as [owner+0x2dc], e.g.
-// from CGruntzMgr::SetVideoMode and CPlay::OnKeyCommand), re-homed from the
-// ApiCaller stubs. Two methods, ONE class (they share the Prep_12fd/Sub194c/
-// Sub3d55 helpers): Open (0x0fe460) lays out the 0xa0x0x1e0 (160x480) region,
-// resizes it, refreshes the live state, validates it (else g_gameReg->ReportError
-// 0x80e4/0x448) and activates it; Reset (0x0fe600) collapses the region to (-1)
-// and refreshes. The ApiCaller worklist split 0x0fe600 to play/sbi_rectonly on a
-// thunk-band mis-read of its callers - disasm proves it is the SAME class as
-// 0x0fe460, so both are homed here. Field NAMES are placeholders (only offsets +
-// code bytes are load-bearing); the region object's concrete RTTI name is not yet
-// recovered.
-void __stdcall Prep_12fd(i32 mode); // 0x12fd (free __stdcall region-prep helper)
-// The live game-state sub-call (g_gameReg->m_curState->Sub3d55, 0x3d55) both
-// methods make; reloc-masked thiscall (the state's concrete method not recovered).
-struct ScreenCurState {
-    // Sub3d55 @0xfe460 IS ScreenRegionMgr::Open; cast at each call.
-};
-struct ScreenRegionMgr {
-    i32 m_0; // +0x00  state (1 == open, 2 == reset)
-    char m_pad4[0x10 - 4];
-    RECT m_10; // +0x10  region rect
-    char m_pad20[0x10c - 0x20];
-    i32 m_10c; // +0x10c  activate arg
-    char m_pad110[0x548 - 0x110];
-    i32 m_548;                   // +0x548  busy/one-shot flag
-    i32 Open();                  // 0x0fe460
-    i32 Reset();                 // 0x0fe600
-    void Sub194c(i32 v);         // 0x194c  thiscall (resize/layout)
-    i32 Validate();              // 0x3a08  thiscall
-    void Activate(i32 a, i32 n); // 0x1d61  thiscall
-};
-SIZE_UNKNOWN(ScreenCurState);
-SIZE_UNKNOWN(ScreenRegionMgr);
-RVA(0x000fe460, 0x83)
-i32 ScreenRegionMgr::Open() {
-    if (m_548 == 0 && m_0 != 1) {
-        Prep_12fd(1);
-        SetRect(&m_10, 0, 0, 0xa0, 0x1e0);
-        Sub194c(1);
-        ((ScreenRegionMgr*)g_gameReg->m_curState)->Open();
-        if (!Validate()) {
-            g_gameReg->ReportError(0x80e4, 0x448);
-            return 0;
-        }
-        Activate(m_10c, 3);
-    }
-    return 1;
-}
-RVA(0x000fe600, 0x49)
-i32 ScreenRegionMgr::Reset() {
-    if (m_548 == 0 && m_0 != 2) {
-        Prep_12fd(1);
-        SetRect(&m_10, -1, -1, -1, -1);
-        Sub194c(2);
-        ((ScreenRegionMgr*)g_gameReg->m_curState)->Open();
-    }
-    return 1;
-}
+// The screen/video-region manager (Open @0x0fe460 / Reset @0x0fe600) lives in
+// ScreenRegionMgr.cpp - a separate retail object far from this block, interleaved
+// with the CSBI_RectOnly .text at 0x0fe4xx.
 
 SIZE_UNKNOWN(CActiveObj);
 SIZE_UNKNOWN(CActiveSub2dc);
