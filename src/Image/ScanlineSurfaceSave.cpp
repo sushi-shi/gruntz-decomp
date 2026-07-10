@@ -37,6 +37,29 @@ struct BmpFile {
     char pad[0x10 - 0xd]; // file object is 0x10 B on the frame (info sits at file+0x10)
 };
 
+// CRezImage::Save(filename, paletteObj) - the format-guard dispatch: only 8bpp
+// surfaces are BMP-writable; 16bpp (and anything else) return 0.
+// @early-stop
+// codegen block-merge divergence (~62.6%). Logic is exact: retail is a switch on
+// m_bitCount (+0x440) with `case 8 -> SaveBmp`, `case 0x10 -> return 0`, default
+// `return 0`. Retail MSVC5 keeps the identical `case 0x10` and default `return 0`
+// as two separate blocks (emits `cmp 0x10; je`); this wine MSVC5 proves them equal
+// and drops the `cmp 0x10` comparison entirely. Not source-steerable (every
+// spelling - switch/no-default/if-chain - collapses the redundant block) and the
+// permuter only reorders operands, it can't un-merge a block. First 4 insns + the
+// SaveBmp tail match byte-exact; only the dropped 16bpp block differs.
+RVA(0x00176b00, 0x2c)
+i32 CRezImage::Save(const char* filename, void* paletteObj) {
+    switch (m_bitCount) {
+    case 8:
+        return SaveBmp(filename, paletteObj);
+    case 0x10:
+        return 0;
+    default:
+        return 0;
+    }
+}
+
 // CRezImage::SaveBmp(filename, paletteObj), __thiscall (ret 8).
 // @early-stop
 // zero-register-pinning regalloc wall (~57%). Fixed a REAL bug first: the CFile temp

@@ -96,6 +96,7 @@ public:
         m_paletteNode = paletteNode;
         m_paletteScalar = scalar;
     }
+    i32 Save(const char* filename, void* paletteObj);                // 0x176b00 (8bpp-only dispatch to SaveBmp)
     i32 SaveBmp(const char* filename, void* paletteObj);              // 0x176b30
 
     // Layout. The object opens with a BITMAPINFOHEADER (this+0,

@@ -1941,6 +1941,14 @@ rva,name,lib,confidence,source
 0x169dd0,msc_ios_setsub_169dd0,LIBCMT,LOW,iostream-cluster-bail
 0x16b650,msc_ios_vbase_ctor_thunk_16b650,LIBCMT,LOW,iostream-cluster-bail
 0x16c0c0,msc_ios_vbase_ctor_thunk_16c0c0,LIBCMT,LOW,iostream-cluster-bail
+0x16b4e0,??_Gistream@@UAEPAXI@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
+0x16bc40,??_Gifstream@@UAEPAXI@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
+0x16bf70,??_Gostream@@UAEPAXI@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
+0x16c200,??_Gofstream@@UAEPAXI@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
+0x16c7d0,??_Gfstream@@UAEPAXI@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
+0x16b660,msc_ostream_writeop_16b660,LIBCIMT,LOW,iostream-cluster-bail
+0x16c0d0,msc_ostream_writeop_16c0d0,LIBCIMT,LOW,iostream-cluster-bail
+0x16cc20,?overflow@filebuf@@UAEHH@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
 0x1694f0,?seekoff@strstreambuf@@UAEJJW4seek_dir@ios@@H@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
 0x1696d0,msc_iostream_scalardtor_1696d0,LIBCMT,LOW,iostream-cluster-bail
 0x169890,msc_iostream_scalardtor_169890,LIBCMT,LOW,iostream-cluster-bail

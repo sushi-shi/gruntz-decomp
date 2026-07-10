@@ -1809,6 +1809,11 @@ source = "src/Gruntz/ZDArrayDerived.cpp"
 flags = "base"
 
 [[unit]]
+unit = "typecollruntime"
+source = "src/Gruntz/TypeCollRuntime.cpp"
+flags = "base"
+
+[[unit]]
 unit = "orphanleaves"
 source = "src/Gruntz/OrphanLeaves.cpp"
 flags = "base"
