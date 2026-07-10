@@ -2061,11 +2061,6 @@ source = "src/Stub/BoundaryLowerDtors.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "boundaryupper2"
-source = "src/Stub/BoundaryUpper2.cpp"
-flags = "base"
-
-[[unit]]
 unit = "boundarytail"
 source = "src/Stub/BoundaryTail.cpp"
 flags = "base"
@@ -2408,10 +2403,6 @@ unit = "glyphtable"
 source = "src/Gruntz/GlyphTable.cpp"
 flags = "base"
 [[unit]]
-unit = "cluster0c"
-source = "src/Stub/Cluster0c.cpp"
-flags = "base"
-[[unit]]
 unit = "apphelpers"
 source = "src/Gruntz/AppHelpers.cpp"
 flags = "base"
@@ -2472,11 +2463,6 @@ flags = "eh"
 # RectHost_08c380/RectHost_115b30 per-fn views). No destructible locals -> /base.
 unit = "wap32rect"
 source = "src/Wap32/Rect.cpp"
-flags = "base"
-
-[[unit]]
-unit = "reconbatch2"
-source = "src/Stub/ReconBatch2.cpp"
 flags = "base"
 
 [[unit]]
@@ -2634,23 +2620,6 @@ source = "src/Gruntz/GruntToyTimeSprite.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "discoveredsmall"
-source = "src/Stub/DiscoveredSmall.cpp"
-flags = "base"
-
-# trace-discovered /GX leaf dtors re-homed from src/Stub/Discovered.cpp (need eh):
-[[unit]]
-unit = "discoveredeh"
-source = "src/Stub/DiscoveredEh.cpp"
-flags = "eh"
-
-# trace-discovered MFC CArray::SetSize re-homed from src/Stub/Discovered.cpp:
-[[unit]]
-unit = "discoveredarray"
-source = "src/Stub/DiscoveredArray.cpp"
-flags = "base"
-
-[[unit]]
 unit = "logicrecorddispatch"
 source = "src/Gruntz/LogicRecordDispatch.cpp"
 flags = "eh"
@@ -2664,11 +2633,6 @@ flags = "base"
 unit = "sbi_tabzdialog_eh"
 source = "src/Gruntz/SBI_TabzDialogEh.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "apihicallers"
-source = "src/Stub/ApiHiCallers.cpp"
-flags = "base"
 
 [[unit]]
 # matcher-4: the two dialog flash-rect helpers (EH + severus/imgHolder scratch).
