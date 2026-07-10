@@ -63,9 +63,9 @@ public:
     virtual i32 Init(i32, i32, i32, i32, i32, i32) OVERRIDE; // 0x185750  slot 1
     virtual void Reset() OVERRIDE;                           // 0x184890  slot 3  (decl-only)
     virtual i32 GetWidth() OVERRIDE;                         // 0x185890  slot 4  (decl-only)
-    virtual void Vf5() OVERRIDE;                             // 0x185880  slot 5  (decl-only)
-    virtual void Vf6() OVERRIDE;                             // 0x184780  slot 6  (decl-only)
-    virtual void Notify(void* arg) OVERRIDE;                 // 0x1858a0  slot 8  (decl-only)
+    virtual i32 Vf5() OVERRIDE;                              // 0x185880  slot 5  (decl-only)
+    virtual void Vf6(i32) OVERRIDE;                          // 0x184780  slot 6  (decl-only)
+    virtual i32 Notify(void* arg) OVERRIDE;                  // 0x1858a0  slot 8  (frame cursor)
     virtual i32 Place(i32 ctx, i32 x, i32 y) OVERRIDE;       // 0x1858d0  slot 9  (draws frame)
     virtual i32 OnInit() OVERRIDE;                           // 0x1847b0  slot 13 (decl-only)
     virtual void SetFrame(i32 v); // 0x1847a0  slot 14 (new; body in BoundaryUpper)

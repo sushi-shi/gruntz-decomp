@@ -3439,6 +3439,20 @@ i32 CNetMgr::SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, i32 c, i32 d,
 }
 
 // ---------------------------------------------------------------------------
+// CNetMgr::SendEx  (__thiscall, 0x178f50).
+// Bare IDirectPlay4 SendEx wrapper: forwards nine args straight through; on a
+// nonzero HRESULT other than the benign DPERR_PENDING (0x8000000a) routes the
+// error through the diagnostic reporter.
+RVA(0x00178f50, 0x61)
+i32 CNetMgr::SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i) {
+    i32 hr = m_directPlay->SendEx(a, b, c, (void*)d, e, f, g, (void*)h, (i32*)i);
+    if (hr && hr != (i32)0x8000000a) {
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x481, hr, 0);
+    }
+    return hr;
+}
+
+// ---------------------------------------------------------------------------
 // CNetMgr::SetData  (__thiscall).
 // Bare IDirectPlay4 set-data wrapper: forwards five args straight through; on a
 // nonzero HRESULT routes the error through the diagnostic reporter
@@ -3448,6 +3462,23 @@ i32 CNetMgr::SetData(i32 a, i32 b, i32 c, i32 d, i32 e) {
     i32 hr = m_directPlay->SetData5(a, b, c, d, e);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x492, hr, 0);
+    }
+    return hr;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::Receive  (__thiscall, 0x179010).
+// IDirectPlay4 Receive wrapper: seeds the from/to player-id out-cells from the
+// two CNetPlayerEntry handles (0 if null), then receives into the caller buffer;
+// on a nonzero HRESULT routes the error through the diagnostic reporter.
+RVA(0x00179010, 0x76)
+i32 CNetMgr::Receive(CNetPlayerEntry* from, CNetPlayerEntry* to, i32 flags, void* lpData,
+                     i32* lpSize) {
+    i32 idFrom = from ? from->m_4 : 0;
+    i32 idTo = to ? to->m_4 : 0;
+    i32 hr = m_directPlay->Receive(&idFrom, &idTo, flags, lpData, lpSize);
+    if (hr) {
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4b7, hr, 0);
     }
     return hr;
 }
@@ -3485,6 +3516,34 @@ i32 CNetMgr::EnumSessions(void* desc, void* ctx) {
     i32 hr = m_directPlay->Enum2(desc, ctx);
     if (hr) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x52a, hr, 0);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::GetGroupInfo  (__thiscall, 0x179190).
+// IDirectPlay4 GetGroupData wrapper: requires the group handle (its +0x4 id),
+// zero-inits the 0x28-byte descriptor and stamps its dwSize, then queries the
+// data slot. On a nonzero HRESULT routes the error and returns 0; else 1.
+RVA(0x00179190, 0x84)
+i32 CNetMgr::GetGroupInfo(CNetPlayerEntry* a, void* desc, i32 flags) {
+    if (!a) {
+        return 0;
+    }
+    if (!a->m_4) {
+        return 0;
+    }
+    if (!desc) {
+        return 0;
+    }
+    memset(desc, 0, 0x28);
+    *(i32*)desc = 0x28;
+    IDirectPlay4Z* dp = m_directPlay;
+    i32 id = a->m_4;
+    i32 hr = dp->GetGroupData(id, desc, flags);
+    if (hr) {
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x553, hr, 0);
         return 0;
     }
     return 1;

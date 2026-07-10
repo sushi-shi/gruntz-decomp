@@ -185,6 +185,27 @@ void* CProjActMap::Insert(const char* key, void* value) {
 }
 
 // ===========================================================================
+// zBitVec::Or  (0x193680) - OR the words of `o` into this, growing first if `o`
+// covers more bits (EnsureSize; on failure leave this as-is). Walks the smaller of
+// the two SBO/heap word bands (`o`'s bit count) OR-combining word-by-word.
+// ===========================================================================
+RVA(0x00193680, 0x5e)
+zBitVec* zBitVec::Or(zBitVec* o) {
+    if ((u32)o->m_capacity > (u32)m_capacity) {
+        if (!EnsureSize(o->m_capacity)) {
+            return this;
+        }
+    }
+    i32 nwords = (i32)((u32)(o->m_capacity + 1) >> 5);
+    u32* obuf = (u32)o->m_capacity > 0x20 ? o->m_words : (u32*)&o->m_words;
+    u32* tbuf = (u32)m_capacity > 0x20 ? m_words : (u32*)&m_words;
+    for (i32 i = 0; i < nwords; i++) {
+        tbuf[i] |= obuf[i];
+    }
+    return this;
+}
+
+// ===========================================================================
 // zBitVec::EnsureSize  (0x1936e0)
 // ===========================================================================
 #pragma function(memcpy)

@@ -82,13 +82,13 @@ public:
     RVA(0x00185510, 0x5)
     virtual void Dispatch0c() { Reset(); }
     virtual void Reset();                           // 0x184730  slot 3
-    virtual i32 GetWidth();                         // 0x185550  slot 4  (declared-only)
-    virtual void Vf5();                             // 0x185520  slot 5  (declared-only)
-    virtual void Vf6();                             // 0x184650  slot 6  (declared-only)
+    virtual i32 GetWidth();                         // 0x185550  slot 4  (frame[2] m_height)
+    virtual i32 Vf5();                              // 0x185520  slot 5  (frame[2] m_width)
+    virtual void Vf6(i32);                          // 0x184650  slot 6  (declared-only)
     virtual void Detach();                          // 0x1855d0  slot 7  (declared-only)
-    virtual void Notify(void* arg);                 // 0x1855e0  slot 8  (declared-only)
+    virtual i32 Notify(void* arg);                  // 0x1855e0  slot 8  (declared-only)
     virtual i32 Place(i32 ctx, i32 x, i32 y);       // 0x1855f0  slot 9
-    virtual i32 Configure(void* notify);            // 0x185690  slot 10 (declared-only)
+    virtual i32 Configure(void* notify);            // 0x185690  slot 10 (0x185690)
     virtual void Release();                         // 0x1856c0  slot 11 (declared-only)
     virtual i32 Trigger();                          // 0x1856d0  slot 12
     virtual i32 OnInit();                           // 0x184660  slot 13 (declared-only)

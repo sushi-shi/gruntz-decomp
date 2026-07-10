@@ -53,6 +53,16 @@ DATA(0x002293f4)
 extern "C" char g_emptyString[]; // 0x6293f4
 
 // ---------------------------------------------------------------------------
+// CNetMgr::SetReportMode (0x177670) - latch the four reporting-mode gates.
+RVA(0x00177670, 0x27)
+void CNetMgr::SetReportMode(i32 log, i32 msgBox, i32 beep, i32 third) {
+    g_logEnabled = log;
+    g_msgBoxEnabled = msgBox;
+    g_beepEnabled = beep;
+    g_thirdEnabled = third;
+}
+
+// ---------------------------------------------------------------------------
 // CNetMgr::ReportError
 RVA(0x001776a0, 0xa01)
 void CNetMgr::ReportError(char* file, i32 line, i32 hr, void* hWnd) {

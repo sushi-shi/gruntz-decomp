@@ -137,6 +137,34 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 
 // CMenuItem::Dispatch0c (0x00185510) is now an inline member in the header.
 
+// slot 5 (0x185520): the m_width of the sprite's representative frame (index 2).
+RVA(0x00185520, 0x2c)
+i32 CMenuItem::Vf5() {
+    CMenuSprite* s = (CMenuSprite*)m_sprite;
+    if (!s) {
+        return 0;
+    }
+    CImage* f = s->GetAt(2);
+    if (!f) {
+        return 0;
+    }
+    return f->m_width;
+}
+
+// slot 4 (0x185550): the m_height of the sprite's representative frame (index 2);
+// the menu-page layout uses this as each row's vertical step (y += GetWidth()/2).
+RVA(0x00185550, 0x2c)
+i32 CMenuItem::GetWidth() {
+    CMenuSprite* s = (CMenuSprite*)m_sprite;
+    if (!s) {
+        return 0;
+    }
+    CImage* f = s->GetAt(2);
+    if (!f) {
+        return 0;
+    }
+    return f->m_height;
+}
 
 // notify: PostMessage WM_COMMAND to the host window(s) keyed off m_8->m_4.
 // (Non-virtual internal helper called by Trigger; NOT the slot-8 virtual Notify.)
@@ -193,6 +221,16 @@ i32 CMenuItem::Place(i32 ctx, i32 x, i32 y) {
     m_hitRight = py + *(i32*)((char*)row + 0x18);
     m_hitTop = px - *(i32*)((char*)row + 0x1c);
     m_hitBottom = px + *(i32*)((char*)row + 0x1c);
+    return 1;
+}
+
+// slot 10 (0x185690): scroll the host row when notified, then run the slot-6 hook.
+RVA(0x00185690, 0x25)
+i32 CMenuItem::Configure(void* notify) {
+    if (notify) {
+        ((CChatBox*)m_host)->ScrollRow0();
+    }
+    Vf6(2);
     return 1;
 }
 

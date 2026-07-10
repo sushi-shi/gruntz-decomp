@@ -268,7 +268,12 @@ public:
     i32 m_44;                    // +0x44
     i32 m_48;                    // +0x48
     i32 m_4c;                    // +0x4c
-    char _pad50[0x478 - 0x50];   // +0x50..+0x477
+    i32 m_50;                    // +0x50  shape mode (1/2 -> box, 3 -> diamond)
+    char _pad54[0x58 - 0x54];    // +0x54
+    i32 m_58;                    // +0x58  half-extent (v2 frame count)
+    char _pad5c[0x60 - 0x5c];    // +0x5c
+    i32 m_60;                    // +0x60  span (v2 frame count)
+    char _pad64[0x478 - 0x64];   // +0x64..+0x477
     i32 m_478;                   // +0x478
     char _pad47c[0x488 - 0x47c]; // +0x47c..+0x487
     i32 m_488;                   // +0x488

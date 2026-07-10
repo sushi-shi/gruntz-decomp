@@ -499,7 +499,7 @@ struct IDirectPlay4Z {
     STDMETHOD(v10)() PURE;                                               // slot 16
     STDMETHOD(GetMessageCount)(i32 idPlayer, i32* lpCount) PURE;         // slot 17 (+0x44)
     STDMETHOD(v12)() PURE;                                               // slot 18
-    STDMETHOD(v13)() PURE;                                               // slot 19
+    STDMETHOD(GetGroupData)(i32 id, void* lpData, i32 flags) PURE;       // slot 19 (+0x4c)
     STDMETHOD(GetData2)(i32 id, void* lpData, u32* lpSize, u32 fl) PURE; // slot 20 (+0x50)
     STDMETHOD(v15)() PURE;                                               // slot 21
     STDMETHOD(GetPlayerData2)(void* in, void* out) PURE;                 // slot 22 (+0x58)
@@ -516,6 +516,27 @@ struct IDirectPlay4Z {
     STDMETHOD(v1b)() PURE;                                            // slot 27
     STDMETHOD(v1c)() PURE;                                            // slot 28
     STDMETHOD(GetData5)(i32 id, void* lpData, i32 size, i32 fl) PURE; // slot 29 (+0x74)
+    STDMETHOD(v1e)() PURE;                                            // slot 30
+    STDMETHOD(v1f)() PURE;                                            // slot 31
+    STDMETHOD(v20)() PURE;                                            // slot 32
+    STDMETHOD(v21)() PURE;                                            // slot 33
+    STDMETHOD(v22)() PURE;                                            // slot 34
+    STDMETHOD(v23)() PURE;                                            // slot 35
+    STDMETHOD(v24)() PURE;                                            // slot 36
+    STDMETHOD(v25)() PURE;                                            // slot 37
+    STDMETHOD(v26)() PURE;                                            // slot 38
+    STDMETHOD(v27)() PURE;                                            // slot 39
+    STDMETHOD(v28)() PURE;                                            // slot 40
+    STDMETHOD(v29)() PURE;                                            // slot 41
+    STDMETHOD(v2a)() PURE;                                            // slot 42
+    STDMETHOD(v2b)() PURE;                                            // slot 43
+    STDMETHOD(v2c)() PURE;                                            // slot 44
+    STDMETHOD(v2d)() PURE;                                            // slot 45
+    STDMETHOD(v2e)() PURE;                                            // slot 46
+    STDMETHOD(v2f)() PURE;                                            // slot 47
+    STDMETHOD(v30)() PURE;                                            // slot 48
+    STDMETHOD(SendEx)(i32 idFrom, i32 idTo, i32 flags, void* lpData, i32 size, i32 pri,
+                      i32 timeout, void* ctx, i32* lpMsgId) PURE;     // slot 49 (+0xc4)
 };
 SIZE_UNKNOWN(IDirectPlay4Z); // external DirectPlay COM interface (opaque object); size TBD
 
@@ -868,8 +889,12 @@ public:
     i32 RemovePlayerObj(CNetPlayerObj* obj);                                        // 0x178e20
     void* GetPlayerData(i32 id);                                                    // 0x178eb0
     i32 SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, i32 c, i32 d, i32 e); // 0x178ef0
+    i32 SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i);      // 0x178f50
     i32 SetData(i32 a, i32 b, i32 c, i32 d, i32 e);                                 // 0x178fc0
+    i32 Receive(CNetPlayerEntry* from, CNetPlayerEntry* to, i32 flags, void* lpData,
+                i32* lpSize);                                                      // 0x179010
     i32 SetGroupDataFrom(CNetPlayerEntry* a, i32 c, i32 d, i32 e);                  // 0x179090
+    i32 GetGroupInfo(CNetPlayerEntry* a, void* desc, i32 flags);                    // 0x179190
     i32 EnumSessions(void* desc, void* ctx);                                        // 0x179130
 
     // The session-list cluster (engine CNetMgr base; ~0x178xxx). The three managed
@@ -942,6 +967,9 @@ public:
     // The diagnostic error reporter (lives in the netmgrerror TU; static
     // __cdecl). Declared here so the wrappers can route HRESULTs through it.
     static void ReportError(char* file, i32 line, i32 hr, void* hWnd);
+    // Set the four reporting-mode globals ReportError consults. (0x177670, static
+    // __cdecl; lives in the netmgrerror TU next to ReportError.)
+    static void SetReportMode(i32 log, i32 msgBox, i32 beep, i32 third);
 
     // Version-check cluster (engine CNetMgr base; ~0xbd0xx). HandleVersionCheck
     // compares the host packet's version pair against the two locals and, on a

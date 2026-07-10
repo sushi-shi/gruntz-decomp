@@ -90,6 +90,7 @@ public:
     virtual ~zBitVec() OVERRIDE;              // [0] 0x16d2a0 (real ~; ??_G thunk @0x16d2d0)
     i32 SetSize(i32 nbits);                   // 0x16e100 (?SetSize@zBitVec@@QAEHH@Z)
     i32 EnsureSize(i32 nbits);                // 0x1936e0 (?EnsureSize@zBitVec@@QAEHH@Z)
+    zBitVec* Or(zBitVec* o);                  // 0x193680 (word-wise union; grows to o)
 
     i32 m_capacity; // +0x08  capacity in bits (signed: SetSize's round-up matches as
                     // int; the ctor/EnsureSize cast (u32) for the unsigned `>0x20` jbe)

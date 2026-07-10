@@ -1806,3 +1806,18 @@ void CFaderTileRender::RenderWarpTile(i32 arg0, i32 arg1) {
         } while (col < m_colCount);
     }
 }
+
+// 0x182900 - CFaderShape::v2 (vtable slot 2): total frame count for the shape
+// transition. Modes 1/2 (box) run m_60-2*m_58 frames; mode 3 (diamond) halves the
+// m_60-4*m_58 span. Any other mode is a zero-length (instant) transition.
+RVA(0x00182900, 0x35)
+i32 CFaderShape::v2() {
+    i32 mode = m_50;
+    if (mode == 1 || mode == 2) {
+        return m_60 - m_58 * 2;
+    }
+    if (mode == 3) {
+        return (m_60 - m_58 * 4) / 2;
+    }
+    return 0;
+}
