@@ -961,13 +961,9 @@ unit = "gruntzcmdmgr"
 source = "src/Gruntz/GruntzCmdMgr.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "engine_label_stubs"
-source = "src/Stub/All.cpp"
-flags = "eh"
-
-# --- re-homed out of the src/Stub/ CClass files into their module TUs (flags "eh"
-# == the engine_label_stubs base+/GX the sources came from; matching-neutral). ---
+# --- src/Stub/ FULLY DRAINED + DELETED (2026-07-10): the labeled-but-unmatched
+# backlog (engine_label_stubs / All.cpp) is empty; every stub was re-homed to its
+# real class TU. The re-homed units below keep flags "eh" (== the old base+/GX). ---
 [[unit]]
 # CBoomerang projectile ctor (0xe0650); no other CBoomerang method reconstructed
 # yet, so this is the class's first/real TU.
