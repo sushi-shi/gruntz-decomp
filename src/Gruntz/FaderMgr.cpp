@@ -295,10 +295,6 @@ append:
 // (0x1b9cde) on the sub-object embedded at this+0x24 (`add ecx,0x24; jmp`).
 // Returns the callee's value. The sub-object/callee is external (reloc-masked).
 // ===========================================================================
-SIZE_UNKNOWN(CFaderTail);
-struct CFaderTail {
-    // Flush @0x17e160 IS CFaderMgr::Flush; cast at the call.
-};
 // CFaderMgr::Flush (0x0017e160) is now an inline member in the header.
 
 // ===========================================================================

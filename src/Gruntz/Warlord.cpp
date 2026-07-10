@@ -62,10 +62,24 @@ CWarlord::~CWarlord() {}
 // "Gruntz" bute group. ~0x73e bytes.
 //
 // @early-stop
-// DEFERRED to the final sweep (big function, >512B, STOP-EARLY). The full body is
-// a deep switch + the engine string-table + bute-config inline expansion; per
-// breadth-first doctrine it is homed here (so the RVA + its LoadAttributes caller
-// pair) as a complete-intent placeholder rather than half-reconstructed.
+// STUB (>512B, complete-body-OR-regress wall - gx-this-esi-via-cache-store-pressure.md:
+// only the COMPLETE body pins this->esi and snaps retail's scopetable prologue
+// `push -1; push h; mov eax,fs:0; push eax; sub esp,0x1c; mov esi,ecx`; a partial
+// provably REGRESSES, so it stays stubbed pending a dedicated leaf-first pass).
+// Structure fully MAPPED (matcher-5) for that pass:
+//   1. CUserBaseLink base ctor (0x16d710) at this+0x18.
+//   2. this+0xc/+0x10 = the bound game object (link result, edi); +0x14 = [obj+0x7c].
+//   3. AddLogicHit/Attack/Bump("Logic{Hit,Attack,Bump}") -> 0x150f50/0x151030/0x151110
+//      on this+0x10; then member inits m_28=0x3e9, m_2c=2, m_34/m_38=obj, m_3c=[obj+0x7c];
+//      ~CString(m_54); zero m_88..m_a8.
+//   4. level object (this+0x10) bit-fixups: [lvl+0x5c] &=~0x1f |=0x10, [lvl+0x60] likewise,
+//      [lvl+0x74]=0xc3500 + flag |=0x20000, geo enable, difficulty read at [lvl+0x124].
+//   5. 4-way owner switch (WARLORDZ_{KING,NAPOLEAN,PATTON,VIKING}) -> m_ac = 0x442..0x445.
+//   6. 11 UNROLLED anim-key lookups: zBitVec key = "GRUNTZ_"+ownerPrefix+suffix over
+//      {_IDLE1.._IDLE4,_BATTLECRY1.._BATTLECRY3,_DEATH,_JOY,_MOVING,_PANIC}; resolve via
+//      [m_38]->+0xc->+0x2c(+0x10)(key); store handle into m_58,m_5c,..,m_80. Helpers:
+//      zBitVec ctor 0x16d3a0(const char*,int) / op= 0x16d2f0 / ~zBitVec 0x16d2a0;
+//      ~CString 0x1b9cde (x22 = 2 temps/anim). Trailing panic-timer arm + return this.
 RVA(0x00042d40, 0x73e)
 CWarlord::CWarlord(i32) {}
 
