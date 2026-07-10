@@ -1,4 +1,5 @@
 #include <Gruntz/SBI_RectOnly.h> // canonical CSBI_RectOnly + engine-referent views
+#include <Gruntz/SpriteFactory.h> // real CSpriteFactory::CreateSprite (0x1597b0); 0x104dd0
 #include <Gruntz/WarpStoneFly.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <Rez/RezList.h>
@@ -1021,6 +1022,45 @@ i32 CSBI_RectOnly::TryActivate() {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// 0x104dd0 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). Lazy-
+// create the StatusBarSprite: clamp +0x24/+0x28 to the manager's screen bounds,
+// then build it via the +0x0c factory (CreateSprite @0x1597b0). @orphan: this ==
+// an unmodeled +0x2c status-bar-sprite holder (CSBI_RectOnly's m_2c); owner class
+// unrecovered.
+// @early-stop
+// scheduling wall: retail computes m_8c-0x22 via lea eax,[ecx-0x22] and loads m_x
+// late; cl uses sub + an earlier m_x load. Clamp logic, factory call and literal faithful.
+// Real CSpriteFactoryHolder (+0x08 -> CSpriteFactory) + CSpriteFactory::CreateSprite +
+// CGameObject dissolved in; only the receiver (CSBI_RectOnly's +0x2c holder) is an
+// unrecovered-identity view.
+struct StatusBarSpriteHolder {
+    char pad0[8];
+    CGameObject* m_sprite;                 // +0x08 the created StatusBarSprite instance
+    CSpriteFactoryHolder* m_factoryHolder; // +0x0c
+    char pad10[0x24 - 0x10];
+    i32 m_x; // +0x24
+    i32 m_y; // +0x28
+    i32 Create();
+};
+RVA(0x00104dd0, 0x6b)
+i32 StatusBarSpriteHolder::Create() {
+    if (m_sprite != 0) {
+        return 0;
+    }
+    i32 a = g_gameReg->m_modeW - 0x22;
+    i32 d = g_gameReg->m_modeH;
+    if (m_x > a) {
+        m_x = a;
+    }
+    if (m_y > d - 9) {
+        m_y = d - 0x22;
+    }
+    m_sprite = m_factoryHolder->m_8->CreateSprite(0, m_x, m_y, 0xf4240, "StatusBarSprite", 1);
+    return m_sprite != 0;
+}
+SIZE_UNKNOWN(StatusBarSpriteHolder);
+
 // Enter mode: latch m_modeArmed, conditionally reset the toggle pair, notify m_modeNotify.
 RVA(0x0010bb90, 0x3f)
 void CSBI_RectOnly::SetMode(i32 mode) {
@@ -1033,6 +1073,34 @@ void CSBI_RectOnly::SetMode(i32 mode) {
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// 0x10bbe0 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). Getter:
+// return +0x4cc when +0x528 is clear; else the active cell (+0x534[+0x52c]) when
+// the +0x538 count exceeds the index, else 0. @orphan: this == a game-registry
+// sub-object ([[0x24556c+0x2c]+0x2dc]); owner class unrecovered.
+struct C10bbe0 {
+    char pad0[0x4cc];
+    i32 m_fallback; // +0x4cc
+    char pad4d0[0x528 - 0x4d0];
+    i32 m_528;   // +0x528
+    i32 m_index; // +0x52c
+    char pad530[0x534 - 0x530];
+    i32** m_entries; // +0x534
+    i32 m_count;     // +0x538
+    i32 GetActiveValue();
+};
+RVA(0x0010bbe0, 0x34)
+i32 C10bbe0::GetActiveValue() {
+    if (m_528 == 0) {
+        return m_fallback;
+    }
+    if (m_count > 0 && m_count > m_index) {
+        return *m_entries[m_index];
+    }
+    return 0;
+}
+SIZE_UNKNOWN(C10bbe0);
 
 // Find the rect widget under (x,y) by walking the three hit-test lists (the +0x30
 // list, the active-tab list at +tab*0x1c+0x30, then the +0xd8 list); return the

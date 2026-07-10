@@ -18,6 +18,7 @@
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
+#include <Io/FileStream.h> // CFileIO (the static MFC CFile global at 0x646778; 0x0b5400 ctor)
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <Dsndmgr/GruntzSoundZ.h>
@@ -64,6 +65,16 @@ extern CString g_6473d8; // 0x6473d8
 RVA(0x000b5380, 0xa)
 void InitStr6473d8() {
     g_6473d8.CString::CString();
+}
+
+// -------------------------------------------------------------------------
+// 0x0b5400 (spatially re-homed from src/Stub/BoundaryLowerThunks.cpp). Re-run
+// the ctor of the static CFileIO global at 0x646778 in place via the explicit-
+// ctor-call tail-jmp (its canonical DATA pin lives in src/Io/FileStream.cpp).
+extern CFileIO g_obj646778;
+RVA(0x000b5400, 0xa)
+void ConstructFileIOGlobal() {
+    g_obj646778.CFileIO::CFileIO();
 }
 
 // ShowCursor Win32 import slot (PTR_ShowCursor_006c44c4) - typed pointer so the

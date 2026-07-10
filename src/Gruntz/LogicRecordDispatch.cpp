@@ -266,6 +266,63 @@ i32 LogicDispatchE(LogicDispatchOwner* owner) {
     return 1;
 }
 
+// State-0 sub-record built by LogicDispatchBoomerang (0xde9e0): the ctor 0xe0650 is
+// ??0CBoomerang@@QAE@PAUCGameObject@@@Z (CBoomerang : CProjectile, 0x260 bytes). Kept
+// in the LogicSubRec family view (same shape as the siblings); the family-wide fold
+// onto the real CUserLogic/CProjectile hierarchy is a deferred refactor.
+class LogicSubRecBoomerang : public LogicSubRec {
+public:
+    LogicSubRecBoomerang(LogicDispatchOwner* owner); // 0xe0650 (via thunk) = CBoomerang ctor
+    char m_pad[0x260 - 4];
+};
+SIZE(LogicSubRecBoomerang, 0x260);
+
+// LogicDispatchBoomerang @0x0de9e0 - state-0 builds a 0x260 sub-record (CBoomerang,
+// ctor 0xe0650). Same dispatch shape as the siblings; the larger `new` size uses an
+// imm32 push. Spatially re-homed from src/Stub/DiscoveredEh.cpp (was
+// BoomerangCmdDispatch_de9e0); the Boom* views dissolved onto the LogicSubRec family
+// (the default handler ProjTypeXfer @0x16e4f0 IS LogicSubDefault_16e4f0). EXACT.
+// @identity-TODO: the dispatcher's own owner class is unrecovered (only inbound edge
+// is ILT thunk 0x158c from an unrecovered fn).
+RVA(0x000de9e0, 0xf4)
+i32 LogicDispatchBoomerang(LogicDispatchOwner* owner) {
+    LogicDispatchRecord* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case kLogicStateInit:
+            rec->m_1c = kLogicStateBuilt;
+            {
+                LogicSubRecBoomerang* obj = new LogicSubRecBoomerang(owner);
+                obj->Init();
+                rec->m_18 = obj;
+            }
+            break;
+        case kLogicStateOp1d:
+            rec->m_18->Op1d();
+            break;
+        case kLogicStateOp1e:
+            rec->m_18->Op1e();
+            break;
+        case kLogicStateOp50:
+            rec->m_18->Op50();
+            break;
+        case kLogicStateOp51:
+            rec->m_18->Op51();
+            break;
+        case kLogicStateOp52:
+            rec->m_18->Op52();
+            break;
+        case kLogicStateOp53:
+            rec->m_18->Op53();
+            break;
+        case kLogicStateBuilt:
+            break;
+        default:
+            LogicSubDefault_16e4f0(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
 // LogicDispatchB @0x10d3d0 - state-0 builds a 0x54 sub-record (ctor 0x3701).
 RVA(0x0010d3d0, 0xf1)
 i32 LogicDispatchB(LogicDispatchOwner* owner) {

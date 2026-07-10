@@ -9,6 +9,7 @@
 
 #include <Gruntz/SpriteRefTable.h>
 #include <DDrawMgr/ShadeTableCache.h> // canonical CShadeTableCache (FindRemove @0x14fb80)
+#include <Gruntz/GameRegistry.h>      // g_gameReg (m_saveSink) for the re-homed 0x0e35f0 dlg proc
 
 #include <rva.h>
 
@@ -253,5 +254,40 @@ void CSpriteRef::Free() {
         cache->FindRemove((CShadeTable*)m_alphaKey);
         m_cache = 0;
         m_alphaKey = 0;
+    }
+}
+
+// -------------------------------------------------------------------------
+// 0x0e35f0 (spatially re-homed from src/Stub/ApiCallers.cpp). __stdcall dialog
+// proc: WM_INITDIALOG seeds the selection index + active-HWND from the game
+// registry's save-sink; WM_COMMAND handles Cancel / the shared fallback.
+extern CGameRegistry* g_gameReg;
+DATA(0x0024c86c)
+extern i32 g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
+DATA(0x00213a9c)
+extern i32 g_dlgSel613a9c;                                    // DAT_00613a9c
+i32 __cdecl DlgFallback_1302(HWND hDlg, i32 wParam, i32 cur); // RVA 0x1302
+void __cdecl DlgInit_2e05(HWND hDlg, i32 v);                  // RVA 0x2e05
+RVA(0x000e35f0, 0x77)
+i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case 0x111:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (DlgFallback_1302(hDlg, wParam, g_dlg64c86c) != 0) {
+                return 1;
+            }
+            // falls through to the shared "return 0" default
+        default:
+            return 0;
+        case 0x110: {
+            i32 v = (i32)g_gameReg->m_saveSink;
+            g_dlgSel613a9c = -1;
+            g_dlg64c86c = v;
+            DlgInit_2e05(hDlg, v);
+            return 1;
+        }
     }
 }

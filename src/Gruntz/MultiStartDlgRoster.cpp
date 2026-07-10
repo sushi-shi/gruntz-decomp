@@ -295,3 +295,31 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
         Refresh185c(slot);
     }
 }
+
+// ---------------------------------------------------------------------------
+// 0x0c5240 (spatially re-homed from src/Stub/Cluster0c.cpp). Teardown of the
+// unidentified per-session net object: release+free the +0x60 CNetThing child,
+// then run the final Destroy_1bbb7c. @orphan (class identity unrecovered; its Init
+// sibling homes to src/Net/NetCmdSlot.cpp).
+extern "C" void RezFree(void*); // 0x1b9b82
+struct CNetThing {              // TU-local view of the header-less CNetThing (netthingdtor unit)
+    ~CNetThing();               // dtor @0xc5280 (Release IS ~CNetThing)
+};
+struct CCluster0c {
+    char pad00[0x60];
+    CNetThing* m_60;       // +0x60 owned child
+    void Destroy_1bbb7c(); // 0x1bbb7c
+    void Cleanup();        // 0xc5240
+};
+RVA(0x000c5240, 0x2c)
+void CCluster0c::Cleanup() {
+    CNetThing* p = m_60;
+    if (p) {
+        p->~CNetThing();
+        RezFree(p);
+        m_60 = 0;
+    }
+    Destroy_1bbb7c();
+}
+SIZE_UNKNOWN(CCluster0c);
+SIZE_UNKNOWN(CNetThing);

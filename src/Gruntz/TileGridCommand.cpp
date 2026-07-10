@@ -180,6 +180,39 @@ i32 CTileGridCommand::BumpCell() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x112bf0 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). The
+// decrement sibling of BumpCell: reads the active tile layer's cell at
+// (m_08,m_0c), stores value-1 back, re-publishes it through the tile grid, and
+// clears m_14. Reuses this TU's real grid types (TgcGameMgr/CViewport/CBrickzGrid);
+// only the receiver is an orphan view - its true class is CCheckpointTriggerSwitch-
+// Logic (vtbl slot 3, thunk 0x36fc) per BoundaryLowerMethodsViews.h, class
+// attribution deferred.
+// @early-stop
+// strength-reduction wall (~73%): cl materializes m_row<<2 (shl ecx,2) and reuses
+// scale-1 addressing where retail keeps m_row in a scale-4 address mode in both cell
+// stores; the shift vs scaled-index pick is not steerable.
+struct CDecrementCellHost { // orphan receiver (m_08 col / m_0c row / m_14, same as BumpCell)
+    char pad0[8];
+    i32 m_08; // +0x08 column
+    i32 m_0c; // +0x0c row
+    char pad10[0x14 - 0x10];
+    i32 m_14; // +0x14
+    i32 DecrementCell();
+};
+RVA(0x00112bf0, 0x5e)
+i32 CDecrementCellHost::DecrementCell() {
+    CGameRegistry* reg = g_gameReg;
+    CViewport* layer = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+    i32 v = layer->m_cells[m_08 + layer->m_rowBase[m_0c]] - 1;
+    CViewport* layer2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+    layer2->m_cells[m_08 + layer2->m_rowBase[m_0c]] = v;
+    ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
+    m_14 = 0;
+    return 1;
+}
+SIZE_UNKNOWN(CDecrementCellHost);
+
+// ---------------------------------------------------------------------------
 // CTileGridCommand::ApplyMove
 // Edits the (m_08,m_0c) tile cell of the active layer: an explicit override m_34
 // when set, else by the verb (0x1e->0x5a, 0x1f->0x5b, 0x21->cell+1), marks the

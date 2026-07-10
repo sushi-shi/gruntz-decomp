@@ -383,3 +383,24 @@ SIZE_UNKNOWN(AniCelMap);
 SIZE_UNKNOWN(AniCelTable);
 SIZE_UNKNOWN(AniSeq);
 SIZE_UNKNOWN(CAniPlayer);
+
+// -------------------------------------------------------------------------
+// 0x0e6020 (spatially re-homed from src/Stub/ApiCallers.cpp). Placeholder owner
+// class unrecovered; kept as the 86% artifact stub.
+// @early-stop
+// stub artifact wins: the tiny stub's push/pop-4 + `ret 0x28` epilogue
+// coincidentally aligns with the target's fail-tail, so objdiff (base-length
+// normalized) scores it ~86%. A faithful full-body reconstruction (GameView
+// ::Init, __thiscall(a0..a9): geometry stash + mgr-alloc + 3 bounded map
+// lookups + SetRect) reaches only ~42%: target keeps 4 callee-saved regs and
+// reuses the dead incoming-arg slots as SetRect/lookup scratch, while cl
+// spills a fresh `sub esp,0x10` RECT frame + drops ebp - a uniform frame
+// shift that mismatches every [esp+X] operand. Frame/regalloc wall.
+struct StubOwner_e6020 {
+    i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
+};
+SIZE_UNKNOWN(StubOwner_e6020);
+RVA(0x000e6020, 0x288)
+i32 StubOwner_e6020::winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
+    return 0;
+}

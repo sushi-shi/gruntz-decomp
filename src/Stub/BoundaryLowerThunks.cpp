@@ -196,25 +196,6 @@ CGameWnd::~CGameWnd() {
 }
 
 // ===========================================================================
-// 0x0b5400 / 0x0bd430 - construct / Close the engine's ONE static MFC CFile global
-// at 0x646778. Its real type is CFileIO (RTTI 0x1ed15c == CFile; class in
-// <Io/FileStream.h>); this TU owns its canonical DATA symbol. 0x0b5400 re-runs the
-// ctor in place via the explicit-ctor-call extension (mov ecx,&g; jmp CFileIO::CFileIO
-// 0x1befd7 - placement-new here would emit a null-check, so the explicit call is the
-// clean tail-jmp); 0x0bd430 tail-forwards CFileIO::Close (0x1bf426), devirtualized on
-// the concrete global.
-DATA(0x00246778)
-extern CFileIO g_obj646778;
-RVA(0x000b5400, 0xa)
-void Forwardb5400() {
-    g_obj646778.CFileIO::CFileIO();
-}
-RVA(0x000bd430, 0xa)
-void Forwardbd430() {
-    g_obj646778.Close();
-}
-
-// ===========================================================================
 // 0x0bd7f0 - tail-forward a CString teardown (0x1b9b93) onto the global at
 // 0x649618. __thiscall.
 // ===========================================================================
@@ -242,50 +223,6 @@ void CInitd5d70::Init() {
     m_8 = 0;
     m_c = 0;
     // base vptr auto-stamped via CObject (manual stamp dropped, % ok)
-}
-
-// ===========================================================================
-// 0x0e56b0 - setter: store the constant 0x42a at +0x20. __thiscall.
-// ===========================================================================
-struct CSettere56b0 {
-    char pad0[0x20];
-    i32 m_20; // +0x20
-    void Set();
-};
-SIZE_UNKNOWN(CSettere56b0);
-RVA(0x000e56b0, 0x8)
-void CSettere56b0::Set() {
-    m_20 = 0x42a;
-}
-
-// ===========================================================================
-// 0x100780 - a CStatusBarItem-base vptr restore: cl's implicit vptr-restore stamps
-// the status-base vtable (0x5eabcc) then tail-jumps the base init/teardown (0x1d6b).
-// Placeholder polymorphic class (the real CStatusBarItem dtor is modeled in
-// StatusBarItem.cpp; this is a distinct restore, so its ??_7 reloc-masks by shape).
-// ===========================================================================
-struct CStatusBaseSub100780 {
-    void Base1d6b(); // 0x1d6b (reloc-masked)
-    virtual ~CStatusBaseSub100780();
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill6(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill7(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill8(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill9(); // vtable-slot filler (real slot; declared-only)
-};
-SIZE_UNKNOWN(CStatusBaseSub100780);
-RELOC_VTBL(
-    CStatusBaseSub100780,
-    0x001eabcc
-); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x00100780, 0xb)
-CStatusBaseSub100780::~CStatusBaseSub100780() {
-    Base1d6b();
 }
 
 // ===========================================================================

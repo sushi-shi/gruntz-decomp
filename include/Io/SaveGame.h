@@ -111,6 +111,7 @@ public:
         }
     }
     i32 CheckMagic();                                         // 0x000e5690
+    void SetMagic();                                          // 0x000e56b0 (m_magic = 0x42a)
 
     CString m_str0; // +0x00  the directory CString
     CString m_name; // +0x04  the file-name CString passed to CFileIO::Open

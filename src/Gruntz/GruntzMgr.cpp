@@ -987,6 +987,78 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 }
 
 // -------------------------------------------------------------------------
+// 0x08ee70 (spatially re-homed from src/Stub/ApiCallers.cpp). Pause audio
+// (slot 0x28), force the cursor visible, MessageBoxA, then hide it.
+// @orphan: the +0x30 audio object / +0x04 window owner class is unrecovered.
+// @early-stop
+// regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
+// body byte-exact, but every value-holding register is rotated vs retail - the
+// `m_30->m_4->m_14` chain (ecx/eax vs our eax/ecx), the `*m_30->m_1c; ->vtbl
+// ->Slot28(p)` dispatch (container ecx + vtbl edx vs our edx + ecx) and the
+// MessageBoxA arg setup all carry the same global re-colouring. Same
+// instructions, swapped registers; not source-steerable (~98.5%).
+struct Poly08 { // real polymorphic; Slot28 is slot 10 (+0x28)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void __stdcall Slot28(); // slot 10 (+0x28)
+};
+struct AudioSub_08ee70 {
+    char m_pad0[0x14];
+    i32 m_14; // +0x14 = audio handle
+};
+struct AudioObj_08ee70 {
+    char m_pad0[4];
+    AudioSub_08ee70* m_4; // +0x04 (its [+0x14] is the audio handle)
+    char m_pad8[0x1c - 8];
+    Poly08** m_1c; // +0x1c
+};
+struct MsgWnd_08ee70 {
+    char m_pad0[4];
+    HWND m_4; // +0x04 -> HWND
+};
+struct MsgHost_08ee70 {
+    char m_pad0[4];
+    MsgWnd_08ee70* m_4; // +0x04
+    char m_pad8[0x30 - 8];
+    AudioObj_08ee70* m_30; // +0x30
+    i32 Show(i32 text, i32 type);
+};
+// The shared caption buffer (DAT_0060aac8) passed as the MessageBoxA title.
+DATA(0x0020aac8)
+extern char g_msgCaption[];
+void __stdcall Stop_158c70(i32 handle); // RVA 0x158c70
+RVA(0x0008ee70, 0x7c)
+i32 MsgHost_08ee70::Show(i32 text, i32 type) {
+    if (m_30) {
+        Stop_158c70(m_30->m_4->m_14);
+        Poly08* p = *m_30->m_1c;
+        p->Slot28();
+    }
+    i32 wasShown = ShowCursor(1);
+    while (ShowCursor(1) < 0) {
+    }
+    i32 result = MessageBoxA(m_4->m_4, (LPCSTR)text, g_msgCaption, type);
+    if (wasShown <= 0) {
+        while (ShowCursor(0) >= 0) {
+        }
+    }
+    return result;
+}
+SIZE_UNKNOWN(Poly08);
+SIZE_UNKNOWN(AudioSub_08ee70);
+SIZE_UNKNOWN(AudioObj_08ee70);
+SIZE_UNKNOWN(MsgWnd_08ee70);
+SIZE_UNKNOWN(MsgHost_08ee70);
+
+// -------------------------------------------------------------------------
 // CGruntzMgr::ToggleObjectLayer (0x08efe0; ret). Debug visibility toggle for the
 // world view's (m_world->m_24) "current" object layer: only when the manager is
 // active (base slot-3 gate) and a world+view are loaded. The layer index is
@@ -1384,6 +1456,49 @@ i32 CGruntzMgr::CheckSavedMode() {
     ReportError(0x8008, 0x45e);
     return 0;
 }
+
+// -------------------------------------------------------------------------
+// 0x08f480 (spatially re-homed from src/Stub/ApiCallers.cpp). If the mode is
+// 2/3/5, reset and post a 0x8005 command; returns 1 (else 0).
+// @orphan: no direct rel32 caller (reached only as a data/command-table slot) -
+// owning class of the +0x2c mode object unrecovered.
+struct ModeObj_08f480 { // slot 4 (+0x10) returns the current mode
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual i32 GetMode(); // slot 4 == vtable +0x10
+};
+struct WndChain_08f480 {
+    char m_pad0[4];
+    HWND m_4; // +0x04
+};
+struct Sub_08f480 {
+    void Reset(); // thiscall, RVA 0x1b9c69 (on this+0xc8)
+};
+struct ModeHost_08f480 {
+    char m_pad0[4];
+    WndChain_08f480* m_4; // +0x04
+    char m_pad8[0x2c - 8];
+    ModeObj_08f480* m_2c; // +0x2c
+    char m_pad30[0xc8 - 0x30];
+    Sub_08f480 m_c8; // +0xc8
+    i32 Notify();
+};
+RVA(0x0008f480, 0x49)
+i32 ModeHost_08f480::Notify() {
+    i32 mode = m_2c->GetMode();
+    if (mode == 5 || mode == 2 || mode == 3) {
+        m_c8.Reset();
+        PostMessageA(m_4->m_4, 0x111, 0x8005, 0);
+        return 1;
+    }
+    return 0;
+}
+SIZE_UNKNOWN(ModeObj_08f480);
+SIZE_UNKNOWN(WndChain_08f480);
+SIZE_UNKNOWN(Sub_08f480);
+SIZE_UNKNOWN(ModeHost_08f480);
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::ResetClockGlobals (0x08f4f0). Zeroes the seven game-clock / scroll

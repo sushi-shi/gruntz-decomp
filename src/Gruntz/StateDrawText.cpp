@@ -59,3 +59,34 @@ i32 CState::ShadeScreen(i32 pct) {
     }
     return m_c->m_drawTarget->m_14->m_2c->ShadeRect(pct, 0);
 }
+
+// -------------------------------------------------------------------------
+// 0x0fafa0 (spatially re-homed from src/Stub/ReconBatch2.cpp). __stdcall(4)
+// validity gate: returns 0 if arg0 is null; for kind 4 / 7 validates arg0 through
+// a per-kind checker (return 0 on fail); otherwise (and on success) returns 1.
+i32 __stdcall Check4_2ce8(i32 h); // 0x0faff0 (kind 4)
+i32 __stdcall Check7_36bb(i32 h); // 0x0fb1c0 (kind 7)
+// @early-stop
+// regalloc wall (topic:wall topic:regalloc): the switch body (cmp 4 je / cmp 7
+// jne / kind7 inline / kind4 trailing) is byte-identical to retail; residual is
+// a0 landing in ecx (cl) vs eax (retail) - so the a0==0 return needs an extra
+// xor eax, and the push/cmp register encodings shift. Not source-steerable. ~93.3%.
+RVA(0x000fafa0, 0x3b)
+i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
+    if (a0 == 0) {
+        return 0;
+    }
+    switch (kind) {
+        case 4:
+            if (Check4_2ce8(a0) == 0) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (Check7_36bb(a0) == 0) {
+                return 0;
+            }
+            break;
+    }
+    return 1;
+}

@@ -368,6 +368,27 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// 0x09cab0 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). Out-param
+// wrapper: call the +0x10 sub's Lookup (0x1b8008 == CMapStringToPtr::Lookup) with a
+// zeroed local and return the filled local. @orphan (registry class unrecovered).
+struct CSub9cab0 {
+    i32 Lookup(const char* key, void*& out); // 0x1b8008 (CMapStringToPtr::Lookup)
+};
+struct C9cab0 {
+    char pad0[0x10];
+    CSub9cab0 m_10; // +0x10
+    i32 LookupPtr(i32 arg);
+};
+RVA(0x0009cab0, 0x23)
+i32 C9cab0::LookupPtr(i32 arg) {
+    i32 local = 0;
+    m_10.Lookup((const char*)arg, (void*&)local);
+    return local;
+}
+SIZE_UNKNOWN(CSub9cab0);
+SIZE_UNKNOWN(C9cab0);
+
 // ===========================================================================
 // The CArchive-store / CString-default flavor of the record serializer: a larger
 // record streamed through the shared CSerialArchive's +0x30 slot (Write, the store

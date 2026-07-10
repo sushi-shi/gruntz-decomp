@@ -87,6 +87,10 @@ public:
     // SetDirection (0xea0f0): pick one of four direction tuples from the two
     // boolean selectors and forward to the +0x38 virtual.
     void SetDirection(i32 a, i32 b); // 0x0ea0f0
+    // SetDirectionAlt (0xea170): the mirror sibling of SetDirection - the same four
+    // ApplyDir tuples, re-keyed on (a1,a2). @orphan `this==ebp` sub-object of
+    // LoadTabSprites; RTTI-confirmed CSbConfigItem (slots 0-13 + ApplyDir @+0x38).
+    void SetDirectionAlt(i32 a1, i32 a2); // 0x0ea170
     void SetState(i32 s);            // thunk 0x11e5  (Multiplayer HEAD-loop state set)
     void ShowFrames(i32 a, i32 b);   // thunk 0x23dd  (Multiplayer HEAD-loop frame set)
     void SetArrowMode(i32 a, i32 b); // Statz arrow: the m_114-gated 2-arg sink (reloc `M`)

@@ -63,79 +63,6 @@
 
 // (CGameModeBase::Reset @0xf9840 re-homed to src/Gruntz/GameMode.cpp.)
 
-// ===========================================================================
-// 0x000faec0 (103B) - per-frame present/refresh of the bound view. If the
-// suppress flag is set, clear it and return; else Refresh the sub-view, blit the
-// front surface with arg0, Flip the back surface, then Refresh again.
-// __thiscall(arg0). m_c->m_4 is reloaded each statement (not cached across).
-// @orphan: reached only from CGruntzMgr::RunModalDialog/ExitModalUI (xref) on an
-// unidentified modal-UI presenter object; the `this` owner class has no recoverable
-// identity (only inbound edge is ILT thunk 0x1ec9, no ctor/new trace).
-//
-// NOT a one-class-many-views over-split: it is a genuine 4-deep pointer chain into
-// distinct real DDraw objects (every sub-object call is direct/reloc-masked, so the
-// typing below is matching-neutral):
-//   SubView_faec0.Refresh  = CDDrawWorkerMgr::Method_158c70 (0x158c70, ddrawsubmgr, EXACT)
-//   CSpriteFactoryHolder.m_2c .Flip       = CDDSurface::Flip               (0x13e850, directdrawmgr, EXACT)
-//   CSpriteFactoryHolder.m_2c .CopyRect   = CFileImage::ShadeRect          (0x13f460, lutshaderect, src-claim ~67%)
-// unidentified: PresentHost_faec0 (the `this` owner) + the Mid/CSpriteFactoryHolder hops -- the
-// only inbound edge is ILT thunk 0x1ec9 (no clean ctor/new trace).
-// ===========================================================================
-struct Mid_faec0 {
-    char m_pad0[0x4];
-    CDDrawSubMgrPages* m_4; // +0x04
-};
-struct
-    PresentHost_faec0 { // unidentified owner of Present @0xfaec0 (only inbound edge: ILT thunk 0x1ec9)
-    char m_pad0[0xc];
-    Mid_faec0* m_c; // +0x0c
-    void Present(i32 arg0);
-};
-RVA(0x000faec0, 0x67)
-void PresentHost_faec0::Present(i32 arg0) {
-    if (g_suppress_64e360 != 0) {
-        g_suppress_64e360 = 0;
-        return;
-    }
-    m_c->m_4->Method_158c70(m_c->m_4->m_backPair);
-    m_c->m_4->m_backPair->m_surface->ShadeRect(arg0, (RECT*)0);
-    m_c->m_4->m_frontPair->m_surface->Flip((CDDSurface*)0);
-    m_c->m_4->Method_158c70(m_c->m_4->m_backPair);
-}
-
-// ===========================================================================
-// 0x000fafa0 (59B) - __stdcall(4) validity gate: returns 0 if arg0 is null;
-// for kind 4 / 7 validates arg0 through a per-kind checker (return 0 on fail);
-// otherwise (and on success) returns 1.
-// ===========================================================================
-i32 __stdcall Check4_2ce8(i32 h); // 0x0faff0 (kind 4)
-i32 __stdcall Check7_36bb(i32 h); // 0x0fb1c0 (kind 7)
-// @early-stop
-// regalloc wall (topic:wall topic:regalloc): the switch body (cmp 4 je / cmp 7
-// jne / kind7 inline / kind4 trailing) is byte-identical to retail; residual is
-// a0 landing in ecx (cl) vs eax (retail) - so the a0==0 return needs an extra
-// xor eax, and the push/cmp register encodings shift. The switch dispatch claims
-// eax for `kind`; not source-steerable. ~93.3%.
-RVA(0x000fafa0, 0x3b)
-i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
-    if (a0 == 0) {
-        return 0;
-    }
-    switch (kind) {
-        case 4:
-            if (Check4_2ce8(a0) == 0) {
-                return 0;
-            }
-            break;
-        case 7:
-            if (Check7_36bb(a0) == 0) {
-                return 0;
-            }
-            break;
-    }
-    return 1;
-}
-
 // (0x001104f0 re-homed to src/Gruntz/TileTriggerSwitchLogic.cpp as
 // CTileTriggerSwitchLogic::Vf0 - the one-shot Setup virtual, slot 0 (thunk 0x1749)
 // shared across the whole *TriggerSwitchLogic family; xref: referenced at
@@ -230,7 +157,5 @@ void** Get_1b9b8d() {
 
 SIZE_UNKNOWN(Desc_16f6e0);
 SIZE_UNKNOWN(Dst_16f6e0);
-SIZE_UNKNOWN(Mid_faec0);
 SIZE_UNKNOWN(Obj_11e8dc);
-SIZE_UNKNOWN(PresentHost_faec0);
 SIZE_UNKNOWN(Src_16f6e0);

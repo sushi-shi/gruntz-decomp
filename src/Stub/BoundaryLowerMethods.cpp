@@ -53,16 +53,6 @@ i32 C213a0::Get() {
 // cleared back-pointer word is CSpawnEntry::m_flag. See <Gruntz/SpawnList.h>
 // for the six-view unification proof.)
 
-// ===========================================================================
-// 0x09cab0 - out-param wrapper: call the +0x10 sub's method (0x1b8008) with a
-// zeroed local and return the filled local. __thiscall(arg).
-// ===========================================================================
-RVA(0x0009cab0, 0x23)
-i32 C9cab0::M(i32 arg) {
-    i32 local = 0;
-    ((CMapStringToPtr*)&m_10)->Lookup((const char*)arg, (void*&)local);
-    return local;
-}
 
 // (0x0b4c40 C0b4c40::Handle re-homed to src/Gruntz/GameObjectCtors.cpp as the REAL
 // CUFO::SerializeMove - vtable slot 1 (thunk 0x3fb7 -> 0xb4c40). The 0x3035 chain
@@ -80,107 +70,14 @@ void Cbd450::Init() {
     OpenLog1983("c:\\gruntz.log");
 }
 
-// ===========================================================================
-// 0x0cef50 - teardown: flush the +0x04 owner's +0xc8 sub (0x1b9c69); when +0x1c0
-// is live, run the +0x0c->+0x04 close (0x158d20 -> 0x158e40) and dispatch +0x04's
-// 0x201d(3). __thiscall, returns 1.
-// ===========================================================================
-RVA(0x000cef50, 0x46)
-i32 Ccef50::M() {
-    ((CObList*)(m_4 + 0xc8))->~CObList();
-    if (m_1c0 != 0) {
-        if (((CDDrawSubMgrPages*)m_c->m_4)->Method_158d20() != 0) {
-            ((CDDrawSubMgrPages*)m_c->m_4)->Method_158e40();
-        }
-        ((CGruntzMgr*)m_4)->ChangeState_8fab0(3);
-    }
-    return 1;
-}
 
 // (0x0d5e20 Cd5e20::M re-homed to src/Image/CImage.cpp as CImage::Slot17 - the
 // vtable slot-17 thunk 0x1d1b jmps to 0xd5e20, so this IS CImage's slot-17 virtual
 // that forwards its arg through Slot15 (+0x3c) then Slot16 (+0x40).)
 
-// ===========================================================================
-// 0x0db200 - swap the +0x08 holder to `arg`: no-op when already equal, else
-// validate (0x11f9), toggle old off / new on (0x3bbb) and store. __thiscall.
-// ===========================================================================
-extern "C" i32 Check11f9(void* p);          // 0x11f9
-extern "C" void Toggle3bbb(void* p, i32 f); // 0x3bbb
-RVA(0x000db200, 0x51)
-i32 Cdb200::M(void* arg) {
-    if (m_8 == arg) {
-        return 1;
-    }
-    if (Check11f9(arg)) {
-        Toggle3bbb(m_8, 1);
-        Toggle3bbb(arg, 0);
-        m_8 = arg;
-        return 1;
-    }
-    return 0;
-}
 
-// ===========================================================================
-// 0x0db2f0 - finalize: when +0x20 is live, run the +0x38 teardown (0x40c5) iff
-// +0x14 is clear, then reset +0x20. __thiscall, returns 1/0.
-// ===========================================================================
-RVA(0x000db2f0, 0x2b)
-i32 Cdb2f0::M() {
-    if (m_20 == 0) {
-        return 0;
-    }
-    if (m_14 == 0) {
-        ((CBattlezMapConfig*)&m_38)->Clear_02ade0();
-    }
-    m_20 = 0;
-    return 1;
-}
 
-// ===========================================================================
-// 0x0db750 - "LEVEL" config sync: on first call (arg==0) probe the +0x0c owner's
-// +0x2c config for "LEVEL" (0x152c50); set it (0x1527d0), then resolve the +0x28
-// parser entry (0x13bae0) and, if found, bind it back (0x152ad0). __thiscall.
-// ===========================================================================
-RVA(0x000db750, 0x70)
-i32 Cdb750::M(void* arg) {
-    if (m_c == 0) {
-        return 0;
-    }
-    if (arg == 0) {
-        if (m_c->m_2c->HasKeyPrefix_152c50("LEVEL") != 0) {
-            return 1;
-        }
-    }
-    m_c->m_2c->RemoveKeysEqual_1527d0("LEVEL", (const char*)&g_dat60b588);
-    void* e = m_28->ResolvePath((const char*)&g_dat613054);
-    if (e == 0) {
-        return 0;
-    }
-    m_c->m_2c->ScanTree_152ad0(e, "LEVEL", &g_dat60b588);
-    return 1;
-}
 
-// ===========================================================================
-// 0x0ea170 - 2-bit selector over a +0x38 virtual: pick one of four fixed arg
-// tuples by (arg1!=0, arg2!=0). __thiscall(arg1, arg2).
-// ===========================================================================
-RVA(0x000ea170, 0x5c)
-void Cea170::M(i32 a1, i32 a2) {
-    if (a1 == 0) {
-        if (a2 == 0) {
-            Dispatch(1, -1, 0, 0, -1);
-        } else {
-            Dispatch(-1, -1, -1, 0, -1);
-        }
-    } else {
-        if (a2 == 0) {
-            Dispatch(4, -1, 0, 0, -1);
-        } else {
-            Dispatch(-1, -1, 1, 0, -1);
-        }
-    }
-}
 
 // (0x0eb970 Ceb970::Serialize re-homed to src/Gruntz/SBI_WarlordHead.cpp as the REAL
 // CSBI_WarlordHead::Serialize - vtable slot 1 (thunk 0x3cd8 -> 0xeb970) is authoritative.
@@ -198,65 +95,8 @@ void Cea170::M(i32 a1, i32 a2) {
 // CSBI_WellGoo::Free - vtable slot-3 thunk 0x30b7 jmps to 0x104c80. See
 // <Gruntz/SBI_WellGoo.h>.)
 
-// ===========================================================================
-// 0x104dd0 - lazy-create the StatusBarSprite: clamp +0x24/+0x28 to the manager's
-// screen bounds, then build it via the +0x0c factory (0x1597b0). __thiscall.
-// ===========================================================================
-// @early-stop
-// scheduling wall: retail computes m_8c-0x22 via lea eax,[ecx-0x22] and loads m_x
-// late; cl uses sub + an earlier m_x load. Clamp logic, the factory call and the
-// StatusBarSprite literal are byte-faithful.
-RVA(0x00104dd0, 0x6b)
-i32 C104dd0::Create() {
-    if (m_sprite != 0) {
-        return 0;
-    }
-    i32 a = g_mgrSettings->m_modeW - 0x22;
-    i32 d = g_mgrSettings->m_modeH;
-    if (m_x > a) {
-        m_x = a;
-    }
-    if (m_y > d - 9) {
-        m_y = d - 0x22;
-    }
-    m_sprite = m_factoryHolder->m_8->CreateSprite(0, m_x, m_y, 0xf4240, "StatusBarSprite", 1);
-    return m_sprite != 0;
-}
 
-// ===========================================================================
-// 0x10bbe0 - getter: return +0x4cc when +0x528 is clear; else the active cell
-// (+0x534[+0x52c]) when the +0x538 count exceeds the index, else 0. __thiscall.
-// ===========================================================================
-RVA(0x0010bbe0, 0x34)
-i32 C10bbe0::M() {
-    if (m_528 == 0) {
-        return m_fallback;
-    }
-    if (m_count > 0 && m_count > m_index) {
-        return *m_entries[m_index];
-    }
-    return 0;
-}
 
-// ===========================================================================
-// 0x112bf0 - decrement the active grid cell (manager-owned plane) and re-publish
-// it through the manager's +0x70 notifier (0x33f0). __thiscall, returns 1.
-// ===========================================================================
-// @early-stop
-// strength-reduction wall: cl materializes m_row<<2 (shl ecx,2) and reuses scale-1
-// addressing; retail keeps m_row in ecx and uses *4 scaled addressing in both cell
-// stores. Logic/offsets byte-faithful; the shift vs scaled-index pick is not steerable.
-RVA(0x00112bf0, 0x5e)
-i32 C112bf0::M() {
-    CGameRegistry* mg = g_mgrSettings;
-    CGridData* g = ((CGridOuter*)mg->m_world)->m_24->m_5c;
-    i32 v = g->cells[g->rows[m_row] + m_col] - 1;
-    CGridData* g2 = ((CGridOuter*)mg->m_world)->m_24->m_5c;
-    g2->cells[g2->rows[m_row] + m_col] = v;
-    ((CBrickzGrid*)mg->m_tileGrid)->ComputeCellFlags(m_col, m_row, v);
-    m_14 = 0;
-    return 1;
-}
 
 // (0x113860 Gate113860 re-homed to src/Gruntz/TileTriggerContainer.cpp - the
 // __stdcall mode-gate helper SerializeApplyA / CTileTriggerFactory::Build call.)

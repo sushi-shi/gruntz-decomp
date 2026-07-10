@@ -460,6 +460,15 @@ i32 CSaveGame::CheckMagic() {
 }
 
 // ---------------------------------------------------------------------------
+// CSaveGame::SetMagic  (0x000e56b0) - stamp the save-header magic 0x42a at +0x20.
+// Spatially re-homed from src/Stub/BoundaryLowerThunks.cpp (was CSettere56b0::Set);
+// dissolved onto CSaveGame (m_magic@+0x20 is the field CheckMagic reads).
+RVA(0x000e56b0, 0x8)
+void CSaveGame::SetMagic() {
+    m_magic = 0x42a;
+}
+
+// ---------------------------------------------------------------------------
 // TempFileExists  (0x000e5700) - probe whether the record's flagged temp file
 // can be opened for read: if bit0 is set and the path opens, close it and return
 // 1, else 0. Free __cdecl helper (caller cleans the argument).

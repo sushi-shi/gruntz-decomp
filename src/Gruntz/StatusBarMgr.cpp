@@ -76,6 +76,28 @@ void CSbConfigItem::SetDirection(i32 a, i32 b) {
     }
 }
 
+// ---------------------------------------------------------------------------
+// 0x0ea170 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). The mirror
+// sibling of SetDirection: the same four ApplyDir (+0x38 virtual, slot 14) tuples,
+// re-keyed on (a1,a2). RTTI-confirmed CSbConfigItem (slots 0-13 + ApplyDir @+0x38
+// match); the Views.h Cea170 placeholder dissolved onto the canonical class.
+RVA(0x000ea170, 0x5c)
+void CSbConfigItem::SetDirectionAlt(i32 a1, i32 a2) {
+    if (a1 == 0) {
+        if (a2 == 0) {
+            ApplyDir(1, -1, 0, 0, -1);
+        } else {
+            ApplyDir(-1, -1, -1, 0, -1);
+        }
+    } else {
+        if (a2 == 0) {
+            ApplyDir(4, -1, 0, 0, -1);
+        } else {
+            ApplyDir(-1, -1, 1, 0, -1);
+        }
+    }
+}
+
 // ===========================================================================
 // CStatusBarMgr::LoadTabSprites  @0x102250
 // ===========================================================================

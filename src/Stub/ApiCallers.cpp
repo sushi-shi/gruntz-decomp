@@ -83,7 +83,6 @@ namespace ApiCallerStubs {
     struct ThisStubOwner {
         i32 winapi_015fe0_SendMessageA(i32);
         i32 winapi_0c7ec0_timeGetTime(i32, i32, i32);
-        i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
         i32 winapi_0ecc90_IntersectRect();
         i32 winapi_0ed9f0_PtInRect();
         i32 winapi_0f0e20_IntersectRect_PtInRect();
@@ -213,109 +212,6 @@ namespace ApiCallerStubs {
 
     // (0x8c380 RectHost::Set re-homed to ApiMisc in src/Gruntz/ApiMiscHelpers.cpp.)
 
-    // The shared caption buffer (DAT_0060aac8) passed as the MessageBoxA title.
-    DATA(0x0020aac8)
-    extern char g_msgCaption[];
-    struct Poly08 { // real polymorphic; Slot28 is slot 10 (+0x28)
-        virtual void Slot00();
-        virtual void Slot01();
-        virtual void Slot02();
-        virtual void Slot03();
-        virtual void Slot04();
-        virtual void Slot05();
-        virtual void Slot06();
-        virtual void Slot07();
-        virtual void Slot08();
-        virtual void Slot09();
-        virtual void __stdcall Slot28(); // slot 10 (+0x28)
-    };
-    struct AudioSub_08ee70 {
-        char m_pad0[0x14];
-        i32 m_14; // +0x14 = audio handle
-    };
-    // An audio-ish sub-object: +0x4 -> sub whose [+0x14] is a handle for Stop_158c70,
-    // +0x1c -> a Poly08* (the actual object pointer) whose vtable slot +0x28 runs.
-    struct AudioObj_08ee70 {
-        char m_pad0[4];
-        AudioSub_08ee70* m_4; // +0x04 (its [+0x14] is the audio handle)
-        char m_pad8[0x1c - 8];
-        Poly08** m_1c; // +0x1c
-    };
-    struct MsgWnd_08ee70 {
-        char m_pad0[4];
-        HWND m_4; // +0x04 -> HWND
-    };
-    struct MsgHost_08ee70 {
-        char m_pad0[4];
-        MsgWnd_08ee70* m_4; // +0x04
-        char m_pad8[0x30 - 8];
-        AudioObj_08ee70* m_30; // +0x30
-        i32 Show(i32 text, i32 type);
-    };
-    // Pause audio (slot 0x28), force the cursor visible, MessageBoxA, then hide it.
-    void __stdcall Stop_158c70(i32 handle); // RVA 0x158c70
-    // @early-stop
-    // regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
-    // body byte-exact, but every value-holding register is rotated vs retail - the
-    // `m_30->m_4->m_14` chain (ecx/eax vs our eax/ecx), the `*m_30->m_1c; ->vtbl
-    // ->Slot28(p)` dispatch (container ecx + vtbl edx vs our edx + ecx) and the
-    // MessageBoxA arg setup all carry the same global re-colouring. Same
-    // instructions, swapped registers; not source-steerable (~98.5%).
-    RVA(0x0008ee70, 0x7c)
-    i32 MsgHost_08ee70::Show(i32 text, i32 type) {
-        if (m_30) {
-            Stop_158c70(m_30->m_4->m_14);
-            Poly08* p = *m_30->m_1c;
-            p->Slot28();
-        }
-        i32 wasShown = ShowCursor(1);
-        while (ShowCursor(1) < 0) {
-        }
-        i32 result = MessageBoxA(m_4->m_4, (LPCSTR)text, g_msgCaption, type);
-        if (wasShown <= 0) {
-            while (ShowCursor(0) >= 0) {
-            }
-        }
-        return result;
-    }
-
-    // A polymorphic mode object whose slot 4 (+0x10) returns the current mode.
-    struct ModeObj_08f480 {
-        virtual void v0();
-        virtual void v1();
-        virtual void v2();
-        virtual void v3();
-        virtual i32 GetMode(); // slot 4 == vtable +0x10
-    };
-    struct WndChain_08f480 {
-        char m_pad0[4];
-        HWND m_4; // +0x04
-    };
-    struct Sub_08f480 {
-        void Reset(); // thiscall, RVA 0x1b9c69 (on this+0xc8)
-    };
-    struct ModeHost_08f480 {
-        char m_pad0[4];
-        WndChain_08f480* m_4; // +0x04
-        char m_pad8[0x2c - 8];
-        ModeObj_08f480* m_2c; // +0x2c
-        char m_pad30[0xc8 - 0x30];
-        Sub_08f480 m_c8; // +0xc8
-        i32 Notify();
-    };
-    // __thiscall(): if the mode is 2/3/5, reset and post a 0x8005 command. Returns 1.
-    // @orphan: no direct rel32 caller (reached only as a data/command-table slot) -
-    // owning class of the +0x2c mode object unrecovered.
-    RVA(0x0008f480, 0x49)
-    i32 ModeHost_08f480::Notify() {
-        i32 mode = m_2c->GetMode();
-        if (mode == 5 || mode == 2 || mode == 3) {
-            m_c8.Reset();
-            PostMessageA(m_4->m_4, 0x111, 0x8005, 0);
-            return 1;
-        }
-        return 0;
-    }
 
     // (0x90220 Post re-homed to src/Gruntz/GruntzMgr.cpp as the real CGruntzMgr::Post -
     // the WM_COMMAND 0x807f advance dispatch on the game-manager singleton (reached by
@@ -378,76 +274,11 @@ namespace ApiCallerStubs {
     // src/Gruntz/LevelPreview.cpp (PreviewCancelHost) - the preview-cancel
     // command host CPreviewState::Tick / LoadLevelPreviewScreen drive.)
 
-    DATA(0x0024c86c)
-    extern i32 g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
-    DATA(0x00213a9c)
-    extern i32 g_dlgSel613a9c;                                    // DAT_00613a9c
-    i32 __cdecl DlgFallback_1302(HWND hDlg, i32 wParam, i32 cur); // RVA 0x1302
-    void __cdecl DlgInit_2e05(HWND hDlg, i32 v);                  // RVA 0x2e05
-    // __stdcall DlgProc(hDlg, msg, wParam, lParam).
-    RVA(0x000e35f0, 0x77)
-    i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-        switch (msg) {
-            case 0x111:
-                if (wParam == 2) {
-                    EndDialog(hDlg, 0);
-                    return 1;
-                }
-                if (DlgFallback_1302(hDlg, wParam, g_dlg64c86c) != 0) {
-                    return 1;
-                }
-                // falls through to the shared "return 0" default
-            default:
-                return 0;
-            case 0x110: {
-                i32 v = (i32)g_gameReg->m_saveSink;
-                g_dlgSel613a9c = -1;
-                g_dlg64c86c = v;
-                DlgInit_2e05(hDlg, v);
-                return 1;
-            }
-        }
-    }
-
     // SetDlgItemTextA helper defined below (RVA 0xe4850, reached via thunk 0x103c).
     void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
     // The optional info-line text shown on WM_INITDIALOG (DAT_0064c864).
     DATA(0x0024c864)
     extern char* g_dlgInfoText;
-
-    // The gameReg->m_58 dialog helper sub-object; its M1834/M2d97 thunks live in
-    // this TU. (m_58 is reused elsewhere as an int/void* gate, so cast locally.)
-    struct DlgSub58_0e3a40 {
-        // M1834 IS CloseTempFile_e5550 free fn; call it.
-        // M2d97 IS CSaveGame::Save; cast at the call.
-    };
-    // The SetDlgItemTextA helper (RVA 0xe4850) is reached here via thunk 0x103c.
-    // __stdcall DialogProc: OK closes; Cancel runs the helper sub-object; init fills.
-    RVA(0x000e3a40, 0xb0)
-    i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-        switch (msg) {
-            case 0x110:
-                if (g_dlgInfoText == 0) {
-                    EndDialog(hDlg, (INT_PTR)g_dlgInfoText);
-                    return 1;
-                }
-                winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_dlgInfoText);
-                return 1;
-            case 0x111:
-                if (wParam == 2) {
-                    EndDialog(hDlg, 0);
-                    return 1;
-                }
-                if (wParam == 1) {
-                    CloseTempFile_e5550((SaveTempRec*)g_dlgInfoText);
-                    ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
-                    EndDialog(hDlg, 1);
-                    return 1;
-                }
-                break;
-        }
-        return 0;
-    }
 
     // __stdcall DialogProc: OK/Cancel close the dialog; WM_INITDIALOG fills a line.
     RVA(0x000e3b20, 0x86)
@@ -491,32 +322,6 @@ namespace ApiCallerStubs {
                 }
                 break;
         }
-        return 0;
-    }
-
-    // __cdecl: SetDlgItemTextA(hWnd, 0x40d, &item->text) when all ptrs non-null.
-    RVA(0x000e4850, 0x29)
-    void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
-        if (hWnd && gate && item) {
-            SetDlgItemTextA(hWnd, 0x40d, item + 0x14);
-        }
-    }
-
-    // @confidence: low
-    // @source: winapi:SetRect
-    // @early-stop
-    // stub artifact wins: the tiny stub's push/pop-4 + `ret 0x28` epilogue
-    // coincidentally aligns with the target's fail-tail, so objdiff (base-length
-    // normalized) scores it ~86%. A faithful full-body reconstruction (GameView
-    // ::Init, __thiscall(a0..a9): geometry stash + mgr-alloc + 3 bounded map
-    // lookups + SetRect) reaches only ~42%: target keeps 4 callee-saved regs and
-    // reuses the dead incoming-arg slots as SetRect/lookup scratch, while cl
-    // spills a fresh `sub esp,0x10` RECT frame + drops ebp - a uniform frame
-    // shift that mismatches every [esp+X] operand. Frame/regalloc wall; the 86%
-    // artifact stub is kept so as not to regress the headline.
-    // proximity: CFileIO@-0x920 | CSBI_WellGoo@+0x360
-    RVA(0x000e6020, 0x288)
-    i32 ThisStubOwner::winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
         return 0;
     }
 

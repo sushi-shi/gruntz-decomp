@@ -5,7 +5,9 @@
 // Offsets + code bytes are load-bearing; field/class names are best-guess placeholders.
 #include <Bute/SymParser.h>
 #include <Mfc.h>
-#include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (m_levelData->m_ready)
+#include <DDrawMgr/DDrawSubMgrPages.h>  // canonical CDDrawSubMgrPages (m_levelData->m_ready)
+#include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (m_backPair/m_frontPair->m_surface); 0xfaec0
+#include <DDrawMgr/DDSurface.h>        // CDDSurface::ShadeRect/Flip (0xfaec0 present path)
 #include <Gruntz/GruntzMgr.h>     // canonical CGruntzMgr (game-manager singleton; one true shape)
 #include <Gruntz/SerialArchive.h> // the ONE shared archive stream (Read@+0x2c / Write@+0x30)
 #include <Ints.h>
@@ -118,6 +120,36 @@ struct CMgrPersistObj {
     i32 Save(CSerialArchive* w);
     i32 Init(); // 0xface0
 };
+
+// -------------------------------------------------------------------------
+// 0x0faec0 (spatially re-homed from src/Stub/ReconBatch2.cpp). Per-frame
+// present/refresh of the bound view: if the suppress latch is set, clear it and
+// return; else Refresh the back pair, ShadeRect the back surface with arg0, Flip
+// the front surface, then Refresh again. @orphan: reached from CGruntzMgr::
+// RunModalDialog/ExitModalUI on an unidentified modal-UI presenter object.
+extern i32 g_suppress_64e360; // DAT_0064e360 (present-suppress latch; Globals.h)
+struct Mid_faec0 {
+    char m_pad0[0x4];
+    CDDrawSubMgrPages* m_4; // +0x04
+};
+struct PresentHost_faec0 { // owner unidentified (only inbound edge: ILT thunk 0x1ec9)
+    char m_pad0[0xc];
+    Mid_faec0* m_c; // +0x0c
+    void Present(i32 arg0);
+};
+RVA(0x000faec0, 0x67)
+void PresentHost_faec0::Present(i32 arg0) {
+    if (g_suppress_64e360 != 0) {
+        g_suppress_64e360 = 0;
+        return;
+    }
+    m_c->m_4->Method_158c70(m_c->m_4->m_backPair);
+    m_c->m_4->m_backPair->m_surface->ShadeRect(arg0, (RECT*)0);
+    m_c->m_4->m_frontPair->m_surface->Flip((CDDSurface*)0);
+    m_c->m_4->Method_158c70(m_c->m_4->m_backPair);
+}
+SIZE_UNKNOWN(Mid_faec0);
+SIZE_UNKNOWN(PresentHost_faec0);
 
 // CMgrPersistObj::Save: gate on the writer + the settings singleton, then
 // stream every persisted field through the writer's Write(buf,len) virtual.

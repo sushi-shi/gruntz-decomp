@@ -16,10 +16,11 @@
 #include <Io/FileStream.h>
 #include <rva.h>
 
-// The engine's ONE static MFC CFile instance at 0x646778: a concrete CFileIO global
-// (canonical DATA owned by BoundaryLowerThunks.cpp). Referenced here for its Open
+// The engine's ONE static MFC CFile instance at 0x646778: a concrete CFileIO global.
+// Canonical DATA pin now lives here (CFileIO's own TU); referenced for its Open
 // (0x1bf200 == CFile::Open) + Close (0x1bf426 == CFile::Close); on this concrete-typed
 // global both devirtualize to direct, reloc-masked calls.
+DATA(0x00246778)
 extern CFileIO g_obj646778;
 
 // CFileIO::ReopenSharedFile - reopen the shared file object around a close. Ignores
@@ -34,6 +35,15 @@ void CFileIO::ReopenSharedFile(char* path) {
     g_obj646778.Open(path, 0x1000, 0);
     g_obj646778.Close();
     g_obj646778.Open(path, 1, 0);
+}
+
+// -------------------------------------------------------------------------
+// 0x0bd430 (spatially re-homed from src/Stub/BoundaryLowerThunks.cpp). Tail-
+// forward CFile::Close (0x1bf426) onto the static CFileIO global, devirtualized
+// on the concrete-typed global.
+RVA(0x000bd430, 0xa)
+void CloseFileIOGlobal() {
+    g_obj646778.Close();
 }
 
 // Class-metadata (CFileIO / CFileIODispatch) lives atop their decls in FileStream.h.

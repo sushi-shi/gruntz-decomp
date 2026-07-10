@@ -16,6 +16,7 @@
 #include <Image/ImagePool.h>  // the canonical CImagePool (g_previewMgr; AddSurfaceOp)
 #include <Image/Image.h>      // CRezImage (g_previewImage; the DIB StretchDIBits reads)
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_owner res-module handle, m_saveSink)
+#include <Io/SaveGame.h>         // canonical CSaveGame (Save @0x0e4ea0, the save-confirm sink)
 #include <string.h>           // strrchr/strchr (out-of-line) + strcat (inline /Oi)
 
 #include <rva.h>
@@ -26,6 +27,15 @@ DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 DATA(0x0064c864)
 extern i32 g_slotState;
+
+// Re-homed (spatial home) from src/Stub/ApiCallers.cpp: the save-confirm dialog
+// procedure @0x0e3a40 and its SetDlgItemTextA helper @0x0e4850. g_dlgInfoText
+// (DAT_0064c864 info-line text) stays pinned in ApiCallers; reloc-masked extern here.
+extern char* g_dlgInfoText;
+struct SaveTempRec; // temp save-record freed by CloseTempFile_e5550 (0x0e5550)
+i32 __stdcall CloseTempFile_e5550(SaveTempRec* r);
+// The SetDlgItemTextA helper (RVA 0x0e4850) defined below; 0x0e3a40 reaches it via thunk 0x103c.
+void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
 
 // Defined below (same TU); the WM_INITDIALOG path calls it on the fresh preview mgr.
 void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev);
@@ -125,6 +135,36 @@ i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
     return 0;
 }
 
+// -------------------------------------------------------------------------
+// 0x0e3a40 (spatially re-homed from src/Stub/ApiCallers.cpp). __stdcall dialog
+// proc: OK closes; Cancel runs the save-confirm sub-object (CloseTempFile then
+// CSaveGame::Save); WM_INITDIALOG fills the info line via the 0x0e4850 helper.
+RVA(0x000e3a40, 0xb0)
+i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case 0x110:
+            if (g_dlgInfoText == 0) {
+                EndDialog(hDlg, (INT_PTR)g_dlgInfoText);
+                return 1;
+            }
+            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_dlgInfoText);
+            return 1;
+        case 0x111:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                CloseTempFile_e5550((SaveTempRec*)g_dlgInfoText);
+                ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
+                EndDialog(hDlg, 1);
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
+
 // The 11-entry area-name table (questz "Stage %d of <area>"). An array of char*
 // indexed by (level-1)/4; modeled by-address so the load is reloc-masked.
 
@@ -214,5 +254,15 @@ void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
             g_previewImage = g_previewMgr->AddSurfaceOp(&readBuf[0xe], 2, 0);
             SetDlgItemTextA(hDlg, 0x4b3, title);
         }
+    }
+}
+
+// -------------------------------------------------------------------------
+// 0x0e4850 (spatially re-homed from src/Stub/ApiCallers.cpp). __cdecl helper:
+// SetDlgItemTextA(hWnd, 0x40d, &item->text) when all three pointers are non-null.
+RVA(0x000e4850, 0x29)
+void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
+    if (hWnd && gate && item) {
+        SetDlgItemTextA(hWnd, 0x40d, item + 0x14);
     }
 }

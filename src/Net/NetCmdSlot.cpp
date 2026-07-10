@@ -109,6 +109,56 @@ void CNetCmdSlot::ResetAll() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x0c0c20 (spatially re-homed from src/Stub/Cluster0c.cpp). Field-init of an
+// unidentified per-session net object (called by CNetMgr::AckDropPlayer /
+// CNetSession::Reset / CLobbySync::Reconcile): zero a span of members, then
+// construct the two embedded sub-objects at +0x4c/+0x58. @orphan (class identity
+// unrecovered; its Cleanup sibling homes to MultiStartDlgRoster.cpp).
+// @early-stop
+// regalloc tie-break wall (~71%): logic byte-identical, but retail rematerializes
+// the zero constant in eax while cl hoists 0 into a callee-saved edi across the
+// Init12e0 call; a cl-build heuristic delta, not a source shape.
+struct CNetThing; // +0x60 owned child (dtor 0xc5280, in src/Net/NetThingDtor.cpp)
+struct CCluster0c {
+    char pad00[4];
+    int m_04; // +0x04
+    int m_08; // +0x08
+    char pad0c[0x10 - 0x0c];
+    int m_10; // +0x10
+    int m_14; // +0x14
+    int m_18; // +0x18
+    char pad1c[0x3c - 0x1c];
+    int m_3c;               // +0x3c
+    int m_40;               // +0x40
+    int m_44;               // +0x44
+    int m_48;               // +0x48
+    char m_4c[0x58 - 0x4c]; // +0x4c sub-object
+    char m_58[0x60 - 0x58]; // +0x58 sub-object
+    CNetThing* m_60;        // +0x60 owned child
+
+    void Init12e0();        // 0xc12e0
+    void Init10a0(void* p); // 0xc10a0
+
+    void Init(); // 0xc0c20
+};
+RVA(0x000c0c20, 0x3f)
+void CCluster0c::Init() {
+    m_04 = 0;
+    m_08 = 0;
+    m_10 = 0;
+    m_14 = 0;
+    m_18 = 0;
+    Init12e0();
+    m_3c = 0;
+    m_40 = 0;
+    m_44 = 0;
+    m_48 = 0;
+    Init10a0(&m_4c);
+    Init10a0(&m_58);
+}
+SIZE_UNKNOWN(CCluster0c);
+
+// ---------------------------------------------------------------------------
 // CNetCmdSlot::ProcessCmd (0x0c0c70, __thiscall) - parse one incoming command
 // record (opcode + parity prefix, a fixed header, then a per-entry payload).
 // Bit 7 relays the record straight to the net manager. Even/odd records gate on

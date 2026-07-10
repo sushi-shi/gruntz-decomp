@@ -2438,6 +2438,39 @@ i32 CPlay::ResumeGame() {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// 0x0cef50 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). Teardown:
+// destruct the +0x04 owner's +0xc8 CObList; when +0x1c0 is live, run the +0x0c
+// worker-mgr close (Method_158d20 -> Method_158e40) and dispatch the manager's
+// ChangeState(3). Returns 1. Uses this TU's real CDDrawSubMgrPages/CGruntzMgr/
+// CObList; only the receiver + its +0x0c holder are orphan views (owner unrecovered).
+struct CMid_cef50 {
+    char pad0[4];
+    CDDrawSubMgrPages* m_4; // +0x04 the worker manager (Method_158d20/158e40)
+};
+struct Ccef50 {
+    char pad0[4];
+    char* m_4; // +0x04 owner (its +0xc8 CObList + a CGruntzMgr view)
+    char pad8[0xc - 8];
+    CMid_cef50* m_c; // +0x0c
+    char pad10[0x1c0 - 0x10];
+    i32 m_1c0; // +0x1c0
+    i32 Teardown();
+};
+RVA(0x000cef50, 0x46)
+i32 Ccef50::Teardown() {
+    ((CObList*)(m_4 + 0xc8))->~CObList();
+    if (m_1c0 != 0) {
+        if (m_c->m_4->Method_158d20() != 0) {
+            m_c->m_4->Method_158e40();
+        }
+        ((CGruntzMgr*)m_4)->ChangeState_8fab0(3);
+    }
+    return 1;
+}
+SIZE_UNKNOWN(CMid_cef50);
+SIZE_UNKNOWN(Ccef50);
+
 // CPlay::Vslot15 (0x0cfbd0) - vtable slot 21 (override of CState), the level-quiesce
 // dispatch. On level index 0x20: latch the quiesce flags (m_1c0/m_40), stop the current
 // zoned sound stream (m_c->m_28->m_2c, SoundStream::Stop) + flush the sound bank
@@ -3104,6 +3137,53 @@ i32 CPlay::LoadLevelSounds(i32 force) {
     ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->ScanTree_157ee0((DirNode*)sounds, "LEVEL", "_");
     return 1;
 }
+
+// ---------------------------------------------------------------------------
+// 0x0db750 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). "LEVEL"
+// config sync through the +0x0c owner's +0x2c config leaf (the 0x152xxx registry
+// API - distinct from this TU's 0x157xxx CDDrawSubMgrLeafScan). @orphan (owner
+// unrecovered; the 0x152xxx leaf + symtab kept as unique local views).
+struct Cdb750Cfg {
+    i32 HasKeyPrefix_152c50(const char* key);                   // 0x152c50 (ret != 0 tested)
+    i32 RemoveKeysEqual_1527d0(const char* key, const char* v); // 0x1527d0
+    void ScanTree_152ad0(void* val, const char* key, void* v);  // 0x152ad0
+};
+struct CHolder_db750 {
+    char pad0[0x2c];
+    Cdb750Cfg* m_2c; // +0x2c
+};
+struct Cdb750SymTab {
+    void* ResolvePath(const char* arg); // 0x13bae0
+};
+struct Cdb750 {
+    char pad0[0xc];
+    CHolder_db750* m_c; // +0x0c
+    char pad10[0x28 - 0x10];
+    Cdb750SymTab* m_28; // +0x28
+    i32 SyncLevelKey(void* arg);
+};
+RVA(0x000db750, 0x70)
+i32 Cdb750::SyncLevelKey(void* arg) {
+    if (m_c == 0) {
+        return 0;
+    }
+    if (arg == 0) {
+        if (m_c->m_2c->HasKeyPrefix_152c50("LEVEL") != 0) {
+            return 1;
+        }
+    }
+    m_c->m_2c->RemoveKeysEqual_1527d0("LEVEL", (const char*)&g_dat60b588);
+    void* e = m_28->ResolvePath((const char*)&g_dat613054);
+    if (e == 0) {
+        return 0;
+    }
+    m_c->m_2c->ScanTree_152ad0(e, "LEVEL", &g_dat60b588);
+    return 1;
+}
+SIZE_UNKNOWN(Cdb750Cfg);
+SIZE_UNKNOWN(CHolder_db750);
+SIZE_UNKNOWN(Cdb750SymTab);
+SIZE_UNKNOWN(Cdb750);
 
 // LoadLevelImages (0x0db7e0) - sibling of LoadActionTileSprites; a single Register
 // (LEVEL), then install the level's IMAGEZ set through the +0x48 virtual slot.
