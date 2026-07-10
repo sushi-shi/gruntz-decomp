@@ -1001,12 +1001,11 @@ void CShadeTableArray::Serialize(CArchive& arc) {
 // out-of-line). RezFreeEh kept C++-linkage (potentially-throwing) so cl keeps the /GX
 // base-subobject unwind frame (the extern "C" RezFree above is treated non-throwing).
 void RezFreeEh(void* p); // 0x1b9b82 (C++ linkage; reloc-masked)
-struct Sev14fe30 {
-    virtual ~Sev14fe30();
-};
-SIZE_UNKNOWN(Sev14fe30);
-inline Sev14fe30::~Sev14fe30() {}
-struct C14fe30 : Sev14fe30 {
+// Grand-base fold @0x14fe71 is the REAL ??_7CObject (0x5e8cb4, disasm-verified) - the
+// same CObject base the canonical CShadeTableArray carries - so C14fe30 derives from
+// the real CObject (no Sev shell). (Still a distinct placeholder identity: name-
+// injectivity forbids a 2nd ??1CShadeTableArray at 0x14fe30 - one-source/N-COMDAT wall.)
+struct C14fe30 : CObject {
     char* m_4; // +0x4
     virtual ~C14fe30() OVERRIDE;
 };

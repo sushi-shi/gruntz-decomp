@@ -5,6 +5,7 @@
 // src/Stub/BoundaryUpperEh.cpp (matcher-2). Only OFFSETS + code shape are load-bearing.
 #include <rva.h>
 
+#include <Mfc.h> // CObject grand-base (folds ??_7CObject @0x5e8cb4)
 #include <Ints.h>
 #include <DDrawMgr/DDrawBlitParam.h> // Reset_15c2c0 (0x15c2c0; reloc-masked)
 
@@ -15,12 +16,10 @@
 // CAniAdvanceCursor (aniadvancecursor unit) has an INLINE dtor, so this out-of-line ??1
 // can't be it (inline XOR out-of-line). 0x5f0128 == ??_7CAniAdvanceCursor (bound by
 // VTBL in <Gruntz/AniAdvanceCursor.h>).
-struct Sev15b6d0 {
-    virtual ~Sev15b6d0();
-};
-SIZE_UNKNOWN(Sev15b6d0);
-inline Sev15b6d0::~Sev15b6d0() {}
-struct C15b6d0 : Sev15b6d0 {
+// Grand-base fold @0x15b71b is the REAL ??_7CObject (0x5e8cb4, disasm-verified) - so
+// C15b6d0 derives from the real CObject (no Sev shell). Distinct placeholder identity
+// kept: name-injectivity forbids a 2nd ??1CAniAdvanceCursor (one-source/N-COMDAT wall).
+struct C15b6d0 : CObject {
     i32 m_4; // +0x4
     i32 m_8; // +0x8
     i32 m_c; // +0xc

@@ -5,6 +5,7 @@
 // (matcher-2). Only OFFSETS + code shape are load-bearing.
 #include <rva.h>
 
+#include <Mfc.h> // CObject grand-base (folds ??_7CObject @0x5e8cb4)
 #include <Ints.h>
 
 // The Rez heap free (0x1b9b82). C++ linkage (NOT extern "C") so cl treats it as
@@ -17,12 +18,10 @@ void RezFree(void* p);
 // needs its CLoadable base modeled as a non-trivial subobject to emit the EH frame
 // (the deferred archetype on CDDrawSurfacePair::~). 0x5f0228 == ??_7CImageSet3
 // (bound by VTBL in GameLevel.cpp).
-struct Sev161500 {
-    virtual ~Sev161500();
-};
-SIZE_UNKNOWN(Sev161500);
-inline Sev161500::~Sev161500() {}
-struct C161500 : Sev161500 {
+// Grand-base fold @0x161548 is the REAL ??_7CObject (0x5e8cb4, disasm-verified) - so
+// C161500 derives from the real CObject (no Sev shell). Distinct placeholder identity
+// kept: name-injectivity forbids a 2nd ??1CImageSet3 (one-source/N-COMDAT wall).
+struct C161500 : CObject {
     char _4[0x14 - 0x4];
     char* m_14; // +0x14  pixel buffer
     virtual ~C161500() OVERRIDE;

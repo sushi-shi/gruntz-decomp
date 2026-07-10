@@ -35,13 +35,10 @@ CWwdGrid::~CWwdGrid() {
 // 0x168c10 - a SECOND, un-COMDAT-folded copy of ~CWwdGrid (byte-identical to 0x1682a0:
 // stamp 0x5f0328, FreeBuckets, fold CObject) that retail emitted from a different TU
 // (MSVC5 has no ICF). Co-located with CWwdGrid; kept a distinct placeholder identity
-// (C168c10) because name-injectivity forbids two CWwdGrid::~CWwdGrid at two RVAs.
-struct Sev168c10 {
-    virtual ~Sev168c10();
-};
-SIZE_UNKNOWN(Sev168c10);
-inline Sev168c10::~Sev168c10() {}
-struct C168c10 : Sev168c10 {
+// (C168c10) because name-injectivity forbids two CWwdGrid::~CWwdGrid at two RVAs
+// (one-source/N-COMDAT wall). The grand-base fold @0x168c44 is the REAL ??_7CObject
+// (0x5e8cb4, disasm-verified), so C168c10 derives from the real CObject - no Sev shell.
+struct C168c10 : CObject {
     virtual ~C168c10() OVERRIDE;
 };
 SIZE_UNKNOWN(C168c10);
