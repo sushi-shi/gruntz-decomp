@@ -63,6 +63,76 @@ CGruntzWnd::~CGruntzWnd() {
 }
 
 // -------------------------------------------------------------------------
+// PreDispatchMessage (slot 1) externs: the IAT-mirror imports (call ds:0x6c44a0/
+// 0x6c44a4), the NetLobby active-dialog HWND (0x64557c), and the empty ret-8
+// message hook (0x138940, unnamed - reloc-masked).
+extern "C" i32(WINAPI* g_pIsIconic)(HWND);                          // 0x006c44a0
+extern "C" i32(WINAPI* g_pSendMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x006c44a4
+extern HWND g_curDlg_64557c;                                        // 0x0064557c
+extern void __stdcall Sub_138940(WPARAM, LPARAM);                   // 0x138940 (empty hook)
+
+// -------------------------------------------------------------------------
+// CGruntzWnd::PreDispatchMessage (vtable slot 1). The window's pre-translate hook,
+// dispatched on three messages: WM_ERASEBKGND(0x14) is swallowed (1); WM_SYSCOMMAND
+// (0x112) blocks the screensaver / monitor-power sys-commands while the window is not
+// iconic and re-routes the rest to the active NetLobby dialog; the private 0x3b9 tick
+// pumps a manager PerFrameTick when the game manager + its sound chain are live. All
+// other messages fall through as not-handled here (0 = keep dispatching).
+// @early-stop
+// 73%: complete + correct logic/control-flow (the 3-message compare ladder aligns via
+// the switch form). Residual is a codegen-layout wall: (1) `this` lands in edi (retail
+// ebx), the msg-compare scheduled after the reg-saves not interleaved; (2) the default /
+// case-0x112 `return 0` blocks tail-merge differently (retail runs the 0x3b9 case as the
+// ladder fall-through with a shared ret-0, our cl emits the default ret-0 inline + jumps
+// into the 0x3b9 body). Not source-steerable (3 spellings + permuter no-change). On top,
+// the reloc-masked/plateau operands: the IAT-mirror calls (IsIconic/SendMessageA bare-
+// absolute ds slots), the g_curDlg DIR32, the unnamed empty-hook 0x138940 target.
+// topic:regalloc topic:tail-merge.
+RVA(0x00094790, 0xc2)
+i32 CGruntzWnd::PreDispatchMessage(UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+    case 0x14:
+        return 1;
+    case 0x112: {
+        if (wParam == 0xf100) {
+            return 1;
+        }
+        i32(WINAPI * isIconic)(HWND) = g_pIsIconic;
+        i32 mm = wParam & 0xfff0;
+        if (mm == 0xf140 || mm == 0xf170) {
+            if (!isIconic(m_hwnd)) {
+                return 1;
+            }
+        }
+        if (!isIconic(m_hwnd)) {
+            return 0;
+        }
+        if (g_curDlg_64557c == 0) {
+            return 0;
+        }
+        g_pSendMessageA(g_curDlg_64557c, 0x112, wParam, lParam);
+        return 0;
+    }
+    case 0x3b9: {
+        CGruntzMgr* mgr = GameMgr();
+        if (mgr == 0) {
+            return 1;
+        }
+        if (mgr->m_sound == 0) {
+            return 1;
+        }
+        Sub_138940(wParam, lParam);
+        if (wParam != 1) {
+            return 1;
+        }
+        GameMgr()->PerFrameTick();
+        return wParam;
+    }
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
 // CGruntzWnd::OnChar (WM_CHAR, vtable slot 8). Forwards (wParam, lParam) to the
 // game manager's per-state notifier.
 RVA(0x000948a0, 0x21)

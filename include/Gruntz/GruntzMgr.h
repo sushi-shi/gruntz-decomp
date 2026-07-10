@@ -270,6 +270,9 @@ public:
     i32 ResetWorldState(i32 notify); // @0x091e20 (idle/exit-prep the world, reset cursor)
     void StopBankIfActive();         // @0x092000 (if m_sound && m_14: m_sound->StopAll())
     void StopBank0IfActive();        // @0x092030 (if m_sound && m_14: m_sound->StopBank(0))
+    // @0x092060: set the global asset-root path CString (g_assetRoot @0x64e25c) and
+    // post WM_COMMAND 0x80ab to the game window; ret 1 (0 when path is null).
+    i32 SetAssetRoot(char* path);
     // Music-volume guards on the same m_sound/m_14 gate (BoundaryLowerMethods.cpp;
     // the former C915d0 view): fade the CURRENT bank to 0 / back to 100 over `ms`.
     void MuteMusicIfActive(i32 ms);          // @0x0915d0 (m_pCurrent->SetVolume(0, ms))

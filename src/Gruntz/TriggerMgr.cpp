@@ -347,6 +347,29 @@ void CTriggerMgr::Cleanup() {
     ClearSelections();
 }
 
+// 0x6bc20: DispatchCellForObject(obj, startRow, kind, arg) - scan the placed-object
+// grid (+0x1c) for the cell whose pointer == `obj` (startRow, or rows 0..3 when
+// startRow==5) and hand it to CellDispatch(row,col,kind,arg); ret 0 when not found.
+RVA(0x0006bc20, 0x6f)
+i32 CTriggerMgr::DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32 arg) {
+    i32 last;
+    if (startRow == 5) {
+        startRow = 0;
+        last = 3;
+    } else {
+        last = startRow;
+    }
+    for (i32 row = startRow; row <= last; row++) {
+        CTmCell** cell = &m_grid[row * 15];
+        for (i32 col = 0; col < 15; col++) {
+            if (cell[col] == obj) {
+                return CellDispatch(row, col, kind, arg);
+            }
+        }
+    }
+    return 0;
+}
+
 // 0x6bd40: ClearGridRange(startRow) - ResetAll, then for rows startRow..3 (5 = all)
 // flag each live cell's goal (+0x154) done and clear the cell, its parallel grid slot
 // (+0x11c) and the per-row state words (+0x10c/+0x20c/+0x21c); then ClearSelections.

@@ -633,6 +633,56 @@ struct CChatLog {
 // ON/OFF" into before logging it (reloc-masked DATA ref). The format helper is
 // the statically-linked CRT sprintf (FUN_0051f890; reloc-masked call).
 
+// The deferred per-frame pump flag (0x60fac8; otherwise-unnamed BSS int).
+DATA(0x0020fac8)
+extern i32 g_pendingFrame;
+
+// The game-manager singleton (*0x64556c) - the CGruntzMgr (MFC) view of the datum the
+// engine TUs see as CGameRegistry* g_mgrSettings; same _g_mgrSettings symbol.
+extern "C" CGruntzMgr* g_mgrSettings;
+
+// -------------------------------------------------------------------------
+// PumpIdleFrame (0x08b8c0; ret) - the deferred per-frame pump. When the pending flag is
+// set, clear it and, if the game manager + its world/lookup + live state are all up,
+// poll the state (InputVirtual): on idle (0) surface an idle error (0x8006/0x435) and
+// bail; else run PerFrameTick and re-arm the pending flag. A free function (reads the
+// singleton, no `this`).
+// @early-stop
+// 88%: complete + correct (structure/branches/singleton re-reads all aligned; PerFrameTick
+// called non-virtually). Residual is a pure regalloc coin-flip: retail pins the g_mgrSettings
+// pointer chain (mgr -> m_world / m_curState) in ecx so the InputVirtual thiscall's `this`
+// is already there; our cl pins it in eax and copies (`mov ecx,eax`) into the thiscall - a
+// base-register choice the permuter can't rewrite (operand-order only), whose eax<->ecx swap
+// ripples through the null-check chain. topic:regalloc.
+RVA(0x0008b8c0, 0x76)
+i32 PumpIdleFrame() {
+    if (g_pendingFrame == 0) {
+        return 0;
+    }
+    CGruntzMgr* mgr = g_mgrSettings;
+    g_pendingFrame = 0;
+    if (mgr == 0) {
+        return 0;
+    }
+    CWorldZ* world = mgr->m_world;
+    if (world == 0) {
+        return 0;
+    }
+    if (world->m_10 == 0) {
+        return 0;
+    }
+    if (mgr->m_curState == 0) {
+        return 0;
+    }
+    if (mgr->m_curState->InputVirtual() == 0) {
+        g_mgrSettings->ReportError(0x8006, 0x435);
+        return 0;
+    }
+    g_mgrSettings->CGruntzMgr::PerFrameTick();
+    g_pendingFrame = 1;
+    return 1;
+}
+
 // -------------------------------------------------------------------------
 // CGruntzMgr::GoToNextLevel (0x08d850; ret). Only when the live state is PLAY
 // (id 3): clears the world-file name, computes the next level index
@@ -2147,6 +2197,28 @@ void CGruntzMgr::StopBank0IfActive() {
     if (m_sound && m_musicEnabled) {
         m_sound->StopBank(0);
     }
+}
+
+// The global asset-root path CString (0x64e25c; SplashState.cpp's g_assetRoot binds
+// it, NetMgrMisc's g_netE25c is the same datum). SetAssetRoot assigns it and pokes
+// the game window.
+extern CString g_assetRoot;
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::SetAssetRoot (0x092060; ret 4). Copy `path` into the global asset-root
+// CString and post WM_COMMAND 0x80ab to the game window; ret 1 (0 when path is null).
+// @early-stop
+// reloc-masked PostMessageA IAT-absolute operand only (the 0x6c44c8 slot bakes no
+// symbol, same scoring artifact as the sibling PostSlot* posters); code bytes are
+// byte-exact (CString::operator= + the WM_COMMAND push chain).
+RVA(0x00092060, 0x3c)
+i32 CGruntzMgr::SetAssetRoot(char* path) {
+    if (path == 0) {
+        return 0;
+    }
+    g_assetRoot = path;
+    g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80ab, 0);
+    return 1;
 }
 
 // -------------------------------------------------------------------------

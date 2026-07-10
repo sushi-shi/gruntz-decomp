@@ -22,7 +22,10 @@
 #include <Gruntz/BankMgr.h>   // CBankMgr::Lookup (inherited m_8) -> CResSource
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
 #include <Gruntz/StatusBarUpdatersViews.h> // CRegHolder view of CState::m_c (m_04 page mgr)
-#include <Globals.h>                       // g_6111b0 (the RunTitleSeq title name buffer)
+#include <Gruntz/Attract.h> // CMenuRoot chain (m_c): Render's busy surface + attract registrar
+#include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
+#include <ddraw.h>             // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
+#include <Globals.h>           // g_6111b0 (RunTitleSeq title buffer) + g_actorList (Render)
 #include <rva.h>
 
 // The 11 overridden CState slots (vtbl@0x1e9dfc; the other slots inherited). The
@@ -63,6 +66,76 @@ i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
     m_4->m_gameWnd->PumpMessages(0x100, 0x40);
+    return 1;
+}
+
+// The per-frame attract-actor list (global DAT_00645574): m_count at +0x4, an inline
+// array of actor pointers at +0x8. Each actor's slot-4 (+0x10) is its per-frame Update;
+// its +0x2ac flags word raises an exit request. Same shape Attract.cpp models (the shared
+// g_actorList); TODO fold both views onto one shared header.
+class AttractActor {
+public:
+    virtual void Vslot00();
+    virtual void Vslot01();
+    virtual void Vslot02();
+    virtual void Vslot03();
+    virtual void Update(); // slot 4 (+0x10)
+    char m_pad04[0x2ac - 0x4];
+    i32 m_2ac; // +0x2ac flags
+};
+struct AttractActorList {
+    char m_pad00[0x4];
+    i32 m_count;             // +0x04
+    AttractActor* m_data[1]; // +0x08  inline pointer array
+};
+// The attract registrar's pooled resource: its Stop IS SoundDevice::PurgeVoiceList.
+class SoundDevice {
+public:
+    i32 PurgeVoiceList(i32 a);
+};
+
+// CHelpState::Render (0x951f0, slot 5) - the help/attract per-frame poll/draw: when the
+// menu page's busy surface reports idle AND the InputVirtual slot reports idle, report the
+// exit error (0x8006/0x445) and bail; else stop the registrar's pooled resource, run every
+// attract actor's Update(), and if any actor raised its flags post the exit WM_COMMAND
+// (0x8036) and clear the app run gate. Byte-identical to retail except reloc-masked
+// operands (ReportError bare label, PostMessageA IAT-absolute, PurgeVoiceList cross-unit);
+// same scoring-artifact plateau as the sibling CAttract::Render (docs/matching-patterns.md).
+// @early-stop
+// 99.89%: complete + correct. Residual is a regalloc coin-flip on the res-chain
+// intermediate register (retail `mov eax,[eax+0x28]; mov ecx,[eax+0x2c]`, our cl
+// `mov ecx,[eax+0x28]; mov ecx,[ecx+0x2c]` - same value, m_28 pinned in eax vs ecx;
+// permuter no-change) plus the reloc-masked IAT/cross-unit operands the sibling
+// CAttract::Render documents (ReportError/PostMessageA/PurgeVoiceList). topic:regalloc.
+RVA(0x000951f0, 0xeb)
+i32 CHelpState::Render() {
+    IDirectDrawSurface* busy = ((CMenuRoot*)m_c)->m_04->m_10->m_2c->m_8;
+    if (busy == 0 || busy->IsLost() != 0) {
+        if (InputVirtual() == 0) {
+            m_4->ReportError(0x8006, 0x445);
+            return 0;
+        }
+    }
+
+    CAttractPooledRes* res = ((CMenuRoot*)m_c)->m_28->m_2c;
+    if (res) {
+        ((SoundDevice*)res)->PurgeVoiceList(-1);
+    }
+
+    AttractActorList* list = g_actorList;
+    i32 i;
+    for (i = 0; i < list->m_count; i++) {
+        list->m_data[i]->Update();
+    }
+
+    i32 n = g_actorList->m_count;
+    for (i = 0; i < n; i++) {
+        if (g_actorList->m_data[i]->m_2ac & 0xffffff) {
+            PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
+            m_4->m_owner->m_running = 0;
+            return 1;
+        }
+    }
     return 1;
 }
 

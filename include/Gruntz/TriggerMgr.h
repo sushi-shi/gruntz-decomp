@@ -173,6 +173,11 @@ public:
     // the +0x240 MFC pointer list.
     void ClearRecords();
 
+    // 0x6bc20: scan the cell grid (+0x1c) for the cell pointer == `obj` (startRow, or
+    // rows 0..3 when startRow==5) and dispatch it via CellDispatch(row,col,kind,arg);
+    // ret 0 when `obj` is not placed. (callee-cleans: ret 0x10.)
+    i32 DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32 arg);
+
     // 0x6bcb0: grid-cell dispatch - looks up cell[row*15+col] (+0x1c) and, if it has
     // a +0x368 hook, runs this->NotifyCell(row,col,0) (ret 0); else routes by `kind`
     // to two cell helpers (ret 1). ret 0 when no cell. (callee-cleans: ret 0x10.)
