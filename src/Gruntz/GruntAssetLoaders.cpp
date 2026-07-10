@@ -97,7 +97,7 @@ static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 // and the entrance-cell frame re-stamp are byte-correct in shape/offsets/symbols/CFG.
 // Residue (compounded over 8 lookups): retail reuses the consumed `enable` arg slot as
 // the single lookup `out` local (esp+0x20, 21 refs) under a `sub esp,0xc` frame that
-// also spills a dead `reason=m_entranceCell[2]`, and SINKS each lookup's `out=0` store
+// also spills a dead `reason=m_entranceCell.reason`, and SINKS each lookup's `out=0` store
 // past the &out/key pushes; cl allocates a fresh out slot (esp+0x14, no frame) and
 // hoists the zero-init. Source-invariant (the documented Lookup-family scheduling
 // coin-flip); deferred to the final sweep. ~75%.
@@ -206,7 +206,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         CAniElement* desc = m_154->m_1b4;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
-        i32 idx = 3 * m_entranceCell[0] + m_entranceCell[1];
+        i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
         char* buf = GruntStrGetBuffer(&m_cells[idx].m_walk, 0);
         m_154->CacheFrame(buf, frame);
         return 1;
@@ -220,7 +220,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         CAniElement* desc = m_154->m_1b4;
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
-        i32 idx = 3 * m_entranceCell[0] + m_entranceCell[1];
+        i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
         char* buf = GruntStrGetBuffer(&m_cells[idx].m_idle, 0);
         m_154->CacheFrame(buf, frame);
     }

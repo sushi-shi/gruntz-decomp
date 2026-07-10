@@ -1625,7 +1625,7 @@ public:
     i32 m_430;             // +0x430
     i32 m_434;             // +0x434
     i32 m_438;             // +0x438
-    i32 m_entranceCell[3]; // +0x43c (entrance-cell triple: [0]=col, [1]=row, [2]=m_444 reason)
+    GruntEntranceCell m_entranceCell; // +0x43c (entrance-cell triple {col, row, reason})
     GruntStrSub m_448;     // +0x448 (~CString 0x1b9cde; destructed by ~CGrunt)
     char m_pad449[0x44c - 0x449];
     GruntStrSub m_44c; // +0x44c (~CString 0x1b9cde; destructed by ~CGrunt)

@@ -696,9 +696,9 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
     GRUNT_ZERO_TIMER_BAND(this);
 
     // Second-phase field inits (post CGrunt vptr restamp).
-    m_entranceCell[0] = g_gruntDefEntranceCell[0];
-    m_entranceCell[1] = g_gruntDefEntranceCell[1];
-    m_entranceCell[2] = g_gruntDefEntranceCell[2];
+    m_entranceCell.col = g_gruntDefEntranceCell[0];
+    m_entranceCell.row = g_gruntDefEntranceCell[1];
+    m_entranceCell.reason = g_gruntDefEntranceCell[2];
     m_434 = m_10->m_11c;
     m_438 = g_gruntCtor64558c;
     m_10->m_e4 = 1;
@@ -1127,9 +1127,9 @@ latch:
     // Rebuild the per-cell entrance key string + first frame. The cell is the
     // per-grunt triple {col,row,reason}, unless a non-default entrance reason
     // selects a preset triple.
-    i32 col = m_entranceCell[0];
-    i32 row = m_entranceCell[1];
-    i32 reason = m_entranceCell[2];
+    i32 col = m_entranceCell.col;
+    i32 row = m_entranceCell.row;
+    i32 reason = m_entranceCell.reason;
     if ((void*)m_154->m_1b4 != (void*)m_poseIdle[0]) {
         switch (reason) {
             case 2:
@@ -1347,15 +1347,13 @@ i32 CGrunt::StepEntranceReinit() {
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
     }
-    GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+    GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
     i32 base = cell.col + col;
-    i32 row = base * 3;
-    i32 idx = base + row * 4;
-    // idx == base*13, so idx*8 == base*0x68: MSVC's strength-reduced form of the
-    // &m_cells[base].m_walk address. Kept raw so cl re-emits the same lea chain
-    // (m_cells[base].m_walk would regenerate base*0x68 as an imul and diverge).
-    char* nm = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
+    // &m_cells[base].m_walk == this + base*0x68 + 0x470: cl strength-reduces base*0x68
+    // (sizeof CGruntCellRec) to the same lea chain the raw offset produced (verified
+    // byte-identical) - no imul, so the real member access is faithful.
+    char* nm = m_cells[base].m_walk.GetBuffer(0);
     m_154->CacheFirstFrame(nm);
     return 0;
 }
@@ -1397,12 +1395,10 @@ i32 CGrunt::RunEntranceMove() {
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
-        GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+        GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
-        i32 row = base * 3;
-        i32 idx = base + row * 4;
-        char* nm = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
+        char* nm = m_cells[base].m_walk.GetBuffer(0);
         m_154->CacheFirstFrame(nm);
     } else {
         ReseedIdleReset(1, 0, 0);
@@ -1771,9 +1767,9 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 // pixel position. Case groups are laid out so cl emits the distinct (tail-merged)
 // blocks in retail's .text order (docs/patterns/switch-cases-source-order.md).
 #define MV_VEC(V)                                                                                  \
-    m_entranceCell[0] = g_moveVec##V[0];                                                           \
-    m_entranceCell[1] = g_moveVec##V[1];                                                           \
-    m_entranceCell[2] = g_moveVec##V[2]
+    m_entranceCell.col = g_moveVec##V[0];                                                           \
+    m_entranceCell.row = g_moveVec##V[1];                                                           \
+    m_entranceCell.reason = g_moveVec##V[2]
 #define MV_N                                                                                       \
     MV_VEC(N);                                                                                     \
     m_lastTilePxY -= 0x10
@@ -2096,7 +2092,7 @@ i32 CGrunt::winapi_04a9f0_CopyRect_OffsetRect() {
 RVA(0x0004ac10, 0x402)
 void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
     (void)range;
-    if (CGrunt_IsSameType((CGrunt*)m_entranceCell, (CGrunt*)&rec)) {
+    if (CGrunt_IsSameType((CGrunt*)&m_entranceCell, (CGrunt*)&rec)) {
         return;
     }
 
@@ -2127,8 +2123,8 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
             CAniElement* desc = m_154->m_1b4;
             i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
             i32 frame = elem[0x14 / 4];
-            i32 col = m_entranceCell[0];
-            i32 row = m_entranceCell[1];
+            i32 col = m_entranceCell.col;
+            i32 row = m_entranceCell.row;
             i32 index = 3 * col + row;
             const char* nm = (const char*)((zDArray*)&m_cells[index])->IndexToPtr(0);
             m_154->CacheFrame(nm, frame);
@@ -2147,9 +2143,9 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
 codeI:
     // code "I": latch the record first, drive the IDLE2 geometry, reseed the idle
     // timer. Returns directly (no cell-frame stamp).
-    m_entranceCell[0] = rec.m_0;
-    m_entranceCell[1] = rec.m_4;
-    m_entranceCell[2] = rec.m_8;
+    m_entranceCell.col = rec.m_0;
+    m_entranceCell.row = rec.m_4;
+    m_entranceCell.reason = rec.m_8;
     m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(m_poseIdle[1]);
     ReseedIdleReset(1, 0, 0);
@@ -2186,9 +2182,9 @@ walk:
     }
 
 store:
-    m_entranceCell[0] = rec.m_0;
-    m_entranceCell[1] = rec.m_4;
-    m_entranceCell[2] = rec.m_8;
+    m_entranceCell.col = rec.m_0;
+    m_entranceCell.row = rec.m_4;
+    m_entranceCell.reason = rec.m_8;
 }
 
 // CGrunt::ClearAllSprites() @0x4b240 - on death/teardown, flag each live HUD
@@ -2353,7 +2349,7 @@ void CGrunt::SnapToLastTile(i32 a) {
 
 // ---------------------------------------------------------------------------
 // CGrunt::ClaimSwitchTile()   @0x52c70   (__thiscall, ret 0)
-// Pick a neighbour tile by the entrance-cell direction code (m_entranceCell[2],
+// Pick a neighbour tile by the entrance-cell direction code (m_entranceCell.reason,
 // 1..8 -> the 8 compass deltas; anything else keeps the current tile), test the
 // level board's occupancy flags there; if the tile is clear of the blocking bits
 // (0x20000939 / 0x80), apply the tile switch (tile mgr), move the occupancy record
@@ -2376,7 +2372,7 @@ RVA(0x00052c70, 0x1b1)
 i32 CGrunt::ClaimSwitchTile() {
     i32 x = m_lastTilePxX;
     i32 y = m_lastTilePxY;
-    switch (m_entranceCell[2] - 1) {
+    switch (m_entranceCell.reason - 1) {
         case 0:
             y -= 0x20;
             break;
@@ -2832,7 +2828,7 @@ i32 CGrunt::StepCompassMove() {
                 voice = *(CGruntVoiceRec*)g_voiceE;
                 break;
             case 8:
-                switch (m_entranceCell[2] - 1) {
+                switch (m_entranceCell.reason - 1) {
                     case 0:
                         moveY = y - 0x20;
                         voice = *(CGruntVoiceRec*)g_voiceS;
@@ -2847,8 +2843,8 @@ i32 CGrunt::StepCompassMove() {
                         voice = *(CGruntVoiceRec*)g_voiceE;
                         break;
                     case 3:
-                        moveX = x + 0x20;
                         moveY = y + 0x20;
+                        moveX = x + 0x20;
                         voice = *(CGruntVoiceRec*)g_voiceSE;
                         break;
                     case 4:
@@ -2856,8 +2852,8 @@ i32 CGrunt::StepCompassMove() {
                         voice = *(CGruntVoiceRec*)g_voiceN;
                         break;
                     case 5:
-                        moveX = x - 0x20;
                         moveY = y + 0x20;
+                        moveX = x - 0x20;
                         voice = *(CGruntVoiceRec*)g_voiceSW;
                         break;
                     case 6:
@@ -2910,14 +2906,14 @@ i32 CGrunt::StepCompassMove() {
         }
         i32 toyCount = g_buteMgr.GetIntDef((char*)(LPCTSTR)str, s_ToyTiles, 1);
         if (m_toyTileIndex < toyCount) {
-            switch (m_entranceCell[2] - 1) {
+            switch (m_entranceCell.reason - 1) {
                 case 0:
                     moveY = y - 0x20;
                     voice = *(CGruntVoiceRec*)g_voiceS;
                     break;
                 case 1:
-                    moveX = x + 0x20;
                     moveY = y - 0x20;
+                    moveX = x + 0x20;
                     voice = *(CGruntVoiceRec*)g_voiceNE;
                     break;
                 case 2:
@@ -2925,8 +2921,8 @@ i32 CGrunt::StepCompassMove() {
                     voice = *(CGruntVoiceRec*)g_voiceE;
                     break;
                 case 3:
-                    moveX = x + 0x20;
                     moveY = y + 0x20;
+                    moveX = x + 0x20;
                     voice = *(CGruntVoiceRec*)g_voiceSE;
                     break;
                 case 4:
@@ -2934,8 +2930,8 @@ i32 CGrunt::StepCompassMove() {
                     voice = *(CGruntVoiceRec*)g_voiceN;
                     break;
                 case 5:
-                    moveX = x - 0x20;
                     moveY = y + 0x20;
+                    moveX = x - 0x20;
                     voice = *(CGruntVoiceRec*)g_voiceSW;
                     break;
                 case 6:
@@ -3010,8 +3006,8 @@ i32 CGrunt::StepCompassMove() {
                     voice = *(CGruntVoiceRec*)g_voiceW;
                     break;
                 case 7:
-                    moveX = x - 0x20;
                     moveY = y - 0x20;
+                    moveX = x - 0x20;
                     voice = *(CGruntVoiceRec*)g_voiceNW;
                     break;
             }
@@ -3333,7 +3329,7 @@ i32 CGrunt::UserLogicVfunc9() {
 
 // CGrunt::EntranceTileOffset(out) @0x56f80 - the pixel position of the tile adjacent
 // to the grunt's last occupied tile (m_lastTilePxX/Y) in the entrance-cell direction
-// (m_entranceCell[2], a 1..8 compass code: 1=N, 2=NE, 3=E, 4=SE, 5=S, 6=SW, 7=W, 8=NW;
+// (m_entranceCell.reason, a 1..8 compass code: 1=N, 2=NE, 3=E, 4=SE, 5=S, 6=SW, 7=W, 8=NW;
 // any other value leaves the position unchanged). One tile step is 0x20 px. Writes the
 // (x, y) pair through `out`. __thiscall, ret 4.
 // @early-stop
@@ -3349,7 +3345,7 @@ RVA(0x00056f80, 0x8e)
 void CGrunt::EntranceTileOffset(i32* out) {
     i32 x = m_lastTilePxX;
     i32 y = m_lastTilePxY;
-    switch (m_entranceCell[2]) {
+    switch (m_entranceCell.reason) {
         case 1:
             y -= 0x20;
             break;
@@ -4191,8 +4187,8 @@ i32 CGrunt::ResetGeometry() {
     i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     i32 frame = elem[0x14 / 4];
 
-    i32 col = m_entranceCell[0];
-    i32 row = m_entranceCell[1];
+    i32 col = m_entranceCell.col;
+    i32 row = m_entranceCell.row;
     i32 index = 3 * col + row;
     const char* name = (const char*)((zDArray*)&m_cells[index])->IndexToPtr(0);
     m_154->CacheFrame(name, frame);
@@ -4408,8 +4404,8 @@ void CGrunt::RearmEntranceDrop() {
         i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
         i32 frame = elem[0x14 / 4];
 
-        i32 col = m_entranceCell[0];
-        i32 row = m_entranceCell[1];
+        i32 col = m_entranceCell.col;
+        i32 row = m_entranceCell.row;
         // (3col+row+0xb)*0x68 == &m_cells[3col+row].m_item (0xb*0x68 == 0x478). Kept
         // raw: cl folds the (idx+0xb)*0x68 multiply, which array indexing would split
         // into idx*0x68 + 0x478 and diverge.
@@ -4744,7 +4740,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry((&m_poseItem)[poseIdx]);
 
-    GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+    GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
     i32 base = cell.col + col + 0xb;
     i32 idx = base + base * 3 * 4;
@@ -4935,11 +4931,10 @@ i32 CGrunt::StepArrivalCommit() {
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseWalk);
-            GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+            GruntEntranceCell cell = m_entranceCell;
             i32 colv = cell.row + cell.col * 2;
             i32 base = cell.col + colv;
-            i32 idx = base + base * 3 * 4;
-            char* nm = ((CString*)((char*)this + idx * 8 + 0x470))->GetBuffer(0);
+            char* nm = m_cells[base].m_walk.GetBuffer(0);
             m_154->CacheFirstFrame(nm);
         } else {
             ResetEntranceAnimation(1, 0, 0);
@@ -5068,8 +5063,8 @@ finalize:
         i32 frame = elem[0x14 / 4];
         m_154->CacheFrame(s_GRUNTZ_DEATHZ_FREEZE, frame);
     }
-    m_freezeDelayDone = 1;
     m_freezeUnfrozen = 0;
+    m_freezeDelayDone = 1;
     return 0;
 }
 
@@ -5210,7 +5205,7 @@ i32 CGrunt::UpdateGruntStatus() {
 
 // A grunt board-tile flag fetch (g_gameReg->m_tileGrid board, tile = row[y][x*7]); the
 // out-of-bounds path returns 1 (so any flag test passes). Shared by all five.
-static i32 GruntTileFlags(i32 tx, i32 ty) {
+static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
     GruntBoard* b = g_gameReg->m_tileGrid;
     if ((u32)tx >= (u32)b->m_c || (u32)ty >= (u32)b->m_10) {
         return 1;
@@ -5252,10 +5247,13 @@ static void GruntScratchTeardown() {
 // ---------------------------------------------------------------------------
 // CGrunt::StepArrivalDrop(a,b,c,d,e,f)   @0x4b370   (ret 0x18, /GX EH frame)
 // @early-stop
-// large-state-machine + /GX EH-state plateau: the dispatch cascade + the coord-node
-// freelist recycle + the grid re-stamp are reconstructed in shape; residue is the
-// EH try-level numbering across the cell CString temp, the grid/board chains modeled
-// by raw offset, and the cross-scan regalloc. Deferred to the final sweep.
+// TRUNCATED reconstruction (~8%): only the head (m_464 clear + "D" strcmp + the
+// reachedTarget arg test + a partial coord-node freelist recycle) is present. Retail
+// is 838 insns; the base is ~86. The missing ~750 are the arrival-commit tail the
+// placeholder `StepDropApply()` stands in for: 4 pathfinder re-probes (0x20f4), the
+// CObList release/claim churn (0x1b4a03/0x1b48a6), and the per-direction tile-commit
+// body. Needs a dedicated leaf-first reconstruction of that shared inlined tail (also
+// inlined into MovingSlot16) - deferred to the final sweep, NOT a codegen wall.
 RVA(0x0004b370, 0xafd)
 void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     m_arrivalNotified = 0; // m_464 cleared on entry
@@ -5799,13 +5797,16 @@ label_ret1:
 // ---------------------------------------------------------------------------
 // CGrunt::StepAnimDispatchA(x, y, c, d)   @0x52fb0   (ret 0x10)
 // @early-stop
-// large-state-machine plateau: the 12-way single-letter type-code cascade (the
-// inline-strcmp `bool eq` setcc form, both the GetNameRecord and scratch-teardown
-// GetNameRecords variants), every dispatch arm, the m_1a0 mode sub-dispatch, the
-// coord recycle, and the LookupAnimSet re-latch are reconstructed in shape/order.
-// Residue: the scratch loop-strength-reduction (shared with Method_02f620, no source
-// spelling) + the deep grid/board chains by raw offset + cross-arm regalloc.
-// Deferred to the final sweep.
+// ebp-zero-pin regalloc wall (42.4%, was 39.9%). STRUCTURE now confirmed exact:
+// GruntTileFlags is __inline (matches the inlined grid-walk), and the "J" arm's
+// GruntEntranceCell by-value copy (dead-spilling `reason` to esp+0x1c) reproduces
+// the `sub esp,0xc` frame + the GetBuffer(0)/CacheFirstFrame calls. Every remaining
+// diff is register-COLORING: retail pins 0 in EBP (no 8-bit subreg in 32-bit x86 ->
+// all 12 strcmp arms null-test `test cl,cl`, and a 4th callee-saved reg is pushed with
+// `this` in esi); my body pins 0 in EBX (has bl -> `cmp cl,bl`, this in edi, only 3
+// pushes). Same offsets throughout, no wrong field/dispatch. Which physical reg holds
+// the zero is not source-steerable (permuter SKILL.md excludes register-coloring); the
+// standalone-repro proof in StepArrivalCommit's note applies verbatim. Final sweep.
 RVA(0x00052fb0, 0x96e)
 i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     if (m_entranceCommitted == 0) {
@@ -5882,14 +5883,13 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
-        // Stamp the first entrance-cell frame from the m_474 cell table.
-        i32* cell = m_entranceCell;
-        i32 col = cell[1] + cell[0] * 2;
-        i32 row = (cell[0] + col) * 3;
-        i32 idx = (cell[0] + col) + row * 4;
-        const char* nm =
-            (const char*)((zDArray*)((char*)this + idx * 8 + 0x470))->IndexToPtr(cell[2]);
-        m_154->CacheFrame(nm, 0);
+        // Stamp the first entrance-cell frame from m_cells[base].m_walk. The by-value
+        // cell copy dead-spills `reason` (esp+0x1c) -> `sub esp,0xc`; base = 3*col+row.
+        GruntEntranceCell cell = m_entranceCell;
+        i32 col = cell.row + cell.col * 2;
+        i32 base = cell.col + col;
+        char* nm = m_cells[base].m_walk.GetBuffer(0);
+        m_154->CacheFirstFrame(nm);
         goto modeDispatch;
     } else {
         ApplySetState1(1);
@@ -5954,12 +5954,15 @@ modeDispatch: {
 // ---------------------------------------------------------------------------
 // CGrunt::MovingSlot16()   @0x5f310   (ret 0)
 // @early-stop
-// large-state-machine plateau: the coord-probe head (claim the head coord's tile if
-// free, else retry within the m_coordRetryCount budget) and the scratch-resolver D-code reject
-// cascade (the inline-strcmp `bool eq` setcc + the scratch CString teardown) are
-// reconstructed in shape. Residue is the scratch loop-strength-reduction (shared, no
-// source spelling), the deep grid/board chains by raw offset, and cross-arm
-// regalloc. Deferred to the final sweep.
+// TRUNCATED reconstruction (~9%): the coord-probe head (claim the head coord's tile if
+// free, else retry within m_coordRetryCount) + the scratch-resolver "D" reject are the
+// only reconstructed part. Retail is 938 insns; the base is ~132. The missing ~800 are
+// the arrival-commit block at 0x5f490 (a second GetNameRecords/scratch-teardown + a
+// "D"-gated arrival-processing body: pathfinder re-probe, tile release/claim, the
+// per-direction m_cells[base] {m_dirX..m_stepY} double movement-integration tail). This
+// is the shared inlined arrival-commit tail (the placeholder `StepDropApply()` call
+// stands in for it here). Needs a dedicated leaf-first reconstruction of that tail
+// (shared with StepArrivalDrop) - deferred to the final sweep, NOT a codegen wall.
 RVA(0x0005f310, 0xb5e)
 void CGrunt::MovingSlot16() {
     if (m_arrivalState != 0x11) {
@@ -6070,13 +6073,13 @@ i32 CGrunt::StepAnimDispatchB() {
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
-        i32* cell = m_entranceCell;
-        i32 col = cell[1] + cell[0] * 2;
-        i32 row = (cell[0] + col) * 3;
-        i32 idx = (cell[0] + col) + row * 4;
-        const char* nm =
-            (const char*)((zDArray*)((char*)this + idx * 8 + 0x470))->IndexToPtr(cell[2]);
-        m_154->CacheFrame(nm, 0);
+        // by-value cell copy dead-spills `reason` (esp+0x24) -> sub esp frame, then
+        // GetBuffer(0)/CacheFirstFrame (retail J-arm identical to StepAnimDispatchA).
+        GruntEntranceCell cell = m_entranceCell;
+        i32 col = cell.row + cell.col * 2;
+        i32 base = cell.col + col;
+        char* nm = m_cells[base].m_walk.GetBuffer(0);
+        m_154->CacheFirstFrame(nm);
         goto modeDispatch;
     } else {
         ApplySetState1(1);
@@ -6516,11 +6519,10 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
         m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeL);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
-        GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+        GruntEntranceCell cell = m_entranceCell;
         i32 colv = cell.row + cell.col * 2;
         i32 basev = cell.col + colv;
-        i32 idxv = basev + basev * 12;
-        char* nm = ((CString*)((char*)this + idxv * 8 + 0x470))->GetBuffer(0);
+        char* nm = m_cells[basev].m_walk.GetBuffer(0);
         m_154->CacheFirstFrame(nm);
 
         DWORD tt = g_buteMgr.GetDword(*(char**)&m_animSetName, s_ToyTime);
@@ -6737,7 +6739,7 @@ i32 CGrunt::RearmAttackAnim(i32 col, i32 row) {
     i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     i32 frame = el[0x14 / 4];
 
-    GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+    GruntEntranceCell cell = m_entranceCell;
     i32 cc = cell.col;
     i32 cr = cell.row;
     i32 base = cc + (cr + 2 * cc);
@@ -6773,7 +6775,7 @@ i32 CGrunt::RearmAttackAnim2() {
     i32* el = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
     i32 frame = el[0x14 / 4];
 
-    GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+    GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.col;
     i32 row = cell.row;
     i32 base = col + (row + 2 * col);
@@ -7051,7 +7053,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
             m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseWalk);
-            GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+            GruntEntranceCell cell = m_entranceCell;
             i32 col = cell.row + cell.col * 2;
             i32 base = cell.col + col;
             i32 row = base * 3;
@@ -7177,7 +7179,7 @@ tail:
         frame = elem[0x14 / 4];
     }
     {
-        GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+        GruntEntranceCell cell = m_entranceCell;
         i32 col = cell.row + cell.col * 2;
         i32 base = cell.col + col;
         i32 row = base * 3;
@@ -7787,7 +7789,7 @@ i32 CGrunt::StepArrivalDefenseLean() {
 // on-screen spawn cue when in view, drive the _ITEM geometry, and re-stamp the
 // entrance-cell frame name. Returns 0.
 // @early-stop
-// ~98.7%: FRAME NOW REPRODUCED. The dead m_entranceCell[2] spill (`sub esp,0xc`) IS
+// ~98.7%: FRAME NOW REPRODUCED. The dead m_entranceCell.reason spill (`sub esp,0xc`) IS
 // a by-value 3-int struct copy (GruntEntranceCell cell = *ptr) - MSVC5 loads all
 // three, dead-stores `reason`; the prior "un-reproducible DCE miss" verdict was wrong
 // (a 3-explicit-locals source DCEs it, a struct copy does not). GruntStrGetBuffer is
@@ -7871,7 +7873,7 @@ i32 CGrunt::StartBombGruntRun() {
     }
     m_prevEntranceDesc = m_154->m_1b4;
     m_154->m_1a0.SetGeometry(m_poseItem);
-    GruntEntranceCell cell = *(GruntEntranceCell*)m_entranceCell;
+    GruntEntranceCell cell = m_entranceCell;
     i32 col = cell.row + cell.col * 2;
     i32 base = cell.col + col + 0xb;
     i32 idx = base + base * 3 * 4;

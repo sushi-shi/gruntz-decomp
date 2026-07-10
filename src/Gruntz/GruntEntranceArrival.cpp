@@ -95,7 +95,7 @@ i32 CGrunt::RunPositionInterpStep(i32 arg) {
         if (m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
             return 0;
         }
-        GruntEntranceCell c = *(GruntEntranceCell*)m_entranceCell;
+        GruntEntranceCell c = m_entranceCell;
         i32 col = (c.col == 0) ? 2 : (c.col == 2 ? 0 : c.col);
         i32 row = (c.row == 0) ? 2 : (c.row == 2 ? 0 : c.row);
         i32 base = 3 * col + row;
@@ -129,7 +129,7 @@ i32 CGrunt::RunPositionInterpStep(i32 arg) {
         if (m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
             return 0;
         }
-        GruntEntranceCell c = *(GruntEntranceCell*)m_entranceCell;
+        GruntEntranceCell c = m_entranceCell;
         i32 base = 3 * c.col + c.row;
         char* cell = (char*)&m_cells[base];
         double d48 = *(double*)(cell + 0x48);
