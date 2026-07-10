@@ -113,6 +113,19 @@ that is an identity-recovery TODO (flag it), not a keep. If a canonical-header e
 blocked because another worker owns it, the fold is DEFERRED WORK you report — never
 re-justified as a wall.
 
+**RECOVER THE REAL IDENTITY VIA XREFS BEFORE inventing any view (standing rule).** A
+fake/placeholder view struct (`Obj<hex>`/`CFoo<rva>`/`m_<hex>` shells) is a LAST resort,
+never a first move. Before you write one, run the xref recovery: `gruntz sema xref
+<rva>` for the caller graph (who calls it on what `this` → the owning class); chase
+vtable DATA-refs (a slot data-ref names the vtable → its RTTI/VTBL class); read the
+Ghidra decomp's field readers/writers and `new`-sites to pin the type; check the RTTI
+name. Nine times out of ten this yields the REAL class — model THAT (in its canonical
+header), casting nothing. Only when xref recovery genuinely dead-ends (no caller, no
+vtable slot, sub-object `this` of an unreconstructed parent) may a view exist, and then
+ONLY as a flagged `@identity-TODO` with the xref evidence you gathered — never a silent
+placeholder. "I couldn't name it" is acceptable only after you show the xref chase that
+failed.
+
 ## Tool discipline — semantic questions go to `gruntz sema`, not grep
 
 `rg`/`Grep` answer LEXICAL questions only (find annotation macros, literals, count
