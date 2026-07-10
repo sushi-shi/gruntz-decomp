@@ -49,6 +49,7 @@ class CObject;
 
 // operator delete + placement new for the factories / the mis-homed scalar dtor.
 void operator delete(void*);
+extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil) - the scalar-dtor free
 
 // The sibling 3-map manager (vtable 0x5efdc0) whose scalar-deleting destructor
 // (0x157610) landed in this TU during the vtable scan; its real member-teardown ~
@@ -56,7 +57,8 @@ void operator delete(void*);
 // so the scalar-dtor's call reloc names ??1CDDrawChildGroupDtorHost@@UAE@XZ.
 class CDDrawChildGroupDtorHost {
 public:
-    virtual ~CDDrawChildGroupDtorHost();
+    virtual ~CDDrawChildGroupDtorHost(); // 0x157630 (defined in DDrawSubMgr.cpp)
+    void* ScalarDtor(u32 flags);         // 0x157610
 };
 // Its ??_7 reloc-masks 0x1efdc0 = CDDrawChildGroup's OWN vtable (a /GX member-teardown twin
 // that shares that vtable); can't be VTBL'd (would collide) - documented as an alias.
@@ -137,13 +139,13 @@ public:
     RVA(0x00156cd0, 0x16)
     virtual i32 IsReady() {
         if (m_0c == 0) {
-        goto fail;
+            goto fail;
         }
         if (m_04 != -1) {
-        return 1;
+            return 1;
         }
-        
-        fail:
+
+    fail:
         return 0;
     }
     RVA(0x00156db0, 0x6)
@@ -183,7 +185,6 @@ static inline i32 MapReadField1c(const CDDrawWorkerMapSmall* p) {
 }
 
 // CDDrawWorkerMapSmall::IsReady (0x00156cd0) is now an inline member in the header.
-
 
 // ---------------------------------------------------------------------------
 // ~CDDrawWorkerMapSmall (0x156d20, __thiscall, /GX): now a REAL virtual dtor. cl
@@ -373,18 +374,26 @@ StateId CDDrawWorkerMapSmall::GetStateId() {
     return STATE_WORKERMAPSMALL; // 0x10
 }
 
-
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
 // ---------------------------------------------------------------------------
-// 0x157610: scalar-deleting destructor of the sibling CDDrawChildGroupDtorHost (vtable
-// 0x5efdc0); landed in this TU during the vtable scan. Runs the real member-teardown
-// ~CDDrawChildGroupDtorHost (0x157630, CDDrawSubMgr.cpp) then operator delete under the flag.
-// @rva-symbol: ??_GCDDrawChildGroupDtorHost@@UAEPAXI@Z 0x00157610 0x1e  (cl-auto-gen scalar-deleting dtor / dtor-host)
+// 0x157610: the ??_G scalar-deleting destructor of the sibling CDDrawChildGroupDtorHost
+// (vtable 0x5efdc0); landed in this TU during the vtable scan. Runs the real member-
+// teardown ~CDDrawChildGroupDtorHost (0x157630, CDDrawSubMgr.cpp) then, under the low
+// deleting-flag bit, RezFree(this); return this. Hand-written RVA-pinned method (the
+// CGruntzCommand::ScalarDtor pattern) so cl emits the exact bytes (no delete site to
+// trigger cl's own ??_G synthesis in this TU).
+RVA(0x00157610, 0x1e)
+void* CDDrawChildGroupDtorHost::ScalarDtor(u32 flags) {
+    this->CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost();
+    if (flags & 1) {
+        RezFree(this);
+    }
+    return this;
+}
 
 // CDDrawWorkerMapSmall::Slot06_156db0 (0x00156db0) is now an inline member in the header.
-
 
 // ---------------------------------------------------------------------------
 // 0x1658c0: lock the surface arg (Lock_139960 -> data); on 0 bail. Build a worker,

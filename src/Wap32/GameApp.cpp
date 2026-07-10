@@ -549,6 +549,20 @@ void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
 // (and the retail-vtable / instance-counter aliases) are gone.
 // @rva-symbol: ??_GCGameApp@@UAEPAXI@Z 0x00080dd0 0x32  (cl-auto-gen scalar-deleting dtor)
 
+// CGameApp::~CGameApp @0x080cf0 - the STANDALONE out-of-line copy of the (inline,
+// header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
+// cleanup when a CGameApp-derived ctor's member throws). ??_GCGameApp above and
+// CGruntzApp's cross-TU dtor keep folding their own inline copies; this forcer (the
+// UserLogicCtorEmit #pragma inline_depth(0) pattern) emits the out-of-line COMDAT in
+// this unit so the unwind reference resolves and the RVA is matched.
+// @rva-symbol: ??1CGameApp@@UAE@XZ 0x00080cf0 0x12
+static CGameApp* volatile g_forceEmitCGameApp;
+#pragma inline_depth(0)
+void ForceEmitCGameAppDtor() {
+    g_forceEmitCGameApp->CGameApp::~CGameApp();
+}
+#pragma inline_depth()
+
 // size 0x2c recovered from operator-new sites (gruntz.analysis.news)
 SIZE(WAP32::CGameMgr, 0x2c);
 

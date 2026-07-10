@@ -245,11 +245,10 @@ i32 CDDrawSubMgr::Init() {
 
 // ---------------------------------------------------------------------------
 // 0x155720: scalar-deleting destructor of a far sibling class (real member-teardown
-// ~ at 0xd5d70) that landed in this TU. Runs the real ~ then operator delete.
-// @early-stop
-// reloc-masked cross-module dtor name: the ~ target (0xd5d70) is a distinct
-// engine class in another module; its label won't match the ??1CDDrawSubMgrFar
-// reference. The scalar-dtor code bytes (call ~ / test flag / operator delete) match.
+// ~ at 0xd5d70) that landed in this TU. Runs the real ~ then operator delete. Now
+// BYTE-EXACT: CDDrawSubMgrFar::~CDDrawSubMgrFar is modeled+RVA-pinned at 0xd5d70 in
+// CImage.cpp (its RVA-packed unit) as ??1CDDrawSubMgrFar@@UAE@XZ, so this ??_G's call
+// reloc-masks to the same name (the former cross-module name mismatch is resolved).
 // @rva-symbol: ??_GCDDrawSubMgr@@UAEPAXI@Z 0x00155720 0x1e  (cl-auto-gen scalar-deleting dtor)
 
 // ---------------------------------------------------------------------------
@@ -2663,7 +2662,7 @@ struct CAniTriggerMap_1581b0 {
     char* m_parent;         // +0x0c
     CMapStringToOb m_map10; // +0x10  named CAniBlitTrigger map
     char m_pad2c[0x30 - 0x2c];
-    i32 m_gate30;           // +0x30
+    i32 m_gate30; // +0x30
     i32 Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2);
 };
 RVA(0x001581b0, 0x5b)
@@ -2695,7 +2694,7 @@ i32 CAniTriggerMap_1581b0::Fire_1581b0(const char* key, i32 pos, i32 range1, i32
 // pinning.md + linked-list-walk-node-eax-rotation.md).
 struct CChildFinder_15a8c0 {
     char m_pad00[0x0c];
-    char* m_parent;   // +0x0c
+    char* m_parent; // +0x0c
     char m_pad10[0x14 - 0x10];
     void* m_listHead; // +0x14
     void* Find_15a8c0(i32 id, const char* key);
@@ -2713,8 +2712,8 @@ void* CChildFinder_15a8c0::Find_15a8c0(i32 id, const char* key) {
         char* obj = *(char**)(node + 8);
         node = *(char**)node;
         i32 tag = ((CWwdFactoryObject*)obj)->Vs20();
-        if (tag == 5 && *(i32*)(obj + 4) == id &&
-            *(i32*)(*(char**)(obj + 0x7c) + 0x10) == *(i32*)(fp + 0x10)) {
+        if (tag == 5 && *(i32*)(obj + 4) == id
+            && *(i32*)(*(char**)(obj + 0x7c) + 0x10) == *(i32*)(fp + 0x10)) {
             return obj;
         }
     } while (node != 0);
@@ -2815,7 +2814,8 @@ void CDDrawChildGroup::Slot40() {
                         if (!(*(i32*)(oj + 8) & 4) && !(*(i32*)(oi + 8) & 0x80)) {
                             i32 mask1b = *(i32*)(oj + 0xec) & *(i32*)(oi + 0xe8);
                             i32 mask2b = *(i32*)(oj + 0xe8) & *(i32*)(oi + 0xf0);
-                            if ((mask1b || mask2b) && BoxesOverlap_15a130((CWwdBox*)oj, (CWwdBox*)oi)) {
+                            if ((mask1b || mask2b)
+                                && BoxesOverlap_15a130((CWwdBox*)oj, (CWwdBox*)oi)) {
                                 if (mask2b) {
                                     CWwdNotifier* nf = *(CWwdNotifier**)(oi + 0x88);
                                     if (nf != 0) {

@@ -119,16 +119,17 @@ public:
     i32 ApplyMask(CGruntzCmdTarget* p); // 0x024190
 
     // Two out-of-line base-vftable stamps (0x0242f0 / 0x024430): each is a bare
-    // `mov [this],&vftable; ret` (void, no eax-return, no null guard) - an
-    // out-of-line materialization of the inlined base-vftable store.
-    RVA(0x000242f0, 0x7)
-    void CGruntzCommand_0242f0() {
-        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-    }
-    RVA(0x00024430, 0x7)
-    void CGruntzCommand_024430() {
-        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-    }
+    // `mov [this],&??_7CGruntzCommand; ret` (void __thiscall, no eax-return, no
+    // null guard). Byte-for-byte the non-deleting base dtor body (??1CGruntzCommand
+    // = `mov [ecx],&vtbl; ret`, verified), materialized twice: retail's
+    // CGruntzSingleCommand/CGruntzMultiCommand scalar-deleting dtors (??_G @0x242c0/
+    // 0x24400) each CALL a distinct out-of-line copy of the base-vtable restore. A
+    // plain empty derived dtor emits 11 B (own-vtable stamp + jmp base); the retail
+    // copies stamp ONLY the base vtable, so they are modeled as two void methods
+    // whose body is an explicit inline base-dtor call (emits the exact 7-B stamp).
+    // Defined out-of-line in the .cpp (an unreferenced inline member would not emit).
+    void CGruntzCommand_0242f0();
+    void CGruntzCommand_024430();
 };
 
 // The 16-entry 1<<i bit table (0x5e9608; VA) the mask loop indexes/scans.

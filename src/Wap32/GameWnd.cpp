@@ -317,6 +317,19 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
 i32 CGameWnd::PreDispatchMessage(UINT, WPARAM, LPARAM) {
     return 0;
 }
+
+// CGameWnd::~CGameWnd @0x094c10 - the STANDALONE out-of-line copy of the (inline,
+// header-defined) base dtor, referenced only by a /GX EH-unwind funclet (base-subobject
+// cleanup on a ctor throw). ??_GCGameWnd above keeps folding its own inline copy; this
+// #pragma inline_depth(0) forcer (the UserLogicCtorEmit pattern) emits the out-of-line
+// COMDAT here so the unwind reference resolves and the RVA matches.
+// @rva-symbol: ??1CGameWnd@@UAE@XZ 0x00094c10 0x16
+static CGameWnd* volatile g_forceEmitCGameWnd;
+#pragma inline_depth(0)
+void ForceEmitCGameWndDtor() {
+    g_forceEmitCGameWnd->CGameWnd::~CGameWnd();
+}
+#pragma inline_depth()
 i32 CGameWnd::Wap32GameWndVfunc2(i32, i32, i32) {
     return 0;
 }

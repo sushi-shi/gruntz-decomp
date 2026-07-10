@@ -18,7 +18,7 @@
 
 #include <Image/CImage.h>
 #include <Image/CBlitInfo.h> // canonical CBlitInfo/CBlitXform (RenderImage selector arg)
-#include <Wwd/WwdFile.h>      // CPlaneRender::WrapCoord (the m_xform origin remap)
+#include <Wwd/WwdFile.h>     // CPlaneRender::WrapCoord (the m_xform origin remap)
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (m_surface geometry/Fill/Blt/Reload/m_8 COM)
 #include <DDrawMgr/DDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
@@ -564,6 +564,30 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
 RVA(0x000d5c10, 0x10d)
 i32 Gap_0d5c10(void) {
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x0d5d70 - CDDrawSubMgrFar::~CDDrawSubMgrFar: the member-teardown destructor of a
+// far sibling of the DDraw surface-manager family (a FamilyMapBase-shaped, CObject-
+// derived 5-slot class) whose .text landed in this cimage unit's RVA range. Its ??_G
+// scalar-deleting dtor lives at 0x155720 (DDrawSubMgr.cpp) and calls this ~. The empty
+// derived-vtable stamp over the inline MFC ~CObject is elided, so the dtor lowers to
+// the field resets (m_04=-1, m_08/m_0c=0) followed by the single ??_7CObject re-stamp.
+struct CDDrawSubMgrFar : public CObject {
+    virtual void s0();          // slot 0
+    virtual ~CDDrawSubMgrFar(); // slot 1 (its ??_G is 0x155720 in DDrawSubMgr.cpp)
+    virtual void s2();          // slot 2
+    virtual void s3();          // slot 3
+    virtual void s4();          // slot 4
+    i32 m_04;                   // +0x04
+    i32 m_08;                   // +0x08
+    i32 m_0c;                   // +0x0c
+};
+RVA(0x000d5d70, 0x16)
+CDDrawSubMgrFar::~CDDrawSubMgrFar() {
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
 }
 
 // ---------------------------------------------------------------------------

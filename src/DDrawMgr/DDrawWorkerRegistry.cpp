@@ -97,10 +97,14 @@ extern i32 g_resourceInstallActive;
 
 // operator delete + the member-teardown host (real ~ at 0x156e10, CDDrawSubMgr.cpp,
 // as CDDrawRegistryDtorHost::~) that this class's ??_G scalar-dtor (0x156df0) calls.
+// The dtor is virtual (FamilyMapBase-derived) so it mangles ??1..@@UAE@XZ, matching
+// the 0x156e10 binding; ScalarDtor (0x156df0) runs it then RezFree(this).
 void operator delete(void*);
+extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil) - the scalar-dtor free
 class CDDrawRegistryDtorHost {
 public:
-    ~CDDrawRegistryDtorHost();
+    virtual ~CDDrawRegistryDtorHost(); // 0x156e10 (defined in DDrawSubMgr.cpp)
+    void* ScalarDtor(u32 flags);       // 0x156df0
 };
 
 // Helpers for ProbeWorkerKey (0x156e80): a probe chain (0x13b900 -> object, whose
@@ -287,9 +291,7 @@ StateId CDDrawWorkerRegistry::GetStateId() {
     return STATE_WORKERREGISTRY; // 0x12
 }
 
-
 // CDDrawWorkerRegistry::IsReady (0x001576d0) is now an inline member in the header.
-
 
 // ---------------------------------------------------------------------------
 // Lookup `key` in the map; if found, RemoveKey it and run the value's scalar-
@@ -587,9 +589,20 @@ i32 CDDrawWorkerRegistry::LookupWorkerKey(CSymTab* dir, const char* sub, const c
 }
 
 // ---------------------------------------------------------------------------
-// 0x156df0: ??_G scalar-deleting destructor - run the real member-teardown ~
-// (0x156e10, CDDrawSubMgr.cpp as CDDrawRegistryDtorHost::~) then operator delete.
-// @rva-symbol: ??_GCDDrawRegistryDtorHost@@UAEPAXI@Z 0x00156df0 0x1e  (cl-auto-gen scalar-deleting dtor / dtor-host)
+// 0x156df0: the ??_G scalar-deleting destructor of the 1-map sibling
+// CDDrawRegistryDtorHost - run the real member-teardown ~ (0x156e10, CDDrawSubMgr.cpp)
+// then, when the low deleting-flag bit is set, RezFree(this); return this. Modeled as
+// a hand-written RVA-pinned method (the CGruntzCommand::ScalarDtor pattern) so cl emits
+// the exact `call ~; test flag; RezFree; ret 4` bytes (cl won't synth ??_G with no
+// delete site in this TU).
+RVA(0x00156df0, 0x1e)
+void* CDDrawRegistryDtorHost::ScalarDtor(u32 flags) {
+    this->CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost();
+    if (flags & 1) {
+        RezFree(this);
+    }
+    return this;
+}
 
 // ---------------------------------------------------------------------------
 // 0x156e80: probe `arg1` through 0x13b900(arg2) -> object, deref via 0x13a230; if

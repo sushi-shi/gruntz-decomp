@@ -278,7 +278,13 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
 // masks against the base vftable via this DATA-named extern (re-homed from
 // src/Stub/CGruntzCommand.cpp).
 
-// CGruntzCommand::CGruntzCommand_0242f0 (0x000242f0) is now an inline member in the header.
+// CGruntzCommand::CGruntzCommand_0242f0 (0x000242f0) - out-of-line base-vtable
+// restore called by CGruntzSingleCommand's scalar-deleting dtor (??_G @0x242c0).
+// The explicit inline base-dtor call lowers to `mov [ecx],&??_7CGruntzCommand; ret`.
+RVA(0x000242f0, 0x7)
+void CGruntzCommand::CGruntzCommand_0242f0() {
+    this->CGruntzCommand::~CGruntzCommand();
+}
 
 // ---------------------------------------------------------------------------
 // CGruntzCommand::ScalarDtor - the slot-0 `??_G` scalar-deleting destructor
@@ -307,7 +313,12 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
     return new CGruntzMultiCommand;
 }
 
-// CGruntzCommand::CGruntzCommand_024430 (0x00024430) is now an inline member in the header.
+// CGruntzCommand::CGruntzCommand_024430 (0x00024430) - out-of-line base-vtable
+// restore called by CGruntzMultiCommand's scalar-deleting dtor (??_G @0x24400).
+RVA(0x00024430, 0x7)
+void CGruntzCommand::CGruntzCommand_024430() {
+    this->CGruntzCommand::~CGruntzCommand();
+}
 
 // ---------------------------------------------------------------------------
 // CGruntzSingleCommand::FreeAll() - 0x024450. Drain the per-class recycle list

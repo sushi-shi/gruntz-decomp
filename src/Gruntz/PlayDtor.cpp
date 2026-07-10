@@ -40,6 +40,20 @@ CDemo::~CDemo() {
     DerivedCleanup();
 }
 
+// 0x8c470 - CState::~CState: the STANDALONE out-of-line copy of the (inline, header-
+// defined) base-state dtor, referenced only by /GX EH-unwind funclets (13+ sites: the
+// base-subobject cleanup when a CState-derived ctor throws). ??_GCState @0x8c710 and
+// every derived dtor keep folding their own inline copies; this #pragma inline_depth(0)
+// forcer (UserLogicCtorEmit pattern) emits the out-of-line COMDAT so the unwind refs
+// resolve and the RVA matches (stamp ??_7CState + tail-jmp to the 0xfa150 base body).
+// @rva-symbol: ??1CState@@UAE@XZ 0x0008c470 0xb
+static CState* volatile g_forceEmitCState;
+#pragma inline_depth(0)
+void ForceEmitCStateDtor() {
+    g_forceEmitCState->CState::~CState();
+}
+#pragma inline_depth()
+
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF. CPlay's size is tracked in CPlay.cpp; CState's in its own header.
 SIZE_UNKNOWN(CDemo);
