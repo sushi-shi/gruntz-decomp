@@ -84,9 +84,16 @@ public:
     i16 m_12;        // +0x12 (pad -> 0x14)
 
     virtual ~CGruntzCommand() {} // slot 0 (scalar-deleting dtor)
-    virtual void Vfunc1();       // slot 1
-    virtual void Vfunc2();       // slot 2
-    virtual void Vfunc3();       // slot 3
+    // slot 1 - the (de)serialize dispatcher: on mode 4 call Save (slot 2), on
+    // mode 7 call Load (slot 3), both through the vtable. The leaves override it
+    // (Single 0x0244d0 / Multi 0x0246c0); the base anchor returns 1.
+    virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4);
+    // slot 2/3 - the network (de)serializers (via stream Write +0x30 / Read +0x2c):
+    // pure in the binary (__purecall), each leaf provides its body. Single writes the
+    // +0x10 field as the m_10/m_11 byte pair (0x024520/0x0245f0); Multi as one 16-bit
+    // unit (0x024710/0x0247d0). The base anchors are placeholders for vtable emission.
+    virtual i32 Save(CSerialArchive* s); // slot 2
+    virtual i32 Load(CSerialArchive* s); // slot 3
     // slot 4 (+0x10) - the base "set params" implementation (0x023e20): store
     // the five scalar params; returns 1. Inherited unchanged by both leaves.
     virtual i32 SetParams(char a0, char a1, char a2, i16 a3, i16 a4);
@@ -106,10 +113,6 @@ public:
                         u8* buf);       // 0x023ed0
     i32 ApplyOne(CGruntzCmdTarget* p);  // 0x024140
     i32 ApplyMask(CGruntzCmdTarget* p); // 0x024190
-    // The network (de)serializers (0x024520 / 0x0245f0): no-op unless the
-    // registry's active-game gate is set, then stream the 8 scalar fields.
-    i32 Save(CSerialArchive* s); // 0x024520  via stream Write (+0x30)
-    i32 Load(CSerialArchive* s); // 0x0245f0  via stream Read  (+0x2c)
 
     // Two out-of-line base-vftable stamps (0x0242f0 / 0x024430): each is a bare
     // `mov [this],&vftable; ret` (void, no eax-return, no null guard) - an
@@ -138,9 +141,12 @@ VTBL(CGruntzSingleCommand, 0x001e9634); // vtable_names -> code (RTTI game class
 class CGruntzSingleCommand : public CGruntzCommand {
 public:
     virtual ~CGruntzSingleCommand() OVERRIDE;
-    virtual void Vfunc1() OVERRIDE;
-    virtual void Vfunc2() OVERRIDE;
-    virtual void Vfunc3() OVERRIDE;
+    // slots 1/2/3 (0x0244d0 / 0x024520 / 0x0245f0) - the serialize dispatcher and
+    // the single-target network Save/Load (the base declares them pure; the leaves
+    // provide the bodies).
+    virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) OVERRIDE;
+    virtual i32 Save(CSerialArchive* s) OVERRIDE;
+    virtual i32 Load(CSerialArchive* s) OVERRIDE;
     virtual i32 Vslot05() OVERRIDE;
     virtual char GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
@@ -165,9 +171,12 @@ VTBL(CGruntzMultiCommand, 0x001e96b4); // vtable_names -> code (RTTI game class)
 class CGruntzMultiCommand : public CGruntzCommand {
 public:
     virtual ~CGruntzMultiCommand() OVERRIDE;
-    virtual void Vfunc1() OVERRIDE;
-    virtual void Vfunc2() OVERRIDE;
-    virtual void Vfunc3() OVERRIDE;
+    // slots 1/2/3 (0x0246c0 / 0x024710 / 0x0247d0) - the multi-target overrides of
+    // the serialize dispatcher and the network Save/Load (the +0x10 flag word as a
+    // single 16-bit unit vs the base's m_10/m_11 byte pair).
+    virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) OVERRIDE;
+    virtual i32 Save(CSerialArchive* s) OVERRIDE;
+    virtual i32 Load(CSerialArchive* s) OVERRIDE;
     virtual i32 Vslot05() OVERRIDE;
     virtual char GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
@@ -181,11 +190,6 @@ public:
     // scalar params, then the +0x10 16-bit flag mask as a WORD. Returns the number
     // of bytes written.
     i32 Pack(char* buf, i32 unused);
-    // 0x0247d0 - the multi-command network deserialize (vtable slot 3 of vftable
-    // 0x5e96b4): no-op unless the stream is non-null AND the registry's active-game
-    // gate is set, then read the 8 scalar fields, taking the +0x10 flag word as a
-    // single 16-bit READ (vs the base Load's two 1-byte reads).
-    i32 NetLoad(CSerialArchive* s);
 };
 
 // The per-class recycle lists + their non-empty gates (file-scope globals the

@@ -1250,6 +1250,32 @@ i32 CCreditzOwner::SetupTitle() {
     return 1;
 }
 
+// CCreditsState::Vslot09 (slot 9 / +0x24, 0x39120): force the OS cursor hidden,
+// then (re)prime the attract title; returns whether InitAttractTitle succeeded.
+RVA(0x00039120, 0x2c)
+i32 CCreditsState::Vslot09(i32 /*unused*/) {
+    if (ShowCursor(0) >= 0) {
+        do {
+        } while (ShowCursor(0) >= 0);
+    }
+    return InitAttractTitle() != 0;
+}
+
+// CCreditsState::Vslot06 (slot 6 / +0x18, 0x39400): the Vfunc3-gated title roll -
+// bail unless the state's ready gate (Vfunc3) is set, hide the cursor, then
+// (re)prime the attract title and return its result.
+RVA(0x00039400, 0x2f)
+i32 CCreditsState::Vslot06() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    if (ShowCursor(0) >= 0) {
+        do {
+        } while (ShowCursor(0) >= 0);
+    }
+    return InitAttractTitle();
+}
+
 // CCreditsState::InputVirtual (slot 8 / +0x20, @0x393b0, formerly ShowAttractTitle) -
 // the per-frame input poll: gate on the state core (m_c->m_4->IsLoaded); if loaded,
 // force the cursor hidden then prime the attract title.

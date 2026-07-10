@@ -49,9 +49,15 @@ extern WwdGameReg* g_gameReg;
 // Out-of-line vtable anchors (the slots NOT reconstructed here) so the
 // CGruntzCommand vftable is emitted in this TU (the ctor/dtor reference it).
 // Bodies are placeholders.
-void CGruntzCommand::Vfunc1() {}
-void CGruntzCommand::Vfunc2() {}
-void CGruntzCommand::Vfunc3() {}
+i32 CGruntzCommand::Serialize(CSerialArchive*, i32, i32, i32) {
+    return 1;
+}
+i32 CGruntzCommand::Save(CSerialArchive*) {
+    return 0;
+}
+i32 CGruntzCommand::Load(CSerialArchive*) {
+    return 0;
+}
 i32 CGruntzCommand::Vslot05() {
     return 1;
 }
@@ -280,7 +286,6 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
 
 // CGruntzCommand::CGruntzCommand_0242f0 (0x000242f0) is now an inline member in the header.
 
-
 // ---------------------------------------------------------------------------
 // CGruntzMultiCommand::Allocate() - 0x024360. Same shape, Multi list/vftable.
 // ---------------------------------------------------------------------------
@@ -293,7 +298,6 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
 }
 
 // CGruntzCommand::CGruntzCommand_024430 (0x00024430) is now an inline member in the header.
-
 
 // ---------------------------------------------------------------------------
 // CGruntzSingleCommand::FreeAll() - 0x024450. Drain the per-class recycle list
@@ -328,12 +332,39 @@ void CGruntzMultiCommand::FreeAll() {
 }
 
 // ---------------------------------------------------------------------------
-// CGruntzCommand::Save() - 0x024520. Network-serialize the 8 scalar fields out
-// through the stream's Write (vtable slot +0x30). No-op (return 0) unless the
-// stream is non-null AND the registry's active-game gate (g_gameReg+0x30) is set.
+// CGruntzSingleCommand::Serialize() - 0x0244d0 (vtable slot 1). The (de)serialize
+// dispatcher: bail on a null stream; on mode 4 drive Save (slot 2), on mode 7
+// drive Load (slot 3), both through the vtable; return 1 (or the sub-call's 0 on
+// gate failure). Multi's identical twin is 0x0246c0.
+// ---------------------------------------------------------------------------
+RVA(0x000244d0, 0x3b)
+i32 CGruntzSingleCommand::Serialize(CSerialArchive* s, i32 mode, i32, i32) {
+    if (!s) {
+        return 0;
+    }
+    switch (mode) {
+        case 4:
+            if (!Save(s)) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (!Load(s)) {
+                return 0;
+            }
+            break;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzSingleCommand::Save() - 0x024520 (vtable slot 2). Network-serialize the 8
+// scalar fields out through the stream's Write (vtable slot +0x30). No-op (return 0)
+// unless the stream is non-null AND the registry's active-game gate (g_gameReg->
+// m_world) is set. The base declares Save pure; this is the single-target override.
 // ---------------------------------------------------------------------------
 RVA(0x00024520, 0x98)
-i32 CGruntzCommand::Save(CSerialArchive* s) {
+i32 CGruntzSingleCommand::Save(CSerialArchive* s) {
     if (!s) {
         return 0;
     }
@@ -352,11 +383,11 @@ i32 CGruntzCommand::Save(CSerialArchive* s) {
 }
 
 // ---------------------------------------------------------------------------
-// CGruntzCommand::Load() - 0x0245f0. The read twin: same gate, the 8 scalar
-// fields read back through the stream's Read (vtable slot +0x2c).
+// CGruntzSingleCommand::Load() - 0x0245f0 (vtable slot 3). The read twin: same
+// gate, the 8 scalar fields read back through the stream's Read (vtable slot +0x2c).
 // ---------------------------------------------------------------------------
 RVA(0x000245f0, 0x98)
-i32 CGruntzCommand::Load(CSerialArchive* s) {
+i32 CGruntzSingleCommand::Load(CSerialArchive* s) {
     if (!s) {
         return 0;
     }
@@ -375,13 +406,60 @@ i32 CGruntzCommand::Load(CSerialArchive* s) {
 }
 
 // ---------------------------------------------------------------------------
-// CGruntzMultiCommand::NetLoad() - 0x0247d0 (multi-command vftable 0x5e96b4
-// slot 3). Same gate/shape as the base Load, but reads the +0x10 field as one
-// 16-bit value (the multi-command's flag mask) instead of the m_10/m_11 byte
-// pair. Reached only through the vtable (reloc-masked); modeled non-virtual.
+// CGruntzMultiCommand::Serialize() - 0x0246c0 (vtable slot 1). The multi-target
+// twin of CGruntzSingleCommand::Serialize: identical dispatcher body, but drives
+// this class's own overridden Save/Load (slots 2/3).
+// ---------------------------------------------------------------------------
+RVA(0x000246c0, 0x3b)
+i32 CGruntzMultiCommand::Serialize(CSerialArchive* s, i32 mode, i32, i32) {
+    if (!s) {
+        return 0;
+    }
+    switch (mode) {
+        case 4:
+            if (!Save(s)) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (!Load(s)) {
+                return 0;
+            }
+            break;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzMultiCommand::Save() - 0x024710 (vtable slot 2). The multi-target write
+// twin: same gate/shape as the base Save, but writes the +0x10 field as one
+// 16-bit value (the multi-command's flag mask) instead of the m_10/m_11 byte pair.
+// ---------------------------------------------------------------------------
+RVA(0x00024710, 0x8b)
+i32 CGruntzMultiCommand::Save(CSerialArchive* s) {
+    if (!s) {
+        return 0;
+    }
+    if (!g_gameReg->m_world) {
+        return 0;
+    }
+    s->Write(&m_4, 1);
+    s->Write(&m_5, 1);
+    s->Write(&m_6, 1);
+    s->Write(&m_8, 2);
+    s->Write(&m_a, 2);
+    s->Write(&m_submitted, 4);
+    s->Write(&m_10, 2);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGruntzMultiCommand::Load() - 0x0247d0 (vtable slot 3). Same gate/shape as the
+// base Load, but reads the +0x10 field as one 16-bit value (the multi-command's
+// flag mask) instead of the m_10/m_11 byte pair.
 // ---------------------------------------------------------------------------
 RVA(0x000247d0, 0x8b)
-i32 CGruntzMultiCommand::NetLoad(CSerialArchive* s) {
+i32 CGruntzMultiCommand::Load(CSerialArchive* s) {
     if (!s) {
         return 0;
     }

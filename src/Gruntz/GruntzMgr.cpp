@@ -232,6 +232,9 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND, UINT, WPARAM, LPARAM); // 0x9dff0 (Load
 extern "C" void GruntzDebugGruntTypeProc(); // LAB_004021e9
 extern "C" void GruntzSaveGameDlgProc();    // LAB_00401041 (GAME_SAVE)
 extern "C" void GruntzSaveMsgDlgProc();     // LAB_004011d1 (GAME_SAVEMSG)
+// The "go to level" developer dialog proc (AppDialogs.cpp @0x08e7c0), handed to
+// RunModalDialog by DebugJumpLevel (its pushed code address reloc-masks).
+INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 
 // -------------------------------------------------------------------------
 // Engine objects reached through CGruntzMgr's member pointers. Each engine-side
@@ -516,6 +519,7 @@ struct OptionsSlot {
     char m_pad24[0x38 - 0x24];
     CBattlezMapConfig m_38; // +0x38
     // Command @0x4250 IS CTriggerMgr::RebuildOverlay; cast at the call.
+    i32 Reset(); // 0xda9e0 (external; reloc-masked) - clear/rewind the slot
 };
 
 // The downstream command sinks BroadcastCmd fans the 4-arg command out to: the
@@ -726,6 +730,17 @@ i32 CGruntzMgr::RestoreVideoMode(i32 save) {
         return 1;
     }
     ReportError(0x8008, 0x438);
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::IsStandardMode (0x08f980; ret 0). True when the live video mode is
+// 640x480 (m_modeW == 0x280 && m_modeH == 0x1e0).
+RVA(0x0008f980, 0x21)
+i32 CGruntzMgr::IsStandardMode() {
+    if (m_modeW == 0x280 && m_modeH == 0x1e0) {
+        return 1;
+    }
     return 0;
 }
 
@@ -2135,6 +2150,54 @@ void CGruntzMgr::StopBank0IfActive() {
 }
 
 // -------------------------------------------------------------------------
+// CGruntzMgr::PostSlotCommandB1 (0x0920e0; ret 4). For an in-range slot (0..3),
+// post WM_COMMAND 0x80b1 to the game window with the slot index as lParam. Returns
+// 1 (0 when the slot is out of range).
+RVA(0x000920e0, 0x32)
+i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
+    if (slot < 0 || slot >= 4) {
+        return 0;
+    }
+    g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80b1, slot);
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::PostSlotCommandB6 (0x092130; ret 4). Twin of PostSlotCommandB1 with
+// command code 0x80b6.
+RVA(0x00092130, 0x32)
+i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
+    if (slot < 0 || slot >= 4) {
+        return 0;
+    }
+    g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80b6, slot);
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// winapi_092a30_EndDialog (0x092a30): a bare OK/Cancel modal DialogProc (address-
+// taken via the 0x2649 thunk). WM_INITDIALOG returns TRUE; on WM_COMMAND IDOK (1)
+// / IDCANCEL (2) it ends the dialog with the command id / 0 respectively.
+RVA(0x00092a30, 0x52)
+INT_PTR CALLBACK winapi_092a30_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_INITDIALOG:
+            return 1;
+        case WM_COMMAND:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                EndDialog(hDlg, 1);
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
 // CGruntzMgr::IsLobbyHostReady (0x091500). Null-chain predicate: returns
 // m_curState->ReleaseResources-slot result (slot 7, +0x1c) only when m_curState, the
 // CGameApp (m_8), its m_appActive flag (+0x240) and !m_modalBusy all hold; else 0.
@@ -2440,6 +2503,19 @@ i32 CGruntzMgr::RunDebugGruntTypeDialog() {
 }
 
 // -------------------------------------------------------------------------
+// CGruntzMgr::DebugJumpLevel (0x08e780; ret). Shows the "DEBUG_JUMPLEVEL" modal
+// dialog (flag 1); on a positive level number, jumps the play state to it via
+// PassClickToPlayState(level, 0, 1). Returns 0 when the dialog is cancelled.
+RVA(0x0008e780, 0x2a)
+i32 CGruntzMgr::DebugJumpLevel() {
+    i32 level = RunModalDialog("DEBUG_JUMPLEVEL", (void*)LevelNumberDialogProc8e7c0, 1);
+    if (level > 0) {
+        return PassClickToPlayState(level, 0, 1);
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
 // CGruntzMgr::LoadOptionsSlotName (0x092d50; ret 0x1c). When in a play-ish state
 // (CheckPlayState) and the indexed options slot has not yet been loaded
 // (slot->m_20 == 0), assign its per-slot name CString from `val`. Returns 0. Only
@@ -2465,6 +2541,38 @@ i32 CGruntzMgr::LoadOptionsSlotName(
         }
     }
     return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ResetOptionsSlot (0x092da0; ret 4). Reset the indexed options slot
+// when it is in range and loaded (m_20 != 0); returns Reset()'s result, else 0.
+RVA(0x00092da0, 0x3a)
+i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
+    if ((u32)idx >= 4) {
+        return 0;
+    }
+    OptionsSlot* s = (OptionsSlot*)&m_options[idx];
+    if (s == 0) {
+        return 0;
+    }
+    if (s->m_20 == 0) {
+        return 0;
+    }
+    return s->Reset();
+}
+
+// -------------------------------------------------------------------------
+// CGruntzMgr::ResetAllOptionsSlots (0x092df0). Reset all four options slots
+// unconditionally (each guarded by a non-null check).
+RVA(0x00092df0, 0x24)
+void CGruntzMgr::ResetAllOptionsSlots() {
+    OptionsSlot* s = (OptionsSlot*)&m_options[0];
+    for (i32 d = 4; d != 0; d--) {
+        if (s != 0) {
+            s->Reset();
+        }
+        s = (OptionsSlot*)((char*)s + 0x238);
+    }
 }
 
 // -------------------------------------------------------------------------

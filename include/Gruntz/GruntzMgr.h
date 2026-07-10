@@ -376,6 +376,12 @@ public:
     i32 LoadOptionsSlotName(i32 slot, i32 a2, i32 a3, i32 a4, i32 a5, const char* val, i32 a7);
     i32 CountReadyOptionsSlots(i32 anyState);   // @0x092e30 (count loaded/armed slots)
     struct OptionsSlot* FindOptionsSlot(i32 x); // @0x092e80 (slot whose m_18 == x)
+    i32 ResetOptionsSlot(i32 idx);              // @0x092da0 (reset slot idx if loaded)
+    void ResetAllOptionsSlots();                // @0x092df0 (reset all 4 slots)
+    i32 IsStandardMode();                       // @0x08f980 (mode == 640x480)
+    i32 DebugJumpLevel();                       // @0x08e780 (DEBUG_JUMPLEVEL dialog)
+    i32 PostSlotCommandB1(i32 slot);            // @0x0920e0 (post WM_COMMAND 0x80b1, slot)
+    i32 PostSlotCommandB6(i32 slot);            // @0x092130 (post WM_COMMAND 0x80b6, slot)
     // Sibling reached by Quicksave (reloc-masked): plays the save-feedback sprite.
     i32 LoadSaveMessageSprite();
 
