@@ -45,8 +45,8 @@
 // - so the old hand-rolled COM mirror is not needed here (it starved cguid.h of CLSID);
 // Mfc.h already provides the STDMETHODs the CWorldDispatch view uses.
 #include <rva.h>
-#include <stdio.h>  // engine sprintf (reloc-masked) for the toggle-message formatter
-#include <string.h> // engine strstr (reloc-masked) for the Battlez header probe
+#include <stdio.h>                // engine sprintf (reloc-masked) for the toggle-message formatter
+#include <string.h>               // engine strstr (reloc-masked) for the Battlez header probe
 #include <Utils/RegistryHelper.h> // Utils::RegistryHelper (the settings/registry writer)
 #include <Globals.h>
 
@@ -83,7 +83,6 @@ struct CWorldDispatch {
 // hand-rolled IDirectPlayLobbyZ view is gone: the real interface's slots line up
 // exactly (v01=AddRef, v03-v07=Connect/CreateAddress/EnumAddress/EnumAddressTypes/
 // EnumLocalApplications, slot 8=GetConnectionSettings), so dispatch is byte-identical.
-
 
 // The free CD-ROM / file-probe helpers CGruntzMgr calls (plain file-scope free
 // functions; reloc-masked). GetGruntzDriveLetter (0x1ffe0, WinAPICdRom.cpp) collides
@@ -879,7 +878,16 @@ i32 CGruntzMgr::ShowToggleMessage(char* itemName, i32 on) {
     return AppendChatMessage(g_msgScratch);
 }
 
-// CGruntzMgr::IsInPlayState (0x0008fa40) is now an inline member in the header.
+// IsInPlayState (0x08fa40): live-state playability probe - 0 when no current
+// state, else CheckPlayState() as a bool. Out-of-line (retail emits it standalone;
+// the inline member folded into its callers and never emitted).
+RVA(0x0008fa40, 0x16)
+i32 CGruntzMgr::IsInPlayState() {
+    if (m_curState == 0) {
+        return 0;
+    }
+    return CheckPlayState() != 0;
+}
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::GetGruntzDriveLetter  (__thiscall)
@@ -1521,7 +1529,12 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_6bf3bc = delta;
 }
 
-// CGruntzMgr::RunFromState (0x00090200) is now an inline member in the header.
+// RunFromState (0x090200): forward to ChangeState_8fab0(1). Out-of-line (retail
+// emits it standalone; the inline member folded away and never emitted).
+RVA(0x00090200, 0x8)
+i32 CGruntzMgr::RunFromState() {
+    return ChangeState_8fab0(1);
+}
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::TopState (0x090980). Returns the last pushed state (or 0 when the
@@ -2598,7 +2611,12 @@ CState* CGruntzMgr::FindStateById(i32 id) {
     return 0;
 }
 
-// CGruntzMgr::PickPlayOrPausedState (0x00092990) is now an inline member in the header.
+// PickPlayOrPausedState (0x092990): the concrete PLAY state, FindStateById(3).
+// Out-of-line (retail emits it standalone; the inline member folded away).
+RVA(0x00092990, 0x8)
+CPlay* CGruntzMgr::PickPlayOrPausedState() {
+    return (CPlay*)FindStateById(3);
+}
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::PickPausedThenPlayState (0x0929b0; ret). Prefers the paused/hold

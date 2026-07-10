@@ -369,7 +369,16 @@ i32 CTileTriggerSwitchLogic::DeserializeMatrix(CSerialArchive* s) {
     return 1;
 }
 
-// CTileTriggerSwitchLogic::GetFlag74 (0x00115f00) is now an inline member in the header.
+// GetFlag74 (0x115f00): test-and-set the m_block[18] latch (1 on first call, then
+// 0). Out-of-line (retail emits it standalone; the inline member folded away).
+RVA(0x00115f00, 0x13)
+i32 CTileTriggerSwitchLogic::GetFlag74() {
+    if (m_block[18] != 0) {
+        return 0;
+    }
+    m_block[18] = 1;
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::RemoveByKeys

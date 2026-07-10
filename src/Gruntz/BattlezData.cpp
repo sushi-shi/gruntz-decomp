@@ -122,8 +122,15 @@ i32 CBattlezData::SumFlags(i32 y) {
     return sum;
 }
 
-// CBattlezData::GetFlag (0x000fcc10) is now an inline member in the header.
-
+// GetFlag (0x0fcc10): bounds-checked read of the 5x5 flag grid (0 outside range).
+// Out-of-line (retail emits it standalone; the inline member folded away).
+RVA(0x000fcc10, 0x2f)
+i32 CBattlezData::GetFlag(i32 x, i32 y) {
+    if (x >= 0 && x <= 4 && y >= 0 && y <= 4) {
+        return *(i32*)((char*)m_flags + x * 0x10 + y * 4);
+    }
+    return 0;
+}
 
 // 0xfcc50 - bump wins[y][x] for off-diagonal (y!=x) cells (both bounded 0..4).
 RVA(0x000fcc50, 0x2a)

@@ -1225,8 +1225,13 @@ i32 CPlaneRender::CenterScrollB() {
     return scroll->SetTargetB(x, y);
 }
 
-// CPlaneRender::GetTileHandle (0x000d53a0) is now an inline member in the header.
-
+// GetTileHandle (0x0d53a0): index the tile-handle grid by (row, col) -
+// m_tileGrid[m_colOffsets[col] + row]. Out-of-line (retail emits it standalone;
+// the inline member folded into its callers and never emitted).
+RVA(0x000d53a0, 0x19)
+i32 CPlaneRender::GetTileHandle(i32 row, i32 col) {
+    return m_tileGrid[m_colOffsets[col] + row];
+}
 
 // ---------------------------------------------------------------------------
 // CPlaneRender::SnapToTileCenter (__thiscall, ret 0xc). Floor each axis to its

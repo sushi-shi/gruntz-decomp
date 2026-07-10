@@ -200,14 +200,8 @@ public:
     // "LEVEL" / "ACTION") into the world's lookup holder (m_10) and sound host (m_28),
     // resetting the world coord dispatch (m_1c) in between. No-op with no world.
     void RegisterLevelAssetKeys();
-    char GetGruntzDriveLetter();                    // @0x08fa70  (memoised CD letter)
-    RVA(0x0008fa40, 0x16)
-    i32 IsInPlayState() {
-        if (m_curState == 0) {
-            return 0;
-        }
-        return CheckPlayState() != 0;
-    }
+    char GetGruntzDriveLetter(); // @0x08fa70  (memoised CD letter)
+    i32 IsInPlayState();         // 0x08fa40 (out-of-line: m_curState ? CheckPlayState()!=0 : 0)
     // @0x08f340 (/GX): when the live state is playable (Update() in {5,2,3,7}),
     // capture the current world-file name from the game window into m_strWorldFile,
     // clear the score/state slots (m_128/m_12c), and PostMessageA WM_COMMAND 0x8005.
@@ -354,17 +348,11 @@ public:
     void SetRunState(i32 v); // @0x092340 (set base m_10 run-state + side-effects)
     i32 CheckSavedMode();    // @0x08de70 (saved==live mode test)
     i32 IsLobbyHostReady();  // @0x091500 (m_curState/m_8/m_modalBusy null-chain)
-    RVA(0x00090200, 0x8)
-    i32 RunFromState() {
-        return ChangeState_8fab0(1);
-    }
-    RVA(0x00092990, 0x8)
+    i32 RunFromState();      // 0x090200 (out-of-line: ChangeState_8fab0(1))
     // Returns the concrete PLAY/paused state (FindStateById(3) is always a CPlay);
     // typed CPlay* so the ~12 cheat-dispatch callers drop their (CPlay*) downcast.
     // CState is CPlay's offset-0 base -> the cast is a no-op reinterpret (byte-neutral).
-    CPlay* PickPlayOrPausedState() {
-        return (CPlay*)FindStateById(3);
-    }
+    CPlay* PickPlayOrPausedState();    // 0x092990 (out-of-line: (CPlay*)FindStateById(3))
     CState* PickPausedThenPlayState(); // @0x0929b0 (FindStateById(0x11)|| (3))
 
     // The modal-dialog runner sibling (a __thiscall (template, dlgProc, flag) ->

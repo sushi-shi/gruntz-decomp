@@ -85,14 +85,38 @@ void CSpriteRefTable::Clear() {
     }
 }
 
-// CSpriteRefTable::GetA (0x000e2360) is now an inline member in the header.
+// GetA (0x0e2360): bucket-A node for slot i, null if out of [0,17). Out-of-line
+// (retail emits it standalone; the inline member folded away and never emitted).
+RVA(0x000e2360, 0x15)
+CSpriteRef* CSpriteRefTable::GetA(i32 i) {
+    if ((u32)i >= 0x11) {
+        return 0;
+    }
+    return m_refA[i];
+}
 
+// GetB (0x0e2390): bucket-B node for slot i, null if out of [0,17). Out-of-line.
+RVA(0x000e2390, 0x15)
+CSpriteRef* CSpriteRefTable::GetB(i32 i) {
+    if ((u32)i >= 0x11) {
+        return 0;
+    }
+    return m_refB[i];
+}
 
-// CSpriteRefTable::GetB (0x000e2390) is now an inline member in the header.
-
-
-// CSpriteRefTable::GetSel (0x000e23c0) is now an inline member in the header.
-
+// GetSel (0x0e23c0): resolve slot i (bucket B when bAlt else A), return the node's
+// m_alphaKey, or 0. Out-of-line (retail emits it standalone).
+RVA(0x000e23c0, 0x2d)
+i32 CSpriteRefTable::GetSel(i32 i, i32 bAlt) {
+    if ((u32)i >= 0x11) {
+        return 0;
+    }
+    CSpriteRef* node = bAlt ? m_refB[i] : m_refA[i];
+    if (!node) {
+        return 0;
+    }
+    return node->m_alphaKey;
+}
 
 // @early-stop
 // out-param zero-init scheduling wall: retail SINKS `mov [&out],0` past both arg

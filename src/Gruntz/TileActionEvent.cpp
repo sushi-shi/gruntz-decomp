@@ -16,7 +16,7 @@
 
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TileActionEvent.h>
-#include <Gruntz/LeafCue.h> // canonical LeafCue (PlayIfElapsed_01f940)
+#include <Gruntz/LeafCue.h>   // canonical LeafCue (PlayIfElapsed_01f940)
 #include <Gruntz/UserLogic.h> // CGameObject (the created break sprite)
 
 #include <rva.h>
@@ -112,8 +112,13 @@ SIZE_UNKNOWN(CImpactSound);
 // The sound-bank lookup by name (thunk_FUN_0045b7e0, __cdecl). External no-body.
 extern CImpactSound* Eng_FindSound(const char* name);
 
-// CTileActionEvent::ResetFlag (0x00112d80) is now an inline member in the header.
-
+// ResetFlag (0x112d80): zero the m_10 flag word, return this. Out-of-line (retail
+// emits it standalone; the inline member folded into its callers and never emitted).
+RVA(0x00112d80, 0xa)
+CTileActionEvent* CTileActionEvent::ResetFlag() {
+    m_10 = 0;
+    return this;
+}
 
 // ===========================================================================
 // CTileActionEvent::SetActionCode  (0x112da0) - __thiscall, ret 4

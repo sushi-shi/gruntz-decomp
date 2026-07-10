@@ -32,8 +32,8 @@ public:
     // build signature is corroborated by CheckpointSwitchBuild.cpp's BaseBuild view.
     virtual i32 Vf0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
     virtual void Vf1(); // slot 1 -> 0x0022e8
-    virtual i32 Vf2(); // slot 2 -> 0x002e0f (CTileTimeTriggerSwitchLogic overrides @0x112840)
-    virtual i32 Vf3(); // slot 3 -> 0x0037e2 (returns i32; base slot typed void in retail callers)
+    virtual i32 Vf2();  // slot 2 -> 0x002e0f (CTileTimeTriggerSwitchLogic overrides @0x112840)
+    virtual i32 Vf3();  // slot 3 -> 0x0037e2 (returns i32; base slot typed void in retail callers)
 
     CTileTriggerSwitchLogic();
     // Non-virtual dtor (the 4 vtable slots are all regular methods, no dtor slot).
@@ -54,15 +54,8 @@ public:
     // Trace-discovered child-list accessors (list head @ +0x04; nodes
     // next@+0x00, data@+0x08; data objects are sibling CTileTriggerSwitchLogic
     // with keys at +0x04 / +0x10).
-    RVA(0x00115f00, 0x13)
-    i32 GetFlag74() {
-        if (m_block[18] != 0) {
-            return 0;
-        }
-        m_block[18] = 1;
-        return 1;
-    }
-    i32 RemoveByKeys(i32 k1, i32 k2);                        // 0x116320
+    i32 GetFlag74();                  // 0x115f00 (out-of-line: test-and-set m_block[18])
+    i32 RemoveByKeys(i32 k1, i32 k2); // 0x116320
     CTileTriggerSwitchLogic* FindChild(i32 k1, i32 k2);      // 0x116ee0
     CTileTriggerSwitchLogic* FindByField0C(i32 key);         // 0x1171d0
     i32 ScanNeighborhood(i32 x, i32 y);                      // 0x117ec0

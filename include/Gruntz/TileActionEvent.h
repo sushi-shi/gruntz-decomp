@@ -28,11 +28,7 @@
 class CTileActionEvent {
 public:
     // Reset the m_10 flag word to 0 (returns this). 0x112d80.
-    RVA(0x00112d80, 0xa)
-    CTileActionEvent* ResetFlag() {
-        m_10 = 0;
-        return this;
-    }
+    CTileActionEvent* ResetFlag(); // 0x112d80 (out-of-line: m_10 = 0; return this)
 
     // Set m_actionCode from the action code, then fold a duplicate-action lookup
     // against the per-player active flags / the level grid, returning 0 if the

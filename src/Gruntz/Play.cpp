@@ -2420,7 +2420,13 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
     return 1;
 }
 
-// CPlay::ForwardReady (0x000cee70) is now an inline member in the header.
+// ForwardReady (0x0cee70): tiny vtable forwarder that tail-calls the slot-3 ready
+// gate (Vfunc3). Out-of-line (retail emits it standalone; the inline member folded
+// into its callers and never emitted).
+RVA(0x000cee70, 0x5)
+i32 CPlay::ForwardReady() {
+    return Vfunc3();
+}
 
 // CPlay::PauseGame (0x0cee90) - vtable slot 24 (shared by CDemo/CMulti). Flush
 // the pending mode ops, freeze the guts subsystem (passing whether we were

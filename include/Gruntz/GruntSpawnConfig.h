@@ -91,11 +91,7 @@ public:
     BOOL Init(CSpawnOwner* owner); // 0x11adc0
     void Clear();                  // 0x11ae30
     BOOL LoadGruntVoices();        // 0x11af00
-    RVA(0x0011af90, 0xb)
-    void ClearSprites() {
-        m_08 = 0;
-        m_0c = 0;
-    }
+    void ClearSprites();           // 0x11af90 (out-of-line: m_08 = 0; m_0c = 0)
     void* GetButeSlot(CSpawnButeConfig*, CSpawnButeTarget*); // 0x11bba0
     i32 PickWeighted(i32 index, i32 seed);                   // 0x11bee0
     BOOL BuildVoiceList();                                   // 0x11c1a0

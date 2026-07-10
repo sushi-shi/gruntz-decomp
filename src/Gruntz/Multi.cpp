@@ -249,7 +249,17 @@ void CMulti::Teardown() {
 }
 
 // The shared HUD message-sprite helper (0x1154b0, __cdecl); reloc-masked.
-void ShowHudMessage(void* sink, CString* text, RECT* rect, i32 dur, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1154b0
+void ShowHudMessage(
+    void* sink,
+    CString* text,
+    RECT* rect,
+    i32 dur,
+    i32 a,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e
+); // 0x1154b0
 
 // ===========================================================================
 // CMulti::FrameSlot28  @ 0x0b63f0  (vtable slot 10 / +0x28) - the HUD status/
@@ -916,7 +926,13 @@ CString& CMulti::ClearString5a0(CString& s) {
     return s;
 }
 
-// CMulti::GetString59c (0x000b7a90) is now an inline member in the header.
+// GetString59c (0x0b7a90): return m_groupName by value (CString copy into the
+// return slot). Out-of-line (retail emits it standalone; the inline member folded
+// into its callers and never emitted).
+RVA(0x000b7a90, 0x23)
+CString CMulti::GetString59c() {
+    return m_groupName;
+}
 
 // CMulti::GetString5a0 (0x000b7ad0) is now an inline member in the header.
 

@@ -10,21 +10,22 @@ struct GlyphTable {
     char pad0[0x10];
     int m_10; // +0x10 setter bias
     char pad14[0x1b0 - 0x14];
-    int m_1b0[128]; // +0x1b0
-    RVA(0x000c0430, 0x1f)
-    int Get(int c) {
-        return m_1b0[(c & 0xff) % 128];
-    }
-    RVA(0x000c03f0, 0x29)
-    void Set(int v, int c) {
-        m_1b0[(m_10 + (c & 0xff)) % 128] = v;
-    }
+    int m_1b0[128];         // +0x1b0
+    int Get(int c);         // 0x0c0430
+    void Set(int v, int c); // 0x0c03f0 (== CMulti::ArmSlot on m_session)
 };
 
-// GlyphTable::Get (0x000c0430) is now an inline member in the header.
+// Get (0x0c0430): return the table entry for a wrapped code. Out-of-line (retail
+// emits it standalone; the inline member folded away and never emitted).
+RVA(0x000c0430, 0x1f)
+int GlyphTable::Get(int c) {
+    return m_1b0[(c & 0xff) % 128];
+}
 
-
-// GlyphTable::Set (0x000c03f0) is now an inline member in the header.
-
+// Set (0x0c03f0): store `v` at the (biased) wrapped code's slot. Out-of-line.
+RVA(0x000c03f0, 0x29)
+void GlyphTable::Set(int v, int c) {
+    m_1b0[(m_10 + (c & 0xff)) % 128] = v;
+}
 
 SIZE_UNKNOWN(GlyphTable);

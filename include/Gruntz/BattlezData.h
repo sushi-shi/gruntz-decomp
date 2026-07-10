@@ -57,13 +57,7 @@ public:
     void MarkFlag(i32 y, i32 x);             // 0xfcb50
     void ClearFlags();                       // 0xfcb90
     i32 SumFlags(i32 y);                     // 0xfcbc0
-    RVA(0x000fcc10, 0x2f)
-    i32 GetFlag(i32 x, i32 y) {
-        if (x >= 0 && x <= 4 && y >= 0 && y <= 4) {
-        return *(i32*)((char*)m_flags + x * 0x10 + y * 4);
-        }
-        return 0;
-    }
+    i32 GetFlag(i32 x, i32 y);               // 0x0fcc10 (out-of-line: bounds-checked m_flags[x][y])
     void BumpWin(i32 y, i32 x);              // 0xfcc50
     void ClearWins();                        // 0xfcc90
     i32 SumWinRow(i32 y);                    // 0xfccb0

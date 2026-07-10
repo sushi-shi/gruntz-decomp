@@ -112,14 +112,16 @@ public:
     i32 RunAct(i32 id);
     TILE_LOGIC_TAIL
 public:
-    CPathHazard();                 // 0x13170 (no-arg deserialize-path ctor; zeroes the leg/strike i64s)
+    CPathHazard(); // 0x13170 (no-arg deserialize-path ctor; zeroes the leg/strike i64s)
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
     i32 StartPath();               // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
     // GetTypeTag (0x132f0): the 6-byte per-class logic-type id accessor (0x425).
     // 0x000132f0 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x000132f0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_PATHHAZARD; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_PATHHAZARD;
+    }
     // The five virtuals CPathHazard adds over CUserLogic's 16 slots (16..20), so cl
     // emits the real 21-slot ??_7CPathHazard@@6B@ (CRainCloud/CUFO derive it). Tick
     // and BeginLeg carry bodies; slots 17/18/20 are declared-only (reloc-masked).
@@ -134,10 +136,7 @@ public:
     virtual i32 HitTest(i32, i32); // slot 20 (declared-only; per-frame hit test)
     // ForwardTick (0xb5070): a thin non-virtual forwarder to virtual slot 16 (Tick).
     // Tail-jumps `this->vtbl[16]()` through the raw vtable view (kept indirect).
-    RVA(0x000b5070, 0x5)
-    void ForwardTick() {
-        Tick(); // virtual slot 16 (+0x40); tail-jump `mov eax,[ecx]; jmp [eax+0x40]`
-    }
+    void ForwardTick();              // 0x0b5070 (out-of-line: tail-jump to Tick(), virtual slot 16)
     virtual ~CPathHazard() OVERRIDE; // 0x13340 (folds the CUserLogic teardown; slot 0)
 
     i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)

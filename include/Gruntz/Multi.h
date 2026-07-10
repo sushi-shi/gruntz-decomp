@@ -326,16 +326,13 @@ public:
     void Teardown();                     // 0x0b6110
     CString& ClearString59c(CString& s); // 0x0b76c0  (assign m_groupName <- empty)
     CString& ClearString5a0(CString& s); // 0x0b7730  (assign m_hostName <- empty)
-    RVA(0x000b7a90, 0x23)
-    CString GetString59c() {
-        return m_groupName;
-    }
+    CString GetString59c();              // 0x0b7a90 (out-of-line: return m_groupName by value)
     RVA(0x000b7ad0, 0x23)
     CString GetString5a0() {
         return m_hostName;
     }
-    CString Name42ff();                  // ILT 0x0042ff -> GetConfigNameB 0x0b60d0 (MultiColorDlg)
-    CString Name31d4();                  // ILT 0x0031d4 -> GetConfigNameA 0x0b6090 (MultiColorDlg)
+    CString Name42ff(); // ILT 0x0042ff -> GetConfigNameB 0x0b60d0 (MultiColorDlg)
+    CString Name31d4(); // ILT 0x0031d4 -> GetConfigNameA 0x0b6090 (MultiColorDlg)
     void ReportVersionMsg(char* msg, i32 code); // 0x0b7e30
     // Status-bar diagnostic by string-resource id: LoadStringA through
     // m_logic->m_owner->m_hInstance then ReportVersionMsg. Defined in

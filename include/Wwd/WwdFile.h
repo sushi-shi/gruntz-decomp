@@ -260,20 +260,17 @@ public:
     // 0x161fa0: scan an image set for its first populated frame (in [minIndex,
     // maxIndex]) and seed the tile size from that frame's pixel dims (width/height).
     void SetTileSizeFromImageSet(CImageSet* set);
-    void WrapCoord(i32* px, i32* py);       // 0x00a000  wrap+transform a world coord
-    i32 CenterScrollA();                    // 0x163300
-    i32 CenterScrollB();                    // 0x163370
-    void InitScrollRects();                 // 0x163420  seed the scroll sub-object rects
-    i32 ValidateTiles(char* errOut);        // 0x163510  scan the tile grid for bad refs
-    void ResolveColorKey();                 // 0x163670  pack the +0x144 index to RGB565
-    i32 Save(CWwdStream* s);                // 0x163780  serialize out
-    i32 Load(CWwdStream* s);                // 0x1638c0  serialize in
+    void WrapCoord(i32* px, i32* py); // 0x00a000  wrap+transform a world coord
+    i32 CenterScrollA();              // 0x163300
+    i32 CenterScrollB();              // 0x163370
+    void InitScrollRects();           // 0x163420  seed the scroll sub-object rects
+    i32 ValidateTiles(char* errOut);  // 0x163510  scan the tile grid for bad refs
+    void ResolveColorKey();           // 0x163670  pack the +0x144 index to RGB565
+    i32 Save(CWwdStream* s);          // 0x163780  serialize out
+    i32 Load(CWwdStream* s);          // 0x1638c0  serialize in
     // 0x0d53a0 (__thiscall, ret 8): index the tile-handle grid by (row, col):
     //   m_tileGrid[m_colOffsets[col] + row].
-    RVA(0x000d53a0, 0x19)
-    i32 GetTileHandle(i32 row, i32 col) {
-        return m_tileGrid[m_colOffsets[col] + row];
-    }
+    i32 GetTileHandle(i32 row, i32 col); // 0x0d53a0 (m_tileGrid[m_colOffsets[col]+row])
     // 0x0311e0 (__thiscall, ret 0xc): snap a world (x,y) to its tile centre:
     //   out = (floor-to-tile) + half a tile, per-axis.
     void SnapToTileCenter(i32* out, i32 x, i32 y);

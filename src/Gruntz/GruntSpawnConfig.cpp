@@ -135,7 +135,18 @@ BOOL CGruntSpawnConfig::LoadGruntVoices() {
     return 1;
 }
 
-// CGruntSpawnConfig::ClearSprites (0x0011af90) is now an inline member in the header.
+// ClearSprites (0x11af90): null the m_08/m_0c voice-sprite pair. Out-of-line
+// (retail emits it standalone; the inline member folded away and never emitted).
+// @early-stop
+// base-register-bias wall: retail materializes the pair base (`add ecx,8`) then
+// stores through [ecx]/[ecx+4]; cl stores this-relative [ecx+8]/[ecx+0xc]. The
+// two zero stores are byte-identical bar the addressing form; neither `m_08=0/
+// m_0c=0` nor an &m_08 pointer spelling reproduces the in-place base bias.
+RVA(0x0011af90, 0xb)
+void CGruntSpawnConfig::ClearSprites() {
+    m_08 = 0;
+    m_0c = 0;
+}
 
 // The bute manager singleton (?g_buteMgr, RVA 0x2453d8); DATA label owned by the
 // bute TU, declared extern here so the `ecx=&g_buteMgr; call GetIntDef` reloc-masks.

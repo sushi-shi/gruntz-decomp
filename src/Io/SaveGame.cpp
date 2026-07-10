@@ -461,11 +461,49 @@ int __stdcall CloseTempFile_e5550(SaveTempRec* p) {
     return 1;
 }
 
-// CSaveGame::SetMaxLevel (0x000e5620) is now an inline member in the header.
+// SetMaxLevel (0x0e5620): clamped update of the highest-reached level. Out-of-line
+// (retail emits it standalone; the inline member folded away and never emitted).
+// @early-stop
+// regalloc coin-flip: retail pins the arg `v` in edx and m_maxLevel in eax; cl
+// picks the opposite (v in eax, m_maxLevel in edx). The branch structure and every
+// compare/store are byte-identical - only the eax<->edx pairing differs, and it is
+// not source-steerable here (SetCurLevel, the near-identical sibling, is 100%).
+RVA(0x000e5620, 0x27)
+void CSaveGame::SetMaxLevel(i32 v) {
+    if (v < 0x21) {
+        if ((u32)v > m_maxLevel) {
+            m_maxLevel = v;
+            return;
+        }
+        if (m_maxLevel > 0x24) {
+            m_maxLevel = v;
+            return;
+        }
+    }
+    if (m_maxLevel <= 0x24) {
+        return;
+    }
+    if ((u32)v <= m_maxLevel) {
+        return;
+    }
+    m_maxLevel = v;
+}
 
-
-// CSaveGame::SetCurLevel (0x000e5660) is now an inline member in the header.
-
+// SetCurLevel (0x0e5660): clamped update of the current level; re-Init at 0x20.
+// Out-of-line (retail emits it standalone; the inline member folded away).
+RVA(0x000e5660, 0x1e)
+void CSaveGame::SetCurLevel(i32 v) {
+    if (v >= 0x21) {
+        return;
+    }
+    if (v <= m_curLevel) {
+        return;
+    }
+    m_curLevel = v;
+    if (v == 0x20) {
+        Init();
+    }
+}
 
 // ---------------------------------------------------------------------------
 // CSaveGame::CheckMagic  (0x000e5690)

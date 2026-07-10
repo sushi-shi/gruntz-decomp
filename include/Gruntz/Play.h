@@ -458,10 +458,7 @@ public:
     i32 BuildHelpReveal();           // 0x0d72c0 (THIS TU)
     i32 RegisterInputBindings();     // 0x0d9160 (THIS TU)
     // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
-    RVA(0x000cee70, 0x5)
-    i32 ForwardReady() {
-        return Vfunc3();
-    }
+    i32 ForwardReady(); // 0x0cee70 (out-of-line: tail-call the slot-3 ready gate Vfunc3)
     // Region pause/resume pair (vtable slots 24/25, shared by CDemo/CMulti):
     // PauseGame saves the game clock into m_savedClock + freezes the world; ResumeGame
     // restores the clock + unpauses. Migrated from engine_boundary (CPlay).
@@ -471,8 +468,8 @@ public:
     // both invoked with ecx=this in the status/pause overlay). Method_cef50
     // (0x0cef50, no-arg notify when the m_40 latch is set); Method_fa8f0 (0x0fa8f0,
     // the status-message ticker, args 0x50/0x3e8/0/1).
-    void Method_cef50();                             // 0x0cef50
-    i32 Method_fa8f0(i32 a, i32 b, i32 c, i32 d);    // 0x0fa8f0
+    void Method_cef50();                          // 0x0cef50
+    i32 Method_fa8f0(i32 a, i32 b, i32 c, i32 d); // 0x0fa8f0
     // The HandleCommand cheat receivers (reloc-masked; reached via the play-state
     // lookup PickPlayOrPausedState): SetCursorFrame gives the selected grunt item
     // `item` (the 0x80e5..0x8104 ITEMCHEAT family; thunk 0x17a8); Flip returns the
