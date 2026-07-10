@@ -157,8 +157,8 @@ class CPoolItemA88 : public CDDSurface {
 public:
     virtual ~CPoolItemA88() OVERRIDE;                                // slot 0  ~ 0x142820
     virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cb0
-    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148a50
-    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148ac0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32); // slot 9  0x148a50 (Blit7, 4 args)
+    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32); // slot 10 0x148ac0
 };
 SIZE(CPoolItemA88, 0xc0);
 VTBL(CPoolItemA88, 0x001efa88);
@@ -169,10 +169,10 @@ VTBL(CPoolItemA88, 0x001efa88);
 class CPoolItemAB8 : public CDDSurface {
 public:
     virtual ~CPoolItemAB8() OVERRIDE;                                // slot 0  ~ 0x142a40
-    virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;          // slot 2  0x148b50
-    virtual i32 v18() OVERRIDE;                                      // slot 6  0x143cd0
-    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148af0
-    virtual i32 InstallColorFormat();                                // slot 10 0x148b80
+    virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE; // slot 2  0x148b50
+    virtual i32 v18() OVERRIDE;                             // slot 6  0x143cd0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32);  // slot 9  0x148af0 (Setup, 4 args)
+    virtual i32 InstallColorFormat();                      // slot 10 0x148b80
 };
 SIZE(CPoolItemAB8, 0xc0);
 VTBL(CPoolItemAB8, 0x001efab8);
@@ -511,7 +511,7 @@ i32 CDDrawPtrCollections::CreateRange(
 RVA(0x00142730, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
     CPoolItemA88* item = new CPoolItemA88;
-    if (item->v24(this, a, b, c, 0, 0)) {
+    if (item->v24(this, a, b, c)) {
         AddItemA(item);
         return item;
     }
@@ -565,7 +565,7 @@ CDDSurface* CDDrawPtrCollections::Createa88_1(i32 a) {
 RVA(0x00142940, 0xd4)
 CDDSurface* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
     CPoolItemAB8* item = new CPoolItemAB8;
-    if (item->v24(this, a, b, c, 0, 0)) {
+    if (item->v24(this, a, b, c)) {
         AddItemA(item);
         m_palBpp = item->m_bitDepth;
         return item;
@@ -592,6 +592,50 @@ CPoolItemAB8::~CPoolItemAB8() {}
 RVA(0x00148b50, 0x2c)
 i32 CPoolItemAB8::Init1(CDDrawPtrCollections* h, i32 a) {
     if (CDDSurface::Init1(h, a) == 0) {
+        return 0;
+    }
+    InstallColorFormat();
+    return 1;
+}
+
+// CPoolItemA88::v24 (0x148a50, slot 9, "Blit7"): build a 0x6c-byte DDSURFACEDESC on the
+// stack (mode 7, ddsCaps = a4|0x80, pitch fields), then run the base surface init
+// (CDDSurface::Init1 @0x13e0a0, the descriptor-driven Apply) and return success.
+// __thiscall, 4 args. (Re-homed from src/Stub/BoundaryUpper2.cpp; ImgOwnedY view
+// dissolved onto the real CPoolItemA88.)
+// @early-stop
+// descriptor-fill scheduling wall (~85%): the Apply path is the 100% Setup path, but into
+// a stack-local descriptor; retail hoists the a4 load (or al,0x80) ahead of a2 while MSVC
+// loads a2 first, swapping the eax/ecx assignment + a couple store slots. Logic complete.
+RVA(0x00148a50, 0x6b)
+i32 CPoolItemA88::v24(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
+    u32 desc[(0x7c - 0x10) / 4]; // 0x6c-byte DDSURFACEDESC scratch
+    memset(desc, 0, 0x6c);
+    desc[3] = a2;
+    desc[0x1a] = a4 | 0x80;
+    desc[2] = a3;
+    desc[0x10] = 1;
+    desc[0x11] = 1;
+    desc[0] = 0x6c;
+    desc[1] = 7;
+    return CDDSurface::Init1(info, (i32)desc) != 0;
+}
+
+// ---------------------------------------------------------------------------
+// CPoolItemAB8::v24 (0x148af0, slot 9, "Setup"): zero the surface's embedded 0x6c-byte
+// DDSURFACEDESC (m_ddsd), fill {dwSize, dwFlags=a3, [+0x14]=a4, ddsCaps=a2|0x200}, run
+// the base surface init (CDDSurface::Init1 @0x13e0a0, descriptor NULL => use m_ddsd); on
+// success run InstallColorFormat (slot 10) and return 1. __thiscall, 4 args. (Re-homed
+// from src/Stub/BoundaryUpper2.cpp; ImgOwnedX view dissolved onto the real CPoolItemAB8.)
+// Byte-exact.
+RVA(0x00148af0, 0x58)
+i32 CPoolItemAB8::v24(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4) {
+    memset(m_ddsd, 0, 0x6c);
+    m_ddsd[0] = 0x6c;
+    m_ddsd[0x1a] = a2 | 0x200;
+    m_ddsd[1] = a3;
+    m_ddsd[5] = a4;
+    if (!CDDSurface::Init1(info, 0)) {
         return 0;
     }
     InstallColorFormat();
@@ -663,6 +707,29 @@ i32 CPoolItemAB8::InstallColorFormat() {
 }
 
 // ---------------------------------------------------------------------------
+// CPoolItemAE8::v24 (0x148c40, slot 9, "Blit47"): build a 0x6c-byte DDSURFACEDESC on the
+// stack (mode 0x47, ddsCaps = a5|a4|0x20000, [+0x18]=a7), then run the base surface init
+// (CDDSurface::Init1 @0x13e0a0) and return success. __thiscall, 7 args (a6 unused).
+// (Re-homed from src/Stub/BoundaryUpper2.cpp; ImgOwnedY view dissolved onto the real
+// CPoolItemAE8.)
+// @early-stop
+// descriptor-fill scheduling wall (~85%): mirror of CPoolItemA88::v24 (7-arg / mode 0x47).
+// Same stack-local-descriptor load/store scheduling divergence. Logic complete.
+RVA(0x00148c40, 0x75)
+i32 CPoolItemAE8::v24(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+    (void)a6;
+    u32 desc[(0x7c - 0x10) / 4]; // 0x6c-byte DDSURFACEDESC scratch
+    memset(desc, 0, 0x6c);
+    desc[3] = a2;
+    desc[0x1a] = a5 | a4 | 0x20000;
+    desc[6] = a7;
+    desc[2] = a3;
+    desc[0] = 0x6c;
+    desc[1] = 0x47;
+    return CDDSurface::Init1(info, (i32)desc) != 0;
+}
+
+// ---------------------------------------------------------------------------
 // Createab8_1 (0x142aa0).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch vtbl[0x08]
 // with 1 arg; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success.
 // /GX. ret 0x4.
@@ -687,14 +754,14 @@ CDDSurface* CDDrawPtrCollections::Createab8_1(i32 a) {
 // arg; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success. /GX. ret 0x4.
 // ---------------------------------------------------------------------------
 // @early-stop
-// EH-state wall + arity: this call site invokes ab8 slot 9 with only 3 game args, but
-// slot 9 (0x148af0) is the same virtual Createab8_3 calls with 5, so a single C++
-// signature can serve only one - the 3-arg site over-pushes two zeros here (accepted;
-// the retail author called the same slot with two arities). /GX state-index residue.
+// @early-stop
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue). Slot 9
+// (0x148af0 == CPoolItemAB8::v24, the Setup) takes exactly 4 args (info + 3 ints); this
+// site passes {0x18, 0x21, a}, Createab8_3 passes {a, b, c} - one consistent signature.
 RVA(0x00142b70, 0xce)
 CDDSurface* CDDrawPtrCollections::Createab8_24_3(i32 a) {
     CPoolItemAB8* item = new CPoolItemAB8;
-    if (item->v24(this, 0x18, 0x21, a, 0, 0)) {
+    if (item->v24(this, 0x18, 0x21, a)) {
         AddItemA(item);
         m_palBpp = item->m_bitDepth;
         return item;

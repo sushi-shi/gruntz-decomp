@@ -1215,6 +1215,27 @@ i32 CDirectDrawMgr::GetDisplayMode(i32* pWidth, i32* pHeight, i32* pBpp) {
     return 1;
 }
 
+// 0x1437e0 - install the global "restore lost surfaces" handler: store the supplied
+// callback into g_restoreHandler (0x683edc), read back by RestoreLostSurfaces_1437f0
+// below. __cdecl. (Re-homed from src/Stub/BoundaryUpper2.cpp; the sole caller is
+// CDDrawSurfaceMgr::SetHwnd @0x155f50. Byte-exact.)
+RVA(0x001437e0, 0xa)
+void RelayHwnd(i32 (*handler)()) {
+    g_restoreHandler = handler;
+}
+
+// 0x1437f0 - the "restore lost surfaces" fallback CDDSurface::RestoreLost (slot 7)
+// tail-calls when a surface's own restore callback is absent/failed: if the global
+// handler is installed, tail-jump it; else log a warning and return 0. __cdecl.
+RVA(0x001437f0, 0x1b)
+i32 RestoreLostSurfaces_1437f0() {
+    if (g_restoreHandler) {
+        return g_restoreHandler();
+    }
+    DDrawLogLine("WARNING - Surface(s) lost but no restore handler is available\n");
+    return 0;
+}
+
 // 0x143880 - create the process DirectDraw object via a supplied factory callback and,
 // on success, cache it (g_DirectDraw) with its owner context (g_ddCreateCtx); returns 0
 // on success, 1 if the factory is null or fails. __stdcall (ret 0x10 => 4 args).

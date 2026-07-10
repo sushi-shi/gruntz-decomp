@@ -239,7 +239,7 @@ void* CSymTab::Find(const char* path) {
     if (strlen(ext) != 0) {
         strcpy(tmp, ext + 1);
         _strupr(tmp);
-        arg = m_owner->ResolveName(tmp);
+        arg = (void*)PackTag(tmp);
     } else {
         arg = 0;
     }

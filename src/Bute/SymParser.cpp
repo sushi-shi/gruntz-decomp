@@ -8,6 +8,7 @@
 #include <stdlib.h> // atoi (0x11ff10) / _splitpath (0x18c530)
 #include <string.h> // strlen/strcpy/strcmp (inline) / _strlwr (0x18d330)
 #include <io.h>     // _finddata_t / _findfirst / _findnext / _findclose
+#include <time.h>   // time (0x120210) - the MakeSymSeed clock seed
 
 #include <Bute/SymParser.h>
 
@@ -443,7 +444,7 @@ i32 CSymParser::ParseRecords(void* reader, CSymTab* node, char* path, i32 flag) 
         void* extKey = 0;
         if (ext[0] != 0) {
             _strlwr(ext);
-            extKey = ResolveName(ext);
+            extKey = (void*)PackTag(ext);
         }
         SymBuildLeaf(this, &fd, extKey);
         void* rec = node->FindOrAddSym(key);
@@ -500,6 +501,82 @@ void* CSymParser::Clear(i32 final) {
     }
     m_parseArmed = 0;
     return r;
+}
+
+// ---------------------------------------------------------------------------
+// The ButeMgr string<->DWORD "tag" pack/unpack free helpers (__stdcall). These are
+// the real bodies the SymParser.h "ResolveName"/"SymBuildLeaf" placeholder decls were
+// guessing at: PackTag is the file-extension -> int-key mapper (map an upcased name to
+// its packed int key), UnpackTag its inverse. Callers: CSymTab::Find (0x13a040),
+// CSymParser::ParseRecords (0x13b300). Both bodies byte-exact. (Re-homed from
+// src/Stub/BoundaryUpper2.cpp; NO COMDAT folding in MSVC5 - one real home each.)
+// ---------------------------------------------------------------------------
+
+// 0x13b910 - pack up to 4 leading chars of a string into a right-justified DWORD
+// (reverse byte order). __stdcall, 1 arg.
+RVA(0x0013b910, 0x58)
+u32 __stdcall PackTag(const char* s) {
+    if (!s) {
+        return 0;
+    }
+    u32 r = 0;
+    u8* rb = (u8*)&r;
+    i32 len = (i32)strlen(s);
+    if (len > 0) {
+        rb[len - 1] = s[0];
+    }
+    if (len > 1) {
+        rb[len - 2] = s[1];
+    }
+    if (len > 2) {
+        rb[len - 3] = s[2];
+    }
+    if (len > 3) {
+        rb[len - 4] = s[3];
+    }
+    return r;
+}
+
+// 0x13b970 - inverse of PackTag: unpack a DWORD tag into a string (high non-zero byte
+// first), null-terminated. __stdcall, 2 args (tag, dst).
+RVA(0x0013b970, 0x72)
+void __stdcall UnpackTag(u32 tag, char* dst) {
+    if (!dst) {
+        return;
+    }
+    u8* tb = (u8*)&tag;
+    i32 len = 0;
+    if (tb[3]) {
+        len = 4;
+    } else if (tb[2]) {
+        len = 3;
+    } else if (tb[1]) {
+        len = 2;
+    } else if (tb[0]) {
+        len = 1;
+    }
+    if (len > 0) {
+        dst[0] = tb[len - 1];
+    }
+    if (len > 1) {
+        dst[1] = tb[len - 2];
+    }
+    if (len > 2) {
+        dst[2] = tb[len - 3];
+    }
+    if (len > 3) {
+        dst[3] = tb[len - 4];
+    }
+    dst[len] = 0;
+}
+
+// 0x13ba70 - MakeSymSeed: the ButeMgr clock seed builder ParseBuffer/ParseRecords use
+// (returns time(&t) via the leftover-stack-args trick). __cdecl, no args. Declared in
+// SymParser.h / SymTab.h. 0x120210 == CRT time(). Byte-exact.
+RVA(0x0013ba70, 0x10)
+i32 MakeSymSeed() {
+    time_t t;
+    return (i32)time(&t);
 }
 
 // ResolveQualified (0x13bff0): forward (name, arg) into GetRoot()'s CSymTab.

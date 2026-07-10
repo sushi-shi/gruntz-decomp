@@ -1080,6 +1080,42 @@ void CPlaneRender::ResolveColorKey() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x163710 - the plane-serialize op dispatcher CGameLevel::EditDispatch (0x160f70)
+// tail-calls: on kind 4 run the plane Save (0x163780), on kind 7 the plane Load
+// (0x1638c0) - failure returns 0, every other kind (3/5/6/8) returns 1. __stdcall,
+// 4 args (only the stream + kind used). The Save/Load entries are reached here via a
+// __stdcall re-decl of the same RVAs (retail relies on ecx=plane surviving from
+// EditDispatch, passing the stream as the lone stack arg - so a member call would emit
+// the wrong ecx setup). (Re-homed from src/Stub/BoundaryUpper2.cpp; physically between
+// ResolveColorKey 0x163670 and Save 0x163780 in this CPlaneRender TU.)
+extern i32 __stdcall PlaneSaveVia(void* stream); // 0x163780 == CPlaneRender::Save entry
+extern i32 __stdcall PlaneLoadVia(void* stream); // 0x1638c0 == CPlaneRender::Load entry
+// @early-stop
+// jump-table-shape wall (~84%): retail lowers the kind switch (cases 3..8, only 4 and 7
+// active) to a dense `jmp [eax*4+table]`; MSVC here folds the 4 default-equal cases and
+// emits a compare ladder. Forcing 6 explicit cases still merges them (78%); the 2-case
+// ladder is closest. Logic complete.
+RVA(0x00163710, 0x42)
+i32 __stdcall PlaneSerializeDispatch(void* stream, i32 kind, i32, i32) {
+    if (!stream) {
+        return 0;
+    }
+    switch (kind) {
+        case 4:
+            if (!PlaneSaveVia(stream)) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (!PlaneLoadVia(stream)) {
+                return 0;
+            }
+            break;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CPlaneRender::Save (__thiscall, ret 0x4). Serialize the plane to a binary
 // stream: the scroll origin/dims block, the origin/extent rect, four shift/log
 // fields, the tile grid (size-prefixed), and the fixed 0x80-byte name field.

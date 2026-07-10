@@ -29,8 +29,8 @@
 #include <Bute/SymTab.h> // the single full CSymTab layout (+ the CSymParser fwd-decl)
 
 // The name->key map / seed builder ParseBuffer reaches: MakeSymSeed (0x13ba70, cdecl,
-// the leftover-stack-args ctor trick) returns a seed left on the stack. Reloc-masked.
-i32 MakeSymSeed(); // 0x13ba70
+// the clock-seed builder - returns time(&t)); the PackTag/UnpackTag ext<->key helpers.
+// All declared in <Bute/SymTab.h> (included below), defined in SymParser.cpp.
 
 // The shared empty-string literal the root scope is named with (0x6293f4; homed in
 // NetMgrReportError.cpp as extern "C" - the majority convention across the tree; the
@@ -181,8 +181,8 @@ public:
     // (non-zero = text/structured, 0 = binary). Reloc-masked extern.
     i32 Classify(char* buf); // 0x13c080
 
-    // ResolveName (0x13b910): map an upcased name to its int key. Reloc-masked extern.
-    void* ResolveName(const char* s); // 0x13b910
+    // (0x13b910 "ResolveName" was a mislabel: it is the free __stdcall ::PackTag - the
+    // ext->key mapper declared at file scope above. ParseRecords calls PackTag directly.)
 
     // ReParse (0x13c050): if armed (m_parseArmed), Clear(0) then re-parse the cached
     // +0x64 buffer. Returns 0 if not armed, else ParseBuffer's result.

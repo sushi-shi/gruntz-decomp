@@ -60,10 +60,7 @@ extern "C" void RezFree_call(void* p);
 // Abort @0x17b570). Both views are folded onto the canonical class (the union of
 // field knowledge migrated into MoviePlayer.h).
 #include <Io/MoviePlayer.h>
-class CPageStore17b510 {
-public:
-    void Close();
-};
+#include <Crypto/FecCrypt.h> // the +0x540 decode store IS a CFecFile (Close @0x17b570)
 
 // @early-stop
 // Complete + correct (~98%). Residual is two documented walls: (1) the /GX EH
@@ -285,7 +282,7 @@ i32 CMoviePlayer::CloseSmacker() {
     if (!m_streamOpen) {
         return 0;
     }
-    ((CPageStore17b510*)&m_540)->Close();
+    ((CFecFile*)&m_540)->Close();
     if (!m_smackHandle) {
         return 0;
     }

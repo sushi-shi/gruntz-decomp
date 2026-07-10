@@ -28,6 +28,7 @@
 #include <Ints.h>
 #include <Gruntz/GameModeBase.h>
 #include <Gruntz/BoundaryUpper2Views.h>
+#include <Crypto/FecCrypt.h> // CFecFile (the +0x124/+0x138 decode store ~CCredits390a0 tears down)
 #include <rva.h>
 #include <Gruntz/BoundaryLowerDtorsViews.h> // placeholder /GX dtor classes
 
@@ -79,7 +80,7 @@ CHolder8c400::~CHolder8c400() {
 // ===========================================================================
 RVA(0x000390a0, 0x5d)
 CCredits390a0::~CCredits390a0() {
-    ((CPageStore17b510*)this)->Close();
+    ((CFecFile*)this)->Close();
 }
 
 // ===========================================================================

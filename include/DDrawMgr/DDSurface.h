@@ -231,24 +231,34 @@ public:
     POSITION m_pos; // +0x04  cached CPtrList POSITION (the pool-A item slot); pad otherwise
     IDirectDrawSurface* m_8; // +0x08  held DirectDraw surface (released via Release)
     IDirectDrawSurface* m_c; // +0x0c  held back/secondary surface (also released)
-    union {                  // +0x10  DDSURFACEDESC scratch (m_desc-relative accessors)
-        char m_desc[0x24];   //        raw view (Refresh bulk-clears the desc as dwords)
+    // +0x10..+0x7c: the surface's embedded DDSURFACEDESC scratch (0x6c bytes). The pool
+    // slot-9 setup (CPoolItem*::v24) builds it in bulk via the m_ddsd word view; Refresh
+    // and the geometry accessors read it through the named DDSURFACEDESC fields below.
+    // The outer union is matching-neutral (identical offsets) - it only adds the
+    // whole-descriptor word view.
+    union {
+        u32 m_ddsd[(0x7c - 0x10) / 4]; // +0x10  full DDSURFACEDESC word view (dwSize @[0])
         struct {
-            i32 m_descSize; // +0x10  dwSize
-            char m_descpad14[0x18 - 0x14];
-            i32 m_height; // +0x18  dwHeight (compared vs decoded height)
-            i32 m_width;  // +0x1c  dwWidth  (compared vs decoded width)
-            i32 m_pitch;  // +0x20  lPitch (row stride)
+            union {                // +0x10  DDSURFACEDESC scratch (m_desc-relative accessors)
+                char m_desc[0x24]; //        raw view (Refresh bulk-clears the desc as dwords)
+                struct {
+                    i32 m_descSize; // +0x10  dwSize
+                    char m_descpad14[0x18 - 0x14];
+                    i32 m_height; // +0x18  dwHeight (compared vs decoded height)
+                    i32 m_width;  // +0x1c  dwWidth  (compared vs decoded width)
+                    i32 m_pitch;  // +0x20  lPitch (row stride)
+                };
+            };
+            i32 m_lockBits;            // +0x34  desc lpSurface (locked bits pointer; returned by
+                                       //         Lock, used as the pixel buffer by Fill/BlitDirect)
+            char m_pad38[0x64 - 0x38]; // +0x38
+            i32 m_64;                  // +0x64  pixel-format bit depth / colour-key colour
+            i32 m_rMask;               // +0x68  DDPIXELFORMAT R channel bitmask
+            i32 m_gMask;               // +0x6c  DDPIXELFORMAT G channel bitmask
+            i32 m_bMask;               // +0x70  DDPIXELFORMAT B channel bitmask
+            char m_pad74[0x7c - 0x74]; // +0x74
         };
     };
-    i32 m_lockBits;            // +0x34  desc lpSurface (locked bits pointer; returned by Lock,
-                               //         used as the pixel buffer by Fill/BlitDirect)
-    char m_pad38[0x64 - 0x38]; // +0x38
-    i32 m_64;                  // +0x64  pixel-format bit depth / colour-key colour
-    i32 m_rMask;               // +0x68  DDPIXELFORMAT R channel bitmask
-    i32 m_gMask;               // +0x6c  DDPIXELFORMAT G channel bitmask
-    i32 m_bMask;               // +0x70  DDPIXELFORMAT B channel bitmask
-    char m_pad74[0x7c - 0x74]; // +0x74
     i32 m_dontOwn;             // +0x7c  don't-own flag (bit0 => surfaces not released)
     i32 m_80[2];               // +0x80  RECT left/top (cleared)
     i32 m_88;                  // +0x88  width

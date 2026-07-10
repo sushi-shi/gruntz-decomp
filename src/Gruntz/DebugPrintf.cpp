@@ -44,6 +44,22 @@ public:
     CDebugConfig* InitFromEnv(); // 0x185000
 };
 
+// The debug-config singleton (VA 0x6bf848); InitFromEnv drives its members g_6bf850
+// (the +0x8 CRangeSet) and g_6bf8dc (the +0x94 mode word), which this TU also reaches
+// as free globals.
+DATA(0x006bf848)
+extern CDebugConfig g_debugConfig;
+
+// 0x184b70 - re-initialise the debug config from %DPRINTF% (tail-forward to InitFromEnv
+// on the singleton). Free __cdecl wrapper. (Re-homed from src/Stub/BoundaryUpper2.cpp;
+// the "ClearHash_184b70" name + the CHashTail/Obj1397a0/CSymParser proximity views were
+// a mis-attribution - the byte pattern `mov ecx,&g_debugConfig; jmp InitFromEnv` proves
+// it is a CDebugConfig re-init, not a hash clear. Byte-exact.)
+RVA(0x00184b70, 0xa)
+void RezDebugInit() {
+    g_debugConfig.InitFromEnv();
+}
+
 RVA(0x00185000, 0x1a6)
 CDebugConfig* CDebugConfig::InitFromEnv() {
     char buf[256];

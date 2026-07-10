@@ -29,6 +29,66 @@ struct CDDrawFrameSource {
 SIZE_UNKNOWN(CDDrawFrameSource);
 
 // ---------------------------------------------------------------------------
+// CDDrawWorkerA::~CDDrawWorkerA (0x1570d0; its ??_G scalar-deleting wrapper is 0x1570b0,
+// which calls this then conditionally frees). The non-deleting destructor poisons the
+// worker's timing/marker fields to their sentinels (the m_20/m_38 0x80000000/-1 timer
+// pair, reset THREE times; m_5c; the byte marker m_78) and nulls the header
+// (m_04/m_08/m_ctx). cl stamps the CObject grand-base vtable (g_wapObjectDtorVtbl
+// @0x5e8cb4) at the tail via the implicit base-subobject teardown - no manual store.
+// The redundant m_20/m_38 resets go through volatile lvalues so cl keeps all three
+// (retail does not DCE them). (Re-homed from src/Stub/BoundaryUpper2.cpp; the
+// CDDWorkerFlatA volatile-view is dissolved onto the real CDDrawWorkerA - clean-room
+// mandate: model the class, not the view. The non-polymorphic flat view scored 83.67%
+// only by dropping the base stamp; the real polymorphic destructor is the correct shape.)
+// @early-stop
+// constant-materialization scheduling wall: verified byte-faithful via llvm-objdump -dr -
+// EVERY store + the tail vptr stamp match (the stamp reloc is IMAGE_REL_I386_DIR32
+// ??_7CObject@@6B@ on BOTH sides). The lone diff is a 2-instruction swap: retail hoists
+// `or eax,-1` (the -1 timer sentinel) ahead of the `mov byte [+0x78],0` store; cl schedules
+// the byte store first. Not source-steerable (both constants are materialized up front by
+// retail; cl defers eax until its first use at m_38). Logic + bytes complete.
+RVA(0x001570d0, 0x39)
+CDDrawWorkerA::~CDDrawWorkerA() {
+    volatile i32* pHi = &m_20;
+    volatile i32* pLo = &m_38;
+    m_78 = 0;
+    *pHi = (i32)0x80000000;
+    *pLo = -1;
+    *pHi = (i32)0x80000000;
+    *pLo = -1;
+    m_5c = (i32)0x80000000;
+    *pHi = (i32)0x80000000;
+    *pLo = -1;
+    m_04 = -1;
+    m_08 = 0;
+    m_ctx = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CDDrawWorkerB::~CDDrawWorkerB (0x157240; ??_G wrapper 0x157220). Mirror of
+// ~CDDrawWorkerA - the int-frame worker's m_78 is a DWORD here (byte in A). Same
+// volatile-pinned redundant m_20/m_38 pair + the tail ??_7CObject@@6B@ base stamp.
+// @early-stop
+// constant-materialization scheduling wall: same as ~CDDrawWorkerA - byte-faithful modulo
+// the `or eax,-1` / `mov [+0x78],0` 2-instruction swap; the base vptr stamp reloc matches.
+RVA(0x00157240, 0x3c)
+CDDrawWorkerB::~CDDrawWorkerB() {
+    volatile i32* pHi = &m_20;
+    volatile i32* pLo = &m_38;
+    m_78 = 0;
+    *pHi = (i32)0x80000000;
+    *pLo = -1;
+    *pHi = (i32)0x80000000;
+    *pLo = -1;
+    m_5c = (i32)0x80000000;
+    *pHi = (i32)0x80000000;
+    *pLo = -1;
+    m_04 = -1;
+    m_08 = 0;
+    m_ctx = 0;
+}
+
+// ---------------------------------------------------------------------------
 RVA(0x00157110, 0x20)
 i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
     m_78 = (char)a3;

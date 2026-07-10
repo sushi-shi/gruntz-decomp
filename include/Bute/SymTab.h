@@ -64,9 +64,15 @@ struct CSymTabNode {
 };
 VTBL(CSymTabNode, 0x001ef748);
 
-// A name-keyed seed builder (0x13ba70): returns time(0)-style seed, reloc-masked.
+// A name-keyed seed builder (0x13ba70): returns the clock seed time(&t), reloc-masked.
 // Called as ctor arg5 so its leftover stack args double as the next ctor args.
-i32 MakeSymSeed(); // 0x13ba70 (Boundary stub; cdecl, no args of its own)
+i32 MakeSymSeed(); // 0x13ba70 (defined in SymParser.cpp; cdecl, no args of its own)
+
+// The ButeMgr string<->DWORD "tag" pack/unpack free helpers (__stdcall), defined in
+// SymParser.cpp. PackTag maps a file-extension string to its packed int key (the
+// name->key map CSymTab::Find + CSymParser::ParseRecords reach); UnpackTag inverts it.
+u32 __stdcall PackTag(const char* s);         // 0x13b910
+void __stdcall UnpackTag(u32 tag, char* dst); // 0x13b970
 
 // ---------------------------------------------------------------------------
 // CHashTable - the engine string-keyed hash table embedded at +0x38 / +0x40

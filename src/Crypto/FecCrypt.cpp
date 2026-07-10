@@ -13,77 +13,65 @@
 #include <rva.h>
 #include <string.h> // strlen (inlined as repnz scasb at /O2 /Oi)
 
-// ---------------------------------------------------------------------------
-// The "FEC File" archive reader (0x17b5f0): validates an FEC-format encrypted
-// resource container and walks its index. The class owns a polymorphic byte
-// stream at +0x124 (Open/Read/Seek through its vtable) and a name/checksum
-// helper at +0x138. Field names are placeholders; only offsets + code bytes
-// are load-bearing.
-// ---------------------------------------------------------------------------
-
-// The stream subobject at CFecFile+0x124: a polymorphic file/byte source. Its
-// virtuals are DECLARED only (foreign vtable, reloc-masked dispatch). Slots:
-// Open @+0x28, Seek @+0x30, Read @+0x3c (all __thiscall by MSVC default).
-class FecStream {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual i32 Open(const char* name, i32 a2, i32 a3); // +0x28
-    virtual void Slot2C();                              // +0x2c
-    virtual i32 Seek(i32 off, i32 origin);              // +0x30
-    virtual void Slot34();
-    virtual void Slot38();
-    virtual i32 Read(void* buf, i32 size);        // +0x3c
-    virtual i32 Write(const void* buf, i32 size); // +0x40
-    virtual void Slot44();
-    virtual void Slot48();
-    virtual void Slot4C();
-    virtual void Close(); // +0x50
-};
-
-// The helper at CFecFile+0x138 (its Op at 0x1b4d7c is a reloc-masked rel32 call).
-struct FecIndex {
-    void Op(i32 a1, i32 a2); // 0x1b4d7c  __thiscall
-    void* m_00;
-    i32 m_04;
-    i32 m_08; // +0x08  read as the first Op arg in the loop
-};
+#include <Crypto/FecCrypt.h> // the unified CFecFile / FecStream / FecIndex shape
 
 // The diagnostics sink (0x11f890): variadic cdecl `(buf, fmt, ...)` logger.
 extern "C" int FecLog(char* buf, const char* fmt, ...);
-
-class CFecFile {
-public:
-    i32 CreateArchive(const char* name); // 0x17b8a0
-    i32 ReadArchive(const char* name);   // 0x17b5f0
-    void OnFail();                       // 0x17b5a0 (reloc-masked)
-
-    i32 m_00;           // +0x00  open-gate (must be nonzero)
-    i32 m_04;           // +0x04  already-open flag
-    i32 m_08;           // +0x08
-    i32 m_0c;           // +0x0c  version major (12-byte header word 0)
-    i32 m_10;           // +0x10  version minor
-    i32 m_14;           // +0x14  entry count
-    char m_18[0x10c];   // +0x18  per-entry record (m_11e WORD + m_120 stride inside)
-    FecStream m_stream; // +0x124
-    char _pad128[0x138 - 0x128];
-    FecIndex m_index; // +0x138
-    char* m_13c;      // +0x13c  per-entry offset table (dwords)
-    i32 m_140;        // +0x140
-};
 
 // The version WORD (0x11e) + per-entry seek stride (0x120) live inside the m_18
 // record buffer (0x18 + 0x106 / 0x108).
 #define FEC_W(p) (*(u16*)((char*)(p) + 0x11e))
 #define FEC_STRIDE(p) (*(i32*)((char*)(p) + 0x120))
+
+// ---------------------------------------------------------------------------
+// The CMoviePlayer decode-store lifecycle (this same object is CMoviePlayer's m_540).
+// Re-homed from src/Stub/BoundaryUpper2.cpp where they were the placeholder view
+// CPageStore17b510::Init/Close/Free/Lookup (== CMovieDecodeStore Begin/Abort/-/OpenB);
+// they are CFecFile methods (same +0x124 stream, +0x138 index). Init/OnFail byte-exact.
+// ---------------------------------------------------------------------------
+
+// 0x17b510 - Init: one-time reset+arm of the store. Bail if already armed (m_00);
+// else clear the flags/header, empty the index, and set the open-gate. __thiscall.
+RVA(0x0017b510, 0x55)
+i32 CFecFile::Init() {
+    if (m_00) {
+        return 0;
+    }
+    m_04 = 0;
+    m_08 = 0;
+    m_index.RemoveAt(0, -1);
+    memset(&m_0c, 0, 12); // m_0c, m_10, m_14
+    memset(m_18, 0, sizeof(m_18));
+    m_134 = 0;
+    m_00 = 1;
+    return 1;
+}
+
+// 0x17b570 - Close: if armed, run the fail teardown (OnFail), empty the index and drop
+// the open-gate. __thiscall. (== CMovieDecodeStore::Abort.)
+RVA(0x0017b570, 0x24)
+void CFecFile::Close() {
+    if (!m_00) {
+        return;
+    }
+    OnFail();
+    m_index.RemoveAt(0, -1);
+    m_00 = 0;
+}
+
+// 0x17b5a0 - OnFail: drop the active stream (m_stream.Discard, slot 0x54) and clear the
+// open flags when the store is armed and open; returns whether it did work. __thiscall.
+RVA(0x0017b5a0, 0x48)
+i32 CFecFile::OnFail() {
+    if (m_00 && (m_04 || m_08)) {
+        m_stream.Discard();
+        m_04 = 0;
+        m_08 = 0;
+        m_134 = 0;
+        return 1;
+    }
+    return 0;
+}
 
 // @early-stop
 // validation-reader wall: virtual stream dispatch + the per-entry index walk
@@ -132,7 +120,7 @@ i32 CFecFile::ReadArchive(const char* name) {
         m_index.Op(m_140, w - 0x19d);
 
         for (u16 i = 1; i < (u16)m_14; i++) {
-            i32 base = *(i32*)(m_13c + i * 4 - 4);
+            i32 base = m_13c[i - 1];
             i32 stride = FEC_STRIDE(this);
             if (m_stream.Seek(stride, 1) != base + stride) {
                 goto fail;
@@ -145,13 +133,28 @@ i32 CFecFile::ReadArchive(const char* name) {
             if (m_stream.Seek(w2 - 0x2b8, 1) != base + stride + w2 - 0x1ac) {
                 goto fail;
             }
-            m_index.Op(m_index.m_08, base + stride + *(i32*)(m_13c + i * 4 - 4) - 0x1ac);
+            m_index.Op(m_index.m_08, base + stride + m_13c[i - 1] - 0x1ac);
         }
     }
     return 1;
 
 fail:
     OnFail();
+    return 0;
+}
+
+// 0x17b840 - Lookup: resolve the 1-based entry `idx` (must be in [1, m_14] with the
+// store armed+open). Seek the stream to that entry's recorded offset (m_13c[idx-1]); if
+// the seek lands exactly there, return the cached result m_128, else 0. __thiscall.
+// (== CMovieDecodeStore::OpenB.)
+RVA(0x0017b840, 0x53)
+i32 CFecFile::Lookup(u32 idx) {
+    if (m_04 && m_00 && idx <= (u32)m_14 && idx != 0) {
+        i32* slot = &m_13c[idx - 1];
+        if (m_stream.Seek(*slot, 0) == *slot) {
+            return m_128;
+        }
+    }
     return 0;
 }
 

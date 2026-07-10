@@ -377,6 +377,20 @@ C17e240::~C17e240() {
 }
 
 // ===========================================================================
+// 0x17e230 - the CString-by-value trace sink CFaderMgr::Add feeds its formatted
+// diagnostic strings to (14 call sites). The retail body is empty (a stripped
+// debug/TRACE helper), so the only emitted code is the by-value CString param's
+// destructor at exit (~CString @0x1b9cde, reloc-masked). __stdcall, ret 4. The sibling
+// of the const-char* Fader_Trace (0x1b9d4c) above. (Re-homed from
+// src/Stub/BoundaryUpper2.cpp; the DBuf17e230 placeholder view is dissolved onto the
+// real MFC CString.) Byte-exact.
+// ===========================================================================
+RVA(0x0017e230, 0xc)
+void __stdcall Fader_TraceStr(CString s) {
+    (void)s;
+}
+
+// ===========================================================================
 // 0x17e2a0 - CFaderArray::Serialize (slot 2): the MFC CObArray<CFader*>::Serialize
 // with SetSize inlined. Storing: WriteCount then Write the raw 4-byte-element block;
 // loading: ReadCount, resize the buffer (alloc / grow-with-copy / shrink-in-place per
