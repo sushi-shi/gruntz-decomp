@@ -13,6 +13,15 @@
 // Evidence gathered (for a later identity-recovery pass):
 //   CWorker39f20 (0x39f20)   <- ??_G @0x3a1a0 + CGruntzMgr::ChangeState_8fab0 (a state
 //                               object ChangeState tears down; ~CRezBufferObject shape).
+//                               IDENTITY (matcher-7): the derived vtable 0x5e971c is
+//                               ??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@6B@ (config/
+//                               vtable_names.csv) - i.e. this IS a standalone out-of-line
+//                               dtor of the CArray<PLAYLISTINFOSTRUCT*> template (same
+//                               instantiation CMovieScratch models in MoviePlayer.cpp,
+//                               where its dtor is inline+folded). The owning STATE object
+//                               that holds this CArray member is still unrecovered, so it
+//                               stays a placeholder; the real home is a CArray<...> member
+//                               teardown of that state class.
 //   CCredits390a0 (0x390a0)  <- CGruntzMgr::ChangeState_8fab0 (a page/credits STORE that
 //                               owns an MFC CFile+CByteArray; NOT CCreditsState, whose
 //                               real dtor is 0x8d5e0).

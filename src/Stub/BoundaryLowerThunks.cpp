@@ -12,9 +12,19 @@
 // /g_6473d8/g_levelStr/g_tinyFont init thunks (-> CustomWorldDialog/Multi/CustomWorldInfoDlg
 // /Fonts). REMAINING (no clean home):
 //   * class dtors 0x80cf0 (~CGameApp) / 0x85540+0x855a0 (~CGameMgr+scalar) / 0x94c10
-//     (~CGameWnd): the bodies match Wap32.h's INLINE dtors exactly, but their real home
-//     is the out-of-line vtable-anchor emission in GameApp/GruntzMgr/GameWnd.cpp - which
-//     needs the compiler-emitted-vtable + @rva-symbol labeling (vtable-gate risk). DEFER.
+//     (~CGameWnd): BYTE-PROVEN un-homeable, not merely risky (matcher-7 verified via
+//     llvm-objdump -t on the base objs). Wap32.h makes these dtors INLINE, so gameapp.obj
+//     /gamewnd.obj emit ONLY ??_GCGameApp/??_GCGameWnd (the scalar-deleting dtor, with the
+//     plain ??1 fully INLINED into it) + ??_7CGameApp/??_7CGameWnd - there is NO separate
+//     out-of-line ??1 in the real class's obj. Retail DOES emit a standalone ??1 (at these
+//     RVAs), so it must come from somewhere. De-inlining the header dtor to emit ??1
+//     out-of-line would REGRESS the derived dtors: CGruntzApp::~CGruntzApp / CGruntzWnd::
+//     ~CGruntzWnd INLINE the base-subobject teardown (CloseResources()+counter dec / Destroy
+//     ()+s_activeWnd=0), byte-exact, which requires the base dtor stay inline-visible. And
+//     CGameMgr is namespaced WAP32:: in the reconstruction (to disambiguate CGruntzMgr), so
+//     its emission mangles ??1CGameMgr@WAP32@@ - not retail's ??1CGameMgr@@. So the local
+//     view IS the byte-necessary out-of-line ??1 emitter; it CANNOT dissolve without
+//     regressing the derived dtors. KEEP (100% byte-exact). Final-sweep: leave as-is.
 //   * g_obj646778 (CFileIO) / g_str649618 / g_font64ead8 / g_mgr6451a8: DATA-pinned HERE
 //     (no external owner TU) - the thunk + its global stay together.
 //   * placeholder-identity leaves (CInitd5d70 / CSettere56b0 / CStatusBaseSub100780 /

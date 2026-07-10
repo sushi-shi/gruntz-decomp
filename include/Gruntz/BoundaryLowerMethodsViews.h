@@ -34,11 +34,13 @@
 //                (RunEntranceMove mov ecx,esi), m_1a0==CGrunt::m_moveMode, Method@0x3bd9
 //                == inherited CUserLogic::LoadGruntTypeTable.
 //
+// HOMED (matcher-7): C0b4c40 -> CUFO::SerializeMove (src/Gruntz/GameObjectCtors.cpp),
+//   vtbl slot 1 (thunk 0x3fb7 -> 0xb4c40). The base slot-1 re-signature
+//   (CUserBase::SerializeMove 4-arg) that blocked it is now done; the 0x3035 chain
+//   resolves to CUFO::Serialize (0xb4d30), m_10 == the bound CGameObject.
+//
 // BLOCKED - vtable-attributed but the home needs a base-model/conflict fix a follow-up
 // must do (each stays @early-stop in place):
-//   C0b4c40  IS CUFO::SerializeMove (vtbl slot 1, thunk 0x3fb7 -> 0xb4c40); its 4-arg
-//                shape can't override the CPathHazard/CUserBase placeholder slot-1 sig
-//                (Ufo.h) - needs the base slot-1 re-signature first.
 //   C112bf0  IS CCheckpointTriggerSwitchLogic::M (vtbl slot 3, thunk 0x36fc); home
 //                needs the grid-access chain (g_reg->m_world->m_24->m_5c ==
 //                BrickzAttrMgr->BrickzGridDesc, C77dc0's grid) modeled on the
@@ -134,21 +136,10 @@ struct C9cab0 {
 };
 SIZE_UNKNOWN(C9cab0);
 
-// 0x0b4c40 - dispatch a 4-arg action (0x3035); on success + arg2==8 arm the +0x10 sub.
-struct CSubB4 {
-    char pad0[0x50];
-    i32 m_50; // +0x50
-    i32 m_54; // +0x54
-    i32 m_58; // +0x58
-};
-SIZE_UNKNOWN(CSubB4);
-struct C0b4c40 {
-    char pad0[0x10];
-    CSubB4* m_10;                                 // +0x10
-    i32 Dispatch3035(i32 a, i32 b, i32 c, i32 d); // 0x3035
-    i32 Handle(i32 a1, i32 a2, i32 a3, i32 a4);
-};
-SIZE_UNKNOWN(C0b4c40);
+// (0x0b4c40 C0b4c40::Handle re-homed to src/Gruntz/GameObjectCtors.cpp as the REAL
+// CUFO::SerializeMove - vtable slot 1 (thunk 0x3fb7). 0x3035 == CUFO::Serialize
+// (0xb4d30); m_10 == the bound CGameObject, +0x58/+0x50/+0x54 ==
+// m_drawActive/m_drawFillCmd/m_fillFraction. See <Gruntz/Ufo.h>.)
 
 // 0x0bd450 - init: run the base ctor (0x3625) then open the "c:\gruntz.log" log.
 struct Cbd450 {

@@ -85,23 +85,11 @@ i32 C9cab0::M(i32 arg) {
     return local;
 }
 
-// ===========================================================================
-// 0x0b4c40 - dispatch a 4-arg action (0x3035); on success, when arg2 == 8, arm the
-// +0x10 sub-object (+0x58 = 1, +0x50 = arg2, +0x54 = 0x80). __thiscall, ret 0x10.
-// ===========================================================================
-RVA(0x000b4c40, 0x4b)
-i32 C0b4c40::Handle(i32 a1, i32 a2, i32 a3, i32 a4) {
-    if (!Dispatch3035(a1, a2, a3, a4)) {
-        return 0;
-    }
-    if (a2 == 8) {
-        CSubB4* s = m_10;
-        s->m_58 = 1;
-        s->m_50 = a2;
-        s->m_54 = 0x80;
-    }
-    return 1;
-}
+// (0x0b4c40 C0b4c40::Handle re-homed to src/Gruntz/GameObjectCtors.cpp as the REAL
+// CUFO::SerializeMove - vtable slot 1 (thunk 0x3fb7 -> 0xb4c40). The 0x3035 chain
+// resolves to CUFO::Serialize (0xb4d30); m_10 == the bound CGameObject, +0x58/+0x50/
+// +0x54 == m_drawActive/m_drawFillCmd/m_fillFraction. The base slot-1 re-signature
+// (CUserBase::SerializeMove 4-arg) that blocked this is now done. See <Gruntz/Ufo.h>.)
 
 // ===========================================================================
 // 0x0bd450 - init: run the base ctor (0x3625) then open the "c:\gruntz.log" log

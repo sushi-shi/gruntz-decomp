@@ -18,9 +18,9 @@ public:
     CUFO(CGameObject* obj);
     virtual ~CUFO() OVERRIDE;    // slot 0
     virtual i32 Tick() OVERRIDE; // slot 16
-    // CUFO's serialize (slot 1 in retail): kept a plain reconstructed method - its
-    // 4-arg shape can't override the base's placeholder slot-1 signature; the vtable
-    // slot stays inherited-attributed (reloc-masked).
+    // CUFO::SerializeMove (slot 1, 0xb4c40) is the real override (defined in
+    // GameObjectCtors.cpp): it wraps this non-virtual field-transfer helper and, on
+    // mode 8, re-seeds the ctor's draw-fill state.
     i32 Serialize(void* stream, i32 tag, i32 c, i32 d);      // 0x0b4d30
     i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (base chain; call-only)
 };

@@ -363,6 +363,29 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
 }
 
 // ---------------------------------------------------------------------------
+// CUFO::SerializeMove (0x0b4c40) - vtable slot 1 (the real slot-1 override; thunk
+// 0x3fb7). Chains the 647-byte CUFO::Serialize helper (call 0x3035 -> 0xb4d30, the
+// UFO's field-transfer serialize); bails 0 on failure. On success + mode 8 it
+// re-applies the ctor's draw-fill render state on the bound object (the same
+// m_drawActive=1 / m_drawFillCmd=8 / m_fillFraction=0x80 the ctor seeds above).
+// (Re-homed from the C0b4c40 boundary placeholder: m_10 == the bound CGameObject,
+// +0x58/+0x50/+0x54 == m_drawActive/m_drawFillCmd/m_fillFraction.)
+// ---------------------------------------------------------------------------
+RVA(0x000b4c40, 0x4b)
+i32 CUFO::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
+    if (!Serialize(ar, mode, c, d)) {
+        return 0;
+    }
+    if (mode == 8) {
+        CGameObject* o = m_object;
+        o->m_drawActive = 1;
+        o->m_drawFillCmd = mode;
+        o->m_fillFraction = 0x80;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CUFO::Serialize (0x0b4d30) - the UFO's serialize override. Same archetype as
 // CKitchenSlime::Serialize: chain the shared CUserLogic serialize (0x16e7f0) and
 // the +0x34 serializable sub-object (0x408c00 via the 0x1aff thunk) first - bail
