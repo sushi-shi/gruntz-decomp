@@ -11,6 +11,26 @@
 // only on the CUserLogic base hierarchy from <Gruntz/UserLogic.h>, and Tick is a
 // plain __thiscall member whose codegen depends only on its body + offsets).
 // Only offsets / code bytes are load-bearing; names are placeholders.
+//
+// DE-FRAGMENTATION ASSESSMENT (matcher-1): NOT splittable - case-(b) single-class
+// /Gy-COMDAT scatter (cf. WwdGameObject / LightFxRender). This TU is essentially ONE
+// class, CVoiceTrigger : CUserLogic (the only "other" body is the folded foreign CUFO
+// leaf dtor L_13400 @0x13400, an RVA-homed orphan, not a splittable family). Its 10
+// methods are function-level-scattered across two far-apart .text bands with 2213
+// foreign COMDATs interleaved over the full ~1 MB span (0x133b0..0x11a7ae):
+//   * band 1 = the boundary orphan-COMDAT pool (0x133b0..0x135a0): GetTypeTag / no-arg
+//     ctor / Serialize / ~dtor + L_13400, with CRT __non_rtti_object funclets between
+//     them (the low-RVA leaf-dtor/Serialize pool shared by many classes);
+//   * band 2 (0x119760..0x11a700): VoiceTriggerStep / 1-arg ctor / InitActReg /
+//     FireActivation / RegisterActs / Tick - and WITHIN it the linker threads the
+//     FOREIGN sibling CGruntVoice (GruntVoice.cpp: ctor 0x1198a0, ~dtor 0x119ae0,
+//     InitActReg 0x119dc0, Dispatch 0x119e40) + RegisterActs_6514d8
+//     (LogicActRegistrars.cpp 0x119fa0) + CRT ___inittime BETWEEN CVoiceTrigger's own
+//     methods, so they are never contiguous.
+// No sub-cluster of CVoiceTrigger forms a clean own-block; splitting by band leaves
+// every resulting TU still spanning the same range with the same foreign interleave =
+// zero contiguity gained. The scatter is the /Gy linker's, not source misplacement;
+// one .cpp already = one .obj here. STOP-EARLY.
 #include <Gruntz/VoiceTrigger.h>          // canonical CVoiceTrigger : CUserLogic
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
 #include <Gruntz/BoundaryLeafLogicViews.h> // L_13400 (CUFO fold-flat leaf dtor, RVA-homed here)
