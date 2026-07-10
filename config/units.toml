@@ -629,6 +629,13 @@ unit = "image"
 source = "src/Image/Image.cpp"
 flags = "eh"
 
+# CRezImage/CImageExtLoader REZ-image loaders (RVA band 0x1757c0-0x1772e0), split out
+# of the former `image` god-TU so each class de-fragments into its own contiguous TU.
+[[unit]]
+unit = "rezimage"
+source = "src/Image/RezImage.cpp"
+flags = "eh"
+
 [[unit]]
 unit = "cimage"
 source = "src/Image/CImage.cpp"
