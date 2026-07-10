@@ -81,6 +81,9 @@ public:
         void* buf,
         i32 z
     ); // 0x143950 install a 256-entry palette from a packed RGB-triplet buffer (DDrawPtrCollections.cpp)
+    // Install the trailing packed-RGB palette from an in-memory file image: bail on a
+    // null buffer or a size < 0x3e8, else forward (buf + size - 0x300, tag) to Make950.
+    CDDPalette* Make950Trailing(u8* buf, i32 size, i32 tag); // 0x1439f0
     // Install a 256-entry RGBQ display palette into m_palette (+0x53c) then mark
     // it present (m_hasPalette=1) and latch the tag (m_940). *From copies the cache
     // held by a CDDPalette wrapper (its +0x0c PALETTEENTRY cache); *Direct copies a

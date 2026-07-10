@@ -168,7 +168,7 @@ public:
     virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x0147b0  host/paint poll
     virtual i32 InputVirtual() OVERRIDE; // slot 8  (+0x20) 0x014520  random-title roll (page gate)
     virtual i32 Vslot09(i32)
-        OVERRIDE; // slot 9  (+0x24) 0x014120  (declared-only: 426B EH, deferred)
+        OVERRIDE; // slot 9  (+0x24) 0x014120  title-screen entry (425B /GX; Attract.cpp)
     virtual i32 FrameSlot28(i32 arg) OVERRIDE; // slot 10 (+0x28) 0x014340  per-frame voice poll
     virtual i32 Vslot0c(i32, i32)
         OVERRIDE; // slot 12 (+0x30) 0x014720  (declared-only: ESC/SPACE/ENTER cmd)

@@ -126,6 +126,10 @@ extern "C" i32 sscanf(const char* buf, const char* fmt, ...);     // 0x120900
 struct CButeValueNode {
     i32 type;     // +0x00
     void* pValue; // +0x04
+
+    CButeValueNode() {}
+    // 0x1741b0 - box a copy of another value node (the two-arg "boxed value" ctor).
+    CButeValueNode(i32 valType, CButeValueNode* src);
 };
 SIZE(CButeValueNode, 0x8); // { type, pValue }
 
@@ -680,6 +684,33 @@ CButeRef6* CButeMgr::GetRef6(const char* tag, const char* key, CButeRef6* def) {
         }
     }
     return def;
+}
+
+// CButeValueNode::CButeValueNode (0x1741b0) - the two-arg "boxed value" ctor: tag
+// `this` with `type`, op-new an 8-byte CButeValueNode, copy `src`'s {type, pValue}
+// into it, and stow the boxed copy in this->pValue (or 0 on alloc failure). __thiscall
+// (type, src), returns this. Attributed via the 8-byte {type, pValue} receiver shape;
+// the only caller is the bute value-store builder 0x173dd0 (still a GapFunctions.cpp
+// gap, so the exact ButeType tag `type` carries stays TBD). Re-homed from GapFunctions.cpp.
+// @early-stop
+// 93%: the whole body (tag, op-new, the two-dword copy of src, and the branched
+// this->pValue store + duplicated return-this epilogue) is byte-faithful. The one
+// residual instruction is the alloc-fail arm's zero-store: retail materializes 0 via
+// `xor eax,eax; mov [esi+4],eax` (5 B) where MSVC5 on this source emits the equivalent
+// `mov dword ptr [esi+4],0` (7 B) - a zero-materialization coin-flip (the unconditional
+// `this->pValue = n` form that would reuse the failed-new eax merges the two epilogues
+// and drops to 78%). Not source-steerable. Deferred to the final sweep.
+RVA(0x001741b0, 0x39)
+CButeValueNode::CButeValueNode(i32 type, CButeValueNode* src) {
+    this->type = type;
+    CButeValueNode* n = (CButeValueNode*)operator new(8);
+    if (n) {
+        n->type = src->type;
+        n->pValue = src->pValue;
+        this->pValue = n;
+    } else {
+        this->pValue = 0;
+    }
 }
 
 RVA(0x001741f0, 0x4e)

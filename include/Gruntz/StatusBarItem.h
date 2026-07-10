@@ -65,8 +65,13 @@ public:
     }
 #endif
     virtual ~CStatusBarItem();
-    virtual i32 SbiVfunc0();   // slot 1
-    virtual void SbiSlot2();   // slot 2
+    virtual i32 SbiVfunc0(); // slot 1
+    // vtable slot 2 (0x100660): the base 10-arg setup - bails (returns 0) if the object
+    // id (a2) or owner (a1) is null, else stores the eight live args into the base-region
+    // fields (the last two args are ABI-accepted but unused). CSBI_RectOnly overrides it
+    // (0xe86e0) to additionally mark m_4 = 1 (active).
+    virtual i32
+    Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10); // slot 2
     virtual void SbiSlot3();   // slot 3
     virtual void SbiSlot4();   // slot 4
     virtual void SbiSlot5();   // slot 5
@@ -85,6 +90,7 @@ public:
     SbiRect m_rect14; // +0x14  Setup args 5..8
     i32 m_24;         // +0x24  Setup arg2
     i32 m_28;         // +0x28
+    i32 m_2c;         // +0x2c  Setup arg1 (owner/id target)
 };
 SIZE_UNKNOWN(CStatusBarItem);
 

@@ -167,6 +167,86 @@ void CAttract::ReleaseResources() {
     CState::ReleaseResources();
 }
 
+// The random-pick target string (DAT_0060b5bc) and the shared empty string (0x6293f4)
+// the ATTRACT_TITLE key is built from; the sound-enabled gate; the cached timeGetTime /
+// wsprintfA import fn-ptrs the title roll reaches through. All reloc-masked.
+DATA(0x0020b5bc)
+extern char s_dat60b5bc[];
+DATA(0x002293f4)
+extern char g_emptyString[];
+DATA(0x0021ab20)
+extern i32 g_sndEnabled;
+DATA(0x002c4650)
+extern u32(WINAPI* g_pTimeGetTime)();
+DATA(0x002c44c0)
+extern int(WINAPI* g_pwsprintfA)(char* buf, const char* fmt, ...);
+#define s_ATTRACT_TITLE_s "ATTRACT_TITLE%s"
+
+// CAttract::Vslot09(arg) (slot 9 / +0x24, 0x014120): the full attract title-screen
+// entry (/GX EH frame from the CString format local). Hide the cursor, roll a random
+// TITLE%d and run it (as the siblings do), advance the active menu page (Method_158c70),
+// then - via the inline MS-CRT LCG (== Rng::Next, seeded through the cached timeGetTime
+// fn-ptr) - build a random "ATTRACT_TITLE%s" key, look it up in the registrar's
+// CMapStringToOb (m_28+0x10) to (re)acquire the host/sound sub-object (m_host), (re)play
+// its voice + latch the idle timeout (or a 0x1f40 default), then poke each g_actorList
+// actor's slot-5 virtual. Returns 1. Re-homed from src/Stub/GapFunctions.cpp.
+// @early-stop
+// 98.3%: the whole 425B body - the /GX frame, the ShowCursor roll, the TITLE%d format +
+// RunTitleSeq, the page fade, the inline MS-CRT LCG + %2 pick, the wsprintfA, the
+// CMapStringToOb::Lookup host (re)acquire, the sound/idle branch and the actor slot-5
+// loop - is byte-faithful. The only residue is a pair of register-selection coin-flips:
+// retail seats m_c in eax across the Lookup argument setup where cl uses ecx, and loads
+// the actor's vptr through eax where cl uses edx. A pure regalloc choice (operand-order /
+// spelling variations do not flip it; docs/patterns/zero-register-pinning.md family).
+// Deferred to the final sweep.
+RVA(0x00014120, 0x1a9)
+i32 CAttract::Vslot09(i32 arg) {
+    ShowCursorFn showCursor = g_ShowCursor;
+    if (showCursor(0) >= 0) {
+        do {
+        } while (showCursor(0) >= 0);
+    }
+    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
+    CString s;
+    s.Format(s_TITLE_d, idx);
+    RunTitleSeq(s, 0, 0, 1, 0);
+    CDDrawSubMgrPages* page = (CDDrawSubMgrPages*)menuRoot()->m_04;
+    page->Method_158c70(page->m_backPair);
+
+    i32 seed;
+    if (!(g_randSeeded & 1)) {
+        g_randSeeded |= 1;
+        seed = g_pTimeGetTime();
+    } else {
+        seed = g_randSeed;
+    }
+    g_randSeed = seed * 214013 + 2531011;
+    i32 r = (g_randSeed >> 0x10) & 0x7fff;
+    const char* pick = (r % 2) ? s_dat60b5bc : g_emptyString;
+
+    char buf[0x40];
+    g_pwsprintfA(buf, s_ATTRACT_TITLE_s, pick);
+
+    CMapStringToOb* map = (CMapStringToOb*)((char*)menuRoot()->m_28 + 0x10);
+    CObject* found = 0;
+    map->Lookup(buf, found);
+    m_host = (CAttractHost*)found;
+    if (found != 0 && m_activeFlag != 0) {
+        if (g_sndEnabled) {
+            ((DirectSoundMgr*)m_host->m_10)->ApplyAndPlay(0x64, 0, 0, 0);
+        }
+        m_idleTimer = ((DirectSoundMgr*)m_host->m_10)->m_durationMs + 0x2710;
+    } else {
+        m_idleTimer = 0x1f40;
+    }
+
+    AttractActorList* list = g_actorList;
+    for (i32 i = 0; i < list->m_count; i++) {
+        list->m_data[i]->VtSlotFill0();
+    }
+    return 1;
+}
+
 // CAttract::FrameSlot28(arg) (slot 10 / +0x28, 0x014340): per-frame voice poll.
 // If the host's voice (m_host->m_10) is playing, (re)start it (Restart(0,0x1f4,1)),
 // then if it is still playing stop the registrar's pooled resource (Stop(-1)) and

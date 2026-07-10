@@ -35,7 +35,9 @@ struct CSbiConfigHost;
 class CSBI_RectOnly : public CStatusBarItem {
 public:
     virtual ~CSBI_RectOnly() OVERRIDE; // slot 0
-    virtual void SbiSlot2() OVERRIDE;  // slot 2
+    virtual i32
+    Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10)
+        OVERRIDE; // slot 2 (0xe86e0, declared-only here; body in SBI_RectOnly.cpp)
     virtual void SbiSlot3() OVERRIDE;  // slot 3
     virtual void SbiSlot4() OVERRIDE;  // slot 4
     i32 InsertPtr(i32 a, i32 b);       // 0x108410 (i32 ret, matches SBI_RectOnly.h + retail)

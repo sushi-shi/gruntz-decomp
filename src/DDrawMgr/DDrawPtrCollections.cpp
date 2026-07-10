@@ -1057,6 +1057,25 @@ void CDDrawPtrCollections::SetDisplayPaletteDirect_1439b0(i32* rgbq, i32 tag) {
 }
 
 // ---------------------------------------------------------------------------
+// Make950Trailing (0x1439f0).  Install the trailing 0x300-byte packed-RGB palette
+// from an in-memory file image: bail (return NULL) on a null buffer or a size < 0x3e8
+// (too small to hold the palette); otherwise forward (buf + size - 0x300, tag) to
+// Make950 (the sibling packed-RGB installer).  __thiscall (ecx=this passed straight
+// through to Make950), ret 0xc.
+// (re-homed from src/Stub/GapFunctions.cpp; RVA-adjacent to the Make950/palette family.)
+// ---------------------------------------------------------------------------
+RVA(0x001439f0, 0x35)
+CDDPalette* CDDrawPtrCollections::Make950Trailing(u8* buf, i32 size, i32 tag) {
+    if (buf == 0) {
+        return 0;
+    }
+    if ((u32)size < 0x3e8) {
+        return 0;
+    }
+    return Make950(buf + size - 0x300, tag);
+}
+
+// ---------------------------------------------------------------------------
 // LoadPaletteMake950 (0x143a30).  Identical shape to LoadPaletteMakeB but the trailing
 // palette is handed to the sibling builder Make950 (0x143950) instead of MakeB.  /GX. ret 0x8.
 // ---------------------------------------------------------------------------

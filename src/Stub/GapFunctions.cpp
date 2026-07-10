@@ -35,10 +35,6 @@ i32 Gap_007c60(void) {
 // if(g_sndEnabled) DirectSoundMgr::ApplyAndPlay(m_1b8->m_10, 0x64,0,0,0)[0x136300];
 // m_1b4 = m_1b8->m_10->m_28 + 0x2710; else m_1b4 = 0x1f40; for each g_actorList(0x645574
 // AttractActorList: cnt@+4, arr@+8) actor: actor->vtable[5](); ~t; ret 1.
-RVA(0x00014120, 0x1a9)
-i32 Gap_014120(void) {
-    return 0;
-} // @stub
 // @stub 0x3c990 / 0x3cdd0 = twin bute-config debug DialogProcs (INT_PTR CALLBACK, /GX;
 // belong in DemoCameraTools.cpp with the rest of the 0x3c300 block). Editors for
 // "Attributez.txt" (0x3c990) / "dwrects.txt" (0x3cdd0). DECODED (identical shape, differing
@@ -101,10 +97,6 @@ RVA(0x000e9a30, 0x31e)
 i32 Gap_0e9a30(void) {
     return 0;
 } // @stub
-RVA(0x00100660, 0x50)
-i32 Gap_100660(void) {
-    return 0;
-} // @stub
 // @stub 0x10f6a0 = CCheckpointTrigger's "A" per-frame activation handler (the
 // g_tileSecretTriggerActReg group @0x10f160..0x10f970 is CCheckpointTrigger's, NOT
 // CTileSecretTrigger's - vtable slot 1 = 0x10f9a0, slot 4 = 0x10f1e0; CTileSecretTrigger
@@ -157,10 +149,6 @@ i32 Gap_13e8f0(void) {
 // ImageRotateBlit; not source-steerable).
 RVA(0x00141080, 0x174)
 i32 Gap_141080(void) {
-    return 0;
-} // @stub
-RVA(0x001439f0, 0x35)
-i32 Gap_1439f0(void) {
     return 0;
 } // @stub
 // @identity-TODO (matcher-2): 0x156ad0 == a CFileMem "load file into buffer" helper
@@ -243,10 +231,6 @@ RVA(0x0016b230, 0xe1)
 i32 Gap_16b230(void) {
     return 0;
 } // @stub
-RVA(0x0016e220, 0x139)
-i32 Gap_16e220(void) {
-    return 0;
-} // @stub
 RVA(0x0016e6e0, 0x3e)
 i32 Gap_16e6e0(void) {
     return 0;
@@ -273,21 +257,6 @@ i32 Gap_171640(void) {
 // non-EH; owner class TBD.
 RVA(0x00173dd0, 0x38f)
 i32 Gap_173dd0(void) {
-    return 0;
-} // @stub
-// @identity-TODO (matcher-2): 0x1741b0 == a CButeValue / CButeValueNode value-node
-// ctor (Bute; home src/Bute/ButeMgr.cpp). ATTRIBUTED via xref: the ONLY caller is the
-// Bute value-store builder 0x173dd0 (calls CButeTree::Find/Insert, CButeValue::CopyValue,
-// CButeCfgNode174d, CProjActMap::Insert), which `new(8)`s the receiver then calls this
-// __thiscall(type, src): `this->type(+0)=arg1; n=(CButeValueNode*)operator new(8);
-// if(n){ n->type=src->type; n->pValue=src->pValue; } this->pValue(+4)=n; return this`.
-// So `this` is an 8-byte {i32 type, void* pValue} (== CButeValueNode/CButeValue) that
-// boxes an 8-byte value copied from `src`. The exact ButeType-tag semantics + which
-// Set*/box variant this is (vs the 172xxx Set family) need pinning before a clean
-// byte-match (the alloc-fail arm's `xor eax;mov` zero-store is the only codegen
-// residue). NOT fabricating a .cpp-local view (doctrine ss0).
-RVA(0x001741b0, 0x39)
-i32 Gap_1741b0(void) {
     return 0;
 } // @stub
 RVA(0x0017b950, 0x60b)

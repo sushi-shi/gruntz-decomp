@@ -204,6 +204,85 @@ i32 CKeyFinder::Find(i32 key) {
 }
 
 // ===========================================================================
+// TmErrorHandler (0x16e220) - the "C++ Tools error handler": the default callback
+// seeded into the CKeyFinder/CVariantSlot +0x00 slot (the g_keyFinderVtbl fn-ptr;
+// invoked by CVariantSlot::Set as m_callback(label, value) when a slot is unresolved).
+// Builds "<prefix> - error #<errNum> Caller IP = <hhhh>\n" into a bounded stack buffer
+// (the low 16 bits of the g_retAddrBreadcrumb caller-IP breadcrumb, 4 hex digits, and
+// clears the breadcrumb), MessageBeep(0), pops a MessageBoxA titled "C++ Tools error
+// handler", then FatalAppExitA + exit(1). __cdecl(prefix, errNum). The string operands
+// + the three Win32 imports (MessageBeep/MessageBoxA/FatalAppExitA) reloc-mask.
+// (re-homed from src/Stub/GapFunctions.cpp.)
+// ===========================================================================
+// @early-stop
+// 98.2%, frame-slot-displacement residue: every instruction MATCHES (the 0x60 frame,
+// the decimal itoa via idiv %10 + magic /10, the bounded prefix copy, the do-while
+// 4-digit hex loop with the ebp old-index save, and the three Win32 fatal-report calls
+// are all byte-faithful). The only difference is where MSVC5 seats the shared decimal/hex
+// scratch + the message buffer within the (matched-size) frame - retail puts them at
+// [esp+0x15]/[esp+0x18], this source at [esp+0x1b]/[esp+0x1c], shifting two lea/mov
+// displacement bytes. A pure stack-slot-assignment coin-flip (buffer size / decl-order
+// variations do not move it; the permuter finds no fix). Deferred to the final sweep.
+RVA(0x0016e220, 0x139)
+void TmErrorHandler(char* prefix, i32 errNum) {
+    char tmp[16];
+    char* np = &tmp[15];
+    *np = 0;
+    if (errNum != 0) {
+        do {
+            *--np = (char)(errNum % 10) + '0';
+            errNum = errNum / 10;
+        } while (errNum != 0);
+    }
+
+    char msg[0x50];
+    char* q = msg;
+    while (0 != *prefix) {
+        if (q >= &msg[0x40]) {
+            break;
+        }
+        *q++ = *prefix++;
+    }
+    const char* s;
+    s = " - error #";
+    while (*s != 0) {
+        *q++ = *s++;
+    }
+    while (*np != 0) {
+        *q++ = *np++;
+    }
+    s = " Caller IP = ";
+    while (*s != 0) {
+        *q++ = *s++;
+    }
+
+    u32 v = 0xffff & (u32)g_retAddrBreadcrumb;
+    char* hp = &tmp[15];
+    *hp = 0;
+    i32 i;
+    i = 7;
+    do {
+        i32 d = v & 0xf;
+        *--hp = (char)(d > 9 ? d + 0x37 : d + 0x30);
+        v >>= 4;
+        if (4 == i) {
+            break;
+        }
+    } while (i-- != 0);
+    g_retAddrBreadcrumb = (void*)v;
+    while (*hp != 0) {
+        *q++ = *hp++;
+    }
+    *q++ = '\n';
+    *q = 0;
+
+    MessageBeep(0);
+    MessageBoxA(0, msg, "C++ Tools error handler", 0x2010);
+    FatalAppExitA(0, "The error handler terminated the application");
+    exit(1);
+}
+
+// ===========================================================================
 // ProjTypeXfer (0x16e4f0) - serialize the type-name table entry resolved from an
 // archive record through the archive's slot dispatches. Resolves the entry id
 // (ar->m_14->m_1c) to its CTypeKeyColl entry (the inlined fast-range / Find /
