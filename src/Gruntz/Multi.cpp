@@ -27,6 +27,7 @@
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameRegistry.h>      // g_64556c singleton (0x24556c) canonical view
+#include <Gruntz/ResMgr.h>            // CDrawTarget (m_c->m_drawTarget->m_18->m_2c Fill)
 #include <Gruntz/BoundaryTailViews.h> // CSnd788d0 (fuzzy-identity 0x788d0 sound emitter)
 #include <stdio.h>                    // engine sprintf (reloc-masked)
 #include <stdlib.h>                   // srand (reloc-masked)
@@ -234,6 +235,45 @@ void CMulti::Teardown() {
     }
     Mgr()->m_110 = m_590;
     CPlayDtorBody();
+}
+
+// The shared HUD message-sprite helper (0x1154b0, __cdecl); reloc-masked.
+void ShowHudMessage(void* sink, CString* text, RECT* rect, i32 dur, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1154b0
+
+// ===========================================================================
+// CMulti::FrameSlot28  @ 0x0b63f0  (vtable slot 10 / +0x28) - the HUD status/
+// pause overlay.  BYTE-IDENTICAL to CPlay::FrameSlot28 (Play.cpp): both freeze
+// m_60, stash the game clock, (m_40) run the notify, clear the present surface,
+// then draw the LoadString(0x81a9) banner + tick the status message.
+// ===========================================================================
+// @early-stop
+// /GX EH-frame wall (92.75%): full+correct logic (byte-identical body to CPlay's).
+// Same residual as CPlay::FrameSlot28 - SEH scope-table representation + a 4-byte
+// /GX RECT+CString frame-packing difference (0x14 vs retail 0x10). See Play.cpp.
+RVA(0x000b63f0, 0x11b)
+i32 CMulti::FrameSlot28(i32 arg) {
+    m_4w()->m_60->Method_11c7b0();
+    m_savedClock = (i32)g_645588;
+    if (m_40) {
+        Method_cef50();
+    }
+    if (arg == 9) {
+        return 1;
+    }
+    RECT r;
+    m_c->m_drawTarget->m_18->m_2c->Fill(0);
+    CString s;
+    s.LoadString(0x81a9);
+    r.right = m_4w()->m_8c;
+    r.bottom = m_4w()->m_90;
+    r.left = 0;
+    r.top = 0;
+    ShowHudMessage(m_c, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
+    Method_fa8f0(0x50, 0x3e8, 0, 1);
+    if (m_4w() && m_4w()->m_68) {
+        m_4w()->m_68->Method_6bd40(5);
+    }
+    return 1;
 }
 
 // FUN_00021bd0 is invoked both on `this` (CMulti) and on m_logic->m_5c; one symbol,

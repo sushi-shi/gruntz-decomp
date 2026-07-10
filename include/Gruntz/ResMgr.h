@@ -61,8 +61,11 @@ struct CDrawTarget {
         i32 m_14; // +0x14  surface height
         char p18[0x2c - 0x18];
         CDDSurface* m_2c; // +0x2c  the real CDDSurface (Fill @0x13e760 / Restore @0x13e7d0)
-    }* m_14;
-    void* m_18; // +0x18  the present target
+    };
+    SurfaceB* m_14;
+    // +0x18  the present/back-buffer page (same surface-page layout as m_14); the
+    // status-screen overlay (CPlay/CMulti::FrameSlot28) clears it via m_2c->Fill(0).
+    SurfaceB* m_18;
 };
 
 // The world/key lookup table at CResMgr+0x08 the timer-expiry path probes

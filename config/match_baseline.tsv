@@ -138,7 +138,7 @@ droppedobject	7	4
 droppedobjectserialize	2	2
 droppedobjectshadow	3	2
 dsoundvoice	2	1
-engine_label_stubs	82	8
+engine_label_stubs	79	8
 engstr	3	1
 engstrrendertext	1	0
 exittrigger	4	2
@@ -288,7 +288,7 @@ logicactreg	5	2
 logicactregistrars	9	3
 logicdispatchinit	3	3
 logicrecord	8	5
-logicrecorddispatch	4	4
+logicrecorddispatch	5	5
 logictypetable	1	0
 logicworkerhandlers	16	16
 lutshaderect	1	0
@@ -313,7 +313,7 @@ motionstate	5	4
 movieplayer	2	1
 movinglogic	6	2
 msgdispatch	3	3
-multi	21	10
+multi	22	10
 multicolordlg	1	0
 multiresumeslots	1	0
 multistartdlgcolor	5	0
@@ -348,7 +348,7 @@ palettecopy	1	0
 palettelerp	1	1
 particlez	6	5
 pathhazard	10	5
-play	71	27
+play	72	27
 playdtor	7	7
 playercommandstep	1	0
 playmessageimage	2	0
@@ -1561,13 +1561,10 @@ engine_label_stubs	?Gap_05ecd0@@YAHXZ	0.3194	0.3194	1	cpp:0cd3d8fa5bea	0x5ecd0
 engine_label_stubs	?Gap_063b60@@YAHXZ	1.2102	1.2102	1	cpp:0cd3d8fa5bea	0x63b60
 engine_label_stubs	?Gap_08dc20@@YAHXZ	4.7059	4.7059	1	cpp:0cd3d8fa5bea	0x8dc20
 engine_label_stubs	?Gap_08dc90@@YAHXZ	2.6923	2.6923	1	cpp:0cd3d8fa5bea	0x8dc90
-engine_label_stubs	?Gap_0b63f0@@YAHXZ	1.0526	1.0526	1	cpp:0cd3d8fa5bea	0xb63f0
 engine_label_stubs	?Gap_0b8020@@YAHXZ	0.7447	0.7447	1	cpp:0cd3d8fa5bea	0xb8020
-engine_label_stubs	?Gap_0c8b80@@YAHXZ	1.0526	1.0526	1	cpp:0cd3d8fa5bea	0xc8b80
 engine_label_stubs	?Gap_0cf0a0@@YAHXZ	0.4175	0.4175	1	cpp:0cd3d8fa5bea	0xcf0a0
 engine_label_stubs	?Gap_0cfc90@@YAHXZ	1.4286	1.4286	1	cpp:0cd3d8fa5bea	0xcfc90
 engine_label_stubs	?Gap_0d5c10@@YAHXZ	1.8310	1.8310	1	cpp:0cd3d8fa5bea	0xd5c10
-engine_label_stubs	?Gap_0de8a0@@YAHXZ	2.2619	2.2619	1	cpp:0cd3d8fa5bea	0xde8a0
 engine_label_stubs	?Gap_0e8e00@@YAHXZ	0.3804	0.3804	1	cpp:0cd3d8fa5bea	0xe8e00
 engine_label_stubs	?Gap_0e9a30@@YAHXZ	0.4605	0.4605	1	cpp:0cd3d8fa5bea	0xe9a30
 engine_label_stubs	?Gap_100660@@YAHXZ	5.6000	5.6000	1	cpp:0cd3d8fa5bea	0x100660
@@ -2739,6 +2736,7 @@ logicrecorddispatch	?LogicDispatchA@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0
 logicrecorddispatch	?LogicDispatchB@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	4	52724875e08e	0x10d3d0
 logicrecorddispatch	?LogicDispatchC@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	4	1e562ecee01b	0x46850
 logicrecorddispatch	?LogicDispatchD@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	4	30b26d97a464	0xdeb20
+logicrecorddispatch	?LogicDispatchE@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	1	4a578af0a1f6	0xde8a0
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	87.9167	87.9167	7	c0e472d4ee72	0x8a40
 logicworkerhandlers	?HandlerA9A40@@YAHPAUOwner@@@Z	100.0000	100.0000	1	0041a3619c4c	0xa9a40
 logicworkerhandlers	?HandlerA9B80@@YAHPAUOwner@@@Z	100.0000	100.0000	1	3aeed7335bde	0xa9b80
@@ -2873,6 +2871,7 @@ multi	?ClearString59c@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	2	d96bb142e
 multi	?ClearString5a0@CMulti@@QAEAAVCString@@AAV2@@Z	49.3529	49.3529	2	3253be61dd06	0xb7730
 multi	?Connect@CMulti@@QAEHH@Z	78.6487	78.6487	4	7b3b75ce1c4b	0xb67f0
 multi	?DropTimeout@CMulti@@QAEXXZ	78.9107	78.9107	3	57ef3ff30ec2	0xbc2d0
+multi	?FrameSlot28@CMulti@@UAEHH@Z	92.7500	92.7500	1	42269aa25999	0xb63f0
 multi	?GetString5a0@CMulti@@QAE?AVCString@@XZ	100.0000	100.0000	2	48ac5e65062a	0xb7ad0
 multi	?InitStr6473d8@@YAXXZ	100.0000	100.0000	1	b9d9006cba9b	0xb5380
 multi	?JoinSession@CMulti@@QAEHXZ	100.0000	100.0000	2	7a8ffa706d88	0xb7fe0
@@ -3146,6 +3145,7 @@ play	?DrawWorldPresent@CPlay@@QAEHXZ	96.1667	96.1667	5	20ccdc625383	0xcefc0
 play	?EnterMode@CPlay@@QAEHH@Z	96.1290	96.1290	3	94372d8a3f7e	0xd6fa0
 play	?EnterOverlayDrag@CPlay@@QAEHH@Z	100.0000	100.0000	2	62796a9faabe	0xd6440
 play	?FindStartPointAt@CPlay@@QAEHHHPAH0@Z	83.2237	83.2237	2	b0219009471d	0xd5f90
+play	?FrameSlot28@CPlay@@UAEHH@Z	92.7500	92.7500	1	eb3e6dee01b9	0xc8b80
 play	?FreeListTeardown@CPlay@@QAEXXZ	87.1950	87.1950	3	44c3d33ce313	0xcb480
 play	?HandleDragMove@CPlay@@QAEHHHH@Z	34.9732	34.9732	5	22d426061a41	0xd0db0
 play	?HandleTileClick@CPlay@@QAEHHHH@Z	80.4750	80.4750	6	6d2d8e4a3f38	0xceae0

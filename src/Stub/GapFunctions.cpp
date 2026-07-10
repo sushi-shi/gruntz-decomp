@@ -72,33 +72,10 @@ RVA(0x0008dc90, 0xb1)
 i32 Gap_08dc90(void) {
     return 0;
 } // @stub
-// @stub 0xb63f0 = CMulti::FrameSlot28(i32) (slot 10, /GX) - BYTE-IDENTICAL body to
-// CPlay::FrameSlot28 @0xc8b80 (the shared HUD-status-screen override; crack one, both
-// fall out). Logic traced: m_4->m_60->[0x11c7b0]; m_savedClock=g_645588; if(m_40)
-// this->[0xcef50]; if(arg==9) return 1; CDDSurface::Fill(0) on m_c->m_drawTarget->
-// m_18->m_2c [0x13e760]; CString s; s.LoadString(0x81a9); build rect{0,0,m_4->m_8c,
-// m_4->m_90}; ShowHudMessage((HudMsgSink*)m_c,&s,&rect,0x78,1,0xff,0xff,0,1) [0x1154b0,
-// idiom in BootyMessages.cpp]; this->[0xfa8f0](0x50,0x3e8,0,1); if(m_4&&m_4->m_68)
-// m_4->m_68->[0x6bd40](5); ~s. Deferred: the callees 0x11c7b0/0xcef50/0xfa8f0/0x6bd40
-// are FID-MIS-NAMED (CGruntSpawnConfig::DtorBody / Ccef50::M / CSoundFxEmitter::
-// Method_fa8f0 / CTriggerMgr::ClearGridRange) engine methods really invoked on
-// CPlay's this / m_4 / m_c - matching the relocs forces the exact `)this`/`)m_` casts
-// the cleanup mandate forbids; resolve their TRUE identities first (a focused pass).
-RVA(0x000b63f0, 0x11b)
-i32 Gap_0b63f0(void) {
-    return 0;
-} // @stub
 // @stub 0xb8020 (559 B) - large leaf-first body, no vtable-ref; deferred to a
 // dedicated hard-gaps pass (big-function bottom-up doctrine, >512 B).
 RVA(0x000b8020, 0x22f)
 i32 Gap_0b8020(void) {
-    return 0;
-} // @stub
-// @stub 0xc8b80 = CPlay::FrameSlot28(i32) (slot 10, /GX) - the HUD-status-screen
-// override; BYTE-IDENTICAL body to CMulti::FrameSlot28 @0xb63f0 (see that stub's full
-// trace + the FID-mis-named-callee blocker). Crack one, both fall out.
-RVA(0x000c8b80, 0x11b)
-i32 Gap_0c8b80(void) {
     return 0;
 } // @stub
 // @stub 0xcf0a0 (1383 B) - large leaf-first body, no vtable-ref; deferred to a
@@ -117,19 +94,6 @@ i32 Gap_0cfc90(void) {
 // hard-gaps pass (needs bottom-up reconstruction).
 RVA(0x000d5c10, 0x10d)
 i32 Gap_0d5c10(void) {
-    return 0;
-} // @stub
-// @stub 0xde8a0 = a 4th CLogicRecord-family message handler (free __cdecl(owner),
-// /GX). Logic traced: switch on owner->m_7c->m_1c: tag 0 -> new(0x228), ctor@0xdec60
-// (thiscall on the record, arg owner), record->vslot6, store in m_7c->m_18, reset
-// m_1c=0x3e8; tags 0x1d/0x1e/0x50/0x51/0x52/0x53 -> record(m_7c->m_18)->vtbl slot
-// 11/10/14/13/12/15; tag 0x3e8 -> no-op; default -> ProjTypeXfer(record) [0x16e4f0].
-// Deferred: siblings 0x495750/0x495890/0x4aa6e0 are stubbed in Discovered.cpp; the
-// 0x228-byte polymorphic record (16-slot vtable) + owner->m_7c sub-object are best
-// modeled once for the whole family (LogicRecord.cpp note). new@0x1b9b46, record
-// ctor@0xdec60 (nearby, same TU region).
-RVA(0x000de8a0, 0xf4)
-i32 Gap_0de8a0(void) {
     return 0;
 } // @stub
 RVA(0x000e8e00, 0x41a)

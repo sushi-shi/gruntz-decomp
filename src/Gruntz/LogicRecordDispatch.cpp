@@ -89,6 +89,18 @@ public:
 };
 SIZE(LogicSubRecD, 0x68);
 
+// State-0 sub-record built by LogicDispatchE (0xde8a0): the ctor 0xdec60 is really
+// ??0CProjectile@@QAE@PAUCGameObject@@@Z (CProjectile, 0x228 bytes). Kept in the
+// LogicSubRec family view for now (matches the 4 committed siblings' shape); folding
+// the whole LogicSubRec family onto the real CUserLogic/CProjectile hierarchy is a
+// deferred family-wide refactor (LogicRecord.cpp note).
+class LogicSubRecE : public LogicSubRec {
+public:
+    LogicSubRecE(LogicDispatchOwner* owner); // 0xdec60 (via thunk 0x37d8) = CProjectile ctor
+    char m_pad[0x228 - 4];
+};
+SIZE(LogicSubRecE, 0x228);
+
 // The default-case fall-through helper (0x16e4f0, __cdecl, 1 arg). External.
 extern "C" void LogicSubDefault_16e4f0(LogicSubRec* sub);
 
@@ -181,6 +193,48 @@ i32 LogicDispatchD(LogicDispatchOwner* owner) {
             rec->m_1c = kLogicStateBuilt;
             {
                 LogicSubRecD* obj = new LogicSubRecD(owner);
+                obj->Init();
+                rec->m_18 = obj;
+            }
+            break;
+        case kLogicStateOp1d:
+            rec->m_18->Op1d();
+            break;
+        case kLogicStateOp1e:
+            rec->m_18->Op1e();
+            break;
+        case kLogicStateOp50:
+            rec->m_18->Op50();
+            break;
+        case kLogicStateOp51:
+            rec->m_18->Op51();
+            break;
+        case kLogicStateOp52:
+            rec->m_18->Op52();
+            break;
+        case kLogicStateOp53:
+            rec->m_18->Op53();
+            break;
+        case kLogicStateBuilt:
+            break;
+        default:
+            LogicSubDefault_16e4f0(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+// LogicDispatchE @0x0de8a0 - state-0 builds a 0x228 sub-record (ctor 0xdec60 =
+// CProjectile). Same dispatch shape as the siblings; the larger `new` size uses an
+// imm32 push (3 bytes wider than the imm8-size siblings).
+RVA(0x000de8a0, 0xf4)
+i32 LogicDispatchE(LogicDispatchOwner* owner) {
+    LogicDispatchRecord* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case kLogicStateInit:
+            rec->m_1c = kLogicStateBuilt;
+            {
+                LogicSubRecE* obj = new LogicSubRecE(owner);
                 obj->Init();
                 rec->m_18 = obj;
             }

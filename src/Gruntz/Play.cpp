@@ -296,6 +296,50 @@ void CPlay::ApplyGameOptions() {
 
 // CPlay::Update (0x0008c910) is now an inline member in the header.
 
+// The shared HUD message-sprite helper (0x1154b0, __cdecl): pushes a transient
+// text sprite carrying `text` into `rect` with the given duration/colour flags
+// (idiom shared with BootyMessages.cpp / DrawBattleStats.cpp). reloc-masked.
+void ShowHudMessage(void* sink, CString* text, RECT* rect, i32 dur, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x1154b0
+
+// ===========================================================================
+// CPlay::FrameSlot28  (vtable slot 10 / +0x28) - the HUD status/pause overlay.
+// BYTE-IDENTICAL to CMulti::FrameSlot28 (Multi.cpp).  Freeze m_60, stash the
+// game clock, (m_40) run the notify, clear the present surface, then draw the
+// LoadString(0x81a9) banner + tick the status message.
+// ===========================================================================
+// @early-stop
+// /GX EH-frame wall (92.75%): full+correct logic, all externs typed/named. Residual
+// is (1) the SEH scope-table representation (retail push Unwind@005dde38 / state 8 vs
+// cl's push $L.. / state 0 - reloc-masked immediates, docs/seh-eh.md) and (2) cl
+// allocates the RECT+CString locals in a 0x14-byte frame vs retail's 0x10, a 4-byte
+// /GX frame-packing residue that shifts the [esp+N] stack offsets (not statement-order
+// or decl-order steerable - tried both). Permuter candidate for the final sweep.
+RVA(0x000c8b80, 0x11b)
+i32 CPlay::FrameSlot28(i32 arg) {
+    m_4w()->m_60->Method_11c7b0();
+    m_savedClock = (i32)g_645588;
+    if (m_40) {
+        Method_cef50();
+    }
+    if (arg == 9) {
+        return 1;
+    }
+    RECT r;
+    m_c->m_drawTarget->m_18->m_2c->Fill(0);
+    CString s;
+    s.LoadString(0x81a9);
+    r.right = m_4w()->m_8c;
+    r.bottom = m_4w()->m_90;
+    r.left = 0;
+    r.top = 0;
+    ShowHudMessage(m_c, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
+    Method_fa8f0(0x50, 0x3e8, 0, 1);
+    if (m_4w() && m_4w()->m_68) {
+        m_4w()->m_68->Method_6bd40(5);
+    }
+    return 1;
+}
+
 // ===========================================================================
 // CPlay::Render  (vtable slot +0x14)
 // ===========================================================================

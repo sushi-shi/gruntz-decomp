@@ -71,6 +71,9 @@ struct CWorldDraw {
 // The sub-object at m_4->m_60 (a no-arg reset; ResetForMode third teardown).
 struct CWorldSub60 {
     void Reset(); // 0x51af90 (Dispatch level-quiesce teardown)
+    // 0x11c7b0: the status-screen freeze/capture the pause overlay runs on m_60
+    // (CPlay/CMulti::FrameSlot28 entry). No-arg thiscall; reloc-masked.
+    void Method_11c7b0();
 };
 
 // The plane/render geom block reached as m_4->m_30->m_24->m_5c (ResetGoals'
@@ -154,6 +157,9 @@ struct CWorld {
         void Method_29cd(i32 a, i32 j, i32 c, i32 d); // 0x29cd (thunk) re-arm own grunt
         // 0x478a50: a world post (thiscall(a, b)) -> HandleDragMove out-of-box drag.
         void WorldPost(i32 a, i32 b);
+        // 0x6bd40: the status-screen notify the pause overlay posts to the timeline
+        // (CPlay/CMulti::FrameSlot28 tail, arg 5). thiscall(i32); reloc-masked.
+        void Method_6bd40(i32 a);
         void Reset(); // 0x15c3 thunk (reloc-masked) per-frame/teardown reset
         // HandleTileClick marker place/cancel (thiscall, reloc-masked):
         void PlaceMarker(i32 sx, i32 sy, i32 rx, i32 ry, i32 a, i32 b, i32 c);
@@ -461,6 +467,12 @@ public:
     // restores the clock + unpauses. Migrated from engine_boundary (CPlay).
     i32 PauseGame();  // 0x0cee90
     i32 ResumeGame(); // 0x0cef00
+    // FrameSlot28's two own-this reloc-masked callees (external bodies elsewhere;
+    // both invoked with ecx=this in the status/pause overlay). Method_cef50
+    // (0x0cef50, no-arg notify when the m_40 latch is set); Method_fa8f0 (0x0fa8f0,
+    // the status-message ticker, args 0x50/0x3e8/0/1).
+    void Method_cef50();                             // 0x0cef50
+    i32 Method_fa8f0(i32 a, i32 b, i32 c, i32 d);    // 0x0fa8f0
     // The HandleCommand cheat receivers (reloc-masked; reached via the play-state
     // lookup PickPlayOrPausedState): SetCursorFrame gives the selected grunt item
     // `item` (the 0x80e5..0x8104 ITEMCHEAT family; thunk 0x17a8); Flip returns the
