@@ -72,10 +72,7 @@ public:
     void Shutdown();
     // GetStateId (0x156de0, slot 8): CWorkerVtableView is never instantiated so its
     // vtable never emits; kept here as the non-virtual body (still unmatched - deferred).
-    RVA(0x00156de0, 0x6)
-    StateId GetStateId() {
-        return STATE_WORKERREGISTRY; // 0x12
-    }
+    StateId GetStateId(); // 0x156de0 (out-of-line)
     i32 DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a4, i32 a5);
     i32 Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
     i32 Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);

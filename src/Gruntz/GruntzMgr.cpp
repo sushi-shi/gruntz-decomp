@@ -2904,6 +2904,11 @@ CGruntzMgr::~CGruntzMgr() {
     Close();
 }
 
+// The WAP32::CGameMgr scalar-deleting destructor (??_G, vtable 0x5e9b8c slot 0, 0x855a0):
+// cl auto-emits it from CGameMgr's virtual dtor; @rva-symbol names the auto-emitted thunk
+// at this RVA (homed by matcher-5, unmatched sweep).
+// @rva-symbol: ??_GCGameMgr@WAP32@@UAEPAXI@Z 0x000855a0 0x24
+
 // -------------------------------------------------------------------------
 // CGruntzMgr::RecomputeViewScale (0x08f7f0; ret). Recomputes the world view's
 // three scaled-extent pairs from its tile rect (width/height + 1) at three zoom

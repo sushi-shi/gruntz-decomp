@@ -133,18 +133,10 @@ public:
     // 0x023b40 - find the first base-queue target matching (indexByte, typeByte)
     // and remove+deselect it.
     void RemoveMatchingTarget(char indexByte, char typeByte);
-    // 0x0239d0 - install the manager pointer; returns 1.
-    RVA(0x000239d0, 0xf)
-    i32 SetMgr(GzMgr* mgr) {
-        m_38 = mgr;
-        return 1;
-    }
-    // 0x0239f0 - null the manager then drain everything (tail-calls Clear).
-    RVA(0x000239f0, 0xc)
-    void ClearAndReset() {
-        m_38 = 0;
-        Clear();
-    }
+    // 0x0239d0 - install the manager pointer; returns 1. Out-of-line.
+    i32 SetMgr(GzMgr* mgr); // 0x0239d0
+    // 0x0239f0 - null the manager then drain everything (tail-calls Clear). Out-of-line.
+    void ClearAndReset(); // 0x0239f0
     // 0x023a10 - the state-filtered target scan/select pass.
     i32 ScanTargets(i32 param);
     // 0x023bc0 - drain the base queue, deselecting each node.

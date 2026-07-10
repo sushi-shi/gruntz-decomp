@@ -27,9 +27,19 @@ extern "C" MgrSettings30* g_mgrSettings;
 // (re-homed from src/Stub/BoundaryMisc.cpp, where it was the HasMgrSlot30 placeholder).
 i32 __stdcall IsActive2(void* enable);
 
-// CGruntzCmdMgr::SetMgr (0x000239d0) is now an inline member in the header.
+// 0x0239d0 - install the manager pointer; returns 1. Homed out-of-line (matcher-5).
+RVA(0x000239d0, 0xf)
+i32 CGruntzCmdMgr::SetMgr(GzMgr* mgr) {
+    m_38 = mgr;
+    return 1;
+}
 
-// CGruntzCmdMgr::ClearAndReset (0x000239f0) is now an inline member in the header.
+// 0x0239f0 - null the manager then drain everything (tail-calls Clear). Out-of-line.
+RVA(0x000239f0, 0xc)
+void CGruntzCmdMgr::ClearAndReset() {
+    m_38 = 0;
+    Clear();
+}
 
 // ---------------------------------------------------------------------------
 // ScanTargets: walk the base queue (by index, removing each as it is

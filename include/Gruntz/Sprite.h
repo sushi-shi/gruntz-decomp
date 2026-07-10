@@ -65,13 +65,7 @@ struct CSprite {
     // Insert a frame worker at frame number `n` (0x151f00); bounds-read a frame
     // pointer (0x15cc30). Bodies live in the spriteresource unit.
     CFrameWorker* InsertFrame(void* src, i32 n, i32 mode); // 0x151f00
-    RVA(0x0015cc30, 0x1e)
-    i32 GetFrame(i32 n) {
-        if (n >= m_firstFrame && n <= m_lastFrame) {
-        return (i32)m_frames.m_pData[n];
-        }
-        return 0;
-    }
+    i32 GetFrame(i32 n); // 0x15cc30 (out-of-line)
 };
 
 #endif // GRUNTZ_SPRITE_H

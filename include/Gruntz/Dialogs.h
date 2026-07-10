@@ -211,12 +211,8 @@ public:
     i32 SaveOptionCombo3(); // 0x017620
     // SetCtrlBText - GetCtrlB(index)->SetWindowTextA(text).
     void SetCtrlBText(i32 index, const char* text);
-    // SetSlotValue - store val into slot[index].field@0x158; returns TRUE.
-    RVA(0x00017460, 0x22)
-    i32 SetSlotValue(i32 index, i32 val) {
-        ((CBattlezSlot*)m_slots)[index].m_158 = val;
-        return 1;
-    }
+    // SetSlotValue - store val into slot[index].field@0x158; returns TRUE. Out-of-line.
+    i32 SetSlotValue(i32 index, i32 val); // 0x17460
 
     // ReadCtrlBText (0x17340): read control `index`'s text into a local CString
     // (GetCtrlB(index)->GetWindowText), then measure it. /GX EH frame unwinds the

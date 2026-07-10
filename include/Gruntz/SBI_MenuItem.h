@@ -112,14 +112,8 @@ SIZE_UNKNOWN(CMiSelf);
 class CSBI_MenuItem {
 public:
     // ----- reconstructed methods (RVA-ascending) -----
-    RVA(0x000e6d90, 0x8)
-    void ClearFrame() {
-        m_30 = 0;
-    }
-    RVA(0x000e81a0, 0x8)
-    void ClearFrame2() {
-        m_30 = 0;
-    }
+    void ClearFrame();  // 0xe6d90 (out-of-line)
+    void ClearFrame2(); // 0xe81a0 (out-of-line)
     i32 SerializeChain(void* ar, i32 kind, i32 a, i32 b); // 0xe6e40  serialize tail-chain
     i32 InitItem(
         i32 cfg,
@@ -140,10 +134,7 @@ public:
     i32 ProbeState(i32 state);                             // 0xe8480
     i32 Blit();                                            // 0xe84f0  conditional blit
     i32 Serialize(void* ar, i32 kind, i32 a, i32 b);       // 0xe8520  top serialize
-    RVA(0x001005b0, 0x8)
-    void SetSubtype() {
-        m_28 = 2;
-    }
+    void SetSubtype(); // 0x1005b0 (out-of-line)
     i32 SerializeFields(void* ar, i32 kind, i32 a, i32 b); // 0x10bfc0  field block
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----

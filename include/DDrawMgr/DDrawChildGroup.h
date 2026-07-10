@@ -88,18 +88,7 @@ struct CDDrawGroupNode {
 // ---------------------------------------------------------------------------
 class CDDrawChildGroup : public CObject { // slots 0/2/3/4 = CObject base thunks
 public:
-    RVA(0x001575e0, 0x16)
-    i32 IsReady() {
-        if (m_parent == 0) {
-            goto fail;
-        }
-        if (m_status != -1) {
-            return 1;
-        }
-
-    fail:
-        return 0;
-    }
+    i32 IsReady(); // 0x1575e0 (out-of-line)
     void WalkDispatch34(i32 a1, i32 a2, i32 a3);
     void WalkDispatch38(i32 a1, i32 a2, i32 a3);
 
@@ -107,10 +96,7 @@ public:
     virtual ~CDDrawChildGroup() OVERRIDE; // slot 1  scalar-deleting dtor (0x157610)
     virtual void Slot14();                // +0x14  slot 5
     virtual void Slot18();                // +0x18
-    RVA(0x001591e0, 0x5)
-    virtual void ForwardTo3C() {
-        this->Slot3C();
-    }
+    virtual void ForwardTo3C(); // 0x1591e0 (out-of-line)
     virtual void Slot20();                       // +0x20
     virtual void Slot24();                       // +0x24
     virtual void WalkDispatch2C(i32 a1);         // +0x28

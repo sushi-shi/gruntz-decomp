@@ -281,7 +281,11 @@ void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
     }
 }
 
-// CDDrawWorkerRegistry::GetStateId (0x00156de0) is now an inline member in the header.
+// CDDrawWorkerRegistry::GetStateId (0x156de0): the class's state id. Out-of-line (matcher-5).
+RVA(0x00156de0, 0x6)
+StateId CDDrawWorkerRegistry::GetStateId() {
+    return STATE_WORKERREGISTRY; // 0x12
+}
 
 
 // CDDrawWorkerRegistry::IsReady (0x001576d0) is now an inline member in the header.

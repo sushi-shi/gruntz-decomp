@@ -38,7 +38,12 @@
 DATA(0x0024556c)
 extern CSideTabGameReg* g_gameReg;
 
-// CSBI_SideTab::Reset (0x000e9800) is now an inline member in the header.
+// CSBI_SideTab::Reset (0xe9800): drop the resolved config + frame. Out-of-line (matcher-5).
+RVA(0x000e9800, 0x9)
+void CSBI_SideTab::Reset() {
+    m_30 = 0;
+    m_34 = 0;
+}
 
 // vslot 4: (re)build the +0x58 draw gate from a sibling builder (BuildHandle, now
 // co-named in this TU). The single stack arg is unused (the `ret 4` discards it);

@@ -408,6 +408,14 @@ i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
     return SendMessageA(c->m_hWnd, 0x14e, sel - 1, 0);
 }
 
+// SetSlotValue (0x17460) - store val into slot[index].field@0x158; returns TRUE.
+// Homed out-of-line (matcher-5).
+RVA(0x00017460, 0x22)
+i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
+    ((CBattlezSlot*)m_slots)[index].m_158 = val;
+    return 1;
+}
+
 // SaveOptionCombo0..3 (0x17560/175a0/175e0/17620): read control N's combobox
 // selection (CB_GETCURSEL via GetCtrlC) and persist it (+1) into the game
 // registry's option slot N. g_mgrSettings is the CGruntzMgr view of the 0x64556c

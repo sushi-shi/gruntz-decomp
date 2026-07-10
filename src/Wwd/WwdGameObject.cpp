@@ -852,9 +852,19 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
     return Setup(a1, a2, a3, a4) != 0;
 }
 
-// CWwdGameObject::SetupFlagged (0x0015c1d0) is now an inline member in the header.
+// CWwdGameObject::SetupDeferred (0x15bc30): Setup with a1/a2 zeroed. Out-of-line (matcher-5).
+RVA(0x0015bc30, 0x16)
+i32 CWwdGameObject::SetupDeferred(i32 a3, i32 a4) {
+    return Setup(0, 0, a3, a4);
+}
 
-// CWwdGameObject::SetupDeferred (0x0015bc30) is now an inline member in the header.
+// CWwdGameObject::SetupFlagged (0x15c1d0): stash the dot-color flag byte then Setup.
+// Out-of-line (matcher-5).
+RVA(0x0015c1d0, 0x26)
+i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
+    *(char*)&m_dotColor = (char)flag;
+    return Setup(a1, a2, a3, a4);
+}
 
 // ---------------------------------------------------------------------------
 // RenderDot (0x1660f0): plot the object's (+0x5c,+0x60) position as a single

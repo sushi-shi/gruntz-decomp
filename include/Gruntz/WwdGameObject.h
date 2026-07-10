@@ -117,15 +117,8 @@ public:
     i32 WriteSnapshot(i32 dst);                        // 0x151c00
     i32 Init(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x15b940
     i32 ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4); // 0x1665e0
-    RVA(0x0015c1d0, 0x26)
-    i32 SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
-        *(char*)&m_dotColor = (char)flag;
-        return Setup(a1, a2, a3, a4);
-    }
-    RVA(0x0015bc30, 0x16)
-    i32 SetupDeferred(i32 a3, i32 a4) {
-        return Setup(0, 0, a3, a4);
-    }
+    i32 SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag); // 0x15c1d0 (out-of-line)
+    i32 SetupDeferred(i32 a3, i32 a4);                          // 0x15bc30 (out-of-line)
     void RenderDot(WwdRenderCtx* a); // 0x1660f0
 
     // Sibling helpers (modeled as same-class methods so ecx=this matches).

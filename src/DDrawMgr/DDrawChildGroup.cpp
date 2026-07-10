@@ -42,10 +42,21 @@ public:
     i32 Prune_1628d0(); // 0x1628d0 (__thiscall)
 };
 
-// CDDrawChildGroup::IsReady (0x001575e0) is now an inline member in the header.
+// CDDrawChildGroup::IsReady (0x1575e0): ready unless parent-less or in the error
+// (m_status == -1) state. Out-of-line (matcher-5).
+RVA(0x001575e0, 0x16)
+i32 CDDrawChildGroup::IsReady() {
+    if (m_parent == 0 || m_status == -1) {
+        return 0;
+    }
+    return 1;
+}
 
-
-// CDDrawChildGroup::ForwardTo3C (0x001591e0) is now an inline member in the header.
+// CDDrawChildGroup::ForwardTo3C (0x1591e0): forward to Slot3C. Out-of-line (matcher-5).
+RVA(0x001591e0, 0x5)
+void CDDrawChildGroup::ForwardTo3C() {
+    this->Slot3C();
+}
 
 
 // ---------------------------------------------------------------------------

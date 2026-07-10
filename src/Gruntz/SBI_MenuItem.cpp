@@ -75,10 +75,13 @@ extern i32 g_serialCounter;
 // The frame-name reverse-lookup is CImageRegistry::ReadField (mgr->m_10,
 // <Gruntz/ResMgr.h>); the former CMiNameReg view is gone. The archive is CSerialArchive.
 
-// CSBI_MenuItem::ClearFrame (0x000e6d90) is now an inline member in the header.
+// CSBI_MenuItem::ClearFrame (0xe6d90): drop the resolved frame. Out-of-line (matcher-5).
+RVA(0x000e6d90, 0x8)
+void CSBI_MenuItem::ClearFrame() {
+    m_30 = 0;
+}
 
 
-// CSBI_MenuItem::ClearFrame2 (0x000e81a0) is now an inline member in the header.
 
 
 // ---------------------------------------------------------------------------
@@ -191,6 +194,12 @@ i32 CSBI_MenuItem::InitItem(
 }
 
 // ---------------------------------------------------------------------------
+// CSBI_MenuItem::ClearFrame2 (0xe81a0): drop the resolved frame. Out-of-line (matcher-5).
+RVA(0x000e81a0, 0x8)
+void CSBI_MenuItem::ClearFrame2() {
+    m_30 = 0;
+}
+
 // CSBI_MenuItem::ResolveFrame - look up the keyed config record in the host's
 // map; if found and in range, latch its frame handle into m_30. Returns whether
 // a frame was resolved. 2-arg __thiscall (ret 8).
@@ -385,7 +394,11 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
     return SerializeChain(ar, kind, a, b) != 0;
 }
 
-// CSBI_MenuItem::SetSubtype (0x001005b0) is now an inline member in the header.
+// CSBI_MenuItem::SetSubtype (0x1005b0): arm the countdown (m_28 = 2). Out-of-line (matcher-5).
+RVA(0x001005b0, 0x8)
+void CSBI_MenuItem::SetSubtype() {
+    m_28 = 2;
+}
 
 
 // ---------------------------------------------------------------------------

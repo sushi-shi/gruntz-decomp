@@ -20,7 +20,14 @@ extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 
-// CSBI_GruntMachine::Reset (0x000e8c70) is now an inline member in the header.
+// vtable slot 3 (0xe8c70): drop the standalone frame handle + the two resolved frame
+// records (also the destructor's member teardown). Homed out-of-line (matcher-5).
+RVA(0x000e8c70, 0xc)
+void CSBI_GruntMachine::Reset() {
+    m_34 = 0;
+    m_3c = 0;
+    m_30 = 0;
+}
 
 
 // vtable slot 5 (0xe8cb0): the per-frame render. Idle (return 1) while the frame
@@ -80,7 +87,18 @@ i32 CSBI_GruntMachine::Render(i32 z) {
     return 1;
 }
 
-// CSBI_GruntMachine::SetFrames (0x000e8dc0) is now an inline member in the header.
+// 0xe8dc0 (__thiscall, ret 8): prime the two frame indices (each gated by != -1) and
+// arm the countdown (m_28 = 2). Homed out-of-line (matcher-5).
+RVA(0x000e8dc0, 0x22)
+void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
+    if (idxA != -1) {
+        m_38 = idxA;
+    }
+    if (idxB != -1) {
+        m_40 = idxB;
+    }
+    m_28 = 2;
+}
 
 
 // @early-stop
