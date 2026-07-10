@@ -22,6 +22,40 @@ struct CTrigParam {
 };
 SIZE_UNKNOWN(CTrigParam);
 
+// The +0x7c sub-object of the source tile record, holding two more CTrigParam blocks.
+struct CTrigRecordSub {
+    char _00[0xf0];
+    CTrigParam m_f0;  // +0xf0
+    CTrigParam m_100; // +0x100
+};
+SIZE_UNKNOWN(CTrigRecordSub);
+
+// The source tile record AddLogicFromRecord marshals into the AddLogic factory: five
+// ids (m_4/m_164/m_168 + the two caller args) and six CTrigParam blocks (m_64, three
+// consecutive at m_134/m_144/m_154, and m_7c->m_f0/m_100). Identity unrecovered
+// (the per-tile trigger-source record); placeholder view - only the offsets matter.
+struct CTrigSourceRecord {
+    char _00[0x04];
+    i32 m_4; // +0x04
+    char _08[0x64 - 0x08];
+    CTrigParam m_64; // +0x64
+    char _74[0x7c - 0x74];
+    CTrigRecordSub* m_7c; // +0x7c
+    char _80[0x118 - 0x80];
+    i32 m_118; // +0x118
+    char _11c[0x120 - 0x11c];
+    i32 m_120; // +0x120
+    i32 m_124; // +0x124
+    i32 m_128; // +0x128
+    char _12c[0x134 - 0x12c];
+    CTrigParam m_134; // +0x134
+    CTrigParam m_144; // +0x144
+    CTrigParam m_154; // +0x154
+    i32 m_164;        // +0x164
+    i32 m_168;        // +0x168
+};
+SIZE_UNKNOWN(CTrigSourceRecord);
+
 class CTileTriggerWiring {
 public:
     // 0x116610: the full factory (this, five ids, six param blocks, four ids).
@@ -46,6 +80,10 @@ public:
 
     // 0x1163b0: forward with six default (zeroed) parameter blocks.
     void AddLogicDefaults(i32 type, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9);
+
+    // 0x1164a0: forward with the five ids + six CTrigParam blocks pulled from a source
+    // tile record (rec) instead of zeroed.
+    void AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord* rec);
 };
 SIZE_UNKNOWN(CTileTriggerWiring);
 

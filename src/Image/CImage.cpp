@@ -17,6 +17,8 @@
 // ---------------------------------------------------------------------------
 
 #include <Image/CImage.h>
+#include <Image/CBlitInfo.h> // canonical CBlitInfo/CBlitXform (RenderImage selector arg)
+#include <Wwd/WwdFile.h>      // CPlaneRender::WrapCoord (the m_xform origin remap)
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (m_surface geometry/Fill/Blt/Reload/m_8 COM)
 #include <DDrawMgr/DDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
@@ -25,6 +27,11 @@
 
 // The engine __cdecl deallocator (reloc-masked rel32). _RezFree @0x1b9b82.
 extern "C" void RezFree(void* p);
+
+// The per-frame draw-delta mirror (BSS @0x6bf3bc) the RenderImage animate path
+// consumes to advance/wrap the request's m_44 counter. Canonical binding in
+// Projectile.cpp; declared address-pinned here (reloc-masked).
+extern "C" u32 g_6bf3bc;
 
 // The image-source format tag (CParseSource::GetTag, a packed 3-char fourcc) that
 // both Resolve and Reload dispatch on to pick the format loader index (1..4). Named
@@ -403,6 +410,153 @@ i32 CImage::Reload(CParseSource* src, i32 arg) {
 }
 
 // ---------------------------------------------------------------------------
+// 0x153470 (vtable slot 14): RenderImage - the sprite blit-mode/clip selector.
+// Reads the request's m_mode word: bit 1 culls; bit 8 runs the per-frame animate
+// step (wrap m_44 against the draw-delta g_6bf3bc, toggling the live bit) and gates
+// on bit 0x10000000; bits 2/4 pick the flip variant and m_owned picks surface-vs-
+// shaded, dispatching one of the 7 CImage::Blit* routines. The eighth combination
+// (no flip, no owned sprite) is the inlined "plain surface" path: compute the on-
+// screen sprite rect from the anchor/origin/draw geometry, remap via WrapCoord (bit
+// 0x40000), clip against the parent clip rect / worker box / dest extents, then
+// BltFast this->m_surface onto dst->m_surface and record the clipped rect back into
+// the request. __thiscall, ret 8.
+// @early-stop
+// Complete + correct - the dispatch selector is byte-exact; the inlined geometry
+// path inherits the SAME whole-function regalloc/scheduling wall as its BlitNorm
+// siblings (the origin-load this-member->register tie-break + the WrapCoord ILT-thunk
+// / CopyRect IAT-import reloc-name operand artifacts). Logic verified against retail;
+// the residual is codegen-only.
+RVA(0x00153470, 0x31a)
+void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
+    i32 mode = info->m_mode;
+    if (mode & 1) {
+        info->m_result = -1;
+        return;
+    }
+    if (mode & 8) {
+        if (g_6bf3bc >= info->m_44) {
+            info->m_44 = info->m_48;
+            mode ^= 0x10000000;
+            info->m_mode = mode;
+        } else {
+            info->m_44 -= g_6bf3bc;
+        }
+        mode = info->m_mode;
+        if (!(mode & 0x10000000)) {
+            info->m_result = -1;
+            return;
+        }
+    }
+    i32 hFlip = mode & 4;
+    i32 vFlip = mode & 2;
+    if (vFlip) {
+        if (hFlip) {
+            if (m_owned) {
+                BlitShadeNorm(info, dst);
+            } else {
+                BlitNorm(info, dst);
+            }
+        } else {
+            if (m_owned) {
+                BlitShadeFlipV(info, dst);
+            } else {
+                BlitFlipV(info, dst);
+            }
+        }
+        return;
+    }
+    if (hFlip) {
+        if (m_owned) {
+            BlitShadeFlipH(info, dst);
+        } else {
+            BlitFlipH(info, dst);
+        }
+        return;
+    }
+    if (m_owned) {
+        BlitShadeFlipHV(info, dst);
+        return;
+    }
+
+    // The plain-surface path (no flip, no owned sprite): compute + clip the rect, BltFast.
+    i32 x = m_originX - m_anchorX + info->m_adjustX + info->m_drawX;
+    i32 y = m_originY - m_anchorY + info->m_adjustY + info->m_drawY;
+    if (info->m_flags & 0x40000) {
+        info->m_xform->m_planeRender->WrapCoord(&x, &y);
+    }
+    i32 right = m_width + x - 1;
+    i32 bottom = m_height + y - 1;
+    i32 dleft = x;
+    i32 dtop = y;
+    i32 dright = right;
+    i32 dbottom = bottom;
+    if (info->m_flags & 0x40000) {
+        BlitRect srcClip = m_parent->m_24->m_10;
+        RECT destClip;
+        CopyRect(&destClip, (const RECT*)&srcClip);
+        if (x < destClip.left) {
+            dleft += destClip.left - x;
+        }
+        if (right > destClip.right) {
+            dright = destClip.right;
+        }
+        if (y < destClip.top) {
+            dtop += destClip.top - y;
+        }
+        if (bottom > destClip.bottom) {
+            dbottom = destClip.bottom;
+        }
+    } else if (info->m_clipLeft == (i32)0x80000000) {
+        if (x < 0) {
+            dleft = 0;
+        }
+        if (right >= dst->m_width) {
+            dright = dst->m_width - 1;
+        }
+        if (y < 0) {
+            dtop = 0;
+        }
+        if (bottom >= dst->m_height) {
+            dbottom = dst->m_height - 1;
+        }
+    } else {
+        if (x < info->m_clipLeft) {
+            dleft = info->m_clipLeft;
+        }
+        if (right > info->m_clipRight) {
+            dright = info->m_clipRight;
+        }
+        if (y < info->m_clipTop) {
+            dtop = info->m_clipTop;
+        }
+        if (bottom > info->m_clipBottom) {
+            dbottom = info->m_clipBottom;
+        }
+    }
+    i32 w = dright - dleft + 1;
+    i32 h = dbottom - dtop + 1;
+    if (w <= 0 || h <= 0) {
+        info->m_result = -1;
+        return;
+    }
+    RECT s;
+    s.left = dleft - x;
+    s.top = dtop - y;
+    s.right = s.left + w;
+    s.bottom = s.top + h;
+    dst->m_surface->BltFast(dleft, dtop, m_surface, &s, m_loadResult);
+    info->m_outLeft = dleft;
+    info->m_outRect.m_00 = dleft;
+    info->m_outTop = dtop;
+    info->m_outWidth = w;
+    info->m_outRect.m_04 = dtop;
+    info->m_outHeight = h;
+    info->m_result = 0;
+    info->m_outRect.m_08 = dright;
+    info->m_outRect.m_0c = dbottom;
+}
+
+// ---------------------------------------------------------------------------
 // slot 17 (0x0d5e20): forward the arg through two later virtuals - Slot15
 // (vtable +0x3c) then Slot16 (vtable +0x40). __thiscall, ret 4. Re-homed from
 // src/Stub/BoundaryLowerMethods.cpp (was the Cd5e20 placeholder view); the vtable
@@ -447,15 +601,17 @@ public:
     i32 Resolve(void* parent, i32 z1, void* b, void* c, void* d, i32 z2); // 0x1647e0
 };
 
-// The +0x38 render virtual (slot 14, RenderImage @0x153470) is dispatched on `this`
-// as an ordinary virtual call now (`this->RenderImage(&clip, a)` -> `mov ecx,this;
-// call [vptr+0x38]`); its body is external engine code (declared-only).
+// The +0x38 render virtual (slot 14, RenderImage @0x153470, reconstructed above) is
+// dispatched on `this` as an ordinary virtual call (`this->RenderImage(...)` ->
+// `mov ecx,this; call [vptr+0x38]`). The `clip` CResolveNode IS the CBlitInfo blit
+// request the RESOLVE method fills in (same physical layout); the cast is transitional
+// pending a CResolveNode<->CBlitInfo unification.
 
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
     if (clip.Resolve(m_parent, 0, b, c, d, 0)) {
-        this->RenderImage(&clip, a);
+        this->RenderImage((CBlitInfo*)&clip, (CImage*)a);
     }
 }
 
@@ -481,7 +637,7 @@ void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) 
             g_imageClipRect[2] = ((i32*)rect)[2];
             g_imageClipRect[3] = ((i32*)rect)[3];
         }
-        this->RenderImage(&clip, a);
+        this->RenderImage((CBlitInfo*)&clip, (CImage*)a);
     }
 }
 

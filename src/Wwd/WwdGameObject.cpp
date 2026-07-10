@@ -704,6 +704,38 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 }
 
 // ---------------------------------------------------------------------------
+// Sub151b90 (0x151b90): cache the linked object (m_98) resolved from the
+// serialized key handle (m_184) through the manager's kill-cue map
+// (m_mgr->m_08->m_map, CMapStringToObLite::Lookup @0x1b8760). Gated on a non-null
+// caller arg; a null key or a lookup miss clears m_98. __thiscall, ret 4.
+// @early-stop
+// Logic complete + verified (74.6%). Residual is a pure MSVC5 block-layout tiebreak:
+// retail lays the lookup-MISS block inline (fall-through of `jne`, reusing the tested
+// eax=0 for `m_98 = 0`) with the FOUND block out-of-line, and sinks the `found = 0`
+// init store to just after the two arg pushes. cl unconditionally lays the then-block
+// (found) inline (`je`) and hoists the init store; every source polarity (==0 / !=0 /
+// if-else / temp-hit) canonicalizes to the same found-inline shape (permuter: no
+// change). Not source-steerable.
+// ---------------------------------------------------------------------------
+RVA(0x00151b90, 0x70)
+i32 CWwdGameObject::Sub151b90(i32 gate) {
+    if (gate == 0) {
+        return 0;
+    }
+    if (m_184 != 0) {
+        void* found = 0;
+        if (m_mgr->m_08->m_map.Lookup((void*)m_184, found) == 0) {
+            m_98 = 0;
+            return 1;
+        }
+        m_98 = found;
+        return 1;
+    }
+    m_98 = 0;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // WriteSnapshot (0x151c00): assemble a 0xa0-byte record from this + the worker
 // and emit it through the archive at +0x30.
 // ---------------------------------------------------------------------------

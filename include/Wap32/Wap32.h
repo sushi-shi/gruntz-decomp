@@ -55,7 +55,7 @@ public:
     // Pre-dispatch hook: GameWindowProc calls this for EVERY message before the
     // switch; nonzero swallows the message (WndProc returns 0).
     virtual i32 PreDispatchMessage(UINT uMsg, WPARAM wParam, LPARAM lParam); // +0x04 idx1
-    virtual i32 Wap32GameWndVfunc2(); // +0x08  idx2 (unused by WndProc)
+    virtual i32 Wap32GameWndVfunc2(i32 notifyCode, i32 cmdId, i32 lParam); // +0x08 idx2 (OnCommand fan-out)
 
     // Per-message virtual handlers (return nonzero = handled). The argument shape
     // mirrors the Win32 message: point messages split lParam into LOWORD/HIWORD.

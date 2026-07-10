@@ -132,6 +132,7 @@ public:
     i32 Helper164790(i32 a2, i32 a1); // 0x164790  __thiscall
     i32 Sub150c30(i32 a1);            // 0x150c30
     i32 Sub151780(i32 a1);            // 0x151780
+    i32 Sub151b90(i32 a1);            // 0x151b90  cache linked object (m_98) from key m_184
 
     // The three "resolve object reference" setters Sub151780 dispatches the
     // deserialized name lookups into (sibling __thiscall methods, reloc-masked).

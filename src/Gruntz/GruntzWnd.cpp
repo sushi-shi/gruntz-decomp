@@ -22,7 +22,7 @@ public:
     CGruntzWnd();
     virtual ~CGruntzWnd() OVERRIDE;
     virtual i32 PreDispatchMessage(UINT, WPARAM, LPARAM) OVERRIDE; // slot 1
-    virtual i32 Wap32GameWndVfunc2() OVERRIDE;                     // slot 2
+    virtual i32 Wap32GameWndVfunc2(i32, i32, i32) OVERRIDE;        // slot 2
     virtual i32 OnPaint() OVERRIDE;                                // slot 7
     virtual i32 OnChar(WPARAM, LPARAM) OVERRIDE;                   // slot 8
     virtual i32 OnKeyDown(WPARAM, LPARAM) OVERRIDE;                // slot 9

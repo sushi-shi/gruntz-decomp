@@ -125,10 +125,6 @@ RVA(0x00115b60, 0x97)
 i32 Gap_115b60(void) {
     return 0;
 } // @stub
-RVA(0x001164a0, 0x116)
-i32 Gap_1164a0(void) {
-    return 0;
-} // @stub
 // @stub 0x139810 = __thiscall (dst, size) -> dst: builds a `\`-joined qualified
 // path into dst by walking a CSymTab scope chain rooted at this->m_10 (each node is
 // a CSymTab: node->m_name @+0, node->m_parent @+0x1c; g_sepSlash "\\" @0x60cff0 is
@@ -149,15 +145,6 @@ i32 Gap_139810(void) {
 // @stub 0x13ba80 = __thiscall string setter: RezFree(this->m_4); this->m_4 =
 // operator new(strlen(arg)+1); strcpy(m_4, arg). Bute/SymTab region; owning class
 // with a char* @+0x4 not confidently resolved (orphan, no xref).
-// @stub 0x13d3a0 = CGameWnd virtual (vtbl slots @0x1ea328 CGruntzWnd + @0x1ea398
-// CGameWnd, last slot). Unpacks a packed x/y (lo=x, hi=y) and offers (y,x,arg2) in
-// turn to this->m_owner's vtbl[10], this's own vtbl[2], and m_owner->m_8's vtbl[5];
-// returns on the first true. Deferred: needs CGameApp(m_owner) vtable slot-10 sig +
-// CGameWnd slot-2 re-typed to (y,x,arg2) + the m_8 sub-object vtable modeled first.
-RVA(0x0013d3a0, 0x6a)
-i32 Gap_13d3a0(void) {
-    return 0;
-} // @stub
 // @stub 0x13e8f0 = __thiscall image-cache reload (DIRSURF.CPP): scalar-deletes each
 // g_imageCache element, clears this->m_94 (CDdObArray) + g_imageCache, rebuilds via
 // this->m_8->vtbl[9](0, &CImageFactory::Build_13e9a0), reports through
@@ -173,14 +160,6 @@ i32 Gap_13e8f0(void) {
 // ImageRotateBlit; not source-steerable).
 RVA(0x00141080, 0x174)
 i32 Gap_141080(void) {
-    return 0;
-} // @stub
-RVA(0x00151b90, 0x70)
-i32 Gap_151b90(void) {
-    return 0;
-} // @stub
-RVA(0x00153470, 0x31a)
-i32 Gap_153470(void) {
     return 0;
 } // @stub
 RVA(0x00155ff0, 0x22)

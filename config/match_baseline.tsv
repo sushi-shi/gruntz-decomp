@@ -77,7 +77,7 @@ chatboxowner	5	0
 cheatmgr	7	4
 checkpointswitchbuild	1	0
 checkpointtrigger	5	3
-cimage	13	9
+cimage	14	9
 circleshadeblit	1	0
 cluster0c	2	1
 cmdscrollapply	2	2
@@ -138,7 +138,7 @@ droppedobject	7	4
 droppedobjectserialize	2	2
 droppedobjectshadow	3	2
 dsoundvoice	2	1
-engine_label_stubs	79	8
+engine_label_stubs	75	8
 engstr	3	1
 engstrrendertext	1	0
 exittrigger	4	2
@@ -182,7 +182,7 @@ gameoptionsdialog	2	0
 gamesave	1	1
 gamestaterecordload	1	0
 gametext	4	2
-gamewnd	10	9
+gamewnd	11	10
 glyphstr	3	1
 goowellmgr	1	0
 groupops	2	0
@@ -391,7 +391,7 @@ sbi_imageset	1	0
 sbi_imageset_eh	1	1
 sbi_imagesetani	1	1
 sbi_imagesetani_eh	1	1
-sbi_menuitem	9	4
+sbi_menuitem	9	5
 sbi_menuitem_eh	1	1
 sbi_rectonly	71	32
 sbi_rectonly_eh	2	1
@@ -468,7 +468,7 @@ tiletriggerfactory	1	0
 tiletriggerload	1	1
 tiletriggerlogic	1	1
 tiletriggertransition	10	8
-tiletriggerwiring	1	0
+tiletriggerwiring	2	1
 tilewireswitchlogic	1	0
 timebomb	7	3
 timesplit	2	2
@@ -509,7 +509,7 @@ worldsoundset	17	8
 wormhole	9	6
 wormholeacts	3	2
 wwdfile	23	4
-wwdgameobject	31	14
+wwdgameobject	32	14
 wwdgrid	8	6
 wwdobjmgr	1	0
 wwdobjmgrfactories	9	0
@@ -950,8 +950,9 @@ cimage	?Create@CImage@@UAEHPAVCImageFrameDesc@@H@Z	99.0909	99.0909	4	ffc45ccf6fc
 cimage	?FreeAll@CImage@@UAEXXZ	100.0000	100.0000	4	f03ae4828cb8	0x153260
 cimage	?LoadDispatch@CImage@@UAEHPAVCImageFrameDesc@@IPAXH@Z	99.8611	99.8611	4	0e847a49ddf7	0x152fb0
 cimage	?Reload@CImage@@UAEHPAUCParseSource@@H@Z	99.4000	99.4000	1	f30669846c2f	0x153380
-cimage	?RenderFrame@CImage@@QAEXPAX000@Z	100.0000	100.0000	5	4318cb700c72	0x153790
-cimage	?RenderFrameClipped@CImage@@QAEXPAX0000@Z	100.0000	100.0000	5	72a3b6d07f50	0x153810
+cimage	?RenderFrame@CImage@@QAEXPAX000@Z	100.0000	100.0000	6	1fa3fc04a3ac	0x153790
+cimage	?RenderFrameClipped@CImage@@QAEXPAX0000@Z	100.0000	100.0000	6	e0e34d8c0f45	0x153810
+cimage	?RenderImage@CImage@@UAEXPAVCBlitInfo@@PAV1@@Z	87.8967	87.8967	1	d725fff5a977	0x153470
 cimage	?Resolve@CImage@@UAEHPAUCParseSource@@H@Z	100.0000	100.0000	1	4fb488866b49	0x152f20
 cimage	?SetOrigin@CImage@@QAEHPAVCImageFrameDesc@@H@Z	100.0000	100.0000	1	60091b7fa1da	0x153330
 cimage	?Slot17@CImage@@UAEXPAX@Z	100.0000	100.0000	1	687891fbd07d	0xd5e20
@@ -1570,13 +1571,9 @@ engine_label_stubs	?Gap_0e9a30@@YAHXZ	0.4605	0.4605	1	cpp:0cd3d8fa5bea	0xe9a30
 engine_label_stubs	?Gap_100660@@YAHXZ	5.6000	5.6000	1	cpp:0cd3d8fa5bea	0x100660
 engine_label_stubs	?Gap_10f6a0@@YAHXZ	1.0753	1.0753	1	cpp:0cd3d8fa5bea	0x10f6a0
 engine_label_stubs	?Gap_115b60@@YAHXZ	3.1746	3.1746	1	cpp:0cd3d8fa5bea	0x115b60
-engine_label_stubs	?Gap_1164a0@@YAHXZ	0.8511	0.8511	1	cpp:0cd3d8fa5bea	0x1164a0
 engine_label_stubs	?Gap_139810@@YAHXZ	1.0448	1.0448	1	cpp:0cd3d8fa5bea	0x139810
-engine_label_stubs	?Gap_13d3a0@@YAHXZ	1.4815	1.4815	1	cpp:0cd3d8fa5bea	0x13d3a0
 engine_label_stubs	?Gap_13e8f0@@YAHXZ	2.9688	2.9688	1	cpp:0cd3d8fa5bea	0x13e8f0
 engine_label_stubs	?Gap_141080@@YAHXZ	0.7547	0.7547	1	cpp:0cd3d8fa5bea	0x141080
-engine_label_stubs	?Gap_151b90@@YAHXZ	4.1176	4.1176	1	cpp:0cd3d8fa5bea	0x151b90
-engine_label_stubs	?Gap_153470@@YAHXZ	0.4333	0.4333	1	cpp:0cd3d8fa5bea	0x153470
 engine_label_stubs	?Gap_155ff0@@YAHXZ	10.0000	10.0000	1	cpp:0cd3d8fa5bea	0x155ff0
 engine_label_stubs	?Gap_156ad0@@YAHXZ	1.1304	1.1304	1	cpp:0cd3d8fa5bea	0x156ad0
 engine_label_stubs	?Gap_1581b0@@YAHXZ	4.1176	4.1176	1	cpp:0cd3d8fa5bea	0x1581b0
@@ -1993,6 +1990,7 @@ gamewnd	?Destroy@CGameWnd@@QAEXXZ	100.0000	100.0000	7	c42a6d9df380	0x13cfb0
 gamewnd	?GameWindowProc@CGameApp@@SGJPAUHWND__@@IIJ@Z	94.8343	94.8343	8	ac9bbcf15510	0x13cff0
 gamewnd	?OnActivateApp@CGameWnd@@UAEHIJ@Z	100.0000	100.0000	5	82d8d9668252	0x13d470
 gamewnd	?OnClose@CGameWnd@@UAEHXZ	100.0000	100.0000	3	c369ef3fa202	0x13d4c0
+gamewnd	?OnCommand@CGameWnd@@UAEHIJ@Z	100.0000	100.0000	1	2f7564d7b486	0x13d3a0
 gamewnd	?PumpMessages@CGameWnd@@QAEXIH@Z	100.0000	100.0000	3	ec164a67264b	0x13d4e0
 gamewnd	?PumpMessagesRange@CGameWnd@@QAEXIIH@Z	100.0000	100.0000	1	4d345e2f53cd	0x13d530
 gamewnd	?QuitMessageLoop@CGameWnd@@UAEHXZ	100.0000	100.0000	8	db409a40cc22	0x13d490
@@ -3190,7 +3188,7 @@ play	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	3	71f7c15b670c	0xdc
 play	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	2	adb4377193c9	0xd8d90
 play	?StepGridWalk@CPlay@@QAEHH@Z	66.6667	66.6667	2	30549333890a	0xd0a60
 play	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	3	79a0630162f5	0xd11e0
-play	?StepScroll@CPlay@@QAEXXZ	81.6207	81.6207	4	de3d9251c114	0xd1ac0
+play	?StepScroll@CPlay@@QAEXXZ	63.5172	63.5172	4	de3d9251c114	0xd1ac0
 play	?Vslot15@CPlay@@UAEHXZ	98.4091	98.4091	1	602acd011b02	0xcfbd0
 play	?Vslot1c@CPlay@@UAEHH@Z	100.0000	100.0000	1	f166c87e98e0	0xd0050
 play	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	74edfadd4ca0	0xcdb10
@@ -3361,7 +3359,7 @@ sbi_imageset_eh	??1CSBI_ImageSet@@UAE@XZ	100.0000	100.0000	2	81ed37b03cdc	0x1020
 sbi_imagesetani	?Serialize@CSBI_ImageSetAni@@QAEHPAUCImageSetStream@@HHH@Z	100.0000	100.0000	1	4f604a3a6709	0xe7cd0
 sbi_imagesetani_eh	??1CSBI_ImageSetAni@@UAE@XZ	100.0000	100.0000	2	19b9537bd704	0x1047f0
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	2	c243a91ef3a4	0xe84f0
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	92.0357	92.0357	8	53dd4b502046	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	8	53dd4b502046	0xe82a0
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	4	e7644e6b9f97	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	2	316d4a1ee9fa	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	45.7547	45.7547	4	411d086d9e71	0xe81e0
@@ -3804,6 +3802,7 @@ tiletriggertransition	?Register_10fc90@CTileTriggerTransition@@QAEXXZ	100.0000	1
 tiletriggertransition	?SerializeMove@CTileTriggerTransition@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	ddfed92da460	0x11750
 tiletriggertransition	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	3	86ef5265bc5f	0x10d150
 tiletriggerwiring	?AddLogicDefaults@CTileTriggerWiring@@QAEXHHHHHHHHH@Z	75.8788	75.8788	3	07afce1ff8b2	0x1163b0
+tiletriggerwiring	?AddLogicFromRecord@CTileTriggerWiring@@QAEXHHPAUCTrigSourceRecord@@@Z	100.0000	100.0000	1	47c0e58cad20	0x1164a0
 tilewireswitchlogic	?WireTileSwitchLogic@CTileWireLogic@@QAEHPAXHH@Z	10.4111	10.4111	3	83ed16958f38	0x6c130
 timebomb	??0CTimeBomb@@QAE@PAUCGameObject@@@Z	83.3548	83.3548	4	ffb606176bd0	0xe1b90
 timebomb	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	2	60e9ec8a4aa5	0x12a70
@@ -4155,6 +4154,7 @@ wwdgameobject	?Slot38@CWwdGameObjectA@@UAEXPAVCDDrawSurfacePair@@0H@Z	90.7525	90
 wwdgameobject	?Slot38@CWwdGameObjectC@@UAEXPAVCDDrawSurfacePair@@0H@Z	99.6983	99.6983	1	5037e40eefa8	0x1664a0
 wwdgameobject	?Sub150c30@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	9	6c60d2293114	0x150c30
 wwdgameobject	?Sub151780@CWwdGameObject@@QAEHH@Z	100.0000	100.0000	7	b230cf9d126a	0x151780
+wwdgameobject	?Sub151b90@CWwdGameObject@@QAEHH@Z	74.7059	74.7059	1	68efa1cd3acd	0x151b90
 wwdgameobject	?Test@CWwdGameObject@@QAEHXZ	73.2747	73.2747	1	9cdf28290fa2	0x1509c0
 wwdgameobject	?WalkChildWorkers_166880@CWwdGameObjectB@@QAEHXZ	100.0000	100.0000	1	cdee84ecf15b	0x166880
 wwdgameobject	?WriteSnapshot@CWwdGameObject@@QAEHH@Z	95.9020	95.9020	11	d057d48efec0	0x151c00

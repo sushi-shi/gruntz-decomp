@@ -83,6 +83,25 @@ void CGameWnd::Destroy() {
 }
 
 // -------------------------------------------------------------------------
+// CGameWnd::OnCommand (WM_COMMAND handler, vtable slot 21). Splits wParam into
+// the LOWORD command id and HIWORD notification code and offers (notify, cmd,
+// lParam) in turn to the owning app's command virtual (slot 10), this window's
+// own slot-2 hook, and the game manager's HandleCommand (slot 5), returning on
+// the first one that claims the message.
+RVA(0x0013d3a0, 0x6a)
+i32 CGameWnd::OnCommand(WPARAM wParam, LPARAM lParam) {
+    i32 notifyCode = (i32)(wParam >> 16);
+    i32 cmdId = (i32)(wParam & 0xffff);
+    if (m_owner->VirtualUnknownMethod11(notifyCode, cmdId, lParam)) {
+        return 1;
+    }
+    if (Wap32GameWndVfunc2(notifyCode, cmdId, lParam)) {
+        return 1;
+    }
+    return m_owner->m_gameMgr->HandleCommand(notifyCode, cmdId, lParam) != 0;
+}
+
+// -------------------------------------------------------------------------
 // CGameWnd::OnClose (WM_CLOSE handler, vtable slot 4). Destroys the OS window
 // exactly once (m_closeGuard guards re-entry) and reports "handled" (1).
 RVA(0x0013d4c0, 0x1e)
@@ -298,7 +317,7 @@ LRESULT CALLBACK CGameApp::GameWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
 i32 CGameWnd::PreDispatchMessage(UINT, WPARAM, LPARAM) {
     return 0;
 }
-i32 CGameWnd::Wap32GameWndVfunc2() {
+i32 CGameWnd::Wap32GameWndVfunc2(i32, i32, i32) {
     return 0;
 }
 i32 CGameWnd::OnCreate(LPARAM) {
@@ -344,9 +363,6 @@ i32 CGameWnd::OnLButtonDblClk(WPARAM, i32, i32) {
     return 0;
 }
 i32 CGameWnd::OnRButtonDblClk(WPARAM, i32, i32) {
-    return 0;
-}
-i32 CGameWnd::OnCommand(WPARAM, LPARAM) {
     return 0;
 }
 

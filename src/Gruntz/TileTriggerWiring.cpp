@@ -38,3 +38,31 @@ void CTileTriggerWiring::
         a9
     );
 }
+
+// ===========================================================================
+// CTileTriggerWiring::AddLogicFromRecord  (0x1164a0)
+// ===========================================================================
+// Same forward as AddLogicDefaults, but the five ids (a3/a4/a5) and the six
+// CTrigParam blocks come from a source tile record instead of being zeroed:
+// a3/a4/a5 = rec->m_164/m_168/m_4; p1..p6 = rec->m_134/m_144/m_154/m_64 and the
+// +0x7c sub-object's m_f0/m_100. __thiscall, ret 0xc.
+RVA(0x001164a0, 0x116)
+void CTileTriggerWiring::AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord* rec) {
+    AddLogic(
+        type,
+        a2,
+        rec->m_164,
+        rec->m_168,
+        rec->m_4,
+        rec->m_134,
+        rec->m_144,
+        rec->m_154,
+        rec->m_64,
+        rec->m_7c->m_f0,
+        rec->m_7c->m_100,
+        rec->m_124,
+        rec->m_120,
+        rec->m_118,
+        rec->m_128
+    );
+}
