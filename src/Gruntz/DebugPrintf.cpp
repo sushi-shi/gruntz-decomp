@@ -19,6 +19,16 @@ extern CRangeSet g_6bf850;
 DATA(0x006bf8e0)
 extern void* g_6bf8e0;
 
+// The MONO-mode (DPRINTF=MONO) text-console state: the 80x25 word buffer base
+// (0xfa0 bytes, 0x0720 = grey space), the current row (0..24) and column. Reached
+// as free globals like the rest of the debug config.
+DATA(0x006bf84c)
+extern char* g_monoBuffer;
+DATA(0x006bf8d4)
+extern i32 g_monoRow;
+DATA(0x006bf8d8)
+extern i32 g_monoCol;
+
 // The cursor-position forwarder (0x184fb0 -> 0x184fd0(0, x, y); BoundaryUpper.cpp)
 // and the CRT fclose (0x11f780) the printf variants / DebugClose reach; external
 // no-body so their call relocs mask.
@@ -151,4 +161,48 @@ void DebugClose() {
     if (g_6bf8dc == 5 || (g_6bf8dc > 7 && g_6bf8dc <= 10)) {
         RezFClose(g_6bf8e0);
     }
+}
+
+// 0x184d50 - MONO-console newline: reset the column, advance the row and, when it
+// runs past the last line (25), scroll the whole 80x25 word buffer up one line
+// (0xa2-byte word copy) then blank the bottom line (0x0720), leaving the row at 24.
+// @early-stop
+// codegen-alias wall (~91%): logic + the two do-while word loops + the 25-line scroll
+// gate are byte-faithful, but retail reloads g_monoBuffer into a volatile reg each
+// iteration where cl caches it in a callee-saved reg (adds a push/pop), and colours
+// the scroll temporaries one register apart. Not source-steerable.
+RVA(0x00184d50, 0x5f)
+void MonoNewline() {
+    g_monoCol = 0;
+    if (++g_monoRow == 25) {
+        i32 i = 0xa0;
+        do {
+            i += 2;
+            *(u16*)(g_monoBuffer + i - 0xa2) = *(u16*)(g_monoBuffer + i - 2);
+        } while (i < 0xfa0);
+        i = 0xf00;
+        do {
+            i += 2;
+            *(u16*)(g_monoBuffer + i - 2) = 0x720;
+        } while (i < 0xfa0);
+        g_monoRow--;
+    }
+}
+
+// 0x184db0 - MONO-console clear: blank the whole 80x25 word buffer (0x0720) and home
+// the cursor (row 0, column 0).
+// @early-stop
+// codegen-alias wall (~60%): the blank loop + cursor-home are correct, but retail
+// reloads g_monoBuffer into edx each iteration (cl caches it in esi -> push/pop) and
+// stores the 0x0720 immediate directly where cl hoists it into cx; the row/col=0 pair
+// reuses retail's zero reg. Same alias/hoist family as MonoNewline.
+RVA(0x00184db0, 0x28)
+void MonoClear() {
+    i32 i = 0;
+    do {
+        i += 2;
+        *(u16*)(g_monoBuffer + i - 2) = 0x720;
+    } while (i < 0xfa0);
+    g_monoRow = 0;
+    g_monoCol = 0;
 }

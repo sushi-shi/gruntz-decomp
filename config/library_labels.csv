@@ -2008,6 +2008,8 @@ rva,name,lib,confidence,source
 0x184df0,__fpclear,LIBCMT,LOW,anchored
 0x1855d0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x186180,_deflateInit_,zlib,HIGH,anchored
+0x1863d0,_deflateSetDictionary,zlib,HIGH,manual-gap-reclass
+0x186550,_deflateParams,zlib,HIGH,manual-gap-reclass
 0x1868e0,_putShortMSB,zlib,HIGH,anchored
 0x186910,_flush_pending,zlib,HIGH,anchored
 0x186990,_deflateEnd,zlib,HIGH,anchored
@@ -3394,6 +3396,7 @@ rva,name,lib,confidence,source
 0x16bfa0,??0ostream@@QAE@PAVstreambuf@@@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x16c570,?seekp@ostream@@QAEAAV1@JW4seek_dir@ios@@@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x192390,??0fstream@@QAE@PBDHH@Z,LIBCIMT,HIGH,manual-crt-reclass
+0x192360,??_Gfstream@@UAEPAXI@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x169fb0,??0ifstream@@QAE@PBDHH@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x169ad0,??0strstream@@QAE@PADHH@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x1698c0,??0ostrstream@@QAE@PADHH@Z,LIBCIMT,HIGH,manual-crt-reclass
