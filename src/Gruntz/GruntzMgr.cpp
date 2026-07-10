@@ -229,9 +229,9 @@ void ChannelSlots_InitAll(); // 0xdb1d0
 // addresses reloc-mask (DIR32 against the named LAB_ symbols); only the push
 // shape is load-bearing.
 i32 CALLBACK GruntzLoadGameDlgProc(HWND, UINT, WPARAM, LPARAM); // 0x9dff0 (LoadGameMenu.cpp)
-extern "C" void GruntzDebugGruntTypeProc(); // LAB_004021e9
-extern "C" void GruntzSaveGameDlgProc();    // LAB_00401041 (GAME_SAVE)
-extern "C" void GruntzSaveMsgDlgProc();     // LAB_004011d1 (GAME_SAVEMSG)
+extern "C" void GruntzDebugGruntTypeProc();                     // LAB_004021e9
+extern "C" void GruntzSaveGameDlgProc();                        // LAB_00401041 (GAME_SAVE)
+extern "C" void GruntzSaveMsgDlgProc();                         // LAB_004011d1 (GAME_SAVEMSG)
 // The "go to level" developer dialog proc (AppDialogs.cpp @0x08e7c0), handed to
 // RunModalDialog by DebugJumpLevel (its pushed code address reloc-masks).
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
@@ -3085,6 +3085,42 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     m_curState->Vslot19();
     g_645570->Flush();
     PostSwitchHook();
+    return 1;
+}
+
+// -------------------------------------------------------------------------
+// The serialize-round sync counter (VA 0x629ad0; DATA home in Io/GameSave.cpp) + the
+// game-manager singleton + the wsprintfA scratch buffer (VA 0x629a50) the desync
+// path formats into.
+extern "C" i32 g_serialCounter; // 0x629ad0
+DATA(0x0024556c)
+extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c
+DATA(0x00229a50)
+extern "C" char g_629a50[]; // 0x629a50  wsprintfA scratch buffer
+
+// SerializeSyncMarker (0x13610, __cdecl): the WAP32 serialize round validator every
+// object's Serialize brackets its record with. WRITE (mode 4): stamp the current
+// round counter (+ the 0x1234666 magic) into the archive. READ (mode 7): read it
+// back, and if it does not match, format "save/load out of sync at <name>, <line>"
+// and pop it in a modal error box (CGruntzMgr::EnterModalUI). Returns 1 (ok) / 0
+// (desync). Home is fuzzy (no recovered caller; a shared serialize helper) - placed
+// with the EnterModalUI reporter it drives.
+RVA(0x00013610, 0x8c)
+i32 SerializeSyncMarker(CSerialArchive* arc, i32 mode, const char* name, i32 line) {
+    if (mode == 4) {
+        i32 marker = g_serialCounter + 0x1234666;
+        arc->Write(&marker, 4);
+        return 1;
+    }
+    if (mode == 7) {
+        i32 readVal;
+        arc->Read(&readVal, 4);
+        if (readVal != g_serialCounter + 0x1234666) {
+            wsprintfA(g_629a50, "save/load out of sync at %s, %d", name, line);
+            g_mgrSettings->EnterModalUI((i32)g_629a50);
+            return 0;
+        }
+    }
     return 1;
 }
 

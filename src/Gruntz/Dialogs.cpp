@@ -20,6 +20,7 @@
 #include <Net/LatencyList.h>     // CLatencyList (m_slotList; SelectItem body below)
 #include <rva.h>
 #include <Globals.h>
+#include <string.h> // inline strcmp (the empty-text WM_SETTEXT gate in the edit subclass)
 
 // The game-manager view of the 0x64556c singleton (== g_gameReg); the battlez-setup
 // option handlers persist per-slot dropdowns into its m_options array.
@@ -147,6 +148,27 @@ CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 RVA(0x00017140, 0x47)
 inline CBattlezDlgCustom::~CBattlezDlgCustom() {}
 
+// The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
+extern "C" char g_emptyString[];
+// The saved original window-proc of the edit child this subclass wraps (reloc-masked
+// DATA; the installer snapshots it via GetWindowLongA). Twin of MultiStartDlgWorld's
+// g_64bdc0.
+DATA(0x00629d10)
+extern i32 g_629d10;
+
+// WndProc_15a10 (0x15a10) - the subclass window-proc installed on a read-only combo
+// edit child (twin of WndProc_c1a10): swallow an empty WM_SETTEXT (keeps the shown
+// selection text) and chain everything else to the saved original proc (g_629d10).
+RVA(0x00015a10, 0x70)
+extern "C" i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_SETTEXT) {
+        if (strcmp(g_emptyString, (const char*)lParam) == 0) {
+            return 0;
+        }
+    }
+    return CallWindowProcA((WNDPROC)g_629d10, hWnd, msg, wParam, lParam);
+}
+
 // ShowCustomDlg (0x17030) - stack-construct a CBattlezDlgCustom and DoModal it;
 // on IDOK, if its custom-name CString m_customName is non-empty, uppercase it and shove it
 // into the child window of the 0x4ff combo (GetWindow(GW_CHILD) -> FromHandle ->
@@ -188,6 +210,56 @@ CBattlezDlgColors::CBattlezDlgColors(i32 a0, i32 a1, i32 a2, CWnd* pParent)
     m_slotIndex = a1;
     m_pickedColor = 0;
     m_68 = a2;
+}
+
+// The game's SendMessageA fn-ptr global (reloc-masked indirect call). Bound via
+// DATA(0x006c44a4) later in this TU (CopyComboSelToChild); declared here so the
+// earlier DoDataExchange can reach it.
+extern long(WINAPI* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp); // 0x6c44a4
+
+// CBattlezDlgColors::DoDataExchange (0x179b0): the MFC DDX for the colour-picker
+// listbox (control 0x515). SAVE (m_bSaveAndValidate): read the selected item's
+// data (the colour index) into m_pickedColor, clamped to 0x10. LOAD: for each of
+// the 17 colours, mark it taken if any of the 4 occupied player slots (m_slots,
+// stride 0x238) already uses it; add the free ones as "Color" items (item-data =
+// colour index), then select the first. GetDlgItem(0x515) runs in both branches
+// (the compiler hoists the shared push of the control id).
+// @early-stop
+// 99.5%: logic byte-exact. Residual is a 2-register coin-flip in the LOAD branch -
+// retail assigns pSend->edi / lb->ebx, cl assigns pSend->ebx / lb->edi (esi is the
+// loop counter in both). A pure callee-saved allocation choice; permuter + source
+// reorder tried, not steerable.
+RVA(0x000179b0, 0xcb)
+void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
+    long(WINAPI * pSend)(void*, unsigned, unsigned, long);
+    if (pDX->m_bSaveAndValidate) {
+        CWnd* lb = GetDlgItem(0x515);
+        pSend = g_pSendMessageA;
+        long sel = pSend(lb->m_hWnd, 0x188, 0, 0);    // LB_GETCURSEL
+        long data = pSend(lb->m_hWnd, 0x199, sel, 0); // LB_GETITEMDATA
+        m_pickedColor = data;
+        if (data >= 0x11) {
+            m_pickedColor = 0x10;
+        }
+    } else {
+        CWnd* lb = GetDlgItem(0x515);
+        pSend = g_pSendMessageA;
+        for (i32 i = 0; i < 0x11; i++) {
+            i32 avail = 1;
+            i32* rec = (i32*)(m_slots + 0x158); // -> slot[0].m_158 (color / m_170 occupancy)
+            for (i32 j = 0; j < 4; j++) {
+                if (rec[6] != 0 && rec[0] == i) { // occupied slot already using color i
+                    avail = 0;
+                }
+                rec = (i32*)((char*)rec + 0x238);
+            }
+            if (avail) {
+                long idx = pSend(lb->m_hWnd, 0x180, 0, (long)"Color"); // LB_ADDSTRING
+                pSend(lb->m_hWnd, 0x19a, idx, i);                      // LB_SETITEMDATA
+            }
+        }
+        pSend(lb->m_hWnd, 0x186, 0, 0); // LB_SETCURSEL
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -469,6 +541,25 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
 // ---------------------------------------------------------------------------
 RVA(0x000234a0, 0x1e)
 CCheckpointDlg::CCheckpointDlg(CWnd* pParent) : CDialog(0xcd, pParent) {}
+
+// The active modeless-dialog HWND cache (NetLobby::g_curDlg_64557c; DATA home in
+// Net/LobbyDialogs.cpp). Referenced reloc-masked.
+namespace NetLobby {
+    extern HWND g_curDlg_64557c;
+}
+
+// CCheckpointDlg::DoDataExchange (0x23520): the MFC DDX. Only the LOAD pass acts
+// (m_bSaveAndValidate == 0): cache the dialog's HWND (GetSafeHwnd, null-this safe)
+// into NetLobby::g_curDlg, then clear the 0x53a "disable prompts" checkbox
+// (BM_SETCHECK 0). Save is a no-op.
+RVA(0x00023520, 0x3e)
+void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
+    if (pDX->m_bSaveAndValidate == 0) {
+        NetLobby::g_curDlg_64557c = GetSafeHwnd();
+        CWnd* item = GetDlgItem(0x53a);
+        g_pSendMessageA(item->m_hWnd, 0xf1, 0, 0); // BM_SETCHECK
+    }
+}
 
 // ---------------------------------------------------------------------------
 RVA(0x00023570, 0x6)

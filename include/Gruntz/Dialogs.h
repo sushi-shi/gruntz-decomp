@@ -100,6 +100,11 @@ public:
     void EnableWindow(i32 bEnable);
     void GetWindowTextA(CString& rString);
     void GetLBText1ce7db(i32 nIndex, CString& rString);
+    // GetSafeHwnd (inline, folds into callers): (this != 0) ? m_hWnd : 0. Same
+    // null-this idiom as CMultiStartDlg::GetSafe1c; keeps retail's test/jne/xor shape.
+    HWND__* GetSafeHwnd() {
+        return this == 0 ? 0 : m_hWnd;
+    }
     static CWnd* __stdcall FromHandle(HWND__* hWnd); // 0x1bb23a
     char m_pad04[0x1c - 4];                          // +0x04 (vptr @+0x00)
     HWND__* m_hWnd;                                  // +0x1c  wrapped window handle
@@ -152,8 +157,18 @@ public:
 SIZE_UNKNOWN(CBattlezSlot);
 struct CBattlezSlot {
     char pad0[0x158];
-    i32 m_158; // +0x158  slot value (SetSlotValue)
-    char pad15c[0x238 - 0x15c];
+    i32 m_158; // +0x158  slot value / assigned color (SetSlotValue)
+    char pad15c[0x170 - 0x15c];
+    i32 m_170; // +0x170  occupancy flag (nonzero = slot in use)
+    char pad174[0x238 - 0x174];
+};
+
+// CDataExchange - the MFC DDX context passed to DoDataExchange. Only its first
+// field is read: m_bSaveAndValidate (0 = load control from member, nonzero = save
+// member from control). Real MFC type; NAFXCW bodies never matched here.
+SIZE_UNKNOWN(CDataExchange);
+struct CDataExchange {
+    i32 m_bSaveAndValidate; // +0x00
 };
 
 // The connection-latency slot list CMultiStartDlg::BuildSlotList allocates: the
@@ -271,6 +286,11 @@ public:
     virtual void WndVsl35() OVERRIDE;             // slot 35
     // WM_MEASUREITEM handler (0x17ae0): fixes the owner-draw swatch item size.
     void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
+    // DDX (0x179b0): save reads the 0x515 colour-list selection's item-data into
+    // m_pickedColor (clamped to 0x10); load populates the list with the 17 colours
+    // not already taken by an occupied player slot. Modeled non-virtual (like
+    // GetMessageMap/OnMeasureItem) so it does not perturb the compiler-emitted vtable.
+    void DoDataExchange(CDataExchange* pDX);
 
     i32 m_slots;       // +0x5c  (= a0; the CBattlezSlot* slot-array base, from parent)
     i32 m_slotIndex;   // +0x60  (= a1; the slot being colored)
@@ -438,6 +458,11 @@ public:
     // MFC GetMessageMap override (see CBattlezDlgColors): returns the static map.
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl35() OVERRIDE;             // slot 35
+    // DDX (0x23520): on load, cache this dialog's HWND into NetLobby::g_curDlg and
+    // clear the "disable prompts" checkbox (control 0x53a, BM_SETCHECK 0). Modeled
+    // non-virtual (like CBattlezDlgColors::DoDataExchange) so it does not perturb
+    // the compiler-emitted vtable.
+    void DoDataExchange(CDataExchange* pDX);
     // Checkbox handler (0x23590): mirror control 0x53a into m_isCheckpointPrompts.
     void OnToggleCheckpointPrompts();
 };

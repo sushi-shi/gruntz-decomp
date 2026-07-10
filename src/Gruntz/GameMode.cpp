@@ -49,6 +49,7 @@ public:
 #include <Gruntz/BattlezData.h> // canonical CBattlezData (InBounds @0xfcd70; non-virtual)
 #include <Io/MoviePlayer.h> // canonical CMoviePlayer (~/CloseSmacker; non-virtual, cast-neutral)
 #include <Gruntz/SoundCueMgr.h>
+#include <Gruntz/LeafCue.h> // the looked-up cue leaf (BOOTY_LOOP value; +0x10 sound player)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <DDrawMgr/DDSurface.h>
@@ -274,6 +275,36 @@ void CBootyState::ReleaseResources() {
     ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("BOOTY", "_");
     ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("GRUNTZ_GOKARTGRUNT", "_");
     ((CGameModeBase*)this)->BaseCleanup();
+}
+
+// CBootyState::FrameSlot28 (slot 10 / +0x28, 0x18e40): the BOOTY_LOOP ambient
+// voice-loop driver. Look up the "BOOTY_LOOP" cue in the m_c cue registry (the
+// CSndHost finder embedded at m_28+0x10); if its DirectSound buffer is currently
+// playing, re-trigger it (CloneAndPlay(0, 0x1f4, 1)) and spin the audio-kill voice
+// reaper (m_c->m_28->m_2c->PurgeVoiceList(-1)) until the buffer stops. Returns 1.
+// (The arg is unused.) The cue value's +0x10 player is heterogeneous: a DirectSoundMgr
+// buffer here (the loop), a CSoundCueMgr in the throttled-cue path (Vslot09) - the
+// documented same-offset-different-concrete-type slot, so cast per use.
+// @early-stop
+// regalloc register-assignment wall (~79%): logic byte-exact, but retail keeps the
+// looked-up cue in esi (this in edi), whereas cl allocates this->esi and strength-
+// reduces &found->m_10 into edi. A pure esi<->edi coin-flip on two loop-live base
+// pointers; not steerable (permuter + single/two-local + typed-field all tried).
+RVA(0x00018e40, 0x81)
+i32 CBootyState::FrameSlot28(i32) {
+    CObject* obj = 0;
+    CMapStringToOb* map = (CMapStringToOb*)((char*)m_c->m_28 + 0x10);
+    map->Lookup("BOOTY_LOOP", obj);
+    LeafCue* found = (LeafCue*)obj;
+    if (found && ((DirectSoundMgr*)found->m_10)->IsPlaying()) {
+        ((DirectSoundMgr*)found->m_10)->CloneAndPlay(0, 0x1f4, 1);
+        while (((DirectSoundMgr*)found->m_10)->IsPlaying()) {
+            if (m_c->m_28->m_2c != 0) {
+                m_c->m_28->m_2c->PurgeVoiceList(-1);
+            }
+        }
+    }
+    return 1;
 }
 
 // ===========================================================================
@@ -1902,6 +1933,28 @@ i32 CMultiBootyState::Vslot09(i32) {
             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                 p->m_14 = g_6bf3c0;
                 ((CSoundCueMgr*)p->m_10)->ConfigureItem(item, 0, 0, 1);
+            }
+        }
+    }
+    return 1;
+}
+
+// CMultiBootyState::FrameSlot28 (slot 10 / +0x28, 0x1e660): identical BOOTY_LOOP
+// voice-loop driver to CBootyState::FrameSlot28 (0x18e40) - the two sibling states
+// share the ambient-loop spin. See that method for the heterogeneous +0x10 slot note.
+// @early-stop
+// same regalloc esi<->edi coin-flip wall as CBootyState::FrameSlot28 (0x18e40).
+RVA(0x0001e660, 0x81)
+i32 CMultiBootyState::FrameSlot28(i32) {
+    CObject* obj = 0;
+    CMapStringToOb* map = (CMapStringToOb*)((char*)m_c->m_28 + 0x10);
+    map->Lookup("BOOTY_LOOP", obj);
+    LeafCue* found = (LeafCue*)obj;
+    if (found && ((DirectSoundMgr*)found->m_10)->IsPlaying()) {
+        ((DirectSoundMgr*)found->m_10)->CloneAndPlay(0, 0x1f4, 1);
+        while (((DirectSoundMgr*)found->m_10)->IsPlaying()) {
+            if (m_c->m_28->m_2c != 0) {
+                m_c->m_28->m_2c->PurgeVoiceList(-1);
             }
         }
     }

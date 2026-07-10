@@ -147,6 +147,7 @@ namespace m4 {
         HGDIOBJ m_38;                       // +0x38 control font
         void Draw258b(HDC hdc, RECT* rect); // 0x0000258b (caret/underline draw)
         i32 Render22160(HDC hdc, i32 maxWidth, RECT* rect);
+        i32 DrawWithFont22770(const char* text, HDC hdc, RECT* rect, UINT format); // 0x22770
     };
 
     // @early-stop
@@ -203,6 +204,32 @@ namespace m4 {
             if (prev) {
                 g_pSelectObject(hdc, prev);
             }
+        }
+        return 1;
+    }
+
+    // -------------------------------------------------------------------------
+    // PwdHost::DrawWithFont22770 (0x22770): draw a plain C string with the control
+    // font. Null-guard hdc/text/rect, select m_38 (saving the prior), DrawTextA the
+    // strlen(text) into rect with the caller's format, then restore the font. ret 1.
+    RVA(0x00022770, 0x7d)
+    i32 PwdHost::DrawWithFont22770(const char* text, HDC hdc, RECT* rect, UINT format) {
+        if (hdc == 0) {
+            return 0;
+        }
+        if (text == 0) {
+            return 0;
+        }
+        if (rect == 0) {
+            return 0;
+        }
+        HGDIOBJ prev = 0;
+        if (m_38) {
+            prev = g_pSelectObject(hdc, m_38);
+        }
+        g_pDrawTextA(hdc, text, strlen(text), rect, format);
+        if (prev) {
+            g_pSelectObject(hdc, prev);
         }
         return 1;
     }

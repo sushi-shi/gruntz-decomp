@@ -362,6 +362,47 @@ SoundChannelNew* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3,
     return (SoundChannelNew*)obj;
 }
 
+// CRandomAmbientSound (0x58) with a validated bounding box: reject an inverted x
+// (a5<a4) or y (a7<a6) range, then ::operator new the channel (not RezAlloc), 6-arg
+// Init, the Init2 box roll, append, return. (a8 unused.)
+// @early-stop
+// ~84%: complete correct reconstruction. Residual is the same vtable-stamp-schedule +
+// shrink-wrap wall the sibling factories hit (CreateRandom_bb60/CreatePos ~87%): retail
+// defers the callee-saved pushes past the two range guards and schedules the ??_7 vptr
+// store AFTER the member inits (obj in eax), cl saves eagerly + stamps the vptr in the
+// placement-new ctor first (obj in esi). Not source-steerable; permuter no-change.
+RVA(0x0000ba00, 0xc6)
+SoundChannelNew* CWorldSoundSet::
+    CreateRandomBox_ba00(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
+    if ((u32)a5 < (u32)a4) {
+        return 0;
+    }
+    if ((u32)a7 < (u32)a6) {
+        return 0;
+    }
+    void* raw = ::operator new(0x58);
+    CRandomAmbientSound* obj;
+    if (raw != 0) {
+        obj = new (raw) CRandomAmbientSound;
+        obj->m_voice = 0;
+        obj->m_level = 0x64;
+        obj->m_14 = 0;
+        obj->m_listNode = 0;
+    } else {
+        obj = 0;
+    }
+    if (obj == 0) {
+        return 0;
+    }
+    if (obj->Init6(m_world, a0, a1, m_04, a2, a3) == 0) {
+        delete obj;
+        return 0;
+    }
+    obj->Init2(a4, a5, a6, a7);
+    obj->m_listNode = (i32)m_list.AddTail(obj);
+    return (SoundChannelNew*)obj;
+}
+
 // CRandomAmbientSound (0x58): 5-arg Init then an ungated 4-arg Init2.
 RVA(0x0000bb60, 0x9b)
 SoundChannelNew* CWorldSoundSet::

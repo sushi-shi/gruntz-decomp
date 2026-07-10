@@ -402,6 +402,19 @@ CMulti::CMulti() {
 // zeroing with the member ctors - MSVC5's state numbering + store scheduling for a
 // factory of this size is not source-steerable. Logic complete. topic:wall topic:eh.
 // ===========================================================================
+
+// The cached PostMessageA fn-ptr (bare 0x6c44c8; DATA home in Play.cpp). Reloc-masked.
+extern i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x6c44c8
+
+// CDemo::Vslot15 (slot 21, 0x3c030): post WM_COMMAND 0x8027 to the owner HWND (the
+// CState/CWorld back-ptr chain m_4w()->m_4->m_4), the demo-state re-post twin of
+// CPlay::Vslot15. Returns 1.
+RVA(0x0003c030, 0x22)
+i32 CDemo::Vslot15() {
+    g_pPostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8027, 0);
+    return 1;
+}
+
 RVA(0x0008b960, 0x7c4)
 i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
     (void)a4;

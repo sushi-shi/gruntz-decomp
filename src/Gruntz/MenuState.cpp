@@ -213,6 +213,20 @@ void OnToggleEasyModeOption(HWND hWnd) {
 }
 
 namespace ApiCallerStubs {
+    // __cdecl(hDlg, id, pos): set dialog item `id`'s scroll position (SIF_POS only,
+    // redraw). The 3-arg sibling of winapi_0371e0 (which also sets range/page).
+    RVA(0x00036e50, 0x43)
+    void winapi_036e50_GetDlgItem_SetScrollPos(HWND hDlg, i32 id, i32 pos) {
+        HWND h = GetDlgItem(hDlg, id);
+        if (h) {
+            SCROLLINFO si;
+            si.cbSize = 0x1c;
+            si.fMask = SIF_POS;
+            si.nPos = pos;
+            SetScrollInfo(h, SB_CTL, &si, TRUE);
+        }
+    }
+
     // __cdecl(hDlg, id): read the scroll position of dialog item `id`.
     RVA(0x00036ec0, 0x41)
     i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id) {
