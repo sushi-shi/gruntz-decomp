@@ -2402,6 +2402,15 @@ source = "src/Rez/RezBufferObjectDtor.cpp"
 flags = "eh"
 
 [[unit]]
+# CRect - the WAP32 engine rectangle class (derives from tagRECT); its geometry
+# methods route through the engine's Win32-API fn-pointer table (reloc-masked).
+# SetRect @0x8c380 + operator= @0x115b30 re-homed from apimischelpers (were the
+# RectHost_08c380/RectHost_115b30 per-fn views). No destructible locals -> /base.
+unit = "wap32rect"
+source = "src/Wap32/Rect.cpp"
+flags = "base"
+
+[[unit]]
 unit = "reconbatch2"
 source = "src/Stub/ReconBatch2.cpp"
 flags = "base"

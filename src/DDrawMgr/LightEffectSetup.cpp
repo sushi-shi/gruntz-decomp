@@ -15,7 +15,9 @@
 #include <Mfc.h> // afx-first (TU pulls MFC via unified CObject; superset of Win32.h)
 
 #include <DDrawMgr/ShadeTableCache.h>
-#include <Gruntz/FaderSubtypes.h> // CFaderLight (v2 vtable slot decl)
+#include <DDrawMgr/DDSurface.h>          // CDDSurface::Blt (v3 overlay blit)
+#include <DDrawMgr/DDrawPtrCollections.h> // the +0x2c overlay surface pool (v3/v4)
+#include <Gruntz/FaderSubtypes.h> // CFaderLight (v2/v3/v4 vtable slot decls)
 #include <math.h>                 // sqrt + pow (__CIpow) for v2's corner distances
 
 // The corner-distance exponent (retail .rdata double @0x5f0888 = 2.0); passed to the
@@ -216,4 +218,35 @@ i32 CFaderLight::v2() {
     i32 r = (i32)m;
     self->m_5c = r;
     return r;
+}
+
+// ===========================================================================
+// CFaderLight::v3 (vtable slot 3, +0xc, 0x181660) - AddItem: when the effect is
+// active (span count m_2060 > 0 && gate m_48), acquire a fresh overlay surface from
+// the +0x2c pool (MakeAndAddB, sized m_2064 x m_2068), stash it in m_40, and blit it
+// onto the active surface m_38. Re-homed from ReconBatch2 (was the Worker181x_181x
+// placeholder view; xref: ??_7CFaderLight@@6B@+0xc via thunk).
+// ===========================================================================
+RVA(0x00181660, 0x40)
+void CFaderLight::v3() {
+    if (m_2060 > 0 && m_48 != 0) {
+        CDDrawPtrCollections* pool = (CDDrawPtrCollections*)m_set2cArg; // +0x2c dual-role pool slot
+        CDDSurface* h = pool->MakeAndAddB(m_2064, m_2068, 0, 0, -1);
+        m_40 = h;
+        h->Blt(m_38);
+    }
+}
+
+// ===========================================================================
+// CFaderLight::v4 (vtable slot 4, +0x10, 0x1816a0) - DropItem: if an overlay
+// surface is held (m_40), release it back to the +0x2c pool (RemoveItemA) and clear
+// the slot. Re-homed from ReconBatch2 (was Worker181x_181x; ??_7CFaderLight@@6B@+0x10).
+// ===========================================================================
+RVA(0x001816a0, 0x1c)
+void CFaderLight::v4() {
+    if (m_40) {
+        CDDrawPtrCollections* pool = (CDDrawPtrCollections*)m_set2cArg;
+        pool->RemoveItemA(m_40);
+        m_40 = 0;
+    }
 }

@@ -28,9 +28,11 @@ public:
     // ??_7 vftable + the implicit ctor vptr-stamp (replaces the manual struct
     // stamp). Bodies live in unmatched engine TUs; declared-only here, named on
     // the target via deterministic @data-symbol/@rva-symbol in the .cpp.
-    virtual void Vf0(); // slot 0 -> 0x001749
+    // slot 0 (thunk 0x1749) - the one-shot Setup virtual, body @0x1104f0. Its 8-arg
+    // build signature is corroborated by CheckpointSwitchBuild.cpp's BaseBuild view.
+    virtual i32 Vf0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
     virtual void Vf1(); // slot 1 -> 0x0022e8
-    virtual void Vf2(); // slot 2 -> 0x002e0f
+    virtual i32 Vf2(); // slot 2 -> 0x002e0f (CTileTimeTriggerSwitchLogic overrides @0x112840)
     virtual void Vf3(); // slot 3 -> 0x0037e2
 
     CTileTriggerSwitchLogic();

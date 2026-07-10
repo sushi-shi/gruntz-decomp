@@ -28,7 +28,7 @@ CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
 class CTileExclusiveTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
-    virtual void Vf2() OVERRIDE; // slot 2
+    virtual i32 Vf2() OVERRIDE; // slot 2
 public:
     CTileExclusiveTriggerSwitchLogic();
 };
@@ -78,7 +78,7 @@ CTileSecretTriggerLogic::CTileSecretTriggerLogic() {}
 // --- CTileTriggerSwitchLogic family (base = 4 virtuals), upper RVAs --------
 class CTileSecretTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
-    virtual void Vf2() OVERRIDE; // slot 2
+    virtual i32 Vf2() OVERRIDE; // slot 2
 public:
     CTileSecretTriggerSwitchLogic();
 };
@@ -89,7 +89,7 @@ CTileSecretTriggerSwitchLogic::CTileSecretTriggerSwitchLogic() {}
 
 class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
-    virtual void Vf2() OVERRIDE; // slot 2
+    virtual i32 Vf2() OVERRIDE; // slot 2
     virtual void Vf3() OVERRIDE; // slot 3
 public:
     CTileTimeTriggerSwitchLogic();
@@ -100,7 +100,7 @@ RVA(0x001127c0, 0x12)
 CTileTimeTriggerSwitchLogic::CTileTimeTriggerSwitchLogic() {}
 
 class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual void Vf2() OVERRIDE; // slot 2
+    virtual i32 Vf2() OVERRIDE; // slot 2
     virtual void Vf3() OVERRIDE; // slot 3
 public:
     CCheckpointTriggerSwitchLogic();
@@ -109,3 +109,18 @@ SIZE_UNKNOWN(CCheckpointTriggerSwitchLogic);
 VTBL(CCheckpointTriggerSwitchLogic, 0x001eaf54); // vtable_names -> code (RTTI game class)
 RVA(0x001127f0, 0x12)
 CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic() {}
+
+// The base switch-logic slot-2 probe (thunk 0x2e0f == base CTileTriggerSwitchLogic
+// slot 2); reloc-masked free callee. CTileTime's slot-2 override normalizes its
+// result to a bool.
+extern "C" i32 TileSwitchProbe_2e0f();
+
+// ---------------------------------------------------------------------------
+// CTileTimeTriggerSwitchLogic::Vf2 (slot 2 override, 0x112840) - `return probe() != 0`
+// (the int->bool neg/sbb/neg normalize). Re-homed from ReconBatch2 (was Probe_112840);
+// xref: ??_7CTileTimeTriggerSwitchLogic@@6B@+0x8 via thunk 0x2464.
+// ---------------------------------------------------------------------------
+RVA(0x00112840, 0xc)
+i32 CTileTimeTriggerSwitchLogic::Vf2() {
+    return TileSwitchProbe_2e0f() != 0;
+}

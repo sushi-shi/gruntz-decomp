@@ -81,9 +81,10 @@ public:
     virtual ~CButeTree() OVERRIDE;              // slot 0 (scalar-dtor 0x16e9c0)
     void* Find(const char* key);                // 0x16d190
     void* Insert(const char* key, void* value); // 0x16db90
-    // Apply a callback to each matching node (__thiscall: push flag/ctx/fn,
-    // callee-cleanup). Reloc-masked external/no-body.
-    void Walk(void (*fn)(), void* ctx, i32 flag);
+    // Walk (0x193340) - invoke fn(key, value, ctx) for each node of the crit-bit
+    // trie, recursing left (child[0]) and iterating right (child[1]) while a child's
+    // crit-bit index still exceeds the node's; `node`==0 starts from m_root.
+    void Walk(void(__cdecl* fn)(char* key, void* value, void* ctx), void* ctx, CButeTreeNode* node);
 
     // g_buteTree ctor/dtor (TypeKeyColl.cpp). Construct runs the deeper base ctor;
     // ClearRecursive frees the keyed nodes; BaseDtor is the primary-base teardown;

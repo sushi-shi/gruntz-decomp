@@ -70,6 +70,7 @@ struct FaderSrc {
     i32 m_frameCount; // +0x18  frame count (w)
     i32 m_1c;         // +0x1c  element count
 };
+class CDDSurface; // the DDraw surface CFaderLight's overlay-pool members point at (matcher-7)
 
 // ===========================================================================
 // CFaderMesh (ctor 0x17e940, size 0x6c): embeds a nested polymorphic sub-object
@@ -203,8 +204,19 @@ public:
     i32 CopyFrom(CFader* src);      // 0x1804a0 (same method; copy from the pInit descriptor)
     void SubFree180630();           // 0x180630 (dtor member teardown; reloc-masked)
 
-    char _pad38[0x40 - 0x38]; // +0x38..+0x3f
-    i32 m_40;                 // +0x40
+    // Overlay-pool state read by v3/v4 (AddItem/DropItem). The surface POOL itself is
+    // the CFader base's dual-role +0x2c slot (m_set2cArg, read as CDDrawPtrCollections*
+    // here). (This is a partial layout for v3/v4; the fuller CFaderLightApply flat view
+    // in LightEffectSetup.cpp is the pending complete-fold onto this class.)
+    CDDSurface* m_38;           // +0x38  active surface (v3 Blt destination)
+    char _pad3c[0x40 - 0x3c];   // +0x3c
+    CDDSurface* m_40;           // +0x40  current pooled overlay surface (0 = none)
+    char _pad44[0x48 - 0x44];   // +0x44
+    i32 m_48;                   // +0x48  emit gate
+    char _pad4c[0x2060 - 0x4c]; // +0x4c..+0x205f
+    i32 m_2060;                 // +0x2060  active span count (gate)
+    i32 m_2064;                 // +0x2064  surface width
+    i32 m_2068;                 // +0x2068  surface height
 };
 
 // ===========================================================================

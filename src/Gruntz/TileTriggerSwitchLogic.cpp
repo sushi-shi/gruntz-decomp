@@ -64,11 +64,34 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
     m_20 = 0;
 }
 
-// The 4 virtuals are DECLARED-ONLY: their real bodies live in unmatched engine
-// TUs, so we don't define them here. cl still emits the ??_7 vftable (the ctor
-// references it) with the 4 slots as external refs - enough for the ctor's
-// implicit vptr-stamp to be byte-exact. The vtable's slot CONTENTS are verified
-// only once each virtual is reconstructed (then named via @rva-symbol).
+// Vf1/Vf2/Vf3 stay DECLARED-ONLY (bodies live in unmatched engine TUs); cl still
+// emits the ??_7 vftable (the ctor references it) with those slots as external
+// refs. Vf0 (slot 0, thunk 0x1749) IS reconstructed below.
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::Vf0 (slot 0) - the one-shot Setup virtual (0x1104f0,
+// shared as slot 0 across the whole *TriggerSwitchLogic family). If already set up
+// (m_20 non-zero) returns 0; else scatters the 8 args into the object fields, sets
+// the init guard (m_20=1) + clears m_1c, returns 1. Re-homed from ReconBatch2
+// (was the Init8_1104f0 placeholder view; xref: vtable slot +0x0 via thunk 0x1749).
+// ---------------------------------------------------------------------------
+RVA(0x001104f0, 0x56)
+i32 CTileTriggerSwitchLogic::Vf0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+    if (m_20) {
+        return 0;
+    }
+    m_04 = a1;
+    m_08 = a2;
+    m_key0c = a3;
+    m_key1 = a4;
+    m_owner = (CTileTriggerSwitchLogic*)a0;
+    m_18 = a6;
+    m_28 = a7;
+    m_1c = 0;
+    m_linkGate = a5;
+    m_20 = (ListNode*)1;
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // CTileTriggerSwitchLogic::FindIndexByKey

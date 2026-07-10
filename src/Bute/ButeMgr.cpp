@@ -100,7 +100,10 @@ SIZE(ButeMgr, 0x110); // alias view of CButeMgr (same object)
 
 // ParseGroup's recursive node-walk callback (the engine apply-fn passed to the
 // tree walker at 0x193340). Reloc-masked file-scope address.
-extern "C" void ButeGroup_Apply();
+// The CButeTree::Walk callback: applies one parsed group node (key/value) against
+// the write-mode text context. extern "C" (undecorated reloc name unchanged by the
+// arg list); its real 3-arg shape is what Walk invokes.
+extern "C" void ButeGroup_Apply(char* key, void* value, void* ctx);
 
 // The token-value scanners ParseAttributeFile feeds the lexed token buffer
 // through (all __cdecl CRT-style, reloc-masked external/no-body):

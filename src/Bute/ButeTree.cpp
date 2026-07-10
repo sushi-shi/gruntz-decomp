@@ -244,3 +244,37 @@ i32 FirstDiffBit(const char* a, const char* b) {
     }
     return c + n;
 }
+
+// ===========================================================================
+// CButeTree::Walk (0x193340) - recursive crit-bit trie traversal: for each node,
+// invoke fn(node->key, node->value, ctx), recurse on the left child (child[0]) then
+// iterate down the right child (child[1]) as long as the child's crit-bit index still
+// increases (a proper crit-bit descent - stops when it loops back up). A null start
+// node begins from m_root. Re-homed from ReconBatch2 (was the Tree_193340 placeholder
+// view; CButeMgr::ParseGroup calls it on a CButeTree sub-tree; node layout == CButeTreeNode).
+// ===========================================================================
+RVA(0x00193340, 0x61)
+void CButeTree::Walk(
+    void(__cdecl* fn)(char* key, void* value, void* ctx),
+    void* ctx,
+    CButeTreeNode* node
+) {
+    while (1) {
+        if (node == 0) {
+            node = m_root;
+            if (node == 0) {
+                return;
+            }
+        }
+        fn(node->m_key, node->m_value, ctx);
+        CButeTreeNode* l = node->m_child[0];
+        if (l != 0 && l->m_bit > node->m_bit) {
+            Walk(fn, ctx, l);
+        }
+        CButeTreeNode* r = node->m_child[1];
+        if (r == 0 || r->m_bit <= node->m_bit) {
+            return;
+        }
+        node = r;
+    }
+}

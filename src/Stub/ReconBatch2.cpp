@@ -136,53 +136,15 @@ i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
     return 1;
 }
 
-// ===========================================================================
-// 0x001104f0 (86B) - one-shot init: if already initialized (m_20) return 0; else
-// scatter the 8 __stdcall args into member fields, set m_20=1, m_1c=0; return 1.
-// @orphan: no retail caller (empty xref tree) and no RTTI/vtable ref - owning class
-// identity unrecoverable.
-// ===========================================================================
-struct Init8_1104f0 {
-    i32 m_0;
-    i32 m_4;
-    i32 m_8;
-    i32 m_c;
-    i32 m_10;
-    i32 m_14;
-    i32 m_18;
-    i32 m_1c;
-    i32 m_20;
-    i32 m_24;
-    i32 m_28;
-    i32 Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
-};
-RVA(0x001104f0, 0x56)
-i32 Init8_1104f0::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
-    if (m_20) {
-        return 0;
-    }
-    m_4 = a1;
-    m_8 = a2;
-    m_c = a3;
-    m_10 = a4;
-    m_24 = a0;
-    m_18 = a6;
-    m_28 = a7;
-    m_1c = 0;
-    m_14 = a5;
-    m_20 = 1;
-    return 1;
-}
+// (0x001104f0 re-homed to src/Gruntz/TileTriggerSwitchLogic.cpp as
+// CTileTriggerSwitchLogic::Vf0 - the one-shot Setup virtual, slot 0 (thunk 0x1749)
+// shared across the whole *TriggerSwitchLogic family; xref: referenced at
+// ??_7CTile*TriggerSwitchLogic@@6B@+0x0. The old Init8_1104f0 view WAS the base
+// switch-logic layout; the 8-arg build signature is corroborated by CheckpointSwitchBuild.)
 
-// ===========================================================================
-// 0x00112840 (12B) - `return LoadSwitchDownSprite() != 0;`. The trailing
-// neg/sbb/neg is the int->bool normalize (docs/patterns/int-to-bool-normalize).
-// ===========================================================================
-i32 LoadSwitchDownSprite_2e0f();
-RVA(0x00112840, 0xc)
-i32 Probe_112840() {
-    return LoadSwitchDownSprite_2e0f() != 0;
-}
+// (0x00112840 re-homed to src/Gruntz/TileTriggerDerivedCtors.cpp as
+// CTileTimeTriggerSwitchLogic::Vf2 - the slot-2 override that normalizes the base
+// slot-2 probe (thunk 0x2e0f) to a bool; xref: ??_7CTileTimeTriggerSwitchLogic@@6B@+0x8.)
 
 // (Forward_115630 @0x00115630 re-homed to src/Gruntz/Fonts.cpp - the
 // compiler-generated dynamic initializer that constructs the g_mediumFont global;
@@ -238,96 +200,18 @@ void __stdcall Copy_16f6e0(Src_16f6e0* src, Dst_16f6e0* dst) {
     dst->Finish(last);
 }
 
-// ===========================================================================
-// 0x001816a0 (28B) - if a held item handle is present, remove it from the owned
-// list and clear it. Sibling of 0x00181660 (same class: m_2c list, m_40 handle).
-// @orphan: an unidentified DDraw overlay worker (m_2c CDDrawPtrCollections, m_38
-// CDDSurface, m_40 CPoolItemA); no retail caller (empty xref) - owning class unknown.
-// ===========================================================================
-class CPoolItemA;
-class CDDrawPtrCollections {
-public:
-    void RemoveItemA(CDDSurface* h); // 0x142160 (real takes CDDSurface*)
-    CDDSurface*
-    MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x142e60 (real returns CDDSurface*)
-};
-struct Worker181x_181x {
-    char _vft0[4];               // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    char m_pad04[0x2c - 0x04];   // +0x04..0x2b
-    CDDrawPtrCollections* m_2c;  // +0x2c  owned item collection
-    char m_pad30[0x38 - 0x30];   // +0x30..0x37
-    CDDSurface* m_38;            // +0x38
-    char m_pad3c[0x40 - 0x3c];   // +0x3c..0x3f
-    CPoolItemA* m_40;            // +0x40  held item handle (0 = none)
-    char m_pad44[0x48 - 0x44];   // +0x44..0x47
-    i32 m_48;                    // +0x48
-    char m_pad4c[0x2060 - 0x4c]; // +0x4c..0x205f
-    i32 m_2060;                  // +0x2060 count
-    i32 m_2064;                  // +0x2064
-    i32 m_2068;                  // +0x2068
-    void DropItem();             // 0x1816a0
-    void AddItem();              // 0x181660
-};
-// 0x00181660 (64B) - if active (m_2060>0 && m_48), allocate+register an item via
-// the owned collection and Blt it onto m_38; store the new handle into m_40.
-RVA(0x00181660, 0x40)
-void Worker181x_181x::AddItem() {
-    if (m_2060 > 0 && m_48 != 0) {
-        CPoolItemA* h = (CPoolItemA*)m_2c->MakeAndAddB(m_2064, m_2068, 0, 0, -1);
-        m_40 = h;
-        ((CDDSurface*)h)->Blt(m_38);
-    }
-}
+// (0x00181660 + 0x001816a0 re-homed to src/DDrawMgr/LightEffectSetup.cpp as
+// CFaderLight::v3 (AddItem) / v4 (DropItem) - the overlay light-fader's pooled-surface
+// acquire/release virtuals (vtable slots 3/4, ??_7CFaderLight@@6B@+0xc/+0x10). The old
+// Worker181x_181x view WAS CFaderLight (size 0x206c; m_38=activeSurface, m_2060=span
+// count, m_2064/68=dims - the same offsets as LightEffectSetup's CFaderLightApply view;
+// the +0x2c pool is the CFader base's dual-role m_set2cArg). Xref-proven vtable slots.)
 
-RVA(0x001816a0, 0x1c)
-void Worker181x_181x::DropItem() {
-    if (m_40) {
-        m_2c->RemoveItemA((CDDSurface*)m_40);
-        m_40 = 0;
-    }
-}
-
-// ===========================================================================
-// 0x00193340 (97B) - recursive tree walk. For each node call cb(node->m_c,
-// node->m_10, ctx); recurse on the left child then iterate to the right child
-// while the child's key (m_8) exceeds the node's. __thiscall(cb, ctx, node).
-// @orphan: a generic binary-tree callback-walk reached from CButeMgr::ParseGroup
-// (xref); the owning container class (a bute symbol tree) has no recoverable identity.
-// ===========================================================================
-typedef void(__cdecl* WalkCb_193340)(i32, i32, i32);
-struct TNode_193340 {
-    TNode_193340* m_0; // +0x00 left
-    TNode_193340* m_4; // +0x04 right
-    i32 m_8;           // +0x08 key
-    i32 m_c;           // +0x0c
-    i32 m_10;          // +0x10
-};
-struct Tree_193340 {
-    char m_pad0[0x18];
-    TNode_193340* m_18; // +0x18 root
-    void Walk(WalkCb_193340 cb, i32 ctx, TNode_193340* node);
-};
-RVA(0x00193340, 0x61)
-void Tree_193340::Walk(WalkCb_193340 cb, i32 ctx, TNode_193340* node) {
-    while (1) {
-        if (node == 0) {
-            node = m_18;
-            if (node == 0) {
-                return;
-            }
-        }
-        cb(node->m_c, node->m_10, ctx);
-        TNode_193340* l = node->m_0;
-        if (l != 0 && l->m_8 > node->m_8) {
-            Walk(cb, ctx, l);
-        }
-        TNode_193340* r = node->m_4;
-        if (r == 0 || r->m_8 <= node->m_8) {
-            return;
-        }
-        node = r;
-    }
-}
+// (0x00193340 re-homed to src/Bute/ButeTree.cpp as CButeTree::Walk - the crit-bit
+// trie callback traversal; CButeMgr::ParseGroup (xref) calls it on a CButeTree
+// sub-tree, `this` root at +0x18 == CButeTree::m_root, node layout == CButeTreeNode
+// (child[0]/child[1]/bit/key/value). Filled the class's declared-only Walk slot; the
+// old Tree_193340/TNode_193340 views were CButeTree/CButeTreeNode.)
 
 // ===========================================================================
 // 0x001b9b8d (6B) - getter that returns the address of a global descriptor
@@ -340,11 +224,7 @@ void** Get_1b9b8d() {
 
 SIZE_UNKNOWN(Desc_16f6e0);
 SIZE_UNKNOWN(Dst_16f6e0);
-SIZE_UNKNOWN(Init8_1104f0);
 SIZE_UNKNOWN(Mid_faec0);
 SIZE_UNKNOWN(Obj_11e8dc);
 SIZE_UNKNOWN(PresentHost_faec0);
 SIZE_UNKNOWN(Src_16f6e0);
-SIZE_UNKNOWN(TNode_193340);
-SIZE_UNKNOWN(Tree_193340);
-SIZE_UNKNOWN(Worker181x_181x);
