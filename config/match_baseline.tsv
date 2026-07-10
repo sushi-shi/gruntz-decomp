@@ -2708,7 +2708,7 @@ lightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.1100	73.1100	2	67db6c9338be	0xa7
 lightfxrender	?Shape8@CLightFxRender@@QAEHXZ	69.7435	69.7435	2	d25b846364de	0xa8900
 loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	2af7b016eb66	0x9dff0
 loadgamemenu	?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	79.2708	79.2708	1	77f602689a4a	0x9e390
-loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHH@Z	34.8095	34.8095	7	1da4fbd866cc	0xca200
+loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHHH@Z	78.8290	78.8290	1	9aa1cc58e716	0xca200
 loadobjectresources	?GetName@CSpawnEntry@@QAE?AVCString@@XZ	100.0000	100.0000	1	cpp:d63a959bf6b0	0x9a260
 loadobjectresources	?LoadObjectAnimResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	88.3103	88.3103	2	750f5fd8641d	0x9ac20
 loadobjectresources	?LoadObjectImageResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z	88.3889	88.3889	1	6da67c03ba5b	0x9a510
@@ -3887,7 +3887,7 @@ teleporter	?GetTypeTag@CTeleporter@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	c
 teleporter	?InitActReg@CTeleporter@@SAXXZ	100.0000	100.0000	3	1bef3a621da1	0x414a0
 teleporter	?Serialize@CTeleporter@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	8f143593dd04	0x41350
 teleporter	?Update@CTeleporter@@QAEHXZ	100.0000	100.0000	5	31dbe43561ab	0x41aa0
-terraintileloader	?Load@CTerrainTileLoader@@QAEHHHHHHH@Z	7.8554	7.8554	1	505b43725144	0x75e90
+terraintileloader	?Load@CTerrainTileLoader@@QAEHHHHHHH@Z	7.8554	7.8554	2	78e4e9d747b5	0x75e90
 terraintileloader	?Validate@ValidateHost@@QAEHXZ	100.0000	100.0000	2	085bfb3cabb2	0x94bc0
 tileactionevent	?DeserializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	5	f033294e79d9	0x114040
 tileactionevent	?MorphByTool@CTileActionEvent@@QAEHHH@Z	0.0000	0.0000	4	a847e8ef3911	0x113420

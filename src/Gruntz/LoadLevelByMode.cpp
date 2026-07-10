@@ -1,74 +1,67 @@
 // LoadLevelByMode.cpp - the PLAY game-state per-mode level loader
-// (C:\Proj\Gruntz). A backlog megafunction (3636 B): given a level/mode id
-// (arg1) it tears down the previous level, resolves the level's area page and
-// display name, then runs the long linear init chain that brings up a level
-// (the BATTLEZ / MULTI / CUSTOMLEVEL / TRAINING / Level%i variants), wiring the
-// map, sound, palette, cursor-snap sprite, status bars and the loading screen.
-// It is a /GX EH-framed routine (CString temps at [esp+0x14]/[esp+0x18] for the
-// area-name and warp-stone formatting give it the exception frame) with one
-// area-page jump-table switch over the area count.
+// (C:\Proj\Gruntz). A /GX EH-framed megafunction (3636 B) on the PLAY-state
+// object (`this`, a CPlay/CLevelValidator-faceted level host): given a level id
+// it tears down the previous level, resolves the level's area page and display
+// name, then runs the long linear init chain that brings up a level (the
+// BATTLEZ / MULTI / CUSTOMLEVEL / TRAINING / Level%i variants), wiring the map,
+// sound, palette, cursor-snap sprite, status bars and the loading screen.
 //
-// Identity: the stub had it as EngineLabelBacklog::LoadLevelByMode; the $SG
-// string set ("GAME_BATTLEZ", "GAME_MULTI", "AREA%i", "CUSTOMLEVEL",
-// "TRAINING", "Level%i", "WarpStone", "CursorSnapSprite") and the
-// g_gameReg->m_134 mode dispatch (1=single, 2=multi, 3=battle) identify it as
-// the per-mode level bring-up on the >0x514-byte PLAY-state object (`this`=esi,
-// sibling of CGamePlayInput::DispatchKey in GameKeyHandler.cpp). Reconstructed
-// as an EH unit (the CString temps).
+// Reconstructed with the REAL retail ABI (was a cdecl/void* carcass at 34.8%):
+//   * `this` is the PLAY-state object; its init-chain steps are __thiscall CPlay
+//     methods (BuildHelpReveal 0x1019, RegisterInputBindings 0x3a71,
+//     LoadActionTileSprites 0x2dce, ScanBuildTiles 0x3553, AddLevelGruntz 0x17ee,
+//     ValidateLevelTiles 0x345e (CLevelValidator facet), ...) reached via
+//     `mov ecx,esi; call`. The four `[edx+0x84/0xa4/0xa8/0x10]` slots stay manual
+//     vtable dispatch (the emitted `mov edx,[esi]; call [edx+X]`).
+//   * m_4 is a CGruntzMgr; GetWorldFileName (0x2531) returns a CString BY VALUE
+//     (hidden ret-slot ptr -> the /GX EH frame's [esp+0x14] temp). Insert
+//     (CSymTab 0x13a000), BeginParse/EndParse (CParseSource 0x139960/0x1399d0) and
+//     ResolvePath (CSymParser 0x13c030) are __thiscall on the resolved set.
+//   * genuine __cdecl helpers: Cmd_ResetScroll (0x2bd0), EngStr_DrawText (0x1c5d),
+//     QueryToken (0x39a4), sprintf/atoi/srand/new/delete.
+//   * the WarpStone scan / Level%i loop / loading screen each build a real
+//     block-scoped CString, so cl emits the ctor(inline)/dtor(0x1b9cde)/state
+//     stores that give the exception frame.
 //
-// Structure:
-//   1) Reset prior-level state: zero the four scroll/area globals, clear the
-//      m_3f4 worker's slots, tear down the old map/sound/grid sub-objects.
-//   2) Mode-split on g_gameReg->m_134 (battle/multi/single) + the m_4->m_c8
-//      already-loaded guard: resolve the level/area number `level` either from
-//      the "GAME_BATTLEZ"/"GAME_MULTI" registry key (skipping a trailing digit
-//      run) or from the bute-driven default; compute the area page index m_20 =
-//      ((level-1)/0x24)*... .
-//   3) Build the level name: "AREA%i"/"CUSTOMLEVEL"/"TRAINING"/"Level%i" then
-//      Lookup the level descriptor in the game's level set (m_8).
-//   4) The area-page jump table (m_20-1 in 0..7 -> 0x4cb034) seeds the two
-//      per-page globals g_645270 (page size) and g_64553c (sub-index).
-//   5) The long linear init chain: a sequence of `BeginStep(0)/EndStep()` paired
-//      sub-object steps, each gated `if (!Step()) goto fail`, that brings the
-//      level online (map, fog, sounds, the WarpStone bute scan, the
-//      CursorSnapSprite registration, the status-bar build, the loading-screen
-//      blit). Returns 1 on success, 0 (edi) on any failing step.
+// IDENTITY (xref-recovered) + DEFERRED FOLD (blocked by cross-TU ownership):
+//   * `this` is the canonical CPlay (<Gruntz/Play.h>, `class CPlay : public CState`,
+//     matcher-4's `play` unit) - proven by the __thiscall init-chain leaves all
+//     being CPlay methods (BuildHelpReveal 0x1019, LoadWarlordSprites 0x2b80,
+//     ScanBuildTiles 0x3553, AddLevelGruntz 0x17ee, BuildWarlordNameTable 0x38dc,
+//     ScanShuffleQuads 0x28dd, LoadActionTileSprites 0x2dce) PLUS
+//     CLevelValidator::ValidateLevelTiles (0x345e) on the SAME `this` at offset 0
+//     (the inheritance the class shape encodes). `CPlayLevelLoad` here is a FAKE
+//     VIEW of CPlay: homing LoadByMode/LoadPyramidBridge onto the real CPlay needs
+//     their method decls added to Play.h + the +0xa4/+0xa8/+0x84/+0x10 vtable-slot
+//     signatures there corrected (slot41 BuildMusicCategoryTable / slot42
+//     BuildWorldLevelPath are modeled no-arg but retail passes 1 arg). That edits
+//     matcher-4's Play.h -> DEFERRED cross-TU fold, reported (not a wall).
+//   * `Eng` is a declared-only carcass that CONFLATES the xref-recovered sub-object
+//     classes (m_4 = CGruntzMgr <Gruntz/GruntzMgr.h>: GetWorldFileName/SyncOptionsState/
+//     RecomputeViewScale/CheckSavedMode; set = CSymParser/CSymTab/CParseSource;
+//     ctx = CLightFxRender; m_3f4 = CTimer; m_2dc = CSBI_RectOnly; CImageSet3;
+//     CButeMgr; CBattlezData; CAreaMgr; CSaveGame; CFontConfig; CBrickz; CDDSurface).
+//     The calls are reloc-masked so the view name is byte-irrelevant; the fold to
+//     the real per-class canonical headers is DEFERRED (retype + header method
+//     decls, cross-TU). Only offsets / code bytes are load-bearing. Returns int;
+//     the retail `ret 8` implies a second (unused) param.
 //
-// CARCASS doctrine: `this` and the g_gameReg singleton sub-objects are unmatched
-// engine classes accessed by raw this+offset (a naming-independent choice for
-// this externally-coupled loader). Every callee body is external (no-body,
-// reloc-masked rel32 / IAT FF15); the data globals + GAME_*/Level%i strings are
-// named so their DIR32 operands reloc-mask. PtInRect-family imports (timeGetTime,
-// UpdateWindow, ShowCursor) come via <Win32.h>. Only offsets / code bytes are
-// load-bearing.
-//
-// Returns int (1 ok / 0 fail) - a void model would tail-merge the many
-// `mov eax,edi; ... ret` failure epilogues (see
-// docs/patterns/void-vs-bool-return-epilogue-split.md).
-//
-// @early-stop
-// /GX megafunction wall. The state reset, the battle/multi/single mode split
-// with the inline trailing-digit skip + the area-page math, the "AREA%i"/
-// "Level%i" name build, the area jump table and the full linear init chain are
-// reconstructed here and match retail's logic. The residual is the documented
-// wall shared by the sibling /GX megafunctions (MainMenuBuilder ~78%,
-// ValidateLevelTiles ~17%, TerrainTileLoader): MSVC5's EH-state numbering across
-// the two CString temps, the idiv area-page schedule, and the regalloc pinning
-// of 0/1/level in ebx/ebp/edi/edx across the 3636-byte frame are not steerable
-// from C source. Deferred to the final sweep (docs/patterns/
+// @early-stop  (34.8% -> ~78.8%: rebuilt the real retail ABI - the __thiscall
+// engine-helper convention (was cdecl push/add-esp), the /GX EH frame from real
+// CString temps + the CString-by-value GetWorldFileName return (was a void*
+// carcass with no frame), the polymorphic +0x10/+0x84/+0xa4/+0xa8 vtable slots
+// (was cdecl fn-ptr calls), the ((level-1)%0x24)/4+1 area math (was +q), the
+// self->m_c grid teardown (was m_4), the 0xb4 nameBuf frame slot, and the
+// warp-cache reload flag -> the +0xa4 arg, so the frame/prologue/calls align.)
+// Residual is the documented /GX regalloc + EH-state wall: MSVC5 pins a fresh
+// `xor eax,eax` zero where our cl reuses the edi=0 register, reloads `this`
+// (g_gameReg) into edx vs ecx, and numbers the EH scope-table states across the
+// CString temps differently - a systematic register/schedule rename across the
+// 3636-byte frame, not steerable from C source (docs/patterns/
 // eh-state-numbering-base.md; big-seh-fuzzy-desync.md; zero-register-pinning.md;
 // o2-optimizer-bailout-framed.md).
-//
-// COLLECTION-EMBEDDING pass (NOT attempted here; sibling evidence): the CString
-// temps here are constructed/destroyed across MULTIPLE scopes (warpTemp/areaTemp at
-// distinct init sub-steps) for /GX EH precision. The sibling PyramidBridgeSprites -
-// which has the SIMPLER top-to-bottom temp lifetime - regressed 7.30% -> 6.84% when
-// its void* temps were converted to real `CString` locals (cl re-schedules the /GX
-// temp ctor/dtor placement). The multi-scope temps here are strictly harder; the
-// void* + explicit LlStr* placement is the byte-faithful model - left untouched to
-// protect the 34.85% partial.
 
-#include <Win32.h> // timeGetTime / UpdateWindow / ShowCursor (reloc-masked IAT)
+#include <Mfc.h> // CString (the /GX EH temps) + PtInRect/UpdateWindow/ShowCursor
 
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <rva.h>
@@ -97,121 +90,170 @@ extern void* g_buteMgr;             // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8
 extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 
 // ---------------------------------------------------------------------------
-// Engine helpers reached through reloc-masked __thiscall ILT thunks (no body).
-// The two recurring no-arg "step" calls (0x1019 BeginStep(arg), 0x3a71 EndStep)
-// bracket each init sub-step; 0x35e4 destroys the CString temp.
+// A declared-only view of the engine sub-objects reached by raw this+offset.
+// Every method is __thiscall (default for member fns) and bodyless, so each call
+// lowers to `mov ecx,ptr; call <reloc-masked symbol>` exactly like retail. The
+// method identities (real retail names in comments) are reloc-masked, so the
+// view name is not load-bearing.
 // ---------------------------------------------------------------------------
-void LlBeginStep(void* self, i32 a);   // 0x1019  __thiscall(this, push a)
-void LlEndStep(void* self);            // 0x3a71  __thiscall(this)
-void LlFreeTemp(void* tmp);            // 0x35e4  free the CString diagnostic temp
-i32 LlTeardownGrid(void* a);           // 0x137a80 (cdecl-ish, reloc-masked)
-void LlReset0(void* self);             // 0x138530 __thiscall
-void LlReset1(void* self);             // 0x28ab
-void LlReset2(void* self);             // 0x20a4
-void LlReset3(void* self);             // 0x244b
-void LlReset4(void* self, i32 a);      // 0x34ef (push edi)
-void LlScrub(void* self, i32 a);       // 0x409d
-void LlWorkerReset(void* self, i32 a); // 0x40a7
+struct Eng {
+    void Teardown();                               // 0x137a80  (grid)
+    void Reset0();                                 // 0x138530  (m_4->m_48)
+    void Reset1();                                 // 0x28ab    (m_4->m_54)
+    void Reset2();                                 // 0x20a4    (m_4->m_60)
+    void Reset3();                                 // 0x244b    (m_4->m_60)
+    void Reset4(i32 a);                            // 0x34ef    (m_4)
+    void Scrub(i32 v, i32 one);                    // 0x409d    (g_gameReg)
+    void WorkerReset(i32 a);                       // 0x40a7    (team)
+    i32 SameGroup(i32 a);                          // 0x2f2c    CAreaMgr::SameGroup (g_61139c)
+    void BattlezInit();                            // 0x2e3c    CBattlezData::Init (g_gameReg->m_7c)
+    void ObListInit();                             // 0x1b48a6  (g_gameReg->m_6c+0x1c)
+    void ClearList();                              // 0x2c11    (g_gameReg->m_6c)
+    CString GetWorldFileName();                    // 0x2531    CGruntzMgr, returns CString by value
+    i32 Insert(const char* name, void* p);         // 0x13a000  CSymTab::Insert (set)
+    i32 BeginParse();                              // 0x139960  CParseSource (set)
+    i32 EndParse();                                // 0x1399d0  CParseSource (set)
+    void* ResolvePath(const char* key);            // 0x13c030  CSymParser (returns set)
+    void SyncOptionsState();                       // 0x2e14    CGruntzMgr (m_4)
+    void RecomputeViewScale();                     // 0x1db6    CGruntzMgr (m_4)
+    void CheckSavedMode();                         // 0x12ee    CGruntzMgr (m_4)
+    void PerFrameTick();                           // 0x3d23    CGruntzMgr (m_4, virtual, direct)
+    void FreeFontNodes();                          // 0x128a    CFontConfig (m_4->m_5c)
+    i32 LoadAttributes(i32 a, i32 b);              // 0x3d19    CBrickz (m_4->m_70)
+    i32 UpdateDiagonals(void* a);                  // 0x3562    CBrickzGrid (m_4->m_70)
+    i32 InstallLightFx(void* mgr, i32 id);         // 0x3bf2    CLightFxRender (ctx)
+    i32 BuildLightShape(i32 a);                    // 0x3bca    CLightFxRender (ctx)
+    i32 GetSize();                                 // 0x1633e0/0x163300 CImageSet3
+    void FillSlot2(void* out, i32 n, void* p);     // 0x175d CSaveGame (m_4->m_58)
+    void ClearTiles(i32 n);                        // 0x130c    CSBI_RectOnly (m_2dc)
+    void PostMap();                                // 0x26a3    CSBI_RectOnly (m_2dc)
+    void HideMenu();                               // 0x133110  (g_645570)
+    void FinalizeLevel();                          // 0x3d23-adj (m_4)  -> PerFrameTick
+    void ShadeRect(i32 a, void* rect);             // 0x13f460  CDDSurface (map surface)
+    i32 TimerEqSet(i32 a, i32 b);                  // 0x2eaa    CTimer::LoadTimerSprite (m_3f4)
+    void TimerReset();                             // 0x14ce    CTimer::Reset (m_3f4)
+    i32 GetBool(i32 key, void* out, i32 dflt);     // 0x1bedde  GetBool (bute)
+    i32 GetInt(const char* key, const char* sect); // 0x171af0 CButeMgr::GetInt (g_buteMgr)
+    void ButeStore(void* key, void* val);          // 0x1b5485  (g_gameReg->m_68+0x260)
+};
 
-void* LlRegistryFind(void* reg, const char* key);            // 0x13c030 find set
-void* LlSetField(void* self);                                // 0x2531 -> &m_xx
-void* LlPathJoin(void* set, i32 nameField, const char* sep); // 0x13a000
-void* LlSetResolve(void* set);                               // 0x139960
-void LlSetRelease(void* set);                                // 0x1399d0
-void* LlButeLevelNum(void* src);                             // 0x2c8e
-void LlStrCtor(void* str);                                   // 0x1b9b93 CString::CString
-void LlStrDtor(void* str);                                   // 0x1b9cde CString::~CString
-void LlAssignStr(void* str, const char* s);                  // 0x1b9e74 CString::operator=
-
-void LlSetMode(void* self, i32 mode); // 0x2bd0
-void LlClearTimers(void* self);       // 0x2e3c
-void LlObListInit(void* p);           // 0x1b48a6
-void LlClearList(void* self);         // 0x2c11
-
-// The long linear init chain steps (each __thiscall on `this`, ret BOOL).
-i32 LlBuildGrid(void* self, void* outRect, i32, i32, i32, i32); // 0x1e60
-void LlPrime(void* self, i32 a, i32 b, i32 c, i32 d);           // 0x1843
-void LlPrime2(void* self);                                      // 0x14b5
-void LlZeroBlock(void* self);                                   // 0x32d3
-i32 LlStepA(void* self, i32 a);                                 // 0x2dce
-void LlPostBuild(void* self, i32 a);                            // 0x38dc
-i32 LlStepB(void* self, i32 a);                                 // 0x3021
-i32 LlStepC(void* self, i32 a);                                 // 0x3346
-i32 LlStepD(void* self, i32 a);                                 // 0x23b5
-i32 LlStepE(void* self, i32 a);                                 // 0x1c2b
-i32 LlStepF(void* self, i32 a);                                 // 0x2964
-i32 LlStepG(void* self, i32 a);                                 // 0x2e9b
-void LlStepH(void* self);                                       // 0x4458
-i32 LlStepI(void* self, i32 a);                                 // 0x2c07
-i32 LlStepJ(void* self, i32 a);                                 // 0x247d
-i32 LlStepK(void* self, i32 a);                                 // 0x3b61
-void LlFinalizeWorld(void* self);                               // 0x1db6
-i32 LlClearPlaneA(void* a);                                     // 0x1633e0 (cdecl)
-i32 LlClearPlaneB(void* a);                                     // 0x163300 (cdecl)
-i32 LlSetupView(void* host70);                                  // 0x3d19 (host->m_70)
-i32 LlSetupView2(void* host70, void* a);                        // 0x3562
-void* RezAlloc(i32 sz);                                         // 0x1b9b46 operator new
-i32 LlInstallCtx(void* host70, i32 id, void* ctx);              // 0x3bf2
-i32 LlSizeView(void* ctx, i32 a);                               // 0x3bca
-i32 LlScanWarpStone(void* self);                                // 0x28dd
-void LlSetTitle(void* level58, i32 nameLen, void* out);         // 0x175d
-i32 LlAfterTitle(void* self);                                   // 0x2e14
-void LlWsFormat(void* out, const char* fmt, i32 n);             // 0x1b2cf5 wsprintf-into-CString
-i32 LlButeLookup(void* bute, const char* sect, const char* key, void* out); // 0x171af0
-void LlButeStore(void* dst, void* key, void* val);                          // 0x1b5485
-void LlClearTiles(void* self, i32 n);                                       // 0x130c
-void LlSpriteHook(void* host8, i32 a);       // FUN via host->m_8 vtable +0x24
-i32 LlEqSet(void* self, i32 a);              // 0x2eaa
-void LlSpriteRelease(void* spr);             // 0x14ce
-void RezFree(void* p);                       // 0x1b9b82 operator delete
-i32 LlLoadMap(void* self, void* a, void* b); // 0x2b80
-i32 LlLoadStep1(void* self);                 // 0x3553
-i32 LlLoadStep2(void* self);                 // 0x345e
-i32 LlLoadStep3(void* self);                 // 0x17ee
-void LlPostMap(void* self);                  // 0x26a3
-void LlHideMenu(void* a);                    // 0x133110
-i32 LlFinalizeLevel(void* host4);            // 0x3d23
-i32 LlBuildBars(void* self, i32 a);          // virtual host4 +0xa4 / 0xa8
-void LlFinishMap(void* self);                // 0x12ee
-void LlFinishMap2(void* self);               // 0x128a
-void LlStartGame(void* self);                // 0x3d55
-void ActiveWait(i32 ms);                     // 0x13dfe0 busy-wait
-void LlSetCue(void* mapHost, i32 a, i32 b);  // 0x13f460
-void LlSpriteResize(
-    void* host,
-    void* a,
-    void* b,
-    i32 c,
-    i32 d,
-    i32 e,
-    i32 f,
-    i32 g,
-    i32 h
-);                                                           // 0x1c5d
-i32 LlButeBoolGet(void* bute, i32 key, void* out, i32 dflt); // 0x1bedde GetBool
-i32 LlStrCmp(const char* a, const char* b);                  // inlined strcmp (modeled)
+// ---------------------------------------------------------------------------
+// Genuine __cdecl engine helpers (reloc-masked rel32).
+// ---------------------------------------------------------------------------
+void Cmd_ResetScroll();            // 0x2bd0  YAXXZ
+i32 QueryToken(i32 a);             // 0x39a4  QueryToken(int)
+i32 ValidateMainBlock(void* cstr); // 0x2c8e  static WwdFile (CString byval)
+void ActiveWait(i32 ms);           // 0x13dfe0 busy-wait
+void* RezAlloc(i32 sz);            // 0x1b9b46 operator new
+void RezFree(void* p);             // 0x1b9b82 operator delete
+void EngStr_DrawText(                                         // 0x1c5d  YAX...
+    void* host, void* rect, void* buf, i32 a, i32 b, i32 c, i32 d, i32 e, i32 f
+);
 
 #define I32(p, off) (*(i32*)((char*)(p) + (off)))
 #define PTR(p, off) (*(void**)((char*)(p) + (off)))
+#define E(p) ((Eng*)(p))
 
 // ---------------------------------------------------------------------------
-// The PLAY-state level loader (`this`). Raw-offset access throughout.
+// The PLAY-state level loader (`this`). Its own init-chain steps are __thiscall
+// methods; raw-offset field access via the macros.
 // ---------------------------------------------------------------------------
 class CPlayLevelLoad {
 public:
-    i32 LoadByMode(i32 level); // ?LoadLevelByMode@@ (the backlog placeholder)
+    // The polymorphic vtable (declared-only, no key fn -> no vtable emission). The
+    // four used slots: +0x10 GetKindTag, +0x84 Vf84, +0xa4 Vfa4, +0xa8 Vfa8.
+    virtual void vf0();
+    virtual void vf1();
+    virtual void vf2();
+    virtual void vf3();
+    virtual i32 GetKindTag(); // +0x10 (slot 4)
+    virtual void vf5();
+    virtual void vf6();
+    virtual void vf7();
+    virtual void vf8();
+    virtual void vf9();
+    virtual void vf10();
+    virtual void vf11();
+    virtual void vf12();
+    virtual void vf13();
+    virtual void vf14();
+    virtual void vf15();
+    virtual void vf16();
+    virtual void vf17();
+    virtual void vf18();
+    virtual void vf19();
+    virtual void vf20();
+    virtual void vf21();
+    virtual void vf22();
+    virtual void vf23();
+    virtual void vf24();
+    virtual void vf25();
+    virtual void vf26();
+    virtual void vf27();
+    virtual void vf28();
+    virtual void vf29();
+    virtual void vf30();
+    virtual void vf31();
+    virtual void vf32();
+    virtual void Vf84(); // +0x84 (slot 33)
+    virtual void vf34();
+    virtual void vf35();
+    virtual void vf36();
+    virtual void vf37();
+    virtual void vf38();
+    virtual void vf39();
+    virtual void vf40();
+    virtual i32 Vfa4(i32 a); // +0xa4 (slot 41)
+    virtual i32 Vfa8(i32 a); // +0xa8 (slot 42)
+
+    i32 LoadByMode(i32 level, i32 unused); // ?LoadLevelByMode@@ placeholder
+
+    // self (__thiscall on `this`) init-chain steps (real retail names in comments)
+    i32 BuildHelpReveal(i32 a);  // 0x1019
+    i32 RegisterInputBindings(); // 0x3a71
+    void AckJoinFailure();       // 0x35e4  (CMulti, on a saved-flag object)
+    i32 FadeInTitle(const char* b, i32 c, i32 d, i32 e, i32 f, i32 g); // 0x1e60
+    i32 SoundStep(i32 a, i32 b, i32 c, i32 d);                         // 0x1843
+    i32 InfoTextStep();                                                // 0x14b5
+    void ZeroBlock();                                                  // 0x32d3
+    i32 LoadActionTileSprites(i32 a);                                  // 0x2dce
+    void BuildWarlordNameTable(i32 a);                                 // 0x38dc
+    i32 StepB(i32 a);                                                  // 0x3021
+    i32 StepC(i32 a);                                                  // 0x3346
+    i32 StepD(i32 a);                                                  // 0x23b5
+    i32 StepE(i32 a);                                                  // 0x1c2b
+    i32 StepF(i32 a);                                                  // 0x2964
+    i32 StepG(i32 a);                                                  // 0x2e9b
+    void StepH();                                                      // 0x4458
+    i32 StepI(i32 a);                                                  // 0x2c07
+    i32 StepJ(i32 a);                                                  // 0x247d
+    i32 StepK(i32 a);                                                  // 0x3b61
+    void FinalizeWorld();                                              // 0x1db6  (via m_4)
+    void ScanWarpStone();                          // 0x28dd  CPlay::ScanShuffleQuads
+    i32 AfterTitle();                              // 0x2e14  (via m_4)
+    void SetTitle(void* save58, i32 n, void* out); // 0x175d (via m_4->m_58)
+    i32 LoadMap(void* a, void* b);                 // 0x2b80  CPlay::LoadWarlordSprites
+    i32 LoadStep1();                               // 0x3553  CPlay::ScanBuildTiles
+    i32 LoadStep2();                               // 0x345e  CLevelValidator::ValidateLevelTiles
+    i32 LoadStep3();                               // 0x17ee  CPlay::AddLevelGruntz
+    void StartGame();                              // 0x3d55
+
     char m_pad[4];
 };
 
+// CString by-value helpers modeled on Eng; the "ScanWarpStone"/init chain call on
+// `this` so declare a same-named thiscall on the class too (reloc-masked).
+
 // ===========================================================================
 RVA(0x000ca200, 0xe34)
-i32 CPlayLevelLoad::LoadByMode(i32 level) {
+i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     void* self = this;
     void* gameReg;
     void* set;
-    char nameBuf[0x20]; // [esp+0x38] AREA%i / Level%i / TRAINING name
-    void* warpTemp;     // [esp+0x14] WarpStone CString temp
-    void* areaTemp;     // [esp+0x18] area-name CString temp
+    i32 reload = 0; // [esp+0x20] warp-cache reload flag (-> the vtable +0xa4 arg)
+    // one contiguous stack buffer: the AREA%i/Level%i name at +0x00, a 148-byte
+    // zeroed sub-block at +0x20 (retail's [esp+0x58] rep-stos region / LoadMap arg).
+    char nameBuf[0xb4]; // [esp+0x38]
 
     // ---- 1) reset prior-level scroll/area globals ----
     I32(self, 0x484) = 1;
@@ -235,24 +277,25 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
         I32(worker, 0x4c) = 0;
     }
 
-    // tear down the old grid / map / sound sub-objects
-    void* host = PTR(self, 0x4);
-    void* grid = PTR(PTR(host, 0x28), 0x2c);
+    // tear down the old grid (self->m_c->m_28->m_2c) / map / sound sub-objects
+    void* grid = PTR(PTR(PTR(self, 0xc), 0x28), 0x2c);
     if (grid != 0) {
-        LlTeardownGrid(grid);
+        E(grid)->Teardown();
     }
-    LlReset0(PTR(PTR(self, 0x4), 0x48));
-    LlReset1(PTR(PTR(self, 0x4), 0x54));
-    LlReset2(PTR(PTR(self, 0x4), 0x60));
-    LlReset3(PTR(PTR(self, 0x4), 0x60));
-    LlReset4(PTR(self, 0x4), 0);
+    E(PTR(PTR(self, 0x4), 0x48))->Reset0();
+    E(PTR(PTR(self, 0x4), 0x54))->Reset1();
+    E(PTR(PTR(self, 0x4), 0x60))->Reset2();
+    E(PTR(PTR(self, 0x4), 0x60))->Reset3();
+    E(PTR(self, 0x4))->Reset4(0);
 
     gameReg = g_64556c;
-    if (I32(gameReg, 0x134) != 2 && I32(gameReg, 0xc) != 0) {
+    if (I32(gameReg, 0x134) != 2) {
         g_644c54 = 0;
-        i32 v = I32(gameReg, 0xc) ^ 1;
-        I32(gameReg, 0xc) = v;
-        LlScrub(g_64556c, v);
+        if (I32(gameReg, 0xc) != 0) {
+            i32 v = I32(gameReg, 0xc) ^ 1;
+            I32(gameReg, 0xc) = v;
+            E(g_64556c)->Scrub(v, 1);
+        }
     }
 
     // clear the 4 score/team slots at +0x384 (-4 .. +28, two dwords each)
@@ -269,14 +312,14 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
     g_6bf3c0 = g_645580;
     g_6bf3bc = g_645584;
 
-    // reset the 4 team blocks at host->m_150 (0x48-byte stride): single-mode
-    // primes team 0 ready, multi-mode zeroes the round counters.
+    // reset the 4 team blocks at host->m_150 (stride 0x238): single-mode primes
+    // team 0 ready, multi-mode zeroes the round counters.
     for (i32 t = 0; t < 4; ++t) {
         void* hostBase = PTR(self, 0x4);
         gameReg = g_64556c;
         void* team = (char*)hostBase + t * 0x48 * 8 - t * 8 + 0x150; // [edx+ecx*8+0x150]
         if (I32(gameReg, 0x134) == 1) {
-            LlWorkerReset(team, 0);
+            E(team)->WorkerReset(0);
             if (t == 0) {
                 I32(team, 0x20) = 1;
                 I32(team, 0x28) = 1;
@@ -289,21 +332,13 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
     }
 
     // ---- 2) mode/level-number resolve ----
-    // m_20 = ((level-1)/0x24) area page, sentinel m_1c4=1, m_1c=level
-    i32 modeFlag = ((*(i32(**)(void*))(*(void**)self))(self) == 0x11) ? 1 : 0;
-    i32 battleFlag = modeFlag;
+    i32 modeFlag = (GetKindTag() == 0x11) ? 1 : 0;
+    void* savedThis = modeFlag ? self : 0; // [esp+0x10] = (-modeFlag) & self
     I32(self, 0x1c4) = 1;
     I32(self, 0x1c) = level;
     {
-        // ebp = battleFlag, then masked into a slot for later restore
-        i32 mask = -modeFlag;
-        // [esp+0x10] = mask & self  (a saved-this idiom)
-        (void)mask;
-    }
-    {
-        i32 q = (level - 1) / 0x24;
         i32 r = (level - 1) % 0x24;
-        I32(self, 0x20) = (r + (r & 3)) / 4 + 1 + q; // the /GX area-page math
+        I32(self, 0x20) = r / 4 + 1; // ((level-1)%0x24)/4 + 1 (signed div-by-4)
     }
 
     gameReg = g_64556c;
@@ -312,37 +347,32 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
         srand(timeGetTime());
     }
     g_resourceInstallActive = 0;
-    LlSetMode(self, 0);
-    LlClearTimers(PTR(g_64556c, 0x7c));
-    LlObListInit((char*)PTR(g_64556c, 0x6c) + 0x1c);
-    LlClearList(PTR(g_64556c, 0x6c));
+    Cmd_ResetScroll();
+    E(PTR(g_64556c, 0x7c))->BattlezInit();
+    E((char*)PTR(g_64556c, 0x6c) + 0x1c)->ObListInit();
+    E(PTR(g_64556c, 0x6c))->ClearList();
     g_64558c = 0;
     I32(self, 0x1bc) = 0;
     I32(PTR(self, 0x4), 0x130) = 0;
 
-    // already-loaded guard: when host->m_c8[-2] == 0 skip the name-resolve and
-    // jump straight to the "AREA%i" build at label nameBuild.
-    host = PTR(self, 0x4);
+    // already-loaded guard: when host->m_c8[-2] == 0 skip the name-resolve.
+    void* host = PTR(self, 0x4);
     if (I32(PTR(host, 0xc8), -8) != 0) {
         if (I32(host, 0x128) != 0) {
-            // BATTLEZ mode: resolve the level number from the level name's
-            // trailing digit run.
-            set = LlRegistryFind(PTR(host, 0x34), "GAME_BATTLEZ");
+            // BATTLEZ: resolve the level number from the level name's digit run.
+            set = E(PTR(host, 0x34))->ResolvePath("GAME_BATTLEZ");
             if (set == 0) {
                 goto fail0;
             }
-            LlStrCtor(&areaTemp);
-            char* name = (char*)*(void**)LlSetField(PTR(self, 0x4));
-            set = LlPathJoin(set, (i32)name, g_emptyString);
-            LlStrDtor(&areaTemp);
-            if (set == 0) {
+            i32 ins =
+                E(set)->Insert((const char*)E(PTR(self, 0x4))->GetWorldFileName(), g_emptyString);
+            if (ins == 0) {
                 return 0;
             }
-            void* desc = LlSetResolve(set);
+            void* desc = (void*)E(set)->BeginParse();
             if (desc == 0) {
                 goto fail0;
             }
-            // skip a trailing digit run, then atoi the tail
             char* p = (char*)desc + 0x10;
             char c = *p;
             while (c != 0) {
@@ -354,22 +384,20 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
                 break;
             }
             i32 num = atoi(p);
-            LlSetRelease(set);
+            E(set)->EndParse();
             level = num;
         } else if (I32(host, 0x12c) != 0) {
-            // MULTI mode: same trailing-digit resolve off "GAME_MULTI".
-            set = LlRegistryFind(PTR(host, 0x34), "GAME_MULTI");
+            // MULTI: same digit resolve off "GAME_MULTI".
+            set = E(PTR(host, 0x34))->ResolvePath("GAME_MULTI");
             if (set == 0) {
                 goto fail0;
             }
-            LlStrCtor(&areaTemp);
-            char* name = (char*)*(void**)LlSetField(PTR(self, 0x4));
-            set = LlPathJoin(set, (i32)name, g_emptyString);
-            LlStrDtor(&areaTemp);
-            if (set == 0) {
+            i32 ins =
+                E(set)->Insert((const char*)E(PTR(self, 0x4))->GetWorldFileName(), g_emptyString);
+            if (ins == 0) {
                 return 0;
             }
-            void* desc = LlSetResolve(set);
+            void* desc = (void*)E(set)->BeginParse();
             if (desc == 0) {
                 goto fail0;
             }
@@ -384,26 +412,24 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
                 break;
             }
             i32 num = atoi(p);
-            LlSetRelease(set);
+            E(set)->EndParse();
             level = num;
         } else {
-            // default: bute-driven level number.
-            void* fld = LlSetField(PTR(self, 0x4));
-            level = (i32)LlButeLevelNum(fld);
-            I32(self, 0x1bc) = (i32)PTR(host, 0); // edi (the found set)
-            I32(PTR(self, 0x4), 0x130) = 0;       // edi
+            // default: bute-driven level number (ValidateMainBlock(CString)).
+            level = ValidateMainBlock((void*)(const char*)E(PTR(self, 0x4))->GetWorldFileName());
+            I32(self, 0x1bc) = 0;
+            I32(PTR(self, 0x4), 0x130) = 0;
         }
 
         // recompute area page from the resolved level number
-        i32 q = (level - 1) / 0x24;
         i32 r = (level - 1) % 0x24;
         I32(self, 0x1c) = level;
-        I32(self, 0x20) = (r + (r & 3)) / 4 + 1 + q;
+        I32(self, 0x20) = r / 4 + 1;
     }
 
     // ---- 3) build the level name + look it up ----
     sprintf(nameBuf, "AREA%i", I32(self, 0x20));
-    set = LlRegistryFind(PTR(self, 0x8), nameBuf);
+    set = E(PTR(self, 0x8))->ResolvePath(nameBuf);
     I32(self, 0x28) = (i32)set;
     if (set == 0) {
         goto fail0;
@@ -417,7 +443,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
                 g_645270 = 4;
                 break;
             case 1:
-                g_645270 = 0; // ecx is 0 here in retail
+                g_645270 = 0;
                 g_64553c = 0;
                 break;
             case 2:
@@ -469,12 +495,12 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
     }
 
     // ---- 5) the long linear init chain ----
-    if (!LlBuildGrid(self, nameBuf, 0, 0, 0, 1)) { // [esp+0x48] out, push 0/0/0/1
+    if (!FadeInTitle(nameBuf, 0, 0, 0, 0, 1)) { // [esp+0x48] out, push 0/0/0/0/1
         goto fail0;
     }
-    LlPrime(self, 0x50, 0x3e8, 0, 1);
-    LlPrime2(self);
-    I32(self, 0x2c) = 0; // edi
+    SoundStep(0x50, 0x3e8, 0, 1);
+    InfoTextStep();
+    I32(self, 0x2c) = 0;
     {
         i32* z = (i32*)((char*)nameBuf + 0x20);
         i32 n = 0x25;
@@ -482,123 +508,155 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
             *z++ = 0;
         }
     }
-    LlZeroBlock(self);
-    LlBeginStep(self, 0);
-    (*(void (**)(void*))((char*)*(void**)self + 0x84))(self); // vtable +0x84
-    if (I32(&warpTemp, 0) != 0) {                             // [esp+0x1c] temp guard
-        LlFreeTemp(&areaTemp);
+    ZeroBlock();
+    BuildHelpReveal(0);
+    Vf84(); // vtable +0x84
+    if (savedThis != 0) {
+        E(savedThis)->Teardown(); // AckJoinFailure placeholder (0x35e4 on saved obj)
     }
-    LlEndStep(self);
+    RegisterInputBindings();
 
-    if (!LlStepK(self, 0)) {
+    if (!StepK(0)) {
         goto fail0;
     }
 
     // the warp-stone / last-level cache comparison (612618 / 61139c)
     {
         void* cached = g_612618;
-        i32 eq = LlEqSet(g_61139c, (i32)cached); // 0x2f2c
-        i32 ebpFlag = (eq == 0) ? 1 : 0;
+        i32 eq = E(g_61139c)->SameGroup((i32)cached); // 0x2f2c
+        reload = (eq == 0) ? 1 : 0;
         i32 diff = (level != (i32)g_612618) ? 1 : 0;
         if (g_61139c == 0) {
             return 0;
         }
         g_612618 = (void*)level;
 
-        LlBeginStep(self, 0);
-        if (I32(&warpTemp, 0) != 0) {
-            LlFreeTemp(&areaTemp);
+        BuildHelpReveal(0);
+        if (savedThis != 0) {
+            E(savedThis)->Teardown();
         }
-        LlEndStep(self);
+        RegisterInputBindings();
 
-        LlBeginStep(self, 0);
-        i32 reload = diff;
-        if (reload != 0) {
-            LlFreeTemp(&areaTemp);
+        BuildHelpReveal(0);
+        if (savedThis != 0) {
+            E(savedThis)->Teardown();
         }
-        LlEndStep(self);
+        RegisterInputBindings();
 
-        if (!LlStepA(self, diff)) {
+        if (!LoadActionTileSprites(diff)) {
             goto fail0;
         }
-        (void)ebpFlag;
     }
 
     // a tail of paired BeginStep(0)/EndStep brackets around the real init steps.
-    LlBeginStep(self, 0);
-    LlEndStep(self);
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
     if (modeFlag != 0 && I32(g_64556c, 0x134) == 1) {
-        LlPostBuild(self, (i32)warpTemp);
+        BuildWarlordNameTable((i32)savedThis);
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
-    if (!LlStepB(self, (i32)warpTemp)) {
+    BuildHelpReveal(0);
+    RegisterInputBindings();
+    if (!StepB(1)) {
         goto fail0;
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
-    if (!LlStepC(self, (i32)warpTemp)) {
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepC(1)) {
         goto fail0;
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
-    if (!LlStepD(self, (i32)warpTemp)) {
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepD((i32)savedThis)) {
         goto fail0;
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
-    if (!LlStepE(self, (i32)warpTemp)) {
+    BuildHelpReveal(0);
+    RegisterInputBindings();
+    if (!StepE(1)) {
         goto fail0;
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
-    if (!LlStepF(self, (i32)warpTemp)) {
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepF(1)) {
         goto fail0;
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
-    if (!LlStepG(self, 0)) {
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepG(0)) {
         goto fail0;
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
-    LlStepH(self);
-    LlEndStep(self);
-    if (!LlStepI(self, (i32)warpTemp)) {
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    StepH();
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepI(1)) {
         goto fail0;
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
-    if (!LlStepJ(self, (i32)warpTemp)) {
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepJ(1)) {
         goto fail0;
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
-    if (!(*(i32(**)(void*, i32))((char*)*(void**)self + 0xa8))(
-            self,
-            (i32)warpTemp
-        )) { // vtable +0xa8
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!Vfa8(1)) { // vtable +0xa8
         goto fail0;
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
 
     // finalize the world planes
-    LlFinalizeWorld(PTR(self, 0x4));
+    E(PTR(self, 0x4))->RecomputeViewScale();
     if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-        LlClearPlaneA(0);
+        E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
     }
     if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-        LlClearPlaneB(0);
+        E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
     }
-    LlBeginStep(self, 0);
-    LlEndStep(self);
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
 
     // view setup off host->m_70
-    if (!LlSetupView(PTR(PTR(self, 0x4), 0x70))) {
-        goto fail0;
+    {
+        void* g5c = PTR(PTR(PTR(self, 0xc), 0x24), 0x5c);
+        void* host70 = PTR(PTR(self, 0x4), 0x70);
+        if (!E(host70)->LoadAttributes(I32(g5c, 0x28), I32(g5c, 0x2c))) {
+            goto fail0;
+        }
     }
-    if (!LlSetupView2(PTR(PTR(self, 0x4), 0x70), PTR(self, 0x4))) {
+    if (!E(PTR(PTR(self, 0x4), 0x70))->UpdateDiagonals(PTR(self, 0x4))) {
         goto fail0;
     }
 
@@ -618,93 +676,103 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
             ctx = 0;
         }
         I32(self, 0x320) = (i32)ctx;
-        if (!LlInstallCtx(PTR(self, 0x4), 0xfa, ctx)) {
+        if (!E(ctx)->InstallLightFx(PTR(self, 0x4), 0xfa)) {
             goto fail0;
         }
     }
-    if (!LlSizeView(PTR(self, 0x320), I32(self, 0x20))) {
+    if (!E(PTR(self, 0x320))->BuildLightShape(I32(self, 0x20))) {
         goto fail0;
     }
 
     // ---- the WarpStone bute scan (single-mode only) ----
     gameReg = g_64556c;
     if (I32(gameReg, 0x134) != 1) {
-        LlStrCtor(&warpTemp);
-        if (LlButeBoolGet(0, 0x81ab, &areaTemp, 2)) {
-            // strcmp the bute string against the cached one
-            char* a = (char*)*(void**)LlSetField(g_64556c);
-            char* b = (char*)warpTemp;
-            i32 same = (LlStrCmp(b, a) == 0) ? 1 : 0;
-            LlStrDtor(&areaTemp);
-            if (same) {
-                LlScanWarpStone(self);
+        CString warp; // [esp+0x14]
+        i32 same = 0;
+        if (E(&warp)->GetBool(0x81ab, &warp, 2)) {
+            char* a = (char*)(const char*)E(g_64556c)->GetWorldFileName();
+            char* b = (char*)(const char*)warp;
+            i32 eq = 1;
+            while (*b == *a) {
+                if (*b == 0) {
+                    break;
+                }
+                a += 1;
+                b += 1;
             }
+            if (*b != *a) {
+                eq = 0;
+            }
+            same = eq;
         }
-        LlStrDtor(&warpTemp);
+        if (same) {
+            ScanWarpStone();
+        }
     }
 
     // ---- area-name -> level-list build ----
     if (I32(PTR(self, 0x4), 0x134) == 3) {
-        LlAfterTitle(self);
+        AfterTitle();
     }
-    LlSetTitle(PTR(PTR(self, 0x4), 0x58), I32(self, 0x1c), (char*)self + 0x1d0);
-    LlStrCtor(&warpTemp);
+    E(PTR(PTR(self, 0x4), 0x58))->FillSlot2((char*)self + 0x1d0, I32(self, 0x1c), 0);
     {
+        CString key; // [esp+0x18]
         gameReg = g_64556c;
         I32(PTR(gameReg, 0x68), 0x2a0) = 0;
         i32 count = I32(self, 0x1c);
-        i32 i = count;
-        i32 base = count - ((count - 1 & 3) ^ ((count - 1) >> 31))
-                   - (((count - 1) >> 31)); // round-to-4 idiom
-        (void)base;
+        i32 i = count - ((count - 1) % 4); // round-down-to-4 idiom
         for (; i < count; ++i) {
-            LlWsFormat(&warpTemp, "Level%i", i);
+            // key.Format("Level%i", i) -> wsprintf-into-CString (0x1b2cf5)
+            key.Format("Level%i", i);
             void* bm = PTR(g_64556c, 0x68);
-            void* v = (void*)LlButeLookup(g_buteMgr, (const char*)warpTemp, "WarpStone", 0);
-            LlButeStore((char*)bm + 0x260, PTR(bm, 0x268), v);
+            i32 v = E(g_buteMgr)->GetInt((const char*)key, "WarpStone");
+            E((char*)bm + 0x260)->ButeStore(PTR(bm, 0x268), (void*)v);
         }
     }
-    LlClearTiles(PTR(self, 0x2dc), I32(self, 0x1c));
+    E(PTR(self, 0x2dc))->ClearTiles(I32(self, 0x1c));
 
-    // ---- CursorSnapSprite registration (the canonical factory at [self+0xc]->m_8) ----
+    // ---- CursorSnapSprite registration (factory at [self+0xc]->m_8) ----
     set = ((CSpriteFactory*)PTR(PTR(self, 0xc), 0x8))
               ->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
     I32(self, 0x4e4) = (i32)set;
     if (set != 0) {
         void* host8 = PTR(PTR(self, 0xc), 0x8);
         (*(void (**)(void*, i32))((char*)*(void**)host8 + 0x24))(host8, 0); // host8 vtable +0x24
-        if (I32(&warpTemp, 0) == 0) {
+        if (savedThis == 0) {
             // empty cursor-snap set -> reset the resource-install flag
             void* tiles = PTR(self, 0x2dc);
             i32 id = (I32(tiles, 0) == 0) ? 0x1a9 : 0x249;
-            if (!LlEqSet(PTR(self, 0x3f4), id)) {
+            if (!E(PTR(self, 0x3f4))->TimerEqSet(id, 0x1ca)) {
                 void* spr = PTR(self, 0x3f4);
                 if (spr != 0) {
-                    LlSpriteRelease(spr);
+                    E(spr)->TimerReset();
                     RezFree(spr);
                     I32(self, 0x3f4) = 0;
                 }
             }
         } else {
             // load the level map + the four map sub-steps
-            if (LlLoadMap(self, (void*)warpTemp, (char*)nameBuf + 0x20) && LlLoadStep1(self)
-                && LlLoadStep2(self) && LlLoadStep3(self)) {
+            if (LoadMap(savedThis, (char*)nameBuf + 0x20) && LoadStep1() && LoadStep2()
+                && LoadStep3()) {
                 void* host8b = PTR(PTR(self, 0xc), 0x8);
                 (*(void (**)(void*, i32))((char*)*(void**)host8b + 0x24))(host8b, 0);
-                LlPostMap(PTR(self, 0x2dc));
-                LlHideMenu(g_645570);
+                E(PTR(self, 0x2dc))->PostMap();
+                E(g_645570)->HideMenu();
                 while (ShowCursor(0) >= 0)
                     ;
-                LlFinalizeLevel(PTR(self, 0x4));
+                E(PTR(self, 0x4))->PerFrameTick();
                 if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-                    LlClearPlaneA(0);
+                    E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
                 }
                 if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-                    LlClearPlaneB(0);
+                    E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
                 }
-                LlBeginStep(self, 0);
-                LlEndStep(self);
-                if ((*(i32(**)(void*, i32))((char*)*(void**)self + 0xa4))(self, (i32)warpTemp)) {
+                BuildHelpReveal(0);
+                if (savedThis != 0) {
+                    E(savedThis)->Teardown();
+                }
+                RegisterInputBindings();
+                if (Vfa4(reload)) {
                     goto okContinue;
                 }
             }
@@ -713,33 +781,37 @@ i32 CPlayLevelLoad::LoadByMode(i32 level) {
     }
 
 okContinue:
-    LlBeginStep(self, 0);
-    LlEndStep(self);
-    LlBeginStep(self, 1);
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    BuildHelpReveal(1);
     ActiveWait(0x64);
-    LlEndStep(self);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
 
     gameReg = g_64556c;
     if (I32(gameReg, 0x114) == 0) {
         void* mapHost = PTR(PTR(PTR(PTR(self, 0xc), 0x4), 0x10), 0x2c);
-        LlSetCue(mapHost, 0x32, 0);
+        E(mapHost)->ShadeRect(0x32, 0);
         gameReg = g_64556c;
     }
 
     // ---- loading-screen blit (mode != 2 && m_114 == 0) ----
     if (I32(gameReg, 0x134) != 2 && I32(gameReg, 0x114) == 0) {
+        CString scr; // [esp+0x14]
         I32(self, 0x4f8) = 1;
         I32(self, 0x484) = 0;
-        LlStrCtor(&warpTemp);
         i32 rect[4];
         rect[0] = 0;
         rect[1] = 0;
         rect[2] = 0x280;
         rect[3] = 0x1e0;
-        if (LlButeBoolGet(0, 0x8128, &areaTemp, 4)) {
-            LlSpriteResize(PTR(self, 0xc), rect, (char*)nameBuf + 0x4, 0x78, 1, 0xff, 0xff, 0, 1);
+        if (E(&scr)->GetBool(0x8128, &scr, 4)) {
+            EngStr_DrawText(PTR(self, 0xc), rect, (char*)nameBuf + 0x4, 0x78, 1, 0xff, 0xff, 0, 1);
         }
-        LlStrDtor(&areaTemp);
     } else {
         I32(self, 0x484) = 1;
     }
@@ -754,7 +826,8 @@ okContinue:
     I32(self, 0x404) = 0;
     I32(self, 0x3f8) = g_645588;
     I32(self, 0x3fc) = 0;
-    LlAssignStr((char*)self + 0x410, g_emptyString);
+    I32(self, 0x408) = 1;
+    ((CString*)((char*)self + 0x410))->operator=(g_emptyString);
     I32(self, 0x40c) = 0;
     I32(self, 0x470) = 0;
     I32(self, 0x474) = 0;
@@ -762,20 +835,18 @@ okContinue:
     I32(self, 0x47c) = 0;
     I32(self, 0x4b0) = 0;
     I32(self, 0x514) = 3;
-    I32(self, 0x408) = 1;
     I32(self, 0x4ec) = 1;
     g_64e35c = 0;
-    LlStartGame(self);
+    StartGame();
     if (I32(g_64556c, 0x134) == 2) {
         g_64e35c = 1;
         I32(self, 0x4ec) = 0;
-        LlFinishMap(PTR(self, 0x4));
+        E(PTR(self, 0x4))->CheckSavedMode();
+        E(PTR(PTR(self, 0x4), 0x5c))->FreeFontNodes();
     }
-    LlFinishMap2(PTR(PTR(self, 0x4), 0x5c));
     return 1;
 
 fail1:
-    LlStrDtor(&warpTemp);
     return 0;
 fail0:
     return 0;
@@ -783,3 +854,6 @@ fail0:
 
 #undef I32
 #undef PTR
+#undef E
+
+SIZE_UNKNOWN(Eng);

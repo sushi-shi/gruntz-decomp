@@ -96,7 +96,14 @@ public:
 // when its sub-op (a5) is 2, and clears the tile's tag-0x1a set when a5 is 0x63.
 // ===========================================================================
 RVA(0x00075e90, 0x1329)
-i32 CTerrainTileLoader::Load(i32 actionIndex, i32 a1, i32 tileX, i32 tileY, i32 actionType, i32 a5) {
+i32 CTerrainTileLoader::Load(
+    i32 actionIndex,
+    i32 a1,
+    i32 tileX,
+    i32 tileY,
+    i32 actionType,
+    i32 a5
+) {
     void* self = this;
     (void)actionIndex;
     (void)a1;
@@ -205,3 +212,5 @@ i32 ValidateHost::Validate() {
 }
 
 SIZE_UNKNOWN(CTerrainTileLoader);
+SIZE_UNKNOWN(TtTrigReg);
+SIZE_UNKNOWN(TtSet);

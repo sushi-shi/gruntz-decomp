@@ -26,11 +26,14 @@
 //   * build the two CString sprite keys, then the big jump table over
 //     (sprite-type - 0xf) in 0..0x65 (switchdataD 0x511a50 / index 0x511a98).
 //
-// CARCASS doctrine: `this`, the g_gameReg map/grid sub-objects and the cell
-// objects are unmatched engine classes accessed by raw this+offset; every callee
-// body is external (no-body, reloc-masked rel32); the GAME_*/LEVEL_* strings are
-// $SG literals reloc-masked against the matched string symbols; PtInRect comes
-// via <Mfc.h>. Only offsets / code bytes are load-bearing.
+// IDENTITY: `this` is the canonical CPlay (<Gruntz/Play.h>, matcher-4's `play`
+// unit); `CPlayLevelLoad` here is a FAKE VIEW of it (see LoadLevelByMode.cpp's
+// header for the xref proof + the DEFERRED cross-TU fold onto CPlay). The
+// g_gameReg map/grid sub-objects and the cell objects are unmatched engine classes
+// accessed by raw this+offset; every callee body is external (no-body, reloc-masked
+// rel32); the GAME_*/LEVEL_* strings are $SG literals reloc-masked against the
+// matched string symbols; PtInRect comes via <Mfc.h>. Only offsets / code bytes
+// are load-bearing.
 //
 // @early-stop
 // /GX nested-jump-table megafunction wall. The grid-cell resolve, the PtInRect
