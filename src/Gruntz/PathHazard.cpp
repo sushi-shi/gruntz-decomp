@@ -113,6 +113,21 @@ extern "C" u32 g_killCueClock; // 0x6bf3c0
 // The "A" bute key the new-leg re-bind looks up (DAT_0060a454 $SG literal).
 extern CButeTree g_buteTree;
 
+// --- CPathHazard no-arg ctor (0x013170) --- the deserialize-path ctor: base
+// prologue + link + leaf vptr stamp, then zero the eight leg/strike i64 lo/hi
+// fields (+0x108..+0x12c). Re-homed from the UserLogic.cpp-local view.
+RVA(0x00013170, 0x7b)
+CPathHazard::CPathHazard() {
+    m_legTag = 0;
+    m_legSegs = 0;
+    m_legTagHi = 0;
+    m_legSegsHi = 0;
+    m_strikeDeadline = 0;
+    m_strikeWindow = 0;
+    m_strikeDeadlineHi = 0;
+    m_strikeWindowHi = 0;
+}
+
 // CLightningHazard::~ @0x013280 - byte-identical to ~CPathHazard (the bare
 // CUserLogic leaf teardown); the empty body is enough for cl. (Distinct EH
 // handler funclet from 0x13340, but that is reloc-masked.)

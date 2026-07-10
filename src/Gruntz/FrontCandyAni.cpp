@@ -50,6 +50,48 @@ i32 CFrontCandyAni::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 RVA(0x0000fe90, 0x44)
 CFrontCandyAni::~CFrontCandyAni() {}
 
+// --- CFrontCandy (0x0abfa0), vptr 0x5e84ec --- CFrontCandy's Serialize (0xfa60) +
+// dtor (0xfb00) already live in this TU; the ctor anchors GetTypeTag @0xfa40 + the
+// ??_7CFrontCandy vtable here, reuniting the whole class. Folds the inline
+// CUserLogic(obj) base + the shared z-clamp tail.
+RVA(0x000abfa0, 0x1b6)
+CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    if (m_object->m_latchedAnimId != 0xf4240) {
+        m_object->m_latchedAnimId = 0xf4240;
+        m_object->m_flags |= 0x20000;
+    }
+    CGameObjLayer* aux = m_object->m_layer;
+    if (aux != 0) {
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
+            }
+        }
+    }
+}
+
+// --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 --- the ctor anchors the
+// ??_7CFrontCandyAni vtable in this TU. Folds the inline CUserLogic(obj) base.
+RVA(0x000acf40, 0x16e)
+CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    if (m_38->m_geoId == 0) {
+        m_40 = m_38->m_geoId;
+        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    }
+    if (m_object->m_latchedAnimId != 0xf4240) {
+        m_object->m_latchedAnimId = 0xf4240;
+        m_object->m_flags |= 0x20000;
+    }
+}
+
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
 // class). FireActivation invokes it __thiscall on the trigger.

@@ -19,8 +19,29 @@
 // (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
 // destructible link forces the /GX EH frame. Byte-identical in shape to the
 // established leaf dtors; the empty body is enough for cl.
+// --- CGruntHealthSprite no-arg ctor (0x011ef0) --- the deserialize-path ctor:
+// base prologue + link + leaf vptr stamp (the empty body is enough for cl).
+RVA(0x00011ef0, 0x4b)
+CGruntHealthSprite::CGruntHealthSprite() {}
+
 RVA(0x00011fb0, 0x44)
 CGruntHealthSprite::~CGruntHealthSprite() {}
+
+// --- CGruntHealthSprite 1-arg ctor (0x07eb00), vptr 0x5e7ba4 --- the ctor anchors
+// the ??_7CGruntHealthSprite vtable in this TU. Folds the inline CUserLogic(obj) base.
+RVA(0x0007eb00, 0x170)
+CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_38->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_health = 0x64;
+    if (m_object->m_latchedAnimId != 0xdbba0) {
+        m_object->m_latchedAnimId = 0xdbba0;
+        m_object->m_flags |= 0x20000;
+    }
+    m_60 = -0x19;
+}
 
 // CGruntHealthSprite::InitActReg @0x07ecf0 - construct the class's activation-
 // coordinate registry singleton (g_healthActReg @0x644d80) over the fixed range

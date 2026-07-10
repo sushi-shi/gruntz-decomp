@@ -83,6 +83,27 @@ extern i32 g_curPlayer;
 RVA(0x00010dd0, 0x44)
 CTeleporter::~CTeleporter() {}
 
+// --- CTeleporter (0x041020), vptr 0x5e80cc --- the ctor is the vtable-emission
+// anchor: GetTypeTag @0x10d80 + the ??_7CTeleporter vtable emit in this TU. Folds
+// the inline CUserLogic(obj) base + the tile-snap/enter-field tail.
+RVA(0x00041020, 0x170)
+CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_armClockLo = 0;
+    m_intervalLo = 0;
+    m_armClockHi = 0;
+    m_intervalHi = 0;
+    m_38->m_flags |= 0x2000002;
+    if (m_object->m_latchedAnimId != 0x1869f) {
+        m_object->m_latchedAnimId = 0x1869f;
+        m_object->m_flags |= 0x20000;
+    }
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    EnterField1();
+    EnterField2();
+}
+
 // CTeleporter::Serialize @0x041350 - slot-1 (SerializeMove) override. Chain the
 // shared CUserLogic serialize helper + the +0x34 sub-object's chain (either bailing
 // out on failure), then round-trip the leaf state: the two i64 arm-clock/interval

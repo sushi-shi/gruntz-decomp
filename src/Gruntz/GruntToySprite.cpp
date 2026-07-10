@@ -15,6 +15,22 @@
 RVA(0x000122b0, 0x44)
 CGruntToySprite::~CGruntToySprite() {}
 
+// --- CGruntToySprite (0x07f350), vptr 0x5e7b4c --- the ctor anchors the
+// ??_7CGruntToySprite vtable in this TU. Folds the inline CUserLogic(obj) base.
+RVA(0x0007f350, 0x16a)
+CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALL", 0);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_stateFlags |= 1;
+    if (m_object->m_latchedAnimId != 0xdbba0) {
+        m_object->m_latchedAnimId = 0xdbba0;
+        m_object->m_flags |= 0x20000;
+    }
+    m_lastLayer = 0;
+}
+
 // CGruntToySprite::InitActReg @0x07f540 - construct the class's activation-
 // coordinate registry singleton (g_toyActReg @0x644d58) over [2000, 2010] via
 // the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.

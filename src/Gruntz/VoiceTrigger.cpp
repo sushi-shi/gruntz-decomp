@@ -195,6 +195,12 @@ extern "C" i32 g_644c54;
 RVA(0x00013400, 0x44)
 L_13400::~L_13400() {}
 
+// --- CVoiceTrigger no-arg ctor (0x013470) --- the deserialize-path ctor: base
+// prologue + link + leaf vptr stamp (the empty body is enough for cl). It anchors
+// GetTypeTag @0x133b0 in this TU alongside the class's dtor/Serialize band.
+RVA(0x00013470, 0x4b)
+CVoiceTrigger::CVoiceTrigger() {}
+
 // CVoiceTrigger::Serialize @0x0134e0 - the vtable slot-1 override: chain the shared
 // CUserLogic serialize helper on `this`, and (only on success) the +0x34 serializable
 // sub-object's chain; normalize the second chain's success to a strict bool. The

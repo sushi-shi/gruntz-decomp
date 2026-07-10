@@ -98,10 +98,17 @@ public:
     // grunt, spawn the "Teleporter"/"Wormhole" sprite, close the gate and scroll
     // the camera to the warped grunt. Returns 0.
     i32 Update();
-    // vtable slot 2 (per-class logic-type id). Inline body + RVA live in the
-    // constructing TU (UserLogic.cpp's ctor view) so cl+clang emit the COMDAT there;
-    // declared-only here (Teleporter.cpp only anchors the vtable via the dtor).
-    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    // Leaf-state entry setup this-methods the ctor runs (0x1771 / 0x27d9;
+    // reloc-masked no-body).
+    void EnterField1(); // 0x1771
+    void EnterField2(); // 0x27d9
+    // vtable slot 2 (per-class logic-type id), inline. The ctor now lives in
+    // Teleporter.cpp so cl+clang emit this COMDAT (@0x10d80) + the ??_7CTeleporter
+    // vtable in this TU.
+    RVA(0x00010d80, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_TELEPORTER; }
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (body: Serialize 0x41350)
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     virtual ~CTeleporter() OVERRIDE; // 0x10dd0 (folds the CUserLogic teardown)
 
     i32 m_savedGeoId; // +0x40  snapshot of m_38->m_geoId

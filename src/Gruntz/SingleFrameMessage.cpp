@@ -3,12 +3,18 @@
 //   RegisterActs @0x0ab710 - bind the per-frame handler to the "A" key.
 //
 // CSingleFrameMessage : CUserLogic. Only offsets / code bytes are load-bearing.
+#include <Mfc.h>                    // RECT / CopyRect (the ctor centers the object in a bounds rect)
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SingleFrameMessage.h>
+#include <Gruntz/WwdGameReg.h>   // g_gameReg->GetMessageBounds (on-screen message bounds)
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
+
+// The game registry singleton (canonical <Gruntz/WwdGameReg.h>); the ctor asks it
+// for the on-screen message-bounds RECT. Declared extern only (wwdfile owns 0x24556c).
+extern WwdGameReg* g_gameReg;
 
 // CSingleFrameMessage::Serialize @0x00f5a0 - the vtable slot-1 override: chain the
 // shared CUserLogic serialize helper on `this`, and (only on success) the +0x34
@@ -26,6 +32,22 @@ i32 CSingleFrameMessage::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 // folds the CUserLogic teardown (the /GX leaf-dtor archetype).
 RVA(0x0000f640, 0x44)
 CSingleFrameMessage::~CSingleFrameMessage() {}
+
+// --- CSingleFrameMessage (0x0ab310), vptr 0x5e864c --- the ctor anchors the
+// ??_7CSingleFrameMessage vtable in this TU. Folds the inline CUserLogic(obj) base,
+// applies the message sprite, then centers the object in g_gameReg's message bounds.
+RVA(0x000ab310, 0x18d)
+CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_38->m_04);
+    RECT bounds;
+    RECT r;
+    CopyRect(&r, g_gameReg->GetMessageBounds(&bounds));
+    m_object->m_screenX = r.left + (r.right - r.left) / 2;
+    m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
+}
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance

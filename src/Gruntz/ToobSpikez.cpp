@@ -200,6 +200,24 @@ static inline char* ActNameLookup(i32 id) {
 // method @0x114bc0); referenced by address so the DIR32 operand reloc-masks.
 extern i32 ToobLogic_114bc0();
 
+// --- CToobSpikez (0x1145c0), vptr 0x5e7774 --- the ctor anchors GetTypeTag @0x12ba0
+// + the ??_7CToobSpikez vtable in this TU. Folds the inline CUserLogic(obj) base.
+RVA(0x001145c0, 0x18e)
+CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_40 = m_38->m_geoId;
+    m_38->ApplyLookupGeometry("GAME_CYCLE100", 2);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 2;
+    m_object->m_164 = m_object->m_screenX >> 5;
+    m_object->m_168 = m_object->m_screenY >> 5;
+    if (m_object->m_latchedAnimId != 0xc) {
+        m_object->m_latchedAnimId = 0xc;
+        m_object->m_flags |= 0x20000;
+    }
+}
+
 // CToobSpikez::Register_1147e0 @0x1147e0 - reserve this class's activation
 // coordinate range [0x7d0, 0x7da] in its registry (g_toobColl).  A trivial
 // forwarder (mov ecx,&reg; push hi; push lo; call); ecx (this) is unused.

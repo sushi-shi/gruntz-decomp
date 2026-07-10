@@ -35,4 +35,27 @@ i32 CBehindCandy::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 RVA(0x0000fc30, 0x44)
 CBehindCandy::~CBehindCandy() {}
 
+// --- CBehindCandy (0x0ac3f0), vptr 0x5e8494 --- the ctor anchors GetTypeTag @0xfb70
+// + the ??_7CBehindCandy vtable in this TU. Folds the inline CUserLogic(obj) base +
+// the shared z-clamp tail.
+RVA(0x000ac3f0, 0x1b1)
+CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    if (m_object->m_latchedAnimId != 0) {
+        m_object->m_latchedAnimId = 0;
+        m_object->m_flags |= 0x20000;
+    }
+    if (m_object->m_layer != 0) {
+        if (m_object->m_layer->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
+            }
+        }
+    }
+}
+
 #include <rva.h>

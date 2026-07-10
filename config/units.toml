@@ -1414,6 +1414,26 @@ source = "src/Gruntz/ToobSpikez.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "warpstonepad"
+source = "src/Gruntz/WarpStonePad.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "menusparkle"
+source = "src/Gruntz/MenuSparkle.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "tiletriggerswitch"
+source = "src/Gruntz/TileTriggerSwitch.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "gruntbehaviorleaf"
+source = "src/Gruntz/GruntBehaviorLeaf.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "particlez"
 source = "src/Gruntz/Particlez.cpp"
 flags = "eh"

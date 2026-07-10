@@ -132,6 +132,28 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
     return v->m_spare;
 }
 
+// --- CSimpleAnimation (0x0ab940), vptr 0x5e8544 --- the ctor anchors the
+// ??_7CSimpleAnimation vtable in this TU. Folds the inline CUserLogic(obj) base +
+// the shared z-clamp tail.
+RVA(0x000ab940, 0x1b8)
+CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    CGameObjLayer* aux = m_object->m_layer;
+    if (aux != 0) {
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
+            }
+        }
+    }
+}
+
 // ===========================================================================
 // InitSimpleAnimDispatch  (0x0abb90)
 // File-scope static-init thunk: construct the logic dispatch table over the index

@@ -16,6 +16,10 @@ class CGruntPowerupSprite : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    CGruntPowerupSprite(CGameObject* obj);   // 0x07fdb0 (ctor body in GruntPowerupSprite.cpp)
     virtual ~CGruntPowerupSprite() OVERRIDE; // 0x012370 (folds the CUserLogic teardown)
 
     static void InitActReg();   // 0x07ffa0 (construct g_powerupActReg over [2000,2010])
@@ -36,6 +40,7 @@ public:
     i32 m_cellY;     // +0x58  grunt cell y
     i32 m_powerupId; // +0x5c  powerup id
 };
+VTBL(CGruntPowerupSprite, 0x001e76c4); // vtable_names -> code (RTTI game class)
 
 // The class registry entry: its first dword receives the Update handler PMF (a
 // 4-byte code pointer on this complete single-inheritance class).

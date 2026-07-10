@@ -47,6 +47,20 @@ i32 CAniCycle::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 RVA(0x0000f510, 0x44)
 CAniCycle::~CAniCycle() {}
 
+// --- CAniCycle (0x0aad20), vptr 0x5e86a4 --- the ctor anchors GetTypeTag @0xf450
+// + the ??_7CAniCycle vtable in this TU. Folds the inline CUserLogic(obj) base.
+RVA(0x000aad20, 0x15c)
+CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_38->m_flags |= 1;
+    if (m_38->m_geoId == 0) {
+        m_40 = m_38->m_geoId;
+        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    }
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+}
+
 // CAniCycle::InitActReg @0x0aaf00 - construct the class's activation-coordinate
 // registry singleton (g_aniCycleActReg @0x646088) over the fixed range
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.

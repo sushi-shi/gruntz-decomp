@@ -65,6 +65,35 @@ i32 CBehindCandyAni::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 RVA(0x000100f0, 0x44)
 CBehindCandyAni::~CBehindCandyAni() {}
 
+// --- CBehindCandyAni (0x0ad540), vptr 0x5e838c --- the ctor anchors GetTypeTag
+// @0x10030 + the ??_7CBehindCandyAni vtable in this TU. Folds the inline
+// CUserLogic(obj) base + the shared z-clamp tail.
+RVA(0x000ad540, 0x1f0)
+CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    if (m_38->m_geoId == 0) {
+        m_40 = m_38->m_geoId;
+        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    }
+    if (m_object->m_latchedAnimId != 0) {
+        m_object->m_latchedAnimId = 0;
+        m_object->m_flags |= 0x20000;
+    }
+    if (m_object->m_layer != 0) {
+        if (m_object->m_layer->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
+            }
+        }
+    }
+}
+
 // CBehindCandyAni::InitActReg @0x0ad7d0 - construct the class's activation-
 // coordinate registry singleton (g_behindCandyActReg @0x645f98) over the fixed
 // range [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.

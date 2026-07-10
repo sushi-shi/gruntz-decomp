@@ -19,20 +19,8 @@
 #include <Image/ImageSet.h>
 #include <Mfc.h>             // RECT / CopyRect (CSingleFrameMessage centers in a bounds rect)
 #include <Gruntz/ActReg.h>   // shared CActColl/CVariantSlot/CActReg activation-registry archetype
-#include <Gruntz/AniCycle.h> // the canonical CAniCycle class (ctor defined below)
-#include <Gruntz/BehindCandy.h>        // the canonical CBehindCandy class (ctor defined below)
-#include <Gruntz/BehindCandyAni.h>     // the canonical CBehindCandyAni class (ctor defined below)
-#include <Gruntz/EyeCandy.h>           // the canonical CEyeCandy class (ctor defined below)
-#include <Gruntz/FrontCandy.h>         // the canonical CFrontCandy class (ctor defined below)
-#include <Gruntz/FrontCandyAni.h>      // the canonical CFrontCandyAni class (ctor defined below)
-#include <Gruntz/MenuSparkle.h>        // the canonical CMenuSparkle class (ctor defined below)
 #include <Gruntz/WarpStonePad.h>       // the canonical CWarpStonePad class (ctor defined below)
-#include <Gruntz/Particlez.h>          // the canonical CParticlez class (ctor defined below)
-#include <Gruntz/SimpleAnimation.h>    // the canonical CSimpleAnimation class (ctor defined below)
-#include <Gruntz/SingleAnimation.h>    // the canonical CSingleAnimation class (ctor defined below)
-#include <Gruntz/SingleFrameMessage.h> // the canonical CSingleFrameMessage class (ctor defined below)
 #include <Gruntz/TeleSpriteFactory.h>  // shared teleporter HUD-sprite factory
-#include <Gruntz/ToobSpikez.h>         // the canonical CToobSpikez class (ctor defined below)
 #include <Gruntz/Trigger.h>            // shared point-probe result object
 #include <Gruntz/SecretLevelTrigger.h> // canonical CSecretLevelTrigger (ctors defined below)
 #include <Gruntz/VoiceTrigger.h>       // canonical CVoiceTrigger (no-arg ctor + GetTypeTag below)
@@ -41,12 +29,11 @@
 #include <Bute/SymTab.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
+#include <Gruntz/TileTriggerSwitch.h>      // the canonical CTileTriggerSwitch (state-pump new-site)
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <rva.h>
 #include <Globals.h>
-
-#include <stdlib.h> // rand (0x11fee0; CMenuSparkle timer seed)
 
 // ---------------------------------------------------------------------------
 // CButeTree (declared in <Bute/ButeMgr.h>, pulled via UserLogic.h) - the engine
@@ -175,43 +162,17 @@ public:
     virtual ~CCoveredPowerup() OVERRIDE;
 };
 
-class CGruntHealthSprite : public CUserLogic {
-    virtual i32 Vslot16();                     // slot 16 (new)
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    TILE_LOGIC_TAIL
-public:
-    CGruntHealthSprite();
-    CGruntHealthSprite(CGameObject* obj); // 0x07eb00 (1-arg)
-    virtual ~CGruntHealthSprite() OVERRIDE;
-    char m_pad40[0x5c - 0x40]; // CUserLogic ends +0x40; anchors at +0x5c
-    i32 m_5c;                  // +0x5c
-    i32 m_60;                  // +0x60
-};
-// VTBL(CGruntHealthSprite, 0x1e7ba4) is bound canonically in <Gruntz/GruntHealthSprite.h>
-// (scanned tree-wide); this TU keeps a local class view for the ctor/dtor bodies below.
+// CGruntHealthSprite (no-arg ctor 0x11ef0 + 1-arg ctor 0x7eb00 + dtor anchor) re-homed
+// to src/Gruntz/GruntHealthSprite.cpp; the local view is dissolved onto the canonical
+// <Gruntz/GruntHealthSprite.h> class.
 
 // CVoiceTrigger is the canonical <Gruntz/VoiceTrigger.h> class (its no-arg ctor +
 // GetTypeTag bodies stay here; the class shape is shared with VoiceTrigger.cpp).
 
-class CTeleporter : public CUserLogic {
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    // slot 2: per-class logic-type id, inline (emitted with this TU's ctor vtable)
-    RVA(0x00010d80, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_TELEPORTER; }
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
-public:
-    TILE_LOGIC_TAIL
-public:
-    CTeleporter(CGameObject* obj); // 0x041020
-    virtual ~CTeleporter() OVERRIDE;
-    char m_pad40[0x58 - 0x40];  // CUserLogic ends +0x40; CTeleporter fields at +0x58
-    i32 m_58, m_5c, m_60, m_64; // +0x58..+0x67
-    void EnterField1();         // 0x1771 (this-method, no body)
-    void EnterField2();         // 0x27d9 (this-method, no body)
-};
+// CTeleporter (ctor 0x041020 + GetTypeTag 0x10d80 + dtor anchor) re-homed to
+// src/Gruntz/Teleporter.cpp; the local view is dissolved onto the canonical
+// <Gruntz/Teleporter.h> class (which now owns the inline GetTypeTag + the
+// EnterField1/EnterField2 this-methods).
 
 // CSecretTeleporterTrigger is the canonical <Gruntz/SecretTeleporterTrigger.h>
 // class (extracted so the anim-worker dispatch handler can `new` it); its
@@ -220,24 +181,11 @@ public:
 
 // CWarpStonePad comes from <Gruntz/WarpStonePad.h> (folded; ctor 0x10d650 defined below).
 
-SIZE(CTileTriggerSwitch, 0x54);
-class CTileTriggerSwitch : public CUserLogic {
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    TILE_LOGIC_TAIL
-public:
-    CTileTriggerSwitch(CGameObject* obj); // 0x10dc40
-    virtual ~CTileTriggerSwitch() OVERRIDE;
-    static void InitActReg();       // 0x10de20
-    void FireActivation(i32 coord); // 0x10dea0 (vtable slot 4 body: per-coord PMF dispatch)
-    static void RegisterActs();     // 0x10e000
-    i32 AdvanceAnim();              // 0x10e200
-    char m_pad40[0x54 - 0x40];      // +0x40  (unmodeled leaf tail; size 0x54 proven from
-    //         the state pump's `new CTileTriggerSwitch` = new(0x54))
-};
-VTBL(CTileTriggerSwitch, 0x1e7f6c);
+// CTileTriggerSwitch (ctor 0x10dc40 + InitActReg/FireActivation/RegisterActs +
+// SerializeMove 0x11050 + ~dtor 0x110f0 + the g_tileTriggerSwitchActReg registry)
+// re-homed to src/Gruntz/TileTriggerSwitch.cpp; the local view is dissolved onto the
+// canonical <Gruntz/TileTriggerSwitch.h>. (The TileTriggerSwitchStep pump below still
+// `new`s CTileTriggerSwitch via that header.)
 
 // CTileTriggerTransition (vptr 0x5e7db4) + its leaf methods and state pump now
 // live in src/Gruntz/TileTriggerTransition.cpp.
@@ -250,51 +198,10 @@ VTBL(CTileTriggerSwitch, 0x1e7f6c);
 
 // CSingleAnimation comes from <Gruntz/SingleAnimation.h> (folded; ctor 0x0ae7f0 defined below).
 
-// ---------------------------------------------------------------------------
-// The CGruntSprite-family leaves (1-arg ctors). Each folds the inline
-// CUserLogic(obj) base, stamps its own vptr, then runs a per-class sprite tail
-// (ApplyLookupSprite/ApplyName + ApplyLookupGeometry, the "A" bute seed, a pose
-// id force, anchor fields). m_5c/m_60 (CGruntHealthSprite/CGruntToySprite) and
-// m_40 (the geometry token cache, the rest) are leaf fields.
-// ---------------------------------------------------------------------------
-class CGruntSelectedSprite : public CUserLogic {
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    TILE_LOGIC_TAIL
-public:
-    CGruntSelectedSprite(CGameObject* obj); // 0x07e3e0
-    virtual ~CGruntSelectedSprite() OVERRIDE;
-    i32 m_40; // +0x40
-};
-VTBL(CGruntSelectedSprite, 0x1e7bfc);
-
-class CGruntToySprite : public CUserLogic {
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-public:
-    TILE_LOGIC_TAIL
-public:
-    CGruntToySprite(CGameObject* obj); // 0x07f350
-    virtual ~CGruntToySprite() OVERRIDE;
-    char m_pad40[0x5c - 0x40];
-    i32 m_5c; // +0x5c
-};
-
-class CGruntPowerupSprite : public CUserLogic {
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-public:
-    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
-    TILE_LOGIC_TAIL
-public:
-    CGruntPowerupSprite(CGameObject* obj); // 0x07fdb0
-    virtual ~CGruntPowerupSprite() OVERRIDE;
-    i32 m_40; // +0x40
-};
-VTBL(CGruntPowerupSprite, 0x1e76c4);
+// The CGruntSprite-family leaves (CGruntSelectedSprite 0x07e3e0 / CGruntToySprite
+// 0x07f350 / CGruntPowerupSprite 0x07fdb0) re-homed to their canonical per-class TUs
+// (GruntSelectedSprite.cpp / GruntToySprite.cpp / GruntPowerupSprite.cpp); the local
+// views are dissolved onto their canonical headers.
 
 // ---------------------------------------------------------------------------
 // The eyecandy / simple-animation leaves (1-arg ctors). They share a common
@@ -321,29 +228,8 @@ VTBL(CGruntPowerupSprite, 0x1e76c4);
 
 // CMenuSparkle comes from <Gruntz/MenuSparkle.h> (folded; ctor 0x0adbe0 defined below).
 
-// CPathHazard (0x13170, no-arg): same folded base schedule, then zeroes its own
-// eight pointer fields at +0x108..+0x12c.
-class CPathHazard : public CUserLogic {
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    TILE_LOGIC_TAIL
-public:
-    CPathHazard();
-    virtual ~CPathHazard() OVERRIDE;
-    char m_pad[0x108 - 0x40]; // pad CUserLogic (ends +0x40) .. +0x107
-    void* m_108;
-    void* m_10c;
-    void* m_110;
-    void* m_114;
-    char m_pad118[0x120 - 0x118];
-    void* m_120;
-    void* m_124;
-    void* m_128;
-    void* m_12c;
-};
-VTBL(CPathHazard, 0x1e7394);
+// CPathHazard (no-arg ctor 0x13170 + dtor anchor) re-homed to src/Gruntz/PathHazard.cpp;
+// the local view is dissolved onto the canonical <Gruntz/PathHazard.h> class.
 
 // The global game registry several tails poll for level flags (WwdGameReg, the
 // same symbol wwdfile labels at RVA 0x24556c; only the fields these tails read
@@ -428,39 +314,18 @@ struct CLeafActReg : public CActReg {};
 // (g_frontCandyActReg @0x646060 was the mis-attributed CEyeCandyAni registry - it
 // re-homed to src/Gruntz/EyeCandyAni.cpp as g_eyeCandyActReg; 0x646060's DATA symbol
 // is pinned in src/Gruntz/LogicDispatchInit.cpp as g_logicDispatch_646060.)
-DATA(0x00245f70)
-extern CLeafActReg g_singleAnimActReg; // 0x645f70
-DATA(0x0024e6a0)
-extern CLeafActReg g_warpStonePadActReg; // 0x64e6a0
 DATA(0x0024e810)
 extern CLeafActReg g_tileTriggerActReg; // 0x64e810
-DATA(0x0024e798)
-extern CLeafActReg g_tileTriggerSwitchActReg; // 0x64e798
 DATA(0x0024e7e8)
 extern CLeafActReg g_tileSecretTriggerActReg; // 0x64e7e8
 
 // Each leaf's handler entry: its first dword receives the per-frame handler PMF
 // (AdvanceAnim, a 4-byte code ptr on the single-inheritance class). (CFrontCandyAni's
 // entry re-homed to src/Gruntz/EyeCandyAni.cpp with its RegisterActs.)
-typedef i32 (CSingleAnimation::*SingleAnimHandler)();
-SIZE_UNKNOWN(CSingleAnimActEntry);
-struct CSingleAnimActEntry {
-    SingleAnimHandler m_fn;
-};
-typedef i32 (CWarpStonePad::*WarpStonePadHandler)();
-SIZE_UNKNOWN(CWarpStonePadActEntry);
-struct CWarpStonePadActEntry {
-    WarpStonePadHandler m_fn;
-};
 typedef i32 (CTileTrigger::*TileTriggerHandler)();
 SIZE_UNKNOWN(CTileTriggerActEntry);
 struct CTileTriggerActEntry {
     TileTriggerHandler m_fn;
-};
-typedef i32 (CTileTriggerSwitch::*TileTriggerSwitchHandler)();
-SIZE_UNKNOWN(CTileTriggerSwitchActEntry);
-struct CTileTriggerSwitchActEntry {
-    TileTriggerSwitchHandler m_fn;
 };
 typedef i32 (CTileSecretTrigger::*TileSecretTriggerHandler)();
 SIZE_UNKNOWN(CTileSecretTriggerActEntry);
@@ -582,9 +447,8 @@ i32 CSecretTeleporterTrigger::Serialize(i32 a, i32 b, i32 c, i32 d) {
 RVA(0x00010ab0, 0x44)
 CSecretTeleporterTrigger::~CSecretTeleporterTrigger() {}
 
-CSecretLevelTrigger::~CSecretLevelTrigger() {}
-RVA(0x00010b20, 0x4b)
-CSecretLevelTrigger::CSecretLevelTrigger() {}
+// CSecretLevelTrigger (no-arg ctor 0x10b20 + 1-arg ctor 0x424b0 + dtor anchor)
+// re-homed to src/Gruntz/SecretLevelTrigger.cpp.
 
 RVA(0x00011160, 0x4b)
 CTileTrigger::CTileTrigger() {}
@@ -606,51 +470,14 @@ CGiantRock::~CGiantRock() {}
 RVA(0x000116c0, 0x44)
 CCoveredPowerup::~CCoveredPowerup() {}
 
-CGruntHealthSprite::~CGruntHealthSprite() {}
-RVA(0x00011ef0, 0x4b)
-CGruntHealthSprite::CGruntHealthSprite() {}
-
-CPathHazard::~CPathHazard() {}
-RVA(0x00013170, 0x7b)
-CPathHazard::CPathHazard() {
-    m_108 = 0;
-    m_110 = 0;
-    m_10c = 0;
-    m_114 = 0;
-    m_120 = 0;
-    m_128 = 0;
-    m_124 = 0;
-    m_12c = 0;
-}
-
-CVoiceTrigger::~CVoiceTrigger() {}
-// CVoiceTrigger::GetTypeTag (0x000133b0) is now an inline member in the class header.
-RVA(0x00013470, 0x4b)
-CVoiceTrigger::CVoiceTrigger() {}
+// CVoiceTrigger (no-arg ctor 0x13470 + GetTypeTag 0x133b0 + dtor anchor) re-homed to
+// src/Gruntz/VoiceTrigger.cpp (joins its dtor 0x135a0 / Serialize 0x134e0 band).
 
 // CUserLogic::GetScreenPos (0x00029a50) is now an inline member in the header.
 
 // CUserLogic::IsAtSavedScreenPos (0x00029a80) is now an inline member in the header.
 
-// --- CTeleporter (0x041020), vptr 0x5e80cc ---
-CTeleporter::~CTeleporter() {}
-RVA(0x00041020, 0x170)
-CTeleporter::CTeleporter(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_58 = 0;
-    m_60 = 0;
-    m_5c = 0;
-    m_64 = 0;
-    m_38->m_flags |= 0x2000002;
-    if (m_object->m_latchedAnimId != 0x1869f) {
-        m_object->m_latchedAnimId = 0x1869f;
-        m_object->m_flags |= 0x20000;
-    }
-    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-    EnterField1();
-    EnterField2();
-}
+// CTeleporter ctor 0x041020 re-homed to src/Gruntz/Teleporter.cpp.
 
 // --- CSecretTeleporterTrigger (0x041e90), vptr 0x5e7564 ---
 RVA(0x00041e90, 0x1ac)
@@ -727,25 +554,7 @@ void CSecretTeleporterTrigger::RegisterActs() {
     ((CTelActEntry*)ActLookup(id))->m_fn = &CSecretTeleporterTrigger::SpawnTeleporter;
 }
 
-// --- CSecretLevelTrigger 1-arg (0x0424b0), vptr 0x5e8804 ---
-RVA(0x000424b0, 0x1a0)
-CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    if (g_gameReg->m_134 == 1 && g_gameReg->m_130 == 0) {
-        m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
-        m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
-        if (m_object->m_latchedAnimId != 0) {
-            m_object->m_latchedAnimId = 0;
-            m_object->m_flags |= 0x20000;
-        }
-        m_38->m_flags |= 2;
-        m_38->m_stateFlags |= 1;
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find("A");
-    } else {
-        m_38->m_flags |= 0x10000;
-    }
-}
+// CSecretLevelTrigger 1-arg ctor 0x0424b0 re-homed to src/Gruntz/SecretLevelTrigger.cpp.
 
 // --- CSecretTeleporterTrigger::SpawnTeleporter (0x042b80) ---
 // The registered point-activation callback: probe the trigger's screen point for
@@ -795,400 +604,54 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     return 0;
 }
 
-// --- CParticlez (0x046ad0), vptr 0x5e7614 ---
-CParticlez::~CParticlez() {}
-// CParticlez::GetTypeTag (0x00012cd0) is now an inline member in the class header.
-RVA(0x00046ad0, 0x15e)
-CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_flags |= 0x2000002;
-    if (m_object->m_latchedAnimId != 0xcf84f) {
-        m_object->m_latchedAnimId = 0xcf84f;
-        m_object->m_flags |= 0x20000;
-    }
-    m_object->m_38 = 0;
-}
+// CParticlez (ctor 0x046ad0 + ~CParticlez anchor) re-homed to src/Gruntz/Particlez.cpp
+// (the ctor anchors GetTypeTag @0x12cd0 + the ??_7CParticlez vtable there).
 
-// --- CGruntSelectedSprite (0x07e3e0), vptr 0x5e7bfc ---
-CGruntSelectedSprite::~CGruntSelectedSprite() {}
-RVA(0x0007e3e0, 0x178)
-CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_38->ApplyName("GAME_GRUNTSELECTEDSPRITE");
-    m_40 = m_38->m_geoId;
-    m_38->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_object->m_latchedAnimId != 0x14) {
-        m_object->m_latchedAnimId = 0x14;
-        m_object->m_flags |= 0x20000;
-    }
-}
+// CGruntSelectedSprite (ctor 0x07e3e0 + dtor anchor) re-homed to
+// src/Gruntz/GruntSelectedSprite.cpp.
+// CGruntHealthSprite 1-arg ctor 0x07eb00 re-homed to src/Gruntz/GruntHealthSprite.cpp.
+// CGruntToySprite (ctor 0x07f350 + dtor anchor) re-homed to src/Gruntz/GruntToySprite.cpp.
+// CGruntPowerupSprite (ctor 0x07fdb0 + dtor anchor) re-homed to
+// src/Gruntz/GruntPowerupSprite.cpp.
 
-// --- CGruntHealthSprite (0x07eb00), vptr 0x5e7ba4 ---
-RVA(0x0007eb00, 0x170)
-CGruntHealthSprite::CGruntHealthSprite(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_38->ApplyLookupSprite("GAME_GRUNTHEALTHSPRITE", 1);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    m_5c = 0x64;
-    if (m_object->m_latchedAnimId != 0xdbba0) {
-        m_object->m_latchedAnimId = 0xdbba0;
-        m_object->m_flags |= 0x20000;
-    }
-    m_60 = -0x19;
-}
+// CAniCycle (ctor 0x0aad20 + ~CAniCycle anchor) re-homed to src/Gruntz/AniCycle.cpp
+// (the ctor anchors GetTypeTag @0xf450 + the ??_7CAniCycle vtable there).
 
-// --- CGruntToySprite (0x07f350), vptr 0x5e7b4c ---
-CGruntToySprite::~CGruntToySprite() {}
-RVA(0x0007f350, 0x16a)
-CGruntToySprite::CGruntToySprite(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_38->ApplyLookupSprite("GAME_STATUSBAR_TABZ_STATZTAB_SMALL", 0);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_stateFlags |= 1;
-    if (m_object->m_latchedAnimId != 0xdbba0) {
-        m_object->m_latchedAnimId = 0xdbba0;
-        m_object->m_flags |= 0x20000;
-    }
-    m_5c = 0;
-}
+// CSingleFrameMessage (ctor 0x0ab310 + ~CSingleFrameMessage anchor) re-homed to
+// src/Gruntz/SingleFrameMessage.cpp.
 
-// --- CGruntPowerupSprite (0x07fdb0), vptr 0x5e76c4 ---
-CGruntPowerupSprite::~CGruntPowerupSprite() {}
-RVA(0x0007fdb0, 0x166)
-CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_38->ApplyName("GAME_LIGHTING_POWERUP");
-    m_40 = m_38->m_geoId;
-    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    if (m_object->m_latchedAnimId != 0x15) {
-        m_object->m_latchedAnimId = 0x15;
-        m_object->m_flags |= 0x20000;
-    }
-    m_38->m_stateFlags |= 1;
-}
+// CSimpleAnimation (ctor 0x0ab940 + ~CSimpleAnimation anchor) re-homed to
+// src/Gruntz/SimpleAnimation.cpp.
 
-// --- CAniCycle (0x0aad20), vptr 0x5e86a4 ---
-CAniCycle::~CAniCycle() {}
-RVA(0x000aad20, 0x15c)
-CAniCycle::CAniCycle(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_38->m_flags |= 1;
-    if (m_38->m_geoId == 0) {
-        m_40 = m_38->m_geoId;
-        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    }
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-}
+// CFrontCandy (ctor 0x0abfa0 + ~CFrontCandy anchor) re-homed to
+// src/Gruntz/FrontCandyAni.cpp (joins its Serialize 0xfa60 / dtor 0xfb00 band; the
+// ctor anchors GetTypeTag @0xfa40 + the ??_7CFrontCandy vtable there).
 
-// --- CSingleFrameMessage (0x0ab310), vptr 0x5e864c ---
-// The tail asks g_gameReg for the on-screen message-bounds RECT (0x2cb1 thunk),
-// copies it into a local via the CopyRect Win32 import, then centers the object
-// (m_object->m_5c/m_60) inside it. ApplyLookupSprite takes m_38->m_04 as its flag.
-CSingleFrameMessage::~CSingleFrameMessage() {}
-RVA(0x000ab310, 0x18d)
-CSingleFrameMessage::CSingleFrameMessage(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    m_object->ApplyLookupSprite("GAME_MESSAGEZ", m_38->m_04);
-    RECT bounds;
-    RECT r;
-    CopyRect(&r, g_gameReg->GetMessageBounds(&bounds));
-    m_object->m_screenX = r.left + (r.right - r.left) / 2;
-    m_object->m_screenY = r.top + (r.bottom - r.top) / 2;
-}
+// CBehindCandy (ctor 0x0ac3f0 + ~CBehindCandy anchor) re-homed to
+// src/Gruntz/BehindCandy.cpp (the ctor anchors GetTypeTag @0xfb70 + the
+// ??_7CBehindCandy vtable there).
 
-// --- CSimpleAnimation (0x0ab940), vptr 0x5e8544 ---
-CSimpleAnimation::~CSimpleAnimation() {}
-RVA(0x000ab940, 0x1b8)
-CSimpleAnimation::CSimpleAnimation(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    CGameObjLayer* aux = m_object->m_layer;
-    if (aux != 0) {
-        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_7c != 0) {
-                m_object->m_7c->m_08 &= ~6;
-                m_object->m_7c->m_08 |= 1;
-                m_38->m_flags &= ~0x1000002;
-                m_38->m_flags |= 0x800000;
-            }
-        }
-    }
-}
-
-// --- CFrontCandy (0x0abfa0), vptr 0x5e84ec ---
-CFrontCandy::~CFrontCandy() {}
-RVA(0x000abfa0, 0x1b6)
-CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    if (m_object->m_latchedAnimId != 0xf4240) {
-        m_object->m_latchedAnimId = 0xf4240;
-        m_object->m_flags |= 0x20000;
-    }
-    CGameObjLayer* aux = m_object->m_layer;
-    if (aux != 0) {
-        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_7c != 0) {
-                m_object->m_7c->m_08 &= ~6;
-                m_object->m_7c->m_08 |= 1;
-                m_38->m_flags &= ~0x1000002;
-                m_38->m_flags |= 0x800000;
-            }
-        }
-    }
-}
-
-// --- CBehindCandy (0x0ac3f0), vptr 0x5e8494 ---
-CBehindCandy::~CBehindCandy() {}
-RVA(0x000ac3f0, 0x1b1)
-CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    if (m_object->m_latchedAnimId != 0) {
-        m_object->m_latchedAnimId = 0;
-        m_object->m_flags |= 0x20000;
-    }
-    if (m_object->m_layer != 0) {
-        if (m_object->m_layer->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_7c != 0) {
-                m_object->m_7c->m_08 &= ~6;
-                m_object->m_7c->m_08 |= 1;
-                m_38->m_flags &= ~0x1000002;
-                m_38->m_flags |= 0x800000;
-            }
-        }
-    }
-}
-
-// --- CEyeCandy (0x0ac620), vptr 0x5e843c ---
-CEyeCandy::~CEyeCandy() {}
-RVA(0x000ac620, 0x1cf)
-CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    CGameObject* o = m_object;
-    if (o->m_latchedAnimId == 0 && o->m_layer != 0) {
-        i32 v = o->m_layer->m_1c + o->m_screenY + 0x186a0;
-        if (o->m_latchedAnimId != v) {
-            o->m_latchedAnimId = v;
-            o->m_flags |= 0x20000;
-        }
-    }
-    CGameObjLayer* aux = m_object->m_layer;
-    if (aux != 0) {
-        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_7c != 0) {
-                m_object->m_7c->m_08 &= ~6;
-                m_object->m_7c->m_08 |= 1;
-                m_38->m_flags &= ~0x1000002;
-                m_38->m_flags |= 0x800000;
-            }
-        }
-    }
-}
+// CEyeCandy (ctor 0x0ac620 + ~CEyeCandy anchor) re-homed to src/Gruntz/EyeCandy.cpp
+// (the ctor anchors GetTypeTag @0xfca0 + the ??_7CEyeCandy vtable in that TU).
 
 // --- CFrontCandyAni::RegisterActs (0x0acd10) + AdvanceAnim (0x0acf10) re-homed ---
 // These were a mis-attribution of CEyeCandyAni's acts (registry 0x646060) and now
 // live in src/Gruntz/EyeCandyAni.cpp, killing the ?RegisterActs@CFrontCandyAni
 // dup-RVA (they emit as ?RegisterActs@CEyeCandyAni / ?AdvanceAnim@CEyeCandyAni).
 
-// --- CFrontCandyAni (0x0acf40), vptr 0x5e83e4 ---
-CFrontCandyAni::~CFrontCandyAni() {}
-RVA(0x000acf40, 0x16e)
-CFrontCandyAni::CFrontCandyAni(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_38->m_geoId == 0) {
-        m_40 = m_38->m_geoId;
-        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    }
-    if (m_object->m_latchedAnimId != 0xf4240) {
-        m_object->m_latchedAnimId = 0xf4240;
-        m_object->m_flags |= 0x20000;
-    }
-}
+// CFrontCandyAni (ctor 0x0acf40 + ~CFrontCandyAni anchor) re-homed to
+// src/Gruntz/FrontCandyAni.cpp.
 
-// --- CBehindCandyAni (0x0ad540), vptr 0x5e838c ---
-CBehindCandyAni::~CBehindCandyAni() {}
-RVA(0x000ad540, 0x1f0)
-CBehindCandyAni::CBehindCandyAni(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    if (m_38->m_geoId == 0) {
-        m_40 = m_38->m_geoId;
-        m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
-    }
-    if (m_object->m_latchedAnimId != 0) {
-        m_object->m_latchedAnimId = 0;
-        m_object->m_flags |= 0x20000;
-    }
-    if (m_object->m_layer != 0) {
-        if (m_object->m_layer->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
-            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
-            if (m_object->m_7c != 0) {
-                m_object->m_7c->m_08 &= ~6;
-                m_object->m_7c->m_08 |= 1;
-                m_38->m_flags &= ~0x1000002;
-                m_38->m_flags |= 0x800000;
-            }
-        }
-    }
-}
+// CBehindCandyAni (ctor 0x0ad540 + ~CBehindCandyAni anchor) re-homed to
+// src/Gruntz/BehindCandyAni.cpp (the ctor anchors GetTypeTag @0x10030 + the
+// ??_7CBehindCandyAni vtable there).
 
-// --- CMenuSparkle (0x0adbe0), vptr 0x5e82dc ---
-// ~CMenuSparkle @0x101b0 - empty vtable-anchor dtor (folds the CUserLogic teardown);
-// homed here (band sibling of the leaf dtors below) from BoundaryLeafLogic.cpp.
-RVA(0x000101b0, 0x44)
-CMenuSparkle::~CMenuSparkle() {}
-RVA(0x000adbe0, 0x178)
-CMenuSparkle::CMenuSparkle(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_38->ApplyName("MENU_SPARKLE");
-    m_40 = m_38->m_geoId;
-    m_38->ApplyLookupGeometry("MENU_FORWARD100", 0);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    m_objAux->m_130 = rand() % 0xfa1 + 0x3e8;
-}
+// CMenuSparkle (ctor 0x0adbe0 + ~dtor 0x101b0 + AdvanceAnim 0xae2a0) re-homed to
+// src/Gruntz/MenuSparkle.cpp (the canonical CMenuSparkle view; the slot-1 SerializeMove
+// 0xae1c0 stays under the Grunt.h serialize view in MenuSparkleSerial.cpp).
 
-// The frame delta / tick globals the sparkle handler drives (DATA-bound elsewhere:
-// g_645584 in Attract.cpp, g_6bf3bc below); declared extern so the loads reloc-mask.
-extern u32 g_645584;     // 0x645584  per-frame time delta
-extern "C" i32 g_6bf3bc; // 0x6bf3bc  frame tick (also declared at the pump cluster below)
-
-// The +0x1a0 anim sub-object's blit-param facet (Recompute @0x15c320, __thiscall) -
-// the SAME embedded object CAniAdvanceCursor advances, viewed as CDDrawBlitParam for
-// the recompute call (the documented per-leaf +0x1a0 dual-view; call reloc-masks).
-class CDDrawBlitParam {
-public:
-    void Recompute_15c320(i32 x); // 0x15c320
-};
-
-// CMenuSparkle::AdvanceAnim @0x0ae2a0 - the sparkle's per-frame handler. Tick down
-// the aux flicker countdown (m_objAux->m_130, seeded random in the ctor); when it
-// reaches 0 advance the +0x1a0 anim; then, while the object is active (m_38->m_1c8)
-// and the anim is idle (m_20 == 0), recompute the blit param and re-arm the random
-// flicker delay (rand()%0xfa1 + 0x3e8, the same range the ctor seeds).
-// @early-stop
-// scheduling/regalloc coin-flip (~95%, topic:scheduling): logic byte-faithful (the
-// countdown, the conditional Advance, the m_1c8/m_20 gate, the Recompute + rand
-// re-arm all match retail). Sole residual: retail schedules `lea ecx,[m_38+0x1a0]`
-// (anim) BEFORE `mov eax,[m_38+0x1c8]` (m_1c8, reusing eax), whereas MSVC5 loads
-// m_1c8 into edx first (keeping m_38 in eax) then the lea - a 2-instruction reorder
-// + reg choice not steerable from C (tried o-local, active-local, direct m_38).
-RVA(0x000ae2a0, 0x8e)
-i32 CMenuSparkle::AdvanceAnim() {
-    u32 delta = g_645584;
-    if (delta >= m_objAux->m_130) {
-        m_objAux->m_130 = 0;
-    } else {
-        m_objAux->m_130 -= delta;
-    }
-    if (m_objAux->m_130 == 0) {
-        ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
-    }
-    CAniAdvanceCursor* anim = (CAniAdvanceCursor*)((char*)m_38 + 0x1a0);
-    i32 active = m_38->m_1c8;
-    if (active != 0 && anim->m_20 == 0) {
-        if (anim != 0) {
-            ((CDDrawBlitParam*)anim)->Recompute_15c320(1);
-        }
-        *(i32*)((char*)m_3c + 0x20) = rand() % 0xfa1 + 0x3e8;
-    }
-    return 0;
-}
-
-// --- CSingleAnimation (0x0ae7f0), vptr 0x5e745c ---
-CSingleAnimation::~CSingleAnimation() {}
-RVA(0x000ae7f0, 0x13d)
-CSingleAnimation::CSingleAnimation(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_38->m_flags |= 2;
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-}
-
-// --- CSingleAnimation::InitActReg (0x0ae9a0) ---
-// Construct the class's per-coordinate activation registry singleton
-// (g_singleAnimActReg @0x645f70) over the fixed range [2000, 2010] via the shared
-// registry ctor (0x408710). Free init thunk; reloc-masked.
-RVA(0x000ae9a0, 0x15)
-void CSingleAnimation::InitActReg() {
-    ((CZDArrayDerived*)&g_singleAnimActReg)->Construct(2000, 2010);
-}
-
-// --- CSingleAnimation::RunAct (0x0aea20) ---
-// Resolve the registry entry for id; if a handler is bound, re-resolve and invoke
-// it as a PMF on this, else return the entry pointer. Same archetype as
-// CAniCycle::RunAct (ResolveEntry inlined twice; no CSE).
-RVA(0x000aea20, 0x102)
-i32 CSingleAnimation::RunAct(i32 id) {
-    CSingleAnimActEntry* e = (CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id);
-    if (e->m_fn != 0) {
-        return (this->*((CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id))->m_fn)();
-    }
-    return (i32)e;
-}
-
-// --- CSingleAnimation::RegisterActs (0x0aeb80) ---
-// Bind the per-frame handler (AdvanceAnim @0x0aed80) to the activation key "A"
-// via the shared name registry + the class's coordinate registry
-// (g_singleAnimActReg). SAME archetype as CSecretTeleporterTrigger::RegisterActs.
-//
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the handler store match
-// retail); residual is the slot-vs-id callee-saved register choice cascading into
-// the free-loop count materialization. Deferred.
-RVA(0x000aeb80, 0x18d)
-void CSingleAnimation::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
-    if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
-        char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
-        while (n-- != 0) {
-            if (list != 0) {
-                ((CString*)list)->CString::~CString();
-            }
-            list++;
-        }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
-    }
-    ((CSingleAnimActEntry*)g_singleAnimActReg.ResolveEntry(id))->m_fn =
-        &CSingleAnimation::AdvanceAnim;
-}
-
-// --- CSingleAnimation::AdvanceAnim (0x0aed80) ---
-// The per-frame handler bound by RegisterActs: advance the bound object's +0x1a0
-// anim cursor by the frame counter, then, if the anim sub-mgr is active (m_1c8) and
-// its idle flag is clear (m_1c0 == 0), mark the object dirty (m_flags |= 0x10000).
-// Returns 0. (Sibling of CMenuSparkle::AdvanceAnim without the flicker countdown.)
-RVA(0x000aed80, 0x39)
-i32 CSingleAnimation::AdvanceAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
-    if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
-        m_38->m_flags |= 0x10000;
-    }
-    return 0;
-}
+// CSingleAnimation (ctor 0x0ae7f0 + InitActReg/RunAct/RegisterActs/AdvanceAnim +
+// ~anchor + the g_singleAnimActReg registry) re-homed to src/Gruntz/SingleAnimation.cpp.
 
 // ---------------------------------------------------------------------------
 // The tile-logic worker-pump family (0x10cb10..0x10d510). Each is a free __cdecl
@@ -1252,174 +715,13 @@ i32 CoveredPowerupStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CCoveredPowerup)
 RVA(0x0010d510, 0xf1)
 i32 WarpStonePadStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
 
-// --- CWarpStonePad (0x10d650), vptr 0x5e71ac ---
-// ~CWarpStonePad @0x10fc0 - empty vtable-anchor dtor (folds the CUserLogic teardown);
-// 0x10fc0 sits inside this TU's retail .obj RVA cluster (0x10f20..0x11050).
-RVA(0x00010fc0, 0x44)
-CWarpStonePad::~CWarpStonePad() {}
-RVA(0x0010d650, 0x16c)
-CWarpStonePad::CWarpStonePad(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_38->m_flags |= 2;
-    m_38->m_flags |= 1;
-    if (g_gameReg->m_134 == 1) {
-        m_38->m_stateFlags |= 1;
-        m_38->m_flags |= 0x10000;
-    }
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-}
+// CWarpStonePad (ctor 0x10d650 + InitActReg/FireWarp/RegisterActs + SerializeMove
+// 0x10f20 + ~dtor 0x10fc0 + GetTypeTag 0x10f00 + the g_warpStonePadActReg registry)
+// re-homed to src/Gruntz/WarpStonePad.cpp. (The WarpStonePadStep pump above still
+// `new`s CWarpStonePad via <Gruntz/WarpStonePad.h>.)
 
-// --- CWarpStonePad::InitActReg (0x10d840) ---
-// Construct the class's activation-coordinate registry singleton
-// (g_warpStonePadActReg @0x64e6a0) over the fixed range [2000, 2010] via the
-// shared registry ctor (0x408710). Free init thunk; reloc-masked.
-RVA(0x0010d840, 0x15)
-void CWarpStonePad::InitActReg() {
-    ((CZDArrayDerived*)&g_warpStonePadActReg)->Construct(2000, 2010);
-}
-
-// --- CWarpStonePad::FireWarp (0x10d8c0), vtable slot 4 ---
-// Look the activation coordinate up in the class's own registry singleton
-// (g_warpStonePadActReg); if the resolved entry carries a registered handler,
-// look it up again and dispatch it __thiscall on this. The SAME archetype as
-// CSecretTeleporterTrigger::FireActivation, but driving the warp-pad registry.
-RVA(0x0010d8c0, 0x102)
-void CWarpStonePad::FireWarp(i32 coord) {
-    CWarpStonePadActEntry* e = (CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(coord);
-    if (e->m_fn != 0) {
-        CWarpStonePadActEntry* e2 =
-            (CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(coord);
-        (this->*(e2->m_fn))();
-    }
-}
-
-// --- CWarpStonePad::RegisterActs (0x10da20) ---
-// Bind the per-frame handler (AdvanceAnim @0x10dc20) to the activation key "A"
-// via the shared name registry + the class's coordinate registry
-// (g_warpStonePadActReg). SAME archetype as CSecretTeleporterTrigger::RegisterActs.
-//
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the handler store match
-// retail); residual is the slot-vs-id callee-saved register choice cascading into
-// the free-loop count materialization. Deferred.
-RVA(0x0010da20, 0x18d)
-void CWarpStonePad::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
-    if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
-        char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
-        while (n-- != 0) {
-            if (list != 0) {
-                ((CString*)list)->CString::~CString();
-            }
-            list++;
-        }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
-    }
-    ((CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(id))->m_fn =
-        &CWarpStonePad::AdvanceAnim;
-}
-
-// --- CWarpStonePad::SerializeMove (0x10f20), vtable slot 1 ---
-// The CSecretTeleporterTrigger::Serialize archetype: chain the shared serialize
-// helper on `this`, then (only on success) the +0x34 CSerialObjRef sub-object;
-// normalize the result to a strict bool. Adds no leaf fields.
-RVA(0x00010f20, 0x47)
-i32 CWarpStonePad::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!SerializeChain((i32)ar, mode, a3, a4)) {
-        return 0;
-    }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
-}
-
-// --- CTileTriggerSwitch (0x10dc40), vptr 0x5e7f6c ---
-// The most-derived dtor at 0x110f0 is the 0x44 folded CUserLogic teardown: the
-// leaf vptr store (0x5e7f6c) is dead-eliminated by the immediately-inlined
-// CUserLogic base dtor (store 0x5e705c, ~EngStr on +0x18, store 0x5e70b4).
-RVA(0x000110f0, 0x44)
-CTileTriggerSwitch::~CTileTriggerSwitch() {}
-RVA(0x0010dc40, 0x154)
-CTileTriggerSwitch::CTileTriggerSwitch(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_flags |= 2;
-    m_38->m_flags |= 1;
-    m_38->m_stateFlags |= 1;
-}
-
-// --- CTileTriggerSwitch::InitActReg (0x10de20) ---
-// Construct the class's activation-coordinate registry singleton
-// (g_tileTriggerSwitchActReg @0x64e798) over the fixed range [2000, 2010] via
-// the shared registry ctor (0x408710). Free init thunk; reloc-masked.
-RVA(0x0010de20, 0x15)
-void CTileTriggerSwitch::InitActReg() {
-    ((CZDArrayDerived*)&g_tileTriggerSwitchActReg)->Construct(2000, 2010);
-}
-
-// --- CTileTriggerSwitch::FireActivation (0x10dea0), vtable slot 4 ---
-// Look the activation coordinate up in the class registry (g_tileTriggerSwitchActReg);
-// if the resolved entry carries a registered handler PMF, resolve it again and dispatch
-// it __thiscall on `this`. Same archetype as CWarpStonePad::FireWarp.
-RVA(0x0010dea0, 0x102)
-void CTileTriggerSwitch::FireActivation(i32 coord) {
-    CTileTriggerSwitchActEntry* e =
-        (CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(coord);
-    if (e->m_fn != 0) {
-        CTileTriggerSwitchActEntry* e2 =
-            (CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(coord);
-        (this->*(e2->m_fn))();
-    }
-}
-
-// --- CTileTriggerSwitch::RegisterActs (0x10e000) ---
-// Bind the per-frame handler (AdvanceAnim @0x10e200) to the activation key "A"
-// via the shared name registry + the class's coordinate registry
-// (g_tileTriggerSwitchActReg). SAME archetype as CTileTrigger::RegisterActs.
-//
-// @early-stop
-// register-pinning wall (docs/patterns/zero-register-pinning.md +
-// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
-// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
-// AdvanceAnim` handler store match retail); residual is the slot-vs-id callee-saved
-// register choice cascading into the free-loop count materialization. Deferred.
-RVA(0x0010e000, 0x18d)
-void CTileTriggerSwitch::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
-    if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
-        char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
-        while (n-- != 0) {
-            if (list != 0) {
-                ((CString*)list)->CString::~CString();
-            }
-            list++;
-        }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
-    }
-    ((CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(id))->m_fn =
-        &CTileTriggerSwitch::AdvanceAnim;
-}
-
-// --- CTileTriggerSwitch::SerializeMove (0x11050), vtable slot 1 ---
-RVA(0x00011050, 0x47)
-i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!SerializeChain((i32)ar, mode, a3, a4)) {
-        return 0;
-    }
-    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
-}
+// CTileTriggerSwitch band re-homed to src/Gruntz/TileTriggerSwitch.cpp (see the note
+// at its former class-view site above).
 
 // --- CTileTrigger 1-arg (0x10e220), vptr 0x5e7f14 ---
 RVA(0x0010e220, 0x17d)
@@ -1589,23 +891,9 @@ CGiantRock::CGiantRock(CGameObject* obj) : CTileTrigger(obj) {}
 RVA(0x0010fac0, 0x19)
 CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 
-// --- CToobSpikez (0x1145c0), vptr 0x5e7774 ---
-CToobSpikez::~CToobSpikez() {}
-RVA(0x001145c0, 0x18e)
-CToobSpikez::CToobSpikez(CGameObject* obj) : CUserLogic(obj) {
-    TILE_LOGIC_SEED(obj);
-    m_40 = m_38->m_geoId;
-    m_38->ApplyLookupGeometry("GAME_CYCLE100", 2);
-    m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find("A");
-    m_38->m_flags |= 2;
-    m_object->m_164 = m_object->m_screenX >> 5;
-    m_object->m_168 = m_object->m_screenY >> 5;
-    if (m_object->m_latchedAnimId != 0xc) {
-        m_object->m_latchedAnimId = 0xc;
-        m_object->m_flags |= 0x20000;
-    }
-}
+// CToobSpikez (ctor 0x1145c0 + ~CToobSpikez anchor) re-homed to
+// src/Gruntz/ToobSpikez.cpp (the ctor anchors GetTypeTag @0x12ba0 + the
+// ??_7CToobSpikez vtable there).
 
 // @confidence: low
 // @source: winapi:CopyRect
@@ -1721,236 +1009,10 @@ void CUserLogic::LoadGruntTypeTable(i32, i32, i32, i32) {}
 RVA(0x0005d210, 0x1443)
 void CUserLogic::LoadGruntTuningConstants(i32) {}
 
-// ---------------------------------------------------------------------------
-// The per-frame grunt "decay/wand" AI (0x612a0 / 0x61570 / 0x65a60). These run on
-// a grunt-behavior leaf that extends CUserLogic (base at +0) with a decay-timer +
-// anim state (modeled below as CGruntBehaviorLeaf; placeholder name, only offsets +
-// code bytes are load-bearing). The timer (m_830 start / m_838 duration, both
-// hi=0) drives a 0..256 fixed-point fill bar on the bound object's draw command;
-// m_object is the real inherited CGameObject. The bute/anim callees are reloc-masked
-// __thiscall externs. g_645588 = running ms clock.
-// ---------------------------------------------------------------------------
-extern "C" u32 g_645588;   // running game clock (ms)
-extern CButeMgr g_buteMgr; // 0x6453d8 - getters reloc-mask
-extern char k_60bebc[];    // interned bute-node name "R"
-
-SIZE_UNKNOWN(CDecayMgr);
-struct CDecayMgr { // m_154 - the bound draw-state manager
-    char m_pad00[0x8];
-    i32 m_8; // +0x08 dirty flags
-    char m_pad0c[0x40 - 0xc];
-    i32 m_40; // +0x40 flags
-    char m_pad44[0x194 - 0x44];
-    CImageSet* m_194; // +0x194
-    char m_pad198[0x1a0 - 0x198];
-    CAniAdvanceCursor m_1a0; // +0x1a0
-};
-SIZE_UNKNOWN(CDecayAnim);
-struct CDecayAnim {                                               // m_260 - anim/sprite controller
-    void Anim2a72(i32 a, i32 b, i32 c);                           // 0x2a72
-    void DrawAnimAt(i32 a, i32 b, i32 c, i32 d);                  // 0x1073
-    void PlayAnimEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);    // 0x3003
-    void SetAnim(i32 a, i32 b, i32 c, i32 d);                     // 0x2e96
-    void PlayStateAnim(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x3945
-};
-
-SIZE_UNKNOWN(CGruntBehaviorLeaf);
-class CGruntBehaviorLeaf : public CUserLogic {
-public:
-    TILE_LOGIC_TAIL
-public:
-    i32 LoadGruntDecayConfig();    // 0x612a0
-    i32 LoadGruntDecayConfig2();   // 0x61570
-    i32 LoadWandGruntItemConfig(); // 0x65a60
-    // Leaf's own reloc-masked __thiscall helpers.
-    void RefreshDecay();                     // 0x22de
-    void SetDecayTarget(i32 a);              // 0x3c29
-    void InitAnimState(i32 a, i32 b, i32 c); // 0x136b
-
-    // Members beyond CUserLogic's 0x40 base.
-    char m_pad40[0x154 - 0x40];
-    CDecayMgr* m_drawState; // +0x154 bound draw-state manager
-    char m_pad158[0x170 - 0x158];
-    i32 m_gruntSubState; // +0x170 grunt sub-state
-    char m_pad174[0x1c0 - 0x174];
-    char* m_gruntTypeTag; // +0x1c0 grunt-type bute tag
-    i32 m_1c4;            // +0x1c4
-    char m_pad1c8[0x1e4 - 0x1c8];
-    i32 m_downtimeLatch; // +0x1e4 latch flag
-    char m_pad1e8[0x1ec - 0x1e8];
-    i32 m_animArg0; // +0x1ec anim arg
-    i32 m_animArg1; // +0x1f0 anim arg
-    i32 m_animArg2; // +0x1f4 anim arg
-    char m_pad1f8[0x258 - 0x1f8];
-    i32 m_typeDisc; // +0x258 type discriminator (0x3b = no-downtime)
-    char m_pad25c[0x260 - 0x25c];
-    CDecayAnim* m_animCtrl; // +0x260 anim controller
-    char m_pad264[0x360 - 0x264];
-    i32 m_gruntMode; // +0x360 grunt mode
-    char m_pad364[0x36c - 0x364];
-    i32 m_animSuppress; // +0x36c anim-suppress gate
-    char m_pad370[0x380 - 0x370];
-    i32 m_380; // +0x380
-    char m_pad384[0x3e4 - 0x384];
-    i32 m_3e4;    // +0x3e4
-    i32 m_3e8;    // +0x3e8
-    i32 m_health; // +0x3ec health
-    i32 m_3f0;    // +0x3f0
-    char m_pad3f4[0x460 - 0x3f4];
-    i32 m_460; // +0x460
-    char m_pad464[0x830 - 0x464];
-    i32 m_decayTimerLo;    // +0x830 timer start (lo)
-    i32 m_decayTimerHi;    // +0x834 (hi, always 0)
-    i32 m_decayDurationLo; // +0x838 timer duration (lo)
-    i32 m_decayDurationHi; // +0x83c (hi, always 0)
-    char m_pad840[0x860 - 0x840];
-    i32 m_wandTimerLo;    // +0x860 wand timer start (lo)
-    i32 m_wandTimerHi;    // +0x864 (hi)
-    i32 m_wandDowntimeLo; // +0x868 wand downtime (lo)
-    i32 m_wandDowntimeHi; // +0x86c (hi)
-};
-
-// LoadGruntDecayConfig (0x612a0): advance the arrival probe, drive the walk/idle
-// anim by grunt mode, then (once arrived + not busy) latch the decay timer + fill.
-// @early-stop
-// 90.5%: logic byte-faithful. Residual is CSE/regalloc of the 64-bit timer delta -
-// retail keeps g_645588 pinned in eax and re-does the m_decayTimerLo subtraction in the fill
-// tail, while cl shares the whole `(i64)clock - m_decayTimerLo` delta, shifting the lo dword
-// off eax and cascading register names + the epilogue merge. Not source-steerable.
-RVA(0x000612a0, 0x23c)
-i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
-    if (m_gruntMode == 0) {
-        return 0;
-    }
-    if (m_drawState->m_1a0.Advance_15c360(g_6bf3bc) == 1) {
-        if (m_gruntSubState == 1 && m_gruntMode != 5) {
-            m_animCtrl->DrawAnimAt(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
-        } else {
-            m_animCtrl->PlayAnimEx(
-                m_object->m_screenX,
-                m_object->m_screenY,
-                m_animArg0,
-                m_animArg2,
-                m_gruntMode != 5,
-                0x19
-            );
-        }
-    }
-    CAniAdvanceCursor* sub = &m_drawState->m_1a0;
-    if (sub->m_28 == 0) {
-        return 0;
-    }
-    if (sub->m_20 != 0) {
-        return 0;
-    }
-    i32 mode = m_gruntMode;
-    if (mode == 1 || mode == 2 || mode == 0xb || mode == 6) {
-        m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find(k_60bebc);
-        if (m_animSuppress == 0) {
-            m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
-        }
-        i32 dt = (i32)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8);
-        if (m_object->m_drawFillCmd == 0xb) {
-            m_decayDurationLo = dt;
-            m_decayTimerLo = (i32)g_645588 - m_object->m_fillFraction * dt / 256;
-            m_decayDurationHi = 0;
-        } else {
-            m_decayDurationLo = dt;
-            m_decayDurationHi = 0;
-            m_decayTimerLo = (i32)g_645588;
-        }
-        m_decayTimerHi = 0;
-        i64 e = (i64)(u32)g_645588 - *(i64*)&m_decayTimerLo;
-        u32 elapsed = e < 0 ? 0 : (u32)e;
-        i32 r = (i32)((double)elapsed * 256.0
-                      / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
-        m_object->m_drawActive = 1;
-        m_object->m_drawFillCmd = 0xb;
-        m_object->m_fillFraction = r;
-        return 0;
-    }
-    if (m_animSuppress == 0) {
-        m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
-    }
-    m_drawState->m_8 |= 0x10000;
-    return 0;
-}
-
-// LoadGruntDecayConfig2 (0x61570): if the timer has fully elapsed, fire the finish
-// (flag + finish anim); else refresh the 0..256 fill fraction on the draw command.
-// @early-stop
-// ~77%: logic byte-faithful. Same CSE/regalloc wall as LoadGruntDecayConfig -
-// retail loads g_645588 once into eax and recomputes the m_decayTimerLo subtraction in the
-// fill branch (eax preserved -> lo stays in eax); cl CSEs the whole 64-bit delta and
-// pins lo in ecx, cascading a register-name mismatch through the tail. Hoisting the
-// clock into a local regressed it. Not source-steerable.
-RVA(0x00061570, 0x11d)
-i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
-    if ((i64)(u32)g_645588 - *(i64*)&m_decayTimerLo >= *(i64*)&m_decayDurationLo) {
-        m_drawState->m_40 |= 1;
-        m_drawState->m_194->SetAllTypes(1);
-        if (m_animSuppress == 0) {
-            m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
-        }
-        m_drawState->m_8 |= 0x10000;
-        return 0;
-    }
-    i64 e = (i64)(u32)g_645588 - *(i64*)&m_decayTimerLo;
-    u32 elapsed = e < 0 ? 0 : (u32)e;
-    i32 r =
-        (i32)((double)elapsed * 256.0 / (double)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8));
-    m_object->m_drawActive = 1;
-    m_object->m_drawFillCmd = 0xb;
-    m_object->m_fillFraction = r;
-    return 0;
-}
-
-// LoadWandGruntItemConfig (0x65a60): per-frame wand-grunt item logic. Advance the
-// arrival probe; on the peak phase (0x63) latch the item downtime timer, tick the
-// wand health loss, and fire the depletion anim; every active frame run the wand
-// projectile step; finally, once arrived + idle, clear the latch + run the reset.
-// @early-stop
-// ~95%: whole body byte-identical (incl. the branchless max(0,hp) sub/sets/dec/and
-// idiom) except cl schedules the `if (m_1c4)` load a few slots earlier than retail
-// (which interleaves it among the timer zero-stores). Pure scheduling; not steerable.
-RVA(0x00065a60, 0x159)
-i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
-    i32 phase = m_drawState->m_1a0.Advance_15c360(g_6bf3bc);
-    if (phase > 0) {
-        if (phase == 0x63) {
-            m_downtimeLatch = 1;
-            u32 downtime = g_buteMgr.GetDword(m_gruntTypeTag, "ItemDowntime");
-            if (m_typeDisc == 0x3b) {
-                downtime = 0;
-            }
-            m_wandDowntimeLo = downtime;
-            m_wandDowntimeHi = 0;
-            m_wandTimerLo = g_645588;
-            m_wandTimerHi = 0;
-            m_460 = 0;
-            m_3f0 = 0;
-            if (m_1c4 != 0) {
-                RefreshDecay();
-            }
-            if (m_gruntSubState == 0x13) {
-                SetDecayTarget(m_380);
-                i32 hp = m_health - g_buteMgr.GetIntDef("WANDGRUNT", "HealthLoss", 0x19);
-                m_health = hp < 0 ? 0 : hp;
-                if (m_health <= 0) {
-                    m_animCtrl->SetAnim(m_animArg0, m_animArg1, 1, -1);
-                }
-            }
-        }
-        m_animCtrl->PlayStateAnim(m_animArg0, m_animArg1, m_3e4, m_3e8, m_gruntSubState, phase);
-    }
-    CAniAdvanceCursor* sub = &m_drawState->m_1a0;
-    if (sub->m_28 != 0 && sub->m_20 == 0) {
-        m_downtimeLatch = 0;
-        InitAnimState(1, 0, 0);
-    }
-    return 0;
-}
+// The per-frame grunt "decay/wand" AI (CGruntBehaviorLeaf: LoadGruntDecayConfig
+// 0x612a0, LoadGruntDecayConfig2 0x61570, LoadWandGruntItemConfig 0x65a60) re-homed
+// to src/Gruntz/GruntBehaviorLeaf.{h,cpp} (the placeholder-identity leaf + its
+// CDecayMgr/CDecayAnim views).
 
 // ---------------------------------------------------------------------------
 // The one-shot "begin action" (0x0d7220), re-homed from the ApiCaller stubs:

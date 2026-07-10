@@ -112,6 +112,7 @@ public:
     i32 RunAct(i32 id);
     TILE_LOGIC_TAIL
 public:
+    CPathHazard();                 // 0x13170 (no-arg deserialize-path ctor; zeroes the leg/strike i64s)
     CPathHazard(CGameObject* obj); // 0xb35a0 (folds CUserLogic(obj) + the waypoint setup)
     i32 StartPath();               // 0x29be thunk (find/seed the first leg; reloc-masked no-body)
     // GetTypeTag (0x132f0): the 6-byte per-class logic-type id accessor (0x425).
@@ -164,5 +165,6 @@ public:
     i32 m_strikeWindowHi;   // +0x12c          (i64 hi)
 };
 SIZE(CPathHazard, 0x130);
+VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)
 
 #endif // GRUNTZ_CPATHHAZARD_H

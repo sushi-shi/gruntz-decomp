@@ -36,6 +36,9 @@ class CGruntHealthSprite : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
 public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     static void InitActReg();   // 0x07ecf0 (construct g_healthActReg over [2000,2010])
     void RunAct(i32 id);        // 0x07ed70 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x07eed0 (register the class's activation handlers)
@@ -46,6 +49,8 @@ public:
     // slot 16 (new): the per-class stat-time getter (leaf overrides read the bound
     // grunt's stamina/wingz/toy timer); HealthUpdate dispatches it with the grunt entry.
     virtual i32 Vslot16(CGruntEntry* grunt);
+    CGruntHealthSprite();                   // 0x011ef0 (no-arg ctor; body in GruntHealthSprite.cpp)
+    CGruntHealthSprite(CGameObject* obj);   // 0x07eb00 (1-arg ctor; body in GruntHealthSprite.cpp)
     virtual ~CGruntHealthSprite() OVERRIDE; // 0x011fb0 (folds the CUserLogic teardown)
 
     // CUserLogic is 0x40; the leaf adds its own fields. SetHealthGlyph stashes the

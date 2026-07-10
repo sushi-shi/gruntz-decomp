@@ -35,4 +35,32 @@ i32 CEyeCandy::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 RVA(0x0000fd60, 0x44)
 CEyeCandy::~CEyeCandy() {}
 
+// --- CEyeCandy (0x0ac620), vptr 0x5e843c --- the ctor is the vtable-emission anchor
+// for this class (GetTypeTag @0xfca0 + the ??_7 vtable emit in this TU because the
+// ctor lives here). Folds the inline CUserLogic(obj) base + the shared z-clamp tail.
+RVA(0x000ac620, 0x1cf)
+CEyeCandy::CEyeCandy(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    CGameObject* o = m_object;
+    if (o->m_latchedAnimId == 0 && o->m_layer != 0) {
+        i32 v = o->m_layer->m_1c + o->m_screenY + 0x186a0;
+        if (o->m_latchedAnimId != v) {
+            o->m_latchedAnimId = v;
+            o->m_flags |= 0x20000;
+        }
+    }
+    CGameObjLayer* aux = m_object->m_layer;
+    if (aux != 0) {
+        if (aux->m_zClampLo >= g_buteMgr.GetInt("World", "BigActHeight")
+            || m_object->m_layer->m_zClampHi >= g_buteMgr.GetInt("World", "BigActHeight")) {
+            if (m_object->m_7c != 0) {
+                m_object->m_7c->m_08 &= ~6;
+                m_object->m_7c->m_08 |= 1;
+                m_38->m_flags &= ~0x1000002;
+                m_38->m_flags |= 0x800000;
+            }
+        }
+    }
+}
+
 #include <rva.h>

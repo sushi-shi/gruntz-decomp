@@ -23,6 +23,23 @@
 RVA(0x00011e80, 0x44)
 CGruntSelectedSprite::~CGruntSelectedSprite() {}
 
+// --- CGruntSelectedSprite (0x07e3e0), vptr 0x5e7bfc --- the ctor anchors the
+// ??_7CGruntSelectedSprite vtable in this TU. Folds the inline CUserLogic(obj) base
+// + the sprite name/geometry tail.
+RVA(0x0007e3e0, 0x178)
+CGruntSelectedSprite::CGruntSelectedSprite(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_38->ApplyName("GAME_GRUNTSELECTEDSPRITE");
+    m_geoId = m_38->m_geoId;
+    m_38->ApplyLookupGeometry("GAME_GRUNTSELECTEDSPRITE", 0);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    if (m_object->m_latchedAnimId != 0x14) {
+        m_object->m_latchedAnimId = 0x14;
+        m_object->m_flags |= 0x20000;
+    }
+}
+
 // CGruntSelectedSprite::InitActReg @0x07e5e0 - construct the class's activation-
 // coordinate registry singleton (g_selectedActReg @0x644da8) over [2000, 2010]
 // via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.

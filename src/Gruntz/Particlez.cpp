@@ -153,6 +153,21 @@ i32 CParticlez::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 RVA(0x00012d90, 0x44)
 CParticlez::~CParticlez() {}
 
+// --- CParticlez (0x046ad0), vptr 0x5e7614 --- the ctor anchors GetTypeTag @0x12cd0
+// + the ??_7CParticlez vtable in this TU. Folds the inline CUserLogic(obj) base.
+RVA(0x00046ad0, 0x15e)
+CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 0x2000002;
+    if (m_object->m_latchedAnimId != 0xcf84f) {
+        m_object->m_latchedAnimId = 0xcf84f;
+        m_object->m_flags |= 0x20000;
+    }
+    m_object->m_38 = 0;
+}
+
 // CParticlez::InitActReg @0x046cb0 - construct the class's activation-coordinate
 // registry singleton (g_partColl @0x644870) over the fixed range [2000, 2010]
 // via the shared registry ctor (FUN_00408710, __thiscall ret 8). A free init

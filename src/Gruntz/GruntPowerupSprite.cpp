@@ -27,6 +27,21 @@
 RVA(0x00012370, 0x44)
 CGruntPowerupSprite::~CGruntPowerupSprite() {}
 
+// --- CGruntPowerupSprite (0x07fdb0), vptr 0x5e76c4 --- the ctor anchors the
+// ??_7CGruntPowerupSprite vtable in this TU. Folds the inline CUserLogic(obj) base.
+RVA(0x0007fdb0, 0x166)
+CGruntPowerupSprite::CGruntPowerupSprite(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_38->ApplyName("GAME_LIGHTING_POWERUP");
+    m_geoId = m_38->m_geoId;
+    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    if (m_object->m_latchedAnimId != 0x15) {
+        m_object->m_latchedAnimId = 0x15;
+        m_object->m_flags |= 0x20000;
+    }
+    m_38->m_stateFlags |= 1;
+}
+
 // CGruntPowerupSprite::InitActReg @0x07ffa0 - construct the class's activation-
 // coordinate registry singleton (g_powerupActReg @0x644d30) over [2000, 2010]
 // via the shared registry ctor (FUN_00408710). Free init thunk; reloc-masked.

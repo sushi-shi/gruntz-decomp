@@ -64,6 +64,11 @@ SIZE_UNKNOWN(CTrigger);
 DATA(0x0024556c)
 extern CGameRegistry* g_gameReg;
 
+// --- CSecretLevelTrigger no-arg ctor (0x010b20) --- the deserialize-path ctor:
+// base prologue + link + leaf vptr stamp (the empty body is enough for cl).
+RVA(0x00010b20, 0x4b)
+CSecretLevelTrigger::CSecretLevelTrigger() {}
+
 // CSecretLevelTrigger::Serialize @0x010bb0 - the vtable slot-1 override: chain the
 // shared CUserLogic serialize helper on `this`, and (only on success) the +0x34
 // serializable sub-object's chain; normalize the second chain's success to a strict
@@ -85,6 +90,27 @@ i32 CSecretLevelTrigger::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 // ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl.
 RVA(0x00010c50, 0x44)
 CSecretLevelTrigger::~CSecretLevelTrigger() {}
+
+// --- CSecretLevelTrigger 1-arg ctor (0x0424b0), vptr 0x5e8804 --- folds the inline
+// CUserLogic(obj) base + the tile-snap/anim tail (gated on the play sub-mode).
+RVA(0x000424b0, 0x1a0)
+CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    if (g_gameReg->m_134 == 1 && g_gameReg->m_130 == 0) {
+        m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+        m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+        if (m_object->m_latchedAnimId != 0) {
+            m_object->m_latchedAnimId = 0;
+            m_object->m_flags |= 0x20000;
+        }
+        m_38->m_flags |= 2;
+        m_38->m_stateFlags |= 1;
+        m_prevAnimSetNode = m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find("A");
+    } else {
+        m_38->m_flags |= 0x10000;
+    }
+}
 
 // CSecretLevelTrigger::InitActReg @0x0426e0 - construct the class's activation-
 // coordinate registry singleton (g_secretActReg @0x644598) over the fixed range
