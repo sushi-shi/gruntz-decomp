@@ -1,0 +1,1631 @@
+[
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?PointInBounds@CGameLevel@@SAHPBULevelCoordRect@@HH@Z",
+  "rva": 439088,
+  "demo_rva": 432528,
+  "retail_dist": 989558,
+  "demo_dist": 987632,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?LookupTile@CGameLevel@@QAEHHH@Z",
+  "rva": 534016,
+  "demo_rva": 527456,
+  "retail_dist": 894557,
+  "demo_dist": 892704,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?ApplyMove@@YGHPAUCGameObject@@HHH@Z",
+  "rva": 1470768,
+  "demo_rva": 1462240,
+  "retail_dist": 24078,
+  "demo_dist": 41408,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?MoveKindDispatch12@CGameLevel@@QAEHPAUCGameObject@@HHH@Z",
+  "rva": 1470912,
+  "demo_rva": 1462384,
+  "retail_dist": 24078,
+  "demo_dist": 41552,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?MoveStepXHi@CGameLevel@@QAEHPAUCGameObject@@HHPAHH@Z",
+  "rva": 1471072,
+  "demo_rva": 1462544,
+  "retail_dist": 24078,
+  "demo_dist": 41712,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?MoveStepXLo@CGameLevel@@QAEHPAUCGameObject@@HHPAHH@Z",
+  "rva": 1471568,
+  "demo_rva": 1463040,
+  "retail_dist": 24078,
+  "demo_dist": 42208,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?MoveStepYHi@CGameLevel@@QAEHPAUCGameObject@@HHPAHH@Z",
+  "rva": 1472064,
+  "demo_rva": 1463536,
+  "retail_dist": 24078,
+  "demo_dist": 42704,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?MoveStepYLo@CGameLevel@@QAEHPAUCGameObject@@HHPAHH@Z",
+  "rva": 1472560,
+  "demo_rva": 1464032,
+  "retail_dist": 24078,
+  "demo_dist": 43200,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?ResolveRightX@CGameLevel@@AAEHPAUCGameObject@@HH@Z",
+  "rva": 1473056,
+  "demo_rva": 1464528,
+  "retail_dist": 24078,
+  "demo_dist": 43696,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?ResolveLeftX@CGameLevel@@AAEHPAUCGameObject@@HH@Z",
+  "rva": 1473344,
+  "demo_rva": 1464816,
+  "retail_dist": 24078,
+  "demo_dist": 43984,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?ResolveBottomY@CGameLevel@@AAEHPAUCGameObject@@HH@Z",
+  "rva": 1473632,
+  "demo_rva": 1465104,
+  "retail_dist": 24078,
+  "demo_dist": 44272,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?ResolveTopY@CGameLevel@@AAEHPAUCGameObject@@HH@Z",
+  "rva": 1473920,
+  "demo_rva": 1465392,
+  "retail_dist": 24078,
+  "demo_dist": 44560,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?BroadPhase@CGameLevel@@QAEHPAUCGameObject@@HH@Z",
+  "rva": 1474208,
+  "demo_rva": 1465680,
+  "retail_dist": 24078,
+  "demo_dist": 44848,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "name": "?Init@Builder_168080@@QAEHPAXPAUtagRECT@@PAUPt_168080@@22222",
+  "rva": 1474688,
+  "demo_rva": 1466160,
+  "retail_dist": 24078,
+  "demo_dist": 45328,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?Init@CWwdGameObject@@QAEHHHHH@Z",
+  "rva": 1423680,
+  "demo_rva": 1415152,
+  "retail_dist": 39910,
+  "demo_dist": 44928,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?SetupFlagged@CWwdGameObject@@QAEHHHHHH@Z",
+  "rva": 1425872,
+  "demo_rva": 1417344,
+  "retail_dist": 39910,
+  "demo_dist": 47120,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?RenderDot@CWwdGameObject@@QAEXPAUWwdRenderCtx@@@Z",
+  "rva": 1466608,
+  "demo_rva": 1458080,
+  "retail_dist": 82838,
+  "demo_dist": 87856,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?Slot30@CWwdGameObjectC@@UAEXPAVCDDrawSurfacePair@@0@Z",
+  "rva": 1466832,
+  "demo_rva": 1458304,
+  "retail_dist": 82838,
+  "demo_dist": 88080,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?Slot34@CWwdGameObjectC@@UAEXPAVCDDrawSurfacePair@@0H@Z",
+  "rva": 1467040,
+  "demo_rva": 1458512,
+  "retail_dist": 82838,
+  "demo_dist": 88288,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?Slot38@CWwdGameObjectC@@UAEXPAVCDDrawSurfacePair@@0H@Z",
+  "rva": 1467552,
+  "demo_rva": 1459024,
+  "retail_dist": 82838,
+  "demo_dist": 88800,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?ResetAndSetup@CWwdGameObject@@QAEHHHHH@Z",
+  "rva": 1467872,
+  "demo_rva": 1459344,
+  "retail_dist": 82838,
+  "demo_dist": 89120,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?AddChild_1667e0@CWwdGameObjectB@@QAEHPAVCDDrawGroupChild@@@",
+  "rva": 1468384,
+  "demo_rva": 1459856,
+  "retail_dist": 82838,
+  "demo_dist": 89632,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?Clear_166810@CWwdGameObjectB@@QAEXXZ",
+  "rva": 1468432,
+  "demo_rva": 1459904,
+  "retail_dist": 82838,
+  "demo_dist": 89680,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?RemoveChild_166850@CWwdGameObjectB@@QAEHPAVCDDrawGroupChild",
+  "rva": 1468496,
+  "demo_rva": 1459968,
+  "retail_dist": 82838,
+  "demo_dist": 89744,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?WalkChildWorkers_166880@CWwdGameObjectB@@QAEHXZ",
+  "rva": 1468544,
+  "demo_rva": 1460016,
+  "retail_dist": 82838,
+  "demo_dist": 89792,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?Slot11_1668b0@CWwdGameObjectB@@UAEXH@Z",
+  "rva": 1468592,
+  "demo_rva": 1460064,
+  "retail_dist": 82838,
+  "demo_dist": 89840,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?Slot12_1668e0@CWwdGameObjectB@@UAEXHH@Z",
+  "rva": 1468640,
+  "demo_rva": 1460112,
+  "retail_dist": 82838,
+  "demo_dist": 89888,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?Slot13_166910@CWwdGameObjectB@@UAEXHHH@Z",
+  "rva": 1468688,
+  "demo_rva": 1460160,
+  "retail_dist": 82838,
+  "demo_dist": 89936,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "name": "?Slot14_166950@CWwdGameObjectB@@UAEXHHH@Z",
+  "rva": 1468752,
+  "demo_rva": 1460224,
+  "retail_dist": 82838,
+  "demo_dist": 90000,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?SetLevel@CTriggerMgr@@QAEHPAUCTmLevel@@@Z",
+  "rva": 439872,
+  "demo_rva": 433312,
+  "retail_dist": 28347,
+  "demo_dist": 41888,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?Cleanup@CTriggerMgr@@QAEXXZ",
+  "rva": 439936,
+  "demo_rva": 433376,
+  "retail_dist": 28347,
+  "demo_dist": 41824,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?PlaceObject@CTriggerMgr@@QAEHHHHHHHHHHHHHH@Z",
+  "rva": 440016,
+  "demo_rva": 433456,
+  "retail_dist": 28347,
+  "demo_dist": 41744,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?DispatchCellForObject@CTriggerMgr@@QAEHPAUCTmCell@@HHH@Z",
+  "rva": 441376,
+  "demo_rva": 434816,
+  "retail_dist": 28347,
+  "demo_dist": 40384,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?CellDispatch@CTriggerMgr@@QAEHHHHH@Z",
+  "rva": 441520,
+  "demo_rva": 434960,
+  "retail_dist": 28347,
+  "demo_dist": 40240,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?ClearGridRange@CTriggerMgr@@QAEHH@Z",
+  "rva": 441664,
+  "demo_rva": 435104,
+  "retail_dist": 28347,
+  "demo_dist": 40096,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?ScreenToCell@CTriggerMgr@@QAEPAXHHPAH0H@Z",
+  "rva": 441904,
+  "demo_rva": 435344,
+  "retail_dist": 28347,
+  "demo_dist": 39856,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?CellHitTest@CTriggerMgr@@QAEPAXHHPAH0H@Z",
+  "rva": 442016,
+  "demo_rva": 435456,
+  "retail_dist": 28347,
+  "demo_dist": 39744,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?ResetCell@CTriggerMgr@@QAEHHHHH@Z",
+  "rva": 442320,
+  "demo_rva": 435760,
+  "retail_dist": 28347,
+  "demo_dist": 39440,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?GridAction6@@YGHHH@Z",
+  "rva": 449120,
+  "demo_rva": 442560,
+  "retail_dist": 28347,
+  "demo_dist": 32640,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?GridAction7@@YGHHH@Z",
+  "rva": 449184,
+  "demo_rva": 442624,
+  "retail_dist": 28347,
+  "demo_dist": 32576,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z",
+  "rva": 449248,
+  "demo_rva": 442688,
+  "retail_dist": 28347,
+  "demo_dist": 32512,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z",
+  "rva": 450848,
+  "demo_rva": 444288,
+  "retail_dist": 28347,
+  "demo_dist": 30912,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?ClearCell@CTriggerMgr@@QAEHHHHHH@Z",
+  "rva": 452608,
+  "demo_rva": 446048,
+  "retail_dist": 28347,
+  "demo_dist": 29152,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/TriggerMgr.cpp",
+  "name": "?HitTestApply@CTriggerMgr@@QAEXHHH@Z",
+  "rva": 453120,
+  "demo_rva": 446560,
+  "retail_dist": 28347,
+  "demo_dist": 28640,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MenuState.cpp",
+  "name": "?FormatHudText@CMenuState@@QAEXPAVCString@@H@Z",
+  "rva": 110448,
+  "demo_rva": 110176,
+  "retail_dist": 544656,
+  "demo_dist": 538656,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MenuState.cpp",
+  "name": "?LoadGameOptionsToDialog@@YAXPAUHWND__@@@Z",
+  "rva": 223328,
+  "demo_rva": 217872,
+  "retail_dist": 430213,
+  "demo_dist": 430960,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MenuState.cpp",
+  "name": "?ReadMenuOptionsDialog@@YAXPAUHWND__@@@Z",
+  "rva": 223792,
+  "demo_rva": 218336,
+  "retail_dist": 430213,
+  "demo_dist": 430496,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MenuState.cpp",
+  "name": "?OnToggleMusicOption@@YAXPAUHWND__@@@Z",
+  "rva": 224512,
+  "demo_rva": 219056,
+  "retail_dist": 430213,
+  "demo_dist": 429776,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MenuState.cpp",
+  "name": "?OnToggleVoiceOption@@YAXPAUHWND__@@@Z",
+  "rva": 224592,
+  "demo_rva": 219136,
+  "retail_dist": 430213,
+  "demo_dist": 429696,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MenuState.cpp",
+  "name": "?OnToggleSpeechOption@@YAXPAUHWND__@@@Z",
+  "rva": 224672,
+  "demo_rva": 219216,
+  "retail_dist": 430213,
+  "demo_dist": 429616,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MenuState.cpp",
+  "name": "?OnToggleEasyModeOption@@YAXPAUHWND__@@@Z",
+  "rva": 224784,
+  "demo_rva": 219328,
+  "retail_dist": 430213,
+  "demo_dist": 429504,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MenuState.cpp",
+  "name": "?winapi_036e50_GetDlgItem_SetScrollPos@ApiCallerStubs@@YAXPA",
+  "rva": 224848,
+  "demo_rva": 219392,
+  "retail_dist": 430213,
+  "demo_dist": 429440,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MenuState.cpp",
+  "name": "?winapi_036ec0_GetDlgItem_GetScrollInfo@ApiCallerStubs@@YAHP",
+  "rva": 224960,
+  "demo_rva": 219504,
+  "retail_dist": 430213,
+  "demo_dist": 429328,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MenuState.cpp",
+  "name": "?winapi_0371e0_GetDlgItem_SetScrollInfo@ApiCallerStubs@@YAXP",
+  "rva": 225760,
+  "demo_rva": 220304,
+  "retail_dist": 430213,
+  "demo_dist": 428528,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Brickz.cpp",
+  "name": "?Clip@CBrickzGrid@@QAEXPBUtagRECT@@@Z",
+  "rva": 176960,
+  "demo_rva": 171552,
+  "retail_dist": 472694,
+  "demo_dist": 471040,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Brickz.cpp",
+  "name": "?ComputeCellFlags@CBrickzGrid@@QAEXHHH@Z",
+  "rva": 489360,
+  "demo_rva": 482800,
+  "retail_dist": 158515,
+  "demo_dist": 159792,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Brickz.cpp",
+  "name": "?SetCell@BrickzGridDesc@@QAEXHHH@Z",
+  "rva": 490944,
+  "demo_rva": 484384,
+  "retail_dist": 158515,
+  "demo_dist": 158208,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Brickz.cpp",
+  "name": "?FindNearest@Grid_77df0@@QAEPAUGridCell_77df0@@PAUGridWorld_",
+  "rva": 490992,
+  "demo_rva": 484432,
+  "retail_dist": 158515,
+  "demo_dist": 158160,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Brickz.cpp",
+  "name": "?SearchEdge@CBrickzGrid@@QAEHHHHHPAXHHH@Z",
+  "rva": 531984,
+  "demo_rva": 525424,
+  "retail_dist": 103978,
+  "demo_dist": 117168,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Brickz.cpp",
+  "name": "?UpdateDiagonals@CBrickzGrid@@QAEHH@Z",
+  "rva": 532528,
+  "demo_rva": 525968,
+  "retail_dist": 103978,
+  "demo_dist": 116624,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Brickz.cpp",
+  "name": "?LineIsClear@CBrickzGrid@@QAEHHHHH@Z",
+  "rva": 533072,
+  "demo_rva": 526512,
+  "retail_dist": 103978,
+  "demo_dist": 116080,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Brickz.cpp",
+  "name": "?IsCellClear@CBrickzGrid@@QAEHHH@Z",
+  "rva": 545776,
+  "demo_rva": 539216,
+  "retail_dist": 103978,
+  "demo_dist": 103376,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Brickz.cpp",
+  "name": "?Serialize@CBrickzGrid@@QAEHHHHH@Z",
+  "rva": 603500,
+  "demo_rva": 596092,
+  "retail_dist": 46268,
+  "demo_dist": 46500,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Attract.cpp",
+  "name": "?RefreshTitle@CAttract@@QAEHH@Z",
+  "rva": 233824,
+  "demo_rva": 227984,
+  "retail_dist": 149830,
+  "demo_dist": 145104,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Attract.cpp",
+  "name": "?LoadTitleConfig@CAttract@@QAEHH@Z",
+  "rva": 656368,
+  "demo_rva": 649136,
+  "retail_dist": 572374,
+  "demo_dist": 566256,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Attract.cpp",
+  "name": "?Activate@CAttract@@QAEHXZ",
+  "rva": 657968,
+  "demo_rva": 650736,
+  "retail_dist": 572374,
+  "demo_dist": 567856,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Attract.cpp",
+  "name": "?FadeInTitle@CAttract@@QAEHPBDHHHHH@Z",
+  "rva": 1024496,
+  "demo_rva": 1015984,
+  "retail_dist": 940502,
+  "demo_dist": 933104,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Attract.cpp",
+  "name": "?RunTitle@CAttract@@QAEHHHHHH@Z",
+  "rva": 1024768,
+  "demo_rva": 1016256,
+  "retail_dist": 940502,
+  "demo_dist": 933376,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Attract.cpp",
+  "name": "?RunTitleSeq@CAttract@@QAEHPBDHHHH@Z",
+  "rva": 1024848,
+  "demo_rva": 1016336,
+  "retail_dist": 940502,
+  "demo_dist": 933456,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Attract.cpp",
+  "name": "?Vslot07@CState@@UAEHXZ",
+  "rva": 1027184,
+  "demo_rva": 1018672,
+  "retail_dist": 940502,
+  "demo_dist": 935792,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Bute/Hash.cpp",
+  "name": "?FindInt@CHash@@QAEPAXI@Z",
+  "rva": 1295200,
+  "demo_rva": 1286672,
+  "retail_dist": 296214,
+  "demo_dist": 287376,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Multi.cpp",
+  "name": "?PositionUpdate@CSnd788d0@@QAEHXZ",
+  "rva": 493776,
+  "demo_rva": 487216,
+  "retail_dist": 248396,
+  "demo_dist": 251328,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Multi.cpp",
+  "name": "?RunErrorDialog@CMulti@@QAEHPADPAXH@Z",
+  "rva": 770640,
+  "demo_rva": 763440,
+  "retail_dist": 16385,
+  "demo_dist": 22976,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Multi.cpp",
+  "name": "?DropTimeout@CMulti@@QAEXXZ",
+  "rva": 770768,
+  "demo_rva": 763568,
+  "retail_dist": 16385,
+  "demo_dist": 23104,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Multi.cpp",
+  "name": "?AckJoinFailure@CMulti@@QAEXXZ",
+  "rva": 771104,
+  "demo_rva": 763904,
+  "retail_dist": 16385,
+  "demo_dist": 23440,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Multi.cpp",
+  "name": "?OpenHostChannel@CMulti@@QAEHPAXHHHHHHH@Z",
+  "rva": 772368,
+  "demo_rva": 765168,
+  "retail_dist": 16385,
+  "demo_dist": 24704,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Multi.cpp",
+  "name": "?Vslot0b@CMulti@@UAEHHH@Z",
+  "rva": 774672,
+  "demo_rva": 767472,
+  "retail_dist": 16385,
+  "demo_dist": 27008,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawPtrCollections.cpp",
+  "name": "?v24@CPoolItemA88@@UAEHPAVCDDrawPtrCollections@@HHH@Z",
+  "rva": 1346128,
+  "demo_rva": 1337600,
+  "retail_dist": 19884,
+  "demo_dist": 26960,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawPtrCollections.cpp",
+  "name": "?v24@CPoolItemAB8@@UAEHPAVCDDrawPtrCollections@@HHH@Z",
+  "rva": 1346288,
+  "demo_rva": 1337760,
+  "retail_dist": 19884,
+  "demo_dist": 27120,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawPtrCollections.cpp",
+  "name": "?Init1@CPoolItemAB8@@UAEHPAVCDDrawPtrCollections@@H@Z",
+  "rva": 1346384,
+  "demo_rva": 1337856,
+  "retail_dist": 19884,
+  "demo_dist": 27216,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawPtrCollections.cpp",
+  "name": "?InstallColorFormat@CPoolItemAB8@@UAEHXZ",
+  "rva": 1346432,
+  "demo_rva": 1337904,
+  "retail_dist": 19884,
+  "demo_dist": 27264,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawPtrCollections.cpp",
+  "name": "?v24@CPoolItemAE8@@UAEHPAVCDDrawPtrCollections@@HHHHHH@Z",
+  "rva": 1346624,
+  "demo_rva": 1338096,
+  "retail_dist": 19884,
+  "demo_dist": 27456,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/SpriteResource.cpp",
+  "name": "?ApplyGeometryDirect@CGameObject@@QAEXHH@Z",
+  "rva": 363360,
+  "demo_rva": 356800,
+  "retail_dist": 1014083,
+  "demo_dist": 1012160,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/SpriteResource.cpp",
+  "name": "?ConfigureItem@CSoundCueMgr@@QAEHHHHH@Z",
+  "rva": 1269968,
+  "demo_rva": 1261440,
+  "retail_dist": 107394,
+  "demo_dist": 107520,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/SpriteResource.cpp",
+  "name": "?AttachSprite@CSpriteFactory@@QAEHPAUCSprite2@@HHHPBDH@Z",
+  "rva": 1415216,
+  "demo_rva": 1406688,
+  "retail_dist": 30732,
+  "demo_dist": 37408,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/SpriteResource.cpp",
+  "name": "?GetFrame@CSprite@@QAEHH@Z",
+  "rva": 1428528,
+  "demo_rva": 1420000,
+  "retail_dist": 30732,
+  "demo_dist": 50720,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GruntzMgr.cpp",
+  "name": "??0CGruntzMgr@@QAE@XZ",
+  "rva": 536624,
+  "demo_rva": 530064,
+  "retail_dist": 22043,
+  "demo_dist": 35056,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GruntzMgr.cpp",
+  "name": "?Close@CGruntzMgr@@UAEXXZ",
+  "rva": 546272,
+  "demo_rva": 539712,
+  "retail_dist": 22043,
+  "demo_dist": 25408,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GruntzMgr.cpp",
+  "name": "?AccrueScoreTime@CGruntzMgr@@QAEXXZ",
+  "rva": 549344,
+  "demo_rva": 542800,
+  "retail_dist": 22043,
+  "demo_dist": 22320,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Rez/RezMgr.cpp",
+  "name": "?PerFrameTick@RezMgr@@UAEHXZ",
+  "rva": 571200,
+  "demo_rva": 564736,
+  "retail_dist": 690132,
+  "demo_dist": 713120,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Rez/RezMgr.cpp",
+  "name": "?HandleDebugPosition@RezMgr@@QAEHXZ",
+  "rva": 582768,
+  "demo_rva": 576608,
+  "retail_dist": 690132,
+  "demo_dist": 701248,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdSpatialMgr.cpp",
+  "name": "?Start@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@H@Z",
+  "rva": 1645264,
+  "demo_rva": 1627552,
+  "retail_dist": 167659,
+  "demo_dist": 160240,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdSpatialMgr.cpp",
+  "name": "?Init@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@UWwdRect",
+  "rva": 1645328,
+  "demo_rva": 1627616,
+  "retail_dist": 167659,
+  "demo_dist": 160304,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdSpatialMgr.cpp",
+  "name": "?GetNext@CWwdGridIter@@QAEPAUWwdGridNode@@XZ",
+  "rva": 1645616,
+  "demo_rva": 1627904,
+  "retail_dist": 167659,
+  "demo_dist": 160592,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/UserBaseLink.cpp",
+  "name": "??4zBitVec@@QAEAAV0@ABV0@@Z",
+  "rva": 1495792,
+  "demo_rva": 1487264,
+  "retail_dist": 115115,
+  "demo_dist": 115328,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/UserBaseLink.cpp",
+  "name": "??0zBitVec@@QAE@PBDH@Z",
+  "rva": 1495968,
+  "demo_rva": 1487440,
+  "retail_dist": 115115,
+  "demo_dist": 115504,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/UserBaseLink.cpp",
+  "name": "??0CUserBaseLink@@QAE@XZ",
+  "rva": 1496848,
+  "demo_rva": 1488320,
+  "retail_dist": 115115,
+  "demo_dist": 116384,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/SBI_RectOnly.cpp",
+  "name": "?ConfigureRect@CSBI_RectOnly@@QAEHHPAUCSbiConfigHost@@HHHHHH",
+  "rva": 946928,
+  "demo_rva": 938416,
+  "retail_dist": 87245,
+  "demo_dist": 92432,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/SBI_RectOnly.cpp",
+  "name": "?Setup@CSBI_RectOnly@@UAEHHHHHHHHHHH@Z",
+  "rva": 952032,
+  "demo_rva": 943520,
+  "retail_dist": 87245,
+  "demo_dist": 87328,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Io/FileMem.cpp",
+  "name": "??0CFileMemBase@@QAE@XZ",
+  "rva": 1407056,
+  "demo_rva": 1398528,
+  "retail_dist": 58314,
+  "demo_dist": 58848,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Grunt.cpp",
+  "name": "?GetTilePos@CGrunt@@QAEPAUGruntTilePos@@PAU2@@Z",
+  "rva": 203888,
+  "demo_rva": 198432,
+  "retail_dist": 78963,
+  "demo_dist": 77888,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Grunt.cpp",
+  "name": "?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z",
+  "rva": 247792,
+  "demo_rva": 241232,
+  "retail_dist": 35064,
+  "demo_dist": 35088,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Grunt.cpp",
+  "name": "?Load@CGrunt@@QAEHPAUCGruntArchive@@@Z",
+  "rva": 884832,
+  "demo_rva": 876272,
+  "retail_dist": 445947,
+  "demo_dist": 597808,
+  "verdict": "FAR-DIFFERENT"
+ },
+ {
+  "file": "src/Gruntz/Grunt.cpp",
+  "name": "?ResolveArrivalReposition@CGrunt@@QAEHXZ",
+  "rva": 968304,
+  "demo_rva": 959792,
+  "retail_dist": 529419,
+  "demo_dist": 681328,
+  "verdict": "FAR-DIFFERENT"
+ },
+ {
+  "file": "src/Gruntz/Grunt.cpp",
+  "name": "?ResolveArrivalNeighbor@CGrunt@@QAEHXZ",
+  "rva": 993008,
+  "demo_rva": 984496,
+  "retail_dist": 554123,
+  "demo_dist": 706032,
+  "verdict": "FAR-DIFFERENT"
+ },
+ {
+  "file": "src/Gruntz/Grunt.cpp",
+  "name": "?StepArrivalDefense@CGrunt@@QAEHXZ",
+  "rva": 994080,
+  "demo_rva": 985568,
+  "retail_dist": 554123,
+  "demo_dist": 707104,
+  "verdict": "FAR-DIFFERENT"
+ },
+ {
+  "file": "src/Gruntz/Grunt.cpp",
+  "name": "?StepArrivalDefenseLean@CGrunt@@QAEHXZ",
+  "rva": 1016384,
+  "demo_rva": 1007872,
+  "retail_dist": 577499,
+  "demo_dist": 729408,
+  "verdict": "FAR-DIFFERENT"
+ },
+ {
+  "file": "src/Gruntz/ResourceLoaders.cpp",
+  "name": "?LoadWave@WaveHost_136a30@ResLoaders@@QAEHPBDHH@Z",
+  "rva": 1272368,
+  "demo_rva": 1263840,
+  "retail_dist": 54526,
+  "demo_dist": 0,
+  "verdict": "AT-HOME-IN-DEMO"
+ },
+ {
+  "file": "src/Gruntz/ResourceLoaders.cpp",
+  "name": "?LoadWave@WaveHost2_136ce0@ResLoaders@@QAEHPAVDirectSoundMgr",
+  "rva": 1273056,
+  "demo_rva": 1264528,
+  "retail_dist": 54526,
+  "demo_dist": 0,
+  "verdict": "AT-HOME-IN-DEMO"
+ },
+ {
+  "file": "src/Gruntz/ResourceLoaders.cpp",
+  "name": "?DrawCount@DrawHost_164380@ResLoaders@@QAEXPAUtagRECT@@H@Z",
+  "rva": 1459072,
+  "demo_rva": 1450544,
+  "retail_dist": 116965,
+  "demo_dist": 186016,
+  "verdict": "FAR-DIFFERENT"
+ },
+ {
+  "file": "src/Gruntz/ResourceLoaders.cpp",
+  "name": "?DrawLabel@DrawHost2_164420@ResLoaders@@QAEXPAUtagRECT@@PAD@",
+  "rva": 1459232,
+  "demo_rva": 1450704,
+  "retail_dist": 116965,
+  "demo_dist": 186176,
+  "verdict": "FAR-DIFFERENT"
+ },
+ {
+  "file": "src/Gruntz/ResourceLoaders.cpp",
+  "name": "?Apply@PalHost_1775f0@ResLoaders@@QAEHPBDH@Z",
+  "rva": 1537520,
+  "demo_rva": 1528992,
+  "retail_dist": 195413,
+  "demo_dist": 264464,
+  "verdict": "FAR-DIFFERENT"
+ },
+ {
+  "file": "src/Wwd/WwdFile.cpp",
+  "name": "?WrapCoord@CPlaneRender@@QAEXPAH0@Z",
+  "rva": 40960,
+  "demo_rva": 40928,
+  "retail_dist": 1390628,
+  "demo_dist": 1382304,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdFile.cpp",
+  "name": "?SnapToTileCenter@CPlaneRender@@QAEXPAHHH@Z",
+  "rva": 201184,
+  "demo_rva": 195728,
+  "retail_dist": 1230500,
+  "demo_dist": 1227504,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdFile.cpp",
+  "name": "?ValidateMainBlock@WwdFile@@SAHVCString@@@Z",
+  "rva": 242800,
+  "demo_rva": 236240,
+  "retail_dist": 1186904,
+  "demo_dist": 1186992,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdFile.cpp",
+  "name": "?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z",
+  "rva": 244560,
+  "demo_rva": 238000,
+  "retail_dist": 1186904,
+  "demo_dist": 1185232,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdFile.cpp",
+  "name": "?GetTileHandle@CPlaneRender@@QAEHHH@Z",
+  "rva": 873376,
+  "demo_rva": 864848,
+  "retail_dist": 558359,
+  "demo_dist": 558384,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Play.cpp",
+  "name": "?ApplyGameOptions@CPlay@@QAEXXZ",
+  "rva": 224224,
+  "demo_rva": 218768,
+  "retail_dist": 596557,
+  "demo_dist": 594672,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Play.cpp",
+  "name": "?HudRect@WorldTimeline@CWorld@@QAEXUtagRECT@@H@Z",
+  "rva": 491616,
+  "demo_rva": 485056,
+  "retail_dist": 328979,
+  "demo_dist": 328384,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Play.cpp",
+  "name": "?SetBeginClearParams@CState@@QAEHHHH@Z",
+  "rva": 575856,
+  "demo_rva": 569472,
+  "retail_dist": 244339,
+  "demo_dist": 243968,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Play.cpp",
+  "name": "?PlayBacklog08c9d0@CPlay@@QAEXXZ",
+  "rva": 575952,
+  "demo_rva": 569568,
+  "retail_dist": 244339,
+  "demo_dist": 243872,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MotionState.cpp",
+  "name": "??0CMotionState@@QAE@XZ",
+  "rva": 79568,
+  "demo_rva": 79536,
+  "retail_dist": 1422460,
+  "demo_dist": 1414352,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MotionState.cpp",
+  "name": "?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z",
+  "rva": 363456,
+  "demo_rva": 356896,
+  "retail_dist": 1138711,
+  "demo_dist": 1136992,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MotionState.cpp",
+  "name": "?SetZ@CMotionState@@QAEXN@Z",
+  "rva": 363680,
+  "demo_rva": 357120,
+  "retail_dist": 1138711,
+  "demo_dist": 1136768,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawSubMgrLeafScan.cpp",
+  "name": "?PlayIfElapsed_01f940@LeafCue@@QAEHHHHH@Z",
+  "rva": 129344,
+  "demo_rva": 124448,
+  "retail_dist": 1276836,
+  "demo_dist": 1275680,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawSubMgrLeafScan.cpp",
+  "name": "?RefreshAsset_114120@CDDrawSubMgrLeafScan@@QAEHPBD@Z",
+  "rva": 1130784,
+  "demo_rva": 1122272,
+  "retail_dist": 275360,
+  "demo_dist": 277856,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawSurfacePair.cpp",
+  "name": "?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z",
+  "rva": 238032,
+  "demo_rva": 231472,
+  "retail_dist": 1219235,
+  "demo_dist": 1217296,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawSurfacePair.cpp",
+  "name": "?SetGeometry_158fd0@CDDrawSurfacePair@@UAEHHHH@Z",
+  "rva": 1413072,
+  "demo_rva": 1404544,
+  "retail_dist": 43996,
+  "demo_dist": 44224,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameMode.cpp",
+  "name": "??0CState@@QAE@XZ",
+  "rva": 575312,
+  "demo_rva": 568928,
+  "retail_dist": 465306,
+  "demo_dist": 460912,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameMode.cpp",
+  "name": "?Reset@CGameModeBase@@QAEXXZ",
+  "rva": 1022016,
+  "demo_rva": 1013504,
+  "retail_dist": 912010,
+  "demo_dist": 905488,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Projectile.cpp",
+  "name": "??0CProjectile@@QAE@XZ",
+  "rva": 75488,
+  "demo_rva": 75456,
+  "retail_dist": 831401,
+  "demo_dist": 828464,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/Projectile.cpp",
+  "name": "?ReleaseDeferred@CProjectile@@QAEXH@Z",
+  "rva": 81008,
+  "demo_rva": 80976,
+  "retail_dist": 831401,
+  "demo_dist": 822944,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Io/SaveGame.cpp",
+  "name": "?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z",
+  "rva": 647888,
+  "demo_rva": 640656,
+  "retail_dist": 284812,
+  "demo_dist": 283616,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Io/SaveGame.cpp",
+  "name": "?Show@BlitHost@@QAEXH@Z",
+  "rva": 852128,
+  "demo_rva": 843600,
+  "retail_dist": 80614,
+  "demo_dist": 80672,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GruntzMgrCmd.cpp",
+  "name": "?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z",
+  "rva": 53776,
+  "demo_rva": 53744,
+  "retail_dist": 1080395,
+  "demo_dist": 1072016,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wap32/GameApp.cpp",
+  "name": "?InitDefault@CGameApp@@UAEHPAUHINSTANCE__@@PAD@Z",
+  "rva": 527648,
+  "demo_rva": 521088,
+  "retail_dist": 772172,
+  "demo_dist": 770240,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MultiStartDlgRoster.cpp",
+  "name": "?GetName@GruntzPlayer@@QAE?AVCString@@XZ",
+  "rva": 128080,
+  "demo_rva": 123184,
+  "retail_dist": 668944,
+  "demo_dist": 666672,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MultiStartDlgRoster.cpp",
+  "name": "?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z",
+  "rva": 229920,
+  "demo_rva": 224464,
+  "retail_dist": 567021,
+  "demo_dist": 565392,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/PathHazard.cpp",
+  "name": "??0CPathHazard@@QAE@XZ",
+  "rva": 78192,
+  "demo_rva": 78160,
+  "retail_dist": 656042,
+  "demo_dist": 649264,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Image/CImage.cpp",
+  "name": "?Gap_0d5c10@@YAHXZ",
+  "rva": 875536,
+  "demo_rva": 867008,
+  "retail_dist": 512085,
+  "demo_dist": 512640,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Image/CImage.cpp",
+  "name": "?Slot17@CImage@@UAEXPAX@Z",
+  "rva": 876064,
+  "demo_rva": 867536,
+  "retail_dist": 512085,
+  "demo_dist": 512112,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MapLogic.cpp",
+  "name": "?MapSerializeCurve@@YAHPAUCSerialArchive@@H@Z",
+  "rva": 967216,
+  "demo_rva": 958704,
+  "retail_dist": 421214,
+  "demo_dist": 419344,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/IconLoaders.cpp",
+  "name": "?BuildPowerupIconKeys@@YGXPAVPowerupKeyRegistry@@H@Z",
+  "rva": 124704,
+  "demo_rva": 119824,
+  "retail_dist": 368450,
+  "demo_dist": 367536,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Bute/SymTab.cpp",
+  "name": "?Gap_184900@@YAHXZ",
+  "rva": 1591552,
+  "demo_rva": 1573840,
+  "retail_dist": 297236,
+  "demo_dist": 296512,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Bute/SymTab.cpp",
+  "name": "?Construct@CSymList@@QAEPAU1@H@Z",
+  "rva": 1591648,
+  "demo_rva": 1573936,
+  "retail_dist": 297236,
+  "demo_dist": 296608,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/FortressFlag.cpp",
+  "name": "?HandleFortConquered@CFortressFlag@@QAEXXZ",
+  "rva": 259568,
+  "demo_rva": 253008,
+  "retail_dist": 25114,
+  "demo_dist": 26432,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/SBI_MenuItem.cpp",
+  "name": "?SerializeFields@CSBI_MenuItem@@QAEHPAXHHH@Z",
+  "rva": 1097664,
+  "demo_rva": 1089152,
+  "retail_dist": 145742,
+  "demo_dist": 146608,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/LogicRecord.cpp",
+  "name": "?Init@CLogicRecord@@QAEHPAXH@Z",
+  "rva": 1383968,
+  "demo_rva": 1375440,
+  "retail_dist": 76234,
+  "demo_dist": 76304,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/LogicRecord.cpp",
+  "name": "?Consume@CLogicRecord@@QAEHH@Z",
+  "rva": 1422144,
+  "demo_rva": 1413616,
+  "retail_dist": 38085,
+  "demo_dist": 38128,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/ResolveNode.cpp",
+  "name": "??0CResolveNode@@QAE@XZ",
+  "rva": 1395152,
+  "demo_rva": 1386624,
+  "retail_dist": 64999,
+  "demo_dist": 0,
+  "verdict": "AT-HOME-IN-DEMO"
+ },
+ {
+  "file": "src/Gruntz/ResolveNode.cpp",
+  "name": "??0CResolveNode@@QAE@HHH@Z",
+  "rva": 1422016,
+  "demo_rva": 1413488,
+  "retail_dist": 38115,
+  "demo_dist": 26736,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawWorkers.cpp",
+  "name": "?PlotMarker_165fa0@CDDrawWorkerA@@UAEXPAVCDDrawSurfacePair@@",
+  "rva": 1466272,
+  "demo_rva": 1457744,
+  "retail_dist": 60560,
+  "demo_dist": 60704,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawWorkers.cpp",
+  "name": "?Slot10_1660b0@CDDrawWorkerB@@UAEXPAVCDDrawSurfacePair@@0@Z",
+  "rva": 1466544,
+  "demo_rva": 1458016,
+  "retail_dist": 60560,
+  "demo_dist": 60976,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawWorkerRegistry.cpp",
+  "name": "?FindKeyOfValue_165360@CDDrawWorkerRegistry@@QAE?AVCString@@",
+  "rva": 1463136,
+  "demo_rva": 1454608,
+  "retail_dist": 58128,
+  "demo_dist": 67200,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawWorkerList.cpp",
+  "name": "?PruneWorkers@CDDrawWorkerList@@QAEXHH@Z",
+  "rva": 1457136,
+  "demo_rva": 1448608,
+  "retail_dist": 51056,
+  "demo_dist": 51216,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Wwd/WwdObjMgrFactories.cpp",
+  "name": "?CreateObject_166640@CWwdObjMgrL@@QAEPAVCWwdGameObject@@HHHH",
+  "rva": 1467968,
+  "demo_rva": 1459440,
+  "retail_dist": 45448,
+  "demo_dist": 53392,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/StatusBarUpdaters.cpp",
+  "name": "?LoadSwitchDownSprite@EngineLabelBacklog@@QAEHXZ",
+  "rva": 1115504,
+  "demo_rva": 1106992,
+  "retail_dist": 20713,
+  "demo_dist": 27040,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/StatusBarUpdaters.cpp",
+  "name": "?LoadSwitchUpSprite@EngineLabelBacklog@@QAEHXZ",
+  "rva": 1115824,
+  "demo_rva": 1107312,
+  "retail_dist": 20713,
+  "demo_dist": 27360,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Image/FileImageRunDecode.cpp",
+  "name": "?RunDecode1@CDDSurface@@QAEHPAX0HH@Z",
+  "rva": 1331824,
+  "demo_rva": 1323296,
+  "retail_dist": 16958,
+  "demo_dist": 17952,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Image/FileImageRunDecode.cpp",
+  "name": "?RunDecode3@CDDSurface@@QAEHPAX0HH@Z",
+  "rva": 1332208,
+  "demo_rva": 1323680,
+  "retail_dist": 16958,
+  "demo_dist": 18336,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/MovingLogic.cpp",
+  "name": "??0CMovingLogic@@QAE@XZ",
+  "rva": 80192,
+  "demo_rva": 80160,
+  "retail_dist": 1413807,
+  "demo_dist": 1405792,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawSubMgr.cpp",
+  "name": "?Drain_031250@CQueueDrainHost@@QAEPAXXZ",
+  "rva": 201296,
+  "demo_rva": 195840,
+  "retail_dist": 1202733,
+  "demo_dist": 1199712,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/AniElement.cpp",
+  "name": "?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z",
+  "rva": 438896,
+  "demo_rva": 432336,
+  "retail_dist": 1024469,
+  "demo_dist": 1022528,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/ChatBox.cpp",
+  "name": "?Init@CChatBox@@QAEXXZ",
+  "rva": 656000,
+  "demo_rva": 648768,
+  "retail_dist": 927877,
+  "demo_dist": 917440,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/FxModeDesc.cpp",
+  "name": "?MakeButeSectionKey@@YAHPADPBD1@Z",
+  "rva": 1020544,
+  "demo_rva": 1012032,
+  "retail_dist": 545868,
+  "demo_dist": 536912,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GruntzCommand.cpp",
+  "name": "?winapi_092ab0_EndDialog@@YGHPAXIIJ@Z",
+  "rva": 600752,
+  "demo_rva": 593344,
+  "retail_dist": 451157,
+  "demo_dist": 451344,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Bute/SymParser.cpp",
+  "name": "?Remove@CObjList@@QAEXPAVCObjNode@@@Z",
+  "rva": 1594080,
+  "demo_rva": 1576368,
+  "retail_dist": 299190,
+  "demo_dist": 295424,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GruntPuddle.cpp",
+  "name": "?SetBute@CGruntPuddle@@QAEXPAD@Z",
+  "rva": 514064,
+  "demo_rva": 507504,
+  "retail_dist": 247888,
+  "demo_dist": 248256,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/SpriteLoaders.cpp",
+  "name": "?LoadLoadingBarSprite@CLoadingBar@@QAEHXZ",
+  "rva": 881728,
+  "demo_rva": 873168,
+  "retail_dist": 241322,
+  "demo_dist": 242288,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/AreaMgr.cpp",
+  "name": "?OnInitDialog@AreaTimerDlg@@QAEHXZ",
+  "rva": 797872,
+  "demo_rva": 790672,
+  "retail_dist": 161847,
+  "demo_dist": 166912,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/ProjActCache.cpp",
+  "name": "??0zBitVec@@QAE@HH@Z",
+  "rva": 1496976,
+  "demo_rva": 1488448,
+  "retail_dist": 154479,
+  "demo_dist": 145472,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Bute/ButeTree.cpp",
+  "name": "?Walk@CButeTree@@QAEXP6AXPADPAX1@Z1PAUCButeTreeNode@@@Z",
+  "rva": 1651520,
+  "demo_rva": 1633808,
+  "retail_dist": 151170,
+  "demo_dist": 142048,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/SBI_WellGoo.cpp",
+  "name": "?Free@CSBI_WellGoo@@QAEXXZ",
+  "rva": 1068160,
+  "demo_rva": 1059648,
+  "retail_dist": 123865,
+  "demo_dist": 124864,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/LevelPreview.cpp",
+  "name": "?LoadScreen@CPreviewState@@QAEHPADHHH@Z",
+  "rva": 1026960,
+  "demo_rva": 1018448,
+  "retail_dist": 116178,
+  "demo_dist": 116992,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/StatusBarMgr.cpp",
+  "name": "?LoadTabSprites@CStatusBarMgr@@QAEHXZ",
+  "rva": 1057360,
+  "demo_rva": 1048848,
+  "retail_dist": 98436,
+  "demo_dist": 98528,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/DDrawMgr/DDrawSubMgrPages.cpp",
+  "name": "?SetGeom_1646b0@CDDrawSurfaceChildA@@UAEHHHH@Z",
+  "rva": 1459888,
+  "demo_rva": 1451360,
+  "retail_dist": 46311,
+  "demo_dist": 48112,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Bute/ButeNode.cpp",
+  "name": "??0CButeCfgNode174d@@QAE@H@Z",
+  "rva": 1527040,
+  "demo_rva": 1518512,
+  "retail_dist": 27805,
+  "demo_dist": 27920,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/ImageSet3.cpp",
+  "name": "?FreePixels@CImageSet3@@UAEXXZ",
+  "rva": 1447088,
+  "demo_rva": 1438560,
+  "retail_dist": 22692,
+  "demo_dist": 22720,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/ImageSet2.cpp",
+  "name": "?GetCollisionAt@CImageSet2@@UAEHHH@Z",
+  "rva": 1447024,
+  "demo_rva": 1438496,
+  "retail_dist": 21748,
+  "demo_dist": 21792,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GameModeObjLifecycle.cpp",
+  "name": "?SetCursorFrame@CGameModeObj@@QAEHH@Z",
+  "rva": 858928,
+  "demo_rva": 850400,
+  "retail_dist": 18960,
+  "demo_dist": 18992,
+  "verdict": "FAR-IN-BOTH"
+ },
+ {
+  "file": "src/Gruntz/GruntBehaviorLeaf.cpp",
+  "name": "?LoadWandGruntItemConfig@CGruntBehaviorLeaf@@QAEHXZ",
+  "rva": 416352,
+  "demo_rva": 409792,
+  "retail_dist": 17363,
+  "demo_dist": 17648,
+  "verdict": "FAR-IN-BOTH"
+ }
+]

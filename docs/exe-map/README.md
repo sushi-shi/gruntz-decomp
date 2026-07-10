@@ -13,6 +13,7 @@ the matching pipeline produces (`gruntz build`), read through
 | `scatter_methods.html` | **destructors removed** — same, but the base `??1` + deleting `??_G`/`??_E` destructors (which MSVC COMDAT-pools away from the TU block) are dropped. Shows the *true* per-TU layout; constructors are kept (they cluster with the methods). |
 | `misplacement.html` | **the misplacement finder** — with destructors removed, functions far from their file's main block are flagged as either a **mis-attribution** (belongs in another file) or a **conflated TU** (one `src/` name covering two real TUs). Five graphs incl. an RVA "genome" (with named game/engine/library **regions**) of where each file's functions actually sit and a suggested-home lollipop. |
 | `homm2.html` | **ground-truth baseline** — HoMM2 (HEROES2W) ships a real CodeView debug stream, so its function→file grouping is *truth*. Every one of its 94 TUs is a single contiguous block (the linker scatters nothing for correctly-grouped, non-`/Gy` code). Overlaid against Gruntz to show how much of Gruntz's "scatter" is our grouping vs the linker. Reads a read-only VA snapshot from the `homm2-decomp` project. |
+| `deep.html` | **the deep map** — genome strip (code family per bin + int3 holes + `__FILE__` anchors), the reconstructed **original-TU interval track**, the **original link order** (CRT init-table skeleton), and the measured mechanism verdicts for every outlier. Actionable output: `TU_MIGRATION.md`. |
 
 ## Concepts
 
@@ -53,6 +54,21 @@ Each step writes its output (JSON + HTML) into this directory. Intermediate data
 - `make_homm2.py` — builds `homm2.html` from the snapshot + Gruntz's data.
 - `probe.py` — ad-hoc layout probe (e.g. per-file cluster breakdown); handy when
   investigating a specific unit.
+- `demo_oracle.py` — **placement oracle**: finds each outlier in `GruntDem.exe`
+  (a different link of the same build session) by reloc-masked byte search and
+  compares its relative position → `demo_oracle.json`. Measured: 170/181
+  comparable outliers sit identically in both links, only 3 true ilink moves —
+  placements are **first-link birth positions**. Slow; not in the default
+  pipeline; rerun manually after big re-homing waves.
+- `deep_layout.py` — consolidates the 2026-07-10 layout investigation: gap census
+  (switch tables / int3 pads / unclaimed code ⇒ the EXE is `/INCREMENTAL`-linked),
+  the CRT init-table skeleton (original obj **link order** from the never-moving
+  `$E` fragments; 501 zeroed slots), `__FILE__` assert-string anchors, per-outlier
+  mechanism verdicts (REHOME / COMDAT-POOL / COMDAT-AT-USAGE / ILINK-MOVED), and
+  the **original-TU interval partition** (only ≥3-function same-unit runs may span
+  a boundary) → `deep_layout.json` + **`TU_MIGRATION.md`** (merge/split/move
+  instructions, our units → original TUs).
+- `make_deep.py` — builds `deep.html` from `deep_layout.json`.
 
 ## Baseline finding
 

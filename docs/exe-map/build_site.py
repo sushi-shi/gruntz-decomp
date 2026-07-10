@@ -17,7 +17,11 @@ STEPS = ["scatter.py",         # scatter.json + scatter_methods.json (+ printed 
          "make_dashboard.py",  # misplacement.html
          "homm2_baseline.py",  # homm2_va.csv snapshot (reads homm2-decomp, read-only)
          "make_homm2.py",      # homm2.html (ground-truth baseline vs Gruntz)
-         "split_plan.py"]      # SPLIT_PLAN.md (actionable split/move worklist)
+         "split_plan.py",      # SPLIT_PLAN.md (actionable split/move worklist)
+         # demo_oracle.py is NOT in the default pipeline (slow, needs GruntDem.exe);
+         # run it manually to refresh demo_oracle.json after big re-homing waves.
+         "deep_layout.py",     # deep_layout.json + TU_MIGRATION.md (uses flags.json)
+         "make_deep.py"]       # deep.html (the deep map + original-TU partition)
 
 for step in STEPS:
     print(f"\n=== {step} ===")
