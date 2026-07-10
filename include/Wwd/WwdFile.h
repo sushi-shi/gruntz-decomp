@@ -140,25 +140,38 @@ public:
 SIZE_UNKNOWN(PlaneBlitScratch);
 struct PlaneBlitScratch {};
 
+// The real engine draw surface (BltEx/BltFast `this`); defined in
+// <DDrawMgr/DDSurface.h> and reached via the Draw ctx's +0x2c.
+class CDDSurface;
+struct CPlaneTile;
+
 // A drawable plane source-frame (one entry of the tile/image lookup the renderer
 // dereferences through m_planeArray[handle>>16]). Only the fields the draw loop
-// reads are pinned: the cell-bounds (+0x64/+0x68), the frame table (+0x14), and
-// the per-frame blit src (+0x28 surface, +0x2c srcRect).
+// reads are pinned: the cell-bounds (+0x64/+0x68), the frame table (+0x14).
 SIZE_UNKNOWN(CPlaneFrame);
 struct CPlaneFrame {
     u8 pad_0[0x14];
-    void** m_frames; // +0x14  frame table (indexed by the low 16 bits of handle)
+    CPlaneTile** m_frames; // +0x14  frame table (indexed by the low 16 bits of handle)
     u8 pad_18[0x64 - 0x18];
     i32 m_lo; // +0x64  valid handle range [m_lo, m_hi]
     i32 m_hi; // +0x68
 };
 
-// One resolved tile/sprite frame: +0x28 = the source surface, +0x2c = its srcRect.
+// One resolved tile/sprite frame Draw blits: +0x28 = the BltFast transparency
+// key, +0x2c = the source surface. (Draw supplies the srcRect itself, per region.)
 SIZE_UNKNOWN(CPlaneTile);
 struct CPlaneTile {
     u8 pad_0[0x28];
-    void* m_surface; // +0x28
-    void* m_srcRect; // +0x2c
+    u32 m_trans;       // +0x28  BltFast transparency/colour-key flag
+    CDDSurface* m_src; // +0x2c  source surface
+};
+
+// The render context Draw takes (the render visitor Sync/Draw/Hook receive):
+// only the target draw surface (the BltEx/BltFast `this`) at +0x2c is used.
+SIZE_UNKNOWN(CPlaneDrawCtx);
+struct CPlaneDrawCtx {
+    u8 pad_0[0x2c];
+    CDDSurface* m_surface; // +0x2c  the blit target surface
 };
 
 // ---------------------------------------------------------------------------
@@ -255,7 +268,7 @@ struct CPlaneRenderPoly {
 
 class CPlaneRender {
 public:
-    void Draw(void* ctx);                   // 0x162010  the tile-grid render
+    void Draw(CPlaneDrawCtx* ctx);          // 0x162010  the tile-grid render
     void SetTileSize(i32 tileW, i32 tileH); // 0x161f00  derive wrap dims/fill/shifts
     // 0x161fa0: scan an image set for its first populated frame (in [minIndex,
     // maxIndex]) and seed the tile size from that frame's pixel dims (width/height).
@@ -296,10 +309,7 @@ public:
     i32 m_viewX;       // +0x50
     i32 m_viewY;       // +0x54
     u8 pad_58[0x60 - 0x58];
-    i32 m_fillL; // +0x60
-    i32 m_fillT; // +0x64
-    i32 m_fillR; // +0x68
-    i32 m_fillB; // +0x6c
+    RECT m_fillRect; // +0x60  default full-tile src rect {0,0,tilePxW,tilePxH}
     u8 pad_70[0x80 - 0x70];
     i32 m_80, m_84, m_88;       // +0x80..+0x88
     i32 m_shiftX;               // +0x8c

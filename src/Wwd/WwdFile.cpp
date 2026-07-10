@@ -27,8 +27,9 @@
 // functions. Returns are full-width eax (1 / 0), i.e. `int`, not bool.
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GameRegistry.h>
-#include <Image/ImageSet.h>   // SetTileSizeFromImageSet frame source (GetAt/m_count)
-#include <Image/ImageFrame.h> // CImageFrame m_width/m_height
+#include <Image/ImageSet.h>     // SetTileSizeFromImageSet frame source (GetAt/m_count)
+#include <Image/ImageFrame.h>   // CImageFrame m_width/m_height
+#include <DDrawMgr/DDSurface.h> // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <rva.h>
 
 #include <Mfc.h>    // CString (ValidateMainBlock takes one by value; ReadPlaneObjects builds four)
@@ -360,11 +361,11 @@ RVA(0x00161f00, 0x75)
 void CPlaneRender::SetTileSize(i32 tileW, i32 tileH) {
     m_wrapW = m_gridW * tileW;
     m_tilePxH = tileH;
-    m_fillB = tileH;
+    m_fillRect.bottom = tileH;
     m_tilePxW = tileW;
-    m_fillL = 0;
-    m_fillT = 0;
-    m_fillR = tileW;
+    m_fillRect.left = 0;
+    m_fillRect.top = 0;
+    m_fillRect.right = tileW;
     m_wrapH = m_gridH * tileH;
     m_shiftX = 0;
     for (i32 t = tileW; t > 1; t >>= 1) {
@@ -410,17 +411,161 @@ void CPlaneRender::SetTileSizeFromImageSet(CImageSet* set) {
 // the frame (m_a0[handle>>16], bounds-check (handle&0xffff) against the frame's
 // [+0x64,+0x68], index its +0x14 frame table) and CDDSurface::BltFast it.
 //
+// Per-cell blit (the retail inlined this at all 9 region sites). handle==
+// 0xEEEEEEEE -> a clipped fill via BltEx(&destRect,...,&m_surface); handle==-1 ->
+// skip; else resolve the frame (m_planeArray[handle>>16], bounds-check the low
+// 16 bits against [m_lo,m_hi], index m_frames) and BltFast it. The blit's dest
+// size equals the src rect size (right-left / bottom-top), so every region only
+// differs in the src rect it passes + its screen (x,y). `dr`/`surf` are Draw's
+// locals; expanded textually to reproduce the 9 separate inlined sites.
+#define DRAW_CELL(handle, xp, yp, srcp)                                                            \
+    do {                                                                                           \
+        u32 h_ = (u32)(handle);                                                                    \
+        if (h_ == 0xeeeeeeee) {                                                                    \
+            dr.left = (xp);                                                                        \
+            dr.top = (yp);                                                                         \
+            dr.right = (xp) + ((srcp)->right - (srcp)->left);                                      \
+            dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
+            surf->BltEx(&dr, 0, 0, 0x1000400, &m_surface);                                         \
+        } else if (h_ != 0xffffffff) {                                                             \
+            CPlaneFrame* fr_ = m_planeArray[h_ >> 16];                                             \
+            i32 idx_ = (i32)(h_ & 0xffff);                                                         \
+            CPlaneTile* e_;                                                                        \
+            if (idx_ >= fr_->m_lo && idx_ <= fr_->m_hi) {                                          \
+                e_ = fr_->m_frames[idx_];                                                          \
+            } else {                                                                               \
+                e_ = 0;                                                                            \
+            }                                                                                      \
+            surf->BltFast((xp), (yp), e_->m_src, (srcp), e_->m_trans);                             \
+        }                                                                                          \
+    } while (0)
+
 // @early-stop
-// Deferred to the final sweep: a 2237-byte function with the tile-lookup+blit
-// body inlined at ~8 sites over a ~0x94-byte frame (~20 stack slots). The logic,
-// the per-edge coordinate math, the wrap, the handle resolution, and the
-// CDDSurface blit callees (CDDSurface::BltEx@0x13eef0 / BltFast@0x13ef90, both
-// reloc-masked) are fully decoded above, but reproducing MSVC 5.0's exact
-// stack-slot assignment + the 8 inlined-site scheduling is a leaf-first /
-// dedicated-grind job, not a breadth-mode worker's. Left claimed in its real TU
-// (not Stub/) so the final sweep re-attacks it with this decode as a head start.
+// Complete reconstruction of the 2237-byte toroidally-wrapped tile-grid renderer
+// (~80.6%, up from a 0.1% bare stub). The five-band walk (top row: TL corner /
+// top strip / TR corner; per interior row: left col / interior cols / right col;
+// bottom row: BL / bottom strip / BR), the per-region clip math, the column/row
+// wrap (mod m_gridW / m_gridH), the handle resolution and the BltEx/BltFast
+// callees are all reproduced; the frame (0x94) now matches retail exactly. Parked
+// on a whole-function regalloc/scheduling wall (permuter-confirmed: an operand-
+// order search moved it only 80.613 -> 80.615): retail pins viewX->ebx /
+// viewY->edi where cl swaps them, and reuses the shiftX register (ebp) both to
+// zero-init the src-rect left/top and to hold the deferred ctx->m_surface load
+// where cl keeps the surface live in its own register from the top; the per-site
+// dest-rect operand order (add-then-sub vs sub-then-add) and per-loop counter
+// slot numbering also diverge. Logic + offsets + CFG byte-faithful; a leaf-first
+// regalloc grind is deferred to the final sweep.
 RVA(0x00162010, 0x8bd)
-void CPlaneRender::Draw(void* /*ctx*/) {}
+void CPlaneRender::Draw(CPlaneDrawCtx* ctx) {
+    if ((m_flags & 2) != 0) {
+        return;
+    }
+    CDDSurface* surf = ctx->m_surface;
+
+    i32 colL = m_originX >> m_shiftX;
+    i32 leftW = ((colL + 1) << m_shiftX) - m_originX;
+    i32 rowT = m_originY >> m_shiftY;
+    i32 topH = ((rowT + 1) << m_shiftY) - m_originY;
+    i32 colR = m_extentX >> m_shiftX;
+    i32 rightW = m_extentX - (colR << m_shiftX) + 1;
+    i32 rowB = m_extentY >> m_shiftY;
+    i32 botH = m_extentY - (rowB << m_shiftY) + 1;
+    i32 nCols = colR - colL - 1;
+    i32 nRows = rowB - rowT - 1;
+
+    RECT topSrc = {0, m_tilePxH - topH, m_tilePxW, m_tilePxH};   // top strip: clip top
+    RECT leftSrc = {m_tilePxW - leftW, 0, m_tilePxW, m_tilePxH}; // left col: clip left
+    RECT rightSrc = {0, 0, rightW, m_tilePxH};                   // right col: clip right
+    RECT corner;                                                 // reused, four corners
+    RECT dr;                                                     // shared BltEx dest rect
+
+    i32 x, y, col, row, i;
+    i32 rowBase;
+
+    // ---- top row: TL corner, top strip, TR corner ----
+    y = m_viewY;
+    x = m_viewX;
+    rowBase = m_colOffsets[rowT];
+    corner.left = m_tilePxW - leftW;
+    corner.top = m_tilePxH - topH;
+    corner.right = m_tilePxW;
+    corner.bottom = m_tilePxH;
+    DRAW_CELL(m_tileGrid[rowBase + colL], x, y, &corner);
+    x += leftW;
+    col = colL + 1;
+    if (col >= m_gridW) {
+        col = 0;
+    }
+    for (i = nCols; i > 0; i--) {
+        DRAW_CELL(m_tileGrid[rowBase + col], x, y, &topSrc);
+        x += m_tilePxW;
+        if (++col >= m_gridW) {
+            col = 0;
+        }
+    }
+    corner.left = 0;
+    corner.top = m_tilePxH - topH;
+    corner.right = rightW;
+    corner.bottom = m_tilePxH;
+    DRAW_CELL(m_tileGrid[rowBase + col], x, y, &corner);
+
+    // ---- interior rows: left col, interior cols, right col ----
+    y += topH;
+    row = rowT + 1;
+    if (row >= m_gridH) {
+        row = 0;
+    }
+    for (i32 r = nRows; r > 0; r--) {
+        rowBase = m_colOffsets[row];
+        x = m_viewX;
+        DRAW_CELL(m_tileGrid[rowBase + colL], x, y, &leftSrc);
+        x += leftW;
+        col = colL + 1;
+        if (col >= m_gridW) {
+            col = 0;
+        }
+        for (i = nCols; i > 0; i--) {
+            DRAW_CELL(m_tileGrid[rowBase + col], x, y, &m_fillRect);
+            x += m_tilePxW;
+            if (++col >= m_gridW) {
+                col = 0;
+            }
+        }
+        DRAW_CELL(m_tileGrid[rowBase + col], x, y, &rightSrc);
+        y += m_tilePxH;
+        if (++row >= m_gridH) {
+            row = 0;
+        }
+    }
+
+    // ---- bottom row: BL corner, bottom strip, BR corner ----
+    RECT botSrc = {0, 0, m_tilePxW, botH}; // bottom strip: clip bottom
+    x = m_viewX;
+    rowBase = m_colOffsets[row];
+    corner.left = m_tilePxW - leftW;
+    corner.top = 0;
+    corner.right = m_tilePxW;
+    corner.bottom = botH;
+    DRAW_CELL(m_tileGrid[rowBase + colL], x, y, &corner);
+    x += leftW;
+    col = colL + 1;
+    if (col >= m_gridW) {
+        col = 0;
+    }
+    for (i = nCols; i > 0; i--) {
+        DRAW_CELL(m_tileGrid[rowBase + col], x, y, &botSrc);
+        x += m_tilePxW;
+        if (++col >= m_gridW) {
+            col = 0;
+        }
+    }
+    corner.left = 0;
+    corner.top = 0;
+    corner.right = rightW;
+    corner.bottom = botH;
+    DRAW_CELL(m_tileGrid[rowBase + col], x, y, &corner);
+}
+#undef DRAW_CELL
 
 // ===========================================================================
 // WwdFile::ReadPlaneObjects (__thiscall, ret 0x4; Ghidra mis-derived the
