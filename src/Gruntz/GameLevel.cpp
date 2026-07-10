@@ -739,6 +739,16 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
 
 // CImageSet1::DtorBase (0x00161370) is now an inline member in the header.
 
+// CImageSet2::GetCollisionAt (0x161470, slot 8): return the interior collision
+// kind m_10 when (x,y) is inside the {m_14..m_1c} x {m_18..m_20} box, else the
+// exterior kind m_0c. __thiscall, 2 args (ret 0x8).
+RVA(0x00161470, 0x2c)
+i32 CImageSet2::GetCollisionAt(i32 x, i32 y) {
+    if (x < m_14 || x > m_1c || y < m_18 || y > m_20) {
+        return m_0c;
+    }
+    return m_10;
+}
 // CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Copies three dwords
 // from the WWD record at +0x08.. into m_04/m_08/m_0c via an advancing source
 // pointer (retail's `add eax,8; mov (eax); add eax,4` cursor walk) and returns TRUE.
