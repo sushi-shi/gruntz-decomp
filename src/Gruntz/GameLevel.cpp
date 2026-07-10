@@ -3112,6 +3112,45 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
 }
 
 // ---------------------------------------------------------------------------
+// ProbeHeadSoft (@0x160450): probe the tile straight above the object at
+// (m_screenX, m_screenY + m_extentT + dy) and return whether it is soft-blocking
+// (== kTileSoft). The inlined PROBE_TILE shape; the result==1 test is shared by
+// both the tile-hit and empty-tile paths (retail merges the sete). ret 8.
+//
+// @early-stop
+// ~94.9%: logic + offsets + CFG + the inlined PROBE_TILE clamp/shift/dispatch are
+// byte-faithful; residue is the clamp branch's free-register assignment - the same
+// PROBE_TILE-shape regalloc entropy documented on ProbeColumn/AxisProbe. Not
+// source-steerable; deferred to the final sweep.
+RVA(0x00160450, 0xd6)
+i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
+    i32 px = t->m_screenX;
+    i32 py = t->m_screenY + t->m_extentT + dy;
+    i32 result;
+    PROBE_TILE(this, px, py, result);
+    return result == kTileSoft;
+}
+
+// ---------------------------------------------------------------------------
+// ProbeFeetKind (@0x1608c0): the feet-edge twin of ProbeColumn - probe the tile at
+// (m_screenX + dx, m_extentB + m_screenY) and return the image set's GetCollisionAt
+// kind raw (0 for an empty/clear tile). The inlined PROBE_TILE shape. ret 8.
+//
+// @early-stop
+// 92.56% - identical shape+% to its twin ProbeColumn (0x160980, extentT vs extentB):
+// logic/offsets/CFG/PROBE_TILE clamp-shift-dispatch byte-faithful, residue is the
+// clamp branch's free-register coloring (this/o kept in esi vs retail reusing the
+// arg1 scratch edx). Same wall as ProbeColumn; deferred to the final sweep.
+RVA(0x001608c0, 0xc0)
+i32 CGameLevel::ProbeFeetKind(CGameObject* t, i32 dx) {
+    i32 px = t->m_screenX + dx;
+    i32 py = t->m_extentB + t->m_screenY;
+    i32 result;
+    PROBE_TILE(this, px, py, result);
+    return result;
+}
+
+// ---------------------------------------------------------------------------
 // ProbeColumn (@0x160980): probe the single tile at the object's top edge
 // (m_screenX + dx, m_extentT + m_screenY), clamped into the main plane grid,
 // returning the image set's GetCollisionAt (+0x20) dispatch (0 for an
@@ -3339,6 +3378,26 @@ i32 CGameLevel::SnapCeilUp(CGameObject* t, i32 x, i32 y, i32* out) {
         }
     }
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// ProbeSpanHard (@0x15f470): hard-block test across the object's vertical span at
+// column x. Probe the tile at the top edge (m_extentT + off - 1); if it is hard-
+// blocking (== kTileHard) succeed. Otherwise probe the bottom edge (m_extentB +
+// off + 1) and return whether IT is hard-blocking. Two inlined PROBE_TILE copies
+// (the top row succeeds early); x is re-clamped for each. ret 0xc.
+RVA(0x0015f470, 0x193)
+i32 CGameLevel::ProbeSpanHard(CGameObject* t, i32 x, i32 off) {
+    i32 py2 = t->m_extentB + off + 1;
+    i32 py1 = t->m_extentT + off - 1;
+    i32 r1;
+    PROBE_TILE(this, x, py1, r1);
+    if (r1 == kTileHard) {
+        return 1;
+    }
+    i32 r2;
+    PROBE_TILE(this, x, py2, r2);
+    return r2 == kTileHard;
 }
 
 // ---------------------------------------------------------------------------

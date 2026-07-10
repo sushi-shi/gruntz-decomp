@@ -1091,6 +1091,16 @@ source = "src/Gruntz/Play.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "playmessageimage"
+source = "src/Gruntz/PlayMessageImage.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "multiresumeslots"
+source = "src/Gruntz/MultiResumeSlots.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "playdtor"
 source = "src/Gruntz/PlayDtor.cpp"
 flags = "eh"

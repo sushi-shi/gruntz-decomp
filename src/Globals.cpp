@@ -177,6 +177,8 @@ DATA(0x002111b0)
 extern u8 g_6111b0; // 0x6111b0
 DATA(0x00211d88)
 extern "C" i32 g_611d88; // 0x611d88  saved dropped-player id
+DATA(0x00211ab8)
+extern char s_GameMessagez[]; // s_GAME_MESSAGEZ_00611ab8 (image-set name literal)
 DATA(0x00211ec4)
 extern char s_GameKey[]; // s_GAME_KEY_00611ec4 (registry key literal)
 DATA(0x00212610)

@@ -352,6 +352,9 @@ public:
     // Commit the selected battle-latency option (list 0x527) into the CMulti session
     // config, or flag "none selected".
     void CommitLatencyOption(); // 0xc5020
+    // Echo the current CmdDelay/ResendDelay session config to the chat log
+    // (a diagnostic command; body in MultiStartDlgNet.cpp).
+    void EchoLatencySettings(); // 0xc52f0
     // Roster helpers (own methods reached through ILT thunks; reloc-masked, RVAs
     // live in sibling units / ApiCaller stubs).
     void Drive();                  // 0xc40b0  re-drive the connect state (body in NetMgrMisc.cpp)

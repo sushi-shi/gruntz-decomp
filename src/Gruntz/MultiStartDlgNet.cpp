@@ -5,14 +5,17 @@
 // external (reloc-masked); field names are placeholders, only offsets + code bytes are
 // load-bearing.
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/Multi.h>   // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
-#include <Net/NetMgr.h>     // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
+#include <Gruntz/Multi.h> // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Net/NetMgr.h>   // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
 #include <rva.h>
 
 // The multiplayer game-state singleton (a CMulti, xref-proven). DATA reloc-masks
 // against ReconBatch2's home.
 DATA(0x0024bd5c)
 extern CMulti* g_64bd5c;
+// "Using CmdDelay of %d and ResendDelay of %d\n" (the EchoLatencySettings format).
+DATA(0x0024243c)
+extern char s_UsingCmdDelay[];
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 extern "C" char g_emptyString[];
 // The generic listbox-selection splitter (0x38220, __stdcall; body in
@@ -66,4 +69,13 @@ void CMultiStartDlg::CommitLatencyOption() {
     } else {
         g_64bd5c->m_600 = 1;
     }
+}
+
+// EchoLatencySettings (0xc52f0): print the current session CmdDelay (m_5a4) and
+// ResendDelay (m_drainReload) to the chat log via wsprintfA into a stack buffer.
+RVA(0x000c52f0, 0x43)
+void CMultiStartDlg::EchoLatencySettings() {
+    char buf[128];
+    wsprintfA(buf, s_UsingCmdDelay, g_64bd5c->m_5a4, g_64bd5c->m_drainReload);
+    AppendChatLine(buf);
 }

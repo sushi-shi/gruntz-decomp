@@ -325,7 +325,10 @@ public:
     virtual void Vslot20();
     virtual void Vslot21();
     virtual void Vslot22();
-    virtual void Vslot23();
+    // slot 35 (+0x8c): present the GAME_MESSAGEZ overlay image for the state's
+    // Update() id (frame 3, or 4 when Update()==7): render it centered on the
+    // draw surface then flip. Body in PlayMessageImage.cpp.
+    virtual i32 Vslot23();
     virtual void Vslot24();
     // slot 37 (+0x94): per-draw text-attr setup (debug HUD hands it the live HDC;
     // void* keeps this widely-included header windows.h-neutral).
@@ -367,7 +370,11 @@ public:
         i32 a6,
         i32 a7,
         i32 rectSrc
-    );                                                           // (THIS TU)
+    ); // (THIS TU)
+    // DrawMessageFrame (0x0d1650): look up the GAME_MESSAGEZ image set, fetch frame
+    // `index`, and blit it centered in the active viewport (winapi_115300_SetRect).
+    // Body in PlayMessageImage.cpp.
+    void DrawMessageFrame(i32 index, i32 useFront);              // 0x0d1650
     void LoadSBITextEdges(char* name);                           // 0x0d1710 (THIS TU)
     i32 BuildGruntNamespaceList(i32 arg);                        // 0x0dd050 (THIS TU)
     i32 RegisterNamespace(CString& name, i32 a, i32 b, i32 arg); // call 0x2bc1 (THIS TU sibling)

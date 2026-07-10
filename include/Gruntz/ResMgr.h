@@ -56,7 +56,10 @@ struct CDrawTarget {
     }* m_10;
     struct SurfaceB {       // +0x14  draw-surface view (the loaders' "draw context" handle)
         void Blit(i32 arg); // credits blit-target blit (thiscall)
-        char p0[0x2c];
+        char p0[0x10];
+        i32 m_10; // +0x10  surface width  (CPlay::Vslot23 centers the message frame)
+        i32 m_14; // +0x14  surface height
+        char p18[0x2c - 0x18];
         CDDSurface* m_2c; // +0x2c  the real CDDSurface (Fill @0x13e760 / Restore @0x13e7d0)
     }* m_14;
     void* m_18; // +0x18  the present target

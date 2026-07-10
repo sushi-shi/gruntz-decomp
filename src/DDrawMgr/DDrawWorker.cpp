@@ -12,7 +12,12 @@
 // the dtor its /GX EH frame (cf. CWwdGrid::~CWwdGrid @0x1682a0).
 #include <Mfc.h> // /GX EH-frame helpers
 
+#include <stdlib.h> // atoi (frame-index parse)
+
+#include <Bute/SymTab.h>              // CSymTab iteration (FirstSym/NextSym{,2,3})
+#include <DDrawMgr/DDrawSurfaceMgr.h> // m_0c owner (m_flags bit 0x100 = single-frame)
 #include <DDrawMgr/DDrawWorker.h>
+#include <Gruntz/ParseSource.h> // CParseSource value records (m_name/GetEntryTag)
 
 // The class is real-polymorphic: cl emits ??_7CLoadable (grand-base @0x5e8cb4)
 // + the derived vtable @0x5efbe8 implicitly. Both former manual externs
@@ -51,6 +56,105 @@ void CDDrawWorker::AddFrameAt_1521c0(void* elem, i32 index) {
     if (index > m_68) {
         m_68 = index;
     }
+}
+
+// ===========================================================================
+// 0x1521f0 (slot 10): build frames from a CSymTab scope. Walk every value record
+// of every symbol; parse a frame index out of each value's name (the first digit
+// run) and dispatch InsertFrame(rec, index, 1) (slot 14). Count the frames that
+// took. When the owner surface-mgr's single-frame flag (m_flags & 0x100) is set,
+// stop after the first success. __thiscall(tab), ret 4.
+// ===========================================================================
+RVA(0x001521f0, 0xbc)
+i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
+    i32 count = 0;
+    void* sym = tab->FirstSym();
+    while (sym != 0) {
+        void* val = tab->NextSym2(sym);
+        while (val != 0) {
+            char* p = ((CParseSource*)val)->m_name;
+            while (*p != 0) {
+                if (*p >= '0' && *p <= '9') {
+                    break;
+                }
+                p++;
+            }
+            i32 fi = atoi(p);
+            if (InsertFrame(val, fi, 1) != 0) {
+                count++;
+            }
+            val = tab->NextSym3(val);
+            if ((((CDDrawSurfaceMgr*)m_0c)->m_flags & 0x100) && count > 0) {
+                val = 0;
+            }
+        }
+        sym = tab->NextSym(sym);
+        if ((((CDDrawSurfaceMgr*)m_0c)->m_flags & 0x100) && count > 0) {
+            sym = 0;
+        }
+    }
+    return count;
+}
+
+// ===========================================================================
+// 0x1522b0 (slot 15): validate that a CSymTab scope's image-type value records
+// (tags 'PCX'/'BMP'/'RID'/'PID') each resolve to a frame in the cached window via
+// slot 16 (Slot40_1523b0). Returns -1 the moment a resolve fails, or if fewer
+// records matched than the count of live frames in [m_64, m_68]; else the match
+// count. __thiscall(tab), ret 4.
+// ===========================================================================
+// @early-stop
+// regalloc-coloring wall: body is byte-structure-exact but MSVC colors `this`->ebx
+// and coalesces cnt/tab->edi, whereas retail keeps `this`->edi and coalesces
+// cnt/tab->ebx (a consistent ebx<->edi swap) plus retail push-saves all 4 GPRs up
+// front where cl shrink-wraps them. Every mnemonic/operand-shape matches; only the
+// two callee-saved colors differ. permute (start 87.755%) found no better spelling.
+RVA(0x001522b0, 0xf7)
+i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
+    i32 matched = 0;
+    i32 liveFrames;
+    liveFrames = 0;
+    i32 n = m_items.m_nSize;
+    if (n > 0) {
+        i32 cnt;
+        cnt = 0;
+        for (i32 i = 0; i < n; i++) {
+            CWorkerElement* el;
+            if (i >= m_64 && i <= m_68) {
+                el = m_items.m_pData[i];
+            } else {
+                el = 0;
+            }
+            if (el != 0) {
+                cnt++;
+            }
+        }
+        liveFrames = cnt;
+    }
+    void* sym = tab->FirstSym();
+    while (sym != 0) {
+        void* val = tab->NextSym2(sym);
+        while (val != 0) {
+            i32 tag = ((CParseSource*)val)->GetEntryTag();
+            if (tag == 'PCX' || tag == 'BMP' || tag == 'RID' || tag == 'PID') {
+                char* p = ((CParseSource*)val)->m_name;
+                while (*p != 0) {
+                    if (*p >= '0' && *p <= '9') {
+                        break;
+                    }
+                    p++;
+                }
+                i32 fi = atoi(p);
+                if (0 == Slot40_1523b0((i32)val, fi, 1)) {
+                    return -1;
+                }
+                matched++;
+            }
+            val = tab->NextSym3(val);
+        }
+        sym = tab->NextSym(sym);
+    }
+    return (matched >= liveFrames) ? matched : -1;
 }
 
 // ===========================================================================

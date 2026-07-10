@@ -296,6 +296,21 @@ public:
     // resolved row back into m_screenY (ground snap). ret 8 (2nd stack arg unused).
     i32 WalkColumnDown(CGameObject* target, i32 unused);
 
+    // ProbeHeadSoft (@0x160450): probe the tile straight above the object at
+    // (m_screenX, m_screenY + m_extentT + dy) - top edge, offset dy - and return
+    // whether it is soft-blocking (GetCollisionAt == kTileSoft). ret 8.
+    i32 ProbeHeadSoft(CGameObject* target, i32 dy);
+
+    // ProbeFeetKind (@0x1608c0): probe the tile at the feet row (m_screenX + dx,
+    // m_extentB + m_screenY) and return the image set's GetCollisionAt kind (0 for
+    // an empty/clear tile). The feet-edge twin of ProbeColumn (top vs bottom). ret 8.
+    i32 ProbeFeetKind(CGameObject* target, i32 dx);
+
+    // ProbeSpanHard (@0x15f470): scan the object's column between its top and bottom
+    // edges at x, checking whether any tile from (m_extentT + off - 1) down to
+    // (m_extentB + off + 1) is hard-blocking (GetCollisionAt == kTileHard). ret 0xc.
+    i32 ProbeSpanHard(CGameObject* target, i32 x, i32 off);
+
     // Forwards a method (vtable +0x28/+0x2c) across every plane.
     void NotifyAllPlanes();
 

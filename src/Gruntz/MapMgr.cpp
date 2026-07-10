@@ -307,3 +307,27 @@ void CMapMgr::Vfunc5() {}
 
 SIZE_UNKNOWN(MapElemA);
 SIZE_UNKNOWN(MapElemB);
+
+// ===========================================================================
+// SetVersionRect (0x0009fe10) - a free __cdecl that seeds the map/menu-screen
+// version-string RECT {5, 0x1c5, 0x27b, 0x1de} (a bottom strip on the 640x480
+// select screen). @orphan: its only inbound edge is an unrecovered fn at ~0x9face
+// (the gap between MapMgr's last method @0x9f9a0 and MenuStateAssets @0x9fe50);
+// homed here as the offset-0-safe adjacent unit (extends MapMgr's top; the delinker
+// carves the four consecutive DWORDs as separate data symbols, so they are modeled
+// as four i32 globals rather than one RECT to match the reloc set 1:1).
+DATA(0x00245cc8)
+extern i32 g_versionRectL; // 0x645cc8
+DATA(0x00245ccc)
+extern i32 g_versionRectT; // 0x645ccc
+DATA(0x00245cd0)
+extern i32 g_versionRectR; // 0x645cd0
+DATA(0x00245cd4)
+extern i32 g_versionRectB; // 0x645cd4
+RVA(0x0009fe10, 0x29)
+void SetVersionRect() {
+    g_versionRectL = 5;
+    g_versionRectT = 0x1c5;
+    g_versionRectR = 0x27b;
+    g_versionRectB = 0x1de;
+}
