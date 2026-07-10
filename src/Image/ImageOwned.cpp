@@ -14,7 +14,9 @@
 // ---------------------------------------------------------------------------
 
 #include <DDrawMgr/DDrawShadeBlit.h>
-#include <Io/FileStream.h> // CFileIO (Open/Read/GetLength/Close, reloc-masked) + CString
+#include <DDrawMgr/DDSurface.h> // CDDSurface src arg (Lock/m_width/m_height/m_pitch/m_8)
+#include <ddraw.h>              // IDirectDrawSurface::Unlock (surf->m_8->Unlock inline COM)
+#include <Io/FileStream.h>      // CFileIO (Open/Read/GetLength/Close, reloc-masked) + CString
 
 #include <string.h> // memcpy (inlined to rep movs)
 
@@ -167,6 +169,27 @@ i32 CDDrawShadeBlit::BuildRle(
         memcpy(m_palette, palette, 0x400);
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// BuildFromSurface - lock a source DirectDraw surface, RLE-encode its locked bits
+// (via BuildRle) using the surface's own width/height/pitch, then unlock the held
+// IDirectDrawSurface. Stamps m_colorKey = keyVal. __thiscall, ret 0xc (3 args).
+// Returns 0 if the surface is null or fails to lock, else BuildRle's result.
+// ---------------------------------------------------------------------------
+RVA(0x00148f50, 0x61)
+i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette) {
+    if (surf == 0) {
+        return 0;
+    }
+    m_colorKey = keyVal;
+    i32 bits = surf->Lock(0);
+    if (bits == 0) {
+        return 0;
+    }
+    i32 r = BuildRle((void*)bits, surf->m_width, surf->m_height, surf->m_pitch, keyVal, palette);
+    surf->m_8->Unlock(0);
+    return r;
 }
 
 // ---------------------------------------------------------------------------

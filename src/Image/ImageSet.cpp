@@ -210,6 +210,21 @@ i32 CImageSet::SetAllFormats(i32 format) {
     return count;
 }
 
+// GetFirstFrameState (__thiscall, ret 0). Read the shade/type state (+0x14) of the
+// lowest-indexed frame's format helper; returns 1 when that frame or its format is null.
+RVA(0x00152570, 0x24)
+i32 CImageSet::GetFirstFrameState() {
+    CImageFrame* frame = m_frames[m_minIndex];
+    if (frame == 0) {
+        return 1;
+    }
+    CImageFormat* fmt = frame->m_format;
+    if (fmt == 0) {
+        return 1;
+    }
+    return fmt->m_14;
+}
+
 // FindFrame (__thiscall, ret 0xc). Returns 1 on a hit, 0 otherwise.
 RVA(0x001525c0, 0x76)
 i32 CImageSet::FindFrame(CImageFrame* frame, char* outName, i32* outIndex) {

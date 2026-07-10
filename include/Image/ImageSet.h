@@ -32,6 +32,10 @@ public:
     // Same walk, writing `value` into each populated frame's format +0x18.
     i32 SetAllField18(i32 value); // 0x1524d0
 
+    // Read the lowest-indexed frame's format shade/type state (+0x14); returns 1 when
+    // that frame or its format helper is absent. 0x152570.
+    i32 GetFirstFrameState(); // 0x152570
+
     // Sum the decoded byte size of every populated frame (width*height scaled by the
     // held surface's bit depth, or the owned object's exact count when present). When
     // `raw` is 0 each frame also carries a fixed 0x34-byte overhead. 0x1523f0.

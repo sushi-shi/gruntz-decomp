@@ -314,6 +314,25 @@ i32 CImage::CopyFrom(CImage* other) {
 }
 
 // ---------------------------------------------------------------------------
+// SetOrigin (0x153330, __thiscall, ret 8). For frame modes 3 and 4 copy the
+// descriptor's +0x10/+0x14 origin into the image (m_originX/m_originY); for any
+// other mode zero them. Always returns 1.
+// ---------------------------------------------------------------------------
+RVA(0x00153330, 0x36)
+i32 CImage::SetOrigin(CImageFrameDesc* desc, i32 mode) {
+    if (mode == 4 || mode == 3) {
+        i32 oy = desc->m_14;
+        i32 ox = desc->m_10;
+        m_originX = ox;
+        m_originY = oy;
+    } else {
+        m_originX = 0;
+        m_originY = 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // 0x153380 (vtable slot 13): Reload - refresh the held surface from its parse
 // source. If there is no held surface, succeed. If the surface's source sub-object
 // (m_surface->m_08) reports still-clean (IsClean, vtbl[0x60]), succeed. Else if it still

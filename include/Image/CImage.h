@@ -189,6 +189,8 @@ public:
     i32
     BuildSlot13(CImageFrameDesc* desc, void* a); // 0x153180  (non-virtual /GX builder, external)
     i32 CopyFrom(CImage* other);                 // 0x1532b0  (clone the surface from another image)
+    i32
+    SetOrigin(CImageFrameDesc* desc, i32 mode); // 0x153330 (copy desc origin for mode 3/4, else 0)
     void RenderFrame(void* a, void* b, void* c, void* d);                    // 0x153790
     void RenderFrameClipped(void* a, void* b, void* c, void* d, void* rect); // 0x153810
 

@@ -1236,6 +1236,31 @@ i32 RestoreLostSurfaces_1437f0() {
     return 0;
 }
 
+// CDDrawMgr::GetFreeVidMem (__thiscall, no args). Query the device for available
+// texture video memory; return the free-byte count on success, 0 on failure.
+RVA(0x00143840, 0x32)
+i32 CDirectDrawMgr::GetFreeVidMem() {
+    DDSCAPS caps;
+    DWORD total;
+    DWORD freeMem;
+    caps.dwCaps = 0x1000;
+    i32 hr = m_device->GetAvailableVidMem(&caps, &total, &freeMem);
+    return hr == 0 ? freeMem : 0;
+}
+
+// CDDrawMgr::GetGDISurface (__thiscall, no args). Ask the device for the shared
+// GDI (primary) surface; on a failed COM call TRACE the method name and return 0.
+RVA(0x001438c0, 0x31)
+IDirectDrawSurface* CDirectDrawMgr::GetGDISurface() {
+    IDirectDrawSurface* surf = 0;
+    i32 hr = m_device->GetGDISurface(&surf);
+    if (hr != 0) {
+        DDrawLogLine((char*)"CDirectDrawMgr::GetGDISurface()");
+        return 0;
+    }
+    return surf;
+}
+
 // 0x143880 - create the process DirectDraw object via a supplied factory callback and,
 // on success, cache it (g_DirectDraw) with its owner context (g_ddCreateCtx); returns 0
 // on success, 1 if the factory is null or fails. __stdcall (ret 0x10 => 4 args).

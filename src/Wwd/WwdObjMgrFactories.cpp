@@ -37,6 +37,15 @@ struct CDDrawSubMgr { // the +0x1a0 draw sub-manager (real ctor in DDrawSubMgr.c
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
 
+// The level-file handle CWwdObjMgr::m_0c points at (forward-declared in the shared
+// header): the name->value resolve map (a CMapStringToPtr) sits at m_14 + 0x10. The
+// CreateNamed_* front-ends look each descriptor name up through it. Local completion
+// of the header's forward decl (same view WwdObjMgr.cpp uses for LoadObjects).
+struct WwdFile {
+    char m_pad0[0x14];
+    char* m_14; // +0x14  fronts the string-resolve map (CMapStringToPtr @ +0x10)
+};
+
 // The CResolveNode base subobject: stamps 0x5efbc0 + the +0x04..+0xd8 field block.
 struct WwdCtorBase {
     WwdCtorBase(int a, int b, int c) {
@@ -253,6 +262,23 @@ CWwdObjMgr::CreateObject_159250(int a1, int a2, int a3, int a4, int a5, int a6, 
 // @early-stop
 // rezalloc-placement-new wall (sibling of 0x159600). frame absent, body exact.
 // ===========================================================================
+// CreateNamed_1593e0 (__thiscall, ret 0x1c => 7 args). Resolve `name` through the
+// level string map to a value, then create the 7-arg kind with it substituted for
+// arg5.
+// @early-stop
+// 93.5% - logic byte-exact. Residual: MSVC5 schedules the `val = 0` pre-init store
+// BETWEEN the two Lookup arg-pushes (push &val / [val]=0 / push name) where retail
+// emits it AFTER both pushes (push &val / push name / [val]=0). A non-steerable /O2
+// statement-scheduling coin-flip (permuter + map-hoist both tried; hoist regressed
+// to 79%). Shared with CreateNamed_1595b0/159a10/166780.
+RVA(0x001593e0, 0x53)
+CWwdGameObject*
+CWwdObjMgr::CreateNamed_1593e0(int a1, int a2, int a3, int a4, const char* name, int a6, int a7) {
+    void* val = 0;
+    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
+    return CreateObject_159250(a1, a2, a3, a4, (int)val, a6, a7);
+}
+
 RVA(0x00159440, 0x170)
 CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) {
     char* obj = (char*)RezAlloc(0x18c);
@@ -304,6 +330,17 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
 // @early-stop
 // rezalloc-placement-new wall (sibling of 0x159600). frame absent, body exact.
 // ===========================================================================
+// CreateNamed_1595b0 (__thiscall, ret 0x10 => 4 args). Resolve `name` -> value and
+// create the 4-arg kind with it substituted for arg3.
+// @early-stop
+// 92% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
+RVA(0x001595b0, 0x44)
+CWwdGameObject* CWwdObjMgr::CreateNamed_1595b0(int a1, int a2, const char* name, int a4) {
+    void* val = 0;
+    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
+    return CreateObject_159440(a1, a2, (int)val, a4);
+}
+
 RVA(0x001598d0, 0x13d)
 CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6) {
     char* obj = (char*)RezAlloc(0x1fc);
@@ -342,6 +379,21 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
     return result;
 }
 
+// CreateNamed_159a10 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
+// the lookup produced nothing, bail; else create the 6-arg kind with the value as arg5.
+// @early-stop
+// 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
+RVA(0x00159a10, 0x57)
+CWwdGameObject*
+CWwdObjMgr::CreateNamed_159a10(int a1, int a2, int a3, int a4, const char* name, int a6) {
+    void* val = 0;
+    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
+    if (val == 0) {
+        return 0;
+    }
+    return CreateObject_1598d0(a1, a2, a3, a4, (int)val, a6);
+}
+
 // ===========================================================================
 // 0x166640 - factory for the 0x1dc-byte kind, sibling of the above but published
 // into the manager's own CPtrList (AddTail) at +0x1dc rather than InsertSorted.
@@ -358,8 +410,10 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
 class CWwdObjMgrL {
 public:
     CWwdGameObject* CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6);
+    CWwdGameObject*
+    CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
     char m_pad00[0x0c];
-    int m_0c; // +0x0c parent handle
+    WwdFile* m_0c; // +0x0c parent file handle (name-resolve map at m_14 + 0x10)
     char m_pad10[0x1dc - 0x10];
     CObList m_1dc; // +0x1dc published-objects list (real MFC, main's fold)
 };
@@ -369,7 +423,7 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
     char* obj = (char*)RezAlloc(0x1dc);
     CWwdGameObject* result;
     if (obj != 0) {
-        int root = m_0c;
+        int root = (int)m_0c;
         new (obj) CWwdGameObj15b390(root, a1, a6);
         *(int*)(obj + 0x1a4) = a1;
         *(int*)(obj + 0x1a8) = a6;
@@ -405,6 +459,21 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
         ((CWwdWorker*)*(void**)(obj + 0x7c))->Kick(result);
     }
     return result;
+}
+
+// CreateNamed_166780 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
+// nothing resolved, bail; else create the 0x1dc-byte kind with the value as arg5.
+// @early-stop
+// 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
+RVA(0x00166780, 0x57)
+CWwdGameObject*
+CWwdObjMgrL::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6) {
+    void* val = 0;
+    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
+    if (val == 0) {
+        return 0;
+    }
+    return CreateObject_166640(a1, a2, a3, a4, (int)val, a6);
 }
 
 // ---------------------------------------------------------------------------

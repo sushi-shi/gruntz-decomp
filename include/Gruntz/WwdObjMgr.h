@@ -31,6 +31,22 @@ public:
     CWwdGameObject* CreateObject_159600(int a1, int a2, int a3, int a4, int a5, int flags);
     CWwdGameObject* CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6);
 
+    // Name-resolving factory front-ends (bodies: CWwdObjMgrFactories.cpp): resolve
+    // `name` through the level string->value map (m_0c->m_14 + 0x10) to a numeric id,
+    // then forward it as the matching CreateObject argument.
+    CWwdGameObject* CreateNamed_1593e0(
+        int a1,
+        int a2,
+        int a3,
+        int a4,
+        const char* name,
+        int a6,
+        int a7
+    );                                                                            // 0x1593e0
+    CWwdGameObject* CreateNamed_1595b0(int a1, int a2, const char* name, int a4); // 0x1595b0
+    CWwdGameObject*
+    CreateNamed_159a10(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x159a10
+
     // Level-load path (bodies: CWwdObjMgr.cpp; Init_159830 is external/no-body).
     i32 LoadObjects(CSerialArchive* reader, u32 count, i32 unused);
     i32 Init_159830(void* obj, i32 a94, i32 a98, i32 a9c, const void* nameBuf, i32 z);

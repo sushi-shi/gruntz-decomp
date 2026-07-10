@@ -41,6 +41,24 @@ extern i32 g_bDown; // 0x683eb4
 // reads (verified regressive). The only other cast, `(u8)m_light`, is a numeric fill-byte
 // conversion. This file is at its authentic floor.
 
+// BlitAt (0x149780, __thiscall, ret 0x14 => 5 args). Position the sprite's full
+// bounds at (x,y) on `dstSurf`: build the destination rect {x,y,x+w-1,y+h-1} and
+// the source clip {0,0,w-1,h-1} from the sprite's m_width/m_height, then call Blit.
+RVA(0x00149780, 0x69)
+i32 CDDrawShadeBlit::BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 p4) {
+    ShadeRect clip;
+    ShadeRect dst;
+    clip.left = 0;
+    clip.top = 0;
+    clip.right = m_width - 1;
+    clip.bottom = m_height - 1;
+    dst.left = x;
+    dst.top = y;
+    dst.right = x + m_width - 1;
+    dst.bottom = y + m_height - 1;
+    return Blit(&dst, dstSurf, &clip, sel, p4);
+}
+
 RVA(0x001497f0, 0x154)
 i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 sel, i32 p4) {
     if (clip->left < 0 || clip->right > m_width - 1 || clip->top < 0

@@ -95,16 +95,22 @@ public:
         i32 stride,
         i32 keyVal,
         void* palette
-    );                                                  // 0x148d40  (/GX, CByteArray RLE encode)
-    i32 LoadFromFile(CString name, i32 fmt);            // 0x148fc0  (/GX, open + slurp + Build)
-    i32 Build(CImageBuildDesc* src, i32 size, i32 fmt); // 0x1490d0
-    void* Remap(void* pixels);                          // 0x1495d0  (palette-remap, external)
-    void Teardown();                                    // 0x148d10
+    );                                       // 0x148d40  (/GX, CByteArray RLE encode)
+    i32 LoadFromFile(CString name, i32 fmt); // 0x148fc0  (/GX, open + slurp + Build)
+    // Lock a source DirectDraw surface, RLE-encode its locked bits (via BuildRle) with
+    // the surface's own width/height/pitch, then unlock it. Returns BuildRle's result.
+    i32 BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palette); // 0x148f50
+    i32 Build(CImageBuildDesc* src, i32 size, i32 fmt);                // 0x1490d0
+    void* Remap(void* pixels); // 0x1495d0  (palette-remap, external)
+    void Teardown();           // 0x148d10
     i32 DecodeFrame(CString name, CImageFrameRebuildDesc desc); // 0x149250 (external)
     i32 Rebuild(CString name, i32 a1, i32 a2);                  // 0x1493b0
-    i32 Decompress(void* dest);                                // 0x1494b0 (RLE expand)
+    i32 Decompress(void* dest);                                 // 0x1494b0 (RLE expand)
 
     // --- blit side (src/DDrawMgr/DDrawShadeBlit.cpp) -----------------------------
+    // Position the sprite at (x,y) on `dstSurf`: build a {x,y,x+w-1,y+h-1} destination
+    // rect + a {0,0,w-1,h-1} clip rect from m_width/m_height, then forward to Blit.
+    i32 BlitAt(CDDSurface* dstSurf, i32 x, i32 y, i32 sel, i32 p4);              // 0x149780
     i32 Blit(ShadeRect* dst, CDDSurface* src, ShadeRect* clip, i32 sel, i32 p4); // 0x1497f0
     void Notify(i32 a, i32 b);                                                   // 0x14dd90
     // The unselected (h-aligned) RLE blit; sel picks the h-flipped sibling. The
