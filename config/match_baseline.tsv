@@ -34,7 +34,7 @@ applyrange	1	1
 areamgr	12	7
 arrayserialize	1	0
 assetnamespaceprefixes	1	0
-attract	20	11
+attract	19	11
 battlezdata	30	27
 battlezdlgrow	1	0
 battlezmapconfig	47	16
@@ -116,7 +116,7 @@ ddsurface	20	15
 debugprintf	10	8
 debugtiming	2	2
 deflate	15	15
-demo	1	1
+demo	2	1
 democameratools	5	0
 demosetup	1	1
 destructbutton	1	1
@@ -648,8 +648,6 @@ attract	?FadeInTitle@CAttract@@QAEHPBDHHHHH@Z	75.3691	75.3691	3	d924e9b6dd99	0xf
 attract	?FrameSlot28@CAttract@@UAEHH@Z	99.7143	99.7143	3	1d0e3912870a	0x14340
 attract	?InputVirtual@CAttract@@UAEHXZ	100.0000	100.0000	3	0536418f02b2	0x14520
 attract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	4	fc29b9b540e3	0xa03f0
-attract	?Paint@StatePaintHost@@QAEHXZ	100.0000	100.0000	2	c85ffb3135a6	0xfac70
-attract	?Poll@CAttractIdlePoll@@QAEHXZ	99.5455	99.5455	2	180f9639e89f	0x3c220
 attract	?RefreshTitle@CAttract@@QAEHH@Z	100.0000	100.0000	3	bf4a6935165f	0x39160
 attract	?ReleaseResources@CAttract@@UAEXXZ	100.0000	100.0000	3	948181bf5f89	0x140d0
 attract	?Render@CAttract@@UAEHXZ	97.0833	97.0833	4	36ee4b5dce29	0x143e0
@@ -658,7 +656,8 @@ attract	?RunTitleSeq@CAttract@@QAEHPBDHHHH@Z	100.0000	100.0000	2	bfe7fa0ade91	0x
 attract	?Update@CAttract@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	2	15cb595062e2	0x8cd40
 attract	?Vslot06@CAttract@@UAEHXZ	100.0000	100.0000	3	7d92a01de87d	0x14630
 attract	?Vslot07@CAttract@@UAEHXZ	99.1667	99.1667	2	0791b7ad75ea	0x147b0
-attract	?Vslot09@CAttract@@UAEHH@Z	98.2836	98.2836	1	9c8c95298d00	0x14120
+attract	?Vslot07@CState@@UAEHXZ	100.0000	100.0000	1	ccb2a53a171d	0xfac70
+attract	?Vslot09@CAttract@@UAEHH@Z	98.2836	98.2836	2	0730206a1e3a	0x14120
 attract	?Vslot0c@CAttract@@UAEHHH@Z	100.0000	100.0000	1	c6e228bf1d86	0x14720
 attract	?Vslot0e@CAttract@@UAEHHHH@Z	100.0000	100.0000	2	82cf2f8c7adf	0x14770
 battlezdata	?AllRecordsInBounds@CBattlezData@@QAEHXZ	100.0000	100.0000	3	1ada6078aebb	0xfccf0
@@ -1387,6 +1386,7 @@ deflate	_lm_init	100.0000	100.0000	1	92f427e44f84	0x186a50
 deflate	_longest_match	100.0000	100.0000	1	18824b519e86	0x187000
 deflate	_putShortMSB	100.0000	100.0000	1	6f59b6af4108	0x1868e0
 deflate	_read_buf	100.0000	100.0000	1	b66aa815658a	0x186d30
+demo	?Render@CDemo@@UAEHXZ	99.5455	99.5455	1	7598268bf31f	0x3c220
 demo	?Vfunc1@CDemo@@UAEHHHH@Z	100.0000	100.0000	1	7569a15ec175	0x3bfa0
 democameratools	?DemoAutoScrollStep@@YAHPAUScrollOwner@@@Z	72.6786	72.6786	1	f637bdf38cbe	0x3c300
 democameratools	?Gap_03c990@@YAHXZ	1.2069	1.2069	1	af2039b39fb7	0x3c990

@@ -15,7 +15,8 @@
 #include <Gruntz/GruntzMgr.h>
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Gruntz/Attract.h>
-#include <Gruntz/GameRegistry.h>       // the ONE game-registry shape (CGameRegistry / g_gameReg)
+#include <Gruntz/GameRegistry.h> // the ONE game-registry shape (CGameRegistry / g_gameReg)
+#include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view (also used by CDemo/CHelpState)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40)
 #include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c: Flip + m_8)
 #include <ddraw.h>                     // IDirectDrawSurface (the flip surface's raw +0x8 COM iface)
@@ -90,45 +91,8 @@ public:
 // __stdcall self-on-stack) on the flip surface's held DirectDraw COM interface
 // (CDDSurface::m_8) to see whether the page still needs a restore.
 
-// The per-frame actor list (global pointer DAT_00645574): m_count at +0x4 and an
-// inline array of actor pointers at +0x8. Each actor's slot-4 (+0x10) virtual is
-// the per-frame Update; its +0x2ac flags word raises 0x100 to request the exit.
-class AttractActor {
-public:
-    virtual void Vslot00();
-    virtual void Vslot01();
-    virtual void Vslot02();
-    virtual void Vslot03();
-    virtual void Update(); // slot 4 (+0x10)
-    char m_pad04[0x2ac - 0x4];
-    i32 m_2ac;                   // +0x2ac flags
-    virtual void VtSlotFill0();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill6();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill7();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill8();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill9();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill10(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill11(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill12(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill13(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill14(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill15(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill16(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill17(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill18(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill19(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill20(); // vtable-slot filler (real slot; declared-only)
-};
-struct AttractActorList {
-    char m_pad00[0x4];
-    i32 m_count;             // +0x04
-    AttractActor* m_data[1]; // +0x08  inline pointer array
-};
+// AttractActor / AttractActorList (the per-frame g_actorList view) now live in the
+// shared <Gruntz/AttractActor.h> (folded out of this TU; also used by CDemo/CHelpState).
 
 // The per-frame time delta (countdown source for m_idleTimer). C linkage so the symbol
 // pairs with the target's _g_645584 (the convention across the gamemode units).
@@ -242,7 +206,7 @@ i32 CAttract::Vslot09(i32 arg) {
 
     AttractActorList* list = g_actorList;
     for (i32 i = 0; i < list->m_count; i++) {
-        list->m_data[i]->VtSlotFill0();
+        list->m_data[i]->Vslot05();
     }
     return 1;
 }
@@ -327,47 +291,10 @@ i32 CAttract::Render() {
     return 1;
 }
 
-// 0x3c220: an attract-family per-frame idle poll (PLACEHOLDER class; m_4 owner /
-// m_520 idle timer). Pump (0x20db) the host, scan g_actorList for the 0x100 exit
-// flag (post WM_COMMAND 0x8023 on the first match), count the idle timer m_520 down
-// by the frame delta, and post WM_COMMAND 0x8027 when it expires. Returns 1.
-// @early-stop
-// 99.55%: every opcode/offset/branch is byte-identical. The residual is (1) the
-// same PostMessageA IAT-absolute scoring artifact the sibling FramePoll documents
-// (target bakes the bare 0x6c44c8, no symbol) and (2) a register-coloring coin-flip
-// (pm <-> ebx/edi vs the 0x100 mask) - the documented regalloc back-edge wall
-// (docs/patterns/zero-register-pinning.md). Not source-steerable; deferred.
-struct CAttractIdlePoll {
-    char _00[4];
-    CGruntzMgr* m_4; // +0x04
-    char _08[0x520 - 0x8];
-    u32 m_520;   // +0x520  idle timer
-    void Pump(); // 0x20db (ILT thunk; reloc-masked)
-    i32 Poll();  // 0x3c220
-};
-
-RVA(0x0003c220, 0xa4)
-i32 CAttractIdlePoll::Poll() {
-    Pump();
-    PostMessageFn pm = g_pPostMessageA;
-    AttractActorList* list = g_actorList;
-    i32 n = list->m_count;
-    for (i32 i = 0; i < n; i++) {
-        if (list->m_data[i]->m_2ac & 0x100) {
-            pm(m_4->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
-            break;
-        }
-    }
-    if (g_645584 >= m_520) {
-        m_520 = 0;
-    } else {
-        m_520 -= g_645584;
-    }
-    if (m_520 == 0) {
-        pm(m_4->m_gameWnd->m_hwnd, 0x111, 0x8027, 0);
-    }
-    return 1;
-}
+// 0x3c220 (the attract-family per-frame idle poll) is CDemo's vtable slot 5 -
+// re-homed to Demo.cpp as CDemo::Render (proven: the .rdata data-ref at
+// ??_7CDemo@@6B@+0x14 + the m_520 idle-timer match). The former CAttractIdlePoll
+// placeholder view is gone.
 
 // CAttract::InputVirtual (slot 8 / +0x20, 0x14520): the random-title roll gated on
 // the menu page's IsLoaded; if loaded, hide the cursor, pick a random TITLE%d index
@@ -433,7 +360,6 @@ i32 CAttract::Vslot07() {
 }
 
 // CAttract::Update (0x0008cd40) is now an inline member in the header.
-
 
 // CAttract::Vslot0c (slot 12 / +0x30, 0x14720): keydown handler - on ESC/SPACE/ENTER
 // post the exit WM_COMMAND (0x8023) to the top-level HWND. (Re-homed from ApiCallers
@@ -720,46 +646,34 @@ i32 CAttract::Activate() {
 }
 
 // ---------------------------------------------------------------------------
-// The top-window paint poll (0x0fac70), re-homed from the ApiCaller stubs. This
-// is a NON-VIRTUAL shared base-class method: CAttract::Vslot07 (0x0147b0),
-// CMultiBootyState::ReadyAndPaint (0x01ce30, gamemode) and CGuardedDispatch::Run
-// (0x01f870, boundarymisc) each `mov ecx,<this>; call 0x1136` on their OWN this,
-// so +0x04 (a wnd chain -> top-level HWND at m_4->m_gameWnd->m_hwnd) is a base-layout
-// field they all share. If the window is present, it runs a null Begin/EndPaint
-// cycle and returns 1. Homed here (CAttract, the first/RTTI-named caller); the
-// common base class it truly belongs to is not yet recovered. Offsets + code
-// bytes load-bearing.
-struct StatePaintWnd {
-    char m_pad0[4];
-    StatePaintWnd* m_4; // +0x04
-};
-struct StatePaintHost {
-    char m_pad0[4];
-    StatePaintWnd* m_4; // +0x04
-    i32 Paint();
-};
-SIZE_UNKNOWN(StatePaintWnd);
-SIZE_UNKNOWN(StatePaintHost);
+// CState::Vslot07 (slot 7 / +0x1c, 0x0fac70): the base-state top-window paint poll.
+// RECOVERED IDENTITY (was the StatePaintHost placeholder homed at CAttract): its
+// .rdata data-ref is ??_7CState@@6B@+0x1c, and CCreditsState/CSplashState/CHelpState/
+// CDemo/CMulti/CPlay all inherit this slot; the callers CAttract::Vslot07 (0x147b0),
+// CMultiBootyState::ReadyAndPaint (0x1ce30) and CGuardedDispatch::Run (0x1f870) each
+// call CState::Vslot07() on their own `this`. If the owner's game window is present, it
+// runs a null Begin/EndPaint cycle and returns 1. Declared in <Gruntz/State.h>; its
+// out-of-line COMDAT lands here (retail scattered it adjacent to the attract title
+// methods). The StatePaintWnd/StatePaintHost placeholder views are folded onto
+// CState::m_4 (CGruntzMgr*) -> CGameMgr::m_gameWnd (CGameWnd*) -> CGameWnd::m_hwnd.
+// ---------------------------------------------------------------------------
 RVA(0x000fac70, 0x4c)
-i32 StatePaintHost::Paint() {
+i32 CState::Vslot07() {
     if (!m_4) {
         return 0;
     }
-    if (!m_4->m_4) {
+    if (!m_4->m_gameWnd) {
         return 0;
     }
     PAINTSTRUCT ps;
-    BeginPaint((HWND)m_4->m_4->m_4, &ps);
-    EndPaint((HWND)m_4->m_4->m_4, &ps);
+    BeginPaint(m_4->m_gameWnd->m_hwnd, &ps);
+    EndPaint(m_4->m_gameWnd->m_hwnd, &ps);
     return 1;
 }
 
-SIZE_UNKNOWN(AttractActor);
-SIZE_UNKNOWN(AttractActorList);
 SIZE_UNKNOWN(AttractWndHolder);
 SIZE_UNKNOWN(CAttract);
 SIZE_UNKNOWN(CAttractHost);
-SIZE_UNKNOWN(CAttractIdlePoll);
 SIZE_UNKNOWN(CAttractPooledRes);
 SIZE_UNKNOWN(CAttractRegistrar);
 SIZE_UNKNOWN(CAttractSceneSlot);
