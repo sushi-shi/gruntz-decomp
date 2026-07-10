@@ -43,17 +43,8 @@ void RezFree(void* p);
 // The CObject base subobject is CObject (Wap32/Object.h): empty dtor body; cl
 // stamps ??_7Wap@@CObject (masks g_wapObjectDtorVtbl @0x5e8cb4) as the folded base.
 
-// The worker IS a CObArray of 40-byte mesh records (proven by Serialize @0x17f130:
-// it reads m_pData(+0x04)/m_nSize(+0x08)/m_nMaxSize(+0x0c)/m_nGrowBy(+0x10) and
-// SetSize-grows a 0x28-stride buffer). The dtor RezFrees m_pData.
-struct CRezBufferObject : public CObject {
-    RezElem40* m_pData; // +0x04  heap buffer (mesh-record array)
-    i32 m_nSize;        // +0x08
-    i32 m_nMaxSize;     // +0x0c
-    i32 m_nGrowBy;      // +0x10
-    virtual ~CRezBufferObject() OVERRIDE;
-    virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2 (0x17f130)
-};
+// CRezBufferObject (the CObArray of 40-byte mesh records) is now the shared canonical
+// in <Rez/RezBufferObject.h>.
 
 // ---------------------------------------------------------------------------
 // 0x17f330 - ~CRezBufferObject (/GX): cl stamps the derived vptr (prologue), RezFree
@@ -134,7 +125,7 @@ void CRezBufferObject::Serialize(CArchive& ar) {
         a->ReadData(m_pData, m_nSize * sizeof(RezElem40));
     }
 }
-SIZE_UNKNOWN(CRezBufferObject);
+// SIZE_UNKNOWN(CRezBufferObject) now lives with the class in <Rez/RezBufferObject.h>.
 VTBL(CRezBufferObject, 0x001f07d8); // ??_7CRezBufferObject@@6B@ (5-slot CObject-derived)
 SIZE_UNKNOWN(CObject);
 // ??_7CRezBufferObject (was g_rezBufferObjectVtbl @0x5f07d8, vtbl-cluster

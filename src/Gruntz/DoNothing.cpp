@@ -40,6 +40,19 @@
 //
 // Field names are placeholders; only OFFSETS + the emitted code bytes are load-
 // bearing (campaign doctrine).
+//
+// WHY THESE VIEWS ARE NOT FOLDED onto <Gruntz/WorkerHandler.h> (Owner/Worker) + the
+// real CUserLogic dispatch (as the sibling pumps in LogicWorkerHandlers.cpp are):
+// HandlerA9E00's case 0 INLINES the CDoNothingNormal leaf ctor, which CALLS the
+// out-of-line shared CUserLogic base ctor (0x58cd0) - whereas CDoNothing::CDoNothing
+// (0xac1d0, this same TU) INLINES the CUserLogic init. One TU cannot model CUserLogic's
+// ctor both inline (for 0xac1d0) AND out-of-line-called (for the pump): the inline-XOR-
+// out-of-line ctor wall (the same species as the one-source/N-COMDAT delinker wall).
+// CUserLogicOOL is the escape (a distinct class whose ctor IS the 0x58cd0 call); DnnRec
+// derives it (not the real CUserLogic) for that reason, so Worker.m_18/EngRec cannot use
+// the canonical CUserLogic* either. DoNothing's Owner also adds m_08 (the inlined ctor
+// raises owner->m_08 bit 0 directly), which the reduced WorkerHandler.h Owner lacks. All
+// five views are matching scaffolding for the inlined-ctor variant, not fakes to fold.
 
 struct Owner;
 

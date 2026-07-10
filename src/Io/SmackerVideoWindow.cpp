@@ -547,7 +547,7 @@ i32 CMoviePlayer::PlayList(i32 loops) {
     }
     i32 iter = 1;
     do {
-        for (i32 i = 0; i < m_clipCount; i++) {
+        for (i32 i = 0; i < m_868c.m_nSize; i++) {
             CMovieClip* clip = m_868c.m_pData[i];
             if (clip->m_src == 0) {
                 return 0;

@@ -98,17 +98,20 @@ SIZE(CMovieClip, 0x20);
 // old manual `m_vptr = &g_*Vtbl` stores hand-rolled. Slot 2 is declared-only
 // (unreconstructed body behind the 0x401e56 thunk; reloc-masked slot).
 //
-// A CObArray-shaped playlist of CMovieClip* (proven by PlayList @0x17d720: it reads
-// m_pData(+0x04) + the count/maxsize/growby at worker+0x8694.. and indexes the pointer
-// array). Kept as the 8-byte {vptr, m_pData} subobject the dtor actually touches
-// (RezFrees m_pData); the array's nSize/nMaxSize/nGrowby live as CMoviePlayer fields
-// just past the embed (worker+0x8694..) so growing this subobject doesn't perturb the
-// ~CMoviePlayer /GX member-teardown frame.
+// The real MFC CArray<CMovieClip*> playlist (RTTI ??_7?$CArray@PAUPLAYLISTINFOSTRUCT
+// @0x1e971c; proven by PlayList @0x17d720 reading m_pData + count/maxsize/growby, and by
+// Serialize @0x39fa0 = vtable slot 2). Full 0x14 layout: the growable-array fields
+// (nSize/nMaxSize/nGrowBy) are members of THIS class - retail places them at worker
+// +0x8694.., i.e. immediately past m_pData in the embed. The ~CMoviePlayer /GX dtor only
+// touches m_pData (RezFree), so the extra int members are teardown-neutral.
 struct CMovieScratch : public CObject {
     virtual ~CMovieScratch() OVERRIDE;             // slot 1 override (retail thunk 0x4040f7)
-    virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2 (0x001e56, declared-only)
+    virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2  0x039fa0 (ArraySerialize.cpp)
 
     CMovieClip** m_pData; // +0x04 (worker+0x8690)  Rez-owned clip-pointer array
+    i32 m_nSize;          // +0x08 (worker+0x8694)  live clip count
+    i32 m_nMaxSize;       // +0x0c (worker+0x8698)  allocated capacity
+    i32 m_nGrowBy;        // +0x10 (worker+0x869c)  grow increment (0 => auto)
 };
 
 class CMoviePlayer {
@@ -164,10 +167,7 @@ public:
     CWnd* m_videoWnd;        // +0x53c  the video window (real MFC CWnd)
     CMovieDecodeStore m_540; // +0x540  embedded decode store
     char m_pad740[0x868c - (0x540 + 0x200)];
-    CMovieScratch m_868c; // +0x868c  Rez-owned scratch embed (8 bytes, ends +0x8694)
-    i32 m_clipCount;      // +0x8694  playlist clip count (m_868c array's nSize)
-    i32 m_8698;           // +0x8698  (nMaxSize)
-    i32 m_869c;           // +0x869c  (nGrowBy)
+    CMovieScratch m_868c; // +0x868c  Rez-owned scratch embed (CArray<CMovieClip*>, 0x14 B)
     i32 m_loopCount;      // +0x86a0  loop counter
 };
 

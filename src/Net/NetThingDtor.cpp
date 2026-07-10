@@ -6,14 +6,19 @@
 // is load-bearing.
 #include <rva.h>
 
-// Base subobject whose destructor (0x1b48c6) the derived dtor chains to.
-struct CNetThingBase {
-    ~CNetThingBase(); // 0x1b48c6 (external, reloc-masked)
+// Base subobject whose destructor (0x1b48c6) the derived dtor chains to. IDENTITY
+// (sema rva 0x1b48c6): ??1CInternetSession@@UAE@XZ - the MFC NAFXCW CInternetSession
+// dtor (a library carve-out, excluded from the match %). So CNetThing derives the real
+// MFC CInternetSession; kept as this reloc-masked dtor-chain view rather than pulling
+// <afxinet.h> into a tiny /GX dtor TU (the chained call reloc-masks either way).
+struct CNetThingBase { // == MFC CInternetSession (0x1b48c6 base dtor)
+    ~CNetThingBase();  // 0x1b48c6 (external, reloc-masked)
 };
-SIZE_UNKNOWN(CNetThingBase); // dtor-chain view; retail size TBD
+SIZE_UNKNOWN(CNetThingBase); // dtor-chain view of CInternetSession; retail size TBD
 
 // The keyed-list the dtor clears (Clear @0x379a0); TU-local method view of the real
-// header-less CKeyedList (keyedlist unit).
+// header-less CKeyedList (keyedlist unit - defined in src/Gruntz/KeyedList.cpp, no
+// shared header to fold onto yet).
 class CKeyedList {
 public:
     void Clear();
