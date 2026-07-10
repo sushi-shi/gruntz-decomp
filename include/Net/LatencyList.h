@@ -1,8 +1,8 @@
 // LatencyList.h - the multiplayer "connection latency preset" list (the network
 // start dialog, C:\Proj\NetMgr / Gruntz). ONE real class, formerly viewed under
 // four placeholder names across four TUs (all folded here, wave 3):
-//   * CMultiSlotList  (Dialogs.cpp)      - the m_slotList container + SelectItem
-//   * CMultiSlotList  (SlotComboFill.cpp)- FillCombo (the combo populate)
+//   * CMultiSlotList  (SlotComboFill.cpp)- FillCombo + SelectItem (the combo
+//                                          populate/select; both call g_pGetDlgItem)
 //   * CConnSlotList   (Net/ConnSlotList) - the AddItem populators (0x37c30/e10/f00)
 //   * CBzKindDispatch (BzKindDispatch)   - the mode dispatcher (0x37910)
 // PROOF of one class: the dispatcher 0x37910 (called on the dialog's m_slotList)

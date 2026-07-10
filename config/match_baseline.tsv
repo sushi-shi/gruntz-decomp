@@ -66,6 +66,7 @@ chatbox	28	21
 chatbox_eh	1	1
 chatboxowner	5	0
 cheatmgr	7	4
+checkpointdlg	6	5
 checkpointswitchbuild	1	0
 checkpointtrigger	5	3
 cimage	14	9
@@ -118,7 +119,7 @@ demo	1	1
 democameratools	3	0
 demosetup	1	1
 destructbutton	1	1
-dialogs	57	32
+dialogs	37	22
 directdrawmgr	21	12
 directinputmgr2	50	43
 directionclassify	1	0
@@ -319,6 +320,7 @@ msgdispatch	3	3
 multi	23	11
 multicolordlg	1	0
 multiresumeslots	1	0
+multistartdlg	11	4
 multistartdlgcolor	5	0
 multistartdlgnet	3	2
 multistartdlgroster	12	10
@@ -423,10 +425,11 @@ serialobjref	1	0
 sfselectdevice	1	0
 shadedescrtable	2	0
 shadetablecache	23	4
+showmultidlg	2	0
 simpleanimation	7	5
 singleanimation	7	5
 singleframemessage	6	4
-slotcombofill	2	1
+slotcombofill	3	2
 smackervideowindow	10	7
 soundbankload	1	0
 sounddevice	17	9
@@ -917,6 +920,12 @@ cheatmgr	?Empty@CCheatMgr@@QAEXXZ	100.0000	100.0000	2	9fd9d12feff1	0x22b00
 cheatmgr	?Init@CCheatMgr@@QAEHH@Z	100.0000	100.0000	2	c04f8a8c8d56	0x22ad0
 cheatmgr	?LoadCheatConfig@CCheatMgr@@QAEXXZ	91.5726	91.5726	4	35b53606b085	0x22e60
 cheatmgr	?RegisterCheats@CCheatMgr@@QAEXXZ	100.0000	100.0000	2	441beca8e972	0x22c80
+checkpointdlg	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	1	410f9276b580	0x234a0
+checkpointdlg	?DoDataExchange@CCheckpointDlg@@QAEXPAUCDataExchange@@@Z	100.0000	100.0000	1	d4becedf9ca8	0x23520
+checkpointdlg	?GetMessageMap@CCheckpointDlg@@UAEPBXXZ	100.0000	100.0000	1	25792fd462ed	0x23570
+checkpointdlg	?Init238d0@@YAXXZ	100.0000	100.0000	1	21bf8daa542f	0x238d0
+checkpointdlg	?InitGlobalObList62b640@@YAXXZ	100.0000	100.0000	1	149f07a7d92a	0x23960
+checkpointdlg	?OnToggleCheckpointPrompts@CCheckpointDlg@@QAEXXZ	97.8571	97.8571	1	8c735be9808c	0x23590
 checkpointswitchbuild	?BuildSmall@CCheckpointTriggerSwitchLogic@@QAEHHHHHHPAUCStatzRect60@@HHH@Z	63.3617	63.3617	4	699deb2de584	0x112a50
 checkpointtrigger	??0CCheckpointTrigger@@QAE@PAUCGameObject@@@Z	84.4398	84.4398	4	afada2b709b9	0x10ee20
 checkpointtrigger	??1CCheckpointTrigger@@UAE@XZ	100.0000	100.0000	2	af5b3c71c03b	0x11480
@@ -1353,14 +1362,11 @@ destructbutton	?UpdateDestructButton@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	5	
 dialogs	??0CBattlezDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	8	d79f509aae6c	0x14b30
 dialogs	??0CBattlezDlgColors@@QAE@HHHPAVCWnd@@@Z	100.0000	100.0000	8	5bdecb16db06	0x17930
 dialogs	??0CBattlezDlgCustom@@QAE@PAVCWnd@@@Z	100.0000	100.0000	5	8a57267b8126	0x18030
-dialogs	??0CCheckpointDlg@@QAE@PAVCWnd@@@Z	100.0000	100.0000	4	410f9276b580	0x234a0
-dialogs	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	10	1d80ea73491f	0xc1750
 dialogs	??1CBattlezDlg@@UAE@XZ	94.4444	94.4444	2	623ad344bc89	0x14c90
 dialogs	??1CBattlezDlgCustom@@UAE@XZ	94.4444	94.4444	3	b7834928246a	0x17140
 dialogs	??1CImgHolder2@@UAE@XZ	100.0000	100.0000	1	6130acb87215	0x16460
 dialogs	??1CImgHolder@@UAE@XZ	100.0000	100.0000	3	4dd9487c3911	0x16500
 dialogs	??1CImgHolderBase@@UAE@XZ	100.0000	100.0000	2	4640934b52b9	0x16410
-dialogs	??1CMultiStartDlg@@UAE@XZ	95.6522	95.6522	2	b0b72bd087bb	0xb8960
 dialogs	?ApplyColorSlot0@CBattlezDlg@@QAEXXZ	74.7333	74.7333	3	8ecaa7383598	0x16cd0
 dialogs	?ApplyColorSlot1@CBattlezDlg@@QAEXXZ	74.7333	74.7333	3	a0cde8440259	0x16dc0
 dialogs	?ApplyColorSlot2@CBattlezDlg@@QAEXXZ	74.7333	74.7333	3	bbfc1ae3d75c	0x16e90
@@ -1370,27 +1376,14 @@ dialogs	?ApplyOption1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	3	e150e97a88dd	0x15e
 dialogs	?ApplyOption2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	3	0c21177b05cd	0x15ee0
 dialogs	?ApplyOption3@CBattlezDlg@@QAEXXZ	100.0000	100.0000	3	d72174f2490c	0x15f60
 dialogs	?BattlezSetupDlgInit@@YGHH@Z	0.2387	0.2387	1	6ae50989c643	0x14d00
-dialogs	?BuildSlotList@CMultiStartDlg@@QAEXXZ	87.6823	87.6823	7	607ad84c676e	0xc1e60
 dialogs	?CopyComboSelToChild@CBattlezDlg@@QAEXXZ	96.7581	96.7581	3	8121b6563c2d	0x171b0
 dialogs	?DoDataExchange@CBattlezDlgColors@@QAEXPAUCDataExchange@@@Z	99.4937	99.4937	1	56335239f865	0x179b0
-dialogs	?DoDataExchange@CCheckpointDlg@@QAEXPAUCDataExchange@@@Z	100.0000	100.0000	1	d4becedf9ca8	0x23520
-dialogs	?GetComboSelC@CMultiStartDlg@@QAEHH@Z	100.0000	100.0000	1	f4082b9a4152	0xc2940
-dialogs	?GetComboSelE@@YGHH@Z	100.0000	100.0000	1	80abbae6a26a	0xc2900
 dialogs	?GetCtrlA@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	3	8da357a36fb9	0x15ac0
-dialogs	?GetCtrlA@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	f33dde055d3d	0xc26c0
 dialogs	?GetCtrlB@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	3	c281ebbcc664	0x15b40
-dialogs	?GetCtrlB@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	fee911749556	0xc2740
 dialogs	?GetCtrlC@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	3	c00bd1f73847	0x15bc0
-dialogs	?GetCtrlC@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	29cfc8bf4753	0xc27c0
 dialogs	?GetCtrlD@CBattlezDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	3	507d79af722a	0x15c40
-dialogs	?GetCtrlD@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	2	a153fb631930	0xc2840
 dialogs	?GetMessageMap@CBattlezDlgColors@@UAEPBXXZ	100.0000	100.0000	1	a4c2851eff1a	0x17ac0
-dialogs	?GetMessageMap@CCheckpointDlg@@UAEPBXXZ	100.0000	100.0000	1	25792fd462ed	0x23570
-dialogs	?Init238d0@@YAXXZ	100.0000	100.0000	2	21bf8daa542f	0x238d0
-dialogs	?InitGlobalObList62b640@@YAXXZ	100.0000	100.0000	1	149f07a7d92a	0x23960
-dialogs	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	3	6d55f5c306bb	0xc20a0
 dialogs	?OnMeasureItem@CBattlezDlgColors@@QAEXHPAUtagMEASUREITEMSTRUCT@@@Z	100.0000	100.0000	1	1d032d148dfc	0x17ae0
-dialogs	?OnToggleCheckpointPrompts@CCheckpointDlg@@QAEXXZ	97.8571	97.8571	1	8c735be9808c	0x23590
 dialogs	?Query015d00@CBattlezDlg@@QAEHH@Z	100.0000	100.0000	2	7af453fb39d8	0x15d00
 dialogs	?Query015d30@CBattlezDlg@@QAEHH@Z	100.0000	100.0000	2	777f32ccb25b	0x15d30
 dialogs	?ReadCtrlBText@CBattlezDlg@@QAEXH@Z	69.1389	69.1389	2	b7d8437cebfe	0x17340
@@ -1398,14 +1391,10 @@ dialogs	?SaveOptionCombo0@CBattlezDlg@@QAEHXZ	100.0000	100.0000	1	81f357e4d6e2	0
 dialogs	?SaveOptionCombo1@CBattlezDlg@@QAEHXZ	100.0000	100.0000	1	cd4cfe6d0832	0x175a0
 dialogs	?SaveOptionCombo2@CBattlezDlg@@QAEHXZ	100.0000	100.0000	1	a806c564a323	0x175e0
 dialogs	?SaveOptionCombo3@CBattlezDlg@@QAEHXZ	100.0000	100.0000	1	4920ddc13dfa	0x17620
-dialogs	?SelectItem@CLatencyList@@QAEHHHHH@Z	100.0000	100.0000	2	8d05346cf2af	0x38150
-dialogs	?SetComboSelE@@YGXHH@Z	100.0000	100.0000	1	ced241daff28	0xc28c0
 dialogs	?SetCtrlBText@CBattlezDlg@@QAEXHPBD@Z	100.0000	100.0000	3	c5f06e83206e	0x15db0
 dialogs	?SetCurSelA@CBattlezDlg@@QAEHHH@Z	100.0000	100.0000	2	c41fbb74f173	0x15cc0
 dialogs	?SetCurSelC@CBattlezDlg@@QAEHHH@Z	100.0000	100.0000	2	8b7a29a37df2	0x15d70
 dialogs	?ShowCustomDlg@CBattlezDlg@@QAEXXZ	92.9216	92.9216	4	4e710d20c4eb	0x17030
-dialogs	?ShowMultiStartDlg@CNetMgrLite@@QAEHXZ	81.8605	81.8605	5	4b96be102ebc	0xb86c0
-dialogs	?UpdateSlot@CMultiStartDlg@@QAEHXZ	91.8571	91.8571	7	774b50237c9b	0xc1fd0
 dialogs	_WndProc_15a10@16	100.0000	100.0000	1	5bbda31c8a86	0x15a10
 directdrawmgr	?AddDisplayMode@@YGHPAXH@Z	66.1111	66.1111	1	59a8489b2a17	0x143390
 directdrawmgr	?ClearModeArray_141c80@@YAXXZ	100.0000	100.0000	1	72f3d0439b0f	0x141c80
@@ -2884,6 +2873,17 @@ multi	?Tick@CMulti@@QAEHXZ	86.6074	86.6074	5	820d65d4e270	0xb6890
 multi	?Vslot0b@CMulti@@UAEHHH@Z	100.0000	100.0000	1	7a60f11f8ccb	0xbd210
 multicolordlg	?UpdateColorItems@MultiColorDlg@m4@@QAEHXZ	89.7165	89.7165	4	bb2606acf003	0xc1aa0
 multiresumeslots	?Vslot09@CMulti@@UAEHH@Z	98.5897	98.5897	1	9a4b89340945	0xb6330
+multistartdlg	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	1	1d80ea73491f	0xc1750
+multistartdlg	?BuildSlotList@CMultiStartDlg@@QAEXXZ	87.6823	87.6823	1	607ad84c676e	0xc1e60
+multistartdlg	?GetComboSelC@CMultiStartDlg@@QAEHH@Z	100.0000	100.0000	1	f4082b9a4152	0xc2940
+multistartdlg	?GetComboSelE@@YGHH@Z	100.0000	100.0000	1	80abbae6a26a	0xc2900
+multistartdlg	?GetCtrlA@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	f33dde055d3d	0xc26c0
+multistartdlg	?GetCtrlB@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	fee911749556	0xc2740
+multistartdlg	?GetCtrlC@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	29cfc8bf4753	0xc27c0
+multistartdlg	?GetCtrlD@CMultiStartDlg@@QAEPAVCWnd@@H@Z	70.2941	70.2941	1	a153fb631930	0xc2840
+multistartdlg	?InitPlayerSlots@CMultiStartDlg@@QAEXXZ	0.1294	0.1294	1	6d55f5c306bb	0xc20a0
+multistartdlg	?SetComboSelE@@YGXHH@Z	100.0000	100.0000	1	ced241daff28	0xc28c0
+multistartdlg	?UpdateSlot@CMultiStartDlg@@QAEHXZ	91.8571	91.8571	1	774b50237c9b	0xc1fd0
 multistartdlgcolor	?OnColorSlot0@CMultiStartDlg@@QAEXXZ	99.8387	99.8387	1	a6889846e618	0xc3830
 multistartdlgcolor	?OnColorSlot1@CMultiStartDlg@@QAEXXZ	99.8387	99.8387	1	5b1705ef884c	0xc3950
 multistartdlgcolor	?OnColorSlot2@CMultiStartDlg@@QAEXXZ	99.8387	99.8387	1	053d19ab2753	0xc3a70
@@ -3550,6 +3550,8 @@ shadetablecache	?LumaSortTable@CShadeTableCache@@QAEPAUCShadeTable@@PAUPalEntry@
 shadetablecache	?Serialize@CShadeTableArray@@UAEXAAVCArchive@@@Z	74.5205	74.5205	1	9b1078be0a3b	0x14fe90
 shadetablecache	?SetSizeGrow@CShadeTableArray@@QAEXHH@Z	86.4113	86.4113	1	5c90c2590a04	0x150040
 shadetablecache	?SubTable@CShadeTableCache@@QAEPAUCShadeTable@@H@Z	71.6763	71.6763	4	e5a68ddb0ba9	0x14f310
+showmultidlg	??1CMultiStartDlg@@UAE@XZ	95.6522	95.6522	1	b0b72bd087bb	0xb8960
+showmultidlg	?ShowMultiStartDlg@CNetMgrLite@@QAEHXZ	76.7985	76.7985	1	4b96be102ebc	0xb86c0
 simpleanimation	??0CSimpleAnimation@@QAE@PAUCGameObject@@@Z	90.2797	90.2797	1	3adf25d88694	0xab940
 simpleanimation	??1CSimpleAnimation@@UAE@XZ	100.0000	100.0000	2	ca124d506c16	0xf9d0
 simpleanimation	?AdvanceAnim@CSimpleAnimation@@QAEHXZ	100.0000	100.0000	2	d03180f6f8d2	0xabf70
@@ -3570,8 +3572,9 @@ singleframemessage	?InitActReg@CSingleFrameMessage@@SAXXZ	100.0000	100.0000	2	2d
 singleframemessage	?RegisterActs@CSingleFrameMessage@@SAXXZ	92.9130	92.9130	2	2892678d03c2	0xab710
 singleframemessage	?RunAct@CSingleFrameMessage@@QAEHH@Z	100.0000	100.0000	1	02dec4299eba	0xab5b0
 singleframemessage	?Serialize@CSingleFrameMessage@@QAEHHHHH@Z	100.0000	100.0000	1	6b961b0b12bf	0xf5a0
-slotcombofill	?FillCombo@CLatencyList@@QAEHHH@Z	59.1579	59.1579	3	f5dd51d1b5ee	0x37ff0
+slotcombofill	?FillCombo@CLatencyList@@QAEHHH@Z	60.6842	60.6842	4	8ba71940625e	0x37ff0
 slotcombofill	?GetName@CLatencyItem@@QAE?AVCString@@XZ	100.0000	100.0000	1	cf86a3d59d27	0x38120
+slotcombofill	?SelectItem@CLatencyList@@QAEHHHHH@Z	100.0000	100.0000	1	8f5e03f3f6a7	0x38150
 smackervideowindow	?Advance@CMoviePlayer@@QAEHHH@Z	100.0000	100.0000	2	fe8558754244	0x17c8e0
 smackervideowindow	?CloseSmacker@CMoviePlayer@@QAEHXZ	100.0000	100.0000	3	a654089ecb8e	0x17c9b0
 smackervideowindow	?CreateVideoWindow@CMoviePlayer@@QAEHHH@Z	98.0097	98.0097	2	8505ede7a8ce	0x17c2a0

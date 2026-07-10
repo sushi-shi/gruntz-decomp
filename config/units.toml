@@ -580,6 +580,21 @@ source = "src/Gruntz/Dialogs.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "checkpointdlg"
+source = "src/Gruntz/CheckpointDlg.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "multistartdlg"
+source = "src/Gruntz/MultiStartDlg.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "showmultidlg"
+source = "src/Gruntz/ShowMultiDlg.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "wwdfile"
 source = "src/Wwd/WwdFile.cpp"
 flags = "eh"
