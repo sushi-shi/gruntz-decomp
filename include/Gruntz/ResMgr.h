@@ -44,22 +44,19 @@ struct CDrawTarget {
     char m_pad00[0x10];
     struct SurfaceA { // +0x10  frame-surface page
         char p0[0x2c];
-        struct Surface2c {    // +0x2c the frame surface (CPlay casts it to CProfFlush)
-            void Flip(i32 z); // FUN_0013e850 (resource-facet flip, ret 4)
-            void Draw(i32 z); // credits draw-target draw (thiscall)
-            char p0[0x8];
-            // +0x08  the real IDirectDrawSurface (the render/credits path polls its
-            // IsLost slot 24 (was the CGMInputObj "Poll" misnomer); CState::Vslot17
-            // draws text through its GetDC (slot 17) / ReleaseDC (slot 26)).
-            IDirectDrawSurface* m_8;
-        }* m_2c;
+        // +0x2c the frame surface: the real CDDSurface (Flip @0x13e850, Draw, and its
+        // held IDirectDrawSurface m_8 whose IsLost slot 24 the render/credits path polls;
+        // CState::Vslot17 draws text through m_8's GetDC/ReleaseDC). Was the Surface2c view.
+        CDDSurface* m_2c;
     }* m_10;
     struct SurfaceB {       // +0x14  draw-surface view (the loaders' "draw context" handle)
         void Blit(i32 arg); // credits blit-target blit (thiscall)
         char p0[0x10];
         i32 m_10; // +0x10  surface width  (CPlay::Vslot23 centers the message frame)
         i32 m_14; // +0x14  surface height
-        char p18[0x2c - 0x18];
+        char p18[0x1c - 0x18];
+        i32 m_1c; // +0x1c  the surface's own blit-source RECT origin (BltFast srcRect)
+        char p20[0x2c - 0x20];
         CDDSurface* m_2c; // +0x2c  the real CDDSurface (Fill @0x13e760 / Restore @0x13e7d0)
     };
     SurfaceB* m_14;

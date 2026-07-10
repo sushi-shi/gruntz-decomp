@@ -32,7 +32,7 @@ i32 CState::Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode) {
     if (str == 0) {
         return 0;
     }
-    CDrawTarget::SurfaceA::Surface2c* s = m_c->m_drawTarget->m_10->m_2c;
+    CDDSurface* s = m_c->m_drawTarget->m_10->m_2c;
     if (s == 0) {
         return 0;
     }

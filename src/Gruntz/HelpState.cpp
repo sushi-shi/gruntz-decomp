@@ -105,11 +105,8 @@ struct AttractActorList {
     i32 m_count;             // +0x04
     AttractActor* m_data[1]; // +0x08  inline pointer array
 };
-// The attract registrar's pooled resource: its Stop IS SoundDevice::PurgeVoiceList.
-class SoundDevice {
-public:
-    i32 PurgeVoiceList(i32 a);
-};
+// The attract registrar's pooled resource: its Stop IS SoundDevice::PurgeVoiceList
+// (SoundDevice now from <Gruntz/SoundCue.h>, pulled via GruntzMgr.h->GameRegistry.h).
 
 // CHelpState::Render (0x951f0, slot 5) - the help/attract per-frame poll/draw: when the
 // menu page's busy surface reports idle AND the InputVirtual slot reports idle, report the

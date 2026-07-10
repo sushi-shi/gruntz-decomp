@@ -29,14 +29,20 @@ struct CSprite; // the frame-data value the +0x10 map ALSO yields (Sprite.h); th
 // former StatusBarCueHolder.h CueObj (identical value layout + role) - folded here.
 SIZE_UNKNOWN(LeafCue);
 
-// The DirectSound stream hung off CSndHost+0x2c; Stop() halts it. Its base
-// SoundDevice sub-object supplies PurgeVoiceList (0x136e20, the per-tick voice
-// reaper the level-preview audio-kill path calls). Both reloc-masked __thiscall.
-struct StreamVoice; // fwd (DestroyVoice/OpenStream arg+ret)
+// The DirectSound stream hung off CSndHost+0x2c is a `SoundStream : SoundDevice`;
+// Stop() halts it, and PurgeVoiceList (0x136e20) is its SoundDevice base method - the
+// per-tick voice reaper the audio-kill paths call. The real SoundDevice base is pulled
+// here (include-guarded, so it dedupes with the TUs that already have it via
+// WorldSoundSet.h / a real Dsndmgr header), letting PurgeVoiceList carry the retail
+// SoundDevice symbol so every caller reaches it cast-free. SoundDevice.h is afx-light
+// (it only forward-declares the DirectSound COM). Folded away the per-TU SoundDevice /
+// DirectSoundMgr facet views. SoundStream's own Stop/DestroyVoice/OpenStream are declared
+// against forward-declared StreamVoice/CParseSource so this stays a light method facet.
+#include <Dsndmgr/SoundDevice.h> // the real SoundDevice base (+ DirectSoundMgr / voice list)
+struct StreamVoice;              // fwd (DestroyVoice/OpenStream arg+ret; <Dsndmgr/StreamVoice.h>)
 class CParseSource;
-struct SoundStream {
+struct SoundStream : SoundDevice {
     void Stop();                       // 0x137a80 ?Stop@SoundStream@@QAEXXZ (__thiscall)
-    void PurgeVoiceList(i32 time);     // 0x136e20 (SoundDevice base method; voice reap)
     void DestroyVoice(StreamVoice* v); // 0x1379d0
     StreamVoice* OpenStream(CParseSource* p, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x137900
 };

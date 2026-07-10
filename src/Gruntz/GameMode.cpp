@@ -32,20 +32,14 @@
 // real per-frame step+draw is slot +0x14 (Render), overridden by each concrete
 // state (carcassed in the long comment at the bottom of this file).
 #include <Bute/SymParser.h>
-class SoundDevice {
-public:
-    i32 PurgeVoiceList(i32 a);
-};
+// SoundDevice (PurgeVoiceList) now comes from <Gruntz/SoundCue.h> (via GameRegistry.h).
 class CDDrawWorkerRegistry {
 public:
     i32 HasKeyEqual_155550(const char* k);
     i32 RemoveKeysEqual_155360(const char* a, const char* b);
 }; // 0x155550/0x155360
-class DirectSoundMgr {
-public:
-    i32 IsPlaying();
-    i32 CloneAndPlay(i32 a, i32 b, i32 c);
-}; // 0x1353f0/0x135660
+// DirectSoundMgr (IsPlaying 0x1353f0 / CloneAndPlay 0x135660) now comes from the real
+// <Dsndmgr/SoundDevice.h>, pulled through <Gruntz/SoundCue.h> (via GameRegistry.h).
 #include <Gruntz/BattlezData.h> // canonical CBattlezData (InBounds @0xfcd70; non-virtual)
 #include <Io/MoviePlayer.h> // canonical CMoviePlayer (~/CloseSmacker; non-virtual, cast-neutral)
 #include <Gruntz/SoundCueMgr.h>

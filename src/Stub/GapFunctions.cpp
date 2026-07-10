@@ -39,24 +39,6 @@ RVA(0x00014120, 0x1a9)
 i32 Gap_014120(void) {
     return 0;
 } // @stub
-// @stub 0x1f480 = CMultiBootyState::Render (slot 5, +0x14; declared-only in GameMode.h,
-// home BootyStateActivate.cpp). /GX booty-countdown display. DECODED: m_c is the
-// CSpriteFactoryHolder. r = m_c->m_drawTarget->m_10->m_2c->m_8; if(r && r->vtable[0x18](r)==0
-// || this->InputVirtual()!=0){ m_4->ReportError(0x8006,0x459)[thunk 0x346d]; return 0; }
-// if(m_1b8==0x64){ this->OnActivated()[thunk 0x3fdf->0x1ed30 == CBattleStatsView::
-// DrawBattleStats]; m_1b8=0xc7; } m_c->m_8->vtable[9](1); m_c->m_8->vtable[10](m_c->m_4->m_14);
-// secs = g_mgrSettings->m_7c->m_10 / 1000; CString s; SetRect(&rc,8,0x41,0xcb,0xae);
-// if(secs>=3600) s.Format("%d:%2.2d:%2.2d", h, m, sec) else s.Format("%d:%2.2d", m, sec)
-// [0x1b2cf5]; ShowHudMessageAlt(m_c, &s, &rc, 0x6e, 1,0xff,0xff,0,1)[thunk 0x31d9->0x115520];
-// CDDSurface::Flip(m_c->m_4->m_10->m_2c, 0)[0x13e850]; CDDSurface::BltFast(m_c->m_4->m_14->m_2c,
-// 0,0, m_c->m_4->m_18->m_2c, &(...+0x1c), 0x10)[0x13ef90]; if(m_c->m_28->m_2c) SoundDevice::
-// PurgeVoiceList(-1)[0x136e20]; ~s; ret 1. Needs CDrawTarget m_10/m_14/m_18(->m_2c) +
-// CSpriteFactory vtable slots 9/10 modeled (deep member chain) + the DrawBattleStats
-// reloc-name (cast this to CBattleStatsView for the exact `?DrawBattleStats@` symbol).
-RVA(0x0001f480, 0x1e9)
-i32 Gap_01f480(void) {
-    return 0;
-} // @stub
 // @stub 0x3c990 / 0x3cdd0 = twin bute-config debug DialogProcs (INT_PTR CALLBACK, /GX;
 // belong in DemoCameraTools.cpp with the rest of the 0x3c300 block). Editors for
 // "Attributez.txt" (0x3c990) / "dwrects.txt" (0x3cdd0). DECODED (identical shape, differing

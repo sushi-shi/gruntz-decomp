@@ -104,6 +104,7 @@ public:
     i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
     i32 Restore(void* arg1, i32 arg2);           // 0x13e7d0 (BoundaryUpper2.cpp)
     i32 Flip(CDDSurface* target);                // 0x13e850
+    void Draw(i32 z);                            // credits draw-target draw (thiscall; reloc-masked)
     void* GetElementAt(i32 i);                   // 0x13ea70  m_elements[i] (bounds-checked)
     i32 SetColorKey(u32 flags, void* key);       // 0x13eaa0
     // Convenience SetColorKey overloads that build a DDCOLORKEY on the stack + forward.

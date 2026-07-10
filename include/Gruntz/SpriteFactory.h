@@ -76,6 +76,22 @@ struct GruntObjMap {
 };
 class CSpriteFactory {
 public:
+    // The factory is polymorphic (vptr @+0x00): the per-frame render path dispatches
+    // its "worker apply" slots (CMultiBootyState::Render -> slot 9 FrameBegin(flag),
+    // slot 10 FramePresent(drawSurface)). Slots 0..8 anchor the order (declared-only,
+    // reloc-masked; the vtable is not diffed).
+    virtual void v00();
+    virtual void v01();
+    virtual void v02();
+    virtual void v03();
+    virtual void v04();
+    virtual void v05();
+    virtual void v06();
+    virtual void v07();
+    virtual void v08();
+    virtual void FrameBegin(i32 flag);      // slot 9  (+0x24)  begin/apply the frame worker
+    virtual void FramePresent(void* target); // slot 10 (+0x28)  present onto the draw surface
+
     // Public entry: look the template up by class-NAME, forward to the impl. __thiscall,
     // ret 0x18. Returns the created instance (or 0 if the template is missing).
     CGameObject* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
@@ -85,8 +101,8 @@ public:
     i32 AttachSprite(CSprite2* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags);
     void AddChild(CSprite2* obj, i32 flag); // 0x159e40 (external/no-body)
 
-    char m_pad00[0xc];
-    CResMgr* m_c; // +0x0c
+    char m_pad04[0xc - 0x4]; // vptr occupies +0x00..+0x03
+    CResMgr* m_c;            // +0x0c
     char m_pad10[0x14 - 0x10];
     CSpriteListNode* m_liveObjects; // +0x14  live created-object list head
     char m_pad18[0x48 - 0x18];

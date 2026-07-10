@@ -20,11 +20,21 @@
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Mfc.h> // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
+#include <DDrawMgr/DDSurface.h> // CMultiBootyState::Render: CDDSurface Flip/BltFast on the frame surfaces
+#include <Mfc.h>   // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
+#include <ddraw.h> // CMultiBootyState::Render: real IDirectDrawSurface::IsLost dispatch (slot 24)
 
 #include <rva.h>
 #include <Gruntz/BankMgr.h> // CResSource::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
 #include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CSpriteFactoryHolder facet
+#include <Gruntz/GruntzMgr.h>    // CMultiBootyState::Render: CState::m_4 owner (ReportError)
+#include <Gruntz/SpriteFactory.h> // CMultiBootyState::Render: m_c->m_8 frame-worker slots 9/10
+
+// CMultiBootyState::Render's HUD line is drawn through the shared GlyphStringDraw.cpp
+// free function (0x115520); declared here (reloc-masked) so the call co-names with retail.
+struct HudMsgSink;
+void ShowHudMessageAlt(HudMsgSink* sink, i32 rect, i32 str, i32 a4, i32 a5, i32 a6, i32 a7,
+                       i32 a8, i32 a9);
 
 // ---------------------------------------------------------------------------
 // The game-registry (*0x24556c == g_mgrSettings, the CGameRegistry singleton) WORLD
@@ -58,13 +68,21 @@ struct BzGameWnd { // g_mgrSettings->m_gameWnd (+0x04): the game window; m_hwnd 
     char m_pad00[4];
     HWND m_hwnd; // +0x04
 };
+// The elapsed-time clock the booty countdown reads (g_mgrSettings->m_7c->m_10 ms).
+SIZE_UNKNOWN(BzGameClock);
+struct BzGameClock {
+    char m_pad00[0x10];
+    i32 m_elapsedMs; // +0x10  elapsed game milliseconds (Render / 1000 -> seconds)
+};
 SIZE_UNKNOWN(BzGameReg);
 struct BzGameReg { // == *0x24556c (g_mgrSettings), viewed for the world sound set
     char m_pad00[4];
     BzGameWnd* m_gameWnd; // +0x04  the game window (KeyHost::Check posts to m_hwnd)
     char m_pad08[0x30 - 0x08];
     BootySndWorld* m_world; // +0x30
-    char m_pad34[0x11c - 0x34];
+    char m_pad34[0x7c - 0x34];
+    BzGameClock* m_7c; // +0x7c  elapsed-time clock (Render countdown source)
+    char m_pad80[0x11c - 0x80];
     i32 m_soundToken; // +0x11c  ambient sound token
 };
 DATA(0x0024556c)
@@ -111,6 +129,49 @@ i32 CBootyState::Vslot09(i32) {
                 res->m_player->ConfigureItem(token, 0, 0, 1);
             }
         }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CMultiBootyState::Render (slot 5, +0x14, 0x1f480) - the booty-countdown per-frame
+// draw. Bail (ReportError 0x8006/0x459) when the frame surface is lost and the input
+// poll did not consume the frame. Draw the battle-stats scoreboard once (the m_1b8
+// latch flips 0x64 -> 0xc7), run the sprite worker's frame apply/present, format the
+// remaining time as a HUD line (H:MM:SS or M:SS), flip the frame + blit the page onto
+// the target, and purge finished sound voices. /GX (the CString temp).
+RVA(0x0001f480, 0x1e9)
+i32 CMultiBootyState::Render() {
+    IDirectDrawSurface* frameSurf = m_c->m_drawTarget->m_10->m_2c->m_8;
+    if (frameSurf == 0 || frameSurf->IsLost() != 0) {
+        if (InputVirtual() == 0) {
+            m_4->ReportError(0x8006, 0x459);
+            return 0;
+        }
+    }
+    if (m_1b8 == 0x64) {
+        OnActivated(); // 0x1ed30 (== CBattleStatsView::DrawBattleStats)
+        m_1b8 = 0xc7;
+    }
+    m_c->m_8->FrameBegin(1);
+    m_c->m_8->FramePresent(m_c->m_drawTarget->m_14);
+
+    u32 secs = g_mgrSettings->m_7c->m_elapsedMs / 1000; // signed /1000, then unsigned H:M:S
+    CString s;
+    RECT rc;
+    SetRect(&rc, 8, 0x41, 0xcb, 0xae);
+    if (secs / 3600 != 0) {
+        s.Format("%d:%2.2d:%2.2d", secs / 3600, (secs / 60) % 60, secs % 60);
+    } else {
+        s.Format("%d:%2.2d", secs / 60, secs % 60);
+    }
+    ShowHudMessageAlt((HudMsgSink*)m_c, (i32)&s, (i32)&rc, 0x6e, 1, 0xff, 0xff, 0, 1);
+
+    CDrawTarget* dt = m_c->m_drawTarget;
+    dt->m_10->m_2c->Flip(0);
+    dt->m_14->m_2c->BltFast(0, 0, dt->m_18->m_2c, &dt->m_18->m_1c, 0x10);
+    if (m_c->m_28->m_2c != 0) {
+        m_c->m_28->m_2c->PurgeVoiceList(-1); // SoundDevice base method (inherited)
     }
     return 1;
 }

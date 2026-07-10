@@ -17,20 +17,14 @@
 #include <Gruntz/Attract.h>
 #include <Gruntz/GameRegistry.h>       // the ONE game-registry shape (CGameRegistry / g_gameReg)
 #include <DDrawMgr/DDrawSubMgrPages.h> // the ONE CDDrawSubMgrPages shape (Method_158b40)
+#include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c: Flip + m_8)
 #include <ddraw.h>                     // IDirectDrawSurface (the flip surface's raw +0x8 COM iface)
 #include <rva.h>
 #include <Globals.h>
 
 #include <stdio.h> // sprintf (the "\SCREENZ\%s" path formatter)
-class DirectSoundMgr {
-public:
-    i32 IsPlaying();
-    i32 CloneAndPlay(i32 a, i32 b, i32 c);
-};
-class SoundDevice {
-public:
-    i32 PurgeVoiceList(i32 a);
-};
+// DirectSoundMgr (IsPlaying/CloneAndPlay) + SoundDevice (PurgeVoiceList) now come from the
+// real <Dsndmgr/SoundDevice.h>, pulled through <Gruntz/SoundCue.h> (via GameRegistry.h).
 
 // The attract-cue registrar IS a CDDrawSubMgrLeafScan (header-less); local decl (exact arg types).
 class DirNode;

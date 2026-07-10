@@ -932,7 +932,8 @@ flags = "eh"
 # CBootyState::vfunc_9 (slot 9) + CMultiBootyState::OnActivate2 (slot 8) - vtable-proven.
 unit = "bootystateactivate"
 source = "src/Gruntz/BootyStateActivate.cpp"
-flags = "base"
+# eh: CMultiBootyState::Render (0x1f480) has the /GX frame for its CString HUD temp.
+flags = "eh"
 
 [[unit]]
 # LoadCustomWorldInfo (0x3b7c0) CUSTOM_WORLDINFO dialog helper (sibling of CustomWorldDialog).

@@ -14,10 +14,8 @@ struct StreamVoice { // struct (not class): retail OpenStream returns PAU (?Open
     i32 Configure(i32 a, i32 b, i32 c, i32 d);
     i32 SetSource(CParseSource* s); // real @0x1374c0 takes CParseSource* (src is the parse-source handle)
 };
-class DirectSoundMgr {
-public:
-    i32 SetVolumeByIndex(i32 v); // DirectSoundMgr::SetVolumeByIndex (i32 ret; call ignores it)
-};
+// DirectSoundMgr (SetVolumeByIndex) now comes from the real <Dsndmgr/SoundDevice.h>,
+// pulled through <Gruntz/SoundCue.h> (via GameRegistry.h below).
 #include <Gruntz/GruntVoice.h>
 #include <Dsndmgr/StreamFeeder.h>
 #include <Gruntz/GameRegistry.h>

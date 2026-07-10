@@ -485,7 +485,8 @@ public:
     // declared as fields here. Only the directly-stored scalars are named.
     char m_pad1a8[0x1b4 - 0x1a8];
     i32 m_1b4; // +0x1b4 anim-mode gate (0 = trig path, !=0 = table path)
-    char m_pad1b8[0x1d8 - 0x1b8];
+    i32 m_1b8; // +0x1b8 Render's one-shot battle-stats latch (0x64 -> draws once -> 0xc7)
+    char m_pad1bc[0x1d8 - 0x1bc];
     i32 m_letterIdx; // +0x1d8 active letter count / index
     i32 m_radius;    // +0x1dc sine-spiral radius (loaded (float) for sin/cos; shrinks to 0)
     i32 m_angleStep; // +0x1e0 spiral angle/step counter (advances by 5)
