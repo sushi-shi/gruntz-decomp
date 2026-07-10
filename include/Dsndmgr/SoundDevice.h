@@ -72,6 +72,16 @@ public:
     DirectSoundMgr*
     AcquireFile(char* path, u32 flags, u32 reserved); // 0x136860  fopen whole file -> Acquire
     DirectSoundMgr* Acquire(void* riff, u32, u32);    // 0x136910  parse RIFF + CreateBuffer + load
+    DirectSoundMgr* AcquireResource(
+        const char* name,
+        u32 flags,
+        u32 reserved
+    ); // 0x136a30  find/load/lock the named "WAVE" Win32 resource -> Acquire
+    i32 ReloadResource(
+        DirectSoundMgr* probe,
+        const char* name,
+        u32 reserved
+    ); // 0x136ce0  looping-gated "WAVE" resource -> ReloadRiff
     i32 ValidateRestore(
         DirectSoundMgr* buf,
         WaveFormatX* fmt,
@@ -94,10 +104,11 @@ public:
     i32 Compact();                                  // 0x136650  IDirectSound::Compact
     i32 ReacquireViaCallback();                     // 0x1365e0  dispatch m_reacquireProc
     i32 SetCooperativeLevel(void* hwnd, u32 level); // 0x1365f0
-    // Per-tick device-list housekeeping (also defined in DirectSoundMgr.cpp).
+    // Per-tick device-list housekeeping.
     i32 PurgeVoiceList(i32 time);   // 0x136e20  reap finished voices from m_voiceList
     void RemoveSub(StreamVoice* n); // 0x1379d0  retire one instance-list stream voice (extern)
-    i32 TickSubManagers(i32 time);  // 0x137ac0  tick each derived instance
+    i32 TickSubManagers(i32 time);  // 0x137ac0  tick each derived instance (defined in
+                                    // SoundStream.cpp - the DSndMgSR.cpp obj, per dossier)
 
     // The volume->attenuation curve (DSNDMGR.CPP): map a 0..100 volume to a DSound
     // hundredths-of-dB attenuation via an acos/pow transfer (static, x87).

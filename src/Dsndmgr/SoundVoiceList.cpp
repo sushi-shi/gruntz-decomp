@@ -1,49 +1,15 @@
 // SoundVoiceList.cpp - the WAP32 sound engine's intrusive doubly-linked-list
-// primitive (the home for the four shared list helpers used across Dsndmgr). See
-// include/Dsndmgr/SoundVoiceList.h for the layout + the call-graph evidence
-// (SoundDevice/SoundStream/DirectSoundMgr each declare a local wrapper struct over
-// these same RVAs). Recovered from the "ClassUnknown_30" trace group; the four
-// helpers are ONE physical copy each, modeled here on the {head,tail} list head.
+// primitive (the five 0x1390e0-0x1391e0 list helpers; a SEPARATE retail obj past
+// the 0x13848b end of the DSndMgSR.cpp interval - see docs/exe-map/
+// interval-dossiers.md). DSoundList::RemoveMatching (0x136f60) falls INSIDE the
+// DSNDMGR.CPP obj span and now lives in src/Dsndmgr/DirectSoundMgr.cpp; the
+// declaration stays on the shared DSoundList (SoundVoiceList.h). See
+// include/Dsndmgr/SoundVoiceList.h for the layout + the call-graph evidence.
 //
 // The biased +/-4 element<->link conversions are the ternary short-circuit form
 // (docs/patterns/biased-pointer-advance-ternary.md).
 #include <Dsndmgr/SoundVoiceList.h>
 #include <rva.h>
-
-// ---------------------------------------------------------------------------
-// RemoveMatching (__thiscall, 2 stack args). Walk the chain; unlink +
-// free every element whose key (@+0x10) equals `key` and whose tag (@+0xc) equals
-// `tag` (0xffff is a wildcard). The free is `delete (PureSoundElem*)e`: the base-
-// subobject teardown resets the element vptr to the pure base (??_7PureSoundElem =
-// 0x5ef6c8) and PureSoundElem::operator delete RezFree's it. The tag-mismatch arm
-// does not advance (it re-tests the current element) - retail's structure; the
-// elements that reach here never trip it, but the source must reproduce the
-// codegen, so spell it as a no-advance `continue`.
-// @early-stop
-// select-zero-mask-dest-register wall (docs/patterns/select-zero-mask-dest-register.md):
-// byte-exact except the `e ? node : 0` mask (neg/sbb/and) lands in edx (ours) vs eax
-// (retail) - a free-list pick the four obvious source spellings don't move. 99.3%,
-// logic complete; deferred to the final sweep.
-RVA(0x00136f60, 0x74)
-void DSoundList::RemoveMatching(void* key, u32 tag) {
-    DSoundElem* e = elemOf<DSoundElem>(m_head);
-    while (e) {
-        DSoundLink* node = &e->m_link;
-        DSoundLink* n = e->m_link.m_next;
-        DSoundElem* next = elemOf<DSoundElem>(n);
-        if (tag != 0xffff && e->m_tag != tag) {
-            continue;
-        }
-        if (e->m_key == key) {
-            Unlink(e ? node : 0);
-            if (e) {
-                PureSoundElem* pure = e; // up-cast: teardown resets to the pure base
-                delete pure;
-            }
-        }
-        e = next;
-    }
-}
 
 // ---------------------------------------------------------------------------
 // InsertHead (0x1390e0, __thiscall, 1 stack arg). Prepend `node`: node->next =
@@ -58,6 +24,21 @@ void DSoundList::InsertHead(DSoundLink* node) {
         m_tail = node;
     }
     m_head = node;
+}
+
+// ---------------------------------------------------------------------------
+// InsertTail (0x139110, __thiscall, 1 stack arg). Append `node`: node->next = 0;
+// node->prev = tail; fix the old tail's next (or the head if empty); tail = node.
+RVA(0x00139110, 0x27)
+void DSoundList::InsertTail(DSoundLink* node) {
+    node->m_next = 0;
+    node->m_prev = m_tail;
+    if (m_tail) {
+        m_tail->m_next = node;
+    } else {
+        m_head = node;
+    }
+    m_tail = node;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,22 +81,7 @@ void DSoundList::InsertBefore(DSoundLink* before, DSoundLink* node) {
 }
 
 // ---------------------------------------------------------------------------
-// InsertTail (0x139110, __thiscall, 1 stack arg). Append `node`: node->next = 0;
-// node->prev = tail; fix the old tail's next (or the head if empty); tail = node.
-RVA(0x00139110, 0x27)
-void DSoundList::InsertTail(DSoundLink* node) {
-    node->m_next = 0;
-    node->m_prev = m_tail;
-    if (m_tail) {
-        m_tail->m_next = node;
-    } else {
-        m_head = node;
-    }
-    m_tail = node;
-}
-
-// ---------------------------------------------------------------------------
-// Unlink (__thiscall, 1 stack arg). Splice `node` out: patch its prev's
+// Unlink (0x1391e0, __thiscall, 1 stack arg). Splice `node` out: patch its prev's
 // next (or the head) and its next's prev (or the tail).
 RVA(0x001391e0, 0x30)
 void DSoundList::Unlink(DSoundLink* node) {

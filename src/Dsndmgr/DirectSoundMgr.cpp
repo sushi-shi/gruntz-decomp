@@ -1,42 +1,52 @@
-// DirectSoundMgr.cpp - per-buffer DirectSound wrapper run (C:\Proj\Dsndmgr\DSNDMGR.CPP).
-// DirectSoundMgr is the wrapper base (vtable 0x5ef6b8); two leaves derive it here:
-// DSoundBaseSub (0x5ef6c0, 0x58B clone) and DSoundCloneInst (0x5ef6bc, 0x60B owns a
-// clone list). SoundDevice bring-up methods in this RVA range live here too.
-// GetErrorString maps a DSound HRESULT to a string + beeps/logs/MessageBox per three
-// reporting globals (switch VALUES + DSERR_*/"DirectSoundMgr" strings are load-bearing).
+// DirectSoundMgr.cpp
+// original TU: C:\Proj\Dsndmgr\DSNDMGR.CPP
+//
+// The WHOLE DSNDMGR.CPP object, consolidated per docs/exe-map/interval-dossiers.md
+// (interval 0x1350b0-0x13848b splits at 0x137330 into DSNDMGR.CPP + DSndMgSR.cpp;
+// __FILE__-anchored). One retail obj = one TU, functions in retail RVA order:
+//   * SoundDevice - the DirectSound *device* manager (vftable 0x5ef6c4): bring-up,
+//     buffer/voice lists, RIFF acquire/reload, primary buffer (was SoundDevice.cpp).
+//   * DirectSoundMgr - the per-buffer wrapper base (vftable 0x5ef6b8) + its two
+//     leaves DSoundBaseSub (0x5ef6c0, 0x58B clone) and DSoundCloneInst (0x5ef6bc,
+//     0x60B owns a clone list).
+//   * DSoundVoice - the 0x28-byte volume-ramp voice node (vftable 0x5ef6d0),
+//     Tick/Stop (was DSoundVoice.cpp). Its ctor 0x136fe0 is NOT yet reconstructed
+//     (no source body anywhere; the dossier's "SoundTick_Ctor" gap) - CloneAndPlay's
+//     `new DSoundVoice(...)` reloc-masks to it.
+//   * DSoundList::RemoveMatching (0x136f60) - the reaping list helper (the other
+//     five DSoundList primitives live at 0x1390e0+, OUTSIDE this obj's span, and
+//     stay in SoundVoiceList.cpp).
+//   * CSoundCueMgr::GetItem/ConfigureItem (0x135d70/0x1360d0) - the Dsndmgr UI
+//     sound-cue manager (dossier seam re-homes from statusbarmgrgetitem /
+//     spriteresource; both walk DirectSoundMgr voices).
+//   * ConvertVolumeToPercent (0x135110) - the centi-dB -> percent transfer curve
+//     (dossier seam re-home; was the mis-homed "GruntCmdPercent" /Odi singleton,
+//     now compiled under this TU's real /O2 /GX profile).
+//   * SoundDevice::AcquireResource/ReloadResource (0x136a30/0x136ce0) - the WAVE
+//     Win32-resource siblings of AcquireFile/ReloadFile (dossier seam re-homes;
+//     were the ResLoaders::WaveHost_136a30/WaveHost2_136ce0 views).
+//
+// GetErrorString + SetDSoundReportModes (0x138120/0x138150) moved OUT to the
+// DSndMgSR.cpp side (SoundStream.cpp): they sit AFTER the StreamFeeder block in
+// retail, past the 0x137330 file boundary. Same for ??1PureSoundElem (0x137330)
+// and SoundDevice::TickSubManagers (0x137ac0).
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Dsndmgr/SoundVoiceList.h>
 #include <Dsndmgr/DSoundVoice.h> // the 0x28-byte voice node CloneAndPlay news
 #include <Dsndmgr/SoundDevice.h> // SoundDevice: the owning device (m_owner) + its methods
+#include <Rez/RezMgr.h>          // RezAlloc/RezFree/RezFRead/RezFClose - the engine heap/file layer
+                                 // (pulls <Mfc.h>; MUST precede <Win32.h> - the C1189 rule)
 #include <Win32.h>               // windows.h base types (dsound.h needs them)
 #include <mmsystem.h>            // WAVEFORMATEX (dsound.h needs it predefined)
 #include <dsound.h> // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
-#include <Dsndmgr/StreamVoice.h> // canonical StreamVoice + StreamVoiceFeeder (TickSubManagers)
 #include <rva.h>
-#include <stdio.h>  // engine sprintf (reloc-masked)
-#include <string.h> // inline strcpy (rep movs / repne scasb)
+#include <math.h>   // acos / pow (intrinsic __CIacos / __CIpow) in the volume curves
+#include <stdio.h>  // engine sprintf (reloc-masked); FILE - the CRT stream Eng_fopen returns
+#include <string.h> // inline strcpy/memcpy (rep movs / repne scasb)
 
-// MessageBeep/MessageBoxA/OutputDebugStringA + Win32 types via <windows.h> (Win32.h).
-#include <Win32.h>
-#include <Globals.h>
+#include <Globals.h> // c_volScale/c_volNum/c_acosNorm/c_powExp + g_panTable
 
-// Reporting-mode globals (.data): g_logEnabled -> OutputDebugStringA, g_msgBoxEnabled
-// -> MessageBox, g_beepEnabled -> startup beep, g_thirdEnabled -> "any output" gate.
-DATA(0x00253c54)
-extern "C" i32 g_beepEnabled; // 0x653c54
-DATA(0x00253c4c)
-extern "C" i32 g_logEnabled; // 0x653c4c
-DATA(0x00253c50)
-extern "C" i32 g_msgBoxEnabled; // 0x653c50
-DATA(0x00253c58)
-extern "C" i32 g_thirdEnabled; // 0x653c58
-
-// DSERR_BUFFERLOST (MAKE_DSHRESULT(150)) - the DirectSound error a lost hardware
-// buffer returns; every buffer op that hits it drops into the reacquire-retry path.
-
-// Empty mutable string in .data copied into the working buffer up front.
-DATA(0x002293f4)
-extern "C" char g_emptyString[]; // 0x6293f4
+#include <Gruntz/SoundCueMgr.h> // CSoundCueMgr (GetItem/ConfigureItem live in this obj)
 
 // __FILE__ every wrapper passes to GetErrorString (single $SG pooled constant).
 #define DSNDMGR_FILE "C:\\Proj\\Dsndmgr\\DSNDMGR.CPP"
@@ -45,23 +55,114 @@ extern "C" char g_emptyString[]; // 0x6293f4
 #define DSB_RETAIL_LOOPBIT                                                                         \
     0x02 // retail IsLooping mask; DX6 dsound.h DSB_RETAIL_LOOPBIT is 0x04, this game used the DX5-era 0x02 (byte-proven, load-bearing)
 
+// DSBUFFERDESC.dwSize (the 0x14-byte sound-buffer descriptor).
+#define DSBUFFERDESC_SIZE 0x14
+
+// A little-endian RIFF FourCC as a u32 (compile-time constant -> the same immediate
+// the retail chunk-tag compares use).
+#define WAVE_FOURCC(a, b, c, d)                                                                    \
+    ((u32)(u8)(a) | ((u32)(u8)(b) << 8) | ((u32)(u8)(c) << 16) | ((u32)(u8)(d) << 24))
+
 // DSOUND.dll ordinal #1 device creator; no dllimport -> direct `e8 rel32` thunk (retail).
 
-// DSound centi-dB [-10000..0] -> 0..100 percent; free __cdecl helper 0x135110.
-extern "C" i32 ConvertVolumeToPercent(i32 vol);
+// RIFF/WAVE chunk parser 0x137110 (__cdecl): scan a RIFF blob for `fmt `/`data`,
+// write fmt (*out), PCM ptr (*dataOut) + len (*sizeOut); nonzero if `fmt ` found.
+extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut);
 
-// Volume->attenuation table SetVolumeByIndex indexes (0x653ab8, filled in SoundDevice.cpp).
-extern i32 g_volumeTable[100];
-// The pan table (0x653c48, Globals.h) sits right after: +arg reads the negated entry.
+// Volume->attenuation table SetVolumeByIndex indexes (0x653ab8), filled by
+// BuildVolumeTable(i=0..100); INCLUSIVE loop -> the 101st store lands on
+// g_panTable[0] (retail). The pan table (0x653c48, Globals.h) sits right after:
+// SetPanByIndex's +arg reads the negated entry.
+DATA(0x00653ab8)
+i32 g_volumeTable[100];
+
+// Engine fopen 0x11f870 (CRT FILE*) + file-size query 0x18c480 (reads FILE._file fd).
+extern "C" FILE* Eng_fopen(const char* path, const char* mode); // 0x11f870
+extern "C" u32 Eng_filelength(i32 fd);                          // 0x18c480
+
+// "rb" open-mode string the loader passes fopen (.data @ 0x60b668).
+DATA(0x0020b668)
+extern const char s_rb[];
+
+// The app resource-module accessor AcquireResource/ReloadResource read the
+// HINSTANCE from (global accessor 0x1d3631, module handle @+0x08; the same local
+// view ResourceLoaders.cpp keeps for its RT_BITMAP/PALETTE loaders).
+struct AppModule_136a30 {
+    char m_pad0[8];
+    HINSTANCE m_8; // +0x08 = the resource module handle
+};
+SIZE_UNKNOWN(AppModule_136a30);
+AppModule_136a30* AppModule_1d3631(); // RVA 0x1d3631 (global accessor)
+
+// The retail game-global timeGetTime fn-ptr (_g_pTimeGetTime @ 0x6c4650), NOT the
+// WINMM import; PurgeVoiceList calls ds:[0x6c4650] - do NOT swap for timeGetTime.
+extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 
 // The DirectSoundMgr clone hierarchy (CloneList / DSoundBaseSub / DSoundCloneInst) is
-// now defined in DirectSoundMgr.h so the device + feeder can name the concrete leaf;
-// the method bodies below are unchanged.
+// defined in DirectSoundMgr.h so the device + feeder can name the concrete leaf.
 
 // ---------------------------------------------------------------------------
-// ~DirectSoundMgr - empty base-subobject dtor (just the vptr reset to 0x5ef6b8).
-RVA(0x00135300, 0x7)
-DirectSoundMgr::~DirectSoundMgr() {}
+// VolumeToAttenuation (static __cdecl, x87): 0..100 volume -> centi-dB attenuation.
+// 100->0, 0->-10000, else -acos(pow(1/(v/100),10))/acos(2)*100, floored via __ftol.
+// @early-stop
+// x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md, 58%): retail spills
+// `ratio` to [ebp-8] (push ebp frame + shared jmp epilogue); MSVC5 keeps it in st0
+// (frameless) + an extra fxch. Not source-steerable; logic complete.
+RVA(0x001350b0, 0x5d)
+i32 SoundDevice::VolumeToAttenuation(i32 value) {
+    if (value == 100) {
+        return 0;
+    }
+    if (value == 0) {
+        return -10000;
+    }
+    double t = (double)value / c_volScale;
+    double ratio = acos(pow(c_volNum / t, c_powExp)) / acos(c_acosNorm);
+    return (i32)(-(ratio * c_volScale));
+}
+
+// ---------------------------------------------------------------------------
+// ConvertVolumeToPercent (0x135110, free __cdecl): DSound centi-dB [-10000..0] ->
+// 0..100 linear percent. Returns 100 for a zero input, else r = c_volScale -
+// (c_volNum - pow(c_acosNorm, -(|v|/100)/c_powExp)) * c_volScale
+// (== 100*2^(-(|v|/100)/10)), floored via __ftol and sign-flipped for non-negative
+// inputs. Shares the volume-curve constant pool with VolumeToAttenuation above.
+// (Dossier seam re-home: was the mis-homed "ComputeCmdPercent" singleton unit
+// gruntcmdpercent, compiled /Odi.)
+// @early-stop
+// compile-profile wall (33.96%, was 100% under the /Odi singleton crutch): the body
+// needs /O1-style codegen (ebp frame retained, idiv-by-100 with no magic-number
+// strength reduction, x87 spill schedule) that this TU's real /O2 /GX profile does
+// not emit. Logic complete + previously byte-proven; placement per the dossier is
+// authoritative (never revert placement) - a per-fn #pragma optimize probe is the
+// final-sweep lead.
+RVA(0x00135110, 0x8e)
+SYMBOL(_ConvertVolumeToPercent)
+extern "C" i32 ConvertVolumeToPercent(i32 v) {
+    if (v == 0) {
+        return 100;
+    }
+    double d;
+    if (v < 0) {
+        d = (double)(-v / 100);
+    } else {
+        d = (double)(v / 100);
+    }
+    double r = c_volScale - (c_volNum - pow(c_acosNorm, -d / c_powExp)) * c_volScale;
+    if (v < 0) {
+        return (i32)r;
+    }
+    return (i32)(-r);
+}
+
+// ---------------------------------------------------------------------------
+// BuildVolumeTable: g_volumeTable[i] = VolumeToAttenuation(i), i=0..100 (101 stores).
+RVA(0x001351a0, 0x23)
+void SoundDevice::BuildVolumeTable() {
+    for (i32 i = 0; i <= 100; i++) {
+        g_volumeTable[i] = VolumeToAttenuation(i);
+    }
+}
 
 // ---------------------------------------------------------------------------
 // ctor: cache buffer + owner, zero the caps/state, then (if buf) read caps into m_caps
@@ -115,6 +216,11 @@ DirectSoundMgr::DirectSoundMgr(IDirectSoundBuffer* buf, SoundDevice* owner) {
         m_volume = 0;
     }
 }
+
+// ---------------------------------------------------------------------------
+// ~DirectSoundMgr - empty base-subobject dtor (just the vptr reset to 0x5ef6b8).
+RVA(0x00135300, 0x7)
+DirectSoundMgr::~DirectSoundMgr() {}
 
 // ---------------------------------------------------------------------------
 // Restore: IDirectSoundBuffer::Restore; HRESULT normalized to 0/1 (neg/sbb/neg), that
@@ -300,7 +406,8 @@ i32 DirectSoundMgr::GetVolumePercent() {
 // when mode==0 it just re-applies the volume via SetVolumeByIndex; otherwise new's
 // a 0x28-byte DSoundVoice for the requested play and links its anchor into the
 // owner's voice list (new/ctor in a /GX EH frame). Returns 1 on success, 0 if the
-// device is down or the voice allocation/ctor failed.
+// device is down or the voice allocation/ctor failed. (The DSoundVoice ctor
+// 0x136fe0 has no reconstructed body yet - the call reloc-masks.)
 RVA(0x00135660, 0xe0)
 i32 DirectSoundMgr::CloneAndPlay(i32 key, i32 mode, i32 slot) {
     SoundDevice* owner = m_owner;
@@ -497,6 +604,22 @@ i32 DirectSoundMgr::GetFormat(void* fmt, u32 size, u32* written) {
 }
 
 // ---------------------------------------------------------------------------
+// DSoundCloneInst ctor 0x135b10: chain DSoundBaseSub base ctor, init empty clone list,
+// seed head with m_cloneNode, stamp m_playKey; cl stamps 0x5ef6bc.
+// @early-stop
+// EH-state-count wall: code bytes byte-identical (base-vs-target llvm-objdump -dr) except
+// the /GX unwind state machine. Base ctor DEFINED AFTER -> out-of-line `call 0x136230`.
+RVA(0x00135b10, 0x6b)
+DSoundCloneInst::DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner)
+    : DSoundBaseSub(buf, owner) {
+    m_cloneList.m_head = 0;
+    m_cloneList.m_tail = 0;
+    // cl auto-stamps ??_7DSoundCloneInst@@6B@ (0x5ef6bc) here.
+    ((DSoundList*)&m_cloneList)->InsertHead((DSoundLink*)&m_cloneNode);
+    m_playKey = 1;
+}
+
+// ---------------------------------------------------------------------------
 // ~DSoundCloneInst: drain the clone list via RemoveClone (re-reads head each pass);
 // cl stamps the clone vptr + chains ~DSoundBaseSub; /GX EH frame.
 // @early-stop
@@ -550,6 +673,59 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
     if (clone != this) {
         delete clone;
     }
+}
+
+// ---------------------------------------------------------------------------
+// CSoundCueMgr::GetItem (0x135d70) - the Dsndmgr sound-cue manager's pooled-buffer
+// resolver: walk the +0x58 item list for a live/finished DirectSound buffer,
+// reconfigure it (pan/pitch/volume from m_18/m_1c/m_20) and, when none is free,
+// Create() a fresh one, then unlink + re-append it to the +0x58 list. (Dossier
+// seam re-home from the statusbarmgrgetitem singleton unit; its owner
+// CSoundCueMgr was rtti-mislabeled "CStatusBarMgr" - see <Gruntz/SoundCueMgr.h>.)
+// @confidence: med
+// @source: reloc-correlation (1 caller)
+// @early-stop
+// shrink-wrapped callee-save push wall (~90%): logic + offsets + externs byte-exact.
+// Retail saves only edi at entry and defers `push esi`/`push ebx` past the m_78 null
+// guard (the early-out restores just edi); cl pushes all three upfront. Not source-
+// steerable; docs/patterns/shrink-wrapped-callee-save-push.md. Final sweep.
+RVA(0x00135d70, 0x92)
+CStatusBarItem2* CSoundCueMgr::GetItem() {
+    if (!m_10->m_78) {
+        return 0;
+    }
+    SBNode* node = m_58.m_head;
+    if (node) {
+        while (1) {
+            if (node->m_8->m_50 && ((DirectSoundMgr*)node->m_8)->IsPlaying() == 0) {
+                break;
+            }
+            node = node->m_0;
+            if (!node) {
+                break;
+            }
+        }
+    }
+    CStatusBarItem2* found;
+    if (!node) {
+        found = 0;
+    } else {
+        found = node->m_8;
+    }
+    if (found) {
+        ((DirectSoundMgr*)found)->SetVolume(m_20);
+        ((DirectSoundMgr*)found)->SetPan(m_1c);
+        ((DirectSoundMgr*)found)->SetFrequency(m_18);
+    }
+    if (!found) {
+        found = Create(1);
+        if (!found) {
+            return found;
+        }
+    }
+    ((DSoundList*)&m_58)->Unlink((DSoundLink*)&found->m_link44);
+    ((DSoundList*)&m_58)->InsertTail((DSoundLink*)&found->m_link44);
+    return found;
 }
 
 // ---------------------------------------------------------------------------
@@ -660,6 +836,39 @@ i32 DirectSoundMgr::LockConvert(void* src, u32 lockBytes, u32 convert) {
 }
 
 // ---------------------------------------------------------------------------
+// CSoundCueMgr::ConfigureItem (0x1360d0) - the shared cue-configuration helper the
+// per-widget status-bar loaders funnel through. Guard on the surface being live
+// (m_10->m_78), resolve the pooled buffer via GetItem (0x135d70), then push the
+// four cue values through the DirectSoundMgr setters + Play, ANDing the checked
+// results (the 4th setter's result is ignored). __thiscall, ret 0x10. (Dossier
+// seam re-home from SpriteResource.cpp.)
+RVA(0x001360d0, 0x7c)
+i32 CSoundCueMgr::ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3) {
+    if (!m_10->m_78) {
+        return 0;
+    }
+    CStatusBarItem2* item = GetItem();
+    if (!item) {
+        return 0;
+    }
+    i32 ok = 1;
+    if (!((DirectSoundMgr*)item)->SetVolumeByIndex(a0)) {
+        ok = 0;
+    }
+    if (!((DirectSoundMgr*)item)->SetPanByIndex(a1)) {
+        ok = 0;
+    }
+    if (!((DirectSoundMgr*)item)->SetField2(a2)) {
+        ok = 0;
+    }
+    ((DirectSoundMgr*)item)->SetField3(a3);
+    if (!((DirectSoundMgr*)item)->Play()) {
+        ok = 0;
+    }
+    return ok;
+}
+
+// ---------------------------------------------------------------------------
 // StopAllClones: gated on init; StopAndRewind each clone (list left intact).
 RVA(0x00136150, 0x22)
 void DSoundCloneInst::StopAllClones() {
@@ -669,34 +878,6 @@ void DSoundCloneInst::StopAllClones() {
     for (CloneNode* node = m_cloneList.m_head; node != 0; node = node->m_next) {
         node->m_inst->StopAndRewind();
     }
-}
-
-// ---------------------------------------------------------------------------
-// DSoundCloneInst ctor 0x135b10: chain DSoundBaseSub base ctor, init empty clone list,
-// seed head with m_cloneNode, stamp m_playKey; cl stamps 0x5ef6bc.
-// @early-stop
-// EH-state-count wall: code bytes byte-identical (base-vs-target llvm-objdump -dr) except
-// the /GX unwind state machine. Base ctor DEFINED AFTER -> out-of-line `call 0x136230`.
-RVA(0x00135b10, 0x6b)
-DSoundCloneInst::DSoundCloneInst(IDirectSoundBuffer* buf, SoundDevice* owner)
-    : DSoundBaseSub(buf, owner) {
-    m_cloneList.m_head = 0;
-    m_cloneList.m_tail = 0;
-    // cl auto-stamps ??_7DSoundCloneInst@@6B@ (0x5ef6bc) here.
-    ((DSoundList*)&m_cloneList)->InsertHead((DSoundLink*)&m_cloneNode);
-    m_playKey = 1;
-}
-
-// ---------------------------------------------------------------------------
-// DSoundBaseSub 2-arg ctor 0x136230: chain base ctor (cl stamps 0x5ef6c0); set
-// m_cloneNode.m_inst=this, m_reacquireOwner=this, m_playKey=1.
-RVA(0x00136230, 0x2d)
-DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner)
-    : DirectSoundMgr(buf, owner) {
-    // cl auto-stamps ??_7DSoundBaseSub@@6B@ (0x5ef6c0) here.
-    m_cloneNode.m_inst = this;
-    m_reacquireOwner = this;
-    m_playKey = 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -715,6 +896,18 @@ DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner, Direct
     m_sampleRate = original->m_sampleRate;
     m_rateBase = original->m_rateBase;
     ComputeDuration();
+}
+
+// ---------------------------------------------------------------------------
+// DSoundBaseSub 2-arg ctor 0x136230: chain base ctor (cl stamps 0x5ef6c0); set
+// m_cloneNode.m_inst=this, m_reacquireOwner=this, m_playKey=1.
+RVA(0x00136230, 0x2d)
+DSoundBaseSub::DSoundBaseSub(IDirectSoundBuffer* buf, SoundDevice* owner)
+    : DirectSoundMgr(buf, owner) {
+    // cl auto-stamps ??_7DSoundBaseSub@@6B@ (0x5ef6c0) here.
+    m_cloneNode.m_inst = this;
+    m_reacquireOwner = this;
+    m_playKey = 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -805,6 +998,47 @@ i32 DirectSoundMgr::Lock(u32 off, u32 bytes, void** p1, u32* n1, void** p2, u32*
 }
 
 // ---------------------------------------------------------------------------
+// ctor (/GX EH frame): zero the two list members, stamp vptr, clear init flag,
+// BuildVolumeTable, zero device/primary state. SoundStream derives -> base call here.
+// @early-stop
+// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
+// retail's /GX frame comes from the fully-constructed object registering ~SoundDevice
+// for unwind; MSVC5 emits a frameless body. Body faithful; same family as ~SoundDevice.
+RVA(0x00136440, 0x74)
+SoundDevice::SoundDevice() {
+    // cl auto-stamps ??_7SoundDevice@@6B@ (0x5ef6c4).
+    m_bufferList.m_head = 0;
+    m_bufferList.m_tail = 0;
+    m_voiceList.m_head = 0;
+    m_voiceList.m_tail = 0;
+    m_initialized = 0;
+    BuildVolumeTable();
+    m_reacquireProc = 0;
+    m_primaryBuffer = 0;
+    m_coopLevel = 0;
+    m_bufferFlags = 0;
+    m_force8Bit = 0;
+}
+
+// Slot-0 scalar-deleting dtor (??_G) MSVC synthesizes from the virtual dtor; no source
+// body -> pin by mangled name.
+// @rva-symbol: ??_GSoundDevice@@UAEPAXI@Z 0x001364c0 0x1e
+
+// ---------------------------------------------------------------------------
+// ~SoundDevice (/GX EH frame): cl resets vptr, then if init runs the teardown.
+// @early-stop
+// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
+// body byte-exact, but retail's /GX frame comes from the fully-constructed base
+// subobject; MSVC5's dtor is frameless. Same wall as ~DirectSoundMgr.
+RVA(0x00136500, 0x43)
+SoundDevice::~SoundDevice() {
+    // cl auto-resets the vptr to ??_7SoundDevice@@6B@ (0x5ef6c4).
+    if (m_initialized) {
+        Shutdown();
+    }
+}
+
+// ---------------------------------------------------------------------------
 // SoundDevice::Create: DirectSoundCreate into m_device, then SetCooperativeLevel;
 // on fail report + Release; on success cache coop params, clear m_createFlag, set init.
 RVA(0x00136550, 0x8c)
@@ -813,7 +1047,7 @@ i32 SoundDevice::Create(void* hwnd, u32 level, u32 flags) {
     if (created) {
         return 0;
     }
-    i32 hr = m_device->SetCooperativeLevel(hwnd, level) != 0;
+    i32 hr = m_device->SetCooperativeLevel((HWND)hwnd, level) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x3b0, hr);
         m_device->Release();
@@ -843,7 +1077,7 @@ i32 SoundDevice::SetCooperativeLevel(void* hwnd, u32 level) {
     if (m_initialized == 0) {
         return 0;
     }
-    i32 hr = m_device->SetCooperativeLevel(hwnd, level) != 0;
+    i32 hr = m_device->SetCooperativeLevel((HWND)hwnd, level) != 0;
     if (hr) {
         DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x3cf, hr);
         return 0;
@@ -869,11 +1103,577 @@ i32 SoundDevice::Compact() {
 }
 
 // ---------------------------------------------------------------------------
-// StartPrimary (0x137200, re-homed from BoundaryUpper2): gated on init, lazily
-// (re)create the primary buffer, then start it looping (IDirectSoundBuffer::Play
-// slot 12, DSBPLAY_LOOPING); report + fail on a non-zero HRESULT. (The
-// BoundaryUpper2 view mislabeled this "SoundDevice::Restore" over a placeholder
-// ISndBuf slot 0x30 - it is the real StartPrimary declared in SoundDevice.h.)
+// Shutdown: RemoveBuffer each owned buffer, then Release the primary + device, clear
+// the flag. The `head ? node-4 : 0` biased-pointer recovery is language-forced.
+RVA(0x00136690, 0x58)
+void SoundDevice::Shutdown() {
+    if (m_initialized) {
+        DSoundCloneInst* node = elemOf<DSoundCloneInst>(m_bufferList.m_head);
+        while (node) {
+            RemoveBuffer(node);
+            node = elemOf<DSoundCloneInst>(m_bufferList.m_head);
+        }
+        if (m_primaryBuffer) {
+            m_primaryBuffer->Release();
+        }
+        m_device->Release();
+    }
+    m_initialized = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CreateBuffer (/GX EH frame): validate PCM fmt, CreateSoundBuffer, RezAlloc+BaseInit a
+// DSoundCloneInst leaf, thread on the +0x04 list, seed fmt/avg-bytes/byte-count + duration.
+// @early-stop
+// RezAlloc+placement-new EH-frame wall (docs/patterns/rezalloc-placement-new-no-eh-frame.md):
+// body byte-exact, but retail's `new`-with-RezAlloc-operator-new emits a /GX
+// ctor-in-flight frame the RezAlloc+BaseInit path can't reproduce. Same wall as
+// SoundStream::CreateStreamBuffer.
+RVA(0x001366f0, 0x168)
+DirectSoundMgr* SoundDevice::CreateBuffer(WaveFormatX* fmt, u32 bytes, u32 flags) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    if (bytes == 0) {
+        return 0;
+    }
+    if (fmt == 0) {
+        return 0;
+    }
+    if (fmt->wFormatTag != 1) {
+        return 0;
+    }
+
+    // The 16-byte WAVEFORMATEX copy: retail moves it as dword@0, dword@4, dword@8,
+    // dword@0xc, word@0x10 (verified). The two u16-pair fields (wFormatTag|nChannels
+    // and nBlockAlign|wBitsPerSample) must be punned to a single dword store -
+    // field-by-field would emit two 16-bit moves. Language-forced (verified by disasm).
+    WaveFormatX wf;
+    *(u32*)&wf.wFormatTag = *(u32*)&fmt->wFormatTag;
+    wf.nSamplesPerSec = fmt->nSamplesPerSec;
+    wf.nAvgBytesPerSec = fmt->nAvgBytesPerSec;
+    *(u32*)&wf.nBlockAlign = *(u32*)&fmt->nBlockAlign;
+    wf.cbSize = fmt->cbSize;
+
+    IDirectSoundBuffer* out = 0;
+    DSBUFFERDESC desc;
+    desc.dwSize = DSBUFFERDESC_SIZE;
+    desc.dwFlags = flags;
+    desc.dwBufferBytes = bytes;
+    desc.dwReserved = 0;
+    desc.lpwfxFormat = (LPWAVEFORMATEX)&wf;
+
+    i32 hr = m_device->CreateSoundBuffer(&desc, &out, 0) != 0;
+    if (hr) {
+        DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x422, hr);
+        return 0;
+    }
+    if (out == 0) {
+        return 0;
+    }
+
+    // RezAlloc the 0x60B leaf, then BaseInit (the ctor 0x135b10, reached as a method)
+    // stamps its vptr. The buffer's cached format/rate/sample fields (base offsets
+    // +0x18/+0x38/+0x3c/+0x2c) are seeded from the wave header here.
+    DSoundCloneInst* voice = (DSoundCloneInst*)RezAlloc(0x60);
+    if (voice) {
+        voice->BaseInit(out, this);
+    }
+    voice->m_freq = *(u32*)&wf.wFormatTag; // +0x18  format word (wFormatTag|nChannels)
+    m_bufferList.InsertHead(voice ? &voice->m_link : 0);
+    voice->m_rateBase = fmt->nAvgBytesPerSec;   // +0x38  avg bytes/sec
+    voice->m_sampleRate = fmt->nAvgBytesPerSec; // +0x3c  duration divisor
+    voice->m_sampleCount = bytes;               // +0x2c  byte count
+    voice->ComputeDuration();
+    return voice; // DSoundCloneInst* -> DirectSoundMgr* base view (CreateBuffer's return)
+}
+
+// ---------------------------------------------------------------------------
+// AcquireFile: gated on init; fopen "rb", slurp whole file into a new'd buffer, Acquire
+// the RIFF blob, free + close. Returns the wrapper (0 on any I/O failure).
+RVA(0x00136860, 0xa9)
+DirectSoundMgr* SoundDevice::AcquireFile(char* path, u32 flags, u32 reserved) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    FILE* fp = Eng_fopen(path, s_rb);
+    if (fp == 0) {
+        return 0;
+    }
+    u32 size = Eng_filelength(fp->_file);
+    void* buf = operator new(size);
+    if (RezFRead(buf, size, 1, fp) != 1) {
+        RezFClose(fp);
+        operator delete(buf);
+        return 0;
+    }
+    RezFClose(fp);
+    DirectSoundMgr* wrapper = Acquire(buf, flags, reserved);
+    operator delete(buf);
+    return wrapper;
+}
+
+// ---------------------------------------------------------------------------
+// Acquire: parse RIFF/WAVE fmt+data, optionally 16->8 downconvert (m_force8Bit or parse
+// flag), CreateBuffer, LockConvert the PCM in; RemoveBuffer on load failure.
+// @early-stop
+// frame-homing-area-reuse wall (docs/patterns/stack-buffer-size-drives-frame.md, 99.8%):
+// every code byte IDENTICAL; retail overlays the ParseFmt out-struct onto dead arg-home
+// slots (sub esp,8) while MSVC5 gives fresh stack (sub esp,0x18). Not source-steerable.
+RVA(0x00136910, 0x119)
+DirectSoundMgr* SoundDevice::Acquire(void* riff, u32, u32) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    if (riff == 0) {
+        return 0;
+    }
+
+    ParseFmt po;
+    void* data;
+    u32 size;
+    po.m_reservedC = 0;
+    po.m_flags = 0;
+    po.m_reservedA = 0;
+    if (ParseWaveChunks(riff, &po, &data, &size) == 0) {
+        return 0;
+    }
+
+    i32 cvt = 0;
+    if (m_force8Bit != 0 || (po.m_flags & 1) == 1) {
+        cvt = 1;
+    }
+    if (po.m_fmt->wBitsPerSample != 0x10 || po.m_fmt->wFormatTag != 1) {
+        cvt = 0;
+    }
+    if (cvt) {
+        size >>= 1;
+        po.m_fmt->wBitsPerSample = 8;
+        po.m_fmt->nAvgBytesPerSec >>= 1;
+        po.m_fmt->nBlockAlign >>= 1;
+    }
+
+    DirectSoundMgr* wrapper = CreateBuffer(po.m_fmt, size, po.m_flags);
+    if (wrapper == 0) {
+        return 0;
+    }
+    if (wrapper->LockConvert(data, size, cvt) == 0) {
+        RemoveBuffer(wrapper);
+        return 0;
+    }
+    return wrapper;
+}
+
+// ---------------------------------------------------------------------------
+// AcquireResource (0x136a30): the WAVE Win32-resource sibling of AcquireFile -
+// find/load/lock the named "WAVE" resource in the app module, then Acquire the
+// RIFF blob. (Dossier seam re-home: was ResLoaders::WaveHost_136a30::LoadWave;
+// the +0x78 gate IS m_initialized and the 0x136910 callee IS Acquire.)
+RVA(0x00136a30, 0x76)
+DirectSoundMgr* SoundDevice::AcquireResource(const char* name, u32 flags, u32 reserved) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    HINSTANCE mod1 = AppModule_1d3631()->m_8;
+    HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
+    if (!hRsrc) {
+        return 0;
+    }
+    HINSTANCE mod2 = AppModule_1d3631()->m_8;
+    HGLOBAL hRes = LoadResource(mod2, hRsrc);
+    if (!hRes) {
+        return 0;
+    }
+    void* data = LockResource(hRes);
+    if (!data) {
+        return 0;
+    }
+    return Acquire(data, flags, reserved);
+}
+
+// ---------------------------------------------------------------------------
+// ValidateRestore: gated on init; require size + fmt (non-null) + wFormatTag==1, then
+// Restore the buffer and return its 0/1 success.
+RVA(0x00136ab0, 0x41)
+i32 SoundDevice::ValidateRestore(DirectSoundMgr* buf, WaveFormatX* fmt, u32 size) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    if (size == 0) {
+        return 0;
+    }
+    if (fmt == 0) {
+        return 0;
+    }
+    if (fmt->wFormatTag != 1) {
+        return 0;
+    }
+    return buf->Restore() != 0;
+}
+
+// ---------------------------------------------------------------------------
+// ReloadFile: fopen a file and re-load it into an EXISTING looping buffer (the
+// AcquireFile sibling that funnels through ReloadRiff). Skip (return 1) unless the
+// buffer is looping; on any I/O failure return 0.
+RVA(0x00136b00, 0xc2)
+i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 reserved) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    if (buf->IsLooping() == 0) {
+        return 1;
+    }
+    FILE* fp = Eng_fopen(path, s_rb);
+    if (fp == 0) {
+        return 0;
+    }
+    u32 size = Eng_filelength(fp->_file);
+    void* data = operator new(size);
+    if (RezFRead(data, size, 1, fp) != 1) {
+        RezFClose(fp);
+        operator delete(data);
+        return 0;
+    }
+    RezFClose(fp);
+    i32 r = ReloadRiff(buf, data, reserved);
+    operator delete(data);
+    return r;
+}
+
+// ---------------------------------------------------------------------------
+// ReloadRiff: re-load a RIFF into an EXISTING buffer (Acquire sibling). Gate on init +
+// non-null RIFF + buffer looping; parse, optional 16->8 downconvert, Restore, LockConvert.
+// @early-stop
+// frame-homing-area-reuse wall (docs/patterns/stack-buffer-size-drives-frame.md): same
+// family as Acquire (fresh stack vs retail's arg-home overlay). Not source-steerable.
+RVA(0x00136bd0, 0x110)
+i32 SoundDevice::ReloadRiff(DirectSoundMgr* buf, void* riff, u32 /*reserved*/) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    if (riff == 0) {
+        return 0;
+    }
+    if (buf->IsLooping() == 0) {
+        return 1;
+    }
+
+    ParseFmt po;
+    void* data;
+    u32 size;
+    po.m_reservedC = 0;
+    po.m_flags = 0;
+    po.m_reservedA = 0;
+    if (ParseWaveChunks(riff, &po, &data, &size) == 0) {
+        return 0;
+    }
+
+    i32 cvt = 0;
+    if (m_force8Bit != 0 || (po.m_flags & 1) == 1) {
+        cvt = 1;
+    }
+    if (po.m_fmt->wBitsPerSample != 0x10 || po.m_fmt->wFormatTag != 1) {
+        cvt = 0;
+    }
+    if (cvt) {
+        size >>= 1;
+        po.m_fmt->wBitsPerSample = 8;
+        po.m_fmt->nAvgBytesPerSec >>= 1;
+        po.m_fmt->nBlockAlign >>= 1;
+    }
+
+    if (ValidateRestore(buf, po.m_fmt, size) == 0) {
+        return 0;
+    }
+    return buf->LockConvert(data, size, cvt) != 0;
+}
+
+// ---------------------------------------------------------------------------
+// ReloadResource (0x136ce0): the WAVE Win32-resource sibling of ReloadFile - if the
+// probe buffer is looping, find/load/lock the named "WAVE" resource and ReloadRiff
+// it into the buffer. (Dossier seam re-home: was ResLoaders::WaveHost2_136ce0::
+// LoadWave; the +0x78 gate IS m_initialized and the 0x136bd0 callee IS ReloadRiff.)
+RVA(0x00136ce0, 0x92)
+i32 SoundDevice::ReloadResource(DirectSoundMgr* probe, const char* name, u32 reserved) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    if (probe->IsLooping() == 0) {
+        return 1;
+    }
+    HINSTANCE mod1 = AppModule_1d3631()->m_8;
+    HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
+    if (!hRsrc) {
+        return 0;
+    }
+    HINSTANCE mod2 = AppModule_1d3631()->m_8;
+    HGLOBAL hRes = LoadResource(mod2, hRsrc);
+    if (!hRes) {
+        return 0;
+    }
+    void* data = LockResource(hRes);
+    if (!data) {
+        return 0;
+    }
+    return ReloadRiff(probe, data, reserved);
+}
+
+// ---------------------------------------------------------------------------
+// RemoveBuffer: reap the buffer's voices (keyed by its address), Release its COM
+// buffer, unlink from the owned-buffer list, then scalar-delete it.
+RVA(0x00136d80, 0x56)
+void SoundDevice::RemoveBuffer(DirectSoundMgr* node) {
+    if (m_initialized) {
+        // The voices carry the owning buffer's address as their reap key.
+        m_voiceList.RemoveMatching(node, 0xffff);
+        if (node->m_buffer) {
+            node->m_buffer->Release();
+            node->m_buffer = 0;
+        }
+        m_bufferList.Unlink(node ? &node->m_link : 0);
+        if (node) {
+            delete node;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// StopAll: StopAndRewind + StopAllClones each owned buffer.
+RVA(0x00136de0, 0x3c)
+void SoundDevice::StopAll() {
+    if (m_initialized) {
+        DSoundCloneInst* node = elemOf<DSoundCloneInst>(m_bufferList.m_head);
+        while (node) {
+            node->StopAndRewind();
+            node->StopAllClones();
+            node = elemOf<DSoundCloneInst>(node->m_link.m_next);
+        }
+    }
+}
+
+// -------------------------------------------------------------------------
+// PurgeVoiceList @0x136e20 - per-tick voice purge. Gated on init + m_createFlag time
+// window; walk m_voiceList (DSoundVoice nodes) and for each whose Tick (slot 0) reports
+// done (0), unlink + `delete (PureSoundElem*)e` (pure-base teardown). time==-1 -> clock.
+// @early-stop
+// select-zero-mask-dest-register wall (docs/patterns/select-zero-mask-dest-register.md,
+// SAME as DSoundList::RemoveMatching @0x136f60): byte-exact except the `e ? &link : 0`
+// mask (neg/sbb/and) lands in a different register than retail.
+// g_pTimeGetTime = genuine game global fn-ptr (retail _g_pTimeGetTime @ 0x6c4650), NOT
+// the WINMM import; call ds:[0x6c4650] indirection - do NOT swap for timeGetTime.
+RVA(0x00136e20, 0xa8)
+i32 SoundDevice::PurgeVoiceList(i32 time) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    DSoundLink* head = m_voiceList.m_head;
+    DSoundVoice* e = elemOf<DSoundVoice>(head);
+    if (e == 0) {
+        return 0;
+    }
+    if (time == -1) {
+        time = (i32)g_pTimeGetTime();
+    }
+    if ((u32)time <= (u32)m_createFlag) {
+        return 1;
+    }
+    m_createFlag = time;
+    do {
+        DSoundLink* n = e->m_link.m_next;
+        DSoundVoice* next = elemOf<DSoundVoice>(n);
+        if (e->Tick(time) == 0) {
+            m_voiceList.Unlink(e ? &e->m_link : 0);
+            if (e) {
+                PureSoundElem* pure = e; // up-cast: teardown resets to the pure base + RezFree
+                delete pure;
+            }
+        }
+        e = next;
+    } while (e);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// FreeSamples: walk the voice list; per node run its slot-1 stop, unlink, then
+// `delete (PureSoundElem*)node` (pure-base teardown + RezFree). Returns 1.
+// @early-stop
+// regalloc/early-out scheduling wall (77%): retail reserves all 4 callee-saved regs and
+// runs the early-out in-frame; MSVC emits a leaner frameless early-out. Loop byte-exact.
+RVA(0x00136ed0, 0x72)
+i32 SoundDevice::FreeSamples() {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    DSoundElem* node = elemOf<DSoundElem>(m_voiceList.m_head);
+    while (node) {
+        DSoundLink* n = node->m_link.m_next;
+        DSoundElem* next = elemOf<DSoundElem>(n);
+        node->Stop(); // slot 1: stop the element before freeing it
+        m_voiceList.Unlink(node ? &node->m_link : 0);
+        if (node) {
+            // pure-base teardown: reset vptr to ??_7PureSoundElem (0x5ef6c8) + RezFree.
+            PureSoundElem* pure = node;
+            delete pure;
+        }
+        node = next;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DSoundList::RemoveMatching (0x136f60, __thiscall, 2 stack args) - the reaping
+// list helper (the only DSoundList primitive that falls INSIDE this obj; the other
+// five live at 0x1390e0+ in SoundVoiceList.cpp). Walk the chain; unlink + free
+// every element whose key (@+0x10) equals `key` and whose tag (@+0xc) equals `tag`
+// (0xffff is a wildcard). The free is `delete (PureSoundElem*)e`: the base-
+// subobject teardown resets the element vptr to the pure base (??_7PureSoundElem =
+// 0x5ef6c8) and PureSoundElem::operator delete RezFree's it. The tag-mismatch arm
+// does not advance (it re-tests the current element) - retail's structure; the
+// elements that reach here never trip it, but the source must reproduce the
+// codegen, so spell it as a no-advance `continue`.
+// @early-stop
+// select-zero-mask-dest-register wall (docs/patterns/select-zero-mask-dest-register.md):
+// byte-exact except the `e ? node : 0` mask (neg/sbb/and) lands in edx (ours) vs eax
+// (retail) - a free-list pick the four obvious source spellings don't move. 99.3%,
+// logic complete; deferred to the final sweep.
+RVA(0x00136f60, 0x74)
+void DSoundList::RemoveMatching(void* key, u32 tag) {
+    DSoundElem* e = elemOf<DSoundElem>(m_head);
+    while (e) {
+        DSoundLink* node = &e->m_link;
+        DSoundLink* n = e->m_link.m_next;
+        DSoundElem* next = elemOf<DSoundElem>(n);
+        if (tag != 0xffff && e->m_tag != tag) {
+            continue;
+        }
+        if (e->m_key == key) {
+            Unlink(e ? node : 0);
+            if (e) {
+                PureSoundElem* pure = e; // up-cast: teardown resets to the pure base
+                delete pure;
+            }
+        }
+        e = next;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x136fe0 - the DSoundVoice 6-arg ctor ("SoundTick_Ctor", 123 B): stamps the
+// 0x5ef6d0 vtable + the play params. NOT yet reconstructed (the dossier's one
+// remaining in-obj gap); CloneAndPlay's `new DSoundVoice(...)` reloc-masks to it.
+
+// ---------------------------------------------------------------------------
+// DSoundVoice::Tick (0x137060, vtbl slot 0, __thiscall, 1 arg = the current
+// clock). Clamp the elapsed time to the ramp duration (flagging completion when
+// it overruns); if the buffer stopped playing on its own, also flag done.
+// Otherwise interpolate the ramp volume index across the elapsed fraction and
+// push it through SetVolumeByIndex. On completion, when the stop flag is set,
+// stop+rewind the buffer. Returns whether the voice is still live (!done).
+// @early-stop
+// 95.7% -- regalloc-pinning wall (docs/patterns/zero-register-pinning.md): every
+// instruction matches (the unsigned clamp `jb`, the signed idiv interpolation, the
+// three buffer calls, the done/!done epilogue). The only residual is the esi<->edi
+// coin-flip: retail pins this->esi + elapsed->edi, MSVC5 here pins elapsed->esi +
+// this->edi (same values, mirrored register file). Logic complete.
+RVA(0x00137060, 0x6b)
+i32 DSoundVoice::Tick(i32 now) {
+    i32 done = 0;
+    i32 elapsed = now - m_rampStartTime;
+    if ((u32)elapsed >= (u32)m_rampDurationMs) {
+        elapsed = m_rampDurationMs;
+        done = 1;
+    }
+    if (m_buffer->IsPlaying() == 0) {
+        done = 1;
+    } else {
+        i32 vol =
+            (m_rampEndVolume - m_rampStartVolume) * elapsed / m_rampDurationMs + m_rampStartVolume;
+        m_buffer->SetVolumeByIndex(vol);
+    }
+    if (done && m_stopAndRewind != 0) {
+        m_buffer->StopAndRewind();
+    }
+    return done == 0;
+}
+
+// ---------------------------------------------------------------------------
+// DSoundVoice::Stop (0x1370d0, vtbl slot 1, __thiscall, no args). If the buffer
+// is still playing: when the stop flag is set, stop+rewind it; otherwise snap its
+// volume to the ramp end. Always returns 1.
+RVA(0x001370d0, 0x38)
+i32 DSoundVoice::Stop() {
+    if (m_buffer->IsPlaying() != 0) {
+        if (m_stopAndRewind != 0) {
+            m_buffer->StopAndRewind();
+            return 1;
+        }
+        m_buffer->SetVolumeByIndex(m_rampEndVolume);
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// ParseWaveChunks (__cdecl): verify 'RIFF'/'WAVE', walk even-aligned chunks, record the
+// 'fmt ' payload into out->m_fmt and 'data' ptr/len into *dataOut/*sizeOut; nonzero when
+// 'fmt ' seen before 'data'.
+// @early-stop
+// add-fold scheduling wall (98.2%): byte-identical except the per-chunk cursor advance -
+// source `p += 2` -> two `add $4` (retail) vs one `add $8` (MSVC5 /O2 fold). Not steerable.
+RVA(0x00137110, 0x8d)
+SYMBOL(_ParseWaveChunks)
+extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut) {
+    u32* p = (u32*)((char*)riff + 4);
+    u32 riffSize = *p;
+    p++;
+    u32 waveTag = *p;
+    p++;
+    char* end = (char*)p + riffSize - 4;
+    if (*(u32*)riff != WAVE_FOURCC('R', 'I', 'F', 'F')) {
+        return 0;
+    }
+    if (waveTag != WAVE_FOURCC('W', 'A', 'V', 'E')) {
+        return 0;
+    }
+    out->m_fmt = 0;
+    *dataOut = 0;
+    while ((char*)p < end) {
+        u32 id = p[0];
+        u32 size = p[1];
+        p += 2;
+        if (id == WAVE_FOURCC('f', 'm', 't', ' ')) {
+            out->m_fmt = (WaveFormatX*)p;
+        } else if (id == WAVE_FOURCC('d', 'a', 't', 'a')) {
+            *dataOut = p;
+            *sizeOut = size;
+            return out->m_fmt != 0;
+        }
+        p = (u32*)((char*)p + ((size + 1) & ~1));
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// SetPrimaryFormat: ensure the primary buffer exists, then SetFormat; report + bail.
+RVA(0x001371a0, 0x5a)
+i32 SoundDevice::SetPrimaryFormat(void* fmt) {
+    if (m_initialized == 0) {
+        return 0;
+    }
+    if (CreatePrimaryBuffer() == 0) {
+        return 0;
+    }
+    i32 hr = m_primaryBuffer->SetFormat((LPWAVEFORMATEX)fmt) != 0;
+    if (hr) {
+        DirectSoundMgr::GetErrorString(DSNDMGR_FILE, 0x678, hr);
+        return 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// StartPrimary (0x137200): gated on init, lazily (re)create the primary buffer,
+// then start it looping (IDirectSoundBuffer::Play slot 12, DSBPLAY_LOOPING);
+// report + fail on a non-zero HRESULT.
 RVA(0x00137200, 0x53)
 i32 SoundDevice::StartPrimary() {
     if (m_initialized == 0) {
@@ -916,9 +1716,10 @@ i32 SoundDevice::CreatePrimaryBuffer() {
 }
 
 // ---------------------------------------------------------------------------
-// GetPrimary (0x137300, re-homed from src/Stub/BoundaryUpper.cpp): gated on init,
-// lazily (re)create the primary buffer, then return it. The device-getter sibling of
-// StartPrimary/CreatePrimaryBuffer.
+// GetPrimary (0x137300): gated on init, lazily (re)create the primary buffer, then
+// return it. The device-getter sibling of StartPrimary/CreatePrimaryBuffer. LAST
+// function of the DSNDMGR.CPP obj (the 0x137330 file boundary follows; DSndMgSR.cpp
+// = src/Dsndmgr/SoundStream.cpp).
 RVA(0x00137300, 0x23)
 IDirectSoundBuffer* SoundDevice::GetPrimary() {
     if (m_initialized == 0) {
@@ -928,212 +1729,4 @@ IDirectSoundBuffer* SoundDevice::GetPrimary() {
         return 0;
     }
     return m_primaryBuffer;
-}
-
-// ---------------------------------------------------------------------------
-// 0x137330 - PureSoundElem's standalone base-object destructor (retail ??1PureSoundElem):
-// cl's implicit vptr-restore stamps the ??_7PureSoundElem pure-call vtable (0x5ef6c8)
-// into [this] and returns (7-byte `mov [ecx],offset ??_7 + ret`). Modeled as an empty
-// virtual dtor (emits exactly the stamp+ret). REQUIRED-SPLIT from the inline
-// `delete (PureSoundElem*)e` sites (0x136f60/e20/ed0) which inline the teardown - this
-// standalone COMDAT is forced only by the EH unwind funclet @0x1e0950 that references
-// it out-of-line, so the two models coexist. Re-homed from src/Stub/BoundaryThunks.cpp.
-struct CAbstract137330 {
-    virtual ~CAbstract137330();
-};
-SIZE_UNKNOWN(CAbstract137330);
-RELOC_VTBL(CAbstract137330, 0x001ef6c8); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x00137330, 0x7)
-CAbstract137330::~CAbstract137330() {}
-
-// ---------------------------------------------------------------------------
-// 0x138120 - set the four GetErrorString reporting-mode flags (log / message-box /
-// beep / third) from the four args. __cdecl free helper (sibling of DDraw's / DInput's).
-RVA(0x00138120, 0x27)
-void SetDSoundReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
-    g_logEnabled = log;
-    g_msgBoxEnabled = msgBox;
-    g_beepEnabled = beep;
-    g_thirdEnabled = third;
-}
-
-// ---------------------------------------------------------------------------
-// DirectSoundMgr::GetErrorString
-RVA(0x00138150, 0x33b)
-void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
-    char szCode[64];  // error-code name
-    char szMsg[256];  // description
-    char szLine[512]; // formatted output line
-
-    if (g_beepEnabled) {
-        MessageBeep(MB_ICONEXCLAMATION);
-    }
-    if (!g_logEnabled && !g_msgBoxEnabled && !g_thirdEnabled) {
-        return;
-    }
-
-    i32 code = hr & 0xffff;
-
-    strcpy(szMsg, "Unknown Error Message");
-    sprintf(szCode, "Unknown Error Code");
-    strcpy(szLine, g_emptyString);
-
-    switch (hr) {
-        case (i32)0x80004001:
-            strcpy(szCode, "DSERR_UNSUPPORTED");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x80004005:
-            strcpy(szCode, "DSERR_GENERIC");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x80040110:
-            strcpy(szCode, "DSERR_NOAGGREGATION");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x8007000e:
-            strcpy(szCode, "DSERR_OUTOFMEMORY");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x80070057:
-            strcpy(szCode, "DSERR_INVALIDPARAM");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x8878000a:
-            strcpy(szCode, "DSERR_ALLOCATED");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x8878001e:
-            strcpy(szCode, "DSERR_CONTROLUNAVAIL");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x88780032:
-            strcpy(szCode, "DSERR_INVALIDCALL");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x88780046:
-            strcpy(szCode, "DSERR_PRIOLEVELNEEDED");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x88780064:
-            strcpy(szCode, "DSERR_BADFORMAT");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x88780078:
-            strcpy(szCode, "DSERR_NODRIVER");
-            strcpy(szMsg, "No message");
-            break;
-        case DSERR_BUFFERLOST:
-            strcpy(szCode, "DSERR_BUFFERLOST");
-            strcpy(szMsg, "No message");
-            break;
-        case (i32)0x887800a0:
-            strcpy(szCode, "DSERR_OTHERAPPHASPRIO");
-            strcpy(szMsg, "No message");
-            break;
-        case 0:
-            strcpy(szCode, "DS_OK");
-            strcpy(szMsg, "No error");
-            break;
-        default:
-            break;
-    }
-
-    if (g_logEnabled) {
-        if (file == 0 || line <= 0) {
-            sprintf(szLine, "%s (%i) - %s\n", szCode, code, szMsg);
-        } else {
-            sprintf(szLine, "%s, line %i: %s (%i) - %s\n", file, line, szCode, code, szMsg);
-        }
-        OutputDebugStringA(szLine);
-    }
-    if (g_msgBoxEnabled) {
-        if (file == 0 || line <= 0) {
-            sprintf(szLine, "%s (%i)\n\n%s", szCode, code, szMsg);
-        } else {
-            sprintf(szLine, "%s, line %i\n\n%s (%i)\n\n%s", file, line, szCode, code, szMsg);
-        }
-        MessageBoxA((HWND)0, szLine, "DirectSoundMgr", MB_ICONEXCLAMATION);
-    }
-}
-
-// -------------------------------------------------------------------------
-// PurgeVoiceList @0x136e20 - per-tick voice purge. Gated on init + m_createFlag time
-// window; walk m_voiceList (DSoundVoice nodes) and for each whose Tick (slot 0) reports
-// done (0), unlink + `delete (PureSoundElem*)e` (pure-base teardown). time==-1 -> clock.
-// @early-stop
-// select-zero-mask-dest-register wall (docs/patterns/select-zero-mask-dest-register.md,
-// SAME as DSoundList::RemoveMatching @0x136f60): byte-exact except the `e ? &link : 0`
-// mask (neg/sbb/and) lands in a different register than retail.
-// g_pTimeGetTime = genuine game global fn-ptr (retail _g_pTimeGetTime @ 0x6c4650), NOT
-// the WINMM import; call ds:[0x6c4650] indirection - do NOT swap for timeGetTime.
-extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
-RVA(0x00136e20, 0xa8)
-i32 SoundDevice::PurgeVoiceList(i32 time) {
-    if (m_initialized == 0) {
-        return 0;
-    }
-    DSoundLink* head = m_voiceList.m_head;
-    DSoundVoice* e = elemOf<DSoundVoice>(head);
-    if (e == 0) {
-        return 0;
-    }
-    if (time == -1) {
-        time = (i32)g_pTimeGetTime();
-    }
-    if ((u32)time <= (u32)m_createFlag) {
-        return 1;
-    }
-    m_createFlag = time;
-    do {
-        DSoundLink* n = e->m_link.m_next;
-        DSoundVoice* next = elemOf<DSoundVoice>(n);
-        if (e->Tick(time) == 0) {
-            m_voiceList.Unlink(e ? &e->m_link : 0);
-            if (e) {
-                PureSoundElem* pure = e; // up-cast: teardown resets to the pure base + RezFree
-                delete pure;
-            }
-        }
-        e = next;
-    } while (e);
-    return 1;
-}
-
-// -------------------------------------------------------------------------
-// TickSubManagers @0x137ac0 - per-frame stream-voice tick. Walk the instance list
-// (m_instanceHead threads StreamVoice+4 links); per voice: pump the embedded feeder
-// (StreamFeeder::Tick @0x137e30), poll the per-stream buffer wrapper's IsPlaying
-// (feeder->m_buffer, i.e. voice+0x74); when it just went idle, reprime the feeder
-// (TickPump(-1) @0x1380d0) if m_stopWhenIdle and/or retire the voice (RemoveSub) if
-// m_retireWhenIdle; latch the IsPlaying result into m_active. The former SubNode /
-// SubInnerList / SubGuard views are gone (wave 3): the node IS the canonical
-// StreamVoice, the inner list IS its embedded StreamVoiceFeeder (m_feeder @+0x6c),
-// and the guard IS the feeder's DirectSoundMgr buffer wrapper (m_buffer @+0x08).
-RVA(0x00137ac0, 0xa2)
-i32 SoundDevice::TickSubManagers(i32 time) {
-    if (time == -1) {
-        time = (i32)g_pTimeGetTime();
-    }
-    DSoundLink* head = m_instanceHead;
-    StreamVoice* o = elemOf<StreamVoice>(head);
-    while (o) {
-        StreamVoice* next = elemOf<StreamVoice>(o->m_link.m_next);
-        o->m_feeder.Tick(time);
-        i32 r = o->m_feeder.m_buffer->IsPlaying();
-        if (r == 0 && o->m_active != 0) {
-            if (o->m_stopWhenIdle != 0) {
-                o->m_feeder.TickPump(-1);
-            }
-            if (o->m_retireWhenIdle != 0) {
-                RemoveSub(o);
-                o = 0;
-            }
-        }
-        if (o) {
-            o->m_active = r;
-        }
-        o = next;
-    }
-    return 1;
 }

@@ -905,13 +905,6 @@ source = "src/Gruntz/Registry23.cpp"
 flags = "base"
 
 [[unit]]
-# percentage transfer curve helper (re-homed from Discovered.cpp). /O1 (favor
-# size): ebp frame retained, idiv-by-100 (no magic-number strength reduction).
-unit = "gruntcmdpercent"
-source = "src/Gruntz/GruntCmdPercent.cpp"
-flags = "odi"
-
-[[unit]]
 unit = "gruntzcmdmgr"
 source = "src/Gruntz/GruntzCmdMgr.cpp"
 flags = "eh"
@@ -1244,15 +1237,6 @@ flags = "base"
 [[unit]]
 unit = "statusbarmgr"
 source = "src/Gruntz/StatusBarMgr.cpp"
-flags = "eh"
-
-[[unit]]
-# CStatusBarMgr::GetItem (0x135d70) - re-homed from src/Stub/CStatusBarMgr.cpp into its
-# own unit: its CStatusBarMgr field-view (m_10 pointer, +0x58 list) conflicts with the
-# cstatusbarmgr unit's byte-exact LoadTabSprites view, so it keeps a self-contained view
-# in isolation. flags="eh" == the engine_label_stubs base+/GX it came from.
-unit = "statusbarmgrgetitem"
-source = "src/Gruntz/StatusBarMgrGetItem.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1695,22 +1679,21 @@ unit = "directinputmgr2"
 source = "src/DinMgr2/DirectInputMgr2.cpp"
 flags = "eh"
 
+# The two original Dsndmgr TUs (docs/exe-map/interval-dossiers.md, split @0x137330):
+# directsoundmgr == C:\Proj\Dsndmgr\DSNDMGR.CPP (absorbed sounddevice, dsoundvoice,
+# gruntcmdpercent, statusbarmgrgetitem + the DSoundList::RemoveMatching /
+# WAVE-resource seam re-homes); soundstream == C:\Proj\Dsndmgr\DSndMgSR.cpp
+# (absorbed streamfeeder, streamvoice, soundstreamfree, soundstreamteardown +
+# TickSubManagers + the error-reporting tail).
 [[unit]]
 unit = "directsoundmgr"
 source = "src/Dsndmgr/DirectSoundMgr.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "dsoundvoice"
-source = "src/Dsndmgr/DSoundVoice.cpp"
-flags = "base"
-
-[[unit]]
-unit = "sounddevice"
-source = "src/Dsndmgr/SoundDevice.cpp"
-flags = "eh"
-
-[[unit]]
+# The five 0x1390e0+ list primitives - a separate retail obj PAST the DSndMgSR.cpp
+# interval end (0x13848b), so it stays its own unit (RemoveMatching @0x136f60 moved
+# to directsoundmgr, whose obj span owns it).
 unit = "soundvoicelist"
 source = "src/Dsndmgr/SoundVoiceList.cpp"
 flags = "base"
@@ -1723,16 +1706,6 @@ flags = "eh"
 [[unit]]
 unit = "soundstream"
 source = "src/Dsndmgr/SoundStream.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "streamfeeder"
-source = "src/Dsndmgr/StreamFeeder.cpp"
-flags = "base"
-
-[[unit]]
-unit = "streamvoice"
-source = "src/Dsndmgr/StreamVoice.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2160,16 +2133,6 @@ flags = "o1"
 [[unit]]
 unit = "rezcoll"
 source = "src/Rez/RezColl.cpp"
-flags = "base"
-
-[[unit]]
-unit = "soundstreamfree"
-source = "src/Dsndmgr/SoundStreamFree.cpp"
-flags = "base"
-
-[[unit]]
-unit = "soundstreamteardown"
-source = "src/Dsndmgr/SoundStreamTeardown.cpp"
 flags = "base"
 
 [[unit]]

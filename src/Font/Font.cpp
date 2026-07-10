@@ -22,21 +22,12 @@
 #include <DDrawMgr/DDSurface.h> // CDDSurface - the draw family's surface arg (m_height in DrawLine)
 #include <Font/Font.h>
 #include <rva.h>
-#include <string.h> // memcmp (FontInterfaceObject::IsInterfaceX)
 
-// GUIDs for DirectDraw-style interface checks (FontInterfaceObject::IsInterfaceX).
-// clang-format off
-const u8 g_guid1[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
-                                   0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3};
-const u8 g_guid2[16] = {0xe0, 0x5e, 0xe9, 0x36, 0x77, 0x85, 0xcf, 0x11,
-                                   0x96, 0x0c, 0x00, 0x80, 0xc7, 0x53, 0x4e, 0x82};
-const u8 g_guid3[16] = {0x60, 0xa7, 0xea, 0x44, 0x68, 0xcb, 0xcf, 0x11,
-                                   0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
-const u8 g_guid4[16] = {0x60, 0x68, 0x1d, 0x0f, 0xd9, 0x88, 0xcf, 0x11,
-                                   0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
-const u8 g_guid5[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
-                                   0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40};
-// clang-format on
+// The FontInterfaceObject::IsInterface1-5 GUID predicates (0x1794b0-0x179570), their
+// g_guid1-5 tables, and CWapNodeB::FreeStrings (0x179680) are re-homed to the
+// NetMgr.cpp tail (src/Net/NetMgr.cpp): they precede ??0Font (0x179700) in retail,
+// i.e. they are NetMgr.cpp-obj code, not Font.cpp's (docs/exe-map/
+// interval-dossiers.md calibration case; the netmgr+font seam).
 
 // ---------------------------------------------------------------------------
 // Font::Font
@@ -176,79 +167,6 @@ i32 Font::SaveFont(CString szFileName) {
     return 1;
 }
 
-// =========================================================================
-// IsInterface1
-//
-RVA(0x001794b0, 0x21)
-i32 FontInterfaceObject::IsInterface1() {
-    if (!iid) {
-        return 0;
-    }
-    return memcmp(iid, g_guid1, 16) == 0 ? 1 : 0;
-}
-
-// =========================================================================
-// IsInterface2
-//
-RVA(0x001794e0, 0x21)
-i32 FontInterfaceObject::IsInterface2() {
-    if (!iid) {
-        return 0;
-    }
-    return memcmp(iid, g_guid2, 16) == 0 ? 1 : 0;
-}
-
-// =========================================================================
-// IsInterface3
-//
-RVA(0x00179510, 0x21)
-i32 FontInterfaceObject::IsInterface3() {
-    if (!iid) {
-        return 0;
-    }
-    return memcmp(iid, g_guid3, 16) == 0 ? 1 : 0;
-}
-
-// =========================================================================
-// IsInterface4
-//
-RVA(0x00179540, 0x21)
-i32 FontInterfaceObject::IsInterface4() {
-    if (!iid) {
-        return 0;
-    }
-    return memcmp(iid, g_guid4, 16) == 0 ? 1 : 0;
-}
-
-// =========================================================================
-// IsInterface5
-//
-RVA(0x00179570, 0x21)
-i32 FontInterfaceObject::IsInterface5() {
-    if (!iid) {
-        return 0;
-    }
-    return memcmp(iid, g_guid5, 16) == 0 ? 1 : 0;
-}
-
-// =========================================================================
-// CWapNodeB::FreeStrings
-//
-// Frees two allocated buffers at +0x34 and +0x38 and clears m_type.
-//
-RVA(0x00179680, 0x3a)
-void CWapNodeB::FreeStrings() {
-    if (m_buf34) {
-        operator delete(m_buf34);
-        m_buf34 = 0;
-    }
-    if (m_buf38) {
-        operator delete(m_buf38);
-        m_buf38 = 0;
-    }
-    m_type = 0;
-}
-
 // Font::GetSurface (0x179b60) - &m_surfaces[c].
 RVA(0x00179b60, 0x12)
 void** Font::GetSurface(u8 c) {
@@ -287,42 +205,25 @@ void FontRenderer::SetColor(i32 color) {
 
 // CharCursor::GetChar (0x0017b4f0) is now an inline member in the header.
 
-// TextRange::Span (0x17b500) - byte distance end - begin.
-RVA(0x0017b500, 0x8)
-i32 TextRange::Span() {
-    return m_end - m_begin;
-}
-
 // =========================================================================
-// FontRenderer::MeasureText
-// Sum the advance widths of every glyph in `text` and pair it with the font's
-// line-height. With no font loaded the extent is {0,0}. The CString arg is
-// taken by value (the EH frame destroys it); the result is returned by value.
-// @early-stop
-// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): retail
-// pins esi=0 and reuses it for the null-branch result stores, the EH-state
-// writes and the length compares (+ one dead `mov [esp+0x10],esi` spill); cl
-// allocates ecx for the zero, cascading a 1-instr regalloc shift. Body/offsets
-// byte-exact; logic complete.
-RVA(0x0017ac50, 0xbd)
-TextExtent FontRenderer::MeasureText(CString text) {
-    TextExtent ext;
-    i32 i = 0;
-    i32 width = 0;
+// FontRenderer::DrawLine
+// Public single-line entry: measure the run, reject it if it would overflow
+// the destination surface's height, otherwise hand off to DrawLineClipped with
+// the full-extent rect {0,0,ext.width,ext.height}. No-op when no font is
+// loaded. Real arg flow (0x179c30 disasm): arg2 is the CDDSurface* itself
+// (its +0x18 dwHeight is the vertical limit), forwarded as DrawLineClipped's
+// surface; z is forwarded unchanged (the blend flag).
+RVA(0x00179c30, 0xdb)
+void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z) {
+    TextExtent ext = MeasureText(text);
     if (m_font == 0) {
-        ext.width = 0;
-        ext.height = 0;
-        return ext;
+        return;
     }
-    for (i = 0; i < text.GetLength(); i++) {
-        Glyph g;
-        u8 c = text[i];
-        m_font->GetGlyph(g, c);
-        width += g.width;
+    i32 limit = surf->m_height;
+    if (m_font->GetMaxHeight() + y > limit) {
+        return;
     }
-    ext.width = width;
-    ext.height = m_font->GetMaxHeight();
-    return ext;
+    DrawLineClipped(text, surf, Rect(0, 0, ext.width, ext.height), x, y, z);
 }
 
 // =========================================================================
@@ -501,6 +402,38 @@ void FontRenderer::DrawWrapped(
             DrawLine(line, surf, x0, y, z);
         }
     }
+}
+
+// =========================================================================
+// FontRenderer::MeasureText
+// Sum the advance widths of every glyph in `text` and pair it with the font's
+// line-height. With no font loaded the extent is {0,0}. The CString arg is
+// taken by value (the EH frame destroys it); the result is returned by value.
+// @early-stop
+// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): retail
+// pins esi=0 and reuses it for the null-branch result stores, the EH-state
+// writes and the length compares (+ one dead `mov [esp+0x10],esi` spill); cl
+// allocates ecx for the zero, cascading a 1-instr regalloc shift. Body/offsets
+// byte-exact; logic complete.
+RVA(0x0017ac50, 0xbd)
+TextExtent FontRenderer::MeasureText(CString text) {
+    TextExtent ext;
+    i32 i = 0;
+    i32 width = 0;
+    if (m_font == 0) {
+        ext.width = 0;
+        ext.height = 0;
+        return ext;
+    }
+    for (i = 0; i < text.GetLength(); i++) {
+        Glyph g;
+        u8 c = text[i];
+        m_font->GetGlyph(g, c);
+        width += g.width;
+    }
+    ext.width = width;
+    ext.height = m_font->GetMaxHeight();
+    return ext;
 }
 
 // =========================================================================
@@ -731,23 +664,8 @@ FontRenderer::LayoutWrapped(CString text, i32 x0, i32 begin, i32 right, i32 bott
     return ext;
 }
 
-// =========================================================================
-// FontRenderer::DrawLine
-// Public single-line entry: measure the run, reject it if it would overflow
-// the destination surface's height, otherwise hand off to DrawLineClipped with
-// the full-extent rect {0,0,ext.width,ext.height}. No-op when no font is
-// loaded. Real arg flow (0x179c30 disasm): arg2 is the CDDSurface* itself
-// (its +0x18 dwHeight is the vertical limit), forwarded as DrawLineClipped's
-// surface; z is forwarded unchanged (the blend flag).
-RVA(0x00179c30, 0xdb)
-void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z) {
-    TextExtent ext = MeasureText(text);
-    if (m_font == 0) {
-        return;
-    }
-    i32 limit = surf->m_height;
-    if (m_font->GetMaxHeight() + y > limit) {
-        return;
-    }
-    DrawLineClipped(text, surf, Rect(0, 0, ext.width, ext.height), x, y, z);
+// TextRange::Span (0x17b500) - byte distance end - begin.
+RVA(0x0017b500, 0x8)
+i32 TextRange::Span() {
+    return m_end - m_begin;
 }

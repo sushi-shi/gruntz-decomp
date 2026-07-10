@@ -1,11 +1,10 @@
-// ResourceLoaders.cpp - Win32 resource (WAVE / RT_BITMAP / PALETTE) loaders and
+// ResourceLoaders.cpp - Win32 resource (RT_BITMAP / PALETTE) loaders and
 // GDI counter-draw helpers re-homed out of the src/Stub/ApiCallers.cpp winapi
 // grab-bag. Each host struct is a local view onto its (not-yet-recovered) owning
 // class; offsets + emitted bytes are load-bearing. The moves are byte-neutral
 // (only FindResource/LoadResource/GDI + sprintf).
 #include <Win32.h>
 #include <ddraw.h> // IDirectDrawSurface (the counter window's GetDC/ReleaseDC source)
-#include <Dsndmgr/DirectSoundMgr.h> // real DirectSoundMgr (the WAVE-load looping gate)
 #include <Gruntz/ResLoadersViews.h> // shared CounterWnd/DrawHost counter-draw views
 #include <rva.h>
 #include <string.h>
@@ -26,66 +25,11 @@ namespace ResLoaders {
     };
     AppModule_136a30* AppModule_1d3631(); // RVA 0x1d3631 (global accessor)
 
-    struct WaveHost_136a30 {
-        char m_pad0[0x78];
-        i32 m_78; // +0x78
-        i32 LoadWave(const char* name, i32 a, i32 b);
-        i32 Use136910(void* data, i32 a, i32 b); // thiscall, RVA 0x136910
-    };
-    // __thiscall(name, a, b): find/load/lock a WAVE resource, hand it to Use136910.
-    RVA(0x00136a30, 0x76)
-    i32 WaveHost_136a30::LoadWave(const char* name, i32 a, i32 b) {
-        if (!m_78) {
-            return 0;
-        }
-        HINSTANCE mod1 = AppModule_1d3631()->m_8;
-        HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
-        if (!hRsrc) {
-            return 0;
-        }
-        HINSTANCE mod2 = AppModule_1d3631()->m_8;
-        HGLOBAL hRes = LoadResource(mod2, hRsrc);
-        if (!hRes) {
-            return 0;
-        }
-        void* data = LockResource(hRes);
-        if (!data) {
-            return 0;
-        }
-        return Use136910(data, a, b);
-    }
-
-    struct WaveHost2_136ce0 {
-        char m_pad0[0x78];
-        i32 m_78; // +0x78
-        i32 LoadWave(DirectSoundMgr* probe, const char* name, i32 arg);
-        i32 Use136bd0(DirectSoundMgr* probe, void* data, i32 arg); // thiscall, RVA 0x136bd0
-    };
-    // __thiscall(probe, name, arg): if the probe (a DS buffer) is looping, find/load/lock the WAVE.
-    RVA(0x00136ce0, 0x92)
-    i32 WaveHost2_136ce0::LoadWave(DirectSoundMgr* probe, const char* name, i32 arg) {
-        if (!m_78) {
-            return 0;
-        }
-        if (probe->IsLooping() == 0) {
-            return 1;
-        }
-        HINSTANCE mod1 = AppModule_1d3631()->m_8;
-        HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
-        if (!hRsrc) {
-            return 0;
-        }
-        HINSTANCE mod2 = AppModule_1d3631()->m_8;
-        HGLOBAL hRes = LoadResource(mod2, hRsrc);
-        if (!hRes) {
-            return 0;
-        }
-        void* data = LockResource(hRes);
-        if (!data) {
-            return 0;
-        }
-        return Use136bd0(probe, data, arg);
-    }
+    // The two WAVE-resource loaders (0x136a30 / 0x136ce0, the former
+    // WaveHost_136a30/WaveHost2_136ce0 views) re-homed to src/Dsndmgr/
+    // DirectSoundMgr.cpp as SoundDevice::AcquireResource / ReloadResource (the
+    // DSNDMGR.CPP obj, per docs/exe-map/interval-dossiers.md: the +0x78 gate IS
+    // SoundDevice::m_initialized, the callees ARE Acquire/ReloadRiff).
 
     // The header of the locked RT_BITMAP resource (its +0xe must be 8).
     struct ResHdr_144270 {

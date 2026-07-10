@@ -14,8 +14,10 @@
 // blocks are separate retail objects (a ~0xbaf30 .text gap between them).
 #include <Net/NetMgr.h>          // CNetMgr + DirectPlay/list node types (pulls <Mfc.h>, RezMgr)
 #include <Net/InterfaceObject.h> // Find() returns the InterfaceObject group-node
+#include <Font/Font.h> // FontInterfaceObject + CWapNodeB decls (the misnomered 0x1794b0-0x179680
+                       // NetMgr.cpp-tail bodies below; see the seam note there)
 #include <rva.h>
-#include <string.h> // memset (the inlined rep stos node/packet zeroing)
+#include <string.h> // memset (the inlined rep stos node/packet zeroing) + memcmp (IsInterfaceX)
 
 // DirectPlay DLL imports (DPLAYX.dll ordinals), reached through the IAT jump
 // thunks at 0x1937c0 / 0x1937c6 -> the `call rel32` reloc-masks. __stdcall.
@@ -312,6 +314,47 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
     m_groupSel = data;
     return data;
 }
+// NetEnumPlayerCb (0x1786a0, below): forward decl so EnumPlayersInto's `push offset`
+// reloc-masks (the callback body follows in RVA order).
+extern "C" BOOL __stdcall
+NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
+
+// ---------------------------------------------------------------------------
+// CNetMgr::EnumPlayersInto  (__thiscall).
+// Re-enumerates the session's players: first clears the +0x38 player list, then
+// builds a 0x50-byte session descriptor on the stack (dwSize + the session GUID
+// copied from this+4) and fires the IDirectPlay4 EnumPlayers slot (+0x34) with the
+// per-player callback (NetEnumPlayerCb), the two caller args, and `this` as the
+// enum context. On a nonzero HRESULT it routes the error through the static
+// diagnostic reporter (NetMgr.cpp:0x1c9) and returns it; otherwise returns 0.
+// @early-stop
+// stack-anchor/scheduling wall (~67.7%): logic, memset, dwSize, the GUID copy,
+// the 6-arg COM call and ReportError are all reproduced - but MSVC anchors the
+// 0x50 stack desc at esp+0xc (retail esp+0x8) and interleaves the GUID stores
+// with the arg pushes differently. struct-vs-raw-buffer and base-ptr GUID-copy
+// levers did not move it; see docs/patterns/stack-buffer-size-drives-frame.md +
+// statement-schedule-faithful.md. Deferred to the final sweep.
+RVA(0x00178610, 0x8c)
+i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
+    ClearPlayerList();
+
+    char desc[0x50];
+    memset(desc, 0, 0x50);
+    i32* guid = (i32*)((char*)this + 4);
+    *(i32*)(desc + 0x00) = 0x50;
+    *(i32*)(desc + 0x18) = guid[0];
+    *(i32*)(desc + 0x1c) = guid[1];
+    *(i32*)(desc + 0x20) = guid[2];
+    *(i32*)(desc + 0x24) = guid[3];
+
+    IDirectPlay4Z* com = m_directPlay;
+    i32 hr = com->EnumPlayers(desc, a, (void*)&NetEnumPlayerCb, this, b);
+    if (hr) {
+        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x1c9, hr, 0);
+        return hr;
+    }
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // NetEnumPlayerCb  (EnumSessionsCallback2; __stdcall, 4 args -> ret 0x10).
@@ -357,43 +400,6 @@ i32 CNetMgr::AddPlayerNode(void* playerDesc) {
 
     node->m_54 = (__POSITION*)((CObList*)((char*)this + 0x38))->AddTail((::CObject*)node);
     return (i32)node;
-}
-
-// ---------------------------------------------------------------------------
-// CNetMgr::EnumPlayersInto  (__thiscall).
-// Re-enumerates the session's players: first clears the +0x38 player list, then
-// builds a 0x50-byte session descriptor on the stack (dwSize + the session GUID
-// copied from this+4) and fires the IDirectPlay4 EnumPlayers slot (+0x34) with the
-// per-player callback (NetEnumPlayerCb), the two caller args, and `this` as the
-// enum context. On a nonzero HRESULT it routes the error through the static
-// diagnostic reporter (NetMgr.cpp:0x1c9) and returns it; otherwise returns 0.
-// @early-stop
-// stack-anchor/scheduling wall (~67.7%): logic, memset, dwSize, the GUID copy,
-// the 6-arg COM call and ReportError are all reproduced - but MSVC anchors the
-// 0x50 stack desc at esp+0xc (retail esp+0x8) and interleaves the GUID stores
-// with the arg pushes differently. struct-vs-raw-buffer and base-ptr GUID-copy
-// levers did not move it; see docs/patterns/stack-buffer-size-drives-frame.md +
-// statement-schedule-faithful.md. Deferred to the final sweep.
-RVA(0x00178610, 0x8c)
-i32 CNetMgr::EnumPlayersInto(void* a, void* b) {
-    ClearPlayerList();
-
-    char desc[0x50];
-    memset(desc, 0, 0x50);
-    i32* guid = (i32*)((char*)this + 4);
-    *(i32*)(desc + 0x00) = 0x50;
-    *(i32*)(desc + 0x18) = guid[0];
-    *(i32*)(desc + 0x1c) = guid[1];
-    *(i32*)(desc + 0x20) = guid[2];
-    *(i32*)(desc + 0x24) = guid[3];
-
-    IDirectPlay4Z* com = m_directPlay;
-    i32 hr = com->EnumPlayers(desc, a, (void*)&NetEnumPlayerCb, this, b);
-    if (hr) {
-        ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x1c9, hr, 0);
-        return hr;
-    }
-    return 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -683,6 +689,25 @@ i32 CNetMgr::AddSessionNode(i32 id, const char* nameA, const char* nameB, i32 d)
 }
 
 // ---------------------------------------------------------------------------
+// CNetMgr::ClearSessionList  (__thiscall).
+// Tears down the managed CObList at +0x54 (head at +0x58): self-destructs each
+// node's payload, RemoveAll's the list, zeroes the count/id pair (+0x84, +0x78).
+RVA(0x00178c70, 0x3d)
+void CNetMgr::ClearSessionList() {
+    CNetListNode* node = *(CNetListNode**)((char*)this + 0x58);
+    while (node != 0) {
+        CNetListNode* cur = node;
+        node = node->m_next;
+        if (cur->m_data != 0) {
+            cur->m_data->SelfDestruct(1);
+        }
+    }
+    ((CObList*)((char*)this + 0x54))->RemoveAll();
+    m_sessionSelId = 0;
+    m_sessionSel = 0;
+}
+
+// ---------------------------------------------------------------------------
 // CNetMgr::CreatePlayer  (__thiscall; ret 0xc, 3 args).
 // Reads a session's player-data blob via the DirectPlay interface (slot 6) into a
 // 0x10-byte descriptor (size 0x10, the two trailing args at +0x8/+0xc) plus a
@@ -713,25 +738,6 @@ i32 CNetMgr::CreatePlayer(void* a, i32 b, i32 c) {
         return 0;
     }
     return AddSessionNode(out, (const char*)a, (const char*)b, 0);
-}
-
-// ---------------------------------------------------------------------------
-// CNetMgr::ClearSessionList  (__thiscall).
-// Tears down the managed CObList at +0x54 (head at +0x58): self-destructs each
-// node's payload, RemoveAll's the list, zeroes the count/id pair (+0x84, +0x78).
-RVA(0x00178c70, 0x3d)
-void CNetMgr::ClearSessionList() {
-    CNetListNode* node = *(CNetListNode**)((char*)this + 0x58);
-    while (node != 0) {
-        CNetListNode* cur = node;
-        node = node->m_next;
-        if (cur->m_data != 0) {
-            cur->m_data->SelfDestruct(1);
-        }
-    }
-    ((CObList*)((char*)this + 0x54))->RemoveAll();
-    m_sessionSelId = 0;
-    m_sessionSel = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1077,6 +1083,104 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
         }
     }
     return 0;
+}
+
+// ===========================================================================
+// The NetMgr.cpp tail (0x1794b0-0x1796c0): the five service-provider GUID
+// predicates + the node string-free, re-homed from src/Font/Font.cpp per the
+// docs/exe-map/interval-dossiers.md calibration case (they precede ??0Font
+// @0x179700 - NetMgr.cpp-obj code, glued to the font unit only by the seam).
+// @identity-TODO: NetMgr InterfaceObject, not font - FontInterfaceObject is a
+// misnomered duplicate view of <Net/InterfaceObject.h>'s InterfaceObject (whose
+// header declares these five RVAs as its methods); fold the two classes (and the
+// mangled names) in a dedicated rename pass, not this re-home package. Same for
+// CWapNodeB (a NetMgr node type, declared in <Font/Font.h> for now).
+// ===========================================================================
+
+// GUIDs for the DirectPlay service-provider interface checks (IsInterfaceX).
+// clang-format off
+const u8 g_guid1[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
+                                   0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3};
+const u8 g_guid2[16] = {0xe0, 0x5e, 0xe9, 0x36, 0x77, 0x85, 0xcf, 0x11,
+                                   0x96, 0x0c, 0x00, 0x80, 0xc7, 0x53, 0x4e, 0x82};
+const u8 g_guid3[16] = {0x60, 0xa7, 0xea, 0x44, 0x68, 0xcb, 0xcf, 0x11,
+                                   0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
+const u8 g_guid4[16] = {0x60, 0x68, 0x1d, 0x0f, 0xd9, 0x88, 0xcf, 0x11,
+                                   0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
+const u8 g_guid5[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
+                                   0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40};
+// clang-format on
+
+// =========================================================================
+// IsInterface1
+// @identity-TODO: NetMgr InterfaceObject, not font
+RVA(0x001794b0, 0x21)
+i32 FontInterfaceObject::IsInterface1() {
+    if (!iid) {
+        return 0;
+    }
+    return memcmp(iid, g_guid1, 16) == 0 ? 1 : 0;
+}
+
+// =========================================================================
+// IsInterface2
+// @identity-TODO: NetMgr InterfaceObject, not font
+RVA(0x001794e0, 0x21)
+i32 FontInterfaceObject::IsInterface2() {
+    if (!iid) {
+        return 0;
+    }
+    return memcmp(iid, g_guid2, 16) == 0 ? 1 : 0;
+}
+
+// =========================================================================
+// IsInterface3
+// @identity-TODO: NetMgr InterfaceObject, not font
+RVA(0x00179510, 0x21)
+i32 FontInterfaceObject::IsInterface3() {
+    if (!iid) {
+        return 0;
+    }
+    return memcmp(iid, g_guid3, 16) == 0 ? 1 : 0;
+}
+
+// =========================================================================
+// IsInterface4
+// @identity-TODO: NetMgr InterfaceObject, not font
+RVA(0x00179540, 0x21)
+i32 FontInterfaceObject::IsInterface4() {
+    if (!iid) {
+        return 0;
+    }
+    return memcmp(iid, g_guid4, 16) == 0 ? 1 : 0;
+}
+
+// =========================================================================
+// IsInterface5
+// @identity-TODO: NetMgr InterfaceObject, not font
+RVA(0x00179570, 0x21)
+i32 FontInterfaceObject::IsInterface5() {
+    if (!iid) {
+        return 0;
+    }
+    return memcmp(iid, g_guid5, 16) == 0 ? 1 : 0;
+}
+
+// =========================================================================
+// CWapNodeB::FreeStrings (0x179680)
+// Frees two allocated buffers at +0x34 and +0x38 and clears m_type.
+// @identity-TODO: NetMgr InterfaceObject, not font (a NetMgr node type)
+RVA(0x00179680, 0x3a)
+void CWapNodeB::FreeStrings() {
+    if (m_buf34) {
+        operator delete(m_buf34);
+        m_buf34 = 0;
+    }
+    if (m_buf38) {
+        operator delete(m_buf38);
+        m_buf38 = 0;
+    }
+    m_type = 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,10 +1,8 @@
 #include <Mfc.h> // real MFC CObArray (the frame array's SetAtGrow @0x1b5822)
 #include <rva.h>
-#include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/ResMgr.h>        // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
 #include <Gruntz/Sprite.h>        // CSprite (frame-data), CSpriteHashTable, CFrameArray
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory shape (this TU owns CreateSprite@0x1597b0)
-#include <Gruntz/SoundCueMgr.h> // the ONE CSoundCueMgr shape (this TU owns ConfigureItem@0x1360d0)
 // SpriteResource.cpp - the shared engine sprite-resource helpers that the HUD /
 // powerup / explosion / camera / status-bar loaders all funnel through
 // (C:\Proj\Gruntz). Each pulls a named sprite-set out of the engine's
@@ -268,49 +266,8 @@ i32 CSpriteFactory::AttachSprite(
     return 1;
 }
 
-// ===========================================================================
-// CStatusBarMgr::ConfigureItem  @0x1360d0
-// ===========================================================================
-//
-// The shared status-bar item-configuration helper the per-widget status-bar
-// loaders (UpdateGruntOvenStatusBar, UpdateWarpStoneStatusBar,
-// LoadSwitchUp/DownSprite, LoadStatzTabToggleSprite, UpdateChipGrinderStatusBar,
-// ...) funnel through. It guards on the status-bar surface being live
-// (this->m_10->m_78 != 0), then resolves the backing status-bar ITEM via
-// GetItem @0x135d70 (__thiscall on this) and pushes four configuration values
-// into it through four __thiscall setters @0x1355c0/0x1357a0/0x135920/0x135510
-// (each ret 4) plus a finalize @0x136270 (ret 0). The first three setters and the
-// finalizer each AND their success flag into the accumulator (the 4th setter's
-// result is ignored). __thiscall, ret 0x10 = 4 stack args. Returns the
-// success flag (1 only if every checked step succeeded).
-
-// CStatusBarSurface / CStatusBarItem2 / CSoundCueMgr now live in the shared
-// <Gruntz/SoundCueMgr.h> (included above); this TU owns ConfigureItem (0x1360d0).
-RVA(0x001360d0, 0x7c)
-i32 CSoundCueMgr::ConfigureItem(i32 a0, i32 a1, i32 a2, i32 a3) {
-    if (!m_10->m_78) {
-        return 0;
-    }
-    CStatusBarItem2* item = GetItem();
-    if (!item) {
-        return 0;
-    }
-    i32 ok = 1;
-    if (!((DirectSoundMgr*)item)->SetVolumeByIndex(a0)) {
-        ok = 0;
-    }
-    if (!((DirectSoundMgr*)item)->SetPanByIndex(a1)) {
-        ok = 0;
-    }
-    if (!((DirectSoundMgr*)item)->SetField2(a2)) {
-        ok = 0;
-    }
-    ((DirectSoundMgr*)item)->SetField3(a3);
-    if (!((DirectSoundMgr*)item)->Play()) {
-        ok = 0;
-    }
-    return ok;
-}
+// CSoundCueMgr::ConfigureItem (0x1360d0) re-homed to src/Dsndmgr/DirectSoundMgr.cpp
+// (the DSNDMGR.CPP obj, per docs/exe-map/interval-dossiers.md seam audit).
 
 // ===========================================================================
 // CGruntAnimPlayer::ApplyLookupGeometry  @0x1505b0
