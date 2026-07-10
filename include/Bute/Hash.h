@@ -110,6 +110,10 @@ class CHashBase {
 public:
     // First live entry in iteration order (0x184ae0), or 0.
     CHashElement* First(); // 0x184ae0
+    // Last live entry in reverse iteration order (0x184b10): scan the bucket array
+    // from the highest index down, return the tail element of the first non-empty
+    // bucket (FromLink(slot.m_chain.m_tail)), or 0.
+    CHashElement* Last(); // 0x184b10
     // Chain head for bucket `idx`, biased back to the element (head - 4), or 0.
     CHashElement* Lookup(u32 idx); // 0x184b40
     // Unlink `entry` (its chain node = &entry->m_link) from its owning slot's chain.

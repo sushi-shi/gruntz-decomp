@@ -45,6 +45,11 @@ public:
     // Stop streaming: Pause each voice's embedded feeder (+0x6c), then the base
     // SoundDevice::StopAll. The wide pause/reset path (menu/level teardown).
     void Stop(); // 0x137a80
+    // 0x137720 - play a defaulted sound (3rd flag = 0) bound to a window handle.
+    // Reached __thiscall here (CDDrawSurfaceMgr::PlayDefaultSound); the SAME RVA is
+    // also modelled as the free __stdcall PlaySoundDefaulted in SoundStream.cpp (its
+    // body ignores `this`), so the two spellings are byte-identical.
+    i32 PlaySoundDefaulted(void* hWnd, i32 flag); // 0x137720
     i32 ParseWave(
         CParseSource* src,
         WaveFormatX* fmtBuf,

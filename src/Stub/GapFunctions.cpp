@@ -181,10 +181,16 @@ RVA(0x001439f0, 0x35)
 i32 Gap_1439f0(void) {
     return 0;
 } // @stub
-RVA(0x00155ff0, 0x22)
-i32 Gap_155ff0(void) {
-    return 0;
-} // @stub
+// @identity-TODO (matcher-2): 0x156ad0 == a CFileMem "load file into buffer" helper
+// (home src/Io/FileMem.cpp; RVA-adjacent to CFileMemBase @0x157850). Free __stdcall,
+// 5 args, /GX. DECODED: if (arg1 == 0) return 0; construct a local CFileMem (base+
+// derived ctors inlined: CString m_name, vptr ??_7CFileMemBase then ??_7CFileMem,
+// m_4/m_8=0, Reset()); CFileMemBase::SetName(arg?, 1, arg1); if fail -> teardown,
+// return 0; CFileMem::Open(); if fail -> teardown, return 0; CFileMem::Read(buf,0x120)
+// [header]; if (readLen && size) CFileMem::Read(buf2, size); CFileMem::Ready(); dtor
+// the CFileMem + CString; return 1. Byte-match BLOCKED on the inlined CFileMem ctor
+// (retail re-inits all fields via a Reset()-body ctor; the header's implicit ctor
+// does not) -> needs an explicit inline CFileMem() modelled in FileMem.h first.
 RVA(0x00156ad0, 0x1d2)
 i32 Gap_156ad0(void) {
     return 0;
@@ -275,10 +281,29 @@ RVA(0x00171640, 0x3f2)
 i32 Gap_171640(void) {
     return 0;
 } // @stub
+// @identity-TODO (matcher-2): 0x173dd0 == a Bute value-store / projectile-action-map
+// builder (home src/Bute/, butemgr/butenode/projactcache region). ATTRIBUTED via
+// callee xref: it calls CButeTree::Find/Insert, CButeValue::CopyValue + ~CButeValue,
+// CButeCfgNode174d(0x174d00) ctor, CProjActMap::Insert, and the value-node ctor 0x1741b0
+// (which it `new(8)`s and ctors with a ButeType tag). It repeatedly `new(6)`s / stamps
+// small nodes with a type tag `6`. It is the ONLY caller of 0x1741b0, so pinning this
+// function's owning class (a CButeMgr/CProjActMap loader) also homes 0x1741b0. 911 B,
+// non-EH; owner class TBD.
 RVA(0x00173dd0, 0x38f)
 i32 Gap_173dd0(void) {
     return 0;
 } // @stub
+// @identity-TODO (matcher-2): 0x1741b0 == a CButeValue / CButeValueNode value-node
+// ctor (Bute; home src/Bute/ButeMgr.cpp). ATTRIBUTED via xref: the ONLY caller is the
+// Bute value-store builder 0x173dd0 (calls CButeTree::Find/Insert, CButeValue::CopyValue,
+// CButeCfgNode174d, CProjActMap::Insert), which `new(8)`s the receiver then calls this
+// __thiscall(type, src): `this->type(+0)=arg1; n=(CButeValueNode*)operator new(8);
+// if(n){ n->type=src->type; n->pValue=src->pValue; } this->pValue(+4)=n; return this`.
+// So `this` is an 8-byte {i32 type, void* pValue} (== CButeValueNode/CButeValue) that
+// boxes an 8-byte value copied from `src`. The exact ButeType-tag semantics + which
+// Set*/box variant this is (vs the 172xxx Set family) need pinning before a clean
+// byte-match (the alloc-fail arm's `xor eax;mov` zero-store is the only codegen
+// residue). NOT fabricating a .cpp-local view (doctrine ss0).
 RVA(0x001741b0, 0x39)
 i32 Gap_1741b0(void) {
     return 0;
@@ -307,18 +332,40 @@ RVA(0x00181b00, 0x34f)
 i32 Gap_181b00(void) {
     return 0;
 } // @stub
+// @identity-TODO (matcher-2): 0x184900 == a Bute hash reverse-iteration method (home
+// src/Bute/, CHashBase/CSymTab family; 0x184b10 was its twin and IS now homed as
+// CHashBase::Last in src/Bute/Hash.cpp). The +0x0c field probe `x ? x-4 : 0` is exactly
+// CHashBase::FromLink (chain link -> element, container_of -4). This receiver is a
+// 2-level structure (NOT a bare CHashBase, which is only 8 B): m_8 = a current chain
+// link (returns FromLink(m_8) when set), m_c = a table-like object whose +0x04 is the
+// 16-byte CHashSlot[] bucket array, m_10 = the bucket count. So it reads: if the cached
+// link m_8 has an element, return it; else scan m_c's buckets from index m_10 down for
+// the last non-empty bucket's tail element. Likely a hash-table ITERATOR's current/prev
+// (or a CSymTab reverse walk). Pin the iterator class (owner of m_8/m_c/m_10), then home;
+// same SIB base/index coin-flip wall as CHashBase::Insert/Last. NOT fabricating a view.
 RVA(0x00184900, 0x43)
 i32 Gap_184900(void) {
     return 0;
 } // @stub
+// @identity-TODO (matcher-2): 0x1849d0 spans TWO functions the gap tool merged (home
+// src/Bute/, CHashSlot/CSymList family @0x1849xx). (1) 0x1849d0 (size 0x50) = a MSVC
+// `scalar deleting destructor' for a 16-byte class (vector arm: __ehvec_dtor 0x51f640
+// over stride 0x10 with the no-op CHashSlot_Dtor, then _RezFree the array cookie;
+// scalar arm: run dtor, `flags&1` -> _RezFree this). (2) 0x184a20 (size 0xb) = its
+// ctor: `mov eax,ecx; xor ecx; mov [eax+8],ecx; mov [eax+0xc],ecx; ret` = zero the
+// +0x08/+0x0c pair == CHashSlot::CHashSlot (zero m_chain {head,tail}). To home: SPLIT
+// into two RVA() entries (0x1849d0 + 0x184a20) on the real CHashSlot class. NOT a view.
 RVA(0x001849d0, 0x5b)
 i32 Gap_1849d0(void) {
     return 0;
 } // @stub
-RVA(0x00184b10, 0x29)
-i32 Gap_184b10(void) {
-    return 0;
-} // @stub
+// @identity-TODO (matcher-2): 0x191720 spans TWO functions (home src/Wwd/WwdGrid.cpp).
+// (1) 0x191720 (size ~0x50) = a MSVC `scalar deleting destructor' for an 8-byte class
+// (vector arm __ehvec_dtor 0x51f640 stride 0x08 + _RezFree) == BucketHead (the 8-byte
+// {head,tail} grid list-head, WwdGrid.h). (2) 0x191770 (size ~0x8d) = a __thiscall(6
+// ints) wrapper that computes cell spans (imul 0x66666667 /5 divides) and forwards to
+// ??0CWwdGrid@@QAE@HHHHHH@Z (the grid ctor). To home: SPLIT into two RVA() entries on
+// BucketHead (dtor) + the CWwdGrid-derived owner (ctor). NOT a view.
 RVA(0x00191720, 0xdd)
 i32 Gap_191720(void) {
     return 0;

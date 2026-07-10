@@ -199,6 +199,22 @@ void CDDrawSurfaceMgr::FreeContext() {
 }
 
 // ---------------------------------------------------------------------------
+// CDDrawSurfaceMgr::PlayDefaultSound()  (0x155ff0)
+// Lazily (re)start the owner's sound stream: if it exists and its DirectSound device
+// is not yet initialised (SoundDevice::m_initialized @+0x78 == 0), play the defaulted
+// sound bound to the manager's window (PlaySoundDefaulted, 0x137720 __thiscall) and
+// return its result; otherwise report OK (1). Sibling of Init/FreeContext (all three
+// dispatch the +0x20 SoundStream). Re-homed from src/Stub/GapFunctions.cpp (matcher-2)
+// - attributed via PlaySoundDefaulted's caller set (only Init + this).
+RVA(0x00155ff0, 0x22)
+i32 CDDrawSurfaceMgr::PlayDefaultSound() {
+    if (m_soundStream != 0 && m_soundStream->m_initialized == 0) {
+        return m_soundStream->PlaySoundDefaulted(m_hWnd, 1);
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::SetDimensions()
 // Validates/sets surface dimensions.
 RVA(0x00155f60, 0x56)

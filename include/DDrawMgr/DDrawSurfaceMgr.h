@@ -84,6 +84,7 @@ public:
 
     // Non-virtual methods (census-proven OFF the retail vtable - plain, not slots):
     void FreeContext();                                           // 0x155fc0
+    i32 PlayDefaultSound();                                       // 0x155ff0
     i32 SetDimensions(i32 x, i32 y, i32 flags);                   // 0x155f60
     void SetHwnd(void* hWnd);                                     // 0x155f50
     i32 InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4); // 0x156a90

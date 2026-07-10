@@ -55,6 +55,35 @@ CHashElement* CHashBase::Lookup(u32 idx) {
     return FromLink(m_buckets[idx].m_chain.m_head);
 }
 
+// Last (0x184b10): reverse iteration - scan the bucket array from the highest index
+// down, return the tail element of the first non-empty bucket (or 0 when empty).
+// Re-homed from src/Stub/GapFunctions.cpp (matcher-2; CHashBase-owned - bracketed by
+// Remove/Lookup, scans the 16-byte CHashSlot[] reading m_chain.m_tail @+0x0c).
+// @early-stop
+// SAME SIB base/index coin-flip wall as CHashBase::Insert (above): retail folds the
+// bucket address into `mov ecx,[ecx+4]; lea ecx,[ecx+eax+0xc]` (m_buckets reuses the
+// `this` register), while cl loads m_buckets into eax -> `push esi; add eax,esi; lea
+// ecx,[eax+0xc]`. The loop body is byte-identical; the base-register pick is not
+// source-steerable (operand-typing/reorder do not flip it, per the Insert note).
+RVA(0x00184b10, 0x29)
+CHashElement* CHashBase::Last() {
+    u32 i = m_count - 1;
+    CHashSlot* p = &m_buckets[i];
+    CHashElement* e;
+    for (;;) {
+        e = FromLink(p->m_chain.m_tail);
+        if (i == 0) {
+            break;
+        }
+        --i;
+        --p;
+        if (e != 0) {
+            break;
+        }
+    }
+    return e;
+}
+
 // ---------------------------------------------------------------------------
 // CHash (instantiation "_a"): HashStr / Walk / HashInt / FindInt.
 // ---------------------------------------------------------------------------

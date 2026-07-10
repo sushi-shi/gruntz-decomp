@@ -104,7 +104,7 @@ ddrawsubmgrani	3	1
 ddrawsubmgrleaf	13	9
 ddrawsubmgrleafscan	22	14
 ddrawsubmgrpages	9	7
-ddrawsurfacemgr	9	7
+ddrawsurfacemgr	10	8
 ddrawsurfacemgrserialize	2	0
 ddrawsurfacepair	14	5
 ddrawworker	6	5
@@ -135,7 +135,7 @@ droppedobject	7	4
 droppedobjectserialize	2	2
 droppedobjectshadow	3	2
 dsoundvoice	2	1
-engine_label_stubs	44	3
+engine_label_stubs	42	3
 engstr	3	1
 engstrrendertext	1	0
 exittrigger	4	2
@@ -232,7 +232,7 @@ gruntzrandom	5	3
 gruntzsoundz	30	27
 gruntzwnd	16	15
 guardpoint	4	3
-hash	7	3
+hash	8	2
 heapdiag	3	0
 helperhost	2	0
 helpstate	8	7
@@ -1159,6 +1159,7 @@ ddrawsurfacemgr	?FreeContext@CDDrawSurfaceMgr@@QAEXXZ	100.0000	100.0000	1	409b72
 ddrawsurfacemgr	?Init@CDDrawSurfaceMgr@@UAEXXZ	0.0998	0.0998	1	596261af34fd	0x155900
 ddrawsurfacemgr	?InvokeCallback@CDDrawSurfaceMgr@@QAEHPAXHHH@Z	100.0000	100.0000	1	31657c239733	0x156a90
 ddrawsurfacemgr	?IsReady@CDDrawSurfaceMgr@@UAEHXZ	100.0000	100.0000	3	3e96f7644d30	0x155f00
+ddrawsurfacemgr	?PlayDefaultSound@CDDrawSurfaceMgr@@QAEHXZ	100.0000	100.0000	1	eabbbdd715b1	0x155ff0
 ddrawsurfacemgr	?SetDimensions@CDDrawSurfaceMgr@@QAEHHHH@Z	96.6250	96.6250	1	3f728521a87c	0x155f60
 ddrawsurfacemgr	?SetHwnd@CDDrawSurfaceMgr@@QAEXPAX@Z	100.0000	100.0000	1	5227eb60287d	0x155f50
 ddrawsurfacemgrserialize	?RestoreChildren@CDDrawSurfaceMgr@@QAEHP6AHPAX0HHH@ZPADH@Z	45.9601	45.9601	4	f6b87ac7b77c	0x156530
@@ -1543,7 +1544,6 @@ engine_label_stubs	?Gap_139810@@YAHXZ	1.0448	1.0448	1	cpp:0cd3d8fa5bea	0x139810
 engine_label_stubs	?Gap_13e8f0@@YAHXZ	2.9688	2.9688	1	cpp:0cd3d8fa5bea	0x13e8f0
 engine_label_stubs	?Gap_141080@@YAHXZ	0.7547	0.7547	1	cpp:0cd3d8fa5bea	0x141080
 engine_label_stubs	?Gap_1439f0@@YAHXZ	7.3684	7.3684	1	cpp:0cd3d8fa5bea	0x1439f0
-engine_label_stubs	?Gap_155ff0@@YAHXZ	10.0000	10.0000	1	cpp:0cd3d8fa5bea	0x155ff0
 engine_label_stubs	?Gap_156ad0@@YAHXZ	1.1304	1.1304	1	cpp:0cd3d8fa5bea	0x156ad0
 engine_label_stubs	?Gap_15a210@@YAHXZ	0.5797	0.5797	1	cpp:0cd3d8fa5bea	0x15a210
 engine_label_stubs	?Gap_161640@@YAHXZ	0.4127	0.4127	1	cpp:0cd3d8fa5bea	0x161640
@@ -1563,7 +1563,6 @@ engine_label_stubs	?Gap_180640@@YAHXZ	0.1615	0.1615	1	cpp:0cd3d8fa5bea	0x180640
 engine_label_stubs	?Gap_181b00@@YAHXZ	0.3988	0.3988	1	cpp:0cd3d8fa5bea	0x181b00
 engine_label_stubs	?Gap_184900@@YAHXZ	6.8966	6.8966	1	cpp:0cd3d8fa5bea	0x184900
 engine_label_stubs	?Gap_1849d0@@YAHXZ	4.8718	4.8718	1	cpp:0cd3d8fa5bea	0x1849d0
-engine_label_stubs	?Gap_184b10@@YAHXZ	10.5263	10.5263	1	cpp:0cd3d8fa5bea	0x184b10
 engine_label_stubs	?Gap_191720@@YAHXZ	0.8602	0.8602	1	cpp:0cd3d8fa5bea	0x191720
 engine_label_stubs	?winapi_0e3b20_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xe3b20
 engine_label_stubs	?winapi_0e3be0_EndDialog@ApiCallerStubs@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	cpp:0b27792d981c	0xe3be0
@@ -2395,7 +2394,8 @@ guardpoint	?GetTypeTag@CGuardPoint@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	c
 guardpoint	?Serialize@CGuardPoint@@QAEHHHHH@Z	100.0000	100.0000	2	4ef47d0fe28f	0x10370
 hash	?FindInt@CHash@@QAEPAXI@Z	71.6364	71.6364	4	6f87ba2800d8	0x13c360
 hash	?Insert@CHashBase@@QAEXPAVCHashElement@@@Z	100.0000	100.0000	2	4c4f557ce0d3	0x184a70
-hash	?Lookup@CHashBase@@QAEPAVCHashElement@@I@Z	100.0000	100.0000	2	19aebfce415b	0x184b40
+hash	?Last@CHashBase@@QAEPAVCHashElement@@XZ	77.1053	77.1053	1	84972236f3c5	0x184b10
+hash	?Lookup@CHashBase@@QAEPAVCHashElement@@I@Z	99.0000	99.0000	2	19aebfce415b	0x184b40
 hash	?Remove@CHashBase@@QAEXPAVCHashElement@@@Z	99.2308	99.2308	2	ec71052b7ffe	0x184ab0
 hash	?RemoveAll@CHashBase@@QAEXXZ	100.0000	100.0000	3	9a7263e7a33f	0x184a40
 hash	?Walk@CHash@@QAEPAXPBDH@Z	86.4362	86.4362	4	aefbda46e84b	0x13c270
