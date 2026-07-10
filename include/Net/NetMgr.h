@@ -461,6 +461,19 @@ SIZE(CNetSession, 0x20bb0); // fully-laid-out: +0x3b0 + 0x80*0x410 resync entrie
 //   +0x50 (slot 20)  GetData2  (id, lpData, lpSize, fl)     -> HRESULT
 //   +0x68 (slot 26)  SetData5  (a, b, c, d, e)              -> HRESULT
 // ---------------------------------------------------------------------------
+
+// The DirectPlay DPNAME name blob the enum callbacks read (dwSize@+0, dwFlags@+4,
+// short-name ptr@+0x8, long-name ptr@+0xc). Named locally (dplay.h's own DPNAME
+// would collide in the TUs that pull it in via dplobby.h) - only the two name
+// pointers are used.
+struct NetDPName {
+    u32 dwSize;           // +0x00
+    u32 dwFlags;          // +0x04
+    char* lpszShortNameA; // +0x08
+    char* lpszLongNameA;  // +0x0c
+};
+SIZE(NetDPName, 0x10); // DirectPlay DPNAME (only the two name pointers are used)
+
 struct IDirectPlay4Z {
     // External DirectPlay-shaped COM interface (abstract, __stdcall; no dplay.h in
     // dx/Include, so the slot layout is hand-modeled). STDMETHOD == `virtual HRESULT
@@ -535,8 +548,17 @@ struct IDirectPlay4Z {
     STDMETHOD(v2e)() PURE;                                            // slot 46
     STDMETHOD(v2f)() PURE;                                            // slot 47
     STDMETHOD(v30)() PURE;                                            // slot 48
-    STDMETHOD(SendEx)(i32 idFrom, i32 idTo, i32 flags, void* lpData, i32 size, i32 pri,
-                      i32 timeout, void* ctx, i32* lpMsgId) PURE;     // slot 49 (+0xc4)
+    STDMETHOD(SendEx)(
+        i32 idFrom,
+        i32 idTo,
+        i32 flags,
+        void* lpData,
+        i32 size,
+        i32 pri,
+        i32 timeout,
+        void* ctx,
+        i32* lpMsgId
+    ) PURE; // slot 49 (+0xc4)
 };
 SIZE_UNKNOWN(IDirectPlay4Z); // external DirectPlay COM interface (opaque object); size TBD
 
@@ -683,17 +705,21 @@ SIZE(CNetSessionNode, 0x24); // AddSessionNode (NetMgr.cpp 0x178b30) RezAlloc(0x
 extern "C" void* g_netDirectPlayRiid; // 0x5f0588
 
 // ---------------------------------------------------------------------------
-// The per-player enumeration callback EnumPlayersInto hands to the DirectPlay
-// EnumPlayers slot (its address is taken => DIR32 reloc-masked). The body lives
-// elsewhere in the NetMgr TU (a recovery gap with no carved boundary); declared
-// no-body here so the `push &NetEnumPlayerCb` reloc-masks.
+// The per-session enumeration callback EnumPlayersInto hands to the DirectPlay
+// EnumSessions slot (a 4-arg EnumSessionsCallback2: lpThisSD, lpdwTimeout,
+// dwFlags, lpContext). Skips the DPESC_TIMEDOUT (flag&1) sweep and, for each live
+// session descriptor, forwards it to CNetMgr::AddPlayerNode. Its address is taken
+// (=> DIR32 reloc-masked). 0x005786a0.
 // ---------------------------------------------------------------------------
-extern "C" void NetEnumPlayerCb();
+extern "C" BOOL __stdcall
+NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx);
 
-// The group/session enumeration callback the EnumGroups/EnumSessions wrappers
-// (0x178a40/0x178a80/0x1789e0) hand to the DirectPlay enum slots (its address is
-// taken => DIR32 reloc-masked). 0x00578b00; no body here.
-extern "C" void NetEnumCb();
+// The group enumeration callback the EnumGroups wrappers (0x178a40/0x178a80) hand
+// to the DirectPlay EnumGroups slot (a 5-arg EnumGroupsCallback2: dpId, dwType,
+// lpName, dwFlags, lpContext). Forwards the id + the DPNAME short/long name to
+// CNetMgr::AddSessionNode. Its address is taken (=> DIR32 reloc-masked). 0x00578b00.
+extern "C" BOOL __stdcall
+NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx);
 
 // ---------------------------------------------------------------------------
 // A COM interface CNetMgr keeps at +0x14 alongside the IDirectPlay4 at +0x18.
@@ -886,16 +912,24 @@ public:
     // ~0x178xxx). Each thin wrapper calls one IDirectPlay4 vtable slot on the
     // m_18 interface and, on a nonzero HRESULT, routes it through the static
     // ReportError diagnostic with this TU's __FILE__/__LINE__.
-    i32 RemovePlayerObj(CNetPlayerObj* obj);                                        // 0x178e20
-    void* GetPlayerData(i32 id);                                                    // 0x178eb0
+    i32 RemovePlayerObj(CNetPlayerObj* obj); // 0x178e20
+    i32 RemovePlayerById(i32 id);            // 0x178e60  GetPlayerData(id) -> RemovePlayerObj
+    i32 RemovePlayerNode(CNetPlayerListNode* node); // 0x1790e0  drop one +0x38 player node
+    i32 EnumSessions2(void* ctx); // 0x179240  enum into a 0x28 desc, return desc+0x18
+    void* GetPlayerData(i32 id);  // 0x178eb0
     i32 SetGroupData2(CNetPlayerEntry* a, CNetPlayerEntry* b, i32 c, i32 d, i32 e); // 0x178ef0
     i32 SendEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g, i32 h, i32 i);      // 0x178f50
     i32 SetData(i32 a, i32 b, i32 c, i32 d, i32 e);                                 // 0x178fc0
-    i32 Receive(CNetPlayerEntry* from, CNetPlayerEntry* to, i32 flags, void* lpData,
-                i32* lpSize);                                                      // 0x179010
-    i32 SetGroupDataFrom(CNetPlayerEntry* a, i32 c, i32 d, i32 e);                  // 0x179090
-    i32 GetGroupInfo(CNetPlayerEntry* a, void* desc, i32 flags);                    // 0x179190
-    i32 EnumSessions(void* desc, void* ctx);                                        // 0x179130
+    i32 Receive(
+        CNetPlayerEntry* from,
+        CNetPlayerEntry* to,
+        i32 flags,
+        void* lpData,
+        i32* lpSize
+    );                                                             // 0x179010
+    i32 SetGroupDataFrom(CNetPlayerEntry* a, i32 c, i32 d, i32 e); // 0x179090
+    i32 GetGroupInfo(CNetPlayerEntry* a, void* desc, i32 flags);   // 0x179190
+    i32 EnumSessions(void* desc, void* ctx);                       // 0x179130
 
     // The session-list cluster (engine CNetMgr base; ~0x178xxx). The three managed
     // collections at +0x1c/+0x38/+0x54 each have a clear-loop that self-destructs

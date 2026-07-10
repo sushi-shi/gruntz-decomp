@@ -2932,6 +2932,22 @@ i32 CNetMgr::ReadGroupSel(void* hList) {
 }
 
 // ---------------------------------------------------------------------------
+// NetEnumPlayerCb  (EnumSessionsCallback2; __stdcall, 4 args -> ret 0x10).
+// The per-session callback EnumPlayersInto hands to the DirectPlay EnumSessions
+// slot: skips the timed-out sweep (dwFlags & DPESC_TIMEDOUT) and forwards each
+// live session descriptor to AddPlayerNode. Returns TRUE to keep enumerating,
+// FALSE on a null context/descriptor or the timed-out pass.
+RVA(0x001786a0, 0x2a)
+extern "C" BOOL __stdcall
+NetEnumPlayerCb(void* lpThisSD, void* lpdwTimeout, DWORD dwFlags, CNetMgr* ctx) {
+    if (ctx != 0 && (dwFlags & 1) == 0 && lpThisSD != 0) {
+        ctx->AddPlayerNode(lpThisSD);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+// ---------------------------------------------------------------------------
 // CNetMgr::AddPlayerNode  (__thiscall).
 // Adds one enumerated player to the +0x38 player list. No-op (0) on a null
 // descriptor. RezAlloc's a 0x58-byte node (vptr 0x5f0760, body zeroed),
@@ -3228,6 +3244,21 @@ i32 CNetMgr::EnumGroupsRange(void* rec, i32 flags) {
 }
 
 // ---------------------------------------------------------------------------
+// NetEnumCb  (EnumGroupsCallback2; __stdcall, 5 args -> ret 0x14).
+// The group callback the EnumGroups wrappers hand to the DirectPlay EnumGroups
+// slot: forwards the group id + the DPNAME short/long names + flags to
+// AddSessionNode. No-op (FALSE) on a null context.
+RVA(0x00178b00, 0x30)
+extern "C" BOOL __stdcall
+NetEnumCb(u32 dpId, DWORD dwType, NetDPName* lpName, DWORD dwFlags, CNetMgr* ctx) {
+    if (ctx == 0) {
+        return FALSE;
+    }
+    ctx->AddSessionNode(dpId, lpName->lpszShortNameA, lpName->lpszLongNameA, dwFlags);
+    return TRUE;
+}
+
+// ---------------------------------------------------------------------------
 // CNetMgr::AddSessionNode  (__thiscall; /GX EH frame).
 // Adds one enumerated session to the +0x54 list. RezAlloc's a 0x24-byte node
 // (base-dtor vptr 0x5e8cb4 while its two CString members are constructed, final
@@ -3389,6 +3420,20 @@ i32 CNetMgr::RemovePlayerObj(CNetPlayerObj* obj) {
 }
 
 // ---------------------------------------------------------------------------
+// CNetMgr::RemovePlayerById  (__thiscall).
+// Looks up the player object DirectPlay stores as `id`'s player-data blob
+// (GetPlayerData) and, if present, tears it down via RemovePlayerObj (returning
+// its result); returns 0 when no object is registered for the id.
+RVA(0x00178e60, 0x23)
+i32 CNetMgr::RemovePlayerById(i32 id) {
+    CNetPlayerObj* obj = (CNetPlayerObj*)GetPlayerData(id);
+    if (obj != 0) {
+        return RemovePlayerObj(obj);
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // CNetMgr::FindPlayerById  (pure leaf; __thiscall).
 // Walks the m_58 player list and returns the first entry whose id (+0x4) equals
 // the requested id, or null if the list is empty / no entry matches.
@@ -3472,8 +3517,13 @@ i32 CNetMgr::SetData(i32 a, i32 b, i32 c, i32 d, i32 e) {
 // two CNetPlayerEntry handles (0 if null), then receives into the caller buffer;
 // on a nonzero HRESULT routes the error through the diagnostic reporter.
 RVA(0x00179010, 0x76)
-i32 CNetMgr::Receive(CNetPlayerEntry* from, CNetPlayerEntry* to, i32 flags, void* lpData,
-                     i32* lpSize) {
+i32 CNetMgr::Receive(
+    CNetPlayerEntry* from,
+    CNetPlayerEntry* to,
+    i32 flags,
+    void* lpData,
+    i32* lpSize
+) {
     i32 idFrom = from ? from->m_4 : 0;
     i32 idTo = to ? to->m_4 : 0;
     i32 hr = m_directPlay->Receive(&idFrom, &idTo, flags, lpData, lpSize);
@@ -3497,6 +3547,28 @@ i32 CNetMgr::SetGroupDataFrom(CNetPlayerEntry* a, i32 c, i32 d, i32 e) {
         ReportError("C:\\Proj\\NetMgr\\NetMgr.cpp", 0x4da, hr, 0);
     }
     return hr;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::RemovePlayerNode  (__thiscall).
+// Drops one CNetPlayerListNode from the +0x38 player list: clears the selection
+// latch (+0x74) if it points at this node, closes the DirectPlay side (m_18 slot
+// 4), then self-destructs the node and unlinks its cached +0x38 position.
+RVA(0x001790e0, 0x4f)
+i32 CNetMgr::RemovePlayerNode(CNetPlayerListNode* node) {
+    if (node == 0) {
+        return 0;
+    }
+    if (m_playerSel == (i32)node) {
+        m_playerSel = 0;
+    }
+    m_directPlay->v04();
+    __POSITION* pos = node->m_54;
+    delete node;
+    if (pos != 0) {
+        ((CObList*)((char*)this + 0x38))->RemoveAt(pos);
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -3547,6 +3619,18 @@ i32 CNetMgr::GetGroupInfo(CNetPlayerEntry* a, void* desc, i32 flags) {
         return 0;
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetMgr::EnumSessions2  (__thiscall).
+// Enumerates sessions into a scratch 0x28-byte descriptor (EnumSessions) with the
+// caller context and, on success, returns the descriptor's +0x18 field (0 on any
+// enum failure - branchless neg/sbb/and select).
+RVA(0x00179240, 0x22)
+i32 CNetMgr::EnumSessions2(void* ctx) {
+    char desc[0x28];
+    i32 ok = EnumSessions(desc, ctx);
+    return ok ? *(i32*)(desc + 0x18) : 0;
 }
 
 // ---------------------------------------------------------------------------

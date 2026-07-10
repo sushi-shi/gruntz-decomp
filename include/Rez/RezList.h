@@ -49,6 +49,11 @@ SIZE_UNKNOWN(CObjList); // {vptr,head,tail}=0xc header; full engine size unprove
 struct CRezList : public CObjList {
     void AddHead(CRezListNode* node); // 0x1851e0
     void AddTail(CRezListNode* node); // 0x185210
+    // Positional inserts: splice `node` after/before `pos` (null pos -> AddHead /
+    // AddTail respectively). Each branch re-reads pos->m_next/m_prev after the
+    // aliasing store, and MSVC duplicates the common link tail into both arms.
+    void InsertAfter(CRezListNode* pos, CRezListNode* node);  // 0x185240
+    void InsertBefore(CRezListNode* pos, CRezListNode* node); // 0x185290
 };
 SIZE_UNKNOWN(CRezList); // {vptr,head,tail}=0xc header; full engine size unproven
 

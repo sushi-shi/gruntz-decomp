@@ -15,6 +15,16 @@
 DATA(0x006bf850)
 extern CRangeSet g_6bf850;
 
+// The open debug-output FILE handle (mode 5/8/9/10); DebugClose fcloses it.
+DATA(0x006bf8e0)
+extern void* g_6bf8e0;
+
+// The cursor-position forwarder (0x184fb0 -> 0x184fd0(0, x, y); BoundaryUpper.cpp)
+// and the CRT fclose (0x11f780) the printf variants / DebugClose reach; external
+// no-body so their call relocs mask.
+void Fwd_184fb0(i32 x, i32 y);
+extern "C" i32 RezFClose(void* fp); // 0x11f780 (CRT fclose)
+
 // ---------------------------------------------------------------------------
 // 0x184e00 - debug-gated assert/printf (re-homed from src/Stub/EngineExternFns.cpp):
 // when the debug mode (g_6bf8dc) is armed and channel 0 is enabled in the debug-
@@ -32,6 +42,38 @@ extern "C" {
     void RezAssertFail(char* fmt, ...) {
         char buf[256];
         if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(0)) {
+            vsprintf(buf, fmt, (char*)(&fmt + 1));
+            DebugSink_184df0(buf);
+        }
+    }
+
+    // 0x184e60 - channel-0 debug printf that first positions the cursor (x,y).
+    RVA(0x00184e60, 0x6d)
+    void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
+        char buf[256];
+        if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(0)) {
+            Fwd_184fb0(x, y);
+            vsprintf(buf, fmt, (char*)(&fmt + 1));
+            DebugSink_184df0(buf);
+        }
+    }
+
+    // 0x184ed0 - debug printf gated on a caller-supplied channel.
+    RVA(0x00184ed0, 0x5b)
+    void RezDebugPrintfCh(i32 channel, char* fmt, ...) {
+        char buf[256];
+        if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(channel)) {
+            vsprintf(buf, fmt, (char*)(&fmt + 1));
+            DebugSink_184df0(buf);
+        }
+    }
+
+    // 0x184f30 - channel-gated debug printf that positions the cursor (x,y) first.
+    RVA(0x00184f30, 0x73)
+    void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
+        char buf[256];
+        if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(channel)) {
+            Fwd_184fb0(x, y);
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);
         }
@@ -100,4 +142,13 @@ CDebugConfig* CDebugConfig::InitFromEnv() {
     }
     g_6bf8dc = 2;
     return this;
+}
+
+// 0x1851b0 - close the debug-output file if the current mode owns an open handle
+// (mode 5 = FILE, or 8/9/10 = LPT1/LPT2/PRN).
+RVA(0x001851b0, 0x23)
+void DebugClose() {
+    if (g_6bf8dc == 5 || (g_6bf8dc > 7 && g_6bf8dc <= 10)) {
+        RezFClose(g_6bf8e0);
+    }
 }
