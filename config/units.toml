@@ -1121,6 +1121,14 @@ source = "src/Gruntz/GameMode.cpp"
 flags = "eh"
 
 [[unit]]
+# CCreditsState (credits/attract CState leaf) + CCreditzOwner (SetupTitle), split out of
+# the GameMode.cpp god-TU. eh: ~CCreditsState / DrawScrollingCredits (CString temp) /
+# SetupTitle (operator new/delete + CString) carry the /GX SEH frame.
+unit = "creditsstate"
+source = "src/Gruntz/CreditsState.cpp"
+flags = "eh"
+
+[[unit]]
 # CGameModeBase::BaseCleanup (0x0fa150), the base cleanup all game-state
 # ReleaseResources chain to. Its own retail .obj (re-homed from Stub).
 unit = "gamemodebase"
@@ -1426,7 +1434,9 @@ flags = "eh"
 [[unit]]
 unit = "menustate"
 source = "src/Gruntz/MenuState.cpp"
-flags = "base"
+# eh: ~CMenuState / ReleaseResources (operator delete + ~CChatBox) / BuildVersionString
+# (CString temp) carry the /GX SEH frame; the base dialog helpers are unwind-free (neutral).
+flags = "eh"
 
 [[unit]]
 unit = "donothing"

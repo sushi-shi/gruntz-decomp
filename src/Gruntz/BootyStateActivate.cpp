@@ -20,15 +20,23 @@
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (Booty/MultiBooty ReleaseResources)
+#include <DDrawMgr/DDrawWorkerRegistry.h> // RemoveKeysEqual_155360 (CBootyState::ReleaseResources)
 #include <DDrawMgr/DDSurface.h> // CMultiBootyState::Render: CDDSurface Flip/BltFast on the frame surfaces
 #include <Mfc.h>   // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
 #include <ddraw.h> // CMultiBootyState::Render: real IDirectDrawSurface::IsLost dispatch (slot 24)
+#include <math.h>  // sin/cos (StepGlitterAnim sine spiral)
 
 #include <rva.h>
 #include <Gruntz/BankMgr.h> // CResSource::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
 #include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CSpriteFactoryHolder facet
 #include <Gruntz/GruntzMgr.h>    // CMultiBootyState::Render: CState::m_4 owner (ReportError)
 #include <Gruntz/SpriteFactory.h> // CMultiBootyState::Render: m_c->m_8 frame-worker slots 9/10
+#include <Gruntz/LeafCue.h>       // LeafCue (Booty/MultiBooty FrameSlot28 BOOTY_LOOP cue)
+#include <Gruntz/UserLogic.h>     // CGameObject (glitter/letter sprites; StepGlitterAnim/BuildWarp)
+#include <Gruntz/BattlezData.h>   // CBattlezData::InBounds (CheckPerfectBonus frame-ready gate)
+#include <Gruntz/WwdGameReg.h>    // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
+#include <Io/MoviePlayer.h>       // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
 
 // CMultiBootyState::Render's HUD line is drawn through the shared GlyphStringDraw.cpp
 // free function (0x115520); declared here (reloc-masked) so the call co-names with retail.
@@ -96,6 +104,128 @@ extern i32 g_sndEnabled; // BOOTY_LOOP enable gate
 DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // wrap-safe draw clock
 
+// The owning game-manager (CState::m_4, a real CGruntzMgr*) reached through the
+// gamemode-local CGMOwner reduced view (same helper the sibling state TUs use).
+static inline CGMOwner* Owner(CState* s) {
+    return (CGMOwner*)s->m_4;
+}
+// The scalar-deleting dtor's operator delete (declared so /GX tracks the EH state).
+void operator delete(void*);
+
+// ---------------------------------------------------------------------------
+// CGlitterMgr / CBooty* views of the *0x24556c singleton (aliased with the BzGameReg
+// view above): the glitter animator reads it as CGlitterMgr (m_world sprite factory +
+// m_7c letter-count set), the perfect-bonus / cue pollers read it as CBootyGameReg
+// (m_30 music host, m_7c draw-ready object, m_11c cue item) through the g_gameReg
+// WwdGameReg alias. Same address; codegen-neutral reloc-masked loads. The 0x24556c
+// canonical-type unification is a separate worklist item.
+// ---------------------------------------------------------------------------
+extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x24556c alias, reloc-masked)
+// g_6bf3c0 / g_61ab20 are the draw-clock mirror + reentrancy gate (same 0x6bf3c0 /
+// 0x61ab20 data as g_killCueClock / g_sndEnabled above; the moved bodies use these names).
+extern "C" u32 g_6bf3c0; // draw-clock mirror
+extern i32 g_61ab20;     // DAT_0061ab20 reentrancy gate
+
+// The glitter factory chain (CGlitterMgr view of g_mgrSettings): m_world->m_8 sprite
+// factory (CreateSprite @0x1597b0), m_7c->m_4 active letter count.
+SIZE_UNKNOWN(CGlitterMgrM30);
+struct CGlitterMgrM30 {
+    char m_pad00[0x8];
+    CSpriteFactory* m_8; // +0x08 the animation factory
+};
+SIZE_UNKNOWN(CGlitterMgrSet);
+struct CGlitterMgrSet {
+    char m_pad00[0x4];
+    i32 m_4; // +0x04 element count
+};
+SIZE_UNKNOWN(CGlitterMgr);
+struct CGlitterMgr {
+    char m_pad00[0x30];
+    CGlitterMgrM30* m_world; // +0x30
+    char m_pad34[0x7c - 0x34];
+    CGlitterMgrSet* m_7c; // +0x7c
+};
+
+// The packed {x,y} spawn-coordinate table StepGlitterAnim indexes by m_letterIdx
+// (DAT_005e8fe8; x via [tbl], y via [tbl+4], stride 8), + the trig constants
+// (deg->rad, -225.0f phase bias, the 350.0-step*0.002*350.0 shrink curve).
+extern "C" i32 g_5e8fe8[];
+extern "C" float g_5e93b4;  // -225.0f  (phase bias, fsub'd)
+extern "C" double g_5e93b8; // 0.017453292  (pi/180)
+extern "C" double g_5e93c0; // 0.002
+extern "C" double g_5e93c8; // 350.0
+
+// The bonus state object (CMultiBootyState+0x2f8): flags @+0x8, a scroll phase @+0x5c.
+SIZE_UNKNOWN(CBootyBonusState);
+struct CBootyBonusState {
+    char m_pad00[0x8];
+    i32 m_8; // +0x08 flags
+    char m_pad0c[0x5c - 0xc];
+    i32 m_5c; // +0x5c scroll phase
+};
+
+// The draw object (g_gameReg+0x7c) the frame-ready gate runs on (FrameReady @0xfcd70
+// IS CBattlezData::InBounds; cast at the call).
+SIZE_UNKNOWN(CBootyDrawObj);
+struct CBootyDrawObj {};
+struct CBootyMusicHost; // the g_gameReg+0x30 music host (defined below)
+SIZE_UNKNOWN(CBootyGameReg);
+struct CBootyGameReg {
+    char m_pad00[0x30];
+    CBootyMusicHost* m_30; // +0x30 music host
+    char m_pad34[0x7c - 0x34];
+    CBootyDrawObj* m_7c; // +0x7c draw object
+    char m_pad80[0x11c - 0x80];
+    i32 m_11c; // +0x11c configured music item
+};
+#define BOOTY_REG ((CBootyGameReg*)g_gameReg)
+// The Lookup output ("BOOTY_LOOP"/"BOOTY_PERFECT" cue entry): a player @+0x10 (the
+// ConfigureItem `this`), and a draw-clock gate (last @+0x14, interval @+0x18).
+SIZE_UNKNOWN(CBootyFound);
+struct CBootyFound {
+    char m_pad00[0x10];
+    CSoundCueMgr* m_10; // +0x10 player (ConfigureItem this)
+    i32 m_14;           // +0x14 last draw-clock
+    i32 m_18;           // +0x18 interval
+};
+// The music host chain g_gameReg->m_30->{m_28->m_30 gate, Lookup map @m_28+0x10}.
+SIZE_UNKNOWN(CBootyMusicHost);
+struct CBootyMusicHost {
+    char m_pad00[0x28];
+    struct M28 {
+        char m_pad00[0x30];
+        void* m_30; // +0x30 gate (non-null => skip); the lookup map is at this+0x10
+    }* m_28;
+};
+
+// ReleaseResources teardown chain: m_4 (owner) -> m_60 sub-object (a CMoviePlayer the
+// booty state owns; its ~CMoviePlayer runs before BaseCleanup).
+SIZE_UNKNOWN(CBootyM4Sub);
+struct CBootyM4Sub {};
+SIZE_UNKNOWN(CBootyOwnerView);
+struct CBootyOwnerView {
+    char m_pad00[0x60];
+    CBootyM4Sub* m_60; // +0x60
+};
+
+// ---------------------------------------------------------------------------
+// CBootyState::ReleaseResources() (slot 2 / +0x8, 0x18c90): release the BOOTY resource
+// set, then chain BaseCleanup. The `m_c` view's leaf registry (m_28) holds a pooled
+// resource (Free/Stop if set) and releases two named sound sets; the name registry
+// (m_10) releases two named sprite sets. Also reached directly from ~CBootyState.
+RVA(0x00018c90, 0x72)
+void CBootyState::ReleaseResources() {
+    CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
+    if (r) {
+        ((SoundStream*)r)->Stop();
+    }
+    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("BOOTY", "_");
+    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("GRUNTZ_WANDGRUNT", "_");
+    ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("BOOTY", "_");
+    ((CDDrawWorkerRegistry*)m_c->m_10)->RemoveKeysEqual_155360("GRUNTZ_GOKARTGRUNT", "_");
+    ((CGameModeBase*)this)->BaseCleanup();
+}
+
 // ---------------------------------------------------------------------------
 // CBootyState::Vslot09 (slot 9, 0x18d30) - the booty "bg" activation tick: hide the
 // cursor, fade in the "bg" title, kick the render worker apply (m_c->m_drawTarget->Flush)
@@ -131,6 +261,372 @@ i32 CBootyState::Vslot09(i32) {
         }
     }
     return 1;
+}
+
+// CBootyState::FrameSlot28 (slot 10 / +0x28, 0x18e40): the BOOTY_LOOP ambient
+// voice-loop driver. Look up the "BOOTY_LOOP" cue in the m_c cue registry; if its
+// DirectSound buffer is playing, re-trigger it (CloneAndPlay) and spin the audio-kill
+// voice reaper until the buffer stops. Returns 1.
+// @early-stop
+// regalloc register-assignment wall (~79%): logic byte-exact, but retail keeps the
+// looked-up cue in esi (this in edi), whereas cl allocates this->esi and strength-
+// reduces &found->m_10 into edi. A pure esi<->edi coin-flip on two loop-live base
+// pointers; not steerable.
+RVA(0x00018e40, 0x81)
+i32 CBootyState::FrameSlot28(i32) {
+    CObject* obj = 0;
+    CMapStringToOb* map = (CMapStringToOb*)((char*)m_c->m_28 + 0x10);
+    map->Lookup("BOOTY_LOOP", obj);
+    LeafCue* found = (LeafCue*)obj;
+    if (found && ((DirectSoundMgr*)found->m_10)->IsPlaying()) {
+        ((DirectSoundMgr*)found->m_10)->CloneAndPlay(0, 0x1f4, 1);
+        while (((DirectSoundMgr*)found->m_10)->IsPlaying()) {
+            if (m_c->m_28->m_2c != 0) {
+                m_c->m_28->m_2c->PurgeVoiceList(-1);
+            }
+        }
+    }
+    return 1;
+}
+
+// CMultiBootyState::BuildWarpStoneGlitterAnimation (0x19540): build 4 "DoNothing" warp-
+// letter animations through the glitter factory (g_mgrSettings viewed as CGlitterMgr:
+// m_world->m_8), stash them in the +0x1ec ptr array, set/clear their active bit, then
+// build the trailing "SimpleAnimation" glitter sprite.
+// @early-stop
+// 88.1%: logic byte-faithful. Residual is the branchless-select codegen for the per-letter
+// `(i != m_letterIdx) ? 1 : 3` kind + the per-iteration g_mgrSettings reload scheduling.
+RVA(0x00019540, 0x12a)
+i32 CMultiBootyState::BuildWarpStoneGlitterAnimation() {
+    CGlitterMgr* reg = (CGlitterMgr*)g_mgrSettings;
+    // The +0x1ec and +0x204 arrays overlap; reach the letter-sprite array by offset
+    // (naming-independent, campaign doctrine) - the rest are real CMultiBootyState members.
+    CGameObject** slot = (CGameObject**)((char*)this + 0x1ec);
+    m_radius = 0xc8;
+    m_letterIdx = (reg->m_7c->m_4 - 1) % 4;
+    m_angleStep = 0;
+    m_scratchX = 0;
+    m_1e8 = 0;
+    for (i32 i = 0; i < 4; i++) {
+        CGameObject* a = ((CGlitterMgr*)g_mgrSettings)
+                             ->m_world->m_8->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3,
+                                                          "DoNothing", 3);
+        slot[i] = a;
+        if (a == 0) {
+            return 0;
+        }
+        a->ApplyLookupSprite("GAME_STATUSBAR_TABZ_GAMETAB_WARP", i + 2);
+        a->m_stateFlags |= 1;
+    }
+    for (i32 k = 0; k <= m_letterIdx; k++) {
+        slot[k]->m_stateFlags &= ~1;
+    }
+    CGameObject* g =
+        ((CGlitterMgr*)g_mgrSettings)->m_world->m_8->CreateSprite(0, 0, 0, 4, "SimpleAnimation", 3);
+    m_cursorLetter = g;
+    if (g == 0) {
+        return 0;
+    }
+    g->ApplyName("GAME_GLITTERGOLD");
+    m_cursorLetter->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    return 1;
+}
+
+// CMultiBootyState::StepGlitterAnim() (0x196c0): the glitter/spawn positioner. With
+// m_1b4 set it snaps the eight letter sprites to the static spawn table; otherwise it
+// walks a sine spiral (radius m_radius, angle (m_angleStep+225)*pi/180), advances the
+// step by 5, shrinks the radius along the 350.0-step*0.002*350.0 curve, then latches the
+// trailing sprite's spawn flag when the radius reaches zero.
+// @early-stop
+// regalloc wall (~80%): the float branch is byte-exact (sin/cos/__ftol chain matches);
+// the residual is the two integer letter-loops + the final latch block, a pure
+// register-allocation coin-flip (docs/patterns/zero-register-pinning.md).
+RVA(0x000196c0, 0x1d3)
+void CMultiBootyState::StepGlitterAnim() {
+    if (m_1b4) {
+        if (m_letterIdx >= 0) {
+            i32* tbl = g_5e8fe8 + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
+            CGameObject** ap = (CGameObject**)((char*)this + 0x1ec); // walks arr1ec by 1
+            for (i32 i = 0; i <= m_letterIdx; i++) {
+                CGameObject* e = *ap;
+                e->m_screenX = tbl[-1];
+                e = *ap;
+                e->m_screenY = tbl[0];
+                e = *ap;
+                if (e->m_latchedAnimId != 1) {
+                    e->m_latchedAnimId = 1;
+                    e->m_flags |= 0x20000;
+                }
+                ap++;
+                tbl += 2;
+            }
+        }
+        m_cursorLetter->m_screenX = g_5e8fe8[m_letterIdx * 2];
+        m_cursorLetter->m_screenY = g_5e8fe8[m_letterIdx * 2 + 1];
+        return;
+    }
+
+    i32 step = m_angleStep;
+    i32 idx = m_letterIdx;
+    double r = (float)m_radius; // load (float)m_radius first; shared across sin/cos terms
+    double ang = ((float)step - g_5e93b4) * g_5e93b8;
+    m_scratchX = (i32)(sin(ang) * r + (float)g_5e8fe8[idx * 2]);
+    m_1e8 = (i32)(cos(ang) * r + (float)g_5e8fe8[idx * 2 + 1]);
+    m_angleStep = step + 5;
+    m_radius = (i32)(g_5e93c8 - (float)(step + 5) * g_5e93c0 * g_5e93c8);
+
+    // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
+    i32 i = 0;
+    CGameObject** arr1ec = (CGameObject**)((char*)this + 0x1ec);
+    if (idx > 0) {
+        i32* tbl = g_5e8fe8 + 1;   // ecx: tbl[-1]=x, tbl[0]=y
+        CGameObject** ap = arr1ec; // eax
+        do {
+            CGameObject* e = *ap;
+            i++;
+            ap++;
+            e->m_screenX = tbl[-1];
+            e = ap[-1];
+            e->m_screenY = tbl[0];
+            tbl += 2;
+        } while (i < m_letterIdx);
+    }
+    // The trailing sprite + the i'th (== m_letterIdx) sprite get the computed scratch coords.
+    m_cursorLetter->m_screenX = m_scratchX;
+    m_cursorLetter->m_screenY = m_1e8;
+    arr1ec[i]->m_screenX = m_scratchX;
+    arr1ec[i]->m_screenY = m_1e8;
+
+    MoveLettersByDir();
+
+    if (m_radius == 0) {
+        CGameObject* e = arr1ec[i];
+        if (e->m_latchedAnimId != 1) {
+            e->m_latchedAnimId = 1;
+            e->m_flags |= 0x20000;
+        }
+    }
+}
+
+// CMultiBootyState::MoveLettersByDir() (0x19b90): if the anim-mode latch (m_1b4) is set,
+// OR the spawn bit into all eight letters' flags; otherwise step each of the eight
+// letters one cell (+/-4 px) along its compass direction (an 8-way jump table), flagging
+// any that leave the [0,0x280]x[0,0x1e0] play field.
+// @early-stop
+// regalloc wall (~60%): logic/offsets/control-flow/jump-table all match; the residual is
+// pure register allocation (docs/patterns/zero-register-pinning.md). The 8-way switch
+// body itself is byte-aligned.
+RVA(0x00019b90, 0xd7)
+void CMultiBootyState::MoveLettersByDir() {
+    if (m_1b4) {
+        CGameObject** p = (CGameObject**)((char*)this + 0x204);
+        i32 n = 8;
+        do {
+            CGameObject* e = *p;
+            p++;
+            e->m_stateFlags |= 1;
+        } while (--n);
+        return;
+    }
+    CGameObject** p = (CGameObject**)((char*)this + 0x204);
+    for (i32 i = 0; i < 8; i++, p++) {
+        CGameObject* e = *p;
+        i32 x = e->m_screenX;
+        i32 y = e->m_screenY;
+        if (x < 0 || x > 0x280 || y < 0 || y > 0x1e0) {
+            e->m_stateFlags |= 1;
+        } else {
+            switch (i) {
+                case 0:
+                    e->m_screenX = x;
+                    (*p)->m_screenY = y - 4;
+                    break;
+                case 1:
+                    e->m_screenX = x + 4;
+                    (*p)->m_screenY = y - 4;
+                    break;
+                case 2:
+                    e->m_screenX = x + 4;
+                    (*p)->m_screenY = y;
+                    break;
+                case 3:
+                    e->m_screenX = x + 4;
+                    (*p)->m_screenY = y + 4;
+                    break;
+                case 4:
+                    e->m_screenX = x;
+                    (*p)->m_screenY = y + 4;
+                    break;
+                case 5:
+                    e->m_screenX = x - 4;
+                    (*p)->m_screenY = y + 4;
+                    break;
+                case 6:
+                    e->m_screenX = x - 4;
+                    (*p)->m_screenY = y;
+                    break;
+                case 7:
+                    e->m_screenX = x - 4;
+                    (*p)->m_screenY = y - 4;
+                    break;
+            }
+        }
+    }
+}
+
+// CMultiBootyState::CheckPerfectBonus() (0x1c0f0): once the frame-ready gate fires,
+// drive the bonus state's scroll phase (m_bonusState->m_5c): on the wrap value (-0x82)
+// play the "BOOTY_PERFECT" cue on the draw-clock window; past 0x302 latch the done flag
+// (m_8 |= 0x10000); otherwise advance the phase by 0xa. Returns 1.
+RVA(0x0001c0f0, 0xd5)
+i32 CMultiBootyState::CheckPerfectBonus() {
+    if (!((CBattlezData*)BOOTY_REG->m_7c)->InBounds(-1)) {
+        return 1;
+    }
+    CBootyBonusState* st = m_bonusState;
+    i32 phase = st->m_5c;
+    if (phase == (i32)0xffffff7e) {
+        CBootyMusicHost* host = BOOTY_REG->m_30;
+        i32 item = BOOTY_REG->m_11c;
+        CBootyMusicHost::M28* m28 = host->m_28;
+        if (m28->m_30 == 0) {
+            void* found = 0;
+            CMapStringToOb* map = (CMapStringToOb*)((char*)m28 + 0x10);
+            map->Lookup("BOOTY_PERFECT", (CObject*&)found);
+            if (found && g_61ab20 != 0) {
+                CBootyFound* p = (CBootyFound*)found;
+                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                    p->m_14 = g_6bf3c0;
+                    ((CSoundCueMgr*)p->m_10)->ConfigureItem(item, 0, 0, 0);
+                }
+            }
+        }
+    }
+    if (phase >= 0x302) {
+        m_bonusState->m_8 |= 0x10000;
+        return 1;
+    }
+    m_bonusState->m_5c = phase + 0xa;
+    return 1;
+}
+
+// CBootyState::Render (slot 5 / +0x14, 0x1c210): the per-frame bonus-state draw (1205B).
+// Still a reconstruction target - stub body marks the slot.
+// @confidence: med
+// @source: string-xref
+// @stub
+RVA(0x0001c210, 0x4b5)
+i32 CBootyState::Render() {
+    return 0;
+}
+
+// CMultiBootyState::ReadyAndPaint() (0x1ce30): gate on the active/ready virtual (CState
+// slot 3 / +0xc); when ready, run the per-frame Paint and return the normalized result;
+// otherwise return the (zero) gate result.
+RVA(0x0001ce30, 0x1d)
+i32 CMultiBootyState::ReadyAndPaint() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    return Paint() != 0;
+}
+
+// CBootyState::StateOnEnter (0x1d440): the booty state-enter driver - engine-label
+// backlog stub (non-virtual; vtable-neutral).
+// @confidence: med
+// @source: decomp-xref
+// @stub
+RVA(0x0001d440, 0xd7d)
+void CBootyState::StateOnEnter() {}
+
+// CMultiBootyState::ReleaseResources() (slot 2 / +0x8, 0x1e520): free the leaf-registry
+// pooled resource (if set), release the "BOOTY" set on the leaf registry, run a teardown
+// on the owner's m_4->m_60 sub-object (~CMoviePlayer), then chain BaseCleanup.
+// @early-stop
+// near-exact (~98.5%): structure/offsets/calls all match; the sole non-reloc residual is
+// the m_4 deref landing in eax vs retail's edx (single-register coin-flip).
+RVA(0x0001e520, 0x3e)
+void CMultiBootyState::ReleaseResources() {
+    CViewPooledRes* r = ((CSoundRegistry*)m_c->m_28)->m_2c;
+    if (r) {
+        ((SoundStream*)r)->Stop();
+    }
+    ((CDDrawSubMgrLeafScan*)m_c->m_28)->RemoveKeysEqual_157c70("BOOTY", "_");
+    ((CMoviePlayer*)((CBootyOwnerView*)m_4)->m_60)->~CMoviePlayer();
+    ((CGameModeBase*)this)->BaseCleanup();
+}
+
+// CMultiBootyState::Vslot09() (slot 9 / +0x24, 0x1e570): on entry build the "multi"
+// title page (fade + page) then, if the menu is live, push the "BOOTY_LOOP" cue into the
+// player on the draw-clock window. Returns 1.
+RVA(0x0001e570, 0xb4)
+i32 CMultiBootyState::Vslot09(i32) {
+    i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1);
+    if (!ok) {
+        return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
+    }
+    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
+    BuildPage(0x50, 0x3e8, 0, 1);
+
+    CBootyMusicHost* host = BOOTY_REG->m_30;
+    i32 item = BOOTY_REG->m_11c;
+    CBootyMusicHost::M28* m28 = host->m_28;
+    if (m28->m_30 == 0) {
+        void* found = 0;
+        CMapStringToOb* map = (CMapStringToOb*)((char*)m28 + 0x10);
+        map->Lookup("BOOTY_LOOP", (CObject*&)found);
+        if (found && g_61ab20 != 0) {
+            CBootyFound* p = (CBootyFound*)found;
+            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
+                p->m_14 = g_6bf3c0;
+                ((CSoundCueMgr*)p->m_10)->ConfigureItem(item, 0, 0, 1);
+            }
+        }
+    }
+    return 1;
+}
+
+// CMultiBootyState::FrameSlot28 (slot 10 / +0x28, 0x1e660): identical BOOTY_LOOP
+// voice-loop driver to CBootyState::FrameSlot28 (0x18e40) - the two sibling states
+// share the ambient-loop spin.
+// @early-stop
+// same regalloc esi<->edi coin-flip wall as CBootyState::FrameSlot28 (0x18e40).
+RVA(0x0001e660, 0x81)
+i32 CMultiBootyState::FrameSlot28(i32) {
+    CObject* obj = 0;
+    CMapStringToOb* map = (CMapStringToOb*)((char*)m_c->m_28 + 0x10);
+    map->Lookup("BOOTY_LOOP", obj);
+    LeafCue* found = (LeafCue*)obj;
+    if (found && ((DirectSoundMgr*)found->m_10)->IsPlaying()) {
+        ((DirectSoundMgr*)found->m_10)->CloneAndPlay(0, 0x1f4, 1);
+        while (((DirectSoundMgr*)found->m_10)->IsPlaying()) {
+            if (m_c->m_28->m_2c != 0) {
+                m_c->m_28->m_2c->PurgeVoiceList(-1);
+            }
+        }
+    }
+    return 1;
+}
+
+// CMultiBootyState::QueryGruntSlots() (0x1ecf0): scan the four per-player registry
+// records (g_gameReg+0x174, stride 0x238); the first whose +0x4 is set but +0x0 is
+// clear yields its +0x150 field; none -> 0. (`this`/ecx is unused.)
+// @early-stop
+// 1-instruction-order wall (~94%): the `je`/test/loop shape is byte-exact; the sole
+// residual is the loop tail's `inc ecx` vs `add eax,0x238` order (a /O2 scheduling
+// coin-flip; the natural for-loop form is kept).
+RVA(0x0001ecf0, 0x2a)
+i32 CMultiBootyState::QueryGruntSlots() {
+    char* base = (char*)g_gameReg;
+    i32 i = 0;
+    char* rec = base + 0x174;
+    for (; i < 4; i++) {
+        if (*(i32*)(rec + 4) != 0 && *(i32*)rec == 0) {
+            return *(i32*)(rec - 0x24);
+        }
+        rec += 0x238;
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -271,4 +767,24 @@ i32 PendingCmdKeyHost::PostCommandIfKey() {
         g_pPostMessageA(g_mgrSettings->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// The EH-framed `??1` destructors (slot 0). Each re-stamps its own vtable, runs the
+// slot-2 release (statically bound), re-stamps CState, chains BaseCleanup (compiler-
+// emitted). With the CState ctor they anchor the CBootyState / CMultiBootyState vtable +
+// inline-virtual (Update) emission in this TU. /GX EH frame.
+// ---------------------------------------------------------------------------
+
+// CBootyState::~CBootyState() (`??1`, 0x8d440): run the booty teardown then chain base.
+RVA(0x0008d440, 0x55)
+CBootyState::~CBootyState() {
+    ReleaseResources();
+}
+
+// CMultiBootyState::~CMultiBootyState() (`??1`, 0x8d510): run the booty teardown then
+// chain the base (the vtable re-stamps fold into the compiler-emitted body).
+RVA(0x0008d510, 0x55)
+CMultiBootyState::~CMultiBootyState() {
+    ReleaseResources();
 }
