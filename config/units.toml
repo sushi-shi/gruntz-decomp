@@ -1036,6 +1036,14 @@ unit = "netmgr"
 source = "src/Net/NetMgr.cpp"
 flags = "eh"
 
+# The Gruntz-side half of the conflated CNetMgr (the 0x0b5xxx-0x0bdxxx multiplayer
+# game-state cluster, really CMulti); split out of the netmgr god-TU (2026-07-10).
+# Separate retail object from the engine CNetMgr at 0x178xxx (~0xbaf30 .text gap).
+[[unit]]
+unit = "netmgrgame"
+source = "src/Net/NetMgrGame.cpp"
+flags = "eh"
+
 [[unit]]
 unit = "netmgrerror"
 source = "src/Net/NetMgrReportError.cpp"
