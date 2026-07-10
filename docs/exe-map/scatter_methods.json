@@ -27,16 +27,16 @@
  },
  {
   "file": "src/DDrawMgr/DDrawSubMgr.cpp",
-  "n": 70,
-  "bytes": 8408,
+  "n": 72,
+  "bytes": 8425,
   "lo": 201296,
   "hi": 1428680,
   "span": 1227384,
-  "frags": 21,
-  "avg_cluster": 3.3333333333333335,
-  "frag_ratio": 0.3,
-  "occupancy": 0.0068503418653005094,
-  "spread": 145.9781160799239
+  "frags": 19,
+  "avg_cluster": 3.789473684210526,
+  "frag_ratio": 0.2638888888888889,
+  "occupancy": 0.006864192461364984,
+  "spread": 145.68356083086053
  },
  {
   "file": "src/Image/Image.cpp",
@@ -170,16 +170,16 @@
  },
  {
   "file": "src/Gruntz/BootyStateActivate.cpp",
-  "n": 20,
-  "bytes": 7586,
+  "n": 21,
+  "bytes": 7594,
   "lo": 101520,
   "hi": 578758,
   "span": 477238,
   "frags": 9,
-  "avg_cluster": 2.2222222222222223,
-  "frag_ratio": 0.45,
-  "occupancy": 0.015895632786995167,
-  "spread": 62.91036119166886
+  "avg_cluster": 2.3333333333333335,
+  "frag_ratio": 0.42857142857142855,
+  "occupancy": 0.01591239591147394,
+  "spread": 62.84408743745062
  },
  {
   "file": "src/Gruntz/MenuState.cpp",
@@ -232,19 +232,6 @@
   "frag_ratio": 0.45,
   "occupancy": 0.39765639765639765,
   "spread": 2.5147338403041823
- },
- {
-  "file": "src/Gruntz/Attract.cpp",
-  "n": 19,
-  "bytes": 2941,
-  "lo": 81840,
-  "hi": 1027260,
-  "span": 945420,
-  "frags": 8,
-  "avg_cluster": 2.375,
-  "frag_ratio": 0.42105263157894735,
-  "occupancy": 0.003110786740284741,
-  "spread": 321.46208772526353
  },
  {
   "file": "src/Gruntz/MultiStartDlgRoster.cpp",
@@ -310,6 +297,19 @@
   "frag_ratio": 0.5384615384615384,
   "occupancy": 0.007928401072479338,
   "spread": 126.1288361749444
+ },
+ {
+  "file": "src/Gruntz/Attract.cpp",
+  "n": 18,
+  "bytes": 2777,
+  "lo": 81840,
+  "hi": 1027260,
+  "span": 945420,
+  "frags": 7,
+  "avg_cluster": 2.5714285714285716,
+  "frag_ratio": 0.3888888888888889,
+  "occupancy": 0.0029373188635738613,
+  "spread": 340.44652502700757
  },
  {
   "file": "src/DDrawMgr/DDrawSubMgrLeafScan.cpp",
@@ -403,6 +403,19 @@
   "spread": 74.48089017900338
  },
  {
+  "file": "src/Wwd/WwdGameObject.cpp",
+  "n": 30,
+  "bytes": 6799,
+  "lo": 1377888,
+  "hi": 1468804,
+  "span": 90916,
+  "frags": 7,
+  "avg_cluster": 4.285714285714286,
+  "frag_ratio": 0.23333333333333334,
+  "occupancy": 0.07478331646794843,
+  "spread": 13.371966465656714
+ },
+ {
   "file": "src/Gruntz/TileTrigger.cpp",
   "n": 12,
   "bytes": 2241,
@@ -455,17 +468,17 @@
   "spread": 1.6977133021883453
  },
  {
-  "file": "src/DDrawMgr/DDrawSurfacePair.cpp",
-  "n": 13,
-  "bytes": 2179,
-  "lo": 238032,
-  "hi": 1459878,
-  "span": 1221846,
+  "file": "src/Gruntz/SpriteResource.cpp",
+  "n": 10,
+  "bytes": 966,
+  "lo": 363360,
+  "hi": 1428558,
+  "span": 1065198,
   "frags": 6,
-  "avg_cluster": 2.1666666666666665,
-  "frag_ratio": 0.46153846153846156,
-  "occupancy": 0.001783367134647083,
-  "spread": 560.7370353373107
+  "avg_cluster": 1.6666666666666667,
+  "frag_ratio": 0.6,
+  "occupancy": 0.0009068736516591281,
+  "spread": 1102.6894409937888
  },
  {
   "file": "src/DDrawMgr/DDrawSubMgrLeaf.cpp",
@@ -559,30 +572,30 @@
   "spread": 5.290560471976401
  },
  {
-  "file": "src/Font/Font.cpp",
-  "n": 19,
-  "bytes": 6093,
-  "lo": 1545392,
-  "hi": 1553660,
-  "span": 8268,
+  "file": "src/Image/ImagePool.cpp",
+  "n": 29,
+  "bytes": 3111,
+  "lo": 1527440,
+  "hi": 1537142,
+  "span": 9702,
   "frags": 6,
-  "avg_cluster": 3.1666666666666665,
-  "frag_ratio": 0.3157894736842105,
-  "occupancy": 0.7369375907111756,
-  "spread": 1.3569670113244707
+  "avg_cluster": 4.833333333333333,
+  "frag_ratio": 0.20689655172413793,
+  "occupancy": 0.3206555349412492,
+  "spread": 3.1186113789778207
  },
  {
   "file": "src/Gruntz/Fader.cpp",
-  "n": 26,
-  "bytes": 10635,
+  "n": 28,
+  "bytes": 10662,
   "lo": 1565776,
   "hi": 1583413,
   "span": 17637,
   "frags": 6,
-  "avg_cluster": 4.333333333333333,
-  "frag_ratio": 0.23076923076923078,
-  "occupancy": 0.6029937064126553,
-  "spread": 1.6583921015514809
+  "avg_cluster": 4.666666666666667,
+  "frag_ratio": 0.21428571428571427,
+  "occupancy": 0.6045245790100358,
+  "spread": 1.6541924592009003
  },
  {
   "file": "src/Gruntz/StreamRecordLoaders.cpp",
@@ -663,6 +676,19 @@
   "spread": 560.6839826839827
  },
  {
+  "file": "src/Gruntz/Dialogs.cpp",
+  "n": 33,
+  "bytes": 5393,
+  "lo": 84784,
+  "hi": 98438,
+  "span": 13654,
+  "frags": 5,
+  "avg_cluster": 6.6,
+  "frag_ratio": 0.15151515151515152,
+  "occupancy": 0.3949758312582393,
+  "spread": 2.5318004821064344
+ },
+ {
   "file": "src/Gruntz/OrphanLeaves.cpp",
   "n": 8,
   "bytes": 154,
@@ -689,6 +715,19 @@
   "spread": 239.13804801670148
  },
  {
+  "file": "src/DDrawMgr/DDrawSurfacePair.cpp",
+  "n": 14,
+  "bytes": 2318,
+  "lo": 238032,
+  "hi": 1459878,
+  "span": 1221846,
+  "frags": 5,
+  "avg_cluster": 2.8,
+  "frag_ratio": 0.35714285714285715,
+  "occupancy": 0.0018971294254758783,
+  "spread": 527.1121656600518
+ },
+ {
   "file": "src/Gruntz/LogicActReg.cpp",
   "n": 5,
   "bytes": 1233,
@@ -700,19 +739,6 @@
   "frag_ratio": 1.0,
   "occupancy": 0.002600492258631926,
   "spread": 384.5425790754258
- },
- {
-  "file": "src/Gruntz/SpriteResource.cpp",
-  "n": 9,
-  "bytes": 936,
-  "lo": 363360,
-  "hi": 1415362,
-  "span": 1052002,
-  "frags": 5,
-  "avg_cluster": 1.8,
-  "frag_ratio": 0.5555555555555556,
-  "occupancy": 0.0008897321487981962,
-  "spread": 1123.9337606837607
  },
  {
   "file": "src/Gruntz/GruntEntranceArrival.cpp",
@@ -767,6 +793,19 @@
   "spread": 1398.233918128655
  },
  {
+  "file": "src/Gruntz/SBI_MenuItem.cpp",
+  "n": 12,
+  "bytes": 1692,
+  "lo": 945552,
+  "hi": 1097896,
+  "span": 152344,
+  "frags": 5,
+  "avg_cluster": 2.4,
+  "frag_ratio": 0.4166666666666667,
+  "occupancy": 0.011106443312503282,
+  "spread": 90.03782505910165
+ },
+ {
   "file": "src/Gruntz/TileGridCommand.cpp",
   "n": 7,
   "bytes": 1197,
@@ -791,19 +830,6 @@
   "frag_ratio": 0.7142857142857143,
   "occupancy": 0.287826420890937,
   "spread": 3.474316210807205
- },
- {
-  "file": "src/DinMgr2/DirectInputMgr2.cpp",
-  "n": 46,
-  "bytes": 8028,
-  "lo": 1256672,
-  "hi": 1265829,
-  "span": 9157,
-  "frags": 5,
-  "avg_cluster": 9.2,
-  "frag_ratio": 0.10869565217391304,
-  "occupancy": 0.8767063448727749,
-  "spread": 1.1406327852516194
  },
  {
   "file": "src/Bute/SymParser.cpp",
@@ -832,30 +858,17 @@
   "spread": 6.7019535374868004
  },
  {
-  "file": "src/Wwd/WwdGameObject.cpp",
-  "n": 28,
-  "bytes": 6739,
-  "lo": 1377888,
-  "hi": 1468804,
-  "span": 90916,
+  "file": "src/DDrawMgr/DDrawWorkerRegistry.cpp",
+  "n": 24,
+  "bytes": 3592,
+  "lo": 1395360,
+  "hi": 1463377,
+  "span": 68017,
   "frags": 5,
-  "avg_cluster": 5.6,
-  "frag_ratio": 0.17857142857142858,
-  "occupancy": 0.07412336662413657,
-  "spread": 13.491022406885294
- },
- {
-  "file": "src/Image/ImagePool.cpp",
-  "n": 28,
-  "bytes": 3088,
-  "lo": 1527440,
-  "hi": 1537142,
-  "span": 9702,
-  "frags": 5,
-  "avg_cluster": 5.6,
-  "frag_ratio": 0.17857142857142858,
-  "occupancy": 0.31828488971346114,
-  "spread": 3.141839378238342
+  "avg_cluster": 4.8,
+  "frag_ratio": 0.20833333333333334,
+  "occupancy": 0.052810326830057194,
+  "spread": 18.935690423162583
  },
  {
   "file": "src/Image/RezImage.cpp",
@@ -871,17 +884,17 @@
   "spread": 1.796766169154229
  },
  {
-  "file": "src/Gruntz/DebugPrintf.cpp",
-  "n": 7,
-  "bytes": 575,
-  "lo": 1592176,
-  "hi": 1593811,
-  "span": 1635,
+  "file": "src/Font/Font.cpp",
+  "n": 24,
+  "bytes": 6167,
+  "lo": 1545392,
+  "hi": 1553672,
+  "span": 8280,
   "frags": 5,
-  "avg_cluster": 1.4,
-  "frag_ratio": 0.7142857142857143,
-  "occupancy": 0.3516819571865443,
-  "spread": 2.8434782608695652
+  "avg_cluster": 4.8,
+  "frag_ratio": 0.20833333333333334,
+  "occupancy": 0.7448067632850242,
+  "spread": 1.3426301281011837
  },
  {
   "file": "src/Wap32/ZVec.cpp",
@@ -962,19 +975,6 @@
   "spread": 714.3623287671232
  },
  {
-  "file": "src/Gruntz/Dialogs.cpp",
-  "n": 32,
-  "bytes": 5359,
-  "lo": 84784,
-  "hi": 98438,
-  "span": 13654,
-  "frags": 4,
-  "avg_cluster": 8.0,
-  "frag_ratio": 0.125,
-  "occupancy": 0.3924857184707778,
-  "spread": 2.547863407352118
- },
- {
   "file": "src/Gruntz/GruntzCommand.cpp",
   "n": 21,
   "bytes": 2128,
@@ -1025,19 +1025,6 @@
   "frag_ratio": 0.6666666666666666,
   "occupancy": 0.0017833609475885939,
   "spread": 560.7389807162534
- },
- {
-  "file": "src/Gruntz/UserLogic.cpp",
-  "n": 5,
-  "bytes": 17843,
-  "lo": 317440,
-  "hi": 979313,
-  "span": 661873,
-  "frags": 4,
-  "avg_cluster": 1.25,
-  "frag_ratio": 0.8,
-  "occupancy": 0.02695834397233306,
-  "spread": 37.09426665919408
  },
  {
   "file": "src/Gruntz/OrphanMethods.cpp",
@@ -1144,19 +1131,6 @@
   "spread": 4.665769644779332
  },
  {
-  "file": "src/Gruntz/SBI_MenuItem.cpp",
-  "n": 9,
-  "bytes": 1668,
-  "lo": 945728,
-  "hi": 1097896,
-  "span": 152168,
-  "frags": 4,
-  "avg_cluster": 2.25,
-  "frag_ratio": 0.4444444444444444,
-  "occupancy": 0.010961568792387362,
-  "spread": 91.22781774580336
- },
- {
   "file": "src/Gruntz/CheckpointTrigger.cpp",
   "n": 5,
   "bytes": 1610,
@@ -1196,6 +1170,19 @@
   "spread": 3.1380753138075312
  },
  {
+  "file": "src/DinMgr2/DirectInputMgr2.cpp",
+  "n": 47,
+  "bytes": 8039,
+  "lo": 1256672,
+  "hi": 1265829,
+  "span": 9157,
+  "frags": 4,
+  "avg_cluster": 11.75,
+  "frag_ratio": 0.0851063829787234,
+  "occupancy": 0.8779076116632085,
+  "spread": 1.1390720238835677
+ },
+ {
   "file": "src/Bute/Hash.cpp",
   "n": 13,
   "bytes": 740,
@@ -1207,19 +1194,6 @@
   "frag_ratio": 0.3076923076923077,
   "occupancy": 0.0024895288398459185,
   "spread": 401.68243243243245
- },
- {
-  "file": "src/DDrawMgr/DDrawWorkerRegistry.cpp",
-  "n": 23,
-  "bytes": 3586,
-  "lo": 1395360,
-  "hi": 1463377,
-  "span": 68017,
-  "frags": 4,
-  "avg_cluster": 5.75,
-  "frag_ratio": 0.17391304347826086,
-  "occupancy": 0.05272211358924975,
-  "spread": 18.967373117679866
  },
  {
   "file": "src/DDrawMgr/DDrawWorkerList.cpp",
@@ -1259,6 +1233,19 @@
   "frag_ratio": 0.5,
   "occupancy": 0.016102165463631316,
   "spread": 62.10344827586207
+ },
+ {
+  "file": "src/DDrawMgr/DDrawChildGroup.cpp",
+  "n": 10,
+  "bytes": 1423,
+  "lo": 1406432,
+  "hi": 1418833,
+  "span": 12401,
+  "frags": 4,
+  "avg_cluster": 2.5,
+  "frag_ratio": 0.4,
+  "occupancy": 0.11474881057979196,
+  "spread": 8.714687280393536
  },
  {
   "file": "src/Wwd/WwdObjMgrFactories.cpp",
@@ -1311,6 +1298,19 @@
   "frag_ratio": 0.4,
   "occupancy": 0.4306737588652482,
   "spread": 2.3219431864965006
+ },
+ {
+  "file": "src/Gruntz/DebugPrintf.cpp",
+  "n": 10,
+  "bytes": 890,
+  "lo": 1592176,
+  "hi": 1593811,
+  "span": 1635,
+  "frags": 4,
+  "avg_cluster": 2.5,
+  "frag_ratio": 0.4,
+  "occupancy": 0.5443425076452599,
+  "spread": 1.8370786516853932
  },
  {
   "file": "src/Globals.cpp",
@@ -1613,16 +1613,16 @@
  },
  {
   "file": "src/Bute/ButeMgr.cpp",
-  "n": 48,
-  "bytes": 8341,
+  "n": 49,
+  "bytes": 8351,
   "lo": 136096,
   "hi": 1527033,
   "span": 1390937,
   "frags": 3,
-  "avg_cluster": 16.0,
-  "frag_ratio": 0.0625,
-  "occupancy": 0.005996677060140035,
-  "spread": 166.75902170003596
+  "avg_cluster": 16.333333333333332,
+  "frag_ratio": 0.061224489795918366,
+  "occupancy": 0.006003866458365836,
+  "spread": 166.55933421147168
  },
  {
   "file": "src/Gruntz/CheckpointDlg.cpp",
@@ -1740,6 +1740,19 @@
   "frag_ratio": 0.25,
   "occupancy": 0.7586274509803922,
   "spread": 1.3181700697854744
+ },
+ {
+  "file": "src/Gruntz/UserLogic.cpp",
+  "n": 4,
+  "bytes": 15426,
+  "lo": 317440,
+  "hi": 411228,
+  "span": 93788,
+  "frags": 3,
+  "avg_cluster": 1.3333333333333333,
+  "frag_ratio": 0.75,
+  "occupancy": 0.16447733185482152,
+  "spread": 6.079865162712304
  },
  {
   "file": "src/Gruntz/GruntAssetLoaders.cpp",
@@ -2041,6 +2054,19 @@
   "spread": 374.2068965517241
  },
  {
+  "file": "src/DDrawMgr/DDrawWorkerMapSmall.cpp",
+  "n": 11,
+  "bytes": 1384,
+  "lo": 1404112,
+  "hi": 1465743,
+  "span": 61631,
+  "frags": 3,
+  "avg_cluster": 3.6666666666666665,
+  "frag_ratio": 0.2727272727272727,
+  "occupancy": 0.02245623144196914,
+  "spread": 44.53106936416185
+ },
+ {
   "file": "src/Io/FileMem.cpp",
   "n": 8,
   "bytes": 463,
@@ -2054,19 +2080,6 @@
   "spread": 127.87257019438445
  },
  {
-  "file": "src/DDrawMgr/DDrawChildGroup.cpp",
-  "n": 8,
-  "bytes": 1396,
-  "lo": 1413616,
-  "hi": 1418833,
-  "span": 5217,
-  "frags": 3,
-  "avg_cluster": 2.6666666666666665,
-  "frag_ratio": 0.375,
-  "occupancy": 0.26758673567184205,
-  "spread": 3.737106017191977
- },
- {
   "file": "src/Gruntz/ImageSet3.cpp",
   "n": 8,
   "bytes": 752,
@@ -2078,32 +2091,6 @@
   "frag_ratio": 0.375,
   "occupancy": 0.03176078050428686,
   "spread": 31.48537234042553
- },
- {
-  "file": "src/Wwd/WwdSpatialMgr.cpp",
-  "n": 15,
-  "bytes": 2699,
-  "lo": 1475312,
-  "hi": 1645820,
-  "span": 170508,
-  "frags": 3,
-  "avg_cluster": 5.0,
-  "frag_ratio": 0.2,
-  "occupancy": 0.01582916930583902,
-  "spread": 63.174509077436085
- },
- {
-  "file": "src/Gruntz/AniRecord.cpp",
-  "n": 8,
-  "bytes": 713,
-  "lo": 1477728,
-  "hi": 1487633,
-  "span": 9905,
-  "frags": 3,
-  "avg_cluster": 2.6666666666666665,
-  "frag_ratio": 0.375,
-  "occupancy": 0.07198384654215043,
-  "spread": 13.892005610098177
  },
  {
   "file": "src/Gruntz/ProjActCache.cpp",
@@ -2158,19 +2145,6 @@
   "spread": 1.3626819374850871
  },
  {
-  "file": "src/Gruntz/FaderMgr.cpp",
-  "n": 7,
-  "bytes": 2545,
-  "lo": 1562864,
-  "hi": 1565736,
-  "span": 2872,
-  "frags": 3,
-  "avg_cluster": 2.3333333333333335,
-  "frag_ratio": 0.42857142857142855,
-  "occupancy": 0.8861420612813371,
-  "spread": 1.1284872298624755
- },
- {
   "file": "src/DDrawMgr/LightEffectSetup.cpp",
   "n": 5,
   "bytes": 3255,
@@ -2185,29 +2159,16 @@
  },
  {
   "file": "src/Gruntz/MenuItem.cpp",
-  "n": 9,
-  "bytes": 693,
-  "lo": 1591088,
+  "n": 11,
+  "bytes": 757,
+  "lo": 1590800,
   "hi": 1595211,
-  "span": 4123,
+  "span": 4411,
   "frags": 3,
-  "avg_cluster": 3.0,
-  "frag_ratio": 0.3333333333333333,
-  "occupancy": 0.16808149405772496,
-  "spread": 5.94949494949495
- },
- {
-  "file": "src/Gruntz/MenuItem2.cpp",
-  "n": 6,
-  "bytes": 613,
-  "lo": 1591200,
-  "hi": 1595918,
-  "span": 4718,
-  "frags": 3,
-  "avg_cluster": 2.0,
-  "frag_ratio": 0.5,
-  "occupancy": 0.12992793556591775,
-  "spread": 7.696574225122349
+  "avg_cluster": 3.6666666666666665,
+  "frag_ratio": 0.2727272727272727,
+  "occupancy": 0.17161641351167536,
+  "spread": 5.826948480845442
  },
  {
   "file": "vendor/zlib-1.0.4/deflate.c",
@@ -2510,16 +2471,16 @@
  },
  {
   "file": "src/Gruntz/GruntzCmdMgr.cpp",
-  "n": 10,
-  "bytes": 1072,
-  "lo": 145936,
+  "n": 12,
+  "bytes": 1099,
+  "lo": 145872,
   "hi": 150240,
-  "span": 4304,
+  "span": 4368,
   "frags": 2,
-  "avg_cluster": 5.0,
-  "frag_ratio": 0.2,
-  "occupancy": 0.24907063197026022,
-  "spread": 4.014925373134329
+  "avg_cluster": 6.0,
+  "frag_ratio": 0.16666666666666666,
+  "occupancy": 0.2516025641025641,
+  "spread": 3.9745222929936306
  },
  {
   "file": "src/Gruntz/GameKeyHandler.cpp",
@@ -2598,6 +2559,19 @@
   "frag_ratio": 0.6666666666666666,
   "occupancy": 0.2200399467376831,
   "spread": 4.544629349470499
+ },
+ {
+  "file": "src/Gruntz/Demo.cpp",
+  "n": 2,
+  "bytes": 230,
+  "lo": 245664,
+  "hi": 246468,
+  "span": 804,
+  "frags": 2,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 0.2860696517412935,
+  "spread": 3.4956521739130433
  },
  {
   "file": "src/Gruntz/GruntzMgrTransition.cpp",
@@ -3159,19 +3133,6 @@
   "spread": 97.9007036747459
  },
  {
-  "file": "src/Gruntz/SBI_GruntMachine.cpp",
-  "n": 2,
-  "bytes": 1246,
-  "lo": 953520,
-  "hi": 954906,
-  "span": 1386,
-  "frags": 2,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.898989898989899,
-  "spread": 1.1123595505617978
- },
- {
   "file": "src/Gruntz/StatusBarMgr.cpp",
   "n": 3,
   "bytes": 7813,
@@ -3575,19 +3536,6 @@
   "spread": 2.2204255319148936
  },
  {
-  "file": "src/DDrawMgr/DDrawWorkerMapSmall.cpp",
-  "n": 10,
-  "bytes": 1378,
-  "lo": 1404112,
-  "hi": 1465743,
-  "span": 61631,
-  "frags": 2,
-  "avg_cluster": 5.0,
-  "frag_ratio": 0.2,
-  "occupancy": 0.02235887783745193,
-  "spread": 44.72496371552975
- },
- {
   "file": "src/Gruntz/ImageSet2.cpp",
   "n": 10,
   "bytes": 904,
@@ -3638,6 +3586,32 @@
   "frag_ratio": 1.0,
   "occupancy": 0.02600436001245718,
   "spread": 38.455089820359284
+ },
+ {
+  "file": "src/Wwd/WwdSpatialMgr.cpp",
+  "n": 16,
+  "bytes": 2745,
+  "lo": 1475312,
+  "hi": 1645820,
+  "span": 170508,
+  "frags": 2,
+  "avg_cluster": 8.0,
+  "frag_ratio": 0.125,
+  "occupancy": 0.016098951368850728,
+  "spread": 62.11584699453552
+ },
+ {
+  "file": "src/Gruntz/AniRecord.cpp",
+  "n": 11,
+  "bytes": 1114,
+  "lo": 1477728,
+  "hi": 1487633,
+  "span": 9905,
+  "frags": 2,
+  "avg_cluster": 5.5,
+  "frag_ratio": 0.18181818181818182,
+  "occupancy": 0.11246845027763756,
+  "spread": 8.891382405745063
  },
  {
   "file": "src/Crypto/Blowfish.cpp",
@@ -3692,17 +3666,43 @@
   "spread": 1.0778236914600552
  },
  {
-  "file": "src/Gruntz/MenuPage.cpp",
-  "n": 34,
-  "bytes": 4696,
-  "lo": 1585904,
-  "hi": 1594645,
-  "span": 8741,
+  "file": "src/Gruntz/FaderMgr.cpp",
+  "n": 8,
+  "bytes": 2576,
+  "lo": 1562864,
+  "hi": 1565736,
+  "span": 2872,
   "frags": 2,
-  "avg_cluster": 17.0,
-  "frag_ratio": 0.058823529411764705,
-  "occupancy": 0.5372383022537467,
-  "spread": 1.8613713798977853
+  "avg_cluster": 4.0,
+  "frag_ratio": 0.25,
+  "occupancy": 0.8969359331476323,
+  "spread": 1.1149068322981366
+ },
+ {
+  "file": "src/Gruntz/MenuPage.cpp",
+  "n": 35,
+  "bytes": 4728,
+  "lo": 1585872,
+  "hi": 1594645,
+  "span": 8773,
+  "frags": 2,
+  "avg_cluster": 17.5,
+  "frag_ratio": 0.05714285714285714,
+  "occupancy": 0.5389262509973783,
+  "spread": 1.8555414551607445
+ },
+ {
+  "file": "src/Gruntz/MenuItem2.cpp",
+  "n": 7,
+  "bytes": 640,
+  "lo": 1591200,
+  "hi": 1595918,
+  "span": 4718,
+  "frags": 2,
+  "avg_cluster": 3.5,
+  "frag_ratio": 0.2857142857142857,
+  "occupancy": 0.13565069944891903,
+  "spread": 7.371875
  },
  {
   "file": "src/Rez/RezColl.cpp",
@@ -3729,6 +3729,19 @@
   "frag_ratio": 1.0,
   "occupancy": 0.00021703231894314696,
   "spread": 4607.608695652174
+ },
+ {
+  "file": "src/Wap32/M3MfcLeaves.cpp",
+  "n": 2,
+  "bytes": 16,
+  "lo": 1894751,
+  "hi": 1901702,
+  "span": 6951,
+  "frags": 2,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 0.0023018270752409725,
+  "spread": 434.4375
  },
  {
   "file": "src/Utils/ApplyRange.cpp",
@@ -4140,19 +4153,6 @@
   "lo": 244032,
   "hi": 244445,
   "span": 413,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
-  "file": "src/Gruntz/Demo.cpp",
-  "n": 1,
-  "bytes": 66,
-  "lo": 245664,
-  "hi": 245730,
-  "span": 66,
   "frags": 1,
   "avg_cluster": 1.0,
   "frag_ratio": 1.0,
@@ -5057,17 +5057,30 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/SBI_SideTab.cpp",
+  "file": "src/Gruntz/SBI_GruntMachine.cpp",
   "n": 4,
-  "bytes": 1164,
-  "lo": 956448,
-  "hi": 957774,
-  "span": 1326,
+  "bytes": 1292,
+  "lo": 953456,
+  "hi": 954906,
+  "span": 1450,
   "frags": 1,
   "avg_cluster": 4.0,
   "frag_ratio": 0.25,
-  "occupancy": 0.8778280542986425,
-  "spread": 1.1391752577319587
+  "occupancy": 0.8910344827586207,
+  "spread": 1.1222910216718267
+ },
+ {
+  "file": "src/Gruntz/SBI_SideTab.cpp",
+  "n": 5,
+  "bytes": 1173,
+  "lo": 956416,
+  "hi": 957774,
+  "span": 1358,
+  "frags": 1,
+  "avg_cluster": 5.0,
+  "frag_ratio": 0.2,
+  "occupancy": 0.8637702503681886,
+  "spread": 1.1577152600170504
  },
  {
   "file": "src/Gruntz/SBI_StatzTabGruntBar.cpp",
@@ -5115,6 +5128,19 @@
   "lo": 973296,
   "hi": 975565,
   "span": 2269,
+  "frags": 1,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 1.0,
+  "spread": 1.0
+ },
+ {
+  "file": "src/Gruntz/GruntReticle.cpp",
+  "n": 1,
+  "bytes": 2417,
+  "lo": 976896,
+  "hi": 979313,
+  "span": 2417,
   "frags": 1,
   "avg_cluster": 1.0,
   "frag_ratio": 1.0,
@@ -6574,19 +6600,6 @@
   "frags": 1,
   "avg_cluster": 2.0,
   "frag_ratio": 0.5,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
-  "file": "src/Wap32/M3MfcLeaves.cpp",
-  "n": 1,
-  "bytes": 9,
-  "lo": 1894751,
-  "hi": 1894760,
-  "span": 9,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
   "occupancy": 1.0,
   "spread": 1.0
  }

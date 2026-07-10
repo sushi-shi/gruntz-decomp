@@ -82,7 +82,7 @@ improves — **not** a confident semantic move. Do not apply blindly.
 
 _(+41 more — see the generator output.)_
 
-## D. HEADER-INLINE — reconstruct in the header (107) · not a move
+## D. HEADER-INLINE — reconstruct in the header (112) · not a move
 
 Small or virtual member functions sitting **scattered from their own class body**.
 They were defined **inline in a header**: MSVC still emits one out-of-line COMDAT copy
@@ -94,12 +94,13 @@ not in any `.cpp`; the compiler reproduces the same COMDAT + dedup for free.
 Top classes by inline-scattered method count:
 
 - `CAttract` — 7
+- `CWwdGameObject` — 5
 - `CVoiceTrigger` — 3
 - `RezMgr` — 3
+- `CDDrawWorkerMapSmall` — 3
 - `CDDrawSubMgrLeaf` — 3
 - `CMotionState` — 3
 - `CPlaneRender` — 3
-- `CWwdGameObject` — 3
 - `CToobSpikez` — 2
 - `CTileTriggerTransition` — 2
 - `CTileTrigger` — 2
@@ -110,7 +111,6 @@ Top classes by inline-scattered method count:
 - `CAniCycle` — 2
 - `CFortressFlag` — 2
 - `CParticlez` — 2
-- `CDDrawWorkerMapSmall` — 2
 - `Rng` — 2
 - `WwdFile` — 2
 
