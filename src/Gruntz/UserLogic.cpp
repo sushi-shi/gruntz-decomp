@@ -371,22 +371,30 @@ i32 CUserLogic::winapi_064540_PostMessageA() {
     return 0;
 }
 
-// @confidence: low
-// @source: winapi:IntersectRect;PtInRect
-// @stub
-RVA(0x000ee800, 0x971)
-i32 CUserLogic::winapi_0ee800_IntersectRect_PtInRect() {
-    return 0;
-}
+// winapi_0ee800_IntersectRect_PtInRect: XREF-recovered as CGrunt::ArrivalReticleScan
+// (its `this` extends to +0x3f0 and the caller 0x5d210 is CGrunt vtable slot 3) and
+// re-homed to src/Gruntz/GruntReticle.cpp as a real CGrunt method.
 
+// XREF-RECOVERED IDENTITY (matcher-1): LoadGruntTypeTable (0x4dd50, 8896 B) and
+// LoadGruntTuningConstants (0x5d210, 5187 B) are CGrunt methods, NOT CUserLogic - both
+// run on a CGrunt `this` (fields to +0x3f0), and 0x5d210 is CGrunt vtable slot 3
+// (?LoadGruntTuningConstants is data-ref'd at ~??_7CGrunt@@6B@+0xc; it calls 0xee800 =
+// CGrunt::ArrivalReticleScan). Supporting singletons are the canonical classes:
+// CGameRegistry (g_mgrSettings @0x64556c), CTileGrid (+0x70), g_typeColl (CTypeKeyColl,
+// tuning), g_resButeMgr (config strings: FadeTransparency/SafeFlashTime/AccelerateFlash/
+// EntranceSafeTime). Both are DEFERRED to the final sweep: they are decompiler-gated
+// mega-methods (MSVC /O2 stack-slot aliasing + a local CByteArray + the tile grid double-
+// loops + switch tables), of the same shape as CGrunt::ArrivalReticleScan whose front is
+// banked in GruntReticle.cpp. Kept as CUserLogic stubs here (RVA-anchored, so re-homing
+// to a real CGrunt TU is a follow-up); reconstructing them needs the Ghidra decompiler C.
 // @confidence: med
-// @source: string-xref
+// @source: string-xref;vtable-slot
 // @stub
 RVA(0x0004dd50, 0x22c0)
 void CUserLogic::LoadGruntTypeTable(i32, i32, i32, i32) {}
 
 // @confidence: med
-// @source: string-xref
+// @source: string-xref;vtable-slot
 // @stub
 RVA(0x0005d210, 0x1443)
 void CUserLogic::LoadGruntTuningConstants(i32) {}

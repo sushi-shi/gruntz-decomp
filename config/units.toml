@@ -315,6 +315,11 @@ source = "src/Gruntz/UserLogicCtorEmit.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntreticle"
+source = "src/Gruntz/GruntReticle.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "leveltilevalidation"
 source = "src/Gruntz/LevelTileValidation.cpp"
 flags = "eh"

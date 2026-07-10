@@ -475,7 +475,8 @@ public:
     // src/Gruntz/UserLogic.cpp.
     i32 winapi_04d800_CopyRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
     i32 winapi_064540_PostMessageA();
-    i32 winapi_0ee800_IntersectRect_PtInRect();
+    // (winapi_0ee800_IntersectRect_PtInRect was XREF-recovered as CGrunt::ArrivalReticleScan
+    //  and re-homed to src/Gruntz/GruntReticle.cpp as a real CGrunt method.)
     void LoadGruntTypeTable(i32, i32, i32, i32);
     void LoadGruntTuningConstants(i32);
     // Leaf placement/arm entrypoints reached through the bound-logic base pointer

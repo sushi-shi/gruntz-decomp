@@ -203,6 +203,7 @@ gruntpickupload	1	0
 gruntpowerupsprite	8	6
 gruntpuddle	7	3
 gruntresurrectradius	1	0
+gruntreticle	1	0
 gruntselectedsprite	8	5
 gruntspawnconfig	18	10
 gruntspawnlevel	2	0
@@ -500,7 +501,7 @@ ufo	4	3
 uncompr	1	1
 unknownfileioctor	1	1
 userbaselink	10	2
-userlogic	5	0
+userlogic	4	0
 userlogicctoremit	2	1
 vehiclegruntsprites	1	0
 videoconfig	6	2
@@ -525,7 +526,7 @@ worldlevelpath	2	2
 worldsoundset	18	9
 wormhole	9	6
 wormholeacts	3	2
-wwdfile	24	6
+wwdfile	24	5
 wwdgameobject	35	18
 wwdgrid	10	6
 wwdobjmgr	1	0
@@ -2099,6 +2100,7 @@ gruntpuddle	?Remove@CGruntPuddle@@QAEHXZ	71.3000	71.3000	9	2429d2bd03e4	0x40d20
 gruntpuddle	?Serialize@CGruntPuddle@@QAEHPAUCSerialArchive@@HHH@Z	97.8937	97.8937	1	654c0a8d36d9	0x40e50
 gruntpuddle	?SetBute@CGruntPuddle@@QAEXPAD@Z	100.0000	100.0000	3	fb5afdebf73a	0x7d810
 gruntresurrectradius	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	63.4917	63.4917	6	2abd4e9971e7	0x7be60
+gruntreticle	?ArrivalReticleScan@CGrunt@@QAEHXZ	15.1769	15.1769	1	7256badea6ad	0xee800
 gruntselectedsprite	??0CGruntSelectedSprite@@QAE@PAUCGameObject@@@Z	91.4583	91.4583	1	723bc061ed39	0x7e3e0
 gruntselectedsprite	??1CGruntSelectedSprite@@UAE@XZ	100.0000	100.0000	2	e4dba9b44f5d	0x11e80
 gruntselectedsprite	?InitActReg@CGruntSelectedSprite@@SAXXZ	100.0000	100.0000	2	a0f492d42790	0x7e5e0
@@ -3225,7 +3227,7 @@ play	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	4	9567653c832a	0xcffe0
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	5	1d7fd4fc8082	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	5	fd1ac9b2399d	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	4	8309f61d38e2	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.8450	85.8450	3	b94f48adc376	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.9200	85.9200	3	b94f48adc376	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	4	eb3839ea341e	0xd65d0
 play	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	3	cfa5101aa629	0xcb740
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	76.3529	76.3529	5	5c7e2ae1589a	0xd9050
@@ -4119,7 +4121,6 @@ userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	3	6997bbd3
 userlogic	?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z	0.0415	0.0415	3	0cf4fef43b2a	0x4dd50
 userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	4	ea5a56c47dbc	0x4d800
 userlogic	?winapi_064540_PostMessageA@CUserLogic@@QAEHXZ	86.4156	86.4156	7	196a7ddcef0b	0x64540
-userlogic	?winapi_0ee800_IntersectRect_PtInRect@CUserLogic@@QAEHXZ	0.2653	0.2585	3	95fdfa115d6d	0xee800
 userlogicctoremit	??0CUserLogic@@QAE@PAUCGameObject@@@Z	89.0446	89.0446	1	cpp:aca2e8db625f	0x58cd0
 userlogicctoremit	??0CUserLogic@@QAE@XZ	100.0000	100.0000	1	cpp:aca2e8db625f	0x138d0
 vehiclegruntsprites	?LoadVehicleGruntSprites@CGruntCmdObj@@QAEHH@Z	35.2158	35.2158	9	bd4672e351a5	0x50ce0
@@ -4225,7 +4226,7 @@ wormholeacts	?FireActivation@CWormhole@@QAEXH@Z	100.0000	100.0000	1	f3c2fa1ac28d
 wormholeacts	?InitActReg@CWormhole@@SAXXZ	100.0000	100.0000	2	18b443ca5e40	0x3f210
 wormholeacts	?RegisterActs@CWormhole@@SAXXZ	92.9130	92.9130	2	35d4c07d8336	0x3f3f0
 wwdfile	?CenterScrollA@CPlaneRender@@QAEHXZ	87.9464	87.9464	2	d483ea7c1725	0x163300
-wwdfile	?CenterScrollB@CPlaneRender@@QAEHXZ	87.9464	87.9464	2	ed8fe7ecf0d2	0x163370
+wwdfile	?CenterScrollB@CPlaneRender@@QAEHXZ	87.8750	87.8750	2	ed8fe7ecf0d2	0x163370
 wwdfile	?Draw@CPlaneRender@@QAEXPAX@Z	0.1391	0.1391	2	70fbd905ad2a	0x162010
 wwdfile	?GetMapBaseName@WwdFile@@SA?AVCString@@V2@@Z	83.2887	83.2887	2	c7a8c051baf4	0x3bb50
 wwdfile	?GetTileHandle@CPlaneRender@@QAEHHH@Z	100.0000	100.0000	1	8959e213fb79	0xd53a0
@@ -4237,7 +4238,7 @@ wwdfile	?ReadPlane@CGameLevelPlanes@@QAEPAVCPlane@@PAX00@Z	99.5362	99.5362	5	fa3
 wwdfile	?ReadPlaneObjects@WwdFile@@QAEHPBH@Z	76.1228	76.1228	10	ebd4ae8fd084	0x162af0
 wwdfile	?RebuildPlanes@WwdFile@@QAEHHH@Z	49.5000	49.5000	4	02807a63511e	0x1628f0
 wwdfile	?ResolveColorKey@CPlaneRender@@QAEXXZ	64.7451	64.7451	4	8712a53d2140	0x163670
-wwdfile	?Save@CPlaneRender@@QAEHPAUCWwdStream@@@Z	100.0000	100.0000	2	8511ace0b40f	0x163780
+wwdfile	?Save@CPlaneRender@@QAEHPAUCWwdStream@@@Z	99.9833	99.9833	2	8511ace0b40f	0x163780
 wwdfile	?SetTileSize@CPlaneRender@@QAEXHH@Z	88.3846	88.3846	2	d063acd3c181	0x161f00
 wwdfile	?SetTileSizeFromImageSet@CPlaneRender@@QAEXPAVCImageSet@@@Z	100.0000	100.0000	1	a0576baf25ee	0x161fa0
 wwdfile	?SnapToTileCenter@CPlaneRender@@QAEXPAHHH@Z	48.3636	48.3636	2	7f34630bda9b	0x311e0

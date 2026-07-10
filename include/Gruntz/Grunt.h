@@ -1872,6 +1872,15 @@ public:
     // Battlez arrival resolver's neighbour-pick trigger (CGrunt_TileSwitch).
     i32 TileSwitch(i32 col, i32 row, i32 flags, i32 a4, i32 a5, i32 a6); // thunk 0x1640
 
+    // @0xee800 (ret 4, /GX) - the arrival/defender reticle scan (mis-homed under
+    // ?winapi_0ee800_IntersectRect_PtInRect@CUserLogic before xref recovery: this
+    // is CGrunt - the this-object extends to +0x3f0 and the caller (0x5d210, CGrunt
+    // vtable slot 3) runs it on a CGrunt). Snapshots the reach-box grid cells into a
+    // local CByteArray, marks the tiles within m_defenderRadius of the defender tile,
+    // clips against the tile grid + viewport (PtInRect/IntersectRect), and recycles
+    // occupied-coord nodes through g_coordPool. Reconstruction in GruntReticle.cpp.
+    i32 ArrivalReticleScan(); // 0xee800
+
     // CombatCue per-grunt spell effects (external/no-body, reloc-masked):
     //   TeleportMove(dx,dy,a,b) thunk 0x2f3b (ret 0x10; nonzero = moved)
     //   FreezeApply()           thunk 0x28d8 (0-arg freeze)
