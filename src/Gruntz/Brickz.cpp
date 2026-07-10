@@ -24,28 +24,28 @@
 //   inline-MARKED fns; retail keeps Find standalone+called => out-of-line. Stays here.
 // TIER B - the scattered singletons (Clip 0x2b340 | ComputeCellFlags 0x77790 |
 //   SearchEdge/UpdDiag/Line 0x81e10.. | IsCellClear 0x853f0 | Serialize 0x9356c) are
-//   HEADER-INLINE members: they scatter far from block F as deduped COMDATs, each placed
-//   ALONE among uncarved gaps (e.g. ComputeCellFlags 0x77790 has a 1.5KB gap before and
-//   691B after - not packed with any brickz fn), called through incremental-link thunks -
-//   the inline-COMDAT signature, unlike block F's contiguous out-of-line .obj run.
+//   OUT-OF-LINE functions that retail CALLS: each has its own rva, reached from other
+//   TUs via incremental-link thunks, and the delinked target references them as an
+//   `U <name>` extern (= a linked CALL). They STAY OUT-OF-LINE here, same as Tier A.
+//   DO NOT move them to Brickz.h. PROVEN (2026-07-10, measured end-to-end): making
+//   ComputeCellFlags an `inline` header member makes MSVC5 /O2 INLINE it into its callers
+//   (BuildRockBreakParticles doubled 1008->2096B, the switch body folded in, 0 calls
+//   left) -> RockBreakParticles 81->0, ApplyMove 70->0. The DELINKER IS NOT THE CAUSE -
+//   re-attributing the rva alone (no recompile) craters nothing. Retail inlines these
+//   SELECTIVELY: ComputeCellFlags is inlined ONLY into CBrickz::LoadAttributes @0x810f0
+//   (the switch consts appear at exactly 2 rvas: 0x77790 + 0x8150c) and CALLED from the
+//   other 3 sites. We mirror that by hand: out-of-line member + hand-written inlined body
+//   where retail inlined it (see BrickzLoad.cpp), NEVER the `inline` keyword.
 //   IsCellClear is data-ref'd ONLY from vtable slots ??_7CMapMgr@@6B@+0x14 &
 //   ??_7CGruntzMapMgr@@6B@+0x14 => an inline VIRTUAL of CMapMgr (slot 5), mislabeled
-//   CBrickzGrid::IsCellClear (@owner-TODO). Their correct home is Brickz.h (inline).
-//   DEFERRED, not done here, because the migration needs OTHER WORK first: moving a
-//   non-virtual inline into the header makes it emit as a COMDAT in each includer-caller,
-//   and today the delinker attributes that COMDAT to the CALLER's unit and packs 0x77790
-//   into e.g. rockbreakparticles' target .text -> tested: RockBreakParticles::BuildRock
-//   81->0, CTileGridCommand::ApplyMove 70->0, ComputeCellFlags LOST. The ~61 working
-//   header-inline cases are all VIRTUALS emitted via ONE vtable in ONE predictable TU, so
-//   attribution is unambiguous. Non-virtual multi-caller inline needs delinker owner-
-//   attribution (attribute an inline COMDAT to its declaring class's unit, not the
-//   emitter) - see docs/patterns/nonvirtual-inline-header-craters-delinker-packing.md.
-//   Until that lands, Tier B stays out-of-line here (match-neutral - identical bytes),
-//   a KNOWN reconstruction constraint, NOT a claim that the original was out-of-line.
+//   CBrickzGrid::IsCellClear (@owner-TODO). Virtuals ARE safe as header-inline (vtable
+//   dispatch = `call *(%eax)`, never inlined at the call site) - that is the ONLY safe
+//   header-inline case. See docs/patterns/nonvirtual-inline-header-craters-delinker-
+//   packing.md (corrected: root cause is MSVC inlining, not the delinker).
 //
-// Remaining work: the delinker owner-attribution above (unblocks Tier B -> Brickz.h);
-// per-method @early-stop residue (final sweep); Grid_77df0 identity via xref (@identity-
-// TODO); IsCellClear -> CMapMgr slot 5 (rides on the same delinker work). Also 3 trivial
+// Remaining work: per-method @early-stop residue (final sweep); Grid_77df0 identity via
+// xref (@identity-TODO); IsCellClear -> CMapMgr slot 5 (real virtual, header-inline-safe).
+// Tier B needs NO delinker work - it is out-of-line and faithful. Also 3 trivial
 // intra-file-order violations (CellPush/Find/SetCell not ascending) per tu_order_check.
 // ---------------------------------------------------------------------------
 #include <rva.h>
