@@ -3,6 +3,51 @@
 // Placeholder class name (see <Gruntz/Brickz.h>): these are __thiscall pointer-
 // shuffle ops over a self-contained graph/grid container's intrusive node lists.
 // They match by shape; field names are placeholders, offsets are load-bearing.
+//
+// ---------------------------------------------------------------------------
+// DE-FRAGMENTATION ASSESSMENT (matcher-2, 2026-07-10): NOT a .cpp split. CBrickzGrid is
+// TWO tiers - an OUT-OF-LINE core (stays here) + HEADER-INLINE singletons whose correct
+// home is Brickz.h but whose migration is DEFERRED on delinker attribution work (below).
+//
+// One dominant class, CBrickzGrid (19 methods, non-polymorphic grid/pathfinding
+// container, all QAE), + two tiny homed helpers (BrickzGridDesc::SetCell @0x77dc0,
+// Grid_77df0::FindNearest @0x77df0). Game object CBrickz is already its own TU
+// (src/Gruntz/CBrickz.cpp). Methods sit in six disjoint whole-binary .text clusters
+// (34-396 foreign fns between each) - so NOT a per-class .cpp split (vs SPLIT_PLAN cat-B
+// "confirm before splitting": it is COMDAT scatter, not two .objs).
+//
+// TIER A - block F (0x9ea60..0x9f7b7: AllocGrid,Search,Expand,Insert,PopFront,CellPush,
+//   Find,FindCellNode,Drain,Reset,Unlink,CellPop) = the OUT-OF-LINE .cpp core (one
+//   roughly-contiguous .obj block). PROVEN out-of-line: forcing Find (0x9f500) inline
+//   -> MSVC5 inlined it into its sole caller Expand (Find vanished, Expand -2.5); moving
+//   Find out-of-line BEFORE Expand -> NOT inlined (stays 100%). MSVC5 auto-inlines only
+//   inline-MARKED fns; retail keeps Find standalone+called => out-of-line. Stays here.
+// TIER B - the scattered singletons (Clip 0x2b340 | ComputeCellFlags 0x77790 |
+//   SearchEdge/UpdDiag/Line 0x81e10.. | IsCellClear 0x853f0 | Serialize 0x9356c) are
+//   HEADER-INLINE members: they scatter far from block F as deduped COMDATs, each placed
+//   ALONE among uncarved gaps (e.g. ComputeCellFlags 0x77790 has a 1.5KB gap before and
+//   691B after - not packed with any brickz fn), called through incremental-link thunks -
+//   the inline-COMDAT signature, unlike block F's contiguous out-of-line .obj run.
+//   IsCellClear is data-ref'd ONLY from vtable slots ??_7CMapMgr@@6B@+0x14 &
+//   ??_7CGruntzMapMgr@@6B@+0x14 => an inline VIRTUAL of CMapMgr (slot 5), mislabeled
+//   CBrickzGrid::IsCellClear (@owner-TODO). Their correct home is Brickz.h (inline).
+//   DEFERRED, not done here, because the migration needs OTHER WORK first: moving a
+//   non-virtual inline into the header makes it emit as a COMDAT in each includer-caller,
+//   and today the delinker attributes that COMDAT to the CALLER's unit and packs 0x77790
+//   into e.g. rockbreakparticles' target .text -> tested: RockBreakParticles::BuildRock
+//   81->0, CTileGridCommand::ApplyMove 70->0, ComputeCellFlags LOST. The ~61 working
+//   header-inline cases are all VIRTUALS emitted via ONE vtable in ONE predictable TU, so
+//   attribution is unambiguous. Non-virtual multi-caller inline needs delinker owner-
+//   attribution (attribute an inline COMDAT to its declaring class's unit, not the
+//   emitter) - see docs/patterns/nonvirtual-inline-header-craters-delinker-packing.md.
+//   Until that lands, Tier B stays out-of-line here (match-neutral - identical bytes),
+//   a KNOWN reconstruction constraint, NOT a claim that the original was out-of-line.
+//
+// Remaining work: the delinker owner-attribution above (unblocks Tier B -> Brickz.h);
+// per-method @early-stop residue (final sweep); Grid_77df0 identity via xref (@identity-
+// TODO); IsCellClear -> CMapMgr slot 5 (rides on the same delinker work). Also 3 trivial
+// intra-file-order violations (CellPush/Find/SetCell not ascending) per tu_order_check.
+// ---------------------------------------------------------------------------
 #include <rva.h>
 #include <Gruntz/BattlezData.h>
 #include <Rez/RezList.h>
