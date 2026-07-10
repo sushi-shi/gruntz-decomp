@@ -13,6 +13,7 @@
 #include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
 #include <Gruntz/NetDlgHost.h> // CMultiStartDlg::m_host (its +0x34 m_registry is a CSymParser)
 #include <Bute/SymParser.h>    // CSymParser::ResolvePath (0x13c030), the world name registry
+#include <string.h>            // inline strcmp (empty-text WM_SETTEXT gate)
 #include <rva.h>
 #include <Globals.h>
 
@@ -92,6 +93,19 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     SetWindowLongA(h, GWL_WNDPROC, (i32)WndProc_c1a10);
     Sub_c3e30();
     return 1;
+}
+
+// WndProc_c1a10 (0xc1a10) - the subclass window-proc installed on the world combo's
+// read-only edit child: swallow an empty WM_SETTEXT (keeps the shown selection text)
+// and chain everything else to the saved original proc (g_64bdc0).
+RVA(0x000c1a10, 0x70)
+extern "C" i32 CALLBACK WndProc_c1a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_SETTEXT) {
+        if (strcmp(g_emptyString, (const char*)lParam) == 0) {
+            return 0;
+        }
+    }
+    return CallWindowProcA((WNDPROC)g_64bdc0, hWnd, msg, wParam, lParam);
 }
 
 // CMultiStartDlg::Sub_c3e30 (0xc3e30) - re-homed from src/Stub/ApiCallers.cpp

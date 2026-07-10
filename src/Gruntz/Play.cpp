@@ -866,6 +866,31 @@ i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
     return 0;
 }
 
+// CPlay::Vslot1c (0xd0050, slot 28 / +0x70) - counts the sprite factory's live objects
+// whose collision-category word (CGameObject +0xe8) equals `category`. The factory's
+// live-object list container sits at m_c->m_8+0x10 (its head pointer at +0x14 IS
+// CSpriteFactory::m_liveObjects); retail walks it through the container, so the head +
+// node fields are read via documented offsets (this TU does not pull SpriteFactory.h/
+// UserLogic.h) to reproduce the `add 0x10; [+4]` node walk. Node: next@+0, sprite@+8.
+RVA(0x000d0050, 0x3a)
+i32 CPlay::Vslot1c(i32 category) {
+    char* container = (char*)m_c->m_8 + 0x10;
+    if (container == 0) {
+        return 0;
+    }
+    char* node = *(char**)(container + 4);
+    i32 count = 0;
+    while (node != 0) {
+        char* p = node;
+        node = *(char**)node;
+        char* sprite = *(char**)(p + 8);
+        if (sprite != 0 && *(u32*)(sprite + 0xe8) == (u32)category) {
+            count++;
+        }
+    }
+    return count;
+}
+
 // ===========================================================================
 // CPlay::ResetViewport (0x0d8c60) - ClampViewport's no-change fallback: build the
 // full-screen viewport rect (a guts-state-dependent left/right bias), optionally

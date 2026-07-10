@@ -318,7 +318,7 @@ public:
     // --- CPlay-owned high slots 26..40 (moved from CState; RTTI CState is 26 slots) ---
     virtual void Vslot1a();
     virtual i32 GetFrame(); // slot 27 (+0x6c)  current frame number (debug HUD "Frame = %i")
-    virtual void Vslot1c();
+    virtual i32 Vslot1c(i32 category); // slot 28 (+0x70) count live objects by coll-category
     virtual void Vslot1d();
     virtual i32 Vslot1e(i32, i32);               // slot 30 (+0x78)  (a0, a2) -> handled flag
     virtual void BeginFrameClear(i32, i32, i32); // slot 31 (+0x7c)
