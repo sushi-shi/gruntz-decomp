@@ -235,6 +235,16 @@ struct DDModeInfo {
     i32 bpp;    // +0x08
 };
 
+// A cached page record (CDDPageMgr::m_data element): three independently-owned heap
+// buffers (RemoveAt frees them, memmoves the tail down and drops the record).
+SIZE_UNKNOWN(CPageRec);
+struct CPageRec {
+    void* m_00; // +0x00  owned buffer
+    char m_pad04[0x10 - 4];
+    void* m_10; // +0x10  owned buffer
+    void* m_14; // +0x14  owned buffer
+};
+
 SIZE_UNKNOWN(CDDPageMgr);
 class CDDPageMgr {
 public:
@@ -244,7 +254,13 @@ public:
     void HandleError();    // 0x17cc80
     void OnModeSet(i32 a); // 0x17cd90
     i32 CheckMode16();     // 0x17d2b0
-    void FinishInit();     // 0x17d6b0
+
+    // The 1-based page-record cache management (bodies in DDPageMgr.cpp). RemoveAt drops
+    // one record (frees its three buffers, shifts the tail down); FreeAll RemoveAt(1)s
+    // every record then frees the array - Init's finalize step tail-calls it (0x17d6b0;
+    // the earlier "FinishInit" name was a guess, the xref proves Init -> FreeAll).
+    i32 RemoveAt(i32 idx); // 0x17d600
+    i32 FreeAll();         // 0x17d6b0
 
     // --- layout (only touched offsets pinned) ---------------------------------
     void* m_window;    // +0x00  owner window (HWND; stored last by Init)
@@ -274,6 +290,10 @@ public:
     i32 m_width;  // +0x518  width
     i32 m_height; // +0x51c  height
     i32 m_bpp;    // +0x520  bpp
+    char m_pad524[0x8690 - 0x524];
+    CPageRec** m_data; // +0x8690  1-based growable array of cached page records
+    i32 m_count;       // +0x8694  record count
+    i32 m_8698;        // +0x8698
 };
 
 #endif // GRUNTZ_CDIRECTDRAWMGR_H

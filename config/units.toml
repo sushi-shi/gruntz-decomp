@@ -1705,6 +1705,16 @@ source = "src/DDrawMgr/DirectDrawMgr.cpp"
 flags = "base"
 
 [[unit]]
+unit = "ddsurface"
+source = "src/DDrawMgr/DDSurface.cpp"
+flags = "base"
+
+[[unit]]
+unit = "ddpalette"
+source = "src/DDrawMgr/DDPalette.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "ddrawsurfacepair"
 source = "src/DDrawMgr/DDrawSurfacePair.cpp"
 flags = "eh"
