@@ -554,6 +554,9 @@ SIZE(WAP32::CGameMgr, 0x2c);
 
 // Wap32.h class metadata (hosted here at the owning .cpp's EOF so the hot
 // engine header stays untouched; EOF append is line-/parse-shift-neutral).
+// The real polymorphic CGameApp emits ??_7CGameApp@@6B@ from this TU; bind its
+// retail vtable RVA here (moved from the deleted src/Stub/BoundaryLowerThunks.cpp).
+VTBL(CGameApp, 0x001e9b0c);
 SIZE(
     CGameApp,
     0x254

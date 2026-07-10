@@ -46,7 +46,6 @@ bootycheatstate	1	0
 bootymessages	3	0
 bootystateactivate	5	4
 bootywalkanim	2	0
-boundarylowerthunks	4	3
 bracketvalue	1	1
 brickz	20	6
 brickzload	1	0
@@ -734,10 +733,6 @@ bootystateactivate	?Run@CGuardedDispatch1f870@@QAEHXZ	100.0000	100.0000	1	0da856
 bootystateactivate	?Vslot09@CBootyState@@UAEHH@Z	94.7973	94.7973	4	74b09efe80b3	0x18d30
 bootywalkanim	?BuildBootyWalkingGruntz@BzState@@QAEHXZ	77.2368	77.2368	4	8c1e53ce1b15	0x1b450
 bootywalkanim	?UpdateBootyWalkingGruntz@BzState@@QAEHXZ	90.7704	90.7704	5	b5d4d35a456c	0x1b690
-boundarylowerthunks	??1CGameApp@@UAE@XZ	100.0000	100.0000	2	013747a02009	0x80cf0
-boundarylowerthunks	??1CGameWnd@@UAE@XZ	100.0000	100.0000	2	c9ff587dcd4d	0x94c10
-boundarylowerthunks	??1CStateSub8c470@@UAE@XZ	100.0000	100.0000	1	2f6c6cd45bcf	0x8c470
-boundarylowerthunks	?Init@CInitd5d70@@QAEXXZ	83.3333	83.3333	3	9dabcbf83850	0xd5d70
 bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	100.0000	100.0000	2	621add35a117	0xf9160
 brickz	?AllocGrid@CBrickzGrid@@QAEHHHH@Z	78.5180	78.5180	4	db116cc4a4e9	0x9ea60
 brickz	?CellPop@CBrickzGrid@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	2	e1876e1cbfb2	0x9f710

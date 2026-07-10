@@ -122,3 +122,10 @@ void RegisterXLogic_646010() {
     i32 id = RegisterActionName();
     *(void**)g_logicActReg_646010.ResolveEntry(id) = (void*)&LogicHandler_0ad2a0;
 }
+
+// Tree-wide SIZE anchors for the shared registrar-collection archetypes
+// (<Gruntz/ActReg.h>; used across many TUs). Moved here from the deleted
+// src/Stub/BoundaryLowerThunks.cpp, next to this TU's CLogicActTable globals.
+SIZE_UNKNOWN(CLogicActTable);
+SIZE_UNKNOWN(CLookupColl);
+SIZE_UNKNOWN(CActReg);

@@ -38,3 +38,7 @@ CStatusBarItem::~CStatusBarItem() {}
 i32 CStatusBarItem::SbiVfunc0() {
     return 0;
 }
+
+// CStatusBarItem vtable RVA binding (moved from the deleted
+// src/Stub/BoundaryLowerThunks.cpp vtable catalog).
+VTBL(CStatusBarItem, 0x001eabcc);

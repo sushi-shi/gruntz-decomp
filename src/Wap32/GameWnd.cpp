@@ -366,5 +366,8 @@ i32 CGameWnd::OnRButtonDblClk(WPARAM, i32, i32) {
     return 0;
 }
 
+// The real polymorphic CGameWnd emits ??_7CGameWnd@@6B@ from this TU; bind its
+// retail vtable RVA here (moved from the deleted src/Stub/BoundaryLowerThunks.cpp).
+VTBL(CGameWnd, 0x001ea344);
 // size 0x10 recovered from operator-new sites (gruntz.analysis.news)
 SIZE(CGameWnd, 0x10);

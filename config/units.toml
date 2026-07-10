@@ -2032,11 +2032,6 @@ source = "src/Gruntz/LevelTimeDtor.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "boundarylowerthunks"
-source = "src/Stub/BoundaryLowerThunks.cpp"
-flags = "base"
-
-[[unit]]
 unit = "statusbarspriteacts"
 source = "src/Gruntz/StatusBarSpriteActs.cpp"
 flags = "eh"

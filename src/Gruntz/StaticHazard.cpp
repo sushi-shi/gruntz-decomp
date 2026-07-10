@@ -100,7 +100,7 @@ struct CHaznEntry;         // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024e3d0)
-extern CHaznColl g_haznColl;
+extern CCoordColl g_haznColl;
 
 // ConstructHaznRange @0x0fbb70 - the static initializer that builds g_haznColl's fast
 // [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from
@@ -140,7 +140,7 @@ extern char s_actKeyA[]; // "A"
 DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"
 DATA(0x002bf650)
-extern CHaznColl g_nameReg; // 0x6bf650
+extern CCoordColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
 extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
@@ -168,7 +168,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) { // CHaznColl::Find == _zvec::GrowTo @0x16da80
+    if (g_nameReg.Find(id, 0)) { // CCoordColl::Find == _zvec::GrowTo @0x16da80
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -183,7 +183,7 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
     if (coord >= g_haznLo && coord <= g_haznHi) {
         return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
     }
-    if (g_haznColl.Find(coord, 0)) { // CHaznColl::Find == _zvec::GrowTo @0x16da80
+    if (g_haznColl.Find(coord, 0)) { // CCoordColl::Find == _zvec::GrowTo @0x16da80
         return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
     }
     void* item = g_actCache;
@@ -517,6 +517,10 @@ SIZE_UNKNOWN(HazSndCat);
 SIZE_UNKNOWN(HazSndRoot);
 SIZE_UNKNOWN(HazStrMap);
 SIZE_UNKNOWN(HazSwitchSrc);
+// Tree-wide SIZE anchor for the unified CCoordColl coordinate/activation-registry
+// archetype (<Gruntz/HaznColl.h>; the former CTBombColl/CHaznColl views, used across
+// TimeBomb/StaticHazard). Moved here from the deleted src/Stub/BoundaryLowerThunks.cpp.
+SIZE_UNKNOWN(CCoordColl);
 SIZE_UNKNOWN(WwdAnimSub);
 
 // CStaticHazard::SerializeMove (0x0fc5b0), vtable slot 1 - stream the leaf pulse

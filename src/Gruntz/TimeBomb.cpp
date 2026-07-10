@@ -13,7 +13,7 @@
 #include <Bute/ButeTree.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton + CTileGrid collision grid
-#include <Gruntz/TBombColl.h>    // shared coordinate/activation-registry collection
+#include <Gruntz/HaznColl.h>     // shared coordinate/activation-registry collection (CCoordColl)
 #include <Gruntz/TimeBomb.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
@@ -37,7 +37,7 @@ struct CTBombEntry;        // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024c780)
-extern CTBombColl g_tbombColl;
+extern CCoordColl g_tbombColl;
 
 // ConstructTBombRange @0x0e17b0 - the static initializer that builds g_tbombColl's fast
 // [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from
@@ -92,7 +92,7 @@ extern i32 g_nextActId;
 DATA(0x0020a454)
 extern char s_actKeyA[];
 DATA(0x002bf650)
-extern CTBombColl g_nameReg; // 0x6bf650
+extern CCoordColl g_nameReg; // 0x6bf650
 DATA(0x002bf654)
 extern CVariantSlot* g_nameReg2; // 0x6bf654
 DATA(0x002bf658)
@@ -387,3 +387,6 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     }
     return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CSerialObj*)a4) ? 1 : 0;
 }
+
+// (SIZE anchor for the unified CCoordColl archetype lives in StaticHazard.cpp; the
+// timebomb registry uses the same CCoordColl from <Gruntz/HaznColl.h>.)

@@ -790,9 +790,11 @@ CString Obj85500::GetName() {
 // (masks 0x5e9b8c). This is the GLOBAL-namespace ??1CGameMgr@@ that retail keeps at
 // 0x85540; the reconstruction's real manager is modeled as the namespaced
 // WAP32::CGameMgr (to disambiguate CGruntzMgr), so this distinct global placeholder is
-// the byte-necessary out-of-line emitter (its scalar-deleting twin 0x855a0 stays in
-// BoundaryLowerThunks). RVA-contiguous with RezSync::Init (this TU is the CGameMgr
-// bootstrap).
+// the byte-necessary out-of-line emitter. RVA-contiguous with RezSync::Init (this TU
+// is the CGameMgr bootstrap). (The scalar-deleting twin 0x855a0 was a separate inline
+// dtor COMDAT emitter in the now-deleted src/Stub/BoundaryLowerThunks.cpp; it was
+// dropped - it can only be emitted by an inline dtor whose ??_G inlines it, which
+// conflicts with this TU's out-of-line ~CGameMgr, so no clean single-TU home exists.)
 struct CGameMgr {
     virtual ~CGameMgr(); // 0x85540 (slot 0): implicit base-vtable restamp + Close
     virtual void s1();
