@@ -143,6 +143,44 @@ def engine_universe():
                 except ValueError:
                     pass
 
+    # IAT import thunks are 6-byte `FF25 jmp [__imp__...]` (or `FF15 call`) that carry
+    # the IMPORTED name (VerQueryValueA, ImageList_Read, Ordinal_1, ...), not a
+    # placeholder - so the <=7B FUN_/Unmatched_ name filter below misses them and they
+    # inflate real_fn. Catch them by OPCODE from the retail bytes (a real 6-byte vtable
+    # method is `mov eax,imm; ret`, not FF25, so it stays a real target). Best-effort:
+    # if the EXE isn't present (fresh worktree) fall back to the name-only rule.
+    import os
+    import struct
+
+    iat_thunks: set[int] = set()
+    exe = os.environ.get("GRUNTZ_EXE") or str(REPO / "build" / "exe" / "GRUNTZ.EXE")
+    try:
+        d = Path(exe).read_bytes()
+        e = struct.unpack_from("<I", d, 0x3C)[0]
+        nsec = struct.unpack_from("<H", d, e + 6)[0]
+        optsz = struct.unpack_from("<H", d, e + 20)[0]
+        secs = []
+        for i in range(nsec):
+            b = e + 24 + optsz + i * 40
+            va = struct.unpack_from("<I", d, b + 12)[0]
+            rsz = struct.unpack_from("<I", d, b + 16)[0]
+            rp = struct.unpack_from("<I", d, b + 20)[0]
+            secs.append((va, rsz, rp))
+
+        def _off(rva):
+            for va, rsz, rp in secs:
+                if va <= rva < va + rsz:
+                    return rp + (rva - va)
+            return None
+
+        for rva, sz, _n, _t in rows:
+            if sz <= 7 and rva not in claimed:
+                o = _off(rva)
+                if o is not None and d[o] == 0xFF and d[o + 1] in (0x25, 0x15):
+                    iat_thunks.add(rva)
+    except (OSError, struct.error, IndexError):
+        iat_thunks = set()
+
     # The leading contiguous run of <=5-byte functions is the linker's ILT jump
     # table - 5-byte `jmp rel32` forwarders, each named after the body it targets.
     # They aren't named thunk_*, so a name filter misses them; instead bound the
@@ -160,7 +198,7 @@ def engine_universe():
             real_fn += 1
             real_code += sz
             continue
-        if rva < ilt_end or is_thunk:      # ILT jmp-table + Ghidra thunk_*
+        if rva < ilt_end or is_thunk or rva in iat_thunks:  # ILT jmp-table + thunk_* + FF25/FF15 IAT
             k = "thunk"
         elif sz <= 7 and (name.startswith("FUN_") or name.startswith("Unmatched_")):
             # Scattered import/glue thunks the leading-ILT + thunk_* filters miss:
