@@ -1,18 +1,5 @@
 [
  {
-  "file": "src/Gruntz/UserLogic.cpp",
-  "n": 87,
-  "bytes": 35458,
-  "lo": 62544,
-  "hi": 1132366,
-  "span": 1069822,
-  "frags": 58,
-  "avg_cluster": 1.5,
-  "frag_ratio": 0.6666666666666666,
-  "occupancy": 0.03314383140372885,
-  "spread": 30.17152687686841
- },
- {
   "file": "src/Gruntz/Grunt.cpp",
   "n": 90,
   "bytes": 68815,
@@ -65,19 +52,6 @@
   "spread": 54.61256023465326
  },
  {
-  "file": "src/Image/Image.cpp",
-  "n": 47,
-  "bytes": 10182,
-  "lo": 1302640,
-  "hi": 1537015,
-  "span": 234375,
-  "frags": 24,
-  "avg_cluster": 1.9583333333333333,
-  "frag_ratio": 0.5106382978723404,
-  "occupancy": 0.0434432,
-  "spread": 23.018562168532704
- },
- {
   "file": "src/Gruntz/Play.cpp",
   "n": 74,
   "bytes": 28453,
@@ -89,6 +63,32 @@
   "frag_ratio": 0.3108108108108108,
   "occupancy": 0.04158190406042112,
   "spread": 24.048922784943592
+ },
+ {
+  "file": "src/Gruntz/UserLogic.cpp",
+  "n": 35,
+  "bytes": 23507,
+  "lo": 68112,
+  "hi": 1112793,
+  "span": 1044681,
+  "frags": 22,
+  "avg_cluster": 1.5909090909090908,
+  "frag_ratio": 0.6285714285714286,
+  "occupancy": 0.02250160575333523,
+  "spread": 44.441272812353766
+ },
+ {
+  "file": "src/Image/Image.cpp",
+  "n": 32,
+  "bytes": 6162,
+  "lo": 1302640,
+  "hi": 1346241,
+  "span": 43601,
+  "frags": 19,
+  "avg_cluster": 1.6842105263157894,
+  "frag_ratio": 0.59375,
+  "occupancy": 0.14132703378362882,
+  "spread": 7.075787082116196
  },
  {
   "file": "src/Gruntz/SBI_RectOnly.cpp",
@@ -351,19 +351,6 @@
   "spread": 10.618547068441952
  },
  {
-  "file": "src/Gruntz/VoiceTrigger.cpp",
-  "n": 10,
-  "bytes": 1766,
-  "lo": 78768,
-  "hi": 1157038,
-  "span": 1078270,
-  "frags": 8,
-  "avg_cluster": 1.25,
-  "frag_ratio": 0.8,
-  "occupancy": 0.0016378087121036475,
-  "spread": 610.5719139297848
- },
- {
   "file": "src/Gruntz/MultiStartDlgRoster.cpp",
   "n": 12,
   "bytes": 1774,
@@ -416,6 +403,19 @@
   "spread": 3.7691287041132244
  },
  {
+  "file": "src/Gruntz/FrontCandyAni.cpp",
+  "n": 11,
+  "bytes": 1787,
+  "lo": 64064,
+  "hi": 709927,
+  "span": 645863,
+  "frags": 7,
+  "avg_cluster": 1.5714285714285714,
+  "frag_ratio": 0.6363636363636364,
+  "occupancy": 0.0027668406457716263,
+  "spread": 361.42305540011193
+ },
+ {
   "file": "src/Gruntz/GameObjectCtors.cpp",
   "n": 11,
   "bytes": 1726,
@@ -440,6 +440,32 @@
   "frag_ratio": 0.5,
   "occupancy": 0.00814938541667891,
   "spread": 122.70863983845378
+ },
+ {
+  "file": "src/Gruntz/PathHazard.cpp",
+  "n": 11,
+  "bytes": 3290,
+  "lo": 78192,
+  "hi": 739664,
+  "span": 661472,
+  "frags": 7,
+  "avg_cluster": 1.5714285714285714,
+  "frag_ratio": 0.6363636363636364,
+  "occupancy": 0.004973755502878429,
+  "spread": 201.05531914893618
+ },
+ {
+  "file": "src/Gruntz/VoiceTrigger.cpp",
+  "n": 11,
+  "bytes": 1841,
+  "lo": 78768,
+  "hi": 1157038,
+  "span": 1078270,
+  "frags": 7,
+  "avg_cluster": 1.5714285714285714,
+  "frag_ratio": 0.6363636363636364,
+  "occupancy": 0.001707364574735456,
+  "spread": 585.697990222705
  },
  {
   "file": "src/Gruntz/FreeNodePool.cpp",
@@ -520,17 +546,17 @@
   "spread": 3.7372670807453416
  },
  {
-  "file": "src/Gruntz/FrontCandyAni.cpp",
+  "file": "src/Gruntz/Teleporter.cpp",
   "n": 8,
-  "bytes": 977,
-  "lo": 64096,
-  "hi": 709927,
-  "span": 645831,
+  "bytes": 1874,
+  "lo": 68992,
+  "hi": 269746,
+  "span": 200754,
   "frags": 6,
   "avg_cluster": 1.3333333333333333,
   "frag_ratio": 0.75,
-  "occupancy": 0.0015127796590748972,
-  "spread": 661.0348004094166
+  "occupancy": 0.00933480777468942,
+  "spread": 107.12593383137673
  },
  {
   "file": "src/Gruntz/InGameIcon.cpp",
@@ -557,19 +583,6 @@
   "frag_ratio": 1.0,
   "occupancy": 0.003834232333007679,
   "spread": 260.8084
- },
- {
-  "file": "src/Gruntz/PathHazard.cpp",
-  "n": 10,
-  "bytes": 3167,
-  "lo": 78464,
-  "hi": 739664,
-  "span": 661200,
-  "frags": 6,
-  "avg_cluster": 1.6666666666666667,
-  "frag_ratio": 0.6,
-  "occupancy": 0.004789776164549305,
-  "spread": 208.77802336596147
  },
  {
   "file": "src/Gruntz/IconLoaders.cpp",
@@ -817,19 +830,6 @@
   "frag_ratio": 0.5,
   "occupancy": 0.0014650483379659415,
   "spread": 682.571335078534
- },
- {
-  "file": "src/Gruntz/ToobSpikez.cpp",
-  "n": 6,
-  "bytes": 1056,
-  "lo": 76736,
-  "hi": 1133389,
-  "span": 1056653,
-  "frags": 5,
-  "avg_cluster": 1.2,
-  "frag_ratio": 0.8333333333333334,
-  "occupancy": 0.0009993820109345263,
-  "spread": 1000.6183712121212
  },
  {
   "file": "src/Gruntz/MovingLogic.cpp",
@@ -1105,6 +1105,19 @@
   "spread": 3.141839378238342
  },
  {
+  "file": "src/Image/RezImage.cpp",
+  "n": 15,
+  "bytes": 4020,
+  "lo": 1529792,
+  "hi": 1537015,
+  "span": 7223,
+  "frags": 5,
+  "avg_cluster": 3.0,
+  "frag_ratio": 0.3333333333333333,
+  "occupancy": 0.5565554478748442,
+  "spread": 1.796766169154229
+ },
+ {
   "file": "src/Gruntz/DebugPrintf.cpp",
   "n": 7,
   "bytes": 575,
@@ -1132,42 +1145,42 @@
  },
  {
   "file": "src/Gruntz/AniCycle.cpp",
-  "n": 5,
-  "bytes": 815,
-  "lo": 62576,
+  "n": 7,
+  "bytes": 1169,
+  "lo": 62544,
   "hi": 701037,
-  "span": 638461,
+  "span": 638493,
   "frags": 4,
-  "avg_cluster": 1.25,
-  "frag_ratio": 0.8,
-  "occupancy": 0.001276507100668639,
-  "spread": 783.3877300613497
+  "avg_cluster": 1.75,
+  "frag_ratio": 0.5714285714285714,
+  "occupancy": 0.0018308736352630334,
+  "spread": 546.1873396065013
  },
  {
   "file": "src/Gruntz/SingleFrameMessage.cpp",
-  "n": 5,
-  "bytes": 815,
+  "n": 6,
+  "bytes": 1212,
   "lo": 62880,
   "hi": 702621,
   "span": 639741,
   "frags": 4,
-  "avg_cluster": 1.25,
-  "frag_ratio": 0.8,
-  "occupancy": 0.0012739530528760859,
-  "spread": 784.9582822085889
+  "avg_cluster": 1.5,
+  "frag_ratio": 0.6666666666666666,
+  "occupancy": 0.00189451668722186,
+  "spread": 527.8391089108911
  },
  {
   "file": "src/Gruntz/SimpleAnimation.cpp",
-  "n": 6,
-  "bytes": 838,
+  "n": 7,
+  "bytes": 1278,
   "lo": 63792,
   "hi": 704391,
   "span": 640599,
   "frags": 4,
-  "avg_cluster": 1.5,
-  "frag_ratio": 0.6666666666666666,
-  "occupancy": 0.0013081506527484433,
-  "spread": 764.4379474940334
+  "avg_cluster": 1.75,
+  "frag_ratio": 0.5714285714285714,
+  "occupancy": 0.0019950077973896305,
+  "spread": 501.2511737089202
  },
  {
   "file": "src/Gruntz/EyeCandyAni.cpp",
@@ -1184,16 +1197,29 @@
  },
  {
   "file": "src/Gruntz/BehindCandyAni.cpp",
-  "n": 6,
-  "bytes": 838,
-  "lo": 65616,
+  "n": 8,
+  "bytes": 1340,
+  "lo": 65584,
   "hi": 711623,
-  "span": 646007,
+  "span": 646039,
   "frags": 4,
-  "avg_cluster": 1.5,
-  "frag_ratio": 0.6666666666666666,
-  "occupancy": 0.0012971995659489758,
-  "spread": 770.8914081145584
+  "avg_cluster": 2.0,
+  "frag_ratio": 0.5,
+  "occupancy": 0.0020741781842891836,
+  "spread": 482.1186567164179
+ },
+ {
+  "file": "src/Gruntz/SingleAnimation.cpp",
+  "n": 7,
+  "bytes": 1189,
+  "lo": 66720,
+  "hi": 716217,
+  "span": 649497,
+  "frags": 4,
+  "avg_cluster": 1.75,
+  "frag_ratio": 0.5714285714285714,
+  "occupancy": 0.00183064740868703,
+  "spread": 546.2548359966358
  },
  {
   "file": "src/Gruntz/Warlord.cpp",
@@ -1223,29 +1249,42 @@
  },
  {
   "file": "src/Gruntz/SecretLevelTrigger.cpp",
-  "n": 6,
-  "bytes": 959,
-  "lo": 68528,
+  "n": 8,
+  "bytes": 1450,
+  "lo": 68384,
   "hi": 273232,
-  "span": 204704,
+  "span": 204848,
   "frags": 4,
-  "avg_cluster": 1.5,
-  "frag_ratio": 0.6666666666666666,
-  "occupancy": 0.004684813193684539,
-  "spread": 213.45568300312826
+  "avg_cluster": 2.0,
+  "frag_ratio": 0.5,
+  "occupancy": 0.007078419120518629,
+  "spread": 141.27448275862068
  },
  {
-  "file": "src/Gruntz/Teleporter.cpp",
+  "file": "src/Gruntz/WarpStonePad.cpp",
+  "n": 7,
+  "bytes": 1185,
+  "lo": 69376,
+  "hi": 1104813,
+  "span": 1035437,
+  "frags": 4,
+  "avg_cluster": 1.75,
+  "frag_ratio": 0.5714285714285714,
+  "occupancy": 0.0011444443264051797,
+  "spread": 873.7864978902953
+ },
+ {
+  "file": "src/Gruntz/TileTriggerSwitch.cpp",
   "n": 6,
-  "bytes": 1500,
-  "lo": 69072,
-  "hi": 269746,
-  "span": 200674,
+  "bytes": 1155,
+  "lo": 69712,
+  "hi": 1106317,
+  "span": 1036605,
   "frags": 4,
   "avg_cluster": 1.5,
   "frag_ratio": 0.6666666666666666,
-  "occupancy": 0.007474809890668448,
-  "spread": 133.78266666666667
+  "occupancy": 0.001114214189590056,
+  "spread": 897.4935064935065
  },
  {
   "file": "src/Gruntz/CursorSnapSprite.cpp",
@@ -1288,29 +1327,42 @@
  },
  {
   "file": "src/Gruntz/GruntSelectedSprite.cpp",
-  "n": 6,
-  "bytes": 950,
+  "n": 7,
+  "bytes": 1326,
   "lo": 73344,
   "hi": 518879,
   "span": 445535,
   "frags": 4,
-  "avg_cluster": 1.5,
-  "frag_ratio": 0.6666666666666666,
-  "occupancy": 0.0021322679475237636,
-  "spread": 468.9842105263158
+  "avg_cluster": 1.75,
+  "frag_ratio": 0.5714285714285714,
+  "occupancy": 0.002976197156227906,
+  "spread": 335.999245852187
+ },
+ {
+  "file": "src/Gruntz/GruntHealthSprite.cpp",
+  "n": 9,
+  "bytes": 1640,
+  "lo": 73456,
+  "hi": 520979,
+  "span": 447523,
+  "frags": 4,
+  "avg_cluster": 2.25,
+  "frag_ratio": 0.4444444444444444,
+  "occupancy": 0.0036646161202887897,
+  "spread": 272.8798780487805
  },
  {
   "file": "src/Gruntz/GruntToySprite.cpp",
-  "n": 6,
-  "bytes": 1014,
+  "n": 7,
+  "bytes": 1376,
   "lo": 74416,
   "hi": 522921,
   "span": 448505,
   "frags": 4,
-  "avg_cluster": 1.5,
-  "frag_ratio": 0.6666666666666666,
-  "occupancy": 0.002260844360709468,
-  "spread": 442.31262327416175
+  "avg_cluster": 1.75,
+  "frag_ratio": 0.5714285714285714,
+  "occupancy": 0.0030679702567418424,
+  "spread": 325.9484011627907
  },
  {
   "file": "src/Gruntz/ObjectDropper.cpp",
@@ -1339,17 +1391,30 @@
   "spread": 317.9611424775822
  },
  {
-  "file": "src/Gruntz/Particlez.cpp",
-  "n": 6,
-  "bytes": 872,
-  "lo": 77040,
-  "hi": 291017,
-  "span": 213977,
+  "file": "src/Gruntz/ToobSpikez.cpp",
+  "n": 8,
+  "bytes": 1460,
+  "lo": 76704,
+  "hi": 1133389,
+  "span": 1056685,
   "frags": 4,
-  "avg_cluster": 1.5,
-  "frag_ratio": 0.6666666666666666,
-  "occupancy": 0.004075204344392154,
-  "spread": 245.38646788990826
+  "avg_cluster": 2.0,
+  "frag_ratio": 0.5,
+  "occupancy": 0.0013816794976743306,
+  "spread": 723.7568493150685
+ },
+ {
+  "file": "src/Gruntz/Particlez.cpp",
+  "n": 8,
+  "bytes": 1228,
+  "lo": 77008,
+  "hi": 291017,
+  "span": 214009,
+  "frags": 4,
+  "avg_cluster": 2.0,
+  "frag_ratio": 0.5,
+  "occupancy": 0.005738076436037737,
+  "spread": 174.2744299674267
  },
  {
   "file": "src/Gruntz/Explosion.cpp",
@@ -1742,6 +1807,45 @@
   "spread": 67.92946944933367
  },
  {
+  "file": "src/Gruntz/BehindCandy.cpp",
+  "n": 4,
+  "bytes": 578,
+  "lo": 64368,
+  "hi": 705953,
+  "span": 641585,
+  "frags": 3,
+  "avg_cluster": 1.3333333333333333,
+  "frag_ratio": 0.75,
+  "occupancy": 0.0009008938800003117,
+  "spread": 1110.008650519031
+ },
+ {
+  "file": "src/Gruntz/EyeCandy.cpp",
+  "n": 4,
+  "bytes": 608,
+  "lo": 64672,
+  "hi": 706543,
+  "span": 641871,
+  "frags": 3,
+  "avg_cluster": 1.3333333333333333,
+  "frag_ratio": 0.75,
+  "occupancy": 0.0009472308298707995,
+  "spread": 1055.7088815789473
+ },
+ {
+  "file": "src/Gruntz/MenuSparkle.cpp",
+  "n": 3,
+  "bytes": 586,
+  "lo": 65968,
+  "hi": 713518,
+  "span": 647550,
+  "frags": 3,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 0.0009049494247548452,
+  "spread": 1105.0341296928327
+ },
+ {
   "file": "src/Gruntz/WayPoint.cpp",
   "n": 4,
   "bytes": 544,
@@ -1833,30 +1937,17 @@
   "spread": 1166.572033898305
  },
  {
-  "file": "src/Gruntz/GruntHealthSprite.cpp",
-  "n": 7,
-  "bytes": 1197,
-  "lo": 73648,
-  "hi": 520979,
-  "span": 447331,
-  "frags": 3,
-  "avg_cluster": 2.3333333333333335,
-  "frag_ratio": 0.42857142857142855,
-  "occupancy": 0.002675870887553065,
-  "spread": 373.71010860484546
- },
- {
   "file": "src/Gruntz/GruntPowerupSprite.cpp",
-  "n": 7,
-  "bytes": 1123,
+  "n": 8,
+  "bytes": 1481,
   "lo": 74608,
   "hi": 525646,
   "span": 451038,
   "frags": 3,
-  "avg_cluster": 2.3333333333333335,
-  "frag_ratio": 0.42857142857142855,
-  "occupancy": 0.00248981238831318,
-  "spread": 401.6366874443455
+  "avg_cluster": 2.6666666666666665,
+  "frag_ratio": 0.375,
+  "occupancy": 0.00328353708556707,
+  "spread": 304.54962862930455
  },
  {
   "file": "src/Gruntz/LightFx.cpp",
@@ -2574,45 +2665,6 @@
   "spread": 4.742372881355932
  },
  {
-  "file": "src/Gruntz/BehindCandy.cpp",
-  "n": 2,
-  "bytes": 139,
-  "lo": 64400,
-  "hi": 64628,
-  "span": 228,
-  "frags": 2,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.6096491228070176,
-  "spread": 1.6402877697841727
- },
- {
-  "file": "src/Gruntz/EyeCandy.cpp",
-  "n": 2,
-  "bytes": 139,
-  "lo": 64704,
-  "hi": 64932,
-  "span": 228,
-  "frags": 2,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.6096491228070176,
-  "spread": 1.6402877697841727
- },
- {
-  "file": "src/Gruntz/SingleAnimation.cpp",
-  "n": 2,
-  "bytes": 139,
-  "lo": 66720,
-  "hi": 66948,
-  "span": 228,
-  "frags": 2,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.6096491228070176,
-  "spread": 1.6402877697841727
- },
- {
   "file": "src/Gruntz/CBrickz.cpp",
   "n": 3,
   "bytes": 458,
@@ -2871,6 +2923,19 @@
   "frag_ratio": 0.6666666666666666,
   "occupancy": 0.7708095781071835,
   "spread": 1.297337278106509
+ },
+ {
+  "file": "src/Gruntz/GruntBehaviorLeaf.cpp",
+  "n": 3,
+  "bytes": 1202,
+  "lo": 397984,
+  "hi": 416697,
+  "span": 18713,
+  "frags": 2,
+  "avg_cluster": 1.5,
+  "frag_ratio": 0.6666666666666666,
+  "occupancy": 0.06423342061668359,
+  "spread": 15.568219633943428
  },
  {
   "file": "src/Gruntz/AniElement.cpp",
