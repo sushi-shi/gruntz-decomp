@@ -344,7 +344,7 @@ netthingdtor	1	1
 obj0f7d90	1	0
 objectdropper	4	3
 objectlogicpump	3	0
-orphanleaves	8	7
+orphanleaves	7	6
 orphanmethods	4	2
 packetpool	2	2
 palettebmp	1	0
@@ -493,7 +493,7 @@ triggermgr	56	14
 trirecordserialize	2	2
 typecollruntime	1	0
 typekeycoll	12	2
-ufo	3	2
+ufo	4	3
 uncompr	1	1
 unknownfileioctor	1	1
 userbaselink	10	2
@@ -3099,7 +3099,6 @@ orphanleaves	?FreeGlobal62c25c@@YAXXZ	0.0000	0.0000	3	8a53755b7a0b	0x3ac30
 orphanleaves	?GetGlobal5e8e98@@YAPAXXZ	100.0000	100.0000	2	4173b2b46bf6	0x183d0
 orphanleaves	?PickIfSelected@DlgHost_183f0@@QAEXXZ	100.0000	100.0000	1	331baa9fb4f8	0x183f0
 orphanleaves	?Register6446d8Range@@YAXXZ	100.0000	100.0000	3	7f8180a13913	0x3e120
-orphanleaves	?RunHelper2914@@YAHXZ	100.0000	100.0000	2	77144cfe11e1	0xb4330
 orphanmethods	?Apply@CEffect6b@@QAEXHH@Z	76.3333	76.3333	4	4bb3670d583d	0x6b2e0
 orphanmethods	?Lookup@CGridLookup@@QAEHHH@Z	100.0000	100.0000	2	ab8ffe709b29	0x75a40
 orphanmethods	?Step@CState95@@QAEHH@Z	100.0000	100.0000	2	d50e2192695a	0x95140
@@ -4027,6 +4026,7 @@ typekeycoll	?TmErrorHandler@@YAXPADH@Z	98.2458	98.2458	1	f11d19a7b2bb	0x16e220
 ufo	??0CUFO@@QAE@PAUCGameObject@@@Z	84.8409	84.8409	1	212ec8a73970	0xb4a90
 ufo	?Serialize@CUFO@@QAEHPAXHHH@Z	100.0000	100.0000	1	023bd6ea680a	0xb4d30
 ufo	?SerializeMove@CUFO@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	73b5628269d7	0xb4c40
+ufo	?Tick@CUFO@@UAEHXZ	100.0000	100.0000	1	41b9dc44dedf	0xb4330
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320
 unknownfileioctor	??0FileIOOwner@@QAE@XZ	100.0000	100.0000	2	01b3d14d4690	0x8fea0
 userbaselink	??0CUserBaseLink@@QAE@XZ	100.0000	100.0000	4	cb7f1376f20c	0x16d710

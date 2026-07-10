@@ -133,17 +133,8 @@ struct CPairXY {
 };
 
 // CPairXY::Set (0x00075a10) is now an inline member in the header.
+// RunHelper2914 (0xb4330) re-homed to src/Gruntz/Ufo.cpp as CUFO::Tick (matcher-6).
 
-
-// ---------------------------------------------------------------------------
-// 0xb4330: run a one-shot helper (ILT 0x2914) and return 0.
-extern "C" void Helper2914(); // 0x2914 (ILT thunk)
-
-RVA(0x000b4330, 0x8)
-i32 RunHelper2914() {
-    Helper2914();
-    return 0;
-}
 SIZE_UNKNOWN(CZDArrayDerived);
 SIZE_UNKNOWN(COwnerWithSubs);
 SIZE_UNKNOWN(CPairXY);

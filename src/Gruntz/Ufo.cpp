@@ -19,6 +19,16 @@
 // resource holder m_world (+0x30) -> m_8 (the sprite factory), and reads the light-FX
 // pump m_logicPump (+0x78) for the rain-cloud sibling.
 
+// CUFO::Tick (0xb4330) - vtable slot 16 override (origin CPathHazard): run the base
+// CPathHazard per-frame driver, then report "not done" (return 0). Re-homed from
+// OrphanLeaves.cpp (was the RunHelper2914 free function; matcher-6); the call
+// reloc-masks to CPathHazard::Tick (0xb4020) via thunk 0x2914.
+RVA(0x000b4330, 0x8)
+i32 CUFO::Tick() {
+    CPathHazard::Tick();
+    return 0;
+}
+
 // @confidence: high
 // @source: rtti-vptr
 // @early-stop
