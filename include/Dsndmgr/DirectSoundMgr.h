@@ -20,6 +20,7 @@
 #define DSNDMGR_DIRECTSOUNDMGR_H
 
 #include <rva.h>
+#include <stdio.h>                  // FILE (LoadFromFile stream arg)
 #include <Dsndmgr/SoundVoiceList.h> // DSoundLink / DSoundList intrusive list primitive
 
 // DSBCAPS - the buffer-caps struct GetCaps fills (dwSize 0x14 in, dwFlags out).
@@ -91,6 +92,7 @@ public:
     i32 StopAndRewind();           // 0x135380  Stop + SetCurrentPosition(0)
     i32 IsPlaying();               // 0x1353f0  GetStatus & DSBSTATUS_PLAYING
     i32 IsLooping();               // 0x135440  GetStatus & DSBSTATUS_LOOPING
+    i32 IsInHardware();            // 0x135490  GetCaps & DSBCAPS_LOCHARDWARE
     void SetField3(i32 on);        // 0x135510  toggle the +0x14 play-flag bit 0 (looping)
     i32 SetVolume(i32 vol);        // 0x135560  SetVolume (caps DSBCAPS_CTRLVOLUME)
     i32 SetVolumeByIndex(i32 idx); // 0x1355c0  SetVolume(g_volumeTable[idx])
@@ -108,6 +110,7 @@ public:
     i32 GetCurrentPosition(u32* play, u32* write);          // 0x135a20
     i32 SetCurrentPosition(u32 pos);                        // 0x135a70
     i32 GetFormat(void* fmt, u32 size, u32* written);       // 0x135ac0
+    i32 LoadFromFile(FILE* fp, u32 bytes, i32 offset);      // 0x135e10  fseek+Lock+fread+Unlock
     i32 LockConvert(void* src, u32 lockBytes, u32 convert); // 0x135f40
     i32 Play();                                             // 0x136270  Play + reacquire-retry
     i32 ApplyAndPlay(i32 vol, i32 pan, i32 freq, i32 d);    // 0x136300  apply params + play

@@ -1390,6 +1390,48 @@ DeviceState* CInputDevice::ReadState() {
     return m_stateBuffer;
 }
 
+// CInputDevRoot::GetDeviceInfo (__thiscall, no args). Fills the embedded
+// DIDEVICEINSTANCEA via IDirectInputDevice::GetDeviceInfo (slot +0x3c); report on
+// failure. Returns the descriptor pointer, or 0 on failure.
+RVA(0x00134df0, 0x33)
+DIDEVICEINSTANCEA* CInputDevRoot::GetDeviceInfo() {
+    m_deviceInfo.dwSize = 0x244;
+    i32 hr = m_device2->GetDeviceInfo(&m_deviceInfo);
+    if (hr != 0) {
+        DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0xa6, hr);
+        return 0;
+    }
+    return &m_deviceInfo;
+}
+
+// CInputDevRoot::GetCapabilities (__thiscall, no args). Fills the embedded DIDEVCAPS
+// via IDirectInputDevice::GetCapabilities (slot +0x0c); report on failure. Returns
+// the descriptor pointer, or 0 on failure.
+RVA(0x00134e30, 0x36)
+DIDEVCAPS* CInputDevRoot::GetCapabilities() {
+    m_caps.dwSize = 0x244;
+    i32 hr = m_device2->GetCapabilities(&m_caps);
+    if (hr != 0) {
+        DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0xc7, hr);
+        return 0;
+    }
+    return &m_caps;
+}
+
+// CInputDevRoot::GetProperty (__thiscall, ret 4 => 1 arg). Fills the embedded
+// DIPROPHEADER via IDirectInputDevice::GetProperty (slot +0x14) for the given
+// property GUID; report on failure. Returns the header pointer, or 0 on failure.
+RVA(0x00134e70, 0x3f)
+DIPROPHEADER* CInputDevRoot::GetProperty(REFGUID rguid) {
+    m_prop.dwSize = 0x244;
+    i32 hr = m_device2->GetProperty(rguid, &m_prop);
+    if (hr != 0) {
+        DirectInputMgr2::GetErrorString(INPUTDEVICE_FILE, 0xe8, hr);
+        return 0;
+    }
+    return &m_prop;
+}
+
 // CInputDevice::SetDataFormat (__thiscall, ret 4 => 1 arg). Pass-through to
 // IDirectInputDevice::SetDataFormat; report on failure.
 RVA(0x00134eb0, 0x3b)

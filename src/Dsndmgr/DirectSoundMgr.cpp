@@ -202,6 +202,29 @@ i32 DirectSoundMgr::IsLooping() {
 }
 
 // ---------------------------------------------------------------------------
+// IsInHardware: gated on init; GetCaps into a zeroed DSBCAPS, report on failure,
+// return the DSBCAPS_LOCHARDWARE bit. Same normalize/forward shape as IsPlaying.
+// @early-stop
+// byte-AND-width wall (99.88%): retail `and al,4` (24 04) vs cl `and eax,4` (83 e0 04)
+// on the returned (dwFlags & 4)==4 - identical wall to IsLooping/IsPlaying; permuter
+// no-change. Body is byte-exact otherwise (memset-{0} keeps the redundant dwSize zero).
+RVA(0x00135490, 0x73)
+i32 DirectSoundMgr::IsInHardware() {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    DSBCAPS caps;
+    memset(&caps, 0, sizeof(caps));
+    caps.dwSize = sizeof(DSBCAPS);
+    i32 hr = m_buffer->GetCaps(&caps) != 0;
+    if (hr) {
+        GetErrorString(DSNDMGR_FILE, 0xcc, hr);
+        return 0;
+    }
+    return (caps.dwFlags & DSBCAPS_LOCHARDWARE) == DSBCAPS_LOCHARDWARE;
+}
+
+// ---------------------------------------------------------------------------
 // SetField3: gated on init; set/clear bit 0 of m_playFlags (the Play looping flag).
 RVA(0x00135510, 0x25)
 void DirectSoundMgr::SetField3(i32 on) {
@@ -527,6 +550,51 @@ void DSoundCloneInst::RemoveClone(DirectSoundMgr* clone) {
     if (clone != this) {
         delete clone;
     }
+}
+
+// ---------------------------------------------------------------------------
+// LoadFromFile: (optionally fseek to `offset`), Lock the buffer FROMWRITECURSOR for
+// `bytes`, fread each wrap region straight from `fp`, then Unlock. Gated on init;
+// fseek/fread failures and Lock/Unlock HRESULTs each bail to 0.
+RVA(0x00135e10, 0x124)
+i32 DirectSoundMgr::LoadFromFile(FILE* fp, u32 bytes, i32 offset) {
+    if (m_owner->m_initialized == 0) {
+        return 0;
+    }
+    if (offset != -1) {
+        if (fseek(fp, offset, SEEK_SET) != 0) {
+            return 0;
+        }
+    }
+
+    void* p1;
+    u32 n1;
+    void* p2;
+    u32 n2;
+    i32 hr =
+        m_buffer->Lock(0, bytes, &p1, (LPDWORD)&n1, &p2, (LPDWORD)&n2, DSBLOCK_FROMWRITECURSOR);
+    if (hr != 0) {
+        GetErrorString(DSNDMGR_FILE, 0x27c, hr);
+        return 0;
+    }
+
+    if (n1 > 0) {
+        if (fread(p1, n1, 1, fp) != 1) {
+            return 0;
+        }
+    }
+    if (n2 > 0) {
+        if (fread(p2, n2, 1, fp) != 1) {
+            return 0;
+        }
+    }
+
+    hr = m_buffer->Unlock(p1, n1, p2, n2);
+    if (hr != 0) {
+        GetErrorString(DSNDMGR_FILE, 0x295, hr);
+        return 0;
+    }
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

@@ -205,6 +205,24 @@ namespace Utils {
     }
 
     // -------------------------------------------------------------------------
+    // RegistryHelper::SetValueBinary
+    // Writes dataSize bytes of pData as a REG_BINARY value. Returns nonzero on success.
+    RVA(0x00139410, 0x45)
+    i32 RegistryHelper::SetValueBinary(char* szValueName, void* pData, u32 dataSize) {
+        if (!m_open) {
+            return 0;
+        }
+        if (!szValueName) {
+            return 0;
+        }
+        if (!pData) {
+            return 0;
+        }
+        return RegSetValueExA(m_valueKey, szValueName, 0, 3 /*REG_BINARY*/, (LPBYTE)pData, dataSize)
+               == 0;
+    }
+
+    // -------------------------------------------------------------------------
     // RegistryHelper::SetValueDword
     // Writes value as a 4-byte REG_DWORD value. Returns nonzero on success.
     RVA(0x00139460, 0x33)

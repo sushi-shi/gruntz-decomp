@@ -250,6 +250,14 @@ public:
     i32 Unacquire();        // 0x134fe0
     i32 Escape(void* data); // 0x135000  IDirectInputDevice2::Escape
 
+    // COM device-query thunks: fill an embedded descriptor via the device slot,
+    // report on failure, and return the descriptor pointer (0 on failure). The
+    // descriptor's leading size dword is written 0x244 in every case (matches
+    // retail; the immediate is load-bearing).
+    DIDEVICEINSTANCEA* GetDeviceInfo();       // 0x134df0  slot GetDeviceInfo (+0x3c)
+    DIDEVCAPS* GetCapabilities();             // 0x134e30  slot GetCapabilities (+0x0c)
+    DIPROPHEADER* GetProperty(REFGUID rguid); // 0x134e70  slot GetProperty (+0x14)
+
     // Shared COM device-config thunks: they touch only the root-owned m_device2 /
     // m_hwnd, so every device leaf (keyboard/mouse/joystick) reaches them directly.
     i32 SetDataFormat(const void* fmt);                                    // 0x134eb0
@@ -260,7 +268,10 @@ public:
     // --- layout ---------------------------------------------------------------
     IDirectInputDeviceA* m_device;   // +0x004  the created device (CreateDevice out)
     IDirectInputDevice2A* m_device2; // +0x008  the QI'd v2 device interface (slot dispatch)
-    char m_padc[0x29c - 0x0c];
+    char m_padc[0x1c - 0x0c];        // +0x00c
+    DIDEVICEINSTANCEA m_deviceInfo;  // +0x01c  GetDeviceInfo() out (0x244 bytes)
+    DIDEVCAPS m_caps;                // +0x260  GetCapabilities() out (0x2c bytes)
+    DIPROPHEADER m_prop;             // +0x28c  GetProperty() header scratch (0x10 bytes)
     // m_hwnd is the cached cooperative-level HWND (Win32 handle) - kept void* for the
     // same documented FOREIGN-HANDLE reason as the manager's m_owner/m_hinst.
     void* m_hwnd;               // +0x29c  cached cooperative-level HWND

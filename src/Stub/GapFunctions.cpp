@@ -257,30 +257,6 @@ RVA(0x00118130, 0x44)
 i32 Gap_118130(void) {
     return 0;
 } // @stub
-RVA(0x00134df0, 0x33)
-i32 Gap_134df0(void) {
-    return 0;
-} // @stub
-RVA(0x00134e30, 0x36)
-i32 Gap_134e30(void) {
-    return 0;
-} // @stub
-RVA(0x00134e70, 0x3f)
-i32 Gap_134e70(void) {
-    return 0;
-} // @stub
-RVA(0x00135490, 0x73)
-i32 Gap_135490(void) {
-    return 0;
-} // @stub
-RVA(0x00135e10, 0x124)
-i32 Gap_135e10(void) {
-    return 0;
-} // @stub
-RVA(0x00139410, 0x45)
-i32 Gap_139410(void) {
-    return 0;
-} // @stub
 // @stub 0x139810 = CParseSource method (RVA-contiguous: 0x139800..0x139960 is
 // ParseSource.cpp). Walks this->m_10's linked list (node->m_1c=next, node->m_0=str,
 // _g_emptyString sentinel), concatenating strings into arg1 via inline strcpy/strlen
