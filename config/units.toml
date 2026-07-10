@@ -599,6 +599,32 @@ unit = "gamelevel"
 source = "src/Gruntz/GameLevel.cpp"
 flags = "eh"
 
+# Split out of the gamelevel god-TU (CGameLevel's per-plane / image-set variants).
+# Their vtables are still emitted (and VTBL-bound) in gamelevel via ReadImageSet's
+# `new CImageSetN`; these TUs carry only the out-of-line method bodies.
+[[unit]]
+unit = "levelplane"
+source = "src/Gruntz/LevelPlane.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "imageset1"
+source = "src/Gruntz/ImageSet1.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "imageset2"
+source = "src/Gruntz/ImageSet2.cpp"
+flags = "eh"
+
+# imageset3g: the small (size-0x18) CImageSet3 variant record's bodies. Named
+# distinctly from the existing `imageset3` unit (src/Image/ImageSet3.cpp), which
+# models a DIFFERENT grid-owning object under the same reconstruction name.
+[[unit]]
+unit = "imageset3g"
+source = "src/Gruntz/ImageSet3.cpp"
+flags = "eh"
+
 [[unit]]
 unit = "filestream"
 source = "src/Io/FileStream.cpp"

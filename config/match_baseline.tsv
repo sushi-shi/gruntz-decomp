@@ -161,7 +161,7 @@ gamechecksum	1	0
 gameiconflasheffect	1	1
 gameinfostring	4	3
 gamekeyhandler	2	0
-gamelevel	100	39
+gamelevel	78	28
 gamemode	52	25
 gamemodebase	1	0
 gamemodeobjlifecycle	4	3
@@ -242,8 +242,11 @@ imagerle16encode	1	0
 imagerotate	1	0
 imagesavebmp	1	0
 imageset	9	6
+imageset1	1	0
+imageset2	10	9
 imageset3	3	2
 imageset3eh	1	1
+imageset3g	8	2
 imagespriteblit	7	0
 imagevflip	1	0
 infblock	5	4
@@ -263,6 +266,7 @@ kitchenslime	8	4
 latencylist	2	2
 leafelementobj	2	2
 levelinfodlg	5	2
+levelplane	3	0
 levelpreview	9	6
 levelrezpath	1	0
 levelsync	1	0
@@ -1762,23 +1766,19 @@ gamelevel	??1CGameLevel@@UAE@XZ	86.0000	86.0000	1	b61ee621336c	0x1611e0
 gamelevel	??_GCGameLevel@@UAEPAXI@Z	100.0000	100.0000	1	cpp:64506b77e757	0x1611c0
 gamelevel	?AdvanceA@CGameLevel@@AAEHPAUCGameObject@@HHH@Z	93.5194	93.5194	3	db37729a731a	0x15f1c0
 gamelevel	?AdvanceB@CGameLevel@@AAEHPAUCGameObject@@HHH@Z	92.2241	92.2241	3	77d7477ad685	0x15ede0
-gamelevel	?AltStepValidate@CGameLevel@@AAEHPAUCGameObject@@0HHPAHH@Z	71.8919	71.8919	2	fca196cb5625	0x15fe40
+gamelevel	?AltStepValidate@CGameLevel@@AAEHPAUCGameObject@@0HHPAHH@Z	71.9054	71.9054	2	fca196cb5625	0x15fe40
 gamelevel	?ApplyMove@@YGHPAUCGameObject@@HHH@Z	94.7826	94.7826	2	fcf76d7f6b03	0x167130
 gamelevel	?AxisProbe@CGameLevel@@AAEHHH@Z	99.8667	99.8667	5	acb81ecc6528	0x161270
 gamelevel	?BroadPhase@CGameLevel@@QAEHPAUCGameObject@@HH@Z	69.9552	69.9552	3	84f9fdd3c36b	0x167ea0
-gamelevel	?Build@CLevelPlane@@QAEXPAULevelCoordRect@@@Z	90.4318	90.4318	1	fc89fcd98c90	0x161e80
 gamelevel	?BuildAllPlanes@CGameLevel@@QAEXPAULevelCoordRect@@@Z	100.0000	100.0000	4	3dba9aa7445e	0x15da80
 gamelevel	?ClampSpan@CGameLevel@@AAEHHHPAH0@Z	99.8305	99.8305	4	80f54249e6a4	0x15ffe0
 gamelevel	?DispatchMove@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	88.8440	88.8440	2	f33d6488c7ee	0x15dfb0
 gamelevel	?EditDispatch@CGameLevel@@QAEHPAXHHH@Z	47.8085	47.8085	2	850c11fc8725	0x160f70
 gamelevel	?FindPlaneByName@CGameLevel@@QAEPAVCPlane@@PBD@Z	100.0000	100.0000	5	3696c13912d1	0x15dde0
 gamelevel	?FreeMove@CGameLevel@@AAEHPAUCGameObject@@HHH@Z	80.5800	80.5800	3	f3e252837de9	0x15eb00
-gamelevel	?FreePixels@CImageSet3@@UAEXXZ	100.0000	100.0000	1	d50bd19bea4a	0x1614b0
 gamelevel	?GetClassId@CGameLevel@@UAEHXZ	100.0000	100.0000	3	75e0a67dbae3	0x1611b0
-gamelevel	?GetCollisionAt@CImageSet2@@UAEHHH@Z	100.0000	100.0000	1	498cdb079af2	0x161470
-gamelevel	?HoldMove@CGameLevel@@AAEHPAUCGameObject@@0HHH@Z	98.0581	98.0581	2	a6c93f38cdf2	0x15ff20
+gamelevel	?HoldMove@CGameLevel@@AAEHPAUCGameObject@@0HHH@Z	98.0814	98.0814	2	a6c93f38cdf2	0x15ff20
 gamelevel	?Init@Builder_168080@@QAEHPAXPAUtagRECT@@PAUPt_168080@@22222@Z	99.5131	99.5131	1	ee26d0411fec	0x168080
-gamelevel	?InitGeometry_1619f0@CLevelPlane@@QAEHHHHHHHPAULevelCoordRect@@PAD@Z	78.3314	78.3314	1	fe45d6b8328b	0x1619f0
 gamelevel	?IsLoaded@CGameLevel@@UAEHXZ	100.0000	100.0000	3	d9f2574e5930	0x161190
 gamelevel	?LoadFromFile@CGameLevel@@UAEHPBD@Z	100.0000	100.0000	2	24adc56ccb7a	0x15d500
 gamelevel	?LoadName@CGameLevel@@QAEHPAX@Z	100.0000	100.0000	1	43461c871d4e	0x161110
@@ -1799,45 +1799,27 @@ gamelevel	?MoveStepYHi@CGameLevel@@QAEHPAUCGameObject@@HHPAHH@Z	82.1034	82.1034	
 gamelevel	?MoveStepYLo@CGameLevel@@QAEHPAUCGameObject@@HHPAHH@Z	81.5000	81.5000	3	824bca2813ad	0x167830
 gamelevel	?MoveToward@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	70.8112	70.8112	2	68e62faa9601	0x15de40
 gamelevel	?NotifyAllPlanes@CGameLevel@@QAEXXZ	100.0000	100.0000	5	1ac249c38d48	0x160f40
-gamelevel	?Parse@CImageSet1@@UAEHPAX@Z	86.6667	86.6667	2	a6085ca582b9	0x166d40
-gamelevel	?Parse@CImageSet2@@UAEHPAX@Z	94.0741	94.0741	2	ff0efad7f2cc	0x166990
-gamelevel	?Parse@CImageSet3@@UAEHPAX@Z	88.6441	88.6441	3	785d9b58ef86	0x166d70
 gamelevel	?PointInBounds@CGameLevel@@SAHPBULevelCoordRect@@HH@Z	100.0000	100.0000	2	632d3d8a0e70	0x6b330
 gamelevel	?ProbeColumn@CGameLevel@@QAEHPAUCGameObject@@H@Z	92.5769	92.5769	2	42eb468ced6e	0x160980
 gamelevel	?ProbeFeetKind@CGameLevel@@QAEHPAUCGameObject@@H@Z	92.5769	92.5769	1	f768d8d8ddf4	0x1608c0
-gamelevel	?ProbeFootBlocked@CGameLevel@@AAEHPAUCGameObject@@H@Z	82.0725	82.0725	1	af5af4259081	0x160210
-gamelevel	?ProbeFootSoft@CGameLevel@@AAEHPAUCGameObject@@H@Z	98.5959	98.5959	1	0b240c2b6bca	0x160080
-gamelevel	?ProbeHeadSoft@CGameLevel@@QAEHPAUCGameObject@@H@Z	94.9080	94.9080	1	af561ff4f484	0x160450
+gamelevel	?ProbeFootBlocked@CGameLevel@@AAEHPAUCGameObject@@H@Z	82.0725	82.0676	1	af5af4259081	0x160210
+gamelevel	?ProbeFootSoft@CGameLevel@@AAEHPAUCGameObject@@H@Z	98.5822	98.5822	1	0b240c2b6bca	0x160080
+gamelevel	?ProbeHeadSoft@CGameLevel@@QAEHPAUCGameObject@@H@Z	94.8966	94.8966	1	af561ff4f484	0x160450
 gamelevel	?ProbeSpanHard@CGameLevel@@QAEHPAUCGameObject@@HH@Z	99.8726	99.8726	1	353f47f77f71	0x15f470
 gamelevel	?ProbeStepEdge@CGameLevel@@AAEHHH@Z	99.7171	99.7171	1	ea6023cc2f8a	0x15fc30
-gamelevel	?Query_1669e0@CImageSet2@@UAEHHHPAH0@Z	100.0000	100.0000	1	78ca1386f3c3	0x1669e0
-gamelevel	?Query_166a40@CImageSet2@@UAEHHHHPAH@Z	100.0000	100.0000	1	0ffbd86dd404	0x166a40
-gamelevel	?Query_166ab0@CImageSet2@@UAEHHHPAH0@Z	100.0000	100.0000	1	4d1acc4686c4	0x166ab0
-gamelevel	?Query_166b20@CImageSet2@@UAEHHHHPAH@Z	100.0000	100.0000	1	8052787ef618	0x166b20
-gamelevel	?Query_166b90@CImageSet2@@UAEHHHPAH0@Z	100.0000	100.0000	1	2e6e9e80848c	0x166b90
-gamelevel	?Query_166bf0@CImageSet2@@UAEHHHHPAH@Z	100.0000	100.0000	1	95ca28a836cb	0x166bf0
-gamelevel	?Query_166c60@CImageSet2@@UAEHHHPAH0@Z	100.0000	100.0000	1	72f0aff8bdb7	0x166c60
-gamelevel	?Query_166cd0@CImageSet2@@UAEHHHHPAH@Z	100.0000	100.0000	1	728a86fae753	0x166cd0
 gamelevel	?ReadImageSet@CGameLevel@@AAEPAVCImageSet@@PAX@Z	100.0000	100.0000	6	a069f70dadcd	0x15d820
 gamelevel	?ReadImageSets@CGameLevel@@AAEHPBIPAD@Z	100.0000	100.0000	1	930908b7105f	0x15d790
-gamelevel	?RecomputePlaneCoords@CLevelPlane@@QAEXXZ	97.0640	97.0640	2	94d4485a43e3	0x161c90
 gamelevel	?ReleaseChildren@CGameLevel@@UAEXXZ	100.0000	100.0000	4	adcd0482882f	0x15d680
 gamelevel	?RemovePlane@CGameLevel@@AAEHH@Z	100.0000	100.0000	1	9707881869d5	0x15db30
-gamelevel	?ResolveBottomY@CGameLevel@@AAEHPAUCGameObject@@HH@Z	96.7664	96.7664	1	c5578e553b0a	0x167c60
+gamelevel	?ResolveBottomY@CGameLevel@@AAEHPAUCGameObject@@HH@Z	96.7477	96.7477	1	c5578e553b0a	0x167c60
 gamelevel	?ResolveLeftX@CGameLevel@@AAEHPAUCGameObject@@HH@Z	92.9813	92.9813	1	9464d2396500	0x167b40
 gamelevel	?ResolveMoveDown@CGameLevel@@AAEHPAUCGameObject@@HHH@Z	83.5563	83.5563	1	e912b008c65b	0x15f610
 gamelevel	?ResolveMoveUp@CGameLevel@@AAEHPAUCGameObject@@HHH@Z	91.2600	91.2600	1	efcbd66034c9	0x15f7b0
 gamelevel	?ResolveRightX@CGameLevel@@AAEHPAUCGameObject@@HH@Z	92.9813	92.9813	1	af4a34591d86	0x167a20
-gamelevel	?ResolveTopY@CGameLevel@@AAEHPAUCGameObject@@HH@Z	96.7664	96.7664	1	13d78f605061	0x167d80
+gamelevel	?ResolveTopY@CGameLevel@@AAEHPAUCGameObject@@HH@Z	96.7477	96.7477	1	13d78f605061	0x167d80
 gamelevel	?SaveName@CGameLevel@@QAEHPAX@Z	100.0000	100.0000	1	5faf2af24063	0x1610a0
-gamelevel	?ScanDownGate_1670d0@CImageSet3@@UAEHHHHPAH@Z	94.4348	94.4348	1	23e63183e84b	0x1670d0
-gamelevel	?ScanDown_167050@CImageSet3@@UAEHHHPAH0@Z	67.1111	67.1111	1	777e480f300b	0x167050
-gamelevel	?ScanRightGate_166ff0@CImageSet3@@UAEHHHHPAH@Z	72.2432	72.2432	1	a11a4334cf6d	0x166ff0
-gamelevel	?ScanRight_166f80@CImageSet3@@UAEHHHPAH0@Z	78.4314	78.4314	1	4a5f7faacf8b	0x166f80
 gamelevel	?ScanRowSpan@CGameLevel@@AAEHHHHH@Z	91.6904	91.6904	1	90166a6c7fe9	0x160c50
 gamelevel	?ScanSpanTop@CGameLevel@@AAEHPAUCGameObject@@HHH@Z	95.6261	95.6261	1	de2a113dcf0d	0x15e9c0
-gamelevel	?ScanUpGate_166f20@CImageSet3@@UAEHHHHPAH@Z	82.1622	82.1622	1	7906cc7fea3b	0x166f20
-gamelevel	?ScanUp_166eb0@CImageSet3@@UAEHHHPAH0@Z	100.0000	100.0000	1	428763ed0081	0x166eb0
 gamelevel	?SetCoordExtents@CGameLevel@@UAEHHH@Z	84.2800	84.2800	2	ac727f1825ce	0x15d030
 gamelevel	?SetCoords@CGameLevel@@UAEHPAULevelCoordRect@@@Z	100.0000	100.0000	2	5d87a13fb2df	0x15d0d0
 gamelevel	?SetCoordsAndLoad38@CGameLevel@@UAEHPAUWwdHeader@@PAULevelCoordRect@@@Z	100.0000	100.0000	3	332f4043d8c3	0x15cf70
@@ -2513,10 +2495,29 @@ imageset	?GetMemoryUsage@CImageSet@@QAEHH@Z	100.0000	100.0000	3	8e64c2ef05ca	0x1
 imageset	?SetAllField18@CImageSet@@QAEHH@Z	100.0000	100.0000	2	3833a9f7a198	0x1524d0
 imageset	?SetAllFormats@CImageSet@@QAEHH@Z	100.0000	100.0000	4	440c1575795f	0x152520
 imageset	?SetAllTypes@CImageSet@@QAEHH@Z	100.0000	100.0000	2	dc25b1b52868	0x152480
+imageset1	?Parse@CImageSet1@@UAEHPAX@Z	86.6667	86.6667	1	a6085ca582b9	0x166d40
+imageset2	?GetCollisionAt@CImageSet2@@UAEHHH@Z	100.0000	100.0000	1	6e7f92c2bd7a	0x161470
+imageset2	?Parse@CImageSet2@@UAEHPAX@Z	94.0741	94.0741	1	ff0efad7f2cc	0x166990
+imageset2	?Query_1669e0@CImageSet2@@UAEHHHPAH0@Z	100.0000	100.0000	1	78ca1386f3c3	0x1669e0
+imageset2	?Query_166a40@CImageSet2@@UAEHHHHPAH@Z	100.0000	100.0000	1	0ffbd86dd404	0x166a40
+imageset2	?Query_166ab0@CImageSet2@@UAEHHHPAH0@Z	100.0000	100.0000	1	4d1acc4686c4	0x166ab0
+imageset2	?Query_166b20@CImageSet2@@UAEHHHHPAH@Z	100.0000	100.0000	1	8052787ef618	0x166b20
+imageset2	?Query_166b90@CImageSet2@@UAEHHHPAH0@Z	100.0000	100.0000	1	2e6e9e80848c	0x166b90
+imageset2	?Query_166bf0@CImageSet2@@UAEHHHHPAH@Z	100.0000	100.0000	1	95ca28a836cb	0x166bf0
+imageset2	?Query_166c60@CImageSet2@@UAEHHHPAH0@Z	100.0000	100.0000	1	72f0aff8bdb7	0x166c60
+imageset2	?Query_166cd0@CImageSet2@@UAEHHHHPAH@Z	100.0000	100.0000	1	728a86fae753	0x166cd0
 imageset3	?Cleanup_161bf0@CImageSet3@@QAEXXZ	100.0000	100.0000	2	345e58d43f5c	0x161bf0
 imageset3	?Prune_1628d0@CImageSet3@@QAEHXZ	100.0000	100.0000	2	f3947d454f08	0x1628d0
 imageset3	?ScanRunLeft_166e00@CImageSet3@@QAEHHHPAH0@Z	99.7778	99.7778	1	b56857274c55	0x166e00
 imageset3eh	??1C161500@@UAE@XZ	100.0000	100.0000	1	00b99b12d549	0x161500
+imageset3g	?FreePixels@CImageSet3@@UAEXXZ	100.0000	100.0000	1	d50bd19bea4a	0x1614b0
+imageset3g	?Parse@CImageSet3@@UAEHPAX@Z	88.6441	88.6441	1	785d9b58ef86	0x166d70
+imageset3g	?ScanDownGate_1670d0@CImageSet3@@UAEHHHHPAH@Z	94.4348	94.4348	1	23e63183e84b	0x1670d0
+imageset3g	?ScanDown_167050@CImageSet3@@UAEHHHPAH0@Z	67.1111	67.1111	1	777e480f300b	0x167050
+imageset3g	?ScanRightGate_166ff0@CImageSet3@@UAEHHHHPAH@Z	72.2432	72.2432	1	a11a4334cf6d	0x166ff0
+imageset3g	?ScanRight_166f80@CImageSet3@@UAEHHHPAH0@Z	78.4314	78.4314	1	4a5f7faacf8b	0x166f80
+imageset3g	?ScanUpGate_166f20@CImageSet3@@UAEHHHHPAH@Z	82.1622	82.1622	1	7906cc7fea3b	0x166f20
+imageset3g	?ScanUp_166eb0@CImageSet3@@UAEHHHPAH0@Z	100.0000	100.0000	1	428763ed0081	0x166eb0
 imagespriteblit	?BlitFlipH@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	82.8358	82.8358	2	e2579987201c	0x153d90
 imagespriteblit	?BlitFlipV@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	80.6329	80.6329	2	02cdddb9c8aa	0x153b20
 imagespriteblit	?BlitNorm@CImage@@QAEXPAVCBlitInfo@@PAV1@@Z	98.6030	98.6030	2	14578e147bcf	0x1538c0
@@ -2599,6 +2600,9 @@ levelinfodlg	?InfoLineDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	d15e92
 levelinfodlg	?LevelPreviewDlgProc@@YGHPAUHWND__@@IIJ@Z	80.3200	80.3200	1	42787967db96	0xe3690
 levelinfodlg	?winapi_0e3a40_EndDialog@@YGHPAUHWND__@@IIJ@Z	90.3774	90.3774	1	888ee520d79b	0xe3a40
 levelinfodlg	?winapi_0e4850_SetDlgItemTextA@@YAXPAUHWND__@@PAXPAD@Z	100.0000	100.0000	1	bc2fb44a8218	0xe4850
+levelplane	?Build@CLevelPlane@@QAEXPAULevelCoordRect@@@Z	90.4318	90.4318	1	fc89fcd98c90	0x161e80
+levelplane	?InitGeometry_1619f0@CLevelPlane@@QAEHHHHHHHPAULevelCoordRect@@PAD@Z	78.3314	78.3314	1	fe45d6b8328b	0x1619f0
+levelplane	?RecomputePlaneCoords@CLevelPlane@@QAEXXZ	97.0640	97.0640	1	94d4485a43e3	0x161c90
 levelpreview	?Cancel@CPreviewState@@QAEXXZ	100.0000	100.0000	2	aa46bdd36cea	0xde590
 levelpreview	?Enter@CPreviewState@@QAEHPAXHH@Z	100.0000	100.0000	1	035ce49583c2	0xde030
 levelpreview	?LoadLevelPreviewScreen@CPreviewState@@QAEXXZ	94.7368	94.7368	5	d1ccf395a859	0xde420
