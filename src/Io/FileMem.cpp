@@ -34,6 +34,13 @@ CFileMemBase::CFileMemBase() {
 CFileMemBase::~CFileMemBase() {}
 
 // ---------------------------------------------------------------------------
+// GetName (slot 4, 0x157920): return a by-value copy of the stream's name.
+RVA(0x00157920, 0x20)
+CString CFileMemBase::GetName() {
+    return m_name;
+}
+
+// ---------------------------------------------------------------------------
 // CFileMem::~CFileMem  (0x00157980)
 // cl stamps the derived vtable at entry, run Reset() (derived), destruct the
 // inner CFileIO, call the base Reset(), then cl folds the base vtable restamp +

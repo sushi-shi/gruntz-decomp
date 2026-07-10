@@ -103,6 +103,7 @@ public:
     i32 QueryB();                       // 0x163370  main-plane query
     void Notify();                      // 0x163420  main-plane notify
     void RecomputePlaneCoords();        // 0x161c90  wrap/clamp scaled coords (matched)
+    i32 ValidateTiles(char* errOut);    // 0x163510  scan the tile grid for bad refs
 
     u8 pad_4[0x4]; // +0x04
     u32 m_flags;   // +0x08  bit0 = MAIN/origin-fixed; bit2/3 = wrap X/Y
@@ -118,10 +119,10 @@ public:
     i32 m_wrapW;       // +0x30  tile count across (wrap/clamp modulus)
     i32 m_wrapH;       // +0x34  tile count down
     u8 pad_38[0x40 - 0x38];
-    i32 m_tileOriginX; // +0x40  out: near tile-origin X
-    i32 m_tileOriginY; // +0x44  out: near tile-origin Y
-    i32 m_tileExtentX; // +0x48  out: far tile-extent X
-    i32 m_tileExtentY; // +0x4c  out: far tile-extent Y
+    i32 m_tileOriginX;         // +0x40  out: near tile-origin X
+    i32 m_tileOriginY;         // +0x44  out: near tile-origin Y
+    i32 m_tileExtentX;         // +0x48  out: far tile-extent X
+    i32 m_tileExtentY;         // +0x4c  out: far tile-extent Y
     LevelCoordRect m_bounds50; // +0x50  level coord bounds (Build copies coords here)
     u8 pad_60[0x70 - 0x60];
     i32 m_viewW;   // +0x70  viewport tiles across (= bounds width)
@@ -205,7 +206,9 @@ public:
     virtual i32 IsReady();          // [6]  +0x18  0x001c08 (own; was CWapObj slot, declared-only)
     virtual i32 Unload();           // [7]  +0x1c  0x15d1f0  full unload (+ header zero)
     RVA(0x001611b0, 0x6)
-    virtual i32 GetClassId() { return CLASSID_GAMELEVEL; }
+    virtual i32 GetClassId() {
+        return CLASSID_GAMELEVEL;
+    }
     virtual i32 SetCoordsAndLoad38(WwdHeader* hdr, LevelCoordRect* coords); // [9]  +0x24  0x15cf70
     virtual i32
     SetCoordsAndLoad3C(CParseSource* src, LevelCoordRect* coords); // [10] +0x28  0x15ceb0
@@ -241,6 +244,10 @@ public:
 
     // Copies *coords into m_planeCtx, then drives every plane's Build(coords).
     void BuildAllPlanes(LevelCoordRect* coords);
+
+    // Clear *errOut (when non-null) then ValidateTiles(errOut) every plane; returns 1
+    // only if every plane validated, 0 if any failed. (ret 4). 0x160ef0.
+    i32 ValidateAllPlanes(char* errOut);
 
     // Builds the [0,0,w-1,h-1] coord rect into m_planeCtx and a local copy, then
     // Build(&rect) on every plane; returns 1. (ret 8)

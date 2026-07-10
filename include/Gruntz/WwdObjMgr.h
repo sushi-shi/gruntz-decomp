@@ -71,6 +71,11 @@ public:
     CWwdObject* FindByTypeProbe_15a810(i32 type);
     CWwdObject* FindByWorker_15a860(i32 type, void* key);
     CWwdObject* FindByField_15a940(i32 type, void* key);
+    CWwdObject* FindByKey_15a9a0(void* key);       // 0x15a9a0 first obj with m_key==key
+    CWwdObject* FindByStatusKey_15a9d0(void* key); // 0x15a9d0 first status-5 obj with m_key==key
+    i32 IsKindUnique_15aa20(i32 kind);             // 0x15aa20 1 unless 2+ objs share m_04==kind
+    i32 CountByKind_15aa60(i32 kind);              // 0x15aa60 count of objs with m_04==kind
+    i32 SumWeighted_15aaf0();                      // 0x15aaf0 sum i*(m_5c+m_74+m_60+m_04)
 
     char m_pad00[0x0c]; // +0x00..0x0b
     WwdFile* m_0c;      // +0x0c parent file handle (read as a raw int by the factories)

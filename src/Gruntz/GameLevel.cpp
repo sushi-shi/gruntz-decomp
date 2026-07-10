@@ -517,7 +517,6 @@ void CGameLevel::ReleaseChildren() {
 
 // CGameLevel::GetClassId (0x001611b0) is now an inline member in the header.
 
-
 // --- the SetCoordsAndLoadNN sibling family (do not drop) -------------------
 // ---------------------------------------------------------------------------
 // As SetCoordsAndLoad38 but dispatches the +0x40 load virtual.
@@ -628,9 +627,9 @@ struct CImageSet1 : CObject {
     void DtorBase() {
         // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
     }
-    i32 m_04;        // +0x04
-    i32 m_08;        // +0x08
-    i32 m_0c;        // +0x0c
+    i32 m_04; // +0x04
+    i32 m_08; // +0x08
+    i32 m_0c; // +0x0c
 };
 struct CImageSet2 : CObject {
     virtual ~CImageSet2() OVERRIDE; // slot 1 (CObject dtor)
@@ -687,11 +686,11 @@ struct CImageSet3 : CObject {
     virtual i32 ScanUp_166eb0(i32 x, i32 y, i32* outY, i32* outVal);
     // [13-17]: the directional scan family - UP/RIGHT/DOWN run scans (the *Gate forms
     // walk to the first pixel that EQUALS `val`, reporting only the coord).
-    virtual i32 ScanUpGate_166f20(i32 x, i32 y, i32 val, i32* outY);        // [13] 0x166f20
-    virtual i32 ScanRight_166f80(i32 x, i32 y, i32* outX, i32* outVal);     // [14] 0x166f80
-    virtual i32 ScanRightGate_166ff0(i32 x, i32 y, i32 val, i32* outX);     // [15] 0x166ff0
-    virtual i32 ScanDown_167050(i32 x, i32 y, i32* outY, i32* outVal);      // [16] 0x167050
-    virtual i32 ScanDownGate_1670d0(i32 x, i32 y, i32 val, i32* outY);      // [17] 0x1670d0
+    virtual i32 ScanUpGate_166f20(i32 x, i32 y, i32 val, i32* outY);    // [13] 0x166f20
+    virtual i32 ScanRight_166f80(i32 x, i32 y, i32* outX, i32* outVal); // [14] 0x166f80
+    virtual i32 ScanRightGate_166ff0(i32 x, i32 y, i32 val, i32* outX); // [15] 0x166ff0
+    virtual i32 ScanDown_167050(i32 x, i32 y, i32* outY, i32* outVal);  // [16] 0x167050
+    virtual i32 ScanDownGate_1670d0(i32 x, i32 y, i32 val, i32* outY);  // [17] 0x1670d0
     CImageSet3() {
         m_width = 0; // cl auto-stamps &??_7CImageSet3 first
         m_pixels = 0;
@@ -739,7 +738,6 @@ CImageSet* CGameLevel::ReadImageSet(void* record) {
 }
 
 // CImageSet1::DtorBase (0x00161370) is now an inline member in the header.
-
 
 // CImageSet1::Parse (0x166d40, g_imageSet1Vtbl slot +0x14). Copies three dwords
 // from the WWD record at +0x08.. into m_04/m_08/m_0c via an advancing source
@@ -1462,6 +1460,23 @@ void CGameLevel::MainPlaneNotify() {
     if (m_mainPlane != 0) {
         (m_mainPlane)->Notify();
     }
+}
+
+// ---------------------------------------------------------------------------
+// ValidateAllPlanes (0x160ef0, ret 4): clear *errOut (when non-null) then run
+// ValidateTiles(errOut) on every plane; returns 1 only if all planes validated.
+RVA(0x00160ef0, 0x42)
+i32 CGameLevel::ValidateAllPlanes(char* errOut) {
+    i32 ok = 1;
+    if (errOut != 0) {
+        *errOut = 0;
+    }
+    for (i32 i = 0; i < m_planes.GetSize(); i++) {
+        if (((CLevelPlane*)m_planes[i])->ValidateTiles(errOut) == 0) {
+            ok = 0;
+        }
+    }
+    return ok;
 }
 
 // ---------------------------------------------------------------------------

@@ -241,9 +241,7 @@ i32 CDDrawSubMgr::Init() {
 
 // CDDrawSubMgr::GetStateId (0x00157790) is now an inline member in the header.
 
-
 // CDDrawSubMgr::OnDestroy (0x001576c0) is now an inline member in the header.
-
 
 // ---------------------------------------------------------------------------
 // 0x155720: scalar-deleting destructor of a far sibling class (real member-teardown
@@ -521,7 +519,6 @@ i32 CDDrawSubMgrPages::Method_158ee0() {
 
 // CDDrawSubMgrPages::Method_159ef0 (0x00159ef0) is now an inline member in the header.
 
-
 // 0x15c290: blit-param init.
 // @early-stop
 // 94.75% — structure/offsets/stores byte-exact; retail pins `src` in edx and the
@@ -539,7 +536,6 @@ void CDDrawBlitParam::Construct(void* srcv) {
 }
 
 // CDDrawBlitParam::Reset_15c2c0 (0x0015c2c0) is now an inline member in the header.
-
 
 // 0x15c2d0: blit-param setup from a worker source.
 RVA(0x0015c2d0, 0x45)
@@ -805,7 +801,10 @@ public:
     virtual i32 Slot3C(i32 a1, i32 a2, i32 a3, void* obj); // +0x3c
     i32 m_04;                  // +0x04 type/kind key (FindBy* match field)
     i32 m_flags;               // +0x08 flag word
-    char m_pad0c[0x74 - 0x0c]; // +0x0c..0x73
+    char m_pad0c[0x5c - 0x0c]; // +0x0c..0x5b
+    i32 m_5c;                  // +0x5c geometry term (SumWeighted_15aaf0)
+    i32 m_60;                  // +0x60 geometry term (SumWeighted_15aaf0)
+    char m_pad64[0x74 - 0x64]; // +0x64..0x73
     i32 m_sortKey;             // +0x74 sort key
     i32 m_posCache;            // +0x78 CPtrList POSITION cache
     CLogicRecord* m_killCue;   // +0x7c kill-cue record (Consume/callback/refcount)
@@ -1361,6 +1360,101 @@ CWwdObject* CWwdObjMgr::FindByField_15a940(i32 type, void* key) {
         }
     } while (node != 0);
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15a9a0: return the first list object whose map key (+0x188) equals `key`.
+RVA(0x0015a9a0, 0x23)
+CWwdObject* CWwdObjMgr::FindByKey_15a9a0(void* key) {
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
+    while (node != 0) {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        if (obj->m_key == key) {
+            return obj;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15a9d0: return the first list object whose status probe (slot +0x20) is 5 and
+// whose map key (+0x188) equals `key`.  Twin of FindByTypeProbe_15a810.
+RVA(0x0015a9d0, 0x45)
+CWwdObject* CWwdObjMgr::FindByStatusKey_15a9d0(void* key) {
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
+    while (node != 0) {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        if (obj->Slot20() == 5 && obj->m_key == key) {
+            return obj;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15aa20: uniqueness predicate — return 1 unless two or more list objects share
+// +0x04 == `kind` (in which case 0 as soon as the second is seen).
+RVA(0x0015aa20, 0x3c)
+i32 CWwdObjMgr::IsKindUnique_15aa20(i32 kind) {
+    CWwdObject* found = 0;
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
+    while (node != 0) {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        if (obj->m_04 == kind) {
+            if (found != 0) {
+                return 0;
+            }
+            found = obj;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15aa60: count the list objects whose +0x04 == `kind`.
+RVA(0x0015aa60, 0x23)
+i32 CWwdObjMgr::CountByKind_15aa60(i32 kind) {
+    i32 count = 0;
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
+    while (node != 0) {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        if (obj->m_04 == kind) {
+            ++count;
+        }
+    }
+    return count;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15aaf0: accumulate SUM over the list of index*(obj->m_5c + m_74 + m_60 + m_04),
+// where index is the 0-based list position.
+// @early-stop
+// 99.15% - logic/CFG/offsets byte-exact. Residual: cl reassociates the 4-term
+// commutative sum to load m_74 into the accumulator first, where retail loads m_5c
+// first (edi=m_5c; +=m_74; +=m_60; +=m_04). Not source-steerable - every operand
+// permutation + explicit-accumulator + parenthesization + the permuter all reassociate
+// identically (one instruction's field offset differs). Documented add-reassociation wall.
+RVA(0x0015aaf0, 0x35)
+i32 CWwdObjMgr::SumWeighted_15aaf0() {
+    i32 sum = 0;
+    i32 i = 0;
+    CWwdNode* node = (CWwdNode*)m_10.GetHeadPosition();
+    while (node != 0) {
+        CWwdNode* cur = node;
+        node = node->m_next;
+        CWwdObject* obj = cur->m_obj;
+        sum += i * (obj->m_5c + obj->m_sortKey + obj->m_60 + obj->m_04);
+        ++i;
+    }
+    return sum;
 }
 
 // ===========================================================================

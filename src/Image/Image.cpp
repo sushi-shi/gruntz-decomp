@@ -1828,6 +1828,23 @@ i32 CDDSurface::ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl, i
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// UpdateOverlay (0x148ac0, __thiscall, ret 0x14 => 5 args). Thin passthrough to the
+// held IDirectDrawSurface::UpdateOverlay (COM slot 33 / +0x84), routing the source/
+// dest rects, the destination wrapper's own held surface, the flags + the overlay FX.
+// ---------------------------------------------------------------------------
+RVA(0x00148ac0, 0x2b)
+i32 CDDSurface::UpdateOverlay(
+    void* srcRect,
+    CDDSurface* dest,
+    void* destRect,
+    u32 flags,
+    void* fx
+) {
+    return m_8
+        ->UpdateOverlay((LPRECT)srcRect, dest->m_8, (LPRECT)destRect, flags, (LPDDOVERLAYFX)fx);
+}
+
 // ===========================================================================
 // Class-metadata annotations (EOF-hosted). This TU's REZ-loader family is named
 // distinctly (CRezImage / CRezImageSource / CRezSurfaceItem) so it no longer clashes
