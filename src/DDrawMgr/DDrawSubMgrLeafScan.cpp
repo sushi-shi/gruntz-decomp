@@ -285,6 +285,18 @@ CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
     return val;
 }
 
+// CDDrawSubMgrLeafScan::ScalarDtor - the slot-1 `??_G` scalar-deleting dtor (0x157550):
+// run the real ~CDDrawSubMgrLeafScan (direct call), conditionally RezFree, return this.
+// Hand-written non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern).
+RVA(0x00157550, 0x1e)
+void* CDDrawSubMgrLeafScan::ScalarDtor(u32 flags) {
+    this->CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan();
+    if (flags & 1) {
+        RezFree(this);
+    }
+    return this;
+}
+
 // ---------------------------------------------------------------------------
 // 0x157570: the (non-deleting) destructor. Now a real virtual dtor: cl stamps
 // ??_7CDDrawSubMgrLeafScan (masks g_leafScanVtbl @0x5efca0) at entry, runs the VM18

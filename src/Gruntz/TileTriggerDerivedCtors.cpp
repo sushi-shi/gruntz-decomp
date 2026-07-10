@@ -90,7 +90,7 @@ CTileSecretTriggerSwitchLogic::CTileSecretTriggerSwitchLogic() {}
 class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
 
     virtual i32 Vf2() OVERRIDE; // slot 2
-    virtual void Vf3() OVERRIDE; // slot 3
+    virtual i32 Vf3() OVERRIDE; // slot 3
 public:
     CTileTimeTriggerSwitchLogic();
 };
@@ -101,7 +101,7 @@ CTileTimeTriggerSwitchLogic::CTileTimeTriggerSwitchLogic() {}
 
 class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
     virtual i32 Vf2() OVERRIDE; // slot 2
-    virtual void Vf3() OVERRIDE; // slot 3
+    virtual i32 Vf3() OVERRIDE; // slot 3
 public:
     CCheckpointTriggerSwitchLogic();
 };
@@ -110,10 +110,18 @@ VTBL(CCheckpointTriggerSwitchLogic, 0x001eaf54); // vtable_names -> code (RTTI g
 RVA(0x001127f0, 0x12)
 CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic() {}
 
-// The base switch-logic slot-2 probe (thunk 0x2e0f == base CTileTriggerSwitchLogic
-// slot 2); reloc-masked free callee. CTileTime's slot-2 override normalizes its
-// result to a bool.
+// The base switch-logic slot probes (reloc-masked free callees): thunk 0x2e0f == base
+// CTileTriggerSwitchLogic slot 2; thunk 0x37e2 == base slot 3 (LoadSwitchUpSprite
+// @0x1106b0). The leaf slot overrides normalize the probe result to a bool.
 extern "C" i32 TileSwitchProbe_2e0f();
+extern "C" i32 TileSwitchProbe_37e2();
+
+// CTileSecretTriggerSwitchLogic::Vf2 (slot 2 override, 0x112820) - `return probe() != 0`
+// (int->bool neg/sbb/neg normalize); shares the base slot-2 probe (thunk 0x2e0f).
+RVA(0x00112820, 0xc)
+i32 CTileSecretTriggerSwitchLogic::Vf2() {
+    return TileSwitchProbe_2e0f() != 0;
+}
 
 // ---------------------------------------------------------------------------
 // CTileTimeTriggerSwitchLogic::Vf2 (slot 2 override, 0x112840) - `return probe() != 0`
@@ -123,4 +131,11 @@ extern "C" i32 TileSwitchProbe_2e0f();
 RVA(0x00112840, 0xc)
 i32 CTileTimeTriggerSwitchLogic::Vf2() {
     return TileSwitchProbe_2e0f() != 0;
+}
+
+// CTileTimeTriggerSwitchLogic::Vf3 (slot 3 override, 0x112860) - `return probe() != 0`
+// against the base slot-3 probe (thunk 0x37e2).
+RVA(0x00112860, 0xc)
+i32 CTileTimeTriggerSwitchLogic::Vf3() {
+    return TileSwitchProbe_37e2() != 0;
 }

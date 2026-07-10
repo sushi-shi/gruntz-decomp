@@ -13,8 +13,10 @@
 class CSpotLight : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in SpotLightCtor.cpp)
+    RVA(0x00012ff0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_SPOTLIGHT; }
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CSpotLight(CGameObject* obj); // 0xb1200

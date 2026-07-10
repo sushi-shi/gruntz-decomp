@@ -85,43 +85,37 @@ struct WorkNode {
 class CDDrawWorkerList : public CObject {
 public:
     virtual ~CDDrawWorkerList() OVERRIDE; // slot 1 (dtor 0x163bc0 / ??_G 0x156f30)
-    virtual i32 VIsReady();               // slot 5  @0x156f00
-    virtual i32 VReadyPred();             // slot 6  @0x156fc0
-    virtual void VDtor7();                // slot 7  @0x163bc0
-    virtual void VGetState();             // slot 8  @0x156f20
-    virtual void VCreateA();              // slot 9  @0x156fd0
-    virtual void VCreateB28();            // slot 10 @0x1573e0
-    virtual void VCreateB2C();            // slot 11 @0x157330
-    virtual void VCreateB30();            // slot 12 @0x157150
-    virtual void VPrune();                // slot 13 @0x163bf0
-
-    // Matched method bodies (non-virtual; direct-called + reached via the slots above).
+    // slot 5 (0x156f00): ready iff the surface mgr is bound and the status latch isn't -1.
     RVA(0x00156f00, 0x16)
-    i32 IsReady() {
+    virtual i32 IsReady() {
         if (m_pSurfaceMgr == 0) {
         goto fail;
         }
         if (m_status != -1) {
         return 1;
         }
-        
+
         fail:
         return 0;
     }
-    void ClearWorkers();
+    RVA(0x00156fc0, 0x6)
+    virtual i32 IsReadyPredicate() { return 1; } // slot 6 @0x156fc0
+    virtual void VDtor7();                        // slot 7 @0x163bc0
     RVA(0x00156f20, 0x6)
-    StateId GetStateId() {
-        return STATE_WORKERLIST; // 0x11
-    }
+    virtual StateId GetStateId() { return STATE_WORKERLIST; } // slot 8 @0x156f20 (0x11)
+    virtual void VCreateA();              // slot 9  @0x156fd0
+    virtual void VCreateB28();            // slot 10 @0x1573e0
+    virtual void VCreateB2C();            // slot 11 @0x157330
+    virtual void VCreateB30();            // slot 12 @0x157150
+    virtual void VPrune();                // slot 13 @0x163bf0
+
+    // Non-virtual helpers (direct-called).
+    void ClearWorkers();
     void* CreateWorkerA(i32 a1, i32 a2, i32 a3);
     void* CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead);
     void* CreateWorkerB2C(i32 a1, i32 a2, CDDrawFrameSource* a3, i32 a4, i32 addHead);
     void* CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead);
     void PruneWorkers(i32 a1, i32 a2);
-    RVA(0x00156fc0, 0x6)
-    i32 IsReadyPredicate() {
-        return 1;
-    }
 
     i32 m_status;                   // +0x04  initialized to -1 when inactive
     char m_pad08[0x0c - 0x08];      // +0x08..0x0b

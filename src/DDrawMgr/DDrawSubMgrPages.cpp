@@ -103,6 +103,18 @@ void CDDrawSubMgrPages::DestroyChildren() {
 
 // CDDrawSubMgrPages::GetStateId (0x001574a0) is now an inline member in the header.
 
+// CDDrawSubMgrPages::ScalarDtor - the slot-1 `??_G` scalar-deleting dtor (0x1574b0):
+// run the real ~CDDrawSubMgrPages (direct call), conditionally RezFree, return this.
+// Hand-written non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern).
+extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil)
+RVA(0x001574b0, 0x1e)
+void* CDDrawSubMgrPages::ScalarDtor(u32 flags) {
+    this->CDDrawSubMgrPages::~CDDrawSubMgrPages();
+    if (flags & 1) {
+        RezFree(this);
+    }
+    return this;
+}
 
 // ---------------------------------------------------------------------------
 // Member-teardown destructor (0x1574d0; retail ~CDDrawSubMgrDraco). cl stamps the
@@ -110,7 +122,7 @@ void CDDrawSubMgrPages::DestroyChildren() {
 // DestroyChildren (slot 7) to a direct call, resets the three header words, then the
 // empty grand-base subobject dtor folds the g_wapObjectDtorVtbl (0x5e8cb4) re-stamp
 // last. The destructible CWapObj grand-base gives the /GX EH frame. The scalar-
-// deleting dtor ??_G (0x1574b0) is cl-auto-generated from this virtual dtor.
+// deleting dtor ??_G (0x1574b0) homes as the ScalarDtor above.
 RVA(0x001574d0, 0x5b)
 CDDrawSubMgrPages::~CDDrawSubMgrPages() {
     DestroyChildren();

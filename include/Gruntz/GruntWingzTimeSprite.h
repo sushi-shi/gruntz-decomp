@@ -38,11 +38,9 @@
 // no-op for its GetTypeTag + link-teardown dtor.
 class CGruntWingzTimeSprite : public CGruntHealthSprite {
 public:
-    // GetTypeTag (0x121a0): the 6-byte per-class logic-type id accessor (0x417).
-    // 0x000121a0 vtable slot 2: per-class logic-type id, inline (one
-    // deduped COMDAT copy in retail; see docs on header-inline members).
-    RVA(0x000121a0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_GRUNTWINGZTIMESPRITE; }
+    // GetTypeTag (0x121a0, slot 2): inline body + RVA live in the constructing TU
+    // (GameObjectCtors.cpp) so cl+clang emit the COMDAT there; declared-only here.
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
     virtual ~CGruntWingzTimeSprite() OVERRIDE; // 0x0121f0 (folds the CUserLogic teardown)
     virtual i32 Vslot16(CGruntEntry* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };

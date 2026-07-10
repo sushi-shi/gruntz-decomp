@@ -98,12 +98,10 @@ public:
     // grunt, spawn the "Teleporter"/"Wormhole" sprite, close the gate and scroll
     // the camera to the warped grunt. Returns 0.
     i32 Update();
-    // vtable slot 2 (per-class logic-type id); regular method - the fat CUserLogic
-    // base models this slot with a placeholder signature (see CGuardPoint.cpp).
-    // 0x00010d80 vtable slot 2: per-class logic-type id, inline (one
-    // deduped COMDAT copy in retail; see docs on header-inline members).
-    RVA(0x00010d80, 0x6)
-    LogicTypeId GetTypeTag() { return LOGIC_TELEPORTER; }
+    // vtable slot 2 (per-class logic-type id). Inline body + RVA live in the
+    // constructing TU (UserLogic.cpp's ctor view) so cl+clang emit the COMDAT there;
+    // declared-only here (Teleporter.cpp only anchors the vtable via the dtor).
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
     virtual ~CTeleporter() OVERRIDE; // 0x10dd0 (folds the CUserLogic teardown)
 
     i32 m_savedGeoId; // +0x40  snapshot of m_38->m_geoId

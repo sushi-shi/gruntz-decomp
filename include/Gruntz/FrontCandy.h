@@ -14,7 +14,9 @@ SIZE_UNKNOWN(CFrontCandy);
 class CFrontCandy : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in UserLogic.cpp)
+    RVA(0x0000fa40, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_FRONTCANDY; }
     TILE_LOGIC_TAIL
 public:
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0xfa60 (slot-1 two-chain body; ??_7CFrontCandy slot 1)

@@ -313,9 +313,9 @@ void operator delete(void*);
 
 
 // ---------------------------------------------------------------------------
-// Scalar-deleting destructor (??_G of CDDrawSubMgrLeafScan at 0x157550): run the real
-// member-teardown ~CDDrawSubMgrLeafScan (0x157570) then operator delete under the flag.
-// @rva-symbol: ??_GCDDrawSubMgrLeafScan@@UAEPAXI@Z 0x00157550 0x1e  (cl-auto-gen scalar-deleting dtor / dtor-host)
+// The slot-1 ??_G scalar-deleting dtor of CDDrawSubMgrLeafScan (0x157550) is now
+// reconstructed as a hand-written CDDrawSubMgrLeafScan::ScalarDtor in
+// DDrawSubMgrLeafScan.cpp (the CFileImageSurface::ScalarDelete pattern).
 
 // ---------------------------------------------------------------------------
 // 0x157bc0: iterate every entry of the name-keyed map via GetNextAssoc, destroying

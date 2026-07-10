@@ -18,7 +18,7 @@
 enum LogicTypeId {
     LOGIC_ANICYCLE = 0x3ea,       // CAniCycle::GetTypeTag               @0x0f450
     LOGIC_DONOTHING = 0x3ec,      // CDoNothing::GetTypeTag              @0x0f6b0
-    LOGIC_TAG_3EF = 0x3ef,        // CTileLogicTag3ef::GetTypeTag        @0x0fa40 (owner unpinned)
+    LOGIC_FRONTCANDY = 0x3ef,     // CFrontCandy::GetTypeTag             @0x0fa40 (vtable 0x1e84ec, slot 2)
     LOGIC_BEHINDCANDY = 0x3f0,    // CBehindCandy::GetTypeTag            @0x0fb70
     LOGIC_EYECANDY = 0x3f1,       // CEyeCandy::GetTypeTag               @0x0fca0
     LOGIC_BEHINDCANDYANI = 0x3f3, // CBehindCandyAni::GetTypeTag         @0x10030
@@ -34,14 +34,14 @@ enum LogicTypeId {
     LOGIC_GRUNTWINGZTIMESPRITE = 0x417,  // CGruntWingzTimeSprite::GetTypeTag   @0x121a0
     LOGIC_TOOBSPIKEZ = 0x418,            // CToobSpikez::GetTypeTag             @0x12ba0
     LOGIC_PARTICLEZ = 0x41c,             // CParticlez::GetTypeTag              @0x12cd0
-    LOGIC_TAG_41D = 0x41d,      // CTileLogicTag41d::GetTypeTag        @0x12ff0 (owner unpinned)
+    LOGIC_SPOTLIGHT = 0x41d,    // CSpotLight::GetTypeTag              @0x12ff0 (vtable 0x1e75bc, slot 2)
     LOGIC_WAYPOINT = 0x420,     // CWayPoint::GetTypeTag               @0x10220
     LOGIC_ACTIONAREA = 0x423,   // CActionArea::GetTypeTag             @0x07f80
     LOGIC_PATHHAZARD = 0x425,   // CPathHazard::GetTypeTag             @0x132f0
     LOGIC_VOICETRIGGER = 0x426, // CVoiceTrigger::GetTypeTag           @0x133b0
     LOGIC_FORTRESSFLAG = 0x427, // CFortressFlag::GetTypeTag           @0x10e40
-    LOGIC_TAG_428 = 0x428,      // CTileLogicTag428::GetTypeTag        @0x11bf0 (owner unpinned)
-    LOGIC_TAG_429 = 0x429,      // CTileLogicTag429::GetTypeTag        @0x10f00 (owner unpinned)
+    LOGIC_TOYPEEK = 0x428,      // CToyPeek::GetTypeTag                @0x11bf0 (vtable 0x1e7204, slot 2)
+    LOGIC_WARPSTONEPAD = 0x429, // CWarpStonePad::GetTypeTag           @0x10f00 (vtable 0x1e71ac, slot 2)
     LOGIC_GUARDPOINT = 0x42a,   // CGuardPoint::GetTypeTag             @0x10350
 };
 

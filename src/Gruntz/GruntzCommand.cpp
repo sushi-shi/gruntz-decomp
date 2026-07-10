@@ -37,14 +37,8 @@ public:
 DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
 
-// ---------------------------------------------------------------------------
-// CGruntzCommand::~CGruntzCommand() - the slot-0 scalar-deleting dtor (??_G).
-// Restore the vftable, then (if the low bit of the hidden flags arg is set)
-// operator delete(this). Empty body (no members, no base) - MSVC synthesizes
-// the deleting thunk from `virtual ~CGruntzCommand() {}` in the header. The
-// thunk has no source body so it cannot carry an RVA() attribute; pin the
-// deleting-dtor symbol by mangled name here.
-// @rva-symbol: ??_GCGruntzCommand@@UAEPAXI@Z 0x00024330 0x20
+// The slot-0 `??_G` scalar-deleting destructor (0x24330) is reconstructed as
+// CGruntzCommand::ScalarDtor below (in ascending-RVA order, after 0x24220).
 
 // Out-of-line vtable anchors (the slots NOT reconstructed here) so the
 // CGruntzCommand vftable is emitted in this TU (the ctor/dtor reference it).
@@ -285,6 +279,22 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
 // src/Stub/CGruntzCommand.cpp).
 
 // CGruntzCommand::CGruntzCommand_0242f0 (0x000242f0) is now an inline member in the header.
+
+// ---------------------------------------------------------------------------
+// CGruntzCommand::ScalarDtor - the slot-0 `??_G` scalar-deleting destructor
+// (0x24330). Run the trivial ~CGruntzCommand (inlines to the vptr re-stamp), then -
+// when the low bit of the hidden flags arg is set - RezFree(this); return this.
+// Hand-written non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern)
+// so the body emits and matches (MSVC's own synthesized ??_G is a separate symbol).
+extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil)
+RVA(0x00024330, 0x20)
+void* CGruntzCommand::ScalarDtor(u32 flags) {
+    this->CGruntzCommand::~CGruntzCommand();
+    if (flags & 1) {
+        RezFree(this);
+    }
+    return this;
+}
 
 // ---------------------------------------------------------------------------
 // CGruntzMultiCommand::Allocate() - 0x024360. Same shape, Multi list/vftable.

@@ -12,8 +12,10 @@ class CToyPeek : public CUserLogic {
 public:
     virtual ~CToyPeek() OVERRIDE;                                      // slot 0
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in ToyPeek.cpp)
+    RVA(0x00011bf0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_TOYPEEK; }
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CToyPeek(CGameObject* obj); // 0x98140

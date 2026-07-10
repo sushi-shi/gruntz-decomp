@@ -83,7 +83,11 @@ public:
     char m_11;       // +0x11
     i16 m_12;        // +0x12 (pad -> 0x14)
 
-    virtual ~CGruntzCommand() {} // slot 0 (scalar-deleting dtor)
+    virtual ~CGruntzCommand() {} // slot 0 (the non-deleting dtor; trivial -> vptr stamp only)
+    // The `??_G` scalar-deleting destructor (vtable slot 0 @0x24330): run the trivial
+    // ~CGruntzCommand (inlined vptr stamp), conditionally RezFree, return this. Modeled
+    // as a hand-written non-virtual method pinned by RVA (the CFileImageSurface pattern).
+    void* ScalarDtor(u32 flags); // 0x24330
     // slot 1 - the (de)serialize dispatcher: on mode 4 call Save (slot 2), on
     // mode 7 call Load (slot 3), both through the vtable. The leaves override it
     // (Single 0x0244d0 / Multi 0x0246c0); the base anchor returns 1.

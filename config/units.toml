@@ -1915,11 +1915,6 @@ source = "src/Io/GameSave.cpp"
 flags = "base"
 
 [[unit]]
-unit = "eyecandytypetags"
-source = "src/Gruntz/EyeCandyTypeTags.cpp"
-flags = "base"
-
-[[unit]]
 unit = "demosetup"
 source = "src/Gruntz/DemoSetup.cpp"
 flags = "base"

@@ -33,7 +33,7 @@ public:
     virtual i32 Vf0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
     virtual void Vf1(); // slot 1 -> 0x0022e8
     virtual i32 Vf2(); // slot 2 -> 0x002e0f (CTileTimeTriggerSwitchLogic overrides @0x112840)
-    virtual void Vf3(); // slot 3 -> 0x0037e2
+    virtual i32 Vf3(); // slot 3 -> 0x0037e2 (returns i32; base slot typed void in retail callers)
 
     CTileTriggerSwitchLogic();
     // Non-virtual dtor (the 4 vtable slots are all regular methods, no dtor slot).

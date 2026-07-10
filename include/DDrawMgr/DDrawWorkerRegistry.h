@@ -66,20 +66,12 @@ public:
 // ---------------------------------------------------------------------------
 class CDDrawWorkerRegistry {
 public:
-    RVA(0x001576d0, 0x16)
-    i32 IsReady() {
-        if (m_0c == 0) {
-        goto fail;
-        }
-        if (m_status != -1) {
-        return 1;
-        }
-        
-        fail:
-        return 0;
-    }
+    // IsReady (0x1576d0, slot 5) now homes on CDDrawWorkerCache's real vtable slot
+    // (constructed there so cl+clang emit it); dropped from this non-instantiated body view.
     i32 ResetScratch();
     void Shutdown();
+    // GetStateId (0x156de0, slot 8): CWorkerVtableView is never instantiated so its
+    // vtable never emits; kept here as the non-virtual body (still unmatched - deferred).
     RVA(0x00156de0, 0x6)
     StateId GetStateId() {
         return STATE_WORKERREGISTRY; // 0x12

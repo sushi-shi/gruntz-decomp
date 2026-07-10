@@ -51,7 +51,7 @@ SIZE_UNKNOWN(CCheckpointTriggerSwitchLogic);
 struct CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
     virtual void Vf1() OVERRIDE; // slot 1 (BuildSmall)
     virtual i32 Vf2() OVERRIDE; // slot 2 (BumpCell)
-    virtual void Vf3() OVERRIDE; // slot 3 (M)
+    virtual i32 Vf3() OVERRIDE; // slot 3 (M)
     i32 BaseBuild(
         i32,
         i32,

@@ -34,11 +34,9 @@
 // CTileLogic reparent - stays `: CUserLogic` (Grunt.h's true-0x30) until stage 5.
 class CGruntStaminaSprite : public CGruntHealthSprite {
 public:
-    // GetTypeTag (0x12020): the 6-byte per-class logic-type id accessor (0x410).
-    // 0x00012020 vtable slot 2: per-class logic-type id, inline (one
-    // deduped COMDAT copy in retail; see docs on header-inline members).
-    RVA(0x00012020, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_GRUNTSTAMINASPRITE; }
+    // GetTypeTag (0x12020, slot 2): inline body + RVA live in the constructing TU
+    // (GameObjectCtors.cpp) so cl+clang emit the COMDAT there; declared-only here.
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
     virtual ~CGruntStaminaSprite() OVERRIDE; // 0x00012070 (folds the CUserLogic teardown)
     virtual i32 Vslot16(CGruntEntry* grunt) OVERRIDE; // slot 16 (stat-time getter)
 };

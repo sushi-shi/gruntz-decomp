@@ -198,8 +198,10 @@ public:
 
 class CTeleporter : public CUserLogic {
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    // slot 2: per-class logic-type id, inline (emitted with this TU's ctor vtable)
+    RVA(0x00010d80, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_TELEPORTER; }
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
 public:
     TILE_LOGIC_TAIL
 public:

@@ -107,7 +107,19 @@ class CDDrawWorkerCache : public CObject {
 public:
     i32 m_04, m_08, m_0c;                  // +0x04..0x0f (merged CDDrawWorkerCacheBase)
     virtual ~CDDrawWorkerCache() OVERRIDE; // [1] dtor 0x157720 (??_G 0x157700 pinned below)
-    virtual void IsReady(); // [5] 0x1576d0 (= CDDrawWorkerRegistry::IsReady, declared-only)
+    // [5] 0x1576d0: ready iff +0x0c is bound and the +0x04 status latch isn't -1.
+    RVA(0x001576d0, 0x16)
+    virtual i32 IsReady() {
+        if (m_0c == 0) {
+        goto fail;
+        }
+        if (m_04 != -1) {
+        return 1;
+        }
+
+        fail:
+        return 0;
+    }
     virtual void GetStateId_157790(); // [6] 0x157790 (= CDDrawSubMgr::GetStateId, declared-only)
     virtual void
     DestroyAll(); // [7] 0x165210 (= CDDrawWorkerRegistry::DestroyAll, defined in Registry TU)

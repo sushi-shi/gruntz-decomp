@@ -100,6 +100,10 @@ public:
     void ClearMap(); // 0x157bc0 (non-virtual map teardown)
 
     virtual ~CDDrawSubMgrLeafScan() OVERRIDE; // overrides slot [1]
+    // The `??_G` scalar-deleting destructor (vtable slot 1 @0x157550): run the real
+    // ~CDDrawSubMgrLeafScan (direct call), conditionally RezFree, return this. Hand-written
+    // non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern) so the body emits.
+    void* ScalarDtor(u32 flags); // 0x157550
 
     CMapStringToOb m_10; // +0x10  keyed asset cache (ends +0x2c)
     SoundDevice* m_2c;   // +0x2c  held DSound device

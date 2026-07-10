@@ -94,7 +94,7 @@ struct CGruntHealthSpriteBase {
     ~CGruntHealthSpriteBase(); // out-of-line; unwound on throw
     virtual void Vf0();
     virtual void Vf1();
-    virtual void Vf2();
+    virtual LogicTypeId GetTypeTag(); // slot 2 (per-class logic-type id; overridden by leaves)
     virtual void Vf3();
     virtual void Vf4();
     virtual void Vf5();
@@ -126,6 +126,9 @@ struct CGruntHealthSpriteBase {
 class CGruntStaminaSprite : public CGruntHealthSpriteBase {
 public:
     CGruntStaminaSprite(CSpriteObj* obj);
+    // GetTypeTag (0x12020): slot-2 logic-type id, inline (emitted with this TU's ctor vtable)
+    RVA(0x00012020, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_GRUNTSTAMINASPRITE; }
     char m_pad3c[0x5c - 0x3c];
     i32 m_anchorX; // +0x5c  icon screen-offset X from the bound grunt
     i32 m_anchorY; // +0x60  icon screen-offset Y (drawn above the grunt)
@@ -134,10 +137,9 @@ public:
 class CGruntToyTimeSprite : public CGruntHealthSpriteBase {
 public:
     CGruntToyTimeSprite(CSpriteObj* obj);
-    // GetTypeTag (0x120e0): 6-byte per-class logic-type id accessor (0x411),
-    // defined inline (retail keeps one deduped COMDAT copy).
+    // GetTypeTag (0x120e0): slot-2 logic-type id, inline (emitted with this TU's ctor vtable)
     RVA(0x000120e0, 0x6)
-    LogicTypeId GetTypeTag() { return LOGIC_GRUNTTOYTIMESPRITE; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_GRUNTTOYTIMESPRITE; }
     char m_pad3c[0x5c - 0x3c];
     i32 m_anchorX; // +0x5c  icon screen-offset X from the bound grunt
     i32 m_anchorY; // +0x60  icon screen-offset Y (drawn above the grunt)
@@ -157,6 +159,9 @@ i32 __stdcall GetToyTime(CToyTimeHost* o);
 class CGruntWingzTimeSprite : public CGruntHealthSpriteBase {
 public:
     CGruntWingzTimeSprite(CSpriteObj* obj);
+    // GetTypeTag (0x121a0): slot-2 logic-type id, inline (emitted with this TU's ctor vtable)
+    RVA(0x000121a0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_GRUNTWINGZTIMESPRITE; }
     char m_pad3c[0x5c - 0x3c];
     i32 m_anchorX; // +0x5c  icon screen-offset X from the bound grunt
     i32 m_anchorY; // +0x60  icon screen-offset Y (drawn above the grunt)
