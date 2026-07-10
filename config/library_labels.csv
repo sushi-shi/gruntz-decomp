@@ -1944,6 +1944,7 @@ rva,name,lib,confidence,source
 0x16b4e0,??_Gistream@@UAEPAXI@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
 0x16bc40,??_Gifstream@@UAEPAXI@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
 0x16bf70,??_Gostream@@UAEPAXI@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
+0x16be60,??6ostream@@QAEAAV0@PBD@Z,LIBCIMT,HIGH,anchored
 0x16c200,??_Gofstream@@UAEPAXI@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
 0x16c7d0,??_Gfstream@@UAEPAXI@Z,LIBCIMT,MEDIUM,iostream-cluster-bail
 0x16b660,msc_ostream_writeop_16b660,LIBCIMT,LOW,iostream-cluster-bail

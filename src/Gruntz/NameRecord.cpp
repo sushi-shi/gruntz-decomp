@@ -122,6 +122,47 @@ i32 C1181d0::Update(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
+// ===========================================================================
+// 0x118260 - CopyIfLarger: the RVA-contiguous TWIN of C1181d0::Update above (same
+// +0xb8 bounds box, same +0xd4 field). Reject a null/absent source, or one that does
+// not exceed the current box (+0xb8); else copy the whole 7-dword box in and stash
+// +0xd4. __thiscall(src, arg2) ret 8. Re-homed from src/Stub/BoundaryLowerMethods.cpp.
+// @identity-TODO: no direct caller (a bounds-grow updater); owner class unrecovered.
+// ===========================================================================
+struct CGrowBox {
+    void* m_0;
+    u32 m_4;
+    u32 m_8;
+    char pad[0x1c - 0xc]; // 7 dwords total
+};
+struct CBoundsCopy118 {
+    char pad0[0xb8];
+    CGrowBox m_bounds; // +0xb8 (7 dwords, ends at 0xd4)
+    i32 m_d4;          // +0xd4
+    i32 CopyIfLarger(CGrowBox* src, i32 arg2);
+};
+RVA(0x00118260, 0x63)
+i32 CBoundsCopy118::CopyIfLarger(CGrowBox* src, i32 arg2) {
+    if (src == 0) {
+        return 0;
+    }
+    CGrowBox* dst = &m_bounds;
+    if (dst == 0) {
+        return 0;
+    }
+    if (dst->m_4 > src->m_4) {
+        return 0;
+    }
+    if (dst->m_4 == src->m_4 && dst->m_8 < src->m_8) {
+        return 0;
+    }
+    *dst = *src;
+    m_d4 = arg2;
+    return 1;
+}
+
 SIZE_UNKNOWN(CNameRecord);
 SIZE_UNKNOWN(CBox118);
 SIZE_UNKNOWN(C1181d0);
+SIZE_UNKNOWN(CGrowBox);
+SIZE_UNKNOWN(CBoundsCopy118);

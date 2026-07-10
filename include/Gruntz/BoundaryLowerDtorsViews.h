@@ -65,18 +65,23 @@ struct CMenuState8d000
 SIZE_UNKNOWN(CMenuState8d000);
 RELOC_VTBL(CMenuState8d000, 0x001ea21c); // aliases CState (dtor-stamp verified)
 
-// 0x021310 / 0x021570 - CButeStore-family dtors (/GX, multiple inheritance): stamp both
-// base vtables, run the body teardown (0x16e070 == CButeStore::ClearRecursive), then fold
-// the +0x08 second base (dtor 0x16dfc0, MI this-adjust null guard) and the +0x00 first base
-// (dtor 0x16da60 == ~CContainerErr; its vtable 0x5e94ac == ??_7zPTree, RTTI-confirmed). Two
-// distinct derived classes share the base vtables (kept standalone to avoid dup base vtables).
-struct CButeBase1_21 {
-    virtual ~CButeBase1_21();   // +0x00 vptr (0x5e94ac), dtor 0x16da60
-    void Teardown16e070(i32 z); // 0x16e070
-    i32 m_4;                    // +0x04 (pads first base to 8 so the second base lands at +0x08)
+// 0x021310 / 0x021570 - the out-of-line /GX destructors of TWO distinct classes that each
+// multiply-inherit the same two REAL bases (identities RTTI-confirmed; only the DERIVED
+// class name is unrecovered - each dtor is out-of-line with no Complete-Object-Locator):
+//   +0x00 first base  = CContainerErr (dtor 0x16da60; vtable 0x5e94ac == ??_7zPTree);
+//                       it owns the recursive-clear body method 0x16e070 (the store root
+//                       lives in this +0 subobject, so ClearRecursive runs on `this`+0).
+//   +0x08 second base = the CButeStore vtable subobject (dtor 0x16dfc0; vtable 0x5e949c).
+// The dtor stamps both base vtables, runs ClearRecursive(0), then folds the +0x08 base
+// (MI this-adjust null guard) and the +0x00 base. Modeled with the real bases so no cast
+// of `this` is needed; kept standalone (not one class) to avoid duplicating the base vtables.
+struct CButeBase1_21 {                    // == CContainerErr subobject (+0x00)
+    virtual ~CButeBase1_21();             // +0x00 vptr (0x5e94ac), dtor 0x16da60 (~CContainerErr)
+    void ClearRecursive(void* node);      // 0x16e070 (== CButeStore::ClearRecursive)
+    i32 m_4; // +0x04 (pads the first base to 8 so the second base lands at +0x08)
 };
 SIZE_UNKNOWN(CButeBase1_21);
-struct CButeBase2_21 {
+struct CButeBase2_21 {        // == CButeStore vtable subobject (+0x08)
     virtual ~CButeBase2_21(); // +0x08 vptr (0x5e949c), dtor 0x16dfc0
 };
 SIZE_UNKNOWN(CButeBase2_21);

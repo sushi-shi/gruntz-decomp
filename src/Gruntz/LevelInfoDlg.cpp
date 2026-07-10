@@ -165,6 +165,34 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
     return 0;
 }
 
+// -------------------------------------------------------------------------
+// 0x0e3b20 (spatially re-homed from src/Stub/ApiCallers.cpp; twin of 0x0e3a40).
+// __stdcall dialog proc: WM_INITDIALOG fills the info line via the 0x0e4850 helper;
+// WM_COMMAND OK/Cancel just close the dialog (no save-confirm sub-object).
+RVA(0x000e3b20, 0x86)
+i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case 0x110:
+            if (g_dlgInfoText == 0) {
+                EndDialog(hDlg, (INT_PTR)g_dlgInfoText);
+                return 1;
+            }
+            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_dlgInfoText);
+            return 1;
+        case 0x111:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                EndDialog(hDlg, wParam);
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
+
 // The 11-entry area-name table (questz "Stage %d of <area>"). An array of char*
 // indexed by (level-1)/4; modeled by-address so the load is reloc-masked.
 

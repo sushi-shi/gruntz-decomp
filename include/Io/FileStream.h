@@ -103,6 +103,11 @@ public:
     // Reopen the shared global file object (0x646778) around a close: open(path,
     // 0x1000), close, open(path, 1). Static-like (ignores `this`). Non-virtual.
     void ReopenSharedFile(char* path);
+
+    // Close the shared global file then reopen it on the fixed "c:\gruntz.log" debug
+    // path (0xbd450): CloseFileIOGlobal() + ReopenSharedFile). `this` is forwarded to
+    // ReopenSharedFile (which ignores it). Non-virtual.
+    void OpenGruntzLog();
 };
 
 // --- vtable catalog ---

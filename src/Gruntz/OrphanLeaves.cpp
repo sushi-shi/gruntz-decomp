@@ -46,6 +46,25 @@ SIZE_UNKNOWN(DlgHostItem_183f0);
 SIZE_UNKNOWN(DlgHost_183f0);
 
 // ---------------------------------------------------------------------------
+// 0x018430 (re-homed from src/Stub/BoundaryMisc.cpp): end the wait cursor on the
+// current MFC thread - tail-call CWinThread::EndWaitCursor (0x1beb10) on
+// AfxGetModuleState()->m_thread (+0x04). __cdecl, no args.
+// @orphan: called only from EH unwind funclets (no single owning class); a shared
+// MFC wait-cursor helper. CWinThread's full definition lives in the GUI-heavy
+// <afxwin.h> (not pulled by VC_EXTRALEAN <Mfc.h>), so it is completed with just the
+// one method invoked (the raw +0x04 module-state offset is load-bearing).
+class CWinThread {
+public:
+    void EndWaitCursor();
+};
+SIZE_UNKNOWN(CWinThread);
+RVA(0x00018430, 0xd)
+void EndWaitCursorOnThread() {
+    CWinThread* thread = *(CWinThread**)((char*)AfxGetModuleState() + 4);
+    thread->EndWaitCursor();
+}
+
+// ---------------------------------------------------------------------------
 // 0x3ac30: tear down a global CString-like object (tail-call its Free at 0x1b9b93).
 DATA(0x0022c25c)
 extern CString g_62c25c;

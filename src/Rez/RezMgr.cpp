@@ -804,25 +804,31 @@ void RezMgr::SpinWaitUntil(i32 ms) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x13dee0 - `m_1c = v; if(v > 0) m_28 = 1000 / v;` a frame-timing setter (m_1c=fps,
-// m_28=ms per frame) on a placeholder-identity object RVA-adjacent to SpinWaitUntil.
-// __thiscall, 1 arg. Its sibling TrySet (0x13df00) stays in Stub/BoundaryUpper.cpp for
-// now, calling this Set out-of-line. Re-homed from src/Stub/BoundaryUpper.cpp.
-struct B_13dee0 {
-    char _0[0x1c];
-    i32 m_1c; // 0x1c
-    char _20[0x28 - 0x20];
-    i32 m_28; // 0x28
-    void Set(i32 v);
-    i32 TrySet(i32 v); // 0x13df00 (sibling, still in BoundaryUpper.cpp)
-};
-SIZE_UNKNOWN(B_13dee0);
+// RezMgr::SetFrameRate(fps) (0x13dee0): store the frame rate in the pacing gate
+// (m_pacingGate @+0x1c) and, when positive, derive the per-frame budget
+// (m_frameBudgetMs @+0x28 = 1000/fps). __thiscall, 1 arg. Re-homed from
+// src/Stub/BoundaryUpper.cpp - RTTI-adjacent to SpinWaitUntil/UpdateClock, and the
+// +0x1c/+0x28 fields ARE RezMgr::m_pacingGate/m_frameBudgetMs (dossier-confirmed).
 RVA(0x0013dee0, 0x1b)
-void B_13dee0::Set(i32 v) {
-    m_1c = v;
-    if (v > 0) {
-        m_28 = 1000 / v;
+void RezMgr::SetFrameRate(i32 fps) {
+    m_pacingGate = fps;
+    if (fps > 0) {
+        m_frameBudgetMs = 1000 / fps;
     }
+}
+
+// RezMgr::TrySetFrameRate(fps) (0x13df00): install the rate only when pacing is not
+// already active (m_pacingGate > 0 -> clear it via SetFrameRate(0) and fail with 0);
+// otherwise configure to fps and succeed (return 1). __thiscall, 1 arg. Re-homed
+// from src/Stub/BoundaryUpper.cpp (next to its SetFrameRate callee).
+RVA(0x0013df00, 0x25)
+i32 RezMgr::TrySetFrameRate(i32 fps) {
+    if (m_pacingGate > 0) {
+        SetFrameRate(0);
+        return 0;
+    }
+    SetFrameRate(fps);
+    return 1;
 }
 
 // ---------------------------------------------------------------------------

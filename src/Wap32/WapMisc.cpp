@@ -73,5 +73,21 @@ void LibHost_1bf577::Run() {
     }
 }
 
+// --- 0x1c09de : free the owned global handle if present ----------------------
+// A __thiscall leaf on a placeholder host that owns an HGLOBAL at +0x00. Re-homed
+// from src/Stub/ApiMiscHelpers.cpp (its RVA neighborhood).
+// @identity-TODO: owner class genuinely unrecovered - a minimal __thiscall placeholder.
+struct GlobalHandleOwner {
+    HGLOBAL m_handle; // +0x00
+    void FreeHandle();
+};
+SIZE_UNKNOWN(GlobalHandleOwner);
+RVA(0x001c09de, 0xe)
+void GlobalHandleOwner::FreeHandle() {
+    if (m_handle) {
+        GlobalFree(m_handle);
+    }
+}
+
 SIZE_UNKNOWN(CNoTrackObjectStamp); // CNoTrackObject vptr-stamp leaf
 SIZE_UNKNOWN(CWndFwd);             // MFC CWnd-family global forward (class not recoverable)

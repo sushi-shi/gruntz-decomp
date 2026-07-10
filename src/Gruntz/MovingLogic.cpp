@@ -94,6 +94,12 @@ CMovingLogic::CMovingLogic() {
 RVA(0x00013bd0, 0x44)
 CMovingLogic::~CMovingLogic() {}
 
+// (0x16be60 is NOT a game method: it is the CRT iostream insertion operator
+// ostream::operator<<(const char*) - its callees are ostream::opfx (0x16bd10) /
+// writepad (0x16c2d0) / osfx (0x16bd90), and its siblings ostream::operator<<(int)
+// @0x191d20 / (double) @0x191df0 are library-carved. Carved to config/library_labels.csv
+// (LIBCIMT, ??6ostream@@QAEAAV0@PBD@Z), not reconstructed - game-not-CRT policy.)
+
 // 0x16cdd0 - WriteCurve(accum, curve): 29 doubles + 1 int, returning accum.
 RVA(0x0016cdd0, 0x22f)
 CButeText& WriteCurve(CButeText& accum, const CMotionState& c) {

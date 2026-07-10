@@ -813,14 +813,6 @@ source = "src/Gruntz/Random.cpp"
 flags = "base"
 
 [[unit]]
-# Small self-contained geometry / window / timer / object-lifetime helpers
-# (0x2b340/0x8c380/0x115b30/0x118930/0x1192d0/0x137e30/0x1380d0/0x161e80/
-# 0x1bf577/0x1c09de), re-homed from ApiCallers. No destructible locals -> /base.
-unit = "apimischelpers"
-source = "src/Stub/ApiMiscHelpers.cpp"
-flags = "base"
-
-[[unit]]
 # Win32 resource (WAVE / RT_BITMAP / PALETTE) loaders + GDI counter-draw helpers
 # (0x136a30/0x136ce0/0x144270/0x1479e0/0x164380/0x164420/0x1775f0/0x17cd90),
 # re-homed from ApiCallers. No destructible locals -> /base.
@@ -2031,29 +2023,9 @@ source = "src/Gruntz/LevelTimeDtor.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "boundarymisc"
-source = "src/Stub/BoundaryMisc.cpp"
-flags = "base"
-
-[[unit]]
-unit = "boundaryupper"
-source = "src/Stub/BoundaryUpper.cpp"
-flags = "base"
-
-[[unit]]
 unit = "boundarylowerthunks"
 source = "src/Stub/BoundaryLowerThunks.cpp"
 flags = "base"
-
-[[unit]]
-unit = "boundarylowermethods"
-source = "src/Stub/BoundaryLowerMethods.cpp"
-flags = "base"
-
-[[unit]]
-unit = "boundarylowerdtors"
-source = "src/Stub/BoundaryLowerDtors.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "statusbarspriteacts"

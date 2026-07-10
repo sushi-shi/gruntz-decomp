@@ -180,21 +180,10 @@ namespace ApiCallerStubs {
 
     // (0x19f50 RNG helper re-homed to Rng::RangeStd in src/Gruntz/Random.cpp.)
 
-    // __thiscall(): if the cached key (m_1b8) is 0xc7, post a 0x8023 command. Returns 1.
-    struct KeyHost_01f8a0 {
-        char m_pad0[0x1b8];
-        i32 m_1b8; // +0x1b8
-        i32 Check();
-    };
-    // @orphan: only caller is the adjacent unrecovered fn @~0x1f8d0 (no named/attributable
-    // caller, no vtable ref) - owning class of the +0x1b8 key cache unrecovered.
-    RVA(0x0001f8a0, 0x30)
-    i32 KeyHost_01f8a0::Check() {
-        if (m_1b8 == 0xc7) {
-            PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
-        }
-        return 1;
-    }
+    // (0x1f8a0 PendingCmdKeyHost::PostCommandIfKey re-homed to
+    // src/Gruntz/BootyStateActivate.cpp (its RVA neighborhood): the pending-command-key
+    // (m_cmdKey==0xc7) WM_COMMAND 0x8023 post to g_mgrSettings->m_gameWnd->m_hwnd via the
+    // game-owned g_pPostMessageA fn-ptr. Owner class of the +0x1b8 command-key unrecovered.)
 
     // (0x2b340 ClipHost::Clip re-homed to ApiMisc in src/Gruntz/ApiMiscHelpers.cpp.)
 
@@ -274,56 +263,15 @@ namespace ApiCallerStubs {
     // src/Gruntz/LevelPreview.cpp (PreviewCancelHost) - the preview-cancel
     // command host CPreviewState::Tick / LoadLevelPreviewScreen drive.)
 
-    // SetDlgItemTextA helper defined below (RVA 0xe4850, reached via thunk 0x103c).
-    void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
-    // The optional info-line text shown on WM_INITDIALOG (DAT_0064c864).
+    // The optional info-line text shown on WM_INITDIALOG (DAT_0064c864). This DATA pin
+    // stays here (its consumers - the 0x0e3a40/0x0e3b20 DialogProcs in LevelInfoDlg.cpp -
+    // reach it as a reloc-masked extern).
     DATA(0x0024c864)
     extern char* g_dlgInfoText;
 
-    // __stdcall DialogProc: OK/Cancel close the dialog; WM_INITDIALOG fills a line.
-    RVA(0x000e3b20, 0x86)
-    i32 CALLBACK winapi_0e3b20_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-        switch (msg) {
-            case 0x110:
-                if (g_dlgInfoText == 0) {
-                    EndDialog(hDlg, (INT_PTR)g_dlgInfoText);
-                    return 1;
-                }
-                winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_dlgInfoText);
-                return 1;
-            case 0x111:
-                if (wParam == 2) {
-                    EndDialog(hDlg, 0);
-                    return 1;
-                }
-                if (wParam == 1) {
-                    EndDialog(hDlg, wParam);
-                    return 1;
-                }
-                break;
-        }
-        return 0;
-    }
-
-    // __stdcall DlgProc(hDlg, msg, wParam, lParam): OK/Cancel end the dialog.
-    RVA(0x000e3be0, 0x52)
-    i32 CALLBACK winapi_0e3be0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
-        switch (msg) {
-            case 0x110:
-                return 1;
-            case 0x111:
-                if (wParam == 2) {
-                    EndDialog(hDlg, 0);
-                    return 1;
-                }
-                if (wParam == 1) {
-                    EndDialog(hDlg, 1);
-                    return 1;
-                }
-                break;
-        }
-        return 0;
-    }
+    // (0x0e3b20 -> InfoLineDialogProc in src/Gruntz/LevelInfoDlg.cpp (twin of the 0x0e3a40
+    // save-confirm DlgProc already there); 0x0e3be0 -> OkCancelDialogProc in
+    // src/Io/SaveGame.cpp. Both are __stdcall CALLBACK dialog procs, RVA-homed.)
 
     // (0xf8e20 soundfont-device DLL teardown re-homed to src/Gruntz/SoundFontPath.cpp.)
 

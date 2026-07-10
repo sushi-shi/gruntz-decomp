@@ -53,15 +53,26 @@ struct BootySndWorld { // g_mgrSettings->m_world (+0x30) sound facet
     char m_pad00[0x28];
     BootySndSet* m_soundSet; // +0x28
 };
+SIZE_UNKNOWN(BzGameWnd);
+struct BzGameWnd { // g_mgrSettings->m_gameWnd (+0x04): the game window; m_hwnd @+0x04
+    char m_pad00[4];
+    HWND m_hwnd; // +0x04
+};
 SIZE_UNKNOWN(BzGameReg);
 struct BzGameReg { // == *0x24556c (g_mgrSettings), viewed for the world sound set
-    char m_pad00[0x30];
+    char m_pad00[4];
+    BzGameWnd* m_gameWnd; // +0x04  the game window (KeyHost::Check posts to m_hwnd)
+    char m_pad08[0x30 - 0x08];
     BootySndWorld* m_world; // +0x30
     char m_pad34[0x11c - 0x34];
     i32 m_soundToken; // +0x11c  ambient sound token
 };
 DATA(0x0024556c)
 extern BzGameReg* g_mgrSettings;
+// USER32 PostMessageA reached through the game-owned IAT-style fn-ptr (ff 15 [ptr]);
+// same global CGruntzMgr/Attract/Play bind. KeyHost::Check posts through it.
+DATA(0x002c44c8)
+extern i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32); // 0x6c44c8
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // BOOTY_LOOP enable gate
 DATA(0x002bf3c0)
@@ -176,4 +187,27 @@ i32 CGuardedDispatch1f870::Run() {
         return 0;
     }
     return Handle() != 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x01f8a0 - if the pending-command key (m_cmdKey) equals 0xc7, post WM_COMMAND
+// 0x8023 to the game window (g_mgrSettings->m_gameWnd->m_hwnd) via g_pPostMessageA;
+// always return 1. __thiscall, no args. Re-homed from src/Stub/ApiCallers.cpp.
+// @identity-TODO: genuinely-unrecovered owner. xref proves the sole inbound edge is
+// ILT thunk 0x1d3e, called only by the adjacent unrecovered fn @~0x1f8d0 (no named
+// caller / no vtable slot / no new-site), so the class holding the +0x1b8 command-key
+// is not recoverable yet - a minimal __thiscall placeholder host, not a modeled class.
+// ---------------------------------------------------------------------------
+struct PendingCmdKeyHost {
+    char m_pad0[0x1b8];
+    i32 m_cmdKey; // +0x1b8
+    i32 PostCommandIfKey();
+};
+SIZE_UNKNOWN(PendingCmdKeyHost);
+RVA(0x0001f8a0, 0x30)
+i32 PendingCmdKeyHost::PostCommandIfKey() {
+    if (m_cmdKey == 0xc7) {
+        g_pPostMessageA(g_mgrSettings->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+    }
+    return 1;
 }

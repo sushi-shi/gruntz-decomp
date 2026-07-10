@@ -950,20 +950,24 @@ void CBattlezDlg::ReadCtrlBText(i32 index) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0238d0 - register thunk: invoke a 1-int method (0x1b4867) on a global container
-// object (VA 0x62b5d0) with arg 0xa. __cdecl free fn. RVA-homed from src/Stub/
-// BoundaryMisc.cpp (its RVA-contiguous sibling 0x23960 stays there).
-// @orphan: both callers are unrecovered fns; a free init thunk with no owner class.
+// 0x0238d0 / 0x023960 - the two module dynamic-initializers that construct a pair of
+// global MFC CObList objects (g_container62b5d0 @0x62b5d0, g_container62b640 @0x62b640)
+// with block size 0xa via the NAFXCW CObList block-size ctor (0x1b4867 ==
+// ??0CObList@@QAE@H@Z, reloc-masked). __cdecl free fns. Re-homed from
+// src/Stub/BoundaryMisc.cpp.
+// @orphan: both callers are unrecovered fns; module-init thunks with no owner class.
 // ---------------------------------------------------------------------------
-struct CGlobalContainer238d0 {
-    void Register(i32 n); // 0x1b4867 (reloc-masked)
-};
-SIZE_UNKNOWN(CGlobalContainer238d0);
 DATA(0x0022b5d0)
-extern CGlobalContainer238d0 g_container62b5d0;
+extern CObList g_container62b5d0;
+DATA(0x0022b640)
+extern CObList g_container62b640;
 RVA(0x000238d0, 0xd)
 void Init238d0() {
-    g_container62b5d0.Register(0xa);
+    g_container62b5d0.CObList::CObList(0xa);
+}
+RVA(0x00023960, 0xd)
+void InitGlobalObList62b640() {
+    g_container62b640.CObList::CObList(0xa);
 }
 
 // ===========================================================================

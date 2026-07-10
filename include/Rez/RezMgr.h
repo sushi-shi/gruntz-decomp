@@ -428,6 +428,12 @@ public:
     void SpinWaitUntil(i32 target); // 0x13dec0
     void InitTimeFields(i32 reset); // 0x13de70
 
+    // Frame-rate config: SetFrameRate stores `fps` in the pacing gate (+0x1c) and
+    // derives the ms-per-frame budget (+0x28 = 1000/fps); TrySetFrameRate installs it
+    // only when pacing is not already active (else clears it and fails).
+    void SetFrameRate(i32 fps);   // 0x13dee0
+    i32 TrySetFrameRate(i32 fps); // 0x13df00
+
     // The extension-dispatch image loaders (external, reloc-masked).
     i32 LoadBmp(void* a, void* b);
     i32 LoadPcx(void* a, void* b);

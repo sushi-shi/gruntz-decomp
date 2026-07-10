@@ -46,4 +46,16 @@ void CloseFileIOGlobal() {
     g_obj646778.Close();
 }
 
+// -------------------------------------------------------------------------
+// CFileIO::OpenGruntzLog (0x0bd450, re-homed from src/Stub/BoundaryLowerMethods.cpp):
+// close the shared global file then reopen it on the fixed "c:\gruntz.log" debug path.
+// The two calls resolve (via ILT thunks 0x3625/0x1983) to the real CloseFileIOGlobal
+// (0xbd430) + CFileIO::ReopenSharedFile (0xbd3e0) above; `this` is forwarded to
+// ReopenSharedFile, which ignores it. __thiscall, no args.
+RVA(0x000bd450, 0x16)
+void CFileIO::OpenGruntzLog() {
+    CloseFileIOGlobal();
+    ReopenSharedFile("c:\\gruntz.log");
+}
+
 // Class-metadata (CFileIO / CFileIODispatch) lives atop their decls in FileStream.h.

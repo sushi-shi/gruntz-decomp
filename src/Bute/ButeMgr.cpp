@@ -201,6 +201,42 @@ static const char s_fmtRect2[] = "[%lf, %lf]";
 static const char s_strLBrack[] = "[";
 static const char s_strRBrack[] = "]";
 
+// ===========================================================================
+// 0x021310 - ~CButeTree21a (/GX, multiple inheritance): the RVA-contiguous twin of
+// ~CButeTree21b below. Stamp both base vtables (0x5e94ac @+0, 0x5e949c @+8), run the
+// body teardown (CButeStore::ClearRecursive @0x16e070), then fold the +0x08 second
+// base (dtor 0x16dfc0, MI this-adjust null guard) and the +0x00 first base (0x16da60).
+// Re-homed from src/Stub/BoundaryLowerDtors.cpp (nearest real TU; its ClearRecursive
+// callee is the canonical CButeStore here). A distinct derived class sharing
+// CButeStore's base vtables; RTTI name unrecovered. __thiscall.
+// ===========================================================================
+RVA(0x00021310, 0x70)
+CButeTree21a::~CButeTree21a() {
+    ClearRecursive(0); // inherited from the +0 base (CButeBase1_21 == CContainerErr subobject)
+}
+
+// ---------------------------------------------------------------------------
+// 0x0213a0 - getter that returns the +0x04 field of its VIRTUAL base. Modeled as a
+// real virtual-base member read so it compiles to the vbtable access (load vbptr,
+// load the vbase displacement from vbtable[1], read [this+disp+4]) with no raw cast.
+// __thiscall. Re-homed from src/Stub/BoundaryLowerMethods.cpp (its RVA neighborhood).
+// @identity-TODO: the getter runs on g_mgrSettings->m_2c (the current state), reached
+// by CChatBoxOwner::ProcessCheatInput (xref); the state class holding the virtual base
+// is unrecovered, so the host class name is a placeholder.
+struct VBaseState213 {
+    i32 m_0;
+    i32 m_4; // +0x04 (the returned field; role unproven)
+};
+struct CVBaseFieldHost : virtual VBaseState213 {
+    i32 GetVBaseField();
+};
+SIZE_UNKNOWN(VBaseState213);
+SIZE_UNKNOWN(CVBaseFieldHost);
+RVA(0x000213a0, 0xa)
+i32 CVBaseFieldHost::GetVBaseField() {
+    return m_4;
+}
+
 // ---------------------------------------------------------------------------
 // CButeMgr::~CButeMgr
 // The /GX (EH-frame) scalar destructor: tears down the three owned CButeStore
@@ -244,7 +280,7 @@ CButeMgr::~CButeMgr() {}
 // RVA-contiguous twin CButeTree21a @0x21310 stays in BoundaryLowerDtors.cpp).
 RVA(0x00021570, 0x70)
 CButeTree21b::~CButeTree21b() {
-    ((CButeStore*)this)->ClearRecursive(0);
+    ClearRecursive(0); // inherited from the +0 base (CButeBase1_21 == CContainerErr subobject)
 }
 
 // ---------------------------------------------------------------------------
