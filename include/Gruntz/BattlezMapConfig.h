@@ -52,6 +52,7 @@ class CBrickzGrid; // folded Board
 //   m_triggerMgr = the level's CTriggerMgr (the 4x15 cell grid);
 //   m_board      = the CBrickz pathfinding-grid container.
 class CTriggerMgr;
+class CTileTriggerSwitchLogic; // +0x14 cell-record query (run-phase FindChild receiver)
 struct GruntSpawnCtx;
 struct Board;
 // ---- Load-phase engine object pointers (config view) ------------------------
@@ -118,7 +119,10 @@ public:
             GruntSpawnCtx* m_ctx;       // +0x004  the level/game spawn context
             CTriggerMgr* m_triggerMgr;  // +0x008  the level's CTriggerMgr (4x15 grid)
             CBrickzGrid* m_board;       // +0x00c  the CBrickz pathfinding-grid / tile-map
-            char m_pad010[0x18 - 0x10]; // +0x010  (untouched by run ctor)
+            i32 m_010;                  // +0x010  (untouched by run ctor)
+            CTileTriggerSwitchLogic* m_cellQuery; // +0x014  cell-record query object
+                                        //         (LoadConfig-seeded from m_10->m_2e4;
+                                        //         run phase dispatches FindChild on it)
             i32 m_curCell;              // +0x018  current cell index (=0)
             i32 m_01c;                  // +0x01c  = 1
             i32 m_020;                  // +0x020  = 0x40

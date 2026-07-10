@@ -408,6 +408,7 @@ public:
     //   and BootyStateActivate's local CBootyState views fold onto this canonical class.
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0xfa1f0
     i32 BuildPage(i32 a, i32 b, i32 c, i32 d);                      // 0xfa8f0
+    i32 BuildBootyGruntIdleAnimation();                            // 0x1ce60 (reloc-masked; the shared booty idle-anim builder Vslot0c tail-calls)
     void ShowSecretBonusMessage();                                  // 0xfa540
     void ShowLevelCompleteMessage();                                // 0xfa120
 
@@ -471,10 +472,9 @@ public:
     // Ready-gate + paint (0x1ce30): if the active/ready virtual (CState slot 3) fires,
     // run the per-frame paint and return its normalized result, else 0.
     i32 ReadyAndPaint(); // 0x1ce30
-    RVA(0x0001d420, 0x8)
-    i32 ForwardIdleAnim(i32 a, i32 b) {
-        return BuildBootyGruntIdleAnimation();
-    }
+    // 0x1d420 is CBootyState::Vslot0c (vtable slot 12), homed out-of-line (matcher-5);
+    // this non-virtual CMultiBootyState alias is kept decl-only (no RVA) for callers.
+    i32 ForwardIdleAnim(i32 a, i32 b);
     i32 Paint();                        // 0xfac70 (reloc-masked engine paint)
     i32 BuildBootyGruntIdleAnimation(); // 0x1ce60 (reloc-masked, own method;
                                         // shares the forwarder's arg frame)

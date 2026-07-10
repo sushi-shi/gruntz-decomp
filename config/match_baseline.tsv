@@ -46,7 +46,7 @@ blowfish	5	3
 boomerang	3	0
 bootycheatstate	1	0
 bootymessages	3	0
-bootystateactivate	22	11
+bootystateactivate	23	12
 bootywalkanim	2	0
 bracketvalue	1	1
 brickz	21	6
@@ -703,7 +703,7 @@ battlezmapconfig	?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z	85.4667	
 battlezmapconfig	?Method_025c20@CBattlezMapConfig@@QAEHXZ	100.0000	100.0000	2	40cb83667db0	0x25c20
 battlezmapconfig	?Method_025d90@CBattlezMapConfig@@QAEHXZ	75.2712	75.2712	3	eb24923ec131	0x25d90
 battlezmapconfig	?Method_026470@CBattlezMapConfig@@QAEHH@Z	82.2366	82.2366	3	4ab2e829500d	0x26470
-battlezmapconfig	?Method_029b40@CBattlezMapConfig@@QAEHH@Z	23.8000	23.8000	4	217df467266a	0x29b40
+battlezmapconfig	?Method_029b40@CBattlezMapConfig@@QAEHH@Z	58.3790	58.3790	5	d33abea5cb03	0x29b40
 battlezmapconfig	?Method_02ad40@CBattlezMapConfig@@QAEPAXH@Z	59.7708	59.7708	2	9994aff78917	0x2ad40
 battlezmapconfig	?Method_02bfc0@CBattlezMapConfig@@QAEHHPAXHH@Z	100.0000	100.0000	3	7fc0767e5dee	0x2bfc0
 battlezmapconfig	?Method_02c080@CBattlezMapConfig@@QAEHH@Z	100.0000	100.0000	1	4035b18bf37c	0x2c080
@@ -725,17 +725,17 @@ battlezmapconfig	?Method_034c70@CBattlezMapConfig@@QAEHH@Z	46.9556	46.9556	4	ff4
 battlezmapconfig	?Method_0350d0@CBattlezMapConfig@@QAEHH@Z	72.3595	72.3595	2	8a623b48ab1c	0x350d0
 battlezmapconfig	?Method_035210@CBattlezMapConfig@@QAEHHH@Z	100.0000	100.0000	1	37c5e4644ba9	0x35210
 battlezmapconfig	?Method_035550@CBattlezMapConfig@@QAEHH@Z	100.0000	100.0000	1	332f5b1c99b5	0x35550
-battlezmapconfig	?Method_0358a0@CBattlezMapConfig@@QAEHH@Z	81.6740	81.6740	5	17884afbff1f	0x358a0
+battlezmapconfig	?Method_0358a0@CBattlezMapConfig@@QAEHH@Z	82.2247	82.2247	5	17884afbff1f	0x358a0
 battlezmapconfig	?RecycleCoords@GridUnit@@QAEXXZ	99.7826	99.7826	2	d6c730cd3fd8	0x343f0
 battlezmapconfig	?Report@ZErrTarget@@QAEXHH@Z	100.0000	100.0000	5	4254aa71b7d1	0x34960
 battlezmapconfig	?Serialize_02b420@CBattlezMapConfig@@QAEHPAX@Z	100.0000	100.0000	2	ac1e7f0d9444	0x2b420
 battlezmapconfig	?winapi_0267c0_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHXZ	0.0596	0.0596	2	831a3129959e	0x267c0
 battlezmapconfig	?winapi_02a570_IntersectRect@CBattlezMapConfig@@QAEHH@Z	57.4442	57.4442	5	de407cb0a629	0x2a570
-battlezmapconfig	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.4911	77.4821	2	a79cacbf857d	0x2ab80
+battlezmapconfig	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.4911	77.4911	2	a79cacbf857d	0x2ab80
 battlezmapconfig	?winapi_02ae00_IntersectRect@CBattlezMapConfig@@QAEHHH@Z	82.9729	82.9729	4	b0571507f693	0x2ae00
 battlezmapconfig	?winapi_02c140_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHH@Z	61.8146	61.8146	6	3eaaa9a69437	0x2c140
 battlezmapconfig	?winapi_02dfa0_IntersectRect@CBattlezMapConfig@@QAEHHHHH@Z	59.2921	59.2921	4	5319a4606363	0x2dfa0
-battlezmapconfig	?winapi_02e3a0_PtInRect@CBattlezMapConfig@@QAEHH@Z	54.8391	54.8391	5	25804c0977a6	0x2e3a0
+battlezmapconfig	?winapi_02e3a0_PtInRect@CBattlezMapConfig@@QAEHH@Z	54.8233	54.8233	5	25804c0977a6	0x2e3a0
 battlezmapconfig	?winapi_031ca0_IntersectRect@CBattlezMapConfig@@QAEHH@Z	75.3229	75.3229	5	32cb1496793e	0x31ca0
 battlezmapconfig	?winapi_032060_IntersectRect@CBattlezMapConfig@@QAEHH@Z	40.7237	40.7237	5	0e8f1bbaa43d	0x32060
 behindcandy	??0CBehindCandy@@QAE@PAUCGameObject@@@Z	88.5726	88.5726	1	1b9e0e949940	0xac3f0
@@ -786,6 +786,7 @@ bootystateactivate	?Update@CBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000
 bootystateactivate	?Update@CMultiBootyState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:6dfc833de9c7	0x8d4c0
 bootystateactivate	?Vslot09@CBootyState@@UAEHH@Z	94.7973	94.7973	4	74b09efe80b3	0x18d30
 bootystateactivate	?Vslot09@CMultiBootyState@@UAEHH@Z	100.0000	100.0000	1	05b3db3d1724	0x1e570
+bootystateactivate	?Vslot0c@CBootyState@@UAEHHH@Z	100.0000	100.0000	1	b7a44c1a9f3e	0x1d420
 bootywalkanim	?BuildBootyWalkingGruntz@BzState@@QAEHXZ	92.8158	92.8158	4	8c1e53ce1b15	0x1b450
 bootywalkanim	?UpdateBootyWalkingGruntz@BzState@@QAEHXZ	93.5142	93.5142	5	b5d4d35a456c	0x1b690
 bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	100.0000	100.0000	2	621add35a117	0xf9160
@@ -3227,7 +3228,7 @@ play	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	4	9567653c832a	0xcffe0
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	5	1d7fd4fc8082	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	5	fd1ac9b2399d	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	4	8309f61d38e2	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.9200	85.9200	3	b94f48adc376	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.8450	85.8450	3	b94f48adc376	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	4	eb3839ea341e	0xd65d0
 play	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	3	cfa5101aa629	0xcb740
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	76.3529	76.3529	5	5c7e2ae1589a	0xd9050

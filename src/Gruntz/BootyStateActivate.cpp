@@ -531,6 +531,14 @@ i32 CMultiBootyState::ReadyAndPaint() {
     return Paint() != 0;
 }
 
+// CBootyState::Vslot0c (0x1d420, vtable slot 12): tail-forward to the shared booty-grunt
+// idle-animation builder (0x1ce60). Homed out-of-line as the real virtual (matcher-5); the
+// call is reloc-masked, so the shared-body owner name is code-neutral.
+RVA(0x0001d420, 0x8)
+i32 CBootyState::Vslot0c(i32, i32) {
+    return BuildBootyGruntIdleAnimation();
+}
+
 // CBootyState::StateOnEnter (0x1d440): the booty state-enter driver - engine-label
 // backlog stub (non-virtual; vtable-neutral).
 // @confidence: med

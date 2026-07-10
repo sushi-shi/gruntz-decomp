@@ -266,11 +266,30 @@ struct Candidate {
     i32 m_y; // +0x04
 };
 
-// A map tile: 0x1c-byte record; its first byte carries flag bits
-// (bit 2 = 0x4 = "blocked"/special).
+// A map tile: 0x1c-byte record (7 dwords). Its first dword is a flags word
+// (bits: 0x2/0x4/0x8/0x20/0x40/0x100/0x200/0x800/0x8000/0x20000000); the low byte
+// carries the coarse blocked/special code ((u8)==1 => blocked).
 struct Tile {
-    u8 m_flags; // +0x00
-    char m_pad01[0x1c - 1];
+    i32 m_flags;   // +0x00  flags word
+    i32 m_rest[6]; // +0x04..0x1c
+};
+
+// The grid candidate list (m_triggerMgr->m_objListHead): each node holds the
+// candidate sub-object (its level coord at +0x54 / +0x58, an "occupied" flag at
+// +0x5c) at +0x8. Defined here (used by Method_029b40's kind-7 arm below and by
+// Method_0350d0 further down).
+struct GridCandNode {
+    GridCandNode* m_next; // +0x00
+    char m_pad04[0x04];
+    char* m_payload; // +0x08
+};
+// The candidate sub-object reached via node->m_8: m_54/m_58 carry its grid (>>5)
+// coordinate, m_5c is a nonzero "already occupied" flag.
+struct GridCand {
+    char m_pad00[0x54];
+    i32 m_gridX;    // +0x54  grid x
+    i32 m_gridY;    // +0x58  grid y
+    i32 m_occupied; // +0x5c  occupied flag (skip when set)
 };
 
 // The board/tile map held at this->m_board is the canonical CBrickzGrid
@@ -1183,6 +1202,45 @@ i32 CBattlezMapConfig::Method_026470(i32) {
     return 1;
 }
 
+// ===========================================================================
+// CBattlezMapConfig::winapi_0267c0_IntersectRect_PtInRect  @0x267c0  (10269 B)
+// The engine's single biggest function and #1 weighted match drag. TRIAGED: this is
+// a GENUINE reconstruction gap (a bare `return 0` scoring 0.06%), NOT a scoring
+// artifact - there is no reconstruction here yet to be mis-scored.
+//
+// STRUCTURE (mapped from the retail disasm; reconstructable, just very large): the
+// master per-unit AI dispatch tick. `esi` is the GridUnit (the same CGrunt-family
+// object Method_029b40 drives - reads m_1fc/m_220/m_1e4/m_368 eligibility guards,
+// m_14->m_1c type key, m_308/30c/314/310/320/328/280 geometry). The body is:
+//   * head (0x267c0..0x2690b): a screen-rect / board-rect intersect + PtInRect-style
+//     geometry gate (the IntersectRect/PtInRect winapi imports at PTR_..006c4568/6c
+//     that heuristically named this fn) + a first type-name probe.
+//   * the CORE is a long, highly REGULAR chain of eligibility-gated type-dispatch
+//     arms, each of the shape:
+//        if (unit->m_1fc == 0) goto handler;            // + m_368/m_1e4/m_220 guards
+//        name = *g_typeColl.IndexToPtr(unit->m_14->m_1c);   // CTypeKeyColl lookup
+//        if (strcmp(name, "<CODE>") == 0) goto handler;     // MSVC5-inlined strcmp
+//     over ~9 distinct type-code string constants (?s_codeA / ?s_codeJ / k_60cca0 /
+//     k_60cc9c / k_60cc98 / k_60beb8 / k_60bebc / k_60cc90 / k_60cc94), each arm then
+//     branching into a per-type behaviour (coord recycle via g_coordPool, GetScreenPos
+//     geometry, CRect clamps, CButeMgr::GetIntDef config reads, and hand-offs to the
+//     sibling state-machine methods in this TU).
+// callees (all named, reloc-masked): winapi_02c140/02ae00/02e3a0/031ca0/032060 (the
+//   IntersectRect/PtInRect family), GetScreenPos, IndexToPtr (CTypeKeyColl, x52),
+//   CRect (x15), ListNodeAdvance, g_coordPool.Push, CObList::RemoveAll, RectContains,
+//   FindGridNeighbor, ResolveArrival, Step/Step33520, Scan/ScanRegion32ce0,
+//   Method_030530/02ed90/0350d0/034c70/0358a0, CGrunt_TileSwitch, ApplyTriggerA,
+//   ResetEntranceAnimation, StepEntranceReinit, rand, CButeMgr::GetIntDef.
+// ===========================================================================
+// @early-stop
+// deferred - SIZE wall, not an idiom/regalloc wall. A faithful reconstruction is
+// tractable (the arm pattern is regular; every callee + type is already modeled - the
+// GridUnit/g_typeColl/CBrickzGrid views used by Method_029b40 above cover it), but at
+// 10269 B it is a dedicated multi-session leaf-first job, not a single-matcher batch.
+// objdiff scores the WHOLE function's alignment, so any sub-complete partial (even a
+// 1-2 KB faithful head) still scores ~0 and diverges its own regalloc - reconstructing
+// a fraction buys no weighted credit and risks banking a wrong guess, so the honest
+// state is the stub + this structural map. TOP-PRIORITY final-sweep target.
 // @confidence: low
 // @source: winapi:IntersectRect;PtInRect
 // @stub
@@ -1204,24 +1262,19 @@ void* __stdcall ListNodeAdvance(void** it) {
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_029b40  @0x029b40
-// The per-unit tile/coord cleanup step. Recover the unit's first occupied coord +
-// its level geometry; if they have drifted >= 2 cells apart, recycle the unit's
-// coord nodes and bail. Otherwise read the tile under the unit (and a second tile
-// under its current geometry) and dispatch on the tile's flag byte: each flag bit
-// (0x8 / 0x20 / 0x40 / 0x2 / the reserved 0x20000000) gates a state transition
-// (Method_02c0a0 SetState to one of {5,0xd,0x12,0x16,...}), some guarded by the
-// unit's 0x16/0x12 anim mode; the kind-7 arm recycles the unit's path onto
-// g_freeList and advances its timer. Returns 1 on a handled transition.
+// CBattlezMapConfig::Method_029b40  @0x029b40  (faithful two-scratch reconstruction)
+// The per-unit tile/coord cleanup+dispatch step. Recover the unit's first occupied
+// coord + its live screen cell; if they have drifted >= 2 cells apart, recycle the
+// unit's coord nodes and bail. Otherwise fetch TWO 7-dword tile records into stack
+// scratch (scratchA = the unit's stored coord cell = the MAIN flags word; scratchB =
+// the live screen cell = a secondary gate) and run the flag dispatch: the scratchB
+// 0x4 FindChild reroute (-> mode 0xb), the prim==0x11 two-coord ApplyTriggerB arm,
+// the scratchA 0x8000 commit / Method_030530 hand-off, and the main scratchA bit
+// dispatch (0x200/0x8/0x20/0x40/0x2/0x20000000) with per-arm anim-mode guards +
+// Method_02c0a0 transitions, the Method_030b20 hand-off, and the kind-7 grid-
+// candidate scan (RectContains -> ApplyTriggerB + recycle + spawn-timer advance).
+// Returns 1 on a handled transition. See the marker above the RVA for the residual.
 // ===========================================================================
-// @early-stop
-// large-state-machine plateau: the geometry-drift head (two GetCoord reads + the
-// abs-distance bail), the dual tile lookup, the flag-byte arm dispatch (0x8/0x20/
-// 0x40/0x2/0x20000000) with the per-arm 0x16/0x12 anim-mode guards + Method_02c0a0
-// transitions, the Method_030b20 hand-off, and the kind-7 g_freeList recycle +
-// timer advance are reconstructed in shape + order. Residual is the heavy stack
-// scheduling of the manual 7-dword tile-record copies (rep movs/stos) + the arm
-// regalloc; foreign unit/board chains are modeled by raw offset. Final sweep.
 // GetScreenPos (0x29a50) / IsAtSavedScreenPos (0x29a80) - CUserLogic leaf accessors
 // (declared in <Gruntz/UserLogic.h>); physically compiled in this TU.
 RVA(0x00029a50, 0x15)
@@ -1243,21 +1296,34 @@ i32 CUserLogic::IsAtSavedScreenPos() {
     return 0;
 }
 
+// @early-stop
+// two-scratch reconstruction plateau (23.8% loose one-tile approx -> 58.4% faithful).
+// The whole control-flow graph, the two tile-record stack copies (rep stos/movs), the
+// arm bit dispatch, and the per-arm recyclers (g_coordPool.Push vs raw g_freeList +
+// RemoveAt/RemoveAll) are byte-faithful; the permuter confirms 58.4% is the operand-
+// permutation ceiling for this shape. Residual is genuine codegen/regalloc: (1) frame
+// 0x5c vs retail 0x58 - one extra spill slot MSVC picks for the head; (2) the tile-
+// fetch regions carry retail artifacts no clean C++ reproduces (a dead redundant
+// GetScreenPos before scratchA, and cross-call register reuse - scratchB reads x from
+// one screen probe and y from the other); (3) the head keeps this in [esp+0x8] pre-
+// push where MSVC5 sinks it post-push; (4) deep arm regalloc. Final sweep / permuter.
 RVA(0x00029b40, 0x813)
 i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
     GridUnit* unit = (GridUnit*)unitArg;
+    CObList* coordList = (CObList*)&unit->m_coordList;
     if (unit->m_coordCount == 0) {
         return 0;
     }
-    CoordNode* node = unit->m_coordHead;
-    Coord* c0 = node->m_coord;
+    // --- geometry-drift head: recycle-and-bail if the unit's stored first coord and
+    //     its live screen cell have drifted >= 2 cells apart. ---
+    Coord* c0 = unit->m_coordHead->m_coord;
     i32 ux = c0->m_x;
     i32 uy = c0->m_y;
-    Coord g;
-    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g);
-    i32 gx = g.m_x >> 5;
-    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g);
-    i32 gy = g.m_y >> 5;
+    Coord pt;
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt);
+    i32 gx = pt.m_x >> 5;
+    ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt);
+    i32 gy = pt.m_y >> 5;
     if (abs(ux - gx) >= 2) {
         goto recycleBail;
     }
@@ -1266,15 +1332,14 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
     }
     {
         CBrickzGrid* board = m_board;
+        // tile0: is the unit's own coord cell blocked (low flag byte == 1)?
         i32 tile0;
         if ((u32)ux < (u32)board->m_width && (u32)uy < (u32)board->m_height) {
-            i32* row = (i32*)board->m_rows[uy];
-            tile0 = ((i32*)((char*)row + ((ux * 7) << 2)))[0];
+            tile0 = ((Tile*)board->m_rows[uy])[ux].m_flags;
         } else {
             tile0 = 1;
         }
         if ((u8)tile0 == 1) {
-            // The unit's own cell is blocked: recycle its path onto g_freeList.
             if (unit->m_coordCount == 0) {
                 return 0;
             }
@@ -1283,37 +1348,173 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                 CoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
-                    void** fn = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                    *fn = g_freeList;
-                    g_freeList = fn;
+                    g_coordPool.Push(cur->m_coord);
                 }
             }
-            ((CObList*)&unit->m_coordList)->RemoveAll();
+            coordList->RemoveAll();
             return 0;
         }
-        // Read the tile under the unit's current geometry into `flagByte`, then
-        // dispatch on its bits. (Modeled directly from the unit's coord; the retail
-        // copies the 7-dword tile records to stack scratch first.)
-        Coord g2;
-        ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g2);
-        i32 cgx = g2.m_x >> 5;
-        i32 cgy = g2.m_y >> 5;
-        i32 tileG;
-        if ((u32)cgx < (u32)board->m_width && (u32)cgy < (u32)board->m_height) {
-            i32* row = (i32*)board->m_rows[cgy];
-            tileG = ((i32*)((char*)row + ((cgx * 7) << 2)))[0];
+        // --- scratchA: the 7-dword tile record under the unit's STORED coord (the
+        //     main flags word). Retail copies the record to a stack scratch (rep movs),
+        //     defaulting to all-0x01 (memset) when out of bounds. This forces the 0x58
+        //     EH frame; the flag dispatch reads the scratch. ---
+        i32 cx = c0->m_x;
+        i32 cy = c0->m_y;
+        ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt);
+        Tile scratchA;
+        const Tile* srcA;
+        if ((u32)cx < (u32)board->m_width && (u32)cy < (u32)board->m_height) {
+            srcA = &((Tile*)board->m_rows[cy])[cx];
         } else {
-            tileG = 1;
+            memset(&scratchA, 1, sizeof(scratchA));
+            srcA = &scratchA;
         }
+        if (unit->m_coordCount == 0) {
+            return 0;
+        }
+        scratchA = *srcA;
         i32 prim = unit->m_animPrim;
         if (prim > 0x16) {
             prim = unit->m_animSec;
         }
-        i32 flags = tileG;
-        if (flags & 0x8) {
-            // The 0x8 (gate) arm: a 0x12/0x16 anim mode commits; else fall through.
-            if (flags & 0x100) {
-                if (prim == 0x16) {
+        // --- scratchB: the tile record under the unit's LIVE screen cell (secondary
+        //     gate). Retail reads the y from the first probe and the x from the second. ---
+        Coord pt2;
+        ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt2);
+        i32 sgy = pt2.m_y >> 5;
+        ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt);
+        i32 sgx = pt.m_x >> 5;
+        Tile scratchB;
+        const Tile* srcB;
+        if ((u32)sgx < (u32)board->m_width && (u32)sgy < (u32)board->m_height) {
+            srcB = &((Tile*)board->m_rows[sgy])[sgx];
+        } else {
+            memset(&scratchB, 1, sizeof(scratchB));
+            srcB = &scratchB;
+        }
+        scratchB = *srcB;
+        // --- reroute arm: scratchB blocked-bit (0x4) + unit not already in mode 0xb.
+        //     If the live cell resolves to a kind-2 cell record, drop the unit's path
+        //     and latch it into mode 0xb. ---
+        if ((scratchB.m_flags & 0x4) && unit->m_mode != 0xb) {
+            ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt);
+            i32 rx = pt.m_x >> 5;
+            ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt2);
+            i32 ry = pt2.m_y >> 5;
+            CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild((rx << 8) + ry, 0);
+            if (rec->m_04 == 2) {
+                unit->m_state = 0;
+                if (unit->m_coordCount != 0) {
+                    CoordNode* n = unit->m_coordHead;
+                    while (n != 0) {
+                        CoordNode* cur = n;
+                        n = n->m_next;
+                        if (cur->m_coord != 0) {
+                            g_coordPool.Push(cur->m_coord);
+                        }
+                    }
+                    coordList->RemoveAll();
+                }
+                unit->m_mode = 0xb;
+                unit->m_idleTimer = 0;
+                return 0;
+            }
+        }
+        // --- prim==0x11 arm: with two occupied coords, if the second's tile is a
+        //     0x20 cell and the first's is not a 0x2 cell, fire the coord trigger. ---
+        i32 p11 = unit->m_animPrim;
+        if (p11 > 0x16) {
+            p11 = unit->m_animSec;
+        }
+        if (p11 == 0x11 && unit->m_coordCount >= 2) {
+            CoordNode* node = unit->m_coordHead;
+            Coord* ca = node->m_coord;
+            CoordNode* nn = node->m_next;
+            i32 ax = ca->m_x;
+            Coord* cb = nn->m_coord;
+            i32 ay = ca->m_y;
+            i32 bx = cb->m_x;
+            i32 by = cb->m_y;
+            i32 tB;
+            if ((u32)bx < (u32)board->m_width && (u32)by < (u32)board->m_height) {
+                tB = ((Tile*)board->m_rows[by])[bx].m_flags;
+            } else {
+                tB = 1;
+            }
+            if (tB & 0x20) {
+                i32 tA2;
+                if ((u32)ax < (u32)board->m_width && (u32)ay < (u32)board->m_height) {
+                    tA2 = ((Tile*)board->m_rows[ay])[ax].m_flags;
+                } else {
+                    tA2 = 1;
+                }
+                if (!(tA2 & 0x2)) {
+                    m_triggerMgr->ApplyTriggerB(unit->m_trigA, unit->m_trigB, ax * 0x20 + 0x10, ay * 0x20 + 0x10);
+                    return 0;
+                }
+            }
+        }
+        // --- 0x8000 arms: scratchB 0x8000 clears an in-progress state-3; scratchA
+        //     0x8000 gates a commit (mode 0xa) or a Method_030530 hand-off. ---
+        if ((scratchB.m_flags & 0x8000) && unit->m_state == 3) {
+            unit->m_state = 0;
+        }
+        i32 sA = scratchA.m_flags;
+        if (sA & 0x8000) {
+            if (prim == 3 && unit->m_mode == 0xa) {
+                m_triggerMgr->ApplyTriggerB(unit->m_trigA, unit->m_trigB, cx * 0x20 + 0x10, cy * 0x20 + 0x10);
+                unit->m_state = 0;
+                if (unit->m_coordCount != 0) {
+                    CoordNode* n = unit->m_coordHead;
+                    while (n != 0) {
+                        CoordNode* cur = n;
+                        n = n->m_next;
+                        if (cur->m_coord != 0) {
+                            g_coordPool.Push(cur->m_coord);
+                        }
+                    }
+                    coordList->RemoveAll();
+                }
+                return 0;
+            }
+            if (Method_030530((i32)unit) == 0 && unit->m_state == 7) {
+                CoordNode* head = unit->m_coordHead;
+                if (head != 0) {
+                    CoordNode* n = head->m_next;
+                    if (n != 0) {
+                        while (n != 0) {
+                            CoordNode* cur = n;
+                            n = n->m_next;
+                            if (cur->m_coord != 0) {
+                                void** fn = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                                *fn = g_freeList;
+                                g_freeList = fn;
+                                coordList->RemoveAt((POSITION)cur);
+                            }
+                        }
+                        return 1;
+                    }
+                }
+            }
+        }
+        // --- 0x2a024: main scratchA bit dispatch ---
+        if (sA & 0x200) {
+            i32 p = unit->m_animPrim;
+            if (p > 0x16) {
+                p = unit->m_animSec;
+            }
+            if (p != 0x16) {
+                return 0;
+            }
+        }
+        if (sA & 0x8) {
+            i32 hi = sA & 0x100;
+            if (hi) {
+                i32 p = unit->m_animPrim;
+                if (p > 0x16) {
+                    p = unit->m_animSec;
+                }
+                if (p == 0x16) {
                     return 1;
                 }
                 i32 p2 = unit->m_animPrim;
@@ -1324,83 +1525,109 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                     return 1;
                 }
             }
-            i32 e2 = flags & 0x2;
-            if (e2 != 0) {
-                if (prim == 0x16) {
+            i32 lo2 = sA & 0x2;
+            if (lo2) {
+                i32 p = unit->m_animPrim;
+                if (p > 0x16) {
+                    p = unit->m_animSec;
+                }
+                if (p == 0x16) {
                     return 1;
                 }
             }
-            if (((CGrunt*)this)->RectContains(uy, ux) != 0) {
+            if (Method_030b20((i32)unit, cx, cy) != 0) {
                 return 1;
             }
-            if ((tileG & 0x200) != 0) {
-                goto endZero;
-            }
-            if ((u8)(tileG >> 8) & 0x8) {
-                goto endZero;
-            }
-            if (flags & 0x100) {
-                if (unit->m_state != 3) {
-                    i32 pick = (rand() % 5) != 0 ? 0x12 : 0x16;
-                    Method_02c0a0((i32)unit, pick);
-                }
-            }
-            if (e2 != 0) {
-                if (unit->m_state != 3) {
-                    Method_02c0a0((i32)unit, 0x16);
-                }
+            i32 sB = scratchB.m_flags;
+            if ((sB & 0x200) || (sB & 0x8)) {
                 return 0;
             }
-            goto endZero;
+            if (hi && unit->m_state != 3) {
+                i32 pick = (rand() % 5) != 0 ? 0x12 : 0x16;
+                Method_02c0a0((i32)unit, pick);
+            }
+            if (lo2) {
+                if (unit->m_state == 3) {
+                    return 0;
+                }
+                Method_02c0a0((i32)unit, 0x16);
+            }
+            return 0;
         }
-        i32 curMode = tileG >> 8;
-        if ((flags & 0x20) && curMode != 5 && curMode != 0x11 && curMode != 1) {
+        // --- sA & 0x8 == 0 ---
+        if ((sA & 0x20) && prim != 5 && prim != 0x11 && prim != 1) {
             if (unit->m_state == 3) {
-                goto endZero;
+                return 0;
             }
             Method_02c0a0((i32)unit, 5);
             return 0;
         }
-        if (flags & 0x40) {
-            i32 pm = unit->m_animPrim;
-            if (pm > 0x16) {
-                pm = unit->m_animSec;
+        if (sA & 0x40) {
+            i32 p = unit->m_animPrim;
+            if (p > 0x16) {
+                p = unit->m_animSec;
             }
-            if (pm != 0x16) {
-                if (curMode == 0xd) {
-                    goto endZero;
+            if (p != 0x16) {
+                if (prim == 0xd) {
+                    return 0;
                 }
                 if (unit->m_state == 3) {
-                    goto endZero;
+                    return 0;
                 }
                 Method_02c0a0((i32)unit, 0xd);
                 return 0;
             }
         }
-        if (flags & 0x2) {
-            i32 pm = unit->m_animPrim;
-            if (pm > 0x16) {
-                pm = unit->m_animSec;
+        if (sA & 0x2) {
+            i32 p = unit->m_animPrim;
+            if (p > 0x16) {
+                p = unit->m_animSec;
             }
-            if (pm == 0x16) {
-                goto endZero;
+            if (p == 0x16) {
+                return 0;
             }
         }
-        if (flags & 0x20000000) {
+        if (sA & 0x20000000) {
             winapi_02a570_IntersectRect((i32)unit);
             return 0;
         }
-        i32 pm2 = unit->m_animPrim;
-        if (pm2 > 0x16) {
-            pm2 = unit->m_animSec;
+        i32 pk = unit->m_animPrim;
+        if (pk > 0x16) {
+            pk = unit->m_animSec;
         }
-        if (pm2 != 0x7) {
+        if (pk != 0x7) {
             return 1;
         }
-        // kind-7: recycle the unit's first list node's coords + advance the timer.
-        CoordNode* head = (CoordNode*)(unit->m_coordHead)->m_coord;
-        // (the kind-7 tail is modeled by the shared recycle + a 0x46/0x4c timer add)
-        (void)head;
+        // --- kind-7 arm: scan the grid candidate list for an unoccupied cell that
+        //     falls inside the unit's reach rect; on a hit, fire the trigger, recycle
+        //     the unit's path, advance the spawn timer, and return 1. ---
+        GridCandNode* onode = m_triggerMgr->m_objListHead;
+        while (onode != 0) {
+            GridCand* cand = (GridCand*)onode->m_payload;
+            onode = onode->m_next;
+            if (cand->m_occupied == 0) {
+                i32 ox = cand->m_gridX;
+                i32 oy = cand->m_gridY;
+                if (((CGrunt*)unit)->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10) != 0) {
+                    m_triggerMgr->ApplyTriggerB(unit->m_trigA, unit->m_trigB, ox * 0x20 + 0x10, oy * 0x20 + 0x10);
+                    if (unit->m_coordCount != 0) {
+                        CoordNode* n = unit->m_coordHead;
+                        while (n != 0) {
+                            CoordNode* cur = n;
+                            n = n->m_next;
+                            if (cur->m_coord != 0) {
+                                void** fn = (void**)((char*)cur->m_coord - g_freeListNodeBias);
+                                *fn = g_freeList;
+                                g_freeList = fn;
+                            }
+                        }
+                        coordList->RemoveAll();
+                    }
+                    m_spawnTimer += (i32)((u32)m_spawnInterval >> 2);
+                    return 1;
+                }
+            }
+        }
         return 1;
     }
 recycleBail:
@@ -1416,10 +1643,8 @@ recycleBail:
                 g_coordPool.Push(cur->m_coord);
             }
         }
-        ((CObList*)&unit->m_coordList)->RemoveAll();
+        coordList->RemoveAll();
     }
-    return 0;
-endZero:
     return 0;
 }
 
@@ -4874,20 +5099,8 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 
 // One node of the grid object's candidate list (head at m_triggerMgr->m_4): ->next at +0,
 // the candidate sub-object (its level coord at +0x54 / +0x58, an "occupied" flag at
-// +0x5c) at +0x8.
-struct GridCandNode {
-    GridCandNode* m_next; // +0x00
-    char m_pad04[0x04];
-    char* m_payload; // +0x08
-};
-// The candidate sub-object reached via node->m_8: m_54/m_58 carry its grid (>>5)
-// coordinate, m_5c is a nonzero "already occupied" flag.
-struct GridCand {
-    char m_pad00[0x54];
-    i32 m_gridX;    // +0x54  grid x
-    i32 m_gridY;    // +0x58  grid y
-    i32 m_occupied; // +0x5c  occupied flag (skip when set)
-};
+// +0x5c) at +0x8. GridCandNode / GridCand are defined near the top of this TU
+// (before Method_029b40's kind-7 arm, which also walks this list).
 
 // ===========================================================================
 // CBattlezMapConfig::Method_0350d0  @0x0350d0
