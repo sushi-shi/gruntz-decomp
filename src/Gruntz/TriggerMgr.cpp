@@ -299,17 +299,14 @@ struct CTmSpriteDesc {
 // The level view at level->m_24: ScreenToCell biases the input by its scroll origin - the
 // view holds the origin (m_10/m_14) and the scroll object (m_5c), whose +0x40/+0x44 is the
 // current scroll (x,y).
-struct CTmScroll {
-    char p0[0x40];
-    i32 m_40; // +0x40  scroll x
-    i32 m_44; // +0x44  scroll y
-};
 struct CTmLevelView {
     char p0[0x10];
     i32 m_10; // +0x10  view origin x
     i32 m_14; // +0x14  view origin y
-    char p18[0x5c - 0x18];
-    CTmScroll* m_5c; // +0x5c  scroll object
+    char p18[0x4c - 0x18];
+    void** m_4c;     // +0x4c  tile-class object table (cell id -> type object; PlaceObjectFull)
+    char p50[0x5c - 0x50];
+    CViewport* m_5c; // +0x5c  the plane viewport (real CViewport: tile grid + edge/scroll origin)
 };
 
 // The level object stored at CTriggerMgr+0x22c (set by SetLevel): its +0x8 is the sprite
@@ -464,8 +461,8 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
 RVA(0x0006be30, 0x47)
 void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
     CTmLevelView* view = m_level->m_24;
-    i32 px = view->m_5c->m_40 - view->m_10 + sx;
-    i32 py = view->m_5c->m_44 - view->m_14 + sy;
+    i32 px = view->m_5c->m_edgeL - view->m_10 + sx;
+    i32 py = view->m_5c->m_edgeT - view->m_14 + sy;
     return CellHitTest(px, py, outRow, outCol, startRow);
 }
 
@@ -1971,22 +1968,33 @@ i32 CTriggerMgr::PlaceObject(
 // hit-test the (x,y) target (HitTest5) and run the dense per-kind jump table over the two
 // coordinate sub-tables (DAT_00683ea0..eb4), building/dispatching the per-kind object and
 // stashing the rebuilt cell. ret 1. (__thiscall: ret 0x8.) Reconstructed to plateau.
-// @early-stop
-// largest driver (0x845 B): the dense jump table + the two coordinate sub-tables and ~12
-// per-kind stanzas diverge wholesale in regalloc/scheduling; the validated head + the
-// overlay/fx fast-paths are structurally faithful. Deferred to the final sweep. topic:wall.
+// @early-stop  (8.3% -> 18.3%)
+// largest driver (0x845 B): the common path (record decode, overlay/fx fast-paths,
+// CellHitTest, the viewport cell-type resolve, and the pending-fx>=0xdf tile-attr branch)
+// is reconstructed faithfully. FRAME WALL: retail allocates all the tail's spill slots
+// up front (`sub esp,0x18`, spilling this@[esp+0x18]/world@[esp+0x10]/cell@[esp+0x1c]/
+// hitFlag@[esp+0x20]/kind@[esp+0x14]) for the dense per-kind jump table (0x78e09: kind-1
+// -> the 0x4792cc byte table -> 0x479298 jumps, ~12 stanzas incl. the WrapCoord write-back
+// to cell+0x414..0x428). The stubbed tail here uses fewer locals (`sub esp,0xc`), so the
+// head's esp offsets + this-in-edi-vs-ebx regalloc shift wholesale - fully matching the
+// head requires reconstructing that jump table. Deferred to the final sweep. topic:wall.
 RVA(0x00078a50, 0x845)
 i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
+    // Decode the single record cell (row*15 + col into the placed grid).
     CTmCell* cell;
-    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
+    if (m_recList.m_count != 1) {
         cell = 0;
     } else {
         i32* rec = m_recList.m_head->m_payload;
-        cell = m_grid[rec[1] + rec[0] * 15];
+        cell = m_grid[rec[0] * 15 + rec[1]];
     }
-    if (cell == 0 || cell->m_1ec != g_644c54) {
-        return 0;
+    if (cell == 0) {
+        return 1;
     }
+    if (cell->m_1ec != g_644c54) {
+        return 1;
+    }
+    // An active overlay eats the click.
     CActionOptionsMenuBar* ov = m_overlay;
     if (ov != 0 && ov->m_active != 0) {
         ov->Forward(x, y);
@@ -1994,15 +2002,64 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     }
     CTmWorld* world = g_gameReg->m_curState;
     if (m_pendingFxKind == 0) {
-        if (cell->Type13Check() == 0) {
-            world->StopFx2(0, 0);
+        if (cell->CanShowStamina() == 0) {
+            world->LoadCursorSprites(0, 0);
             return 1;
         }
     }
-    // the HitTest5 + dense per-kind jump table over the two coordinate sub-tables
-    // (DAT_00683ea0..eb4) and the ~12 per-kind build/dispatch stanzas elide here; the placer
-    // stashes the rebuilt cell + bumps the counters (reconstructed to plateau)
-    cell->m_36c = 1;
+    // Hit-test the (x,y) target against the placed grid (startRow==5 -> all rows).
+    i32 hitFlag = 0;
+    if (CellHitTest(x, y, 0, 0, 5)) {
+        hitFlag = 1;
+    }
+    // Resolve the tile-cell's type object from the level viewport (result discarded:
+    // the virtual GetTypeId dispatch is kept for its side effect).
+    CTmLevelView* view = m_level->m_24;
+    CViewport* grid = view->m_5c;
+    i32 tx = x >> 5;
+    i32 ty = y >> 5;
+    i32 cx = tx;
+    if (tx < 0) {
+        cx = 0;
+    } else if (tx >= grid->m_tileWidth) {
+        cx = grid->m_tileWidth - 1;
+    }
+    i32 cy = ty;
+    if (ty < 0) {
+        cy = 0;
+    } else if (ty >= grid->m_tileHeight) {
+        cy = grid->m_tileHeight - 1;
+    }
+    i32 cval = grid->m_cells[grid->m_rowBase[cy] + cx];
+    if (cval != (i32)0xeeeeeeee && cval != -1) {
+        void* tc = view->m_4c[cval & 0xffff];
+        (*(i32(**)(void*, i32, i32))(*(void***)tc + 8))(tc, 0, 0);
+    }
+    // Pending-fx dispatch.
+    i32 pfk = m_pendingFxKind;
+    if (pfk >= 0xdf) {
+        i32 alt = cell->m_198;
+        if (hitFlag != 0) {
+            world->LoadCursorSprites(alt + 0xc8, 1);
+            return 1;
+        }
+        CTileGrid* plane = g_gameReg->m_tileGrid;
+        i32 attr;
+        if ((u32)tx >= (u32)plane->m_c || (u32)ty >= (u32)plane->m_10) {
+            attr = 1;
+        } else {
+            attr = plane->m_8[ty][tx * 7];
+        }
+        if ((attr & 0x939) != 0 || (attr & 2) != 0) {
+            world->LoadCursorSprites(pfk, 0);
+        } else {
+            world->LoadCursorSprites(alt + 0xc8, 1);
+        }
+        return 1;
+    }
+    // Block H (pfk < 0xdf): the dense per-kind jump table + write-back stanzas.
+    // Reconstructed to plateau (see @early-stop above).
+    (void)hitFlag;
     return 1;
 }
 

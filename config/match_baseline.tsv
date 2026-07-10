@@ -3887,7 +3887,7 @@ teleporter	?GetTypeTag@CTeleporter@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	c
 teleporter	?InitActReg@CTeleporter@@SAXXZ	100.0000	100.0000	3	1bef3a621da1	0x414a0
 teleporter	?Serialize@CTeleporter@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	8f143593dd04	0x41350
 teleporter	?Update@CTeleporter@@QAEHXZ	98.9103	98.9103	5	31dbe43561ab	0x41aa0
-terraintileloader	?Load@CTerrainTileLoader@@QAEHHHHHHH@Z	7.8554	7.8554	2	78e4e9d747b5	0x75e90
+terraintileloader	?Load@CTerrainTileLoader@@QAEHHHHHHH@Z	7.8554	7.8554	3	534137f13d2a	0x75e90
 terraintileloader	?Validate@ValidateHost@@QAEHXZ	100.0000	100.0000	2	085bfb3cabb2	0x94bc0
 tileactionevent	?DeserializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	5	f033294e79d9	0x114040
 tileactionevent	?MorphByTool@CTileActionEvent@@QAEHHH@Z	0.0000	0.0000	4	a847e8ef3911	0x113420
@@ -4071,7 +4071,7 @@ triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	76.1078	76.1078	7	19227f21fbfd	0x7
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	7	aa17ca3713d7	0x79b00
 triggermgr	?OverlayTick@CTriggerMgr@@QAEXXZ	100.0000	100.0000	6	12c00630f681	0x78a30
 triggermgr	?PlaceObject@CTriggerMgr@@QAEHHHHHHHHHHHHHH@Z	28.4642	28.4642	7	5f8c7f55f1b7	0x6b6d0
-triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	8.2789	8.2789	10	f458923eaaaa	0x78a50
+triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	18.2909	18.2909	11	4164216c6d73	0x78a50
 triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCTmCell@@H@Z	87.8205	87.8205	5	870e93a5e79b	0x7a240
 triggermgr	?RebuildOverlay@CTriggerMgr@@QAEHPAXHHH@Z	100.0000	100.0000	3	55df587ff46d	0x7a5e0
 triggermgr	?RebuildSelectionList@CTriggerMgr@@QAEHH@Z	85.7759	85.7759	5	b1fdf8873102	0x7cc60
@@ -4085,7 +4085,7 @@ triggermgr	?ResetCell@CTriggerMgr@@QAEHHHHH@Z	62.2414	62.2414	6	8a544e4da314	0x6
 triggermgr	?ResetGroup@CTriggerMgr@@QAEHHHHHHHH@Z	46.6561	46.6561	12	98857eaddb42	0x79520
 triggermgr	?ResetSpawnState@CTriggerMgr@@QAEXXZ	97.7885	97.7885	9	e851e19793b1	0x79d90
 triggermgr	?ScanGroup@CTriggerMgr@@QAEHPAUCSerialArchive@@@Z	77.9083	77.9083	2	f98831f70849	0x7a760
-triggermgr	?ScreenToCell@CTriggerMgr@@QAEPAXHHPAH0H@Z	86.9286	86.9286	5	9f501000e1db	0x6be30
+triggermgr	?ScreenToCell@CTriggerMgr@@QAEPAXHHPAH0H@Z	86.9286	86.9286	6	e0490337d930	0x6be30
 triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	84.5833	84.5833	6	d04fb4993349	0x7d2a0
 triggermgr	?SetLevel@CTriggerMgr@@QAEHPAUCTmLevel@@@Z	100.0000	100.0000	1	6d05ad7645ad	0x6b640
 triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	70.2188	70.2188	6	146463a14d78	0x7c110

@@ -187,14 +187,26 @@ i32 CChatBoxOwner::HitTest(i32 x, i32 y) {
 //   done:   m_14->Refresh(); this->m_10 = 0;             // 0x25c2
 //
 // @early-stop
-// DEFERRED to the final sweep. This is a 1857-byte CString-temp-heavy /GX body
-// with ~24 cascading EH states (the [esp+0x154] state byte runs 0..0x18), MFC
-// CString Format/Left/Mid temps, virtual-dispatch input-mode probes, and a
-// CButeMgr cheat-file load+enumerate. Per the eh-state-numbering-base.md +
-// gx-state-machine-scalar-delete-cleanup.md walls (same family as the deferred
-// Font word-wrap monsters), reproducing the exact EH-state machine + the deep
-// engine-collection model is a leaf-first redo - homed by RVA as a complete-intent
-// placeholder rather than a half-reconstructed body that would diverge regalloc.
+// DEFERRED to the final sweep (ALL-OR-NOTHING /GX FRAME wall). This is a 1857-byte
+// CString-temp-heavy /GX body with ~24 cascading EH states (the [esp+0x154] state byte
+// runs 0..0x18) whose `sub esp,0x13c` frame is fixed only when EVERY destructible local
+// is declared - so a partial reconstruction shifts every esp offset and gains nothing
+// (empirically confirmed on the simpler non-EH PlaceObjectFull: an under-declared frame
+// wholesale-diverges regalloc). Callee/local identities recovered (xref) for the redo:
+//   [esp+0x3c] = CButeSection (ctor ??0CButeSection 0x170210; ParseGroup 0x171580;
+//                GetIntDef 0x171aa0 / Exists 0x171a60 / GetStringDef 0x173180; Init 0x170330)
+//   ebx        = CParseSource (m_34->LoadBute 0x13bff0; BeginParse 0x139960 / EndParse 0x1399d0)
+//   [esp+0x54/0x84/0xb0] = 3 scratch CButeStore locals (ctor/Clear 0x16e070; MI dtor
+//                restamps ??_7zPTree@0x5e94ac / ??_7CButeStore@0x5e949c + 0x16dfc0 + 0x16da60)
+//   the two `new`(0x5c/0x58) heap objects (ctors 0x169700/0x1698c0) + their wrappers
+//                (0x16f6c0/0x16f760, dtor 0x16f6b0) are the MSVC istream/ostream-family
+//                stream construction over the loaded TXT resource - LIBRARY machinery.
+// m_14 = CChatBoxTextHost (IsAcceptingInput 0x3508 / GetText 0x12a3 / Dispatch 0x2243 /
+//        ClearInput 0x442b / Refresh 0x25c2); g_gameReg->m_2c GetInputMode @vtbl+0x10;
+//        g_gameReg->m_44 = the cheat applier (Apply 0x4269). Per eh-state-numbering-base.md
+// + gx-state-machine-scalar-delete-cleanup.md, reproducing the exact EH-state machine + the
+// istream/ostream library construction is a leaf-first redo - homed by RVA as a complete-
+// intent placeholder rather than a half-reconstructed body that would diverge regalloc.
 RVA(0x000205c0, 0x741)
 void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
     (void)a;

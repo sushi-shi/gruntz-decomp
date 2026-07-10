@@ -53,6 +53,7 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created Particlez sprite)
 #include <Gruntz/Viewport.h>      // the shared tile-grid geometry (cell lookup)
+#include <Gruntz/TileGridCommand.h> // real CTileTriggerContainer (map+0x2e4) + CTileGridCommand (the found set)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -64,16 +65,10 @@ extern void* g_64556c;
 
 #define PTR(p, off) (*(void**)((char*)(p) + (off)))
 
-// The trigger registrar reached through the level map's +0x2e4: LookupKind (0x21df)
-// resolves a set by (key, kind); FreeSet (0x2581) releases it. The looked-up set's
-// MarkKind (0x1a00) tags it. All __thiscall, reloc-masked (no body).
-struct TtTrigReg {
-    void* LookupKind(i32 key, i32 kind); // 0x21df
-    void FreeSet(void* obj);             // 0x2581
-};
-struct TtSet {
-    void MarkKind(i32 kind); // 0x1a00
-};
+// The trigger registrar reached through the level map's (g_gameReg->m_2c) +0x2e4 is the
+// real CTileTriggerContainer (FindInLists12 @0x116f20 resolves a set by (key,kind);
+// DelFromList1 @0x116e60 releases it); the looked-up set is a CTileGridCommand
+// (ApplyMove @0x112590 tags it 0x22). All __thiscall, reloc-masked.
 
 // ---------------------------------------------------------------------------
 // The level/map owner (`this`). Raw-offset access.
@@ -166,11 +161,11 @@ i32 CTerrainTileLoader::Load(
             }
             // a5 == 0x63: clear the tile's registered tag-0x1a set, keyed by tile coord
             if (cellType == 0x22) {
-                TtTrigReg* reg = (TtTrigReg*)PTR(map, 0x2e4);
-                void* found = reg->LookupKind((tileX << 8) + tileY, 0x1a);
+                CTileTriggerContainer* reg = (CTileTriggerContainer*)PTR(map, 0x2e4);
+                void* found = reg->FindInLists12((tileX << 8) + tileY, 0x1a);
                 if (found != 0) {
-                    ((TtSet*)found)->MarkKind(0x22);
-                    reg->FreeSet(found);
+                    ((CTileGridCommand*)found)->ApplyMove(0x22);
+                    reg->DelFromList1(found);
                 }
             }
             return 1;
