@@ -21,6 +21,7 @@
 #include <rva.h>
 
 class CBattlezData; // folded BrickzSerObj
+struct tagRECT;     // Win32 RECT (CBrickzGrid::Clip arg)
 
 #include <Ints.h>
 
@@ -103,6 +104,14 @@ struct BrickzAttrMgr {
 class CBrickzGrid {
 public:
     // ---- reconstructed in src/Gruntz/Brickz.cpp ----
+    // The board dirty-rect clip finaliser (0x02b340): clip the (0,0,m_width,m_height)
+    // box against the optional src rect (right/bottom inclusive -> +1) via Win32
+    // IntersectRect, store the clipped rect at the +0x60 bound-rect, and derive its
+    // width/height at +0x70/+0x74. __thiscall(const RECT*) ; ret 0x4. `this` is the
+    // board (m_board in the Battlez/Grunt movement methods); called on divergent
+    // callers so reloc-masked at each site.
+    void Clip(const tagRECT* r); // 0x02b340
+
     // The terrain-grid cell-flag compute (0x077790): look up the bute-type id for
     // cell (x,y) via the m_78 attribute manager, switch it to a packed flag value,
     // OR in the preserved high bits, then run the 8-neighbour edge-update walk over

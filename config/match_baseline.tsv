@@ -35,7 +35,7 @@ assetnamespaceprefixes	1	0
 attract	20	10
 battlezdata	29	26
 battlezdlgrow	1	0
-battlezmapconfig	43	11
+battlezmapconfig	42	11
 behindcandy	4	3
 behindcandyani	8	6
 bitarray	1	1
@@ -47,7 +47,7 @@ bootymessages	3	0
 bootystateactivate	5	4
 bootywalkanim	2	0
 bracketvalue	1	1
-brickz	20	6
+brickz	21	6
 brickzload	1	0
 bridgemovesprites	1	0
 buildgruntzcrcinfo	1	0
@@ -671,7 +671,6 @@ battlezdata	?SumWinRow@CBattlezData@@QAEHH@Z	100.0000	100.0000	3	4368e766c5e9	0x
 battlezdlgrow	?ToggleRow@CBattlezDlg@@QAEHH@Z	82.0714	82.0714	3	b46c142c2955	0x15fe0
 battlezmapconfig	??0CBattlezMapConfig@@QAE@XZ	93.3108	93.3108	2	cc97689a6a74	0x24dc0
 battlezmapconfig	??1CBattlezMapConfig@@QAE@XZ	100.0000	100.0000	2	fb1156cf80c5	0x24f80
-battlezmapconfig	?Clip@ClipHost_02b340@@QAEXPBUtagRECT@@@Z	81.3000	81.3000	1	865e4eab224b	0x2b340
 battlezmapconfig	?Deserialize_02b950@CBattlezMapConfig@@QAEHPAX@Z	99.5079	99.5079	2	9d928c2298e8	0x2b950
 battlezmapconfig	?FreeArrays@CBattlezMapConfig@@QAEXXZ	100.0000	100.0000	2	8d6a0f663c78	0x25ca0
 battlezmapconfig	?ListNodeAdvance@@YGPAXPAPAX@Z	100.0000	100.0000	1	2e81a8ba66d0	0x29a30
@@ -705,9 +704,9 @@ battlezmapconfig	?Report@ZErrTarget@@QAEXHH@Z	100.0000	100.0000	5	4254aa71b7d1	0
 battlezmapconfig	?Serialize_02b420@CBattlezMapConfig@@QAEHPAX@Z	100.0000	100.0000	2	ac1e7f0d9444	0x2b420
 battlezmapconfig	?winapi_0267c0_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHXZ	0.0596	0.0596	2	831a3129959e	0x267c0
 battlezmapconfig	?winapi_02a570_IntersectRect@CBattlezMapConfig@@QAEHH@Z	55.7065	55.7065	5	de407cb0a629	0x2a570
-battlezmapconfig	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.4911	77.4911	2	a79cacbf857d	0x2ab80
-battlezmapconfig	?winapi_02ae00_IntersectRect@CBattlezMapConfig@@QAEHHH@Z	82.9729	82.9729	3	fa76a64e82a9	0x2ae00
-battlezmapconfig	?winapi_02c140_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHH@Z	57.3921	57.3921	4	155bfea5ef13	0x2c140
+battlezmapconfig	?winapi_02ab80_PtInRect@CBattlezMapConfig@@QAEHHHHH@Z	77.4911	77.4821	2	a79cacbf857d	0x2ab80
+battlezmapconfig	?winapi_02ae00_IntersectRect@CBattlezMapConfig@@QAEHHH@Z	82.9729	82.9729	4	b0571507f693	0x2ae00
+battlezmapconfig	?winapi_02c140_IntersectRect_PtInRect@CBattlezMapConfig@@QAEHH@Z	57.3921	57.3921	5	e8810bf02501	0x2c140
 battlezmapconfig	?winapi_02dfa0_IntersectRect@CBattlezMapConfig@@QAEHHHHH@Z	52.3633	52.3633	4	5319a4606363	0x2dfa0
 battlezmapconfig	?winapi_02e3a0_PtInRect@CBattlezMapConfig@@QAEHH@Z	53.0804	53.0804	5	25804c0977a6	0x2e3a0
 battlezmapconfig	?winapi_031ca0_IntersectRect@CBattlezMapConfig@@QAEHH@Z	75.3229	75.3229	5	32cb1496793e	0x31ca0
@@ -749,6 +748,7 @@ bracketvalue	?ExtractBracketValue@@YAHPAD00@Z	100.0000	100.0000	2	621add35a117	0
 brickz	?AllocGrid@CBrickzGrid@@QAEHHHH@Z	78.5180	78.5180	4	db116cc4a4e9	0x9ea60
 brickz	?CellPop@CBrickzGrid@@QAEXPAUBrickzNode@@H@Z	80.3284	80.3284	2	e1876e1cbfb2	0x9f710
 brickz	?CellPush@CBrickzGrid@@QAEXPAUBrickzNode@@@Z	85.9070	85.9070	2	0d74ef4642ea	0x9f470
+brickz	?Clip@CBrickzGrid@@QAEXPBUtagRECT@@@Z	81.3000	81.3000	1	e000b5d07dd4	0x2b340
 brickz	?ComputeCellFlags@CBrickzGrid@@QAEXHHH@Z	0.0000	0.0000	2	c6c20d989182	0x77790
 brickz	?Drain@CBrickzGrid@@QAEXXZ	66.7391	66.7391	2	d83a0d36dad1	0x9f590
 brickz	?Expand@CBrickzGrid@@QAEHPAUBrickzNode@@HHHH@Z	78.8300	78.8300	2	7d636f17142a	0x9f010
@@ -760,7 +760,7 @@ brickz	?IsCellClear@CBrickzGrid@@QAEHHH@Z	100.0000	100.0000	1	4b38d4b9443a	0x853
 brickz	?LineIsClear@CBrickzGrid@@QAEHHHHH@Z	99.7500	99.7500	1	fd73661973e3	0x82250
 brickz	?PopFront@CBrickzGrid@@QAEPAUBrickzNode@@XZ	100.0000	100.0000	2	94842a64e90f	0x9f430
 brickz	?Reset@CBrickzGrid@@QAEXXZ	64.7115	64.7115	2	826f20e069cb	0x9f5d0
-brickz	?Search@CBrickzGrid@@QAEHHHHHPAXHHH@Z	91.1326	91.1326	3	9413073d8985	0x9eca0
+brickz	?Search@CBrickzGrid@@QAEHHHHHPAXHHH@Z	91.0871	91.0871	3	9413073d8985	0x9eca0
 brickz	?SearchEdge@CBrickzGrid@@QAEHHHHHPAXHHH@Z	82.5373	82.5373	2	7b79a7ef2a65	0x81e10
 brickz	?Serialize@CBrickzGrid@@QAEHHHHH@Z	33.2258	33.2258	3	cd10c92203c8	0x9356c
 brickz	?SetCell@BrickzGridDesc@@QAEXHHH@Z	100.0000	100.0000	1	7b878db7611f	0x77dc0
