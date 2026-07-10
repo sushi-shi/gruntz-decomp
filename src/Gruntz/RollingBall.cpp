@@ -207,12 +207,12 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
 
     CRbCtorObj* o = (CRbCtorObj*)m_object;
     i32 snapX = (o->m_5c & ~0x1f) + 0x10;
-    i32 snapY = (o->m_60 & ~0x1f) + 0x10;
+    i32 snapY = 0x10 + (o->m_60 & ~0x1f);
     o->m_5c = snapX;
     m_subX = (double)snapX;
     o->m_60 = snapY;
     m_subY = (double)snapY;
-    if (o->m_74 != snapY + 0x186a0) {
+    if (o->m_74 != 0x186a0 + snapY) {
         o->m_74 = snapY + 0x186a0;
         o->m_08 |= 0x20000;
     }
@@ -221,23 +221,24 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     if (obj38->m_194 != 0) {
         CRbMiniStr name;
         name = obj38->m_194 + 0x24;
-        const char* s = name.m_buf;
+        const char* s;
+        s = name.m_buf;
         if (strcmp(s, "LEVEL_ROLLINGBALL_NORTH") == 0) {
             o->m_12c = 1;
             m_stepDirX = 0;
             m_stepDirY = -1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_EAST") == 0) {
             o->m_12c = 2;
-            m_stepDirX = 1;
             m_stepDirY = 0;
+            m_stepDirX = 1;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_SOUTH") == 0) {
             o->m_12c = 3;
-            m_stepDirX = 0;
             m_stepDirY = 1;
+            m_stepDirX = 0;
         } else if (strcmp(s, "LEVEL_ROLLINGBALL_WEST") == 0) {
             o->m_12c = 4;
-            m_stepDirX = -1;
             m_stepDirY = 0;
+            m_stepDirX = -1;
         }
     }
 
@@ -246,15 +247,15 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
         time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
     }
     CRbReg* reg = (CRbReg*)g_64556c;
-    if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && o->m_124 != 1) {
+    if (0 != reg->m_isEasyMode && reg->m_134 == 1 && o->m_124 != 1) {
         time += 1000;
     }
     m_explodeWindowLo = o->m_118;
     m_explodeWindowHi = 0;
     m_explodeStartLo = g_645588;
     m_explodeStartHi = 0;
-    m_targetX = snapY;
     m_targetY = snapY;
+    m_targetX = snapY;
     m_explodeLatch = 0;
     m_fallLatch = 0;
     m_moveSpeed = g_slimeSpeedNum / (double)(i64)(u32)time;
@@ -262,8 +263,8 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     o->m_14c = 0;
     o->m_148 = 0;
     o->m_150 = 0;
-    m_moveDeltaLo = 0;
     m_moveDeltaHi = 0;
+    m_moveDeltaLo = 0;
 }
 
 // CRollingBall::InitActReg @0x0afd60 - construct the class's activation-coordinate
@@ -390,7 +391,7 @@ i32 CRollingBall::Update() {
 
     // ----- the sub-tile-snapped move + action switch -----
     void* logic = PTR(self, 0x10);
-    if (I32(logic, 0x5c) == I32(self, 0x78) && I32(logic, 0x60) == I32(self, 0x7c)) {
+    if (I32(logic, 0x5c) == I32(self, 0x78) && I32(self, 0x7c) == I32(logic, 0x60)) {
         // arrived at the target cell: clear the cell, read its terrain id and
         // dispatch on the rolling-ball action.
         RbClearCell(PTR(g_64556c, 0x68), I32(self, 0x7c), I32(self, 0x78), 0);

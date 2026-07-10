@@ -89,15 +89,17 @@ public:
 };
 SIZE(CButeStream, 0x4); // receiver view of the +0xa0 input stream
 
-// The big attribute-file line driver at 0x170750 (the same class as CButeMgr;
-// its retail symbol is ?ParseAttributeFile@ButeMgr@@QAE_NXZ, stubbed in
-// src/Stub/Backlog.cpp). The lexer cluster reaches it through this `ButeMgr`
-// view so the call pairs by name; `this` (a CButeMgr*) is the receiver.
-class ButeMgr {
+// The big attribute-file line driver at 0x170750. Retail mangles ONLY this method
+// under `ButeMgr@@` (every sibling method is `CButeMgr@@`), so ParseAttributeFile
+// lives on a `ButeMgr` class that single-inherits CButeMgr: the base sits at offset
+// 0 (CButeMgr is non-polymorphic -> no vptr), so `this` is a `ButeMgr*` == its
+// `CButeMgr*` sub-object and every data member / method is reached DIRECTLY through
+// inheritance with no cast.
+class ButeMgr : public CButeMgr {
 public:
     bool ParseAttributeFile();
 };
-SIZE(ButeMgr, 0x110); // alias view of CButeMgr (same object)
+SIZE(ButeMgr, 0x110); // == sizeof(CButeMgr): the single base, no added members
 
 // ParseGroup's recursive node-walk callback (the engine apply-fn passed to the
 // tree walker at 0x193340). Reloc-masked file-scope address.
@@ -881,148 +883,154 @@ bool CButeMgr::Parse() {
 //     decorations ("(DWORD)", "(FLOAT)", "(a, b)", "<x, y, z>", "[x, y]", ...).
 // The token scanners + the heap value copies live under a C++ EH frame (each
 // inline value object + the CString string temp are destructible on unwind) ->
-// /GX. `this` is a CButeMgr (the ButeMgr view only fixes the retail mangling).
+// /GX. `this` is a `ButeMgr` == its `CButeMgr` base (offset 0) -- reached directly
+// through inheritance, no cast/view.
 // @early-stop
-// 40.9% this-register-pin + EH-frame-layout regalloc wall. Logic/CFG are complete
-// and correct: all 11 value-type cases (int/dword/float/double/string + the
-// point2/4 + rect2/3 refs), both STORE (new+Insert) and WRITE-BACK (getter +
-// formatted accum append) modes, with byte-correct case bodies (verified
-// per-case against the disasm). The residual is two coupled allocator coin-flips
-// that cascade through every `this`-relative operand: (1) retail pins `this` in
-// EBP (`mov ebp,ecx`), the recompile picks ESI -- so every `[this+N]` access
-// encodes a different mod/rm byte fn-wide; (2) retail reserves a 0x54 frame
-// (double-staging the rect/point value copies through `[esp+0x34..0x60]` +
-// `rep movs`), the recompile reserves 0x28 (field-store, no staging buffer).
-// Modeling the refs as named value-structs copied to the heap (which reproduces
-// the staging + rep-movs) regressed the whole fn 41%->36% by perturbing the /GX
-// EH-state of the destructible locals -- a net-negative lever. The case bodies
-// otherwise match; deferred to the final sweep (see docs/patterns/
+// this-register-pin + EH-frame-layout regalloc wall. Logic/CFG are complete and
+// correct: all 11 value-type cases, both STORE (new+Insert) and WRITE-BACK (getter +
+// formatted accum append) modes, byte-correct case bodies. Reconstruction is now
+// maximally faithful + clean: no `(CButeMgr*)this` cast (real single-inheritance from
+// CButeMgr), no `(CString*)GetString(...)` cast (retail calls CString(const char*) on
+// the char* return), the shared value slot is a union (not `*(DWORD*)&v`/`*(float*)&v`
+// reinterprets), and m_pText->accum is recomputed per use exactly as retail does (it
+// does NOT cache it). The residual is the register coin-flip: retail pins `this` in EBP
+// (`mov ebp,ecx`), MSVC here picks ESI (rotation this/&m_token/&m_str104 = ebp/esi/edi
+// retail vs esi/edi/ebp here) -> every `[this+N]` encodes a different mod/rm byte
+// fn-wide -- coupled with retail's 0x54 frame (staging the rect/point copies + rep movs)
+// vs our 0x28 (direct field store). NOT source-steerable: tried accum cache-vs-recompute
+// (the cache form scores ~5% higher by luck but the retail bytes prove no cache -> kept
+// the faithful recompute), explicit tok/key base locals (codegen-neutral), and the
+// permuter (no change). Deferred to the final sweep (see docs/patterns/
 // stack-buffer-size-drives-frame.md + o2-optimizer-bailout-framed.md).
 RVA(0x00170750, 0x9d8)
 bool ButeMgr::ParseAttributeFile() {
-    CButeMgr* self = (CButeMgr*)this;
-    CButeText* accum = &self->m_pText->accum;
 
     // The shared 4-byte scalar value slot ([esp+0x10] in retail), zero-init at
-    // entry (`mov [esp+0x10],0`) and reused by the int/dword/float store paths.
-    i32 v = 0;
+    // entry (`mov [esp+0x10],0`) and reused by the int/dword/float store paths -
+    // one slot, three views, so an honest union rather than reinterpret casts.
+    union {
+        i32 vi;
+        DWORD vd;
+        float vf;
+    };
+    vi = 0;
 
-    self->m_str104 = self->m_token;
+    m_str104 = m_token;
 
     bool bDup = false;
-    if (!self->m_writeMode) {
-        if (self->m_pNode->Find(self->m_str104)) {
-            self->ReportError(s_fmtDupTag, self->m_str104.GetBuffer(0));
+    if (!m_writeMode) {
+        if (m_pNode->Find(m_str104)) {
+            ReportError(s_fmtDupTag, m_str104.GetBuffer(0));
             bDup = true;
         }
     }
 
-    if (!self->ScanToken(5)) {
+    if (!ScanToken(5)) {
         return false;
     }
-    if (self->m_writeMode) {
-        accum->Trim(0x20);
-        self->m_captureText = 0;
+    if (m_writeMode) {
+        m_pText->accum.Trim(0x20);
+        m_captureText = 0;
     }
-    if (!self->Parse()) {
+    if (!Parse()) {
         return false;
     }
 
-    switch (self->m_tokType) {
+    switch (m_tokType) {
         case 5:
         case 6: { // signed int -> type 0
-            v = atoi(self->m_token);
-            if (self->m_writeMode) {
-                accum->AppendInt(self->GetInt(self->m_tagName, self->m_str104));
+            vi = atoi(m_token);
+            if (m_writeMode) {
+                m_pText->accum.AppendInt(GetInt(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
                     n->type = 0;
                     i32* p = (i32*)operator new(4);
                     if (p) {
-                        *p = v;
+                        *p = vi;
                         n->pValue = p;
                     } else {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert(self->m_str104, n);
+                m_pNode->Insert(m_str104, n);
             }
             break;
         }
         case 13: { // dword -> type 1
-            if (!self->ScanToken(6)) {
+            if (!ScanToken(6)) {
                 return false;
             }
-            *(DWORD*)&v = ButeRead_Dword(self->m_token, 0, 10);
-            if (self->m_writeMode) {
-                *accum += s_strDword;
-                accum->AppendDword(self->GetDword(self->m_tagName, self->m_str104));
+            vd = ButeRead_Dword(m_token, 0, 10);
+            if (m_writeMode) {
+                m_pText->accum += s_strDword;
+                m_pText->accum.AppendDword(GetDword(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
                     n->type = 1;
                     DWORD* p = (DWORD*)operator new(4);
                     if (p) {
-                        *p = v;
+                        *p = vi;
                         n->pValue = p;
                     } else {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert(self->m_str104, n);
+                m_pNode->Insert(m_str104, n);
             }
             break;
         }
         case 14: { // float (FLOAT-tagged) -> type 3
-            if (!self->ScanToken(8)) {
+            if (!ScanToken(8)) {
                 return false;
             }
-            *(float*)&v = (float)ButeRead_Float(self->m_token);
-            if (self->m_writeMode) {
-                (*accum += s_strFloat)
-                    .AppendDouble(self->GetFloat(self->m_tagName, self->m_str104));
+            vf = (float)ButeRead_Float(m_token);
+            if (m_writeMode) {
+                (m_pText->accum += s_strFloat)
+                    .AppendDouble(GetFloat(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
                     n->type = 3;
                     i32* p = (i32*)operator new(4);
                     if (p) {
-                        *p = v;
+                        *p = vi;
                         n->pValue = p;
                     } else {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert(self->m_str104, n);
+                m_pNode->Insert(m_str104, n);
             }
             break;
         }
         case 15: { // float ('f'-tagged) -> type 3
-            *(float*)&v = (float)ButeRead_Float(self->m_token);
-            if (self->m_writeMode) {
-                (*accum).AppendDouble(self->GetFloat(self->m_tagName, self->m_str104));
-                *accum += s_strFloatSuffix;
+            vf = (float)ButeRead_Float(m_token);
+            if (m_writeMode) {
+                (m_pText->accum).AppendDouble(GetFloat(m_tagName, m_str104));
+                m_pText->accum += s_strFloatSuffix;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
                     n->type = 3;
                     i32* p = (i32*)operator new(4);
                     if (p) {
-                        *p = v;
+                        *p = vi;
                         n->pValue = p;
                     } else {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert(self->m_str104, n);
+                m_pNode->Insert(m_str104, n);
             }
             break;
         }
         case 7: { // double -> type 2
-            double dv = ButeRead_Float(self->m_token);
-            if (self->m_writeMode) {
-                accum->AppendDouble(self->GetDouble(self->m_tagName, self->m_str104));
+            double dv = ButeRead_Float(m_token);
+            if (m_writeMode) {
+                m_pText->accum.AppendDouble(GetDouble(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1035,20 +1043,20 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert(self->m_str104, n);
+                m_pNode->Insert(m_str104, n);
             }
             break;
         }
         case 9: { // (a, b, c, d) point4 -> type 5
             i32 a, b, c, d;
-            sscanf(self->m_token, s_fmtPoint4, &a, &b, &c, &d);
-            if (self->m_writeMode) {
-                CButeRef5* r = self->GetRef5(self->m_tagName, self->m_str104);
-                (*accum += s_strOpen).AppendElem((i32)r->a);
-                (*accum += s_strComma).AppendElem((i32)r->b);
-                (*accum += s_strComma).AppendElem((i32)r->c);
-                (*accum += s_strComma).AppendElem((i32)r->d);
-                *accum += s_strClose;
+            sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
+            if (m_writeMode) {
+                CButeRef5* r = GetRef5(m_tagName, m_str104);
+                (m_pText->accum += s_strOpen).AppendElem((i32)r->a);
+                (m_pText->accum += s_strComma).AppendElem((i32)r->b);
+                (m_pText->accum += s_strComma).AppendElem((i32)r->c);
+                (m_pText->accum += s_strComma).AppendElem((i32)r->d);
+                m_pText->accum += s_strClose;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1064,18 +1072,18 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert(self->m_str104, n);
+                m_pNode->Insert(m_str104, n);
             }
             break;
         }
         case 10: { // (a, b) point -> type 6
             i32 a, b;
-            sscanf(self->m_token, s_fmtPoint2, &a, &b);
-            if (self->m_writeMode) {
-                CButeRef6* r = self->GetRef6(self->m_tagName, self->m_str104);
-                (*accum += s_strOpen).AppendElem((i32)r->a);
-                (*accum += s_strComma).AppendElem((i32)r->b);
-                *accum += s_strClose;
+            sscanf(m_token, s_fmtPoint2, &a, &b);
+            if (m_writeMode) {
+                CButeRef6* r = GetRef6(m_tagName, m_str104);
+                (m_pText->accum += s_strOpen).AppendElem((i32)r->a);
+                (m_pText->accum += s_strComma).AppendElem((i32)r->b);
+                m_pText->accum += s_strClose;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1089,22 +1097,22 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert(self->m_str104, n);
+                m_pNode->Insert(m_str104, n);
             }
             break;
         }
         case 11: { // <x, y, z> rect3 -> type 7
             double x, y, z;
-            sscanf(self->m_token, s_fmtRect3, &x, &y, &z);
-            if (self->m_writeMode) {
-                CButeRef7* r = self->GetRef7(self->m_tagName, self->m_str104);
+            sscanf(m_token, s_fmtRect3, &x, &y, &z);
+            if (m_writeMode) {
+                CButeRef7* r = GetRef7(m_tagName, m_str104);
                 double dx = *(double*)&r->a;
                 double dy = *(double*)&r->c;
                 double dz = *(double*)&r->e;
-                (*accum += s_strLt).AppendDouble(dx);
-                (*accum += s_strComma).AppendDouble(dy);
-                (*accum += s_strComma).AppendDouble(dz);
-                *accum += s_strGt;
+                (m_pText->accum += s_strLt).AppendDouble(dx);
+                (m_pText->accum += s_strComma).AppendDouble(dy);
+                (m_pText->accum += s_strComma).AppendDouble(dz);
+                m_pText->accum += s_strGt;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1119,20 +1127,20 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert(self->m_str104, n);
+                m_pNode->Insert(m_str104, n);
             }
             break;
         }
         case 12: { // [x, y] rect2 -> type 8
             double x, y;
-            sscanf(self->m_token, s_fmtRect2, &x, &y);
-            if (self->m_writeMode) {
-                CButeRef8* r = self->GetRef8(self->m_tagName, self->m_str104);
+            sscanf(m_token, s_fmtRect2, &x, &y);
+            if (m_writeMode) {
+                CButeRef8* r = GetRef8(m_tagName, m_str104);
                 double dx = *(double*)&r->a;
                 double dy = *(double*)&r->c;
-                (*accum += s_strLBrack).AppendDouble(dx);
-                (*accum += s_strComma).AppendDouble(dy);
-                *accum += s_strRBrack;
+                (m_pText->accum += s_strLBrack).AppendDouble(dx);
+                (m_pText->accum += s_strComma).AppendDouble(dy);
+                m_pText->accum += s_strRBrack;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1146,34 +1154,34 @@ bool ButeMgr::ParseAttributeFile() {
                         n->pValue = 0;
                     }
                 }
-                self->m_pNode->Insert(self->m_str104, n);
+                m_pNode->Insert(m_str104, n);
             }
             break;
         }
         case 8: { // quoted string -> type 4
-            if (self->m_writeMode) {
-                CString tmp(*(CString*)self->GetString(self->m_tagName, self->m_str104));
-                accum->Trim(0x22);
-                *accum += tmp.GetBuffer(0);
-                accum->Trim(0x22);
+            if (m_writeMode) {
+                CString tmp(GetString(m_tagName, m_str104));
+                m_pText->accum.Trim(0x22);
+                m_pText->accum += tmp.GetBuffer(0);
+                m_pText->accum.Trim(0x22);
             } else if (!bDup) {
-                CString s(self->m_token);
+                CString s(m_token);
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
                     n->type = 4;
                     n->pValue = new CString(s);
                 }
-                self->m_pNode->Insert(self->m_str104, n);
+                m_pNode->Insert(m_str104, n);
             }
             break;
         }
         default:
-            self->ReportError(s_fmtInvalidToken, self->m_lineNo);
+            ReportError(s_fmtInvalidToken, m_lineNo);
             return false;
     }
 
-    if (self->m_writeMode) {
-        self->m_captureText = 1;
+    if (m_writeMode) {
+        m_captureText = 1;
     }
     return true;
 }

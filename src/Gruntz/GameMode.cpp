@@ -459,8 +459,8 @@ i32 CState::LevelMsgHudDriver() {
                 CGameObject* e = self->m_expl[i];
                 e->m_stateFlags &= ~1;
                 e->ApplyLookupGeometry("GAME_EXPLOSION1", 0);
-                e->m_screenX = (g_levelMsgRectsB[i].left + g_levelMsgRectsB[i].right) / 2;
-                e->m_screenY = (g_levelMsgRectsB[i].top + g_levelMsgRectsB[i].bottom) / 2 - 0x10;
+                e->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
+                e->m_screenY = (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
                 if (shown == 0) {
                     CSndHost* host = ((CSndSubMgr*)g_mgrSettings->m_world)->m_28;
                     if (host->m_emitGate == 0) {
@@ -490,7 +490,7 @@ i32 CState::LevelMsgHudDriver() {
         self->m_gokart[self->m_slot]->m_screenX = gx;
         i32 s = self->m_slot;
         if (self->m_shownB[s] == 0
-            && (g_levelMsgRectsA[s].left + g_levelMsgRectsA[s].right) / 2 <= gx) {
+            && (g_levelMsgRectsA[s].right + g_levelMsgRectsA[s].left) / 2 <= gx) {
             RECT box;
             self->m_shownB[s] = 1;
             g_pCopyRect(&box, &g_levelMsgRectsA[self->m_slot]);
