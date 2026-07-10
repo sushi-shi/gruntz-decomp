@@ -43,7 +43,7 @@
 
       # objdiff - upstream prebuilt Linux binaries (not in nixpkgs), so foreign ELF
       # patched by autoPatchelfHook. Supports x86 + COFF, our MSVC target.
-      objdiffVersion = "3.7.1";
+      objdiffVersion = "3.7.3";
       objdiffUrl = name:
         "https://github.com/encounter/objdiff/releases/download/v${objdiffVersion}/${name}";
       objdiffGuiLibs = with pkgs; [
@@ -56,7 +56,7 @@
         version = objdiffVersion;
         src = pkgs.fetchurl {
           url = objdiffUrl "objdiff-cli-linux-x86_64";
-          hash = "sha256-QNhW2gHgpnbA8zr1NOVi8JjNUORey2Tzs0ZBjHsmSuY=";
+          hash = "sha256-HIp1ZJcOhrVI8JIZCNNuW1Rkb+cvhuXIK4wOumQCDOo=";
         };
         dontUnpack = true;
         nativeBuildInputs = [ pkgs.autoPatchelfHook ];
@@ -69,7 +69,7 @@
         version = objdiffVersion;
         src = pkgs.fetchurl {
           url = objdiffUrl "objdiff-linux-x86_64";
-          hash = "sha256-LpBPYyWPzuX5jm02WUovzqJQyqz+l8SbRURHDWgFqq8=";
+          hash = "sha256-1pzhzJUl/BJQP2XS333KIfkx1YYi8ZyRdPMv5MnJGyA=";
         };
         dontUnpack = true;
         nativeBuildInputs = [ pkgs.autoPatchelfHook pkgs.makeWrapper ];
