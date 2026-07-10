@@ -76,6 +76,16 @@ SIZE_UNKNOWN(CWhRect);
 // under head-specific names spanning all four base levels.
 class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
+    // Real vtable shape (sema class: vtbl@0x1ead24, 13 slots; overrides 0/1/5/11).
+    // The out-of-line ~ (0x104a00, calls DtorReset) lives in SBI_WarlordHead.cpp via
+    // the CHAIN-DTOR device (see StatusBarItem.h).
+    virtual ~CSBI_WarlordHead() OVERRIDE; // slot 0
+    virtual i32 SbiVfunc0() OVERRIDE;     // slot 1 (the Serialize below)
+    virtual void SbiSlot5() OVERRIDE;     // slot 5 (the Render below)
+    // Member teardown run by the dtor: 0xe7400 (the ImageSet-level counter reset the
+    // chain view called DtorReset; reloc-masked extern).
+    void DtorReset(); // 0xe7400
+
     // vtable slot 1 (0xeb970): serialize the head's single direction (m_3c), then
     // chain to the CSBI_ImageSet base serialize (0xe74f0). (The six-int slot-1
     // serialize formerly claimed here at 0xe7cd0 was CSBI_ImageSetAni's - re-homed

@@ -10,19 +10,24 @@
 //   GetSize_1633e0 (0x1633e0) - if(m_b0) tail-call CWwdGrid::GetSize
 //   Cleanup_161bf0 (0x161bf0) - prune+destroy+free the grid, free m_20/m_24
 //
-// The /GX manual-vtable destructors (0x161500 ~CImageSet3, 0x163a40 ~CWwdGrid)
-// stay in the boundary backlog: they need the CLoadable base modeled as a
-// non-trivial subobject to emit the retail EH frame (the deferred archetype
-// already documented on CDDrawSurfacePair::~).
+// The /GX out-of-line ~CImageSet3 (0x161500) is defined below under its C161500
+// placeholder identity (collapsed from ImageSet3Eh.cpp; the split companion TU was
+// our invention - retail's one TU was compiled /GX). ~CWwdGrid (0x163a40) stays in
+// the boundary backlog (needs the CLoadable base modeled as a non-trivial
+// subobject - the deferred archetype documented on CDDrawSurfacePair::~).
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
 // bytes are load-bearing.  The grid methods are reloc-masked __thiscall externs.
 #include <rva.h>
 
+#include <Mfc.h> // CObject grand-base of the collapsed ~CImageSet3 (folds ??_7CObject @0x5e8cb4)
 #include <Ints.h>
 
-// Engine heap free (RezFree).  Reloc-masked __cdecl extern.  0x1b9b82.
-extern "C" void RezFree(void* p);
+// Engine heap free (0x1b9b82). C++ linkage (NOT extern "C") so cl treats it as
+// potentially-throwing and keeps the /GX base-subobject unwind frame in the
+// collapsed ~CImageSet3 below (the reloc is masked either way; retail's canonical
+// name is _RezFree - a reloc-name-only mismatch on the Cleanup call).
+void RezFree(void* p);
 
 // The +0xb0 spatial grid: Prune (0x1688b0) sweeps its four sub-managers, GetSize
 // (0x168430) sums their element counts, and the dtor (0x163a40) frees the grids.
@@ -56,24 +61,26 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// 0x1628d0: forward the grid's Prune when present (else 0).  __thiscall tail call.
-RVA(0x001628d0, 0x12)
-i32 CImageSet3::Prune_1628d0() {
-    if (m_b0 == 0) {
-        return 0;
+// 0x161500 - the out-of-line ~CImageSet3: stamp derived (0x5f0228), free the +0x14
+// pixel buffer and zero it, fold the CObject base dtor (0x5e8cb4). Kept a DISTINCT
+// placeholder identity (C161500): folding onto the real CImageSet3 (below) needs
+// its CLoadable base modeled as a non-trivial subobject to emit the EH frame (the
+// deferred archetype on CDDrawSurfacePair::~; @identity-TODO). 0x5f0228 ==
+// ??_7CImageSet3 (bound by VTBL in GameLevel.cpp). Grand-base fold @0x161548 is the
+// REAL ??_7CObject (0x5e8cb4, disasm-verified). Collapsed from ImageSet3Eh.cpp.
+struct C161500 : CObject {
+    char _4[0x14 - 0x4];
+    char* m_14; // +0x14  pixel buffer
+    virtual ~C161500() OVERRIDE;
+};
+SIZE_UNKNOWN(C161500);
+RELOC_VTBL(C161500, 0x001f0228); // aliases CImageSet3 (dtor-stamp verified)
+RVA(0x00161500, 0x58)
+C161500::~C161500() {
+    if (m_14) {
+        RezFree(m_14);
     }
-    return m_b0->Prune_1688b0();
-}
-
-// GetSize_1633e0 (0x1633e0): forward the grid's serialized size when present
-// (else 0). Out-of-line (retail emits it standalone, tail-forwarding to
-// CWwdGrid::GetSize; an inline member folds away and never emits).
-RVA(0x001633e0, 0x12)
-i32 CImageSet3::GetSize_1633e0() {
-    if (m_b0 == 0) {
-        return 0;
-    }
-    return m_b0->GetSize_168430();
+    m_14 = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -100,16 +107,34 @@ void CImageSet3::Cleanup_161bf0() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x1628d0: forward the grid's Prune when present (else 0).  __thiscall tail call.
+RVA(0x001628d0, 0x12)
+i32 CImageSet3::Prune_1628d0() {
+    if (m_b0 == 0) {
+        return 0;
+    }
+    return m_b0->Prune_1688b0();
+}
+
+// GetSize_1633e0 (0x1633e0): forward the grid's serialized size when present
+// (else 0). Out-of-line (retail emits it standalone, tail-forwarding to
+// CWwdGrid::GetSize; an inline member folds away and never emits).
+RVA(0x001633e0, 0x12)
+i32 CImageSet3::GetSize_1633e0() {
+    if (m_b0 == 0) {
+        return 0;
+    }
+    return m_b0->GetSize_168430();
+}
+
+// ---------------------------------------------------------------------------
 // 0x166e00: from the pixel at (x,y), walk LEFT along the row while the pixel value
 // stays equal to that start pixel. On the first differing pixel, record its column
 // in *outX and its value in *outVal and return 1; if the row edge (x reaches 0) is
 // hit first, return 0. __thiscall, 4 args (ret 0x10).
-// @early-stop
-// 99.778% - logic/CFG/loop/offsets all byte-exact. The lone residual is ONE SIB
-// base/index swap in the cold `*outVal = m_14[off]` tail: retail keeps `off` as the
-// base and re-loaded m_14 as the index ([eax+ecx], matching the hot loop's [eax+esi]),
-// our cl picks m_14 as base ([ecx+eax]). Same address, same byte. Not source-steerable
-// (the permuter found no change). docs/patterns/zero-register-pinning.md family.
+// 100%: the former SIB base/index-swap residual (a 99.778% @early-stop) flipped to
+// retail's pick when the TU regained its retail /GX profile + the collapsed dtor
+// (the *Eh.cpp merge) - the codegen residue was TU-composition-sensitive, not a wall.
 RVA(0x00166e00, 0xa8)
 i32 CImageSet3::ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal) {
     i32 off = (y << m_c) + x;

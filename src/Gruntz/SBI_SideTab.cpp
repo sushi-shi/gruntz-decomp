@@ -1,3 +1,4 @@
+#define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
 #include <rva.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Mfc.h>
@@ -9,8 +10,8 @@
 // SBI_SideTab.cpp - Gruntz CSBI_SideTab (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_SideTab@@; a sibling leaf of the SBI family
 //   CSBI_SideTab : CStatusBarItem  (RTTI hierarchy: {CSBI_SideTab, CStatusBarItem}).
-// Vtable @0x5eae3c. The /GX-framed scalar destructor (0x105200) lives in
-// SBI_SideTabEh.cpp.
+// Vtable @0x5eae3c. The /GX chain destructor (0x105200) is defined below - the
+// former SBI_SideTabEh.cpp companion split is collapsed (retail's one TU was /GX).
 //
 // These are concrete virtual-slot methods modeled with the SBI family's
 // manual-vtable-stamp device (no real `virtual`), so each matches without forcing
@@ -52,24 +53,6 @@ RVA(0x000e9820, 0x11)
 i32 CSBI_SideTab::Refresh(i32 unused) {
     m_58 = BuildHandle();
     return 0;
-}
-
-// vslot 5: if the draw gate is set, blit the two side frames through the game
-// manager's active drawable surface. Returns 1.
-// @early-stop
-// ~98.1% reloc-residual plateau: CODE BYTES byte-identical to retail (verified
-// llvm-objdump base vs target). Raised from 87.8% by unifying the CSideTabFrame
-// view to CImage (the two RenderFrame rel32s now co-name) and fixing the 4th
-// RenderFrame arg to the literal 0 (was `z` - passing the arg forced an extra
-// `push ebx` to stage it). Residual is only the g_gameReg DIR32 name artifact.
-RVA(0x000e99c0, 0x4c)
-i32 CSBI_SideTab::Render(i32 z) {
-    if (m_58) {
-        i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
-        m_30->RenderFrame((void*)ctx, (void*)m_48, (void*)m_4c, 0);
-        m_34->RenderFrame((void*)ctx, (void*)(m_48 + m_50), (void*)m_4c, 0);
-    }
-    return 1;
 }
 
 // 0xe9850: resample the selected unit's tracked value (one of: ability cap, override
@@ -143,6 +126,24 @@ i32 CSBI_SideTab::BuildHandle() {
     return 1;
 }
 
+// vslot 5: if the draw gate is set, blit the two side frames through the game
+// manager's active drawable surface. Returns 1.
+// @early-stop
+// ~98.1% reloc-residual plateau: CODE BYTES byte-identical to retail (verified
+// llvm-objdump base vs target). Raised from 87.8% by unifying the CSideTabFrame
+// view to CImage (the two RenderFrame rel32s now co-name) and fixing the 4th
+// RenderFrame arg to the literal 0 (was `z` - passing the arg forced an extra
+// `push ebx` to stage it). Residual is only the g_gameReg DIR32 name artifact.
+RVA(0x000e99c0, 0x4c)
+i32 CSBI_SideTab::Render(i32 z) {
+    if (m_58) {
+        i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
+        m_30->RenderFrame((void*)ctx, (void*)m_48, (void*)m_4c, 0);
+        m_34->RenderFrame((void*)ctx, (void*)(m_48 + m_50), (void*)m_4c, 0);
+    }
+    return 1;
+}
+
 // @early-stop
 // 0x0e9a30 (798 B) - homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
 // neighbourhood (this TU owns the 0xe9820/0xe99c0/0xe9850 SBI_SideTab block).
@@ -150,4 +151,14 @@ i32 CSBI_SideTab::BuildHandle() {
 RVA(0x000e9a30, 0x31e)
 i32 Gap_0e9a30(void) {
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// ~CSBI_SideTab (0x105200): the /GX chain destructor - stamp ??_7CSBI_SideTab,
+// run Reset (the slot-3 teardown above, 0xe9800), then MSVC folds the inline
+// ~CStatusBarItem in (??_7CStatusBarItem + DtorStatus - the SBI_DTOR_CHAIN
+// device) behind the /GX SEH frame. Collapsed from SBI_SideTabEh.cpp.
+RVA(0x00105200, 0x55)
+CSBI_SideTab::~CSBI_SideTab() {
+    Reset();
 }

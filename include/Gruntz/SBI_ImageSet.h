@@ -58,6 +58,8 @@ public:
     virtual void SbiSlot12();                                        // slot 12 (new)
     i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);     // vslot 1 (0xe74f0)
     i32 BaseSerialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // 0xe6e40 base slot 1
+    // Member teardown run by the CHAIN-DTOR device (see StatusBarItem.h).
+    void DtorImageSet(); // slot-3 teardown (reloc-masked extern)
 
     CSprite* m_34; // +0x34  resolved config record (the image registry's CSprite)
     i32 m_38;      // +0x38  serialized config id (4 bytes)
@@ -66,5 +68,14 @@ SIZE(CSBI_ImageSet, 0x3c);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 VTBL(CSBI_ImageSet, 0x001eac4c);
+
+// CHAIN-DTOR device (see StatusBarItem.h): inline base-dtor body for the merged
+// /GX leaf TUs; SBI_OWN_IMAGESET_DTOR marks the TU that owns the out-of-line ??1
+// (SBI_ImageSet.cpp, RVA 0x102000).
+#if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESET_DTOR)
+inline CSBI_ImageSet::~CSBI_ImageSet() {
+    DtorImageSet();
+}
+#endif
 
 #endif // GRUNTZ_SBI_IMAGESET_H

@@ -1,3 +1,4 @@
+#define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
@@ -13,7 +14,8 @@
 // SBI_WellGoo.cpp - Gruntz CSBI_WellGoo (C:\Proj\Gruntz), the frameless method.
 // RTTI .?AVCSBI_WellGoo@@; the most-derived leaf of the SBI image chain
 //   CSBI_WellGoo : CSBI_Image : CSBI_RectOnly : CStatusBarItem. Vtable @0x5eadfc.
-// The 4-level /GX-framed scalar destructor (0x104bb0) lives in SBI_WellGooEh.cpp.
+// The 4-level /GX chain destructor (0x104bb0) is defined below - the former
+// SBI_WellGooEh.cpp companion split is collapsed (retail's one TU was /GX).
 //
 // The per-frame Tick (vtable slot 5) is modeled with the SBI family's
 // manual-vtable-stamp device (no real `virtual`); sibling/engine callees are
@@ -217,6 +219,20 @@ i32 CSBI_WellGoo::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         }
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// ~CSBI_WellGoo (0x104bb0): the /GX chain destructor - stamp ??_7CSBI_WellGoo,
+// release the owned goo source surface back to the pool (the same teardown the
+// slot-3 Free below carries, folded inline here by retail), then MSVC folds the
+// three inline base dtors in (Image/RectOnly/StatusBarItem - the SBI_DTOR_CHAIN
+// device) behind the /GX SEH frame. Collapsed from SBI_WellGooEh.cpp.
+RVA(0x00104bb0, 0x94)
+CSBI_WellGoo::~CSBI_WellGoo() {
+    if (m_gooSrc != 0) {
+        ((CGooGameMgr*)m_24)->m_1c->RemoveItemA(m_gooSrc);
+        m_gooSrc = 0;
+    }
 }
 
 // vtable slot 3 (0x104c80): release the owned goo source surface (+0x34) through the

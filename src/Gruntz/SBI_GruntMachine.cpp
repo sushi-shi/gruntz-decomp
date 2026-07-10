@@ -1,3 +1,4 @@
+#define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
@@ -6,8 +7,9 @@
 #include <Gruntz/ResMgr.h>       // CDrawTarget (m_world->m_drawTarget->m_14)
 // SBI_GruntMachine.cpp - Gruntz CSBI_GruntMachine (C:\Proj\Gruntz), the frameless
 // methods. RTTI .?AVCSBI_GruntMachine@@; a sibling leaf of the SBI family
-//   CSBI_GruntMachine : CStatusBarItem. Vtable @0x5eadbc. The /GX-framed scalar
-// destructor (0x104ce0) lives in SBI_GruntMachineEh.cpp.
+//   CSBI_GruntMachine : CStatusBarItem. Vtable @0x5eadbc. The /GX chain destructor
+// (0x104ce0) is defined below - the former SBI_GruntMachineEh.cpp companion split
+// is collapsed (retail's one TU was /GX).
 //
 // These are concrete virtual-slot methods (slots 3 and 5) plus a non-virtual
 // frame-prime helper, modeled with the SBI family's manual-vtable-stamp device (no
@@ -28,7 +30,6 @@ void CSBI_GruntMachine::Reset() {
     m_3c = 0;
     m_30 = 0;
 }
-
 
 // vtable slot 5 (0xe8cb0): the per-frame render. Idle (return 1) while the frame
 // countdown is non-positive; otherwise tick it down, resolve the two indexed frame
@@ -100,7 +101,6 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
     m_28 = 2;
 }
 
-
 // @early-stop
 // 0x0e8e00 (1.0 KB) - homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
 // neighbourhood (this TU owns the 0xe8cb0 SBI_GruntMachine block). __thiscall(4 args,
@@ -109,4 +109,15 @@ void CSBI_GruntMachine::SetFrames(i32 idxA, i32 idxB) {
 RVA(0x000e8e00, 0x41a)
 i32 Gap_0e8e00(void) {
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// ~CSBI_GruntMachine (0x104ce0): the /GX chain destructor - stamp
+// ??_7CSBI_GruntMachine, run Reset (the slot-3 teardown above, 0xe8c70), then
+// MSVC folds the inline ~CStatusBarItem in (??_7CStatusBarItem + DtorStatus - the
+// SBI_DTOR_CHAIN device) behind the /GX SEH frame. Collapsed from
+// SBI_GruntMachineEh.cpp.
+RVA(0x00104ce0, 0x55)
+CSBI_GruntMachine::~CSBI_GruntMachine() {
+    Reset();
 }

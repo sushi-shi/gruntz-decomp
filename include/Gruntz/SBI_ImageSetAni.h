@@ -17,6 +17,18 @@
 
 class CSBI_ImageSetAni : public CSBI_ImageSet {
 public:
+    // Real vtable shape (sema class: vtbl@0x1ead6c, 15 slots; overrides 0/1/4/5,
+    // news 13/14). The out-of-line ~ (0x1047f0) lives in SBI_ImageSetAni.cpp via
+    // the CHAIN-DTOR device (see StatusBarItem.h).
+    virtual ~CSBI_ImageSetAni() OVERRIDE; // slot 0
+    virtual i32 SbiVfunc0() OVERRIDE;     // slot 1 (the Serialize below)
+    virtual void SbiSlot4() OVERRIDE;     // slot 4
+    virtual void SbiSlot5() OVERRIDE;     // slot 5
+    virtual void AniInit();               // slot 13 (new)
+    virtual void AniSetRange();           // slot 14 (new; 0xe7c30 SetRange)
+    // Member teardown run by the dtor (reloc-masked extern).
+    void DtorImageSetAni();
+
     // vtable slot 1 (0xe7cd0): serialize the six persistent ints (m_3c..m_50) through
     // the stream's Read/WriteBytes, then chain the CSBI_ImageSet base serialize.
     i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);

@@ -1,31 +1,26 @@
+// SBI_MenuItem.cpp - Gruntz CSBI_MenuItem (C:\Proj\Gruntz), the whole class: the
+// concrete (mostly virtual-slot) methods + the /GX chain destructor (0x1007d0),
+// re-united by the *Eh.cpp collapse (retail's one TU was compiled /GX).
+// RTTI .?AVCSBI_MenuItem@@; most-derived of the SBI family
+//   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem (canonical chain).
+#define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <Mfc.h>
 #include <Gruntz/GruntzMgr.h> // canonical MFC-side g_gameReg singleton view (CGruntzMgr)
 #include <Gruntz/SBI_MenuItem.h>
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world (m_world) view (CResMgr + CDrawTarget + CImageRegistry + CSprite)
-#include <Gruntz/SbiConfig.h>           // canonical config-host family (one shape)
-#include <Gruntz/StatusBarMgrBuilders.h> // canonical CStatusBarMgr (LoadTabSprites)
-#include <Image/CImage.h>     // canonical frame-record class (CImage::RenderFrame @0x153790)
-class CSBI_RectOnly {
-public:
-    void ClearTabGroup();
-    i32 Deactivate();
-};
+#include <Gruntz/SbiConfig.h>    // canonical config-host family (one shape)
+#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (LoadTabSprites)
+#include <Image/CImage.h>        // canonical frame-record class (CImage::RenderFrame @0x153790)
 class CDDrawWorkerRegistry {
 public:
     i32 HasKeyEqual_155550(const char* k);
     i32 RemoveKeysEqual_155360(const char* a, const char* b);
     void Method_155630(i32 h, char* t, i32* o);
 }; // 0x155550/0x155360/0x155630
-// SBI_MenuItem.cpp - Gruntz CSBI_MenuItem (C:\Proj\Gruntz), the frameless methods.
-// RTTI .?AVCSBI_MenuItem@@; most-derived of the SBI family
-//   CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
-// The /GX-framed scalar destructor (0x1007d0) lives in SBI_MenuItemEh.cpp.
-//
-// These are concrete (mostly virtual-slot) methods modeled with the SBI family's
-// manual-vtable-stamp device (no real `virtual`), so each matches without forcing
-// a divergent compiler vtable. Sibling/engine callees are ILT-reloc-masked.
+// The former per-TU `class CSBI_RectOnly { ClearTabGroup; Deactivate; }` view is
+// folded onto the canonical chain CSBI_RectOnly (SBI_Image.h) - same mangled symbols.
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; the methods/fields touched are the only
@@ -33,7 +28,7 @@ public:
 
 // The drawable animation-frame object held at m_30 is the RTTI-confirmed CImage:
 // its blit entry (CImage::RenderFrame, 0x153790, __thiscall) draws the frame at a
-// screen position; m_18/m_1c are the frame's draw-origin offsets. Modeled by the
+// screen position; m_rect14.m_0/.m_4 double as the frame's draw-origin. Modeled by the
 // shared <Image/CImage.h> definition; the RenderFrame call is reloc-masked.
 
 // The keyed image-registry record (the map-lookup result) is the CSprite the image
@@ -80,9 +75,6 @@ RVA(0x000e6d90, 0x8)
 void CSBI_MenuItem::ClearFrame() {
     m_30 = 0;
 }
-
-
-
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::SerializeChain - the CSBI_Image-subobject leg of Serialize:
@@ -177,16 +169,16 @@ i32 CSBI_MenuItem::InitItem(
     if (host == 0 || cfg == 0) {
         return 0;
     }
-    m_2c = (CMiTabHost*)cfg;
-    m_24 = (CSbiConfigHost*)host;
+    m_2c = cfg;  // owning tab host (CMiTabHost view at the deref sites)
+    m_24 = host; // config host (CSbiConfigHost, cast at the deref sites)
     m_10 = r0;
     m_8 = 2;
     m_30 = 0;
-    m_14 = r1;
+    m_rect14.m_0 = r1;
     m_28 = 0;
-    m_18 = r2;
-    m_1c = r3;
-    m_20 = r4;
+    m_rect14.m_4 = r2;
+    m_rect14.m_8 = r3;
+    m_rect14.m_c = r4;
     m_c = cmd;
     m_34 = 1;
     m_4 = 1;
@@ -215,7 +207,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
         return key;
     }
     CSbiConfigRecord* rec = 0;
-    CSbiConfigHost* host = m_24;
+    CSbiConfigHost* host = (CSbiConfigHost*)m_24;
     ((CMapStringToOb*)&host->m_10->m_10map)->Lookup((const char*)key, (CObject*&)rec);
     m_38 = rec;
     if (rec == 0) {
@@ -239,7 +231,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::DecCounter - decrement the live counter; while it is still up,
 // blit the resolved frame at the menu's screen rect. 0-arg __thiscall (ret 1).
-// The RenderFrame arg-block load schedule (retail loads m_18/m_14 on `this` before
+// The RenderFrame arg-block load schedule (retail loads the rect block on `this` before
 // the frame's anchor fields) is register-schedule-sensitive to the TU's TOTAL
 // transitive file-scope fwd-decl count (SBI_MenuItem.cpp -> GruntzMgr.h chain):
 // crossing a threshold flips the two `a+b` loads pointee-first and craters this to
@@ -255,8 +247,8 @@ i32 CSBI_MenuItem::DecCounter() {
         if (f) {
             f->RenderFrame(
                 (void*)((CResMgr*)g_gameReg->m_world)->m_drawTarget->m_14,
-                (void*)(m_14 + f->m_anchorX),
-                (void*)(m_18 + f->m_anchorY),
+                (void*)(m_rect14.m_0 + f->m_anchorX),
+                (void*)(m_rect14.m_4 + f->m_anchorY),
                 0
             );
         }
@@ -283,7 +275,7 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     if (state == 2 && m_34 == 3) {
         return 1;
     }
-    CMiTabHost* host = m_2c;
+    CMiTabHost* host = (CMiTabHost*)m_2c;
     if (state == 3) {
         ((CSBI_RectOnly*)host)->ClearTabGroup();
         host->m_10c = m_c;
@@ -400,6 +392,18 @@ void CSBI_MenuItem::SetSubtype() {
     m_28 = 2;
 }
 
+// ---------------------------------------------------------------------------
+// ~CSBI_MenuItem (0x1007d0): the /GX chain destructor - stamp ??_7CSBI_MenuItem,
+// run ClearFrame2 (the slot-3 teardown above, 0xe81a0; the chain view called it
+// DtorMenu), then MSVC folds the three inline base dtors in (??_7CSBI_Image +
+// DtorImage, ??_7CSBI_RectOnly + DtorRect, ??_7CStatusBarItem + DtorStatus - the
+// SBI_DTOR_CHAIN device) behind the /GX SEH frame with descending trylevels.
+// Collapsed from SBI_MenuItemEh.cpp (the split companion TU was our invention;
+// retail's one TU was compiled /GX).
+RVA(0x001007d0, 0x7f)
+CSBI_MenuItem::~CSBI_MenuItem() {
+    ClearFrame2();
+}
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::SerializeFields - the CSBI_RectOnly leg: transfer the six
@@ -420,7 +424,7 @@ i32 CSBI_MenuItem::SerializeFields(void* arP, i32 kind, i32 a, i32 b) {
             ar->Read(&m_8, 4);
             ar->Read(&m_c, 4);
             ar->Read(&m_10, 4);
-            ar->Read(&m_14, 0x10);
+            ar->Read(&m_rect14, 0x10);
             ar->Read(&m_28, 4);
             break;
         case 4:
@@ -428,7 +432,7 @@ i32 CSBI_MenuItem::SerializeFields(void* arP, i32 kind, i32 a, i32 b) {
             ar->Write(&m_8, 4);
             ar->Write(&m_c, 4);
             ar->Write(&m_10, 4);
-            ar->Write(&m_14, 0x10);
+            ar->Write(&m_rect14, 0x10);
             ar->Write(&m_28, 4);
             break;
     }

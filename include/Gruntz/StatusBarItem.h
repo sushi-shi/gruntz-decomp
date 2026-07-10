@@ -7,19 +7,18 @@
 #include <Ints.h>
 #include <rva.h>
 
-// TWO-VIEW SPLIT (genuinely cannot merge to one C++ spelling): this header is the
-// FRAMELESS view - the small 2-virtual inline-ctor base that the ctor-side/builder
-// TUs (SBI_RectOnly.cpp, SBI_Image.cpp, CStatusBarMgr.h) use so MSVC5 FOLDS the tiny
-// ctor at each instantiation with no /GX frame. <Gruntz/SbiDtorChain.h> is the CHAIN
-// view - the full 11-virtual 0x60-byte grand-base with an INLINE DtorStatus dtor that
-// the *Eh.cpp dtor TUs use so the multilevel destructor chain + /GX EH frame emits.
-// The two are NEVER co-included (verified) precisely because one class cannot be both:
-// a class carrying the inline DtorStatus dtor + 11 virtuals would force the ctor-side
-// TUs to inline that dtor (a destructible-base /GX frame retail does not have there),
-// and a 2-virtual declared-dtor class cannot emit the dtor chain. Same retail class,
-// two deliberate reconstruction views. (StatusBarItem.cpp + StatusBarGameMenu.cpp add
-// two further LABELING-DEVICE redefs whose class NAME must stay "CStatusBarItem" so
-// their ctor-call symbols pair with the 0x1005d0 ctor.)
+// ONE canonical CStatusBarItem, TWO dtor spellings selected per-TU by macro (the
+// CHAIN-DTOR device below): by default the dtor is DECLARED-only, so ctor-side/
+// builder TUs fold the tiny inline ctor with no /GX frame; a merged one-file-per-
+// class SBI TU #defines SBI_DTOR_CHAIN and gets the retail INLINE DtorStatus dtor
+// body, so its leaf's out-of-line ~CSBI_X folds the multilevel destructor chain +
+// /GX EH frame. This device superseded the old frameless-vs-<Gruntz/SbiDtorChain.h>
+// two-view split for the collapsed TUs (the *Eh.cpp collapse proved both spellings
+// co-host in one TU byte-exactly - dtors 100%, ctor-side fns unchanged);
+// SbiDtorChain.h remains only for the still-split dtor TUs (sbi_rectonlydtor_eh,
+// sbi_statztabarrow_eh). (StatusBarItem.cpp + StatusBarGameMenu.cpp add two further
+// LABELING-DEVICE redefs whose class NAME must stay "CStatusBarItem" so their
+// ctor-call symbols pair with the 0x1005d0 ctor.)
 //
 // ---------------------------------------------------------------------------
 // CStatusBarItem - base of the SBI_* family. One class, one definition.
@@ -70,8 +69,18 @@ public:
     // id (a2) or owner (a1) is null, else stores the eight live args into the base-region
     // fields (the last two args are ABI-accepted but unused). CSBI_RectOnly overrides it
     // (0xe86e0) to additionally mark m_4 = 1 (active).
-    virtual i32
-    Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10); // slot 2
+    virtual i32 Setup(
+        i32 a1,
+        i32 a2,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 a7,
+        i32 a8,
+        i32 a9,
+        i32 a10
+    );                         // slot 2
     virtual void SbiSlot3();   // slot 3
     virtual void SbiSlot4();   // slot 4
     virtual void SbiSlot5();   // slot 5
@@ -91,7 +100,28 @@ public:
     i32 m_24;         // +0x24  Setup arg2
     i32 m_28;         // +0x28
     i32 m_2c;         // +0x2c  Setup arg1 (owner/id target)
+
+    // Member teardown run by the inline destructor of the CHAIN-DTOR device below
+    // (reloc-masked extern; the retail standalone body is 0x10bfa0).
+    void DtorStatus(); // 0x10bfa0
 };
 SIZE_UNKNOWN(CStatusBarItem);
+
+// ---------------------------------------------------------------------------
+// CHAIN-DTOR device (opt-in): a merged /GX leaf TU (the original one-file-per-class
+// SBI TUs, rebuilt by the *Eh.cpp collapse) #defines SBI_DTOR_CHAIN before its first
+// include; the base destructors then get their retail INLINE bodies, so the leaf's
+// out-of-line ~CSBI_X folds the whole subobject teardown walk (per-level ??_7
+// re-stamps + Dtor* calls) behind one /GX SEH frame with descending trylevels.
+// Every other TU (macro undefined) sees today's declared-only dtor - preprocessor-
+// identical, so this device is output-neutral outside the merged TUs. It supersedes
+// <Gruntz/SbiDtorChain.h> for the collapsed TUs; the SBI_OWN_*_DTOR guards mirror
+// that header's device (the one TU that owns a level's out-of-line dtor suppresses
+// the inline body). See docs/patterns/eh-dtor-multilevel-polymorphic-chain.md.
+#if defined(SBI_DTOR_CHAIN) && !defined(SBI_ITEM_OWN_DTOR)
+inline CStatusBarItem::~CStatusBarItem() {
+    DtorStatus();
+}
+#endif
 
 #endif // STATUSBARITEM_H

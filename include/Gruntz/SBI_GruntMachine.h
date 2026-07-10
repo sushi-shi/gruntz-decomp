@@ -57,6 +57,15 @@ SIZE_UNKNOWN(CGmConfig);
 // names that CStatusBarItem models as the m_rect14 aggregate.
 class CSBI_GruntMachine : public CStatusBarItem {
 public:
+    // Real vtable shape (sema class: vtbl@0x1eadbc, 11 slots; overrides 0/1/3/4/5).
+    // The out-of-line ~ (0x104ce0, calls Reset) lives in SBI_GruntMachine.cpp via the
+    // CHAIN-DTOR device (see StatusBarItem.h).
+    virtual ~CSBI_GruntMachine() OVERRIDE; // slot 0
+    virtual i32 SbiVfunc0() OVERRIDE;      // slot 1
+    virtual void SbiSlot3() OVERRIDE;      // slot 3 (the Reset below)
+    virtual void SbiSlot4() OVERRIDE;      // slot 4
+    virtual void SbiSlot5() OVERRIDE;      // slot 5 (the Render below)
+
     // vtable slot 3 (0xe8c70): drop the standalone frame handle + the two resolved
     // frame records (also reached by the destructor as the member teardown). Out-of-line
     // (retail emits it as a standalone .text fn / vtable slot).

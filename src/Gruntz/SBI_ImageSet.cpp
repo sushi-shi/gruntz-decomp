@@ -1,3 +1,5 @@
+#define SBI_DTOR_CHAIN        // enable the inline base-dtor bodies (see StatusBarItem.h)
+#define SBI_OWN_IMAGESET_DTOR // this TU supplies the out-of-line ~CSBI_ImageSet (0x102000)
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
@@ -7,9 +9,9 @@
 // SBI_ImageSet.cpp - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_ImageSet@@; the most-derived of the SBI image chain
 //   CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
-// Vtable @0x5eac4c. The /GX-framed scalar destructor (0x102000) lives in
-// SBI_RectOnlyEh.cpp under its true name. Sibling/engine callees are
-// ILT/vtable-reloc-masked.
+// Vtable @0x5eac4c. The /GX chain destructor (0x102000) is defined below - the
+// former SBI_ImageSetEh.cpp companion split is collapsed (retail's one TU was
+// /GX). Sibling/engine callees are ILT/vtable-reloc-masked.
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only touched members/methods are
@@ -74,4 +76,17 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
             break;
     }
     return BaseSerialize(s, mode, a3, a4) != 0;
+}
+
+// ---------------------------------------------------------------------------
+// ~CSBI_ImageSet (0x102000): the /GX chain destructor - stamp ??_7CSBI_ImageSet,
+// run DtorImageSet (reloc-masked), then MSVC folds the three inline base dtors in
+// (??_7CSBI_Image + DtorImage, ??_7CSBI_RectOnly + DtorRect, ??_7CStatusBarItem +
+// DtorStatus - the SBI_DTOR_CHAIN device; this TU owns ~CSBI_ImageSet itself via
+// SBI_OWN_IMAGESET_DTOR) behind the /GX SEH frame with 0/1/2/-1 trylevels.
+// Collapsed from SBI_ImageSetEh.cpp (4-level case of
+// docs/patterns/eh-dtor-multilevel-polymorphic-chain.md).
+RVA(0x00102000, 0x7f)
+CSBI_ImageSet::~CSBI_ImageSet() {
+    DtorImageSet();
 }

@@ -16,6 +16,7 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Mfc.h>           // CPtrList (the five embedded tab lists)
 #include <Gruntz/SbRect.h> // the geometry rect passed by value into the configure virtuals
 #include <Gruntz/StatusBarItem.h>
 
@@ -48,6 +49,89 @@ public:
     );
 };
 SIZE_UNKNOWN(CSBI);
+
+// CStatusBarMgr layout (placeholder fields; only offsets are load-bearing). Moved
+// here from <Gruntz/StatusBarMgrBuilders.h> (its natural home) so non-builder TUs
+// can reach LoadTabSprites without the builder-facet SBI leaf views.
+class CStatusBarMgr {
+public:
+    i32 LoadTabSprites(); // 0x102250
+    void BuildGameMenu(); // 0x101580 (the GAMETAB menu builder; called at the Game-tab tail)
+
+    i32 m_00; // +0x00  status-bar side/mode selector (Statz arrow x-span + arrow dir gate)
+    char m_pad04[0xc - 4];
+    i32 m_code; // +0x0c  the Configure `code` arg (== BuildGameMenu m_code)
+    i32 m_10;   // +0x10  base x
+    i32 m_14;   // +0x14  base y
+    char m_pad18[0x48 - 0x18];
+    CPtrList m_48; // +0x48  Statz tab list
+    CPtrList m_64; // +0x64  Gruntz tab list
+    CPtrList m_80; // +0x80  Resource tab list
+    CPtrList m_9c; // +0x9c  Multiplayer tab list
+    CPtrList m_b8; // +0xb8  Game tab list
+    char m_padd4[0x10c - 0xd4];
+    i32 m_10c; // +0x10c  current tab selector (1..5)
+    // ----- created-widget cache slots (only offsets are load-bearing) -----
+    char m_pad110[0x114 - 0x110];
+    i32 m_114; // +0x114  Statz smallicon cache base
+    char m_pad118[0x204 - 0x118];
+    i32 m_204; // +0x204  Gruntz GRUNTOVEN item cache (5, stride 4)
+    char m_pad208[0x218 - 0x208];
+    i32 m_218; // +0x218  Gruntz OVENZTEXT slot
+    i32 m_21c; // +0x21c  Gruntz WELLGOO slot
+    char m_pad220[0x224 - 0x220];
+    i32 m_224; // +0x224  Gruntz GRUNTOVEN format cache (5, stride 0x18)
+    char m_pad228[0x298 - 0x228];
+    i32 m_298; // +0x298  Gruntz WELLGOO config-d source
+    char m_pad29c[0x2c4 - 0x29c];
+    i32 m_2c4; // +0x2c4  Resource BELT config-d source (3, stride 0x18)
+    char m_pad2c8[0x2dc - 0x2c8];
+    i32 m_2dc; // +0x2dc  (BELT[1])
+    char m_pad2e0[0x2f4 - 0x2e0];
+    i32 m_2f4; // +0x2f4  (BELT[2])
+    char m_pad2f8[0x308 - 0x2f8];
+    i32 m_308; // +0x308  Resource BELT item cache (3, stride 4)
+    i32 m_30c;
+    i32 m_310;
+    char m_pad314[0x31c - 0x314];
+    i32 m_31c; // +0x31c  Resource MACHINE cross-call idxB source
+    char m_pad320[0x334 - 0x320];
+    i32 m_334; // +0x334  Resource MACHINE cross-call idxA source
+    char m_pad338[0x348 - 0x338];
+    i32 m_348; // +0x348  Resource MACHINE item slot
+    char m_pad34c[0x364 - 0x34c];
+    i32 m_364; // +0x364  Resource MAINBG slot
+    i32 m_368; // +0x368  (multiplayer slot base)
+    i32 m_36c; // +0x36c  Resource UPPERBG slot
+    i32 m_370; // +0x370  Resource WINDOWBG slot
+    char m_pad374[0x3dc - 0x374];
+    i32 m_3dc; // +0x3dc  Resource SHREDDER config-d array
+    char m_pad3e0[0x4a8 - 0x3e0];
+    i32 m_4a8; // +0x4a8  Resource SHREDDER item cache
+    char m_pad4ac[0x4cc - 0x4ac];
+    i32 m_4cc; // +0x4cc  Resource MACHINE config-d source
+    char m_pad4d0[0x4e0 - 0x4d0];
+    i32 m_4e0; // +0x4e0  Resource MACHINE-shredder item slot
+    char m_pad4e4[0x4ec - 0x4e4];
+    i32 m_4ec; // +0x4ec  Multiplayer config-d source
+    char m_pad4f0[0x500 - 0x4f0];
+    i32 m_500; // +0x500  Multiplayer shredder item slot
+    i32 m_504; // +0x504  rect-cached x
+    i32 m_508; // +0x508  rect-cached y
+    i32 m_50c; // +0x50c  rect-cached
+    i32 m_510; // +0x510  rect-cached
+    i32 m_514; // +0x514  Resource MACHINE rect-cached x
+    i32 m_518; // +0x518  rect-cached y
+    i32 m_51c; // +0x51c  rect-cached
+    i32 m_520; // +0x520  rect-cached
+    char m_pad524[0x61c - 0x524];
+    i32 m_61c; // +0x61c  Multiplayer player-slot cache (4, stride 4)
+    i32 m_620;
+    i32 m_624;
+    i32 m_628;
+    i32 m_62c; // +0x62c  Multiplayer head slot
+};
+SIZE_UNKNOWN(CStatusBarMgr);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 

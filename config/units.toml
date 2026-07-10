@@ -166,31 +166,16 @@ flags = "base"
 [[unit]]
 unit = "sbi_menuitem"
 source = "src/Gruntz/SBI_MenuItem.cpp"
-flags = "base"
-
-[[unit]]
-unit = "sbi_menuitem_eh"
-source = "src/Gruntz/SBI_MenuItemEh.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "sbi_rectonly"
 source = "src/Gruntz/SBI_RectOnly.cpp"
-flags = "base"
-
-[[unit]]
-unit = "sbi_rectonly_eh"
-source = "src/Gruntz/SBI_RectOnlyEh.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "sbi_sidetab"
 source = "src/Gruntz/SBI_SideTab.cpp"
-flags = "base"
-
-[[unit]]
-unit = "sbi_sidetab_eh"
-source = "src/Gruntz/SBI_SideTabEh.cpp"
 flags = "eh"
 
 [[unit]]
@@ -201,11 +186,6 @@ flags = "base"
 [[unit]]
 unit = "sbi_image"
 source = "src/Gruntz/SBI_Image.cpp"
-flags = "base"
-
-[[unit]]
-unit = "sbi_image_eh"
-source = "src/Gruntz/SBI_ImageEh.cpp"
 flags = "eh"
 
 [[unit]]
@@ -213,11 +193,6 @@ flags = "eh"
 # from SBI_WarlordHead.cpp (vtable proof: slot 1 = thunk 0x2829, shared w/ StatzTabArrow).
 unit = "sbi_imagesetani"
 source = "src/Gruntz/SBI_ImageSetAni.cpp"
-flags = "base"
-
-[[unit]]
-unit = "sbi_imagesetani_eh"
-source = "src/Gruntz/SBI_ImageSetAniEh.cpp"
 flags = "eh"
 
 [[unit]]
@@ -238,51 +213,31 @@ flags = "eh"
 [[unit]]
 unit = "sbi_imageset"
 source = "src/Gruntz/SBI_ImageSet.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "warpstonefly"
 source = "src/Gruntz/WarpStoneFly.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "sbi_warlordhead"
 source = "src/Gruntz/SBI_WarlordHead.cpp"
-flags = "base"
-
-[[unit]]
-unit = "sbi_warlordhead_eh"
-source = "src/Gruntz/SBI_WarlordHeadEh.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "sbi_wellgoo"
 source = "src/Gruntz/SBI_WellGoo.cpp"
-flags = "base"
-
-[[unit]]
-unit = "sbi_wellgoo_eh"
-source = "src/Gruntz/SBI_WellGooEh.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "sbi_statztabgruntbar"
 source = "src/Gruntz/SBI_StatzTabGruntBar.cpp"
-flags = "base"
-
-[[unit]]
-unit = "sbi_statztabgruntbar_eh"
-source = "src/Gruntz/SBI_StatzTabGruntBarEh.cpp"
 flags = "eh"
 
 [[unit]]
 unit = "sbi_gruntmachine"
 source = "src/Gruntz/SBI_GruntMachine.cpp"
-flags = "base"
-
-[[unit]]
-unit = "sbi_gruntmachine_eh"
-source = "src/Gruntz/SBI_GruntMachineEh.cpp"
 flags = "eh"
 
 [[unit]]
@@ -612,11 +567,6 @@ flags = "eh"
 [[unit]]
 unit = "aniadvancecursor"
 source = "src/Wwd/AniAdvanceCursor.cpp"
-flags = "base"
-
-[[unit]]
-unit = "aniadvancecursoreh"
-source = "src/Wwd/AniAdvanceCursorEh.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1370,7 +1320,7 @@ flags = "eh"
 [[unit]]
 unit = "statusbarupdaters"
 source = "src/Gruntz/StatusBarUpdaters.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "kitchenslime"
@@ -2257,13 +2207,7 @@ flags = "base"
 [[unit]]
 unit = "imageset3"
 source = "src/Image/ImageSet3.cpp"
-flags = "base"
-
-[[unit]]
-unit = "imageset3eh"
-source = "src/Image/ImageSet3Eh.cpp"
 flags = "eh"
-
 
 [[unit]]
 unit = "netcmdslot"
@@ -2646,10 +2590,6 @@ flags = "base"
 [[unit]]
 unit = "sbi_rectonlydtor_eh"
 source = "src/Gruntz/SBI_RectOnlyDtorEh.cpp"
-flags = "eh"
-[[unit]]
-unit = "sbi_imageset_eh"
-source = "src/Gruntz/SBI_ImageSetEh.cpp"
 flags = "eh"
 [[unit]]
 unit = "destructbutton"

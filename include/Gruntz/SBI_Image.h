@@ -41,9 +41,25 @@ public:
     virtual void SbiSlot3() OVERRIDE; // slot 3
     virtual void SbiSlot4() OVERRIDE; // slot 4
     i32 InsertPtr(i32 a, i32 b);      // 0x108410 (i32 ret, matches SBI_RectOnly.h + retail)
+    // Tab-group helpers defined in SBI_RectOnly.cpp on the 0x570 HOST that wears the
+    // same CSBI_RectOnly name (a known conflation - see CSbiRectSub in SBI_RectOnly.h).
+    // Declared here so callers (SBI_MenuItem.cpp SetState) mangle the identical
+    // ?...@CSBI_RectOnly@@ symbols without a per-TU view; decl-only = byte-neutral.
+    void ClearTabGroup(); // 0x100b00
+    i32 Deactivate();     // 0x100cb0
+    // Member teardown run by the CHAIN-DTOR device (see StatusBarItem.h).
+    void DtorRect(); // 0xe8760
 };
 SIZE_UNKNOWN(CSBI_RectOnly);
 VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)
+
+// CHAIN-DTOR device (see StatusBarItem.h): inline base-dtor body for the merged
+// /GX leaf TUs; SBI_OWN_RECTONLY_DTOR marks the TU that owns the out-of-line ??1.
+#if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_RECTONLY_DTOR)
+inline CSBI_RectOnly::~CSBI_RectOnly() {
+    DtorRect();
+}
+#endif
 
 // CSBI_Image - the image status-bar item. Inherits the CStatusBarItem base-region
 // fields (via CSBI_RectOnly), INCLUDING the id slot at +0x2c (base CStatusBarItem::m_2c,
@@ -73,10 +89,24 @@ public:
         i32 a11
     );
 
+    // Member teardown run by the CHAIN-DTOR device (see StatusBarItem.h). The retail
+    // body is 0xe6d90 (also claimed as CSBI_MenuItem::ClearFrame - the attribution is
+    // menu-item-TU-resident; the reloc is masked either way).
+    void DtorImage(); // 0xe6d90
+
     // +0x2c is the inherited base CStatusBarItem::m_2c (the id slot SetupImage latches).
     i32 m_30; // +0x30  latched config value
 };
 SIZE(CSBI_Image, 0x34);
 VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)
+
+// CHAIN-DTOR device (see StatusBarItem.h): inline base-dtor body for the merged
+// /GX leaf TUs; SBI_OWN_IMAGE_DTOR marks the TU that owns the out-of-line ??1
+// (SBI_Image.cpp, RVA 0x100870).
+#if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGE_DTOR)
+inline CSBI_Image::~CSBI_Image() {
+    DtorImage();
+}
+#endif
 
 #endif // GRUNTZ_SBI_IMAGE_H

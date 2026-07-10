@@ -1,3 +1,4 @@
+#define SBI_DTOR_CHAIN // enable the inline base-dtor body (see StatusBarItem.h)
 #include <rva.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Mfc.h>
@@ -5,8 +6,9 @@
 #include <Gruntz/SBI_StatzTabGruntBar.h>
 // SBI_StatzTabGruntBar.cpp - Gruntz CSBI_StatzTabGruntBar (C:\Proj\Gruntz), the
 // frameless methods. RTTI .?AVCSBI_StatzTabGruntBar@@; a sibling leaf of the SBI
-// family CSBI_StatzTabGruntBar : CStatusBarItem. Vtable @0x5eace4. The /GX-framed
-// scalar destructor (0x104b00) lives in SBI_StatzTabGruntBarEh.cpp.
+// family CSBI_StatzTabGruntBar : CStatusBarItem. Vtable @0x5eace4. The /GX chain
+// destructor (0x104b00) is defined below - the former SBI_StatzTabGruntBarEh.cpp
+// companion split is collapsed (retail's one TU was /GX).
 //
 // The per-grunt "Statz" status tab. Modeled with the SBI family's manual-vtable-
 // stamp device (no real `virtual`); sibling/engine callees are ILT/reloc-masked.
@@ -86,37 +88,43 @@ i32 CSBI_StatzTabGruntBar::Blit() {
             ctx,
             (void*)(m_rect14.m_0 + m_statusGlyph->m_anchorX),
             (void*)(m_rect14.m_4 + m_statusGlyph->m_anchorY),
-            0);
+            0
+        );
         m_abilityGlyph->RenderFrame(
             ctx,
             (void*)(m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14),
             (void*)(m_rect14.m_4 + m_abilityGlyph->m_anchorY),
-            0);
+            0
+        );
         m_overrideGlyph->RenderFrame(
             ctx,
             (void*)(m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28),
             (void*)(m_rect14.m_4 + m_overrideGlyph->m_anchorY),
-            0);
+            0
+        );
         if (m_selectKey != 0) {
             m_selectKey->RenderFrame(
                 ctx,
                 (void*)(m_rect14.m_0 + m_selectKey->m_anchorX + 0x3c),
                 (void*)(m_rect14.m_4 + m_selectKey->m_anchorY),
-                0);
+                0
+            );
         }
         if (m_statusGlyphLatched != 0) {
             m_statusGlyphLatched->RenderFrame(
                 ctx,
                 (void*)(m_rect14.m_0 + m_statusGlyph->m_anchorX + 1),
                 (void*)(m_rect14.m_4 + m_statusGlyph->m_anchorY),
-                0);
+                0
+            );
         }
         if (m_abilityGlyphLatched != 0) {
             m_abilityGlyphLatched->RenderFrame(
                 ctx,
                 (void*)(m_rect14.m_0 + m_abilityGlyph->m_anchorX + 0x14),
                 (void*)(m_rect14.m_4 + m_abilityGlyph->m_anchorY),
-                0);
+                0
+            );
         }
         i32 adj = -1;
         if (m_selectKey != 0) {
@@ -127,14 +135,16 @@ i32 CSBI_StatzTabGruntBar::Blit() {
                 ctx,
                 (void*)(m_rect14.m_0 + m_overrideGlyph->m_anchorX + 0x28 + adj),
                 (void*)(m_rect14.m_4 + m_overrideGlyph->m_anchorY),
-                0);
+                0
+            );
         }
         if (m_selectGlyph != 0) {
             m_selectGlyph->RenderFrame(
                 ctx,
                 (void*)(m_rect14.m_0 + m_selectKey->m_anchorX + 0x3b),
                 (void*)(m_rect14.m_4 + m_selectKey->m_anchorY),
-                0);
+                0
+            );
         }
     }
     if (m_timerGlyph != 0) {
@@ -142,7 +152,8 @@ i32 CSBI_StatzTabGruntBar::Blit() {
             ctx,
             (void*)(m_rect14.m_0 + m_timerGlyph->m_anchorX),
             (void*)(m_rect14.m_4 + m_timerGlyph->m_anchorY),
-            0);
+            0
+        );
     }
     return 1;
 }
@@ -267,4 +278,15 @@ i32 CSBI_StatzTabGruntBar::Update() {
         dirty = 1;
     }
     return dirty;
+}
+
+// ---------------------------------------------------------------------------
+// ~CSBI_StatzTabGruntBar (0x104b00): the /GX chain destructor - stamp
+// ??_7CSBI_StatzTabGruntBar, run Reset (the slot-3 teardown above, 0xea470), then
+// MSVC folds the inline ~CStatusBarItem in (??_7CStatusBarItem + DtorStatus - the
+// SBI_DTOR_CHAIN device) behind the /GX SEH frame. Collapsed from
+// SBI_StatzTabGruntBarEh.cpp.
+RVA(0x00104b00, 0x55)
+CSBI_StatzTabGruntBar::~CSBI_StatzTabGruntBar() {
+    Reset();
 }

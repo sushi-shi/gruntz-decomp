@@ -1,3 +1,4 @@
+#define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
@@ -8,8 +9,9 @@
 // SBI_WarlordHead.cpp - Gruntz CSBI_WarlordHead (C:\Proj\Gruntz), the frameless
 // methods. RTTI .?AVCSBI_WarlordHead@@; the most-derived leaf of the SBI image
 // chain CSBI_WarlordHead : CSBI_ImageSet : CSBI_Image : CSBI_RectOnly :
-// CStatusBarItem. Vtable @0x5ead24. The 5-level /GX-framed scalar destructor
-// (0x104a00) lives in SBI_WarlordHeadEh.cpp.
+// CStatusBarItem. Vtable @0x5ead24. The 5-level /GX chain destructor (0x104a00)
+// is defined below - the former SBI_WarlordHeadEh.cpp companion split is collapsed
+// (retail's one TU was /GX).
 //
 // These are concrete virtual-slot methods (slots 5 and 11) plus two non-virtual
 // helpers, modeled with the SBI family's manual-vtable-stamp device (no real
@@ -193,5 +195,16 @@ i32 CSBI_WarlordHead::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
     } else if (mode == 7) {
         s->ReadBytes(&m_3c, 4);
     }
-    return ((CSBI_ImageSet*)this)->Serialize(s, mode, a3, a4) != 0;
+    return CSBI_ImageSet::Serialize(s, mode, a3, a4) != 0; // qualified = direct base call
+}
+
+// ---------------------------------------------------------------------------
+// ~CSBI_WarlordHead (0x104a00): the /GX chain destructor - stamp
+// ??_7CSBI_WarlordHead, run DtorReset (0xe7400, reloc-masked), then MSVC folds
+// the four inline base dtors in (ImageSet/Image/RectOnly/StatusBarItem - the
+// SBI_DTOR_CHAIN device) behind the /GX SEH frame. Collapsed from
+// SBI_WarlordHeadEh.cpp.
+RVA(0x00104a00, 0x94)
+CSBI_WarlordHead::~CSBI_WarlordHead() {
+    DtorReset();
 }

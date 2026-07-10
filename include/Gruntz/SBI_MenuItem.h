@@ -8,10 +8,10 @@
 // "CSBI_RectOnly.cpp" TU actually models CSBI_ImageSet (vtable 0x5eac4c); this
 // menu-item class is distinct.
 //
-// The class is modeled with the manual-vtable-stamp device shared across the SBI
-// family (no real `virtual`), so its concrete methods can be matched without
-// emitting a divergent compiler vtable. Offsets are the load-bearing fact; field
-// names are placeholders recovered from the matched use-sites.
+// The class sits on the real polymorphic canonical chain (SBI_Image.h) since the
+// *Eh.cpp collapse - the compiler emits its ??_7 from the sema-proven slot decls.
+// Offsets are the load-bearing fact; field names are placeholders recovered from
+// the matched use-sites.
 #ifndef SBI_MENUITEM_H
 #define SBI_MENUITEM_H
 
@@ -19,6 +19,7 @@
 #include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
 
+#include <Gruntz/SBI_Image.h> // canonical chain base CSBI_Image : CSBI_RectOnly : CStatusBarItem
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
 // The +0x24 config host is the shared canonical CSbiConfigHost (SbiConfig.h, pulled
@@ -100,20 +101,34 @@ SIZE_UNKNOWN(CMiSelf);
 // - the former local `CMiArchive` view is folded away.
 
 // ---------------------------------------------------------------------------
-// CSBI_MenuItem - a single status-bar menu entry. The small layout (fields up to
-// +0x38) holds: a config-host pointer at +0x24, an item-counter at +0x28, an
-// owning rect-only host at +0x2c, the resolved frame at +0x30, the menu state
-// tag at +0x34, and a resolved cue/config record at +0x38.
+// CSBI_MenuItem - a single status-bar menu entry, on the real RTTI chain
+// CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem. The inherited base
+// region carries: m_4 active flag, m_8 subtype tag (=2), m_c command/tab id, m_10
+// arg0, m_rect14 the rect block (x0/y0/x1/y1; .m_4/.m_8 double as the frame draw
+// origin), m_24 the config host (CSbiConfigHost*, i32 slot - cast at the deref like
+// the sibling leaves), m_28 the counter, m_2c the owning tab host (CMiTabHost view
+// at the deref), m_30 the resolved frame handle (CImage* stored as DWORD, the
+// CSBI_Image slot). Adds the menu state tag (+0x34) and the resolved cue/config
+// record (+0x38).
 //
-// Real RTTI base is CSBI_Image (see top comment); kept FLAT (frameless method-view)
-// because the matched methods read nearly the whole base region (m_4..m_30) under
-// menu-item-specific names, so deriving CSBI_Image would erase those recovered names.
+// Formerly kept FLAT to preserve the menu-item field names; folded onto the
+// canonical chain by the *Eh.cpp collapse (this TU also owns the /GX chain dtor
+// 0x1007d0, which requires the real polymorphic base chain).
 // ---------------------------------------------------------------------------
-class CSBI_MenuItem {
+class CSBI_MenuItem : public CSBI_Image {
 public:
+    // Real vtable shape (sema class: vtbl@0x1eab4c, 12 slots; overrides 0/1/3/4/5/11).
+    // The out-of-line ~ (0x1007d0, calls ClearFrame2) lives in SBI_MenuItem.cpp via
+    // the CHAIN-DTOR device (see StatusBarItem.h).
+    virtual ~CSBI_MenuItem() OVERRIDE; // slot 0
+    virtual i32 SbiVfunc0() OVERRIDE;  // slot 1 (the Serialize below)
+    virtual void SbiSlot3() OVERRIDE;  // slot 3 (the ClearFrame2 below)
+    virtual void SbiSlot4() OVERRIDE;  // slot 4 (the DecCounter below)
+    virtual void SbiSlot5() OVERRIDE;  // slot 5
+
     // ----- reconstructed methods (RVA-ascending) -----
-    void ClearFrame();  // 0xe6d90 (out-of-line)
-    void ClearFrame2(); // 0xe81a0 (out-of-line)
+    void ClearFrame();                                    // 0xe6d90 (out-of-line)
+    void ClearFrame2();                                   // 0xe81a0 (out-of-line)
     i32 SerializeChain(void* ar, i32 kind, i32 a, i32 b); // 0xe6e40  serialize tail-chain
     i32 InitItem(
         i32 cfg,
@@ -127,32 +142,18 @@ public:
         void* obj,
         i32 key,
         i32 unused
-    );                                                     // 0xe80e0
+    );                                                     // 0xe80e0  (vtable slot 11)
     i32 ResolveFrame(i32 key, i32 a);                      // 0xe81e0
     i32 DecCounter();                                      // 0xe82a0  decrement-and-blit
     i32 SetState(i32 state, i32 a);                        // 0xe8310
     i32 ProbeState(i32 state);                             // 0xe8480
     i32 Blit();                                            // 0xe84f0  conditional blit
     i32 Serialize(void* ar, i32 kind, i32 a, i32 b);       // 0xe8520  top serialize
-    void SetSubtype(); // 0x1005b0 (out-of-line)
+    void SetSubtype();                                     // 0x1005b0 (out-of-line)
     i32 SerializeFields(void* ar, i32 kind, i32 a, i32 b); // 0x10bfc0  field block
 
-    // ----- layout (placeholders; offsets are the load-bearing fact) -----
-    virtual void
-    VSlot0(); // +0x00  manual-stamp vtable pointer (slot 0x28 = Refresh)  // real polymorphic vptr @+0x00 (was m_vptr)
-    i32 m_4;  // +0x04  active/valid flag
-    i32 m_8;  // +0x08  subtype tag (=2)
-    i32 m_c;  // +0x0c  command/tab id
-    i32 m_10; // +0x10  arg0
-    i32 m_14; // +0x14  rect x0 / arg block start
-    i32 m_18; // +0x18  rect y0
-    i32 m_1c; // +0x1c  rect x1
-    i32 m_20; // +0x20  rect y1
-    CSbiConfigHost* m_24; // +0x24  config host
-    i32 m_28;             // +0x28  counter / subtype
-    CMiTabHost* m_2c;     // +0x2c  owning rect-only host (CSBI_Image-like, tab-state view)
-    i32 m_30;             // +0x30  resolved frame handle (CImage* stored as DWORD)
-    i32 m_34;             // +0x34  menu state tag
+    // ----- own fields (after CSBI_Image @0x34) -----
+    i32 m_34; // +0x34  menu state tag
     // +0x38 is a PROVEN-heterogeneous slot: ResolveFrame stores a CSbiConfigRecord*,
     // Serialize (case 7) stores the CSprite the image registry yields. Same physical
     // shape, distinct modeled classes reached on different code paths -> kept void*.
