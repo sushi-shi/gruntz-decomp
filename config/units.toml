@@ -1897,6 +1897,16 @@ source = "src/Gruntz/AnimWorkerHandlers.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntindicatorworkerhandlers"
+source = "src/Gruntz/GruntIndicatorWorkerHandlers.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "animworkerctor"
+source = "src/Gruntz/AnimWorkerCtor.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "ingameworkerhandlers"
 source = "src/Gruntz/InGameWorkerHandlers.cpp"
 flags = "eh"

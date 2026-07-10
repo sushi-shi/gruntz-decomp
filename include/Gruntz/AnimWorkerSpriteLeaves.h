@@ -22,6 +22,21 @@
 // take it by pointer (the ctor is reloc-masked, so the exact arg type is not load-bearing).
 struct Owner;
 
+// The selected-grunt highlight sprite and the toy-in-hand sprite: real CUserLogic
+// leaves whose most-derived 1-arg ctors (0x07e3e0 / 0x07f350) are matched elsewhere;
+// modeled here as size-views for the `new T(owner)` size + ctor target only.
+struct CGruntSelectedSprite : public CUserLogic {
+    TILE_LOGIC_TAIL
+    CGruntSelectedSprite(Owner* owner); // 0x07e3e0
+    char m_body[0x5c - 0x40];
+}; // sizeof = 0x5c
+
+struct CGruntToySprite : public CUserLogic {
+    TILE_LOGIC_TAIL
+    CGruntToySprite(Owner* owner); // 0x07f350
+    char m_body[0x60 - 0x40];
+}; // sizeof = 0x60
+
 // The HUD-timer leaves derive CGruntHealthSprite (RTTI); it derives CUserLogic. The
 // timer leaves add no data of their own (0x64, same as the base), so they carry no tail.
 struct CGruntHealthSprite : public CUserLogic {

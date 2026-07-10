@@ -24,7 +24,8 @@ aniadvancecursor	1	1
 aniadvancecursoreh	1	0
 anicycle	7	5
 anielement	4	2
-animworkerhandlers	20	18
+animworkerctor	1	0
+animworkerhandlers	12	11
 aniplayer	10	0
 anirecord	10	9
 appdialogs	3	3
@@ -193,6 +194,7 @@ gruntcreationpoint	7	4
 gruntdatarecord	2	2
 gruntentrancearrival	6	0
 grunthealthsprite	9	6
+gruntindicatorworkerhandlers	7	7
 gruntinfotext	1	0
 gruntmovestep	2	0
 gruntpathscan	1	0
@@ -581,7 +583,7 @@ anielement	?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@Z	100.0000	100.0000	2
 anielement	?Build_165460@CAniElement@@QAEHPAXPAUCAniSource@@H@Z	86.9695	86.9695	3	f3d9e6fa70d4	0x165460
 anielement	?Configure_1655c0@CAniElement@@QAEHPAX0H@Z	100.0000	100.0000	2	33bfab2187ca	0x1655c0
 anielement	?LoadFile_165620@CAniElement@@QAEHPAX0H@Z	97.2875	97.2875	2	3aa33f9a86e4	0x165620
-animworkerhandlers	??0WorkerFull@@QAE@HHH@Z	98.1765	98.1765	2	402865e98943	0x15b300
+animworkerctor	??0WorkerFull@@QAE@HHH@Z	98.1765	98.1765	1	402865e98943	0x15b300
 animworkerhandlers	?Handler03a200@@YAHPAUOwner@@@Z	100.0000	100.0000	1	976f6584cd36	0x3a200
 animworkerhandlers	?Handler03d2b0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	24bff43d562d	0x3d2b0
 animworkerhandlers	?Handler03d3f0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	6bfd8fbd21ad	0x3d3f0
@@ -594,13 +596,6 @@ animworkerhandlers	?Handler03db70@@YAHPAUOwner@@@Z	100.0000	100.0000	1	9cb75d8d9
 animworkerhandlers	?Handler03dcb0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	ea86b21b9a1f	0x3dcb0
 animworkerhandlers	?Handler03ddf0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	2c14674fff64	0x3ddf0
 animworkerhandlers	?Handler046990@@YAHPAUOwner@@@Z	100.0000	100.0000	1	468c61a58183	0x46990
-animworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	4	da2189bdc3c4	0x7db20
-animworkerhandlers	?Handler07dc60@@YAHPAUOwner@@@Z	100.0000	100.0000	1	42371a2bfdd2	0x7dc60
-animworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	4	b11fb86c1c28	0x7dda0
-animworkerhandlers	?Handler07dee0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	4b8d5b038146	0x7dee0
-animworkerhandlers	?Handler07e020@@YAHPAUOwner@@@Z	100.0000	100.0000	1	2056b5a01b79	0x7e020
-animworkerhandlers	?Handler07e160@@YAHPAUOwner@@@Z	100.0000	100.0000	1	6f5296f0c2dc	0x7e160
-animworkerhandlers	?Handler07e2a0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	447884d2f517	0x7e2a0
 aniplayer	?Init@CAniPlayer@@QAEHPAUAniSeq@@0HHHHHHHHHHHH@Z	62.9348	62.9348	3	8da10565a41c	0xe7980
 aniplayer	?RenderCel_0e5c10@CAniPlayer@@QAEHXZ	75.6364	75.6364	1	6cf3770f71d7	0xe5c10
 aniplayer	?Serialize@CAniPlayer@@QAEHPAUCSerialArchive@@HHH@Z	88.2500	88.2500	1	e77028b96343	0xe5c90
@@ -2051,6 +2046,13 @@ grunthealthsprite	?RegisterActs@CGruntHealthSprite@@SAXXZ	92.9130	92.9130	2	8c16
 grunthealthsprite	?RunAct@CGruntHealthSprite@@QAEXH@Z	100.0000	100.0000	1	e3995ba1a8b7	0x7ed70
 grunthealthsprite	?Serialize@CGruntHealthSprite@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	65d583444dfa	0x7f270
 grunthealthsprite	?SetHealthGlyph@CGruntHealthSprite@@QAEHHHH@Z	100.0000	100.0000	2	d74457fe605c	0x7f0d0
+gruntindicatorworkerhandlers	?Handler07db20@@YAHPAUOwner@@@Z	100.0000	100.0000	1	da2189bdc3c4	0x7db20
+gruntindicatorworkerhandlers	?Handler07dc60@@YAHPAUOwner@@@Z	100.0000	100.0000	1	58d639c8c57b	0x7dc60
+gruntindicatorworkerhandlers	?Handler07dda0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b11fb86c1c28	0x7dda0
+gruntindicatorworkerhandlers	?Handler07dee0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	349078c6aded	0x7dee0
+gruntindicatorworkerhandlers	?Handler07e020@@YAHPAUOwner@@@Z	100.0000	100.0000	1	4ed52bd33864	0x7e020
+gruntindicatorworkerhandlers	?Handler07e160@@YAHPAUOwner@@@Z	100.0000	100.0000	1	f402fb37818d	0x7e160
+gruntindicatorworkerhandlers	?Handler07e2a0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	93f96e5035df	0x7e2a0
 gruntinfotext	?winapi_0d95f0_wsprintfA@GruntInfoTextHost@@QAEHXZ	88.4979	88.4979	4	a379f6fbabfd	0xd95f0
 gruntmovestep	?Step@CGruntMover@@QAEHPAVCGrunt@@@Z	73.5076	73.5076	1	7e36d4752437	0x31610
 gruntmovestep	?TileSwitch29af0@@YGXHHHHHH@Z	94.7368	94.7368	1	4cae7e2e10fc	0x29af0
