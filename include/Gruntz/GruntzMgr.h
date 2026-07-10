@@ -181,6 +181,10 @@ public:
     void AccrueScoreTime();        // @0x0861e0 (per-state HUD time/score accrual + state push)
     void OnCheckpointReached();    // @0x08e6c0 (checkpoint modal -> WM_COMMAND 0x80cf)
     void DelayedQuit();            // @0x08f530 (menu-activate delay spin -> WM_CLOSE)
+    // @0x0907c0 (ret 4) - resolve the installed "Portal" companion exe path
+    // (LaunchPortalExe), spawn it in place (LaunchProcessInDir), and when `quitAfter`
+    // is set schedule the delayed shutdown. Returns 1 on a successful launch, else 0.
+    i32 LaunchPortal(i32 quitAfter);
     // Clamp a command index into (0,0x29] and PostMessageA WM_COMMAND 0x807f to the
     // game window (wParam = index, or 1 when index==0x29). CPlay reaches it as
     // m_4->Post via the CState owner back-ptr (called by CPlay::Vslot15/Dispatch).

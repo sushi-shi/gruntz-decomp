@@ -56,32 +56,12 @@ RVA(0x0004a780, 0x1ec)
 i32 Gap_04a780(void) {
     return 0;
 } // @stub
-RVA(0x0005baf0, 0xf4)
-i32 Gap_05baf0(void) {
-    return 0;
-} // @stub
 RVA(0x0005ecd0, 0x4f3)
 i32 Gap_05ecd0(void) {
     return 0;
 } // @stub
-RVA(0x00062840, 0x25d)
-i32 Gap_062840(void) {
-    return 0;
-} // @stub
 RVA(0x00063b60, 0x1cf)
 i32 Gap_063b60(void) {
-    return 0;
-} // @stub
-RVA(0x00065300, 0x148)
-i32 Gap_065300(void) {
-    return 0;
-} // @stub
-RVA(0x000654b0, 0x130)
-i32 Gap_0654b0(void) {
-    return 0;
-} // @stub
-RVA(0x00065c20, 0x1d5)
-i32 Gap_065c20(void) {
     return 0;
 } // @stub
 RVA(0x0008dc20, 0x2b)
@@ -90,23 +70,6 @@ i32 Gap_08dc20(void) {
 } // @stub
 RVA(0x0008dc90, 0xb1)
 i32 Gap_08dc90(void) {
-    return 0;
-} // @stub
-RVA(0x000907c0, 0x77)
-i32 Gap_0907c0(void) {
-    return 0;
-} // @stub
-// @stub 0xae360 = GAME_ICONFLASH effect handler, a FREE __cdecl(CGameObject* obj)
-// (ret, no cleanup; obj at [esp+8]). Logic fully traced: switch on obj->m_7c->m_1c
-// (a Cb151d20 callback state) - state 0 sets obj->m_8|=1, calls
-// obj->ApplyLookupGeometry("GAME_ICONFLASH",0) [0x1505b0], sets m_1c=5; state 5
-// steps ((CAniAdvanceCursor*)((char*)obj+0x1a0))->Advance_15c360(g_6bf3bc) then, if
-// a->m_28!=0 && a->m_20==0, sets obj->m_8|=0x10000; else returns 1. Deferred: needs
-// the UNIFIED CGameObject class (m_7c/m_8/+0x1a0/ApplyLookupGeometry) instead of a
-// .cpp-local view, and its home TU is unrecovered (free fn in the gap between
-// UserLogic 0xae2a0 and WayPoint 0xae3f0; caller via thunk 0x393b unrecovered).
-RVA(0x000ae360, 0x6f)
-i32 Gap_0ae360(void) {
     return 0;
 } // @stub
 // @stub 0xb63f0 = CMulti::FrameSlot28(i32) (slot 10, /GX) - BYTE-IDENTICAL body to

@@ -1277,6 +1277,21 @@ source = "src/Gruntz/GruntCreationPoint.cpp"
 flags = "eh"
 
 [[unit]]
+unit = "gruntentrancearrival"
+source = "src/Gruntz/GruntEntranceArrival.cpp"
+flags = "base"
+
+[[unit]]
+unit = "gruntspawnpump"
+source = "src/Gruntz/GruntSpawnPump.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "gameiconflasheffect"
+source = "src/Gruntz/GameIconFlashEffect.cpp"
+flags = "base"
+
+[[unit]]
 unit = "grunthealthsprite"
 source = "src/Gruntz/GruntHealthSprite.cpp"
 flags = "eh"

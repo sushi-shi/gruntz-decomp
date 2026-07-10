@@ -3726,6 +3726,44 @@ void CGruntzMgr::DelayedQuit() {
     }
 }
 
+// The Portal companion path resolver + process spawner (PortalPath.cpp, both
+// __stdcall free functions; reloc-masked here).
+i32 __stdcall LaunchPortalExe(char* outPath);
+i32 __stdcall LaunchProcessInDir(char* exe, char* dir);
+
+// CGruntzMgr::LaunchPortal (0x0907c0, ret 4). Resolve the installed Portal
+// companion's exe path into a local buffer; if it resolves and the buffer is
+// non-empty, spawn the process in place; on a successful spawn, optionally
+// schedule the delayed shutdown (`quitAfter`). Returns 1 on launch, 0 otherwise.
+// @early-stop
+// byte-proven (llvm-objdump -dr base vs target): the ONLY difference is a single
+// dead `mov ecx,esi` retail emits BEFORE the LaunchProcessInDir call site. The
+// retail source invoked LaunchProcessInDir through a `this`-qualified / member
+// expression (a __thiscall member that ignores `this`, which Ghidra mislabels
+// __stdcall since it never reads ecx), so the caller materializes this=esi->ecx;
+// our free-function call omits it. All three reloc operands (LaunchPortalExe /
+// LaunchProcessInDir / DelayedQuit) already match; that one 2-byte instruction
+// shifts the tail and caps this at 97.37%. Keeping the free-fn model (exact callee
+// symbol resolution) over a fake member-view that would only reloc-mask.
+RVA(0x000907c0, 0x77)
+i32 CGruntzMgr::LaunchPortal(i32 quitAfter) {
+    char path[256];
+    path[0] = 0;
+    if (!LaunchPortalExe(path)) {
+        return 0;
+    }
+    if (path[0] == 0) {
+        return 0;
+    }
+    if (!LaunchProcessInDir(path, 0)) {
+        return 0;
+    }
+    if (quitAfter) {
+        DelayedQuit();
+    }
+    return 1;
+}
+
 // -------------------------------------------------------------------------
 // CGruntzMgr::RunModalDialog (0x090260; ret 0xc). The DialogBoxParamA-driven modal
 // runner (the ExitModalUI sibling): bails (0) on a null template/proc, quiesces the

@@ -383,6 +383,10 @@ public:
     // CGruntSprite/CGruntAnimPlayer facet views are folded here). The player IS the
     // created game object.
     void CacheFirstFrame(const char* name);              // 0x1504d0
+    // The 2-arg frame-cache form at the same 0x1504d0 slot (the CGameObject-base
+    // ApplyLookupSprite(key, flag); the entrance re-stamp steps drive it with the
+    // built cell-name buffer + the active descriptor's first-element frame index).
+    void CacheFrameIndexed(const char* key, i32 frame);   // 0x1504d0 (2-arg)
     void CacheFrame(const char* key, i32 frame);         // 0x150540
     void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
     void ApplyGeometryDirect(i32 src, i32 flag);         // 0x58b60
@@ -1602,6 +1606,7 @@ public:
     i32 m_8c8; // +0x8c8
     i32 m_8cc; // +0x8cc
     i32 m_8d0; // +0x8d0
+    i32 m_8d4; // +0x8d4  (trailing member; sizeof(CGrunt) == 0x8d8, the `new CGrunt` size)
 
     // The grunt's spawn constructor @0x47a10 (__thiscall, the CMovingLogic-base
     // moving-object ctor: base CUserLogic(owner), the CMotionState motion band at
@@ -1832,6 +1837,16 @@ public:
     // re-rolling) pick a random adjacent tile, play the move sound, latch the "M" anim,
     // load RunningTimePerTile, fire the on-screen spawn cue, and re-stamp the cell frame.
     i32 StartBombGruntRun(); // @0x68520
+
+    // --- entrance/arrival per-tick steps (RunAct-dispatched; GruntEntranceArrival.cpp) ---
+    // Each advances the entrance geometry sub-player (m_154->m_1a0.Advance_15c360),
+    // and (once the sub-player is armed-but-not-running: m_1a0.m_28!=0 && m_1a0.m_20==0)
+    // runs an arrival/entrance commit driven by the tile-mgr + tile-occupancy board.
+    i32 StepEntranceRelatchA(); // @0x62840 (re-latch "A" anim, board-gated commit/HUD)
+    i32 StepArrivalReroll();    // @0x63b60 (idle re-roll timer -> on-screen entrance cue)
+    i32 StepArrivalCommitA();   // @0x65300 (health-gated tile commit / drop / reset)
+    i32 StepArrivalCommitB();   // @0x654b0 (snap+commit then the same board-gated tail)
+    i32 StepEntranceRelatchB(); // @0x65c20 (re-latch "D" anim, board-gated icon place)
 
     // @0x646b0 (ret 0x20, 8 stack args) - the combat-reaction anim-dispatch state
     // machine. MISATTRIBUTED to CUserLogic by proximity bracketing; the +0x1fc gate,
