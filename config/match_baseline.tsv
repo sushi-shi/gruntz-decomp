@@ -471,7 +471,7 @@ surfacepalette	1	1
 symparser	19	11
 symrec	3	1
 symtab	26	12
-teleporter	8	6
+teleporter	8	5
 terraintileloader	2	1
 tileactionevent	7	4
 tilegridcommand	7	3
@@ -1947,7 +1947,7 @@ glyphtable	?Get@GlyphTable@@QAEHH@Z	100.0000	100.0000	1	d0cea9d03908	0xc0430
 glyphtable	?Set@GlyphTable@@QAEXHH@Z	100.0000	100.0000	1	ba6ede0151a5	0xc03f0
 goowellmgr	?LoadTeleporterGooConfig@CGooWellMgr@@QAEHH@Z	96.0566	96.0566	10	9fad1cc54970	0x6eb80
 groupops	?Broadcast@CGroupBroadcast@@QAEHXZ	84.2818	84.2818	5	36a3c2e418d3	0x112080
-groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	86.7788	86.7788	7	0b09210b0595	0x7cf40
+groupops	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	7	0b09210b0595	0x7cf40
 grunt	??0CGrunt@@QAE@PAX@Z	67.3985	67.3985	8	1298c995a918	0x47a10
 grunt	??1CGrunt@@UAE@XZ	94.9091	94.9091	3	4e0675312829	0xf2f0
 grunt	?Activate@CGrunt@@UAEHXZ	37.3000	37.3000	1	f735d4f8e816	0x5caa0
@@ -2692,20 +2692,20 @@ lightfxrender	?ClampRect@CLightFxRender@@QAEHHHPAHH@Z	88.4819	88.4819	2	43197eff
 lightfxrender	?ClearHandle@CLightFxRender@@QAEHHHH@Z	100.0000	100.0000	2	f97cbde62124	0xa9500
 lightfxrender	?ComputeRect@CLightFxRender@@QAEHPAULfxBorderCtx@@PAULfxRect@@@Z	58.0705	58.0705	2	62c97a3877d1	0xa3820
 lightfxrender	?Ctor@CLightFxRender@@QAEXXZ	100.0000	100.0000	2	bd9a0fec0006	0xa3360
-lightfxrender	?DrawBorder@CLightFxRender@@QAEXPAULfxRect@@PAULfxBorderCtx@@H@Z	70.4086	70.4086	2	ea8628e5224c	0xa3b50
+lightfxrender	?DrawBorder@CLightFxRender@@QAEXPAULfxRect@@PAULfxBorderCtx@@H@Z	70.3333	70.3333	2	ea8628e5224c	0xa3b50
 lightfxrender	?DrawBorderRaw@CLightFxRender@@QAEXPAULfxRect@@PAXH@Z	69.0345	69.0345	2	5bac770e7681	0xa3a20
 lightfxrender	?FillSpan@CLightFxRender@@QAEXIIG@Z	100.0000	100.0000	2	dab55b822081	0xa4840
 lightfxrender	?FreeSurface@CLightFxRender@@QAEXXZ	100.0000	100.0000	2	256004b8f4cc	0xa33a0
 lightfxrender	?Init@CLightFxRender@@QAEHPAULfxMgr@@H@Z	100.0000	100.0000	2	809cd77e9d7a	0xa32c0
-lightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	47.3824	47.3824	3	ba306affb252	0xa3460
-lightfxrender	?Shape1@CLightFxRender@@QAEHXZ	73.5357	73.5357	2	cacbe4b54694	0xa3dc0
-lightfxrender	?Shape2@CLightFxRender@@QAEHXZ	73.1042	73.1042	2	af0da48bf1a7	0xa4890
-lightfxrender	?Shape3@CLightFxRender@@QAEHXZ	72.1144	72.1144	2	3a9fd6c093b1	0xa5310
+lightfxrender	?Resize@CLightFxRender@@QAEHHH@Z	48.6092	48.6092	3	ba306affb252	0xa3460
+lightfxrender	?Shape1@CLightFxRender@@QAEHXZ	73.4969	73.4969	2	cacbe4b54694	0xa3dc0
+lightfxrender	?Shape2@CLightFxRender@@QAEHXZ	73.0785	73.0785	2	af0da48bf1a7	0xa4890
+lightfxrender	?Shape3@CLightFxRender@@QAEHXZ	72.2163	72.2163	2	3a9fd6c093b1	0xa5310
 lightfxrender	?Shape4@CLightFxRender@@QAEHXZ	68.9935	68.9935	2	359593eae658	0xa5d90
-lightfxrender	?Shape5@CLightFxRender@@QAEHXZ	73.9256	73.9256	2	518d52e6c679	0xa67d0
-lightfxrender	?Shape6@CLightFxRender@@QAEHXZ	76.9864	76.9864	2	053bfdf01474	0xa7260
-lightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.1100	73.1100	2	67db6c9338be	0xa7d50
-lightfxrender	?Shape8@CLightFxRender@@QAEHXZ	69.7435	69.7435	2	d25b846364de	0xa8900
+lightfxrender	?Shape5@CLightFxRender@@QAEHXZ	74.1814	74.1814	2	518d52e6c679	0xa67d0
+lightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.0015	77.0015	2	053bfdf01474	0xa7260
+lightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.8956	73.8956	2	67db6c9338be	0xa7d50
+lightfxrender	?Shape8@CLightFxRender@@QAEHXZ	67.6819	67.6819	2	d25b846364de	0xa8900
 loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	2af7b016eb66	0x9dff0
 loadgamemenu	?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	79.2708	79.2708	1	77f602689a4a	0x9e390
 loadlevelbymode	?LoadByMode@CPlayLevelLoad@@QAEHHH@Z	78.8290	78.8290	1	9aa1cc58e716	0xca200
@@ -3208,7 +3208,7 @@ play	?BuildMusicCategoryTable@CPlay@@QAEHH@Z	100.0000	100.0000	4	47289460a213	0x
 play	?BuildSpriteImageKeyTable@CPlay@@QAEHPAVCMulti@@@Z	100.0000	100.0000	1	78ebb49edd86	0xdd540
 play	?BuildWarlordNameTable@CPlay@@QAEHH@Z	100.0000	100.0000	2	8358acc34928	0xdd340
 play	?CPlayDtorBody@CPlay@@QAEXXZ	89.3158	89.3158	4	29ba08c8462a	0xc8700
-play	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	3	4f22c537dfcf	0xda3b0
+play	?CanQuickSave@CPlay@@QAEHXZ	100.0000	100.0000	4	a03e37cca9ad	0xda3b0
 play	?ClampViewport2@CPlay@@QAEHH@Z	85.8469	85.8469	6	6d1e284c2c83	0xd8ed0
 play	?ClampViewport@CPlay@@QAEHH@Z	93.7887	93.7887	6	ce1bc55b8530	0xd8dc0
 play	?DispatchHudClick@CPlay@@QAEHHHH@Z	72.0125	72.0125	4	dcd5d6b3b65b	0xce530
@@ -3224,8 +3224,8 @@ play	?FreeListTeardown@CPlay@@QAEXXZ	99.1195	99.1195	3	44c3d33ce313	0xcb480
 play	?Gap_0cf0a0@@YAHXZ	0.4175	0.4175	1	e6c260f69337	0xcf0a0
 play	?Gap_0cfc90@@YAHXZ	1.4286	1.4286	1	ee10fe5678f7	0xcfc90
 play	?HandleDragMove@CPlay@@QAEHHHH@Z	34.9962	34.9962	5	22d426061a41	0xd0db0
-play	?HandleTileClick@CPlay@@QAEHHHH@Z	80.7050	80.7050	6	6d2d8e4a3f38	0xceae0
-play	?HudRect@WorldTimeline@CWorld@@QAEXUtagRECT@@H@Z	79.7155	79.7155	1	d7b9317a4352	0x78060
+play	?HandleTileClick@CPlay@@QAEHHHH@Z	80.7050	80.7050	7	f43c2dc34762	0xceae0
+play	?HudRect@WorldTimeline@CWorld@@QAEXUtagRECT@@H@Z	79.7155	79.7155	2	049ea09de447	0x78060
 play	?LoadActionTileSprites@CPlay@@QAEHH@Z	100.0000	100.0000	5	dd46839bc6c2	0xdb600
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	92.6389	92.6389	4	9acf14533884	0xd0120
 play	?LoadGameAnims@CPlay@@QAEHH@Z	100.0000	100.0000	4	64af09119af8	0xdb9b0
@@ -3236,7 +3236,7 @@ play	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	4	9567653c832a	0xcffe0
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	5	1d7fd4fc8082	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	5	fd1ac9b2399d	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	4	8309f61d38e2	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.8450	85.8450	3	b94f48adc376	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.1450	86.1450	3	b94f48adc376	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	4	eb3839ea341e	0xd65d0
 play	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	3	cfa5101aa629	0xcb740
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	76.3529	76.3529	5	5c7e2ae1589a	0xd9050
@@ -3267,12 +3267,12 @@ play	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	3	71f7c15b670c	0xdc
 play	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	2	adb4377193c9	0xd8d90
 play	?StepGridWalk@CPlay@@QAEHH@Z	66.6667	66.6667	2	30549333890a	0xd0a60
 play	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	3	79a0630162f5	0xd11e0
-play	?StepScroll@CPlay@@QAEXXZ	81.6207	81.6207	4	de3d9251c114	0xd1ac0
+play	?StepScroll@CPlay@@QAEXXZ	63.5172	63.5172	4	de3d9251c114	0xd1ac0
 play	?SyncLevelKey@Cdb750@@QAEHPAX@Z	100.0000	100.0000	1	c4cc531e784c	0xdb750
 play	?Teardown@Ccef50@@QAEHXZ	77.6818	77.6818	1	98943f7207a1	0xcef50
 play	?Vslot15@CPlay@@UAEHXZ	98.4091	98.4091	1	602acd011b02	0xcfbd0
 play	?Vslot1c@CPlay@@UAEHH@Z	100.0000	100.0000	1	f166c87e98e0	0xd0050
-play	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	0.2946	0.2946	2	74edfadd4ca0	0xcdb10
+play	?winapi_0cdb10_PostMessageA@CPlay@@QAEHHHH@Z	34.8689	34.8689	3	3b02d352d0b6	0xcdb10
 play	?winapi_0d0b30_CopyRect@CPlay@@QAEHH@Z	1.2270	1.2270	2	da693a1aace5	0xd0b30
 playdtor	??1CDemo@@UAE@XZ	100.0000	100.0000	2	6d8be8e39d6c	0x8d0d0
 playdtor	??1CPlay@@UAE@XZ	100.0000	100.0000	1	07c566493077	0x8c830
@@ -3516,7 +3516,7 @@ sbi_rectonly	?LoadBattlezItemConfig@CSBI_RectOnly@@QAEHH@Z	93.6625	93.6625	5	3bf
 sbi_rectonly	?LoadChipMachineConfig@CSBI_RectOnly@@QAEXXZ	78.9587	78.9587	11	e4355b98534f	0x106bb0
 sbi_rectonly	?LoadDestructButtonSprite@CSBI_RectOnly@@QAEHH@Z	97.2477	97.2477	11	874e9d57f8bb	0xffb20
 sbi_rectonly	?LoadGooCookingSprite@CSBI_RectOnly@@QAEHH@Z	96.6667	96.6667	8	2cd6912ae0a5	0x1055b0
-sbi_rectonly	?LoadMainStatusBarSprite@CSBI_RectOnly@@QAEHXZ	95.6403	95.6403	9	8a24358653de	0xfe6b0
+sbi_rectonly	?LoadMainStatusBarSprite@CSBI_RectOnly@@QAEHXZ	88.5526	88.5526	9	8a24358653de	0xfe6b0
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CSBI_RectOnly@@QAEXH@Z	90.4545	90.4545	5	7b46e4e18552	0x107ae0
 sbi_rectonly	?LoadRezMachineConfig@CSBI_RectOnly@@QAEXXZ	71.7037	71.7037	11	6dce9bc66067	0x105e40
 sbi_rectonly	?NotifyAllSlots@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	6	601438384dca	0x106a00
@@ -3886,7 +3886,7 @@ teleporter	?FireActivation@CTeleporter@@QAEXH@Z	100.0000	100.0000	1	33be2519ffdd
 teleporter	?GetTypeTag@CTeleporter@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:68f08689ea8c	0x10d80
 teleporter	?InitActReg@CTeleporter@@SAXXZ	100.0000	100.0000	3	1bef3a621da1	0x414a0
 teleporter	?Serialize@CTeleporter@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	8f143593dd04	0x41350
-teleporter	?Update@CTeleporter@@QAEHXZ	100.0000	100.0000	5	31dbe43561ab	0x41aa0
+teleporter	?Update@CTeleporter@@QAEHXZ	98.9103	98.9103	5	31dbe43561ab	0x41aa0
 terraintileloader	?Load@CTerrainTileLoader@@QAEHHHHHHH@Z	7.8554	7.8554	2	78e4e9d747b5	0x75e90
 terraintileloader	?Validate@ValidateHost@@QAEHXZ	100.0000	100.0000	2	085bfb3cabb2	0x94bc0
 tileactionevent	?DeserializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	5	f033294e79d9	0x114040

@@ -153,8 +153,8 @@ struct CWorld {
         // a world rect via m_viewHost's viewport, then (re)arm combat state on every grunt
         // slot whose 30x30 box hits it. Body in Play.cpp. reloc-masked.
         void HudRect(RECT r, i32 flag);
-        void Method_36ed();                           // 0x36ed (thunk) combat sub-step
-        void Method_29cd(i32 a, i32 j, i32 c, i32 d); // 0x29cd (thunk) re-arm own grunt
+        void Method_36ed();                             // 0x36ed (thunk) combat sub-step
+        void ResetCell29cd(i32 a, i32 j, i32 c, i32 d); // 0x29cd (thunk) re-arm own grunt
         // 0x478a50: a world post (thiscall(a, b)) -> HandleDragMove out-of-box drag.
         void WorldPost(i32 a, i32 b);
         // 0x6bd40: the status-screen notify the pause overlay posts to the timeline
@@ -164,6 +164,9 @@ struct CWorld {
         // HandleTileClick marker place/cancel (thiscall, reloc-masked):
         void PlaceMarker(i32 sx, i32 sy, i32 rx, i32 ry, i32 a, i32 b, i32 c);
         void CancelMarker();
+        // OnMouseUp (0x0cdb10) grunt pick at a screen point (thiscall; reloc-masked);
+        // returns the picked grunt/selectable (see CPickedObj in Play.cpp).
+        void* ScreenToCell3cb0(i32 x, i32 sx, i32* a, i32* b, i32 n); // 0x3cb0
         // HudRect's screen-transform + grunt-slot sub-objects (folded GruntCombatMgr view):
         struct CombatViewport { // CombatView::m_viewport (a CRect at +0x40)
             char p0[0x40];
@@ -495,6 +498,10 @@ public:
     void DragHudInRect(i32 a, i32 x, i32 y); // 0x4a95d0 (thiscall on this)
     void DragSnapTo(i32 x, i32 y);           // 0x4fe860 (thiscall on this)
     void EndDragSel();                       // 0x4da2d0 (thiscall on this)
+    // OnMouseUp (0x0cdb10) own-this leaf callees (reloc-masked, thiscall):
+    void ClearDragBoxes(i32 a, i32 b);                          // 0x35da  reset the drag-box rects
+    i32 FindStartPointAt309e(i32 sx, i32 sy, i32* px, i32* py); // 0x309e  snap click -> tile
+    i32 ApplyOverlay3e59(i32 a, i32 x, i32 y);                  // 0x3e59  (on m_overlayActive cast)
 
     // ---- per-level resource loaders (trace-discovered, THIS TU) ----
     // Each casts `this` to a typed loader view (CPlay.cpp): the +0xc resource
@@ -618,6 +625,13 @@ public:
         // HandleTileClick HUD hit-test dispatch (thiscall, reloc-masked):
         i32 HitTest3ad5(i32 x, i32 y); // -> slot index or -1
         void Apply3ebd(i32 idx);       // apply the hit slot
+        // OnMouseUp (0x0cdb10) guts sub-steps (reloc-masked ILT thunks, thiscall):
+        void CommitSlot142e(i32 f);                        // 0x142e  latch-drag marker
+        i32 SetFallRect1442(i32 x, i32 y, i32 t);          // 0x1442  waypoint hit-test
+        void EnterHlRow213f(i32 z, i32 t);                 // 0x213f  cancel waypoint
+        i32 HitTestLayer1c44(i32 x, i32 y);                // 0x1c44  drag-box begin hit
+        void PlaceCursorTarget20b8(i32 idx, i32 z);        // 0x20b8  apply marker slot
+        i32 UpdateStatusBarTabHl428c(i32 a, i32 x, i32 y); // 0x428c  guts drag dispatch (tail)
         // SyncState (0x0d7520) round-trips the guts state through the archive via
         // this reloc-masked 4-arg serialize entry (CLevelSync::Sync 0x1084d0).
         // Sync @0xd7520 IS CPlay::SyncState (same sig); cast at the call.

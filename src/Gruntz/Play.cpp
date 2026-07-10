@@ -111,10 +111,32 @@ public:
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Globals.h>
 
-// The registry's +0x68 cue-sink B sub-object CanQuickSave probes at +0x400.
-struct CRegSub68 {
-    char p0[0x400];
-    i32 m_400; // +0x400  pending/busy gate
+// The grid cell / selectable object picked at a screen point (OnMouseUp's marker/
+// select dispatch) - the facet of the real CTriggerMgr::CTmCell returned by
+// FindGruntAt (0x32ce) and the timeline ScreenToCell (0x3cb0). +0x1ec is its
+// owner/team id (compared to g_644c54), +0x1fc a live flag. (CTmCell is fwd-only in
+// TriggerMgr.h; fold this into it when its full layout is modeled.)
+SIZE_UNKNOWN(CPickedObj);
+struct CPickedObj {
+    void OnStruck1f4b(i32 flag); // 0x1f4b  select/deselect
+    char p0[0x1ec];
+    i32 m_1ec; // +0x1ec  owner/team id
+    char p1f0[0x1fc - 0x1f0];
+    i32 m_1fc; // +0x1fc  live/present flag
+};
+
+// The registry's +0x60 on-screen cue sink (CGruntCueSink facet): OnMouseUp posts a
+// 6-arg cancel/curse cue (0x39f4) on select/marker changes.
+SIZE_UNKNOWN(CCueSink6);
+struct CCueSink6 {
+    void SpawnVoiceDriver39f4(i32 f, i32 id, i32 a, i32 b, i32 c, i32 d); // 0x39f4
+};
+
+// The world's +0x6c marker/waypoint placer (m_4->m_6c): OnMouseUp queues an 8-arg
+// place order for the click.
+SIZE_UNKNOWN(CMarkerPlacer);
+struct CMarkerPlacer {
+    void Place(i32, char, i32, i32, i32, i32, i32, i32); // 0x2095
 };
 
 // ---- MFC primitives reused verbatim from the engine (reloc-masked). ----
@@ -353,6 +375,32 @@ i32 CPlay::FrameSlot28(i32 arg) {
 // ===========================================================================
 // CPlay::Render  (vtable slot +0x14)
 // ===========================================================================
+// @early-stop
+// DIVERGING CARCASS (0%): the control flow + member offsets are faithful but the
+// codegen is NOT byte-exact yet - retail is 897 instrs, this lowers to ~737. A
+// dedicated rewrite (final sweep) must apply these traced structural fixes before
+// the codegen residue is even reachable:
+//   * zero-register wall: retail pins the 0-constant in EBP (xor ebp,ebp; ebp free
+//     because it is NOT a frame pointer here); cl picks EDI, so every `push 0`/
+//     `cmp x,0` differs. Pervasive; caps the score. Not source-steerable.
+//   * the per-frame profiler is a __thiscall on m_c->m_frameProfiler (+0x20):
+//     `p->Prof1(t); p->Prof2(t)` (0x136e20/0x137ac0), NOT the cdecl Eng_Profiler1/2.
+//   * MarkerBegin(now) -> m_beginMarker->Begin(now) (ecx=[esi+0x2e4], call 0x2cc0);
+//     GutsStep() -> m_guts->FrameStep() (ecx=[esi+0x2dc], call 0x21b7) - both are
+//     sub-object thiscalls, not CPlay-this methods.
+//   * FrameTimerBegin(now) -> m_frameMarker->Begin(now) (ecx=[esi+0x3f4], 0x3710);
+//     FrameTimerEnd -> m_frameMarker->End(view, 1) (0x27a2), 2 args.
+//   * ALL the interval one-shots (cue +0x3f8, booty +0x328, ambient +0x338,
+//     win/lose, snapshot +0x4a0) are 64-BIT elapsed tests: retail does
+//     `sub ecx,lo; sbb eax,hi; cmp eax,intervalHi; jl/jg; cmp ecx,intervalLo; jb`
+//     ((i64)(u32)g_645588 - *(i64*)&m_timerLo >= *(i64*)&m_intervalLo), not 32-bit.
+//   * the in-game tail (after the view check) has 2 CPlay this-calls the carcass
+//     omits (0x2e2d(clock), 0x1519(view)) + a 3-arg cdecl(g_64556c, m_guts,
+//     m_region0Gate) before m_c->m_24->PostStep(); surface flush is a __thiscall on
+//     m_2c, not cdecl Eng_SurfaceFlush.
+// Also a /GX EH-frame + frame-size residue (0x84 vs 0x6c) once the above land.
+// Left as carcass (not touched this pass): a partial rewrite ripples the tight play
+// unit's regalloc (StepScroll-style) for no % gain until ALL of the above are done.
 RVA(0x000c8cf0, 0xc14)
 i32 CPlay::Render() {
     // --- frame entry: clear the per-frame flag, then a `this`-virtual begin. ---
@@ -1786,7 +1834,7 @@ RVA(0x000da3b0, 0x6e)
 i32 CPlay::CanQuickSave() {
     if (m_renderDisabled == 0 && m_inGame == 0 && m_overlayDrag == 0 && m_snapshotActive == 0
         && m_guts->m_548 == 0 && m_guts->m_busyA == 0 && m_guts->m_busyB == 0
-        && g_64556c->m_frameGate == 0 && ((CRegSub68*)g_64556c->m_cmdGrid)->m_400 != 0) {
+        && g_64556c->m_frameGate == 0 && g_64556c->m_cmdGrid->m_groupFlag != 0) {
         return 1;
     }
     return 0;
@@ -1810,7 +1858,7 @@ i32 CPlay::PostHudRect() {
 // and CPlay::DispatchHudClick invoke on m_4w()->m_68. Re-homed from src/Stub/ApiWrappers
 // .cpp (was GruntCombatMgr::CheckCombatRegion): screen-transform the world rect via the
 // active viewport, then for each occupied grunt slot whose 30x30 screen box hits the rect,
-// either re-arm the local player's grunt (Method_36ed/Method_29cd on g_curPlayer) or arm a
+// either re-arm the local player's grunt (Method_36ed/ResetCell29cd on g_curPlayer) or arm a
 // foe's combat state (health sprite + CombatTimeout clock). The GruntCombatMgr placeholder
 // view folded onto CWorld::WorldTimeline; its sub-objects are the nested combat structs.
 DATA(0x00244c54)
@@ -1841,7 +1889,7 @@ void CWorld::WorldTimeline::HudRect(RECT r, i32 flag) {
                             Method_36ed();
                             flag = 1;
                         }
-                        Method_29cd(g_curPlayer, j, 1, 1);
+                        ResetCell29cd(g_curPlayer, j, 1, 1);
                     } else {
                         g->CreateHealthSprite();
                         g->m_combatTimeout =
@@ -2192,12 +2240,299 @@ i32 CState::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
     return 1;
 }
 
-// @confidence: low
-// @source: winapi:PostMessageA
-// @stub
+// The cached PostMessageA fn-ptr (bare 0x6c44c8; the paused-frame unpause posts
+// WM_COMMAND 0x816e through it). Same decl used by the Dispatch cluster below.
+extern i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM);
+
+// ===========================================================================
+// CPlay::OnMouseUp (0x0cdb10, Ghidra-named winapi_0cdb10_PostMessageA after the
+// PostMessageA it fires) - the menu/pause-state mouse button-UP / drag-release
+// handler, sibling of OnKeyCommand/HandleTileClick: the same hudSuppressed /
+// renderDisabled(resume) / inGame(reset-or-report 0x457) / paused(unpause) /
+// overlayDrag priority chain, then (no active grunt) the marker/waypoint place,
+// drag-box and grunt-pick dispatch. Non-EH; __thiscall(a, x, y), ret 0xc; every
+// path returns 1 except the overlay-drag guts dispatch tail (returns its result).
+// ===========================================================================
+// @early-stop
+// full+correct reconstruction (was a bare `return 0` stub; 0.29% -> 34.9%). Six
+// steerable codegen fixes landed on the correct structure:
+//   1. nest the no-active-grunt body deepest so the guts-dispatch cold block floats
+//      to the tail (nested-if-success-deepest-error-tail.md): 27 -> 30
+//   2. byte-widen the g_644c54 marker arg via a `char` Place param (mov cl,[g] +
+//      store-byte/read-dword): 30 -> 32.2
+//   3. order waypoint_cancel before drag_path per retail (cdf36 < cdf6c)
+//   4. route the drag/pick/reset `return 1`s to a shared `ret1:` tail (retail's
+//      0xce2e9), matching its 23 vs my former 25 epilogues: 32.2 -> 33.3
+//   5. cache arg1 x in a pure-read local `xr` for the pre-snap value reads so cl
+//      promotes it to EBX like retail (the arg slot is modified in place by the &x
+//      snap/place calls): 33.3 -> 34.6  (drag_box's first rect-test x stays stack)
+//   6. size FindGruntAt's span-output arg as an 8-byte buffer (2 ints), not a 4-byte
+//      void* - this makes cl reserve retail's 0x20 frame (was 0x1c), so every
+//      [esp+arg] aligns: 34.6 -> 34.9. The "frame-coalesce wall" was a sizing bug.
+// Residual (regalloc, not source-steerable): the marker/drag blocks assign sx/sy to
+// edi/ecx where retail uses ebp/edi, and cl spills the cached CWorld* to [esp+0x10]
+// where retail re-reads m_4 (removing the cache regressed 34.9->33.3 - the re-read
+// cascades worse); plus m_5c `add 0x40`/`[+0x40]` addressing-mode coin-flips.
+// Final-sweep/permuter candidate.
 RVA(0x000cdb10, 0x80c)
-i32 CPlay::winapi_0cdb10_PostMessageA(i32, i32, i32) {
-    return 0;
+i32 CPlay::winapi_0cdb10_PostMessageA(i32 a, i32 x, i32 y) {
+    // retail keeps the ORIGINAL click x in EBX for the pre-snap value reads while
+    // the arg slot [esp+0x38] is modified in place by the snap/place calls (they
+    // take &x). Declared before any goto so no init is skipped.
+    i32 xr = x;
+    if (m_hudSuppressed != 0) {
+        return 1;
+    }
+    if (m_renderDisabled != 0) {
+        m_hudSuppressed = 1;
+        m_renderDisabled = 0;
+        EnterMode(3);
+        m_inGame = 1;
+        return 1;
+    }
+    if (m_inGame != 0) {
+        if (ResetPlayState()) {
+            goto ret1;
+        }
+        m_4->ReportError(0x800a, 0x457);
+        return 1;
+    }
+    if (m_paused != 0) {
+        m_paused = 0;
+        g_pPostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x816e, 0);
+        return 1;
+    }
+    // The overlay-drag / command-grid-idle gates route to the guts dispatch tail
+    // (a forward je all the way down); nest the no-active-grunt main body deepest
+    // so retail's cold-block-at-tail layout falls out (nested-if-success-deepest).
+    if (m_overlayDrag == 0 && g_64556c->m_cmdGrid->m_groupFlag != 0) {
+        if (m_4w()->m_c != 0) {
+            goto drag_path;
+        }
+
+        // ---- no active grunt: overlay probe, then marker/waypoint place ----
+        if (m_overlayActive != 0 && m_guts->m_state != 2 && m_guts->m_mode != 5) {
+            if (((CPlay*)(void*)m_overlayActive)->ApplyOverlay3e59(a, xr, y)) {
+                return 1;
+            }
+        }
+        CWorld* w = m_4w();
+        CWorld::RenderStateHolder::PlaneGeomHolder* geom = w->m_30->m_24;
+        CGameViewport::CameraGeom* cam = (CGameViewport::CameraGeom*)geom->m_5c;
+        i32 sx = cam->m_originX - geom->m_rect10.left + xr;
+        i32 sy = cam->m_originY - geom->m_rect10.top + y;
+        if (m_dragInhibit1 == 0) {
+            goto mode_36c;
+        }
+        if (m_4f0 != 0) {
+            goto mode_36c;
+        }
+        i32 placed = 0;
+        RECT* gr = &m_guts->m_rect10;
+        if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
+            // inside the guts HUD rect -> finalize with placed == 0
+        } else {
+            RECT* wr = &geom->m_rect10;
+            if (xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top) {
+                if (FindStartPointAt309e(sx, sy, &x, &y)) {
+                    char tok = *(char*)&g_644c54;
+                    ((CMarkerPlacer*)w->m_6c)->Place(1, tok, 0, 0, x, y, 0, 0);
+                    placed = 1;
+                }
+            }
+        }
+        if (placed == 0) {
+            ((CCueSink6*)g_64556c->m_cueSink)->SpawnVoiceDriver39f4(placed, 0x340, -1, 1, -1, -1);
+        }
+        m_dragInhibit1 = 0;
+        m_guts->CommitSlot142e(placed);
+        SetCursorFrame(0);
+        return 1;
+    } else {
+        goto guts_dispatch;
+    }
+
+mode_36c:
+    if (m_dragInhibit2 == 0) {
+        goto drag_path;
+    }
+    if (m_4f0 != 0) {
+        goto drag_path;
+    }
+    {
+        RECT* gr = &m_guts->m_rect10;
+        if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
+            if (m_guts->SetFallRect1442(xr, y, *(char*)((char*)this + 0x2f4))) {
+                m_dragInhibit2 = 0;
+                SetCursorFrame(0);
+                return 1;
+            }
+            goto waypoint_cancel;
+        }
+        CWorld* w = m_4w();
+        CWorld::RenderStateHolder::PlaneGeomHolder* geom = w->m_30->m_24;
+        RECT* wr = &geom->m_rect10;
+        if (!(xr < wr->right && xr >= wr->left && y < wr->bottom && y >= wr->top)) {
+            goto waypoint_cancel;
+        }
+        // inside the world rect: place a waypoint through the trigger grid
+        CGameViewport* ds = m_c->m_24;
+        CGameViewport::CameraGeom* cam = (CGameViewport::CameraGeom*)ds->m_5c;
+        i32 wx = cam->m_originX - ds->m_viewport.left + xr;
+        i32 wy = cam->m_originY - ds->m_viewport.top + y;
+        i32 tok = *(char*)(0x2f4 + (char*)this);
+        if (g_64556c->m_cmdGrid->CellHitTest(wx, wy, &x, &y, tok) != 0) {
+            ((CMarkerPlacer*)w->m_6c)->Place(1, a, y, 8, 0, 0, tok, 0);
+            m_4f0 = 1;
+            return 1;
+        }
+        // cdea2: nothing placed -> pick a grunt in a 30x30 world box via the grid
+        RECT box;
+        box.left = wx - 0xf;
+        box.top = wy - 0xf;
+        box.right = wx + 0xf;
+        box.bottom = wy + 0xf;
+        i32 out28[2] = {0, 0};
+        i32 col = 0;
+        CTmCell* p = g_64556c->m_cmdGrid->FindGruntAt(wx, wy, (RECT*)out28, &col, &y, &box);
+        if (p == 0 || g_644c54 != ((CPickedObj*)p)->m_1ec) {
+            goto waypoint_cancel;
+        }
+        ((CMarkerPlacer*)w->m_6c)->Place(1, a, y, 8, 0, 0, tok, 0);
+        return 1;
+    }
+
+waypoint_cancel:
+    m_dragInhibit2 = 0;
+    m_guts->EnterHlRow213f(0, *(char*)((char*)this + 0x2f4));
+    SetCursorFrame(0);
+    return 1;
+
+drag_path: {
+    // m_4w()->m_c != 0: an active grunt is selected -> drag / guts dispatch
+    (void)y;
+    if (m_guts == 0) {
+        return 1;
+    }
+    if (m_guts->m_state == 2) {
+        if (m_guts->HitTestLayer1c44(xr, y)) {
+            m_dragSnapActive = 1;
+            void* g8 = *(void**)((char*)m_guts + 8);
+            i32 dx = 0;
+            if (g8 != 0) {
+                dx = *(i32*)((char*)g8 + 0x5c) - xr;
+            }
+            *(i32*)((char*)this + 0x158) = dx;
+            void* g8b = *(void**)((char*)m_guts + 8);
+            if (g8b == 0) {
+                *(i32*)((char*)this + 0x15c) = 0;
+                return 1;
+            }
+            *(i32*)((char*)this + 0x15c) = *(i32*)((char*)g8b + 0x60) - y;
+            return 1;
+        }
+        goto drag_box;
+    }
+    // m_guts->m_state != 2: guts-rect dispatch
+    RECT* gr = &m_guts->m_rect10;
+    if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
+        Helper2c7f();
+        return m_guts->UpdateStatusBarTabHl428c(a, xr, y);
+    }
+    if (m_hitTest->HitTest43e0(xr, y)) {
+        return 1;
+    }
+}
+
+drag_box: {
+    if (m_4w()->m_c != 0) {
+        goto ret1;
+    }
+    CWorld* w = m_4w();
+    RECT* wr = &w->m_30->m_24->m_rect10;
+    if (!(x < wr->right && x >= wr->left && y < wr->bottom)) {
+        goto ret1;
+    }
+    if (y < wr->top) {
+        return 1;
+    }
+    // inside the world rect
+    if (m_dragEndNotify != 0) {
+        i32 ex = (y & ~0x1f) + 0x10;
+        i32 ey = (y & ~0x1f) + 0x10;
+        i32 lv = m_levelId - 0xc8;
+        if (lv <= 0x16) {
+            g_64556c->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, 2, 1);
+        } else if (lv >= 0x17 && lv <= 0x20) {
+            g_64556c->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, 3, 1);
+        }
+        g_64556c->m_cmdGrid->m_pendingFxKind = 0;
+        ClearDragBoxes(0, 0);
+        m_dragClampMaxX = xr;
+        m_dragClampMaxY = y;
+        m_hudRect.left = xr;
+        m_hudRect.top = y;
+        m_hudRect.right = xr;
+        m_hudRect.bottom = y;
+        m_worldReady = 1;
+        return 1;
+    }
+    {
+        i32 ex = (y & ~0x1f) + 0x10;
+        i32 ey = (y & ~0x1f) + 0x10;
+        if (g_64556c->m_cmdGrid->TriggerCell(ex, ey)) {
+            return 1;
+        }
+    }
+    // ce191: level-gated curse cue + waypoint queue
+    if (m_levelId >= 0xc8) {
+        CTriggerMgr* cg = g_64556c->m_cmdGrid;
+        CTmCell* slot = 0;
+        if (1 == cg->m_recList.m_count) { // exactly one record node
+            i32* sel = *(i32**)(*(char**)((char*)&cg->m_recList + 4) + 8);
+            slot = cg->m_grid[sel[1] * 15 + sel[0]];
+        }
+        if (slot != 0 && ((CPickedObj*)slot)->m_1fc != 0) {
+            ((CCueSink6*)g_64556c->m_cueSink)
+                ->SpawnVoiceDriver39f4((i32)slot, 0x324, -1, 0, -1, -1);
+        }
+    }
+    ClearDragBoxes(0, 0);
+    i32 hit = m_guts->HitTest3ad5(xr, y);
+    if (hit != -1) {
+        m_guts->PlaceCursorTarget20b8(hit, 0);
+        return 1;
+    }
+    // ce22f: pick a grunt at the point
+    i32 slot38 = 0;
+    CPickedObj* picked = (CPickedObj*)m_4w()->m_68->ScreenToCell3cb0(xr, y, &slot38, &slot38, 5);
+    if (picked == 0) {
+        m_dragClampMaxX = xr;
+        m_dragClampMaxY = y;
+        m_hudRect.left = xr;
+        m_hudRect.right = xr;
+        m_hudRect.top = y;
+        m_hudRect.bottom = y;
+        m_worldReady = 1;
+        goto ret1;
+    }
+    m_4w()->m_68->ResetCell29cd(slot38, slot38, g_645578->m_18 & 0x20, 0);
+    if (a == g_644c54) {
+        if (0 != (g_645578->m_18 & 0x20)) {
+            goto ret1;
+        }
+        picked->OnStruck1f4b(1);
+        return 1;
+    }
+    picked->OnStruck1f4b(0);
+    return 1;
+}
+
+ret1:
+    return 1;
+
+guts_dispatch:
+    return m_guts->UpdateStatusBarTabHl428c(a, x, y);
 }
 
 // ===========================================================================
@@ -2252,7 +2587,7 @@ i32 CPlay::HandleTileClick(i32 a, i32 x, i32 y) {
     if (m_overlayDrag != 0) {
         return 1;
     }
-    if (((CRegSub68*)g_64556c->m_cmdGrid)->m_400 == 0) { // reg->m_68 cue-sink busy gate
+    if (g_64556c->m_cmdGrid->m_groupFlag == 0) { // reg->m_68 cue-sink busy gate
         return 1;
     }
     if (m_4w()->m_c != 0) {
@@ -5217,7 +5552,6 @@ SIZE_UNKNOWN(CRegHitGate);
 SIZE_UNKNOWN(CRegHitView);
 SIZE_UNKNOWN(CRegSink);
 SIZE_UNKNOWN(CRegSlot);
-SIZE_UNKNOWN(CRegSub68);
 SIZE_UNKNOWN(StateMgrBZ);
 SIZE_UNKNOWN(CRenderer);
 SIZE_UNKNOWN(CRpFrame);

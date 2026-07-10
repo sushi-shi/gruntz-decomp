@@ -39,6 +39,8 @@ public:
     void ProcessCheatInput(i32 a, i32 b);
     // Render the chat-box sprite + stamp its text for the current mode.
     i32 LoadChatBoxSprite(i32 arg1);
+    // OnMouseUp (CPlay 0x0cdb10) click-consume probe (thiscall(x,y); reloc-masked).
+    i32 HitTest43e0(i32 x, i32 y); // 0x43e0
 
     i32 m_0;                // +0x00  box origin X (or 0/0xa0 by mode)
     i32 m_4;                // +0x04  box origin Y (viewport-relative)
