@@ -8,6 +8,7 @@
 #include <Mfc.h>
 #include <Utils/RegistryHelper.h>
 #include <rva.h>
+#include <stdarg.h> // va_list for the DebugTrace varargs formatter
 #include <string.h>
 #include <stdio.h>
 
@@ -97,6 +98,20 @@ namespace Utils {
             DWORD target = timeGetTime() + milliseconds;
             while (timeGetTime() < target)
                 ;
+        }
+
+        // -------------------------------------------------------------------------
+        // DebugTrace (0x13e010): printf-style formatter into a 256-byte stack buffer,
+        // emitted via OutputDebugStringA. __cdecl varargs. Orphan copy (inlined at all
+        // call sites).
+        RVA(0x0013e010, 0x32)
+        void DebugTrace(const char* fmt, ...) {
+            char buf[256];
+            va_list ap;
+            va_start(ap, fmt);
+            vsprintf(buf, fmt, ap);
+            va_end(ap);
+            OutputDebugStringA(buf);
         }
 
         // -------------------------------------------------------------------------

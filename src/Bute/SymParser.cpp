@@ -14,13 +14,15 @@
 
 // CParseSlot::Init @0x1396f0 IS CParseSource::Init (header-less here); minimal local decl.
 SIZE_UNKNOWN(CParseSource);
-struct CParseSource { // struct (not class): retail mangles Init's return PAU (?Init@CParseSource@@QAEPAU1@XZ)
+struct
+    CParseSource { // struct (not class): retail mangles Init's return PAU (?Init@CParseSource@@QAEPAU1@XZ)
     CParseSource* Init();
 };
 
 // The +0x80 hash member's construction (0x184960) is CSymList::Construct; TU-local decl
 // (the real array-backed list container lives in the symtab unit).
-struct CSymList { // struct (not class): retail mangles Construct's return PAU (?Construct@CSymList@@QAEPAU1@H@Z)
+struct
+    CSymList { // struct (not class): retail mangles Construct's return PAU (?Construct@CSymList@@QAEPAU1@H@Z)
     CSymList* Construct(i32 count);
 };
 
@@ -570,6 +572,20 @@ void __stdcall UnpackTag(u32 tag, char* dst) {
     dst[len] = 0;
 }
 
+// CheckNodes (0x13ba20): walk the +0x10 object list, calling each node's slot-7
+// probe; return 1 iff every node returned nonzero (accumulates, no early exit).
+// __thiscall, no args. Orphan copy (fully inlined at all call sites).
+RVA(0x0013ba20, 0x27)
+i32 CSymParser::CheckNodes() {
+    i32 ok = 1;
+    for (CObjNode* n = m_list.m_head; n != 0; n = n->m_next) {
+        if (n->Slot1c() == 0) {
+            ok = 0;
+        }
+    }
+    return ok;
+}
+
 // 0x13ba70 - MakeSymSeed: the ButeMgr clock seed builder ParseBuffer/ParseRecords use
 // (returns time(&t) via the leftover-stack-args trick). __cdecl, no args. Declared in
 // SymParser.h / SymTab.h. 0x120210 == CRT time(). Byte-exact.
@@ -577,6 +593,17 @@ RVA(0x0013ba70, 0x10)
 i32 MakeSymSeed() {
     time_t t;
     return (i32)time(&t);
+}
+
+// SetDelims (0x13ba80): free the current owned delimiter buffer, then own a fresh
+// strdup of `s`. __thiscall, 1 arg. Orphan copy (fully inlined at all call sites).
+RVA(0x0013ba80, 0x57)
+void CSymParser::SetDelims(char* s) {
+    if (m_delims != 0) {
+        RezFree(m_delims);
+    }
+    m_delims = (char*)::operator new(strlen(s) + 1);
+    strcpy(m_delims, s);
 }
 
 // ResolveQualified (0x13bff0): forward (name, arg) into GetRoot()'s CSymTab.

@@ -55,6 +55,8 @@ public:
     virtual void Slot0c();                                 // +0x0c
     virtual i32 Read(void* buf, i32 a, i32 b);             // +0x10  slot 4 (parse buffer)
     virtual void* Detach();                                // +0x14  slot 5 (teardown/detach)
+    virtual void Slot18();                                 // +0x18  slot 6
+    virtual i32 Slot1c();                                  // +0x1c  slot 7 (CheckNodes probe)
 
     CObjNode* m_next; // +0x04
     CObjNode* m_prev; // +0x08
@@ -199,6 +201,13 @@ public:
     // free cdecl, reached here with a `this` (SymTab.cpp AddNodeEntry). Bare decl (no
     // RVA - the RVA is carried by MakeSymSeed); the rel32 call reloc-masks.
     i32 MakeSeed(); // 0x13ba70 (__thiscall view of the seed builder)
+
+    // CheckNodes (0x13ba20): walk m_list, calling each node's slot-7 probe; return 1
+    // iff every node returned nonzero (no early exit). Orphan copy (no caller).
+    i32 CheckNodes(); // 0x13ba20
+    // SetDelims (0x13ba80): free the current m_delims buffer, then own a fresh
+    // strdup of `s`. Orphan copy (no caller).
+    void SetDelims(char* s); // 0x13ba80
 
     // The three path-resolution thunks: forward into GetRoot()'s CSymTab.
     i32 ResolveQualified(const char* name, void* arg); // 0x13bff0 -> root->ResolveQualified

@@ -257,11 +257,15 @@ RVA(0x00118130, 0x44)
 i32 Gap_118130(void) {
     return 0;
 } // @stub
-// @stub 0x139810 = CParseSource method (RVA-contiguous: 0x139800..0x139960 is
-// ParseSource.cpp). Walks this->m_10's linked list (node->m_1c=next, node->m_0=str,
-// _g_emptyString sentinel), concatenating strings into arg1 via inline strcpy/strlen
-// (rep movs / repne scas) + operator new. Deferred (defer-huge doctrine, 319 B of
-// inline string-copy scheduling is a rep-movs codegen minefield). Home: ParseSource.cpp.
+// @stub 0x139810 = __thiscall (dst, size) -> dst: builds a `\`-joined qualified
+// path into dst by walking a CSymTab scope chain rooted at this->m_10 (each node is
+// a CSymTab: node->m_name @+0, node->m_parent @+0x1c; g_sepSlash "\\" @0x60cff0 is
+// both the separator and the empty-chain fast-path string; g_emptyString @0x6293f4;
+// scratch = operator new(size), RezFree'd). Reverse-concatenation (strcpy(scratch,
+// dst) + rebuild dst = sep + node->m_name + scratch) via inline strcpy/strlen.
+// BLOCKER: `this`'s class UNRESOLVED - it holds a CSymTab* at +0x10, which is NOT
+// CParseSource (its +0x10 is ParseMappedSource, disproven) nor CSymTab (its +0x10 is
+// an int accumulator). Also a 319 B inline rep-movs scheduling wall even once homed.
 RVA(0x00139810, 0x146)
 i32 Gap_139810(void) {
     return 0;
@@ -270,17 +274,9 @@ i32 Gap_139810(void) {
 // (node->m_4=next), call virtual slot 7 (@+0x1c) on each node, AND the results,
 // return "all true". Bute/SymParser region (0x13b9..0x13be40 = SymTab.cpp/SymParser.cpp/
 // BoundaryUpper2 orphans); owning class not confidently resolved (orphan, no xref).
-RVA(0x0013ba20, 0x27)
-i32 Gap_13ba20(void) {
-    return 0;
-} // @stub
 // @stub 0x13ba80 = __thiscall string setter: RezFree(this->m_4); this->m_4 =
 // operator new(strlen(arg)+1); strcpy(m_4, arg). Bute/SymTab region; owning class
 // with a char* @+0x4 not confidently resolved (orphan, no xref).
-RVA(0x0013ba80, 0x57)
-i32 Gap_13ba80(void) {
-    return 0;
-} // @stub
 // @stub 0x13d3a0 = CGameWnd virtual (vtbl slots @0x1ea328 CGruntzWnd + @0x1ea398
 // CGameWnd, last slot). Unpacks a packed x/y (lo=x, hi=y) and offers (y,x,arg2) in
 // turn to this->m_owner's vtbl[10], this's own vtbl[2], and m_owner->m_8's vtbl[5];
@@ -288,13 +284,6 @@ i32 Gap_13ba80(void) {
 // CGameWnd slot-2 re-typed to (y,x,arg2) + the m_8 sub-object vtable modeled first.
 RVA(0x0013d3a0, 0x6a)
 i32 Gap_13d3a0(void) {
-    return 0;
-} // @stub
-// @stub 0x13e010 = __cdecl varargs debug-trace: char buf[256]; vsprintf(buf, fmt, ap)
-// (0x121770=vsprintf); OutputDebugStringA(buf). Free function; no confident owning
-// TU/module (DDrawMgr/Image region). Deferred pending a home.
-RVA(0x0013e010, 0x32)
-i32 Gap_13e010(void) {
     return 0;
 } // @stub
 // @stub 0x13e8f0 = __thiscall image-cache reload (DIRSURF.CPP): scalar-deletes each
