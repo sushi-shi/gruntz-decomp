@@ -2653,7 +2653,7 @@ levelrezpath	?BuildLevelRezPath@LevelRezLoader@@QAEHHHHHVCString@@@Z	45.0709	45.
 levelsync	?Sync@CLevelSync@@QAEHPAUCSerialArchive@@HHH@Z	45.8653	45.8653	2	9756e2ac2910	0x1084d0
 leveltilevalidation	?PlaceStartGruntz@CLevelValidator@@QAEHXZ	63.9458	63.9458	4	72e7601e0ceb	0xd2b20
 leveltilevalidation	?PositionBridgeToggle@CLevelValidator@@QAEHHH@Z	87.5536	87.5536	4	b07ae60f9462	0xd5b20
-leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	16.9029	16.9029	8	e97b758bf67b	0xd2dd0
+leveltilevalidation	?ValidateLevelTiles@CLevelValidator@@QAEHXZ	52.7201	52.7201	9	666f7146a48b	0xd2dd0
 leveltimedtor	??0CLevelTime@@QAE@PAUCGameObject@@@Z	95.7273	95.7273	3	ad60f75cdcfc	0x9b8b0
 leveltimedtor	??1CLevelTime@@UAE@XZ	100.0000	100.0000	2	e29f6e4f5886	0x11a50
 leveltimedtor	?SerializeMove@CLevelTime@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	e43413ca048c	0x119b0
@@ -3878,7 +3878,7 @@ teleporter	?GetTypeTag@CTeleporter@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	c
 teleporter	?InitActReg@CTeleporter@@SAXXZ	100.0000	100.0000	3	1bef3a621da1	0x414a0
 teleporter	?Serialize@CTeleporter@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	1	8f143593dd04	0x41350
 teleporter	?Update@CTeleporter@@QAEHXZ	100.0000	100.0000	5	31dbe43561ab	0x41aa0
-terraintileloader	?Load@CTerrainTileLoader@@QAEXHHHHHH@Z	1.0914	1.0914	2	8aa879bd4d9d	0x75e90
+terraintileloader	?Load@CTerrainTileLoader@@QAEHHHHHHH@Z	7.8554	7.8554	1	505b43725144	0x75e90
 terraintileloader	?Validate@ValidateHost@@QAEHXZ	100.0000	100.0000	2	085bfb3cabb2	0x94bc0
 tileactionevent	?DeserializeFields@CTileActionEvent@@QAEHPAX@Z	100.0000	100.0000	5	f033294e79d9	0x114040
 tileactionevent	?MorphByTool@CTileActionEvent@@QAEHHH@Z	0.0000	0.0000	4	a847e8ef3911	0x113420

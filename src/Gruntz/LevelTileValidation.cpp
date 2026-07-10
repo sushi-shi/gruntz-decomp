@@ -6,28 +6,31 @@
 // vtable slot +0x10) and routes it to a per-class validator.
 //
 // The dominant class (identity 0x401799) clamps the object's world coords to the
-// tile grid, looks up the underlying tile-type id, and on a switch over the
-// object's +0x124 "switch kind" either registers a CTileTriggerSwitchLogic via
-// this->m_2e4 (the trigger registrar, method 0x115f60) or, when the placement is
-// invalid, emits a "Bad <kind> switch at: x=%d, y=%d" diagnostic built into a
-// CString temp and logged through g_gameReg. Two sibling classes (0x403bfc /
-// 0x4037b0) repeat the same scan with toob/trigger-specific id checks. The
-// remaining ~8 identities run short bounds/free-list/cell-grid pokes.
+// tile grid, looks up the underlying tile-type id (LookupTileType, inlined), and
+// on a 16-way switch over the RESOLVED tile-type id registers a
+// CTileTriggerSwitchLogic via this->m_2e4 (the trigger registrar, method 0x115f60)
+// with a per-case tag {1..8} + isMatch predicate, or on failure emits a
+// "Bad <kind> switch at: x=%d, y=%d" diagnostic through g_gameReg. Tile-type 0x21
+// runs a 3x3 neighbour scan (LookupKind tag 0x16) to re-resolve; tile-types
+// 0x1e/0x1f/0x22/0x23 (toys) re-resolve through a tag-0x1a record. Two sibling
+// classes (0x403bfc / 0x4037b0) repeat the scan; the remaining ~8 identities run
+// short bounds/free-list/cell-grid pokes.
 //
 // CARCASS doctrine: only the member OFFSETS and the per-object call/branch
 // STRUCTURE are load-bearing. Field names are placeholders (m_<hexoffset>);
 // engine callees are external no-body fns (reloc-masked `call rel32`/virtual).
-// The owning class is modeled self-contained here to avoid perturbing the
-// matched, shared CTriggerMgr / CTileTriggerSwitchLogic headers.
 //
-// @early-stop
-// megafunction wall: three near-identical tile-scan loop preambles plus an
-// inlined 16-way rect-by-value switch make the per-loop regalloc + the inlined
-// struct-copy scheduling diverge from retail past the entropy tail. The body is
-// a complete, faithful reconstruction; the byte-match plateaus on the documented
-// big-switch / regalloc wall (docs/patterns/INDEX.md, topic:wall). Deferred to
-// the final sweep for a leaf-first redo (the tile-grid lookup + the 0x115f60
-// registrar should be matched as leaves first, then this re-attacked).
+// @early-stop  (16.9% -> 52.7%: fixed the node layout [pNext@+0/data@+8], the
+// 2-load direct-field identity read [was a wrong 3-load vtable model], the grid
+// path [m_playMgr->m_24, was renderer->m_10], and rebuilt the switch to dispatch
+// on the RESOLVED tile-type with all 8 arms + the 0x21 neighbour scan + the toy
+// re-resolve, so ~half the body now aligns.) Residual is the documented big /GX
+// megafunction wall: (a) a 4-byte frame-size delta (0x38 vs retail 0x34) shifts
+// every [esp+X] spill slot; (b) retail homes `this` in edx and spills/reloads it
+// where our cl keeps it enregistered - a systematic register rename across 2358
+// instructions; (c) the physical switch-arm ordering + rect-copy scheduling + the
+// EH-state numbering across this size are not steerable from C source
+// (docs/patterns/INDEX.md, topic:wall; big-seh-fuzzy-desync.md).
 
 #include <Mfc.h> // CString (Format / ctor / dtor), RECT
 #include <Gruntz/GruntzCmdMgr.h>
@@ -69,32 +72,27 @@ struct TileLogicObj {
     i32 m_tileRow; // +0x168  tile row
 };
 
-// The list-node head reached through (m_0c manager). The list is iterated by
-// reading the node's data (+0x00) and next (+0x08).
+// The list node is an MFC CPtrList node: pNext@+0x00, pPrev@+0x04, data@+0x08.
+// (Retail iterates via GetNext: obj = pos->data [+8]; pos = pos->pNext [+0].)
 struct TileObjNode {
-    TileLogicObj* m_data; // +0x00
-    char m_pad04[0x8 - 0x4];
-    TileObjNode* m_next; // +0x08
+    TileObjNode* m_next;  // +0x00  pNext
+    char m_pad04[0x8 - 0x4]; // +0x04  pPrev
+    TileLogicObj* m_data; // +0x08  data
 };
 struct TileObjList {
     char m_pad00[0x4];
     TileObjNode* m_04; // +0x04  head node
 };
 
-// The +0x7c identity sub-object. Its vtable slot +0x10 holds the per-class
-// identity address the validator compares against. The two trailing rects are
+// The +0x7c identity sub-object. Retail reads the class identity with TWO loads
+// (`mov eax,[obj+0x7c]; mov eax,[eax+0x10]`) - i.e. m_7c is a pointer whose +0x10
+// field directly holds the per-class identity fn-address the validator compares
+// against (NOT a vtable double-deref). The two trailing rects at +0xf0/+0x100 are
 // copied by value as switch args.
-// Real polymorphic identity object: the validator keys each object by the ADDRESS
-// held in its vtable slot 4 (+0x10) - which override is installed IS the class id.
-// (Reading a virtual slot's address as data is the one thing plain C++ virtuals
-// can't spell, so the identity read below indexes the vptr directly.)
 struct GameObjAux7c {
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void ClassId(); // slot 4 (+0x10): its fn address is the per-class identity
-    char m_pad04[0xf0 - 0x04];
+    char m_pad00[0x10];
+    void* m_id; // +0x10  per-class identity fn-address (read as a data field)
+    char m_pad14[0xf0 - 0x14];
     RECT m_f0;  // +0xf0
     RECT m_100; // +0x100
 };
@@ -199,12 +197,13 @@ struct TileGrid {
     CViewport* m_5c; // +0x5c
 };
 struct PlayMgrRenderer {
-    char m_pad00[0x10];
-    TileGrid* m_10; // +0x10
+    char m_pad00[0x10]; // +0x10  the embedded tile-obj list (reached by cast)
 };
 struct PlayMgr {
     char m_pad00[0x8];
-    PlayMgrRenderer* m_08; // +0x08
+    PlayMgrRenderer* m_08; // +0x08  render host (tile-obj list embedded at +0x10)
+    char m_pad0c[0x24 - 0xc];
+    TileGrid* m_24; // +0x24  the world tile grid
 };
 
 // The placed-object list node embedded at PlayMgrRenderer+0x10 (head at +0x14). An
@@ -254,7 +253,7 @@ public:
 // The level tile-id lookup: clamp (x,y) to the grid bounds, shift to tile
 // coords, resolve the tile-class through the row/cell tables, and call its
 // +0x20 type virtual. Returns 0 for an empty/out-of-range cell.
-static i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
+static inline i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
     CViewport* g = grid->m_5c;
     if (x < 0) {
         x = 0;
@@ -268,12 +267,14 @@ static i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
     }
     i32 tx = x >> g->m_shiftX;
     i32 ty = y >> g->m_shiftY;
-    i32 cell = g->m_cells[g->m_rowBase[ty] + tx];
+    i32 subX = x - (tx << g->m_shiftX);
+    i32 subY = y - (ty << g->m_shiftY);
+    i32 cell = g->GetCell(tx, ty);
     if (cell == (i32)0xeeeeeeee || cell == -1) {
         return 0;
     }
     TileClass* tc = grid->m_4c[cell & 0xffff];
-    return tc->GetTypeId(x - (tx << g->m_shiftX), y - (ty << g->m_shiftY));
+    return tc->GetTypeId(subX, subY);
 }
 
 // ===========================================================================
@@ -374,52 +375,94 @@ i32 CLevelValidator::PlaceStartGruntz() {
 RVA(0x000d2dd0, 0x1de4)
 i32 CLevelValidator::ValidateLevelTiles() {
     i32 validCount = 0; // [esp+0x10]  count of objects validated
-    i32 counts[4];      // [esp+0x34]  per-kind pressure-pad tallies
+    i32 counts[4];      // per-kind pressure-pad tallies (0x40164f arm)
     counts[0] = 0;
     counts[1] = 0;
     counts[2] = 0;
     counts[3] = 0;
 
+    // The tile-object list is embedded at renderer+0x10 (MFC CPtrList: head @+0x4).
     TileObjList* list = (TileObjList*)((char*)m_playMgr->m_08 + 0x10);
-    if (list->m_04 == 0) {
+    if (list == 0) {
+        return 0;
+    }
+    TileObjNode* node = list->m_04;
+    if (node == 0) {
         return 1;
     }
 
     i32 ok = 1;
-    for (TileObjNode* node = list->m_04; node != 0; node = node->m_next) {
-        TileLogicObj* obj = node->m_data;
+    do {
+        TileLogicObj* obj = node->m_data; // GetNext: data @+0x08
+        node = node->m_next;              //          pNext @+0x00
         if (obj == 0) {
             continue;
         }
 
-        void* who = (*(void***)obj->m_7c)[4];
-        TileGrid* grid = m_playMgr->m_08->m_10;
+        void* who = obj->m_7c->m_id; // 2-load class identity ([obj+0x7c]->+0x10)
 
         if (who == (void*)0x401799) {
-            i32 type = LookupTileType(grid, obj->m_worldX, obj->m_worldY);
-            i32 kind = obj->m_kind;
+            TileGrid* grid = m_playMgr->m_24; // recomputed per-arm (retail spills it)
+            i32 type = LookupTileType(m_playMgr->m_24, obj->m_worldX, obj->m_worldY);
             if (type == 0x21) {
-                // off-grid neighbor scan for a matching tile (uses LookupKind)
-                obj->m_kind = type;
+                // 3x3 neighbour scan around the tile: find an adjacent registered
+                // switch (LookupKind tag 0x16), then re-resolve the tile-class type
+                // at the hit cell (rel index into hit+0xac).
+                void* hit = 0;
+                i32 col = obj->m_tileCol - 1;
+                i32 colOff = col << 8;
+                i32 row = obj->m_tileRow - 1;
+                while (col < obj->m_tileCol + 2) {
+                    row = obj->m_tileRow - 1;
+                    if (hit != 0) {
+                        break;
+                    }
+                    while (row < obj->m_tileRow + 2) {
+                        void* r = m_triggerRegistrar->LookupKind(row + colOff, 0x16);
+                        if (r != 0) {
+                            hit = r;
+                        }
+                        if (hit != 0) {
+                            break;
+                        }
+                        row++;
+                    }
+                    if (hit != 0) {
+                        break;
+                    }
+                    col++;
+                    colOff += 0x100;
+                }
+                if (hit == 0) {
+                    return 0;
+                }
+                i32 rel = (obj->m_tileRow - row) * 3 - col + obj->m_tileCol;
+                i32 tcidx = *(i32*)((char*)hit + rel * 4 + 0xac);
+                if (tcidx == 0) {
+                    return 0;
+                }
+                type = grid->m_4c[tcidx]->GetTypeId(0, 0);
             }
-            switch (kind - 0x33) {
-                case 1: // 0x34
-                case 0: // 0x33
+            if (type == 0x1e || type == 0x1f || type == 0x22 || type == 0x23) {
+                // toy tile: re-resolve the underlying tile-class type through the
+                // trigger registrar's tag-0x1a record (+0x34 = tile-class index).
+                void* r = m_triggerRegistrar->LookupKind(obj->m_key, 0x1a);
+                if (r == 0) {
+                    return 0;
+                }
+                i32 tcidx = *(i32*)((char*)r + 0x34);
+                if (tcidx == 0) {
+                    return 0;
+                }
+                type = grid->m_4c[tcidx]->GetTypeId(0, 0);
+            }
+            switch (type - 0x33) {
+                case 4: // 0x37
+                case 5: // 0x38
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
-                            3,
-                            obj->m_tileCol,
-                            obj->m_tileRow,
-                            obj->m_key,
-                            obj->m_134,
-                            obj->m_144,
-                            obj->m_154,
-                            obj->m_64,
-                            obj->m_7c->m_f0,
-                            obj->m_7c->m_100,
-                            kind == 0x38,
-                            obj->m_120,
-                            0
-                        )) {
+                            3, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
+                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            obj->m_7c->m_100, type == 0x38, obj->m_120, 0)) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((LPCSTR)s);
@@ -428,25 +471,104 @@ i32 CLevelValidator::ValidateLevelTiles() {
                     validCount++;
                     obj->m_flags |= 0x10000;
                     break;
-                case 5: // 0x38
-                case 4: // 0x37
+                case 8: // 0x3b
+                case 9: // 0x3c
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
-                            4,
-                            obj->m_tileCol,
-                            obj->m_tileRow,
-                            obj->m_key,
-                            obj->m_134,
-                            obj->m_144,
-                            obj->m_154,
-                            obj->m_64,
-                            obj->m_7c->m_f0,
-                            obj->m_7c->m_100,
-                            kind == 0x3c,
-                            obj->m_120,
-                            0
-                        )) {
+                            4, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
+                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            obj->m_7c->m_100, type == 0x3c, obj->m_120, 0)) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
+                        g_gameReg->LogTileError((LPCSTR)s);
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case 0xa: // 0x3d (retail also increments (*0x64556c)->m_7c->+0x3c here)
+                case 0xb: // 0x3e
+                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                            6, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
+                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            obj->m_7c->m_100, type == 0x3e, obj->m_120, 0)) {
+                        CString s;
+                        s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
+                        g_gameReg->LogTileError((LPCSTR)s);
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case 0xc: // 0x3f
+                case 0xd: // 0x40
+                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                            7, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
+                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            obj->m_7c->m_100, type == 0x40, obj->m_120, 0)) {
+                        CString s;
+                        s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
+                        g_gameReg->LogTileError((LPCSTR)s);
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case 0xe: // 0x41
+                case 0xf: // 0x42
+                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                            8, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
+                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            obj->m_7c->m_100, type == 0x42, obj->m_120, obj->m_kind)) {
+                        CString s;
+                        s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
+                        g_gameReg->LogTileError((LPCSTR)s);
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case 0: // 0x33
+                case 1: // 0x34
+                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                            1, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
+                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            obj->m_7c->m_100,
+                            type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
+                            obj->m_120, 0)) {
+                        CString s;
+                        s.Format(s_BadMulti, obj->m_worldX, obj->m_worldY);
+                        g_gameReg->LogTileError((LPCSTR)s);
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case 2: // 0x35
+                case 3: // 0x36
+                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                            2, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
+                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            obj->m_7c->m_100,
+                            type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
+                            obj->m_120, 0)) {
+                        CString s;
+                        s.Format(s_BadMulti, obj->m_worldX, obj->m_worldY);
+                        g_gameReg->LogTileError((LPCSTR)s);
+                        return 0;
+                    }
+                    validCount++;
+                    obj->m_flags |= 0x10000;
+                    break;
+                case 6: // 0x39
+                case 7: // 0x3a
+                    if (!m_triggerRegistrar->RegisterSwitchLogic(
+                            5, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
+                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            obj->m_7c->m_100,
+                            type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
+                            obj->m_120, 0)) {
+                        CString s;
+                        s.Format(s_BadMulti, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((LPCSTR)s);
                         return 0;
                     }
@@ -457,11 +579,11 @@ i32 CLevelValidator::ValidateLevelTiles() {
                     break;
             }
         } else if (who == (void*)0x403bfc) {
-            i32 type = LookupTileType(grid, obj->m_worldX, obj->m_worldY);
+            i32 type = LookupTileType(m_playMgr->m_24, obj->m_worldX, obj->m_worldY);
             (void)type;
             obj->m_flags |= 0x10000;
         } else if (who == (void*)0x4037b0) {
-            i32 type = LookupTileType(grid, obj->m_worldX, obj->m_worldY);
+            i32 type = LookupTileType(m_playMgr->m_24, obj->m_worldX, obj->m_worldY);
             (void)type;
             obj->m_flags |= 0x10000;
         } else if (who == (void*)0x401b09) {
@@ -496,7 +618,7 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 }
             }
         } else if (who == (void*)0x4019bf) {
-            i32 type = LookupTileType(grid, obj->m_worldX, obj->m_worldY);
+            i32 type = LookupTileType(m_playMgr->m_24, obj->m_worldX, obj->m_worldY);
             (void)type;
             obj->m_flags |= 0x10000;
         } else if (who == (void*)0x402a68) {
@@ -564,9 +686,8 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 }
             }
         }
-    }
+    } while (node != 0);
 
-    (void)s_BadMulti;
     return ok;
 }
 

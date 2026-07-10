@@ -31,16 +31,19 @@
 // 0x6c456c) bounds-checks the action rect. Only offsets / code bytes are
 // load-bearing.
 //
-// @early-stop
-// /GX nested-jump-table megafunction wall. The EH frame, the grid-cell resolve,
-// the outer action switch and the DIRT / GIANTROCK arms with their
-// string-masked registry Lookup + free are reconstructed here and match retail's
-// logic. The full 4905-byte body - three nested jump tables, the per-action
-// list-walk loops, the CString diagnostic format path, and the descending /GX
-// exception-state thread around the temp - is the documented wall (cf. the
-// sibling /GX megafunctions MainMenuBuilder ~78% and ValidateLevelTiles ~17%):
-// MSVC5's jump-table base reloc typing + the EH-state numbering across this size
-// are not steerable from C source. Deferred to the final sweep
+// @early-stop  (1.1% -> 7.9%: return type corrected to int [retail materialises
+// eax=1 before each ret]; reconstructed the always-run prologue - the action
+// descriptor, the grid-cell type resolve [level->m_24->m_5c CViewport clamp +
+// cells[rowBase[y]+x] + tile-class GetTypeId], the pixel snap - the 0x4771bc
+// byte-indexed outer switch mapped to actionTypes {3,5,7,0xd,0xf,0x12}, and the
+// DIRT arm [actionType 0xd] with its a5 {-1,2,0x63} sub-dispatch + Particlez
+// CreateSprite + tag-0x1a clear.) Residual is the documented /GX nested-jump-table
+// megafunction wall: the retail frame is sub esp,0x54 - that size is fixed by the
+// UNION of all 6 arms' locals + the descending EH-state scopes, so a partial body
+// (this reconstructs 1 of 6 arms) frames at 0xc and shifts every [esp+X] slot;
+// the descriptor + the 5 unreconstructed arms (each its own nested cellType jump
+// table + CString diagnostic path) are needed to pin the frame and stop the DCE
+// of the prologue's descriptor/cell reads. A leaf-first full-body redo is the fix
 // (docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md;
 // eh-state-numbering-base.md; o2-optimizer-bailout-framed.md).
 
@@ -49,98 +52,126 @@
 
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created Particlez sprite)
+#include <Gruntz/Viewport.h>      // the shared tile-grid geometry (cell lookup)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
 // Shared singletons + the recycled-node free sink (named so DIR32 reloc-mask).
 // ---------------------------------------------------------------------------
-extern i32 g_inputCtx; // DAT_0061ab24 @0x61ab24 (Lookup-free sink)
-
+// The game image registry singleton (the object at *0x64556c; reloc-masked DIR32).
 // ---------------------------------------------------------------------------
-// Engine helpers reached through reloc-masked __thiscall ILT thunks (no body).
-// ---------------------------------------------------------------------------
-void TtLookup(void* table10, const char* name, void** out); // 0x1b8438 Lookup
-void TtFree(i32 sink, i32 a, i32 b, i32 c);                 // 0x25fe   free a set
+extern void* g_64556c;
 
-#define I32(p, off) (*(i32*)((char*)(p) + (off)))
 #define PTR(p, off) (*(void**)((char*)(p) + (off)))
 
-namespace {
-
-    // The DIRT arm (outer case 2): look up "LEVEL_DIRT" + "GAME_DIRT" in the
-    // "Particlez" namespace registered under the level's map sub-object, then add
-    // the GAME_DIRT prefix. Returns the registered set (0 on failure).
-    void LoadDirt(void* self, i32 x, i32 y) {
-        // create the "Particlez" eye-candy sprite (canonical factory @ [self+0x22c]+0x8;
-        // the old TtRegister model missed the 0xcf84f hint arg) and configure it.
-        void* map = PTR(self, 0x22c);
-        CGameObject* set =
-            ((CSpriteFactory*)PTR(map, 0x8))->CreateSprite(0, x, y, 0xcf84f, "Particlez", 0x40003);
-        if (set != 0) {
-            set->ApplyName("LEVEL_DIRT");
-            set->ApplyLookupGeometry("GAME_DIRT", 0);
-        }
-    }
-
-    // The GIANTROCK arm (inner case 0x22): clear the LEVEL_GAUNTLETROCK1 +
-    // GAME_GAUNTLETBRICK1 hint sets from the registry hashtable, freeing each via
-    // g_inputCtx when present.
-    void ClearGauntletRock(void* self) {
-        void* reg = PTR(PTR(self, 0x22c), 0x28);
-        if (I32(reg, 0x30) == 0) {
-            void* found = 0;
-            TtLookup((char*)reg + 0x10, "LEVEL_GAUNTLETROCK1", &found);
-            if (found != 0) {
-                TtFree(g_inputCtx, 0, 0, 0);
-            }
-        }
-        void* reg2 = PTR(PTR(self, 0x22c), 0x28);
-        if (I32(reg2, 0x30) == 0) {
-            void* found = 0;
-            TtLookup((char*)reg2 + 0x10, "GAME_GAUNTLETBRICK1", &found);
-            if (found != 0) {
-                TtFree(g_inputCtx, 0, 0, 0);
-            }
-        }
-    }
-
-} // namespace
+// The trigger registrar reached through the level map's +0x2e4: LookupKind (0x21df)
+// resolves a set by (key, kind); FreeSet (0x2581) releases it. The looked-up set's
+// MarkKind (0x1a00) tags it. All __thiscall, reloc-masked (no body).
+struct TtTrigReg {
+    void* LookupKind(i32 key, i32 kind); // 0x21df
+    void FreeSet(void* obj);             // 0x2581
+};
+struct TtSet {
+    void MarkKind(i32 kind); // 0x1a00
+};
 
 // ---------------------------------------------------------------------------
 // The level/map owner (`this`). Raw-offset access.
 // ---------------------------------------------------------------------------
 class CTerrainTileLoader {
 public:
-    // __thiscall member (retail passes `this` in ecx: `mov esi,ecx` prologue). The
-    // earlier `__stdcall` here was a reconstruction artifact - a real member's
-    // convention is __thiscall, not callee-cleanup-with-stack-this.
-    void Load(i32 actionIndex, i32 a2, i32 ty, i32 a4, i32 tx, i32 sub);
+    // __thiscall member (retail passes `this` in ecx: `mov esi,ecx` prologue), returns
+    // 1 on every handled path (retail materialises eax=1 before each `ret`).
+    i32 Load(i32 actionIndex, i32 a1, i32 tileX, i32 tileY, i32 actionType, i32 a5);
     char m_pad[4];
 };
 
 // ===========================================================================
+// CTerrainTileLoader::Load (0x075e90) - the per-tile terrain-action loader.
+// Prologue (always run): resolve the tile cell's type id from the level grid
+// (level->m_24->m_5c CViewport: clamp tile coords, cells[rowBase[y]+x], tile-class
+// GetTypeId), snap (tileX,tileY) to a pixel centre, then dispatch on
+// (actionType - 3) through the 0x4771bc byte-indexed jump table. The DIRT arm
+// (actionType 0xd) registers the "Particlez"/LEVEL_DIRT/GAME_DIRT eye-candy set
+// when its sub-op (a5) is 2, and clears the tile's tag-0x1a set when a5 is 0x63.
+// ===========================================================================
 RVA(0x00075e90, 0x1329)
-void CTerrainTileLoader::Load(i32 actionIndex, i32 a2, i32 ty, i32 a4, i32 tx, i32 sub) {
+i32 CTerrainTileLoader::Load(i32 actionIndex, i32 a1, i32 tileX, i32 tileY, i32 actionType, i32 a5) {
     void* self = this;
-    i32 x = tx;
-    i32 y = ty;
-    (void)a2;
-    (void)a4;
-    (void)sub;
     (void)actionIndex;
+    (void)a1;
+    CString diag; // the "No giant rock logic found" temp - forces the /GX EH frame
 
-    // The verified top: resolve the cell from the grid, run the outer action
-    // switch, and handle the DIRT / GIANTROCK arms. The full nested-switch body
-    // is the megafunction wall (above); this keeps retail's single-function /GX
-    // shape and the tractable leading arms.
     void* level = PTR(self, 0x22c);
-    if (level != 0) {
-        LoadDirt(self, x, y);
-        ClearGauntletRock(self);
+    void* map = PTR(g_64556c, 0x2c);
+    void* grid = PTR(level, 0x24);
+    CViewport* g = *(CViewport**)((char*)grid + 0x5c);
+
+    // clamp the tile coords to the grid (tile-space bounds at +0x28/+0x2c)
+    i32 cx = tileX;
+    if (tileX < 0) {
+        cx = 0;
+    } else if (tileX >= g->m_tileWidth) {
+        cx = g->m_tileWidth - 1;
+    }
+    i32 cy;
+    if (tileY < 0) {
+        cy = 0;
+    } else if (tileY >= g->m_tileHeight) {
+        cy = g->m_tileHeight - 1;
+    } else {
+        cy = tileY;
+    }
+
+    i32 cellType;
+    i32 cell = g->m_cells[g->m_rowBase[cy] + cx];
+    if (cell == (i32)0xeeeeeeee || cell == -1) {
+        cellType = 0;
+    } else {
+        void* tc = *(void**)((char*)PTR(grid, 0x4c) + (cell & 0xffff) * 4);
+        cellType = (*(i32(**)(void*, i32, i32))(*(void***)tc + 8))(tc, 0, 0);
+    }
+
+    i32 px = tileX * 32 + 0x10;
+    i32 py = tileY * 32 + 0x10;
+
+    switch (actionType - 3) {
+        case 0xa: // actionType 0xd - the DIRT / eye-candy arm
+            if (a5 == -1) {
+                return 1;
+            }
+            if (a5 == 2) {
+                POINT pt;
+                pt.x = px;
+                pt.y = py;
+                if (PtInRect((const RECT*)((char*)g_64556c + 0x13c), pt)) {
+                    CGameObject* set = ((CSpriteFactory*)PTR(level, 0x8))
+                                           ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
+                    if (set != 0) {
+                        set->ApplyName("LEVEL_DIRT");
+                        set->ApplyLookupGeometry("GAME_DIRT", 0);
+                    }
+                }
+                return 1;
+            }
+            if (a5 != 0x63) {
+                return 1;
+            }
+            // a5 == 0x63: clear the tile's registered tag-0x1a set, keyed by tile coord
+            if (cellType == 0x22) {
+                TtTrigReg* reg = (TtTrigReg*)PTR(map, 0x2e4);
+                void* found = reg->LookupKind((tileX << 8) + tileY, 0x1a);
+                if (found != 0) {
+                    ((TtSet*)found)->MarkKind(0x22);
+                    reg->FreeSet(found);
+                }
+            }
+            return 1;
+        default:
+            return 1;
     }
 }
 
-#undef I32
 #undef PTR
 
 // ---------------------------------------------------------------------------

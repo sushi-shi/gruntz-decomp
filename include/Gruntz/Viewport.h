@@ -33,7 +33,8 @@ struct CViewport {
     char m_pad0c[0x20 - 0xc];
     i32* m_cells;   // +0x20  tile cell array (cell = m_cells[m_rowBase[y] + x])
     i32* m_rowBase; // +0x24  per-row start-index table
-    char m_pad28[0x30 - 0x28];
+    i32 m_tileWidth;  // +0x28  grid width in TILES  (clamp for tile coords)
+    i32 m_tileHeight; // +0x2c  grid height in TILES
     i32 m_worldWidth;  // +0x30  world width (also the grid clamp width)
     i32 m_worldHeight; // +0x34  world height (grid clamp height)
     char m_pad38[0x40 - 0x38];
@@ -50,6 +51,11 @@ struct CViewport {
     // __thiscall reloc-masks; reached here as m_parent->m_24->m_5c in the debug
     // object-count draw (CDDrawChildGroup::DrawObjectCounts_15a650).
     void WrapCoord(void* x, void* y);
+
+    // Fetch the packed tile cell id at tile coords (tx,ty) (== m_cells[m_rowBase[ty]
+    // + tx]); -1 / 0xeeeeeeee = empty. External/no-body so the __thiscall reloc-masks
+    // (the level tile validator calls it out-of-line rather than inlining the index).
+    i32 GetCell(i32 tx, i32 ty);
 };
 
 #endif // GRUNTZ_GRUNTZ_CVIEWPORT_H
