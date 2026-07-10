@@ -8,23 +8,14 @@
 // CMapStringToOb::Lookup (0x1b8008) named-object lookup in Helper_166040. Names are
 // placeholders; offsets + code bytes are load-bearing.
 #include <DDrawMgr/DDrawWorkerNode.h>
+#include <DDrawMgr/DDrawWorkerCtx.h> // shared CDDrawWorkerCtx / CDDrawWorkerCtxMap
 
 #include <Mfc.h> // real MFC CMapStringToOb / CObject (Lookup 0x1b8008, reloc-masked)
 #include <Ints.h>
 #include <rva.h>
 
-// The worker's +0x0c owner context (CDDrawWorkerCtx): a sub-manager ptr at +0x10
-// (whose +0x10 is the string->object map) and an int at +0x24 (primes m_3c).
-struct CDDrawWorkerCtxMap {
-    char pad_00[0x10];
-    CMapStringToOb m_10; // +0x10  named-object map
-};
-struct CDDrawWorkerCtx {
-    char pad_00[0x10];
-    CDDrawWorkerCtxMap* m_10; // +0x10
-    char pad_14[0x24 - 0x14];
-    i32 m_24; // +0x24
-};
+// The worker's +0x0c owner context (CDDrawWorkerCtx / CDDrawWorkerCtxMap) - shared
+// with CDDrawWorkerHost::RegisterNamed via <DDrawMgr/DDrawWorkerCtx.h>.
 
 // The object Lookup yields, viewed as a bounded element array.
 struct CDDrawWorkerObj {
@@ -85,6 +76,4 @@ i32 CDDrawWorkerB::Helper_166040(i32 key, i32 idx) {
     return v != 0;
 }
 
-SIZE_UNKNOWN(CDDrawWorkerCtx);
-SIZE_UNKNOWN(CDDrawWorkerCtxMap);
 SIZE_UNKNOWN(CDDrawWorkerObj);

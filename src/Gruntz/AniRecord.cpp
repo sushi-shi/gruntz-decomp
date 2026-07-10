@@ -32,6 +32,7 @@
 // ---------------------------------------------------------------------------
 #include <Mfc.h>                  // real MFC CStringArray / CMapStringToPtr / CString / CObject
 #include <Gruntz/AniRecordView.h> // the primary-facet class (CAniRecordView : CObject)
+#include <DDrawMgr/DDSurface.h>   // CDDSurface::SetPalette (Slot13_168fd0, reloc-masked)
 #include <string.h>               // strlen (inline repnz scas)
 #include <Globals.h>
 
@@ -244,7 +245,6 @@ void CAniRecordView::ResolveIndices_168d00(CAniMapOwner* owner, const char* str)
 
 // CAniRecordView::GetSize_168e50 (0x00168e50) is now an inline member in the header.
 
-
 // ---------------------------------------------------------------------------
 // 0x168ea0: (re)allocate the +0x10 work buffer from the owner's pool with size
 // 0x44 (Alloc2_142f40). On success, if the caller's flag bit 0x1 is set, mark the
@@ -325,6 +325,39 @@ void CAniRecordView::FreeBuf_168fb0() {
     }
 }
 
+// The owner-image / surface-descriptor chain Slot13_168fd0 walks: m_owner->m_04 is
+// the owner image, whose +0x10 is a surface descriptor carrying the source bitdepth
+// (+0x18; 8 = paletted) and the target CDDSurface (+0x2c). The concrete image /
+// descriptor classes are not yet recovered (@identity-TODO); only the touched
+// offsets are modeled (CImage.h is deliberately avoided - its EH include tangle
+// regresses this TU's /GX destructors).
+struct AniSurfDesc {
+    char pad_00[0x18];
+    i32 m_18; // +0x18  source bitdepth (8 = 8bpp / paletted)
+    char pad_1c[0x2c - 0x1c];
+    CDDSurface* m_2c; // +0x2c  target surface
+};
+struct AniImageHost {
+    char pad_00[0x10];
+    AniSurfDesc* m_10; // +0x10  surface descriptor
+};
+SIZE_UNKNOWN(AniSurfDesc);
+SIZE_UNKNOWN(AniImageHost);
+
+// ---------------------------------------------------------------------------
+// CAniRecordView::Slot13_168fd0 (0x168fd0, vtable slot 13 of CAniRecordBase2): if
+// the owner image is 8bpp (surfDesc->m_18 == 8), push this record's palette buffer
+// (m_buf) onto the owner's target surface via CDDSurface::SetPalette and return its
+// result; otherwise return 1. __thiscall, no args (ret).
+RVA(0x00168fd0, 0x24)
+i32 CAniRecordView::Slot13_168fd0() {
+    AniSurfDesc* sd = ((AniImageHost*)m_owner->m_04)->m_10;
+    if (sd->m_18 != 8) {
+        return 1;
+    }
+    return sd->m_2c->SetPalette((CDDPalette*)m_buf, 0);
+}
+
 // ---------------------------------------------------------------------------
 // CAniStrArray::GetAt (0x168e70) - a by-value CString-array element accessor,
 // re-homed from src/Stub/MallocConstructors. Returns (via the RVO return slot) a
@@ -332,8 +365,8 @@ void CAniRecordView::FreeBuf_168fb0() {
 // copy-ctor 0x1b9ba3). xref (gruntz.analysis.xref): CAniRecordView::ResolveIndices
 // (0x168d00). Modeled as the small string-array view CAniRecord indexes.
 struct CAniStrArray {
-    char m_00[4];             // +0x00
-    CString* m_data;          // +0x04  CString array base (4-byte elements)
+    char m_00[4];    // +0x00
+    CString* m_data; // +0x04  CString array base (4-byte elements)
     RVA(0x00168e70, 0x27)
     CString GetAt(int index) {
         return m_data[index];
@@ -341,7 +374,6 @@ struct CAniStrArray {
 };
 SIZE_UNKNOWN(CAniStrArray);
 // CAniStrArray::GetAt (0x00168e70) is now an inline member in the header.
-
 
 SIZE_UNKNOWN(CAniMapOwner);
 SIZE_UNKNOWN(CAniRecordBase2);

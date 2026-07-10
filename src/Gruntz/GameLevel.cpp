@@ -2325,6 +2325,40 @@ i32 CGameLevel::EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3) {
     return ResolveLevelName(s, arg2, arg2, arg3) != 0 ? 1 : 0;
 }
 
+// SaveName (0x1610a0, __thiscall ret 0x4): write the level name (m_levelName@+0x6c)
+// as a fixed 0x80-byte blob into the EditSink stream (SetName@+0x30). Standalone
+// counterpart to EditDispatch case 4. Dead code in retail (no callers / not in the
+// vtable) - homed to CGameLevel by its COMDAT placement amid the CGameLevel cluster.
+RVA(0x001610a0, 0x70)
+i32 CGameLevel::SaveName(void* sink) {
+    EditSink* s = (EditSink*)sink;
+    if (s == 0) {
+        return 0;
+    }
+
+    char buf[0x80];
+    memset(buf, 0, sizeof(buf));
+    strcpy(buf, m_levelName);
+    s->SetName(buf, 0x80);
+    return 1;
+}
+
+// LoadName (0x161110, __thiscall ret 0x4): read a fixed 0x80-byte name blob from the
+// EditSink stream (GetName@+0x2c) back into m_levelName. Standalone counterpart to
+// EditDispatch case 7.
+RVA(0x00161110, 0x64)
+i32 CGameLevel::LoadName(void* sink) {
+    EditSink* s = (EditSink*)sink;
+    if (s == 0) {
+        return 0;
+    }
+
+    char buf[0x80];
+    s->GetName(buf, 0x80);
+    strcpy(m_levelName, buf);
+    return 1;
+}
+
 // ---------------------------------------------------------------------------
 // DispatchMove: when this->flags & 4, tail into ApplyMove on `target`; else run
 // `target`'s +0xe4 brush-kind switch (kinds 1..8) and fold the flag bits into the

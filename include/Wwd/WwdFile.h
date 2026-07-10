@@ -7,6 +7,7 @@
 #define SRC_WWD_WWDFILE_H
 
 struct CWwdSpatialMgr; // folded CPlaneScroll
+class CImageSet;       // Image/ImageSet.h - SetTileSizeFromImageSet's frame source
 
 #include <Mfc.h> // real MFC CString (the WwdFile members take it by value)
 #include <Ints.h>
@@ -256,6 +257,9 @@ class CPlaneRender {
 public:
     void Draw(void* ctx);                   // 0x162010  the tile-grid render
     void SetTileSize(i32 tileW, i32 tileH); // 0x161f00  derive wrap dims/fill/shifts
+    // 0x161fa0: scan an image set for its first populated frame (in [minIndex,
+    // maxIndex]) and seed the tile size from that frame's pixel dims (width/height).
+    void SetTileSizeFromImageSet(CImageSet* set);
     void WrapCoord(i32* px, i32* py);       // 0x00a000  wrap+transform a world coord
     i32 CenterScrollA();                    // 0x163300
     i32 CenterScrollB();                    // 0x163370

@@ -1375,6 +1375,7 @@ public:
     void Clear_166810();                                // 0x166810 (destroy m_1dc list + RemoveAll)
     i32 AddChild_1667e0(CDDrawGroupChild* child);       // 0x1667e0
     i32 RemoveChild_166850(CDDrawGroupChild* child);    // 0x166850
+    i32 WalkChildWorkers_166880();                      // 0x166880 (per-child worker cb + count)
     WwdObList m_1dc;                                    // +0x1dc  CObList (vptr only in view)
     CDDrawGroupNode* m_listHead; // +0x1e0  CObList m_pNodeHead (broadcast list)
     char _p1e4[0x1f8 - 0x1e4];
@@ -1691,6 +1692,24 @@ i32 CWwdGameObjectB::RemoveChild_166850(CDDrawGroupChild* child) {
     }
     m_1dc.RemoveAt(pos);
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x166880 (__thiscall, ret): walk the broadcast child list (m_listHead), invoke
+// each child's per-child worker callback (child->m_7c->m_fn10(child), __cdecl), and
+// return the number of children visited. Advances to the next node BEFORE the
+// callback (so a callback that unlinks the child is safe).
+RVA(0x00166880, 0x29)
+i32 CWwdGameObjectB::WalkChildWorkers_166880() {
+    i32 count = 0;
+    for (CDDrawGroupNode* n = m_listHead; n != 0;) {
+        CDDrawGroupNode* cur = n;
+        n = n->m_next;
+        CDDrawGroupChild* o = cur->m_obj;
+        o->m_7c->m_fn10(o);
+        count++;
+    }
+    return count;
 }
 
 // Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:

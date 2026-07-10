@@ -8,6 +8,7 @@
 #include <Mfc.h> // /GX EH-frame helpers
 
 #include <DDrawMgr/DDrawWorkerHost.h>
+#include <DDrawMgr/DDrawWorkerCtx.h> // shared CDDrawWorkerCtx (RegisterNamed's map chain)
 
 // The host's own primary vtable (0x5f0270) is now the cl-emitted
 // ??_7CDDrawWorkerHost (real-polymorphic CLoadable-derived class; VTBL at
@@ -43,6 +44,27 @@ CDDrawWorkerHost::CDDrawWorkerHost(i32 owner, i32 field04, i32 field08) {
     m_50 = -1;
     memset(m_pool, 0, sizeof(m_pool));
     m_pool[0] = 100;
+}
+
+// ===========================================================================
+// 0x161c50 - RegisterNamed(index, key): resolve `key` to a named object through the
+// owner context's map (m_0c -> sub-manager -> +0x10 CMapStringToOb) and cache the
+// result (or null on a miss) at m_obArray[index] (SetAtGrow). __thiscall, ret 8.
+// Same lookup chain as CDDrawWorkerB::Helper_166040. m_0c is the CLoadable base's
+// +0x0c owner context (declared i32; the reinterpret is the CLoadable ctx handle).
+// ===========================================================================
+// @early-stop
+// 90.48%: identical Lookup out-param zero-init reorder wall as CDDrawWorkerB::
+// Helper_166040 - retail emits the `mov [esp+N],0` (val=0) AFTER both Lookup arg
+// pushes (push &val / push key), cl emits it BETWEEN them. Verified byte-exact
+// elsewhere (llvm-objdump -dr): the only differing bytes are that 1-instruction
+// slot. Logic/offsets/both call sites/movsbl-narrowed index all match. Not
+// source-steerable (same as Helper_166040's documented note).
+RVA(0x00161c50, 0x3f)
+void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
+    CObject* val = 0;
+    ((CDDrawWorkerCtx*)m_0c)->m_10->m_10.Lookup(key, val);
+    m_obArray.SetAtGrow(index, val);
 }
 
 // ===========================================================================

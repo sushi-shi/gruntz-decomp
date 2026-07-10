@@ -58,6 +58,9 @@ struct CAniRecordView : public CObject {
     void* Alloc168ea0(i32 size, i32 flag);                            // 0x168ea0
     void* Alloc168f60(i32 a, i32 size, i32 flag);                     // 0x168f60
     void FreeBuf_168fb0();                                            // 0x168fb0
+    // 0x168fd0 (vtable slot 13): when the owner image is 8bpp, push the record's
+    // palette buffer (m_buf) onto the owner's surface; else return 1.
+    i32 Slot13_168fd0();
 
     inline CAniRecordView() {
         m_count = 0;

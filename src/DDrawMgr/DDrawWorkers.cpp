@@ -166,3 +166,44 @@ void CDDrawWorkerA::PlotMarker_165fa0(CDDrawSurfacePair* a, CDDrawSurfacePair* b
         }
     }
 }
+
+// The render object CDDrawWorkerB::m_78 holds: for the int-frame worker, m_78 is a
+// DWORD that stores a pointer to the current frame's render node (Vfunc30 fills it
+// from src->m_frameTable[a4]; the frame table stores object pointers as DWORDs).
+// Its slot 14 (offset 0x38) draws that frame - given the worker - onto one target
+// surface-pair. The concrete node class is not yet recovered
+// (@identity-TODO: unresolved element of CDDrawFrameSource::m_frameTable), so it is
+// a declared-only manual-dispatch interface (the CDDrawFrameSource precedent) - the
+// slot-0x38 call reloc-masks.
+struct CDDrawFrameNode {
+    virtual void v00();
+    virtual void v04();
+    virtual void v08();
+    virtual void v0c();
+    virtual void v10();
+    virtual void v14();
+    virtual void v18();
+    virtual void v1c();
+    virtual void v20();
+    virtual void v24();
+    virtual void v28();
+    virtual void v2c();
+    virtual void v30();
+    virtual void v34();
+    virtual void Draw(CDDrawWorkerB* worker, CDDrawSurfacePair* target); // +0x38
+};
+SIZE_UNKNOWN(CDDrawFrameNode);
+
+// ---------------------------------------------------------------------------
+// 0x1660b0 (CDDrawWorkerB vtable slot 10): draw the worker's current frame node
+// (m_78) onto the first target `a`, then - when the second target `b` has a live
+// surface (m_2c) and is not flagged 0x20000 - onto `b` too. __thiscall, 2 ptr args
+// (ret 0x8). m_78 is the int-frame slot reinterpreted as the frame-node pointer
+// (authentic DWORD-stores-a-pointer reinterpret, as in Vfunc30's frame table).
+RVA(0x001660b0, 0x33)
+void CDDrawWorkerB::Slot10_1660b0(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+    ((CDDrawFrameNode*)m_78)->Draw(this, a);
+    if (b->m_surface != 0 && (b->m_flags & 0x20000) == 0) {
+        ((CDDrawFrameNode*)m_78)->Draw(this, b);
+    }
+}

@@ -147,7 +147,9 @@ struct CDDrawWorkerB : public CObject {
     virtual void Slot07_157310();      // [7]  0x157310 (B)
     virtual void Slot08_157210();      // [8]  0x157210 (B)
     virtual void Slot09_157080();      // [9]  0x157080
-    virtual void Slot10_1660b0();      // [10] 0x1660b0 (B)
+    // [10] 0x1660b0: draw the current frame node (m_78) onto the two surface-pair
+    // targets (unconditional first, gated second on m_2c live + not flagged 0x20000).
+    virtual void Slot10_1660b0(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
     // Non-virtual: reset/arm the worker from (a, b); seeds m_3c off the owner ctx.
     i32 Helper_164790(i32 a, i32 b); // 0x164790
     i32 m_04;                        // +0x04

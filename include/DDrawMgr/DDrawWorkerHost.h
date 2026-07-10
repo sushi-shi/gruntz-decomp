@@ -38,6 +38,9 @@ class CDDrawWorkerHost : public CObject {
 public:
     CDDrawWorkerHost(i32 owner, i32 field04, i32 field08); // 0x1615a0
     virtual ~CDDrawWorkerHost() OVERRIDE;                  // slot 1 (scalar-deleting dtor)
+    // 0x161c50: cache the object named `key` (resolved via the owner context's map)
+    // at m_obArray[index], or null on a miss.
+    void RegisterNamed(char index, const char* key);
 
     i32 m_04, m_08, m_0c;            // +0x04..0x0f (merged CLoadable base fields)
     char m_pad10[0x18 - 0x10];       // +0x10..+0x17

@@ -29,6 +29,8 @@
 #include <Mfc.h>          // CMapPtrToPtr - the +0x2c / +0x48 collections (real MFC)
 #include <Wap32/Object.h> // the shared WAP CObject grand-base (slots 0/2/3/4 base thunks)
 
+struct CDDrawChildWorker; // CDDrawGroupChild+0x7c worker (WalkChildWorkers callback host)
+
 // The child object dispatched per list node. Slots laid out so the broadcast
 // virtuals land at +0x34 / +0x38, with +0x2c and +0x30 used by other methods.
 // Declarations only - never defined, so no ??_7 is emitted.
@@ -54,10 +56,21 @@ public:
     // is linked into a broadcast list (CWwdGameObjectB Add/RemoveChild); m_d8 written
     // by ResetChildD8.
     char m_pad04[0x78 - 4];
-    i32 m_78; // +0x78  cached CObList POSITION
-    char m_pad7c[0xd8 - 0x7c];
+    i32 m_78;                // +0x78  cached CObList POSITION
+    CDDrawChildWorker* m_7c; // +0x7c  per-child worker (WalkChildWorkers callback host)
+    char m_pad80[0xd8 - 0x80];
     i32 m_d8; // +0xd8
 };
+
+// The per-child worker/handler sub-object held at CDDrawGroupChild+0x7c. Its +0x10
+// slot is a __cdecl callback CWwdGameObjectB::WalkChildWorkers_166880 invokes once
+// per child (passing the child). The concrete worker class is not yet recovered
+// (@identity-TODO); only the callback field is modeled so the fn-ptr call reproduces.
+struct CDDrawChildWorker {
+    char m_pad00[0x10];
+    void(__cdecl* m_fn10)(CDDrawGroupChild*); // +0x10  per-child callback
+};
+SIZE_UNKNOWN(CDDrawChildWorker);
 
 // One node of the intrusive list at +0x14: next pointer @0, child object @8.
 struct CDDrawGroupNode {
@@ -78,22 +91,22 @@ public:
     RVA(0x001575e0, 0x16)
     i32 IsReady() {
         if (m_parent == 0) {
-        goto fail;
+            goto fail;
         }
         if (m_status != -1) {
-        return 1;
+            return 1;
         }
-        
-        fail:
+
+    fail:
         return 0;
     }
     void WalkDispatch34(i32 a1, i32 a2, i32 a3);
     void WalkDispatch38(i32 a1, i32 a2, i32 a3);
 
     // Slots 0/2/3/4 inherited from CObject (base thunks). Own slots below:
-    virtual ~CDDrawChildGroup() OVERRIDE;        // slot 1  scalar-deleting dtor (0x157610)
-    virtual void Slot14();                       // +0x14  slot 5
-    virtual void Slot18();                       // +0x18
+    virtual ~CDDrawChildGroup() OVERRIDE; // slot 1  scalar-deleting dtor (0x157610)
+    virtual void Slot14();                // +0x14  slot 5
+    virtual void Slot18();                // +0x18
     RVA(0x001591e0, 0x5)
     virtual void ForwardTo3C() {
         this->Slot3C();

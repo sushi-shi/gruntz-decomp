@@ -327,6 +327,16 @@ public:
     // the fwd-decl note above) and cast to EditSink in the definition.
     i32 EditDispatch(void* sink, i32 arg1, i32 arg2, i32 arg3);
 
+    // SaveName/LoadName (0x1610a0 / 0x161110, __thiscall ret 0x4): serialize just
+    // this level's name (m_levelName@+0x6c) as a fixed 0x80-byte blob through the
+    // EditSink stream - the standalone counterparts to EditDispatch cases 4 & 7.
+    // Dead code in retail (no rel32 callers / no vtable slot); attributed to
+    // CGameLevel by their COMDAT placement amid the CGameLevel cluster plus the
+    // +0x6c name field. `sink` is void* here (EditSink is the GameLevel.cpp-local
+    // serializer view), cast to EditSink in the definition.
+    i32 SaveName(void* sink);
+    i32 LoadName(void* sink);
+
     // MoveKindDispatch12 (@0x1671c0, __thiscall this=level): the per-axis move
     // resolver ApplyMove fans modes 1..2 into. For each axis, when the object's
     // position differs from the goal, call the matching hi/lo axis stepper (which

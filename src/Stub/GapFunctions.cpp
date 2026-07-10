@@ -328,36 +328,30 @@ RVA(0x0015a8c0, 0x7d)
 i32 Gap_15a8c0(void) {
     return 0;
 } // @stub
-RVA(0x001610a0, 0xd4)
-i32 Gap_1610a0(void) {
-    return 0;
-} // @stub
+// @identity-TODO leaf-first (matcher-2): 930B __thiscall (this=ecx/ebp, ret 0xc, 3
+// args). arg1 is a plane data block; bails (return 0) unless *arg1 == 0xa0. Reads
+// arg1->m_88 (+base ecx) and arg1->m_7c (count), then token-parses a byte buffer
+// (skip bytes <0x30 or (signed)>0x80, i.e. non-printable/whitespace) into a 0x98-byte
+// stack frame. A tile/object plane-block reader (the CPlane vtable-slot-0x28 family),
+// NOT CDDrawWorkerHost. Owner: CGameLevelPlanes/CPlane. Deferred - large parser.
 RVA(0x00161640, 0x3a2)
 i32 Gap_161640(void) {
     return 0;
 } // @stub
+// @identity-TODO leaf-first (matcher-2): 503B __thiscall (this=ecx/ebx, ret 0x20, 8
+// args). A PLANE geometry Init: stores the 8 args into the plane's tile/wrap/origin
+// fields (m_28/m_2c tile dims, m_38/m_3c, m_50-5c rect from arg struct ptr, m_94/98),
+// derives wrap dims (m_30=w*h1, m_34=w*h2), grid dims (m_70/m_74), tile centres
+// (m_78/m_7c via sar), and the SetTileSize-style log2 shift amounts (m_8c/m_90);
+// strcpy's a name into +0xb4; when arg-struct[0] != 0x80000000 calls a global coord
+// transform [0x6c44bc] and recomputes m_70/74/78; fills m_24[i]=i*m_28 for
+// i in [0,m_2c); then tail-calls CLevelPlane::RecomputePlaneCoords() on `this`.
+// => this IS a CLevelPlane/CPlaneRender (SAME plane object), NOT CDDrawWorkerHost
+// (the RecomputePlaneCoords @0x161c90 CLevelPlane call on ecx=this proves it).
+// Deferred - large geometry Init; needs the +0x6c44bc global fn-ptr named + ~30
+// plane fields modeled on CPlaneRender.
 RVA(0x001619f0, 0x1f7)
 i32 Gap_1619f0(void) {
-    return 0;
-} // @stub
-RVA(0x00161c50, 0x3f)
-i32 Gap_161c50(void) {
-    return 0;
-} // @stub
-RVA(0x00161fa0, 0x6c)
-i32 Gap_161fa0(void) {
-    return 0;
-} // @stub
-RVA(0x001660b0, 0x33)
-i32 Gap_1660b0(void) {
-    return 0;
-} // @stub
-RVA(0x00166880, 0x29)
-i32 Gap_166880(void) {
-    return 0;
-} // @stub
-RVA(0x00168fd0, 0x24)
-i32 Gap_168fd0(void) {
     return 0;
 } // @stub
 RVA(0x0016b230, 0xe1)

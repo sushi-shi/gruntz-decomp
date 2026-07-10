@@ -27,6 +27,8 @@
 // functions. Returns are full-width eax (1 / 0), i.e. `int`, not bool.
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GameRegistry.h>
+#include <Image/ImageSet.h>   // SetTileSizeFromImageSet frame source (GetAt/m_count)
+#include <Image/ImageFrame.h> // CImageFrame m_width/m_height
 #include <rva.h>
 
 #include <Mfc.h>    // CString (ValidateMainBlock takes one by value; ReadPlaneObjects builds four)
@@ -371,6 +373,22 @@ void CPlaneRender::SetTileSize(i32 tileW, i32 tileH) {
     m_shiftY = 0;
     for (i32 u = tileW; u > 1; u >>= 1) {
         m_shiftY++;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CPlaneRender::SetTileSizeFromImageSet (0x161fa0, __thiscall, ret 0x4): linear-scan
+// the image set for the first populated frame (GetAt returns null outside
+// [minIndex, maxIndex]); on the first hit, drive SetTileSize with that frame's pixel
+// dimensions and stop. An empty set leaves the tile size unchanged.
+RVA(0x00161fa0, 0x6c)
+void CPlaneRender::SetTileSizeFromImageSet(CImageSet* set) {
+    for (i32 i = 0; i < set->m_count; i++) {
+        if (set->GetAt(i) != 0) {
+            CImageFrame* f = set->GetAt(i);
+            SetTileSize(f->m_width, f->m_height);
+            break;
+        }
     }
 }
 
