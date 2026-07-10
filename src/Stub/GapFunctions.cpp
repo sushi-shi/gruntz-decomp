@@ -170,36 +170,52 @@ RVA(0x00156ad0, 0x1d2)
 i32 Gap_156ad0(void) {
     return 0;
 } // @stub
-RVA(0x001581b0, 0x5b)
-i32 Gap_1581b0(void) {
-    return 0;
-} // @stub
-RVA(0x00158b10, 0x2c)
-i32 Gap_158b10(void) {
-    return 0;
-} // @stub
-RVA(0x00159f00, 0x22e)
-i32 Gap_159f00(void) {
-    return 0;
-} // @stub
+// @identity-TODO (matcher-5): 0x15a210 (1074B) is a CDDrawChildGroup-family debug
+// OVERLAY, twin of CDDrawChildGroup::DrawObjectCounts_15a650 (same subsystem, both
+// unreferenced/dead-in-retail).  __thiscall, gated on a +0x08 debug flag; walks the
+// +0x14 child list and, per object, draws debug geometry via CViewport::WrapCoord
+// (world->screen transform, the m_parent->m_24->m_5c viewport - see DrawObjectCounts):
+//   - CDDrawSurfacePair::DrawBox(RECT*, color)  (3x - the object's boxes/extents)
+//   - CDDrawSurfacePair::DrawCross(x, y)         (the object's centre/anchor)
+//   - ResLoaders::DrawHost2_164420::DrawLabel(RECT*, char*)  (the object's label,
+//     falling back to the "???" literal @0x1f0a94 when unnamed)
+// Individual draws gated by the debug-toggle globals g_dbg61ab28/2c/30 (DAT_0061ab28/
+// 2c/30).  Home: DDrawChildGroup.cpp (needs CDDrawSurfacePair::DrawBox/DrawCross +
+// DrawHost2_164420 - both already modeled - plus the per-object field map).  Deferred
+// to the final sweep (>512 B, novel per-object geometry; the WrapCoord/DrawHost
+// scaffolding is proven by 15a650).
 RVA(0x0015a210, 0x432)
 i32 Gap_15a210(void) {
     return 0;
 } // @stub
-RVA(0x0015a650, 0x12c)
-i32 Gap_15a650(void) {
-    return 0;
-} // @stub
-RVA(0x0015a8c0, 0x7d)
-i32 Gap_15a8c0(void) {
-    return 0;
-} // @stub
-// @identity-TODO leaf-first (matcher-2): 930B __thiscall (this=ecx/ebp, ret 0xc, 3
-// args). arg1 is a plane data block; bails (return 0) unless *arg1 == 0xa0. Reads
-// arg1->m_88 (+base ecx) and arg1->m_7c (count), then token-parses a byte buffer
-// (skip bytes <0x30 or (signed)>0x80, i.e. non-printable/whitespace) into a 0x98-byte
-// stack frame. A tile/object plane-block reader (the CPlane vtable-slot-0x28 family),
-// NOT CDDrawWorkerHost. Owner: CGameLevelPlanes/CPlane. Deferred - large parser.
+// IDENTITY RESOLVED (matcher-5): 0x161640 == CLevelPlane::ReadPlaneBlock (the plane
+// object's vtable slot +0x28, ??_7CDDrawWorkerHost @0x1f0270+0x28; same multi-view
+// object as CLevelPlane/CPlaneRender/WwdFile - it drives all three).  __thiscall,
+// 3 args (a1 plane-source record, a2 buffer offset, a3 LevelCoordRect* bounds), ret
+// 0xc, returns 1.  Structure (full):
+//   1. if (*a1 != 0xa0) return 0.
+//   2. buf = a1->m_88 + a2; for (i=0; i < a1->m_7c; i++): skip bytes <0x30 or
+//      (signed)>0x80, collect the printable run into a stack token[0x28]; if non-
+//      empty: CObject* v=0; ((CMapStringToOb*)(this->m_c->m_10+0x10))->Lookup(token,v);
+//      this->m_9c(CObArray)::SetAtGrow((char)i, v).
+//   3. Copy from a1 into this: m_8=a1->m_8, m_94=a1->m_70, m_98=a1->m_74, m_10=m_14=0,
+//      m_80=0xfff0bdc1 then m_80=a1->m_90, m_28=a1->m_60, m_2c=a1->m_64, m_38=a1->m_58,
+//      m_3c=a1->m_5c, m_50..5c=a3[0..3], m_60=m_64=0, m_68=m_38, m_6c=m_3c,
+//      m_30=m_38*m_28, m_34=m_3c*m_2c.
+//   4. SetTileSize (CPlaneRender): if (m_8 & 0x10) scan this->m_9c[0]'s spatial grid
+//      (elem->m_18 count, m_64/m_68 bounds, m_14[] cells) for the first non-zero cell,
+//      SetTileSize(cell->m_10, cell->m_14); else SetTileSize(a1->m_58, a1->m_5c).
+//   5. strcpy(this->m_b4, a2+0x10); m_144=a2->m_78; m_8=a2->m_8.
+//   6. if (a3[0]!=INT_MIN): CopyRect(&local,a3); m_bounds50=local; re-derive
+//      m_70/74/78/7c; RecomputePlaneCoords().   [== CLevelPlane::Build / 1619f0 tail]
+//   7. m_18=(float)m_94*0.01; m_1c=(float)m_98*0.01; m_20=new((m_28*m_2c)*4), fill
+//      from a2->m_84 + a3; m_24=new(m_2c*4), fill m_24[i]=i*m_28.
+//   8. m_10/m_14 = fild(a2->m_6c/a2->m_68) [*m_18/m_1c unless m_8&1]; RecomputePlaneCoords().
+//   9. if (a2->m_8c): WwdFile::RebuildPlanes(a2->m_80, a3 + a2->m_8c); return !hr.
+// Steps 6-9 are byte-identical to CLevelPlane::InitGeometry_1619f0 (GameLevel.cpp).
+// Deferred to the final sweep: needs SetTileSize/RebuildPlanes/SetAtGrow declared on
+// CLevelPlane (declared-only reloc-masked) + the spatial-grid element modeled; the
+// token-parser stack frame + step-4 scan are the novel work.  Home: GameLevel.cpp.
 RVA(0x00161640, 0x3a2)
 i32 Gap_161640(void) {
     return 0;
@@ -216,10 +232,6 @@ i32 Gap_161640(void) {
 // (the RecomputePlaneCoords @0x161c90 CLevelPlane call on ecx=this proves it).
 // Deferred - large geometry Init; needs the +0x6c44bc global fn-ptr named + ~30
 // plane fields modeled on CPlaneRender.
-RVA(0x001619f0, 0x1f7)
-i32 Gap_1619f0(void) {
-    return 0;
-} // @stub
 RVA(0x0016b230, 0xe1)
 i32 Gap_16b230(void) {
     return 0;

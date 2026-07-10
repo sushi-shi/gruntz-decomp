@@ -286,6 +286,25 @@ CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost() {
 // __thiscall engine wrappers on the +0x2c surface proxy.
 // ===========================================================================
 
+// 0x158b10: pick m_overlayPair (arg2==2) or m_backPair, null-check, dispatch slot 0x38
+// (ResolveImage) with arg1.  Twin of Method_158b40 (which dispatches slot 0x34).
+RVA(0x00158b10, 0x2c)
+i32 CDDrawSubMgrPages::Method_158b10(i32 arg1, i32 arg2) {
+    CDDrawSurfacePair* p;
+    if (arg2 == 2) {
+        p = m_overlayPair;
+        if (!p) {
+            return 0;
+        }
+    } else {
+        p = m_backPair;
+        if (!p) {
+            return 0;
+        }
+    }
+    return p->ResolveImage_163ee0((CParseSource*)arg1);
+}
+
 // 0x158b40: pick m_overlayPair (arg2==2) or m_backPair, null-check, dispatch slot 0x34 with arg1.
 RVA(0x00158b40, 0x2c)
 i32 CDDrawSubMgrPages::Method_158b40(i32 arg1, i32 arg2) {
@@ -2198,7 +2217,7 @@ public:
     virtual void Vs14();
     virtual void Vs18();
     virtual void Vs1C();
-    virtual void Vs20();
+    virtual i32 Vs20(); // slot 8 (@+0x20) - object type tag (== 5 in Find_15a8c0)
     virtual void Vs24();
     virtual i32 Build(i32 a, i32 b, i32 c, i32 d); // +0x28 deserialize/build
 
@@ -2588,6 +2607,194 @@ i32 __stdcall BoxesOverlap_15a130(CWwdBox* a1, CWwdBox* a2) {
         return 0;
     }
     return a1B >= a2T;
+}
+
+// ---------------------------------------------------------------------------
+// @identity-TODO: 0x1581b0 has NO reference anywhere in the retail image (not a
+// vtable slot, no rel32/absolute caller) - dead / inlined-away code whose owning
+// class is unrecovered.  `this` is a CDDrawSurfaceMgr-family child: a parent
+// back-pointer @+0x0c (parent->m_24->m_5c must be non-null - the CImageSet3, cf.
+// CDDrawChildGroup::DestroyChildren), a CMapStringToOb of named CAniBlitTriggers
+// @+0x10, and a gate flag @+0x30.  NOT CDDrawChildGroup (whose +0x10 is the
+// WalkDispatch CObList).  Byte-reconstructed; offsets load-bearing, names
+// placeholders.
+struct CAniTriggerMap_1581b0 {
+    char m_pad00[0x0c];
+    char* m_parent;         // +0x0c
+    CMapStringToOb m_map10; // +0x10  named CAniBlitTrigger map
+    char m_pad2c[0x30 - 0x2c];
+    i32 m_gate30;           // +0x30
+    i32 Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2);
+};
+RVA(0x001581b0, 0x5b)
+i32 CAniTriggerMap_1581b0::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2) {
+    char* p24 = *(char**)(m_parent + 0x24);
+    if (p24 != 0 && *(char**)(p24 + 0x5c) != 0 && m_gate30 == 0) {
+        CObject* val = 0;
+        m_map10.Lookup(key, val);
+        if (val != 0) {
+            return ((CAniBlitTrigger*)val)->TriggerBlit_1587f0(pos, -1, range1, range2);
+        }
+    }
+    return 0;
+}
+
+// @identity-TODO: 0x15a8c0 unreferenced (dead / inlined-away), owner unrecovered.
+// `this`: a parent back-pointer @+0x0c and an intrusive child-list head @+0x14
+// (nodes: next@+0x00, object@+0x08).  It Lookups `key` in the CMapStringToOb at
+// parent->m_14 +0x10, then scans the child list for the game object whose type tag
+// (vtable slot 8, @+0x20) == 5, whose +0x04 id == `id`, and whose +0x7c sub-object's
+// +0x10 equals the looked-up object's +0x10.  Byte-reconstructed; raw-offset access.
+// @early-stop
+// 79% - logic/CFG/offsets/vtable-dispatch byte-faithful (the Lookup, the list walk
+// with advance-before-process, the tag==5 / id / m_7c->m_10 gate, the return).
+// Residual is a regalloc/branch-layout wall: retail pins `found` in ebp and the node
+// in eax (twin-copy `mov eax,edi; mov esi,[eax+8]`), allocates the out slot 4 B
+// higher, and lays out the match path as fall-through (`jne continue`) vs our
+// `je match; jmp continue` - same values, same stores (docs/patterns/zero-register-
+// pinning.md + linked-list-walk-node-eax-rotation.md).
+struct CChildFinder_15a8c0 {
+    char m_pad00[0x0c];
+    char* m_parent;   // +0x0c
+    char m_pad10[0x14 - 0x10];
+    void* m_listHead; // +0x14
+    void* Find_15a8c0(i32 id, const char* key);
+};
+RVA(0x0015a8c0, 0x7d)
+void* CChildFinder_15a8c0::Find_15a8c0(i32 id, const char* key) {
+    CObject* found = 0;
+    ((CMapStringToOb*)(*(char**)(m_parent + 0x14) + 0x10))->Lookup(key, found);
+    char* node = (char*)m_listHead;
+    if (node == 0) {
+        return 0;
+    }
+    char* fp = (char*)found;
+    do {
+        char* obj = *(char**)(node + 8);
+        node = *(char**)node;
+        i32 tag = ((CWwdFactoryObject*)obj)->Vs20();
+        if (tag == 5 && *(i32*)(obj + 4) == id &&
+            *(i32*)(*(char**)(obj + 0x7c) + 0x10) == *(i32*)(fp + 0x10)) {
+            return obj;
+        }
+    } while (node != 0);
+    return 0;
+}
+SIZE_UNKNOWN(CAniTriggerMap_1581b0);
+SIZE_UNKNOWN(CChildFinder_15a8c0);
+
+// ---------------------------------------------------------------------------
+// 0x159f00: CDDrawChildGroup::Slot40 (vtable slot 16, @+0x40).  Pairwise
+// collision broadcast over the +0x14 child list: for every ordered pair (i<j)
+// of active objects (flag bit0 clear) that share the 0x40000 class bit, test
+// overlap and, on a hit, fire the registered +0x80/+0x88 collision callbacks,
+// the +0x128 damage budget latch, or CWwdFactoryObject::Notify.  Two phases:
+// a RECT overlap (skipped when i&4 or j&0x80) using each object's +0x144.. AABB
+// and RectsOverlap, then a BOX overlap (skipped when j&4 or i&0x80) via
+// BoxesOverlap.  The objects are the wide CWwdGameObject (raw-offset access,
+// campaign doctrine: offsets load-bearing, names placeholders).  __thiscall,
+// no args.  Homed here (not DDrawChildGroup.cpp) so the CWwdFactoryObject model
+// + the two overlap predicates + Notify resolve without a cross-TU view.
+// @early-stop
+// 87.9% — logic/CFG/field-offsets/arg-order byte-identical (both loops, both
+// overlap phases, all callbacks, the damage-budget latch, the INT_MIN early-outs
+// and the rectA/rectB build all match instruction-for-instruction).  Residual is
+// a zero-register-pinning / dead-spill wall: retail spills `this` to [esp] at
+// entry and reloads it (dead) before the stdcall BoxesOverlap, giving a 0x30
+// frame; our cl never spills the unused `this` (0x2c frame), shifting every stack
+// slot offset + rotating the mask temp register (retail ebp vs our ecx).  No
+// source lever forces a dead self-spill (docs/patterns/zero-register-pinning.md).
+RVA(0x00159f00, 0x22e)
+void CDDrawChildGroup::Slot40() {
+    CDDrawGroupNode* outer = m_head;
+    while (outer != 0) {
+        char* oi = (char*)outer->m_obj;
+        CDDrawGroupNode* nextOuter = outer->m_next;
+        if (!(*(i32*)(oi + 8) & 1)) {
+            CDDrawGroupNode* inner = nextOuter;
+            while (inner != 0) {
+                char* oj = (char*)inner->m_obj;
+                CDDrawGroupNode* nextInner = inner->m_next;
+                i32 fj = *(i32*)(oj + 8);
+                if (!(fj & 1)) {
+                    i32 fi = *(i32*)(oi + 8);
+                    if (!((fi ^ fj) & 0x40000)) {
+                        // --- RECT PHASE (skipped when i&4 or j&0x80) ---
+                        if (!(fi & 4) && !(fj & 0x80)) {
+                            i32 mask1 = *(i32*)(oj + 0xe8) & *(i32*)(oi + 0xec);
+                            i32 mask2 = *(i32*)(oi + 0xe8) & *(i32*)(oj + 0xf0);
+                            if (mask1 || mask2) {
+                                i32 overlap;
+                                if (*(i32*)(oj + 0x154) == (i32)0x80000000) {
+                                    overlap = 0;
+                                } else if (*(i32*)(oi + 0x144) == (i32)0x80000000) {
+                                    overlap = 0;
+                                } else {
+                                    CDDrawRect ra, rb;
+                                    i32 xi = *(i32*)(oi + 0x5c);
+                                    i32 yi = *(i32*)(oi + 0x60);
+                                    ra.left = *(i32*)(oi + 0x144) + xi;
+                                    ra.top = *(i32*)(oi + 0x148) + yi;
+                                    ra.right = *(i32*)(oi + 0x14c) + xi;
+                                    ra.bottom = *(i32*)(oi + 0x150) + yi;
+                                    i32 xj = *(i32*)(oj + 0x5c);
+                                    i32 yj = *(i32*)(oj + 0x60);
+                                    rb.left = *(i32*)(oj + 0x154) + xj;
+                                    rb.top = *(i32*)(oj + 0x158) + yj;
+                                    rb.right = *(i32*)(oj + 0x15c) + xj;
+                                    rb.bottom = *(i32*)(oj + 0x160) + yj;
+                                    overlap = RectsOverlap_15bfb0(&ra, &rb);
+                                }
+                                if (overlap) {
+                                    if (mask2) {
+                                        CWwdNotifier* nf = *(CWwdNotifier**)(oj + 0x88);
+                                        if (nf != 0) {
+                                            *(void**)(oj + 0x8c) = oi;
+                                            nf->m_callback(oj);
+                                        }
+                                    }
+                                    if (mask1) {
+                                        if (*(i32*)(oi + 8) & 8) {
+                                            i32 v = *(i32*)(oi + 0x128) - *(i32*)(oj + 0x120);
+                                            *(i32*)(oi + 0x128) = v;
+                                            if (v <= 0) {
+                                                *(i32*)(*(char**)(oi + 0x7c) + 0x1c) = 0x1c;
+                                            }
+                                        } else {
+                                            CWwdNotifier* nf = *(CWwdNotifier**)(oi + 0x80);
+                                            if (nf != 0) {
+                                                *(void**)(oi + 0x84) = oj;
+                                                nf->m_callback(oi);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // --- BOX PHASE (skipped when j&4 or i&0x80) ---
+                        if (!(*(i32*)(oj + 8) & 4) && !(*(i32*)(oi + 8) & 0x80)) {
+                            i32 mask1b = *(i32*)(oj + 0xec) & *(i32*)(oi + 0xe8);
+                            i32 mask2b = *(i32*)(oj + 0xe8) & *(i32*)(oi + 0xf0);
+                            if ((mask1b || mask2b) && BoxesOverlap_15a130((CWwdBox*)oj, (CWwdBox*)oi)) {
+                                if (mask2b) {
+                                    CWwdNotifier* nf = *(CWwdNotifier**)(oi + 0x88);
+                                    if (nf != 0) {
+                                        *(void**)(oi + 0x8c) = oj;
+                                        nf->m_callback(oi);
+                                    }
+                                }
+                                if (mask1b) {
+                                    ((CWwdFactoryObject*)oj)->Notify_15b650(oi);
+                                }
+                            }
+                        }
+                    }
+                }
+                inner = nextInner;
+            }
+        }
+        outer = nextOuter;
+    }
 }
 
 // @early-stop

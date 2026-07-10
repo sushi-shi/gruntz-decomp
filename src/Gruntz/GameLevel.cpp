@@ -1122,6 +1122,92 @@ i32 CImageSet3::ScanDownGate_1670d0(i32 x, i32 y, i32 val, i32* outY) {
 }
 
 // ---------------------------------------------------------------------------
+// CLevelPlane::InitGeometry_1619f0 (0x1619f0, CDDrawWorkerHost vtable slot +0x24):
+// seed the plane's tile/wrap/origin geometry from the 8 args, log2 the tile-pixel
+// size into the two tile->pixel shifts, strcpy the plane name, re-derive the view
+// extents through CopyRect + RecomputePlaneCoords when the bounds are valid, scale
+// the two int depth values into the float parallax factors (* 0.01), allocate the
+// tile grid + column-offset table, seed the per-column base offsets, and recompute
+// once more.  __thiscall, 8 args (ret 0x20), returns 1.
+// @early-stop
+// 78.3% codegen wall (twin of CLevelPlane::Build): logic/fields/offsets/CFG/args
+// byte-faithful (the two log2 shift loops, the strcpy inline rep-movs, the
+// CopyRect IAT call + m_bounds50 re-derive, the fild/fmul/__ftol float scale, the
+// two operator-new allocations and the column-offset fill all match).  Residual is
+// a zero-register-pinning wall: retail assigns the 8 args to edx/eax/ecx/esi/ebp in
+// a different rotation than our cl and schedules the ~20 field seeds interleaved
+// with the m_30/m_34 products differently.  Same values, same stores; no source
+// lever picks the arg->register map (docs/patterns/zero-register-pinning.md).
+RVA(0x001619f0, 0x1f7)
+i32 CLevelPlane::InitGeometry_1619f0(i32 w, i32 h, i32 tileW, i32 tileH, i32 depthX,
+                                     i32 depthY, LevelCoordRect* bounds, char* name) {
+    m_width = w;
+    m_height = h;
+    m_tilePixW = tileW;
+    m_tilePixH = tileH;
+    m_bounds50.minX = bounds->minX;
+    m_bounds50.minY = bounds->minY;
+    m_bounds50.maxX = bounds->maxX;
+    m_bounds50.maxY = bounds->maxY;
+    m_94 = depthX;
+    m_98 = depthY;
+    m_60 = 0;
+    m_64 = 0;
+    m_6c = tileH;
+    m_wrapW = tileW * w;
+    m_wrapH = tileH * h;
+    m_68 = tileW;
+    i32 pw = m_bounds50.maxX - m_bounds50.minX + 1;
+    i32 ph = m_bounds50.maxY - m_bounds50.minY + 1;
+    m_viewW = pw;
+    m_viewH = ph;
+    m_anchorX = pw / 2;
+    m_anchorY = ph / 2;
+    m_shiftX = 0;
+    if (tileW > 1) {
+        i32 v = tileW;
+        do {
+            v >>= 1;
+            m_shiftX = m_shiftX + 1;
+        } while (v > 1);
+    }
+    m_shiftY = 0;
+    if (tileW > 1) {
+        i32 v = tileW;
+        do {
+            v >>= 1;
+            m_shiftY = m_shiftY + 1;
+        } while (v > 1);
+    }
+    if (name != 0) {
+        strcpy(m_name, name);
+    }
+    if (bounds->minX != (i32)0x80000000) {
+        LevelCoordRect local;
+        CopyRect((RECT*)&local, (RECT*)bounds);
+        m_bounds50 = local;
+        i32 pw2 = m_bounds50.maxX - m_bounds50.minX + 1;
+        i32 ph2 = m_bounds50.maxY - m_bounds50.minY + 1;
+        m_viewW = pw2;
+        m_viewH = ph2;
+        m_anchorX = pw2 / 2;
+        m_anchorY = ph2 / 2;
+        RecomputePlaneCoords();
+    }
+    m_scaleX = (float)m_94 * 0.01f;
+    m_scaleY = (float)m_98 * 0.01f;
+    m_tileGrid = (i32*)operator new(m_width * m_height * 4);
+    m_colOffsets = (i32*)operator new(m_height * 4);
+    for (i32 i = 0; i < m_height; i++) {
+        m_colOffsets[i] = i * m_width;
+    }
+    m_scaledX = 0;
+    m_scaledY = 0;
+    RecomputePlaneCoords();
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CLevelPlane::RecomputePlaneCoords - recompute one plane's scaled scroll origin
 // and visible-tile extents from its (already-scaled) float coords. __thiscall
 // with `this` = the plane (ecx); reloc-masks only the float 0.0 constant and the

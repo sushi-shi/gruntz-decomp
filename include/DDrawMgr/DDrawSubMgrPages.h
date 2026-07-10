@@ -97,6 +97,7 @@ public:
     virtual void Slot16_165f50(); // [22] 0x165f50 (COMDAT CFileMem::Write)
 
     // --- the 0x158xxx surface-op cluster (was CDDrawWorkerMgr::Method_*) ---------
+    i32 Method_158b10(i32 arg1, i32 arg2);     // 0x158b10
     i32 Method_158b40(i32 arg1, i32 arg2);     // 0x158b40
     void Method_158b90();                      // 0x158b90
     i32 Method_158bc0();                       // 0x158bc0

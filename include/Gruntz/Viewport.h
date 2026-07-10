@@ -38,11 +38,18 @@ struct CViewport {
     i32 m_worldHeight; // +0x34  world height (grid clamp height)
     char m_pad38[0x40 - 0x38];
     i32 m_edgeL, m_edgeT, m_edgeR, m_edgeB; // +0x40..+0x4c  visible-bounds edge origins
-    char m_pad50[0x5c - 0x50];
+    i32 m_scrollX; // +0x50  screen-scroll origin X (added to the wrapped coord)
+    i32 m_scrollY; // +0x54  screen-scroll origin Y
+    char m_pad58[0x5c - 0x58];
     char* m_5c; // +0x5c  visible-rect base pointer
     char m_pad60[0x8c - 0x60];
     i32 m_shiftX; // +0x8c  world->tile X shift (tx = x >> m_shiftX)
     i32 m_shiftY; // +0x90  world->tile Y shift
+
+    // World->screen wrap of a coordinate pair (in place).  External/no-body, so the
+    // __thiscall reloc-masks; reached here as m_parent->m_24->m_5c in the debug
+    // object-count draw (CDDrawChildGroup::DrawObjectCounts_15a650).
+    void WrapCoord(void* x, void* y);
 };
 
 #endif // GRUNTZ_GRUNTZ_CVIEWPORT_H

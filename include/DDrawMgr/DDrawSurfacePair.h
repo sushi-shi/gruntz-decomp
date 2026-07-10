@@ -97,7 +97,7 @@ public:
     virtual i32 InitFromSurface_163db0(CDDSurface* src); // slot 11 (@0x2c) 0x163db0
     virtual i32 Create(i32 w, i32 h, i32 bpp, i32 a3); // slot 12 (@0x30) 0x163c90
     virtual i32 LoadImage_163e50(CParseSource* src);   // slot 13 (@0x34) 0x163e50
-    virtual i32 ResolveImage_163ee0();                 // slot 14 (@0x38) 0x163ee0
+    virtual i32 ResolveImage_163ee0(CParseSource* src); // slot 14 (@0x38) 0x163ee0
 
     virtual ~CDDrawSurfacePair() OVERRIDE; // 0x1590f0  slot 1 (scalar-deleting dtor)
 

@@ -30,6 +30,9 @@
 
 #include <Gruntz/ObList.h>
 #include <DDrawMgr/DDrawChildGroup.h> // THE single-source CDDrawChildGroup shape
+#include <Gruntz/Viewport.h>          // CViewport (m_parent->m_24->m_5c world transform)
+#include <Gruntz/ResLoadersViews.h>   // ResLoaders::DrawHost_164380 (counter draw)
+#include <Win32.h>                    // SetRect + RECT
 
 // The object reached via m_parent->+0x24->+0x5c is a CImageSet3 (the WWD image-set
 // collection, defined in src/Image/ImageSet3.cpp); its Prune_1628d0 (0x1628d0)
@@ -172,5 +175,81 @@ void CDDrawChildGroup::DestroyChildren() {
 // NOTE: 0x159a70 (vtable slot 9, the per-frame kill-cue tick) is reconstructed as
 // CWwdObjMgr::TickKillCues_159a70 in CDDrawSubMgr.cpp — that TU already models the
 // real class (list/map ops + CWwdObject + InsertSorted sibling).
+
+// ---------------------------------------------------------------------------
+// 0x15a650: per-object debug-count overlay.  Only active when the +0x08 flag word
+// carries 0x200000.  For each child in the +0x14 list, box its screen position
+// (SetRect a 0x40x0x10 rect around +0x5c/+0x60), world-wrap the top-left into the
+// visible range (the +0x04/+0x08 flag bits gate the X/Y wrap), transform the
+// bottom-right through the viewport's WrapCoord, and draw the object's +0x74 count
+// into the resulting rect via the counter draw-host (m_parent->m_4->m_14).  The
+// viewport (m_parent->m_24->m_5c) is the shared CViewport; the child objects are
+// raw-offset accessed (campaign doctrine).  __thiscall, no args.
+// @early-stop
+// 86.8% — logic/CFG/field-offsets/arg-order byte-identical (the SetRect box, both
+// X/Y world-wrap blocks with their normalize + far-edge adjust, the top-left
+// transform, the WrapCoord of the bottom-right corner, and the DrawCount all match
+// instruction-for-instruction; SetRect resolves to the same `call [IAT]` import,
+// reloc-masked DIR32-vs-absolute).  Residual is a zero-register-pinning wall: retail
+// rotates the (drawHost/view/obj/box) live values through edx/ecx/eax/ebx where our
+// cl picks ecx/eax/edx/ebx, and allocates one fewer scratch slot (box@0x34 vs our
+// 0x38) — flipping the ModRM byte of most accesses.  No source lever picks the
+// register order (docs/patterns/zero-register-pinning.md).
+RVA(0x0015a650, 0x12c)
+void CDDrawChildGroup::DrawObjectCounts_15a650() {
+    if (!(m_flags08 & 0x200000)) {
+        return;
+    }
+    char* mgr = (char*)m_parent;
+    CDDrawGroupNode* node = m_head;
+    ResLoaders::DrawHost_164380* drawHost =
+        *(ResLoaders::DrawHost_164380**)(*(char**)(mgr + 4) + 0x14);
+    CViewport* view = *(CViewport**)(*(char**)(mgr + 0x24) + 0x5c);
+    if (node == 0) {
+        return;
+    }
+    do {
+        char* obj = (char*)node->m_obj;
+        node = node->m_next;
+        i32 ox = *(i32*)(obj + 0x5c);
+        i32 oy = *(i32*)(obj + 0x60);
+        RECT box;
+        SetRect(&box, ox - 0x20, oy - 8, ox + 0x20, oy + 8);
+        RECT rc;
+        rc.right = box.right;
+        rc.bottom = box.bottom;
+        i32 wl = box.left;
+        i32 wt = box.top;
+        i32 fl = view->m_flags;
+        if (fl & 4) {
+            i32 w = view->m_worldWidth;
+            if (box.left < 0) {
+                wl = box.left + w;
+            } else if (box.left >= w) {
+                wl = box.left - w;
+            }
+            i32 farEdge = view->m_edgeR;
+            if (farEdge >= w && wl < view->m_edgeL && wl <= farEdge - w) {
+                wl += w;
+            }
+        }
+        if (fl & 8) {
+            i32 h = view->m_worldHeight;
+            if (box.top < 0) {
+                wt = box.top + h;
+            } else if (box.top >= h) {
+                wt = box.top - h;
+            }
+            i32 farEdge = view->m_edgeB;
+            if (farEdge >= h && wt < view->m_edgeT && wt <= farEdge - h) {
+                wt += h;
+            }
+        }
+        rc.left = wl - view->m_edgeL + view->m_scrollX;
+        rc.top = wt - view->m_edgeT + view->m_scrollY;
+        view->WrapCoord(&rc.right, &rc.bottom);
+        drawHost->DrawCount(&rc, *(i32*)(obj + 0x74));
+    } while (node != 0);
+}
 
 SIZE_UNKNOWN(CImageSet3);

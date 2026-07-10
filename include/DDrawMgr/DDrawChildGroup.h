@@ -122,7 +122,7 @@ public:
     virtual void Slot40();                       // +0x40  0x159f00 (17th slot)
 
     i32 m_status;              // +0x04  initialized to -1 when inactive
-    char m_pad08[0x0c - 0x08]; // +0x08..0x0b
+    i32 m_flags08;             // +0x08  flags (bit 0x200000 = draw per-object debug counts)
     i32 m_parent;              // +0x0c  parent/root handle
     char m_pad10[0x14 - 0x10]; // +0x10..0x13 (the +0x10 CObList's vptr)
     CDDrawGroupNode* m_head;   // +0x14  the +0x10 CObList's node-head (intrusive walk)
@@ -132,6 +132,7 @@ public:
 
     // Engine-label backlog stubs.
     void DestroyChildren();
+    void DrawObjectCounts_15a650(); // 0x15a650  per-object debug-count overlay
 };
 
 SIZE_UNKNOWN(CDDrawChildGroup);

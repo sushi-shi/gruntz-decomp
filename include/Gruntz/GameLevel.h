@@ -104,6 +104,11 @@ public:
     void Notify();                      // 0x163420  main-plane notify
     void RecomputePlaneCoords();        // 0x161c90  wrap/clamp scaled coords (matched)
     i32 ValidateTiles(char* errOut);    // 0x163510  scan the tile grid for bad refs
+    // 0x1619f0  geometry Init (CDDrawWorkerHost vtable slot +0x24): seed tile/wrap/
+    // origin/shift fields from the 8 args, log2 the tile shifts, strcpy the name,
+    // alloc the tile grid + column-offset table, tail-call RecomputePlaneCoords.
+    i32 InitGeometry_1619f0(i32 w, i32 h, i32 tileW, i32 tileH, i32 depthX, i32 depthY,
+                            LevelCoordRect* bounds, char* name);
 
     u8 pad_4[0x4]; // +0x04
     u32 m_flags;   // +0x08  bit0 = MAIN/origin-fixed; bit2/3 = wrap X/Y
@@ -118,13 +123,17 @@ public:
     i32 m_height;      // +0x2c  tile-grid height
     i32 m_wrapW;       // +0x30  tile count across (wrap/clamp modulus)
     i32 m_wrapH;       // +0x34  tile count down
-    u8 pad_38[0x40 - 0x38];
+    i32 m_tilePixW;    // +0x38  tile pixel width (log2 -> m_shiftX)
+    i32 m_tilePixH;    // +0x3c  tile pixel height
     i32 m_tileOriginX;         // +0x40  out: near tile-origin X
     i32 m_tileOriginY;         // +0x44  out: near tile-origin Y
     i32 m_tileExtentX;         // +0x48  out: far tile-extent X
     i32 m_tileExtentY;         // +0x4c  out: far tile-extent Y
     LevelCoordRect m_bounds50; // +0x50  level coord bounds (Build copies coords here)
-    u8 pad_60[0x70 - 0x60];
+    i32 m_60;      // +0x60  (cleared by geometry Init)
+    i32 m_64;      // +0x64  (cleared by geometry Init)
+    i32 m_68;      // +0x68  tile pixel width copy (a3)
+    i32 m_6c;      // +0x6c  tile pixel height copy (a4)
     i32 m_viewW;   // +0x70  viewport tiles across (= bounds width)
     i32 m_viewH;   // +0x74  viewport tiles down (= bounds height)
     i32 m_anchorX; // +0x78  view-anchor X (= half width)
@@ -134,7 +143,9 @@ public:
     i32 m_originY; // +0x88  out: integer scaledY
     i32 m_shiftX;  // +0x8c  tile->pixel shift X
     i32 m_shiftY;  // +0x90  tile->pixel shift Y
-    u8 pad_94[0xb4 - 0x94];
+    i32 m_94;      // +0x94  int scaled into m_scaleX (m_18 = m_94 * DAT_5f02a0)
+    i32 m_98;      // +0x98  int scaled into m_scaleY (m_1c = m_98 * DAT_5f02a0)
+    u8 pad_9c[0xb4 - 0x9c];
     char m_name[4];          // +0xb4  plane name (FindPlaneByName)
     u8 pad_b8[0x158 - 0xb8]; // pad to the real plane size (0x158)
 };
