@@ -24,7 +24,7 @@
 // WINMM timeGetTime decl (timeGetTime is not in <windows.h> itself).
 #include <Mfc.h>
 
-// CGameRegistry - the global game-manager singleton (*g_64556c), shared via
+// CGameRegistry - the global game-manager singleton (*g_gameReg), shared via
 // <Gruntz/GameRegistry.h> with the CGrunt resolvers in Grunt.h.
 #include <Gruntz/GameRegistry.h>
 
@@ -273,6 +273,7 @@ struct CPlaySerialChild {
 // drives; the 0x8107 timer cheat (HandleCommand) zeroes its accum/expiry/
 // running/current block ("Ah, who needed that stupid timer anyway?").
 #include <Gruntz/Timer.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 // The level/tile frame grid (CPlay::m_grid @+0x4cc) GrabTile/AdvanceTile walk. Top-level
 // so the CState::m_c->m_10 image-registry map can return it typed (CSpriteHashTable::Lookup
 // frame-grid overload), cast-free.
@@ -544,7 +545,7 @@ public:
     // global free list (m_374[]/m_3ac[]/m_48c[] arrays + the per-type config rows).
     void FreeListTeardown(); // 0x0cb480
     // CPlayDtorBody (0x0c8700): the ~CPlay teardown body - free the per-frame
-    // workers (m_320/m_guts/m_hitTest/m_beginMarker/m_frameMarker), clear the four g_mgrSettings config
+    // workers (m_320/m_guts/m_hitTest/m_beginMarker/m_frameMarker), clear the four g_gameReg config
     // rows, flush the m_startMarkers/m_3a4[4]/m_488 free-list arrays, then run the base dtor.
     void CPlayDtorBody(); // 0x0c8700
     // AddLevelGruntz (0x0d5960): walk the registry object list and register each
@@ -789,14 +790,13 @@ struct StateMgrBZ {
 };
 
 extern "C" {
-    extern u32 g_645580;            // g_lastNow  (-> mirror g_6bf3c0)
-    extern u32 g_645584;            // g_lastDelta
-    extern u32 g_645588;            // g_accumMs (the running game clock)
-    extern CGameRegistry* g_64556c; // the singleton ptr
-    extern StateMgrBZ* g_645578;    // the dev/render-state singleton (DispatchHudClick)
-    extern i32 g_644c54;            // a default cue/message wParam
-    extern u32 g_6bf3c0;            // draw-clock mirror
-    extern u32 g_6bf3bc;            // draw-delta mirror
+    extern u32 g_645580;         // g_lastNow  (-> mirror g_6bf3c0)
+    extern u32 g_645584;         // g_lastDelta
+    extern u32 g_645588;         // g_accumMs (the running game clock)
+    extern StateMgrBZ* g_645578; // the dev/render-state singleton (DispatchHudClick)
+    extern i32 g_644c54;         // a default cue/message wParam
+    extern u32 g_6bf3c0;         // draw-clock mirror
+    extern u32 g_6bf3bc;         // draw-delta mirror
 }
 
 #endif // SRC_GRUNTZ_CPLAY_H

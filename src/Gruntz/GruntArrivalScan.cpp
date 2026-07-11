@@ -44,7 +44,7 @@ extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0
 // The shared game-manager singleton (*0x64556c); reached typed as CGameRegistry: the
 // board base via m_world->m_24->+0x5c, the +0x60 cue receiver (m_cueSink), and the
 // +0x70 tile grid downcast to the richer CScanGrid view (dirty rect + row table).
-extern CGameRegistry* g_pGameRegistry; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
+extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 
 // Recompute the board dirty rect (m_60) as {0,0,w,h} intersected with a copy of
 // itself; m_70/m_74 = the resulting size.
@@ -112,7 +112,7 @@ i32 CGrunt::ArrivalScanA() {
     }
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    CScanGrid* grid = (CScanGrid*)g_pGameRegistry->m_tileGrid;
+    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -212,11 +212,11 @@ L_ed006:
         goto L_ed153;
     }
     if (F(this, 0x390) != 0) {
-        char* board = P(g_pGameRegistry->m_world->m_24, 0x5c) + 0x40;
+        char* board = P(g_gameReg->m_world->m_24, 0x5c) + 0x40;
         i32 x = F(P(this, 0x10), 0x5c);
         i32 y = F(P(this, 0x10), 0x60);
         if (x < F(board, 8) && F(board, 0) <= x && y < F(board, 0xc) && F(board, 4) <= y) {
-            g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+            g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
         }
         F(this, 0x390) = 0;
     }
@@ -333,7 +333,7 @@ i32 CGrunt::ArrivalScanB() {
     }
     F(this, 0x300) = F(this, 0x17c);
     F(this, 0x304) = F(this, 0x180);
-    CScanGrid* grid = (CScanGrid*)g_pGameRegistry->m_tileGrid;
+    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -436,9 +436,8 @@ L_ed006b:
             if (F(this, 0x390) != 0) {
                 i32 x = F(P(this, 0x10), 0x5c);
                 i32 y = F(P(this, 0x10), 0x60);
-                if (GruntPointVisible((i32)(P(g_pGameRegistry->m_world->m_24, 0x5c) + 0x40), x, y)
-                    != 0) {
-                    g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+                if (GruntPointVisible((i32)(P(g_gameReg->m_world->m_24, 0x5c) + 0x40), x, y) != 0) {
+                    g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
                 F(this, 0x390) = 0;
             }
@@ -569,7 +568,7 @@ i32 CGrunt::ArrivalScanC() {
     if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, "I") == 0) {
         return 1;
     }
-    CScanGrid* grid = (CScanGrid*)g_pGameRegistry->m_tileGrid;
+    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
     GRID_RECT_BOUNDS(grid);
 
     i32 c1[4];
@@ -660,11 +659,11 @@ i32 CGrunt::ArrivalScanC() {
     if (TileSwitch6(F(P(g, 0x10), 0x5c) >> 5, F(P(g, 0x10), 0x60) >> 5, 0, F(this, 0x248), 1, 0)
         != 0) {
         if (F(this, 0x390) != 0) {
-            char* board = P(g_pGameRegistry->m_world->m_24, 0x5c) + 0x40;
+            char* board = P(g_gameReg->m_world->m_24, 0x5c) + 0x40;
             i32 x = F(P(this, 0x10), 0x5c);
             i32 y = F(P(this, 0x10), 0x60);
             if (x < F(board, 8) && F(board, 0) <= x && y < F(board, 0xc) && F(board, 4) <= y) {
-                g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
             }
             F(this, 0x390) = 0;
         }

@@ -6,7 +6,7 @@
 //     "Screen Dump Count" key in the registry/config object (bute->GetInt /
 //     WriteInt) and formats "Gruntz%04i.BMP" into a local buffer.
 //   - grabs the back-surface (owner->m_30->m_1c), asks it to build a capture image
-//     sized to the screen (g_mgrSettings->m_modeW x m_modeH), blits the screen rect into
+//     sized to the screen (g_gameReg->m_modeW x m_modeH), blits the screen rect into
 //     it, and saves it to the BMP path; the surface frees the image on both paths.
 // Frameless (no destructible C++ local) - lives in a base /O2 unit. Only offsets /
 // code bytes are load-bearing; the surface/image/config callees are reloc-masked
@@ -52,7 +52,7 @@ struct ScrOwner { // arg3
 // The global game/manager settings singleton (*0x64556c); m_modeW/m_modeH = the screen
 // capture width/height.
 DATA(0x0024556c)
-extern CGameRegistry* g_mgrSettings;
+extern "C" CGameRegistry* g_gameReg;
 
 // @source: decomp-xref
 // @early-stop
@@ -61,7 +61,7 @@ extern CGameRegistry* g_mgrSettings;
 // offsets), but MSVC colored the two callee-saved registers oppositely - retail
 // pins the persistent zero (and the reused return temp) in esi and cnt/img in edi,
 // while this /O2 recompile pins them edi<->esi swapped; that propagates through
-// every null-compare/push. The descriptor fill also CSEs the g_mgrSettings m_modeW/m_modeH
+// every null-compare/push. The descriptor fill also CSEs the g_gameReg m_modeW/m_modeH
 // loads where retail re-reads each twice (a scheduling choice). Logic complete; the
 // coloring/scheduling is the allocator's, not source-steerable. See
 // docs/patterns/zero-register-pinning.md + pin-local-for-callee-saved-reg.md.
@@ -107,7 +107,7 @@ i32 SaveScreenshot(
         return 0;
     }
 
-    CGameRegistry* mgr = g_mgrSettings;
+    CGameRegistry* mgr = g_gameReg;
     descA[0] = 0;
     descA[1] = 0;
     descA[2] = 0;

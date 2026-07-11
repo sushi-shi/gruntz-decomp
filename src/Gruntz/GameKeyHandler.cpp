@@ -4,7 +4,7 @@
 // key code to its game/cheat action.
 //
 // `this` (esi) is a >0x500-byte PLAY-state object; it reads the game-mgr
-// singleton g_mgrSettings (*0x64556c), the dev/render-state g_devState
+// singleton g_gameReg (*0x64556c), the dev/render-state g_devState
 // (*0x645578, its +0x18 flags byte gated by 0x20 = "cheats enabled"), the area
 // index g_areaIdx (0x644c54), the recycled-node free list g_freeList /
 // g_freeListNodeBias, and a set of cheat-enable globals (g_cheatA/B/C/D); it
@@ -33,7 +33,7 @@
 // ---------------------------------------------------------------------------
 // Named globals (so their DIR32 operands reloc-mask in objdiff).
 // ---------------------------------------------------------------------------
-extern void* g_mgrSettings;    // 0x64556c  _g_mgrSettings (game-mgr singleton)
+extern "C" void* g_gameReg;    // 0x64556c  _g_mgrSettings (game-mgr singleton)
 extern i32 g_sndCueTag;        // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
 extern void* g_devState;       // 0x645578  DAT_00645578 (dev/render state; +0x18 flags)
 extern i32 g_areaIdx;          // 0x644c54  _g_644c54 (current area index)
@@ -180,10 +180,10 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         if (M(level, 0x554) != 0) {
             // dialog mode (cbd3b)
             if (key == 0x59 || key == 0xd) {
-                if (M(g_mgrSettings, 0x134) == 1) {
+                if (M(g_gameReg, 0x134) == 1) {
                     CLEAR_TAB_HINT(host);
-                    if (M(P(g_mgrSettings, 0x68), 0x288) == 1) {
-                        ((CGruntzMgr*)(g_mgrSettings))->UpdateScoreHud();
+                    if (M(P(g_gameReg, 0x68), 0x288) == 1) {
+                        ((CGruntzMgr*)(g_gameReg))->UpdateScoreHud();
                     }
                     PostMessageA((HWND)P(P(P(host, 0x4), 0x4), 0x4), 0x111, 0x8023, 0);
                     return 1;
@@ -201,30 +201,30 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         } else {
             // paused mode (cbe51)
             if (key == 0x51) {
-                if (M(g_mgrSettings, 0x134) == 1) {
+                if (M(g_gameReg, 0x134) == 1) {
                     CLEAR_TAB_HINT(host);
-                    if (M(P(g_mgrSettings, 0x68), 0x288) == 1) {
-                        ((CGruntzMgr*)(g_mgrSettings))->UpdateScoreHud();
+                    if (M(P(g_gameReg, 0x68), 0x288) == 1) {
+                        ((CGruntzMgr*)(g_gameReg))->UpdateScoreHud();
                     }
                     PostMessageA((HWND)P(P(P(host, 0x4), 0x4), 0x4), 0x111, 0x8023, 0);
                 }
                 return 1;
             }
             // paused-only cheats S/R/N/O (cbee0)
-            if (key == 0x53 && M(g_mgrSettings, 0x134) == 1) {
+            if (key == 0x53 && M(g_gameReg, 0x134) == 1) {
                 CLEAR_TAB_HINT(host);
                 ((CGruntzMgr*)(host))->AccrueScoreTime();
             }
             if (key == 0x52) {
-                if (M(host, 0x134) == 1 && M(P(g_mgrSettings, 0x68), 0x288) != 1) {
+                if (M(host, 0x134) == 1 && M(P(g_gameReg, 0x68), 0x288) != 1) {
                     CLEAR_TAB_HINT(host);
-                    void* r = P(g_mgrSettings, 0x4);
+                    void* r = P(g_gameReg, 0x4);
                     PostMessageA((HWND)P(r, 0x4), 0x111, 0x806b, 0);
                 }
                 return 1;
             }
             if (key == 0x4e) {
-                if (M(host, 0x134) == 1 && M(P(g_mgrSettings, 0x68), 0x288) == 1) {
+                if (M(host, 0x134) == 1 && M(P(g_gameReg, 0x68), 0x288) == 1) {
                     CLEAR_TAB_HINT(host);
                     ((CGruntzMgr*)(host))->AccrueScoreTime();
                 }
@@ -272,10 +272,10 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         if (this->Fn2c7f() != 0) {
             return 1;
         }
-        CLEAR_TAB_HINT(g_mgrSettings);
-        if (M(g_mgrSettings, 0xc) != 0) {
-            M(g_mgrSettings, 0xc) ^= 1;
-            ((CGruntzMgr*)(g_mgrSettings))->FinishLevel(M(g_mgrSettings, 0xc), 1);
+        CLEAR_TAB_HINT(g_gameReg);
+        if (M(g_gameReg, 0xc) != 0) {
+            M(g_gameReg, 0xc) ^= 1;
+            ((CGruntzMgr*)(g_gameReg))->FinishLevel(M(g_gameReg, 0xc), 1);
         }
         this->Fn3c15(1);
         return 1;
@@ -284,7 +284,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     if (M(P(self, 0x2e0), 0x10) != 0) {
         return 1;
     }
-    if (M(P(g_mgrSettings, 0x68), 0x400) == 0) {
+    if (M(P(g_gameReg, 0x68), 0x400) == 0) {
         return 1;
     }
 
@@ -300,7 +300,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             if (pick < 0) {
                 pick = 3;
             }
-            area = &((RegArea*)((char*)g_mgrSettings + 0x150))[pick];
+            area = &((RegArea*)((char*)g_gameReg + 0x150))[pick];
             while (pick != idx) {
                 if (M(area, 0x28) == 0 || (M(area, 0x2c) == 0 && M(area, 0x24) == 0)) {
                     break;
@@ -309,14 +309,14 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
                 if (pick < 0) {
                     pick = 3;
                 }
-                area = &((RegArea*)((char*)g_mgrSettings + 0x150))[pick];
+                area = &((RegArea*)((char*)g_gameReg + 0x150))[pick];
             }
         } else {
             pick = idx + 1;
             if (pick >= 4) {
                 pick = 0;
             }
-            area = &((RegArea*)((char*)g_mgrSettings + 0x150))[pick];
+            area = &((RegArea*)((char*)g_gameReg + 0x150))[pick];
             while (pick != idx) {
                 if (M(area, 0x28) == 0 || (M(area, 0x2c) == 0 && M(area, 0x24) == 0)) {
                     break;
@@ -325,7 +325,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
                 if (pick >= 4) {
                     pick = 0;
                 }
-                area = &((RegArea*)((char*)g_mgrSettings + 0x150))[pick];
+                area = &((RegArea*)((char*)g_gameReg + 0x150))[pick];
             }
         }
         if (M(area, 0x28) != 0 && M(area, 0x2c) == 0 && M(area, 0x24) == 0) {
@@ -335,7 +335,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // H (cc30b): jump to the current area's default cue
     if (key == 0x48) {
-        RegArea* a = &((RegArea*)((char*)g_mgrSettings + 0x150))[g_areaIdx];
+        RegArea* a = &((RegArea*)((char*)g_gameReg + 0x150))[g_areaIdx];
         if (a == 0) {
             return 1;
         }
@@ -364,24 +364,24 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // Z (cc3dd)
     if (key == 0x5a) {
-        ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->EnqueueGroupCells();
+        ((CTriggerMgr*)(P(g_gameReg, 0x68)))->EnqueueGroupCells();
         return 1;
     }
     // C (cc3f9)
     if (key == 0x43) {
-        ((CGroupSel*)(P(g_mgrSettings, 0x68)))->CenterOnGroup(M(dev, 0x18) & 0x20);
+        ((CGroupSel*)(P(g_gameReg, 0x68)))->CenterOnGroup(M(dev, 0x18) & 0x20);
         return 1;
     }
     // T (cc41c)
     if (key == 0x54) {
         this->Fn2c7f();
-        ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->ToggleRegionA();
+        ((CTriggerMgr*)(P(g_gameReg, 0x68)))->ToggleRegionA();
         return 1;
     }
     // Y (cc444)
     if (key == 0x59) {
         this->Fn2c7f();
-        ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->ToggleRegionB();
+        ((CTriggerMgr*)(P(g_gameReg, 0x68)))->ToggleRegionB();
         return 1;
     }
     // Space (cc46d): recorder step / recycle node churn
@@ -467,12 +467,12 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // M (cc668)
     if (key == 0x4d && (M(dev, 0x18) & 0x20)) {
-        ((CGruntzMgr*)(g_mgrSettings))->SetSoundLevelState(M(g_mgrSettings, 0x14) == 0);
+        ((CGruntzMgr*)(g_gameReg))->SetSoundLevelState(M(g_gameReg, 0x14) == 0);
         return 1;
     }
     // V (cc692)
     if (key == 0x56 && (M(dev, 0x18) & 0x20)) {
-        M(g_mgrSettings, 0x100) = (M(g_mgrSettings, 0x100) == 0);
+        M(g_gameReg, 0x100) = (M(g_gameReg, 0x100) == 0);
         return 1;
     }
     // A (cc6bf)
@@ -499,7 +499,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     // S (cc76e)
     if (key == 0x53) {
         if (M(dev, 0x18) & 0x20) {
-            void* h68 = P(g_mgrSettings, 0x10);
+            void* h68 = P(g_gameReg, 0x10);
             ((CGruntzMgr*)(h68))->SetRunState(h68 == 0);
             return 1;
         }
@@ -548,7 +548,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         if (M(level, 0x354) != 0) {
             return 1;
         }
-        if (M(g_mgrSettings, 0x134) == 1) {
+        if (M(g_gameReg, 0x134) == 1) {
             return 1;
         }
         CLEAR_TAB_HINT(host);
@@ -611,11 +611,11 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         if (g_cheatB == 0) {
             return 1;
         }
-        RegArea* a = &((RegArea*)((char*)g_mgrSettings + 0x150))[g_areaIdx];
+        RegArea* a = &((RegArea*)((char*)g_gameReg + 0x150))[g_areaIdx];
         if (a == 0) {
             return 1;
         }
-        if (M(P(g_mgrSettings, 0x68), g_areaIdx * 4 + 0x10c) >= M(a, 0x228)) {
+        if (M(P(g_gameReg, 0x68), g_areaIdx * 4 + 0x10c) >= M(a, 0x228)) {
             return 1;
         }
         void* h = P(self, 0x4);
@@ -638,7 +638,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         if (g_cheatC == 0) {
             return 1;
         }
-        if (M(g_mgrSettings, 0x134) == 2) {
+        if (M(g_gameReg, 0x134) == 2) {
             return 1;
         }
         void* h = P(self, 0x4);
@@ -668,7 +668,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         void* g = (char*)P(q, 0x5c) + 0x40;
         i32 by = ((M(g, 0x4) - M(q, 0x14) + my) & ~0x1f) + 0x10;
         i32 bx = ((M(self, 0x150) - M(q, 0x10) + M(g, 0)) & ~0x1f) + 0x10;
-        ((EngineLabelBacklog*)(P(g_mgrSettings, 0x68)))->LoadExplosionSprites(bx, by, -1, 1);
+        ((EngineLabelBacklog*)(P(g_gameReg, 0x68)))->LoadExplosionSprites(bx, by, -1, 1);
         return 1;
     }
     // K (ccda8)
@@ -689,73 +689,73 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     // digit cheats 1-9 (cce0f)
     if (key == 0x31) {
         if (M(g_devState, 0x18) & 0x20) {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->RebuildSelectionList(1);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(1);
         } else {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->CenterSelectionGroup(1);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(1);
         }
         return 1;
     }
     if (key == 0x32) {
         if (M(g_devState, 0x18) & 0x20) {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->RebuildSelectionList(2);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(2);
         } else {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->CenterSelectionGroup(2);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(2);
         }
         return 1;
     }
     if (key == 0x33) {
         if (M(g_devState, 0x18) & 0x20) {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->RebuildSelectionList(3);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(3);
         } else {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->CenterSelectionGroup(3);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(3);
         }
         return 1;
     }
     if (key == 0x34) {
         if (M(g_devState, 0x18) & 0x20) {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->RebuildSelectionList(4);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(4);
         } else {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->CenterSelectionGroup(4);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(4);
         }
         return 1;
     }
     if (key == 0x35) {
         if (M(g_devState, 0x18) & 0x20) {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->RebuildSelectionList(5);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(5);
         } else {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->CenterSelectionGroup(5);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(5);
         }
         return 1;
     }
     if (key == 0x36) {
         if (M(g_devState, 0x18) & 0x20) {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->RebuildSelectionList(6);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(6);
         } else {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->CenterSelectionGroup(6);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(6);
         }
         return 1;
     }
     if (key == 0x37) {
         if (M(g_devState, 0x18) & 0x20) {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->RebuildSelectionList(7);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(7);
         } else {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->CenterSelectionGroup(7);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(7);
         }
         return 1;
     }
     if (key == 0x38) {
         if (M(g_devState, 0x18) & 0x20) {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->RebuildSelectionList(8);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(8);
         } else {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->CenterSelectionGroup(8);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(8);
         }
         return 1;
     }
     if (key == 0x39) {
         if (M(g_devState, 0x18) & 0x20) {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->RebuildSelectionList(9);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(9);
         } else {
-            ((CTriggerMgr*)(P(g_mgrSettings, 0x68)))->CenterSelectionGroup(9);
+            ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(9);
         }
         return 1;
     }
@@ -897,7 +897,7 @@ recorder_place:
 tail_default:
     // cd22c
     {
-        void* h68 = P(g_mgrSettings, 0x68);
+        void* h68 = P(g_gameReg, 0x68);
         M(h68, 0x2a8) = 0;
         this->Fn35da(0, 0);
     }

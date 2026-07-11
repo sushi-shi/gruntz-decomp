@@ -87,7 +87,7 @@ struct HazSndRoot {
     HazSndCat* m_cat; // +0x2c
 };
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // ===========================================================================
 // FireActivation's per-coordinate activation registry (CStaticHazard's OWN

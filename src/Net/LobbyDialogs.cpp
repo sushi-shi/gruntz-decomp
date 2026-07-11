@@ -34,7 +34,7 @@
 // --- shared globals (canonical home elsewhere; extern-only pins here) ---
 // The CGameRegistry singleton: the lobby DlgProcs read its current game-state
 // (m_curState, +0x2c) which - while a network game is open - IS the CMulti.
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 // GetDlgItem(hWnd, 0x4b6) cache (DAT_00648ce0; homed in Globals.cpp), shared by the
 // timer wrappers.
 extern HWND g_dlgItem_648ce0;

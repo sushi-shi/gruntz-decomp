@@ -137,7 +137,7 @@ public:
 // The m_10/m_11c/m_134 scalars match, and the per-player slot array at +0x150
 // (stride 0x238) is reached via raw offset.
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 struct CGooWellMgr {
     char _0[0x10c];

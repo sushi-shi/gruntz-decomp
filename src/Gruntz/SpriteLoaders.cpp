@@ -72,7 +72,7 @@ public:
 // (+0x68) is a genuinely reused slot cast locally; the per-player timer-slot array
 // at +0x150 (stride 0x238) and the m_15c sub-object are reached via raw offsets.
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CLoadingBar::LoadLoadingBarSprite
@@ -464,9 +464,9 @@ i32 CTimer::HandleEvent(CSerialArchive* ar, i32 kind, i32 a3, i32 a4) {
 }
 
 // Per-serialize round counter the CString archive helpers bump (g_serialCounter,
-// = DAT_00629ad0). The frame-name reverse-lookup helper (0x155630) lives on the
-// sprite registry (g_gameReg->m_world->m_10); modeled with NO body -> reloc-masks.
-DATA(0x00629ad0)
+// = ?g_serialCounter@@3HA @0x229ad0). The frame-name reverse-lookup helper (0x155630)
+// lives on the sprite registry (g_gameReg->m_world->m_10); modeled with NO body -> reloc-masks.
+DATA(0x00229ad0)
 extern i32 g_serialCounter;
 // The frame-name reverse-lookup is CImageRegistry::ReadField (0x155630, mgr->m_10);
 // the former CStrReader view is gone (wave 3).

@@ -17,7 +17,7 @@
 // The g_gameReg base CGameMgr window-holder chain g_gameReg->m_gameWnd->m_hwnd the
 // action posts its WM_COMMAND to; reached via a minimal cast (WwdGameReg pads over
 // +0x04). wwdfile owns the DATA label at 0x24556c.
-extern WwdGameReg* g_gameReg;
+extern "C" WwdGameReg* g_gameReg;
 
 SIZE_UNKNOWN(ActionRegWnd);
 struct ActionRegWnd {
@@ -40,7 +40,7 @@ struct ActionPeer {
 SIZE_UNKNOWN(ActionBeginHost);
 struct ActionBeginHost {
     char m_pad0[0x40c];
-    i32 m_40c;    // +0x40c  the accepted action arg
+    i32 m_40c;     // +0x40c  the accepted action arg
     CString m_410; // +0x410  the action's label CString (LoadStringA @0x1bedde)
     char m_pad414[0x4e4 - 0x414];
     ActionPeer* m_4e4; // +0x4e4

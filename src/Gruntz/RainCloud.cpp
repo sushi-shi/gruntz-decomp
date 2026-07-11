@@ -11,9 +11,10 @@
 #include <Gruntz/RainCloud.h> // CRainCloud : CPathHazard (canonical; pulls PathHazard.h -> GameRegistry.h)
 #include <Gruntz/LightFxMgr.h> // reg->m_logicPump (+0x78): the shade-table pump the fill arg reads
 #include <rva.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
 // The game registry / settings singleton (*0x24556c) is modeled by PathHazard.h as
-// g_pathGameReg (CGameRegistry*): the rain cloud reads its draw-fill argument out of
+// g_gameReg (CGameRegistry*): the rain cloud reads its draw-fill argument out of
 // the light-FX pump's shade-table slot at m_logicPump->+0x28 (== m_tables[5]).
 
 // @confidence: high
@@ -21,7 +22,7 @@
 RVA(0x000b49b0, 0xa8)
 CRainCloud::CRainCloud(CGameObject* obj) : CPathHazard(obj) {
     CGameObject* o = m_object;
-    i32 n = (i32)g_pathGameReg->m_logicPump->m_tables[5]; // reg->+0x78->+0x28
+    i32 n = (i32)g_gameReg->m_logicPump->m_tables[5]; // reg->+0x78->+0x28
     o->m_drawActive = 1;
     o->m_drawFillCmd = 0x7;
     o->m_drawFillArg = n;

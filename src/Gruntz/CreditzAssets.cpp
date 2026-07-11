@@ -11,12 +11,12 @@
 // 0x64556c singleton global - the same object, both reads authentic retail.
 #include <rva.h>
 
-#include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ / CGruntzSoundInnerZ
-#include <Gruntz/GameMode.h>      // canonical CCreditsState : CState
-#include <Gruntz/GruntzMgr.h>     // CGruntzMgr (m_4 / the singleton; m_sound @+0x48)
+#include <Dsndmgr/GruntzSoundZ.h>           // canonical CGruntzSoundZ / CGruntzSoundInnerZ
+#include <Gruntz/GameMode.h>                // canonical CCreditsState : CState
+#include <Gruntz/GruntzMgr.h>               // CGruntzMgr (m_4 / the singleton; m_sound @+0x48)
 #include <Gruntz/BoundaryLowerDtorsViews.h> // CWorker39f20 (the 0x39f20 /GX leaf dtor)
 
-extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c (the CGruntzMgr singleton)
+extern "C" CGruntzMgr* g_gameReg; // 0x64556c (the CGruntzMgr singleton)
 
 // The Rez heap free (0x1b9b82, __cdecl); canonical extern "C" decl (creditzassets is
 // base-profile, so the /GX throwing-ness the dtor TU relied on is moot here).
@@ -35,13 +35,13 @@ void CCreditsState::LoadCreditzAssets() {
         }
         CGruntzSoundInnerZ* mono = m_4->m_sound->FindBank("MONOLITH");
         if (mono != 0) {
-            g_mgrSettings->m_sound->m_pCurrent = mono;
-            g_mgrSettings->m_sound->Restart(0);
+            g_gameReg->m_sound->m_pCurrent = mono;
+            g_gameReg->m_sound->Restart(0);
         }
     } else {
         m_1c0 = 0;
         CGruntzSoundInnerZ* current = m_4->m_sound->m_pCurrent;
-        CGruntzSoundInnerZ* mono = g_mgrSettings->m_sound->FindBank("MONOLITH");
+        CGruntzSoundInnerZ* mono = g_gameReg->m_sound->FindBank("MONOLITH");
         if (current == mono && mono != 0 && mono->IsBusy() != 0) {
             mono->Stop();
         }

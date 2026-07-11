@@ -57,7 +57,7 @@ struct LfxMapSource {
 // The global game registry (?g_gameReg, *0x64556c); only the +0x78 logic pump is
 // read here. (Declared as the engine's CGameRegistry via the existing DATA label.)
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // The global bute store RebindNode re-points the object map at ("A" section).
 // g_buteTree (0x6bf620) + CButeTree::Find (0x16d190) live in the bute TUs;

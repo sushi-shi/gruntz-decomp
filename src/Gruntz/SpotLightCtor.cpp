@@ -41,7 +41,7 @@ struct CSpotMgrTable {
     i32 m_arr[1]; // +0x14
 };
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // CSpotLight : CUserLogic is modeled in <Gruntz/SpotLight.h> (canonical header,
 // included below). The light eyecandy logic: own fields begin past the CUserLogic

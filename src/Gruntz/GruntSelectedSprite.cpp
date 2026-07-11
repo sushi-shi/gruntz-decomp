@@ -14,6 +14,7 @@
 #include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
 // ~CGruntSelectedSprite @0x011e80 - the leaf adds no destructible members beyond
 // CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
@@ -106,14 +107,14 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 //
 // @early-stop
 // regalloc/scheduling wall (zero-register-pinning class): the logic is byte-exact
-// but cl pins g_mgrSettings in a different register than retail (ecx vs edx) and emits
+// but cl pins g_gameReg in a different register than retail (ecx vs edx) and emits
 // the reg->m_68 load before the index lea-chain where retail defers it - the
 // `m_drawn` second condition shifts the register pressure so the deref ordering is
 // not source-steerable (the sibling Toy::Update, no m_1d8 check, reaches 99.3%).
 // Every instruction matches modulo register names. Deferred to the final sweep.
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
-    CGameRegistry* reg = g_mgrSettings;
+    CGameRegistry* reg = g_gameReg;
     CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0 && e->m_drawn != 0) {
         ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);

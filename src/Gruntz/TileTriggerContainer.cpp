@@ -806,7 +806,7 @@ i32 __stdcall Gate113860(void* a, i32 b, i32 c, i32 d); // 0x113860 (TtcTrigElem
 // The serialized type id is read off the shared CSerialArchive stream (Read @
 // vtable slot 11, +0x2c); `mov eax,[r]; call [eax+0x2c]` falls out with no cast.
 
-// A board tile-object reached via g_mgrSettings->m_world->m_24->m_4c[tile]; slot 8 (+0x20)
+// A board tile-object reached via g_gameReg->m_world->m_24->m_4c[tile]; slot 8 (+0x20)
 // returns the tile's gameplay type id. Reloc-masked virtual.
 struct CTileObj {
     virtual void s0();
@@ -821,7 +821,7 @@ struct CTileObj {
 };
 SIZE_UNKNOWN(CTileObj);
 
-// The board geometry (g_mgrSettings->m_world->m_24): m_5c->m_28 / m_5c->m_2c are the x/y
+// The board geometry (g_gameReg->m_world->m_24): m_5c->m_28 / m_5c->m_2c are the x/y
 // bounds, m_5c->m_24 the row base, m_5c->m_20 the cell->tile map, m_4c the tile-object
 // table. Reached by raw offset (engine struct, modeled minimally).
 struct CTrigBoardGeo {
@@ -847,7 +847,6 @@ struct CTrigMgr {
     CTrigMgrInner* m_world; // +0x30
 };
 SIZE_UNKNOWN(CTrigMgr);
-extern CTrigMgr* g_mgrSettings; // ?g_mgrSettings (0x64556c)
 
 // The built trigger-logic object. The 14 distinct ctor thunks (0-arg __thiscall,
 // returning the object) and the 3 register thunks (4-arg __thiscall, returning success)
@@ -1060,7 +1059,7 @@ void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a
             obj->m_20 = this;
             obj->m_04 = id;
             // resolve the board tile under the object; latch on a 0x67/0x68 tile.
-            CTrigBoard* board = g_mgrSettings->m_world->m_24;
+            CTrigBoard* board = (CTrigBoard*)g_gameReg->m_world->m_24;
             i32 x = obj->m_08;
             i32 y = obj->m_0c;
             i32* geo = board->m_5c;

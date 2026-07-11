@@ -32,7 +32,7 @@
 #include <Gruntz/Effect6b.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-extern WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.cpp)
+extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.cpp)
 #include <rva.h>
 #include <math.h>
 #include <stdlib.h>
@@ -47,9 +47,6 @@ extern WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.cpp)
 #include <new>
 #pragma intrinsic(strcmp, sqrt)
 
-// The global manager pointer (reloc-masked).
-CGameRegistry* g_pGameRegistry;
-
 // ---------------------------------------------------------------------------
 // Animation-resolver cluster (the 5 CGrunt::Resolve*Animation methods, the
 // SECOND wave on this CGrunt TU). Each builds an animation-key string
@@ -59,7 +56,7 @@ CGameRegistry* g_pGameRegistry;
 // resolved geometry source into the grunt's animation player (m_38), then looks
 // the key up in the global animation tree (CButeTree::Find) and
 // caches the result into m_14->m_1c. Several also fire a 5-arg on-screen "cue"
-// (via g_pGameRegistry->m_cueSink) gated on the grunt being inside the visible view
+// (via g_gameReg->m_cueSink) gated on the grunt being inside the visible view
 // rect (registry m_134==1 -> a 4-way bounds test).
 //
 //   CGrunt::ResolveMovingAnimation()    ("_MOVING", key "B")
@@ -277,7 +274,7 @@ struct CombatReg {
     i32 m_viewOriginR; // +0x144 view right
     i32 m_viewOriginB; // +0x148 view bottom
 };
-// g_mgrSettings (0x64556c) is declared above (PathScan section); the combat
+// g_gameReg (0x64556c) is declared above (PathScan section); the combat
 // paths read it through the CombatReg view with a per-use cast.
 extern "C" i32 g_644c54; // _g_644c54 handicap owner id
 
@@ -439,7 +436,7 @@ void CGrunt::EntranceTileOffset(i32* out) {
 }
 
 // ==== PathScan57db0 @0x57db0 (ex GruntPathScan.cpp) ====
-extern "C" char* g_mgrSettings; // _g_mgrSettings @0x64556c (byte-view; per-use casts)
+// (g_gameReg is the WwdGameReg* view declared at the top of this TU; byte-view uses cast it)
 
 extern void* g_freeList;       // ?g_freeList@@3PAXA (0x645544)
 extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (0x64554c)
@@ -579,7 +576,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     i32 idx = forced;
     if (forced == 0) {
         i32 m = 3;
-        if (g_pGameRegistry->m_134 != 1) {
+        if (g_gameReg->m_134 != 1) {
             m = 6;
         }
         if (m == 0) {
@@ -601,7 +598,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     switch (idx) {
         case SPELLZ_FREEZE: { // freeze
             CHudSprite* spr =
-                (CHudSprite*)g_pGameRegistry->m_world->m_8
+                (CHudSprite*)g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
@@ -615,7 +612,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_HEALTH: { // health
             CHudSprite* spr =
-                (CHudSprite*)g_pGameRegistry->m_world->m_8
+                (CHudSprite*)g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
@@ -629,7 +626,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_RESURRECTION: { // resurrection
             CHudSprite* spr =
-                (CHudSprite*)g_pGameRegistry->m_world->m_8
+                (CHudSprite*)g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
@@ -641,7 +638,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_TOYZ: { // toyz
             CHudSprite* spr =
-                (CHudSprite*)g_pGameRegistry->m_world->m_8
+                (CHudSprite*)g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
@@ -655,7 +652,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
         }
         case SPELLZ_TELEPORT: { // teleport
             CHudSprite* spr =
-                (CHudSprite*)g_pGameRegistry->m_world->m_8
+                (CHudSprite*)g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->m_init(spr);
             spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
@@ -668,7 +665,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELLZ_ROLLINGBALL: { // rolling ball (4 directions)
-            CHudSprite* n = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
+            CHudSprite* n = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX,
                 m_lastTilePxY - 0x20,
@@ -682,7 +679,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             n->m_124 = 0;
             n->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CHudSprite* e = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
+            CHudSprite* e = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX + 0x20,
                 m_lastTilePxY,
@@ -696,7 +693,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             e->m_124 = 0;
             e->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CHudSprite* s = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
+            CHudSprite* s = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX,
                 m_lastTilePxY + 0x20,
@@ -710,7 +707,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             s->m_124 = 0;
             s->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CHudSprite* w = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
+            CHudSprite* w = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX - 0x20,
                 m_lastTilePxY,
@@ -748,7 +745,7 @@ i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
-WwdGameReg* g_gameReg;             // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 FreeNodePool g_coordPool;          // DAT_00645540
 CAnimScratchString* g_animScratch; // DAT_006bf66c
 i32 g_animScratchCount;            // DAT_006bf670
@@ -814,12 +811,12 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     }
 
     CHudSprite* spr =
-        (CHudSprite*)(CHudSprite*)g_pGameRegistry->m_world->m_8
+        (CHudSprite*)(CHudSprite*)g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0xcf850, s_SingleAnimation, 0x40003);
     spr->CacheFirstFrame(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
     spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
 
-    CGameRegistry* g = g_pGameRegistry;
+    CGameRegistry* g = (CGameRegistry*)g_gameReg;
     i32 x = m_10->m_5c;
     i32 y = m_10->m_60;
     CCueRect* rc = (CCueRect*)(g->m_world->m_24->m_5c + 0x40);
@@ -1055,13 +1052,13 @@ extern "C" void H_4036f2();
 // clamp, the tracked-coord scan loop firing Probe20f4 (m_arrivalFlags|0x20000000 / m_24c)
 // capped at five hits, the g_freeList pop/push + g_coordPool recycle drains, the 9x9
 // neighbour re-scan (flag 0x20040002) and the plane dirty-rect recompute are byte-shaped
-// and the DATA refs (g_mgrSettings / g_freeList family / g_coordPool / IntersectRect) pair.
+// and the DATA refs (g_gameReg / g_freeList family / g_coordPool / IntersectRect) pair.
 // Residual walls: the overlapping stack-slot schedule of the box/coord temps, the
 // per-iteration CObList EH-state stamps and the 8-arg Probe20f4 push ordering diverge from
 // retail's regalloc - re-attack leaf-first in the sweep.
 RVA(0x00057db0, 0x8f8)
 i32 CGrunt::PathScan57db0() {
-    CScanPlane* grid = *(CScanPlane**)((char*)g_mgrSettings + 0x70);
+    CScanPlane* grid = *(CScanPlane**)((char*)g_gameReg + 0x70);
     if (m_coordCount == 0) {
         return 1;
     }
@@ -1236,14 +1233,14 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_10->m_5c;
         i32 y = m_10->m_60;
         if (c < 5) {
-            CGameRegistry* g = g_pGameRegistry;
+            CGameRegistry* g = (CGameRegistry*)g_gameReg;
             i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
             if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
                 g->m_cueSink->CueA(this, 0x370, -1, 0, -1, -1);
             }
             return;
         }
-        CGameRegistry* g = g_pGameRegistry;
+        CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x371, -1, 0, -1, -1);
@@ -1256,7 +1253,7 @@ void CGrunt::OnStruck(i32 wasHit) {
     if (c < 5) {
         i32 x = m_10->m_5c;
         i32 y = m_10->m_60;
-        CGameRegistry* g = g_pGameRegistry;
+        CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x320, -1, 0, -1, -1);
@@ -1266,7 +1263,7 @@ void CGrunt::OnStruck(i32 wasHit) {
     if (c < 0xa) {
         i32 x = m_10->m_5c;
         i32 y = m_10->m_60;
-        CGameRegistry* g = g_pGameRegistry;
+        CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x321, -1, 0, -1, -1);
@@ -1277,7 +1274,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_10->m_5c;
         i32 y = m_10->m_60;
         m_struckCount = 0;
-        CGameRegistry* g = g_pGameRegistry;
+        CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x322, -1, 0, -1, -1);
@@ -1459,7 +1456,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
 
     // Hit-type byte-table lookup + optional handicap halving.
     i32 hit = g_hitTable[F(this, 0x170) * 23 + a0];
-    CombatReg* reg = (CombatReg*)g_mgrSettings;
+    CombatReg* reg = (CombatReg*)g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1 && F(this, 0x1ec) == g_644c54) {
         i32 t = hit / 2;
         hit = t + t % 5;
@@ -1775,7 +1772,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     // Tile-to-tile occupancy + diagonal-corner move check.
     {
         i32 flags = F(this, 0x248) | 0x20000000;
-        CombatGrid* grid = ((CombatReg*)g_mgrSettings)->m_tileGrid;
+        CombatGrid* grid = ((CombatReg*)g_gameReg)->m_tileGrid;
         i32 nyt = newY >> 5;
         i32 nxt = newX >> 5;
         i32 oxt = F(this, 0x17c) >> 5;
@@ -1840,7 +1837,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
         if (F(this, 0x1e8) == 0) {
             ((CombatTileMgr*)P(this, 0x260))->ApplySwitch(this, F(this, 0x17c), F(this, 0x180));
         }
-        CombatGrid* g2 = ((CombatReg*)g_mgrSettings)->m_tileGrid;
+        CombatGrid* g2 = ((CombatReg*)g_gameReg)->m_tileGrid;
         i32 ox = F(this, 0x17c) >> 5;
         i32 oy = F(this, 0x180) >> 5;
         i32* oc = g2->m_8[oy] + ox * 7;

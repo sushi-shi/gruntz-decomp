@@ -22,7 +22,7 @@ class Obj0f7d90;
 // the 0x24556c dual-view): typed CGameRegistry so its m_cmdGrid (CTriggerMgr) / m_cueSink
 // (CGruntCueSink) slots are reached cast-free. Bound here (Win32 dual-view convention).
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_mgrSettings;
+extern "C" CGameRegistry* g_gameReg;
 
 // The managed object's screen-position sub-object (m_10): its +0x5c/+0x60 are the screen
 // (x,y). A genuinely-distinct engine display object (identity unrecovered).
@@ -37,7 +37,7 @@ struct Obj260 {
     Obj0f7d90* Get253b(Obj0f7d90* self);
 };
 
-// The registry's viewport-bounds path (g_mgrSettings->m_world->m_24->m_5c->rect): the same
+// The registry's viewport-bounds path (g_gameReg->m_world->m_24->m_5c->rect): the same
 // m_world(+0x30)->m_24(+0x24)->m_5c(+0x5c) chain CTriggerMgr walks (landing on the shared
 // CViewport, whose +0x40 is the screen rect). The registry world's sub-object chain is not
 // yet broken out on the canonical CSpriteFactoryHolder/CViewport (a shared-chain modeling
@@ -121,7 +121,7 @@ int Obj0f7d90::Update_0f7d90() {
     Box5c* a = p->m_10;
     if (a->m_5c == p->m_17c && a->m_60 == p->m_180 && Func1e97(a->m_5c, a->m_60)) {
         Box5c* b = p->m_10;
-        g_mgrSettings->m_cmdGrid->ReportObjectAt(m_1ec, m_1f0, b->m_5c, b->m_60);
+        g_gameReg->m_cmdGrid->ReportObjectAt(m_1ec, m_1f0, b->m_5c, b->m_60);
         return 1;
     }
     if (m_2ec <= 0x3e8) {
@@ -135,7 +135,7 @@ int Obj0f7d90::Update_0f7d90() {
             return 1;
         }
         Box5c* c = m_10;
-        CGameRegistry* g = g_mgrSettings;
+        CGameRegistry* g = g_gameReg;
         int y = c->m_60;
         int x = c->m_5c;
         Rect4* r = &((Reg30*)g->m_world)->m_24->m_5c->rect;

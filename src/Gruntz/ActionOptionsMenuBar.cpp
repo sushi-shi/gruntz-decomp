@@ -47,7 +47,7 @@ public:
 // (+0x30, typed CSpriteFactoryHolder) is reached without a cast; the grid object
 // table (+0x68) is a genuinely reused slot cast locally (see below).
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // The menu-bar frame (this->m_frame) doubles as the engine drawable that paints the
 // bar/chips; +0x10 is its draw entry. NO-body so `call 0x153810` reloc-masks

@@ -55,10 +55,10 @@ extern CButeTree g_buteTree;
 extern CButeMgr g_buteMgr;
 
 // The game-registry singleton (0x64556c; the SAME instance every gamemode unit
-// binds as g_gameReg / g_mgrSettings). The dropper family reaches its facets
+// binds as g_gameReg / g_gameReg). The dropper family reaches its facets
 // through the reused per-mode slots (authentic downcasts, see CGameRegistry.h).
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // The per-frame game clock (g_645588) + frame delta (g_645584) + draw-clock
 // delta (g_6bf3bc). C linkage so the symbols pair with the targets' _g_* names

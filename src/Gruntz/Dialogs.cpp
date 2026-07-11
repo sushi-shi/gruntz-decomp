@@ -27,7 +27,7 @@
 
 // The game-manager view of the 0x64556c singleton (== g_gameReg); the battlez-setup
 // option handlers persist per-slot dropdowns into its m_options array.
-extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c
+extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
 // CImgHolder::DeleteImageList @0x1c6a5c IS MFC CImageList::DeleteImageList (afxcmn); minimal local
 // decl (links from MFC).
@@ -70,7 +70,7 @@ CBattlezDlg::~CBattlezDlg() {}
 // BattlezSetupDlgInit @0x14d00 (RVA-homed from src/Stub/ApiCallers.cpp) - the Battlez
 // multiplayer-setup dialog init (GAME code, 2664 B). Reads config via g_buteMgr
 // ("Battlez_Setup" section: LastMaxGruntz%d / LastDiff%d / LastColour%d,
-// DefaultMaxGruntz) + g_mgrSettings, populates the dialog controls (the "Computer
+// DefaultMaxGruntz) + g_gameReg, populates the dialog controls (the "Computer
 // (easy/normal/difficult)", "Human", "Player", "Serra", "Jebediah" combo/list
 // strings) and drives them via the g_pSendMessageA / PTR_GetWindow / PTR_GetWindowLongA
 // / PTR_SetWindowLongA function-pointer trampolines. Deferred to the leaf-first final
@@ -426,34 +426,34 @@ i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
 
 // SaveOptionCombo0..3 (0x17560/175a0/175e0/17620): read control N's combobox
 // selection (CB_GETCURSEL via GetCtrlC) and persist it (+1) into the game
-// registry's option slot N. g_mgrSettings is the CGruntzMgr view of the 0x64556c
+// registry's option slot N. g_gameReg is the CGruntzMgr view of the 0x64556c
 // singleton (folds the +0x150 options base + 0x228 into the mov displacement).
 RVA(0x00017560, 0x28)
 i32 CBattlezDlg::SaveOptionCombo0() {
     CWnd* c = GetCtrlC(0);
     i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
-    g_mgrSettings->m_options[0].m_comboSel = v;
+    g_gameReg->m_options[0].m_comboSel = v;
     return v;
 }
 RVA(0x000175a0, 0x28)
 i32 CBattlezDlg::SaveOptionCombo1() {
     CWnd* c = GetCtrlC(1);
     i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
-    g_mgrSettings->m_options[1].m_comboSel = v;
+    g_gameReg->m_options[1].m_comboSel = v;
     return v;
 }
 RVA(0x000175e0, 0x28)
 i32 CBattlezDlg::SaveOptionCombo2() {
     CWnd* c = GetCtrlC(2);
     i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
-    g_mgrSettings->m_options[2].m_comboSel = v;
+    g_gameReg->m_options[2].m_comboSel = v;
     return v;
 }
 RVA(0x00017620, 0x28)
 i32 CBattlezDlg::SaveOptionCombo3() {
     CWnd* c = GetCtrlC(3);
     i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
-    g_mgrSettings->m_options[3].m_comboSel = v;
+    g_gameReg->m_options[3].m_comboSel = v;
     return v;
 }
 

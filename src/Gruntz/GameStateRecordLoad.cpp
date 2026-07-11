@@ -61,7 +61,7 @@ struct CDirObj {
 struct CSerialMap {};
 struct CNameMap {};
 
-// The engine object directory (g_mgrSettings->m_world): the serial-map host at +8
+// The engine object directory (g_gameReg->m_world): the serial-map host at +8
 // (map at +0x48), the name-map host at +0x2c (map at +0x10).
 struct CObjDir {
     char _00[8];
@@ -75,7 +75,7 @@ struct CObjDir {
 // here as the serial/name-map host), an engine helper at +0x74 the tail invokes
 // (0x4165). Both sub-objects are engine carcasses reached by a struct-view cast.
 DATA(0x0024556c)
-extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c
+extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
 // The event/command buffer at this+0x10 the tail writes (type/value/flag slots).
 struct CCmdBuf {
@@ -168,7 +168,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
-    CObjDir* dir = (CObjDir*)g_mgrSettings->m_world;
+    CObjDir* dir = (CObjDir*)g_gameReg->m_world;
     if (dir == 0) {
         return 0;
     }
@@ -392,7 +392,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
     i32 m170 = *(i32*)(p + 0x170);
     i32 m1f4 = *(i32*)(p + 0x1f4);
     i32 flag = (m170 >= 0x17);
-    i32 r = ((CSpriteRefTable*)g_mgrSettings->m_spriteFactory)->GetSel(m1f4, flag);
+    i32 r = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)->GetSel(m1f4, flag);
     CCmdBuf* cb = *(CCmdBuf**)(p + 0x10);
     cb->m_58 = 1;
     cb->m_50 = 0xa;

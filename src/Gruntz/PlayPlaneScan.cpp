@@ -140,11 +140,11 @@ struct ObjSink2e4 {
     );
 };
 
-// The global game-manager singleton (*g_64556c) whose ReportError the error
+// The global game-manager singleton (*g_gameReg) whose ReportError the error
 // paths call, and the error-formatting free helper.
 extern "C" {
     DATA(0x0024556c)
-    extern CGameRegistry* g_64556c;
+    extern "C" CGameRegistry* g_gameReg;
 }
 
 // The two plane-type discriminators the scans compare m_desc->m_typeId against
@@ -249,7 +249,7 @@ i32 CPlay::ScanBuildTiles() {
                 == 0) {
                 CString s;
                 s.Format("Bad rock at: x=%d, y=%d", p->m_x, p->m_y);
-                g_64556c->ReportError(s);
+                g_gameReg->ReportError(s);
                 return 0;
             }
             if (p->m_11c == 0x32) {
@@ -311,7 +311,7 @@ i32 CPlay::ScanBuildTiles() {
                 == 0) {
                 CString s;
                 s.Format("Bad covered powerup at: x=%d, y=%d", p->m_x, p->m_y);
-                g_64556c->ReportError(s);
+                g_gameReg->ReportError(s);
                 return 0;
             }
             if (p->m_11c == 0x32) {

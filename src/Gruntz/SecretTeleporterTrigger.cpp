@@ -36,7 +36,7 @@
 // unified onto it - same offsets: m_world +0x30, m_cueSink +0x60, m_cmdGrid
 // +0x68, m_scoreHud +0x7c).
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // The +0x7c aux facet (g_gameReg->m_scoreHud): the teleporter ctor bumps its
 // +0x3c "teleporter armed" counter. @identity-TODO (the scoreHud/aux slot's

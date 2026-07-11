@@ -1,5 +1,5 @@
 // BzState.h - the shared object graph of the booty ("WARP" spell) game-state and
-// its g_mgrSettings (0x64556c) sub-objects. ONE canonical definition of every Bz*
+// its g_gameReg (0x64556c) sub-objects. ONE canonical definition of every Bz*
 // type, included by BootyMessages.cpp (the HUD message / secret-bonus / idle-grunt
 // overlays) and BootyWalkAnim.cpp (the per-frame walking-grunt tick). Both TUs are
 // __thiscall methods on BzState reaching the same retail sub-objects; the two files
@@ -19,7 +19,7 @@
 
 class CString; // <Mfc.h>; used by reference in BzState::FormatHudText's declaration
 
-// The per-level record (g_mgrSettings->m_levelRecord). m_recordBase points at the
+// The per-level record (g_gameReg->m_levelRecord). m_recordBase points at the
 // group-records table GetRecordValue indexes (0x40-byte stride, +0x28 payload).
 struct BzLevelRecord {
     void* m_recordBase; // +0x00  group-records table base
@@ -31,7 +31,7 @@ struct BzLevelRecord {
 };
 SIZE_UNKNOWN(BzLevelRecord);
 
-// The top-level window holder reached via g_mgrSettings->m_wnd; m_hwnd is its HWND.
+// The top-level window holder reached via g_gameReg->m_wnd; m_hwnd is its HWND.
 struct BzWndHolder {
     char m_pad00[0x4];
     i32 m_hwnd; // +0x04  HWND
@@ -68,7 +68,7 @@ struct BzSoundSet {
 };
 SIZE_UNKNOWN(BzSoundSet);
 
-// g_mgrSettings->m_soundHolder->m_spriteFactory - the canonical CSpriteFactory
+// g_gameReg->m_soundHolder->m_spriteFactory - the canonical CSpriteFactory
 // (<Gruntz/SpriteFactory.h>) the booty setup builds its per-player idle grunts
 // through (CreateSprite @0x1597b0).
 struct BzSoundHolder {
@@ -79,11 +79,11 @@ struct BzSoundHolder {
 };
 SIZE_UNKNOWN(BzSoundHolder);
 
-// g_mgrSettings->m_cuePlayer - fires a positional sound cue.
+// g_gameReg->m_cuePlayer - fires a positional sound cue.
 struct BzCuePlayer {};
 SIZE_UNKNOWN(BzCuePlayer);
 
-// g_mgrSettings->m_selSource - resolves the active selection handle.
+// g_gameReg->m_selSource - resolves the active selection handle.
 struct BzSelSource {};
 SIZE_UNKNOWN(BzSelSource);
 
@@ -100,16 +100,14 @@ struct BzGameReg {
     char m_pad64[0x74 - 0x64];
     BzSelSource* m_selSource; // +0x74
     char m_pad78[0x7c - 0x78];
-    BzLevelRecord* m_levelRecord; // +0x7c  (BootyStateActivate reads this same slot as its
-                                  // elapsed-time clock via a BzGameClock* cast - same object)
-    char m_pad80[0x11c - 0x80];
-    i32 m_soundToken; // +0x11c  ambient sound token (BootyStateActivate's glitter setup)
-    // *g_64556c's own game-mgr method (== CGruntzMgr::ChangeState_8fab0, reloc-masked)
-    // so g_mgrSettings->ChangeState_8fab0() calls direct - no cross-cast to CGruntzMgr*.
+    BzLevelRecord* m_levelRecord; // +0x7c
+    // *g_gameReg's own game-mgr method (== CGruntzMgr::ChangeState_8fab0, reloc-masked)
+    // so g_gameReg->ChangeState_8fab0() calls direct - no cross-cast to CGruntzMgr*.
     i32 ChangeState_8fab0(i32 arg); // 0x08fab0
 };
+
+extern "C" BzGameReg* g_gameReg; // *0x24556c (Booty view of the singleton)
 SIZE_UNKNOWN(BzGameReg);
-extern "C" BzGameReg* g_mgrSettings; // *0x64556c
 
 // The grunt-data loader (BzSink::m_loader): Load/Finish; m_data feeds the notify.
 struct BzLoader {

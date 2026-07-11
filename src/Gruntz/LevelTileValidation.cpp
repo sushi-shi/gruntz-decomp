@@ -75,9 +75,9 @@ struct TileLogicObj {
 // The list node is an MFC CPtrList node: pNext@+0x00, pPrev@+0x04, data@+0x08.
 // (Retail iterates via GetNext: obj = pos->data [+8]; pos = pos->pNext [+0].)
 struct TileObjNode {
-    TileObjNode* m_next;  // +0x00  pNext
+    TileObjNode* m_next;     // +0x00  pNext
     char m_pad04[0x8 - 0x4]; // +0x04  pPrev
-    TileLogicObj* m_data; // +0x08  data
+    TileLogicObj* m_data;    // +0x08  data
 };
 struct TileObjList {
     char m_pad00[0x4];
@@ -157,7 +157,7 @@ struct WwdStartPlayer {
 // m_tileGrid downcast to WwdGameGrid*, and the per-player start records in the
 // m_options block at +0x150 by raw offset (the established 0x150-region idiom).
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern "C" WwdGameReg* g_gameReg;
 
 // The recycled-node free-list head (?g_freeList@@3PAXA) and a tile-id constant
 // (DAT_00644c54) the 0x4017e4 case compares against.
@@ -460,9 +460,20 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 case 4: // 0x37
                 case 5: // 0x38
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
-                            3, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
-                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
-                            obj->m_7c->m_100, type == 0x38, obj->m_120, 0)) {
+                            3,
+                            obj->m_tileCol,
+                            obj->m_tileRow,
+                            obj->m_key,
+                            obj->m_134,
+                            obj->m_144,
+                            obj->m_154,
+                            obj->m_64,
+                            obj->m_7c->m_f0,
+                            obj->m_7c->m_100,
+                            type == 0x38,
+                            obj->m_120,
+                            0
+                        )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((LPCSTR)s);
@@ -474,9 +485,20 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 case 8: // 0x3b
                 case 9: // 0x3c
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
-                            4, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
-                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
-                            obj->m_7c->m_100, type == 0x3c, obj->m_120, 0)) {
+                            4,
+                            obj->m_tileCol,
+                            obj->m_tileRow,
+                            obj->m_key,
+                            obj->m_134,
+                            obj->m_144,
+                            obj->m_154,
+                            obj->m_64,
+                            obj->m_7c->m_f0,
+                            obj->m_7c->m_100,
+                            type == 0x3c,
+                            obj->m_120,
+                            0
+                        )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((LPCSTR)s);
@@ -488,9 +510,20 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 case 0xa: // 0x3d (retail also increments (*0x64556c)->m_7c->+0x3c here)
                 case 0xb: // 0x3e
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
-                            6, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
-                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
-                            obj->m_7c->m_100, type == 0x3e, obj->m_120, 0)) {
+                            6,
+                            obj->m_tileCol,
+                            obj->m_tileRow,
+                            obj->m_key,
+                            obj->m_134,
+                            obj->m_144,
+                            obj->m_154,
+                            obj->m_64,
+                            obj->m_7c->m_f0,
+                            obj->m_7c->m_100,
+                            type == 0x3e,
+                            obj->m_120,
+                            0
+                        )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((LPCSTR)s);
@@ -502,9 +535,20 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 case 0xc: // 0x3f
                 case 0xd: // 0x40
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
-                            7, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
-                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
-                            obj->m_7c->m_100, type == 0x40, obj->m_120, 0)) {
+                            7,
+                            obj->m_tileCol,
+                            obj->m_tileRow,
+                            obj->m_key,
+                            obj->m_134,
+                            obj->m_144,
+                            obj->m_154,
+                            obj->m_64,
+                            obj->m_7c->m_f0,
+                            obj->m_7c->m_100,
+                            type == 0x40,
+                            obj->m_120,
+                            0
+                        )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((LPCSTR)s);
@@ -516,9 +560,20 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 case 0xe: // 0x41
                 case 0xf: // 0x42
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
-                            8, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
-                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
-                            obj->m_7c->m_100, type == 0x42, obj->m_120, obj->m_kind)) {
+                            8,
+                            obj->m_tileCol,
+                            obj->m_tileRow,
+                            obj->m_key,
+                            obj->m_134,
+                            obj->m_144,
+                            obj->m_154,
+                            obj->m_64,
+                            obj->m_7c->m_f0,
+                            obj->m_7c->m_100,
+                            type == 0x42,
+                            obj->m_120,
+                            obj->m_kind
+                        )) {
                         CString s;
                         s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((LPCSTR)s);
@@ -530,11 +585,20 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 case 0: // 0x33
                 case 1: // 0x34
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
-                            1, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
-                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            1,
+                            obj->m_tileCol,
+                            obj->m_tileRow,
+                            obj->m_key,
+                            obj->m_134,
+                            obj->m_144,
+                            obj->m_154,
+                            obj->m_64,
+                            obj->m_7c->m_f0,
                             obj->m_7c->m_100,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
-                            obj->m_120, 0)) {
+                            obj->m_120,
+                            0
+                        )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((LPCSTR)s);
@@ -546,11 +610,20 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 case 2: // 0x35
                 case 3: // 0x36
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
-                            2, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
-                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            2,
+                            obj->m_tileCol,
+                            obj->m_tileRow,
+                            obj->m_key,
+                            obj->m_134,
+                            obj->m_144,
+                            obj->m_154,
+                            obj->m_64,
+                            obj->m_7c->m_f0,
                             obj->m_7c->m_100,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
-                            obj->m_120, 0)) {
+                            obj->m_120,
+                            0
+                        )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((LPCSTR)s);
@@ -562,11 +635,20 @@ i32 CLevelValidator::ValidateLevelTiles() {
                 case 6: // 0x39
                 case 7: // 0x3a
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
-                            5, obj->m_tileCol, obj->m_tileRow, obj->m_key, obj->m_134,
-                            obj->m_144, obj->m_154, obj->m_64, obj->m_7c->m_f0,
+                            5,
+                            obj->m_tileCol,
+                            obj->m_tileRow,
+                            obj->m_key,
+                            obj->m_134,
+                            obj->m_144,
+                            obj->m_154,
+                            obj->m_64,
+                            obj->m_7c->m_f0,
                             obj->m_7c->m_100,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
-                            obj->m_120, 0)) {
+                            obj->m_120,
+                            0
+                        )) {
                         CString s;
                         s.Format(s_BadMulti, obj->m_worldX, obj->m_worldY);
                         g_gameReg->LogTileError((LPCSTR)s);

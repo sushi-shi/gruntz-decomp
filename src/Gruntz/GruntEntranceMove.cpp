@@ -24,16 +24,13 @@
 #include <Gruntz/Effect6b.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-extern WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.cpp)
+extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.cpp)
 #include <rva.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>
 #include <Globals.h>
-
-// The global manager pointer (reloc-masked).
-CGameRegistry* g_pGameRegistry;
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
 CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
@@ -113,7 +110,7 @@ i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
-WwdGameReg* g_gameReg;             // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 FreeNodePool g_coordPool;          // DAT_00645540
 CAnimScratchString* g_animScratch; // DAT_006bf66c
 i32 g_animScratchCount;            // DAT_006bf670
@@ -382,7 +379,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
     // the visible view rect, or when it is the registry's focused grunt and its
     // m_tileOwnerHi matches the focus sentinel.
     i32 onScreen = 0;
-    CGameRegistry* g = g_pGameRegistry;
+    CGameRegistry* g = (CGameRegistry*)g_gameReg;
     {
         i32 x = m_10->m_5c;
         i32 y = m_10->m_60;
@@ -461,7 +458,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 // CGrunt::LoadEntranceConfig()  @0x67f80
 // Commits the grunt to its newly resolved entrance position: arms the entrance
 // player (m_154->m_1a0 geometry-state setter), then re-stamps the grunt's
-// footprint into the global tile-occupancy grid (g_pGameRegistry->m_tileGrid): on the
+// footprint into the global tile-occupancy grid (g_gameReg->m_tileGrid): on the
 // NEW tile (m_10->m_5c>>5, m_10->m_60>>5) it reads the occupying owner word and,
 // if a *different* grunt holds it, fires the path sub-manager's contention notify;
 // clears the OLD tile (m_lastTilePxX/m_lastTilePxY pixel coords, -1 = none) and stamps the NEW
@@ -487,7 +484,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 RVA(0x00067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {
     if (m_154->m_1a0.Advance_15c360((u32)g_defaultGeo) == 1) {
-        CGameRegistry* g = g_pGameRegistry;
+        CGameRegistry* g = (CGameRegistry*)g_gameReg;
         CGruntHud* h = m_10;
         CTileGrid* grid = g->m_tileGrid;
         i32 tx = h->m_5c >> 5;
@@ -526,12 +523,12 @@ void CGrunt::LoadEntranceConfig() {
         i32 newTileY = newPxY >> 5;
 
         if (oldX != -1 && m_lastTilePxY != -1) {
-            CTileGrid* og = g_pGameRegistry->m_tileGrid;
+            CTileGrid* og = (CTileGrid*)g_gameReg->m_tileGrid;
             ((char*)&og->m_8[oldTileY][oldTileX * 7])[3] &= ~0x20;
             og->m_8[oldTileY][oldTileX * 7 + 1] = -1;
         }
         {
-            CTileGrid* ng = g_pGameRegistry->m_tileGrid;
+            CTileGrid* ng = (CTileGrid*)g_gameReg->m_tileGrid;
             ((char*)&ng->m_8[newTileY][newTileX * 7])[3] |= 0x20;
             ng->m_8[newTileY][newTileX * 7 + 1] = (m_tileOwnerHi << 8) | m_tileOwnerLo;
         }
@@ -553,7 +550,7 @@ void CGrunt::LoadEntranceConfig() {
             ->Lookup(s_GRUNTZ_ENTRANCEZ_DROP, (CObject*&)found);
         if ((void*)found == cached) {
             if (m_tileOwnerHi == g_focusedGruntSentinel) {
-                g_pGameRegistry->m_cueSink->CueA(this, 0x33f, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->CueA(this, 0x33f, -1, 0, -1, -1);
             }
             m_tileMgr->ClaimTile(m_tileOwnerHi, m_tileOwnerLo, 0, 0);
             m_entranceDropActive = 1;
@@ -795,7 +792,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_poseIdle4 = 0;
         m_poseIdle5 = 0;
 
-        CGameRegistry* g = g_pGameRegistry;
+        CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32 y = m_10->m_60;
         i32 x = m_10->m_5c;
         CCueRect* r = (CCueRect*)((char*)g->m_world->m_24->m_5c + 0x40);

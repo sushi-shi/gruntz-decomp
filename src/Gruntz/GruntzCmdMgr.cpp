@@ -34,7 +34,7 @@ public:
 // the m_world facet type is irrelevant here. (The former separate MgrSettings30
 // view of the same singleton is dissolved onto this one canonical extern.)
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern "C" WwdGameReg* g_gameReg;
 
 // the registry-active predicate the read pass gates on (0x024ac0, an out-of-line
 // free __stdcall twin of the IsActive member at 0x024a90; same body). Defined below

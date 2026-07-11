@@ -35,6 +35,7 @@
 #include <Globals.h>
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
+extern "C" CTmGameReg* g_gameReg;   // *0x24556c (trigger-mgr view)
 
 // 0x6b640: SetLevel - store the supplied level at +0x22c, clear m_230 + m_pendingFx
 // and raise m_2a4; returns 1 (0 when arg is null).
@@ -105,7 +106,7 @@ i32 CTriggerMgr::PlaceObject(
         special = 0x100;
         wantSlot = 1;
     }
-    CTileGrid* plane = g_tmGameReg->m_tileGrid;
+    CTileGrid* plane = g_gameReg->m_tileGrid;
     i32 attr;
     if ((ax >> 5) >= plane->m_c || (ay >> 5) >= plane->m_10) {
         attr = 1;
@@ -150,7 +151,7 @@ i32 CTriggerMgr::PlaceObject(
     m_grid[row * 15 + free] = sprite;
     m_rowCount[row] += 1;
     m_cellFlag[(row * 15 + free)] = 0;
-    g_tmGameReg->m_scoreBoard->m_counts[row] += 1;
+    g_gameReg->m_scoreBoard->m_counts[row] += 1;
     return free;
 }
 
@@ -359,11 +360,10 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
 // CTileWireLogic::WireTileSwitchLogic (0x6c130; re-homed from the former
 // tilewireswitchlogic unit, waveP - the documented SEAM: by first-link contiguity
 // it belongs to THIS obj, sitting between ResetCell (0x6bfd0) and ApplySwitch
-// (0x6d300)). The tile-switch/plate "wire" dispatcher; g_mgrSettings is the 0x64556c
+// (0x6d300)). The tile-switch/plate "wire" dispatcher; g_gameReg is the 0x64556c
 // singleton, `this` is a tile/switch-logic owner (level @+0x22c). CString diagnostic
 // temp -> /GX frame. Only offsets / code bytes load-bearing; callees reloc-masked.
 // ===========================================================================
-extern "C" void* g_mgrSettings; // _g_mgrSettings @0x64556c (the CGruntzMgr singleton)
 
 // Engine helpers reached through reloc-masked thunks (no body).
 void* TsLookupSwitch(void* container, i32 key);                 // 0x1c21 resolve switch by id
@@ -390,7 +390,7 @@ static i32 WtsVtblResolve(void* node) {
 }
 
 // The tile/switch-logic owner that hosts WireTileSwitchLogic (`this`, ecx). NOT the
-// CGruntzMgr game manager (loaded separately as g_mgrSettings): its level lives at
+// CGruntzMgr game manager (loaded separately as g_gameReg): its level lives at
 // +0x22c and its trigger container at +0x2e4. Only touched offsets matter.
 SIZE_UNKNOWN(CTileWireLogic);
 class CTileWireLogic {
@@ -408,7 +408,7 @@ public:
 RVA(0x0006c130, 0xd62)
 i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
     void* self = this;
-    void* gr = g_mgrSettings;
+    void* gr = g_gameReg;
     i32 areaGm = WTS_I32(gr, 0x2c);
 
     if (trigger != 0) {
@@ -484,7 +484,7 @@ i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
 // topic:wall topic:eh.
 RVA(0x0006d300, 0x5b2)
 i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
-    char* plane = (char*)g_tmGameReg->m_curState;
+    char* plane = (char*)g_gameReg->m_curState;
     char* view = *(char**)((char*)m_level + 0x24);
     i32 x = sx;
     i32 y = sy;
@@ -526,7 +526,7 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
     if (obj == 0) {
         CString msg;
         msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
-        g_tmGameReg->ReportError(0x80dd, 0x3f7);
+        g_gameReg->ReportError(0x80dd, 0x3f7);
         return 0;
     }
     obj->UserLogicVfunc1(); // Run = vtbl slot 3 (+0xc)
@@ -543,14 +543,14 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
 // __stdcall free function (cleans its own 2 args; retail ends in `ret 8`).
 RVA(0x0006da60, 0x27)
 i32 __stdcall GridAction6(i32 a, i32 b) {
-    g_tmGameReg->m_6c->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
+    g_gameReg->m_6c->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
     return 0;
 }
 
 // 0x6daa0: GridAction7(a, b) - dispatch the spawn sub-mgr's action with kind 7.
 RVA(0x0006daa0, 0x27)
 i32 __stdcall GridAction7(i32 a, i32 b) {
-    g_tmGameReg->m_6c->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
+    g_gameReg->m_6c->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
     return 0;
 }
 
@@ -692,13 +692,13 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     if (k != 0x14) {
         return;
     }
-    CTmWorld* world = g_tmGameReg->m_curState;
+    CTmWorld* world = g_gameReg->m_curState;
     CTmScoreSub* sub = world->m_3f4;
     i64 diff = (i64)(u32)g_645588 - sub->m_38;
     if (diff < 0) {
         diff = 0;
     }
-    g_tmGameReg->m_scoreBoard->m_score += (i32)diff;
+    g_gameReg->m_scoreBoard->m_score += (i32)diff;
     sub->m_40 = 0;
     sub->m_44 = 0;
     sub->m_30 = 0;

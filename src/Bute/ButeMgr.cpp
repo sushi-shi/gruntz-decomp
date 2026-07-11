@@ -226,7 +226,7 @@ CButeTree21a::~CButeTree21a() {
 // real virtual-base member read so it compiles to the vbtable access (load vbptr,
 // load the vbase displacement from vbtable[1], read [this+disp+4]) with no raw cast.
 // __thiscall. Re-homed from src/Stub/BoundaryLowerMethods.cpp (its RVA neighborhood).
-// @identity-TODO: the getter runs on g_mgrSettings->m_2c (the current state), reached
+// @identity-TODO: the getter runs on g_gameReg->m_2c (the current state), reached
 // by CChatBoxOwner::ProcessCheatInput (xref); the state class holding the virtual base
 // is unrecovered, so the host class name is a placeholder.
 struct VBaseState213 {
@@ -988,8 +988,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             vf = (float)ButeRead_Float(m_token);
             if (m_writeMode) {
-                (m_pText->accum += s_strFloat)
-                    .AppendDouble(GetFloat(m_tagName, m_str104));
+                (m_pText->accum += s_strFloat).AppendDouble(GetFloat(m_tagName, m_str104));
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {

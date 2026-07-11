@@ -205,7 +205,7 @@ public:
     i32 Query015d30(i32 id);         // 0x015d30  LB_GETCURSEL(GetCtrlC) + 1
     i32 SetCurSelC(i32 id, i32 sel); // 0x015d70  LB_SETCURSEL(GetCtrlC, sel-1)
     // Persist per-slot dropdown selection (CB_GETCURSEL(GetCtrlC(N)) + 1) into the
-    // game registry's option slot N (g_mgrSettings->m_options[N].m_comboSel).
+    // game registry's option slot N (g_gameReg->m_options[N].m_comboSel).
     i32 SaveOptionCombo0(); // 0x017560
     i32 SaveOptionCombo1(); // 0x0175a0
     i32 SaveOptionCombo2(); // 0x0175e0

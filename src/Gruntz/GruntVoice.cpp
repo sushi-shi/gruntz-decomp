@@ -15,7 +15,7 @@
 #include <Gruntz/GruntVoice.h>
 #include <Gruntz/VoiceTrigger.h>           // canonical CVoiceTrigger : CUserLogic
 #include <Gruntz/TileTriggerTransition.h>  // CTileTransitionController/State worker-pump view
-#include <Gruntz/GameRegistry.h>           // g_gameReg / g_mgrSettings->m_world->m_8
+#include <Gruntz/GameRegistry.h>           // g_gameReg / g_gameReg->m_world->m_8
 #include <Gruntz/BoundaryLeafLogicViews.h> // L_13400 (CUFO fold-flat leaf dtor, RVA-homed here)
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 #include <Gruntz/TypeKeyColl.h>
@@ -32,7 +32,7 @@ extern "C" u32 g_645588;
 
 // The global game/manager registry singleton (*0x64556c; _g_mgrSettings - the C
 // alias of g_gameReg below; the 0x24556c DATA binding lives on the C++ name).
-extern "C" CGameRegistry* g_mgrSettings;
+extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // The activation registry CVoiceTrigger::RegisterActs (0x11a500) binds into - the
@@ -171,7 +171,7 @@ SIZE_UNKNOWN(CVoiceHit);
 // cue receiver at +0x60 (CueA's `this`) and the probe sink at +0x68 (QueryAt's
 // `this`).
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // The current-area index (DAT_00644c54, VA 0x644c54 / RVA 0x244c54); the trigger
 // only fires for the active area. extern "C" so the load reloc-masks against the
@@ -568,7 +568,7 @@ void CGruntVoice::Reset() {
 // its timed-play window has elapsed (game clock - the i64 start @+0x58 >= the i64
 // duration @+0x60), reset to the idle "A" pose (the inlined Reset). Otherwise resolve
 // the play's source object by its cookie (m_source) through the object factory's
-// id->object map (g_mgrSettings->m_world->m_8 + 0x48, an MFC CMapPtrToPtr, keeping it
+// id->object map (g_gameReg->m_world->m_8 + 0x48, an MFC CMapPtrToPtr, keeping it
 // only when its type tag == 5) and reposition the bound bubble object over it: when a
 // carrier (m_owner) is set, follow the resolved object's bound logic leaf's object;
 // otherwise offset by the resolved object's layer scroll. On a miss/wrong-type, mark
@@ -589,7 +589,7 @@ i32 CGruntVoice::Update() {
     if (m_owner == 0) {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = ((CMapPtrToPtr*)((char*)g_mgrSettings->m_world->m_8 + 0x48))
+        i32 resolved = ((CMapPtrToPtr*)((char*)g_gameReg->m_world->m_8 + 0x48))
                            ->Lookup((void*)src, (void*&)out);
         if (resolved != 0) {
             if (out == 0) {
@@ -613,7 +613,7 @@ i32 CGruntVoice::Update() {
     } else {
         CGameObject* out = 0;
         i32 src = m_source;
-        i32 resolved = ((CMapPtrToPtr*)((char*)g_mgrSettings->m_world->m_8 + 0x48))
+        i32 resolved = ((CMapPtrToPtr*)((char*)g_gameReg->m_world->m_8 + 0x48))
                            ->Lookup((void*)src, (void*&)out);
         if (resolved != 0) {
             if (out == 0) {

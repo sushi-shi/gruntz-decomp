@@ -3,7 +3,7 @@
 //   RegisterActs @0x0ab710 - bind the per-frame handler to the "A" key.
 //
 // CSingleFrameMessage : CUserLogic. Only offsets / code bytes are load-bearing.
-#include <Mfc.h>                    // RECT / CopyRect (the ctor centers the object in a bounds rect)
+#include <Mfc.h> // RECT / CopyRect (the ctor centers the object in a bounds rect)
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
@@ -14,7 +14,7 @@
 
 // The game registry singleton (canonical <Gruntz/WwdGameReg.h>); the ctor asks it
 // for the on-screen message-bounds RECT. Declared extern only (wwdfile owns 0x24556c).
-extern WwdGameReg* g_gameReg;
+extern "C" WwdGameReg* g_gameReg;
 
 // CSingleFrameMessage::Serialize @0x00f5a0 - the vtable slot-1 override: chain the
 // shared CUserLogic serialize helper on `this`, and (only on success) the +0x34

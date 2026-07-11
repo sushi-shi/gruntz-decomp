@@ -103,7 +103,7 @@ struct CSlimeCueGate {
 // The canonical CGameRegistry view of the singleton; m_posY (cue gate) and m_dirX
 // (tile map) are void*/CTileGrid* here, cast locally at the deref sites.
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // The entity QueryAt returns; +0x258 is its type/state tag (0x38 == the slime
 // itself, so its own footprint is ignored when probing the destination tile).

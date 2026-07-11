@@ -22,6 +22,7 @@
 #include <Gruntz/SpriteFactory.h>         // CSpriteFactory (m_world->m_8 CreateSprite)
 #include <Gruntz/UserLogic.h>             // CGameObject (the created effect sprites)
 #include <Gruntz/WwdGameReg.h>            // g_gameReg (GenMenuRandPos Rand/RandRange)
+#include <Gruntz/Grunt.h>                 // GruntSoundCat full def (m_world->m_8 factory)
 #include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/CSoundCueMgr (LevelMsgHudDriver cue)
 #include <Gruntz/LeafCue.h>  // LeafCue (PlayIfElapsed_01f940 + m_10/m_14/m_18)
 #include <rva.h>
@@ -32,9 +33,9 @@ void operator delete(void*);
 
 // The global game registry (canonical <Gruntz/WwdGameReg.h>): the Rand()/RandRange()
 // __thiscall helpers GenMenuRandPos calls (all reloc-masked).
-extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked)
+extern "C" WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked)
 
-// The glitter/effect factory chain (CGlitterMgr view of g_mgrSettings, *0x24556c): the
+// The glitter/effect factory chain (CGlitterMgr view of g_gameReg, *0x24556c): the
 // selection source (m_74), the SecretColor->handle table (m_78), the sprite factory
 // (m_world->m_8), the letter-count set (m_7c), the attract frame counter (m_80).
 SIZE_UNKNOWN(CGlitterMgrM30);
@@ -62,8 +63,6 @@ struct CGlitterMgr {
     CGlitterMgrSet* m_7c;     // +0x7c
     i32 m_80;                 // +0x80  attract frame counter (title rotation source)
 };
-DATA(0x0024556c)
-extern "C" CGlitterMgr* g_mgrSettings;
 
 // LoadGruntEffectSprites externs: the CButeMgr text-config singleton + the wormhole
 // SecretColor bute tag + the go-kart install byte flag.
@@ -186,7 +185,7 @@ void __stdcall GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 // ===========================================================================
 // CState::LoadGruntEffectSprites (0x1a040): preload the in-game effect/icon animation
 // set. Really a CPlay-layout method (the trace homed it on the CState base); it walks
-// the g_mgrSettings->m_world->m_8 SimpleAnimation factory and stores ~15 named effect
+// the g_gameReg->m_world->m_8 SimpleAnimation factory and stores ~15 named effect
 // sprites into the +0x2fc.. block plus three parallel 8-element sprite arrays at
 // +0x224/+0x244/+0x264, positioned from the geometry table.
 // @confidence: med
@@ -194,7 +193,7 @@ void __stdcall GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
 // @early-stop
 // ~96.3%: complete + correct, dev-authentic shape (natural array indexing throughout).
 // Residual is two scheduling walls: (1) the SecretColor block schedules the
-// g_mgrSettings->m_78 load AFTER the GetIntDef call (retail hoists it before); (2) the
+// g_gameReg->m_78 load AFTER the GetIntDef call (retail hoists it before); (2) the
 // (a+c)/2 geom pair loads a/c in the opposite eax/edx order (commutative). All
 // externs/strings named.
 // ===========================================================================
@@ -202,11 +201,11 @@ RVA(0x0001a040, 0x55e)
 i32 CState::LoadGruntEffectSprites() {
     CEffLoaderSelf* self = (CEffLoaderSelf*)this;
 
-    i32 handleA = g_mgrSettings->m_74->GetSel(0, 0);
+    i32 handleA = g_gameReg->m_74->GetSel(0, 0);
     if (handleA == 0) {
         return 0;
     }
-    i32 handleB = g_mgrSettings->m_74->GetSel(0, 1);
+    i32 handleB = g_gameReg->m_74->GetSel(0, 1);
 
     void* img = self->m_30->ResolvePath("IMAGEZ_GOKARTGRUNT");
     if (img == 0) {
@@ -214,7 +213,7 @@ i32 CState::LoadGruntEffectSprites() {
     }
     self->m_c->m_10->Install(img, "GRUNTZ_GOKARTGRUNT", (const char*)&g_dat60b588);
 
-    CSpriteFactory* f = g_mgrSettings->m_world->m_8;
+    CSpriteFactory* f = g_gameReg->m_world->m_8;
 
     CGameObject* sw = f->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_icons[0] = sw;
@@ -225,13 +224,13 @@ i32 CState::LoadGruntEffectSprites() {
     self->m_icons[0]->ApplyLookupGeometry("GAME_CYCLE100", 0);
     self->m_icons[0]->m_stateFlags |= 1;
 
-    CGameObject* wh = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* wh = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_icons[7] = wh;
     if (wh == 0) {
         return 0;
     }
-    i32 tint =
-        g_mgrSettings->m_78->m_arr14[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "SecretColor", 1)];
+    i32 tint = ((CGlitterMgr*)g_gameReg)
+                   ->m_78->m_arr14[g_buteMgr.GetIntDef(g_wormholeSpawnKey, "SecretColor", 1)];
     self->m_icons[7]->ApplyName("GAME_WORMHOLE");
     self->m_icons[7]->ApplyLookupGeometry("GAME_TELEPORTER", 0);
     CGameObject* p318 = self->m_icons[7];
@@ -239,7 +238,7 @@ i32 CState::LoadGruntEffectSprites() {
     p318->m_drawFillCmd = 7;
     p318->m_drawFillArg = tint;
 
-    CGameObject* ex = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* ex = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_icons[1] = ex;
     if (ex == 0) {
         return 0;
@@ -252,7 +251,7 @@ i32 CState::LoadGruntEffectSprites() {
     p300->m_drawFillArg = handleA;
     self->m_icons[1]->m_stateFlags |= 1;
 
-    CGameObject* dt = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* dt = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_icons[2] = dt;
     if (dt == 0) {
         return 0;
@@ -265,7 +264,7 @@ i32 CState::LoadGruntEffectSprites() {
     p304->m_drawFillArg = handleA;
     self->m_icons[2]->m_stateFlags |= 1;
 
-    CGameObject* gl = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* gl = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_icons[3] = gl;
     if (gl == 0) {
         return 0;
@@ -278,7 +277,7 @@ i32 CState::LoadGruntEffectSprites() {
     p308->m_drawFillArg = handleA;
     self->m_icons[3]->m_stateFlags |= 1;
 
-    CGameObject* bb = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* bb = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_icons[4] = bb;
     if (bb == 0) {
         return 0;
@@ -291,7 +290,7 @@ i32 CState::LoadGruntEffectSprites() {
     p30c->m_drawFillArg = handleA;
     self->m_icons[4]->m_stateFlags |= 1;
 
-    CGameObject* rz = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* rz = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_icons[5] = rz;
     if (rz == 0) {
         return 0;
@@ -304,7 +303,7 @@ i32 CState::LoadGruntEffectSprites() {
     p310->m_drawFillArg = handleA;
     self->m_icons[5]->m_stateFlags |= 1;
 
-    CGameObject* cn = g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
+    CGameObject* cn = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 0, "SimpleAnimation", 3);
     self->m_icons[6] = cn;
     if (cn == 0) {
         return 0;
@@ -321,8 +320,7 @@ i32 CState::LoadGruntEffectSprites() {
     // positioned from the geometry table row's {a,c} midpoint; MSVC fuses the three
     // parallel array walks + the geom walk into single induction pointers.
     for (i32 i = 0; i < 8; i++) {
-        CGameObject* b =
-            g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* b = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_bomb[i] = b;
         if (b == 0) {
             return 0;
@@ -337,8 +335,7 @@ i32 CState::LoadGruntEffectSprites() {
         self->m_bomb[i]->m_screenY = (g_effGeom[i].a + g_effGeom[i].c) / 2;
         self->m_bomb[i]->m_stateFlags |= 1;
 
-        CGameObject* e =
-            g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* e = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_expl[i] = e;
         if (e == 0) {
             return 0;
@@ -346,8 +343,7 @@ i32 CState::LoadGruntEffectSprites() {
         e->ApplyName("GAME_EXPLOSION");
         self->m_expl[i]->m_stateFlags |= 1;
 
-        CGameObject* g =
-            g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+        CGameObject* g = g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         self->m_gokart[i] = g;
         if (g == 0) {
             return 0;
@@ -462,7 +458,7 @@ i32 CState::LevelMsgHudDriver() {
                 e->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
                 e->m_screenY = (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
                 if (shown == 0) {
-                    CSndHost* host = ((CSndSubMgr*)g_mgrSettings->m_world)->m_28;
+                    CSndHost* host = ((CSndSubMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_emitGate == 0) {
                         LeafCue* cue = 0;
                         host->m_10.Lookup("GAME_EXPLOSION1", &cue);
@@ -530,7 +526,7 @@ i32 CState::LevelMsgHudDriver() {
             self->m_bomb[i]->m_stateFlags |= 1;
             self->m_gokart[i]->m_stateFlags |= 1;
             self->m_slot++;
-            CSndHost* host = ((CSndSubMgr*)g_mgrSettings->m_world)->m_28;
+            CSndHost* host = ((CSndSubMgr*)g_gameReg->m_world)->m_28;
             if (host->m_emitGate == 0) {
                 LeafCue* cue = 0;
                 host->m_10.Lookup("GAME_EXPLOSION1", &cue);

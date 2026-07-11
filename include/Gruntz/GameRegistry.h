@@ -166,7 +166,7 @@ struct CSpriteFactoryHolder {
     CAnimRegistry* m_animRegistry; // +0x2c  anim/third registry (real ResMgr.h class)
 };
 
-// The tile occupancy grid (*g_pGameRegistry+0x70) is CTileGrid, in
+// The tile occupancy grid (*g_gameReg+0x70) is CTileGrid, in
 // <Gruntz/TileGrid.h>. CGrunt::LoadEntranceConfig stamps the grunt's footprint
 // into the cell occupied by (m_10->m_5c>>5, m_10->m_60>>5): sets/clears bit
 // 0x20 in cell byte+3 and writes a packed (m_1ec<<8)|m_1f0 owner word into cell[1].
@@ -251,12 +251,20 @@ struct CGameRegistry {
     // the canonical view so a TU whose local singleton-view is folded here calls
     // g_gameReg->M() directly instead of cross-casting to an unrelated CGruntzMgr* (the
     // no-sane-dev cross-cast; 0x24556c convergence). Consumers still carrying a per-TU
-    // g_gameReg/g_mgrSettings view (CTmGameReg/RockMgr/LevelSettings/...) must fold onto
+    // g_gameReg/g_gameReg view (CTmGameReg/RockMgr/LevelSettings/...) must fold onto
     // this canonical first - see the matcher report's CGameRegistry-side worklist.
     CState* PickPausedThenPlayState();        // 0x0929b0
     void EnterModalUI(i32 arg);               // 0x08ef10
     i32 IsBattlezMapFile(class CString path); // (== CGruntzMgr::IsBattlezMapFile)
     i32 ChangeState_8fab0(i32 arg);           // 0x08fab0
+    // Win32-safe options/run-state setters (== CGruntzMgr's, reloc-masked to the shared
+    // RVAs) - declared on the canonical view so an options/save TU whose singleton-view
+    // is folded here calls g_gameReg->M() directly (no cross-cast to CGruntzMgr*).
+    void SetRunState(i32 v);              // 0x092340
+    void StoreInputFlag(i32 v);           // 0x0919d0
+    void StoreInputState(i32 v);          // 0x0919f0
+    void SetSoundLevelState(i32 v);       // sound-level state setter
+    class CPlay* PickPlayOrPausedState(); // 0x092990 ((CPlay*)FindStateById(3))
 
     // Slot NAMES agree with <Gruntz/GruntzMgr.h> (the RTTI-true MFC owner) - one field,
     // one name across the dual view (0x24556c convergence, step 1). Named: the base

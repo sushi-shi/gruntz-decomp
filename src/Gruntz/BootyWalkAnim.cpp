@@ -7,7 +7,7 @@
 //
 // IDENTITY recovered by string-xref (the "GRUNTZ_PICKUPS_<W/A/R/P>" WARP cycle,
 // "GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D" / "GAME_FLAGRISE" cues). The Bz* object graph is
-// the shared <Gruntz/BzState.h>; the booty-state class, g_mgrSettings sub-objects and
+// the shared <Gruntz/BzState.h>; the booty-state class, g_gameReg sub-objects and
 // every callee are unmatched engine code reached by raw this+offset / reloc-masked
 // external thunks; only the offsets / code bytes are load-bearing (campaign
 // doctrine). Modeled with real <Mfc.h> CString so cl emits the same /GX EH frame +
@@ -69,18 +69,18 @@ extern char g_secretChars[]; // "WARP"
 // identical, REL32 masked); (3) the /GX static-CString-guard EH frame (docs/seh-eh.md).
 RVA(0x0001b450, 0x1ac)
 i32 BzState::BuildBootyWalkingGruntz() {
-    if (g_mgrSettings->m_levelRecord->m_suppressGate != 0) {
+    if (g_gameReg->m_levelRecord->m_suppressGate != 0) {
         return 1;
     }
-    if (g_mgrSettings->m_levelRecord->m_levelIndex > 0x24) {
+    if (g_gameReg->m_levelRecord->m_levelIndex > 0x24) {
         return 1;
     }
-    i32 sel = ((CSpriteRefTable*)g_mgrSettings->m_selSource)->GetSel(0, 0);
+    i32 sel = ((CSpriteRefTable*)g_gameReg->m_selSource)->GetSel(0, 0);
     if (sel == 0) {
         return 0;
     }
     for (i32 i = 0; i < 4; i++) {
-        m_animSprites[i] = g_mgrSettings->m_soundHolder->m_spriteFactory
+        m_animSprites[i] = g_gameReg->m_soundHolder->m_spriteFactory
                                ->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
         if (m_animSprites[i] == 0) {
             return 0;
@@ -91,13 +91,13 @@ i32 BzState::BuildBootyWalkingGruntz() {
         m_animSprites[i]->m_drawActive = 1;
         m_animSprites[i]->m_drawFillCmd = 0xa;
         m_animSprites[i]->m_drawFillArg = sel;
-        m_visSprites[i] = g_mgrSettings->m_soundHolder->m_spriteFactory
+        m_visSprites[i] = g_gameReg->m_soundHolder->m_spriteFactory
                               ->CreateSprite(0, 0, 0, 1, "SimpleAnimation", 3);
         if (m_visSprites[i] == 0) {
             return 0;
         }
         static CString buf;
-        const char* prefix = (i < (g_mgrSettings->m_levelRecord->m_levelIndex - 1) % 4 + 1)
+        const char* prefix = (i < (g_gameReg->m_levelRecord->m_levelIndex - 1) % 4 + 1)
                                  ? "GAME_INGAMEICONZ_"
                                  : "BOOTY_DIM";
         buf.Format("%sSECRET%c", prefix, g_secretChars[i]);
@@ -137,7 +137,7 @@ i32 BzState::BuildBootyWalkingGruntz() {
 //      `??_C@` string-constant labels (docs/patterns/jumptable-data-overlap.md).
 RVA(0x0001b690, 0x7bf)
 i32 BzState::UpdateBootyWalkingGruntz() {
-    BzLevelRecord* rec = g_mgrSettings->m_levelRecord;
+    BzLevelRecord* rec = g_gameReg->m_levelRecord;
     if (rec->m_suppressGate != 0) {
         return 1;
     }
@@ -153,12 +153,12 @@ i32 BzState::UpdateBootyWalkingGruntz() {
         // ---- init path ----
         if (n < 0x24) {
             for (i32 i = 0; i < 4; i++) {
-                if (i <= (g_mgrSettings->m_levelRecord->m_levelIndex - 1) % 4) {
+                if (i <= (g_gameReg->m_levelRecord->m_levelIndex - 1) % 4) {
                     m_visSprites[i]->m_stateFlags |= 1;
                     m_animSprites[i]->m_screenX = g_idleSpriteIds[i];
                     m_animSprites[i]->m_screenY = 0xdc;
                     m_animSprites[i]->m_stateFlags &= ~1;
-                    if (((CBattlezData*)g_mgrSettings->m_levelRecord)->GetRecordValue(i) == 0) {
+                    if (((CBattlezData*)g_gameReg->m_levelRecord)->GetRecordValue(i) == 0) {
                         m_animSprites[i]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
                         m_animSprites[i]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
                     } else {
@@ -205,9 +205,9 @@ i32 BzState::UpdateBootyWalkingGruntz() {
     }
 
     if (m_soundStarted == 0 && m_animSprites[m_stepIndex]->m_screenY <= 0x195) {
-        if (((CBattlezData*)g_mgrSettings->m_levelRecord)->GetRecordValue(m_stepIndex) == 0) {
+        if (((CBattlezData*)g_gameReg->m_levelRecord)->GetRecordValue(m_stepIndex) == 0) {
             m_soundStarted = 1;
-            BzSoundSet* ss = g_mgrSettings->m_soundHolder->m_soundSet;
+            BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
             if (ss->m_playing == 0) {
                 BzSoundEntry* res = 0;
                 ((CMapStringToPtr*)&ss->m_findTable)
@@ -220,7 +220,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
     }
 
     if (m_soundStarted != 0) {
-        BzSoundSet* ss = g_mgrSettings->m_soundHolder->m_soundSet;
+        BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
         BzSoundEntry* res = 0;
         ((CMapStringToPtr*)&ss->m_findTable)
             ->Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTUI1D", (void*&)res);
@@ -251,11 +251,10 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                     letter = "P";
                     break;
             }
-            i32 sel = ((CSpriteRefTable*)g_mgrSettings->m_selSource)->GetSel(0, 0);
+            i32 sel = ((CSpriteRefTable*)g_gameReg->m_selSource)->GetSel(0, 0);
             if (sel != 0) {
-                if (((CBattlezData*)g_mgrSettings->m_levelRecord)->GetRecordValue(m_stepIndex)
-                    != 0) {
-                    BzSoundSet* ss = g_mgrSettings->m_soundHolder->m_soundSet;
+                if (((CBattlezData*)g_gameReg->m_levelRecord)->GetRecordValue(m_stepIndex) != 0) {
+                    BzSoundSet* ss = g_gameReg->m_soundHolder->m_soundSet;
                     if (ss->m_playing == 0) {
                         BzSoundEntry* res = 0;
                         ((CMapStringToPtr*)&ss->m_findTable)->Lookup("GAME_FLAGRISE", (void*&)res);
@@ -282,7 +281,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                         x = g_randSeed;
                     }
                     g_randSeed = x * 214013 + 2531011;
-                    ((CGruntSpawnConfig*)g_mgrSettings->m_cuePlayer)
+                    ((CGruntSpawnConfig*)g_gameReg->m_cuePlayer)
                         ->SpawnVoiceDriver(
                             0,
                             0x3bf,
@@ -301,9 +300,9 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                     g->m_drawFillArg = sel;
                     m_visSprites[m_stepIndex]->m_stateFlags |= 1;
                     m_stepIndex++;
-                    ((CGruntSpawnConfig*)g_mgrSettings->m_cuePlayer)
+                    ((CGruntSpawnConfig*)g_gameReg->m_cuePlayer)
                         ->SpawnVoiceDriver(0, 0x441, 0, 1, -1, -1);
-                    if (m_stepIndex == g_mgrSettings->m_levelRecord->m_levelIndex % 4) {
+                    if (m_stepIndex == g_gameReg->m_levelRecord->m_levelIndex % 4) {
                         m_stepIndex = 4;
                         return 1;
                     }
@@ -322,7 +321,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
         CGameObject* spr = m_animSprites[m_stepIndex];
         if (spr->m_1c8 != 0 && spr->m_1c0 == 0) {
             m_stepIndex++;
-            if (m_stepIndex == g_mgrSettings->m_levelRecord->m_levelIndex % 4) {
+            if (m_stepIndex == g_gameReg->m_levelRecord->m_levelIndex % 4) {
                 m_stepIndex = 4;
                 return 1;
             }

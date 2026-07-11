@@ -1,7 +1,7 @@
 // DestructButton.cpp - CSBI_RectOnly::UpdateDestructButton (RVA 0x10bc30).
 //
 // Arms the "destruct button" status-bar warning: latch the snapshot timer on the
-// active CPlay (from g_mgrSettings), seed the warning-delay window from the
+// active CPlay (from g_gameReg), seed the warning-delay window from the
 // StatusBar/DestructButtonWarningDelay bute setting, then drop the item to mode 0.
 // Field names are placeholders; only offsets + code bytes are load-bearing.
 //
@@ -17,7 +17,7 @@
 
 // The game-manager singleton is the canonical CGameRegistry (*0x64556c, via
 // CPlay.h); its +0x2c current game-state downcasts to the active CPlay.
-extern "C" CGameRegistry* g_mgrSettings; // 0x64556c
+extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // The CButeMgr text-config singleton (?g_buteMgr@@3VCButeMgr@@A @ 0x6453d8).
 // GetDwordDef (0x1721e0) is on the canonical CButeMgr (include/Bute/ButeMgr.h).
@@ -28,7 +28,7 @@ extern CButeMgr g_buteMgr;
 
 RVA(0x0010bc30, 0x78)
 void CSBI_RectOnly::UpdateDestructButton(i32 arg) {
-    CPlay* play = (CPlay*)g_mgrSettings->m_curState;
+    CPlay* play = (CPlay*)g_gameReg->m_curState;
     m_destructWarnActive = 1;
     m_modeState = 2;
     m_destructWarnDelay = g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);

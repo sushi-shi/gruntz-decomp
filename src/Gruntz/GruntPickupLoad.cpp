@@ -7,8 +7,8 @@
 // into its own TU (matching-neutral); only OFFSETS + code bytes are load-bearing.
 #include <Gruntz/Grunt.h>
 #include <Wap32/ZVec.h>
-extern WwdGameReg* g_gameReg;   // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
-#include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
+extern "C" WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
+#include <Gruntz/TypeKeyColl.h>   // the shared CTypeKeyColl (g_typeColl @0x6bf650)
 #include <rva.h>
 #include <string.h>
 #include <Bute/ButeMgr.h>      // CButeTree g_buteTree (Find)

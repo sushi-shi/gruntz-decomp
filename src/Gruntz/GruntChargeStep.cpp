@@ -33,7 +33,7 @@ struct GruntTable {
     Grunt* entries[1]; // +0x1c (indexed [m_arrivalRow + m_arrivalCol*15])
 };
 
-// The g_64556c game-manager singleton chain this step walks.
+// The g_gameReg game-manager singleton chain this step walks.
 struct MgrGrid {
     char pad0[0x30];
     i32 m_30; // +0x30 (grid dim base, +0x40'd)
@@ -65,7 +65,7 @@ struct GameMgr {
 };
 extern "C" {
     DATA(0x0024556c)
-    extern GameMgr* g_64556c;
+    extern "C" GameMgr* g_gameReg;
 }
 
 // __cdecl line-of-sight probe (0x401127 via ILT): (destTile, x, y) -> reachable.
@@ -236,7 +236,7 @@ i32 Grunt::ChargeStep() {
                         m_arrivalRow = g->m_tileOwnerLo;
                         m_defenderState = 1;
                         PosObj* mp = m_10;
-                        GameMgr* mgr = g_64556c;
+                        GameMgr* mgr = g_gameReg;
                         i32 los = GruntLos1127(
                             mgr->m_world->m_24->m_grid->m_30 + 0x40,
                             mp->m_pixelX,
@@ -264,7 +264,7 @@ i32 Grunt::ChargeStep() {
                 if (spanY != 0) {
                     baseY += rand() % spanY;
                 }
-                GameMgr* mgr = g_64556c;
+                GameMgr* mgr = g_gameReg;
                 if ((u32)baseX < mgr->m_tileGrid->m_c && (u32)baseY < mgr->m_tileGrid->m_10) {
                     Attack(baseX, baseY, 0, m_arrivalFlags, 1, 0);
                 }

@@ -11,7 +11,7 @@
 // methods; the tile-mgr grid is the canonical CGruntTileMgr::m_grid (this+0x260); the
 // cue is m_cueSink->CueA (the retail 0x39f4 thiscall - the prior __stdcall free-fn model
 // was wrong). Every CGrunt/CGruntHud field access is the NAMED member (m_dwell,
-// m_poweredUp, m_10->m_5c, ...); only the registry-chain reads (g_pGameRegistry->
+// m_poweredUp, m_10->m_5c, ...); only the registry-chain reads (g_gameReg->
 // m_cmdGrid/m_tileGrid + the board rect) stay F()/P() pending typed manager sub-objects.
 #include <Gruntz/Grunt.h> // canonical CGrunt / CGruntTileMgr / CGruntCueSink / CGameRegistry
 #include <Wap32/ZVec.h>
@@ -27,7 +27,7 @@
 #define P(base, o) (*(char**)((char*)(base) + (o)))
 
 // The shared game-manager singleton (*0x64556c); reached typed as CGameRegistry.
-extern CGameRegistry* g_pGameRegistry; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
+extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 
 // Type-name collection (g_typeColl @0x6bf650): Lookup(key)->node, node->m_0 = name.
 // (DATA-bound here; GruntArrivalScan.cpp references it unbound.)
@@ -143,12 +143,12 @@ i32 CGrunt::UpdateArrival() {
                             this->m_arrivalRow = g->m_tileOwnerLo;
                             this->m_defenderState = 1;
                             i32 r = GruntPointVisible(
-                                F(P(g_pGameRegistry->m_world->m_24, 0x5c), 0) + 0x40,
+                                F(P(g_gameReg->m_world->m_24, 0x5c), 0) + 0x40,
                                 this->m_10->m_5c,
                                 this->m_10->m_60
                             );
                             if (r != 0) {
-                                g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+                                g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                             }
                         }
                     }
@@ -186,8 +186,8 @@ i32 CGrunt::UpdateArrival() {
                     if (ay != 0) {
                         lo2 = lo2 + GruntRand() % ay;
                     }
-                    if (lo < (u32)F(g_pGameRegistry->m_tileGrid, 0xc)
-                        && lo2 < (u32)F(g_pGameRegistry->m_tileGrid, 0x10)) {
+                    if (lo < (u32)F(g_gameReg->m_tileGrid, 0xc)
+                        && lo2 < (u32)F(g_gameReg->m_tileGrid, 0x10)) {
                         TileSwitch6((i32)lo, (i32)lo2, 0, this->m_arrivalFlags, 1, 0);
                     }
                     if (this->m_coordCount != 0) {
@@ -249,7 +249,7 @@ i32 CGrunt::UpdateArrival() {
         // The active-move cell: (head node)->link is a [col,row]; gate on the grid
         // cell's flag byte (&0x20).
         i32* cell = (i32*)this->m_320->m_coord;
-        u8* flags = (u8*)(F(F(g_pGameRegistry->m_tileGrid, 0x8) + cell[1] * 4, 0) + cell[0] * 0x1c);
+        u8* flags = (u8*)(F(F(g_gameReg->m_tileGrid, 0x8) + cell[1] * 4, 0) + cell[0] * 0x1c);
         if ((flags[0] & 0x20) != 0) {
             SetEntrancePos(1, 1);
             if (this->m_coordCount != 0) {
@@ -284,7 +284,7 @@ i32 CGrunt::SeekTarget() {
     this->m_defenderX = this->m_lastTilePxX;
     this->m_defenderY = this->m_lastTilePxY;
     if (this->m_coordCount != 0
-        && F(F(g_pGameRegistry->m_cmdGrid, 0x1c) + this->m_arrivalCol * 4, 0) == 0) {
+        && F(F(g_gameReg->m_cmdGrid, 0x1c) + this->m_arrivalCol * 4, 0) == 0) {
         void* p = (void*)this->m_320;
         while (p != 0) {
             void* next = *(void**)p;
@@ -303,7 +303,7 @@ i32 CGrunt::SeekTarget() {
         reason = this->m_19c;
     }
     if (reason == 0 && (reason = this->m_arrivalCol, reason >= 0) && reason < 0xf) {
-        CGrunt* slot = (CGrunt*)F(F(g_pGameRegistry->m_cmdGrid, 0x1c) + reason * 4, 0);
+        CGrunt* slot = (CGrunt*)F(F(g_gameReg->m_cmdGrid, 0x1c) + reason * 4, 0);
         if (slot == 0 || slot->m_entranceCommitted == 0) {
             if (this->m_coordCount != 0) {
                 void* p = (void*)this->m_320;
@@ -371,7 +371,7 @@ i32 CGrunt::SeekTarget() {
             }
             i32 best = 0x7fffffff;
             i32 bestIdx = -1;
-            CGrunt** slots = (CGrunt**)((char*)0 + F(g_pGameRegistry->m_cmdGrid, 0x1c));
+            CGrunt** slots = (CGrunt**)((char*)0 + F(g_gameReg->m_cmdGrid, 0x1c));
             i32 i = 0;
             do {
                 CGrunt* sv = slots[i];
@@ -403,10 +403,10 @@ i32 CGrunt::SeekTarget() {
                     != 0) {
                     i32 by = this->m_10->m_60;
                     i32 bx = this->m_10->m_5c;
-                    i32 board = F(P(g_pGameRegistry->m_world->m_24, 0x5c), 0);
+                    i32 board = F(P(g_gameReg->m_world->m_24, 0x5c), 0);
                     if (bx < F(board, 0x48) && F(board, 0x40) <= bx && by < F(board, 0x4c)
                         && F(board, 0x44) <= by) {
-                        g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+                        g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                     }
                 }
             }
@@ -420,7 +420,7 @@ i32 CGrunt::SeekTarget() {
             return 1;
         }
         CGruntHud* base =
-            ((CGrunt*)F(F(g_pGameRegistry->m_cmdGrid, 0x1c) + this->m_arrivalCol * 4, 0))->m_10;
+            ((CGrunt*)F(F(g_gameReg->m_cmdGrid, 0x1c) + this->m_arrivalCol * 4, 0))->m_10;
         TileSwitch6(base->m_5c >> 5, base->m_60 >> 5, 0, this->m_arrivalFlags, 1, 0);
     } else {
         CGrunt* g = m_tileMgr->GetOccupant(this);
@@ -500,12 +500,12 @@ i32 CGrunt::SeekTarget() {
         }
         if (this->m_390 != 0) {
             i32 r = GruntPointVisible(
-                F(P(g_pGameRegistry->m_world->m_24, 0x5c), 0) + 0x40,
+                F(P(g_gameReg->m_world->m_24, 0x5c), 0) + 0x40,
                 this->m_10->m_5c,
                 this->m_10->m_60
             );
             if (r != 0) {
-                g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+                g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
             }
             this->m_390 = 0;
             this->m_dwell = 0;

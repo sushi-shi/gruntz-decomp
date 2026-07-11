@@ -7,7 +7,7 @@
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_mgrSettings->m_logicPump @+0x78; m_tables[])
+#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -89,7 +89,7 @@ DATA(0x00245588)
 extern "C" u32 g_645588;   // tick
 extern i32 g_strikeThresh; // 0x645598
 DATA(0x0024556c)
-extern CGameRegistry* g_mgrSettings; // 0x64556c
+extern "C" CGameRegistry* g_gameReg; // 0x64556c
 extern "C" void Helper2914();        // 0x2914 (ILT thunk)
 
 struct CStrikeSprite {
@@ -112,7 +112,7 @@ struct CStrikeEffect {
 
 // @early-stop
 // 98.94%: every opcode/offset/branch is byte-identical. The lone residual is a
-// load-order coin-flip in the sprite-write tail - retail reads g_mgrSettings->m_78
+// load-order coin-flip in the sprite-write tail - retail reads g_gameReg->m_78
 // (edx) before m_10 (reusing eax for the sprite ptr); cl loads m_10 first (into ecx)
 // and pins the sprite there. A pure allocator choice on the [this+0x10] load; no
 // source reorder flips it.
@@ -127,7 +127,7 @@ i32 CStrikeEffect::Tick() {
         } else {
             m_118 = 0;
         }
-        i32 frame = (i32)g_mgrSettings->m_logicPump->m_tables[idx];
+        i32 frame = (i32)g_gameReg->m_logicPump->m_tables[idx];
         CStrikeSprite* spr = m_10;
         spr->m_58 = 1;
         spr->m_4c = frame;

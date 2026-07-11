@@ -41,9 +41,9 @@ void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32
 
 // --- the dialog half's shared state/decls (ex LevelInfoDlg.cpp/SaveGameMenu.cpp) ---
 // g_gameReg comes typed from <Io/SaveGame.h> (the DATA(0x0024556c) binding lives in
-// GruntzMgr.cpp); g_saveMenuMgr is the CGruntzMgr view of the SAME 0x24556c datum.
+// GruntzMgr.cpp); g_gameReg is the CGruntzMgr view of the SAME 0x24556c datum.
 DATA(0x0024556c)
-extern CGruntzMgr* g_saveMenuMgr; // *0x64556c
+extern "C" CGameRegistry* g_gameReg; // *0x64556c
 DATA(0x00213a9c)
 extern i32 g_savedMenuCmd; // DAT_00613a9c  pending deferred save-menu command
 DATA(0x0024c864)
@@ -384,7 +384,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             return 0;
         }
         EnableWindow(hDlg, FALSE);
-        g_saveMenuMgr->RunModalDialog("GAME_INFO", (void*)SaveInfoProc, 0);
+        g_gameReg->RunModalDialog("GAME_INFO", (void*)SaveInfoProc, 0);
         EnableWindow(hDlg, TRUE);
         return 0;
     }
@@ -432,7 +432,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
             return 0;
         }
         EnableWindow(hDlg, FALSE);
-        i32 ok = g_saveMenuMgr->RunModalDialog("GAME_DELETE", (void*)SaveDeleteProc, 0);
+        i32 ok = g_gameReg->RunModalDialog("GAME_DELETE", (void*)SaveDeleteProc, 0);
         EnableWindow(hDlg, TRUE);
         if (ok == 0) {
             return 0;
@@ -488,18 +488,18 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
         g_slotState = (i32)obj->GetSlot(slot);
         if (g_slotState != 0) {
             EnableWindow(hDlg, FALSE);
-            i32 ok = g_saveMenuMgr->RunModalDialog("GAME_OVERWRITE", (void*)SaveOverwriteProc, 0);
+            i32 ok = g_gameReg->RunModalDialog("GAME_OVERWRITE", (void*)SaveOverwriteProc, 0);
             EnableWindow(hDlg, TRUE);
             if (ok == 0) {
                 return 1;
             }
         }
     }
-    obj->FillSlotByIndex(slot, (i32)name, g_saveMenuMgr);
-    g_saveMenuMgr->FillSaveInfo((SaveInfo*)(i32)obj->GetSlot(slot), (void*)name);
+    obj->FillSlotByIndex(slot, (i32)name, g_gameReg);
+    ((CGruntzMgr*)g_gameReg)->FillSaveInfo((SaveInfo*)(i32)obj->GetSlot(slot), (void*)name);
     EndDialog(hDlg, 1);
     if (!obj->Save((i32)obj->GetSlot(slot) + 0x35, 0x81a6)) {
-        g_saveMenuMgr->EnterModalUI((i32) "ERROR - Cannot Save Game.");
+        g_gameReg->EnterModalUI((i32) "ERROR - Cannot Save Game.");
     }
     return 1;
 }

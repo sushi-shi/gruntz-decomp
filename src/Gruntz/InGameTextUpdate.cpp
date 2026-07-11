@@ -25,7 +25,7 @@ struct HbF14 {
     i32 m_1c; // +0x1c  type index fed to g_typeColl.IndexToPtr
 };
 SIZE_UNKNOWN(HbCellMgr);
-struct HbCellMgr { // g_mgrSettings->m_68
+struct HbCellMgr { // g_gameReg->m_68
     // FUN_004035f3 (thunk) __thiscall: hit-test a cell, returning the object +
     // its (areaId, subId) out-params.
 };
@@ -75,7 +75,7 @@ struct HbMgr { // the *0x64556c singleton, this method's view
     i32 m_148; // +0x148  (y hi)
 };
 DATA(0x0024556c)
-extern "C" HbMgr* g_mgrSettings; // _g_mgrSettings (the *0x64556c singleton)
+extern "C" HbMgr* g_gameReg; // _g_mgrSettings (the *0x64556c singleton)
 // The 4-byte default-constructed CString cache nodes (FUN_001b9b93 == CString
 // default ctor; matched array-touch loop). g_typeNodes is the base pointer.
 SIZE_UNKNOWN(EngStr4);
@@ -118,7 +118,7 @@ i32 CInGameText::Update() {
 
     i32 areaId;
     i32 subId;
-    CGrunt* found = (CGrunt*)((CTriggerMgr*)g_mgrSettings->m_68)
+    CGrunt* found = (CGrunt*)((CTriggerMgr*)g_gameReg->m_68)
                         ->HitTestCell(m_object->m_screenX, m_object->m_screenY, &areaId, &subId, 1);
     if (found == 0) {
         m_cachedSubId = -1;
@@ -153,9 +153,9 @@ i32 CInGameText::Update() {
     CGameObject* o = m_object;
     i32 x = o->m_screenX;
     i32 y = o->m_screenY;
-    if (x < g_mgrSettings->m_144 && x >= g_mgrSettings->m_13c && y < g_mgrSettings->m_148
-        && y >= g_mgrSettings->m_140) {
-        HbSndSet* set = g_mgrSettings->m_world->m_28;
+    if (x < g_gameReg->m_144 && x >= g_gameReg->m_13c && y < g_gameReg->m_148
+        && y >= g_gameReg->m_140) {
+        HbSndSet* set = g_gameReg->m_world->m_28;
         if (set->m_30 == 0) {
             HbSndEntry* res = 0;
             ((CMapStringToOb*)&set->m_10)->Lookup("GAME_HELPBOOK", (CObject*&)res);

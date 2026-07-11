@@ -24,8 +24,8 @@ public:
     i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4); // 0x7b440
 };
 
-extern "C" u32 g_6bf3bc;         // 0x6bf3bc  per-frame draw delta (advance ctx)
-extern CGameRegistry* g_gameReg; // *0x64556c the game-registry singleton
+extern "C" u32 g_6bf3bc;             // 0x6bf3bc  per-frame draw delta (advance ctx)
+extern "C" CGameRegistry* g_gameReg; // *0x64556c the game-registry singleton
 
 // The target game object (this->m_10): world position + the +0x114 state union.
 SIZE_UNKNOWN(RbTarget);

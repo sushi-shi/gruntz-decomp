@@ -38,7 +38,7 @@ struct MgrObj68 {
     int arr[1]; // 0x1c
 };
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 class CSpotLight : public CUserLogic {
 public:

@@ -24,7 +24,7 @@
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c). Only the
 // game-manager chain Tick reads (surface context + back-buffer) is modeled.
 DATA(0x0024556c)
-extern CGooGameReg* g_gameReg;
+extern "C" CGooGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // vtable slot 2 (0xe6020, thunk 0x24eb): CSBI_WellGoo's Setup override (dossier
@@ -105,7 +105,7 @@ i32 CSBI_WellGoo::Tick() {
 // The serialize record counter (bumped before each name+index frame slot) + the
 // focused-grunt sentinel keying the mode-8 selector table.
 DATA(0x00229ad0)
-extern "C" i32 g_serialCounter;
+extern i32 g_serialCounter;
 DATA(0x00244c54)
 extern i32 g_644c54;
 

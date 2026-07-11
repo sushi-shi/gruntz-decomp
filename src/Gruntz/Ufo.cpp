@@ -13,9 +13,10 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference facet
 #include <rva.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
 // The game registry / settings singleton (*0x24556c). Modeled by PathHazard.h as
-// g_pathGameReg (CGameRegistry*): the UFO spawns its spotlights through the world
+// g_gameReg (CGameRegistry*): the UFO spawns its spotlights through the world
 // resource holder m_world (+0x30) -> m_8 (the sprite factory), and reads the light-FX
 // pump m_logicPump (+0x78) for the rain-cloud sibling.
 
@@ -49,8 +50,7 @@ CUFO::CUFO(CGameObject* obj) : CPathHazard(obj) {
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("LEVEL_UFO", 0);
     for (i32 i = 0; i < 2; ++i) {
-        CGameObject* sl =
-            g_pathGameReg->m_world->m_8->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
+        CGameObject* sl = g_gameReg->m_world->m_8->CreateSprite(0, sx, 0, 0, "SpotLight", 0x40003);
         if (sl != 0) {
             sl->ApplyName("LEVEL_SPOTLIGHT");
             CGameObjAux* sub = sl->m_7c;

@@ -468,7 +468,7 @@ i32 CGrunt::ResolveDeathAnimation() {
     }
     m_animResolved = 1;
 
-    CGameRegistry* g = g_pGameRegistry;
+    CGameRegistry* g = g_gameReg;
     if (g->m_134 == 1) {
         CGruntHud* h = m_10;
         i32 x = h->m_5c;
@@ -501,7 +501,7 @@ i32 CGrunt::ResolveAnimation() {
         return 0;
     }
 
-    CGameRegistry* g = g_pGameRegistry;
+    CGameRegistry* g = g_gameReg;
     if (g->m_134 == 1) {
         CGruntHud* h = m_10;
         i32 x = h->m_5c;
@@ -538,7 +538,7 @@ i32 CGrunt::ResolveIdleAnimation() {
 
     i32 idx = GruntRand() % 3 + 1;
 
-    CGameRegistry* g = g_pGameRegistry;
+    CGameRegistry* g = g_gameReg;
     if (g->m_134 == 1) {
         CGruntHud* h = m_10;
         i32 x = h->m_5c;
@@ -578,7 +578,7 @@ i32 CGrunt::ResolveBattlecryAnimation() {
 
     i32 idx = GruntRand() % 3;
 
-    CGameRegistry* g = g_pGameRegistry;
+    CGameRegistry* g = g_gameReg;
     if (g->m_134 == 1) {
         CGruntHud* h = m_10;
         i32 x = h->m_5c;

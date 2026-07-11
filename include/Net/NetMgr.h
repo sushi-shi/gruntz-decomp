@@ -102,8 +102,6 @@ struct CGameMgr {
 SIZE_UNKNOWN(CGameMgr);     // partial view (only +0x38 pinned) - full retail size TBD
 VTBL(CGameMgr, 0x001e9b8c); // vtable_names -> code (RTTI game class)
 
-extern CGameMgr* g_pGameMgr;
-
 // ---------------------------------------------------------------------------
 // The multiplayer command dispatcher (reached through an
 // incremental-link thunk so its `call rel32` reloc-masks). __stdcall (cleans
@@ -777,7 +775,7 @@ SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size T
 // The +0x38 registry/config store (SetValueDword/SetValueString/GetValueDword);
 // Utils::RegistryHelper (from <Utils/RegistryHelper.h>, included above) is the real
 // class, exposed as a named typed member instead of a raw m_4+0x38 cast.
-// CNetGameMgr IS *g_64556c, the same object <Gruntz/GruntzMgr.h> models as CGruntzMgr
+// CNetGameMgr IS *g_gameReg, the same object <Gruntz/GruntzMgr.h> models as CGruntzMgr
 // (Net-side named view; the MFC-wall "required split" is dead - see NetMgrMenuSelect).
 // These are that object's own CGruntzMgr methods, declared here (reloc-masked to the
 // same RVAs) so the Net code calls them DIRECTLY instead of cross-casting m_4 to an
@@ -797,7 +795,7 @@ struct CNetGameMgr {
     GruntzPlayer* FindPlayer();
     // Level-name / rez-path builder and the modal reporter this same *0x64556c object
     // exposes (the former per-TU CGameSettings view, now folded here): the net verify
-    // path calls g_mgrSettings->BuildRezPath / ->ShowModal. Reloc-masked externs.
+    // path calls g_gameReg->BuildRezPath / ->ShowModal. Reloc-masked externs.
     void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
     void ShowModal(const char* msg);                                  // 0x8ef10
     char m_pad0[4];                                                   // +0x00
@@ -1015,7 +1013,7 @@ public:
 
     // VerifyCustomLevel (0xb8fc0, /GX EH): build the level-name rez path from the
     // config name CStrings, run it past the active session (Poll), and pop the
-    // appropriate g_mgrSettings error modal on failure / level mismatch.
+    // appropriate g_gameReg error modal on failure / level mismatch.
     i32 VerifyCustomLevel(i32 a1, i32 a2); // 0xb8fc0
 
     // Poll the active session for the verify response (0xbba10, reloc-masked).

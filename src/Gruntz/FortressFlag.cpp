@@ -94,7 +94,7 @@ struct WwdRefSlot {
 // (m_74) and the ref-index array in the m_options block at +0x158 (raw offset - the
 // established 0x150-region idiom; WwdRefSlot is this TU's element view).
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
+extern "C" WwdGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CParticlez's per-coordinate activation registry (@0x644870) - the SAME

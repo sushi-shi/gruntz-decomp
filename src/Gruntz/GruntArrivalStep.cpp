@@ -4,12 +4,12 @@
 // and every engine helper (GetOccupant, RectContains, FindGridNeighbor, CommitNeighbor,
 // StepArrivalDrop, GruntInRadius, the on-screen CueA) is a CGrunt member/method, so it
 // is re-homed here as a CGrunt method (the devs' true shape). Field names are
-// placeholders; offsets + code bytes are load-bearing. Engine callees + g_pGameRegistry
+// placeholders; offsets + code bytes are load-bearing. Engine callees + g_gameReg
 // are external (reloc-masked).
 #include <Gruntz/Grunt.h>
 #include <rva.h>
 
-extern CGameRegistry* g_pGameRegistry; // ?g_gameReg@@3PAUWwdGameRegZ@@A
+extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameRegZ@@A
 
 // @early-stop
 // arrival-defender regalloc/redundant-recheck wall (~big body): the prologue (m_248
@@ -233,9 +233,9 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 CGruntHud* h = m_10;
                 i32 x = h->m_5c;
                 i32 y = h->m_60;
-                i32* rect = (i32*)(g_pGameRegistry->m_world->m_24->m_5c + 0x40);
+                i32* rect = (i32*)(g_gameReg->m_world->m_24->m_5c + 0x40);
                 if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
-                    g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+                    g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
             }
             goto tail;

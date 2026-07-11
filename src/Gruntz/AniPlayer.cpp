@@ -15,7 +15,7 @@
 #include <Gruntz/SbiConfig.h>    // CSbiConfigHost / CSbiConfigRecord (the record views)
 
 // The g_gameReg singleton (*0x24556c); DATA-pinned elsewhere (canonical extern).
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // The running game clock the timed-play start is stamped from (DAT_00645588).
 DATA(0x00245588)

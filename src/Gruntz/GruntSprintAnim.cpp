@@ -28,7 +28,7 @@
 
 #include <rva.h>
 
-// The HUD sprite factory reached via g_mgrSettings->m_world->m_8 is the canonical
+// The HUD sprite factory reached via g_gameReg->m_world->m_8 is the canonical
 // CSpriteFactory (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0) looks the template
 // up by class-NAME (the 5th arg; __thiscall ret 0x18) and returns the created
 // CGameObject. The world holder is the canonical CSpriteFactoryHolder
@@ -39,7 +39,7 @@
 // The handle it returns is stored into the sprite's i32 draw-fill arg, so it is
 // i32-typed here (no cast at the store).
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_mgrSettings; // *0x64556c (canonical _g_mgrSettings view)
+extern "C" CGameRegistry* g_gameReg; // *0x64556c (canonical _g_mgrSettings view)
 
 // The created SimpleAnimation sprite is the shared CGameObject: ApplyName (0x150540)
 // caches the named first frame; ApplyLookupGeometry (0x1505b0) resolves its cycle
@@ -79,14 +79,14 @@ public:
 // jumptable-data-overlap.md + zero-register-pinning.md.
 RVA(0x00019920, 0x1c2)
 i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
-    i32 h = ((CSpriteRefTable*)g_mgrSettings->m_spriteFactory)->GetSel(0, 0);
+    i32 h = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)->GetSel(0, 0);
     if (!h) {
         return 0;
     }
 
     for (i32 i = 1; i <= 8; i++) {
         m_sprintSprites[i - 1] =
-            g_mgrSettings->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
+            g_gameReg->m_world->m_8->CreateSprite(0, 0, 0, 2, "SimpleAnimation", 3);
         if (m_sprintSprites[i - 1] == 0) {
             return 0;
         }

@@ -34,7 +34,6 @@
 // External CGameRegistry singleton (g_gameReg) referenced through a typed global so
 // the `mov ecx,ds:g_gameReg; call <slot>` falls out as in retail. BuildLevelRezPath
 // is the __thiscall method invoked from Register() (reloc-masked no-body callee).
-extern CGameRegistry* g_gameReg;
 
 // The shared empty C string global (RVA 0x2293f4 / VA 0x6293f4), referenced by
 // Register's name-fallback path (reloc-masked DIR32).

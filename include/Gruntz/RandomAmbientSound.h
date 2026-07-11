@@ -27,6 +27,7 @@ struct CGruntArchive; // struct (not class): uniform tag -> U mangling (see Grun
 #include <rva.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A, RVA 0x24556c /
 // VA 0x64556c). Update gates the play on the +0x54 active-level object's armed/
@@ -34,7 +35,6 @@ struct CGruntArchive; // struct (not class): uniform tag -> U mangling (see Grun
 // interval roller in Step also loads g_gameReg as a dead receiver before the rand
 // call (the binary proves the load even though rand ignores it).
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
 
 // The global frame-delta clock in ms (DAT_00645584, canonical ?g_tickDelta@@3HA);
 // the countdown at +0x50 is drained by it each Step.

@@ -20,7 +20,7 @@
 #define P(base, o) (*(char**)((char*)(base) + (o)))
 
 // The shared game-manager singleton (*0x64556c); reached typed as CGameRegistry.
-extern CGameRegistry* g_pGameRegistry; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
+extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 
 extern FreeNodePool g_dropList; // 0x645540 (coord recycle pool; DATA-bound elsewhere)
 extern u32 g_clock;             // game clock (0x645588)
@@ -123,12 +123,12 @@ i32 CGrunt::WanderStep() {
                             F(this, 0x2f4) = F(g, 0x1f0);
                             F(this, 0x2d4) = 1;
                             if (GruntPointVisible(
-                                    F(g_pGameRegistry->m_world->m_24, 0x5c) + 0x40,
+                                    F(g_gameReg->m_world->m_24, 0x5c) + 0x40,
                                     F(P(this, 0x10), 0x5c),
                                     F(P(this, 0x10), 0x60)
                                 )
                                 != 0) {
-                                g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+                                g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                             }
                         }
                     }
@@ -264,8 +264,8 @@ i32 CGrunt::WanderStep() {
             i32 py = GameRand() % 4 + (F(base, 0x60) >> 5) - 2;
             i32 px = GameRand() % 4 + (F(base, 0x5c) >> 5) - 2;
             if ((u32)F(this, 0x2f0) < 4 && (u32)F(this, 0x2f4) < 0xf) {
-                CGrunt* entry = ((CGruntTileMgr*)g_pGameRegistry->m_cmdGrid)
-                                    ->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
+                CGrunt* entry =
+                    ((CGruntTileMgr*)g_gameReg->m_cmdGrid)->m_grid[F(this, 0x2f0)][F(this, 0x2f4)];
                 if (entry != 0) {
                     i32 e10 = F(entry, 0x10);
                     RECT rc;
@@ -284,7 +284,7 @@ i32 CGrunt::WanderStep() {
             if (clip == 0) {
                 return 1;
             }
-            CTileGrid* grid = g_pGameRegistry->m_tileGrid;
+            CTileGrid* grid = g_gameReg->m_tileGrid;
             if ((u32)px >= (u32)grid->m_c) {
                 return 1;
             }
@@ -327,8 +327,8 @@ timeout:
             if (ay != 0) {
                 ly += GameRand() % ay;
             }
-            if (lx < (u32)F(g_pGameRegistry->m_tileGrid, 0xc)
-                && ly < (u32)F(g_pGameRegistry->m_tileGrid, 0x10)) {
+            if (lx < (u32)F(g_gameReg->m_tileGrid, 0xc)
+                && ly < (u32)F(g_gameReg->m_tileGrid, 0x10)) {
                 TileSwitch6((i32)lx, (i32)ly, 0, F(this, 0x248), 1, 0);
             }
             if (F(this, 0x328) != 0) {

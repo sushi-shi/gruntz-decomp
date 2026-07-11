@@ -108,7 +108,7 @@ public:
 }; // size 0x3c
 SIZE(CSBI_ImageSet, 0x3c);
 
-// The g_mgrSettings singleton chain (DATA 0x64556c, RVA 0x24556c). Only the fields
+// The g_gameReg singleton chain (DATA 0x64556c, RVA 0x24556c). Only the fields
 // this builder reads are modeled: the mission-complete selector (m_68->m_288), the
 // reason code (m_68->m_3ec), the test-mode gate (m_134) and the 4-player active
 // table at +0x174 (stride 0x238).

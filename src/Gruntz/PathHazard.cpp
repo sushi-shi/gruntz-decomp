@@ -316,7 +316,7 @@ i32 CPathHazard::Tick() {
     rect[1] = obj->m_screenY - obj->m_layer->m_1c + 7;
     rect[3] = obj->m_layer->m_1c + obj->m_screenY - 7;
 
-    CGameRegistry* reg = g_pathGameReg;
+    CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         i32 outA, outB;
         CPathEntity* ent = (CPathEntity*)((m4::GruntHitMgr*)reg->m_cmdGrid)
@@ -329,7 +329,7 @@ i32 CPathHazard::Tick() {
                                    (tagRECT*)rect
                                );
         if (ent != 0 && ent->m_258 != 0x38) {
-            if (g_pathGameReg->m_134 != 1 || outA != 0) {
+            if (g_gameReg->m_134 != 1 || outA != 0) {
                 if (this->HitTest(outA, outB) == 0) { // virtual slot 20 (+0x50)
                     return 0;
                 }
@@ -585,6 +585,7 @@ void CPathHazard::ForwardTick() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CLightningHazard);
 RELOC_VTBL(CLightningHazard, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)

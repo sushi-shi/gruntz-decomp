@@ -53,7 +53,7 @@ extern i32 g_sndCueTag;
 DATA(0x00644c54)
 extern i32 g_localPlayer; // g_644c54
 DATA(0x0024556c)
-extern char* g_mgrSettings; // ->m_134
+extern "C" char* g_gameReg; // ->m_134
 
 // Free engine helpers (reloc-masked).
 extern "C" {
@@ -69,7 +69,7 @@ extern "C" {
 // the movement target is CGrunt::SetArrivalTarget (called on the grunt g, NOT the handler
 // - the prior this-receiver was a bug). De-hoisted to match retail's register discipline
 // (localP + grid read lazily per-case so `world` stays in a reg across the switch;
-// case-0 Refresh reloads g_mgrSettings->m_68; the address-taken CellHitTest outputs reuse
+// case-0 Refresh reloads g_gameReg->m_68; the address-taken CellHitTest outputs reuse
 // the ret-0x1c'd &a4/&a8 param slots) + a permuter operand-order pass. 15.9%->~23.7%.
 // Residual is a global-regalloc wall MSVC5 will not steer from C source: retail pins
 // `this` in ebx and g in esi with NO frame, whereas the correct g-receiver makes cl
@@ -115,8 +115,8 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
                         );
             if (r != -1) {
                 if ((a2 & 0xff) == (u32)g_localPlayer) {
-                    // retail re-loads the grid from g_mgrSettings (0x64556c), not world.
-                    ((CTriggerMgr*)P(g_mgrSettings, 0x68))->ResetAll();
+                    // retail re-loads the grid from g_gameReg (0x64556c), not world.
+                    ((CTriggerMgr*)P(g_gameReg, 0x68))->ResetAll();
                 }
                 return 1;
             }
@@ -326,7 +326,7 @@ i32 CCmdHandler::Dispatch(u32 a2, u32 a3, u32 a4, u32 a5, u32 a6, u32 a7, u32 a8
             if (g2 == 0 || F(g2, 0x1fc) == 0) {
                 r = 0;
             } else {
-                r = PickupCheck(a7 & 0xff, 0, 0, 0, F(g_mgrSettings, 0x134) != 1);
+                r = PickupCheck(a7 & 0xff, 0, 0, 0, F(g_gameReg, 0x134) != 1);
             }
             i32 sel;
             if (r == 0) {

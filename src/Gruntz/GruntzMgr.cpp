@@ -238,11 +238,13 @@ INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 // Engine objects reached through CGruntzMgr's member pointers. Each engine-side
 // method is a reloc-masked __thiscall (`mov ecx,obj; call rel32`), so only the
 // layout offsets + call shapes are load-bearing; the displacements reloc-mask.
+// The serialize sequence counter is C++-linkage (?g_serialCounter@@3HA @0x229ad0),
+// the canonical name folded in wave5-R4 - kept OUT of the extern "C" block below.
+extern i32 g_serialCounter;
 extern "C" {
     extern i32 g_61ab24; // DAT_0061ab24  (last-stored input flag mirror)
     extern i32 g_64557c; // DAT_0064557c  (modal/cursor-busy gate)
     // The clock/scroll/warp globals SaveState streams through the archive.
-    extern i32 g_629ad0;        // DAT_00629ad0  (save serial counter)
     extern i32 g_64558c;        // DAT_0064558c
     extern i32 g_645590;        // DAT_00645590
     extern i32 g_645594;        // DAT_00645594
@@ -274,7 +276,7 @@ struct ScoreSub2c { // g_gameReg->m_curState
     i32 m_1c; // +0x1c  cumulative score
 };
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // The +0x68 world command-grid object is the ONE CTriggerMgr (<Gruntz/TriggerMgr.h>,
 // included above) - the former CCmdGrid facet view is dissolved onto it, thunk-proven:
@@ -640,8 +642,8 @@ DATA(0x0020fac8)
 extern i32 g_pendingFrame;
 
 // The game-manager singleton (*0x64556c) - the CGruntzMgr (MFC) view of the datum the
-// engine TUs see as CGameRegistry* g_mgrSettings; same _g_mgrSettings symbol.
-extern "C" CGruntzMgr* g_mgrSettings;
+// engine TUs see as CGameRegistry* g_gameReg; same _g_mgrSettings symbol.
+extern "C" CGameRegistry* g_gameReg;
 
 // -------------------------------------------------------------------------
 // PumpIdleFrame (0x08b8c0; ret) - the deferred per-frame pump. When the pending flag is
@@ -651,7 +653,7 @@ extern "C" CGruntzMgr* g_mgrSettings;
 // singleton, no `this`).
 // @early-stop
 // 88%: complete + correct (structure/branches/singleton re-reads all aligned; PerFrameTick
-// called non-virtually). Residual is a pure regalloc coin-flip: retail pins the g_mgrSettings
+// called non-virtually). Residual is a pure regalloc coin-flip: retail pins the g_gameReg
 // pointer chain (mgr -> m_world / m_curState) in ecx so the InputVirtual thiscall's `this`
 // is already there; our cl pins it in eax and copies (`mov ecx,eax`) into the thiscall - a
 // base-register choice the permuter can't rewrite (operand-order only), whose eax<->ecx swap
@@ -661,7 +663,7 @@ i32 PumpIdleFrame() {
     if (g_pendingFrame == 0) {
         return 0;
     }
-    CGruntzMgr* mgr = g_mgrSettings;
+    CGruntzMgr* mgr = (CGruntzMgr*)g_gameReg;
     g_pendingFrame = 0;
     if (mgr == 0) {
         return 0;
@@ -677,10 +679,10 @@ i32 PumpIdleFrame() {
         return 0;
     }
     if (mgr->m_curState->InputVirtual() == 0) {
-        g_mgrSettings->ReportError(0x8006, 0x435);
+        g_gameReg->ReportError(0x8006, 0x435);
         return 0;
     }
-    g_mgrSettings->CGruntzMgr::PerFrameTick();
+    ((CGruntzMgr*)g_gameReg)->PerFrameTick();
     g_pendingFrame = 1;
     return 1;
 }
@@ -3597,7 +3599,7 @@ i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
     if (m_world == 0) {
         return 0;
     }
-    g_629ad0++;
+    g_serialCounter++;
 
     char buf[0x80];
     memset(buf, 0, 0x80);
@@ -3653,7 +3655,7 @@ i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    g_629ad0++;
+    g_serialCounter++;
 
     char buf[0x80];
     ar->Read(buf, 0x80);
@@ -3807,7 +3809,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
 // used by the modal reporters below. (SerializeSyncMarker, the free 0x13610 serialize
 // validator that also used this, is split out to SerializeSyncMarker.cpp.)
 DATA(0x0024556c)
-extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c
+extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::EnterModalUI (0x08ef10; ret 4). Suspends the in-game world for a

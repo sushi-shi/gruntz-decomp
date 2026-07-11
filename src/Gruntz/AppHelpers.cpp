@@ -36,7 +36,7 @@ int CTitleApp::OnStart(int) {
 // The game-manager singleton is the canonical CGameRegistry (*0x64556c); this
 // routine reaches its +0x78 light-FX pump (CLightFxMgr) shade-table array
 // (m_tables[5], the +0x28 slot).
-extern "C" CGameRegistry* g_mgrSettings; // 0x64556c
+extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 struct CSub10 {
     char pad[0x4c];
@@ -59,7 +59,7 @@ int CHandlerB4::Handle(int a0, int a1, int a2, int a3) {
         return 0;
     }
     if (a1 == 8) {
-        void* x = g_mgrSettings->m_logicPump->m_tables[5];
+        void* x = g_gameReg->m_logicPump->m_tables[5];
         CSub10* p = m_10;
         p->m_58 = 1;
         p->m_50 = 7;

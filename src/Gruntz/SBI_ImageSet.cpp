@@ -26,7 +26,7 @@
 // shape SetupImage uses, reached as reg->m_10->m_10map.
 
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // The serialize-sequence counter bumped once per non-trivial pass.
 DATA(0x00229ad0)

@@ -41,7 +41,7 @@
 // (<Gruntz/GruntzMgr.h>). Its +0x30 world slot (m_world) is the resource manager
 // here, cast locally to CResMgr at the deref sites.
 DATA(0x0024556c)
-extern CGruntzMgr* g_gameReg;
+extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight cue plays through, and the
 // draw-clock mirror (wrap-safe gate compare).

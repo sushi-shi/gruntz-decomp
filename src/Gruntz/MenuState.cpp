@@ -33,12 +33,12 @@
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
-// The game-manager singleton (*g_64556c) - the one true CGruntzMgr shape lives in
+// The game-manager singleton (*g_gameReg) - the one true CGruntzMgr shape lives in
 // <Gruntz/GruntzMgr.h>. (The options-dialog reader/writer family that also taps it
 // is homed in src/Gruntz/VideoConfig.cpp, the options-dialogs TU.)
 extern "C" {
     DATA(0x0024556c)
-    extern CGruntzMgr* g_mgrSettings; // = g_64556c (the CGruntzMgr singleton)
+    extern "C" CGruntzMgr* g_gameReg; // = g_gameReg (the CGruntzMgr singleton)
 }
 
 // ===========================================================================
@@ -47,7 +47,7 @@ extern "C" {
 // emission in this TU.
 // ===========================================================================
 
-// FormatHudText's stats source: g_mgrSettings->m_scoreHud (the +0x7c CBattlezData
+// FormatHudText's stats source: g_gameReg->m_scoreHud (the +0x7c CBattlezData
 // HUD/score accumulator) viewed for its 13 live-value getters (thiscall on the stats
 // object) + cached fields. The getter path is gated by m_liveGame && stats->m_c (the
 // sibling-guard idiom). Fold onto CBattlezData is a follow-up (placeholder getters).
@@ -70,7 +70,7 @@ struct CHudStats {
     i32 m_c; // +0xc  live-game flag (getter gate)
     i32 m_10, m_14, m_18, m_1c, m_20, m_24, m_28, m_2c, m_30, m_34, m_38, m_3c, m_40;
 };
-#define STATS ((CHudStats*)g_mgrSettings->m_scoreHud)
+#define STATS ((CHudStats*)g_gameReg->m_scoreHud)
 #define STAT(getter, field) ((m_liveGame != 0 && STATS->m_c != 0) ? STATS->getter() : STATS->field)
 
 // CMenuState::FormatHudText(buf, sel) (0x1af70): the 960-byte HUD-text formatter - an
@@ -82,7 +82,7 @@ struct CHudStats {
 // 960-byte switch body is CODE-BYTE-EXACT (verified llvm-objdump -dr base vs retail:
 // every stat sibling-guard block, the MM:SS unsigned /1000-then-/60 divide magic, the
 // "%d of %d" clamp, the 13 stats-thiscall getters, and the sprintf pushes all match;
-// the ~24 g_mgrSettings loads are the retail A1 moffs32 form). Residual ~2.5% is the
+// the ~24 g_gameReg loads are the retail A1 moffs32 form). Residual ~2.5% is the
 // inline .rdata jump table (8 case addresses) + the reloc-typed format-string DIR32
 // operands, neither source-steerable. ~97.5%.
 RVA(0x0001af70, 0x3c0)
@@ -199,8 +199,7 @@ extern "C" u32 g_6bf3c0; // draw-clock mirror
 extern i32 g_61ab20;     // DAT_0061ab20 reentrancy gate
 
 // StartMusic reads the game registry through its WwdGameReg view (m_10 presence gate,
-// m_11c configured item); same 0x24556c singleton as g_mgrSettings, typed WwdGameReg.
-extern WwdGameReg* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (reloc-masked)
+// m_11c configured item); same 0x24556c singleton as g_gameReg, typed WwdGameReg.
 
 // CMenuState::~CMenuState() (`??1`, 0x8ce60): run the menu teardown then chain the base.
 // ReleaseResources/the base ~CState are statically bound in the dtor.
@@ -245,7 +244,7 @@ void CMenuState::StartMusic() {
     if (m_1bc == 0) {
         return;
     }
-    if (g_gameReg->m_10 == 0) {
+    if (((WwdGameReg*)g_gameReg)->m_10 == 0) {
         return;
     }
     i32 saved = g_61ab20;
@@ -254,7 +253,7 @@ void CMenuState::StartMusic() {
         flag = 1;
         g_61ab20 = 1;
     }
-    i32 item = g_gameReg->m_11c;
+    i32 item = ((WwdGameReg*)g_gameReg)->m_11c;
     CMenuMusic* mus = m_1bc;
     if (flag) {
         u32 clk = g_6bf3c0;

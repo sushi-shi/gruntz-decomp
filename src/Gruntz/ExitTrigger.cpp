@@ -59,7 +59,7 @@ struct CExitCueSink {
 };
 SIZE_UNKNOWN(CExitCueSink);
 
-// The game registry singleton (g_mgrSettings @0x64556c): +0x30 the probe-sink
+// The game registry singleton (g_gameReg @0x64556c): +0x30 the probe-sink
 // holder, +0x68 the cue receiver, the per-area focus slots at +0x150.
 SIZE_UNKNOWN(CGameRegistry);
 DATA(0x0024556c)

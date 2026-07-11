@@ -245,7 +245,7 @@ public:
     i32 CommitState();
 
     // 0x1af70 - the 960-B HUD-text formatter switch: 8 cases of sprintf over the
-    // game-stats object (g_mgrSettings->m_7c), each stat read via the live-getter /
+    // game-stats object (g_gameReg->m_7c), each stat read via the live-getter /
     // cached-field pair gated by m_liveGame && stats->m_c (the sibling-guard idiom).
     void FormatHudText(CString* buf, i32 sel);
 
@@ -408,9 +408,10 @@ public:
     //   and BootyStateActivate's local CBootyState views fold onto this canonical class.
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0xfa1f0
     i32 BuildPage(i32 a, i32 b, i32 c, i32 d);                      // 0xfa8f0
-    i32 BuildBootyGruntIdleAnimation();                            // 0x1ce60 (reloc-masked; the shared booty idle-anim builder Vslot0c tail-calls)
-    void ShowSecretBonusMessage();                                  // 0xfa540
-    void ShowLevelCompleteMessage();                                // 0xfa120
+    i32
+    BuildBootyGruntIdleAnimation(); // 0x1ce60 (reloc-masked; the shared booty idle-anim builder Vslot0c tail-calls)
+    void ShowSecretBonusMessage();   // 0xfa540
+    void ShowLevelCompleteMessage(); // 0xfa120
 
     // --- CBootyState members (placeholders, beyond the CState layout) ---
     char m_pad1a8[0x1bc - 0x1a8];

@@ -20,9 +20,9 @@
 #include <Gruntz/ResMgr.h>     // canonical CImageRegistry (+0x10 image registrar)
 #include <Gruntz/View.h>       // canonical CSpriteFactoryHolder sub-objects (CRenderer @+0xc)
 #include <rva.h>
-#include <Globals.h>                  // g_glsResetMgr (DAT_00645570)
-#include <Gruntz/GameLevel.h>         // canonical CGameLevel (VisitVisible)
-#include <DinMgr2/DirectInputMgr2.h>  // canonical DirectInputMgr2 (ReadAll)
+#include <Globals.h>                   // g_glsResetMgr (DAT_00645570)
+#include <Gruntz/GameLevel.h>          // canonical CGameLevel (VisitVisible)
+#include <DinMgr2/DirectInputMgr2.h>   // canonical DirectInputMgr2 (ReadAll)
 #include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (Method_158e90/159ef0)
 class CSBI_RectOnly {
 public:
@@ -82,7 +82,6 @@ struct GLSResetMgr {
 };
 // The game-manager singleton (0x64556c); mangled ?g_gameReg@@3PAUWwdGameReg@@A.
 DATA(0x0024556c)
-extern WwdGameReg* g_gameReg;
 // cdecl level-init helper (g_gameReg, this->m_2dc, this->m_470).
 void LevelInit2356(WwdGameReg* gameReg, GLSMapMgr* mapMgr, i32 a3); // reloc-masked
 
@@ -146,7 +145,7 @@ i32 CPlay::OnActivate() {
         ;
 
     ((CDDSurface*)p->m_c->m_4->m_14->m_2c)->Fill(0);
-    LevelInit2356(g_gameReg, p->m_2dc, p->m_470);
+    LevelInit2356((WwdGameReg*)g_gameReg, p->m_2dc, p->m_470);
 
     if (p->m_474 != 0) {
         p->ArmActivation();

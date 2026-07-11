@@ -8,7 +8,7 @@
 // only offsets + code bytes are load-bearing.
 //
 // The 0x64556c singleton is viewed here as CTmGameReg through the extern
-// g_tmGameReg (renamed from the historical g_gameReg: <Gruntz/TileGridCommand.h>
+// g_gameReg (renamed from the historical g_gameReg: <Gruntz/TileGridCommand.h>
 // - pulled by the merged rock-break leaf - owns `g_gameReg` as the canonical
 // CGameRegistry*, and one TU cannot carry both types under one name). Folding
 // CTmGameReg onto canonical CGameRegistry is deferred (sub-object views
@@ -171,7 +171,7 @@ struct CTmGoal {
 // (same global the StatzTab toggle keys off; see StatusBarUpdaters.cpp / CPlay.h).
 extern "C" i32 g_644c54;
 
-// The global game-registry singleton (?g_tmGameReg@@3PAUWwdGameReg@@A @0x64556c). Only
+// The global game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). Only
 // the +0x2c world back-ptr is read here; the world's hooks are reloc-masked.
 // The status-bar item at world->m_2dc is the real CSBI_RectOnly (<Gruntz/SBI_RectOnly.h>,
 // included above): SetMode @0x10bb90, TryActivate/Reset/Place/Run; the reset path reads its
@@ -192,7 +192,7 @@ struct CTmScoreSub {
     i32 m_4c; // +0x4c
 };
 
-// The active game-state (g_tmGameReg->m_curState, a CPlay/CState) as the leaves view it: one
+// The active game-state (g_gameReg->m_curState, a CPlay/CState) as the leaves view it: one
 // unified shape. LoadCursorSprites (== the retail's StopFx, 0xd0120) loads/clears the pending
 // cursor fx; the rest are the world refresh / stat / scroll / fx hooks. Reloc-masked.
 struct CTmWorld {
@@ -216,7 +216,7 @@ struct CTmWorld {
     i32 m_504; // +0x504  pending-fx flag (only null-tested)
 };
 // The level/plane grid the active-selection center reads its dims from: the chain
-// g_tmGameReg->m_world->m_24->m_5c lands on the shared CViewport
+// g_gameReg->m_world->m_24->m_5c lands on the shared CViewport
 // (<Gruntz/Viewport.h>) whose m_worldWidth/m_worldHeight are the (cols,rows) read here.
 struct CTmGridHolder {
     void Snap(i32* outR, i32* outC); // ReinitGroup snap-to-cell (reloc-masked)
@@ -227,10 +227,10 @@ struct CTmRegSub30 {
     char p0[0x24];
     CTmGridHolder* m_24; // +0x24
 };
-// The tile occupancy grid at g_tmGameReg->m_tileGrid (+0x70) is the canonical CTileGrid
+// The tile occupancy grid at g_gameReg->m_tileGrid (+0x70) is the canonical CTileGrid
 // (<Gruntz/TileGrid.h>): a row-pointer table (m_8), width (m_c), height (m_10).
 
-// The HUD/score board at g_tmGameReg->m_scoreBoard (+0x7c, a reused per-mode slot):
+// The HUD/score board at g_gameReg->m_scoreBoard (+0x7c, a reused per-mode slot):
 // a running score (+0x10) and the per-row placed-object counters (+0x48).
 struct CTmScoreBoard {
     char p0[0x10];
@@ -239,10 +239,10 @@ struct CTmScoreBoard {
     i32 m_counts[4]; // +0x48  per-row placed-object counters
 };
 
-// The fx/target sub-mgr at g_tmGameReg->m_68 (a reused per-mode slot; the fx TUs' "light-fx
+// The fx/target sub-mgr at g_gameReg->m_68 (a reused per-mode slot; the fx TUs' "light-fx
 // target"): its fx-sprite spawner (0x90b48) and its group-reset driver (0x79520). Both
 // reloc-masked __thiscall bodies.
-// The command/report sub-mgr at g_tmGameReg->m_6c: the per-record reporter (0x90db8),
+// The command/report sub-mgr at g_gameReg->m_6c: the per-record reporter (0x90db8),
 // the group enqueue action (0x23c30) and the single/multi command posts (0x23c30/
 // 0x23ca0). Reloc-masked; the two 0x23c30 views (Action / EnqueueSingle) carry the
 // retail's two arg shapes for their two call sites.
@@ -258,15 +258,14 @@ struct CTmGameReg {
     CTmScoreBoard* m_scoreBoard; // +0x7c  HUD/score board (reused per-mode)
     char p3[0x134 - 0x80];       // +0x80
     i32 m_134;                   // +0x134  gate/outcome discriminator (==1 live play)
-    // *g_64556c's own game-mgr methods (== CGruntzMgr's, reloc-masked to the shared
-    // RVAs) so g_tmGameReg->M() calls direct - no cross-cast to an unrelated CGruntzMgr*.
+    // *g_gameReg's own game-mgr methods (== CGruntzMgr's, reloc-masked to the shared
+    // RVAs) so g_gameReg->M() calls direct - no cross-cast to an unrelated CGruntzMgr*.
     // (Folding this whole view onto canonical CGameRegistry is deferred: its sub-object
     // fields CTmWorld/CTmRegSub30/... diverge from CState/CWorldZ - needs a sub-object
     // class reconciliation. See the matcher report.)
     class CState* PickPausedThenPlayState(); // 0x0929b0
     void ReportError(i32 id, i32 tag);       // 0x08dc60
 };
-extern CTmGameReg* g_tmGameReg;
 
 // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8 - the canonical CButeMgr (via TriggerMgr.h);
 // the int-with-default getter (0x1721e0) is reloc-masked __thiscall.

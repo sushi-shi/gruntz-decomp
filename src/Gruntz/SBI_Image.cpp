@@ -89,7 +89,7 @@ i32 CSBI_Image::SetupImage(
 
 // The g_gameReg singleton (*0x24556c) + the per-serialize round counter.
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 DATA(0x00229ad0)
 extern i32 g_serialCounter;
 

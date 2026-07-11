@@ -70,7 +70,7 @@ struct CreationGameReg {
     CreationRefSlot m_158[1]; // +0x158 base of the ref-index array
 };
 DATA(0x0024556c)
-extern CreationGameReg* g_gameReg;
+extern "C" CreationGameReg* g_gameReg;
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
@@ -148,8 +148,7 @@ i32 CGruntCreationPoint::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()
-             ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
+    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
         return 0;
     }
     if (tag != 4 && tag == 8) {
@@ -190,7 +189,8 @@ RVA(0x0003e960, 0x102)
 void CGruntCreationPoint::FireActivation(i32 coord) {
     CCreationPointActEntry* e = (CCreationPointActEntry*)g_creationPointActReg.ResolveEntry(coord);
     if (e->m_fn != 0) {
-        CCreationPointActEntry* e2 = (CCreationPointActEntry*)g_creationPointActReg.ResolveEntry(coord);
+        CCreationPointActEntry* e2 =
+            (CCreationPointActEntry*)g_creationPointActReg.ResolveEntry(coord);
         (this->*(e2->m_fn))();
     }
 }

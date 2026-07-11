@@ -10,13 +10,13 @@
 // load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr (g_mgrSettings; m_isCheckpointPrompts)
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr (g_gameReg; m_isCheckpointPrompts)
 #include <rva.h>
 #include <Globals.h> // g_msgmap_CCheckpointDlg
 
 // The game-manager view of the 0x64556c singleton; OnToggleCheckpointPrompts
 // mirrors the "disable prompts" checkbox into its m_isCheckpointPrompts flag.
-extern "C" CGruntzMgr* g_mgrSettings; // 0x64556c
+extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
 // The game's SendMessageA fn-ptr global (reloc-masked indirect call). Bound via
 // DATA(0x006c44a4) (shared with Dialogs.cpp / BattlezDlgRow.cpp).
@@ -62,7 +62,7 @@ RVA(0x00023590, 0x31)
 void CCheckpointDlg::OnToggleCheckpointPrompts() {
     CWnd* c = GetDlgItem(0x53a);
     i32 checked = SendMessageA(c->m_hWnd, 0xf0, 0, 0);
-    g_mgrSettings->m_isCheckpointPrompts = checked == 0;
+    g_gameReg->m_isCheckpointPrompts = checked == 0;
 }
 
 // ---------------------------------------------------------------------------

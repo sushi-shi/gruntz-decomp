@@ -29,7 +29,7 @@
 #include <Gruntz/LobbyObjB.h> // CLobbyObjB/CLobbySlot (the m_520 lobby object, dtors @0xb6220/0xb62a0)
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/Brickz.h>
-#include <Gruntz/GameRegistry.h> // g_64556c singleton (0x24556c) canonical view
+#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/ResMgr.h>       // CDrawTarget (m_c->m_drawTarget->m_18->m_2c Fill)
 #include <stdio.h>               // engine sprintf (reloc-masked)
 #include <stdlib.h>              // srand (reloc-masked)
@@ -52,7 +52,7 @@ extern "C" u32 g_645588; // 0x645588  accum clock
 
 // The game-manager singleton + a divisor for the TITLE%d index.
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_64556c; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 DATA(0x00245534)
 extern "C" i32 g_645534; // 0x645534  title-index modulus
 
@@ -113,7 +113,7 @@ public:
 //     offset dtors are documented terminal @early-stop walls (vtbl un-catalogued / member-
 //     by-value modeling deferred to the final sweep).
 
-CGameMgr* g_pGameMgr;
+extern "C" CGameRegistry* g_gameReg;
 
 // File-scope reentrancy guards.
 static i32 g_optionzGuard;
@@ -201,7 +201,7 @@ extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32);  // 0x6c448c
 extern "C" i32(WINAPI* g_pMessageBeep)(u32);                        // 0x6c4534
 extern "C" i32(WINAPI* g_pSetDlgItemTextA)(HWND, i32, const char*); // 0x6c4554
 extern "C" i32(WINAPI* g_pSendMessageA)(HWND, u32, u32, i32);       // 0x6c44a4
-extern "C" CNetGameMgr* g_mgrSettings; // 0x64556c (the same *0x64556c object as m_4)
+extern "C" CGameRegistry* g_gameReg; // 0x64556c (the same *0x64556c object as m_4)
 
 // The 0x28-byte "player joined" announce packet CreateLocalPlayer builds and ships
 // as stat 0x3f9: a flag byte, the stat id, a small fixed config block, the local
@@ -277,7 +277,7 @@ enum {
     STAT_VERIFY_DISAGREE = 0x41e, // host: the players disagree on the level
 };
 
-// (g_mgrSettings - the 0x64556c singleton - is declared once above as the
+// (g_gameReg - the 0x64556c singleton - is declared once above as the
 // CNetGameMgr*; the Wait views cast it per use.)
 
 // The frame-clock base stamp WaitForOtherPlayers republishes on exit (0x648ce8).
@@ -316,7 +316,7 @@ struct WaitLogic {            // this->m_4
     CGruntzSoundZ* m_48; // +0x48  ambient sound sub-mgr
 };
 SIZE_UNKNOWN(WaitLogic); // logic view (only +0x48 pinned); size TBD
-struct WaitSettings {    // g_mgrSettings (0x64556c)
+struct WaitSettings {    // g_gameReg (0x64556c)
     char m_pad0[0x14];
     i32 m_ambientEnabled; // +0x14  ambient-enabled gate
     char m_pad18[0x30 - 0x18];
@@ -542,13 +542,13 @@ extern "C" void ChannelSlots_InitAll(); // 0x2da1 (thunk) - no `this` (stale-ecx
 // are NULL and +0x14 onward is unrelated .rdata. So the CNetConnectSlotView slots the driver
 // dispatches (+0x08 Abort, +0x74 OnStart, +0x78 OnConnect, +0x90 OnReady) are NOT on
 // 0x5ea42c - they live on the DRIVER `this`'s own, much larger vtable. That `this` (used
-// by CNetMgr::SetupMultiplayerSession: a CSymParser @+0x08, host flag @+0x528, g_mgrSettings, m_4
+// by CNetMgr::SetupMultiplayerSession: a CSymParser @+0x08, host flag @+0x528, g_gameReg, m_4
 // game-mgr, m_peer) is the CMulti-shaped multiplayer state, NOT the 0x8c DirectPlay
 // CNetMgr the peer stamps. CONVERTING these PMFs to real virtuals is DEFERRED WORK (not
 // done here): it requires modeling that driver class polymorphic over its full CPlay/
 // CState/CMulti vtable chain - a task <Gruntz/Multi.h> explicitly holds for the final
 // sweep ("real-chain modeling stays a final-sweep task") and which also reaches the
-// reserved g_mgrSettings (0x64556c) domain. Until then the slots stay pointers-to-member
+// reserved g_gameReg (0x64556c) domain. Until then the slots stay pointers-to-member
 // loaded from the vtable (MSVC5 forbids the __thiscall fn-ptr keyword; PMFs of the
 // complete, non-polymorphic class are 4 bytes and emit `mov edx,[this]; call [edx+off]`
 // - see docs/patterns/pmf-complete-class-4byte.md).
@@ -678,7 +678,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
 #define TF(o) (*(i32*)((char*)this + (o)))
 #define MF(o) (*(i32*)((char*)m_4 + (o)))
 
-    *(i32*)((char*)g_mgrSettings + 0x134) = 2;
+    *(i32*)((char*)g_gameReg + 0x134) = 2;
     if (a1 == 0) {
         return 0;
     }
@@ -726,11 +726,11 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     TF(0x58c) = 0;
     TF(0x594) = 0;
 
-    // m_channelLatency[0..3] + the four g_mgrSettings slots (+0x37c / +0x380)
+    // m_channelLatency[0..3] + the four g_gameReg slots (+0x37c / +0x380)
     i32* clat = (i32*)((char*)this + 0x5f0);
     for (i32 k = 0; k < 0x8e0; k += 0x238) {
         *clat++ = 0;
-        i32* slot = (i32*)((char*)g_mgrSettings + k + 0x37c);
+        i32* slot = (i32*)((char*)g_gameReg + k + 0x37c);
         slot[0] = 0;
         slot[1] = 0;
     }
@@ -1322,7 +1322,7 @@ i32 CMulti::PumpA() {
         if ((i64)(u32)g_645588 - *(i64*)&m_ambientTimerLo >= *(i64*)&m_ambientInterval) {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
-            if (g_64556c->m_14 != 0) {
+            if (g_gameReg->m_14 != 0) {
                 Mgr()->m_48->PlayByName(name, 1);
             } else {
                 CGruntzSoundInnerZ* p = Mgr()->m_48->FindBank(name);
@@ -1503,8 +1503,8 @@ void CMulti::PumpB() {
             if (fx->m_0 == 1) {
                 SetRect(&rc, 20, 5, 140, 125);
             } else {
-                i32 cx = g_64556c->m_modeH;
-                i32 cy = g_64556c->m_modeW;
+                i32 cx = g_gameReg->m_modeH;
+                i32 cy = g_gameReg->m_modeW;
                 rc.top = cx;
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
@@ -1527,7 +1527,7 @@ void CMulti::PumpB() {
         h->DrawBox((i32*)&m_hudRect, 0xff);
     }
     mgr->m_4->m_10->m_surface->Flip(0);
-    PumpBRefresh2356(g_64556c, ((CMultiSubDC*)m_guts), m_region0Gate);
+    PumpBRefresh2356(g_gameReg, ((CMultiSubDC*)m_guts), m_region0Gate);
     if (mgr->m_24->m_mainPlane != 0) {
         ((CPlaneRender*)mgr->m_24->m_mainPlane)->CenterScrollB();
     }
@@ -1577,7 +1577,7 @@ i32 CMulti::StartTitle() {
     if (!st) {
         return 0;
     }
-    i32 idx = g_64556c->m_numRuns % g_645534 + 1;
+    i32 idx = g_gameReg->m_numRuns % g_645534 + 1;
     CString title;
     title.Format("TITLE%d", idx);
     if (LoadTitleScreen(title, 0, 0, 1, 0) == 0) {
@@ -1777,7 +1777,7 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
             char nameBuf[0xa];
             char gameBuf[0x40];
             i32 cap = 0xa;
-            ((Utils::RegistryHelper*)*(void**)((char*)g_mgrSettings + 0x38))
+            ((Utils::RegistryHelper*)*(void**)((char*)g_gameReg + 0x38))
                 ->GetValueString(
                     (char*)(const char*)("Player_Name"),
                     nameBuf,
@@ -1785,7 +1785,7 @@ i32 __stdcall NetSetupDlgProc(HWND hDlg, u32 msg, u32 wParam, i32 lParam) {
                     "Player"
                 );
             cap = 0x40;
-            ((Utils::RegistryHelper*)*(void**)((char*)g_mgrSettings + 0x38))
+            ((Utils::RegistryHelper*)*(void**)((char*)g_gameReg + 0x38))
                 ->GetValueString(
                     (char*)(const char*)("Game_Name"),
                     gameBuf,
@@ -2031,7 +2031,7 @@ i32 CNetMgr::DetectConnectionConfig() {
 // three temporaries' dtors run under the C++ EH frame (=> /GX).
 RVA(0x000b85a0, 0xd2)
 void CNetMgr::ApplyCmdDelayDefaults() {
-    Utils::RegistryHelper* reg = g_pGameMgr->m_38;
+    Utils::RegistryHelper* reg = ((CGameMgr*)g_gameReg)->m_38;
 
     CString cmdDelayName = m_configSection + "_CmdDelay";
     CString resendName = m_configSection + "_Resend";
@@ -2319,20 +2319,20 @@ i32 CNetMgr::VerifyCustomLevel(i32 a1, i32 a2) {
     void* token;
     if (m_5b0 != 0) {
         CString b = GetConfigNameB();
-        token = g_mgrSettings->BuildRezPath(0, (void*)m_5b0, 0, 0, b);
+        token = ((CNetGameMgr*)g_gameReg)->BuildRezPath(0, (void*)m_5b0, 0, 0, b);
     } else {
         CString a = GetConfigNameA();
-        token = g_mgrSettings->BuildRezPath(0, (void*)m_5b0, 0, 0, a);
+        token = ((CNetGameMgr*)g_gameReg)->BuildRezPath(0, (void*)m_5b0, 0, 0, a);
     }
 
     g_connectRptMgr->m_levelVerifyResult = 0;
     if (g_connectRptMgr->Poll((i32)token) == 0) {
         m_530 = 0;
-        g_mgrSettings->ShowModal("Unable to verify custom level with other players");
+        ((CNetGameMgr*)g_gameReg)->ShowModal("Unable to verify custom level with other players");
         return 0;
     }
     if (g_connectRptMgr->m_levelVerifyResult == 0) {
-        g_mgrSettings->ShowModal("Not all players have the (same) custom level.");
+        ((CNetGameMgr*)g_gameReg)->ShowModal("Not all players have the (same) custom level.");
         m_530 = 0;
         return 0;
     }
@@ -2840,7 +2840,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             i32 stamp = msg->m_8;
             u32 now = timeGetTime();
             i32 delta = now - stamp;
-            GruntzPlayer* player = g_mgrSettings->FindPlayer();
+            GruntzPlayer* player = ((CNetGameMgr*)g_gameReg)->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2855,7 +2855,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_useChannelLatency == 0) {
                 break;
             }
-            GruntzPlayer* player = g_mgrSettings->FindPlayer();
+            GruntzPlayer* player = ((CNetGameMgr*)g_gameReg)->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2874,7 +2874,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             return 1;
 
         case 0x41c: {
-            GruntzPlayer* player = g_mgrSettings->FindPlayer();
+            GruntzPlayer* player = ((CNetGameMgr*)g_gameReg)->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -3393,7 +3393,7 @@ void CNetMgr::OnMultiPause() {
     }
 }
 
-// (The g_mgrSettings +0x38 config store is the SAME Utils::RegistryHelper the CNetGameMgr
+// (The g_gameReg +0x38 config store is the SAME Utils::RegistryHelper the CNetGameMgr
 // exposes as m_configStore - GetString lives on that one class now; the former
 // CGameCfgStore method-only shadow is folded away.)
 
@@ -3803,7 +3803,7 @@ i32 CNetMgr::WaitForOtherPlayers() {
 
     SendStatFlag(0x3ed, 1);
     CString waitStr("Waiting for other playerz...");
-    WaitSettings* g = (WaitSettings*)g_mgrSettings;
+    WaitSettings* g = (WaitSettings*)g_gameReg;
     RECT rc;
     rc.left = 0;
     rc.top = 0;
@@ -3937,10 +3937,10 @@ i32 CNetMgr::Poll(i32 token) {
 
         i32 allAcked = 1;
         i32 allAgree = 1;
-        // g_mgrSettings is the game-manager singleton; its +0x150 channel table is
+        // g_gameReg is the game-manager singleton; its +0x150 channel table is
         // the same CNetGameMgr::m_channels[4] the net mgr drives (retail walks it
         // from +0x170 == channel.m_20, reading back to m_18/m_14).
-        CNetGameMgr* mgr = (CNetGameMgr*)g_mgrSettings;
+        CNetGameMgr* mgr = (CNetGameMgr*)g_gameReg;
         for (i32 i = 0; i < 4; i++) {
             CNetChannel* ch = &mgr->m_channels[i];
             if (ch->m_playerId != m_localPlayerId && ch->m_active != 0 && ch->m_14 != 0) {

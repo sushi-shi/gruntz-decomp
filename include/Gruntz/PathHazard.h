@@ -49,7 +49,6 @@ struct CPathCueGate {
 };
 
 DATA(0x0024556c)
-extern CGameRegistry* g_pathGameReg;
 
 // The +0x1a0 sub-mgr the per-frame Tick advances once (SetGeoSource 0x15c360,
 // __thiscall ret 4, takes the g_pathTick frame counter as its int arg).
@@ -90,6 +89,7 @@ extern char g_iconBute[]; // DAT_0060d1bc
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4).
 // Owned by another TU; declared extern so `ecx=&g_buteTree; call Find` masks.
 #include <Bute/ButeMgr.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 extern CButeTree g_buteTree;
 
 // sqrt lowers inline (d9 fa); __ftol (0x11f570) lowers the (int) casts.

@@ -63,16 +63,10 @@ extern CButeMgr g_attractButeMgr;
 // The game registry singleton (canonical CGameRegistry, <Gruntz/GameRegistry.h>): its
 // +0x80 launch counter (m_numRuns, "Num_Runs") selects the TITLE state. The retail
 // reads it off the canonical g_gameReg pointer at ds:0x64556c (verified in InputVirtual/
-// Activate/LoadTitleConfig: mov ecx,ds:0x64556c; mov eax,[ecx+0x80]); the DATA() RVA
-// below (0x245460) is a pre-existing mis-transcription that stays reloc-masked (operand
-// masked in objdiff, code bytes unaffected) - fixing it to 0x24556c is a separate P6
-// symbol-pairing concern, out of this view-fold's scope.
-DATA(0x00245460)
-extern CGameRegistry* g_gameReg;
-
-// The settings singleton gate (the CGruntzMgr facet of the 0x64556c datum):
-// CMgrPersistObj::Save requires g_mgrSettings->m_world live.
-extern "C" CGruntzMgr* g_mgrSettings; // _g_mgrSettings (VA 0x64556c)
+// Activate/LoadTitleConfig: mov ecx,ds:0x64556c; mov eax,[ecx+0x80]). Canonical DATA at
+// 0x24556c (the CMgrPersistObj::Save m_world gate is the same object).
+DATA(0x0024556c)
+extern "C" CGameRegistry* g_gameReg;
 
 // The attract-state count divisor (DAT_00645534, a writable global int).
 DATA(0x00245534)
@@ -1211,7 +1205,7 @@ i32 CMgrPersistObj::Save(CSerialArchive* w) {
     if (w == 0) {
         return 0;
     }
-    if (g_mgrSettings->m_world == 0) {
+    if (g_gameReg->m_world == 0) {
         return 0;
     }
     w->Read(&m_1c, 4);

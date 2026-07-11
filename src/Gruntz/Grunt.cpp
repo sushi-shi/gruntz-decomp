@@ -80,7 +80,7 @@
 #include <Gruntz/Effect6b.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
-extern WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
+extern "C" WwdGameReg* g_gameReg; // 0x64556c (moved from Grunt.h; this TU uses the WwdGameReg view)
 #include <rva.h>
 #include <math.h>
 #include <stdlib.h>
@@ -102,9 +102,6 @@ static const char s_GruntWingzTimeSprite[] = "GruntWingzTimeSprite";
 static const char s_GruntPowerupSprite[] = "GruntPowerupSprite";
 static const char s_GruntSelectedSprite[] = "GruntSelectedSprite";
 
-// The global manager pointer (reloc-masked).
-CGameRegistry* g_pGameRegistry;
-
 // ---------------------------------------------------------------------------
 // Animation-resolver cluster (the 5 CGrunt::Resolve*Animation methods, the
 // SECOND wave on this CGrunt TU). Each builds an animation-key string
@@ -114,7 +111,7 @@ CGameRegistry* g_pGameRegistry;
 // resolved geometry source into the grunt's animation player (m_38), then looks
 // the key up in the global animation tree (CButeTree::Find) and
 // caches the result into m_14->m_1c. Several also fire a 5-arg on-screen "cue"
-// (via g_pGameRegistry->m_cueSink) gated on the grunt being inside the visible view
+// (via g_gameReg->m_cueSink) gated on the grunt being inside the visible view
 // rect (registry m_134==1 -> a 4-way bounds test).
 //
 //   CGrunt::ResolveMovingAnimation()    ("_MOVING", key "B")
@@ -580,7 +577,7 @@ i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
-WwdGameReg* g_gameReg;             // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 FreeNodePool g_coordPool;          // DAT_00645540
 CAnimScratchString* g_animScratch; // DAT_006bf66c
 i32 g_animScratchCount;            // DAT_006bf670
@@ -1028,7 +1025,7 @@ i32 CGrunt::CommitArrival() {
         return 1;
     }
     if (m_tileClaimed != 0) {
-        if (g_pGameRegistry->m_134 == 2) {
+        if (g_gameReg->m_134 == 2) {
             m_tileMgr->NotifyArrival(m_tileOwnerHi, m_tileOwnerLo);
         } else if (m_tileClaimed != 0) {
             m_arrivalRerollLo = 0;
@@ -1697,7 +1694,7 @@ i32 CGrunt::CreateHealthSprite() {
     }
 
     m_healthSprite =
-        (CHudSprite*)g_pGameRegistry->m_world->m_8
+        (CHudSprite*)g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntHealthSprite, 0x40003);
     m_healthSprite->m_7c->m_init(m_healthSprite);
 
@@ -1722,7 +1719,7 @@ i32 CGrunt::CreateToySprite() {
     }
 
     m_toySprite =
-        (CHudSprite*)g_pGameRegistry->m_world->m_8
+        (CHudSprite*)g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntToySprite, 0x40003);
     m_toySprite->m_7c->m_init(m_toySprite);
 
@@ -1745,7 +1742,7 @@ i32 CGrunt::CreateStaminaSprite() {
         return 0;
     }
 
-    m_staminaSprite = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
+    m_staminaSprite = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
         0,
         m_10->m_5c,
         m_10->m_60 - 0x20,
@@ -1786,7 +1783,7 @@ i32 CGrunt::CreateToyTimeSprite() {
         m_wingzTimeSprite = 0;
     }
 
-    m_toyTimeSprite = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
+    m_toyTimeSprite = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
         0,
         m_10->m_5c,
         m_10->m_60 - 0x20,
@@ -1822,7 +1819,7 @@ i32 CGrunt::CreateWingzTimeSprite() {
         m_toyTimeSprite = 0;
     }
 
-    m_wingzTimeSprite = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
+    m_wingzTimeSprite = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
         0,
         m_10->m_5c,
         m_10->m_60 - 0x26,
@@ -1853,7 +1850,7 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
     }
 
     m_powerupSprite =
-        (CHudSprite*)g_pGameRegistry->m_world->m_8
+        (CHudSprite*)g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x15, s_GruntPowerupSprite, 0x40003);
     m_powerupSprite->m_7c->m_init(m_powerupSprite);
 
@@ -1878,7 +1875,7 @@ i32 CGrunt::CreateSelectedSprite() {
     }
 
     m_selectedSprite =
-        (CHudSprite*)g_pGameRegistry->m_world->m_8
+        (CHudSprite*)g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x14, s_GruntSelectedSprite, 0x40003);
     m_selectedSprite->m_7c->m_init(m_selectedSprite);
 

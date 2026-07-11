@@ -20,6 +20,7 @@
 #include <Gruntz/UserLogic.h> // CUserBase / CUserLogic / EngStr / CGameObject
 
 #include <rva.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 
 // ---------------------------------------------------------------------------
 // The geometry sub-player at +0x1a0 on the bound game object (reached as
@@ -84,7 +85,6 @@ struct CWarlordMission {
 // CGameRegistry - the big game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @
 // 0x64556c). Only the offsets the warlord's per-tick update touches are modeled.
 // ---------------------------------------------------------------------------
-extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CWarlord

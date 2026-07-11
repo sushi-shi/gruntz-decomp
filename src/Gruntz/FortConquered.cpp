@@ -23,7 +23,7 @@
 // this-register + frame-slot divergence cascading through all 1318 B. Kept as the
 // empty (highest-%) stub per the >512B REVERT rule; final-sweep leaf-first redo
 // needs the callee set + a matching regalloc modeled first. Structure decoded:
-// the +0x1a0 sub-clock tick, the g_mgrSettings->m_134 mode gate, HitTestCell +
+// the +0x1a0 sub-clock tick, the g_gameReg->m_134 mode gate, HitTestCell +
 // dedup vs owner->m_124, the 5-CString "<A> was conquered by <B>!" HUD message,
 // the config re-tag, the two handler-type re-home list walks + a g_freeList pop,
 // and a per-object GAME_EXPLOSION3 eye-candy spawn.

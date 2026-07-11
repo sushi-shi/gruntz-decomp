@@ -31,7 +31,7 @@ struct CoinGameReg {
     i32 m_130; // +0x130
     i32 m_134; // +0x134 replay-active flag
 };
-extern CoinGameReg* g_gameReg;
+extern "C" CoinGameReg* g_gameReg;
 
 namespace Rng {
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.

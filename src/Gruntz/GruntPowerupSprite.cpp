@@ -12,9 +12,10 @@
 #include <Gruntz/SerialObjRef.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GruntPowerupSprite.h>
-#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_mgrSettings->m_logicPump @+0x78; m_tables[])
+#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
 // The (de)serialization archive is the shared CSerialArchive (Read @ +0x2c / Write
 // @ +0x30), pulled in via the header - the former per-TU PupArchive view is folded.
@@ -102,7 +103,7 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
     m_cellX = x;
     m_cellY = y;
     m_powerupId = powerup;
-    i32 rec = (i32)g_mgrSettings->m_logicPump->m_tables[powerup];
+    i32 rec = (i32)g_gameReg->m_logicPump->m_tables[powerup];
     CGameObject* r = m_object;
     r->m_drawActive = 1;
     r->m_drawFillCmd = 7;
@@ -119,15 +120,14 @@ i32 CGruntPowerupSprite::SetCell(i32 x, i32 y, i32 powerup) {
 //
 // @early-stop
 // regalloc/scheduling wall (zero-register-pinning class): the logic is byte-exact
-// but cl loads g_mgrSettings into a different register (edx vs retail's eax) AFTER the
+// but cl loads g_gameReg into a different register (edx vs retail's eax) AFTER the
 // index add where retail schedules it between the lea-chain and the add, cascading
 // a register-name swap through the indexed entry load - not source-steerable.
 // Every instruction matches modulo register names. Deferred to the final sweep.
 RVA(0x00080410, 0x51)
 i32 CGruntPowerupSprite::Update() {
     ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
-    CGruntEntry* e =
-        ((CGruntEntry**)((char*)g_mgrSettings->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
+    CGruntEntry* e = ((CGruntEntry**)((char*)g_gameReg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e != 0) {
         m_object->m_screenX = e->m_renderable->m_screenX;
         m_object->m_screenY = e->m_renderable->m_screenY;
@@ -138,7 +138,7 @@ i32 CGruntPowerupSprite::Update() {
 // CGruntPowerupSprite::Serialize @0x080490 - the serialize override. Chain the base
 // CUserLogic::SerializeChain and the +0x34 sub-object, then round-trip the own state:
 // m_cellX/m_cellY (8 B) + m_powerupId (4 B). mode 4 = write, mode 7 = read. On read, re-resolve
-// the powerup's bute-set record (g_mgrSettings->m_78[m_powerupId*4 + 0x14]) into the bound renderable.
+// the powerup's bute-set record (g_gameReg->m_78[m_powerupId*4 + 0x14]) into the bound renderable.
 RVA(0x00080490, 0xbe)
 i32 CGruntPowerupSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
@@ -157,7 +157,7 @@ i32 CGruntPowerupSprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4)
             ar->Read(&m_powerupId, 4);
             i32 id = m_powerupId;
             CGameObject* r = m_object;
-            i32 v = (i32)g_mgrSettings->m_logicPump->m_tables[id];
+            i32 v = (i32)g_gameReg->m_logicPump->m_tables[id];
             r->m_drawActive = 1;
             r->m_drawFillArg = v;
             r->m_drawFillCmd = 7;

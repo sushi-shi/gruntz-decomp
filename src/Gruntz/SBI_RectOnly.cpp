@@ -11,7 +11,7 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDSurface.h>
 #include <Gruntz/LeafCue.h>
-// The g_mgrSettings spine slots are the REAL classes (the former per-TU CSbiSubMgr/
+// The g_gameReg spine slots are the REAL classes (the former per-TU CSbiSubMgr/
 // CSbiActiveObj/CSbiLogger facet views are gone): the current play-state (CPlay), the
 // single-player trigger grid (CTriggerMgr) and the registry writer (RegistryHelper).
 #include <Gruntz/Play.h>
@@ -59,9 +59,9 @@ extern i32 g_644c54;
 // <Gruntz/SBI_RectOnly.h>.
 // 0x24556c: the game-mgr singleton. Its canonical symbol is _g_mgrSettings (an
 // extern-C CGameRegistry*, bound via DATA in userlogic); referencing it by that name
-// pairs the DIR32 relocs -- the former ?g_mgrSettings@@ alias at 0x24556c mismatched
-// retail's _g_mgrSettings (the real ?g_mgrSettings@@ lives at 0x245460).
-extern "C" CGameRegistry* g_mgrSettings;
+// pairs the DIR32 relocs -- the former ?g_gameReg@@ alias at 0x24556c mismatched
+// retail's _g_mgrSettings (the real ?g_gameReg@@ lives at 0x245460).
+extern "C" CGameRegistry* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight handlers play through.
 DATA(0x0021ab20)
@@ -213,23 +213,23 @@ void CSBI_RectOnly::SetGauge(i32 value) {
 // @early-stop
 // ~71%: the code bytes are byte-exact vs retail (same regs/order/offsets; verified by
 // llvm-objdump -dr base vs target). The residual is purely the reloc-symbol-naming
-// scoring tail - this TU models the g_mgrSettings singleton as ?g_mgrSettings@@3PAUCGameReg@@A
+// scoring tail - this TU models the g_gameReg singleton as ?g_gameReg@@3PAUCGameReg@@A
 // while the retail obj names it _g_mgrSettings, so the three DIR32 data relocs don't
 // pair (weighted heavily on a short function). g_644c54 + the ILT call thunks already
-// pair. A TU-wide g_mgrSettings rename, not a per-function fix; matcher.md reloc artifact.
+// pair. A TU-wide g_gameReg rename, not a per-function fix; matcher.md reloc artifact.
 RVA(0x00105800, 0x9e)
 i32 CSBI_RectOnly::PlaceCursorTarget(i32 row, i32 commit) {
     i32 col = g_644c54;
-    if (g_mgrSettings->m_cmdGrid->ResetCell(col, row, 0, 0) == 0) {
+    if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) == 0) {
         return 0;
     }
-    CSbiTileEntry* entry = (CSbiTileEntry*)g_mgrSettings->m_cmdGrid->m_grid[row + col * 15];
+    CSbiTileEntry* entry = (CSbiTileEntry*)g_gameReg->m_cmdGrid->m_grid[row + col * 15];
     if (entry == 0) {
         return 0;
     }
-    ((CPlay*)g_mgrSettings->m_curState)->ResetGoals(entry->m_10->m_5c, entry->m_10->m_60);
+    ((CPlay*)g_gameReg->m_curState)->ResetGoals(entry->m_10->m_5c, entry->m_10->m_60);
     if (commit != 0) {
-        CTriggerMgr* obj = g_mgrSettings->m_cmdGrid;
+        CTriggerMgr* obj = g_gameReg->m_cmdGrid;
         if (obj->RecordListHas(col, row)) {
             obj->m_recX = col;
             obj->m_recY = row;
@@ -445,7 +445,7 @@ i32 CSBI_RectOnly::Serialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    if (((CSbiGameMgr*)g_mgrSettings->m_world) == 0) {
+    if (((CSbiGameMgr*)g_gameReg->m_world) == 0) {
         return 0;
     }
 
@@ -558,7 +558,7 @@ i32 CSBI_RectOnly::Deserialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    CSbiGameMgr* gm = ((CSbiGameMgr*)g_mgrSettings->m_world);
+    CSbiGameMgr* gm = ((CSbiGameMgr*)g_gameReg->m_world);
     if (gm == 0) {
         return 0;
     }
@@ -678,7 +678,7 @@ i32 CSBI_RectOnly::Deserialize(CSerialArchive* s) {
 }
 
 // Periodic highlight-cursor tick (RVA-ascending). Bail while the suppress flag
-// (m_hlBusy) is set or the game is over (g_mgrSettings->m_134==1). If this is the
+// (m_hlBusy) is set or the game is over (g_gameReg->m_134==1). If this is the
 // subtype-2 cursor item, refresh its state first. When the active tab is not the
 // gauge tab (4), latch it inactive (SetTabState(4,3)) and Deactivate; otherwise
 // advance the 4-state cursor (forward wraps 4->0; the `reverse` path only guards
@@ -688,7 +688,7 @@ void CSBI_RectOnly::AdvanceTab(i32 reverse) {
     if (m_hlBusy != 0) {
         return;
     }
-    if (g_mgrSettings->m_134 == 1) {
+    if (g_gameReg->m_134 == 1) {
         return;
     }
     if (*(i32*)this == kSubtypeTag) {
@@ -727,11 +727,11 @@ void CSBI_RectOnly::AdvanceTab(i32 reverse) {
 // string vs retail's REL32). Not a wall - matcher.md reloc-typing artifact.
 RVA(0x0010b5d0, 0xdd)
 i32 CSBI_RectOnly::HlClickGroup0(i32 row) {
-    if (((CPlay*)g_mgrSettings->m_curState)->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
+    if (((CPlay*)g_gameReg->m_curState)->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
         i32 handle = m_hlGrid[row].m_handle;
         i32* slot = &m_hlGrid[row].m_handle;
         if (ResolveHandle(handle)) {
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -763,11 +763,11 @@ i32 CSBI_RectOnly::HlClickGroup0(i32 row) {
 // ~94.2%: code byte-exact; reloc-symbol-naming tail only (see HlClickGroup0).
 RVA(0x0010b6f0, 0xdd)
 i32 CSBI_RectOnly::HlClickGroup1(i32 row) {
-    if (((CPlay*)g_mgrSettings->m_curState)->m_4f0 == 0 && m_hlGrid[row + 4].m_state == 1) {
+    if (((CPlay*)g_gameReg->m_curState)->m_4f0 == 0 && m_hlGrid[row + 4].m_state == 1) {
         i32 handle = m_hlGrid[row + 4].m_handle;
         i32* slot = &m_hlGrid[row + 4].m_handle;
         if (ResolveHandle(handle)) {
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -798,11 +798,11 @@ i32 CSBI_RectOnly::HlClickGroup1(i32 row) {
 // ~94.2%: code byte-exact; reloc-symbol-naming tail only (see HlClickGroup0).
 RVA(0x0010b810, 0xdd)
 i32 CSBI_RectOnly::HlClickGroup2(i32 row) {
-    if (((CPlay*)g_mgrSettings->m_curState)->m_4f0 == 0 && m_hlGrid[row + 8].m_state == 1) {
+    if (((CPlay*)g_gameReg->m_curState)->m_4f0 == 0 && m_hlGrid[row + 8].m_state == 1) {
         i32 handle = m_hlGrid[row + 8].m_handle;
         i32* slot = &m_hlGrid[row + 8].m_handle;
         if (ResolveHandle(handle)) {
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -960,14 +960,14 @@ i32 CSBI_RectOnly::ClearTabSprites(i32 idx) {
 // matched m_30/m_34 ints, so the raw access is the codegen-faithful model here.
 // @early-stop
 // ~97.2%: the two notify-list walks + teardown are byte-exact; the residual is a
-// 3-instr regalloc choice in the cursor-rect prologue (retail loads g_mgrSettings via
+// 3-instr regalloc choice in the cursor-rect prologue (retail loads g_gameReg via
 // `mov eax,moffs` and computes the two `-0x45/-0x30` offsets with non-destructive
 // `lea` into fresh regs; the recompile loads into ecx and uses `sub` in place).
 // Not steerable from C - logic byte-correct; deferred to the final sweep.
 RVA(0x00100cb0, 0x8b)
 i32 CSBI_RectOnly::Deactivate() {
     if (*(i32*)this == kSubtypeTag) {
-        CGameRegistry* g = g_mgrSettings;
+        CGameRegistry* g = g_gameReg;
         i32 a = g->m_modeW;
         i32 b = g->m_modeH;
         i32 x = a - 0x45;
@@ -1026,7 +1026,7 @@ i32 CSBI_RectOnly::SetTab(i32 tab, i32 flag) {
     m_tabSprite10 = 0;
     m_activeTab = tab;
     if (!RefreshState()) {
-        g_mgrSettings->ReportError(kActivateErrId, kSetTabErrTag);
+        g_gameReg->ReportError(kActivateErrId, kSetTabErrTag);
         return 0;
     }
     Deactivate();
@@ -1044,7 +1044,7 @@ i32 CSBI_RectOnly::SetTab(i32 tab, i32 flag) {
 // pins the head in a callee-saved edi). Regalloc/induction wall; deferred.
 RVA(0x000fe350, 0x6d)
 void CSBI_RectOnly::Teardown() {
-    ((Utils::RegistryHelper*)g_mgrSettings->m_settings)
+    ((Utils::RegistryHelper*)g_gameReg->m_settings)
         ->SetValueDword("StatusBar Position", *(i32*)this);
     ResetWidgets(0);
     for (i32 i = 0; i < m_ptrCount; i++) {
@@ -1070,7 +1070,7 @@ i32 CSBI_RectOnly::TryActivate() {
         return Activate();
     }
     if (!BuildStatusBarTabs()) {
-        g_mgrSettings->ReportError(kActivateErrId, kActivateErrTag);
+        g_gameReg->ReportError(kActivateErrId, kActivateErrTag);
         return 0;
     }
     SetTabState(m_activeTab, 3);
@@ -1103,8 +1103,8 @@ i32 StatusBarSpriteHolder::Create() {
     if (m_sprite != 0) {
         return 0;
     }
-    i32 a = g_mgrSettings->m_modeW - 0x22;
-    i32 d = g_mgrSettings->m_modeH;
+    i32 a = g_gameReg->m_modeW - 0x22;
+    i32 d = g_gameReg->m_modeH;
     if (m_x > a) {
         m_x = a;
     }
@@ -1268,7 +1268,7 @@ i32 CStatzTabBuilder::Build() {
         CSBI_SideTab* newobj = new CSBI_SideTab;
         i32 ok = newobj->BuildStatzTabStatusBar(
             (CSBI_SideTab*)this,
-            g_mgrSettings->m_world,
+            g_gameReg->m_world,
             i + 0xb,
             0,
             geomBase,
@@ -2576,7 +2576,7 @@ void CSBI_RectOnly::ExitMode() {
     m_tabSprite13 = 0;
     m_tabSprite14 = 0;
     m_hlBusy = 0;
-    if (handle == 0 && g_mgrSettings->m_134 != 1) {
+    if (handle == 0 && g_gameReg->m_134 != 1) {
         if (*(i32*)this == 2) {
             RefreshState();
         }
@@ -2891,9 +2891,9 @@ i32 CSBI_RectOnly::ClickHilite(i32 a, i32 x, i32 y) {
     }
     r->Click1c(a, x, y);
     i32 cmd = r->m_cmd;
-    if (r->m_tab == 1 && m_hitTestDisabled == 0 && g_mgrSettings->m_cmdGrid->m_groupFlag != 0
+    if (r->m_tab == 1 && m_hitTestDisabled == 0 && g_gameReg->m_cmdGrid->m_groupFlag != 0
         && cmd >= 0x13b && cmd <= 0x149) {
-        CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
             CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -2928,7 +2928,7 @@ i32 CSBI_RectOnly::ClearStat(i32 idx) {
         r->m_enabled = 0;
         if (m_activeTab == 1) {
             ((CSBI_RectOnly*)m_statObj[idx])->ResetGroupA();
-            CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -3002,7 +3002,7 @@ i32 CSBI_RectOnly::SetFallRect(i32 x, i32 y, i32 item) {
 // one-instruction eager read in the find-slot loop. Documented walls; deferred.
 RVA(0x0010b930, 0x1a7)
 i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
-    if (((CPlay*)g_mgrSettings->m_curState)->m_4f0 != 0) {
+    if (((CPlay*)g_gameReg->m_curState)->m_4f0 != 0) {
         return 0;
     }
     if (idx == -1) {
@@ -3016,7 +3016,7 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
         if (!ResolveHandle(0x66)) {
             return 0;
         }
-        CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
             CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -3046,7 +3046,7 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
     if (!ResolveHandle(0x66)) {
         return 0;
     }
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
     if (host->m_30 == 0) {
         void* found = 0;
         CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -3097,13 +3097,13 @@ i32 CSBI_RectOnly::SetState(i32 state) {
     }
     old = *(i32*)this;
     *(i32*)this = state;
-    ((CPlay*)g_mgrSettings->m_curState)->SetState(state, old);
+    ((CPlay*)g_gameReg->m_curState)->SetState(state, old);
     return 1;
 }
 
 // 0xfe520 - place the rect-only HUD panel: gated on the mode (m_hlBusy) and the
 // offset-0 subtype tag; pre-teardown notify, set the right-anchored 0xa0-wide
-// full-height rect (+0x10) from the view width (g_mgrSettings->m_modeW), notify, refresh
+// full-height rect (+0x10) from the view width (g_gameReg->m_modeW), notify, refresh
 // the highlight sub-manager, then probe-and-apply (m_10c). On probe failure log
 // the placement error and bail. Returns 1.
 RVA(0x000fe520, 0xa9)
@@ -3118,14 +3118,14 @@ i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
     // Retail reads the view extent (m_modeW,m_modeH) as a POINT but only uses x for the
     // rect; the y store survives as a dead 8-byte-frame spill. `volatile` reproduces
     // that preserved store (a plain local is dead-eliminated by MSVC5 /O2).
-    i32 w = g_mgrSettings->m_modeW;
+    i32 w = g_gameReg->m_modeW;
     volatile POINT pt;
-    pt.y = g_mgrSettings->m_modeH;
+    pt.y = g_gameReg->m_modeH;
     SetRect((LPRECT)&m_10, w - 0xa0, 0, w, 0x1e0);
     SetState(0);
-    ((CPlay*)g_mgrSettings->m_curState)->ResetViewport();
+    ((CPlay*)g_gameReg->m_curState)->ResetViewport();
     if (BuildStatusBarTabs() == 0) {
-        g_mgrSettings->ReportError(kActivateErrId, 0x449);
+        g_gameReg->ReportError(kActivateErrId, 0x449);
         return 0;
     }
     SetTabState(m_activeTab, 3);
@@ -3373,7 +3373,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     }
     ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
     m_tabSprite3 = (CSbiSprite*)it;
-    if (g_mgrSettings->m_134 == 1) {
+    if (g_gameReg->m_134 == 1) {
         CSBI_MenuItem* mp = (CSBI_MenuItem*)it;
         mp->m_34 = 4;
         SbiTabFrame* f = (SbiTabFrame*)mp->m_38;
@@ -3461,12 +3461,12 @@ static __inline i32 WapRand(i32 range) {
 // is a callee-saved-reg CSE pick: retail caches g_randSeeded in bl (a 4th push ebx)
 // and the g_pTimeGetTime ptr in edi (mov edi,[ptr]; call edi), while cl emits a
 // 3-register solution (flag in cl, call [ptr] indirect) and a `mov ecx,[m_134];cmp`
-// vs retail's `cmp [m_134],1` direct memory compare. Plus the ?g_mgrSettings vs
+// vs retail's `cmp [m_134],1` direct memory compare. Plus the ?g_gameReg vs
 // _g_mgrSettings shared-global DIR32 naming tail. Not source-steerable under /O2.
 RVA(0x00107d00, 0x591)
 i32 CSBI_RectOnly::winapi_107d00_SetRect() {
     i32 result;
-    if (g_mgrSettings->m_134 == 1) {
+    if (g_gameReg->m_134 == 1) {
         if (m_ptrCount > 0) {
             void* p = m_ptrTable[0];
             result = *(i32*)p;
@@ -3593,15 +3593,15 @@ i32 CSBI_RectOnly::winapi_107d00_SetRect() {
 // the constant 0 in edi + view-x/y in ebx/ebp, while MSVC5 here pins 0 in ebx +
 // view-x in edi - a 1-instr phase shift cascading through every =0 store, the
 // running-sum reload registers, and the trailing `push 0`. Plus the SetRect import
-// (ff 15 -> __imp_SetRect vs PTR_SetRect) + g_mgrSettings DIR32 naming. Not source-
+// (ff 15 -> __imp_SetRect vs PTR_SetRect) + g_gameReg DIR32 naming. Not source-
 // steerable under /O2; deferred to the final sweep.
 RVA(0x000fdc00, 0x5c2)
 i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
     m_c = arg;
     m_4 = 0;
     *(i32*)this = 0;
-    i32 vx = g_mgrSettings->m_modeW;
-    i32 vy = g_mgrSettings->m_modeH;
+    i32 vx = g_gameReg->m_modeW;
+    i32 vy = g_gameReg->m_modeH;
     SetRect((LPRECT)((char*)this + 0x10), vx - 0xa0, 0, vx, 0x1e0);
     m_rect14.m_c = 0;
     m_24 = vx - 0x45;
@@ -3657,7 +3657,7 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
     m_battlezPct[36] = m_battlezPct[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
     m_battlezPct[37] = m_battlezPct[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
     SetTabState(5, 3);
-    if (((Utils::RegistryHelper*)g_mgrSettings->m_settings)->GetValueDword("StatusBar Position", 0)
+    if (((Utils::RegistryHelper*)g_gameReg->m_settings)->GetValueDword("StatusBar Position", 0)
         == 1) {
         RefreshA();
     }
@@ -3678,7 +3678,7 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
 // args) are byte-correct in content but MSVC schedules the interleaved local stores /
 // packs the 0x14 frame differently than retail (the statement-schedule wall shared with
 // Setup); the three notify walks + the config lookup are byte-faithful. Residual is that
-// scheduling plus the g_mgrSettings / GAME_STATUSBAR_MAINBAR DIR32 naming. Deferred.
+// scheduling plus the g_gameReg / GAME_STATUSBAR_MAINBAR DIR32 naming. Deferred.
 // NEIGHBOR TRIGGER: the sibling cue functions (HlClickGroup*/HiCue*), and now the
 // CSbiMusicHost::m_map10 real-member de-cast, reshuffle this function's
 // MainBarDrawFrame arg-block register allocation (the documented MSVC5 cross-function
@@ -3694,7 +3694,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
             m_rect14.m_c--;
             i32 v = m_barFrameGate;
             if (v > 0x1e0) {
-                CSbiMainSetup* tgt = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_4->m_14->m_2c;
+                CSbiMainSetup* tgt = ((CSbiGameMgr*)g_gameReg->m_world)->m_4->m_14->m_2c;
                 struct {
                     i32 a, b, c, d;
                 } rc;
@@ -3712,7 +3712,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
                 CSbiMainBarCfg* cfg = (CSbiMainBarCfg*)found;
                 CSbiFrameEntry* entry = cfg->m_14[cfg->m_64];
                 if (entry) {
-                    CSbiMainL1* l1 = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_4;
+                    CSbiMainL1* l1 = ((CSbiGameMgr*)g_gameReg->m_world)->m_4;
                     MainBarDrawFrame(l1->m_14, entry->m_18 + m_10, entry->m_1c + m_rect14.m_0, 0);
                 }
             }
@@ -3765,7 +3765,7 @@ extern "C" {
 // Play GAME_TABHIGHLIGHT1 immediately (no clock gate) - variant 1: the record is
 // resolved by a direct FindCue on the host (returns the record) and played.
 static __inline void HiCueFind() {
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
     if (host->m_30 == 0) {
         void* obj = ((CDDrawSubMgrLeafScan*)host)->Lookup_05b7e0("GAME_TABHIGHLIGHT1");
         if (obj) {
@@ -3776,7 +3776,7 @@ static __inline void HiCueFind() {
 
 // Variant 2: resolve via the +0x10 string map (Lookup out-param) then play now.
 static __inline void HiCueLookup() {
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
     if (host->m_30 == 0) {
         void* out = 0;
         ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)out);
@@ -3788,7 +3788,7 @@ static __inline void HiCueLookup() {
 
 // Variant 3: the standard draw-clock-gated cue play (like LoadGooCookingSprite).
 static __inline void HiCueTimed() {
-    CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
     if (host->m_30 == 0) {
         void* found = 0;
         ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
@@ -3805,7 +3805,7 @@ static __inline void HiCueTimed() {
 
 // Post WM_COMMAND(cmdId) to the game window via the cached PostMessageA pointer.
 static __inline void HiPost(i32 cmdId) {
-    g_pPostMessageA(((CSbiWndHost*)g_mgrSettings->m_gameWnd)->m_4, 0x111, cmdId, 0);
+    g_pPostMessageA(((CSbiWndHost*)g_gameReg->m_gameWnd)->m_4, 0x111, cmdId, 0);
 }
 
 // 0xfe910 - UpdateStatusBarTabHighlight(a1, a2, a3). Resolve the hit tab-highlight
@@ -3822,7 +3822,7 @@ static __inline void HiPost(i32 cmdId) {
 // switch-jumptable-separate-comdat.md, ~75-80%) and the byte-index tables aren't
 // source-steerable; (2) the ~15 inlined cue-play blocks + PostMessage tails
 // tail-merge/schedule differently. Logic is byte-faithful; deferred to the final
-// sweep. (The shared-global DIR32 operands -- g_mgrSettings/g_sndCueTag/
+// sweep. (The shared-global DIR32 operands -- g_gameReg/g_sndCueTag/
 // g_pPostMessageA/GAME_TABHIGHLIGHT1 $SG -- are RELOC-MASKED by objdiff, so their
 // symbol names are scoring-neutral; the singleton at 0x24556c is now referenced by
 // its canonical extern-C _g_mgrSettings, not the colliding ?g_gameReg@@ alias that
@@ -3840,7 +3840,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
-            if (g_mgrSettings->m_cmdGrid->m_groupFlag == 0) {
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
             if (cmd > 0x259) {
@@ -3872,7 +3872,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
-            if (g_mgrSettings->m_cmdGrid->m_groupFlag == 0) {
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
             if (cmd < 0x12c || cmd > 0x149) {
@@ -3891,7 +3891,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
-            if (g_mgrSettings->m_cmdGrid->m_groupFlag == 0) {
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
             if (cmd < 0x64 || cmd > 0x68) {
@@ -3904,7 +3904,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
-            if (g_mgrSettings->m_cmdGrid->m_groupFlag == 0) {
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
             if (cmd < 0xd3 || cmd > 0xde) {
@@ -3923,7 +3923,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (m_hitTestDisabled != 0) {
                 return 1;
             }
-            if (g_mgrSettings->m_cmdGrid->m_groupFlag == 0) {
+            if (g_gameReg->m_cmdGrid->m_groupFlag == 0) {
                 return 1;
             }
             if (cmd < 0x190 || cmd > 0x193) {
@@ -3963,18 +3963,18 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     return 1;
                 case 0x1f9:
                     HiCueLookup();
-                    if (g_mgrSettings->m_frameGate != 0) {
-                        g_mgrSettings->m_frameGate ^= 1;
-                        g_mgrSettings->FinishLevel(g_mgrSettings->m_frameGate, 1);
+                    if (g_gameReg->m_frameGate != 0) {
+                        g_gameReg->m_frameGate ^= 1;
+                        g_gameReg->FinishLevel(g_gameReg->m_frameGate, 1);
                     }
-                    ((CPlay*)g_mgrSettings->m_curState)->EnterOverlayDrag(1);
+                    ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(1);
                     return 1;
                 case 0x1fa:
                     HiCueLookup();
                     ArmTab(5, 0);
                     return 1;
                 case 0x1fc:
-                    if (g_mgrSettings->m_134 != 1) {
+                    if (g_gameReg->m_134 != 1) {
                         return 1;
                     }
                     if (m_modeArmed != 0) {
@@ -3985,7 +3985,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                     }
                     HiCueLookup();
                     {
-                        CPlay* sm = (CPlay*)g_mgrSettings->m_curState;
+                        CPlay* sm = (CPlay*)g_gameReg->m_curState;
                         if (m_destructWarnActive == 0) {
                             m_destructWarnActive = 1;
                             m_modeState = 2;
@@ -4016,44 +4016,44 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
         case 6:
             switch (cmd) {
                 case 0x324:
-                    if (g_mgrSettings->m_cmdGrid->m_288 == 1) {
+                    if (g_gameReg->m_cmdGrid->m_288 == 1) {
                         HiCueLookup();
-                        g_mgrSettings->AccrueScoreTime();
-                    } else if (g_mgrSettings->m_134 == 1) {
+                        g_gameReg->AccrueScoreTime();
+                    } else if (g_gameReg->m_134 == 1) {
                         HiCueLookup();
                         HiPost(0x806b);
                     } else {
                         HiCueLookup();
-                        ((CPlay*)g_mgrSettings->m_curState)->HiRefresh(0);
+                        ((CPlay*)g_gameReg->m_curState)->HiRefresh(0);
                     }
                     return 1;
                 case 0x325:
-                    if (g_mgrSettings->m_134 == 1) {
-                        if (g_mgrSettings->m_cmdGrid->m_288 == 1) {
-                            g_mgrSettings->UpdateScoreHud();
+                    if (g_gameReg->m_134 == 1) {
+                        if (g_gameReg->m_cmdGrid->m_288 == 1) {
+                            g_gameReg->UpdateScoreHud();
                         }
                         HiCueLookup();
                         HiPost(0x8023);
                     } else {
                         HiCueTimed();
-                        g_mgrSettings->AccrueScoreTime();
+                        g_gameReg->AccrueScoreTime();
                     }
                     return 1;
                 case 0x327:
-                    if (g_mgrSettings->m_134 == 1) {
-                        if (g_mgrSettings->m_cmdGrid->m_288 == 1) {
-                            g_mgrSettings->UpdateScoreHud();
+                    if (g_gameReg->m_134 == 1) {
+                        if (g_gameReg->m_cmdGrid->m_288 == 1) {
+                            g_gameReg->UpdateScoreHud();
                         }
                         HiCueTimed();
                         HiPost(0x8023);
                     } else {
                         HiCueTimed();
-                        g_mgrSettings->AccrueScoreTime();
+                        g_gameReg->AccrueScoreTime();
                     }
                     return 1;
                 case 0x328:
                     HiCueTimed();
-                    ((CPlay*)g_mgrSettings->m_curState)->HiRefresh(0);
+                    ((CPlay*)g_gameReg->m_curState)->HiRefresh(0);
                     return 1;
                 default:
                     return 0;
@@ -4065,22 +4065,22 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
 }
 
 // 0xffb20 - build (or release) the DESTRUCT button display object. Only touches it
-// while the presence gate (g_mgrSettings->m_soundEnabled) is up: when the mode is armed (m_destructWarnActive!=0)
+// while the presence gate (g_gameReg->m_soundEnabled) is up: when the mode is armed (m_destructWarnActive!=0)
 // and not held (m_574==0), and the object is not yet built, look up GAME_DESTRUCT and
 // build+configure it; otherwise release any existing object. Then refresh the host and
 // fire the notify value `arg` down the three per-tab notify lists (+0x30, active tab,
 // +0xd8) plus the +0x54c notifier. Returns 1.
 // @early-stop
 // ~97.2%: the code bytes are byte-exact vs retail (verified llvm-objdump -dr). The only
-// scored diffs are the two DIR32 g_mgrSettings operands (retail _g_mgrSettings) and the
+// scored diffs are the two DIR32 g_gameReg operands (retail _g_mgrSettings) and the
 // GAME_DESTRUCT $SG string; every other reloc (Lookup/Build/Configure/Release/RefreshHost/
 // Notify0/TabCommit) is a reloc-masked REL32. TU-wide rename, matcher.md reloc artifact.
 RVA(0x000ffb20, 0x13a)
 i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
-    if (g_mgrSettings->m_soundEnabled != 0) {
+    if (g_gameReg->m_soundEnabled != 0) {
         if (m_destructWarnActive != 0 && m_modeArmed == 0) {
             if (m_destructButton == 0) {
-                CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+                CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                 void* found = 0;
                 ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_DESTRUCT", (CObject*&)found);
                 if (found) {
@@ -4089,8 +4089,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
                         CSbiDisplayObj* obj = (CSbiDisplayObj*)((CSoundCueMgr*)f)->GetItem();
                         m_destructButton = obj;
                         if (obj) {
-                            ((DirectSoundMgr*)obj)
-                                ->ApplyAndPlay(g_mgrSettings->m_inputFlag, 0, 0, 1);
+                            ((DirectSoundMgr*)obj)->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
                         }
                     }
                 }
@@ -4177,7 +4176,7 @@ void CSBI_RectOnly::BuildGameTabPauseButton() {
 // @early-stop
 // ~96.7%: the code bytes are byte-exact vs retail (verified llvm-objdump -dr base vs
 // target). The residual is purely the reloc-symbol-naming scoring tail - this TU models
-// the shared singletons as ?g_mgrSettings@@... / ?g_dat645588@@... / ?g_61ab20@@... etc.
+// the shared singletons as ?g_gameReg@@... / ?g_dat645588@@... / ?g_61ab20@@... etc.
 // while retail names them _g_mgrSettings / _g_645588 / ?g_sndEnabled@@... / ?g_sndCueTag@@
 // ... / _g_killCueClock (+ the GAME_GOOCOOKING1 $SG string), so those DIR32 operands
 // don't pair. A TU-wide rename, not a per-function fix; matcher.md reloc artifact.
@@ -4187,7 +4186,7 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
     if (sp->m_state != 0) {
         return 0;
     }
-    if (g_mgrSettings->m_134 == 1 && m_hlBusy == 0) {
+    if (g_gameReg->m_134 == 1 && m_hlBusy == 0) {
         if (*(i32*)this == kSubtypeTag) {
             RefreshState();
         }
@@ -4203,7 +4202,7 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
     g->m_state = g_dat645588;
     g->m_value = 0;
     if (m_activeTab == 2 && *(i32*)this != 2) {
-        CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
             CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
@@ -4233,7 +4232,7 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
 // @early-stop
 // complete reconstruction; residual is the 64-bit draw-clock gate scheduling +
 // zero/1-register pinning across the 3-slot loop + the shared-global DIR32 naming
-// (g_mgrSettings/g_dat645588/g_sndEnabled...); documented regalloc/scheduling walls.
+// (g_gameReg/g_dat645588/g_sndEnabled...); documented regalloc/scheduling walls.
 RVA(0x00105990, 0x398)
 void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
     i32 count = 3;
@@ -4296,7 +4295,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
             case 6:
                 if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && *(i32*)this != 2) {
-                        CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
                             ((CMapStringToOb*)&host->m_map10)
@@ -4317,7 +4316,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
             case 7:
                 if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
                     if (m_activeTab == 3 && *(i32*)this != 2) {
-                        CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
                             ((CMapStringToOb*)&host->m_map10)
@@ -4354,7 +4353,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
 // @early-stop
 // complete reconstruction; residual is the 64-bit draw-clock gates + MSVC cross-jump/
 // tail-merge of the shared GetIntDef/SetStatBar sequences + zero-register pinning +
-// shared-global DIR32 naming (g_mgrSettings/g_dat645588/g_buteMgr/g_sndEnabled). Walls.
+// shared-global DIR32 naming (g_gameReg/g_dat645588/g_buteMgr/g_sndEnabled). Walls.
 RVA(0x00105e40, 0x62c)
 void CSBI_RectOnly::LoadRezMachineConfig() {
     SbiPhaseSlot* pA = (SbiPhaseSlot*)&m_hudRectB_x;
@@ -4423,7 +4422,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                     m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
                     m_beltLast = (u32)g_dat645588;
                     if (m_activeTab == 3 && *(i32*)this != 2) {
-                        CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+                        CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
                             ((CMapStringToOb*)&host->m_map10)
@@ -4481,7 +4480,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                         g[col].m_state = 4;
                         g[col].m_counter = 0x13;
                         if (m_activeTab == 3 && *(i32*)this != 2) {
-                            CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+                            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
                                 ((CMapStringToOb*)&host->m_map10)
@@ -4500,7 +4499,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                         g[col].m_state = 2;
                         g[col].m_counter = 0xa;
                         if (m_activeTab == 3 && *(i32*)this != 2) {
-                            CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+                            CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
                                 ((CMapStringToOb*)&host->m_map10)
@@ -4602,7 +4601,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
                 m_machinePhase = 5;
                 if (m_activeTab == 3 && *(i32*)this != 2) {
-                    CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
                         ((CMapStringToOb*)&host->m_map10)
@@ -4633,7 +4632,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                 m_itemRectT = 0x104;
                 rectFlag = 1;
                 if (m_activeTab == 3 && *(i32*)this != 2) {
-                    CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
                         ((CMapStringToOb*)&host->m_map10)
@@ -4704,7 +4703,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
             }
             if (m_itemRectT >= row * 0x20 + 0x13e) {
                 if (m_activeTab == 3 && *(i32*)this != 2) {
-                    CSbiMusicHost* host = ((CSbiGameMgr*)g_mgrSettings->m_world)->m_28;
+                    CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
                         ((CMapStringToOb*)&host->m_map10)
@@ -4815,7 +4814,7 @@ i32 CSBI_RectOnly::UpdateRezMachineWakeStatusBar() {
 // loop are byte-exact (the free-loop matched once m_ptrTable was typed void**). Residual:
 // (1) the teardown tail reorders the m_2b0/2b8/2b4/2bc zero-block vs the m_retabNotify load / m_hlBusy
 // store (a store-vs-load MSVC scheduling coin-flip; an explicit-temp rewrite was neutral)
-// and (2) the g_mgrSettings + StartingGruntz/Multiplayer/Battlez string DIR32 naming. Not
+// and (2) the g_gameReg + StartingGruntz/Multiplayer/Battlez string DIR32 naming. Not
 // source-steerable; deferred to the final sweep.
 RVA(0x00107ae0, 0x1aa)
 void CSBI_RectOnly::LoadMultiplayerBattlezConfig(i32) {
@@ -4831,7 +4830,7 @@ void CSBI_RectOnly::LoadMultiplayerBattlezConfig(i32) {
     memset(m_statFlags, 0, sizeof(m_statFlags));
     ResetTabWidgets2b44();
 
-    i32 mode = g_mgrSettings->m_134;
+    i32 mode = g_gameReg->m_134;
     if (mode == 2) {
         CSbiSlot* s = m_slots;
         for (i32 i = 0; i < g_buteMgr.GetIntDef("Multiplayer", "StartingGruntz", 0); i++) {

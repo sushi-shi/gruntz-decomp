@@ -17,7 +17,8 @@
 
 #include <Mfc.h> // CObject/CArchive base + <windows.h>
 
-#include <Gruntz/UserLogic.h> // CUserLogic : CUserBase, EngStr, CGameObject
+#include <Gruntz/UserLogic.h>        // CUserLogic : CUserBase, EngStr, CGameObject
+extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 
 // ---------------------------------------------------------------------------
 // CGameRegistry - the global game-manager singleton (the object at *0x64556c). Only
@@ -56,7 +57,6 @@ struct CGameRegMapHolder {
 // (thunk 0x4165 -> 0xe23c0 == CSpriteRefTable::GetSel).
 
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
 DATA(0x00244c54)
 extern i32 g_curPlayer; // DAT_00644c54  (the current local player index)

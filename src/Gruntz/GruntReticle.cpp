@@ -3,7 +3,7 @@
 // ?winapi_0ee800_IntersectRect_PtInRect@CUserLogic; the `this` object extends to
 // +0x3f0 (m_stamina) and beyond, and the retail caller 0x5d210 (CGrunt vtable slot 3)
 // runs it on a CGrunt. It is a CGrunt method. The supporting singletons are the
-// canonical modeled classes: CGameRegistry (g_mgrSettings), CTileGrid (registry+0x70),
+// canonical modeled classes: CGameRegistry (g_gameReg), CTileGrid (registry+0x70),
 // CGameViewport (registry->m_world->m_24), FreeNodePool (g_coordPool), GruntCoordNode.
 //
 // @early-stop

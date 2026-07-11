@@ -23,7 +23,7 @@ namespace m4 {
 } // namespace m4
 
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // Engine views the sprite renderer (LoadChatBoxSprite, 0x20f40) reaches through.

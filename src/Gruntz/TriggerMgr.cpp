@@ -17,8 +17,8 @@
 // <Gruntz/TriggerMgrViews.h>; each merged foreign singleton keeps its own
 // donor views/externs (identities are placeholders, @identity-TODO per the
 // dossier ledger - no class renames in the migration). The 0x64556c singleton
-// is reached under FIVE historical names in this one TU (g_tmGameReg /
-// g_mgrSettings / g_gameRegSel / g_pGameRegistry / g_resSettings), one per
+// is reached under FIVE historical names in this one TU (g_gameReg /
+// g_gameReg / g_gameReg / g_gameReg / g_gameReg), one per
 // donor view - the canonical-CGameRegistry fold that unifies them is deferred
 // cleanup work.
 #include <Gruntz/TriggerMgr.h>
@@ -41,7 +41,7 @@
 #include <Gruntz/GameLevel.h>         // CLevelPlane (PositionUpdate @0x788d0 tail call)
 #include <Gruntz/BoundaryTailViews.h> // CSnd788d0 (the 0x788d0 emitter view)
 #include <Gruntz/GameRegistry.h>      // canonical singleton view (icon/selection donors)
-#include <Gruntz/Grunt.h>             // CGruntTileMgr (CombatCue @0x7b930) + g_pGameRegistry
+#include <Gruntz/Grunt.h>             // CGruntTileMgr (CombatCue @0x7b930) + g_gameReg
 #include <Gruntz/String.h>
 #include <Gruntz/PickupType.h>      // the shared pickup/toy/tool id space (0x7c620)
 #include <Gruntz/IconLoaderViews.h> // EngineLabelBacklog (the four icon loaders)
@@ -293,7 +293,7 @@ i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
 // @early-stop
 // reporter-dispatch arg-shape wall (~72%): the record scan is now byte-exact (u8 count +
 // `bytes[count]=payload[4]` collected byte, size matches retail 0x106). The residual is the
-// trailing count==1/else dispatch: retail calls two 8-arg reporter methods on g_tmGameReg->m_6c
+// trailing count==1/else dispatch: retail calls two 8-arg reporter methods on ((CTmGameReg*)g_gameReg)->m_6c
 // passing a per-iter firstByte dword slot (`*(u8*)payload` stored beside count) + the count/
 // array as separate args; our 7-arg self-call ReportN/Report1 shape approximates it. topic:wall.
 RVA(0x00078520, 0x106)
@@ -315,7 +315,7 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
         n = next;
     }
     if (count == 1) {
-        g_tmGameReg->m_6c->Report1(2, bytes[0], a14, a18, 0, a1c, 0);
+        ((CTmGameReg*)g_gameReg)->m_6c->Report1(2, bytes[0], a14, a18, 0, a1c, 0);
     } else {
         this->ReportN(2, a14, bytes, a18, a1c, a20, a24);
     }
@@ -327,7 +327,7 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
 // @early-stop
 // reporter-dispatch arg-shape wall (~62%): same fixed record scan as ReportRecordsA (u8 count +
 // payload[4] collected byte). The residual is the 4-way (count==1 x a28) dispatch to the two
-// 8-arg g_tmGameReg->m_6c reporter methods with the firstByte dword slot; our self-call shape
+// 8-arg ((CTmGameReg*)g_gameReg)->m_6c reporter methods with the firstByte dword slot; our self-call shape
 // approximates it. topic:wall.
 RVA(0x00078680, 0x189)
 void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28) {
@@ -347,7 +347,7 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
         }
         n = next;
     }
-    CGruntzCmdMgr* rep = g_tmGameReg->m_6c;
+    CGruntzCmdMgr* rep = ((CTmGameReg*)g_gameReg)->m_6c;
     if (count == 1) {
         if (a28 != 0) {
             rep->Report1(9, bytes[0], a14, a18, 0, 0, 0);
@@ -426,7 +426,7 @@ i32 CSnd788d0::PositionUpdate() {
 // fns are embedded between the CTriggerMgr runs; the unit's other two fns
 // 0x1c070/0x1e720 stay in IconLoaders.cpp). Holder view + factory chain in
 // <Gruntz/IconLoaderViews.h>; the singleton is the canonical CGameRegistry
-// via g_pGameRegistry (<Gruntz/Grunt.h>).
+// via g_gameReg (<Gruntz/Grunt.h>).
 // ===========================================================================
 // Two icon-class init-slot fns the toybox de-dup test compares an existing
 // icon's m_7c->Init against (the in-game-icon / in-game-text classes).
@@ -440,7 +440,7 @@ extern "C" void IconClassInitB(); // 0x402bad
 // ===========================================================================
 //
 // Lazily creates the "DoNothing" camera sprite once (gated on this+0x23c being
-// empty). It positions the sprite from the viewport (g_pGameRegistry->m_viewportX/m_viewportY) offset
+// empty). It positions the sprite from the viewport (g_gameReg->m_viewportX/m_viewportY) offset
 // by a per-tile bias selected from the current map's first travel count, runs the
 // sprite's init virtual (vtbl slot +0x10), then caches its first frame.
 // __thiscall (this @ esi). Returns 1 on (re)creation, 0 if already present.
@@ -451,9 +451,9 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
         return 0;
     }
 
-    i32 vx = g_pGameRegistry->m_modeW;
-    i32 vy = g_pGameRegistry->m_modeH;
-    i32 count = *(*(i32**)((char*)g_pGameRegistry->m_curState + 0x2dc));
+    i32 vx = g_gameReg->m_modeW;
+    i32 vy = g_gameReg->m_modeH;
+    i32 count = *(*(i32**)((char*)g_gameReg->m_curState + 0x2dc));
 
     i32 ax, cx;
     if (count == 0) {
@@ -519,7 +519,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         ov->Forward(x, y);
         return 1;
     }
-    CTmWorld* world = g_tmGameReg->m_curState;
+    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
     if (m_pendingFxKind == 0) {
         if (cell->CanShowStamina() == 0) {
             world->LoadCursorSprites(0, 0);
@@ -562,7 +562,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             world->LoadCursorSprites(alt + 0xc8, 1);
             return 1;
         }
-        CTileGrid* plane = g_tmGameReg->m_tileGrid;
+        CTileGrid* plane = g_gameReg->m_tileGrid;
         i32 attr;
         if ((u32)tx >= (u32)plane->m_c || (u32)ty >= (u32)plane->m_10) {
             attr = 1;
@@ -616,7 +616,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         } else if (hit == cell) {
             // toggle off the pending-fx and rewind
             m_pendingFxKind = 0;
-            (g_tmGameReg->m_curState)->StopFx2(0, 0);
+            ((CTmWorld*)g_gameReg->m_curState)->StopFx2(0, 0);
             CTmDisplay* o = hit->m_10;
             this->PlaceA(o->m_5c, o->m_60, a18, a14);
             return 1;
@@ -636,7 +636,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         return 1;
     } else if (sel == 1) {
         // spawn the cursor target sprite
-        CGruntzCmdMgr* rep = g_tmGameReg->m_6c;
+        CGruntzCmdMgr* rep = ((CTmGameReg*)g_gameReg)->m_6c;
         if (cell != 0) {
             rep->Report1(1, cell->m_1ec, cell->m_1f0, a18, a14, 0, 0);
         } else {
@@ -696,7 +696,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
                 operator delete(o2);
                 m_overlay = 0;
             }
-            g_tmGameReg->ReportError(0x800a, 0x3ff);
+            g_gameReg->ReportError(0x800a, 0x3ff);
         }
         return 0;
     }
@@ -760,20 +760,20 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     if (m_284 != 0) {
         return 0;
     }
-    if (*(i32*)((char*)g_tmGameReg + 0x134) != 1) {
+    if (*(i32*)((char*)g_gameReg + 0x134) != 1) {
         return 0;
     }
-    char* lvl = (char*)g_tmGameReg->m_curState;
+    char* lvl = (char*)g_gameReg->m_curState;
     CString name;
     name.Format("Level%i", *(i32*)(lvl + 0x1c), 0);
     i32 color = g_buteMgr.GetIntDef((char*)(const char*)name, "WarpStone", 0);
     i32 hx = col;
     i32 hy = row;
-    if (hy >= *(i32*)((char*)g_tmGameReg + 0x144) || hy < *(i32*)((char*)g_tmGameReg + 0x13c)
-        || hx >= *(i32*)((char*)g_tmGameReg + 0x148) || hx < *(i32*)((char*)g_tmGameReg + 0x140)) {
+    if (hy >= *(i32*)((char*)g_gameReg + 0x144) || hy < *(i32*)((char*)g_gameReg + 0x13c)
+        || hx >= *(i32*)((char*)g_gameReg + 0x148) || hx < *(i32*)((char*)g_gameReg + 0x140)) {
         ((CTmWorld*)lvl)->Place2(hy, hx, 0);
     }
-    CTmGridHolder* plane = (CTmGridHolder*)*(char**)(*(char**)((char*)g_tmGameReg + 0x30) + 0x24);
+    CTmGridHolder* plane = (CTmGridHolder*)*(char**)(*(char**)((char*)g_gameReg + 0x30) + 0x24);
     i32 outR = col;
     i32 outC = row;
     plane->Snap(&outR, &outC);
@@ -809,13 +809,13 @@ extern void __cdecl operator delete(void*);
 
 RVA(0x00079d90, 0xc5)
 void CTriggerMgr::ResetSpawnState() {
-    if (g_tmGameReg->m_134 != 1) {
+    if (g_gameReg->m_134 != 1) {
         return;
     }
     if (m_284 == 0) {
         return;
     }
-    CTmWorld* world = g_tmGameReg->m_curState;
+    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
     CSBI_RectOnly* st = world->m_2dc;
     if (st->m_retabNotify != 0) {
         operator delete(st->m_retabNotify);
@@ -830,7 +830,7 @@ void CTriggerMgr::ResetSpawnState() {
             world->m_2dc->TryActivate();
         }
     }
-    if (g_tmGameReg->m_134 == 1) {
+    if (g_gameReg->m_134 == 1) {
         CTmPendingFx* fx = m_pendingFx;
         if (fx != 0) {
             fx->Pulse();
@@ -853,10 +853,10 @@ extern void __stdcall Eng_SpawnFx(i32 type, i32 x, i32 y, i32 a3, i32 a4, i32 a5
 // gameReg=esi/width=edi (2 regs). Not source-steerable. topic:wall topic:regalloc.
 RVA(0x00079ea0, 0xc2)
 i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
-    if (g_tmGameReg->m_134 != 1) {
+    if (g_gameReg->m_134 != 1) {
         return 0;
     }
-    CTileGrid* grid = g_tmGameReg->m_tileGrid;
+    CTileGrid* grid = g_gameReg->m_tileGrid;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 tile;
@@ -869,7 +869,7 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
         Eng_SpawnFx(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, a3, 0);
         return 1;
     }
-    CTmWorld* world = g_tmGameReg->m_curState;
+    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
     i32 idx = a3 - 1;
     CTmWorld::Anchor* rec = ((u32)idx < 4) ? &world->m_anchors[idx] : 0;
     if (rec != 0) {
@@ -905,7 +905,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         this->RecallCell(cell, cell->m_pos.x, cell->m_pos.y);
     }
     CTrigPoint pt = cell->m_pos;
-    CTileGrid* tg = g_tmGameReg->m_tileGrid;
+    CTileGrid* tg = g_gameReg->m_tileGrid;
     i32 rowIdx = pt.y >> 5;
     i32 colByte = (pt.x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
     ((char*)tg->m_8[rowIdx])[colByte + 0x3] &= 0xdf;
@@ -920,7 +920,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
             k = cell->m_19c;
         }
         if (k == 0x14) {
-            if (g_tmGameReg->m_134 == 1) {
+            if (g_gameReg->m_134 == 1) {
                 CTmPendingFx* fx = m_pendingFx;
                 if (fx != 0) {
                     fx->Pulse();
@@ -950,7 +950,7 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
     CSpriteFactory* fac = m_level->m_8;
     CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
     if (sprite == 0) {
-        g_tmGameReg->ReportError(0x8009, 0x400);
+        g_gameReg->ReportError(0x8009, 0x400);
         return 0;
     }
     sprite->m_7c->Init(sprite);
@@ -977,7 +977,7 @@ i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
     }
     if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
         tgt->m_38->m_8 |= 0x10000;
-        g_tmGameReg->ReportError(0x8009, 0x401);
+        g_gameReg->ReportError(0x8009, 0x401);
         return 0;
     }
     CTmRecNode* n = (CTmRecNode*)m_baseList.m_head;
@@ -1050,7 +1050,7 @@ i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
 
     CGameObject* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
-        g_pGameRegistry->Report(0x8009, 0x402);
+        g_gameReg->Report(0x8009, 0x402);
         return 0;
     }
     spr->ApplyName("GAME_TOYBOX");
@@ -1098,7 +1098,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
     if (startRow == g_644c54) {
         m_groupFlag = 0;
     }
-    CTmWorld* world = g_tmGameReg->m_curState;
+    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
     world->Refresh();
     world->SetStat(0, 0xbb7);
     world->m_2dc->SetMode(1);
@@ -1517,7 +1517,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         i32* rec = m_recList.m_head->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
-    CTmWorld* world = g_tmGameReg->m_curState;
+    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
     i32 kind = this->Classify(x, y);
     if (kind == 2) {
         i32 alt = cell->m_170;
@@ -1525,12 +1525,12 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
             alt = cell->m_19c;
         }
         if (alt == 0x13) {
-            g_tmGameReg->m_68->Spawn(cell->m_pos.x, cell->m_pos.y, 0, 0, 0, 2, 1);
+            ((CTmGameReg*)g_gameReg)->m_68->Spawn(cell->m_pos.x, cell->m_pos.y, 0, 0, 0, 2, 1);
         }
     } else if (kind == 3) {
         if (cell->m_198 == 0x1e) {
             CTmDisplay* o = cell->m_10;
-            g_tmGameReg->m_68->Spawn(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
+            ((CTmGameReg*)g_gameReg)->m_68->Spawn(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
         }
     } else if (kind != 0) {
         i32 v = kind + kPendingFxIdBase;
@@ -1574,7 +1574,7 @@ i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i3
 // embedded singleton, this TU by retail position). @identity-TODO: the
 // CRockBreakMgr/Rock* identities are placeholders; the Rock* views below are
 // the donor's (RockMgr is the 0x64556c singleton under its extern-"C" csv name
-// g_mgrSettings - the name every unit's reloc matches).
+// g_gameReg - the name every unit's reloc matches).
 // ===========================================================================
 // FUN_001b2cf5 __cdecl: format into a CString (the LoadBootyCheatState FormatStr).
 void FormatStr(CString* out, const char* fmt, ...);
@@ -1633,13 +1633,13 @@ struct RockCellObj {
     virtual void Slot7();
     virtual i32 GetType(i32 a, i32 b); // +0x20 (slot 8)
 };
-struct RockBoard { // this->m_22c->m_24 (and g_mgrSettings->m_world->m_24)
+struct RockBoard { // this->m_22c->m_24 (and g_gameReg->m_world->m_24)
     char m_pad00[0x4c];
     RockCellObj** m_4c; // +0x4c  cell type-object table
     char m_pad50[0x5c - 0x50];
     RockGrid* m_5c; // +0x5c
 };
-struct RockMapHost { // this->m_22c (== g_mgrSettings->m_world)
+struct RockMapHost { // this->m_22c (== g_gameReg->m_world)
     char m_pad00[0x8];
     CSpriteFactory* m_8; // +0x08
     char m_pad0c[0x24 - 0xc];
@@ -1653,18 +1653,18 @@ struct RockLogicObj {
     // SetType @0x1a00 IS CTileGridCommand::ApplyMove; cast at the call.
     // Reconcile @0x3adf IS CTileActionEvent::Process; cast at the call.
 };
-struct RockLogicMgr { // g_mgrSettings->m_curState->m_2e4
+struct RockLogicMgr { // g_gameReg->m_curState->m_2e4
     // FindAt IS CTileTriggerSwitchLogic::ScanNeighborhood; cast at the call.
     // FindCell IS CTileTriggerSwitchLogic::FindByField0C; cast at the call.
     // Acquire IS CTileTriggerContainer::FindInLists12; cast at the call.
     // Release IS CTileTriggerContainer::DelFromList1; cast at the call.
     // Reap IS CTileTriggerContainer::DelFromList3; cast at the call.
 };
-struct RockSettingsRoot { // g_mgrSettings->m_curState
+struct RockSettingsRoot { // g_gameReg->m_curState
     char m_pad00[0x2e4];
     RockLogicMgr* m_2e4; // +0x2e4
 };
-struct RockMgr { // g_mgrSettings (*0x64556c), this method's typed alias
+struct RockMgr { // g_gameReg (*0x64556c), this method's typed alias
     char m_pad00[0x2c];
     RockSettingsRoot* m_curState; // +0x2c
     RockMapHost* m_world;         // +0x30  write-grid host
@@ -1672,14 +1672,12 @@ struct RockMgr { // g_mgrSettings (*0x64556c), this method's typed alias
     CBrickzGrid* m_tileGrid; // +0x70
     char m_pad74[0x13c - 0x74];
     RECT m_13c; // +0x13c  visible rect
-    // *g_64556c's own game-mgr methods (== CGruntzMgr's, reloc-masked) - call direct,
+    // *g_gameReg's own game-mgr methods (== CGruntzMgr's, reloc-masked) - call direct,
     // no cross-cast. Full fold onto canonical CGameRegistry deferred (RockSettingsRoot/
     // RockMapHost sub-object views diverge from CState/CWorldZ).
     void EnterModalUI(i32 arg);        // 0x08ef10
     void ReportError(i32 id, i32 tag); // 0x08dc60
 };
-DATA(0x0024556c)
-extern "C" RockMgr* g_mgrSettings; // _g_mgrSettings
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
 DATA(0x0021ab24)
@@ -1715,7 +1713,7 @@ RVA(0x0007b440, 0x3f0)
 i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
     Prepare(cx, cy, r, 6, a4);
 
-    RockSettingsRoot* root = g_mgrSettings->m_curState;
+    RockSettingsRoot* root = (RockSettingsRoot*)g_gameReg->m_curState;
     i32 tileCx = cx >> 5;
     i32 tileCy = cy >> 5;
     i32 hiX = tileCx + r;
@@ -1756,8 +1754,8 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                     if (gr == 0) {
                         CString msg;
                         FormatStr(&msg, "No giant rock logic found around: x=%d, y=%d", cx, cy);
-                        g_mgrSettings->EnterModalUI((i32)(const char*)(msg));
-                        g_mgrSettings->ReportError(0x80dd, 0x403);
+                        g_gameReg->EnterModalUI((i32)(const char*)(msg));
+                        g_gameReg->ReportError(0x80dd, 0x403);
                         return 0;
                     }
                     ((CTileTriggerSwitchLogic*)gr)->BuildRockBreakInGameText();
@@ -1782,21 +1780,21 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                 ((CTileGridCommand*)lo)->ApplyMove(type);
                 ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)lo);
             } else {
-                RockGrid* wg = g_mgrSettings->m_world->m_24->m_5c;
+                RockGrid* wg = (RockGrid*)g_gameReg->m_world->m_24->m_5c;
                 i32 off = wg->m_24[ty];
                 if (type == 0x1e) {
                     wg->m_20[off + tx] = 0x5a;
-                    g_mgrSettings->m_tileGrid->ComputeCellFlags(tx, ty, 0x5a);
+                    ((CBrickzGrid*)g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
                 } else {
                     wg->m_20[off + tx] = 0x5b;
-                    g_mgrSettings->m_tileGrid->ComputeCellFlags(tx, ty, 0x5b);
+                    ((CBrickzGrid*)g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
                 }
             }
 
             POINT pt;
             pt.x = pxX;
             pt.y = pxY;
-            if (!PtInRect(&g_mgrSettings->m_13c, pt)) {
+            if (!PtInRect((const RECT*)&g_gameReg->m_viewOriginL, pt)) {
                 continue;
             }
             CGameObject* spr = m_22c->m_8->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
@@ -1840,7 +1838,7 @@ SIZE_UNKNOWN(RockSndTable);
 // ===========================================================================
 // CGruntTileMgr::CombatCue (0x7b930) - merged from GruntTileMgr.cpp per
 // dossier 10b (the grunt tile-mgr spell-area cue; embedded singleton, this TU
-// by retail position). CGruntTileMgr + g_pGameRegistry come from
+// by retail position). CGruntTileMgr + g_gameReg come from
 // <Gruntz/Grunt.h>; the LightFx/flash key statics are the donor's.
 // ===========================================================================
 // The LightFx / flash key strings (reloc-masked .rodata literals).
@@ -1918,7 +1916,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                             i32 dy = rangeB ? GruntRand() % rangeB + 1 : GruntRand() & 1;
                             if (g->TeleportMove(dx, dy, 0, 1)) {
                                 CHudSprite* spr =
-                                    (CHudSprite*)g_pGameRegistry->m_world->m_8
+                                    (CHudSprite*)g_gameReg->m_world->m_8
                                         ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                                 done = 1;
                                 spr->m_7c->m_init(spr);
@@ -1940,7 +1938,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         g->m_combatClockLo = g_645588;
                         g->m_combatClockHi = 0;
                         CHudSprite* spr =
-                            (CHudSprite*)g_pGameRegistry->m_world->m_8
+                            (CHudSprite*)g_gameReg->m_world->m_8
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_init(spr);
                         spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 2, 1);
@@ -1956,7 +1954,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         }
                         g->SetMoveStateA(toy, 1, 0, 0);
                         CHudSprite* spr =
-                            (CHudSprite*)g_pGameRegistry->m_world->m_8
+                            (CHudSprite*)g_gameReg->m_world->m_8
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_init(spr);
                         spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 7, 1);
@@ -1969,7 +1967,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         g->FreezeApply();
                         CGruntHud* h = g->m_10;
                         CHudSprite* spr =
-                            (CHudSprite*)g_pGameRegistry->m_world->m_8
+                            (CHudSprite*)g_gameReg->m_world->m_8
                                 ->CreateSprite(0, h->m_5c, h->m_60, 0xf4240, s_LightFx, 0x40003);
                         spr->m_7c->m_init(spr);
                         spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 9, 1);
@@ -1986,7 +1984,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
 // pending flag (world+0x504), stop the world's fx and clear +0x2a8.
 RVA(0x0007be10, 0x34)
 void CTriggerMgr::StopPendingFx() {
-    CTmWorld* world = g_tmGameReg->m_curState;
+    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
     if (m_pendingFxKind == 0 && world->m_504 == 0) {
         return;
     }
@@ -1999,7 +1997,7 @@ void CTriggerMgr::StopPendingFx() {
 // GruntResurrectRadius.cpp per dossier 10b (the resurrect-radius pass, sibling
 // of the rock-break scan; called by CGrunt::LoadGruntAbilityTuning @0x572db).
 // @identity-TODO: CGruntResurrector/Res* identities are placeholders (the
-// owning `this` is the grunt-list manager; g_resSettings/g_resButeMgr are the
+// owning `this` is the grunt-list manager; g_gameReg/g_resButeMgr are the
 // donor's names for the 0x64556c / 0x2453d8 singletons).
 // ===========================================================================
 SIZE_UNKNOWN(ResGruntLogic);
@@ -2027,7 +2025,7 @@ struct ResNode {
     ResGrunt* m_grunt; // +0x08
 };
 SIZE_UNKNOWN(ResMgrCfgEntry);
-struct ResMgrCfgEntry { // g_mgrSettings + 0x150 + type*0x238
+struct ResMgrCfgEntry { // g_gameReg + 0x150 + type*0x238
     char m_pad00[0x14];
     i32 m_14; // +0x14
     char m_pad18[0x20 - 0x18];
@@ -2061,8 +2059,6 @@ SIZE_UNKNOWN(ResButeMgr);
 struct ResButeMgr {};
 DATA(0x002453d8)
 extern ResButeMgr g_resButeMgr;
-DATA(0x0024556c)
-extern ResSettings* g_resSettings;
 SIZE_UNKNOWN(CGruntResurrector);
 struct CGruntResurrector {
     char m_pad00[0x4];
@@ -2118,7 +2114,7 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         }
 
         i32 type = g->m_68;
-        ResSettings* s = g_resSettings;
+        ResSettings* s = (ResSettings*)g_gameReg;
         ResMgrCfgEntry* cfg = &s->m_150[type];
         i32 aiType = 0;
         i32 ok = 0;
@@ -2148,7 +2144,7 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             g->m_38->m_8 |= 0x10000;
             Notify(node);
             CGameObject* spr =
-                g_resSettings->m_world->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
+                g_gameReg->m_world->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
             spr->m_7c->Init(spr);
             ((CLightFx*)spr->m_7c->m_logic)
                 ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 8, 1);
@@ -2232,7 +2228,7 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
                             g->m_1f8 = g->m_1f4;
                         }
                         g->SelectMoveIcon(t);
-                        (g_tmGameReg->m_curState)->OnRegion4(1);
+                        ((CTmWorld*)g_gameReg->m_curState)->OnRegion4(1);
                     } else if (g->m_1f8 != -1) {
                         g->SelectMoveIcon(g->m_1f8);
                         g->m_1f8 = -1;
@@ -2461,8 +2457,8 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             name = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
             break;
         case PICKUP_WARPSTONE:
-            if (g_pGameRegistry->m_134 == 1) {
-                CResourceTracker* rt = (CResourceTracker*)g_pGameRegistry->m_curState;
+            if (g_gameReg->m_134 == 1) {
+                CResourceTracker* rt = (CResourceTracker*)g_gameReg->m_curState;
                 CString lvl;
                 lvl.Format("Level%i", rt->m_levelNumber);
                 name.Format(
@@ -2561,8 +2557,8 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
             name = "GAME_INGAMEICONZ_POWERUPZ_COIN";
             break;
         case PICKUP_COVEREDTIMEBOMB: {
-            CGameObject* tb = g_pGameRegistry->m_world->m_8
-                                  ->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
+            CGameObject* tb =
+                g_gameReg->m_world->m_8->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
             if (tb) {
                 tb->m_120 = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
             }
@@ -2573,7 +2569,7 @@ i32 EngineLabelBacklog::LoadPowerupIconSprites(
     }
 
     CGameObject* spr =
-        g_pGameRegistry->m_world->m_8->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
+        g_gameReg->m_world->m_8->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
         return 0;
     }
@@ -2643,7 +2639,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
 // the slot list is empty).
 // @early-stop
 // regalloc wall (~87%): logic + offsets + all reloc-masked externs (ResetAll/OverlayTick/
-// ResetCell/RemoveAt/Center/g_freeList*/g_tmGameReg) byte-exact, but retail pins this=ebp,
+// ResetCell/RemoveAt/Center/g_freeList*/g_gameReg) byte-exact, but retail pins this=ebp,
 // node=esi, y=edi (a perfect 5-reg fit); our cl swaps this/node into esi/ebp and spills
 // `this` to the stack, reusing esi for y. Same systematic esi<->ebp swap the rest of this
 // TU exhibits; not source-steerable. topic:wall.
@@ -2661,7 +2657,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     }
     i32 maxX = 0;
     i32 maxY = 0;
-    CViewport* grid = g_tmGameReg->m_world->m_24->m_5c;
+    CViewport* grid = (CViewport*)g_gameReg->m_world->m_24->m_5c;
     i32 minX = grid->m_worldWidth - 1;
     i32 minY = grid->m_worldHeight - 1;
     do {
@@ -2697,7 +2693,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
         }
     } while (n != 0);
     if (m_selSentinel == slot) {
-        g_tmGameReg->m_curState->Center(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
+        ((CTmWorld*)g_gameReg->m_curState)
+            ->Center(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
         m_selSentinel = -1;
         return 1;
     }
@@ -2718,7 +2715,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 // ===========================================================================
 // CenterOnGroup (0x7cf40)
 // ===========================================================================
-// The view-centre helper reached as g_gameReg->m_curState->Center(x, y) (0x2e28 thunk).
+// The view-centre helper reached as ((CTmWorld*)g_gameReg->m_curState)->Center(x, y) (0x2e28 thunk).
 // The map dimensions grid (gameReg->m_world->m_24->m_5c) is the shared
 // CViewport (<Gruntz/Viewport.h>); only its m_worldWidth/m_worldHeight are read here.
 struct CMapHolderB {
@@ -2729,8 +2726,6 @@ struct CMapHolderA {
     char m_pad00[0x24];
     CMapHolderB* m_24; // +0x24
 };
-DATA(0x0024556c)
-extern CGameRegistry* g_gameRegSel; // 0x64556c
 
 // A selected cell's grunt (cell->m_10) carries its tile position at +0x5c/+0x60.
 struct CSelGrunt {
@@ -2785,7 +2780,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     if (n == 0) {
         return 0;
     }
-    CViewport* dims = (CViewport*)g_gameRegSel->m_world->m_24->m_5c;
+    CViewport* dims = (CViewport*)g_gameReg->m_world->m_24->m_5c;
     i32 minX = dims->m_worldWidth - 1;
     i32 minY = dims->m_worldHeight - 1;
     i32 maxX = 0;
@@ -2816,7 +2811,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     } while (n != 0);
     i32 cy = minY + (maxY - minY) / 2;
     i32 cx = minX + (maxX - minX) / 2;
-    i32 r = ((CPlay*)g_gameRegSel->m_curState)->ResetGoals(cx, cy);
+    i32 r = ((CPlay*)g_gameReg->m_curState)->ResetGoals(cx, cy);
     if (r != 0 && count == 1 && m_24c == 1) {
         CSelKey* head = m_244->m_8;
         CSelGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
@@ -2880,7 +2875,7 @@ i32 CTriggerMgr::ClearRow(i32 row) {
     if (row == g_644c54) {
         m_groupFlag = 0;
     }
-    g_tmGameReg->m_curState->Refresh();
+    ((CTmWorld*)g_gameReg->m_curState)->Refresh();
     return 1;
 }
 
@@ -3005,7 +3000,7 @@ void CTriggerMgr::DestroyAllAnims() {
         ch1->StopAndRewind();
         m_soundChanB = 0;
     }
-    void* state = g_tmGameReg->PickPausedThenPlayState();
+    void* state = g_gameReg->PickPausedThenPlayState();
     if (state != 0) {
         char* sub = *(char**)((char*)state + 0x2dc);
         if (sub != 0) {
@@ -3033,7 +3028,7 @@ RVA(0x0007d450, 0x112)
 i32 CTriggerMgr::ToggleRegionA() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
-        (g_tmGameReg->m_curState)->LoadCursorSprites(0, 0);
+        ((CTmGameReg*)g_gameReg)->m_curState->LoadCursorSprites(0, 0);
         return 0;
     }
     m_pendingFxKind = 0;
@@ -3061,12 +3056,12 @@ i32 CTriggerMgr::ToggleRegionA() {
     }
     if (v == 0x13) {
         CTrigPoint pt = cell->m_pos;
-        g_tmGameReg->m_68->ResetGroup(pt.x, pt.y, 0, 0, 0, 2, 1);
+        ((CTmGameReg*)g_gameReg)->m_68->ResetGroup(pt.x, pt.y, 0, 0, 0, 2, 1);
         OverlayTick();
         return 1;
     }
     m_pendingFxKind = v + kPendingFxIdBase;
-    (g_tmGameReg->m_curState)->LoadCursorSprites(v + kPendingFxIdBase, 0);
+    ((CTmGameReg*)g_gameReg)->m_curState->LoadCursorSprites(v + kPendingFxIdBase, 0);
     OverlayTick();
     return 1;
 }
@@ -3081,7 +3076,7 @@ RVA(0x0007d5c0, 0xdc)
 i32 CTriggerMgr::ToggleRegionB() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
-        (g_tmGameReg->m_curState)->LoadCursorSprites(0, 0);
+        ((CTmGameReg*)g_gameReg)->m_curState->LoadCursorSprites(0, 0);
         return 0;
     }
     m_pendingFxKind = 0;
@@ -3105,7 +3100,7 @@ i32 CTriggerMgr::ToggleRegionB() {
     i32 kind = cell->m_198;
     if (kind == 0x1e) {
         CTmDisplay* o = cell->m_10;
-        g_tmGameReg->m_68->ResetGroup(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
+        ((CTmGameReg*)g_gameReg)->m_68->ResetGroup(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
         OverlayTick();
         return 1;
     }
@@ -3114,7 +3109,7 @@ i32 CTriggerMgr::ToggleRegionB() {
         return 1;
     }
     m_pendingFxKind = kind + kPendingFxIdBase;
-    (g_tmGameReg->m_curState)->LoadCursorSprites(kind + kPendingFxIdBase, 0);
+    ((CTmGameReg*)g_gameReg)->m_curState->LoadCursorSprites(kind + kPendingFxIdBase, 0);
     OverlayTick();
     return 1;
 }
@@ -3151,9 +3146,9 @@ i32 CTriggerMgr::EnqueueGroupCells() {
         } while (n != 0);
     }
     if (count == 1) {
-        g_tmGameReg->m_6c->EnqueueSingle(1, x, (char)buf[0], 5, 0, 0, 0, 0);
+        ((CTmGameReg*)g_gameReg)->m_6c->EnqueueSingle(1, x, (char)buf[0], 5, 0, 0, 0, 0);
     } else {
-        g_tmGameReg->m_6c->EnqueueMulti(1, x, count, (u8*)buf, 5, 0, 0, 0);
+        ((CTmGameReg*)g_gameReg)->m_6c->EnqueueMulti(1, x, count, (u8*)buf, 5, 0, 0, 0);
     }
     return 1;
 }

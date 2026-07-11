@@ -49,7 +49,7 @@
 // The game registry: factory at +0x68/+0x74, a per-player icon table at +0x158
 // (stride for the per-player block: 71*8; per-icon stride inside it: 0x238).
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
+extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUCGameReg@@A @ VA 0x64556c
 
 DATA(0x00244c54)
 extern i32 g_curPlayer; // DAT_00644c54

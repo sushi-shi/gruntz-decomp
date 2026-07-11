@@ -50,7 +50,7 @@ DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"
 
 // The game registry singleton the warp ctor polls for the play sub-mode (m_134).
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // --- The per-class activation-coordinate registry singletons + handler-entry views.
 // Each ActReg is the shared <Gruntz/ActReg.h> CActReg archetype (distinct instance);

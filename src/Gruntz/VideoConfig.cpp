@@ -52,14 +52,14 @@ public:
     void SetRange(i32 nMin, i32 nMax, i32 bRedraw);
 };
 
-// The game-manager settings singleton (?g_mgrSettings == g_64556c, the CGruntzMgr;
+// The game-manager settings singleton (?g_gameReg == g_gameReg, the CGruntzMgr;
 // canonical <Gruntz/GruntzMgr.h>). The option commits reach the input/audio
 // sub-systems through it: SetRunState @0x092340, StoreInputFlag @0x0919d0,
 // StoreInputState @0x091a10, SetSoundLevelState @0x0923b0, and the m_sound
 // object's XMIDI volume push/read (0x138950/0x1389c0). All reloc-masked.
 extern "C" {
     DATA(0x0024556c)
-    extern CGruntzMgr* g_mgrSettings;
+    extern "C" CGameRegistry* g_gameReg;
 }
 
 // The active dialog handle latch (NetLobby::g_curDlg_64557c @0x64557c); the proc
@@ -132,8 +132,8 @@ extern PFN_CheckDlgButton p_CheckDlgButton;
 // resolution combo index (1024x768 -> 3, 800x600 -> 2, else 1).
 RVA(0x000363a0, 0x41)
 i32 GetResolutionCode() {
-    i32 w = g_mgrSettings->m_savedModeW;
-    i32 h = g_mgrSettings->m_savedModeH;
+    i32 w = g_gameReg->m_savedModeW;
+    i32 h = g_gameReg->m_savedModeH;
     if (w == 0x400 && h == 0x300) {
         return RES_1024x768;
     }
@@ -153,7 +153,7 @@ i32 GetResolutionCode() {
 // @early-stop
 // ~92.5%: the full dialog logic + every handler dispatch is byte-exact. Residual is
 // pure codegen shaping: (1) the IDOK resolution-store register allocation (retail
-// caches g_mgrSettings once and puts w/h in ecx/edx; cl reloads it and uses eax/ecx),
+// caches g_gameReg once and puts w/h in ecx/edx; cl reloads it and uses eax/ecx),
 // (2) IsInPlayState's inline-vs-call bool normalization (GruntzMgr.h defines it inline,
 // so cl folds a neg/sbb/neg where retail keeps the call's raw bool test), and (3) the
 // outer msg-switch default placement (je-case vs jne-default fall-through). The
@@ -178,15 +178,15 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
         case WM_COMMAND: // 0x111
             switch (wParam) {
                 case 2: // IDCANCEL: discard
-                    if (g_mgrSettings->m_curState->Update() == 0x11) {
-                        ((CNetMgr*)g_mgrSettings->m_curState)->SendChannelStat423();
+                    if (g_gameReg->m_curState->Update() == 0x11) {
+                        ((CNetMgr*)g_gameReg->m_curState)->SendChannelStat423();
                     }
                     ApplyGameOptions();
                     EndDialog(hDlg, 0);
                     return TRUE;
                 case 1: { // IDOK: commit
-                    if (g_mgrSettings->m_curState->Update() == 0x11) {
-                        ((CNetMgr*)g_mgrSettings->m_curState)->SendChannelStat423();
+                    if (g_gameReg->m_curState->Update() == 0x11) {
+                        ((CNetMgr*)g_gameReg->m_curState)->SendChannelStat423();
                     }
                     ReadMenuOptionsDialog(hDlg);
                     EndDialog(hDlg, 1);
@@ -201,10 +201,10 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                         w = 0x280;
                         h = 0x1e0;
                     }
-                    g_mgrSettings->m_savedModeW = w;
-                    g_mgrSettings->m_savedModeH = h;
-                    if (g_mgrSettings->IsInPlayState()) {
-                        g_mgrSettings->CheckSavedMode();
+                    g_gameReg->m_savedModeW = w;
+                    g_gameReg->m_savedModeH = h;
+                    if (((CGruntzMgr*)g_gameReg)->IsInPlayState()) {
+                        ((CGruntzMgr*)g_gameReg)->CheckSavedMode();
                     }
                     return TRUE;
                 }
@@ -243,9 +243,9 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
             g_optHwndCk7 = GetDlgItem(hDlg, 0x470);
             g_optHwndCk8 = GetDlgItem(hDlg, 0x476);
 
-            if (g_mgrSettings->m_curState->Update() != 3) {
-                if (g_mgrSettings->m_curState->Update() == 0x11) {
-                    ((CNetMgr*)g_mgrSettings->m_curState)->SendChannelStat422();
+            if (g_gameReg->m_curState->Update() != 3) {
+                if (g_gameReg->m_curState->Update() == 0x11) {
+                    ((CNetMgr*)g_gameReg->m_curState)->SendChannelStat422();
                 } else {
                     EnableWindow(g_optHwndEasy, g_cdPromptResult == 0);
                 }
@@ -264,7 +264,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 EnableWindow(g_optHwndVoice, 0);
                 EnableWindow(g_optHwndCk8, 0);
             }
-            if (g_optLockSpeech != 0 || g_mgrSettings->m_sound->m_enabled == 0) {
+            if (g_optLockSpeech != 0 || ((CGruntzMgr*)g_gameReg)->m_sound->m_enabled == 0) {
                 EnableWindow(g_optHwndSpeech, 0);
                 EnableWindow(g_optHwndCk6, 0);
             }
@@ -282,48 +282,48 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
 // LoadVideoResolutionConfig. A free __cdecl function (no `this`); bails if no manager.
 RVA(0x00036860, 0x16f)
 void LoadGameOptionsToDialog(HWND hDlg) {
-    if (g_mgrSettings == 0) {
+    if (g_gameReg == 0) {
         return;
     }
-    g_opt_22bd70 = g_mgrSettings->m_isEasyMode;
-    g_opt_22bd6c = g_mgrSettings->m_inputFlag;
-    g_opt_22bd84 = g_mgrSettings->m_soundEnabled;
-    g_opt_22bdc4 = g_mgrSettings->m_inputStateVal;
-    g_opt_22bdd4 = g_mgrSettings->m_isVoiceEnabled;
-    g_opt_22bdcc = g_mgrSettings->m_sound->GetXMidiVolume();
-    g_opt_22bdd0 = g_mgrSettings->m_musicEnabled;
-    g_opt_22bd68 = g_mgrSettings->m_scrollSpeed;
-    g_opt_22bd64 = g_mgrSettings->m_musicEnabled;
+    g_opt_22bd70 = g_gameReg->m_isEasyMode;
+    g_opt_22bd6c = g_gameReg->m_inputFlag;
+    g_opt_22bd84 = g_gameReg->m_soundEnabled;
+    g_opt_22bdc4 = g_gameReg->m_inputStateVal;
+    g_opt_22bdd4 = g_gameReg->m_isVoiceEnabled;
+    g_opt_22bdcc = ((CGruntzMgr*)g_gameReg)->m_sound->GetXMidiVolume();
+    g_opt_22bdd0 = g_gameReg->m_14;
+    g_opt_22bd68 = g_gameReg->m_scrollSpeed;
+    g_opt_22bd64 = g_gameReg->m_14;
     g_opt_22bdc8 = GetResolutionCode();
     g_videoResolutionMode = GetResolutionCode();
 
-    CheckDlgButton(hDlg, 0x455, g_mgrSettings->m_isEasyMode);
+    CheckDlgButton(hDlg, 0x455, g_gameReg->m_isEasyMode);
     LoadVideoResolutionConfig(hDlg, 0x52c, g_videoResolutionMode);
-    CheckDlgButton(hDlg, 0x46d, g_mgrSettings->m_soundEnabled);
+    CheckDlgButton(hDlg, 0x46d, g_gameReg->m_soundEnabled);
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
         hDlg,
         0x470,
-        g_mgrSettings->m_inputFlag,
+        g_gameReg->m_inputFlag,
         0x50
     );
-    CheckDlgButton(hDlg, 0x475, g_mgrSettings->m_isVoiceEnabled);
+    CheckDlgButton(hDlg, 0x475, g_gameReg->m_isVoiceEnabled);
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
         hDlg,
         0x476,
-        g_mgrSettings->m_inputStateVal,
+        g_gameReg->m_inputStateVal,
         0x50
     );
-    CheckDlgButton(hDlg, 0x471, g_mgrSettings->m_musicEnabled);
+    CheckDlgButton(hDlg, 0x471, g_gameReg->m_14);
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
         hDlg,
         0x472,
-        g_mgrSettings->m_sound->GetXMidiVolume(),
+        ((CGruntzMgr*)g_gameReg)->m_sound->GetXMidiVolume(),
         0x64
     );
     ApiCallerStubs::winapi_0371e0_GetDlgItem_SetScrollInfo(
         hDlg,
         0x478,
-        g_mgrSettings->m_scrollSpeed,
+        g_gameReg->m_scrollSpeed,
         0x64
     );
 }
@@ -345,44 +345,45 @@ void LoadGameOptionsToDialog(HWND hDlg) {
 // coin-flip). No real code divergence; no source lever flips either.
 RVA(0x00036a30, 0x14e)
 void ReadMenuOptionsDialog(HWND hDlg) {
-    if (g_mgrSettings == 0) {
+    if (g_gameReg == 0) {
         return;
     }
-    g_mgrSettings->m_isEasyMode = IsDlgButtonChecked(hDlg, 0x455);
+    g_gameReg->m_isEasyMode = IsDlgButtonChecked(hDlg, 0x455);
     i32 res = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x52c);
     if (res >= 0 && res <= 100) {
         g_videoResolutionMode = res;
     }
     if (g_optLockAll == 0) {
         if (g_optLockAudio == 0) {
-            g_mgrSettings->SetRunState(IsDlgButtonChecked(hDlg, 0x46d));
+            g_gameReg->SetRunState(IsDlgButtonChecked(hDlg, 0x46d));
             i32 mv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x470);
             if (mv >= 0 && mv <= 100) {
-                g_mgrSettings->StoreInputFlag(mv);
+                g_gameReg->StoreInputFlag(mv);
             }
-            g_mgrSettings->m_isVoiceEnabled = IsDlgButtonChecked(hDlg, 0x475);
+            g_gameReg->m_isVoiceEnabled = IsDlgButtonChecked(hDlg, 0x475);
             i32 sv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x476);
             if (sv >= 0 && sv <= 100) {
-                g_mgrSettings->StoreInputState(sv);
+                g_gameReg->StoreInputState(sv);
             }
         }
-        if (g_optLockAll == 0 && g_optLockSpeech == 0 && g_mgrSettings->m_sound->m_enabled != 0) {
-            g_mgrSettings->SetSoundLevelState(IsDlgButtonChecked(hDlg, 0x471));
+        if (g_optLockAll == 0 && g_optLockSpeech == 0
+            && ((CGruntzMgr*)g_gameReg)->m_sound->m_enabled != 0) {
+            g_gameReg->SetSoundLevelState(IsDlgButtonChecked(hDlg, 0x471));
             i32 pv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x472);
             if (pv >= 0 && pv <= 100) {
-                g_mgrSettings->m_sound->SetXMidiVolume(pv);
+                ((CGruntzMgr*)g_gameReg)->m_sound->SetXMidiVolume(pv);
             }
         }
     }
     i32 qv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x478);
     if (qv >= 0 && qv <= 100) {
-        g_mgrSettings->m_scrollSpeed = qv;
+        g_gameReg->m_scrollSpeed = qv;
     }
 }
 
 // ===========================================================================
 // CPlay::ApplyGameOptions (0x036be0, dossier seam: play -> this TU) - push the
-// current staged option values into the game manager (*g_64556c). Mirrors the
+// current staged option values into the game manager (*g_gameReg). Mirrors the
 // video-resolution mode global, stamps the easy/voice/scroll manager words, and -
 // unless the runtime lock gates say otherwise - forwards the input flag/state
 // options and (when the sound object's m_enabled gate is live) commits the music
@@ -398,39 +399,40 @@ void ReadMenuOptionsDialog(HWND hDlg) {
 // regs + the top videomode/lock-load schedule. See docs/patterns/zero-register-pinning.md.
 RVA(0x00036be0, 0xd3)
 void CPlay::ApplyGameOptions() {
-    if (g_mgrSettings == 0) {
+    if (g_gameReg == 0) {
         return;
     }
-    g_mgrSettings->m_isEasyMode = g_opt_22bd70;
+    g_gameReg->m_isEasyMode = g_opt_22bd70;
     g_videoResolutionMode = g_opt_22bdc8;
     if (g_optLockAll == 0) {
         if (g_optLockAudio == 0) {
-            g_mgrSettings->SetRunState(g_opt_22bd84);
-            g_mgrSettings->StoreInputFlag(g_opt_22bd6c);
-            g_mgrSettings->m_isVoiceEnabled = g_opt_22bdd4;
-            g_mgrSettings->StoreInputState(g_opt_22bdc4);
+            g_gameReg->SetRunState(g_opt_22bd84);
+            g_gameReg->StoreInputFlag(g_opt_22bd6c);
+            g_gameReg->m_isVoiceEnabled = g_opt_22bdd4;
+            g_gameReg->StoreInputState(g_opt_22bdc4);
         }
-        if (g_optLockAll == 0 && g_optLockSpeech == 0 && g_mgrSettings->m_sound->m_enabled != 0) {
-            g_mgrSettings->SetSoundLevelState(g_opt_22bdd0);
-            g_mgrSettings->m_sound->SetXMidiVolume(g_opt_22bdcc);
+        if (g_optLockAll == 0 && g_optLockSpeech == 0
+            && ((CGruntzMgr*)g_gameReg)->m_sound->m_enabled != 0) {
+            g_gameReg->SetSoundLevelState(g_opt_22bdd0);
+            ((CGruntzMgr*)g_gameReg)->m_sound->SetXMidiVolume(g_opt_22bdcc);
         }
     }
-    g_mgrSettings->m_scrollSpeed = g_opt_22bd68;
+    g_gameReg->m_scrollSpeed = g_opt_22bd68;
 }
 
 // The four per-checkbox WM_COMMAND handlers of the same options dialog: each
 // mirrors one checkbox into the CGruntzMgr settings singleton and enables the
 // paired slider/control. Free __cdecl(hWnd); no-op when the manager is not live.
 // SAME control IDs + commit set as ReadMenuOptionsDialog above (the reader's
-// per-control split-out). g_mgrSettings loads reloc-mask; the commit calls
+// per-control split-out). g_gameReg loads reloc-mask; the commit calls
 // (SetRunState/SetSoundLevelState) go through the thunks 0x492340/0x4923b0.
 
 // 0x36d00: music-enable checkbox (0x46d) -> SetRunState, enable slider 0x470.
 RVA(0x00036d00, 0x40)
 void OnToggleMusicOption(HWND hWnd) {
-    if (g_mgrSettings) {
+    if (g_gameReg) {
         i32 state = IsDlgButtonChecked(hWnd, 0x46d);
-        g_mgrSettings->SetRunState(state);
+        g_gameReg->SetRunState(state);
         EnableWindow(GetDlgItem(hWnd, 0x470), state);
     }
 }
@@ -438,9 +440,9 @@ void OnToggleMusicOption(HWND hWnd) {
 // 0x36d50: voice-enable checkbox (0x475) -> m_isVoiceEnabled, enable ctrl 0x476.
 RVA(0x00036d50, 0x3c)
 void OnToggleVoiceOption(HWND hWnd) {
-    if (g_mgrSettings) {
+    if (g_gameReg) {
         i32 checked = IsDlgButtonChecked(hWnd, 0x475);
-        g_mgrSettings->m_isVoiceEnabled = checked;
+        g_gameReg->m_isVoiceEnabled = checked;
         EnableWindow(GetDlgItem(hWnd, 0x476), checked);
     }
 }
@@ -448,9 +450,9 @@ void OnToggleVoiceOption(HWND hWnd) {
 // 0x36da0: speech-enable checkbox (0x471) -> SetSoundLevelState, enable ctrl 0x472.
 RVA(0x00036da0, 0x40)
 void OnToggleSpeechOption(HWND hWnd) {
-    if (g_mgrSettings) {
+    if (g_gameReg) {
         i32 state = IsDlgButtonChecked(hWnd, 0x471);
-        g_mgrSettings->SetSoundLevelState(state);
+        g_gameReg->SetSoundLevelState(state);
         EnableWindow(GetDlgItem(hWnd, 0x472), state);
     }
 }
@@ -458,8 +460,8 @@ void OnToggleSpeechOption(HWND hWnd) {
 // 0x36e10: easy-mode checkbox (0x455) -> m_isEasyMode.
 RVA(0x00036e10, 0x26)
 void OnToggleEasyModeOption(HWND hWnd) {
-    if (g_mgrSettings) {
-        g_mgrSettings->m_isEasyMode = IsDlgButtonChecked(hWnd, 0x455);
+    if (g_gameReg) {
+        g_gameReg->m_isEasyMode = IsDlgButtonChecked(hWnd, 0x455);
     }
 }
 
@@ -663,19 +665,19 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
     si.nPos = newpos;
     SetScrollInfo(hCtrl, SB_CTL, &si, TRUE);
     if (hCtrl == GetDlgItem(hDlg, 0x472)) {
-        g_mgrSettings->m_sound->SetXMidiVolume(newpos);
+        ((CGruntzMgr*)g_gameReg)->m_sound->SetXMidiVolume(newpos);
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x478)) {
-        g_mgrSettings->m_scrollSpeed = newpos;
+        g_gameReg->m_scrollSpeed = newpos;
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x476)) {
-        g_mgrSettings->StoreInputState(newpos);
+        g_gameReg->StoreInputState(newpos);
         if (code == 5) {
             return;
         }
-        CSndHost* host = g_mgrSettings->m_world->m_28;
+        CSndHost* host = g_gameReg->m_world->m_28;
         if (host->m_emitGate) {
             return;
         }
@@ -695,11 +697,11 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         return;
     }
     if (hCtrl == GetDlgItem(hDlg, 0x470)) {
-        g_mgrSettings->StoreInputFlag(newpos);
+        g_gameReg->StoreInputFlag(newpos);
         if (code == 5) {
             return;
         }
-        CSndHost* host = g_mgrSettings->m_world->m_28;
+        CSndHost* host = g_gameReg->m_world->m_28;
         if (host->m_emitGate) {
             return;
         }
@@ -754,12 +756,12 @@ BOOL CALLBACK VideoOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPa
 // edi/esi assignment is not source-steerable.
 RVA(0x00037870, 0x3c)
 void DialogInit37870(HWND hDlg) {
-    if (g_mgrSettings == 0) {
+    if (g_gameReg == 0) {
         return;
     }
     PFN_CheckDlgButton fn = p_CheckDlgButton; // retail caches the import ptr in edi
-    fn(hDlg, 0x46f, g_mgrSettings->m_isHighDetail);
-    fn(hDlg, 0x4d5, g_mgrSettings->m_isEffectsEnabled);
+    fn(hDlg, 0x46f, g_gameReg->m_isHighDetail);
+    fn(hDlg, 0x4d5, g_gameReg->m_isEffectsEnabled);
 }
 
 // 0x378c0: SaveVideoCheckboxes(hDlg) - latch the two video option checkboxes
@@ -770,10 +772,10 @@ void DialogInit37870(HWND hDlg) {
 // resolution-config pair; logic + offsets byte-exact.
 RVA(0x000378c0, 0x40)
 void SaveVideoCheckboxes(HWND hDlg) {
-    if (g_mgrSettings == 0) {
+    if (g_gameReg == 0) {
         return;
     }
-    g_mgrSettings->m_isHighDetail = IsDlgButtonChecked(hDlg, 0x46f);
-    g_mgrSettings->m_isEffectsEnabled = IsDlgButtonChecked(hDlg, 0x4d5);
+    g_gameReg->m_isHighDetail = IsDlgButtonChecked(hDlg, 0x46f);
+    g_gameReg->m_isEffectsEnabled = IsDlgButtonChecked(hDlg, 0x4d5);
 }
 SIZE_UNKNOWN(CSliderCtrl);

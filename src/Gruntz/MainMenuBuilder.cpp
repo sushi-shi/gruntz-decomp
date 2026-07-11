@@ -138,7 +138,7 @@ struct MenuProgress {
 // The canonical CGameRegistry view of the singleton (*0x24556c); its +0x58 host
 // (MenuProgress*) is cast locally at the deref sites.
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // The multiplayer-availability gate (DAT_006455ec): nonzero disables the
 // multiplayer/network-gated items.

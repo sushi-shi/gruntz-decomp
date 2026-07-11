@@ -21,6 +21,7 @@
 #include <rva.h>
 
 #include <Dsndmgr/DirectSoundMgr.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 
 // left == AMBIENT_BOX_UNBOUNDED in either box means "no box / always in range":
 // the listener test for that box is skipped and the source is treated as audible
@@ -48,7 +49,6 @@ struct AmbientBox {
 // <Gruntz/InputState.h> - the same object CRandomAmbientSound taps).
 // ---------------------------------------------------------------------------
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
 // CAmbientSound : CUserBase (sizeof 0x40, vftable 0x5e710c). Real polymorphic:

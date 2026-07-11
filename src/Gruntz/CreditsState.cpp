@@ -6,22 +6,22 @@
 // The ~CCreditsState `??1` (with the CState ctor) is the class's vtable +
 // inline-virtual (Update) emission anchor - it stays in this TU. Names are
 // placeholders; only offsets + code bytes are load-bearing.
-#include <Bute/SymParser.h>               // CSymParser::ResolvePath (LoadCreditz / InitAttractTitle)
-#include <Bute/SymTab.h>                  // CSymTab Insert/FindSub/ResolvePath (LoadCreditz / SetupTitle)
-#include <Bute/ButeMgr.h>                 // CButeMgr GetIntDef (InitAttractTitle brightness)
-#include <Io/MoviePlayer.h>              // CMoviePlayer (~/CloseSmacker - ReleaseResources / StepVideo)
-#include <Gruntz/BankMgr.h>              // CResSource (InitAttractTitle m_2c state store)
-#include <Gruntz/ParseSource.h>          // CParseSource::BeginParse (Creditz IsLoaded probe)
+#include <Bute/SymParser.h>     // CSymParser::ResolvePath (LoadCreditz / InitAttractTitle)
+#include <Bute/SymTab.h>        // CSymTab Insert/FindSub/ResolvePath (LoadCreditz / SetupTitle)
+#include <Bute/ButeMgr.h>       // CButeMgr GetIntDef (InitAttractTitle brightness)
+#include <Io/MoviePlayer.h>     // CMoviePlayer (~/CloseSmacker - ReleaseResources / StepVideo)
+#include <Gruntz/BankMgr.h>     // CResSource (InitAttractTitle m_2c state store)
+#include <Gruntz/ParseSource.h> // CParseSource::BeginParse (Creditz IsLoaded probe)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ReleaseResources / LoadCreditz keys)
-#include <DDrawMgr/DDrawSubMgrPages.h>   // CDDrawSubMgrPages (InitAttractTitle / LoadCreditz gates)
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (InitAttractTitle / LoadCreditz gates)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (was GameMode.cpp local view)
-#include <DDrawMgr/DDSurface.h>          // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
-#include <Gruntz/GameMode.h>             // CCreditsState : CState + CGMEntityList/CGMOwner/CGMSoundEntry
-#include <Rez/RezMgr.h>                  // RezFree (ReleaseResources video-handle teardown)
-#include <Win32.h>                       // windows.h base types (ddraw.h needs them first)
-#include <ddraw.h>                       // real IDirectDrawSurface (credits-scroll DC + Render input surface)
+#include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
+#include <Gruntz/GameMode.h> // CCreditsState : CState + CGMEntityList/CGMOwner/CGMSoundEntry
+#include <Rez/RezMgr.h>      // RezFree (ReleaseResources video-handle teardown)
+#include <Win32.h>           // windows.h base types (ddraw.h needs them first)
+#include <ddraw.h>           // real IDirectDrawSurface (credits-scroll DC + Render input surface)
 #include <rva.h>
-#include <stdio.h>                       // sprintf (InitAttractTitle STATEZ_ATTRACT/TITLE%d keys)
+#include <stdio.h> // sprintf (InitAttractTitle STATEZ_ATTRACT/TITLE%d keys)
 // Real MFC CRgn/CGdiObject for the credits clip region (CreditsScrollSelf::m_1e8).
 // GameMode.h pulled <Mfc.h>->afx.h (defines _AFX_ENABLE_INLINES); skip afxwin*.inl for
 // the clang label step only (implicit-int CMenu::op==); wine cl keeps the inlines.
@@ -197,7 +197,7 @@ struct CButeCfg {};
 DATA(0x002453d8)
 extern CButeCfg g_buteCfg;
 extern "C" i32 g_645534;
-// g_mgrSettings (*0x24556c) viewed for its +0x80 attract frame counter (InitAttractTitle
+// g_gameReg (*0x24556c) viewed for its +0x80 attract frame counter (InitAttractTitle
 // rotates the TITLE index off it). Reloc-masked; the 0x24556c canonical-type unification
 // is a separate worklist item.
 SIZE_UNKNOWN(CCreditzAttractReg);
@@ -205,7 +205,7 @@ struct CCreditzAttractReg {
     char m_pad00[0x80];
     i32 m_80; // +0x80  attract frame counter (title rotation source)
 };
-extern "C" CCreditzAttractReg* g_mgrSettings;
+extern "C" CCreditzAttractReg* g_gameReg;
 
 // StepVideo draw views: the credits draw chain (m_c->m_4) + the Smacker frame step.
 // The Smacker frame-step wrapper (FUN_0057c8e0): __stdcall(handle, frame); ret nonzero
@@ -523,7 +523,7 @@ i32 CCreditsState::InitAttractTitle() {
     }
     char stateName[0x20];
     char titleName[0x20];
-    i32 idx = g_mgrSettings->m_80 % g_645534 + 1;
+    i32 idx = g_gameReg->m_80 % g_645534 + 1;
     sprintf(stateName, "STATEZ_ATTRACT");
     sprintf(titleName, "TITLE%d", idx);
     void* saved = (void*)m_2c;

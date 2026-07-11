@@ -82,7 +82,6 @@ struct CGruntEntry {
 // ---------------------------------------------------------------------------
 
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_mgrSettings; // canonical _g_mgrSettings @ VA 0x64556c
 
 // ---------------------------------------------------------------------------
 // A bound-object sub-object on the +0x38 game object: at +0x1a0 sits a helper
@@ -101,7 +100,8 @@ extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 // the RegisterActs id->entry resolve uses.
 #include <Bute/ButeMgr.h>
 #include <Gruntz/ActNameRegistry.h>
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
+extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 
 // ---------------------------------------------------------------------------
 // CIndicatorActReg - the per-class activation-coordinate registry singleton each

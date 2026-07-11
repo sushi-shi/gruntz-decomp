@@ -3,7 +3,7 @@
 // tile coordinate (edi=x, ebp=y) and an action descriptor, it dispatches on the
 // tile's terrain-action type and registers / resolves the matching sprite,
 // particle, lighting or puddle asset set in the game image registry
-// (*g_64556c). It is a /GX EH-framed routine (a CString diagnostic temp at
+// (*g_gameReg). It is a /GX EH-framed routine (a CString diagnostic temp at
 // [esp+0x74] gives it the exception frame) with three nested jump-table switches
 // over the action-type id.
 //
@@ -16,7 +16,7 @@
 // tile-action loader. Reconstructed as an EH unit (the CString temp).
 //
 // Structure: it first resolves the tile cell from the grid (the [esi+0x22c]
-// level / [g_64556c+0x2c] map chain), reads the cell's object id, then runs the
+// level / [g_gameReg+0x2c] map chain), reads the cell's object id, then runs the
 // outer action switch ([esp+0x84]-3, range 0..0xf -> jump table 0x4771bc) whose
 // arms (DIRT, GIANTROCK, ROCKBREAK, WATER, HIDDENITEM-lighting, TOY, PUDDLE)
 // each look up a GAME_*/LEVEL_* namespace pair in the registry hashtable
@@ -61,7 +61,6 @@
 // ---------------------------------------------------------------------------
 // The game image registry singleton (the object at *0x64556c; reloc-masked DIR32).
 // ---------------------------------------------------------------------------
-extern void* g_64556c;
 
 #define PTR(p, off) (*(void**)((char*)(p) + (off)))
 
@@ -105,7 +104,7 @@ i32 CTerrainTileLoader::Load(
     CString diag; // the "No giant rock logic found" temp - forces the /GX EH frame
 
     void* level = PTR(self, 0x22c);
-    void* map = PTR(g_64556c, 0x2c);
+    void* map = PTR(g_gameReg, 0x2c);
     void* grid = PTR(level, 0x24);
     CViewport* g = *(CViewport**)((char*)grid + 0x5c);
 
@@ -146,7 +145,7 @@ i32 CTerrainTileLoader::Load(
                 POINT pt;
                 pt.x = px;
                 pt.y = py;
-                if (PtInRect((const RECT*)((char*)g_64556c + 0x13c), pt)) {
+                if (PtInRect((const RECT*)((char*)g_gameReg + 0x13c), pt)) {
                     CGameObject* set = ((CSpriteFactory*)PTR(level, 0x8))
                                            ->CreateSprite(0, px, py, 0xcf84f, "Particlez", 0x40003);
                     if (set != 0) {

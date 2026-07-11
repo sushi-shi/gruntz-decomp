@@ -15,6 +15,7 @@
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
 #include <Ints.h>
 #include <rva.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 
 // The registry leaf reached as g_gameReg->m_world->m_10: a CDDrawWorkerRegistry with
 // the name map at +0x10 (read path) and the reverse name+index probe (write path).
@@ -44,7 +45,6 @@ struct CMgrActiveHolder {
     CDDrawWorkerRegistry* m_10; // +0x10
 };
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
 
 // Per-serialize round counter the archive bumps.
 DATA(0x00229ad0)

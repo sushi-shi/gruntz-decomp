@@ -33,7 +33,7 @@
 // m_68. One TU-wide decl (the CSideTabGameReg view from <Gruntz/SBI_SideTab.h>;
 // the builders' namespace-scoped CGameRegistry decl below is its own symbol).
 DATA(0x0024556c)
-extern CSideTabGameReg* g_gameReg;
+extern "C" CSideTabGameReg* g_gameReg;
 
 namespace StatusBarTabBuilders {
 
@@ -44,7 +44,9 @@ namespace StatusBarTabBuilders {
     // The game registry / settings singleton (*0x24556c) - the canonical
     // CGameRegistry view. The namespace owner (+0x30 -> CSbOwner), sprite-ref table
     // (+0x74 -> CSpriteRefTable) and per-world slot array (+0x138, stride 0x238 ->
-    // CSbWorldSlot) are cast locally at the deref sites.
+    // CSbWorldSlot) are cast locally at the deref sites. C++-namespaced (its OWN symbol,
+    // distinct from the file-scope extern "C" _g_gameReg above) so the two typed views of
+    // *0x24556c coexist in one TU without an extern "C" type clash (clang -emit-llvm).
     extern CGameRegistry* g_gameReg;
     extern i32 g_644c54; // the current world index (canonical DATA(0x00244c54) in sbi_rectonly)
 

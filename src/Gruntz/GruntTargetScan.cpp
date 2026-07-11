@@ -29,7 +29,7 @@
 #include <rva.h>
 #include <Gruntz/ScanGrid.h>
 #include <Gruntz/GruntSpawnConfig.h> // canonical CGruntSpawnConfig (SpawnVoiceDriver)
-#include <stdlib.h> // engine rand (0x11fee0)
+#include <stdlib.h>                  // engine rand (0x11fee0)
 
 #define F(base, o) (*(i32*)((char*)(base) + (o)))
 #define P(base, o) (*(char**)((char*)(base) + (o)))
@@ -142,8 +142,8 @@ struct CScanReg {
     char m_pad6c[0x70 - 0x6c];
     CScanGrid* m_tileGrid; // +0x70 the board grid (dims)
 };
-extern "C" CScanReg* g_mgrSettings; // _g_mgrSettings @0x64556c
-extern "C" u32 g_clock;             // _g_645588 @0x645588 running game clock
+extern "C" CScanReg* g_gameReg; // _g_mgrSettings @0x64556c
+extern "C" u32 g_clock;         // _g_645588 @0x645588 running game clock
 
 // __cdecl board rect predicate (0x401127): point-in-board-rect.
 extern "C" i32 BoardTest(char* board, i32 x, i32 y); // 0x401127
@@ -178,7 +178,7 @@ i32 CGruntScan::ScanNearestTarget() {
         if (row == ownerHi) {
             continue;
         }
-        CScanTileMgr* board = g_mgrSettings->m_68;
+        CScanTileMgr* board = g_gameReg->m_68;
         for (i32 col = 0; col < 15; col++) {
             CGruntScan* cand = board->m_grid[row][col];
             if (cand != 0 && F(cand, 0x1fc) != 0 && F(cand, 0x258) != 0x36) {
@@ -338,7 +338,7 @@ i32 CGruntScan::ScanNearestTarget() {
             F(this, 0x2f4) = F(best, 0x1f0);
             F(this, 0x2d4) = 1;
             {
-                CScanReg* mgr = g_mgrSettings;
+                CScanReg* mgr = g_gameReg;
                 if (BoardTest(
                         mgr->m_world->m_24->m_5c + 0x40,
                         F(P(this, 0x10), 0x5c),
@@ -388,7 +388,7 @@ i32 CGruntScan::ScanNearestTarget() {
                     if (spanY != 0) {
                         baseRow += rand() % spanY;
                     }
-                    CScanGrid* grid = g_mgrSettings->m_tileGrid;
+                    CScanGrid* grid = g_gameReg->m_tileGrid;
                     if ((u32)baseCol < (u32)grid->m_c && (u32)baseRow < (u32)grid->m_10) {
                         this->ProbeMove(baseCol, baseRow, 0, F(this, 0x248), 1, 0);
                     }

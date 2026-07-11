@@ -12,7 +12,7 @@
 // view: FillRecord folds reg->m_118 into each record. The DATA pin reloc-masks
 // the `mov ds:g_gameReg` load against the already-named symbol.
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // 0xfc9c0 - the (re)initialize-with-records entry: run Init() on this, then bind
 // the record array. (The object is raw-`operator new`d by the game manager and

@@ -12,7 +12,7 @@
 // ScanGrid.h/ScanRectInit.h coexist after it - see GruntPathScan.cpp). The local
 // `struct CGrunt` view + the local TileMgr/MapObj/NeighborNode/ObList views are gone:
 // this is a real CGrunt method; the grid/coord views are the shared CScanGrid family;
-// the manager singleton is g_pGameRegistry; the cue is m_cueSink->CueA; the visited
+// the manager singleton is g_gameReg; the cue is m_cueSink->CueA; the visited
 // nodes are the canonical m_320 GruntCoordNode chain. Placeholder field names; only
 // offsets + code bytes are load-bearing.
 #include <Gruntz/Grunt.h> // canonical CGrunt (pulls <Mfc.h> FIRST: RECT + IntersectRect)
@@ -30,7 +30,7 @@
 // The shared game-manager singleton (*0x64556c): the +0x60 cue sink, +0x30 world,
 // +0x68 reused command grid, +0x70 tile grid. (The WwdGameReg g_gameReg name is a
 // dual-view of the same address; the CGameRegistry facet is what this TU reaches.)
-extern CGameRegistry* g_pGameRegistry; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
+extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 
 // The type-name collection singleton (0x6bf650, aliased g_animNameResolver in
 // Grunt.h): Lookup(key)->node, node->m_0 = the type-name string. DATA-bound in
@@ -166,7 +166,7 @@ state2: {
     }
     i32 x = m_arrivalCol;
     i32 y = m_arrivalRow;
-    CScanGrid* grid = (CScanGrid*)g_pGameRegistry->m_tileGrid;
+    CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
     {
         RECT box;
         box.left = x - 4;
@@ -206,7 +206,7 @@ state2: {
         i32 pt = acc.m_4[sel];
         i32 px = (u32)pt >> 0x10;
         i32 py = pt & 0xffff;
-        CScanGrid* pl = (CScanGrid*)g_pGameRegistry->m_tileGrid;
+        CScanGrid* pl = (CScanGrid*)g_gameReg->m_tileGrid;
         i32 flag;
         if ((u32)px < (u32)pl->m_c && (u32)py < (u32)pl->m_10 && px < pl->m_c && py < pl->m_10) {
             flag = ((i32*)pl->m_8[py])[px * 8 - px];
@@ -223,7 +223,7 @@ state2: {
         acc.RemoveAt(sel, 1);
     }
 build_tail: {
-    CScanGrid* pl2 = (CScanGrid*)g_pGameRegistry->m_tileGrid;
+    CScanGrid* pl2 = (CScanGrid*)g_gameReg->m_tileGrid;
     GRID_BOUNDS(pl2);
     ((CByteArray*)&acc)->~CByteArray();
     goto common;
@@ -262,11 +262,10 @@ state0: {
     if (m_390 == 0) {
         goto common;
     }
-    if (GruntPointVisible(g_pGameRegistry->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)
-        == 0) {
+    if (GruntPointVisible(g_gameReg->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60) == 0) {
         goto s0_reset;
     }
-    g_pGameRegistry->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
+    g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
 s0_reset:
     m_390 = 0;
     goto common;
@@ -281,7 +280,7 @@ common: {
         GruntCoord* nc = head->m_next->m_coord;
         i32 fx = nc->m_x;
         i32 fy = nc->m_y;
-        CScanGrid* pl = (CScanGrid*)g_pGameRegistry->m_tileGrid;
+        CScanGrid* pl = (CScanGrid*)g_gameReg->m_tileGrid;
         i32 flag;
         if ((u32)fx < (u32)pl->m_c && (u32)fy < (u32)pl->m_10) {
             flag = ((i32*)pl->m_8[fy])[fx * 8 - fx];
@@ -293,7 +292,7 @@ common: {
                 RECYCLE_COORDS(m_320);
                 m_31c.RemoveAll();
             }
-            ((CGruntTileMgr*)g_pGameRegistry->m_cmdGrid)
+            ((CGruntTileMgr*)g_gameReg->m_cmdGrid)
                 ->CommitTileSlot2(m_tileOwnerHi, m_tileOwnerLo, bx * 32 + 16, by * 32 + 16);
             m_arrivalCol = bx;
             m_arrivalRow = by;
@@ -305,7 +304,7 @@ common: {
         return 1;
     }
     GruntCoord* p1 = m_320->m_coord;
-    CScanGrid* pl2 = (CScanGrid*)g_pGameRegistry->m_tileGrid;
+    CScanGrid* pl2 = (CScanGrid*)g_gameReg->m_tileGrid;
     i32 gx = p1->m_x;
     i32 gy = p1->m_y;
     i32 flag2;

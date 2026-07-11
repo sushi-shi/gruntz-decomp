@@ -32,7 +32,7 @@ struct CSpriteFactoryHolder; // +0x0c render/resource holder == CGameRegistry::m
 struct CBankMgr;             // +0x08 asset-bank manager (resolves a "GRUNTZ"/"GAME"/level bank)
 struct CResSource;           // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
 class CSymTab;               // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
-class CGruntzMgr;            // +0x04 owner back-ptr: the game-manager singleton (*g_64556c).
+class CGruntzMgr;            // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
                              // Forward-declared (MFC-free) so this widely-included header stays
                              // afx-neutral; GruntzMgr.h/GameRegistry.h complete the two views.
 
@@ -150,8 +150,8 @@ public:
     i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);
 
     // --- scalar members, at the offsets CState::CState pins ---
-    // +0x04  owner back-ptr == the game-manager singleton (*g_64556c). PROVEN one
-    // object: m_4->m_c is the SAME field as g_64556c->m_c (the active-selection gate),
+    // +0x04  owner back-ptr == the game-manager singleton (*g_gameReg). PROVEN one
+    // object: m_4->m_c is the SAME field as g_gameReg->m_c (the active-selection gate),
     // m_4->m_48 the same sound bank, m_4->m_8c..m_98 the same live video mode. The
     // gamemode/cplay TUs still downcast it to their local CGMOwner/CWorld facet views.
     CGruntzMgr* m_4;

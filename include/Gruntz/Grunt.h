@@ -181,13 +181,15 @@ struct CGruntHud {
 
 class CGruntCueSink; // defined below (the 5-arg on-screen cue receiver)
 
-// CGameRegistry - the shared global singleton (*g_pGameRegistry). The CGrunt
+// CGameRegistry - the shared global singleton (*g_gameReg). The CGrunt
 // resolvers below read the visible-bounds gate (m_134, m_13c..m_148) and fire
 // m_60->Cue.
 #include <Gruntz/GameRegistry.h>
 
-// The global manager pointer.
-extern CGameRegistry* g_pGameRegistry;
+// The global manager singleton (*0x24556c, extern "C" _g_gameReg) is declared
+// per-consumer with the view type that TU uses (WwdGameReg* in the grunt-movement
+// TUs, CGameRegistry* elsewhere) - see WwdGameReg.h. Not declared here so this
+// widely-included header does not force one view type on every consumer.
 
 // ===========================================================================
 // Animation-resolver cluster support (the 5 CGrunt::Resolve*Animation methods)
@@ -276,7 +278,7 @@ extern i32 g_movingSeed;
 extern "C" i32 GruntRand(); // stub
 
 // ---------------------------------------------------------------------------
-// The on-screen-cue receiver reached via g_pGameRegistry->m_cueSink (a __thiscall
+// The on-screen-cue receiver reached via g_gameReg->m_cueSink (a __thiscall
 // ret 0x14 = 5 stack args). The resolvers fire a 5-arg cue when the
 // grunt is on-screen (m_134 == 1 -> 4-way visible-bounds test) or unconditionally
 // otherwise. External/no-body (reloc-masked; reached via incremental-link thunk).
@@ -795,7 +797,7 @@ i32 GruntPointVisible(i32 px, i32 py, i32 cmp);
 i32 __stdcall GruntDropReady029b40(CGrunt* g);
 
 // The registry focused-grunt slot the arrival gate reads is CFocusSlot, the
-// canonical element of g_pGameRegistry->m_focusSlots[] (+0x150, stride 0x238),
+// canonical element of g_gameReg->m_focusSlots[] (+0x150, stride 0x238),
 // defined in <Gruntz/GameRegistry.h> (included above). The arrival path checks
 // its +0x14 gate.
 

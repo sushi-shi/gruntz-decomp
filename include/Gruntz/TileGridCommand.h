@@ -24,6 +24,7 @@
 #include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
 
 #include <Gruntz/TileTriggerContainer.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 
 // The running game clock (DAT_00645588); reloc-masked DIR32 datum.
 extern "C" u32 g_645588;
@@ -67,7 +68,6 @@ SIZE_UNKNOWN(TgcRegion);
 // The WwdGameReg singleton (g_gameReg, RVA 0x64556c); +0x30 is the active game
 // manager, +0x68 the rect-dirty helper, +0x70 the redraw helper.
 SIZE_UNKNOWN(CGameRegistry);
-extern CGameRegistry* g_gameReg;
 
 // The serialization stream is the shared WAP32 CSerialArchive (Read @ vtable +0x2c /
 // Write @ +0x30 - the store/transfer slot this cluster drives), now the one modeled

@@ -56,7 +56,7 @@ struct CRegTypeTable {
 // The game registry singleton (0x64556c). The delinker's canonical symbol is the
 // extern "C" _g_mgrSettings (the cplay unit owns it); reloc-masked DIR32.
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_mgrSettings;
+extern "C" CGameRegistry* g_gameReg;
 
 // The serialize sequence counter (0x629ad0, ?g_serialCounter@@3HA): bumped once
 // per string field read.
@@ -99,7 +99,7 @@ i32 CTriggerLoadRec::Deserialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    CGameRegistry* gr = g_mgrSettings;
+    CGameRegistry* gr = g_gameReg;
     if (gr == 0) {
         return 0;
     }
@@ -215,7 +215,7 @@ i32 CTriggerLoadRec::Deserialize(CSerialArchive* s) {
 // reader+registry idiom as CTriggerLoadRec but a different field layout: two raw
 // dwords, one plain name ref (m_8), one raw dword, five bounds-checked type-table
 // index refs (m_10..m_20), then two trailing raw dwords (m_48/m_4c). __thiscall,
-// ret 4. Note: unlike CTriggerLoadRec it does NOT null-check g_mgrSettings, only
+// ret 4. Note: unlike CTriggerLoadRec it does NOT null-check g_gameReg, only
 // the m_30 sub-registry.
 // ===========================================================================
 struct CEventLoadRec {
@@ -243,7 +243,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
-    CRegSub30* reg = (CRegSub30*)g_mgrSettings->m_world;
+    CRegSub30* reg = (CRegSub30*)g_gameReg->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -392,7 +392,7 @@ SIZE_UNKNOWN(C9cab0);
 // ===========================================================================
 // CGruntStateRec::Load (0x0ea990) - the dual-mode grunt-state record loader. A
 // __thiscall taking (reader, mode, a2, a3), ret 0x10. Bails (0) when the reader
-// or the registry sub-object (g_mgrSettings->m_world) is absent. Mode 7 loads the
+// or the registry sub-object (g_gameReg->m_world) is absent. Mode 7 loads the
 // fields as registry refs (the CEventLoadRec indexed-type-ref / name-ref idiom,
 // the reader's Read at vtable +0x2c); mode 4 stores them as nested sub-records (the
 // CArchiveLoadRec FillDefault + sub-reader idiom, Write at vtable +0x30). Either
@@ -440,7 +440,7 @@ i32 CGruntStateRec::Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     if (s == 0) {
         return 0;
     }
-    CRegSub30* reg = (CRegSub30*)g_mgrSettings->m_world;
+    CRegSub30* reg = (CRegSub30*)g_gameReg->m_world;
     if (reg == 0) {
         return 0;
     }
@@ -556,7 +556,7 @@ i32 CGruntStateRec::Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
 // ===========================================================================
 // CProjLoadRec::Load (0x0e0d40) - a CProjectile/CTimeBomb-family dual-mode record
 // loader. A __thiscall(reader, mode, a2, a3), ret 0x10, bailing (0) when the
-// registry sub-object (g_mgrSettings->m_world) is absent. Mode 7 = READ: a fixed run
+// registry sub-object (g_gameReg->m_world) is absent. Mode 7 = READ: a fixed run
 // of raw fields, a 7-entry name-ref loop (CMapStringToOb::Lookup @0x1b8438 through
 // reg->m_2c->m_10), a single CMapPtrToPtr::Lookup @0x1b8760 (through reg->m_8->m_48)
 // gated on the looked-up object's type code (virtual +0x20 == 5), then a g_freeList
@@ -578,7 +578,7 @@ struct CProjObjReg {
     CMapPtrToPtr m_48; // +0x48
 };
 
-// g_mgrSettings->m_world (the game registry's +0x30 sub-registry) viewed by this
+// g_gameReg->m_world (the game registry's +0x30 sub-registry) viewed by this
 // loader: the projectile-object map at +0x8 and the name leaf at +0x2c (the same
 // CDDrawSubMgrLeaf type CSerialObjRef resolves through). +0x8 is a CProjObjReg*
 // (the retail-correct type). Distinct object from CProjReg in ProjActRegistry.cpp.
@@ -672,7 +672,7 @@ struct CProjLoadRec {
 // source-steerable.
 RVA(0x000e0d40, 0x6c2)
 i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
-    CProjRegSub30* reg = (CProjRegSub30*)(void*)g_mgrSettings->m_world;
+    CProjRegSub30* reg = (CProjRegSub30*)(void*)g_gameReg->m_world;
     if (reg == 0) {
         return 0;
     }

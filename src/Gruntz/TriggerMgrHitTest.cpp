@@ -24,7 +24,8 @@
 #include <Gruntz/TileGrid.h> // canonical CTileGrid (FindGruntAt's packed owner grid)
 #include <Globals.h>
 
-#include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
+#include <Gruntz/TriggerMgrViews.h>  // the shared CTm* views + singleton externs
+extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton
 
 // 0x759e0: GetOriginXY - copy the cached origin pair (m_cellFlag[0x16],[0x17] ==
 // +0x174,+0x178) into the caller's out-slot and return it.
@@ -109,7 +110,7 @@ i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
 // ±7 box arithmetic spills to different slots than retail. Logic + offsets byte-exact.
 RVA(0x00075af0, 0x111)
 i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
-    CTileGrid* plane = g_tmGameReg->m_tileGrid;
+    CTileGrid* plane = g_gameReg->m_tileGrid;
     i32 ix = x >> 5;
     i32 iy = y >> 5;
     i32 attr;
@@ -189,10 +190,10 @@ CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* 
     for (i32 x = tcol - span->left - 1; (u32)x <= (u32)xEnd; x++) {
         i32 yEnd = span->bottom + trow + 1;
         for (i32 y = trow - span->top - 1; (u32)y <= (u32)yEnd; y++) {
-            if ((u32)x >= (u32)g_tmGameReg->m_tileGrid->m_c) {
+            if ((u32)x >= (u32)g_gameReg->m_tileGrid->m_c) {
                 continue;
             }
-            CTileGrid* grid = g_tmGameReg->m_tileGrid;
+            CTileGrid* grid = g_gameReg->m_tileGrid;
             if ((u32)y >= (u32)grid->m_10) {
                 continue;
             }

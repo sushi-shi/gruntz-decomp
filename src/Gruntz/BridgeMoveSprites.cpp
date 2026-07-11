@@ -31,8 +31,8 @@ struct BmGameReg {
     i32 m_144; // +0x144  rect x-hi
     i32 m_148; // +0x148  rect y-hi
 };
-extern "C" BmGameReg* g_mgrSettings; // _g_mgrSettings @0x64556c
-extern i32 g_sndCueTag;              // ?g_sndCueTag@@3HA @0x61ab24
+extern "C" BmGameReg* g_gameReg; // _g_mgrSettings @0x64556c
+extern i32 g_sndCueTag;          // ?g_sndCueTag@@3HA @0x61ab24
 
 class CPlayLevelLoad {
 public:
@@ -77,7 +77,7 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
         case 106:
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
-            r = g_mgrSettings;
+            r = g_gameReg;
             if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
                 set = r->m_30->m_28;
                 if (set->m_30 == 0) {
@@ -92,7 +92,7 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
         case 108:
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
-            r = g_mgrSettings;
+            r = g_gameReg;
             if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
                 set = r->m_30->m_28;
                 if (set->m_30 == 0) {
@@ -107,7 +107,7 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
         case 114:
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
-            r = g_mgrSettings;
+            r = g_gameReg;
             if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
                 r->m_30->m_28->RefreshAsset_114120("LEVEL_WATERBRIDGEMOVE");
             }
@@ -116,7 +116,7 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
         case 110:
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
-            r = g_mgrSettings;
+            r = g_gameReg;
             if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
                 r->m_30->m_28->RefreshAsset_114120("LEVEL_DEATHBRIDGEMOVE");
             }
@@ -125,7 +125,7 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
         case 116:
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
-            r = g_mgrSettings;
+            r = g_gameReg;
             if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
                 r->m_30->m_28->RefreshAsset_114120("LEVEL_DEATHBRIDGEMOVE");
             }
@@ -134,7 +134,7 @@ void CPlayLevelLoad::LoadBridgeMove(i32 type) {
         case 112:
             py = (m_c << 5) + 0x10;
             px = (m_8 << 5) + 0x10;
-            r = g_mgrSettings;
+            r = g_gameReg;
             if (px < r->m_144 && px >= r->m_13c && py < r->m_148 && py >= r->m_140) {
                 r->m_30->m_28->RefreshAsset_114120("LEVEL_CRUMBLE");
             }

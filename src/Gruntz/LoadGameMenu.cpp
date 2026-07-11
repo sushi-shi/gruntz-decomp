@@ -13,9 +13,9 @@
 #include <rva.h>
 #include <Win32.h>
 
-// The 0x24556c game-manager singleton (== SaveGameMenu's g_saveMenuMgr; DATA-bound
+// The 0x24556c game-manager singleton (== SaveGameMenu's g_gameReg; DATA-bound
 // there, extern here).
-extern CGruntzMgr* g_saveMenuMgr;
+extern "C" CGameRegistry* g_gameReg;
 // The last-queried slot handle (== SaveGameMenu's g_slotState; DATA-bound there).
 extern i32 g_slotState; // ?g_slotState@@3HA @0x64c864
 // The active GAME_LOAD dialog's CSaveGame sink, latched at WM_INITDIALOG.
@@ -40,7 +40,7 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
     switch (msg) {
         case WM_COMMAND: // 0x111
             if (wParam == 2 || wParam == 1) {
-                CPlay* obj = g_saveMenuMgr->PickPlayOrPausedState();
+                CPlay* obj = g_gameReg->PickPlayOrPausedState();
                 if (obj) {
                     obj->m_stepCountdown = 2;
                 }
@@ -54,7 +54,7 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
         default:
             return 0;
         case WM_INITDIALOG: { // 0x110
-            g_dlgLoadSink = (CSaveGame*)g_saveMenuMgr->m_saveSink;
+            g_dlgLoadSink = (CSaveGame*)g_gameReg->m_saveSink;
             DlgInit_2ee6(hDlg, g_dlgLoadSink);
             return 1;
         }
@@ -114,7 +114,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
         g_slotState = (i32)dlg->GetSlot(idx);
         if (g_slotState) {
             EnableWindow(hwnd, FALSE);
-            g_saveMenuMgr->RunModalDialog("GAME_INFO", (void*)LoadInfoDlgProc, 0);
+            g_gameReg->RunModalDialog("GAME_INFO", (void*)LoadInfoDlgProc, 0);
             EnableWindow(hwnd, TRUE);
         }
         return 0;
@@ -156,7 +156,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
         g_slotState = (i32)dlg->GetSlot(idx);
         if (g_slotState) {
             EnableWindow(hwnd, FALSE);
-            i32 r = g_saveMenuMgr->RunModalDialog("GAME_DELETE", (void*)LoadDeleteDlgProc, 0);
+            i32 r = g_gameReg->RunModalDialog("GAME_DELETE", (void*)LoadDeleteDlgProc, 0);
             EnableWindow(hwnd, TRUE);
             if (r) {
                 DlgInit_2ee6(hwnd, dlg);
@@ -204,8 +204,8 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
             i32 r = dlg->VerifySlot(slot);
             EnableWindow(hwnd, TRUE);
             if (r) {
-                g_saveMenuMgr->m_saveInfoRec = (SaveInfo*)slot;
-                PostMessageA(g_saveMenuMgr->m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
+                ((CGruntzMgr*)g_gameReg)->m_saveInfoRec = (SaveInfo*)slot;
+                PostMessageA(((CGruntzMgr*)g_gameReg)->m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
                 EndDialog(hwnd, 1);
             }
             return 1;

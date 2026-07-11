@@ -1,6 +1,6 @@
-// MgrListFind.cpp - a g_mgrSettings list scan (0xf0db0): walk the manager's
+// MgrListFind.cpp - a g_gameReg list scan (0xf0db0): walk the manager's
 // +0x68->+0x4 node list for a payload whose (m_5c==0, m_54, m_58) matches the two
-// query coordinates. Self-contained; g_mgrSettings is a reloc-masked DATA load.
+// query coordinates. Self-contained; g_gameReg is a reloc-masked DATA load.
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
 #include <rva.h>
@@ -28,9 +28,9 @@ struct MgrFindList {
 
 // The settings manager (only its +0x68 list sub-object is touched here).
 
-extern CGameRegistry* g_mgrSettings;
+extern "C" CGameRegistry* g_gameReg;
 DATA(0x0024556c)
-extern CGameRegistry* g_mgrSettings; // ?g_mgrSettings (VA 0x64556c)
+extern "C" CGameRegistry* g_gameReg; // ?g_gameReg (VA 0x64556c)
 
 // ---------------------------------------------------------------------------
 // 0xf0db0 (__cdecl) - true if a live (m_5c==0) node matches (a1,a2).
@@ -45,7 +45,7 @@ extern CGameRegistry* g_mgrSettings; // ?g_mgrSettings (VA 0x64556c)
 // source-steerable. Logic 100% correct; deferred.
 RVA(0x000f0db0, 0x48)
 i32 MgrListFind(i32 a1, i32 a2) {
-    MgrFindNode* node = ((MgrFindList*)g_mgrSettings->m_cmdGrid)->m_4;
+    MgrFindNode* node = ((MgrFindList*)g_gameReg->m_cmdGrid)->m_4;
     while (node) {
         MgrFindNode* cur = node;
         node = node->m_next;

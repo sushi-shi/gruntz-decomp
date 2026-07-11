@@ -19,7 +19,7 @@
 
 // The g_gameReg singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // ===========================================================================
 // CSBI_ImageSetAni::Init (0xe7980, vtable slot 13): seed the item from a config

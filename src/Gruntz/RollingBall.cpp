@@ -67,7 +67,7 @@ extern CRollingBallActReg g_rollingBallActReg; // 0x6461b0
 // ---------------------------------------------------------------------------
 // Shared singletons (named so their DIR32 datum reloc-masks).
 // ---------------------------------------------------------------------------
-extern void* g_64556c; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
+extern "C" void* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 // (g_buteMgr comes from <Bute/ButeMgr.h> via UserLogic.h; Update reaches it only
 //  through RbGetDwordDef, so no direct extern is needed here.)
 extern "C" i32 g_645588;    // DAT_00645588 @0x645588 (world clock ms)
@@ -162,7 +162,7 @@ struct CRbCtorObj {
     i32 m_1b4; // +0x1b4 cycle-geometry id
 };
 
-// The global game registry (WwdGameReg @0x64556c; g_64556c masks _g_mgrSettings).
+// The global game registry (WwdGameReg @0x64556c; g_gameReg masks _g_mgrSettings).
 // m_118 the has-window gate; m_134 the mode discriminator (the time-bonus gate).
 struct CRbReg {
     char m_pad00[0x118];
@@ -246,7 +246,7 @@ CRollingBall::CRollingBall(CGameObject* obj) : CUserLogic(obj) {
     if (time == 0) {
         time = g_buteMgr.GetDwordDef("Hazardz", "RollingBallTimePerTile", 1000);
     }
-    CRbReg* reg = (CRbReg*)g_64556c;
+    CRbReg* reg = (CRbReg*)g_gameReg;
     if (0 != reg->m_isEasyMode && reg->m_134 == 1 && o->m_124 != 1) {
         time += 1000;
     }
@@ -325,7 +325,7 @@ void CRollingBall::RegisterActs() {
 // x87 interpolation tail). Two binary-proven structural fixes landed the prologue
 // exactly (36.4%->38.0%): the m_38+0x1a0 sub-update is the real CAniAdvanceCursor::
 // Advance_15c360(g_6bf3bc) __thiscall (was a fake free-fn RbSubUpdate + a dead
-// g_6bf3bc load), and g_64556c is re-loaded per use (retail does not cache the game
+// g_6bf3bc load), and g_gameReg is re-loaded per use (retail does not cache the game
 // registry in a callee-saved reg - ~15 fresh ds:0x64556c loads). Residual is the
 // documented wall: MSVC5's constant-materialization (test eax,eax vs cmp [mem],ebx),
 // the +8B frame spill count, the EH-state numbering + the three nested jump-table
@@ -352,7 +352,7 @@ i32 CRollingBall::Update() {
             RbCacheFirst(PTR(self, 0x38), "LEVEL_ROLLINGBALL_EXPLOSION");
             I32(self, 0x40) = I32(PTR(self, 0x38), 0x1b4);
             RbApplyLookup(PTR(self, 0x38), "LEVEL_ROLLINGBALLEXPLOSION", 0);
-            void* map = PTR(g_64556c, 0x70);
+            void* map = PTR(g_gameReg, 0x70);
             i32 cx = I32(logic, 0x5c) >> 5;
             i32 cy = I32(logic, 0x60) >> 5;
             if ((u32)cx < (u32)I32(map, 0xc) && (u32)cy < (u32)I32(map, 0x10)) {
@@ -370,14 +370,14 @@ i32 CRollingBall::Update() {
         void* logic = PTR(self, 0x10);
         i32 cx = I32(logic, 0x5c);
         i32 cy = I32(logic, 0x60);
-        if (cx < I32(g_64556c, 0x144) && cx >= I32(g_64556c, 0x13c) && cy < I32(g_64556c, 0x148)
-            && cy >= I32(g_64556c, 0x140)) {
-            I32(PTR(g_64556c, 0x68), 0x3f8) = 1;
+        if (cx < I32(g_gameReg, 0x144) && cx >= I32(g_gameReg, 0x13c) && cy < I32(g_gameReg, 0x148)
+            && cy >= I32(g_gameReg, 0x140)) {
+            I32(PTR(g_gameReg, 0x68), 0x3f8) = 1;
         }
         void* logic2 = PTR(self, 0x10);
         i32 outA, outB;
         if (RbProbeRect(
-                PTR(g_64556c, 0x68),
+                PTR(g_gameReg, 0x68),
                 I32(logic2, 0x5c),
                 I32(logic2, 0x60),
                 (i32*)((char*)logic2 + 0x144),
@@ -385,7 +385,7 @@ i32 CRollingBall::Update() {
                 &outA,
                 0
             )) {
-            RbMarkRect(PTR(g_64556c, 0x68), outA, outB, 2, -1);
+            RbMarkRect(PTR(g_gameReg, 0x68), outA, outB, 2, -1);
         }
     }
 
@@ -394,9 +394,9 @@ i32 CRollingBall::Update() {
     if (I32(logic, 0x5c) == I32(self, 0x78) && I32(self, 0x7c) == I32(logic, 0x60)) {
         // arrived at the target cell: clear the cell, read its terrain id and
         // dispatch on the rolling-ball action.
-        RbClearCell(PTR(g_64556c, 0x68), I32(self, 0x7c), I32(self, 0x78), 0);
+        RbClearCell(PTR(g_gameReg, 0x68), I32(self, 0x7c), I32(self, 0x78), 0);
 
-        void* map = PTR(g_64556c, 0x70);
+        void* map = PTR(g_gameReg, 0x70);
         i32 cx = I32(self, 0x78) >> 5;
         i32 cy = I32(self, 0x7c) >> 5;
         i32 terrain;
@@ -412,7 +412,7 @@ i32 CRollingBall::Update() {
             CString fall;      // [esp+0x14]
             CString explosion; // [esp+0x10]
             // resolve the action id from the second grid plane.
-            void* m2 = PTR(g_64556c, 0x30);
+            void* m2 = PTR(g_gameReg, 0x30);
             void* lvl = PTR(m2, 0x24);
             i32 ax = I32(self, 0x7c) >> 5;
             i32 ay = I32(self, 0x78) >> 5;

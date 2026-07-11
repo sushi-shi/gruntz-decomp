@@ -7,13 +7,13 @@
 // CPlay::OnKeyCommand, CSBI_RectOnly::LoadBattlezItemConfig all call it on `this+0x2dc`);
 // an embedded sub-object whose concrete RTTI name is not yet recovered. Field NAMES are
 // placeholders (only offsets + code bytes are load-bearing).
-#include <Mfc.h>                  // RECT / Win32 SetRect (via the afx-controlled windows.h)
-#include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_curState / ReportError)
+#include <Mfc.h>                 // RECT / Win32 SetRect (via the afx-controlled windows.h)
+#include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_curState / ReportError)
 #include <rva.h>
 
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). DATA-bound in
 // GruntzMgr.cpp (many CGruntzMgr methods use it); declared-only here.
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 void __stdcall Prep_12fd(i32 mode); // 0x12fd (free __stdcall region-prep helper)
 // The live game-state sub-call (g_gameReg->m_curState->Sub3d55, 0x3d55) both

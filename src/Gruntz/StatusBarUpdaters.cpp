@@ -33,7 +33,7 @@ extern i32 g_61ab24; // DAT_0061ab24
 // notifier (+0x70) is the canonical CTileGrid (Notify facet), reached without a
 // cast, and the view-bounds rectangle scalars (+0x13c..+0x148) match directly.
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg; // the game-manager singleton
+extern "C" CGameRegistry* g_gameReg; // the game-manager singleton
 
 // ===========================================================================
 // EngineLabelBacklog::LoadSwitchDownSprite @0x110570

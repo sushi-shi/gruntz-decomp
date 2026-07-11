@@ -89,7 +89,7 @@ struct GmInner8 {
 // names the pointer _g_mgrSettings (extern "C"), matching the codebase convention
 // for 0x64556c.
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_mgrSettings;
+extern "C" CGameRegistry* g_gameReg;
 
 // The game-root-dir resolver (FUN_0011fc10) + the OpenFile(OF_EXIST) existence
 // probe (FUN_00004282) both dialogs' loaders funnel through (reloc-masked).
@@ -139,12 +139,12 @@ CString RunCustomWorldDialog(i32 id, CString* outSource) {
     g_pathStr.Empty();
     i32 v = id;
     if (id == 0) {
-        v = ((GmInner4*)g_mgrSettings->m_gameWnd)->m_4;
+        v = ((GmInner4*)g_gameReg->m_gameWnd)->m_4;
     }
     g_customWorldParent = (HWND)v;
-    g_dat62c268 = (i32)g_mgrSettings->m_world;
-    g_customWorldInst = (HINSTANCE)((GmInner8*)g_mgrSettings->m_owner)->m_c;
-    if (g_mgrSettings->RunModalDialog("CUSTOM_WORLD", (void*)CustomWorldDlgProc, 0) == 0) {
+    g_dat62c268 = (i32)g_gameReg->m_world;
+    g_customWorldInst = (HINSTANCE)((GmInner8*)g_gameReg->m_owner)->m_c;
+    if (g_gameReg->RunModalDialog("CUSTOM_WORLD", (void*)CustomWorldDlgProc, 0) == 0) {
         g_pathStr.Empty();
     }
     g_dat62c268 = 0;
@@ -231,11 +231,12 @@ namespace m4 {
     };
     extern "C" WalkOwner* GetWalkOwner1d3631(); // 0x001d3631
 
-    // The settings-manager singleton == *g_64556c (the real CGruntzMgr, the MFC view
-    // of the file-global g_mgrSettings above); IsBattlezMapFile takes the display
-    // name by value (callee destroys). C++-mangled here so the one C symbol keeps
-    // the single global-scope DATA binding.
-    extern CGruntzMgr* g_mgrSettings; // 0x0064556c
+    // The settings-manager singleton == *g_gameReg (the real CGruntzMgr, the MFC view
+    // of the file-global g_gameReg above); IsBattlezMapFile takes the display
+    // name by value (callee destroys). C++-namespaced here (its OWN symbol) so the one
+    // file-scope extern "C" _g_gameReg keeps the single global-scope DATA binding and the
+    // two typed views coexist without an extern "C" type clash (clang -emit-llvm).
+    extern CGruntzMgr* g_gameReg; // 0x0064556c
 
     // The custom-level glob + display-name format + "already loaded" strings.
     extern char g_customGlob[]; // 0x0060cf94
@@ -271,7 +272,7 @@ namespace m4 {
             do {
                 char disp[260];
                 sprintf(disp, g_nameFmt, fd.name);
-                if (!g_mgrSettings->IsBattlezMapFile(CString(disp))) {
+                if (!g_gameReg->IsBattlezMapFile(CString(disp))) {
                     i32 len = strlen(disp);
                     if (len > 4) {
                         disp[len - 4] = 0;
@@ -320,8 +321,7 @@ i32 FillLevelInfoDialog(HWND hDlg) {
     char num[0x20];
     WwdHeader info;
     BOOL(WINAPI * setText)(HWND, int, LPCSTR) = g_pSetDlgItemTextA;
-    if (((WwdWorldHolder*)g_mgrSettings->m_world)
-            ->m_24->IsValidWwd((const char*)g_pathStr, &info)) {
+    if (((WwdWorldHolder*)g_gameReg->m_world)->m_24->IsValidWwd((const char*)g_pathStr, &info)) {
         char* p = info.levelName;
         while (*p && (*p < '0' || *p > '9')) {
             p++;
@@ -391,7 +391,7 @@ struct WwdGameRegSlot {
 // for the three reject paths, else the integer parsed from the first digit run
 // of the validated header:
 //   1. the CString must be non-empty (its length, at pszData-8, != 0);
-//   2. ((WwdGameRegSlot*)g_mgrSettings->m_world)->m_wwdPath must be non-null;
+//   2. ((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath must be non-null;
 //   3. CheckHeader(that filename) into a 0x100 stack buffer must succeed.
 // Then skip leading non-digits and atoi() the first digit run. The CString is
 // unused beyond its non-empty check; `this` is never touched -> static.
@@ -402,11 +402,11 @@ i32 WwdFile::ValidateMainBlock(CString name) {
     if (name.GetLength() == 0) {
         return -1;
     }
-    if (((WwdGameRegSlot*)g_mgrSettings->m_world)->m_wwdPath == 0) {
+    if (((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath == 0) {
         return -1;
     }
 
-    if (WwdFile_CheckHeader(((WwdGameRegSlot*)g_mgrSettings->m_world)->m_wwdPath, header) == 0) {
+    if (WwdFile_CheckHeader(((WwdGameRegSlot*)g_gameReg->m_world)->m_wwdPath, header) == 0) {
         return -1;
     }
 

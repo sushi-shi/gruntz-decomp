@@ -12,6 +12,7 @@
 #include <Gruntz/GruntHealthSprite.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
 // CGruntHealthSprite::~CGruntHealthSprite @0x011fb0 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
@@ -145,7 +146,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
 // end-to-end (the grunt-table resolve, the Vslot16 stat dispatch, the *0.2+0.5 __ftol
 // glyph round + the [m_64..m_68]-gated republish, the health stash, the screen-pos sync
 // with the m_60 y-bias). The SOLE residual is the entry-lookup's whole-function register
-// allocation: retail pins g_mgrSettings in edx and schedules reg->m_68 AFTER the index
+// allocation: retail pins g_gameReg in edx and schedules reg->m_68 AFTER the index
 // lea-chain (add ecx,eax; [eax+ecx*4+0x1c]); cl pins it in ecx and materializes reg->m_68
 // BEFORE the chain (add eax,edx; [ecx+4*eax+0x1c]) - the same pin the sibling
 // CGruntSelectedSprite::Update / CGruntPowerupSprite::Update carry. Not source-steerable
@@ -153,7 +154,7 @@ i32 CGruntHealthSprite::SetHealthGlyph(i32 x, i32 y, i32 health) {
 // see docs/patterns/zero-register-pinning.md. Deferred to the final sweep.
 RVA(0x0007f180, 0xb4)
 i32 CGruntHealthSprite::HealthUpdate() {
-    CGameRegistry* reg = g_mgrSettings;
+    CGameRegistry* reg = g_gameReg;
     CGruntEntry* e = ((CGruntEntry**)((char*)reg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;

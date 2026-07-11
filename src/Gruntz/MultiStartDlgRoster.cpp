@@ -28,7 +28,7 @@
 // The game-manager singleton (VA 0x64556c); the SelHost/roster handlers cache each
 // player-slot's combo value into its m_focusSlots[] record. Reference-only (undefined
 // external, reloc-masks) as in LobbyDialogs.cpp.
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 // The multiplayer game-state (a CMulti, xref-proven); the roster reads m_isHost /
 // m_hostIndex off it. DATA reloc-masks against ReconBatch2's home.
 DATA(0x0024bd5c)
@@ -91,7 +91,7 @@ struct CGameSettings {
     void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
     void ShowModal(const char* msg);                                  // 0x8ef10
 };
-extern "C" CGameSettings* g_mgrSettings; // _g_mgrSettings (0x64556c)
+extern "C" CGameRegistry* g_gameReg; // _g_mgrSettings (0x64556c)
 SIZE_UNKNOWN(CGameSettings);
 DATA(0x0024bdb0)
 extern CString g_64bdb0[]; // 0x64bdb0 per-channel label table
@@ -569,11 +569,11 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
 // 0xc2980 multistartdlgroster`). Guarded by a re-entrancy flag, it refreshes the
 // per-slot roster display, advances two blink counters, then walks the net-session
 // status flags and, on any terminal condition, kills the poll timer, pops a status
-// message, and tears down. Field/class names are placeholders; g_64bd5c/g_mgrSettings
+// message, and tears down. Field/class names are placeholders; g_64bd5c/g_gameReg
 // reuse this TU's canonical decls.
 // ===========================================================================
 // The game-registry slot array (*0x64556c + 0x150, stride 0x238/slot) viewed for the
-// three fields this watchdog reads; g_mgrSettings is this TU's CGameSettings* (cast).
+// three fields this watchdog reads; g_gameReg is this TU's CGameSettings* (cast).
 struct WatchRegSlot {
     char m_pad00[0x14];
     i32 m_14; // +0x14 present flag
@@ -645,7 +645,7 @@ void CMultiStartDlg::Watchdog() {
     }
     if (g_watchBlinkB == 0) {
         for (i32 i = 0; i < 4; i++) {
-            WatchRegSlot* slot = &((WatchReg*)g_mgrSettings)->m_slots[i];
+            WatchRegSlot* slot = &((WatchReg*)g_gameReg)->m_slots[i];
             CWnd* item1;
             CWnd* item2;
             switch (i) {
@@ -764,16 +764,16 @@ void CMultiStartDlg::VerifyCustomLevel() {
     void* token;
     if (g_64bd5c->m_5b0 != 0) {
         CString b = GetConfigNameB();
-        token = g_mgrSettings->BuildRezPath(0, (void*)g_64bd5c->m_5b0, 0, 0, b);
+        token = ((CNetGameMgr*)g_gameReg)->BuildRezPath(0, (void*)g_64bd5c->m_5b0, 0, 0, b);
     } else {
         CString a = GetConfigNameA();
-        token = g_mgrSettings->BuildRezPath(0, (void*)g_64bd5c->m_5b0, 0, 0, a);
+        token = ((CNetGameMgr*)g_gameReg)->BuildRezPath(0, (void*)g_64bd5c->m_5b0, 0, 0, a);
     }
     g_64bd5c->m_53c = 0;
     if (g_64bd5c->Poll((i32)token) == 0) {
         g_64bd5c->m_530 = 0;
         EnableWindow(0);
-        g_mgrSettings->ShowModal("Unable to verify custom level with other players");
+        ((CNetGameMgr*)g_gameReg)->ShowModal("Unable to verify custom level with other players");
         EnableWindow(1);
     } else if (g_64bd5c->m_53c == 0) {
         g_64bd5c->m_530 = 1;
@@ -781,7 +781,7 @@ void CMultiStartDlg::VerifyCustomLevel() {
     } else {
         g_64bd5c->m_530 = 0;
         EnableWindow(0);
-        g_mgrSettings->ShowModal("Not all players have the (same) custom level.");
+        ((CNetGameMgr*)g_gameReg)->ShowModal("Not all players have the (same) custom level.");
         EnableWindow(1);
     }
 }

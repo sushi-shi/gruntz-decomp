@@ -91,7 +91,7 @@ struct LfxMgr {
 // g_gameReg singleton (*0x64556c) - the canonical CGameRegistry view. The global
 // apply path blits through g_gameReg->m_cmdGrid (+0x68), the real CTriggerMgr
 // (<Gruntz/TriggerMgr.h>): CTriggerMgr::ResetGroup @0x79520.
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // One tile cell of the grid row (stride 0x1c): +0x4 the tile id (-1 = empty),
 // +0xc a direct index into the +0x4c color buffer.

@@ -10,6 +10,7 @@
 #include <Gruntz/GruntToySprite.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
 // ~CGruntToySprite @0x0122b0 - the CUserLogic-folded /GX leaf dtor (see header).
 RVA(0x000122b0, 0x44)
@@ -96,8 +97,7 @@ i32 CGruntToySprite::SetCell(i32 x, i32 y) {
 // -0x20) into the bound renderable. Returns 0.
 RVA(0x0007f960, 0x85)
 i32 CGruntToySprite::Update() {
-    CGruntEntry* e =
-        ((CGruntEntry**)((char*)g_mgrSettings->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
+    CGruntEntry* e = ((CGruntEntry**)((char*)g_gameReg->m_cmdGrid + 0x1c))[m_cellX * 15 + m_cellY];
     if (e == 0) {
         return 0;
     }

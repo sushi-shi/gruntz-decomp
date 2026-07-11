@@ -409,7 +409,7 @@ extern i32 g_freeListNodeBias;
 
 // The CGameRegistry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // A render-context object the cell-probe call site passes through (DAT_00644ca4 @
 // VA 0x644ca4). Reloc-masked DATA.

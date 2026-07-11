@@ -1,9 +1,9 @@
 // MgrAutoScroll.cpp - the CGruntzMgr camera auto-scroll / clamp update (0x0ebd70).
 // __cdecl helper called from the render path (CPlay::Render etc., via the ILT
-// thunk at 0x2356) with arg0 = g_mgrSettings (the CGruntzMgr singleton). Walks the
+// thunk at 0x2356) with arg0 = g_gameReg (the CGruntzMgr singleton). Walks the
 // active view (pm->m_world->m_24->m_view), runs a timeGetTime-driven random auto-pan
 // when the countdown timer (g_64cfc4) expires, clamps the scroll to the view
-// bounds (centered on g_mgrSettings->m_modeW/m_modeH), publishes the scaled scroll to the
+// bounds (centered on g_gameReg->m_modeW/m_modeH), publishes the scaled scroll to the
 // view (m_scrollX/m_scrollY) + a second "back plane" view (g_64c27c) eased by 0.05*delta plus
 // the ButeMgr [BackPlane] ScrollDist offsets on a 64-bit ScrollTime cadence, then
 // writes the four scroll-bound fields (pm->m_viewOriginL..0x148). Field names are
@@ -61,7 +61,7 @@ extern "C" {
 
 // Reloc-masked engine globals (DIR32 data operands).
 DATA(0x0024556c)
-extern CGruntzMgr* g_mgrSettings; // 0x64556c
+extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 DATA(0x000453d8)
 extern CButeMgr g_buteMgr; // 0x6453d8
 DATA(0x00245588)
@@ -108,8 +108,8 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
         }
     }
 
-    i32 cx = g_mgrSettings->m_modeW / 2;
-    i32 cy = g_mgrSettings->m_modeH / 2;
+    i32 cx = g_gameReg->m_modeW / 2;
+    i32 cy = g_gameReg->m_modeH / 2;
     if (*pMode != 2) {
         cx -= 0xa0;
     }

@@ -70,7 +70,7 @@ extern "C" u32 g_6bf3bc;
 // MovingSlot16 tests: water 0x900 / death 0x2 / gate 0x40); reg->m_curState
 // the level-type descriptor (CState, +0x20 terrain-class id switch key).
 DATA(0x0024556c)
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 
 // A grunt in the hit-scan grid (g_gameReg->m_68 is a flat 15x15 cell table; each
 // cell holds a grunt ptr). Only the offsets ScanTargets touches are modeled: the

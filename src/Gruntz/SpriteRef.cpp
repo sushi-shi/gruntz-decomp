@@ -261,7 +261,7 @@ void CSpriteRef::Free() {
 // 0x0e35f0 (spatially re-homed from src/Stub/ApiCallers.cpp). __stdcall dialog
 // proc: WM_INITDIALOG seeds the selection index + active-HWND from the game
 // registry's save-sink; WM_COMMAND handles Cancel / the shared fallback.
-extern CGameRegistry* g_gameReg;
+extern "C" CGameRegistry* g_gameReg;
 DATA(0x0024c86c)
 extern i32 g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
 DATA(0x00213a9c)
