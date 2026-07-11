@@ -56,12 +56,9 @@ static __inline i32 IsTokenChar(const char* delims, char ch) {
     return 0;
 }
 
-// The +0x80 hash member's construction (0x184960) is CSymList::Construct; TU-local decl
-// (the real array-backed list container lives in the symtab unit).
-struct
-    CSymList { // struct (not class): retail mangles Construct's return PAU (?Construct@CSymList@@QAEPAU1@H@Z)
-    CSymList* Construct(i32 count);
-};
+// The +0x80 hash member's construction (0x184960) is CHashBase::Construct (folded
+// from the former CSymList::Construct view; wave5-F1) - a real method on the parser's
+// CParserHash/CHashBase member, reached cast-free via m_hash.Construct(1).
 
 // ===========================================================================
 // 0x1396f0 - Init (re-homed from src/Stub/BoundaryUpper2.cpp): initialize a fresh parse
@@ -404,25 +401,25 @@ CSymRec::CSymRec(i32 key, CSymTab* owner, i32 c) : m_keyTable(), m_valTable(c) {
 // ~CSymRec (0x139cf0): drain m_keyTable when the owning parser's m_6c flag is
 // set, then drain m_valTable - re-filing each node's payload (tearing it down
 // via Obj1397a0::Teardown @0x1397a0 above) back to the parser's free pool -
-// then zero the key + the node payload. The two CHashTable members auto-
+// then zero the key + the node payload. The two CHash members auto-
 // destruct after the body (reverse declaration order, /GX trylevels).
 RVA(0x00139cf0, 0xd7)
 CSymRec::~CSymRec() {
     if (m_scope->m_owner->m_6c != 0) {
-        CHashTableEntry* n = m_keyTable.First();
+        CHashElement* n = m_keyTable.First();
         while (n) {
-            CHashTableEntry* cur = n;
+            CHashElement* cur = n;
             n = cur->Next();
             m_keyTable.Remove(cur);
         }
     }
-    CHashTableEntry* n = m_valTable.First();
+    CHashElement* n = m_valTable.First();
     while (n) {
-        CHashTableEntry* cur = n;
+        CHashElement* cur = n;
         n = cur->Next();
         m_valTable.Remove(cur);
-        ((Obj1397a0*)cur->m_payload)->Teardown();
-        m_scope->m_owner->AddNode(cur->m_payload);
+        ((Obj1397a0*)cur->m_record)->Teardown();
+        m_scope->m_owner->AddNode(cur->m_record);
     }
     m_key = 0;
     m_symNode.m_record = 0;
@@ -436,7 +433,7 @@ CSymRec::~CSymRec() {
 // at this. Returns this.
 // @early-stop
 // reloc-name plateau: every CODE byte matches retail. The residual is purely
-// differently-named reloc operands (the two CHashTable::Init = MallocCtor_184960
+// differently-named reloc operands (the two CHashBase::Construct = 0x184960
 // ctor calls, ::operator new vs the delinked _RezAlloc, and the +0x20 vtable named
 // by the delinker after its containing PTR_LAB) - the documented scoring artifact,
 // not a logic gap. Confirm with llvm-objdump -dr base vs target.
@@ -470,7 +467,7 @@ CSymTab::CSymTab(
 // ~CSymTab (0x139ee0): tear down the scope tree. Walk the leaf-symbol table
 // (m_symbols, +0x40) clearing+freeing each record, then the child-scope table
 // (m_subTabs, +0x38) recursing ~CSymTab on each, then free the owned buffers and
-// null the fields. The two CHashTable members auto-destruct after the body, in
+// null the fields. The two hash-table members (CHashB then CHash) auto-destruct after the body, in
 // reverse declaration order (m_symbols then m_subTabs) at descending trylevels --
 // the /GX member-teardown frame (docs/patterns/eh-dtor-model-members-as-
 // destructible.md).
@@ -480,11 +477,11 @@ CSymTab::CSymTab(
 // immediate (0xb vs 0x0) is reloc-masked. A callee-saved coin-flip. Final sweep.
 RVA(0x00139ee0, 0x11e)
 CSymTab::~CSymTab() {
-    CHashTableEntry* cur;
+    CHashElement* cur;
     for (cur = m_symbols.First(); cur != 0;) {
-        CHashTableEntry* next = m_symbols.Next(cur);
+        CHashElement* next = cur->Next();
         m_symbols.Remove(cur);
-        CSymRec* rec = (CSymRec*)cur->m_payload;
+        CSymRec* rec = (CSymRec*)cur->m_record;
         if (rec) {
             rec->~CSymRec();
             RezFree(rec);
@@ -492,9 +489,9 @@ CSymTab::~CSymTab() {
         cur = next;
     }
     for (cur = m_subTabs.First(); cur != 0;) {
-        CHashTableEntry* next = m_subTabs.Next(cur);
+        CHashElement* next = cur->Next();
         m_subTabs.Remove(cur);
-        CSymTab* sub = (CSymTab*)cur->m_payload;
+        CSymTab* sub = (CSymTab*)cur->m_record;
         if (sub) {
             sub->~CSymTab();
             RezFree(sub);
@@ -526,7 +523,7 @@ CSymTab::~CSymTab() {
 // The `m_68 == 0` is the int->bool sete. __thiscall, callee-clean of both args.
 RVA(0x0013a000, 0x37)
 i32 CSymTab::Insert(const char* key, void* arg) {
-    CSymRec* rec = (CSymRec*)m_symbols.Find((const char*)arg);
+    CSymRec* rec = (CSymRec*)m_symbols.FindInt((u32)arg);
     if (!rec) {
         return (i32)rec;
     }
@@ -588,11 +585,11 @@ i32 CRezDirNode::Load(i32 childFlag) {
     }
 
     if (childFlag != 0) {
-        for (RezNode* n = m_kids.First(); n != 0; n = n->Next()) {
-            // RezNode::m_14 is the shared hash-collection's generic (void*) payload
+        for (CHashElement* n = m_kids.First(); n != 0; n = n->Next()) {
+            // CHashElement::m_record is the shared hash-node's generic (void*) payload
             // slot - it holds a CSymTab*/CSymRec* in Bute and a CRezDirNode* here;
             // typed to the concrete element type at this use site.
-            ((CRezDirNode*)n->m_14)->Load(1);
+            ((CRezDirNode*)n->m_record)->Load(1);
         }
     }
     return 1;
@@ -619,9 +616,9 @@ i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
         }
     }
     if (recurse) {
-        RezNode* e = ((RezColl*)&m_subTabs)->First();
+        CHashElement* e = m_subTabs.First();
         while (e) {
-            ((CSymTab*)e->m_14)->ReleaseParseBuffers(1);
+            ((CSymTab*)e->m_record)->ReleaseParseBuffers(1);
             e = e->Next();
         }
     }
@@ -639,9 +636,9 @@ void* CSymTab::FindSub(const char* name) {
 }
 
 // Iteration accessors (0x13a260..0x13a326). Each fetches a node from the embedded
-// collection (FirstSub/FirstSym via RezColl::First on m_subTabs/+0x38 or
+// collection (FirstSub/FirstSym via CHashBase::First on m_subTabs/+0x38 or
 // m_symbols/+0x40) or from the next-link the engine embeds inside a previously-
-// returned record (NextSub/NextSym* via RezNode::Next on the node at rec+OFF),
+// returned record (NextSub/NextSym* via CHashElement::Next on the node at rec+OFF),
 // then returns that node's payload ([node+0x14]). At the end the node is null and
 // the function returns it unchanged (the null falls through, no `xor eax,eax`).
 // The Next* offsets (+0x20/+0x04/+0x24/+0x1c) locate the intrusive list node the
@@ -650,63 +647,63 @@ void* CSymTab::FindSub(const char* name) {
 // FirstSub (0x13a260): first child-scope record (m_subTabs, +0x38).
 RVA(0x0013a260, 0x11)
 void* CSymTab::FirstSub() {
-    RezNode* n = ((RezColl*)&m_subTabs)->First();
+    CHashElement* n = m_subTabs.First();
     if (!n) {
         return n;
     }
-    return n->m_14;
+    return n->m_record;
 }
 
 // NextSub (0x13a280): next child-scope record after `rec` (node @ rec+0x20).
 RVA(0x0013a280, 0x19)
 void* CSymTab::NextSub(void* rec) {
-    RezNode* n = ((RezNode*)((char*)rec + 0x20))->Next();
+    CHashElement* n = ((CHashElement*)((char*)rec + 0x20))->Next();
     if (!n) {
         return n;
     }
-    return n->m_14;
+    return n->m_record;
 }
 
 // FirstSym (0x13a2b0): first leaf-symbol record (m_symbols, +0x40).
 RVA(0x0013a2b0, 0x11)
 void* CSymTab::FirstSym() {
-    RezNode* n = ((RezColl*)&m_symbols)->First();
+    CHashElement* n = m_symbols.First();
     if (!n) {
         return n;
     }
-    return n->m_14;
+    return n->m_record;
 }
 
 // NextSym (0x13a2d0): next leaf-symbol record after `rec` (node @ rec+0x04).
 RVA(0x0013a2d0, 0x19)
 void* CSymTab::NextSym(void* rec) {
-    RezNode* n = ((RezNode*)((char*)rec + 0x4))->Next();
+    CHashElement* n = ((CHashElement*)((char*)rec + 0x4))->Next();
     if (!n) {
         return n;
     }
-    return n->m_14;
+    return n->m_record;
 }
 
 // NextSym2 (0x13a2f0): FIRST record of the value sub-collection at rec+0x24 (a
-// CSymRec's m_valTable is a whole RezColl, not an embedded node), so retail calls
-// RezColl::First (0x184ae0), not RezNode::Next. reloc_fidelity MISBOUND fix, wave5-R8.
+// CSymRec's m_valTable is a whole CHashBase table, not an embedded node), so retail
+// calls CHashBase::First (0x184ae0), not CHashElement::Next. reloc_fidelity fix R8.
 RVA(0x0013a2f0, 0x19)
 void* CSymTab::NextSym2(void* rec) {
-    RezNode* n = ((RezColl*)((char*)rec + 0x24))->First();
+    CHashElement* n = ((CHashBase*)((char*)rec + 0x24))->First();
     if (!n) {
         return n;
     }
-    return n->m_14;
+    return n->m_record;
 }
 
 // NextSym3 (0x13a310): next record after `rec` (node @ rec+0x1c).
 RVA(0x0013a310, 0x19)
 void* CSymTab::NextSym3(void* rec) {
-    RezNode* n = ((RezNode*)((char*)rec + 0x1c))->Next();
+    CHashElement* n = ((CHashElement*)((char*)rec + 0x1c))->Next();
     if (!n) {
         return n;
     }
-    return n->m_14;
+    return n->m_record;
 }
 
 // CreateSub (0x13a330): add a child scope named `name`. If it already exists (the
@@ -736,7 +733,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
     if (!child) {
         return 0;
     }
-    m_subTabs.Insert(&child->m_node20);
+    m_subTabs.Insert((CHashElement*)&child->m_node20);
     if (m_owner->m_longestScopeNameLen <= (i32)strlen(name)) {
         m_owner->m_longestScopeNameLen = strlen(name) + 1;
     }
@@ -824,7 +821,7 @@ i32 CSymTab::AddNodeEntry(void* a0, void* a1, void* a2, void* a3) {
 RVA(0x0013a530, 0x47)
 i32 CSymTab::AddNodeSubEntry(void* rec, void* found) {
     m_10 -= *(i32*)((char*)found + 0xc);
-    ((CSymRec*)rec)->m_valTable.Remove((CHashTableEntry*)((char*)found + 0x1c));
+    ((CSymRec*)rec)->m_valTable.Remove((CHashElement*)((char*)found + 0x1c));
     ((Obj1397a0*)found)->Teardown();
     m_owner->AddNode(found);
     m_owner->m_08 = 0;
@@ -842,17 +839,17 @@ RVA(0x0013a580, 0xb2)
 i32 CSymTab::ApplyRecursive(i32 a0, i32 a1, i32 a2, i32 a3) {
     i32 ok = 1;
     if (a2 != 0) {
-        RezNode* e = ((RezColl*)&m_subTabs)->First();
+        CHashElement* e = m_subTabs.First();
         while (e) {
-            ((CSymTab*)e->m_14)->m_04 = 0;
+            ((CSymTab*)e->m_record)->m_04 = 0;
             e = e->Next();
         }
         if (ApplyRange(a0, a1, a2, a3) == 0) {
             return 0;
         }
-        e = ((RezColl*)&m_subTabs)->First();
+        e = m_subTabs.First();
         while (e) {
-            CSymTab* sub = (CSymTab*)e->m_14;
+            CSymTab* sub = (CSymTab*)e->m_record;
             if (sub->m_04 != 0) {
                 if (sub->ApplyRecursive(a0, (i32)sub->m_04, (i32)sub->m_08, a3) == 0) {
                     ok = 0;
@@ -928,7 +925,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
                     o->m_subTabBucketCount,
                     o->m_symbolBucketCount
                 );
-                m_subTabs.Insert(&node->m_node20);
+                m_subTabs.Insert((CHashElement*)&node->m_node20);
             } else {
                 ((CSymTab*)existing)->m_04 = fA;
                 ((CSymTab*)existing)->m_08 = fB;
@@ -1006,7 +1003,7 @@ i32 CSymTab::ApplyRange(i32 a0, i32 a1, i32 a2, i32 a3) {
 // Banked for the final sweep.
 RVA(0x0013a940, 0xc2)
 CSymRec* CSymTab::FindOrAddSym(i32 key) {
-    CSymRec* found = (CSymRec*)m_symbols.Find((const char*)key);
+    CSymRec* found = (CSymRec*)m_symbols.FindInt((u32)key);
     if (found) {
         return found;
     }
@@ -1027,7 +1024,7 @@ CSymRec* CSymTab::FindOrAddSym(i32 key) {
 // CSymParseConfig::Construct; xref proves it: the 3-arg buf-ctor 0x13ab00 builds
 // its discarded `CSymParser tmp;` through it, and RezSync::Init (0x83450) +
 // CGruntzMgr::LoadWorldMode (0x91a40) new one). cl auto-stamps ??_7CSymParser @+0;
-// the m_list member ctor auto-stamps ??_7CObjList @+0x10; ((CSymList*)&m_hash)->Construct(1) builds the
+// the m_list member ctor auto-stamps ??_7CObjList @+0x10; m_hash.Construct(1) builds the
 // +0x80 list. Seeds the parse-config defaults; leaves m_34/m_38 untouched. The
 // destructible m_hash/m_list members force the /GX EH frame.
 // @early-stop
@@ -1043,7 +1040,7 @@ RVA(0x0013aa10, 0xdc)
 CSymParser::CSymParser() {
     m_list.m_head = 0;
     m_list.m_tail = 0;
-    ((CSymList*)&m_hash)->Construct(1);
+    m_hash.Construct(1);
     m_nodes.m_head = 0;
     m_nodes.m_tail = 0;
     m_parseArmed = 0;
@@ -1108,7 +1105,7 @@ CSymParser::CSymParser(void* buf, i32 a2, i32 a3) {
     // auto-stamps ??_7CObjList @+0x10 (== the old CObjList_ctor_vftbl stamp).
     m_list.m_head = 0;
     m_list.m_tail = 0;
-    ((CSymList*)&m_hash)->Construct(1);
+    m_hash.Construct(1);
     m_nodes.m_head = 0;
     m_nodes.m_tail = 0;
     {
@@ -1916,12 +1913,13 @@ void CSymParser::AddNode(void* rec) {
 // emission sits at the rezlist obj's tail in the 0x1832d0 engine-util pocket, far
 // from this TU's 0x13axxx core; callers here reference it externally).
 
-// CSymList::Construct (0x184960) + the 0x184900 hash reverse-iterator gap moved to
-// src/Rez/RezColl.cpp (wave1-E: the 0x1832d0-pocket rez/sym/hash utility obj is ONE
-// original TU; this file keeps the 0x139xxx/0x13axxx CSymTab core).
+// CHashBase::Construct (0x184960, ex-CSymList::Construct) + CHash::CHash() (0x184950)
+// + the 0x184900 hash reverse-iterator gap live in src/Rez/RezColl.cpp (wave1-E: the
+// 0x1832d0-pocket rez/sym/hash utility obj is ONE original TU; this file keeps the
+// 0x139xxx/0x13axxx CSymTab core).
 // All SIZE()s are annotated atop their class definitions (this TU's .cpp-local
-// structs above, SymTab.h for CHashTable/CHashTableEntry/CSymRec/CSymTab,
-// Rez/RezColl.h for RezColl/RezNode). CSymParser is annotated in SymParser.h.
+// structs above; SymTab.h for CSymRec/CSymTab; Bute/Hash.h for the canonical hash
+// classes CHashBase/CHashElement/CHash/CHashB). CSymParser is annotated in SymParser.h.
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.

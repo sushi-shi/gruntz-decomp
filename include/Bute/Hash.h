@@ -41,10 +41,20 @@ extern "C" void RezFree(void* p);
 // caller-side cleanup is absent, so this site's helper is __stdcall.)
 void __stdcall Tm_DestroyArray(void* base, i32 stride, u32 count, void (*dtor)()); // 0x11f640
 
+// The MSVC `'eh vector constructor iterator'` runtime (0x11f5a0): run `ctor` over
+// `count` elements of `stride` bytes from `base` under an EH frame (rolling back
+// with `dtor` on a throw). __stdcall, args (base, stride, count, ctor, dtor); the
+// reloc is masked. Emitted for CHashBase::Construct's bucket-array element build.
+void __stdcall
+Tm_ConstructArray(void* base, i32 stride, i32 count, void (*ctor)(), void (*dtor)()); // 0x11f5a0
+
 // The no-op per-element bucket-slot destructor (0x584a30, a bare `ret`); its
 // address is passed to the array-delete. Modeled as a stub so the DIR32 reloc to
 // it falls out.
 void CHashSlot_Dtor(); // 0x584a30 (retail "empty_stub")
+// The per-element bucket-slot constructor (0x584a20 == CHashSlot::CHashSlot); its
+// address is passed to the ehvec constructor iterator (a function-ptr, so `void()`).
+void CHashSlot_Ctor(); // 0x584a20 (CHashSlot ctor, as a bare fn-ptr for the iterator)
 
 // The intrusive doubly-linked chain node threaded through each stored element at
 // element+0x04 (next@+0, prev@+4). Chains store &element->m_link; the element is
@@ -102,6 +112,13 @@ SIZE(CHashSlot, 0x10);
 class CHashElement {
 public:
     virtual u32 Hash(); // +0x00  slot 0 (the key-typed bucket hash; stamped ctor)
+
+    // The next live element in iteration order (0x1848b0): follow this element's
+    // chain link (container_of -4), else scan the owning table's later buckets for
+    // the next occupied chain head. The canonical intrusive-chain node walk; the
+    // former RezNode::Next view folded onto this (wave5-F1). Body in RezColl.cpp.
+    CHashElement* Next(); // 0x1848b0
+
     CHashLink m_link;   // +0x04  intrusive chain node { next, prev }
     CHashBase* m_owner; // +0x0c  owning table back-ptr (Insert stamps this)
     u32 m_bucket;       // +0x10  computed bucket (Insert stamps this)
@@ -112,7 +129,16 @@ SIZE(CHashElement, 0x18);
 
 class CHashBase {
 public:
-    // First live entry in iteration order (0x184ae0), or 0.
+    // Allocate the bucket array (0x184960): store `count` at +0x00, RezAlloc a
+    // (count<<4)+4-byte block (an int cookie + `count` 16-byte CHashSlot buckets),
+    // ehvec-construct the slots, store the array at +0x04. Returns this. This is the
+    // real sized "constructor" (a plain method, not a C++ ctor - retail mangles it
+    // ?Construct@... returning `this`); the derived tables' sized ctors delegate to
+    // it. Was the CSymList::Construct view (wave5-F1). Body in RezColl.cpp.
+    CHashBase* Construct(i32 count); // 0x184960
+
+    // First live entry in iteration order (0x184ae0), or 0. Was RezColl::First
+    // (folded wave5-F1); body in RezColl.cpp.
     CHashElement* First(); // 0x184ae0
     // Last live entry in reverse iteration order (0x184b10): scan the bucket array
     // from the highest index down, return the tail element of the first non-empty
@@ -146,6 +172,21 @@ SIZE(CHashBase, 0x8);
 // ---------------------------------------------------------------------------
 class CHash : public CHashBase {
 public:
+    // The default (empty-table) ctor (0x184950): zero count+buckets. OUT-OF-LINE
+    // (retail `call`s it from CSymRec's 3-arg ctor for m_keyTable - it is not
+    // inlined), so declared here + defined in RezColl.cpp. Was unhomed (wave5-F1).
+    CHash(); // 0x184950
+    // The sized ctor: delegate to CHashBase::Construct (a direct `call 0x184960`
+    // once /O2 folds this trivial wrapper - matches the member-init reloc).
+    CHash(i32 n) {
+        Construct(n);
+    }
+    // Member-teardown: the two CHashTable members of CSymRec/CSymTab auto-destruct
+    // via RemoveAll (inline, so it folds into the enclosing /GX dtor frame).
+    ~CHash() {
+        RemoveAll();
+    }
+
     // HashStr/HashInt are genuine OUT-OF-LINE functions in retail (called via
     // `call` from Walk/FindInt at their own RVAs) - defining them inline here let
     // /O2 fold them into their callers, so they never emitted. Out-of-line in Hash.cpp.
@@ -162,6 +203,16 @@ SIZE(CHash, 0x8);
 // ---------------------------------------------------------------------------
 class CHashB : public CHashBase {
 public:
+    // The child-scope table is always sized (m_subTabs(subN)); its sized ctor
+    // delegates to CHashBase::Construct (direct `call 0x184960`), and its member
+    // teardown is RemoveAll (folds into ~CSymTab's /GX frame).
+    CHashB(i32 n) {
+        Construct(n);
+    }
+    ~CHashB() {
+        RemoveAll();
+    }
+
     u32 HashStr(const char* s);           // 0x13c3c0 (out-of-line; see CHash above)
     void* Walk(const char* name, i32 ci); // 0x13c3f0
 };

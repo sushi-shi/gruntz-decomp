@@ -2003,7 +2003,6 @@ rva,name,lib,confidence,source
 0x184670,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x1847b0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x1847c0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x184950,??0DNameNode@@IAE@XZ,LIBCMT,AMBIG,anchored
 0x184a30,__fpclear,LIBCMT,LOW,anchored
 0x184b80,___inittime,LIBCMT,LOW,anchored
 0x184df0,__fpclear,LIBCMT,LOW,anchored

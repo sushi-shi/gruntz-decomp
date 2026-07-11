@@ -48,9 +48,10 @@
 // plus CString / CObject; the engine helpers below stay minimal externs.
 #include <Mfc.h>
 
-// The shared RezColl (hash-bucket child collection) + RezNode (chain node)
-// definition. CRezDirNode embeds a RezColl (m_kids) and walks it with First/Next.
-#include <Rez/RezColl.h>
+// The canonical hash-bucket collection CHashBase + its intrusive node CHashElement
+// (wave5-F1: the former RezColl/RezNode views folded onto these). CRezDirNode embeds
+// a CHashBase (m_kids) and walks it with First/Next.
+#include <Bute/Hash.h>
 
 // ---------------------------------------------------------------------------
 // External engine helpers, modeled with NO body so their `call rel32`
@@ -78,8 +79,8 @@ class CRezDir;
 // external no-body, __thiscall - the collection/node arrives in ecx, no stack
 // args). Modeled as member functions (First on the collection, Next on a node)
 // so the `lea ecx,[..]; call` / `mov ecx,..; call` shapes fall out, reloc-masked.
-//   RezColl::First()  -> first child node   (shared def in <Rez/RezColl.h>)
-//   RezNode::Next()   -> next sibling node
+//   CHashBase::First()   -> first child node   (shared def in <Bute/Hash.h>)
+//   CHashElement::Next() -> next sibling node
 
 // The engine assert/trace sink: prints/logs the message string.
 extern "C" void RezAssertFail(const char* msg);
@@ -276,7 +277,7 @@ public:
 //   +0x38  m_kids   : the child collection (First/Next iterated here)
 //   +0x48  m_buf    : the loaded payload buffer (also the "already loaded" gate)
 // ---------------------------------------------------------------------------
-class CRezDirNode; // fwd (RezNode holds a CRezDirNode* sub-dir at +0x14)
+class CRezDirNode; // fwd (a CHashElement holds a CRezDirNode* sub-dir at +0x14)
 
 // A polymorphic stream object: the recursive read does
 //   ecx = src->m_stream (the object @ src+0x20)
@@ -300,8 +301,8 @@ struct RezSrc {
     RezStream* m_stream; // +0x20  (the polymorphic read stream)
 };
 
-// The child collection embedded at CRezDirNode+0x38 is the shared RezColl
-// (First/Next iterated) - defined in <Rez/RezColl.h>. Its 8-byte engine size
+// The child collection embedded at CRezDirNode+0x38 is the canonical CHashBase
+// (First/Next iterated) - defined in <Bute/Hash.h>. Its 8-byte engine size
 // {count, buckets} is fixed by CSymTab's dual embedding (Bute/SymTab.h).
 class CRezDirNode {
 public:
@@ -315,14 +316,14 @@ public:
     void* m_subdir; // +0x14  (unused by Load on `this`)
     RezSrc* m_src;  // +0x18  (archive source object)
     char m_pad1c[0x38 - 0x1c];
-    RezColl m_kids;  // +0x38..+0x3f  (8-byte engine child collection)
-    char m_pad40[8]; // +0x40..+0x47
-    void* m_buf;     // +0x48  (payload buffer / loaded gate)
+    CHashBase m_kids; // +0x38..+0x3f  (8-byte engine child collection)
+    char m_pad40[8];  // +0x40..+0x47
+    void* m_buf;      // +0x48  (payload buffer / loaded gate)
 };
 
 // The child chain node walked by Load carries the recursion target (the sub-dir
-// CRezDirNode*) in the shared RezNode's payload slot RezNode::m_14 (void*; cast
-// to CRezDirNode* at the Load call site).
+// CRezDirNode*) in the canonical CHashElement's payload slot CHashElement::m_record
+// (void*; cast to CRezDirNode* at the Load call site).
 
 // ---------------------------------------------------------------------------
 // CString - the minimal MFC CString model (a single char* m_pchData @+0; an

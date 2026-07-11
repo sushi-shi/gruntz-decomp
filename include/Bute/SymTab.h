@@ -9,9 +9,11 @@
 //                       freed by CSymRec::Clear (0x139cf0) on each entry.
 // A dotted path "a.b.c" is resolved by tokenizing on the parser's delimiter set:
 // the first segment selects a child scope (Find via the +0x38 hash), the rest
-// recurses. The hash tables themselves are the engine CHashTable class
-// (ClassUnknown_13: Lookup 0x184b40, First 0x184ae0, Next 0x1848b0, Remove
-// 0x184ab0, RemoveAll 0x184a40; Find 0x13c360 / Walk 0x13c270/0x13c3f0).
+// recurses. The hash tables themselves are the canonical engine hash class
+// (CHashBase + CHash/CHashB from <Bute/Hash.h>: Lookup 0x184b40, First 0x184ae0,
+// Next 0x1848b0, Remove 0x184ab0, RemoveAll 0x184a40; the child-scope table's Walk
+// is 0x13c3f0 (CHashB), the leaf/value tables' Walk 0x13c270 + FindInt 0x13c360
+// (CHash) - two distinct instantiations at distinct RVAs).
 //
 // Layout recovered from the dtor (0x139ee0), the +0x38 walk wrapper (0x13a230)
 // and the two recursive path-resolvers (0x13bae0/0x13be40). Only the OFFSETS +
@@ -24,8 +26,8 @@
 //                      set ([+0x4]) the tokenizer splits on and a flag ([+0x68]
 //                      != 0) passed to the +0x38 walk.
 //   +0x30/+0x34      : link words (zero-init).
-//   +0x38  m_subTabs : CHashTable - child-scope table (destructed at trylevel -1).
-//   +0x40  m_symbols : CHashTable - leaf-symbol table   (destructed at trylevel 0).
+//   +0x38  m_subTabs : CHashB - child-scope table (destructed at trylevel -1).
+//   +0x40  m_symbols : CHash  - leaf-symbol table (destructed at trylevel 0).
 //   +0x48  m_buf48   : char* - a second owned buffer (freed in dtor).
 #ifndef SRC_BUTE_SYMTAB_H
 #define SRC_BUTE_SYMTAB_H
@@ -76,72 +78,16 @@ u32 __stdcall PackTag(const char* s);         // 0x13b910
 void __stdcall UnpackTag(u32 tag, char* dst); // 0x13b970
 
 // ---------------------------------------------------------------------------
-// CHashTable - the engine string-keyed hash table embedded at +0x38 / +0x40
-// (ClassUnknown_13). 8 bytes: { u32 m_count; Entry* m_buckets; }. Every method
-// is a reloc-masked external (no body) so the __thiscall call shapes fall out.
-// Entry is a 16-byte slot; a live slot's payload pointer is [slot+0]-4 (the
-// engine offsets entries by 4), and the resolved record sits at [entry+0x14].
+// The two embedded hash tables of a scope/record are the canonical engine hash
+// class from <Bute/Hash.h> (wave5-F1: the former per-TU CHashTable/CHashTableEntry
+// views folded onto it): CHashBase is the key-agnostic base (First/Last/Lookup/
+// Insert/Remove/RemoveAll + the sized Construct 0x184960 and default ctor 0x184950),
+// CHashElement the 24-byte intrusive node (payload record at +0x14), and CHash/CHashB
+// the two key-typed template instantiations (Walk 0x13c270 vs 0x13c3f0 - the leaf/
+// value table vs the child-scope table are DISTINCT physical Walk RVAs, which is why
+// they must stay two derived classes, not one merged view). Both are reloc-masked
+// externals whose bodies live in Hash.cpp / RezColl.cpp.
 // ---------------------------------------------------------------------------
-struct CHashTableEntry {
-    // Node-relative next hop (the intrusive chain walk ~CSymRec emits: __thiscall
-    // on the ENTRY, no args - distinct from the table-relative CHashTable::Next).
-    // External no-body; reloc-masked.
-    CHashTableEntry* Next();
-
-    char* m_key;            // +0x00  (the engine stores key+4; First/Next adjust by -4)
-    char m_pad04[0x14 - 4]; // +0x04
-    void* m_payload;        // +0x14  the resolved (key,node) record (heterogeneous)
-};
-SIZE(CHashTableEntry, 0x18); // { key, ..., payload @0x14 }
-
-// The embedded table iterates the shared RezColl (collection) / RezNode (entry):
-// one physical First (0x184ae0) / Next (0x1848b0), the canonical owners of those
-// RVAs (bodies in src/Rez/RezColl.cpp; shared def in <Rez/RezColl.h>). The
-// CSymTab iterators reinterpret-cast a CHashTable* / a record-relative offset to
-// RezColl* / RezNode* and call First/Next; the returned node's payload (the
-// resolved record) sits at RezNode::m_14 (+0x14). Both are reloc-masked externals.
-#include <Rez/RezColl.h>
-
-class CHashTable {
-public:
-    // Allocate the bucket array (0x184960): the ctor body lives in another TU, so the
-    // C++ ctor delegates to Init -> the member ctor falls out as a reloc-masked call,
-    // driving CSymTab's /GX member-construction trylevel machinery.
-    CHashTable(i32 n) {
-        Init(n);
-    }
-    // The default container ctor (0x184950; CSymRec's 3-arg ctor default-builds
-    // m_keyTable through it). External no-body -> reloc-masked ctor call.
-    CHashTable();
-    void Init(i32 n); // 0x184960
-
-    // First live entry (0x184ae0), or null.
-    CHashTableEntry* First();
-    // Entry after `e` in iteration order (0x1848b0).
-    CHashTableEntry* Next(CHashTableEntry* e);
-    // Remove `e` and return the next entry (0x184ab0).
-    CHashTableEntry* Remove(CHashTableEntry* e);
-    // Drop every entry (0x184a40) - the table's destructor.
-    void RemoveAll();
-    // Find the (key,node) record for `name`, or null (0x13c360).
-    void* Find(const char* name);
-    // Walk: apply the stored callback to each record matching `name` with `flag`
-    // (0x13c3f0 / 0x13c270; __thiscall, callee-cleanup of both args).
-    void* Walk(const char* name, i32 flag);
-    // Insert a hash node (0x184a70): the node's vtable slot-0 hash picks the bucket,
-    // then node+4 is spliced into the bucket chain. `node` points at the embedded
-    // CHashInsertNode (the vtable-bearing prefix inside the stored record).
-    void Insert(void* node);
-
-    // Real destructor so ~CSymTab's /GX member-teardown frame falls out.
-    ~CHashTable() {
-        RemoveAll();
-    }
-
-    u32 m_count;                // +0x00
-    CHashTableEntry* m_buckets; // +0x04  the RezAlloc'd 16-byte-slot bucket array
-};
-SIZE(CHashTable, 0x8); // { count, buckets }
 
 // CSymParser - the owning ButeMgr parser (CSymTab::m_owner @+0x18 points back to it).
 // The single full definition lives in <Bute/SymParser.h>; here it is only a
@@ -196,8 +142,8 @@ public:
 
     i32 m_key;             // +0x00  int key (m_symbols hashes on this)
     CSymRecNode m_symNode; // +0x04  hash-node prefix spliced into m_symbols (vtbl 0x1ef744)
-    CHashTable m_keyTable; // +0x1c  second live container (drained iff parser m_6c)
-    CHashTable m_valTable; // +0x24  the record's value sub-table
+    CHash m_keyTable;      // +0x1c  second live container (drained iff parser m_6c)
+    CHash m_valTable;      // +0x24  the record's value sub-table (Walk 0x13c270)
     CSymTab* m_scope;      // +0x2c  the owning scope (back-ptr)
 };
 SIZE(CSymRec, 0x30); // leaf-record allocation size (operator new -> RezAlloc)
@@ -223,8 +169,8 @@ public:
     );
 
     // ~CSymTab (0x139ee0): walk both tables freeing each entry's record + node,
-    // free the owned buffers, null the fields; the two CHashTable members then
-    // auto-destruct at descending trylevels (the /GX frame).
+    // free the owned buffers, null the fields; the two hash-table members (CHashB
+    // then CHash) then auto-destruct at descending trylevels (the /GX frame).
     ~CSymTab();
 
     // CSymTab uses the Rez heap (nothrow): operator new = RezAlloc(0x4c), delete =
@@ -325,11 +271,11 @@ public:
     void* m_1c;          // +0x1c
     void* m_node20;      // +0x20  hash-node vtable (the scope's parent-table interface)
     char m_pad24[0x30 - 0x24];
-    void* m_30;           // +0x30
-    void* m_34;           // +0x34  self-ptr (the scope's own record back-pointer)
-    CHashTable m_subTabs; // +0x38  (destructed last: trylevel -1)
-    CHashTable m_symbols; // +0x40  (destructed first: trylevel 0)
-    char* m_buf48;        // +0x48
+    void* m_30;       // +0x30
+    void* m_34;       // +0x34  self-ptr (the scope's own record back-pointer)
+    CHashB m_subTabs; // +0x38  child-scope table (Walk 0x13c3f0; destructed last)
+    CHash m_symbols;  // +0x40  leaf-symbol table (Walk 0x13c270; destructed first)
+    char* m_buf48;    // +0x48
 };
 SIZE(CSymTab, 0x4c); // operator new -> RezAlloc(0x4c); fields through m_buf48 @0x48
 
