@@ -520,19 +520,6 @@
   "spread": 299.52777777777777
  },
  {
-  "file": "src/Gruntz/LogicActRegistrars.cpp",
-  "n": 5,
-  "bytes": 2094,
-  "lo": 726448,
-  "hi": 1155660,
-  "span": 429212,
-  "frags": 5,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.004878707957839017,
-  "spread": 204.9723018147087
- },
- {
   "file": "src/Net/NetCmdSlot.cpp",
   "n": 43,
   "bytes": 4616,
@@ -934,19 +921,6 @@
   "frag_ratio": 1.0,
   "occupancy": 0.0001582558345202521,
   "spread": 6318.882352941177
- },
- {
-  "file": "src/Gruntz/LogicActReg.cpp",
-  "n": 4,
-  "bytes": 836,
-  "lo": 238896,
-  "hi": 713037,
-  "span": 474141,
-  "frags": 4,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.0017631885873611436,
-  "spread": 567.1543062200957
  },
  {
   "file": "src/Gruntz/CustomWorldDialog.cpp",
@@ -1794,6 +1768,19 @@
   "spread": 3200.4927536231885
  },
  {
+  "file": "src/Gruntz/CursorSnapActReg.cpp",
+  "n": 2,
+  "bytes": 418,
+  "lo": 238896,
+  "hi": 239773,
+  "span": 877,
+  "frags": 2,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 0.4766248574686431,
+  "spread": 2.098086124401914
+ },
+ {
   "file": "src/Gruntz/Demo.cpp",
   "n": 24,
   "bytes": 4839,
@@ -2039,6 +2026,45 @@
   "frag_ratio": 0.09523809523809523,
   "occupancy": 0.2131407580564368,
   "spread": 4.6917352134743435
+ },
+ {
+  "file": "src/Gruntz/LogicActReg646010.cpp",
+  "n": 2,
+  "bytes": 418,
+  "lo": 712160,
+  "hi": 713037,
+  "span": 877,
+  "frags": 2,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 0.4766248574686431,
+  "spread": 2.098086124401914
+ },
+ {
+  "file": "src/Gruntz/SpotLightActReg.cpp",
+  "n": 2,
+  "bytes": 705,
+  "lo": 726448,
+  "hi": 727612,
+  "span": 1164,
+  "frags": 2,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 0.6056701030927835,
+  "spread": 1.651063829787234
+ },
+ {
+  "file": "src/Gruntz/PathHazardActReg.cpp",
+  "n": 2,
+  "bytes": 705,
+  "lo": 735968,
+  "hi": 737132,
+  "span": 1164,
+  "frags": 2,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 0.6056701030927835,
+  "spread": 1.651063829787234
  },
  {
   "file": "src/Net/PacketPool.cpp",
@@ -4080,6 +4106,19 @@
   "frag_ratio": 0.5,
   "occupancy": 0.6385542168674698,
   "spread": 1.5660377358490567
+ },
+ {
+  "file": "src/Gruntz/GruntVoiceActReg.cpp",
+  "n": 1,
+  "bytes": 684,
+  "lo": 1154976,
+  "hi": 1155660,
+  "span": 684,
+  "frags": 1,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 1.0,
+  "spread": 1.0
  },
  {
   "file": "src/Gruntz/VoiceSoundList.cpp",

@@ -2509,53 +2509,6 @@
    ]
   },
   {
-   "file": "src/Gruntz/LogicActReg.cpp",
-   "n": 4,
-   "bytes": 836,
-   "main_lo": 238896,
-   "main_hi": 239773,
-   "main_n": 2,
-   "main_share": 0.5,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 238896,
-     "hi": 239773,
-     "n": 2
-    },
-    {
-     "lo": 712160,
-     "hi": 713037,
-     "n": 2
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 712160,
-     "name": "?ConstructLogicActRange_646010@@YAXXZ",
-     "dist": 472387,
-     "cluster_n": 2,
-     "home": "src/Gruntz/FrontCandyAni.cpp",
-     "home_n": 10
-    },
-    {
-     "rva": 712640,
-     "name": "?RegisterXLogic_646010@@YAXXZ",
-     "dist": 472387,
-     "cluster_n": 2,
-     "home": "src/Gruntz/FrontCandyAni.cpp",
-     "home_n": 10
-    }
-   ],
-   "rvas": [
-    238896,
-    239376,
-    712160,
-    712640
-   ]
-  },
-  {
    "file": "src/Globals.cpp",
    "n": 3,
    "bytes": 635,
@@ -3561,46 +3514,6 @@
     533552,
     545920,
     967216
-   ]
-  },
-  {
-   "file": "src/Gruntz/LogicActRegistrars.cpp",
-   "n": 5,
-   "bytes": 2094,
-   "main_lo": 726448,
-   "main_hi": 737132,
-   "main_n": 4,
-   "main_share": 0.8,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 726448,
-     "hi": 737132,
-     "n": 4
-    },
-    {
-     "lo": 1154976,
-     "hi": 1155660,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 1154976,
-     "name": "?RegisterActs_6514d8@@YAXXZ",
-     "dist": 417844,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GruntVoice.cpp",
-     "home_n": 13
-    }
-   ],
-   "rvas": [
-    726448,
-    726928,
-    735968,
-    736448,
-    1154976
    ]
   },
   {
