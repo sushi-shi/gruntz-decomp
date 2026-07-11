@@ -23,7 +23,8 @@ anirecord	13	10
 applyrange	1	1
 areamgr	18	10
 arrayserialize	1	0
-attract	31	17
+attract	19	9
+attractstate	12	8
 battlezdata	30	27
 battlezdlgrow	1	0
 battlezmapconfig	50	16
@@ -463,13 +464,9 @@ areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	3	5faa6e31be7e	0x9a0b0
 areamgr	?SameGroup@CAreaMgr@@QAEHH@Z	58.5000	58.5000	3	0d6263294c55	0x9b430
 areamgr	?TokenMgrReset99b80@@YAXXZ	100.0000	100.0000	1	f78fe176a96a	0x99b80
 arrayserialize	?Serialize@CMovieScratch@@UAEXAAVCArchive@@@Z	72.6849	72.6849	1	adba7d3f736d	0x39fa0
-attract	??1CAttract@@UAE@XZ	100.0000	100.0000	2	b2b974d351ac	0x8cd90
 attract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	4	9e4876438204	0xa0a30
-attract	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	4	693495b08e92	0x13fb0
 attract	?FadeInTitle@CAttract@@QAEHPBDHHHHH@Z	75.3691	75.3691	3	d924e9b6dd99	0xfa1f0
-attract	?FrameSlot28@CAttract@@UAEHH@Z	99.7143	99.7143	3	1d0e3912870a	0x14340
 attract	?Init@CMgrPersistObj@@QAEHXZ	96.1048	96.1048	1	3161d891266a	0xface0
-attract	?InputVirtual@CAttract@@UAEHXZ	100.0000	100.0000	3	0536418f02b2	0x14520
 attract	?Load@CMgrPersistObj@@QAEHPAUCSerialArchive@@@Z	95.9116	95.9116	1	a73bcd8f7217	0xfaff0
 attract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	4	fc29b9b540e3	0xa03f0
 attract	?Method_fa410@CSoundFxEmitter@@QAEHHHHH@Z	100.0000	100.0000	1	57400620ae41	0xfa410
@@ -479,21 +476,25 @@ attract	?Method_fa8f0@CSoundFxEmitter@@QAEHHHHH@Z	98.3913	98.3913	1	25ab196408ef
 attract	?Method_faa60@CSoundFxEmitter@@QAEHHHH@Z	100.0000	100.0000	1	23d16cee8c9f	0xfaa60
 attract	?Present@PresentHost_faec0@@QAEXH@Z	100.0000	100.0000	1	7afd4cf278ec	0xfaec0
 attract	?RefreshTitle@CAttract@@QAEHH@Z	100.0000	100.0000	3	bf4a6935165f	0x39160
-attract	?ReleaseResources@CAttract@@UAEXXZ	100.0000	100.0000	3	948181bf5f89	0x140d0
-attract	?Render@CAttract@@UAEHXZ	97.0833	97.0833	4	36ee4b5dce29	0x143e0
 attract	?RunTitle@CAttract@@QAEHHHHHH@Z	99.5238	99.5238	2	9757b99ff019	0xfa300
 attract	?RunTitleSeq@CAttract@@QAEHPBDHHHH@Z	100.0000	100.0000	2	bfe7fa0ade91	0xfa350
 attract	?Save@CMgrPersistObj@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	2	4cfa2b4c9d7b	0xfb1c0
 attract	?ShadeScreen@CState@@QAEHH@Z	100.0000	100.0000	1	e876d2deb587	0xfaf50
-attract	?Update@CAttract@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	2	15cb595062e2	0x8cd40
 attract	?Validate_fafa0@@YGHHHHH@Z	93.3333	93.3333	1	dbcad3c4c56f	0xfafa0
-attract	?Vslot06@CAttract@@UAEHXZ	100.0000	100.0000	3	7d92a01de87d	0x14630
-attract	?Vslot07@CAttract@@UAEHXZ	99.1667	99.1667	2	0791b7ad75ea	0x147b0
 attract	?Vslot07@CState@@UAEHXZ	100.0000	100.0000	1	ccb2a53a171d	0xfac70
-attract	?Vslot09@CAttract@@UAEHH@Z	98.2836	98.2836	2	0730206a1e3a	0x14120
-attract	?Vslot0c@CAttract@@UAEHHH@Z	100.0000	100.0000	1	c6e228bf1d86	0x14720
-attract	?Vslot0e@CAttract@@UAEHHHH@Z	100.0000	100.0000	2	82cf2f8c7adf	0x14770
 attract	?Vslot17@CState@@UAEHHHPADHH@Z	100.0000	100.0000	1	95c50c89cc25	0xfa6b0
+attractstate	??1CAttract@@UAE@XZ	100.0000	100.0000	1	b2b974d351ac	0x8cd90
+attractstate	?EnterAttractMode@CAttract@@QAEHHHH@Z	100.0000	100.0000	1	693495b08e92	0x13fb0
+attractstate	?FrameSlot28@CAttract@@UAEHH@Z	99.7143	99.7143	1	1d0e3912870a	0x14340
+attractstate	?InputVirtual@CAttract@@UAEHXZ	100.0000	100.0000	1	0536418f02b2	0x14520
+attractstate	?ReleaseResources@CAttract@@UAEXXZ	100.0000	100.0000	1	948181bf5f89	0x140d0
+attractstate	?Render@CAttract@@UAEHXZ	97.0833	97.0833	1	36ee4b5dce29	0x143e0
+attractstate	?Update@CAttract@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:e9225f5a6c92	0x8cd40
+attractstate	?Vslot06@CAttract@@UAEHXZ	100.0000	100.0000	1	7d92a01de87d	0x14630
+attractstate	?Vslot07@CAttract@@UAEHXZ	99.1667	99.1667	1	0791b7ad75ea	0x147b0
+attractstate	?Vslot09@CAttract@@UAEHH@Z	98.2836	98.2836	1	0730206a1e3a	0x14120
+attractstate	?Vslot0c@CAttract@@UAEHHH@Z	100.0000	100.0000	1	c6e228bf1d86	0x14720
+attractstate	?Vslot0e@CAttract@@UAEHHHH@Z	100.0000	100.0000	1	82cf2f8c7adf	0x14770
 battlezdata	?AllRecordsInBounds@CBattlezData@@QAEHXZ	100.0000	100.0000	3	1ada6078aebb	0xfccf0
 battlezdata	?BumpWin@CBattlezData@@QAEXHH@Z	100.0000	100.0000	3	ddee734e4ccf	0xfcc50
 battlezdata	?ClearFlags@CBattlezData@@QAEXXZ	100.0000	100.0000	3	f19394f29b4c	0xfcb90
