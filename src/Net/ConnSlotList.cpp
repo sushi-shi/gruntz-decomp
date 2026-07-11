@@ -19,28 +19,28 @@
 // ===========================================================================
 RVA(0x00037c30, 0xb3)
 i32 CLatencyList::Populate2() {
-    if (!AddItem("Automatic", 0, 0)) {
+    if (!AddNode("Automatic", 0, 0)) {
         return 0;
     }
-    if (!AddItem("Very Low Latency [ping < 50]", 2, 10)) {
+    if (!AddNode("Very Low Latency [ping < 50]", 2, 10)) {
         return 0;
     }
-    if (!AddItem("Low Latency [ping < 100]", 4, 10)) {
+    if (!AddNode("Low Latency [ping < 100]", 4, 10)) {
         return 0;
     }
-    if (!AddItem("Medium Latency [ping < 200]", 6, 20)) {
+    if (!AddNode("Medium Latency [ping < 200]", 6, 20)) {
         return 0;
     }
-    if (!AddItem("Medium-High [ping < 250]", 8, 30)) {
+    if (!AddNode("Medium-High [ping < 250]", 8, 30)) {
         return 0;
     }
-    if (!AddItem("High Latency [ping < 400]", 12, 30)) {
+    if (!AddNode("High Latency [ping < 400]", 12, 30)) {
         return 0;
     }
-    if (!AddItem("Very High Latency [ping < 550]", 16, 30)) {
+    if (!AddNode("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
     }
-    return AddItem("Last Resort", 24, 30) != 0;
+    return AddNode("Last Resort", 24, 30) != 0;
 }
 
 // ===========================================================================
@@ -50,28 +50,28 @@ i32 CLatencyList::Populate2() {
 // ===========================================================================
 RVA(0x00037e10, 0xb3)
 i32 CLatencyList::Populate4() {
-    if (!AddItem("Automatic", 0, 0)) {
+    if (!AddNode("Automatic", 0, 0)) {
         return 0;
     }
-    if (!AddItem("Very Low Latency [ping < 50]", 2, 30)) {
+    if (!AddNode("Very Low Latency [ping < 50]", 2, 30)) {
         return 0;
     }
-    if (!AddItem("Low Latency [ping < 100]", 4, 30)) {
+    if (!AddNode("Low Latency [ping < 100]", 4, 30)) {
         return 0;
     }
-    if (!AddItem("Medium Latency [ping < 200]", 6, 30)) {
+    if (!AddNode("Medium Latency [ping < 200]", 6, 30)) {
         return 0;
     }
-    if (!AddItem("Medium-High [ping < 250]", 8, 30)) {
+    if (!AddNode("Medium-High [ping < 250]", 8, 30)) {
         return 0;
     }
-    if (!AddItem("High Latency [ping < 400]", 12, 30)) {
+    if (!AddNode("High Latency [ping < 400]", 12, 30)) {
         return 0;
     }
-    if (!AddItem("Very High Latency [ping < 550]", 16, 30)) {
+    if (!AddNode("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
     }
-    return AddItem("Last Resort", 24, 30) != 0;
+    return AddNode("Last Resort", 24, 30) != 0;
 }
 
 // ===========================================================================
@@ -80,26 +80,26 @@ i32 CLatencyList::Populate4() {
 // ===========================================================================
 RVA(0x00037f00, 0xb3)
 i32 CLatencyList::Populate5() {
-    if (!AddItem("Automatic", 0, 0)) {
+    if (!AddNode("Automatic", 0, 0)) {
         return 0;
     }
-    if (!AddItem("Very Low Latency [ping < 50]", 2, 30)) {
+    if (!AddNode("Very Low Latency [ping < 50]", 2, 30)) {
         return 0;
     }
-    if (!AddItem("Low Latency [ping < 100]", 4, 30)) {
+    if (!AddNode("Low Latency [ping < 100]", 4, 30)) {
         return 0;
     }
-    if (!AddItem("Medium Latency [ping < 200]", 6, 30)) {
+    if (!AddNode("Medium Latency [ping < 200]", 6, 30)) {
         return 0;
     }
-    if (!AddItem("Medium-High [ping < 250]", 8, 30)) {
+    if (!AddNode("Medium-High [ping < 250]", 8, 30)) {
         return 0;
     }
-    if (!AddItem("High Latency [ping < 400]", 12, 30)) {
+    if (!AddNode("High Latency [ping < 400]", 12, 30)) {
         return 0;
     }
-    if (!AddItem("Very High Latency [ping < 550]", 16, 30)) {
+    if (!AddNode("Very High Latency [ping < 550]", 16, 30)) {
         return 0;
     }
-    return AddItem("Last Resort", 24, 30) != 0;
+    return AddNode("Last Resort", 24, 30) != 0;
 }

@@ -72,6 +72,11 @@ extern "C" CGameRegistry* g_gameReg;
 DATA(0x00245534)
 extern i32 g_attractStateCount;
 
+// The fx direct/deferred gate the CSoundFxEmitter methods poll (0x2455c4, no other
+// owner); binding it here ties the emitters' g_fxDirectGate DIR32 to the real RVA.
+DATA(0x002455c4)
+extern i32 g_fxDirectGate;
+
 // The "ShowCursor" Win32 import slot (PTR_ShowCursor_006c44c4).
 typedef i32(WINAPI* ShowCursorFn)(i32);
 DATA(0x002c44c4)

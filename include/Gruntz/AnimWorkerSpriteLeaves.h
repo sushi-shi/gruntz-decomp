@@ -16,24 +16,25 @@
 #ifndef GRUNTZ_ANIMWORKERSPRITELEAVES_H
 #define GRUNTZ_ANIMWORKERSPRITELEAVES_H
 
-#include <Gruntz/UserLogic.h> // CUserLogic base + TILE_LOGIC_TAIL
+#include <Gruntz/UserLogic.h> // CUserLogic base + TILE_LOGIC_TAIL + real CGameObject
 
-// The owning game object handed to each handler (defined in the pump TU); the leaf ctors
-// take it by pointer (the ctor is reloc-masked, so the exact arg type is not load-bearing).
-struct Owner;
+// The leaf ctors take the created object's owning CGameObject* (the retail 1-arg ctor
+// signature is ??0<leaf>@@QAE@PAUCGameObject@@@Z); binding to the real struct CGameObject
+// (from UserLogic.h) makes the `new T((CGameObject*)owner)` call reloc-tie to the real
+// most-derived ctor RVA. Only the sizeof + the ctor target are load-bearing.
 
 // The selected-grunt highlight sprite and the toy-in-hand sprite: real CUserLogic
 // leaves whose most-derived 1-arg ctors (0x07e3e0 / 0x07f350) are matched elsewhere;
 // modeled here as size-views for the `new T(owner)` size + ctor target only.
 struct CGruntSelectedSprite : public CUserLogic {
     TILE_LOGIC_TAIL
-    CGruntSelectedSprite(Owner* owner); // 0x07e3e0
+    CGruntSelectedSprite(CGameObject* obj); // 0x07e3e0
     char m_body[0x5c - 0x40];
 }; // sizeof = 0x5c
 
 struct CGruntToySprite : public CUserLogic {
     TILE_LOGIC_TAIL
-    CGruntToySprite(Owner* owner); // 0x07f350
+    CGruntToySprite(CGameObject* obj); // 0x07f350
     char m_body[0x60 - 0x40];
 }; // sizeof = 0x60
 
@@ -41,25 +42,25 @@ struct CGruntToySprite : public CUserLogic {
 // timer leaves add no data of their own (0x64, same as the base), so they carry no tail.
 struct CGruntHealthSprite : public CUserLogic {
     TILE_LOGIC_TAIL
-    CGruntHealthSprite(Owner* owner); // 0x07eb00
+    CGruntHealthSprite(CGameObject* obj); // 0x07eb00
     char m_body[0x64 - 0x40];
 }; // sizeof = 0x64
 
 struct CGruntStaminaSprite : public CGruntHealthSprite {
-    CGruntStaminaSprite(Owner* owner); // 0x07fae0
+    CGruntStaminaSprite(CGameObject* obj); // 0x07fae0
 }; // sizeof = 0x64
 
 struct CGruntToyTimeSprite : public CGruntHealthSprite {
-    CGruntToyTimeSprite(Owner* owner); // 0x07fbd0
+    CGruntToyTimeSprite(CGameObject* obj); // 0x07fbd0
 }; // sizeof = 0x64
 
 struct CGruntWingzTimeSprite : public CGruntHealthSprite {
-    CGruntWingzTimeSprite(Owner* owner); // 0x07fcc0
+    CGruntWingzTimeSprite(CGameObject* obj); // 0x07fcc0
 }; // sizeof = 0x64
 
 struct CGruntPowerupSprite : public CUserLogic {
     TILE_LOGIC_TAIL
-    CGruntPowerupSprite(Owner* owner); // 0x07fdb0
+    CGruntPowerupSprite(CGameObject* obj); // 0x07fdb0
     char m_body[0x60 - 0x40];
 }; // sizeof = 0x60
 

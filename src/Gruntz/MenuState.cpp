@@ -425,7 +425,9 @@ i32 CMenuState::ReadyGate() {
     if (r == 0) {
         return r;
     }
-    r = CommitState();
+    // The middle probe is the base CState::Vslot07 slot, invoked statically (direct
+    // rel32 to 0xfac70, via the ILT thunk) - was the fake CMenuState::CommitState.
+    r = CState::Vslot07();
     if (r == 0) {
         return r;
     }
@@ -437,9 +439,12 @@ i32 CMenuState::ReadyGate() {
 // spawn install, then hand it to the shared HUD-message sprite helper into the
 // caller-supplied RECT (the 4 args form the RECT by value). The build/patch field
 // g_65160c selects the two- vs three-number version format.
-extern "C" i32 g_651608; // 0x651608  version field A
-extern "C" i32 g_65160c; // 0x65160c  build/patch field (0 -> two-number format)
-extern "C" i32 g_651610; // 0x651610  version field B
+DATA(0x00251608)
+extern "C" i32 g_651608; // 0x251608  version field A
+DATA(0x0025160c)
+extern "C" i32 g_65160c; // 0x25160c  build/patch field (0 -> two-number format)
+DATA(0x00251610)
+extern "C" i32 g_651610; // 0x251610  version field B
 // The shared HUD message-sprite helper (0x1154b0 via the 0x1f00 ILT thunk,
 // __cdecl): push a transient text sprite carrying `text` into `rect`.
 void ShowHudMessage(

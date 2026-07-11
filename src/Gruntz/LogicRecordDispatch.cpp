@@ -8,6 +8,8 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/XferArchive.h> // ProjTypeXfer (0x16e4f0) = the default-case fall-through
+
 // global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.
 void* operator new(u32 n);
 
@@ -92,8 +94,12 @@ public:
 };
 SIZE(LogicSubRecE, 0x228);
 
-// The default-case fall-through helper (0x16e4f0, __cdecl, 1 arg). External.
-extern "C" void LogicSubDefault_16e4f0(LogicSubRec* sub);
+// The default-case fall-through helper IS the real shared type-registry resolve at
+// 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z, __cdecl). Thin forwarder so the
+// callers emit the bound rel32 (was the fake, UNBOUND _LogicSubDefault_16e4f0).
+inline void LogicSubDefault_16e4f0(LogicSubRec* sub) {
+    ProjTypeXfer((CXferArchive*)sub);
+}
 
 // LogicDispatchE @0x0de8a0 - state-0 builds a 0x228 sub-record (ctor 0xdec60 =
 // CProjectile). Same dispatch shape as the siblings; the larger `new` size uses an

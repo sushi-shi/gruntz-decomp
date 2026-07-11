@@ -311,7 +311,9 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
 
     self->SetupTitle();
     self->m_20c = 2;
-    i32 r = self->FinishState();
+    // FinishState is CCreditsState's own method (0x39c40), not CCreditzOwner's - call
+    // it on `this` (same pointer as self) so the rel32 ties to the real body.
+    i32 r = FinishState();
     self->m_1b4 = 0;
     return r;
 }

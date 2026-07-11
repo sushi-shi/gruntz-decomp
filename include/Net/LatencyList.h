@@ -21,42 +21,39 @@
 #ifndef GRUNTZ_NET_LATENCYLIST_H
 #define GRUNTZ_NET_LATENCYLIST_H
 
-#include <Mfc.h> // real MFC CObList (base) + CString (node text / GetName)
+#include <Net/KeyedList.h> // the REAL container: CKeyedList : CObList + AddNode/m_mode
 #include <rva.h>
 
-// The node payload hung off each CObList node's `data` pointer (heap, 0xc bytes).
-// GetName (0x38120) returns m_text by value; FillCombo packs (m_param<<16)|m_id as
-// the combo item-data.
+// The node payload hung off each CObList node's `data` pointer (heap, 0xc bytes). This
+// IS the CKeyedList payload node (CNode, <Net/KeyedList.h>) under a latency-specific
+// name; GetName (0x38120) returns m_text by value. Kept here (not folded onto CNode)
+// only because CLatencyItem::GetName lives in the not-owned slotcombofill TU - the
+// CLatencyItem<->CNode payload fold is a deferred cross-TU merge.
 struct CLatencyItem {
-    CString m_text; // +0x00  row label ("Very Low Latency [ping < 50]", ...)
-    i32 m_id;       // +0x04  row id / ping column
-    i32 m_param;    // +0x08  row param column
+    CString m_text;    // +0x00  row label ("Very Low Latency [ping < 50]", ...)
+    i32 m_id;          // +0x04  row id / ping column
+    i32 m_param;       // +0x08  row param column
     CString GetName(); // 0x38120  returns m_text by value
 };
 SIZE_UNKNOWN(CLatencyItem);
 
-// The connection-latency slot list: a CObList of CLatencyItem rows + the latched
-// connection-type mode at +0x1c. Allocated with block size 0xa.
+// The connection-latency slot list IS a CKeyedList (the fake `CLatencyList : CObList`
+// view is folded onto the real container): it adds only the per-mode populators + the
+// combo fill/select. AddItem is the inherited CKeyedList::AddNode (0x37a70), so every
+// populator's append binds to the one real body.
 SIZE(CLatencyList, 0x20);
-class CLatencyList : public CObList {
+class CLatencyList : public CKeyedList {
 public:
-    // Inline ctor: chain the MFC CObList(nBlockSize) ctor (0x1b4867), then zero the
-    // mode. No own vtable, so cl emits no extra stamp (matches new(0x20) + CObList
-    // ctor + `mov [obj+0x1c],0`).
-    CLatencyList(i32 nBlockSize) : CObList(nBlockSize) {
-        m_mode = 0;
-    }
-
-    // 0x37a70: new a {text,id,param} CLatencyItem and AddTail it; returns the node
-    // (non-zero on success). Reloc-masked external (no body here).
-    i32 AddItem(const char* text, i32 id, i32 param);
+    // Forward to the CKeyedList(nBlockSize) ctor (chains CObList(0x1b4867), zeros the
+    // mode). Inlines to new(0x20) + CObList ctor + `mov [obj+0x1c],0`.
+    CLatencyList(i32 nBlockSize) : CKeyedList(nBlockSize) {}
 
     // 0x37910: latch `mode` at +0x1c and route to Populate<mode> (mode 1..5), report
     // whether the populator succeeded (0 for an out-of-range mode).
     i32 Dispatch(i32 mode);
 
     // The five per-mode populators (reached via ILT thunks from Dispatch; each
-    // appends eight AddItem rows and folds the success into a BOOL).
+    // appends eight AddNode rows and folds the success into a BOOL).
     i32 Populate1(); // 0x37b40  mode 1
     i32 Populate2(); // 0x37c30  mode 2  (ramped ladder 0,10,10,20,30,30,30,30)
     i32 Populate3(); // 0x37d20  mode 3
@@ -70,8 +67,6 @@ public:
     // 0x38150: find the combo item whose data == MAKELONG(lo,hi) and select it
     // (ignores `this` - a pure dialog-item scan). Returns 1 if found.
     i32 SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi);
-
-    i32 m_mode; // +0x1c  latched connection-type mode (Dispatch arg)
 };
 
 #endif // GRUNTZ_NET_LATENCYLIST_H
