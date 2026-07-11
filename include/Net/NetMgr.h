@@ -1189,7 +1189,13 @@ public:
     // CObList's own m_pHead (what FindPlayerById walks). Modeled as the head
     // pointer here; RemovePlayerObj reaches the embedded CObList via a +0x54 cast.
     CNetPlayerNode* m_58; // +0x58  head of the player-object list (CObList m_pHead)
-    char m_pad5c[0x70 - 0x5c];
+    char m_pad5c[0x60 - 0x5c];
+    // +0x60: read by the CMulti wait loop (WaitForOtherPlayers) as a "peer already
+    // ready" gate (==1 short-circuits the wait). Folded from the former Multi.cpp-local
+    // WaitReportGate view of m_peer; the +0x54 region's exact CObList shape is unproven,
+    // so this is modeled as a plain field at the load-bearing offset.
+    i32 m_peerReady; // +0x60
+    char m_pad64[0x70 - 0x64];
     // The three list-box selection latches (one per managed list). Each list's
     // ReadXxxSel reader writes the selected item's data here when it is in range;
     // the matching clear-loop zeroes it (along with the +0x7c/+0x80/+0x84 id below).

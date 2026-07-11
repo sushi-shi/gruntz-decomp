@@ -306,12 +306,7 @@ struct WaitDWordArr {               // this+0x604 (a CDWordArray of per-slot vot
     i32 m_8; // +0x8
 };
 SIZE_UNKNOWN(WaitDWordArr); // CDWordArray view (only +0x8 pinned); size TBD
-struct WaitReportGate {     // m_peer (+0x524)
-    char m_pad0[0x60];
-    i32 m_peerReady; // +0x60  peer-ready gate
-};
-SIZE_UNKNOWN(WaitReportGate); // peer view (only +0x60 pinned); size TBD
-struct WaitLogic {            // this->m_4
+struct WaitLogic {          // this->m_4
     char m_pad0[0x48];
     CGruntzSoundZ* m_48; // +0x48  ambient sound sub-mgr
 };
@@ -3784,7 +3779,7 @@ i32 CNetMgr::WaitForOtherPlayers() {
     for (i32 k = 3; k != 0; k--) {
         votes->SetAtGrow(votes->m_8, 0);
     }
-    if (((WaitReportGate*)m_peer)->m_peerReady == 1) {
+    if (m_peer->m_peerReady == 1) {
         m_534 = 1;
         return 1;
     }
