@@ -2665,7 +2665,7 @@ menuitem	?Reset@CMenuItem@@UAEXXZ	100.0000	100.0000	3	b12058da8dc7	0x184730
 menuitem	?SetFrame@CMenuItem2@@UAEXH@Z	100.0000	100.0000	1	b6f28d6e7f3a	0x1847a0
 menuitem	?Trigger@CMenuItem@@UAEHXZ	100.0000	100.0000	4	8015d9d48b02	0x1856d0
 menuitem	?Vf5@CMenuItem@@UAEHXZ	100.0000	100.0000	1	86025b655526	0x185520
-menupage	??1CMenuPage@@QAE@XZ	100.0000	100.0000	2	5b4e15f599cf	0x183250
+menupage	??1CMenuPage@@QAE@XZ	100.0000	100.0000	3	774d6e8330bc	0x183250
 menupage	?Activate@CMenuPage@@QAEHXZ	100.0000	100.0000	3	b3a198ffe122	0x183dd0
 menupage	?AddItem2@CMenuPage@@QAEPAVCMenuItem2@@HHHHH@Z	33.8482	33.8482	3	ec74b9ccd271	0x1836f0
 menupage	?AddItem@CMenuPage@@QAEPAVCMenuItem@@HHHHHH@Z	34.4554	34.4554	3	618bd58f0120	0x183460
@@ -2901,7 +2901,7 @@ multistartdlgroster	?Watchdog@CMultiStartDlg@@QAEXXZ	93.9344	93.9344	2	76350defd
 namerecord	?CopyBody@CNameRecord@@QAEHPAD@Z	100.0000	100.0000	1	69b8ad5fa171	0x118130
 namerecord	?CopyIfLarger@CBoundsCopy118@@QAEHPAUCGrowBox@@H@Z	100.0000	100.0000	1	de456dad077d	0x118260
 namerecord	?SetNames@CNameRecord@@QAEHPAD0H@Z	96.5909	96.5909	3	d3bfd5a67cb7	0x118040
-namerecord	?Update@C1181d0@@QAEHHHH@Z	100.0000	100.0000	1	d4cb59d54ae9	0x1181d0
+namerecord	?Update@C1181d0@@QAEHHHH@Z	100.0000	100.0000	2	9d75be17c048	0x1181d0
 netcmdmgr	?SelectColor@CNetSessHost@@QAEHHH@Z	100.0000	100.0000	6	1cd69ad7fceb	0xc4b60
 netcmdslot	?AddCmd@CNetCmdSlot@@QAEXPAUCNetCmd@@@Z	100.0000	100.0000	2	ebcc8ed183a9	0xc1170
 netcmdslot	?Advance@CLobbySync@@QAEHXZ	100.0000	100.0000	1	5aff9f84d64c	0xc01d0
@@ -3649,7 +3649,7 @@ symtab	?BeginParse@CParseSource@@QAEHXZ	99.7660	99.7660	1	0bab22bc9eb6	0x139960
 symtab	?Build@CSymLeafBuilder@@QAEXPAXPBD000000000@Z	96.2963	96.2963	4	ab58a8e3b9fc	0x139710
 symtab	?CheckNodes@CSymParser@@QAEHXZ	100.0000	100.0000	1	a46f9f5c2329	0x13ba20
 symtab	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	1	2912b500d101	0x13b850
-symtab	?CreateSub@CSymTab@@QAEPAV1@PBD@Z	79.5000	79.5000	4	2002c91b840d	0x13a330
+symtab	?CreateSub@CSymTab@@QAEPAV1@PBD@Z	78.2500	78.2500	5	d1f0a05e3268	0x13a330
 symtab	?EndParse@CParseSource@@QAEHXZ	100.0000	100.0000	1	1e6a41c92cbf	0x1399d0
 symtab	?Find@CSymTab@@QAEPAXPBD@Z	98.2759	98.2759	3	ce01d0d5bba5	0x13a040
 symtab	?FindEntry@CRezDir@@QAEHPAD@Z	100.0000	100.0000	1	966e946f941f	0x13c080
@@ -3665,13 +3665,13 @@ symtab	?Init@CParseSource@@QAEPAU1@XZ	56.6667	56.6667	1	cb74ced2c6b2	0x1396f0
 symtab	?Insert@CSymTab@@QAEHPBDPAX@Z	100.0000	100.0000	3	d81b0e356072	0x13a000
 symtab	?Load@CRezDirNode@@QAEHH@Z	100.0000	100.0000	1	6aa4c00ecb5d	0x13a0f0
 symtab	?LoadEntry@CSymParser@@QAEHPADH@Z	98.2888	98.2888	1	a6cd04fffbfa	0x13b0c0
-symtab	?MakeSymSeed@@YAHXZ	100.0000	100.0000	1	472e50eb9d31	0x13ba70
+symtab	?MakeSeed@CSymParser@@QAEHXZ	100.0000	100.0000	1	440bbd06b531	0x13ba70
 symtab	?NextSub@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	2	69678baba288	0x13a280
-symtab	?NextSym2@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	2	66c47df229c3	0x13a2f0
+symtab	?NextSym2@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	3	346a0957cb60	0x13a2f0
 symtab	?NextSym3@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	2	edbd24755c79	0x13a310
 symtab	?NextSym@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	2	1cf88c1e2f0c	0x13a2d0
 symtab	?PackTag@@YGIPBD@Z	100.0000	100.0000	1	5427b9365e37	0x13b910
-symtab	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	77.1533	77.1533	1	ef8e22cfab14	0x13ad00
+symtab	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	78.1500	78.1500	2	7f514f4e3f94	0x13ad00
 symtab	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	56.1996	56.1996	1	5de5ecf79f1e	0x13b300
 symtab	?PopParseSlot@CSymParser@@QAEPAXXZ	77.1304	77.1304	1	86a7301697bc	0x13c0c0
 symtab	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	5f22edcbb006	0x13c050

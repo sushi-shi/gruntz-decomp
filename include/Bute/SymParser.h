@@ -196,11 +196,11 @@ public:
     // pop the first. Returns the popped record (or 0 on allocation failure).
     void* PopParseSlot(); // 0x13c0c0
 
-    // MakeSeed: the name-keyed seed builder (0x13ba70) dispatched __thiscall on the
-    // parser (ecx = this) - the same physical seed builder MakeSymSeed calls as a
-    // free cdecl, reached here with a `this` (SymTab.cpp AddNodeEntry). Bare decl (no
-    // RVA - the RVA is carried by MakeSymSeed); the rel32 call reloc-masks.
-    i32 MakeSeed(); // 0x13ba70 (__thiscall view of the seed builder)
+    // MakeSeed: the name-keyed clock-seed builder (0x13ba70), __thiscall on the parser
+    // (ecx = this; body ignores it, returning time(&t)). The real method - every caller
+    // loads the parser into ecx before the call (AddNodeEntry's byte-exact `mov ecx,
+    // m_owner; call` proves the thiscall convention). Defined in SymTab.cpp.
+    i32 MakeSeed(); // 0x13ba70 (defined in SymTab.cpp)
 
     // CheckNodes (0x13ba20): walk m_list, calling each node's slot-7 probe; return 1
     // iff every node returned nonzero (no early exit). Orphan copy (no caller).

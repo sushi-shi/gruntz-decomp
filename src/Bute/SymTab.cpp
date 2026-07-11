@@ -687,10 +687,12 @@ void* CSymTab::NextSym(void* rec) {
     return n->m_14;
 }
 
-// NextSym2 (0x13a2f0): next record after `rec` (node @ rec+0x24).
+// NextSym2 (0x13a2f0): FIRST record of the value sub-collection at rec+0x24 (a
+// CSymRec's m_valTable is a whole RezColl, not an embedded node), so retail calls
+// RezColl::First (0x184ae0), not RezNode::Next. reloc_fidelity MISBOUND fix, wave5-R8.
 RVA(0x0013a2f0, 0x19)
 void* CSymTab::NextSym2(void* rec) {
-    RezNode* n = ((RezNode*)((char*)rec + 0x24))->Next();
+    RezNode* n = ((RezColl*)((char*)rec + 0x24))->First();
     if (!n) {
         return n;
     }
@@ -727,7 +729,7 @@ CSymTab* CSymTab::CreateSub(const char* name) {
         name,
         0,
         0,
-        (void*)MakeSymSeed(),
+        (void*)owner->MakeSeed(),
         owner->m_subTabBucketCount,
         owner->m_symbolBucketCount
     );
@@ -1249,7 +1251,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             g_emptyString,
             0,
             0,
-            (void*)MakeSymSeed(),
+            (void*)this->MakeSeed(),
             m_subTabBucketCount,
             m_symbolBucketCount
         );
@@ -1280,7 +1282,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
             g_emptyString,
             0,
             0,
-            (void*)MakeSymSeed(),
+            (void*)this->MakeSeed(),
             m_subTabBucketCount,
             m_symbolBucketCount
         );
@@ -1647,11 +1649,14 @@ i32 CSymParser::CheckNodes() {
     return ok;
 }
 
-// 0x13ba70 - MakeSymSeed: the ButeMgr clock seed builder ParseBuffer/ParseRecords use
-// (returns time(&t) via the leftover-stack-args trick). __cdecl, no args. Declared in
-// SymParser.h / SymTab.h. 0x120210 == CRT time(). Byte-exact.
+// 0x13ba70 - CSymParser::MakeSeed: the ButeMgr clock seed builder ParseBuffer/
+// ParseRecords use (returns time(&t); ignores `this`). It is genuinely __thiscall
+// (every caller loads ecx=parser before the call - proven by AddNodeEntry's byte-exact
+// `mov ecx,m_owner; call`), so it is modeled as a real CSymParser method, not the old
+// free `MakeSymSeed` dual-view whose thiscall-view relocs went UNBOUND (wave5-R8).
+// 0x120210 == CRT time(). Byte-exact.
 RVA(0x0013ba70, 0x10)
-i32 MakeSymSeed() {
+i32 CSymParser::MakeSeed() {
     time_t t;
     return (i32)time(&t);
 }

@@ -64,9 +64,10 @@ struct CSymTabNode {
 };
 VTBL(CSymTabNode, 0x001ef748);
 
-// A name-keyed seed builder (0x13ba70): returns the clock seed time(&t), reloc-masked.
-// Called as ctor arg5 so its leftover stack args double as the next ctor args.
-i32 MakeSymSeed(); // 0x13ba70 (defined in SymParser.cpp; cdecl, no args of its own)
+// The clock-seed builder is CSymParser::MakeSeed (0x13ba70, __thiscall on the parser);
+// see SymParser.h. It is called as ctor arg5 so its leftover stack args double as the
+// next ctor args. (Formerly a free `MakeSymSeed` dual-view; folded to the real method,
+// wave5-R8, so its thiscall reloc binds.)
 
 // The ButeMgr string<->DWORD "tag" pack/unpack free helpers (__stdcall), defined in
 // SymParser.cpp. PackTag maps a file-extension string to its packed int key (the

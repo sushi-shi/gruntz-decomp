@@ -79,24 +79,28 @@ i32 CNameRecord::CopyBody(char* body) {
 }
 
 // ===========================================================================
-// 0x1181d0 - a spatially-adjacent bounds-grow object (NOT CNameRecord: its box is
-// at +0xb8, past this record's body). Reject when the new (+0x04,+0x08) pair does
-// not exceed the +0xb8 box; else store it, notify (0x3661) and stash +0xd4.
-// __thiscall(3). Placeholder identity. Re-homed from src/Stub/BoundaryLowerMethods.cpp.
+// 0x1181d0 - a spatially-adjacent CGameInfo-family time-update object (NOT CNameRecord:
+// its +0xb8 record is a CGameInfoTime, a 0x1c-byte time record). Reject when the new
+// (seconds,timestamp) pair does not exceed the current one; else store it, rebuild the
+// calendar date (BuildGameDate @0x118330, reached via the 0x3661 ILT jmp-thunk) and
+// stash +0xd4. __thiscall(3). Re-homed from src/Stub/BoundaryLowerMethods.cpp.
 // ===========================================================================
-struct CBox118 {
+struct CBox118 { // the CGameInfoTime prefix Update touches (S @+0x04, timestamp @+0x08)
     void* m_0;
     u32 m_4;
     u32 m_8;
 };
 struct C1181d0 {
     char pad0[0xb8];
-    CBox118 m_bounds; // +0xb8
+    CBox118 m_bounds; // +0xb8  (== CGameInfoTime; BuildGameDate fills +0xc4/+0xc8/+0xcc)
     char padd4[0xd4 - 0xb8 - 0xc];
     i32 m_d4; // +0xd4
     i32 Update(i32 a1, i32 a2, i32 a3);
 };
-extern "C" void Func3661(CBox118* p); // 0x3661
+// The real notify callee is the free BuildGameDate (gameinfostring 0x118330), which
+// takes a CGameInfoTime*; the 0x3661 fake extern was the reloc-masked ILT thunk to it.
+struct CGameInfoTime;
+i32 BuildGameDate(CGameInfoTime* out); // 0x118330 (via 0x3661 thunk)
 RVA(0x001181d0, 0x70)
 i32 C1181d0::Update(i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
@@ -117,7 +121,7 @@ i32 C1181d0::Update(i32 a1, i32 a2, i32 a3) {
     }
     b->m_4 = a1;
     b->m_8 = a2;
-    Func3661(b);
+    BuildGameDate((CGameInfoTime*)b);
     m_d4 = a3;
     return 1;
 }

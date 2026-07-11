@@ -73,10 +73,12 @@ SIZE_UNKNOWN(CMenuPlacer);
 
 // ===========================================================================
 
-// destructor: Clear() then tear down the CPtrList + three CStrings.
+// destructor: InitDefaults() (reset-to-defaults, which itself calls Clear) then
+// tear down the CPtrList + three CStrings. (retail calls 0x1833a0 InitDefaults, not
+// 0x1833c0 Clear - reloc_fidelity MISBOUND fix, wave5-R8.)
 RVA(0x00183250, 0x71)
 CMenuPage::~CMenuPage() {
-    Clear();
+    InitDefaults();
 }
 
 // CMenuPage::GetKey (0x1832d0) - return the page key CString by value.
