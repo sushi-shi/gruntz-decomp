@@ -15,11 +15,11 @@
 #include <stdio.h>
 
 #include <Bute/SymTab.h>
-#include <Bute/SymParser.h>                // CSymParser::ResolvePath (0x13c030) on m_8
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>  // CDDrawSubMgrLeafScan::ScanTree_157ee0 (0x157ee0)
-#include <Wap32/Wap32.h>                   // CGameWnd::PumpMessages (0x13d4e0)
-#include <Gruntz/State.h>    // the CState base this screen state derives (real vtable)
-#include <Gruntz/SoundCue.h> // the ONE +0x28 cue holder (CSndHost / LeafCue)
+#include <Bute/SymParser.h>               // CSymParser::ResolvePath (0x13c030) on m_8
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::ScanTree_157ee0 (0x157ee0)
+#include <Wap32/Wap32.h>                  // CGameWnd::PumpMessages (0x13d4e0)
+#include <Gruntz/State.h>                 // the CState base this screen state derives (real vtable)
+#include <Gruntz/SoundCue.h>              // the ONE +0x28 cue holder (CSndHost / LeafCue)
 #include <Gruntz/StatusBarUpdatersViews.h> // the ONE CRegHolder (CState::m_c world holder)
 #include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
@@ -30,7 +30,7 @@ extern "C" {
     extern i32 g_sndEnabled;
     DATA(0x0061ab24)
     extern i32 g_sndCueTag;
-    DATA(0x006bf3c0)
+    DATA(0x002bf3c0)
     extern u32 g_killCueClock;
 }
 
@@ -63,12 +63,12 @@ extern "C" {
 SIZE_UNKNOWN(CPreviewState);
 class CPreviewState : public CState {
 public:
-    i32 Enter(void* mgr, i32 a1, i32 a2);                           // 0x0de030
+    i32 Enter(void* mgr, i32 a1, i32 a2); // 0x0de030
     // The state-entry asset loader run on `this` (0x43a9 -> CAssetLoader::
     // LoadGameAssetNamespaces @0xf9ea0; the CState/CGameModeBase family share the base
     // state layout - the codegen-neutral cross-view State.h already uses). Declared-
     // only so the __thiscall call reloc-masks.
-    i32 LoadAssetNamespaces(void* mgr, i32 a, i32 b);              // 0x0f9ea0
+    i32 LoadAssetNamespaces(void* mgr, i32 a, i32 b);               // 0x0f9ea0
     i32 Tick();                                                     // 0x0de200
     i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0 (CState base method)
     void RetireScene(i32 a, i32 b, i32 c, i32 d);                   // 0x0fa8f0 (CState base method)
