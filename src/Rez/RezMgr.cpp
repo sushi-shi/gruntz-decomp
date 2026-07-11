@@ -555,21 +555,17 @@ CRezDir::CRezDir(void* parent, void* rezMgr) : CRezItmBase(parent) {
 // ---------------------------------------------------------------------------
 // The two CRezDir-family /GX destructors (re-homed from src/Stub/BoundaryUpper2Eh.cpp),
 // co-located next to CRezDir. Their derived vtables (0x1ef760/0x1ef7d0) are CObjListBase-
-// family; the shared out-of-line base subobject dtor is 0x13c520 (== CRezItmBase's).
-// Kept distinct placeholder identities (CRezDir13c9b0/CRezDir13cb80) since they are not
-// the same symbol as CRezDir's inline dtor.
+// family; the shared out-of-line base subobject dtor is 0x13c520 == CRezItmBase's dtor,
+// so both derive from the real CRezItmBase (which binds the base-subobject dtor call to
+// ??1CRezItmBase). Kept distinct placeholder identities (CRezDir13c9b0/CRezDir13cb80)
+// since they are not the same symbol as CRezDir's inline dtor.
 // ---------------------------------------------------------------------------
-struct RezDirBase {
-    virtual ~RezDirBase(); // 0x13c520 (shared base-subobject dtor)
-};
-SIZE_UNKNOWN(RezDirBase);
 struct RezListNode {
     virtual void v0();
     virtual void Delete(i32); // slot 1 (+0x4)
 };
 SIZE_UNKNOWN(RezListNode);
-struct CRezDir13c9b0 : RezDirBase {
-    i32 _4[(0x10 - 0x4) / 4];
+struct CRezDir13c9b0 : CRezItmBase {
     void* m_10;        // +0x10
     RezListNode* m_14; // +0x14
     i32 _18;           // +0x18
@@ -655,8 +651,10 @@ struct RezOwner18 {
     CObjList m_1c; // +0x1c
 };
 SIZE_UNKNOWN(RezOwner18);
-struct CRezDir13cb80 : RezDirBase {
-    i32 _4[(0x10 - 0x4) / 4];
+// Real base is CRezItmBase (0x10-byte node base; its out-of-line subobject dtor is
+// 0x13c520). Deriving from it binds the derived dtor's base-subobject call to
+// ??1CRezItmBase (0x13c520) instead of the fake RezDirBase placeholder.
+struct CRezDir13cb80 : CRezItmBase {
     void* m_10;       // +0x10
     i32 m_14;         // +0x14
     RezOwner18* m_18; // +0x18

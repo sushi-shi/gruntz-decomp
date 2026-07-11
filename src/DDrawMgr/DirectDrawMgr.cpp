@@ -84,8 +84,8 @@ extern "C" {
 }
 
 // The post-mask surface-format apply (BuildColorChannelTables @0x13f740, the
-// DIRSURF obj); free-fn decl so the bare `call rel32` reloc-masks.
-void Boundary_13f740();
+// DDSurface.cpp obj); free-fn decl so the bare `call rel32` reloc-masks.
+void BuildColorChannelTables();
 
 // The pool items' operator delete (invoked by the scalar-deleting dtors); the
 // engine free, reloc-masked rel32.
@@ -638,9 +638,14 @@ void* CFileImageSurface::ScalarDelete(u32 flags) {
 // vptr stamp lands stamp-first, then the shared FreeSurfaces teardown runs and the
 // owned CPtrArray member at +0x94 is destroyed (guarded -> the /GX EH frame). The
 // implicit stamp reloc-masks against the shared 0x5ef7f0 surface vtable.
+//
+// This dtor IS the inlined CDDSurface base teardown recompiled under the a58-variant
+// name (single stamp + single FreeSurfaces, so it is NOT modeled by deriving from
+// CDDSurface - that would emit a doubled base-dtor teardown). FreeSurfaces is thus the
+// real CDDSurface::FreeSurfaces (0x13e4d0); the base-subobject cast is language-forced.
 RVA(0x00142360, 0x53)
 CFileImageSurface::~CFileImageSurface() {
-    FreeSurfaces();
+    ((CDDSurface*)this)->CDDSurface::FreeSurfaces();
 }
 
 // ---------------------------------------------------------------------------
@@ -1639,7 +1644,7 @@ i32 CDDrawPtrCollections::ComputeColorMasks() {
     g_683ea8 = shift;
     g_683eb4 = 8 - count;
 
-    Boundary_13f740();
+    BuildColorChannelTables();
     return 1;
 }
 

@@ -2,7 +2,7 @@
 // surface class (C:\Proj\...\Image) - ONE original TU (interval dossier
 // 0x174e90-0x177476: imagepool + rezimage + scanlinesurface + imagevflip +
 // scanlinesurfacesave + imagerectfill all hold methods of the same
-// CImagePool/CRezImage/CImagePaletteNode/CImageExtLoader classes, totally
+// CImagePool/CRezImage/CImagePaletteNode classes, totally
 // interleaved - merged wave1-E, strict retail-RVA order).
 //
 // The pool keeps two MFC CObLists - a list of GDI surface nodes (+0x10) and a
@@ -27,8 +27,9 @@
 //                       array from a packed-RGB / dispatched / trailing-768-byte
 //                       source then forward to Build. Run() @0x177070 deletes the
 //                       HPALETTE.
-//   CImageExtLoader     - LoadByExtension() @0x176f90 loads a palette node from a
-//                       file by extension (.BMP/.PCX/.PAL -> sibling loaders).
+//   CImagePaletteNode   - LoadByExtension() @0x176f90 loads a palette node from a
+//                       file by extension (.BMP/.PCX/.PAL -> sibling loaders); the
+//                       former CImageExtLoader view is folded in (proven same `this`).
 //
 // The pool walks/edits the CObLists through the real MFC CObList (AddTail/
 // RemoveAll/RemoveAt are NAFXCW, reloc-masked via library labels) and
@@ -104,6 +105,19 @@ namespace ApiCallerStubs {
         i32 ParseDispatch(void* buf, u32 size, i32 type, i32 ctrl); // 0x177040 (this TU)
         i32 ParsePaletteTail(void* buf, u32 size, i32 ctrl);        // 0x177400 (this TU)
         void Run();                                                 // 0x177070 (this TU)
+
+        // The file-extension loader front-ends (former CImageExtLoader view, folded in:
+        // its `this` was xref-proven a CImagePaletteNode - AddImageFile 0x1755f0 news a
+        // CImagePaletteNode and dispatches here). strrchr the dot then a stricmp ladder.
+        i32 LoadByExtension(char* path, i32 arg); // 0x176f90 (this TU)
+        i32 LoadPalFile(char* path, i32 arg);     // 0x1771f0 (this TU)
+        i32 LoadPcxFile(char* path, i32 arg);     // 0x1772e0 (this TU)
+        // LoadBmpFile/Apply bodies live (mis-named) in the palettebmp/resourceloaders
+        // objs as CPalLoader::LoadBmpPalette (0x177480) / ResLoaders::PalHost_1775f0::
+        // Apply (0x1775f0) - same `this`, so really CImagePaletteNode methods. Declared-
+        // only here until those TUs rename their owners onto CImagePaletteNode.
+        i32 LoadBmpFile(char* path, i32 arg); // 0x177480 (external, palettebmp)
+        i32 Apply(char* path, i32 arg);       // 0x1775f0 (external, resourceloaders)
     };
 
     // Two free GDI palette helpers PalBuilder::Build/Tune funnel through:
@@ -112,25 +126,6 @@ namespace ApiCallerStubs {
     i32 winapi_1770a0_CreateICA_DeleteDC_GetDeviceCaps();
     void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
 } // namespace ApiCallerStubs
-
-// ---------------------------------------------------------------------------
-// CImageExtLoader  - the FILE-loader counterpart of LoadFromRez: strrchr the dot,
-// then a stricmp ladder on .BMP/.PCX/.PAL forwarding (path, arg) verbatim to the
-// matching file loader; an absent/unknown extension falls through to Apply.
-// LoadBmpFile/Apply are reloc-masked external siblings (0x177480/0x1775f0);
-// `this` is pure-forwarded so its layout is immaterial. __thiscall, ret 8.
-// ---------------------------------------------------------------------------
-class CImageExtLoader {
-public:
-    i32 LoadByExtension(char* path, i32 arg);
-    i32 LoadBmpFile(char* path, i32 arg);  // 0x177480 (external)
-    i32 LoadPcxFile(char* path, i32 arg);  // 0x1772e0  (.PCX palette tail)
-    i32 LoadPalFile(char* path, i32 arg);  // 0x1771f0  (768-byte .PAL)
-    i32 Apply(char* path, i32 arg);        // 0x1775f0  (default; external)
-    i32 ProcessPal(void* rgb768, i32 arg); // 0x176e70
-    i32 BuildPalette(void* rgbq, i32 arg); // 0x176df0
-};
-SIZE_UNKNOWN(CImageExtLoader);
 
 // The 14-byte "BM" BITMAPFILEHEADER template SaveBmp copies up front ($SG .rdata
 // @0x61aabc; canonical in Globals.h - re-declared bare here, the fat Globals.h
@@ -585,7 +580,7 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
     } else {
         node = 0;
     }
-    if (((CImageExtLoader*)node)->LoadByExtension(path, arg) == 0) {
+    if (node->LoadByExtension(path, arg) == 0) {
         if (node) {
             node->Run();
             RezFree(node);
@@ -1368,8 +1363,13 @@ void CRezImage::FillRect(CRezFillRect* r, i32 color) {
 // ---------------------------------------------------------------------------
 // CRezImage::FillRectAt (0x176da0) - build a translated fill rect at origin
 // (dx,dy) sized from `src` (right = dx + src.width, bottom = dy + src.height)
-// and scanline-fill it. 100% - the former ~66% regalloc-pressure wall dissolved
-// once the pair was compiled in this merged (retail-shaped) TU.
+// and scanline-fill it.
+// @early-stop
+// ~66% regalloc-pressure wall (extra ebx spill vs retail's tighter esi/edi pick).
+// This function's 100% was TU-shape-dependent; it re-surfaced when the CImageExtLoader
+// view was folded into ApiCallerStubs::CImagePaletteNode (5 loader method decls added
+// to the node class reschedule the whole imagepool /O2 regalloc). Body byte-faithful;
+// kept per the clean-room mandate (correct de-view outranks a collateral regalloc %).
 RVA(0x00176da0, 0x4b)
 void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
     CRezFillRect r;
@@ -1479,9 +1479,9 @@ i32 ApiCallerStubs::CImagePaletteNode::ProcessPalBGR(void* bgr, i32 flags) {
 }
 
 // ---------------------------------------------------------------------------
-// CImageExtLoader::LoadByExtension  @0x176f90 - see the class comment above.
+// CImagePaletteNode::LoadByExtension  @0x176f90 - see the class comment above.
 RVA(0x00176f90, 0xa4)
-i32 CImageExtLoader::LoadByExtension(char* path, i32 arg) {
+i32 ApiCallerStubs::CImagePaletteNode::LoadByExtension(char* path, i32 arg) {
     char* ext = strrchr(path, '.');
 
     if (ext && _stricmp(ext, s_extBmp) == 0) {
@@ -1580,12 +1580,12 @@ void ApiCallerStubs::winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalet
 }
 
 // ---------------------------------------------------------------------------
-// CImageExtLoader::LoadPalFile (0x1771f0) - load a raw 768-byte (.PAL) palette:
+// CImagePaletteNode::LoadPalFile (0x1771f0) - load a raw 768-byte (.PAL) palette:
 // open the file, require length == 0x300, Read the 256*3 RGB bytes into a stack
 // buffer, hand it to ProcessPal(buf, arg). Any I/O failure returns 0. The CFileIO
 // stack object forces the /GX EH frame. __thiscall, ret 8.
 RVA(0x001771f0, 0xe2)
-i32 CImageExtLoader::LoadPalFile(char* path, i32 arg) {
+i32 ApiCallerStubs::CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
     CFileIO file;
     char rgb[0x300];
 
@@ -1600,7 +1600,7 @@ i32 CImageExtLoader::LoadPalFile(char* path, i32 arg) {
 }
 
 // ---------------------------------------------------------------------------
-// CImageExtLoader::LoadPcxFile (0x1772e0) - load the trailing palette of a .PCX:
+// CImagePaletteNode::LoadPcxFile (0x1772e0) - load the trailing palette of a .PCX:
 // seek 0x300 bytes back from EOF, Read the 256*3 RGB triples; on a short read
 // return 0. Expand the triples in place into a 256-entry RGBQUAD table (R,G,B,0)
 // and hand it to BuildPalette(table, arg). The CFileIO stack object forces the
@@ -1612,7 +1612,7 @@ i32 CImageExtLoader::LoadPalFile(char* path, i32 arg) {
 // [iv-3]/[iv-2], the zero-store LAST) while clean C reorders the +4 and the zero
 // store; not source-steerable. Logic 100% correct (256 RGB triples -> RGBQUAD).
 RVA(0x001772e0, 0x117)
-i32 CImageExtLoader::LoadPcxFile(char* path, i32 arg) {
+i32 ApiCallerStubs::CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
     CFileIO file;
     u8 rgb[0x300];
     u8 rgbq[0x400];
@@ -1634,7 +1634,7 @@ i32 CImageExtLoader::LoadPcxFile(char* path, i32 arg) {
         dst[3] = 0;
         dst += 4;
     }
-    return BuildPalette(rgbq, arg);
+    return Build((PALETTEENTRY*)rgbq, arg);
 }
 
 // ===========================================================================

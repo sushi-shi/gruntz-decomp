@@ -16,6 +16,7 @@
 // The TU carries a destructible base subobject -> /GX EH frame (flags="eh").
 // ---------------------------------------------------------------------------
 
+#include <Gruntz/ResolveNode.h> // canonical CResolveNode (Init @0x1647e0, ctor @0x1549d0)
 #include <Image/CImage.h>
 #include <Image/CBlitInfo.h> // canonical CBlitInfo/CBlitXform (RenderImage selector arg)
 #include <Wwd/WwdFile.h>     // CPlaneRender::WrapCoord (the m_xform origin remap)
@@ -631,16 +632,11 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
 // and the first arg. __thiscall, ret 0x10 (4 stack args).
 // ---------------------------------------------------------------------------
 
-// The shared clip/resolve singleton: a CResolveNode (vtable 0x5efbc0). Its default
-// ctor (0x1549d0) + the resolve method (0x1647e0) are external engine __thiscall
-// callees, modeled here as a tiny host so the magic-static init + the resolve
-// call reloc-mask. The atexit dtor thunk (0x553800) is the static's cleanup.
-class CResolveNode {
-public:
-    CResolveNode();                                                       // 0x1549d0
-    i32 Resolve(void* parent, i32 z1, void* b, void* c, void* d, i32 z2); // 0x1647e0
-};
-
+// The shared clip/resolve singleton is the canonical CResolveNode (class in
+// <Gruntz/ResolveNode.h>). Its default ctor (0x1549d0) + Init (0x1647e0) are external
+// engine __thiscall callees; the magic-static init + the Init call reloc-mask, and the
+// node's virtual ~CResolveNode drives the compiler-emitted atexit thunk.
+//
 // The +0x38 render virtual (slot 14, RenderImage @0x153470, reconstructed above) is
 // dispatched on `this` as an ordinary virtual call (`this->RenderImage(...)` ->
 // `mov ecx,this; call [vptr+0x38]`). The `clip` CResolveNode IS the CBlitInfo blit
@@ -650,7 +646,7 @@ public:
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf314, ctor 0x1549d0 + atexit
-    if (clip.Resolve(m_parent, 0, b, c, d, 0)) {
+    if (clip.Init((i32)m_parent, 0, (i32)b, (i32)c, (i32)d, 0)) {
         this->RenderImage((CBlitInfo*)&clip, (CImage*)a);
     }
 }
@@ -670,7 +666,7 @@ static i32 g_imageClipRect[4]; // @0x6bf28c
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {
     static CResolveNode clip; // magic-static guard @0x6bf29c, ctor 0x1549d0 + atexit
-    if (clip.Resolve(m_parent, 0, b, c, d, 0)) {
+    if (clip.Init((i32)m_parent, 0, (i32)b, (i32)c, (i32)d, 0)) {
         if (rect != 0) {
             g_imageClipRect[0] = ((i32*)rect)[0];
             g_imageClipRect[1] = ((i32*)rect)[1];

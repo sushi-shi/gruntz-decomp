@@ -39,9 +39,9 @@ extern "C" {
     extern i32 g_683eb4; // blue  8-minus-count
 }
 
-// The post-mask surface-format apply (BuildColorChannelTables @0x13f740, the
-// DIRSURF obj); free-fn decl so the bare `call rel32` reloc-masks.
-void Boundary_13f740();
+// The post-mask surface-format apply (BuildColorChannelTables @0x13f740, DDSurface.cpp
+// obj); free-fn decl so the bare `call rel32` reloc-masks.
+void BuildColorChannelTables();
 
 // ---------------------------------------------------------------------------
 // CDDSurface::LoadKeyed (ret 0x18) - blit a source surface in with the control word
@@ -282,7 +282,7 @@ i32 CPoolItemAB8::InstallColorFormat() {
     g_683eb4 = 8 - count;
     g_683ea8 = shift;
 
-    Boundary_13f740();
+    BuildColorChannelTables();
     return 1;
 }
 

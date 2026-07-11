@@ -198,7 +198,6 @@ public:
     virtual i32 ResolveEx();      // slot 9  @0x148890
     virtual i32 LoadByExt();      // slot 10 @0x148940
     virtual i32 LoadKeyed();      // slot 11 @0x148840
-    void FreeSurfaces();          // 0x13e4d0 (shared teardown, external/no-body)
 
     // vptr @+0x00 (implicit, polymorphic; the compiler emits the dtor's stamp).
     char m_pad04[0x94 - 0x04]; // +0x04
