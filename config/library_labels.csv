@@ -3427,3 +3427,13 @@ rva,name,lib,confidence,source
 0x16c9d0,msc_lock_term_16c9d0,LIBCIMT,HIGH,manual-stub-reclass
 0x16c9e0,msc_lock_enter_16c9e0,LIBCIMT,HIGH,manual-stub-reclass
 0x16c9f0,msc_lock_leave_16c9f0,LIBCIMT,HIGH,manual-stub-reclass
+0x1b9b82,??3@YAXPAX@Z,NAFXCW,MED,derecon-waveO
+0x1b9b8d,Get_1b9b8d,NAFXCW,LOW,derecon-waveO
+0x1d4722,??1CNoTrackObject@@UAE@XZ,NAFXCW,MED,derecon-waveO
+0x1d4c0c,_$E_afxData,NAFXCW,MED,derecon-waveO
+0x1bae1f,_$E_com652f00,NAFXCW,HIGH,derecon-waveO
+0x1ce95f,?ModuleStateField30@@YAHXZ,NAFXCW,LOW,derecon-waveO
+0x1d047f,?GetActive@CDdeView@@QAEHXZ,NAFXCW,LOW,derecon-waveO
+0x1bae5d,_$E_652e80,NAFXCW,HIGH,derecon-waveO
+0x1bf577,?Run@LibHost_1bf577@@QAEXXZ,NAFXCW,LOW,derecon-waveO
+0x1c09de,?FreeHandle@GlobalHandleOwner@@QAEXXZ,NAFXCW,LOW,derecon-waveO

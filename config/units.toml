@@ -1750,11 +1750,6 @@ source = "src/Rez/RezList.cpp"
 flags = "base"
 
 [[unit]]
-unit = "rezutil"
-source = "src/Rez/RezUtil.cpp"
-flags = "o1"
-
-[[unit]]
 unit = "rezcoll"
 source = "src/Rez/RezColl.cpp"
 flags = "base"
@@ -2001,10 +1996,6 @@ source = "src/Wap32/WapMisc.cpp"
 flags = "base"
 
 [[unit]]
-unit = "comhelperthunks"
-source = "src/Wap32/ComHelperThunks.cpp"
-flags = "framed"
-[[unit]]
 unit = "recordfill"
 source = "src/Utils/RecordFill.cpp"
 flags = "base"
@@ -2061,10 +2052,6 @@ flags = "base"
 [[unit]]
 unit = "netcmdmgr"
 source = "src/Net/NetCmdMgr.cpp"
-flags = "base"
-[[unit]]
-unit = "m3mfcleaves"
-source = "src/Wap32/M3MfcLeaves.cpp"
 flags = "base"
 [[unit]]
 unit = "netthingdtor"

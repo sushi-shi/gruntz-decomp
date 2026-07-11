@@ -1,9 +1,8 @@
 // WapMisc.cpp - assorted tiny engine leaves.
 //
 //  0x11d100 - a CNoTrackObject base-subobject vptr stamp (*this = &??_7CNoTrackObject);
-//             transitional stamp - the class lives in ComHelperThunks.cpp.
+//             transitional stamp - the class lives in the MFC library.
 //  0x1155b0 - construct the g_largeFont global (tail-jmp to ??0Font).
-//  0x1bae5d - forward (-1) to a CWnd method on a global framework object.
 #include <rva.h>
 #include <Ints.h>
 
@@ -11,12 +10,15 @@
 #include <Wap32/ZVec.h>
 
 // --- 0x11d100 : CNoTrackObject vptr stamp ------------------------------------
-// Stamps the ??_7CNoTrackObject vtable (VA 0x5ec26c = the vtable ComHelperThunks.cpp
-// models as CNoTrackObject). Kept as a bare stamp leaf: making it a real CNoTrackObject
+// Stamps the ??_7CNoTrackObject vtable (VA 0x5ec26c = the vtable modeled as
+// CNoTrackObject). Kept as a bare stamp leaf: making it a real CNoTrackObject
 // ctor would add a `mov eax,ecx` (return-this) the 7-byte retail body does not carry
-// (the vtable-realization boundary - matcher.md). CNoTrackObject itself lives in a
-// different TU, so the stamp is modeled locally against the same vtable symbol.
-extern void* const Vtbl_5ec26c; // ??_7CNoTrackObject@@6B@
+// (the vtable-realization boundary - matcher.md). CNoTrackObject itself is MFC
+// library code (NAFXCW), so the stamp is modeled locally against the same vtable
+// symbol; the DATA() pin names the external library vtable ??_7CNoTrackObject@@6B@
+// (VA 0x5ec26c) so this reloc masks (formerly bound by ComHelperThunks' VTBL()).
+DATA(0x001ec26c)
+extern void* const Vtbl_5ec26c; // ??_7CNoTrackObject@@6B@ (NAFXCW library vtable)
 struct CNoTrackObjectStamp {
     void* vptr;
     void Stamp(); // 0x11d100
@@ -38,52 +40,7 @@ void Unmatched_1155b0() {
     g_largeFont.Font::Font();
 }
 
-// --- 0x1bae5d : forward (-1) to a CWnd method on a global object -------------
-// g_652e80 is an MFC framework global; 0x1baf15 is a CWnd method (Ghidra: CWnd)
-// taking an int, shared with ComHelperThunks' g_com652f00 forwarder. The exact
-// CWnd-family class of the global is not recoverable from this one call site.
-struct CWndFwd {
-    void Method_1baf15(int); // 0x1baf15 (CWnd method)
-};
-extern CWndFwd g_652e80;
-RVA(0x001bae5d, 0xd)
-void Unmatched_1bae5d() {
-    g_652e80.Method_1baf15(-1);
-}
-
 // (The 0xc76d0 "Unmatched_c76d0" that was parked here is really
 //  CDroppedObjectShadow::InitActReg - src/Gruntz/DroppedObject.cpp, wave2-H.)
 
-// --- 0x1bf577 : free the owned module handle if present ----------------------
-// A __thiscall leaf on a placeholder host that owns an HMODULE at +0x00. Re-homed
-// from src/Stub/ApiMiscHelpers.cpp.
-struct LibHost_1bf577 {
-    HMODULE m_0; // +0x00
-    void Run();
-};
-SIZE_UNKNOWN(LibHost_1bf577);
-RVA(0x001bf577, 0xe)
-void LibHost_1bf577::Run() {
-    if (m_0) {
-        FreeLibrary(m_0);
-    }
-}
-
-// --- 0x1c09de : free the owned global handle if present ----------------------
-// A __thiscall leaf on a placeholder host that owns an HGLOBAL at +0x00. Re-homed
-// from src/Stub/ApiMiscHelpers.cpp (its RVA neighborhood).
-// @identity-TODO: owner class genuinely unrecovered - a minimal __thiscall placeholder.
-struct GlobalHandleOwner {
-    HGLOBAL m_handle; // +0x00
-    void FreeHandle();
-};
-SIZE_UNKNOWN(GlobalHandleOwner);
-RVA(0x001c09de, 0xe)
-void GlobalHandleOwner::FreeHandle() {
-    if (m_handle) {
-        GlobalFree(m_handle);
-    }
-}
-
 SIZE_UNKNOWN(CNoTrackObjectStamp); // CNoTrackObject vptr-stamp leaf
-SIZE_UNKNOWN(CWndFwd);             // MFC CWnd-family global forward (class not recoverable)

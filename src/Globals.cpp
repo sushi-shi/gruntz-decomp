@@ -191,8 +191,6 @@ DATA(0x00213054)
 extern u8 g_dat613054; // 0x613054 (new pin)
 DATA(0x002135e8)
 extern char s_PREVIEW_6135e8[]; // "PREVIEW"
-DATA(0x002156f4)
-extern void* g_desc_6156f4;
 DATA(0x0021aabc)
 extern char g_bmpHeaderTemplate[]; // 0x61aabc
 DATA(0x0021ab14)
