@@ -73,6 +73,12 @@ def name_kind(name):
         return "serialize"
     if "GetTypeTag" in name or "GetRuntimeClass" in name:
         return "typetag"
+    import re as _re
+    # any other pooled vtable-slot virtual: GetClassId/IsLoaded/SlotNN + any leaf-class
+    # override (mangled @@[UME]AE = public/protected/private virtual __thiscall).
+    if (_re.match(r"\?(GetClassId|IsLoaded|V?[Ss]lot[0-9a-f]{2})@", name)
+            or _re.search(r"@@[UME]AE", name)):
+        return "vslot"
     return "method"
 
 
@@ -294,7 +300,7 @@ def partition(frva, units_map, exempt):
         src = units_map.get(u, "")
         if not src or src.startswith("src/Stub/"):
             continue
-        if name_kind(nm) in ("dtor", "serialize", "typetag") or a in exempt:
+        if name_kind(nm) in ("dtor", "serialize", "typetag", "vslot") or a in exempt:
             continue
         fns.append((a, sz, u, nm))
     by_unit = defaultdict(list)
@@ -558,7 +564,7 @@ def main():
             land = src2unit.get(o["home"] or "")
             cus = callers.get(o["rva"], set())
             orc = oracle.get(o["rva"], {}).get("verdict", "")
-            if kind in ("dtor", "serialize", "typetag"):
+            if kind in ("dtor", "serialize", "typetag", "vslot"):
                 v = "COMDAT-POOL-EXILE"
             elif land and land in cus and rank.get(land, 1 << 30) <= min(
                     (rank.get(u, 1 << 30) for u in cus), default=1 << 30):

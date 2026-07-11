@@ -30,9 +30,14 @@ import re as _re
 # handlers, and Serialize (also pooled). Excluding these keeps the finder from
 # counting a correctly-placed pooled virtual as an "outlier".
 _POOLED_RE = _re.compile(
-    r"\?(GetTypeTag|GetRuntimeClass|GetClassId|Serialize|V?[Ss]lot[0-9a-f]{2}|"
-    r"Wap32GameMgrVfunc[0-9]|SbiSlot[0-9]|DoDefault|UnusedMsgHandler|"
+    r"\?(GetTypeTag|GetRuntimeClass|GetClassId|IsLoaded|Serialize[A-Za-z]*|"
+    r"V?[Ss]lot[0-9a-f]{2}|Wap32GameMgrVfunc[0-9]|SbiSlot[0-9]|DoDefault|UnusedMsgHandler|"
     r"On(DrawItem|MeasureItem|ActionBtn|StubBtn|InitDialog|Ok|OkCommand))@")
+# a VIRTUAL method (public/protected/private virtual __thiscall = @@[UME]AE) sitting
+# as an OUTLIER is a COMDAT the linker pooled from the first obj - benign, not a
+# misplacement. Catches the whole vtable-slot family generically (GetTypeTag/Slot/
+# SerializeMove/IsLoaded and any leaf-class override) without name-enumeration.
+_VIRT_RE = _re.compile(r"@@[UME]AE")
 
 
 def is_dtor(name):
@@ -138,11 +143,18 @@ def main():
             clo, chi = min(x["rva"] for x in c), max(x["end"] for x in c)
             dist = clo - mhi if clo > mhi else mlo - chi
             terr = territory(clo, chi, src)
+            home, home_n = (terr[0] if terr else ("", 0))
+            # a lone run (<=2 fns) buried inside a single other unit is an
+            # INTERLEAVER (this class's method compiled out-of-line in that unit's
+            # obj) - kept in the host for continuity + flagged, NOT a misplacement.
+            kind = ("interleaver" if len(c) <= 2 and home_n >= 2 else "misplaced")
             for x in c:
+                if _VIRT_RE.search(x["name"]):      # pooled vtable-slot virtual - benign
+                    continue
                 outliers.append({
                     "rva": x["rva"], "name": x["name"], "dist": dist,
-                    "cluster_n": len(c),
-                    "home": terr[0][0] if terr else "", "home_n": terr[0][1] if terr else 0,
+                    "cluster_n": len(c), "kind": kind,
+                    "home": home, "home_n": home_n,
                 })
         files_out.append({
             "file": src, "n": len(recs), "bytes": sum(x["size"] for x in recs),
@@ -167,13 +179,17 @@ def main():
                "regions": regions, "flagged": flagged},
               open(DIR + "/flags.json", "w"), indent=1)
 
-    tot_out = sum(len(f["outliers"]) for f in flagged)
+    all_out = [o for f in flagged for o in f["outliers"]]
+    n_inter = sum(1 for o in all_out if o["kind"] == "interleaver")
+    n_mis = len(all_out) - n_inter
     conf = [f for f in flagged if f["conflated"]]
     print("=" * 72)
-    print("MISPLACEMENT FLAGS  (destructors removed, src/Stub/ excluded)")
+    print("MISPLACEMENT FLAGS  (dtors + pooled vtable-slot virtuals removed, Stub excluded)")
     print("=" * 72)
-    print(f"{len(files_out)} files -> {len(flagged)} have outlier methods "
-          f"({tot_out} functions possibly in the wrong file); {len(conf)} look CONFLATED.\n")
+    print(f"{len(files_out)} files -> {len(flagged)} have outlier methods: "
+          f"{n_mis} MISPLACED (wrong file) + {n_inter} INTERLEAVER "
+          f"(this class's method compiled in another unit - keep in host + flag); "
+          f"{len(conf)} look CONFLATED.\n")
     print("CONFLATED-TU candidates (>=2 clusters of >=3 methods; split the unit):")
     for f in sorted(conf, key=lambda f: -f["n"])[:12]:
         cs = clusters(by_file[f["file"]])

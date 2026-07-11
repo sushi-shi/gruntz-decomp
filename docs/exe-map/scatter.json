@@ -273,19 +273,6 @@
   "spread": 316.6032863849765
  },
  {
-  "file": "src/Gruntz/Attract.cpp",
-  "n": 31,
-  "bytes": 5625,
-  "lo": 81840,
-  "hi": 1028904,
-  "span": 947064,
-  "frags": 8,
-  "avg_cluster": 3.875,
-  "frag_ratio": 0.25806451612903225,
-  "occupancy": 0.005939408529940954,
-  "spread": 168.36693333333332
- },
- {
   "file": "src/Gruntz/MultiStartDlgRoster.cpp",
   "n": 31,
   "bytes": 6778,
@@ -481,6 +468,19 @@
   "spread": 114.41314398943197
  },
  {
+  "file": "src/Gruntz/Attract.cpp",
+  "n": 19,
+  "bytes": 3900,
+  "lo": 233824,
+  "hi": 1028904,
+  "span": 795080,
+  "frags": 5,
+  "avg_cluster": 3.8,
+  "frag_ratio": 0.2631578947368421,
+  "occupancy": 0.004905166775670372,
+  "spread": 203.86666666666667
+ },
+ {
   "file": "src/Dsndmgr/GruntzSoundZ.cpp",
   "n": 31,
   "bytes": 2448,
@@ -505,19 +505,6 @@
   "frag_ratio": 0.11627906976744186,
   "occupancy": 0.49886523289743867,
   "spread": 2.0045493934142113
- },
- {
-  "file": "src/Dsndmgr/DirectSoundMgr.cpp",
-  "n": 71,
-  "bytes": 7736,
-  "lo": 1265840,
-  "hi": 1274659,
-  "span": 8819,
-  "frags": 5,
-  "avg_cluster": 14.2,
-  "frag_ratio": 0.07042253521126761,
-  "occupancy": 0.8771969611067014,
-  "spread": 1.139994829369183
  },
  {
   "file": "src/Bute/SymTab.cpp",
@@ -1053,6 +1040,19 @@
   "spread": 3.1380753138075312
  },
  {
+  "file": "src/Dsndmgr/DirectSoundMgr.cpp",
+  "n": 72,
+  "bytes": 7859,
+  "lo": 1265840,
+  "hi": 1274659,
+  "span": 8819,
+  "frags": 4,
+  "avg_cluster": 18.0,
+  "frag_ratio": 0.05555555555555555,
+  "occupancy": 0.8911441206485996,
+  "spread": 1.1221529456673878
+ },
+ {
   "file": "src/Dsndmgr/SoundStream.cpp",
   "n": 30,
   "bytes": 4089,
@@ -1324,6 +1324,19 @@
   "frag_ratio": 0.5,
   "occupancy": 0.0017784540363677708,
   "spread": 562.2861089187056
+ },
+ {
+  "file": "src/Gruntz/AttractState.cpp",
+  "n": 12,
+  "bytes": 1725,
+  "lo": 81840,
+  "hi": 576997,
+  "span": 495157,
+  "frags": 3,
+  "avg_cluster": 4.0,
+  "frag_ratio": 0.25,
+  "occupancy": 0.00348374353992774,
+  "spread": 287.04753623188407
  },
  {
   "file": "src/Gruntz/BootyMessages.cpp",

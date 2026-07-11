@@ -32,8 +32,14 @@ def is_dtor(name):
       - C++ dynamic-init fragments: the raw _$E<n> / ??__E<sym> initializer thunks
         and our reconstructed InitStr<addr>, ordered by the CRT init table (the
         .data:0x208000 table) so they sit far from the TU's code by construction."""
+    import re as _re
     return (name.startswith(("??1", "??_G", "??_E", "_$E", "??__E", "?InitStr", "_$S"))
-            or "DeletingDtor" in name or "InitStr" in name)
+            or "DeletingDtor" in name or "InitStr" in name
+            # pooled vtable-slot virtuals (GetTypeTag/Serialize*/Slot/GetClassId/IsLoaded
+            # + any leaf-class override) - COMDATs the linker pools, not scatter:
+            or bool(_re.search(r"@@[UME]AE", name))
+            or bool(_re.match(r"\?(GetTypeTag|GetRuntimeClass|GetClassId|IsLoaded|"
+                              r"Serialize[A-Za-z]*|V?[Ss]lot[0-9a-f]{2})@", name)))
 
 
 def rows_for(funcs):
