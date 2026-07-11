@@ -85,7 +85,7 @@ DATA(0x006455f8)
 extern i32 g_explosionz; // "Explosionz"
 DATA(0x006bf3c0)
 extern i32 g_time6bf3c0; // cue-cooldown clock (0x8247 throttle)
-DATA(0x00644c54)
+DATA(0x00244c54) // RVA (was VA-typo 0x644c54, which shadowed the canonical _g_644c54)
 extern i32 g_644c54; // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
 DATA(0x00648cf0)
 extern i32 g_isHost_648cf0;

@@ -36,6 +36,7 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
 #include <Gruntz/ActName.h>       // CActName (shared)
+#include <Gruntz/ActReg.h>        // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
 
 // The +0x1a0 anim sub-object's setter/probe (CProjAnim::SetGeometry / Advance_15c360) and
 // the render object's CGameObject-base name/sprite setters (CProjRenderObj::CacheFirstFrame /
@@ -510,7 +511,7 @@ static inline CProjActEntry* ProjActLookup(i32 coord) {
     if ((i32)((_zvec*)&g_projActColl)->GrowTo(coord, 0)) {
         return (CProjActEntry*)(g_projActBase + (coord - g_projActLo) * g_projActStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_projActColl2->Set(&g_projActColl, (i32)item, 0xc);
     return g_projActCur;
@@ -525,7 +526,7 @@ static inline CTypeNameEntry* ProjTypeLookup(i32 key) {
     if ((i32)((_zvec*)&g_projTypeColl)->GrowTo(key, 0)) {
         return (CTypeNameEntry*)(g_projTypeBase + (key - g_projTypeLo) * g_projTypeStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_projTypeColl2->Set(&g_projTypeColl, (i32)item, 0xc);
     return g_projTypeCur;
@@ -823,7 +824,9 @@ void CProjectile::MovingSlot16() {
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_sprite->m_40 &= ~1u;
-    m_sprite->m_1a0.Advance_15c360((i32)g_6bf3bc);
+    // m_1a0 is a CAniAdvanceCursor (the CProjAnim view is a reduced facet of it);
+    // bind Advance_15c360 to the real ?..@CAniAdvanceCursor@@QAEHI@Z (0x15c360).
+    ((CAniAdvanceCursor*)&m_sprite->m_1a0)->Advance_15c360(g_6bf3bc);
     CProjRenderObj* r = m_sprite;
     if (r->m_1c8 != 0 && r->m_1c0 == 0) {
         r->m_08 |= 0x10000;
@@ -1018,9 +1021,7 @@ RVA(0x000e17b0, 0x15)
 void ConstructTBombRange() {
     ((CZDArrayDerived*)&g_tbombColl)->Construct(0x7d0, 0x7da);
 }
-DATA(0x002bf464)
-extern void* g_actCache;
-extern void* g_retAddrBreadcrumb;
+// g_projActCache (0x2bf464) + g_retAddrBreadcrumb come from <Gruntz/ActColl.h>.
 
 // The entry's first dword is a pointer-to-member-function of CTimeBomb (single
 // inheritance -> 4-byte code pointer); FireActivation invokes it on `this`,
@@ -1041,7 +1042,7 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
     if ((i32)((_zvec*)&g_tbombColl)->GrowTo(coord, 0)) {
         return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_tbombColl2->Set(&g_tbombColl, (i32)item, 0xc);
     return g_tbombCur;
@@ -1096,7 +1097,7 @@ static inline char* ActNameLookup(i32 id) {
     if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;
@@ -1384,11 +1385,15 @@ i32 CProjectile::LaunchSound(const char* key) {
 }
 
 // ===========================================================================
-// 0x0ade60 - per-coordinate projectile-action dispatch.  Resolves the activation
-// entry for `coord` (R2 lookup, inlined); if the entry's leading handler slot is
-// non-null, re-resolves the entry and invokes the handler (__thiscall) on this
-// dispatcher object.  Same global-table-driven shape as ProjActLookup's callers.
-// ===========================================================================
+// 0x0ade60 - per-coordinate action dispatch over the per-logic-class dispatch
+// table g_logicActReg_646010 (@0x246010, a CLogicActTable - NOT the projectile's
+// own g_projActColl @0x24c758; that was a lookup-table conflation). Resolves the
+// activation entry for `coord` (ResolveEntry, inlined twice); if the entry's
+// leading handler slot is non-null, re-resolves and invokes it __thiscall on this
+// dispatcher object. Sits in the MenuSparkle/logic leaf-init COMDAT pool
+// (LogicActReg646010.cpp), not the projectile bodies.
+extern CLogicActTable g_logicActReg_646010; // 0x246010 (bound in LogicActReg646010.cpp)
+
 SIZE_UNKNOWN(CProjActDispatcher);
 class CProjActDispatcher {
 public:
@@ -1402,9 +1407,9 @@ typedef void (CProjActDispatcher::*ProjActHandler)();
 
 RVA(0x000ade60, 0x102)
 void CProjActDispatcher::Dispatch(i32 coord) {
-    CProjActEntry* e = ProjActLookup(coord);
+    char* e = g_logicActReg_646010.ResolveEntry(coord);
     if (*(void**)e != 0) {
-        CProjActEntry* e2 = ProjActLookup(coord);
+        char* e2 = g_logicActReg_646010.ResolveEntry(coord);
         ProjActHandler h = *(ProjActHandler*)e2;
         (this->*h)();
     }

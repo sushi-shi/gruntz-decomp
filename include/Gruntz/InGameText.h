@@ -63,7 +63,7 @@ VTBL(CInGameText, 0x1e7cac);
 // at VA 0x645950 / RVA 0x245950). Dispatch indexes it and invokes the resolved
 // member function on `this`. The accessor inlines the bounds-check + grow.
 // ---------------------------------------------------------------------------
-DATA(0x00245950)
-extern zDArray g_textDispatch;
+// The DATA binding lives in InGameIcon.cpp (a header DATA() is not scanned).
+extern zDArray g_textDispatch; // 0x245950
 
 #endif // GRUNTZ_GRUNTZ_CINGAMETEXT_H

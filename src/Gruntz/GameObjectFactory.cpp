@@ -124,6 +124,98 @@ extern "C" {
     void RegHelper_272a();
 }
 
+// Reloc-fidelity bindings for the factory-fn pointers the registrar pushes.
+// Each `push offset _CreateXxx` (DIR32) relocates in retail to that create-fn's
+// ILT jmp-thunk (a 5-byte `e9 <rel32>` in the <0x7c20 thunk band jumping to the
+// real ctor body). The reference is reloc-masked, so the byte match already
+// holds; these labels bind the undefined `_CreateXxx` external to the exact
+// thunk RVA so reloc_fidelity scores them CORRECT (verified: every RVA is an E9
+// thunk, and none collide with functions.csv / another symbol). The four thunks
+// also used as placed-object type markers in Play.cpp (GiantRock/CoveredPowerup/
+// InGameIcon/GruntStartingPoint) are bound here ONCE; Play.cpp references the
+// same `_CreateXxx` symbol (its old `g_objIdThunk_<rva>` view was the same thunk).
+// @data-symbol: _CreateAniCycle 0x00001f19
+// @data-symbol: _CreateDoNothingNormal 0x00003dc8
+// @data-symbol: _CreateDoNothing 0x000019d3
+// @data-symbol: _CreateSimpleAnimation 0x00001a37
+// @data-symbol: _CreateMenuSparkle 0x00003f3a
+// @data-symbol: _CreateFrontCandy 0x000013c0
+// @data-symbol: _CreateBehindCandy 0x000018bb
+// @data-symbol: _CreateFrontCandyAni 0x00001f91
+// @data-symbol: _CreateBehindCandyAni 0x00003c65
+// @data-symbol: _CreateEyeCandy 0x00001aaa
+// @data-symbol: _CreateEyeCandyAni 0x00002f27
+// @data-symbol: _CreateGrunt 0x00002d2e
+// @data-symbol: _CreateGlobalAmbientSound 0x00002d15
+// @data-symbol: _CreateAmbientSound 0x00002158
+// @data-symbol: _CreateAmbientPosSound 0x00001217
+// @data-symbol: _CreateSpotAmbientSound 0x00002851
+// @data-symbol: _CreateActionArea 0x0000349a
+// @data-symbol: _CreateStatusBarSprite 0x000027c0
+// @data-symbol: _CreateParticlez 0x00002e1e
+// @data-symbol: _CreateExplosion 0x00003468
+// @data-symbol: _CreateGruntSelectedSprite 0x00003da0
+// @data-symbol: _CreateGruntHealthSprite 0x000037b5
+// @data-symbol: _CreateGruntStaminaSprite 0x000025d1
+// @data-symbol: _CreateGruntToySprite 0x00001910
+// @data-symbol: _CreateGruntToyTimeSprite 0x00001bae
+// @data-symbol: _CreateGruntWingzTimeSprite 0x00002d24
+// @data-symbol: _CreateGruntPowerupSprite 0x000027cf
+// @data-symbol: _CreateToyPeek 0x00001e1f
+// @data-symbol: _CreateTileTriggerSwitch 0x00001799
+// @data-symbol: _CreateTileTrigger 0x00003bfc
+// @data-symbol: _CreateTileSecretTrigger 0x000037b0
+// @data-symbol: _CreateBrickz 0x000019bf
+// @data-symbol: _CreateTileTriggerTransition 0x00001d43
+// @data-symbol: _CreateGruntStartingPoint 0x000024a5
+// @data-symbol: _CreateGruntCreationPoint 0x000017e4
+// @data-symbol: _CreateFortressFlag 0x00003148
+// @data-symbol: _CreateExitTrigger 0x0000192e
+// @data-symbol: _CreateGiantRock 0x0000137a
+// @data-symbol: _CreateCoveredPowerup 0x00003d0f
+// @data-symbol: _CreateInGameIcon 0x0000288d
+// @data-symbol: _CreateInGameText 0x00002bad
+// @data-symbol: _CreateWormhole 0x0000191a
+// @data-symbol: _CreateGruntPuddle 0x00002a68
+// @data-symbol: _CreateRollingBall 0x0000191f
+// @data-symbol: _CreateObjectDropper 0x00002d79
+// @data-symbol: _CreateDroppedObject 0x00001e24
+// @data-symbol: _CreateDroppedObjectShadow 0x000011b8
+// @data-symbol: _CreateCheckpointTrigger 0x00001794
+// @data-symbol: _CreateTeleporter 0x000039b3
+// @data-symbol: _CreateSecretTeleporterTrigger 0x000015af
+// @data-symbol: _CreateSecretLevelTrigger 0x00001bf4
+// @data-symbol: _CreateProjectile 0x000030f8
+// @data-symbol: _CreateBoomerang 0x0000158c
+// @data-symbol: _CreateStaticHazard 0x00003ca6
+// @data-symbol: _CreateToobSpikez 0x0000182a
+// @data-symbol: _CreateTimeBomb 0x000016c7
+// @data-symbol: _CreateSpotLight 0x00001a8c
+// @data-symbol: _CreateKitchenSlime 0x000015f0
+// @data-symbol: _CreateSingleAnimation 0x00002702
+// @data-symbol: _CreateWayPoint 0x00001087
+// @data-symbol: _CreateWarlord 0x00004354
+// @data-symbol: _CreatePathHazard 0x00003814
+// @data-symbol: _CreateRainCloud 0x00001e5b
+// @data-symbol: _CreateUFO 0x00002d7e
+// @data-symbol: _CreateGruntVoice 0x00001f32
+// @data-symbol: _CreateWarpStonePad 0x00001f0a
+// @data-symbol: _CreateGuardPoint 0x0000164f
+// @data-symbol: _CreateVoiceTrigger 0x00002cf2
+// @data-symbol: _CreateLevelTime 0x00001b09
+// @data-symbol: _CreateCursorSnapSprite 0x00002bbc
+// @data-symbol: _CreateLightFx 0x00002bdf
+// @data-symbol: _CreateDemoMover 0x00002eb9
+// @data-symbol: _CreateDemoSign 0x0000448a
+//
+// The five RegHelper CALL sites stay UNBOUND (see the extern block above): the
+// retail target is a __thiscall (QAE) member called this-less (`call <thunk>`
+// with no `mov ecx`), so retargeting the call to the real `?..@@QAEXXZ` symbol
+// would insert a `mov ecx` and desync this 0x6e2-byte function below 100%. And a
+// fake `_RegHelper_<rva>` label cannot bind at the real body RVA: read_names_map
+// is RVA-keyed last-wins, so a second symbol there would rename the real function
+// in the synth PDB and break its home unit's delink. Left unbound by necessity.
+
 // @source: string-xref
 RVA(0x0000a3b0, 0x6e2)
 void RegisterGameObjectTypes(GameObjFactoryCtx* ctx) {

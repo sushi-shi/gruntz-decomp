@@ -17,6 +17,7 @@
 #include <Gruntz/VoiceTrigger.h>           // canonical CVoiceTrigger : CUserLogic
 #include <Gruntz/TileTriggerTransition.h>  // CTileTransitionController/State worker-pump view
 #include <Gruntz/GameRegistry.h>           // g_gameReg / g_gameReg->m_world->m_8
+#include <Gruntz/TriggerMgr.h>             // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free)
 #include <Gruntz/BoundaryLeafLogicViews.h> // L_13400 (CUFO fold-flat leaf dtor, RVA-homed here)
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 #include <Gruntz/TypeKeyColl.h>
@@ -30,6 +31,31 @@
 // The global running game clock (DAT_00645588); the value-load reloc-masks.
 DATA(0x00245588)
 extern "C" u32 g_645588;
+
+// Reloc-fidelity bindings for the registry statics whose plain externs live in
+// GruntVoice.h (labels.py does not scan a header's DATA(), so they are bound here
+// in the owning .cpp - same header-extern/cpp-DATA split as Globals). The shared
+// alloc-scratch cache is the canonical g_projActCache @0x2bf464 (the old
+// g_actCache spelling was an unbound VA-typo alias).
+DATA(0x0020a454)
+extern char g_voiceKeyA[];
+DATA(0x002514e0)
+extern i32 g_vactLo;
+DATA(0x002514e4)
+extern i32 g_vactHi;
+DATA(0x002514e8)
+extern char* g_vactBase;
+DATA(0x002514f0)
+extern i32 g_vactStride;
+DATA(0x002514ec)
+extern CVActEntry* g_vactCur;
+DATA(0x002514f8)
+extern i32 g_vactScratch;
+DATA(0x002514d8)
+extern CVActColl g_vactColl;
+DATA(0x002514dc)
+extern CVariantSlot* g_vactColl2;
+extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA), bound in GruntStartingPoint.cpp
 
 // The global game/manager registry singleton (*0x64556c; _g_mgrSettings - the C
 // alias of g_gameReg below; the 0x24556c DATA binding lives on the C++ name).
@@ -62,7 +88,7 @@ static inline CVTrigEntry* VTrigLookup(i32 coord) {
     if ((i32)((_zvec*)&g_vtrigColl)->GrowTo(coord, 0)) {
         return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_vtrigColl2->Set(&g_vtrigColl, (i32)item, 0xc);
     return g_vtrigCur;
@@ -106,7 +132,7 @@ static inline char* ActNameLookup(i32 id) {
     if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;
@@ -120,15 +146,7 @@ extern i32 VTrigLogic_11a700();
 // thunk) resolves the entity whose screen rect overlaps the trigger; CueA
 // (0x11b3b0, via the 0x39f4 thunk) fires the voice cue on it. Both __thiscall,
 // modeled NO-body so the calls reloc-mask.
-struct CVoiceHit; // the entity QueryAt returns
-namespace m4 {
-    struct HitGrunt;
-    struct HitTileRect;
-    class GruntHitMgr {
-    public:
-        HitGrunt* FindGruntAt(i32 x, i32 y, HitTileRect* r, i32* a, i32* b, struct tagRECT* rect);
-    };
-} // namespace m4
+struct CVoiceHit; // the entity FindGruntAt returns (a reduced view of CTmCell)
 class CGruntSpawnConfig {
 public:
     i32 SpawnVoiceDriver(
@@ -141,8 +159,8 @@ public:
     ); // real @0x11b3b0 = 6 args (ret 0x18)
 };
 struct CVoiceSink {
-    // QueryAt(x, y, &m_object->m_134, &outA, &outB, &m_object->m_144) -> entity* (or 0).
-    // QueryAt IS m4::GruntHitMgr::FindGruntAt; cast at the call.
+    // FindGruntAt(x, y, &m_object->m_134, &outA, &outB, &m_object->m_144) -> entity* (or 0).
+    // The probe IS CTriggerMgr::FindGruntAt (m_cmdGrid), called cast-free.
     // CueA(hit, m_object->m_124, m_object->m_128, 0, -1, -1) -> nonzero on fire.
     // CueA IS CGruntSpawnConfig::SpawnVoiceDriver (padded); cast at the call.
 };
@@ -478,15 +496,14 @@ void CVoiceTrigger::RegisterActs() {
 RVA(0x0011a700, 0xae)
 i32 CVoiceTrigger::Tick() {
     i32 outA, outB;
-    CVoiceHit* hit = (CVoiceHit*)((m4::GruntHitMgr*)g_gameReg->m_cmdGrid)
-                         ->FindGruntAt(
-                             m_object->m_screenX,
-                             m_object->m_screenY,
-                             (m4::HitTileRect*)&m_object->m_extentL,
-                             &outA,
-                             &outB,
-                             (struct tagRECT*)&m_object->m_areaL
-                         );
+    CVoiceHit* hit = (CVoiceHit*)g_gameReg->m_cmdGrid->FindGruntAt(
+        m_object->m_screenX,
+        m_object->m_screenY,
+        (RECT*)&m_object->m_extentL,
+        &outA,
+        &outB,
+        (RECT*)&m_object->m_areaL
+    );
     if (hit && outA == g_644c54) {
         CVoiceHitSprite* hs = hit->m_sprite;
         i32 hy = hs->m_screenY;

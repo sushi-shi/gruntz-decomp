@@ -17,7 +17,7 @@
 #ifndef GRUNTZ_GRUNTZ_CGRUNTVOICE_H
 #define GRUNTZ_GRUNTZ_CGRUNTVOICE_H
 
-class CVariantSlot; // folded CVActColl2
+struct CVariantSlot; // folded CVActColl2 (struct tag = canonical PAU mangling, matches Globals)
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
@@ -34,10 +34,9 @@ class CVariantSlot; // folded CVActColl2
 extern CButeTree g_buteTree;
 
 // The idle-anim bute key "A" (0x60a454) the reset path looks up. Its own rdata
-// (DAT_0060a454, also referenced by Grunt.cpp). Declared here so the Find call
-// reloc-masks.
-DATA(0x0020a454)
-extern char g_voiceKeyA[]; // s_A_0060a454
+// (DAT_0060a454, also referenced by Grunt.cpp). The DATA binding lives in
+// GruntVoice.cpp (a header DATA() is not scanned by labels.py).
+extern char g_voiceKeyA[]; // 0x20a454  s_A_0060a454
 
 // ---------------------------------------------------------------------------
 // The audio/sample object Setup is handed as `sample` (arg2). Its rate helper
@@ -68,28 +67,23 @@ struct CVActColl {
 };
 extern void* GetRetAddr(); // 0x16d990
 
-DATA(0x002514e0)
-extern i32 g_vactLo;
-DATA(0x002514e4)
-extern i32 g_vactHi;
-DATA(0x002514e8)
-extern char* g_vactBase;
-DATA(0x002514f0)
-extern i32 g_vactStride;
-DATA(0x002514ec)
-extern struct CVActEntry* g_vactCur;
-DATA(0x002514f8)
-extern i32 g_vactScratch;
-DATA(0x002514d8)
-extern CVActColl g_vactColl;
-DATA(0x002514dc)
-extern CVariantSlot* g_vactColl2;
+// CGruntVoice's own activation-registry statics (@0x2514xx). The DATA bindings
+// live in GruntVoice.cpp (a header DATA() is not scanned by labels.py).
+extern i32 g_vactLo;               // 0x2514e0
+extern i32 g_vactHi;               // 0x2514e4
+extern char* g_vactBase;           // 0x2514e8
+extern i32 g_vactStride;           // 0x2514f0
+extern struct CVActEntry* g_vactCur; // 0x2514ec
+extern i32 g_vactScratch;          // 0x2514f8
+extern CVActColl g_vactColl;       // 0x2514d8
+extern CVariantSlot* g_vactColl2;  // 0x2514dc
 
 // The cache/alloc scratch globals shared with the trigger registry (reused
 // verbatim - 0x6bf464 / 0x6bf428; owned by UserLogic.cpp, declared extern here
 // so the loads reloc-mask against the already-matched symbols).
 DATA(0x002bf464)
-extern void* g_actCache;
+extern void* g_projActCache; // 0x2bf464 canonical (?g_projActCache@@3PAXA); use this
+extern void* g_actCache;     // unbound VA-typo alias of g_projActCache (legacy includers)
 extern void* g_retAddrBreadcrumb;
 
 // ---------------------------------------------------------------------------
@@ -149,7 +143,7 @@ static inline CVActEntry* VActLookup(i32 coord) {
     if ((i32)((_zvec*)&g_vactColl)->GrowTo(coord, 0)) {
         return (CVActEntry*)(g_vactBase + (coord - g_vactLo) * g_vactStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_vactColl2->Set(&g_vactColl, (i32)item, 0xc);
     return g_vactCur;
