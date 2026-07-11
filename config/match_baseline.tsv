@@ -385,9 +385,9 @@ wwdfactoryobject	32	16
 wwdfile	3	1
 wwdgameobject	43	17
 wwdgameobjectrender	15	9
-wwdgrid	10	6
+wwdgrid	13	7
 wwdobjmgr	50	24
-wwdspatialmgr	17	10
+wwdspatialmgr	14	9
 zdarrayderived	1	0
 zutil	2	2
 zvec	3	1
@@ -4201,8 +4201,11 @@ wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	4	c619ac2fd1c2	0x1
 wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	4	c32aedba425a	0x191a70
 wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	4	98c1f36d43e5	0x191800
 wwdgrid	?Gap_191770@@YAHXZ	1.3559	1.3559	1	31df55904c43	0x191770
+wwdgrid	?GetNext@CWwdGridIter@@QAEPAUWwdGridNode@@XZ	93.7073	93.7073	1	496234414222	0x191c30
+wwdgrid	?Init@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	1	2856c328f6ce	0x191b10
 wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	5	3c70bed64c49	0x1918c0
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	4	ffac9a50e9e4	0x191890
+wwdgrid	?Start@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@H@Z	100.0000	100.0000	1	838b0d935f99	0x191ad0
 wwdobjmgr	??0CWwdSlot9c@@QAE@XZ	100.0000	100.0000	1	ded1af0c668b	0x15b2a0
 wwdobjmgr	??0Obj15b270@@QAE@XZ	100.0000	100.0000	1	0db58a16cd6b	0x15b270
 wwdobjmgr	??0Obj15b2b0@@QAE@XZ	100.0000	100.0000	1	e19a44aafde2	0x15b2b0
@@ -4261,15 +4264,12 @@ wwdspatialmgr	?ForEach@CWwdSpatialMgr@@QAEHP6AXPAVCWwdObject@@@Z@Z	100.0000	100.
 wwdspatialmgr	?ForEachGrid@CWwdSpatialMgr@@QAEHPAVCWwdGrid@@P6AXPAVCWwdObject@@@Z@Z	84.8649	84.8649	2	0f60592fc3d1	0x168a70
 wwdspatialmgr	?FreeGrids@CWwdSpatialMgr@@QAEXXZ	100.0000	100.0000	3	8da8aa838009	0x1682f0
 wwdspatialmgr	?GetFirstObject@CWwdSpatialMgr@@QAEPAVCWwdObject@@XZ	100.0000	100.0000	2	ac760e2d859d	0x168af0
-wwdspatialmgr	?GetNext@CWwdGridIter@@QAEPAUWwdGridNode@@XZ	93.7073	93.7073	4	46bc8c045df9	0x191c30
 wwdspatialmgr	?GetNextObject@CWwdSpatialMgr@@QAEPAVCWwdObject@@XZ	100.0000	100.0000	2	6da24eebbc9b	0x168b60
 wwdspatialmgr	?GetSize@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	1	7cc0ac908981	0x168430
-wwdspatialmgr	?Init@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	2	5be2e3e0f27d	0x191b10
 wwdspatialmgr	?PruneCount@CWwdSpatialMgr@@QAEHXZ	100.0000	100.0000	4	18089061c781	0x1688b0
 wwdspatialmgr	?Relocate@CWwdSpatialMgr@@QAEHHH@Z	0.6515	0.6515	2	46070df8450f	0x168500
 wwdspatialmgr	?RemoveObject@CWwdSpatialMgr@@QAEXPAVCWwdObject@@@Z	100.0000	100.0000	4	a88576c41fa1	0x1688f0
 wwdspatialmgr	?ScrollTo@CWwdSpatialMgr@@QAEHHH@Z	66.1023	66.1023	3	3f442db76e98	0x168340
-wwdspatialmgr	?Start@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@H@Z	100.0000	100.0000	3	a95a9a5aea71	0x191ad0
 zdarrayderived	?Construct@CZDArrayDerived@@QAEPAU1@HH@Z	86.2500	86.2500	3	ed58298d239a	0x8710
 zutil	_zcalloc	100.0000	100.0000	1	55f82c5a172f	0x188410
 zutil	_zcfree	100.0000	100.0000	1	e741567a7e95	0x188430
