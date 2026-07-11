@@ -36,8 +36,20 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-REPO = next((p for p in Path(__file__).resolve().parents if (p / "flake.nix").exists()),
-            Path(__file__).resolve().parents[3])
+# Resolve REPO from the CWD first, not __file__: in a worktree the shell's
+# PYTHONPATH can point at MAIN's scripts/, so `python -m ...` loads main's module
+# and __file__ would mis-resolve to main ([[worktree-pythonpath-leaks-to-main]]).
+# The CWD is the worktree the user is actually in.
+def _find_repo():
+    for base in (Path.cwd(), Path(__file__).resolve().parent):
+        for p in (base, *base.parents):
+            if (p / "flake.nix").exists() and (p / "build" / "objdiff").exists():
+                return p
+    return next((p for p in Path(__file__).resolve().parents
+                 if (p / "flake.nix").exists()), Path(__file__).resolve().parents[3])
+
+
+REPO = _find_repo()
 EXE = os.environ.get("GRUNTZ_EXE", "")
 IMG = 0x400000
 TEXT = (0x1000, 0x1e626b)
@@ -171,10 +183,30 @@ class Coff:
         return out
 
 
+def _current_unit_objs():
+    """Only objs for CURRENT units - build/objdiff/base/ accumulates STALE ORPHAN
+    objs from retired/renamed units (gitignored artifacts), and an orphan's stale
+    COMDAT copy shadows the live one under the plain glob, false-reporting a fixed
+    symbol as still-defective. units.toml is the authoritative current set."""
+    try:
+        import tomllib
+        units = {u["unit"] for u in
+                 tomllib.loads((REPO / "config/units.toml").read_text()).get("unit", [])}
+    except Exception:
+        units = None
+    objs = []
+    for p in glob.glob(str(REPO / "build/objdiff/base/*.obj")):
+        stem = os.path.basename(p)[:-4]
+        if units is None or stem in units:
+            objs.append(p)
+    return objs
+
+
 def build_comdat_index():
     name2rva = _NAME2RVA
     idx = {}
-    for p in glob.glob(str(REPO / "build/objdiff/base/*.obj")):
+    # newest-first so a live obj wins over any same-named straggler
+    for p in sorted(_current_unit_objs(), key=lambda q: -os.path.getmtime(q)):
         c = Coff(p)
         for nm, sec in c.defined_text().items():
             if nm in name2rva and nm not in idx:
