@@ -29,14 +29,17 @@
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
 // Reporting-mode globals (live in .data), consumed by SetDDrawReportModes/GetErrorString.
+// Module-distinct names (g_dd*): each engine module has its OWN copy of these debug
+// flags at a module-specific rva (DDrawMgr @0x283exx); the shared donor name
+// g_<flag>Enabled conflated four modules' cells onto one symbol (wave5-R5 split).
 DATA(0x00283ec0)
-extern "C" i32 g_beepEnabled; // 0x683ec0
+extern "C" i32 g_ddBeepEnabled; // 0x683ec0
 DATA(0x00283eb8)
-extern "C" i32 g_logEnabled; // 0x683eb8
+extern "C" i32 g_ddLogEnabled; // 0x683eb8
 DATA(0x00283ebc)
-extern "C" i32 g_msgBoxEnabled; // 0x683ebc
+extern "C" i32 g_ddMsgBoxEnabled; // 0x683ebc
 DATA(0x00283ec4)
-extern "C" i32 g_thirdEnabled; // 0x683ec4
+extern "C" i32 g_ddThirdEnabled; // 0x683ec4
 
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)
@@ -119,10 +122,10 @@ inline CDDSurface::~CDDSurface() {
 // beep / third) from the four args. __cdecl free helper.
 RVA(0x001413d0, 0x27)
 void SetDDrawReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
-    g_logEnabled = log;
-    g_msgBoxEnabled = msgBox;
-    g_beepEnabled = beep;
-    g_thirdEnabled = third;
+    g_ddLogEnabled = log;
+    g_ddMsgBoxEnabled = msgBox;
+    g_ddBeepEnabled = beep;
+    g_ddThirdEnabled = third;
 }
 
 // CDirectDrawMgr::GetErrorString
@@ -132,10 +135,10 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
     char szMsg[256];  // local_300 - description
     char szLine[512]; // local_200 - formatted output line
 
-    if (g_beepEnabled) {
+    if (g_ddBeepEnabled) {
         MessageBeep(MB_ICONEXCLAMATION);
     }
-    if (!g_logEnabled && !g_msgBoxEnabled && !g_thirdEnabled) {
+    if (!g_ddLogEnabled && !g_ddMsgBoxEnabled && !g_ddThirdEnabled) {
         return;
     }
 
@@ -350,7 +353,7 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
             break;
     }
 
-    if (g_logEnabled) {
+    if (g_ddLogEnabled) {
         if (file == 0 || line <= 0) {
             sprintf(szLine, "%s (%i) - %s\n", szCode, code, szMsg);
         } else {
@@ -358,7 +361,7 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
         }
         DDrawLogLine(szLine);
     }
-    if (g_msgBoxEnabled) {
+    if (g_ddMsgBoxEnabled) {
         if (file == 0 || line <= 0) {
             sprintf(szLine, "%s (%i)\n\n%s", szCode, code, szMsg);
         } else {

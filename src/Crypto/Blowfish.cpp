@@ -24,16 +24,23 @@
 // The global key state (zero-init -> .bss). The four 256-entry S-boxes are
 // contiguous immediately after S[0], so a flat 1024-entry view (0x000/0x100/
 // 0x200/0x300 quadrants) drives the F macro exactly as retail addresses them.
+// P-array @ 0x21aeb0, S-boxes @ 0x21aef8 (RVA); DATA-pinned so the reloc targets
+// bind to their retail rvas (clang & cl agree on the non-const array mangling).
+DATA(0x0021aeb0)
 u32 g_bfP[18];
+DATA(0x0021aef8)
 u32 g_bfS[4][256];
 
 // The const digits-of-pi init tables InitializeBlowfish copies into the runtime
-// key state (rep movs sources). P-init @ 0x61bef8 (18 dwords), S-init @ 0x61bf40
-// (1024 dwords); reloc-masked via the DATA pins so the `mov esi,addr` immediates
-// match retail.
-DATA(0x0021bef8)
+// key state (rep movs sources). P-init @ 0x21bef8 (18 dwords), S-init @ 0x21bf40
+// (1024 dwords); reloc-masked so the `mov esi,addr` immediates match retail.
+// Bound via @data-symbol (not DATA) because clang mangles the const-extern array
+// with a `Q` storage class while cl 5.0 emits `P` (?g_bfInitP@@3PBIB), so a DATA()
+// label's clang mangledName would miss the base obj's undefined external. The
+// @data-symbol name is the exact cl mangling and is authority-checked against it.
+// @data-symbol: ?g_bfInitP@@3PBIB 0x0021bef8
 extern const u32 g_bfInitP[18];
-DATA(0x0021bf40)
+// @data-symbol: ?g_bfInitS@@3PAY0BAA@$$CBIA 0x0021bf40
 extern const u32 g_bfInitS[4][256];
 
 #define BF_S ((u32*)g_bfS)

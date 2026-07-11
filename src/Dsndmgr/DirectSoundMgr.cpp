@@ -69,19 +69,23 @@
 // write fmt (*out), PCM ptr (*dataOut) + len (*sizeOut); nonzero if `fmt ` found.
 extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* sizeOut);
 
-// Volume->attenuation table SetVolumeByIndex indexes (0x653ab8), filled by
+// Volume->attenuation table SetVolumeByIndex indexes (rva 0x253ab8), filled by
 // BuildVolumeTable(i=0..100); INCLUSIVE loop -> the 101st store lands on
-// g_panTable[0] (retail). The pan table (0x653c48, Globals.h) sits right after:
+// g_panTable[0] (retail). The pan table (rva 0x253c48, Globals.h) sits right after:
 // SetPanByIndex's +arg reads the negated entry.
-DATA(0x00653ab8)
+DATA(0x00253ab8)
 i32 g_volumeTable[100];
 
 // Engine fopen 0x11f870 (CRT FILE*) + file-size query 0x18c480 (reads FILE._file fd).
 extern "C" FILE* Eng_fopen(const char* path, const char* mode); // 0x11f870
 extern "C" u32 Eng_filelength(i32 fd);                          // 0x18c480
 
-// "rb" open-mode string the loader passes fopen (.data @ 0x60b668).
-DATA(0x0020b668)
+// "rb" open-mode string the loader passes fopen (.data, rva 0x20b668). Bound via
+// @data-symbol, not DATA: clang mangles the const-char[] extern with a `Q` storage
+// class while cl 5.0 emits `P` (?s_rb@@3PBDB), so a DATA() label's clang mangledName
+// would miss the base obj's undefined external. The @data-symbol name is the exact
+// cl mangling and is authority-checked against the base obj.
+// @data-symbol: ?s_rb@@3PBDB 0x0020b668
 extern const char s_rb[];
 
 // The app resource-module accessor AcquireResource/ReloadResource read the

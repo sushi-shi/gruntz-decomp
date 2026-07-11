@@ -37,17 +37,17 @@
 // constant 0x619f1c).
 #define DSNDMGSR_FILE "C:\\Proj\\Dsndmgr\\DSndMgSR.cpp"
 
-// Reporting-mode globals (.data): g_logEnabled -> OutputDebugStringA, g_msgBoxEnabled
-// -> MessageBox, g_beepEnabled -> startup beep, g_thirdEnabled -> "any output" gate.
+// Reporting-mode globals (.data): g_ssLogEnabled -> OutputDebugStringA, g_ssMsgBoxEnabled
+// -> MessageBox, g_ssBeepEnabled -> startup beep, g_ssThirdEnabled -> "any output" gate.
 // (Bound here with the GetErrorString/SetDSoundReportModes pair that owns them.)
 DATA(0x00253c54)
-extern "C" i32 g_beepEnabled; // 0x653c54
+extern "C" i32 g_ssBeepEnabled; // 0x653c54
 DATA(0x00253c4c)
-extern "C" i32 g_logEnabled; // 0x653c4c
+extern "C" i32 g_ssLogEnabled; // 0x653c4c
 DATA(0x00253c50)
-extern "C" i32 g_msgBoxEnabled; // 0x653c50
+extern "C" i32 g_ssMsgBoxEnabled; // 0x653c50
 DATA(0x00253c58)
-extern "C" i32 g_thirdEnabled; // 0x653c58
+extern "C" i32 g_ssThirdEnabled; // 0x653c58
 
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)
@@ -801,10 +801,10 @@ i32 StreamFeeder::TickPump(i32 now) {
 // (Dossier: sits past the StreamFeeder block -> this obj's error-reporting tail.)
 RVA(0x00138120, 0x27)
 void SetDSoundReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
-    g_logEnabled = log;
-    g_msgBoxEnabled = msgBox;
-    g_beepEnabled = beep;
-    g_thirdEnabled = third;
+    g_ssLogEnabled = log;
+    g_ssMsgBoxEnabled = msgBox;
+    g_ssBeepEnabled = beep;
+    g_ssThirdEnabled = third;
 }
 
 // ---------------------------------------------------------------------------
@@ -817,10 +817,10 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
     char szMsg[256];  // description
     char szLine[512]; // formatted output line
 
-    if (g_beepEnabled) {
+    if (g_ssBeepEnabled) {
         MessageBeep(MB_ICONEXCLAMATION);
     }
-    if (!g_logEnabled && !g_msgBoxEnabled && !g_thirdEnabled) {
+    if (!g_ssLogEnabled && !g_ssMsgBoxEnabled && !g_ssThirdEnabled) {
         return;
     }
 
@@ -891,7 +891,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
             break;
     }
 
-    if (g_logEnabled) {
+    if (g_ssLogEnabled) {
         if (file == 0 || line <= 0) {
             sprintf(szLine, "%s (%i) - %s\n", szCode, code, szMsg);
         } else {
@@ -899,7 +899,7 @@ void DirectSoundMgr::GetErrorString(char* file, i32 line, i32 hr) {
         }
         OutputDebugStringA(szLine);
     }
-    if (g_msgBoxEnabled) {
+    if (g_ssMsgBoxEnabled) {
         if (file == 0 || line <= 0) {
             sprintf(szLine, "%s (%i)\n\n%s", szCode, code, szMsg);
         } else {

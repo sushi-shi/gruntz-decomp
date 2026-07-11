@@ -144,7 +144,7 @@ extern i32 g_sndEnabled; // 0x61ab20
 DATA(0x001eff2c)
 extern float g_sndPanScale; // 0x5eff2c
 DATA(0x0021ab24)
-extern i32 g_aniCueItem; // 0x61ab24  the cue-item id played through PlayIfElapsed
+extern i32 g_sndCueTag; // 0x61ab24  the cue-item id played through PlayIfElapsed (== g_aniCueItem)
 
 // The shared empty-string datum (labeled by netmgrerror; declared-only here).
 extern char g_emptyString[]; // 0x2293f4
@@ -153,11 +153,11 @@ extern char g_emptyString[]; // 0x2293f4
 // The CDDrawSubMgrLeafScan section type skeleton (views/types from the merged
 // DDrawSubMgrLeafScan.cpp, hoisted ahead of the RVA-ordered fn chunks).
 // ===========================================================================
-// The donor-name aliases of the sound-cue globals (same cells as g_sndEnabled/
-// g_aniCueItem/g_killCueClock; the DATA bindings live above / in DirPal).
-extern i32 g_61ab20;     // == g_sndEnabled (0x21ab20)
-extern i32 g_61ab24;     // == g_aniCueItem (0x21ab24)
-extern "C" u32 g_6bf3c0; // == g_killCueClock (0x2bf3c0)
+// The sound-cue globals (g_sndEnabled/g_sndCueTag declared+DATA-bound above;
+// g_killCueClock is bound by triggermgr). Donor-name aliases (g_61ab20/g_61ab24/
+// g_6bf3c0/g_aniCueItem) unified onto these canonicals so the reloc targets bind
+// to their real rvas (wave5-R5); reloc-masked, matching-neutral.
+extern "C" u32 g_killCueClock; // 0x2bf3c0
 // DDrawSubMgrLeafScan.cpp - a sibling sub-manager of the tomalla-named
 // CDDrawSubMgrLeaf family (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" group; see docs/ddraw-family-names.md). This is
@@ -415,11 +415,11 @@ SIZE_UNKNOWN(CQueueDrainHost);
 // steerable (tried flat + nested guard forms). Logic complete.
 RVA(0x0001f940, 0x4c)
 i32 LeafCue::PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3) {
-    if (g_61ab20 == 0) {
+    if (g_sndEnabled == 0) {
         return 0;
     }
-    if (g_6bf3c0 - (u32)m_14 >= (u32)m_18) {
-        m_14 = g_6bf3c0;
+    if (g_killCueClock - (u32)m_14 >= (u32)m_18) {
+        m_14 = g_killCueClock;
         return m_10->ConfigureItem(a0, a1, a2, a3);
     }
     return 0;
@@ -470,8 +470,8 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
     if (val == 0) {
         return 0;
     }
-    i32 gate = g_61ab20;
-    i32 item = g_61ab24;
+    i32 gate = g_sndEnabled;
+    i32 item = g_sndCueTag;
     if (gate == 0) {
         return 0;
     }
@@ -480,8 +480,8 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
     // (void-modeled) ConfigureItem result so the success epilogue falls through
     // WITHOUT zeroing eax (retail's split-epilogue shape: the guard-failure paths
     // return 0 via the trailing `xor eax,eax` exit, success is the fall-through).
-    if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-        p->m_14 = g_6bf3c0;
+    if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+        p->m_14 = g_killCueClock;
         return p->m_10->ConfigureItem(item, 0, 0, 0);
     }
     return 0;
@@ -1112,7 +1112,7 @@ i32 CDDrawBlitParam::SelectCue_157a80(void* force) {
         m_30 = 0;
     }
     m_2c = (i32)cue;
-    g_aniCueItem = 0x64;
+    g_sndCueTag = 0x64;
     return 1;
 }
 
@@ -1693,7 +1693,7 @@ i32 CAniBlitTrigger::TriggerBlit_1587f0(i32 pos, i32 center, i32 range1, i32 ran
         }
     }
     i32 vol = (pan * 100) / range2;
-    i32 cue = g_aniCueItem;
+    i32 cue = g_sndCueTag;
     i32 amp = 100;
     i32 vscale;
     if (cue == 100) {
