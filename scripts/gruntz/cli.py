@@ -153,6 +153,12 @@ def summarize(report: dict, full: bool = True) -> None:
           f"{m.get('fuzzy_match_percent', 0.0):.2f}% fuzzy across "
           f"{len(named)} named unit(s).")
     print(f"  Report: {REPORT}")
+    print("  DOCTRINE (structure-recovery phase): recover the ORIGINAL structure; "
+          "do NOT fear regalloc ripple or protect match %. A %-drop from moving a "
+          "function/global/view to its true home is EXPECTED and RECOVERS as more "
+          "structure lands - gate on BUILD INTEGRITY, never revert a correct move "
+          "for a %-drop. Reloc-fidelity (functions bound to the RIGHT rva) and view "
+          "debt now outrank match %. See docs/exe-map/reloc.html.")
     if not full:   # --fast: just the objdiff %, skip the high-water/cleanliness/vtable probes
         return
     # MAX % high-water. The fuzzy % is a RATIO, so it barely moves even when structural
