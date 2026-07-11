@@ -154,14 +154,20 @@ class Coff:
         return out
 
     def reloc_sites(self, sec):
-        """{operand offset -> symbol name} for DIR32/REL32 relocs of the section."""
+        """{operand offset -> (symbol name, kind)} for DIR32 + REL32 relocs.
+        kind 'D'=DIR32 absolute (data/vtable/fn-ptr), 'C'=REL32 call/jmp. Our
+        COMDAT names the callee and marks the exact operand offset, so for a
+        byte-exact function retail's displacement at that same offset gives the
+        real callee - no disassembler needed."""
         relptr, nrel = self.secs[sec - 1]
         out = {}
         for r in range(nrel):
             ro = relptr + r * 10
             vaddr, symidx, typ = struct.unpack_from("<IIH", self.b, ro)
-            if typ == 6:  # DIR32 absolute only (see retail_sites)
-                out[vaddr] = self.name(symidx)
+            if typ == 6:
+                out[vaddr] = (self.name(symidx), "D")
+            elif typ == 20:
+                out[vaddr] = (self.name(symidx), "C")
         return out
 
 
@@ -187,27 +193,38 @@ def analyze(funcs, comdat, lib, exact, unit_filter=None):
         if not cd or size == 0:
             continue
         c, sec = cd
-        rt = retail_sites(rva, size)
+        rt = retail_sites(rva, size)     # DIR32 absolute targets (authoritative)
+        fb = D[fo(rva):fo(rva) + size]
         sites = []
-        for voff, sym in c.reloc_sites(sec).items():
+        for voff, (sym, kind) in c.reloc_sites(sec).items():
             if is_exempt(sym, lib):
                 continue
-            want = rt.get(voff)          # retail target at this offset (or None)
+            if kind == "D":
+                want = rt.get(voff)      # retail absolute target at this offset
+            else:                        # REL32 call: retail callee from displacement
+                if voff + 4 <= len(fb):
+                    disp = struct.unpack("<i", fb[voff:voff + 4])[0]
+                    t = rva + voff + 4 + disp
+                    want = resolve_thunk(t) if TEXT[0] <= t < TEXT[1] else None
+                else:
+                    want = None
             have = _NAME2RVA.get(sym)     # our binding (or None = unbound)
             if have is None:
                 v = "UNBOUND"
             elif want is None:
-                v = "MISBOUND"            # we bind where retail has no code ref
+                v = "MISBOUND"           # we reference where retail has no ref
             elif have == want:
                 v = "CORRECT"
             else:
                 v = "MISBOUND"
-            sites.append((voff, sym, have, want, v))
+            sites.append((voff, sym, have, want, v, kind))
         bad = [s for s in sites if s[4] in ("UNBOUND", "MISBOUND")]
         rows.append({"rva": rva, "size": size, "name": nm, "unit": unit,
                      "n": len(sites), "correct": sum(1 for s in sites if s[4] == "CORRECT"),
                      "misbound": sum(1 for s in sites if s[4] == "MISBOUND"),
                      "unbound": sum(1 for s in sites if s[4] == "UNBOUND"),
+                     "call_bad": sum(1 for s in sites if s[5] == "C" and s[4] != "CORRECT"),
+                     "data_bad": sum(1 for s in sites if s[5] == "D" and s[4] != "CORRECT"),
                      "sites": sites, "faithful": not bad})
     return rows
 
@@ -246,13 +263,14 @@ def main():
     if args.worklist:
         w = csv.writer(sys.stdout)
         w.writerow(["rva", "unit", "function", "offset", "symbol",
-                    "our_rva", "retail_rva", "verdict"])
+                    "our_rva", "retail_rva", "verdict", "kind"])
         for r in rows:
-            for voff, sym, have, want, v in r["sites"]:
+            for voff, sym, have, want, v, kind in r["sites"]:
                 if v in ("MISBOUND", "UNBOUND"):
                     w.writerow(["0x%08x" % r["rva"], r["unit"], r["name"], "0x%x" % voff,
                                 sym, "0x%x" % have if have else "",
-                                "0x%x" % want if want else "", v])
+                                "0x%x" % want if want else "", v,
+                                "CALL" if kind == "C" else "DATA"])
         return
 
     n = len(rows)
@@ -267,6 +285,10 @@ def main():
           % (tot, tot - mis - unb, mis, unb))
     print("  MISBOUND is the toxic case (points at a real but WRONG rva);")
     print("  UNBOUND = a declared-only/fake symbol; retail names the target to bind to.")
+    cb = sum(r["call_bad"] for r in rows)
+    db = sum(r["data_bad"] for r in rows)
+    print("  by kind: %d CALL-target defects (fake/misbound FUNCTIONS, rel32), "
+          "%d DATA defects (globals/vtables, DIR32)" % (cb, db))
     print("\nworst 25 functions (misbound first):")
     for r in sorted(rows, key=lambda r: (-r["misbound"], -r["unbound"]))[:25]:
         ex = [s[1] for s in r["sites"] if s[4] == "MISBOUND"][:2]
