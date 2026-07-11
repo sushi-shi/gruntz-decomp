@@ -32,59 +32,10 @@ namespace ResLoaders {
     // DSNDMGR.CPP obj, per docs/exe-map/interval-dossiers.md: the +0x78 gate IS
     // SoundDevice::m_initialized, the callees ARE Acquire/ReloadRiff).
 
-    // The header of the locked RT_BITMAP resource (its +0xe must be 8).
-    struct ResHdr_144270 {
-        i32 m_0; // +0x00 (payload size; data follows at +m_0+0x400)
-        i32 m_4; // +0x04
-        i32 m_8; // +0x08
-        char m_padc[0xe - 0xc];
-        i16 m_e; // +0x0e (must be 8)
-    };
-    struct ResLoad_144270 {
-        char m_pad0[0x10];
-        i32 m_10; // +0x10 (set to 0x6c after a 0x6c-byte zero-fill)
-        i32 m_14; // +0x14
-        i32 m_18; // +0x18
-        i32 m_1c; // +0x1c
-        char m_pad20[0x78 - 0x20];
-        i32 m_78;                        // +0x78
-        i32 Init(i32 saved);             // thiscall, RVA 0x13e0a0
-        void Parse(char* data, i32 two); // thiscall, RVA 0x13ece0
-        i32 Load(i32 a, char* name, i32 c);
-    };
-    // __thiscall(a, name, c): find/load/lock the named RT_BITMAP, validate its
-    // header (+0xe==8), zero a 0x6c-byte block, seed the loader fields, init it,
-    // then parse the payload that follows the 0x400-byte header.
-    RVA(0x00144270, 0xd2)
-    i32 ResLoad_144270::Load(i32 a, char* name, i32 c) {
-        HRSRC hr = FindResourceA(g_resModule, name, (LPCSTR)2);
-        if (!hr) {
-            return 0;
-        }
-        HGLOBAL hg = LoadResource(g_resModule, hr);
-        if (!hg) {
-            return 0;
-        }
-        ResHdr_144270* p = (ResHdr_144270*)LockResource(hg);
-        if (!p) {
-            return 0;
-        }
-        i32 saved = p->m_8;
-        if (p->m_e != 8) {
-            return 0;
-        }
-        memset(&m_10, 0, 0x6c);
-        m_10 = 0x6c;
-        m_78 = c | 0x40;
-        m_14 = 7;
-        m_1c = p->m_4;
-        m_18 = c;
-        if (!Init(saved)) {
-            return 0;
-        }
-        Parse((char*)p + p->m_0 + 0x400, 2);
-        return 1;
-    }
+    // The former ResLoad_144270 view (RVA 0x144270) was RVA-proven to be
+    // CDDSurface::Load (its Init@0x13e0a0 / Parse@0x13ece0 ARE CDDSurface::Init1 /
+    // BlitDirect) and re-homed to src/Image/FileImage.cpp (the file-codec obj,
+    // wave4-K, dossier #14I).
 
     // The former PalLoad_1479e0 view (RVA 0x1479e0) was RVA-proven to be
     // CDDPalette::LoadDefault (its Apply@0x147390 IS CDDPalette::Create) and

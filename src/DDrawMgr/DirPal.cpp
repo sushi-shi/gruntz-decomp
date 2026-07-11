@@ -118,12 +118,12 @@ i32 CDDPalette::CreateRGB(IDirectDraw2* dd, void* rgb, u32 flags) {
     return Create(dd, entries, flags);
 }
 
-// CDDPalette::Destroy (__thiscall, no args). Nulls m_0/m_palette/m_8, frees the three
+// CDDPalette::Destroy (__thiscall, no args). Nulls m_pos/m_palette/m_8, frees the three
 // owned buffers (m_cacheA/m_cacheB/m_sourcePalette) via operator delete, clears
 // m_active. m_palette is only nulled (not Released) here.
 RVA(0x00147530, 0x54)
 void CDDPalette::Destroy() {
-    m_0 = 0;
+    m_pos = 0;
     m_8 = 0;
     if (m_palette != 0) {
         m_palette = 0;

@@ -13,7 +13,7 @@ Outlier mechanisms: REHOME-CANDIDATE 208, COMDAT-POOL-EXILE 47, COMDAT-AT-USAGE 
 
 | interval | fns | verdict | weave | combine/verify these units |
 |---|---|---|---|---|
-| `0x1396f0-0x145e00` | 236 | mixed | 0.21 | ddrawptrcollections (34), image (27), symtab (23), directdrawmgr (21), ddsurface (20), rezmgr (18), gameapp (18), symparser (16), fileimage (13), gamewnd (10), cremusreadstream (9), hash (6), rezfile (6), fileimageblit (5), fileimagerundecode (4) |
+| `0x1396f0-0x145e00` | 236 | ~~mixed~~ **RESOLVED wave4-K** (dossier #14): SEVEN TUs - sym `0x1396f0` / hash `0x13c240` / rez `0x13c4e0` / GameWnd `0x13cf00` / GameApp `0x13d590` / DIRSURF `0x13e060` / DDRAWMGR `0x1413d0` / codec `0x143cf0` | 0.21 | dissolved: cremusreadstream+symrec+symparser->symtab, rezfile->rezmgr, image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext->ddsurface/fileimage/pocket, ddrawptrcollections in-band->directdrawmgr |
 | `0x154aa0-0x15ccc8` | 183 | mixed | 0.19 | ddrawsubmgr (69), ddrawworkerregistry (23), ddrawsubmgrleafscan (17), ddrawsurfacemgr (10), ddrawchildgroup (10), ddrawworkerlist (7), ddrawsubmgrpages (7), wwdobjmgrfactories (7), ddrawworkermapsmall (4), ddrawworkers (4), ddrawsubmgrleaf (3), filemem (3), wwdgameobject (3) |
 | `0x08b8c0-0x093ce7` | 137 | seam-glued | 0.01 | gruntzmgr (115), menustate (4) |
 | `0x184610-0x185a0e` | 50 | seam-glued | 0.02 | menuitem (19), debugprintf (13), rezcoll (11), rezlist (5) |
@@ -461,7 +461,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 
 **Mixed-profile merge groups (unify; EH evidence decides):**
 - `0x03ac30-0x03e135` (19 EH sites): orphanleaves (base), customworlddialog (base), customworldinfodlg (base), democameratools (eh), animworkerhandlers (eh)
-- `0x1396f0-0x145e00` (53 EH sites): cremusreadstream (base), symtab (eh), rezmgr (eh), symparser (eh), hash (eh), rezfile (base), gamewnd (base), gameapp (eh), image (eh), ddsurface (base), fileimage (eh), fileimageblit (base), fileimagerundecode (od), directdrawmgr (base), ddrawptrcollections (eh)
+- `0x1396f0-0x145e00` (53 EH sites): **RESOLVED wave4-K** - symtab/rezmgr/gameapp/ddsurface/directdrawmgr/fileimage all eh (per-obj EH sites); gamewnd stays base (zero sites, own obj); the fileimagerundecode `od` singleton was a `#pragma optimize("",off)` island (docs/patterns/od-island-pragma-optimize-off.md)
 - `0x1504d0-0x152636` (1 EH sites): spriteresource (base), wwdgameobject (eh), userbaselink (eh), ddrawworker (eh), imageset (base)
 - `0x154aa0-0x15ccc8` (49 EH sites): ddrawworkerregistry (eh), ddrawsurfacemgr (eh), ddrawsubmgr (eh), ddrawworkermapsmall (eh), ddrawworkerlist (base), ddrawworkers (base), ddrawsubmgrpages (eh), ddrawsubmgrleafscan (eh), ddrawchildgroup (base), ddrawsubmgrleaf (eh), filemem (eh), wwdobjmgrfactories (eh), wwdgameobject (eh)
 - `0x17c040-0x17d8a8` (1 EH sites): ddpagemgr (base), smackervideowindow (eh), ddscreen (base)
@@ -470,7 +470,6 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 
 **Singleton profile overrides — re-derive, may mask wrong shape/TU composition:**
 - filestream (`mfc`) — src/Io/FileStream.cpp
-- fileimagerundecode (`od`) — src/Image/FileImageRunDecode.cpp
 - rezutil (`o1`) — src/Rez/RezUtil.cpp
 - warptextureblit (`framed`) — src/Image/WarpTextureBlit.cpp
 - ddrawpolyfill (`framed`) — src/DDrawMgr/DDrawPolyFill.cpp
@@ -539,4 +538,4 @@ comhelperthunks | wapmisc | rezutil | ?x2 | comhelperthunksx8 | ? | m3mfcleavesx
 directdrawmgr | typekeycollx7 | debugprintf | comhelperthunks
 ```
 
-*Caveats: the engine-resource mega-interval (0x1396f0+) is glued by our own coarse units and needs per-function re-attribution before it splits (DIRSURF/DDRAWMGR/DIRPAL anchors mark three distinct files inside it). Splits invisible to layout (adjacent objs, e.g. DinMgr2.cpp + InputDevice.cpp inside our directinputmgr2) are only visible via anchors/init-frags.*
+*Caveats: the engine-resource mega-interval (0x1396f0-0x145e00) was re-attributed + split in wave4-K (dossier #14; DIRSURF/DDRAWMGR anchored, seven TUs); the 0x145e00-0x148840 warp/rotate strip and the 0x148840 pocket's original names remain open. Splits invisible to layout (adjacent objs, e.g. DinMgr2.cpp + InputDevice.cpp inside our directinputmgr2) are only visible via anchors/init-frags.*

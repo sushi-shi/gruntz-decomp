@@ -49,4 +49,16 @@ struct TgaHeader {
     i16 bitCount; // +0x12
 };
 
+// The locked RT_BITMAP resource header CDDSurface::Load (0x144270) validates:
+// payload size at +0 (data follows at +m_0+0x400), a width word at +4, the
+// slot-2-init word at +8, and the +0xe format tag (must be 8).
+SIZE_UNKNOWN(ResHdr_144270); // resource-header view (only the first 0x10 bytes pinned)
+struct ResHdr_144270 {
+    i32 m_0; // +0x00 (payload size; data follows at +m_0+0x400)
+    i32 m_4; // +0x04 (stored into the surface desc width)
+    i32 m_8; // +0x08 (forwarded to the slot-2 init)
+    char m_padc[0xe - 0xc];
+    i16 m_e; // +0x0e (must be 8)
+};
+
 #endif // SRC_IMAGE_CFILEIMAGERECORDS_H

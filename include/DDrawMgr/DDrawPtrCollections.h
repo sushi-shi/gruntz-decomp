@@ -20,11 +20,82 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The pool item base + pool-B item + cached surface: completed in the owner unit
-// (their vtables / layouts stay there); pointer-only here.
-class CDDSurface;
+#include <DDrawMgr/DDSurface.h> // CDDSurface (the pool-A item base; CPoolItem* derive it)
+
+// The pool-B item (CDDPalette, DIRPAL.CPP - full def in <DDrawMgr/DirectDrawMgr.h>).
 struct CDDPalette;
-struct CCachedSurface;
+// The two cached device slots at +0x00/+0x04 are the REAL DirectDraw COM interfaces
+// (wave4-K: the former CCachedSurface view's slot set - "GetSurfaceDesc"@12 /
+// "Restore"@19 / "Configure"@21(5 args) - is exactly IDirectDraw2's GetDisplayMode /
+// RestoreDisplayMode / SetDisplayMode; the view is dissolved).
+struct IDirectDraw;  // <ddraw.h> in the dispatching TU
+struct IDirectDraw2; // <ddraw.h> in the dispatching TU
+
+// ---------------------------------------------------------------------------
+// The +0x47c-pool surface-item family. GENUINE C++ VTABLES (verified against the
+// retail .rdata): the 9-slot polymorphic base CDDSurface (vtable 0x5ef7f0) plus four
+// DERIVED subclasses (0x5efa58 / a88 / ab8 / ae8) that override {virtual dtor slot 0,
+// the slot-2 init, the slot-6 surface op} and add per-subclass init tail slots.
+// Shared here (wave4-K) because the factories live in the DDRAWMGR.CPP obj
+// (DirectDrawMgr.cpp) while the pocket slot bodies live in the 0x148840-pocket obj
+// (DDrawPtrCollections.cpp).
+//
+// vtable 0x5efa58: overrides the dtor (??_G 0x142340 / ~ 0x142360) and slot 6
+// (0x143cc0); adds three init tail slots (9 = 0x148890, 10 = 0x148940, 11 = 0x148840).
+// This a58 subclass is the SAME class the Image side models as CFileImageSurface: its
+// ??_G/~ COMDAT (0x142340/0x142360) is emitted under the CFileImageSurface name
+// (?ScalarDelete@CFileImageSurface + ??1CFileImageSurface); here it is declared-only.
+// See docs/patterns/surface-pool-comdat-dtors.md.
+class CPoolItemA : public CDDSurface {
+public:
+    virtual ~CPoolItemA() OVERRIDE; // slot 0  ~ 0x142360 (image copy)
+    virtual i32 v18() OVERRIDE;     // slot 6  0x143cc0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148890
+    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148940
+    virtual i32 v2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 11 0x148840
+};
+SIZE(CPoolItemA, 0xc0);
+RELOC_VTBL(
+    CPoolItemA,
+    0x001efa58
+); // reduced/derived view aliases CFileImageSurface (slot-RVA verified)
+
+// vtable 0x5efa88: overrides the dtor (??_G 0x142800 / ~ 0x142820) and slot 6 (0x143cb0);
+// adds two init tail slots (9 = 0x148a50, 10 = 0x148ac0).
+class CPoolItemA88 : public CDDSurface {
+public:
+    virtual ~CPoolItemA88() OVERRIDE;                      // slot 0  ~ 0x142820
+    virtual i32 v18() OVERRIDE;                            // slot 6  0x143cb0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32); // slot 9  0x148a50 (Blit7, 4 args)
+    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32); // slot 10 0x148ac0
+};
+SIZE(CPoolItemA88, 0xc0);
+VTBL(CPoolItemA88, 0x001efa88);
+
+// vtable 0x5efab8: overrides the dtor (??_G 0x142a20 / ~ 0x142a40), slot 2 (0x148b50) and
+// slot 6 (0x143cd0); adds two init tail slots (9 = 0x148af0, 10 = 0x148b80).
+class CPoolItemAB8 : public CDDSurface {
+public:
+    virtual ~CPoolItemAB8() OVERRIDE;                       // slot 0  ~ 0x142a40
+    virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE; // slot 2  0x148b50
+    virtual i32 v18() OVERRIDE;                             // slot 6  0x143cd0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32);  // slot 9  0x148af0 (Setup, 4 args)
+    virtual i32 InstallColorFormat();                       // slot 10 0x148b80
+};
+SIZE(CPoolItemAB8, 0xc0);
+VTBL(CPoolItemAB8, 0x001efab8);
+
+// vtable 0x5efae8: overrides the dtor (??_G 0x142d20 / ~ 0x142d40), slot 2 (0x148cc0)
+// and slot 6 (0x143ce0); adds one init tail slot (9 = 0x148c40, 6-arg).
+class CPoolItemAE8 : public CDDSurface {
+public:
+    virtual ~CPoolItemAE8() OVERRIDE;                                     // slot 0  ~ 0x142d40
+    virtual i32 Init1(CDDrawPtrCollections*, i32) OVERRIDE;               // slot 2  0x148cc0
+    virtual i32 v18() OVERRIDE;                                           // slot 6  0x143ce0
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32, i32); // slot 9  0x148c40
+};
+SIZE(CPoolItemAE8, 0xc0);
+VTBL(CPoolItemAE8, 0x001efae8);
 
 SIZE_UNKNOWN(CDDrawPtrCollections);
 class CDDrawPtrCollections {
@@ -97,8 +168,13 @@ public:
     // masks; report + latch the failure code on either error. 0x143c20.
     i32 ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4); // 0x143c20
 
-    CCachedSurface* m_surf0; // +0x00 - cached surface object (Release on Clear)
-    CCachedSurface* m_surf4; // +0x04 - cached surface object (Release on Clear)
+    IDirectDraw2* m_surf0; // +0x00 - the held DirectDraw device (Release on Clear).
+                           //         NOTE (wave4-K): +0x00/+0x04 mirror CDirectDrawMgr's
+                           //         m_device/m_dd1 - CDDrawPtrCollections and
+                           //         CDirectDrawMgr are two views of ONE DDRAWMGR.CPP
+                           //         manager class (shared +0x4b4 array, +0x93c..+0x944
+                           //         tail); flagged for a canonical-class unification.
+    IDirectDraw* m_surf4;  // +0x04 - the raw pre-QI DirectDraw device (Release on Clear)
     char _pad008[0x47c - 0x08];
     CPtrList m_poolA;  // +0x47c  (block size 0xa) - CPoolItemA*
     CPtrList m_poolB;  // +0x498  (block size 0xa) - CDDPalette*

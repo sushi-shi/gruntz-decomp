@@ -170,11 +170,37 @@ public:
 
 // ---------------------------------------------------------------------------
 // CDDPalette (DIRPAL.CPP) - a palette wrapper. Held IDirectDrawPalette @0x4,
-// two 0x400-byte PALETTEENTRY caches @0xc/@0x10.
+// two 0x400-byte PALETTEENTRY caches @0xc/@0x10. Also the +0x498 pool-B item of
+// CDDrawPtrCollections (wave4-K: the pool view's Init/Init2/Init3/Teardown were
+// RVA-proven == CreateRGB/LoadFromFile/CreateFromTrailing/Destroy; folded here).
+// +0x00 doubles as the pool's cached CPtrList POSITION.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CDDPalette);
-struct CDDPalette { // struct (PAUCDDPalette mangling); consistent with the fwd decls
+// afx-compatible POSITION forward (identical to afx.h's typedef; this header must
+// not pull <Mfc.h> - it is widely included).
+struct __POSITION;
+typedef __POSITION* POSITION;
+
+SIZE(CDDPalette, 0x38); // measured: the pool factories RezAlloc 0x38-byte items
+struct CDDPalette {     // struct (PAUCDDPalette mangling); consistent with the fwd decls
 public:
+    // Pool-item construction (the CDDrawPtrCollections MakeB*/Create factories
+    // inline these): zero the fields; class operator new is the Rez heap 0x38 alloc.
+    CDDPalette() {
+        m_palette = 0;
+        m_pos = 0;
+        m_8 = 0;
+        m_cacheA = 0;
+        m_cacheB = 0;
+        m_active = 0;
+        m_sourcePalette = 0;
+        m_targetPalette = 0;
+        m_firstColorIndex = 0;
+        m_colorCount = 0;
+    }
+    void* operator new(u32) {
+        return ::operator new(0x38);
+    }
+
     i32 LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags); // 0x147410
     i32 Create(IDirectDraw2* dd, void* entries, u32 flags);        // 0x147390
     i32 LoadBmp(IDirectDraw2* dd, char* filename, u32 flags);      // 0x147590
@@ -216,7 +242,9 @@ public:
     i32 CaptureSystemPalette(); // 0x1485b0 (system-reserved entries -> m_cacheA)
 
     // --- layout ---------------------------------------------------------------
-    i32 m_0;                       // +0x00  cleared by Destroy
+    POSITION m_pos;                // +0x00  pool-B cached CPtrList POSITION (AddItemB
+                                   //        stamps it; RemoveItemB unlinks by it);
+                                   //        cleared by Destroy
     IDirectDrawPalette* m_palette; // +0x04  the held palette interface
     i32 m_8;                       // +0x08  cleared by Destroy
     u8* m_cacheA;                  // +0x0c  PALETTEENTRY cache A (0x400 bytes; the live palette)

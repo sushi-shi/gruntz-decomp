@@ -589,11 +589,6 @@ source = "src/Rez/RezMgr.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "image"
-source = "src/Image/Image.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "cimage"
 source = "src/Image/CImage.cpp"
 flags = "eh"
@@ -614,19 +609,11 @@ source = "src/Image/ImageSet.cpp"
 flags = "base"
 
 [[unit]]
+# wave4-K: the 0x143cf0-0x145dff surface file-CODEC obj (dossier #14I; original
+# name unknown - no __FILE__ anchor; a DIRFILE.CPP-like DDrawMgr sibling).
 unit = "fileimage"
 source = "src/Image/FileImage.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "fileimageblit"
-source = "src/Image/FileImageBlit.cpp"
-flags = "base"
-
-[[unit]]
-unit = "fileimagerundecode"
-source = "src/Image/FileImageRunDecode.cpp"
-flags = "od"
 
 [[unit]]
 unit = "registryhelper"
@@ -733,11 +720,6 @@ source = "src/Bute/Hash.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "symparser"
-source = "src/Bute/SymParser.cpp"
-flags = "eh"
-
-[[unit]]
 # CButeTree::Find/Insert - the string-keyed crit-bit (PATRICIA) trie. No
 # destructible locals -> /base (no /GX EH frame); strlen/strcmp/strcpy come from
 # /O2's /Oi intrinsics.
@@ -801,9 +783,10 @@ source = "src/Gruntz/Random.cpp"
 flags = "base"
 
 [[unit]]
-# Win32 resource (WAVE / RT_BITMAP / PALETTE) loaders + GDI counter-draw helpers
-# (0x136a30/0x136ce0/0x144270/0x1479e0/0x164380/0x164420/0x1775f0/0x17cd90),
-# re-homed from ApiCallers. No destructible locals -> /base.
+# Win32 PALETTE resource loaders (0x1775f0/0x17cd90), re-homed from ApiCallers.
+# The WAVE pair went to DirectSoundMgr.cpp, the GDI pair to DDrawSurfacePair.cpp,
+# 0x1479e0 to DirPal.cpp, and 0x144270 (RT_BITMAP) is CDDSurface::Load in
+# FileImage.cpp (wave4-K). No destructible locals -> /base.
 unit = "resourceloaders"
 source = "src/Gruntz/ResourceLoaders.cpp"
 flags = "base"
@@ -864,13 +847,6 @@ flags = "eh"
 # CGruntzMgr; true owner not identified, so its own TU.
 unit = "unknownfileioctor"
 source = "src/Gruntz/UnknownFileIOCtor.cpp"
-flags = "eh"
-
-[[unit]]
-# CFileImage::LoadByExt (0x148940); own TU (its 0x144270 this-cast dispatch keeps a
-# self-contained model rather than the full CFileImage.cpp class).
-unit = "fileimageloadbyext"
-source = "src/Image/FileImageLoadByExt.cpp"
 flags = "eh"
 
 # --- semantic stub-elim: re-homed from src/Stub/Backlog.cpp + Discovered.cpp ---
@@ -946,12 +922,6 @@ flags = "base"
 unit = "bitstreamblowfish"
 source = "src/Crypto/BitStreamBlowfish.cpp"
 flags = "base"
-
-[[unit]]
-# ClassUnknown_48::Clear (0x139cf0) intrusive-list drain (/GX) re-homed from Discovered.cpp.
-unit = "symrec"
-source = "src/Bute/SymRec.cpp"
-flags = "eh"
 
 [[unit]]
 # CSpotLight::Update (0x0b1ee0) x87 rotation re-homed from Discovered.cpp.
@@ -1480,6 +1450,9 @@ source = "src/Wwd/WwdObjMgr.cpp"
 flags = "base"
 
 [[unit]]
+# wave4-K: now the 0x148840-0x148cd8 surface-extras pocket obj only (dossier #14);
+# the in-band 0x141cc0-0x143c20 pool/factory methods live in DirectDrawMgr.cpp
+# (the DDRAWMGR.CPP obj). Unit name kept for delinker packing.
 unit = "ddrawptrcollections"
 source = "src/DDrawMgr/DDrawPtrCollections.cpp"
 flags = "eh"
@@ -1487,12 +1460,12 @@ flags = "eh"
 [[unit]]
 unit = "directdrawmgr"
 source = "src/DDrawMgr/DirectDrawMgr.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "ddsurface"
 source = "src/DDrawMgr/DDSurface.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 # ONE original TU: C:\Proj\DDrawMgr\DIRPAL.CPP (__FILE__-anchored; wave3-J merge of
@@ -1811,11 +1784,6 @@ source = "src/Wap32/EngStrRenderText.cpp"
 flags = "base"
 
 [[unit]]
-unit = "cremusreadstream"
-source = "src/Gruntz/ParseSource.cpp"
-flags = "base"
-
-[[unit]]
 unit = "helperhost"
 source = "src/Gruntz/HelperHost.cpp"
 flags = "base"
@@ -1896,11 +1864,6 @@ flags = "eh"
 unit = "statusbarspriteacts"
 source = "src/Gruntz/StatusBarSpriteActs.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "rezfile"
-source = "src/Rez/RezFile.cpp"
-flags = "base"
 
 [[unit]]
 unit = "rezlist"
@@ -2392,11 +2355,6 @@ flags = "eh"
 unit = "gruntphasestep"
 source = "src/Gruntz/GruntPhaseStep.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "lutshaderect"
-source = "src/Image/LutShadeRect.cpp"
-flags = "base"
 
 [[unit]]
 unit = "globals"

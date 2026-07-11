@@ -45,16 +45,8 @@
 // compare) + memset/memcpy in the RLE decoders.
 #include <string.h>
 
-// The .PID/.PCX-via-RezMgr flags word (header+4). Monolith's WAP32 layout
-// (libwap32 wap32/pid.h). Same immediates as
-// the bare masks, so naming them is matching-neutral.
-enum PidFlags {
-    PID_TRANSPARENCY = 0x01,     // bit0  install the transparent colour key
-    PID_VIDEO_MEMORY = 0x02,     // bit1  "VID"
-    PID_SYSTEM_MEMORY = 0x04,    // bit2  "SYS"
-    PID_COMPRESSION = 0x20,      // bit5  "RLE" - skip/fill RLE pixel stream
-    PID_EMBEDDED_PALETTE = 0x80, // bit7  trailing 768-byte VGA palette at EOF
-};
+// The .PID/.PCX-via-RezMgr flags word (PidFlags) now comes from the shared
+// <DDrawMgr/DDSurface.h> (via Image.h) - wave4-K dedup.
 
 // The .PID on-disk image header (32 = 0x20 bytes; 8 dwords). DecodePidData reads
 // this at the head of the RezMgr payload; the RLE/uncompressed 8bpp pixel stream

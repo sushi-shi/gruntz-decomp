@@ -1,26 +1,265 @@
-// RezMgr.cpp - the Monolith "RezMgr" archive container classes (CRezItm leaf /
-// CRezDir subdirectory nodes) and the directory walk over a Gruntz.REZ /
-// GRUNTZ.VRZ archive.
+// RezMgr.cpp - the Monolith "RezMgr" archive-container ORIGINAL TU (wave4-K
+// merge; interval dossier #14C): one obj spanning retail 0x13c4e0-0x13ce8c.
+// CRezItmBase/CRezItm/CRezDir/CRezParseNode (the directory-tree nodes) AND
+// CRezFile/CRezFileMgr (the LRU-managed open-file wrapper, ex RezFile.cpp unit)
+// are ONE file - proven by the shared private fopen-mode literals 0x21a0a4
+// ("r+b") / 0x21a0a8 ("w+b"), referenced ONLY by Open@CRezItm + Open@CRezFile,
+// and the text A-B-A weave (CloseAllOpen@CRezFileMgr @0x13ca80 inside the
+// rezmgr run). Plus three out-of-band methods of the "RezMgr" manager view
+// (0x8b740/0x8e470/0x91670 - really CGruntzMgr territory; deferred to the
+// gruntzmgr package).
 //
-// Both ctors share the base ctor CRezItmBase::CRezItmBase (stores the base vtable
-// and the parent pointer @+0xc), then overwrite the vtable with the derived one
-// (two-phase construction; all vtable stores reloc-masked). `operator new` sizes
-// 0x24 (leaf) / 0x38 (dir) confirm the layouts. The "File is not sorted!" assert
-// string is a reloc-masked file-scope literal.
+// Both node ctors share the base ctor CRezItmBase::CRezItmBase (stores the base
+// vtable and the parent pointer @+0xc), then overwrite the vtable with the
+// derived one (two-phase construction; all vtable stores reloc-masked).
+// `operator new` sizes 0x24 (leaf) / 0x38 (dir) confirm the layouts.
 //
 // OpenSub is NOT matched here: it runs on a THIRD, distinct node layout (it uses
 // +0x1c as a child COUNT and +0x10 as a list-append target, conflicting with both
 // the 0x38 CRezDir ctor's vtable stores and CRezDirNode's +0x10 size / +0x18 source
 // - so the three "CRezDir"-labeled functions are actually three different classes).
-// The container layouts it would confirm are already pinned by the two ctors below.
 #include <Rez/RezMgr.h>
-#include <Rez/RezFile.h> // CRezFile::Close (the 0x13cb80 /GX dtor's child cleanup)
+#include <Rez/RezFile.h> // CRezFile/CRezFileMgr (this TU's own classes; shared decls)
 #include <rva.h>
 
 // The owner's embedded child list a CRezParseNode enrolls itself into is the
 // shared CRezList (AddHead = 0x1851e0). Included in the .cpp only (NOT in RezMgr.h,
 // which is pulled into /O2-sensitive TUs like Image.cpp).
 #include <Rez/RezList.h>
+
+// ---------------------------------------------------------------------------
+// The per-frame frame-clock globals PerFrameTick reads are the CANONICAL WAP32
+// clock cells (0x253c70/0x253c74, DATA-bound in Globals.cpp) - the same cells
+// GameApp.cpp's CGameMgr::InitializeTimeGlobal seeds and RezMgr::UpdateClock
+// (now in GameApp.cpp, its original TU) advances. The per-second accumulators
+// below stay file-scope statics of this TU (reloc-masked).
+// ---------------------------------------------------------------------------
+extern i32 g_wap32Now;        // 0x253c70 (last timeGetTime sample)
+extern i32 g_wap32FrameDelta; // 0x253c74 (ms since previous frame)
+
+static i32 g_lastNow;
+static i32 g_lastDelta;  // (frame delta, clamped to <= 0x64)
+static i32 g_accumMs;    // (running accumulated frame time)
+static i32 g_frameTicks; // (per-frame counter)
+static i32 g_timer32;    // (seed 0x32 ms)
+static i32 g_timer100;   // (seed 0x64 ms)
+static i32 g_timer200;   // (seed 0xc8 ms)
+static i32 g_timer400;   // (seed 0x190 ms)
+static i32 g_timer500;   // (seed 0x1f4 ms)
+
+// ---------------------------------------------------------------------------
+// RezMgr::PerFrameTick()  (virtual, vtable slot +0x10).
+// THE per-frame game tick: the engine's idle (CGameApp slot +0x20) tail-calls
+// this every frame on an empty message queue.
+//
+//   if (m_mode == 0) return 0;          // nothing to drive yet
+//   UpdateClock();                       // advance g_wap32Now / g_wap32FrameDelta
+//   int r = m_mode->Update();            // step the active game-state (slot +0x10)
+//   if (r != 0x11) {                     // 0x11 = a state that suppresses timing
+//       // clamp this frame's delta to <= 0x64 ms and accumulate
+//       int dt = g_wap32FrameDelta;
+//       g_lastNow = g_wap32Now;  g_lastDelta = dt;
+//       if (dt > 0x64) { dt = 0x64; g_lastDelta = 0x64; }
+//       g_accumMs += dt;
+//       // five interval countdown timers: reseed when expired, else subtract dt
+//       <timer32/100/200/400/500>
+//       g_frameTicks++;
+//   }
+//   if (m_renderGate != 0) return 0;     // render suppressed this frame
+//   m_mode->Render();                    // post-step (slot +0x14)
+//   return 1;
+//
+// Each countdown timer t loads its current value (or its SEED when it has hit
+// 0), and either zeroes (delta has run it out) or subtracts the clamped delta:
+//   v = (g_tN == 0) ? SEED : g_tN;
+//   if (dt >= v) g_tN = 0; else g_tN = v - dt;
+// The disasm reseeds in a register (mov ecx,SEED) without storing, so the
+// reseed value is only visible through the subtract/zero - reproduce with the
+// ternary feeding the compare directly.
+//
+// STATUS: BYTE-EXACT under reloc-masking (98.70% fuzzy). All 92 instructions are
+// opcode+ModRM-identical vs dump_target.py; the only 24 diffs are
+// reloc-masked address operands (the `call UpdateClock` REL32 + the 23 DIR32 to
+// the frame-clock globals below).
+// LEVER: the frame-delta clamp and the timer compares are UNSIGNED. `dt`/`v` MUST
+// be `unsigned int` so the target's `jbe` (dt>0x64 clamp) and `jb` (dt>=v timer
+// test) fall out; `int` emits signed `jle`/`jl` (94.78%). g_wap32FrameDelta is a
+// timeGetTime() delta (genuinely unsigned ms).
+RVA(0x0008b740, 0x12d)
+i32 RezMgr::PerFrameTick() {
+    if (m_mode == 0) {
+        return 0;
+    }
+
+    UpdateClock();
+
+    i32 r = m_mode->Update();
+    if (r != 0x11) {
+        u32 dt = g_wap32FrameDelta;
+        g_lastNow = g_wap32Now;
+        g_lastDelta = dt;
+        if (dt > 0x64) {
+            dt = 0x64;
+            g_lastDelta = 0x64;
+        }
+        g_accumMs += dt;
+
+        u32 v;
+        v = (g_timer32 == 0) ? 0x32 : g_timer32;
+        if (dt >= v) {
+            g_timer32 = 0;
+        } else {
+            g_timer32 = v - dt;
+        }
+        v = (g_timer100 == 0) ? 0x64 : g_timer100;
+        if (dt >= v) {
+            g_timer100 = 0;
+        } else {
+            g_timer100 = v - dt;
+        }
+        v = (g_timer200 == 0) ? 0xc8 : g_timer200;
+        if (dt >= v) {
+            g_timer200 = 0;
+        } else {
+            g_timer200 = v - dt;
+        }
+        v = (g_timer400 == 0) ? 0x190 : g_timer400;
+        if (dt >= v) {
+            g_timer400 = 0;
+        } else {
+            g_timer400 = v - dt;
+        }
+        v = (g_timer500 == 0) ? 0x1f4 : g_timer500;
+        if (dt >= v) {
+            g_timer500 = 0;
+        } else {
+            g_timer500 = v - dt;
+        }
+
+        g_frameTicks++;
+    }
+
+    if (m_renderGate != 0) {
+        return 0;
+    }
+
+    m_mode->Render();
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// RezMgr::HandleDebugPosition()
+// When the active mode's per-frame state step reports 3, look up the
+// "DEBUG_POSITION" debug value (via the external CheckDbgVal helper, reached at
+// the call site through the 0x2bb7 thunk); if it is set, fetch the
+// owning window handle (this+4 -> owner, owner+4 -> hwnd) and post it a
+// WM_COMMAND (0x111) with command id 0x805c. Returns nonzero iff the lookup
+// reported a hit. The CheckDbgVal call's E8 rel32 is reloc-masked by objdiff.
+RVA(0x0008e470, 0x50)
+i32 RezMgr::HandleDebugPosition() {
+    i32 r = 0;
+    if (m_mode && m_mode->Update() == 3) {
+        r = CheckDbgVal("DEBUG_POSITION", 0x402d0b, 1);
+        if (r == 1) {
+            HWND hwnd = m_4->m_hWnd;
+            PostMessageA(hwnd, 0x111, 0x805c, 0);
+        }
+    }
+    return r != 0;
+}
+
+// The runtime low-detail / front-end-class selector.
+i32 g_rezLowDetail;
+
+// The archive base names / path templates - file-scope literals (reloc-masked).
+static const char s_rezName[] = "Gruntz.REZ";
+static const char s_join[] = "%s\\%s";
+static const char s_dataPath[] = "%c:\\DATA\\%s";
+static const char s_fecName[] = "Gruntz.FEC";
+static const char s_fecLoName[] = "GruntzLo.FEC";
+static const char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
+
+// ---------------------------------------------------------------------------
+// RezMgr::MakeRezPath()
+// Assembles the candidate archive paths (the main Gruntz.REZ and the front-end
+// Gruntz.FEC / GruntzLo.FEC) and probes them with FileExists, recording in
+// m_inGameDir/m_haveRez/m_haveMoviez which were found. Reports an error and
+// returns 0 if nothing was found, else 1.
+//
+// PLATEAU 91.87% (documented): a >512 B C++ EH-frame function with four
+// ref-counted MFC CString locals (one COW copy-ctor selecting the lo/hi FEC
+// variant), the engine sprintf-style CString::Format wrapper, a runtime
+// low-detail global branch, and FileExists probes. All call/string/IAT/EH
+// operands are reloc-masked. The logic, control flow, all RezMgr member offsets
+// (+0xec/+0xf0 path CStrings, +0xf4/+0xf8/+0xfc flags) and the string-template
+// order are reconstructed faithfully and verified against the disasm. The sole
+// residue is an EH-state-tracking write: the target advances the C++ EH state to
+// 0 (`mov [esp+ehstate],ebp`) inline right before the first CString::Format,
+// just after `m_haveRez=0` - my build omits exactly that one inline state-write,
+// which shifts the instruction alignment by one and cascades objdiff's
+// edit-distance. This is the MSVC5 EH-state scheduling over four overlapping
+// CString live ranges (entropy-class; no source lever flips a single funclet
+// state-write). MakeImageKey (the other target) is BYTE-EXACT and is the green
+// deliverable; per the prompt's "don't sacrifice a green fn", this is left as a
+// documented plateau with the full reconstruction in place.
+RVA(0x00091670, 0x2ac)
+i32 RezMgr::MakeRezPath() {
+    char cwd[0x100];
+    if (!GetCurrentDirectoryA(0xff, cwd)) {
+        return 0;
+    }
+
+    char drive = GetGruntzDriveLetter();
+    m_inGameDir = (drive == cwd[0]);
+
+    i32 found = 1;
+
+    // --- main archive: cwd\Gruntz.REZ, fall back to <drive>:\DATA\Gruntz.REZ ---
+    {
+        CString rez(s_rezName);
+        m_haveRez = 0;
+        RezFormat(&m_pathA, s_join, cwd, (LPCTSTR)rez);
+        if (!RezFileExists(m_pathA)) {
+            if (drive) {
+                RezFormat(&m_pathA, s_dataPath, drive, (LPCTSTR)rez);
+                if (RezFileExists(m_pathA)) {
+                    m_haveRez = 1;
+                } else {
+                    found = 0;
+                }
+            } else {
+                found = 0;
+            }
+        }
+    }
+
+    // --- front-end archive: cwd\<FEC>, then <drive>:\MOVIEZ\<FEC> ---
+    CString fecHi(s_fecName);
+    CString fecLo(s_fecLoName);
+    CString fec(g_rezLowDetail ? fecLo : fecHi);
+
+    m_haveMoviez = 0;
+    i32 movFound = 0;
+    RezFormat(&m_pathB, s_join, cwd, (LPCTSTR)fec);
+    if (!m_inGameDir && !RezFileExists(m_pathB) && !g_rezLowDetail) {
+        RezFormat(&m_pathB, s_join, cwd, (LPCTSTR)fecHi);
+        if (RezFileExists(m_pathB)) {
+            movFound = 1;
+        }
+    }
+    if (!movFound && drive) {
+        RezFormat(&m_pathB, s_moviezPath, drive, (LPCTSTR)fec);
+        if (RezFileExists(m_pathB)) {
+            m_haveMoviez = 1;
+        }
+    }
+
+    if (!found) {
+        ReportError(0x800b, 0x43e);
+        return 0;
+    }
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // CRezItmBase::CRezItmBase(parent)
@@ -36,6 +275,15 @@ CRezItmBase::CRezItmBase(void* parent) {
 }
 
 // ---------------------------------------------------------------------------
+// CRezItmBase::~CRezItmBase()
+// The base destructor: restore the base vtbl (auto, since polymorphic) and clear
+// the parent pointer. Out-of-line so the derived dtor emits a `call` to it.
+RVA(0x0013c520, 0xe)
+CRezItmBase::~CRezItmBase() {
+    m_parent = 0;
+}
+
+// ---------------------------------------------------------------------------
 // CRezItm::CRezItm(parent)
 // Base ctor (vtbl + parent), then derived vtbl, m_fp = 0,
 // m_readBuf = 0, m_pos = -1. m_18/m_1c untouched.
@@ -44,15 +292,6 @@ CRezItm::CRezItm(void* parent) : CRezItmBase(parent) {
     m_fp = 0;
     m_readBuf = 0;
     m_pos = -1;
-}
-
-// ---------------------------------------------------------------------------
-// CRezItmBase::~CRezItmBase()
-// The base destructor: restore the base vtbl (auto, since polymorphic) and clear
-// the parent pointer. Out-of-line so the derived dtor emits a `call` to it.
-RVA(0x0013c520, 0xe)
-CRezItmBase::~CRezItmBase() {
-    m_parent = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -154,14 +393,6 @@ i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
     }
     return put;
 }
-
-// The lazy-open helpers. Eng_fopen + the three fopen mode strings live in
-// RezFile.cpp (CRezFile::Open uses the identical mode ladder); referenced here
-// by name so their relocs reloc-mask against the shared symbols.
-extern "C" void* Eng_fopen(const char* path, const char* mode); // 0x11f870
-extern const char s_rb[];                                       // 0x20b668  "rb"
-extern const char s_rPlusB[];                                   // 0x21a0a4  "r+b"
-extern const char s_wPlusB[];                                   // 0x21a0a8  "w+b"
 
 // ---------------------------------------------------------------------------
 // CRezItm::Open(filename, readonly, write)
@@ -371,510 +602,19 @@ RELOC_VTBL(CAbstract13ca30, 0x001ef760); // vtable reloc-masks a bound datum (dt
 RVA(0x0013ca30, 0x7)
 CAbstract13ca30::~CAbstract13ca30() {}
 
-struct RezOwner18 {
-    i32 _0[0x1c / 4];
-    CObjList m_1c; // +0x1c
-};
-SIZE_UNKNOWN(RezOwner18);
-struct CRezDir13cb80 : RezDirBase {
-    i32 _4[(0x10 - 0x4) / 4];
-    void* m_10;       // +0x10
-    i32 m_14;         // +0x14
-    RezOwner18* m_18; // +0x18
-    virtual ~CRezDir13cb80() OVERRIDE;
-};
-SIZE_UNKNOWN(CRezDir13cb80);
-RELOC_VTBL(CRezDir13cb80, 0x001ef7d0); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x0013cb80, 0x72)
-CRezDir13cb80::~CRezDir13cb80() {
-    if (m_14) {
-        ((CRezFile*)this)->Close();
-    }
-    if (m_10) {
-        RezFree(m_10);
-    }
-    m_18->m_1c.Remove((CObjNode*)this);
-}
-
-// ---------------------------------------------------------------------------
-// CRezDir::FindEntry(char* name)
-// Despite the tomalla "binary search" label, the bytes are a stat: build a
-// 0x24-byte find-record on the stack, RezStatEntry(name, &rec); on failure
-// return 0; on success return whether the entry's attribute dword (at byte +6
-// of the record) has bit 0x4000 set (i.e. the entry is a directory).
-// `this` is never read here.
-RVA(0x0013c080, 0x3c)
-i32 CRezDir::FindEntry(char* name) {
-    RezFindRec rec;
-    if (RezStatEntry(name, &rec) != 0) {
-        return 0;
-    }
-    // Language-forced int-view over the fixed byte record: the entry's attribute
-    // dword sits at the packed (unaligned) offset +6 of the 0x24-byte find-record;
-    // bit 0x4000 marks a directory. Reading a dword from a byte buffer needs the cast.
-    return (*(i32*)(rec.raw + 6) & 0x4000) == 0x4000;
-}
-
-// The "File is not sorted!" assert message - a file-scope literal (its address
-// is the reloc-masked push operand in Load's failure path).
-static const char s_notSorted[] = "CRezDir::Load Failed! (File is not sorted!)";
-
-// ---------------------------------------------------------------------------
-// CRezDirNode::Load(childFlag)
-// Recursive directory parse / load. If already loaded (m_buf != 0) return 1.
-// Validate the source (m_src->m_8 nonzero, m_src->m_1c <= 1) else assert "File
-// is not sorted!". If m_size > 0, allocate the payload buffer and virtually read
-// it from the source stream at (m_off, 0, m_size, buf). When childFlag is set,
-// iterate the child collection (First/Next) and recurse Load(1) into each
-// child's sub-dir node (node->m_14). Returns 1.
-SYMBOL(?Load@CRezDirNode@@QAEHH@Z)
-RVA(0x0013a0f0, 0x99)
-i32 CRezDirNode::Load(i32 childFlag) {
-    if (m_buf != 0) {
-        return 1;
-    }
-
-    RezSrc* src = m_src;
-    if (src->m_8 == 0 || (u32)src->m_1c > 1) {
-        RezAssertFail(s_notSorted);
-        return 0;
-    }
-
-    if (m_size > 0) {
-        m_buf = RezAlloc(m_size);
-        if (m_buf != 0) {
-            m_src->m_stream->ReadAt(m_off, 0, m_size, m_buf);
-        }
-    }
-
-    if (childFlag != 0) {
-        for (RezNode* n = m_kids.First(); n != 0; n = n->Next()) {
-            // RezNode::m_14 is the shared hash-collection's generic (void*) payload
-            // slot - it holds a CSymTab*/CSymRec* in Bute and a CRezDirNode* here;
-            // typed to the concrete element type at this use site.
-            ((CRezDirNode*)n->m_14)->Load(1);
-        }
+// CloseAllOpen (0x13ca80): drain the open-handle list. The list head sits at
+// CRezFileMgr+0x14 (m_openList.m_head); Close() each file until the list empties
+// (each Close moves the node off the open list, advancing the head). Returns 1.
+RVA(0x0013ca80, 0x1d)
+i32 CRezFileMgr::CloseAllOpen() {
+    // The list stores CRezFile nodes; retrieve the head as its concrete type (the
+    // typed intrusive-list access - CRezFile's node base is at offset 0, so this is a
+    // zero-offset static downcast, matching-neutral). Close() is a direct call.
+    while (m_openList.m_head != 0) {
+        ((CRezFile*)m_openList.m_head)->Close();
     }
     return 1;
 }
-
-// The image-resource extension keys (file-scope literals - their addresses are
-// the reloc-masked push operands in MakeImageKey's stricmp calls). Order in the
-// binary: .BMP, then .PCX, then .PID.
-static const char s_extBmp[] = ".BMP";
-static const char s_extPcx[] = ".PCX";
-static const char s_extPid[] = ".PID";
-
-// ---------------------------------------------------------------------------
-// RezMgr::MakeImageKey(arg1, name, arg3)
-// Dispatch a resource load by the file extension of `name`: locate the last
-// '.', then case-insensitively match .BMP/.PCX/.PID and hand off to the
-// matching loader (LoadBmp/LoadPcx take (arg1,name); LoadPid takes
-// (arg1,name,arg3)). Returns 1 unless the extension matched but its loader
-// failed (then 0); an unrecognised/absent extension also returns 1.
-RVA(0x0013e5d0, 0xb1)
-i32 RezMgr::MakeImageKey(void* arg1, char* name, void* arg3) {
-    char* ext = RezStrrchr(name, '.');
-    if (ext && RezStricmp(ext, s_extBmp) == 0) {
-        if (!LoadBmp(arg1, name)) {
-            return 0;
-        }
-    } else if (ext && RezStricmp(ext, s_extPcx) == 0) {
-        if (!LoadPcx(arg1, name)) {
-            return 0;
-        }
-    } else if (ext && RezStricmp(ext, s_extPid) == 0) {
-        if (!LoadPid(arg1, name, arg3)) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-// The runtime low-detail / front-end-class selector.
-i32 g_rezLowDetail;
-
-// The archive base names / path templates - file-scope literals (reloc-masked).
-static const char s_rezName[] = "Gruntz.REZ";
-static const char s_join[] = "%s\\%s";
-static const char s_dataPath[] = "%c:\\DATA\\%s";
-static const char s_fecName[] = "Gruntz.FEC";
-static const char s_fecLoName[] = "GruntzLo.FEC";
-static const char s_moviezPath[] = "%c:\\MOVIEZ\\%s";
-
-// ---------------------------------------------------------------------------
-// RezMgr::MakeRezPath()
-// Assembles the candidate archive paths (the main Gruntz.REZ and the front-end
-// Gruntz.FEC / GruntzLo.FEC) and probes them with FileExists, recording in
-// m_inGameDir/m_haveRez/m_haveMoviez which were found. Reports an error and
-// returns 0 if nothing was found, else 1.
-//
-// PLATEAU 91.87% (documented): a >512 B C++ EH-frame function with four
-// ref-counted MFC CString locals (one COW copy-ctor selecting the lo/hi FEC
-// variant), the engine sprintf-style CString::Format wrapper, a runtime
-// low-detail global branch, and FileExists probes. All call/string/IAT/EH
-// operands are reloc-masked. The logic, control flow, all RezMgr member offsets
-// (+0xec/+0xf0 path CStrings, +0xf4/+0xf8/+0xfc flags) and the string-template
-// order are reconstructed faithfully and verified against the disasm. The sole
-// residue is an EH-state-tracking write: the target advances the C++ EH state to
-// 0 (`mov [esp+ehstate],ebp`) inline right before the first CString::Format,
-// just after `m_haveRez=0` - my build omits exactly that one inline state-write,
-// which shifts the instruction alignment by one and cascades objdiff's
-// edit-distance. This is the MSVC5 EH-state scheduling over four overlapping
-// CString live ranges (entropy-class; no source lever flips a single funclet
-// state-write). MakeImageKey (the other target) is BYTE-EXACT and is the green
-// deliverable; per the prompt's "don't sacrifice a green fn", this is left as a
-// documented plateau with the full reconstruction in place.
-RVA(0x00091670, 0x2ac)
-i32 RezMgr::MakeRezPath() {
-    char cwd[0x100];
-    if (!GetCurrentDirectoryA(0xff, cwd)) {
-        return 0;
-    }
-
-    char drive = GetGruntzDriveLetter();
-    m_inGameDir = (drive == cwd[0]);
-
-    i32 found = 1;
-
-    // --- main archive: cwd\Gruntz.REZ, fall back to <drive>:\DATA\Gruntz.REZ ---
-    {
-        CString rez(s_rezName);
-        m_haveRez = 0;
-        RezFormat(&m_pathA, s_join, cwd, (LPCTSTR)rez);
-        if (!RezFileExists(m_pathA)) {
-            if (drive) {
-                RezFormat(&m_pathA, s_dataPath, drive, (LPCTSTR)rez);
-                if (RezFileExists(m_pathA)) {
-                    m_haveRez = 1;
-                } else {
-                    found = 0;
-                }
-            } else {
-                found = 0;
-            }
-        }
-    }
-
-    // --- front-end archive: cwd\<FEC>, then <drive>:\MOVIEZ\<FEC> ---
-    CString fecHi(s_fecName);
-    CString fecLo(s_fecLoName);
-    CString fec(g_rezLowDetail ? fecLo : fecHi);
-
-    m_haveMoviez = 0;
-    i32 movFound = 0;
-    RezFormat(&m_pathB, s_join, cwd, (LPCTSTR)fec);
-    if (!m_inGameDir && !RezFileExists(m_pathB) && !g_rezLowDetail) {
-        RezFormat(&m_pathB, s_join, cwd, (LPCTSTR)fecHi);
-        if (RezFileExists(m_pathB)) {
-            movFound = 1;
-        }
-    }
-    if (!movFound && drive) {
-        RezFormat(&m_pathB, s_moviezPath, drive, (LPCTSTR)fec);
-        if (RezFileExists(m_pathB)) {
-            m_haveMoviez = 1;
-        }
-    }
-
-    if (!found) {
-        ReportError(0x800b, 0x43e);
-        return 0;
-    }
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// The per-frame global frame-clock / interval-timer state (file-scope ints,
-// reloc-masked; see RezMgr.h). UpdateClock writes g_now/g_frameDelta;
-// the tick reads them, clamps the delta and advances the per-second timers.
-// ---------------------------------------------------------------------------
-static i32 g_now;        // (UpdateClock sets it; tick re-uses)
-static i32 g_frameDelta; // (ms since previous frame)
-
-static i32 g_lastNow;
-static i32 g_lastDelta;  // (frame delta, clamped to <= 0x64)
-static i32 g_accumMs;    // (running accumulated frame time)
-static i32 g_frameTicks; // (per-frame counter)
-static i32 g_timer32;    // (seed 0x32 ms)
-static i32 g_timer100;   // (seed 0x64 ms)
-static i32 g_timer200;   // (seed 0xc8 ms)
-static i32 g_timer400;   // (seed 0x190 ms)
-static i32 g_timer500;   // (seed 0x1f4 ms)
-
-// The run-state / pacing globals UpdateClock (0x13ddc0) maintains alongside the
-// frame clock above (reloc-masked; modeled as file-scope like g_now). g_clockReset
-// is unsigned so its `!=0` gate + the elapsed<budget test emit the unsigned compare.
-static i32 g_run7c;      // (run-state countdown; reseeded from g_run80)
-static i32 g_run80;      // (run-state reload value)
-static u32 g_clockReset; // (last clock-reset tick; == ?g_wap32ClockReset@@3HA @0x253c78)
-
-// ---------------------------------------------------------------------------
-// RezMgr::PerFrameTick()  (virtual, vtable slot +0x10).
-// THE per-frame game tick: the engine's idle (CGameApp slot +0x20) tail-calls
-// this every frame on an empty message queue.
-//
-//   if (m_mode == 0) return 0;          // nothing to drive yet
-//   UpdateClock();                       // advance g_now / g_frameDelta
-//   int r = m_mode->Update();            // step the active game-state (slot +0x10)
-//   if (r != 0x11) {                     // 0x11 = a state that suppresses timing
-//       // clamp this frame's delta to <= 0x64 ms and accumulate
-//       int dt = g_frameDelta;
-//       g_lastNow = g_now;  g_lastDelta = dt;
-//       if (dt > 0x64) { dt = 0x64; g_lastDelta = 0x64; }
-//       g_accumMs += dt;
-//       // five interval countdown timers: reseed when expired, else subtract dt
-//       <timer32/100/200/400/500>
-//       g_frameTicks++;
-//   }
-//   if (m_renderGate != 0) return 0;     // render suppressed this frame
-//   m_mode->Render();                    // post-step (slot +0x14)
-//   return 1;
-//
-// Each countdown timer t loads its current value (or its SEED when it has hit
-// 0), and either zeroes (delta has run it out) or subtracts the clamped delta:
-//   v = (g_tN == 0) ? SEED : g_tN;
-//   if (dt >= v) g_tN = 0; else g_tN = v - dt;
-// The disasm reseeds in a register (mov ecx,SEED) without storing, so the
-// reseed value is only visible through the subtract/zero - reproduce with the
-// ternary feeding the compare directly.
-//
-// STATUS: BYTE-EXACT under reloc-masking (98.70% fuzzy). All 92 instructions are
-// opcode+ModRM-identical vs dump_target.py; the only 24 diffs are
-// reloc-masked address operands (the `call UpdateClock` REL32 + the 23 DIR32 to
-// the frame-clock globals below).
-// LEVER: the frame-delta clamp and the timer compares are UNSIGNED. `dt`/`v` MUST
-// be `unsigned int` so the target's `jbe` (dt>0x64 clamp) and `jb` (dt>=v timer
-// test) fall out; `int` emits signed `jle`/`jl` (94.78%). g_frameDelta is a
-// timeGetTime() delta (genuinely unsigned ms).
-RVA(0x0008b740, 0x12d)
-i32 RezMgr::PerFrameTick() {
-    if (m_mode == 0) {
-        return 0;
-    }
-
-    UpdateClock();
-
-    i32 r = m_mode->Update();
-    if (r != 0x11) {
-        u32 dt = g_frameDelta;
-        g_lastNow = g_now;
-        g_lastDelta = dt;
-        if (dt > 0x64) {
-            dt = 0x64;
-            g_lastDelta = 0x64;
-        }
-        g_accumMs += dt;
-
-        u32 v;
-        v = (g_timer32 == 0) ? 0x32 : g_timer32;
-        if (dt >= v) {
-            g_timer32 = 0;
-        } else {
-            g_timer32 = v - dt;
-        }
-        v = (g_timer100 == 0) ? 0x64 : g_timer100;
-        if (dt >= v) {
-            g_timer100 = 0;
-        } else {
-            g_timer100 = v - dt;
-        }
-        v = (g_timer200 == 0) ? 0xc8 : g_timer200;
-        if (dt >= v) {
-            g_timer200 = 0;
-        } else {
-            g_timer200 = v - dt;
-        }
-        v = (g_timer400 == 0) ? 0x190 : g_timer400;
-        if (dt >= v) {
-            g_timer400 = 0;
-        } else {
-            g_timer400 = v - dt;
-        }
-        v = (g_timer500 == 0) ? 0x1f4 : g_timer500;
-        if (dt >= v) {
-            g_timer500 = 0;
-        } else {
-            g_timer500 = v - dt;
-        }
-
-        g_frameTicks++;
-    }
-
-    if (m_renderGate != 0) {
-        return 0;
-    }
-
-    m_mode->Render();
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// RezMgr::HandleDebugPosition()
-// When the active mode's per-frame state step reports 3, look up the
-// "DEBUG_POSITION" debug value (via the external CheckDbgVal helper, reached at
-// the call site through the 0x2bb7 thunk); if it is set, fetch the
-// owning window handle (this+4 -> owner, owner+4 -> hwnd) and post it a
-// WM_COMMAND (0x111) with command id 0x805c. Returns nonzero iff the lookup
-// reported a hit. The CheckDbgVal call's E8 rel32 is reloc-masked by objdiff.
-RVA(0x0008e470, 0x50)
-i32 RezMgr::HandleDebugPosition() {
-    i32 r = 0;
-    if (m_mode && m_mode->Update() == 3) {
-        r = CheckDbgVal("DEBUG_POSITION", 0x402d0b, 1);
-        if (r == 1) {
-            HWND hwnd = m_4->m_hWnd;
-            PostMessageA(hwnd, 0x111, 0x805c, 0);
-        }
-    }
-    return r != 0;
-}
-
-// The frame clock. Retail does NOT call the WINMM import thunk directly; it caches
-// timeGetTime in a game-owned global pointer (_g_pTimeGetTime @ RVA 0x2c4650, pinned
-// in cplay/globals) and calls through it (ff 15). extern "C" so the reloc binds the
-// canonical one-symbol-per-RVA at whole-game link (was the raw __imp__timeGetTime@0).
-extern "C" u32(WINAPI* g_pTimeGetTime)();
-
-// -------------------------------------------------------------------------
-// RezMgr::UpdateClock() (0x13ddc0) - the frame-clock advance helper PerFrameTick
-// calls (re-homed from src/Stub/RezMgr.cpp). Sample timeGetTime, derive the
-// per-frame delta into g_now/g_frameDelta, run down the run-state countdown, then
-// (when the pacing gate m_pacingGate is armed) busy-wait to the ms budget and, every
-// ~2s window, fold the frame count into m_smoothedFrameCount and rearm the window.
-// @confidence: med
-// @source: reloc-correlation (1 caller)
-RVA(0x0013ddc0, 0xaa)
-i32 RezMgr::UpdateClock() {
-    // Cache the fnptr in a local so cl loads it once (mov edi,[_g_pTimeGetTime]) and
-    // reuses it across the three samples (call edi), exactly as retail does.
-    u32(WINAPI * pTGT)() = g_pTimeGetTime;
-    u32 now = pTGT();
-    u32 delta = now - (u32)g_now;
-    g_now = now;
-    g_frameDelta = delta;
-    u32 run7c = g_run7c;
-    if (run7c == 0) {
-        g_run7c = g_run80;
-    } else if (delta >= run7c) {
-        g_run7c = 0;
-    } else {
-        g_run7c = run7c - delta;
-    }
-
-    if (m_pacingGate > 0) {
-        if (g_clockReset > 0) {
-            u32 elapsed = pTGT() - g_clockReset;
-            if (elapsed < (u32)m_frameBudgetMs) {
-                SpinWaitUntil(m_frameBudgetMs - elapsed);
-            }
-        }
-        g_clockReset = pTGT();
-    }
-
-    u32 count = m_frameCounter + 1;
-    m_frameCounter = count;
-    if ((u32)g_now - (u32)m_windowStartTick >= 0x7d0) {
-        m_smoothedFrameCount = count >> 1;
-        InitTimeFields(0);
-    }
-    return 1;
-}
-
-// -------------------------------------------------------------------------
-// RezMgr::SpinWaitUntil(ms) (0x13dec0; re-homed from src/Stub/BoundaryUpper.cpp) -
-// the ms frame-pacing busy-wait UpdateClock calls: sample timeGetTime through the
-// game-owned fn-ptr and spin until `now` passes `start + ms` (unsigned, overflow-
-// guarded). `this` is unused (ecx ignored); the fn-ptr is cached in a callee-save.
-// @early-stop
-// ~83.9% regalloc wall: body byte-exact, but retail pins the cached fn-ptr in edi
-// and the deadline in esi (pushing both callee-saves upfront), while MSVC5 swaps
-// them (fn-ptr in esi, deadline in edi, edi shrink-wrapped). No source spelling
-// flips the esi/edi pair; logic complete.
-RVA(0x0013dec0, 0x20)
-void RezMgr::SpinWaitUntil(i32 ms) {
-    u32(WINAPI * fn)() = g_pTimeGetTime;
-    u32 now = fn();
-    u32 end = now + (u32)ms;
-    if (now <= end) {
-        do {
-            now = fn();
-        } while (now <= end);
-    }
-}
-
-// ---------------------------------------------------------------------------
-// RezMgr::SetFrameRate(fps) (0x13dee0): store the frame rate in the pacing gate
-// (m_pacingGate @+0x1c) and, when positive, derive the per-frame budget
-// (m_frameBudgetMs @+0x28 = 1000/fps). __thiscall, 1 arg. Re-homed from
-// src/Stub/BoundaryUpper.cpp - RTTI-adjacent to SpinWaitUntil/UpdateClock, and the
-// +0x1c/+0x28 fields ARE RezMgr::m_pacingGate/m_frameBudgetMs (dossier-confirmed).
-RVA(0x0013dee0, 0x1b)
-void RezMgr::SetFrameRate(i32 fps) {
-    m_pacingGate = fps;
-    if (fps > 0) {
-        m_frameBudgetMs = 1000 / fps;
-    }
-}
-
-// RezMgr::TrySetFrameRate(fps) (0x13df00): install the rate only when pacing is not
-// already active (m_pacingGate > 0 -> clear it via SetFrameRate(0) and fail with 0);
-// otherwise configure to fps and succeed (return 1). __thiscall, 1 arg. Re-homed
-// from src/Stub/BoundaryUpper.cpp (next to its SetFrameRate callee).
-RVA(0x0013df00, 0x25)
-i32 RezMgr::TrySetFrameRate(i32 fps) {
-    if (m_pacingGate > 0) {
-        SetFrameRate(0);
-        return 0;
-    }
-    SetFrameRate(fps);
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// WaitKeyEdge (0x13df30; RVA-homed from src/Stub/BoundaryTail.cpp) - busy-wait for a
-// key down-then-up edge on virtual-key `vk`, with an optional `timeoutMs` deadline
-// (through the game-owned timeGetTime fn-ptr g_pTimeGetTime, above). __cdecl, two
-// stack args. Reads the OS key state through the engine's cached GetAsyncKeyState
-// fn-ptr (g_pGetAsyncKeyState @0x6c4500).
-// @orphan: no .text caller (a free __cdecl busy-wait); no owning class.
-// @early-stop
-// regalloc-swap wall (~97%): byte-identical except retail pins `vk` in esi and the
-// cached GetAsyncKeyState ptr in edi, while our /O2 picks the reverse (ptr->esi,
-// vk->edi). Only the modrm reg fields differ; tried direct global calls (77%, no
-// caching) and an `int k = vk` copy (no change). Pure register assignment.
-extern "C" i16(WINAPI* g_pGetAsyncKeyState)(int vk); // 0x6c4500 (PTR_GetAsyncKeyState)
-RVA(0x0013df30, 0xaf)
-void WaitKeyEdge(int vk, int timeoutMs) {
-    if (timeoutMs == 0) {
-        i16(WINAPI * gaks)(int) = g_pGetAsyncKeyState;
-        while (!((i32)gaks(vk) & 0x80000000))
-            ;
-        while ((i32)gaks(vk) & 0x80000000)
-            ;
-    } else {
-        u32(WINAPI * tgt)() = g_pTimeGetTime;
-        u32 deadline = tgt() + timeoutMs;
-        i16(WINAPI * gaks)(int) = g_pGetAsyncKeyState;
-        while (!((i32)gaks(vk) & 0x80000000)) {
-            if (tgt() > deadline) {
-                return;
-            }
-        }
-        while ((i32)gaks(vk) & 0x80000000) {
-            if (tgt() > deadline) {
-                return;
-            }
-        }
-    }
-}
-
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// (CRezDir::Stub_13b0c0 @0x13b0c0 was a Ghidra mislabel: its real owner is
-// CSymParser - it sits between ParseBuffer and ParseRecords and drives them on
-// `this`. Reconstructed as CSymParser::LoadEntry in src/Bute/SymParser.cpp.)
 
 // -------------------------------------------------------------------------
 // CRezParseNode::CRezParseNode(parent, nameSrc, owner)  (0x13cac0; class in
@@ -906,6 +646,193 @@ CRezParseNode::CRezParseNode(void* parent, char* nameSrc, void* owner) : CRezItm
 // (not in the header): RezMgr.h is pulled into the /O2-sensitive Image.cpp for
 // RezAlloc/RezFree, where any header-injected typedef reschedules DecodePcxData
 // (verified). Placed after all function bodies so this TU is unperturbed too.
+// ===========================================================================
+SIZE(RezFindRec, 0x24);     // RE'd WIN32-find-style fixed record
+SIZE_UNKNOWN(CRezItmOwner); // abstract Retry-gate interface (no storage/vtable here)
+
+struct RezOwner18 {
+    i32 _0[0x1c / 4];
+    CObjList m_1c; // +0x1c
+};
+SIZE_UNKNOWN(RezOwner18);
+struct CRezDir13cb80 : RezDirBase {
+    i32 _4[(0x10 - 0x4) / 4];
+    void* m_10;       // +0x10
+    i32 m_14;         // +0x14
+    RezOwner18* m_18; // +0x18
+    virtual ~CRezDir13cb80() OVERRIDE;
+};
+SIZE_UNKNOWN(CRezDir13cb80);
+RELOC_VTBL(CRezDir13cb80, 0x001ef7d0); // vtable reloc-masks a bound datum (dtor-stamp verified)
+RVA(0x0013cb80, 0x72)
+CRezDir13cb80::~CRezDir13cb80() {
+    if (m_14) {
+        ((CRezFile*)this)->Close();
+    }
+    if (m_10) {
+        RezFree(m_10);
+    }
+    m_18->m_1c.Remove((CObjNode*)this);
+}
+
+// Read (0x13cc00): ensure the handle is open, seek to `pos` (retrying through the
+// manager's gate), then fread `count` bytes into buf (retrying short reads through
+// the same gate). Returns the bytes read (== count) or 0. `a` is the base-class
+// signature's unused leading param. The `count <= 0` guard (unsigned) lowers to
+// retail's `test;jbe` (docs/patterns/unsigned-zero-guard-le-not-eq.md).
+RVA(0x0013cc00, 0x9f)
+i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
+    (void)a;
+    if (count <= 0) {
+        return 0;
+    }
+    if (m_handle == 0) {
+        Open();
+    }
+    while (RezFSeek(m_handle, pos, 0) != 0) {
+        if (m_mgr->m_gate->Retry() == 0) {
+            return 0;
+        }
+    }
+    u32 got = RezFRead(buf, 1, count, m_handle);
+    while (got != count) {
+        if (m_mgr->m_gate->Retry() == 0) {
+            return 0;
+        }
+        got = RezFRead(buf, 1, count, m_handle);
+    }
+    return got;
+}
+
+// Write (0x13cca0): the write counterpart of Read (RezFWrite for RezFRead); same
+// open/seek/retry gating. Returns the bytes written (== count) or 0.
+RVA(0x0013cca0, 0x9f)
+i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
+    (void)a;
+    if (count <= 0) {
+        return 0;
+    }
+    if (m_handle == 0) {
+        Open();
+    }
+    while (RezFSeek(m_handle, pos, 0) != 0) {
+        if (m_mgr->m_gate->Retry() == 0) {
+            return 0;
+        }
+    }
+    u32 put = RezFWrite(buf, 1, count, m_handle);
+    while (put != count) {
+        if (m_mgr->m_gate->Retry() == 0) {
+            return 0;
+        }
+        put = RezFWrite(buf, 1, count, m_handle);
+    }
+    return put;
+}
+
+// Flush (0x13cd60): fflush the handle, retrying through the manager's gate on
+// failure. Returns 1 (no handle / flushed) or 0 (the gate gave up). Same clean
+// `(fflush == 0)` neg/sbb/inc bool-normalize as Close (no list/handle teardown).
+RVA(0x0013cd60, 0x49)
+i32 CRezFile::Flush() {
+    if (m_handle != 0) {
+        i32 ok = (Eng_fflush(m_handle) == 0);
+        while (!ok) {
+            if (m_mgr->m_gate->Retry() == 0) {
+                return 0;
+            }
+            ok = (Eng_fflush(m_handle) == 0);
+        }
+        return ok;
+    }
+    return 1;
+}
+
+// Open (0x13cdc0): lazily (re)open the handle. If already open, return 1. If the
+// cache is over its cap, evict the LRU (the open-list tail) via Close(). Then fopen
+// with the flag-selected mode ("w+b"/"rb"/"r+b"), retrying through the manager's
+// gate on failure; on success move the node from the closed list to the open list
+// and bump the open count. Returns 1 (opened) / 0 (gave up or an invalid w+ro mix).
+RVA(0x0013cdc0, 0xad)
+i32 CRezFile::Open() {
+    if (m_handle != 0) {
+        return 1;
+    }
+    if (m_mgr->m_openCount > m_mgr->m_maxOpen) {
+        // Typed intrusive-list access: the LRU eviction candidate (the open list's
+        // tail) is a CRezFile (zero-offset static downcast; see CloseAllOpen).
+        CRezFile* lru = (CRezFile*)m_mgr->m_openList.m_tail;
+        if (lru != 0) {
+            lru->Close();
+        }
+    }
+    for (;;) {
+        if (m_mgr->m_write) {
+            if (m_mgr->m_readonly) {
+                return 0;
+            }
+            m_handle = Eng_fopen(m_name, s_wPlusB);
+        } else if (m_mgr->m_readonly) {
+            m_handle = Eng_fopen(m_name, s_rb);
+        } else {
+            m_handle = Eng_fopen(m_name, s_rPlusB);
+        }
+        if (m_handle != 0) {
+            break;
+        }
+        if (m_mgr->m_gate->Retry() == 0) {
+            return 0;
+        }
+        if (m_handle != 0) {
+            break;
+        }
+    }
+    m_mgr->m_closedList.Remove(this);
+    m_mgr->m_openList.AddHead(this);
+    m_mgr->m_openCount++;
+    return 1;
+}
+
+// Close (0x13ce70): fclose the handle (retrying through the manager's gate); then
+// drop the open count, move the node back to the closed list, and null the handle.
+// Returns 1 (no handle / closed) or 0 (the gate gave up). BYTE-EXACT (100%): the
+// anticipated esi<->edi coin-flip did not materialize here - MSVC5 pins the same
+// registers as retail, so this method needs no early-stop marker.
+RVA(0x0013ce70, 0x7c)
+i32 CRezFile::Close() {
+    if (m_handle == 0) {
+        return 1;
+    }
+    i32 ok = (RezFClose(m_handle) == 0);
+    while (!ok) {
+        if (m_mgr->m_gate->Retry() == 0) {
+            return 0;
+        }
+        ok = (RezFClose(m_handle) == 0);
+    }
+    m_mgr->m_openCount--;
+    m_mgr->m_openList.Remove(this);
+    m_mgr->m_closedList.AddHead(this);
+    m_handle = 0;
+    return ok;
+}
+
+// (RezMgr::UpdateClock @0x13ddc0, SpinWaitUntil @0x13dec0, SetFrameRate
+// @0x13dee0, TrySetFrameRate @0x13df00 and ::WaitKeyEdge @0x13df30 moved to
+// src/Wap32/GameApp.cpp in wave4-K: their text is A-B-A-woven into the GameApp
+// obj between CGameMgr::Close/InitTimeFields - dossier #14E. RezMgr::MakeImageKey
+// @0x13e5d0 moved to src/DDrawMgr/DDSurface.cpp - text-contained in the DIRSURF
+// obj, dossier #14G.)
+
+// (CRezDir::FindEntry @0x13c080 and CRezDirNode::Load @0x13a0f0 moved to
+// src/Bute/SymTab.cpp in wave4-K: both are text-contained in the ButeMgr sym
+// obj and Load's private .data cell 0x21a070 sits inside the sym band, BEFORE
+// this obj's 0x21a0a4 mode strings - dossier #14A. Their Rez-flavored names are
+// an @identity-TODO carried there.)
+
+// ===========================================================================
+// Class-metadata annotations for the RezMgr.h classes (EOF-hosted; RezMgr.h is
+// pulled into /O2-sensitive TUs, so the header stays untouched).
 // ===========================================================================
 SIZE(RezFindRec, 0x24);                // RE'd WIN32-find-style fixed record
 SIZE_UNKNOWN(CRezItmOwner);            // abstract Retry-gate interface (no storage/vtable here)

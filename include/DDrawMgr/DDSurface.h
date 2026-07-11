@@ -50,6 +50,26 @@ struct ClipRect16 {
     i32 a, b, c, d;
 };
 
+// The .PID/.PCX-via-RezMgr flags word (header+4). Monolith's WAP32 layout
+// (libwap32 wap32/pid.h). Same immediates as the bare masks, so naming them is
+// matching-neutral. (Shared by the DIRSURF + file-codec TUs.)
+enum PidFlags {
+    PID_TRANSPARENCY = 0x01,     // bit0  install the transparent colour key
+    PID_VIDEO_MEMORY = 0x02,     // bit1  "VID"
+    PID_SYSTEM_MEMORY = 0x04,    // bit2  "SYS"
+    PID_COMPRESSION = 0x20,      // bit5  "RLE" - skip/fill RLE pixel stream
+    PID_EMBEDDED_PALETTE = 0x80, // bit7  trailing 768-byte VGA palette at EOF
+};
+
+// The CDDSurface::Resolve / ResolveEx `type` selector. Same case immediates as the
+// bare 1/2/4 labels (the running-subtract switch chain is value-driven), so naming
+// them is matching-neutral; bodies stay in retail .text order (4, 2, 1).
+enum FileImageFormat {
+    FMT_BMP = 1,
+    FMT_PCX = 2,
+    FMT_PID = 4,
+};
+
 // ---------------------------------------------------------------------------
 // CDDSurface (DIRSURF.CPP) - the WAP32 0xc0-byte surface base and the POLYMORPHIC
 // base of the pool-item surface family. The same 0xc0 object CFileImageSurface /
@@ -104,9 +124,9 @@ public:
     i32 SetPalette(CDDPalette* pal, i32 unused); // 0x13e690
     i32 Restore(void* arg1, i32 arg2);           // 0x13e7d0 (BoundaryUpper2.cpp)
     i32 Flip(CDDSurface* target);                // 0x13e850
-    void Draw(i32 z);                            // credits draw-target draw (thiscall; reloc-masked)
-    void* GetElementAt(i32 i);                   // 0x13ea70  m_elements[i] (bounds-checked)
-    i32 SetColorKey(u32 flags, void* key);       // 0x13eaa0
+    void Draw(i32 z);                      // credits draw-target draw (thiscall; reloc-masked)
+    void* GetElementAt(i32 i);             // 0x13ea70  m_elements[i] (bounds-checked)
+    i32 SetColorKey(u32 flags, void* key); // 0x13eaa0
     // Convenience SetColorKey overloads that build a DDCOLORKEY on the stack + forward.
     i32 SetColorKeyVal(u32 flags, u32 key);          // 0x13eae0  key={v,v}
     i32 SetColorKeyRange(u32 flags, u32 lo, u32 hi); // 0x13eb10  key={lo,hi}

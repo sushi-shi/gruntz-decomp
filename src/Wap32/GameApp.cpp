@@ -8,6 +8,11 @@
 #include <stdio.h>
 #include <Globals.h>
 // timeGetTime (WINMM frame clock) comes from <Mfc.h>'s central decl (via <Wap32.h>).
+// The "RezMgr" manager view (== WAP32::CGameMgr/CGruntzMgr; RezMgr.h) - receiver of
+// the four frame-clock methods 0x13ddc0-0x13df00 whose text is A-B-A-woven into THIS
+// obj (wave4-K, dossier #14E). Folding the RezMgr view onto CGameMgr proper is
+// deferred to the gruntzmgr package (its other methods live at 0x8b740+).
+#include <Rez/RezMgr.h>
 
 // Two run-state timing defaults CGameMgr::Run seeds to 0x64 (100).
 
@@ -15,6 +20,57 @@
 // (declared in Wap32.h) so the inline ~CGameApp - which CGruntzApp's dtor
 // inlines in another TU - resolves it; the reloc name is masked in objdiff.
 i32 g_gameAppInstanceCount;
+
+// -------------------------------------------------------------------------
+// CGameApp::InitDefault (vtbl +0x0c) - the one-name convenience overload: forward
+// to the virtual Init using `szName` for BOTH the window name and the game
+// identifier, an empty command line, no flags, and default (CW_USEDEFAULT) size.
+extern "C" char g_emptyString[]; // 0x6293f4 (empty command-line default)
+
+RVA(0x00080d20, 0x24)
+i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {
+    return Init(hInstance, szName, szName, g_emptyString, 0, (i32)0x80000000, (i32)0x80000000);
+}
+
+// -------------------------------------------------------------------------
+// Engine-label backlog stubs.
+// -------------------------------------------------------------------------
+// 0x133380 stores vftable 0x5ef670 and calls dtor body FUN_00534d50 - the
+// scalar-deleting destructor of some OTHER engine class the delinker labelled
+// under CGameMgr@WAP32; it is NEITHER the base WAP32::CGameMgr (vftable
+// 0x5e9b8c) NOR CGruntzMgr (vftable 0x5e9b64). It is a (storage-free) method on
+// CGameMgr ONLY so MSVC mangles it to the retail symbol name; see the note on
+// the declaration in Wap32.h.
+// The DirectInput device-config grand-base (vftable 0x5ef670 == ??_7CInputDevRoot,
+// named in DirectInputMgr2.cpp) + its base-subobject teardown (0x134d50). The
+// engine allocator's operator delete. All reloc-masked.
+extern void* deviceConfigRootTable; // 0x5ef670 (the CInputDevRoot vtable datum)
+// The DirectInput device-config grand-base (full class in <DinMgr2/DirectInputMgr2.h>);
+// partial view for the base teardown this dtor runs.
+struct CInputDevRoot {
+    void ReleaseDevices(); // 0x134d50
+};
+void operator delete(void*); // engine allocator (0x1b9b82)
+
+// WAP32::CGameMgr::vector_deleting_destructor @0x133380 - the CInputDevRoot scalar-
+// deleting dtor (mangled through CGameMgr for the retail symbol name): stamp the C
+// vftable, run the base teardown, conditionally free, return `this`.
+// @early-stop
+// cross-class-alias wall: this is really a CInputDevRoot scalar-deleting dtor but
+// the delinker mangled it under CGameMgr, so it cannot be expressed as a real
+// ~CInputDevRoot here (that ??_G is auto-emitted, unbound, by DirectInputMgr2). The
+// vptr re-stamp of a FOREIGN class's vtable is a non-ctor stamp cl cannot realize
+// (vtable-realization-ctor-boundary), so it stays an explicit `*(void**)this` store
+// of the reloc-masked CInputDevRoot vtable datum. Code bytes match.
+RVA(0x00133380, 0x24)
+void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
+    *(void**)this = &deviceConfigRootTable;
+    ((CInputDevRoot*)this)->ReleaseDevices();
+    if (flags & 1) {
+        operator delete(this);
+    }
+    return this;
+}
 
 // -------------------------------------------------------------------------
 // CGameApp::CGameApp()
@@ -31,263 +87,6 @@ CGameApp::CGameApp() {
     m_errorCode = 0;
     m_errorDetail = 0;
     g_gameAppInstanceCount++;
-}
-
-// -------------------------------------------------------------------------
-// CGameApp::CloseResources
-// Frees the accelerator table then deletes the two resource objects.
-RVA(0x0013d8c0, 0x42)
-void CGameApp::CloseResources() {
-    if (m_hAccel) {
-        DestroyAcceleratorTable(m_hAccel);
-        m_hAccel = 0;
-    }
-    if (m_gameMgr) {
-        delete m_gameMgr;
-        m_gameMgr = 0;
-    }
-    if (m_gameWnd) {
-        delete m_gameWnd;
-        m_gameWnd = 0;
-    }
-}
-
-// -------------------------------------------------------------------------
-// CGameApp::InitializeAccelerators
-// Reloads the accelerator table; returns whether it loaded.
-RVA(0x0013dc20, 0x49)
-BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
-    if (lpTable && *lpTable) {
-        if (m_hAccel) {
-            DestroyAcceleratorTable(m_hAccel);
-            m_hAccel = 0;
-        }
-        m_hAccel = LoadAcceleratorsA(m_hInstance, lpTable);
-        return m_hAccel != 0;
-    }
-    return 0;
-}
-
-// -------------------------------------------------------------------------
-// CGameApp::ReportError
-// Records an error once (guarded by m_errorReported), posting WM_CLOSE to the window.
-RVA(0x0013dcb0, 0x57)
-void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
-    if (m_errorReported) {
-        return;
-    }
-    m_errorReported = 1;
-    if (m_gameWnd && m_gameWnd->m_closeGuard == 0) {
-        PostMessageA(m_gameWnd->m_hwnd, 0x10 /*WM_CLOSE*/, 0, 0);
-    }
-    m_running = 0;
-    m_errorCode = (i32)wParam;
-    m_errorDetail = (i32)lParam;
-}
-
-// -------------------------------------------------------------------------
-// CGameApp::RunMessageLoop - the main Win32 pump (vtbl slot +0x18; WinMain
-// dispatches here). Reads the OS HWND off m_gameWnd->m_hwnd; if there is no
-// window, return 0. Otherwise the classic peek/process/idle pump: PeekMessageA
-// (PM_REMOVE) drains all pending messages (WM_QUIT exits with 1); when m_hAccel
-// (HACCEL) is set AND the message targets our window, run TranslateAcceleratorA
-// (return ignored); always TranslateMessage + DispatchMessageA; when the queue
-// is empty, call the idle virtual (vtbl +0x20) and loop.
-RVA(0x0013d910, 0x9f)
-i32 CGameApp::RunMessageLoop() {
-    MSG msg;
-
-    HWND hwnd = m_gameWnd->m_hwnd;
-    if (!hwnd) {
-        return 0;
-    }
-
-    for (;;) {
-        if (PeekMessageA(&msg, 0, 0, 0, 1)) {
-            do {
-                if (msg.message == 0x12 /*WM_QUIT*/) {
-                    return 1;
-                }
-                if (m_hAccel && msg.hwnd == hwnd) {
-                    TranslateAcceleratorA(hwnd, m_hAccel, &msg);
-                }
-                TranslateMessage(&msg);
-                DispatchMessageA(&msg);
-            } while (PeekMessageA(&msg, 0, 0, 0, 1));
-        }
-        OnIdle(); // idle virtual (vtbl +0x20)
-    }
-}
-
-// -------------------------------------------------------------------------
-// CGameApp::InitializeDefaultWindowClass
-// Fills the embedded WNDCLASSA (m_wc @ +0x1e8) and loads its icon/cursor.
-RVA(0x0013d9b0, 0xa0)
-void CGameApp::InitializeDefaultWindowClass() {
-    i32 i;
-    for (i = 0; i < 10; i++) {
-        ((i32*)&m_wc)[i] = 0;
-    }
-
-    HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.szGameIdentifier);
-    if (m_gameInfo.windowClassFlags & 1) {
-        hCursor = LoadCursorA(0, (LPCSTR)0x7f00 /*IDC_ARROW*/);
-    }
-
-    m_wc.style = 8; // CS_DBLCLKS
-    m_wc.lpfnWndProc = GameWindowProc;
-    m_wc.cbClsExtra = 0;
-    m_wc.cbWndExtra = 0;
-    m_wc.hInstance = m_hInstance;
-    m_wc.hIcon = LoadIconA(m_hInstance, m_gameInfo.szGameIdentifier);
-    m_wc.hCursor = hCursor;
-    m_wc.hbrBackground = (HBRUSH)GetStockObject(4);
-    m_wc.lpszMenuName = 0;
-    m_wc.lpszClassName = m_gameInfo.szWindowClassName;
-}
-
-// -------------------------------------------------------------------------
-// CGameApp::InitializeGameWindow
-// `return new CGameWnd;` - operator new(0x10) then the CGameWnd ctor under a
-// C++ EH frame (so this TU is built with /GX). The push-ecx at entry is MSVC
-// reserving one dword of locals for the new pointer / EH-tracked object;
-// `this` (the CGameApp) is never touched - this is the CGameWnd-allocation
-// analog of CGruntzApp::InitializeGameManager, and it sits in the CGameApp
-// address cluster, so it belongs to CGameApp (not CGruntzApp; uses no
-// game-app-specific >=0x254 fields).
-RVA(0x0013db60, 0x57)
-CGameWnd* CGameApp::InitializeGameWindow() {
-    return new CGameWnd;
-}
-
-// -------------------------------------------------------------------------
-// CGameApp::InitializeGameManager (vtbl +0x38) - the base engine's manager
-// factory: `return new WAP32::CGameMgr;` (operator new(0x2c) then the CGameMgr
-// ctor at 0x13dd10, under the C++ EH frame). The CGameMgr-allocation analog of
-// InitializeGameWindow; CGruntzApp overrides it (new CGruntzMgr) in GruntzApp.cpp.
-RVA(0x0013dbc0, 0x57)
-WAP32::CGameMgr* CGameApp::InitializeGameManager() {
-    return new WAP32::CGameMgr;
-}
-
-// -------------------------------------------------------------------------
-// CGameApp::Init
-// Builds a GameInfo descriptor on the stack from the launch parameters, then
-// hands it to InitInstance (vtable +0x4) to register+create.
-// hInstance is required (null -> 0). The three name strings are conditionally
-// strcpy'd (inline rep movs at /O2/Oi).
-RVA(0x0013d7b0, 0x105)
-i32 CGameApp::Init(
-    HINSTANCE hInstance,
-    char* szWindowName,
-    char* szGameIdentifier,
-    char* szCmdLine,
-    i32 windowClassFlags,
-    i32 windowWidth,
-    i32 windowHeight
-) {
-    GameInfo gi;
-
-    if (!hInstance) {
-        return 0;
-    }
-
-    memset(&gi, 0, sizeof(gi));
-    gi.hInstance = hInstance;
-    gi.size = sizeof(GameInfo);
-    gi.windowClassFlags = windowClassFlags;
-    gi.windowWidth = windowWidth;
-    gi.windowHeight = windowHeight;
-    if (szWindowName) {
-        strcpy(gi.szWindowName, szWindowName);
-    }
-    if (szGameIdentifier) {
-        strcpy(gi.szGameIdentifier, szGameIdentifier);
-    }
-    if (szCmdLine) {
-        strcpy(gi.szCmdLine, szCmdLine);
-    }
-
-    return InitInstance(&gi, 0, 0);
-}
-
-// -------------------------------------------------------------------------
-// CGameApp::InitDefault (vtbl +0x0c) - the one-name convenience overload: forward
-// to the virtual Init using `szName` for BOTH the window name and the game
-// identifier, an empty command line, no flags, and default (CW_USEDEFAULT) size.
-extern "C" char g_emptyString[]; // 0x6293f4 (empty command-line default)
-
-RVA(0x00080d20, 0x24)
-i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {
-    return Init(hInstance, szName, szName, g_emptyString, 0, (i32)0x80000000, (i32)0x80000000);
-}
-
-// -------------------------------------------------------------------------
-// CGameApp::InitializeDefaultCreateStruct
-// Fills the embedded CREATESTRUCTA (m_createStruct @ +0x210) with default
-// window geometry/style derived from the GameInfo windowClassFlags:
-//   bit1 (Windowed) -> a "Gruntz" menu, gameInfo width/height, overlapped or
-//   caption style; otherwise -> fullscreen popup at the screen metrics.
-RVA(0x0013da50, 0x10b)
-void CGameApp::InitializeDefaultCreateStruct() {
-    i32 i;
-    for (i = 0; i < 12; i++) {
-        ((i32*)&m_createStruct)[i] = 0;
-    }
-
-    HMENU hMenu = 0;
-    if (m_gameInfo.windowClassFlags & 1) {
-        hMenu = LoadMenuA(m_hInstance, m_gameInfo.szGameIdentifier);
-    }
-
-    // x and y both == CW_USEDEFAULT (windowed) or 0 (fullscreen). Kept as two
-    // separate variables (the target materializes x in a register, y in a stack
-    // slot, both assigned in one branch - a single var folds to a branchless
-    // neg/sbb/and on the 0x80000000 mask).
-    i32 x, y;
-    if (m_gameInfo.windowClassFlags & 1) {
-        x = (i32)0x80000000;
-        y = (i32)0x80000000;
-    } else {
-        x = 0;
-        y = 0;
-    }
-
-    // Width/height: the requested size when windowed, the screen otherwise.
-    i32 cx, cy;
-    if (m_gameInfo.windowClassFlags & 1) {
-        cx = m_gameInfo.windowWidth;
-        cy = m_gameInfo.windowHeight;
-    } else {
-        cx = GetSystemMetrics(0); // SM_CXSCREEN
-        cy = GetSystemMetrics(1); // SM_CYSCREEN
-    }
-
-    i32 style;
-    DWORD exStyle;
-    if (m_gameInfo.windowClassFlags & 1) {
-        style = 0xcf0000; // WS_OVERLAPPEDWINDOW (default)
-        exStyle = 0x40000;
-        if (m_gameInfo.windowClassFlags & 2) {
-            style = 0xca0000; // DialogFrame: caption + sysmenu
-        }
-    } else {
-        style = 0x80080000; // WS_POPUP | ...
-        exStyle = 0x40008;
-    }
-
-    m_createStruct.style = style;
-    m_createStruct.hInstance = m_hInstance;
-    m_createStruct.hMenu = hMenu;
-    m_createStruct.y = y;
-    m_createStruct.cx = cx;
-    m_createStruct.lpCreateParams = 0;
-    m_createStruct.hwndParent = 0;
-    m_createStruct.x = x;
-    m_createStruct.cy = cy;
-    m_createStruct.lpszName = m_gameInfo.szWindowName;
-    m_createStruct.lpszClass = m_gameInfo.szWindowClassName;
-    m_createStruct.dwExStyle = exStyle;
 }
 
 // -------------------------------------------------------------------------
@@ -375,6 +174,235 @@ i32 CGameApp::InitInstance(
     return 1;
 
 Fail:
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// CGameApp::Init
+// Builds a GameInfo descriptor on the stack from the launch parameters, then
+// hands it to InitInstance (vtable +0x4) to register+create.
+// hInstance is required (null -> 0). The three name strings are conditionally
+// strcpy'd (inline rep movs at /O2/Oi).
+RVA(0x0013d7b0, 0x105)
+i32 CGameApp::Init(
+    HINSTANCE hInstance,
+    char* szWindowName,
+    char* szGameIdentifier,
+    char* szCmdLine,
+    i32 windowClassFlags,
+    i32 windowWidth,
+    i32 windowHeight
+) {
+    GameInfo gi;
+
+    if (!hInstance) {
+        return 0;
+    }
+
+    memset(&gi, 0, sizeof(gi));
+    gi.hInstance = hInstance;
+    gi.size = sizeof(GameInfo);
+    gi.windowClassFlags = windowClassFlags;
+    gi.windowWidth = windowWidth;
+    gi.windowHeight = windowHeight;
+    if (szWindowName) {
+        strcpy(gi.szWindowName, szWindowName);
+    }
+    if (szGameIdentifier) {
+        strcpy(gi.szGameIdentifier, szGameIdentifier);
+    }
+    if (szCmdLine) {
+        strcpy(gi.szCmdLine, szCmdLine);
+    }
+
+    return InitInstance(&gi, 0, 0);
+}
+
+// -------------------------------------------------------------------------
+// CGameApp::CloseResources
+// Frees the accelerator table then deletes the two resource objects.
+RVA(0x0013d8c0, 0x42)
+void CGameApp::CloseResources() {
+    if (m_hAccel) {
+        DestroyAcceleratorTable(m_hAccel);
+        m_hAccel = 0;
+    }
+    if (m_gameMgr) {
+        delete m_gameMgr;
+        m_gameMgr = 0;
+    }
+    if (m_gameWnd) {
+        delete m_gameWnd;
+        m_gameWnd = 0;
+    }
+}
+
+// -------------------------------------------------------------------------
+// CGameApp::RunMessageLoop - the main Win32 pump (vtbl slot +0x18; WinMain
+// dispatches here). Reads the OS HWND off m_gameWnd->m_hwnd; if there is no
+// window, return 0. Otherwise the classic peek/process/idle pump: PeekMessageA
+// (PM_REMOVE) drains all pending messages (WM_QUIT exits with 1); when m_hAccel
+// (HACCEL) is set AND the message targets our window, run TranslateAcceleratorA
+// (return ignored); always TranslateMessage + DispatchMessageA; when the queue
+// is empty, call the idle virtual (vtbl +0x20) and loop.
+RVA(0x0013d910, 0x9f)
+i32 CGameApp::RunMessageLoop() {
+    MSG msg;
+
+    HWND hwnd = m_gameWnd->m_hwnd;
+    if (!hwnd) {
+        return 0;
+    }
+
+    for (;;) {
+        if (PeekMessageA(&msg, 0, 0, 0, 1)) {
+            do {
+                if (msg.message == 0x12 /*WM_QUIT*/) {
+                    return 1;
+                }
+                if (m_hAccel && msg.hwnd == hwnd) {
+                    TranslateAcceleratorA(hwnd, m_hAccel, &msg);
+                }
+                TranslateMessage(&msg);
+                DispatchMessageA(&msg);
+            } while (PeekMessageA(&msg, 0, 0, 0, 1));
+        }
+        OnIdle(); // idle virtual (vtbl +0x20)
+    }
+}
+
+// -------------------------------------------------------------------------
+// CGameApp::InitializeDefaultWindowClass
+// Fills the embedded WNDCLASSA (m_wc @ +0x1e8) and loads its icon/cursor.
+RVA(0x0013d9b0, 0xa0)
+void CGameApp::InitializeDefaultWindowClass() {
+    i32 i;
+    for (i = 0; i < 10; i++) {
+        ((i32*)&m_wc)[i] = 0;
+    }
+
+    HCURSOR hCursor = LoadCursorA(m_hInstance, m_gameInfo.szGameIdentifier);
+    if (m_gameInfo.windowClassFlags & 1) {
+        hCursor = LoadCursorA(0, (LPCSTR)0x7f00 /*IDC_ARROW*/);
+    }
+
+    m_wc.style = 8; // CS_DBLCLKS
+    m_wc.lpfnWndProc = GameWindowProc;
+    m_wc.cbClsExtra = 0;
+    m_wc.cbWndExtra = 0;
+    m_wc.hInstance = m_hInstance;
+    m_wc.hIcon = LoadIconA(m_hInstance, m_gameInfo.szGameIdentifier);
+    m_wc.hCursor = hCursor;
+    m_wc.hbrBackground = (HBRUSH)GetStockObject(4);
+    m_wc.lpszMenuName = 0;
+    m_wc.lpszClassName = m_gameInfo.szWindowClassName;
+}
+
+// -------------------------------------------------------------------------
+// CGameApp::InitializeDefaultCreateStruct
+// Fills the embedded CREATESTRUCTA (m_createStruct @ +0x210) with default
+// window geometry/style derived from the GameInfo windowClassFlags:
+//   bit1 (Windowed) -> a "Gruntz" menu, gameInfo width/height, overlapped or
+//   caption style; otherwise -> fullscreen popup at the screen metrics.
+RVA(0x0013da50, 0x10b)
+void CGameApp::InitializeDefaultCreateStruct() {
+    i32 i;
+    for (i = 0; i < 12; i++) {
+        ((i32*)&m_createStruct)[i] = 0;
+    }
+
+    HMENU hMenu = 0;
+    if (m_gameInfo.windowClassFlags & 1) {
+        hMenu = LoadMenuA(m_hInstance, m_gameInfo.szGameIdentifier);
+    }
+
+    // x and y both == CW_USEDEFAULT (windowed) or 0 (fullscreen). Kept as two
+    // separate variables (the target materializes x in a register, y in a stack
+    // slot, both assigned in one branch - a single var folds to a branchless
+    // neg/sbb/and on the 0x80000000 mask).
+    i32 x, y;
+    if (m_gameInfo.windowClassFlags & 1) {
+        x = (i32)0x80000000;
+        y = (i32)0x80000000;
+    } else {
+        x = 0;
+        y = 0;
+    }
+
+    // Width/height: the requested size when windowed, the screen otherwise.
+    i32 cx, cy;
+    if (m_gameInfo.windowClassFlags & 1) {
+        cx = m_gameInfo.windowWidth;
+        cy = m_gameInfo.windowHeight;
+    } else {
+        cx = GetSystemMetrics(0); // SM_CXSCREEN
+        cy = GetSystemMetrics(1); // SM_CYSCREEN
+    }
+
+    i32 style;
+    DWORD exStyle;
+    if (m_gameInfo.windowClassFlags & 1) {
+        style = 0xcf0000; // WS_OVERLAPPEDWINDOW (default)
+        exStyle = 0x40000;
+        if (m_gameInfo.windowClassFlags & 2) {
+            style = 0xca0000; // DialogFrame: caption + sysmenu
+        }
+    } else {
+        style = 0x80080000; // WS_POPUP | ...
+        exStyle = 0x40008;
+    }
+
+    m_createStruct.style = style;
+    m_createStruct.hInstance = m_hInstance;
+    m_createStruct.hMenu = hMenu;
+    m_createStruct.y = y;
+    m_createStruct.cx = cx;
+    m_createStruct.lpCreateParams = 0;
+    m_createStruct.hwndParent = 0;
+    m_createStruct.x = x;
+    m_createStruct.cy = cy;
+    m_createStruct.lpszName = m_gameInfo.szWindowName;
+    m_createStruct.lpszClass = m_gameInfo.szWindowClassName;
+    m_createStruct.dwExStyle = exStyle;
+}
+
+// -------------------------------------------------------------------------
+// CGameApp::InitializeGameWindow
+// `return new CGameWnd;` - operator new(0x10) then the CGameWnd ctor under a
+// C++ EH frame (so this TU is built with /GX). The push-ecx at entry is MSVC
+// reserving one dword of locals for the new pointer / EH-tracked object;
+// `this` (the CGameApp) is never touched - this is the CGameWnd-allocation
+// analog of CGruntzApp::InitializeGameManager, and it sits in the CGameApp
+// address cluster, so it belongs to CGameApp (not CGruntzApp; uses no
+// game-app-specific >=0x254 fields).
+RVA(0x0013db60, 0x57)
+CGameWnd* CGameApp::InitializeGameWindow() {
+    return new CGameWnd;
+}
+
+// -------------------------------------------------------------------------
+// CGameApp::InitializeGameManager (vtbl +0x38) - the base engine's manager
+// factory: `return new WAP32::CGameMgr;` (operator new(0x2c) then the CGameMgr
+// ctor at 0x13dd10, under the C++ EH frame). The CGameMgr-allocation analog of
+// InitializeGameWindow; CGruntzApp overrides it (new CGruntzMgr) in GruntzApp.cpp.
+RVA(0x0013dbc0, 0x57)
+WAP32::CGameMgr* CGameApp::InitializeGameManager() {
+    return new WAP32::CGameMgr;
+}
+
+// -------------------------------------------------------------------------
+// CGameApp::InitializeAccelerators
+// Reloads the accelerator table; returns whether it loaded.
+RVA(0x0013dc20, 0x49)
+BOOL CGameApp::InitializeAccelerators(LPCSTR lpTable) {
+    if (lpTable && *lpTable) {
+        if (m_hAccel) {
+            DestroyAcceleratorTable(m_hAccel);
+            m_hAccel = 0;
+        }
+        m_hAccel = LoadAcceleratorsA(m_hInstance, lpTable);
+        return m_hAccel != 0;
+    }
     return 0;
 }
 
@@ -470,6 +498,59 @@ void WAP32::CGameMgr::Close() {
     m_owner = 0;
 }
 
+// The frame clock. Retail does NOT call the WINMM import thunk directly; it caches
+// timeGetTime in a game-owned global pointer (_g_pTimeGetTime @ RVA 0x2c4650, pinned
+// in cplay/globals) and calls through it (ff 15). extern "C" so the reloc binds the
+// canonical one-symbol-per-RVA at whole-game link (was the raw __imp__timeGetTime@0).
+extern "C" u32(WINAPI* g_pTimeGetTime)();
+
+// -------------------------------------------------------------------------
+// RezMgr::UpdateClock() (0x13ddc0; moved from RezMgr.cpp in wave4-K - its text
+// sits between CGameMgr::Close and InitTimeFields in THIS obj) - the frame-clock
+// advance helper PerFrameTick calls. Sample timeGetTime, derive the per-frame
+// delta into the canonical g_wap32Now/g_wap32FrameDelta cells, run down the
+// run-state countdown, then (when the pacing gate m_pacingGate is armed)
+// busy-wait to the ms budget and, every ~2s window, fold the frame count into
+// m_smoothedFrameCount and rearm the window. The RezMgr receiver view IS
+// WAP32::CGameMgr (m_fps/m_pauseFlag/m_elapsedMs/m_startTick at the same
+// +0x18..+0x24 slots); the view fold is deferred to the gruntzmgr package.
+RVA(0x0013ddc0, 0xaa)
+i32 RezMgr::UpdateClock() {
+    // Cache the fnptr in a local so cl loads it once (mov edi,[_g_pTimeGetTime]) and
+    // reuses it across the three samples (call edi), exactly as retail does.
+    u32(WINAPI * pTGT)() = g_pTimeGetTime;
+    u32 now = pTGT();
+    u32 delta = now - (u32)g_wap32Now;
+    g_wap32Now = now;
+    g_wap32FrameDelta = delta;
+    u32 run7c = (u32)g_wap32Run7c;
+    if (run7c == 0) {
+        g_wap32Run7c = g_wap32Run80;
+    } else if (delta >= run7c) {
+        g_wap32Run7c = 0;
+    } else {
+        g_wap32Run7c = run7c - delta;
+    }
+
+    if (m_pacingGate > 0) {
+        if ((u32)g_wap32ClockReset > 0) {
+            u32 elapsed = pTGT() - (u32)g_wap32ClockReset;
+            if (elapsed < (u32)m_frameBudgetMs) {
+                SpinWaitUntil(m_frameBudgetMs - elapsed);
+            }
+        }
+        g_wap32ClockReset = pTGT();
+    }
+
+    u32 count = m_frameCounter + 1;
+    m_frameCounter = count;
+    if ((u32)g_wap32Now - (u32)m_windowStartTick >= 0x7d0) {
+        m_smoothedFrameCount = count >> 1;
+        InitTimeFields(0);
+    }
+    return 1;
+}
+
 // -------------------------------------------------------------------------
 // CGameMgr::InitTimeFields  (__thiscall; ctor/Run helper @0x13de70)
 // Zeroes m_elapsedMs, samples the start tick into m_startTick, and (when reset) arms m_fps.
@@ -492,50 +573,96 @@ void WAP32::CGameMgr::InitializeTimeGlobal() {
     g_wap32ClockReset = 0;
 }
 
+// -------------------------------------------------------------------------
+// RezMgr::SpinWaitUntil(ms) (0x13dec0; moved from RezMgr.cpp in wave4-K) -
+// the ms frame-pacing busy-wait UpdateClock calls: sample timeGetTime through the
+// game-owned fn-ptr and spin until `now` passes `start + ms` (unsigned, overflow-
+// guarded). `this` is unused (ecx ignored); the fn-ptr is cached in a callee-save.
+// @early-stop
+// ~83.9% regalloc wall: body byte-exact, but retail pins the cached fn-ptr in edi
+// and the deadline in esi (pushing both callee-saves upfront), while MSVC5 swaps
+// them (fn-ptr in esi, deadline in edi, edi shrink-wrapped). No source spelling
+// flips the esi/edi pair; logic complete.
+RVA(0x0013dec0, 0x20)
+void RezMgr::SpinWaitUntil(i32 ms) {
+    u32(WINAPI * fn)() = g_pTimeGetTime;
+    u32 now = fn();
+    u32 end = now + (u32)ms;
+    if (now <= end) {
+        do {
+            now = fn();
+        } while (now <= end);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// RezMgr::SetFrameRate(fps) (0x13dee0; moved from RezMgr.cpp in wave4-K): store
+// the frame rate in the pacing gate (m_pacingGate @+0x1c) and, when positive,
+// derive the per-frame budget (m_frameBudgetMs @+0x28 = 1000/fps). __thiscall, 1 arg.
+RVA(0x0013dee0, 0x1b)
+void RezMgr::SetFrameRate(i32 fps) {
+    m_pacingGate = fps;
+    if (fps > 0) {
+        m_frameBudgetMs = 1000 / fps;
+    }
+}
+
+// RezMgr::TrySetFrameRate(fps) (0x13df00; moved from RezMgr.cpp in wave4-K):
+// install the rate only when pacing is not already active (m_pacingGate > 0 ->
+// clear it via SetFrameRate(0) and fail with 0); otherwise configure to fps and
+// succeed (return 1). __thiscall, 1 arg.
+RVA(0x0013df00, 0x25)
+i32 RezMgr::TrySetFrameRate(i32 fps) {
+    if (m_pacingGate > 0) {
+        SetFrameRate(0);
+        return 0;
+    }
+    SetFrameRate(fps);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// WaitKeyEdge (0x13df30; moved from RezMgr.cpp in wave4-K) - busy-wait for a
+// key down-then-up edge on virtual-key `vk`, with an optional `timeoutMs` deadline
+// (through the game-owned timeGetTime fn-ptr g_pTimeGetTime, above). __cdecl, two
+// stack args. Reads the OS key state through the engine's cached GetAsyncKeyState
+// fn-ptr (g_pGetAsyncKeyState @0x6c4500).
+// @orphan: no .text caller (a free __cdecl busy-wait); no owning class.
+// @early-stop
+// regalloc-swap wall (~97%): byte-identical except retail pins `vk` in esi and the
+// cached GetAsyncKeyState ptr in edi, while our /O2 picks the reverse (ptr->esi,
+// vk->edi). Only the modrm reg fields differ; tried direct global calls (77%, no
+// caching) and an `int k = vk` copy (no change). Pure register assignment.
+extern "C" i16(WINAPI* g_pGetAsyncKeyState)(int vk); // 0x6c4500 (PTR_GetAsyncKeyState)
+RVA(0x0013df30, 0xaf)
+void WaitKeyEdge(int vk, int timeoutMs) {
+    if (timeoutMs == 0) {
+        i16(WINAPI * gaks)(int) = g_pGetAsyncKeyState;
+        while (!((i32)gaks(vk) & 0x80000000))
+            ;
+        while ((i32)gaks(vk) & 0x80000000)
+            ;
+    } else {
+        u32(WINAPI * tgt)() = g_pTimeGetTime;
+        u32 deadline = tgt() + timeoutMs;
+        i16(WINAPI * gaks)(int) = g_pGetAsyncKeyState;
+        while (!((i32)gaks(vk) & 0x80000000)) {
+            if (tgt() > deadline) {
+                return;
+            }
+        }
+        while ((i32)gaks(vk) & 0x80000000) {
+            if (tgt() > deadline) {
+                return;
+            }
+        }
+    }
+}
+
 // CGameApp::GameWindowProc (the static WNDPROC) is reconstructed in GameWnd.cpp:
 // its code lives in the CGameWnd address cluster and dispatches to the active
 // CGameWnd singleton (s_activeWnd). This TU only references it (the WNDCLASS
 // store in InitializeDefaultWindowClass).
-
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// 0x133380 stores vftable 0x5ef670 and calls dtor body FUN_00534d50 - the
-// scalar-deleting destructor of some OTHER engine class the delinker labelled
-// under CGameMgr@WAP32; it is NEITHER the base WAP32::CGameMgr (vftable
-// 0x5e9b8c) NOR CGruntzMgr (vftable 0x5e9b64). It is a (storage-free) method on
-// CGameMgr ONLY so MSVC mangles it to the retail symbol name; see the note on
-// the declaration in Wap32.h.
-// The DirectInput device-config grand-base (vftable 0x5ef670 == ??_7CInputDevRoot,
-// named in DirectInputMgr2.cpp) + its base-subobject teardown (0x134d50). The
-// engine allocator's operator delete. All reloc-masked.
-extern void* deviceConfigRootTable; // 0x5ef670 (the CInputDevRoot vtable datum)
-// The DirectInput device-config grand-base (full class in <DinMgr2/DirectInputMgr2.h>);
-// partial view for the base teardown this dtor runs.
-struct CInputDevRoot {
-    void ReleaseDevices(); // 0x134d50
-};
-void operator delete(void*); // engine allocator (0x1b9b82)
-
-// WAP32::CGameMgr::vector_deleting_destructor @0x133380 - the CInputDevRoot scalar-
-// deleting dtor (mangled through CGameMgr for the retail symbol name): stamp the C
-// vftable, run the base teardown, conditionally free, return `this`.
-// @early-stop
-// cross-class-alias wall: this is really a CInputDevRoot scalar-deleting dtor but
-// the delinker mangled it under CGameMgr, so it cannot be expressed as a real
-// ~CInputDevRoot here (that ??_G is auto-emitted, unbound, by DirectInputMgr2). The
-// vptr re-stamp of a FOREIGN class's vtable is a non-ctor stamp cl cannot realize
-// (vtable-realization-ctor-boundary), so it stays an explicit `*(void**)this` store
-// of the reloc-masked CInputDevRoot vtable datum. Code bytes match.
-RVA(0x00133380, 0x24)
-void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
-    *(void**)this = &deviceConfigRootTable;
-    ((CInputDevRoot*)this)->ReleaseDevices();
-    if (flags & 1) {
-        operator delete(this);
-    }
-    return this;
-}
 
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.

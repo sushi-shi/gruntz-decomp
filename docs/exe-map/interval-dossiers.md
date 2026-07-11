@@ -42,6 +42,7 @@ Verdict summary:
 | `0x0abfa0-0x0ad527` | frontcandyani+eyecandyani | **ONE TU** (FrontCandyAni.cpp) | strong |
 | `0x041e90-0x042cd3` | secretteleportertrigger+secretleveltrigger | **ONE TU** (SecretTeleporterTrigger.cpp) | strong |
 | `0x147390-0x148837` | ddpalette+dirpal+palettelerp (+PalLoad stray) | **ONE TU** (DirPal.cpp, DIRPAL.CPP anchored) | anchored |
+| `0x1396f0-0x145e00` | engine-resource mega-region (15 units) | **SEVEN TUs** + 2 ambiguous pockets (§14): sym `0x1396f0` / hash `0x13c240` / rez `0x13c4e0` / GameWnd `0x13cf00` / GameApp `0x13d590` / DIRSURF `0x13e060` / DDRAWMGR `0x1413d0` / codec `0x143cf0` | anchored (G/H) / strong |
 
 ---
 
@@ -627,6 +628,117 @@ tail pending the 0xea990-0xf8800 partition package.
   names (m_targetPalette/m_sourcePalette/m_fixedR..B/m_durationMs/m_startTimeMs/
   m_lastElapsedMs/m_firstColorIndex/m_colorCount/m_active) onto the +0x14..+0x34
   layout. Every fn byte-preserved (Tick/Flush/Destroy 100% held).
+
+## 14. wave4-K - the engine-resource mega-region `0x1396f0-0x145e00` (236 fns, 15 units)
+
+**Verdict: SEVEN original TUs + two ambiguous pockets.** Derived boundary map
+(evidence per boundary below; private-cell RVAs are initialized-.data only):
+
+| # | original TU | .text span | our file (unit kept) | flags |
+|---|---|---|---|---|
+| A | ButeMgr sym file (name unknown) | `0x1396f0-0x13c23a` | src/Bute/SymTab.cpp (symtab) | eh |
+| B | Hash pocket — AMBIGUOUS | `0x13c240-0x13c4ba` | src/Bute/Hash.cpp (hash) | eh |
+| C | RezMgr archive file | `0x13c4e0-0x13ce8c` | src/Rez/RezMgr.cpp (rezmgr) | eh |
+| D | GameWnd.cpp | `0x13cf00-0x13d58a` | src/Wap32/GameWnd.cpp (gamewnd) | base |
+| E | GameApp.cpp | `0x13d590-0x13dfdf` | src/Wap32/GameApp.cpp (gameapp) | eh |
+| F | DebugTiming pocket — AMBIGUOUS | `0x13dfe0-0x13e042` | src/Utils/DebugTiming.cpp (debugtiming) | eh |
+| G | **DIRSURF.CPP** (anchored) | `0x13e060-0x1413cb` | src/DDrawMgr/DDSurface.cpp (ddsurface) | base->**eh** |
+| H | **DDRAWMGR.CPP** (anchored) | `0x1413d0-0x143ca4` | src/DDrawMgr/DirectDrawMgr.cpp (directdrawmgr) | base->**eh** |
+| I | surface file-codec file (name unknown; "DIRFILE"-like) | `0x143cf0-0x145dff` | src/Image/FileImage.cpp (fileimage) | eh |
+
+Units dissolved: cremusreadstream+symrec+symparser (->A), rezfile (->C),
+image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext
+(->G/H/I + the 0x148840 pocket), ddrawptrcollections' 34 in-band fns (->H).
+
+* **A (sym file = ONE TU).** Multi-scale text A-B-A: the CParseSource run
+  0x139800-0x139bbc sits INSIDE the SymTab head (Build@0x139710 .. ??0@0x139de0)
+  with the CSymRec ctors between; the CSymTab Resolve* trio 0x13bae0-0x13bfec
+  sits INSIDE the CSymParser run (SetDelims@0x13ba80 .. ResolveQualified@0x13bff0).
+  Private-cell order: Load@CRezDirNode(0x13a0f0)'s cell 0x21a070 <
+  ParseRecords@CSymParser's 0x21a0a0 < the rez obj's 0x21a0a4 - the two
+  "rezmgr"-attributed strays (0x13a0f0, 0x13c080 - both text-contained) carry
+  cells INSIDE the sym band -> they are this obj's fns wearing Rez names
+  (@identity-TODO). EH sites throughout (SymRec/SymTab/SymParser ctors+dtors,
+  ApplyRange, PopParseSlot) -> /GX; the cremusreadstream base profile was a
+  seam artifact.
+* **B (hash pocket).** One contiguous CHash/CHashB block directly after A; no
+  frags, no private cells, no EH sites, no weave -> cannot bind to A or prove
+  its own obj. Left split (conservative partial).
+* **C (rez file = ONE TU).** DECISIVE shared private cells: the "r+b"/"w+b"
+  fopen-mode literals 0x21a0a4/0x21a0a8 are referenced ONLY by Open@CRezItm
+  (0x13c760, rezmgr) + Open@CRezFile (0x13cdc0, rezfile). Text A-B-A:
+  CloseAllOpen@CRezFileMgr (0x13ca80) inside the rezmgr run, ??1CRezDir13cb80
+  (0x13cb80) inside the rezfile neighborhood. EH sites (CRezItm/CRezDir dtors,
+  CRezParseNode ctor) -> /GX; rezfile's base profile flips.
+* **D/E (GameWnd vs GameApp = TWO TUs).** Two clean class blocks, no weave
+  across 0x13d590; GameWindowProc@CGameApp (0x13cff0) is the static WNDPROC
+  compiled in the window file (stays D). EH sites only in E
+  (InitializeGameWindow/Manager) - D base, E eh, exactly the current profiles.
+  The five "rezmgr" timing fns are E's: text A-B-A (UpdateClock@0x13ddc0
+  between Close@CGameMgr@0x13ddb0 and InitTimeFields@CGameMgr@0x13de70;
+  SpinWaitUntil/SetFrameRate/TrySetFrameRate/WaitKeyEdge 0x13dec0-0x13df30
+  after InitializeTimeGlobal@0x13dea0). Identity: the "RezMgr" receiver view
+  == WAP32::CGameMgr (m_fps@0x18/m_pauseFlag@0x1c/m_elapsedMs@0x20/
+  m_startTick@0x24 == the view's m_smoothedFrameCount/m_pacingGate/
+  m_frameCounter/m_windowStartTick; UpdateClock calls InitTimeFields ==
+  0x13de70), and its duplicate frame-clock statics are the canonical
+  g_wap32Now/FrameDelta/ClockReset/Run7c/Run80 cells (0x253c70-0x253c80,
+  Globals.cpp) - the statics dissolve onto the canonicals with the move.
+  Full RezMgr->CGameMgr method fold deferred to the gruntzmgr package (its
+  other methods live at 0x8b740/0x8e470/0x91670, outside this band).
+* **F (DebugTiming pocket).** ActiveWait/DebugTrace sit between E's tail and
+  G's init frag. ActiveWait's callers are engine-wide (multi/attract/winmain),
+  DebugTrace has zero callers -> no discriminating evidence for E-tail vs
+  G-head. Left in the 2-fn holding unit.
+* **G (DIRSURF.CPP, anchored).** The `C:\Proj\DDrawMgr\DIRSURF.CPP` assert
+  string is referenced from 16 sites 0x13e140-0x13f460 spanning ddsurface AND
+  image (Fill@0x13e760) AND lutshaderect (ShadeRect@0x13f460) fns. The single
+  image-unit init frag @0x13e060 + atexit companion ClearImageCache_13e070 =
+  the file's leading static. Every fn in the span is a CDDSurface method or
+  its factory/helper; fn-granularity interleave of ddsurface|image|fileimage|
+  fileimageblit|fileimagerundecode -> one obj. Private cells: DumpSurfaceInfo's
+  table 0x21a0ec-0x21a33c sits between E's cell (0x21a0ac) and H's band
+  (0x21a378+) - monotone. EH sites at Build_13e9a0 + ??1CDDSurface -> the obj
+  was /GX -> ddsurface's base profile flips to eh. MakeImageKey@RezMgr
+  (0x13e5d0, text-contained, no cells) moves in by position.
+  The fileimagerundecode "od" per-file override is structurally IMPOSSIBLE
+  (DecodeRun8/24 are text-contained in this /GX /O2 obj; one obj = one flag
+  set) - the 99.5%-under-/Od shape means retail compiled exactly these fns
+  unoptimized, i.e. `#pragma optimize("", off)` islands in the source (VC5
+  supports it). Modeled that way; craters accepted if the pragma is refused.
+* **H (DDRAWMGR.CPP, anchored).** The `C:\Proj\DDrawMgr\DDRAWMGR.CPP` string is
+  referenced from directdrawmgr fns (CreateDevice/Init/SetupCaps/CreatePoolItem/
+  GetDisplayMode) AND ddrawptrcollections fns (ComputeColorMasks@0x143b20,
+  ConfigureSurface@0x143c20); `C:\Proj\DDrawMgr\ddrawmgr.h` from CreateDevice.
+  The directdrawmgr init frag @0x141c70 + ClearModeArray atexit companion
+  @0x141c80 ($E at the static's source position - the mode array is defined
+  mid-file). ONE-OBJ cell proof: 0x21a9f8 is shared by CreateDevice/Init/
+  SetupCaps/CreatePoolItem/GetDisplayMode (directdrawmgr) AND ComputeColorMasks
+  (ddrawptrcollections). Head attribution: GetErrorString's private string
+  table 0x21a378-0x21a9e4 directly precedes the mode-array band and follows
+  G's - so the SetDDrawReportModes/GetErrorString pair @0x1413d0/0x141400 is
+  H's head (the DSNDMGR sibling has the same reporting head/tail pair). Text
+  A-B-A: collections 0x141cc0-0x143150 | mgr Find*/caps block 0x143240-0x1438c0
+  | collections 0x143900-0x143c20. EH sites throughout -> /GX flip for
+  directdrawmgr. The CFileImageSurface dtor pair (0x142340/0x142360, image
+  unit) is text-contained -> homed here (likely COMDAT-at-usage of the pool
+  surface class's inline dtor).
+* **I (codec file = ONE TU, third DDrawMgr image file).** The 0x143cf0-0x145dff
+  block is ALL CDDSurface file-format code (Load/Save/Decode BMP/PCX/PID/TGA/
+  RLE16 + run-decode) but CANNOT be DIRSURF.CPP: the whole DDRAWMGR obj sits
+  between (contiguity at first link). No __FILE__ string (no asserts) -> the
+  original name is unknown (DIRFILE.CPP-like); hosted in FileImage.cpp. Total
+  image|fileimage interleave at fn granularity -> one obj. EH sites (LoadFile2/
+  LoadBmp/SaveBmp/SaveRle16/SaveTga/LoadFile/LoadPcx/DecodePcxEx/LoadPid) ->
+  /GX (fileimage already eh). ResLoad_144270 (resourceloaders, 0x144270,
+  text-contained) moves in by position; RunDecode1/3 are the codec file's
+  `#pragma optimize` islands (see G).
+* **The `0x148840-0x148cd8` pocket** (outside this band; TU_MIGRATION row
+  "WOVEN 0.29" = one obj): the leftover second cores of image (LoadKeyed/
+  ResolveEx/UpdateOverlay) + ddrawptrcollections (the CPoolItem* virtuals) +
+  fileimageloadbyext (LoadByExt). Consolidated into DDrawPtrCollections.cpp as
+  the pocket's holding unit so no unit spans two blocks; its original file is
+  a fourth DDrawMgr surface file (unnamed - no anchor), unresolved here.
 
 **Extent-overlap rows audited (job 9, initialized-.data oracle):**
 

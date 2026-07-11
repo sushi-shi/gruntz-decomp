@@ -1,20 +1,28 @@
-// DDSurface.cpp - CDDSurface (C:\Proj\DDrawMgr\DIRSURF.CPP), the thin
-// IDirectDrawSurface wrapper class. Split out of the DirectDrawMgr god-TU: this is
-// one contiguous retail .text block (0x13e140-0x140a96) == one retail .obj (DIRSURF).
-// Every wrapper does iface->Method(args...) so the retail `call *off(reg)` COM
-// dispatch falls out; on a DDERR_SURFACELOST the thunks call the wrapper's own
-// virtual RestoreLost (slot 7) to restore + retry, then route a still-bad HRESULT
-// through CDirectDrawMgr::GetErrorString. The class's ctor/dtor + ??_7CDDSurface
-// vtable live in DDrawPtrCollections.cpp (emission anchor), so these bodies emit
-// standalone. BuildColorChannelTables (0x13f740, free __cdecl) sits inside this
-// DIRSURF block and precomputes the RGB channel CLUTs ShadeBlt blends through.
+// DDSurface.cpp - CDDSurface, the ORIGINAL C:\Proj\DDrawMgr\DIRSURF.CPP TU
+// (wave4-K merge; interval dossier #14G): one obj spanning retail 0x13e060-0x1413cb.
+// The __FILE__ assert string is referenced from 16 sites across the whole span; the
+// obj's single init frag (@0x13e060) + its atexit companion ClearImageCache_13e070
+// lead it. The former image / fileimage / fileimageblit / fileimagerundecode /
+// lutshaderect units' fns in this span were fn-granularity-interleaved slices of
+// this file and are folded in, in retail-RVA order: the IDirectDrawSurface COM
+// thunks, the surface geometry/blit/save ops, the pixel-format converter blitters
+// (Blit<dest><src>), the in-surface RLE decoders (DecodeRun8/24 - retail compiled
+// these UNOPTIMIZED: `#pragma optimize("",off)` islands, see below), the CImage
+// factory/cache, and the rotate-blit forwarders. RezMgr::MakeImageKey (0x13e5d0,
+// text-contained) rides along. EH sites at Build_13e9a0 + ~CDDSurface prove the
+// obj was /GX (the old ddsurface base profile flips to eh).
 //
-// Include environment mirrors the former DirectDrawMgr.cpp exactly (Mfc.h via
-// FileStream.h supplies windows.h before <ddraw.h>) so the byte-exact thunks keep
-// matching; DDSurface itself needs no CFileIO.
+// On a DDERR_SURFACELOST the COM thunks call the wrapper's own virtual RestoreLost
+// (slot 7) to restore + retry, then route a still-bad HRESULT through
+// CDirectDrawMgr::GetErrorString. The class's pool ctor/dtor emission anchor is
+// the DDRAWMGR TU (DirectDrawMgr.cpp); ~CDDSurface's kept COMDAT copy (0x141350)
+// is THIS obj's.
 #include <Io/FileStream.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/DDrawPtrCollections.h> // the palette/pool context the decoders read
+#include <Image/Image.h> // CFileImageElement / CFileImageHeldSurface / CFileImageSrc
+#include <Rez/RezMgr.h>  // the RezMgr manager view (MakeImageKey) + RezStrrchr/RezStricmp
 #include <ddraw.h> // real DirectDraw SDK (IDirectDrawSurface, DDBLTFX, DDCOLORKEY, DDERR_*/DDBD_*/DDSCAPS_*)
 #include <rva.h>
 #include <stdio.h>
@@ -48,6 +56,68 @@ extern i32 g_bDown; // 0x683eb4
 // The engine RECT-copier fn-ptr (0x6c44bc), used by ShadeBlt to snapshot the rects.
 DATA(0x002c44bc)
 extern void(__stdcall* g_pCopyRect)(struct tagRECT*, const struct tagRECT*);
+
+// The global image cache the new item is filed into (elements: the 0xc0
+// CRezSurfaceItem surface items the 0x13e9a0 factory below builds).
+class CRezSurfaceItem;
+class CImageCache {
+public:
+    void SetAtGrow(i32 index, CRezSurfaceItem* item); // 0x1b5144
+    void RemoveAll();                                 // 0x1b4f0b (out-of-line array teardown)
+};
+SIZE_UNKNOWN(CImageCache);
+DATA(0x00253c88)
+extern CImageCache g_imageCache; // 0x653c88
+
+// Global image-cache teardown tail-forward (0x13e070): mov ecx,&g_imageCache; jmp
+// RemoveAll. Folded from Stub/BoundaryUpper.cpp (ClearImageCache_13e070); g_imageCache
+// is this TU's own datum.
+RVA(0x0013e070, 0xa)
+void ClearImageCache_13e070() {
+    g_imageCache.RemoveAll();
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Init1 (0x13e0a0, vtable slot 2): if the descriptor arg (a, a 0x6c-byte
+// Blk6c* passed as an int handle) is non-null, copy it into the +0x10 DDSURFACEDESC
+// scratch, then dispatch the surface's own slot-8 v20 with the collection context h;
+// return its result. Folded from Stub/BoundaryUpper.cpp (ImgOwned::Apply - the view
+// IS CDDSurface; the "ambiguous CDDSurface::Init1" note is resolved). Decl in DDSurface.h.
+// ---------------------------------------------------------------------------
+RVA(0x0013e0a0, 0x27)
+i32 CDDSurface::Init1(CDDrawPtrCollections* h, i32 a) {
+    if (a != 0) {
+        memcpy((char*)this + 0x10, (const void*)a, 0x6c);
+    }
+    return v20(h);
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::BlitSurf
+// The DecodePcxData destination setup: zero the surface's DDSURFACEDESC, stash
+// the colour-key arg (m_78), record width/height into the desc, set dwSize/
+// dwFlags, and - when a4 names a non-zero source bpp that differs from the
+// palette context's bpp (surf->m_palBpp, the display manager passed in) - flag a colour-key blit (dwFlags|0x1000,
+// ddckCKSrcBlt dwFlags 0x20, the key colour at m_64). Then dispatch the surface's
+// own slot-8 virtual with `surf`.
+RVA(0x0013e0d0, 0x66)
+i32 CDDSurface::BlitSurf(void* surf, i32 width, i32 height, i32 a4, i32 a5) {
+    i32* desc = (i32*)(this->m_desc);
+    for (i32 i = 0x1b; i != 0; i--) {
+        *desc++ = 0;
+    }
+    *(i32*)(this->m_desc + 0x68) = a5; // m_78
+    this->m_width = width;
+    this->m_height = height;
+    *(i32*)(this->m_desc) = 0x6c;  // dwSize
+    *(i32*)(this->m_desc + 4) = 7; // dwFlags
+    if (a4 != 0 && a4 != ((CDDrawPtrCollections*)surf)->m_palBpp) {
+        *(i32*)(this->m_desc + 4) = 0x1007;
+        *(i32*)(this->m_desc + 0x48) = 0x20; // m_58
+        this->m_64 = a4;
+    }
+    return this->v20(surf); // slot-8 virtual dispatch (+0x20)
+}
 
 // CDDSurface::Refresh (__thiscall, ret 4 => 1 arg). GetSurfaceDesc into the
 // scratch desc, then derive the row/pixel geometry by a bit-depth switch. The
@@ -120,6 +190,107 @@ i32 CDDSurface::Refresh(IDirectDrawSurface* surf) {
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// CDDSurface::FreeSurfaces (vtable slot 4, @+0x10) - the shared surface teardown.
+// Walk the +0x94 CPtrArray (m_pData@0x98, count@0x9c, unsigned) running each
+// element's slot-0 scalar-deleting destructor, RemoveAll the array (SetSize(0,-1)),
+// then - unless the "don't-own" flag (m_dontOwn & 1) is set - Release the two held
+// IDirectDrawSurfaces (m_8/m_c) and null them, and clear m_b8.
+RVA(0x0013e4d0, 0x7e)
+void CDDSurface::FreeSurfaces() {
+    for (u32 i = 0; i < (u32)m_elements.GetSize(); i++) {
+        CFileImageElement* e = (CFileImageElement*)m_elements[i];
+        delete e;
+    }
+    m_elements.SetSize(0, -1);
+    if (this->m_8 != 0) {
+        if ((this->m_dontOwn & 1) == 0) {
+            this->m_8->Release();
+        }
+        this->m_8 = 0;
+    }
+    if (this->m_c != 0) {
+        if ((this->m_dontOwn & 1) == 0) {
+            this->m_c->Release();
+        }
+        this->m_c = 0;
+    }
+    this->m_b8 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Resolve
+// The file-format dispatcher (the .REZ payload path). `type` (1=BMP, 2=PCX,
+// 4=PID) selects the matching decoder; the destination buffer arg (`size`) must
+// be non-zero. Each decoder is handed (surf, buf, size); PID additionally takes
+// the transparency-colour pass-through (surf2). Returns 1 on a successful decode,
+// else 0. The near-consecutive case labels lower to MSVC's running-subtract chain
+// (dec/dec/sub 2), so this is spelled as a switch (see
+// docs/patterns/switch-subtract-chain-vs-ifelse.md), case bodies in retail .text
+// order (4, 2, 1).
+RVA(0x0013e550, 0x71)
+i32 CDDSurface::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) {
+    if (size == 0) {
+        return 0;
+    }
+    switch (type) {
+        case FMT_PID:
+            if (!DecodePid(surf, buf, size, surf2)) {
+                return 0;
+            }
+            break;
+        case FMT_PCX:
+            if (!DecodePcx(surf, buf, size)) {
+                return 0;
+            }
+            break;
+        case FMT_BMP:
+            if (!DecodeBmp(surf, buf, size)) {
+                return 0;
+            }
+            break;
+        default:
+            return 0;
+    }
+    return 1;
+}
+
+// The image-resource extension keys (file-scope literals - their addresses are
+// the reloc-masked push operands in MakeImageKey's stricmp calls). Order in the
+// binary: .BMP, then .PCX, then .PID.
+static const char s_extBmp[] = ".BMP";
+static const char s_extPcx[] = ".PCX";
+static const char s_extPid[] = ".PID";
+
+// ---------------------------------------------------------------------------
+// RezMgr::MakeImageKey (0x13e5d0; moved from RezMgr.cpp in wave4-K - its text is
+// contained in THIS obj, between Resolve and SetPalette). Dispatch a resource
+// load by the file extension of `name`: locate the last '.', then case-
+// insensitively match .BMP/.PCX/.PID and hand off to the matching loader
+// (LoadBmp/LoadPcx take (arg1,name); LoadPid takes (arg1,name,arg3)). Returns 1
+// unless the extension matched but its loader failed (then 0); an unrecognised/
+// absent extension also returns 1. (The RezMgr view == the WAP32 game manager;
+// its Load* here are the CDDSurface loaders reached through the manager - the
+// receiver fold is deferred with the rest of the RezMgr view.)
+RVA(0x0013e5d0, 0xb1)
+i32 RezMgr::MakeImageKey(void* arg1, char* name, void* arg3) {
+    char* ext = RezStrrchr(name, '.');
+    if (ext && RezStricmp(ext, s_extBmp) == 0) {
+        if (!LoadBmp(arg1, name)) {
+            return 0;
+        }
+    } else if (ext && RezStricmp(ext, s_extPcx) == 0) {
+        if (!LoadPcx(arg1, name)) {
+            return 0;
+        }
+    } else if (ext && RezStricmp(ext, s_extPid) == 0) {
+        if (!LoadPid(arg1, name, arg3)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 // CDDSurface::SetPalette (__thiscall). m_8->SetPalette(pal->m_palette).
 RVA(0x0013e690, 0x35)
 i32 CDDSurface::SetPalette(CDDPalette* pal, i32 unused) {
@@ -152,6 +323,28 @@ i32 CDDSurface::Lock(void* rect) {
     }
     CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x209, hr);
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Fill
+// Colour-fill blt: build a zeroed DDBLTFX (dwSize 0x64, dwFillColor = `color` at
+// +0x50) and Blt(NULL, NULL, NULL, DDBLT_COLORFILL|DDBLT_WAIT (0x1000400), &fx)
+// through the surface's BltEx thunk. A bad HRESULT routes through
+// CDirectDrawMgr::GetErrorString (DIRSURF.CPP, line 0x22c). Returns hr == DD_OK.
+RVA(0x0013e760, 0x63)
+i32 CDDSurface::Fill(u32 color) {
+    i32 fx[0x19]; // DDBLTFX (0x64 bytes)
+    i32* p = fx;
+    for (i32 i = 0x19; i != 0; i--) {
+        *p++ = 0;
+    }
+    fx[0] = 0x64;          // dwSize
+    fx[0x14] = (i32)color; // dwFillColor @ +0x50
+    i32 hr = this->BltEx(0, 0, 0, 0x1000400, fx);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString((char*)"C:\\Proj\\DDrawMgr\\DIRSURF.CPP", 0x22c, hr);
+    }
+    return hr == 0;
 }
 
 // CDDSurface::Restore (__thiscall, 0x13e7d0, re-homed from src/Stub/BoundaryUpper2.cpp):
@@ -212,6 +405,104 @@ i32 Gap_13e8f0(void) {
     return 0;
 }
 
+// ---------------------------------------------------------------------------
+// The factory at 0x13e9a0 builds a CFileImageSurface from a source resolver.
+// Modeling pieces (all reloc-masked):
+//   - the source's slot-0 probe(magic, &out) - declared on a tiny polymorphic view;
+//   - the global CObArray registry @0x653c88 + its grow index @0x653c90;
+//   - the 0xc0 surface item (surface vtable @0x5ef7f0, CByteArray @+0x94), the same
+//     shape as CDDrawPtrCollections::Create7f0_1.
+// ---------------------------------------------------------------------------
+inline void* operator new(u32, void* p) {
+    return p;
+} // placement new (construct in place)
+
+SIZE_UNKNOWN(CRezImageSource);
+class CRezImageSource {
+public:
+    virtual i32 Probe(void* magic, void** out); // slot 0 (@0x00)
+};
+
+// The data tag passed to the source probe (reloc-masked .rdata datum).
+DATA(0x001ef888)
+extern void* g_imageProbeTag; // 0x5ef888
+
+// The created 0xc0 surface item: vptr @0, the slot-1 Load, a CByteArray @+0x94.
+class CByteArrayMember {
+public:
+    CByteArrayMember(); // 0x1b4f0b (reloc-masked rel32)
+};
+// The built 0xc0 surface item: the SHARED CPoolItemA base vtable ??@0x1ef7f0
+// (VA 0x5ef7f0, 9 slots; uncataloged - a foreign shared base also stamped by
+// CDDSurface/CPoolItemA/CDDSurface). Real-polymorphic (2-slot declared-only foreign
+// surface-item vtable; the declared-only slots reloc-mask). cl auto-stamps the vptr
+// (??_7CRezSurfaceItem@@6B@) at ctor entry - the former manual surface-vtable stamp
+// stamped the vptr FIRST, so the store position is preserved (extern + stamp removed
+// per the all-vtables mandate). Slots named by their retail 0x1ef7f0 vtable-slot RVA
+// (FUN_<rva>): slot 0 = 0x141330 (scalar dtor), slot 1 = 0x13e140 (Load). This is the
+// ONE class the factory news, dispatches through, and files into the cache - the
+// former CImageSurfaceItemInit "init view" was the same physical object; folded here
+// so Build_13e9a0 carries no cross-cast.
+SIZE(CRezSurfaceItem, 0xc0); // `new CRezSurfaceItem` allocates the 0xc0 item
+class CRezSurfaceItem {
+public:
+    virtual ~CRezSurfaceItem();         // slot 1 (deleting dtor -> cl-emitted ??_G)
+    virtual i32 ImgItemLoad(void* src); // slot 1 @+0x04  Load
+    inline CRezSurfaceItem() {
+        m_08 = 0;
+        m_0c = 0;
+        m_04 = 0;
+        m_dontOwn = 0;
+        m_bitDepth = 0;
+        m_b8 = 0;
+    }
+
+    i32 m_04;                  // +0x04
+    i32 m_08;                  // +0x08
+    i32 m_0c;                  // +0x0c
+    char m_pad10[0x7c - 0x10]; // +0x10
+    i32 m_dontOwn;             // +0x7c
+    char m_pad80[0x94 - 0x80]; // +0x80
+    CByteArrayMember m_94;     // +0x94
+    char m_pad98[0xa8 - 0x98]; // +0x98
+    i32 m_bitDepth;            // +0xa8
+    char m_padac[0xb8 - 0xac]; // +0xac
+    i32 m_b8;                  // +0xb8
+    char m_padbc[0xc0 - 0xbc]; // +0xbc
+};
+
+// The owner of the factory (this) is not touched by the body; modeled as an
+// opaque shell so the call lowers to the retail __thiscall frame.
+class CImageFactory {
+public:
+    i32 Build_13e9a0(CRezImageSource* src, i32 a2);
+};
+
+// ---------------------------------------------------------------------------
+// Probe `src` (slot 0); if it yields a payload, allocate a 0xc0 surface
+// item, construct it (CByteArray @+0x94, stamp the surface vtable, zero the scalar
+// fields), Load the payload through slot 1, and on success file it into the global
+// image cache - else virtual-delete it. /GX. ret 0xc.
+// @early-stop
+// rezalloc-placement-new-no-eh-frame wall (docs/patterns/rezalloc-placement-new-no-eh-
+// frame.md), the same wall as the sibling Create7f0_1/CreateA factories: retail wraps
+// `new`+throwing-member-ctor in a /GX frame; MSVC5 placement-new emits no
+// ctor-in-flight EH state, so the body is byte-exact but the frame differs. Deferred
+// to the final sweep.
+RVA(0x0013e9a0, 0xcc)
+i32 CImageFactory::Build_13e9a0(CRezImageSource* src, i32 a2) {
+    void* payload = 0;
+    if (src->Probe(&g_imageProbeTag, &payload) != 0) {
+        CRezSurfaceItem* item = new CRezSurfaceItem;
+        if (item->ImgItemLoad(payload)) { // slot 1 @+0x04  Load
+            g_imageCache.SetAtGrow(g_imageCacheIndex, item);
+        } else if (item) {
+            delete item; // slot 0 @+0x00  scalar-deleting dtor
+        }
+    }
+    return 1;
+}
+
 // CDDSurface::GetElementAt (__thiscall): bounds-checked m_elements[i], or 0.
 RVA(0x0013ea70, 0x21)
 void* CDDSurface::GetElementAt(i32 i) {
@@ -248,12 +539,207 @@ i32 CDDSurface::SetColorKeyRange(u32 flags, u32 lo, u32 hi) {
     ck.dwColorSpaceHighValue = hi;
     return SetColorKey(flags, &ck);
 }
+
+// ---------------------------------------------------------------------------
+// CDDSurface::FillPalette
+// Installs the transparency colour. arg == -1 means "no colour key": clear the
+// have-key flag (m_bc) and pass {-1,-1}; otherwise set m_bc and set the surface
+// source colour key to {arg, arg} (DDCKEY_SRCBLT = 8).
+RVA(0x0013eb40, 0x3c)
+void CDDSurface::FillPalette(u32 key) {
+    u32 ck[2];
+    ck[0] = key;
+    ck[1] = key;
+    if ((i32)key != -1) {
+        this->m_bc = 1;
+    } else {
+        this->m_bc = 0;
+    }
+    this->SetColorKey(8, ck);
+}
+
 RVA(0x0013eb80, 0x21)
 i32 CDDSurface::SetDestColorKey(u32 key) {
     DDCOLORKEY ck;
     ck.dwColorSpaceLowValue = key;
     ck.dwColorSpaceHighValue = key;
     return SetColorKey(DDCKEY_DESTBLT, &ck);
+}
+
+// ---------------------------------------------------------------------------
+// FlipVertical - swap the locked surface's rows top-to-bottom through a
+// one-row temp buffer. No-op for a <= 1-row image. Locks the surface (Lock), and on
+// success allocates the temp row; a failed temp alloc unlocks and returns. __thiscall.
+//
+// @early-stop
+// regalloc wall (~62%): logic + offsets + CFG + the 3 inner row-copy loops are exact.
+// Residue is the callee-saved-register assignment cascade - retail pins `this` in ebx
+// (every member read is [ebx+N]) and the loop var i in esi, while our cl assigns this
+// to ebp and spills i to [esp+0x10]; the prologue push order (push esi before the
+// first member read) and the running bottom-row pointer (add ecx,ebx) all cascade from
+// that one choice. docs/patterns/zero-register-pinning.md + reread-member-view-pointer.md.
+// Not source-steerable on a leaf this small; deferred to the final sweep.
+RVA(0x0013ebb0, 0x126)
+void CDDSurface::FlipVertical() {
+    if (m_height <= 1) {
+        return;
+    }
+    u8* buf = (u8*)Lock(0);
+    if (buf == 0) {
+        return;
+    }
+    u8* tmp = (u8*)operator new(m_width);
+    if (tmp == 0) {
+        ((CFileImageHeldSurface*)m_8)->Unlock(0);
+        return;
+    }
+
+    i32 width = m_width;
+    i32 i = 0;
+    i32 half = m_height / 2;
+    if (half > 0) {
+        do {
+            // top row -> tmp
+            u8* top = buf + i * m_pitch;
+            i32 j = 0;
+            if (width > 0) {
+                do {
+                    tmp[j] = *top;
+                    ++top;
+                    ++j;
+                } while (j < width);
+            }
+            // bottom row -> top row
+            i32 botRow = m_height - i - 1;
+            u8* topDst = buf + i * m_pitch;
+            u8* botSrc = buf + botRow * m_pitch;
+            if (width > 0) {
+                i32 k = width;
+                do {
+                    *topDst = *botSrc;
+                    ++topDst;
+                    ++botSrc;
+                    --k;
+                } while (k != 0);
+            }
+            // tmp -> bottom row
+            u8* botDst = buf + botRow * m_pitch;
+            i32 m = 0;
+            if (width > 0) {
+                do {
+                    ++botDst;
+                    botDst[-1] = tmp[m];
+                    ++m;
+                } while (m < width);
+            }
+            ++i;
+        } while (i < half);
+    }
+
+    ((CFileImageHeldSurface*)m_8)->Unlock(0);
+    RezFree(tmp);
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::BlitDirect
+// Straight copy of `src` into the locked surface. Lock() returns the locked bits
+// pointer (m_34); on failure return 0. Each row of m_ac bytes is copied into the
+// row at locked + row*lPitch; mode 2 walks rows bottom-up (flipped), else top-
+// down. Unlock and return 1.
+RVA(0x0013ece0, 0xc7)
+i32 CDDSurface::BlitDirect(void* src, i32 mode) {
+    u8* locked = (u8*)Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    u8* p = (u8*)src;
+    if (mode == 2) {
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_pitch;
+            u8* sp = p;
+            i32 n = this->m_ac;
+            for (i32 i = n; i > 0; i--) {
+                *dst++ = *sp++;
+            }
+            p += n;
+        }
+    } else {
+        for (i32 row = 0; row < this->m_height; row++) {
+            u8* dst = locked + row * this->m_pitch;
+            u8* sp = p;
+            i32 n = this->m_ac;
+            for (i32 i = n; i > 0; i--) {
+                *dst++ = *sp++;
+            }
+            p += n;
+        }
+    }
+    this->m_8->Unlock(0);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Clear (ret 4) - blank the surface. Build a zeroed 0x64-byte DDBLTFX
+// on the stack (dwSize@+0x0 = 0x64, fill flags@+0x8 = 0x42 | (white ? 0xff0020 :
+// 0)), Blt(NULL, NULL, NULL, 0x1020000, &fx) through the held surface, and on a
+// non-zero (failed/lost) HRESULT colour-fill it white (0xff) or black (0) via Fill.
+RVA(0x0013edb0, 0x78)
+void CDDSurface::Clear(i32 white) {
+    DDBLTFX fx;
+    i32* p = (i32*)&fx;
+    for (i32 i = 0x19; i != 0; i--) {
+        *p++ = 0;
+    }
+    fx.dwSize = 0x64;
+    fx.dwROP = white ? (i32)0xff0062 : 0x42; // WHITENESS : BLACKNESS (DDBLT_ROP)
+    i32 hr = this->m_8->Blt(0, 0, 0, 0x1020000, &fx);
+    if (hr != 0) {
+        if (white != 0) {
+            Fill(0xff);
+        } else {
+            Fill(0);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x13ee30 - a surface flip-wait: `while(m_8->Flip(2) == DDERR_WASSTILLDRAWING);`. The
+// +0x8 surface is an IDirectDrawSurface-STYLE object but NOT the ddraw.h one (retail's
+// Flip pushes ONE arg here, slot 0x48), so it is modeled as a minimal own-vtable view -
+// distinct from CDDSurface (whose Flip is 0x13e850). Placeholder identity, RVA-adjacent
+// to CDDSurface::Clear. Re-homed from src/Stub/BoundaryUpper.cpp.
+struct IDDS_ee30 { // real polymorphic; Flip is slot 18 (+0x48)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual u32 __stdcall Flip(i32); // slot 18 (+0x48)
+};
+SIZE_UNKNOWN(IDDS_ee30);
+struct B_13ee30 {
+    char _0[8];
+    IDDS_ee30* m_8; // 0x8
+    void WaitFlip();
+};
+SIZE_UNKNOWN(B_13ee30);
+RVA(0x0013ee30, 0x29)
+void B_13ee30::WaitFlip() {
+    while (m_8->Flip(2) == 0x8876021c) {
+    }
 }
 
 // CDDSurface::Blt (__thiscall, ret 4 => 1 arg). Blts src's RECT (src->m_80) into
@@ -461,6 +947,110 @@ i32 CDDSurface::ShadeBlt(
     return 1;
 }
 
+// ---------------------------------------------------------------------------
+// CDDSurface::ShadeRect (0x13f460; the former lutshaderect unit's fn, folded in -
+// wave4-K; its .cpp-local CDDSurface/HeldDDSurface views dissolved onto the
+// canonical class). __thiscall ShadeRect(pct, clip): validate + clip the target
+// rectangle, scale the fade percentage into a LUT bank offset, then walk the
+// surface rectangle row-by-row (copy the row to a scratch line, split each
+// RGB565/555 pixel and recombine the three channels through the three shade-LUT
+// banks, write back in place), then notify the surface + free the scratch line.
+// @early-stop
+// regalloc wall (~67%, was a 0.9% `return 0` stub). Logic + offsets + structure
+// are faithful (verified base-vs-target via llvm-objdump -dr: the clip/CopyRect,
+// scale imul-by-100, geometry, operator-new, memcpy row copy, both config-gated
+// variants and the notify/free tails all line up instruction-for-instruction).
+// The residual is a whole-function register-coloring divergence: retail pins
+// this->edi and pct/off->esi and uses direct `test`/`jl` on the clip fields,
+// while cl pins this->esi and materializes a zero in edi (regalloc-zero-pin) for
+// the same compares - so every [this+off] ModRM byte and the channel-split reg
+// choices differ. A regalloc coin-flip, not a codegen miss.
+RVA(0x0013f460, 0x2da)
+i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
+    if (pct > 100) {
+        return 0;
+    }
+    RECT rc;
+    if (clip) {
+        if (clip->left < 0) {
+            return 0;
+        }
+        if (clip->right > m_width) {
+            return 0;
+        }
+        if (clip->top < 0) {
+            return 0;
+        }
+        if (clip->bottom > m_height) {
+            return 0;
+        }
+        CopyRect(&rc, clip);
+    } else {
+        rc.left = 0;
+        rc.top = 0;
+        rc.right = m_width;
+        rc.bottom = m_height;
+    }
+    i32 scale = pct * 32 / 100;
+    u16* src = (u16*)Lock(0);
+    i32 rowPix = m_pitch / 2;
+    u16* srcPix = src + rc.top * rowPix + rc.left;
+    i32 stride = rc.left - rc.right + rowPix;
+    i32 width = rc.right - rc.left;
+    i32 height = rc.bottom - rc.top;
+    u16* scratch = (u16*)operator new(width * 4);
+    i32 off = scale << 11;
+
+    if (g_pfRedSize == 3) {
+        if (g_pfGreenShift == 3 && g_pfBlueSize == 3 && g_pfRedShift == 0xa && g_pfGreenSize == 5) {
+            for (; height > 0; height--) {
+                memcpy(scratch, srcPix, width * 2);
+                u16* rd = scratch;
+                for (i32 x = width; x > 0; x--) {
+                    u32 p = *rd++;
+                    u32 blue = p & 0x1f;
+                    u32 hi = p >> 5;
+                    u32 green = hi & 0x1f;
+                    u32 red = hi & 0xffffffe0;
+                    *srcPix++ = (u16)(*(u16*)((char*)g_lutBank2_663ca0 + off + (blue << 6))
+                                      | *(u16*)((char*)g_lutBank1_653ca0 + off + (green << 6))
+                                      | *(u16*)((char*)g_lutBank0_673ca0 + off + red * 2));
+                }
+                srcPix += stride;
+            }
+        } else if (g_pfGreenShift == 2 && g_pfBlueSize == 3 && g_pfRedShift == 0xb
+                   && g_pfGreenSize == 5) {
+            for (; height > 0; height--) {
+                memcpy(scratch, srcPix, width * 2);
+                u16* rd = scratch;
+                for (i32 x = width; x > 0; x--) {
+                    u32 p = *rd++;
+                    u32 blue = p & 0x1f;
+                    u32 hi = p >> 6;
+                    u32 green = hi & 0x1f;
+                    u32 red = hi & 0xffffffe0;
+                    *srcPix++ = (u16)(*(u16*)((char*)g_lutBank2_663ca0 + off + (blue << 6))
+                                      | *(u16*)((char*)g_lutBank1_653ca0 + off + (green << 6))
+                                      | *(u16*)((char*)g_lutBank0_673ca0 + off + red * 2));
+                }
+                srcPix += stride;
+            }
+        } else {
+            operator delete(scratch);
+            m_8->Unlock(0);
+            return 0;
+        }
+    } else {
+        operator delete(scratch);
+        m_8->Unlock(0);
+        return 0;
+    }
+
+    m_8->Unlock(0);
+    operator delete(scratch);
+    return 1;
+}
+
 // The three 64 KB RGB channel-spread lookup tables, one contiguous 0x30000 block:
 // G @0x653c9e, B @+0x10000, R @+0x20000. Indexed by a byte offset built from the
 // (a<<11) block + 2*n. Modeled as one base so the three writes keep retail's three
@@ -529,6 +1119,30 @@ void BuildColorChannelTables() {
     }
 }
 
+// ---------------------------------------------------------------------------
+// CDDSurface::SaveFile (ret 0x10) - the surface SAVE entry point. Bail (return 0)
+// unless the surface is valid (slot-5 IsValid), `buf` is non-null and non-empty
+// (*buf != 0), and `type` == 1. Then hand (buf, a3, a4) to the per-bit-depth
+// dispatcher and return its result.
+RVA(0x0013f910, 0x4a)
+i32 CDDSurface::SaveFile(char* buf, i32 type, void* a3, void* a4) {
+    if (this->IsValid() == 0) { // slot-5 virtual dispatch (+0x14)
+        return 0;
+    }
+    if (buf == 0) {
+        return 0;
+    }
+    if (*buf == 0) {
+        return 0;
+    }
+    switch (type) {
+        case 1:
+            return SaveDispatch(buf, a3, a4);
+        default:
+            return 0;
+    }
+}
+
 // CDDSurface::RestoreLost (__thiscall, slot 7, 0x13f960): if a per-surface restore
 // callback is installed (m_b8) and succeeds, done (1); otherwise run the shared
 // CDDrawPtrCollections restore trampoline and report failure (0).
@@ -587,6 +1201,417 @@ i32 CDDSurface::GetColorKey() {
         CDirectDrawMgr::GetErrorString(DIRSURF_FILE, 0x695, hr);
     }
     return -1;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Blit
+// Palette-remap copy dispatcher. Selects a specialization by (dest bpp = m_bitDepth,
+// src bpp = bitcount). When m_bitDepth==0 / bitcount agree on the "no remap" fast path
+// it delegates to BlitDirect; otherwise a nested switch on dest bpp (8/16/24)
+// then src bpp picks the matching Blit<dest><src> specialization. Unhandled
+// combinations return 0.
+RVA(0x0013faa0, 0x108)
+i32 CDDSurface::Blit(void* src, i32 bitcount, void* palette, i32 mode) {
+    i32 dest = this->m_bitDepth;
+    if ((dest == 0) == bitcount) {
+        return BlitDirect(src, mode);
+    }
+    switch (dest) {
+        case 8:
+            switch (bitcount) {
+                case 0x10:
+                    return Blit816(src, palette, mode);
+                case 0x18:
+                    return Blit824(src, palette, mode);
+            }
+            return 0;
+        case 0x10:
+            switch (bitcount) {
+                case 8:
+                    return Blit168(src, palette, mode);
+                case 0x18:
+                    return Blit1624(src, mode);
+            }
+            return 0;
+        case 0x18:
+            switch (bitcount) {
+                case 8:
+                    return Blit248(src, palette, mode);
+                case 0x10:
+                    return Blit2416(src, mode);
+            }
+            return 0;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Blit168  (8bpp src -> 16bpp dest, palette remap)
+// Build a 256-entry 16bpp LUT from the source palette (the RGB shift table packs
+// each {R,G,B} entry into a screen-native 16bpp word), then walk the surface row
+// by row writing LUT[index] per source pixel.
+// @early-stop
+// Regalloc wall (~66%): the LUT-build loop's two loop-carried pointers (palette,
+// LUT) take both callee-saved slots, pushing `this` out of esi into edi - which
+// cascades into the blit loop (retail keeps this=esi/src=edi with no spill; ours
+// shifts this=edi/src=edx and spills the source index to the stack). Logic exact;
+// the inner LUT-lookup idiom is correct, only the register file is permuted.
+RVA(0x0013fbb0, 0x126)
+i32 CDDSurface::Blit168(void* srcv, void* palv, i32 mode) {
+    u8* pal = (u8*)palv;
+    if (pal == 0) {
+        return 0;
+    }
+    u16* lut = g_lut16;
+    do {
+        u8 r = (u8)((u8)pal[0] >> g_rDown);
+        pal += 4;
+        u8 g = (u8)((u8)pal[-3] >> g_gDown);
+        u8 b = (u8)((u8)pal[-2] >> g_bDown);
+        *lut++ = (u16)(((u32)r << g_rUp) | ((u32)g << g_gUp) | (u32)b);
+    } while (lut < g_lut16 + 256);
+    u8* locked = (u8*)Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    u8* src = (u8*)srcv;
+    if (mode == 2) {
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u16* dst = (u16*)(locked + row * this->m_pitch);
+            for (i32 col = 0; col < this->m_width; col++) {
+                u8 idx = *src++;
+                *dst++ = g_lut16[idx];
+            }
+        }
+    } else {
+        for (i32 row = 0; row < this->m_height; row++) {
+            u16* dst = (u16*)(locked + row * this->m_pitch);
+            for (i32 col = 0; col < this->m_width; col++) {
+                u8 idx = *src++;
+                *dst++ = g_lut16[idx];
+            }
+        }
+    }
+    this->m_8->Unlock(0);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Blit1624  (24bpp src -> 16bpp dest)
+// Pack each B,G,R source triple straight into a screen-native 16bpp word.
+// @early-stop
+// Entropy wall (~71%): the per-pixel 3-byte read + shift-pack needs a stack temp
+// under register pressure; retail's spill-slot scheduling and the 8/16-bit shift
+// narrowing (movb vs movzx) of the channel packs diverge from our equivalent
+// codegen. Logic exact; documented MSVC5 /O2 register-allocation plateau.
+RVA(0x0013fce0, 0x17f)
+i32 CDDSurface::Blit1624(void* srcv, i32 mode) {
+    u8* locked = (u8*)Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    u8* src = (u8*)srcv;
+    if (mode == 2) {
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u16* dst = (u16*)(locked + row * this->m_pitch);
+            for (i32 col = 0; col < this->m_width; col++) {
+                u8 b = src[0];
+                u8 g = src[1];
+                u8 r = src[2];
+                src += 3;
+                *dst++ = (u16)(((u32)((u8)((u8)g >> g_gDown)) << g_gUp)
+                               | ((u32)((u8)((u8)r >> g_rDown)) << g_rUp)
+                               | (u32)((u8)((u8)b >> g_bDown)));
+            }
+        }
+    } else {
+        for (i32 row = 0; row < this->m_height; row++) {
+            u16* dst = (u16*)(locked + row * this->m_pitch);
+            for (i32 col = 0; col < this->m_width; col++) {
+                u8 b = src[0];
+                u8 g = src[1];
+                u8 r = src[2];
+                src += 3;
+                *dst++ = (u16)(((u32)((u8)((u8)g >> g_gDown)) << g_gUp)
+                               | ((u32)((u8)((u8)r >> g_rDown)) << g_rUp)
+                               | (u32)((u8)((u8)b >> g_bDown)));
+            }
+        }
+    }
+    this->m_8->Unlock(0);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Blit2416  (16bpp src -> 24bpp dest, 6-byte/pixel word writes)
+// Unpack each 16bpp word into an R,G,B triple, each stored as a zero-extended
+// 16bpp word (the retail dest stride is 6 bytes per source pixel).
+// @early-stop
+// Entropy wall (~82%): the 16->8-bit shift narrowing on each channel unpack
+// (shr bx then shl bl, with the shift-count load width varying word/dword) and
+// the one stack temp are MSVC5 /O2 register-allocation coin-flips. Logic exact.
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Blit248  (8bpp src -> 24bpp dest, palette remap)
+// Lock the surface, walk it row-by-row (mode 2 = bottom-up flipped, else top-
+// down) writing each source palette index's RGBQUAD bytes (2,1,0) as 3 dest
+// bytes, then Unlock. Returns 0 if the palette is null or the lock fails.
+// @early-stop
+// 94.3% - both inner conversion loops byte-exact; residual is an edi<->ebp
+// induction-variable allocation swap (src pinned in edi vs retail's ebp, which
+// propagates a different ModRM byte through every src reference in both loops)
+// + retail's `cmp $2,[esp+mode]` memory compare vs our reg-loaded `mov ecx,
+// [mode];cmp ecx,2`. Both stem from `src` being a single live variable across
+// the two branches (loaded before the mode test); a per-branch `src` flips the
+// load late but un-spills `locked` and breaks the `push ecx` frame (drops to
+// 91%). Regalloc-ordering wall (docs/patterns/zero-register-pinning.md).
+RVA(0x0013fe60, 0x11e)
+i32 CDDSurface::Blit248(void* srcv, void* palv, i32 mode) {
+    u8* pal = (u8*)palv;
+    if (pal == 0) {
+        return 0;
+    }
+    u8* locked = (u8*)Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    u8* src = (u8*)srcv;
+    if (mode == 2) {
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_pitch;
+            for (i32 col = 0; col < this->m_width; col++) {
+                u8 idx = *src++;
+                *dst++ = pal[idx * 4 + 2];
+                *dst++ = pal[idx * 4 + 1];
+                *dst++ = pal[idx * 4];
+            }
+        }
+    } else {
+        for (i32 row = 0; row < this->m_height; row++) {
+            u8* dst = locked + row * this->m_pitch;
+            for (i32 col = 0; col < this->m_width; col++) {
+                u8 idx = *src++;
+                *dst++ = pal[idx * 4 + 2];
+                *dst++ = pal[idx * 4 + 1];
+                *dst++ = pal[idx * 4];
+            }
+        }
+    }
+    this->m_8->Unlock(0);
+    return 1;
+}
+
+// CDDSurface / CFileImageSurface / CRezSurfaceItem are all real-polymorphic
+// now: cl emits their ??_7 and stamps the vptr (compiler-implicit, stamp-first)
+// in the ctor/dtor. The shared surface vtable (0x5ef7f0) reloc-masks; no manual
+// base-surface vtable extern/stamp remains (all-vtables mandate).
+
+RVA(0x0013ff80, 0x184)
+i32 CDDSurface::Blit2416(void* srcv, i32 mode) {
+    u8* locked = (u8*)Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    u16* src = (u16*)srcv;
+    if (mode == 2) {
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u16* dst = (u16*)(locked + row * this->m_pitch);
+            for (i32 col = 0; col < this->m_width; col++) {
+                u16 px = *src++;
+                dst[0] = (u16)(u8)((u8)(u16)(px >> g_rUp) << g_rDown);
+                dst[1] = (u16)(u8)((u8)(u16)(px >> g_gUp) << g_gDown);
+                dst[2] = (u16)(u8)((u8)px << g_bDown);
+                dst += 3;
+            }
+        }
+    } else {
+        for (i32 row = 0; row < this->m_height; row++) {
+            u16* dst = (u16*)(locked + row * this->m_pitch);
+            for (i32 col = 0; col < this->m_width; col++) {
+                u16 px = *src++;
+                dst[0] = (u16)(u8)((u8)(u16)(px >> g_rUp) << g_rDown);
+                dst[1] = (u16)(u8)((u8)(u16)(px >> g_gUp) << g_gDown);
+                dst[2] = (u16)(u8)((u8)px << g_bDown);
+                dst += 3;
+            }
+        }
+    }
+    this->m_8->Unlock(0);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Blit824  (24bpp src -> 8bpp dest, nearest-palette quantize)
+// For each B,G,R source triple, find the palette index whose entry minimizes the
+// sum of squared channel differences (entry 0 seeds the best; entries 1..255 are
+// scanned, breaking early on an exact match), and write that index.
+// @early-stop
+// Entropy wall (large /O2 body, ~0x30b): the SSD inner search spills the source
+// channels and the best/bestdist accumulators across ~7 stack temps; retail's
+// exact spill-slot scheduling is an MSVC5 register-allocation coin-flip. Logic
+// (channel pairing s0<->pal[+2], s1<->pal[+1], s2<->pal[+0], min-SSD, exact-match
+// break) is faithful; only the regalloc/scheduling of the spills diverges.
+RVA(0x00140110, 0x30b)
+i32 CDDSurface::Blit824(void* srcv, void* palv, i32 mode) {
+    u8* pal = (u8*)palv;
+    if (pal == 0) {
+        return 0;
+    }
+    u8* locked = (u8*)Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    u8* src = (u8*)srcv;
+    if (mode == 2) {
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_pitch;
+            for (i32 col = 0; col < this->m_width; col++) {
+                i32 s0 = src[0];
+                i32 s1 = src[1];
+                i32 s2 = src[2];
+                src += 3;
+                i32 best = 0;
+                i32 d0 = s2 - pal[0];
+                i32 d1 = s1 - pal[1];
+                i32 d2 = s0 - pal[2];
+                i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
+                for (i32 k = 1; k < 256; k++) {
+                    i32 e0 = s2 - pal[k * 4];
+                    i32 e1 = s1 - pal[k * 4 + 1];
+                    i32 e2 = s0 - pal[k * 4 + 2];
+                    i32 d = e0 * e0 + e1 * e1 + e2 * e2;
+                    if (d < bestd) {
+                        best = k;
+                        bestd = d;
+                        if (d == 0) {
+                            break;
+                        }
+                    }
+                }
+                *dst = (u8)best;
+                dst++;
+            }
+        }
+    } else {
+        for (i32 row = 0; row < this->m_height; row++) {
+            u8* dst = locked + row * this->m_pitch;
+            for (i32 col = 0; col < this->m_width; col++) {
+                i32 s0 = src[0];
+                i32 s1 = src[1];
+                i32 s2 = src[2];
+                src += 3;
+                i32 best = 0;
+                i32 d0 = s2 - pal[0];
+                i32 d1 = s1 - pal[1];
+                i32 d2 = s0 - pal[2];
+                i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
+                for (i32 k = 1; k < 256; k++) {
+                    i32 e0 = s2 - pal[k * 4];
+                    i32 e1 = s1 - pal[k * 4 + 1];
+                    i32 e2 = s0 - pal[k * 4 + 2];
+                    i32 d = e0 * e0 + e1 * e1 + e2 * e2;
+                    if (d < bestd) {
+                        best = k;
+                        bestd = d;
+                        if (d == 0) {
+                            break;
+                        }
+                    }
+                }
+                *dst = (u8)best;
+                dst++;
+            }
+        }
+    }
+    this->m_8->Unlock(0);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::Blit816  (16bpp src -> 8bpp dest, nearest-palette quantize)
+// Unpack each 16bpp source word into an R,G,B triple (via the screen shift table),
+// then find the palette index minimizing the sum of squared channel differences
+// (entry 0 seeds the best; 1..255 scanned, exact-match break) and write it.
+// @early-stop
+// Entropy wall (large /O2 body, ~0x34f): the 16bpp unpack + SSD search spills the
+// three channels and the best/bestdist accumulators across ~8 stack temps; retail's
+// exact spill-slot scheduling and the 8/16-bit unpack narrowing are MSVC5 /O2
+// register-allocation coin-flips. Logic (RGB unpack, red<->pal[0]/green<->pal[1]/
+// blue<->pal[2] min-SSD, exact-match break) is faithful.
+RVA(0x00140420, 0x34f)
+i32 CDDSurface::Blit816(void* srcv, void* palv, i32 mode) {
+    u8* pal = (u8*)palv;
+    if (pal == 0) {
+        return 0;
+    }
+    u8* locked = (u8*)Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    u16* src = (u16*)srcv;
+    if (mode == 2) {
+        for (i32 row = this->m_height - 1; row >= 0; row--) {
+            u8* dst = locked + row * this->m_pitch;
+            for (i32 col = 0; col < this->m_width; col++) {
+                u16 px = *src++;
+                i32 red = (u8)((u8)(u16)(px >> g_rUp) << g_rDown);
+                i32 green = (u8)((u8)(u16)(px >> g_gUp) << g_gDown);
+                i32 blue = (u8)((u8)px << g_bDown);
+                i32 best = 0;
+                i32 d1 = green - pal[1];
+                i32 d2 = blue - pal[2];
+                i32 d0 = red - pal[0];
+                i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
+                for (i32 k = 1; k < 256; k++) {
+                    i32 e0 = red - pal[k * 4];
+                    i32 e1 = green - pal[k * 4 + 1];
+                    i32 e2 = blue - pal[k * 4 + 2];
+                    i32 d = e0 * e0 + e1 * e1 + e2 * e2;
+                    if (d < bestd) {
+                        best = k;
+                        bestd = d;
+                        if (d == 0) {
+                            break;
+                        }
+                    }
+                }
+                *dst = (u8)best;
+                dst++;
+            }
+        }
+    } else {
+        for (i32 row = 0; row < this->m_height; row++) {
+            u8* dst = locked + row * this->m_pitch;
+            for (i32 col = 0; col < this->m_width; col++) {
+                u16 px = *src++;
+                i32 red = (u8)((u8)(u16)(px >> g_rUp) << g_rDown);
+                i32 green = (u8)((u8)(u16)(px >> g_gUp) << g_gDown);
+                i32 blue = (u8)((u8)px << g_bDown);
+                i32 best = 0;
+                i32 d1 = green - pal[1];
+                i32 d2 = blue - pal[2];
+                i32 d0 = red - pal[0];
+                i32 bestd = d1 * d1 + d2 * d2 + d0 * d0;
+                for (i32 k = 1; k < 256; k++) {
+                    i32 e0 = red - pal[k * 4];
+                    i32 e1 = green - pal[k * 4 + 1];
+                    i32 e2 = blue - pal[k * 4 + 2];
+                    i32 d = e0 * e0 + e1 * e1 + e2 * e2;
+                    if (d < bestd) {
+                        best = k;
+                        bestd = d;
+                        if (d == 0) {
+                            break;
+                        }
+                    }
+                }
+                *dst = (u8)best;
+                dst++;
+            }
+        }
+    }
+    this->m_8->Unlock(0);
+    return 1;
 }
 
 // CDDSurface::DumpSurfaceInfo (__thiscall, ret 4 => 1 arg). Re-fetch the surface
@@ -756,3 +1781,352 @@ void CDDSurface::DumpSurfaceInfo(i32 detailed) {
         DDrawLogLine("DDSCAPS_ZBUFFER is set\n");
     }
 }
+
+// ---------------------------------------------------------------------------
+// The two in-surface RLE row-decoders retail compiled UNOPTIMIZED: a full ebp
+// frame with every local spilled to the stack, no register allocation or strength
+// reduction - inside this otherwise-/O2 obj. One obj = one flag set, so the old
+// per-unit /Od profile (fileimagerundecode) was structurally impossible; the
+// only period mechanism is a `#pragma optimize("", off)` island in the source
+// (VC5 supports it), modeled exactly so here. Locals are declared in retail's
+// /Od stack-slot order so the [ebp-N] displacements match.
+#pragma optimize("", off)
+
+// ---------------------------------------------------------------------------
+// CDDSurface::DecodeRun8 (ret 4) - RLE-decode an 8bpp run-stream (arg0)
+// into the locked surface, row by row. Each token: the high two bits set (& 0xc0
+// == 0xc0) means a run of (token & 0x3f) copies of the following byte; otherwise
+// the token itself is one literal pixel. A run that overflows the current scanline
+// carries the remainder to the next row.
+// @early-stop
+// /Od local-slot-ordering wall (docs/patterns/od-local-slot-ordering.md): the
+// instruction stream is byte-identical to retail; only the [ebp-N] local-slot
+// displacements differ (retail lays locals out sequentially in declaration order,
+// our same-order recompile permutes them) - ~99.5% fuzzy / ~85% byte.
+RVA(0x00140aa0, 0x1a3)
+i32 CDDSurface::DecodeRun8(void* src) {
+    u8* sp;
+    i32 carry;
+    u8 pixel;
+    i32 width;
+    i32 locked;
+    i32 row;
+    i32 run;
+    u8* dst;
+    i32 k;
+    i32 height;
+    i32 cols;
+    if (src == 0) {
+        return 0;
+    }
+    width = this->GetWidth();
+    height = this->GetHeight();
+    carry = 0;
+    sp = (u8*)src;
+    locked = this->Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    for (row = 0; row < height; row++) {
+        dst = (u8*)(locked + this->Scale(row));
+        cols = width;
+        if (carry > 0) {
+            for (k = 0; k < carry; k++) {
+                *dst = pixel;
+                dst++;
+            }
+            cols -= carry;
+            carry = 0;
+        }
+        while (cols > 0) {
+            pixel = *sp;
+            sp++;
+            if ((pixel & 0xc0) == 0xc0) {
+                run = pixel & 0x3f;
+                pixel = *sp;
+                sp++;
+                if (run > cols) {
+                    carry = run - cols;
+                    run = cols;
+                }
+                for (k = 0; k < run; k++) {
+                    *dst = pixel;
+                    dst++;
+                }
+                cols -= run;
+            } else {
+                *dst = pixel;
+                dst++;
+                cols--;
+            }
+        }
+    }
+    this->UnlockThunk();
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::DecodeRun24 (ret 4) - the 24bpp surface RLE decoder. Like
+// DecodeRun8 but planar: each row is decoded as three independent stride-3 channel
+// scanlines (R at the +2 byte, G at +1, B at +0 of each BGR triple), with the run
+// carry and source cursor continuous across channel and row boundaries. The row
+// base is the pitch-scale helper (Scale(row)); width/height come from the geometry
+// getters (re-read per use, not cached - retail's /Od shape).
+// @early-stop
+// /Od local-slot-ordering wall (docs/patterns/od-local-slot-ordering.md): byte-
+// identical instruction stream, only the [ebp-N] local displacements differ.
+RVA(0x00140c50, 0x3e2)
+i32 CDDSurface::DecodeRun24(void* src) {
+    u8* sp;
+    i32 carry;
+    u8 pixel;
+    i32 locked;
+    i32 row;
+    i32 run;
+    u8* dst;
+    i32 k;
+    i32 cols;
+    if (src == 0) {
+        return 0;
+    }
+    locked = this->Lock(0);
+    if (locked == 0) {
+        return 0;
+    }
+    carry = 0;
+    sp = (u8*)src;
+    dst = 0;
+    for (row = 0; row < this->GetHeight(); row++) {
+        dst = (u8*)(locked + this->Scale(row) + 2);
+        cols = this->GetWidth();
+        if (carry > 0) {
+            for (k = 0; k < carry; k++) {
+                *dst = pixel;
+                dst += 3;
+            }
+            cols -= carry;
+            carry = 0;
+        }
+        while (cols > 0) {
+            pixel = *sp;
+            sp++;
+            if ((pixel & 0xc0) == 0xc0) {
+                run = pixel & 0x3f;
+                pixel = *sp;
+                sp++;
+                if (run > cols) {
+                    carry = run - cols;
+                    run = cols;
+                }
+                for (k = 0; k < run; k++) {
+                    *dst = pixel;
+                    dst += 3;
+                }
+                cols -= run;
+            } else {
+                *dst = pixel;
+                dst += 3;
+                cols--;
+            }
+        }
+        dst = (u8*)(locked + this->Scale(row) + 1);
+        cols = this->GetWidth();
+        if (carry > 0) {
+            for (k = 0; k < carry; k++) {
+                *dst = pixel;
+                dst += 3;
+            }
+            cols -= carry;
+            carry = 0;
+        }
+        while (cols > 0) {
+            pixel = *sp;
+            sp++;
+            if ((pixel & 0xc0) == 0xc0) {
+                run = pixel & 0x3f;
+                pixel = *sp;
+                sp++;
+                if (run > cols) {
+                    carry = run - cols;
+                    run = cols;
+                }
+                for (k = 0; k < run; k++) {
+                    *dst = pixel;
+                    dst += 3;
+                }
+                cols -= run;
+            } else {
+                *dst = pixel;
+                dst += 3;
+                cols--;
+            }
+        }
+        dst = (u8*)(locked + this->Scale(row));
+        cols = this->GetWidth();
+        if (carry > 0) {
+            for (k = 0; k < carry; k++) {
+                *dst = pixel;
+                dst += 3;
+            }
+            cols -= carry;
+            carry = 0;
+        }
+        while (cols > 0) {
+            pixel = *sp;
+            sp++;
+            if ((pixel & 0xc0) == 0xc0) {
+                run = pixel & 0x3f;
+                pixel = *sp;
+                sp++;
+                if (run > cols) {
+                    carry = run - cols;
+                    run = cols;
+                }
+                for (k = 0; k < run; k++) {
+                    *dst = pixel;
+                    dst += 3;
+                }
+                cols -= run;
+            } else {
+                *dst = pixel;
+                dst += 3;
+                cols--;
+            }
+        }
+    }
+    this->UnlockThunk();
+    return 1;
+}
+
+#pragma optimize("", on)
+
+// ---------------------------------------------------------------------------
+// The rotated-blit transform-setup worker (ImageRotate.cpp, 0x145f60). Declared
+// locally with the 9-arg tail these three thunks pass (retail under-passes the
+// 10th param); reloc-masked, so the decl shape only drives the push sequence.
+extern void ImageRotateBlit(
+    i32 a1,
+    i32 a2,
+    i32* pivot,
+    void* dst,
+    void* in,
+    i32 a6,
+    float angle,
+    float scale,
+    i32 a9
+);
+
+// RotateBlit / ScaleBlit / RotateScaleBlit (0x141040 / 0x141200 / 0x141240) - thin
+// arg-reorder thunks forwarding to ImageRotateBlit with `this` as the destination.
+// Each returns 1. Orphan copies (no caller); __thiscall.
+RVA(0x00141040, 0x36)
+i32 CDDSurface::RotateBlit(i32 rect, i32 pivot, i32 a1, i32 a2, float angle, float scale, i32 a9) {
+    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, 0, angle, scale, a9);
+    return 1;
+}
+
+// @early-stop
+// 0x141080 (372 B) = a CDDSurface rotated-blit transform builder: fild/fxch-heavy x87
+// assembly of a corner-transform record on a 0x8c-byte local, then call 0x146550
+// (RotateRasterize). Homed from GapFunctions.cpp (matcher-5) by RVA neighbourhood.
+// Homed pending reconstruction (x87 fld/fxch scheduling wall; sibling of ImageRotateBlit).
+RVA(0x00141080, 0x174)
+i32 Gap_141080(void) {
+    return 0;
+}
+
+RVA(0x00141200, 0x39)
+i32 CDDSurface::ScaleBlit(i32 rect, i32 pivot, i32 a1, i32 a2, i32 a6, float scale, i32 a9) {
+    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, a6, 1.0f, scale, a9);
+    return 1;
+}
+
+RVA(0x00141240, 0x39)
+i32 CDDSurface::RotateScaleBlit(
+    i32 rect,
+    i32 pivot,
+    i32 a1,
+    i32 a2,
+    i32 a6,
+    float angle,
+    float scale,
+    i32 a9
+) {
+    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, a6, angle, scale, a9);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// DecodeThunk - a glue forwarder that rebuilds a 16-byte rect/clip record
+// from its trailing args on the stack and tail-calls the image worker (0x1471d0) with
+// the six leading scalar args + that record passed by value, then cleans 0x2c of stack
+// (ret 0x28). The worker `this` arrives in ecx (re-pushed, not reloaded).
+//
+// @early-stop
+// stack-forward wall (~48%): the 16-byte record build on the stack, the scalar
+// re-pushes and the `ret 0x28` are faithful; residue is the exact scratch-register
+// choice for the record copy + that retail re-pushes `this` (ecx) as the trailing arg
+// (the worker gets `this` both in ecx and pushed) which has no clean /O2 source
+// spelling. Deferred to the final sweep.
+RVA(0x00141280, 0x4a)
+void CDDSurface::
+    DecodeThunk(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 r0, i32 r1, i32 r2, i32 r3) {
+    ClipRect16 clip;
+    clip.a = r0;
+    clip.b = r1;
+    clip.c = r2;
+    clip.d = r3;
+    this->Run(a1, a2, a3, a4, a5, a6, clip);
+}
+
+// ---------------------------------------------------------------------------
+// 0x1412d0 (slot 5): IsValid - a held DirectDraw surface present and a positive
+// cached width/height. __thiscall, no args.
+RVA(0x001412d0, 0x24)
+i32 CDDSurface::IsValid() {
+    if (m_8 != 0 && m_88 > 0 && m_8c > 0) {
+        return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CDDSurface::~CDDSurface
+// The virtual destructor: MSVC stamps the vptr (compiler-implicit, stamp-first),
+// runs the shared surface teardown (FreeSurfaces: release the held DirectDraw
+// surfaces + walk the +0x98 object array), then destroys the owned CPtrArray at
+// +0x94. The CPtrArray member-dtor is guarded -> the /GX EH frame. The implicit
+// stamp reloc-masks against the shared 0x5ef7f0 surface vtable.
+RVA(0x00141350, 0x53)
+CDDSurface::~CDDSurface() {
+    FreeSurfaces();
+}
+
+// CDDSurface::UnlockThunk (0x1413b0): unlock the held DirectDraw surface
+// (IDirectDrawSurface::Unlock(0), vtable slot 0x80). Folded from Stub/BoundaryUpper.cpp
+// (Owner1413::Thunk - the m_8 sub-object IS the real m_8 IDirectDrawSurface); decl in
+// DDSurface.h. The DecodeRun8 (FileImageRunDecode.cpp) run-decoder calls it on `this`.
+RVA(0x001413b0, 0xf)
+void CDDSurface::UnlockThunk() {
+    m_8->Unlock(0);
+}
+
+// CDDSurface::Scale (0x1413c0): the pitch-scaled row offset (m_pitch * n). Folded
+// from Stub/BoundaryUpper.cpp (B_1413c0::Scale - this IS CDDSurface, from DecodeRun8);
+// decl in DDSurface.h.
+RVA(0x001413c0, 0xb)
+i32 CDDSurface::Scale(i32 n) {
+    return m_pitch * n;
+}
+
+// ===========================================================================
+// Class-metadata annotations (EOF-hosted).
+// ===========================================================================
+SIZE_UNKNOWN(CFileImageElement);
+SIZE_UNKNOWN(CFileImageHeldSurface);
+SIZE_UNKNOWN(CFileImageSrc);
+SIZE_UNKNOWN(CByteArrayMember);
+SIZE_UNKNOWN(CImageFactory);
+SIZE(ClipRect16, 0x10); // 16-byte by-value rect/clip record
+
+// --- vtable catalog ---

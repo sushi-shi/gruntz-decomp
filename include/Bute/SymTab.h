@@ -82,6 +82,11 @@ void __stdcall UnpackTag(u32 tag, char* dst); // 0x13b970
 // engine offsets entries by 4), and the resolved record sits at [entry+0x14].
 // ---------------------------------------------------------------------------
 struct CHashTableEntry {
+    // Node-relative next hop (the intrusive chain walk ~CSymRec emits: __thiscall
+    // on the ENTRY, no args - distinct from the table-relative CHashTable::Next).
+    // External no-body; reloc-masked.
+    CHashTableEntry* Next();
+
     char* m_key;            // +0x00  (the engine stores key+4; First/Next adjust by -4)
     char m_pad04[0x14 - 4]; // +0x04
     void* m_payload;        // +0x14  the resolved (key,node) record (heterogeneous)
@@ -104,6 +109,9 @@ public:
     CHashTable(i32 n) {
         Init(n);
     }
+    // The default container ctor (0x184950; CSymRec's 3-arg ctor default-builds
+    // m_keyTable through it). External no-body -> reloc-masked ctor call.
+    CHashTable();
     void Init(i32 n); // 0x184960
 
     // First live entry (0x184ae0), or null.
@@ -141,19 +149,43 @@ SIZE(CHashTable, 0x8); // { count, buckets }
 // SymParser.h for the full layout.
 class CSymParser;
 
+class CSymTab; // fwd (CSymRec keeps the owning-scope back-ptr at +0x2c)
+
+// The int-key hash-node prefix CSymRec embeds at +0x04. Its OWN vtable is
+// 0x1ef744 (slot0 sub_13c340) - DISTINCT from CSymTabNode's 0x1ef748 above. The
+// inline default ctor stamps the vptr and zeroes the payload slot (exactly the
+// two stores the CSymRec ctors 0x139bf0/0x139c80 open with); the record ctor
+// then re-points the payload at `this`.
+struct CSymRecNode : public CHashElement {
+    // Slot 0 override: the int-key bucket hash (sub_13c340; declared-only -> the
+    // emitted ??_7CSymRecNode slot reloc-masks against the retail 0x1ef744 datum).
+    virtual u32 Hash() OVERRIDE;
+    CSymRecNode() {
+        m_record = 0;
+    }
+};
+SIZE(CSymRecNode, 0x18); // no new fields over CHashElement
+VTBL(CSymRecNode, 0x001ef744);
+
 // ---------------------------------------------------------------------------
-// CSymRec - the leaf symbol record stored in m_symbols (0x139cf0/0x1397a0). Its
-// teardown (Clear @0x139cf0) is a reloc-masked external; modeled minimally so the
-// dtor's `mov ecx,rec; call 0x139cf0` shape falls out.
+// CSymRec - the leaf symbol record stored in m_symbols. FULL layout (unified
+// from the former SymRec.cpp TU-local model, wave4-K): the dtor (0x139cf0)
+// proves a SECOND live hash container @+0x1c (drained only when the owning
+// parser's m_6c flag is set) and the owner-scope back-ptr @+0x2c. Bodies for
+// the two ctors + the dtor live in SymTab.cpp (retail RVAs 0x139bf0/0x139c80/
+// 0x139cf0 - the same original TU as CSymTab).
 // ---------------------------------------------------------------------------
 class CSymRec {
 public:
-    // The two leaf-record constructors (selected by m_owner->m_6c). Defined in
-    // another TU; declared here so `new CSymRec(...)` emits the reloc-masked ctor call
-    // plus the Rez operator new/delete + ctor-throw cleanup the /GX frame needs.
-    CSymRec(i32 key, void* owner, i32 a, i32 b); // 0x139bf0 (m_6c != 0)
-    CSymRec(i32 key, void* owner, i32 a);        // 0x139c80 (m_6c == 0)
-    // Clear @0x139cf0 IS ~CSymRec; call the dtor directly.
+    // The two leaf-record ctors (selected by m_owner->m_6c). Both stamp the +0x04
+    // node prefix (CSymRecNode's inlined ctor), build the two hash-table members
+    // (destructible -> the /GX member-construction frame), then wire key/back-ptr.
+    CSymRec(i32 key, CSymTab* owner, i32 c, i32 d); // 0x139bf0 (m_6c != 0)
+    CSymRec(i32 key, CSymTab* owner, i32 c);        // 0x139c80 (m_6c == 0)
+    // ~CSymRec (0x139cf0, the "Clear" teardown): drain m_keyTable (iff the owning
+    // parser's m_6c is set) and m_valTable (re-filing each payload to the parser's
+    // free pool); the two members then auto-destruct (RemoveAll) in reverse order.
+    ~CSymRec();
     void* operator new(u32 n) {
         return RezAlloc(n);
     }
@@ -161,11 +193,11 @@ public:
         RezFree(p);
     }
 
-    i32 m_key;                 // +0x00  int key (m_symbols hashes on this)
-    CHashElement m_symNode;    // +0x04  hash-node prefix spliced into m_symbols
-    char m_pad1c[0x24 - 0x1c]; // +0x1c
-    CHashTable m_valTable;     // +0x24  the record's value sub-table
-    char m_pad2c[0x30 - 0x2c]; // +0x2c
+    i32 m_key;             // +0x00  int key (m_symbols hashes on this)
+    CSymRecNode m_symNode; // +0x04  hash-node prefix spliced into m_symbols (vtbl 0x1ef744)
+    CHashTable m_keyTable; // +0x1c  second live container (drained iff parser m_6c)
+    CHashTable m_valTable; // +0x24  the record's value sub-table
+    CSymTab* m_scope;      // +0x2c  the owning scope (back-ptr)
 };
 SIZE(CSymRec, 0x30); // leaf-record allocation size (operator new -> RezAlloc)
 

@@ -1,22 +1,28 @@
-// DirectDrawMgr.cpp - CDirectDrawMgr (C:\Proj\DDrawMgr\DDRAWMGR.CPP), the top-level
-// DirectDraw device manager. Split out of the former DirectDrawMgr god-TU (which
-// aggregated three sibling DDrawMgr classes); this is now one contiguous retail .text
-// block (0x1413d0-0x1438f1) == one retail .obj (DDRAWMGR). Its siblings moved to
-// DDSurface.cpp (CDDSurface / DIRSURF.CPP) and DirPal.cpp (CDDPalette / DIRPAL.CPP);
-// CDDPageMgr::Init/CheckMode16 rejoined DDPageMgr.cpp (their own .obj).
+// DirectDrawMgr.cpp - the ORIGINAL C:\Proj\DDrawMgr\DDRAWMGR.CPP TU (wave4-K
+// merge; interval dossier #14H): one obj spanning retail 0x1413d0-0x143ca4. The
+// __FILE__ assert string is referenced from both the CDirectDrawMgr methods
+// (CreateDevice/Init/SetupCaps/CreatePoolItem/GetDisplayMode) AND the former
+// ddrawptrcollections unit's fns (ComputeColorMasks/ConfigureSurface); the obj's
+// init frag (@0x141c70) + atexit companion ClearModeArray_141c80 sit at the
+// mode-array static's source position; the private cell 0x21a9f8 is shared by
+// fns of BOTH former units - one obj. The 34 in-band CDDrawPtrCollections
+// methods (pools/factories/palette installs) are folded in, in retail-RVA order,
+// plus the CFileImageSurface dtor pair (0x142340/0x142360 - the a58 pool item's
+// kept ??_G/~ COMDAT copies, emitted from this obj).
 //
-// CDirectDrawMgr owns GetErrorString (the shared diagnostic HRESULT formatter every
-// DDrawMgr class funnels failures through), the DirectDrawCreate device bring-up
-// (CreateDevice/Init), the display-mode pool (SetupCaps + the Compare/Find* searches)
-// and CreatePoolItem. Include environment mirrors the former god-TU (Mfc.h via
-// FileStream.h supplies windows.h before <ddraw.h>; CreatePoolItem needs CPtrArray).
+// NOTE (wave4-K): CDDrawPtrCollections and CDirectDrawMgr are two VIEWS of this
+// one DDRAWMGR manager class (+0x00/+0x04 device slots == m_device/m_dd1, the
+// +0x4b4 array, the +0x93c..+0x944 tail are the same cells) - flagged for a
+// canonical-class unification pass; the physical TU is already one file.
 #include <Io/FileStream.h>
 
 #include <DDrawMgr/DirectDrawMgr.h>
+#include <DDrawMgr/DDrawPtrCollections.h> // the pool half of this obj's manager (+ CPoolItem*)
+#include <Image/Image.h>                  // CFileImageSurface (the a58 pool item's dtor pair)
 #include <ddraw.h> // real DirectDraw SDK (IDirectDraw/2, DirectDrawCreate, DirectDrawEnumerateA, DDCAPS, IID_IDirectDraw2)
 #include <rva.h>
 #include <stdio.h>  // engine sprintf (reloc-masked)
-#include <string.h> // inline strcpy / memcpy
+#include <string.h> // inline strcpy / memcpy / memset (rep stos)
 #include <Globals.h>
 
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
@@ -58,6 +64,56 @@ DATA(0x00283ec8)
 extern CDdObArray g_modeArray; // 0x683ec8 (CObArray of 0x6c-byte mode records)
 DATA(0x00283ee4)
 extern void* g_ddCreateCtx; // 0x683ee4
+
+// The RGB low-bit-position / 8-minus-bitcount pair tables ComputeColorMasks fills from
+// the back-buffer's pixel format (reloc-masked .data globals; named g_683* across the
+// run - GruntzMgr.cpp's 16-bit pack reads the same six words).
+extern "C" {
+    DATA(0x00283ea0)
+    extern i32 g_683ea0; // red   low-bit shift
+    DATA(0x00283ea4)
+    extern i32 g_683ea4; // green low-bit shift
+    DATA(0x00283ea8)
+    extern i32 g_683ea8; // blue  low-bit shift
+    DATA(0x00283eac)
+    extern i32 g_683eac; // red   8-minus-count
+    DATA(0x00283eb0)
+    extern i32 g_683eb0; // green 8-minus-count
+    DATA(0x00283eb4)
+    extern i32 g_683eb4; // blue  8-minus-count
+}
+
+// The post-mask surface-format apply (BuildColorChannelTables @0x13f740, the
+// DIRSURF obj); free-fn decl so the bare `call rel32` reloc-masks.
+void Boundary_13f740();
+
+// The pool items' operator delete (invoked by the scalar-deleting dtors); the
+// engine free, reloc-masked rel32.
+void operator delete(void*);
+
+// A CPtrList internal node: { Node* pNext; Node* pPrev; void* data; }.  The pool
+// walk in Clear/Empty derefs node->pNext (+0) and node->data (+8) directly.
+struct CPtrListNode {
+    CPtrListNode* pNext;
+    CPtrListNode* pPrev;
+    void* data;
+};
+
+// The shared pool-item base ctor + dtor, defined INLINE here (before the derived
+// classes' bodies) so each derived dtor inlines the shared teardown - retail has
+// no out-of-line base dtor in this TU; its kept COMDAT is ~CDDSurface @0x141350
+// in the DIRSURF obj. See docs/patterns/surface-pool-comdat-dtors.md.
+inline CDDSurface::CDDSurface() {
+    m_8 = 0;
+    m_c = 0;
+    m_pos = 0;
+    m_dontOwn = 0;
+    m_bitDepth = 0;
+    m_b8 = 0;
+}
+inline CDDSurface::~CDDSurface() {
+    FreeSurfaces();
+}
 
 // 0x1413d0 - set the four GetErrorString reporting-mode flags (log / message-box /
 // beep / third) from the four args. __cdecl free helper.
@@ -319,6 +375,29 @@ void ClearModeArray_141c80() {
     g_modeArray.RemoveAll();
 }
 
+// ---------------------------------------------------------------------------
+// Constructor (0x141cc0).  /GX EH frame to unwind the three containers.
+// ---------------------------------------------------------------------------
+RVA(0x00141cc0, 0x84)
+CDDrawPtrCollections::CDDrawPtrCollections() : m_poolA(0xa), m_poolB(0xa), m_array() {
+    m_surf0 = 0;
+    m_surf4 = 0;
+    m_534 = 0;
+    m_palBpp = 0;
+    m_hasPalette = 0;
+    m_940 = 0;
+    m_944 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// Destructor (0x141d50).  Clear(1), then tear down the two CPtrLists + CPtrArray
+// (reverse construction order).  /GX EH frame.
+// ---------------------------------------------------------------------------
+RVA(0x00141d50, 0x6f)
+CDDrawPtrCollections::~CDDrawPtrCollections() {
+    Clear(1);
+}
+
 // CDirectDrawMgr::CreateDevice (__thiscall, ret 0x18 => 6 args; arg1 unused).
 // Brings up the DirectDraw device and caches it as the singleton.
 RVA(0x00141dc0, 0x224)
@@ -437,6 +516,551 @@ i32 CDirectDrawMgr::Init(void* factory, void* a1, i32 width, i32 height, i32 bpp
         return 0;
     }
     return CreateDevice(a1, g_ddCreateCtx, width, height, bpp, coop);
+}
+
+// ---------------------------------------------------------------------------
+// Clear (0x142060).  mode!=0 -> Release the cached +0x00 surface; free every entry
+// in the raw pointer array (+0x4b8/+0x4bc); RemoveAll the CPtrArray; drain both
+// pools; null g_DirectDrawMgr; Release+null both cached surfaces; zero +0x534.
+// ---------------------------------------------------------------------------
+RVA(0x00142060, 0x9d)
+void CDDrawPtrCollections::Clear(i32 mode) {
+    if (mode && m_surf0) {
+        m_surf0->RestoreDisplayMode();
+    }
+    for (i32 i = 0; i < m_array.GetSize(); i++) {
+        RezFree(m_array.GetData()[i]);
+    }
+    m_array.SetSize(0, -1);
+    EmptyPoolA();
+    EmptyPoolB();
+    g_DirectDrawMgr = 0;
+    if (m_surf0) {
+        m_surf0->Release();
+        m_surf0 = 0;
+    }
+    if (m_surf4) {
+        m_surf4->Release();
+        m_surf4 = 0;
+    }
+    m_534 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// AddItemA (0x142100).  pool.AddTail(item); item->pos = position.
+// ---------------------------------------------------------------------------
+RVA(0x00142100, 0x18)
+void CDDrawPtrCollections::AddItemA(CDDSurface* item) {
+    item->m_pos = m_poolA.AddTail(item);
+}
+
+// ---------------------------------------------------------------------------
+// EmptyPoolA (0x142120).  Walk the +0x47c list, virtual-delete each item, RemoveAll.
+// ---------------------------------------------------------------------------
+RVA(0x00142120, 0x31)
+void CDDrawPtrCollections::EmptyPoolA() {
+    CPtrListNode* node = *(CPtrListNode**)((char*)&m_poolA + 4);
+    while (node) {
+        CPtrListNode* cur = node;
+        node = node->pNext;
+        CDDSurface* item = (CDDSurface*)cur->data;
+        delete item;
+    }
+    m_poolA.RemoveAll();
+}
+
+// ---------------------------------------------------------------------------
+// RemoveItemA (0x142160).  pool.RemoveAt(item->pos); virtual-delete item.
+// ---------------------------------------------------------------------------
+RVA(0x00142160, 0x24)
+void CDDrawPtrCollections::RemoveItemA(CDDSurface* item) {
+    m_poolA.RemoveAt(item->m_pos);
+    delete item;
+}
+
+// ---------------------------------------------------------------------------
+// Create7f0_1 (0x1421a0).  new 0xc0 item; ctor (CByteArray @+0x94, vtbl 0x5ef7f0
+// stamped FIRST, then zero fields); dispatch vtbl[0x08] with 1 arg; on success
+// AddItemA, else virtual-delete. /GX. ret 0x4.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall: real-polymorphic `new CDDSurface` now emits the /GX ctor-in-flight
+// frame (the throwing CByteArray member ctor), but the global __ehfuncinfo state-index
+// push differs from retail (not reproducible from one TU); body byte-exact. Deferred.
+RVA(0x001421a0, 0xbe)
+CDDSurface* CDDrawPtrCollections::Create7f0_1(i32 a) {
+    CDDSurface* item = new CDDSurface;
+    if (item->Init1(this, a)) {
+        AddItemA(item);
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CreateA (0x142260).  new 0xc0 item, ctor (CPoolItemA shell @+0x94 / vtbl 0x5efa58),
+// dispatch vtbl[0x24]; on success register via AddItemA, else virtual-delete. /GX.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall: real-polymorphic `new CPoolItemA` emits the /GX frame; residue is the
+// global __ehfuncinfo state-index push (per-TU) + the redundant base-then-derived vptr
+// stamp order. Body byte-faithful. Deferred to the final sweep.
+RVA(0x00142260, 0xd2)
+CDDSurface* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
+    CPoolItemA* item = new CPoolItemA;
+    if (item->v24(this, a, b, c, d, e)) {
+        AddItemA(item);
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CFileImageSurface::ScalarDelete - the derived surface wrapper's `??_G`
+// scalar-deleting destructor (vtable slot 0 @0x5efa58). Run the teardown copy, then -
+// when the low bit of the hidden flags arg is set - RezFree the object; return this.
+RVA(0x00142340, 0x1e)
+void* CFileImageSurface::ScalarDelete(u32 flags) {
+    // Qualified call -> direct (non-virtual) dispatch to the 0x142360 teardown copy,
+    // matching retail's ??_G which calls the non-deleting dtor directly.
+    this->CFileImageSurface::~CFileImageSurface();
+    if (flags & 1) {
+        RezFree(this);
+    }
+    return this;
+}
+
+// ---------------------------------------------------------------------------
+// CFileImageSurface::~CFileImageSurface - the second compiled teardown
+// copy, byte-identical to ~CDDSurface (0x141350): the virtual destructor's implicit
+// vptr stamp lands stamp-first, then the shared FreeSurfaces teardown runs and the
+// owned CPtrArray member at +0x94 is destroyed (guarded -> the /GX EH frame). The
+// implicit stamp reloc-masks against the shared 0x5ef7f0 surface vtable.
+RVA(0x00142360, 0x53)
+CFileImageSurface::~CFileImageSurface() {
+    FreeSurfaces();
+}
+
+// ---------------------------------------------------------------------------
+// CreateB (0x1423c0).  Same as CreateA but dispatches vtbl[0x2c]. /GX.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall (same as CreateA, init slot 11). Body byte-faithful, /GX state-index
+// residue. Deferred to the final sweep.
+RVA(0x001423c0, 0xd2)
+CDDSurface* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
+    CPoolItemA* item = new CPoolItemA;
+    if (item->v2c(this, a, b, c, d, e)) {
+        AddItemA(item);
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Createa58_1 (0x1424a0).  new 0xc0 item; ctor (vtbl 0x5efa58); dispatch vtbl[0x08]
+// with 1 arg; AddItemA on success. /GX. ret 0x4.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
+RVA(0x001424a0, 0xbe)
+CDDSurface* CDDrawPtrCollections::Createa58_1(i32 a) {
+    CPoolItemA* item = new CPoolItemA;
+    if (item->Init1(this, a)) {
+        AddItemA(item);
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Createa58_3 (0x142560).  new 0xc0 item; ctor (vtbl 0x5efa58); dispatch vtbl[0x28]
+// with 3 args; AddItemA on success. /GX. ret 0xc.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
+RVA(0x00142560, 0xc8)
+CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
+    CPoolItemA* item = new CPoolItemA;
+    if (item->v28(this, a, b, c)) {
+        AddItemA(item);
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// The engine CRT sprintf (0x11f890) + the shared ".." $SG constant (0x5ee8ec).
+extern "C" int sprintf(char* buf, const char* fmt, ...); // 0x11f890 (_sprintf)
+extern char g_dotDot[];                                  // 0x5ee8ec  ".."
+
+// ---------------------------------------------------------------------------
+// CreateRange (0x142630). Build a numbered sequence of a58 pool items named
+// "<base><index>" over [start, start+count); an optional suffix overrides the name
+// (".." + suffix, or the numbered name + suffix when the suffix starts with '.').
+// Createa58_3 each and gather the non-null results into `out`; return the count.
+// __thiscall, ret 0x1c => 7 args.
+// @early-stop
+// regalloc/spill wall (~80%): logic is complete + correct (the numbered-name build,
+// the ".."/suffix override, the Createa58_3 loop + non-null collect). The inline
+// strlen/strcpy/strcat clobber the caller-saved regs, forcing heavy spilling; retail
+// spills n/end/output-ptr and keeps the suffix in ebp (frame 0x28), while cl assigns
+// the callee-saved regs differently (frame 0x20). The permuter finds no operand fix;
+// same MSVC5 coin-flip its sibling factories carry. Banked for the final sweep.
+RVA(0x00142630, 0xfe)
+i32 CDDrawPtrCollections::CreateRange(
+    CDDSurface** out,
+    i32 start,
+    i32 count,
+    char* baseName,
+    char* suffix,
+    i32 a6,
+    i32 a7
+) {
+    i32 n = 0;
+    i32 end = start + count;
+    CDDSurface** p = out;
+    for (i32 i = start; i < end; i++) {
+        char buf[32];
+        sprintf(buf, "%s%i", baseName, i);
+        if (suffix != 0) {
+            if (suffix[0] != '.') {
+                strcpy(buf, g_dotDot);
+            }
+            strcat(buf, suffix);
+        }
+        CDDSurface* item = Createa58_3((i32)buf, a6, a7);
+        if (item == 0) {
+            break;
+        }
+        *p++ = item;
+        n++;
+    }
+    return n;
+}
+
+// ---------------------------------------------------------------------------
+// Createa88_3 (0x142730).  new 0xc0 item; ctor (vtbl 0x5efa88); dispatch vtbl[0x24]
+// with 3 args; AddItemA on success. /GX. ret 0xc.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
+RVA(0x00142730, 0xc8)
+CDDSurface* CDDrawPtrCollections::Createa88_3(i32 a, i32 b, i32 c) {
+    CPoolItemA88* item = new CPoolItemA88;
+    if (item->v24(this, a, b, c)) {
+        AddItemA(item);
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// The shared base teardown the derived dtors inline (defined INLINE in the class
+// body above): re-stamp the base vptr (0x5ef7f0), run FreeSurfaces(), then destroy
+// the owned CByteArray member (auto).  /GX (trylevel 0 -> -1 around the member dtor).
+// cl folds the redundant derived vptr stamp (dead store), leaving the base 0x5ef7f0
+// stamp - matching retail's per-class inlined dtors.  (Base ~CDDSurface itself is
+// CFileImage::~CFileImage @0x141350 in a sibling TU; the inline definition emits no
+// out-of-line body here, so it does not collide.)
+// ---------------------------------------------------------------------------
+// ~CPoolItemA88 (0x142820).  Derived a88 non-deleting dtor - trivial body; inlines the
+// base teardown above (INLINE ~CDDSurface: implicit stamp-first, FreeSurfaces, member
+// dtor - the a88 vptr stamp folds as a dead store, leaving the base 0x5ef7f0 stamp).
+// __thiscall, ret 0x0.  Byte-identical to every other pool-item dtor (the vptr operand
+// reloc-masks to 0x5ef7f0); the OWNING class is fixed by its ??_G (0x142800, a88 vtable
+// slot 0), not the byte pattern.  Byte-exact.
+// ---------------------------------------------------------------------------
+RVA(0x00142820, 0x53)
+CPoolItemA88::~CPoolItemA88() {}
+
+// ---------------------------------------------------------------------------
+// Createa88_1 (0x142880).  new 0xc0 item; ctor (vtbl 0x5efa88); dispatch vtbl[0x08]
+// with 1 arg; AddItemA on success. /GX. ret 0x4.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
+RVA(0x00142880, 0xbe)
+CDDSurface* CDDrawPtrCollections::Createa88_1(i32 a) {
+    CPoolItemA88* item = new CPoolItemA88;
+    if (item->Init1(this, a)) {
+        AddItemA(item);
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Createab8_3 (0x142940).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch vtbl[0x24]
+// with 3 args; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success.
+// /GX. ret 0xc.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
+RVA(0x00142940, 0xd4)
+CDDSurface* CDDrawPtrCollections::Createab8_3(i32 a, i32 b, i32 c) {
+    CPoolItemAB8* item = new CPoolItemAB8;
+    if (item->v24(this, a, b, c)) {
+        AddItemA(item);
+        m_palBpp = item->m_bitDepth;
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// ~CPoolItemAB8 (0x142a40).  Derived ab8 non-deleting dtor - trivial body; inlines the
+// shared base teardown (INLINE ~CDDSurface: stamp 0x5ef7f0 stamp-first + FreeSurfaces +
+// member dtor; the ab8 vptr stamp folds as a dead store).  __thiscall, ret 0x0.  Byte-
+// identical to the other pool-item dtors; owner fixed by its ??_G (0x142a20, ab8 vtable
+// slot 0).  Was formerly mislabeled ~CDDSurface in DDSurfaceDtor.cpp.  Byte-exact.
+// ---------------------------------------------------------------------------
+RVA(0x00142a40, 0x53)
+CPoolItemAB8::~CPoolItemAB8() {}
+
+// ---------------------------------------------------------------------------
+// Createab8_1 (0x142aa0).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch vtbl[0x08]
+// with 1 arg; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success.
+// /GX. ret 0x4.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
+RVA(0x00142aa0, 0xca)
+CDDSurface* CDDrawPtrCollections::Createab8_1(i32 a) {
+    CPoolItemAB8* item = new CPoolItemAB8;
+    if (item->Init1(this, a)) {
+        AddItemA(item);
+        m_palBpp = item->m_bitDepth;
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Createab8_24_3 (0x142b70).  new 0xc0 item; ctor (vtbl 0x5efab8); dispatch
+// vtbl[0x24] as a 3-arg init with the two literal tags (0x18, 0x21) + the incoming
+// arg; AddItemA + cache item->m_bitDepth into host->fieldUnknown538 on success. /GX. ret 0x4.
+// ---------------------------------------------------------------------------
+// @early-stop
+// @early-stop
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue). Slot 9
+// (0x148af0 == CPoolItemAB8::v24, the Setup) takes exactly 4 args (info + 3 ints); this
+// site passes {0x18, 0x21, a}, Createab8_3 passes {a, b, c} - one consistent signature.
+RVA(0x00142b70, 0xce)
+CDDSurface* CDDrawPtrCollections::Createab8_24_3(i32 a) {
+    CPoolItemAB8* item = new CPoolItemAB8;
+    if (item->v24(this, 0x18, 0x21, a)) {
+        AddItemA(item);
+        m_palBpp = item->m_bitDepth;
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Createae8_6 (0x142c40).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x24]
+// as a 6-arg init with all six incoming args; AddItemA on success. /GX. ret 0x18.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
+RVA(0x00142c40, 0xd7)
+CDDSurface* CDDrawPtrCollections::Createae8_6(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
+    CPoolItemAE8* item = new CPoolItemAE8;
+    if (item->v24(this, a, b, c, d, e, f)) {
+        AddItemA(item);
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// ~CPoolItemAE8 (0x142d40).  Derived ae8 non-deleting dtor - trivial body; inlines the
+// shared base teardown (INLINE ~CDDSurface: stamp 0x5ef7f0 stamp-first + FreeSurfaces +
+// member dtor).  /GX, ret 0x0.  Byte-identical codegen to ~CPoolItemA (0x142820); a
+// distinct subclass.  Byte-exact.
+// ---------------------------------------------------------------------------
+RVA(0x00142d40, 0x53)
+CPoolItemAE8::~CPoolItemAE8() {}
+
+// ---------------------------------------------------------------------------
+// Createae8_1 (0x142da0).  new 0xc0 item; ctor (vtbl 0x5efae8); dispatch vtbl[0x08]
+// with 1 arg; AddItemA on success. /GX. ret 0x4.
+// ---------------------------------------------------------------------------
+// @early-stop
+// EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
+RVA(0x00142da0, 0xbe)
+CDDSurface* CDDrawPtrCollections::Createae8_1(i32 a) {
+    CPoolItemAE8* item = new CPoolItemAE8;
+    if (item->Init1(this, a)) {
+        AddItemA(item);
+        return item;
+    }
+    delete item;
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// MakeAndAddB (0x142e60).  Tail-thunk into CreateB with arg2 |= 0x840.
+// ---------------------------------------------------------------------------
+RVA(0x00142e60, 0x27)
+CDDSurface* CDDrawPtrCollections::MakeAndAddB(i32 a, i32 b, i32 c, i32 d, i32 e) {
+    return CreateB(a, b, c, d | 0x840, e);
+}
+
+// ---------------------------------------------------------------------------
+// AddItemB (0x142eb0).  pool.AddTail(item); item->pos = position.
+// ---------------------------------------------------------------------------
+RVA(0x00142eb0, 0x17)
+void CDDrawPtrCollections::AddItemB(CDDPalette* item) {
+    item->m_pos = m_poolB.AddTail(item);
+}
+
+// ---------------------------------------------------------------------------
+// EmptyPoolB (0x142ed0).  Walk the +0x498 list, tear down + RezFree each item,
+// RemoveAll.
+// ---------------------------------------------------------------------------
+RVA(0x00142ed0, 0x3d)
+void CDDrawPtrCollections::EmptyPoolB() {
+    CPtrListNode* node = *(CPtrListNode**)((char*)&m_poolB + 4);
+    while (node) {
+        CPtrListNode* cur = node;
+        node = node->pNext;
+        CDDPalette* item = (CDDPalette*)cur->data;
+        if (item) {
+            item->Destroy();
+            RezFree(item);
+        }
+    }
+    m_poolB.RemoveAll();
+}
+
+// ---------------------------------------------------------------------------
+// RemoveItemB (0x142f10).  pool.RemoveAt(item->pos); tear down + RezFree item.
+// ---------------------------------------------------------------------------
+RVA(0x00142f10, 0x2b)
+void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
+    m_poolB.RemoveAt(item->m_pos);
+    if (item) {
+        item->Destroy();
+        RezFree(item);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// MakeB2 (0x142f40).  Sibling of MakeB: RezAlloc a 0x38-byte CDDPalette, zero its
+// fields, init it via the alternate Init2 (0x147410) with (m_surf0, a, b); on success
+// add to pool B and return it, else tear down + RezFree and return 0.  NO EH frame
+// (no destructible local), so this matches cleanly.
+// ---------------------------------------------------------------------------
+RVA(0x00142f40, 0x7c)
+CDDPalette* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
+    CDDPalette* item = new CDDPalette;
+    if (!item->LoadFromFile(m_surf0, (char*)a, b)) {
+        if (item) {
+            item->Destroy();
+            RezFree(item);
+        }
+        return 0;
+    }
+    AddItemB(item);
+    return item;
+}
+
+// ---------------------------------------------------------------------------
+// MakeB (0x142fc0).  RezAlloc a 0x38-byte CDDPalette, zero its fields, init it via
+// the external Item498_Init (0x1474d0) with (vtbl-of-this, a, b); on success add to
+// pool B and return it, else tear down + RezFree and return 0.
+// ---------------------------------------------------------------------------
+RVA(0x00142fc0, 0x7c)
+CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
+    CDDPalette* item = new CDDPalette;
+    if (!item->CreateRGB(m_surf0, rgb, flags)) {
+        if (item) {
+            item->Destroy();
+            RezFree(item);
+        }
+        return 0;
+    }
+    AddItemB(item);
+    return item;
+}
+
+// ---------------------------------------------------------------------------
+// Create (0x143040).  Sibling of MakeB2: RezAlloc a 0x38-byte CDDPalette, init it
+// via CDDPalette::Create (0x147390) with (m_surf0, a, b); on success add to pool B
+// and return it, else tear down + RezFree and return 0.
+// (re-homed from src/Stub/BoundaryUpper2.cpp; dissolves the CDDPalette/
+// CDDrawPtrCollections placeholder views.)
+// ---------------------------------------------------------------------------
+RVA(0x00143040, 0x7c)
+CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
+    CDDPalette* item = new CDDPalette;
+    if (!item->Create(m_surf0, (void*)a, b)) {
+        if (item) {
+            item->Destroy();
+            RezFree(item);
+        }
+        return 0;
+    }
+    AddItemB(item);
+    return item;
+}
+
+// ---------------------------------------------------------------------------
+// MakeB3 (0x1430c0).  Third sibling of MakeB: RezAlloc a 0x38-byte CDDPalette,
+// zero its fields, init it via the 3-param Init3 (0x147840) with (m_surf0, a, b,
+// c); on success add to pool B and return it, else tear down + RezFree and return
+// 0.  No EH frame (no destructible local) -> matches cleanly.
+// ---------------------------------------------------------------------------
+RVA(0x001430c0, 0x81)
+CDDPalette* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
+    CDDPalette* item = new CDDPalette;
+    if (!item->CreateFromTrailing(m_surf0, (void*)a, b, c)) {
+        if (item) {
+            item->Destroy();
+            RezFree(item);
+        }
+        return 0;
+    }
+    AddItemB(item);
+    return item;
+}
+
+// ---------------------------------------------------------------------------
+// LoadPaletteMakeB (0x143150).  Open `path` via CFileIO, seek 0x300 from the end and
+// read the trailing 0x300-byte palette into a stack buffer, then register a pool-B item
+// built from it (MakeB(buf, 0)).  Any failure unwinds the CFileIO + returns 0.  The
+// second arg slot is reused as the (always-0) MakeB tag.  /GX EH frame.  ret 0x8.
+// ---------------------------------------------------------------------------
+// @early-stop
+// ~98%: logic + offsets + CFG + the CFileIO open/seek/read shapes are byte-faithful.
+// Residue is (a) the /GX funcinfo state index push (retail `push 0xb` vs the per-TU
+// compiler-generated funcinfo @+0 - the global __ehfuncinfo numbering, not reproducible
+// from one TU; docs/patterns/eh-state-numbering-base.md) and (b) MSVC folds the
+// reloaded-from-param-slot MakeB tag to an immediate 0 where retail reloads it. Deferred.
+RVA(0x00143150, 0xe9)
+CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
+    CFileIO file;
+    z = 0;
+    if (!file.Open(path, 0, 0)) {
+        return 0;
+    }
+    file.Seek(-0x300, 2);
+    char buf[0x300];
+    if (file.Read(buf, 0x300) != 0x300) {
+        return 0;
+    }
+    return MakeB(buf, z);
 }
 
 // ===========================================================================
@@ -829,8 +1453,229 @@ IDirectDrawSurface* CDirectDrawMgr::GetGDISurface() {
     return surf;
 }
 
+// ---------------------------------------------------------------------------
+// 0x143900 - install the display palette from a CDDPalette wrapper's PALETTEENTRY
+// cache (+0x0c): straight 256-dword copy into m_palette, then flag present + tag.
+// __thiscall, 2 args (ret 0x8). No return value used.
+// @early-stop
+// ~65% - logic/offsets/CFG byte-faithful; the residual is the mirror-register wall
+// (same as the sibling Make950 @0x143950): retail keeps the source cursor in eax and
+// the dst in edx and pushes esi/edi in the prologue (bail paths pop), where MSVC on
+// this identical source mirrors the src/dst registers and defers the pushes past both
+// null checks. Not source-steerable (permuter 150-iter marginal). Regalloc-coloring
+// residue; see the 0x143950 note. docs/patterns/zero-register-pinning.md family.
+RVA(0x00143900, 0x4d)
+void CDDrawPtrCollections::SetDisplayPaletteFrom_143900(CDDPalette* pal, i32 tag) {
+    if (pal == 0) {
+        return;
+    }
+    i32* src = (i32*)pal->m_cacheA;
+    if (src == 0) {
+        return;
+    }
+    i32* dst = m_palette;
+    for (i32 i = 0; i < 256; i++) {
+        *dst++ = *src++;
+    }
+    m_940 = tag;
+    m_hasPalette = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Make950 (0x143950, re-homed from src/Stub/BoundaryUpper2.cpp): install a 256-entry
+// palette from a caller-supplied packed RGB-triplet buffer (buf) - expand each 3-byte
+// RGB into the 4-byte display palette entry (4th byte zeroed), then flag present +
+// latch the tag (z). Returns success (1). __thiscall, 2 args (ret 0x8). The palette-
+// install sibling of SetDisplayPaletteFrom/Direct; LoadPaletteMake950 tail-returns it.
+// @early-stop
+// ~78% mirror-register wall (same family as 0x143900/0x1439b0): retail keeps src in eax
+// and pre-increments dst in edx (-1/-4/-3/-2 displacements); MSVC mirrors the src/dst
+// registers here. Not source-steerable (permuter marginal). docs/patterns/zero-register-pinning.md.
+RVA(0x00143950, 0x56)
+CDDPalette* CDDrawPtrCollections::Make950(void* buf, i32 z) {
+    if (buf == 0) {
+        return 0;
+    }
+    const u8* src = (const u8*)buf;
+    u8* dst = (u8*)m_palette;
+    for (i32 i = 0; i < 256; i++) {
+        dst[0] = src[0];
+        dst[1] = src[1];
+        dst[2] = src[2];
+        dst[3] = 0;
+        dst += 4;
+        src += 3;
+    }
+    m_hasPalette = 1;
+    m_940 = z;
+    return (CDDPalette*)1; // retail returns the success flag as the CDDPalette* result
+}
+
+// ---------------------------------------------------------------------------
+// 0x1439b0 - install the display palette directly from a caller RGBQ array:
+// straight 256-dword copy into m_palette, then flag present + latch tag.
+// __thiscall, 2 args (ret 0x8). No return value used.
+// @early-stop
+// ~83% - logic/offsets/CFG byte-faithful; residual is the same mirror-register wall
+// as 0x143900/0x143950: retail keeps src in eax + dst in edx, materializes the m_hasPalette
+// 1 into a reused reg; MSVC on this source mirrors src/dst and stores the immediate.
+// Not source-steerable (permuter 150-iter marginal). docs/patterns/zero-register-pinning.md.
+RVA(0x001439b0, 0x3d)
+void CDDrawPtrCollections::SetDisplayPaletteDirect_1439b0(i32* rgbq, i32 tag) {
+    if (rgbq == 0) {
+        return;
+    }
+    i32* dst = m_palette;
+    for (i32 i = 0; i < 256; i++) {
+        *dst++ = *rgbq++;
+    }
+    m_940 = tag;
+    m_hasPalette = 1;
+}
+
+// ---------------------------------------------------------------------------
+// Make950Trailing (0x1439f0).  Install the trailing 0x300-byte packed-RGB palette
+// from an in-memory file image: bail (return NULL) on a null buffer or a size < 0x3e8
+// (too small to hold the palette); otherwise forward (buf + size - 0x300, tag) to
+// Make950 (the sibling packed-RGB installer).  __thiscall (ecx=this passed straight
+// through to Make950), ret 0xc.
+// (re-homed from src/Stub/GapFunctions.cpp; RVA-adjacent to the Make950/palette family.)
+// ---------------------------------------------------------------------------
+RVA(0x001439f0, 0x35)
+CDDPalette* CDDrawPtrCollections::Make950Trailing(u8* buf, i32 size, i32 tag) {
+    if (buf == 0) {
+        return 0;
+    }
+    if ((u32)size < 0x3e8) {
+        return 0;
+    }
+    return Make950(buf + size - 0x300, tag);
+}
+
+// ---------------------------------------------------------------------------
+// LoadPaletteMake950 (0x143a30).  Identical shape to LoadPaletteMakeB but the trailing
+// palette is handed to the sibling builder Make950 (0x143950) instead of MakeB.  /GX. ret 0x8.
+// ---------------------------------------------------------------------------
+// @early-stop
+// ~98%: same wall as LoadPaletteMakeB (EH funcinfo state index + MakeB-tag const-fold);
+// additionally the Make950 callee (0x143950) is still an unreconstructed engine_boundary
+// stub, so its rel32 reloc pairs by code bytes but not by symbol name. Deferred.
+RVA(0x00143a30, 0xe9)
+CDDPalette* CDDrawPtrCollections::LoadPaletteMake950(const char* path, i32 z) {
+    CFileIO file;
+    z = 0;
+    if (!file.Open(path, 0, 0)) {
+        return 0;
+    }
+    file.Seek(-0x300, 2);
+    char buf[0x300];
+    if (file.Read(buf, 0x300) != 0x300) {
+        return 0;
+    }
+    return Make950(buf, z);
+}
+
+// ---------------------------------------------------------------------------
+// ComputeColorMasks (0x143b20).  Query the device's display-mode pixel format
+// (IDirectDraw2::GetDisplayMode - the former CCachedSurface "GetSurfaceDesc"
+// slot-12 view, dissolved in wave4-K), and for each of the R/G/B bit masks
+// record the low set-bit position (the shift) and 8-minus-popcount (the scale)
+// into the six g_683* globals, then apply (BuildColorChannelTables @0x13f740).
+// On a failed query, report via GetErrorString and return 0.  No EH frame.
+// ---------------------------------------------------------------------------
+RVA(0x00143b20, 0xfc)
+i32 CDDrawPtrCollections::ComputeColorMasks() {
+    DDSURFACEDESC desc;
+    memset(&desc, 0, 0x6c);
+    desc.dwSize = 0x6c;
+    i32 hr = m_surf0->GetDisplayMode(&desc);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x82c, hr);
+        return 0;
+    }
+
+    u32 m = desc.ddpfPixelFormat.dwRBitMask;
+    i32 count = 0;
+    i32 shift = -1;
+    for (i32 b = 0; b < 0x20; b++) {
+        if ((m & 1) == 1) {
+            if (shift == -1) {
+                shift = b;
+            }
+            count++;
+        }
+        m >>= 1;
+    }
+    g_683ea0 = shift;
+    g_683eac = 8 - count;
+
+    m = desc.ddpfPixelFormat.dwGBitMask;
+    count = 0;
+    shift = -1;
+    for (i32 b2 = 0; b2 < 0x20; b2++) {
+        if ((m & 1) == 1) {
+            if (shift == -1) {
+                shift = b2;
+            }
+            count++;
+        }
+        m >>= 1;
+    }
+    g_683ea4 = shift;
+    g_683eb0 = 8 - count;
+
+    m = desc.ddpfPixelFormat.dwBBitMask;
+    count = 0;
+    shift = -1;
+    for (i32 b3 = 0; b3 < 0x20; b3++) {
+        if ((m & 1) == 1) {
+            if (shift == -1) {
+                shift = b3;
+            }
+            count++;
+        }
+        m >>= 1;
+    }
+    g_683ea8 = shift;
+    g_683eb4 = 8 - count;
+
+    Boundary_13f740();
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// ConfigureSurface (0x143c20).  Reconfigure the display mode through the device
+// (IDirectDraw2::SetDisplayMode, the former CCachedSurface "Configure" slot-21
+// view - five args forwarded verbatim).  On a non-zero HRESULT, report through
+// GetErrorString, latch m_944 = 0x3ec if unset, and return the HRESULT.
+// Otherwise recompute the color masks; if that fails, latch m_944 = 0x3ed if
+// unset and return E_FAIL (0x80004005).  __thiscall, ret 0x14 (5 stack args). No EH.
+// ---------------------------------------------------------------------------
+RVA(0x00143c20, 0x84)
+i32 CDDrawPtrCollections::ConfigureSurface(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
+    i32 hr = m_surf0->SetDisplayMode(a0, a1, a2, a3, a4);
+    if (hr != 0) {
+        CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x8a2, hr);
+        if (m_944 == 0) {
+            m_944 = 0x3ec;
+        }
+        return hr;
+    }
+    if (ComputeColorMasks() == 0) {
+        hr = (i32)0x80004005;
+        if (m_944 == 0) {
+            m_944 = 0x3ed;
+        }
+    }
+    return hr;
+}
+
 SIZE_UNKNOWN(CDdCreateArg);
 SIZE_UNKNOWN(CDdDescSrc);
 SIZE_UNKNOWN(CDdEnumVtbl);
 SIZE_UNKNOWN(CDdPoolItem);
 SIZE_UNKNOWN(CDdPoolSub);
+SIZE_UNKNOWN(CPtrListNode);
+SIZE_UNKNOWN(CDDrawPtrCollections);
+
+// --- vtable catalog ---
