@@ -15,16 +15,14 @@
 #include <Image/FileImageRecords.h> // DecodeSrc / BmpFileHeader / TgaHeader / ResHdr_144270
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette-context (m_palBpp/m_palette/m_hasPalette) `info` points at
 
-#include <Io/FileStream.h> // CFileIO (engine KERNEL32 file wrapper; LoadFile2)
-#include <ddraw.h>         // real IDirectDrawSurface dispatch (this->m_8->Unlock in the exporters)
+#include <ddraw.h> // real IDirectDrawSurface dispatch (this->m_8->Unlock in the exporters)
 
 #include <string.h> // memcpy / strlen (inlined to rep movs / repne scas)
 #include <Globals.h>
 
-// Engine allocator/freer (reloc-masked rel32). operator new @0x1b9b46 (NAFXCW)
-// is declared by <Mfc.h>; _RezFree @0x1b9b82.
-extern "C" void RezFree(void* p);
-extern "C" void* RezAlloc(u32 size);
+// The file loaders open through the real MFC CFile (RTTI 0x1ed15c); the heap
+// buffers are ::operator new @0x1b9b46 / ::operator delete @0x1b9b82 (NAFXCW),
+// both declared by <Mfc.h> - all reloc-masked library calls (was CFileIO/RezFree).
 
 // The app HINSTANCE used as the RT_BITMAP resource module (DAT_00683ee0).
 DATA(0x00283ee0)
@@ -114,9 +112,9 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
 }
 
 // ---------------------------------------------------------------------------
-// LoadFile2 - open `path` via the engine CFileIO, slurp it whole into a heap
-// buffer and hand it to DecodeRun. Each failure unwinds the CFileIO + returns 0; the
-// buffer is RezFree'd after DecodeRun (and on a short read). /GX EH frame. ret 0xc.
+// LoadFile2 - open `path` via the real MFC CFile, slurp it whole into a heap
+// buffer and hand it to DecodeRun. Each failure unwinds the CFile + returns 0; the
+// buffer is freed after DecodeRun (and on a short read). /GX EH frame. ret 0xc.
 //
 // @early-stop
 // ~98%: open/length/read/decode/free shapes + offsets are byte-faithful; residue is the
@@ -124,7 +122,7 @@ i32 CDDSurface::DecodeRun(CDDrawPtrCollections* info, void* srcv, i32, i32 b) {
 // own divergence (it is the branch-scheduling wall above). Deferred to the final sweep.
 RVA(0x00143e60, 0x15b)
 i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode) {
-    CFileIO file;
+    CFile file;
     if (!file.Open(path, 0, 0)) {
         return 0;
     }
@@ -137,11 +135,11 @@ i32 CDDSurface::LoadFile2(CDDrawPtrCollections* info, const char* path, i32 mode
         return 0;
     }
     if (file.Read(buf, len) != len) {
-        RezFree(buf);
+        operator delete(buf);
         return 0;
     }
     i32 result = DecodeRun(info, buf, len, mode);
-    RezFree(buf);
+    operator delete(buf);
     return result;
 }
 
@@ -213,10 +211,10 @@ void* CDDSurface::DecodeBmp(void* surf, void* buf, u32 size) {
 // Open the file named by `path`; on failure return 0. GetLength(); if the length
 // is zero return 0. `operator new` a buffer of that size; if it fails return 0.
 // Read the file; if the read count != length, free + return 0. Else decode and
-// return the decoder's result. The CFileIO dtor + buffer free run on every exit.
+// return the decoder's result. The CFile dtor + buffer free run on every exit.
 RVA(0x00144110, 0x156)
 void* CDDSurface::LoadBmp(char* name, char* path) {
-    CFileIO file;
+    CFile file;
 
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -427,13 +425,13 @@ extern i32 g_bDown; // blue  down-shift
 // (m_bitDepth == 0x10). Build a packed BITMAPFILEHEADER ("BM", bfSize = 3*w*h + 0x3a,
 // bfOffBits = 0x3a) + a zeroed BITMAPINFOHEADER (biSize 0x28, biWidth/biHeight =
 // surface w/h, biPlanes 1, biBitCount 0x18), operator-new a one-scanline 24bpp
-// buffer, Lock the surface, open the CFileIO (mode 0x2001 / 0x1001 by a3), write
+// buffer, Lock the surface, open the CFile (mode 0x2001 / 0x1001 by a3), write
 // the two headers, then walk the rows bottom-up expanding each 16bpp pixel into a
 // BGR triple and writing the scanline. On any failure Unlock + free + close +
-// return 0; on success return 1. The CFileIO stack object -> a /GX EH frame.
+// return 0; on success return 1. The CFile stack object -> a /GX EH frame.
 // @early-stop
 // Two stacked walls (~52%): (1) the /GX shared-cleanup ladder - retail's per-reject
-// unwind funclets converge on one Unlock/RezFree/~CFileIO tail that idiomatic C++
+// unwind funclets converge on one Unlock/delete/~CFile tail that idiomatic C++
 // scope-exit can't reproduce (docs/patterns/gx-state-machine-scalar-delete-cleanup.md);
 // (2) register-allocation entropy in the 16->24bpp conversion inner loop. Logic is
 // complete + correct; both are documented non-steerable plateaus.
@@ -485,11 +483,11 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
 
     u8* locked = (u8*)Lock(0);
     if (locked == 0) {
-        RezFree(line);
+        operator delete(line);
         return 0;
     }
 
-    CFileIO file;
+    CFile file;
     i32 ok;
     if (a3 != 0) {
         ok = file.Open((char*)a2, 0x2001, 0);
@@ -498,7 +496,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
     }
     if (ok == 0) {
         this->m_8->Unlock(0);
-        RezFree(line);
+        operator delete(line);
         return 0;
     }
 
@@ -521,7 +519,7 @@ i32 CDDSurface::SaveRle16(void* a1, void* a2, void* a3) {
     }
 
     this->m_8->Unlock(0);
-    RezFree(line);
+    operator delete(line);
     return 1;
 }
 
@@ -704,19 +702,19 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
             result = RunDecode3(buf, run, width, height);
         }
         if (result == 0) {
-            RezFree(buf);
+            operator delete(buf);
             return 0;
         }
     }
 
     if (convert) {
         if (Blit(buf, srcFmt, palette, 1) == 0) {
-            RezFree(buf);
+            operator delete(buf);
             return 0;
         }
     }
     if (buf != 0) {
-        RezFree(buf);
+        operator delete(buf);
     }
     return 1;
 }
@@ -726,7 +724,7 @@ i32 CDDSurface::Decode(CDDrawPtrCollections* info, CFileImageSrc* src, i32 len, 
 // buffer (plus the caller's `src` descriptor + `mode`) to Decode. The local CFile
 // destructs on every exit -> /GX EH frame. Each failure (open / empty / alloc /
 // short read) returns 0; otherwise returns Decode's result. The read buffer is
-// RezFree'd after Decode (and on a short read). ret 0xc.
+// freed after Decode (and on a short read). ret 0xc.
 // ---------------------------------------------------------------------------
 RVA(0x00144d80, 0x15b)
 i32 CDDSurface::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode) {
@@ -743,11 +741,11 @@ i32 CDDSurface::LoadFile(CDDrawPtrCollections* info, const char* path, i32 mode)
         return 0;
     }
     if (file.Read(buf, len) != len) {
-        RezFree(buf);
+        operator delete(buf);
         return 0;
     }
     i32 result = Decode(info, (CFileImageSrc*)buf, len, mode);
-    RezFree(buf);
+    operator delete(buf);
     return result;
 }
 
@@ -829,32 +827,32 @@ void* CDDSurface::DecodePcx(void* surf, void* buf, u32 size) {
         }
     } else {
         if (bitcount == 8) {
-            decoded = RezAlloc(width * height);
+            decoded = operator new(width * height);
             if (!decoded) {
                 return 0;
             }
             ok = RunDecode1(decoded, pixels, width, height);
         } else {
-            decoded = RezAlloc(width * height * 3);
+            decoded = operator new(width * height * 3);
             if (!decoded) {
                 return 0;
             }
             ok = RunDecode3(decoded, pixels, width, height);
         }
         if (!ok) {
-            RezFree(decoded);
+            operator delete(decoded);
             return 0;
         }
     }
 
     if (remap) {
         if (!Blit(decoded, bitcount, palette, 1)) {
-            RezFree(decoded);
+            operator delete(decoded);
             return 0;
         }
     }
     if (decoded) {
-        RezFree(decoded);
+        operator delete(decoded);
     }
     return (void*)1;
 }
@@ -864,7 +862,7 @@ void* CDDSurface::DecodePcx(void* surf, void* buf, u32 size) {
 // Byte-identical to LoadBmp except for the per-format decode helper (DecodePcx).
 RVA(0x00145110, 0x156)
 void* CDDSurface::LoadPcx(char* name, char* path) {
-    CFileIO file;
+    CFile file;
 
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -1167,24 +1165,24 @@ i32 CDDSurface::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
             return 0;
         }
     } else {
-        decoded = RezAlloc(h * w);
+        decoded = operator new(h * w);
         if (!decoded) {
             return 0;
         }
         if (!RunDecode1(decoded, data, w, h)) {
-            RezFree(decoded);
+            operator delete(decoded);
             return 0;
         }
     }
 
     if (remap) {
         if (!Blit(decoded, 8, palette, 1)) {
-            RezFree(decoded);
+            operator delete(decoded);
             return 0;
         }
     }
     if (decoded) {
-        RezFree(decoded);
+        operator delete(decoded);
     }
     if (flags & PID_TRANSPARENCY) {
         FillPalette(a5);
@@ -1199,7 +1197,7 @@ i32 CDDSurface::DecodePcxData(void* surf, void* buf, i32 size, i32 a4, i32 a5) {
 // ===========================================================================
 RVA(0x001459d0, 0x135)
 i32 CDDSurface::DecodePcxEx(void* surf, char* path, void* a3, void* a4) {
-    CFileIO file;
+    CFile file;
 
     if (!file.Open(path, 0, 0)) {
         return 0;
@@ -1291,24 +1289,24 @@ void* CDDSurface::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
             return 0;
         }
     } else {
-        decoded = RezAlloc(height * width);
+        decoded = operator new(height * width);
         if (!decoded) {
             return 0;
         }
         if (!RunDecode1(decoded, data, width, height)) {
-            RezFree(decoded);
+            operator delete(decoded);
             return 0;
         }
     }
 
     if (remap) {
         if (!Blit(decoded, 8, palette, 1)) {
-            RezFree(decoded);
+            operator delete(decoded);
             return 0;
         }
     }
     if (decoded) {
-        RezFree(decoded);
+        operator delete(decoded);
     }
     if (flags & PID_TRANSPARENCY) {
         FillPalette((u32)surf2);
@@ -1323,7 +1321,7 @@ void* CDDSurface::DecodePid(void* surf, void* buf, u32 size, void* surf2) {
 // (2) the decoder takes a fourth pass-through arg (a3).
 RVA(0x00145cd0, 0x130)
 void* CDDSurface::LoadPid(char* name, char* path, void* a3) {
-    CFileIO file;
+    CFile file;
 
     if (!file.Open(path, 0, 0)) {
         return 0;

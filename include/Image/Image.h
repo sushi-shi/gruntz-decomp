@@ -180,6 +180,13 @@ public:
 // without disturbing the already-matched CFileImage dtor. ScalarDelete is its `??_G`
 // (0x142340): destroy + conditional RezFree.
 SIZE_UNKNOWN(CFileImageSurface);
+// reloc-fidelity NOTE (deferred): retail's ~CFileImageSurface (0x142360) re-stamps the
+// BASE CDDSurface vtable (0x1ef7f0 = ??_7CDDSurface@@6B@), but the compiler's implicit
+// dtor stamp references THIS class's own vtable symbol (0x1efa58). Binding this symbol
+// to 0x1ef7f0 instead would fix that stamp BUT dedups/shadows the canonical
+// ??_7CDDSurface@@6B@ (which 4 sibling dtors stamp) - a net regression. The real fix is
+// to derive CFileImageSurface : public CDDSurface so the /O2 dtor inlines the base
+// teardown and stamps ??_7CDDSurface directly (risks the a58 family byte-match; deferred).
 VTBL(CFileImageSurface, 0x001efa58); // ??_7CFileImageSurface@@6B@ (12-slot surface vtable)
 class CFileImageSurface {
 public:

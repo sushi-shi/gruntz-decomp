@@ -48,10 +48,8 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // The engine logger that consumes the formatted line (DDrawMgr-local helper).
 extern void __cdecl DDrawLogLine(char* fmt, ...); // 0x141cb0 (printf-style TRACE)
 
-// The Rez heap allocator/free + operator new (reloc-masked engine leaves).
-extern "C" void* RezAlloc(unsigned int); // 0x1b9b46
-extern "C" void RezFree(void* p);        // 0x1b9b82
-void* operator new(u32);                 // engine allocator (reloc-masked rel32)
+// Heap alloc/free are ::operator new @0x1b9b46 / ::operator delete @0x1b9b82
+// (NAFXCW), declared by <Mfc.h> - reloc-masked library calls (was RezAlloc/RezFree).
 
 // IID_IDirectDraw2 - the real dxguid GUID constant in .rdata, passed to QueryInterface
 // by REFIID. <ddraw.h> declares it (EXTERN_C const GUID); redeclared with DATA() to bind
@@ -372,11 +370,21 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
 }
 
 // Global-mode-array teardown tail-forward (0x141c80): mov ecx,&g_modeArray; jmp
-// RemoveAll. Folded from Stub/BoundaryUpper.cpp (ClearModeArray_141c80).
+// 0x1b4f0b. Folded from Stub/BoundaryUpper.cpp (ClearModeArray_141c80).
+// reloc-fidelity (deferred): retail tail-jmps to the CByteArray/CPtrArray CTOR
+// (0x1b4f0b, stamps vtable 0x5ec2dc + zeroes) - a re-construct-in-place reset, NOT
+// RemoveAll. Fix = retype g_modeArray to real MFC CPtrArray + model the clear as
+// `new (&g_modeArray) CPtrArray()` (tail-jmps to ??0CPtrArray, already a library
+// label) + dissolve the CDdObArray view; the fake RemoveAll call stays UNBOUND meanwhile.
 RVA(0x00141c80, 0xa)
 void ClearModeArray_141c80() {
     g_modeArray.RemoveAll();
 }
+
+// The printf-style TRACE logger (0x141cb0). In the retail RELEASE build the body is
+// compiled out to a bare `ret` (1 byte); callers still push the format string + args.
+RVA(0x00141cb0, 0x1)
+void __cdecl DDrawLogLine(char*, ...) {}
 
 // ---------------------------------------------------------------------------
 // Constructor (0x141cc0).  /GX EH frame to unwind the three containers.
@@ -532,7 +540,7 @@ void CDDrawPtrCollections::Clear(i32 mode) {
         m_surf0->RestoreDisplayMode();
     }
     for (i32 i = 0; i < m_array.GetSize(); i++) {
-        RezFree(m_array.GetData()[i]);
+        ::operator delete(m_array.GetData()[i]);
     }
     m_array.SetSize(0, -1);
     EmptyPoolA();
@@ -630,7 +638,7 @@ void* CFileImageSurface::ScalarDelete(u32 flags) {
     // matching retail's ??_G which calls the non-deleting dtor directly.
     this->CFileImageSurface::~CFileImageSurface();
     if (flags & 1) {
-        RezFree(this);
+        ::operator delete(this);
     }
     return this;
 }
@@ -946,7 +954,7 @@ void CDDrawPtrCollections::EmptyPoolB() {
         CDDPalette* item = (CDDPalette*)cur->data;
         if (item) {
             item->Destroy();
-            RezFree(item);
+            ::operator delete(item);
         }
     }
     m_poolB.RemoveAll();
@@ -960,7 +968,7 @@ void CDDrawPtrCollections::RemoveItemB(CDDPalette* item) {
     m_poolB.RemoveAt(item->m_pos);
     if (item) {
         item->Destroy();
-        RezFree(item);
+        ::operator delete(item);
     }
 }
 
@@ -976,7 +984,7 @@ CDDPalette* CDDrawPtrCollections::MakeB2(i32 a, i32 b) {
     if (!item->LoadFromFile(m_surf0, (char*)a, b)) {
         if (item) {
             item->Destroy();
-            RezFree(item);
+            ::operator delete(item);
         }
         return 0;
     }
@@ -995,7 +1003,7 @@ CDDPalette* CDDrawPtrCollections::MakeB(void* rgb, i32 flags) {
     if (!item->CreateRGB(m_surf0, rgb, flags)) {
         if (item) {
             item->Destroy();
-            RezFree(item);
+            ::operator delete(item);
         }
         return 0;
     }
@@ -1016,7 +1024,7 @@ CDDPalette* CDDrawPtrCollections::Create(i32 a, i32 b) {
     if (!item->Create(m_surf0, (void*)a, b)) {
         if (item) {
             item->Destroy();
-            RezFree(item);
+            ::operator delete(item);
         }
         return 0;
     }
@@ -1036,7 +1044,7 @@ CDDPalette* CDDrawPtrCollections::MakeB3(i32 a, i32 b, i32 c) {
     if (!item->CreateFromTrailing(m_surf0, (void*)a, b, c)) {
         if (item) {
             item->Destroy();
-            RezFree(item);
+            ::operator delete(item);
         }
         return 0;
     }
@@ -1077,9 +1085,6 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 // device's display modes (rebuilding a global mode array) and re-sorts the pool;
 // CreatePoolItem builds + initialises one pool item from a descriptor source.
 // ===========================================================================
-// Engine heap free / operator new (reloc-masked __cdecl leaves).
-extern "C" void RezFree(void* p);        // 0x1b9b82
-extern "C" void* RezAlloc(unsigned int); // 0x1b9b46
 
 // The transient global mode array EnumDisplayModes rebuilds (a CObArray @0x683ec8).
 // CDdObArray + the pool comparator/publisher (Compare/AddPoolItem) live on
@@ -1100,7 +1105,7 @@ RVA(0x00143240, 0x143)
 void CDirectDrawMgr::SetupCaps() {
     CDdObArray* arr = &m_poolItems;
     for (i32 i = 0; i < arr->m_nSize; i++) {
-        RezFree(arr->m_pData[i]);
+        ::operator delete(arr->m_pData[i]);
     }
     arr->SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
@@ -1327,7 +1332,7 @@ void* CDirectDrawMgr::CreatePoolItem(void* arg0v, void* arg1) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x6ae, hr);
         return 0;
     }
-    char* item = (char*)RezAlloc(0xc0);
+    char* item = (char*)::operator new(0xc0);
     if (item != 0) {
         new ((CPtrArray*)(item + 0x94)) CPtrArray(); // in-place CPtrArray ctor (0x1b4f0b)
         // Manual vptr stamp by ADDRESS (the vtable-realization wall - cl cannot emit a

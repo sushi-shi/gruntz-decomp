@@ -417,7 +417,6 @@ public:
     // The per-frame game tick (vtable slot +0x10 / index 4).
     virtual i32 PerFrameTick();
 
-    i32 MakeImageKey(void* arg1, char* name, void* arg3);
     i32 MakeRezPath();
 
     // The frame-clock advance helper (a non-virtual member; also
@@ -434,11 +433,6 @@ public:
     // only when pacing is not already active (else clears it and fails).
     void SetFrameRate(i32 fps);   // 0x13dee0
     i32 TrySetFrameRate(i32 fps); // 0x13df00
-
-    // The extension-dispatch image loaders (external, reloc-masked).
-    i32 LoadBmp(void* a, void* b);
-    i32 LoadPcx(void* a, void* b);
-    i32 LoadPid(void* a, void* b, void* c);
 
     // CD/install helpers on the manager (external, reloc-masked).
     char GetGruntzDriveLetter();

@@ -191,6 +191,9 @@ public:
     void* LoadBmp(char* name, char* path);
     void* LoadPcx(char* name, char* path);
     void* LoadPid(char* name, char* path, void* a3);
+    // Extension-dispatch resource loader (0x13e5d0): strrchr the ext, _strcmpi
+    // .BMP/.PCX/.PID, forward to the matching LoadBmp/LoadPcx/LoadPid on this.
+    i32 MakeImageKey(void* arg1, char* name, void* arg3);
     i32 DecodePcxEx(void* surf, char* path, void* a3, void* a4); // arg1 = decode-target surface
 
     // The surface-blit decoders ResolveEx dispatches to (ret 0x10 = 4 args). DecodeRun ==

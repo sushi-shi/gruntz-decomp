@@ -1877,7 +1877,6 @@ rva,name,lib,confidence,source
 0x141300,___init_collate,LIBCMT,LOW,anchored
 0x141330,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x141c90,___inittime,LIBCMT,LOW,anchored
-0x141cb0,__fpclear,LIBCMT,LOW,anchored
 0x142800,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x142a20,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x142d20,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
@@ -3431,3 +3430,12 @@ rva,name,lib,confidence,source
 0x1bae5d,_$E_652e80,NAFXCW,HIGH,derecon-waveO
 0x1bf577,?Run@LibHost_1bf577@@QAEXXZ,NAFXCW,LOW,derecon-waveO
 0x1c09de,?FreeHandle@GlobalHandleOwner@@QAEXXZ,NAFXCW,LOW,derecon-waveO
+0x1b4867,??0CPtrList@@QAE@H@Z,NAFXCW,HIGH,reloc-R21
+0x1b48c6,??1CPtrList@@UAE@XZ,NAFXCW,HIGH,reloc-R21
+0x1b48a6,?RemoveAll@CPtrList@@QAEXXZ,NAFXCW,HIGH,reloc-R21
+0x1b4991,?AddTail@CPtrList@@QAEPAU__POSITION@@PAX@Z,NAFXCW,HIGH,reloc-R21
+0x1b4ac7,?RemoveAt@CPtrList@@QAEXPAU__POSITION@@@Z,NAFXCW,HIGH,reloc-R21
+0x1b4f0b,??0CPtrArray@@QAE@XZ,NAFXCW,HIGH,reloc-R21
+0x1b4f3e,??1CPtrArray@@UAE@XZ,NAFXCW,HIGH,reloc-R21
+0x1b4f75,?SetSize@CPtrArray@@QAEXHH@Z,NAFXCW,HIGH,reloc-R21
+0x1915b4,_DirectDrawEnumerateA@8,DDRAW,HIGH,reloc-R21

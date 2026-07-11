@@ -22,7 +22,6 @@
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette/pool context the decoders read
 #include <Image/Image.h> // CFileImageElement / CFileImageHeldSurface / CFileImageSrc
-#include <Rez/RezMgr.h>  // the RezMgr manager view (MakeImageKey) + RezStrrchr/RezStricmp
 #include <ddraw.h> // real DirectDraw SDK (IDirectDrawSurface, DDBLTFX, DDCOLORKEY, DDERR_*/DDBD_*/DDSCAPS_*)
 #include <rva.h>
 #include <stdio.h>
@@ -70,8 +69,11 @@ DATA(0x00253c88)
 extern CImageCache g_imageCache; // 0x653c88
 
 // Global image-cache teardown tail-forward (0x13e070): mov ecx,&g_imageCache; jmp
-// RemoveAll. Folded from Stub/BoundaryUpper.cpp (ClearImageCache_13e070); g_imageCache
+// 0x1b4f0b. Folded from Stub/BoundaryUpper.cpp (ClearImageCache_13e070); g_imageCache
 // is this TU's own datum.
+// reloc-fidelity (deferred): retail tail-jmps to the CByteArray/CPtrArray CTOR
+// (0x1b4f0b, re-construct-in-place reset, NOT RemoveAll). Fix = retype g_imageCache to
+// real MFC CPtrArray + `new (&g_imageCache) CPtrArray()` + dissolve the CImageCache view.
 RVA(0x0013e070, 0xa)
 void ClearImageCache_13e070() {
     g_imageCache.RemoveAll();
@@ -255,36 +257,29 @@ i32 CDDSurface::Resolve(void* surf, void* buf, i32 type, u32 size, void* surf2) 
     return 1;
 }
 
-// The image-resource extension keys (file-scope literals - their addresses are
-// the reloc-masked push operands in MakeImageKey's stricmp calls). Order in the
-// binary: .BMP, then .PCX, then .PID.
-static const char s_extBmp[] = ".BMP";
-static const char s_extPcx[] = ".PCX";
-static const char s_extPid[] = ".PID";
-
 // ---------------------------------------------------------------------------
-// RezMgr::MakeImageKey (0x13e5d0; moved from RezMgr.cpp in wave4-K - its text is
-// contained in THIS obj, between Resolve and SetPalette). Dispatch a resource
-// load by the file extension of `name`: locate the last '.', then case-
-// insensitively match .BMP/.PCX/.PID and hand off to the matching loader
-// (LoadBmp/LoadPcx take (arg1,name); LoadPid takes (arg1,name,arg3)). Returns 1
-// unless the extension matched but its loader failed (then 0); an unrecognised/
-// absent extension also returns 1. (The RezMgr view == the WAP32 game manager;
-// its Load* here are the CDDSurface loaders reached through the manager - the
-// receiver fold is deferred with the rest of the RezMgr view.)
+// CDDSurface::MakeImageKey (0x13e5d0; text contained in THIS obj, between Resolve
+// and SetPalette). Dispatch a resource load by the file extension of `name`:
+// locate the last '.' (strrchr @0x120680), then case-insensitively match
+// (_strcmpi @0x11fdf0) .BMP/.PCX/.PID and hand off to the matching loader on
+// `this` (LoadBmp/LoadPcx take (name,path); LoadPid takes (name,path,arg3)).
+// Returns 1 unless the extension matched but its loader failed (then 0); an
+// unrecognised/absent extension also returns 1. (`this` == the CDDSurface loading
+// the resource - the calls target CDDSurface::LoadBmp/Pcx/Pid @0x144110/0x145110/
+// 0x145cd0; the former RezMgr receiver was a mis-home, now folded.)
 RVA(0x0013e5d0, 0xb1)
-i32 RezMgr::MakeImageKey(void* arg1, char* name, void* arg3) {
-    char* ext = RezStrrchr(name, '.');
-    if (ext && RezStricmp(ext, s_extBmp) == 0) {
-        if (!LoadBmp(arg1, name)) {
+i32 CDDSurface::MakeImageKey(void* arg1, char* name, void* arg3) {
+    char* ext = strrchr(name, '.');
+    if (ext && _strcmpi(ext, ".BMP") == 0) {
+        if (!LoadBmp((char*)arg1, name)) {
             return 0;
         }
-    } else if (ext && RezStricmp(ext, s_extPcx) == 0) {
-        if (!LoadPcx(arg1, name)) {
+    } else if (ext && _strcmpi(ext, ".PCX") == 0) {
+        if (!LoadPcx((char*)arg1, name)) {
             return 0;
         }
-    } else if (ext && RezStricmp(ext, s_extPid) == 0) {
-        if (!LoadPid(arg1, name, arg3)) {
+    } else if (ext && _strcmpi(ext, ".PID") == 0) {
+        if (!LoadPid((char*)arg1, name, arg3)) {
             return 0;
         }
     }
@@ -2004,6 +1999,11 @@ i32 CDDSurface::DecodeRun24(void* src) {
 // The rotated-blit transform-setup worker (ImageRotate.cpp, 0x145f60). Declared
 // locally with the 9-arg tail these three thunks pass (retail under-passes the
 // 10th param); reloc-masked, so the decl shape only drives the push sequence.
+// reloc-fidelity (deferred, cross-unit): the real def is the 10-param
+// ?ImageRotateBlit@@YAXHHPAHHPAUImgRect@@HMMHH@Z; these thunks push only 9 args, so a
+// 9-param decl (needed to keep the 9 pushes) can NEVER mangle to the 10-param name -
+// the call stays UNBOUND. A clean fix needs ImageRotate.cpp (imagerotate lane) to
+// expose a 9-param facade or reconcile the under-pass; not fixable from the caller.
 extern void ImageRotateBlit(
     i32 a1,
     i32 a2,
