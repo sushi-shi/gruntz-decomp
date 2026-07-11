@@ -3047,7 +3047,7 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
         g_648cec--;
     }
     slot->m_020 = 0;
-    SetNetSlot(slot->m_008, 1);
+    ChannelSlots_Set(slot->m_008, 1);
 
     CString line = ((CNetMgr*)slot)->GetName() + " has left the game.";
     ((CFontConfig*)m_4->m_5c)->AddItem((char*)(const char*)line, 0x20, 0x11);
@@ -3073,7 +3073,7 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
 RVA(0x000ba590, 0x63)
 void CNetMgr::AckDropPlayer(i32 id) {
     if (m_534 == 0) {
-        RecordDropPlayer(0, id);
+        RecordDropPlayer2(0, id);
         CNetCmdSlot* slot = m_session->FindCmdSlot(id);
         if (slot != 0) {
             slot->Touch();
@@ -3216,7 +3216,7 @@ i32 CNetMgr::BroadcastChannelTable(CNetPlayerEntry* recipient) {
 // the four-channel table. Bails (0) on a null packet; (re)initializes the global
 // net-slot table when not channel-latency mode, then for each channel copies the
 // record bytes back, restores its name CString, and - in non-channel mode for a
-// newly active channel - frees its net slot (SetNetSlot(id, 0)).
+// newly active channel - frees its net slot (ChannelSlots_Set(id, 0)).
 // @early-stop
 // regalloc SIB-base wall (~99.9%): the whole body is byte-exact, the single
 // residual is the slot-address `lea 0x150(%eax,%ebp)` vs my `lea 0x150(%ebp,%eax)`
@@ -3248,7 +3248,7 @@ i32 CNetMgr::ParseChannelTable(void* packet) {
             ch->m_name = rec + 0xb;
             ch->m_playerId = *(i32*)(rec + 7);
             if (m_useChannelLatency == 0 && ch->m_active != 0) {
-                SetNetSlot(ch->m_slotId, 0);
+                ChannelSlots_Set(ch->m_slotId, 0);
             }
         }
         rec += 0x20;
@@ -3307,7 +3307,7 @@ i32 CNetMgr::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i3
         }
     }
 
-    SetNetSlot(id, 0);
+    ChannelSlots_Set(id, 0);
     {
         CString temp(name);
         ch->m_name = temp;
@@ -3342,7 +3342,7 @@ i32 CNetMgr::RegisterChannelRec(void* rec) {
 // CNetMgr::RemoveChannel  (__thiscall).
 // Tears down the channel slot at the given index: no-op on a null slot; returns 0
 // if it was already inactive; otherwise clears its active gate and frees its net
-// slot (SetNetSlot(id, 1)). Returns 1 when a slot was removed.
+// slot (ChannelSlots_Set(id, 1)). Returns 1 when a slot was removed.
 RVA(0x000bac90, 0x46)
 i32 CNetMgr::RemoveChannel(i32 idx) {
     CNetChannel* ch = &m_4->m_channels[idx];
@@ -3353,7 +3353,7 @@ i32 CNetMgr::RemoveChannel(i32 idx) {
         return 0;
     }
     ch->m_active = 0;
-    SetNetSlot(ch->m_slotId, 1);
+    ChannelSlots_Set(ch->m_slotId, 1);
     return 1;
 }
 
@@ -4208,7 +4208,7 @@ i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
     }
     Mgr()->m_60->PreDialog();
     i32 r = Mgr()->RunDialog(tmpl, handler, lparam);
-    MultiRestoreFocus(Mgr()->m_4->m_4);
+    SetActiveAndFocus(Mgr()->m_4->m_4);
     AckJoinFailure();
     return r;
 }

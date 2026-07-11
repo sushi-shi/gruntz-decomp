@@ -826,7 +826,6 @@ SIZE_UNKNOWN(CNetPlayerDesc); // descriptor-node view (only +0x34 name pinned); 
 
 // FUN_004db2b0 (__cdecl): g_netSlotTable[idx] = value (a global flag array at
 // 0x64c3f0). External, no body -> the call reloc-masks.
-void SetNetSlot(i32 idx, i32 value); // 0x004db2b0
 
 // FUN_004db1d0 (__cdecl): zero the whole 0x11-dword net-slot flag table at
 // 0x64c3f0 (ParseChannelTable resets it when not in channel-latency mode).
@@ -1128,10 +1127,8 @@ public:
     i32 SendChannelStat423();                 // 0xbb120  build {0x423} -> SetGroupDataFrom
     i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd); // 0xbb190
 
-    // The 3-arg record helper AckDropPlayer fires before the slot reset (records
-    // the pending drop into the m_dropIds id array). __thiscall (id is its 2nd arg);
-    // external incremental-link thunk -> no body here.
-    void RecordDropPlayer(i32 a, i32 id); // 0xbb5e0
+    // AckDropPlayer's record helper is RecordDropPlayer2 (0xbb5e0, declared above);
+    // the former duplicate declared-only RecordDropPlayer alias was folded onto it.
 
     // The chat-window dispatcher BroadcastChatLine fires when the show-window flag
     // is set: posts the assembled line to a Win32 chat control (SendMessageA-based

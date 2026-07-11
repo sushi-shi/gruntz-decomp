@@ -339,10 +339,7 @@ public:
 
     // ----- sibling methods called by the reconstructed bodies (declared so the
     // ILT call targets resolve; bodies live elsewhere / are stubbed) -----
-    i32 ProbeSlot(i32 idx);
-    void RebuildGroupA();
     void ResetGroupA();
-    void ClearStatToggle(i32);
     void LoadStatzTabToggleSprite(i32, i32);
     void UpdateGruntOvenStatusBar();
     void TickGauge();
@@ -351,11 +348,9 @@ public:
     void UpdateChipGrinderStatusBar();
     void UpdateDestructButtonStatusBar();
     i32 Activate();
-    i32 Stub_0ffde0_probe();
     i32 SetTabState(i32 tab, i32 state);
 
     void Teardown();
-    void TeardownNotify(i32); // call 0x12fd - pre-teardown notify (1 arg)
     i32 TryActivate();
     i32 Deactivate();
     i32 HlClickGroup0(i32 row);
@@ -364,8 +359,6 @@ public:
     void* ResolveHandle(i32 handle);  // call 0x17a8 - validity probe
     void SetCursorRect(i32 x, i32 y); // call 0x3878 (__thiscall, 2 args)
     i32 SetTab(i32 tab, i32 flag);
-    i32 TabRefresh(); // call 0x1690 - activation probe (returns int)
-    void TabCommit(); // call 0x125d - success helper
     i32 ClearTabSprites(i32 idx);
     i32 HitTest(i32 x, i32 y);
     i32 Serialize(CSerialArchive* s);
@@ -406,28 +399,18 @@ public:
     i32 InsertPtr(i32 a, i32 b);
     void ReportTab(i32 tab);
     // siblings dispatched (reloc-masked ILT thunks / bodies elsewhere)
-    i32 StateProbe();                    // call 0x2b2b - the subtype-2 activation probe
-    void StateNotify();                  // call 0x125d - the non-subtype-2 notify
-    i32 RefreshA();                      // jmp 0x2b8a
-    i32 RefreshB();                      // jmp 0x2d5b
-    void ReportLog(i32 a, i32 b, i32 c); // call 0x1276
-    i32 ReportApply(i32 a, i32 b);       // call 0x213f
+    i32 StateProbe(); // call 0x2b2b - the subtype-2 activation probe
+    i32 RefreshA();   // jmp 0x2b8a
 
     // ----- third batch -----
     void AdvanceTab(i32 reverse); // 0x10b4f0 periodic highlight-cursor tick
 
     // ----- fourth batch: the rect-only HUD placement (0xfe520) + its siblings ---
     i32 winapi_0fe520_SetRect();
-    void RectNotify(i32);                   // call 0x194c (__thiscall, 1 arg)
-    i32 RectProbe();                        // call 0x3a08 (__thiscall, returns int)
-    void RectApply(i32, i32);               // call 0x1d61 (__thiscall, 2 args)
-    void TabSubtypeRefresh();               // call 0x123f (__thiscall, no args) - subtype-2 refresh
-    void SetStatBar(i32 a, i32 b, i32 val); // call 0x1523 (__thiscall, 3 args)
-    void SetGaugeSpan(i32 a, i32 b, i32 c); // call 0x4359 (__thiscall, 3 args)
-    void RefreshFallRect();                 // call 0x1cbc (__thiscall, no args)
-    void ConveyorReturn();                  // call 0x26a3 (__thiscall, no args)
-    i32 FallItemTick();                     // call 0x2130 (__thiscall, no args)
-    void ChipNotify27f7();                  // call 0x27f7 (__thiscall, no args)
+    void RefreshFallRect();                       // call 0x1cbc (__thiscall, no args)
+    void ConveyorReturn();                        // call 0x26a3 (__thiscall, no args)
+    i32 FallItemTick();                           // call 0x2130 (__thiscall, no args)
+    void ChipNotify27f7();                        // call 0x27f7 (__thiscall, no args)
     void ChipFinish(i32 col, i32 which, i32 row); // call 0x3968 (__thiscall, 3 args)
 
     // ----- fifth batch: item-config-loader siblings (reloc-masked ILT thunks) -----

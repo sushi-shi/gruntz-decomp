@@ -69,12 +69,15 @@ namespace NetLobby {
     void InitDropPrompt_be3e0(HWND hWnd, void* ctx); // thunk 0x2185 -> 0xbe3e0
     // Lobby DlgProc message helpers (cdecl, reached through ILT jmp-thunks).
     i32 PreHandleLobbyMsg_38c3(HWND, u32, u32, i32); // RVA 0x38c3 -> 0x1192d0
-    void OnLobbyInit_2c66(HWND, CMulti*);            // RVA 0x2c66
-    void OnLobbyInit_371f(HWND, CMulti*);            // RVA 0x371f
-    void OnLobbyTimerA_265d(HWND, CMulti*);          // RVA 0x265d
-    void OnLobbyTimerB_154b(HWND, CMulti*);          // RVA 0x154b
-    void OnLobbyTimerC_2185(HWND, CMulti*);          // RVA 0x2185 -> 0xbe3e0
-    void OnLobbyCancel_2ae0(HWND, CMulti*);          // RVA 0x2ae0
+    // These four ARE the real dialog helpers defined later in this TU (reloc-masked
+    // calls now bind to the correct RVAs); forward-declared so the early DlgProcs
+    // above their definitions can call them.
+    void NetDlgInit_bdd60(HWND, void*);     // 0xbdd60 (ex OnLobbyInit_2c66)
+    void NetDlgInitDropWait(HWND, void*);   // 0xbe2f0 (ex OnLobbyInit_371f)
+    void NetDlgSessionStop(HWND, CMulti*);  // 0xbe490 (ex OnLobbyTimerA_265d)
+    void OnLobbyTimerB_154b(HWND, CMulti*); // RVA 0x154b
+    void OnLobbyTimerC_2185(HWND, CMulti*); // RVA 0x2185 -> 0xbe3e0
+    void NetChatSubmit(HWND, void*);        // 0xbe400 (ex OnLobbyCancel_2ae0)
     // WM_INITDIALOG init helpers defined later in this TU (forward-declared so the
     // sibling wait/drop DlgProcs below can call them before their definitions).
     void NetDlgInit_bda00(HWND hWnd, void* ctx); // 0xbda00
@@ -124,7 +127,7 @@ namespace NetLobby {
                     return 1;
                 }
                 if (wParam == 0x4c6) {
-                    OnLobbyCancel_2ae0(hWnd, g_curMulti);
+                    NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
                 break;
@@ -133,7 +136,7 @@ namespace NetLobby {
                     PostMessageA(hWnd, 0x111, 0x4d2, 0);
                     return 1;
                 }
-                OnLobbyTimerA_265d(hWnd, g_curMulti);
+                NetDlgSessionStop(hWnd, g_curMulti);
                 Init_42b4(hWnd, g_curMulti);
                 return 1;
         }
@@ -167,12 +170,12 @@ namespace NetLobby {
                 return 1;
             case 0x111:
                 if (wParam == 0x4c6) {
-                    OnLobbyCancel_2ae0(hWnd, g_curMulti);
+                    NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
                 break;
             case 0x113:
-                OnLobbyTimerA_265d(hWnd, g_curMulti);
+                NetDlgSessionStop(hWnd, g_curMulti);
                 Init_1924(hWnd, g_curMulti);
                 if (g_648cec) {
                     return 1;
@@ -205,7 +208,7 @@ namespace NetLobby {
             case 0x110:
                 g_curDlg_64557c = hWnd;
                 g_curMulti = (CMulti*)g_gameReg->m_curState;
-                OnLobbyInit_2c66(hWnd, g_curMulti);
+                NetDlgInit_bdd60(hWnd, g_curMulti);
                 return 1;
             case 0x111:
                 if (wParam == 0x4f7) {
@@ -219,12 +222,12 @@ namespace NetLobby {
                     return 1;
                 }
                 if (wParam == 0x4c6) {
-                    OnLobbyCancel_2ae0(hWnd, g_curMulti);
+                    NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
                 break;
             case 0x113:
-                OnLobbyTimerA_265d(hWnd, g_curMulti);
+                NetDlgSessionStop(hWnd, g_curMulti);
                 OnLobbyTimerB_154b(hWnd, g_curMulti);
                 return 1;
         }
@@ -282,12 +285,12 @@ namespace NetLobby {
                     return 1;
                 }
                 if (wParam == 0x4c6) {
-                    OnLobbyCancel_2ae0(hWnd, g_curMulti);
+                    NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
                 break;
             case 0x113:
-                OnLobbyTimerA_265d(hWnd, g_curMulti);
+                NetDlgSessionStop(hWnd, g_curMulti);
                 Init_2522(hWnd, g_curMulti);
                 return 1;
         }
@@ -317,7 +320,7 @@ namespace NetLobby {
             case 0x110:
                 g_curDlg_64557c = hWnd;
                 g_curMulti = (CMulti*)g_gameReg->m_curState;
-                OnLobbyInit_371f(hWnd, g_curMulti);
+                NetDlgInitDropWait(hWnd, g_curMulti);
                 return 1;
             case 0x111:
                 if (wParam == 0x4ea) {
@@ -339,7 +342,7 @@ namespace NetLobby {
                     return 1;
                 }
                 if (wParam == 0x4c6) {
-                    OnLobbyCancel_2ae0(hWnd, g_curMulti);
+                    NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
                 break;
@@ -349,7 +352,7 @@ namespace NetLobby {
                     EndDialog(hWnd, 0x4cd);
                     return 1;
                 }
-                OnLobbyTimerA_265d(hWnd, g_curMulti);
+                NetDlgSessionStop(hWnd, g_curMulti);
                 OnLobbyTimerC_2185(hWnd, g_curMulti);
                 if (g_curMulti->m_session->CheckLatency(0x2710)) {
                     PostMessageA(hWnd, 0x111, 0x4cd, 0);
@@ -449,12 +452,12 @@ namespace NetLobby {
                     return 1;
                 }
                 if (wParam == 0x4c6) {
-                    OnLobbyCancel_2ae0(hWnd, g_curMulti);
+                    NetChatSubmit(hWnd, g_curMulti);
                     return 1;
                 }
                 break;
             case 0x113:
-                OnLobbyTimerA_265d(hWnd, g_curMulti);
+                NetDlgSessionStop(hWnd, g_curMulti);
                 Init_2ed7(hWnd, g_curMulti);
                 return 1;
         }

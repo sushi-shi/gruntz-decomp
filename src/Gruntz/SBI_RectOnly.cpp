@@ -161,7 +161,7 @@ void CSBI_RectOnly::ArmSlot(i32 idx) {
 RVA(0x00105710, 0x23)
 i32 CSBI_RectOnly::AnySlotActive() {
     for (i32 i = 0; i < 5; i++) {
-        if (ProbeSlot(i)) {
+        if (LoadGooCookingSprite(i)) {
             return 1;
         }
     }
@@ -240,7 +240,7 @@ void CSBI_RectOnly::Reset() {
     m_gauge = 0;
     ResetGroupA();
     UpdateRezMachineSnoozeStatusBar();
-    RebuildGroupA();
+    InitTabRects();
     m_modeState = 1;
     m_destructWarnActive = 0;
 }
@@ -249,7 +249,7 @@ void CSBI_RectOnly::Reset() {
 RVA(0x00107aa0, 0x23)
 void CSBI_RectOnly::ToggleStat(i32 idx) {
     if (m_statFlags[idx]) {
-        ClearStatToggle(idx);
+        ClearStat(idx);
     } else {
         LoadStatzTabToggleSprite(idx, 1);
     }
@@ -544,7 +544,7 @@ i32 CSBI_RectOnly::Deserialize(CSerialArchive* s) {
     }
     char* B = (char*)this;
     *(i32*)(B + 0x618) = 0;
-    TeardownNotify(0);
+    ResetWidgets(0);
 
     s->Read(B, 4);
     s->Read(B + 0x4, 4);
@@ -1005,11 +1005,11 @@ i32 CSBI_RectOnly::SetTab(i32 tab, i32 flag) {
     m_tabSprite9 = 0;
     m_tabSprite10 = 0;
     m_activeTab = tab;
-    if (!TabRefresh()) {
+    if (!RefreshState()) {
         g_mgrSettings->ReportError(kActivateErrId, kSetTabErrTag);
         return 0;
     }
-    TabCommit();
+    Deactivate();
     return 1;
 }
 
@@ -1026,7 +1026,7 @@ RVA(0x000fe350, 0x6d)
 void CSBI_RectOnly::Teardown() {
     ((Utils::RegistryHelper*)g_mgrSettings->m_settings)
         ->SetValueDword("StatusBar Position", *(i32*)this);
-    TeardownNotify(0);
+    ResetWidgets(0);
     for (i32 i = 0; i < m_ptrCount; i++) {
         void* p = m_ptrTable[i];
         if (p) {
@@ -1049,7 +1049,7 @@ i32 CSBI_RectOnly::TryActivate() {
     if (*(i32*)this == kSubtypeTag) {
         return Activate();
     }
-    if (!Stub_0ffde0_probe()) {
+    if (!BuildStatusBarTabs()) {
         g_mgrSettings->ReportError(kActivateErrId, kActivateErrTag);
         return 0;
     }
@@ -2558,7 +2558,7 @@ void CSBI_RectOnly::ExitMode() {
     m_hlBusy = 0;
     if (handle == 0 && g_mgrSettings->m_134 != 1) {
         if (*(i32*)this == 2) {
-            TabRefresh();
+            RefreshState();
         }
         if (m_activeTab != 5) {
             SetTabState(5, 3);
@@ -3073,7 +3073,7 @@ i32 CSBI_RectOnly::SetState(i32 state) {
         }
         m_4 = *(i32*)this;
     } else {
-        StateNotify();
+        Deactivate();
     }
     old = *(i32*)this;
     *(i32*)this = state;
@@ -3094,7 +3094,7 @@ i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
     if (*(i32*)this == 0) {
         return 1;
     }
-    TeardownNotify(1);
+    ResetWidgets(1);
     // Retail reads the view extent (m_modeW,m_modeH) as a POINT but only uses x for the
     // rect; the y store survives as a dead 8-byte-frame spill. `volatile` reproduces
     // that preserved store (a plain local is dead-eliminated by MSVC5 /O2).
@@ -3102,13 +3102,13 @@ i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
     volatile POINT pt;
     pt.y = g_mgrSettings->m_modeH;
     SetRect((LPRECT)&m_10, w - 0xa0, 0, w, 0x1e0);
-    RectNotify(0);
+    SetState(0);
     ((CPlay*)g_mgrSettings->m_curState)->ResetViewport();
-    if (RectProbe() == 0) {
+    if (BuildStatusBarTabs() == 0) {
         g_mgrSettings->ReportError(kActivateErrId, 0x449);
         return 0;
     }
-    RectApply(m_activeTab, 3);
+    SetTabState(m_activeTab, 3);
     return 1;
 }
 
@@ -3126,7 +3126,7 @@ i32 CSBI_RectOnly::RefreshState() {
     if (m_4 == 1) {
         return RefreshA();
     }
-    return RefreshB();
+    return winapi_0fe520_SetRect();
 }
 
 // 0xfe860 - SetSpritePos(x, y): push the position into the render object
@@ -3207,8 +3207,8 @@ i32 CSBI_RectOnly::InsertPtr(i32 a, i32 b) {
 // apply it on `this` as (1, tab). Both helpers are reloc-masked siblings.
 RVA(0x0010bb50, 0x24)
 void CSBI_RectOnly::ReportTab(i32 tab) {
-    ReportLog(tab, 0x4f, 0x1b3);
-    ReportApply(1, tab);
+    UpdateFallingItemStatusBar(tab, 0x4f, 0x1b3);
+    EnterHlRow(1, tab);
 }
 
 // -------------------------------------------------------------------------
@@ -3386,7 +3386,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
     if (Probe2e69() == 0) {
         return 0;
     }
-    if (TabRefresh() == 0) {
+    if (RefreshState() == 0) {
         return 0;
     }
     if (Probe41a1() == 0) {
@@ -3589,7 +3589,7 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
     m_itemKind = 5;
     m_tabCycle = g_644c54;
     ResetTabWidgets2b44();
-    if (RectProbe() == 0) {
+    if (BuildStatusBarTabs() == 0) {
         return 0;
     }
     m_activeSlot = -1;
@@ -3636,7 +3636,7 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
     m_battlezPct[35] = m_battlezPct[34] + g_buteMgr.GetInt("Multiplayer", "Wandz");
     m_battlezPct[36] = m_battlezPct[35] + g_buteMgr.GetInt("Multiplayer", "Welderz");
     m_battlezPct[37] = m_battlezPct[36] + g_buteMgr.GetInt("Multiplayer", "Wingz");
-    RectApply(5, 3);
+    SetTabState(5, 3);
     if (((Utils::RegistryHelper*)g_mgrSettings->m_settings)->GetValueDword("StatusBar Position", 0)
         == 1) {
         RefreshA();
@@ -3826,7 +3826,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             if (cmd > 0x259) {
                 if (cmd == 0x25a) {
                     HiCueFind();
-                    RefreshB();
+                    winapi_0fe520_SetRect();
                     return 1;
                 }
                 if (cmd == 0x25b) {
@@ -3845,7 +3845,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
                 return 0;
             }
             HiCueFind();
-            RectApply(cmd, 3);
+            SetTabState(cmd, 3);
             return 1;
 
         case 1:
@@ -3911,9 +3911,9 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
             }
             HiCueLookup();
             m_tabCycle = cmd - 0x190;
-            TeardownNotify(0);
+            ResetWidgets(0);
             FinishReset16ea();
-            TabCommit();
+            Deactivate();
             return 1;
 
         case 5:
@@ -4111,7 +4111,7 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
     }
     if (m_retabNotify) {
         m_retabNotify->Tick(arg);
-        TabCommit();
+        Deactivate();
     }
     return 1;
 }
@@ -4123,14 +4123,14 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
 RVA(0x00102180, 0x5f)
 void CSBI_RectOnly::BuildGameTabResumeButton(i32 show) {
     if (*(i32*)this == kSubtypeTag) {
-        TabSubtypeRefresh();
+        RefreshState();
     }
     if (show && m_activeTab != 5) {
-        RectApply(5, 3);
+        SetTabState(5, 3);
     }
     if (m_tabSprite5) {
         m_tabSprite5->Configure("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
-        TabCommit();
+        Deactivate();
         m_tabSprite5->Refresh();
     }
     m_hitTestDisabled = 1;
@@ -4142,7 +4142,7 @@ RVA(0x00102200, 0x37)
 void CSBI_RectOnly::BuildGameTabPauseButton() {
     if (m_tabSprite5) {
         m_tabSprite5->Configure("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
-        TabCommit();
+        Deactivate();
         m_tabSprite5->Refresh();
     }
     m_hitTestDisabled = 0;
@@ -4169,12 +4169,12 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
     }
     if (g_mgrSettings->m_134 == 1 && m_hlBusy == 0) {
         if (*(i32*)this == kSubtypeTag) {
-            TabSubtypeRefresh();
+            RefreshState();
         }
         if (m_activeTab != 2) {
-            RectApply(2, 3);
+            SetTabState(2, 3);
         }
-        TabCommit();
+        Deactivate();
     }
     sp->m_state = 1;
     CSbiSlot* g = (CSbiSlot*)this + (idx + 0x17);
@@ -4234,7 +4234,11 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                         ph->m_interval =
                             g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltHoldDelay", 0x1f4);
                         ph->m_last = (u32)g_dat645588;
-                        ReportLog(m_extraNotifyArg0, m_itemRectL + 0xc, m_itemRectT + 0xc);
+                        UpdateFallingItemStatusBar(
+                            m_extraNotifyArg0,
+                            m_itemRectL + 0xc,
+                            m_itemRectT + 0xc
+                        );
                         ConveyorReturn();
                     }
                 }
@@ -4339,7 +4343,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
     if (pA->m_state == 5) {
         if ((i64)(u32)g_dat645588 - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x34) {
-                SetGaugeSpan(
+                SetHudRectB(
                     0x2b,
                     5,
                     g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d)
@@ -4352,7 +4356,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
     } else if (pA->m_state == 6) {
         if ((i64)(u32)g_dat645588 - pA->m_last >= pA->m_interval) {
             if (++pA->m_counter > 0x44) {
-                SetGaugeSpan(0x2b, 0, 0x7fffffff);
+                SetHudRectB(0x2b, 0, 0x7fffffff);
             } else {
                 pA->m_interval = g_buteMgr.GetIntDef("StatusBar", "RightMachineSpewingDelay", 0x7d);
                 pA->m_last = (u32)g_dat645588;
@@ -4364,7 +4368,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
         case 1:
             if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 8) {
-                    SetStatBar(
+                    SetHudRectA(
                         1,
                         1,
                         g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64)
@@ -4379,12 +4383,12 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
         case 2:
             if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 0x13) {
-                    SetStatBar(
+                    SetHudRectA(
                         0x14,
                         3,
                         g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
                     );
-                    SetGaugeSpan(
+                    SetHudRectB(
                         0x2b,
                         5,
                         g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d)
@@ -4424,7 +4428,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
         case 3:
             if ((i64)(u32)g_dat645588 - pB->m_last >= pB->m_interval) {
                 if (++pB->m_counter > 0x1d) {
-                    SetStatBar(
+                    SetHudRectA(
                         0x14,
                         3,
                         g_buteMgr.GetIntDef("StatusBar", "LeftMachineTurningWheelDelay", 0x64)
@@ -4495,7 +4499,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                     g[0].m_interval = g_buteMgr.GetIntDef("StatusBar", "ConveyorBeltDelay", 0x64);
                     g[0].m_last = (u32)g_dat645588;
                     if (pB->m_counter > 0x2a) {
-                        SetStatBar(
+                        SetHudRectA(
                             1,
                             1,
                             g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 0x64)
@@ -4521,8 +4525,8 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
 // y-coords, then clear the snooze/wake state pair.
 RVA(0x00106660, 0x68)
 void CSBI_RectOnly::UpdateRezMachineSnoozeStatusBar() {
-    SetStatBar(1, 1, g_buteMgr.GetIntDef("StatusBar", "LeftMachineSnoozingDelay", 100));
-    SetGaugeSpan(0x2b, 0, 0x7fffffff);
+    SetHudRectA(1, 1, g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 100));
+    SetHudRectB(0x2b, 0, 0x7fffffff);
     if (m_348) {
         ((CSBI_GruntMachine*)m_348)->SetFrames(m_hudRectA_y, m_hudRectB_y);
     }
@@ -4564,7 +4568,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
             break;
         case 3:
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
-                SetGaugeSpan(
+                SetHudRectB(
                     0x35,
                     6,
                     g_buteMgr.GetIntDef("StatusBar", "RightMachineSpewingDelay", 0x7d)
@@ -4649,7 +4653,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                 m_itemRectR = m_itemBaseX + 0x17;
                 rectFlag = 1;
                 ChipNotify27f7();
-                SetStatBar(
+                SetHudRectA(
                     0x1e,
                     4,
                     g_buteMgr.GetIntDef("StatusBar", "LeftMachineLeverDelay", 0x64)
@@ -4772,7 +4776,7 @@ i32 CSBI_RectOnly::UpdateRezMachineWakeStatusBar() {
         if (m_extraNotifyArg0 == 0) {
             return 0;
         }
-        SetStatBar(9, 2, g_buteMgr.GetIntDef("StatusBar", "LeftMachineWakingDelay", 100));
+        SetHudRectA(9, 2, g_buteMgr.GetIntDef("StatusBar", "LeftMachineWakingDelay", 100));
         m_rezActive = 1;
         return 1;
     }
@@ -4797,7 +4801,7 @@ RVA(0x00107ae0, 0x1aa)
 void CSBI_RectOnly::LoadMultiplayerBattlezConfig(i32) {
     PrepMultiReset();
     if (*(i32*)this == kSubtypeTag) {
-        TabSubtypeRefresh();
+        RefreshState();
     }
     if (m_activeTab != 5) {
         NotifyTabExit();

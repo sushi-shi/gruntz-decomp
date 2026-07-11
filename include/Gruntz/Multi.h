@@ -178,7 +178,7 @@ public:
 };
 
 // Win32 focus restore on the innermost window (m_logic->m_4->m_4); __cdecl, reloc-masked.
-void MultiRestoreFocus(void* hwnd); // 0x00518930
+void SetActiveAndFocus(void* hwnd); // 0x00518930 (ex MultiRestoreFocus)
 
 // The opened-player object OpenPlayer returns (group-name accessor @0x4b76a0).
 class CMultiPlayer;
