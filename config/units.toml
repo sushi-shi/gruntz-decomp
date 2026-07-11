@@ -221,19 +221,6 @@ source = "src/Gruntz/SBI_StatzTabGruntBar.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "tiletriggerlogic"
-source = "src/Gruntz/TileTriggerLogic.cpp"
-flags = "base"
-
-[[unit]]
-# 18-byte derived tile-trigger logic ctors homed from src/Stub/ (9 leaf classes;
-# each chains its engine base ctor + stamps its leaf vftable). Own TU so the base
-# ctor stays an external reloc-masked call (defined in tiletriggerlogic/switch).
-unit = "tiletriggerderivedctors"
-source = "src/Gruntz/TileTriggerDerivedCtors.cpp"
-flags = "base"
-
-[[unit]]
 unit = "triggermgr"
 source = "src/Gruntz/TriggerMgr.cpp"
 flags = "eh"
@@ -303,16 +290,6 @@ flags = "eh"
 [[unit]]
 unit = "multistartdlgroster"
 source = "src/Gruntz/MultiStartDlgRoster.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "multistartdlgcolor"
-source = "src/Gruntz/MultiStartDlgColor.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "multistartdlgnet"
-source = "src/Gruntz/MultiStartDlgNet.cpp"
 flags = "eh"
 
 [[unit]]
@@ -711,11 +688,6 @@ flags = "eh"
 unit = "maplogic"
 source = "src/Gruntz/MapLogic.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "tileactionevent"
-source = "src/Gruntz/TileActionEvent.cpp"
-flags = "base"
 
 [[unit]]
 unit = "spritereftable"
@@ -1355,11 +1327,6 @@ source = "src/Gruntz/SecretLevelTrigger.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "voicetrigger"
-source = "src/Gruntz/VoiceTrigger.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "statichazard"
 source = "src/Gruntz/StaticHazard.cpp"
 flags = "eh"
@@ -1493,7 +1460,7 @@ flags = "eh"
 [[unit]]
 unit = "tileswitchlogic"
 source = "src/Gruntz/TileTriggerSwitchLogic.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "tiletriggercontainer"
@@ -1509,11 +1476,6 @@ flags = "eh"
 unit = "areamgr"
 source = "src/Gruntz/AreaMgr.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "tilegridcommand"
-source = "src/Gruntz/TileGridCommand.cpp"
-flags = "base"
 
 [[unit]]
 unit = "ddrawsubmgrleaf"
@@ -2088,7 +2050,7 @@ flags = "eh"
 [[unit]]
 unit = "netcmdslot"
 source = "src/Net/NetCmdSlot.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "netsessionnode"
@@ -2193,11 +2155,6 @@ source = "src/Image/ImagePolyClip.cpp"
 flags = "base"
 
 [[unit]]
-unit = "tiletriggerfactory"
-source = "src/Gruntz/TileTriggerFactory.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "ddrawpolyfill"
 source = "src/DDrawMgr/DDrawPolyFill.cpp"
 flags = "framed"
@@ -2269,10 +2226,6 @@ unit = "connslotlist"
 source = "src/Net/ConnSlotList.cpp"
 flags = "base"
 [[unit]]
-unit = "tiletriggerload"
-source = "src/Gruntz/TileTriggerLoad.cpp"
-flags = "base"
-[[unit]]
 unit = "namerecord"
 source = "src/Gruntz/NameRecord.cpp"
 flags = "base"
@@ -2297,11 +2250,6 @@ flags = "base"
 unit = "projactcache"
 source = "src/Gruntz/ProjActCache.cpp"
 flags = "eh"
-[[unit]]
-unit = "tiletriggerwiring"
-source = "src/Gruntz/TileTriggerWiring.cpp"
-flags = "base"
-
 [[unit]]
 unit = "movieplayer"
 source = "src/Io/MoviePlayer.cpp"
@@ -2339,7 +2287,7 @@ flags = "base"
 [[unit]]
 unit = "netcmdsession"
 source = "src/Net/NetCmdSession.cpp"
-flags = "base"
+flags = "eh"
 [[unit]]
 unit = "comhelperthunks"
 source = "src/Wap32/ComHelperThunks.cpp"
@@ -2409,7 +2357,7 @@ flags = "base"
 [[unit]]
 unit = "netsession2"
 source = "src/Net/NetSession2.cpp"
-flags = "base"
+flags = "eh"
 [[unit]]
 unit = "netthingdtor"
 source = "src/Net/NetThingDtor.cpp"
@@ -2431,10 +2379,6 @@ flags = "base"
 [[unit]]
 unit = "lobbysync"
 source = "src/Gruntz/LobbySync.cpp"
-flags = "base"
-[[unit]]
-unit = "netgamedlg"
-source = "src/Net/NetGameDlg.cpp"
 flags = "eh"
 [[unit]]
 unit = "glyphstr"

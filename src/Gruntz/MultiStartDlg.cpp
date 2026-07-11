@@ -453,37 +453,6 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
     return SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
 }
 
-// ---------------------------------------------------------------------------
-// CMultiStartDlg::Sub_c3e30 (0xc3e30) - the caller SetupWorldCombo runs it as a
-// self-call. When this is the host, read the current selection of the 0x4ff world
-// combo, and if its text is non-empty commit it as the game's world/host name into
-// the CMulti game-state (m_5b4 = name, m_5b8 = "", m_5b0 = 0, Commit3ada). The /GX
-// EH frame unwinds the local scratch CString. GetLBText (CComboBox::GetLBText
-// 0x1ce7db) / operator= / Commit3ada / SendMessageA all reloc-mask.
-// NOTE: RVA 0xc3e30 lies in the NEXT (roster/color/net) interval - TU_MIGRATION's
-// MOVE table re-homes it to the roster TU; kept here this package (came with the
-// multistartdlgworld unit; not in the wave1-D seam ledger). Deferred re-home.
-RVA(0x000c3e30, 0xfe)
-void CMultiStartDlg::Sub_c3e30() {
-    if (g_64bd5c->m_isHost != 0) {
-        CWnd* item = GetDlgItem(0x4ff);
-        if (item != 0) {
-            i32 r = SendMessageA(item->m_hWnd, 0x147, 0, 0);
-            if (r != -1) {
-                CString name;
-                item->GetLBText1ce7db(r, name);
-                if (name.GetLength() != 0) {
-                    m_6c = 0;
-                }
-                g_64bd5c->m_5b0 = 0;
-                g_64bd5c->m_5b8 = g_emptyString;
-                g_64bd5c->m_5b4 = (LPCTSTR)name;
-                g_64bd5c->Commit3ada(0);
-            }
-        }
-    }
-}
-
 SIZE_UNKNOWN(CMultiSlot);
 SIZE_UNKNOWN(EngStrAssign);
 SIZE_UNKNOWN(MpSymItem);

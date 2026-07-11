@@ -1,23 +1,24 @@
-// MultiStartDlgRoster.cpp - the CMultiStartDlg multiplayer roster/refresh method
-// cluster (the 0xc2000-0xc5000 band), re-homed from the ApiCaller stubs. Every one
-// of these ran on the ONE multiplayer-start dialog (CMultiStartDlg): the former
-// per-function ApiCaller host views (SelHost_0c4ee0 / SelHost_0c4f80 /
-// RosterHost_0c50f0 / BattlezDlg_c4230 / EditAppendHost_0c2ce0) were placeholder
-// duplicates of this class, proven by their shared control accessors (GetCtrlA..D
-// @0xc26c0/40/c0/40) and self-call into Drive (@0xc40b0). The net-game-config facets
-// CNetGameDlg (NetGameDlg.cpp) / CNetConnCoord (NetMgrMisc.cpp) were the SAME dialog
-// too and are now FOLDED into CMultiStartDlg (matcher-5): their methods dispatch this
-// class's per-slot accessors (0x1929/0x298c/GetCtrlD/0x1753/0x1159) on `this` and
-// self-call Drive/UpdatePlayers - bodies stay in their own units (delinker packing).
+// MultiStartDlgRoster.cpp - the multiplayer roster/color/net dialog TU: the WOVEN
+// original obj at retail .text [0x0c2980 .. 0x0c5f15] (TU_MIGRATION interval
+// 0x0c2980, weave 0.43; own 8-frag init run @0xc5360 per interval-dossiers #4a -
+// a SEPARATE obj from MultiStartDlg.cpp's 0xc16b0 interval). wave2-F merge of the
+// five former units multistartdlgroster + netmgrmisc(interval fns) + netgamedlg +
+// multistartdlgcolor + multistartdlgnet, + the Sub_c3e30 stray from
+// MultiStartDlg.cpp (TU_MIGRATION MOVE row). Everything here runs on the ONE
+// multiplayer-start dialog (CMultiStartDlg) or its roster records; definitions in
+// strict ascending retail-RVA order.
 //
 // Homed in its own unit (not Dialogs.cpp) so it can't perturb that TU's parked dtors;
 // it reuses the shared Dialogs.h dialog models, the canonical CGameRegistry spine
 // (GameRegistry.h) and the canonical CMulti game-state (Multi.h). Field names are
 // placeholders (m_<hexoffset>); only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
-#include <Gruntz/NetDlgHost.h>   // CNetDlgHost (m_host +0x5c facet; FindOptionsSlot @0x92e80)
-#include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
+#include <Gruntz/Multi.h>         // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Gruntz/NetDlgHost.h>    // CNetDlgHost (m_host +0x5c facet; FindOptionsSlot @0x92e80)
+#include <Gruntz/GameRegistry.h>  // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
+#include <Net/NetSessHost.h>      // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet
+#include <Net/NetMgr.h>           // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
+#include <Wap32/ZDArrayDerived.h> // CZDArrayDerived (the g_netBe90 singleton's Construct)
 #include <rva.h>
 #include <string.h> // strcat (inline CRT, reloc-masked)
 
@@ -43,6 +44,15 @@ DATA(0x002c44f0)
 extern BOOL(WINAPI* g_pInvalidateRect)(HWND, const RECT*, BOOL);
 DATA(0x002c4520)
 extern HWND(WINAPI* g_pGetFocus)();
+// More USER32 entry points via the game's own IAT-style pointers.
+DATA(0x002c44d8)
+extern HWND(WINAPI* g_pGetWindow)(HWND, UINT);
+// "Using CmdDelay of %d and ResendDelay of %d\n" (the EchoLatencySettings format).
+DATA(0x0024243c)
+extern char s_UsingCmdDelay[];
+// Singletons the forwarders dispatch onto.
+DATA(0x0024be90)
+extern CZDArrayDerived g_netBe90; // VA 0x64be90
 
 // The per-player roster record IS the canonical CFocusSlot (GameRegistry.h,
 // CGameRegistry::m_focusSlots[] +0x150, stride 0x238) - the former local RosterSlot
@@ -60,6 +70,152 @@ CWnd* __stdcall ResolveItem_c27c0(i32 id);  // 0xc27c0
 // Roster free helpers (__stdcall, reloc-masked).
 void __stdcall Func1d70(i32 flag);            // 0x01d70
 void __stdcall Refresh185c(CFocusSlot* slot); // 0x0185c
+
+// The per-channel player-slot record (lives at +0x150 inside a 0x238-byte channel
+// entry, reached off CMultiStartDlg::m_host). Same memory as the roster's RosterSlot
+// (MultiStartDlgRoster.cpp); the two interpretations are kept local to their units
+// per the established "roster interpretation stays local" decision.
+struct ChannelSlot {
+    i32 m_playerId;  // +0x00 player id
+    CString m_label; // +0x04 label
+    i32 m_slotIndex; // +0x08 slot index
+    char m_pad0c[0x10 - 0x0c];
+    i32 m_selectionIndex; // +0x10
+    i32 m_14;             // +0x14
+    char m_pad18[0x1c - 0x18];
+    i32 m_ready;  // +0x1c ready flag
+    i32 m_active; // +0x20 active flag
+};
+SIZE_UNKNOWN(ChannelSlot);
+
+// The game-settings singleton (CGruntzMgr) used to resolve the level + show modals -
+// the settings facet of the 0x64556c dual-view (a REQUIRED CGameRegistry/CGruntzMgr
+// split; not unified here). Only the two touched methods are modeled.
+struct CGameSettings {
+    void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
+    void ShowModal(const char* msg);                                  // 0x8ef10
+};
+extern "C" CGameSettings* g_mgrSettings; // _g_mgrSettings (0x64556c)
+SIZE_UNKNOWN(CGameSettings);
+DATA(0x0024bdb0)
+extern CString g_64bdb0[]; // 0x64bdb0 per-channel label table
+
+void ChannelSlots_Set(i32 slot, i32 v); // 0xdb2b0
+i32 ChannelSlots_FindFree();            // 0xdb280
+CString GetConfigNameA();               // 0xb6090
+CString GetConfigNameB();               // 0xb60d0
+
+// __stdcall(hDlg, id, *lo, *hi): split control `id`'s selected listbox item data into
+// two words; returns 1 when a valid item is selected. Generic listbox helper.
+RVA(0x00038220, 0x73)
+i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
+    HWND list = GetDlgItem(hDlg, id);
+    if (!list) {
+        return 0;
+    }
+    i32 sel = SendMessageA(list, 0x147, 0, 0);
+    if (sel == -1) {
+        return 0;
+    }
+    i32 data = SendMessageA(list, 0x150, sel, 0);
+    if (data == -1) {
+        return 0;
+    }
+    *outLo = data & 0xffff;
+    *outHi = (u32)data >> 0x10;
+    return 1;
+}
+
+// __stdcall(id, wParam): if item `id` resolves, set its list selection to wParam-1
+// (LB_SETCURSEL). Free helper preserving the caller's ecx=this (see resolvers above).
+RVA(0x000c2980, 0x28)
+void __stdcall SetListCurSel(i32 id, i32 wParam) {
+    CWnd* it = ResolveItem_1753(id);
+    if (it) {
+        SendMessageA(it->m_hWnd, 0x14e, wParam - 1, 0);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// One connect step: reconcile slot 1 (0xc2ab0) then the connect drive (0xc40b0).
+// ---------------------------------------------------------------------------
+RVA(0x000c2a20, 0x13)
+void CMultiStartDlg::ConnectStep() {
+    SyncChannelSlot(1);
+    Drive();
+}
+
+// ---------------------------------------------------------------------------
+// Channel 2 / 3 handlers: reconcile the channel's player slot (0xc2ab0) then re-drive
+// the connect state (0xc40b0). Twins of ConnectStep (channel 1). Re-homed here from
+// src/Stub/Cluster0c.cpp (CCluster0c::Run) and src/Stub/ReconBatch2.cpp (Host_c2a80::Run) -
+// both PROVEN CMultiStartDlg: they self-call SyncChannelSlot + Drive on `this`.
+// ---------------------------------------------------------------------------
+RVA(0x000c2a50, 0x13)
+void CMultiStartDlg::Method_c2a50() {
+    SyncChannelSlot(2);
+    Drive();
+}
+
+RVA(0x000c2a80, 0x13)
+void CMultiStartDlg::Method_c2a80() {
+    SyncChannelSlot(3);
+    Drive();
+}
+
+// @early-stop
+// regalloc / const-materialize wall (~69%): the control flow is byte-faithful, but
+// retail pins `this` in esi and `ch` in edi (this cl swaps them), and materializes
+// 0 into the dead `ch` register to drive the `cmp` against the slot flags where
+// this cl re-tests; the swap + 0-in-reg-vs-`test` cascade the register renames.
+// reconcile one channel's player slot after a join/leave: poll the owner
+// window, drop or assign the channel's logical slot, and toggle the two controls.
+// (0xc2ab0; also reached as the roster's per-row reconcile via ILT thunk 0x3ffd.)
+RVA(0x000c2ab0, 0x161)
+void CMultiStartDlg::SyncChannelSlot(i32 ch) {
+    CWnd* owner = KindCombo1929(ch); // 0x1929  the list whose selection drives the slot
+    CWnd* c1 = NameEdit298c(ch);     // 0x298c
+    CWnd* c2 = GetCtrlD(ch);         // 0x30da -> 0xc2840
+    ColourBtn1753(ch);               // 0x1753 (side effect only)
+    ReadyCheck1159(ch);              // 0x1159 (side effect only)
+    ChannelSlot* s = (ChannelSlot*)((char*)m_host + ch * 0x238 + 0x150);
+    LRESULT(WINAPI * pSend)(HWND, UINT, WPARAM, LPARAM) = g_pSendMessageA;
+    if (pSend(owner->m_hWnd, 0x147, 0, 0) == 0) {
+        if (s->m_14 != 0) {
+            if (s->m_active != 0) {
+                g_64bd5c->DropPlayer(s->m_playerId);
+            }
+        } else if (s->m_active != 0) {
+            ChannelSlots_Set(s->m_slotIndex, 1);
+        }
+        s->m_active = 0;
+        s->m_ready = 0;
+        c1->EnableWindow(0);
+        c2->EnableWindow(0);
+    } else {
+        if (pSend(owner->m_hWnd, 0x147, 0, 0) != 4) {
+            if (s->m_14 != 0) {
+                if (s->m_active != 0) {
+                    g_64bd5c->DropPlayer(s->m_playerId);
+                }
+                i32 free = ChannelSlots_FindFree();
+                s->m_slotIndex = free;
+                ChannelSlots_Set(free, 0);
+            } else if (s->m_active == 0) {
+                i32 free = ChannelSlots_FindFree();
+                s->m_slotIndex = free;
+                ChannelSlots_Set(free, 0);
+            }
+            s->m_ready = 1;
+            s->m_14 = 0;
+            s->m_selectionIndex = (i32)pSend(owner->m_hWnd, 0x147, 0, 0) - 1;
+            s->m_active = 1;
+            s->m_label = g_64bdb0[ch];
+        }
+        c1->EnableWindow(1);
+        c2->EnableWindow(1);
+    }
+}
 
 // __thiscall(str): resolve control 0x511 (the chat/message log edit) and append `str`
 // to it - CRLF-prefixed when the control already has text, then scroll the caret into
@@ -92,34 +248,206 @@ void CMultiStartDlg::AppendChatLine(char* str) {
     SendMessageA(edit, 0xb6, 0, 0x270f);
 }
 
-// __stdcall(id, wParam): if item `id` resolves, set its list selection to wParam-1
-// (LB_SETCURSEL). Free helper preserving the caller's ecx=this (see resolvers above).
-RVA(0x000c2980, 0x28)
-void __stdcall SetListCurSel(i32 id, i32 wParam) {
-    CWnd* it = ResolveItem_1753(id);
-    if (it) {
-        SendMessageA(it->m_hWnd, 0x14e, wParam - 1, 0);
+// ---------------------------------------------------------------------------
+// Per-slot colour handlers (0xc3830/0xc3950/0xc3a70/0xc3b90). Slot N owns swatch
+// control 0x501+2*N. The pick is allowed when the host set the slot's colour gate
+// (m_164==0) or when it is unlocked (m_16c==0) and owned by us (m_168==m_hostIndex).
+// All four are byte-exact code (~99.84%); residual is two reloc/regalloc artifacts:
+// the /GX scope-table push addend (delinker names it Unwind@005dda10+8 vs our own
+// $L scope table at +0) and a single eax-vs-ecx coin-flip on the InvalidateRect hwnd
+// load (`mov ecx,[eax+0x1c]` retail vs `mov eax,...`). Neither is source-steerable.
+// @early-stop
+// reloc scope-table addend + InvalidateRect-hwnd eax/ecx regalloc coin-flip (~99.84%).
+RVA(0x000c3830, 0xd1)
+void CMultiStartDlg::OnColorSlot0() {
+    CMulti* mp = g_64bd5c;
+    if ((mp->m_isHost == 0 || ((CFocusSlot*)m_host)[0].m_164 != 0)
+        && (((CFocusSlot*)m_host)[0].m_16c != 0
+            || ((CFocusSlot*)m_host)[0].m_168 != mp->m_hostIndex)) {
+        return;
+    }
+    CBattlezDlgColors dlg(m_host, 0, 1, 0);
+    if (dlg.DoModal() == 1) {
+        if (((CNetSessHost*)this)->SelectColor(0, dlg.m_pickedColor)) {
+            Drive();
+            HWND h = GetDlgItem(0x501)->m_hWnd;
+            g_pInvalidateRect(h, 0, 1);
+        }
     }
 }
 
-// __stdcall(hDlg, id, *lo, *hi): split control `id`'s selected listbox item data into
-// two words; returns 1 when a valid item is selected. Generic listbox helper.
-RVA(0x00038220, 0x73)
-i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
-    HWND list = GetDlgItem(hDlg, id);
-    if (!list) {
-        return 0;
+RVA(0x000c3950, 0xd1)
+void CMultiStartDlg::OnColorSlot1() {
+    CMulti* mp = g_64bd5c;
+    if ((mp->m_isHost == 0 || ((CFocusSlot*)m_host)[1].m_164 != 0)
+        && (((CFocusSlot*)m_host)[1].m_16c != 0
+            || ((CFocusSlot*)m_host)[1].m_168 != mp->m_hostIndex)) {
+        return;
     }
-    i32 sel = SendMessageA(list, 0x147, 0, 0);
-    if (sel == -1) {
-        return 0;
+    CBattlezDlgColors dlg(m_host, 1, 1, 0);
+    if (dlg.DoModal() == 1) {
+        if (((CNetSessHost*)this)->SelectColor(1, dlg.m_pickedColor)) {
+            Drive();
+            HWND h = GetDlgItem(0x503)->m_hWnd;
+            g_pInvalidateRect(h, 0, 1);
+        }
     }
-    i32 data = SendMessageA(list, 0x150, sel, 0);
-    if (data == -1) {
-        return 0;
+}
+
+RVA(0x000c3a70, 0xd1)
+void CMultiStartDlg::OnColorSlot2() {
+    CMulti* mp = g_64bd5c;
+    if ((mp->m_isHost == 0 || ((CFocusSlot*)m_host)[2].m_164 != 0)
+        && (((CFocusSlot*)m_host)[2].m_16c != 0
+            || ((CFocusSlot*)m_host)[2].m_168 != mp->m_hostIndex)) {
+        return;
     }
-    *outLo = data & 0xffff;
-    *outHi = (u32)data >> 0x10;
+    CBattlezDlgColors dlg(m_host, 2, 1, 0);
+    if (dlg.DoModal() == 1) {
+        if (((CNetSessHost*)this)->SelectColor(2, dlg.m_pickedColor)) {
+            Drive();
+            HWND h = GetDlgItem(0x505)->m_hWnd;
+            g_pInvalidateRect(h, 0, 1);
+        }
+    }
+}
+
+RVA(0x000c3b90, 0xd1)
+void CMultiStartDlg::OnColorSlot3() {
+    CMulti* mp = g_64bd5c;
+    if ((mp->m_isHost == 0 || ((CFocusSlot*)m_host)[3].m_164 != 0)
+        && (((CFocusSlot*)m_host)[3].m_16c != 0
+            || ((CFocusSlot*)m_host)[3].m_168 != mp->m_hostIndex)) {
+        return;
+    }
+    CBattlezDlgColors dlg(m_host, 3, 1, 0);
+    if (dlg.DoModal() == 1) {
+        if (((CNetSessHost*)this)->SelectColor(3, dlg.m_pickedColor)) {
+            Drive();
+            HWND h = GetDlgItem(0x507)->m_hWnd;
+            g_pInvalidateRect(h, 0, 1);
+        }
+    }
+}
+
+// inlines OnCustomWorld's teardown (member ~CString m_customName + base ~CDialog as
+// separate calls) exactly as retail did - the out-of-line ??1 call misses that shape.
+inline CBattlezDlgCustom::~CBattlezDlgCustom() {}
+
+// ---------------------------------------------------------------------------
+// OnCustomWorld (0xc3cb0): double-click the world combo (0x4ff). Host-only: run the
+// modal CBattlezDlgCustom name dialog, and on IDOK with a non-empty name uppercase it
+// into the combo's edit child and commit it as the game's custom world/host name.
+// ---------------------------------------------------------------------------
+// @early-stop
+// Same wall family as the sibling CBattlezDlg::ShowCustomDlg (Dialogs.cpp, ~92.9%):
+// the inlined ~CBattlezDlgCustom teardown, /GX EH trylevel numbering (retail 0/1/2/-1
+// vs 0/1/-1), the child!=0 branch polarity, and an esi-save shrink-wrap our newer
+// codegen does that MSVC5 didn't - none source-steerable. Body byte-faithful. ~86.5%.
+RVA(0x000c3cb0, 0x128)
+void CMultiStartDlg::OnCustomWorld() {
+    if (g_64bd5c->m_isHost == 0) {
+        return;
+    }
+    CBattlezDlgCustom dlg(0);
+    if (dlg.DoModal() == 1 && dlg.m_customName.GetLength() != 0) {
+        CWnd* child = CWnd::FromHandle(g_pGetWindow(GetDlgItem(0x4ff)->m_hWnd, GW_CHILD));
+        if (child != 0) {
+            dlg.m_customName.MakeUpper();
+            child->SetWindowTextA((LPCTSTR)dlg.m_customName);
+            m_6c = 1;
+            g_64bd5c->m_5b0 = 1;
+            g_64bd5c->m_5b8 = (LPCTSTR)dlg.m_customName;
+            g_64bd5c->m_5b4 = g_emptyString;
+            g_64bd5c->Commit3ada(0);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CMultiStartDlg::Sub_c3e30 (0xc3e30) - the caller SetupWorldCombo runs it as a
+// self-call. When this is the host, read the current selection of the 0x4ff world
+// combo, and if its text is non-empty commit it as the game's world/host name into
+// the CMulti game-state (m_5b4 = name, m_5b8 = "", m_5b0 = 0, Commit3ada). The /GX
+// EH frame unwinds the local scratch CString. GetLBText (CComboBox::GetLBText
+// 0x1ce7db) / operator= / Commit3ada / SendMessageA all reloc-mask.
+// (wave2-F: re-homed here from MultiStartDlg.cpp - RVA 0xc3e30 lies in THIS
+// roster interval, per the TU_MIGRATION MOVE row deferred by wave1-D.)
+RVA(0x000c3e30, 0xfe)
+void CMultiStartDlg::Sub_c3e30() {
+    if (g_64bd5c->m_isHost != 0) {
+        CWnd* item = GetDlgItem(0x4ff);
+        if (item != 0) {
+            i32 r = SendMessageA(item->m_hWnd, 0x147, 0, 0);
+            if (r != -1) {
+                CString name;
+                item->GetLBText1ce7db(r, name);
+                if (name.GetLength() != 0) {
+                    m_6c = 0;
+                }
+                g_64bd5c->m_5b0 = 0;
+                g_64bd5c->m_5b8 = g_emptyString;
+                g_64bd5c->m_5b4 = (LPCTSTR)name;
+                g_64bd5c->Commit3ada(0);
+            }
+        }
+    }
+}
+
+// OnChatSend (0xc3f70): compose "<localName> says: <typed text>" and, when the input
+// (control 0x42d) is non-empty, append it to the chat log and broadcast it to every
+// peer, then clear the input. The /GX EH frame unwinds the two scratch CStrings.
+RVA(0x000c3f70, 0xfb)
+void CMultiStartDlg::OnChatSend() {
+    CWnd* input = GetDlgItem(0x42d);
+    if (input == 0) {
+        return;
+    }
+    CString a, b;
+    GetCtrlB(GetSlotIndex())->GetWindowTextA(a); // a = the local player's name
+    a += " says: ";
+    input->GetWindowTextA(b); // b = the typed message
+    if (b.GetLength() != 0) {
+        a += b;
+        AppendChatLine((char*)(const char*)a);
+        input->SetWindowTextA(g_emptyString);
+        ((CNetMgr*)g_64bd5c)->BroadcastChatLine((char*)(const char*)a, 0, 0, 0);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Drive the connect state off the file-scope CMulti: if this is the host, broadcast
+// the channel table + refresh players; else transform the local id and submit it.
+// ---------------------------------------------------------------------------
+RVA(0x000c40b0, 0x42)
+void CMultiStartDlg::Drive() {
+    CMulti* netMgr = g_64bd5c;
+    if (netMgr->m_isHost != 0) {
+        netMgr->BroadcastChannelTable(0);
+        UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
+    } else {
+        i32 transformedPlayerId = (i32)((CNetDlgHost*)m_host)->FindOptionsSlot(netMgr->m_hostIndex);
+        g_64bd5c->BroadcastOneChannel(transformedPlayerId);
+    }
+}
+
+// @early-stop
+// /GX EH-frame representation wall (~84%): the code stream is byte-faithful (all
+// GetDlgItem/EnableWindow calls + the g_optCfg load pair), but the delinker emits
+// the scope-table push addend (0x8 vs 0x0) and the fs:0 handler-registration relocs
+// differently than the MSVC base obj, so the EH prologue/epilogue can't pair.
+// re-enable the four player-config controls, then (when no custom level
+// name is set) build and discard an empty caption string.
+RVA(0x000c4120, 0xc2)
+i32 CMultiStartDlg::EnableControls() {
+    GetDlgItem(2)->EnableWindow(1);
+    GetDlgItem(0x4c6)->EnableWindow(1);
+    GetDlgItem(0x42d)->EnableWindow(1);
+    GetDlgItem(0x511)->EnableWindow(1);
+    CString s1;
+    if (g_64bd5c->m_5b0 == 0) {
+        CString s2;
+    }
     return 1;
 }
 
@@ -229,6 +557,50 @@ i32 CMultiStartDlg::GetSlotIndex() {
     return *slot;
 }
 
+// @early-stop
+// /GX CString cleanup-state-machine wall (~52%): the branch logic + the merged
+// BuildRezPath / by-value caption copy are reconstructed, but two retail early
+// guards test the relocatable addresses of CTileExclusiveTriggerSwitchLogic /
+// ReleaseResources (a pointer-to-member null check this cl can't re-spell), which
+// shifts the layout, and the a/b CString destruct-state numbering is EH residue.
+// (CLEANUP p2: folding the CNetSession lens into the real CMulti re-mangled the
+// Poll/SendStatFlag callees CMulti::-side; the code loads are byte-identical -
+// (void*)m_5b0 is the same DWORD mov as the old void* field - but the re-mangled
+// reloc symbol set nudged the EH-scope fuzzy score 54.6% -> 51.9%. Accepted.)
+// before the match starts, confirm every player has the same custom
+// level; otherwise re-enable the dialog and pop the appropriate error modal.
+RVA(0x000c4c00, 0x190)
+void CMultiStartDlg::VerifyCustomLevel() {
+    CMulti* mgr = g_64bd5c;
+    if (mgr->m_isHost == 0) {
+        return;
+    }
+    mgr->SendStatFlag(0x3fc, 1);
+    void* token;
+    if (g_64bd5c->m_5b0 != 0) {
+        CString b = GetConfigNameB();
+        token = g_mgrSettings->BuildRezPath(0, (void*)g_64bd5c->m_5b0, 0, 0, b);
+    } else {
+        CString a = GetConfigNameA();
+        token = g_mgrSettings->BuildRezPath(0, (void*)g_64bd5c->m_5b0, 0, 0, a);
+    }
+    g_64bd5c->m_53c = 0;
+    if (g_64bd5c->Poll((i32)token) == 0) {
+        g_64bd5c->m_530 = 0;
+        EnableWindow(0);
+        g_mgrSettings->ShowModal("Unable to verify custom level with other players");
+        EnableWindow(1);
+    } else if (g_64bd5c->m_53c == 0) {
+        g_64bd5c->m_530 = 1;
+        OnOK();
+    } else {
+        g_64bd5c->m_530 = 0;
+        EnableWindow(0);
+        g_mgrSettings->ShowModal("Not all players have the (same) custom level.");
+        EnableWindow(1);
+    }
+}
+
 // __thiscall(): cache list N's current selection (+1) into the Nth player-slot's combo
 // value, then re-drive the connect state. Four handlers, one per player slot; slot 2
 // resolves its list through GetCtrlC (ResolveItem_c27c0), the rest through 0x1753.
@@ -258,6 +630,34 @@ void CMultiStartDlg::OnSlotSelect3() {
     HWND h = ResolveItem_1753(3)->m_hWnd;
     g_gameReg->m_focusSlots[3].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
+}
+
+// CommitLatencyOption (0xc5020): host-only. Split the battle-latency combo's (control
+// 0x527) selection into its lo/hi words; if either is set, commit them into the CMulti
+// session config (m_5a4 / m_drainReload) and re-save, else flag "none selected" (m_600).
+// @early-stop
+// dead-member-read wall (~92%): retail emits a DEAD `mov ecx,[this+0x60]` (m_slotList)
+// right after the GetSafe1c hwnd load - it occupies ecx, forcing both GetSelItemData
+// out-arg `lea`s into edx (retail `lea (esp),edx; push; lea 8(esp),edx` vs our `lea
+// (esp),ecx; lea 4(esp),edx; push`). MSVC5 emitted that dead read; /O2 reconstruction
+// DCEs any discarded `m_slotList;` access, so the read + its register/offset cascade are
+// the only residual. Logic + every other byte faithful.
+RVA(0x000c5020, 0x95)
+void CMultiStartDlg::CommitLatencyOption() {
+    if (g_64bd5c->m_isHost == 0) {
+        return;
+    }
+    i32 lo, hi;
+    i32 h = GetSafe1c();
+    GetSelItemData((HWND)h, 0x527, &lo, &hi);
+    if (lo != 0 || hi != 0) {
+        g_64bd5c->m_5a4 = lo;
+        g_64bd5c->m_drainReload = hi;
+        g_64bd5c->m_600 = 0;
+        g_64bd5c->Commit3ada(0);
+    } else {
+        g_64bd5c->m_600 = 1;
+    }
 }
 
 // __thiscall(idx): toggle slot idx's ready flag from its checkbox, then either re-sync
@@ -323,3 +723,20 @@ void CCluster0c::Cleanup() {
 }
 SIZE_UNKNOWN(CCluster0c);
 SIZE_UNKNOWN(CNetThing);
+
+// EchoLatencySettings (0xc52f0): print the current session CmdDelay (m_5a4) and
+// ResendDelay (m_drainReload) to the chat log via wsprintfA into a stack buffer.
+RVA(0x000c52f0, 0x43)
+void CMultiStartDlg::EchoLatencySettings() {
+    char buf[128];
+    wsprintfA(buf, s_UsingCmdDelay, g_64bd5c->m_5a4, g_64bd5c->m_drainReload);
+    AppendChatLine(buf);
+}
+
+// ---------------------------------------------------------------------------
+// Configure the singleton with two fixed ids.
+// ---------------------------------------------------------------------------
+RVA(0x000c5f00, 0x15)
+void NetConfigureBe90() {
+    ((CZDArrayDerived*)&g_netBe90)->Construct(0x7d0, 0x7da);
+}

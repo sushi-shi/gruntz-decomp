@@ -68,6 +68,9 @@ i32 CNetSession::Init(void* a1, CNetMgr* a2, void* a3) {
 // (m_resetGuard) and re-reads it with `cmp $0,(esi)` each test; cl CSEs the read and
 // anchors at +0x34 (m_baseSeq) - a non-steerable addressing-mode tie-break. Plus
 // Verify(i32) now unpairs (see file header).
+// (wave2-F: the mandated /GX flip - TU_MIGRATION hard error, interval 0x0bef80
+// carries EH evidence - re-opened this exact anchor wall: 100 -> 89.5. /GX
+// perturbs the anchor tie-break even with no EH scope in the fn. Accepted crater.)
 RVA(0x000c0290, 0x63)
 i32 CNetSession::Verify(i32 n) {
     for (i32 i = 0; i < 4; i++) {

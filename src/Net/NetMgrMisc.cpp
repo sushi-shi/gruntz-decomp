@@ -1,38 +1,14 @@
-// NetMgrMisc.cpp - small CNetMgr-cluster helpers reached through incremental-link
-// thunks: a 4-dword range clear, a connect-state coordinator that fans out to the
-// file-scope CNetMgr singleton (g_64bd5c), and two one-line forwarders onto
-// engine singletons. All callees/globals are external (reloc-masked).
+// NetMgrMisc.cpp - two residual CNetMgr-cluster helpers reached through
+// incremental-link thunks: a 4-dword slot range clear (0xbf120, inside the
+// 0x0bef80 netcmd interval - re-home when that interval's TU merges) and the
+// one-line singleton forwarder NetPollE25c (0xf9710). wave2-F moved the five
+// CMultiStartDlg connect-coordinator fns (0xc2a20/0xc2a50/0xc2a80/0xc40b0/
+// 0xc5f00) into MultiStartDlgRoster.cpp - the WOVEN roster interval TU they
+// belong to. All callees/globals are external (reloc-masked).
 #include <Ints.h>
-#include <Wap32/ZDArrayDerived.h>
-#include <Gruntz/GruntzMgr.h>
-#include <Gruntz/Dialogs.h>    // CMultiStartDlg (the connect-coordinator IS this dialog)
-#include <Gruntz/Multi.h>      // the g_64bd5c singleton is a CMulti (xref-proven)
-#include <Gruntz/NetDlgHost.h> // CMultiStartDlg::m_host (the +0x5c transform host)
+#include <Gruntz/Dialogs.h> // CString (the E25c forwarder's cast)
 #include <rva.h>
 #include <string.h>
-#include <Wap32/ZVec.h>
-
-// The file-scope multiplayer game-state singleton (g_64bd5c) the coordinator
-// dispatches onto. XREF proves it is a CMulti: its +0x528 is-host latch / +0x5c0
-// host index and the Broadcast* / ReportVersionMsg methods reached off it all belong
-// to CMulti's 0xb6110-0xbc420 lobby cluster (Ghidra's "CNetMgr::" labels on
-// 0xba810/0xbaf00 are heuristic mis-attributions of that same cluster). Re-declared
-// by name here (own DATA binding for the CMulti* mangled name) so the load reloc-masks.
-DATA(0x0024bd5c)
-extern CMulti* g_64bd5c;
-
-// The +0x5c host sub-object (CMultiStartDlg::m_host) whose transform the else-branch
-// calls is the canonical CNetDlgHost (<Gruntz/NetDlgHost.h>, unified from the former
-// per-TU CNetXform + MultiStartDlgWorld's MpDlgHost/MpWorldReg views). m_host is a
-// heterogeneous handle (also a slot-array base elsewhere) so the host-facet cast stays.
-// (FindOptionsSlot @0x92e80 via thunk 0x2e00.)
-
-// NOTE: the connect-state coordinator ('this') is CMultiStartDlg, PROVEN (matcher-5):
-// Drive reads [this+0x5c] (== m_host) and self-calls UpdatePlayers (0xc4230) + the
-// reconcile method (0xc2ab0) - both this class's own methods on `this`. The former
-// placeholder `struct CNetConnCoord` is folded into <Gruntz/Dialogs.h>'s CMultiStartDlg;
-// Step -> ConnectStep, Drive -> CMultiStartDlg::Drive. These bodies stay in this unit so
-// the delinker packing is undisturbed.
 
 // A slot object whose +0x3c..+0x48 range is cleared.
 struct CNetSlotAux {
@@ -41,10 +17,6 @@ struct CNetSlotAux {
     void ClearRange(); // bf120
 };
 SIZE_UNKNOWN(CNetSlotAux); // slot-clear view (only +0x3c range pinned); size TBD
-
-// Singletons the forwarders dispatch onto.
-DATA(0x0024be90)
-extern CZDArrayDerived g_netBe90; // VA 0x64be90
 
 struct CNetSingletonE25c {
     // Poll @0x1b9b93 IS CString::~CString; cast at the call.
@@ -75,55 +47,4 @@ RVA(0x000f9710, 0xa)
 i32 NetPollE25c() {
     ((CString*)&g_netE25c)->~CString();
     return 0;
-}
-
-// ---------------------------------------------------------------------------
-// One connect step: reconcile slot 1 (0xc2ab0) then the connect drive (0xc40b0).
-// ---------------------------------------------------------------------------
-RVA(0x000c2a20, 0x13)
-void CMultiStartDlg::ConnectStep() {
-    SyncChannelSlot(1);
-    Drive();
-}
-
-// ---------------------------------------------------------------------------
-// Channel 2 / 3 handlers: reconcile the channel's player slot (0xc2ab0) then re-drive
-// the connect state (0xc40b0). Twins of ConnectStep (channel 1). Re-homed here from
-// src/Stub/Cluster0c.cpp (CCluster0c::Run) and src/Stub/ReconBatch2.cpp (Host_c2a80::Run) -
-// both PROVEN CMultiStartDlg: they self-call SyncChannelSlot + Drive on `this`.
-// ---------------------------------------------------------------------------
-RVA(0x000c2a50, 0x13)
-void CMultiStartDlg::Method_c2a50() {
-    SyncChannelSlot(2);
-    Drive();
-}
-
-RVA(0x000c2a80, 0x13)
-void CMultiStartDlg::Method_c2a80() {
-    SyncChannelSlot(3);
-    Drive();
-}
-
-// ---------------------------------------------------------------------------
-// Drive the connect state off the file-scope CMulti: if this is the host, broadcast
-// the channel table + refresh players; else transform the local id and submit it.
-// ---------------------------------------------------------------------------
-RVA(0x000c40b0, 0x42)
-void CMultiStartDlg::Drive() {
-    CMulti* netMgr = g_64bd5c;
-    if (netMgr->m_isHost != 0) {
-        netMgr->BroadcastChannelTable(0);
-        UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
-    } else {
-        i32 transformedPlayerId = (i32)((CNetDlgHost*)m_host)->FindOptionsSlot(netMgr->m_hostIndex);
-        g_64bd5c->BroadcastOneChannel(transformedPlayerId);
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Configure the singleton with two fixed ids.
-// ---------------------------------------------------------------------------
-RVA(0x000c5f00, 0x15)
-void NetConfigureBe90() {
-    ((CZDArrayDerived*)&g_netBe90)->Construct(0x7d0, 0x7da);
 }

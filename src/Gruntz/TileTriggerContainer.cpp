@@ -15,46 +15,67 @@
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + the emitted
 // code bytes are load-bearing (campaign doctrine).
+//
+// wave2-F: this file is the WOVEN original obj at retail .text
+// [0x115b60 .. 0x118001] (TU_MIGRATION interval 0x115b60, weave 0.43):
+// CTileTriggerContainer + the CTileTriggerSwitchLogic methods the devs defined
+// in this second file (their RVAs interleave with the container's throughout),
+// + the tiletriggerwiring / tiletriggerfactory singletons whose RVAs sit inside
+// the interval. Gate113860 (0x113860) moved OUT to TileTriggerSwitchLogic.cpp
+// (its RVA is inside the 0x110430 interval). Definitions in strict ascending
+// retail-RVA order (the ~dtor 0xc8640 is the lone COMDAT-at-usage outlier).
+#include <Mfc.h>
 #include <rva.h>
+#include <new> // Rez heap throwing operator new / nothrow delete (0x1b9b46 / 0x1b9b82)
+
 #include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileGridCommand.h>
-#include <Mfc.h>
 #include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/TileTriggerWiring.h>
 
-// 0x113860 - Gate113860: mode gate over a container element - validate `obj`
-// against the mode (4 -> the write-check 0x4499, 7 -> the read-check 0x1893, both
-// TileTriggerSwitchLogic-family helpers), passing through otherwise. __stdcall,
-// ret 0x10. The __stdcall helper SerializeApplyA / CTileTriggerFactory::Build call.
-// Re-homed from src/Stub/BoundaryLowerMethods.cpp (was the Gate113860 placeholder).
-extern i32 __stdcall Func1893(void* p); // 0x1893 -> 0x1139a0
-extern i32 __stdcall Func4499(void* p); // 0x4499 -> 0x1138b0
-// @early-stop
-// regalloc wall (~93%): retail keeps obj in eax (so the obj==0 return 0 is free); cl
-// pins it in ecx and adds xor eax. switch(mode) recovers the case layout; the eax vs
-// ecx pick is not source-steerable.
-RVA(0x00113860, 0x3b)
-i32 __stdcall Gate113860(void* obj, i32 mode, i32 a3, i32 a4) {
-    if (obj == 0) {
-        return 0;
-    }
-    switch (mode) {
-        case 4:
-            if (!Func4499(obj)) {
-                return 0;
-            }
-            break;
-        case 7:
-            if (!Func1893(obj)) {
-                return 0;
-            }
-            break;
-    }
-    return 1;
-}
+// The mode gate over a container element (defined in TileTriggerSwitchLogic.cpp,
+// its RVA 0x113860 sits in that TU's interval); reloc-masked rel32 callee of
+// SerializeApplyA/B + CTileTriggerFactory::Build.
+i32 __stdcall Gate113860(void* obj, i32 mode, i32 a3, i32 a4);
 
 // The list1/list2 command element: its data is compared against an arg by the
 // CTileGridCommand classifier (RVA 0x112970, a __thiscall returning 0/-1/+1).
 SIZE_UNKNOWN(TtcElem);
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::Dtor
+// The /GX destructor: runs the most-derived teardown (DtorBase) then destroys the
+// four CObList sub-objects in reverse declaration order (m_list3, m_list2,
+// m_list1, m_base), each at its own EH trylevel.
+// ---------------------------------------------------------------------------
+RVA(0x000c8640, 0x70)
+CTileTriggerContainer::~CTileTriggerContainer() {
+    DtorBase();
+    // m_list3 / m_list2 / m_list1 / m_base are auto-destroyed here (reverse decl
+    // order) by the compiler-emitted /GX member teardown.
+}
+
+// @early-stop
+// 0x115b60 (151 B) = a __thiscall predicate walking this->m_2c's chain and dispatching a
+// vtable slot (+0x44/+0x68) - a tile-trigger container query. Homed from GapFunctions.cpp
+// (matcher-5) by RVA neighbourhood (this TU's .text block brackets 0x115b60). Homed pending
+// full reconstruction of the receiver's field/vtable model.
+RVA(0x00115b60, 0x97)
+i32 Gap_115b60(void) {
+    return 0;
+}
+
+// GetFlag74 (0x115f00): test-and-set the m_block[18] latch (1 on first call, then
+// 0). Out-of-line (retail emits it standalone; the inline member folded away).
+RVA(0x00115f00, 0x13)
+i32 CTileTriggerSwitchLogic::GetFlag74() {
+    if (m_block[18] != 0) {
+        return 0;
+    }
+    m_block[18] = 1;
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // CTileTriggerContainer::DtorBase
@@ -67,6 +88,263 @@ void CTileTriggerContainer::DtorBase() {
         RemoveAll();
         m_74 = 0;
     }
+}
+
+// Engine-label backlog stubs (moved from src/Stub/CTileTriggerSwitchLogic.cpp).
+
+// @confidence: high
+// @source: rtti-vptr
+// @stub
+RVA(0x00115f60, 0x2de)
+void CTileTriggerSwitchLogic::CTileTriggerSwitchLogic_115f60() {}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::RemoveByKeys
+// Walks the child list (head @ +0x04, an MFC CObList: node next@0, prev@4, data@8);
+// on the first child whose +0x04 == k2 and +0x10 == k1, deletes the child (inlined
+// dtor vptr-restamp + RezFree), unlinks the node via CObList::RemoveAt, returns 1.
+// Returns 0 if no match. The loop is the inlined CObList::GetNext idiom: a saved
+// position (cur, esi) + the GetNext local (pn, ecx) are two distinct node copies;
+// pn advances node then derefs data, so retail materializes the extra `mov ecx,eax`
+// copy and defers the data load past the advance.
+// ---------------------------------------------------------------------------
+RVA(0x00116320, 0x66)
+i32 CTileTriggerSwitchLogic::RemoveByKeys(i32 k1, i32 k2) {
+    ListNode* node = (ListNode*)m_04;
+    while (node) {
+        ListNode* cur = node; // savePos (esi)
+        ListNode* pn = node;  // GetNext local (ecx)
+        node = node->m_next;
+        CTileTriggerSwitchLogic* data = pn->m_data;
+        if (data->m_04 == k2 && data->m_key1 == k1) {
+            if (data) {
+                // The inlined `delete data`: the dtor restamps the vptr
+                // (`mov [data],offset ??_7`) + clears m_20, then RezFree frees it.
+                data->~CTileTriggerSwitchLogic();
+                RezFree(data);
+            }
+            ListRemoveAt(cur);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// TileTriggerWiring.cpp - CTileTriggerWiring::AddLogicDefaults (0x1163b0): forward
+// to the full AddLogic factory, supplying six zeroed 16-byte parameter blocks.
+
+// ===========================================================================
+// CTileTriggerWiring::AddLogicDefaults  (0x1163b0)
+// ===========================================================================
+// @early-stop
+// Register-allocation wall (topic:regalloc). The forwarder structure is faithful -
+// push the four trailing ids, build six in-place zeroed 16-byte param blocks, push
+// the five leading ids, tail into AddLogic - and the zeroing-ctor temps reproduce
+// retail's shared-zero-register stores (MSVC5 will NOT value-init `CTrigParam()`,
+// so the explicit ctor is required: a no-ctor POD copied garbage, 27%->76%). The
+// residual is purely which registers cl picks: retail loads the forwarded ids
+// THROUGH ebx (reused as the block pointer) and keeps exactly FOUR zero regs
+// (eax/edx/esi/edi) live across all six blocks; cl loads through ebp and spends a
+// FIFTH zero reg (ebx), so every arg-load/zero-store operand shifts. A pure /O2
+// regalloc coin-flip with no source lever. ~75.9%, logic complete; deferred to the
+// final sweep.
+RVA(0x001163b0, 0xb2)
+void CTileTriggerWiring::
+    AddLogicDefaults(i32 type, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9) {
+    AddLogic(
+        type,
+        a2,
+        a3,
+        a4,
+        a5,
+        CTrigParam(),
+        CTrigParam(),
+        CTrigParam(),
+        CTrigParam(),
+        CTrigParam(),
+        CTrigParam(),
+        a6,
+        a7,
+        a8,
+        a9
+    );
+}
+
+// ===========================================================================
+// CTileTriggerWiring::AddLogicFromRecord  (0x1164a0)
+// ===========================================================================
+// Same forward as AddLogicDefaults, but the five ids (a3/a4/a5) and the six
+// CTrigParam blocks come from a source tile record instead of being zeroed:
+// a3/a4/a5 = rec->m_164/m_168/m_4; p1..p6 = rec->m_134/m_144/m_154/m_64 and the
+// +0x7c sub-object's m_f0/m_100. __thiscall, ret 0xc.
+RVA(0x001164a0, 0x116)
+void CTileTriggerWiring::AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord* rec) {
+    AddLogic(
+        type,
+        a2,
+        rec->m_164,
+        rec->m_168,
+        rec->m_4,
+        rec->m_134,
+        rec->m_144,
+        rec->m_154,
+        rec->m_64,
+        rec->m_7c->m_f0,
+        rec->m_7c->m_100,
+        rec->m_124,
+        rec->m_120,
+        rec->m_118,
+        rec->m_128
+    );
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::AddToList3
+// Allocates a 0x28-byte mark, constructs it, and (when its init flag is clear)
+// fills its fields from the args, back-links it to this container, notifies it,
+// and appends it to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
+// ---------------------------------------------------------------------------
+// @early-stop
+// /GX operator-new wall (~43%): the RezAlloc + placement-ctor + exception-cleanup
+// trylevel guard around the partially-constructed heap element is not reproducible
+// with a plain new (distinct from the member-teardown dtor frame, which IS
+// steerable - see eh-dtor-model-members-as-destructible.md); field-fill + Notify +
+// AddTail identical.
+RVA(0x00116a40, 0xf5)
+TtcMark*
+CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
+    TtcMark* raw = (TtcMark*)RezAlloc(0x28);
+    TtcMark* m = raw != 0 ? TtcMarkCtor(raw) : 0;
+    if (m == 0) {
+        return 0;
+    }
+    if (m->m_10 != 0) {
+        m->m_10 = 0;
+        RezFree(m);
+        return 0;
+    }
+    m->m_04 = a2;
+    m->m_08 = a3;
+    m->m_0c = a4;
+    m->m_18 = a5;
+    m->m_1c = a6;
+    m->m_24 = a8;
+    m->m_00 = a1;
+    m->m_14 = this;
+    m->m_10 = 1;
+    m->m_20 = a7;
+    ((CTileActionEvent*)m)->SetActionCode((i32)a1);
+    m_list3.AddTail(m);
+    return m;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::AddToList3Switch  (0x116b80)
+// Twin of AddToList3: allocates+constructs a 0x28-byte mark, and (when its init
+// flag is clear) fills its fields from the args, computes four state flags from a
+// switch on `type` (cases 0..5, default = all clear), notifies it, and appends it
+// to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
+// ---------------------------------------------------------------------------
+// @early-stop
+// RezAlloc + placement-ctor /GX wall (~49%): twin of AddToList3 - retail carries the
+// ctor-in-flight EH frame (push -1/fs:0 + trylevel + shared jmp epilogue) that MSVC5
+// won't emit for the RezAlloc+ctor pair; switch flag-fill + Notify + AddTail are
+// byte-identical (scores above the no-switch twin AddToList3 at 43%).
+// See docs/patterns/rezalloc-placement-new-no-eh-frame.md
+RVA(0x00116b80, 0x105)
+TtcMark* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type) {
+    TtcMark* raw = (TtcMark*)RezAlloc(0x28);
+    TtcMark* m = raw != 0 ? TtcMarkCtor(raw) : 0;
+    if (m == 0) {
+        return 0;
+    }
+    i32 a = 0, b = 0, c = 0, d = 0;
+    switch (type) {
+        case 0:
+            d = 1;
+            break;
+        case 1:
+            c = 1;
+            break;
+        case 2:
+            b = 1;
+            break;
+        case 3:
+            a = 1;
+            break;
+        case 5:
+            a = 1;
+            b = 1;
+            c = 1;
+            d = 1;
+            break;
+    }
+    if (m->m_10 != 0) {
+        m->m_10 = 0;
+        RezFree(m);
+        return 0;
+    }
+    m->m_04 = a2;
+    m->m_08 = a3;
+    m->m_0c = a4;
+    m->m_20 = b;
+    m->m_00 = a1;
+    m->m_14 = this;
+    m->m_10 = 1;
+    m->m_18 = d;
+    m->m_1c = c;
+    m->m_24 = a;
+    ((CTileActionEvent*)m)->SetActionCode((i32)a1);
+    m_list3.AddTail(m);
+    return m;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::AddToList1
+// Allocates a 0xc8-byte command element, constructs it, copies the 9-dword block
+// into +0x9c, fills the rest from the args + two game-clock snapshots, back-links
+// this container, and appends it to m_list1.  Returns the element, or 0 on
+// alloc/double-init failure (vtable-stamped + freed).
+// ---------------------------------------------------------------------------
+// @early-stop
+// /GX operator-new wall (~29%): the RezAlloc + placement-ctor + exception-cleanup
+// trylevel guard around the partial heap element is not reproducible with a plain
+// new; field-fill + rep-movs + AddTail identical (arg->field mapping approximate).
+RVA(0x00116cf0, 0x111)
+TtcBaseElem*
+CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i32 a6, i32 a7) {
+    TtcBaseElem* raw = (TtcBaseElem*)RezAlloc(0xc8);
+    TtcBaseElem* e = raw != 0 ? TtcBaseElemCtor(raw) : 0;
+    if (e == 0) {
+        return 0;
+    }
+    if (e->m_1c != 0) {
+        // inline-dtor base-vptr restore dropped (compiler-managed; % ok)
+        e->m_1c = 0;
+        RezFree(e);
+        return 0;
+    }
+    for (i32 i = 0; i < 9; i++) {
+        e->m_9c[i] = block9[i];
+    }
+    e->m_c0 = a4;
+    e->m_c4 = a6;
+    e->m_0c = a2;
+    e->m_04 = 0x16;
+    e->m_08 = a1;
+    e->m_10 = block9;
+    e->m_20 = this;
+    e->m_1c = 1;
+    e->m_38 = 0;
+    e->m_24 = (i32)g_645588;
+    e->m_28 = 0;
+    e->m_34 = 0;
+    e->m_2c = 0;
+    e->m_30 = 0;
+    e->m_30 = a7;
+    e->m_24 = (i32)g_645588;
+    m_list1.AddTail(e);
+    return e;
 }
 
 // ---------------------------------------------------------------------------
@@ -99,6 +377,27 @@ i32 CTileTriggerContainer::DelFromList1(void* data) {
             return 1;
         }
     } while (node != 0);
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::FindChild
+// Walks the child list (head @ +0x04; node next@+0x00, data@+0x08); returns the
+// first child whose +0x10 == k1 and (k2==0 || +0x04 == k2), else NULL.
+// ---------------------------------------------------------------------------
+RVA(0x00116ee0, 0x2f)
+CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindChild(i32 k1, i32 k2) {
+    ListNode* node = (ListNode*)m_04;
+    while (node) {
+        ListNode* cur = node;
+        node = node->m_next;
+        CTileTriggerSwitchLogic* data = cur->m_data;
+        if (data->m_key1 == k1) {
+            if (k2 == 0 || data->m_04 == k2) {
+                return data;
+            }
+        }
+    }
     return 0;
 }
 
@@ -142,6 +441,66 @@ void* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
         } while (node != 0);
     }
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::RemoveAll
+// Empties all four lists, inline-destroying every element (stamp its vtable +
+// clear a field + RezFree) before RemoveAll'ing the list, then clears m_70.  The
+// element type/cleared-field differs per list: m_list1 / m_list2 hold grid
+// commands (vtable 0x5eaea4, clear +0x1c); m_base holds switch siblings (vtable
+// 0x5eae8c, clear +0x20); m_list3 holds plain records (clear +0x10, no stamp).
+// ---------------------------------------------------------------------------
+RVA(0x00116fa0, 0xc7)
+void CTileTriggerContainer::RemoveAll() {
+    TtcNode* node = m_list1.m_pNodeHead;
+    while (node != 0) {
+        TtcNode* cur = node;
+        node = node->m_next;
+        i32* elem = (i32*)cur->m_data;
+        if (elem != 0) {
+            // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
+            elem[7] = 0; // +0x1c
+            RezFree(elem);
+        }
+    }
+    m_list1.RemoveAll();
+    node = m_base.m_pNodeHead;
+    while (node != 0) {
+        TtcNode* cur = node;
+        node = node->m_next;
+        i32* elem = (i32*)cur->m_data;
+        if (elem != 0) {
+            // inline-dtor base-vptr restore dropped (compiler-managed; % ok)
+            elem[8] = 0; // +0x20
+            RezFree(elem);
+        }
+    }
+    m_base.RemoveAll();
+    node = m_list2.m_pNodeHead;
+    while (node != 0) {
+        TtcNode* cur = node;
+        node = node->m_next;
+        i32* elem = (i32*)cur->m_data;
+        if (elem != 0) {
+            // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
+            elem[7] = 0; // +0x1c
+            RezFree(elem);
+        }
+    }
+    m_list2.RemoveAll();
+    node = m_list3.m_pNodeHead;
+    while (node != 0) {
+        TtcNode* cur = node;
+        node = node->m_next;
+        i32* elem = (i32*)cur->m_data;
+        if (elem != 0) {
+            elem[4] = 0; // +0x10
+            RezFree(elem);
+        }
+    }
+    m_list3.RemoveAll();
+    m_70 = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -210,6 +569,24 @@ i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
 }
 
 // ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::FindByField0C
+// Walks the list at +0x58; returns the first child whose +0x0c == key, else NULL.
+// ---------------------------------------------------------------------------
+RVA(0x001171d0, 0x20)
+CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindByField0C(i32 key) {
+    ListNode* node = (ListNode*)m_block[11];
+    while (node) {
+        ListNode* cur = node;
+        node = node->m_next;
+        CTileTriggerSwitchLogic* data = cur->m_data;
+        if (data->m_key0c == key) {
+            return data;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // CTileTriggerContainer::DelFromList3
 // Scans list3 (head @ +0x58) for the node whose data == arg; deletes that
 // element inline ([elem+0x10]=0 + RezFree) and unlinks the node via
@@ -233,261 +610,6 @@ i32 CTileTriggerContainer::DelFromList3(void* data) {
         }
     }
     return 0;
-}
-
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::RemoveAll
-// Empties all four lists, inline-destroying every element (stamp its vtable +
-// clear a field + RezFree) before RemoveAll'ing the list, then clears m_70.  The
-// element type/cleared-field differs per list: m_list1 / m_list2 hold grid
-// commands (vtable 0x5eaea4, clear +0x1c); m_base holds switch siblings (vtable
-// 0x5eae8c, clear +0x20); m_list3 holds plain records (clear +0x10, no stamp).
-// ---------------------------------------------------------------------------
-RVA(0x00116fa0, 0xc7)
-void CTileTriggerContainer::RemoveAll() {
-    TtcNode* node = m_list1.m_pNodeHead;
-    while (node != 0) {
-        TtcNode* cur = node;
-        node = node->m_next;
-        i32* elem = (i32*)cur->m_data;
-        if (elem != 0) {
-            // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
-            elem[7] = 0; // +0x1c
-            RezFree(elem);
-        }
-    }
-    m_list1.RemoveAll();
-    node = m_base.m_pNodeHead;
-    while (node != 0) {
-        TtcNode* cur = node;
-        node = node->m_next;
-        i32* elem = (i32*)cur->m_data;
-        if (elem != 0) {
-            // inline-dtor base-vptr restore dropped (compiler-managed; % ok)
-            elem[8] = 0; // +0x20
-            RezFree(elem);
-        }
-    }
-    m_base.RemoveAll();
-    node = m_list2.m_pNodeHead;
-    while (node != 0) {
-        TtcNode* cur = node;
-        node = node->m_next;
-        i32* elem = (i32*)cur->m_data;
-        if (elem != 0) {
-            // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
-            elem[7] = 0; // +0x1c
-            RezFree(elem);
-        }
-    }
-    m_list2.RemoveAll();
-    node = m_list3.m_pNodeHead;
-    while (node != 0) {
-        TtcNode* cur = node;
-        node = node->m_next;
-        i32* elem = (i32*)cur->m_data;
-        if (elem != 0) {
-            elem[4] = 0; // +0x10
-            RezFree(elem);
-        }
-    }
-    m_list3.RemoveAll();
-    m_70 = 0;
-}
-
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::SetCell
-// Looks up the keyed element for cell (a,b) (key = (a<<8)|b).  If it exists, a
-// verb of 5 flags all four state words [+0x18..+0x24], otherwise just word
-// [+0x18 + verb*4]; either way the element is notified.  If absent, a new mark
-// is registered (AddMark key,0x1a); on failure the fallback (RunFallback a,b)
-// decides the result.  Returns 1 on success, 0 only from a failed fallback.
-// ---------------------------------------------------------------------------
-// @early-stop
-// regalloc wall (~78%): logic identical; retail pins key in edi / this in esi,
-// the recompile swaps them (esi<->edi), propagating through the body.
-RVA(0x00117f60, 0xa1)
-i32 CTileTriggerContainer::SetCell(i32 a, i32 b, i32 verb) {
-    i32 key = (a << 8) + b;
-    TtcKeyedElem* elem = FindByKey(key);
-    if (elem != 0) {
-        if (verb == 5) {
-            elem->m_flags[0] = 1;
-            elem->m_flags[1] = 1;
-            elem->m_flags[2] = 1;
-            elem->m_flags[3] = 1;
-        } else {
-            elem->m_flags[verb] = 1;
-        }
-        ((CTileActionEvent*)elem)->SetActionCode((i32) * (void**)elem);
-        return 1;
-    }
-    if (AddMark(key, 0x1a) != 0) {
-        return 1;
-    }
-    return RunFallback(a, b) != 0;
-}
-
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::Dtor
-// The /GX destructor: runs the most-derived teardown (DtorBase) then destroys the
-// four CObList sub-objects in reverse declaration order (m_list3, m_list2,
-// m_list1, m_base), each at its own EH trylevel.
-// ---------------------------------------------------------------------------
-RVA(0x000c8640, 0x70)
-CTileTriggerContainer::~CTileTriggerContainer() {
-    DtorBase();
-    // m_list3 / m_list2 / m_list1 / m_base are auto-destroyed here (reverse decl
-    // order) by the compiler-emitted /GX member teardown.
-}
-
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::AddToList3
-// Allocates a 0x28-byte mark, constructs it, and (when its init flag is clear)
-// fills its fields from the args, back-links it to this container, notifies it,
-// and appends it to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
-// ---------------------------------------------------------------------------
-// @early-stop
-// /GX operator-new wall (~43%): the RezAlloc + placement-ctor + exception-cleanup
-// trylevel guard around the partially-constructed heap element is not reproducible
-// with a plain new (distinct from the member-teardown dtor frame, which IS
-// steerable - see eh-dtor-model-members-as-destructible.md); field-fill + Notify +
-// AddTail identical.
-RVA(0x00116a40, 0xf5)
-TtcMark*
-CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8) {
-    TtcMark* raw = (TtcMark*)RezAlloc(0x28);
-    TtcMark* m = raw != 0 ? TtcMarkCtor(raw) : 0;
-    if (m == 0) {
-        return 0;
-    }
-    if (m->m_10 != 0) {
-        m->m_10 = 0;
-        RezFree(m);
-        return 0;
-    }
-    m->m_04 = a2;
-    m->m_08 = a3;
-    m->m_0c = a4;
-    m->m_18 = a5;
-    m->m_1c = a6;
-    m->m_24 = a8;
-    m->m_00 = a1;
-    m->m_14 = this;
-    m->m_10 = 1;
-    m->m_20 = a7;
-    ((CTileActionEvent*)m)->SetActionCode((i32)a1);
-    m_list3.AddTail(m);
-    return m;
-}
-
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::AddToList1
-// Allocates a 0xc8-byte command element, constructs it, copies the 9-dword block
-// into +0x9c, fills the rest from the args + two game-clock snapshots, back-links
-// this container, and appends it to m_list1.  Returns the element, or 0 on
-// alloc/double-init failure (vtable-stamped + freed).
-// ---------------------------------------------------------------------------
-// @early-stop
-// /GX operator-new wall (~29%): the RezAlloc + placement-ctor + exception-cleanup
-// trylevel guard around the partial heap element is not reproducible with a plain
-// new; field-fill + rep-movs + AddTail identical (arg->field mapping approximate).
-RVA(0x00116cf0, 0x111)
-TtcBaseElem*
-CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i32 a6, i32 a7) {
-    TtcBaseElem* raw = (TtcBaseElem*)RezAlloc(0xc8);
-    TtcBaseElem* e = raw != 0 ? TtcBaseElemCtor(raw) : 0;
-    if (e == 0) {
-        return 0;
-    }
-    if (e->m_1c != 0) {
-        // inline-dtor base-vptr restore dropped (compiler-managed; % ok)
-        e->m_1c = 0;
-        RezFree(e);
-        return 0;
-    }
-    for (i32 i = 0; i < 9; i++) {
-        e->m_9c[i] = block9[i];
-    }
-    e->m_c0 = a4;
-    e->m_c4 = a6;
-    e->m_0c = a2;
-    e->m_04 = 0x16;
-    e->m_08 = a1;
-    e->m_10 = block9;
-    e->m_20 = this;
-    e->m_1c = 1;
-    e->m_38 = 0;
-    e->m_24 = (i32)g_645588;
-    e->m_28 = 0;
-    e->m_34 = 0;
-    e->m_2c = 0;
-    e->m_30 = 0;
-    e->m_30 = a7;
-    e->m_24 = (i32)g_645588;
-    m_list1.AddTail(e);
-    return e;
-}
-
-// ---------------------------------------------------------------------------
-// CTileTriggerContainer::AddToList3Switch  (0x116b80)
-// Twin of AddToList3: allocates+constructs a 0x28-byte mark, and (when its init
-// flag is clear) fills its fields from the args, computes four state flags from a
-// switch on `type` (cases 0..5, default = all clear), notifies it, and appends it
-// to m_list3.  Returns the mark, or 0 on alloc/double-init failure.
-// ---------------------------------------------------------------------------
-// @early-stop
-// RezAlloc + placement-ctor /GX wall (~49%): twin of AddToList3 - retail carries the
-// ctor-in-flight EH frame (push -1/fs:0 + trylevel + shared jmp epilogue) that MSVC5
-// won't emit for the RezAlloc+ctor pair; switch flag-fill + Notify + AddTail are
-// byte-identical (scores above the no-switch twin AddToList3 at 43%).
-// See docs/patterns/rezalloc-placement-new-no-eh-frame.md
-RVA(0x00116b80, 0x105)
-TtcMark* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type) {
-    TtcMark* raw = (TtcMark*)RezAlloc(0x28);
-    TtcMark* m = raw != 0 ? TtcMarkCtor(raw) : 0;
-    if (m == 0) {
-        return 0;
-    }
-    i32 a = 0, b = 0, c = 0, d = 0;
-    switch (type) {
-        case 0:
-            d = 1;
-            break;
-        case 1:
-            c = 1;
-            break;
-        case 2:
-            b = 1;
-            break;
-        case 3:
-            a = 1;
-            break;
-        case 5:
-            a = 1;
-            b = 1;
-            c = 1;
-            d = 1;
-            break;
-    }
-    if (m->m_10 != 0) {
-        m->m_10 = 0;
-        RezFree(m);
-        return 0;
-    }
-    m->m_04 = a2;
-    m->m_08 = a3;
-    m->m_0c = a4;
-    m->m_20 = b;
-    m->m_00 = a1;
-    m->m_14 = this;
-    m->m_10 = 1;
-    m->m_18 = d;
-    m->m_1c = c;
-    m->m_24 = a;
-    ((CTileActionEvent*)m)->SetActionCode((i32)a1);
-    m_list3.AddTail(m);
-    return m;
 }
 
 // ---------------------------------------------------------------------------
@@ -664,12 +786,432 @@ i32 __stdcall SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrig
     }
 }
 
+// TileTriggerFactory.cpp - the tile-trigger logic factory @0x117800 (proximity
+// CTileTriggerContainer / CTileTriggerSwitchLogic). A __thiscall(reader, 7, a2, a3)
+// ret 0x10 that reads a 4-byte type id off the serialized `reader` (vtable slot 11 =
+// +0x2c), then dispatches a dense `switch(id)` (ids 1..26, the MSVC compact byte-index
+// + jump-table idiom: index table @0x517cbc, jump table @0x517c80) to build the matching
+// trigger-logic object. Each case Rez-allocates the object (0x8c / 0x9c / 0xc8 bytes),
+// runs its 0-arg ctor thunk, then a 4-arg register thunk (0x277f for ids 1..8, 0x1abe
+// for ids 23..26 + 21, 0x1d39 for id 22), stamps the owner + id, and returns it. id 21
+// additionally resolves the board tile under the object and, on a 0x67/0x68 tile, latches
+// the object into this->m_70.
+//
+// Field names are placeholders; only OFFSETS + code bytes are load-bearing. The ctor /
+// register thunks are reloc-masked externals (no body); the type id map (id-1):
+//   0..7 -> cases 0..7   8..19 -> default(0)   20..25 -> cases 8..13
+
+i32 __stdcall Gate113860(void* a, i32 b, i32 c, i32 d); // 0x113860 (TtcTrigElem::Reg* view)
+
+// The serialized type id is read off the shared CSerialArchive stream (Read @
+// vtable slot 11, +0x2c); `mov eax,[r]; call [eax+0x2c]` falls out with no cast.
+
+// A board tile-object reached via g_mgrSettings->m_world->m_24->m_4c[tile]; slot 8 (+0x20)
+// returns the tile's gameplay type id. Reloc-masked virtual.
+struct CTileObj {
+    virtual void s0();
+    virtual void s1();
+    virtual void s2();
+    virtual void s3();
+    virtual void s4();
+    virtual void s5();
+    virtual void s6();
+    virtual void s7();
+    virtual i32 TypeId(); // slot 8 (+0x20)
+};
+SIZE_UNKNOWN(CTileObj);
+
+// The board geometry (g_mgrSettings->m_world->m_24): m_5c->m_28 / m_5c->m_2c are the x/y
+// bounds, m_5c->m_24 the row base, m_5c->m_20 the cell->tile map, m_4c the tile-object
+// table. Reached by raw offset (engine struct, modeled minimally).
+struct CTrigBoardGeo {
+    char m_pad00[0x24];
+    i32* m_24row;                     // +0x24  row base (cell index = m_24row[y] + x)
+    char m_pad28[0x20 - 0x28 + 0x20]; // pad to +0x20-relative kept raw below
+};
+SIZE_UNKNOWN(CTrigBoardGeo);
+struct CTrigBoard {
+    char m_pad00[0x4c];
+    CTileObj** m_4c; // +0x4c  tile-object table (indexed by the resolved tile id & 0xffff)
+    char m_pad50[0x5c - 0x50];
+    i32* m_5c; // +0x5c  board geometry block (bounds @0x28/0x2c, row-base @0x24, cell-map @0x20)
+};
+SIZE_UNKNOWN(CTrigBoard);
+struct CTrigMgrInner {
+    char m_pad00[0x24];
+    CTrigBoard* m_24; // +0x24
+};
+SIZE_UNKNOWN(CTrigMgrInner);
+struct CTrigMgr {
+    char m_pad00[0x30];
+    CTrigMgrInner* m_world; // +0x30
+};
+SIZE_UNKNOWN(CTrigMgr);
+extern CTrigMgr* g_mgrSettings; // ?g_mgrSettings (0x64556c)
+
+// The built trigger-logic object. The 14 distinct ctor thunks (0-arg __thiscall,
+// returning the object) and the 3 register thunks (4-arg __thiscall, returning success)
+// are reloc-masked externals reached through the incremental-link thunk table.
+//
+// DISPOSITION (CTrigLogic8c/9c/C8): these are NOT single classes - each is a SIZE
+// BUCKET (0x8c/0x9c/0xc8 bytes) that the switch allocates for SEVERAL distinct real
+// leaf classes (e.g. CTrigLogic8c covers 6 different trigger-logic leaves). A single
+// real class name can't stand for a size bucket, so the buckets stay size-tagged;
+// but each per-id ctor selector IS one real RTTI class, resolved by ILT-jmp target
+// and now named for it (the tag/New* pairs below -> CTileTriggerSwitchLogic /
+// CTileMultiTriggerSwitchLogic / ... / CGiantRockLogic, defs in
+// TileTriggerDerivedCtors.cpp + the two base ctors 0x110430/0x1107f0).
+struct CTileTriggerFactory; // the owning factory (this); back-stamped into m_20/m_24
+
+struct CTrigLogic {
+    struct TileTriggerSwitchLogicTag {};
+    struct TileMultiTriggerSwitchLogicTag {};
+    struct TileExclusiveTriggerSwitchLogicTag {};
+    struct TileSecretTriggerSwitchLogicTag {};
+    struct TileTimeTriggerSwitchLogicTag {};
+    struct CheckpointTriggerSwitchLogicTag {};
+    struct TileTriggerLogicTag {};
+    struct GiantRockLogicTag {};
+    struct TileTimeTriggerLogicTag {};
+    struct TileSecretTriggerLogicTag {};
+    struct CoveredPowerupLogicTag {};
+
+    i32 m_00; // +0x00
+    i32 m_04; // +0x04  type id (the switch id 1..26)
+    i32 m_08; // +0x08  (id 21: board x)
+    i32 m_0c; // +0x0c  (id 21: board y)
+    char m_pad10[0x20 - 0x10];
+    CTileTriggerFactory* m_20; // +0x20  owner (1abe / 1d39 group)
+    CTileTriggerFactory* m_24; // +0x24  owner (277f group)
+    char m_pad28[0x74 - 0x28]; // +0x28..+0x73 (folds the unused +0x70 owner slot)
+
+    // Each thunk (ILT 0xNNNN -> the real leaf ctor RVA) constructs one RTTI class;
+    // resolved from the ILT jmp target (TileTriggerDerivedCtors.cpp / the base ctors).
+    CTrigLogic*
+    NewTileTriggerSwitchLogic(); // ILT 0x3206 -> ??0CTileTriggerSwitchLogic 0x110430 (ids 1,2,5)
+    CTrigLogic*
+    NewTileMultiTriggerSwitchLogic(); // ILT 0x3eb3 -> ??0CTileMultiTriggerSwitchLogic 0x111f10 (id 3)
+    CTrigLogic*
+    NewTileExclusiveTriggerSwitchLogic(); // ILT 0x4192 -> ??0CTileExclusiveTriggerSwitchLogic 0x112050 (id 4)
+    CTrigLogic*
+    NewTileSecretTriggerSwitchLogic(); // ILT 0x2db5 -> ??0CTileSecretTriggerSwitchLogic 0x112790 (id 6)
+    CTrigLogic*
+    NewTileTimeTriggerSwitchLogic(); // ILT 0x332d -> ??0CTileTimeTriggerSwitchLogic 0x1127c0 (id 7)
+    CTrigLogic*
+    NewCheckpointTriggerSwitchLogic(); // ILT 0x2f72 -> ??0CCheckpointTriggerSwitchLogic 0x1127f0 (id 8)
+    CTrigLogic* NewTileTriggerLogic(); // ILT 0x43b3 -> ??0CTileTriggerLogic 0x1107f0 (ids 21,24)
+    CTrigLogic* NewGiantRockLogic();   // ILT 0x2c3e -> ??0CGiantRockLogic 0x112210 (id 22)
+    CTrigLogic*
+    NewTileTimeTriggerLogic(); // ILT 0x18de -> ??0CTileTimeTriggerLogic 0x112270 (id 23)
+    CTrigLogic*
+    NewTileSecretTriggerLogic(); // ILT 0x310c -> ??0CTileSecretTriggerLogic 0x112760 (id 25)
+    CTrigLogic* NewCoveredPowerupLogic(); // ILT 0x2a4f -> ??0CCoveredPowerupLogic 0x112240 (id 26)
+    i32 Reg277f(void* r, i32 k, i32 a2, i32 a3); // 0x277f (ids 1..8)
+    i32 Reg1abe(void* r, i32 k, i32 a2, i32 a3); // 0x1abe (ids 21,23..26)
+    i32 Reg1d39(void* r, i32 k, i32 a2, i32 a3); // 0x1d39 (id 22)
+};
+SIZE_UNKNOWN(CTrigLogic);
+
+struct CTrigLogic8c : public CTrigLogic {
+    inline CTrigLogic8c(CTrigLogic::TileTriggerSwitchLogicTag) {
+        NewTileTriggerSwitchLogic();
+    }
+    inline CTrigLogic8c(CTrigLogic::TileMultiTriggerSwitchLogicTag) {
+        NewTileMultiTriggerSwitchLogic();
+    }
+    inline CTrigLogic8c(CTrigLogic::TileExclusiveTriggerSwitchLogicTag) {
+        NewTileExclusiveTriggerSwitchLogic();
+    }
+    inline CTrigLogic8c(CTrigLogic::TileSecretTriggerSwitchLogicTag) {
+        NewTileSecretTriggerSwitchLogic();
+    }
+    inline CTrigLogic8c(CTrigLogic::TileTimeTriggerSwitchLogicTag) {
+        NewTileTimeTriggerSwitchLogic();
+    }
+    inline CTrigLogic8c(CTrigLogic::CheckpointTriggerSwitchLogicTag) {
+        NewCheckpointTriggerSwitchLogic();
+    }
+
+    char m_sizePad[0x8c - 0x74];
+};
+SIZE_UNKNOWN(CTrigLogic8c);
+
+struct CTrigLogic9c : public CTrigLogic {
+    inline CTrigLogic9c(CTrigLogic::TileTriggerLogicTag) {
+        NewTileTriggerLogic();
+    }
+    inline CTrigLogic9c(CTrigLogic::TileTimeTriggerLogicTag) {
+        NewTileTimeTriggerLogic();
+    }
+    inline CTrigLogic9c(CTrigLogic::TileSecretTriggerLogicTag) {
+        NewTileSecretTriggerLogic();
+    }
+    inline CTrigLogic9c(CTrigLogic::CoveredPowerupLogicTag) {
+        NewCoveredPowerupLogic();
+    }
+
+    char m_sizePad[0x9c - 0x74];
+};
+SIZE_UNKNOWN(CTrigLogic9c);
+
+struct CTrigLogicC8 : public CTrigLogic {
+    inline CTrigLogicC8(CTrigLogic::GiantRockLogicTag) {
+        NewGiantRockLogic();
+    }
+
+    char m_sizePad[0xc8 - 0x74];
+};
+SIZE_UNKNOWN(CTrigLogicC8);
+
+// The factory container (this): the built object's owner; id 21 latches the object
+// into this->m_70.
+struct CTileTriggerFactory {
+    char m_pad00[0x70];
+    CTrigLogic* m_70; // +0x70  id-21 latches the built object here
+
+    void* Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a3); // 0x117800
+};
+SIZE_UNKNOWN(CTileTriggerFactory);
+
+// Build the 277f-group object: alloc 0x8c, run `ctor`, register, stamp owner+id.
+static void* Reg277fTail(
+    CTileTriggerFactory* self,
+    CTrigLogic* obj,
+    CSerialArchive* reader,
+    i32 a2,
+    i32 a3,
+    i32 id
+) {
+    if (Gate113860((void*)reader, 7, a2, a3) == 0) {
+        return 0;
+    }
+    obj->m_24 = self;
+    obj->m_04 = id;
+    return obj;
+}
+
+// Build the 1abe-group object tail: register, stamp owner+id.
+static void* Reg1abeTail(
+    CTileTriggerFactory* self,
+    CTrigLogic* obj,
+    CSerialArchive* reader,
+    i32 a2,
+    i32 a3,
+    i32 id
+) {
+    if (Gate113860((void*)reader, 7, a2, a3) == 0) {
+        return 0;
+    }
+    obj->m_20 = self;
+    obj->m_04 = id;
+    return obj;
+}
+
 // @early-stop
-// 0x115b60 (151 B) = a __thiscall predicate walking this->m_2c's chain and dispatching a
-// vtable slot (+0x44/+0x68) - a tile-trigger container query. Homed from GapFunctions.cpp
-// (matcher-5) by RVA neighbourhood (this TU's .text block brackets 0x115b60). Homed pending
-// full reconstruction of the receiver's field/vtable model.
-RVA(0x00115b60, 0x97)
-i32 Gap_115b60(void) {
+// 0x47f (1151 B) /GX compact-switch factory. The body reproduces the reader read, the
+// dense id 1..26 switch (the documented MSVC byte-index + jump-table wall: id->case map
+// recovered from 0x517cbc/0x517c80), every per-case Rez-alloc + ctor + register + owner
+// stamp, and the id 21 board-tile gate. The plateau is the jump-table/reloc-typing wall
+// + the per-`new` /GX trylevel state machine (each case carries its own EH state, which
+// MSVC tail-merges differently from the helper-factored spelling here) + the differently
+// -named ctor/register reloc operands. Logic complete; byte-match parked for the final sweep.
+RVA(0x00117800, 0x47f)
+void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a3) {
+    if (reader == 0) {
+        return 0;
+    }
+    if (kind != 7) {
+        return 0;
+    }
+    i32 id;
+    reader->Read(&id, 4);
+    switch (id) {
+        case 1:
+        case 2:
+        case 5: {
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::TileTriggerSwitchLogicTag());
+            return Reg277fTail(this, obj, reader, a2, a3, id);
+        }
+        case 3: {
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::TileMultiTriggerSwitchLogicTag());
+            return Reg277fTail(this, obj, reader, a2, a3, id);
+        }
+        case 4: {
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::TileExclusiveTriggerSwitchLogicTag());
+            return Reg277fTail(this, obj, reader, a2, a3, id);
+        }
+        case 6: {
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::TileSecretTriggerSwitchLogicTag());
+            return Reg277fTail(this, obj, reader, a2, a3, id);
+        }
+        case 7: {
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::TileTimeTriggerSwitchLogicTag());
+            return Reg277fTail(this, obj, reader, a2, a3, id);
+        }
+        case 8: {
+            CTrigLogic* obj = new CTrigLogic8c(CTrigLogic::CheckpointTriggerSwitchLogicTag());
+            return Reg277fTail(this, obj, reader, a2, a3, id);
+        }
+        case 21: {
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::TileTriggerLogicTag());
+            if (Gate113860((void*)reader, 7, a2, a3) == 0) {
+                return 0;
+            }
+            obj->m_20 = this;
+            obj->m_04 = id;
+            // resolve the board tile under the object; latch on a 0x67/0x68 tile.
+            CTrigBoard* board = g_mgrSettings->m_world->m_24;
+            i32 x = obj->m_08;
+            i32 y = obj->m_0c;
+            i32* geo = board->m_5c;
+            if (x < 0) {
+                x = 0;
+            } else if (x >= geo[0x28 / 4]) {
+                x = geo[0x28 / 4] - 1;
+            }
+            if (y < 0) {
+                y = 0;
+            } else if (y >= geo[0x2c / 4]) {
+                y = geo[0x2c / 4] - 1;
+            }
+            i32* rowbase = (i32*)geo[0x24 / 4];
+            i32 cell = rowbase[y] + x;
+            i32 tile = ((i32*)geo[0x20 / 4])[cell];
+            i32 type;
+            if (tile == (i32)0xeeeeeeee || tile == -1) {
+                type = 0;
+            } else {
+                type = board->m_4c[tile & 0xffff]->TypeId();
+            }
+            if (type == 0x67 || type == 0x68) {
+                this->m_70 = obj;
+            }
+            return obj;
+        }
+        case 22: {
+            CTrigLogic* obj = new CTrigLogicC8(CTrigLogic::GiantRockLogicTag());
+            if (Gate113860((void*)reader, 7, a2, a3) == 0) {
+                return 0;
+            }
+            obj->m_20 = this;
+            obj->m_04 = id;
+            return obj;
+        }
+        case 23: {
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::TileTimeTriggerLogicTag());
+            return Reg1abeTail(this, obj, reader, a2, a3, id);
+        }
+        case 24: {
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::TileTriggerLogicTag());
+            return Reg1abeTail(this, obj, reader, a2, a3, id);
+        }
+        case 25: {
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::TileSecretTriggerLogicTag());
+            return Reg1abeTail(this, obj, reader, a2, a3, id);
+        }
+        case 26: {
+            CTrigLogic* obj = new CTrigLogic9c(CTrigLogic::CoveredPowerupLogicTag());
+            return Reg1abeTail(this, obj, reader, a2, a3, id);
+        }
+        default:
+            return 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::TransferFlag74
+// If the stream is null returns 0; if the active game-manager (g_gameReg+0x30)
+// is null returns 0; otherwise transfers the 4-byte +0x74 flag through the
+// stream's Transfer (vtable slot 12) and returns 1.
+// ---------------------------------------------------------------------------
+RVA(0x00117e20, 0x36)
+i32 CTileTriggerSwitchLogic::TransferFlag74(CSerialArchive* s) {
+    if (s == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_world == 0) {
+        return 0;
+    }
+    s->Write(&m_block[18], 4);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::LoadFlag74
+// The read counterpart of TransferFlag74: same null/game-manager gates, but
+// reads the 4-byte +0x74 flag (== m_block[18]) through the stream's read slot
+// (vtable +0x2c) instead of the write slot (+0x30). Returns 1 on success.
+// ---------------------------------------------------------------------------
+RVA(0x00117e70, 0x36)
+i32 CTileTriggerSwitchLogic::LoadFlag74(CSerialArchive* s) {
+    if (s == 0) {
+        return 0;
+    }
+    if (g_gameReg->m_world == 0) {
+        return 0;
+    }
+    s->Read(&m_block[18], 4);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::ScanNeighborhood
+// Scans the 3x3 cell neighborhood centered on (x, y): for px in [x-1, x+2) and
+// py in [y-1, y+2), probes cell (py + (px << 8)) with kind 0x16; returns the
+// first nonzero probe result, else 0.
+// ---------------------------------------------------------------------------
+// @early-stop
+// regalloc wall (~76%): logic exact, inner loop + ProbeCell call/regs match.
+// Retail reserves an 8B frame (sub esp,8), keeps the inner bound py_end in a
+// callee-saved REGISTER (ebp, hoisted once) and spills px/base to stack, whereas
+// MSVC5 keeps px/base in registers and reloads py_end from the frame each inner
+// step. The strength-reduced form (base += 0x100 accumulator) reproduces retail's
+// outer tail but flips the same 2 callee-saved registers the other way (72%), so
+// the plain double-for is the closest. Which of {px,base,py_end} wins the two
+// callee-saved regs is a non-steerable regalloc pick. Final-sweep.
+RVA(0x00117ec0, 0x7f)
+i32 CTileTriggerSwitchLogic::ScanNeighborhood(i32 x, i32 y) {
+    for (i32 px = x - 1; px < x + 2; px++) {
+        i32 base = px << 8;
+        for (i32 py = y - 1; py < y + 2; py++) {
+            i32 r = ProbeCell(py + base, 0x16);
+            if (r != 0) {
+                return r;
+            }
+        }
+    }
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerContainer::SetCell
+// Looks up the keyed element for cell (a,b) (key = (a<<8)|b).  If it exists, a
+// verb of 5 flags all four state words [+0x18..+0x24], otherwise just word
+// [+0x18 + verb*4]; either way the element is notified.  If absent, a new mark
+// is registered (AddMark key,0x1a); on failure the fallback (RunFallback a,b)
+// decides the result.  Returns 1 on success, 0 only from a failed fallback.
+// ---------------------------------------------------------------------------
+// @early-stop
+// regalloc wall (~78%): logic identical; retail pins key in edi / this in esi,
+// the recompile swaps them (esi<->edi), propagating through the body.
+RVA(0x00117f60, 0xa1)
+i32 CTileTriggerContainer::SetCell(i32 a, i32 b, i32 verb) {
+    i32 key = (a << 8) + b;
+    TtcKeyedElem* elem = FindByKey(key);
+    if (elem != 0) {
+        if (verb == 5) {
+            elem->m_flags[0] = 1;
+            elem->m_flags[1] = 1;
+            elem->m_flags[2] = 1;
+            elem->m_flags[3] = 1;
+        } else {
+            elem->m_flags[verb] = 1;
+        }
+        ((CTileActionEvent*)elem)->SetActionCode((i32) * (void**)elem);
+        return 1;
+    }
+    if (AddMark(key, 0x1a) != 0) {
+        return 1;
+    }
+    return RunFallback(a, b) != 0;
 }
