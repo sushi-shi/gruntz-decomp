@@ -105,10 +105,10 @@ public:
     i32 ReacquireViaCallback();                     // 0x1365e0  dispatch m_reacquireProc
     i32 SetCooperativeLevel(void* hwnd, u32 level); // 0x1365f0
     // Per-tick device-list housekeeping.
-    i32 PurgeVoiceList(i32 time);   // 0x136e20  reap finished voices from m_voiceList
-    void RemoveSub(StreamVoice* n); // 0x1379d0  retire one instance-list stream voice (extern)
-    i32 TickSubManagers(i32 time);  // 0x137ac0  tick each derived instance (defined in
-                                    // SoundStream.cpp - the DSndMgSR.cpp obj, per dossier)
+    i32 PurgeVoiceList(i32 time); // 0x136e20  reap finished voices from m_voiceList
+    // (Retiring one instance-list voice is SoundStream::DestroyVoice @0x1379d0, and the
+    // per-tick TickSubManagers @0x137ac0 is a SoundStream method - both live on the
+    // derived class since their `this` drives the derived voice list + DestroyVoice.)
 
     // The volume->attenuation curve (DSNDMGR.CPP): map a 0..100 volume to a DSound
     // hundredths-of-dB attenuation via an acos/pow transfer (static, x87).

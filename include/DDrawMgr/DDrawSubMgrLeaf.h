@@ -59,7 +59,8 @@ public:
     virtual void Slot08_154a00(); // [8] 0x154a00 (shared, declared-only)
 
     // Non-vtable members.
-    void ClearContext(); // 0x157ae0 (G obj; not a vtable slot)
+    // (ClearContext @0x157ae0 belongs to the sibling CDDrawSubMgrLeafScan - it is that
+    // class's slot-7 virtual; it operated on a LeafScan `this`, so it was re-homed there.)
     CObject* LookupValue_06b2a0(const char* key);
     void RemoveValue_152660(CCatalogNode* target);
     void FreeAll_152720();

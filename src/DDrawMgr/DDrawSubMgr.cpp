@@ -1117,10 +1117,14 @@ i32 CDDrawBlitParam::SelectCue_157a80(void* force) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x157ae0: clear the sibling scan map then zero the parent handle.
+// 0x157ae0: CDDrawSubMgrLeafScan::ClearContext (slot [7] of ??_7CDDrawSubMgrLeafScan) -
+// clear the keyed scan map then zero the parent handle. `this` is a CDDrawSubMgrLeafScan
+// (it drives its own ClearMap + LeafScanBase m_0c), so the ~LeafScan dtor's devirtualized
+// slot-7 call + the vtable slot both bind to this real RVA (was mis-attributed to
+// CDDrawSubMgrLeaf, which left the dtor call reloc-unbound; the cast was a no-op).
 RVA(0x00157ae0, 0x11)
-void CDDrawSubMgrLeaf::ClearContext() {
-    ((CDDrawSubMgrLeafScan*)this)->ClearMap();
+void CDDrawSubMgrLeafScan::ClearContext() {
+    ClearMap();
     m_0c = 0;
 }
 

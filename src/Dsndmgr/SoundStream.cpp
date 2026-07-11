@@ -267,16 +267,20 @@ SoundStream::SoundStream() {
 RVA(0x00137710, 0xb)
 SoundStream::~SoundStream() {}
 
-// PlaySoundDefaulted (0x137720, __stdcall): thin wrapper defaulting the 3rd flag arg
-// to 0 over the shared play helper (0x136550).
+// SoundStream::PlaySoundDefaulted (0x137720, __thiscall - `this`/ecx is unused): thin
+// wrapper defaulting the 3rd flag arg to 0 over the shared play helper (0x136550). The
+// sole caller (CDDrawSurfaceMgr::PlayDefaultSound) dispatches it on m_soundStream
+// (`mov ecx,eax; push 1; push [hWnd]; call 0x137720`), so it is a real SoundStream
+// method, not the free __stdcall it was modelled as (byte-identical either way since
+// ecx is dead; the thiscall name binds the caller's reloc to the real 0x137720).
 // @early-stop
 // regalloc free-list-pick wall (docs/patterns/select-zero-mask-dest-register.md):
-// body byte-exact except retail loads `a` into edx while cl picks ecx after eax is
-// taken by `b` - a single free-list register pick, not source-steerable (~98.6%).
+// body byte-exact except retail loads the hWnd arg into edx while cl picks ecx after
+// eax is taken by flag - a single free-list register pick, not source-steerable (~98.6%).
 i32 __stdcall PlaySound3_136550(i32 a, i32 b, i32 flag); // RVA 0x136550
 RVA(0x00137720, 0x14)
-i32 __stdcall PlaySoundDefaulted(i32 a, i32 b) {
-    return PlaySound3_136550(a, b, 0);
+i32 SoundStream::PlaySoundDefaulted(void* hWnd, i32 flag) {
+    return PlaySound3_136550((i32)hWnd, flag, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -455,16 +459,16 @@ void SoundStream::Stop() {
 }
 
 // -------------------------------------------------------------------------
-// SoundDevice::TickSubManagers @0x137ac0 - per-frame stream-voice tick. Walk the
+// SoundStream::TickSubManagers @0x137ac0 - per-frame stream-voice tick. Walk the
 // instance list (m_instanceHead threads StreamVoice+4 links); per voice: pump the
 // embedded feeder (StreamFeeder::Tick @0x137e30), poll the per-stream buffer
 // wrapper's IsPlaying (feeder->m_buffer, i.e. voice+0x74); when it just went idle,
 // reprime the feeder (TickPump(-1) @0x1380d0) if m_stopWhenIdle and/or retire the
-// voice (RemoveSub) if m_retireWhenIdle; latch the IsPlaying result into m_active.
-// A SoundDevice method DEFINED IN THE STREAM FILE (dossier seam re-home: its RVA
-// sits mid-DSndMgSR span and its body is pure stream machinery).
+// voice (DestroyVoice) if m_retireWhenIdle; latch the IsPlaying result into m_active.
+// A SoundStream method (its `this` calls the SoundStream-only DestroyVoice directly);
+// the DSndMgSR.cpp obj holds its body (pure stream machinery).
 RVA(0x00137ac0, 0xa2)
-i32 SoundDevice::TickSubManagers(i32 time) {
+i32 SoundStream::TickSubManagers(i32 time) {
     if (time == -1) {
         time = (i32)g_pTimeGetTime();
     }
@@ -479,7 +483,7 @@ i32 SoundDevice::TickSubManagers(i32 time) {
                 o->m_feeder.TickPump(-1);
             }
             if (o->m_retireWhenIdle != 0) {
-                RemoveSub(o);
+                DestroyVoice(o);
                 o = 0;
             }
         }

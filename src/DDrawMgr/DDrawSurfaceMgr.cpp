@@ -216,7 +216,9 @@ fail:
     return 0;
 }
 
-extern void __cdecl RelayHwnd(void* hWnd);
+// 0x1437e0 (directdrawmgr): real signature takes a callback fn-ptr (?RelayHwnd@@YAXP6AHXZ@Z);
+// SetHwnd forwards its opaque handle arg through it (reloc-masked, arg is a bare push).
+extern void __cdecl RelayHwnd(i32(__cdecl* callback)());
 extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
 
 // ---------------------------------------------------------------------------
@@ -224,7 +226,7 @@ extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
 // Relays the hWnd argument to an external manager function.
 RVA(0x00155f50, 0x10)
 void CDDrawSurfaceMgr::SetHwnd(void* hWnd) {
-    RelayHwnd(hWnd);
+    RelayHwnd((i32(__cdecl*)())hWnd);
 }
 
 // ---------------------------------------------------------------------------

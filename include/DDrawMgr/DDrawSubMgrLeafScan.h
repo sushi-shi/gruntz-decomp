@@ -68,21 +68,22 @@ public:
     RVA(0x00157530, 0x17)
     virtual i32 IsReady() {
         if (m_2c != 0) {
-        return 1;
+            return 1;
         }
         if (m_30 != 0) {
-        return 1;
+            return 1;
         }
         return 0;
     }
-    virtual void IsValidImage();  // [6] 0x001c08 (shared thunk, declared-only)
-    virtual void ClearContext();  // [7] 0x157ae0 (CDDrawSubMgrLeaf::ClearContext, sibling TU)
+    virtual void IsValidImage(); // [6] 0x001c08 (shared thunk, declared-only)
+    virtual void
+    ClearContext(); // [7] 0x157ae0 (defined in DDrawSubMgr.cpp - this class's own slot)
     virtual void Slot08_154a00(); // [8] 0x154a00 (shared, declared-only)
 
     i32 RefreshAsset_114120(const char* key);
     LeafElementObj* CreateEntry_157d70(const char* key, void* arg2);
     LeafElementObj* CreateEntry2_157e00(const char* key, void* arg2);
-    LeafElementObj* AddFromSource_157e90(CParseSource* src); // 0x157e90
+    LeafElementObj* AddFromSource_157e90(CParseSource* src);     // 0x157e90
     void AddEntry_157ec0(LeafElementObj* elem, const char* key); // 0x157ec0
     i32 ScanTree_157ee0(DirNode* tree, const char* prefix, const char* suffix);
 

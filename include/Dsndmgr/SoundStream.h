@@ -37,8 +37,8 @@ public:
     StreamVoice* OpenStream(CParseSource* src, i32 p1, i32 p2, i32 p3, i32 p4, i32 p5);
     StreamVoice* PlayStream(CParseSource* src, i32 a2, i32 a3, i32 a4); // 0x137a30 open + resume
     // 0x137900
-    void DestroyVoice(StreamVoice* voice); // 0x1379d0 (SoundDevice.h's RemoveSub decl
-                                           // is a caller-side alias of this same RVA)
+    void DestroyVoice(StreamVoice* voice); // 0x1379d0 (retire one instance-list voice;
+                                           // TickSubManagers calls it directly on `this`)
     // Full free: reap (DestroyVoice) every voice off m_voices, then the base
     // SoundDevice::Shutdown. Called from CDDrawSurfaceMgr::FreeContext.
     void Free(); // 0x137740
@@ -46,10 +46,13 @@ public:
     // SoundDevice::StopAll. The wide pause/reset path (menu/level teardown).
     void Stop(); // 0x137a80
     // 0x137720 - play a defaulted sound (3rd flag = 0) bound to a window handle.
-    // Reached __thiscall here (CDDrawSurfaceMgr::PlayDefaultSound); the SAME RVA is
-    // also modelled as the free __stdcall PlaySoundDefaulted in SoundStream.cpp (its
-    // body ignores `this`), so the two spellings are byte-identical.
+    // A real __thiscall SoundStream method (CDDrawSurfaceMgr::PlayDefaultSound
+    // dispatches it on m_soundStream); its body ignores `this`.
     i32 PlaySoundDefaulted(void* hWnd, i32 flag); // 0x137720
+    // Per-frame stream-voice tick: walk m_instanceHead, pump each embedded feeder,
+    // poll IsPlaying, reprime/retire (DestroyVoice) idle voices. A SoundStream method
+    // (its `this` calls the SoundStream-only DestroyVoice) defined in SoundStream.cpp.
+    i32 TickSubManagers(i32 time); // 0x137ac0
     i32 ParseWave(
         CParseSource* src,
         WaveFormatX* fmtBuf,

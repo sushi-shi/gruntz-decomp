@@ -86,17 +86,19 @@ public:
 // by address so the `push offset` operand carries a reloc-masked DIR32.
 extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref); // 0x132fc0
 
-// Reporting-mode globals (live in .data). g_logEnabled drives the format-line
-// path, g_msgBoxEnabled the MessageBox path; g_beepEnabled gates the startup
-// beep, g_thirdEnabled is a third "any output wanted" gate checked at entry.
+// DirectInput reporting-mode globals (live in .data; DirectInput-specific, hence the
+// g_dinput* names - disambiguated from NetMgr's own same-role g_logEnabled/... set at
+// 0x2bf6e8 which collided on the extern "C" name). g_dinputLogEnabled drives the
+// format-line path, g_dinputMsgBoxEnabled the MessageBox path; g_dinputBeepEnabled gates
+// the startup beep, g_dinputThirdEnabled is a third "any output wanted" gate at entry.
 DATA(0x00253aac)
-extern "C" i32 g_beepEnabled; // 0x653aac
+extern "C" i32 g_dinputBeepEnabled; // 0x653aac
 DATA(0x00253aa4)
-extern "C" i32 g_logEnabled; // 0x653aa4
+extern "C" i32 g_dinputLogEnabled; // 0x653aa4
 DATA(0x00253aa8)
-extern "C" i32 g_msgBoxEnabled; // 0x653aa8
+extern "C" i32 g_dinputMsgBoxEnabled; // 0x653aa8
 DATA(0x00253ab0)
-extern "C" i32 g_thirdEnabled; // 0x653ab0
+extern "C" i32 g_dinputThirdEnabled; // 0x653ab0
 
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)
@@ -586,10 +588,10 @@ CDeviceConfigB::~CDeviceConfigB() {
 // beep / third) from the four args. __cdecl free helper (sibling of DDraw's).
 RVA(0x00133560, 0x27)
 void SetDInputReportModes(i32 log, i32 msgBox, i32 beep, i32 third) {
-    g_logEnabled = log;
-    g_msgBoxEnabled = msgBox;
-    g_beepEnabled = beep;
-    g_thirdEnabled = third;
+    g_dinputLogEnabled = log;
+    g_dinputMsgBoxEnabled = msgBox;
+    g_dinputBeepEnabled = beep;
+    g_dinputThirdEnabled = third;
 }
 
 // ---------------------------------------------------------------------------
@@ -600,10 +602,10 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
     char szMsg[256];  // description
     char szLine[512]; // formatted output line
 
-    if (g_beepEnabled) {
+    if (g_dinputBeepEnabled) {
         MessageBeep(MB_ICONEXCLAMATION);
     }
-    if (!g_logEnabled && !g_msgBoxEnabled && !g_thirdEnabled) {
+    if (!g_dinputLogEnabled && !g_dinputMsgBoxEnabled && !g_dinputThirdEnabled) {
         return;
     }
 
@@ -693,14 +695,14 @@ void DirectInputMgr2::GetErrorString(char* file, i32 line, i32 hr) {
             break;
     }
 
-    if (g_logEnabled) {
+    if (g_dinputLogEnabled) {
         if (file == 0 || line <= 0) {
             sprintf(szLine, "%s (%i) - %s\n", szCode, code, szMsg);
         } else {
             sprintf(szLine, "%s, line %i: %s (%i) - %s\n", file, line, szCode, code, szMsg);
         }
     }
-    if (g_msgBoxEnabled) {
+    if (g_dinputMsgBoxEnabled) {
         if (file == 0 || line <= 0) {
             sprintf(szLine, "%s (%i)\n\n%s", szCode, code, szMsg);
         } else {
@@ -1080,8 +1082,10 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u
 // CDeviceConfigB::Free360 (0x134360) / CDeviceConfigC::Free6d0 (0x1346d0), re-homed from
 // src/Stub/BoundaryUpper.cpp: the two byte-identical device-leaf teardowns (each the
 // class's ReleaseDevices slot-2 override) - free the inherited GetDeviceState snapshot
-// buffer (m_stateBuffer/+0x2a0), then run the shared base cleanup (CInputDevBase::
-// ReleaseDevices @0x1342b0, qualified direct call). __thiscall.
+// buffer (m_stateBuffer/+0x2a0), then run the shared grand-base cleanup. Retail calls
+// the 0x1342b0 incremental-link jmp-thunk, which lands on CInputDevRoot::ReleaseDevices
+// @0x134d50; binding the call to that resolved target (qualified direct call) is
+// reloc-masked + byte-neutral. __thiscall.
 extern "C" void RezFree(void* p); // 0x1b9b82 (engine operator delete; reloc-masked)
 RVA(0x00134360, 0x33)
 void CDeviceConfigB::Free360() {
@@ -1090,7 +1094,7 @@ void CDeviceConfigB::Free360() {
         m_stateBuffer = 0;
         m_stateBufferSize = 0;
     }
-    CInputDevBase::ReleaseDevices();
+    CInputDevRoot::ReleaseDevices();
 }
 
 // CDeviceConfigB::IsReady (0x1343a0): ready once the device object is created.
@@ -1218,7 +1222,7 @@ void CDeviceConfigC::Free6d0() {
         m_stateBuffer = 0;
         m_stateBufferSize = 0;
     }
-    CInputDevBase::ReleaseDevices();
+    CInputDevRoot::ReleaseDevices();
 }
 
 // CDeviceConfigB::SetupAxes (__thiscall, no args). Configures the joystick's two axes
