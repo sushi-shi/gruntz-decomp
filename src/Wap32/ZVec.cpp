@@ -28,6 +28,13 @@ extern void* const zDArrayLiveTable; // 0x5e70fc
 // Engine return-address capture helper that seeds the error token.
 extern void* GetRetAddr(); // 0x16d990 (pop eax;push eax;ret: the call-site return addr)
 
+// The container OOM/overflow error token the accessor passes to Set() on the
+// can't-grow path (VA 0x6bf464). Bound as ?g_projActCache@@3PAXA in <Wap32/zBitVec.h>
+// (reloc-correct); the Globals.h `g_zvecErrSentinel` is the SAME cell under a second
+// reconstruction name whose Globals.cpp DATA is mis-addressed (0x1f0464, a typo) -
+// referencing the correctly-bound g_projActCache keeps this fn's DATA reloc faithful.
+extern void* g_projActCache; // 0x6bf464 (== the mislabeled g_zvecErrSentinel)
+
 // Per-element relocation applied to each freshly-grown member-pointer slot
 // (a __thiscall on the slot: ecx=slot, no stack cleanup). 0x1b9b93.
 
@@ -57,7 +64,7 @@ i32 zDArray::IndexToPtr(i32 i) {
     } else if (GrowTo(i, 0)) {
         r = m_base + (i - m_lo) * m_stride;
     } else {
-        i32 sentinel = g_zvecErrSentinel;
+        i32 sentinel = (i32)g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
         m_err->Set((void*)this, sentinel, 0xc);
         r = m_spare;
@@ -95,7 +102,7 @@ i32 _zvec::IndexToPtr(i32 idx) {
         idx *= m_stride;
         return idx + base;
     }
-    i32 sentinel = g_zvecErrSentinel;
+    i32 sentinel = (i32)g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     m_err->Set((void*)this, sentinel, 0xc);
     return m_spare;

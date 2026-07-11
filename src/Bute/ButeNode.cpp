@@ -71,26 +71,27 @@ CButeCfgNode174d::CButeCfgNode174d(i32 kind) : zPTree(&g_node174df0Tag, kind) {}
 // nodes above). The most-derived class re-stamps its primary vptr (+0, 0x5e94ac) and
 // its secondary base vptr (+8, 0x5e949c) at entry, runs ClearRecursive(0) (0x16e070),
 // then destructs its bases in reverse declaration order: the secondary base @+8
-// (~CObj50 0x16dfc0, with the `this ? this+8 : 0` adjust) then the primary base @0
-// (~CContainerErr 0x16da60). Real-polymorphic MI model so cl emits both implicit vptr
-// stamps + both base-dtor CALLs (all reloc-mask). The non-trivial bases earn the /GX
-// frame (this TU is flags="eh"). This MI model cannot fold into ButeStoreClear.cpp's
-// flat <Bute/ButeMgr.h> CButeStore without reconciling the two models (deferred).
-// Re-homed from src/Stub/DiscoveredEh.cpp.
-struct CContainerErr {
-    virtual ~CContainerErr(); // 0x16da60 (external)
-    char m_pad[8 - 4];        // vptr@+0; CObj50 begins at +8
-};
-SIZE_UNKNOWN(CContainerErr);
-struct CObj50 {
-    virtual ~CObj50(); // 0x16dfc0 (external; stamps 0x5f04d8 internally)
-};
-SIZE_UNKNOWN(CObj50);
-struct CButeStore : CContainerErr, CObj50 {
+// (0x16dfc0, with the `this ? this+8 : 0` adjust) then the primary base @0 (0x16da60).
+// Real-polymorphic MI model so cl emits both implicit vptr stamps + both base-dtor
+// CALLs (all reloc-mask). The non-trivial bases earn the /GX frame (this TU is
+// flags="eh"). Re-homed from src/Stub/DiscoveredEh.cpp.
+//
+// PROVEN bases (sema disasm, wave5-F3): the two bases are exactly zPTree's -
+//   primary  @+0  = zErrHandling  (dtor 0x16da60 re-stamps its own vtable 0x5f04cc;
+//                   RTTI-real name from zPTree's base-class array; the reconstruction
+//                   name "CContainerErr" in zBitVec.h/typekeycoll is the same class),
+//   secondary@+8  = CButeNodeEntry (dtor 0x16dfc0 re-stamps its own vtable 0x5f04d8).
+// Folded off the former fake `CContainerErr`/`CObj50` local views onto the real
+// <Bute/PTreeNode.h> classes (already included above); CButeStore is a zPTree-shape
+// class (same two bases + child-link fields at +0x18/+0x28).
+struct CButeStore : zErrHandling, CButeNodeEntry {
     virtual ~CButeStore() OVERRIDE;              // 0x174d70
     void ClearRecursive(struct CButeStoreNode*); // 0x16e070 (real takes CButeStoreNode*; 0 = null)
+    i32 m_child18;                               // +0x18  tree root / child link
+    char m_pad1c[0x28 - 0x1c];
+    i32 m_child28; // +0x28  child link
 };
-SIZE_UNKNOWN(CButeStore);
+SIZE(CButeStore, 0x2c); // MI: zErrHandling @0 (8B) + CButeNodeEntry @8 (0x10B) + child links
 RVA(0x00174d70, 0x70)
 CButeStore::~CButeStore() {
     ClearRecursive(0);
