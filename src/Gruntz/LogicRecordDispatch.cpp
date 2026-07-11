@@ -75,13 +75,6 @@ public:
 };
 SIZE(LogicSubRecB, 0x54);
 
-class LogicSubRecC : public LogicSubRec {
-public:
-    LogicSubRecC(LogicDispatchOwner* owner); // 0x2a04 (via thunk)
-    char m_pad[0x54 - 4];
-};
-SIZE(LogicSubRecC, 0x54);
-
 class LogicSubRecD : public LogicSubRec {
 public:
     LogicSubRecD(LogicDispatchOwner* owner); // 0x1348 (via thunk)
@@ -103,126 +96,6 @@ SIZE(LogicSubRecE, 0x228);
 
 // The default-case fall-through helper (0x16e4f0, __cdecl, 1 arg). External.
 extern "C" void LogicSubDefault_16e4f0(LogicSubRec* sub);
-
-// LogicDispatchA @0x0fb660 - state-0 builds a 0x6c sub-record (ctor 0x2c70).
-RVA(0x000fb660, 0xf1)
-i32 LogicDispatchA(LogicDispatchOwner* owner) {
-    LogicDispatchRecord* rec = owner->m_7c;
-    switch (rec->m_1c) {
-        case kLogicStateInit:
-            rec->m_1c = kLogicStateBuilt;
-            {
-                LogicSubRecA* obj = new LogicSubRecA(owner);
-                obj->Init();
-                rec->m_18 = obj;
-            }
-            break;
-        case kLogicStateOp1d:
-            rec->m_18->Op1d();
-            break;
-        case kLogicStateOp1e:
-            rec->m_18->Op1e();
-            break;
-        case kLogicStateOp50:
-            rec->m_18->Op50();
-            break;
-        case kLogicStateOp51:
-            rec->m_18->Op51();
-            break;
-        case kLogicStateOp52:
-            rec->m_18->Op52();
-            break;
-        case kLogicStateOp53:
-            rec->m_18->Op53();
-            break;
-        case kLogicStateBuilt:
-            break;
-        default:
-            LogicSubDefault_16e4f0(rec->m_18);
-            break;
-    }
-    return 1;
-}
-
-// LogicDispatchC @0x046850 - state-0 builds a 0x54 sub-record (ctor 0x2a04).
-RVA(0x00046850, 0xf1)
-i32 LogicDispatchC(LogicDispatchOwner* owner) {
-    LogicDispatchRecord* rec = owner->m_7c;
-    switch (rec->m_1c) {
-        case kLogicStateInit:
-            rec->m_1c = kLogicStateBuilt;
-            {
-                LogicSubRecC* obj = new LogicSubRecC(owner);
-                obj->Init();
-                rec->m_18 = obj;
-            }
-            break;
-        case kLogicStateOp1d:
-            rec->m_18->Op1d();
-            break;
-        case kLogicStateOp1e:
-            rec->m_18->Op1e();
-            break;
-        case kLogicStateOp50:
-            rec->m_18->Op50();
-            break;
-        case kLogicStateOp51:
-            rec->m_18->Op51();
-            break;
-        case kLogicStateOp52:
-            rec->m_18->Op52();
-            break;
-        case kLogicStateOp53:
-            rec->m_18->Op53();
-            break;
-        case kLogicStateBuilt:
-            break;
-        default:
-            LogicSubDefault_16e4f0(rec->m_18);
-            break;
-    }
-    return 1;
-}
-
-// LogicDispatchD @0x0deb20 - state-0 builds a 0x68 sub-record (ctor 0x1348).
-RVA(0x000deb20, 0xf1)
-i32 LogicDispatchD(LogicDispatchOwner* owner) {
-    LogicDispatchRecord* rec = owner->m_7c;
-    switch (rec->m_1c) {
-        case kLogicStateInit:
-            rec->m_1c = kLogicStateBuilt;
-            {
-                LogicSubRecD* obj = new LogicSubRecD(owner);
-                obj->Init();
-                rec->m_18 = obj;
-            }
-            break;
-        case kLogicStateOp1d:
-            rec->m_18->Op1d();
-            break;
-        case kLogicStateOp1e:
-            rec->m_18->Op1e();
-            break;
-        case kLogicStateOp50:
-            rec->m_18->Op50();
-            break;
-        case kLogicStateOp51:
-            rec->m_18->Op51();
-            break;
-        case kLogicStateOp52:
-            rec->m_18->Op52();
-            break;
-        case kLogicStateOp53:
-            rec->m_18->Op53();
-            break;
-        case kLogicStateBuilt:
-            break;
-        default:
-            LogicSubDefault_16e4f0(rec->m_18);
-            break;
-    }
-    return 1;
-}
 
 // LogicDispatchE @0x0de8a0 - state-0 builds a 0x228 sub-record (ctor 0xdec60 =
 // CProjectile). Same dispatch shape as the siblings; the larger `new` size uses an
@@ -322,6 +195,92 @@ i32 LogicDispatchBoomerang(LogicDispatchOwner* owner) {
     }
     return 1;
 }
+
+// LogicDispatchD @0x0deb20 - state-0 builds a 0x68 sub-record (ctor 0x1348).
+RVA(0x000deb20, 0xf1)
+i32 LogicDispatchD(LogicDispatchOwner* owner) {
+    LogicDispatchRecord* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case kLogicStateInit:
+            rec->m_1c = kLogicStateBuilt;
+            {
+                LogicSubRecD* obj = new LogicSubRecD(owner);
+                obj->Init();
+                rec->m_18 = obj;
+            }
+            break;
+        case kLogicStateOp1d:
+            rec->m_18->Op1d();
+            break;
+        case kLogicStateOp1e:
+            rec->m_18->Op1e();
+            break;
+        case kLogicStateOp50:
+            rec->m_18->Op50();
+            break;
+        case kLogicStateOp51:
+            rec->m_18->Op51();
+            break;
+        case kLogicStateOp52:
+            rec->m_18->Op52();
+            break;
+        case kLogicStateOp53:
+            rec->m_18->Op53();
+            break;
+        case kLogicStateBuilt:
+            break;
+        default:
+            LogicSubDefault_16e4f0(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+// LogicDispatchA @0x0fb660 - state-0 builds a 0x6c sub-record (ctor 0x2c70).
+RVA(0x000fb660, 0xf1)
+i32 LogicDispatchA(LogicDispatchOwner* owner) {
+    LogicDispatchRecord* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case kLogicStateInit:
+            rec->m_1c = kLogicStateBuilt;
+            {
+                LogicSubRecA* obj = new LogicSubRecA(owner);
+                obj->Init();
+                rec->m_18 = obj;
+            }
+            break;
+        case kLogicStateOp1d:
+            rec->m_18->Op1d();
+            break;
+        case kLogicStateOp1e:
+            rec->m_18->Op1e();
+            break;
+        case kLogicStateOp50:
+            rec->m_18->Op50();
+            break;
+        case kLogicStateOp51:
+            rec->m_18->Op51();
+            break;
+        case kLogicStateOp52:
+            rec->m_18->Op52();
+            break;
+        case kLogicStateOp53:
+            rec->m_18->Op53();
+            break;
+        case kLogicStateBuilt:
+            break;
+        default:
+            LogicSubDefault_16e4f0(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+// LogicDispatchC @0x046850 (state-0 news a CPARTICLEZ: ctor thunk 0x2a04 ->
+// 0x46ad0 == ??0CParticlez) was re-homed to FortressFlag.cpp (wave3-I): its
+// retail body is text-contained in the ff+particlez+explosion obj.
+// LogicSubRecC (its former local sub-record view) went with it, dissolved
+// onto the real CParticlez.
 
 // LogicDispatchB @0x10d3d0 - state-0 builds a 0x54 sub-record (ctor 0x3701).
 RVA(0x0010d3d0, 0xf1)

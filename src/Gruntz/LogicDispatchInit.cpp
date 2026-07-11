@@ -1,44 +1,30 @@
-// LogicDispatchInit.cpp - file-scope logic-dispatch-table static initializers
+// LogicDispatchInit.cpp - file-scope logic-dispatch-table static initializer
 // (C:\Proj\Gruntz).
 //
-// Three init thunks that are byte-identical to CSimpleAnimation.cpp's
-// InitSimpleAnimDispatch (@0x0abb90): each constructs a per-logic-class
-// zDArray<int (CUserLogic::*)(void)> dispatch table over the index band
-// [0x7d0, 0x7da]. They are the CRT static initializers the engine emits per
-// game-object-logic class; the matching companion RegisterXLogic (the adjacent
-// function that touches the same table + the zvec error globals 0x6bf464/0x6bf428)
-// consumes each table.
+// One init thunk, byte-identical to CSimpleAnimation.cpp's InitSimpleAnimDispatch
+// (@0x0abb90): constructs a per-logic-class zDArray<int (CUserLogic::*)(void)>
+// dispatch table over the index band [0x7d0, 0x7da]. It is the CRT static
+// initializer the engine emits per game-object-logic class; the matching companion
+// RegisterXLogic (the adjacent function that touches the same table + the zvec
+// error globals 0x6bf464/0x6bf428) consumes the table.
 //
-// The precise owning leaf class for each table is not yet pinned (the registration
-// keys live in .data, not a .rdata string constant), so these are named by their
-// dispatch-table address; the proximity candidates are recorded per function. The
-// bodies are owner-independent (the global is a reloc-masked DATA extern and the
-// zDArray ctor call reloc-masks), so the byte match is exact regardless.
+// Its two former siblings were re-homed to their ORIGINAL TUs (wave3-I):
+//   InitLogicDispatch_6445e8 @0x0406d0 -> Wormhole.cpp (the wormhole-trio obj)
+//   InitLogicDispatch_6447f8 @0x0472d0 -> FortressFlag.cpp (the ff+particlez+
+//                                         explosion obj)
+//
+// @identity-TODO: the 646060 table's owning leaf class is not yet pinned
+// (proximity: CEyeCandy | CFrontCandyAni; frag i513 @0xacb10 sits in the
+// frontcandyani region 0xabfa0-0xad527).
 #include <Wap32/ZVec.h>          // zDArray base
 #include <Gruntz/LogicFnTable.h> // the shared LogicFnTable dispatch-table shape
 #include <Wap32/ZDArrayDerived.h>
 // LogicFnTable (zDArray<T>, ctor 0x408710 reached via the 0x3742 ILT thunk - the
 // SAME callee as InitSimpleAnimDispatch) is the shared <Gruntz/LogicFnTable.h> shape.
 
-// The per-class dispatch tables (zDArray<methodptr> in .data).
-DATA(0x002445e8)
-extern LogicFnTable g_logicDispatch_6445e8; // 0x6445e8  (proximity: CWormhole | CGruntPuddle)
-DATA(0x002447f8)
-extern LogicFnTable g_logicDispatch_6447f8; // 0x6447f8  (proximity: CParticlez | CGrunt)
+// The per-class dispatch table (zDArray<methodptr> in .data).
 DATA(0x00246060)
 extern LogicFnTable g_logicDispatch_646060; // 0x646060  (proximity: CEyeCandy | CFrontCandyAni)
-
-// construct the dispatch table at 0x6445e8 over [0x7d0, 0x7da].
-RVA(0x000406d0, 0x15)
-void InitLogicDispatch_6445e8() {
-    ((CZDArrayDerived*)&g_logicDispatch_6445e8)->Construct(0x7d0, 0x7da);
-}
-
-// construct the dispatch table at 0x6447f8 over [0x7d0, 0x7da].
-RVA(0x000472d0, 0x15)
-void InitLogicDispatch_6447f8() {
-    ((CZDArrayDerived*)&g_logicDispatch_6447f8)->Construct(0x7d0, 0x7da);
-}
 
 // construct the dispatch table at 0x646060 over [0x7d0, 0x7da].
 RVA(0x000acb30, 0x15)

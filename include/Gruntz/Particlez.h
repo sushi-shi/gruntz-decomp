@@ -23,12 +23,18 @@
 class CParticlez : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
+    // +0x40..+0x53 unmodeled tail (sizeof proven 0x54 by the worker-pump new-site
+    // `push 0x54` @0x46850 LogicDispatchC, FortressFlag.cpp).
+    char m_pad40[0x54 - 0x40];
+
 public:
-    CParticlez(CGameObject* obj);              // 0x046ad0 (ctor body in UserLogic.cpp)
+    CParticlez(CGameObject* obj); // 0x046ad0 (ctor body in UserLogic.cpp)
     // 0x00012cd0 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x00012cd0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_PARTICLEZ; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_PARTICLEZ;
+    }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x012cf0 (vtable slot 1: serialize chain)

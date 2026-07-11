@@ -6,6 +6,12 @@
 // +0x114 state == 1, spawn rock-break particles at the target's world position; then
 // mark the effect's goal flag when it is armed (+0x1c8 set) and not yet consumed (+0x1c0
 // clear). Field names are placeholders; only offsets + code bytes are load-bearing.
+// wave3-I partition note: Update@RbEffect @0x476b0 sits at the exact boundary
+// between the fortressflag obj (ff+particlez+explosion, ends ~0x4763d) and the
+// grunt-main obj (frags @0x47740+, ctor @0x47a10). No private .data cells or
+// frags pin it to either side; the TU_MIGRATION MOVE row's "-> grunt" was the
+// dominant-unit heuristic only. Left in its own unit pending stronger evidence
+// (@identity-TODO).
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/AniAdvanceCursor.h>

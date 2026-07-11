@@ -201,11 +201,15 @@ SIZE_UNKNOWN(Cdb2f0);
 
 // 0x0db750 - "LEVEL" config sync through the +0x0c owner's +0x2c config.
 struct CDDrawSubMgrLeaf : public CObject {
-    i32 HasKeyPrefix_152c50(const char* key);                  // 0x152c50 (i32 ret; caller tests != 0)
-    i32 RemoveKeysEqual_1527d0(const char* key, const char* v); // 0x1527d0 (i32 ret, 2nd arg const char*)
+    i32 HasKeyPrefix_152c50(const char* key); // 0x152c50 (i32 ret; caller tests != 0)
+    i32 RemoveKeysEqual_1527d0(
+        const char* key,
+        const char* v
+    ); // 0x1527d0 (i32 ret, 2nd arg const char*)
     void ScanTree_152ad0(void* val, const char* key, void* v); // 0x152ad0
-    class CString KeyOfValue_152d30(CObject* v);               // 0x152d30 (id->name; ret CString; real arg CObject*)
-    void* LookupValue_06b2a0(const char* key);                 // 0x6b2a0  (id lookup; main's fold)
+    class CString
+    KeyOfValue_152d30(CObject* v); // 0x152d30 (id->name; ret CString; real arg CObject*)
+    void* LookupValue_06b2a0(const char* key); // 0x6b2a0  (id lookup; main's fold)
 };
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);
 struct CHolderdb {
@@ -215,6 +219,7 @@ struct CHolderdb {
 SIZE_UNKNOWN(CHolderdb);
 struct CSymTab {
     void* ResolvePath(const char* arg); // 0x13bae0 (real: void* ret, const char* arg)
+    i32 ResolveQualified(const char* name, void* arg); // 0x13a0e0 (same sig as <Bute/SymTab.h>)
 };
 SIZE_UNKNOWN(CSymTab);
 struct Cdb750 {

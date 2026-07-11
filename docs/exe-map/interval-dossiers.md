@@ -31,6 +31,9 @@ Verdict summary:
 | `0x0363a0-0x037900` | videoconfig+menustate(+2) | **ONE TU** (options dialogs) | strong |
 | `0x00b5e0-0x00cc98` | worldsoundset+randomambientsound+ambientsound | **ONE TU** | strong |
 | `0x0c5360-0x0c7e90` | roster tail (pumps+dropper) + actregsiblings+droppedobject | **ONE TU** (DroppedObject.cpp), boundary `0x0c5360` | strong |
+| `0x03fc70-0x041db2` | wormhole+gruntpuddle+teleporter(+registrars) | **ONE TU** (Wormhole.cpp) | strong |
+| `0x042d40-0x04d7c6` | warlord+grunt+fortressflag+particlez(+explosion) | **THREE TUs**: Warlord.cpp `0x42d40-0x45cc1` / FortressFlag.cpp `0x45d30-0x4763d` / Grunt.cpp `0x47a10-0x4d7c6` | strong |
+| grunt 5-interval SPLIT | grunt cores 0x42d40/0x50ca0/0x56f80/0x616e0/0x67850 | **FIVE TUs** (Warlord-woven + Grunt + GruntSteps + GruntCombat + GruntEntranceArrival + GruntEntranceMove) | strong |
 
 ---
 
@@ -477,3 +480,69 @@ anim's drop frame); "NetConfigureBe90"/"Unmatched_c76d0" == the
 CObjectDropper/CDroppedObjectShadow InitActReg constructors. The
 CCheckpointTrigger pair (0x10ea80/0x10ebe0) that shared ActRegSiblings.cpp moved
 to CheckpointTrigger.cpp (its class TU, 0x10cb10 interval).
+
+## 12. the grunt region - 5-interval partition + wormhole trio (wave3-I)
+
+**Verdicts** (all executed):
+
+* `0x03fc70-0x041db2` wormhole trio -> **ONE TU** (Wormhole.cpp): text A-B-A weave
+  (LoadColors/ReapplyConfig@CWormhole 0x411f0/0x412c0 INSIDE the CTeleporter
+  block; SpawnPartners/LoadColors bracket the CGruntPuddle block); frags
+  i297-i299 one run; private .data band 0x20d194-0x20d1d0 contiguous. The three
+  in-interval registrar fns (0x406d0/0x408b0/0x41680) are text-contained ->
+  folded in. GruntPuddle::SetBute @0x7d810 is NOT this TU (own interval at the
+  TriggerMgr tail) - stays in GruntPuddle.cpp (@identity-TODO). WormholeActs.cpp
+  (0x3f210, frag i296) left split: adjacent obj, no positive one-obj evidence.
+* `0x042d40-0x04d7c6` -> **THREE TUs**:
+  - **Warlord.cpp** `0x42d40-0x45cc1`: CWarlord + the five CGrunt::Resolve*Animation
+    fns (0x45100/0x455f0/0x457b0/0x45960/0x45b60) - text A-B-A (0x45100 between
+    warlord fns) + the ctor's private .data band interleaving the resolvers'
+    cells (0x20d218-0x20d374). Frag i302.
+  - **FortressFlag.cpp** `0x45d30-0x4763d`: CFortressFlag + CParticlez + CExplosion
+    + LogicDispatchC (state-0 news a CPARTICLEZ; thunk 0x2a04 -> 0x46ad0) +
+    Handler046990 (news a CEXPLOSION) + the explosion dispatch triple. DECISIVE:
+    frag SANDWICH i303-i313 (ff x2 | explosion | ff x7 | particlez) + text
+    containment. The new-site `push 0x54` binary-proved sizeof(CParticlez)=0x54
+    (Particlez.h tail pad added).
+  - **Grunt.cpp** `0x47a10-0x4d7c6` (grunt-main): the CGrunt ctor/anim-name loaders
+    /movement/create-sprite family + Classify@MotionEntity (directionclassify
+    frags i317/i323 WOVEN inside the grunt frag run i315-i323).
+  - HandleFortConquered @0x3f5f0 -> **FortConquered.cpp** (@identity-TODO): its
+    text + 3 private .data cells (0x20d154-16c) sit between WormholeActs and the
+    trio, BEFORE the trio's band - it cannot be the ff obj at 0x45d30.
+* `0x50ca0` -> **GruntSteps.cpp** (movement-step/move-sound/serialize family +
+  LoadVehicleGruntSprites @0x50ce0 text-contained). The TU_MIGRATION
+  extent-overlap claim "0x50ca0+0x56f80 one obj" is **REFUTED**: it came from the
+  .bss act-registry singleton band (0x2445xx), which is provably NOT obj-ordered
+  (wormholeacts/warlord/secrettrigs interleave there); the initialized-.data band
+  is perfectly monotone with zero overlaps across the whole region.
+* `0x56f80` -> **GruntCombat.cpp** (combat/struck/attack/tuning/spawn family;
+  frags i324-i342 one run; absorbs 0x57100 LoadGruntAbilityTuning + 0x57db0
+  PathScan + 0x597a0 LoadGruntCombatAnimations + 0x5baf0 GruntSpawnPump + the
+  644af0 registrar pair - each pinned by private-.data cells inside this TU's
+  band). The mid-block foreign leaves (0x58b60/0x58bc0/0x58ca0/0x58cd0/0x58ee0/
+  0x5b7e0) are COMDAT-at-usage emissions - NOT re-homed (legend).
+* `0x616e0` (WOVEN grunt+gruntentrancearrival, weave 0.38) -> **ONE TU**, hosted
+  in **GruntEntranceArrival.cpp** (flags base->eh per the interval's 2 EH sites);
+  absorbs Update@CGruntFireView @0x61cb0 (its private cell 0x20e180 HEADS the
+  band), winapi_064540 (text-contained) and LoadWandGruntItemConfig @0x65a60
+  (its cells 0x20e27c-8c sit inside the band, NOT the 0x612a0 behaviorleaf
+  extent). RunPositionInterpStep @0x5ecd0 kept with an @identity-TODO note (own
+  interval outside the obj).
+* `0x67850` -> **GruntEntranceMove.cpp** (entrance-move/asset/arrival-commit
+  family; absorbs LoadWingzGruntSprites @0x68880 - 31 private cells inside the
+  band).
+
+**Method note (the .bss oracle trap):** per-interval private extents must be
+split by band. Initialized .data (0x208000-0x229400 raw) is 98%-monotone and
+decisive; the .bss tail (0x2445xx act-registry singletons etc.) is NOT
+obj-ordered in this EXE and produced all four false extent-overlap merge rows
+for this region (0x3fc70+0x42d40, 0x42d40+0x4dd50, 0x50ca0+0x56f80,
+0x56f80+0x5d210).
+
+**Not executed (noted in-tree):** GruntTubeAnim @0x50a50 (probable GruntSteps
+head, unproven); Update@RbEffect @0x476b0 (ff/grunt boundary, unpinned);
+CGrunt::Load @0xd8060 (play-TU move blocked by Play.cpp/Grunt.h header
+conflicts - deferred to the play package); the far arrival-defense family
+(0xec670/0xf26f0/0xf2b20/0xf8240 + MovingSlot16 @0x5f310) parked at Grunt.cpp's
+tail pending the 0xea990-0xf8800 partition package.

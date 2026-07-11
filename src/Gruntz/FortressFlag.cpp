@@ -1,25 +1,54 @@
-// FortressFlag.cpp - the fortress-flag game-object (C:\Proj\Gruntz).
+// FortressFlag.cpp - the ORIGINAL fortress-flag TU: CFortressFlag + CParticlez +
+// CExplosion (+ their worker handlers and registrars); one obj, text
+// 0x45d30-0x4763d (wave3-I grunt-region partition).
 //
-// Two trace-discovered CFortressFlag methods, defined in ascending retail-RVA
-// order:
-//   ~CFortressFlag    @0x010e90 - the /GX leaf dtor (folds the CUserLogic teardown).
-//   Serialize         @0x046410 - the Serialize override (chain + the tag-8 fixup).
+// ONE-TU evidence (TU_MIGRATION 0x42d40 interval resolution):
+//   * init-frag SANDWICH: the CRT-table runs i303-i304 (fortressflag x2 @0x45fe0),
+//     i305 (explosion @0x465d0), i306-i312 (fortressflag x7 @0x46620), i313
+//     (particlez @0x46c90) - the explosion frag INSIDE the fortressflag frag run
+//     is impossible for separate objs.
+//   * text containment: with ff+explosion one obj, its contribution spans
+//     0x45d30..0x4763d, which contains the particlez block (0x46ad0-0x470b5),
+//     LogicDispatchC @0x46850 (state-0 news a CPARTICLEZ - thunk 0x2a04 ->
+//     0x46ad0), Handler046990 @0x46990 (state-0 news a CEXPLOSION), and the
+//     explosion dispatch triple (InitLogicDispatch_6447f8 @0x472d0 /
+//     FireActivation @0x47350 / RegisterXLogic_6447f8 @0x474b0) woven between
+//     the explosion ctor and its registrar.
+//   * private .data extent 0x20d384-0x20d3e8 (the ff ctor's statics) sits
+//     between the warlord obj's band and grunt-main's band, in TU link order.
+// NOT this TU: HandleFortConquered @0x3f5f0 (its text + its private .data cells
+// 0x20d154-0x20d16c sit between WormholeActs and the wormhole trio -> moved to
+// FortConquered.cpp); Update@RbEffect @0x476b0 (boundary-ambiguous, left in
+// RockBreakEffectUpdate.cpp with a note).
 //
-// CFortressFlag : CUserLogic (the base hierarchy comes from <Gruntz/UserLogic.h>).
-// Only offsets / code bytes are load-bearing; names are placeholders for the
-// recovered engine identities.
+// Function roster in strict retail-RVA order:
+//   0x010e90 ~CFortressFlag  0x012cf0 P::Serialize  0x012d90 ~CParticlez
+//   0x012e20 E::Serialize    0x012ec0 ~CExplosion
+//   0x045d30 CFortressFlag ctor  0x046000 FF::InitActReg  0x046080 FF::FireActivation
+//   0x0461e0 FF::RegisterActs  0x0463e0 FF::AdvanceAnim  0x046410 FF::Serialize
+//   0x0464e0 CTypeColl464::Resolve  0x046850 LogicDispatchC  0x046990 Handler046990
+//   0x046ad0 CParticlez ctor  0x046cb0 P::InitActReg  0x046d30 P::FireActivation
+//   0x046e90 P::RegisterActs  0x047090 P::Update
+//   0x0470e0 CExplosion ctor  0x0472d0 InitLogicDispatch_6447f8
+//   0x047350 E::FireActivation  0x0474b0 RegisterXLogic_6447f8
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/FortressFlag.h>
+#include <Gruntz/Particlez.h>
+#include <Gruntz/Explosion.h>
+#include <Gruntz/AnimWorker.h>     // shared Owner / Worker views + Worker_DefaultPump
+#include <Gruntz/UserLogic.h>      // CUserLogic leaves the worker handlers build
 #include <Gruntz/SerialObjRef.h>   // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/SpriteRefTable.h> // the shared CSpriteRefTable (g_gameReg->m_74->GetSel)
 #include <Gruntz/Enums.h> // Warlord - the m_124 flag-owner roster (KING/NAPOLEAN/PATTON/VIKING)
 #include <Gruntz/AnimSink.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
-#include <Bute/ButeTree.h> // CVariantSlot::Set (the grow-path node inserter m_4->Set)
+#include <Bute/ButeTree.h>     // CVariantSlot::Set (the grow-path node inserter m_4->Set)
+#include <Globals.h>           // g_part* (CParticlez's registry scalars)
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance
@@ -67,6 +96,85 @@ struct WwdRefSlot {
 DATA(0x0024556c)
 extern WwdGameReg* g_gameReg;
 
+// ---------------------------------------------------------------------------
+// CParticlez's per-coordinate activation registry (@0x644870) - the SAME
+// archetype as CTimeBomb::FireActivation's, but CParticlez's OWN instance. A
+// coordinate maps to an Entry* either directly (fast [g_partLo, g_partHi] range)
+// via g_partBase + (coord-lo)*stride, or by a slow Find in the collection
+// (0x16da80), which on miss rebuilds (GetRetAddr 0x16d990 -> g_actCache, Insert
+// 0x16d850) and yields g_partCur. All globals unnamed BSS (DATA-pinned so the
+// loads reloc-mask); the collection methods external/no-body.
+struct CPartEntry; // an entry: first dword is the registered handler
+DATA(0x00244870)
+extern CTypeKeyColl g_partColl;
+
+// The entry's first dword is a pointer-to-member-function of CParticlez (single
+// inheritance -> 4-byte code pointer); FireActivation invokes it on `this`,
+// emitting `mov ecx,this; call [entry]`. CParticlez is defined COMPLETE in the
+// header above this typedef so the PMF stays 4 bytes (pmf-complete-class-4byte).
+typedef void (CParticlez::*PartHandler)();
+struct CPartEntry {
+    PartHandler m_fn; // [entry]
+};
+
+// RegisterActs binds the i32-returning Update handler; a parallel entry view with
+// the correct PMF signature for the `mov [entry],offset Update` store.
+typedef i32 (CParticlez::*PartHandlerI32)();
+struct CPartEntryI32 {
+    PartHandlerI32 m_fn;
+};
+
+// The inlined coordinate->Entry* lookup FireActivation folds in twice.
+static inline CPartEntry* PartLookup(i32 coord) {
+    g_partScratch = 0;
+    if (coord >= g_partLo && coord <= g_partHi) {
+        return (CPartEntry*)(g_partBase + (coord - g_partLo) * g_partStride);
+    }
+    if (g_partColl.Find(coord, 0)) {
+        return (CPartEntry*)(g_partBase + (coord - g_partLo) * g_partStride);
+    }
+    void* item = g_actCache;
+    g_retAddrBreadcrumb = GetRetAddr();
+    g_partColl2->Set(&g_partColl, (i32)item, 0xc);
+    return g_partCur;
+}
+
+// The CExplosion class dispatch table (@0x6447f8), constructed by
+// InitLogicDispatch_6447f8 below and bound by RegisterXLogic_6447f8.
+DATA(0x002447f8)
+extern CLogicActTable g_logicActReg_6447f8; // 0x6447f8
+
+// The explosion activation handler (ILT thunk; referenced by address so the
+// entry store emits a reloc-masked DIR32 to the named symbol).
+extern "C" void LogicHandler_0466b0(); // thunk 0x4041ec -> 0x466b0
+
+// The shared name-registry build (action key "A"), CKitchenSlime::RegisterType
+// ordering: register the action name on first use (g_buteTree maps name->id),
+// resolve its name-table slot, free the slot's old CString nodes, assign the key,
+// bump the global counter; returns the (possibly newly-allocated) action id.
+static inline i32 RegisterActionName() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
+        i32 key = g_nextActId;
+        id = key;
+        char* slot = ActNameLookup(key);
+        i32 cnt = g_nameRegScratch;
+        void** nodes = g_nameRegCurList;
+        if (cnt != 0) {
+            do {
+                if (nodes != 0) {
+                    ((CString*)nodes)->CString::~CString();
+                }
+                nodes++;
+            } while (--cnt);
+        }
+        ((CString*)slot)->operator=(s_actKeyA);
+        g_nextActId++;
+    }
+    return id;
+}
+
 // CFortressFlag::GetTypeTag (0x00010e40) is now an inline member in the class header.
 
 // CFortressFlag::~CFortressFlag @0x010e90 - the leaf adds no destructible members
@@ -78,23 +186,43 @@ extern WwdGameReg* g_gameReg;
 RVA(0x00010e90, 0x44)
 CFortressFlag::~CFortressFlag() {}
 
-// CFortressFlag::HandleFortConquered @0x03f5f0 (1318 B) - the per-frame fort-
-// conquest check (re-homed from src/Stub/Backlog.cpp; Ghidra symbol cluster proves
-// CFortressFlag ownership: adjacent to NotifyFortUnderAttack @0x45270 / the
-// CFortressFlag ctor/dtor / BuildFortSplashParticles @0x44f80). Structure decoded:
-// the +0x1a0 sub-clock tick, the g_mgrSettings->m_134 mode gate, HitTestCell + dedup
-// vs owner->m_124, the 5-CString "<A> was conquered by <B>!" HUD message, the config
-// re-tag, the two handler-type re-home list walks + a g_freeList pop, and a
-// per-object GAME_EXPLOSION3 eye-candy spawn.
-// @early-stop
-// >512B /GX regalloc wall: the full-body reconstruction BUILDS but scores 0.0% (below
-// the empty-stub baseline) - retail pins `this` to ebp with a 0x24 frame + canonical
-// /GX prologue while the /O2 recompile pins `this` to ebx with a 0x20 frame + a
-// hoisted `mov eax,fs:0`, a this-register + frame-slot divergence cascading through
-// all 1318 B. Kept as the empty (highest-%) stub per the >512B REVERT rule; final-
-// sweep leaf-first redo needs the callee set + a matching regalloc modeled first.
-RVA(0x0003f5f0, 0x526)
-void CFortressFlag::HandleFortConquered() {}
+// CParticlez::Serialize @0x012cf0 - the vtable slot-1 override: chain the shared
+// CUserLogic serialize helper on `this`, and (only on success) the +0x34 serializable
+// sub-object's chain; normalize the second chain's success to a strict bool. The
+// byte-identical chain-Serialize archetype (differs only in the two call displacements).
+RVA(0x00012cf0, 0x47)
+i32 CParticlez::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
+
+// CParticlez::~CParticlez @0x012d90 - the leaf adds no destructible members
+// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown. The
+// destructible link forces the /GX EH frame. Byte-identical in shape to
+// ~CTimeBomb @0x012a70; the empty body is enough for cl.
+RVA(0x00012d90, 0x44)
+CParticlez::~CParticlez() {}
+
+// CExplosion::Serialize @0x012e20 - the vtable slot-1 override: chain the shared
+// CUserLogic serialize helper on `this`, and (only on success) the +0x34 serializable
+// sub-object's chain; normalize the second chain's success to a strict bool. The
+// byte-identical chain-Serialize archetype (differs only in the two call displacements).
+RVA(0x00012e20, 0x47)
+i32 CExplosion::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
+
+// CExplosion::~CExplosion (0x12ec0) - the /GX leaf dtor folds the bare CUserLogic
+// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
+// (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
+// destructible link forces the /GX EH frame; the leaf vptr store is dead-eliminated.
+RVA(0x00012ec0, 0x44)
+CExplosion::~CExplosion() {}
 
 // CFortressFlag::CFortressFlag @0x045d30 - fold the shared CUserLogic(obj) init,
 // run the eyecandy z-clamp, pick the flag's faction name (a 4-way switch on the
@@ -165,7 +293,8 @@ RVA(0x00046080, 0x102)
 void CFortressFlag::FireActivation(i32 coord) {
     CFortressFlagActEntry* e = (CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(coord);
     if (e->m_fn != 0) {
-        CFortressFlagActEntry* e2 = (CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(coord);
+        CFortressFlagActEntry* e2 =
+            (CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(coord);
         (this->*(e2->m_fn))();
     }
 }
@@ -222,8 +351,7 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    if (!SerialRef34()
-             ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
+    if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
         return 0;
     }
     if (tag == 8) {
@@ -263,9 +391,7 @@ struct CTypeColl464 {
     void* Resolve(i32 key);
 };
 SIZE_UNKNOWN(CTypeColl464);
-extern void* g_projActCache;      // 0x6bf464 (pinned in CStaticHazard.cpp)
-extern void* g_retAddrBreadcrumb; // 0x6bf428 (pinned in CVoiceTrigger.cpp)
-extern void* GetRetAddr();        // 0x16d990
+extern void* g_projActCache; // 0x6bf464 (pinned in CStaticHazard.cpp)
 RVA(0x000464e0, 0x74)
 void* CTypeColl464::Resolve(i32 key) {
     m_20 = 0;
@@ -281,9 +407,237 @@ void* CTypeColl464::Resolve(i32 key) {
     return (void*)m_buf2;
 }
 
+// ---------------------------------------------------------------------------
+// LogicDispatchC @0x046850 - the CParticlez worker-pump handler (moved from
+// LogicRecordDispatch.cpp; state-0 news a CPARTICLEZ - the 0x54 `new` + ctor
+// thunk 0x2a04 -> 0x46ad0 == ??0CParticlez). __cdecl FREE function; the shared
+// AnimWorker Owner/Worker pump shape (same as Handler046990 below).
+RVA(0x00046850, 0xf1)
+i32 LogicDispatchC(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CParticlez((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+// Handler046990 @0x046990 - the CExplosion worker-pump handler (moved from
+// AnimWorkerHandlers.cpp; state-0 news a CEXPLOSION). Same __cdecl dispatch shape.
+RVA(0x00046990, 0xf1)
+i32 Handler046990(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CExplosion((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
+
+// --- CParticlez (0x046ad0), vptr 0x5e7614 --- the ctor anchors GetTypeTag @0x12cd0
+// + the ??_7CParticlez vtable in this TU. Folds the inline CUserLogic(obj) base.
+RVA(0x00046ad0, 0x15e)
+CParticlez::CParticlez(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 0x2000002;
+    if (m_object->m_latchedAnimId != 0xcf84f) {
+        m_object->m_latchedAnimId = 0xcf84f;
+        m_object->m_flags |= 0x20000;
+    }
+    m_object->m_38 = 0;
+}
+
+// CParticlez::InitActReg @0x046cb0 - construct the class's activation-coordinate
+// registry singleton (g_partColl @0x644870) over the fixed range [2000, 2010]
+// via the shared registry ctor (FUN_00408710, __thiscall ret 8). A free init
+// thunk (no `this`); reloc-masked.
+RVA(0x00046cb0, 0x15)
+void CParticlez::InitActReg() {
+    ((CZDArrayDerived*)&g_partColl)->Construct(2000, 2010);
+}
+
+// CParticlez::FireActivation @0x046d30 - look the activation coordinate up in
+// the registry; if the entry has a registered handler, look it up again and
+// dispatch it __thiscall on this. Same archetype as CTimeBomb::FireActivation
+// (0x0e1830).
+RVA(0x00046d30, 0x102)
+void CParticlez::FireActivation(i32 coord) {
+    CPartEntry* e = PartLookup(coord);
+    if (e->m_fn != 0) {
+        CPartEntry* e2 = PartLookup(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
+// CParticlez::RegisterActs @0x046e90 - bind the per-frame handler (Update
+// @0x047090) to the activation key "A" via the shared name registry, then bind
+// id->entry in the class's own coordinate registry (g_partColl). The SAME
+// archetype as CSecretTeleporterTrigger::RegisterActs.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset
+// Update` handler store match retail); residual is the slot-vs-id callee-saved
+// register choice cascading into the free-loop count materialization. Deferred.
+RVA(0x00046e90, 0x18d)
+void CParticlez::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CString*)list)->CString::~CString();
+            }
+            list++;
+        }
+        ((CString*)slot)->operator=(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CPartEntryI32*)PartLookup(id))->m_fn = &CParticlez::Update;
+}
+
+// CParticlez::Update @0x047090 - re-target the bound object's animation sub-object
+// (m_38 + 0x1a0) to the current draw-delta (g_6bf3bc); then, if its +0x1c8 latch is
+// set and its +0x1c0 latch is clear, mark it on-screen this frame (+0x8 |= 0x10000).
+// Always returns 0. The extended AdvanceAnim archetype.
+RVA(0x00047090, 0x4c)
+i32 CParticlez::Update() {
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    CGameObject* o = m_38;
+    if (o->m_1c8 != 0 && o->m_1c0 == 0) {
+        o->m_flags |= 0x10000;
+    }
+    return 0;
+}
+
+// CExplosion::CExplosion (0x470e0) - the eyecandy ctor: fold the shared
+// CUserLogic(obj) init, then name the bound object "GAME_EXPLOSION", bind its "A"
+// bute node, flag the sub-object, lock the draw order to 0xf4240 and clear m_38.
+//
+// @early-stop
+// eh-ctor-vptr-restamp-position wall (docs/patterns/eh-ctor-vptr-restamp-position.md,
+// topic:wall topic:eh): body byte-identical; residual is the /GX leaf-vptr re-stamp
+// position + the EH-state ids, not source-steerable - the established leaf-ctor
+// baseline (cf. CMenuSparkle 92.8% / CEyeCandy 92.5% in userlogic).
+RVA(0x000470e0, 0x16b)
+CExplosion::CExplosion(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_38->ApplyName("GAME_EXPLOSION");
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 0x2000002;
+    CGameObject* o = m_object;
+    if (o->m_latchedAnimId != 0xf4240) {
+        o->m_latchedAnimId = 0xf4240;
+        o->m_flags |= 0x20000;
+    }
+    m_object->m_38 = 0;
+}
+
+// InitLogicDispatch_6447f8 @0x0472d0 - construct the CExplosion dispatch table
+// (@0x6447f8) over [0x7d0, 0x7da]. (Moved from LogicDispatchInit.cpp - the frag
+// i314 @0x472b0 is text-contained in this TU, between the explosion ctor and its
+// FireActivation.)
+RVA(0x000472d0, 0x15)
+void InitLogicDispatch_6447f8() {
+    ((CZDArrayDerived*)&g_logicActReg_6447f8)->Construct(0x7d0, 0x7da);
+}
+
+// CExplosion::FireActivation @0x047350 - slot-4 (UserLogicVfunc2) override: resolve
+// `id` in the class dispatch table; if the entry carries a handler, re-resolve and
+// dispatch it __thiscall on `this`. Same archetype as CTeleporter::FireActivation
+// (the ResolveEntry inline expands twice).
+RVA(0x00047350, 0x102)
+void CExplosion::FireActivation(i32 id) {
+    CExplosionActEntry* e = (CExplosionActEntry*)g_logicActReg_6447f8.ResolveEntry(id);
+    if (e->m_fn != 0) {
+        CExplosionActEntry* e2 = (CExplosionActEntry*)g_logicActReg_6447f8.ResolveEntry(id);
+        (this->*(e2->m_fn))();
+    }
+}
+
+// RegisterXLogic_6447f8 @0x0474b0 - bind the CExplosion logic class to its
+// activation handler under the shared action name "A". (Moved from
+// LogicActReg.cpp - text-contained in this TU.)
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md): logic
+// byte-faithful, residual is the action-id register coloring + count-down
+// induction. Deferred.
+RVA(0x000474b0, 0x18d)
+void RegisterXLogic_6447f8() {
+    i32 id = RegisterActionName();
+    *(void**)g_logicActReg_6447f8.ResolveEntry(id) = (void*)&LogicHandler_0466b0;
+}
+
+// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
+// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
-#include <Wap32/ZVec.h>
-#include <Wap32/ZDArrayDerived.h>
 SIZE_UNKNOWN(CFortressFlagActEntry);
 SIZE_UNKNOWN(CFortressFlagActReg);
 SIZE_UNKNOWN(WwdRefSlot);
+SIZE_UNKNOWN(CPartEntry);
+SIZE_UNKNOWN(CPartEntryI32);
+SIZE_UNKNOWN(CParticlez);

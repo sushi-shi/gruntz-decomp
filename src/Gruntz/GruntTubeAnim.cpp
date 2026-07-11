@@ -13,6 +13,11 @@
 // here with an offset-faithful local CGrunt view rather than the full shared header
 // so the (large, plateauing) reconstruction stays isolated; the real home is
 // Grunt.cpp and a final-sweep re-home is harmless (offsets + bytes are identical).
+// wave3-I partition note: SetupTubeAnim @0x50a50's birth interval is the lone
+// 0x50a50-0x50c15 block 139 bytes before the GruntSteps TU (0x50ca0) - a PROBABLE
+// head of that obj (small gap; the toob IS a vehicle, thematically adjacent to
+// LoadVehicleGruntSprites @0x50ce0), but with no private .data cells or init
+// frags to prove it, it stays split (@identity-TODO).
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/AssetNamespaceLoader.h>

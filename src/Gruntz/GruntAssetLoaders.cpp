@@ -45,410 +45,9 @@ static void GruntScratchTeardown() {
     }
 }
 
-// The per-direction sprite-name key strings (literal .rodata; reloc-masked).
-static const char s_NW_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_ITEM";
-static const char s_N_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTH_ITEM";
-static const char s_NE_ITEM[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_ITEM";
-static const char s_W_ITEM[] = "GRUNTZ_WINGZGRUNT_WEST_ITEM";
-static const char s_E_ITEM[] = "GRUNTZ_WINGZGRUNT_EAST_ITEM";
-static const char s_SW_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_ITEM";
-static const char s_S_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTH_ITEM";
-static const char s_SE_ITEM[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_ITEM";
-static const char s_NW_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_WALK";
-static const char s_N_WALK[] = "GRUNTZ_WINGZGRUNT_NORTH_WALK";
-static const char s_NE_WALK[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_WALK";
-static const char s_W_WALK[] = "GRUNTZ_WINGZGRUNT_WEST_WALK";
-static const char s_E_WALK[] = "GRUNTZ_WINGZGRUNT_EAST_WALK";
-static const char s_SW_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_WALK";
-static const char s_S_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTH_WALK";
-static const char s_SE_WALK[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_WALK";
-static const char s_NW_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHWEST_IDLE";
-static const char s_N_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTH_IDLE";
-static const char s_NE_IDLE[] = "GRUNTZ_WINGZGRUNT_NORTHEAST_IDLE";
-static const char s_W_IDLE[] = "GRUNTZ_WINGZGRUNT_WEST_IDLE";
-static const char s_E_IDLE[] = "GRUNTZ_WINGZGRUNT_EAST_IDLE";
-static const char s_SW_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHWEST_IDLE";
-static const char s_S_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTH_IDLE";
-static const char s_SE_IDLE[] = "GRUNTZ_WINGZGRUNT_SOUTHEAST_IDLE";
-static const char s_WG_ITEM[] = "GRUNTZ_WINGZGRUNT_ITEM";
-static const char s_WG_WALK[] = "GRUNTZ_WINGZGRUNT_WALK";
-static const char s_WG_IDLE1[] = "GRUNTZ_WINGZGRUNT_IDLE1";
-static const char s_WG_IDLE2[] = "GRUNTZ_WINGZGRUNT_IDLE2";
-static const char s_WG_IDLE3[] = "GRUNTZ_WINGZGRUNT_IDLE3";
-static const char s_WG_IDLE4[] = "GRUNTZ_WINGZGRUNT_IDLE4";
-static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
-
-// The entrance-cell record's WALK/IDLE anim-name CStrings (m_cells[k] at +0x08/+0x0c).
-#define CELL_WALK(k) (m_cells[(k)].m_walk)
-#define CELL_IDLE(k) (m_cells[(k)].m_idle)
-#define WLOOKUP(key) (((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup((key), (CObject*&)_out))
-
-// ---------------------------------------------------------------------------
-// CGrunt::LoadWingzGruntSprites(int enable)   @0x68880   (ret 4)
-// When the grunt's wingz timer is active (enable != 0) it stamps the flying ITEM
-// sprite name into every direction cell, sets up the wingz-duration timer and the
-// pose-index lookups against the flying set, then fires the on-screen spawn cue.
-// When disabled it retires the wingz-time HUD sprite and re-stamps the normal
-// WALK/IDLE walking set. Both paths finish by re-stamping the current entrance-cell
-// frame keyed by the active anim type code ("D" = walk pose, "A" = idle pose).
-// @early-stop
-// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
-// every cell operator=, the 8 Lookup blocks, the cue, the ScratchResolve/strcmp tail
-// and the entrance-cell frame re-stamp are byte-correct in shape/offsets/symbols/CFG.
-// Residue (compounded over 8 lookups): retail reuses the consumed `enable` arg slot as
-// the single lookup `out` local (esp+0x20, 21 refs) under a `sub esp,0xc` frame that
-// also spills a dead `reason=m_entranceCell.reason`, and SINKS each lookup's `out=0` store
-// past the &out/key pushes; cl allocates a fresh out slot (esp+0x14, no frame) and
-// hoists the zero-init. Source-invariant (the documented Lookup-family scheduling
-// coin-flip); deferred to the final sweep. ~75%.
-RVA(0x00068880, 0x67c)
-i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
-    CSprite* _out;
-    if (enable != 0) {
-        m_wingzEnabled = 1;
-        m_wingzDurationLo = (i32)((double)m_wingzTime * g_wingzScale - g_wingzBias);
-        m_wingzDurationHi = 0;
-        m_wingzClockLo = (i32)g_645588;
-        m_wingzClockHi = 0;
-        CreateWingzTimeSprite();
-
-        CELL_IDLE(0) = s_NW_ITEM;
-        CELL_IDLE(1) = s_N_ITEM;
-        CELL_IDLE(2) = s_NE_ITEM;
-        CELL_IDLE(3) = s_W_ITEM;
-        CELL_IDLE(4) = s_N_ITEM;
-        CELL_IDLE(5) = s_E_ITEM;
-        CELL_IDLE(6) = s_SW_ITEM;
-        CELL_IDLE(7) = s_S_ITEM;
-        CELL_IDLE(8) = s_SE_ITEM;
-        CELL_WALK(0) = s_NW_ITEM;
-        CELL_WALK(1) = s_N_ITEM;
-        CELL_WALK(2) = s_NE_ITEM;
-        CELL_WALK(3) = s_W_ITEM;
-        CELL_WALK(4) = s_N_ITEM;
-        CELL_WALK(5) = s_E_ITEM;
-        CELL_WALK(6) = s_SW_ITEM;
-        CELL_WALK(7) = s_S_ITEM;
-        CELL_WALK(8) = s_SE_ITEM;
-
-        _out = 0;
-        WLOOKUP(s_WG_ITEM);
-        m_poseWalk = (i32)_out;
-        _out = 0;
-        WLOOKUP(s_WG_ITEM);
-        m_poseIdle[2] = 0;
-        m_poseIdle[0] = (i32)_out;
-        m_poseIdle[1] = (i32)_out;
-        m_poseIdle4 = 0;
-        m_poseIdle5 = 0;
-
-        CGameRegistry* g = g_pGameRegistry;
-        i32 y = m_10->m_60;
-        i32 x = m_10->m_5c;
-        CCueRect* r = (CCueRect*)((char*)g->m_world->m_24->m_5c + 0x40);
-        if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
-            g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
-        }
-    } else {
-        m_wingzEnabled = 0;
-        m_wingzDurationLo = 0;
-        m_wingzDurationHi = 0;
-        if (m_wingzTimeSprite != 0) {
-            m_wingzTimeSprite->m_8 |= 0x10000;
-            m_wingzTimeSprite = 0;
-        }
-
-        CELL_WALK(0) = s_NW_WALK;
-        CELL_WALK(1) = s_N_WALK;
-        CELL_WALK(2) = s_NE_WALK;
-        CELL_WALK(3) = s_W_WALK;
-        CELL_WALK(4) = s_N_WALK;
-        CELL_WALK(5) = s_E_WALK;
-        CELL_WALK(6) = s_SW_WALK;
-        CELL_WALK(7) = s_S_WALK;
-        CELL_WALK(8) = s_SE_WALK;
-        CELL_IDLE(0) = s_NW_IDLE;
-        CELL_IDLE(1) = s_N_IDLE;
-        CELL_IDLE(2) = s_NE_IDLE;
-        CELL_IDLE(3) = s_W_IDLE;
-        CELL_IDLE(4) = s_N_IDLE;
-        CELL_IDLE(5) = s_E_IDLE;
-        CELL_IDLE(6) = s_SW_IDLE;
-        CELL_IDLE(7) = s_S_IDLE;
-        CELL_IDLE(8) = s_SE_IDLE;
-
-        _out = 0;
-        WLOOKUP(s_WG_WALK);
-        m_poseWalk = (i32)_out;
-        _out = 0;
-        WLOOKUP(s_WG_IDLE1);
-        m_poseIdle[0] = (i32)_out;
-        _out = 0;
-        WLOOKUP(s_WG_IDLE2);
-        m_poseIdle[1] = (i32)_out;
-        _out = 0;
-        WLOOKUP(s_WG_IDLE3);
-        m_poseIdle[2] = (i32)_out;
-        _out = 0;
-        WLOOKUP(s_WG_IDLE4);
-        m_poseIdle4 = (i32)_out;
-        _out = 0;
-        WLOOKUP(s_WG_IDLE5);
-        m_poseIdle5 = (i32)_out;
-    }
-
-    // Re-stamp the current entrance-cell frame keyed by the active anim type.
-    CAnimNameRecord* rec = g_animNameResolver.ScratchResolve(m_14->m_1c);
-    GruntScratchTeardown();
-    if (strcmp(rec->m_name, g_codeD) == 0) {
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseWalk);
-        CAniElement* desc = m_154->m_1b4;
-        i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
-        i32 frame = elem[0x14 / 4];
-        i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
-        char* buf = GruntStrGetBuffer(&m_cells[idx].m_walk, 0);
-        m_154->CacheFrame(buf, frame);
-        return 1;
-    }
-
-    CAnimNameRecord* rec2 = g_animNameResolver.ScratchResolve(m_14->m_1c);
-    GruntScratchTeardown();
-    if (strcmp(rec2->m_name, g_codeA) == 0) {
-        m_prevEntranceDesc = m_154->m_1b4;
-        m_154->m_1a0.SetGeometry(m_poseIdle[0]);
-        CAniElement* desc = m_154->m_1b4;
-        i32* elem = desc->m_records.m_nSize > 0 ? (i32*)*desc->m_records.m_pData : 0;
-        i32 frame = elem[0x14 / 4];
-        i32 idx = 3 * m_entranceCell.col + m_entranceCell.row;
-        char* buf = GruntStrGetBuffer(&m_cells[idx].m_idle, 0);
-        m_154->CacheFrame(buf, frame);
-    }
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// CGrunt::LoadGruntAbilityTuning(int forced)   @0x57100   (ret 4)
-// Fire the grunt's spell-ability effect for the given (or randomly-rolled)
-// ability index: play the GAME_ATTACK launch sound (when the slot is armed),
-// then dispatch on the index to spawn the matching LightFx flash + area tuning
-// cue (FreezeRadius/HealthRadius/RessurectionRadius/ToyzRadius/TeleportRadius) or
-// the 4-direction rolling-ball sprites.
-//
-// The ability-sound resource chain (m_158 -> m_c -> m_28): the GAME_ATTACK map is
-// at +0x10, the armed-flag at +0x30.
-struct CGruntSndSlot {
-    char m_pad0[0x30];
-    i32 m_30; // +0x30  armed flag (0 = fire the sound)
-};
-struct CGruntSndRes {
-    char m_pad0[0x28];
-    CGruntSndSlot* m_28; // +0x28
-};
-struct CGruntSndResMgr {
-    char m_pad0[0xc];
-    CGruntSndRes* m_c; // +0x0c
-};
-
-// The launch-sound cue tag (reloc-masked global) + the throttled cue player.
-DATA(0x0021ab24)
-extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
-// LeafCue::PlayIfElapsed (0x1f940, __thiscall): plays the cue when the kill-cue clock
-// throttle has elapsed. Reached as a bare call (latent-ecx cue object), so modeled as
-// a flat __stdcall alias through thunk 0x25fe. External -> reloc-masked.
-extern "C" void __stdcall PlayIfElapsed(i32 tag, i32 a, i32 b, i32 c); // 0x1f940
-
-// The GAME_ATTACK sound cue tag (const char*). The other spell-effect key
-// strings (CreateSprite/Activate/ApplyName args) are spelled as inline literals
-// below so cl pools them into the shared read-only ??_C@ constants retail uses.
-static const char s_GAME_ATTACK[] = "GAME_ATTACK";
-// The bute config tag/keys (GetIntDef/GetDwordDef take char*).
-static char s_Spellz[] = "Spellz";
-static char s_FreezeRadius[] = "FreezeRadius";
-static char s_HealthRadius[] = "HealthRadius";
-static char s_RessurectionRadius[] = "RessurectionRadius";
-static char s_ToyzRadius[] = "ToyzRadius";
-static char s_TeleportRadius[] = "TeleportRadius";
-static char s_RollingBallzSpeed[] = "RollingBallzSpeed";
-static char s_RollingBallzTime[] = "RollingBallzTime";
-
-// The random grunt spell/ability effect LoadGruntAbilityTuning dispatches on (idx);
-// each name is confirmed by its case comment + its "Spellz" bute radius key. Same
-// immediates as the bare labels -> naming is matching-neutral.
-enum SpellzEffect {
-    SPELLZ_FREEZE = 1,       // FreezeRadius
-    SPELLZ_HEALTH = 2,       // HealthRadius
-    SPELLZ_RESURRECTION = 3, // RessurectionRadius
-    SPELLZ_TOYZ = 4,         // ToyzRadius
-    SPELLZ_TELEPORT = 5,     // TeleportRadius
-    SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
-};
-
-// @early-stop
-// Create*-sprite register coin-flip wall (~90.5%): the prologue (incl. the ebp=0 +
-// 4th-saved-reg pin recovered via the rolling-ball m_7c temps), the random-index pick,
-// the GAME_ATTACK sound gate, every switch case (CreateSprite, the init vtable call,
-// Activate, the GetIntDef-into-CombatCue/ResurrectCue area cue) and the cross-case
-// tail-merge are byte-correct in shape/offsets/symbols/CFG. Residue is the documented
-// Create*-sprite scheduling coin-flip (which callee-saved reg holds m_180/m_17c/g per
-// case; the same wall the 7 CGrunt Create* carry at 99% each, compounded over the 10
-// CreateSprite calls) + a 1-instr `cmp edi,ebp` operand-order flip. Deferred to the
-// final sweep.
-RVA(0x00057100, 0x577)
-i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
-    i32 idx = forced;
-    if (forced == 0) {
-        i32 m = 3;
-        if (g_pGameRegistry->m_134 != 1) {
-            m = 6;
-        }
-        if (m == 0) {
-            idx = GruntRand() & 1;
-        } else {
-            idx = GruntRand() % m + 1;
-        }
-    }
-
-    CGruntSndSlot* slot = m_158->m_c->m_28;
-    if (slot->m_30 == 0) {
-        GruntSoundEntry* sout = 0;
-        ((CMapStringToOb*)((char*)slot + 0x10))->Lookup(s_GAME_ATTACK, (CObject*&)sout);
-        if (sout != 0) {
-            PlayIfElapsed(g_sndCueTag, 0, 0, 0);
-        }
-    }
-
-    switch (idx) {
-        case SPELLZ_FREEZE: { // freeze
-            CHudSprite* spr =
-                (CHudSprite*)g_pGameRegistry->m_world->m_8
-                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
-            return m_tileMgr->CombatCue(
-                m_lastTilePxX,
-                m_lastTilePxY,
-                g_buteMgr.GetIntDef(s_Spellz, s_FreezeRadius, 8),
-                4,
-                -1
-            );
-        }
-        case SPELLZ_HEALTH: { // health
-            CHudSprite* spr =
-                (CHudSprite*)g_pGameRegistry->m_world->m_8
-                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
-            return m_tileMgr->CombatCue(
-                m_lastTilePxX,
-                m_lastTilePxY,
-                g_buteMgr.GetIntDef(s_Spellz, s_HealthRadius, 8),
-                3,
-                -1
-            );
-        }
-        case SPELLZ_RESURRECTION: { // resurrection
-            CHudSprite* spr =
-                (CHudSprite*)g_pGameRegistry->m_world->m_8
-                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
-            return m_tileMgr->ResurrectCue(
-                m_lastTilePxX,
-                m_lastTilePxY,
-                g_buteMgr.GetIntDef(s_Spellz, s_RessurectionRadius, 8)
-            );
-        }
-        case SPELLZ_TOYZ: { // toyz
-            CHudSprite* spr =
-                (CHudSprite*)g_pGameRegistry->m_world->m_8
-                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
-            return m_tileMgr->CombatCue(
-                m_lastTilePxX,
-                m_lastTilePxY,
-                g_buteMgr.GetIntDef(s_Spellz, s_ToyzRadius, 8),
-                5,
-                -1
-            );
-        }
-        case SPELLZ_TELEPORT: { // teleport
-            CHudSprite* spr =
-                (CHudSprite*)g_pGameRegistry->m_world->m_8
-                    ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
-            return m_tileMgr->CombatCue(
-                m_lastTilePxX,
-                m_lastTilePxY,
-                g_buteMgr.GetIntDef(s_Spellz, s_TeleportRadius, 8),
-                2,
-                -1
-            );
-        }
-        case SPELLZ_ROLLINGBALL: { // rolling ball (4 directions)
-            CHudSprite* n = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
-                0,
-                m_lastTilePxX,
-                m_lastTilePxY - 0x20,
-                0,
-                "RollingBall",
-                0x40003
-            );
-            n->CacheFirstFrame("LEVEL_ROLLINGBALL_NORTH");
-            CSpriteInner* ni = n->m_7c;
-            ni->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
-            n->m_124 = 0;
-            n->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
-
-            CHudSprite* e = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
-                0,
-                m_lastTilePxX + 0x20,
-                m_lastTilePxY,
-                0,
-                "RollingBall",
-                0x40003
-            );
-            e->CacheFirstFrame("LEVEL_ROLLINGBALL_EAST");
-            CSpriteInner* ei = e->m_7c;
-            ei->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
-            e->m_124 = 0;
-            e->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
-
-            CHudSprite* s = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
-                0,
-                m_lastTilePxX,
-                m_lastTilePxY + 0x20,
-                0,
-                "RollingBall",
-                0x40003
-            );
-            s->CacheFirstFrame("LEVEL_ROLLINGBALL_SOUTH");
-            CSpriteInner* si = s->m_7c;
-            si->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
-            s->m_124 = 0;
-            s->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
-
-            CHudSprite* w = (CHudSprite*)g_pGameRegistry->m_world->m_8->CreateSprite(
-                0,
-                m_lastTilePxX - 0x20,
-                m_lastTilePxY,
-                0,
-                "RollingBall",
-                0x40003
-            );
-            w->CacheFirstFrame("LEVEL_ROLLINGBALL_WEST");
-            CSpriteInner* wi = w->m_7c;
-            wi->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
-            w->m_124 = 0;
-            w->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
-            return 1;
-        }
-        default:
-            return 0;
-    }
-}
+// LoadWingzGruntSprites @0x68880 was re-homed to GruntEntranceMove.cpp and
+// LoadGruntAbilityTuning @0x57100 to GruntCombat.cpp (wave3-I): their retail
+// bodies + private .data cells sit inside the 0x67850 / 0x56f80 grunt objs.
 
 // ---------------------------------------------------------------------------
 // CGrunt::LoadGruntDeathAnimations(int deathType, int a2)   @0x60150   (ret 8)
@@ -605,8 +204,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 m_154->ApplyGeometryDirect(m_poseDeath, 0);
                 goto pathA;
             }
-            m_poseDeath =
-                (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_SQUASH);
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_SQUASH);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_SQUASH, DEATH_FRAME());
@@ -619,8 +217,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto tail;
 
         case DEATH_SINK: // GRUNTZ_DEATHZ_SINK
-            m_poseDeath =
-                (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_SINK);
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_SINK);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_SINK, DEATH_FRAME());
@@ -630,8 +227,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto tail;
 
         case DEATH_HOLE: // GRUNTZ_DEATHZ_HOLE
-            m_poseDeath =
-                (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_HOLE);
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_HOLE);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_HOLE, DEATH_FRAME());
@@ -639,8 +235,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto finalize;
 
         case DEATH_SHATTER: // GRUNTZ_DEATHZ_SHATTER (apply FREEZE)
-            m_poseDeath =
-                (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_SHATTER);
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_SHATTER);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_FREEZE, DEATH_FRAME());
@@ -648,8 +243,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             goto finalize;
 
         case DEATH_BURN: // GRUNTZ_DEATHZ_BURN
-            m_poseDeath =
-                (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_BURN);
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_BURN);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_BURN, DEATH_FRAME());
@@ -659,8 +253,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         case DEATH_QUICKFALL: // GRUNTZ_DEATHZ_QUICKFALL (apply FALL), snap to tile center
             m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
             m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
-            m_poseDeath =
-                (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_QUICKFALL);
+            m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_QUICKFALL);
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
             m_154->CacheFrame(s_DEATHZ_FALL, DEATH_FRAME());
@@ -676,8 +269,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             i32 attr = ((i32*)grid->m_8[m_10->m_60 >> 5])[(m_10->m_5c >> 5) * 7 + 4];
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
-                m_poseDeath = (i32)m_154->m_c->m_2c
-                                  ->LookupValue_06b2a0(s_DEATHZ_QUICKFALL);
+                m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_QUICKFALL);
                 tag = 0x357;
                 if (m_10->m_74 != -1) {
                     m_10->m_74 = -1;
@@ -686,8 +278,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
                 m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
             } else {
-                m_poseDeath =
-                    (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_FALL);
+                m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_FALL);
             }
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
@@ -703,8 +294,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             i32 attr = ((i32*)grid->m_8[m_10->m_60 >> 5])[(m_10->m_5c >> 5) * 7 + 4];
             i32 tag = 0x355;
             if (attr == 0x6e || attr == 0x74) {
-                m_poseDeath = (i32)m_154->m_c->m_2c
-                                  ->LookupValue_06b2a0(s_DEATHZ_QUICKFALL2);
+                m_poseDeath = (i32)m_154->m_c->m_2c->LookupValue_06b2a0(s_DEATHZ_QUICKFALL2);
                 tag = 0x357;
                 if (m_10->m_74 != -1) {
                     m_10->m_74 = -1;

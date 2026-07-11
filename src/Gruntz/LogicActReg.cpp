@@ -15,8 +15,8 @@
 // external/no-body, so the byte match holds regardless of the recovered class name.
 //
 //   0x03a710 -> table 0x62bfa0, handler 0x39910 (thunk 0x401717)
-//   0x0474b0 -> table 0x6447f8 (g_logicDispatch_6447f8), handler 0x466b0 (thunk 0x4041ec)
 //   0x0adfc0 -> table 0x646010, handler 0xad2a0 (thunk 0x403c10)
+// (0x0474b0 -> table 0x6447f8 was re-homed to FortressFlag.cpp, wave3-I.)
 #include <Gruntz/ActNameRegistry.h> // the shared action-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared activation-registrar archetype
 #include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (the [lo,hi] range static-init)
@@ -58,15 +58,12 @@ static inline i32 RegisterActionName() {
 // The three per-class dispatch tables (.data, DATA-pinned so the loads reloc-mask).
 DATA(0x0022bfa0)
 extern CLogicActTable g_logicActReg_62bfa0; // 0x62bfa0
-DATA(0x002447f8)
-extern CLogicActTable g_logicActReg_6447f8; // 0x6447f8 (g_logicDispatch_6447f8)
 DATA(0x00246010)
 extern CLogicActTable g_logicActReg_646010; // 0x646010
 
 // The three class activation handlers (ILT thunks; referenced by address so the
 // entry store emits a reloc-masked DIR32 to the named symbol).
 extern "C" void LogicHandler_039910(); // thunk 0x401717 -> 0x39910
-extern "C" void LogicHandler_0466b0(); // thunk 0x4041ec -> 0x466b0
 extern "C" void LogicHandler_0ad2a0(); // thunk 0x403c10 -> 0xad2a0
 
 // ConstructLogicActRange_62bfa0 @0x03a530 - the static initializer that builds
@@ -92,17 +89,8 @@ void RegisterXLogic_62bfa0() {
     *(void**)g_logicActReg_62bfa0.ResolveEntry(id) = (void*)&LogicHandler_039910;
 }
 
-// RegisterXLogic @0x0474b0 - bind the logic class behind dispatch table 0x6447f8
-// (g_logicDispatch_6447f8, constructed by InitLogicDispatch_6447f8 @0x472d0) to its
-// activation handler. Same archetype/wall as 0x03a710.
-// @early-stop
-// register-pinning wall (see 0x03a710): logic byte-faithful, residual is the
-// action-id register coloring + count-down induction. Deferred.
-RVA(0x000474b0, 0x18d)
-void RegisterXLogic_6447f8() {
-    i32 id = RegisterActionName();
-    *(void**)g_logicActReg_6447f8.ResolveEntry(id) = (void*)&LogicHandler_0466b0;
-}
+// RegisterXLogic_6447f8 @0x0474b0 was re-homed to FortressFlag.cpp (wave3-I):
+// its retail body is text-contained in the ff+particlez+explosion obj.
 
 // ConstructLogicActRange_646010 @0x0adde0 - the static initializer that builds
 // dispatch table 0x646010's fast [0x7d0, 0x7da] id range. Re-homed from

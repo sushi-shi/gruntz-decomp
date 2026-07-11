@@ -93,6 +93,16 @@ i32 Handler03a200(Owner* owner) {
     return 1;
 }
 
+// CGrunt_IsSameType @0x3c7f0 - a free __cdecl comparator returning whether two
+// grunts share the same type record (their +0x8 sub-object ptr). Re-homed from
+// Grunt.cpp (wave3-I): its retail body's birth position is inside this TU's
+// 0x3ac30 interval (TU_MIGRATION MOVE row).
+class CGrunt;
+RVA(0x0003c7f0, 0x18)
+bool CGrunt_IsSameType(CGrunt* a, CGrunt* b) {
+    return *(void**)((char*)a + 8) == *(void**)((char*)b + 8);
+}
+
 // The state-0 anim-worker dispatch family (0x3d2b0..0x3ddf0) - one contiguous retail
 // /Gy object. Each handler is byte-identical to Handler03d670 bar the CUserLogic leaf
 // it `new`s in state 0 (hence the `new` size immediate + ctor symbol).
@@ -478,42 +488,6 @@ i32 Handler03ddf0(Owner* owner) {
     return 1;
 }
 
-// The latest flanking Owner*-handler (builds a CExplosion). Sits in retail next to
-// LogicRecordDispatch's LogicDispatchC (0x46850) - same __cdecl dispatch shape.
-RVA(0x00046990, 0xf1)
-i32 Handler046990(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
-        case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CExplosion((CGameObject*)owner);
-            sub->Activate();
-            rec->m_18 = sub;
-            break;
-        }
-        case 0x1d:
-            rec->m_18->UserLogicVfunc9();
-            break;
-        case 0x1e:
-            rec->m_18->UserLogicVfunc8();
-            break;
-        case 0x50:
-            rec->m_18->UserLogicVfuncC();
-            break;
-        case 0x53:
-            rec->m_18->UserLogicVfuncD();
-            break;
-        case 0x52:
-            rec->m_18->UserLogicVfuncA();
-            break;
-        case 0x51:
-            rec->m_18->UserLogicVfuncB();
-            break;
-        case 0x3e8:
-            break;
-        default:
-            Worker_DefaultPump(rec->m_18);
-            break;
-    }
-    return 1;
-}
+// Handler046990 @0x046990 (the CExplosion worker-pump) was re-homed to
+// FortressFlag.cpp (wave3-I): its retail body is text-contained in the
+// ff+particlez+explosion obj (0x45d30-0x4763d).

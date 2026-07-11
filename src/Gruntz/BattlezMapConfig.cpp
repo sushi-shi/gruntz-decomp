@@ -1449,7 +1449,12 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                     tA2 = 1;
                 }
                 if (!(tA2 & 0x2)) {
-                    m_triggerMgr->ApplyTriggerB(unit->m_trigA, unit->m_trigB, ax * 0x20 + 0x10, ay * 0x20 + 0x10);
+                    m_triggerMgr->ApplyTriggerB(
+                        unit->m_trigA,
+                        unit->m_trigB,
+                        ax * 0x20 + 0x10,
+                        ay * 0x20 + 0x10
+                    );
                     return 0;
                 }
             }
@@ -1462,7 +1467,12 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         i32 sA = scratchA.m_flags;
         if (sA & 0x8000) {
             if (prim == 3 && unit->m_mode == 0xa) {
-                m_triggerMgr->ApplyTriggerB(unit->m_trigA, unit->m_trigB, cx * 0x20 + 0x10, cy * 0x20 + 0x10);
+                m_triggerMgr->ApplyTriggerB(
+                    unit->m_trigA,
+                    unit->m_trigB,
+                    cx * 0x20 + 0x10,
+                    cy * 0x20 + 0x10
+                );
                 unit->m_state = 0;
                 if (unit->m_coordCount != 0) {
                     CoordNode* n = unit->m_coordHead;
@@ -1609,7 +1619,12 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                 i32 ox = cand->m_gridX;
                 i32 oy = cand->m_gridY;
                 if (((CGrunt*)unit)->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10) != 0) {
-                    m_triggerMgr->ApplyTriggerB(unit->m_trigA, unit->m_trigB, ox * 0x20 + 0x10, oy * 0x20 + 0x10);
+                    m_triggerMgr->ApplyTriggerB(
+                        unit->m_trigA,
+                        unit->m_trigB,
+                        ox * 0x20 + 0x10,
+                        oy * 0x20 + 0x10
+                    );
                     if (unit->m_coordCount != 0) {
                         CoordNode* n = unit->m_coordHead;
                         while (n != 0) {
@@ -4409,6 +4424,26 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
     o->m_x = rx;
     o->m_y = ry;
     return o;
+}
+
+// CGrunt::GetTilePos (0x31c70) - write the HUD tile coords (m_10->m_5c/m_60 >> 5)
+// into the caller's {x,y} out slot and return it. Re-homed from Grunt.cpp
+// (wave3-I): its retail body's birth position is inside this TU's 0x29a30
+// interval (TU_MIGRATION MOVE row); a tiny leaf, likely COMDAT-at-usage emitted
+// by this obj.
+// @early-stop
+// return-pointer regalloc wall (~58.9%): logic byte-faithful, but retail keeps `out`
+// in edx across the two stores and materializes the return via a trailing `mov eax,edx`,
+// where our cl pins `out` in eax and elides that move (cascading the m_5c/m_60 register
+// pair). Permuter found no closing spelling (operand-order invariant). Emits at 0x31c70.
+RVA(0x00031c70, 0x1d)
+GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
+    CGruntHud* h = m_10;
+    i32 x = h->m_5c >> 5;
+    i32 y = h->m_60 >> 5;
+    out->m_x = x;
+    out->m_y = y;
+    return out;
 }
 
 // ===========================================================================

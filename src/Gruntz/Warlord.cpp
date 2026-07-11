@@ -1,15 +1,21 @@
-// Warlord.cpp - the AI fort-warlord game object (RTTI .?AVCWarlord@@), a
-// CUserLogic-derived leaf. Home TU for three __thiscall methods, in ascending
-// retail-RVA order:
-//   0x0107f0  ~CWarlord       the dtor: destruct the +0x54 CString, then the
-//                             CUserLogic base (link ~EngStr + base vptr stores).
-//                             The destructible members force the /GX EH frame.
-//   0x044640  ResolveState    slot-4 override: a bounds-checked lookup into a
-//                             file-static CArray of per-state handler vtables,
-//                             growing it on miss, then dispatching `(*elem)(this)`.
-//   0x044bb0  RearmMoving      re-arm the geometry sub-player off the global geo
-//                             source, then resolve the moving animation when the
-//                             sub's state words say so; returns 0.
+// Warlord.cpp - the ORIGINAL warlord TU (RTTI .?AVCWarlord@@), a CUserLogic-
+// derived leaf, PLUS the five anim-resolver methods currently labeled CGrunt::
+// Resolve*Animation - the retail obj spans 0x42d40-0x45cc1 and those five
+// resolvers are TEXT-WOVEN into it (wave3-I grunt-region partition):
+//   * text A-B-A: ResolveMovingAnimation @0x45100 sits BETWEEN
+//     BuildFortSplashParticles @0x44f80 and NotifyFortUnderAttack @0x45270 -
+//     impossible for separate objs at first link.
+//   * private .data weave: the warlord ctor's statics band (0x20d218-0x20d374)
+//     interleaves cell-by-cell with the resolvers' statics (0x20d220 = ctor +
+//     0x45100; 0x20d234 = ctor + 0x457b0; 0x20d22c = ctor + 0x455f0/0x48470/
+//     0x49c60; 0x20d36c/0x20d374 = 0x45960/0x45b60) ahead of the fortressflag
+//     ctor's band (0x20d384).
+//   * init frag i302 @0x445a0 (before InitActReg @0x445c0) is this obj's.
+// @identity-TODO: the resolvers' mangled owner (CGrunt) is the historical
+// attribution; Warlord.h declares same-named CWarlord methods that the warlord
+// handlers call (reloc-masked aliases of the SAME retail bodies). Whether the
+// original class was CGrunt (shared layout) or CWarlord is unresolved - the
+// byte match is owner-independent; kept as-is pending an identity pass.
 //
 // CUserBase / CUserLogic / EngStr / CGameObject come from <Gruntz/UserLogic.h>;
 // MFC CString from <Mfc.h>. Engine callees/globals are reloc-masked (no body).
@@ -17,16 +23,105 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActReg.h>      // the shared CActReg (g_actionTable @0x644610)
 #include <Gruntz/TypeKeyColl.h> // the shared CTypeKeyColl (g_typeColl @0x6bf650)
+#include <Gruntz/Grunt.h>       // CGrunt + CGruntHud/CAnimElem/g_animLookupTree/GruntRand
+                                // (the five Resolve*Animation bodies below)
+#include <Gruntz/AniElement.h>  // full CAniElement (ResolveIdleAnimation's desc walk)
 
 #include <Bute/ButeTree.h> // the real CButeTree (g_buteTree @0x6bf620)
 
 #include <rva.h>
+
+// The five anim-resolvers' key-string statics (this TU's own .data copies - the
+// 0x20d218-0x20d374 private band the warlord ctor shares).
+static const char s_GRUNTZ_[] = "GRUNTZ_";
+static const char s__MOVING[] = "_MOVING";
+static const char s__DEATH[] = "_DEATH";
+static const char s__JOY[] = "_JOY";
+static const char s__IDLE[] = "_IDLE";
+static const char s__BATTLECRY[] = "_BATTLECRY";
+static const char s_keyB[] = "B";
+static const char s_keyC[] = "C";
+static const char s_keyE[] = "E";
+static const char s_keyA[] = "A";
+static const char s_keyF[] = "F";
 
 #include <new>      // placement new (the inlined ConstructElements grow loop)
 #include <stdlib.h> // rand (CRT PRNG, reloc-masked)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
+// ===========================================================================
+// RegisterWarlordActions  (0x0447a0)  - a free function, NOT a CWarlord method
+// ===========================================================================
+// Registers six single-letter Gruntz action-type keys ("A".."F") into the global
+// bute-name -> type-id tree (g_buteTree), growing the parallel type-key string
+// collection (g_typeColl, backed by g_typeNodes/g_typeCount) on a miss, then
+// stamps each resolved type-id's slot in the action-handler dispatch array
+// (g_actionTable @0x644610) with that action's handler entry point. The six
+// (key, handler) pairs are emitted inline (the same find-or-create block x6, via
+// the REGISTER_ACTION macro since cl declines to inline a helper this large). The
+// inlined SetAtGrow expands to IndexToPtr + the placement-new ConstructElements
+// grow loop (`::new(p) CString` = retail's `test esi,esi; je` null guard + the
+// `for(; n--; p++)` lea-recover trip count) + the CString key assign.
+//
+// @early-stop  (~96.9%, logic + structure byte-exact)
+// Two residual scratch-register coin-flips, no source lever:
+//   (a) create-path id load: retail funnels g_typeCounter through eax to merge
+//       with the FindType path's `mov edi,eax` (`mov eax,[g_typeCounter]; push eax;
+//       mov edi,eax`), while our cl coalesces id_ straight into edi (`mov edi,
+//       [g_typeCounter]; push edi`) - our cl is strictly MORE optimal, same family
+//       as the dead-global-read-spill "our cl is smarter" wall; can't cleanly
+//       de-optimize from source (the fresh-var restructure regressed 96.9->84.9%).
+//   (b) the count-guard copy register alternates ecx/edx across the 6 blocks
+//       (global scheduling); logic identical. Deferred to the final sweep.
+
+// The Gruntz type-registry globals (.data). g_buteTree (the real shared CButeTree)
+// maps an action-key string to a 1-based type id (0 = absent, via Find/Insert);
+// g_typeColl is the parallel growable key collection; g_actionTable holds the
+// per-type action-handler pointer slots.
+DATA(0x002bf620)
+extern CButeTree g_buteTree; // 0x6bf620 (?g_buteTree@@3VCButeTree@@A)
+
+// CTypeKeyColl (SetAtGrow == grow + assign, inlined in retail) is the shared
+// <Gruntz/TypeKeyColl.h> shape.
+DATA(0x002bf650)
+extern CTypeKeyColl g_typeColl; // 0x6bf650 (?g_typeColl@@3UCKSlimeColl@@A)
+
+DATA(0x0021aea8)
+extern i32 g_typeCounter; // 0x61aea8 (next free type id)
+
+// g_actionTable (CActionTable @0x644610) is declared above, near InitActReg.
+
+// The six action-type handler entry points (reloc-masked code addresses; their
+// mid-function LAB_ addresses are stored as raw dispatch pointers).
+extern "C" void Act_A(); // 0x403ba7
+extern "C" void Act_B(); // 0x401ce9
+extern "C" void Act_C(); // 0x4024f0
+extern "C" void Act_D(); // 0x403422
+extern "C" void Act_E(); // 0x40431d
+extern "C" void Act_F(); // 0x402725
+
+// Find-or-create one action-key -> handler binding. Retail INLINES all six blocks
+// (SetAtGrow is expanded to IndexToPtr + the placement-new grow loop + the CString
+// key assign); a macro forces the 6x inlining cl declines for a helper this large.
+// The placement-new null guard (`if (p) ctor(p)`) is retail's `test esi,esi; je`.
+#define REGISTER_ACTION(key, handler)                                                              \
+    do {                                                                                           \
+        i32 id_ = (i32)g_buteTree.Find(key);                                                       \
+        if (id_ == 0) {                                                                            \
+            g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
+            id_ = g_typeCounter;                                                                   \
+            CString* slot_ = (CString*)((_zvec*)&g_typeColl)->IndexToPtr(id_);                     \
+            CString* p_ = (CString*)g_typeColl.m_cursor;                                           \
+            for (i32 n_ = g_typeColl.m_count; n_--; p_++) {                                        \
+                ::new ((void*)p_) CString;                                                         \
+            }                                                                                      \
+            *slot_ = key;                                                                          \
+            ++g_typeCounter;                                                                       \
+        }                                                                                          \
+        void** aslot_ = (void**)((_zvec*)&g_actionTable)->IndexToPtr(id_);                         \
+        *aslot_ = (void*)(handler);                                                                \
+    } while (0)
 // ===========================================================================
 // CWarlord::~CWarlord  (0x0107f0)
 // ===========================================================================
@@ -133,79 +228,6 @@ i32 CWarlord::ResolveState(i32 key) {
     }
     return (i32)slot;
 }
-
-// ===========================================================================
-// RegisterWarlordActions  (0x0447a0)  - a free function, NOT a CWarlord method
-// ===========================================================================
-// Registers six single-letter Gruntz action-type keys ("A".."F") into the global
-// bute-name -> type-id tree (g_buteTree), growing the parallel type-key string
-// collection (g_typeColl, backed by g_typeNodes/g_typeCount) on a miss, then
-// stamps each resolved type-id's slot in the action-handler dispatch array
-// (g_actionTable @0x644610) with that action's handler entry point. The six
-// (key, handler) pairs are emitted inline (the same find-or-create block x6, via
-// the REGISTER_ACTION macro since cl declines to inline a helper this large). The
-// inlined SetAtGrow expands to IndexToPtr + the placement-new ConstructElements
-// grow loop (`::new(p) CString` = retail's `test esi,esi; je` null guard + the
-// `for(; n--; p++)` lea-recover trip count) + the CString key assign.
-//
-// @early-stop  (~96.9%, logic + structure byte-exact)
-// Two residual scratch-register coin-flips, no source lever:
-//   (a) create-path id load: retail funnels g_typeCounter through eax to merge
-//       with the FindType path's `mov edi,eax` (`mov eax,[g_typeCounter]; push eax;
-//       mov edi,eax`), while our cl coalesces id_ straight into edi (`mov edi,
-//       [g_typeCounter]; push edi`) - our cl is strictly MORE optimal, same family
-//       as the dead-global-read-spill "our cl is smarter" wall; can't cleanly
-//       de-optimize from source (the fresh-var restructure regressed 96.9->84.9%).
-//   (b) the count-guard copy register alternates ecx/edx across the 6 blocks
-//       (global scheduling); logic identical. Deferred to the final sweep.
-
-// The Gruntz type-registry globals (.data). g_buteTree (the real shared CButeTree)
-// maps an action-key string to a 1-based type id (0 = absent, via Find/Insert);
-// g_typeColl is the parallel growable key collection; g_actionTable holds the
-// per-type action-handler pointer slots.
-DATA(0x002bf620)
-extern CButeTree g_buteTree; // 0x6bf620 (?g_buteTree@@3VCButeTree@@A)
-
-// CTypeKeyColl (SetAtGrow == grow + assign, inlined in retail) is the shared
-// <Gruntz/TypeKeyColl.h> shape.
-DATA(0x002bf650)
-extern CTypeKeyColl g_typeColl; // 0x6bf650 (?g_typeColl@@3UCKSlimeColl@@A)
-
-DATA(0x0021aea8)
-extern i32 g_typeCounter; // 0x61aea8 (next free type id)
-
-// g_actionTable (CActionTable @0x644610) is declared above, near InitActReg.
-
-// The six action-type handler entry points (reloc-masked code addresses; their
-// mid-function LAB_ addresses are stored as raw dispatch pointers).
-extern "C" void Act_A(); // 0x403ba7
-extern "C" void Act_B(); // 0x401ce9
-extern "C" void Act_C(); // 0x4024f0
-extern "C" void Act_D(); // 0x403422
-extern "C" void Act_E(); // 0x40431d
-extern "C" void Act_F(); // 0x402725
-
-// Find-or-create one action-key -> handler binding. Retail INLINES all six blocks
-// (SetAtGrow is expanded to IndexToPtr + the placement-new grow loop + the CString
-// key assign); a macro forces the 6x inlining cl declines for a helper this large.
-// The placement-new null guard (`if (p) ctor(p)`) is retail's `test esi,esi; je`.
-#define REGISTER_ACTION(key, handler)                                                              \
-    do {                                                                                           \
-        i32 id_ = (i32)g_buteTree.Find(key);                                                       \
-        if (id_ == 0) {                                                                            \
-            g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
-            id_ = g_typeCounter;                                                                   \
-            CString* slot_ = (CString*)((_zvec*)&g_typeColl)->IndexToPtr(id_);                     \
-            CString* p_ = (CString*)g_typeColl.m_cursor;                                           \
-            for (i32 n_ = g_typeColl.m_count; n_--; p_++) {                                        \
-                ::new ((void*)p_) CString;                                                         \
-            }                                                                                      \
-            *slot_ = key;                                                                          \
-            ++g_typeCounter;                                                                       \
-        }                                                                                          \
-        void** aslot_ = (void**)((_zvec*)&g_actionTable)->IndexToPtr(id_);                         \
-        *aslot_ = (void*)(handler);                                                                \
-    } while (0)
 
 RVA(0x000447a0, 0x333)
 void RegisterWarlordActions() {
@@ -398,6 +420,33 @@ i32 CWarlord::RearmMoving2() {
 RVA(0x00044f80, 0x127)
 void CWarlord::BuildFortSplashParticles() {}
 
+// ---------------------------------------------------------------------------
+// CGrunt::ResolveMovingAnimation()  (0x045100)  [moved from Grunt.cpp - this
+// obj's text; see the file header]
+// Gate: m_animResolved == 0 (else return 0). Feed key "GRUNTZ_<type>_MOVING" + geometry
+// m_movingGeoSrc into the player; look up tree key "B"; then randomize the move-start time
+// (m_moveStartTime = (rand()%0x5dc1 + 0x1770)*10) and seed m_moveSeed/m_moveTimeHi/m_moveSeedHi.
+RVA(0x00045100, 0x112)
+i32 CGrunt::ResolveMovingAnimation() {
+    if (m_animResolved != 0) {
+        return 0;
+    }
+
+    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__MOVING);
+
+    m_activeAnimDesc = m_38->m_1b4;
+    m_38->m_1a0.SetGeometry(m_movingGeoSrc);
+
+    m_prevAnimSetNode = m_14->m_1c;
+    m_14->m_1c = g_animLookupTree.Find(s_keyB);
+
+    m_moveStartTime = (GruntRand() % 0x5dc1 + 0x1770) * 10;
+    m_moveSeedHi = 0;
+    m_moveSeed = g_movingSeed;
+    m_moveTimeHi = 0;
+    return 1;
+}
+
 // ===========================================================================
 // CWarlord::NotifyFortUnderAttack  (0x045270)
 // ===========================================================================
@@ -407,6 +456,150 @@ void CWarlord::BuildFortSplashParticles() {}
 // the RVA + its LoadAttributes caller pair; full body left for a leaf-first redo.
 RVA(0x00045270, 0x2a8)
 void CWarlord::NotifyFortUnderAttack() {}
+
+// ---------------------------------------------------------------------------
+// CGrunt::ResolveDeathAnimation()  (0x0455f0)  [moved from Grunt.cpp]
+// Gate: m_animResolved == 0 (else return 0); then latch m_animResolved = 1. Fire the on-screen cue
+// (arg2 = m_deathCueArg), feed geometry m_deathGeoSrc then key "GRUNTZ_<type>_DEATH", look up "C".
+RVA(0x000455f0, 0x15b)
+i32 CGrunt::ResolveDeathAnimation() {
+    if (m_animResolved != 0) {
+        return 0;
+    }
+    m_animResolved = 1;
+
+    CGameRegistry* g = g_pGameRegistry;
+    if (g->m_134 == 1) {
+        CGruntHud* h = m_10;
+        i32 x = h->m_5c;
+        i32 y = h->m_60;
+        if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
+            && y >= g->m_viewOriginT) {
+            g->m_cueSink->Cue(h->m_188, m_deathCueArg, -1, -1, -1);
+        }
+    } else {
+        g->m_cueSink->Cue(m_10->m_188, m_deathCueArg, -1, -1, -1);
+    }
+
+    m_activeAnimDesc = m_38->m_1b4;
+    m_38->m_1a0.SetGeometry(m_deathGeoSrc);
+
+    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__DEATH);
+
+    m_prevAnimSetNode = m_14->m_1c;
+    m_14->m_1c = g_animLookupTree.Find(s_keyC);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::ResolveAnimation()  (0x0457b0, generic "_JOY")  [moved from Grunt.cpp]
+// Gate: m_animResolved == 0 (else return 0). The cue arg2 is a fixed constant (0x435 when
+// on-screen / 0x43f otherwise). Geometry m_joyGeoSrc; key "GRUNTZ_<type>_JOY"; look "E".
+RVA(0x000457b0, 0x14c)
+i32 CGrunt::ResolveAnimation() {
+    if (m_animResolved != 0) {
+        return 0;
+    }
+
+    CGameRegistry* g = g_pGameRegistry;
+    if (g->m_134 == 1) {
+        CGruntHud* h = m_10;
+        i32 x = h->m_5c;
+        i32 y = h->m_60;
+        if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
+            && y >= g->m_viewOriginT) {
+            g->m_cueSink->Cue(h->m_188, 0x435, -1, -1, -1);
+        }
+    } else {
+        g->m_cueSink->Cue(m_10->m_188, 0x43f, -1, -1, -1);
+    }
+
+    m_activeAnimDesc = m_38->m_1b4;
+    m_38->m_1a0.SetGeometry(m_joyGeoSrc);
+
+    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__JOY);
+
+    m_prevAnimSetNode = m_14->m_1c;
+    m_14->m_1c = g_animLookupTree.Find(s_keyE);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::ResolveIdleAnimation()  (0x045960)  [moved from Grunt.cpp]
+// Gate: m_animResolved == 0 (else return 0). Pick idx = rand()%3 + 1 (1..3); cue arg2 =
+// idx+0x431 / idx+0x43b; geometry m_idleGeoSrc[idx]; then read the active-anim
+// descriptor's first element's m_14 as a 2nd lookup arg (SetAnimEx); key
+// "GRUNTZ_<type>_IDLE"; look up "A".
+RVA(0x00045960, 0x181)
+i32 CGrunt::ResolveIdleAnimation() {
+    if (m_animResolved != 0) {
+        return 0;
+    }
+
+    i32 idx = GruntRand() % 3 + 1;
+
+    CGameRegistry* g = g_pGameRegistry;
+    if (g->m_134 == 1) {
+        CGruntHud* h = m_10;
+        i32 x = h->m_5c;
+        i32 y = h->m_60;
+        if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
+            && y >= g->m_viewOriginT) {
+            g->m_cueSink->Cue(h->m_188, idx + 0x431, -1, -1, -1);
+        }
+    } else {
+        g->m_cueSink->Cue(m_10->m_188, idx + 0x43b, -1, -1, -1);
+    }
+
+    m_activeAnimDesc = m_38->m_1b4;
+    m_38->m_1a0.SetGeometry(m_idleGeoSrc[idx]);
+
+    CAniElement* desc = m_38->m_1b4;
+    CAnimElem* elem = desc->m_records.m_nSize > 0 ? (CAnimElem*)*desc->m_records.m_pData : 0;
+    i32 frame = elem->m_14;
+
+    m_38->SetAnimEx(s_GRUNTZ_ + TypeName() + s__IDLE, frame);
+
+    m_prevAnimSetNode = m_14->m_1c;
+    m_14->m_1c = g_animLookupTree.Find(s_keyA);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGrunt::ResolveBattlecryAnimation()  (0x045b60)  [moved from Grunt.cpp]
+// Gate: m_animResolved == 0 (else return 0). Pick idx = rand()%3 (0..2); cue arg2 =
+// idx+0x42e / idx+0x438; geometry m_battlecryGeoSrc[idx]; key "GRUNTZ_<type>_BATTLECRY";
+// look up "F".
+RVA(0x00045b60, 0x161)
+i32 CGrunt::ResolveBattlecryAnimation() {
+    if (m_animResolved != 0) {
+        return 0;
+    }
+
+    i32 idx = GruntRand() % 3;
+
+    CGameRegistry* g = g_pGameRegistry;
+    if (g->m_134 == 1) {
+        CGruntHud* h = m_10;
+        i32 x = h->m_5c;
+        i32 y = h->m_60;
+        if (x < g->m_viewOriginR && x >= g->m_viewOriginL && y < g->m_viewOriginB
+            && y >= g->m_viewOriginT) {
+            g->m_cueSink->Cue(h->m_188, idx + 0x42e, -1, -1, -1);
+        }
+    } else {
+        g->m_cueSink->Cue(m_10->m_188, idx + 0x438, -1, -1, -1);
+    }
+
+    m_activeAnimDesc = m_38->m_1b4;
+    m_38->m_1a0.SetGeometry(m_battlecryGeoSrc[idx]);
+
+    m_38->SetAnim(s_GRUNTZ_ + TypeName() + s__BATTLECRY);
+
+    m_prevAnimSetNode = m_14->m_1c;
+    m_14->m_1c = g_animLookupTree.Find(s_keyF);
+    return 1;
+}
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
