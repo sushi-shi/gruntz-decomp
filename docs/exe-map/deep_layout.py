@@ -482,10 +482,17 @@ def oracle_analysis(intervals, by_target, fdata):
                   if lo is not None and n >= 2)
     overlaps = []
     for (l1, h1, i1), (l2, h2, i2) in zip(exts, exts[1:]):
-        if l2 < h1:
-            overlaps.append({"a": intervals[i1]["lo"], "b": intervals[i2]["lo"],
-                             "a_units": list(intervals[i1]["core"])[:3],
-                             "b_units": list(intervals[i2]["core"])[:3]})
+        if l2 >= h1:
+            continue
+        # text-contiguity sanity (wave3-J false positive: multi+gruntzmgr cells
+        # interleave but their .text blocks are far apart - one contiguous
+        # first-link obj is impossible). Only text-adjacent intervals qualify.
+        ta, tb = sorted((intervals[i1], intervals[i2]), key=lambda s: s["lo"])
+        if tb["lo"] - ta["hi"] > 0x4000:
+            continue
+        overlaps.append({"a": intervals[i1]["lo"], "b": intervals[i2]["lo"],
+                         "a_units": list(intervals[i1]["core"])[:3],
+                         "b_units": list(intervals[i2]["core"])[:3]})
     # static-keyword worklist: DATA()-annotated globals private to one interval
     statics = [{"rva": a, "unit": u, "name": n} for a, (u, n, _sz) in fdata.items()
                if a in own and not n.startswith(("??_7", "??_R"))]
