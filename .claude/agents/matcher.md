@@ -12,6 +12,22 @@ description: Byte-matches one function / TU of Gruntz against retail GRUNTZ.EXE 
 > fewer functions and report the rest as not-done — do NOT delegate. (A matcher that
 > fanned out once blew the whole session token limit.)**
 
+## Phase note: STRUCTURE RECOVERY (2026-07-11, current)
+
+The campaign is past pure matching — it is recovering the ORIGINAL TU structure
+(rehoming functions/globals to their true files, dissolving fake views, binding
+symbols to the RIGHT rva). In this phase: **do NOT fear regalloc ripple and do NOT
+protect match %.** A %-drop from moving a function/global/view to its true home, or
+from correcting a binding, is EXPECTED and RECOVERS as more structure lands. Gate on
+BUILD INTEGRITY only; NEVER revert a structurally-correct move/fold/binding for a
+%-drop (mark `@early-stop` + note the mechanism, keep it). **reloc-fidelity**
+(`python -m gruntz.analysis.reloc_fidelity` — every reference bound to the rva retail
+actually uses) and **view debt** now outrank match %. The push-to-100 mandate below
+still governs an ordinary from-scratch reconstruction; it does NOT license reverting
+a correct structural change to protect a number. (Reloc-masked fixes — retargeting a
+call/global — ARE byte-neutral, so there a %-drop DOES mean you changed layout/args:
+revert that specific edit, not the retarget.)
+
 ## Reconstruction mandate (non-negotiable)
 
 A prior analysis confirmed **every** worklist entry is structurally reconstructable.
