@@ -1,28 +1,31 @@
-// Attract.cpp - CAttract, the attract/title-screen game-state (RTTI
-// .?AVCAttract@@, vtable @0x5ea194; a CState leaf) PLUS the state-services
-// interval TU at retail .text [0x0fa1f0 .. 0x0fb328].
+// Attract.cpp - the attract state-services interval TU at retail .text
+// [0x0fa1f0 .. 0x0fb328]: one WOVEN original obj (TU_MIGRATION 0x0fa1f0, weave
+// 0.36) that interleaves function-by-function the CAttract title/fade services
+// (FadeInTitle/RunTitle/RunTitleSeq), the CSoundFxEmitter screen-transition
+// emitters, the CState draw/shade/paint helpers (Vslot17/Vslot07/ShadeScreen) and
+// the CMgrPersistObj serialize family (ex soundfxemitter + statedrawtext +
+// mgrobjserialize units). The former standalone SaveRecordLoad.cpp's SaveRecord
+// (0xfaff0) was a SECOND view of the same CMgrPersistObj (identical +0x0c..+0x1b0
+// layout; its Load is the read-side twin of Save @0xfb1c0) - folded onto the one
+// struct here.
 //
-// wave2-H merge: the former attract(0xfa1f0 fns) + soundfxemitter +
-// statedrawtext + mgrobjserialize units were a WOVEN single interval
-// (TU_MIGRATION 0x0fa1f0, weave 0.36 - the CSoundFxEmitter transition emitters,
-// the CState draw/shade helpers and the CMgrPersistObj serialize family
-// interleave function-by-function), one original obj. The former standalone
-// SaveRecordLoad.cpp's SaveRecord (0xfaff0) was a SECOND view of the same
-// CMgrPersistObj (identical +0x0c..+0x1b0 layout; its Load is the read-side
-// twin of Save @0xfb1c0) - folded onto the one struct here. The CAttract core
-// (0x13fb0 band) already lived here; this file therefore carries the attract
-// TU's two intervals until a further identity split is proven.
+// REHOME/holding-TU drain (D5): the CAttract state-machine CORE obj (the 0x13fb0
+// band of CState vtable-slot overrides + the ??1 dtor @0x08cd90) was a SEPARATE
+// original obj and moved to AttractState.cpp (proven by the CAttract vtable). The
+// 0x13fb0 band never truly "lived here" - it was conflated. Owner attribution:
+// `sema class CAttract` (slot RVAs) for the core; `sema xref --tree` .rdata refs
+// for the foreign fragments below.
+//
+// TEMPORARILY retained here (Phase-2 fold to their PROVEN owners is pending; each
+// is a foreign obj's method mis-attributed to CAttract - matches only because the
+// sibling CState leaves share the layout):
+//   RefreshTitle    0x039160  -> CCreditsState slot 10 (??_7CCreditsState@@6B@+0x28)
+//   LoadTitleConfig 0x0a03f0  -> CMenuState    slot 9  (??_7CMenuState@@6B@+0x24)
+//   Activate        0x0a0a30  -> CMenuState    slot 6  (??_7CMenuState@@6B@+0x18)
+//
 // NB: CPreviewState::LoadScreen (0xfab90) also belongs to this interval but
 // stays in LevelPreview.cpp for now - moving it needs CPreviewState homed into
-// a shared header first (it is that TU's local class); deferred, see the
-// wave2-H report.
-//
-// CAttract slots (vtable not diffed; the slot order is anchored by CState):
-//   ~CAttract()          0x08cd90  slot 0  EH `??1`  (vtable restore + base chain)
-//   ReleaseResources()   0x0140d0  slot 2  resource release (Free + Release + base)
-//   Vslot07()            0x0147b0  slot 7  host/paint poll (base paint -> flip/blit)
-//   FrameSlot28(i32)     0x014340  slot 10 per-frame voice poll
-//   EnterAttractMode     0x013fb0  slot 1  (reached non-virtually; ret 0xc)
+// a shared header first (it is that TU's local class); deferred.
 // Field names are placeholders; only OFFSETS + code bytes matter.
 #include <Gruntz/String.h> // MFC CString (the title-roll formats into one); MFC-first
 #include <Gruntz/GruntzMgr.h>
@@ -88,9 +91,6 @@ extern ShowCursorFn g_ShowCursor;
 #define s_TITLE "TITLE"
 #define s_Menu "Menu"
 #define s_BrightnessPercent "BrightnessPercent"
-#define s_SOUNDZ "SOUNDZ"
-#define s_ATTRACT "ATTRACT"
-#define s_UNDERSCORE "_"
 #define s_SCREENZ_PCT_S "\\SCREENZ\\%s"
 
 // FadeInTitle's resolved-state object (m_2c re-typed): its ResolveScreen
@@ -117,341 +117,18 @@ public:
 // AttractActor / AttractActorList (the per-frame g_actorList view) now live in the
 // shared <Gruntz/AttractActor.h> (folded out of this TU; also used by CDemo/CHelpState).
 
-// The per-frame time delta (countdown source for m_idleTimer). C linkage so the symbol
-// pairs with the target's _g_645584 (the convention across the gamemode units).
-extern "C" {
-    DATA(0x00245584)
-    extern u32 g_645584;
-}
-
-// The owner back-ptr (CState::m_4) viewed as the game manager: ReportError fires a
-// WM_COMMAND on idle (0x8006/0x3e8) and m_4->m_4 chains to the top-level HWND.
-struct AttractWndHolder {
-    char m_pad00[0x4];
-    HWND m_4; // +0x04  top-level HWND
-};
-
-// PostMessageA reached through the IAT slot (matches the engine's ff15 indirect).
-typedef i32(WINAPI* PostMessageFn)(void* hwnd, u32 msg, u32 wparam, i32 lparam);
-DATA(0x002c44c8)
-extern PostMessageFn g_pPostMessageA;
-
-// The random-pick target string (DAT_0060b5bc) and the shared empty string (0x6293f4)
-// the ATTRACT_TITLE key is built from; the sound-enabled gate; the cached timeGetTime /
-// wsprintfA import fn-ptrs the title roll reaches through. All reloc-masked.
-DATA(0x0020b5bc)
-extern char s_dat60b5bc[];
-DATA(0x002293f4)
-extern char g_emptyString[];
-DATA(0x0021ab20)
-extern i32 g_sndEnabled;
-DATA(0x002c4650)
-extern u32(WINAPI* g_pTimeGetTime)();
-DATA(0x002c44c0)
-extern int(WINAPI* g_pwsprintfA)(char* buf, const char* fmt, ...);
-#define s_ATTRACT_TITLE_s "ATTRACT_TITLE%s"
+// (The band-A-only externs - g_645584, g_pPostMessageA, s_dat60b5bc,
+// g_emptyString, g_sndEnabled, g_pTimeGetTime, g_pwsprintfA, the AttractWndHolder
+// view + s_ATTRACT_TITLE_s - moved with the CAttract core to AttractState.cpp.)
 
 // ===========================================================================
-// The CAttract 0x13fb0 core band.
+// The CAttract title/menu foreign fragments (temporarily retained here pending
+// the Phase-2 fold to their proven owners): RefreshTitle @0x39160 is CCreditsState
+// vtable slot 10 (??_7CCreditsState@@6B@+0x28), LoadTitleConfig @0xa03f0 is
+// CMenuState slot 9 (+0x24) and Activate @0xa0a30 is CMenuState slot 6 (+0x18).
+// The CAttract state-machine CORE band [0x13fb0..0x14819] + the ??1 dtor moved to
+// AttractState.cpp (its true separate obj). See the file header + report.
 // ===========================================================================
-
-// CAttract::EnterAttractMode - enter (or re-enter) the attract scene.
-// Gates on LoadAttractScene(a, b, mode); on failure returns that result.
-// Otherwise hides the cursor, re-asserts the video mode, resolves the
-// "STATEZ_ATTRACT" state (stored into m_2c), loads its "SOUNDZ" set, registers
-// the sound handle on the menu page under the "ATTRACT"/"_" tags, hides the
-// cursor again, then sets the entry flags: m_host is always cleared, m_activeFlag is
-// cleared when mode == 3 (else set to 1). Returns 1 on success, 0 on early-out.
-RVA(0x00013fb0, 0xd5)
-i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
-    if (LoadAttractScene(a, b, mode) == 0) {
-        return 0;
-    }
-
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(0) >= 0) {
-        do {
-        } while (showCursor(0) >= 0);
-    }
-
-    owner()->RestoreVideoMode(0);
-
-    CAttractState* state = stateMgr()->LookupState(s_STATEZ_ATTRACT);
-    m_2c = (CResSource*)state;
-    if (state == 0) {
-        return 0;
-    }
-
-    void* sound = state->LoadSoundz(s_SOUNDZ);
-    if (sound == 0) {
-        return 0;
-    }
-
-    ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)
-        ->ScanTree_157ee0((DirNode*)sound, s_ATTRACT, s_UNDERSCORE);
-
-    if (showCursor(0) >= 0) {
-        do {
-        } while (showCursor(0) >= 0);
-    }
-
-    if (mode == 3) {
-        m_activeFlag = 0;
-        m_host = 0;
-    } else {
-        m_activeFlag = 1;
-        m_host = 0;
-    }
-    return 1;
-}
-
-// CAttract::ReleaseResources() (slot 2 / +0x8, 0x0140d0): free the registrar's
-// pooled resource (if any), release the attract page ("ATTRACT"/"_"), then chain
-// the base CState resource teardown. The menu root (m_c) is re-read for the
-// Release access (retail does not cache it).
-RVA(0x000140d0, 0x33)
-void CAttract::ReleaseResources() {
-    CAttractRegistrar* reg = menuRoot()->m_28;
-    if (reg->m_2c) {
-        ((SoundStream*)reg->m_2c)->Stop();
-    }
-    ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)->RemoveKeysEqual_157c70(s_ATTRACT, s_UNDERSCORE);
-    CState::ReleaseResources();
-}
-
-// CAttract::Vslot09(arg) (slot 9 / +0x24, 0x014120): the full attract title-screen
-// entry (/GX EH frame from the CString format local). Hide the cursor, roll a random
-// TITLE%d and run it (as the siblings do), advance the active menu page (Method_158c70),
-// then - via the inline MS-CRT LCG (== Rng::Next, seeded through the cached timeGetTime
-// fn-ptr) - build a random "ATTRACT_TITLE%s" key, look it up in the registrar's
-// CMapStringToOb (m_28+0x10) to (re)acquire the host/sound sub-object (m_host), (re)play
-// its voice + latch the idle timeout (or a 0x1f40 default), then poke each g_actorList
-// actor's slot-5 virtual. Returns 1. Re-homed from src/Stub/GapFunctions.cpp.
-// @early-stop
-// 98.3%: the whole 425B body - the /GX frame, the ShowCursor roll, the TITLE%d format +
-// RunTitleSeq, the page fade, the inline MS-CRT LCG + %2 pick, the wsprintfA, the
-// CMapStringToOb::Lookup host (re)acquire, the sound/idle branch and the actor slot-5
-// loop - is byte-faithful. The only residue is a pair of register-selection coin-flips:
-// retail seats m_c in eax across the Lookup argument setup where cl uses ecx, and loads
-// the actor's vptr through eax where cl uses edx. A pure regalloc choice (operand-order /
-// spelling variations do not flip it; docs/patterns/zero-register-pinning.md family).
-// Deferred to the final sweep.
-RVA(0x00014120, 0x1a9)
-i32 CAttract::Vslot09(i32 arg) {
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(0) >= 0) {
-        do {
-        } while (showCursor(0) >= 0);
-    }
-    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-    CString s;
-    s.Format(s_TITLE_d, idx);
-    RunTitleSeq(s, 0, 0, 1, 0);
-    CDDrawSubMgrPages* page = (CDDrawSubMgrPages*)menuRoot()->m_04;
-    page->Method_158c70(page->m_backPair);
-
-    i32 seed;
-    if (!(g_randSeeded & 1)) {
-        g_randSeeded |= 1;
-        seed = g_pTimeGetTime();
-    } else {
-        seed = g_randSeed;
-    }
-    g_randSeed = seed * 214013 + 2531011;
-    i32 r = (g_randSeed >> 0x10) & 0x7fff;
-    const char* pick = (r % 2) ? s_dat60b5bc : g_emptyString;
-
-    char buf[0x40];
-    g_pwsprintfA(buf, s_ATTRACT_TITLE_s, pick);
-
-    CMapStringToOb* map = (CMapStringToOb*)((char*)menuRoot()->m_28 + 0x10);
-    CObject* found = 0;
-    map->Lookup(buf, found);
-    m_host = (CAttractHost*)found;
-    if (found != 0 && m_activeFlag != 0) {
-        if (g_sndEnabled) {
-            ((DirectSoundMgr*)m_host->m_10)->ApplyAndPlay(0x64, 0, 0, 0);
-        }
-        m_idleTimer = ((DirectSoundMgr*)m_host->m_10)->m_durationMs + 0x2710;
-    } else {
-        m_idleTimer = 0x1f40;
-    }
-
-    AttractActorList* list = g_actorList;
-    for (i32 i = 0; i < list->m_count; i++) {
-        list->m_data[i]->Vslot05();
-    }
-    return 1;
-}
-
-// CAttract::FrameSlot28(arg) (slot 10 / +0x28, 0x014340): per-frame voice poll.
-// If the host's voice (m_host->m_10) is playing, (re)start it (Restart(0,0x1f4,1)),
-// then if it is still playing stop the registrar's pooled resource (Stop(-1)) and
-// loop while the voice keeps reporting playing. Returns 1.
-// @early-stop
-// regalloc back-edge coin-flip (docs/patterns/zero-register-pinning.md): body
-// byte-identical except the final loop-back IsPlaying load - retail re-reads
-// m_host through eax (8b 86 .. 8b 48 10), the recompile through ecx (8b 8e .. 8b 49
-// 10). A pure allocator choice on the do-while back-edge; no source lever flips it.
-RVA(0x00014340, 0x71)
-i32 CAttract::FrameSlot28(i32 arg) {
-    if (m_host == 0) {
-        return 1;
-    }
-    if (!((DirectSoundMgr*)m_host->m_10)->IsPlaying()) {
-        return 1;
-    }
-    ((DirectSoundMgr*)m_host->m_10)->CloneAndPlay(0, 0x1f4, 1);
-    if (!((DirectSoundMgr*)m_host->m_10)->IsPlaying()) {
-        return 1;
-    }
-    do {
-        CAttractPooledRes* r = menuRoot()->m_28->m_2c;
-        if (r) {
-            ((SoundDevice*)r)->PurgeVoiceList(-1);
-        }
-    } while (((DirectSoundMgr*)m_host->m_10)->IsPlaying());
-    return 1;
-}
-
-// CAttract::Render (slot 5 / +0x14, 0x143e0): the attract-mode per-frame poll/draw.
-// If the page's render-busy object reports idle AND the InputVirtual slot reports
-// idle, report the exit error (0x8006/0x3e8) and bail. Otherwise stop the registrar's
-// pooled resource, tick the m_idleTimer timeout down by the frame delta, run every
-// actor's Update(), and if any actor raised its 0x100 flag post the exit WM_COMMAND.
-// Code byte-identical to retail (~97% fuzzy = reloc-masked plateau): the residual
-// is purely cross-unit/IAT symbol-naming on three reloc operands - ReportError (a
-// bare delinker label), 0x136e20 (already owned by DirectSoundMgr::winapi_136e20_
-// timeGetTime; the sibling FrameSlot28 names it CAttractPooledRes::Stop too), and
-// the PostMessageA IAT call (target bakes a bare absolute 0x6c44c8, no symbol).
-// Not source-steerable; topic:scoring-artifact (docs/matching-patterns.md).
-// @early-stop
-// reloc-masked IAT/cross-unit operands only (see above); code bytes byte-exact.
-RVA(0x000143e0, 0xfb)
-i32 CAttract::Render() {
-    IDirectDrawSurface* busy = menuRoot()->m_04->m_10->m_2c->m_8;
-    if (busy == 0 || busy->IsLost() != 0) {
-        if (InputVirtual() == 0) {
-            owner()->ReportError(0x8006, 0x3e8);
-            return 0;
-        }
-    }
-
-    CAttractPooledRes* res = menuRoot()->m_28->m_2c;
-    if (res) {
-        ((SoundDevice*)res)->PurgeVoiceList(-1);
-    }
-
-    if (g_645584 < m_idleTimer) {
-        m_idleTimer -= g_645584;
-    } else {
-        m_idleTimer = 0;
-    }
-
-    AttractActorList* list = g_actorList;
-    i32 i;
-    for (i = 0; i < list->m_count; i++) {
-        list->m_data[i]->Update();
-    }
-
-    i32 n = g_actorList->m_count;
-    for (i = 0; i < n; i++) {
-        if (g_actorList->m_data[i]->m_2ac & 0x100) {
-            g_pPostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
-            return 1;
-        }
-    }
-    return 1;
-}
-
-// 0x3c220 (the attract-family per-frame idle poll) is CDemo's vtable slot 5 -
-// re-homed to Demo.cpp as CDemo::Render (proven: the .rdata data-ref at
-// ??_7CDemo@@6B@+0x14 + the m_520 idle-timer match). The former CAttractIdlePoll
-// placeholder view is gone.
-
-// CAttract::InputVirtual (slot 8 / +0x20, 0x14520): the random-title roll gated on
-// the menu page's IsLoaded; if loaded, hide the cursor, pick a random TITLE%d index
-// off the game-reg attract counter, and run that title sequence. The CString format
-// local forces the /GX EH frame. (Render polls this slot each frame.)
-RVA(0x00014520, 0xc3)
-i32 CAttract::InputVirtual() {
-    if (menuRoot()->m_04->IsLoaded() == 0) {
-        return 0;
-    }
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(0) >= 0) {
-        do {
-        } while (showCursor(0) >= 0);
-    }
-    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-    CString s;
-    s.Format(s_TITLE_d, idx);
-    return RunTitleSeq(s, 0, 0, 1, 0);
-}
-
-// CAttract::Vslot06 (slot 6 / +0x18, 0x14630): identical to the InputVirtual roll but
-// gated on the slot-3 virtual (Vfunc3) instead of the page IsLoaded.
-RVA(0x00014630, 0xbd)
-i32 CAttract::Vslot06() {
-    if (Vfunc3() == 0) {
-        return 0;
-    }
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(0) >= 0) {
-        do {
-        } while (showCursor(0) >= 0);
-    }
-    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
-    CString s;
-    s.Format(s_TITLE_d, idx);
-    return RunTitleSeq(s, 0, 0, 1, 0);
-}
-
-// CAttract::Vslot0c (slot 12 / +0x30, 0x14720): keydown handler - on ESC/SPACE/ENTER
-// post the exit WM_COMMAND (0x8023) to the top-level HWND. (Re-homed from ApiCallers
-// CmdHost_014720.)
-RVA(0x00014720, 0x37)
-i32 CAttract::Vslot0c(i32 code, i32 unused) {
-    if (code == 0x20 || code == 0xd || code == 0x1b) {
-        g_pPostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
-    }
-    return 1;
-}
-
-// CAttract::Vslot0e(a, b, c) (slot 14 / +0x38, 0x14770): post the exit WM_COMMAND
-// (0x8023) to the top-level HWND (m_4->m_gameWnd->m_hwnd) unconditionally, then return 1.
-RVA(0x00014770, 0x24)
-i32 CAttract::Vslot0e(i32, i32, i32) {
-    g_pPostMessageA(owner()->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
-    return 1;
-}
-
-// CAttract::Vslot07() (slot 7 / +0x1c, 0x0147b0): the host/paint poll. Gate on the
-// slot-3 virtual (Vfunc3); bail if the menu root (m_c) is null; run the base
-// CState::Vslot07() paint; force the cursor hidden; flip the render target; blit
-// the title frame onto the menu page. Returns 1.
-RVA(0x000147b0, 0x6a)
-i32 CAttract::Vslot07() {
-    if (!Vfunc3()) {
-        return 0;
-    }
-    if (!m_c) {
-        return 0;
-    }
-    if (!CState::Vslot07()) {
-        return 0;
-    }
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(0) >= 0) {
-        do {
-        } while (showCursor(0) >= 0);
-    }
-    menuRoot()->m_04->m_10->m_2c->Flip(0);
-    menuRoot()->m_04->BlitFrom(menuRoot()->m_04->m_14);
-    return 1;
-}
-
-// CAttract::Update (0x0008cd40) is now an inline member in the header.
 
 // CAttract::RefreshTitle - re-prime the attract title scene. Resets the scene
 // slot off m_4->m_48 (PrimeScene then RestoreScene), re-resolves the
@@ -464,14 +141,6 @@ i32 CAttract::RefreshTitle(i32 unused) {
     m_2c = (CResSource*)stateMgr()->LookupState(s_STATEZ_ATTRACT);
     RunTitleSeq(s_TITLE, 0, 0, 1, 0);
     return 1;
-}
-
-// CAttract::~CAttract() (`??1`, 0x08cd90): the EH-framed destructor. MSVC emits
-// the CAttract-vtable restore + slot-2 release (ReleaseResources, statically
-// bound) + CState-vtable restore + base cleanup; the body just runs the release.
-RVA(0x0008cd90, 0x55)
-CAttract::~CAttract() {
-    ReleaseResources();
 }
 
 // CAttract::LoadTitleConfig - configure the attract/title sequence.
@@ -1237,7 +906,6 @@ i32 CMgrPersistObj::Save(CSerialArchive* w) {
     return 1;
 }
 
-SIZE_UNKNOWN(AttractWndHolder);
 SIZE_UNKNOWN(CAttract);
 SIZE_UNKNOWN(CAttractHost);
 SIZE_UNKNOWN(CAttractPooledRes);

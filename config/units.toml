@@ -919,9 +919,20 @@ source = "src/Gruntz/GameModeBase.cpp"
 flags = "base"
 
 [[unit]]
-# CAttract (attract/title CState leaf); the `??1` carries the /GX SEH frame.
+# The attract state-services interval [0x0fa1f0..0x0fb328]: woven CAttract title/
+# fade + CSoundFxEmitter + CState helpers + CMgrPersistObj serialize (one obj). eh:
+# CMgrPersistObj::Init's CString splash + the CState draw temps carry the /GX frame.
 unit = "attract"
 source = "src/Gruntz/Attract.cpp"
+flags = "eh"
+
+[[unit]]
+# CAttract state-machine CORE obj [0x013fb0..0x014819] + the COMDAT ??1 dtor
+# (0x08cd90); split out of the conflated Attract.cpp (REHOME D5). The class-identity
+# TU: 10 CState vtable-slot overrides + the vtable/??_G emission anchor. eh: Vslot09's
+# CString format local + the ??1 EH frame.
+unit = "attractstate"
+source = "src/Gruntz/AttractState.cpp"
 flags = "eh"
 
 
