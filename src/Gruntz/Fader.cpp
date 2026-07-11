@@ -2,12 +2,18 @@
 // base + its concrete subtypes (CFaderSine / CFaderFlat / CFaderMesh /
 // CFaderRadial / CFaderLight / CFaderShape) plus the flat body-views that host
 // each subtype's ApplyInit (CFaderRadialApply / CFaderShapeApply / CFaderElem /
-// CFaderTileRender + the FaderRun helper; CFaderLightApply is in
-// DDrawMgr/LightEffectSetup.cpp). One dev TU, formerly
+// CFaderTileRender + the FaderRun helper). One dev TU, formerly
 // split across Fader.cpp + Fader{Run,Radial,ElemSetup,ShapeSetup,TileRender,
 // 17e940Apply}.cpp + Obj5f0890Dtor.cpp (the ~CFaderShape dtor). Merged per
 // docs/tu-topology-plan.md (Phase 1); FaderMgr.cpp stays its own TU. All in the
 // 0x17d8f0-0x182610 engine band (one link cluster).
+//
+// waveM-mech absorbed the ex fxmodedesc unit (the CFxModeDesc/T1-T6 mode-descriptor
+// ctors @0x17e7b0-0x17e910, woven between CFader::Set2c and CFaderMesh) + the ex
+// lighteffectsetup unit (CFaderLightApply::Setup + CFaderLight::v2/v3/v4 @0x1804a0-
+// 0x1816a0, woven around CFaderLight's ctor/dtor) - both frag-less but text-woven
+// (Fader brackets each), so ONE original TU. The ex-fxmodedesc's out-of-interval
+// MakeButeSectionKey@0xf9280 stays in FxModeDesc.cpp (a separate obj, ~0.44M RVA away).
 //
 // Unit flags eh: CFader's dtor + ~CFaderShape need the /GX EH frame; the run/
 // build/render helpers (RunFade / ApplyInit / Apply / Build / Setup / RenderTile /
@@ -23,8 +29,11 @@
 #include <Ints.h>
 #include <Mfc.h>                // superset of Win32.h; needed for CDDSurface (CPtrArray member)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (was the FrSurface view)
-#include <math.h>               // acos/sin (fsin) / sqrt (fsqrt) intrinsics
-#include <string.h>             // rep-movs / memset element copies
+#include <DDrawMgr/DDrawPtrCollections.h> // the +0x2c overlay surface pool (CFaderLight v3/v4)
+#include <Gruntz/FxModeT1.h>              // the CString-bearing CFxModeT1 (ex fxmodedesc)
+#include <Gruntz/FxModeDesc.h>            // CFxModeDesc + T2-T6 (ex fxmodedesc)
+#include <math.h>                         // acos/sin (fsin) / sqrt (fsqrt) intrinsics
+#include <string.h>                       // rep-movs / memset element copies
 #include <rva.h>
 
 // ApplyInit's two .rdata FP constants. Kept as minimal externs (not a fat
@@ -96,6 +105,99 @@ void CFader::SetTimers(i32 a, i32 b) {
 RVA(0x0017e780, 0xa)
 void CFader::Set2c(i32 v) {
     m_set2cArg = v;
+}
+
+// ===========================================================================
+// The mode/effect descriptor record family (ex fxmodedesc, woven here between
+// Set2c and CFaderMesh). CFxModeDesc/T1-T6 come from <Gruntz/FxModeDesc.h> /
+// <Gruntz/FxModeT1.h>; each ctor base-inits then stamps its type record.
+// ===========================================================================
+
+// 0x17e7b0 - CFxModeDesc(): zero the type discriminator.
+RVA(0x0017e7b0, 0x9)
+CFxModeDesc::CFxModeDesc() {
+    m_type = 0;
+}
+
+// 0x17e7c0 - CFxModeT1(): the type-1 variant ctor (base + CString member ctor, stamp
+// type=1/m_10=0x32/m_14=1/m_18=1, assign the empty string to the +0x24 CString). The
+// destructible CString member forces the /GX frame.
+extern "C" char g_emptyString[]; // 0x6293f4
+RVA(0x0017e7c0, 0x7a)
+CFxModeT1::CFxModeT1() {
+    m_type = 1;
+    m_04 = 0;
+    m_08 = 0;
+    m_0c = 0;
+    m_10 = 0x32;
+    m_14 = 1;
+    m_18 = 1;
+    m_1c = 0;
+    m_20 = 0;
+    m_24 = g_emptyString;
+    m_28 = 0;
+}
+
+// 0x17e840 - CFxModeT2(): base ctor, stamp the type-2 record.
+// @early-stop
+// constant-materialization/store-scheduling wall (~72%): same stores/offsets/values as
+// retail, but retail pre-loads 0x140->eax / 0xf0->ecx / 0->edx + stores in offset order,
+// while cl keeps 0x140/0xf0 as immediates + groups the zero stores. Not source-steerable.
+RVA(0x0017e840, 0x37)
+CFxModeT2::CFxModeT2() {
+    m_type = 2;
+    m_04 = 0;
+    m_08 = 0;
+    m_10 = 1;
+    m_14 = 0;
+    m_18 = 0x140;
+    m_1c = 0xf0;
+    m_20 = 0;
+}
+
+// 0x17e880 - CFxModeT3(): base ctor, stamp the type-3 record.
+RVA(0x0017e880, 0x28)
+CFxModeT3::CFxModeT3() {
+    m_type = 3;
+    m_04 = 0;
+    m_08 = 0;
+    m_0c = 1;
+    m_10 = 0xf;
+}
+
+// 0x17e8b0 - CFxModeT4(): base ctor, stamp the type-4 record (m_0c stored last).
+RVA(0x0017e8b0, 0x27)
+CFxModeT4::CFxModeT4() {
+    m_type = 4;
+    m_04 = 0;
+    m_08 = 0;
+    m_10 = 0;
+    m_14 = 0;
+    m_0c = 1;
+}
+
+// 0x17e8e0 - CFxModeT5(): base ctor, stamp the type-5 record (m_10 stored last).
+RVA(0x0017e8e0, 0x27)
+CFxModeT5::CFxModeT5() {
+    m_type = 5;
+    m_04 = 0;
+    m_08 = 0;
+    m_0c = 0;
+    m_14 = 0;
+    m_10 = 0x19;
+}
+
+// 0x17e910 - CFxModeT6(): base ctor, stamp the type-6 record.
+RVA(0x0017e910, 0x29)
+CFxModeT6::CFxModeT6() {
+    m_type = 6;
+    m_04 = 0;
+    m_08 = 0;
+    m_10 = 0;
+    m_14 = 0;
+    m_18 = 0;
+    m_1c = 0;
+    m_20 = 0;
 }
 
 // ===========================================================================
@@ -358,6 +460,235 @@ CFaderLight::CFaderLight() {
 RVA(0x00180450, 0x4f)
 CFaderLight::~CFaderLight() {
     SubFree180630();
+}
+
+// ===========================================================================
+// CFaderLight's shade/lighting effect setup pass (ex lighteffectsetup). Modeled as
+// the flat body-view CFaderLightApply (CFaderLight : public CFader reads the base-
+// region slots repurposed as surface/palette; fold onto CFaderLight is a follow-up).
+// ===========================================================================
+
+// The corner-distance exponent (retail .rdata double @0x5f0888 = 2.0); passed to the
+// __CIpow intrinsic so the squarings emit `fild x; fld K; call pow`.
+DATA(0x005f0888)
+extern const double g_faderPowK; // 2.0
+
+// SIZE annotations for the ShadeTableCache.h classes are hosted here (a neutral
+// includer) rather than in the header: shadetablecache.cpp reschedules under any
+// header-injected typedef.
+SIZE(CShadeTable, 0x10);      // array-element stride (0x10-byte buffer wrapper)
+SIZE(CShadeTableArray, 0x14); // MFC CObArray-shaped subobject (cache 0x18 - 0x04)
+SIZE(PalEntry, 0x4);          // 4-byte palette record (256-entry array stride)
+SIZE(CShadeTableCache, 0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
+
+// PtInRect reached through a game-owned function pointer (ff 15).
+DATA(0x006c456c)
+extern BOOL(WINAPI* g_pPtInRect)(const RECT*, POINT);
+
+struct Surf {
+    char m_pad00[0x18];
+    i32 m_height; // +0x18 height
+    i32 m_width;  // +0x1c width
+};
+SIZE_UNKNOWN(Surf);
+struct PalHolder {
+    char m_pad00[0xc];
+    PalEntry* m_palette; // +0x0c palette
+};
+SIZE_UNKNOWN(PalHolder);
+struct LightDesc {
+    char m_pad00[0x4];
+    Surf* m_surface;              // +0x04
+    i32 m_8;                      // +0x08
+    PalHolder* m_paletteHolder;   // +0x0c
+    i32 m_10;                     // +0x10
+    i32 m_spanCount;              // +0x14 span count
+    i32 m_centerX;                // +0x18 centre x
+    i32 m_centerY;                // +0x1c centre y
+    CShadeTable* m_overrideTable; // +0x20 override table (pointer)
+};
+SIZE_UNKNOWN(LightDesc);
+
+class CFaderLightApply {
+public:
+    i32 Setup(LightDesc* d);
+
+    i32 m_00;                  // +0x00
+    CShadeTableCache m_cache;  // +0x04  embedded shade-table cache (0x18 B -> +0x1c)
+    CShadeTable* m_shadeTable; // +0x1c shade table
+    i32 m_20;                  // +0x20
+    Surf* m_defaultSurface;    // +0x24 default surface
+    i32 m_28;                  // +0x28
+    char m_pad2c[0x30 - 0x2c];
+    i32 m_30; // +0x30
+    char m_pad34[0x38 - 0x34];
+    Surf* m_activeSurface; // +0x38 active surface
+    i32 m_3c;              // +0x3c
+    char m_pad40[0x44 - 0x40];
+    PalHolder* m_paletteHolder; // +0x44
+    i32 m_48;                   // +0x48
+    i32 m_centerX;              // +0x4c centre x
+    i32 m_centerY;              // +0x50 centre y
+    char m_pad54[0x5c - 0x54];
+    i32 m_5c;               // +0x5c  frame count = max light->corner distance (v2 output)
+    i32 m_spanStarts[1024]; // +0x60   span starts
+    i32 m_spanEnds[1024];   // +0x1060 span ends
+    i32 m_spanCount;        // +0x2060 span count
+    i32 m_surfaceWidth;     // +0x2064 surface width
+    i32 m_surfaceHeight;    // +0x2068 surface height
+};
+SIZE_UNKNOWN(CFaderLightApply);
+
+// CFaderLightApply::Setup (0x1804a0) = CFaderLight::ApplyInit: capture a descriptor's
+// surface/colour parameters, clip the centre to the surface rect (early-out if outside),
+// fill the per-scan span tables, resolve the hue-ramp shade table.
+// @early-stop
+// 92% - /O2 regalloc entropy tail: the descriptor field loads + the m_3c/m_activeSurface
+// conditional reuse eax in retail but the recompile distributes them across ecx/edx/eax;
+// same instruction selection + scheduling, only the register names differ. Final sweep.
+RVA(0x0001804a0, 0x182)
+i32 CFaderLightApply::Setup(LightDesc* d) {
+    m_20 = 0;
+    Surf* s = d->m_surface;
+    if (s == 0) {
+        s = m_defaultSurface;
+    }
+    m_activeSurface = s;
+    i32 b = d->m_8;
+    if (b == 0) {
+        m_3c = m_28;
+    } else {
+        m_3c = b;
+    }
+    m_48 = d->m_10;
+    m_centerX = d->m_centerX;
+    m_centerY = d->m_centerY;
+    PalHolder* pal = d->m_paletteHolder;
+    m_paletteHolder = pal;
+    i32 cnt = d->m_spanCount;
+    m_spanCount = cnt;
+    if (cnt > 0 && d->m_overrideTable == 0 && pal == 0) {
+        return 0;
+    }
+    if (m_activeSurface == 0) {
+        return 0;
+    }
+    if (m_3c == 0 && m_48 == 0) {
+        return 0;
+    }
+    RECT rect;
+    rect.right = m_activeSurface->m_width;
+    m_surfaceWidth = rect.right;
+    rect.bottom = m_activeSurface->m_height;
+    m_surfaceHeight = rect.bottom;
+    rect.left = 0;
+    rect.top = 0;
+    POINT pt;
+    pt.x = m_centerX;
+    pt.y = m_centerY;
+    if (g_pPtInRect(&rect, pt) == 0) {
+        return 0;
+    }
+    if (m_48 != 0) {
+        i32 i = 0;
+        if (m_surfaceHeight > 0) {
+            do {
+                m_spanStarts[i] = 0;
+                m_spanEnds[i] = m_surfaceWidth;
+                i++;
+            } while (i < m_surfaceHeight);
+        }
+    } else {
+        i32 i = 0;
+        if (m_surfaceHeight > 0) {
+            do {
+                m_spanStarts[i] = m_centerX;
+                m_spanEnds[i] = m_centerX;
+                i++;
+            } while (i < m_surfaceHeight);
+        }
+    }
+    if (m_spanCount > 0) {
+        if (d->m_overrideTable == 0) {
+            m_shadeTable = m_cache.HueRampTable(m_paletteHolder->m_palette, m_spanCount, 0);
+            m_30 = 1;
+            return 1;
+        }
+        m_shadeTable = d->m_overrideTable;
+    }
+    return 1;
+}
+
+// @early-stop
+// 0x180640 (2412 B) = a large light/circle-shade blit worker; homed pending leaf-first
+// reconstruction (>512 B).
+RVA(0x00180640, 0x96c)
+i32 Gap_180640(void) {
+    return 0;
+}
+
+// CFaderLight::v2 (0x1814f0, vtable slot 2) - the fade frame count = the maximum
+// distance from the light centre to any active-surface corner (each squaring is
+// pow(x, 2.0), the largest hypotenuse __ftol'd into m_5c).
+// @early-stop
+// x87-fp-stack-schedule wall (docs/patterns/x87-fp-stack-schedule.md): the four pow/sqrt
+// corner distances + the running-max are byte-faithful in operation/operand, but retail
+// interleaves the pow calls with a dense fxch/fld juggle + open-codes the max as an fcomp
+// tree; cl serialises them + lowers the max as fcom/branch pairs. Not source-steerable.
+RVA(0x001814f0, 0x16d)
+i32 CFaderLight::v2() {
+    CFaderLightApply* self = (CFaderLightApply*)this;
+    i32 cx = self->m_centerX;
+    i32 cy = self->m_centerY;
+    i32 w = self->m_activeSurface->m_width;
+    i32 h = self->m_activeSurface->m_height;
+
+    double pA = pow((double)cx, g_faderPowK);
+    double pB = pow((double)cy, g_faderPowK);
+    double pH = pow((double)(h - cy), g_faderPowK);
+    double pW = pow((double)(w - cx), g_faderPowK);
+
+    double d0 = sqrt(pA + pB);
+    double d1 = sqrt(pW + pB);
+    double d2 = sqrt(pA + pH);
+    double d3 = sqrt(pW + pH);
+
+    double m = d0;
+    if (d1 > m) {
+        m = d1;
+    }
+    if (d2 > m) {
+        m = d2;
+    }
+    if (d3 > m) {
+        m = d3;
+    }
+    i32 r = (i32)m;
+    self->m_5c = r;
+    return r;
+}
+
+// CFaderLight::v3 (0x181660, vtable slot 3) - AddItem: when active, acquire a fresh
+// overlay surface from the +0x2c pool (MakeAndAddB), stash it in m_40, blit it onto m_38.
+RVA(0x00181660, 0x40)
+void CFaderLight::v3() {
+    if (m_2060 > 0 && m_48 != 0) {
+        CDDrawPtrCollections* pool = (CDDrawPtrCollections*)m_set2cArg; // +0x2c dual-role pool slot
+        CDDSurface* h = pool->MakeAndAddB(m_2064, m_2068, 0, 0, -1);
+        m_40 = h;
+        h->Blt(m_38);
+    }
+}
+
+// CFaderLight::v4 (0x1816a0, vtable slot 4) - DropItem: if an overlay surface is held,
+// release it back to the +0x2c pool (RemoveItemA) and clear the slot.
+RVA(0x001816a0, 0x1c)
+void CFaderLight::v4() {
+    if (m_40) {
+        CDDrawPtrCollections* pool = (CDDrawPtrCollections*)m_set2cArg;
+        pool->RemoveItemA(m_40);
+        m_40 = 0;
+    }
 }
 
 // ===========================================================================

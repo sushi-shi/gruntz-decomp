@@ -1246,23 +1246,8 @@ source = "src/Gruntz/ToobSpikez.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "warpstonepad"
-source = "src/Gruntz/WarpStonePad.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "menusparkle"
 source = "src/Gruntz/MenuSparkle.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "tiletriggerswitch"
-source = "src/Gruntz/TileTriggerSwitch.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "tiletrigger"
-source = "src/Gruntz/TileTrigger.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1686,16 +1671,6 @@ source = "src/Utils/ApplyRange.cpp"
 flags = "base"
 
 [[unit]]
-unit = "projactregistry"
-source = "src/Gruntz/ProjActRegistry.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "pulsehighlight"
-source = "src/Gruntz/PulseHighlight.cpp"
-flags = "base"
-
-[[unit]]
 unit = "zdarrayderived"
 source = "src/Gruntz/ZDArrayDerived.cpp"
 flags = "base"
@@ -1772,11 +1747,6 @@ unit = "fader"
 source = "src/Gruntz/Fader.cpp"
 flags = "eh"
 
-
-[[unit]]
-unit = "smackervideowindow"
-source = "src/Io/SmackerVideoWindow.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "engstrrendertext"
@@ -1900,12 +1870,7 @@ flags = "eh"
 [[unit]]
 unit = "ddpagemgr"
 source = "src/DDrawMgr/DDPageMgr.cpp"
-flags = "base"
-
-[[unit]]
-unit = "ddscreen"
-source = "src/DDrawMgr/DDScreen.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "imageset3"
@@ -2136,10 +2101,6 @@ source = "src/Wap32/WapMisc.cpp"
 flags = "base"
 
 [[unit]]
-unit = "netcmdsession"
-source = "src/Net/NetCmdSession.cpp"
-flags = "eh"
-[[unit]]
 unit = "comhelperthunks"
 source = "src/Wap32/ComHelperThunks.cpp"
 flags = "framed"
@@ -2206,10 +2167,6 @@ unit = "m3mfcleaves"
 source = "src/Wap32/M3MfcLeaves.cpp"
 flags = "base"
 [[unit]]
-unit = "netsession2"
-source = "src/Net/NetSession2.cpp"
-flags = "eh"
-[[unit]]
 unit = "netthingdtor"
 source = "src/Net/NetThingDtor.cpp"
 flags = "eh"
@@ -2220,10 +2177,6 @@ unit = "gamechecksum"
 source = "src/Gruntz/GameChecksum.cpp"
 flags = "base"
 
-[[unit]]
-unit = "lobbysync"
-source = "src/Gruntz/LobbySync.cpp"
-flags = "eh"
 [[unit]]
 unit = "glyphstr"
 source = "src/Gruntz/GlyphStringDraw.cpp"
@@ -2275,11 +2228,6 @@ source = "src/Image/ImageProbe.cpp"
 flags = "base"
 
 [[unit]]
-unit = "lighteffectsetup"
-source = "src/DDrawMgr/LightEffectSetup.cpp"
-flags = "base"
-
-[[unit]]
 unit = "worldlevelkey"
 source = "src/Gruntz/WorldLevelKey.cpp"
 flags = "eh"
@@ -2306,11 +2254,6 @@ source = "src/Gruntz/MgrSlotSwap.cpp"
 flags = "base"
 
 # trace-discovered leaf dtors re-homed from src/Stub/Discovered.cpp (matcher-1):
-[[unit]]
-unit = "checkpointtrigger"
-source = "src/Gruntz/CheckpointTrigger.cpp"
-flags = "eh"
-
 [[unit]]
 unit = "grunttoytimesprite"
 source = "src/Gruntz/GruntToyTimeSprite.cpp"

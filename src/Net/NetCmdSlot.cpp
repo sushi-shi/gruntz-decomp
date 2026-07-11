@@ -1,123 +1,65 @@
-// NetCmdSlot.cpp - CNetMgr per-player command-slot helpers (0x0c0fa0..0x0c1390).
+// original TU: filename unknown (@identity-TODO net command/session module)
 //
-// A CNetCmdSlot is one of the four inline 0x64-byte slots the DirectPlay session
-// (CNetMgr+0x520) keeps; FindCmdSlot returns the one whose player matches. Each
-// slot owns a CObList of queued commands at +0x20 (a CObject vptr + head/tail/
-// count + free-list). The resend path (CNetMgr::ResetPlayerCommands) latches the
-// slot (Touch), redispatches the windowed commands and drops each (RemoveCmd),
-// then clears both command ranges (ResetTriple). These are all self-contained
-// (no DIR32 relocs) - the only external references are the CObList mutators (a
-// shared collection TU at 0x1b49xx) and the command-recycle helper (0xbf580),
-// all reloc-masked rel32 calls.
+// waveM-mech merged the net command/session obj: the 0xbef80-0xc1390 .text is ONE
+// original TU (heavy fn-granularity weave - CNetSession(netsession2/netcmdsession),
+// CLobbySync(lobbysync) and CNetCmdSlot(netcmdslot) bracket each other repeatedly;
+// netcmdslot's 17 $E frags @0xc0840/0xc1460 tie the statics to this obj). Absorbs
+// CNetSlotAux::ClearRange@0xbf120 (ex NetMgrMisc.cpp; == CLobbyChannel::InitSub3c).
 //
-// Also here (retail emits them in this address run):
-//   - three __stdcall helpers over a 3-int player-id set (find/add/clear), and
-//   - a session-readiness check on an as-yet-unidentified owner object that
-//     holds a CNetMgr* at +0x1c and a per-slot ack-flag array at +0x3c.
-#include <Net/NetMgr.h>           // <Mfc.h> -> CObList / POSITION / CObject (reloc-masked)
+// DEFERRED FOLD (@identity-TODO): the four ex-units are cross-view CONFLATIONS of two
+// classes. CLobbySync's declared-only M_c00a0/M_c0290 ARE CNetSession::FindCmdSlot/
+// Verify(i32); its InitNeg/ClearList/M_c0fd0/M_c1230/M_c12b0/M_c11b0/M_c0c70 ARE the
+// CNetCmdSlot::ResetTriple/ClearCmds/... bodies at the same RVAs. The 0x64-byte slot
+// wears THREE local views here (CCluster0c=Init@c0c20, CLobbyChannel=M_bfc70@bfc70,
+// CNetSlotAux=ClearRange@bf120); unifying them + CLobbySync<->CNetSession needs
+// field-name reconciliation (m_04/m_isRemote, m_10/m_timer, ...) = re-matching, so it
+// is left as a flagged fold. All cross-view calls stay reloc-masked (distinct mangled
+// names), so co-locating is byte-preserving. LobbySync's CCluster0c was renamed
+// CLobbyChannel here purely to avoid the redefinition clash with netcmdslot's view.
+//
+// Field names are placeholders; only OFFSETS + code bytes are load-bearing.
+#include <Net/NetMgr.h>           // canonical CNetSession / CNetCmdSlot / CObList / CObject
 #include <Gruntz/GruntzCmdMgr.h>  // CNetGameMgr::m_6c real command manager (EnqueueCommand)
 #include <Gruntz/GruntzCommand.h> // canonical CGruntzCommand/Single/Multi (slot-7 Parse)
+#include <Ints.h>
+#include <Rez/RezMgr.h>
+#include <dplay.h> // real DirectPlay: CNetMgr::m_endpoint (+0x18) is IDirectPlay4
+#include <Globals.h>
 #include <rva.h>
+#include <string.h> // memcpy / memset / strcat (see #pragma intrinsic below)
 
-#include <string.h> // memcpy (see #pragma intrinsic below)
-
-// CNetCmdNode (the slot's +0x20 command-queue CObList node), CNetCmdHdr (the record
-// header prefix) and CNetCmdPacket (the recycled queue packet) are the shared Net
-// protocol types - canonical in <Net/NetMgr.h> (included above).
-
-// Return a finished command to the engine's free pool (0xbf580, __cdecl): it
-// AddTail's the node onto a global recycle list. External (reloc-masked).
-extern void RecycleCmd(void* cmd);
-
-// The three __stdcall id-set helpers are defined further down (RVA order puts
-// CNetSession::ResetCmdBuffers / the slot resets above them); forward-declare so
-// AdvanceSeq below can fold its window through them.
-i32 __stdcall NetCmdIdFind(i32* arr, i32 v);
-void __stdcall NetCmdIdAdd(i32* arr, i32 v);
-void __stdcall NetCmdIdClear(i32* arr, i32 v);
-
-// ProcessCmd's memcpy is forced intrinsic (reloc-masked / inline).
+// ProcessCmd's memcpy / NetCmdIdToString's strcat are forced intrinsic (reloc-masked / inline).
 #pragma intrinsic(memcpy)
 #pragma intrinsic(strcat)
 
 // The two file-scope debug buffers NetCmdIdToString formats through: a 16-byte
 // per-id wsprintfA scratch (0x64b6a0) and the comma-joined accumulator (0x64b6b0).
-// BSS; address-pinned so the DIR32 loads reloc-mask.
 DATA(0x0024b6a0)
 extern char g_idScratch[0x10];
 DATA(0x0024b6b0)
 extern char g_idListBuf[0x40];
 
+// The recycled-node free pool drained at the tail of CLobbySync::Reset (real MFC
+// CPtrList from <Rez/RezMgr.h> -> <Mfc.h>; RemoveTail 0x1b4a27 / GetCount inline @+0xc).
+DATA(0x0024aca8)
+extern CPtrList g_pool; // 0x64aca8
+
+// The three __stdcall id-set helpers are defined further down (RVA order); forward-
+// declare so ProcessCmd / AdvanceSeq above them can fold their windows through them.
+i32 __stdcall NetCmdIdFind(i32* arr, i32 v);
+void __stdcall NetCmdIdAdd(i32* arr, i32 v);
+void __stdcall NetCmdIdClear(i32* arr, i32 v);
+
 // The recycled-command-packet allocator (0xbf530, __cdecl): hands back a node from
 // the global packet pool. Modeled by its delinker name so the call is named.
 void* Unmatched_bf530(i32 zero); // 0xbf530
 
-// The parsed grunt command the record's per-entry stream produces is the canonical
-// command family (<Gruntz/GruntzCommand.h>): CGruntzSingleCommand/CGruntzMultiCommand
-// each Allocate() from their recycle list, Parse() in place through vtable slot 7,
-// then get enqueued. (Formerly a reduced local polymorphic view of the same three
-// classes.)
-
-// The per-game command manager reached through CNetMgr->m_4->m_6c is the real
-// CGruntzCmdMgr (EnqueueCommand @0x23d10); ProcessCmd hands each parsed grunt
-// command to it. Shared via the canonical CNetGameMgr::m_6c (folds the former
-// local CGruntzCmdMgr/CNetMgrSub placeholders).
-
-// The slot's +0x1c owner is the shared CNetMgr (NetMgr.h): ProcessCmd reaches its
-// +0x4 game-mgr sub-object (CNetGameMgr; +0x6c is the grunt command manager), the
-// DirectPlay session at +0x520 (FindCmdSlot), and DispatchRecvMsg (0xb9750) for the
-// high-bit relay - all real typed members now, no reduced view.
-
 // ---------------------------------------------------------------------------
-// CNetSession::ResetCmdBuffers (0x0c0070, __thiscall) - zero the +0x10 head of
-// each of the four inline command slots.
+// Local type views (the ex-unit shapes; DEFERRED FOLD per the file header).
 // ---------------------------------------------------------------------------
-RVA(0x000c0070, 0x15)
-void CNetSession::ResetCmdBuffers() {
-    for (i32 i = 0; i < 4; i++) {
-        m_slots[i].m_latency = 0;
-    }
-}
 
-// ---------------------------------------------------------------------------
-// CNetCmdSlot::ResetAll (0x0c0bb0, __thiscall) - full wipe: zero every scalar
-// field (incl. m_state/m_cmdHead/m_owner), drain the queue, then splat both ranges.
-// ---------------------------------------------------------------------------
-// @early-stop
-// zero-register-pinning wall (73.7%): logic byte-exact. Retail re-materializes
-// the splat constant (`xor eax,eax` twice, around ClearCmds) and saves only esi;
-// cl instead pins 0 in callee-saved edi across the call (one xor + an extra
-// push/pop edi). A regalloc coin-flip identical to ResetTriple/AllSlotsReady in
-// this TU (docs/patterns/zero-register-pinning.md); not source-steerable. Final sweep.
-RVA(0x000c0bb0, 0x47)
-void CNetCmdSlot::ResetAll() {
-    m_state = 0;
-    m_resetGuard = 0;
-    m_latchedSeq = 0;
-    m_cmdHead = 0;
-    m_latency = 0;
-    m_baseSeq = 0;
-    m_maxSeq = 0;
-    m_owner = 0;
-    ClearCmds();
-    m_ackFlags[0] = 0;
-    m_ackFlags[1] = 0;
-    m_ackFlags[2] = 0;
-    m_ackFlags[3] = 0;
-    ResetTriple(m_rangeA);
-    ResetTriple(m_rangeB);
-}
-
-// ---------------------------------------------------------------------------
-// 0x0c0c20 (spatially re-homed from src/Stub/Cluster0c.cpp). Field-init of an
-// unidentified per-session net object (called by CNetMgr::AckDropPlayer /
-// CNetSession::Reset / CLobbySync::Reconcile): zero a span of members, then
-// construct the two embedded sub-objects at +0x4c/+0x58. @orphan (class identity
-// unrecovered; its Cleanup sibling homes to MultiStartDlgRoster.cpp).
-// @early-stop
-// regalloc tie-break wall (~71%): logic byte-identical, but retail rematerializes
-// the zero constant in eax while cl hoists 0 into a callee-saved edi across the
-// Init12e0 call; a cl-build heuristic delta, not a source shape.
+// The CNetMgr per-session net object whose field-init is CCluster0c::Init@0xc0c20
+// (called by CNetMgr::AckDropPlayer / CNetSession::Reset / CLobbySync::Reconcile).
 struct CNetThing; // +0x60 owned child (dtor 0xc5280, in src/Net/NetThingDtor.cpp)
 struct CCluster0c {
     char pad00[4];
@@ -141,6 +83,857 @@ struct CCluster0c {
 
     void Init(); // 0xc0c20
 };
+SIZE_UNKNOWN(CCluster0c);
+
+// The owner of AllSlotsReady: caches a CNetMgr* at +0x1c and a per-slot local-ack
+// flag array at +0x3c. Its real class is not yet pinned; modeled minimally.
+struct CNetSyncCheck {
+    char m_pad0[0x1c]; // +0x00
+    CNetMgr* m_netMgr; // +0x1c  the owning net manager
+    char m_pad20[0x3c - 0x20];
+    i32 m_localAckFlags[4]; // +0x3c  per-slot local-ack flags
+
+    i32 AllSlotsReady(); // c1320
+};
+SIZE_UNKNOWN(CNetSyncCheck); // minimal view (only +0x1c/+0x3c pinned); retail size TBD
+
+// The slot object whose +0x3c..+0x48 range ClearRange@0xbf120 zeroes (== the same
+// 0x64-byte slot; ClearRange IS CLobbyChannel::InitSub3c, absorbed from NetMgrMisc).
+struct CNetSlotAux {
+    char m_pad0[0x3c];
+    i32 m_3c;          // +0x3c..+0x48 (4 dwords)
+    void ClearRange(); // bf120
+};
+SIZE_UNKNOWN(CNetSlotAux);
+
+// The synced game object stored in CLobbySync's id-map (GetSlotPtr 0xc0430 -> CSyncObj*).
+// A genuine external polymorphic class (>=9 vtable slots; slot 8 @+0x20 is its
+// serializer). IDENTITY-RECOVERY TODO: its concrete identity lives in the net-game
+// insert path in another TU; kept a minimal slot-8-only placeholder.
+struct CSyncObj {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual i32 Serialize(char* buf, i32 max); // slot 8 -> vtbl+0x20
+};
+void NoopSync(CSyncObj* p); // 0xbfb20 (empty)
+
+// The per-slot player descriptor (CLobbyChannel::m_desc / CLobbySync::m_localDesc).
+struct SlotInfo {
+    char pad00[4];
+    i32 m_playerId; // +0x04 DirectPlay player id (SetData `a`, Recv/Read channel)
+    char pad08[0x18 - 0x08];
+    i32 m_netId; // +0x18 peer/target id (SetData `b`)
+    char pad1c[0x2c - 0x1c];
+    i32 m_dirty; // +0x2c set on slot re-init
+};
+
+// A grunt record in CLobbySync's +0x3b0 table (stride 0x410).
+struct GruntRec {
+    i32 m_seq;             // +0x00 sequence number
+    i32 m_checksum;        // +0x04 state checksum
+    unsigned char m_count; // +0x08 grunts serialized into this record
+    char pad09[3];
+    i32 m_payloadLen;             // +0x0c payload length
+    char m_payload[0x410 - 0x10]; // +0x10 payload
+};
+
+// The per-channel lobby slot (0x64 bytes) - LobbySync's view of the same 0x64-byte
+// slot class the CCluster0c / CNetSlotAux / CNetCmdSlot views also model (renamed
+// from CCluster0c to avoid the redefinition clash; DEFERRED FOLD per the file header).
+struct CLobbyChannel {
+    i32 m_state;      // +0x00 slot state (3 = active)
+    i32 m_isRemote;   // +0x04 flag (0 = local)
+    i32 m_08;         // +0x08 counter / CNetMgr* (overloaded)
+    SlotInfo* m_desc; // +0x0c descriptor
+    i32 m_timer;      // +0x10 activity timer
+    i32 m_baseSeq;    // +0x14 base sequence for the ack windows
+    i32 m_sentSeq;    // +0x18 highest sequence sent
+    i32 m_1c;         // +0x1c
+    char pad20[0x4c - 0x20];
+    char m_4c[0x58 - 0x4c]; // +0x4c sub-object (ack window)
+    char m_58[0x5c - 0x58]; // +0x58 sub-object (ack window)
+    char pad5c[0x64 - 0x5c];
+
+    void Init();                        // 0xc0c20 (== CCluster0c::Init)
+    i32 M_c0fd0(void* p, i32 v);        // 0xc0fd0
+    void M_c1230(i32* a, i32* b);       // 0xc1230
+    GruntRec* M_c12b0(i32 v);           // 0xc12b0  find the record for `v`, or 0
+    void M_c11b0(i32 v);                // 0xc11b0
+    i32 M_c0c70(i32 a, void* b, i32 c); // 0xc0c70
+    i32 M_bfc70(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId); // 0xbfc70
+    void ClearList();      // 0xc12e0 (recycle list at +0x20 to pool)
+    void InitSub3c();      // 0xbf120 (zero +0x3c..0x48)
+    void InitNeg(void* p); // 0xc10a0 (3 dwords of *p = -1)
+};
+
+// The game/session manager pointed to by CLobbySync::m_session (a partial net/session
+// sink; only +0x564 + the reloc-masked call shapes are load-bearing).
+SIZE_UNKNOWN(CSessionMgr);
+struct CSessionMgr {
+    char pad000[0x564];
+    i32 m_busy; // +0x564 net busy flag
+};
+
+// A CLobbySync control/command message header (the net protocol's own 3-word header).
+struct LobbyMsg {
+    i32 m_type; // +0x00 message type
+    i32 m_04;   // +0x04
+    i32 m_08;   // +0x08
+};
+
+struct CLobbySync {
+    i32 m_00;
+    CSessionMgr* m_session;   // +0x04
+    CNetMgr* m_netMgr;        // +0x08 CNetMgr*
+    SlotInfo* m_localDesc;    // +0x0c local player descriptor
+    i32 m_tick;               // +0x10 sub-tick counter
+    i32 m_snapshotDone;       // +0x14 per-period snapshot-built flag
+    i32 m_seq;                // +0x18 reconcile-period sequence
+    i32 m_period;             // +0x1c ticks per period (modulus)
+    CLobbyChannel m_slots[4]; // +0x20 .. +0x1b0
+    CSyncObj* m_idMap[0x80];  // +0x1b0 .. +0x3b0  synced-object ptr table (GetSlotPtr)
+    GruntRec m_records[0x80]; // +0x3b0 grunt-record table
+
+    // my targets
+    i32 Advance();                           // 0xc01d0
+    void Reconcile();                        // 0xc00f0
+    i32 SendBatch();                         // 0xbfd40
+    i32 SendAll();                           // 0xbfb40
+    i32 Dispatch(i32 a, LobbyMsg* b, i32 c); // 0xbf700
+    i32 DispatchMsg(LobbyMsg* m, i32 arg2);  // 0xbf7c0
+    void Reset();                            // 0xbf000
+    i32 Poll(i32 delta);                     // 0xbf5a0
+    i32 Tick();                              // 0xbf9e0
+    // siblings (declared-only -> reloc-masked; == CNetSession/CNetCmdSlot bodies)
+    CLobbyChannel* M_c00a0(i32 a);        // 0xc00a0 (== CNetSession::FindCmdSlot)
+    i32 M_c0290(i32 v);                   // 0xc0290 (== CNetSession::Verify(i32))
+    i32 SendOne(CLobbyChannel* s, i32 v); // 0xbfeb0
+    i32 Checksum();                       // 0xc0590
+    CSyncObj* GetSlotPtr(i32 v);          // 0xc0430
+};
+
+void ReportError(const char* file, i32 line, i32 code, i32 extra); // 0x1776a0
+
+// ===========================================================================
+// Functions in retail-RVA order.
+// ===========================================================================
+
+RVA(0x000bef80, 0x51)
+i32 CNetSession::Init(void* a1, CNetMgr* a2, void* a3) {
+    if (a1 == 0) {
+        return 0;
+    }
+    if (a2 == 0) {
+        return 0;
+    }
+    if (a3 == 0) {
+        return 0;
+    }
+    m_0 = (CNetCmdBuf*)a1;
+    m_4 = (i32)a2; // the owning CNetMgr is kept as an i32 handle (CreateSlot re-passes it)
+    m_8 = a3;
+    Reset();
+    m_1c = a2->m_cmdDelay;
+    return 1;
+}
+
+// @early-stop
+// regalloc/scheduling wall (~85%): instruction sequence byte-faithful, but retail
+// centers the per-slot store base at slot+8 (keeping edi=slot for the thiscall
+// `this`) and spills the loop counter to [esp+0x10]; this cl uses one pointer
+// (esi=slot) + counter in edi.  Same store order/values; callees+pool reloc-masked.
+// 0xbf000  Reset: recycle each channel slot, clear the id-map + record table,
+// then drain the recycled-node free pool.
+RVA(0x000bf000, 0xd5)
+void CLobbySync::Reset() {
+    m_00 = 0;
+    m_session = 0;
+    m_netMgr = 0;
+    m_localDesc = 0;
+    m_tick = 0;
+    m_snapshotDone = 0;
+    m_seq = 0;
+    m_period = 1;
+    CLobbyChannel* s = m_slots;
+    i32 n = 4;
+    do {
+        s->m_isRemote = 0;
+        s->m_08 = 0;
+        s->m_state = 0;
+        s->m_desc = 0;
+        s->m_timer = 0;
+        s->m_baseSeq = 0;
+        s->m_sentSeq = 0;
+        s->m_1c = 0;
+        s->ClearList();
+        s->InitSub3c();
+        s->InitNeg(&s->m_4c);
+        s->InitNeg(&s->m_58);
+        s++;
+    } while (--n);
+    for (i32 j = 0; j < 0x80; j++) {
+        m_idMap[j] = 0;
+    }
+    GruntRec* r = m_records;
+    i32 k = 0x80;
+    do {
+        r->m_seq = 0;
+        r->m_count = 0;
+        r->m_payloadLen = 0;
+        r->m_checksum = 0;
+        r++;
+    } while (--k);
+    while (g_pool.GetCount() != 0) {
+        void* p = g_pool.RemoveTail();
+        if (p) {
+            RezFree(p);
+        }
+    }
+}
+
+// ClearRange (0xbf120, absorbed from NetMgrMisc.cpp): zero the slot's +0x3c..+0x48
+// dword range. (== CLobbyChannel::InitSub3c, declared-only above.)
+// @early-stop
+// regalloc coin-flip (84%): the inline 16-byte memset (base pointer + 4 dword
+// stores of a zero register) is byte-faithful in operation, but retail materializes
+// the base in eax via `lea eax,[ecx+0x3c]` and reuses the dead `this` (ecx) as the
+// zero, while cl advances ecx in place (`add ecx,0x3c`) and zeroes via eax - a pure
+// pointer/zero register swap (zero-register-pinning.md family); not source-steerable
+// (a plain 4-member `=0` instead folds to direct `[ecx+N]` stores, 71%). Deferred.
+RVA(0x000bf120, 0x11)
+void CNetSlotAux::ClearRange() {
+    memset(&m_3c, 0, 16);
+}
+
+// @early-stop
+// rep-stos setup scheduling wall (was 94.1%) PLUS the delinker unpair: logic + every
+// other byte exact. The residual is a 3-instruction permutation of the
+// memset(m_1b0,0,0x200) prologue - retail emits `lea edi,[ebp+0x1b0]` before
+// `mov ecx,0x80 / xor eax,eax`, cl emits it after (identical multiset, one schedule
+// swap, source-invariant under /O2). Plus Reset now unpairs (delinker section-packing).
+RVA(0x000bf150, 0x58)
+void CNetSession::Reset() {
+    m_10 = 0;
+    m_14 = 0;
+    m_18 = 0;
+    i32 i;
+    for (i = 0; i < 4; i++) {
+        m_slots[i].FullReset();
+    }
+    memset(m_1b0, 0, 0x200);
+    for (i = 0; i < 0x80; i++) {
+        m_entries[i].m_0 = 0;
+        m_entries[i].m_8 = 0;
+        m_entries[i].m_c = 0;
+        m_entries[i].m_4 = 0;
+    }
+}
+
+// RecycleCmd (0xbf580, __cdecl): return a finished command node to the global recycle
+// pool (g_pool.AddTail). Called by CNetCmdSlot::RemoveCmd / ClearCmds.
+RVA(0x000bf580, 0x10)
+void RecycleCmd(void* cmd) {
+    g_pool.AddTail(cmd);
+}
+
+// @early-stop
+// regalloc cascade (~63%): logic byte-faithful; retail pins `this` in edi, hoists
+// the slot `== 3` test constant into esi, and parks `len` in the reused incoming
+// arg slot (3 distinct stack locals).  This cl pins `this` in esi and coalesces a
+// stack local into a register; the consequent register renames cascade the body.
+// 0xbf5a0  Poll: advance active slots by `delta`, then drain the endpoint's
+// incoming packet queue, dispatching foreign packets.
+RVA(0x000bf5a0, 0x110)
+i32 CLobbySync::Poll(i32 delta) {
+    CLobbyChannel* s = m_slots;
+    i32 n = 4;
+    do {
+        if (s->m_state == 3) {
+            s->m_timer += delta;
+        }
+        s++;
+    } while (--n);
+
+    i32 avail;
+    if (m_localDesc == 0) {
+        avail = 0;
+    } else {
+        i32 got;
+        IDirectPlay4* ep = (*(IDirectPlay4**)((char*)m_netMgr + 0x18));
+        i32 r = ep->GetMessageCount(m_localDesc->m_playerId, (LPDWORD)&got);
+        avail = (r == 0) ? got : 0;
+    }
+
+    i32 a = 0;
+    i32 received = 0;
+    while (avail > 0 && m_session->m_busy == 0) {
+        i32 len = 0x800;
+        i32 chan = m_localDesc->m_playerId;
+        IDirectPlay4* ep = (*(IDirectPlay4**)((char*)m_netMgr + 0x18));
+        i32 st = ep->Receive((LPDPID)&a, (LPDPID)&chan, 1, g_649858, (LPDWORD)&len);
+        if (st != 0) {
+            ReportError("c:\\proj\\incs\\netmgr.h", 0x141, st, 0);
+            if (st != 0) {
+                break;
+            }
+        }
+        received++;
+        avail--;
+        if (a != m_localDesc->m_playerId) {
+            Dispatch(a, (LobbyMsg*)g_649858, len);
+        }
+    }
+    return received;
+}
+
+// @early-stop
+// regalloc tie (~93%): logic byte-exact, retail keeps obj in eax / reads the flag
+// byte into cl; cl's MSVC spills obj to ecx then reads flag into al.
+RVA(0x000bf700, 0x82)
+i32 CLobbySync::Dispatch(i32 a, LobbyMsg* b, i32 c) {
+    if (!b) {
+        return 0;
+    }
+    if (a == 0) {
+        return DispatchMsg(b, c);
+    }
+    CLobbyChannel* obj = M_c00a0(a);
+    if (!obj) {
+        return 0;
+    }
+    obj->m_timer = 0;
+    CLobbyChannel* target = obj;
+    unsigned char* p = (unsigned char*)b;
+    if (!(p[0] & 0x80) && (p[0] & 1)) {
+        target = &m_slots[p[1]];
+        if (!target) {
+            return 0;
+        }
+    }
+    return target->M_c0c70(a, b, c);
+}
+
+// @early-stop
+// jump-table-placement wall (docs/patterns/switch-jumptable-separate-comdat.md):
+// code bytes byte-identical (proven llvm-objdump -dr base vs target); MSVC emits
+// the 0xff-byte index table + jump table as separate $L symbols while the delinker
+// folds them into the fn symbol, so the table region can't pair.
+RVA(0x000bf7c0, 0x95)
+i32 CLobbySync::DispatchMsg(LobbyMsg* m, i32 arg2) {
+    if (!m) {
+        return 0;
+    }
+    switch (m->m_type) {
+        case 3:
+            ((CNetMgr*)m_session)->LoadMenuSelectSprite((void*)m);
+            return 1;
+        case 5:
+            if (m->m_04 == 1) {
+                void* p = (void*)m->m_08;
+                ((CNetMgr*)m_session)->OnPlayerLeft((i32)p);
+                ((CNetMgr*)m_session)->ResetPlayerCommands((i32)p);
+                return 1;
+            }
+            return 1;
+        case 49:
+            return ((CNetMgr*)m_session)->HandleControlMsg((CNetCtrlMsg*)m, arg2);
+        case 257:
+            return ((CNetMgr*)m_session)->HandleControlMsg((CNetCtrlMsg*)m, arg2);
+        default:
+            return 1;
+    }
+}
+
+// @early-stop
+// regalloc tie (~85%): instruction sequence byte-identical except retail holds
+// `this` in ebp where this cl holds it in ebx (cascading esi/edi/ebx renames);
+// the callee-save register pick is function-specific and non-steerable.
+// 0xbf9e0  Tick: at the reconcile boundary, snapshot every channel's grunt
+// state into the current record, broadcast, then flush the pending batches.
+RVA(0x000bf9e0, 0xfe)
+i32 CLobbySync::Tick() {
+    if (m_snapshotDone == 0 && (m_tick + 1) % m_period == 0) {
+        i32 seq = m_seq + 2;
+        GruntRec* rec = &m_records[seq % 0x80];
+        rec->m_seq = seq;
+        rec->m_payloadLen = 0;
+        rec->m_count = 0;
+        rec->m_checksum = Checksum();
+        char* payload = rec->m_payload;
+        i32 next = seq + 1;
+        for (i32 t = seq * m_period; t < next * m_period; t++) {
+            CSyncObj* obj = GetSlotPtr(t);
+            if (obj) {
+                NoopSync(obj);
+                rec->m_count++;
+                payload += obj->Serialize(payload, (char*)rec - payload + 0x410);
+            }
+        }
+        ((CNetMgr*)m_session)->WriteTag("[end]\n");
+        rec->m_payloadLen = (i32)(payload - (char*)rec - 0x10);
+        m_snapshotDone = 1;
+    }
+    return SendBatch() + SendAll();
+}
+
+// @early-stop
+// regalloc/spill wall (~67%): logic correct, retail spills `this` (dead slot) +
+// caches &m_slots[0]; this cl allocates the slot pointers differently.
+RVA(0x000bfb40, 0xe2)
+i32 CLobbySync::SendAll() {
+    i32 count = 0;
+    CLobbyChannel* outer = m_slots;
+    for (i32 oi = 0; oi < 4; oi++) {
+        if (outer && outer->m_state == 3 && outer->m_isRemote != 0) {
+            i32 lo, hi;
+            outer->M_c1230(&lo, &hi);
+            CLobbyChannel* inner = m_slots;
+            i32 in = 4;
+            do {
+                if (inner && inner->m_state == 3 && inner->m_isRemote == 0) {
+                    for (i32 v = lo; v <= hi; v++) {
+                        GruntRec* r = outer->M_c12b0(v);
+                        if (r) {
+                            i32 flag = (v == hi) ? 3 : 1;
+                            if (m_slots[0].M_bfc70(v, r, flag, oi, inner->m_desc->m_netId)) {
+                                count++;
+                            }
+                        }
+                    }
+                }
+                inner++;
+            } while (--in);
+        }
+        outer++;
+    }
+    return count;
+}
+
+// @early-stop
+// one-register regalloc tie (~90%): byte-identical except retail holds `seq` in
+// esi where this cl holds it in ecx (mov esi/ecx,[esp+0x10]); non-steerable.
+// 0xbfc70  (CLobbyChannel method: this == the channel base slot)
+RVA(0x000bfc70, 0x9c)
+i32 CLobbyChannel::M_bfc70(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId) {
+    if (!rec) {
+        return 0;
+    }
+    if (seq < 0) {
+        return 1;
+    }
+    gA_seq = seq;
+    gA_flag = (unsigned char)flag;
+    gA_slot = (unsigned char)slot;
+    gA_e04 = rec->m_checksum;
+    gA_e08 = rec->m_count;
+    memcpy(&gA_data, rec->m_payload, rec->m_payloadLen);
+    return ((CNetMgr*)m_08)
+               ->SetData(m_desc->m_playerId, gruntId, 0, (i32)&gA_flag, rec->m_payloadLen + 0xf)
+           == 0;
+}
+
+RVA(0x000bfd40, 0x116)
+i32 CLobbySync::SendBatch() {
+    i32 count = 0;
+    CLobbyChannel* s = m_slots;
+    i32 n = 4;
+    do {
+        if (s && s->m_state == 3 && s->m_isRemote == 0) {
+            i32 t = m_seq + 2;
+            if (m_snapshotDone == 0 && (m_tick + 1) % m_period == 0) {
+                if (SendOne(s, t)) {
+                    count++;
+                }
+            }
+            i32 v = m_seq + 1;
+            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
+                if (SendOne(s, v)) {
+                    count++;
+                }
+            }
+            v = m_seq;
+            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
+                if (SendOne(s, v)) {
+                    count++;
+                }
+            }
+            v = m_seq - 1;
+            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
+                if (SendOne(s, v)) {
+                    count++;
+                }
+            }
+            v = m_seq - 2;
+            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
+                if (SendOne(s, v)) {
+                    count++;
+                }
+            }
+        }
+        s++;
+    } while (--n);
+    return count;
+}
+
+// @early-stop
+// regalloc cascade (~84%): logic byte-exact; ecx/edx + esi/eax allocation for the
+// modulo index and arg differ, plus the M_c0fd0 sibling (Boundary_0c0fd0) reloc.
+RVA(0x000bfeb0, 0xfa)
+i32 CLobbySync::SendOne(CLobbyChannel* slot, i32 val) {
+    if (!slot) {
+        return 0;
+    }
+    if (val < 0) {
+        return 1;
+    }
+    unsigned char flags = 0;
+    i32 baseSeq = slot->m_baseSeq;
+    if (slot->M_c0fd0(&slot->m_4c, baseSeq + 2)) {
+        flags = 0x10;
+    }
+    if (slot->M_c0fd0(&slot->m_4c, baseSeq + 3)) {
+        flags |= 0x20;
+    }
+    gB_flag = flags;
+    gB_val = val;
+    i32 idx = val % 0x80;
+    GruntRec* entry = &m_records[idx];
+    gB_m14 = slot->m_baseSeq;
+    gB_e04 = entry->m_checksum;
+    gB_e08 = entry->m_count;
+    memcpy(&gB_data, entry->m_payload, entry->m_payloadLen);
+    return m_netMgr->SetData(
+               m_localDesc->m_playerId,
+               slot->m_desc->m_netId,
+               0,
+               (i32)&gB_flag,
+               entry->m_payloadLen + 0xe
+           )
+           == 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::CreateSlot (0x0bfff0, __thiscall) - reset slot[index] and seed it
+// from the session's command-buffer array; returns the slot on success.
+// ---------------------------------------------------------------------------
+RVA(0x000bfff0, 0x5d)
+CNetCmdSlot* CNetSession::CreateSlot(i32 index, i32 owner) {
+    if (index < 0 || index >= 4) {
+        return 0;
+    }
+    CNetCmdSlot* slot = &m_slots[index];
+    if (slot == 0) {
+        return 0;
+    }
+    ((CNetCmdSlot*)slot)->ResetAll();
+    return slot->Init(m_4, &m_0[index].m_sel.m_slotHead, owner) ? slot : 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::ResetCmdBuffers (0x0c0070, __thiscall) - zero the +0x10 head of
+// each of the four inline command slots.
+// ---------------------------------------------------------------------------
+RVA(0x000c0070, 0x15)
+void CNetSession::ResetCmdBuffers() {
+    for (i32 i = 0; i < 4; i++) {
+        m_slots[i].m_latency = 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::FindCmdSlot (0xc00a0, __thiscall) - the slot whose owning player
+// (m_c[6]) matches, or null.
+// ---------------------------------------------------------------------------
+RVA(0x000c00a0, 0x31)
+CNetCmdSlot* CNetSession::FindCmdSlot(i32 playerId) {
+    for (i32 i = 0; i < 4; i++) {
+        if (m_slots[i].m_cmdHead[6] == playerId) {
+            return &m_slots[i];
+        }
+    }
+    return 0;
+}
+
+RVA(0x000c00f0, 0xaf)
+void CLobbySync::Reconcile() {
+    i32 withFlag = 0;
+    i32 withoutFlag = 0;
+    CLobbyChannel* base = m_slots;
+    {
+        CLobbyChannel* s = base;
+        i32 n = 4;
+        do {
+            if (s) {
+                i32 type = s->m_state;
+                if (type == 3 && s->m_isRemote != 0) {
+                    withFlag++;
+                }
+                if (type == 3 && s->m_isRemote == 0) {
+                    withoutFlag++;
+                }
+            }
+            s++;
+        } while (--n);
+    }
+    if (withoutFlag == 0) {
+        CLobbyChannel* s = base;
+        i32 n = 4;
+        do {
+            if (s && s->m_state == 3) {
+                s->Init();
+                SlotInfo* p = s->m_desc;
+                s->m_state = 1;
+                p->m_dirty = 1;
+            }
+            s++;
+        } while (--n);
+    } else if (withFlag != 0) {
+        CLobbyChannel* s = base;
+        i32 n = 4;
+        do {
+            if (s && s->m_state == 3 && s->m_isRemote != 0 && m_seq > s->m_08 + 2) {
+                s->Init();
+                SlotInfo* p = s->m_desc;
+                s->m_state = 1;
+                p->m_dirty = 1;
+            }
+            s++;
+        } while (--n);
+    }
+}
+
+RVA(0x000c01d0, 0x8c)
+i32 CLobbySync::Advance() {
+    i32 nextTick = m_tick + 1;
+    i32 nextSeq = m_seq + 1;
+    if (nextTick % m_period != 0) {
+        m_tick = nextTick;
+        return 1;
+    }
+    Reconcile();
+    if (!M_c0290(nextSeq)) {
+        return 0;
+    }
+    CLobbyChannel* s = m_slots;
+    i32 n = 4;
+    do {
+        if (s && s->m_state == 3 && s->m_isRemote == 0) {
+            s->M_c11b0(m_seq - 4);
+        }
+        s++;
+    } while (--n);
+    m_tick = nextTick;
+    m_seq = nextSeq;
+    m_snapshotDone = 0;
+    return 1;
+}
+
+// @early-stop
+// slot-pointer anchor + member re-read wall (~89.5%) PLUS the delinker unpair: logic
+// byte-faithful (the per-slot state==3 / resetGuard gate, the baseSeq window test, the
+// Ready()+latchedSeq branch). Retail anchors the slot cursor at +0x24 (m_resetGuard)
+// and re-reads it with `cmp $0,(esi)` each test; cl CSEs the read and anchors at +0x34
+// (m_baseSeq) - a non-steerable addressing-mode tie-break. (wave2-F /GX flip: 100->89.5.)
+RVA(0x000c0290, 0x63)
+i32 CNetSession::Verify(i32 n) {
+    for (i32 i = 0; i < 4; i++) {
+        CNetCmdSlot* s = &m_slots[i];
+        if (s != 0) {
+            if (s->m_state == 3 && s->m_resetGuard == 0) {
+                if (s->m_baseSeq < n) {
+                    return 0;
+                }
+            } else if (s->m_state == 3 && s->m_resetGuard != 0) {
+                if (s->Ready() == 0) {
+                    return 0;
+                }
+                if (s->m_latchedSeq != s->m_baseSeq) {
+                    return 0;
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::AllSlotsReachedSeq (0xc0320, __thiscall) - 0 if any active
+// (m_state==3), unreset (m_resetGuard==0) slot's high-water m_maxSeq is still below
+// `seq`; 1 otherwise.
+// ---------------------------------------------------------------------------
+RVA(0x000c0320, 0x37)
+i32 CNetSession::AllSlotsReachedSeq(i32 seq) {
+    for (i32 i = 0; i < 4; i++) {
+        CNetCmdSlot* slot = &m_slots[i];
+        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0 && slot->m_maxSeq < seq) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::AdvanceAllSlots (0xc0370, __thiscall) - fold ack `id` into every
+// active slot's sequence window (down-counting slot cursor, no null guard).
+// ---------------------------------------------------------------------------
+RVA(0x000c0370, 0x28)
+void CNetSession::AdvanceAllSlots(i32 id) {
+    CNetCmdSlot* slot = m_slots;
+    for (i32 i = 4; i != 0; i--) {
+        if (slot->m_state == 3) {
+            slot->AdvanceSeq(id);
+        }
+        slot++;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::RaiseAllSlotsMax (0xc03b0, __thiscall) - keep `v` as the high-water
+// sequence in every active slot.
+// ---------------------------------------------------------------------------
+RVA(0x000c03b0, 0x28)
+void CNetSession::RaiseAllSlotsMax(i32 v) {
+    CNetCmdSlot* slot = m_slots;
+    for (i32 i = 4; i != 0; i--) {
+        if (slot->m_state == 3) {
+            slot->RaiseMax(v);
+        }
+        slot++;
+    }
+}
+
+// Scan the four inline command slots for the first active (m_state==3), un-reset
+// (m_resetGuard==0) slot whose latency exceeds key (unsigned).
+// @early-stop
+// regalloc wall (topic:wall topic:regalloc): structure byte-identical to retail
+// (lea/loop/guards/ja/ret all match); residual is the key<->counter register swap
+// (retail key=ecx/counter=edx, cl here key=edx/counter=ecx) driven by the key-load
+// vs lea schedule order, not source-steerable, ~88.75%.
+RVA(0x000c0460, 0x2e)
+CNetCmdSlot* CNetSession::FindSlot(u32 key) {
+    CNetCmdSlot* p = &m_slots[0];
+    for (i32 i = 0; i < 4; i++, p++) {
+        if (p && p->m_state == 3 && p->m_resetGuard == 0 && (u32)p->m_latency > key) {
+            return p;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::CheckLatency (0xc04a0, __thiscall) - 0 if any active (m_state==3),
+// unreset (m_resetGuard==0) slot's latency (m_latency) exceeds the cap; 1 otherwise.
+// ---------------------------------------------------------------------------
+RVA(0x000c04a0, 0x37)
+i32 CNetSession::CheckLatency(i32 cap) {
+    for (i32 i = 0; i < 4; i++) {
+        CNetCmdSlot* slot = &m_slots[i];
+        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0
+            && (u32)slot->m_latency > (u32)cap) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetSession::Verify (0xc04f0, __thiscall) - resync consistency: each active
+// slot's command (seq = m_18-2) must agree (+0x4) with the resync entry indexed
+// by (m_18-2)%128.
+// ---------------------------------------------------------------------------
+RVA(0x000c04f0, 0x7c)
+i32 CNetSession::Verify() {
+    i32 seq = m_18 - 2;
+    CNetResyncEntry* e = &m_entries[seq % 128];
+    if (e != 0) {
+        for (i32 i = 0; i < 4; i++) {
+            CNetCmdSlot* slot = &m_slots[i];
+            if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0) {
+                CNetCmd* c = (CNetCmd*)slot->FindCmd(seq);
+                if (c != 0 && c->m_4 != e->m_4) {
+                    return 0;
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetCmdSlot::Init (0xc0b10, __thiscall) - seed a fresh slot (owner/buffer),
+// drain its queue and reset both command ranges.
+// ---------------------------------------------------------------------------
+// @early-stop
+// regalloc wall (74%): logic + field-store order are byte-faithful, but retail
+// keeps the constant 0 in eax (caller-saved, re-`xor`ed after ClearCmds) and the
+// args in edx/ecx/edi, whereas cl pins 0 in edi (callee-saved, no re-zero) and
+// the args in ecx/eax. A zero-register + arg-register coin-flip; not source-steerable.
+RVA(0x000c0b10, 0x72)
+i32 CNetCmdSlot::Init(i32 a1, i32* a2, i32 a3) {
+    if (a2 == 0) {
+        return 0;
+    }
+    if (a1 == 0) {
+        return 0;
+    }
+    m_owner = (CNetMgr*)a1; // the session passes its owning CNetMgr in as an i32 handle
+    m_state = a3;
+    m_resetGuard = 0;
+    m_latchedSeq = 0;
+    m_cmdHead = a2;
+    m_latency = 0;
+    m_baseSeq = 0;
+    m_maxSeq = 0;
+    ClearCmds();
+    m_ackFlags[0] = 0;
+    m_ackFlags[1] = 0;
+    m_ackFlags[2] = 0;
+    m_ackFlags[3] = 0;
+    ResetTriple(m_rangeA);
+    ResetTriple(m_rangeB);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CNetCmdSlot::ResetAll (0x0c0bb0, __thiscall) - full wipe.
+// ---------------------------------------------------------------------------
+// @early-stop
+// zero-register-pinning wall (73.7%): logic byte-exact. Retail re-materializes
+// the splat constant (`xor eax,eax` twice, around ClearCmds) and saves only esi;
+// cl instead pins 0 in callee-saved edi across the call. A regalloc coin-flip
+// identical to ResetTriple/AllSlotsReady in this TU; not source-steerable.
+RVA(0x000c0bb0, 0x47)
+void CNetCmdSlot::ResetAll() {
+    m_state = 0;
+    m_resetGuard = 0;
+    m_latchedSeq = 0;
+    m_cmdHead = 0;
+    m_latency = 0;
+    m_baseSeq = 0;
+    m_maxSeq = 0;
+    m_owner = 0;
+    ClearCmds();
+    m_ackFlags[0] = 0;
+    m_ackFlags[1] = 0;
+    m_ackFlags[2] = 0;
+    m_ackFlags[3] = 0;
+    ResetTriple(m_rangeA);
+    ResetTriple(m_rangeB);
+}
+
+// ---------------------------------------------------------------------------
+// CCluster0c::Init (0x0c0c20, __thiscall) - field-init the per-session net object.
+// @orphan (class identity unrecovered).
+// @early-stop
+// regalloc tie-break wall (~71%): logic byte-identical, but retail rematerializes
+// the zero constant in eax while cl hoists 0 into a callee-saved edi across the
+// Init12e0 call; a cl-build heuristic delta, not a source shape.
 RVA(0x000c0c20, 0x3f)
 void CCluster0c::Init() {
     m_04 = 0;
@@ -156,29 +949,20 @@ void CCluster0c::Init() {
     Init10a0(&m_4c);
     Init10a0(&m_58);
 }
-SIZE_UNKNOWN(CCluster0c);
 
 // ---------------------------------------------------------------------------
-// CNetCmdSlot::ProcessCmd (0x0c0c70, __thiscall) - parse one incoming command
-// record (opcode + parity prefix, a fixed header, then a per-entry payload).
-// Bit 7 relays the record straight to the net manager. Even/odd records gate on
-// the slot's reset guard; matched records bump the high-water windows, queue a
-// recycled copy of the payload, and unpack each entry into a grunt command that is
-// submitted to the per-game command manager.
+// CNetCmdSlot::ProcessCmd (0x0c0c70, __thiscall) - parse one incoming command record.
 // ---------------------------------------------------------------------------
 // @early-stop
 // regalloc + this-residency wall (~75%): the full control flow is byte-faithful -
-// the opcode/parity dispatch (recovered as two independent `if` guards), the bit-7
-// relay, the FindCmdSlot ack-flag set, RaiseMax/NetCmdIdAdd/NetCmdIdClear/
-// NetCmdIdFind/AdvanceSeq window updates, the Unmatched_bf530 packet alloc + inline
-// payload memcpy + AddCmd, and the per-entry Single/MultiCommand parse loop with the
-// vtable-slot-7 dispatch + EnqueueCommand. Three unsteerable MSVC5 /O2 choices
-// remain: (a) cl pins `this` in ebp where retail keeps it in esi + a [esp+0x18]
-// reload (a callee-saved-register coin-flip that cascades); (b) the redundant
-// `mov ecx,esi` retail refreshes before each __stdcall NetCmdId* call (the same
-// this-residency idiom that parks this TU's AdvanceSeq at 86.6%); (c) retail walks
-// the header through an advancing cursor with grouped byte-counter decrements
-// (-8/-4/-1) where cl folds the offsets (p+13, rem-13). No source lever; final sweep.
+// the opcode/parity dispatch, the bit-7 relay, the FindCmdSlot ack-flag set, the
+// RaiseMax/NetCmdIdAdd/NetCmdIdClear/NetCmdIdFind/AdvanceSeq window updates, the
+// Unmatched_bf530 packet alloc + inline payload memcpy + AddCmd, and the per-entry
+// Single/MultiCommand parse loop with the vtable-slot-7 dispatch + EnqueueCommand.
+// Three unsteerable MSVC5 /O2 choices remain: (a) cl pins `this` in ebp where retail
+// keeps it in esi + a [esp+0x18] reload; (b) the redundant `mov ecx,esi` retail
+// refreshes before each __stdcall NetCmdId* call; (c) retail walks the header through
+// an advancing cursor with grouped byte-counter decrements. No source lever; final sweep.
 RVA(0x000c0c70, 0x20f)
 i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
     if (rec == 0) {
@@ -276,15 +1060,12 @@ i32 CNetCmdSlot::ProcessCmd(i32 playerId, void* rec, i32 size) {
 
 // ---------------------------------------------------------------------------
 // CNetCmdSlot::AdvanceSeq (0x0c0f10, __thiscall) - fold an acknowledged id into
-// the high-water window: if it is exactly m_14+1, retire it (and every
-// already-present successor) out of range A; otherwise just record it.
+// the high-water window.
 // ---------------------------------------------------------------------------
 // @early-stop
 // this-in-ecx residency wall (86.6%): logic + control flow byte-exact. Retail
 // refreshes `mov ecx,esi` (this) before each __stdcall NetCmdId* call even though
-// the convention ignores ecx (4 redundant moves cl omits); the optimizer keeps
-// `this` resident in ecx as well as esi. Same flavor as the framed-module
-// this-residency idiom; not source-steerable here. Final sweep.
+// the convention ignores ecx (4 redundant moves cl omits); not source-steerable.
 RVA(0x000c0f10, 0x6e)
 void CNetCmdSlot::AdvanceSeq(i32 id) {
     if (m_baseSeq + 1 == id) {
@@ -323,8 +1104,7 @@ i32 __stdcall NetCmdIdFind(i32* arr, i32 v) {
 }
 
 // ---------------------------------------------------------------------------
-// NetCmdIdAdd (0x0c1010, __stdcall) - add `v` to the first free (-1) slot of
-// `arr`, unless it is already present.
+// NetCmdIdAdd (0x0c1010, __stdcall) - add `v` to the first free (-1) slot.
 // ---------------------------------------------------------------------------
 RVA(0x000c1010, 0x32)
 void __stdcall NetCmdIdAdd(i32* arr, i32 v) {
@@ -340,8 +1120,7 @@ void __stdcall NetCmdIdAdd(i32* arr, i32 v) {
 }
 
 // ---------------------------------------------------------------------------
-// NetCmdIdClear (0x0c1060, __stdcall) - clear (-1) the first slot of `arr`
-// equal to `v`.
+// NetCmdIdClear (0x0c1060, __stdcall) - clear (-1) the first slot equal to `v`.
 // ---------------------------------------------------------------------------
 RVA(0x000c1060, 0x29)
 void __stdcall NetCmdIdClear(i32* arr, i32 v) {
@@ -355,14 +1134,11 @@ void __stdcall NetCmdIdClear(i32* arr, i32 v) {
 
 // ---------------------------------------------------------------------------
 // CNetCmdSlot::ResetTriple (0x0c10a0, __thiscall) - splat -1 over three dwords.
-// (The slot pointer is unused; only the explicit array argument is touched.)
 // ---------------------------------------------------------------------------
 // @early-stop
 // regalloc swap (93.33%): logic byte-exact, but retail loads p into ecx (reusing
-// the dead `this`) and materializes -1 into eax (`mov ecx,[esp+4]; or eax,-1`),
-// while cl picks eax for p and ecx for -1. A pure eax/ecx coin-flip on a thiscall
-// member that ignores `this` (see const-materialize-into-reg-vs-immediate.md /
-// zero-register-pinning.md); not source-steerable. Final sweep.
+// the dead `this`) and materializes -1 into eax, while cl picks eax for p and ecx
+// for -1. A pure eax/ecx coin-flip on a thiscall member that ignores `this`.
 RVA(0x000c10a0, 0x12)
 void CNetCmdSlot::ResetTriple(i32* p) {
     p[0] = -1;
@@ -372,17 +1148,13 @@ void CNetCmdSlot::ResetTriple(i32* p) {
 
 // ---------------------------------------------------------------------------
 // NetCmdIdToString (0x0c10d0, __stdcall) - format the three-int player-id set as a
-// "%d,"-joined debug string in the shared g_idListBuf accumulator (skipping -1 free
-// slots); each id is rendered through the g_idScratch scratch and strcat'd on.
+// "%d,"-joined debug string in the shared g_idListBuf accumulator.
 // ---------------------------------------------------------------------------
 // @early-stop
-// frame-slot-selection wall (95.36%): the whole body is byte-faithful (the IAT-ptr
-// hoist into ebx, the "%d," wsprintfA + inline strcat, the walking-pointer countdown
-// loop). The only real residue is where the spilled 3->0 counter lives: retail
-// REUSES the dead arg1 home slot ([esp+0x14]) with a zero-extra frame, while cl
-// allocates a fresh local (`push ecx`/`pop ecx`, counter at [esp+0x10]) - a
-// build-8034 frame-allocator coin-flip on a fn whose 4 callee-saved regs are all
-// live across the calls. Not source-steerable (do-while/for/permute identical).
+// frame-slot-selection wall (95.36%): the whole body is byte-faithful. The only
+// real residue is where the spilled 3->0 counter lives: retail REUSES the dead arg1
+// home slot ([esp+0x14]) with a zero-extra frame, while cl allocates a fresh local
+// (`push ecx`/`pop ecx`, counter at [esp+0x10]). Not source-steerable.
 RVA(0x000c10d0, 0x7c)
 char* __stdcall NetCmdIdToString(i32* arr) {
     g_idListBuf[0] = 0;
@@ -398,8 +1170,7 @@ char* __stdcall NetCmdIdToString(i32* arr) {
 }
 
 // ---------------------------------------------------------------------------
-// CNetCmdSlot::AddCmd (0x0c1170, __thiscall) - enqueue a command, deduping on
-// its sequence number.
+// CNetCmdSlot::AddCmd (0x0c1170, __thiscall) - enqueue a command, deduping on seq.
 // ---------------------------------------------------------------------------
 RVA(0x000c1170, 0x26)
 void CNetCmdSlot::AddCmd(CNetCmd* cmd) {
@@ -409,8 +1180,8 @@ void CNetCmdSlot::AddCmd(CNetCmd* cmd) {
 }
 
 // ---------------------------------------------------------------------------
-// CNetCmdSlot::RemoveCmd (0x0c11b0, __thiscall) - drop the queued command with
-// the given sequence number and recycle it.
+// CNetCmdSlot::RemoveCmd (0x0c11b0, __thiscall) - drop the queued command with the
+// given sequence number and recycle it.
 // ---------------------------------------------------------------------------
 RVA(0x000c11b0, 0x55)
 void CNetCmdSlot::RemoveCmd(i32 seq) {
@@ -432,8 +1203,7 @@ void CNetCmdSlot::RemoveCmd(i32 seq) {
 }
 
 // ---------------------------------------------------------------------------
-// CNetCmdSlot::GetRange (0x0c1230, __thiscall) - min/max queued sequence into
-// (*pMin, *pMax); zero both when the queue is empty.
+// CNetCmdSlot::GetRange (0x0c1230, __thiscall) - min/max queued sequence.
 // ---------------------------------------------------------------------------
 RVA(0x000c1230, 0x55)
 void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
@@ -465,8 +1235,8 @@ void CNetCmdSlot::GetRange(i32* pMin, i32* pMax) {
 }
 
 // ---------------------------------------------------------------------------
-// CNetCmdSlot::FindCmd (0x0c12b0, __thiscall) - the queued command with the
-// given sequence number, or null.
+// CNetCmdSlot::FindCmd (0x0c12b0, __thiscall) - the queued command with the given
+// sequence number, or null.
 // ---------------------------------------------------------------------------
 RVA(0x000c12b0, 0x1f)
 CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
@@ -483,8 +1253,7 @@ CNetCmd* CNetCmdSlot::FindCmd(i32 seq) {
 }
 
 // ---------------------------------------------------------------------------
-// CNetCmdSlot::ClearCmds (0x0c12e0, __thiscall) - drain the queue, recycling
-// each command.
+// CNetCmdSlot::ClearCmds (0x0c12e0, __thiscall) - drain the queue, recycling each.
 // ---------------------------------------------------------------------------
 RVA(0x000c12e0, 0x2c)
 void CNetCmdSlot::ClearCmds() {
@@ -496,33 +1265,14 @@ void CNetCmdSlot::ClearCmds() {
     }
 }
 
-// The owner of the session-readiness check below: an object that caches a
-// CNetMgr* at +0x1c and a per-slot local-ack flag array at +0x3c. Its real
-// class is not yet pinned (self-contained, so matching is name-independent);
-// modeled minimally here.
-struct CNetSyncCheck {
-    char m_pad0[0x1c]; // +0x00
-    CNetMgr* m_netMgr; // +0x1c  the owning net manager
-    char m_pad20[0x3c - 0x20];
-    i32 m_localAckFlags[4]; // +0x3c  per-slot local-ack flags
-
-    i32 AllSlotsReady(); // c1320
-};
-SIZE_UNKNOWN(CNetSyncCheck); // minimal view (only +0x1c/+0x3c pinned); retail size TBD
-
 // ---------------------------------------------------------------------------
-// CNetSyncCheck::AllSlotsReady (0x0c1320, __thiscall) - false (0) if any active
-// (m_state==3), unreset (m_resetGuard==0) command slot has not yet been acked locally
-// (m_3c[i]==0); true (1) otherwise.
+// CNetSyncCheck::AllSlotsReady (0x0c1320, __thiscall) - false (0) if any active,
+// unreset command slot has not yet been acked locally; true (1) otherwise.
 // ---------------------------------------------------------------------------
 // @early-stop
 // induction-var/regalloc wall (~79%): logic byte-exact. Retail keeps `sess` in
-// esi and recomputes the slot via `lea ecx,[esi+eax+0x20]` each iteration with
-// the byte offset eax (compared to 0x190) as the loop variable, spending a 5th
-// register (push edi for the slot->m_4 temp); cl folds sess+offset into one
-// running slot pointer and counts i<4, needing only 4 registers (one push). The
-// offset-based source form regresses it (72%). An IV-selection coin-flip
-// (cf. const-materialize-into-reg-vs-immediate.md); not steerable. Final sweep.
+// esi and recomputes the slot via `lea ecx,[esi+eax+0x20]` each iteration; cl folds
+// sess+offset into one running slot pointer and counts i<4. An IV-selection coin-flip.
 RVA(0x000c1320, 0x4a)
 i32 CNetSyncCheck::AllSlotsReady() {
     CNetMgr* mgr = m_netMgr;
@@ -540,8 +1290,7 @@ i32 CNetSyncCheck::AllSlotsReady() {
 }
 
 // ---------------------------------------------------------------------------
-// CNetCmdSlot::Touch (0x0c1390, __thiscall) - latch the slot the first time it
-// is reset (sets the guard and copies the base sequence).
+// CNetCmdSlot::Touch (0x0c1390, __thiscall) - latch the slot the first time it is reset.
 // ---------------------------------------------------------------------------
 RVA(0x000c1390, 0x15)
 void CNetCmdSlot::Touch() {
@@ -550,3 +1299,10 @@ void CNetCmdSlot::Touch() {
         m_latchedSeq = m_baseSeq;
     }
 }
+
+SIZE_UNKNOWN(CLobbySync);
+SIZE_UNKNOWN(CLobbyChannel);
+SIZE_UNKNOWN(CSyncObj);
+SIZE_UNKNOWN(GruntRec);
+SIZE_UNKNOWN(LobbyMsg);
+SIZE_UNKNOWN(SlotInfo);

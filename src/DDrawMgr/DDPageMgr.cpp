@@ -1,48 +1,190 @@
-// DDPageMgr.cpp - CDDPageMgr (DDrawMgr), the primary-surface / display-mode bring-up
-// class behind the second DirectDrawCreate caller (0x17c040). One contiguous retail
-// .text block (0x17c040-0x17d720) == one retail .obj. De-fragmented: Init (0x17c040)
-// and CheckMode16 (0x17d2b0) rejoined here from the DirectDrawMgr god-TU so all four
-// CDDPageMgr methods (Init, CheckMode16, RemoveAt, FreeAll) live in their own .obj.
+// DDPageMgr.cpp - the primary-surface / display-mode bring-up + Smacker playback obj.
 //
-// The class is modeled canonically in <DDrawMgr/DirectDrawMgr.h> (formerly a divergent
-// .cpp-local view here); it owns its OWN IDirectDraw + IDirectDraw2 + primary surface +
-// palette (Init) plus, far down, a 1-based growable array of CPageRec records at +0x8690
-// (RemoveAt/FreeAll). On a failed COM call it routes through its own HandleError, not
-// CDirectDrawMgr::GetErrorString. Only offsets + code bytes are load-bearing.
+// waveM-mech merged the 0x17c040-0x17d720 .text (ONE original TU: text A-B-A weave -
+// CDDPageMgr's Init@0x17c040 + CheckMode16/RemoveAt/FreeAll@0x17d2b0-0x17d6b0 bracket
+// the CMoviePlayer(smackervideowindow) + CDDScreen(ddscreen) methods; DDPageMgr's Init
+// calls CDDScreen::HandleError@0x17cc80 - same obj). Absorbed the ex ddpagemgr +
+// smackervideowindow + ddscreen units.
 //
-// Include environment mirrors the former god-TU (Mfc.h via FileStream.h -> windows.h
-// before <ddraw.h>) so Init/CheckMode16 keep matching.
-#include <Io/FileStream.h>
-
-#include <DDrawMgr/DirectDrawMgr.h> // CDDPageMgr, DDModeInfo, CPageRec (canonical)
-#include <ddraw.h> // real DirectDraw SDK (DirectDrawCreate, IDirectDraw/2, IID_*, DDSURFACEDESC)
+// DEFERRED FOLD (@identity-TODO): CDDPageMgr (<DDrawMgr/DirectDrawMgr.h>) and CDDScreen
+// (<DDrawMgr/DDScreen.h>) are two cross-header views of the SAME tiled-DirectDraw
+// display object (Init@CDDPageMgr calls HandleError@CDDScreen); the declared-only
+// cross-calls stay reloc-masked (distinct mangled names), so co-locating is byte-
+// preserving, but unifying the two header views is deferred work.
+//
+// BOUNDARY (left separate, frag-woven strays out of scope): CMoviePlayer::Open@0x17c6f0
+// (movieplayer), CDDScreen::UploadPalette@0x17ca10 (palettecopy), CDDScreen::ResetPalette
+// @0x17ca60 (palettereset), CImageProbe::Init@0x17cbe0 (imageprobe), PalCache::Snapshot
+// @0x17cd90 (resourceloaders) - each is a method of this obj's classes wearing a stray
+// unit; SHOULD fold here in a follow-up.
+//
+// Include env mirrors the SmackerVideoWindow environment (Mfc.h/afxwin.h -> CWnd,
+// smack.h -> the RAD Smacker SDK, ddraw.h) plus the DDrawMgr display headers. Only
+// offsets + code bytes are load-bearing; field names are placeholders.
+#include <Mfc.h> // CString + windows.h (afx-first)
+#ifdef __clang__
+// The label-step clang can't parse MFC's afxwin1.inl (implicit-int CMenu::operator==);
+// skip the *.inl for clang only - docs/patterns/afxwin-clang-label-step-skip-inl.md.
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h> // the REAL MFC CWnd (m_videoWnd) + AfxRegisterWndClass
+#include <Ints.h>
 #include <rva.h>
+#include <smack.h> // the genuine RAD Smacker SDK (SMACKW32.DLL) - Smack handle + Smack* API
+// smack.h pulls rad.h, whose u8/u16/u32/... object-like macros shadow <Ints.h>; undo
+// them (matching-neutral: rad's u32==unsigned long is the same 4 bytes).
+#undef u8
+#undef u16
+#undef u32
+#undef u64
+#undef s8
+#undef s16
+#undef s32
+#undef s64
+#include <ddraw.h> // real IDirectDraw/IDirectDrawSurface (DirectDrawCreate, IID_*, DDSURFACEDESC)
+#include <Io/MoviePlayer.h>         // canonical CMoviePlayer
+#include <Crypto/FecCrypt.h>        // the +0x540 decode store IS a CFecFile (Close @0x17b570)
+#include <Io/FileStream.h>          // DDPageMgr's former god-TU include env
+#include <DDrawMgr/DirectDrawMgr.h> // CDDPageMgr, DDModeInfo, CPageRec (canonical)
+#include <DDrawMgr/DDScreen.h>      // canonical CDDScreen + CTileInfo
 #include <stdio.h>
 #include <string.h> // memset / inlined memcpy (rep movsd)
 #include <Globals.h>
 
-// The Rez heap free (0x1b9b82, __cdecl); reloc-masked (RemoveAt/FreeAll).
+// The Rez heap free (0x1b9b82, __cdecl); reloc-masked. DDPageMgr calls it RezFree,
+// the Smacker paths call it RezFree_call - two extern "C" names for the same address.
 extern "C" void RezFree(void* p);
+extern "C" void RezFree_call(void* p);
+// The engine heap allocator (0x1b9b46) - Configure's explicit-blit RECT nodes.
+extern "C" void* RezAlloc(u32 size);
 
-// The dxguid GUID constants Init passes to QueryInterface by REFIID. <ddraw.h> declares
-// them (EXTERN_C const GUID); redeclared with DATA() to bind their retail .rdata address
-// so the `push OFFSET` reloc-masks (IID_IDirectDrawSurface3 is Init's local reference).
+// The dxguid GUID constants Init passes to QueryInterface by REFIID (retail .rdata
+// addresses, DATA()-pinned so the `push OFFSET` reloc-masks).
 DATA(0x001ef848)
 extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
 DATA(0x001ef888)
 extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 
+// The IAT ShowCursor pointer the 0x17c3f0 command handler hides the cursor through.
+extern "C" int(WINAPI* g_pShowCursor_6c44c4)(int); // 0x6c44c4
+
+// --- The 0x17c3f0 page/cursor command handler's transient shapes (a STACK-LOCAL
+// 0x520-byte command block CGruntzMgr::ChangeState_8fab0 builds + Init()s; no
+// persistent owning class - a placeholder shape). --------------------------------
+struct ObjA2_17c3f0 { // real polymorphic; fn5 is slot 5 (+0x14)
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual i32 __stdcall fn5(i32, i32*, i32*, i32); // slot 5 (+0x14)
+};
+SIZE_UNKNOWN(ObjA2_17c3f0);
+struct ObjA3_17c3f0 { // real polymorphic; fn31 is slot 31 (+0x7c)
+    virtual void Slot00();
+    virtual void Slot01();
+    virtual void Slot02();
+    virtual void Slot03();
+    virtual void Slot04();
+    virtual void Slot05();
+    virtual void Slot06();
+    virtual void Slot07();
+    virtual void Slot08();
+    virtual void Slot09();
+    virtual void Slot10();
+    virtual void Slot11();
+    virtual void Slot12();
+    virtual void Slot13();
+    virtual void Slot14();
+    virtual void Slot15();
+    virtual void Slot16();
+    virtual void Slot17();
+    virtual void Slot18();
+    virtual void Slot19();
+    virtual void Slot20();
+    virtual void Slot21();
+    virtual void Slot22();
+    virtual void Slot23();
+    virtual void Slot24();
+    virtual void Slot25();
+    virtual void Slot26();
+    virtual void Slot27();
+    virtual void Slot28();
+    virtual void Slot29();
+    virtual void Slot30();
+    virtual void __stdcall fn31(i32); // slot 31 (+0x7c)
+};
+SIZE_UNKNOWN(ObjA3_17c3f0);
+struct Handler_17c3f0 {
+    void* m_0; // +0x00
+    i32 m_4;   // +0x04
+    void* m_8; // +0x08
+    i32 m_c;   // +0x0c
+    char m_pad10[0x14 - 0x10];
+    ObjA2_17c3f0* m_14; // +0x14
+    char m_pad18[0x1c - 0x18];
+    ObjA3_17c3f0* m_1c; // +0x1c
+    char m_pad20[0x24 - 0x20];
+    i32 m_24; // +0x24
+    i32 m_28; // +0x28
+    i32 m_2c; // +0x2c
+    char m_pad30[0x108 - 0x30];
+    i32 m_108; // +0x108
+    char m_pad10c[0x508 - 0x10c];
+    i32 m_508; // +0x508
+    char m_pad50c[0x510 - 0x50c];
+    i32 m_510; // +0x510
+    char m_pad514[0x518 - 0x514];
+    i32 m_518; // +0x518
+    i32 m_51c; // +0x51c
+    i32 m_520; // +0x520
+    void M_17cd90(void* a1);
+    void M_17cc80();
+    i32 M_17d2b0();
+    void M_17d6b0();
+    i32 Init(
+        void* a1,
+        ObjA2_17c3f0* a2,
+        ObjA3_17c3f0* a3,
+        i32 p4,
+        i32 p5,
+        i32 a6,
+        i32 a7,
+        i32 p8,
+        i32 p9,
+        i32 p10,
+        i32 p11,
+        i32 p12,
+        i32 p13,
+        i32 p14,
+        i32 p15,
+        i32 p16,
+        i32 p17,
+        i32 p18,
+        i32 p19,
+        i32 p20,
+        i32 p21,
+        i32 p22,
+        i32 p23,
+        i32 p24,
+        i32 kind,
+        i32 p26,
+        i32 p27,
+        i32 p28,
+        i32 p29,
+        i32 p30,
+        i32 a31
+    );
+};
+SIZE_UNKNOWN(Handler_17c3f0);
+
 // ===========================================================================
-// CDDPageMgr (DDrawMgr) - the primary-surface bring-up (second DirectDrawCreate
-// caller). On a failed COM call it routes through its own HandleError, not
-// GetErrorString.
+// Functions in retail-RVA order.
 // ===========================================================================
 
-// CDDPageMgr::Init (__thiscall, ret 0xc => 3 args). Creates its own DirectDraw,
-// QueryInterfaces IDirectDraw2, sets the cooperative level + display mode,
-// creates the primary surface (QI'd to IDirectDrawSurface3) and, for 8bpp, a
-// palette; caches the geometry and shows the cursor. The desc scratch is filled
-// through the named DDSURFACEDESC fields (m_descSize / ddsCaps.dwCaps m_descCaps).
+// CDDPageMgr::Init (0x17c040, __thiscall) - create DirectDraw, QI IDirectDraw2, set
+// the cooperative level + display mode, create the primary surface (QI'd to
+// IDirectDrawSurface3) and, for 8bpp, a palette; cache geometry + show the cursor.
 RVA(0x0017c040, 0x25d)
 i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     if (m_initialized != 0) {
@@ -132,19 +274,606 @@ i32 CDDPageMgr::Init(void* window, DDModeInfo* mode, u32 coopFlags) {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CDDPageMgr::CheckMode16 (@0x17d2b0, __thiscall, no args)
-// Read the current display mode's pixel format (IDirectDraw2::GetDisplayMode,
-// vtbl slot 12), popcount its R/G/B channel bit-masks, and classify a 16-bit
-// mode: 5/5/5 -> tag m_modeTag = 0x80000000, 5/6/5 -> 0xc0000000. Returns 1 on a
-// recognised 16-bit mode, 0 otherwise (incl. a failed GetDisplayMode).
+// CMoviePlayer::CreateVideoWindow (0x17c2a0) - register a private window class, refuse
+// if the window exists, create a screen-sized top-level MFC CWnd "Smacker Video
+// Window", focus it, then hand its HWND to the host's Init.
 // @early-stop
-// 83.9% - logic/CFG/the GetDisplayMode COM call/the three 32-iter popcount loops/
-// the 5-5-5 vs 5-6-5 classification are all reproduced. The residual is a regalloc
-// coin-flip: retail spills `this` to a stack slot (sub esp,0x70) and uses ebx as a
-// bit counter, while we keep `this` in ebx (sub esp,0x6c) and use edi for the third
-// counter; this cascades the loop register operands + the desc stack offset.
-// Not source-steerable; deferred to the final sweep.
+// Complete + correct (~98%). Residual is two documented walls: (1) the /GX EH scope-
+// table + handler-thunk relocs are named differently ($L.../__except_list vs the retail
+// Unwind@... funclet), a reloc-typing artifact; (2) MSVC5 tail-merges the two `return 0`
+// guards differently than retail (one extra `jmp; xor eax,eax`).
+RVA(0x0017c2a0, 0x14e)
+int CMoviePlayer::CreateVideoWindow(i32 a0, i32 a1) {
+    CString cls(AfxRegisterWndClass(3, 0, 0, 0));
+    if (m_videoWnd != 0) {
+        return 0;
+    }
+    m_videoWnd = new CWnd;
+    if (!m_videoWnd->CreateEx(
+            8,
+            cls,
+            "Smacker Video Window",
+            0x90000000,
+            0,
+            0,
+            GetSystemMetrics(0),
+            GetSystemMetrics(1),
+            0,
+            0,
+            0
+        )) {
+        return 0;
+    }
+    m_videoWnd->SetFocus();
+    HWND h = m_videoWnd ? m_videoWnd->m_hWnd : 0;
+    return Init(h, a0, a1);
+}
+
+// 0x17c3f0 - a page/cursor command handler over a stack-local 0x520-byte command block.
+RVA(0x0017c3f0, 0x14e)
+i32 Handler_17c3f0::Init(
+    void* a1,
+    ObjA2_17c3f0* a2,
+    ObjA3_17c3f0* a3,
+    i32 p4,
+    i32 p5,
+    i32 a6,
+    i32 a7,
+    i32 p8,
+    i32 p9,
+    i32 p10,
+    i32 p11,
+    i32 p12,
+    i32 p13,
+    i32 p14,
+    i32 p15,
+    i32 p16,
+    i32 p17,
+    i32 p18,
+    i32 p19,
+    i32 p20,
+    i32 p21,
+    i32 p22,
+    i32 p23,
+    i32 p24,
+    i32 kind,
+    i32 p26,
+    i32 p27,
+    i32 p28,
+    i32 p29,
+    i32 p30,
+    i32 a31
+) {
+    if (!a1 || !a2 || !a3) {
+        return 0;
+    }
+    m_14 = a2;
+    m_c = 1;
+    m_1c = a3;
+    M_17cd90(a1);
+    if (kind == 8) {
+        if (m_14->fn5(4, &m_108, &m_2c, 0)) {
+            M_17cc80();
+            return 0;
+        }
+        m_1c->fn31(m_2c);
+        m_510 = 0;
+    }
+    if (kind == 0x18) {
+        M_17cc80();
+        return 0;
+    }
+    if (kind == 0x10) {
+        if (!M_17d2b0()) {
+            M_17cc80();
+            return 0;
+        }
+    }
+    m_518 = a7;
+    m_51c = a6;
+    m_520 = kind;
+    m_0 = a1;
+    m_8 = 0;
+    m_24 = 0;
+    m_28 = 0;
+    m_508 = a31;
+    g_pShowCursor_6c44c4(0);
+    m_4 = 1;
+    M_17d6b0();
+    return 1;
+}
+
+// CMoviePlayer::Teardown (0x17c510) - tear the playback object down + restore the cursor.
+RVA(0x0017c510, 0x5e)
+void CMoviePlayer::Teardown() {
+    if (!m_active) {
+        return;
+    }
+    CloseSmacker();
+    Free17d6b0();
+    m_0 = 0; // +0x00 plain data (no vptr evidence; zeroed at teardown)
+    m_active = 0;
+    Free17cc80();
+    if (m_videoWnd) {
+        m_videoWnd->DestroyWindow();
+        delete m_videoWnd; // virtual dtor -> the compiler's own null-guarded slot-1 dispatch
+        m_videoWnd = 0;
+    }
+    ShowCursor(1);
+}
+
+// CMoviePlayer::OpenLo (0x17c570) - open a Smacker stream (0xfe000 flags, +0x100000 for
+// DirectSound), begin playback, roll back on failure.
+RVA(0x0017c570, 0xc0)
+i32 CMoviePlayer::OpenLo(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
+    if (!m_active) {
+        return 0;
+    }
+    SmackSoundUseDirectSound(m_directSound);
+    m_514 = a2;
+    u32 flags;
+    if (useDS == 1) {
+        m_useDS = useDS;
+        flags = 0x100000;
+    } else {
+        m_useDS = 0;
+        flags = 0;
+    }
+    flags |= 0xfe000;
+    m_smackHandle = SmackOpen((const char*)src, flags, -1);
+    if (!m_smackHandle) {
+        return 0;
+    }
+    m_streamOpen = 1;
+    i32 r = Begin(a2, useDS, a4, a5);
+    if (r) {
+        return r;
+    }
+    if (m_24) {
+        m_24->Release();
+        m_24 = 0;
+    }
+    if (m_28) {
+        m_28->Release();
+        m_28 = 0;
+    }
+    CloseSmacker();
+    return r;
+}
+
+// CMoviePlayer::OpenHi (0x17c630) - same as OpenLo but with the 0xff000 flag set.
+RVA(0x0017c630, 0xc0)
+i32 CMoviePlayer::OpenHi(i32 src, i32 a2, i32 useDS, i32 a4, i32 a5) {
+    if (!m_active) {
+        return 0;
+    }
+    SmackSoundUseDirectSound(m_directSound);
+    m_514 = a2;
+    u32 flags;
+    if (useDS == 1) {
+        flags = 0x100000;
+        m_useDS = useDS;
+    } else {
+        m_useDS = 0;
+        flags = 0;
+    }
+    flags |= 0xff000;
+    m_smackHandle = SmackOpen((const char*)src, flags, -1);
+    if (!m_smackHandle) {
+        return 0;
+    }
+    m_streamOpen = 1;
+    i32 r = Begin(a2, useDS, a4, a5);
+    if (r) {
+        return r;
+    }
+    if (m_24) {
+        m_24->Release();
+        m_24 = 0;
+    }
+    if (m_28) {
+        m_28->Release();
+        m_28 = 0;
+    }
+    CloseSmacker();
+    return r;
+}
+
+// CMoviePlayer::Pump (0x17c790) - pump the Win32 queue while a movie plays; abort on the
+// selected key/mouse events, else render the next frame until `count` plays elapse.
+RVA(0x0017c790, 0x14a)
+i32 CMoviePlayer::Pump(i32 flags, i32 count) {
+    if (!m_active || count < -1 || count == 0) {
+        return 0;
+    }
+    m_loopCount = 1;
+    MSG msg;
+    for (;;) {
+        if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
+            if (msg.message == 0x104) {
+                continue;
+            }
+            if (msg.message == 0x105) {
+                continue;
+            }
+            if (msg.message == 0x100) {
+                if (flags & 1) {
+                    return 1;
+                }
+                continue;
+            }
+            if (msg.message == 0x201 || msg.message == 0x204 || msg.message == 0x203
+                || msg.message == 0x206) {
+                if (flags & 0x100) {
+                    return 0x100;
+                }
+                continue;
+            }
+            TranslateMessage(&msg);
+            DispatchMessageA(&msg);
+        } else {
+            if (SmackWait(m_smackHandle)) {
+                continue;
+            }
+            if (Frame()) {
+                continue;
+            }
+            if (count != -1 && ++m_loopCount > count) {
+                return 0x11111111;
+            }
+            SmackSoundOnOff(m_smackHandle, 0);
+            SmackGoto(m_smackHandle, 1);
+            SmackSoundOnOff(m_smackHandle, 1);
+        }
+    }
+}
+
+// CMoviePlayer::Advance (0x17c8e0) - wait for the stream, render a frame, loop on EOF
+// until `loops` is exhausted.
+RVA(0x0017c8e0, 0xca)
+i32 CMoviePlayer::Advance(i32 cmd, i32 loops) {
+    if (!cmd || !m_active || loops < -1 || loops == 0) {
+        return 0;
+    }
+    i32 result = 1;
+    if (m_loopCount == 0) {
+        m_loopCount = result;
+    }
+    if (SmackWait(m_smackHandle) == 0) {
+        i32 saved = m_command;
+        m_command = cmd;
+        result = Frame();
+        if (result == 0) {
+            if (loops == -1 || ++m_loopCount <= loops) {
+                SmackSoundOnOff(m_smackHandle, 0);
+                SmackGoto(m_smackHandle, 1);
+                SmackSoundOnOff(m_smackHandle, 1);
+                result = 1;
+            }
+        }
+        m_command = saved;
+    }
+    if (result == 0) {
+        m_loopCount = 0;
+    }
+    return result;
+}
+
+// CMoviePlayer::CloseSmacker (0x17c9b0) - shut the sub-player, close the stream, free buffers.
+RVA(0x0017c9b0, 0x5b)
+i32 CMoviePlayer::CloseSmacker() {
+    if (!m_streamOpen) {
+        return 0;
+    }
+    ((CFecFile*)&m_540)->Close();
+    if (!m_smackHandle) {
+        return 0;
+    }
+    SmackClose(m_smackHandle);
+    m_smackHandle = 0;
+    if (m_rezBuffer) {
+        RezFree_call(m_rezBuffer);
+        m_rezBuffer = 0;
+    }
+    m_streamOpen = 0;
+    return 1;
+}
+
+// CMoviePlayer::Frame (0x17caa0) - the per-frame renderer Pump drives: lock the DDraw
+// surface (retrying on DDERR_SURFACELOST), decode the current Smacker frame, blit the
+// changed region(s), advance to the next frame.
+RVA(0x0017caa0, 0x13b)
+i32 CMoviePlayer::Frame() {
+    if (m_smackHandle->NewPalette && m_520 == 8) {
+        SnapshotPalette();
+    }
+    i32 hr = m_24->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
+    while (hr == (i32)0x887601c2) {
+        if (m_24->Restore() != 0) {
+            goto afterLock;
+        }
+        hr = m_24->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
+    }
+    if (hr == 0) {
+        SmackToBuffer(m_smackHandle, 0, 0, m_lPitch, m_smackHandle->Height, m_lpSurface, m_510);
+        SmackDoFrame(m_smackHandle);
+        m_50c = 1;
+        m_24->Unlock(m_lpSurface);
+    }
+afterLock:
+    if (m_514 != 1) {
+        while (SmackToBufferRect(m_smackHandle, 0) != 0) {
+            BlitDirty(
+                m_smackHandle->LastRectx,
+                m_smackHandle->LastRecty,
+                m_smackHandle->LastRectw,
+                m_smackHandle->LastRecth
+            );
+        }
+    } else {
+        BlitDirty(0, 0, m_smackHandle->Width, m_smackHandle->Height);
+    }
+    Smack* s = m_smackHandle;
+    if (s->FrameNum == s->Frames - 1) {
+        return 0;
+    }
+    SmackNextFrame(s);
+    return 1;
+}
+
+// CDDScreen::HandleError (0x17cc80) - release owned interfaces; if still mid-bringup
+// black the primary surface, then release the remaining objects.
+RVA(0x0017cc80, 0x109)
+void CDDScreen::HandleError() {
+    if (m_srcSurf) {
+        m_srcSurf->Release();
+        m_srcSurf = 0;
+    }
+    if (m_28) {
+        m_28->Release();
+        m_28 = 0;
+    }
+    if (m_bpp == 8) {
+        ResetPalette();
+    }
+    if (m_primary) {
+        DDBLTFX fx;
+        memset(&fx, 0, sizeof(fx));
+        fx.dwSize = 0x64;
+        fx.dwROP = 0x42;
+        void* rc = (void*)m_primary->Blt(0, 0, 0, 0x1020000, &fx);
+        if (rc) {
+            memset(&fx, 0, sizeof(fx));
+            fx.dwSize = 0x64;
+            fx.dwFillColor = 0;
+            m_primary->Blt(0, 0, 0, 0x1000400, &fx);
+        }
+    }
+    if (m_0c == 0) {
+        if (m_palette) {
+            m_palette->Release();
+            m_palette = 0;
+        }
+        if (m_primary) {
+            m_primary->Release();
+            m_primary = 0;
+        }
+        if (m_20) {
+            m_20->Release();
+            m_20 = 0;
+        }
+        if (m_dd2) {
+            m_dd2->RestoreDisplayMode();
+            m_dd2->Release();
+            m_dd2 = 0;
+        }
+        if (m_dd) {
+            m_dd->Release();
+            m_dd = 0;
+        }
+    }
+}
+
+// CDDScreen::BlitRegion (0x17cdf0) - blit the (col,row,nCols,nRows) tile region from the
+// source surface onto the primary; handle DDERR_SURFACELOST by restoring + retrying.
+RVA(0x0017cdf0, 0x1c6)
+i32 CDDScreen::BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows) {
+    RECT dst, src;
+    if (m_destRect) {
+        dst.left = m_destRect->left;
+        dst.top = m_destRect->top;
+        dst.right = m_destRect->right;
+        dst.bottom = m_destRect->bottom;
+    } else {
+        dst.left = col * m_tilesAcross + m_originX;
+        dst.top = row * m_tilesDown + m_originY;
+        dst.right = nCols * m_tilesAcross + dst.left;
+        dst.bottom = nRows * m_tilesDown + dst.top;
+    }
+    src.left = col;
+    src.top = row;
+    src.right = col + nCols;
+    src.bottom = row + nRows;
+
+    for (;;) {
+        i32 hr;
+        if (m_tilesAcross == 1 && m_tilesDown == 1 && m_destRect == 0) {
+            hr = m_primary->BltFast(dst.left, dst.top, m_srcSurf, &src, 0x10);
+            if (hr != 0x887601c2) {
+                return hr;
+            }
+            if (m_primary->IsLost() == 0x887601c2 && m_primary->Restore() == 0) {
+                if (m_bpp == 8) {
+                    m_primary->SetPalette(m_palette);
+                    UploadPalette();
+                }
+            } else {
+                hr = m_srcSurf->IsLost();
+                if (hr != 0x887601c2) {
+                    return hr;
+                }
+                hr = m_srcSurf->Restore();
+                if (hr != 0) {
+                    return hr;
+                }
+            }
+        } else {
+            hr = m_primary->Blt(&dst, m_srcSurf, &src, 0x1000000, 0);
+            if (hr != 0x887601c2) {
+                return hr;
+            }
+            if (m_primary->IsLost() == 0x887601c2 && m_primary->Restore() == 0) {
+                if (m_bpp == 8) {
+                    m_primary->SetPalette(m_palette);
+                    UploadPalette();
+                }
+            } else {
+                hr = m_srcSurf->IsLost();
+                if (hr != 0x887601c2) {
+                    return hr;
+                }
+                hr = m_srcSurf->Restore();
+                if (hr != 0) {
+                    return hr;
+                }
+            }
+        }
+    }
+}
+
+// CDDScreen::Configure (0x17cfc0) - derive the tile grid + scroll origin for a layout
+// `mode` (0..3), validating the caller's optional origin/clip against the screen first.
+// @early-stop
+// reloc-mask scoring artifact (~97.4%): the CODE BYTES are byte-exact (llvm-objdump -dr
+// base vs target). The residual is two differently-named reloc operands: the rel32 call
+// to the sibling grid validator at 0x17cbe0 (stubbed ?Unmatched_17cbe0, modeled here as
+// CDDScreen::CheckGrid), and the switch jump table ($L385 vs switchdataD_0057d2a0).
+// topic:scoring-artifact - no further code change possible.
+RVA(0x0017cfc0, 0x2dd)
+i32 CDDScreen::Configure(i32 mode, i32 flags, POINT* origin, RECT* rect) {
+    if (origin) {
+        if (origin->x > m_screenWidth) {
+            return 0;
+        }
+        if (origin->y > m_screenHeight) {
+            return 0;
+        }
+    }
+    if (rect) {
+        if (rect->left > rect->right) {
+            return 0;
+        }
+        if (rect->top > rect->bottom) {
+            return 0;
+        }
+        if ((u32)rect->right > m_screenWidth) {
+            return 0;
+        }
+        if ((u32)rect->bottom > m_screenHeight) {
+            return 0;
+        }
+    }
+    if (m_tileInfo->m_width > m_screenWidth) {
+        return 0;
+    }
+    if (m_tileInfo->m_height > m_screenHeight) {
+        return 0;
+    }
+    if (!CheckGrid()) {
+        return 0;
+    }
+
+    switch (mode) {
+        case 0:
+            m_tilesAcross = m_screenWidth / m_tileInfo->m_width;
+            m_tilesDown = m_screenHeight / m_tileInfo->m_height;
+            if (flags & 0x10) {
+                if (!origin) {
+                    return 0;
+                }
+                m_originX = origin->x;
+                m_originY = origin->y;
+            } else {
+                m_originX = (m_screenWidth - m_tilesAcross * m_tileInfo->m_width) >> 1;
+                m_originY = (m_screenHeight - m_tilesDown * m_tileInfo->m_height) >> 1;
+            }
+            break;
+        case 1:
+            m_tilesAcross = 1;
+            m_tilesDown = 1;
+            if (flags & 0x10) {
+                if (!origin) {
+                    return 0;
+                }
+                m_originX = origin->x;
+                m_originY = origin->y;
+            } else {
+                m_originX = (m_screenWidth - m_tileInfo->m_width) >> 1;
+                m_originY = (m_screenHeight - m_tileInfo->m_height) >> 1;
+            }
+            break;
+        case 2:
+            if (m_screenWidth % m_tileInfo->m_width == 0
+                && m_screenHeight % m_tileInfo->m_height == 0) {
+                m_tilesAcross = m_screenWidth / m_tileInfo->m_width;
+                m_tilesDown = m_screenHeight / m_tileInfo->m_height;
+                if (flags & 0x10) {
+                    if (!origin) {
+                        return 0;
+                    }
+                    m_originX = origin->x;
+                    m_originY = origin->y;
+                } else {
+                    m_originX = (m_screenWidth - m_tilesAcross * m_tileInfo->m_width) >> 1;
+                    m_originY = (m_screenHeight - m_tilesDown * m_tileInfo->m_height) >> 1;
+                }
+            } else {
+                m_tilesAcross = 1;
+                m_tilesDown = 1;
+                m_originX = 0;
+                m_originY = 0;
+                m_destRect = (RECT*)RezAlloc(0x10);
+                m_destRect->top = 0;
+                m_destRect->left = 0;
+                m_destRect->bottom = m_screenHeight;
+                m_destRect->right = m_screenWidth;
+                m_514 = 1;
+            }
+            break;
+        case 3: {
+            m_tilesAcross = 1;
+            m_tilesDown = 1;
+            m_originX = 0;
+            m_originY = 0;
+            if (!rect) {
+                return 0;
+            }
+            RECT* r = (RECT*)RezAlloc(0x10);
+            m_destRect = r;
+            r->left = rect->left;
+            r->top = rect->top;
+            r->right = rect->right;
+            r->bottom = rect->bottom;
+            break;
+        }
+        default:
+            return 0;
+    }
+
+    if (m_forceSingleRow != 0) {
+        m_tilesDown = 1;
+    }
+    m_50c = 0;
+    m_86a0 = 0;
+    return 1;
+}
+
+// CDDPageMgr::CheckMode16 (0x17d2b0) - popcount the current display mode's R/G/B masks
+// and classify a 16-bit mode (5/5/5 -> 0x80000000, 5/6/5 -> 0xc0000000).
+// @early-stop
+// 83.9% - logic/CFG/COM call/popcount loops/classification reproduced. The residual is a
+// regalloc coin-flip: retail spills `this` (sub esp,0x70) + uses ebx as a bit counter,
+// while we keep `this` in ebx (sub esp,0x6c) + use edi for the third counter. Deferred.
 RVA(0x0017d2b0, 0xfa)
 i32 CDDPageMgr::CheckMode16() {
     DDSURFACEDESC desc;
@@ -193,17 +922,12 @@ i32 CDDPageMgr::CheckMode16() {
     return 0;
 }
 
-// ===========================================================================
-// 0x17d600 - RemoveAt(idx): drop the 1-based idx-th record. Free its three owned
-// buffers, shift the tail down one slot, decrement the count, free the record.
-// ===========================================================================
+// CDDPageMgr::RemoveAt (0x17d600) - drop the 1-based idx-th CPageRec: free its three
+// owned buffers, shift the tail down one slot, decrement the count, free the record.
 // @early-stop
-// constant-materialization wall: logic + layout byte-correct, but retail hoists
-// the null `0` into edi (callee-saved) and reuses it for all 7 pointer
-// null-checks/stores (`cmp [..],edi` / `mov [..],edi`), which forces idx into esi;
-// MSVC5 here emits `test`/immediate-0 and keeps idx in edi instead. The whole
-// register allocation cascades from that one materialization choice; not
-// source-steerable (an explicit `void* z=0` folds back). ~86%.
+// constant-materialization wall (~86%): logic + layout byte-correct, but retail hoists
+// the null `0` into edi (callee-saved) and reuses it for all 7 pointer checks/stores,
+// forcing idx into esi; MSVC5 here emits `test`/immediate-0 and keeps idx in edi.
 RVA(0x0017d600, 0xad)
 i32 CDDPageMgr::RemoveAt(i32 idx) {
     if (!m_initialized) {
@@ -235,10 +959,7 @@ i32 CDDPageMgr::RemoveAt(i32 idx) {
     return 1;
 }
 
-// ===========================================================================
-// 0x17d6b0 - FreeAll: RemoveAt(1) every record in turn (bailing if one fails),
-// then free the array buffer and clear the bookkeeping fields.
-// ===========================================================================
+// CDDPageMgr::FreeAll (0x17d6b0) - RemoveAt(1) every record, then free the array buffer.
 RVA(0x0017d6b0, 0x70)
 i32 CDDPageMgr::FreeAll() {
     if (!m_initialized) {
@@ -257,4 +978,60 @@ i32 CDDPageMgr::FreeAll() {
     m_8698 = 0;
     m_count = 0;
     return 1;
+}
+
+// CMoviePlayer::PlayList (0x17d720) - play the whole m_868c clip playlist `loops` times.
+RVA(0x0017d720, 0x188)
+i32 CMoviePlayer::PlayList(i32 loops) {
+    if (!m_active || loops < -1 || loops == 0) {
+        return 0;
+    }
+    i32 iter = 1;
+    do {
+        for (i32 i = 0; i < m_868c.m_nSize; i++) {
+            CMovieClip* clip = m_868c.m_pData[i];
+            if (clip->m_src == 0) {
+                return 0;
+            }
+            if (clip->m_openArg == 0) {
+                if (OpenLo(clip->m_src, clip->m_08, clip->m_useDS, clip->m_10, clip->m_14) == 0) {
+                    return 0;
+                }
+            } else {
+                if (Open(
+                        clip->m_src,
+                        clip->m_openArg,
+                        clip->m_08,
+                        clip->m_useDS,
+                        clip->m_10,
+                        clip->m_14
+                    )
+                    == 0) {
+                    return 0;
+                }
+            }
+            CMovieClip* c2 = m_868c.m_pData[i];
+            i32 result = Pump(c2->m_flags, c2->m_count);
+            if (result != 0x11111111) {
+                CloseSmacker();
+                return result;
+            }
+            if (m_command != 0) {
+                DDBLTFX fx;
+                memset(&fx, 0, sizeof(fx));
+                fx.dwSize = sizeof(fx);
+                fx.dwROP = 0x42;
+                i32 hr = ((IDirectDrawSurface*)m_command)->Blt(0, 0, 0, 0x1020000, &fx);
+                if (hr != 0) {
+                    memset(&fx, 0, sizeof(fx));
+                    fx.dwSize = sizeof(fx);
+                    fx.dwFillColor = 0;
+                    ((IDirectDrawSurface*)m_command)->Blt(0, 0, 0, 0x1000400, &fx);
+                }
+            }
+            CloseSmacker();
+        }
+        iter++;
+    } while (iter <= loops);
+    return 0x11111111;
 }
