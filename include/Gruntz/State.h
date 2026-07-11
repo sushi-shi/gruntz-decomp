@@ -63,7 +63,10 @@ public:
     virtual i32 Render() {
         return 1;
     }
-    virtual i32 Vslot06();        // slot 6  (+0x18)  activation-ready poll
+    RVA(0x0008c4f0, 0x3)
+    virtual i32 Vslot06() {
+        return 0;
+    } // slot 6  (+0x18)  activation-ready poll
     virtual i32 Vslot07();        // slot 7  (+0x1c)  lobby-host-ready poll
     virtual i32 InputVirtual();   // slot 8  (+0x20)  per-frame input poll
     virtual i32 Vslot09(i32);     // slot 9  (+0x24)  notify w/ state id
@@ -71,23 +74,57 @@ public:
     // CGruntzMgr's per-state forwarders (0x8d9d0..0x8dbe0) dispatch a 2-arg or
     // 3-arg notification into these slots; the int return / arg shapes are what
     // those forwarders' push/ret-N codegen needs (vtables not diffed).
-    virtual i32 Vslot0b(i32, i32);      // slot 11 (+0x2c)
-    virtual i32 Vslot0c(i32, i32);      // slot 12 (+0x30)
-    virtual i32 Vslot0d(i32, i32);      // slot 13 (+0x34)
-    virtual i32 Vslot0e(i32, i32, i32); // slot 14 (+0x38)
-    virtual i32 Vslot0f(i32, i32, i32); // slot 15 (+0x3c)
-    virtual i32 Vslot10(i32, i32, i32); // slot 16 (+0x40)
+    RVA(0x0008c550, 0x5)
+    virtual i32 Vslot0b(i32, i32) {
+        return 0;
+    } // slot 11 (+0x2c)
+    RVA(0x0008c570, 0x5)
+    virtual i32 Vslot0c(i32, i32) {
+        return 0;
+    } // slot 12 (+0x30)
+    RVA(0x0008c590, 0x5)
+    virtual i32 Vslot0d(i32, i32) {
+        return 0;
+    } // slot 13 (+0x34)
+    RVA(0x0008c5b0, 0x5)
+    virtual i32 Vslot0e(i32, i32, i32) {
+        return 0;
+    } // slot 14 (+0x38)
+    RVA(0x0008c5d0, 0x5)
+    virtual i32 Vslot0f(i32, i32, i32) {
+        return 0;
+    } // slot 15 (+0x3c)
+    RVA(0x0008c5f0, 0x5)
+    virtual i32 Vslot10(i32, i32, i32) {
+        return 0;
+    } // slot 16 (+0x40)
     RVA(0x0008c610, 0x5)
     virtual i32 Vslot11(i32, i32, i32) {
         return 0;
     }
-    virtual i32 Vslot12(i32, i32, i32); // slot 18 (+0x48)
-    virtual i32 Vslot13(i32, i32, i32); // slot 19 (+0x4c)
-    virtual i32 Vslot14(i32, i32, i32); // slot 20 (+0x50)
+    RVA(0x0008c630, 0x5)
+    virtual i32 Vslot12(i32, i32, i32) {
+        return 0;
+    } // slot 18 (+0x48)
+    RVA(0x0008c650, 0x5)
+    virtual i32 Vslot13(i32, i32, i32) {
+        return 0;
+    } // slot 19 (+0x4c)
+    RVA(0x0008c670, 0x5)
+    virtual i32 Vslot14(i32, i32, i32) {
+        return 0;
+    } // slot 20 (+0x50)
     // slot 21 (+0x54): HandleCommand's 0x800e path polls it as a veto gate
     // (`if (m_curState->Vslot15()) return 1;`) - the i32 return is proven there.
-    virtual i32 Vslot15();
-    virtual void Vslot16();
+    RVA(0x0008c690, 0x3)
+    virtual i32 Vslot15() {
+        return 0;
+    }
+    // slot 22 (+0x58): `33 c0 c3` (xor eax,eax; ret) proves an i32 return-0, not void.
+    RVA(0x0008c6b0, 0x3)
+    virtual i32 Vslot16() {
+        return 0;
+    }
     // slot 23 (+0x5c, 0x0fa6b0): the frame-surface GDI text overlay (all states inherit
     // it). GetDC on the frame surface, SetBkMode/SetTextColor, TextOutA(x,y,str), ReleaseDC.
     virtual i32 Vslot17(i32 x, i32 y, char* str, i32 color, i32 bkMode);

@@ -80,15 +80,18 @@ public:
         i32 a8,
         i32 a9,
         i32 a10
-    );                         // slot 2
-    virtual void SbiSlot3();   // slot 3
-    virtual void SbiSlot4();   // slot 4
-    virtual void SbiSlot5();   // slot 5
-    virtual void SbiSlot6();   // slot 6
-    virtual void SbiSlot7();   // slot 7
-    virtual void SbiSlot8();   // slot 8
-    virtual void SbiSlot9();   // slot 9
-    virtual void SetSubtype(); // slot 10
+    );                       // slot 2
+    virtual void SbiSlot3(); // slot 3
+    virtual void SbiSlot4(); // slot 4
+    virtual void SbiSlot5(); // slot 5
+    // slots 6..9 (0x100530/0x100550/0x100570/0x100590): base defaults - each is
+    // `xor eax,eax; ret 0xc` => i32-return, 3 stack args, `return 0`. No SBI leaf
+    // overrides them. Out-of-line default bodies in SBI_RectOnly.cpp.
+    virtual i32 SbiSlot6(i32, i32, i32); // slot 6  0x100530
+    virtual i32 SbiSlot7(i32, i32, i32); // slot 7  0x100550
+    virtual i32 SbiSlot8(i32, i32, i32); // slot 8  0x100570
+    virtual i32 SbiSlot9(i32, i32, i32); // slot 9  0x100590
+    virtual void SetSubtype();           // slot 10
 
     i32 m_4;  // +0x04
     i32 m_8;  // +0x08

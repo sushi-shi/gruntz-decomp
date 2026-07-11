@@ -122,6 +122,26 @@ i32 CStatusBarItem::SbiVfunc0() {
     return 0;
 }
 
+// CStatusBarItem base default slots 6..9 (0x100530/0x100550/0x100570/0x100590):
+// each is `xor eax,eax; ret 0xc` - returns 0 for its 3-arg call (no SBI leaf
+// overrides them).
+RVA(0x00100530, 0x5)
+i32 CStatusBarItem::SbiSlot6(i32, i32, i32) {
+    return 0;
+}
+RVA(0x00100550, 0x5)
+i32 CStatusBarItem::SbiSlot7(i32, i32, i32) {
+    return 0;
+}
+RVA(0x00100570, 0x5)
+i32 CStatusBarItem::SbiSlot8(i32, i32, i32) {
+    return 0;
+}
+RVA(0x00100590, 0x5)
+i32 CStatusBarItem::SbiSlot9(i32, i32, i32) {
+    return 0;
+}
+
 // ---------------------------------------------------------------------------
 // CSBI_RectOnly::CSBI_RectOnly()
 // Inlines the CStatusBarItem base ctor (the dead m_8=0 store is elided), stores

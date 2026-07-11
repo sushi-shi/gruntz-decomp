@@ -351,6 +351,7 @@ i32 CGameWnd::OnChar(WPARAM, LPARAM) {
 i32 CGameWnd::OnKeyDown(WPARAM, LPARAM) {
     return 0;
 }
+RVA(0x00094c80, 0x5)
 i32 CGameWnd::OnKeyUp(WPARAM, LPARAM) {
     return 0;
 }
@@ -360,18 +361,22 @@ i32 CGameWnd::OnSysKeyDown(WPARAM, LPARAM) {
 i32 CGameWnd::OnLButtonDown(WPARAM, i32, i32) {
     return 0;
 }
+RVA(0x00094cc0, 0x5)
 i32 CGameWnd::OnRButtonDown(WPARAM, i32, i32) {
     return 0;
 }
+RVA(0x00094ce0, 0x5)
 i32 CGameWnd::OnLButtonUp(WPARAM, i32, i32) {
     return 0;
 }
+RVA(0x00094d00, 0x5)
 i32 CGameWnd::OnRButtonUp(WPARAM, i32, i32) {
     return 0;
 }
 i32 CGameWnd::OnMouseMove(WPARAM, i32, i32) {
     return 0;
 }
+RVA(0x00094d40, 0x5)
 i32 CGameWnd::OnLButtonDblClk(WPARAM, i32, i32) {
     return 0;
 }

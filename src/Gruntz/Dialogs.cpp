@@ -38,6 +38,14 @@ public:
 };
 
 // ---------------------------------------------------------------------------
+// 0x14b10 (first fn in the TU): a message-map handler that runs MFC's default
+// processing - `return Default();` tail-jmps to CWnd::Default (reloc-masked).
+RVA(0x00014b10, 0x5)
+long CBattlezDlg::DoDefault() {
+    return Default();
+}
+
+// ---------------------------------------------------------------------------
 RVA(0x00014b30, 0x64)
 CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_slots = a0;
@@ -621,6 +629,85 @@ RVA(0x00017340, 0x73)
 void CBattlezDlg::ReadCtrlBText(i32 index) {
     CString s;
     GetCtrlB(index)->GetWindowText(s);
+}
+
+// ---------------------------------------------------------------------------
+// CBattlezDlg MFC message-map + dialog-frame handlers (referenced by the MFC
+// message-map data, external to code here; each emits standalone at its RVA).
+// ---------------------------------------------------------------------------
+// OnInitDialog (vtable slot 49, 0x160d0): chain the base CDialog::OnInitDialog,
+// then return TRUE (keep the dialog's default control focus).
+RVA(0x000160d0, 0xb)
+i32 CBattlezDlg::DlgVsl49() {
+    CDialog::DlgVsl49();
+    return 1;
+}
+
+// WM_MEASUREITEM (0x16570): forward (nIDCtl, lpmis) to the CWnd default owner-draw
+// measure handler (no swatch sizing of its own, unlike CBattlezDlgColors').
+RVA(0x00016570, 0x10)
+void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
+    ((CWndOnMeasure*)this)->OnMeasureItem(nIDCtl, lpmis);
+}
+
+// Unused message-map handler (0x17440): `xor eax,eax; ret` (returns 0).
+RVA(0x00017440, 0x3)
+i32 CBattlezDlg::UnusedMsgHandler() {
+    return 0;
+}
+
+// Four button trampolines (0x172c0/0x172e0/0x17300/0x17320): each forwards its
+// fixed index 0..3 to the shared external handler Sub01c340 (`push N; call; ret`).
+RVA(0x000172c0, 0x8)
+void CBattlezDlg::OnActionBtn0() {
+    Sub01c340(0);
+}
+RVA(0x000172e0, 0x8)
+void CBattlezDlg::OnActionBtn1() {
+    Sub01c340(1);
+}
+RVA(0x00017300, 0x8)
+void CBattlezDlg::OnActionBtn2() {
+    Sub01c340(2);
+}
+RVA(0x00017320, 0x8)
+void CBattlezDlg::OnActionBtn3() {
+    Sub01c340(3);
+}
+
+// OnOK (vtable slot 51, 0x174a0): forward to the base CDialog::OnOK (tail-jmp).
+RVA(0x000174a0, 0x5)
+void CBattlezDlg::DlgVsl51() {
+    CDialog::DlgVsl51();
+}
+
+// Four button trampolines (0x174c0/0x174e0/0x17500/0x17520): each forwards its
+// fixed index 0..3 to the shared do-nothing StubBtnHandler.
+RVA(0x000174c0, 0x8)
+void CBattlezDlg::OnStubBtn0() {
+    StubBtnHandler(0);
+}
+RVA(0x000174e0, 0x8)
+void CBattlezDlg::OnStubBtn1() {
+    StubBtnHandler(1);
+}
+RVA(0x00017500, 0x8)
+void CBattlezDlg::OnStubBtn2() {
+    StubBtnHandler(2);
+}
+RVA(0x00017520, 0x8)
+void CBattlezDlg::OnStubBtn3() {
+    StubBtnHandler(3);
+}
+// The shared button handler (0x17540): a no-op that just cleans its index arg (ret 4).
+RVA(0x00017540, 0x3)
+void CBattlezDlg::StubBtnHandler(i32) {}
+
+// IDOK command trampoline (0x17d40): virtual-dispatch OnOK through this's vtable
+// (slot 51 / +0xcc) - `mov eax,[ecx]; jmp [eax+0xcc]`.
+RVA(0x00017d40, 0x8)
+void CBattlezDlg::OnOkCommand() {
+    DlgVsl51();
 }
 
 SIZE_UNKNOWN(CImgHolderBase);

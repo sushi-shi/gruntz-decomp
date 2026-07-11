@@ -32,6 +32,20 @@ i32 CGameApp::InitDefault(HINSTANCE hInstance, char* szName) {
     return Init(hInstance, szName, szName, g_emptyString, 0, (i32)0x80000000, (i32)0x80000000);
 }
 
+// CGameApp::HasWindowAndManager (vtbl +0x14, slot 5) - readiness gate: nonzero
+// only when both the game window and game manager are constructed.
+RVA(0x00080d60, 0x18)
+i32 CGameApp::HasWindowAndManager() {
+    return m_gameWnd != 0 && m_gameMgr != 0;
+}
+
+// CGameApp::VirtualUnknownMethod11 (vtbl +0x28, slot 10) - the default OnCommand
+// fan-out: unhandled, returns 0. (CGruntzApp overrides it at 0x080aa0.)
+RVA(0x00080d90, 0x5)
+i32 CGameApp::VirtualUnknownMethod11(i32, i32, i32) {
+    return 0;
+}
+
 // -------------------------------------------------------------------------
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------

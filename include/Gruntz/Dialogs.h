@@ -106,8 +106,9 @@ public:
         return this == 0 ? 0 : m_hWnd;
     }
     static CWnd* __stdcall FromHandle(HWND__* hWnd); // 0x1bb23a
-    char m_pad04[0x1c - 4];                          // +0x04 (vptr @+0x00)
-    HWND__* m_hWnd;                                  // +0x1c  wrapped window handle
+    long Default();         // 0x1bb18f ?Default@CWnd (NAFXCW default message processing)
+    char m_pad04[0x1c - 4]; // +0x04 (vptr @+0x00)
+    HWND__* m_hWnd;         // +0x1c  wrapped window handle
 };
 
 // CString - the MFC string. Only its default ctor is touched (the embedded
@@ -137,9 +138,9 @@ public:
     virtual void WndVsl45() OVERRIDE;             // slot 45
     virtual void WndVsl47() OVERRIDE;             // slot 47
     virtual void DlgVsl48();
-    virtual void DlgVsl49();
+    virtual i32 DlgVsl49(); // OnInitDialog (returns BOOL)
     virtual void DlgVsl50();
-    virtual void DlgVsl51();
+    virtual void DlgVsl51(); // OnOK
     virtual void DlgVsl52();
     virtual void DlgVsl53();
     CWnd* GetDlgItem(i32 nID) const;
@@ -183,8 +184,8 @@ public:
     virtual ~CBattlezDlg() OVERRIDE;              // 0x14c90 (destroy CString m_6c, chain ~CDialog)
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl35() OVERRIDE;             // slot 35
-    virtual void DlgVsl49() OVERRIDE;             // slot 49
-    virtual void DlgVsl51() OVERRIDE;             // slot 51
+    virtual i32 DlgVsl49() OVERRIDE;              // slot 49  OnInitDialog
+    virtual void DlgVsl51() OVERRIDE;             // slot 51  OnOK
 
     i32 m_slots;          // +0x5c  (= a0; the CBattlezSlot* slot-array base)
     char m_pad60[8];      // +0x60
@@ -247,6 +248,36 @@ public:
     void ApplyColorSlot3();
     // Copy the 0x4ff combo's current selection text into its child edit (0x171b0).
     void CopyComboSelToChild();
+
+    // --- MFC message-map handlers (referenced by the dialog's message-map data,
+    //     external to code here; they emit standalone at their retail RVAs) ---
+    // WM_MEASUREITEM forwarder (0x16570): pass (nIDCtl, lpmis) straight to the base
+    // CWnd default (via the CWndOnMeasure shim); no owner-draw sizing of its own.
+    void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
+    // 0x17440: an unused message-map handler - `xor eax,eax; ret` (returns 0).
+    i32 UnusedMsgHandler();
+    // 0x17d40: IDOK command trampoline - virtual-dispatch to this->DlgVsl51 (OnOK,
+    // vtable slot 51 / +0xcc): `mov eax,[ecx]; jmp [eax+0xcc]`.
+    void OnOkCommand();
+    // Four button trampolines (0x174c0/0x174e0/0x17500/0x17520): each forwards its
+    // fixed index 0..3 to the (currently do-nothing) StubBtnHandler (0x17540).
+    void OnStubBtn0();
+    void OnStubBtn1();
+    void OnStubBtn2();
+    void OnStubBtn3();
+    // 0x17540: the shared do-nothing button handler (`ret 4`; ignores its index arg).
+    void StubBtnHandler(i32 index);
+    // Four more button trampolines (0x172c0/0x172e0/0x17300/0x17320): each forwards
+    // its fixed index 0..3 to the shared handler Sub01c340 (an external __thiscall
+    // body in another TU that acts on this->m_28; reloc-masked, no body here).
+    void OnActionBtn0();
+    void OnActionBtn1();
+    void OnActionBtn2();
+    void OnActionBtn3();
+    void Sub01c340(i32 index); // 0x1c340 (external TU; identity unconfirmed - operates on m_28)
+    // 0x14b10 (first fn in the TU): a message-map handler that just runs MFC's
+    // default processing - `return Default();` tail-jmps to CWnd::Default.
+    long DoDefault();
 };
 
 // ---------------------------------------------------------------------------
@@ -310,8 +341,8 @@ public:
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl24() OVERRIDE;             // slot 24
     virtual void WndVsl35() OVERRIDE;             // slot 35
-    virtual void DlgVsl49() OVERRIDE;             // slot 49
-    virtual void DlgVsl51() OVERRIDE;             // slot 51
+    virtual i32 DlgVsl49() OVERRIDE;              // slot 49  OnInitDialog
+    virtual void DlgVsl51() OVERRIDE;             // slot 51  OnOK
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void InitPlayerSlots();

@@ -87,6 +87,17 @@ CDDrawSubMgrFar::~CDDrawSubMgrFar() {
 }
 
 // ---------------------------------------------------------------------------
+// CWapObj::IsLoaded (slot 5, 0x0d5dc0) - the SHARED base default the whole
+// CWapObj family inherits unless it overrides: the first derived field (@+0x10 -
+// a count/size) is nonzero. CImage inherits it unchanged (its m_width lands at
+// +0x10). Emitted in this (CImage) TU, its sole non-overriding user. `mov edx,
+// [ecx+0x10]; xor eax,eax; test edx,edx; setg al; ret`.
+RVA(0x000d5dc0, 0xb)
+i32 CWapObj::IsLoaded() {
+    return *(i32*)((char*)this + 0x10) > 0;
+}
+
+// ---------------------------------------------------------------------------
 // slot 17 (0x0d5e20): forward the arg through two later virtuals - Slot15
 // (vtable +0x3c) then Slot16 (vtable +0x40). __thiscall, ret 4. Re-homed from
 // src/Stub/BoundaryLowerMethods.cpp (was the Cd5e20 placeholder view); the vtable

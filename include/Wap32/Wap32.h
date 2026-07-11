@@ -55,7 +55,8 @@ public:
     // Pre-dispatch hook: GameWindowProc calls this for EVERY message before the
     // switch; nonzero swallows the message (WndProc returns 0).
     virtual i32 PreDispatchMessage(UINT uMsg, WPARAM wParam, LPARAM lParam); // +0x04 idx1
-    virtual i32 Wap32GameWndVfunc2(i32 notifyCode, i32 cmdId, i32 lParam); // +0x08 idx2 (OnCommand fan-out)
+    virtual i32
+    Wap32GameWndVfunc2(i32 notifyCode, i32 cmdId, i32 lParam); // +0x08 idx2 (OnCommand fan-out)
 
     // Per-message virtual handlers (return nonzero = handled). The argument shape
     // mirrors the Win32 message: point messages split lParam into LOWORD/HIWORD.
@@ -228,14 +229,16 @@ public:
     );                                                          // +0x08
     virtual i32 InitDefault(HINSTANCE hInstance, char* szName); // +0x0c  0x080d20
     virtual void CloseResources();                              // +0x10
-    virtual void VirtualUnknownMethod06() {}                    // +0x14
-    virtual i32 RunMessageLoop();                               // +0x18
-    virtual void ReportError(WPARAM wParam, LPARAM lParam);     // +0x1c
+    // +0x14 slot 5 (0x080d60): readiness gate - `return m_gameWnd && m_gameMgr;`
+    // (both the game window and manager are constructed). Out-of-line default body.
+    virtual i32 HasWindowAndManager();                      // +0x14  0x080d60
+    virtual i32 RunMessageLoop();                           // +0x18
+    virtual void ReportError(WPARAM wParam, LPARAM lParam); // +0x1c
     virtual void OnIdle();          // +0x20 idle virtual (tail-calls m_gameMgr->Tick)
     virtual void FreeGameManager(); // +0x24
-    virtual i32 VirtualUnknownMethod11(i32, i32, i32) {
-        return 0;
-    } // +0x28 slot 10
+    // +0x28 slot 10 (0x080d90): default OnCommand fan-out - `return 0;` (unhandled).
+    // Called by CGameWnd::Wap32GameWndVfunc2; CGruntzApp overrides it (0x080aa0).
+    virtual i32 VirtualUnknownMethod11(i32, i32, i32);   // +0x28  slot 10  0x080d90
     virtual BOOL InitializeAccelerators(LPCSTR lpTable); // +0x2c
     virtual void ShowError() {}                          // +0x30
     virtual CGameWnd* InitializeGameWindow();            // +0x34
