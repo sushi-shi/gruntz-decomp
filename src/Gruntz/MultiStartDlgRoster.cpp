@@ -563,6 +563,172 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
     return 1;
 }
 
+// ===========================================================================
+// CMultiStartDlg::Watchdog  (0x0c46b0; re-homed from the former netgamedlgwatch unit,
+// waveP - TU_MIGRATION MOVE row `0x0c46b0 Watchdog@CMultiStartDlg netgamedlgwatch ->
+// 0xc2980 multistartdlgroster`). Guarded by a re-entrancy flag, it refreshes the
+// per-slot roster display, advances two blink counters, then walks the net-session
+// status flags and, on any terminal condition, kills the poll timer, pops a status
+// message, and tears down. Field/class names are placeholders; g_64bd5c/g_mgrSettings
+// reuse this TU's canonical decls.
+// ===========================================================================
+// The game-registry slot array (*0x64556c + 0x150, stride 0x238/slot) viewed for the
+// three fields this watchdog reads; g_mgrSettings is this TU's CGameSettings* (cast).
+struct WatchRegSlot {
+    char m_pad00[0x14];
+    i32 m_14; // +0x14 present flag
+    char m_pad18[0x20 - 0x18];
+    i32 m_20; // +0x20 active flag
+    char m_pad24[0x22c - 0x24];
+    i32 m_22c; // +0x22c display value
+    char m_tail[0x238 - 0x230];
+};
+struct WatchReg {
+    char m_pad000[0x150];
+    WatchRegSlot m_slots[1]; // +0x150
+};
+SIZE_UNKNOWN(WatchReg);
+SIZE_UNKNOWN(WatchRegSlot);
+
+// The cached timeGetTime fn-ptr (DATA symbol; 0-arg, bound by m5_PaletteLerp).
+extern u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
+// Watchdog re-entrancy guard + two blink counters (.data).
+extern "C" i32 g_watchBusy;      // 0x64bdc4
+extern "C" i32 g_watchBlinkA;    // 0x64bdc8
+extern "C" i32 g_watchBlinkB;    // 0x64bdcc
+extern "C" i32 g_playerLeftFlag; // 0x648ce4
+
+// @early-stop
+// ~94% regalloc-coloring wall (all control flow + calls + the DIR32 globals pair):
+// retail re-materializes the zero constant into ebx after the roster loop and reuses
+// it for the state-chain `push 0` + the m_58c store, whereas MSVC5 colors the m_hWnd
+// KillTimer temps into ecx/edx; plus a 2-instr timeGetTime `this`-load schedule. Not
+// source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x000c46b0, 0x371)
+void CMultiStartDlg::Watchdog() {
+    if (g_watchBusy != 0) {
+        return;
+    }
+    g_watchBusy = 1;
+    void* h = g_64bd5c->m_netGate->m_player;
+    if (h == 0) {
+        return;
+    }
+    g_64bd5c->m_netGate->M178a80(h, 0);
+    g_64bd5c->ResolveLocalPlayer();
+    if (g_watchBlinkA == 0) {
+        u32 t = g_pTimeGetTime();
+        g_64bd5c->SendNetStat(0x41f, (i32)t, 0);
+    }
+    if (g_64bd5c->m_isHost == 0) {
+        if (g_watchBlinkA == 0) {
+            g_64bd5c->ReportAckLatency();
+        }
+        EnableWindow(0);
+        i32 r = g_64bd5c->VerifyCustomLevel(h, g_64bd5c->m_5bc);
+        EnableWindow(1);
+        if (r != 0) {
+            M1bab37(1);
+            g_watchBusy = 0;
+            return;
+        }
+    } else {
+        g_64bd5c->PollSession();
+        if (g_64bd5c->m_600 != 0) {
+            g_64bd5c->AutoTuneCmdDelay();
+        }
+    }
+    i32 a = g_watchBlinkA + 1;
+    g_watchBlinkA = a;
+    if (a > 3) {
+        g_watchBlinkA = 0;
+    }
+    if (g_watchBlinkB == 0) {
+        for (i32 i = 0; i < 4; i++) {
+            WatchRegSlot* slot = &((WatchReg*)g_mgrSettings)->m_slots[i];
+            CWnd* item1;
+            CWnd* item2;
+            switch (i) {
+                case 0:
+                    item1 = GetDlgItem(0x531);
+                    item2 = GetDlgItem(0x534);
+                    break;
+                case 1:
+                    item1 = GetDlgItem(0x532);
+                    item2 = GetDlgItem(0x536);
+                    break;
+                case 2:
+                    item1 = GetDlgItem(0x533);
+                    item2 = GetDlgItem(0x537);
+                    break;
+                case 3:
+                    item1 = GetDlgItem(0x535);
+                    item2 = GetDlgItem(0x538);
+                    break;
+            }
+            if (slot->m_20 != 0 && slot->m_14 != 0) {
+                char buf[0x20];
+                wsprintfA(buf, "%d", slot->m_22c);
+                item1->SetWindowTextA(buf);
+                item2->SetWindowTextA("R");
+            } else {
+                item1->SetWindowTextA("");
+                item2->SetWindowTextA("");
+            }
+        }
+    }
+    i32 b = g_watchBlinkB + 1;
+    g_watchBlinkB = b;
+    if (b > 0x31) {
+        g_watchBlinkB = 0;
+    }
+    if (g_64bd5c->m_sessionTerminated != 0) {
+        KillTimer(m_hWnd, 1);
+        g_64bd5c->ReportVersionMsg("terminated", 0);
+        g_watchBusy = 0;
+        return;
+    }
+    if (g_64bd5c->m_568 != 0) {
+        g_64bd5c->m_568 = 0;
+        g_64bd5c->ReportVersionMsg("selected", 0);
+        g_watchBusy = 0;
+        return;
+    }
+    char* msg;
+    if (g_64bd5c->m_538 != 0) {
+        KillTimer(m_hWnd, 1);
+        msg = "removed";
+    } else if (g_64bd5c->m_5ac != 0) {
+        KillTimer(m_hWnd, 1);
+        msg = "closed";
+    } else if (g_64bd5c->m_56c != 0) {
+        KillTimer(m_hWnd, 1);
+        msg = "full";
+    } else if (g_64bd5c->m_570 != 0) {
+        KillTimer(m_hWnd, 1);
+        msg = "version";
+    } else {
+        if (g_playerLeftFlag != 0) {
+            Sync16db(1);
+            Sync227a();
+            Sync2c0c();
+            Sync38d2();
+            g_playerLeftFlag = 0;
+        }
+        if (g_64bd5c->m_58c != 0) {
+            Sync227a();
+            Sync2c0c();
+            Sync38d2();
+            g_64bd5c->m_58c = 0;
+        }
+        g_watchBusy = 0;
+        return;
+    }
+    g_64bd5c->ReportVersionMsg(msg, 0);
+    M1bab37(0);
+    g_watchBusy = 0;
+}
+
 // GetSlotIndex (0xc4b30): resolve the local player's options slot through the host
 // facet (m_host->FindOptionsSlot(g_64bd5c->m_hostIndex)); return the stored slot value
 // or -1 when absent. __thiscall. Re-homed from src/Stub/ReconBatch2.cpp (was the

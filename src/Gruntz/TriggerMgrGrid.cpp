@@ -355,8 +355,122 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     return cell->ResetMagic();
 }
 
-// (0x6c130 ?WireTileSwitchLogic@CTileWireLogic - this obj's next fn by retail
-// position; body in src/Gruntz/TileSwitchLogic.cpp, see the header note.)
+// ===========================================================================
+// CTileWireLogic::WireTileSwitchLogic (0x6c130; re-homed from the former
+// tilewireswitchlogic unit, waveP - the documented SEAM: by first-link contiguity
+// it belongs to THIS obj, sitting between ResetCell (0x6bfd0) and ApplySwitch
+// (0x6d300)). The tile-switch/plate "wire" dispatcher; g_mgrSettings is the 0x64556c
+// singleton, `this` is a tile/switch-logic owner (level @+0x22c). CString diagnostic
+// temp -> /GX frame. Only offsets / code bytes load-bearing; callees reloc-masked.
+// ===========================================================================
+extern "C" void* g_mgrSettings; // _g_mgrSettings @0x64556c (the CGruntzMgr singleton)
+
+// Engine helpers reached through reloc-masked thunks (no body).
+void* TsLookupSwitch(void* container, i32 key);                 // 0x1c21 resolve switch by id
+i32 TsStrCmp(void* str, i32 key);                               // 0x1fa5 name/key compare
+void TsApply(void* node);                                       // 0x19dd apply a switch effect
+i32 TsToggle(void* node);                                       // 0x3e63 toggle secret switch
+i32 TsIsCrumble(void* node);                                    // 0x2289 crumble check
+void TsTrigger(void* obj, i32 a, i32 b, i32 c, i32 tag, i32 d); // 0x39f4 fire a trigger
+void TsActivate(void* obj, i32 a, i32 b, i32 c, i32 d, i32 e);  // 0x14e2 activate effect
+void* TsAlloc(void* mgr, i32 a, i32 b, i32 c, i32 d, i32 e, i32 f, i32 g); // 0x3265 allocate
+i32 TsGetDword(const char* sec, const char* key);             // 0x172240 CButeMgr::GetDword
+i32 TsLookupRegistry(void* reg, const char* name, void* out); // 0x1b8438 registry lookup
+void TsFree(void* sink, i32 a, i32 b, i32 c);                 // 0x25fe free a set
+void TsAck(void* gr, i32 a, i32 b);                           // 0x346d ack a switch fire
+void TsRemove(void* gr, i32 a);                               // 0x417e remove from queue
+
+#define WTS_I32(p, off) (*(i32*)((char*)(p) + (off)))
+#define WTS_PTR(p, off) (*(void**)((char*)(p) + (off)))
+
+// Vtable slot +0x20 (the cell -> object-id resolver): mov edx,[node]; call [edx+0x20].
+static i32 WtsVtblResolve(void* node) {
+    void* vtbl = *(void**)node;
+    return (*(i32(**)(void*))((char*)vtbl + 0x20))(node);
+}
+
+// The tile/switch-logic owner that hosts WireTileSwitchLogic (`this`, ecx). NOT the
+// CGruntzMgr game manager (loaded separately as g_mgrSettings): its level lives at
+// +0x22c and its trigger container at +0x2e4. Only touched offsets matter.
+SIZE_UNKNOWN(CTileWireLogic);
+class CTileWireLogic {
+public:
+    i32 WireTileSwitchLogic(void* trigger, i32 x, i32 y); // __thiscall (callee cleans 0xc)
+    char m_pad[0x2f0];
+};
+
+// @early-stop
+// /GX branchy nested-jump-table megafunction wall (~10%): validated top reconstructed
+// (prologue, grid clamp, cell-tag resolve, primary switch + first diagnostic arm); the
+// 20-way + nested 7-way dispatch, the twelve near-identical list-walk/CString-format arms
+// and the /GX EH-state thread across 3426 B are the documented wall. Final-sweep.
+// docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md; eh-state-numbering-base.md.
+RVA(0x0006c130, 0xd62)
+i32 CTileWireLogic::WireTileSwitchLogic(void* trigger, i32 x, i32 y) {
+    void* self = this;
+    void* gr = g_mgrSettings;
+    i32 areaGm = WTS_I32(gr, 0x2c);
+
+    if (trigger != 0) {
+        WTS_I32(trigger, 0x358) = 1;
+    }
+
+    // Resolve the tile cell from the level's action plane and clamp (x, y).
+    void* lvl = WTS_PTR(self, 0x22c);
+    void* plane = WTS_PTR(lvl, 0x24);
+    i32 cx = x;
+    i32 cy = y;
+    if (cx < 0) {
+        cx = 0;
+    } else {
+        i32 w = WTS_I32(WTS_PTR(plane, 0x5c), 0x30);
+        if (cx >= w) {
+            cx = w - 1;
+        }
+    }
+    if (cy < 0) {
+        cy = 0;
+    } else {
+        i32 h = WTS_I32(WTS_PTR(plane, 0x5c), 0x34);
+        if (cy >= h) {
+            cy = h - 1;
+        }
+    }
+    void* p5c = WTS_PTR(plane, 0x5c);
+    i32 sx = WTS_I32(p5c, 0x8c);
+    i32 sy = WTS_I32(p5c, 0x90);
+    i32 col = (cx >> sx);
+    i32 row = (cy >> sy);
+    i32 base = WTS_I32(WTS_I32(p5c, 0x24), row * 4) + col;
+    i32 raw = WTS_I32(WTS_PTR(p5c, 0x20), base * 4);
+    i32 tag = 0;
+    if (raw != (i32)0xeeeeeeee && raw != -1) {
+        void* tbl = WTS_PTR(plane, 0x4c);
+        void* node = WTS_PTR((char*)tbl, (raw & 0xffff) * 4);
+        tag = WtsVtblResolve(node);
+    }
+
+    i32 id = tag - 0xb;
+    if ((u32)id > 0x65) {
+        return 0;
+    }
+
+    void* trig = WTS_PTR(self, 0x2e4);
+    void* sw = TsLookupSwitch(trig, (x >> 5) + ((y >> 5) << 8) + 0x700);
+    if (sw == 0) {
+        CString msg; // [esp+0x30] diagnostic temp
+        msg.Format("No switch logic found for switch at: x=%d, y=%d", x, y);
+        TsRemove(gr, *(i32*)((char*)&msg + 0));
+        TsAck(gr, 0x80dd, 0x3eb);
+        return 0;
+    }
+
+    (void)areaGm;
+    (void)sw;
+    return 1;
+}
+#undef WTS_I32
+#undef WTS_PTR
 
 // 0x6d300: ApplySwitch(sx, sy) - the /GX switch-logic driver. Clamp (sx,sy) to the plane,
 // sample the tile attribute, decode the logic class, switch over the kind dispatching the

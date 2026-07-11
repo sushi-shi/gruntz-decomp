@@ -66,10 +66,13 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Gruntz/AreaMgr.h> // CAreaMgr (g_61139c; CPlayLevelLoad::LoadByMode, waveP)
 class CDDrawWorkerRegistry {
 public:
     i32 HasKeyEqual_155550(const char* k);
     i32 RemoveKeysEqual_155360(const char* a, const char* b);
+    i32
+    AnyValueMatches_155630(i32 a, i32 b, i32 c); // 0x155630 (CArchiveLoadRec::Load default helper)
 }; // 0x155550/0x155360
 class
     CSymTab; // ScanTree_152ad0's real 1st arg (the anim namespace tree); cast at the void* call sites
@@ -91,6 +94,8 @@ public:
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntzCmdMgr.h> // CGruntzCmdMgr::Spawn (HandleMousePress, waveP)
+#include <Gruntz/LeafCue.h>      // LeafCue::PlayIfElapsed_01f940 (HandleMousePress tab cue)
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Gruntz/WwdObjMgr.h>
@@ -681,6 +686,753 @@ struct CRegExit {
     char p12c[0x134 - 0x12c];
     i32 m_134; // +0x134
 };
+// ===========================================================================
+// CPlayLevelLoad::LoadByMode (0x0ca200; re-homed from the former loadlevelbymode unit,
+// waveP - TU_MIGRATION MOVE row `0x0ca200 LoadByMode@CPlayLevelLoad loadlevelbymode ->
+// 0xc8700 play`). The PLAY game-state per-mode level loader (/GX megafunction).
+// `this` IS the canonical CPlay; CPlayLevelLoad here is a thin CPlay-derived facet
+// (LoadByMode not yet on Play.h - a DEFERRED cross-TU fold onto CPlay, reported). g_644c54
+// / g_emptyString reuse Play.h's decls.
+// ===========================================================================
+// ---------------------------------------------------------------------------
+// Shared singletons + the per-mode/per-area globals (named so DIR32 reloc-mask).
+// ---------------------------------------------------------------------------
+extern "C" i32 g_645270;            // DAT_00645270 (area page size)
+extern void* g_645570;              // DAT_00645570
+extern "C" i32 g_64558c;            // DAT_0064558c
+extern "C" i32 g_64e35c;            // DAT_0064e35c
+extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c
+extern void* g_612618;              // DAT_00612618 (last-level cache)
+extern void* g_61139c;              // PTR_DAT_0061139c
+
+// ---------------------------------------------------------------------------
+// RESIDUAL carcass (9 classes already folded onto their real canonical headers:
+// CGruntzMgr/CGruntSpawnConfig/CButeMgr/CAreaMgr/CSymTab/CSymParser/CSaveGame/
+// CFontConfig/CWorldSoundSet). The methods below are the DEFERRED remainder,
+// grouped by why they aren't folded yet (all reloc-masked, so byte-neutral):
+//   (a) cross-module canonical header + retype (SoundStream Dsndmgr[Teardown/grid];
+//       CGruntzSoundZ Dsndmgr[Reset0]; CGruntzCmdMgr Net[ClearList]; DirectInputMgr2
+//       StateMgrBZ[HideMenu]; CDDSurface ResMgr[ShadeRect]; CSBI_RectOnly SBI_Image
+//       [ClearTiles/PostMap]);
+//   (b) needs a byte-neutral declared-only method added to its Gruntz header first
+//       (CParseSource CImage.h[BeginParse/EndParse]; CBrickz/CBrickzGrid[LoadAttributes/
+//       UpdateDiagonals]; CLightFxRender[InstallLightFx/BuildLightShape]; CTimer
+//       [TimerEqSet/TimerReset]; CBattlezData[BattlezInit=Init]);
+//   (c) Teardown-on-savedThis is CMulti::AckJoinFailure (a cross-cast of the CPlay
+//       `this`); WorkerReset is the GruntzPlayer(int) ctor (placement-new);
+//   (d) @identity-TODO - genuinely unrecovered (no xref/header): ObListInit 0x1b48a6,
+//       ButeStore 0x1b5485, GetBool 0x1bedde, CImageSet3::GetSize 0x1633e0 (no header).
+// ---------------------------------------------------------------------------
+struct Eng {
+    void Teardown();                           // 0x137a80  (grid)
+    void Reset0();                             // 0x138530  (m_4->m_48)
+    void WorkerReset(i32 a);                   // 0x40a7    (team)
+    void BattlezInit();                        // 0x2e3c    CBattlezData::Init (g_gameReg->m_7c)
+    void ObListInit();                         // 0x1b48a6  (g_gameReg->m_6c+0x1c)
+    void ClearList();                          // 0x2c11    (g_gameReg->m_6c)
+    i32 BeginParse();                          // 0x139960  CParseSource (set)
+    i32 EndParse();                            // 0x1399d0  CParseSource (set)
+    i32 LoadAttributes(i32 a, i32 b);          // 0x3d19    CBrickz (m_4->m_70)
+    i32 UpdateDiagonals(void* a);              // 0x3562    CBrickzGrid (m_4->m_70)
+    i32 InstallLightFx(void* mgr, i32 id);     // 0x3bf2    CLightFxRender (ctx)
+    i32 BuildLightShape(i32 a);                // 0x3bca    CLightFxRender (ctx)
+    i32 GetSize();                             // 0x1633e0/0x163300 CImageSet3
+    void ClearTiles(i32 n);                    // 0x130c    CSBI_RectOnly (m_2dc)
+    void PostMap();                            // 0x26a3    CSBI_RectOnly (m_2dc)
+    void HideMenu();                           // 0x133110  (g_645570)
+    void ShadeRect(i32 a, void* rect);         // 0x13f460  CDDSurface (map surface)
+    i32 TimerEqSet(i32 a, i32 b);              // 0x2eaa    CTimer::LoadTimerSprite (m_3f4)
+    void TimerReset();                         // 0x14ce    CTimer::Reset (m_3f4)
+    i32 GetBool(i32 key, void* out, i32 dflt); // 0x1bedde  GetBool (bute)
+    void ButeStore(void* key, void* val);      // 0x1b5485  (g_gameReg->m_68+0x260)
+};
+
+// ---------------------------------------------------------------------------
+// Genuine __cdecl engine helpers (reloc-masked rel32).
+// ---------------------------------------------------------------------------
+void Cmd_ResetScroll();            // 0x2bd0  YAXXZ
+i32 QueryToken(i32 a);             // 0x39a4  QueryToken(int)
+i32 ValidateMainBlock(void* cstr); // 0x2c8e  static WwdFile (CString byval)
+void ActiveWait(i32 ms);           // 0x13dfe0 busy-wait
+void* RezAlloc(i32 sz);            // 0x1b9b46 operator new
+void RezFree(void* p);             // 0x1b9b82 operator delete
+void EngStr_DrawText(                                         // 0x1c5d  YAX...
+    void* host, void* rect, void* buf, i32 a, i32 b, i32 c, i32 d, i32 e, i32 f
+);
+
+#define I32(p, off) (*(i32*)((char*)(p) + (off)))
+#define PTR(p, off) (*(void**)((char*)(p) + (off)))
+#define E(p) ((Eng*)(p))
+
+// ---------------------------------------------------------------------------
+// The PLAY-state level loader (`this`). Its own init-chain steps are __thiscall
+// methods; raw-offset field access via the macros.
+// ---------------------------------------------------------------------------
+// `this` IS the canonical CPlay (proven by xref - the init-chain leaves are all
+// CPlay methods; the +0x10/+0x84/+0xa4/+0xa8 dispatches map to CPlay's real vtable
+// slots Update/Vslot21/BuildMusicCategoryTable/BuildWorldLevelPath). LoadByMode is
+// modeled on this thin CPlay-derived facet (its two big methods aren't yet in the
+// canonical Play.h owned by another unit); the init-chain steps are declared here
+// as reloc-masked leaves (real CPlay/CLevelValidator targets in comments).
+class CPlayLevelLoad : public CPlay {
+public:
+    i32 LoadByMode(i32 level, i32 unused); // ?LoadLevelByMode@@ placeholder
+
+    i32 BuildHelpReveal(i32 a);  // 0x1019
+    i32 RegisterInputBindings(); // 0x3a71
+    void AckJoinFailure();       // 0x35e4  (CMulti, on a saved-flag object)
+    i32 FadeInTitle(const char* b, i32 c, i32 d, i32 e, i32 f, i32 g); // 0x1e60
+    i32 SoundStep(i32 a, i32 b, i32 c, i32 d);                         // 0x1843
+    i32 InfoTextStep();                                                // 0x14b5
+    void ZeroBlock();                                                  // 0x32d3
+    i32 LoadActionTileSprites(i32 a);                                  // 0x2dce
+    void BuildWarlordNameTable(i32 a);                                 // 0x38dc
+    i32 StepB(i32 a);                                                  // 0x3021
+    i32 StepC(i32 a);                                                  // 0x3346
+    i32 StepD(i32 a);                                                  // 0x23b5
+    i32 StepE(i32 a);                                                  // 0x1c2b
+    i32 StepF(i32 a);                                                  // 0x2964
+    i32 StepG(i32 a);                                                  // 0x2e9b
+    void StepH();                                                      // 0x4458
+    i32 StepI(i32 a);                                                  // 0x2c07
+    i32 StepJ(i32 a);                                                  // 0x247d
+    i32 StepK(i32 a);                                                  // 0x3b61
+    void FinalizeWorld();                                              // 0x1db6  (via m_4)
+    void ScanWarpStone();                          // 0x28dd  CPlay::ScanShuffleQuads
+    i32 AfterTitle();                              // 0x2e14  (via m_4)
+    void SetTitle(void* save58, i32 n, void* out); // 0x175d (via m_4->m_58)
+    i32 LoadMap(void* a, void* b);                 // 0x2b80  CPlay::LoadWarlordSprites
+    i32 LoadStep1();                               // 0x3553  CPlay::ScanBuildTiles
+    i32 LoadStep2();                               // 0x345e  CLevelValidator::ValidateLevelTiles
+    i32 LoadStep3();                               // 0x17ee  CPlay::AddLevelGruntz
+    void StartGame();                              // 0x3d55
+};
+
+// ===========================================================================
+RVA(0x000ca200, 0xe34)
+i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
+    void* self = this;
+    void* gameReg;
+    void* set;
+    i32 reload = 0; // [esp+0x20] warp-cache reload flag (-> the vtable +0xa4 arg)
+    // one contiguous stack buffer: the AREA%i/Level%i name at +0x00, a 148-byte
+    // zeroed sub-block at +0x20 (retail's [esp+0x58] rep-stos region / LoadMap arg).
+    char nameBuf[0xb4]; // [esp+0x38]
+
+    // ---- 1) reset prior-level scroll/area globals ----
+    I32(self, 0x484) = 1;
+    g_645584 = 0;
+    g_645580 = 0;
+    g_645588 = 0;
+    g_6455f0 = 0;
+    if (level > 0x64) {
+        level -= 0x64;
+        g_6455f0 = 1;
+    }
+
+    // clear the m_3f4 worker's slots
+    void* worker = PTR(self, 0x3f4);
+    if (worker != 0) {
+        I32(worker, 0x40) = 0;
+        I32(worker, 0x44) = 0;
+        I32(worker, 0x30) = 0;
+        I32(worker, 0x34) = 0;
+        I32(worker, 0x48) = 0;
+        I32(worker, 0x4c) = 0;
+    }
+
+    // tear down the old grid (self->m_c->m_28->m_2c) / map / sound sub-objects
+    void* grid = PTR(PTR(PTR(self, 0xc), 0x28), 0x2c);
+    if (grid != 0) {
+        E(grid)->Teardown();
+    }
+    E(PTR(PTR(self, 0x4), 0x48))->Reset0();
+    ((CWorldSoundSet*)PTR(PTR(self, 0x4), 0x54))->Teardown();
+    ((CGruntSpawnConfig*)PTR(PTR(self, 0x4), 0x60))->DtorBody();
+    ((CGruntSpawnConfig*)PTR(PTR(self, 0x4), 0x60))->ClearSprites();
+    ((CGruntzMgr*)PTR(self, 0x4))->RestoreVideoMode(0);
+
+    gameReg = g_64556c;
+    if (I32(gameReg, 0x134) != 2) {
+        g_644c54 = 0;
+        if (I32(gameReg, 0xc) != 0) {
+            i32 v = I32(gameReg, 0xc) ^ 1;
+            I32(gameReg, 0xc) = v;
+            ((CGruntzMgr*)g_64556c)->FinishLevel(v, 1);
+        }
+    }
+
+    // clear the 4 score/team slots at +0x384 (-4 .. +28, two dwords each)
+    {
+        i32* p = (i32*)((char*)self + 0x388);
+        i32 n = 4;
+        do {
+            p[-1] = -1;
+            p[0] = -1;
+            p += 2;
+        } while (--n);
+    }
+
+    g_6bf3c0 = g_645580;
+    g_6bf3bc = g_645584;
+
+    // reset the 4 team blocks at host->m_150 (stride 0x238): single-mode primes
+    // team 0 ready, multi-mode zeroes the round counters.
+    for (i32 t = 0; t < 4; ++t) {
+        void* hostBase = PTR(self, 0x4);
+        gameReg = g_64556c;
+        void* team = (char*)hostBase + t * 0x48 * 8 - t * 8 + 0x150; // [edx+ecx*8+0x150]
+        if (I32(gameReg, 0x134) == 1) {
+            E(team)->WorkerReset(0);
+            if (t == 0) {
+                I32(team, 0x20) = 1;
+                I32(team, 0x28) = 1;
+            }
+        } else {
+            I32(team, 0x2c) = 0;
+            I32(team, 0x28) = I32(team, 0x20);
+            I32(team, 0x24) = 0;
+        }
+    }
+
+    // ---- 2) mode/level-number resolve ----
+    i32 modeFlag = ((i32)Update() == 0x11) ? 1 : 0;
+    void* savedThis = modeFlag ? self : 0; // [esp+0x10] = (-modeFlag) & self
+    I32(self, 0x1c4) = 1;
+    I32(self, 0x1c) = level;
+    {
+        i32 r = (level - 1) % 0x24;
+        I32(self, 0x20) = r / 4 + 1; // ((level-1)%0x24)/4 + 1 (signed div-by-4)
+    }
+
+    gameReg = g_64556c;
+    g_645588 = 0;
+    if (I32(gameReg, 0x134) == 3) {
+        srand(timeGetTime());
+    }
+    g_resourceInstallActive = 0;
+    Cmd_ResetScroll();
+    E(PTR(g_64556c, 0x7c))->BattlezInit();
+    E((char*)PTR(g_64556c, 0x6c) + 0x1c)->ObListInit();
+    E(PTR(g_64556c, 0x6c))->ClearList();
+    g_64558c = 0;
+    I32(self, 0x1bc) = 0;
+    I32(PTR(self, 0x4), 0x130) = 0;
+
+    // already-loaded guard: when host->m_c8[-2] == 0 skip the name-resolve.
+    void* host = PTR(self, 0x4);
+    if (I32(PTR(host, 0xc8), -8) != 0) {
+        if (I32(host, 0x128) != 0) {
+            // BATTLEZ: resolve the level number from the level name's digit run.
+            set = ((CSymParser*)PTR(host, 0x34))->ResolvePath("GAME_BATTLEZ");
+            if (set == 0) {
+                goto fail0;
+            }
+            i32 ins = ((CSymTab*)set)
+                          ->Insert(
+                              (const char*)((CGruntzMgr*)PTR(self, 0x4))->GetWorldFileName(),
+                              g_emptyString
+                          );
+            if (ins == 0) {
+                return 0;
+            }
+            void* desc = (void*)E(set)->BeginParse();
+            if (desc == 0) {
+                goto fail0;
+            }
+            char* p = (char*)desc + 0x10;
+            char c = *p;
+            while (c != 0) {
+                if (c < '0' || c > '9') {
+                    ++p;
+                    c = *p;
+                    continue;
+                }
+                break;
+            }
+            i32 num = atoi(p);
+            E(set)->EndParse();
+            level = num;
+        } else if (I32(host, 0x12c) != 0) {
+            // MULTI: same digit resolve off "GAME_MULTI".
+            set = ((CSymParser*)PTR(host, 0x34))->ResolvePath("GAME_MULTI");
+            if (set == 0) {
+                goto fail0;
+            }
+            i32 ins = ((CSymTab*)set)
+                          ->Insert(
+                              (const char*)((CGruntzMgr*)PTR(self, 0x4))->GetWorldFileName(),
+                              g_emptyString
+                          );
+            if (ins == 0) {
+                return 0;
+            }
+            void* desc = (void*)E(set)->BeginParse();
+            if (desc == 0) {
+                goto fail0;
+            }
+            char* p = (char*)desc + 0x10;
+            char c = *p;
+            while (c != 0) {
+                if (c < '0' || c > '9') {
+                    ++p;
+                    c = *p;
+                    continue;
+                }
+                break;
+            }
+            i32 num = atoi(p);
+            E(set)->EndParse();
+            level = num;
+        } else {
+            // default: bute-driven level number (ValidateMainBlock(CString)).
+            level = ValidateMainBlock(
+                (void*)(const char*)((CGruntzMgr*)PTR(self, 0x4))->GetWorldFileName()
+            );
+            I32(self, 0x1bc) = 0;
+            I32(PTR(self, 0x4), 0x130) = 0;
+        }
+
+        // recompute area page from the resolved level number
+        i32 r = (level - 1) % 0x24;
+        I32(self, 0x1c) = level;
+        I32(self, 0x20) = r / 4 + 1;
+    }
+
+    // ---- 3) build the level name + look it up ----
+    sprintf(nameBuf, "AREA%i", I32(self, 0x20));
+    set = ((CSymParser*)PTR(self, 0x8))->ResolvePath(nameBuf);
+    I32(self, 0x28) = (i32)set;
+    if (set == 0) {
+        goto fail0;
+    }
+
+    // ---- 4) area-page jump table over (m_20 - 1) in 0..7 ----
+    {
+        i32 page = I32(self, 0x20) - 1;
+        switch ((u32)page) {
+            case 0:
+                g_645270 = 4;
+                break;
+            case 1:
+                g_645270 = 0;
+                g_64553c = 0;
+                break;
+            case 2:
+                g_645270 = 8;
+                g_64553c = 0;
+                break;
+            case 3:
+                g_645270 = 8;
+                g_64553c = 0xf;
+                break;
+            case 4:
+                g_645270 = 5;
+                g_64553c = 9;
+                break;
+            case 5:
+                g_645270 = 4;
+                g_64553c = 0xb;
+                break;
+            case 6:
+                g_645270 = 0xe;
+                g_64553c = 0xb;
+                break;
+            case 7:
+                g_645270 = 4;
+                g_64553c = 0;
+                break;
+            default:
+                g_645270 = 4;
+                g_64553c = 0;
+                break;
+        }
+    }
+
+    // m_2c = m_28 (the resolved area descriptor); refresh the host window
+    {
+        i32 prevTiles = I32(self, 0x2c);
+        I32(self, 0x2c) = I32(self, 0x28);
+        UpdateWindow((HWND)PTR(PTR(PTR(self, 0x4), 0x4), 0x4));
+
+        host = PTR(self, 0x4);
+        if (I32(PTR(host, 0xc8), -8) != 0) {
+            if (I32(host, 0x128) == 0 && I32(host, 0x12c) == 0) {
+                sprintf(nameBuf, "CUSTOMLEVEL", 0);
+            }
+        } else if (level > 0x24) {
+            sprintf(nameBuf, "TRAINING", 0);
+        }
+        (void)prevTiles;
+    }
+
+    // ---- 5) the long linear init chain ----
+    if (!FadeInTitle(nameBuf, 0, 0, 0, 0, 1)) { // [esp+0x48] out, push 0/0/0/0/1
+        goto fail0;
+    }
+    SoundStep(0x50, 0x3e8, 0, 1);
+    InfoTextStep();
+    I32(self, 0x2c) = 0;
+    {
+        i32* z = (i32*)((char*)nameBuf + 0x20);
+        i32 n = 0x25;
+        while (n--) {
+            *z++ = 0;
+        }
+    }
+    ZeroBlock();
+    BuildHelpReveal(0);
+    Vslot21(); // vtable +0x84 (CPlay slot 33)
+    if (savedThis != 0) {
+        E(savedThis)->Teardown(); // AckJoinFailure placeholder (0x35e4 on saved obj)
+    }
+    RegisterInputBindings();
+
+    if (!StepK(0)) {
+        goto fail0;
+    }
+
+    // the warp-stone / last-level cache comparison (612618 / 61139c)
+    {
+        void* cached = g_612618;
+        i32 eq = ((CAreaMgr*)g_61139c)->SameGroup((i32)cached); // 0x2f2c
+        reload = (eq == 0) ? 1 : 0;
+        i32 diff = (level != (i32)g_612618) ? 1 : 0;
+        if (g_61139c == 0) {
+            return 0;
+        }
+        g_612618 = (void*)level;
+
+        BuildHelpReveal(0);
+        if (savedThis != 0) {
+            E(savedThis)->Teardown();
+        }
+        RegisterInputBindings();
+
+        BuildHelpReveal(0);
+        if (savedThis != 0) {
+            E(savedThis)->Teardown();
+        }
+        RegisterInputBindings();
+
+        if (!LoadActionTileSprites(diff)) {
+            goto fail0;
+        }
+    }
+
+    // a tail of paired BeginStep(0)/EndStep brackets around the real init steps.
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (modeFlag != 0 && I32(g_64556c, 0x134) == 1) {
+        BuildWarlordNameTable((i32)savedThis);
+    }
+    BuildHelpReveal(0);
+    RegisterInputBindings();
+    if (!StepB(1)) {
+        goto fail0;
+    }
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepC(1)) {
+        goto fail0;
+    }
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepD((i32)savedThis)) {
+        goto fail0;
+    }
+    BuildHelpReveal(0);
+    RegisterInputBindings();
+    if (!StepE(1)) {
+        goto fail0;
+    }
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepF(1)) {
+        goto fail0;
+    }
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepG(0)) {
+        goto fail0;
+    }
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    StepH();
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepI(1)) {
+        goto fail0;
+    }
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!StepJ(1)) {
+        goto fail0;
+    }
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    if (!BuildWorldLevelPath(1)) { // vtable +0xa8 (CPlay slot 42)
+        goto fail0;
+    }
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+
+    // finalize the world planes
+    ((CGruntzMgr*)PTR(self, 0x4))->RecomputeViewScale();
+    if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
+        E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
+    }
+    if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
+        E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
+    }
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+
+    // view setup off host->m_70
+    {
+        void* g5c = PTR(PTR(PTR(self, 0xc), 0x24), 0x5c);
+        void* host70 = PTR(PTR(self, 0x4), 0x70);
+        if (!E(host70)->LoadAttributes(I32(g5c, 0x28), I32(g5c, 0x2c))) {
+            goto fail0;
+        }
+    }
+    if (!E(PTR(PTR(self, 0x4), 0x70))->UpdateDiagonals(PTR(self, 0x4))) {
+        goto fail0;
+    }
+
+    // lazily allocate the level context at +0x320
+    if (I32(self, 0x320) == 0) {
+        void* ctx = RezAlloc(0x43c);
+        if (ctx != 0) {
+            I32(ctx, 0) = 0;
+            I32(ctx, 0x4) = 0;
+            I32(ctx, 0x8) = 0;
+            I32(ctx, 0xc) = 0;
+            I32(ctx, 0x10) = 0;
+            I32(ctx, 0x48) = 0;
+            I32(ctx, 0x434) = 0;
+            I32(ctx, 0x438) = 0;
+        } else {
+            ctx = 0;
+        }
+        I32(self, 0x320) = (i32)ctx;
+        if (!E(ctx)->InstallLightFx(PTR(self, 0x4), 0xfa)) {
+            goto fail0;
+        }
+    }
+    if (!E(PTR(self, 0x320))->BuildLightShape(I32(self, 0x20))) {
+        goto fail0;
+    }
+
+    // ---- the WarpStone bute scan (single-mode only) ----
+    gameReg = g_64556c;
+    if (I32(gameReg, 0x134) != 1) {
+        CString warp; // [esp+0x14]
+        i32 same = 0;
+        if (E(&warp)->GetBool(0x81ab, &warp, 2)) {
+            char* a = (char*)(const char*)((CGruntzMgr*)g_64556c)->GetWorldFileName();
+            char* b = (char*)(const char*)warp;
+            i32 eq = 1;
+            while (*b == *a) {
+                if (*b == 0) {
+                    break;
+                }
+                a += 1;
+                b += 1;
+            }
+            if (*b != *a) {
+                eq = 0;
+            }
+            same = eq;
+        }
+        if (same) {
+            ScanWarpStone();
+        }
+    }
+
+    // ---- area-name -> level-list build ----
+    if (I32(PTR(self, 0x4), 0x134) == 3) {
+        AfterTitle();
+    }
+    ((CSaveGame*)PTR(PTR(self, 0x4), 0x58))
+        ->FillSlot2((SaveSlot*)((char*)self + 0x1d0), I32(self, 0x1c), 0);
+    {
+        CString key; // [esp+0x18]
+        gameReg = g_64556c;
+        I32(PTR(gameReg, 0x68), 0x2a0) = 0;
+        i32 count = I32(self, 0x1c);
+        i32 i = count - ((count - 1) % 4); // round-down-to-4 idiom
+        for (; i < count; ++i) {
+            // key.Format("Level%i", i) -> wsprintf-into-CString (0x1b2cf5)
+            key.Format("Level%i", i);
+            void* bm = PTR(g_64556c, 0x68);
+            i32 v = g_buteMgr.GetInt((const char*)key, "WarpStone");
+            E((char*)bm + 0x260)->ButeStore(PTR(bm, 0x268), (void*)v);
+        }
+    }
+    E(PTR(self, 0x2dc))->ClearTiles(I32(self, 0x1c));
+
+    // ---- CursorSnapSprite registration (factory at [self+0xc]->m_8) ----
+    set = ((CSpriteFactory*)PTR(PTR(self, 0xc), 0x8))
+              ->CreateSprite(0, 0, 0, 0x13880, "CursorSnapSprite", 0x40001);
+    I32(self, 0x4e4) = (i32)set;
+    if (set != 0) {
+        void* host8 = PTR(PTR(self, 0xc), 0x8);
+        (*(void (**)(void*, i32))((char*)*(void**)host8 + 0x24))(host8, 0); // host8 vtable +0x24
+        if (savedThis == 0) {
+            // empty cursor-snap set -> reset the resource-install flag
+            void* tiles = PTR(self, 0x2dc);
+            i32 id = (I32(tiles, 0) == 0) ? 0x1a9 : 0x249;
+            if (!E(PTR(self, 0x3f4))->TimerEqSet(id, 0x1ca)) {
+                void* spr = PTR(self, 0x3f4);
+                if (spr != 0) {
+                    E(spr)->TimerReset();
+                    RezFree(spr);
+                    I32(self, 0x3f4) = 0;
+                }
+            }
+        } else {
+            // load the level map + the four map sub-steps
+            if (LoadMap(savedThis, (char*)nameBuf + 0x20) && LoadStep1() && LoadStep2()
+                && LoadStep3()) {
+                void* host8b = PTR(PTR(self, 0xc), 0x8);
+                (*(void (**)(void*, i32))((char*)*(void**)host8b + 0x24))(host8b, 0);
+                E(PTR(self, 0x2dc))->PostMap();
+                E(g_645570)->HideMenu();
+                while (ShowCursor(0) >= 0)
+                    ;
+                ((CGruntzMgr*)PTR(self, 0x4))->CGruntzMgr::PerFrameTick();
+                if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
+                    E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
+                }
+                if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
+                    E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
+                }
+                BuildHelpReveal(0);
+                if (savedThis != 0) {
+                    E(savedThis)->Teardown();
+                }
+                RegisterInputBindings();
+                if (BuildMusicCategoryTable(reload)) { // vtable +0xa4 (CPlay slot 41)
+                    goto okContinue;
+                }
+            }
+            goto fail1;
+        }
+    }
+
+okContinue:
+    BuildHelpReveal(0);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+    RegisterInputBindings();
+    BuildHelpReveal(1);
+    ActiveWait(0x64);
+    if (savedThis != 0) {
+        E(savedThis)->Teardown();
+    }
+
+    gameReg = g_64556c;
+    if (I32(gameReg, 0x114) == 0) {
+        void* mapHost = PTR(PTR(PTR(PTR(self, 0xc), 0x4), 0x10), 0x2c);
+        E(mapHost)->ShadeRect(0x32, 0);
+        gameReg = g_64556c;
+    }
+
+    // ---- loading-screen blit (mode != 2 && m_114 == 0) ----
+    if (I32(gameReg, 0x134) != 2 && I32(gameReg, 0x114) == 0) {
+        CString scr; // [esp+0x14]
+        I32(self, 0x4f8) = 1;
+        I32(self, 0x484) = 0;
+        i32 rect[4];
+        rect[0] = 0;
+        rect[1] = 0;
+        rect[2] = 0x280;
+        rect[3] = 0x1e0;
+        if (E(&scr)->GetBool(0x8128, &scr, 4)) {
+            EngStr_DrawText(PTR(self, 0xc), rect, (char*)nameBuf + 0x4, 0x78, 1, 0xff, 0xff, 0, 1);
+        }
+    } else {
+        I32(self, 0x484) = 1;
+    }
+
+    // ---- final state stamp ----
+    I32(self, 0x4b8) = 0;
+    I32(self, 0x4fc) = 0;
+    I32(self, 0x500) = 0;
+    I32(self, 0x4f0) = 0;
+    I32(self, 0x4f4) = 0;
+    I32(self, 0x400) = 0x1f4;
+    I32(self, 0x404) = 0;
+    I32(self, 0x3f8) = g_645588;
+    I32(self, 0x3fc) = 0;
+    I32(self, 0x408) = 1;
+    ((CString*)((char*)self + 0x410))->operator=(g_emptyString);
+    I32(self, 0x40c) = 0;
+    I32(self, 0x470) = 0;
+    I32(self, 0x474) = 0;
+    I32(self, 0x478) = 0;
+    I32(self, 0x47c) = 0;
+    I32(self, 0x4b0) = 0;
+    I32(self, 0x514) = 3;
+    I32(self, 0x4ec) = 1;
+    g_64e35c = 0;
+    StartGame();
+    if (I32(g_64556c, 0x134) == 2) {
+        g_64e35c = 1;
+        I32(self, 0x4ec) = 0;
+        ((CGruntzMgr*)PTR(self, 0x4))->CheckSavedMode();
+        ((CFontConfig*)PTR(PTR(self, 0x4), 0x5c))->FreeNodes();
+    }
+    return 1;
+
+fail1:
+    return 0;
+fail0:
+    return 0;
+}
+
+#undef I32
+#undef PTR
+#undef E
+
+SIZE_UNKNOWN(Eng);
+#undef I32
+#undef PTR
+#undef E
 
 // @early-stop
 // ~95% regalloc wall: logic + all 5 relocs pair; retail threads the reloaded registry
@@ -918,6 +1670,335 @@ i32 CPlay::Vslot1c(i32 category) {
     }
     return count;
 }
+
+// ===========================================================================
+// CPlay::SyncState  (0x0d7520; re-homed from the former playsync unit, waveP - its
+// retail birth position is inside THIS TU's 0xd5960 interval, TU_MIGRATION MOVE row
+// `0x0d7520 SyncState@CPlay playsync -> 0xd5960 play`). The play-state serialize/
+// round-trip: bail on a null archive, run the header serialize, a mode pre-step
+// (4=write, 7=read, 8=re-init ambient cue), then round-trip a sequence of 64-bit
+// timer blocks (mode 4 -> Write vtbl[0x30], mode 7 -> Read vtbl[0x2c]) interleaved
+// with three child sync sub-objects (m_guts / m_frameMarker / m_beginMarker).
+// Archive Read/Write + child syncs are reloc-masked external.
+// ---------------------------------------------------------------------------
+// Round-trip a 16-byte (two 4-int halves) timer block through the archive; `p` is
+// an i32* into the block. The mode-4 (write) body is emitted out-of-line (retail
+// checks mode==4 first via je, keeps the mode-7 read body inline).
+#define SYNC_PAIR(ar, mode, p)                                                                     \
+    if ((mode) != 4) {                                                                             \
+        if ((mode) == 7) {                                                                         \
+            (ar)->Read((p), 8);                                                                    \
+            (ar)->Read((p) + 2, 8);                                                                \
+        }                                                                                          \
+    } else {                                                                                       \
+        (ar)->Write((p), 8);                                                                       \
+        (ar)->Write((p) + 2, 8);                                                                   \
+    }
+
+RVA(0x000d7520, 0x3b9)
+i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
+    if (ar == 0) {
+        return 0;
+    }
+    if (!HeaderSerialize(ar, mode, a2, a3)) {
+        return 0;
+    }
+    switch (mode) {
+        case 4:
+            if (!SyncWrite19fb(ar)) {
+                return 0;
+            }
+            break;
+        case 7:
+            if (!SyncRead2f7c(ar)) {
+                return 0;
+            }
+            break;
+        case 8: {
+            if (m_gridHasSprite) {
+                CWorld* w = m_4w();
+                i32 id = g_644c54;
+                void* spr = w->m_74->LoadSprite(*(void**)(w->m_158 + (id * 0x47) * 8), 0);
+                if (spr == 0) {
+                    spr = g_64556c->m_spriteFactory->LoadSprite((void*)1, (i32)spr);
+                }
+                ((CImageSet*)m_grid)->SetAllTypes(0xa);
+                ((CImageSet*)m_grid)->SetAllFormats((i32)spr);
+            }
+            char buf[0x40];
+            wsprintfA(buf, "AMBIENT%d", GetAmbientId());
+            if (g_64556c->m_14) {
+                m_4w()->m_48->PlayByName(buf, 1);
+            }
+            m_ambientInitDone = 1;
+            break;
+        }
+    }
+
+    i32* p;
+    p = &m_syncTimerLo;
+    SYNC_PAIR(ar, mode, p);
+    if (!((CPlay*)m_guts)->SyncState(ar, mode, a2, a3)) {
+        return 0;
+    }
+    if (!m_frameMarker->HandleEvent(ar, mode, a2, a3)) { // CTimer's real serialize entry
+        return 0;
+    }
+    p = &m_cueTimerLo;
+    SYNC_PAIR(ar, mode, p);
+    if (!((CPlay*)m_beginMarker)->SyncState(ar, mode, a2, a3)) {
+        return 0;
+    }
+    p = &m_region0TimerLo;
+    SYNC_PAIR(ar, mode, p);
+    p = &m_region1TimerLo;
+    SYNC_PAIR(ar, mode, p);
+    p = &m_snapBaseLo;
+    SYNC_PAIR(ar, mode, p);
+    p = &m_region2TimerLo;
+    SYNC_PAIR(ar, mode, p);
+    p = &m_region3TimerLo;
+    SYNC_PAIR(ar, mode, p);
+    p = &m_bootyTimerLo;
+    SYNC_PAIR(ar, mode, p);
+    return 1;
+}
+#undef SYNC_PAIR
+
+// ===========================================================================
+// CArchiveLoadRec::Load (0x0d79d0; re-homed from the former streamrecordloaders unit,
+// waveP - TU_MIGRATION MOVE row `0x0d79d0 Load@CArchiveLoadRec streamrecordloaders ->
+// 0xd5960 play`). The CArchive-store / CString-default flavor of the record
+// serializer: a larger record streamed through the shared CSerialArchive's +0x30 slot
+// (Write). __thiscall, ret 4; returns 0 when the archive or the bound manager (m_c) is
+// absent, else 1. NB the CArchiveLoadRec::Load method name is the recovered-symbol
+// placeholder; only the +0x30 slot offset is load-bearing. g_serialCounter /
+// g_archiveDefault612618 reuse this TU's decls; the record views are local.
+// ===========================================================================
+extern i32 g_serialCounter; // ?g_serialCounter@@3HA @0x629ad0 (bumped per string field)
+
+struct CArchiveMgr {
+    char m_pad00[0x10];
+    CDDrawWorkerRegistry* m_10; // +0x10
+    char m_pad14[0x24 - 0x14];  //
+    char m_name24[0x80 - 0x24]; // +0x24  inline name string (default-copied into scratch)
+};
+
+// The +0x188 default-int object one raw field seeds from (m_4e4 below).
+struct CArchiveDefInt;
+
+// The global default sink one raw field reads into (DAT_00612618).
+
+// One outer entry of the m_3a8 nested-array block: {void** base; i32 count}.
+struct CArchiveSubArray {
+    void** m_base; // +0x00
+    i32 m_count;   // +0x04
+    char m_pad08[0x14 - 0x08];
+};
+
+struct CArchiveLoadRec {
+    i32 Load(CSerialArchive* s);
+
+    char m_pad00[0x0c];
+    CArchiveMgr* m_c; // +0x0c  bound manager (null -> bail)
+    char m_pad10[0x1bc - 0x10];
+    i32 m_1bc; // +0x1bc
+    i32 m_1c0; // +0x1c0
+    i32 m_1c4; // +0x1c4
+    char m_pad1c8[0x1cc - 0x1c8];
+    i32 m_1cc; // +0x1cc
+    char m_pad1d0[0x2d8 - 0x1d0];
+    i32 m_2d8; // +0x2d8
+    char m_pad2dc[0x2ec - 0x2dc];
+    i32 m_2ec;        // +0x2ec
+    i32 m_2f0;        // +0x2f0
+    i32 m_2f4;        // +0x2f4
+    i32 m_2f8;        // +0x2f8
+    i32 m_2fc, m_300; // +0x2fc  (8 bytes)
+    char m_pad304[0x360 - 0x304];
+    i32 m_360, m_364;   // +0x360  (8 bytes)
+    i32 m_368;          // +0x368
+    i32 m_36c;          // +0x36c
+    i32 m_370;          // +0x370
+    void** m_elemArray; // +0x374  element-ptr array (paired count m_elemCount)
+    i32 m_elemCount;    // +0x378  element count
+    char m_pad37c[0x384 - 0x37c];
+    char m_384[0x3a8 - 0x384]; // +0x384  4 fixed 8-byte entries
+    CArchiveSubArray m_3a8[4]; // +0x3a8  4 nested {base,count} sub-arrays
+    char m_pad3f8[0x408 - 0x3f8];
+    i32 m_408;                             // +0x408
+    i32 m_40c;                             // +0x40c
+    char* m_defaultStr;                    // +0x410  default string (copied into the scratch)
+    i32 m_414, m_418, m_41c, m_420, m_424; // +0x414..+0x424
+    i16 m_428;                             // +0x428  (2 bytes)
+    char m_pad42a[0x470 - 0x42a];
+    i32 m_470, m_474, m_478, m_47c, m_480, m_484; // +0x470..+0x484
+    char m_pad488[0x48c - 0x488];
+    void** m_tailArray; // +0x48c  trailing element-ptr array (paired count m_tailCount)
+    i32 m_tailCount;    // +0x490  trailing element count
+    char m_pad494[0x49c - 0x494];
+    i32 m_49c; // +0x49c
+    char m_pad4a0[0x4b0 - 0x4a0];
+    i32 m_4b0; // +0x4b0
+    char m_pad4b4[0x4cc - 0x4b4];
+    CArchiveMgr* m_4cc;        // +0x4cc  object whose +0x24 is an inline name string
+    void* m_4d0;               // +0x4d0  object passed to the default helper
+    i32 m_4d4;                 // +0x4d4
+    i32 m_4d8, m_4dc, m_4e0;   // +0x4d8..+0x4e0
+    CArchiveDefInt* m_4e4_obj; // +0x4e4  object whose +0x188 seeds a default int
+    i32 m_4e8, m_4ec, m_4f0, m_4f4, m_4f8, m_4fc, m_500, m_504; // +0x4e8..+0x504
+    char m_pad508[0x514 - 0x508];
+    i32 m_514; // +0x514
+};
+
+// The +0x188 default-int field on the m_4e4 object.
+struct CArchiveDefInt {
+    char m_pad00[0x188];
+    i32 m_188; // +0x188
+};
+
+// @early-stop
+// scratch-slot scheduling tail (~99.8%): every serialize field/size, the two unsigned
+// count loops, the nested sub-array loop, the inline strlen/strcpy default copies,
+// the g_serialCounter bumps, the conditional default-helper call and the final
+// signed element loop are byte-faithful. The sole residual is the MSVC5 scheduler
+// parking one extra scratch slot (frame 0x294 vs retail 0x28c) + a few zero-init
+// store positions - the entropy tail the CTriggerLoadRec/CEventLoadRec siblings
+// share; not source-steerable.
+RVA(0x000d79d0, 0x537)
+i32 CArchiveLoadRec::Load(CSerialArchive* s) {
+    if (s == 0) {
+        return 0;
+    }
+    CArchiveMgr* mc = m_c;
+    if (mc == 0) {
+        return 0;
+    }
+
+    s->Write(&m_1bc, 4);
+    s->Write(&m_1c0, 4);
+    s->Write(&m_1cc, 4);
+    s->Write(&m_2d8, 4);
+    s->Write(&m_2ec, 4);
+    s->Write(&m_2f0, 4);
+    s->Write(&m_2f4, 4);
+    s->Write(&m_2f8, 4);
+    s->Write(&m_2fc, 8);
+    s->Write(&m_360, 8);
+    s->Write(&m_368, 4);
+    s->Write(&m_36c, 4);
+
+    i32 c0 = m_elemCount;
+    s->Write(&c0, 4);
+    for (u32 i0 = 0; i0 < (u32)c0; i0++) {
+        s->Write(m_elemArray[i0], 8);
+    }
+
+    char* p = m_384;
+    for (i32 k0 = 4; k0 != 0; k0--) {
+        s->Write(p, 8);
+        p += 8;
+    }
+
+    CArchiveSubArray* e = m_3a8;
+    for (i32 k1 = 4; k1 != 0; k1--) {
+        i32 cnt = e->m_count;
+        s->Write(&cnt, 4);
+        for (u32 i1 = 0; i1 < (u32)cnt; i1++) {
+            s->Write(e->m_base[i1], 8);
+        }
+        e++;
+    }
+
+    s->Write(&m_408, 4);
+
+    g_serialCounter++;
+    {
+        char buf[0x200];
+        memset(buf, 0, sizeof(buf));
+        strcpy(buf, m_defaultStr);
+        s->Write(buf, 0x200);
+    }
+
+    s->Write(&m_40c, 4);
+    s->Write(&g_archiveDefault612618, 4);
+
+    g_serialCounter++;
+    {
+        char buf[0x80];
+        memset(buf, 0, sizeof(buf));
+        i32 v = 0;
+        if (m_4d0 != 0) {
+            mc->m_10->AnyValueMatches_155630((i32)m_4d0, (i32)buf, (i32)&v);
+        }
+        s->Write(buf, 0x80);
+        s->Write(&v, 4);
+    }
+
+    g_serialCounter++;
+    {
+        char buf[0x80];
+        memset(buf, 0, sizeof(buf));
+        if (m_4cc != 0) {
+            strcpy(buf, m_4cc->m_name24);
+        }
+        s->Write(buf, 0x80);
+    }
+
+    s->Write(&m_4d8, 4);
+    s->Write(&m_4dc, 4);
+    s->Write(&m_4e0, 4);
+
+    g_serialCounter++;
+    {
+        i32 v = 0;
+        if (m_4e4_obj != 0) {
+            v = m_4e4_obj->m_188;
+        }
+        s->Write(&v, 4);
+    }
+
+    s->Write(&m_4e8, 4);
+    s->Write(&m_4ec, 4);
+    s->Write(&m_4f4, 4);
+    s->Write(&m_1c4, 4);
+    s->Write(&m_484, 4);
+    s->Write(&m_4f8, 4);
+    s->Write(&m_4fc, 4);
+    s->Write(&m_500, 4);
+    s->Write(&m_4f0, 4);
+    s->Write(&m_504, 4);
+    s->Write(&m_414, 4);
+    s->Write(&m_418, 4);
+    s->Write(&m_41c, 4);
+    s->Write(&m_420, 4);
+    s->Write(&m_424, 4);
+    s->Write(&m_428, 2);
+    s->Write(&m_470, 4);
+    s->Write(&m_474, 4);
+    s->Write(&m_478, 4);
+    s->Write(&m_47c, 4);
+    s->Write(&m_480, 4);
+    s->Write(&m_4b0, 4);
+    s->Write(&m_4d4, 4);
+    s->Write(&m_49c, 4);
+    s->Write(&m_514, 4);
+
+    i32 c1 = m_tailCount;
+    s->Write(&c1, 4);
+    for (i32 fi = 0; fi < m_tailCount; fi++) {
+        void* el = m_tailArray[fi];
+        if (el != 0) {
+            s->Write(el, 8);
+        }
+    }
+
+    return 1;
+}
+SIZE_UNKNOWN(CArchiveMgr);
+SIZE_UNKNOWN(CArchiveDefInt);
+SIZE_UNKNOWN(CArchiveLoadRec);
+SIZE_UNKNOWN(CArchiveSubArray);
 
 // ===========================================================================
 // CGrunt::Load (0x0d8060; re-homed from Grunt.cpp wave3-J - the retail body's
@@ -1991,6 +3072,278 @@ struct CPlacedObj {
     i32 m_4; // +0x04  cell Y
 };
 SIZE_UNKNOWN(CPlacedObj);
+// ===========================================================================
+// GruntInfoTextHost::winapi_0d95f0_wsprintfA (0x0d95f0; re-homed from the former
+// gruntinfotext unit, waveP - TU_MIGRATION MOVE row `0x0d95f0 gruntinfotext ->
+// 0xd5960 play`). The full-screen level/grunt info-text panel painter on an
+// unrecovered owning object (placeholder GruntInfoTextHost view). Four CString locals
+// -> /GX frame; EngStr_DrawText uses this TU's (EngStrRenderObj*, i32...) decl,
+// g_64556c / g_emptyString reuse Play.h / this TU's decls.
+// ===========================================================================
+// Placeholder host for the retail 0x0d95f0 method (real owning class unrecovered).
+struct GruntInfoTextHost {
+    char m_pad0[0xc];
+    void* m_c; // +0x0c EngStr render surface
+    char m_pad10[0x1c - 0x10];
+    i32 m_1c; // +0x1c level/stage number
+    i32 m_20; // +0x20 tool/mode selector
+    i32 winapi_0d95f0_wsprintfA();
+};
+
+// @early-stop
+// Logic + control-flow byte-exact through the whole switch/mode/QueryLevelName
+// chain (all if/else fall-through polarities matched); residual ~11% is a
+// register-allocation rotation in the tail SetRect/EngStr_DrawText render block:
+// retail threads the RECT/CString/m_c temps through eax/ecx/edx where cl picks
+// edx/eax/ecx (a consistent 3-register rotation, identical push order + opcodes,
+// only the ModRM reg field differs), plus the basename ptr pushed in-branch vs
+// post-merge. Pure allocator coin-flip; no source spelling flips the rotation.
+// The 3 `jmpl *table(,%eax,4)` rows are jump-table DIR32 displacement artifacts
+// (code bytes identical, reloc-masked). Verified base-vs-target with llvm-objdump -dr.
+// The 8 Gruntz worlds (m_20, 1-based); the line-1 name is LoadString'd from the
+// retail STRINGTABLE (ids 0x81ae..0x81b5, texts recovered from GRUNTZ.EXE .rsrc).
+// Same immediates as the bare labels -> naming is matching-neutral.
+enum World {
+    WORLD_ROCKY_ROADZ = 1,       // "Rocky Roadz"
+    WORLD_GRUNTZICLEZ = 2,       // "Gruntziclez"
+    WORLD_TROPICZ = 3,           // "Trouble in the Tropicz"
+    WORLD_HIGH_ON_SWEETZ = 4,    // "High on Sweetz"
+    WORLD_HIGH_ROLLERZ = 5,      // "High Rollerz"
+    WORLD_HONEY_I_SHRUNK = 6,    // "Honey, I Shrunk the Gruntz!"
+    WORLD_MINIATURE_MASTERZ = 7, // "The Miniature Masterz"
+    WORLD_GRUNTZ_IN_SPACE = 8,   // "Gruntz in Space"
+};
+
+RVA(0x000d95f0, 0x756)
+i32 GruntInfoTextHost::winapi_0d95f0_wsprintfA() {
+    CString s0; // line 1: current World name (LoadString)
+    CString s1; // stage/status    (line 2)
+    CString s2; // grunt-type name / level basename (line 3)
+    CString s3; // footer          (line 4)
+
+    switch (m_20) {
+        case WORLD_ROCKY_ROADZ:
+            s0.LoadString(0x81ae);
+            break;
+        case WORLD_GRUNTZICLEZ:
+            s0.LoadString(0x81af);
+            break;
+        case WORLD_TROPICZ:
+            s0.LoadString(0x81b0);
+            break;
+        case WORLD_HIGH_ON_SWEETZ:
+            s0.LoadString(0x81b1);
+            break;
+        case WORLD_HIGH_ROLLERZ:
+            s0.LoadString(0x81b2);
+            break;
+        case WORLD_HONEY_I_SHRUNK:
+            s0.LoadString(0x81b3);
+            break;
+        case WORLD_MINIATURE_MASTERZ:
+            s0.LoadString(0x81b4);
+            break;
+        case WORLD_GRUNTZ_IN_SPACE:
+            s0.LoadString(0x81b5);
+            break;
+        default:
+            s0 = g_emptyString;
+    }
+
+    i32 mode = g_64556c->m_134;
+    if (mode == 1) {
+        if (g_64556c->m_130 != 0) {
+            s1.LoadString(0x81a0);
+        } else {
+            i32 stage = m_1c;
+            if (stage > 0x24) {
+                switch (stage) {
+                    case 0x25:
+                        s1.LoadString(0x81a2);
+                        break;
+                    case 0x26:
+                        s1.LoadString(0x81a3);
+                        break;
+                    case 0x27:
+                        s1.LoadString(0x81a4);
+                        break;
+                    case 0x28:
+                        s1.LoadString(0x81a5);
+                        break;
+                    default:
+                        s1 = g_emptyString;
+                }
+            } else {
+                s1.Format("Stage %d", ((stage - 1) % 4) + 1);
+            }
+            switch (m_1c) {
+                case 1:
+                    s2.LoadString(0x8177);
+                    break;
+                case 2:
+                    s2.LoadString(0x8178);
+                    break;
+                case 3:
+                    s2.LoadString(0x8179);
+                    break;
+                case 4:
+                    s2.LoadString(0x817a);
+                    break;
+                case 5:
+                    s2.LoadString(0x817b);
+                    break;
+                case 6:
+                    s2.LoadString(0x817c);
+                    break;
+                case 7:
+                    s2.LoadString(0x817d);
+                    break;
+                case 8:
+                    s2.LoadString(0x817e);
+                    break;
+                case 9:
+                    s2.LoadString(0x817f);
+                    break;
+                case 10:
+                    s2.LoadString(0x8180);
+                    break;
+                case 0xb:
+                    s2.LoadString(0x8181);
+                    break;
+                case 0xc:
+                    s2.LoadString(0x8182);
+                    break;
+                case 0xd:
+                    s2.LoadString(0x8183);
+                    break;
+                case 0xe:
+                    s2.LoadString(0x8184);
+                    break;
+                case 0xf:
+                    s2.LoadString(0x8185);
+                    break;
+                case 0x10:
+                    s2.LoadString(0x8186);
+                    break;
+                case 0x11:
+                    s2.LoadString(0x8187);
+                    break;
+                case 0x12:
+                    s2.LoadString(0x8188);
+                    break;
+                case 0x13:
+                    s2.LoadString(0x8189);
+                    break;
+                case 0x14:
+                    s2.LoadString(0x818a);
+                    break;
+                case 0x15:
+                    s2.LoadString(0x818b);
+                    break;
+                case 0x16:
+                    s2.LoadString(0x818c);
+                    break;
+                case 0x17:
+                    s2.LoadString(0x818d);
+                    break;
+                case 0x18:
+                    s2.LoadString(0x818e);
+                    break;
+                case 0x19:
+                    s2.LoadString(0x818f);
+                    break;
+                case 0x1a:
+                    s2.LoadString(0x8190);
+                    break;
+                case 0x1b:
+                    s2.LoadString(0x8191);
+                    break;
+                case 0x1c:
+                    s2.LoadString(0x8192);
+                    break;
+                case 0x1d:
+                    s2.LoadString(0x8193);
+                    break;
+                case 0x1e:
+                    s2.LoadString(0x8194);
+                    break;
+                case 0x1f:
+                    s2.LoadString(0x8195);
+                    break;
+                case 0x20:
+                    s2.LoadString(0x8196);
+                    break;
+                default:
+                    s2.Format(g_emptyString);
+                    break;
+                case 0x25:
+                    s2.LoadString(0x8197);
+                    break;
+                case 0x26:
+                    s2.LoadString(0x8198);
+                    break;
+                case 0x27:
+                    s2.LoadString(0x8199);
+                    break;
+                case 0x28:
+                    s2.LoadString(0x819a);
+            }
+            if (g_6455f0 != 0) {
+                s1.LoadString(0x81ac);
+                s2.LoadString(0x81ad);
+            }
+        }
+    } else if (mode == 3) {
+        if (g_64556c->m_130 != 0) {
+            s1.LoadString(0x819f);
+        } else {
+            s1.LoadString(0x819e);
+        }
+    } else if (mode == 2) {
+        if (g_64556c->m_130 != 0) {
+            s1.LoadString(0x819d);
+        } else {
+            s1.LoadString(0x819c);
+        }
+    } else {
+        s0.Format(g_emptyString);
+        s2.Format(g_emptyString);
+        s1.Format(g_emptyString);
+    }
+
+    if (g_64556c->QueryLevelName().GetLength() != 0) {
+        char buf[128];
+        wsprintfA(buf, g_64556c->QueryLevelName());
+        if (strchr(buf, '.')) {
+            *strchr(buf, '.') = 0;
+        }
+        char* base;
+        if (strrchr(buf, '\\') != 0) {
+            base = strrchr(buf, '\\') + 1;
+        } else {
+            base = buf;
+        }
+        s2 = base;
+    }
+
+    s3.LoadString(0x819b);
+
+    RECT r1;
+    RECT r2;
+    RECT r3;
+    RECT r4;
+    SetRect(&r1, 0, 0, 0x280, 0x38);
+    SetRect(&r2, 0, 0x2b, 0x280, 0x59);
+    SetRect(&r3, 0, 0x176, 0x280, 0x1a2);
+    SetRect(&r4, 0, 0x1b8, 0x280, 0x1e0);
+    EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s0, (i32)&r1, 0x78, 0, 0, 0, 0, 1);
+    EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s1, (i32)&r2, 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s2, (i32)&r3, 0x6e, 0, 0, 0, 0, 1);
+    EngStr_DrawText((EngStrRenderObj*)m_c, (i32)&s3, (i32)&r4, 0x6e, 0, 0, 0, 0, 1);
+    return 1;
+}
+
+SIZE_UNKNOWN(GruntInfoTextHost);
 
 // ===========================================================================
 // @early-stop
@@ -2588,6 +3941,198 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
         return 1;
     }
     m_guts->HudClickAt(a, x, y);
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::HandleMousePress (0x0ce660; re-homed from the former gamemousehandler unit,
+// waveP - vtable slot 16 / +0x40 of the CPlay/CMulti/CDemo state vtables, mouse
+// sibling of the keyboard dispatcher; TU_MIGRATION MOVE row `0x0ce660 HandleMousePress
+// @CPlay gamemousehandler -> 0xcdb10 play`). The status-bar sub-objects it reaches
+// are modeled minimally as this-facet views; only offsets / code bytes load-bearing,
+// every helper reloc-masked external.
+// ===========================================================================
+SIZE_UNKNOWN(SbiSndTable);
+struct SbiSndTable {
+    // Find @0x1b8438 IS CMapStringToOb::Lookup; cast at the call.
+};
+SIZE_UNKNOWN(SbiSndSet);
+struct SbiSndSet { // m_4->m_30->m_28
+    char m_pad00[0x10];
+    SbiSndTable m_10; // +0x10
+    char m_pad11[0x30 - 0x11];
+    i32 m_30; // +0x30  active guard
+};
+SIZE_UNKNOWN(SbiPoint);
+struct SbiPoint {
+    i32 x; // +0x00
+    i32 y; // +0x04
+};
+SIZE_UNKNOWN(SbiCoordSrc);
+struct SbiCoordSrc { // m_4->m_30->m_24->m_5c
+    char m_pad00[0x40];
+    SbiPoint m_40; // +0x40
+};
+SIZE_UNKNOWN(SbiHost24);
+struct SbiHost24 { // m_4->m_30->m_24
+    char m_pad00[0x10];
+    i32 m_10; // +0x10  origin x offset
+    i32 m_14; // +0x14  origin y offset
+    char m_pad18[0x5c - 0x18];
+    SbiCoordSrc* m_5c; // +0x5c
+};
+SIZE_UNKNOWN(SbiHostInner);
+struct SbiHostInner { // m_4->m_30
+    char m_pad00[0x24];
+    SbiHost24* m_24; // +0x24
+    SbiSndSet* m_28; // +0x28
+};
+SIZE_UNKNOWN(SbiHost);
+struct SbiHost { // this->m_4
+    char m_pad00[0x30];
+    SbiHostInner* m_30; // +0x30
+    char m_pad34[0x68 - 0x34];
+    CTriggerMgr* m_68;   // +0x68
+    CGruntzCmdMgr* m_6c; // +0x6c
+};
+SIZE_UNKNOWN(SbiRectSrc);
+struct SbiRectSrc { // this->m_c->m_24
+    char m_pad00[0x10];
+    RECT m_10; // +0x10
+};
+SIZE_UNKNOWN(SbiRectHost);
+struct SbiRectHost { // this->m_c
+    char m_pad00[0x24];
+    SbiRectSrc* m_24; // +0x24
+};
+SIZE_UNKNOWN(SbiChild);
+struct SbiChild { // this->m_2dc
+    i32 m_0;      // +0x00  mode tag
+};
+SIZE_UNKNOWN(SbiEntry);
+struct SbiEntry { // this->m_374[i]
+    i32 m_0;      // +0x00  center x
+    i32 m_4;      // +0x04  center y
+};
+SIZE_UNKNOWN(SbiMgr68);
+struct SbiMgr68 { // g_sbiMgr->m_68
+    char m_pad00[0x10c];
+    i32 m_10c[1]; // +0x10c  per-area counter array
+    char m_pad110[0x400 - 0x110];
+    i32 m_400; // +0x400  active gate
+};
+SIZE_UNKNOWN(SbiCfgEntry);
+struct SbiCfgEntry { // g_sbiMgr->m_150[area]  (stride 0x238)
+    char m_pad00[0x228];
+    i32 m_228; // +0x228  max count
+    char m_pad22c[0x238 - 0x22c];
+};
+SIZE_UNKNOWN(SbiMgr);
+struct SbiMgr { // g_sbiMgr (*0x64556c)
+    char m_pad00[0x68];
+    SbiMgr68* m_68; // +0x68
+    char m_pad6c[0x150 - 0x6c];
+    SbiCfgEntry m_150[1]; // +0x150
+};
+DATA(0x0024556c)
+extern SbiMgr* g_sbiMgr; // *0x64556c
+DATA(0x0021ab24)
+extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA (HandleMousePress tab cue tag)
+// sub_1c44 (0x1c44 thunk) __stdcall: is the hot point inside the mode-2 child?
+i32 __stdcall SbiPointInChild(i32 x, i32 y);
+
+// @early-stop
+// 4-byte stack-coalesce wall (~84%, body byte-exact). Return-epilogue tail-merge
+// (paired guards combined with `||`) + a uniform +4 frame shift (sub esp,0x14 vs
+// 0x10): retail packs every local into the 16-byte RECT + reuses dead x/y arg homes
+// for the Probe/Find out-params; this build spills one out-param to a fresh 5th slot.
+// A documented stack-slot-coalesce coin-flip (docs/patterns/stack-slot-coalesce-
+// frame-4b.md), not source-steerable; ZERO logic differences remain.
+RVA(0x000ce660, 0x362)
+i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
+    if (m_hudSuppressed != 0 || m_guts == 0) {
+        return 1;
+    }
+    if (m_overlayDrag != 0 || g_sbiMgr->m_68->m_400 == 0) {
+        return ((CSBI_RectOnly*)m_guts)->ClickHilite(msg, x, y);
+    }
+    if (m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
+        return this->Vslot0e(msg, x, y); // base handler at vtable slot +0x38
+    }
+
+    if (((SbiChild*)m_guts)->m_0 == 2 && SbiPointInChild(x, y)) {
+        SbiSndSet* set = ((SbiHost*)m_4)->m_30->m_28;
+        if (set->m_30 == 0) {
+            LeafCue* e = 0;
+            ((CMapStringToOb*)&set->m_10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)e);
+            if (e != 0) {
+                e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+            }
+        }
+        ((CSBI_RectOnly*)m_guts)->RefreshState();
+        if (((SbiChild*)m_guts)->m_0 == 1) {
+            m_hitTest->Configure(2);
+        } else {
+            m_hitTest->Configure(1);
+        }
+        return 1;
+    }
+
+    i32 idx = ((CSBI_RectOnly*)m_guts)->HitTest(x, y);
+    if (idx != -1) {
+        ((CSBI_RectOnly*)m_guts)->PlaceCursorTarget(idx, 1);
+        return 1;
+    }
+
+    RECT* rc = &((SbiRectHost*)m_c)->m_24->m_10;
+    i32 rl = rc->left;
+    i32 rt = rc->top;
+    i32 rr = rc->right;
+    i32 rb = rc->bottom;
+    if (x < rl || x > rr || y < rt || y > rb) {
+        return ((CSBI_RectOnly*)m_guts)->ClickHilite(msg, x, y);
+    }
+
+    i32 outArea;
+    i32 outVal;
+    if (((SbiHost*)m_4)->m_68->ScreenToCell(x, y, &outArea, &outVal, 5) && g_644c54 == outArea) {
+        ((CSBI_RectOnly*)m_guts)->ToggleStat(outVal);
+        return 1;
+    }
+
+    if (m_dragInhibit1 != 0) {
+        return 1;
+    }
+    i32 area = g_644c54;
+    SbiCfgEntry* cfg = &g_sbiMgr->m_150[area];
+    if (cfg == 0) {
+        return 0;
+    }
+    if (g_sbiMgr->m_68->m_10c[area] >= cfg->m_228) {
+        return 0;
+    }
+
+    SbiHost24* h = ((SbiHost*)m_4)->m_30->m_24;
+    i32 px = h->m_5c->m_40.x - h->m_10 + x;
+    i32 py = h->m_5c->m_40.y - h->m_14 + y;
+    for (i32 i = 0; i < markerCount(); i++) {
+        SbiEntry* e = ((SbiEntry**)markerData())[i];
+        if (e == 0) {
+            continue;
+        }
+        RECT er;
+        SetRect(&er, e->m_0 - 0x10, e->m_4 - 0x10, e->m_0 + 0x10, e->m_4 + 0x10);
+        if (px < er.right && px >= er.left && py < er.bottom && py >= er.top) {
+            if (!((CSBI_RectOnly*)m_guts)->FindReadySlot()) {
+                return 1;
+            }
+            char ab = (char)g_644c54;
+            px = (px & 0xffe0) + 0x10;
+            py = (py & 0xffe0) + 0x10;
+            ((SbiHost*)m_4)->m_6c->Spawn(1, ab, 0, 0, px, py, 0, 0);
+            return 1;
+        }
+    }
     return 1;
 }
 

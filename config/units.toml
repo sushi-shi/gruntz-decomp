@@ -313,11 +313,6 @@ source = "src/Gruntz/LevelRezPath.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "drawbattlestats"
-source = "src/Gruntz/DrawBattleStats.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "assetnamespaceprefixes"
 source = "src/Gruntz/AssetNamespacePrefixes.cpp"
 flags = "eh"
@@ -326,11 +321,6 @@ flags = "eh"
 unit = "brickzload"
 source = "src/Gruntz/BrickzLoad.cpp"
 flags = "base"
-
-[[unit]]
-unit = "gruntinfotext"
-source = "src/Gruntz/GruntInfoText.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "gruntzmgrtransition"
@@ -380,11 +370,6 @@ flags = "eh"
 [[unit]]
 unit = "voicesoundlist"
 source = "src/Gruntz/VoiceSoundList.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "tilewireswitchlogic"
-source = "src/Gruntz/TileSwitchLogic.cpp"
 flags = "eh"
 
 [[unit]]
@@ -819,12 +804,6 @@ source = "src/Gruntz/BootyStateActivate.cpp"
 flags = "eh"
 
 [[unit]]
-# CPlay::vfunc_16 (slot 16) in-game pointer/click dispatcher (sibling of GameKeyHandler).
-unit = "gamemousehandler"
-source = "src/Gruntz/GameMouseHandler.cpp"
-flags = "base"
-
-[[unit]]
 # CCheckpointTriggerSwitchLogic slot-1 builder (0x112a50) - vtable-proven.
 unit = "checkpointswitchbuild"
 source = "src/Gruntz/CheckpointSwitchBuild.cpp"
@@ -966,16 +945,6 @@ flags = "base"
 # Ghidra-missed 0x4a780: 8-way direction classifier (identity-TODO, FP).
 unit = "directionclassify"
 source = "src/Gruntz/DirectionClassify.cpp"
-flags = "base"
-
-[[unit]]
-unit = "playsync"
-source = "src/Gruntz/PlaySync.cpp"
-flags = "base"
-
-[[unit]]
-unit = "netgamedlgwatch"
-source = "src/Net/NetGameDlgWatch.cpp"
 flags = "base"
 
 [[unit]]
@@ -1253,11 +1222,6 @@ source = "src/DDrawMgr/DDrawSurfaceMgr.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "ddrawsurfacemgrserialize"
-source = "src/DDrawMgr/DDrawSurfaceMgrSerialize.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "serialobjref"
 source = "src/Gruntz/SerialObjRef.cpp"
 flags = "eh"
@@ -1515,16 +1479,6 @@ flags = "eh"
 [[unit]]
 unit = "logicworkerhandlers"
 source = "src/Gruntz/LogicWorkerHandlers.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "loadlevelbymode"
-source = "src/Gruntz/LoadLevelByMode.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "pyramidbridgesprites"
-source = "src/Gruntz/PyramidBridgeSprites.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1873,12 +1827,6 @@ unit = "gruntstatestep"
 source = "src/Gruntz/GruntStateStep.cpp"
 flags = "base"
 
-[[unit]]
-unit = "gruntarriveresolve"
-source = "src/Gruntz/GruntArriveResolve.cpp"
-flags = "eh"
-
-# FreeNodePool::Push (0x0311b0), the g_coordPool recycler (re-homed from DiscoveredSmall.cpp).
 [[unit]]
 unit = "freenodepool"
 source = "src/Gruntz/FreeNodePool.cpp"

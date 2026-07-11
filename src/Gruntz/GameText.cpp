@@ -8,6 +8,8 @@
 #include <Wap32/ZDArrayDerived.h> // CZDArrayDerived::Construct (the 0x82aa0 register thunk)
 #include <Globals.h>              // g_desc60aac8 (the registered descriptor)
 #include <Bute/ButeSection.h>     // real CButeSection (g_resButeMgr's dynamic init @0x82b20)
+#include <Gruntz/FreeNodePool.h>  // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
+#include <Rez/RezMgr.h>           // RezFree (ClearCoordPool frees the pool's backing block)
 
 // ---------------------------------------------------------------------------
 // The two name tables are file-scope arrays of CString with brace-initializers.
@@ -104,6 +106,66 @@ void InitStr64552c() {
 RVA(0x00082d20, 0xa)
 void InitStr645530() {
     g_str645530.CString::CString();
+}
+
+// ---------------------------------------------------------------------------
+// 0x082da0..0x082ff0 (folded from the former freenodepool unit, waveP). This is
+// the RVA-contiguous TAIL of THIS obj: 0x82d20 + 0x80 = 0x82da0, and the
+// g_str6455xx CString globals sit in ONE contiguous .data run 0x645514..0x645530
+// with GameText's g_str645524..30 above (private-globals oracle: one obj). The
+// four low-band CString dynamic-initializer (_$E) thunks of the debug-overlay /
+// profiler text-sink set (0x645514..0x645520); each tail-constructs its empty
+// CString in place (`mov ecx,&g; jmp CString::CString()` @0x1b9b93, reloc-masked).
+// ---------------------------------------------------------------------------
+DATA(0x00245514)
+extern CString g_str645514; // 0x645514
+DATA(0x00245518)
+extern CString g_str645518; // 0x645518
+DATA(0x0024551c)
+extern CString g_str64551c; // 0x64551c
+DATA(0x00245520)
+extern CString g_str645520; // 0x645520
+
+RVA(0x00082da0, 0xa)
+void InitStr645514() {
+    g_str645514.CString::CString();
+}
+RVA(0x00082e20, 0xa)
+void InitStr645518() {
+    g_str645518.CString::CString();
+}
+RVA(0x00082ea0, 0xa)
+void InitStr64551c() {
+    g_str64551c.CString::CString();
+}
+RVA(0x00082f20, 0xa)
+void InitStr645520() {
+    g_str645520.CString::CString();
+}
+
+// The shared coord-node pool object (0x645540); its +0 slot holds the RezAlloc'd
+// backing block ClearCoordPool frees. ResetCoordPool (0x082fa0, __cdecl) zeroes
+// the four pool words WITHOUT freeing; ClearCoordPool (0x082ff0) frees the backing
+// block (m_0) if present, then zeroes. RVA-contiguous tail of this obj.
+extern FreeNodePool g_coordPool;
+
+RVA(0x00082fa0, 0x17)
+void ResetCoordPool() {
+    g_coordPool.m_0 = 0;
+    g_coordPool.m_4 = 0;
+    g_coordPool.m_8 = 0;
+    g_coordPool.m_c = 0;
+}
+
+RVA(0x00082ff0, 0x2f)
+void ClearCoordPool() {
+    if (g_coordPool.m_0 != 0) {
+        RezFree((void*)g_coordPool.m_0);
+    }
+    g_coordPool.m_0 = 0;
+    g_coordPool.m_4 = 0;
+    g_coordPool.m_8 = 0;
+    g_coordPool.m_c = 0;
 }
 
 // ---------------------------------------------------------------------------

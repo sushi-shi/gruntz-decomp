@@ -23,26 +23,36 @@
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (Booty/MultiBooty ReleaseResources)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // RemoveKeysEqual_155360 (CBootyState::ReleaseResources)
 #include <DDrawMgr/DDSurface.h> // CMultiBootyState::Render: CDDSurface Flip/BltFast on the frame surfaces
-#include <Mfc.h>   // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
+#include <Mfc.h>                // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
 #include <ddraw.h> // CMultiBootyState::Render: real IDirectDrawSurface::IsLost dispatch (slot 24)
 #include <math.h>  // sin/cos (StepGlitterAnim sine spiral)
 
 #include <rva.h>
 #include <Gruntz/BankMgr.h> // CResSource::LookupSet (CState::m_2c/m_levelBank/m_gruntzBank)
 #include <Gruntz/GameMode.h> // canonical CBootyState/CMultiBootyState : CState + CSpriteFactoryHolder facet
-#include <Gruntz/GruntzMgr.h>    // CMultiBootyState::Render: CState::m_4 owner (ReportError)
+#include <Gruntz/GruntzMgr.h>     // CMultiBootyState::Render: CState::m_4 owner (ReportError)
 #include <Gruntz/SpriteFactory.h> // CMultiBootyState::Render: m_c->m_8 frame-worker slots 9/10
 #include <Gruntz/LeafCue.h>       // LeafCue (Booty/MultiBooty FrameSlot28 BOOTY_LOOP cue)
 #include <Gruntz/UserLogic.h>     // CGameObject (glitter/letter sprites; StepGlitterAnim/BuildWarp)
 #include <Gruntz/BattlezData.h>   // CBattlezData::InBounds (CheckPerfectBonus frame-ready gate)
-#include <Gruntz/WwdGameReg.h>    // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
-#include <Io/MoviePlayer.h>       // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
+#include <Gruntz/WwdGameReg.h> // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
+#include <Gruntz/GameRegistry.h> // CGameRegistry (g_mgr; CBattleStatsView::DrawBattleStats, waveP)
+#include <Io/MoviePlayer.h>      // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
 
 // CMultiBootyState::Render's HUD line is drawn through the shared GlyphStringDraw.cpp
 // free function (0x115520); declared here (reloc-masked) so the call co-names with retail.
 struct HudMsgSink;
-void ShowHudMessageAlt(HudMsgSink* sink, i32 rect, i32 str, i32 a4, i32 a5, i32 a6, i32 a7,
-                       i32 a8, i32 a9);
+void ShowHudMessageAlt(
+    HudMsgSink* sink,
+    i32 rect,
+    i32 str,
+    i32 a4,
+    i32 a5,
+    i32 a6,
+    i32 a7,
+    i32 a8,
+    i32 a9
+);
 
 // ---------------------------------------------------------------------------
 // The game-registry (*0x24556c == g_mgrSettings, the CGameRegistry singleton) WORLD
@@ -308,9 +318,9 @@ i32 CMultiBootyState::BuildWarpStoneGlitterAnimation() {
     m_scratchX = 0;
     m_1e8 = 0;
     for (i32 i = 0; i < 4; i++) {
-        CGameObject* a = ((CGlitterMgr*)g_mgrSettings)
-                             ->m_world->m_8->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3,
-                                                          "DoNothing", 3);
+        CGameObject* a =
+            ((CGlitterMgr*)g_mgrSettings)
+                ->m_world->m_8->CreateSprite(0, 0, 0, (i != m_letterIdx) ? 1 : 3, "DoNothing", 3);
         slot[i] = a;
         if (a == 0) {
             return 0;
@@ -636,6 +646,229 @@ i32 CMultiBootyState::QueryGruntSlots() {
     }
     return 0;
 }
+
+// ===========================================================================
+// CBattleStatsView::DrawBattleStats (0x1ed30; re-homed from the former drawbattlestats
+// unit, waveP - TU_MIGRATION MOVE row `0x01ed30 DrawBattleStats@CBattleStatsView
+// drawbattlestats -> 0x1c0f0 bootystateactivate`; called here as OnActivated). The
+// in-game BATTLE-STATZ scoreboard renderer (sibling of DrawDebugStats): 6 numeric
+// stat columns per active player, 7 category labels, per-player team-colour name, the
+// title. The reused CString + colour-name temp give it the /GX frame. g_mgr / the view
+// are engine classes reached by raw this+offset; every callee reloc-masked external;
+// CopyRect hoisted through a data fn-ptr global.
+// ===========================================================================
+// DrawStatText (0x1f00 -> 0x1154b0): __cdecl(ctx, text, rect, y, flag, b, g, r, a9).
+extern "C" void
+DrawStatText(void* ctx, CString* text, RECT* rc, i32 y, i32 flag, i32 b, i32 g, i32 r, i32 a9);
+// GetColorName (0x3e54): NRV CString* into `out`.
+CString* GetColorName(CString* out);
+
+// CopyRect USER32 import hoisted through a data fn-ptr global (retail loads it once
+// into ebp and calls it ~13x).
+DATA(0x002c44bc)
+extern void(WINAPI* g_pCopyRect)(RECT* dst, const RECT* src); // 0x6c44bc
+
+// The per-column source-rect tables (RECT[] in .data). Indexed by player/category.
+DATA(0x001e9178)
+extern RECT g_col1Rects[]; // 0x5e9178
+DATA(0x001e91b8)
+extern RECT g_col2Rects[]; // 0x5e91b8
+DATA(0x001e91f8)
+extern RECT g_col3Rects[]; // 0x5e91f8
+DATA(0x001e9238)
+extern RECT g_col4Rects[]; // 0x5e9238
+DATA(0x001e9278)
+extern RECT g_col5Rects[]; // 0x5e9278
+DATA(0x001e92b8)
+extern RECT g_col6Rects[]; // 0x5e92b8
+DATA(0x001e92f8)
+extern RECT g_colorRects[]; // 0x5e92f8 (4 team-colour rects)
+DATA(0x001e9338)
+extern RECT g_labelRects[]; // 0x5e9338 (7 category-label rects)
+
+// The per-player stat block reached through g_mgr->m_7c; SumWinRow (0x1230) folds
+// the win-row totals for a player.
+DATA(0x0024556c)
+extern CGameRegistry* g_mgr; // *0x64556c
+
+class CBattleStatsView {
+public:
+    void DrawBattleStats(); // 0x1ed30
+
+    char m_pad00[0xc];
+    void* m_c; // +0x0c  draw context
+};
+
+static __inline i32 sumRun(CBattlezData* base, i32 off, i32 n) {
+    i32* p = (i32*)((char*)base + off);
+    i32 s = 0;
+    i32 k;
+    for (k = 0; k < n; k++) {
+        s += p[k];
+    }
+    return s;
+}
+
+// @source: string-xref
+// @early-stop
+// induction-variable strength-reduction wall (~85%): the whole structure, all
+// externs/strings, the /GX frame size and register roles match retail. The residual is
+// the 6-column player loop: retail strength-reduces the per-column offsets into a
+// specific induction-variable/register layout; the /O2 recompile derives an
+// equivalent-but-differently-registered set cascading a scheduling/operand-byte drift.
+// Documented regalloc wall, not source-steerable (cf. docs/patterns/
+// loop-invariant-multiply-strength-reduce-vs-memreread.md).
+RVA(0x0001ed30, 0x549)
+void CBattleStatsView::DrawBattleStats() {
+    CString s;
+    RECT rc;
+    void(WINAPI * copyRect)(RECT*, const RECT*) = g_pCopyRect;
+    i32 i;
+    i32 c;
+
+    // Loop 1: 6 numeric stat columns per active player.
+    for (i = 0; i < 4; i++) {
+        if (*(i32*)((char*)g_mgr + 0x178 + i * 0x238) != 0) {
+            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0x348 + i * 0x10, 4));
+            copyRect(&rc, &g_col1Rects[i]);
+            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+
+            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0x2d8 + i * 0x1c, 7));
+            copyRect(&rc, &g_col2Rects[i]);
+            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+
+            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0x238 + i * 0x28, 10));
+            copyRect(&rc, &g_col3Rects[i]);
+            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+
+            s.Format("%d", sumRun((CBattlezData*)g_mgr->m_scoreHud, 0xd8 + i * 0x58, 22));
+            copyRect(&rc, &g_col4Rects[i]);
+            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+
+            s.Format("%d", *(i32*)((char*)(CBattlezData*)g_mgr->m_scoreHud + 0x48 + i * 4));
+            copyRect(&rc, &g_col5Rects[i]);
+            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+
+            s.Format("%d", ((CBattlezData*)g_mgr->m_scoreHud)->SumWinRow(i));
+            copyRect(&rc, &g_col6Rects[i]);
+            DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+        }
+    }
+
+    // Loop 2: category labels.
+    for (c = 0; c <= 6; c++) {
+        switch (c) {
+            case 0:
+                s = "Fortz:";
+                break;
+            case 1:
+                s = "Killz:";
+                break;
+            case 2:
+                s = "Gruntz:";
+                break;
+            case 3:
+                s = "Toolz:";
+                break;
+            case 4:
+                s = "Toyz:";
+                break;
+            case 5:
+                s = "Powerupz:";
+                break;
+            case 6:
+                s = "Cursez:";
+                break;
+        }
+        copyRect(&rc, &g_labelRects[c]);
+        DrawStatText(m_c, &s, &rc, 0x78, 1, 0xff, 0xff, 0, 1);
+    }
+
+    // Colour loop: team-colour name per active player, drawn in that colour.
+    for (i = 0; i < 4; i++) {
+        if (*(i32*)((char*)g_mgr + 0x178 + i * 0x238) != 0) {
+            i32 color;
+            switch (*(i32*)((char*)g_mgr + 0x158 + i * 0x238)) {
+                case 0:
+                    color = 0x80ff;
+                    break;
+                case 1:
+                    color = 0xff00;
+                    break;
+                case 2:
+                    color = 0xff0000;
+                    break;
+                case 3:
+                    color = 0xff;
+                    break;
+                case 4:
+                    color = 0x800080;
+                    break;
+                case 5:
+                    color = 0xffff;
+                    break;
+                case 6:
+                    color = 0x8000ff;
+                    break;
+                case 8:
+                    color = 0x800000;
+                    break;
+                case 9:
+                    color = 0x8000;
+                    break;
+                case 10:
+                    color = 0x808000;
+                    break;
+                case 11:
+                    color = 0x80;
+                    break;
+                case 12:
+                    color = 0xff00ff;
+                    break;
+                case 13:
+                    color = 0x8080;
+                    break;
+                case 14:
+                    color = 0x808080;
+                    break;
+                case 15:
+                    color = 0xffff00;
+                    break;
+                case 16:
+                    color = 0xffffff;
+                    break;
+                default:
+                    color = 0;
+                    break;
+            }
+            CString cn;
+            s.Format("%s", (const char*)*GetColorName(&cn));
+            copyRect(&rc, &g_colorRects[i]);
+            DrawStatText(
+                m_c,
+                &s,
+                &rc,
+                0x64,
+                0,
+                color & 0xff,
+                (color >> 8) & 0xff,
+                (color >> 0x10) & 0xff,
+                1
+            );
+        }
+    }
+
+    // Title.
+    s.Format("BATTLE STATZ");
+    rc.left = 0x96;
+    rc.top = 0xf;
+    rc.right = 0x280;
+    rc.bottom = 0x73;
+    DrawStatText(m_c, &s, &rc, 0x82, 1, 0xff, 0xff, 0, 1);
+}
+
+SIZE_UNKNOWN(StatArray);
+SIZE_UNKNOWN(CBattleStatsView);
 
 // ---------------------------------------------------------------------------
 // CMultiBootyState::Render (slot 5, +0x14, 0x1f480) - the booty-countdown per-frame

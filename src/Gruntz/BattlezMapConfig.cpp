@@ -58,7 +58,9 @@
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Globals.h>
 
-#include <stdlib.h>     // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
+#include <stdlib.h> // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
+#include <math.h>   // sqrt (CGruntMover::Step board-distance, waveP)
+#pragma intrinsic(sqrt)
 #include <string.h>     // strcmp (anim-name dispatch -> inline sbb/sbb byte compare)
 #include <new>          // placement new (CRect in-place ctor)
 #include <Wap32/Rect.h> // canonical CRect (0x29ac0 direct-store ctor, was local QuadIntRecord)
@@ -221,6 +223,12 @@ public:
     GridCandNode* m_objListHead; // +0x04  base object-list head (the candidate list)
     char m_pad08[0x1c - 0x08];
     GridUnit* m_grid[0x3c]; // +0x1c  the 4x15 placed-cell grid (stride 4), indexed [band*15 + k]
+    i32 ApplyTriggerA(
+        i32 col,
+        i32 row,
+        i32 a24,
+        i32 a28
+    ); // (CArriveMgr::ResolveArrival tile-trigger, waveP)
     i32 ApplyTriggerB(i32 a, i32 b, i32 x, i32 y); // 0x06e120 (CTriggerMgr::ApplyTriggerB, i32 ret)
     i32 Probe(
         i32 cell,
@@ -2602,6 +2610,446 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
 // marks the tile 0x20000-visited and RECURSES into the 8 neighbours (each gated by
 // the visited bit + a 0xc0000/0x9a passability test), then loops on g_stepRun.
 // ===========================================================================
+// ===========================================================================
+// CArriveMgr::ResolveArrival (0x02c690; re-homed from the former gruntarriveresolve
+// unit, waveP - TU_MIGRATION MOVE row `0x02c690 ResolveArrival@CArriveMgr
+// gruntarriveresolve -> 0x29a30 battlezmapconfig`; CArriveMgr IS CBattlezMapConfig's
+// run-phase reinterpretation, xref-proven). The grunt arrival/tile-effect resolver;
+// g_freeList / g_freeListNodeBias / g_coordPool reuse this TU's decls, CTriggerMgr is
+// this TU's local view (ApplyTriggerA added). The CArrive* sub-object views are local.
+// ===========================================================================
+// --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
+// The arriving grunt (arg) is the real CGrunt; its head pending-coord list nodes are
+// GruntCoordNode (+0x08 GruntCoord*) and the tile-coord pairs are GruntTilePos - all
+// from <Gruntz/Grunt.h>. (The former CArriveGrunt/CArriveCoord/CArriveNode/CArriveList
+// views are dissolved onto those real classes.)
+struct CArriveCell { // 0x1c bytes/cell
+    i32 m_0;         // +0x00 flags
+    char _04[0x10 - 4];
+    i32 m_10; // +0x10 type
+    char _14[0x1c - 0x14];
+};
+struct CArriveQuad {                                  // QuadIntRecord (0x34a4) target
+    i32 left, top, right, bottom;                     // +0x00..+0x0c
+    CArriveQuad* Set34a4(i32 a, i32 b, i32 c, i32 d); // 0x34a4 (__thiscall, returns this)
+};
+struct CArriveGrid { // this->m_c
+    char _00[8];
+    CArriveCell** m_8; // +0x08 rows
+    i32 m_c, m_10;     // +0x0c width, +0x10 height
+    char _14[0x60 - 0x14];
+    CArriveQuad m_60; // +0x60 clip region (left/top/right/bottom)
+    i32 m_70, m_74;   // +0x70 width, +0x74 height of clip
+};
+struct CArriveFind { // FindByField0C (0x2838) result
+    i32 m_0;         // +0x00
+    char _04[0x18 - 4];
+    i32 m_arr[1]; // +0x18 indexed by this->m_18
+};
+struct CArriveFind2 { // Find1c21 result
+    i32 _00;
+    i32 m_4; // +0x04
+};
+struct CArriveSub10b { // this->m_10
+    char _00[0x2e4];
+    CTileTriggerContainer* m_2e4; // +0x2e4
+};
+// (The scratch CObList block is the real GruntListSub - forces the /GX EH frame.)
+struct CArriveFinder { // this->m_14
+};
+struct CArriveMgr {                                      // this (the CBattlezMapConfig board)
+    i32 Gate1a14(CGrunt* g);                             // 0x1a14
+    void Effect374c(CGrunt* g, i32 kind);                // 0x374c
+    i32 Probe1a4b(CGrunt* g, i32 a, i32 b);              // 0x1a4b
+    void Impact25e5(CGrunt* g, i32 a, i32 b, i32 c);     // 0x25e5
+    void SelfImpact2b58(CGrunt* g, i32 a, i32 b, i32 c); // 0x2b58
+    i32 Ready27ed(CGrunt* g);                            // 0x27ed
+
+    char _00[8];
+    CTriggerMgr* m_8;    // +0x08
+    CArriveGrid* m_c;    // +0x0c grid
+    CArriveSub10b* m_10; // +0x10
+    CArriveFinder* m_14; // +0x14
+    i32 m_18;            // +0x18 index
+    char _1c[0x5c - 0x1c];
+    i32 m_5c, m_60; // +0x5c, +0x60 origin coords (raw px)
+
+    i32 ResolveArrival(CGrunt* g);
+};
+
+// Recycle the grunt's pending-coord list onto g_coordPool (guarded by m_coordCount).
+// The occupied-coord CObList head is g->m_320 (GruntCoordNode); its +0x08 GruntCoord*
+// is the recycled coord-node handle Drop takes (as its i32 arg).
+#define ARR_RECYCLE(g)                                                                             \
+    if ((g)->m_coordCount != 0) {                                                                  \
+        GruntCoordNode* nd = (g)->m_320;                                                           \
+        while (nd != 0) {                                                                          \
+            GruntCoordNode* cur = nd;                                                              \
+            nd = nd->m_next;                                                                       \
+            if (cur->m_coord != 0) {                                                               \
+                g_coordPool.Push(cur->m_coord);                                                    \
+            }                                                                                      \
+        }                                                                                          \
+        (g)->m_31c.RemoveAll();                                                                    \
+    }
+
+// cell flags at (col,row), out-of-bounds -> 0x01010101.
+static __inline i32 arrCell(CArriveGrid* grid, i32 col, i32 row) {
+    if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
+        return grid->m_8[row][col].m_0;
+    }
+    return 1;
+}
+
+// @early-stop
+// RECONSTRUCTED 23.7%->54.8% (2026-07-05). The whole COMMON path is now complete + logic-
+// correct (verified vs `sema disasm --diff`): Gate1a14(g) gate; the list-cached m_328 latch
+// (esi=&g->m_31c, read [esi+0xc]); the double-GetTilePos dest cell grid[gy][bx] AND the own
+// cell grid[fcy][fcx] (fcy = coord->y, was wrongly fcx twice) with the 0x01010101 OOB self-
+// fill; maskFlags = own.m_0 & ~0x20000000; type = (m_170>0x16?m_19c:m_170); and ALL the
+// flag/type handlers in retail order - door(0x400)/doorbody(0x4,FindChild==2)/0x8000-t3/
+// 0x4000-t3(!=0x99)/0x200/0x8(Probe+Effect0x12)/0x20(t1 Move, t0x11 3x3 scan)/0x4000-tf/
+// 0x8000-tf(FindByField0C+Impact/Move)/0x20-t5(SetCell/Impact/Move)/0x40(td Move / Effect0xd)/
+// the neighbour-pick fallback (SelfImpact+Ready, rand()%3 origin scan + Trigger1640). Every
+// callee owner corrected: this==g->m_10 (grid=this->m_c, Move via this->m_8, Find via this->
+// m_14, Effect/Probe/Impact/Ready on this; origin g->m_10->m_5c/m_60). The CArriveMgr view had
+// a missing char _00[8] (all this-> offsets were 8 low) - fixed.
+//
+// Residual is TWO walls, both proven with `sema disasm --base/--target`:
+//   (1) REGALLOC SWAP (dominant, ~unclimbable): retail colours g->ebp and SPILLS this to
+//       [esp+0x10]; our MSVC5 colours this->ebp and g->edi. Identical instruction stream +
+//       logic, but every g-member/this-member ref uses the opposite base register (ebp<->edi),
+//       so the modrm bytes differ throughout. Same allocator wall documented for
+//       CGruntMover::Step (GruntMoveStep.cpp) - "no source spelling reassigns the callee-saved
+//       register". Routing the board through g->m_10 DOES flip g->ebp but adds an [ebp+0x10]
+//       reload per cluster (base grows), netting -0.8% - not worth it.
+//   (2) DOOR-OPEN transform (off the common path, own recheck-DCE wall): retail's 0x1ad..0x46e
+//       block is 3x GetTilePos + QuadIntRecord + IntersectRect + a per-cell CString-EH nested
+//       loop (SearchEdge 0x20f4 / RemoveHead / g_freeList push) + a 0x2d31b cleanup tail. It
+//       contains a dead stack-address null-recheck (`lea edx,[esp+0x38]; test edx,edx; je`) our
+//       stronger MSVC5 DCE eliminates (cf. docs/patterns/dead-unreachable-recheck-block-dce.md),
+//       so it can't reach byte-exact regardless. Reconstructed as a structural CString-EH loop
+//       (forces the /GX frame); the exact 700-B transform + tail are a dedicated final-sweep job.
+RVA(0x0002c690, 0xdb4)
+i32 CArriveMgr::ResolveArrival(CGrunt* g) {
+    if (Gate1a14(g)) {
+        return 1;
+    }
+    if (g->m_coordCount == 0) {
+        return 0;
+    }
+
+    GruntCoord* fc = g->m_320->m_coord;
+    i32 fcx = fc->m_x; // grunt head coord x (long-lived)
+    i32 fcy = fc->m_y; // grunt head coord y
+
+    GruntTilePos a;
+    g->GetTilePos(&a);
+    i32 gy = a.m_y >> 5;
+    i32 gx = a.m_x >> 5;
+    GruntTilePos b;
+    g->GetTilePos(&b);
+    i32 bx = b.m_x >> 5;
+
+    // destination cell = grid[gy][bx]; OOB fills the dest buffer itself (self-copy).
+    CArriveCell dest;
+    CArriveCell* dsrc;
+    if ((u32)bx < (u32)m_c->m_c && (u32)gy < (u32)m_c->m_10) {
+        dsrc = &m_c->m_8[gy][bx];
+    } else {
+        memset(&dest, 1, 0x1c);
+        dsrc = &dest;
+    }
+    dest = *dsrc;
+    (void)gx;
+
+    // own cell = grid[fcy][fcx], the grunt's head pending coordinate.
+    CArriveCell own;
+    CArriveCell* osrc;
+    if ((u32)fcx < (u32)m_c->m_c && (u32)fcy < (u32)m_c->m_10) {
+        osrc = &m_c->m_8[fcy][fcx];
+    } else {
+        memset(&own, 1, 0x1c);
+        osrc = &own;
+    }
+    own = *osrc;
+
+    i32 maskFlags = own.m_0 & 0xdfffffff;
+    i32 type = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+
+    // ---- door (dest.flags & 0x400, m_2d4==3, type!=8) ----
+    if ((dest.m_0 & 0x400) && g->m_defenderState == 3 && type != 8) {
+        if (own.m_0 & 0x4000) {
+            // door-open transform: build a search rect from the grunt pos, then a per-cell
+            // CString-EH loop recycling edge nodes onto g_freeList. (Byte-walled: retail
+            // emits a dead stack-address null-recheck our MSVC5 DCEs - see @early-stop.)
+            GruntTilePos da;
+            g->GetTilePos(&da);
+            for (i32 drow = m_c->m_60.top; drow < m_c->m_60.bottom; drow++) {
+                for (i32 dcol = m_c->m_60.left; dcol < m_c->m_60.right; dcol++) {
+                    GruntListSub cs; // CObList block (default ctor -> CtorImpl(0xa))
+                    if (!(m_c->m_8[drow][dcol].m_0 & 0x20000000)) {
+                        void* h = cs.RemoveHead();
+                        if (h != 0) {
+                            void** node = (void**)((char*)h - g_freeListNodeBias);
+                            *node = g_freeList;
+                            g_freeList = node;
+                        }
+                    }
+                }
+            }
+        }
+        // recompute the grid clip region (IntersectRect with the full-grid rect)
+        CArriveQuad full, corners;
+        full.Set34a4(0, 0, m_c->m_c, m_c->m_10);
+        CArriveQuad* cr = corners.Set34a4(0, 0, m_c->m_c, m_c->m_10);
+        CArriveQuad tmp;
+        tmp.left = cr->left;
+        tmp.top = cr->top;
+        tmp.right = cr->right;
+        tmp.bottom = cr->bottom;
+        if (!IntersectRect((RECT*)&m_c->m_60, (RECT*)&tmp, (RECT*)&corners)) {
+            m_c->m_60 = tmp;
+        }
+        m_c->m_70 = m_c->m_60.right - m_c->m_60.left;
+        m_c->m_74 = m_c->m_60.bottom - m_c->m_60.top;
+    }
+
+    // ---- door body flag (dest.flags & 4) ----
+    if ((dest.m_0 & 4) && g->m_2d8 != 0xb) {
+        GruntTilePos tp;
+        i32 keyHi = g->m_10->m_5c >> 5;
+        g->GetTilePos(&tp);
+        i32 key = (keyHi << 8) + (tp.m_y >> 5);
+        (void)(tp.m_x >> 5);
+        CArriveFind2* r = (CArriveFind2*)((CTileTriggerSwitchLogic*)m_14)->FindChild(key, 0);
+        if (r->m_4 == 2) {
+            g->m_defenderState = 0;
+            ARR_RECYCLE(g);
+            g->m_2d8 = 0xb;
+            g->m_dwell = 0;
+            return 0;
+        }
+    }
+
+    // ---- 0x8000 gate, type 3 ----
+    if ((maskFlags & 0x8000) && type == 3 && g->m_2d8 == 0xa) {
+        m_8->ApplyTriggerA(
+            g->m_tileOwnerHi,
+            g->m_tileOwnerLo,
+            (fcx << 5) + 0x10,
+            (fcy << 5) + 0x10
+        );
+        ARR_RECYCLE(g);
+        return 0;
+    }
+
+    // ---- 0x4000 gate, type 3 ----
+    if ((maskFlags & 0x4000) && type == 3 && g->m_2d8 == 0xa) {
+        if (m_c->m_8[fcy][fcx].m_10 != 0x99) {
+            m_8->ApplyTriggerA(
+                g->m_tileOwnerHi,
+                g->m_tileOwnerLo,
+                (fcx << 5) + 0x10,
+                (fcy << 5) + 0x10
+            );
+        }
+        ARR_RECYCLE(g);
+        return 0;
+    }
+
+    // ---- 0x200 -> done ----
+    if (maskFlags & 0x200) {
+        return 1;
+    }
+
+    // ---- 0x8 -> probe/effect ----
+    if (maskFlags & 0x8) {
+        if (Probe1a4b(g, fcx, fcy) != 0) {
+            return 1;
+        }
+        Effect374c(g, 0x12);
+    }
+
+    // ---- 0x20 -> type dispatch ----
+    if (maskFlags & 0x20) {
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        if (t == 1 || t == 0x11) {
+            if (t == 1) {
+                m_8->ApplyTriggerA(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    (fcx << 5) + 0x10,
+                    (fcy << 5) + 0x10
+                );
+                return 1;
+            }
+            // t == 0x11: scan the 3x3 neighbourhood for the first in-bounds cell
+            for (i32 row = fcy - 1; row < fcy + 2; row++) {
+                for (i32 col = fcx - 1; col < fcx + 2; col++) {
+                    if ((u32)col < (u32)m_c->m_c && (u32)row < (u32)m_c->m_10) {
+                        i32 cf = arrCell(m_c, col, row);
+                        if (cf & 0x939) {
+                            return 1;
+                        }
+                        if (g->IsInCombatRange((col << 5) + 0x10, (row << 5) + 0x10) != 0) {
+                            m_8->ApplyTriggerA(
+                                g->m_tileOwnerHi,
+                                g->m_tileOwnerLo,
+                                (col << 5) + 0x10,
+                                (row << 5) + 0x10
+                            );
+                        }
+                        return 1;
+                    }
+                }
+            }
+        }
+    }
+
+    // ---- 0x4000 path, type 0xf (teleport) ----
+    if (maskFlags & 0x4000) {
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        if (t == 0xf) {
+            CArriveFind* r =
+                (CArriveFind*)((CTileTriggerSwitchLogic*)m_14)->FindByField0C((fcx << 8) + fcy);
+            if (r != 0) {
+                if (r->m_arr[m_18] != 0) {
+                    ARR_RECYCLE(g);
+                    Impact25e5(g, fcx, fcy, 1);
+                    return 1;
+                }
+                m_8->ApplyTriggerA(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    (fcx << 5) + 0x10,
+                    (fcy << 5) + 0x10
+                );
+                return 1;
+            }
+        }
+    }
+
+    // ---- 0x8000 path, type 0xf ----
+    if (maskFlags & 0x8000) {
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        if (t == 0xf) {
+            ARR_RECYCLE(g);
+            Impact25e5(g, fcx, fcy, 1);
+            return 1;
+        }
+    }
+
+    // ---- 0x20 path, type 5 ----
+    if (maskFlags & 0x20) {
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        if (t == 5) {
+            if (maskFlags & 0x4000) {
+                CArriveFind* r =
+                    (CArriveFind*)((CTileTriggerSwitchLogic*)m_14)->FindByField0C((fcx << 8) + fcy);
+                if (r != 0) {
+                    i32 k = r->m_0;
+                    if (r->m_arr[m_18] != 0) {
+                        if (k == 0x13e || k == 0x140 || k == 0x143) {
+                            Impact25e5(g, fcx, fcy, 0);
+                        }
+                    } else {
+                        if (k == 0x13e || k == 0x140 || k == 0x143) {
+                            m_10->m_2e4->SetCell(fcx, fcy, m_18);
+                        }
+                    }
+                }
+            }
+            m_8->ApplyTriggerA(
+                g->m_tileOwnerHi,
+                g->m_tileOwnerLo,
+                (fcx << 5) + 0x10,
+                (fcy << 5) + 0x10
+            );
+            return 0;
+        }
+        if (t == 0x11 || t == 1) {
+            return 1;
+        }
+        i32 flag = 1;
+        if (t == 3 && (maskFlags & 0x4000)) {
+            flag = 0;
+        }
+        if (t == 0xf && (maskFlags & 0x4000)) {
+            flag = 0;
+        }
+        if (flag == 0) {
+            return 1;
+        }
+        Effect374c(g, 5);
+        return 0;
+    }
+
+    // ---- 0x40 path ----
+    if (maskFlags & 0x40) {
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        if (t != 0x16) {
+            i32 t2 = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+            if (t2 == 0xd) {
+                m_8->ApplyTriggerA(
+                    g->m_tileOwnerHi,
+                    g->m_tileOwnerLo,
+                    (fcx << 5) + 0x10,
+                    (fcy << 5) + 0x10
+                );
+                return 0;
+            }
+            Effect374c(g, 0xd);
+            return 0;
+        }
+    }
+
+    // ---- neighbour pick fallback ----
+    SelfImpact2b58(g, 0, 0, 0);
+    if (Ready27ed(g) != 0) {
+        return 1;
+    }
+    {
+        i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
+        if (t == 0x16) {
+            return 1;
+        }
+    }
+    {
+        i32 oy = g->m_10->m_60 >> 5;
+        i32 ox = g->m_10->m_5c >> 5;
+        i32 row = rand() % 3 + oy - 1;
+        i32 col = rand() % 3 + ox - 1;
+        if ((u32)col >= (u32)m_c->m_c || (u32)row >= (u32)m_c->m_10) {
+            return 1;
+        }
+        i32 c0 = arrCell(m_c, col, row);
+        i32 c1 = arrCell(m_c, col, row);
+        if ((c1 & 0x987) & 0x20000000) {
+            return 1;
+        }
+        if (c1 & 0x987) {
+            return 1;
+        }
+        if (c0 & 0x20000000) {
+            return 1;
+        }
+        g->TileSwitch(col, row, 0x987, 0, 1, 0);
+    }
+    return 1;
+}
+
+SIZE_UNKNOWN(CArriveCell);
+SIZE_UNKNOWN(CArriveFind);
+SIZE_UNKNOWN(CArriveFind2);
+SIZE_UNKNOWN(CArriveFinder);
+SIZE_UNKNOWN(CArriveGrid);
+SIZE_UNKNOWN(CArriveMgr);
+SIZE_UNKNOWN(CArriveMover);
+SIZE_UNKNOWN(CArriveQuad);
+SIZE_UNKNOWN(CArriveSub10b);
+#undef ARR_RECYCLE
+
 // @early-stop
 // recursive flood-fill plateau: the global-flag loop, both FindPath arms (0x4903 /
 // 0x4003), the special anim-id set test, the commit (g_stepRun/Col/Row + g_freeList
@@ -4425,6 +4873,236 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
     o->m_y = ry;
     return o;
 }
+
+// ===========================================================================
+// CGruntMover::Step (0x031610; re-homed from the former gruntmovestep unit, waveP -
+// TU_MIGRATION MOVE row `0x031610 Step@CGruntMover gruntmovestep -> 0x29a30
+// battlezmapconfig`). The per-tick grunt move-resolution step; g_coordPool reuses
+// this TU's decl, the move-grid views are local. (Sibling 0x29af0 TileSwitch29af0
+// stays in gruntmovestep - a COMDAT leaf, out of scope this batch.)
+// ===========================================================================
+// --- views (offsets + called methods load-bearing; reloc-masked, no body) ---
+struct CGruntSub10 { // grunt->m_10
+    char _00[0x5c];
+    i32 m_5c, m_60; // +0x5c, +0x60
+};
+struct CCoordXY {
+    i32 x, y;
+};
+struct CMoveGridDims { // mover->m_c
+    char _00[0xc];
+    i32 m_c, m_10; // +0x0c grid width, +0x10 grid height
+};
+
+// The mover's board (m_8): a 4x15 grunt-pointer grid at +0x1c, indexed [15*col+row].
+struct CMoveBoard {
+    char _00[0x1c];
+    CGrunt* m_grid[60]; // +0x1c
+};
+
+struct CGruntMover {                                             // this (edi)
+    i32 Step(CGrunt* g);                                         // 0x031610
+    CGrunt* QueryTile4098(i32 x, i32 y, i32 dx, i32 dy);         // 0x4098
+    void Commit42e1(CGrunt* g);                                  // 0x42e1
+    void Plan293c(CGrunt* g, i32 x, i32 y, i32 a, i32 b, i32 c); // 0x293c
+    void Finish3e4f(CGrunt* g, CGrunt* a);                       // 0x3e4f
+
+    char _00[0x8];
+    CMoveBoard* m_8;    // +0x08  board (CGrunt*[] grid at +0x1c)
+    CMoveGridDims* m_c; // +0x0c
+    char _10[0x94 - 0x10];
+    i32 m_94, m_98; // +0x94, +0x98
+    char _9c[0xac - 0x9c];
+    i32 m_ac, m_b0, m_b4, m_b8; // +0xac..+0xb8
+    char _bc[0xc0 - 0xbc];
+    i32 m_c0; // +0xc0
+};
+
+#define MOVE_RECYCLE(g)                                                                            \
+    {                                                                                              \
+        GruntCoordNode* nd = (g)->m_320;                                                           \
+        while (nd != 0) {                                                                          \
+            GruntCoordNode* cur = nd;                                                              \
+            nd = nd->m_next;                                                                       \
+            if (cur->m_coord != 0) {                                                               \
+                g_coordPool.Push((void*)(cur->m_coord));                                           \
+            }                                                                                      \
+        }                                                                                          \
+        (g)->m_31c.RemoveAll();                                                                    \
+    }
+
+// @early-stop
+// CRACKED 18%->72% (2026-07-05). The 18% park was STRUCTURAL, not a wall: my source
+// laid the in-flight path first, but retail lays the FRESH path as the fall-through.
+// Fixes applied, each verified against llvm-objdump -dr:
+//   * block order: wrap fresh in `if(m_328==0){...}` so cl emits `jne handle328` and
+//     falls into fresh (was `if(m_328!=0)goto` which cl inverted to fall into the short
+//     handle328) - the single change that moved 18->69;
+//   * board distance is real `(int)sqrt((double)(adx*adx+ady*ady))` inlined -> retail's
+//     `fild [sum]; fsqrt; call __ftol` (the fake identity isqrt both mis-computed AND
+//     dropped the [esp] spill that sizes the frame to 0x20);
+//   * W/H read raw before GetTilePos, /3 divided after (deferred-division);
+//   * `c0.x/c0.y/c1.x/c1.y >>= 5` in place (retail stores the shifted coords back);
+//   * m_2ec vs m_b8/m_b4 are UNSIGNED compares (jbe, not jle).
+// Residual ~28% is a genuine register-COLORING cascade: retail colors `this`(mover)->edi
+// and `g`(arg)->esi; this cl colors `this`->ebx, freeing one reg so it spills/reloads
+// fewer temps (base 352 insns vs retail 395 - retail re-materializes push-0/or-1 and
+// reloads spills that this cl keeps in the extra reg). No source spelling reassigns the
+// callee-saved `this` register. Final-sweep candidate.
+RVA(0x00031610, 0x501)
+i32 CGruntMover::Step(CGrunt* g) {
+    if (g->m_coordCount == 0) {
+        if (g->m_defenderState == 2) {
+            goto inflight;
+        }
+
+        // ---- fresh: re-query the move grid for the target tile ----
+        i32 W = m_c->m_c;
+        i32 H = m_c->m_10;
+        CCoordXY c0;
+        g->GetScreenPos((GruntTilePos*)&c0);
+        c0.x >>= 5;
+        c0.y >>= 5;
+        CGrunt* nb = QueryTile4098(c0.x, c0.y, (i32)((u32)W / 3), (i32)((u32)H / 3));
+        if (nb != 0) {
+            CCoordXY c1;
+            nb->GetScreenPos((GruntTilePos*)&c1);
+            c1.x >>= 5;
+            c1.y >>= 5;
+            if (CGrunt_TileSwitch(c1.x, c1.y, 0xd87, 0, 1, 0) == 0) {
+                return 1;
+            }
+            g->m_arrivalCol = nb->m_tileOwnerHi;
+            g->m_arrivalRow = nb->m_tileOwnerLo;
+            g->m_defenderState = 2;
+            g->m_dwell = 0;
+            Commit42e1(g);
+            return 1;
+        }
+        // nb == 0: replan / drain
+        if ((u32)g->m_dwell > (u32)m_b8) {
+            CCoordXY here;
+            g->GetScreenPos((GruntTilePos*)&here);
+            Plan293c(g, here.x >> 5, here.y >> 5, m_ac, m_b0, -1);
+            if (g->m_coordCount > m_98 + m_94 && g->m_coordCount != 0) {
+                GruntCoordNode* nd = g->m_320;
+                if (nd != 0) {
+                    do {
+                        void* r = g->m_31c.Find1de8((void**)&nd);
+                        if (*(i32*)r != 0) {
+                            g_coordPool.Push((void*)(*(i32*)r));
+                        }
+                    } while (nd != 0);
+                }
+                g->m_31c.RemoveAll();
+            }
+            g->m_dwell = 0;
+        }
+        return 1;
+    }
+
+    // m_328 != 0
+    if (g->m_defenderState != 2) {
+        return 1;
+    }
+inflight: {
+    // ---- in-flight: advance / reroute along the path ----
+    i32 col = g->m_arrivalCol;
+    i32 row = g->m_arrivalRow;
+    CGrunt* cur = m_8->m_grid[15 * col + row];
+    i32 W = m_c->m_c;
+    i32 H = m_c->m_10;
+    CCoordXY c0;
+    g->GetScreenPos((GruntTilePos*)&c0);
+    c0.x >>= 5;
+    c0.y >>= 5;
+    CGrunt* nb = QueryTile4098(c0.x, c0.y, (i32)((u32)W / 3), (i32)((u32)H / 3));
+
+    if (cur == 0) {
+        goto L_clear;
+    }
+    if (nb != 0 && cur != nb) {
+        if (g->m_coordCount != 0) {
+            MOVE_RECYCLE(g);
+        }
+        g->m_arrivalCol = nb->m_tileOwnerHi;
+        g->m_arrivalRow = nb->m_tileOwnerLo;
+        g->m_defenderState = 2;
+        g->m_dwell = 0;
+        {
+            CGruntSub10* s = (CGruntSub10*)nb->m_10;
+            if (CGrunt_TileSwitch(s->m_5c >> 5, s->m_60 >> 5, 0xd87, 0, 0, 0) == 0) {
+                return 1;
+            }
+        }
+        cur = nb; // loc34
+    }
+    // L_900
+    if (cur == 0) {
+        goto L_clear;
+    }
+    {
+        CGruntSub10* s = (CGruntSub10*)cur->m_10;
+        if (g->RectContains(s->m_5c, s->m_60) != 0) {
+            // arrived on this tile: latch the move
+            g->m_arrivalCol = -1;
+            g->m_arrivalRow = -1;
+            Finish3e4f(g, cur);
+            g->m_defenderState = 0;
+            return 1;
+        }
+    }
+    // 3198f: not arrived - reroute by board distance
+    if ((u32)g->m_dwell <= (u32)m_b4) {
+        return 1;
+    }
+    {
+        CCoordXY here;
+        g->GetScreenPos((GruntTilePos*)&here);
+        i32 x5 = here.x >> 5;
+        i32 y5 = here.y >> 5;
+        CCoordXY nbpos;
+        cur->GetTilePos((GruntTilePos*)&nbpos);
+        i32 dx = nbpos.x - x5;
+        i32 dy = nbpos.y - y5;
+        i32 adx = dx < 0 ? -dx : dx;
+        i32 ady = dy < 0 ? -dy : dy;
+        i32 dist = (i32)sqrt((double)(adx * adx + ady * ady));
+        if (dist > m_c0) {
+            if (g->m_coordCount != 0) {
+                MOVE_RECYCLE(g);
+            }
+            goto L_clearAt;
+        }
+        if (g->m_coordCount != 0) {
+            MOVE_RECYCLE(g);
+        }
+        CGruntSub10* s = (CGruntSub10*)cur->m_10;
+        if (CGrunt_TileSwitch(s->m_5c >> 5, s->m_60 >> 5, 0xd87, 0, 0, 0) != 0) {
+            g->m_dwell = 0;
+            return 1;
+        }
+    }
+L_clearAt:
+    g->m_arrivalCol = -1;
+    g->m_arrivalRow = -1;
+    g->m_defenderState = 0;
+    g->m_dwell = 0;
+    return 1;
+
+L_clear:
+    g->m_arrivalCol = -1;
+    g->m_defenderState = 0;
+    g->m_arrivalRow = -1;
+    return 1;
+}
+}
+#undef MOVE_RECYCLE
+SIZE_UNKNOWN(CCoordXY);
+SIZE_UNKNOWN(CGruntMover);
+SIZE_UNKNOWN(CGruntSub10);
+SIZE_UNKNOWN(CMoveBoard);
+SIZE_UNKNOWN(CMoveGridDims);
 
 // CGrunt::GetTilePos (0x31c70) - write the HUD tile coords (m_10->m_5c/m_60 >> 5)
 // into the caller's {x,y} out slot and return it. Re-homed from Grunt.cpp

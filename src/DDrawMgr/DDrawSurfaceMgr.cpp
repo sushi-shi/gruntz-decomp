@@ -20,9 +20,13 @@
 #include <Wap32/Object.h>             // CObject - the shared engine grand-base
 #include <DDrawMgr/DDrawSurfaceMgr.h> // THE canonical CDDrawSurfaceMgr class shape
 #include <DDrawMgr/DDrawSubMgr.h>     // generic child base (slot-1 scalar-delete, slot-5 IsReady)
-#include <DDrawMgr/DDrawResolveSubMgr.h>  // real +0x24 child type (SetCoords)
-#include <DDrawMgr/DDrawSubMgrPages.h>    // real +0x04 child type (m_pages: IsLoaded, m_frontPair)
-#include <DDrawMgr/DDrawChildGroup.h>     // real +0x08 child type (m_childGroup)
+#include <DDrawMgr/DDrawResolveSubMgr.h> // real +0x24 child type (SetCoords)
+#include <DDrawMgr/DDrawSubMgrPages.h>   // real +0x04 child type (m_pages: IsLoaded, m_frontPair)
+#include <DDrawMgr/DDrawChildGroup.h>    // real +0x08 child type (m_childGroup)
+#include <Gruntz/WwdObjMgr.h> // CWwdObjMgr (Snapshot/RestoreChildren blit-op target, waveP)
+#include <Gruntz/GameLevel.h> // CGameLevel (m_resolveSubMgr child; EditDispatch/MainPlaneQueryB)
+#include <Globals.h>          // g_61ab14 (serialized header id)
+#include <string.h>           // strcpy/memset (inline header build)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // real +0x28 child type (m_2c held stream, ClearMap)
 #include <DDrawMgr/DDrawSurfacePair.h>    // m_pages->m_frontPair geometry (m_width/m_height)
 #include <DDrawMgr/DDrawPtrCollections.h> // real +0x1c pool type (non-virtual dtor 0x141d50)
@@ -282,6 +286,215 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
     if (m_soundStream != 0 && m_soundStream->m_initialized == 0) {
         return m_soundStream->PlaySoundDefaulted(m_hWnd, 1);
     }
+    return 1;
+}
+// ===========================================================================
+// CDDrawSurfaceMgr::SnapshotChildren (0x156020) / RestoreChildren (0x156530) - the /GX
+// child blit-param serializer pair, re-homed from the former ddrawsurfacemgrserialize
+// unit (waveP): the split-out /GX tail of THIS obj. The canonical class already declares
+// both (DDrawSurfaceMgr.h); member access uses m_childGroup (cast CWwdObjMgr* for the
+// blit-op calls) / m_resolveSubMgr (cast CGameLevel*) / m_callback; the local view + its
+// SnapRunCallback dissolve onto the canonical HP_Callback. Engine callees reloc-masked.
+// ===========================================================================
+class CFileMemBase {
+public:
+    virtual i32 SetName(const char* n, i32 a, i32 b);
+};
+class CFileMem {
+public:
+    virtual void Reset();
+    virtual ~CFileMem();
+    virtual i32 Open();
+    virtual i32 Read(void* b, i32 l);
+    virtual i32 Write(const void* b, i32 l);
+    virtual i32 Ready();
+};
+struct CSerialArchive;
+
+struct SnapStream {
+    void Init(); // 0x1befd7  CFileIO()
+    char m_pad[0x10];
+};
+
+class Serializer {
+public:
+    Serializer();  // 0x157850 own ctor (vtbl + name CString)
+    ~Serializer(); // 0x1578b0 non-deleting dtor (failure teardown)
+    // Reset @0x157a50 IS CFileMem::Reset; cast at each call.
+    // Close @0x157980 IS CFileMem::~CFileMem; cast at each call.
+    // SetSink @0x165e30 IS CFileMemBase::SetName; cast at each call.
+    // Begin @0x165e60 IS CFileMem::Open; cast at each call.
+    // Read @0x165f00 IS CFileMem::Read; cast at each call.
+    // Write @0x165f50 IS CFileMem::Write; cast at each call.
+    // End @0x165ef0 IS CFileMem::Ready; cast at each call.
+
+    char m_pad00[0x10];  // +0x00..+0x0f (vtbl, ints, name CString)
+    SnapStream m_stream; // +0x10..+0x1f
+    char m_pad20[0x0c];  // +0x20..+0x2b (cursors + tail)
+};
+SIZE_UNKNOWN(Serializer);
+SIZE_UNKNOWN(SnapStream);
+
+// ---------------------------------------------------------------------------
+// CDDrawSurfaceMgr::SnapshotChildren (0x156020, __thiscall, /GX)
+RVA(0x00156020, 0x505)
+i32 CDDrawSurfaceMgr::SnapshotChildren(HP_Callback cb, i32 arg1, char* name, i32 arg3) {
+    if (cb == 0) {
+        return 0;
+    }
+    m_callback = cb;
+
+    Serializer S;
+    S.m_stream.Init();
+    ((CFileMem*)&S)->Reset();
+
+    if (((CFileMemBase*)&S)->SetName((const char*)(void*)cb, 0, 0) == 0) {
+        return 0;
+    }
+    if (((CFileMem*)&S)->Open() == 0) {
+        return 0;
+    }
+
+    // Build the 0x120-byte header record (CTime stamp + the name strcpy).
+    CTime now;
+    char header[0x120];
+    memset(header, 0, sizeof(header));
+    *(i32*)(header + 0x04) = 1;
+    *(i32*)(header + 0x08) = now.GetLocalTm(0)->tm_mon + 1;
+    *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_mday;
+    *(i32*)(header + 0x0c) = now.GetLocalTm(0)->tm_year + 0x76c;
+    strcpy(header + 0x10, name);
+    i32 probe = ((CWwdObjMgr*)m_childGroup)->CountActive_15abc0();
+    *(u32*)(header + 0x114) = g_61ab14;
+    *(i32*)(header + 0x118) = probe;
+    ((CFileMem*)&S)->Write((const void*)header, 0x120);
+
+    // ---- dispatch the five blit modes over the children ----
+    if (m_callback && cb(this, &S, 1, 0, 0) == 0) {
+        return 0;
+    }
+    if (((CWwdObjMgr*)m_childGroup)->ForEachProbe_15acb0((i32)&S, arg3) == 0) {
+        return 0;
+    }
+    if (m_callback && cb(this, &S, 3, 0, 0) == 0) {
+        return 0;
+    }
+    if (((CWwdObjMgr*)m_childGroup)->ForEachDispatch_15ac20((i32)&S, 3, arg3) == 0) {
+        return 0;
+    }
+    if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 3, 0, 0) == 0) {
+        return 0;
+    }
+    if (m_callback && cb(this, &S, 4, 0, 0) == 0) {
+        return 0;
+    }
+    if (((CWwdObjMgr*)m_childGroup)->ForEachSerialize_15b020((CSerialArchive*)&S, arg3) == 0) {
+        return 0;
+    }
+    if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 4, 0, 0) == 0) {
+        return 0;
+    }
+    if (m_callback && cb(this, &S, 5, 0, 0) == 0) {
+        return 0;
+    }
+    if (((CWwdObjMgr*)m_childGroup)->ForEachDispatch_15ac20((i32)&S, 5, arg3) == 0) {
+        return 0;
+    }
+    if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 5, 0, 0) == 0) {
+        return 0;
+    }
+
+    ((CFileMem*)&S)->Ready();
+    ((CFileMem*)&S)->~CFileMem();
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CDDrawSurfaceMgr::RestoreChildren (0x156530, __thiscall, /GX) - the load
+// counterpart of SnapshotChildren. Opens the same CFileMem-backed serializer over
+// `name`, reads back the 0x120-byte header (publishing header[0x114] -> g_61ab14),
+// then replays the run-callback (m_callback, REQUIRED here - a null m_callback rejects) and the
+// child load-ops over the m_08 (CDDrawChildGroup) + m_24 (CGameLevel) children for
+// modes 2/6/7/8. Success closes via End()/MainPlaneQueryB()/Close(). Field/method
+// names are placeholders; OFFSETS, vtable slots, sizes, store order and the ordered
+// call sequence are load-bearing. Engine callees are reloc-masked external.
+//
+// @early-stop
+// big-SEH wall (same as SnapshotChildren above; docs/patterns/big-seh-fuzzy-desync.md
+// + gx-state-machine-scalar-delete-cleanup.md + eh-state-numbering-base.md): a 1367-B
+// /GX function with a multi-way fall-through reject ladder over the CFileMem serializer
+// temp. The whole carcass (every offset, the embedded-stream Init, the 0x120 header
+// Read, the g_61ab14 publish, the ordered child load-op call sequence, the inline-vs-
+// out-of-line ~Serializer split) is reproduced, but at each reject retail destroys the
+// temp via the re-stamped scalar-deleting vtable (mov [esp+0xc],0x5efe30; call
+// ds:0x5efe3c) under an even/odd __ehfuncinfo state pair before a shared ~T tail, while
+// idiomatic scope-exit C++ emits the simple dtor per return -> the long fail ladder
+// desyncs and the trylevel state numbers diverge. Not source-steerable; deferred to the
+// final sweep once the serializer + child classes are fully modeled (leaf-first redo).
+RVA(0x00156530, 0x557)
+i32 CDDrawSurfaceMgr::RestoreChildren(HP_Callback cb, char* name, i32 arg3) {
+    if (name == 0) {
+        return 0;
+    }
+    m_callback = cb;
+
+    Serializer S;
+    S.m_stream.Init();
+    ((CFileMem*)&S)->Reset();
+
+    if (((CFileMemBase*)&S)->SetName((const char*)name, 1, 0) == 0) {
+        return 0;
+    }
+    if (((CFileMem*)&S)->Open() == 0) {
+        return 0;
+    }
+
+    char header[0x120];
+    ((CFileMem*)&S)->Read(header, 0x120);
+
+    if (m_callback == 0 || m_callback(this, &S, 2, arg3, (i32)header) == 0) {
+        return 0;
+    }
+    g_61ab14 = *(u32*)(header + 0x114);
+    ((CDDrawSubMgrPages*)m_childGroup)->Method_159ef0();
+    if (((CWwdObjMgr*)m_childGroup)
+            ->LoadObjects((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)
+        == 0) {
+        return 0;
+    }
+    if (m_callback == 0 || m_callback(this, &S, 6, arg3, (i32)header) == 0) {
+        return 0;
+    }
+    if (((CWwdObjMgr*)m_childGroup)->ForEachDispatch_15ac20((i32)&S, 6, arg3) == 0) {
+        return 0;
+    }
+    if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 6, 0, 0) == 0) {
+        return 0;
+    }
+    if (m_callback == 0 || m_callback(this, &S, 7, arg3, (i32)header) == 0) {
+        return 0;
+    }
+    if (((CWwdObjMgr*)m_childGroup)
+            ->Deserialize_15b0e0((CSerialArchive*)&S, *(unsigned int*)(header + 0x110), arg3)
+        == 0) {
+        return 0;
+    }
+    if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 7, 0, 0) == 0) {
+        return 0;
+    }
+    if (m_callback == 0 || m_callback(this, &S, 8, arg3, (i32)header) == 0) {
+        return 0;
+    }
+    if (((CWwdObjMgr*)m_childGroup)->ForEachDispatch_15ac20((i32)&S, 8, arg3) == 0) {
+        return 0;
+    }
+    if (((CGameLevel*)m_resolveSubMgr)->EditDispatch((void*)&S, 8, 0, 0) == 0) {
+        return 0;
+    }
+
+    ((CFileMem*)&S)->Ready();
+    ((CGameLevel*)m_resolveSubMgr)->MainPlaneQueryB();
+    ((CFileMem*)&S)->~CFileMem();
     return 1;
 }
 
