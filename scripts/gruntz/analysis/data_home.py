@@ -81,6 +81,20 @@ def scan_src_status():
     return st
 
 
+def _is_string_const(d, secs, rva, size_ub):
+    """True if the retail bytes at rva are a NUL-terminated printable string - a
+    compiler `$SG` literal MSVC5 emits into writable .data (each gets a code reloc),
+    NOT a named global. G2 pilot: ~1967 of the .data `missing_absent` are these."""
+    off = _rva_to_off(secs, rva)
+    if off is None:                      # .bss has no file bytes -> never a string
+        return False
+    b = d[off:off + min(size_ub, 256)]
+    nul = b.find(0)
+    if nul < 1:                          # empty or no terminator in range
+        return False
+    return all(0x20 <= c < 0x7f or c in (9, 10, 13) for c in b[:nul])
+
+
 def _classify(kind, owner, def_units, ndef):
     """CORRECT / DUP_DEF / WRONG_TU / MISSING_EXTERN / MISSING_ABSENT."""
     if ndef == 0:
@@ -111,9 +125,11 @@ def analyze():
         s = src.get(rva, {"def_files": set(), "extern_files": set()})
         def_units = {s2u.get(f, "?") for f in s["def_files"]}
         cat, def_unit = _classify(kind, owner, def_units, len(s["def_files"]))
-        # absent = not even an extern declares it in src
+        # absent = not even an extern declares it in src; split off the compiler
+        # $SG string literals (printable .data blobs) which are NOT named globals.
         if cat == "missing_extern" and not s["extern_files"]:
-            cat = "missing_absent"
+            cat = ("string_const" if _is_string_const(d, secs, rva, nxt.get(rva, rva + 4) - rva)
+                   else "missing_absent")
         rows.append({
             "rva": rva, "sec": ".bss" if bss else (_sec_of(secs, rva) or "?"),
             "kind": kind, "owner": owner, "n_units": len(units),
@@ -137,19 +153,25 @@ def main():
         return 0
 
     if a.unit:
-        u = [r for r in rows if r["owner"] == a.unit and r["cat"] != "correct"]
-        print(f"{a.unit}: {len(u)} globals needing a definition\n")
-        for r in sorted(u, key=lambda r: r["rva"]):
-            note = {"missing_absent": "ABSENT", "missing_extern": "extern x%d" % r["n_extern"],
-                    "wrong_tu": "DEFINED IN %s" % r["def_unit"], "dup_def": "DUP x%d" % r["n_def"],
-                    }.get(r["cat"], r["cat"])
+        mine = [r for r in rows if r["owner"] == a.unit]
+        real = [r for r in mine if r["cat"] in ("missing_extern", "missing_absent",
+                                                "wrong_tu", "dup_def")]
+        strs = [r for r in mine if r["cat"] == "string_const"]
+        print(f"{a.unit}: {len(real)} globals needing a definition "
+              f"(+ {len(strs)} $SG string literals to IGNORE)\n")
+        for r in sorted(real, key=lambda r: (r["cat"] != "missing_extern", r["rva"])):
+            note = {"missing_absent": "ABSENT (non-string)",
+                    "missing_extern": "extern-only x%d  <- reliable" % r["n_extern"],
+                    "wrong_tu": "DEFINED IN %s" % r["def_unit"],
+                    "dup_def": "DUP x%d" % r["n_def"]}.get(r["cat"], r["cat"])
             print(f"  0x{r['rva']:06x} {r['sec']:5} size<={r['size_ub']:>5}  {note}")
         return 0
 
-    CATS = ["correct", "missing_absent", "missing_extern", "wrong_tu", "dup_def"]
+    CATS = ["correct", "missing_extern", "missing_absent", "string_const", "wrong_tu", "dup_def"]
     LABEL = {"correct": "CORRECT (defined once, in owner)",
-             "missing_absent": "MISSING - absent (referenced, nothing in src)",
-             "missing_extern": "MISSING - extern-only (reloc-masked, no storage)",
+             "missing_extern": "MISSING - extern-only (reloc-masked; THE worklist)",
+             "missing_absent": "MISSING - absent, non-string (genuine unmodeled)",
+             "string_const": "$SG string literal (compiler-emitted; NOT a global)",
              "wrong_tu": "WRONG TU (defined, but not the xref owner)",
              "dup_def": "DUPLICATE (defined in >1 file)"}
     priv = [r for r in rows if r["kind"] == "private"]
@@ -163,21 +185,24 @@ def main():
     for r in rows:
         cc[r["cat"]] += 1
     for c in CATS:
-        print(f"  {LABEL[c]:<50} {cc[c]:>5}")
-    print(f"\n  DEFINED-CORRECTLY: {cc['correct']} / {len(rows)}  "
-          f"({100*cc['correct']//max(1,len(rows))}%)   "
-          f"defects (missing+wrong+dup): {len(rows)-cc['correct']-cc['missing_absent'] if False else sum(cc[c] for c in CATS[1:])}")
-    # the actionable slice: private, owned by a RECOVERED TU, not yet correct
-    act = [r for r in priv if r["owner"] not in ("", "(unrecovered)") and r["cat"] != "correct"]
-    print(f"\nACTIONABLE now (private, owner is a recovered TU, not correct): {len(act)}")
+        print(f"  {LABEL[c]:<52} {cc[c]:>5}")
+    # actionable = the TRUSTWORTHY set (extern-only + genuine non-string absent),
+    # private, owned by a recovered TU. G2: missing_extern is the reliable signal.
+    REAL = ("missing_extern", "missing_absent", "wrong_tu", "dup_def")
+    act = [r for r in priv if r["owner"] not in ("", "(unrecovered)") and r["cat"] in REAL]
+    ext = [r for r in act if r["cat"] == "missing_extern"]
+    print(f"\n  DEFINED-CORRECTLY: {cc['correct']}   |   "
+          f"reliable worklist (extern-only): {cc['missing_extern']}   "
+          f"({len(ext)} of them owned by a recovered TU)")
+    print(f"\nACTIONABLE now (private, recovered-TU owner, real defect): {len(act)}")
     per = defaultdict(lambda: defaultdict(int))
     for r in act:
         per[r["owner"]][r["cat"]] += 1
-    print("TOP owning TUs (worklist):")
-    for u, cats in sorted(per.items(), key=lambda kv: -sum(kv[1].values()))[:22]:
-        tot = sum(cats.values())
-        brk = " ".join(f"{k.split('_')[-1]}:{v}" for k, v in cats.items())
-        print(f"  {u:<24} {tot:>4}   ({brk})")
+    print("TOP owning TUs (extern-only first = highest confidence):")
+    for u, cats in sorted(per.items(), key=lambda kv: (-kv[1].get("missing_extern", 0),
+                                                       -sum(kv[1].values())))[:22]:
+        brk = " ".join(f"{k.split('_')[-1]}:{v}" for k, v in sorted(cats.items()))
+        print(f"  {u:<24} {sum(cats.values()):>4}   ({brk})")
     print(f"\n  -> `python -m gruntz.analysis.data_home --unit <name>` for one TU's list")
     return 0
 
