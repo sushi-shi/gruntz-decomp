@@ -12,7 +12,7 @@
 #include <DDrawMgr/DDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
 #include <Globals.h>
 
-DATA(0x006bf37c)
+DATA(0x002bf37c) // RVA (was the VA 0x6bf37c - poisoned the keep-last dedup for every consumer)
 extern i32 g_resourceInstallActive;
 
 // CSymParser (ResolvePath 0x13c030) is the shared <Bute/SymParser.h> shape.

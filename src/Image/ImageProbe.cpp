@@ -3,8 +3,8 @@
 // Fills a 0x6c-byte surface-request descriptor (embedded at +0x9c) from the
 // source-info object (+0x10), asks the source provider (+0x14, COM slot 6) to
 // build the descriptor into an image source (+0x28), probes that source for the
-// payload (+0x24, the engine's shared CImageSource::Probe slot 0 + g_imageProbeTag
-// tag, the SAME path Image.cpp::CImageFactory uses), and - when the mode field
+// payload (+0x24, the engine's shared CImageSource::Probe slot 0 + the surface IID
+// IID_IDirectDrawSurface3, the SAME path Image.cpp::CImageFactory uses), and - when the mode field
 // (+0x520) selects format 8 - hands the payload to the bound surface (+0x2c)
 // through payload slot 0x7c. Returns 0 on any sub-step failure, else 1.
 //
@@ -17,10 +17,11 @@
 
 #include <string.h> // inline memset (rep stos) for the descriptor zero
 
-// The probe tag passed to the source's slot-0 Probe (reloc-masked .rdata datum,
-// the SAME global Image.cpp names).
-DATA(0x001ef888)
-extern void* g_imageProbeTag; // 0x5ef888
+// The probe tag passed to the source's slot-0 Probe is the DirectDraw surface IID
+// (0x1ef888 == IID_IDirectDrawSurface3): the Probe call is a QueryInterface. Bind to
+// the canonical extern "C" symbol (DATA-bound in ddpagemgr; the ?g_imageProbeTag view
+// lost the keep-last symbol dedup and was unbound). Reloc-masked .rdata datum.
+extern "C" void* IID_IDirectDrawSurface3; // 0x1ef888
 
 // The engine's COM-style interfaces (vptr @ +0x00, __stdcall slots that take the
 // object as the explicit first arg). Modeled as real declare-only polymorphic
@@ -129,7 +130,7 @@ i32 CImageProbe::Init() {
     if (m_14->BuildSource(&m_desc, &m_28, 0) != 0) {
         return 0;
     }
-    if (m_28->Probe(&g_imageProbeTag, (void**)&m_24) != 0) {
+    if (m_28->Probe(&IID_IDirectDrawSurface3, (void**)&m_24) != 0) {
         return 0;
     }
     if (m_520 == 8) {

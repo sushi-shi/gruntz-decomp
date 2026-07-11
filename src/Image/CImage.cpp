@@ -23,6 +23,7 @@
 
 #include <DDrawMgr/DDSurface.h> // canonical CDDSurface (m_surface geometry/Fill/Blt/Reload/m_8 COM)
 #include <DDrawMgr/DDrawShadeBlit.h> // canonical CDDrawShadeBlit (m_owned: new/Build/Teardown)
+#include <DDrawMgr/ShadeSelector.h>  // 0x14dd90 shade selector (m_owned's pre-notify == Select)
 #include <Win32.h>                   // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                   // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
 
@@ -1069,7 +1070,7 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
+        ((ShadeSelector*)m_owned)->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 0);
     info->m_outLeft = d.left;
@@ -1084,11 +1085,13 @@ void CImage::BlitShadeFlipHV(CBlitInfo* info, CImage* dst) {
 // No flip, shaded blit (CDDrawShadeBlit::Blit, sel/p4 = 1/1).
 // ---------------------------------------------------------------------------
 // @early-stop
-// Complete + correct, ~99.85%. Residual = the same 4 origin-load regalloc-tiebreak
-// insns + 3 reloc-name operand artifacts (WrapCoord ILT thunk, CopyRect IAT import,
-// the 0x14dd90 pre-notify whose retail symbol is the no-arg ClassUnknown_11 alias
-// while the call site is a 2-arg thiscall). All other code bytes are byte-exact -
-// the inclusive-rect struct-copy end-store matches retail exactly.
+// Complete + correct, ~99.86%. The 0x14dd90 pre-notify is now bound to its real
+// callee ShadeSelector::Select (reloc-fidelity fix, wave5-R14; was the unbound
+// CDDrawShadeBlit::Notify view-method): the ((ShadeSelector*)m_owned) reinterpret is
+// the established convention (WwdGameObject / ImageFrame.h) but ripples the /O2
+// origin-load regalloc-tiebreak (ebp/ebx swap in the rect setup). Residual = those
+// tiebreak insns + the WrapCoord ILT-thunk / CopyRect IAT-import reloc-name artifacts;
+// all other code bytes byte-exact. %-hit accepted per structure-recovery doctrine.
 RVA(0x00154270, 0x257)
 void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     i32 x = info->m_drawX - m_originX - m_anchorX - info->m_adjustX;
@@ -1158,7 +1161,7 @@ void CImage::BlitShadeNorm(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
+        ((ShadeSelector*)m_owned)->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 1);
     info->m_outLeft = d.left;
@@ -1248,7 +1251,7 @@ void CImage::BlitShadeFlipV(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
+        ((ShadeSelector*)m_owned)->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 1, 0);
     info->m_outLeft = d.left;
@@ -1337,7 +1340,7 @@ void CImage::BlitShadeFlipH(CBlitInfo* info, CImage* dst) {
     s.right = s.left + w - 1;
     s.bottom = s.top + h - 1;
     if (info->m_notify) {
-        m_owned->Notify(info->m_notifyArg0, info->m_notifyArg1);
+        ((ShadeSelector*)m_owned)->Select(info->m_notifyArg0, (ShadeDescr*)info->m_notifyArg1);
     }
     m_owned->Blit(&d, dst->m_surface, &s, 0, 1);
     info->m_outLeft = d.left;

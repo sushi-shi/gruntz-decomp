@@ -259,15 +259,17 @@ void CSpriteRef::Free() {
 
 // -------------------------------------------------------------------------
 // 0x0e35f0 (spatially re-homed from src/Stub/ApiCallers.cpp). __stdcall dialog
-// proc: WM_INITDIALOG seeds the selection index + active-HWND from the game
-// registry's save-sink; WM_COMMAND handles Cancel / the shared fallback.
+// proc: WM_INITDIALOG seeds the selection index + active save-sink from the game
+// registry; WM_COMMAND handles Cancel / the shared save-menu draw. The two callees
+// and the selection global are the canonical savegame symbols (DrawSaveGameMenu
+// @0xe3f40, FillSaveDialog @0xe3c60, g_savedMenuCmd @0x213a9c), reloc-masked.
 extern "C" CGameRegistry* g_gameReg;
 DATA(0x0024c86c)
-extern i32 g_dlg64c86c; // DAT_0064c86c (the active dialog HWND)
-DATA(0x00213a9c)
-extern i32 g_dlgSel613a9c;                                    // DAT_00613a9c
-i32 __cdecl DlgFallback_1302(HWND hDlg, i32 wParam, i32 cur); // RVA 0x1302
-void __cdecl DlgInit_2e05(HWND hDlg, i32 v);                  // RVA 0x2e05
+extern i32 g_dlg64c86c;    // DAT_0064c86c (the active save-sink)
+extern i32 g_savedMenuCmd; // 0x213a9c (canonical, DATA-bound in savegame)
+class CSaveGame;
+i32 DrawSaveGameMenu(HWND hDlg, i32 wParam, CSaveGame* cur); // 0xe3f40 (savegame)
+void FillSaveDialog(HWND hDlg, CSaveGame* sg);               // 0xe3c60 (savegame)
 RVA(0x000e35f0, 0x77)
 i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
@@ -276,7 +278,7 @@ i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 EndDialog(hDlg, 0);
                 return 1;
             }
-            if (DlgFallback_1302(hDlg, wParam, g_dlg64c86c) != 0) {
+            if (DrawSaveGameMenu(hDlg, wParam, (CSaveGame*)g_dlg64c86c) != 0) {
                 return 1;
             }
             // falls through to the shared "return 0" default
@@ -284,9 +286,9 @@ i32 CALLBACK winapi_0e35f0_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
             return 0;
         case 0x110: {
             i32 v = (i32)g_gameReg->m_saveSink;
-            g_dlgSel613a9c = -1;
+            g_savedMenuCmd = -1;
             g_dlg64c86c = v;
-            DlgInit_2e05(hDlg, v);
+            FillSaveDialog(hDlg, (CSaveGame*)v);
             return 1;
         }
     }

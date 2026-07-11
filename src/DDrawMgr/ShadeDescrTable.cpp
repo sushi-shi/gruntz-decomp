@@ -7,6 +7,7 @@
 // object's +0x1c field.
 #include <rva.h>
 #include <Globals.h>
+#include <DDrawMgr/ShadeSelector.h> // the shared ShadeSelector shape (Select @0x14dd90)
 
 struct ShadeDescr;
 
@@ -47,14 +48,7 @@ void SetShadeDescr(ShadeDescr* v, int mode) {
     }
 }
 
-class ShadeSelector {
-public:
-    char m_pad[0x14];
-    i32 m_mode;          // +0x14  latched mode id
-    i32 m_18;            // +0x18  (role unproven)
-    ShadeDescr* m_descr; // +0x1c  selected descriptor
-    void Select(int mode, ShadeDescr* descr);
-};
+// ShadeSelector (Select @0x14dd90) is the shared <DDrawMgr/ShadeSelector.h> shape.
 
 // @early-stop
 // Code bytes byte-exact (verified llvm-objdump base vs target: every byte pairs except
@@ -91,4 +85,3 @@ void ShadeSelector::Select(int mode, ShadeDescr* descr) {
         m_descr = descr;
     }
 }
-SIZE_UNKNOWN(ShadeSelector);

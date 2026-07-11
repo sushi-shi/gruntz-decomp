@@ -17,19 +17,22 @@
 #include <string.h> // inline rep-movs memcpy intrinsic
 #include <Globals.h>
 
-// The live screen RGB-format shift table at 0x683ea0..0x683eb4 - already named by
-// CLightFxRender.cpp; the mode-2 gate compares these against the magic 5/10/3/3/3
-// state. Reloc-masked.
-DATA(0x00283ea0)
-extern i32 g_rUp; // 0x683ea0
-DATA(0x00283ea4)
-extern i32 g_gUp; // 0x683ea4
-DATA(0x00283eac)
-extern i32 g_rDown; // 0x683eac
-DATA(0x00283eb0)
-extern i32 g_gDown; // 0x683eb0
-DATA(0x00283eb4)
-extern i32 g_bDown; // 0x683eb4
+// The live screen RGB-format shift table at RVA 0x283ea0..0x283eb4 - the canonical
+// binding is the extern "C" _g_683eaX (DATA-bound in GruntzMgr.cpp); the C++ ?g_rUp
+// aliases lost the keep-last symbol dedup, so bind to the winning names directly.
+// The mode-2 gate compares these against the magic 5/10/3/3/3 state. Reloc-masked.
+extern "C" {
+    DATA(0x00283ea0)
+    extern i32 g_683ea0; // red   shift-up
+    DATA(0x00283ea4)
+    extern i32 g_683ea4; // green shift-up
+    DATA(0x00283eac)
+    extern i32 g_683eac; // red   shift-down
+    DATA(0x00283eb0)
+    extern i32 g_683eb0; // green shift-down
+    DATA(0x00283eb4)
+    extern i32 g_683eb4; // blue  shift-down
+}
 
 // The secondary palette/format descriptor (DAT_006bf218) used by the 16-bit alpha
 // path (case 7); its +0x8 LUT base is read as u16*. Reloc-masked.
@@ -74,7 +77,7 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 s
     i32 mode = src->m_b0;
     m_dstBpp = (u8)mode;
     if ((u8)mode == 2) {
-        if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
+        if (g_683eac == 3 && g_683eb0 == 3 && g_683eb4 == 3 && g_683ea0 == 0xa && g_683ea4 == 5) {
             m_blendVariant = 1;
         } else {
             m_blendVariant = 0;
