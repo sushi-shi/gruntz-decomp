@@ -101,6 +101,9 @@ public:
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_74/m_spriteFactory @+0x74; LoadSprite)
+#include <Gruntz/GruntzPlayer.h>   // the per-player slot record (its TU folded here, wave3-J)
+#include <Gruntz/Grunt.h>          // CGrunt (Load @0xd8060 folds here per the 0xd5960 dossier)
+#include <Gruntz/SerialArchive.h>  // the shared archive stream (GruntzPlayer::Serialize)
 #include <rva.h>
 #include <Gruntz/ResMgr.h>      // CResMgr + its image/sound/anim registries (m_10/m_28/m_2c)
 #include <Gruntz/SoundCue.h>    // CSndHost (m_c->m_28) + SoundStream (m_2c; Vslot15 quiesce stop)
@@ -917,6 +920,227 @@ i32 CPlay::Vslot1c(i32 category) {
 }
 
 // ===========================================================================
+// CGrunt::Load (0x0d8060; re-homed from Grunt.cpp wave3-J - the retail body's
+// birth position is inside THIS TU's 0xd5960 interval, TU_MIGRATION MOVE row
+// `0x0d8060 Load@CGrunt grunt -> 0xd5960 play`; the wave3-I Grunt.h header wall
+// is gone). g_gameReg (the CGameRegistry* view, via <Io/SaveGame.h>) is the same
+// 0x24556c singleton Grunt.cpp reaches as its WwdGameReg view; m_world is the
+// same +0x30 slot, so the GruntResMgr cast is unchanged.
+// ---------------------------------------------------------------------------
+// CGrunt::Load(ar)  @0xd8060  (__thiscall, ret 4) - the Read inverse of Save.
+// Bails (return 0) if the archive or the resource manager (g_gameReg->m_world) is
+// null. Reads back the sprite-id + arrival fields, rebuilds the owned node
+// collections (this+0x370, the four at this+0x3a4, this+0x488) by recycling each
+// existing node back onto the global coord free-list, clearing the array, then
+// re-popping fresh nodes for each streamed record. Resolves the two anim-name id
+// records (this+0x4d0/0x4cc) + the object record (this+0x4e4, validated by the
+// engine kind() vtable slot 0x20 == 5; a found-but-invalid record fails the load),
+// streams the ~70 plain fields, then rebuilds the trailing collection.
+// @early-stop
+// reloc-masked-extern plateau (Save's symmetric pair): the field/record Read
+// stream, the freelist recycle + CObArray SetSize/SetAtGrow rebuild loops, the
+// resource-mgr name/object lookups and the load-fail bail are reconstructed in
+// shape/order. Residue is the ~90 archive-Read + collection + map-lookup call
+// operands pairing to differently named retail symbols (the whole referent set
+// is external). Final sweep.
+RVA(0x000d8060, 0x6ce)
+i32 CGrunt::Load(CGruntArchive* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    GruntResMgr* res = (GruntResMgr*)g_gameReg->m_world;
+    if (res == 0) {
+        return 0;
+    }
+
+    ar->Read(&m_toySprite, 4);
+    ar->Read(&m_animSetName, 4);
+    ar->Read(&m_toyTimeSprite, 4);
+    ar->Read(&m_2d8, 4);
+    ar->Read(&m_dwell, 4);
+    ar->Read(&m_arrivalCol, 4);
+    ar->Read(&m_arrivalRow, 4);
+    ar->Read(&m_2f8, 4);
+    ar->Read(&m_2fc, 8);
+    ar->Read(&m_deathType, 8);
+    ar->Read(&m_deathAnimStarted, 4);
+    ar->Read(&m_36c, 4);
+
+    {
+        GruntLoadColl* coll = (GruntLoadColl*)(&m_370);
+        for (i32 i = 0; i < coll->m_count; i++) {
+            void* node = coll->m_data[i];
+            if (node) {
+                void** p = (void**)((char*)node - g_gruntFreeListBias);
+                *p = g_gruntFreeList;
+                g_gruntFreeList = p;
+            }
+        }
+        ((CPtrArray*)coll)->SetSize(0, -1);
+        i32 n;
+        ar->Read(&n, 4);
+        for (u32 j = 0; j < (u32)n; j++) {
+            void* node = 0;
+            void** head = (void**)g_gruntFreeList;
+            void* next = *head;
+            if (next) {
+                node = (char*)head + 4;
+                g_gruntFreeList = next;
+            }
+            ar->Read(node, 8);
+            ((CPtrArray*)coll)->SetAtGrow(coll->m_count, node);
+        }
+    }
+
+    ar->Read(&m_coordRetryCount, 8);
+    ar->Read(&m_38c, 8);
+    ar->Read(&m_poseWalk, 8);
+    ar->Read(&m_poseAttack2, 8);
+
+    {
+        GruntLoadColl* coll = (GruntLoadColl*)(&m_poseStruck1);
+        i32 k = 4;
+        do {
+            for (i32 i = 0; i < coll->m_count; i++) {
+                void* node = coll->m_data[i];
+                if (node) {
+                    void** p = (void**)((char*)node - g_gruntFreeListBias);
+                    *p = g_gruntFreeList;
+                    g_gruntFreeList = p;
+                }
+            }
+            ((CPtrArray*)coll)->SetSize(0, -1);
+            i32 n;
+            ar->Read(&n, 4);
+            for (u32 j = 0; j < (u32)n; j++) {
+                void* node = 0;
+                void** head = (void**)g_gruntFreeList;
+                void* next = *head;
+                if (next) {
+                    node = (char*)head + 4;
+                    g_gruntFreeList = next;
+                }
+                ar->Read(node, 8);
+                ((CPtrArray*)coll)->SetAtGrow(coll->m_count, node);
+            }
+            coll = (GruntLoadColl*)((char*)coll + 0x14);
+        } while (--k);
+    }
+
+    ar->Read(&m_408, 4);
+    g_serialCounter++;
+    char buf512[0x200];
+    ar->Read(buf512, 0x200);
+    ((CString*)(&m_410))->operator=(buf512);
+    ar->Read((char*)&m_408 + 4, 4);
+    ar->Read(&g_load612618, 4);
+
+    g_serialCounter++;
+    char buf80a[0x80];
+    ar->Read(buf80a, 0x80);
+    i32 idx;
+    ar->Read(&idx, 4);
+    if (strlen(buf80a) == 0) {
+        *(i32*)&m_cells[1].m_attack = 0;
+    } else {
+        GruntIdEntry* entry = 0;
+        ((CMapStringToPtr*)(res->m_10 + 0x10))->Lookup((const char*)buf80a, (void*&)entry);
+        if (entry == 0 || idx < entry->m_64 || idx > entry->m_68) {
+            *(i32*)&m_cells[1].m_attack = 0;
+        } else {
+            *(i32*)&m_cells[1].m_attack = entry->m_14[idx];
+        }
+    }
+
+    g_serialCounter++;
+    char buf80b[0x80];
+    ar->Read(buf80b, 0x80);
+    void* entry2 = 0;
+    // +0x4cc: the serialize path streams a raw 4-byte slice over m_cells[0].m_stepY's
+    // high half (the same (char*)+4 raw-slice style as the m_408/m_410 reads).
+    if (strlen(buf80b) == 0) {
+        *(i32*)((char*)&m_cells[0].m_stepY + 4) = 0;
+    } else {
+        ((CMapStringToPtr*)(res->m_10 + 0x10))->Lookup(buf80b, entry2);
+        *(i32*)((char*)&m_cells[0].m_stepY + 4) = (i32)entry2;
+    }
+
+    ar->Read(&m_cells[1].m_walk, 4);
+    ar->Read(&m_cells[1].m_idle, 4);
+    ar->Read(&m_cells[1].m_item, 4);
+    g_serialCounter++;
+    i32 v;
+    ar->Read(&v, 4);
+    GruntObjEntry* oe = 0;
+    ((CMapPtrToPtr*)(res->m_8 + 0x48))->Lookup((void*)entry2, (void*&)oe);
+    i32 ve;
+    if (oe == 0) {
+        ve = 0;
+    } else {
+        ve = oe->Kind() == 5 ? (i32)oe : 0;
+    }
+    m_cells[1].m_14 = ve;
+    if (ve == 0 && entry2 != 0) {
+        return 0;
+    }
+
+    ar->Read(&m_cells[1].m_18, 4);
+    ar->Read(&m_cells[1].m_1c, 4);
+    ar->Read(&m_cells[1].m_24, 4);
+    ar->Read(&m_healthSprite, 4);
+    ar->Read(&m_cells[0].m_1c, 4);
+    ar->Read(&m_cells[1].m_28, 4);
+    ar->Read(&m_cells[1].m_2c, 4);
+    ar->Read(&m_cells[1].m_30, 4);
+    ar->Read(&m_cells[1].m_20, 4);
+    ar->Read(&m_cells[1].m_34, 4);
+    ar->Read((char*)&m_410 + 4, 4);
+    ar->Read(&m_418, 4);
+    ar->Read(&m_timePerTile, 4);
+    ar->Read(&m_tileClaimed, 4);
+    ar->Read(&m_424, 4);
+    ar->Read(&m_428, 2);
+    ar->Read(&m_cells[0].m_walk, 4);
+    ar->Read(&m_cells[0].m_idle, 4);
+    ar->Read(&m_cells[0].m_item, 4);
+    ar->Read(&m_cells[0].m_14, 4);
+    ar->Read(&m_cells[0].m_18, 4);
+    ar->Read(&m_cells[0].m_dirX, 4); // raw low half of the +0x48 dir-vector double
+    ar->Read(&m_cells[1].m_struck, 4);
+    ar->Read(&m_cells[0].m_34, 4);
+    m_cells[1].m_40 = 2;
+    ar->Read(&m_cells[1].m_44, 4);
+
+    i32 n488;
+    ar->Read(&n488, 4);
+    {
+        GruntLoadColl* coll = (GruntLoadColl*)((char*)this + 0x488);
+        for (i32 i = 0; i < coll->m_count; i++) {
+            void* node = coll->m_data[i];
+            if (node) {
+                void** p = (void**)((char*)node - g_gruntFreeListBias);
+                *p = g_gruntFreeList;
+                g_gruntFreeList = p;
+            }
+        }
+        ((CPtrArray*)coll)->SetSize(0, -1);
+        ((CPtrArray*)coll)->SetSize(n488, -1);
+        for (u32 j = 0; j < (u32)n488; j++) {
+            void* node = 0;
+            void** head = (void**)g_gruntFreeList;
+            void* next = *head;
+            if (next) {
+                node = (char*)head + 4;
+                g_gruntFreeList = next;
+            }
+            ar->Read(node, 8);
+            coll->m_data[j] = node;
+        }
+    }
+    return 1;
+}
+
+// ===========================================================================
 // CPlay::ResetViewport (0x0d8c60) - ClampViewport's no-change fallback: build the
 // full-screen viewport rect (a guts-state-dependent left/right bias), optionally
 // re-center it to a 0xc0 box (region-0 gate), pin the view discriminator to idle,
@@ -1326,6 +1550,17 @@ void CPlay::StepScroll() {
 
     m_scrollSink->m_scrollX = x;
     m_scrollSink->m_scrollY = y;
+}
+
+// ===========================================================================
+// CPlay::SetCursorFrame (0x0d1b30; ex "CGameModeObj" view, folded wave3-J) -
+// cache the cursor sprite set for `item` and latch it as the active cursor
+// frame (m_cursorFrame). Returns 1.
+RVA(0x000d1b30, 0x20)
+i32 CPlay::SetCursorFrame(i32 item) {
+    LoadCursorSprites(item, 0);
+    m_cursorFrame = item;
+    return 1;
 }
 
 // ===========================================================================
@@ -1748,6 +1983,135 @@ i32 CPlay::ArmSnapshot(i32 active, i32 dur) {
     return 1;
 }
 
+// The placed map object record (the m_3a4[] element): m_0/m_4 are its grid (x,y)
+// cell coordinates. @identity-TODO (likely the placed CGameObject's coord header;
+// the +0x124 type-tag probe below reads the LOOKED-UP object, not this record).
+struct CPlacedObj {
+    i32 m_0; // +0x00  cell X
+    i32 m_4; // +0x04  cell Y
+};
+SIZE_UNKNOWN(CPlacedObj);
+
+// ===========================================================================
+// @early-stop
+// 361-B map-grid free-list walk. The control flow (the 4 placed-object arrays at
+// +0x3a4, the per-array element walk with the restart flag, the grid (x,y)
+// occupant lookup with the x*7-dword cell stride, the cell-map lookup, the
+// cell-flag clear + CPtrArray::RemoveAt + free-list node return) is a faithful
+// reconstruction of retail's logic. The residual is the dual-exit regalloc/
+// scheduling wall: MSVC5 pins blockIdx/ebx/edi/esi across the nested loops and
+// threads the restart `edi` flag through the block advance in a way the C source
+// can't steer (zero-register-pinning.md). Deferred to the final sweep.
+//
+// CPlay::ClearPlacedObjects (0x0da030; ex "CGameModeObj" view, folded wave3-J) -
+// sweep the 4 placed-object arrays (m_3a4); for each still-occupied grid cell
+// whose map entry is gone (or not type 0x14), clear the cell, remove the object
+// from its array (RemoveAt on the ARRAY base - retail lea ecx,[this+idx*0x14+
+// 0x3a4]), and free the node. Returns the array index on an early-out, else -1.
+RVA(0x000da030, 0x169)
+i32 CPlay::ClearPlacedObjects() {
+    for (i32 blockIdx = 0; blockIdx < 4; ++blockIdx) {
+        CPtrArray* rec = &m_3a4[blockIdx];
+        i32 i = 0;
+        i32 restart = 0;
+        while (i < rec->GetSize()) {
+            CPlacedObj* obj = (CPlacedObj*)rec->GetAt(i);
+            CTileGrid* grid = g_64556c->m_tileGrid;
+            i32* cellObj = 0;
+            if ((u32)obj->m_0 < (u32)grid->m_c && (u32)obj->m_4 < (u32)grid->m_10) {
+                i32 stride = obj->m_0 * 7;
+                i32* row = grid->m_8[obj->m_4];
+                cellObj = (i32*)row[stride + 2];
+            }
+            if (cellObj == 0) {
+                restart = 1;
+                break;
+            }
+            void* out = 0;
+            // The factory's embedded +0x48 key->object map, reached as the real
+            // MFC CMapPtrToPtr (the documented SpriteFactory.h consumer pattern).
+            CMapPtrToPtr* map = (CMapPtrToPtr*)&g_64556c->m_world->m_8->m_objMap;
+            i32* result = cellObj;
+            if (map->Lookup(cellObj, out)) {
+                result = (i32*)out;
+            }
+            if (result == 0) {
+                // cell vacated: clear the cell's occupant + flag bit and unlink.
+                CTileGrid* g = g_64556c->m_tileGrid;
+                if ((u32)obj->m_0 < (u32)g->m_c && (u32)obj->m_4 < (u32)g->m_10) {
+                    i32 stride = obj->m_0 * 7;
+                    i32* row = g->m_8[obj->m_4];
+                    row[stride + 2] = 0;
+                    i32* row2 = g->m_8[obj->m_4];
+                    row2[stride] &= 0xfffbffff;
+                }
+                rec->RemoveAt(i, 1);
+                // return the placed-object node to the MFC free list (the node
+                // header sits g_freeListNodeBias bytes before the payload).
+                void* node = (char*)obj - g_freeListNodeBias;
+                *(void**)node = g_freeList;
+                g_freeList = node;
+                return -1;
+            }
+            if (*(i32*)((char*)result + 0x124) != 0x14) {
+                restart = 1;
+            }
+            ++i;
+            if (restart) {
+                break;
+            }
+        }
+        if (i >= rec->GetSize() && !restart) {
+            if (i > 0) {
+                return blockIdx;
+            }
+            restart = 1;
+        }
+        (void)restart;
+    }
+    return -1;
+}
+
+// ===========================================================================
+// CPlay::FlushPendingOps (0x0da2d0; ex "CGameModeObj" view, folded wave3-J) - if
+// the highlight-busy gate (m_4f0) is clear, flush the two deferred guts ops gated
+// by m_dragInhibit1/m_dragInhibit2 (each running a guts step + a cursor-frame
+// reset), then clear the trigger grid's pending overlay-fx kind and reset the
+// drag boxes. Returns 1 if any of the three was pending, else 0.
+// The +0x2dc guts object is reached as CSBI_RectOnly for CommitSlot/EnterHlRow
+// (the GutsSubsystem view's CommitSlot142e/EnterHlRow213f thunk names mirror
+// exactly these CSBI_RectOnly methods - the guts==CSBI_RectOnly unification is
+// a flagged reconciliation TODO).
+RVA(0x000da2d0, 0xa5)
+i32 CPlay::FlushPendingOps() {
+    if (m_4f0 != 0) {
+        return 0;
+    }
+    i32 changed = 0;
+    if (m_dragInhibit1 != 0) {
+        CSBI_RectOnly* worker = (CSBI_RectOnly*)m_guts;
+        m_dragInhibit1 = 0;
+        worker->CommitSlot(0);
+        SetCursorFrame(0); // via the 0x17a8 ILT thunk in retail
+        changed = 1;
+    }
+    if (m_dragInhibit2 != 0) {
+        i32 spr = m_cursorFrame;
+        CSBI_RectOnly* worker = (CSBI_RectOnly*)m_guts;
+        m_dragInhibit2 = 0;
+        worker->EnterHlRow(0, spr);
+        SetCursorFrame(0);
+        changed = 1;
+    }
+    CTriggerMgr* fx = g_64556c->m_cmdGrid;
+    if (fx->m_pendingFxKind != 0) {
+        changed = 1;
+    }
+    fx->m_pendingFxKind = 0;
+    ClearDragBoxes(0, 0); // via the 0x35da ILT thunk in retail
+    return changed;
+}
+
 // CPlay::CanQuickSave (0x0da3b0) - all-idle predicate: returns 1 only when the
 // render is enabled, not in a main frame, no overlay-drag, no active snapshot, the
 // guts subsystem is idle (m_548/m_busyA/m_busyB all 0), the registry has no active
@@ -1773,6 +2137,382 @@ i32 CPlay::PostHudRect() {
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
+    return 1;
+}
+
+// ===========================================================================
+// GruntzPlayer - the per-player options/state record (CGruntzMgr +0x150 slot
+// array; <Gruntz/GruntzPlayer.h>). Its whole TU (ex GruntzPlayer.cpp) + the
+// channel-slot free functions (ex src/Net/ChannelSlots.cpp) fold into this obj
+// per the 0x0d5960 dossier: the play+channelslots+gruntzplayer+
+// gamemodeobjlifecycle interval is ONE original TU (one 20-frag init run; the
+// channelslots frag sits INSIDE the play run). RVA-ascending: 0xda870-0xdb31b.
+// ===========================================================================
+
+// Per-serialize round counter the CString archive helpers bump (g_serialCounter,
+// = ?g_serialCounter@@3HA @0x629ad0). Reloc-masked DATA.
+DATA(0x00629ad0)
+extern i32 g_serialCounter;
+
+// The MFC empty C string (the afxEmptyString data buffer @0x6293f4); the name
+// CString members default-init to it. Reloc-masked DATA (also declared by the
+// later render-tail section - same extern).
+extern "C" char g_emptyString[]; // 0x6293f4
+#include <string.h>              // inlined memset / strcpy in Serialize (rep stos / rep movs)
+
+// The dialog-combobox fillers below are __cdecl FREE functions physically in this
+// TU; they call the same-TU CString accessors (defined further down, so forward-
+// declared here) and reach USER32 through the game's cached fn-ptr globals.
+CString GetColorName(i32 colorIdx, i32 upper);
+CString GetDifficultyName(i32 diffIdx, i32 upper);
+extern "C" HWND(WINAPI* g_pGetDlgItem)(HWND, i32);            // 0x6c4564
+extern "C" i32(WINAPI* g_pSendMessageA)(HWND, u32, u32, i32); // 0x6c44a4
+
+// ===========================================================================
+// GruntzPlayer::GruntzPlayer(i32)  @0x0da870  (/GX EH frame)
+// Seed the name with "Player" (the temp from GetDefaultName() assigned into the
+// member) and the scalar config block from the index. The /GX frame comes from
+// the destructible "Player" temp.
+// ===========================================================================
+// @early-stop
+// MFC-version wall (cstring-empty-init-version-divergence.md): the field stores +
+// GetDefaultName call + op= are byte-correct, but the packaged MFC's
+// CString::CString() is out-of-line, so our base emits an extra ??0CString@@QAE@XZ
+// default-ctor call before the m_name = g_emptyString op= where retail elides it
+// (its inline CString() folds + dead-store-eliminates). Retail also reads fs:0
+// before push -1 in the /GX prologue where ours pushes first. Both are static-MFC
+// build artifacts, not source-steerable. Deferred to the final sweep.
+RVA(0x000da870, 0xb8)
+GruntzPlayer::GruntzPlayer(i32 index) {
+    m_name = g_emptyString;
+    m_playerIndex = index;
+    m_018 = -2;
+    m_020 = 0;
+    m_028 = 0;
+    m_014 = 1;
+    m_name = GetDefaultName();
+    m_008 = index;
+    m_010 = 0;
+    m_220 = 0;
+    m_224 = 0;
+    m_228 = 0xf;
+    m_02c = 0;
+    m_030 = 0;
+    m_22c = 0;
+    m_230 = 0;
+}
+
+// ===========================================================================
+// GruntzPlayer::GruntzPlayer()  @0x0da960
+// Frameless default ctor: empty name, the scalar config block zeroed (with the
+// sentinel -1 / 1 / -2 / 0xf seeds).
+// ===========================================================================
+// @early-stop
+// MFC-version wall (cstring-empty-init-version-divergence.md): all field stores +
+// the m_name = g_emptyString op= are byte-correct, but the packaged MFC's
+// out-of-line CString::CString() default-ctor call ALSO drags in a /GX EH frame
+// (the member becomes throwing-destructible during construction) that retail lacks
+// entirely - retail's inline CString() folds to nothing and the ctor is frameless,
+// so our base is larger than retail's 0x5b and objdiff can't align it. Static-MFC
+// build artifact, not source-steerable. Deferred to the final sweep.
+RVA(0x000da960, 0x5b)
+GruntzPlayer::GruntzPlayer() {
+    m_playerIndex = -1;
+    m_name = g_emptyString;
+    m_018 = -2;
+    m_020 = 0;
+    m_014 = 1;
+    m_008 = 0;
+    m_010 = 0;
+    m_220 = 0;
+    m_224 = 0;
+    m_228 = 0xf;
+    m_02c = 0;
+    m_030 = 0;
+    m_22c = 0;
+    m_230 = 0;
+}
+
+// ===========================================================================
+// GruntzPlayer::Reset  @0x0da9e0
+// Frameless re-init of an already-live slot: re-empty the name CString (op= to
+// the MFC empty string, NO default ctor / no EH frame since the member is already
+// constructed) and re-seed the scalar config block. Returns 1 (success).
+// ===========================================================================
+// @early-stop
+// store-scheduling wall: every instruction (the op= to g_emptyString + all 14 field
+// stores) is byte-correct, but MSVC's scheduler floats the m_228 = 0xf IMMEDIATE
+// store to the tail of the register-store cluster, where retail keeps it in source
+// position (between m_224 and m_02c). Reordering the source / hoisting to a local
+// does not flip it (the scheduler re-floats the imm). ~94.9%.
+RVA(0x000da9e0, 0x60)
+i32 GruntzPlayer::Reset() {
+    m_playerIndex = -1;
+    m_018 = -2;
+    m_020 = 0;
+    m_014 = 1;
+    m_name = g_emptyString;
+    m_008 = 0;
+    m_010 = 0;
+    m_220 = 0;
+    m_224 = 0;
+    m_228 = 0xf;
+    m_02c = 0;
+    m_030 = 0;
+    m_22c = 0;
+    m_230 = 0;
+    return 1;
+}
+
+// ===========================================================================
+// GruntzPlayer::ClearRoundState  @0x0daa60
+// Frameless: mark the slot active (m_020 = 1) and clear the per-round scalar
+// counters (m_01c / m_02c / m_030 / m_22c / m_230). Returns 1.
+// ===========================================================================
+RVA(0x000daa60, 0x24)
+i32 GruntzPlayer::ClearRoundState_0daa60() {
+    m_020 = 1;
+    m_01c = 0;
+    m_02c = 0;
+    m_030 = 0;
+    m_22c = 0;
+    m_230 = 0;
+    return 1;
+}
+
+// ===========================================================================
+// FillColorCombo  @0x0daaa0  (/GX EH frame, free fn)
+// Reset the combobox (dialog item `nID` on `hDlg`) and fill it with all 17 color
+// names; select `curSel` when non-negative. Returns 0 if the dialog/item is
+// missing, else 1.
+// ===========================================================================
+RVA(0x000daaa0, 0xd3)
+i32 FillColorCombo(HWND hDlg, i32 nID, i32 curSel) {
+    if (hDlg == 0) {
+        return 0;
+    }
+    HWND cb = g_pGetDlgItem(hDlg, nID);
+    if (cb == 0) {
+        return 0;
+    }
+    i32(WINAPI * pSend)(HWND, u32, u32, i32) = g_pSendMessageA;
+    pSend(cb, 0x14b, 0, 0);
+    for (i32 i = 0; i < 0x11; i++) {
+        CString s = GetColorName(i, 0);
+        pSend(cb, 0x143, 0, (i32)(const char*)s);
+    }
+    if (curSel >= 0) {
+        pSend(cb, 0x14e, curSel, 0);
+    }
+    return 1;
+}
+
+// ===========================================================================
+// FillDifficultyCombo  @0x0dabc0 - twin of FillColorCombo over the 3 difficulty names.
+// ===========================================================================
+RVA(0x000dabc0, 0xd3)
+i32 FillDifficultyCombo(HWND hDlg, i32 nID, i32 curSel) {
+    if (hDlg == 0) {
+        return 0;
+    }
+    HWND cb = g_pGetDlgItem(hDlg, nID);
+    if (cb == 0) {
+        return 0;
+    }
+    i32(WINAPI * pSend)(HWND, u32, u32, i32) = g_pSendMessageA;
+    pSend(cb, 0x14b, 0, 0);
+    for (i32 i = 0; i < 3; i++) {
+        CString s = GetDifficultyName(i, 0);
+        pSend(cb, 0x143, 0, (i32)(const char*)s);
+    }
+    if (curSel >= 0) {
+        pSend(cb, 0x14e, curSel, 0);
+    }
+    return 1;
+}
+
+// ===========================================================================
+// GruntzPlayer::Serialize  @0x0dace0
+// Stream every field through the archive order object. kind 7 = Load (read each
+// scalar via [+0x2c], then load the 0x80 name buffer and assign it into m_name),
+// kind 4 = Save (write each scalar via [+0x30], then the inlined memset+strcpy of
+// the name into a 0x80 buffer and write it). Either way, forward the 4-arg
+// command to the +0x38 config bundle and negate (!!) its result.
+// ===========================================================================
+RVA(0x000dace0, 0x239)
+i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
+    CSerialArchive* ar = (CSerialArchive*)arArg;
+    char tmp[0x80];
+    // Retail lays the kind==4 (Save, [+0x30]) arm out of line and keeps the
+    // kind==7 (Load, [+0x2c]) arm inline: `cmp 4; je SAVE / cmp 7; jne TAIL`.
+    if (kind != 4) {
+        if (kind == 7) {
+            // Load.
+            ar->Read(&m_playerIndex, 4);
+            ar->Read(&m_008, 4);
+            ar->Read(&m_00c, 4);
+            ar->Read(&m_010, 4);
+            ar->Read(&m_014, 4);
+            ar->Read(&m_018, 4);
+            ar->Read(&m_01c, 4);
+            ar->Read(&m_020, 4);
+            ar->Read(&m_028, 4);
+            ar->Read(&m_024, 4);
+            g_serialCounter++;
+            ar->Read(tmp, 0x80);
+            m_name = tmp;
+            ar->Read(&m_220, 4);
+            ar->Read(&m_224, 4);
+            ar->Read(&m_228, 4);
+        }
+    } else {
+        // Save.
+        ar->Write(&m_playerIndex, 4);
+        ar->Write(&m_008, 4);
+        ar->Write(&m_00c, 4);
+        ar->Write(&m_010, 4);
+        ar->Write(&m_014, 4);
+        ar->Write(&m_018, 4);
+        ar->Write(&m_01c, 4);
+        ar->Write(&m_020, 4);
+        ar->Write(&m_028, 4);
+        ar->Write(&m_024, 4);
+        g_serialCounter++;
+        memset(tmp, 0, sizeof(tmp));
+        strcpy(tmp, (const char*)m_name);
+        ar->Write(tmp, 0x80);
+        ar->Write(&m_220, 4);
+        ar->Write(&m_224, 4);
+        ar->Write(&m_228, 4);
+    }
+    return ((CBattlezMapConfig*)&m_038)->Method_02bfc0((i32)ar, (void*)kind, a3, a4) != 0;
+}
+
+// ===========================================================================
+// GruntzPlayer::GetDefaultName  @0x0dafb0  (/GX EH frame, static)
+// Return the literal default player name "Player" by value (NRV); the /GX frame
+// comes from the destructible CString("Player") temp.
+// ===========================================================================
+RVA(0x000dafb0, 0x71)
+CString GruntzPlayer::GetDefaultName() {
+    // Retail builds a named local temp, then NRV-copies it into the return slot
+    // (op= copy-ctor) and destructs the temp -> the /GX frame. A direct
+    // `return CString("Player");` would NRV-construct in place (frameless).
+    CString name("Player");
+    return name;
+}
+
+// ===========================================================================
+// GetColorName  @0x0db050  (/GX EH frame, free fn)
+// Build a CString from the color-name table (g_colorNames[idx]); uppercase it
+// when `upper` is set, then return by value (NRV: the local is copy-ctor'd into
+// the caller's return slot and destructed).
+// ===========================================================================
+RVA(0x000db050, 0x90)
+CString GetColorName(i32 colorIdx, i32 upper) {
+    CString s;
+    s = g_colorNames[colorIdx];
+    if (upper) {
+        s.MakeUpper();
+    }
+    return s;
+}
+
+// ===========================================================================
+// GetDifficultyName  @0x0db110  (/GX EH frame, free fn)
+// As GetColorName but over the difficulty table ("Easy"/"Normal"/"Hard").
+// ===========================================================================
+RVA(0x000db110, 0x90)
+CString GetDifficultyName(i32 diffIdx, i32 upper) {
+    CString s;
+    s = g_difficultyNames[diffIdx];
+    if (upper) {
+        s.MakeUpper();
+    }
+    return s;
+}
+
+// ===========================================================================
+// The global channel-slot in-use table (g_64c3f0[17]) and its free-function
+// accessors (ex src/Net/ChannelSlots.cpp; the channelslots init frag sits INSIDE
+// this TU's frag run - one obj). A 17-DWORD array of per-channel "free" flags
+// (1 = free, 0 = taken); CNetMgr and CGruntzMgr init/scan/claim channels through
+// these. The table is an extern (its storage lives in retail .data).
+// ===========================================================================
+
+// Reset every slot to "free" (1).
+RVA(0x000db1d0, 0x14)
+void ChannelSlots_InitAll() {
+    for (i32 i = 0; i < 17; i++) {
+        g_64c3f0[i] = 1;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x0db200. Swap the +0x08 holder to `arg`: no-op when already equal, else
+// validate (0x11f9), toggle old off / new on (0x3bbb), and store.
+// @identity-TODO (owner unrecovered - +0x08-only evidence; the neighbors are
+// GruntzPlayer whose m_008 the int-seeded ctor writes an INDEX into, so the
+// holder-pointer reading here cannot be pinned onto it without more xrefs).
+extern "C" i32 Check11f9(void* p);          // 0x11f9
+extern "C" void Toggle3bbb(void* p, i32 f); // 0x3bbb
+struct Cdb200 {
+    char pad0[8];
+    void* m_8; // +0x08
+    i32 Swap(void* arg);
+};
+RVA(0x000db200, 0x51)
+i32 Cdb200::Swap(void* arg) {
+    if (m_8 == arg) {
+        return 1;
+    }
+    if (Check11f9(arg)) {
+        Toggle3bbb(m_8, 1);
+        Toggle3bbb(arg, 0);
+        m_8 = arg;
+        return 1;
+    }
+    return 0;
+}
+SIZE_UNKNOWN(Cdb200);
+
+// Return the index of the first free (non-zero) slot, else 0.
+RVA(0x000db280, 0x1b)
+i32 ChannelSlots_FindFree() {
+    for (i32 i = 0; i < 17; i++) {
+        if (g_64c3f0[i] != 0) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+// Set slot[i] = v.
+RVA(0x000db2b0, 0x10)
+void ChannelSlots_Set(i32 i, i32 v) {
+    g_64c3f0[i] = v;
+}
+
+// Return slot[i].
+RVA(0x000db2d0, 0xc)
+i32 ChannelSlots_Get(i32 i) {
+    return g_64c3f0[i];
+}
+
+// ===========================================================================
+// GruntzPlayer::Deactivate (0x0db2f0; ex the "Cdb2f0::Finalize" orphan view,
+// folded wave3-J - offsets m_014/m_020/m_038 + the CBattlezMapConfig::Clear_02ade0
+// call pin it to this class). If the slot is active (m_020), clear the embedded
+// board bundle (unless m_014 is set) and deactivate. Returns 1/0.
+RVA(0x000db2f0, 0x2b)
+i32 GruntzPlayer::Deactivate() {
+    if (m_020 == 0) {
+        return 0;
+    }
+    if (m_014 == 0) {
+        ((CBattlezMapConfig*)&m_038)->Clear_02ade0();
+    }
+    m_020 = 0;
     return 1;
 }
 
@@ -2624,6 +3364,25 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
     g->m_548 = 1;
     g->Guts125d();
     m_savedClock = g_645588;
+    return 1;
+}
+
+// ===========================================================================
+// CPlay::ReleaseLevelOverlay (0x0d6560; ex "CGameModeObj" view, folded wave3-J) -
+// if the overlay is live (m_overlayDrag), exit the guts overlay mode, clear the
+// flag, and (unless multiplayer, g_64556c->m_134 == 2) publish the saved level
+// clock (m_savedClock) back to the running game clock. Returns 1. The single
+// stack arg is unused. (The EnterOverlayDrag counterpart above.)
+RVA(0x000d6560, 0x45)
+i32 CPlay::ReleaseLevelOverlay(i32) {
+    if (m_overlayDrag != 0) {
+        CSBI_RectOnly* worker = (CSBI_RectOnly*)m_guts;
+        m_overlayDrag = 0;
+        worker->ExitMode();
+        if (g_64556c->m_134 != 2) {
+            g_645588 = m_savedClock;
+        }
+    }
     return 1;
 }
 

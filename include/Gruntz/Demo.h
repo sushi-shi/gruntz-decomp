@@ -4,7 +4,7 @@
 // words at +0x520.
 //
 // CANONICAL: this was previously dual-viewed as a `.cpp`-local `struct CDemo :
-// CPlay` in BOTH PlayDtor.cpp (dtor host) and GruntzMgrTransition.cpp (ctor +
+// CPlay` in BOTH GruntzMgr.cpp (dtor host) and GruntzMgrTransition.cpp (ctor +
 // vtable host). Unified here so the one shape drives the vtable emission, the
 // /GX dtor fold, and the slot-1/slot-21 overrides. Only OFFSETS + code shape are
 // load-bearing (field names placeholders).
@@ -20,7 +20,7 @@ public:
     // (masks retail 0x5e9f0c). The factory's `new CDemo` (GruntzMgrTransition.cpp)
     // drives the out-of-line COMDAT vtable emission.
     CDemo() {}
-    virtual ~CDemo() OVERRIDE;                     // slot 0  0x8d0d0 (/GX dtor, PlayDtor.cpp)
+    virtual ~CDemo() OVERRIDE;                     // slot 0  0x8d0d0 (/GX dtor, GruntzMgr.cpp)
     virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;    // slot 1  0x3bfa0 (Demo.cpp)
     virtual void ReleaseResources() OVERRIDE;      // slot 2
     virtual GameStateId Update() OVERRIDE;         // slot 4

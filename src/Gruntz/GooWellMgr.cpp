@@ -97,15 +97,13 @@ struct CGameObj2c {
     i32 m_4f4; // +0x4f4
     char _4f8[0x594 - 0x4f8];
     i32 m_594; // +0x594
-    // EnterOverlayDrag @0xd6440 = CPlay::EnterOverlayDrag, ClearPlacedObjects @0xda030 =
-    // CGameModeObj::ClearPlacedObjects; cast at each call.
+    // EnterOverlayDrag @0xd6440 / ClearPlacedObjects @0xda030 are both CPlay
+    // methods (the ex-"CGameModeObj" view folded onto CPlay, wave3-J); cast at
+    // each call. Local decl-only view of the real CPlay (Play.h is too heavy here).
 };
 class CPlay {
 public:
     i32 EnterOverlayDrag(i32);
-};
-class CGameModeObj {
-public:
     i32 ClearPlacedObjects();
 };
 
@@ -272,7 +270,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
     {
         CGameObj2c* obj = (CGameObj2c*)g_gameReg->m_curState;
         if (g_gameReg->m_134 != 1) {
-            i32 idx = ((CGameModeObj*)obj)->ClearPlacedObjects();
+            i32 idx = ((CPlay*)obj)->ClearPlacedObjects();
             if (idx != -1) {
                 CFocusSlot* lastSlot = pslot;
                 i32 i;

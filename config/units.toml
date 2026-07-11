@@ -125,11 +125,6 @@ unit = "cbrickz"
 source = "src/Gruntz/CBrickz.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "levelinfodlg"
-source = "src/Gruntz/LevelInfoDlg.cpp"
-flags = "eh"
-
 # configstore / configstorewrite / configstoreread / reghelpers UNITS REMOVED
 # (P0 library reconcile): their bodies were hand-copies of the statically-linked
 # NAFXCW MFC CWinApp profile/registry API (WriteProfileInt/String/Binary,
@@ -397,13 +392,10 @@ source = "src/Gruntz/TileSwitchLogic.cpp"
 flags = "eh"
 
 [[unit]]
+# ONE original TU (wave3-J): the 0x095b10-0x099b46 text is an I-T-I sandwich +
+# contiguous private-.data extents; absorbs the ex ingametext unit.
 unit = "ingameicon"
 source = "src/Gruntz/InGameIcon.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "ingametext"
-source = "src/Gruntz/InGameText.cpp"
 flags = "eh"
 
 [[unit]]
@@ -464,6 +456,8 @@ source = "src/Gruntz/WorldSoundSet.cpp"
 flags = "eh"
 
 [[unit]]
+# ONE original TU (wave3-J): the 0x0dec60-0x0e2213 text is a P-T-P sandwich +
+# contiguous private-.data extents; absorbs the ex timebomb unit.
 unit = "projectile"
 source = "src/Gruntz/Projectile.cpp"
 flags = "eh"
@@ -572,6 +566,9 @@ source = "src/Io/FileStream.cpp"
 flags = "mfc"
 
 [[unit]]
+# ONE original TU (wave3-J): the 0x0e3690 interval's savegame+levelinfodlg text is
+# an L-S-L-S sandwich + contiguous private-.data extents; absorbs the ex
+# levelinfodlg + savegamemenu units (DrawSaveGameMenu 0xe3f40 is text-contained).
 unit = "savegame"
 source = "src/Io/SaveGame.cpp"
 flags = "eh"
@@ -647,6 +644,8 @@ source = "src/Gruntz/GruntzApp.cpp"
 flags = "eh"
 
 [[unit]]
+# ONE original TU: C:\Proj\Gruntz\GruntzMgr.cpp (__FILE__-anchored). wave3-J merged
+# the ex playdtor+appdialogs units in (FLAGS group 0x08b8c0-0x093ce7, unified /GX).
 unit = "gruntzmgr"
 source = "src/Gruntz/GruntzMgr.cpp"
 flags = "eh"
@@ -901,12 +900,6 @@ source = "src/Gruntz/CheckpointSwitchBuild.cpp"
 flags = "base"
 
 [[unit]]
-# DrawSaveGameMenu (0xe3f40) save-game dialog command dispatcher.
-unit = "savegamemenu"
-source = "src/Gruntz/SaveGameMenu.cpp"
-flags = "base"
-
-[[unit]]
 # GruntzLoadGameDlgProc (0x9dff0) + LoadGameCommand (0x9e390) - the "GAME_LOAD" dialog
 # (load-side sibling of savegamemenu; opened by CGruntzMgr::RunLoadGameDialog).
 unit = "loadgamemenu"
@@ -985,11 +978,6 @@ unit = "netmgrerror"
 source = "src/Net/NetMgrReportError.cpp"
 flags = "base"
 
-[[unit]]
-unit = "channelslots"
-source = "src/Net/ChannelSlots.cpp"
-flags = "base"
-
 
 [[unit]]
 unit = "winmain"
@@ -1024,6 +1012,9 @@ flags = "eh"
 
 
 [[unit]]
+# The 0x0d5960 interval is ONE original TU (dossier: one 20-frag init run; the
+# channelslots frag INSIDE the play run): wave3-J folded the ex channelslots+
+# gruntzplayer+gamemodeobjlifecycle units here, /GX unified.
 unit = "play"
 source = "src/Gruntz/Play.cpp"
 flags = "eh"
@@ -1031,11 +1022,6 @@ flags = "eh"
 [[unit]]
 unit = "playmessageimage"
 source = "src/Gruntz/PlayMessageImage.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "playdtor"
-source = "src/Gruntz/PlayDtor.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1107,11 +1093,6 @@ flags = "eh"
 [[unit]]
 unit = "battlezmapconfig"
 source = "src/Gruntz/BattlezMapConfig.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "gruntzplayer"
-source = "src/Gruntz/GruntzPlayer.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1188,11 +1169,6 @@ flags = "eh"
 [[unit]]
 unit = "kitchenslime"
 source = "src/Gruntz/KitchenSlime.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "timebomb"
-source = "src/Gruntz/TimeBomb.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1290,11 +1266,6 @@ source = "src/Gruntz/ExitTrigger.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "secretleveltrigger"
-source = "src/Gruntz/SecretLevelTrigger.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "statichazard"
 source = "src/Gruntz/StaticHazard.cpp"
 flags = "eh"
@@ -1325,6 +1296,8 @@ source = "src/Gruntz/TileTrigger.cpp"
 flags = "eh"
 
 [[unit]]
+# ONE original TU (wave3-J): the 0x041e90-0x042cd3 text is a T-L-T sandwich
+# (adjacent frag run i40/i41); absorbs the ex secretleveltrigger unit.
 unit = "secretteleportertrigger"
 source = "src/Gruntz/SecretTeleporterTrigger.cpp"
 flags = "eh"
@@ -1522,8 +1495,11 @@ source = "src/DDrawMgr/DDSurface.cpp"
 flags = "base"
 
 [[unit]]
+# ONE original TU: C:\Proj\DDrawMgr\DIRPAL.CPP (__FILE__-anchored; wave3-J merge of
+# the ex ddpalette+dirpal+palettelerp units + the PalLoad_1479e0 stray). Unit name
+# kept "ddpalette" (unit renames disturb delinker packing).
 unit = "ddpalette"
-source = "src/DDrawMgr/DDPalette.cpp"
+source = "src/DDrawMgr/DirPal.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1576,11 +1552,6 @@ flags = "eh"
 unit = "gruntzsoundz"
 source = "src/Dsndmgr/GruntzSoundZ.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "appdialogs"
-source = "src/Gruntz/AppDialogs.cpp"
-flags = "base"
 
 [[unit]]
 unit = "winapimodule"
@@ -1647,11 +1618,6 @@ source = "src/Gruntz/ActionArea.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "eyecandyani"
-source = "src/Gruntz/EyeCandyAni.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "butestoreclear"
 source = "src/Bute/ButeStoreClear.cpp"
 flags = "base"
@@ -1702,11 +1668,6 @@ source = "src/Gruntz/LoadLevelByMode.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "gamemodeobjlifecycle"
-source = "src/Gruntz/GameModeObjLifecycle.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "pyramidbridgesprites"
 source = "src/Gruntz/PyramidBridgeSprites.cpp"
 flags = "eh"
@@ -1725,11 +1686,6 @@ flags = "base"
 unit = "shadetablecache"
 source = "src/DDrawMgr/ShadeTableCache.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "palettelerp"
-source = "src/DDrawMgr/PaletteLerp.cpp"
-flags = "base"
 
 [[unit]]
 unit = "battlezdata"
@@ -1895,6 +1851,8 @@ source = "src/Gruntz/BehindCandyAni.cpp"
 flags = "eh"
 
 [[unit]]
+# ONE original TU (wave3-J): the 0x0abfa0-0x0ad527 text is an F-E-F sandwich
+# (frontcandyani frag @0xad110 in the tail); absorbs the ex eyecandyani unit.
 unit = "frontcandyani"
 source = "src/Gruntz/FrontCandyAni.cpp"
 flags = "eh"
@@ -2434,11 +2392,6 @@ flags = "eh"
 unit = "gruntphasestep"
 source = "src/Gruntz/GruntPhaseStep.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "dirpal"
-source = "src/DDrawMgr/DirPal.cpp"
-flags = "base"
 
 [[unit]]
 unit = "lutshaderect"

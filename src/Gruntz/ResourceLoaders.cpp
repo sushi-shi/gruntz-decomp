@@ -86,36 +86,9 @@ namespace ResLoaders {
         return 1;
     }
 
-    struct PalLoad_1479e0 {
-        i32 Apply(i32 a, PALETTEENTRY* pal, i32 c); // thiscall, RVA 0x147390
-        i32 Load(i32 a, char* name, i32 c);
-    };
-    // __thiscall(a, name, c): load the named PALETTE resource as 256 RGB triples,
-    // expand to PALETTEENTRY[256] (flags 0), and apply it.
-    RVA(0x001479e0, 0xbb)
-    i32 PalLoad_1479e0::Load(i32 a, char* name, i32 c) {
-        PALETTEENTRY pal[256];
-        HRSRC hr = FindResourceA(g_resModule, name, "PALETTE");
-        if (!hr) {
-            return 0;
-        }
-        HGLOBAL hg = LoadResource(g_resModule, hr);
-        if (!hg) {
-            return 0;
-        }
-        char* src = (char*)LockResource(hg);
-        if (!src) {
-            return 0;
-        }
-        for (i32 i = 0; i < 256; i++) {
-            pal[i].peRed = src[0];
-            pal[i].peGreen = src[1];
-            pal[i].peBlue = src[2];
-            pal[i].peFlags = 0;
-            src += 3;
-        }
-        return Apply(a, pal, c);
-    }
+    // The former PalLoad_1479e0 view (RVA 0x1479e0) was RVA-proven to be
+    // CDDPalette::LoadDefault (its Apply@0x147390 IS CDDPalette::Create) and
+    // re-homed to src/DDrawMgr/DirPal.cpp (the DIRPAL.CPP obj, wave3-J).
 
     struct PalHost_1775f0 {
         i32 Apply(const char* name, i32 arg);

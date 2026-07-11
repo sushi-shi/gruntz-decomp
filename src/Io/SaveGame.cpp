@@ -12,6 +12,17 @@
 // operands are masked in objdiff.
 #include <Io/SaveGame.h>
 #include <Gruntz/FontConfig.h>
+// The level-preview / save-menu dialog half of this TU (ex LevelInfoDlg.cpp +
+// SaveGameMenu.cpp, merged wave3-J - the 0x0e3690-0x0e579e interval's text is an
+// L-S-L-S sandwich (levelinfodlg x3 | savegame x3 | ... | levelinfodlg x2 |
+// savegame x23), impossible for two first-link objs; the private initialized-
+// .data extents are contiguous 0x213ac8..0x213c10 across both).
+#include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (BuildLevelTitleString arg3)
+#include <Image/ImagePool.h>  // the canonical CImagePool (g_previewMgr)
+#include <Image/Image.h>      // CRezImage (g_previewImage; the DIB StretchDIBits reads)
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr (RunModalDialog/FillSaveInfo, DrawSaveGameMenu)
+#include <Globals.h>          // g_previewMgr / g_previewImage
+#include <stdio.h>            // sprintf (reloc-masked)
 #include <rva.h>
 
 #include <stdlib.h> // _itoa
@@ -27,6 +38,209 @@
 i32 IsSlotOccupied(SaveSlot* item); // 0x2694 (jmp-thunk -> 0xe5700)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);     // 0x0e3e80
 void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x09e2d0
+
+// --- the dialog half's shared state/decls (ex LevelInfoDlg.cpp/SaveGameMenu.cpp) ---
+// g_gameReg comes typed from <Io/SaveGame.h> (the DATA(0x0024556c) binding lives in
+// GruntzMgr.cpp); g_saveMenuMgr is the CGruntzMgr view of the SAME 0x24556c datum.
+DATA(0x0024556c)
+extern CGruntzMgr* g_saveMenuMgr; // *0x64556c
+DATA(0x00213a9c)
+extern i32 g_savedMenuCmd; // DAT_00613a9c  pending deferred save-menu command
+DATA(0x0024c864)
+extern i32 g_slotState; // DAT_0064c864  last-queried slot state (the previewed level)
+                        // (the ex-LevelInfoDlg DATA(0x0064c864) row was a VA-as-RVA bug)
+// The save-confirm info line (DAT_0064c864-adjacent; pinned in ApiCallers).
+extern char* g_dlgInfoText;
+struct SaveTempRec;                                // defined below (the temp save-record)
+i32 __stdcall CloseTempFile_e5550(SaveTempRec* r); // defined below (0x0e5550)
+// The SetDlgItemTextA helper (0x0e4850) + the title builder (0x0e44e0), defined below.
+void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
+void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev);
+// FUN_00002e05 (thunk): per-slot delete driver (reloc-masked).
+void DeleteSaveSlot(HWND hDlg, CSaveGame* obj);
+// The three dialog sub-proc thunks passed as callbacks (reloc-masked code ptrs).
+extern "C" void SaveInfoProc();
+extern "C" void SaveDeleteProc();
+extern "C" void SaveOverwriteProc();
+
+// LevelPreviewDlgProc (0x0e3690) - the level-select preview dialog proc. WM_INITDIALOG
+// builds the g_previewMgr image pool + the level title; WM_COMMAND (IDOK/IDCANCEL)
+// frees the preview image + destroys the pool + closes; WM_PAINT centre-stretch-blits
+// the previewed DIB (g_previewImage, 8bpp -> DIB_PAL_COLORS else DIB_RGB_COLORS) into
+// a 320x240 box inside the preview item (0x51d). /GX EH frame (the pool ctor/dtor).
+// @early-stop
+// ~81%: logic byte-faithful (the msg sub-chain dispatch, the pool new/SetHandles/
+// BuildLevelTitleString init, the Free+delete teardown, the rect-centre math, the
+// 8bpp/rgb StretchDIBits branch). Residue is three codegen walls, not logic:
+// (1) the /GX SEH prologue order (`push -1` vs `mov eax,fs:0` first + esi/edi
+// shrink-wrap; docs/patterns/shrink-wrapped-callee-save-push.md, topic:wall);
+// (2) epilogue tail-merge - retail funnels every return to ONE shared `mov eax,1` +
+// epilogue via jmp, cl duplicates the epilogue per return (single-return `r` var
+// tried: regressed to 77%); (3) the pool local coloring - cl reuses the hDlg-arg
+// stack slot [esp+0x78] where retail reuses the msg slot [esp+0x7c], shifting the
+// front-half displacements. None are source-steerable.
+RVA(0x000e3690, 0x2ec)
+i32 CALLBACK LevelPreviewDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_PAINT: {
+            HWND item = GetDlgItem(hDlg, 0x51d);
+            if (g_previewMgr == 0 || g_previewImage == 0 || item == 0) {
+                return 1;
+            }
+            RECT wr;
+            GetWindowRect(item, &wr);
+            POINT pt;
+            pt.x = wr.left;
+            pt.y = wr.top;
+            ScreenToClient(hDlg, &pt);
+            i32 w = wr.right - wr.left - 1;
+            i32 h = wr.bottom - wr.top - 1;
+            i32 dx = pt.x;
+            i32 dy = pt.y;
+            if (w >= 0x140) {
+                dx += (w - 0x140) / 2;
+                w = 0x140;
+            }
+            if (h >= 0xf0) {
+                dy += (h - 0xf0) / 2;
+                h = 0xf0;
+            }
+            PAINTSTRUCT ps;
+            BeginPaint(hDlg, &ps);
+            SetStretchBltMode(ps.hdc, 3);
+            CRezImage* img = (CRezImage*)g_previewImage;
+            if (img->m_bitCount == 8) {
+                StretchDIBits(
+                    ps.hdc,
+                    dx,
+                    dy,
+                    w,
+                    h,
+                    0,
+                    0,
+                    img->m_width,
+                    img->m_height,
+                    img->m_pixels,
+                    (BITMAPINFO*)img,
+                    DIB_PAL_COLORS,
+                    SRCCOPY
+                );
+            } else {
+                StretchDIBits(
+                    ps.hdc,
+                    dx,
+                    dy,
+                    w,
+                    h,
+                    0,
+                    0,
+                    img->m_width,
+                    img->m_height,
+                    img->m_pixels,
+                    (BITMAPINFO*)img,
+                    DIB_RGB_COLORS,
+                    SRCCOPY
+                );
+            }
+            EndPaint(hDlg, &ps);
+            return 1;
+        }
+        case WM_INITDIALOG: {
+            if (g_slotState == 0) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            g_previewMgr = new CImagePool;
+            if (g_previewMgr->SetHandles(
+                    (i32) * (HINSTANCE*)((char*)g_gameReg->m_owner + 0xc),
+                    (i32)g_previewMgr,
+                    0
+                )
+                == 0) {
+                return 0;
+            }
+            BuildLevelTitleString(
+                (HWND)g_previewMgr,
+                (i32)g_gameReg->m_saveSink,
+                (CLevelInfo*)g_slotState
+            );
+            return 1;
+        }
+        case WM_COMMAND: {
+            if (wParam != 2 && wParam != 1) {
+                return 0;
+            }
+            if (g_previewMgr != 0) {
+                if (g_previewImage != 0) {
+                    g_previewMgr->Free((CRezImage*)g_previewImage);
+                }
+                delete g_previewMgr;
+                g_previewMgr = 0;
+            }
+            EndDialog(hDlg, 0);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// 0x0e3a40 (spatially re-homed from src/Stub/ApiCallers.cpp). __stdcall dialog
+// proc: OK closes; Cancel runs the save-confirm sub-object (CloseTempFile then
+// CSaveGame::Save); WM_INITDIALOG fills the info line via the 0x0e4850 helper.
+RVA(0x000e3a40, 0xb0)
+i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case 0x110:
+            if (g_dlgInfoText == 0) {
+                EndDialog(hDlg, (INT_PTR)g_dlgInfoText);
+                return 1;
+            }
+            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_dlgInfoText);
+            return 1;
+        case 0x111:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                CloseTempFile_e5550((SaveTempRec*)g_dlgInfoText);
+                ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
+                EndDialog(hDlg, 1);
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
+
+// -------------------------------------------------------------------------
+// 0x0e3b20 (spatially re-homed from src/Stub/ApiCallers.cpp; twin of 0x0e3a40).
+// __stdcall dialog proc: WM_INITDIALOG fills the info line via the 0x0e4850 helper;
+// WM_COMMAND OK/Cancel just close the dialog (no save-confirm sub-object).
+RVA(0x000e3b20, 0x86)
+i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case 0x110:
+            if (g_dlgInfoText == 0) {
+                EndDialog(hDlg, (INT_PTR)g_dlgInfoText);
+                return 1;
+            }
+            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_dlgInfoText);
+            return 1;
+        case 0x111:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                EndDialog(hDlg, wParam);
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // 0x0e3be0 (spatially re-homed from src/Stub/ApiCallers.cpp). __stdcall dialog
@@ -69,6 +283,327 @@ void FillSaveDialog(HWND hWnd, CSaveGame* sg) {
     LabelSaveSlot(hWnd, sg->GetSlot(7), 0x43c, 0x497, 0x4a1, 0x4ab);
     LabelSaveSlot(hWnd, sg->GetSlot(8), 0x43d, 0x498, 0x4a2, 0x4ac);
     LabelSaveSlot(hWnd, sg->GetSlot(9), 0x43e, 0x499, 0x4a3, 0x4ad);
+}
+
+// @early-stop
+// jump-table scoring wall: the code bytes match the retail dispatch (the four
+// dense-case jump tables, the deferred-command latch, the GAME_INFO/DELETE/
+// OVERWRITE/save arms, EnableWindow/GetDlgItemText/EndDialog gates and the two
+// return tails), but MSVC emits each switch's jump table as its own `$Lnnn` COMDAT
+// while the delinker inlines the four `switchdataD_*` tables into the function body,
+// so the four `jmp [id*4+table]` base relocs + the table data don't pair (see
+// docs/patterns/switch-jumptable-separate-comdat.md + jumptable-data-overlap.md).
+RVA(0x000e3f40, 0x3d6)
+i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
+    i32 c;
+    if (cmd == 1) {
+        c = g_savedMenuCmd;
+        if (c == -1) {
+            return 0;
+        }
+    } else {
+        c = cmd;
+    }
+
+    // Latch a pending command from a control notification.
+    if (((u32)c >> 16) == 0x100) {
+        switch (c & 0xffff) {
+            case 0x435:
+                g_savedMenuCmd = 0x490;
+                break;
+            case 0x436:
+                g_savedMenuCmd = 0x491;
+                break;
+            case 0x437:
+                g_savedMenuCmd = 0x492;
+                break;
+            case 0x438:
+                g_savedMenuCmd = 0x493;
+                break;
+            case 0x439:
+                g_savedMenuCmd = 0x494;
+                break;
+            case 0x43a:
+                g_savedMenuCmd = 0x495;
+                break;
+            case 0x43b:
+                g_savedMenuCmd = 0x496;
+                break;
+            case 0x43c:
+                g_savedMenuCmd = 0x497;
+                break;
+            case 0x43d:
+                g_savedMenuCmd = 0x498;
+                break;
+            case 0x43e:
+                g_savedMenuCmd = 0x499;
+                break;
+        }
+    }
+
+    // GAME_INFO buttons.
+    i32 info;
+    switch (c) {
+        case 0x49a:
+            info = 0;
+            break;
+        case 0x49b:
+            info = 1;
+            break;
+        case 0x49c:
+            info = 2;
+            break;
+        case 0x49d:
+            info = 3;
+            break;
+        case 0x49e:
+            info = 4;
+            break;
+        case 0x49f:
+            info = 5;
+            break;
+        case 0x4a0:
+            info = 6;
+            break;
+        case 0x4a1:
+            info = 7;
+            break;
+        case 0x4a2:
+            info = 8;
+            break;
+        case 0x4a3:
+            info = 9;
+            break;
+        default:
+            info = -1;
+            break;
+    }
+    if (info != -1) {
+        g_slotState = (i32)obj->GetSlot(info);
+        if (g_slotState == 0) {
+            return 0;
+        }
+        EnableWindow(hDlg, FALSE);
+        g_saveMenuMgr->RunModalDialog("GAME_INFO", (void*)SaveInfoProc, 0);
+        EnableWindow(hDlg, TRUE);
+        return 0;
+    }
+
+    // GAME_DELETE buttons.
+    i32 del;
+    switch (c) {
+        case 0x4a4:
+            del = 0;
+            break;
+        case 0x4a5:
+            del = 1;
+            break;
+        case 0x4a6:
+            del = 2;
+            break;
+        case 0x4a7:
+            del = 3;
+            break;
+        case 0x4a8:
+            del = 4;
+            break;
+        case 0x4a9:
+            del = 5;
+            break;
+        case 0x4aa:
+            del = 6;
+            break;
+        case 0x4ab:
+            del = 7;
+            break;
+        case 0x4ac:
+            del = 8;
+            break;
+        case 0x4ad:
+            del = 9;
+            break;
+        default:
+            del = -1;
+            break;
+    }
+    if (del != -1) {
+        g_slotState = (i32)obj->GetSlot(del);
+        if (g_slotState == 0) {
+            return 0;
+        }
+        EnableWindow(hDlg, FALSE);
+        i32 ok = g_saveMenuMgr->RunModalDialog("GAME_DELETE", (void*)SaveDeleteProc, 0);
+        EnableWindow(hDlg, TRUE);
+        if (ok == 0) {
+            return 0;
+        }
+        DeleteSaveSlot(hDlg, obj);
+        return 0;
+    }
+
+    // Save / overwrite buttons.
+    i32 slot = -1;
+    switch (c) {
+        case 0x490:
+            slot = 0;
+            break;
+        case 0x491:
+            slot = 1;
+            break;
+        case 0x492:
+            slot = 2;
+            break;
+        case 0x493:
+            slot = 3;
+            break;
+        case 0x494:
+            slot = 4;
+            break;
+        case 0x495:
+            slot = 5;
+            break;
+        case 0x496:
+            slot = 6;
+            break;
+        case 0x497:
+            slot = 7;
+            break;
+        case 0x498:
+            slot = 8;
+            break;
+        case 0x499:
+            slot = 9;
+            break;
+    }
+    if (slot == -1) {
+        return 0;
+    }
+
+    char name[0x20];
+    GetDlgItemTextA(hDlg, 0x435 + slot, name, 0x20);
+    if (_strcmpi(name, "(Empty)") == 0) {
+        sprintf(name, "Saved Game #%i", slot + 1);
+    }
+    if (IsSlotOccupied(obj->GetSlot(slot))) {
+        g_slotState = (i32)obj->GetSlot(slot);
+        if (g_slotState != 0) {
+            EnableWindow(hDlg, FALSE);
+            i32 ok = g_saveMenuMgr->RunModalDialog("GAME_OVERWRITE", (void*)SaveOverwriteProc, 0);
+            EnableWindow(hDlg, TRUE);
+            if (ok == 0) {
+                return 1;
+            }
+        }
+    }
+    obj->FillSlotByIndex(slot, (i32)name, g_saveMenuMgr);
+    g_saveMenuMgr->FillSaveInfo((SaveInfo*)(i32)obj->GetSlot(slot), (void*)name);
+    EndDialog(hDlg, 1);
+    if (!obj->Save((i32)obj->GetSlot(slot) + 0x35, 0x81a6)) {
+        g_saveMenuMgr->EnterModalUI((i32) "ERROR - Cannot Save Game.");
+    }
+    return 1;
+}
+
+// The 11-entry area-name table (questz "Stage %d of <area>"). An array of char*
+// indexed by (level-1)/4; modeled by-address so the load is reloc-masked.
+
+// The preview-image loader singleton g_previewMgr is the canonical CImagePool
+// (<Image/ImagePool.h>); the former CPreviewMgr view is gone (wave 3). The preview
+// blit goes through CImagePool::AddSurfaceOp @0x1751f0.
+
+// @early-stop  (94.46% - logic/frame/branches all faithful)
+// Residual is three documented walls, not logic:
+//   (1) prologue order + callee-save shrink-wrap: retail emits `push -1` before
+//       `mov eax,fs:0` and pushes esi/edi UPFRONT; our /O2 swaps the first pair
+//       and shrink-wraps esi/edi past the null guards (shrink-wrapped-callee-save
+//       -push.md, topic:wall topic:regalloc - not source-steerable).
+//   (2) the CString("Training") EH cleanup funclet is emitted inline at our tail
+//       but lives in a separate COMDAT in retail (delinked target omits it).
+//   (3) the 4 wsprintfA + 1 SetDlgItemTextA calls are `call [__imp__*]` (DIR32
+//       reloc) vs retail's absolute IAT slot - reloc-typing scoring artifact,
+//       code bytes identical (reloc-typing-vptr-global.md).
+RVA(0x000e44e0, 0x2b2)
+void BuildLevelTitleString(HWND hDlg, i32 bShow, CLevelInfo* lev) {
+    char title[0x80];
+    char readBuf[0x3843a];
+
+    if (!hDlg) {
+        return;
+    }
+    if (!bShow) {
+        return;
+    }
+    if (!lev) {
+        return;
+    }
+
+    // m_isCustom/m_isBattlez are re-read at each use (not cached) to match retail's reloads.
+    if (lev->m_isCustom == 0 && lev->m_isBattlez == 0) {
+        // Standard questz/training level. The "Training" CString lives inside the
+        // wsprintf full-expression so its construction is branch-conditional and
+        // its destruction flag-guarded (the /GX temp).
+        i32 n = lev->m_levelNum;
+        wsprintfA(
+            title,
+            "Questz: Stage %d of %s",
+            (n > 0x24 && n < 0x29) ? n - 0x24 : (n - 1) % 4 + 1,
+            (n > 0x24 && n < 0x29) ? (const char*)CString("Training") : g_areaNames[(n - 1) / 4]
+        );
+    } else if (lev->m_isCustom == 0) {
+        // Battlez level (named).
+        wsprintfA(title, "Battlez: %s", lev->m_name);
+    } else {
+        // Custom level: format "Custom <mode> Level[: <basename>]". The mode-keyed
+        // format strings are branched (if/else) so cl tail-merges to one wsprintf
+        // call with two literal pushes (boolarg-branch-push-not-sete).
+        char* bs = strrchr(lev->m_name, '\\');
+        if (bs != 0) {
+            if (lev->m_isBattlez) {
+                wsprintfA(title, "Custom Battlez Level: ");
+            } else {
+                wsprintfA(title, "Custom Questz Level: ");
+            }
+            strcat(title, bs + 1);
+            char* dot = strchr(title, '.');
+            if (dot != 0) {
+                *dot = 0;
+            }
+        } else {
+            if (lev->m_isBattlez) {
+                wsprintfA(title, "Custom Battlez Level");
+            } else {
+                wsprintfA(title, "Custom Questz Level");
+            }
+        }
+    }
+
+    // Open the level file & extract the embedded preview image. Inverted guards
+    // (Open == 0 / Read != full) put the g_previewImage=0 failure store inline
+    // after each test (retail's jne-to-success / je-to-success layout).
+    CFileIO f;
+    if (f.Open(lev->m_path, 0x8000, 0) == 0) {
+        g_previewImage = 0;
+    } else {
+        f.Seek(-0x3843a, 2);
+        if (f.Read(readBuf, 0x3843a) != 0x3843a) {
+            g_previewImage = 0;
+            f.Close();
+        } else {
+            f.Close();
+            g_previewImage = g_previewMgr->AddSurfaceOp(&readBuf[0xe], 2, 0);
+            SetDlgItemTextA(hDlg, 0x4b3, title);
+        }
+    }
+}
+
+// -------------------------------------------------------------------------
+// 0x0e4850 (spatially re-homed from src/Stub/ApiCallers.cpp). __cdecl helper:
+// SetDlgItemTextA(hWnd, 0x40d, &item->text) when all three pointers are non-null.
+RVA(0x000e4850, 0x29)
+void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
+    if (hWnd && gate && item) {
+        SetDlgItemTextA(hWnd, 0x40d, item + 0x14);
+    }
 }
 
 // ---------------------------------------------------------------------------

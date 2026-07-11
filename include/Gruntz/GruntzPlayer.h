@@ -25,16 +25,17 @@
 SIZE_UNKNOWN(GruntzPlayer);
 class GruntzPlayer {
 public:
-    GruntzPlayer();          // 0x0da960 (default)
-    GruntzPlayer(i32 index); // 0x0da870 (/GX, seeds the name with "Player")
-    i32 Reset();             // 0x0da9e0 (frameless re-init; empties name, returns 1)
+    GruntzPlayer();               // 0x0da960 (default)
+    GruntzPlayer(i32 index);      // 0x0da870 (/GX, seeds the name with "Player")
+    i32 Reset();                  // 0x0da9e0 (frameless re-init; empties name, returns 1)
     i32 ClearRoundState_0daa60(); // 0x0daa60 (marks active, clears per-round scalars)
     RVA(0x0001f450, 0x20)
     CString GetName() {
         return m_name;
     }
     i32 Serialize(void* ar, i32 kind, i32 a3, i32 a4); // 0x0dace0
-    static CString GetDefaultName();                   // 0x0dafb0 (/GX, returns "Player")
+    i32 Deactivate(); // 0x0db2f0 (ex "Cdb2f0::Finalize"; clears the board bundle + m_020)
+    static CString GetDefaultName(); // 0x0dafb0 (/GX, returns "Player")
 
     i32 m_playerIndex;          // +0x000  = -1 (default) / index (seeded)
     CString m_name;             // +0x004  name ("Player")

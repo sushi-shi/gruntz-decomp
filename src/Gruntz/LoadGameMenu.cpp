@@ -3,7 +3,7 @@
 // "GAME_LOAD" template to RunModalDialog). GruntzLoadGameDlgProc is the DlgProc;
 // LoadGameCommand (its WM_COMMAND handler, reached through the ILT thunk 0x215d)
 // decodes the per-slot info/delete/load buttons over the save-slot control-id scheme.
-// The load-side sibling of SaveGameMenu.cpp (same 0x490/0x49a/0x4a4 id ranges +
+// The load-side sibling of DrawSaveGameMenu (SaveGame.cpp) (same 0x490/0x49a/0x4a4 id ranges +
 // CSaveGame slots; only offsets + code bytes are load-bearing).
 #include <Mfc.h>         // afx-first superset (EnableWindow/EndDialog/PostMessageA + CGruntzMgr)
 #include <Io/SaveGame.h> // CSaveGame (GetSlot/VerifySlot) + SaveSlot/SaveInfo

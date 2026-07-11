@@ -4,7 +4,7 @@
 // CSecretLevelTrigger : CUserLogic - a method-only leaf (no data members beyond
 // the CUserLogic base). Its methods are split across two TUs: the no-arg/1-arg
 // ctors in src/Gruntz/UserLogic.cpp, and Init/RegisterActs + Tick + dtor in
-// src/Gruntz/SecretLevelTrigger.cpp. This header unifies the two per-TU
+// src/Gruntz/SecretTeleporterTrigger.cpp (its TU, wave3-J). This header unifies the two per-TU
 // redeclarations (matching-neutral: no members, only the CUserLogic dtor slot is
 // overridden). Only offsets/code bytes are load-bearing; names are placeholders.
 #ifndef GRUNTZ_CSECRETLEVELTRIGGER_H

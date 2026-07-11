@@ -25,6 +25,7 @@
 #include <DDrawMgr/DirectDrawMgr.h> // CDirectDrawMgr::FindFwd/FindBack (display-mode pool)
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/Demo.h> // canonical CDemo (the CPlay-derived demo state; its dtor lives in this obj)
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameLevel.h>
@@ -681,6 +682,60 @@ i32 PumpIdleFrame() {
     g_mgrSettings->CGruntzMgr::PerFrameTick();
     g_pendingFrame = 1;
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// The CPlay/CDemo /GX destructors (ex PlayDtor.cpp; merged wave3-J - the FLAGS
+// table's 0x08b8c0-0x093ce7 group gruntzmgr+playdtor+appdialogs is ONE obj,
+// GruntzMgr.cpp, __FILE__-anchored). Uses the ONE canonical CPlay
+// (<Gruntz/Play.h>): its five destructible MFC members are typed there (CString
+// m_1b4, CByteArray m_startMarkers, CByteArray m_3a4[4], CString m_cueText,
+// CByteArray m_488), so the dtor's /GX member-teardown machinery + the
+// most-derived vptr stamp fall out from cl. The members fold in reverse decl
+// (= reverse offset) order under descending /GX trylevels:
+//   +0x488  CByteArray   state 4
+//   +0x410  CString      state 3
+//   +0x3a4  CByteArray[4] (__ehvec_dtor over CByteArray::~CByteArray)  state 2
+//   +0x370  CByteArray   state 1
+//   +0x1b4  CString      state 0
+// The dtor body first runs the explicit teardown CPlayDtorBody (0xc8700) at the
+// top trylevel (state 5), then the members fold, then the CState base subobject
+// restamps its dtor vtable (0x5ea21c, reloc-masked) and runs the CState dtor
+// body (0xfa150). cl auto-emits ??_7CPlay@@6B@ (masks retail 0x5ea0bc, paired
+// via vtable_names.csv) + ??_7CDemo@@6B@ (masks 0x5e9f0c).
+
+// 0x8c830 - CPlay::~CPlay (/GX): stamp the CPlay vtable (prologue), run CPlayDtorBody
+// at the top trylevel, fold the five members (reverse decl order, descending /GX
+// states), then fold the CState base subobject (restamp 0x5ea21c, call CState body).
+// INLINE so it folds into CDemo's dtor (0x8d0d0) exactly as retail inlines the base
+// dtor; cl still emits one out-of-line COMDAT copy (driven by ??_GCPlay), which lands
+// at 0x8c830. An inline dtor can't hang an RVA() (it would also tag the synthesized
+// ??_G -> duplicate-RVA), so it is pinned by mangled name:
+// @rva-symbol: ??1CPlay@@UAE@XZ 0x0008c830 0xaf
+inline CPlay::~CPlay() {
+    CPlayDtorBody();
+}
+
+// 0x8c470 - CState::~CState: the STANDALONE out-of-line copy of the (inline, header-
+// defined) base-state dtor, referenced only by /GX EH-unwind funclets (13+ sites: the
+// base-subobject cleanup when a CState-derived ctor throws). ??_GCState @0x8c710 and
+// every derived dtor keep folding their own inline copies; this #pragma inline_depth(0)
+// forcer (UserLogicCtorEmit pattern) emits the out-of-line COMDAT so the unwind refs
+// resolve and the RVA matches (stamp ??_7CState + tail-jmp to the 0xfa150 base body).
+// @rva-symbol: ??1CState@@UAE@XZ 0x0008c470 0xb
+static CState* volatile g_forceEmitCState;
+#pragma inline_depth(0)
+void ForceEmitCStateDtor() {
+    g_forceEmitCState->CState::~CState();
+}
+#pragma inline_depth()
+
+// 0x8d0d0 - CDemo::~CDemo (/GX): stamp the derived vtable (0x5e9f0c), run the derived
+// cleanup (0x3c010) at trylevel 0, then INLINE-fold CPlay's teardown (restamp 0x5ea0bc,
+// CPlayDtorBody, the five members, the CState base).
+RVA(0x0008d0d0, 0xc4)
+CDemo::~CDemo() {
+    DerivedCleanup();
 }
 
 // -------------------------------------------------------------------------
@@ -4217,6 +4272,124 @@ void RectQuery_08e3a0::GetRect(RECT* out) {
 }
 
 // ---------------------------------------------------------------------------
+// The developer option-dialog Win32 DialogProc callbacks (ex AppDialogs.cpp;
+// merged wave3-J - the FLAGS table's 0x08b8c0-0x093ce7 group gruntzmgr+playdtor+
+// appdialogs is ONE obj, GruntzMgr.cpp; the ex-"appdialogs" base profile unifies
+// to this TU's /GX). Free __stdcall INT_PTR CALLBACK(HWND, UINT, WPARAM, LPARAM)
+// procs the engine hands to the USER32 dialog manager.
+//
+// WarpDialogProc backs the developer "warp" cheat dialog: on WM_INITDIALOG it
+// seeds two edit controls (0x40e / 0x40f) with the current warp X/Y from the
+// game registry; on WM_COMMAND it ends the dialog (IDCANCEL=2) or, on IDOK=1,
+// reads the two edit fields back, stores them, and - if checkbox 0x410 is set -
+// persists them to the registry as the warp target.
+//
+// The procs reach three registry slots through AUTHENTIC per-site downcasts
+// (their concrete class lives in other clusters, so CGameRegistry keeps the
+// base/void* type and the consumer casts):
+//   ((ScoreSub2c*)g_gameReg->m_curState)->m_1c  read here as the CURRENT LEVEL
+//                        NUMBER (the "Level %i Warp X/Y" key + the go-to-level
+//                        seed) - the same +0x1c state slot UpdateScoreHud reads
+//                        as the score accumulator (name reconciliation TODO).
+//   ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(...)
+//   ((CGameRegWarp*)g_gameReg->m_world->m_24->m_5c)->m_84 / ->m_88  seed X/Y
+struct CGameRegWarp { // reinterpret view of the m_5c viewport (+0x84/+0x88 seed X/Y)
+    char m_pad00[0x84];
+    i32 m_84;
+    i32 m_88;
+};
+
+// WarpDialogProc - the warp-cheat dialog callback.
+RVA(0x0008e4e0, 0x172)
+INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    char szValue[64];
+
+    switch (msg) {
+        case WM_INITDIALOG: {
+            CGameRegWarp* warp = (CGameRegWarp*)g_gameReg->m_world->m_24->m_5c;
+            i32 seedX = warp->m_84;
+            i32 seedY = warp->m_88;
+            SetDlgItemInt(hDlg, 0x40e, seedX, 0);
+            SetDlgItemInt(hDlg, 0x40f, seedY, 0);
+            return 1;
+        }
+
+        case WM_COMMAND:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                i32 valX = GetDlgItemInt(hDlg, 0x40e, 0, 0);
+                i32 valY = GetDlgItemInt(hDlg, 0x40f, 0, 0);
+                g_warpX = valX;
+                g_warpY = valY;
+                if (IsDlgButtonChecked(hDlg, 0x410)) {
+                    sprintf(szValue, "Level %i Warp X", ((ScoreSub2c*)g_gameReg->m_curState)->m_1c);
+                    ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(szValue, valX);
+                    sprintf(szValue, "Level %i Warp Y", ((ScoreSub2c*)g_gameReg->m_curState)->m_1c);
+                    ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(szValue, valY);
+                    ((Utils::RegistryHelper*)g_gameReg->m_settings)
+                        ->SetValueDword(
+                            "Last Warp Level",
+                            ((ScoreSub2c*)g_gameReg->m_curState)->m_1c
+                        );
+                }
+                EndDialog(hDlg, 1);
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
+
+// LevelNumberDialogProc (0x0008e7c0 / 0x0008e8c0) - two byte-identical developer
+// "go to level" dialog callbacks. On WM_INITDIALOG the current level number
+// (g_gameReg->m_curState->m_1c) seeds edit control 0x40c; on WM_COMMAND IDCANCEL
+// (2) ends the dialog with 0, IDOK (1) ends it with the entered level number
+// (GetDlgItemInt of 0x40c). The two procs back two separate dialog resources with
+// the same layout, so the compiler emits them identically.
+RVA(0x0008e7c0, 0x86)
+INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_INITDIALOG:
+            SetDlgItemInt(hDlg, 0x40c, ((ScoreSub2c*)g_gameReg->m_curState)->m_1c, 0);
+            return 1;
+        case WM_COMMAND:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, 0, 0));
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
+
+RVA(0x0008e8c0, 0x86)
+INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
+    switch (msg) {
+        case WM_INITDIALOG:
+            SetDlgItemInt(hDlg, 0x40c, ((ScoreSub2c*)g_gameReg->m_curState)->m_1c, 0);
+            return 1;
+        case WM_COMMAND:
+            if (wParam == 2) {
+                EndDialog(hDlg, 0);
+                return 1;
+            }
+            if (wParam == 1) {
+                EndDialog(hDlg, GetDlgItemInt(hDlg, 0x40c, 0, 0));
+                return 1;
+            }
+            break;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // CGruntzMgr::SetVideoMode (0x08df00; ret 0xc). Switch the display to (w,h) at
 // the current bit depth (m_colorDepth). No-op if already at (w,h). When the live state is
 // playable (Update() in {3,0x11}) and the new size exceeds the loaded map's
@@ -4407,5 +4580,7 @@ SIZE_UNKNOWN(SvmGuts);
 SIZE_UNKNOWN(SvmStateView);
 SIZE_UNKNOWN(TimerObj);
 SIZE_UNKNOWN(CGameRegistry);
+SIZE_UNKNOWN(CGameRegWarp);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+VTBL(CDemo, 0x001e9f0c); // vtable_names -> code (RTTI game class; dtor 0x8d0d0 lives here)

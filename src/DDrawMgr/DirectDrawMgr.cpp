@@ -2,7 +2,7 @@
 // DirectDraw device manager. Split out of the former DirectDrawMgr god-TU (which
 // aggregated three sibling DDrawMgr classes); this is now one contiguous retail .text
 // block (0x1413d0-0x1438f1) == one retail .obj (DDRAWMGR). Its siblings moved to
-// DDSurface.cpp (CDDSurface / DIRSURF.CPP) and DDPalette.cpp (CDDPalette / DIRPAL.CPP);
+// DDSurface.cpp (CDDSurface / DIRSURF.CPP) and DirPal.cpp (CDDPalette / DIRPAL.CPP);
 // CDDPageMgr::Init/CheckMode16 rejoined DDPageMgr.cpp (their own .obj).
 //
 // CDirectDrawMgr owns GetErrorString (the shared diagnostic HRESULT formatter every

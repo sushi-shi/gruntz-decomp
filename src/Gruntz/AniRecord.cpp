@@ -30,10 +30,11 @@
 // base-2 destructor have SEH frames for their destructible locals; the leaves
 // (Parse / GetSize / the two buffer virtuals) stay frameless and byte-exact.
 // ---------------------------------------------------------------------------
-#include <Mfc.h>                  // real MFC CStringArray / CMapStringToPtr / CString / CObject
-#include <Gruntz/AniRecordView.h> // the primary-facet class (CAniRecordView : CObject)
-#include <DDrawMgr/DDSurface.h>   // CDDSurface::SetPalette (Slot13_168fd0, reloc-masked)
-#include <string.h>               // strlen (inline repnz scas)
+#include <Mfc.h>                    // real MFC CStringArray / CMapStringToPtr / CString / CObject
+#include <Gruntz/AniRecordView.h>   // the primary-facet class (CAniRecordView : CObject)
+#include <DDrawMgr/DDSurface.h>     // CDDSurface::SetPalette (Slot13_168fd0, reloc-masked)
+#include <DDrawMgr/DirectDrawMgr.h> // canonical CDDPalette (the +0x10 work buffer's real class)
+#include <string.h>                 // strlen (inline repnz scas)
 #include <Globals.h>
 
 // The three vftables (g_aniRecordVtbl @0x5f02c0, CAniRecordBase2 @0x5f02d8, the shared
@@ -82,11 +83,10 @@ public:
     CAniRecordPool* m_pool; // +0x1c  the pool allocator
 };
 
-// The freshly-allocated +0x10 palette buffer; second-stage init captures the
-// current system palette. The real class is DirPal (0x1485b0, DirPal.cpp).
-struct DirPal {
-    i32 CaptureSystemPalette(); // 0x1485b0
-};
+// The freshly-allocated +0x10 palette buffer is a real CDDPalette (canonical
+// <DDrawMgr/DirectDrawMgr.h>); second-stage init captures the current system
+// palette (CaptureSystemPalette @0x1485b0, DirPal.cpp). The ex-"DirPal" local
+// view folded onto the canonical class (wave3-J).
 
 // The CMapStringToPtr the index resolver looks each token up in lives at owner2
 // +0x10 (owner2 = ResolveIndices arg1). Real MFC layout via <Mfc.h>.
@@ -263,7 +263,7 @@ i32 CAniRecordView::GetSize_168e50() {
 // Frameless leaf.
 RVA(0x00168ea0, 0x40)
 void* CAniRecordView::Alloc168ea0(i32 size, i32 flag) {
-    DirPal* buf = (DirPal*)m_owner->m_pool->Alloc2_142f40(size, 0x44);
+    CDDPalette* buf = (CDDPalette*)m_owner->m_pool->Alloc2_142f40(size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0; // tail returns 1 only on the success path below
@@ -280,7 +280,7 @@ void* CAniRecordView::Alloc168ea0(i32 size, i32 flag) {
 // Frameless leaf.
 RVA(0x00168ee0, 0x40)
 void* CAniRecordView::Alloc168ee0(i32 size, i32 flag) {
-    DirPal* buf = (DirPal*)m_owner->m_pool->Alloc1_142fc0(size, 0x44);
+    CDDPalette* buf = (CDDPalette*)m_owner->m_pool->Alloc1_142fc0(size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
@@ -296,7 +296,7 @@ void* CAniRecordView::Alloc168ee0(i32 size, i32 flag) {
 // 0x168f20 (slot 9): as 0x168ea0 but through the Create_143040 allocator. Frameless leaf.
 RVA(0x00168f20, 0x40)
 void* CAniRecordView::Alloc168f20(i32 handle, i32 flag) {
-    DirPal* buf = (DirPal*)m_owner->m_pool->Create_143040(handle, 0x44);
+    CDDPalette* buf = (CDDPalette*)m_owner->m_pool->Create_143040(handle, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
@@ -312,7 +312,7 @@ void* CAniRecordView::Alloc168f20(i32 handle, i32 flag) {
 // 0x168f60: the three-arg buffer allocator (Alloc3_1430c0, ret 0xc). Frameless leaf.
 RVA(0x00168f60, 0x45)
 void* CAniRecordView::Alloc168f60(i32 a, i32 size, i32 flag) {
-    DirPal* buf = (DirPal*)m_owner->m_pool->Alloc3_1430c0(a, size, 0x44);
+    CDDPalette* buf = (CDDPalette*)m_owner->m_pool->Alloc3_1430c0(a, size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
@@ -389,7 +389,6 @@ CString CAniStrArray::GetAt(int index) {
 
 SIZE_UNKNOWN(CAniMapOwner);
 SIZE_UNKNOWN(CAniRecordBase2);
-SIZE_UNKNOWN(DirPal);
 SIZE_UNKNOWN(CAniRecordOwner);
 SIZE_UNKNOWN(CAniRecordPool);
 

@@ -3,7 +3,7 @@
 //   ?BuildLevelTitleString@@YAXPAUHWND__@@HPAUCLevelInfo@@@Z   (0x0e44e0)
 //   ?LoadConfig@CBattlezMapConfig@@QAEHPAUCLevelInfo@@HH@Z     (0x025020)
 // formerly modeled as two divergent .cpp-local views (wave 3 fold):
-//   * LevelInfoDlg.cpp  - the level-SELECT dialog reads m_levelNum/m_path/m_name/
+//   * SaveGame.cpp (level-preview half)  - the level-SELECT dialog reads m_levelNum/m_path/m_name/
 //     the m_isCustom/m_isBattlez flags (BuildLevelTitleString formats the title,
 //     opens the level file, extracts the preview image).
 //   * BattlezMapConfig.cpp - CBattlezMapConfig::LoadConfig reads the three engine

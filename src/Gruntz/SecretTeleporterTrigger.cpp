@@ -1,37 +1,46 @@
-// SecretTeleporterTrigger.cpp - the secret-teleporter trigger tile-logic
-// game-object (C:\Proj\Gruntz), a CUserLogic leaf (vftable 0x5e7564).
+// SecretTeleporterTrigger.cpp - the secret-teleporter + secret-level trigger
+// tile-logic game-objects (C:\Proj\Gruntz), both CUserLogic leaves.
 //
-// The whole CSecretTeleporterTrigger band, in ascending retail-RVA order: the
-// slot-1 Serialize + /GX leaf dtor, the 1-arg ctor (vtable-emission anchor), the
-// activation-coordinate registry's Init/Fire/RegisterActs, and the registered
-// point-activation callback SpawnTeleporter. Re-homed out of the UserLogic god-TU;
-// the class lives in <Gruntz/SecretTeleporterTrigger.h>. The per-coordinate
-// registry (g_actColl @0x644688 + the g_act* fast-range globals) and the shared
-// activation-name registry (g_nameReg @0x6bf650) are carried here as the TU-local
-// inline lookups the trace tuned to this TU's codegen.
-#include <Bute/ButeTree.h>              // CVariantSlot::Set (0x16d850)
-#include <Wap32/ZVec.h>                 // _zvec::GrowTo (Find 0x16da80)
-#include <Wap32/ZDArrayDerived.h>       // CZDArrayDerived::Construct (0x408710)
-#include <Gruntz/TriggerMgr.h>          // CTriggerMgr::HitTestCell (0x75af0)
-#include <Gruntz/GruntSpawnConfig.h>    // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
-#include <Gruntz/TeleSpriteFactory.h>   // CTeleSpriteFactory (CSpriteFactory) CreateSprite
-#include <Gruntz/Trigger.h>             // CTrigger (point-probe result, its m_10 HUD sprite)
-#include <Gruntz/Viewport.h>            // CViewport (visible-rect base at +0x5c)
-#include <Gruntz/WwdGameReg.h>          // WwdGameReg facet (g_gameReg singleton)
-#include <Gruntz/ActColl.h>             // CActColl/GetRetAddr + g_actCache/g_retAddrBreadcrumb
+// ONE original TU (wave3-J): the 0x041e90-0x042cd3 interval's text is a T-L-T
+// sandwich (teleporter 0x41e90..0x422b0 | level 0x424b0..0x42ac0 | teleporter
+// SpawnTeleporter @0x42b80) - impossible for two first-link objs; the two init
+// frags (i40 @0x420b0 teleporter / i41 @0x426c0 level) are one adjacent run.
+// The ex SecretLevelTrigger.cpp folds in here in ascending retail-RVA order.
+//
+// Both classes share the activation-registry archetype: a per-class
+// coordinate registry (g_actColl @0x644688 / g_secretActReg @0x644598) + the
+// SHARED activation-name registry (<Gruntz/ActNameRegistry.h>, @0x6bf650; the
+// ex TU-local duplicate decl block is dissolved onto the shared header).
+#include <Bute/ButeTree.h>           // CVariantSlot::Set (0x16d850)
+#include <Wap32/ZVec.h>              // _zvec::GrowTo (Find 0x16da80)
+#include <Wap32/ZDArrayDerived.h>    // CZDArrayDerived::Construct (0x408710)
+#include <Gruntz/TriggerMgr.h>       // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
+#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
+#include <Gruntz/Trigger.h>          // CTrigger (point-probe result, its m_10 HUD sprite)
+#include <Gruntz/Viewport.h>         // CViewport (visible-rect base at +0x5c)
+#include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (m_world/m_cmdGrid/
+                                     // m_cueSink/m_scoreHud typed; CSpriteFactoryHolder)
+#include <Gruntz/SpriteFactory.h>    // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/ActColl.h>          // CActColl/GetRetAddr + g_actCache/g_retAddrBreadcrumb
+#include <Gruntz/ActNameRegistry.h>  // the SHARED activation-name registry (g_buteTree/
+                                     // g_nextActId/s_actKeyA/g_nameReg*/ActNameLookup)
+#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SecretTeleporterTrigger.h> // the canonical class
-#include <Gruntz/SerialObjRef.h>        // CSerialObjRef::Chain (0x8c00) - the +0x34 round-trip
-#include <Gruntz/ActName.h>             // CString (~CString 0x1b9b93 / operator= 0x1b9e74)
-#include <Globals.h>                    // g_actLo/Hi/Base/Stride/Scratch/Cur/Coll2 (fast range)
+#include <Gruntz/SecretLevelTrigger.h>      // canonical CSecretLevelTrigger : CUserLogic
+#include <Gruntz/SerialObjRef.h>            // CSerialObjRef::Chain (0x8c00) - the +0x34 round-trip
+#include <Globals.h>                        // g_actLo/Hi/Base/Stride/Scratch/Cur/Coll2 (fast range)
 #include <rva.h>
 
-// The global game registry the teleporter tails poll (WwdGameReg, the same symbol
-// wwdfile labels at RVA 0x24556c; only the touched fields are modeled). Declared
-// extern only - wwdfile owns the DATA label. m_world downcasts to CTeleResHolder*,
-// m_cueSink to the cue driver, m_68 to CTriggerMgr*, m_7c to WwdGameRegAux*.
-extern WwdGameReg* g_gameReg;
+// The global game registry both trigger families poll (the canonical
+// CGameRegistry view of *0x64556c; the ex-teleporter-side WwdGameReg extern is
+// unified onto it - same offsets: m_world +0x30, m_cueSink +0x60, m_cmdGrid
+// +0x68, m_scoreHud +0x7c).
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg;
 
-// The +0x7c aux facet: the ctor bumps its +0x3c "teleporter armed" counter.
+// The +0x7c aux facet (g_gameReg->m_scoreHud): the teleporter ctor bumps its
+// +0x3c "teleporter armed" counter. @identity-TODO (the scoreHud/aux slot's
+// concrete class is unrecovered).
 SIZE_UNKNOWN(WwdGameRegAux);
 struct WwdGameRegAux {
     char m_pad00[0x3c];
@@ -48,25 +57,14 @@ struct CViewRect {
     i32 m_bottom; // +0x0c
 };
 
-// The +0x30 resource/sprite-factory holder reached as g_gameReg->m_world.
-SIZE_UNKNOWN(CTeleResHolder);
-struct CTeleResHolder {
-    char m_pad0[0x8];
-    CTeleSpriteFactory* m_8; // +0x08  HUD sprite factory
-    char m_pad0c[0x24 - 0xc];
-    CViewport* m_24; // +0x24  viewport (visible-bounds source)
-};
-
 // ---------------------------------------------------------------------------
-// The per-coordinate activation registry FireActivation (0x042150) dispatches
-// through. A coordinate maps to an Entry* either directly (when within the fast
-// [g_actLo,g_actHi] range) via g_actBase + (coord-g_actLo)*g_actStride, or by a
-// slow lookup in g_actColl (0x16da80, __thiscall ret 8), which on miss rebuilds the
-// table (g_actAlloc 0x16d990 -> g_actCache, g_actColl2 insert 0x16d850 __thiscall
-// ret 0xc) and yields g_actCur. The entry's first dword is a PMF of the trigger
-// class; a nonzero entry's handler is called __thiscall on `this`. All globals are
-// unnamed BSS (DATA-pinned here so the loads reloc-mask); the collection methods are
-// external/no-body. g_actColl (0x644688) is this TU's own collection singleton.
+// The teleporter's per-coordinate activation registry FireActivation (0x042150)
+// dispatches through. A coordinate maps to an Entry* either directly (when
+// within the fast [g_actLo,g_actHi] range) via g_actBase + (coord-g_actLo)*
+// g_actStride, or by a slow lookup in g_actColl (0x16da80, __thiscall ret 8),
+// which on miss rebuilds the table and yields g_actCur. The entry's first dword
+// is a PMF of the trigger class; a nonzero entry's handler is called __thiscall
+// on `this`. g_actColl (0x644688) is the teleporter's own collection singleton.
 DATA(0x00244688)
 extern CActColl g_actColl;
 
@@ -94,55 +92,6 @@ static inline CActEntry* ActLookup(i32 coord) {
     return g_actCur;
 }
 
-// ---------------------------------------------------------------------------
-// The shared activation-NAME registry RegisterActs interns the key "A" through
-// (@0x6bf650; same range/cache shape as g_actColl). g_buteTree doubles as the
-// name->id map (Find returns the id, 0 == absent; Insert maps a new key->id);
-// g_nextActId (0x61aea8) is the running id counter; s_actKeyA (0x60a454) is the
-// "A" key. The id->name-slot resolve reuses the shared Find/GetRetAddr/Insert +
-// g_actCache/g_retAddrBreadcrumb collection methods declared above.
-// ---------------------------------------------------------------------------
-DATA(0x002bf620)
-extern CButeTree g_buteTree; // 0x6bf620
-DATA(0x0021aea8)
-extern i32 g_nextActId;
-DATA(0x0020a454)
-extern char s_actKeyA[];
-DATA(0x002bf650)
-extern CActColl g_nameReg; // 0x6bf650
-DATA(0x002bf654)
-extern CVariantSlot* g_nameReg2; // 0x6bf654
-DATA(0x002bf658)
-extern i32 g_nameRegLo;
-DATA(0x002bf65c)
-extern i32 g_nameRegHi;
-DATA(0x002bf660)
-extern char* g_nameRegBase;
-DATA(0x002bf668)
-extern i32 g_nameRegStride;
-DATA(0x002bf664)
-extern char* g_nameRegCur; // slow-path result slot
-DATA(0x002bf66c)
-extern void** g_nameRegCurList; // the slot's CString list base
-DATA(0x002bf670)
-extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
-
-// The id->name-slot resolve (the fast range path + the slow Find/GetRetAddr/Insert
-// rebuild). Folded inline by RegisterActs once, in the new-id branch.
-static inline char* ActNameLookup(i32 id) {
-    g_nameRegScratch = 0;
-    if (id >= g_nameRegLo && id <= g_nameRegHi) {
-        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
-    }
-    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
-        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
-    }
-    void* item = g_actCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
-    return g_nameRegCur;
-}
-
 // The activation-registry entry for SpawnTeleporter (an i32-returning handler PMF
 // on the complete single-inheritance class).
 typedef i32 (CSecretTeleporterTrigger::*SpawnHandler)();
@@ -150,6 +99,28 @@ SIZE_UNKNOWN(CTelActEntry);
 struct CTelActEntry {
     SpawnHandler m_fn;
 };
+
+// The secret-level trigger's registry entry: its first dword receives the Tick
+// handler PMF (a 4-byte code pointer on this complete single-inheritance class).
+typedef i32 (CSecretLevelTrigger::*SecretActHandler)();
+struct CSecretActEntry {
+    SecretActHandler m_fn;
+};
+SIZE_UNKNOWN(CSecretActEntry);
+
+// The secret-level trigger's activation-coordinate registry singleton
+// (@0x644598): the fixed [2000,2010] range built by the shared registry ctor
+// (0x408710). CSecretActReg is the shared <Gruntz/ActReg.h> CActReg archetype;
+// it keeps its own placeholder name so the DATA-pinned global symbol is unchanged.
+struct CSecretActReg : public CActReg {};
+SIZE_UNKNOWN(CSecretActReg);
+DATA(0x00244598)
+extern CSecretActReg g_secretActReg; // 0x644598
+
+// The probed trigger object is the shared <Gruntz/Trigger.h> class: its
+// +0x170/+0x198 are the level/layer ids the bound sprite's +0x11c/+0x120 must
+// match for the secret-level trigger to fire.
+SIZE_UNKNOWN(CTrigger);
 
 // ===========================================================================
 // Definitions in ascending-RVA order.
@@ -175,6 +146,33 @@ i32 CSecretTeleporterTrigger::Serialize(i32 a, i32 b, i32 c, i32 d) {
 RVA(0x00010ab0, 0x44)
 CSecretTeleporterTrigger::~CSecretTeleporterTrigger() {}
 
+// --- CSecretLevelTrigger no-arg ctor (0x010b20) --- the deserialize-path ctor:
+// base prologue + link + leaf vptr stamp (the empty body is enough for cl).
+RVA(0x00010b20, 0x4b)
+CSecretLevelTrigger::CSecretLevelTrigger() {}
+
+// CSecretLevelTrigger::Serialize @0x010bb0 - the vtable slot-1 override: chain the
+// shared CUserLogic serialize helper on `this`, and (only on success) the +0x34
+// serializable sub-object's chain; normalize the second chain's success to a strict
+// bool. The byte-identical chain-Serialize archetype (differs only in the two call
+// displacements) - the direct sibling of CSecretTeleporterTrigger::Serialize (0x010a10).
+RVA(0x00010bb0, 0x47)
+i32 CSecretLevelTrigger::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
+    if (!SerializeChain(ar, tag, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
+}
+
+// CSecretLevelTrigger::~CSecretLevelTrigger @0x010c50 - the leaf adds no
+// destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
+// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
+// (the embedded ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The
+// destructible link forces the /GX EH frame. Byte-identical in shape to
+// ~CSecretTeleporterTrigger @0x010ab0; the empty body is enough for cl.
+RVA(0x00010c50, 0x44)
+CSecretLevelTrigger::~CSecretLevelTrigger() {}
+
 // --- CSecretTeleporterTrigger (0x041e90), vptr 0x5e7564 ---
 RVA(0x00041e90, 0x1ac)
 CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogic(obj) {
@@ -192,7 +190,7 @@ CSecretTeleporterTrigger::CSecretTeleporterTrigger(CGameObject* obj) : CUserLogi
         m_38->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find("A");
-        ((WwdGameRegAux*)g_gameReg->m_7c)->m_3c++;
+        ((WwdGameRegAux*)g_gameReg->m_scoreHud)->m_3c++;
     }
 }
 
@@ -250,22 +248,129 @@ void CSecretTeleporterTrigger::RegisterActs() {
     ((CTelActEntry*)ActLookup(id))->m_fn = &CSecretTeleporterTrigger::SpawnTeleporter;
 }
 
+// --- CSecretLevelTrigger 1-arg ctor (0x0424b0), vptr 0x5e8804 --- folds the inline
+// CUserLogic(obj) base + the tile-snap/anim tail (gated on the play sub-mode).
+RVA(0x000424b0, 0x1a0)
+CSecretLevelTrigger::CSecretLevelTrigger(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    if (g_gameReg->m_134 == 1 && g_gameReg->m_130 == 0) {
+        m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+        m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+        if (m_object->m_latchedAnimId != 0) {
+            m_object->m_latchedAnimId = 0;
+            m_object->m_flags |= 0x20000;
+        }
+        m_38->m_flags |= 2;
+        m_38->m_stateFlags |= 1;
+        m_prevAnimSetNode = m_objAux->m_1c;
+        m_objAux->m_1c = g_buteTree.Find("A");
+    } else {
+        m_38->m_flags |= 0x10000;
+    }
+}
+
+// CSecretLevelTrigger::InitActReg @0x0426e0 - construct the class's activation-
+// coordinate registry singleton (g_secretActReg @0x644598) over the fixed range
+// [2000, 2010] via the shared registry ctor (FUN_00408710). Free init thunk;
+// reloc-masked.
+RVA(0x000426e0, 0x15)
+void CSecretLevelTrigger::InitActReg() {
+    ((CZDArrayDerived*)&g_secretActReg)->Construct(2000, 2010);
+}
+
+// CSecretLevelTrigger::FireActivation @0x042760 - look the activation coordinate up
+// in the class registry (g_secretActReg); if the resolved entry carries a registered
+// handler PMF, resolve it again and dispatch it __thiscall on `this`. Same archetype
+// as CParticlez::FireActivation (double ResolveEntry + PMF dispatch).
+RVA(0x00042760, 0x102)
+void CSecretLevelTrigger::FireActivation(i32 coord) {
+    CSecretActEntry* e = (CSecretActEntry*)g_secretActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CSecretActEntry* e2 = (CSecretActEntry*)g_secretActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
+// CSecretLevelTrigger::RegisterActs @0x0428c0 - bind the class's per-frame handler
+// (Tick @0x042ac0) to the activation key "A" (the SAME activation-name-intern
+// archetype as CGruntHealthSprite::RegisterActs; see that TU for the full notes).
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset Tick`
+// handler store match retail); residual is the slot-vs-id callee-saved register
+// choice cascading into the free-loop count materialization. Deferred.
+RVA(0x000428c0, 0x18d)
+void CSecretLevelTrigger::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CString*)list)->CString::~CString();
+            }
+            list++;
+        }
+        ((CString*)slot)->operator=(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CSecretActEntry*)g_secretActReg.ResolveEntry(id))->m_fn = &CSecretLevelTrigger::Tick;
+}
+
+// CSecretLevelTrigger::Tick @0x042ac0 - probe the trigger's screen position; if a
+// trigger object is under it whose level/layer ids match the bound sprite's
+// (or are unset), post a scroll to bring it on screen and mark the window stalled
+// this frame. Always returns 0.
+RVA(0x00042ac0, 0x90)
+i32 CSecretLevelTrigger::Tick() {
+    i32 outA, outB;
+    CGameObject* spr = m_object;
+    CTrigger* hit =
+        (CTrigger*)
+            g_gameReg->m_cmdGrid->HitTestCell(spr->m_screenX, spr->m_screenY, &outB, &outA, 1);
+    if (hit) {
+        spr = m_object;
+        i32 ok = 1;
+        i32 lvl = spr->m_11c;
+        i32 lyr = spr->m_120;
+        // (m_11c/m_120 = required level/layer ids on the bound CGameObject)
+        if (lvl != 0 && hit->m_170 != lvl) {
+            ok = 0;
+        }
+        if (lyr != 0 && hit->m_198 != lyr) {
+            ok = 0;
+        }
+        if (ok) {
+            g_gameReg->m_cmdGrid->CellDispatch(outB, outA, 0xc, -1);
+        }
+        m_38->m_flags |= 0x10000;
+    }
+    return 0;
+}
+
 // --- CSecretTeleporterTrigger::SpawnTeleporter (0x042b80) ---
 // The registered point-activation callback: probe the trigger's screen point for
 // a hit grunt; if hit, spawn the "Teleporter" HUD sprite at the (tile<<5)+0x10
 // position, clone the trigger's teleport-link/tile fields into it, and (when the
 // hit grunt is on-screen) fire the 6-arg cue. Always closes by marking the
-// trigger sub-object hidden (m_38->m_08 |= 0x10000).
+// trigger sub-object hidden (m_38->m_08 |= 0x10000). The sprite factory is the
+// canonical g_gameReg->m_world->m_8 CSpriteFactory (the ex CTeleResHolder/
+// CTeleSpriteFactory views are dissolved onto the canonical holder).
 RVA(0x00042b80, 0x153)
 i32 CSecretTeleporterTrigger::SpawnTeleporter() {
     i32 loc0, loc4;
     CGameObject* o = m_object;
-    CTrigger* hit = (CTrigger*)((CTriggerMgr*)g_gameReg->m_68)
-                        ->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1);
+    CTrigger* hit =
+        (CTrigger*)g_gameReg->m_cmdGrid->HitTestCell(o->m_screenX, o->m_screenY, &loc0, &loc4, 1);
     if (hit) {
         o = m_object;
-        CTeleSpriteFactory* fac = ((CTeleResHolder*)g_gameReg->m_world)->m_8;
-        CGameObject* spr = (CGameObject*)fac->CreateSprite(
+        CSpriteFactory* fac = g_gameReg->m_world->m_8;
+        CGameObject* spr = fac->CreateSprite(
             0,
             (o->m_114 << 5) + 0x10,
             (o->m_118 << 5) + 0x10,
@@ -284,10 +389,10 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             spr->m_118 = m_object->m_118;
             spr->m_placeMode = 0;
             CGameObject* eo = hit->m_10;
-            WwdGameReg* g = g_gameReg;
+            CGameRegistry* g = g_gameReg;
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
-            CViewRect* rc = (CViewRect*)(((CTeleResHolder*)g->m_world)->m_24->m_5c + 0x40);
+            CViewRect* rc = (CViewRect*)(g->m_world->m_24->m_5c + 0x40);
             if (ex < rc->m_right && ex >= rc->m_left && ey < rc->m_bottom && ey >= rc->m_top) {
                 ((CGruntSpawnConfig*)g->m_cueSink)
                     ->SpawnVoiceDriver((i32)hit, 0x3fc, -1, 0, -1, -1);

@@ -296,7 +296,7 @@ class CPlay : public CState {
 public:
     // Construction is inlined into CGruntzMgr::TransitionState (no standalone retail
     // ctor); ~CPlay is the real 0x8c830 /GX dtor. Both defined out-of-class in their
-    // owning TUs (GruntzMgrTransition.cpp / CPlayDtor.cpp).
+    // owning TUs (GruntzMgrTransition.cpp / GruntzMgr.cpp).
     CPlay();
     virtual ~CPlay() OVERRIDE; // slot 0 (0x8c830)
 
@@ -479,6 +479,11 @@ public:
     // AMBIENT%d variant index for the 0x8086 Monolith cheat (thunk 0x1df2).
     i32 SetCursorFrame(i32 item); // 0x0d1b30
     i32 Flip();                   // 0x0da200
+    // Level-lifecycle steps (ex the "CGameModeObj" view, GameModeObjLifecycle.cpp;
+    // folded onto CPlay wave3-J - the +0x3a4/+0x2dc/+0x4fc/+0x1cc offsets pin it):
+    i32 ReleaseLevelOverlay(i32 unused); // 0x0d6560  drop the overlay + restore the clock
+    i32 ClearPlacedObjects();            // 0x0da030  sweep the 4 placed-object arrays
+    i32 FlushPendingOps();               // 0x0da2d0  flush the deferred guts ops
     // ArmSnapshot (0x0d9240): latch the snapshot timer (base=clock, dur=arg2) and
     // the active flag (arg1). CanQuickSave (0x0da3b0): all-idle predicate gating
     // the auto/quick path. PostHudRect (0x0da440): post the HUD rect to the world
@@ -582,7 +587,7 @@ public:
     i32 m_inputWarmup2; // +0x1ac  StepInputA second-frame one-shot latch
     i32 m_inputHalfSel; // +0x1b0  StepInputA mirrored-half selector (0/1)
     // +0x1b4: the first of five destructible MFC members ~CPlay tears down (reverse
-    // decl order); typed here so the dtor's /GX member fold falls out (CPlayDtor.cpp).
+    // decl order); typed here so the dtor's /GX member fold falls out (GruntzMgr.cpp).
     CString m_1b4;                // +0x1b4
     char m_pad1b8[0x1bc - 0x1b8]; // +0x1b8
     i32 m_1bc;                    // +0x1bc  Dispatch re-post gate (WM_COMMAND 0x8023 while set)
@@ -654,8 +659,9 @@ public:
     CPlaySerialChild* m_beginMarker; // +0x2e4  begin-marker sink (MarkerBegin; SyncState serialize)
     i32 m_dragSnapActive;            // +0x2e8  drag-snap-active latch (HandleDragMove snap path)
     i32 m_dragInProgress;            // +0x2ec  box-drag-in-progress latch (HandleDragMove)
-    char m_pad2f0[0x2f8 - 0x2f0];
-    i32 m_levelId; // +0x2f8  level/region id (==0x66 -> booty-region init)
+    i32 m_2f0;                       // +0x2f0
+    i32 m_cursorFrame; // +0x2f4  latched cursor sprite frame (SetCursorFrame; FlushPendingOps re-arm)
+    i32 m_levelId;     // +0x2f8  level/region id (==0x66 -> booty-region init)
     char m_pad2fc[0x304 - 0x2fc];
     i32 m_dragClampMaxX; // +0x304  drag-clamp max X
     i32 m_dragClampMaxY; // +0x308  drag-clamp max Y
@@ -680,7 +686,11 @@ public:
     // markerCount(). +0x3a4: a CByteArray[4] (the 3rd..? member, one ??_M vector fold).
     CByteArray m_startMarkers; // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
     char m_pad384[0x3a4 - 0x384];
-    CByteArray m_3a4[4]; // +0x3a4  (4 * 0x14)
+    // +0x3a4: the 4 placed-object record arrays. CPtrArray (not CByteArray):
+    // ClearPlacedObjects (0xda030) reads the elements as CPlacedObj* and retail
+    // calls RemoveAt with ecx = this+0x3a4+idx*0x14 (the ARRAY base, vptr-ful
+    // CObject-derived MFC array of pointers). Same 0x14 size / dtor fold.
+    CPtrArray m_3a4[4]; // +0x3a4  (4 * 0x14)
     CTimer*
         m_frameMarker; // +0x3f4  frame-marker/timeline CTimer (SyncState serialize; 0x8107 cheat)
     i32 m_cueTimerLo, m_cueTimerHi, m_cueInterval,

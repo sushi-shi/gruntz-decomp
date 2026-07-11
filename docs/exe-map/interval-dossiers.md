@@ -34,6 +34,14 @@ Verdict summary:
 | `0x03fc70-0x041db2` | wormhole+gruntpuddle+teleporter(+registrars) | **ONE TU** (Wormhole.cpp) | strong |
 | `0x042d40-0x04d7c6` | warlord+grunt+fortressflag+particlez(+explosion) | **THREE TUs**: Warlord.cpp `0x42d40-0x45cc1` / FortressFlag.cpp `0x45d30-0x4763d` / Grunt.cpp `0x47a10-0x4d7c6` | strong |
 | grunt 5-interval SPLIT | grunt cores 0x42d40/0x50ca0/0x56f80/0x616e0/0x67850 | **FIVE TUs** (Warlord-woven + Grunt + GruntSteps + GruntCombat + GruntEntranceArrival + GruntEntranceMove) | strong |
+| `0x0d5960-0x0ddcc8` | play+channelslots+gruntzplayer+gamemodeobjlifecycle | **ONE TU** (Play.cpp) | strong |
+| `0x08b8c0-0x093ce7` | gruntzmgr+playdtor+appdialogs | **ONE TU** (GruntzMgr.cpp) | anchored |
+| `0x0e3690-0x0e579e` | savegame+levelinfodlg (+savegamemenu stray) | **ONE TU** (SaveGame.cpp) | strong |
+| `0x0dec60-0x0e2213` | projectile+timebomb | **ONE TU** (Projectile.cpp) | strong |
+| `0x095b10-0x099b46` | ingameicon+ingametext | **ONE TU** (InGameIcon.cpp) | strong |
+| `0x0abfa0-0x0ad527` | frontcandyani+eyecandyani | **ONE TU** (FrontCandyAni.cpp) | strong |
+| `0x041e90-0x042cd3` | secretteleportertrigger+secretleveltrigger | **ONE TU** (SecretTeleporterTrigger.cpp) | strong |
+| `0x147390-0x148837` | ddpalette+dirpal+palettelerp (+PalLoad stray) | **ONE TU** (DirPal.cpp, DIRPAL.CPP anchored) | anchored |
 
 ---
 
@@ -546,3 +554,95 @@ CGrunt::Load @0xd8060 (play-TU move blocked by Play.cpp/Grunt.h header
 conflicts - deferred to the play package); the far arrival-defense family
 (0xec670/0xf26f0/0xf2b20/0xf8240 + MovingSlot16 @0x5f310) parked at Grunt.cpp's
 tail pending the 0xea990-0xf8800 partition package.
+
+## 13. wave3-J - the play/gruntzmgr packages + the small one-TU pairs
+
+**Verdicts** (all executed):
+
+* `0x0d5960-0x0ddcc8` play group -> **ONE TU** (Play.cpp): one 20-frag init run
+  (play x1 @0xda4c0 | channelslots x1 @0xda510 | play x16 @0xda560 - the
+  channelslots frag INSIDE the play run is the frag-level sandwich); the ex
+  channelslots + gruntzplayer + gamemodeobjlifecycle units folded in, /GX
+  unified. The "CGameModeObj" view was offset-proven to be CPlay ITSELF
+  (+0x1cc m_savedClock / +0x2dc m_guts / +0x3a4 array block / +0x4fc
+  m_overlayDrag) and its four lifecycle methods are now CPlay members; the
+  retail `lea ecx,[this+idx*0x14+0x3a4]` RemoveAt base proves CPlay::m_3a4 is
+  **CPtrArray[4]** (not CByteArray[4] - same 0x14 size, dtor fold unchanged,
+  ~CPlay/~CDemo held 100%). The "Cdb2f0" orphan folded to
+  GruntzPlayer::Deactivate (m_014/m_020/+0x38 CBattlezMapConfig::Clear_02ade0
+  pin); Cdb200 @0xdb200 stays an @identity-TODO (single +0x08 cell, the
+  GruntzPlayer::m_008-index conflict blocks the pin). CGrunt::Load @0xd8060
+  moved in from Grunt.cpp (the wave3-I "Play.cpp cannot include Grunt.h" wall is
+  GONE - the g_gameReg extern moved out of Grunt.h; byte-preserved at 87.01%,
+  and the Grunt.h include RIPPLED StepScroll 63.5->81.6).
+* `0x08b8c0-0x093ce7` -> **ONE TU** (GruntzMgr.cpp, __FILE__-anchored): the ex
+  playdtor + appdialogs units folded in (FLAGS group unified /GX; the base-
+  profile appdialogs procs held 100% under /GX). The ex-appdialogs CGameRegLevel
+  view folded onto GruntzMgr.cpp's existing ScoreSub2c (same
+  g_gameReg->m_curState +0x1c slot; the dialogs read it as the LEVEL NUMBER -
+  name reconciliation flagged). The 5 CState/CPlay inline-virtual COMDATs the
+  playdtor obj used to emit re-bound to multi/menustate/gruntzmgrtransition at
+  100%.
+* `0x0e3690-0x0e579e` -> **ONE TU** (SaveGame.cpp): text L-S-L-S sandwich
+  (levelinfodlg x3 | savegame x3 | [savegamemenu] | levelinfodlg x2 | savegame
+  x23) + contiguous private initialized-.data extents (levelinfodlg
+  0x213ac8..0x213b60 directly before savegame 0x213b6c..0x213c10). Absorbs the
+  ex levelinfodlg + savegamemenu units; DrawSaveGameMenu's `SlotHasSave` decl
+  unified onto IsSlotOccupied (the same 0x2694->0xe5700 probe, killing the
+  (i32) cast); the ex-LevelInfoDlg `DATA(0x0064c864)` row was a VA-as-RVA bug,
+  fixed to 0x0024c864.
+* `0x0dec60-0x0e2213` -> **ONE TU** (Projectile.cpp): text P-T-P sandwich
+  (projectile x10 | timebomb x6 | projectile LaunchSound @0xe2190, a real 0x83-B
+  method) + contiguous private extents (projectile 0x213624..0x213838, timebomb
+  0x213860..0x2138b4). NOTE: the shared type-name registry cells
+  (0x2bf650-0x2bf670/0x21aea8/0x6bf464) temporarily carry BOTH view-name sets
+  (g_projType* / g_nameReg*) inside the merged TU - unifying that family
+  tree-wide (it spans kitchenslime/particlez/statichazard/... too) is deferred.
+* `0x095b10-0x099b46` -> **ONE TU** (InGameIcon.cpp): text I-T-I sandwich
+  (icon x14 | text 0x99110..0x99a30 | icon SetField54 @0x99b10) + contiguous
+  private extents. The duplicated static-inline ResolveNameSlot/ResolveSlot
+  helpers deduped; g_textRegCounter/s_textLogicKey unified onto
+  g_iconRegCounter/s_iconKeyA (same 0x61aea8/0x60a454 cells).
+* `0x0abfa0-0x0ad527` -> **ONE TU** (FrontCandyAni.cpp): text F-E-F sandwich
+  (front @0xabfa0 | eye 0xac870..0xacf10 | front 0xacf40..0xad510); the
+  frontcandyani init frag @0xad110 sits in the front tail; eyecandyani has no
+  frags/private cells. Both sides already used the shared
+  ActNameRegistry/ActReg headers - clean fold.
+* `0x041e90-0x042cd3` -> **ONE TU** (SecretTeleporterTrigger.cpp): text T-L-T
+  sandwich (teleporter x4 | level x5 | SpawnTeleporter @0x42b80, a real 0x153-B
+  method); the two init frags (i40 @0x420b0 / i41 @0x426c0) are one adjacent
+  run. The teleporter side's hand-rolled name-registry decl block dissolved onto
+  the shared <Gruntz/ActNameRegistry.h>; its WwdGameReg extern unified onto the
+  canonical CGameRegistry (killing the (CTriggerMgr*)m_68 cast and the
+  CTeleResHolder/CTeleSpriteFactory views - CreateSprite now reloc-names the
+  REAL ?CreateSprite@CSpriteFactory).
+* `0x147390-0x148837` -> **ONE TU** (DirPal.cpp, `C:\Proj\DDrawMgr\DIRPAL.CPP`
+  anchored; unit name kept `ddpalette`): the calibration case executed. All 23
+  interval fns in one file: the ex ddpalette+dirpal+palettelerp units + the
+  PalLoad_1479e0 stray (its Apply@0x147390 IS CDDPalette::Create ->
+  CDDPalette::LoadDefault). The PalCtx/DirPal/PaletteLerp views were RVA-proven
+  slices of CDDPalette (Install@0x147aa0==SetAndNotify, Teardown/Finish@0x148250
+  ==Flush, Finalize@0x1480a0==Tick) and folded onto the canonical
+  (include/DDrawMgr/DirectDrawMgr.h), migrating PaletteLerp's semantic field
+  names (m_targetPalette/m_sourcePalette/m_fixedR..B/m_durationMs/m_startTimeMs/
+  m_lastElapsedMs/m_firstColorIndex/m_colorCount/m_active) onto the +0x14..+0x34
+  layout. Every fn byte-preserved (Tick/Flush/Destroy 100% held).
+
+**Extent-overlap rows audited (job 9, initialized-.data oracle):**
+
+* `0xc8700 (play) + 0x99b80 (areamgr)` - **REFUTED** at unit level: play's
+  private extent 0x212620..0x2135c8 and areamgr's 0x2113a0..0x2113c4 are
+  disjoint (no window). Stale interval-level artifact; do not merge.
+* `0xb5380 (multi) + 0x8b8c0 (gruntzmgr)` - **FALSE POSITIVE**: the extents
+  interleave heavily (multi 0x20fa74..0x2120e0 inside gruntzmgr
+  0x20fac8..0x212614) but the two .text blocks (0xb5380-0xbd35d vs
+  0x83030-0x93ce7) are far apart with many other TUs between - impossible for
+  one contiguous first-link obj. The extent method needs a text-contiguity
+  sanity check; likely extent-stretching outlier cells.
+* `0x8b8c0 (gruntzmgr) + 0x82990 (gametext)` - **WEAK seam candidate**: exactly
+  ONE gruntzmgr cell (g_pendingFrame @0x20fac8, referenced only by PumpIdleFrame
+  @0x8b8c0 - the interval head fn) precedes gametext's $E1 static block
+  (0x20fae0..0x20fb84, frags 0x82991..0x829fa) which precedes the rest of
+  gruntzmgr's cells. Either PumpIdleFrame/g_pendingFrame belong to the gametext
+  obj (a seam fn), or gametext+gruntzmgr are one obj (consistent with
+  gruntzmgr's 0x855e0 split-row). Needs a dedicated audit - not executed.

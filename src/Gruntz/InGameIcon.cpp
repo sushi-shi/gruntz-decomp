@@ -11,6 +11,7 @@
 // class header. Engine callees are reloc-masked (no body).
 #include <Mfc.h> // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
 #include <Gruntz/InGameIcon.h>
+#include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
 #include <Gruntz/SerialArchive.h>  // CSerialArchive (Read +0x2c / Write +0x30) for SerializeMove
 #include <Gruntz/SerialObjRef.h>   // the +0x34 serialized-object-reference (Chain @0x8c00)
@@ -155,6 +156,16 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
 // destructible link forces the /GX EH frame. The empty body is enough.
 RVA(0x00011d00, 0x44)
 CInGameIcon::~CInGameIcon() {}
+
+// ===========================================================================
+// CInGameText::~CInGameText  (0x011dc0)
+// ===========================================================================
+// The leaf adds no destructible members, so its dtor folds the bare CUserLogic
+// teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link
+// (the embedded ~EngStr call), store the CUserBase vptr (0x5e70b4). The
+// destructible link forces the /GX EH frame. The empty body is enough.
+RVA(0x00011dc0, 0x44)
+CInGameText::~CInGameText() {}
 
 // ===========================================================================
 // CInGameIcon::CInGameIcon(CGameObject*)  (0x095b10)  -- the HUD-icon builder
@@ -824,8 +835,7 @@ i32 CInGameIcon::PeekCycle() {
             x = g_randSeed;
         }
         g_randSeed = x * 214013 + 2531011;
-        i32 rec =
-            g_gameReg->m_spriteFactory->GetSel((((i32)g_randSeed >> 16) & 0x7fff) % 0x11, 0);
+        i32 rec = g_gameReg->m_spriteFactory->GetSel((((i32)g_randSeed >> 16) & 0x7fff) % 0x11, 0);
         CGameObject* o = m_object;
         o->m_drawActive = 1;
         o->m_drawFillCmd = 0xa;
@@ -1067,6 +1077,162 @@ i32 CInGameIcon::Serialize(CArchive*, i32, i32, i32) {
 }
 
 // ===========================================================================
+// CInGameText (ex InGameText.cpp, merged wave3-J): the 0x095b10-0x099b46
+// interval is ONE original TU - the text is an I-T-I sandwich (icon x14 | text
+// 0x99110..0x99a30 | icon SetField54 @0x99b10) and the private initialized-
+// .data extents are contiguous (icon 0x2111b8..0x21136c, text 0x21137c). The
+// shared registration identifiers unify onto this TU's names (the ex
+// g_textRegCounter/s_textLogicKey duplicates == g_iconRegCounter/s_iconKeyA).
+// ===========================================================================
+
+// The member function the text dispatch slot is loaded with (FUN_00402013, a
+// thunk to a CInGameText handler). Referenced by address so its DIR32 reloc-masks.
+extern i32 TextLogic_402013();
+
+// The member-function-pointer the text dispatch table resolves and invokes on `this`.
+typedef i32 (CUserLogic::*LogicFn)();
+
+// CInGameText::CInGameText @0x099110 - fold the shared CUserLogic(obj) init, then
+// (unless the registry is in the no-place mode m_134==2) bind the "A" bute node,
+// the cycle geometry, the "GAME_HELPBOX" sprite name; flag the sub-object; run the
+// on-screen visibility gate keyed by the bound object's place mode (m_128); and on
+// the visible path snap the screen position to the tile grid + seed the +0x74
+// layer key and the +0x54/+0x58 scalars to -1.
+//
+// @early-stop
+// register-pinning/eh-ctor-vptr-restamp wall (docs/patterns/zero-register-pinning.md,
+// eh-ctor-vptr-restamp-position.md): body byte-faithful (every op/offset/imm/string
+// + the m_128 visibility branch tangle match retail; constant 2 pins in ebx like
+// retail). Residual is the /GX leaf-vptr re-stamp position + the visibility-gate
+// branch-polarity (retail emits `je visible` where structured C emits `jne hide`).
+RVA(0x00099110, 0x215)
+CInGameText::CInGameText(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    if (g_gameReg->m_134 == 2) {
+        m_38->m_flags |= 0x10000;
+        return;
+    }
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_savedGeoId = m_38->m_geoId;
+    m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
+    m_38->ApplyName("GAME_HELPBOX");
+    m_38->m_flags |= 2;
+
+    i32 vis = m_object->m_placeMode;
+    if (vis == 1) {
+        if (g_gameReg->m_isEasyMode == 0) {
+            m_38->m_flags |= 0x10000;
+            return;
+        }
+        if (g_gameReg->m_134 != 1) {
+            m_38->m_flags |= 0x10000;
+            return;
+        }
+    } else if (vis == 2) {
+        if (g_gameReg->m_isEasyMode != 0 && g_gameReg->m_134 == 1) {
+            m_38->m_flags |= 0x10000;
+            return;
+        }
+    }
+
+    m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
+    m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
+    if (m_object->m_latchedAnimId != 0x17318) {
+        m_object->m_latchedAnimId = 0x17318;
+        m_object->m_flags |= 0x20000;
+    }
+    m_cachedAreaId = -1;
+    m_cachedSubId = -1;
+}
+
+// The activation-coordinate registry view of the dispatch table (g_textDispatch
+// @0x645950): InitActReg builds it over the fixed [2000, 2010] range via the
+// shared registry ctor (0x408710, __thiscall ret 8).
+struct CTextActReg {}; // Construct = CZDArrayDerived::Construct; cast at the call
+
+// CInGameText::InitActReg @0x0993e0 - construct the class's activation-coordinate
+// registry (g_textDispatch @0x645950) over [2000, 2010]. Free init thunk.
+RVA(0x000993e0, 0x15)
+void CInGameText::InitActReg() {
+    ((CZDArrayDerived*)&g_textDispatch)->Construct(2000, 2010);
+}
+
+// ===========================================================================
+// CInGameText::Dispatch  (0x099460)
+// ===========================================================================
+// Index the global member-fn-ptr table by `idx`; if the resolved slot holds a
+// non-null member function, invoke it on `this`. The bounds-check + grow of the
+// table accessor is inlined (the _zvec::IndexToPtr body, no out-of-line call),
+// computed once for the null-test and once for the call.
+RVA(0x00099460, 0x102)
+void CInGameText::Dispatch(i32 idx) {
+    if (*(void**)ResolveSlot(&g_textDispatch, idx) != 0) {
+        LogicFn fn = *(LogicFn*)ResolveSlot(&g_textDispatch, idx);
+        (this->*fn)();
+    }
+}
+
+// ===========================================================================
+// RegisterTextLogic  (0x0995c0)
+// ===========================================================================
+// The file-scope static registration thunk for the text-logic handler: look the
+// key up in the bute tree; if absent, Insert it under the running counter and
+// cache the key name into the scratch zDArray<CString> slot (growing it), then
+// bump the counter. Either way, resolve the dispatch-table slot for the key index
+// and load it with the handler member-fn-ptr (FUN_00402013).
+// ---------------------------------------------------------------------------
+// @early-stop
+// inlined zDArray/zvec IndexToPtr regalloc wall (the documented ZVec family - see
+// ZVec.cpp's IndexToPtr/GrowTo @early-stops, ~80%): the two inlined accessors +
+// the CString-ctor fixup loop are reconstructed faithfully, but cl pins the
+// index/this/base across the grow branches differently than retail and permutes
+// the two-block offset tails. Logic + the bute find/insert + the fn-ptr store are
+// correct; the register assignment is not source-steerable.
+RVA(0x000995c0, 0x18d)
+void RegisterTextLogic() {
+    i32 idx = (i32)g_buteTree.Find(s_iconKeyA);
+    if (idx == 0) {
+        g_buteTree.Insert(s_iconKeyA, (void*)g_iconRegCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_iconRegCounter);
+        *(CString*)slot = s_iconKeyA;
+        g_iconRegCounter++;
+    }
+    i32 dslot = ResolveSlot(&g_textDispatch, idx);
+    *(void**)dslot = (void*)&TextLogic_402013;
+}
+
+// ===========================================================================
+// CInGameText::Serialize  (0x099a30)
+// ===========================================================================
+// Guard on the archive, chain the shared CUserLogic::SerializeChain, then the
+// +0x34 sub-object's own serializer, then round-trip the two own dwords at
+// +0x54/+0x58: tag 4 stores (archive Write), tag 7 loads (archive Read).
+RVA(0x00099a30, 0xaa)
+i32 CInGameText::Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b) {
+    if (ar == 0) {
+        return 0;
+    }
+    if (SerializeChain((i32)ar, tag, a, b) == 0) {
+        return 0;
+    }
+    if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, a, (CSerialObj*)b) == 0) {
+        return 0;
+    }
+    switch (tag) {
+        case 4:
+            ar->Write(&m_cachedAreaId, 4);
+            ar->Write(&m_cachedSubId, 4);
+            break;
+        case 7:
+            ar->Read(&m_cachedAreaId, 4);
+            ar->Read(&m_cachedSubId, 4);
+            break;
+    }
+    return 1;
+}
+
+// ===========================================================================
 // CInGameIcon::SetField54  (0x099b10)
 // ===========================================================================
 // When v != 0, look it up in the registry's CMap (g_gameReg->m_world->m_28, Lookup
@@ -1092,3 +1258,5 @@ SIZE_UNKNOWN(CInGameIcon);
 SIZE_UNKNOWN(IconSpriteFactory);
 SIZE_UNKNOWN(LogicFnTable);
 SIZE_UNKNOWN(NameVec);
+SIZE_UNKNOWN(CInGameText);
+SIZE_UNKNOWN(CTextActReg);
