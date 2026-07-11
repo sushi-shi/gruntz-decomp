@@ -1,0 +1,104 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GRUNTZ.EXE reloc fidelity</title>
+<style>
+:root{--surface-1:#fcfcfb;--plane:#f9f9f7;--text-primary:#0b0b0b;--text-secondary:#52514e;
+  --muted:#898781;--grid:#e1e0d9;--baseline:#c3c2b7;--blue:#2a78d6;--green:#1baf7a;
+  --orange:#eb6834;--red:#e34948;--yellow:#eda100;--ring:rgba(11,11,11,0.10);}
+:root[data-theme=dark]{--surface-1:#1a1a19;--plane:#0d0d0d;--text-primary:#fff;
+  --text-secondary:#c3c2b7;--muted:#898781;--grid:#2c2c2a;--baseline:#383835;
+  --blue:#3987e5;--green:#199e70;--orange:#d95926;--red:#e66767;--yellow:#c98500;
+  --ring:rgba(255,255,255,0.10);}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--surface-1:#1a1a19;
+  --plane:#0d0d0d;--text-primary:#fff;--text-secondary:#c3c2b7;--muted:#898781;
+  --grid:#2c2c2a;--baseline:#383835;--blue:#3987e5;--green:#199e70;--orange:#d95926;
+  --red:#e66767;--yellow:#c98500;--ring:rgba(255,255,255,0.10);}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--text-primary);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45;padding:28px 20px 60px}
+.wrap{max-width:1040px;margin:0 auto}
+h1{font-size:22px;margin:0 0 4px}.sub{color:var(--text-secondary);font-size:14px;margin:0 0 14px;max-width:90ch}
+.bar-top{display:flex;gap:10px;align-items:center;margin:0 0 18px;flex-wrap:wrap}
+.badge{font-size:12px;font-weight:600;border-radius:999px;padding:4px 12px;background:var(--red);color:#fff}
+.xlink{font-size:12.5px;color:var(--blue);text-decoration:none;border:1px solid var(--ring);border-radius:6px;padding:4px 10px}
+.xlink:hover{background:var(--surface-1)}
+.toggle{margin-left:auto;font-size:12px;border:1px solid var(--ring);background:var(--surface-1);color:var(--text-secondary);border-radius:6px;padding:5px 10px;cursor:pointer}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 24px}
+.tile{background:var(--surface-1);border:1px solid var(--ring);border-radius:10px;padding:14px 16px}
+.tile .v{font-size:28px;font-weight:650;letter-spacing:-0.02em}.tile .k{font-size:12px;color:var(--text-secondary);margin-top:2px}
+.card{background:var(--surface-1);border:1px solid var(--ring);border-radius:12px;padding:18px 18px 12px;margin-bottom:22px}
+.card h2{font-size:15px;margin:0 0 2px}.card .cap{font-size:12.5px;color:var(--text-secondary);margin:0 0 12px;max-width:90ch}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary);margin:2px 0 10px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.row{display:grid;grid-template-columns:150px 1fr 90px;gap:10px;align-items:center;margin:3px 0;font-size:12.5px}
+.rlabel{text-align:right;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rbar{height:15px;background:var(--grid);border-radius:3px;overflow:hidden;display:flex}
+.rbar .c{background:var(--orange);height:100%}.rbar .d{background:var(--blue);height:100%}
+.rnum{font-variant-numeric:tabular-nums;color:var(--text-secondary)}
+table{border-collapse:collapse;font-size:12.5px;width:100%}
+th{text-align:left;color:var(--text-secondary);font-weight:600;padding:4px 10px 4px 0;border-bottom:1px solid var(--grid)}
+td{padding:4px 10px 4px 0;border-bottom:1px solid var(--grid)}
+td code{background:var(--grid);padding:0 4px;border-radius:3px;font-size:11.5px}
+.note{font-size:12.5px;color:var(--text-secondary);max-width:90ch}.note code,.cap code{background:var(--grid);padding:1px 5px;border-radius:4px}
+</style></head><body><div class="wrap">
+<div class="bar-top">
+  <span class="badge">reloc fidelity</span>
+  <a class="xlink" href="deep.html">&harr; deep map</a>
+  <a class="xlink" href="misplacement.html">&harr; misplacement</a>
+  <a class="xlink" href="scatter_methods.html">&harr; scatter</a>
+  <button class="toggle" onclick="tog()">&#9681; theme</button>
+</div>
+<h1>GRUNTZ.EXE &mdash; reloc fidelity <span style="font-weight:400;color:var(--text-secondary);font-size:15px">(the metric objdiff can't see)</span></h1>
+<p class="sub">A relocation is byte-masked in match scoring: at a fixup site objdiff compares nothing, so a reference
+bound to <b>NO</b> retail address (a declared-only fake, usually in a fake view) or bound to the <b>WRONG</b>
+address still scores <b>100%</b>. This tool aligns each byte-exact function's relocations against retail's
+authoritative targets. Faithful = zero misbound, zero unbound. Live campaign metric &mdash; drive to zero.</p>
+
+<div class="tiles">
+  <div class="tile"><div class="v">61%</div><div class="k">faithful functions<br>(1,312 of 2,127 byte-exact)</div></div>
+  <div class="tile"><div class="v" style="color:var(--orange)">1,360</div><div class="k">CALL-target defects<br>(fake/misbound functions, rel32)</div></div>
+  <div class="tile"><div class="v" style="color:var(--blue)">1,690</div><div class="k">DATA defects<br>(globals/vtables, DIR32)</div></div>
+  <div class="tile"><div class="v" style="color:var(--red)">785</div><div class="k">MISBOUND sites<br>(wrong rva &mdash; toxic)</div></div>
+  <div class="tile"><div class="v">2,265</div><div class="k">UNBOUND sites<br>(fake decl; retail names the target)</div></div>
+</div>
+
+<div class="card">
+  <h2>Worst units</h2>
+  <p class="cap">Defective reloc sites per unit, split <b style="color:var(--orange)">CALL</b> (fake/misbound
+  functions) vs <b style="color:var(--blue)">DATA</b> (globals, vtables). CALL defects are the ones tied
+  tightest to fake views &mdash; a view exists to declare a phantom method. Bars share one scale.</p>
+  <div class="legend">
+    <span><span class="sw" style="background:var(--orange)"></span>CALL (function) defects</span>
+    <span><span class="sw" style="background:var(--blue)"></span>DATA (global/vtable) defects</span>
+  </div>
+  <div id="units"></div>
+</div>
+
+<div class="card">
+  <h2>Worst functions</h2>
+  <p class="cap">Individual byte-exact functions hiding the most reloc defects &mdash; each scores a perfect
+  100% in objdiff.</p>
+  <div id="worst"></div>
+</div>
+
+<p class="note">Source: <code>python -m gruntz.analysis.reloc_fidelity</code> (<code>--worklist</code> for the
+per-site fix CSV: each defect's <code>retail_rva</code> names the real target). DIR32 data + rel32 call
+targets; scoped to the byte-exact set where offsets provably align. Regenerate with
+<code>reloc_fidelity --json &gt; reloc_fidelity.json</code> then <code>make_reloc.py</code>.</p>
+
+<script>
+const UNITS=[{"unit":"tilelogicpump","misbound":96,"unbound":38,"call_bad":26,"data_bad":108,"n":43},{"unit":"gameobjectfactory","misbound":0,"unbound":132,"call_bad":59,"data_bad":73,"n":2},{"unit":"gruntzmgr","misbound":23,"unbound":84,"call_bad":35,"data_bad":72,"n":85},{"unit":"blowfish","misbound":0,"unbound":89,"call_bad":0,"data_bad":89,"n":3},{"unit":"play","misbound":23,"unbound":52,"call_bad":53,"data_bad":22,"n":44},{"unit":"multi","misbound":3,"unbound":71,"call_bad":36,"data_bad":38,"n":51},{"unit":"wormhole","misbound":56,"unbound":14,"call_bad":9,"data_bad":61,"n":16},{"unit":"ingameicon","misbound":40,"unbound":30,"call_bad":8,"data_bad":62,"n":14},{"unit":"droppedobject","misbound":26,"unbound":43,"call_bad":15,"data_bad":54,"n":20},{"unit":"butemgr","misbound":2,"unbound":64,"call_bad":8,"data_bad":58,"n":32},{"unit":"rezmgr","misbound":0,"unbound":58,"call_bad":28,"data_bad":30,"n":18},{"unit":"netlobbydialogs","misbound":6,"unbound":51,"call_bad":43,"data_bad":14,"n":16},{"unit":"imagepool","misbound":1,"unbound":55,"call_bad":49,"data_bad":7,"n":25},{"unit":"sbi_rectonly","misbound":5,"unbound":50,"call_bad":51,"data_bad":4,"n":36},{"unit":"fortressflag","misbound":32,"unbound":20,"call_bad":13,"data_bad":39,"n":19},{"unit":"frontcandyani","misbound":16,"unbound":31,"call_bad":7,"data_bad":40,"n":14},{"unit":"fileimage","misbound":0,"unbound":47,"call_bad":47,"data_bad":0,"n":7},{"unit":"gruntvoice","misbound":3,"unbound":38,"call_bad":10,"data_bad":31,"n":14},{"unit":"typekeycoll","misbound":0,"unbound":41,"call_bad":37,"data_bad":4,"n":9},{"unit":"gruntsteps","misbound":1,"unbound":39,"call_bad":6,"data_bad":34,"n":6},{"unit":"directdrawmgr","misbound":5,"unbound":31,"call_bad":31,"data_bad":5,"n":34},{"unit":"projectile","misbound":20,"unbound":15,"call_bad":9,"data_bad":26,"n":10},{"unit":"motionstate","misbound":0,"unbound":32,"call_bad":0,"data_bad":32,"n":5},{"unit":"secretteleportertrigger","misbound":21,"unbound":10,"call_bad":6,"data_bad":25,"n":13},{"unit":"warlord","misbound":18,"unbound":12,"call_bad":7,"data_bad":23,"n":6},{"unit":"movinglogic","misbound":0,"unbound":30,"call_bad":30,"data_bad":0,"n":2},{"unit":"gruntzcmdmgr","misbound":0,"unbound":30,"call_bad":13,"data_bad":17,"n":33},{"unit":"gruntcombat","misbound":18,"unbound":12,"call_bad":7,"data_bad":23,"n":10},{"unit":"grunthealthsprite","misbound":0,"unbound":28,"call_bad":3,"data_bad":25,"n":7},{"unit":"dialogs","misbound":0,"unbound":28,"call_bad":23,"data_bad":5,"n":22},{"unit":"gruntselectedsprite","misbound":0,"unbound":26,"call_bad":3,"data_bad":23,"n":6},{"unit":"grunttoysprite","misbound":0,"unbound":26,"call_bad":3,"data_bad":23,"n":7},{"unit":"gruntpowerupsprite","misbound":0,"unbound":26,"call_bad":3,"data_bad":23,"n":6},{"unit":"gamelevel","misbound":0,"unbound":26,"call_bad":26,"data_bad":0,"n":31},{"unit":"multistartdlgroster","misbound":5,"unbound":20,"call_bad":20,"data_bad":5,"n":18},{"unit":"connslotlist","misbound":0,"unbound":24,"call_bad":24,"data_bad":0,"n":3},{"unit":"directinputmgr2","misbound":10,"unbound":14,"call_bad":10,"data_bad":14,"n":33},{"unit":"lightfx","misbound":17,"unbound":6,"call_bad":4,"data_bad":19,"n":8},{"unit":"attract","misbound":7,"unbound":16,"call_bad":11,"data_bad":12,"n":17},{"unit":"savegame","misbound":3,"unbound":20,"call_bad":21,"data_bad":2,"n":26}], WORST=[{"unit":"gameobjectfactory","name":"?RegisterGameObjectTypes@@YAXPAUGameObjFactoryCtx@@@Z","misbound":0,"unbound":132,"call_bad":59,"data_bad":73},{"unit":"blowfish","name":"?Blowfish_encipher@@YAXPAI0@Z","misbound":0,"unbound":82,"call_bad":0,"data_bad":82},{"unit":"gruntsteps","name":"?PlayMoveSound@CGrunt@@QAEXHH@Z","misbound":0,"unbound":33,"call_bad":0,"data_bad":33},{"unit":"movinglogic","name":"?WriteCurve@@YAAAVCButeText@@AAV1@ABVCMotionState@@@Z","misbound":0,"unbound":30,"call_bad":30,"data_bad":0},{"unit":"typekeycoll","name":"?LoadConfigFields@@YAPAVCConfigReader@@PAV1@PAD@Z","misbound":0,"unbound":30,"call_bad":30,"data_bad":0},{"unit":"motionstate","name":"??0CMotionState@@QAE@XZ","misbound":0,"unbound":24,"call_bad":0,"data_bad":24},{"unit":"gruntselectedsprite","name":"?RunAct@CGruntSelectedSprite@@QAEXH@Z","misbound":0,"unbound":24,"call_bad":2,"data_bad":22},{"unit":"grunthealthsprite","name":"?RunAct@CGruntHealthSprite@@QAEXH@Z","misbound":0,"unbound":24,"call_bad":2,"data_bad":22},{"unit":"grunttoysprite","name":"?RunAct@CGruntToySprite@@QAEXH@Z","misbound":0,"unbound":24,"call_bad":2,"data_bad":22},{"unit":"gruntpowerupsprite","name":"?RunAct@CGruntPowerupSprite@@QAEXH@Z","misbound":0,"unbound":24,"call_bad":2,"data_bad":22},{"unit":"ingameicon","name":"?Dispatch@CInGameText@@QAEXH@Z","misbound":2,"unbound":22,"call_bad":2,"data_bad":22},{"unit":"frontcandyani","name":"?RunAct@CEyeCandyAni@@QAEHH@Z","misbound":0,"unbound":24,"call_bad":2,"data_bad":22},{"unit":"projectile","name":"?Dispatch@CProjActDispatcher@@QAEXH@Z","misbound":20,"unbound":4,"call_bad":2,"data_bad":22},{"unit":"droppedobject","name":"?FireAct@CObjectDropper@@QAEXH@Z","misbound":0,"unbound":24,"call_bad":2,"data_bad":22},{"unit":"gruntvoice","name":"?Dispatch@CGruntVoice@@QAEXH@Z","misbound":0,"unbound":24,"call_bad":2,"data_bad":22},{"unit":"rezmgr","name":"?PerFrameTick@RezMgr@@UAEHXZ","misbound":0,"unbound":21,"call_bad":0,"data_bad":21},{"unit":"cursorsnapsprite","name":"?FireActivation@CCursorSnapSprite@@QAEXH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"gruntcreationpoint","name":"?FireActivation@CGruntCreationPoint@@QAEXH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"wormholeacts","name":"?FireActivation@CWormhole@@QAEXH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"wormhole","name":"?Dispatch@CWormhole@@QAEXH@Z","misbound":18,"unbound":2,"call_bad":2,"data_bad":18},{"unit":"wormhole","name":"?FireActivation@CGruntPuddle@@QAEXH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"wormhole","name":"?FireActivation@CTeleporter@@QAEXH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"secretteleportertrigger","name":"?FireActivation@CSecretLevelTrigger@@QAEXH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"warlord","name":"?ResolveState@CWarlord@@QAEHH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"fortressflag","name":"?FireActivation@CFortressFlag@@QAEXH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"fortressflag","name":"?FireActivation@CExplosion@@QAEXH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"gruntcombat","name":"?RunAct@CGrunt@@QAEHH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"ingameicon","name":"?RunAction@CInGameIcon@@QAEXH@Z","misbound":18,"unbound":2,"call_bad":2,"data_bad":18},{"unit":"ingameicon","name":"?RunState@CInGameIcon@@QAEXH@Z","misbound":18,"unbound":2,"call_bad":2,"data_bad":18},{"unit":"lightfx","name":"?RunAct@CLightFx@@QAEHH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"anicycle","name":"?RunAct@CAniCycle@@QAEHH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"singleframemessage","name":"?RunAct@CSingleFrameMessage@@QAEHH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"simpleanimation","name":"?Dispatch@CSimpleAnimation@@QAEXH@Z","misbound":18,"unbound":2,"call_bad":2,"data_bad":18},{"unit":"frontcandyani","name":"?FireActivation@CFrontCandyAni@@QAEXH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"behindcandyani","name":"?RunAct@CBehindCandyAni@@QAEHH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"singleanimation","name":"?RunAct@CSingleAnimation@@QAEHH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"rollingball","name":"?RunAct@CRollingBall@@QAEHH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"spotlightctor","name":"?RunAct@CSpotLight@@QAEHH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"pathhazard","name":"?RunAct@CPathHazard@@QAEHH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18},{"unit":"droppedobject","name":"?FireActivation@CDroppedObjectShadow@@QAEXH@Z","misbound":16,"unbound":4,"call_bad":2,"data_bad":18}];
+const mx=Math.max(1,...UNITS.map(u=>u.call_bad+u.data_bad));
+document.getElementById('units').innerHTML=UNITS.map(u=>{
+  const cw=100*u.call_bad/mx, dw=100*u.data_bad/mx;
+  return `<div class="row"><div class="rlabel">${u.unit}</div>
+    <div class="rbar"><div class="c" style="width:${cw}%"></div><div class="d" style="width:${dw}%"></div></div>
+    <div class="rnum">${u.call_bad}C / ${u.data_bad}D</div></div>`;
+}).join('');
+document.getElementById('worst').innerHTML=
+  `<table><tr><th>unit</th><th>function</th><th>CALL</th><th>DATA</th><th>misbound</th><th>unbound</th></tr>`+
+  WORST.map(w=>`<tr><td>${w.unit}</td><td><code>${w.name}</code></td><td>${w.call_bad}</td>
+    <td>${w.data_bad}</td><td>${w.misbound}</td><td>${w.unbound}</td></tr>`).join('')+`</table>`;
+function tog(){const r=document.documentElement,dark=matchMedia('(prefers-color-scheme:dark)').matches;
+  const cur=r.getAttribute('data-theme')||(dark?'dark':'light');r.setAttribute('data-theme',cur==='dark'?'light':'dark');}
+</script></body></html>

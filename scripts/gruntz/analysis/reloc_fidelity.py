@@ -232,6 +232,7 @@ def analyze(funcs, comdat, lib, exact, unit_filter=None):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--worklist", action="store_true")
+    ap.add_argument("--json", action="store_true")
     ap.add_argument("--unit")
     args = ap.parse_args()
     if D is None:
@@ -271,6 +272,33 @@ def main():
                                 sym, "0x%x" % have if have else "",
                                 "0x%x" % want if want else "", v,
                                 "CALL" if kind == "C" else "DATA"])
+        return
+
+    if args.json:
+        import json
+        byu = defaultdict(lambda: [0, 0, 0, 0, 0])  # mis, unb, call_bad, data_bad, n
+        for r in rows:
+            u = byu[r["unit"]]
+            u[0] += r["misbound"]; u[1] += r["unbound"]
+            u[2] += r["call_bad"]; u[3] += r["data_bad"]; u[4] += 1
+        out = {
+            "n": len(rows),
+            "faithful": sum(1 for r in rows if r["faithful"]),
+            "sites": sum(r["n"] for r in rows),
+            "misbound": sum(r["misbound"] for r in rows),
+            "unbound": sum(r["unbound"] for r in rows),
+            "call_bad": sum(r["call_bad"] for r in rows),
+            "data_bad": sum(r["data_bad"] for r in rows),
+            "units": [{"unit": u, "misbound": v[0], "unbound": v[1],
+                       "call_bad": v[2], "data_bad": v[3], "n": v[4]}
+                      for u, v in sorted(byu.items(),
+                                         key=lambda kv: -(kv[1][0] + kv[1][1]))],
+            "worst": [{"unit": r["unit"], "name": r["name"], "misbound": r["misbound"],
+                       "unbound": r["unbound"], "call_bad": r["call_bad"],
+                       "data_bad": r["data_bad"]}
+                      for r in sorted(rows, key=lambda r: -(r["misbound"] + r["unbound"]))
+                      if not r["faithful"]][:40]}
+        print(json.dumps(out))
         return
 
     n = len(rows)

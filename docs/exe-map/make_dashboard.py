@@ -97,6 +97,7 @@ svg{width:100%;height:auto;display:block;overflow:visible}
 <div class="bar-top">
   <span class="badge">misplacement finder</span>
   <a class="xlink" href="scatter_methods.html">↔ scatter (no dtors)</a>
+  <a class="xlink" href="reloc.html">↔ reloc fidelity</a>
   <a class="xlink" href="scatter.html">↔ scatter (all fns)</a>
   <a class="xlink" href="homm2.html">↔ HoMM2 baseline</a>
   <button class="toggle" onclick="tog()">◐ theme</button>

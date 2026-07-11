@@ -18,7 +18,7 @@ Blocks sit in **different `.text` regions** (game vs engine) — a single class 
 methods were compiled in two modules (the `CNetMgr` pattern). Split the file so each
 block becomes its own unit at its true region.
 
-## B. SPLIT — same-module (7) · review
+## B. SPLIT — same-module (9) · review
 
 Two+ substantial blocks in the *same* region — likely two TUs of one module, but could
 be COMDAT scatter or a mis-group. Confirm before splitting.
@@ -26,12 +26,14 @@ be COMDAT scatter or a mis-group. Confirm before splitting.
 - `src/Gruntz/GruntzMgr.cpp` — 2 blocks: 4@0x083030(game)  115@0x08b8c0(game)
 - `src/Gruntz/TileLogicPump.cpp` — 2 blocks: 9@0x010f00(game)  40@0x10cb10(game)
 - `src/Gruntz/Attract.cpp` — 2 blocks: 10@0x013fb0(game)  16@0x0fa1f0(game)
-- `src/Gruntz/FortressFlag.cpp` — 2 blocks: 4@0x010e40(game)  18@0x045d30(game)
+- `src/Gruntz/FortressFlag.cpp` — 2 blocks: 5@0x010e40(game)  18@0x045d30(game)
 - `src/Gruntz/LogicWorkerHandlers.cpp` — 2 blocks: 15@0x0a9a40(game)  6@0x0af0a0(game)
-- `src/Gruntz/FrontCandyAni.cpp` — 2 blocks: 5@0x00fa40(game)  10@0x0abfa0(game)
+- `src/Gruntz/Projectile.cpp` — 2 blocks: 4@0x0126e0(game)  16@0x0dec60(game)
+- `src/Gruntz/FrontCandyAni.cpp` — 2 blocks: 6@0x00fa40(game)  10@0x0abfa0(game)
+- `src/Gruntz/SecretTeleporterTrigger.cpp` — 2 blocks: 5@0x0109f0(game)  10@0x041e90(game)
 - `src/Gruntz/MenuState.cpp` — 2 blocks: 4@0x08c4b0(game)  10@0x0a02c0(game)
 
-## C. RE-HOME HINTS — unknown-class / bucket functions (39) · low confidence
+## C. RE-HOME HINTS — unknown-class / bucket functions (37) · low confidence
 
 What's left after A/B/D. **Named classes are (verified) filed correctly** — e.g. all 12
 `CPlaneRender` methods are in `WwdFile.cpp`; the scattered ones were just header-inlines
@@ -49,12 +51,11 @@ improves — **not** a confident semantic move. Do not apply blindly.
 | `?LookupValue_06b2a0@CDDrawSubMgrLeaf@@QAEPAVCObj` | DDrawSubMgrLeaf.cpp | **TriggerMgrGrid.cpp** (9 fns) | 924.9 KB |
 | `?Reset@CGameModeBase@@QAEXXZ` | GameMode.cpp | **Attract.cpp** (16 fns) | 890.6 KB |
 | `?LookupTile@CGameLevel@@QAEHHH@Z` | GameLevel.cpp | **GruntzApp.cpp** (8 fns) | 873.6 KB |
+| `?GetTileHandle@CPlaneRender@@QAEHHH@Z` | WwdFile.cpp | **Play.cpp** (9 fns) | 812.7 KB |
 | `?ResetPreview@CGameModeBase@@QAEXXZ` | GameMode.cpp | **LevelPreview.cpp** (8 fns) | 780.9 KB |
 | `?StepArrivalDefenseLean@CGrunt@@QAEHXZ` | Grunt.cpp | **Attract.cpp** (7 fns) | 682.6 KB |
-| `?Unmatched_1155b0@@YAXXZ` | WapMisc.cpp | **TileTriggerContainer.cpp** (19 fns) | 679.9 KB |
 | `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | MultiStartDlgRoster.cpp | **BootyStateActivate.cpp** (8 fns) | 653.3 KB |
 | `?ResolveArrivalReposition@CGrunt@@QAEHXZ` | Grunt.cpp | **SBI_WarlordHead.cpp** (5 fns) | 635.7 KB |
-| `?GetTileHandle@CPlaneRender@@QAEHHH@Z` | WwdFile.cpp | **Play.cpp** (9 fns) | 613.8 KB |
 | `?MainPlaneQueryA@CGameLevel@@QAEHXZ` | GameLevel.cpp | **Play.cpp** (18 fns) | 567.7 KB |
 | `?MainPlaneQueryB@CGameLevel@@QAEHXZ` | GameLevel.cpp | **Play.cpp** (18 fns) | 567.7 KB |
 | `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | MultiStartDlgRoster.cpp | **VideoConfig.cpp** (18 fns) | 553.7 KB |
@@ -72,10 +73,11 @@ improves — **not** a confident semantic move. Do not apply blindly.
 | `?Apply@CEffect6b@@QAEXHH@Z` | OrphanMethods.cpp | **TriggerMgrGrid.cpp** (10 fns) | 292.1 KB |
 | `?g_typeDesc3@@3PADA` | Globals.cpp | **WorldSoundSet.cpp** (27 fns) | 279.7 KB |
 | `?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@` | SaveGame.cpp | **MapMgr.cpp** (22 fns) | 276.8 KB |
+| `?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@H` | SaveGame.cpp | **MapMgr.cpp** (22 fns) | 276.8 KB |
 
-_(+9 more — see the generator output.)_
+_(+7 more — see the generator output.)_
 
-## D. HEADER-INLINE — reconstruct in the header (79) · not a move
+## D. HEADER-INLINE — reconstruct in the header (102) · not a move
 
 Small or virtual member functions sitting **scattered from their own class body**.
 They were defined **inline in a header**: MSVC still emits one out-of-line COMDAT copy
@@ -88,24 +90,24 @@ Top classes by inline-scattered method count:
 
 - `CAttract` — 7
 - `CVoiceTrigger` — 3
+- `CProjectile` — 3
+- `CSecretLevelTrigger` — 3
 - `CMotionState` — 3
 - `CToobSpikez` — 2
 - `CTileTriggerTransition` — 2
 - `CTileTrigger` — 2
 - `CWarpStonePad` — 2
 - `CPathHazard` — 2
+- `CSingleAnimation` — 2
 - `CBehindCandyAni` — 2
+- `CFrontCandyAni` — 2
 - `CEyeCandyAni` — 2
+- `CSimpleAnimation` — 2
+- `CSingleFrameMessage` — 2
 - `CAniCycle` — 2
+- `CGruntHealthSprite` — 2
+- `CExplosion` — 2
 - `CParticlez` — 2
-- `CSBI_MenuItem` — 2
-- `Rng` — 2
-- `CDDrawSubMgrLeafScan` — 2
-- `CProjectile` — 2
-- `CSecretLevelTrigger` — 2
-- `CTileTriggerSwitch` — 1
-- `CStatusBarSprite` — 1
-- `CStaticHazard` — 1
 
 Examples (virtual first):
 
@@ -121,21 +123,21 @@ Examples (virtual first):
 | `?SerializeMove@CWarpStonePad@@EAEHPAUCGruntA` | CWarpStonePad | 71 B | ✓ |
 | `?SerializeMove@CStatusBarSprite@@UAEHPAUCGru` | CStatusBarSprite | 71 B | ✓ |
 | `?GetTypeTag@CStaticHazard@@UAE?AW4LogicTypeI` | CStaticHazard | 6 B | ✓ |
+| `?GetTypeTag@CTimeBomb@@UAE?AW4LogicTypeId@@X` | CTimeBomb | 6 B | ✓ |
+| `?GetTypeTag@CProjectile@@UAE?AW4LogicTypeId@` | CProjectile | 6 B | ✓ |
+| `?GetTypeTag@CDroppedObjectShadow@@UAE?AW4Log` | CDroppedObjectShadow | 6 B | ✓ |
+| `?GetTypeTag@CDroppedObject@@UAE?AW4LogicType` | CDroppedObject | 6 B | ✓ |
 | `?GetTypeTag@CObjectDropper@@UAE?AW4LogicType` | CObjectDropper | 6 B | ✓ |
 | `?GetTypeTag@CPathHazard@@UAE?AW4LogicTypeId@` | CPathHazard | 6 B | ✓ |
+| `?GetTypeTag@CKitchenSlime@@UAE?AW4LogicTypeI` | CKitchenSlime | 6 B | ✓ |
+| `?GetTypeTag@CSingleAnimation@@UAE?AW4LogicTy` | CSingleAnimation | 6 B | ✓ |
 | `?GetTypeTag@CBehindCandyAni@@UAE?AW4LogicTyp` | CBehindCandyAni | 6 B | ✓ |
+| `?GetTypeTag@CFrontCandyAni@@UAE?AW4LogicType` | CFrontCandyAni | 6 B | ✓ |
 | `?GetTypeTag@CEyeCandyAni@@UAE?AW4LogicTypeId` | CEyeCandyAni | 6 B | ✓ |
+| `?GetTypeTag@CRollingBall@@UAE?AW4LogicTypeId` | CRollingBall | 6 B | ✓ |
+| `?GetTypeTag@CSimpleAnimation@@UAE?AW4LogicTy` | CSimpleAnimation | 6 B | ✓ |
+| `?GetTypeTag@CSingleFrameMessage@@UAE?AW4Logi` | CSingleFrameMessage | 6 B | ✓ |
 | `?GetTypeTag@CAniCycle@@UAE?AW4LogicTypeId@@X` | CAniCycle | 6 B | ✓ |
-| `?SerializeMove@CLevelTime@@UAEHPAUCGruntArch` | CLevelTime | 71 B | ✓ |
-| `?GetTypeTag@CToyPeek@@UAE?AW4LogicTypeId@@XZ` | CToyPeek | 6 B | ✓ |
-| `?Slot17@CImage@@UAEXPAX@Z` | CImage | 27 B | ✓ |
-| `?Update@CAttract@@UAE?AW4GameStateId@@XZ` | CAttract | 6 B | ✓ |
-| `?Update@CMultiBootyState@@UAE?AW4GameStateId` | CMultiBootyState | 6 B | ✓ |
-| `?GetTypeTag@CGruntWingzTimeSprite@@UAE?AW4Lo` | CGruntWingzTimeSprite | 6 B | ✓ |
-| `?GetTypeTag@CGruntToyTimeSprite@@UAE?AW4Logi` | CGruntToyTimeSprite | 6 B | ✓ |
-| `?GetTypeTag@CGruntStaminaSprite@@UAE?AW4Logi` | CGruntStaminaSprite | 6 B | ✓ |
-| `?GetTypeTag@CParticlez@@UAE?AW4LogicTypeId@@` | CParticlez | 6 B | ✓ |
-| `?GetTypeTag@CTeleporter@@UAE?AW4LogicTypeId@` | CTeleporter | 6 B | ✓ |
 
 ## How to execute a split (NetMgr worked example)
 

@@ -103,6 +103,7 @@ details summary{cursor:pointer;font-size:12.5px;color:var(--text-secondary);marg
 <div class="bar-top">
   <span class="badge">deep map</span>
   <a class="xlink" href="misplacement.html">&harr; misplacement finder</a>
+  <a class="xlink" href="reloc.html">&harr; reloc fidelity</a>
   <a class="xlink" href="scatter_methods.html">&harr; scatter</a>
   <a class="xlink" href="homm2.html">&harr; HoMM2 baseline</a>
   <button class="toggle" onclick="tog()">&#9681; theme</button>
