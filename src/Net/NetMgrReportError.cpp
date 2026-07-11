@@ -35,18 +35,35 @@
 // the "hand" icon, whose real windows.h value is 0x10.
 
 // ---------------------------------------------------------------------------
-// Module-global state (all in .data). Unlike the DDraw/DInput/DSound siblings
-// (which buffer everything on the stack), the Net reporter keeps the error-code
-// name, the description, and the saved (code, hr) in fixed globals.
+// Module-global reporting state - netmgrerror.obj's own .bss block, DEFINED here
+// (their owning TU), zero-init. The linker lays them out gaplessly at
+// 0x2bf6e8..0x2bf840: the four reporting-mode gates, the saved (hr, code), then
+// the two working buffers. Unlike the DDraw/DInput/DSound siblings (which buffer
+// everything on the stack), the Net reporter keeps all of this in fixed globals.
+// g_hr/g_code/g_szCode/g_szMsg keep their reference `extern`s in the consolidated
+// <Globals.h> (its canonical role; CMulti::ReportNetError reads g_code/g_szCode
+// through that header) - only the DATA() binding moves here, onto the definition.
+// The .bss contiguity (g_code/g_szCode bracketed by netmgrerror-private g_hr and
+// g_szMsg) proves all eight live in this one .obj despite the cross-TU read.
 // ---------------------------------------------------------------------------
-DATA(0x002bf6e8)
-extern "C" i32 g_logEnabled; // 0x6bf6e8  - drives the format-line path
-DATA(0x002bf6ec)
-extern "C" i32 g_msgBoxEnabled; // 0x6bf6ec  - drives the MessageBox path
-DATA(0x002bf6f0)
-extern "C" i32 g_beepEnabled; // 0x6bf6f0  - gates the startup beep
-DATA(0x002bf6f4)
-extern "C" i32 g_thirdEnabled; // 0x6bf6f4  - third "any output wanted" gate
+extern "C" {
+    DATA(0x002bf6e8)
+    i32 g_logEnabled = 0; // drives the format-line path
+    DATA(0x002bf6ec)
+    i32 g_msgBoxEnabled = 0; // drives the MessageBox path
+    DATA(0x002bf6f0)
+    i32 g_beepEnabled = 0; // gates the startup beep
+    DATA(0x002bf6f4)
+    i32 g_thirdEnabled = 0; // third "any output wanted" gate
+    DATA(0x002bf6f8)
+    i32 g_hr = 0; // the raw HRESULT, saved at entry
+    DATA(0x002bf6fc)
+    i32 g_code = 0; // hr & 0xffff (the (%i) arg); also read by CMulti::ReportNetError
+    DATA(0x002bf700)
+    char g_szCode[64] = {0}; // error-code name buffer; also read by CMulti::ReportNetError
+    DATA(0x002bf740)
+    char g_szMsg[256] = {0}; // description buffer
+}
 
 // Empty mutable string in .data copied into the working line up front.
 DATA(0x002293f4)

@@ -585,14 +585,10 @@ DATA(0x002bf454)
 extern void* g_projActName; // 0x6bf454 (the bad-arg diagnostic record cell)
 DATA(0x002bf468)
 extern u8 g_zArrayTag;
-DATA(0x002bf6f8)
-extern "C" i32 g_hr; // 0x6bf6f8  - the raw HRESULT, saved at entry
-DATA(0x002bf6fc)
-extern "C" i32 g_code; // 0x6bf6fc  hr & 0xffff (the (%i) arg)
-DATA(0x002bf700)
-extern "C" char g_szCode[]; // 0x6bf700  error-code name buffer
-DATA(0x002bf740)
-extern "C" char g_szMsg[]; // 0x6bf740  - description buffer
+// g_hr/g_code/g_szCode/g_szMsg (0x2bf6f8..0x2bf840) are DEFINED in their owning TU
+// src/Net/NetMgrReportError.cpp (netmgrerror.obj's .bss); the DATA() binding lives on
+// those definitions now. Their reference `extern`s stay in <Globals.h> (canonical
+// reference header - removing them perturbs MSVC5 regalloc in matched includers).
 DATA(0x002c127d)
 extern u8 g_randSeeded; // 0x6c127d  seed-init flag (bit 0)
 DATA(0x002c1288)
