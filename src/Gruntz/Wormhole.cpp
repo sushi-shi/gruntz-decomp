@@ -828,7 +828,7 @@ i32 CTeleporter::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
             ar->Read(&m_tickHandled, 4);
             break;
         case 8:
-            LoadColors();
+            ((CWormhole*)this)->LoadColors();
             break;
     }
     return 1;

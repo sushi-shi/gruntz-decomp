@@ -999,8 +999,8 @@ void CGrunt::ReapplyVoiceParams() {
 // reach engine cleanup; reloc-masked).
 RVA(0x00057d80, 0x11)
 void CGrunt::DestroyAnims() {
-    AnimTeardownA();
-    AnimTeardownB();
+    ClearSubA();
+    ClearSubB();
 }
 
 // ==== ConstructActRange_644af0 @0x5bc50 + RegisterActs_644af0 @0x5be30 (ex

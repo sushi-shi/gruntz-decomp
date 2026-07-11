@@ -134,11 +134,10 @@ public:
     // raise the fort alert when an enemy is inside the panic radius (0x45270).
     void NotifyFortUnderAttack();
 
-    // engine tail helpers (__thiscall), reached via ILT thunks. External/no-body.
-    void ResolveMovingAnimation();    // 0x45100
-    void ResolveIdleAnimation();      // 0x45960
-    void ResolveBattlecryAnimation(); // 0x45b60
-    void RaiseBattleAlert();          // 0x457b0  (panic-radius alert variant)
+    // The moving/idle/battlecry anim resolves (0x45100/0x45960/0x45b60) are real
+    // CGrunt methods (the warlord `this` is a CGrunt receiver at these sites) - the
+    // callers cast to CGrunt::* so the rel32 binds; no fake CWarlord shadow decl.
+    void RaiseBattleAlert(); // 0x457b0  (panic-radius alert variant)
 
     // Past the 0x40 CUserLogic base. m_38 is the inherited CUserLogic::m_38
     // (anim player); CString m_54 is CWarlord's own destructible member; the

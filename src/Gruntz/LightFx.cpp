@@ -2,13 +2,14 @@
 #include <DDrawMgr/DDrawBlitParam.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/LightFx.h>
+#include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h>           // CLightFxMgr (g_gameReg->m_logicPump @+0x78; Push)
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
-#include <Gruntz/SerialArchive.h>        // CSerialArchive Read(+0x2c)/Write(+0x30) for SerializeMove
-#include <Gruntz/SerialObjRef.h>         // the +0x34 serialized-object-reference (Chain @0x8c00)
-#include <Gruntz/AniAdvanceCursor.h>     // CAniAdvanceCursor (m_38+0x1a0 sink; Advance_15c360)
+#include <Gruntz/SerialArchive.h>    // CSerialArchive Read(+0x2c)/Write(+0x30) for SerializeMove
+#include <Gruntz/SerialObjRef.h>     // the +0x34 serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (m_38+0x1a0 sink; Advance_15c360)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 
@@ -308,9 +309,9 @@ SIZE_UNKNOWN(LfxObj);
 RVA(0x00012430, 0x44)
 CLightFx::~CLightFx() {}
 
-// The default-state fall-through helper (0x16e4f0, __cdecl, 1 arg); external/no-body
-// so the reloc-masked call pairs. SAME callee as LogicRecordDispatch.cpp's dispatchers.
-extern "C" void LogicSubDefault_16e4f0(void* sub);
+// The default-state fall-through helper IS the real shared coordinate/type-registry
+// resolve at 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z, __cdecl); the record
+// arg is the active logic leaf, reinterpreted as the archive record it drives.
 
 // LightFxLogicDispatch @0x9cdc0 - the LightFx logic-type per-frame state dispatcher
 // (__cdecl free fn bound into the class's logic dispatch table). Reaches the object's
@@ -353,7 +354,7 @@ i32 LightFxLogicDispatch(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            LogicSubDefault_16e4f0(aux->m_logic);
+            ProjTypeXfer((CXferArchive*)aux->m_logic);
             break;
     }
     return 1;

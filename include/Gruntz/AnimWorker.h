@@ -15,6 +15,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
 
 class CUserLogic; // fwd; deref'd in the pump TUs via <Gruntz/UserLogic.h>
 
@@ -35,8 +36,11 @@ struct Owner {
     Worker* m_7c; // +0x7c
 };
 
-// The engine default message pump run for any unhandled state (0x16e4f0, __cdecl,
-// takes the sub-record). Reloc-masked rel32 - no body.
-extern "C" void Worker_DefaultPump(CUserLogic* sub);
+// The engine default message pump run for any unhandled state IS the real shared
+// coordinate/type-registry resolve at 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z,
+// __cdecl). Thin forwarder so callers emit the bound rel32 (was fake _Worker_DefaultPump).
+inline void Worker_DefaultPump(CUserLogic* sub) {
+    ProjTypeXfer((CXferArchive*)sub);
+}
 
 #endif // GRUNTZ_ANIMWORKER_H

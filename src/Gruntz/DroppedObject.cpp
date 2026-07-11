@@ -176,9 +176,9 @@ static inline CDropEntry* DropLookup(i32 coord) {
 }
 
 // The default case's shared type-keyed record serializer (0x16e4f0, owned +
-// matched in TypeKeyColl.cpp); the active logic leaf is the record arg
-// (CUserLogic -> cast-free).
-i32 ProjTypeXfer(CUserLogic* rec); // 0x16e4f0
+// matched in TypeKeyColl.cpp = ?ProjTypeXfer@@YAHPAUCXferArchive@@@Z); the active
+// logic leaf is the record arg, reinterpreted as the archive record it drives.
+#include <Gruntz/XferArchive.h>
 
 // ---------------------------------------------------------------------------
 // ObjectDropper.cpp's local views of the bound object + registry facets (only
@@ -366,7 +366,7 @@ i32 ObjectDropperPump(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(aux->m_logic);
+            ProjTypeXfer((CXferArchive*)aux->m_logic);
             break;
     }
     return 1;
@@ -404,7 +404,7 @@ i32 DroppedObjectPump(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(aux->m_logic);
+            ProjTypeXfer((CXferArchive*)aux->m_logic);
             break;
     }
     return 1;
@@ -442,7 +442,7 @@ i32 DroppedObjectShadowPump(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(aux->m_logic);
+            ProjTypeXfer((CXferArchive*)aux->m_logic);
             break;
     }
     return 1;

@@ -252,7 +252,7 @@ i32 CWarlord::RearmMoving() {
     ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
-        ResolveMovingAnimation();
+        ((CGrunt*)this)->ResolveMovingAnimation();
     }
     return 0;
 }
@@ -284,10 +284,10 @@ i32 CWarlord::LoadAttributes() {
 
     if ((i64)(u32)g_645588 - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
         if (rand() % 10 < 5) {
-            ResolveIdleAnimation();
+            ((CGrunt*)this)->ResolveIdleAnimation();
             return 0;
         }
-        ResolveBattlecryAnimation();
+        ((CGrunt*)this)->ResolveBattlecryAnimation();
     }
     return 0;
 }
@@ -325,7 +325,7 @@ i32 CWarlord::LoadAttributes2() {
         }
     } else {
         if (((CWarlordMission*)reg->m_curState)->m_3f4->m_4c == 0) {
-            ResolveMovingAnimation();
+            ((CGrunt*)this)->ResolveMovingAnimation();
             return 0;
         }
         if ((i64)(u32)g_645588 - *(i64*)&m_cooldownStampLo >= *(i64*)&m_cooldownWindowLo) {
@@ -373,7 +373,7 @@ i32 CWarlord::AdvanceMovingAnim() {
         h2->m_window = 0x3e8;
         h2->m_stamp = (u32)g_645588;
     }
-    ResolveMovingAnimation();
+    ((CGrunt*)this)->ResolveMovingAnimation();
     return 0;
 }
 
@@ -389,7 +389,7 @@ i32 CWarlord::RearmMoving2() {
     ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
-        ResolveMovingAnimation();
+        ((CGrunt*)this)->ResolveMovingAnimation();
     }
     return 0;
 }

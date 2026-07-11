@@ -1730,8 +1730,8 @@ public:
     // @0x57c40 (ret 4) - lazily build + play the grunt's struck-voice sample for the
     // given sound key (stored into the +0x428 slot ClearSubB frees).
     void EnsureStruckVoice(const char* key);
-    void AnimTeardownA(); // engine thunk (DestroyAnims step 1)
-    void AnimTeardownB(); // engine thunk (DestroyAnims step 2)
+    // DestroyAnims' two teardown steps ARE ClearSubA/ClearSubB (0x57c10/0x57ce0),
+    // declared above - no separate AnimTeardownA/B shadow (those were unbound fakes).
     // Legacy placeholder decls retained: CommitArrival now calls the real creators +
     // SetEntrancePos, but dropping these shifts the unit's symbol set and drifts an
     // unrelated function's fuzzy score (matching-patterns.md symbol-set sensitivity).

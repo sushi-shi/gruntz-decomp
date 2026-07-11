@@ -17,6 +17,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
 
 // CButeTree + g_buteTree come via UserLogic.h (pulls <Bute/ButeMgr.h>); the leaf
 // data layout (CGameObject/CGameObjAux/CUserLogic) is modeled there too.
@@ -74,8 +75,12 @@ struct CTileTransitionController {
 };
 SIZE_UNKNOWN(CTileTransitionController);
 
-// The default-state engine helper (FUN_0056e4f0, __cdecl, takes the state object).
-extern "C" void TileTransitionDefaultStep(CTileTransitionState* obj);
+// The default-state engine helper IS the real shared coordinate/type-registry
+// resolve at 0x16e4f0 (?ProjTypeXfer@@YAHPAUCXferArchive@@@Z, __cdecl). Thin
+// forwarder so callers emit the bound rel32 (was the fake _TileTransitionDefaultStep).
+inline void TileTransitionDefaultStep(CTileTransitionState* obj) {
+    ProjTypeXfer((CXferArchive*)obj);
+}
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 

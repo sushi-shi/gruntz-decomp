@@ -85,10 +85,9 @@ public:
     // tag 8 (post-load) re-applies the config via LoadColors. Same archetype as
     // CGruntPuddle::Serialize / CWormhole::Serialize.
     i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d);
-    // LoadColors (0x411f0): the tag-8 post-load config-reapply handler. Its body is
-    // byte-identical to (and COMDAT-ICF-folded with) CWormhole::LoadColors, so retail
-    // dispatches the folded survivor; declared no-body here so the call reloc-masks.
-    void LoadColors();
+    // LoadColors (0x411f0) IS CWormhole::LoadColors - there is ONE such function at
+    // 0x411f0 (MSVC5 has no /OPT:ICF); the tag-8 post-load reapply calls it on the
+    // teleporter `this` (cast to CWormhole* at the call site), so no fake shadow decl.
     // Begin (0x419e0): advance the anim sub-mgr; on its first idle frame, snapshot
     // the bound geometry, apply the teleporter lookup-geometry and re-bind the "B"
     // bute node. Returns 0.
@@ -106,10 +105,13 @@ public:
     // Teleporter.cpp so cl+clang emit this COMDAT (@0x10d80) + the ??_7CTeleporter
     // vtable in this TU.
     RVA(0x00010d80, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_TELEPORTER; }
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1 (body: Serialize 0x41350)
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    virtual ~CTeleporter() OVERRIDE; // 0x10dd0 (folds the CUserLogic teardown)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_TELEPORTER;
+    }
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32)
+        OVERRIDE;                           // slot 1 (body: Serialize 0x41350)
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
+    virtual ~CTeleporter() OVERRIDE;        // 0x10dd0 (folds the CUserLogic teardown)
 
     i32 m_savedGeoId; // +0x40  snapshot of m_38->m_geoId
     char m_pad44[0x54 - 0x44];
@@ -118,11 +120,11 @@ public:
     // interval (m_60), each a manually zero-extended i64 (lo stored, hi forced 0) so
     // the per-frame delta test compares them 64-bit; kept as lo/hi i32 pairs because
     // retail emits two separate 32-bit stores (not a sign-extending i64 assign).
-    i32 m_armClockLo;  // +0x58  running-clock snapshot (g_645588)
-    i32 m_armClockHi;  // +0x5c
-    i32 m_intervalLo;  // +0x60  bound object's per-tile-time (m_10->m_7c->m_bc)
-    i32 m_intervalHi;  // +0x64
-    i32 m_tickHandled; // +0x68  "tick handled" latch
+    i32 m_armClockLo;          // +0x58  running-clock snapshot (g_645588)
+    i32 m_armClockHi;          // +0x5c
+    i32 m_intervalLo;          // +0x60  bound object's per-tile-time (m_10->m_7c->m_bc)
+    i32 m_intervalHi;          // +0x64
+    i32 m_tickHandled;         // +0x68  "tick handled" latch
     char m_pad6c[0x70 - 0x6c]; // +0x6c  (unmodeled tail; size proven 0x70 from
                                //         AnimWorkerHandlers `new CTeleporter`)
 };

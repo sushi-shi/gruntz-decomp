@@ -963,6 +963,11 @@ source = "src/Gruntz/GameText.cpp"
 flags = "base"
 
 [[unit]]
+unit = "getretaddr"
+source = "src/Gruntz/GetRetAddr.cpp"
+flags = "base"
+
+[[unit]]
 unit = "wormhole"
 source = "src/Gruntz/Wormhole.cpp"
 flags = "eh"
