@@ -326,7 +326,7 @@ public:
     virtual void Vslot18() OVERRIDE;             // slot 24 (CState override)
     virtual void Vslot19() OVERRIDE;             // slot 25 (CState override)
     // --- CPlay-owned high slots 26..40 (moved from CState; RTTI CState is 26 slots) ---
-    virtual void Vslot1a();
+    virtual i32 Vslot1a();  // slot 26 (0x8c930)  ret 0
     virtual i32 GetFrame(); // slot 27 (+0x6c)  current frame number (debug HUD "Frame = %i")
     virtual i32 Vslot1c(i32 category); // slot 28 (+0x70) count live objects by coll-category
     virtual void Vslot1d();

@@ -298,7 +298,7 @@ public:
     virtual i32 FrameSlot28(i32) OVERRIDE;      // slot 10 (CState)
     virtual i32 Vslot0b(i32, i32) OVERRIDE;     // slot 11 (CState)
     virtual i32 Vslot15() OVERRIDE;             // slot 21 (CState)
-    virtual void Vslot1a() OVERRIDE;            // slot 26 (CPlay)
+    virtual i32 Vslot1a() OVERRIDE;             // slot 26 (CPlay)
     virtual i32 GetFrame() OVERRIDE;            // slot 27 (CPlay)
     virtual i32 Vslot1e(i32, i32) OVERRIDE;     // slot 30 (CPlay)
     virtual void Vslot20() OVERRIDE;            // slot 32 (CPlay)

@@ -529,6 +529,13 @@ i32 CBootyState::Render() {
     return 0;
 }
 
+// CBootyState::Vslot06 (slot 6 / +0x18, 0x1ce10): boolify the class's slot-3
+// active/ready virtual (Vfunc3) - return 1 iff ready, else 0.
+RVA(0x0001ce10, 0xc)
+i32 CBootyState::Vslot06() {
+    return Vfunc3() != 0;
+}
+
 // CMultiBootyState::ReadyAndPaint() (0x1ce30): gate on the active/ready virtual (CState
 // slot 3 / +0xc); when ready, run the per-frame Paint and return the normalized result;
 // otherwise return the (zero) gate result.
@@ -538,6 +545,19 @@ i32 CMultiBootyState::ReadyAndPaint() {
         return 0;
     }
     return Paint() != 0;
+}
+
+// CBootyState::Vslot0e (0x1d3e0, vtable slot 14) and Vslot11 (0x1d400, slot 17): the
+// same tail-forward to the shared booty-grunt idle-animation builder (0x1ce60) as
+// Vslot0c, but with the slot-14/17 (int,int,int) arg frame. Reloc-masked call.
+RVA(0x0001d3e0, 0x8)
+i32 CBootyState::Vslot0e(i32, i32, i32) {
+    return BuildBootyGruntIdleAnimation();
+}
+
+RVA(0x0001d400, 0x8)
+i32 CBootyState::Vslot11(i32, i32, i32) {
+    return BuildBootyGruntIdleAnimation();
 }
 
 // CBootyState::Vslot0c (0x1d420, vtable slot 12): tail-forward to the shared booty-grunt
@@ -963,50 +983,60 @@ i32 CMultiBootyState::InputVirtual() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// 0x01f870 - guarded virtual dispatch: if the 4th virtual (vtbl slot +0xc) reports
-// nonzero, run the non-virtual handler (0xfac70) and return its success as a bool
-// (the retail neg/sbb/neg idiom); else return 0. __thiscall, no args. RVA-homed here.
-// @orphan: no .text caller; `this` class genuinely unrecovered.
-// ---------------------------------------------------------------------------
-struct CGuardedDispatch1f870 {
-    virtual i32 v0();
-    virtual i32 v1();
-    virtual i32 v2();
-    virtual i32 IsActive(); // slot +0x0c
-    i32 Handle();           // 0xfac70 (non-virtual; reloc-masked)
-    i32 Run();
-};
-SIZE_UNKNOWN(CGuardedDispatch1f870);
-RVA(0x0001f870, 0x1d)
-i32 CGuardedDispatch1f870::Run() {
-    if (!IsActive()) {
-        return 0;
-    }
-    return Handle() != 0;
+// CMultiBootyState::Vslot06 (slot 6 / +0x18, 0x1f850): boolify the class's slot-3
+// active/ready virtual (Vfunc3) - return 1 iff ready, else 0.
+RVA(0x0001f850, 0xc)
+i32 CMultiBootyState::Vslot06() {
+    return Vfunc3() != 0;
 }
 
 // ---------------------------------------------------------------------------
-// 0x01f8a0 - if the pending-command key (m_cmdKey) equals 0xc7, post WM_COMMAND
-// 0x8023 to the game window (g_gameReg->m_gameWnd->m_hwnd) via g_pPostMessageA;
-// always return 1. __thiscall, no args. Re-homed from src/Stub/ApiCallers.cpp.
-// @identity-TODO: genuinely-unrecovered owner. xref proves the sole inbound edge is
-// ILT thunk 0x1d3e, called only by the adjacent unrecovered fn @~0x1f8d0 (no named
-// caller / no vtable slot / no new-site), so the class holding the +0x1b8 command-key
-// is not recoverable yet - a minimal __thiscall placeholder host, not a modeled class.
+// CMultiBootyState::Vslot07 (slot 7 / +0x1c, 0x1f870): gate on the slot-3 ready
+// virtual (Vfunc3); when ready run the non-virtual paint (Paint, 0xfac70) and return
+// its normalized result, else 0. (Was the @orphan CGuardedDispatch1f870 view; the
+// vtable slot-7 attribution -- find_holding(0x1f870) == CMultiBootyState:7 -- recovers
+// its real identity, dissolving the view.)
 // ---------------------------------------------------------------------------
-struct PendingCmdKeyHost {
-    char m_pad0[0x1b8];
-    i32 m_cmdKey; // +0x1b8
-    i32 PostCommandIfKey();
-};
-SIZE_UNKNOWN(PendingCmdKeyHost);
+RVA(0x0001f870, 0x1d)
+i32 CMultiBootyState::Vslot07() {
+    if (Vfunc3() == 0) {
+        return 0;
+    }
+    return Paint() != 0;
+}
+
+// ---------------------------------------------------------------------------
+// CMultiBootyState::PostCommandIfKey (0x1f8a0): if the one-shot battle-stats latch
+// (m_1b8) reads 0xc7, post WM_COMMAND 0x8023 to the game window
+// (g_gameReg->m_gameWnd->m_hwnd) via g_pPostMessageA; always return 1. __thiscall,
+// no args. (Was the @identity-TODO PendingCmdKeyHost view; the slot-12/14/17
+// forwarders below tail-call it with ecx = a CMultiBootyState `this`, and it reads
+// m_1b8 (+0x1b8) -- that xref recovers it as this CMultiBootyState method.)
+// ---------------------------------------------------------------------------
 RVA(0x0001f8a0, 0x30)
-i32 PendingCmdKeyHost::PostCommandIfKey() {
-    if (m_cmdKey == 0xc7) {
+i32 CMultiBootyState::PostCommandIfKey() {
+    if (m_1b8 == 0xc7) {
         g_pPostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
     }
     return 1;
+}
+
+// CMultiBootyState slots 14/17/12 (0x1f8e0 / 0x1f900 / 0x1f920): each tail-forwards
+// its (reloc-masked) call to PostCommandIfKey on `this`; slots 14/17 with the
+// (int,int,int) arg frame (ret 0xc), slot 12 with (int,int) (ret 8).
+RVA(0x0001f8e0, 0x8)
+i32 CMultiBootyState::Vslot0e(i32, i32, i32) {
+    return PostCommandIfKey();
+}
+
+RVA(0x0001f900, 0x8)
+i32 CMultiBootyState::Vslot11(i32, i32, i32) {
+    return PostCommandIfKey();
+}
+
+RVA(0x0001f920, 0x8)
+i32 CMultiBootyState::Vslot0c(i32, i32) {
+    return PostCommandIfKey();
 }
 
 // ---------------------------------------------------------------------------

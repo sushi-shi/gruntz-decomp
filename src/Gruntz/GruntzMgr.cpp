@@ -3427,6 +3427,20 @@ CGruntzMgr::~CGruntzMgr() {
     Close();
 }
 
+// WAP32::CGameMgr::Wap32GameMgrVfunc3 (0x85560, base vtable 0x5e9b8c slot 3): the
+// "active?" gate - nonzero iff a game window is bound (m_gameWnd != 0).
+RVA(0x00085560, 0xb)
+i32 WAP32::CGameMgr::Wap32GameMgrVfunc3() {
+    return m_gameWnd != 0;
+}
+
+// WAP32::CGameMgr::HandleCommand (0x85580, base vtable 0x5e9b8c slot 5): the base
+// no-op command sink (CGruntzMgr overrides it at 0x862f0). Returns 0 (unhandled).
+RVA(0x00085580, 0x5)
+i32 WAP32::CGameMgr::HandleCommand(i32, i32, i32) {
+    return 0;
+}
+
 // The WAP32::CGameMgr scalar-deleting destructor (??_G, vtable 0x5e9b8c slot 0, 0x855a0):
 // cl auto-emits it from CGameMgr's virtual dtor; @rva-symbol names the auto-emitted thunk
 // at this RVA (homed by matcher-5, unmatched sweep).

@@ -479,6 +479,9 @@ public:
     i32 Paint();                        // 0xfac70 (reloc-masked engine paint)
     i32 BuildBootyGruntIdleAnimation(); // 0x1ce60 (reloc-masked, own method;
                                         // shares the forwarder's arg frame)
+    // 0x1f8a0: post WM_COMMAND 0x8023 when the m_1b8 latch reads 0xc7 (the folded
+    // PendingCmdKeyHost view). The slot-12/14/17 forwarders tail-call it on `this`.
+    i32 PostCommandIfKey();
 
     // --- CMultiBootyState members (placeholders, beyond the CState layout) ---
     // The +0x1ec and +0x204 sprite-ptr arrays overlap (the two animators index the

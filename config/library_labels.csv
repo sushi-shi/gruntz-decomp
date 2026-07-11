@@ -509,7 +509,6 @@ rva,name,lib,confidence,source
 0x08c3d0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08c6d0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x08c6f0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
-0x08c950,___init_collate,LIBCMT,LOW,anchored
 0x08c9a0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08cd60,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x08ce30,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored

@@ -98,6 +98,19 @@ i32 CWapObj::IsLoaded() {
 }
 
 // ---------------------------------------------------------------------------
+// CImage::GetClassId (slot 8, 0x0d5de0): the class type tag - CImage returns 10.
+RVA(0x000d5de0, 0x6)
+i32 CImage::GetClassId() {
+    return 10;
+}
+
+// ---------------------------------------------------------------------------
+// CImage::Slot16 (slot 16, 0x0d5e00): a no-op sink (Slot17 forwards its arg here
+// and to Slot15). __thiscall, one arg, ret 4.
+RVA(0x000d5e00, 0x3)
+void CImage::Slot16(void*) {}
+
+// ---------------------------------------------------------------------------
 // slot 17 (0x0d5e20): forward the arg through two later virtuals - Slot15
 // (vtable +0x3c) then Slot16 (vtable +0x40). __thiscall, ret 4. Re-homed from
 // src/Stub/BoundaryLowerMethods.cpp (was the Cd5e20 placeholder view); the vtable

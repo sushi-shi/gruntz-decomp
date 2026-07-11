@@ -4420,6 +4420,19 @@ i32 CPlay::BuildHelpReveal() {
 RVA(0x0008c9d0, 0x2bd)
 void CPlay::PlayBacklog08c9d0() {}
 
+// CPlay::Vslot1a (0x8c930) - vtable slot 26. CPlay's default: return 0.
+RVA(0x0008c930, 0x3)
+i32 CPlay::Vslot1a() {
+    return 0;
+}
+
+// CPlay::GetFrame (0x8c950) - vtable slot 27. CPlay's base returns 0 (frame count;
+// overridden by subclasses that track a frame number).
+RVA(0x0008c950, 0x3)
+i32 CPlay::GetFrame() {
+    return 0;
+}
+
 // CState::SetBeginClearParams (0x8c970) - seed the begin-clear params.
 RVA(0x0008c970, 0x1c)
 i32 CState::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
@@ -4431,6 +4444,26 @@ i32 CState::SetBeginClearParams(i32 unused, i32 arg2, i32 arg3) {
 // The cached PostMessageA fn-ptr (bare 0x6c44c8; the paused-frame unpause posts
 // WM_COMMAND 0x816e through it). Same decl used by the Dispatch cluster below.
 extern i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM);
+
+// CPlay::Vslot0d (0x0cda70) - vtable slot 13, the key-UP scroll-edge filter. On a
+// key-up event (flags bit 0x1000000 set) for an arrow key, clear the matching
+// scroll-edge-lock direction bit (VK_LEFT->bit0, VK_RIGHT->bit2, VK_UP->bit1,
+// VK_DOWN->bit3). Always returns 1 (handled).
+RVA(0x000cda70, 0x7a)
+i32 CPlay::Vslot0d(i32 key, i32 flags) {
+    if (flags & 0x01000000) {
+        if (key == 0x25) {
+            m_scrollEdgeLock &= ~1;
+        } else if (key == 0x27) {
+            m_scrollEdgeLock &= ~4;
+        } else if (key == 0x26) {
+            m_scrollEdgeLock &= ~2;
+        } else if (key == 0x28) {
+            m_scrollEdgeLock &= ~8;
+        }
+    }
+    return 1;
+}
 
 // ===========================================================================
 // CPlay::OnMouseUp (0x0cdb10, Ghidra-named winapi_0cdb10_PostMessageA after the
@@ -4737,6 +4770,13 @@ SIZE_UNKNOWN(COverlayClick);
 struct COverlayClick {
     // Probe @0x12da IS CPlay::BuildGruntTypeNameTable (4th arg reloc-masked); cast at the call.
 };
+// CPlay::Vslot13 (0x0ceab0) - vtable slot 19. Re-forward all three args to the
+// class's own slot-17 virtual (Vslot11).
+RVA(0x000ceab0, 0x17)
+i32 CPlay::Vslot13(i32 a, i32 b, i32 c) {
+    return Vslot11(a, b, c);
+}
+
 // @early-stop
 // regalloc coin-flip wall (docs/patterns/zero-register-pinning.md): the whole
 // priority chain, the overlay probe, both HUD/world rect hit-tests, the grid-snap
@@ -5034,6 +5074,13 @@ i32 Ccef50::Teardown() {
 }
 SIZE_UNKNOWN(CMid_cef50);
 SIZE_UNKNOWN(Ccef50);
+
+// CPlay::Vslot26 (0x0cfbb0) - vtable slot 38. Tail-forward to the game manager's
+// per-frame state-manager tick (m_4->TickStateMgrs).
+RVA(0x000cfbb0, 0x8)
+void CPlay::Vslot26() {
+    m_4->TickStateMgrs();
+}
 
 // CPlay::Vslot15 (0x0cfbd0) - vtable slot 21 (override of CState), the level-quiesce
 // dispatch. On level index 0x20: latch the quiesce flags (m_1c0/m_40), stop the current
