@@ -815,11 +815,11 @@ void CWwdObjMgr::InsertSorted_159e40(CWwdObject* obj, i32 addToMaps) {
         CWwdObject* data = cur->m_obj;
         node = node->m_next;
         if (data->m_sortKey > key && !(data->m_flags & 0x20000)) {
-            obj->m_posCache = (i32)m_10.InsertBefore((POSITION)cur, obj);
+            obj->m_posCache = (i32)m_10.InsertBefore((POSITION)cur, (CObject*)obj);
             return;
         }
     }
-    obj->m_posCache = (i32)m_10.AddTail(obj);
+    obj->m_posCache = (i32)m_10.AddTail((CObject*)obj);
 }
 
 // CDDrawSubMgrPages::Method_159ef0 (0x159ef0): forward to Slot0F_157a00.

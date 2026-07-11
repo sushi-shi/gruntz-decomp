@@ -201,14 +201,9 @@ struct CWwdSpatialMgr {
 // FreeGrids on `this` - i.e. it destructs a CWwdSpatialMgr. Co-located here next to
 // FreeGrids; kept a distinct placeholder identity (C163a40, most-derived vptr not at
 // offset 0) since it is not the same symbol as the class's inline dtor.
-struct Base163a40 {
-    virtual ~Base163a40();
-};
-SIZE_UNKNOWN(Base163a40);
-inline Base163a40::~Base163a40() {}
 struct C163a40 {
     char _0[0x70];
-    Base163a40 m_70; // +0x70  destructible CObject base subobject
+    CObject m_70; // +0x70  destructible CObject base subobject (vptr-stamp ??_7CObject @0x1e8cb4)
     ~C163a40();
 };
 SIZE_UNKNOWN(C163a40);

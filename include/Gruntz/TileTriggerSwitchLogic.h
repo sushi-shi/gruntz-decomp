@@ -47,9 +47,9 @@ public:
     i32 VerifyBlockLinksB(); // 0x111f40 (FindChild(key, 3) variant)
     i32 VerifyBlockLinks();  // 0x112c70
 
-    // CObList::RemoveAt is reached through the inherited CObList base (this == the
-    // CObList; head @ +0x04).  Declared no-body, reloc-masked rel32 callee.
-    void ListRemoveAt(void* pos);
+    // RemoveByKeys reuses the MFC CObList::RemoveAt (0x1b4ac7) directly on `this`
+    // (its leading {vptr,head,tail,count} overlay a CObList; own vtable 0x1eae8c
+    // differs, so a `(CObList*)this` reinterpret, not inheritance) - see the .cpp.
 
     // Trace-discovered child-list accessors (list head @ +0x04; nodes
     // next@+0x00, data@+0x08; data objects are sibling CTileTriggerSwitchLogic

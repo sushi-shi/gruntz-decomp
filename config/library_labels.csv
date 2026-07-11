@@ -2261,6 +2261,7 @@ rva,name,lib,confidence,source
 0x1b55e9,??0CByteArray@@QAE@XZ,NAFXCW,AMBIG,anchored
 0x1b5600,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x1b561c,??1CByteArray@@UAE@XZ,NAFXCW,AMBIG,anchored
+0x1b561c,??1CObArray@@UAE@XZ,NAFXCW,AMBIG,alias
 0x1b5653,?SetSize@CDWordArray@@QAEXHH@Z,NAFXCW,AMBIG,anchored
 0x1b5776,?Append@CDWordArray@@QAEHABV1@@Z,NAFXCW,AMBIG,anchored
 0x1b57b0,?Copy@CDWordArray@@QAEXABV1@@Z,NAFXCW,AMBIG,anchored

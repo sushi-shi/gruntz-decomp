@@ -78,8 +78,8 @@ struct MenuRoot { // this->m_4
 // at this one use-site (the authentic proven-heterogeneous-slot cast).
 DATA(0x0024556c)
 extern CGameRegistry* g_menuMgrSettings;
-DATA(0x0022f37c)
-extern i32 g_resourceInstallActive; // 0x6bf37c
+DATA(0x002bf37c) // VA-typo fix: 0x22f37c -> 0x2bf37c (canonical, Play.cpp); same global
+extern i32 g_resourceInstallActive;
 
 // The heap-allocated MENU HUD object (0x7c bytes): a CObList at +0x24 and two
 // CString members at +0x44/+0x48, then its own sub-init (FUN_004010c8).  The

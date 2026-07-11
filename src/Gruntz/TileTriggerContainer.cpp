@@ -121,9 +121,12 @@ i32 CTileTriggerSwitchLogic::RemoveByKeys(i32 k1, i32 k2) {
                 // The inlined `delete data`: the dtor restamps the vptr
                 // (`mov [data],offset ??_7`) + clears m_20, then RezFree frees it.
                 data->~CTileTriggerSwitchLogic();
-                RezFree(data);
+                ::operator delete(data);
             }
-            ListRemoveAt(cur);
+            // this's leading {vptr,head,tail,count} overlay a CObList (own vtable
+            // 0x1eae8c differs, so no inheritance) - retail reuses CObList::RemoveAt
+            // (0x1b4ac7) on it directly; cur is the node position.
+            ((CObList*)this)->RemoveAt((POSITION)cur);
             return 1;
         }
     }
@@ -220,7 +223,7 @@ CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6
     }
     if (m->m_10 != 0) {
         m->m_10 = 0;
-        RezFree(m);
+        ::operator delete(m);
         return 0;
     }
     m->m_04 = a2;
@@ -281,7 +284,7 @@ TtcMark* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4,
     }
     if (m->m_10 != 0) {
         m->m_10 = 0;
-        RezFree(m);
+        ::operator delete(m);
         return 0;
     }
     m->m_04 = a2;
@@ -321,7 +324,7 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i
     if (e->m_1c != 0) {
         // inline-dtor base-vptr restore dropped (compiler-managed; % ok)
         e->m_1c = 0;
-        RezFree(e);
+        ::operator delete(e);
         return 0;
     }
     for (i32 i = 0; i < 9; i++) {
@@ -371,7 +374,7 @@ i32 CTileTriggerContainer::DelFromList1(void* data) {
             if (elem != 0) {
                 // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
                 elem->m_1c = 0;
-                RezFree(elem);
+                ::operator delete(elem);
             }
             m_list1.RemoveAt(cur);
             return 1;
@@ -461,7 +464,7 @@ void CTileTriggerContainer::RemoveAll() {
         if (elem != 0) {
             // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
             elem[7] = 0; // +0x1c
-            RezFree(elem);
+            ::operator delete(elem);
         }
     }
     m_list1.RemoveAll();
@@ -473,7 +476,7 @@ void CTileTriggerContainer::RemoveAll() {
         if (elem != 0) {
             // inline-dtor base-vptr restore dropped (compiler-managed; % ok)
             elem[8] = 0; // +0x20
-            RezFree(elem);
+            ::operator delete(elem);
         }
     }
     m_base.RemoveAll();
@@ -485,7 +488,7 @@ void CTileTriggerContainer::RemoveAll() {
         if (elem != 0) {
             // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
             elem[7] = 0; // +0x1c
-            RezFree(elem);
+            ::operator delete(elem);
         }
     }
     m_list2.RemoveAll();
@@ -496,7 +499,7 @@ void CTileTriggerContainer::RemoveAll() {
         i32* elem = (i32*)cur->m_data;
         if (elem != 0) {
             elem[4] = 0; // +0x10
-            RezFree(elem);
+            ::operator delete(elem);
         }
     }
     m_list3.RemoveAll();
@@ -528,7 +531,7 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
                 if (elem != 0) {
                     // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
                     elem->m_1c = 0;
-                    RezFree(elem);
+                    ::operator delete(elem);
                 }
             } else if (r == -1) {
                 m_list2.RemoveAt(cur);
@@ -603,7 +606,7 @@ i32 CTileTriggerContainer::DelFromList3(void* data) {
         if (elem == (i32*)data) {
             if (elem != 0) {
                 elem[4] = 0; // elem+0x10
-                RezFree(elem);
+                ::operator delete(elem);
             }
             m_list3.RemoveAt(node);
             return 1;

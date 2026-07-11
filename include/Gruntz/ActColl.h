@@ -9,9 +9,12 @@
 // the caller's call-site return address, which the resolve stamps into g_retAddrBreadcrumb
 // (0x6bf428) as an error/diagnostic breadcrumb right before the Insert (the misnomer
 // "ActAlloc"/"ProjActAlloc" is corrected to GetRetAddr; see the report). All
-// external/no-body so the calls reloc-mask; g_projActCache (0x6bf464) is the real
-// shared scratch buffer Insert consumes (the retail-canonical name for 0x6bf464;
-// the former per-file g_actCache alias was UNBOUND - 0x6bf464 binds to g_projActCache).
+// external/no-body so the calls reloc-mask. The shared scratch buffer Insert consumes
+// is bound canonically as g_projActCache @0x2bf464 (in GruntStartingPoint.cpp); the
+// old g_actCache "0x6bf464" was a VA-typo alias of the SAME global that lost the DATA
+// dedup - the shared inlines below reference the bound g_projActCache, so their DATA
+// relocs are faithful. g_actCache stays declared only for direct .cpp users not yet
+// unified (KitchenSlime/DroppedObject/ToobSpikez/StaticHazard/SecretTeleporter/... ).
 #ifndef GRUNTZ_GRUNTZ_ACTCOLL_H
 #define GRUNTZ_GRUNTZ_ACTCOLL_H
 
@@ -29,13 +32,11 @@ struct CActColl {
 };
 extern void* GetRetAddr(); // 0x16d990
 
-DATA(0x002bf464)
-extern void* g_projActCache; // 0x6bf464 (?g_projActCache@@3PAXA - canonical bound name)
-// Legacy per-file alias for the SAME 0x6bf464 scratch buffer; kept declared so the
-// TUs that still spell it (Projectile/DroppedObject/GruntVoice/FortressFlag) compile.
-// 0x6bf464 binds to g_projActCache (dedup keep-last winner), so g_actCache is UNBOUND
-// - references reached through the shared inlines below use g_projActCache instead.
-extern void* g_actCache;
+// The shared act-node alloc-scratch cache. g_projActCache is the canonical bound name
+// (@0x2bf464, GruntStartingPoint.cpp); g_actCache is a same-global alias kept declared
+// (unbound) for the .cpp bodies that still spell it that way.
+extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA)
+extern void* g_actCache;     // alias of g_projActCache (unbound; use g_projActCache)
 extern void* g_retAddrBreadcrumb;
 
 #endif // GRUNTZ_GRUNTZ_ACTCOLL_H

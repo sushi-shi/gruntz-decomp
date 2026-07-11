@@ -58,6 +58,10 @@ struct CDDrawWorker : public CLoadable {
     virtual i32 Vfunc38(i32 a1, i32 a3, i32 a4);         // [14] 0x151f00
     virtual void Slot15_1522b0();                        // [15] 0x1522b0
     virtual void Slot16_1523b0();                        // [16] 0x1523b0
+    // The slot-7 override's real (S1-obj) function is CDDrawWorker::DeleteAll @0x151eb0,
+    // bound canonically (non-virtual QAEXXZ) in wwdgameobject; the dtor's devirtualized
+    // slot-7 call targets it directly - reference the bound name so the CALL reloc is faithful.
+    void DeleteAll(); // 0x151eb0  ?DeleteAll@CDDrawWorker@@QAEXXZ
     CDDrawWorker() {}
 
     CByteArray m_10; // +0x10  (m_04/m_08/m_0c inherited from CLoadable)
@@ -475,7 +479,7 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
 // 0x5e8cb4 re-stamp after the m_04/m_08/m_0c resets exactly as retail.
 RVA(0x001557a0, 0x68)
 CDDrawWorker::~CDDrawWorker() {
-    Unload(); // devirtualized direct call == retail's DeleteAll (0x151eb0)
+    DeleteAll(); // retail's devirtualized slot-7 call == CDDrawWorker::DeleteAll (0x151eb0)
     // m_10.~CByteArray() (trylevel 0) + ~CLoadable() (field resets +
     // grand-base vtable stamp) fold here.
 }

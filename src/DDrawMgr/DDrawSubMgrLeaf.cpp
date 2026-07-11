@@ -22,14 +22,17 @@
 #include <string.h>                       // strcpy inline CRT (rep movs / repnz scas)
 
 // The %s%s%s path-join format the walker sprintf's through (reloc-masked DIR32).
-DATA(0x0061ab18)
+// @data-symbol, not DATA: clang mangles the const-char[] extern with a `Q` storage
+// class while cl 5.0 emits `P` (?g_fmtPathJoin@@3PBDB), so a DATA() label's clang
+// mangledName never matches the cl reloc (was also a VA-typo: 0x61ab18 -> 0x21ab18).
+// @data-symbol: ?g_fmtPathJoin@@3PBDB 0x0021ab18
 extern const char g_fmtPathJoin[];
 
-// The path buffer is freed at the walker tail (_RezFree @0x1b9b82, __cdecl).
-extern "C" void RezFree(void* p);
 // Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.
 void* operator new(u32 n);
-// operator delete (called by the scalar-deleting dtor under the delete flag).
+// operator delete (0x1b9b82, ??3@YAXPAX@Z): the engine Rez heap free IS the global
+// operator delete (FID-verified library label) - the scalar-deleting dtor AND the
+// explicit path-buffer free at the walker tail both call it.
 void operator delete(void*);
 
 // The +0x08 "CObject subobject" embedded in the ani element (0x14 bytes): a real
@@ -287,7 +290,7 @@ i32 CDDrawSubMgrAni::ScanTree_152ad0(CSymTab* tree, const char* prefix, const ch
             grp = tree->NextSym(grp);
         } while (grp != 0);
     }
-    RezFree(buf);
+    ::operator delete(buf);
     return count;
 }
 

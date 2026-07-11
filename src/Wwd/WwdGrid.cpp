@@ -12,7 +12,9 @@
 // (__ehvec_dtor, __stdcall - callee-clean, NO `add esp` after the call) over the
 // element dtor, then RezFree of the backing block. (The ctor's alloc + element
 // ctor fall out of `new BucketHead[n]`; see array-new-cookie-ehvec-ctor.md.)
-extern "C" void RezFree(void* p);
+// operator delete (0x1b9b82, ??3@YAXPAX@Z): the engine Rez heap free IS the global
+// operator delete (FID-verified library label).
+void operator delete(void* p);
 extern "C" void __stdcall EhVecDtor_11f640(void* arr, u32 elemSize, i32 count, void* dtor);
 extern "C" void DNameNodeDtor_191d10(); // the element dtor, passed by address (reloc-masked)
 extern "C" double log(double);
@@ -82,7 +84,7 @@ void CWwdGrid::FreeBuckets() {
         if (m_buckets) {
             i32* raw = (i32*)m_buckets - 1; // count cookie precedes the array
             EhVecDtor_11f640(m_buckets, 0x8, *raw, (void*)DNameNodeDtor_191d10);
-            RezFree(raw);
+            ::operator delete(raw);
         }
         m_allocated = 0;
     }
@@ -98,7 +100,7 @@ i32 CWwdGrid::Add(WwdRegion* r) {
     i32 row = (r->m_x - m_minX) >> m_shiftY;
     BucketHead* bucket = m_buckets + (col * m_cols + row);
     r->m_bucket = bucket;
-    bucket->AddNode_1390e0(r);
+    bucket->InsertHead(r); // DSoundList::InsertHead @0x1390e0 (r upcasts to DSoundLink*)
     ++m_count;
     return 1;
 }
@@ -108,7 +110,7 @@ i32 CWwdGrid::Add(WwdRegion* r) {
 // ===========================================================================
 RVA(0x00191890, 0x24)
 void CWwdGrid::Remove(WwdRegion* r) {
-    r->m_bucket->Unlink_1391e0(r);
+    r->m_bucket->Unlink(r); // DSoundList::Unlink @0x1391e0
     r->m_bucket = 0;
     --m_count;
 }
@@ -163,13 +165,13 @@ i32 CWwdGrid::Query(i32 a0, i32 a1, i32 a2, i32 a3, i32 doRemove) {
                 i32 rowN = rowB - rowA + 1;
                 i32 idx = base;
                 do {
-                    WwdRegion* r = m_buckets[idx].m_head;
+                    WwdRegion* r = (WwdRegion*)m_buckets[idx].m_head; // list head -> typed node
                     while (r) {
                         i32 x = r->m_x;
-                        WwdRegion* next = r->m_next;
+                        WwdRegion* next = (WwdRegion*)r->m_next;
                         if (x >= a0 && r->m_y >= a1 && x <= a2 && r->m_y <= a3) {
                             if (doRemove) {
-                                m_buckets[idx].Unlink_1391e0(r);
+                                m_buckets[idx].Unlink(r);
                                 r->m_bucket = 0;
                                 --m_count;
                             }
@@ -195,12 +197,12 @@ RVA(0x00191a70, 0x57)
 i32 CWwdGrid::Clear() {
     i32 nonEmpty = 0;
     for (i32 i = 0; i < m_cellCount; ++i) {
-        WwdRegion* r = m_buckets[i].m_head;
+        WwdRegion* r = (WwdRegion*)m_buckets[i].m_head;
         while (r) {
-            m_buckets[i].Unlink_1391e0(r);
+            m_buckets[i].Unlink(r);
             r->m_bucket = 0;
             ++nonEmpty;
-            r = m_buckets[i].m_head;
+            r = (WwdRegion*)m_buckets[i].m_head;
         }
     }
     m_count = 0;

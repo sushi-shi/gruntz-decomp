@@ -236,18 +236,6 @@ public:
 // per-phase re-clears (eh-dtor-multilevel-polymorphic-chain.md).
 // ---------------------------------------------------------------------------
 
-// The +0x1dc CObList member; its dtor is DtorList (0x1b5a2b, reloc-masked __thiscall).
-struct WwdObList {
-    void DtorImpl(); // 0x1b5a2b
-    ~WwdObList() {
-        ((CString*)this)->~CString();
-    }
-    // CObList AddTail/RemoveAt (reloc-masked rel32 callees 0x1b5af6 / 0x1b5c2c).
-    POSITION AddTail(CObject* p);
-    void RemoveAt(POSITION pos);
-    i32 m_head; // +0x1dc
-};
-
 // Grand-base (vtable 0x5efbc0): a CResolveNode-style base with a virtual dtor (making
 // the whole chain polymorphic). Restamps its vftable then tail-calls the base
 // CResolveNode teardown (0x429b). Owns the +0x04..+0x5c fields; folded LAST.
@@ -348,10 +336,9 @@ public:
     i32 AddChild_1667e0(CDDrawGroupChild* child);       // 0x1667e0
     i32 RemoveChild_166850(CDDrawGroupChild* child);    // 0x166850
     i32 WalkChildWorkers_166880();                      // 0x166880 (per-child worker cb + count)
-    WwdObList m_1dc;                                    // +0x1dc  CObList (vptr only in view)
-    CDDrawGroupNode* m_listHead; // +0x1e0  CObList m_pNodeHead (broadcast list)
-    char _p1e4[0x1f8 - 0x1e4];
-    i32 m_1f8; // +0x1f8
+    CObList m_1dc; // +0x1dc  real MFC CObList (0x1c bytes; head @ +0x1e0 = m_pNodeHead;
+                   // AddTail/RemoveAt = 0x1b5af6/0x1b5c2c; member dtor = ~CObList 0x1b5a2b)
+    i32 m_1f8;     // +0x1f8
 };
 
 // ---------------------------------------------------------------------------
@@ -404,7 +391,6 @@ SIZE_UNKNOWN(WwdWorker);
 SIZE_UNKNOWN(WwdBResolve);
 SIZE_UNKNOWN(WwdBMid);
 SIZE_UNKNOWN(WwdBLevel2);
-SIZE_UNKNOWN(WwdObList);
 VTBL(WwdBResolve, 0x001efbc0);
 
 #endif // GRUNTZ_WWD_WWDGAMEOBJECTFAMILY_H

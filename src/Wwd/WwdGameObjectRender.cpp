@@ -404,7 +404,7 @@ i32 CWwdGameObjectB::AddChild_1667e0(CDDrawGroupChild* child) {
 // ---------------------------------------------------------------------------
 RVA(0x00166810, 0x32)
 void CWwdGameObjectB::Clear_166810() {
-    CDDrawGroupNode* n = m_listHead;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition();
     while (n) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
@@ -412,7 +412,7 @@ void CWwdGameObjectB::Clear_166810() {
             delete cur->m_obj;
         }
     }
-    ((CObList*)&m_1dc)->RemoveAll();
+    m_1dc.RemoveAll();
 }
 
 // ---------------------------------------------------------------------------
@@ -440,7 +440,7 @@ i32 CWwdGameObjectB::RemoveChild_166850(CDDrawGroupChild* child) {
 RVA(0x00166880, 0x29)
 i32 CWwdGameObjectB::WalkChildWorkers_166880() {
     i32 count = 0;
-    for (CDDrawGroupNode* n = m_listHead; n != 0;) {
+    for (CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition(); n != 0;) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
         CDDrawGroupChild* o = cur->m_obj;
@@ -456,7 +456,7 @@ i32 CWwdGameObjectB::WalkChildWorkers_166880() {
 // forwarded args. No post-loop dispatch. __thiscall.
 RVA(0x001668b0, 0x26)
 void CWwdGameObjectB::Slot11_1668b0(i32 a1) {
-    CDDrawGroupNode* n = m_listHead;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -467,7 +467,7 @@ void CWwdGameObjectB::Slot11_1668b0(i32 a1) {
 }
 RVA(0x001668e0, 0x2d)
 void CWwdGameObjectB::Slot12_1668e0(i32 a1, i32 a2) {
-    CDDrawGroupNode* n = m_listHead;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -478,7 +478,7 @@ void CWwdGameObjectB::Slot12_1668e0(i32 a1, i32 a2) {
 }
 RVA(0x00166910, 0x34)
 void CWwdGameObjectB::Slot13_166910(i32 a1, i32 a2, i32 a3) {
-    CDDrawGroupNode* n = m_listHead;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
@@ -489,7 +489,7 @@ void CWwdGameObjectB::Slot13_166910(i32 a1, i32 a2, i32 a3) {
 }
 RVA(0x00166950, 0x34)
 void CWwdGameObjectB::Slot14_166950(i32 a1, i32 a2, i32 a3) {
-    CDDrawGroupNode* n = m_listHead;
+    CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;

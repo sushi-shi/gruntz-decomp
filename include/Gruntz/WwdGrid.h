@@ -15,40 +15,39 @@
 #define GRUNTZ_WWDGRID_H
 
 #include <Ints.h>
-#include <Wap32/Object.h> // CObject - the shared engine grand-base
+#include <Wap32/Object.h>           // CObject - the shared engine grand-base
+#include <Dsndmgr/SoundVoiceList.h> // the engine's ONE {head,tail} intrusive-list
+                                    // primitive DSoundList/DSoundLink (0x1390e0/
+                                    // 0x1391e0) - the grid's buckets ARE this list.
 #include <rva.h>
 
 struct BucketHead;
 
 // A grid region node: link pair @ +0x00, owning-bucket back-pointer @ +0x0c,
 // pixel position @ +0x10/+0x14 (the engine's CWwdObject region sub-object @
-// object+0x9c).
+// object+0x9c). The +0x00 {next,prev} pair IS a DSoundLink (unbiased: the node
+// itself is the link), so the shared InsertHead/Unlink take it directly.
 SIZE_UNKNOWN(WwdRegion);
-struct WwdRegion {
-    WwdRegion* m_next; // +0x00
-    WwdRegion* m_prev; // +0x04
+struct WwdRegion : DSoundLink { // {m_next,m_prev} @ +0x00/+0x04 from DSoundLink
     char m_pad08[0x0c - 0x08];
     BucketHead* m_bucket; // +0x0c  cached owning bucket
     i32 m_x;              // +0x10
     i32 m_y;              // +0x14
 };
 
-// 8-byte intrusive list head: {head, tail} of WwdRegion nodes, with the engine's
-// __thiscall link/unlink ops (reloc-masked externs at 0x1390e0/0x1391e0). The
-// non-trivial ctor (zero the pair) + user dtor make `new BucketHead[n]` lower to
-// the MSVC array-cookie alloc + __ehvec_ctor/__ehvec_dtor pair (and a /GX frame),
-// matching the retail grid's bucket-array build/teardown.
+// 8-byte intrusive list head: {head, tail}. IS the engine's shared DSoundList
+// primitive (its InsertHead @0x1390e0 / Unlink @0x1391e0 are reloc-masked externs
+// bound in Dsndmgr; MSVC5 has no ICF, so these are literally the same functions).
+// The non-trivial ctor (zero the pair) + user dtor make `new BucketHead[n]` lower
+// to the MSVC array-cookie alloc + __ehvec_ctor/__ehvec_dtor pair (and a /GX
+// frame), matching the retail grid's bucket-array build/teardown.
 SIZE_UNKNOWN(BucketHead);
-struct BucketHead {
-    WwdRegion* m_head; // +0x00
-    WwdRegion* m_tail; // +0x04
+struct BucketHead : DSoundList { // {m_head,m_tail} + InsertHead/Unlink inherited
     BucketHead() {
         m_head = 0;
         m_tail = 0;
     }
     ~BucketHead() {}
-    void AddNode_1390e0(WwdRegion* node);
-    void Unlink_1391e0(WwdRegion* node);
 };
 
 // The CObject engine base (CObject-like, vtable @0x5e8cb4): the implicit vptr

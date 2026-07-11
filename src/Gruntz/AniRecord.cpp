@@ -49,12 +49,11 @@
 
 // Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.
 void* operator new(u32 n);
-// operator delete: called by the auto-generated ??_G scalar-deleting dtors (slot 1).
+// operator delete (0x1b9b82, ??3@YAXPAX@Z): the engine's Rez heap free IS the global
+// operator delete (FID-verified library label). C++ linkage (potentially-throwing) so
+// MSVC5 keeps the /GX base-subobject unwind frame; called both by the auto-generated
+// ??_G scalar-deleting dtors (slot 1) and the explicit member-teardown frees below.
 void operator delete(void* p);
-// The Rez heap free (0x1b9b82, __cdecl). C++ linkage (NOT extern "C") so MSVC5
-// treats it as potentially-throwing and keeps the /GX base-subobject unwind frame
-// in the primary dtor (same convention as RezBufferObjectDtor.cpp / BoundaryUpper*Eh.cpp).
-void RezFree(void* p);
 
 // ---------------------------------------------------------------------------
 // The pool allocator the buffer virtuals route through: the owner (record+0x0c)
@@ -141,7 +140,7 @@ RVA(0x001657a0, 0x66)
 CAniRecordView::~CAniRecordView() {
     CAniRecordView* r = this;
     if (r->m_indices != 0) {
-        RezFree(r->m_indices);
+        ::operator delete(r->m_indices);
     }
     r->m_owner = (CAniRecordOwner*)0xffff;
     r->m_count = 0;

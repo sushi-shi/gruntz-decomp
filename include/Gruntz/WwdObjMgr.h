@@ -79,7 +79,8 @@ public:
 
     char m_pad00[0x0c]; // +0x00..0x0b
     WwdFile* m_0c;      // +0x0c parent file handle (read as a raw int by the factories)
-    CPtrList m_10;      // +0x10 sorted object list
+    CObList m_10;       // +0x10 sorted object list (MFC CObList - stores CObject*;
+                        // RemoveAt/AddTail/InsertBefore = 0x1b5c2c/0x1b5af6/0x1b5bb0)
     CMapPtrToPtr m_2c;  // +0x2c key -> object (primary)
     CMapPtrToPtr m_48;  // +0x48 key -> object (active set / dedup)
 };
