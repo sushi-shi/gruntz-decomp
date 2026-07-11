@@ -463,14 +463,20 @@ def oracle_analysis(intervals, by_target, fdata):
         seen.discard(None)
         if len(seen) == 1:
             own[t] = next(iter(seen))
+    # INITIALIZED .data only (raw < 0x229400). The .bss tail is NOT obj-ordered -
+    # the 0x2445xx act-registry singleton band interleaves units freely and
+    # produced four false overlap rows in the grunt region (wave3-I refutation,
+    # dossier #12); the initialized band is 98%-monotone with zero false overlaps.
+    DATA_INIT = (0x208000, 0x229400)
     ext = defaultdict(lambda: [None, None, 0])
     for t, iv in own.items():
-        if t >= 0x208000:                      # .data+bss contribution
+        if DATA_INIT[0] <= t < DATA_INIT[1]:
             e = ext[iv]
             e[0] = t if e[0] is None else min(e[0], t)
             e[1] = t if e[1] is None else max(e[1], t)
             e[2] += 1
-    seq = [own[t] for t in sorted(own) if own[t] is not None and t >= 0x208000]
+    seq = [own[t] for t in sorted(own)
+           if own[t] is not None and DATA_INIT[0] <= t < DATA_INIT[1]]
     pmono = sum(1 for a, b in zip(seq, seq[1:]) if b >= a)
     exts = sorted((lo, hi, iv) for iv, (lo, hi, n) in ext.items()
                   if lo is not None and n >= 2)
