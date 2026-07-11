@@ -30,7 +30,7 @@ import re as _re
 # handlers, and Serialize (also pooled). Excluding these keeps the finder from
 # counting a correctly-placed pooled virtual as an "outlier".
 _POOLED_RE = _re.compile(
-    r"\?(GetTypeTag|GetRuntimeClass|Serialize|Vslot[0-9a-f]{2}|"
+    r"\?(GetTypeTag|GetRuntimeClass|GetClassId|Serialize|V?[Ss]lot[0-9a-f]{2}|"
     r"Wap32GameMgrVfunc[0-9]|SbiSlot[0-9]|DoDefault|UnusedMsgHandler|"
     r"On(DrawItem|MeasureItem|ActionBtn|StubBtn|InitDialog|Ok|OkCommand))@")
 
