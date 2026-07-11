@@ -724,12 +724,12 @@ source = "src/Gruntz/Random.cpp"
 flags = "base"
 
 [[unit]]
-# Win32 PALETTE resource loaders (0x1775f0/0x17cd90), re-homed from ApiCallers.
-# The WAVE pair went to DirectSoundMgr.cpp, the GDI pair to DDrawSurfacePair.cpp,
-# 0x1479e0 to DirPal.cpp, and 0x144270 (RT_BITMAP) is CDDSurface::Load in
-# FileImage.cpp (wave4-K). No destructible locals -> /base.
-unit = "resourceloaders"
-source = "src/Gruntz/ResourceLoaders.cpp"
+# CDDScreen::Snapshot (0x17cd90) - system-palette capture, split out of the ex
+# ResourceLoaders.cpp holding TU. Its obj-mate Apply (0x1775f0 = CImagePaletteNode)
+# folded into PaletteBmp.cpp; this is a stray CDDScreen-palette method (sibling of
+# PaletteReset/PaletteCopy, embedded in the DDPageMgr obj). No destructible locals -> /base.
+unit = "palettesnapshot"
+source = "src/DDrawMgr/PaletteSnapshot.cpp"
 flags = "base"
 
 [[unit]]
@@ -1924,8 +1924,13 @@ unit = "glyphtable"
 source = "src/Gruntz/GlyphTable.cpp"
 flags = "base"
 [[unit]]
-unit = "apphelpers"
-source = "src/Gruntz/AppHelpers.cpp"
+# CTitleApp::OnStart (0xf9880) - title-sequence starter, split out of the ex
+# AppHelpers.cpp holding TU. Its orphan-mates re-homed to their real objs: Handle
+# (0xb4cb0) -> CUFO::Method_b4cb0 in Ufo.cpp; Unmatched_be030 (0xbe030) ->
+# NetLobby::Init_2522 in LobbyDialogs.cpp. OnStart's CAttract owner is deferred
+# (+0x1b8 layout conflict). No destructible locals -> /base.
+unit = "titleappstart"
+source = "src/Gruntz/TitleAppStart.cpp"
 flags = "base"
 [[unit]]
 unit = "timesplit"

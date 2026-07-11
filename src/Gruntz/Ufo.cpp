@@ -13,6 +13,7 @@
 #include <Gruntz/SpotLight.h>       // CSpotLight - the spawned spotlight's bound logic leaf
 #include <Gruntz/SerialArchive.h>   // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>    // the +0x34 serialized-object-reference facet
+#include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump->m_tables[]) - Method_b4cb0
 #include <rva.h>
 extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
@@ -93,6 +94,30 @@ i32 CUFO::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
         o->m_drawActive = 1;
         o->m_drawFillCmd = mode;
         o->m_fillFraction = 0x80;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CUFO::Method_b4cb0 (0x0b4cb0) - re-homed from the AppHelpers.cpp holding TU (was the
+// CHandlerB4::Handle / CSub10 view; xref-proven a CUFO method - it calls CUFO::Serialize
+// (0xb4d30) on `this` and sits in the ufo obj between SerializeMove and Serialize). Same
+// serialize-then-configure archetype as SerializeMove, but on tag 8 it decorates the
+// bound object (m_object, +0x10) with the light-FX draw-fill state: fill-cmd 7 pointing
+// at the light-FX pump's shade table slot 5 (g_gameReg->m_logicPump->m_tables[5]). The
+// exact method name is unrecovered; class is CUFO (placeholder keeps the RVA).
+// ---------------------------------------------------------------------------
+RVA(0x000b4cb0, 0x56)
+i32 CUFO::Method_b4cb0(void* stream, i32 tag, i32 c, i32 d) {
+    if (!Serialize(stream, tag, c, d)) {
+        return 0;
+    }
+    if (tag == 8) {
+        CShadeTable* x = g_gameReg->m_logicPump->m_tables[5];
+        CGameObject* o = m_object;
+        o->m_drawActive = 1;
+        o->m_drawFillCmd = 7;
+        o->m_drawFillArg = (i32)x;
     }
     return 1;
 }

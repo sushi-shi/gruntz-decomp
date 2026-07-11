@@ -112,12 +112,12 @@ namespace ApiCallerStubs {
         i32 LoadByExtension(char* path, i32 arg); // 0x176f90 (this TU)
         i32 LoadPalFile(char* path, i32 arg);     // 0x1771f0 (this TU)
         i32 LoadPcxFile(char* path, i32 arg);     // 0x1772e0 (this TU)
-        // LoadBmpFile/Apply bodies live (mis-named) in the palettebmp/resourceloaders
-        // objs as CPalLoader::LoadBmpPalette (0x177480) / ResLoaders::PalHost_1775f0::
-        // Apply (0x1775f0) - same `this`, so really CImagePaletteNode methods. Declared-
-        // only here until those TUs rename their owners onto CImagePaletteNode.
+        // LoadBmpFile/Apply bodies live (mis-named) in the palettebmp obj as
+        // CPalLoader::LoadBmpPalette (0x177480) / CPalLoader::Apply (0x1775f0) - same
+        // `this`, so really CImagePaletteNode methods. Declared-only here until that TU
+        // renames its CPalLoader view onto CImagePaletteNode.
         i32 LoadBmpFile(char* path, i32 arg); // 0x177480 (external, palettebmp)
-        i32 Apply(char* path, i32 arg);       // 0x1775f0 (external, resourceloaders)
+        i32 Apply(char* path, i32 arg);       // 0x1775f0 (external, palettebmp)
     };
 
     // Two free GDI palette helpers PalBuilder::Build/Tune funnel through:

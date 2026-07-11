@@ -307,6 +307,19 @@ namespace NetLobby {
         }
     }
 
+    // Init_2522 (0xbe030, reached via ILT thunk 0x2522 - the NetDlgInit_bdfe0 call
+    // above): enable/disable the accept (0x4cc) and reject (0x4cd) buttons per the
+    // game-state's host flag. ctx is the current CMulti. __cdecl. Re-homed from the
+    // AppHelpers.cpp holding TU (was the Unmatched_be030 / DlgData view; the +0x528
+    // enable flag IS CMulti::m_isHost - same access as the Init_2ed7 sibling below).
+    RVA(0x000be030, 0x49)
+    void Init_2522(HWND hWnd, void* ctx) {
+        if (hWnd && ctx) {
+            EnableWindow(GetDlgItem(hWnd, 0x4cc), ((CMulti*)ctx)->m_isHost);
+            EnableWindow(GetDlgItem(hWnd, 0x4cd), ((CMulti*)ctx)->m_isHost);
+        }
+    }
+
     // __stdcall DlgProc(hWnd, msg, wParam, lParam): the in-game network dialog proc
     // (sibling of the lobby proc at 0xbdc00). WM_COMMAND ends the dialog on a set of
     // button IDs; WM_TIMER (0x113) polls the abort deadline and re-posts the cancel.

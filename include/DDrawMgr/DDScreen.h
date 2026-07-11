@@ -29,8 +29,9 @@ struct CTileInfo {
 
 class CDDScreen {
 public:
-    void HandleError();  // 0x17cc80
-    void ResetPalette(); // 0x17ca60 (body in PaletteReset.cpp; clears the +0x108 table)
+    void HandleError();       // 0x17cc80
+    void ResetPalette();      // 0x17ca60 (body in PaletteReset.cpp; clears the +0x108 table)
+    void Snapshot(HWND hWnd); // 0x17cd90 (PaletteSnapshot.cpp; system palette -> +0x108)
     i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);        // 0x17cdf0
     i32 Configure(i32 mode, i32 flags, POINT* origin, RECT* rect); // 0x17cfc0
     i32 CheckGrid();                                               // 0x17cbe0 (sibling, external)
@@ -47,7 +48,13 @@ public:
     IDirectDrawSurface* m_28;      // +0x28   surface (only Release'd; role unproven)
     IDirectDrawPalette* m_palette; // +0x2c
     char m_pad30[0x108 - 0x30];
-    u8 m_colorSlots[0x400]; // +0x108  256 * 4-byte PALETTEENTRY slots (4th byte kept)
+    // +0x108  256 * 4-byte PALETTEENTRY slots (4th byte kept). Two views: ResetPalette/
+    // UploadPalette walk it byte-wise (m_colorSlots); Snapshot fills it as a real
+    // PALETTEENTRY[256] from GetSystemPaletteEntries (m_palEntries).
+    union {
+        u8 m_colorSlots[0x400];
+        PALETTEENTRY m_palEntries[0x100];
+    };
     char m_pad508[0x50c - 0x508];
     i32 m_50c; // +0x50c   reset to 0 by Configure
     char m_pad510[0x514 - 0x510];
