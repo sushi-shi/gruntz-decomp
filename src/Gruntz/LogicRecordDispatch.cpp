@@ -68,12 +68,10 @@ public:
 };
 SIZE(LogicSubRecA, 0x6c);
 
-class LogicSubRecB : public LogicSubRec {
-public:
-    LogicSubRecB(LogicDispatchOwner* owner); // 0x3701 (via thunk)
-    char m_pad[0x54 - 4];
-};
-SIZE(LogicSubRecB, 0x54);
+// LogicSubRecB (the state-0 sub-record built by LogicDispatchB@0x10d3d0) is really CBrickz
+// (ctor thunk 0x3701 -> 0x10e800); LogicDispatchB was folded into src/Gruntz/TileLogicPump.cpp
+// (waveM-strays: it sits inside the tile-trigger obj's contiguous .text block) and modeled on
+// the real CBrickz, so the LogicSubRecB view is gone.
 
 class LogicSubRecD : public LogicSubRec {
 public:
@@ -282,45 +280,9 @@ i32 LogicDispatchA(LogicDispatchOwner* owner) {
 // LogicSubRecC (its former local sub-record view) went with it, dissolved
 // onto the real CParticlez.
 
-// LogicDispatchB @0x10d3d0 - state-0 builds a 0x54 sub-record (ctor 0x3701).
-RVA(0x0010d3d0, 0xf1)
-i32 LogicDispatchB(LogicDispatchOwner* owner) {
-    LogicDispatchRecord* rec = owner->m_7c;
-    switch (rec->m_1c) {
-        case kLogicStateInit:
-            rec->m_1c = kLogicStateBuilt;
-            {
-                LogicSubRecB* obj = new LogicSubRecB(owner);
-                obj->Init();
-                rec->m_18 = obj;
-            }
-            break;
-        case kLogicStateOp1d:
-            rec->m_18->Op1d();
-            break;
-        case kLogicStateOp1e:
-            rec->m_18->Op1e();
-            break;
-        case kLogicStateOp50:
-            rec->m_18->Op50();
-            break;
-        case kLogicStateOp51:
-            rec->m_18->Op51();
-            break;
-        case kLogicStateOp52:
-            rec->m_18->Op52();
-            break;
-        case kLogicStateOp53:
-            rec->m_18->Op53();
-            break;
-        case kLogicStateBuilt:
-            break;
-        default:
-            LogicSubDefault_16e4f0(rec->m_18);
-            break;
-    }
-    return 1;
-}
+// LogicDispatchB @0x10d3d0 (state-0 news a CBrickz: ctor thunk 0x3701 -> 0x10e800) was folded
+// into src/Gruntz/TileLogicPump.cpp (waveM-strays): its retail body is text-contained in the
+// tile-trigger logic obj's contiguous first-link .text block, and it is CBrickz's state pump.
 
 SIZE_UNKNOWN(LogicDispatchOwner);
 SIZE_UNKNOWN(LogicDispatchRecord);

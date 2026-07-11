@@ -125,6 +125,22 @@ public:
     virtual void SbiSlot3() OVERRIDE;  // slot 3 (the ClearFrame2 below)
     virtual void SbiSlot4() OVERRIDE;  // slot 4 (the DecCounter below)
     virtual void SbiSlot5() OVERRIDE;  // slot 5
+    // slot 11 override of CSBI_Image::SetupImage; the out-of-line body is InitItem
+    // (0xe80e0, declared below) - the vtable slot reloc-masks, so this declared-only
+    // override just pins the slot in the model (was in the retired SbiDtorChain.h).
+    virtual i32 SetupImage(
+        i32,
+        CSbiConfigHost*,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32
+    ) OVERRIDE; // slot 11
 
     // ----- reconstructed methods (RVA-ascending) -----
     void ClearFrame();                                    // 0xe6d90 (out-of-line)

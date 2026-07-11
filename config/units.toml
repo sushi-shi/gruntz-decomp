@@ -120,10 +120,10 @@ unit = "brickz"
 source = "src/Gruntz/Brickz.cpp"
 flags = "base"
 
-[[unit]]
-unit = "cbrickz"
-source = "src/Gruntz/CBrickz.cpp"
-flags = "eh"
+# cbrickz UNIT REMOVED (waveM-strays): CBrickz's ctor@0x10e800 + leaf pool folded into
+# src/Gruntz/TileLogicPump.cpp (its body sits inside the tile-trigger logic obj's contiguous
+# first-link .text block; its state pump is LogicDispatchB). The CBrickz class stays in
+# include/Gruntz/CBrickz.h.
 
 # configstore / configstorewrite / configstoreread / reghelpers UNITS REMOVED
 # (P0 library reconcile): their bodies were hand-copies of the statically-linked
@@ -1294,10 +1294,9 @@ unit = "tiletriggercontainer"
 source = "src/Gruntz/TileTriggerContainer.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "tiletriggertransition"
-source = "src/Gruntz/TileTriggerTransition.cpp"
-flags = "eh"
+# tiletriggertransition UNIT REMOVED (waveM-strays): folded into src/Gruntz/TileLogicPump.cpp
+# ($E init-frag-proven this obj - runs i143 AND i150 interleave it with the tile-trigger family,
+# impossible across objs at first link; its bodies sit inside the obj's contiguous .text block).
 
 [[unit]]
 unit = "areamgr"

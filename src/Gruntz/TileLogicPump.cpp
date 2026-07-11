@@ -8,17 +8,22 @@
 // trigger-class bodies + their exiled leaf virtuals all sit in this contiguous band.
 //
 // Absorbed the ex tilelogicpump (the 6 pumps) + warpstonepad + tiletriggerswitch +
-// tiletrigger + checkpointtrigger units. The exiled COMDAT leaves (each class's small
-// slot-1 SerializeMove / dtor / no-arg ctor at ~0x10f20-0x116c0) move WITH their class
-// bodies (they are emitted by this obj's vtable instantiation) and are laid out first
-// here so the file stays strictly RVA-ascending (leaf pool ~0x10f20-0x116c0 all sit
-// below the class band ~0x10cb10-0x10fac0).
+// tiletrigger + checkpointtrigger + tiletriggertransition + cbrickz + logicrecorddispatch's
+// LogicDispatchB units. The exiled COMDAT leaves (each class's small slot-1 SerializeMove /
+// dtor / no-arg ctor at ~0x10f20-0x117f0) move WITH their class bodies (they are emitted by
+// this obj's vtable instantiation) and are laid out first here so the file stays strictly
+// RVA-ascending (leaf pool ~0x10f20-0x117f0 all sit below the class band ~0x10cb10-0x110149).
 //
-// BOUNDARY (left separate, frag-woven but out of the task's 5-unit scope): the
-// tiletriggertransition body (StepController@0x10d150 + its 0x110110-tail),
-// logicrecorddispatch (LogicDispatchB@0x10d3d0) and cbrickz (CBrickz@0x10e800) sit
-// interleaved in this band; tiletriggertransition is $E-frag-proven this obj (i143/
-// i150) and SHOULD fold here in a follow-up.
+// waveM-strays folded the last three frag-woven strays into this obj (their bodies sit
+// interleaved WITHIN this obj's contiguous first-link .text block [0x10cb10,0x110149), which
+// is impossible across objs at first link -> same obj):
+//   - tiletriggertransition (StepController@0x10d150 + CTileTriggerTransition ctor@0x10faf0 +
+//     its 0x110110-tail): $E init-frag-proven this obj (runs i143 AND i150 interleave it).
+//   - cbrickz (CBrickz ctor@0x10e800 + leaf pool): its ctor sits inside the block; its state
+//     pump is LogicDispatchB.
+//   - logicrecorddispatch's LogicDispatchB@0x10d3d0: CBrickz's state pump (its state-0 news a
+//     CBrickz via ILT thunk 0x3701 -> ctor 0x10e800). Modeled on the real CBrickz (the ex
+//     LogicSubRecB view dissolved), identical shape to the 6 sibling pumps.
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/ActNameRegistry.h> // g_buteTree / s_actKeyA / g_nextActId / g_nameReg* / ActNameLookup
@@ -30,6 +35,9 @@
 #include <Gruntz/WarpStonePad.h>          // CWarpStonePad (new-site)
 #include <Gruntz/CheckpointTrigger.h>     // CCheckpointTrigger
 #include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State + default step
+#include <Gruntz/CBrickz.h>               // CBrickz (ctor + leaf pool; LogicDispatchB new-site)
+#include <Gruntz/AniElement.h>            // CAniElement (ApplyAnimation +0x1b4 anim descriptor)
+#include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor (Handler_110110 anim sub-object)
 #include <Gruntz/SerialObjRef.h>          // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object
 #include <Gruntz/SerialArchive.h>         // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GameRegistry.h>          // g_gameReg->m_134 (play sub-mode gate in the warp ctor)
@@ -86,6 +94,59 @@ struct CTileTriggerActEntry {
 typedef i32 (CTileSecretTrigger::*TileSecretTriggerHandler)();
 struct CTileSecretTriggerActEntry {
     TileSecretTriggerHandler m_fn;
+};
+
+// --- CTileTriggerTransition (the tiletriggertransition stray, folded waveM-strays) -----------
+
+// The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
+DATA(0x002bf3bc)
+extern "C" u32 g_6bf3bc;
+
+// The CTileTriggerTransition activation-coordinate registry @0x64e720: the fixed
+// [0x7d0, 0x7da] (== [2000, 2010]) range built by the shared registry ctor (0x408710).
+// TileActReg is the shared <Gruntz/ActReg.h> CActReg archetype; it keeps its own placeholder
+// name so the DATA-pinned global symbol is unchanged.
+struct TileActReg : public CActReg {};
+DATA(0x0024e720)
+extern TileActReg g_tileActReg;
+
+// CTileTriggerTransition - the CUserLogic leaf the state machine (StepController) builds.
+// Layout is plain CUserLogic (0x40) + the leaf tail; it is a .cpp-local view of the leaf
+// (a real class whose identity/vtable live entirely in this obj); folding it to a shared
+// header is deferred (it would leak the class into GruntVoice/StatusBarSpriteActs which only
+// need the controller/state types).
+class CTileTriggerTransition : public CUserLogic {
+public:
+    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
+    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    TILE_LOGIC_TAIL
+public:
+    CTileTriggerTransition(CGameObject* obj); // 0x10faf0
+    virtual ~CTileTriggerTransition() OVERRIDE;
+
+    // per-class logic-type id (0x405); body out-of-line at 0x011730 in the leaf pool
+    // (below, so the file stays RVA-ascending).
+    virtual LogicTypeId GetTypeTag() OVERRIDE;
+    void Register_10fc90();         // 0x10fc90
+    void FireActivation(i32 coord); // 0x10fd10 (vtable slot 4: per-coord PMF dispatch)
+    void RegisterActs();            // 0x10fe70  intern "A", bind Handler
+    i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
+    i32 Handler_110110();                         // 0x110110  the per-frame handler bound here
+
+    // Leaf fields: CUserLogic ends at +0x40, the leaf object is 0x54 (the size the
+    // state pump's `operator new(0x54)` allocates). m_activeAnimDesc caches the +0x1b4
+    // animation descriptor (same field CGrunt's resolvers name m_activeAnimDesc).
+    i32 m_activeAnimDesc;      // +0x40
+    char m_pad44[0x54 - 0x44]; // +0x44..+0x53
+};
+VTBL(CTileTriggerTransition, 0x1e7db4);
+SIZE_UNKNOWN(CTileTriggerTransition);
+
+// The per-class registry entry: its first dword receives the per-frame handler PMF
+// (a 4-byte code pointer on this complete single-inheritance class).
+typedef i32 (CTileTriggerTransition::*TileActHandler)();
+struct TileActEntry {
+    TileActHandler m_fn;
 };
 
 // ---------------------------------------------------------------------------
@@ -184,6 +245,23 @@ i32 CTileTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
 // hang an RVA()):
 // @rva-symbol: ??1CTileTrigger@@UAE@XZ 0x00011290 0x44
 
+// --- CBrickz leaf pool (the cbrickz stray, folded waveM-strays) --- ~CBrickz is the
+// vtable anchor (gives the leaf its most-derived vftable 0x5e7c54 so the ctor's vptr
+// store falls out; empty body is enough). CBrickz::GetTypeTag @0x011300 is header-inline
+// (in <Gruntz/CBrickz.h>) so it emits at 0x11300 without a body line here.
+CBrickz::~CBrickz() {}
+
+// CBrickz::Serialize @0x011320 - vtable slot 1: chain the shared CUserLogic serialize
+// helper on `this`, then (on success) the +0x34 sub-object's chain, normalized to a
+// strict bool. Byte-identical to CSecretTeleporterTrigger::Serialize.
+RVA(0x00011320, 0x47)
+i32 CBrickz::Serialize(i32 a, i32 b, i32 c, i32 d) {
+    if (!SerializeChain(a, b, c, d)) {
+        return 0;
+    }
+    return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d) != 0;
+}
+
 // ~CCheckpointTrigger @0x011480 - the bare folded CUserLogic teardown (store the
 // CUserLogic vptr, inline-destruct the +0x18 link via ~EngStr, store CUserBase vptr;
 // the destructible link forces the /GX EH frame).
@@ -199,8 +277,37 @@ CGiantRock::~CGiantRock() {}
 RVA(0x000116c0, 0x44)
 CCoveredPowerup::~CCoveredPowerup() {}
 
+// --- CTileTriggerTransition leaf pool (the tiletriggertransition stray, folded waveM-strays)
+// --- ~CTileTriggerTransition is an empty leaf dtor that folds the CUserLogic base teardown.
+// The folded ~CUserLogic lands as one standalone COMDAT at 0x117f0.
+CTileTriggerTransition::~CTileTriggerTransition() {}
+
+// CTileTriggerTransition::GetTypeTag (0x011730) - per-class logic-type id (0x405). Out-of-line
+// here so its RVA lands in leaf-pool order (one deduped COMDAT copy in retail).
+RVA(0x00011730, 0x6)
+LogicTypeId CTileTriggerTransition::GetTypeTag() {
+    return LOGIC_TILETRIGGERTRANSITION;
+}
+
+// CTileTriggerTransition::SerializeMove (0x11750), vtable slot 1 - the
+// CSecretTeleporterTrigger::Serialize archetype (chain + +0x34 CSerialObjRef gate).
+RVA(0x00011750, 0x47)
+i32 CTileTriggerTransition::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
+    if (!SerializeChain((i32)ar, mode, a3, a4)) {
+        return 0;
+    }
+    return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
+}
+
+// ~CUserLogic (0x0117f0) - the out-of-line base destructor COMDAT the leaf's inline
+// ~CTileTriggerTransition folds; MSVC emits one standalone ??1CUserLogic COMDAT (called by
+// the leaf's scalar-deleting dtor) that lands at 0x117f0. An inline-defined dtor can't hang
+// an RVA() (it would also tag the synthesized ??_G -> duplicate-RVA), so it is pinned by
+// mangled name:
+// @rva-symbol: ??1CUserLogic@@UAE@XZ 0x000117f0 0x44
+
 // ===========================================================================
-// The class band, ascending in the 0x10cb10-0x10fac0 region.
+// The class band, ascending in the 0x10cb10-0x110149 region.
 // ===========================================================================
 
 RVA(0x0010cb10, 0xf1)
@@ -217,6 +324,12 @@ i32 GiantRockStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CGiantRock)}
 
 RVA(0x0010d010, 0xf1)
 i32 CoveredPowerupStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CCoveredPowerup)}
+
+// StepController @0x10d150 (the tiletriggertransition stray, folded waveM-strays) - the aux
+// state pump that builds CTileTriggerTransition (0x54) for state 0 then dispatches by state
+// id to the state object's vtable slots. Same pump shape as the sibling steps.
+RVA(0x0010d150, 0xf1)
+i32 StepController(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CTileTriggerTransition)}
 
 // CheckpointTriggerStep @0x10d290 - byte-identical to StepController bar the leaf TYPE
 // (CCheckpointTrigger is 0x94, so `new` pushes 0x94 imm32 - the 3-byte-longer body).
@@ -257,6 +370,14 @@ i32 CheckpointTriggerStep(CGameObject* obj) {
     }
     return 1;
 }
+
+// LogicDispatchB @0x10d3d0 (the logicrecorddispatch stray, folded waveM-strays) - CBrickz's
+// state pump: state 0 news a CBrickz (0x54; retail calls it through ILT thunk 0x3701 ->
+// ctor 0x10e800). Same pump shape as the sibling steps; the ex LogicSubRecB view dissolved
+// onto the real CBrickz. Was ?LogicDispatchB@@YAHPAULogicDispatchOwner@@@Z (the placeholder
+// owner view); its owner is a CGameObject like every other pump.
+RVA(0x0010d3d0, 0xf1)
+i32 LogicDispatchB(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CBrickz)}
 
 RVA(0x0010d510, 0xf1)
 i32 WarpStonePadStep(CGameObject* obj){TILE_LOGIC_WORKER_PUMP(CWarpStonePad)}
@@ -433,6 +554,27 @@ void CTileTrigger::RegisterActs() {
     }
     ((CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(id))->m_fn =
         &CTileTrigger::AdvanceAnim;
+}
+
+// CBrickz::CBrickz @0x10e800 (the cbrickz stray, folded waveM-strays) - the 1-arg leaf ctor:
+// the standard CUserLogic(obj) init plus the Brickz tail (cache the anim-set node off the "A"
+// bute key, raise the logic/collision flag bits, seed the tile-coordinate fields).
+// @early-stop
+// EH-state-numbering wall (docs/patterns/eh-state-numbering-base.md): the body is
+// byte-identical (the CUserLogic init, the "A" anim-set cache, the two separate m_38->m_08
+// RMW + the m_38->m_40 bit, the m_164/m_168/m_04 tile-coord seed); the residue is this ctor's
+// own __ehfuncinfo + a 1-slot pop-edi scheduling delta in the tail. Not source-steerable; ~88%.
+RVA(0x0010e800, 0x17d)
+CBrickz::CBrickz(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_prevAnimSetNode = m_objAux->m_1c;
+    m_objAux->m_1c = g_buteTree.Find("A");
+    m_38->m_flags |= 2;
+    m_38->m_flags |= 1;
+    m_38->m_stateFlags |= 1;
+    m_object->m_164 = m_object->m_screenX >> 5;
+    m_object->m_168 = m_object->m_screenY >> 5;
+    m_object->m_04 = (m_object->m_164 << 8) + m_object->m_168;
 }
 
 // CCheckpointTrigger::InitActReg @0x10ea00 - construct g_checkpointActReg over [2000,2010].
@@ -642,6 +784,105 @@ CGiantRock::CGiantRock(CGameObject* obj) : CTileTrigger(obj) {}
 RVA(0x0010fac0, 0x19)
 CCoveredPowerup::CCoveredPowerup(CGameObject* obj) : CTileTrigger(obj) {}
 
+// ===========================================================================
+// CTileTriggerTransition class band (the tiletriggertransition stray, folded waveM-strays):
+// the leaf's ctor + own methods, ascending 0x10faf0-0x110149.
+// ===========================================================================
+
+// CTileTriggerTransition::CTileTriggerTransition (0x10faf0) - the 1-arg leaf ctor: fold the
+// shared CUserLogic(obj) init then stamp the leaf vptr (0x5e7db4) + the +0x1000000 object
+// flag / +0x74 type write the original tail does.
+// @early-stop
+// EH-ctor vptr-restamp wall (94.9%): the leaf vptr re-stamp lands in EH state 0 + the EH
+// scope-cookie initializes to 8 not 0 - see docs/patterns/eh-ctor-vptr-restamp-position.md
+// (non-steerable EH-state machine ordering). Body byte-identical otherwise.
+RVA(0x0010faf0, 0x128)
+CTileTriggerTransition::CTileTriggerTransition(CGameObject* obj) : CUserLogic(obj) {
+    TILE_LOGIC_SEED(obj);
+    m_38->m_flags |= 0x1000000;
+    if (m_object->m_latchedAnimId != 0) {
+        m_object->m_latchedAnimId = 0;
+        m_object->m_flags |= 0x20000;
+    }
+}
+
+// Register_10fc90 (0x10fc90) - reserve this class's activation coordinate range [0x7d0, 0x7da]
+// in the global tile-trigger activation registry (ecx/this unused).
+RVA(0x0010fc90, 0x15)
+void CTileTriggerTransition::Register_10fc90() {
+    ((CZDArrayDerived*)&g_tileActReg)->Construct(0x7d0, 0x7da);
+}
+
+// FireActivation (0x10fd10), vtable slot 4 - look the activation coordinate up in the class
+// registry (g_tileActReg); if the resolved entry carries a registered handler PMF, resolve it
+// again and dispatch it __thiscall on `this`. Same double-ResolveEntry + PMF-fire archetype.
+RVA(0x0010fd10, 0x102)
+void CTileTriggerTransition::FireActivation(i32 coord) {
+    TileActEntry* e = (TileActEntry*)g_tileActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        TileActEntry* e2 = (TileActEntry*)g_tileActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
+// RegisterActs (0x10fe70) - intern this class's activation key "A" into the shared bute-tree
+// name map, then bind that id to this class's per-frame handler (Handler_110110).
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md, topic:wall topic:regalloc): logic
+// byte-faithful (every call/immediate/branch/offset + the `mov [entry],offset Handler` store
+// match retail); residual is the slot-vs-id callee-saved register choice cascading into the
+// name-list free-loop count materialization - identical wall to CSecretLevelTrigger::RegisterActs.
+RVA(0x0010fe70, 0x18d)
+void CTileTriggerTransition::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        id = g_nextActId;
+        g_buteTree.Insert(s_actKeyA, (void*)id);
+        char* slot = ActNameLookup(id);
+        i32 n = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        while (n-- != 0) {
+            if (list != 0) {
+                ((CString*)list)->CString::~CString();
+            }
+            list++;
+        }
+        ((CString*)slot)->operator=(s_actKeyA);
+        g_nextActId++;
+    }
+    ((TileActEntry*)g_tileActReg.ResolveEntry(id))->m_fn = &CTileTriggerTransition::Handler_110110;
+}
+
+// ApplyAnimation (0x110070) - reads the object's +0x1b4 animation descriptor, applies the
+// geometry token, picks the seed frame from element[0], applies the sprite, then swaps the
+// aux's bute node for the "A" node (caching the old one).
+RVA(0x00110070, 0x71)
+i32 CTileTriggerTransition::ApplyAnimation(char* sprite, char* geom) {
+    m_activeAnimDesc = m_38->m_geoId;
+    if (m_38->ApplyLookupGeometry(geom, 0) == 0) {
+        return 0;
+    }
+    CAniElement* desc = (CAniElement*)m_38->m_geoId;
+    CAnimElem* elem = desc->m_records.m_nSize > 0 ? (CAnimElem*)*desc->m_records.m_pData : 0;
+    m_38->ApplyLookupSprite(sprite, elem->m_14);
+    m_prevAnimSetNode = m_objAux->m_1c; // save the prev anim-set node (CUserLogic base field)
+    m_objAux->m_1c = g_buteTree.Find("A");
+    return 1;
+}
+
+// Handler_110110 (0x110110) - the per-frame handler bound by RegisterActs. Advance the bound
+// object's +0x1a0 anim sub-object to the current draw-delta (g_6bf3bc); if the sub-mgr is
+// active (m_1c8 != 0) but not idle (m_1c0 == 0), mark the object stalled/handled this frame.
+RVA(0x00110110, 0x39)
+i32 CTileTriggerTransition::Handler_110110() {
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
+    if (m_38->m_1c8 != 0 && m_38->m_1c0 == 0) {
+        m_38->m_flags |= 0x10000;
+    }
+    return 0;
+}
+
 SIZE_UNKNOWN(CWarpStonePadActEntry);
 SIZE_UNKNOWN(CWarpStonePadActReg);
 SIZE_UNKNOWN(CTileTriggerSwitchActEntry);
@@ -651,3 +892,5 @@ SIZE_UNKNOWN(CCheckpointActReg);
 SIZE_UNKNOWN(CLeafActReg);
 SIZE_UNKNOWN(CTileTriggerActEntry);
 SIZE_UNKNOWN(CTileSecretTriggerActEntry);
+SIZE_UNKNOWN(TileActReg);
+SIZE_UNKNOWN(TileActEntry);

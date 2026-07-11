@@ -54,7 +54,6 @@ butesectionctor	1	1
 butestoreclear	1	1
 butetree	1	1
 bzkinddispatch	1	0
-cbrickz	3	2
 chainforward	2	0
 chatbox	28	21
 chatbox_eh	1	1
@@ -241,7 +240,7 @@ logicactreg	4	2
 logicactregistrars	5	2
 logicdispatchinit	1	1
 logicrecord	5	3
-logicrecorddispatch	5	5
+logicrecorddispatch	4	4
 logictypetable	2	1
 logicworkerhandlers	21	19
 m3mfcleaves	2	2
@@ -355,11 +354,10 @@ streamrecordloaders	6	1
 surfacepalette	1	1
 symtab	56	28
 terraintileloader	2	1
-tilelogicpump	43	32
+tilelogicpump	57	43
 tilescan	1	0
 tileswitchlogic	40	26
 tiletriggercontainer	27	9
-tiletriggertransition	10	8
 tilewireswitchlogic	1	0
 timesplit	2	2
 timestring	1	1
@@ -737,9 +735,6 @@ butesectionctor	??0CButeSection@@QAE@XZ	100.0000	100.0000	2	d9115f492116	0x17021
 butestoreclear	?Reset@CButeStore212a0@@QAEXXZ	100.0000	100.0000	1	8cad8b05f136	0x212a0
 butetree	?Walk@CButeTree@@QAEXP6AXPADPAX1@Z1PAUCButeTreeNode@@@Z	100.0000	100.0000	1	4a2a61ea1c8a	0x193340
 bzkinddispatch	?Dispatch@CLatencyList@@QAEHH@Z	79.1379	79.1379	4	cccd94f6bc01	0x37910
-cbrickz	??0CBrickz@@QAE@PAUCGameObject@@@Z	88.3611	88.3611	5	33b9c04312a1	0x10e800
-cbrickz	?GetTypeTag@CBrickz@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:b5083688a727	0x11300
-cbrickz	?Serialize@CBrickz@@QAEHHHHH@Z	100.0000	100.0000	3	9ab56768f75f	0x11320
 chainforward	?ChainForward14@@YAXHPAUChainRoot@@HHHH@Z	87.6923	87.6923	1	a9c311d37b75	0x114f50
 chainforward	?ChainForward@@YAXHPAUChainRoot@@HHHH@Z	87.6923	87.6923	2	c0ab252abf38	0x114fa0
 chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	5	c46d76db1c3b	0x182ba0
@@ -2562,7 +2557,6 @@ logicrecord	?Load@CLogicRecord@@QAEHPAVLogicArchive@@@Z	100.0000	100.0000	2	a7f3
 logicrecord	?ResolveTarget@CLogicRecord@@QAEHPAX@Z	99.3333	99.3333	1	46d1e6aa2be0	0x1651b0
 logicrecord	?Save@CLogicRecord@@QAEHPAVLogicArchive@@@Z	100.0000	100.0000	2	236b7df67d07	0x164d80
 logicrecorddispatch	?LogicDispatchA@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	4	e612dd64ed9f	0xfb660
-logicrecorddispatch	?LogicDispatchB@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	4	52724875e08e	0x10d3d0
 logicrecorddispatch	?LogicDispatchBoomerang@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	1	72e21b4a139e	0xde9e0
 logicrecorddispatch	?LogicDispatchD@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	4	30b26d97a464	0xdeb20
 logicrecorddispatch	?LogicDispatchE@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	1	4a578af0a1f6	0xde8a0
@@ -3256,7 +3250,7 @@ sbi_menuitem	??1CSBI_MenuItem@@UAE@XZ	100.0000	100.0000	1	674154901a15	0x1007d0
 sbi_menuitem	?Blit@CSBI_MenuItem@@QAEHXZ	100.0000	100.0000	2	c243a91ef3a4	0xe84f0
 sbi_menuitem	?ClearFrame2@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	0438e44a3a76	0xe81a0
 sbi_menuitem	?ClearFrame@CSBI_MenuItem@@QAEXXZ	100.0000	100.0000	1	1ea67e5c1a99	0xe6d90
-sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	74.0714	74.0714	9	e4753988cff8	0xe82a0
+sbi_menuitem	?DecCounter@CSBI_MenuItem@@QAEHXZ	74.0357	74.0357	9	e4753988cff8	0xe82a0
 sbi_menuitem	?InitItem@CSBI_MenuItem@@QAEHHHHHHHHHPAXHH@Z	67.8261	67.8261	5	be36be9b8b66	0xe80e0
 sbi_menuitem	?ProbeState@CSBI_MenuItem@@QAEHH@Z	100.0000	100.0000	2	316d4a1ee9fa	0xe8480
 sbi_menuitem	?ResolveFrame@CSBI_MenuItem@@QAEHHH@Z	44.6226	44.6226	5	3813e5f47398	0xe81e0
@@ -3633,6 +3627,7 @@ symtab	?Teardown@Obj1397a0@@QAEXXZ	100.0000	100.0000	1	5b465eda3716	0x1397a0
 symtab	?UnpackTag@@YGXIPAD@Z	100.0000	100.0000	1	258ab999f52f	0x13b970
 terraintileloader	?Load@CTerrainTileLoader@@QAEHHHHHHH@Z	7.8554	7.8554	3	534137f13d2a	0x75e90
 terraintileloader	?Validate@ValidateHost@@QAEHXZ	100.0000	100.0000	2	085bfb3cabb2	0x94bc0
+tilelogicpump	??0CBrickz@@QAE@PAUCGameObject@@@Z	88.3611	88.3611	1	33b9c04312a1	0x10e800
 tilelogicpump	??0CCheckpointTrigger@@QAE@PAUCGameObject@@@Z	84.4398	84.4398	1	afada2b709b9	0x10ee20
 tilelogicpump	??0CCoveredPowerup@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	ee3b05c7a050	0x10fac0
 tilelogicpump	??0CGiantRock@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	1cd859721edb	0x10fa90
@@ -3640,6 +3635,7 @@ tilelogicpump	??0CTileSecretTrigger@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	1	
 tilelogicpump	??0CTileTrigger@@QAE@PAUCGameObject@@@Z	88.3611	88.3611	1	0a660e908969	0x10e220
 tilelogicpump	??0CTileTrigger@@QAE@XZ	100.0000	100.0000	1	0a660e908969	0x11160
 tilelogicpump	??0CTileTriggerSwitch@@QAE@PAUCGameObject@@@Z	94.3854	94.3854	1	e05931be1216	0x10dc40
+tilelogicpump	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.5366	94.5366	1	95ee8f2ad697	0x10faf0
 tilelogicpump	??0CWarpStonePad@@QAE@PAUCGameObject@@@Z	89.7327	89.7327	1	1e3e9b2d4d06	0x10d650
 tilelogicpump	??1CCheckpointTrigger@@UAE@XZ	100.0000	100.0000	1	af5b3c71c03b	0x11480
 tilelogicpump	??1CCoveredPowerup@@UAE@XZ	100.0000	100.0000	1	5a8ab2c385db	0x116c0
@@ -3647,31 +3643,43 @@ tilelogicpump	??1CGiantRock@@UAE@XZ	100.0000	100.0000	1	67c7ae118b81	0x11600
 tilelogicpump	??1CTileSecretTrigger@@UAE@XZ	100.0000	100.0000	1	63a900150158	0x11540
 tilelogicpump	??1CTileTrigger@@UAE@XZ	100.0000	100.0000	1	cpp:cfcb7226a2f7	0x11290
 tilelogicpump	??1CTileTriggerSwitch@@UAE@XZ	100.0000	100.0000	1	114390a8ab8a	0x110f0
+tilelogicpump	??1CUserLogic@@UAE@XZ	100.0000	100.0000	1	cpp:4b5d44d3095c	0x117f0
 tilelogicpump	??1CWarpStonePad@@UAE@XZ	100.0000	100.0000	1	33b44541445e	0x10fc0
+tilelogicpump	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	1	ee45bf1e8427	0x110070
 tilelogicpump	?CheckpointTriggerStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	768877b29521	0x10d290
 tilelogicpump	?CoveredPowerupStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	d2a2b973a243	0x10d010
 tilelogicpump	?FireActivation@CCheckpointTrigger@@QAEXH@Z	100.0000	100.0000	1	561800b7475b	0x10ea80
 tilelogicpump	?FireActivation@CTileSecretTrigger@@QAEXH@Z	100.0000	100.0000	1	777af0bbacf3	0x10f1e0
 tilelogicpump	?FireActivation@CTileTrigger@@QAEXH@Z	100.0000	100.0000	1	bade00570af9	0x10e4a0
 tilelogicpump	?FireActivation@CTileTriggerSwitch@@QAEXH@Z	100.0000	100.0000	1	d4b8071ad625	0x10dea0
+tilelogicpump	?FireActivation@CTileTriggerTransition@@QAEXH@Z	100.0000	100.0000	1	de5cf97964e4	0x10fd10
 tilelogicpump	?FireWarp@CWarpStonePad@@QAEXH@Z	100.0000	100.0000	1	8d2d9c818f0c	0x10d8c0
 tilelogicpump	?Gap_10f6a0@@YAHXZ	1.0753	1.0753	1	f7eb3a5b22e8	0x10f6a0
+tilelogicpump	?GetTypeTag@CBrickz@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:4b5d44d3095c	0x11300
+tilelogicpump	?GetTypeTag@CTileTriggerTransition@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	a29b074c84a5	0x11730
 tilelogicpump	?GetTypeTag@CWarpStonePad@@EAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:cfcb7226a2f7	0x10f00
 tilelogicpump	?GiantRockStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	198bc9d20457	0x10ced0
+tilelogicpump	?Handler_110110@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	1	55700bc9cb33	0x110110
 tilelogicpump	?InitActReg@CCheckpointTrigger@@SAXXZ	100.0000	100.0000	1	692e987e5ddf	0x10ea00
 tilelogicpump	?InitActReg@CTileSecretTrigger@@SAXXZ	100.0000	100.0000	1	8162fa386c80	0x10f160
 tilelogicpump	?InitActReg@CTileTrigger@@SAXXZ	100.0000	100.0000	1	406b3c9ff1bf	0x10e420
 tilelogicpump	?InitActReg@CTileTriggerSwitch@@SAXXZ	100.0000	100.0000	1	d4c6fc143b33	0x10de20
 tilelogicpump	?InitActReg@CWarpStonePad@@SAXXZ	100.0000	100.0000	1	6f98d4a05bd0	0x10d840
+tilelogicpump	?LogicDispatchB@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	4cbe1fef07c3	0x10d3d0
 tilelogicpump	?RegisterActs@CCheckpointTrigger@@SAXXZ	91.1739	91.1739	1	068077f3b575	0x10ebe0
 tilelogicpump	?RegisterActs@CTileSecretTrigger@@SAXXZ	78.5970	78.5970	1	95983ae3d017	0x10f340
 tilelogicpump	?RegisterActs@CTileTrigger@@SAXXZ	92.9130	92.9130	1	05c8a65a7450	0x10e600
 tilelogicpump	?RegisterActs@CTileTriggerSwitch@@SAXXZ	92.9130	92.9130	1	ed86624d0311	0x10e000
+tilelogicpump	?RegisterActs@CTileTriggerTransition@@QAEXXZ	92.9130	92.9130	1	45430ba4f6be	0x10fe70
 tilelogicpump	?RegisterActs@CWarpStonePad@@SAXXZ	92.9130	92.9130	1	62c1591ab82c	0x10da20
+tilelogicpump	?Register_10fc90@CTileTriggerTransition@@QAEXXZ	100.0000	100.0000	1	3c3ad01bef92	0x10fc90
+tilelogicpump	?Serialize@CBrickz@@QAEHHHHH@Z	100.0000	100.0000	1	9ab56768f75f	0x11320
 tilelogicpump	?SerializeMove@CCheckpointTrigger@@UAEHPAUCGruntArchive@@HHH@Z	93.8030	93.8030	1	35f017657e5b	0x10f9a0
 tilelogicpump	?SerializeMove@CTileTrigger@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	3547fce29cb0	0x111f0
 tilelogicpump	?SerializeMove@CTileTriggerSwitch@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	7731d205b4d3	0x11050
+tilelogicpump	?SerializeMove@CTileTriggerTransition@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	ddfed92da460	0x11750
 tilelogicpump	?SerializeMove@CWarpStonePad@@EAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	d5a28c443b10	0x10f20
+tilelogicpump	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	7a953a489256	0x10d150
 tilelogicpump	?TileSecretTriggerStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	a77721399cb4	0x10cd90
 tilelogicpump	?TileTriggerStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	237892a7fbe2	0x10cb10
 tilelogicpump	?TileTriggerSwitchStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	f9b30f544d07	0x10cc50
@@ -3744,16 +3752,6 @@ tiletriggercontainer	?SerializeApplyA@@YGHPAUCSerialArchive@@HHHPAUTtcTrigElem@@
 tiletriggercontainer	?SerializeApplyB@@YGHPAUCSerialArchive@@HHHPAUTtcTrigElem@@@Z	33.6667	33.6667	3	0d9d6ee5f5f7	0x117710
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	76.6912	76.6912	4	e616e31775a9	0x117f60
 tiletriggercontainer	?TransferFlag74@CTileTriggerSwitchLogic@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	78dbefabc930	0x117e20
-tiletriggertransition	??0CTileTriggerTransition@@QAE@PAUCGameObject@@@Z	94.5366	94.5366	5	95ee8f2ad697	0x10faf0
-tiletriggertransition	??1CUserLogic@@UAE@XZ	100.0000	100.0000	1	cpp:fe6dc3b6bc73	0x117f0
-tiletriggertransition	?ApplyAnimation@CTileTriggerTransition@@QAEHPAD0@Z	100.0000	100.0000	5	ee45bf1e8427	0x110070
-tiletriggertransition	?FireActivation@CTileTriggerTransition@@QAEXH@Z	100.0000	100.0000	1	de5cf97964e4	0x10fd10
-tiletriggertransition	?GetTypeTag@CTileTriggerTransition@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	2	2be500ebbbbd	0x11730
-tiletriggertransition	?Handler_110110@CTileTriggerTransition@@QAEHXZ	100.0000	100.0000	1	55700bc9cb33	0x110110
-tiletriggertransition	?RegisterActs@CTileTriggerTransition@@QAEXXZ	92.9130	92.9130	2	45430ba4f6be	0x10fe70
-tiletriggertransition	?Register_10fc90@CTileTriggerTransition@@QAEXXZ	100.0000	100.0000	3	3c3ad01bef92	0x10fc90
-tiletriggertransition	?SerializeMove@CTileTriggerTransition@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	ddfed92da460	0x11750
-tiletriggertransition	?StepController@@YAHPAUCGameObject@@@Z	100.0000	100.0000	3	86ef5265bc5f	0x10d150
 tilewireswitchlogic	?WireTileSwitchLogic@CTileWireLogic@@QAEHPAXHH@Z	10.3165	10.3165	9	83ed16958f38	0x6c130
 timesplit	?BlockScreenSaver@@YAHPAXHH@Z	100.0000	100.0000	1	6e2b29553e4b	0x1192d0
 timesplit	?SplitMillisToHMS@@YAXIPAI00@Z	100.0000	100.0000	2	826102945287	0x119210

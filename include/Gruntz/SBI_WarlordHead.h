@@ -82,6 +82,23 @@ public:
     virtual ~CSBI_WarlordHead() OVERRIDE; // slot 0
     virtual i32 SbiVfunc0() OVERRIDE;     // slot 1 (the Serialize below)
     virtual void SbiSlot5() OVERRIDE;     // slot 5 (the Render below)
+    // slot 11 override of CSBI_Image::SetupImage; the out-of-line body is the
+    // non-virtual SetupImage overload below (0xeb6b0). The vtable slot reloc-masks, so
+    // this declared-only override just pins the slot in the model (was in the retired
+    // SbiDtorChain.h). Distinct overload (CSbiConfigHost* vs i32) from the impl decl.
+    virtual i32 SetupImage(
+        i32,
+        CSbiConfigHost*,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32,
+        i32
+    ) OVERRIDE; // slot 11
     // Member teardown run by the dtor: 0xe7400 (the ImageSet-level counter reset the
     // chain view called DtorReset; reloc-masked extern).
     void DtorReset(); // 0xe7400

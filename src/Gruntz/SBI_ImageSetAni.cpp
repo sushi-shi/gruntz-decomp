@@ -6,7 +6,8 @@
 // CSBI_WarlordHead slot 1 = thunk 0x3cd8 -> 0xeb970 (that real one now lives in
 // SBI_WarlordHead.cpp). The six persistent ints m_3c..m_50 belong to this class
 // (size 0x54), not warlord (which serializes only its single m_3c direction).
-#define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
+#define SBI_DTOR_CHAIN           // enable the inline base-dtor bodies (see StatusBarItem.h)
+#define SBI_OWN_IMAGESETANI_DTOR // this TU owns the out-of-line ~CSBI_ImageSetAni (0x1047f0)
 #include <rva.h>
 #include <Mfc.h>
 #include <Ints.h>
