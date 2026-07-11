@@ -1755,14 +1755,38 @@ source = "src/Bute/ButeSectionCtor.cpp"
 # CButeNode streams) -> /GX EH frame + 8-trylevel member-unwind state machine.
 flags = "eh"
 
+# LogicActRegistrars.cpp + LogicActReg.cpp DRAINED + DELETED (REHOME D1): each was a
+# pure holding TU conflating unrelated per-class activation registrars. Each
+# Construct+Register pair split into its own RVA-block .cpp, named by the CRACKED
+# owner class where the xref pinned it (registry table -> the class that walks it):
+#   0x646188 -> CSpotLight       (SpotLightActReg.cpp)
+#   0x646250 -> CPathHazard      (PathHazardActReg.cpp)
+#   0x6514d8 -> CGruntVoice      (GruntVoiceActReg.cpp)
+#   0x62bfa0 -> CCursorSnapSprite (CursorSnapActReg.cpp)
+#   0x646010 -> uncracked (scattered leaf pool) -> LogicActReg646010.cpp
 [[unit]]
-unit = "logicactregistrars"
-source = "src/Gruntz/LogicActRegistrars.cpp"
+unit = "spotlightactreg"
+source = "src/Gruntz/SpotLightActReg.cpp"
 flags = "base"
 
 [[unit]]
-unit = "logicactreg"
-source = "src/Gruntz/LogicActReg.cpp"
+unit = "pathhazardactreg"
+source = "src/Gruntz/PathHazardActReg.cpp"
+flags = "base"
+
+[[unit]]
+unit = "gruntvoiceactreg"
+source = "src/Gruntz/GruntVoiceActReg.cpp"
+flags = "base"
+
+[[unit]]
+unit = "cursorsnapactreg"
+source = "src/Gruntz/CursorSnapActReg.cpp"
+flags = "base"
+
+[[unit]]
+unit = "logicactreg646010"
+source = "src/Gruntz/LogicActReg646010.cpp"
 flags = "base"
 
 
