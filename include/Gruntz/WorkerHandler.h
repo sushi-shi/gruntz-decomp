@@ -41,4 +41,45 @@ inline void Worker_DefaultPump(CUserLogic* sub) {
     ProjTypeXfer((CXferArchive*)sub);
 }
 
+// The shared logic-worker message pump. Each per-type handler is `{ LOGIC_WORKER_PUMP(LEAF); }`
+// where LEAF is the CUserLogic-derived game object this handler owns (the pump `new`s it on
+// state 0). Reads owner->m_7c (the worker), switches on the UNSIGNED state tag worker->m_1c
+// (u32 -> unsigned ja/jbe range-checks, matching retail; a signed key caps at ~97.86%, see
+// docs/patterns/switch-key-unsigned-ja-vs-jg.md).
+#define LOGIC_WORKER_PUMP(LEAF)                                                                    \
+    Worker* rec = owner->m_7c;                                                                     \
+    switch (rec->m_1c) {                                                                           \
+        case 0: {                                                                                  \
+            rec->m_1c = 0x3e8;                                                                     \
+            CUserLogic* sub = new LEAF((CGameObject*)owner);                                       \
+            sub->Activate(); /* slot 6 (+0x18): activate */                                        \
+            rec->m_18 = sub;                                                                       \
+            break;                                                                                 \
+        }                                                                                          \
+        case 0x1d:                                                                                 \
+            rec->m_18->UserLogicVfunc9(); /* slot 11 (+0x2c) */                                    \
+            break;                                                                                 \
+        case 0x1e:                                                                                 \
+            rec->m_18->UserLogicVfunc8(); /* slot 10 (+0x28) */                                    \
+            break;                                                                                 \
+        case 0x50:                                                                                 \
+            rec->m_18->UserLogicVfuncC(); /* slot 14 (+0x38) */                                    \
+            break;                                                                                 \
+        case 0x53:                                                                                 \
+            rec->m_18->UserLogicVfuncD(); /* slot 15 (+0x3c) */                                    \
+            break;                                                                                 \
+        case 0x52:                                                                                 \
+            rec->m_18->UserLogicVfuncA(); /* slot 12 (+0x30) */                                    \
+            break;                                                                                 \
+        case 0x51:                                                                                 \
+            rec->m_18->UserLogicVfuncB(); /* slot 13 (+0x34) */                                    \
+            break;                                                                                 \
+        case 0x3e8:                                                                                \
+            break;                                                                                 \
+        default:                                                                                   \
+            Worker_DefaultPump(rec->m_18);                                                         \
+            break;                                                                                 \
+    }                                                                                              \
+    return 1;
+
 #endif // GRUNTZ_GRUNTZ_WORKERHANDLER_H

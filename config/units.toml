@@ -1477,8 +1477,13 @@ source = "src/Gruntz/InGameWorkerHandlers.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "logicworkerhandlers"
-source = "src/Gruntz/LogicWorkerHandlers.cpp"
+unit = "logicworkerhandlersa"
+source = "src/Gruntz/LogicWorkerHandlersA.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "logicworkerhandlersb"
+source = "src/Gruntz/LogicWorkerHandlersB.cpp"
 flags = "eh"
 
 [[unit]]

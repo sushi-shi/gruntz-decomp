@@ -228,7 +228,8 @@ logicdispatchinit	1	1
 logicrecord	5	3
 logicrecorddispatch	4	4
 logictypetable	2	1
-logicworkerhandlers	21	19
+logicworkerhandlersa	15	13
+logicworkerhandlersb	6	6
 mainmenubuilder	2	1
 maplogic	4	3
 mapmgr	25	15
@@ -2593,27 +2594,27 @@ logicrecorddispatch	?LogicDispatchD@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0
 logicrecorddispatch	?LogicDispatchE@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	1	4a578af0a1f6	0xde8a0
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	84.5833	84.5833	7	c0e472d4ee72	0x8a40
 logictypetable	?Finalize@CFinalize8b90@@QAEXH@Z	100.0000	100.0000	1	eff7707afcff	0x8b90
-logicworkerhandlers	?Handler0aa6e0@@YAHPAUOwner@@@Z	99.9881	99.9881	2	5c76db60628a	0xaa6e0
-logicworkerhandlers	?HandlerA9A40@@YAHPAUOwner@@@Z	100.0000	100.0000	2	2878a1d2ac0e	0xa9a40
-logicworkerhandlers	?HandlerA9B80@@YAHPAUOwner@@@Z	100.0000	100.0000	2	64a1c8e2b3e4	0xa9b80
-logicworkerhandlers	?HandlerA9CC0@@YAHPAUOwner@@@Z	100.0000	100.0000	6	633c931947bf	0xa9cc0
-logicworkerhandlers	?HandlerA9E00@@YAHPAUDnnOwner@@@Z	97.5269	97.5269	1	d8006f8d7114	0xa9e00
-logicworkerhandlers	?HandlerA9F60@@YAHPAUOwner@@@Z	100.0000	100.0000	2	8602a7ef7465	0xa9f60
-logicworkerhandlers	?HandlerAA0A0@@YAHPAUOwner@@@Z	100.0000	100.0000	2	f43abd0a218a	0xaa0a0
-logicworkerhandlers	?HandlerAA1E0@@YAHPAUOwner@@@Z	100.0000	100.0000	2	07459501e9a2	0xaa1e0
-logicworkerhandlers	?HandlerAA320@@YAHPAUOwner@@@Z	100.0000	100.0000	2	857651c0f8b2	0xaa320
-logicworkerhandlers	?HandlerAA460@@YAHPAUOwner@@@Z	100.0000	100.0000	2	7cd13e4b5cf7	0xaa460
-logicworkerhandlers	?HandlerAA5A0@@YAHPAUOwner@@@Z	100.0000	100.0000	6	0b2d4f117a08	0xaa5a0
-logicworkerhandlers	?HandlerAA820@@YAHPAUOwner@@@Z	100.0000	100.0000	2	d42993667048	0xaa820
-logicworkerhandlers	?HandlerAA960@@YAHPAUOwner@@@Z	100.0000	100.0000	6	7c952cdf4621	0xaa960
-logicworkerhandlers	?HandlerAAAA0@@YAHPAUOwner@@@Z	100.0000	100.0000	2	691a44ab9c80	0xaaaa0
-logicworkerhandlers	?HandlerAABE0@@YAHPAUOwner@@@Z	100.0000	100.0000	2	daa36c265dfc	0xaabe0
-logicworkerhandlers	?HandlerAF0A0@@YAHPAUOwner@@@Z	100.0000	100.0000	6	5a82b1ae79e0	0xaf0a0
-logicworkerhandlers	?HandlerAF1E0@@YAHPAUOwner@@@Z	100.0000	100.0000	2	94225f84431f	0xaf1e0
-logicworkerhandlers	?HandlerAF320@@YAHPAUOwner@@@Z	100.0000	100.0000	2	0ea8ffe6b5e4	0xaf320
-logicworkerhandlers	?HandlerAF460@@YAHPAUOwner@@@Z	100.0000	100.0000	2	51d8e4149365	0xaf460
-logicworkerhandlers	?HandlerAF5A0@@YAHPAUOwner@@@Z	100.0000	100.0000	2	b846ef4dee58	0xaf5a0
-logicworkerhandlers	?HandlerAF6E0@@YAHPAUOwner@@@Z	100.0000	100.0000	2	3d974a1ac0ba	0xaf6e0
+logicworkerhandlersa	?Handler0aa6e0@@YAHPAUOwner@@@Z	99.9881	99.9881	1	5c76db60628a	0xaa6e0
+logicworkerhandlersa	?HandlerA9A40@@YAHPAUOwner@@@Z	100.0000	100.0000	1	2878a1d2ac0e	0xa9a40
+logicworkerhandlersa	?HandlerA9B80@@YAHPAUOwner@@@Z	100.0000	100.0000	1	64a1c8e2b3e4	0xa9b80
+logicworkerhandlersa	?HandlerA9CC0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	633c931947bf	0xa9cc0
+logicworkerhandlersa	?HandlerA9E00@@YAHPAUDnnOwner@@@Z	97.5269	97.5269	1	d8006f8d7114	0xa9e00
+logicworkerhandlersa	?HandlerA9F60@@YAHPAUOwner@@@Z	100.0000	100.0000	1	8602a7ef7465	0xa9f60
+logicworkerhandlersa	?HandlerAA0A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	f43abd0a218a	0xaa0a0
+logicworkerhandlersa	?HandlerAA1E0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	07459501e9a2	0xaa1e0
+logicworkerhandlersa	?HandlerAA320@@YAHPAUOwner@@@Z	100.0000	100.0000	1	857651c0f8b2	0xaa320
+logicworkerhandlersa	?HandlerAA460@@YAHPAUOwner@@@Z	100.0000	100.0000	1	7cd13e4b5cf7	0xaa460
+logicworkerhandlersa	?HandlerAA5A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	0b2d4f117a08	0xaa5a0
+logicworkerhandlersa	?HandlerAA820@@YAHPAUOwner@@@Z	100.0000	100.0000	1	d42993667048	0xaa820
+logicworkerhandlersa	?HandlerAA960@@YAHPAUOwner@@@Z	100.0000	100.0000	1	7c952cdf4621	0xaa960
+logicworkerhandlersa	?HandlerAAAA0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	691a44ab9c80	0xaaaa0
+logicworkerhandlersa	?HandlerAABE0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	daa36c265dfc	0xaabe0
+logicworkerhandlersb	?HandlerAF0A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	5a82b1ae79e0	0xaf0a0
+logicworkerhandlersb	?HandlerAF1E0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	94225f84431f	0xaf1e0
+logicworkerhandlersb	?HandlerAF320@@YAHPAUOwner@@@Z	100.0000	100.0000	1	0ea8ffe6b5e4	0xaf320
+logicworkerhandlersb	?HandlerAF460@@YAHPAUOwner@@@Z	100.0000	100.0000	1	51d8e4149365	0xaf460
+logicworkerhandlersb	?HandlerAF5A0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	b846ef4dee58	0xaf5a0
+logicworkerhandlersb	?HandlerAF6E0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	3d974a1ac0ba	0xaf6e0
 mainmenubuilder	?BuildMainMenuTree@@YAXPAX@Z	76.8068	76.8068	5	25e951edabc3	0xa11d0
 mainmenubuilder	?SetMenuTextRect@@YAXXZ	100.0000	100.0000	1	f58ff91e1747	0xa1190
 maplogic	??1CMapLogic@@UAE@XZ	100.0000	100.0000	2	8d0ae50b06a6	0x113c0
