@@ -20,6 +20,21 @@
 #include <Rez/RezList.h> // CRezList AddHead (0x1851e0) - owner child-list enroll
 #include <rva.h>
 
+// The two private fopen-mode literals referenced ONLY by Open@CRezItm + Open@CRezFile.
+// cl mangles the `extern const char[]` reference with the `P` storage class, which a
+// DATA() label (clang's `Q` mangledName) misses; @data-symbol names the exact cl
+// mangling and is authority-checked against rezfile.obj's undefined externals. (s_rb
+// @0x20b668 is bound by DirectSoundMgr.cpp, which shares it.)
+// @data-symbol: ?s_rPlusB@@3PBDB 0x0021a0a4
+// @data-symbol: ?s_wPlusB@@3PBDB 0x0021a0a8
+
+// NOTE: the three RELOC_VTBL placeholder ??_7 vptr-stores below (CAbstract13ca30 /
+// CRezParseNode / CRezDir13cb80 -> retail 0x1ef760=CObjListBase, 0x1ef7d0=CVtEmit_1ef7d0)
+// stay reloc-UNBOUND: the symbol_names per-rva dedup keeps ONE name per address, so a
+// fiction alias at an already-canonically-bound vtable rva cannot bind. These become
+// faithful only when the placeholder's real identity is recovered (@identity-TODO on
+// each RELOC_VTBL) so cl references the canonical ??_7 directly - not an alias job.
+
 // ---------------------------------------------------------------------------
 // CRezItmBase::CRezItmBase(parent)
 //   mov [this] = base vtbl; mov [this+0xc] = parent. Out-of-line so
@@ -63,7 +78,7 @@ CRezItm::~CRezItm() {
         Close();
     }
     if (m_readBuf != 0) {
-        RezFree(m_readBuf);
+        ::operator delete(m_readBuf);
     }
 }
 
@@ -80,9 +95,8 @@ CRezItm::~CRezItm() {
 // lowers to retail's `test edi,edi; ja` - the equality `== 0` form gave `jne`, and
 // wrapping the body in `if(count>0)` cascaded (99.3%->83.4%); the `<= 0`
 // early-return flips the one opcode with no cascade (docs/patterns/
-// unsigned-zero-guard-le-not-eq.md). Only residual: the four buffered-IO calls,
-// which the delinker names bare `fseek`/`fread` (Ghidra FLIRT) vs our
-// `_RezFSeek`/`_RezFRead` - identical `call rel32`, a delinker bare-name artifact.
+// unsigned-zero-guard-le-not-eq.md). The four buffered-IO calls are the real CRT
+// fseek/fread (retail 0x18c3a0/0x18c220), now bound by name (reloc-faithful).
 RVA(0x0013c600, 0xbd)
 i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
     if (count <= 0) {
@@ -92,7 +106,7 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
     i32 pos = base + off;
 
     if (m_pos != pos) {
-        while (RezFSeek(m_fp, pos, 0) != 0) {
+        while (fseek(m_fp, pos, 0) != 0) {
             if (m_parent->Retry() == 0) {
                 m_pos = -1;
                 return 0;
@@ -100,13 +114,13 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
         }
     }
 
-    u32 got = RezFRead(buf, 1, count, m_fp);
+    u32 got = fread(buf, 1, count, m_fp);
     while (got != count) {
         if (m_parent->Retry() == 0) {
             m_pos = -1;
             return 0;
         }
-        got = RezFRead(buf, 1, count, m_fp);
+        got = fread(buf, 1, count, m_fp);
     }
 
     m_pos = got + pos;
@@ -125,9 +139,8 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 // 99.69% (reloc-masked plateau) - every code byte matches retail. The count guard
 // now spells `if(count <= 0)` (unsigned), lowering to retail's `test;jbe` (the
 // `== 0` form gave `je`; see Read's note + docs/patterns/
-// unsigned-zero-guard-le-not-eq.md). Only residual: the buffered-IO calls the
-// delinker names bare `fseek`/`fread` (Ghidra FLIRT) vs our `_RezFSeek`/`_RezFWrite`
-// - identical `call rel32`, a delinker bare-name artifact (not steerable from src).
+// unsigned-zero-guard-le-not-eq.md). The buffered-IO calls are the real CRT
+// fseek/fwrite (retail 0x18c3a0/0x18cb40), now bound by name (reloc-faithful).
 RVA(0x0013c6c0, 0x97)
 i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
     m_pos = -1;
@@ -137,18 +150,18 @@ i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
 
     i32 pos = off + base;
 
-    while (RezFSeek(m_fp, pos, 0) != 0) {
+    while (fseek(m_fp, pos, 0) != 0) {
         if (m_parent->Retry() == 0) {
             return 0;
         }
     }
 
-    u32 put = RezFWrite(buf, 1, count, m_fp);
+    u32 put = fwrite(buf, 1, count, m_fp);
     while (put != count) {
         if (m_parent->Retry() == 0) {
             return 0;
         }
-        put = RezFWrite(buf, 1, count, m_fp);
+        put = fwrite(buf, 1, count, m_fp);
     }
     return put;
 }
@@ -166,11 +179,11 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
             if (readonly) {
                 return 0;
             }
-            m_fp = Eng_fopen(filename, s_wPlusB);
+            m_fp = fopen(filename, s_wPlusB);
         } else if (readonly) {
-            m_fp = Eng_fopen(filename, s_rb);
+            m_fp = fopen(filename, s_rb);
         } else {
-            m_fp = Eng_fopen(filename, s_rPlusB);
+            m_fp = fopen(filename, s_rPlusB);
         }
         if (m_fp != 0) {
             break;
@@ -185,9 +198,9 @@ i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
 
     m_18 = readonly;
     if (m_readBuf != 0) {
-        RezFree(m_readBuf);
+        ::operator delete(m_readBuf);
     }
-    m_readBuf = RezAlloc(strlen(filename) + 1);
+    m_readBuf = ::operator new(strlen(filename) + 1);
     if (m_readBuf != 0) {
         strcpy((char*)m_readBuf, filename);
     }
@@ -215,7 +228,7 @@ i32 CRezItm::Close() {
 
     i32 ok = 0;
     while (ok == 0) {
-        if (RezFClose(m_fp) == 0) {
+        if (fclose(m_fp) == 0) {
             ok = 1;
         } else {
             ok = 0;
@@ -227,30 +240,26 @@ i32 CRezItm::Close() {
 
     m_fp = 0;
     if (m_readBuf != 0) {
-        RezFree(m_readBuf);
+        ::operator delete(m_readBuf);
     }
     m_readBuf = 0;
     m_pos = -1;
     return ok;
 }
 
-// The FILE*-readable probe (0x125b50): returns 0 when a byte is available (the loop
-// keeps retrying while it reports "not ready"). Statically-linked CRT helper; external
-// no-body so the `call rel32` displacement is reloc-masked. __cdecl, arg on the stack.
-extern "C" i32 RezItmProbe(void* fp); // 0x125b50
-
 // ---------------------------------------------------------------------------
 // CRezItm::Scan()  (vtable slot 6; re-homed from src/Stub/BoundaryUpper.cpp)
-// Reset the position cursor, then (if a FILE* is open) poll the stream until a byte
-// is readable, retrying through the owner's Retry() gate. Returns 1 once ready, 0 if
-// no FILE* or the gate gave up.
+// Reset the position cursor, then (if a FILE* is open) fflush the stream, retrying
+// through the owner's Retry() gate until the flush succeeds (fflush==0). Returns 1
+// once flushed, 0 if no FILE* or the gate gave up. (The 0x125b50 callee is the CRT
+// fflush; a prior reconstruction reloc-masked it under the fake name RezItmProbe.)
 RVA(0x0013c8a0, 0x45)
 i32 CRezItm::Scan() {
     m_pos = -1;
     if (m_fp) {
         i32 found;
         do {
-            if (RezItmProbe(m_fp) == 0) {
+            if (fflush(m_fp) == 0) {
                 found = 1;
             } else {
                 found = 0;
@@ -427,7 +436,7 @@ CRezDir13cb80::~CRezDir13cb80() {
         ((CRezFile*)this)->Close();
     }
     if (m_10) {
-        RezFree(m_10);
+        ::operator delete(m_10);
     }
     m_18->m_1c.Remove((CObjNode*)this);
 }
@@ -446,17 +455,17 @@ i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
     if (m_handle == 0) {
         Open();
     }
-    while (RezFSeek(m_handle, pos, 0) != 0) {
+    while (fseek(m_handle, pos, 0) != 0) {
         if (m_mgr->m_gate->Retry() == 0) {
             return 0;
         }
     }
-    u32 got = RezFRead(buf, 1, count, m_handle);
+    u32 got = fread(buf, 1, count, m_handle);
     while (got != count) {
         if (m_mgr->m_gate->Retry() == 0) {
             return 0;
         }
-        got = RezFRead(buf, 1, count, m_handle);
+        got = fread(buf, 1, count, m_handle);
     }
     return got;
 }
@@ -472,17 +481,17 @@ i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
     if (m_handle == 0) {
         Open();
     }
-    while (RezFSeek(m_handle, pos, 0) != 0) {
+    while (fseek(m_handle, pos, 0) != 0) {
         if (m_mgr->m_gate->Retry() == 0) {
             return 0;
         }
     }
-    u32 put = RezFWrite(buf, 1, count, m_handle);
+    u32 put = fwrite(buf, 1, count, m_handle);
     while (put != count) {
         if (m_mgr->m_gate->Retry() == 0) {
             return 0;
         }
-        put = RezFWrite(buf, 1, count, m_handle);
+        put = fwrite(buf, 1, count, m_handle);
     }
     return put;
 }
@@ -493,12 +502,12 @@ i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
 RVA(0x0013cd60, 0x49)
 i32 CRezFile::Flush() {
     if (m_handle != 0) {
-        i32 ok = (Eng_fflush(m_handle) == 0);
+        i32 ok = (fflush(m_handle) == 0);
         while (!ok) {
             if (m_mgr->m_gate->Retry() == 0) {
                 return 0;
             }
-            ok = (Eng_fflush(m_handle) == 0);
+            ok = (fflush(m_handle) == 0);
         }
         return ok;
     }
@@ -528,11 +537,11 @@ i32 CRezFile::Open() {
             if (m_mgr->m_readonly) {
                 return 0;
             }
-            m_handle = Eng_fopen(m_name, s_wPlusB);
+            m_handle = fopen(m_name, s_wPlusB);
         } else if (m_mgr->m_readonly) {
-            m_handle = Eng_fopen(m_name, s_rb);
+            m_handle = fopen(m_name, s_rb);
         } else {
-            m_handle = Eng_fopen(m_name, s_rPlusB);
+            m_handle = fopen(m_name, s_rPlusB);
         }
         if (m_handle != 0) {
             break;
@@ -560,12 +569,12 @@ i32 CRezFile::Close() {
     if (m_handle == 0) {
         return 1;
     }
-    i32 ok = (RezFClose(m_handle) == 0);
+    i32 ok = (fclose(m_handle) == 0);
     while (!ok) {
         if (m_mgr->m_gate->Retry() == 0) {
             return 0;
         }
-        ok = (RezFClose(m_handle) == 0);
+        ok = (fclose(m_handle) == 0);
     }
     m_mgr->m_openCount--;
     m_mgr->m_openList.Remove(this);

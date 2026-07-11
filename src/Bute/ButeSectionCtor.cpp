@@ -23,6 +23,17 @@
 // CButeNodeEntry base). Bound here in the emitting TU (labels.py scans @data-symbol
 // comments per-.cpp, not through headers).
 // @data-symbol: ??_7CBSecStream@@6BCButeNodeEntry@@@ 0x001f0514 0x4
+// The +0x00 PRIMARY vtable @0x1f0510: cl names it through the ultimate polymorphic
+// base (zErrHandling), NOT the simple ??_7CBSecStream@@6B@ that VTBL() emits, so the
+// ctor's vptr-store reloc needs the through-base name. Same datum as CBSecStream's
+// VTBL (its own vtable); the through-base name sorts last and wins the per-rva dedup.
+// @data-symbol: ??_7CBSecStream@@6BzErrHandling@@@ 0x001f0510
+
+// CBSecObj10f's ctor (0x16f680, a 3-byte `mov eax,ecx; ret` - empty __thiscall ctor
+// returning `this`) lives in a foreign .text band (<this obj's 0x170210), so it stays
+// an undefined external here. @rva-symbol only binds obj-DEFINED thunks, so this CALL
+// stays reloc-UNBOUND until CBSecObj10f's ctor is reconstructed in its own 0x16f6xx TU
+// band (cross-TU work). @reloc-TODO.
 
 RVA(0x00170210, 0x118)
 CButeSection::CButeSection() {

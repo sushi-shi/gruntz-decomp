@@ -42,10 +42,17 @@
 // second-base-in-derived vtable @0x5f0518 at +0x08) after the external base ctor
 // runs (== the old manual double stamp). The concrete class has no RTTI
 // type-descriptor in retail so the name stays a placeholder; base + module
-// (zPTree, the .bute config tree) are proven.
+// (zPTree, the .bute config tree) are proven. The u8 datum is .text-embedded at
+// 0x174df0; bound via @data-symbol (cl mangles it ?g_node174df0Tag@@3EA).
+// @data-symbol: ?g_node174df0Tag@@3EA 0x00174df0
 extern u8 g_node174df0Tag; // 0x574df0  kind descriptor (in .text)
 
 VTBL(CButeCfgNode174d, 0x001f051c); // node primary (most-derived) vtable @+0x00
+// The ctor's +0x00 primary vptr-store: cl names this class's OWN primary vtable through
+// the ultimate polymorphic base (zErrHandling), not the simple ??_7...@@6B@ that VTBL()
+// emits, so the reloc needs the through-base alias (same 0x1f051c datum; the through-base
+// name sorts last and wins the per-rva dedup).
+// @data-symbol: ??_7CButeCfgNode174d@@6BzErrHandling@@@ 0x001f051c
 // The +0x08 second-base-in-derived vtable @0x5f0518 (stamped by the ctor's
 // `mov [esi+0x8],0x5f0518`). Being zPTree-MI-derived, cl emits this secondary itself
 // as ??_7CButeCfgNode174d@@6BCButeNodeEntry@@ (verified in butenode.obj); bind the
@@ -92,6 +99,12 @@ struct CButeStore : zErrHandling, CButeNodeEntry {
     i32 m_child28; // +0x28  child link
 };
 SIZE(CButeStore, 0x2c); // MI: zErrHandling @0 (8B) + CButeNodeEntry @8 (0x10B) + child links
+// The dtor's +0x08 secondary vptr-store: cl names CButeStore's OWN CButeNodeEntry-base
+// vtable ??_7CButeStore@@6BCButeNodeEntry@@@ (0x1e949c, same datum VTBL'd simply as
+// ??_7CButeStore@@6B@; the through-base name sorts last and wins the per-rva dedup).
+// (The +0x00 primary vptr @0x1e94ac is shared with zPTree's own vtable - a genuine
+// identity conflation, @identity-TODO, that the per-rva dedup keeps under ??_7zPTree.)
+// @data-symbol: ??_7CButeStore@@6BCButeNodeEntry@@@ 0x001e949c
 RVA(0x00174d70, 0x70)
 CButeStore::~CButeStore() {
     ClearRecursive(0);

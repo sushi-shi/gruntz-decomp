@@ -168,10 +168,11 @@ public:
     // m_readBuf, then resets the cursor. (0x13c760)
     i32 Open(char* filename, i32 readonly, i32 write);
 
-    // Opaque handles kept as void* (RezMgr.h is pulled into /O2-sensitive TUs like
-    // Image.cpp, so <stdio.h>/FILE cannot be injected without rescheduling them):
-    void* m_fp;      // +0x10  opaque CRT FILE* (= 0); passed to RezF* by value
-    void* m_readBuf; // +0x14  raw heap read buffer (= 0); RezAlloc'd / RezFree'd
+    // <Mfc.h> (included above) already pulls <stdio.h>, so FILE is in scope here; the
+    // handle is the real CRT FILE* (a pointer-type change is matching-neutral - void*
+    // and FILE* are both 4 bytes and m_fp is only touched in RezFile.cpp):
+    FILE* m_fp;      // +0x10  CRT FILE* (= 0); passed to fseek/fread/... by value
+    void* m_readBuf; // +0x14  raw heap read buffer (= 0); operator new'd / operator delete'd
     i32 m_18;        // +0x18  readonly flag (Open stores its readonly arg here)
     i32 m_1c;        // +0x1c  (set by the virtual load, not this TU; role unproven)
     i32 m_pos;       // +0x20  position cursor (= -1)

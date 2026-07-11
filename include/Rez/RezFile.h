@@ -48,11 +48,13 @@ extern "C" void RezFree(void* p);
 //   s_rb     "rb"  (read-only:  m_write==0 && m_readonly!=0)  - shared w/ SoundDevice
 //   s_rPlusB "r+b" (read/write: m_write==0 && m_readonly==0)
 //   s_wPlusB "w+b" (write:      m_write!=0 && m_readonly==0)
-DATA(0x0020b668)
+// Bound via @data-symbol (not DATA): clang mangles the const-char[] extern with a
+// `Q` storage class while cl 5.0 emits `P` (?s_X@@3PBDB), so a DATA() label's clang
+// mangledName misses the base obj's undefined external ([[data-binding-mangling-gotchas]]).
+// @data-symbol is scanned per-.cpp, so the P-mangled bindings live in RezFile.cpp
+// (s_rb is also bound by DirectSoundMgr.cpp, which shares the datum).
 extern const char s_rb[];
-DATA(0x0021a0a4)
 extern const char s_rPlusB[];
-DATA(0x0021a0a8)
 extern const char s_wPlusB[];
 
 // The recover/keep-going gate (CRezItmBase's owner shape): slot-2 Retry returns
@@ -116,7 +118,7 @@ public:
     // next @+0x04, prev @+0x08 (written by CRezList::AddHead / CObjList::Remove).
     char m_pad0c[0x10 - 0x0c]; // +0x0c
     char* m_name;              // +0x10  filename passed to fopen
-    void* m_handle;            // +0x14  opaque CRT FILE* (0 = closed); passed to RezF* by value
+    FILE* m_handle;            // +0x14  CRT FILE* (0 = closed); passed to fseek/fread/... by value
     CRezFileMgr* m_mgr;        // +0x18  owning handle cache
 };
 SIZE_UNKNOWN(CRezFile); // >= 0x1c; the cache's alloc size is not pinned here

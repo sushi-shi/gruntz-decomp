@@ -112,7 +112,7 @@ CHash::CHash() {
 RVA(0x00184960, 0x70)
 CHashBase* CHashBase::Construct(i32 count) {
     m_count = count;
-    void* buf = RezAlloc((count << 4) + 4);
+    void* buf = ::operator new((count << 4) + 4);
     CHashSlot* buckets = 0;
     if (buf) {
         *(i32*)buf = count;
@@ -145,15 +145,25 @@ CHashSlot::CHashSlot() {
     m_chain.m_tail = 0;
 }
 
+// CHashSlot_Dtor (0x184a30): the no-op element destructor (a CHashSlot has trivial
+// teardown). A bare 1-byte `ret` taken by address and handed to the vector-dtor
+// iterator (Tm_DestroyArray/??_M) as the per-element dtor. Real function in this obj's
+// band (was declared-only in Hash.h); defining it here binds the &CHashSlot_Dtor
+// fn-ptr reloc in RemoveAll to its true RVA.
+RVA(0x00184a30, 1)
+void CHashSlot_Dtor() {}
+
 // RemoveAll (0x184a40): array-delete the bucket array. The count cookie sits one
-// word before m_buckets (the RezAlloc header); each 16-byte slot's dtor is a
-// no-op; RezFree the cookie. The cookie read is a deliberate alloc-header offset.
+// word before m_buckets (the operator-new header); each 16-byte slot's dtor is the
+// no-op above; operator delete the cookie. The cookie read is a deliberate alloc-
+// header offset. Tm_DestroyArray is the CRT `` `eh vector destructor iterator' ``
+// (??_M @0x11f640); operator delete is the scalar ??3 (0x1b9b82).
 RVA(0x00184a40, 0x27)
 void CHashBase::RemoveAll() {
     if (m_buckets) {
         u32* cookie = (u32*)((char*)m_buckets - 4);
         Tm_DestroyArray(m_buckets, 0x10, *cookie, &CHashSlot_Dtor);
-        RezFree(cookie);
+        ::operator delete(cookie);
     }
 }
 

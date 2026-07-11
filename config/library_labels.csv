@@ -1437,6 +1437,7 @@ rva,name,lib,confidence,source
 0x11f570,__ftol,LIBCMT,HIGH,anchored
 0x11f5a0,??_L@YGXPAXIHP6EX0@Z1@Z,LIBCMT,LOW,anchored
 0x11f640,??_M@YGXPAXIHP6EX0@Z@Z,LIBCMT,LOW,anchored
+0x11f640,?Tm_DestroyArray@@YGXPAXHIP6AXXZ@Z,LIBCMT,HIGH,reloc-alias
 0x11f6f0,?__ArrayUnwind@@YGXPAXIHP6EX0@Z@Z,LIBCMT,LOW,anchored
 0x11f780,_fclose,LIBCMT,HIGH,anchored
 0x11f7c0,__fclose_lk,LIBCMT,HIGH,anchored
@@ -1929,6 +1930,7 @@ rva,name,lib,confidence,source
 0x1699c0,msc_ios_vbase_ctor_thunk_1699c0,LIBCMT,LOW,iostream-cluster-bail
 0x169c00,msc_ios_ctor_169c00,LIBCMT,LOW,iostream-cluster-bail
 0x169d70,??1ios@@UAE@XZ,LIBCMT,LOW,iostream-cluster-bail
+0x169d70,?Dtor@CButeIosSub@@QAEXXZ,LIBCMT,HIGH,reloc-alias
 0x169dd0,msc_ios_setsub_169dd0,LIBCMT,LOW,iostream-cluster-bail
 0x16b650,msc_ios_vbase_ctor_thunk_16b650,LIBCMT,LOW,iostream-cluster-bail
 0x16c0c0,msc_ios_vbase_ctor_thunk_16c0c0,LIBCMT,LOW,iostream-cluster-bail
@@ -1976,8 +1978,6 @@ rva,name,lib,confidence,source
 0x16f6b0,__fpclear,LIBCMT,LOW,anchored
 0x170370,__fpclear,LIBCMT,LOW,anchored
 0x173700,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x173840,__fpclear,LIBCMT,LOW,anchored
-0x173dc0,__fpclear,LIBCMT,LOW,anchored
 0x174330,__fpclear,LIBCMT,LOW,anchored
 0x174890,__fpclear,LIBCMT,LOW,anchored
 0x174d30,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
@@ -2002,7 +2002,6 @@ rva,name,lib,confidence,source
 0x184670,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x1847b0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x1847c0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x184a30,__fpclear,LIBCMT,LOW,anchored
 0x184b80,___inittime,LIBCMT,LOW,anchored
 0x184df0,__fpclear,LIBCMT,LOW,anchored
 0x1855d0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
@@ -2069,7 +2068,7 @@ rva,name,lib,confidence,source
 0x18c6b0,___dtoxmode,LIBCMT,HIGH,anchored
 0x18c780,__stat,LIBCMT,HIGH,anchored
 0x18cac0,_IsRootUNCName,LIBCMT,HIGH,anchored
-0x18cb40,_fread,LIBCMT,AMBIG,anchored
+0x18cb40,_fwrite,LIBCMT,HIGH,anchored
 0x18cb80,__fwrite_lk,LIBCMT,HIGH,anchored
 0x18ccd0,_ftell,LIBCMT,HIGH,anchored
 0x18cd00,__ftell_lk,LIBCMT,HIGH,anchored
@@ -3283,7 +3282,9 @@ rva,name,lib,confidence,source
 0x191d20,??6ostream@@QAEAAV0@H@Z,LIBCIMT,HIGH,anchored
 0x191df0,??6ostream@@QAEAAV0@N@Z,LIBCIMT,HIGH,anchored
 0x191f30,??5istream@@QAEAAV0@AAH@Z,LIBCIMT,HIGH,anchored
+0x191f30,?ReadInt@CConfigReader@@QAEXPAX@Z,LIBCIMT,HIGH,reloc-alias
 0x191fe0,??5istream@@QAEAAV0@AAN@Z,LIBCIMT,HIGH,anchored
+0x191fe0,?ReadDouble@CConfigReader@@QAEXPAX@Z,LIBCIMT,HIGH,reloc-alias
 0x192060,??6ostream@@QAEAAV0@E@Z,LIBCIMT,HIGH,anchored
 0x192120,??6ostream@@QAEAAV0@J@Z,LIBCIMT,HIGH,anchored
 0x1921e0,??6ostream@@QAEAAV0@K@Z,LIBCIMT,HIGH,anchored
@@ -3378,11 +3379,11 @@ rva,name,lib,confidence,source
 0x1d3330,Thunk_1d3330,MSVC-THUNK,HIGH,asm-carveout
 0x169be0,CButeMgrHelper_FuncA,MSVC-THUNK,HIGH,asm-carveout
 0x1915a8,_DirectSoundCreate@12,MSVC-THUNK,HIGH,dsound-import-thunk
+0x169be0,?VbaseTeardown@CButeIosSub@@QAEXXZ,MSVC-THUNK,HIGH,reloc-alias
 0x17f570,Dtor_17f570,GAME-ASM,HIGH,asm-carveout
 0x1d4a18,FreeLibHost_Dtor,GAME-ASM,HIGH,asm-carveout
 0x1c7e6d,Dtor_1c7e6d,GAME-ASM,HIGH,asm-carveout
 0x18c1f5,IntegerScale,GAME-ASM,HIGH,asm-carveout
-0x16e0f0,GetCallerRetAddr,GAME-ASM,HIGH,asm-carveout
 0x08c3b0,??0CRgn@@QAE@XZ,NAFXCW,MED,manual-stub-reclass
 0x1d38a1,mfc_afx_win_state_ctor_1d38a1,NAFXCW,MED,manual-stub-reclass
 0x1d496b,mfc_winapp_eh_funclet_1d496b,NAFXCW,MED,manual-stub-reclass
@@ -3392,6 +3393,8 @@ rva,name,lib,confidence,source
 0x11eaa8,mfc_exception_base_dtor_11eaa8,NAFXCW,MED,manual-stub-reclass
 0x11eaf5,mfc_exception_base_dtor_11eaf5,NAFXCW,MED,manual-stub-reclass
 0x16dfc0,bute_node_entry_base_dtor_16dfc0,LIBCMT,LOW,manual-stub-reclass
+0x16dfc0,??1CButeBase2_21@@UAE@XZ,LIBCMT,LOW,reloc-alias
+0x16dfc0,??1CButeNodeEntry@@UAE@XZ,LIBCMT,LOW,reloc-alias
 0x16b510,??0istream@@QAE@PAVstreambuf@@@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x16bfa0,??0ostream@@QAE@PAVstreambuf@@@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x16c570,?seekp@ostream@@QAEAAV1@JW4seek_dir@ios@@@Z,LIBCIMT,HIGH,manual-crt-reclass

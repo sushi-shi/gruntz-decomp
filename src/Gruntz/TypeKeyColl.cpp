@@ -89,6 +89,14 @@ extern void* g_typeNodes;
 // through (distinct from g_projActName @0x6bf454; this one @0x6bf45c). Reloc-masked.
 extern void* g_projActName2; // 0x6bf45c
 
+// g_containerName (0x2bf408, char[] in <Wap32/zBitVec.h>) - the CContainerErr base-ctor
+// name arg the zBitVec ctors pass. Bound via @data-symbol (the char[] extern mangles
+// `?g_containerName@@3PADA` under cl; scanned per-.cpp so it lives here, not the header).
+// g_defaultProjActSize (0x21ad28, i32 in zBitVec.h) - the fallback capacity the
+// default/HH zBitVec ctors size to.
+// @data-symbol: ?g_containerName@@3PADA 0x002bf408
+// @data-symbol: ?g_defaultProjActSize@@3HA 0x0021ad28
+
 // The container OOM message the _zvec grow path reports (0x61adf4).
 DATA(0x0021adf4)
 extern const char s_out_of_memory[]; // 0x61adf4
@@ -112,9 +120,9 @@ extern CVariantSlot* g_typeColl2;
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 
-extern "C" void RezFree(void* p);    // 0x1b9b82 (engine operator delete / free)
-extern "C" void* RezAlloc(u32 size); // 0x1b9b46 (engine heap alloc, NAFXCW op-new)
-extern void* GetRetAddr();           // 0x16d990 (the _ReturnAddress breadcrumb capture)
+// The engine heap alloc/free ARE the global operator new (0x1b9b46 = ??2) / operator
+// delete (0x1b9b82 = ??3); called as ::operator new/delete (no decl needed).
+extern void* GetRetAddr(); // 0x16d990 (the _ReturnAddress breadcrumb capture)
 
 // The first-differing-bit (crit-bit index) of two keys (__cdecl). The name
 // matches the delinker's symbol for 0x16e480 so the `call` reloc pairs; defined
@@ -180,15 +188,19 @@ extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
 
 // ===========================================================================
 // 0x16d000 - config field loader.  __cdecl(reader, data): pulls 29 doubles and
-// one int out of the reader into the data block at fixed offsets, returning the
-// reader.  Models the reader's per-field accessors (0x191fe0 double / 0x191f30
-// int, both __thiscall) as reloc-masked no-body methods.
+// one int out of the reader into the data block at fixed offsets via the stream
+// extraction operators, returning the reader.  The reader is the global (pre-std)
+// C++ `istream`: 0x191fe0 = istream::operator>>(double&) and 0x191f30 =
+// istream::operator>>(int&) (both LIBCIMT carve-outs). ReadDouble/ReadInt are our
+// reloc-mask names for those library operators - EXEMPT via config/library_labels.csv
+// (reloc-alias rows). @identity-TODO: fold CConfigReader onto the real istream once a
+// safe include path exists (renaming LoadConfigFields' RVA-tracked mangled name).
 // ===========================================================================
 SIZE_UNKNOWN(CConfigReader);
 class CConfigReader {
 public:
-    void ReadDouble(void* field); // 0x191fe0
-    void ReadInt(void* field);    // 0x191f30
+    void ReadDouble(void* field); // 0x191fe0  istream::operator>>(double&)
+    void ReadInt(void* field);    // 0x191f30  istream::operator>>(int&)
 };
 
 RVA(0x0016d000, 0x189)
@@ -305,7 +317,7 @@ zBitVec& zBitVec::operator=(const zBitVec& that) {
     if (this != &that) {
         if (m_capacity != that.m_capacity) {
             if ((u32)m_capacity > 0x20) {
-                RezFree(m_words);
+                ::operator delete(m_words);
             }
             if ((u32)that.m_capacity > 0x20) {
                 m_words = (u32*)malloc(((u32)that.m_capacity >> 5) * 4);
@@ -681,11 +693,11 @@ void* CButeTree::Insert(const char* key, void* value) {
         critbit = newbit - 1;
     }
 
-    CButeTreeNode* node = (CButeTreeNode*)RezAlloc(0x14);
+    CButeTreeNode* node = (CButeTreeNode*)::operator new(0x14);
     if (node != 0) {
         node->m_value = value;
         node->m_bit = critbit;
-        char* keybuf = (char*)RezAlloc((m_keyBitLength >> 3) + 1);
+        char* keybuf = (char*)::operator new((m_keyBitLength >> 3) + 1);
         node->m_key = keybuf;
         if (keybuf != 0) {
             strcpy(keybuf, key);
@@ -890,12 +902,24 @@ void CButeStore::ClearRecursive(CButeStoreNode* node) {
     if (n->m_right != 0 && n->m_right->m_key > n->m_key) {
         ClearRecursive(n->m_right);
     }
-    RezFree(n->m_str);
+    ::operator delete(n->m_str);
     if (m_flags & 2) {
         m_cb(n->m_val);
-        RezFree(n->m_val);
+        ::operator delete(n->m_val);
     }
-    RezFree(n);
+    ::operator delete(n);
+}
+
+// GetCallerRetAddr (0x16e0f0): return the caller's return address, read from the
+// caller's frame at [ebp+4]. Naked leaf - a 4-byte `mov eax,[ebp+4]; ret` (an
+// intrinsic emits a different encoding, so inline asm is the only faithful form, like
+// GetRetAddr @0x16d990). In this TU's own .text band; was a GAME-ASM carve-out.
+RVA(0x0016e0f0, 4)
+__declspec(naked) void* GetCallerRetAddr() {
+    __asm {
+        mov eax, [ebp + 4]
+        ret
+    }
 }
 
 // ===========================================================================

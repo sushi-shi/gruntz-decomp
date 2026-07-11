@@ -34,11 +34,12 @@
 extern "C" void* RezAlloc(u32 size);
 extern "C" void RezFree(void* p);
 
-// The MSVC `'eh vector destructor iterator'` runtime (0x11f640): run `dtor` over
-// `count` elements of `stride` bytes from `base`, descending, under an EH frame.
-// __stdcall (callee-cleanup: retail has no `add esp,0x10` after the call); the
-// reloc to it is masked. (TriggerMgrEh models the cdecl-shaped sibling; here the
-// caller-side cleanup is absent, so this site's helper is __stdcall.)
+// The MSVC `'eh vector destructor iterator'` runtime (0x11f640 = ??_M): run `dtor`
+// over `count` elements of `stride` bytes from `base`, descending, under an EH frame.
+// __stdcall (callee-cleanup: retail has no `add esp,0x10` after the call); the reloc
+// to it is masked. A compiler/CRT helper (LIBCMT carve-out); our name Tm_DestroyArray
+// stands in for the un-spellable ??_M and is library-labelled at 0x11f640 so the
+// reloc site is EXEMPT (config/library_labels.csv).
 void __stdcall Tm_DestroyArray(void* base, i32 stride, u32 count, void (*dtor)()); // 0x11f640
 
 // The MSVC `'eh vector constructor iterator'` runtime (0x11f5a0): run `ctor` over
@@ -48,10 +49,10 @@ void __stdcall Tm_DestroyArray(void* base, i32 stride, u32 count, void (*dtor)()
 void __stdcall
 Tm_ConstructArray(void* base, i32 stride, i32 count, void (*ctor)(), void (*dtor)()); // 0x11f5a0
 
-// The no-op per-element bucket-slot destructor (0x584a30, a bare `ret`); its
-// address is passed to the array-delete. Modeled as a stub so the DIR32 reloc to
-// it falls out.
-void CHashSlot_Dtor(); // 0x584a30 (retail "empty_stub")
+// The no-op per-element bucket-slot destructor (0x184a30, a bare `ret`); its address
+// is passed to the array-delete. DEFINED with RVA() in RezColl.cpp (its true band), so
+// the DIR32 &CHashSlot_Dtor reloc binds to 0x184a30.
+void CHashSlot_Dtor(); // 0x184a30 (retail no-op element dtor)
 // The per-element bucket-slot constructor (0x584a20 == CHashSlot::CHashSlot); its
 // address is passed to the ehvec constructor iterator (a function-ptr, so `void()`).
 void CHashSlot_Ctor(); // 0x584a20 (CHashSlot ctor, as a bare fn-ptr for the iterator)

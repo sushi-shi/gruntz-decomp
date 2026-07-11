@@ -189,6 +189,18 @@ static const char s_fmtNotFound[] = "ButeMgr: Symbol not found - [%s]";
 static const float s_floatZero = 0.0f;
 static const double s_doubleZero = 0.0;
 
+// Bind the error-reporter string/const pool cells to their retail .rdata RVAs. cl
+// names each named-static string-pool constant `_<name>$S<poolid>` (the pool id is a
+// per-TU counter over ButeMgr.cpp's literals; stable while this TU's string set is).
+// @data-symbol is authority-checked against butemgr.obj's defined symbols, so a drift
+// surfaces as a build-time miss rather than a silent regression.
+// @data-symbol: _s_fmtFormatError$S18502 0x002240d0
+// @data-symbol: _s_fmtTypeMismatch$S18505 0x00224204
+// @data-symbol: _s_fmtInvalidTag$S18506 0x00224228
+// @data-symbol: _s_fmtNotFound$S18507 0x00224250
+// @data-symbol: _s_floatZero$S18508 0x001f0520
+// @data-symbol: _s_doubleZero$S18509 0x001f0528
+
 // ParseAttributeFile write-back decorations + sscanf format strings (reloc-masked
 // file-scope literals, matched against their delinked $SG addresses).
 static const char s_fmtInvalidToken[] = "ButeMgr (%d):  Invalid token encountered.";
@@ -1205,6 +1217,18 @@ bool ButeMgr::ParseAttributeFile() {
 // null-test register differ. Init-list / assignment-body / reversed-order ctor
 // forms all produce identical (ebp-pinned) MSVC codegen; no source lever flips it
 // (see docs/patterns/zero-register-pinning.md - the regalloc wall).
+//
+// Bind the two magic-static cells + the atexit dtor thunk cl emits for each
+// `static CButeRefN s_default;` to their retail RVAs. The guard ($S) + object
+// (s_default) are DATA; the $E atexit thunk is a FUNCTION (obj-defined). cl's local
+// pool ids ($S190xx) are per-TU counters, stable while ButeMgr.cpp's string/local
+// set is; a drift surfaces as a build-time miss (authority-checked vs butemgr.obj).
+// @data-symbol: _?$S31@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4EA$S19092 0x002bf688
+// @data-symbol: _?s_default@?1??GetRef5@CButeMgr@@QAEPAUCButeRef5@@PBD0@Z@4U3@A$S19090 0x002bf6d0
+// @rva-symbol: _$E32 0x00173840
+// @data-symbol: _?$S33@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4EA$S19111 0x002bf67c
+// @data-symbol: _?s_default@?1??GetRef6@CButeMgr@@QAEPAUCButeRef6@@PBD0@Z@4U3@A$S19109 0x002bf690
+// @rva-symbol: _$E34 0x00173dc0
 RVA(0x00173770, 0xc6)
 CButeRef5* CButeMgr::GetRef5(const char* tag, const char* key) {
     static CButeRef5 s_default;
