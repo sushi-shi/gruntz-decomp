@@ -42,6 +42,8 @@ public:
     static void RegisterActs(); // 0x0ad310
     i32 AdvanceAnim();          // 0x0ad510 (re-target bound anim to the draw-delta; ret 0)
     i32 m_40;                   // +0x40
+    char m_pad44[0x54 - 0x44];  // +0x44..0x53 (leaf is 0x54: its only new-site, the
+                                // logic-worker pump @0xaa460, pushes 0x54)
 };
 VTBL(CFrontCandyAni, 0x1e83e4);
 

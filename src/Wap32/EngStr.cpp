@@ -1,12 +1,8 @@
 // EngStr.cpp - WAP32 engine text-render forwarder + container-error helpers around
 // the Ghidra `EngStr` text routine (C:\Proj\incs). The container classes it touches
 // (CContainerErr, zBitVec, CVariantSlot) are the canonical <Wap32/zBitVec.h> shapes.
-#include <Bute/ButeTree.h> // the real CVariantSlot (m_errSink->Remove/Set)
-#include <Wap32/zBitVec.h> // canonical CContainerErr + zBitVec (was <Wap32/EngStr.h>)
+#include <Ints.h>
 #include <rva.h>
-
-#include <stdlib.h> // malloc (0x120b60) - the bit band allocator
-#include <string.h> // memset - the inlined zero-fill
 
 // The text-render worker the draw forwarder tail-calls (a __cdecl that takes the
 // object, two leading args, the font draw-method pointer, then six trailing args;
@@ -69,48 +65,8 @@ void EngStr_DrawText(
     EngStr_RenderText(obj, a1, a2, cfg->m_drawFn, a3, a4, a5, a6, a7, a8);
 }
 
-// CContainerErr::~CContainerErr() - the compiler auto-stamps ??_7CContainerErr at
-// dtor entry (matching retail's stamp-first order), then unregisters the error
-// handler. 0x16da60. VTBL binds the emitted vtable at the retail RVA (reloc-masked).
-// Real-polymorphic now (manual vptr-field stamp drained): cl's implicit dtor-entry
-// store lands stamp-first, exactly as retail does here, so this is byte-exact. (The
-// CTOR at 0x16d9c0 - another TU - is where cl's vptr-first vs retail vptr-last store
-// order would diverge; not in this TU.)
-
-RVA(0x0016da60, 0x12)
-CContainerErr::~CContainerErr() {
-    m_errSink->Remove(this, 0);
-}
-
-// zBitVec::SetSize(nbits) - round the requested bit count up to whole 32-bit
-// words, allocate + zero-fill the word band, and report the realized bit
-// capacity (nwords*32). A request of <=32 bits leaves no band and reports 32.
-// 0x16e100.
-// @early-stop
-// one-instruction sar/shr wall (signed-shift-cast-reschedules.md): retail's
-// `nbits >> 5` lowers to `shr` (the bit count is unsigned); our `int nbits`
-// gives the byte-identical body EXCEPT that one shift as `sar`. Casting the
-// operand to unsigned flips it to `shr` but reschedules the whole round-up
-// block (this->esi vs arg->eax flow, lea vs shl for *4): 1 diff -> 11. So the
-// signed `int` form (the closest, single-opcode miss) is kept.
-RVA(0x0016e100, 0x7f)
-i32 zBitVec::SetSize(i32 nbits) {
-    if ((u32)nbits > 0x20) {
-        i32 nwords = (nbits >> 5) + ((nbits & 0x1f) != 0 ? 1 : 0);
-        m_capacity = nwords;
-        u32* band = (u32*)malloc(nwords * 4);
-        m_words = band;
-        if (!band) {
-            return 0;
-        }
-        memset(band, 0, m_capacity << 2);
-        m_capacity = m_capacity << 5;
-        return 1;
-    }
-    m_words = 0;
-    m_capacity = 0x20;
-    return 1;
-}
+// (~CContainerErr @0x16da60 and zBitVec::SetSize @0x16e100 live in their retail
+//  TU, the merged container obj src/Gruntz/TypeKeyColl.cpp - wave2-H.)
 
 // EngStr.h + local render-family class metadata (hosted at .cpp EOF).
 SIZE_UNKNOWN(EngStrRenderCfg); // render-config partial (pad + drawFn)

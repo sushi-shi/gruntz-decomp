@@ -100,6 +100,21 @@ until the full body lands, then flip it. (Prologue Order A `push -1`-first vs Or
   source order; the `!=` fall-through numbers it last) — see
   [eh-state-numbering-base](eh-state-numbering-base.md).
 
+## Check the UNIT FLAGS before calling this a wall (wave2-H)
+
+The logic-pump family (StateDispatch 0x9b770, the ObjectDropper/DroppedObject/Shadow
+pumps 0xc5630/0xc5770/0xc58b0) sat for months at ~32% behind a claimed
+"MSVC5 cannot re-raise the frame for a bare out-of-line ctor `new`" wall. FALSE:
+those units were compiled `flags="base"` - **no /GX at all**, so *nothing* could
+raise a frame, and every in-source experiment (real virtuals, declared dtors,
+inline wrappers) was doomed from the start. Under the TU's true `eh` profile the
+plain `new CLeaf(obj)` over a bare out-of-line ctor raises retail's
+operator-delete-on-ctor-throw frame EXACTLY. With the UNSIGNED switch key
+([switch-key-unsigned-ja-vs-jg](switch-key-unsigned-ja-vs-jg.md)) and the right
+convention (`__cdecl`, plain `ret`), all four went 32% -> **100%**. Rule: an
+"impossible missing /GX frame" diagnosis is invalid until you have confirmed the
+unit's flag profile matches the interval's EH evidence (TU_MIGRATION FLAGS table).
+
 ## Related
 
 - [throwing-operator-new-eh-state-transition](throwing-operator-new-eh-state-transition.md)

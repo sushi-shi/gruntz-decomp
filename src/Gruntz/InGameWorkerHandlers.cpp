@@ -3,7 +3,7 @@
 // message-pump shape; these dispatch on the in-game HUD worker hanging at
 // owner->m_7c instead of the anim worker.
 //
-// The three handlers (0x095750 / 0x095890 / 0x0aa6e0) are __cdecl FREE functions
+// The three handlers (0x095750 / 0x095890 / 0x0959d0) are __cdecl FREE functions
 // (the owner is a stack arg at [esp+0x18], ecx is never `this` - the trace
 // clusterer's tomalla-65 grouping was a false grouping; these are not class
 // members). Each reads owner->m_7c (the worker), then runs a /GX message pump
@@ -28,7 +28,6 @@
 // are load-bearing (campaign doctrine).
 #include <rva.h>
 #include <Gruntz/InGameIcon.h>
-#include <Gruntz/EyeCandy.h>
 #include <Gruntz/InGameText.h>
 #include <Gruntz/ToyPeek.h>
 
@@ -129,44 +128,6 @@ i32 Handler0959d0(Owner* owner) {
         case 0: {
             rec->m_1c = 0x3e8;
             CUserLogic* sub = new CToyPeek((CGameObject*)owner);
-            sub->Activate(); // slot 6 (+0x18): activate
-            rec->m_18 = sub;
-            break;
-        }
-        case 0x1d:
-            rec->m_18->UserLogicVfunc9(); // slot 11 (+0x2c)
-            break;
-        case 0x1e:
-            rec->m_18->UserLogicVfunc8(); // slot 10 (+0x28)
-            break;
-        case 0x50:
-            rec->m_18->UserLogicVfuncC(); // slot 14 (+0x38)
-            break;
-        case 0x53:
-            rec->m_18->UserLogicVfuncD(); // slot 15 (+0x3c)
-            break;
-        case 0x52:
-            rec->m_18->UserLogicVfuncA(); // slot 12 (+0x30)
-            break;
-        case 0x51:
-            rec->m_18->UserLogicVfuncB(); // slot 13 (+0x34)
-            break;
-        case 0x3e8:
-            break;
-        default:
-            Worker_DefaultPump(rec->m_18);
-            break;
-    }
-    return 1;
-}
-
-RVA(0x000aa6e0, 0xf1)
-i32 Handler0aa6e0(Owner* owner) {
-    Worker* rec = owner->m_7c;
-    switch (rec->m_1c) {
-        case 0: {
-            rec->m_1c = 0x3e8;
-            CUserLogic* sub = new CEyeCandy((CGameObject*)owner);
             sub->Activate(); // slot 6 (+0x18): activate
             rec->m_18 = sub;
             break;

@@ -1,7 +1,7 @@
 // ObjectDropper.h - the object-dropper tile-logic object (C:\Proj\Gruntz), a
-// CUserLogic leaf (RTTI .?AVCUserLogic@@). Only the /GX leaf dtor is reconstructed
-// here; the ctor (0xc59f0) remains the @stub backlog in
-// src/Stub/ObjectDropper.cpp. Offsets + code bytes are load-bearing.
+// CUserLogic leaf (RTTI .?AVCUserLogic@@). All methods are reconstructed in the
+// merged dropped-object TU (src/Gruntz/DroppedObject.cpp, wave2-H). Offsets +
+// code bytes are load-bearing.
 #ifndef GRUNTZ_COBJECTDROPPER_H
 #define GRUNTZ_COBJECTDROPPER_H
 
@@ -19,13 +19,22 @@ public:
     // 0x000124a0 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x000124a0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_OBJECTDROPPER; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_OBJECTDROPPER;
+    }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     CObjectDropper(CGameObject* obj);   // 0xc59f0 (folds CUserLogic(obj) + the drop setup)
     virtual ~CObjectDropper() OVERRIDE; // 0x124f0 (folds the CUserLogic teardown)
     i32 Update();                       // 0xc62e0 (per-frame drop tick + drift/wrap)
     void FireAct(i32 actId);            // 0xc5f80 (look up + fire the registered act handler)
+    // Construct the class's activation-coordinate registry (g_dropperActReg
+    // @0x64be90) over the fixed [2000,2010] range; free init thunk (ex the
+    // "NetConfigureBe90" parking name), reloc-masked.
+    static void InitActReg(); // 0xc5f00
+    // Bind the per-frame handler (Update) to the activation key "A" via the
+    // shared name registry; the CCheckpointTrigger::RegisterActs archetype.
+    static void RegisterActs(); // 0xc60e0
     // The slot-1 serialize impl (modeled as a plain method so its ?Serialize name + RVA
     // pin; the vtable slot is reloc-masked, like CRollingBall::Serialize).
     i32 Serialize(struct CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc6680

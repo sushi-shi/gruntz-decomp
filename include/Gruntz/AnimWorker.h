@@ -14,11 +14,13 @@
 #define GRUNTZ_ANIMWORKER_H
 
 #include <Ints.h>
+#include <rva.h>
 
 class CUserLogic; // fwd; deref'd in the pump TUs via <Gruntz/UserLogic.h>
 
 // The worker held at owner->m_7c (foreign vtable 0x5efb80). Only the message-pump
 // fields are modeled here.
+SIZE_UNKNOWN(Worker);
 struct Worker {
     char _vft0[4];             // +0x00 foreign object vptr (reduced view; not dispatched)
     char m_pad04[0x18 - 0x04]; // +0x04..0x17
@@ -27,6 +29,7 @@ struct Worker {
 };
 
 // The owner game object handed to each handler; its worker hangs at +0x7c.
+SIZE_UNKNOWN(Owner);
 struct Owner {
     char m_pad00[0x7c];
     Worker* m_7c; // +0x7c

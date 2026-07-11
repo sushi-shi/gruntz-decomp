@@ -16,12 +16,21 @@ public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     // slot 2: per-class logic-type id, inline (emitted with the ctor's vtable in UserLogic.cpp)
     RVA(0x0000fa40, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_FRONTCANDY; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_FRONTCANDY;
+    }
     TILE_LOGIC_TAIL
 public:
-    i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0xfa60 (slot-1 two-chain body; ??_7CFrontCandy slot 1)
+    i32 Serialize(
+        i32 ar,
+        i32 tag,
+        i32 c,
+        i32 d
+    );                             // 0xfa60 (slot-1 two-chain body; ??_7CFrontCandy slot 1)
     CFrontCandy(CGameObject* obj); // 0x0abfa0
     virtual ~CFrontCandy() OVERRIDE;
+    char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf is 0x54: its only new-site, the
+                               // logic-worker pump @0xaa1e0, pushes 0x54)
 };
 VTBL(CFrontCandy, 0x1e84ec);
 

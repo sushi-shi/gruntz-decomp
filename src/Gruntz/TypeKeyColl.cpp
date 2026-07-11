@@ -1,27 +1,45 @@
-// TypeKeyColl.cpp - the shared type-key collection / zDArray engine subsystem.
+// TypeKeyColl.cpp - the shared container/type-registry engine TU at retail
+// .text [0x16d000 .. 0x16e7e8] (C++ Tools container library + the type-key
+// registries; C:\Proj\incs).
 //
-// This is the growable key collection (RTTI CTypeKeyColl, @0x6bf650) and its
-// zDArray-style allocating base that back the per-class type registries used by
-// CKitchenSlime / CProjectile / CWarlord (each models the *registry* side in its
-// own TU; the collection's own ctors / binary-search / global dynamic-init live
-// here). All callees into the deeper engine (the base ctor, the error/insert
-// helper, the CRT alloc/free) are external no-body so their call rel32 / the
-// vtable + global DIR32 stores reloc-mask in objdiff.
+// ONE original TU (wave2-H merge): the former typekeycoll + butetree(interval
+// fns) + userbaselink(interval fns) units were a WOVEN single interval
+// (TU_MIGRATION 0x16d000, weave 0.31; typekeycoll's own 7-frag init run
+// @0x16d6f0 sits MID-interval between userbaselink's 0x16d3a0 and 0x16d710 -
+// one obj), plus the seven in-interval strays proven by first-link contiguity:
+// zBitVec(i32,i32) (ex ProjActCache.cpp), _zvec::GrowTo + ~zDArray (ex
+// ZVec.cpp), CButeNodeEntry/zPTree ctors (ex ButeNode.cpp),
+// CButeStore::ClearRecursive (ex ButeStoreClear.cpp), zBitVec::SetSize +
+// ~CContainerErr (ex EngStr.cpp), and Reg23::Add (ex Registry23.cpp - Reg23 IS
+// CKeyFinder: its Find was the same 0x16e1d0, its m_4 the same +0x04 index;
+// folded onto the one class here).
 //
-// Functions (retail-RVA order):
-//   CTypeKeyColl::CTypeKeyColl   0x16dda0  (derived ctor; calls the 2D-array ctor)
-//   CZArray2D::CZArray2D         0x16de30  (allocating ctor, /GX EH frame)
-//   CKeyFinder::CKeyFinder       0x16e1a0  (the binary-search cursor ctor)
-//   CKeyFinder::Find             0x16e1d0  (binary search over g_keyArray)
-//   ProjTypeXfer                 0x16e4f0  (archive serialize of the resolved entry)
-//   `dynamic initializer for g_buteTree' 0x16e6a0
-//   `dynamic initializer for g_typeColl' 0x16e730
-//   CButeTree::`scalar deleting destructor' 0x16e9c0
+// STILL ELSEWHERE (documented walls): the CContainerErr/zErrHandling ctor
+// (0x16d9c0) stays in GameText.cpp - it needs the deliberately NON-virtual
+// vptr-LAST dual-view (zBitVec.h's note; GameText.h and zBitVec.h never coexist
+// in one TU). The CZArrayRoot/zErrHandling/CContainerErr and CZArray2D/zDArray
+// dual models are a known pending dedup (one real class each).
+//
+// All callees into the deeper engine (the base ctor, the error/insert helper,
+// the CRT alloc/free) are external no-body so their call rel32 / the vtable +
+// global DIR32 stores reloc-mask in objdiff. Field names are placeholders; only
+// OFFSETS + code bytes are load-bearing (campaign doctrine).
 #include <Mfc.h>
-#include <Bute/ButeTree.h> // canonical CButeTree / CVariantSlot (one shape)
+#include <Bute/ButeTree.h>       // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
+#include <Bute/PTreeNode.h>      // zErrHandling / CButeNodeEntry / zPTree (the .bute node family)
+#include <Bute/ButeStore.h>      // CButeStore / CButeStoreNode (the keyed-store family)
+#include <Wap32/zBitVec.h>       // CContainerErr / zBitVec + the container-error globals
+#include <Gruntz/UserBaseLink.h> // CUserBaseLink (the +0x18 link sub-object; embeds a zBitVec)
 #include <rva.h>
-#include <stdlib.h> // malloc (0x120b60)
-#include <string.h> // memset
+#include <ctype.h>  // isspace (0x12f8a0) / isdigit (0x12f840) - as FUNCTION calls
+#include <stdlib.h> // malloc (0x120b60) / realloc (0x125180) / free (0x120c30)
+#include <string.h> // memset (rep stos) / inline strcpy / strchr / memmove / memcpy
+
+// The zBitVec parser calls the isspace/isdigit LIBRARY functions (retail does, not
+// the table macro), and operator=/GrowTo call memcpy out-of-line; force all three.
+#undef isspace
+#undef isdigit
+#pragma function(memcpy)
 
 #include <Gruntz/StringNode.h>    // the type-name teardown slot
 #include <Gruntz/TypeKeyColl.h>   // CZErrSink/CZArrayRoot/CZArray2D/CTypeKeyColl (one shape)
@@ -36,19 +54,24 @@
 //
 // The CZArrayRoot/CZArray2D/CTypeKeyColl vtables (0x5f04cc/0x5f04d4/0x5f04d0) are
 // NO LONGER externs: that 1-slot-each construction hierarchy is now modeled as
-// REAL polymorphic C++ (virtual dtor per level, below), so cl emits the implicit
-// ??_7 vptr stamp in each ctor (reloc-masked) instead of a manual stamp.
+// REAL polymorphic C++ (virtual dtor per level), so cl emits the implicit ??_7
+// vptr stamp in each ctor (reloc-masked) instead of a manual stamp. Likewise
+// ~zDArray below auto-emits ??_7zDArray (bound at the retail dtor-vtable RVA).
 // ===========================================================================
 // g_keyFinderVtbl is NOT a vtable: 0x16e220 is a FUNCTION in .text (the default
 // callback the CKeyFinder/CVariantSlot +0x00 slot is seeded with) - stored as a
 // plain fn-ptr field init, not a polymorphic vptr, so it stays a manual store.
 
+// The live zDArray<...> vtable Destroy() re-stamps lives with Destroy in
+// ZVec.cpp; ~zDArray's emitted ??_7zDArray is bound at the retail dtor-entry
+// vtable RVA here (the annotation moved with the dtor).
+VTBL(zDArray, 0x001f04d4); // ~zDArray-entry vtable (0x5f04d4)
+
 // ===========================================================================
 // The registry globals (BSS / .data; DATA-pinned so the loads reloc-mask).
+// (g_retAddrBreadcrumb / g_projActCache / g_projActName / g_containerName /
+// g_defaultProjActSize + GetCallerRetAddr come from <Wap32/zBitVec.h>.)
 // ===========================================================================
-extern void* g_retAddrBreadcrumb; // 0x6bf428
-DATA(0x002bf464)
-extern void* g_projActCache; // 0x6bf464
 DATA(0x002bf658)
 extern i32 g_typeLo;
 DATA(0x002bf65c)
@@ -61,6 +84,14 @@ DATA(0x002bf670)
 extern i32 g_typeCount;
 DATA(0x002bf66c)
 extern void* g_typeNodes;
+
+// The bad-argument / bad-character diagnostic name cell the zBitVec parser reports
+// through (distinct from g_projActName @0x6bf454; this one @0x6bf45c). Reloc-masked.
+extern void* g_projActName2; // 0x6bf45c
+
+// The container OOM message the _zvec grow path reports (0x61adf4).
+DATA(0x0021adf4)
+extern const char s_out_of_memory[]; // 0x61adf4
 
 // The deeper-base ctor argument (a data tag global at 0x6bf468).
 
@@ -81,11 +112,649 @@ extern CVariantSlot* g_typeColl2;
 DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 
-extern "C" void* GetCallerRetAddr(); // 0x16e0f0 (records the fatal context)
 extern "C" void RezFree(void* p);    // 0x1b9b82 (engine operator delete / free)
+extern "C" void* RezAlloc(u32 size); // 0x1b9b46 (engine heap alloc, NAFXCW op-new)
 extern void* GetRetAddr();           // 0x16d990 (the _ReturnAddress breadcrumb capture)
 
-// The CString slot teardown the node-array free loop walks (one per 4-byte slot).
+// The first-differing-bit (crit-bit index) of two keys (__cdecl). The name
+// matches the delinker's symbol for 0x16e480 so the `call` reloc pairs; defined
+// below at its retail RVA.
+i32 FirstDiffBit(const char* a, const char* b); // 0x16e480
+
+// ===========================================================================
+// CKeyFinder - the binary-search cursor over the sorted global key table (the
+// 12-byte-stride record array @0x6bf498 with its count @0x6bf618). Its ctor
+// (0x16e1a0) seeds the two small constant fields and stows the owner; Find
+// (0x16e1d0) bisects for `key`, recording the found index (or the insertion
+// point) into +0x04; Add (0x16e360, the ex-"Reg23" facet - same class, same
+// +0x04 slot, same Find) inserts/updates/removes a record at the cursor.
+// ===========================================================================
+SIZE_UNKNOWN(CKeyFinder);
+struct CKeyFinder {
+    char _vft0[4];           // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
+    i32 m_index;             // +0x04  found index / insertion point (the ex-Reg23 m_4)
+    u16 m_08;                // +0x08
+    u16 m_0a;                // +0x0a  (padding)
+    i32 m_0c;                // +0x0c  = 2
+    i32 m_10;                // +0x10  = 2
+    void* m_owner;           // +0x14
+    CKeyFinder(void* owner); // 0x16e1a0
+    i32 Find(i32 key);       // 0x16e1d0
+    void* Add(void* key, void* val); // 0x16e360
+};
+
+// The sorted key table: 12-byte records {key, value/fn, flag-word} @0x6bf498.
+// Find reads it as a flat i32[] (stride 3); Set dispatches through the value/fn
+// member at +4 (the g_varTable alias @0x6bf49c = &g_recs23[0].m_4); the count
+// @0x6bf618 doubles as Set's probe-enable gate (three names, one datum each).
+SIZE_UNKNOWN(Rec23);
+struct Rec23 {
+    void* m_0; // key
+    void* m_4; // value
+    short m_8; // flag
+    short m_a;
+};
+DATA(0x002bf498)
+extern Rec23 g_recs23[];
+extern i32 g_keyArray[]; // == g_recs23 viewed flat (Find's stride-3 scan)
+DATA(0x002bf618)
+extern i32 g_keyCount;
+DATA(0x002bf618)
+extern int g_recCount23; // == g_keyCount (Add's alias)
+
+// The slot's resolved-index dispatch table (12-byte stride): a __cdecl fn at +0,
+// a word slot at +4. == (char*)g_recs23 + 4. Reloc-masked DATA extern.
+SIZE_UNKNOWN(CVarTableEntry);
+struct CVarTableEntry {
+    void(__cdecl* fn)(i32 a, i32 b); // +0x00
+    u16 w;                           // +0x04
+    char m_pad06[12 - 6];            // 12-byte stride
+};
+DATA(0x002bf49c)
+extern CVarTableEntry g_varTable[]; // 0x6bf49c
+DATA(0x002bf618)
+extern void* g_varProbeEnabled; // 0x6bf618 (== the record count; nonzero -> probe)
+
+// The slot label formatter (__cdecl(buf, value, cap)).
+extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
+
+// ===========================================================================
+// 0x16d000 - config field loader.  __cdecl(reader, data): pulls 29 doubles and
+// one int out of the reader into the data block at fixed offsets, returning the
+// reader.  Models the reader's per-field accessors (0x191fe0 double / 0x191f30
+// int, both __thiscall) as reloc-masked no-body methods.
+// ===========================================================================
+SIZE_UNKNOWN(CConfigReader);
+class CConfigReader {
+public:
+    void ReadDouble(void* field); // 0x191fe0
+    void ReadInt(void* field);    // 0x191f30
+};
+
+RVA(0x0016d000, 0x189)
+CConfigReader* LoadConfigFields(CConfigReader* r, char* d) {
+    r->ReadDouble(d + 0x00);
+    r->ReadDouble(d + 0x08);
+    r->ReadDouble(d + 0x10);
+    r->ReadDouble(d + 0x18);
+    r->ReadDouble(d + 0x20);
+    r->ReadDouble(d + 0x28);
+    r->ReadDouble(d + 0x30);
+    r->ReadDouble(d + 0x38);
+    r->ReadDouble(d + 0x40);
+    r->ReadDouble(d + 0x48);
+    r->ReadDouble(d + 0x50);
+    r->ReadDouble(d + 0x70);
+    r->ReadDouble(d + 0x78);
+    r->ReadDouble(d + 0x80);
+    r->ReadDouble(d + 0x88);
+    r->ReadDouble(d + 0x90);
+    r->ReadDouble(d + 0x98);
+    r->ReadDouble(d + 0xa0);
+    r->ReadDouble(d + 0xa8);
+    r->ReadDouble(d + 0xb0);
+    r->ReadInt(d + 0xb8);
+    r->ReadDouble(d + 0xc0);
+    r->ReadDouble(d + 0xc8);
+    r->ReadDouble(d + 0xd0);
+    r->ReadDouble(d + 0xd8);
+    r->ReadDouble(d + 0xe0);
+    r->ReadDouble(d + 0xe8);
+    r->ReadDouble(d + 0xf0);
+    r->ReadDouble(d + 0xf8);
+    r->ReadDouble(d + 0x100);
+    return r;
+}
+
+// ===========================================================================
+// CButeTree::Find (0x16d190) - descend the trie by the key's crit bits, then
+// strcmp the reached leaf's stored key; return the leaf value on a hit, else 0.
+// Records the descent cursor / candidate so a following Insert can splice in.
+// ===========================================================================
+// @early-stop
+// regalloc-coloring wall (~90.6%): structure, every offset, the inline
+// strlen/strcmp idioms, the null-path global-load hoist and the GetCallerRetAddr
+// helper are byte-exact. Residual is one global coloring decision: retail pins the
+// descent bit `b` in edx (so the cursor load lands in eax and the child stays in
+// eax across the loop), whereas cl colors `b` into eax (strlen leaves eax=0) -
+// cascading a symmetric ebp<->ebx (key/mask) + eax/ecx (child) transposition and a
+// couple of member reloads. Not source-steerable (tried slot-form, node-reuse,
+// mask-local, name-hoist). See docs/patterns/zero-register-pinning.md. Final sweep.
+RVA(0x0016d190, 0x101)
+void* CButeTree::Find(const char* key) {
+    if (key == 0) {
+        void* name = g_projActName;
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_errorSink->Set(this, (i32)name, 0x16);
+        return 0;
+    }
+    CButeTreeNode* root = m_root;
+    m_descentCursor = root;
+    m_candidateLeaf = 0;
+    m_lookupPending = 1;
+    i32 bitmax = (i32)strlen(key) * 8 + 7;
+    m_keyBitLength = bitmax;
+    if (root == 0) {
+        return 0;
+    }
+    i32 b = root->m_bit;
+    while (b <= bitmax) {
+        CButeTreeNode** slot = m_descentCursor->m_child;
+        if (key[b >> 3] & (1 << (b & 7))) {
+            ++slot;
+        }
+        CButeTreeNode* child = *slot;
+        m_candidateLeaf = child;
+        if (child == 0) {
+            return 0;
+        }
+        if (child->m_bit <= b) {
+            if (strcmp(key, child->m_key) == 0) {
+                m_lookupPending = 0;
+                return m_candidateLeaf->m_value;
+            }
+            return 0;
+        }
+        m_descentCursor = child;
+        b = child->m_bit;
+    }
+    m_candidateLeaf = m_descentCursor;
+    return 0;
+}
+
+// ===========================================================================
+// zBitVec::~zBitVec() (0x16d2a0) - free the heap band when out of SBO range,
+// then chain ~CContainerErr (implicit).
+// ===========================================================================
+RVA(0x0016d2a0, 0x26)
+zBitVec::~zBitVec() {
+    if ((u32)m_capacity > 0x20) {
+        free(m_words);
+    }
+}
+
+// zBitVec::operator= (0x16d2f0) - deep-copy the DWORD band. If the capacities differ,
+// release this band (RezFree) and reallocate to the source's word count (or OOM), then
+// memcpy m_capacity/8 bytes from the source (heap band or inline SBO word).
+// @early-stop
+// regalloc wall: 1 instruction of 172 differs - `m_capacity = that.m_capacity` on the
+// capacities-differ path picks ecx in cl vs eax in retail (retail reuses the freed
+// malloc-result register). 99.84%, no source lever for the scratch register.
+RVA(0x0016d2f0, 0xac)
+zBitVec& zBitVec::operator=(const zBitVec& that) {
+    if (this != &that) {
+        if (m_capacity != that.m_capacity) {
+            if ((u32)m_capacity > 0x20) {
+                RezFree(m_words);
+            }
+            if ((u32)that.m_capacity > 0x20) {
+                m_words = (u32*)malloc(((u32)that.m_capacity >> 5) * 4);
+                if (!m_words) {
+                    void* cache = g_projActCache;
+                    g_retAddrBreadcrumb = GetCallerRetAddr();
+                    m_errSink->Set(this, (i32)cache, 0xc);
+                    m_capacity = 0x20;
+                    return *this;
+                }
+            }
+            m_capacity = that.m_capacity;
+        }
+        const u32* src = ((u32)that.m_capacity > 0x20) ? that.m_words : (const u32*)&that.m_words;
+        u32* dst = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
+        memcpy(dst, src, (u32)m_capacity >> 3);
+    }
+    return *this;
+}
+
+// zBitVec(const char* tokens, int minSize) - the 836B whitespace/','/'-' number-list
+// PARSER ctor (0x16d3a0). Pass 1 validates the token syntax and finds the max index
+// (to size the bit-set to max(minSize, maxIndex)); pass 2 re-scans and sets each
+// listed bit, expanding "N-M" ranges. Bad arg / bad char fire the container error sink.
+// @early-stop
+// regalloc wall (zero-register-pinning.md family): the two-pass logic, the
+// isspace/isdigit/strchr(" ,-") validation, the max-index sizing, the SBO bit-set and
+// the "N-M" range expansion are all byte-faithful, but cl pins the pass-1 cursor in
+// edi where retail keeps it in esi (retail: esi=cursor, ebp=value, edi=sawSep flag).
+// That swap spills the flag to an extra [esp+0x10] slot and cascades esi/edi through
+// every [cursor] access. Splitting the pass-2 cursor into its own var did not move the
+// pass-1 assignment; no source lever reaches the allocator here. ~79.8%, logic
+// complete; deferred to the final sweep.
+RVA(0x0016d3a0, 0x344)
+zBitVec::zBitVec(const char* tokens, i32 minSize) : CContainerErr(g_containerName) {
+    i32 maxv = 0;
+    const char* start;
+    const char* q;
+    if (tokens == 0) {
+        void* name = g_projActName;
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_errSink->Set(this, (i32)name, 0x16);
+        return;
+    }
+    if (minSize == 0) {
+        minSize = g_defaultProjActSize;
+    }
+
+    const char* p = tokens;
+    if (isspace(*p)) {
+        do {
+            ++p;
+        } while (isspace(*p));
+    }
+    if (*p == 0) {
+        if (!SetSize(minSize)) {
+            goto oom;
+        }
+        return;
+    }
+    if (!isdigit(*p)) {
+        goto badchar;
+    }
+
+    // ---- pass 1: validate + find max index ----
+    start = p;
+    while (*p != 0) {
+        i32 v = 0;
+        i32 sawSep = 0;
+        while (isdigit(*p)) {
+            v = v * 10 + (*p - '0');
+            ++p;
+        }
+        if ((u32)v > (u32)maxv) {
+            maxv = v;
+        }
+        while (*p != 0) {
+            if (isdigit(*p)) {
+                break;
+            }
+            if (sawSep && *p != ' ') {
+                goto badchar;
+            }
+            if (strchr(" ,-", *p) == 0) {
+                goto badchar;
+            }
+            if (*p != ' ') {
+                sawSep = 1;
+            }
+            ++p;
+        }
+    }
+
+    if ((u32)minSize > (u32)maxv) {
+        maxv = minSize;
+    }
+    if (!SetSize(maxv)) {
+        goto oom;
+    }
+
+    // ---- pass 2: set the bits ----
+    q = start;
+    while (*q != 0) {
+        i32 v = 0;
+        while (isdigit(*q)) {
+            v = v * 10 + (*q - '0');
+            ++q;
+        }
+        {
+            u32* band = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
+            band[(u32)v >> 5] |= 1u << (v & 0x1f);
+        }
+        if (*q == 0) {
+            break;
+        }
+        if (isspace(*q)) {
+            while (isspace(q[1])) {
+                ++q;
+            }
+        }
+        char sep = *q;
+        ++q;
+        if (isspace(*q)) {
+            while (isspace(q[1])) {
+                ++q;
+            }
+        }
+        if (sep == '-') {
+            i32 v2 = 0;
+            while (isdigit(*q)) {
+                v2 = v2 * 10 + (*q - '0');
+                ++q;
+            }
+            if (v > v2) {
+                i32 t = v;
+                v = v2;
+                v2 = t;
+            }
+            for (i32 b = v + 1; b <= v2; ++b) {
+                u32* band = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
+                band[(u32)b >> 5] |= 1u << (b & 0x1f);
+            }
+            while (*q != 0 && !isdigit(*q)) {
+                ++q;
+            }
+        }
+    }
+    return;
+
+oom: {
+    void* cache = g_projActCache;
+    g_retAddrBreadcrumb = GetCallerRetAddr();
+    m_errSink->Set(this, (i32)cache, 0xc);
+    return;
+}
+badchar: {
+    void* name = g_projActName2;
+    g_retAddrBreadcrumb = GetCallerRetAddr();
+    m_errSink->Set(this, (i32)name, 0x16);
+    return;
+}
+}
+
+// ===========================================================================
+// zBitVec() default ctor - build the base, size to g_defaultProjActSize, no bit
+// set. INLINE so it folds into CUserBaseLink::CUserBaseLink() (0x16d710), the
+// only site that default-constructs the link's zBitVec name.
+// ===========================================================================
+inline zBitVec::zBitVec() : CContainerErr(g_containerName) {
+    if (!SetSize(g_defaultProjActSize)) {
+        void* cache = g_projActCache;
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_errSink->Set(this, (i32)cache, 0xc);
+    }
+}
+
+// The +0x18 link: a zBitVec name field, default-constructed (0x16d710; can throw ->
+// the /GX EH frame every leaf ctor inherits).
+RVA(0x0016d710, 0x76)
+CUserBaseLink::CUserBaseLink() {}
+
+// ===========================================================================
+// zBitVec(idx, sizehint) (0x16d790, ex ProjActCache.cpp) - construct the
+// CContainerErr error-tracking base (cl re-stamps the implicit most-derived
+// ??_7zBitVec vptr after it returns), size the bit-vector to cover `idx`, then
+// set bit `idx`; on a sizing failure record the caller return address and fire
+// the error sink. The destructible polymorphic base forces the /GX frame.
+// ===========================================================================
+// @early-stop
+// /GX EH-epilogue + RMW-fusion wall (topic:eh topic:regalloc; see docs/patterns/
+// identical-return-epilogue-tailmerge.md). Logic, recovered types (CContainerErr/
+// zBitVec/CVariantSlot), the const-char* base ctor, the unsigned size compares,
+// the SBO bit-buffer select and the inverted branch layout (failure inline /
+// success out-of-line) are all byte-faithful, but two MSVC5 /O2 choices diverge
+// with no source lever:
+//   (a) retail SHARES one /GX teardown epilogue (the failure path `jmp`s to it,
+//       success falls through); our cl pops edi early in the success bitset (idx
+//       dies after the address calc) so the two exit epilogues are NOT identical
+//       and cl duplicates them instead of merging.
+//   (b) the bit set is `or [eax],edx` (RMW) in retail; cl emits load/or/store,
+//       +3 bytes that shift the success tail.
+// ~77.8%, logic complete; deferred to the final sweep.
+RVA(0x0016d790, 0xb1)
+zBitVec::zBitVec(i32 idx, i32 sizehint) : CContainerErr(g_containerName) {
+    u32 n = (u32)sizehint;
+    if (n == 0) {
+        n = (u32)g_defaultProjActSize;
+    }
+    if ((u32)idx >= n) {
+        n = (u32)idx + 1;
+    }
+    if (!SetSize((i32)n)) {
+        void* cache = g_projActCache;
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_errSink->Set(this, (i32)cache, 0xc);
+    } else {
+        u32* base = ((u32)m_capacity > 0x20) ? m_words : (u32*)&m_words;
+        u32* slot = base + ((u32)idx >> 5);
+        *slot |= 1u << (idx & 0x1f);
+    }
+}
+
+// ===========================================================================
+// 0x16d850 - variant/property setter (the HOT helper, ret 0xc).  Switches on the
+// slot's type tag (m_0c): 4 -> store the low word directly; otherwise probe the
+// global index table (when enabled) and, by tag 2/1, either dispatch through the
+// resolved table entry's fn / word slot, or (unresolved) format the slot's label
+// + invoke the slot's own +0x00 callback / store the word.  The index probe is
+// CKeyFinder::Find (0x16e1d0, defined below); the table + gate are globals.
+// @early-stop
+// 99.85% - reloc-typing / entropy-tail artifact only: the full switch dispatch,
+// indexed-table paths, inline strcpy + Format_18d0f0 and the +0x00 callback are
+// all byte-exact; the residual is the DIR32-vs-REL32 scoring on the named
+// g_varTable / g_varProbeEnabled / Find externs (docs/matching-patterns.md fuzzy%).
+// ===========================================================================
+// CVariantSlot (the +0x00 callback / probe-index / word / type-tag / label slot)
+// is the canonical one in <Bute/ButeTree.h>; Set (0x16d850) is defined here.
+
+RVA(0x0016d850, 0x11e)
+void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
+    if (m_0c == 4) {
+        m_08 = (u16)arg3;
+        return;
+    }
+    i32 idx;
+    if (g_varProbeEnabled != 0) {
+        idx = ((CKeyFinder*)this)->Find((i32)key);
+    } else {
+        idx = -1;
+    }
+    if (idx == -1) {
+        if (m_0c == 2) {
+            char buf[0x94];
+            strcpy(buf, m_14);
+            Format_18d0f0(buf, arg2, 0x4f);
+            m_callback(buf, arg3);
+        } else if (m_0c == 1) {
+            m_08 = (u16)arg3;
+        }
+    } else {
+        if (m_0c == 2) {
+            g_varTable[idx].fn(arg2, arg3);
+        } else if (m_0c == 1) {
+            g_varTable[idx].w = (u16)arg3;
+        }
+    }
+}
+
+// ===========================================================================
+// CContainerErr::~CContainerErr() (0x16da60, ex EngStr.cpp) - the compiler
+// auto-stamps ??_7CContainerErr at dtor entry (matching retail's stamp-first
+// order), then unregisters the error handler. Real-polymorphic (manual
+// vptr-field stamp drained): cl's implicit dtor-entry store lands stamp-first,
+// exactly as retail does here, so this is byte-exact. (The CTOR at 0x16d9c0
+// stays in GameText.cpp - it needs the vptr-LAST non-virtual dual-view.)
+// ===========================================================================
+RVA(0x0016da60, 0x12)
+CContainerErr::~CContainerErr() {
+    m_errSink->Remove(this, 0);
+}
+
+// ===========================================================================
+// _zvec::GrowTo(idx, at) (0x16da80, ex ZVec.cpp) - realloc the element band so
+// index `idx` (relative to the `at` anchor) becomes addressable, shift/zero-
+// fill, update bounds.
+// ===========================================================================
+// @early-stop
+// regalloc wall (~80%): retail pins idx in ebx / this in esi / realloc result
+// in ebp (arg-before-this); our recompile assigns idx->ebp / this->ebx, which
+// cascades into the two-block branch distances. `#pragma function(memcpy)`
+// recovered the out-of-line memcpy call (62%->80%); the residual is the
+// register assignment, not source-steerable. Logic exact.
+RVA(0x0016da80, 0x10b)
+void* _zvec::GrowTo(i32 idx, i32 at) {
+    void* p;
+    if (idx < m_lo) {
+        p = realloc((void*)m_base, (m_hi - (idx - at) + 1) * m_stride);
+        if (!p) {
+            g_retAddrBreadcrumb = GetCallerRetAddr();
+            m_err->Set((void*)this, (u32)s_out_of_memory, 0x22);
+            return 0;
+        }
+        i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
+        i32 shift = m_lo - (idx - at);
+        m_grown = shift;
+        m_alloc = (i32)p;
+        memcpy((char*)p + shift * m_stride, p, oldbytes);
+        memset((char*)m_alloc, 0, m_grown * m_stride);
+        m_lo = idx - at;
+        m_base = (i32)p;
+        return p;
+    }
+    i32 hinew = idx + at;
+    p = realloc((void*)m_base, (hinew - m_lo + 1) * m_stride);
+    if (!p) {
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_err->Set((void*)this, (u32)s_out_of_memory, 0x22);
+        return 0;
+    }
+    i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
+    char* fill = (char*)p + oldbytes;
+    m_grown = hinew - m_hi;
+    m_alloc = (i32)fill;
+    memset(fill, 0, m_grown * m_stride);
+    m_hi = hinew;
+    m_base = (i32)p;
+    return p;
+}
+
+// ===========================================================================
+// CButeTree::Insert (0x16db90) - splice a new leaf for `key`/`value` at the
+// crit-bit where it diverges from the candidate the preceding Find recorded.
+// Allocates the 20-byte node + an owned key copy, sets the node's self-link at
+// its crit bit, walks to the insertion point (from the Find cursor, or from the
+// root when the cursor sits below the divergence bit), and links the node's other
+// child to the displaced subtree. Reports a fatal failure (no prior Find / null
+// arg / OOM) through the +0x04 error sink.
+// ===========================================================================
+// @early-stop
+// regalloc-coloring + block-layout wall (~53%) on a 518-byte crit-bit splice. The
+// frame is byte-exact (the `push ecx` critbit local appears once Insert is typed
+// void* to keep `value` live for the trailing return load), the error paths, the
+// alloc pair, the inline strlen+rep-movs strcpy and the KeyPrefixBits/RezAlloc/Set
+// calls all match. Residue: retail colors `newbit`/candidate into ecx/eax (cl picks
+// the transpose), emits `add reg,-7` where cl picks `sub reg,7`, keeps `node` in esi
+// across the splice with address-merge stores, and tail-merges the two `m_root=node`
+// (cursor==0 / cur2==0) exits into one cold block - none reliably source-steerable
+// on a body this size. Complete + correct logic; deferred to the final sweep.
+// docs/patterns/zero-register-pinning.md, const-materialize-into-reg-vs-immediate.md.
+RVA(0x0016db90, 0x206)
+void* CButeTree::Insert(const char* key, void* value) {
+    if (m_lookupPending == 0) {
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_errorSink->Set(this, (i32) "No prior lookup", 0x16);
+        return 0;
+    }
+    i32 newbit = m_keyBitLength - 7;
+    m_lookupPending = 0;
+    m_keyBitLength = newbit;
+    if (key == 0 || value == 0) {
+        void* name = g_projActName;
+        g_retAddrBreadcrumb = GetCallerRetAddr();
+        m_errorSink->Set(this, (i32)name, 0x16);
+        return 0;
+    }
+
+    i32 critbit;
+    if (m_candidateLeaf != 0) {
+        critbit = FirstDiffBit(key, m_candidateLeaf->m_key);
+    } else {
+        critbit = newbit - 1;
+    }
+
+    CButeTreeNode* node = (CButeTreeNode*)RezAlloc(0x14);
+    if (node != 0) {
+        node->m_value = value;
+        node->m_bit = critbit;
+        char* keybuf = (char*)RezAlloc((m_keyBitLength >> 3) + 1);
+        node->m_key = keybuf;
+        if (keybuf != 0) {
+            strcpy(keybuf, key);
+
+            // The node's crit-bit child points back at itself (the leaf back-edge).
+            i32 dir = key[critbit >> 3] & (1 << (critbit & 7));
+            if (dir) {
+                node->m_child[1] = node;
+            } else {
+                node->m_child[0] = node;
+            }
+
+            // Find where critbit fits and re-point the parent at the new node.
+            CButeTreeNode* cursor = m_descentCursor;
+            i32 d2 = dir;
+            if (cursor == 0) {
+                m_root = node;
+            } else if (critbit < cursor->m_bit) {
+                // The Find cursor is below the divergence bit: walk from the root.
+                CButeTreeNode* p = m_root;
+                m_descentCursor = 0;
+                m_candidateLeaf = p;
+                if (p->m_bit <= critbit) {
+                    CButeTreeNode* c;
+                    do {
+                        p = m_candidateLeaf;
+                        m_descentCursor = p;
+                        d2 = key[p->m_bit >> 3] & (1 << (p->m_bit & 7));
+                        CButeTreeNode** s = p->m_child;
+                        if (d2) {
+                            ++s;
+                        }
+                        c = *s;
+                        m_candidateLeaf = c;
+                    } while (c->m_bit <= critbit);
+                }
+                CButeTreeNode* cur2 = m_descentCursor;
+                if (cur2 == 0) {
+                    m_root = node;
+                } else {
+                    CButeTreeNode** s2 = cur2->m_child;
+                    if (d2) {
+                        ++s2;
+                    }
+                    *s2 = node;
+                }
+            } else {
+                CButeTreeNode** s1 = cursor->m_child;
+                if (key[cursor->m_bit >> 3] & (1 << (cursor->m_bit & 7))) {
+                    ++s1;
+                }
+                *s1 = node;
+            }
+
+            // Link the node's other child to the displaced subtree.
+            if (dir) {
+                node->m_child[0] = m_candidateLeaf;
+            } else {
+                node->m_child[1] = m_candidateLeaf;
+            }
+            m_nodeCount++;
+            return value;
+        }
+    }
+
+    void* cache = g_projActCache;
+    g_retAddrBreadcrumb = GetCallerRetAddr();
+    m_errorSink->Set(this, (i32)cache, 0xc);
+    return 0;
+}
+
 // ===========================================================================
 // CTypeKeyColl::CTypeKeyColl (0x16dda0) - the derived ctor. Forwards the four
 // arguments to the 2D-array base ctor (0x16de30), then derives the cursor (==
@@ -149,28 +818,114 @@ CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
 }
 
 // ===========================================================================
-// CKeyFinder - the binary-search cursor over the sorted key array. Its ctor
-// (0x16e1a0) seeds the two small constant fields and stows the owner; Find
-// (0x16e1d0) bisects g_keyArray (12-byte records, g_keyCount entries) for `key`,
-// recording the found index (or the insertion point) into +0x04.
+// zDArray::~zDArray() (0x16df40, ex ZVec.cpp) - cl auto-stamps the derived dtor
+// vtable (??_7zDArray) at entry, then frees the band and chains to the base
+// dtor. Real-polymorphic: the manual dtor-vtable stamp is drained (cl's
+// implicit dtor-entry stamp replaces it, reloc-masked); byte-exact.
 // ===========================================================================
-SIZE_UNKNOWN(CKeyFinder);
-struct CKeyFinder {
-    char _vft0[4];           // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
-    i32 m_index;             // +0x04  found index / insertion point
-    u16 m_08;                // +0x08
-    u16 m_0a;                // +0x0a  (padding)
-    i32 m_0c;                // +0x0c  = 2
-    i32 m_10;                // +0x10  = 2
-    void* m_owner;           // +0x14
-    CKeyFinder(void* owner); // 0x16e1a0
-    i32 Find(i32 key);       // 0x16e1d0
-};
+RVA(0x0016df40, 0x22)
+zDArray::~zDArray() {
+    i32 p = m_base;
+    if (p) {
+        free((void*)p);
+    }
+    // ~_zvec() base destructor is chained in by the compiler (mov ecx,esi; call).
+}
 
-// The sorted key array + its element count (12-byte records).
-extern i32 g_keyArray[];
-DATA(0x002bf618)
-extern i32 g_keyCount;
+// ===========================================================================
+// CButeNodeEntry ctor (0x16df70, ex ButeNode.cpp): __thiscall(this, n, desc).
+// cl auto-stamps the ??_7CButeNodeEntry vptr@+0, then stores desc@+4, (WORD)n@+8,
+// 0@+0xc. Clean leaf ctor, called out-of-line by the zPTree ctor's member-init.
+// @early-stop
+// vptr-position wall (~82.9%, was 100% hand-rolled): real polymorphism sinks the
+// implicit ??_7 vptr stamp to FIRST; the hand-rolled last-store cannot be sunk in
+// MSVC5 (same mechanism as CZArray2D). Converted per the ALL-VTABLES mandate.
+RVA(0x0016df70, 0x22)
+CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
+    m_desc = desc;
+    m_kind = (i16)n;
+    m_0c = 0;
+}
+
+// zPTree ctor (0x16dff0, ex ButeNode.cpp): run the zErrHandling primary base
+// ctor + the CButeNodeEntry second-base ctor, then cl auto-stamps the two
+// most-derived vptrs (??_7zPTree @+0 = 0x5e94ac, and the second-base-in-derived
+// vtable @+8 = 0x5e949c) and zeroes the two child links. /GX unwind frame from
+// the two destructible base sub-objects.
+// @early-stop
+// vptr-position wall (~96.1%, was 100% hand-rolled): real MI polymorphism
+// auto-stamps both vptrs FIRST, shifting the stamp schedule vs the hand-rolled
+// last-stores. Logic byte-faithful; converted per the ALL-VTABLES mandate.
+RVA(0x0016dff0, 0x73)
+zPTree::zPTree(void* desc, i32 n) : zErrHandling(&g_buteNodeErrMsg), CButeNodeEntry(n, desc) {
+    m_child18 = 0;
+    m_child28 = 0;
+}
+
+// ===========================================================================
+// CButeStore::ClearRecursive (0x16e070, ex ButeStoreClear.cpp) - the derived
+// keyed-store's recursive node-free (C:\Proj\Bute). The store holds a binary
+// tree at +0x18 keyed by each node's +0x08. The walk post-order frees: it
+// recurses into a child only when that child's key is GREATER than the current
+// node's (the heap-ordered owned-subtree invariant), frees the node's name
+// string (+0x0c), then - when the store's +0x10 flag has bit 2 - runs the
+// store's per-value callback (+0x0c fn-ptr) on the node's value (+0x10) and
+// frees it, and finally frees the node itself. No destructible local, so no /GX
+// frame even under this TU's eh flags.
+// ===========================================================================
+RVA(0x0016e070, 0x7b)
+void CButeStore::ClearRecursive(CButeStoreNode* node) {
+    CButeStoreNode* n = node;
+    if (n == 0) {
+        n = m_root18;
+        if (n == 0) {
+            return;
+        }
+    }
+    if (n->m_left != 0 && n->m_left->m_key > n->m_key) {
+        ClearRecursive(n->m_left);
+    }
+    if (n->m_right != 0 && n->m_right->m_key > n->m_key) {
+        ClearRecursive(n->m_right);
+    }
+    RezFree(n->m_str);
+    if (m_flags & 2) {
+        m_cb(n->m_val);
+        RezFree(n->m_val);
+    }
+    RezFree(n);
+}
+
+// ===========================================================================
+// zBitVec::SetSize(nbits) (0x16e100, ex EngStr.cpp) - round the requested bit
+// count up to whole 32-bit words, allocate + zero-fill the word band, and report
+// the realized bit capacity (nwords*32). A request of <=32 bits leaves no band
+// and reports 32.
+// @early-stop
+// one-instruction sar/shr wall (signed-shift-cast-reschedules.md): retail's
+// `nbits >> 5` lowers to `shr` (the bit count is unsigned); our `int nbits`
+// gives the byte-identical body EXCEPT that one shift as `sar`. Casting the
+// operand to unsigned flips it to `shr` but reschedules the whole round-up
+// block (this->esi vs arg->eax flow, lea vs shl for *4): 1 diff -> 11. So the
+// signed `int` form (the closest, single-opcode miss) is kept.
+RVA(0x0016e100, 0x7f)
+i32 zBitVec::SetSize(i32 nbits) {
+    if ((u32)nbits > 0x20) {
+        i32 nwords = (nbits >> 5) + ((nbits & 0x1f) != 0 ? 1 : 0);
+        m_capacity = nwords;
+        u32* band = (u32*)malloc(nwords * 4);
+        m_words = band;
+        if (!band) {
+            return 0;
+        }
+        memset(band, 0, m_capacity << 2);
+        m_capacity = m_capacity << 5;
+        return 1;
+    }
+    m_words = 0;
+    m_capacity = 0x20;
+    return 1;
+}
 
 RVA(0x0016e1a0, 0x23)
 CKeyFinder::CKeyFinder(void* owner) {
@@ -283,6 +1038,82 @@ void TmErrorHandler(char* prefix, i32 errNum) {
 }
 
 // ===========================================================================
+// CKeyFinder::Add (0x16e360, the ex-Reg23 facet) - fixed-capacity (32) keyed
+// record insert/update/remove over the global table at the cursor's m_index.
+// ===========================================================================
+// @early-stop
+// Control flow + 12-byte-stride index arithmetic + memmove shifts + global stores are
+// all faithful, but MSVC pins val->ebx / key->edi where retail uses key->ebx / val->edi
+// (callee-saved register-preference wall, docs/patterns/pin-local-for-callee-saved-reg.md);
+// the ebx<->edi swap is not source-steerable and cascades through every store. Deferred.
+RVA(0x0016e360, 0x11a)
+void* CKeyFinder::Add(void* key, void* val) {
+    int count = g_recCount23;
+    if (val != 0 && count >= 0x20) {
+        return 0;
+    }
+    int idx;
+    if (count != 0) {
+        idx = Find((i32)key);
+    } else {
+        idx = -1;
+    }
+    if (idx != -1) {
+        void* old = g_recs23[idx].m_4;
+        if (val != 0) {
+            g_recs23[idx].m_4 = val;
+            return old;
+        }
+        memmove(
+            &g_recs23[m_index],
+            &g_recs23[m_index + 1],
+            (g_recCount23 - m_index - 1) * sizeof(Rec23)
+        );
+        g_recCount23 = g_recCount23 - 1;
+        return old;
+    }
+    if (val == 0) {
+        return 0;
+    }
+    if (g_recCount23 != 0) {
+        memmove(
+            &g_recs23[m_index + 1],
+            &g_recs23[m_index],
+            (g_recCount23 - m_index) * sizeof(Rec23)
+        );
+    }
+    g_recs23[m_index].m_4 = val;
+    g_recs23[m_index].m_0 = key;
+    g_recCount23 = g_recCount23 + 1;
+    g_recs23[m_index].m_8 = 0;
+    return 0;
+}
+
+// ===========================================================================
+// FirstDiffBit (0x16e480) - the crit-bit index (bit-level common-prefix length)
+// of two byte keys: 8 per matching leading byte, plus the trailing-zero-bit count
+// of the first differing pair's xor. __cdecl free helper; Insert (above) and
+// CProjActMap::Insert (projactcache) both call it. Folded from Stub/DiscoveredSmall.
+// ===========================================================================
+RVA(0x0016e480, 0x3e)
+i32 FirstDiffBit(const char* a, const char* b) {
+    i32 n = 0;
+    while (*a == *b) {
+        n += 8;
+        ++a;
+        ++b;
+    }
+    i32 x = *a;
+    x ^= *b;
+    i32 c = 0;
+    while (!(x & 1)) {
+        x >>= 1;
+        ++c;
+    }
+    return c + n;
+}
+
+// ===========================================================================
 // ProjTypeXfer (0x16e4f0) - serialize the type-name table entry resolved from an
 // archive record through the archive's slot dispatches. Resolves the entry id
 // (ar->m_14->m_1c) to its CTypeKeyColl entry (the inlined fast-range / Find /
@@ -347,8 +1178,9 @@ i32 ProjTypeXfer(CXferArchive* ar) {
 // tree (deeper base ctor 0x16dff0) then stamp its runtime vtables.
 // ===========================================================================
 // g_buteTree is the canonical CButeTree (crit-bit trie, include/Bute/ButeTree.h);
-// Construct (0x16dff0) runs the deeper base ctor. The +0x00 / +0x08 runtime vptrs are
-// stamped via raw casts (CButeTree is now real-polymorphic MI, no manual vptr fields).
+// Construct (0x16dff0 == the zPTree ctor above, seen through the CButeTree facet)
+// runs the deeper base ctor. The +0x00 / +0x08 runtime vptrs are stamped via raw
+// casts (CButeTree is now real-polymorphic MI, no manual vptr fields).
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
@@ -446,115 +1278,3 @@ i32 Gap_16e7a0(void) {
 // flag is set. Returns `this`.
 // ===========================================================================
 // @rva-symbol: ??_GCButeTree@@UAEPAXI@Z 0x0016e9c0 0x45  (cl-auto-gen scalar-deleting dtor)
-
-// ===========================================================================
-// 0x16d000 - config field loader.  __cdecl(reader, data): pulls 29 doubles and
-// one int out of the reader into the data block at fixed offsets, returning the
-// reader.  Models the reader's per-field accessors (0x191fe0 double / 0x191f30
-// int, both __thiscall) as reloc-masked no-body methods.
-// ===========================================================================
-SIZE_UNKNOWN(CConfigReader);
-class CConfigReader {
-public:
-    void ReadDouble(void* field); // 0x191fe0
-    void ReadInt(void* field);    // 0x191f30
-};
-
-RVA(0x0016d000, 0x189)
-CConfigReader* LoadConfigFields(CConfigReader* r, char* d) {
-    r->ReadDouble(d + 0x00);
-    r->ReadDouble(d + 0x08);
-    r->ReadDouble(d + 0x10);
-    r->ReadDouble(d + 0x18);
-    r->ReadDouble(d + 0x20);
-    r->ReadDouble(d + 0x28);
-    r->ReadDouble(d + 0x30);
-    r->ReadDouble(d + 0x38);
-    r->ReadDouble(d + 0x40);
-    r->ReadDouble(d + 0x48);
-    r->ReadDouble(d + 0x50);
-    r->ReadDouble(d + 0x70);
-    r->ReadDouble(d + 0x78);
-    r->ReadDouble(d + 0x80);
-    r->ReadDouble(d + 0x88);
-    r->ReadDouble(d + 0x90);
-    r->ReadDouble(d + 0x98);
-    r->ReadDouble(d + 0xa0);
-    r->ReadDouble(d + 0xa8);
-    r->ReadDouble(d + 0xb0);
-    r->ReadInt(d + 0xb8);
-    r->ReadDouble(d + 0xc0);
-    r->ReadDouble(d + 0xc8);
-    r->ReadDouble(d + 0xd0);
-    r->ReadDouble(d + 0xd8);
-    r->ReadDouble(d + 0xe0);
-    r->ReadDouble(d + 0xe8);
-    r->ReadDouble(d + 0xf0);
-    r->ReadDouble(d + 0xf8);
-    r->ReadDouble(d + 0x100);
-    return r;
-}
-
-// ===========================================================================
-// 0x16d850 - variant/property setter (the HOT helper, ret 0xc).  Switches on the
-// slot's type tag (m_0c): 4 -> store the low word directly; otherwise probe the
-// global index table (when enabled) and, by tag 2/1, either dispatch through the
-// resolved table entry's fn / word slot, or (unresolved) format the slot's label
-// + invoke the slot's own +0x00 callback / store the word.  The index probe is
-// CKeyFinder::Find (0x16e1d0, defined above); the table + gate are globals.
-// @early-stop
-// 99.85% - reloc-typing / entropy-tail artifact only: the full switch dispatch,
-// indexed-table paths, inline strcpy + Format_18d0f0 and the +0x00 callback are
-// all byte-exact; the residual is the DIR32-vs-REL32 scoring on the named
-// g_varTable / g_varProbeEnabled / Find externs (docs/matching-patterns.md fuzzy%).
-// ===========================================================================
-// The slot's resolved-index dispatch table (12-byte stride): a __cdecl fn at +0,
-// a word slot at +4.  Reloc-masked DATA extern (base 0x6bf49c).
-SIZE_UNKNOWN(CVarTableEntry);
-struct CVarTableEntry {
-    void(__cdecl* fn)(i32 a, i32 b); // +0x00
-    u16 w;                           // +0x04
-    char m_pad06[12 - 6];            // 12-byte stride
-};
-DATA(0x002bf49c)
-extern CVarTableEntry g_varTable[]; // 0x6bf49c
-
-// The probe-enable gate (a function-ptr/flag global; nonzero -> probe the table).
-DATA(0x002bf618)
-extern void* g_varProbeEnabled; // 0x6bf618
-
-// The slot label formatter (__cdecl(buf, value, cap)).
-extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
-
-// CVariantSlot (the +0x00 callback / probe-index / word / type-tag / label slot)
-// is the canonical one in <Bute/ButeTree.h>; Set (0x16d850) is defined here.
-
-RVA(0x0016d850, 0x11e)
-void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
-    if (m_0c == 4) {
-        m_08 = (u16)arg3;
-        return;
-    }
-    i32 idx;
-    if (g_varProbeEnabled != 0) {
-        idx = ((CKeyFinder*)this)->Find((i32)key);
-    } else {
-        idx = -1;
-    }
-    if (idx == -1) {
-        if (m_0c == 2) {
-            char buf[0x94];
-            strcpy(buf, m_14);
-            Format_18d0f0(buf, arg2, 0x4f);
-            m_callback(buf, arg3);
-        } else if (m_0c == 1) {
-            m_08 = (u16)arg3;
-        }
-    } else {
-        if (m_0c == 2) {
-            g_varTable[idx].fn(arg2, arg3);
-        } else if (m_0c == 1) {
-            g_varTable[idx].w = (u16)arg3;
-        }
-    }
-}

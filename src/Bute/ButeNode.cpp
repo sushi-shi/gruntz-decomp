@@ -7,7 +7,8 @@
 // its primary base `zErrHandling` with a SECOND base (MI, secondary vtable @+8) -
 // which is exactly our modeled shape (zErrHandling @+0, CButeNodeEntry @+8). The
 // former fabricated name "CButeNodeBase" is replaced by the real library name
-// zPTree here; its primary base is the RTTI-real `zErrHandling` (the same engine
+// zPTree (its ctors 0x16df70/0x16dff0 now live in their retail TU, the merged
+// container obj src/Gruntz/TypeKeyColl.cpp - wave2-H) here; its primary base is the RTTI-real `zErrHandling` (the same engine
 // class is modeled per-TU elsewhere under placeholder names - EngStr/GameText/
 // ProjActCache).
 //
@@ -32,36 +33,6 @@
 // The zErrHandling / CButeNodeEntry / zPTree family shapes are the shared
 // <Bute/PTreeNode.h> (so sibling TUs derive zPTree too); ctor bodies below.
 #include <Bute/PTreeNode.h>
-
-// CButeNodeEntry ctor (0x16df70): __thiscall(this, n, desc). cl auto-stamps the
-// ??_7CButeNodeEntry vptr@+0, then stores desc@+4, (WORD)n@+8, 0@+0xc. Clean leaf
-// ctor. Called out-of-line by the zPTree ctor's m_entry member-init.
-// @early-stop
-// vptr-position wall (~82.9%, was 100% hand-rolled): real polymorphism sinks the
-// implicit ??_7 vptr stamp to FIRST; the hand-rolled last-store cannot be sunk in
-// MSVC5 (same mechanism as CZArray2D). Converted per the ALL-VTABLES mandate.
-RVA(0x0016df70, 0x22)
-CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
-    m_desc = desc;
-    m_kind = (i16)n;
-    m_0c = 0;
-}
-
-// zPTree ctor (0x16dff0): run the zErrHandling primary base ctor + the
-// CButeNodeEntry second-base ctor, then cl auto-stamps the two most-derived vptrs
-// (??_7zPTree @+0 = 0x5e94ac, and the second-base-in-derived vtable @+8 =
-// 0x5e949c) and zeroes the two child links. /GX unwind frame from the two
-// destructible base sub-objects. (Was 100% hand-rolled; the auto-vptr stamps are
-// accepted per the ALL-VTABLES mandate.)
-// @early-stop
-// vptr-position wall (~96.1%, was 100%): real MI polymorphism auto-stamps both
-// vptrs FIRST, shifting the stamp schedule vs the hand-rolled last-stores. Logic
-// byte-faithful; converted per the ALL-VTABLES mandate.
-RVA(0x0016dff0, 0x73)
-zPTree::zPTree(void* desc, i32 n) : zErrHandling(&g_buteNodeErrMsg), CButeNodeEntry(n, desc) {
-    m_child18 = 0;
-    m_child28 = 0;
-}
 
 // ===========================================================================
 // CButeCfgNode174d - a concrete zPTree-derived config-tree node ctor

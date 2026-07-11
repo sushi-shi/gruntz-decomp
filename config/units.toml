@@ -830,11 +830,6 @@ unit = "shadedescrtable"
 source = "src/DDrawMgr/ShadeDescrTable.cpp"
 flags = "base"
 
-[[unit]]
-# global keyed record table insert/update/remove (re-homed from Discovered.cpp).
-unit = "registry23"
-source = "src/Gruntz/Registry23.cpp"
-flags = "base"
 
 [[unit]]
 unit = "gruntzcmdmgr"
@@ -1019,13 +1014,6 @@ unit = "attract"
 source = "src/Gruntz/Attract.cpp"
 flags = "eh"
 
-[[unit]]
-# CState frame-surface render helpers (Vslot17 GDI text overlay + ShadeScreen dim),
-# RVA-contiguous with attract but kept standalone so they don't perturb attract's /GX
-# matches (the EngStrRenderText.cpp split precedent). Non-EH.
-unit = "statedrawtext"
-source = "src/Gruntz/StateDrawText.cpp"
-flags = "base"
 
 [[unit]]
 unit = "play"
@@ -1198,12 +1186,6 @@ unit = "vehiclegruntsprites"
 source = "src/Gruntz/VehicleGruntSprites.cpp"
 flags = "eh"
 
-[[unit]]
-# LoadObject{Image,Sound,Anim}Resources trio (0x9a510/0x9a910/0x9ac20): the
-# OBJECTZ_ namespace asset reconcilers; a destructible local CObList -> /GX.
-unit = "loadobjectresources"
-source = "src/Gruntz/LoadObjectResources.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "statusbarupdaters"
@@ -1650,10 +1632,6 @@ source = "src/Gruntz/LightFxRender.cpp"
 flags = "base"
 
 
-[[unit]]
-unit = "droppedobjectshadow"
-source = "src/Gruntz/DroppedObjectShadow.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "explosion"
@@ -1670,10 +1648,6 @@ unit = "guardpoint"
 source = "src/Gruntz/GuardPoint.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "objectdropper"
-source = "src/Gruntz/ObjectDropper.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "waypoint"
@@ -1845,10 +1819,6 @@ unit = "helpstate"
 source = "src/Gruntz/HelpState.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "msgdispatch"
-source = "src/Gruntz/MsgDispatch.cpp"
-flags = "eh"
 
 [[unit]]
 unit = "actreg4"
@@ -1880,10 +1850,6 @@ unit = "bzkinddispatch"
 source = "src/Gruntz/BzKindDispatch.cpp"
 flags = "base"
 
-[[unit]]
-unit = "mgrtokenquery"
-source = "src/Gruntz/MgrTokenQuery.cpp"
-flags = "base"
 
 [[unit]]
 unit = "scattersamples"
@@ -2081,15 +2047,9 @@ flags = "base"
 [[unit]]
 unit = "statedispatch"
 source = "src/Gruntz/StateDispatch.cpp"
-flags = "base"
-[[unit]]
-unit = "objectlogicpump"
-source = "src/Gruntz/ObjectLogicPump.cpp"
-flags = "base"
-[[unit]]
-unit = "droppedobjectserialize"
-source = "src/Gruntz/DroppedObjectSerialize.cpp"
 flags = "eh"
+
+
 [[unit]]
 unit = "groupops"
 source = "src/Gruntz/GroupOps.cpp"
@@ -2111,10 +2071,7 @@ unit = "logicactreg"
 source = "src/Gruntz/LogicActReg.cpp"
 flags = "base"
 
-[[unit]]
-unit = "soundfxemitter"
-source = "src/Gruntz/SoundFxEmitter.cpp"
-flags = "base"
+
 [[unit]]
 unit = "colorhsv"
 source = "src/DDrawMgr/ColorHsv.cpp"
@@ -2359,14 +2316,7 @@ unit = "netthingdtor"
 source = "src/Net/NetThingDtor.cpp"
 flags = "eh"
 
-[[unit]]
-unit = "actregsiblings"
-source = "src/Gruntz/ActRegSiblings.cpp"
-flags = "eh"
-[[unit]]
-unit = "mgrobjserialize"
-source = "src/Gruntz/MgrObjSerialize.cpp"
-flags = "eh"
+
 [[unit]]
 unit = "gamechecksum"
 source = "src/Gruntz/GameChecksum.cpp"
@@ -2379,10 +2329,6 @@ flags = "eh"
 [[unit]]
 unit = "glyphstr"
 source = "src/Gruntz/GlyphStringDraw.cpp"
-flags = "base"
-[[unit]]
-unit = "saverecload"
-source = "src/Gruntz/SaveRecordLoad.cpp"
 flags = "base"
 
 [[unit]]

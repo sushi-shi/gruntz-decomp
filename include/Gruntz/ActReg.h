@@ -59,9 +59,10 @@ struct CActReg : public CActColl {
 // The concrete per-registry instances: same archetype, distinct placeholder names
 // so each DATA-pinned global keeps its own symbol. (CActReg itself is used for the
 // untyped per-class registries + the boundary range-register thunks.)
-struct CLogicActTable : public CActReg {};    // per-logic-class dispatch tables
-struct CLookupColl : public CActReg {};       // the outlined-lookup registries
-struct CSiblingActReg : public CActReg {};    // CUserLogic-leaf sibling registries
+struct CLogicActTable : public CActReg {}; // per-logic-class dispatch tables
+struct CLookupColl : public CActReg {};    // the outlined-lookup registries
+struct CSiblingActReg : public CActReg {}; // CUserLogic-leaf sibling registries
+SIZE_UNKNOWN(CSiblingActReg);
 struct CTeleporterActReg : public CActReg {}; // CTeleporter's registry (0x6446b0)
 struct CCheckpointActReg : public CActReg {}; // CCheckpointTrigger's registry (0x64e7c0)
 

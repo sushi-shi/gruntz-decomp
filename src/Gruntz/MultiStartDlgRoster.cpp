@@ -13,12 +13,11 @@
 // (GameRegistry.h) and the canonical CMulti game-state (Multi.h). Field names are
 // placeholders (m_<hexoffset>); only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/Multi.h>         // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
-#include <Gruntz/NetDlgHost.h>    // CNetDlgHost (m_host +0x5c facet; FindOptionsSlot @0x92e80)
-#include <Gruntz/GameRegistry.h>  // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
-#include <Net/NetSessHost.h>      // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet
-#include <Net/NetMgr.h>           // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
-#include <Wap32/ZDArrayDerived.h> // CZDArrayDerived (the g_netBe90 singleton's Construct)
+#include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Gruntz/NetDlgHost.h>   // CNetDlgHost (m_host +0x5c facet; FindOptionsSlot @0x92e80)
+#include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
+#include <Net/NetSessHost.h>     // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet
+#include <Net/NetMgr.h>          // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
 #include <rva.h>
 #include <string.h> // strcat (inline CRT, reloc-masked)
 
@@ -50,9 +49,6 @@ extern HWND(WINAPI* g_pGetWindow)(HWND, UINT);
 // "Using CmdDelay of %d and ResendDelay of %d\n" (the EchoLatencySettings format).
 DATA(0x0024243c)
 extern char s_UsingCmdDelay[];
-// Singletons the forwarders dispatch onto.
-DATA(0x0024be90)
-extern CZDArrayDerived g_netBe90; // VA 0x64be90
 
 // The per-player roster record IS the canonical CFocusSlot (GameRegistry.h,
 // CGameRegistry::m_focusSlots[] +0x150, stride 0x238) - the former local RosterSlot
@@ -215,6 +211,29 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
         c1->EnableWindow(1);
         c2->EnableWindow(1);
     }
+}
+
+// ---------------------------------------------------------------------------
+// The area/zone timer dialog's OnInitDialog (0x0c2cb0), re-homed from
+// AreaMgr.cpp (wave2-H): its RVA sits INSIDE this roster-dialog TU (between
+// SyncChannelSlot 0xc2ab0 and AppendChatLine 0xc2ce0 - first-link contiguity),
+// so it is one of this multiplayer-dialog TU's own CDialog leaves, not
+// AreaMgr's. It chains the base CDialog::OnInitDialog (0x1bac5e, reloc-masked)
+// then arms a 50 ms repaint timer; the HWND lives at +0x1c (CWnd::m_hWnd of a
+// CDialog subclass). Concrete dialog identity not yet recovered
+// (@identity-TODO); modeled minimally (offsets + code bytes load-bearing).
+struct AreaTimerDlg {
+    char m_pad0[0x1c];
+    HWND m_hWnd;            // +0x1c  CWnd::m_hWnd
+    i32 OnInitDialog();     // 0x0c2cb0
+    i32 BaseOnInitDialog(); // 0x1bac5e (CDialog::OnInitDialog)
+};
+SIZE_UNKNOWN(AreaTimerDlg);
+RVA(0x000c2cb0, 0x1f)
+i32 AreaTimerDlg::OnInitDialog() {
+    BaseOnInitDialog();
+    SetTimer(m_hWnd, 1, 0x32, 0);
+    return 1;
 }
 
 // __thiscall(str): resolve control 0x511 (the chat/message log edit) and append `str`
@@ -733,10 +752,7 @@ void CMultiStartDlg::EchoLatencySettings() {
     AppendChatLine(buf);
 }
 
-// ---------------------------------------------------------------------------
-// Configure the singleton with two fixed ids.
-// ---------------------------------------------------------------------------
-RVA(0x000c5f00, 0x15)
-void NetConfigureBe90() {
-    ((CZDArrayDerived*)&g_netBe90)->Construct(0x7d0, 0x7da);
-}
+// (The 0xc5f00 "NetConfigureBe90" that was parked here is really
+//  CObjectDropper::InitActReg - the dropped-object TU's registry construct; it
+//  lives in src/Gruntz/DroppedObject.cpp (wave2-H, private-globals-oracle-proven).
+//  This TU's retail extent ends at 0xc5333 + its 8-frag init run @0xc5360.)

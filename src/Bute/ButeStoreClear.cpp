@@ -42,25 +42,5 @@ void CButeStore212a0::Reset() {
     m_14 = 0;
 }
 
-RVA(0x0016e070, 0x7b)
-void CButeStore::ClearRecursive(CButeStoreNode* node) {
-    CButeStoreNode* n = node;
-    if (n == 0) {
-        n = m_root18;
-        if (n == 0) {
-            return;
-        }
-    }
-    if (n->m_left != 0 && n->m_left->m_key > n->m_key) {
-        ClearRecursive(n->m_left);
-    }
-    if (n->m_right != 0 && n->m_right->m_key > n->m_key) {
-        ClearRecursive(n->m_right);
-    }
-    RezFree(n->m_str);
-    if (m_flags & 2) {
-        m_cb(n->m_val);
-        RezFree(n->m_val);
-    }
-    RezFree(n);
-}
+// (CButeStore::ClearRecursive @0x16e070 lives in its retail TU, the merged
+//  container obj src/Gruntz/TypeKeyColl.cpp - wave2-H.)

@@ -26,26 +26,22 @@
 // logic leaf) is passed as the record arg (CUserLogic -> cast-free).
 i32 ProjTypeXfer(CUserLogic* rec); // 0x16e4f0
 
-// @early-stop
-// throwing-operator-new /GX frame wall (docs/patterns/gx-frame-outofline-ctor.md +
-// rezalloc-placement-new-no-eh-frame.md): retail's id-0 `new CLevelTime(obj)` wraps
-// the BARE out-of-line ctor call (0x9b8b0) in the operator-delete-on-ctor-throw
-// cleanup -> a full /GX frame (push -1/fs:0, [esp+0x10] state 0-during-ctor / -1-after,
-// saved raw ptr [esp+0x18]) + every case `jmp`ing one shared fs:0-restoring epilogue.
-// MSVC5 reconstruction CANNOT re-raise that frame for a bare out-of-line ctor `new`
-// (verified: real-virtuals+new, +declared-dtor, and inline-derived-wrapping-out-of-line-
-// base-ctor all stay frameless; the last one regresses to 23% on regalloc). The frame
-// mechanism needs the throwing call inside an INLINE ctor that ALSO stamps a vtable,
-// which would add a new-site vptr store retail does not have. Body/switch/dispatch are
-// byte-faithful; ~32% is the frameless plateau. Deferred to the final sweep.
+// The old "throwing-operator-new /GX frame wall" was a FLAGS MIS-PROFILE, not a
+// codegen wall: this unit was compiled flags="base" (no /GX at all), so nothing
+// could raise the frame. Under the true /GX profile the bare out-of-line ctor
+// `new CLevelTime(obj)` raises retail's operator-delete-on-ctor-throw frame
+// exactly (proven on the three ObjectDropper/DroppedObject/Shadow pumps, wave2-H
+// - 33% -> 100% with flags=eh + the UNSIGNED switch key ja/jbe idiom,
+// docs/patterns/switch-key-unsigned-ja-vs-jg.md). __cdecl like its pump siblings
+// (retail epilogue is a plain `ret`; the old __stdcall(obj,a1,a2) emitted ret 0xc).
 RVA(0x0009b770, 0xf1)
-i32 __stdcall StateDispatch(CGameObject* obj, i32 a1, i32 a2) {
+i32 StateDispatch(CGameObject* obj) {
     CGameObjAux* aux = obj->m_7c;
     // aux->m_1c doubles as the state id here (0 / 0x1d / 0x1e / 0x50..0x53 / 0x3e8)
     // - the same proven-heterogeneous aux slot other sprite classes use as a
     // lookup-node pointer; kept generically typed in the canonical (documented
     // variant), read/written through the int view at this site.
-    switch ((i32)aux->m_1c) {
+    switch ((u32)aux->m_1c) {
         case 0: {
             aux->m_1c = (void*)0x3e8;
             CLevelTime* h = new CLevelTime(obj);

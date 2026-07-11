@@ -80,10 +80,65 @@ void CCheckpointTrigger::InitActReg() {
 #include <string.h>       // memset (inlined rep stosd)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+#include <Gruntz/ActNameRegistry.h> // the shared name registry + ActNameLookup (RegisterActs)
 
 extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 DATA(0x0020a454)
 extern char s_actKeyA[]; // "A"
+
+// The registered-handler entry (first dword = the handler PMF; single inheritance
+// -> 4-byte code pointer; CCheckpointTrigger is complete above).
+struct CCheckpointActEntry {
+    i32 (CCheckpointTrigger::*m_fn)();
+};
+SIZE_UNKNOWN(CCheckpointActEntry);
+
+// CCheckpointTrigger::FireActivation (0x10ea80), vtable slot 4 (re-homed from
+// ActRegSiblings.cpp, wave2-H - its RVA sits between InitActReg @0x10ea00 and the
+// ctor @0x10ee20, this TU): look the activation coordinate up in the class
+// registry (g_checkpointActReg); if the resolved entry carries a registered
+// handler PMF, resolve it again and dispatch it __thiscall on `this`. The
+// double-ResolveEntry + PMF-fire archetype (ResolveEntry has side effects, so it
+// is re-run for the actual call rather than cached).
+RVA(0x0010ea80, 0x102)
+void CCheckpointTrigger::FireActivation(i32 coord) {
+    CCheckpointActEntry* e = (CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(coord);
+    if (e->m_fn != 0) {
+        CCheckpointActEntry* e2 = (CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(coord);
+        (this->*(e2->m_fn))();
+    }
+}
+
+// CCheckpointTrigger::RegisterActs (0x10ebe0, re-homed with FireActivation): the
+// shared register-"A"-then-bind archetype, registry @0x64e7c0.
+//
+// @early-stop
+// register-pinning wall (docs/patterns/zero-register-pinning.md +
+// test-old-value-decrement-loop-while-postdec.md): logic + every byte faithful;
+// only the regalloc/free-loop-count materialization diverges. Deferred.
+RVA(0x0010ebe0, 0x18d)
+void CCheckpointTrigger::RegisterActs() {
+    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    if (id == 0) {
+        g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
+        id = g_nextActId;
+        char* slot = ActNameLookup(id);
+        i32 cnt = g_nameRegScratch;
+        void** list = g_nameRegCurList;
+        if (cnt != 0) {
+            do {
+                if (list != 0) {
+                    ((CString*)list)->CString::~CString();
+                }
+                list++;
+            } while (--cnt);
+        }
+        ((CString*)slot)->operator=(s_actKeyA);
+        g_nextActId++;
+    }
+    ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn =
+        &CCheckpointTrigger::Trigger;
+}
 
 // The bound object is the inherited CUserLogic m_10 (CGameObject*); the ctor uses
 // it directly (the CTeleporter idiom - no per-TU view cast). CGameObject models the

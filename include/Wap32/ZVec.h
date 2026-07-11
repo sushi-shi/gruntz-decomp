@@ -23,16 +23,15 @@
 #include <Ints.h>
 #include <rva.h>
 
-// zErrHandling subobject: kept as the (empty) base <Bute/ButeMgr.h>'s zPTree derives
-// from. NOTE: distinct from the RTTI-real polymorphic zErrHandling in <Bute/PTreeNode.h>
-// (a pending dedup); do not use it for m_err.
-class zErrHandling {
-public:
-};
+// (The empty zErrHandling placeholder that lived here - the stand-in base
+// <Bute/ButeMgr.h>'s zPTree derives - moved into ButeMgr.h itself (wave2-H), so
+// this header can coexist with the RTTI-real polymorphic zErrHandling of
+// <Bute/PTreeNode.h> inside the merged TypeKeyColl TU. The _zvec head
+// {vptr, m_err} IS that same container-error base - a pending dedup.)
 
 // The error-slot the accessor invokes on overflow: m_err points to a CVariantSlot
-// (its Set @0x16d850 is called at every overflow site). Was mis-typed as the empty
-// `zErrHandling` placeholder above; typed to the real pointee here.
+// (its Set @0x16d850 is called at every overflow site). Was mis-typed as an empty
+// `zErrHandling` placeholder; typed to the real pointee here.
 struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call sites)
 
 // The dynamic-vector base; `zDArray<T>` adds the per-element relocation override.

@@ -23,7 +23,15 @@ public:
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
     // slot reloc-masked, like CDroppedObject::Serialize).
     i32 Serialize(struct CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc7b40
-    i32 m_savedGeoId;                         // +0x40  m_38->m_geoId snapshot
+    // The activation-registry facet (ex ActRegSiblings.cpp's "CSiblingActorB" -
+    // identity recovered: its registry construct 0xc76d0 sits right after this
+    // class's ctor, and its per-frame Advance spawns the "DroppedObject" sprite
+    // on the drop frame - the shadow IS the dropper's drop herald):
+    static void InitActReg();       // 0xc76d0 (build g_shadowActReg over [2000,2010])
+    void FireActivation(i32 coord); // 0xc7750 (look up + fire the registered handler)
+    static void RegisterActs();     // 0xc78b0 (bind Advance to the "A" key)
+    i32 Advance();                  // 0xc7ab0 (per-frame: advance anim; drop frame -> spawn)
+    i32 m_savedGeoId;               // +0x40  m_38->m_geoId snapshot
     char m_pad44[0x54 - 0x44];
 };
 VTBL(CDroppedObjectShadow, 0x1e787c);

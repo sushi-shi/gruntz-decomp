@@ -30,6 +30,7 @@ Verdict summary:
 | `0x077f80-0x07d7ca` | triggermgr+iconloaders(+7) | **ONE TU** (TriggerMgr.cpp) | strong |
 | `0x0363a0-0x037900` | videoconfig+menustate(+2) | **ONE TU** (options dialogs) | strong |
 | `0x00b5e0-0x00cc98` | worldsoundset+randomambientsound+ambientsound | **ONE TU** | strong |
+| `0x0c5360-0x0c7e90` | roster tail (pumps+dropper) + actregsiblings+droppedobject | **ONE TU** (DroppedObject.cpp), boundary `0x0c5360` | strong |
 
 ---
 
@@ -438,3 +439,41 @@ Evidence:
 
 Seam fns: none to move (unit-merge only; `?Recompute@CSoundChannel` @`0xbf10`
 and the PosSound free fns `0xc840-0xca00` are already in-place).
+
+## 11. `0x0c5360-0x0c7e90` roster tail + actregsiblings + droppedobject — ONE TU (strong; wave2-H)
+
+**Verdict: one obj** (DroppedObject.cpp: CObjectDropper + CDroppedObject +
+CDroppedObjectShadow, their pumps, act registries and serializes), and the
+MultiStartDlgRoster obj ends at `0xc5333` + its 8-frag run. This REFUTES the
+"pumps belong to the roster" contiguity hypothesis (which rested on the
+`NetConfigureBe90` 0xc5f00 attribution).
+
+Evidence (private-globals oracle, computed from `.reloc` sites):
+- **.data extent weave**: the roster-interval-attributed 9 leading frag statics
+  (0x64be20..88 + 0x64bec8..d0, the {0,1,1} triples) INTERLEAVE with the dropped
+  TU's registry singletons (0x64be90 / 0x64bed8 / 0x64bf00 and the 0x64bed8+
+  cells) in ONE contribution band 0x64be10..0x64c268 — impossible for two objs.
+  MultiStartDlgRoster's private extent ends cleanly at 0x64bdcc; the 0x212xxx
+  string band is likewise ordered rosterA < tail < dropped with no weave.
+- **g_dropperActReg (ex "g_netBe90") @0x64be90 is private to the tail+interval**:
+  referenced ONLY by 0xc5f00 (its Construct) + FireAct 0xc5f80 + RegisterActs
+  0xc60e0. Zero roster references — 0xc5f00 is CObjectDropper::InitActReg, not a
+  roster net helper.
+- **The static-registry triple pattern**: each of the three classes carries an
+  identical {$E frag, Construct(0x15), atexit thunk(0xe)} triple —
+  0xc5ee0/0xc5f00/0xc5f30 (dropper), 0xc6b30/0xc6b50/0xc6b80 (dropped),
+  0xc76b0/0xc76d0/0xc7700 (shadow) — the middle two INSIDE the 0xc5f80 interval;
+  the first one sits in the disputed tail, structurally parallel.
+- **A-B-A sandwich**: actregsiblings fns (0xc5f80/0xc60e0 ... 0xc7750/0xc78b0/
+  0xc7ab0) bracket the droppedobject block — one obj regardless.
+- The `$E` frags are emitted at the SOURCE POSITION of each file-scope static
+  (verified across this TU and areamgr) — so the 9-frag block @0xc5360 is the
+  file's leading statics, not a roster tail.
+
+Identity folds executed with the merge: "CSiblingActorA" == CObjectDropper
+(registry entry fires &CObjectDropper::Update); "CSiblingActorB" ==
+CDroppedObjectShadow (its Advance spawns the "DroppedObject" sprite on the
+anim's drop frame); "NetConfigureBe90"/"Unmatched_c76d0" == the
+CObjectDropper/CDroppedObjectShadow InitActReg constructors. The
+CCheckpointTrigger pair (0x10ea80/0x10ebe0) that shared ActRegSiblings.cpp moved
+to CheckpointTrigger.cpp (its class TU, 0x10cb10 interval).

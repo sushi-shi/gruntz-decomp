@@ -4,9 +4,7 @@
 //             transitional stamp - the class lives in ComHelperThunks.cpp.
 //  0x1155b0 - construct the g_largeFont global (tail-jmp to ??0Font).
 //  0x1bae5d - forward (-1) to a CWnd method on a global framework object.
-//  0xc76d0  - construct g_64bf00 (CZDArrayDerived::Construct(0x7d0,0x7da)).
 #include <rva.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <Ints.h>
 
 #include <Font/Font.h> // real Font (the g_largeFont global)
@@ -53,11 +51,8 @@ void Unmatched_1bae5d() {
     g_652e80.Method_1baf15(-1);
 }
 
-extern CZDArrayDerived g_64bf00;
-RVA(0x000c76d0, 0x15)
-void Unmatched_c76d0() {
-    ((CZDArrayDerived*)&g_64bf00)->Construct(0x7d0, 0x7da);
-}
+// (The 0xc76d0 "Unmatched_c76d0" that was parked here is really
+//  CDroppedObjectShadow::InitActReg - src/Gruntz/DroppedObject.cpp, wave2-H.)
 
 // --- 0x1bf577 : free the owned module handle if present ----------------------
 // A __thiscall leaf on a placeholder host that owns an HMODULE at +0x00. Re-homed
