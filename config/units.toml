@@ -120,6 +120,16 @@ unit = "brickz"
 source = "src/Gruntz/Brickz.cpp"
 flags = "base"
 
+[[unit]]
+unit = "brickzclip"
+source = "src/Gruntz/BrickzClip_02b340.cpp"
+flags = "base"
+
+[[unit]]
+unit = "brickzcellflags"
+source = "src/Gruntz/BrickzCellFlags_077790.cpp"
+flags = "base"
+
 # cbrickz UNIT REMOVED (waveM-strays): CBrickz's ctor@0x10e800 + leaf pool folded into
 # src/Gruntz/TileLogicPump.cpp (its body sits inside the tile-trigger logic obj's contiguous
 # first-link .text block; its state pump is LogicDispatchB). The CBrickz class stays in
@@ -542,6 +552,11 @@ flags = "eh"
 [[unit]]
 unit = "rezmgr"
 source = "src/Rez/RezMgr.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "rezfile"
+source = "src/Rez/RezFile.cpp"
 flags = "eh"
 
 [[unit]]
