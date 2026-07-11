@@ -95,7 +95,7 @@ dialogs	54	38
 directdrawmgr	61	34
 directinputmgr2	40	33
 directionclassify	1	0
-directsoundmgr	71	50
+directsoundmgr	72	50
 donothing	7	6
 drawdebugstats	1	0
 droppedobject	28	20
@@ -1361,6 +1361,7 @@ directionclassify	?Classify@MotionEntity@@QAEPAUDirDesc@@PAU1@D@Z	96.2060	96.206
 directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	3	401bb7a66d82	0x136230
 directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	3	401bb7a66d82	0x136180
 directsoundmgr	??0DSoundCloneInst@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	79.9688	79.9688	2	a89881487883	0x135b10
+directsoundmgr	??0DSoundVoice@@QAE@HHHPAVDirectSoundMgr@@HH@Z	47.6061	47.6061	1	dee1aac58fdf	0x136fe0
 directsoundmgr	??0DirectSoundMgr@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	2	1be6b7dd41fd	0x1351d0
 directsoundmgr	??0SoundDevice@@QAE@XZ	57.3438	57.3438	1	985b51098fe5	0x136440
 directsoundmgr	??1DSoundBaseSub@@UAE@XZ	100.0000	100.0000	2	c1840ba484d2	0x136260
@@ -1369,8 +1370,8 @@ directsoundmgr	??1DirectSoundMgr@@UAE@XZ	100.0000	100.0000	2	25a0537188d4	0x1353
 directsoundmgr	??1SoundDevice@@UAE@XZ	28.2353	28.2353	1	a9599aba9fdc	0x136500
 directsoundmgr	??_GSoundDevice@@UAEPAXI@Z	100.0000	100.0000	1	cpp:6ae4746fea2e	0x1364c0
 directsoundmgr	?Acquire@SoundDevice@@QAEPAVDirectSoundMgr@@PAXII@Z	99.7685	99.7685	1	b7ed2b4c981d	0x136910
-directsoundmgr	?AcquireFile@SoundDevice@@QAEPAVDirectSoundMgr@@PADII@Z	100.0000	100.0000	1	3a2da175ac84	0x136860
-directsoundmgr	?AcquireResource@SoundDevice@@QAEPAVDirectSoundMgr@@PBDII@Z	100.0000	100.0000	1	b760b7199e96	0x136a30
+directsoundmgr	?AcquireFile@SoundDevice@@QAEPAVDirectSoundMgr@@PADII@Z	100.0000	100.0000	2	a3f72a3d38bf	0x136860
+directsoundmgr	?AcquireResource@SoundDevice@@QAEPAVDirectSoundMgr@@PBDII@Z	100.0000	100.0000	2	3a6a1d8c8813	0x136a30
 directsoundmgr	?ApplyAndPlay@DirectSoundMgr@@QAEHHHHH@Z	100.0000	100.0000	3	7701bbd20517	0x136300
 directsoundmgr	?BuildVolumeTable@SoundDevice@@SAXXZ	100.0000	100.0000	1	da3fbae23813	0x1351a0
 directsoundmgr	?Clone@DSoundCloneInst@@QAEPAVDirectSoundMgr@@H@Z	100.0000	100.0000	3	fb2191f9ab8b	0x135c20
@@ -1400,8 +1401,8 @@ directsoundmgr	?Play@DirectSoundMgr@@QAEHXZ	95.5172	95.5172	6	9154ba8f50c6	0x136
 directsoundmgr	?PurgeVoiceList@SoundDevice@@QAEHH@Z	98.6667	98.6667	2	4af8a5a7e598	0x136e20
 directsoundmgr	?ReacquireBuffer@DirectSoundMgr@@QAEHXZ	100.0000	100.0000	4	17e02b4bd33f	0x135340
 directsoundmgr	?ReacquireViaCallback@SoundDevice@@QAEHXZ	100.0000	100.0000	2	fdb5e5d18530	0x1365e0
-directsoundmgr	?ReloadFile@SoundDevice@@QAEHPAVDirectSoundMgr@@PADI@Z	100.0000	100.0000	1	6ac4d999bd95	0x136b00
-directsoundmgr	?ReloadResource@SoundDevice@@QAEHPAVDirectSoundMgr@@PBDI@Z	100.0000	100.0000	1	a9bbc5d4ca31	0x136ce0
+directsoundmgr	?ReloadFile@SoundDevice@@QAEHPAVDirectSoundMgr@@PADI@Z	100.0000	100.0000	2	6ba3bfe29223	0x136b00
+directsoundmgr	?ReloadResource@SoundDevice@@QAEHPAVDirectSoundMgr@@PBDI@Z	100.0000	100.0000	2	66e196cd86eb	0x136ce0
 directsoundmgr	?ReloadRiff@SoundDevice@@QAEHPAVDirectSoundMgr@@PAXI@Z	93.1376	93.1376	1	797d9ea4478c	0x136bd0
 directsoundmgr	?RemoveBuffer@SoundDevice@@QAEXPAVDirectSoundMgr@@@Z	100.0000	100.0000	1	57f4baab541c	0x136d80
 directsoundmgr	?RemoveClone@DSoundCloneInst@@QAEXPAVDirectSoundMgr@@@Z	100.0000	100.0000	3	b0bf7a36faac	0x135d20
