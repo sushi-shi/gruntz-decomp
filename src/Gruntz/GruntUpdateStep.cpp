@@ -36,9 +36,9 @@ extern CTypeColl g_typeColl;
 
 DATA(0x00645588)
 extern u32 g_clock; // game clock (g_645588)
-DATA(0x00645544)
+DATA(0x00245544)    // was VA-typo'd 0x00645544 (canonical binding is 0x245544)
 extern void* g_freeList;
-DATA(0x0064554c)
+DATA(0x0024554c) // was VA-typo'd 0x0064554c
 extern i32 g_freeListBias;
 
 DATA(0x00645540)

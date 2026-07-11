@@ -161,7 +161,7 @@ extern "C" WwdGameReg* g_gameReg;
 
 // The recycled-node free-list head (?g_freeList@@3PAXA) and a tile-id constant
 // (DAT_00644c54) the 0x4017e4 case compares against.
-DATA(0x00645544)
+DATA(0x00245544) // was VA-typo'd 0x00645544 (canonical binding is 0x245544)
 extern void* g_freeList;
 extern i32 g_tileKindMagic;
 

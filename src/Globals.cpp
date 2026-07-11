@@ -13,6 +13,7 @@ struct AttractActorList;
 struct CVariantSlot;
 struct CActEntry;
 class CDirectDrawMgr;
+class CGameWnd; // g_activeGameWnd's pointee (?g_activeGameWnd@@3PAVCGameWnd@@A)
 struct CVariantSlot;
 struct CDropEntry;
 struct CVariantSlot;
@@ -515,9 +516,9 @@ extern i32 g_vtrigScratch;
 DATA(0x00253c48)
 extern i32 g_panTable[];
 DATA(0x00253c68)
-extern i32 g_singleton653c68;
+extern CGameWnd* g_activeGameWnd; // was placeholder g_singleton653c68 (the active-window singleton)
 DATA(0x00253c6c)
-extern i32 g_instCount653c6c;
+extern i32 g_gameAppInstanceCount; // was placeholder g_instCount653c6c (CGameApp instance counter)
 DATA(0x00253c70)
 extern i32 g_wap32Now; // ?g_wap32Now@@3HA
 DATA(0x00253c74)

@@ -39,6 +39,7 @@
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
 #include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
 #include <Gruntz/InputState.h> // CInput54 (m_inputState @+0x54) + CObListSub (its +0x08 CObList)
+#include <Gruntz/FontConfig.h> // CFontConfig (m_chatLog @+0x5c; AddItem @0x21c60)
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
@@ -197,8 +198,8 @@ void CloseSettingsStore(); // FUN_004f8e20
 // CModalDialog. Its ctor/dtor reloc-mask; only the size + destructibility (the /GX
 // frame) are load-bearing.
 struct CCheckpointDlg {
-    CCheckpointDlg(i32 a); // FUN_004234a0 (this, 0)
-    ~CCheckpointDlg();     // FUN_005ba51d
+    CCheckpointDlg(CWnd* a); // 0x234a0 (real ctor ??0CCheckpointDlg@@QAE@PAVCWnd@@@Z; this, null)
+    ~CCheckpointDlg();       // 0x1ba51d (unreconstructed base dtor - stays unbound)
     char m_pad[0x5c];
 };
 
@@ -241,21 +242,25 @@ INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 // The serialize sequence counter is C++-linkage (?g_serialCounter@@3HA @0x229ad0),
 // the canonical name folded in wave5-R4 - kept OUT of the extern "C" block below.
 extern i32 g_serialCounter;
+// SaveState/LoadState stream these; their canonical C++-linkage (?g_...@@3HA)
+// bindings live in the globals/lightfxrender units - reference those directly so the
+// DIR32 reloc pairs (an extern "C" _g_* twin would collide on the same RVA).
+extern i32 g_645594;  // ?g_645594@@3HA @0x245594 (lightfxrender)
+extern i32 g_jitterX; // ?g_jitterX@@3HA @0x2452a4 (was g_6452a4)
+extern i32 g_jitterY; // ?g_jitterY@@3HA @0x2452cc (was g_6452cc)
+extern i32 g_panMinX; // ?g_panMinX@@3HA @0x245508 (was g_645508)
+extern i32 g_panMaxX; // ?g_panMaxX@@3HA @0x24550c (was g_64550c)
 extern "C" {
-    extern i32 g_61ab24; // DAT_0061ab24  (last-stored input flag mirror)
     extern i32 g_64557c; // DAT_0064557c  (modal/cursor-busy gate)
     // The clock/scroll/warp globals SaveState streams through the archive.
-    extern i32 g_64558c;        // DAT_0064558c
-    extern i32 g_645590;        // DAT_00645590
-    extern i32 g_645594;        // DAT_00645594
-    extern i32 g_645598;        // DAT_00645598
-    extern i32 g_64559c;        // DAT_0064559c
-    extern i32 g_6455a0;        // DAT_006455a0
-    extern i32 g_monologoShown; // DAT_006455e8 (the MONOLITH logo is on screen)
-    extern i32 g_6452a4;        // DAT_006452a4
-    extern i32 g_6452cc;        // DAT_006452cc
-    extern i32 g_645508;        // DAT_00645508
-    extern i32 g_64550c;        // DAT_0064550c
+    extern i32 g_64558c; // DAT_0064558c
+    extern i32 g_645590; // DAT_00645590
+    DATA(0x00245598)
+    extern i32 g_645598; // DAT_00645598
+    extern i32 g_64559c; // DAT_0064559c
+    extern i32 g_6455a0; // DAT_006455a0
+    DATA(0x002455e8)
+    extern i32 g_monologoShown; // (the MONOLITH logo is on screen)
 }
 
 extern "C" {
@@ -568,9 +573,10 @@ extern "C" void Format(CString* dst, const char* fmt, ...);
 
 // The engine's __cdecl struct-returning world-file-name builder (FUN_0003ad90):
 // resolves the current world file from the game window handle into a CString
-// (returned by value -> hidden return-slot arg). Reloc-masked; the (hwnd, flag)
-// arg shape + the cdecl struct-return convention are what is load-bearing.
-CString GetWorldFileFromWindow(HWND hwnd, i32 flag);
+// (returned by value -> hidden return-slot arg). The real callee at 0x3ad90 is
+// ?RunCustomWorldDialog@@YA?AVCString@@HPAV1@@Z (customworlddialog); the (hwnd, 0)
+// push shape matches its (int, CString*) params byte-for-byte. Reloc-masked.
+CString RunCustomWorldDialog(i32 hwnd, CString* out);
 
 // The per-frame draw-clock globals PerFrameTick stamps each tick. g_wap32Now /
 // g_wap32FrameDelta are the engine's just-refreshed clock (mangled C++ globals,
@@ -580,18 +586,25 @@ extern "C" {
     extern u32 g_645580; // game-side now mirror (DAT_00645580)
     extern u32 g_645584; // game-side delta mirror (DAT_00645584)
     extern u32 g_645588; // game-side abs clock (DAT_00645588)
-    extern u32 g_6bf3c0; // draw-clock (timeGetTime stamp)
-    extern u32 g_6bf3bc; // draw-clock delta (cleared)
-    // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked).
-    extern u32 g_645600;            // DAT_00645600
-    extern u32 g_traitorMode;       // DAT_006455b0 ("Traitor Mode" cheat toggle)
-    extern u32 g_gruntDestruction;  // DAT_006455a4 ("Grunt destruction" cheat toggle)
-    extern u32 g_gruntCreation;     // DAT_006455a8 ("Grunt creation" cheat toggle)
-    extern u32 g_gooPuddlez;        // DAT_006455ac ("Goo puddlez" cheat toggle)
-    extern u32 g_explosionz;        // DAT_006455f8 ("Explosionz" cheat toggle)
-    extern u32 g_debugDisplayFlags; // DAT_006455f4 (debug-display bit set: 1 obj count,
-                                    // 4 world pos, 0x10 frame rate, 0x40/0x100 brick
-                                    // text, 0x80 elapsed time)
+    extern u32 g_6bf3bc; // draw-clock delta (cleared) - g_6bf3c0 is g_killCueClock
+    // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
+    // here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
+    DATA(0x00245600)
+    extern u32 g_645600; // DAT_00645600
+    DATA(0x002455b0)
+    extern u32 g_traitorMode; // ("Traitor Mode" cheat toggle)
+    DATA(0x002455a4)
+    extern u32 g_gruntDestruction; // ("Grunt destruction" cheat toggle)
+    DATA(0x002455a8)
+    extern u32 g_gruntCreation; // ("Grunt creation" cheat toggle)
+    DATA(0x002455ac)
+    extern u32 g_gooPuddlez; // ("Goo puddlez" cheat toggle)
+    DATA(0x002455f8)
+    extern u32 g_explosionz;        // ("Explosionz" cheat toggle)
+    extern u32 g_debugDisplayFlags; // DAT_006455f4 == ?g_debugFlags@@3EA (u8; retail
+                                    // over-wide dword-zeroes it via a shared eax, so the
+                                    // globals-unit u8 binding cannot host this dword store
+                                    // - this ref stays UNBOUND. reloc-fidelity NOTE)
 }
 
 // The two engine input/state singletons TickStateMgrs drives once per call
@@ -608,7 +621,10 @@ struct DirectInputMgr2 {
 // The +0x578 state manager (g_645578). One object: TickStateMgrs drives its Flush;
 // Close zeroes its field block (+0x00..+0x14) before delete.
 extern "C" {
-    extern DirectInputMgr2* g_645570; // DAT_00645570
+    DATA(0x00245570)
+    extern DirectInputMgr2* g_645570; // DAT_00245570
+    DATA(0x00245578)
+    extern StateMgrBZ* g_645578; // DAT_00245578 (canonical binding; also decl'd in Play.h)
 }
 
 // The embedded options object's ctor/dtor are out-of-line NAFXCW-style helpers
@@ -628,10 +644,6 @@ CGruntzMgrOptions::~CGruntzMgrOptions() {}
 
 // The +0x5c chat/message-log object: AppendChatMessage routes one message line
 // (with type 0 / channel 0x11) into its insert slot (FUN_00421c60, reloc-masked).
-struct CChatLog {
-    i32 Insert(char* msg, i32 type, i32 channel); // (this, msg, type, channel)
-    void Teardown();                              // (this) reloc-masked (Close)
-};
 
 // The shared scratch buffer the toggle-message formatter renders "<item> is
 // ON/OFF" into before logging it (reloc-masked DATA ref). The format helper is
@@ -1377,11 +1389,11 @@ i32 CGruntzMgr::IsStandardMode() {
 // returning its result; 0 when no log is bound.
 RVA(0x0008f9c0, 0x1d)
 i32 CGruntzMgr::AppendChatMessage(char* msg) {
-    CChatLog* log = m_chatLog;
+    CFontConfig* log = m_chatLog;
     if (log == 0) {
         return 0;
     }
-    return log->Insert(msg, 0, 0x11);
+    return log->AddItem(msg, 0, 0x11);
 }
 
 // -------------------------------------------------------------------------
@@ -1667,8 +1679,8 @@ i32 CGruntzMgr::ToggleBaseLayer() {
 // trailing -/ switches, then CreateProcess it with the supplied URL appended. A free
 // helper CGruntzMgr::HandleCommand (0x862f0) calls; RVA-contiguous with the manager
 // methods (in the gruntzmgr .obj). Re-homed from src/Stub/ApiWrappers.cpp.
-// func_2e6e (0x2e6e, cdecl): normalises an argv token in-place (reloc-masked).
-extern "C" i32 func_2e6e(const char* tok, i32 flag, i32* out);
+// The real callee at 0x118ce0 (reloc-masked): ?FindProcessByName@@YAHPBDHPAPAX@Z.
+i32 FindProcessByName(const char* name, i32 flag, void** out);
 RVA(0x0008f120, 0x264)
 i32 __stdcall LaunchWebBrowser(char* url) {
     LONG len = 0x104;
@@ -1682,7 +1694,7 @@ i32 __stdcall LaunchWebBrowser(char* url) {
     i32 quoted = 0;
     _strlwr(cmd);
     if (strstr(cmd, "IEXPLORE.EXE")) {
-        func_2e6e("IEXPLORE.EXE", 1, &quoted);
+        FindProcessByName("IEXPLORE.EXE", 1, (void**)&quoted);
     }
     char* dash = strchr(cmd, '-');
     i32 dn = dash - cmd + 1;
@@ -1736,7 +1748,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
     if (st != 5 && st != 2 && st != 3 && st != 7) {
         return 0;
     }
-    CString name = GetWorldFileFromWindow(m_gameWnd->m_hwnd, 0);
+    CString name = RunCustomWorldDialog((i32)m_gameWnd->m_hwnd, 0);
     if (name.GetLength() == 0) {
         return 0;
     }
@@ -1764,7 +1776,7 @@ void CGruntzMgr::PerFrameTick() {
     InitializeTimeGlobal();
 
     if (m_world) {
-        g_6bf3c0 = timeGetTime();
+        g_killCueClock = timeGetTime();
         g_6bf3bc = 0;
     }
 
@@ -2048,7 +2060,7 @@ void CGruntzMgr::SetGameClock(i32 now, i32 delta, i32 abs) {
     g_645580 = now;
     g_645584 = delta;
     g_645588 = abs;
-    g_6bf3c0 = now;
+    g_killCueClock = now;
     g_6bf3bc = delta;
 }
 
@@ -2878,7 +2890,7 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
 
     while (show(0) >= 0) {
     }
-    SwitchModeState(stateId, 1, 0, 0);
+    TransitionState(stateId, 1, 0, 0);
     m_modalBusy = 0;
     m_b0 = 0;
     EndWaitCursor();
@@ -3004,7 +3016,7 @@ extern void Lab401947(); // 0x401947 (code address passed as a ptr; reloc-masked
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     if (m_curState->Update() == GAMESTATE_PLAY) {
-        RegisterDebugCommand("DEBUG_SETSKILL", (void*)&Lab401947, 1);
+        RunModalDialog("DEBUG_SETSKILL", (void*)&Lab401947, 1);
     }
     return 0;
 }
@@ -3240,7 +3252,7 @@ i32 CGruntzMgr::Quicksave() {
     }
     FillSaveInfo(m_saveInfoRec, 0);
     if (((CSaveGame*)g_gameReg->m_saveSink)->Save((i32)m_saveInfoRec->m_serial, 0x81a7)) {
-        m_chatLog->Insert("Game Quicksaved successfully.", 0, 0x11);
+        m_chatLog->AddItem("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }
     EnterModalUI((i32) "ERROR - Cannot Save Game.");
@@ -3266,7 +3278,7 @@ i32 CGruntzMgr::Quickload() {
             return 1;
         }
         g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
-        m_chatLog->Insert("Game Quickloaded successfully.", 0, 0x11);
+        m_chatLog->AddItem("Game Quickloaded successfully.", 0, 0x11);
         return 1;
     }
     return RunLoadGameDialog();
@@ -3542,7 +3554,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
     if (m_cmdGrid->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (((CTriggerMgr*)GetSaveSource())->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
+    if (((CTriggerMgr*)PickPlayOrPausedState())->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
     if (((CTriggerMgr*)m_cmdSubMgr)->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
@@ -3644,10 +3656,10 @@ i32 CGruntzMgr::SaveState(CSerialArchive* ar) {
     ar->Write(&g_explosionz, 4);
     ar->Write(&m_isEasyMode, 4);
     ar->Write(&g_monologoShown, 4);
-    ar->Write(&g_6452a4, 4);
-    ar->Write(&g_6452cc, 4);
-    ar->Write(&g_645508, 4);
-    ar->Write(&g_64550c, 4);
+    ar->Write(&g_jitterX, 4);
+    ar->Write(&g_jitterY, 4);
+    ar->Write(&g_panMinX, 4);
+    ar->Write(&g_panMaxX, 4);
     ar->Write(&g_warpX, 4);
     ar->Write(&g_warpY, 4);
     return 1;
@@ -3699,10 +3711,10 @@ i32 CGruntzMgr::LoadState(CSerialArchive* ar) {
     ar->Read(&g_explosionz, 4);
     ar->Read(&m_isEasyMode, 4);
     ar->Read(&g_monologoShown, 4);
-    ar->Read(&g_6452a4, 4);
-    ar->Read(&g_6452cc, 4);
-    ar->Read(&g_645508, 4);
-    ar->Read(&g_64550c, 4);
+    ar->Read(&g_jitterX, 4);
+    ar->Read(&g_jitterY, 4);
+    ar->Read(&g_panMinX, 4);
+    ar->Read(&g_panMaxX, 4);
     ar->Read(&g_warpX, 4);
     ar->Read(&g_warpY, 4);
     return 1;
@@ -3725,7 +3737,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     if (dst == 0) {
         return 0;
     }
-    char* src = (char*)GetSaveSource();
+    char* src = (char*)PickPlayOrPausedState();
     if (src == 0) {
         return 0;
     }
@@ -3814,7 +3826,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
     }
     m_curState->Vslot19();
     g_645570->Flush();
-    PostSwitchHook();
+    CGruntzMgr::PerFrameTick();
     return 1;
 }
 
@@ -3915,7 +3927,7 @@ i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
         }
     }
 
-    PostSwitchHook();
+    CGruntzMgr::PerFrameTick();
     CActiveObj* o = GetActiveObj();
     if (o) {
         if (o->m_2dc) {
@@ -3939,7 +3951,7 @@ i32 CGruntzMgr::SwitchToNextState() {
     if (Wap32GameMgrVfunc3() == 0) {
         return 0;
     }
-    CState* next = MakeNextState();
+    CState* next = TopState();
     if (next == 0) {
         return 0;
     }
@@ -3956,12 +3968,12 @@ i32 CGruntzMgr::SwitchToNextState() {
         m_curState = 0;
     }
     m_curState = next;
-    ActivateState(next);
+    PopTopIfMatches(next);
     if (m_curState->Vslot09(oldId) == 0 && m_curState->Vslot06() == 0) {
         return 0;
     }
     m_owner->m_running = 1;
-    PostSwitchHook();
+    CGruntzMgr::PerFrameTick();
     return 1;
 }
 
@@ -4022,12 +4034,12 @@ void CGruntzMgr::UnloadSoundChain() {
 // -------------------------------------------------------------------------
 // CGruntzMgr::StoreInputFlag (0x0919d0; ret 4). Records the input flag at +0x11c;
 // when the loaded world's +0x28 sub-object is present it also mirrors the flag
-// into the g_61ab24 global; finally forwards the flag to the +0x54 input object.
+// into the g_sndCueTag global; finally forwards the flag to the +0x54 input object.
 RVA(0x000919d0, 0x30)
 void CGruntzMgr::StoreInputFlag(i32 v) {
     m_inputFlag = v;
     if (m_world && m_world->m_28) {
-        g_61ab24 = v;
+        g_sndCueTag = v;
     }
     CInput54* in = m_inputState;
     if (in) {
@@ -4194,7 +4206,7 @@ void CGruntzMgr::Close() {
             ((Utils::RegistryHelper*)cfg)->SetValueDword("Voice_Volume", m_timer->m_2c);
         }
         if (m_world && m_world->m_28) {
-            ((Utils::RegistryHelper*)cfg)->SetValueDword("Sound_Volume", g_61ab24);
+            ((Utils::RegistryHelper*)cfg)->SetValueDword("Sound_Volume", g_sndCueTag);
         }
         ((Utils::RegistryHelper*)cfg)->SetValueDword("Scroll_Speed", m_scrollSpeed);
         ((Utils::RegistryHelper*)cfg)->SetValueDword("Easy_Mode", m_isEasyMode);
@@ -4276,7 +4288,7 @@ void CGruntzMgr::Close() {
         m_40 = 0;
     }
     if (m_chatLog) {
-        m_chatLog->Teardown();
+        m_chatLog->~CFontConfig();
         operator delete(m_chatLog);
         m_chatLog = 0;
     }
@@ -4346,7 +4358,7 @@ void CGruntzMgr::AccrueScoreTime() {
         if (m_cmdGrid->m_288 == 1) {
             UpdateScoreHud();
         }
-        SwitchModeState(0xa, 1, 0, 0);
+        TransitionState(0xa, 1, 0, 0);
         return;
     }
     ((GameRegHudView*)g_gameReg)->m_7c->SetCount(((StateScoreView*)st)->m_1c);
@@ -4354,13 +4366,13 @@ void CGruntzMgr::AccrueScoreTime() {
         LevelClock* clk = ((StateScoreView*)st)->m_3f4;
         i64 d = (i64)g_645588 - clk->m_38;
         ((GameRegHudView*)g_gameReg)->m_7c->m_10 += (d < 0) ? 0 : (i32)d;
-        SwitchModeState(0x12, 1, 0, 0);
+        TransitionState(0x12, 1, 0, 0);
         return;
     }
     CBattlezData* hud = ((GameRegHudView*)g_gameReg)->m_7c;
     u32 now = g_pTimeGetTime();
     hud->m_10 += (now - g_648ce8);
-    SwitchModeState(0x12, 1, 0, 0);
+    TransitionState(0x12, 1, 0, 0);
 }
 
 // -------------------------------------------------------------------------
@@ -5024,7 +5036,6 @@ i32 CGruntzMgr::IsBattlezMapFile(CString path) {
 
 SIZE_UNKNOWN(CActiveObj);
 SIZE_UNKNOWN(CActiveSub2dc);
-SIZE_UNKNOWN(CChatLog);
 SIZE_UNKNOWN(CColorLookup);
 SIZE_UNKNOWN(CColorRow);
 SIZE_UNKNOWN(CModalDialog);

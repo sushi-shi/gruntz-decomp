@@ -24,9 +24,9 @@ extern CSaveGame* g_dlgLoadSink; // DAT_00645ca4
 
 // The GAME_INFO / GAME_DELETE sub-dialog procs the load dialog runs (reloc-masked code
 // ptrs) and the dialog (re)init helper (a __cdecl reached via ILT thunk 0x2ee6).
-extern "C" void LoadInfoDlgProc();            // 0x1e3d (GAME_INFO)
-extern "C" void LoadDeleteDlgProc();          // 0x121c (GAME_DELETE)
-void DlgInit_2ee6(HWND hDlg, CSaveGame* dlg); // 0x2ee6 (fill the slot list)
+extern "C" void LoadInfoDlgProc();                  // 0x1e3d (GAME_INFO)
+extern "C" void LoadDeleteDlgProc();                // 0x121c (GAME_DELETE)
+void FillGameInfoDialog(HWND hDlg, CSaveGame* dlg); // 0x2ee6 (fill the slot list)
 
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg); // 0x9e390 (WM_COMMAND handler)
 
@@ -55,7 +55,7 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
             return 0;
         case WM_INITDIALOG: { // 0x110
             g_dlgLoadSink = (CSaveGame*)g_gameReg->m_saveSink;
-            DlgInit_2ee6(hDlg, g_dlgLoadSink);
+            FillGameInfoDialog(hDlg, g_dlgLoadSink);
             return 1;
         }
     }
@@ -159,7 +159,7 @@ i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg) {
             i32 r = g_gameReg->RunModalDialog("GAME_DELETE", (void*)LoadDeleteDlgProc, 0);
             EnableWindow(hwnd, TRUE);
             if (r) {
-                DlgInit_2ee6(hwnd, dlg);
+                FillGameInfoDialog(hwnd, dlg);
             }
         }
         return 0;

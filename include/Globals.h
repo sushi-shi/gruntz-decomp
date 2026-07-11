@@ -284,8 +284,9 @@ extern CVTrigEntry* g_vtrigCur;
 extern i32 g_vtrigStride;
 extern i32 g_vtrigScratch;
 extern i32 g_panTable[];
-extern i32 g_singleton653c68;
-extern i32 g_instCount653c6c;
+class CGameWnd;
+extern CGameWnd* g_activeGameWnd;  // was placeholder g_singleton653c68
+extern i32 g_gameAppInstanceCount; // was placeholder g_instCount653c6c
 extern i32 g_wap32Now;
 extern i32 g_wap32FrameDelta;
 extern i32 g_wap32ClockReset;

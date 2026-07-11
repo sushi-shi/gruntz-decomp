@@ -22,6 +22,12 @@
 
 #include <rva.h>
 
+// g_mapCurve's DATA binding must live in a .cpp (labels.py collect_vars is
+// main-file-only; a header DATA() is ignored). extern "C" sidesteps the C++
+// array-global mangling divergence between clang and MSVC5.
+DATA(0x0024cfb0)
+extern "C" float g_mapCurve[12];
+
 // ===========================================================================
 // CMapLogic::~CMapLogic  (0x0113c0)
 // ===========================================================================

@@ -26,8 +26,8 @@ struct CGameSaveHost {
 
 // The 0x24-dword snapshot scratch buffer (zeroed each save) + the serialize
 // sequence counter (shared with Grunt.cpp's per-record counter).
-DATA(0x00229930)
-extern i32 g_saveBuf[0x24]; // 0x229930
+DATA(0x00229930) // extern "C": C++ array-global mangling diverges clang vs MSVC5 (as g_mapCurve)
+extern "C" i32 g_saveBuf[0x24]; // 0x229930
 DATA(0x00229ad0)
 extern i32 g_serialCounter; // 0x229ad0
 

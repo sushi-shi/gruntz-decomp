@@ -16,10 +16,9 @@
 
 // Two run-state timing defaults CGameMgr::Run seeds to 0x64 (100).
 
-// Instance counter (bumped per ctor). Shared
-// (declared in Wap32.h) so the inline ~CGameApp - which CGruntzApp's dtor
-// inlines in another TU - resolves it; the reloc name is masked in objdiff.
-i32 g_gameAppInstanceCount;
+// Instance counter (bumped per ctor). Canonical DATA binding (0x253c6c) lives in
+// src/Globals.cpp (declared via <Globals.h>, included above) - it is the retail
+// global the placeholder g_instCount653c6c named; referenced here, reloc-masked.
 
 // -------------------------------------------------------------------------
 // CGameApp::InitDefault (vtbl +0x0c) - the one-name convenience overload: forward

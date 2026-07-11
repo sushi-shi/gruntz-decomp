@@ -152,8 +152,8 @@ struct CRezSurface94;   // +0x34 recolor surface (Build/Apply/Teardown)
 struct CSettingsWriter; // +0x38 settings/registry writer (WriteInt/Teardown)
 // HudGuard44 (+0x44 HUD first-frame guard) and SaveSink58 (+0x58 save-record
 // sink) are defined by the <Gruntz/SaveInfo.h> include above.
-struct CChatLog; // +0x5c chat/message log (Insert)
-struct TimerObj; // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
+class CFontConfig; // +0x5c chat/message log (was view CChatLog; AddItem @0x21c60 - FontConfig.h)
+struct TimerObj;   // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
 // +0x68: the world command/trigger grid is the ONE CTriggerMgr (TriggerMgr.h) -
 // the former CCmdGrid view is dtor-proven the same object (Close's teardown thunk
 // 0x3b1b IS ~CTriggerMgr; the +0x20c/+0x21c delta tables == m_rowStateB/C, the
@@ -286,8 +286,7 @@ public:
     void RestoreMusicVolumeIfActive(i32 ms); // @0x091620 (m_pCurrent->SetVolume(100, ms))
     // Debug-command hook (the former C8e880 view): when the current state is
     // GAMESTATE_PLAY, register the DEBUG_SETSKILL command (via ILT thunk 0x2bb7).
-    i32 RegisterSetSkillDebugCmd();                               // @0x08e880
-    void RegisterDebugCommand(const char* name, void* fn, i32 n); // ILT 0x2bb7 (reloc-masked)
+    i32 RegisterSetSkillDebugCmd(); // @0x08e880 (calls RunModalDialog(DEBUG_SETSKILL,...))
 
     i32 StoreInputState(i32 v); // @0x091a10 (store m_inputStateVal, forward to m_timer)
     void StoreInputFlag(i32 v); // @0x0919d0 (store m_inputFlag, mirror to g_61ab24 + m_inputState)
@@ -322,19 +321,16 @@ public:
     struct CActiveObj* GetActiveObj(); // reloc-masked sibling (active game object)
     void RunWinHook();                 // reloc-masked sibling (win/level-complete hook)
     i32 CheckLevelActive();            // reloc-masked sibling (level-active predicate)
-    void* GetSaveSource();             // reloc-masked sibling (live source-state ptr)
-    CString GetLevelName();            // reloc-masked sibling (current level name)
+    CString GetLevelName();            // reloc-masked sibling (current level name; ==0x928c0
+                                       // GetWorldFileName, but that is inline-header so the
+                                       // call here stays under this out-of-line name)
     // A sibling state-transition pusher reached by PassClickToPlayState's reloc-
     // masked 4-arg call (deferred body / matched elsewhere).
     i32 ChangeToPlayState(i32 a, i32 b, i32 c, i32 d);
-    // Reloc-masked CGruntzMgr siblings reached from SwitchToNextState.
-    CState* MakeNextState();       // build/find the next state to switch to
-    void ActivateState(CState* s); // install + activate the new live state
-    void PostSwitchHook();         // post-switch app hook
-
-    // Reloc-masked CGruntzMgr sibling reached from ResetWorldState (the post-mode-
-    // reload state transition pusher @0x08b960).
-    void SwitchModeState(i32 a, i32 b, i32 c, i32 d);
+    // SwitchToNextState's helpers fold onto the real bound methods: MakeNextState ==
+    // TopState (0x90980), ActivateState == PopTopIfMatches (0x909e0), PostSwitchHook ==
+    // PerFrameTick (0x8f620); GetSaveSource == PickPlayOrPausedState (0x92990);
+    // SwitchModeState == TransitionState (0x8b960).
 
     // Reloc-masked CGruntzMgr siblings reached from LoadWorldMode (the rez-path
     // builder + the rez-row resolver that fills a CString and returns the row ptr).
@@ -417,7 +413,7 @@ public:
     // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):
     CInput54* m_inputState; // +0x54  input/state object (Flush/Arm/Disarm/StoreFlag)
     SaveSink58* m_saveSink; // +0x58  save-record sink (SaveSink58::Store)
-    CChatLog* m_chatLog;    // +0x5c  chat/message log (Insert)
+    CFontConfig* m_chatLog; // +0x5c  chat/message log (CFontConfig::AddItem @0x21c60)
     CGruntSpawnConfig*
         m_timer; // +0x60  per-frame timer/poll (== the spawn-config obj; Stop/Tick; m_2c mirror)
     i32 m_64;    // +0x64

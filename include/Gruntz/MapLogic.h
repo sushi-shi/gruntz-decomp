@@ -30,8 +30,9 @@
 // The serializable float curve (a monotone lookup ramp in .data at VA 0x64cfb0;
 // 0xec230 reads/writes a 12-float slice). Modeled extern + DATA() so the
 // `push offset` operands reloc-mask against the retail .data symbol.
-DATA(0x0024cfb0)
-extern float g_mapCurve[12]; // 0x64cfb0..0x64cfddf slice the serializer touches
+// extern "C" (C++ array-global mangling diverges clang vs MSVC5). The DATA binding
+// lives in MapLogic.cpp (a header DATA() is ignored - collect_vars is main-file-only).
+extern "C" float g_mapCurve[12]; // 0x64cfb0..0x64cfddf slice the serializer touches
 
 // The intrusive free-list node allocator the +0x84 pointer-array serializer pulls
 // nodes from (shared with Projectile.cpp / BattlezMapConfig.cpp). The node body
