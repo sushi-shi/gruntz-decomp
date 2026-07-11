@@ -103,7 +103,7 @@
      "dist": 940502,
      "cluster_n": 10,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 16
+     "home_n": 20
     },
     {
      "rva": 82128,
@@ -111,7 +111,7 @@
      "dist": 940502,
      "cluster_n": 10,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 16
+     "home_n": 20
     },
     {
      "rva": 82208,
@@ -119,7 +119,7 @@
      "dist": 940502,
      "cluster_n": 10,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 16
+     "home_n": 20
     },
     {
      "rva": 82752,
@@ -127,7 +127,7 @@
      "dist": 940502,
      "cluster_n": 10,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 16
+     "home_n": 20
     },
     {
      "rva": 82912,
@@ -135,7 +135,7 @@
      "dist": 940502,
      "cluster_n": 10,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 16
+     "home_n": 20
     },
     {
      "rva": 83232,
@@ -143,7 +143,7 @@
      "dist": 940502,
      "cluster_n": 10,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 16
+     "home_n": 20
     },
     {
      "rva": 83504,
@@ -151,7 +151,7 @@
      "dist": 940502,
      "cluster_n": 10,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 16
+     "home_n": 20
     },
     {
      "rva": 83744,
@@ -159,7 +159,7 @@
      "dist": 940502,
      "cluster_n": 10,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 16
+     "home_n": 20
     },
     {
      "rva": 83824,
@@ -167,7 +167,7 @@
      "dist": 940502,
      "cluster_n": 10,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 16
+     "home_n": 20
     },
     {
      "rva": 83888,
@@ -175,7 +175,7 @@
      "dist": 940502,
      "cluster_n": 10,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 16
+     "home_n": 20
     },
     {
      "rva": 233824,
@@ -191,7 +191,7 @@
      "dist": 447658,
      "cluster_n": 1,
      "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 34
+     "home_n": 36
     },
     {
      "rva": 656368,
@@ -241,6 +241,152 @@
     1028000,
     1028080,
     1028544
+   ]
+  },
+  {
+   "file": "src/Gruntz/MenuState.cpp",
+   "n": 26,
+   "bytes": 2456,
+   "main_lo": 574640,
+   "main_hi": 577046,
+   "main_n": 15,
+   "main_share": 0.5769230769230769,
+   "clusters": 3,
+   "conflated": true,
+   "cluster_list": [
+    {
+     "lo": 110448,
+     "hi": 111408,
+     "n": 1
+    },
+    {
+     "lo": 574640,
+     "hi": 577046,
+     "n": 15
+    },
+    {
+     "lo": 656064,
+     "hi": 659031,
+     "n": 10
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 110448,
+     "name": "?FormatHudText@CMenuState@@QAEXPAVCString@@H@Z",
+     "dist": 463232,
+     "cluster_n": 1,
+     "home": "src/Gruntz/BootyStateActivate.cpp",
+     "home_n": 7
+    },
+    {
+     "rva": 656064,
+     "name": "?ReleaseResources@CMenuState@@UAEXXZ",
+     "dist": 79018,
+     "cluster_n": 10,
+     "home": "src/Gruntz/MapMgr.cpp",
+     "home_n": 22
+    },
+    {
+     "rva": 656800,
+     "name": "?StartMusic@CMenuState@@QAEXXZ",
+     "dist": 79018,
+     "cluster_n": 10,
+     "home": "src/Gruntz/MapMgr.cpp",
+     "home_n": 22
+    },
+    {
+     "rva": 656960,
+     "name": "?StopMusicChain@CMenuState@@QAEXXZ",
+     "dist": 79018,
+     "cluster_n": 10,
+     "home": "src/Gruntz/MapMgr.cpp",
+     "home_n": 22
+    },
+    {
+     "rva": 657104,
+     "name": "?FrameSlot28@CMenuState@@UAEHH@Z",
+     "dist": 79018,
+     "cluster_n": 10,
+     "home": "src/Gruntz/MapMgr.cpp",
+     "home_n": 22
+    },
+    {
+     "rva": 657232,
+     "name": "?Render@CMenuState@@UAEHXZ",
+     "dist": 79018,
+     "cluster_n": 10,
+     "home": "src/Gruntz/MapMgr.cpp",
+     "home_n": 22
+    },
+    {
+     "rva": 658320,
+     "name": "?Vslot0c@CMenuState@@UAEHHH@Z",
+     "dist": 79018,
+     "cluster_n": 10,
+     "home": "src/Gruntz/MapMgr.cpp",
+     "home_n": 22
+    },
+    {
+     "rva": 658592,
+     "name": "?Vslot0e@CMenuState@@UAEHHHH@Z",
+     "dist": 79018,
+     "cluster_n": 10,
+     "home": "src/Gruntz/MapMgr.cpp",
+     "home_n": 22
+    },
+    {
+     "rva": 658656,
+     "name": "?Vslot10@CMenuState@@UAEHHHH@Z",
+     "dist": 79018,
+     "cluster_n": 10,
+     "home": "src/Gruntz/MapMgr.cpp",
+     "home_n": 22
+    },
+    {
+     "rva": 658752,
+     "name": "?ReadyGate@CMenuState@@QAEHXZ",
+     "dist": 79018,
+     "cluster_n": 10,
+     "home": "src/Gruntz/MapMgr.cpp",
+     "home_n": 22
+    },
+    {
+     "rva": 658816,
+     "name": "?BuildVersionString@CMenuState@@QAEXHHHH@Z",
+     "dist": 79018,
+     "cluster_n": 10,
+     "home": "src/Gruntz/MapMgr.cpp",
+     "home_n": 22
+    }
+   ],
+   "rvas": [
+    110448,
+    574640,
+    574672,
+    574704,
+    574800,
+    574832,
+    574864,
+    574896,
+    574928,
+    574960,
+    574992,
+    575024,
+    575056,
+    575088,
+    575120,
+    577040,
+    656064,
+    656800,
+    656960,
+    657104,
+    657232,
+    658320,
+    658592,
+    658656,
+    658752,
+    658816
    ]
   },
   {
@@ -483,6 +629,204 @@
    ]
   },
   {
+   "file": "src/Gruntz/GruntzMgr.cpp",
+   "n": 123,
+   "bytes": 21171,
+   "main_lo": 571584,
+   "main_hi": 605415,
+   "main_n": 117,
+   "main_share": 0.9512195121951219,
+   "clusters": 2,
+   "conflated": true,
+   "cluster_list": [
+    {
+     "lo": 536624,
+     "hi": 549541,
+     "n": 6
+    },
+    {
+     "lo": 571584,
+     "hi": 605415,
+     "n": 117
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 536624,
+     "name": "??0CGruntzMgr@@QAE@XZ",
+     "dist": 22043,
+     "cluster_n": 6,
+     "home": "src/Gruntz/GameText.cpp",
+     "home_n": 13
+    },
+    {
+     "rva": 546144,
+     "name": "?Wap32GameMgrVfunc3@CGameMgr@WAP32@@UAEHXZ",
+     "dist": 22043,
+     "cluster_n": 6,
+     "home": "src/Gruntz/GameText.cpp",
+     "home_n": 13
+    },
+    {
+     "rva": 546176,
+     "name": "?HandleCommand@CGameMgr@WAP32@@UAEHHHH@Z",
+     "dist": 22043,
+     "cluster_n": 6,
+     "home": "src/Gruntz/GameText.cpp",
+     "home_n": 13
+    },
+    {
+     "rva": 546272,
+     "name": "?Close@CGruntzMgr@@UAEXXZ",
+     "dist": 22043,
+     "cluster_n": 6,
+     "home": "src/Gruntz/GameText.cpp",
+     "home_n": 13
+    },
+    {
+     "rva": 549040,
+     "name": "?UpdateScoreHud@CGruntzMgr@@QAEXXZ",
+     "dist": 22043,
+     "cluster_n": 6,
+     "home": "src/Gruntz/GameText.cpp",
+     "home_n": 13
+    },
+    {
+     "rva": 549344,
+     "name": "?AccrueScoreTime@CGruntzMgr@@QAEXXZ",
+     "dist": 22043,
+     "cluster_n": 6,
+     "home": "src/Gruntz/GameText.cpp",
+     "home_n": 13
+    }
+   ],
+   "rvas": [
+    536624,
+    546144,
+    546176,
+    546272,
+    549040,
+    549344,
+    571584,
+    571744,
+    575760,
+    579232,
+    579456,
+    579664,
+    579856,
+    580048,
+    580096,
+    580144,
+    580192,
+    580256,
+    580320,
+    580384,
+    580448,
+    580512,
+    580576,
+    580640,
+    580704,
+    580752,
+    581072,
+    581232,
+    581376,
+    582096,
+    582320,
+    582560,
+    582880,
+    583360,
+    583552,
+    583616,
+    583808,
+    583872,
+    584064,
+    584432,
+    584784,
+    584864,
+    585328,
+    585488,
+    585696,
+    585824,
+    585904,
+    586016,
+    586480,
+    586560,
+    586880,
+    586992,
+    587056,
+    587296,
+    587424,
+    587584,
+    587696,
+    587760,
+    588160,
+    588224,
+    588272,
+    588352,
+    588400,
+    588464,
+    589616,
+    590288,
+    590336,
+    590368,
+    590432,
+    590832,
+    591808,
+    592256,
+    592304,
+    592352,
+    592464,
+    592544,
+    592576,
+    593168,
+    593680,
+    594128,
+    594288,
+    594512,
+    594832,
+    595200,
+    595408,
+    595488,
+    596432,
+    596496,
+    596544,
+    597536,
+    598016,
+    598064,
+    598112,
+    598192,
+    598240,
+    598320,
+    598400,
+    598608,
+    598848,
+    598960,
+    599072,
+    599296,
+    599344,
+    599824,
+    599984,
+    600320,
+    600464,
+    600496,
+    600544,
+    600624,
+    601424,
+    601504,
+    601584,
+    601648,
+    601728,
+    601792,
+    601856,
+    602480,
+    603104,
+    603232,
+    603680,
+    604448,
+    605152
+   ]
+  },
+  {
    "file": "src/Gruntz/LogicWorkerHandlers.cpp",
    "n": 21,
    "bytes": 5106,
@@ -672,90 +1016,176 @@
    ]
   },
   {
-   "file": "src/Gruntz/MenuState.cpp",
+   "file": "src/Wap32/GameWnd.cpp",
    "n": 15,
-   "bytes": 2405,
-   "main_lo": 656064,
-   "main_hi": 659031,
+   "bytes": 1449,
+   "main_lo": 1298176,
+   "main_hi": 1299845,
    "main_n": 10,
    "main_share": 0.6666666666666666,
-   "clusters": 3,
+   "clusters": 2,
    "conflated": true,
    "cluster_list": [
     {
-     "lo": 110448,
-     "hi": 111408,
-     "n": 1
+     "lo": 609408,
+     "hi": 609605,
+     "n": 5
     },
     {
-     "lo": 574640,
-     "hi": 577046,
-     "n": 4
-    },
-    {
-     "lo": 656064,
-     "hi": 659031,
+     "lo": 1298176,
+     "hi": 1299845,
      "n": 10
     }
    ],
    "outliers": [
     {
-     "rva": 110448,
-     "name": "?FormatHudText@CMenuState@@QAEXPAVCString@@H@Z",
-     "dist": 544656,
-     "cluster_n": 1,
-     "home": "src/Gruntz/BootyStateActivate.cpp",
-     "home_n": 6
+     "rva": 609408,
+     "name": "?OnKeyUp@CGameWnd@@UAEHIJ@Z",
+     "dist": 688571,
+     "cluster_n": 5,
+     "home": "src/Gruntz/GruntzWnd.cpp",
+     "home_n": 14
     },
     {
-     "rva": 574640,
-     "name": "?Update@CState@@UAE?AW4GameStateId@@XZ",
-     "dist": 79018,
-     "cluster_n": 4,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 34
+     "rva": 609472,
+     "name": "?OnRButtonDown@CGameWnd@@UAEHIHH@Z",
+     "dist": 688571,
+     "cluster_n": 5,
+     "home": "src/Gruntz/GruntzWnd.cpp",
+     "home_n": 14
     },
     {
-     "rva": 574672,
-     "name": "?Render@CState@@UAEHXZ",
-     "dist": 79018,
-     "cluster_n": 4,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 34
+     "rva": 609504,
+     "name": "?OnLButtonUp@CGameWnd@@UAEHIHH@Z",
+     "dist": 688571,
+     "cluster_n": 5,
+     "home": "src/Gruntz/GruntzWnd.cpp",
+     "home_n": 14
     },
     {
-     "rva": 574992,
-     "name": "?Vslot11@CState@@UAEHHHH@Z",
-     "dist": 79018,
-     "cluster_n": 4,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 34
+     "rva": 609536,
+     "name": "?OnRButtonUp@CGameWnd@@UAEHIHH@Z",
+     "dist": 688571,
+     "cluster_n": 5,
+     "home": "src/Gruntz/GruntzWnd.cpp",
+     "home_n": 14
     },
     {
-     "rva": 577040,
-     "name": "?Update@CMenuState@@UAE?AW4GameStateId@@XZ",
-     "dist": 79018,
-     "cluster_n": 4,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 34
+     "rva": 609600,
+     "name": "?OnLButtonDblClk@CGameWnd@@UAEHIHH@Z",
+     "dist": 688571,
+     "cluster_n": 5,
+     "home": "src/Gruntz/GruntzWnd.cpp",
+     "home_n": 14
     }
    ],
    "rvas": [
-    110448,
-    574640,
-    574672,
-    574992,
-    577040,
-    656064,
-    656800,
-    656960,
-    657104,
-    657232,
-    658320,
-    658592,
-    658656,
-    658752,
-    658816
+    609408,
+    609472,
+    609504,
+    609536,
+    609600,
+    1298176,
+    1298208,
+    1298352,
+    1298416,
+    1299360,
+    1299568,
+    1299600,
+    1299648,
+    1299680,
+    1299760
+   ]
+  },
+  {
+   "file": "src/Image/CImage.cpp",
+   "n": 24,
+   "bytes": 7043,
+   "main_lo": 1388176,
+   "main_hi": 1395141,
+   "main_n": 19,
+   "main_share": 0.7916666666666666,
+   "clusters": 2,
+   "conflated": true,
+   "cluster_list": [
+    {
+     "lo": 875536,
+     "hi": 876091,
+     "n": 5
+    },
+    {
+     "lo": 1388176,
+     "hi": 1395141,
+     "n": 19
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 875536,
+     "name": "?Gap_0d5c10@@YAHXZ",
+     "dist": 512085,
+     "cluster_n": 5,
+     "home": "src/Gruntz/Play.cpp",
+     "home_n": 11
+    },
+    {
+     "rva": 875968,
+     "name": "?IsLoaded@CWapObj@@UAEHXZ",
+     "dist": 512085,
+     "cluster_n": 5,
+     "home": "src/Gruntz/Play.cpp",
+     "home_n": 11
+    },
+    {
+     "rva": 876000,
+     "name": "?GetClassId@CImage@@UAEHXZ",
+     "dist": 512085,
+     "cluster_n": 5,
+     "home": "src/Gruntz/Play.cpp",
+     "home_n": 11
+    },
+    {
+     "rva": 876032,
+     "name": "?Slot16@CImage@@UAEXPAX@Z",
+     "dist": 512085,
+     "cluster_n": 5,
+     "home": "src/Gruntz/Play.cpp",
+     "home_n": 11
+    },
+    {
+     "rva": 876064,
+     "name": "?Slot17@CImage@@UAEXPAX@Z",
+     "dist": 512085,
+     "cluster_n": 5,
+     "home": "src/Gruntz/Play.cpp",
+     "home_n": 11
+    }
+   ],
+   "rvas": [
+    875536,
+    875968,
+    876000,
+    876032,
+    876064,
+    1388176,
+    1388320,
+    1388464,
+    1388768,
+    1388928,
+    1389152,
+    1389232,
+    1389360,
+    1389440,
+    1389680,
+    1390480,
+    1390608,
+    1390784,
+    1391392,
+    1392016,
+    1392624,
+    1393264,
+    1393872,
+    1394512
    ]
   },
   {
@@ -797,7 +1227,7 @@
      "dist": 354854,
      "cluster_n": 1,
      "home": "src/Gruntz/BattlezMapConfig.cpp",
-     "home_n": 15
+     "home_n": 16
     },
     {
      "rva": 489360,
@@ -1017,181 +1447,260 @@
    ]
   },
   {
-   "file": "src/Gruntz/GruntzMgr.cpp",
-   "n": 119,
-   "bytes": 19161,
-   "main_lo": 571584,
-   "main_hi": 605415,
-   "main_n": 115,
-   "main_share": 0.9663865546218487,
-   "clusters": 2,
+   "file": "src/Wap32/GameApp.cpp",
+   "n": 26,
+   "bytes": 2490,
+   "main_lo": 1299856,
+   "main_hi": 1302495,
+   "main_n": 22,
+   "main_share": 0.8461538461538461,
+   "clusters": 3,
    "conflated": true,
    "cluster_list": [
     {
-     "lo": 536624,
-     "hi": 549541,
-     "n": 4
+     "lo": 527648,
+     "hi": 527765,
+     "n": 3
     },
     {
-     "lo": 571584,
-     "hi": 605415,
-     "n": 115
+     "lo": 1258368,
+     "hi": 1258404,
+     "n": 1
+    },
+    {
+     "lo": 1299856,
+     "hi": 1302495,
+     "n": 22
     }
    ],
    "outliers": [
     {
-     "rva": 536624,
-     "name": "??0CGruntzMgr@@QAE@XZ",
-     "dist": 22043,
-     "cluster_n": 4,
-     "home": "src/Gruntz/GameText.cpp",
-     "home_n": 7
+     "rva": 527648,
+     "name": "?InitDefault@CGameApp@@UAEHPAUHINSTANCE__@@PAD@Z",
+     "dist": 772091,
+     "cluster_n": 3,
+     "home": "src/Gruntz/GruntzApp.cpp",
+     "home_n": 8
     },
     {
-     "rva": 546272,
-     "name": "?Close@CGruntzMgr@@UAEXXZ",
-     "dist": 22043,
-     "cluster_n": 4,
-     "home": "src/Gruntz/GameText.cpp",
-     "home_n": 7
+     "rva": 527712,
+     "name": "?HasWindowAndManager@CGameApp@@UAEHXZ",
+     "dist": 772091,
+     "cluster_n": 3,
+     "home": "src/Gruntz/GruntzApp.cpp",
+     "home_n": 8
     },
     {
-     "rva": 549040,
-     "name": "?UpdateScoreHud@CGruntzMgr@@QAEXXZ",
-     "dist": 22043,
-     "cluster_n": 4,
-     "home": "src/Gruntz/GameText.cpp",
-     "home_n": 7
+     "rva": 527760,
+     "name": "?VirtualUnknownMethod11@CGameApp@@UAEHHHH@Z",
+     "dist": 772091,
+     "cluster_n": 3,
+     "home": "src/Gruntz/GruntzApp.cpp",
+     "home_n": 8
     },
     {
-     "rva": 549344,
-     "name": "?AccrueScoreTime@CGruntzMgr@@QAEXXZ",
-     "dist": 22043,
-     "cluster_n": 4,
-     "home": "src/Gruntz/GameText.cpp",
-     "home_n": 7
+     "rva": 1258368,
+     "name": "?vector_deleting_destructor@CGameMgr@WAP32@@QAEPAXI@Z",
+     "dist": 41452,
+     "cluster_n": 1,
+     "home": "src/DinMgr2/DinMgr2.cpp",
+     "home_n": 36
     }
    ],
    "rvas": [
-    536624,
-    546272,
-    549040,
-    549344,
-    571584,
-    579232,
-    579456,
-    579664,
-    579856,
-    580048,
-    580096,
-    580144,
-    580192,
-    580256,
-    580320,
-    580384,
-    580448,
-    580512,
-    580576,
-    580640,
-    580704,
-    580752,
-    581072,
-    581232,
-    581376,
-    582096,
-    582320,
-    582560,
-    582880,
-    583360,
-    583552,
-    583616,
-    583808,
-    583872,
-    584064,
-    584432,
-    584784,
-    584864,
-    585328,
-    585488,
-    585696,
-    585824,
-    585904,
-    586016,
-    586480,
-    586560,
-    586880,
-    586992,
-    587056,
-    587296,
-    587424,
-    587584,
-    587696,
-    587760,
-    588160,
-    588224,
-    588272,
-    588352,
-    588400,
-    588464,
-    589616,
-    590288,
-    590336,
-    590368,
-    590432,
-    590832,
-    591808,
-    592256,
-    592304,
-    592352,
-    592464,
-    592544,
-    592576,
-    593168,
-    593680,
-    594128,
-    594288,
-    594512,
-    594832,
-    595200,
-    595408,
-    595488,
-    596432,
-    596496,
-    596544,
-    597536,
-    598016,
-    598064,
-    598112,
-    598192,
-    598240,
-    598320,
-    598400,
-    598608,
-    598848,
-    598960,
-    599072,
-    599296,
-    599344,
-    599824,
-    599984,
-    600320,
-    600464,
-    600496,
-    600544,
-    600624,
-    601424,
-    601504,
-    601584,
-    601648,
-    601728,
-    601792,
-    601856,
-    602480,
-    603104,
-    603232,
-    603680,
-    604448,
-    605152
+    527648,
+    527712,
+    527760,
+    1258368,
+    1299856,
+    1299920,
+    1300400,
+    1300672,
+    1300752,
+    1300912,
+    1301072,
+    1301344,
+    1301440,
+    1301536,
+    1301616,
+    1301648,
+    1301776,
+    1301840,
+    1301936,
+    1301952,
+    1302128,
+    1302176,
+    1302208,
+    1302240,
+    1302272,
+    1302320
+   ]
+  },
+  {
+   "file": "src/Gruntz/Play.cpp",
+   "n": 108,
+   "bytes": 44108,
+   "main_lo": 820992,
+   "main_hi": 908488,
+   "main_n": 104,
+   "main_share": 0.9629629629629629,
+   "clusters": 2,
+   "conflated": true,
+   "cluster_list": [
+    {
+     "lo": 575792,
+     "hi": 576653,
+     "n": 4
+    },
+    {
+     "lo": 820992,
+     "hi": 908488,
+     "n": 104
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 575792,
+     "name": "?Vslot1a@CPlay@@UAEHXZ",
+     "dist": 244339,
+     "cluster_n": 4,
+     "home": "src/Gruntz/GruntzMgr.cpp",
+     "home_n": 35
+    },
+    {
+     "rva": 575824,
+     "name": "?GetFrame@CPlay@@UAEHXZ",
+     "dist": 244339,
+     "cluster_n": 4,
+     "home": "src/Gruntz/GruntzMgr.cpp",
+     "home_n": 35
+    },
+    {
+     "rva": 575856,
+     "name": "?SetBeginClearParams@CState@@QAEHHHH@Z",
+     "dist": 244339,
+     "cluster_n": 4,
+     "home": "src/Gruntz/GruntzMgr.cpp",
+     "home_n": 35
+    },
+    {
+     "rva": 575952,
+     "name": "?PlayBacklog08c9d0@CPlay@@QAEXXZ",
+     "dist": 244339,
+     "cluster_n": 4,
+     "home": "src/Gruntz/GruntzMgr.cpp",
+     "home_n": 35
+    }
+   ],
+   "rvas": [
+    575792,
+    575824,
+    575856,
+    575952,
+    820992,
+    821776,
+    822144,
+    822512,
+    826400,
+    826560,
+    826944,
+    827552,
+    827904,
+    832512,
+    832640,
+    833344,
+    834064,
+    834288,
+    842352,
+    842512,
+    845104,
+    845408,
+    846512,
+    846560,
+    847472,
+    847504,
+    847616,
+    847696,
+    847808,
+    848032,
+    850864,
+    850896,
+    851088,
+    851936,
+    852048,
+    852256,
+    854304,
+    854624,
+    854832,
+    855472,
+    856544,
+    856752,
+    857872,
+    858256,
+    858816,
+    858928,
+    874848,
+    876288,
+    876432,
+    876720,
+    877632,
+    877920,
+    878032,
+    880544,
+    881344,
+    881952,
+    883152,
+    884832,
+    887024,
+    887136,
+    887296,
+    887456,
+    887584,
+    887744,
+    887904,
+    888208,
+    888256,
+    888528,
+    888912,
+    889184,
+    889408,
+    890352,
+    892976,
+    893648,
+    893872,
+    894016,
+    895088,
+    895328,
+    895456,
+    895584,
+    895648,
+    895936,
+    896224,
+    896944,
+    897104,
+    897296,
+    897488,
+    897536,
+    897664,
+    897712,
+    897744,
+    897776,
+    898560,
+    898752,
+    898896,
+    899040,
+    899232,
+    899376,
+    899504,
+    899632,
+    901216,
+    902864,
+    903792,
+    905296,
+    906048,
+    906560,
+    907312,
+    907936
    ]
   },
   {
@@ -1366,7 +1875,7 @@
      "dist": 699332,
      "cluster_n": 3,
      "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 113
+     "home_n": 115
     },
     {
      "rva": 582768,
@@ -1374,7 +1883,7 @@
      "dist": 699332,
      "cluster_n": 3,
      "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 113
+     "home_n": 115
     },
     {
      "rva": 595568,
@@ -1382,7 +1891,7 @@
      "dist": 699332,
      "cluster_n": 3,
      "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 113
+     "home_n": 115
     }
    ],
    "rvas": [
@@ -1715,7 +2224,7 @@
      "dist": 1274660,
      "cluster_n": 1,
      "home": "src/Gruntz/BootyStateActivate.cpp",
-     "home_n": 8
+     "home_n": 13
     },
     {
      "rva": 201296,
@@ -1723,7 +2232,7 @@
      "dist": 1202733,
      "cluster_n": 1,
      "home": "src/Gruntz/BattlezMapConfig.cpp",
-     "home_n": 12
+     "home_n": 13
     },
     {
      "rva": 374752,
@@ -1866,15 +2375,15 @@
      "dist": 989558,
      "cluster_n": 1,
      "home": "src/Gruntz/TriggerMgrGrid.cpp",
-     "home_n": 10
+     "home_n": 11
     },
     {
      "rva": 534016,
      "name": "?LookupTile@CGameLevel@@QAEHHH@Z",
      "dist": 894557,
      "cluster_n": 1,
-     "home": "src/Gruntz/GruntzApp.cpp",
-     "home_n": 8
+     "home": "src/Gruntz/GameText.cpp",
+     "home_n": 13
     },
     {
      "rva": 847344,
@@ -1882,7 +2391,7 @@
      "dist": 581297,
      "cluster_n": 2,
      "home": "src/Gruntz/Play.cpp",
-     "home_n": 18
+     "home_n": 22
     },
     {
      "rva": 847376,
@@ -1890,7 +2399,7 @@
      "dist": 581297,
      "cluster_n": 2,
      "home": "src/Gruntz/Play.cpp",
-     "home_n": 18
+     "home_n": 22
     }
    ],
    "rvas": [
@@ -1966,86 +2475,6 @@
     1446288,
     1446320,
     1446512
-   ]
-  },
-  {
-   "file": "src/Gruntz/StreamRecordLoaders.cpp",
-   "n": 6,
-   "bytes": 7527,
-   "main_lo": 640592,
-   "main_hi": 641747,
-   "main_n": 2,
-   "main_share": 0.3333333333333333,
-   "clusters": 5,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 39856,
-     "hi": 40727,
-     "n": 1
-    },
-    {
-     "lo": 640592,
-     "hi": 641747,
-     "n": 2
-    },
-    {
-     "lo": 883152,
-     "hi": 884487,
-     "n": 1
-    },
-    {
-     "lo": 920896,
-     "hi": 922626,
-     "n": 1
-    },
-    {
-     "lo": 960912,
-     "hi": 963586,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 39856,
-     "name": "?Deserialize@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z",
-     "dist": 599865,
-     "cluster_n": 1,
-     "home": "src/Gruntz/WorldSoundSet.cpp",
-     "home_n": 16
-    },
-    {
-     "rva": 883152,
-     "name": "?Load@CArchiveLoadRec@@QAEHPAUCSerialArchive@@@Z",
-     "dist": 241405,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 22
-    },
-    {
-     "rva": 920896,
-     "name": "?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z",
-     "dist": 279149,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Projectile.cpp",
-     "home_n": 15
-    },
-    {
-     "rva": 960912,
-     "name": "?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z",
-     "dist": 319165,
-     "cluster_n": 1,
-     "home": "src/Gruntz/StatusBarTabBuilders.cpp",
-     "home_n": 14
-    }
-   ],
-   "rvas": [
-    39856,
-    640592,
-    641712,
-    883152,
-    920896,
-    960912
    ]
   },
   {
@@ -2157,7 +2586,7 @@
      "dist": 840619,
      "cluster_n": 1,
      "home": "src/Gruntz/Play.cpp",
-     "home_n": 42
+     "home_n": 43
     },
     {
      "rva": 1428448,
@@ -2177,13 +2606,74 @@
    ]
   },
   {
+   "file": "src/Gruntz/GruntzMgrCmd.cpp",
+   "n": 5,
+   "bytes": 22131,
+   "main_lo": 53776,
+   "main_hi": 60143,
+   "main_n": 2,
+   "main_share": 0.4,
+   "clusters": 3,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 53776,
+     "hi": 60143,
+     "n": 2
+    },
+    {
+     "lo": 549616,
+     "hi": 565322,
+     "n": 1
+    },
+    {
+     "lo": 1134272,
+     "hi": 1134398,
+     "n": 2
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 549616,
+     "name": "?HandleCommand@CGruntzMgr@@UAEHHHH@Z",
+     "dist": 489473,
+     "cluster_n": 1,
+     "home": "src/Gruntz/GruntzMgr.cpp",
+     "home_n": 7
+    },
+    {
+     "rva": 1134272,
+     "name": "?Fwd114ec0@@YAXHHHHHH@Z",
+     "dist": 1074129,
+     "cluster_n": 2,
+     "home": "src/Gruntz/TileTriggerSwitchLogic.cpp",
+     "home_n": 14
+    },
+    {
+     "rva": 1134336,
+     "name": "?Fwd114f00@@YAXHHHHHH@Z",
+     "dist": 1074129,
+     "cluster_n": 2,
+     "home": "src/Gruntz/TileTriggerSwitchLogic.cpp",
+     "home_n": 14
+    }
+   ],
+   "rvas": [
+    53776,
+    53920,
+    549616,
+    1134272,
+    1134336
+   ]
+  },
+  {
    "file": "src/Gruntz/GameText.cpp",
-   "n": 10,
-   "bytes": 566,
+   "n": 16,
+   "bytes": 676,
    "main_lo": 534928,
-   "main_hi": 535850,
-   "main_n": 7,
-   "main_share": 0.7,
+   "main_hi": 536607,
+   "main_n": 13,
+   "main_share": 0.8125,
    "clusters": 4,
    "conflated": false,
    "cluster_list": [
@@ -2199,8 +2689,8 @@
     },
     {
      "lo": 534928,
-     "hi": 535850,
-     "n": 7
+     "hi": 536607,
+     "n": 13
     },
     {
      "lo": 1497536,
@@ -2215,7 +2705,7 @@
      "dist": 434647,
      "cluster_n": 1,
      "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 17
+     "home_n": 29
     },
     {
      "rva": 125984,
@@ -2223,12 +2713,12 @@
      "dist": 408803,
      "cluster_n": 1,
      "home": "src/Gruntz/BootyStateActivate.cpp",
-     "home_n": 11
+     "home_n": 19
     },
     {
      "rva": 1497536,
      "name": "??0CContainerErr@@QAE@PBD@Z",
-     "dist": 961686,
+     "dist": 960929,
      "cluster_n": 1,
      "home": "src/Gruntz/TypeKeyColl.cpp",
      "home_n": 25
@@ -2244,6 +2734,12 @@
     535584,
     535712,
     535840,
+    535968,
+    536096,
+    536224,
+    536352,
+    536480,
+    536560,
     1497536
    ]
   },
@@ -2286,7 +2782,7 @@
      "dist": 465306,
      "cluster_n": 1,
      "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 28
+     "home_n": 30
     },
     {
      "rva": 909632,
@@ -2312,6 +2808,72 @@
     575312,
     909632,
     1022016
+   ]
+  },
+  {
+   "file": "src/Gruntz/StreamRecordLoaders.cpp",
+   "n": 5,
+   "bytes": 6192,
+   "main_lo": 640592,
+   "main_hi": 641747,
+   "main_n": 2,
+   "main_share": 0.4,
+   "clusters": 4,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 39856,
+     "hi": 40727,
+     "n": 1
+    },
+    {
+     "lo": 640592,
+     "hi": 641747,
+     "n": 2
+    },
+    {
+     "lo": 920896,
+     "hi": 922626,
+     "n": 1
+    },
+    {
+     "lo": 960912,
+     "hi": 963586,
+     "n": 1
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 39856,
+     "name": "?Deserialize@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z",
+     "dist": 599865,
+     "cluster_n": 1,
+     "home": "src/Gruntz/WorldSoundSet.cpp",
+     "home_n": 16
+    },
+    {
+     "rva": 920896,
+     "name": "?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z",
+     "dist": 279149,
+     "cluster_n": 1,
+     "home": "src/Gruntz/Projectile.cpp",
+     "home_n": 15
+    },
+    {
+     "rva": 960912,
+     "name": "?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z",
+     "dist": 319165,
+     "cluster_n": 1,
+     "home": "src/Gruntz/StatusBarTabBuilders.cpp",
+     "home_n": 14
+    }
+   ],
+   "rvas": [
+    39856,
+    640592,
+    641712,
+    920896,
+    960912
    ]
   },
   {
@@ -2364,7 +2926,7 @@
      "dist": 79254,
      "cluster_n": 1,
      "home": "src/Gruntz/Play.cpp",
-     "home_n": 23
+     "home_n": 26
     }
    ],
    "rvas": [
@@ -2447,7 +3009,7 @@
      "dist": 1018213,
      "cluster_n": 1,
      "home": "src/Gruntz/TriggerMgrGrid.cpp",
-     "home_n": 9
+     "home_n": 10
     }
    ],
    "rvas": [
@@ -2494,58 +3056,6 @@
     1466272,
     1466432,
     1466544
-   ]
-  },
-  {
-   "file": "src/Gruntz/GruntzMgrCmd.cpp",
-   "n": 4,
-   "bytes": 15908,
-   "main_lo": 1134272,
-   "main_hi": 1134398,
-   "main_n": 2,
-   "main_share": 0.5,
-   "clusters": 3,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 53776,
-     "hi": 53877,
-     "n": 1
-    },
-    {
-     "lo": 549616,
-     "hi": 565322,
-     "n": 1
-    },
-    {
-     "lo": 1134272,
-     "hi": 1134398,
-     "n": 2
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 53776,
-     "name": "?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z",
-     "dist": 1080395,
-     "cluster_n": 1,
-     "home": "src/Gruntz/WorldSoundSet.cpp",
-     "home_n": 27
-    },
-    {
-     "rva": 549616,
-     "name": "?HandleCommand@CGruntzMgr@@UAEHHHH@Z",
-     "dist": 568950,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 4
-    }
-   ],
-   "rvas": [
-    53776,
-    549616,
-    1134272,
-    1134336
    ]
   },
   {
@@ -2632,7 +3142,7 @@
      "dist": 403616,
      "cluster_n": 1,
      "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 23
+     "home_n": 25
     },
     {
      "rva": 1137456,
@@ -2683,7 +3193,7 @@
      "dist": 160052,
      "cluster_n": 1,
      "home": "src/Gruntz/BattlezMapConfig.cpp",
-     "home_n": 12
+     "home_n": 13
     },
     {
      "rva": 873376,
@@ -2701,85 +3211,13 @@
    ]
   },
   {
-   "file": "src/Wap32/GameApp.cpp",
-   "n": 24,
-   "bytes": 2462,
-   "main_lo": 1299856,
-   "main_hi": 1302495,
-   "main_n": 22,
-   "main_share": 0.9166666666666666,
-   "clusters": 3,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 527648,
-     "hi": 527684,
-     "n": 1
-    },
-    {
-     "lo": 1258368,
-     "hi": 1258404,
-     "n": 1
-    },
-    {
-     "lo": 1299856,
-     "hi": 1302495,
-     "n": 22
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 527648,
-     "name": "?InitDefault@CGameApp@@UAEHPAUHINSTANCE__@@PAD@Z",
-     "dist": 772172,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GruntzApp.cpp",
-     "home_n": 8
-    },
-    {
-     "rva": 1258368,
-     "name": "?vector_deleting_destructor@CGameMgr@WAP32@@QAEPAXI@Z",
-     "dist": 41452,
-     "cluster_n": 1,
-     "home": "src/DinMgr2/DinMgr2.cpp",
-     "home_n": 36
-    }
-   ],
-   "rvas": [
-    527648,
-    1258368,
-    1299856,
-    1299920,
-    1300400,
-    1300672,
-    1300752,
-    1300912,
-    1301072,
-    1301344,
-    1301440,
-    1301536,
-    1301616,
-    1301648,
-    1301776,
-    1301840,
-    1301936,
-    1301952,
-    1302128,
-    1302176,
-    1302208,
-    1302240,
-    1302272,
-    1302320
-   ]
-  },
-  {
    "file": "src/Gruntz/MultiStartDlgRoster.cpp",
-   "n": 29,
-   "bytes": 4728,
+   "n": 31,
+   "bytes": 6778,
    "main_lo": 797056,
    "main_hi": 807731,
-   "main_n": 27,
-   "main_share": 0.9310344827586207,
+   "main_n": 29,
+   "main_share": 0.9354838709677419,
    "clusters": 3,
    "conflated": false,
    "cluster_list": [
@@ -2796,7 +3234,7 @@
     {
      "lo": 797056,
      "hi": 807731,
-     "n": 27
+     "n": 29
     }
    ],
    "outliers": [
@@ -2806,7 +3244,7 @@
      "dist": 668944,
      "cluster_n": 1,
      "home": "src/Gruntz/BootyStateActivate.cpp",
-     "home_n": 8
+     "home_n": 13
     },
     {
      "rva": 229920,
@@ -2827,6 +3265,7 @@
     797360,
     797872,
     797920,
+    798976,
     800816,
     801104,
     801392,
@@ -2837,6 +3276,7 @@
     802992,
     803104,
     803376,
+    804528,
     805680,
     805888,
     806624,
@@ -3216,70 +3656,6 @@
    ]
   },
   {
-   "file": "src/Image/CImage.cpp",
-   "n": 21,
-   "bytes": 7023,
-   "main_lo": 1388176,
-   "main_hi": 1395141,
-   "main_n": 19,
-   "main_share": 0.9047619047619048,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 875536,
-     "hi": 876091,
-     "n": 2
-    },
-    {
-     "lo": 1388176,
-     "hi": 1395141,
-     "n": 19
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 875536,
-     "name": "?Gap_0d5c10@@YAHXZ",
-     "dist": 512085,
-     "cluster_n": 2,
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 9
-    },
-    {
-     "rva": 876064,
-     "name": "?Slot17@CImage@@UAEXPAX@Z",
-     "dist": 512085,
-     "cluster_n": 2,
-     "home": "src/Gruntz/Play.cpp",
-     "home_n": 9
-    }
-   ],
-   "rvas": [
-    875536,
-    876064,
-    1388176,
-    1388320,
-    1388464,
-    1388768,
-    1388928,
-    1389152,
-    1389232,
-    1389360,
-    1389440,
-    1389680,
-    1390480,
-    1390608,
-    1390784,
-    1391392,
-    1392016,
-    1392624,
-    1393264,
-    1393872,
-    1394512
-   ]
-  },
-  {
    "file": "src/Gruntz/LogicActReg.cpp",
    "n": 4,
    "bytes": 836,
@@ -3379,19 +3755,19 @@
   },
   {
    "file": "src/Gruntz/BootyStateActivate.cpp",
-   "n": 21,
-   "bytes": 7594,
+   "n": 29,
+   "bytes": 9011,
    "main_lo": 101520,
-   "main_hi": 129232,
-   "main_n": 19,
-   "main_share": 0.9047619047619048,
+   "main_hi": 129320,
+   "main_n": 27,
+   "main_share": 0.9310344827586207,
    "clusters": 2,
    "conflated": false,
    "cluster_list": [
     {
      "lo": 101520,
-     "hi": 129232,
-     "n": 19
+     "hi": 129320,
+     "n": 27
     },
     {
      "lo": 578544,
@@ -3403,18 +3779,18 @@
     {
      "rva": 578544,
      "name": "?Update@CBootyState@@UAE?AW4GameStateId@@XZ",
-     "dist": 449312,
+     "dist": 449224,
      "cluster_n": 2,
      "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 43
+     "home_n": 45
     },
     {
      "rva": 578752,
      "name": "?Update@CMultiBootyState@@UAE?AW4GameStateId@@XZ",
-     "dist": 449312,
+     "dist": 449224,
      "cluster_n": 2,
      "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 43
+     "home_n": 45
     }
    ],
    "rvas": [
@@ -3426,17 +3802,25 @@
     105360,
     114928,
     115216,
+    118288,
     118320,
+    119776,
+    119808,
     119840,
     119872,
     124192,
     124272,
     124512,
     126192,
+    126256,
     128128,
     128752,
+    129104,
     129136,
     129184,
+    129248,
+    129280,
+    129312,
     578544,
     578752
    ]
@@ -3527,7 +3911,7 @@
      "dist": 299063,
      "cluster_n": 1,
      "home": "src/Gruntz/TriggerMgrGrid.cpp",
-     "home_n": 10
+     "home_n": 11
     },
     {
      "rva": 610624,
@@ -3596,146 +3980,6 @@
    ]
   },
   {
-   "file": "src/Gruntz/Play.cpp",
-   "n": 97,
-   "bytes": 34093,
-   "main_lo": 820992,
-   "main_hi": 908488,
-   "main_n": 95,
-   "main_share": 0.979381443298969,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 575856,
-     "hi": 576653,
-     "n": 2
-    },
-    {
-     "lo": 820992,
-     "hi": 908488,
-     "n": 95
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 575856,
-     "name": "?SetBeginClearParams@CState@@QAEHHHH@Z",
-     "dist": 244339,
-     "cluster_n": 2,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 33
-    },
-    {
-     "rva": 575952,
-     "name": "?PlayBacklog08c9d0@CPlay@@QAEXXZ",
-     "dist": 244339,
-     "cluster_n": 2,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 33
-    }
-   ],
-   "rvas": [
-    575856,
-    575952,
-    820992,
-    821776,
-    822144,
-    822512,
-    826400,
-    826560,
-    826944,
-    827552,
-    832512,
-    832640,
-    833344,
-    834064,
-    834288,
-    842512,
-    845104,
-    846560,
-    847472,
-    847504,
-    847616,
-    847696,
-    847808,
-    848032,
-    850896,
-    851088,
-    851936,
-    852048,
-    852256,
-    854304,
-    854624,
-    854832,
-    855472,
-    856544,
-    856752,
-    857872,
-    858256,
-    858816,
-    858928,
-    874848,
-    876288,
-    876432,
-    876720,
-    877632,
-    877920,
-    878032,
-    880544,
-    881344,
-    884832,
-    887024,
-    887136,
-    887296,
-    887456,
-    887584,
-    887744,
-    887904,
-    888208,
-    888256,
-    888528,
-    888912,
-    889184,
-    889408,
-    892976,
-    893648,
-    893872,
-    894016,
-    895088,
-    895328,
-    895456,
-    895584,
-    895648,
-    895936,
-    896224,
-    896944,
-    897104,
-    897296,
-    897488,
-    897536,
-    897664,
-    897712,
-    897744,
-    897776,
-    898560,
-    898752,
-    898896,
-    899040,
-    899232,
-    899376,
-    899504,
-    899632,
-    901216,
-    902864,
-    905296,
-    906048,
-    906560,
-    907312,
-    907936
-   ]
-  },
-  {
    "file": "src/Gruntz/GruntStartingPoint.cpp",
    "n": 6,
    "bytes": 1106,
@@ -3782,6 +4026,145 @@
     254240,
     254368,
     254720
+   ]
+  },
+  {
+   "file": "src/Gruntz/Multi.cpp",
+   "n": 96,
+   "bytes": 23851,
+   "main_lo": 742272,
+   "main_hi": 775005,
+   "main_n": 94,
+   "main_share": 0.9791666666666666,
+   "clusters": 2,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 574608,
+     "hi": 575155,
+     "n": 2
+    },
+    {
+     "lo": 742272,
+     "hi": 775005,
+     "n": 94
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 574608,
+     "name": "?Vfunc3@CState@@UAEHXZ",
+     "dist": 167117,
+     "cluster_n": 2,
+     "home": "src/Gruntz/GruntzMgr.cpp",
+     "home_n": 27
+    },
+    {
+     "rva": 575152,
+     "name": "?Vslot16@CState@@UAEHXZ",
+     "dist": 167117,
+     "cluster_n": 2,
+     "home": "src/Gruntz/GruntzMgr.cpp",
+     "home_n": 27
+    }
+   ],
+   "rvas": [
+    574608,
+    575152,
+    742272,
+    742400,
+    742496,
+    745616,
+    745680,
+    745744,
+    746288,
+    746480,
+    746880,
+    747504,
+    747664,
+    748352,
+    749200,
+    750272,
+    751296,
+    751408,
+    751520,
+    751792,
+    752272,
+    752336,
+    752400,
+    753200,
+    753344,
+    753504,
+    753632,
+    753696,
+    754400,
+    755104,
+    755392,
+    756192,
+    756496,
+    756976,
+    757696,
+    758144,
+    758256,
+    758336,
+    758416,
+    758496,
+    758576,
+    758688,
+    758800,
+    758928,
+    759040,
+    759152,
+    759280,
+    759632,
+    762224,
+    762272,
+    762800,
+    763280,
+    763424,
+    763856,
+    763920,
+    764288,
+    764560,
+    764608,
+    764992,
+    765072,
+    765184,
+    765248,
+    765392,
+    765504,
+    765696,
+    765936,
+    766128,
+    766240,
+    766352,
+    766944,
+    767248,
+    767456,
+    767744,
+    768528,
+    769168,
+    769728,
+    769920,
+    770160,
+    770320,
+    770640,
+    770768,
+    771056,
+    771104,
+    771168,
+    771920,
+    772368,
+    772688,
+    773136,
+    773328,
+    773760,
+    773920,
+    774144,
+    774192,
+    774320,
+    774528,
+    774672
    ]
   },
   {
@@ -3866,7 +4249,7 @@
      "dist": 98110,
      "cluster_n": 1,
      "home": "src/Gruntz/SBI_RectOnly.cpp",
-     "home_n": 19
+     "home_n": 23
     },
     {
      "rva": 1097664,
@@ -4204,7 +4587,7 @@
      "dist": 947069,
      "cluster_n": 1,
      "home": "src/Gruntz/TriggerMgrGrid.cpp",
-     "home_n": 9
+     "home_n": 10
     }
    ],
    "rvas": [
@@ -4350,7 +4733,7 @@
      "dist": 707307,
      "cluster_n": 1,
      "home": "src/Gruntz/MultiStartDlgRoster.cpp",
-     "home_n": 24
+     "home_n": 26
     }
    ],
    "rvas": [
@@ -5294,7 +5677,7 @@
      "dist": 342020,
      "cluster_n": 1,
      "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 45
+     "home_n": 47
     }
    ],
    "rvas": [
@@ -5313,48 +5696,6 @@
     236640,
     236800,
     578960
-   ]
-  },
-  {
-   "file": "src/Gruntz/FreeNodePool.cpp",
-   "n": 7,
-   "bytes": 130,
-   "main_lo": 535968,
-   "main_hi": 536607,
-   "main_n": 6,
-   "main_share": 0.8571428571428571,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 201136,
-     "hi": 201156,
-     "n": 1
-    },
-    {
-     "lo": 535968,
-     "hi": 536607,
-     "n": 6
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 201136,
-     "name": "?Push@FreeNodePool@@QAEXPAX@Z",
-     "dist": 334812,
-     "cluster_n": 1,
-     "home": "src/Gruntz/BattlezMapConfig.cpp",
-     "home_n": 12
-    }
-   ],
-   "rvas": [
-    201136,
-    535968,
-    536096,
-    536224,
-    536352,
-    536480,
-    536560
    ]
   },
   {
@@ -5460,7 +5801,7 @@
      "dist": 241322,
      "cluster_n": 1,
      "home": "src/Gruntz/Play.cpp",
-     "home_n": 23
+     "home_n": 25
     }
    ],
    "rvas": [
@@ -5478,12 +5819,12 @@
   },
   {
    "file": "src/Gruntz/SBI_RectOnly.cpp",
-   "n": 84,
-   "bytes": 32330,
+   "n": 88,
+   "bytes": 32350,
    "main_lo": 1039360,
    "main_hi": 1096724,
-   "main_n": 83,
-   "main_share": 0.9880952380952381,
+   "main_n": 87,
+   "main_share": 0.9886363636363636,
    "clusters": 2,
    "conflated": false,
    "cluster_list": [
@@ -5495,7 +5836,7 @@
     {
      "lo": 1039360,
      "hi": 1096724,
-     "n": 83
+     "n": 87
     }
    ],
    "outliers": [
@@ -5524,6 +5865,10 @@
     1047328,
     1047728,
     1048032,
+    1049904,
+    1049936,
+    1049968,
+    1050000,
     1050928,
     1051392,
     1051824,
@@ -5726,136 +6071,6 @@
     256352,
     256704,
     257216
-   ]
-  },
-  {
-   "file": "src/Gruntz/Multi.cpp",
-   "n": 95,
-   "bytes": 23848,
-   "main_lo": 742272,
-   "main_hi": 775005,
-   "main_n": 94,
-   "main_share": 0.9894736842105263,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 574608,
-     "hi": 574612,
-     "n": 1
-    },
-    {
-     "lo": 742272,
-     "hi": 775005,
-     "n": 94
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 574608,
-     "name": "?Vfunc3@CState@@UAEHXZ",
-     "dist": 167660,
-     "cluster_n": 1,
-     "home": "src/Gruntz/GruntzMgr.cpp",
-     "home_n": 24
-    }
-   ],
-   "rvas": [
-    574608,
-    742272,
-    742400,
-    742496,
-    745616,
-    745680,
-    745744,
-    746288,
-    746480,
-    746880,
-    747504,
-    747664,
-    748352,
-    749200,
-    750272,
-    751296,
-    751408,
-    751520,
-    751792,
-    752272,
-    752336,
-    752400,
-    753200,
-    753344,
-    753504,
-    753632,
-    753696,
-    754400,
-    755104,
-    755392,
-    756192,
-    756496,
-    756976,
-    757696,
-    758144,
-    758256,
-    758336,
-    758416,
-    758496,
-    758576,
-    758688,
-    758800,
-    758928,
-    759040,
-    759152,
-    759280,
-    759632,
-    762224,
-    762272,
-    762800,
-    763280,
-    763424,
-    763856,
-    763920,
-    764288,
-    764560,
-    764608,
-    764992,
-    765072,
-    765184,
-    765248,
-    765392,
-    765504,
-    765696,
-    765936,
-    766128,
-    766240,
-    766352,
-    766944,
-    767248,
-    767456,
-    767744,
-    768528,
-    769168,
-    769728,
-    769920,
-    770160,
-    770320,
-    770640,
-    770768,
-    771056,
-    771104,
-    771168,
-    771920,
-    772368,
-    772688,
-    773136,
-    773328,
-    773760,
-    773920,
-    774144,
-    774192,
-    774320,
-    774528,
-    774672
    ]
   },
   {
@@ -6128,43 +6343,6 @@
    "rvas": [
     1136048,
     1167616
-   ]
-  },
-  {
-   "file": "src/Gruntz/GruntMoveStep.cpp",
-   "n": 2,
-   "bytes": 1340,
-   "main_lo": 202256,
-   "main_hi": 203537,
-   "main_n": 1,
-   "main_share": 0.5,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 170736,
-     "hi": 170795,
-     "n": 1
-    },
-    {
-     "lo": 202256,
-     "hi": 203537,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 170736,
-     "name": "?TileSwitch29af0@@YGXHHHHHH@Z",
-     "dist": 31461,
-     "cluster_n": 1,
-     "home": "src/Gruntz/BattlezMapConfig.cpp",
-     "home_n": 11
-    }
-   ],
-   "rvas": [
-    170736,
-    202256
    ]
   },
   {
