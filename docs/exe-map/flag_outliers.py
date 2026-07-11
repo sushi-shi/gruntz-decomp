@@ -36,7 +36,10 @@ _POOLED_RE = _re.compile(
 
 
 def is_dtor(name):
-    return (name.startswith(("??1", "??_G", "??_E")) or "DeletingDtor" in name
+    # dtors + CRT C++ dynamic-init fragments (_$E / ??__E / InitStr, ordered by the
+    # init table, inherently far from the TU block) + COMDAT-pooled virtuals.
+    return (name.startswith(("??1", "??_G", "??_E", "_$E", "??__E", "?InitStr", "_$S"))
+            or "DeletingDtor" in name or "InitStr" in name
             or bool(_POOLED_RE.match(name)))
 
 

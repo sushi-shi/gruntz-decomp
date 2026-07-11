@@ -13,19 +13,6 @@
   "spread": 7.5427586832320666
  },
  {
-  "file": "src/Gruntz/GameText.cpp",
-  "n": 16,
-  "bytes": 676,
-  "lo": 100160,
-  "hi": 1497653,
-  "span": 1397493,
-  "frags": 16,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.00048372335317600876,
-  "spread": 2067.2973372781066
- },
- {
   "file": "src/Gruntz/GruntzMgr.cpp",
   "n": 123,
   "bytes": 21171,
@@ -156,19 +143,6 @@
   "spread": 100.27308940690469
  },
  {
-  "file": "src/Gruntz/Multi.cpp",
-  "n": 96,
-  "bytes": 23851,
-  "lo": 574608,
-  "hi": 775005,
-  "span": 200397,
-  "frags": 7,
-  "avg_cluster": 13.714285714285714,
-  "frag_ratio": 0.07291666666666667,
-  "occupancy": 0.11901874778564549,
-  "spread": 8.40203765041298
- },
- {
   "file": "src/Net/LobbyDialogs.cpp",
   "n": 16,
   "bytes": 2954,
@@ -260,6 +234,19 @@
   "spread": 223.36441368078175
  },
  {
+  "file": "src/Gruntz/GameText.cpp",
+  "n": 6,
+  "bytes": 354,
+  "lo": 125984,
+  "hi": 1497653,
+  "span": 1371669,
+  "frags": 6,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 0.00025807975539288267,
+  "spread": 3874.771186440678
+ },
+ {
   "file": "src/DDrawMgr/DDrawSubMgr.cpp",
   "n": 82,
   "bytes": 6666,
@@ -271,6 +258,19 @@
   "frag_ratio": 0.07317073170731707,
   "occupancy": 0.005190646868597833,
   "spread": 192.65421542154215
+ },
+ {
+  "file": "src/Gruntz/Multi.cpp",
+  "n": 95,
+  "bytes": 23841,
+  "lo": 574608,
+  "hi": 775005,
+  "span": 200397,
+  "frags": 6,
+  "avg_cluster": 15.833333333333334,
+  "frag_ratio": 0.06315789473684211,
+  "occupancy": 0.11896884683902453,
+  "spread": 8.405561847237951
  },
  {
   "file": "src/Gruntz/Fader.cpp",
@@ -505,19 +505,6 @@
   "frag_ratio": 1.0,
   "occupancy": 0.0017631885873611436,
   "spread": 567.1543062200957
- },
- {
-  "file": "src/Gruntz/CustomWorldDialog.cpp",
-  "n": 13,
-  "bytes": 3044,
-  "lo": 240688,
-  "hi": 244856,
-  "span": 4168,
-  "frags": 4,
-  "avg_cluster": 3.25,
-  "frag_ratio": 0.3076923076923077,
-  "occupancy": 0.7303262955854126,
-  "spread": 1.369250985545335
  },
  {
   "file": "src/Gruntz/GruntCombat.cpp",
@@ -1038,6 +1025,19 @@
   "frag_ratio": 0.2,
   "occupancy": 0.008344164283857551,
   "spread": 119.84423676012462
+ },
+ {
+  "file": "src/Gruntz/CustomWorldDialog.cpp",
+  "n": 12,
+  "bytes": 3034,
+  "lo": 240688,
+  "hi": 244856,
+  "span": 4168,
+  "frags": 3,
+  "avg_cluster": 4.0,
+  "frag_ratio": 0.25,
+  "occupancy": 0.7279270633397313,
+  "spread": 1.3737640079103495
  },
  {
   "file": "src/Gruntz/OrphanMethods.cpp",

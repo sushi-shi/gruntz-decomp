@@ -605,40 +605,40 @@
      "name": "??0CGruntzMgr@@QAE@XZ",
      "dist": 22043,
      "cluster_n": 5,
-     "home": "src/Gruntz/GameText.cpp",
-     "home_n": 13
+     "home": "src/Gruntz/Brickz.cpp",
+     "home_n": 4
     },
     {
      "rva": 546176,
      "name": "?HandleCommand@CGameMgr@WAP32@@UAEHHHH@Z",
      "dist": 22043,
      "cluster_n": 5,
-     "home": "src/Gruntz/GameText.cpp",
-     "home_n": 13
+     "home": "src/Gruntz/Brickz.cpp",
+     "home_n": 4
     },
     {
      "rva": 546272,
      "name": "?Close@CGruntzMgr@@UAEXXZ",
      "dist": 22043,
      "cluster_n": 5,
-     "home": "src/Gruntz/GameText.cpp",
-     "home_n": 13
+     "home": "src/Gruntz/Brickz.cpp",
+     "home_n": 4
     },
     {
      "rva": 549040,
      "name": "?UpdateScoreHud@CGruntzMgr@@QAEXXZ",
      "dist": 22043,
      "cluster_n": 5,
-     "home": "src/Gruntz/GameText.cpp",
-     "home_n": 13
+     "home": "src/Gruntz/Brickz.cpp",
+     "home_n": 4
     },
     {
      "rva": 549344,
      "name": "?AccrueScoreTime@CGruntzMgr@@QAEXXZ",
      "dist": 22043,
      "cluster_n": 5,
-     "home": "src/Gruntz/GameText.cpp",
-     "home_n": 13
+     "home": "src/Gruntz/Brickz.cpp",
+     "home_n": 4
     }
    ],
    "rvas": [
@@ -1601,8 +1601,8 @@
      "name": "?LookupTile@CGameLevel@@QAEHHH@Z",
      "dist": 894557,
      "cluster_n": 1,
-     "home": "src/Gruntz/GameText.cpp",
-     "home_n": 13
+     "home": "src/Gruntz/GruntzApp.cpp",
+     "home_n": 8
     },
     {
      "rva": 847344,
@@ -1883,83 +1883,6 @@
     549616,
     1134272,
     1134336
-   ]
-  },
-  {
-   "file": "src/Gruntz/GameText.cpp",
-   "n": 16,
-   "bytes": 676,
-   "main_lo": 534928,
-   "main_hi": 536607,
-   "main_n": 13,
-   "main_share": 0.8125,
-   "clusters": 4,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 100160,
-     "hi": 100281,
-     "n": 1
-    },
-    {
-     "lo": 125984,
-     "hi": 126125,
-     "n": 1
-    },
-    {
-     "lo": 534928,
-     "hi": 536607,
-     "n": 13
-    },
-    {
-     "lo": 1497536,
-     "hi": 1497653,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 100160,
-     "name": "_$E4",
-     "dist": 434647,
-     "cluster_n": 1,
-     "home": "src/Gruntz/Dialogs.cpp",
-     "home_n": 26
-    },
-    {
-     "rva": 125984,
-     "name": "?GetWarlordName@@YG?AVCString@@H@Z",
-     "dist": 408803,
-     "cluster_n": 1,
-     "home": "src/Gruntz/BootyStateActivate.cpp",
-     "home_n": 9
-    },
-    {
-     "rva": 1497536,
-     "name": "??0CContainerErr@@QAE@PBD@Z",
-     "dist": 960929,
-     "cluster_n": 1,
-     "home": "src/Gruntz/TypeKeyColl.cpp",
-     "home_n": 25
-    }
-   ],
-   "rvas": [
-    100160,
-    125984,
-    534928,
-    535200,
-    535328,
-    535456,
-    535584,
-    535712,
-    535840,
-    535968,
-    536096,
-    536224,
-    536352,
-    536480,
-    536560,
-    1497536
    ]
   },
   {
@@ -2295,7 +2218,7 @@
      "dist": 1219075,
      "cluster_n": 1,
      "home": "src/Gruntz/CustomWorldDialog.cpp",
-     "home_n": 13
+     "home_n": 12
     },
     {
      "rva": 438896,
@@ -2401,6 +2324,60 @@
     170688,
     574336,
     1137456
+   ]
+  },
+  {
+   "file": "src/Gruntz/GameText.cpp",
+   "n": 6,
+   "bytes": 354,
+   "main_lo": 535200,
+   "main_hi": 536607,
+   "main_n": 4,
+   "main_share": 0.6666666666666666,
+   "clusters": 3,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 125984,
+     "hi": 126125,
+     "n": 1
+    },
+    {
+     "lo": 535200,
+     "hi": 536607,
+     "n": 4
+    },
+    {
+     "lo": 1497536,
+     "hi": 1497653,
+     "n": 1
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 125984,
+     "name": "?GetWarlordName@@YG?AVCString@@H@Z",
+     "dist": 409075,
+     "cluster_n": 1,
+     "home": "src/Gruntz/BootyStateActivate.cpp",
+     "home_n": 9
+    },
+    {
+     "rva": 1497536,
+     "name": "??0CContainerErr@@QAE@PBD@Z",
+     "dist": 960929,
+     "cluster_n": 1,
+     "home": "src/Gruntz/TypeKeyColl.cpp",
+     "home_n": 25
+    }
+   ],
+   "rvas": [
+    125984,
+    535200,
+    535328,
+    536480,
+    536560,
+    1497536
    ]
   },
   {
@@ -3955,12 +3932,12 @@
   },
   {
    "file": "src/Gruntz/Multi.cpp",
-   "n": 93,
-   "bytes": 23378,
-   "main_lo": 742272,
+   "n": 92,
+   "bytes": 23368,
+   "main_lo": 742400,
    "main_hi": 774630,
-   "main_n": 92,
-   "main_share": 0.989247311827957,
+   "main_n": 91,
+   "main_share": 0.9891304347826086,
    "clusters": 2,
    "conflated": false,
    "cluster_list": [
@@ -3970,16 +3947,16 @@
      "n": 1
     },
     {
-     "lo": 742272,
+     "lo": 742400,
      "hi": 774630,
-     "n": 92
+     "n": 91
     }
    ],
    "outliers": [
     {
      "rva": 574608,
      "name": "?Vfunc3@CState@@UAEHXZ",
-     "dist": 167660,
+     "dist": 167788,
      "cluster_n": 1,
      "home": "src/Gruntz/GruntzMgr.cpp",
      "home_n": 26
@@ -3987,7 +3964,6 @@
    ],
    "rvas": [
     574608,
-    742272,
     742400,
     742496,
     745616,

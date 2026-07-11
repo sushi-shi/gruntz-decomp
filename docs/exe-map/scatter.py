@@ -25,11 +25,15 @@ import os as _os; DIR = _os.path.dirname(_os.path.abspath(__file__))
 
 
 def is_dtor(name):
-    """A destructor MSVC COMDAT-pools away from the TU block: the base destructor
-    (??1) and the vtable-referenced deleting destructors (??_G scalar, ??_E vector,
-    and our reconstruction's ScalarDeletingDtor). Constructors are NOT pooled, so
-    they are kept."""
-    return name.startswith(("??1", "??_G", "??_E")) or "DeletingDtor" in name
+    """Functions MSVC COMDAT-pools away from the TU block - not scatter, just
+    linker pooling. Two families:
+      - destructors: the base ??1 + vtable-referenced deleting dtors (??_G scalar,
+        ??_E vector, our reconstruction's ScalarDeletingDtor). Ctors are NOT pooled.
+      - C++ dynamic-init fragments: the raw _$E<n> / ??__E<sym> initializer thunks
+        and our reconstructed InitStr<addr>, ordered by the CRT init table (the
+        .data:0x208000 table) so they sit far from the TU's code by construction."""
+    return (name.startswith(("??1", "??_G", "??_E", "_$E", "??__E", "?InitStr", "_$S"))
+            or "DeletingDtor" in name or "InitStr" in name)
 
 
 def rows_for(funcs):

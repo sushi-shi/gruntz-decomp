@@ -2,7 +2,7 @@
 """Build the scatterness charts from the scatter*.json datasets - self-contained
 HTML (inline data + vanilla-JS SVG + hover tooltips, light/dark). Two views:
   scatter.html          all functions
-  scatter_methods.html  destructors removed (the COMDAT-pooled ones)"""
+  scatter_methods.html  pooled functions removed (dtors + CRT dynamic-init fragments)"""
 import json
 import statistics as st
 
@@ -207,7 +207,7 @@ NOTE_COMMON = ('Fragmentation is a property of the <b>retail link layout</b>, no
 
 build("scatter.json", "scatter.html",
       "all functions", "(all functions)",
-      "scatter_methods.html", "view without destructors",
+      "scatter_methods.html", "view without pooled dtors + init fragments",
       "Here <b>all</b> functions are counted.",
       "Destructors here still count. MSVC emits the vtable-referenced <b>deleting destructor</b> as a "
       "COMDAT and the linker pools those (plus the ~Class bodies) into shared low-address runs away from "
