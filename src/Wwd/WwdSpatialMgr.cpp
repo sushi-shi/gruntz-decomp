@@ -2,7 +2,9 @@
 // <Mfc.h> brings the real CObject/CRect types. This cluster's three spatial
 // grids (tomalla-64), the master CWwdObjMgr, and the grid iterator are all
 // reloc-masked engine externs (no bodies here).
-#include <Gruntz/WwdObjMgr.h> // the shared object-collection manager class
+#include <Gruntz/WwdObjMgr.h>   // the shared object-collection manager class
+#include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor + WwdGridNode + WwdRect (shared;
+                                // the cursor's Start/Init/GetNext bodies live in WwdGrid.cpp)
 #include <Mfc.h>
 #include <Wap32/Object.h> // CObject - the shared engine grand-base (iterator's CObject prefix)
 
@@ -21,20 +23,11 @@
 
 // --- reloc-masked engine externs -------------------------------------------
 
-// A grid bucket list node (the region sub-object embedded at CWwdObject+0x9c):
-// intrusive link pair @ +0x00/+0x04, owning-bucket back-pointer @ +0x0c, pixel
-// position @ +0x10/+0x14, owning-object back-pointer @ +0x18. The iterator walks
-// these and reads their position.
+// WwdGridNode (the region sub-object @ CWwdObject+0x9c), WwdRect, and the cursor
+// CWwdGridIter now live in <Gruntz/WwdGridIter.h> (shared with WwdGrid.cpp, which
+// carries the cursor's Start/Init/GetNext bodies - same obj as CWwdGrid).
+// WwdBucketHead below is this TU's reduced-grid bucket view.
 struct WwdBucketHead;
-struct WwdGridNode {
-    WwdGridNode* m_next; // +0x00
-    WwdGridNode* m_prev; // +0x04
-    char m_pad08[0x0c - 0x08];
-    WwdBucketHead* m_bucket;    // +0x0c  cached owning bucket head
-    i32 m_x;                    // +0x10
-    i32 m_y;                    // +0x14
-    class CWwdObject* m_object; // +0x18  owning sprite back-pointer
-};
 
 // A worker held off the sprite at +0x7c, carrying its own flag word at +0x08.
 struct CWwdObjWorker {
@@ -59,10 +52,7 @@ public:
 // CWwdObjMgr - master object manager (m_mgr) is the shared <Gruntz/WwdObjMgr.h>
 // class; the cluster calls InsertSorted_159e40 / AddToMap48_15aba0 / PruneOrphans_15b1d0.
 
-// A 16-byte rectangle passed by value into the grid scroll method.
-struct WwdRect {
-    i32 a, b, c, d;
-};
+// (WwdRect moved to <Gruntz/WwdGridIter.h>.)
 
 // 8-byte intrusive list head {head, tail} of WwdGridNode; one per grid cell.
 // The unlink op is __thiscall on the head (the node passed as the lone stack
@@ -111,55 +101,11 @@ public:
     WwdBucketHead* m_buckets; // +0x40  array of 8-byte {head,tail} bucket heads
 };
 
-// Position-iterator over a CWwdGrid: a rect-restricted cursor that walks every
-// grid cell overlapping a query rectangle and visits each node truly inside it
-// (optionally unlinking it). REAL POLYMORPHIC now: the retail object's vtable @
-// 0x5f02a8 is the 5-slot CObject-style interface (slot0 sub_1bef01, slot1 the
-// scalar-deleting dtor 0x163a20, slots 2/3/4 the shared sub_0028ec/sub_00106e/
-// sub_004034) - i.e. the shared engine grand-base CObject. Deriving from
-// CObject supplies slots 0/2/3/4 by inheritance and slot 1 is the class's own
-// dtor override; cl auto-emits ??_7CWwdGridIter + the implicit vptr-FIRST ctor
-// stamp (== the old `m_vptr = g_wwdGridIterVtbl` first-store shape). This TU OWNS
-// the 0x5f02a8 vtable catalog name via VTBL below:
-// WwdFile::RebuildPlanes only INLINE-stamps this table into its worker's +0x70
-// embedded cursor (genuine inline-construction, not a ctor call), and now
-// references g_planeRenderVtbl as an UNPINNED extern so its stamp reloc-masks
-// against this real ??_7CWwdGridIter (the manual g_planeRenderVtbl DATA pin is
-// drained). 5 slots with the dtor at slot 1, matching retail exactly.
-//
-// Cursor layout (offsets from 0x191b10/0x191c30): implicit vptr @ +0x00, the grid
-// @ +0x04, the current matched node @ +0x08, the saved-next node @ +0x0c, the
-// clamped query rect @ +0x10..+0x1c, the cell-range corners @ +0x20..+0x2c, and
-// the live cell-walk counters @ +0x30..+0x3c, with the remove flag @ +0x40.
-SIZE(CWwdGridIter, 0x44);
-VTBL(CWwdGridIter, 0x001f02a8);
-class CWwdGridIter : public CObject {
-public:
-    // slots 0/2/3/4 (0x1bef01 / 0x0028ec / 0x00106e / 0x004034) inherited from
-    // CObject; slot 1 is the class's own scalar-deleting dtor.
-    virtual ~CWwdGridIter() OVERRIDE; // slot 1 (scalar-deleting dtor 0x163a20; engine teardown)
-
-    CWwdGridIter();
-    WwdGridNode* Start(CWwdGrid* grid, i32 remove); // 0x191ad0 init cursor + first
-    WwdGridNode* Init(CWwdGrid* grid, WwdRect rect,
-                      i32 remove); // 0x191b10 set rect + first
-    WwdGridNode* GetNext();        // 0x191c30 advance the cursor
-
-    // implicit vptr @ +0x00  (= 0x5f02a8, shared g_planeRenderVtbl)
-    CWwdGrid* m_grid;    // +0x04
-    WwdGridNode* m_cur;  // +0x08  current matched node
-    WwdGridNode* m_next; // +0x0c saved-next (cell head cursor)
-    WwdRect m_rect;      // +0x10  clamped query rect (x0,y0,x1,y1)
-    i32 m_rowStart;      // +0x20  (x0-minX)>>shiftY
-    i32 m_colStart;      // +0x24  (y0-minY)>>shiftX
-    i32 m_rowEnd;        // +0x28  (x1-minX)>>shiftY
-    i32 m_colEnd;        // +0x2c  (y1-minY)>>shiftX
-    i32 m_cell;          // +0x30  current linear cell index
-    i32 m_row;           // +0x34  current row counter
-    i32 m_col;           // +0x38  current col counter
-    i32 m_rowBase;       // +0x3c  current row-base linear index
-    i32 m_remove;        // +0x40  unlink-as-visited flag
-};
+// CWwdGridIter (the rect-restricted position cursor over a CWwdGrid) is defined
+// in <Gruntz/WwdGridIter.h>; its Start/Init/GetNext bodies live in WwdGrid.cpp
+// (0x191ad0..0x191c30, the same obj/.text run as CWwdGrid). This TU embeds one
+// (m_iter @ +0x70) for the GetFirst/GetNext API and stack-locals it for the
+// grid-walk methods below.
 
 // --- the cluster class -----------------------------------------------------
 
@@ -311,19 +257,9 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     return count;
 }
 
-// The iterator ctor: cl auto-emits the implicit vptr-FIRST stamp (??_7CWwdGridIter
-// -> reloc-masks the shared 0x5f02a8), then zeros the cursor fields inline; the
-// dtor is the engine teardown that gives this TU its /GX EH frame.
-inline CWwdGridIter::CWwdGridIter() {
-    m_grid = 0;
-    m_cur = 0;
-}
-// Non-trivial dtor: the engine release that, under /GX, registers the unwind
-// funclet (handler 0x5e2518) and gives this method its EH frame.
-extern "C" void WwdGridIter_Release_191c70(CWwdGridIter* it);
-inline CWwdGridIter::~CWwdGridIter() {
-    WwdGridIter_Release_191c70(this);
-}
+// (The CWwdGridIter ctor/dtor - the implicit vptr-FIRST stamp + the WwdGridIter_
+// Release_191c70 engine teardown that gives every user its /GX EH frame - are
+// inline in <Gruntz/WwdGridIter.h>.)
 
 // ===========================================================================
 // 0x168500 - Relocate(newX, newY): walk the master manager's object list and
@@ -513,136 +449,8 @@ CWwdObject* CWwdSpatialMgr::GetNextObject() {
     return 0;
 }
 
-// ===========================================================================
-// CWwdGridIter cursor methods (the tomalla-67 cluster). The iterator walks
-// every grid cell overlapping the query rect, visiting each node truly inside it
-// (optionally unlinking it). Self-contained / reloc-free apart from the bucket
-// Unlink helper.
-// ===========================================================================
-
-// 0x191ad0 - Start(grid, remove): seed the cursor over the grid's ENTIRE bounds
-// rect (grid->minX..maxY passed by value) and return the first in-rect node.
-RVA(0x00191ad0, 0x34)
-WwdGridNode* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
-    // The grid's full bounds rect (minX,minY,maxX,maxY @ +0x28..+0x34) copied
-    // as a contiguous 16-byte block - a struct assignment through a pointer, so
-    // the four fields move through one register (matching the retail lea+copy).
-    // authentic: the four bounds ints ARE the query rect; overlaying them as a
-    // WwdRect for the block copy is the real operation (int-block-as-struct view).
-    WwdRect full = *(WwdRect*)&grid->m_minX;
-    return Init(grid, full, remove);
-}
-
-// 0x191b10 - Init(grid, rect, remove): cache the grid + clamped query rect, fail
-// fast if the rect is fully outside the grid, derive the cell-range corners and
-// the live cell-walk counters, prime the cursor at the first cell head, then
-// advance to the first in-rect node.
-// @early-stop
-// ~95.5% - imul regalloc wall: body byte-identical (the rect block-copy + all 8
-// clamp guards + the cell-range corners match), but the final
-// base=colStart*cols+rowStart keeps colStart in a different reg than retail
-// (retail imul edi,ecx + m_col=ecx between imul/add; recompile imul ecx,esi),
-// a 3-instr operand-register choice. Not source-steerable (see
-// docs/patterns/zero-register-pinning.md / statement-schedule-faithful.md).
-RVA(0x00191b10, 0x111)
-WwdGridNode* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
-    m_grid = grid;
-    m_rect = rect;
-    m_remove = remove;
-    if (m_rect.a > grid->m_maxX) {
-        return 0;
-    }
-    if (m_rect.c < grid->m_minX) {
-        return 0;
-    }
-    if (m_rect.b > grid->m_maxY) {
-        return 0;
-    }
-    if (m_rect.d < grid->m_minY) {
-        return 0;
-    }
-    if (m_rect.a < grid->m_minX) {
-        m_rect.a = grid->m_minX;
-    }
-    if (m_rect.c > grid->m_maxX) {
-        m_rect.c = grid->m_maxX;
-    }
-    if (m_rect.b < grid->m_minY) {
-        m_rect.b = grid->m_minY;
-    }
-    if (m_rect.d > grid->m_maxY) {
-        m_rect.d = grid->m_maxY;
-    }
-    m_colStart = (m_rect.b - grid->m_minY) >> grid->m_shiftX;
-    m_rowStart = (m_rect.a - grid->m_minX) >> grid->m_shiftY;
-    m_colEnd = (m_rect.d - grid->m_minY) >> grid->m_shiftX;
-    m_rowEnd = (m_rect.c - grid->m_minX) >> grid->m_shiftY;
-    i32 base = m_colStart * grid->m_cols + m_rowStart;
-    m_col = m_colStart;
-    m_row = m_rowStart;
-    m_rowBase = base;
-    m_cell = base;
-    m_next = grid->m_buckets[base].m_head;
-    return GetNext();
-}
-
-// 0x191c30 - GetNext(): resume the cell walk. Faithful goto transcription of the
-// retail cursor: reload the scan node, advance cells until a non-empty bucket,
-// then walk the bucket testing each node against the query rect; on a hit,
-// optionally unlink it and return it.
-// @early-stop
-// ~93.7% - LICM/regalloc wall: the cell-advance block + the whole control flow
-// are byte-identical, but cl hoists the loop-invariant query bound m_rect.a
-// (+0x10) into a callee-saved register (extra push ebx) where retail reloads it
-// from memory each iteration; this cascades the walk's m_y0 reg (ebx vs edi) and
-// the remove-block reg assignment. Not source-steerable (member-bound LICM
-// choice; see docs/patterns/zero-register-pinning.md).
-RVA(0x00191c30, 0xcc)
-WwdGridNode* CWwdGridIter::GetNext() {
-    WwdGridNode* node;
-top:
-    node = m_next;
-    m_cur = node;
-    if (node == 0) {
-    nextcell:
-        if (m_row < m_rowEnd) {
-            ++m_cell;
-            ++m_row;
-        } else {
-            if (m_col >= m_colEnd) {
-                return 0;
-            }
-            m_rowBase += m_grid->m_cols;
-            m_cell = m_rowBase;
-            m_row = m_rowStart;
-            ++m_col;
-        }
-        m_cur = m_grid->m_buckets[m_cell].m_head;
-        if (m_cur == 0) {
-            goto nextcell;
-        }
-    }
-    if (m_cur == 0) {
-        goto top;
-    }
-walk:
-    m_next = m_cur->m_next;
-    if (m_cur->m_x >= m_rect.a && m_cur->m_y >= m_rect.b && m_cur->m_x <= m_rect.c
-        && m_cur->m_y <= m_rect.d) {
-        if (m_remove) {
-            m_grid->m_buckets[m_cell].Unlink_1391e0(m_cur);
-            m_cur->m_bucket = 0;
-            --m_grid->m_count;
-        }
-        return m_cur;
-    }
-    if (m_cur != 0) {
-        goto walk;
-    }
-    goto top;
-}
+// (The CWwdGridIter cursor methods Start/Init/GetNext @ 0x191ad0/0x191b10/0x191c30
+// were re-homed to WwdGrid.cpp - the same obj/.text run as CWwdGrid, matcher-2 D6.)
 SIZE_UNKNOWN(CWwdObjWorker);
 SIZE_UNKNOWN(CWwdSpatialMgr);
 SIZE_UNKNOWN(WwdBucketHead);
-SIZE_UNKNOWN(WwdGridNode);
-SIZE_UNKNOWN(WwdRect);

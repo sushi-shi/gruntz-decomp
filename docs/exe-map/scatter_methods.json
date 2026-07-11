@@ -2132,19 +2132,6 @@
   "spread": 25.13938053097345
  },
  {
-  "file": "src/Wwd/WwdSpatialMgr.cpp",
-  "n": 16,
-  "bytes": 2745,
-  "lo": 1475312,
-  "hi": 1645820,
-  "span": 170508,
-  "frags": 2,
-  "avg_cluster": 8.0,
-  "frag_ratio": 0.125,
-  "occupancy": 0.016098951368850728,
-  "spread": 62.11584699453552
- },
- {
   "file": "src/Gruntz/AniRecord.cpp",
   "n": 11,
   "bytes": 1114,
@@ -4355,6 +4342,19 @@
   "spread": 1.0214830214830215
  },
  {
+  "file": "src/Wwd/WwdSpatialMgr.cpp",
+  "n": 13,
+  "bytes": 2216,
+  "lo": 1475312,
+  "hi": 1477605,
+  "span": 2293,
+  "frags": 1,
+  "avg_cluster": 13.0,
+  "frag_ratio": 0.07692307692307693,
+  "occupancy": 0.9664195377235063,
+  "spread": 1.0347472924187726
+ },
+ {
   "file": "src/Gruntz/GetRetAddr.cpp",
   "n": 1,
   "bytes": 3,
@@ -4798,16 +4798,16 @@
  },
  {
   "file": "src/Wwd/WwdGrid.cpp",
-  "n": 7,
-  "bytes": 1160,
+  "n": 10,
+  "bytes": 1689,
   "lo": 1643968,
-  "hi": 1645255,
-  "span": 1287,
+  "hi": 1645820,
+  "span": 1852,
   "frags": 1,
-  "avg_cluster": 7.0,
-  "frag_ratio": 0.14285714285714285,
-  "occupancy": 0.9013209013209014,
-  "spread": 1.1094827586206897
+  "avg_cluster": 10.0,
+  "frag_ratio": 0.1,
+  "occupancy": 0.911987041036717,
+  "spread": 1.0965068087625813
  },
  {
   "file": "src/Bute/ButeTree.cpp",

@@ -5,6 +5,9 @@
 #include <Mfc.h>
 
 #include <Gruntz/WwdGrid.h>
+#include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor - Start/Init/GetNext bodies live
+                                // here (0x191ad0..0x191c30, same obj as CWwdGrid); shared
+                                // with WwdSpatialMgr.cpp (its GetFirst/GetNext API driver)
 
 // --- reloc-masked engine externs -------------------------------------------
 
@@ -207,6 +210,136 @@ i32 CWwdGrid::Clear() {
     }
     m_count = 0;
     return nonEmpty;
+}
+
+// ===========================================================================
+// CWwdGridIter cursor methods (the tomalla-67 cluster) - re-homed here from
+// WwdSpatialMgr.cpp (matcher-2 D6 drain): 0x191ad0..0x191c30 sit in THIS obj's
+// contiguous .text run (right after Clear @0x191a70), not the CWwdSpatialMgr obj
+// (0x1682f0..). The cursor walks every grid cell overlapping the query rect,
+// visiting each node truly inside it (optionally unlinking it). It reads the
+// canonical CWwdGrid's bounds/shift/cols/bucket fields directly; the buckets are
+// the canonical BucketHead ({head,tail} DSoundList) so the node reads cast through
+// (WwdGridNode*) exactly as CWwdGrid::Query/Clear do.
+// ===========================================================================
+
+// 0x191ad0 - Start(grid, remove): seed the cursor over the grid's ENTIRE bounds
+// rect (grid->minX..maxY passed by value) and return the first in-rect node.
+RVA(0x00191ad0, 0x34)
+WwdGridNode* CWwdGridIter::Start(CWwdGrid* grid, i32 remove) {
+    // The grid's full bounds rect (minX,minY,maxX,maxY @ +0x28..+0x34) copied as a
+    // contiguous 16-byte block - the four bounds ints ARE the query rect.
+    WwdRect full = *(WwdRect*)&grid->m_minX;
+    return Init(grid, full, remove);
+}
+
+// 0x191b10 - Init(grid, rect, remove): cache the grid + clamped query rect, fail
+// fast if the rect is fully outside the grid, derive the cell-range corners and
+// the live cell-walk counters, prime the cursor at the first cell head, then
+// advance to the first in-rect node.
+// @early-stop
+// ~95.5% - imul regalloc wall: body byte-identical (the rect block-copy + all 8
+// clamp guards + the cell-range corners match), but the final
+// base=colStart*cols+rowStart keeps colStart in a different reg than retail
+// (retail imul edi,ecx + m_col=ecx between imul/add; recompile imul ecx,esi),
+// a 3-instr operand-register choice. Not source-steerable (see
+// docs/patterns/zero-register-pinning.md / statement-schedule-faithful.md).
+RVA(0x00191b10, 0x111)
+WwdGridNode* CWwdGridIter::Init(CWwdGrid* grid, WwdRect rect, i32 remove) {
+    m_grid = grid;
+    m_rect = rect;
+    m_remove = remove;
+    if (m_rect.a > grid->m_maxX) {
+        return 0;
+    }
+    if (m_rect.c < grid->m_minX) {
+        return 0;
+    }
+    if (m_rect.b > grid->m_maxY) {
+        return 0;
+    }
+    if (m_rect.d < grid->m_minY) {
+        return 0;
+    }
+    if (m_rect.a < grid->m_minX) {
+        m_rect.a = grid->m_minX;
+    }
+    if (m_rect.c > grid->m_maxX) {
+        m_rect.c = grid->m_maxX;
+    }
+    if (m_rect.b < grid->m_minY) {
+        m_rect.b = grid->m_minY;
+    }
+    if (m_rect.d > grid->m_maxY) {
+        m_rect.d = grid->m_maxY;
+    }
+    m_colStart = (m_rect.b - grid->m_minY) >> grid->m_shiftX;
+    m_rowStart = (m_rect.a - grid->m_minX) >> grid->m_shiftY;
+    m_colEnd = (m_rect.d - grid->m_minY) >> grid->m_shiftX;
+    m_rowEnd = (m_rect.c - grid->m_minX) >> grid->m_shiftY;
+    i32 base = m_colStart * grid->m_cols + m_rowStart;
+    m_col = m_colStart;
+    m_row = m_rowStart;
+    m_rowBase = base;
+    m_cell = base;
+    m_next = (WwdGridNode*)grid->m_buckets[base].m_head;
+    return GetNext();
+}
+
+// 0x191c30 - GetNext(): resume the cell walk. Faithful goto transcription of the
+// retail cursor: reload the scan node, advance cells until a non-empty bucket,
+// then walk the bucket testing each node against the query rect; on a hit,
+// optionally unlink it and return it.
+// @early-stop
+// ~93.7% - LICM/regalloc wall: the cell-advance block + the whole control flow
+// are byte-identical, but cl hoists the loop-invariant query bound m_rect.a
+// (+0x10) into a callee-saved register (extra push ebx) where retail reloads it
+// from memory each iteration; this cascades the walk's m_y0 reg (ebx vs edi) and
+// the remove-block reg assignment. Not source-steerable (member-bound LICM
+// choice; see docs/patterns/zero-register-pinning.md).
+RVA(0x00191c30, 0xcc)
+WwdGridNode* CWwdGridIter::GetNext() {
+    WwdGridNode* node;
+top:
+    node = m_next;
+    m_cur = node;
+    if (node == 0) {
+    nextcell:
+        if (m_row < m_rowEnd) {
+            ++m_cell;
+            ++m_row;
+        } else {
+            if (m_col >= m_colEnd) {
+                return 0;
+            }
+            m_rowBase += m_grid->m_cols;
+            m_cell = m_rowBase;
+            m_row = m_rowStart;
+            ++m_col;
+        }
+        m_cur = (WwdGridNode*)m_grid->m_buckets[m_cell].m_head;
+        if (m_cur == 0) {
+            goto nextcell;
+        }
+    }
+    if (m_cur == 0) {
+        goto top;
+    }
+walk:
+    m_next = m_cur->m_next;
+    if (m_cur->m_x >= m_rect.a && m_cur->m_y >= m_rect.b && m_cur->m_x <= m_rect.c
+        && m_cur->m_y <= m_rect.d) {
+        if (m_remove) {
+            m_grid->m_buckets[m_cell].Unlink((DSoundLink*)m_cur);
+            m_cur->m_bucket = 0;
+            --m_grid->m_count;
+        }
+        return m_cur;
+    }
+    if (m_cur != 0) {
+        goto walk;
+    }
+    goto top;
 }
 
 // ===========================================================================

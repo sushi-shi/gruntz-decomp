@@ -48,16 +48,36 @@ enum ImageFormatTag {
 };
 
 // ===========================================================================
-// wave4-L (dossier #15): the 0x0d5xxx quartet below are COMDAT-at-usage exiles of
+// wave4-L (dossier #15): the 0x0d5xxx block below are COMDAT-at-usage exiles of
 // this TU's class, kept at the play-region obj (which first-references the CImage
 // vtable and carries its /GR RTTI); the C block proper is 0x152e90-0x1549c5.
 // File-head position keeps the intra-file RVA order strictly ascending.
+//
+// DRAIN NOTE (matcher-2 D6, verified): the flag_outliers "5@0xd5c10" cluster is
+// NOT a foreign obj and NOT a second CImage .cpp - it is a COMDAT-FOLD POOL, and
+// the whole cluster is pooled-member (doctrine (a) -> LEAVE), NOT conflation. Proof:
+//   (1) the 0xd5xxx members are 512 KB from CImage's main obj (0x152e90) and
+//       interleaved with FOUR other TUs' functions (Play::AddLevelGruntz/ResetGoals,
+//       PlayPlaneScan::ScanBuildTiles, LevelTileValidation::PositionBridgeToggle,
+//       WwdFile::GetTileHandle) - a linker COMDAT pool, not a contiguous obj run;
+//   (2) a CRT COMDAT (??_G__non_rtti_object @0xd5e50) is interleaved BETWEEN Slot17
+//       (0xd5e20) and ~CImage (0xd5e80), so the CImage COMDATs are not even
+//       contiguous among themselves -> unsplittable into one clean obj;
+//   (3) GetClassId/Slot16/Slot17 are CImage inline virtuals declared polymorphic in
+//       CImage.h (cl COMDAT-emits them); IsLoaded is CWapObj's base inline virtual
+//       (CImage its sole non-overriding user); Gap_0d5c10 is a CImage-family loader
+//       helper (xref: calls CImage::Resolve/FreeAll/RenderFrame + CSymTab/sprintf);
+//       ??1CDDrawSubMgrFar is a distinct-identity COMDAT dtor copy (C168c10 pattern).
+// Splitting any of these into a foreign RVA-named .cpp would MISATTRIBUTE CImage's
+// own methods. No split warranted; the flag is a false-positive (flag_outliers
+// _POOLED_RE does not recognise the GetClassId/Slot1N/IsLoaded pooled-virtual names).
 // ===========================================================================
 // @early-stop
 // 0x0d5c10 (269 B) - homed from src/Stub/GapFunctions.cpp (matcher-5) by RVA
 // neighbourhood: it sits between LevelTileValidation (ends 0xd5bdb) and this file's
-// low-RVA CImage block (0xd5e20+). A leaf image-loader helper, no vtable-ref; homed
-// pending leaf-first reconstruction (its identity within the CImage family is TBD).
+// low-RVA CImage block (0xd5e20+). A CImage-family leaf image-loader helper (xref-
+// confirmed: calls CImage::Resolve/FreeAll/RenderFrame, CSymTab::ResolveQualified,
+// sprintf); homed pending leaf-first reconstruction (its exact identity is TBD).
 RVA(0x000d5c10, 0x10d)
 i32 Gap_0d5c10(void) {
     return 0;

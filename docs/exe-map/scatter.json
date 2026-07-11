@@ -1560,30 +1560,17 @@
   "spread": 31.48537234042553
  },
  {
-  "file": "src/Wwd/WwdSpatialMgr.cpp",
-  "n": 17,
-  "bytes": 2810,
-  "lo": 1456704,
-  "hi": 1645820,
-  "span": 189116,
-  "frags": 3,
-  "avg_cluster": 5.666666666666667,
-  "frag_ratio": 0.17647058823529413,
-  "occupancy": 0.014858605300450517,
-  "spread": 67.30106761565837
- },
- {
   "file": "src/Wwd/WwdGrid.cpp",
-  "n": 10,
-  "bytes": 1301,
+  "n": 13,
+  "bytes": 1830,
   "lo": 1475232,
-  "hi": 1645255,
-  "span": 170023,
+  "hi": 1645820,
+  "span": 170588,
   "frags": 3,
-  "avg_cluster": 3.3333333333333335,
-  "frag_ratio": 0.3,
-  "occupancy": 0.0076519059186110116,
-  "spread": 130.68639508070714
+  "avg_cluster": 4.333333333333333,
+  "frag_ratio": 0.23076923076923078,
+  "occupancy": 0.010727601003587592,
+  "spread": 93.21748633879781
  },
  {
   "file": "src/Net/NetSessionNode.cpp",
@@ -2429,6 +2416,19 @@
   "frag_ratio": 1.0,
   "occupancy": 0.008041958041958041,
   "spread": 124.34782608695652
+ },
+ {
+  "file": "src/Wwd/WwdSpatialMgr.cpp",
+  "n": 14,
+  "bytes": 2281,
+  "lo": 1456704,
+  "hi": 1477605,
+  "span": 20901,
+  "frags": 2,
+  "avg_cluster": 7.0,
+  "frag_ratio": 0.14285714285714285,
+  "occupancy": 0.10913353428065643,
+  "spread": 9.16308636562911
  },
  {
   "file": "src/Crypto/Blowfish.cpp",
