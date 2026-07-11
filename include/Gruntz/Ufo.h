@@ -22,7 +22,7 @@ public:
     // GameObjectCtors.cpp): it wraps this non-virtual field-transfer helper and, on
     // mode 8, re-seeds the ctor's draw-fill state.
     i32 Serialize(void* stream, i32 tag, i32 c, i32 d);      // 0x0b4d30
-    i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (base chain; call-only)
+    i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (superseded; call-free)
 };
 VTBL(CUFO, 0x001e72b4); // vtable_names -> code (RTTI game class)
 SIZE(CUFO, 0x130);

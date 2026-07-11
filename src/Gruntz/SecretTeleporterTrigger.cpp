@@ -11,20 +11,21 @@
 // coordinate registry (g_actColl @0x644688 / g_secretActReg @0x644598) + the
 // SHARED activation-name registry (<Gruntz/ActNameRegistry.h>, @0x6bf650; the
 // ex TU-local duplicate decl block is dissolved onto the shared header).
-#include <Bute/ButeTree.h>           // CVariantSlot::Set (0x16d850)
-#include <Wap32/ZVec.h>              // _zvec::GrowTo (Find 0x16da80)
-#include <Wap32/ZDArrayDerived.h>    // CZDArrayDerived::Construct (0x408710)
-#include <Gruntz/TriggerMgr.h>       // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
-#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
-#include <Gruntz/Trigger.h>          // CTrigger (point-probe result, its m_10 HUD sprite)
-#include <Gruntz/Viewport.h>         // CViewport (visible-rect base at +0x5c)
-#include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (m_world/m_cmdGrid/
-                                     // m_cueSink/m_scoreHud typed; CSpriteFactoryHolder)
-#include <Gruntz/SpriteFactory.h>    // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/ActColl.h>          // CActColl/GetRetAddr + g_actCache/g_retAddrBreadcrumb
-#include <Gruntz/ActNameRegistry.h>  // the SHARED activation-name registry (g_buteTree/
-                                     // g_nextActId/s_actKeyA/g_nameReg*/ActNameLookup)
-#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
+#include <Bute/ButeTree.h>          // CVariantSlot::Set (0x16d850)
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
+#include <Wap32/ZVec.h>             // _zvec::GrowTo (Find 0x16da80)
+#include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (0x408710)
+#include <Gruntz/TriggerMgr.h>      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
+#include <Gruntz/GruntSpawnConfig.h>        // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
+#include <Gruntz/Trigger.h>                 // CTrigger (point-probe result, its m_10 HUD sprite)
+#include <Gruntz/Viewport.h>                // CViewport (visible-rect base at +0x5c)
+#include <Gruntz/GameRegistry.h>            // the canonical *0x24556c singleton (m_world/m_cmdGrid/
+                                            // m_cueSink/m_scoreHud typed; CSpriteFactoryHolder)
+#include <Gruntz/SpriteFactory.h>           // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/ActColl.h>                 // CActColl/GetRetAddr + g_actCache/g_retAddrBreadcrumb
+#include <Gruntz/ActNameRegistry.h>         // the SHARED activation-name registry (g_buteTree/
+                                            // g_nextActId/s_actKeyA/g_nameReg*/ActNameLookup)
+#include <Gruntz/ActReg.h>                  // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SecretTeleporterTrigger.h> // the canonical class
 #include <Gruntz/SecretLevelTrigger.h>      // canonical CSecretLevelTrigger : CUserLogic
 #include <Gruntz/SerialObjRef.h>            // CSerialObjRef::Chain (0x8c00) - the +0x34 round-trip
@@ -131,7 +132,7 @@ SIZE_UNKNOWN(CTrigger);
 // serializable sub-object's chain; normalizes the result to a strict bool.
 RVA(0x00010a10, 0x47)
 i32 CSecretTeleporterTrigger::Serialize(i32 a, i32 b, i32 c, i32 d) {
-    if (!SerializeChain(a, b, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(a), b, c, d)) {
         return 0;
     }
     return SerialRef34()->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d) != 0;
@@ -158,7 +159,7 @@ CSecretLevelTrigger::CSecretLevelTrigger() {}
 // displacements) - the direct sibling of CSecretTeleporterTrigger::Serialize (0x010a10).
 RVA(0x00010bb0, 0x47)
 i32 CSecretLevelTrigger::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;

@@ -15,6 +15,7 @@
 // <Gruntz/UserLogic.h>). Only offsets / code bytes are load-bearing; names are
 // placeholders for the recovered engine identities.
 #include <Gruntz/DoNothing.h>
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/DoNothingNormalDtor.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
@@ -29,7 +30,7 @@
 // chain; normalize to a bool. Byte-identical to CEyeCandy::Serialize (0x00fcc0).
 RVA(0x0000f6d0, 0x47)
 i32 CDoNothing::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)ar, tag, c, d)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
@@ -48,7 +49,7 @@ CDoNothing::~CDoNothing() {}
 // CDoNothing::Serialize): base CUserLogic chain + the +0x34 sub-object chain.
 RVA(0x0000f800, 0x47)
 i32 CDoNothingNormal::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)ar, tag, c, d)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;

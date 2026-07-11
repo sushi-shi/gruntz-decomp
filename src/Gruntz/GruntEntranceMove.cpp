@@ -17,6 +17,8 @@
 #include <Gruntz/Grunt.h>
 #include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360)
+#include <Gruntz/TriggerMgr.h>       // CTriggerMgr::NotifyCell (0x79fb0)
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
@@ -1266,13 +1268,15 @@ i32 CGrunt::LoadFreezeSpellAssets() {
 // entrance player (m_154->m_8 |= 0x10000). Returns 0.
 RVA(0x00069fd0, 0x69)
 i32 CGrunt::FinishEntranceMove() {
-    m_154->m_1a0.Advance_15c360((u32)g_defaultGeo);
+    // 0x15c360 = CAniAdvanceCursor::Advance_15c360 (cast the m_1a0 geometry facet)
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_defaultGeo);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;
     }
     if (m_36c == 0) {
-        m_tileMgr->NotifyEntranceDrop(m_tileOwnerHi, m_tileOwnerLo, 0);
+        // 0x79fb0 = CTriggerMgr::NotifyCell (the reused registry slot), not a CGruntTileMgr method
+        ((CTriggerMgr*)m_tileMgr)->NotifyCell(m_tileOwnerHi, m_tileOwnerLo, 0);
     }
     m_154->m_8 |= 0x10000;
     return 0;

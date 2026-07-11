@@ -8,6 +8,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/ExitTrigger.h>
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LogicTypeId.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0; +0x48 GruntObjMap)
@@ -146,7 +147,7 @@ CExitTrigger::CExitTrigger(CGameObject* obj) : CUserLogic(obj) {
 // spelling that flips it (topic:wall topic:regalloc). Deferred to the final sweep.
 RVA(0x0003f040, 0x147)
 i32 CExitTrigger::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (!SerializeChain((i32)ar, mode, a3, a4)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4)) {
         return 0;
     }
     CSerialArchive* arc = (CSerialArchive*)ar;

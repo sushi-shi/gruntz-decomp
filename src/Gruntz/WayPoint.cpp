@@ -2,7 +2,8 @@
 // leaf dtor + the 1-arg ctor (the "unrolled" CUserLogic(obj) prologue: this TU
 // inlines the built-in logic-type registration, see LogicTypeTableInline.h).
 #include <Gruntz/WayPoint.h>
-#include <Gruntz/SerialObjRef.h> // the shared serialized-object-reference (Chain @0x8c00)
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
+#include <Gruntz/SerialObjRef.h>    // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/LogicTypeTableInline.h>
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
@@ -17,7 +18,7 @@ extern CButeTree g_buteTree;
 // normalized to a strict bool. Byte-identical to CSecretTeleporterTrigger::Serialize.
 RVA(0x00010240, 0x47)
 i32 CWayPoint::Serialize(i32 a, i32 b, i32 c, i32 d) {
-    if (!SerializeChain(a, b, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(a), b, c, d)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)a, b, c, (CSerialObj*)d) != 0;

@@ -4,6 +4,7 @@
 //
 // CAniCycle : CUserLogic. Only offsets / code bytes are load-bearing.
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
@@ -36,7 +37,7 @@ extern CAniCycleActReg g_aniCycleActReg; // 0x646088
 // save the two call displacements.
 RVA(0x0000f470, 0x47)
 i32 CAniCycle::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;

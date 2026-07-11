@@ -9,6 +9,7 @@
 // 0x5e70b4 vptr and tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a
 // ctor - identical in shape to ~CTimeBomb @0x012a70 / ~CInGameIcon @0x011d00.
 #include <Gruntz/GruntSelectedSprite.h>
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
@@ -112,6 +113,9 @@ i32 CGruntSelectedSprite::SetCell(i32 x, i32 y) {
 // `m_drawn` second condition shifts the register pressure so the deref ordering is
 // not source-steerable (the sibling Toy::Update, no m_1d8 check, reaches 99.3%).
 // Every instruction matches modulo register names. Deferred to the final sweep.
+// (wave5-R7: this zero-reg-pin wall is ultra-TU-sensitive; SerializeMove's byte-neutral
+// chain rebinding to CMovingLogicBase::Serialize nudged its regalloc 99.2->84.8%. The
+// LOGIC is unchanged - only more register-name divergence in the same wall.)
 RVA(0x0007e9f0, 0x5f)
 i32 CGruntSelectedSprite::Update() {
     CGameRegistry* reg = g_gameReg;
@@ -141,7 +145,7 @@ i32 CGruntSelectedSprite::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i3
     } else {
         sa->Write(&m_cellX, 8);
     }
-    if (!SerializeChain((i32)arc, mode, a3, a4)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)arc), mode, a3, a4)) {
         return 0;
     }
     return SerialRef34()->Chain(sa, mode, a3, (CSerialObj*)a4) ? 1 : 0;

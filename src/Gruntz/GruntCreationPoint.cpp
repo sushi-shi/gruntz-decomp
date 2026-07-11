@@ -9,6 +9,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/SpriteRefTable.h>
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Gruntz/ActReg.h>          // the shared CActReg coordinate-registry archetype
@@ -145,7 +146,7 @@ extern "C" i32 ChannelSlots_FindFree();
 // ctor @0x3e520 shares the same wall (~80%).
 RVA(0x0003e7a0, 0xd7)
 i32 CGruntCreationPoint::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {

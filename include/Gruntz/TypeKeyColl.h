@@ -71,7 +71,8 @@ class CTypeKeyColl : public CZArray2D {
 public:
     CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
     virtual ~CTypeKeyColl() OVERRIDE;                        // [0] ??_G 0x16dde0 (external)
-    i32 Find(i32 key, i32 z);                                // 0x16da80 (external)
+    // (the grow-on-miss the lookups drive is _zvec::GrowTo @0x16da80, reached via a
+    //  (_zvec*)&coll cast at the call sites - the former CTypeKeyColl::Find fake is gone.)
     void Construct(i32 lo, i32 hi);          // 0x408710 (reloc-masked; build registry)
     void RegisterRange(i32 lo, i32 hi);      // 0x408710 (same slot, alt view name)
     void SetAtGrow(i32 id, const char* key); // grow + assign (inlined in retail)

@@ -1,4 +1,5 @@
-#include <Mfc.h> // real MFC CString (direction-name match temp; reloc-masked)
+#include <Mfc.h>                    // real MFC CString (direction-name match temp; reloc-masked)
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
 #include <Bute/ButeTree.h>
@@ -555,7 +556,7 @@ i32 CKitchenSlime::Serialize(void* stream, i32 tag, i32 c, i32 d) {
         s->Write(B + 0x80, 8);
         s->Write(B + 0x88, 8);
     }
-    if (SerializeChain(stream, tag, c, d) == 0) {
+    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(stream), tag, c, d) == 0) {
         return 0;
     }
     return ((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CSerialObj*)d)

@@ -24,6 +24,8 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
+#include <Gruntz/GameStateRecord.h> // CSerialObjRef::Chain (0x8c00) + CGameStateRecord::Load (0x555e0)
+#include <Gruntz/TileWireLogic.h> // CTileWireLogic::WireTileSwitchLogic (0x6c130)
 #include <Gruntz/BoundaryLowerMethodsViews.h>
 #include <Gruntz/Effect6b.h>
 #include <Gruntz/SoundCueMgr.h>
@@ -218,7 +220,9 @@ static __inline i32 GruntTileFlags(i32 tx, i32 ty) {
 // codegen; see the layout-gap TODO on CGrunt::m_moveMode).
 RVA(0x00050ca0, 0x2b)
 void CGrunt::LoadTypeTableClearMove(i32 typeId) {
-    LoadGruntTypeTable(typeId, 0, 0, 0);
+    // the real callee is the inherited CUserLogic::LoadGruntTypeTable (0x4dd50), not
+    // CGrunt's i32-returning shadow (which InGameIcon still needs for its result read)
+    CUserLogic::LoadGruntTypeTable(typeId, 0, 0, 0);
     *(i32*)((char*)this + 0x1a0) = -1;
     *(i32*)((char*)this + 0x1a4) = 0;
 }
@@ -265,10 +269,7 @@ const char g_codeF[] = "F";
 const char g_codeE[] = "E";
 
 // ==== LoadVehicleGruntSprites @0x50ce0 (ex VehicleGruntSprites.cpp; text-contained) ====
-class CTileWireLogic {
-public:
-    i32 WireTileSwitchLogic(void* a, i32 b, i32 c);
-};
+// CTileWireLogic::WireTileSwitchLogic (0x6c130) now comes from the shared header.
 
 // The game registry singleton (*0x24556c): this TU declares it as the
 // WwdGameReg view (Grunt.cpp style); the vehicle path reads it through the
@@ -515,7 +516,10 @@ void CGrunt::SnapToLastTile(i32 a) {
     }
     SetEntrancePos(a, 1);
     if (m_arrivalPending != 0) {
-        m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+        // 0x6c130 is CTileWireLogic::WireTileSwitchLogic (the settled-move commit),
+        // not a CGruntTileMgr method - cast at the call (as m_260's site above does).
+        ((CTileWireLogic*)m_tileMgr)
+            ->WireTileSwitchLogic((void*)this, m_lastTilePxX, m_lastTilePxY);
         m_arrivalPending = 0;
     }
 }
@@ -581,6 +585,8 @@ i32 CGrunt::RectContains(i32 x, i32 y) {
 // query point (x>>5, y>>5) against them via IsRectEmpty + the 4-way bounds compare.
 // Residue: identical to RectContains - cl interleaves the two CRect builds and the
 // [esp+N] temp-slot reuse in an unpinnable order. Deferred to the final sweep.
+// (wave5-R7: the SerializeMove/SnapToLastTile CALL-target rebindings in this TU
+// nudged the shared temp-slot/regalloc schedule here ~62->59.5%; body unchanged.)
 RVA(0x00051a20, 0x17d)
 i32 CGrunt::RectContainsGated(i32 x, i32 y) {
     i32 px = x >> 5;
@@ -1197,20 +1203,25 @@ i32 CGrunt::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     if (ar == 0) {
         return 0;
     }
-    if (SerializeAnimState(ar, mode, a3, a4) == 0) {
+    // chain the base-class serialize on `this` (0x16e7f0 = CMovingLogicBase::Serialize)
+    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)ar, mode, a3, a4) == 0) {
         return 0;
     }
-    if (((CMovingLogicBase*)(&m_150))->Serialize((CSerialArchive*)ar, mode, a3, a4) == 0) {
+    // then the +0x150 CSerialObjRef's chain (0x8c00 via the 0x1aff thunk)
+    if (((CSerialObjRef*)(&m_150))->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) == 0) {
         return 0;
     }
     switch (mode) {
         case 4:
-            if (SerPreStep4(ar) == 0) {
+            // mode-4 save path = CGrunt::Save (0x53f90)
+            if (Save(ar) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (SerPreStep7(ar) == 0) {
+            // mode-7 load path (0x555e0; labeled CGameStateRecord::Load in gamestaterecordload,
+            // really CGrunt's load facet on the same `this` layout - attribution TODO there)
+            if (((CGameStateRecord*)this)->Load((CSerialArchive*)ar) == 0) {
                 return 0;
             }
             break;

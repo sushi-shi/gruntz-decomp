@@ -9,7 +9,8 @@
 // ~dtor) is the boundary orphan-COMDAT pool emission - kept, ascending.
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
-#include <Mfc.h> // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
+#include <Mfc.h>                    // CMapPtrToPtr (the id->object map, Lookup @0x1b8760)
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <rva.h>
 
 #include <Gruntz/GruntVoice.h>
@@ -58,7 +59,7 @@ static inline CVTrigEntry* VTrigLookup(i32 coord) {
     if (coord >= g_vtrigLo && coord <= g_vtrigHi) {
         return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
     }
-    if (g_vtrigColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_vtrigColl)->GrowTo(coord, 0)) {
         return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
     }
     void* item = g_actCache;
@@ -102,7 +103,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) {
+    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -202,7 +203,7 @@ CVoiceTrigger::CVoiceTrigger() {}
 // byte-identical chain-Serialize archetype (differs only in the two call displacements).
 RVA(0x000134e0, 0x47)
 i32 CVoiceTrigger::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;

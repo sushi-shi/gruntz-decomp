@@ -8,10 +8,11 @@
 // The base folds the whole CUserLogic init + constructs the throwing CUserBaseLink,
 // so the leaf emits the /GX EH frame. Functions in ascending retail-RVA order.
 #include <Gruntz/Ufo.h> // CUFO : CPathHazard (canonical; pulls PathHazard.h -> GameRegistry.h)
-#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/SpotLight.h>     // CSpotLight - the spawned spotlight's bound logic leaf
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
-#include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference facet
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
+#include <Gruntz/SpriteFactory.h>   // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/SpotLight.h>       // CSpotLight - the spawned spotlight's bound logic leaf
+#include <Gruntz/SerialArchive.h>   // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
+#include <Gruntz/SerialObjRef.h>    // the +0x34 serialized-object-reference facet
 #include <rva.h>
 extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
@@ -129,7 +130,7 @@ RVA(0x000b4d30, 0x287)
 i32 CUFO::Serialize(void* stream, i32 tag, i32 c, i32 d) {
     CSerialArchive* s = (CSerialArchive*)stream;
     char* B = (char*)this;
-    if (SerializeChain(stream, tag, c, d) == 0) {
+    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(stream), tag, c, d) == 0) {
         return 0;
     }
     if (((CSerialObjRef*)(B + 0x34))->Chain((CSerialArchive*)stream, tag, c, (CSerialObj*)d) == 0) {

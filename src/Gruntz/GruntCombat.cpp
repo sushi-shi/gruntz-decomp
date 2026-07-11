@@ -884,7 +884,7 @@ i32 CGrunt::TryPowerupAtTile() {
 // Logic complete; flips to exact once that shared referent set is named.
 RVA(0x00057b70, 0x77)
 void CGrunt::EnsureStruckSlot(const char* key) {
-    DirectSoundMgr*& sample = *(DirectSoundMgr**)&m_424;
+    DirectSoundMgr*& sample = m_424;
     if (sample != 0) {
         return;
     }
@@ -909,9 +909,9 @@ void CGrunt::EnsureStruckSlot(const char* key) {
 // CGrunt::ClearSubA() @0x57c10 - destroy the optional sub-object at +0x424.
 RVA(0x00057c10, 0x1e)
 void CGrunt::ClearSubA() {
-    CGruntSub* p = m_424;
+    DirectSoundMgr* p = m_424;
     if (p) {
-        ((CGrunt*)p)->LoadFreezeSpellAssets();
+        p->StopAndRewind();
         m_424 = 0;
     }
 }
@@ -933,7 +933,7 @@ void CGrunt::ClearSubA() {
 // functions get stubs (the SAME referent set LaunchSound waits on). Logic complete.
 RVA(0x00057c40, 0x71)
 void CGrunt::EnsureStruckVoice(const char* key) {
-    DirectSoundMgr*& sample = *(DirectSoundMgr**)&m_428;
+    DirectSoundMgr*& sample = m_428;
     if (sample != 0) {
         return;
     }
@@ -955,9 +955,9 @@ void CGrunt::EnsureStruckVoice(const char* key) {
 // CGrunt::ClearSubB() @0x57ce0 - destroy the optional sub-object at +0x428.
 RVA(0x00057ce0, 0x1e)
 void CGrunt::ClearSubB() {
-    CGruntSub* p = m_428;
+    DirectSoundMgr* p = m_428;
     if (p) {
-        ((CGrunt*)p)->LoadFreezeSpellAssets();
+        p->StopAndRewind();
         m_428 = 0;
     }
 }
@@ -982,11 +982,11 @@ void CGrunt::ReapplyVoiceParams() {
     if (*(i32*)((char*)g_gameReg + 0x10) == 0) {
         return;
     }
-    DirectSoundMgr* a = *(DirectSoundMgr**)&m_424;
+    DirectSoundMgr* a = m_424;
     if (a != 0) {
         a->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
     }
-    DirectSoundMgr* b = *(DirectSoundMgr**)&m_428;
+    DirectSoundMgr* b = m_428;
     if (b != 0) {
         b->ApplyAndPlay(g_gameReg->m_11c, 0, 0, 1);
     }

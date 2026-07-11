@@ -26,8 +26,9 @@
 //
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
-#include <Gruntz/ObjectDropper.h>       // CObjectDropper : CUserLogic (ctor 0xc59f0)
-#include <Gruntz/DroppedObject.h>       // CDroppedObject : CUserLogic (ctor 0xc68b0)
+#include <Gruntz/ObjectDropper.h>   // CObjectDropper : CUserLogic (ctor 0xc59f0)
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
+#include <Gruntz/DroppedObject.h>   // CDroppedObject : CUserLogic (ctor 0xc68b0)
 #include <Gruntz/DroppedObjectShadow.h> // CDroppedObjectShadow : CUserLogic (ctor 0xc7490)
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
@@ -140,7 +141,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) {
+    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -166,7 +167,7 @@ static inline CDropEntry* DropLookup(i32 coord) {
     if (coord >= g_dropLo && coord <= g_dropHi) {
         return (CDropEntry*)(g_dropBase + (coord - g_dropLo) * g_dropStride);
     }
-    if (g_dropColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_dropColl)->GrowTo(coord, 0)) {
         return (CDropEntry*)(g_dropBase + (coord - g_dropLo) * g_dropStride);
     }
     void* item = g_actCache;
@@ -691,7 +692,7 @@ i32 CObjectDropper::Update() {
 // draw-fill command on the bound object from the light-FX table set.
 RVA(0x000c6680, 0x1b4)
 i32 CObjectDropper::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain((i32)ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain(ar, tag, c, (CSerialObj*)d)) {
@@ -973,7 +974,7 @@ i32 CDroppedObject::UserLogicVfunc5() {
 // and the +0x68 landing row.
 RVA(0x000c73a0, 0xb5)
 i32 CDroppedObject::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain((i32)ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain(ar, tag, c, (CSerialObj*)d)) {
@@ -1109,7 +1110,7 @@ i32 CDroppedObjectShadow::Advance() {
 // mode-8 archetype.
 RVA(0x000c7b40, 0x76)
 i32 CDroppedObjectShadow::SerializeMove(CGruntArchive* ar, i32 mode, i32 c, i32 d) {
-    if (!SerializeChain((i32)ar, mode, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain((CSerialArchive*)ar, mode, c, (CSerialObj*)d)) {

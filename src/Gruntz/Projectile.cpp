@@ -1,4 +1,5 @@
 #include <Mfc.h>
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/Grunt.h>
 // Projectile.cpp - the CProjectile game-object (C:\Proj\Gruntz). Continues the
@@ -1037,7 +1038,7 @@ static inline CTBombEntry* TBombLookup(i32 coord) {
     if (coord >= g_tbombLo && coord <= g_tbombHi) {
         return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
     }
-    if (g_tbombColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_tbombColl)->GrowTo(coord, 0)) {
         return (CTBombEntry*)(g_tbombBase + (coord - g_tbombLo) * g_tbombStride);
     }
     void* item = g_actCache;
@@ -1092,7 +1093,7 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) {
+    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
     void* item = g_actCache;
@@ -1334,7 +1335,7 @@ i32 CTimeBomb::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     } else if (mode == 7) {
         sa->Read(&m_fastPhase, 4);
     }
-    if (!SerializeChain((i32)arc, mode, a3, a4)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)arc), mode, a3, a4)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain(sa, mode, a3, (CSerialObj*)a4) ? 1 : 0;

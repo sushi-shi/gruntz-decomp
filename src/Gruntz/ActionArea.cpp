@@ -5,7 +5,8 @@
 // the projactregistry block and BETWEEN PulseHighlight's Tick@0x8440 / Serialize@
 // 0x8600; the interval's flags row is uniformly /GX). Field names are placeholders;
 // only OFFSETS + code bytes are load-bearing.
-#include <Mfc.h> // real MFC CString (the type-name record's +0x00 member)
+#include <Mfc.h>                    // real MFC CString (the type-name record's +0x00 member)
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActionArea.h>
 #include <Image/ImageSet.h> // CImageSet::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)
 #include <Bute/ButeTree.h>
@@ -76,7 +77,7 @@ static inline R3Entry* R3Lookup(i32 coord) {
     if (coord >= g_projRegLo && coord <= g_projRegHi) {
         return (R3Entry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
-    if (g_projReg.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_projReg)->GrowTo(coord, 0)) {
         return (R3Entry*)(g_projRegBase + (coord - g_projRegLo) * g_projRegStride);
     }
     void* item = g_projActCache;
@@ -118,7 +119,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     if (key >= g_typeLo && key <= g_typeHi) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
-    if (g_typeColl.Find(key, 0)) {
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
     void* item = g_projActCache;
@@ -323,7 +324,7 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
     if (ar == 0) {
         return 0;
     }
-    if (!SerializeChain((i32)ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
     if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CSerialObj*)d)) {

@@ -222,6 +222,7 @@ const char g_codeE[] = "E";
 // ==== Update@CGruntFireView @0x61cb0 (ex ProjectileUpdate.cpp; its private .data cell 0x20e180
 // HEADS this TU's band) ====
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/TileWireLogic.h> // CTileWireLogic::WireTileSwitchLogic (0x6c130)
 #include <Gruntz/GameRegistry.h>  // canonical CGameRegistry (fire-view cast)
 #include <Gruntz/Projectile.h>    // canonical CProjectile (slot-17 LoadProjectileSprites)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -2247,7 +2248,8 @@ i32 CGrunt::StepArrivalCommitA() {
 // reset the geometry).
 RVA(0x000654b0, 0x130)
 i32 CGrunt::StepArrivalCommitB() {
-    m_154->m_1a0.Advance_15c360((u32)g_defaultGeo);
+    // 0x15c360 is CAniAdvanceCursor::Advance_15c360 (cast the m_1a0 geometry facet)
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_defaultGeo);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;
@@ -2255,10 +2257,11 @@ i32 CGrunt::StepArrivalCommitB() {
     m_entranceActive = 0;
     SnapToLastTile(1);
     SetEntrancePos(1, 1);
-    m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+    // reused registry slot: 0x6c130 = CTileWireLogic::WireTileSwitchLogic, 0x6bcb0 = CTriggerMgr::CellDispatch
+    ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic((void*)this, m_lastTilePxX, m_lastTilePxY);
     if (m_health <= 0) {
         m_entranceCommitted = 0;
-        m_tileMgr->SetTile(m_tileOwnerHi, m_tileOwnerLo, 1, m_370);
+        ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, m_370);
         return 0;
     }
     CGameRegistry* g = (CGameRegistry*)g_gameReg;

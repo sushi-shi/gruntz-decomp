@@ -31,7 +31,7 @@ public:
     void FireActivation(i32 coord);
     i32 Tick();
     i32 Serialize(void* stream, i32 tag, i32 c, i32 d);      // 0x0b2ff0
-    i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (inherited base chain)
+    i32 SerializeChain(void* stream, i32 tag, i32 c, i32 d); // 0x16e7f0 (superseded; call-free)
     i32 LoadSprites();
     CKitchenSlime(CGameObject* obj);   // 0x0b23a0 (folds CUserLogic(obj) + the slime setup)
     virtual ~CKitchenSlime() OVERRIDE; // 0x013100 (folds the CUserLogic teardown)

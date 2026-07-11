@@ -32,6 +32,7 @@
 //   0x0470e0 CExplosion ctor  0x0472d0 InitLogicDispatch_6447f8
 //   0x047350 E::FireActivation  0x0474b0 RegisterXLogic_6447f8
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -130,7 +131,7 @@ static inline CPartEntry* PartLookup(i32 coord) {
     if (coord >= g_partLo && coord <= g_partHi) {
         return (CPartEntry*)(g_partBase + (coord - g_partLo) * g_partStride);
     }
-    if (g_partColl.Find(coord, 0)) {
+    if ((i32)((_zvec*)&g_partColl)->GrowTo(coord, 0)) {
         return (CPartEntry*)(g_partBase + (coord - g_partLo) * g_partStride);
     }
     void* item = g_actCache;
@@ -192,7 +193,7 @@ CFortressFlag::~CFortressFlag() {}
 // byte-identical chain-Serialize archetype (differs only in the two call displacements).
 RVA(0x00012cf0, 0x47)
 i32 CParticlez::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
@@ -211,7 +212,7 @@ CParticlez::~CParticlez() {}
 // byte-identical chain-Serialize archetype (differs only in the two call displacements).
 RVA(0x00012e20, 0x47)
 i32 CExplosion::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
@@ -348,7 +349,7 @@ i32 CFortressFlag::AdvanceAnim() {
 // state trio. Always returns 1 once the two chains succeed.
 RVA(0x00046410, 0x92)
 i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
@@ -378,16 +379,16 @@ i32 CFortressFlag::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 // Field layout is the attributed sibling CTypeKeyColl : CZArray2D (Find @0x16da80);
 // its grow-path node inserter m_4 is the canonical <Bute/ButeTree.h> CVariantSlot.
 struct CTypeColl464 {
-    void* m_0;                // +0x00  vptr
-    CVariantSlot* m_4;        // +0x04  grow-path node inserter
-    i32 m_lo;                 // +0x08  index low bound
-    i32 m_hi;                 // +0x0c  index high bound
-    char* m_buf;              // +0x10  primary element buffer (base)
-    i32 m_buf2;               // +0x14  scratch element (returned as the miss fallback)
-    i32 m_stride;             // +0x18  element size
-    char pad1c[0x20 - 0x1c];  // +0x1c cursor (== m_buf, unused here)
-    i32 m_20;                 // +0x20 (reset to 0 on entry)
-    i32 Find(i32 key, i32 z); // 0x16da80
+    void* m_0;               // +0x00  vptr
+    CVariantSlot* m_4;       // +0x04  grow-path node inserter
+    i32 m_lo;                // +0x08  index low bound
+    i32 m_hi;                // +0x0c  index high bound
+    char* m_buf;             // +0x10  primary element buffer (base)
+    i32 m_buf2;              // +0x14  scratch element (returned as the miss fallback)
+    i32 m_stride;            // +0x18  element size
+    char pad1c[0x20 - 0x1c]; // +0x1c cursor (== m_buf, unused here)
+    i32 m_20;                // +0x20 (reset to 0 on entry)
+    // (Resolve's grow-on-miss calls _zvec::GrowTo @0x16da80 via a (_zvec*)this cast.)
     void* Resolve(i32 key);
 };
 SIZE_UNKNOWN(CTypeColl464);
@@ -398,7 +399,7 @@ void* CTypeColl464::Resolve(i32 key) {
     if (key >= m_lo && key <= m_hi) {
         return m_buf + (key - m_lo) * m_stride;
     }
-    if (Find(key, 0)) {
+    if ((i32)((_zvec*)this)->GrowTo(key, 0)) { // 0x16da80 = _zvec::GrowTo, not a CTypeColl Find
         return m_buf + (key - m_lo) * m_stride;
     }
     void* item = g_projActCache;

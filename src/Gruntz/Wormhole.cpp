@@ -32,9 +32,10 @@
 // (CGruntPuddle::SetBute @0x07d810 is NOT this TU - its birth position is the
 // 0x7d810 interval next to the gruntselectedsprite frag run; it stays in
 // GruntPuddle.cpp with an @identity-TODO note.)
-#include <Gruntz/Wormhole.h>    // the shared CWormhole class (object logic + acts)
-#include <Gruntz/GruntPuddle.h> // CGruntPuddle (+ InGameIcon.h: CGameRegistry/g_gameReg)
-#include <Gruntz/Teleporter.h>  // CTeleporter (+ g_6bf3bc/g_645588/g_iconBute/geo keys)
+#include <Gruntz/Wormhole.h>        // the shared CWormhole class (object logic + acts)
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
+#include <Gruntz/GruntPuddle.h>     // CGruntPuddle (+ InGameIcon.h: CGameRegistry/g_gameReg)
+#include <Gruntz/Teleporter.h>      // CTeleporter (+ g_6bf3bc/g_645588/g_iconBute/geo keys)
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/UserLogic.h>
@@ -323,7 +324,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
 // ---------------------------------------------------------------------------
 RVA(0x0003fed0, 0xa9)
 i32 CWormhole::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)) {
@@ -669,7 +670,7 @@ i32 CGruntPuddle::Remove() {
 // line CSpriteRefTable::GetSel (0xe23c0) where MSVC inlines the header copy here.
 RVA(0x00040e50, 0x170)
 i32 CGruntPuddle::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain((i32)ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
     if (!((CSerialObjRef*)&m_34)->Chain(ar, tag, c, (CSerialObj*)d)) {
@@ -800,7 +801,7 @@ i32 CWormhole::ReapplyConfig() {
 // as CGruntPuddle::Serialize. Byte-exact.
 RVA(0x00041350, 0xee)
 i32 CTeleporter::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain((i32)ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, c, d)) {
         return 0;
     }
     if (!SerialRef34()->Chain(ar, tag, c, (CSerialObj*)d)) {

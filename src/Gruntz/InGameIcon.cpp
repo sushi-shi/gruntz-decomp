@@ -10,6 +10,7 @@
 // the game-manager singleton (g_gameReg) + the icon factory/records from the
 // class header. Engine callees are reloc-masked (no body).
 #include <Mfc.h> // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (g_gameReg->m_spriteFactory; GetSel)
@@ -754,7 +755,7 @@ i32 CInGameIcon::RefreshCell() {
 // CSerialArchive slots (+0x2c/+0x30), reached by that view at the calls.
 RVA(0x000983e0, 0x98)
 i32 CInGameIcon::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
-    if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
+    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
         return 0;
     }
     if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) == 0) {
@@ -1213,7 +1214,7 @@ i32 CInGameText::Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b) {
     if (ar == 0) {
         return 0;
     }
-    if (SerializeChain((i32)ar, tag, a, b) == 0) {
+    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), tag, a, b) == 0) {
         return 0;
     }
     if (((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, a, (CSerialObj*)b) == 0) {

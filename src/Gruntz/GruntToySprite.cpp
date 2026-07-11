@@ -8,6 +8,7 @@
 // tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a ctor - identical in
 // shape to ~CTimeBomb @0x012a70.
 #include <Gruntz/GruntToySprite.h>
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
@@ -138,7 +139,7 @@ i32 CGruntToySprite::Serialize(CSerialArchive* ar, i32 mode, i32 a3, i32 a4) {
             ar->Read(&m_lastLayer, 4);
             break;
     }
-    if (SerializeChain((i32)ar, mode, a3, a4) == 0) {
+    if (((CMovingLogicBase*)this)->Serialize((CSerialArchive*)((i32)ar), mode, a3, a4) == 0) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain(ar, mode, a3, (CSerialObj*)a4) != 0;

@@ -102,7 +102,7 @@ struct EngStrAssign {
     void operator=(const char* s); // CString::operator=, FUN_001b9d4c
 };
 // 4 contiguous CString globals at 0x64bdb0 (defined in the engine's data).
-DATA(0x0064bdb0)
+DATA(0x0024bdb0)
 extern EngStrAssign g_gruntNames[4];
 
 RVA(0x000c16b0, 0x3d)

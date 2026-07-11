@@ -1397,7 +1397,11 @@ public:
     // its HUD origin, then test 4 segments (vertical / horizontal / two diagonals,
     // +-1000 px) through the grunt's own HUD center; return 1 on the first hit.
     i32 winapi_04a9f0_CopyRect_OffsetRect();
-    i32 RectSegProbe(void* r, void* a, void* b); // call 0x4138 (__thiscall, 3 args)
+    // The seg/box probe @0x62b70 is called __THISCALL here (retail loads ecx=this before
+    // the call - removing it misaligns the body by 2B/call). 0x62b70's bound symbol
+    // CGrunt_SegBoxOverlap is mangled __stdcall (YG) in gruntentrancearrival, so no
+    // thiscall-named symbol exists to bind to; this stays a correct-convention UNBOUND.
+    i32 RectSegProbe(void* r, void* a, void* b); // call 0x4138 -> 0x62b70 (__thiscall, 3 args)
 
     // Data members. vptr(+0), m_10(+0x10), m_14(+0x14) are in CUserBase; the +0x18
     // EngStr link is CUserLogic::m_18. CGrunt's own members begin at +0x30.
@@ -1624,8 +1628,8 @@ public:
     i32 m_418;         // +0x418
     i32 m_timePerTile; // +0x41c (TimePerTile config; ComputeFacing time divisor; halved for kind 0x37)
     i32 m_tileClaimed;                // +0x420 (arrival-claimed latch)
-    CGruntSub* m_424;                 // +0x424
-    CGruntSub* m_428;                 // +0x428
+    DirectSoundMgr* m_424;            // +0x424 (struck-slot sound sample; freed via StopAndRewind)
+    DirectSoundMgr* m_428;            // +0x428 (struck-voice sound sample; freed via StopAndRewind)
     i32 m_42c;                        // +0x42c
     i32 m_430;                        // +0x430
     i32 m_434;                        // +0x434
@@ -1764,10 +1768,10 @@ public:
     // directly; the sub-records at +0x150/+0x43c/+0x278/+0x308/+0x890..+0x8c0
     // serialize through their own engine helpers (external/reloc-masked).
     // (SerializeMove is the vtable slot-1 override, declared at the top of CGrunt.)
-    // The head sub-serializer @0x16e7f0 (uncertain shape; left external).
-    i32 SerializeAnimState(CGruntArchive* ar, i32 mode, i32 a3, i32 a4);
-    i32 SerPreStep4(CGruntArchive* ar); // mode-4 pre-step (engine thunk)
-    i32 SerPreStep7(CGruntArchive* ar); // mode-7 pre-step (engine thunk)
+    // The head sub-serializer is CMovingLogicBase::Serialize (0x16e7f0); the mode-4/7
+    // pre-steps are CGrunt::Save (0x53f90) / CGameStateRecord::Load (0x555e0) - all
+    // real bound callees now, so the former SerializeAnimState/SerPreStep4/SerPreStep7
+    // fake decls are gone.
 
     // ---- grunt movement / anim-name dispatch state machines (this TU) ----
     // The 5 big per-pose/anim-name resolution state machines: each resolves the

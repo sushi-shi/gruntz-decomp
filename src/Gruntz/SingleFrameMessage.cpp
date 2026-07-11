@@ -4,6 +4,7 @@
 //
 // CSingleFrameMessage : CUserLogic. Only offsets / code bytes are load-bearing.
 #include <Mfc.h> // RECT / CopyRect (the ctor centers the object in a bounds rect)
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
@@ -22,7 +23,7 @@ extern "C" WwdGameReg* g_gameReg;
 // chain's result to a bool. Byte-identical to CEyeCandy::Serialize (0x00fcc0).
 RVA(0x0000f5a0, 0x47)
 i32 CSingleFrameMessage::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
-    if (!SerializeChain(ar, tag, c, d)) {
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)(ar), tag, c, d)) {
         return 0;
     }
     return ((CSerialObjRef*)&m_34)->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;

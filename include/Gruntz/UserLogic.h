@@ -440,10 +440,11 @@ public:
     virtual i32 UserLogicVfuncC(); // slot 14 (retail impl 0x001730)
     virtual i32 UserLogicVfuncD(); // slot 15 (retail impl 0x003607)
 
-    // The shared serialize-chain helper (0x16e7f0, __thiscall ret 0x10). Run on
-    // `this` by the leaf Serialize overrides. External/no-body (reloc-masked;
-    // pinned in src/Stub/Discovered.cpp).
-    i32 SerializeChain(i32 a, i32 b, i32 c, i32 d); // 0x16e7f0
+    // The shared serialize-chain helper at 0x16e7f0 IS CMovingLogicBase::Serialize
+    // (bound in movinglogic); leaf overrides now drive it via ((CMovingLogicBase*)this)
+    // ->Serialize(...) [<Gruntz/MovingLogicBase.h>]. Decl kept (unused) to avoid a
+    // cross-TU codegen ripple its removal triggers in CUserLogic-including TUs.
+    i32 SerializeChain(i32 a, i32 b, i32 c, i32 d); // 0x16e7f0 (superseded; call-free)
 
     // The serialize-object-reference facet embedded at +0x34 of every tile-logic
     // leaf: a CSerialObjRef (its m_00/m_04/m_08 overlay the tail m_34/m_38/m_3c)

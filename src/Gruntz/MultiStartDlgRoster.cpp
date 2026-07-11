@@ -47,7 +47,7 @@ extern HWND(WINAPI* g_pGetFocus)();
 DATA(0x002c44d8)
 extern HWND(WINAPI* g_pGetWindow)(HWND, UINT);
 // "Using CmdDelay of %d and ResendDelay of %d\n" (the EchoLatencySettings format).
-DATA(0x0024243c)
+DATA(0x0021243c)
 extern char s_UsingCmdDelay[];
 
 // The per-player roster record IS the canonical CFocusSlot (GameRegistry.h,

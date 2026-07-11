@@ -584,7 +584,9 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
 // ===========================================================================
 RVA(0x0016da60, 0x12)
 CContainerErr::~CContainerErr() {
-    m_errSink->Remove(this, 0);
+    // 0x16e360 is CKeyFinder::Add (the cursor's insert/update/remove facet), reached on
+    // the error sink; cast at the call (the sink is a CKeyFinder cursor over the key table).
+    ((CKeyFinder*)m_errSink)->Add(this, 0);
 }
 
 // ===========================================================================
@@ -1132,7 +1134,7 @@ static inline char* TypeResolve(i32 key) {
     if (key >= g_typeLo && key <= g_typeHi) {
         return g_typeBase + (key - g_typeLo) * g_typeStride;
     }
-    if (g_typeColl.Find(key, 0)) {
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
         return g_typeBase + (key - g_typeLo) * g_typeStride;
     }
     void* item = g_projActCache;
