@@ -19,8 +19,11 @@ struct CSlimeAnimPlayer;
 class CKitchenSlime : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    RVA(0x000130b0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_KITCHENSLIME;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     static void RegisterRange(); // 0x0b28c0 (seed the activation table's fast range)

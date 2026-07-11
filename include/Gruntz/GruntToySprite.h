@@ -20,10 +20,13 @@ public:
     TILE_LOGIC_TAIL
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    CGruntToySprite(CGameObject* obj);   // 0x07f350 (ctor body in GruntToySprite.cpp)
-    virtual ~CGruntToySprite() OVERRIDE; // 0x0122b0 (folds the CUserLogic teardown)
+    RVA(0x00012260, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_GRUNTTOYSPRITE;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
+    CGruntToySprite(CGameObject* obj);      // 0x07f350 (ctor body in GruntToySprite.cpp)
+    virtual ~CGruntToySprite() OVERRIDE;    // 0x0122b0 (folds the CUserLogic teardown)
 
     static void InitActReg();   // 0x07f540 (construct g_toyActReg over [2000,2010])
     void RunAct(i32 id);        // 0x07f5c0 (resolve the id's registered handler + dispatch it)

@@ -25,18 +25,22 @@
 class CSimpleAnimation : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    RVA(0x0000f910, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_SIMPLEANIMATION;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00f930 (slot-1 body)
-    CSimpleAnimation(CGameObject* obj); // 0x0ab940 (ctor body in UserLogic.cpp)
-    i32 AdvanceAnim();                  // 0x0abf70 (re-target bound anim to the draw-delta; ret 0)
+    CSimpleAnimation(CGameObject* obj);           // 0x0ab940 (ctor body in UserLogic.cpp)
+    i32 AdvanceAnim(); // 0x0abf70 (re-target bound anim to the draw-delta; ret 0)
     // Index g_simpleAnimDispatch by idx; if the resolved slot holds a handler,
     // invoke it as a PMF on this (ResolveSlot inlined twice). 0x0abc10.
     void Dispatch(i32 idx);
     virtual ~CSimpleAnimation() OVERRIDE; // 0x00f9d0 (folds the CUserLogic teardown)
-    char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CSimpleAnimation` @0xa9f60)
+    char m_pad40
+        [0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CSimpleAnimation` @0xa9f60)
 };
 VTBL(CSimpleAnimation, 0x1e8544);
 SIZE(CSimpleAnimation, 0x54);

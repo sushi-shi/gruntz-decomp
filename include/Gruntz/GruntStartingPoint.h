@@ -12,8 +12,11 @@ class CGruntStartingPoint : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x105d0 (slot-1 two-chain body)
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    RVA(0x000105b0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_GRUNTSTARTINGPOINT;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CGruntStartingPoint(CGameObject* obj);   // 0x3df30

@@ -56,9 +56,6 @@ i32 CGruntzCommand::Save(CSerialArchive*) {
 i32 CGruntzCommand::Load(CSerialArchive*) {
     return 0;
 }
-i32 CGruntzCommand::Vslot05() {
-    return 1;
-}
 char CGruntzCommand::GetTag() {
     return 0;
 }
@@ -482,6 +479,12 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
     return new CGruntzSingleCommand;
 }
 
+// CGruntzSingleCommand::Vslot05 (0x24260) - the single-target slot-5 override; returns 1.
+RVA(0x00024260, 0x6)
+i32 CGruntzSingleCommand::Vslot05() {
+    return 1;
+}
+
 // The CGruntzCommand base vftable (0x5e9674; == ??_7CGruntzCommand@@6B@ this TU
 // emits). The two out-of-line stamps store it into [this]; the operand reloc-
 // masks against the base vftable via this DATA-named extern (re-homed from
@@ -493,6 +496,12 @@ CGruntzSingleCommand* CGruntzSingleCommand::Allocate() {
 RVA(0x000242f0, 0x7)
 void CGruntzCommand::CGruntzCommand_0242f0() {
     this->CGruntzCommand::~CGruntzCommand();
+}
+
+// CGruntzCommand::Vslot05 (0x24310) - base slot-5 default; returns 1 (role unrecovered).
+RVA(0x00024310, 0x6)
+i32 CGruntzCommand::Vslot05() {
+    return 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -520,6 +529,12 @@ CGruntzMultiCommand* CGruntzMultiCommand::Allocate() {
         return (CGruntzMultiCommand*)g_multiCmdList.RemoveTail();
     }
     return new CGruntzMultiCommand;
+}
+
+// CGruntzMultiCommand::Vslot05 (0x243a0) - the multi-target slot-5 override; returns 1.
+RVA(0x000243a0, 0x6)
+i32 CGruntzMultiCommand::Vslot05() {
+    return 1;
 }
 
 // CGruntzCommand::CGruntzCommand_024430 (0x00024430) - out-of-line base-vtable

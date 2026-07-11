@@ -31,8 +31,11 @@
 class CCursorSnapSprite : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    RVA(0x00011860, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_CURSORSNAPSPRITE;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     // Serialize (0x11880): chain the shared CUserLogic serialize helper on `this`,
@@ -47,7 +50,7 @@ public:
     void FireActivation(i32 id);
     virtual ~CCursorSnapSprite() OVERRIDE; // 0x11920 (folds the CUserLogic teardown)
 
-    i32 m_geoId; // +0x40  cached bound-object geometry id (ctor: m_38->m_geoId)
+    i32 m_geoId;               // +0x40  cached bound-object geometry id (ctor: m_38->m_geoId)
     char m_pad44[0x54 - 0x44]; // +0x44  (unmodeled tail; size proven 0x54 from the
                                //         anim-worker `new CCursorSnapSprite`)
 };

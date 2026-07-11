@@ -20,8 +20,11 @@
 class CLightFx : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4 (declared-only slot)
+    RVA(0x000123e0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_LIGHTFX;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4 (declared-only slot)
     TILE_LOGIC_TAIL
 public:
     CLightFx(CGameObject* obj); // 0x9cf00

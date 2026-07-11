@@ -21,8 +21,11 @@ class CSingleAnimation : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x104a0 (slot-1 two-chain body)
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    RVA(0x00010480, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_SINGLEANIMATION;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CSingleAnimation(CGameObject* obj); // 0x0ae7f0 (ctor body in UserLogic.cpp)
@@ -33,7 +36,8 @@ public:
     // is declared only - RegisterActs takes its address as a reloc-masked operand.
     i32 AdvanceAnim();
     virtual ~CSingleAnimation() OVERRIDE; // 0x010540 (folds the CUserLogic teardown)
-    char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CSingleAnimation` @0xaaaa0)
+    char m_pad40
+        [0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CSingleAnimation` @0xaaaa0)
 };
 VTBL(CSingleAnimation, 0x1e745c);
 SIZE(CSingleAnimation, 0x54);

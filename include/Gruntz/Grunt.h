@@ -1274,10 +1274,13 @@ public:
     // vtable overrides in slot order (see the base chain above):
     virtual ~CGrunt() OVERRIDE; // slot 0  @0xf2f0
     virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
-        OVERRIDE;                              // slot 1  @0x53b80
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2  (0xf2a0)
-    virtual i32 UserLogicVfunc1() OVERRIDE;    // slot 3  (0x5d210)
-    virtual i32 UserLogicVfunc2() OVERRIDE;    // slot 4  (0x5bcd0)
+        OVERRIDE; // slot 1  @0x53b80
+    RVA(0x0000f2a0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_GRUNT;
+    } // slot 2  (0xf2a0)
+    virtual i32 UserLogicVfunc1() OVERRIDE; // slot 3  (0x5d210)
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4  (0x5bcd0)
     // RunAct (0x5bcd0): the class's vtable slot-4 (UserLogicVfunc2) activation
     // dispatcher body - a plain method (the no-arg UserLogicVfunc2() base placeholder
     // blocks the int-arg OVERRIDE spelling). Resolves `id`'s handler in the per-class
@@ -1618,15 +1621,15 @@ public:
     double m_410;      // +0x410
     i32 m_418;         // +0x418
     i32 m_timePerTile; // +0x41c (TimePerTile config; ComputeFacing time divisor; halved for kind 0x37)
-    i32 m_tileClaimed;     // +0x420 (arrival-claimed latch)
-    CGruntSub* m_424;      // +0x424
-    CGruntSub* m_428;      // +0x428
-    i32 m_42c;             // +0x42c
-    i32 m_430;             // +0x430
-    i32 m_434;             // +0x434
-    i32 m_438;             // +0x438
+    i32 m_tileClaimed;                // +0x420 (arrival-claimed latch)
+    CGruntSub* m_424;                 // +0x424
+    CGruntSub* m_428;                 // +0x428
+    i32 m_42c;                        // +0x42c
+    i32 m_430;                        // +0x430
+    i32 m_434;                        // +0x434
+    i32 m_438;                        // +0x438
     GruntEntranceCell m_entranceCell; // +0x43c (entrance-cell triple {col, row, reason})
-    GruntStrSub m_448;     // +0x448 (~CString 0x1b9cde; destructed by ~CGrunt)
+    GruntStrSub m_448;                // +0x448 (~CString 0x1b9cde; destructed by ~CGrunt)
     char m_pad449[0x44c - 0x449];
     GruntStrSub m_44c; // +0x44c (~CString 0x1b9cde; destructed by ~CGrunt)
     char m_pad44d[0x450 - 0x44d];

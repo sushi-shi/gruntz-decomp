@@ -15,12 +15,15 @@
 class CSingleFrameMessage : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    RVA(0x0000f580, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_SINGLEFRAMEMESSAGE;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00f5a0 (slot-1 body)
-    CSingleFrameMessage(CGameObject* obj); // 0x0ab310 (ctor body in UserLogic.cpp)
+    CSingleFrameMessage(CGameObject* obj);        // 0x0ab310 (ctor body in UserLogic.cpp)
     // Construct the class's activation-coordinate registry singleton
     // (g_singleFrameActReg @0x645ef0) over the fixed [2000, 2010] range. Static.
     static void InitActReg(); // 0x0ab530
@@ -36,7 +39,8 @@ public:
     i32 AdvanceAnim();
     virtual ~CSingleFrameMessage()
         OVERRIDE; // empty vtable-anchor dtor (folds the CUserLogic teardown)
-    char m_pad40[0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CSingleFrameMessage` @0xa9b80)
+    char m_pad40
+        [0x54 - 0x40]; // +0x40..0x53 (leaf tail; sizeof from `new CSingleFrameMessage` @0xa9b80)
 };
 VTBL(CSingleFrameMessage, 0x1e864c);
 SIZE(CSingleFrameMessage, 0x54);

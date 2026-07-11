@@ -17,8 +17,11 @@ public:
     TILE_LOGIC_TAIL
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    RVA(0x00012320, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_GRUNTPOWERUPSPRITE;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;  // slot 4
     CGruntPowerupSprite(CGameObject* obj);   // 0x07fdb0 (ctor body in GruntPowerupSprite.cpp)
     virtual ~CGruntPowerupSprite() OVERRIDE; // 0x012370 (folds the CUserLogic teardown)
 

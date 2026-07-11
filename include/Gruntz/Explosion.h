@@ -12,8 +12,11 @@
 class CExplosion : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    RVA(0x00012e00, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_EXPLOSION;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;       // slot 4
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x012e20 (vtable slot 1: serialize chain)
     TILE_LOGIC_TAIL
 public:

@@ -37,9 +37,12 @@ public:
     TILE_LOGIC_TAIL
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    static void InitActReg();   // 0x07ecf0 (construct g_healthActReg over [2000,2010])
+    RVA(0x00011f60, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_GRUNTHEALTHSPRITE;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
+    static void InitActReg();               // 0x07ecf0 (construct g_healthActReg over [2000,2010])
     void RunAct(i32 id);        // 0x07ed70 (resolve the id's registered handler + dispatch it)
     static void RegisterActs(); // 0x07eed0 (register the class's activation handlers)
 

@@ -37,8 +37,8 @@ SIZE_UNKNOWN(CProjAnim);
 struct CProjAnim {
     // The +0x1a0 geometry sub-player setter/probe (external/reloc-masked; formerly reached
     // by per-TU CDDrawBlitParam / CAniAdvanceCursor facet casts on &renderObj->m_1a0).
-    void SetGeometry(void* src);     // 0x15c2d0  (src == a CProjRenderObj::m_frameN slot)
-    i32 Advance_15c360(i32 clock);   // 0x15c360
+    void SetGeometry(void* src);   // 0x15c2d0  (src == a CProjRenderObj::m_frameN slot)
+    i32 Advance_15c360(i32 clock); // 0x15c360
 };
 
 // The name->sprite geometry map the sprite object owns (the CMapStringToOb the
@@ -84,8 +84,8 @@ struct CProjRenderObj {
 
     // The CGameObject-base name/sprite setters, folded here (external/reloc-masked; the
     // former per-TU CGruntSprite facet view is gone). The render object IS the game object.
-    void CacheFirstFrame(const char* name);              // 0x150540
-    i32 ApplyLookupGeometry(const char* key, i32 flag);  // 0x1505b0
+    void CacheFirstFrame(const char* name);             // 0x150540
+    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
 };
 
 // The shadow companion's post-create sub-table (m_1fc->m_7c): an Init fn-ptr at
@@ -118,11 +118,14 @@ SIZE_UNKNOWN(CProjectile);
 class CProjectile : public CMovingLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    CProjectile();                                                     // 0x126e0 (no-arg)
-    CProjectile(CGameObject* owner);                                   // 0xdec60 (1-arg spawn ctor)
-    virtual ~CProjectile() OVERRIDE; // most-derived dtor (0xdef60)
+    RVA(0x00012960, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_PROJECTILE;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
+    CProjectile();                          // 0x126e0 (no-arg)
+    CProjectile(CGameObject* owner);        // 0xdec60 (1-arg spawn ctor)
+    virtual ~CProjectile() OVERRIDE;        // most-derived dtor (0xdef60)
     // slot 17 (+0x44) - the ONE added virtual (anchors the new vftable; retail slot
     // holds thunk 0x13bb -> 0xdf050, and 0xdf050's only direct caller IS that thunk,
     // so every call is a virtual dispatch). Spawn-time load: resolve the projectile's
@@ -134,7 +137,7 @@ public:
     virtual i32
     LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1); // 0xdf050
 
-    static void RegisterRange();   // 0xdf920 (seed the activation-table fast range)
+    static void RegisterRange(); // 0xdf920 (seed the activation-table fast range)
     // slot-4 (UserLogicVfunc2) per-coordinate activation dispatch @0xdf9a0. The fat
     // base models slot 4 with the no-arg UserLogicVfunc2() placeholder, so the int-arg
     // real shape is a plain method (the leaf vtable slot stays base-attributed).
@@ -182,11 +185,11 @@ public:
     CProjSample* m_sound;         // +0x200  launch sound sample
     CObList m_hitList;            // +0x204  tracked-hit list (block size 10)
     i32 m_targetId, m_ownerId;    // +0x220/+0x224  target/owner ids passed to DeliverHit
-    i32 m_launchX, m_launchY;     // +0x228/+0x22c  owner launch screen pos (boomerang return origin)
-    double m_dirX, m_dirY;        // +0x230/+0x238  trajectory direction basis
-    double m_originX, m_originY;  // +0x240/+0x248  trajectory origin (base position)
-    double m_phase;               // +0x250  trajectory parameter (sin/cos arg; phase gate)
-    i32 m_launched;               // +0x258  launched flag
+    i32 m_launchX, m_launchY;    // +0x228/+0x22c  owner launch screen pos (boomerang return origin)
+    double m_dirX, m_dirY;       // +0x230/+0x238  trajectory direction basis
+    double m_originX, m_originY; // +0x240/+0x248  trajectory origin (base position)
+    double m_phase;              // +0x250  trajectory parameter (sin/cos arg; phase gate)
+    i32 m_launched;              // +0x258  launched flag
 };
 VTBL(CProjectile, 0x1e798c);
 

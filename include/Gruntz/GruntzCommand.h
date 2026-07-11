@@ -101,7 +101,7 @@ public:
     // slot 4 (+0x10) - the base "set params" implementation (0x023e20): store
     // the five scalar params; returns 1. Inherited unchanged by both leaves.
     virtual i32 SetParams(char a0, char a1, char a2, i16 a3, i16 a4);
-    virtual i32 Vslot05(); // slot 5 (+0x14) - base returns 1 (role unrecovered: P2)
+    virtual i32 Vslot05(); // slot 5 (+0x14) - base returns 1 (role unrecovered: P2), 0x24310
     virtual char GetTag(); // slot 6 - the command's type/tag byte (Pack writes it first)
     // slot 7 - parse a flat command buffer in place; the leaves (Single/Multi)
     // override it with real parsers, the base anchor is a no-op. Consumed-byte
@@ -152,7 +152,7 @@ public:
     virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) OVERRIDE;
     virtual i32 Save(CSerialArchive* s) OVERRIDE;
     virtual i32 Load(CSerialArchive* s) OVERRIDE;
-    virtual i32 Vslot05() OVERRIDE;
+    virtual i32 Vslot05() OVERRIDE; // 0x24260
     virtual char GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
     virtual i32 Vfunc8() OVERRIDE;
@@ -182,7 +182,7 @@ public:
     virtual i32 Serialize(CSerialArchive* s, i32 mode, i32 a3, i32 a4) OVERRIDE;
     virtual i32 Save(CSerialArchive* s) OVERRIDE;
     virtual i32 Load(CSerialArchive* s) OVERRIDE;
-    virtual i32 Vslot05() OVERRIDE;
+    virtual i32 Vslot05() OVERRIDE; // 0x243a0
     virtual char GetTag() OVERRIDE;
     virtual i32 Parse(void*, i32) OVERRIDE;
     virtual i32 Vfunc8() OVERRIDE;

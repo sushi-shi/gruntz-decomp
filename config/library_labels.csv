@@ -238,8 +238,6 @@ rva,name,lib,confidence,source
 0x0238f0,___inittime,LIBCMT,LOW,anchored
 0x023980,___inittime,LIBCMT,LOW,anchored
 0x0242c0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x024310,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
-0x0243a0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x024400,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x024af0,__inc,LIBCMT,LOW,anchored
 0x024b40,__inc,LIBCMT,LOW,anchored

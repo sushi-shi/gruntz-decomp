@@ -24,11 +24,14 @@ SIZE_UNKNOWN(CDoNothingNormal);
 class CDoNothingNormal : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    RVA(0x0000f7e0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_DONOTHINGNORMAL;
+    } // slot 2
     TILE_LOGIC_TAIL
 public:
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x00f800 (slot-1 body)
-    virtual ~CDoNothingNormal() OVERRIDE; // 0x0000f8a0 (folds the CUserLogic teardown)
+    virtual ~CDoNothingNormal() OVERRIDE;         // 0x0000f8a0 (folds the CUserLogic teardown)
 };
 VTBL(CDoNothingNormal, 0x1e859c);
 

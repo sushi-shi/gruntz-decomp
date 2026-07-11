@@ -20,7 +20,10 @@
 class CLevelTime : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
+    RVA(0x00011990, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_LEVELTIME;
+    } // slot 2
     TILE_LOGIC_TAIL
 public:
     CLevelTime(CGameObject* obj);   // 0x9b8b0

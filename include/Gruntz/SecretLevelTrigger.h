@@ -18,8 +18,11 @@ SIZE(CSecretLevelTrigger, 0x54);
 class CSecretLevelTrigger : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    RVA(0x00010b90, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_SECRETLEVELTRIGGER;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE;       // slot 4
     i32 Serialize(i32 ar, i32 tag, i32 c, i32 d); // 0x010bb0 (vtable slot 1: serialize chain)
     TILE_LOGIC_TAIL
 public:

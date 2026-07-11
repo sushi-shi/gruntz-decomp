@@ -92,8 +92,11 @@ extern CGameRegistry* g_gameReg;
 class CWarlord : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
+    RVA(0x000107a0, 0x6)
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_WARLORD;
+    } // slot 2
+    virtual i32 UserLogicVfunc2() OVERRIDE; // slot 4
     TILE_LOGIC_TAIL
 public:
     CWarlord(i32);                // 0x42d40 (the warlord ctor: base init + name/state setup)
@@ -146,10 +149,10 @@ public:
     // The threat-cooldown timer: a 64-bit start stamp (m_cooldownStamp) and window
     // (m_cooldownWindow), each stored as a manually zero-extended lo/hi i32 pair so
     // the elapsed compare runs 64-bit; retail emits separate 32-bit stores.
-    i32 m_cooldownStampLo;  // +0x88
-    i32 m_cooldownStampHi;  // +0x8c
-    i32 m_cooldownWindowLo; // +0x90
-    i32 m_cooldownWindowHi; // +0x94
+    i32 m_cooldownStampLo;     // +0x88
+    i32 m_cooldownStampHi;     // +0x8c
+    i32 m_cooldownWindowLo;    // +0x90
+    i32 m_cooldownWindowHi;    // +0x94
     char m_pad98[0xb0 - 0x98]; // +0x98  (unmodeled tail; size proven 0xb0 from
                                //         AnimWorkerHandlers `new CWarlord`)
 };
