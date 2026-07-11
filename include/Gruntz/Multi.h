@@ -52,6 +52,18 @@ class CBrickzGrid;           // CMultiMgr::m_70
 class CMultiMgr;             // CState owner at CMulti+0x04 (fwd for CSlotConfig::Load)
 class CLobbySlot;            // CNetSession2 slot element (fwd for FindSlot's return)
 class CWorldSoundSet;        // CMultiMgr::m_54 (Retune @0xbd60)
+// The small real CNetMgr (the +0x524 DirectPlay wrapper) and the network views of
+// CMulti's base sub-objects, forward-declared so the accessors below compile without
+// pulling the heavy <Net/NetMgr.h> into every Multi.h includer (Multi.cpp has it).
+class CNetMgr;          // CMulti::m_netGate/+0x524 pointee (net-stat/session wrappers)
+struct CNetGameMgr;     // the network facet of CState::m_4 (m_wnd/m_6c/m_channels/m_38)
+struct CNetPlayerEntry; // the local-player descriptor stored at +0x5bc
+struct CSndSubMgr;      // the chat/menu sound sub-mgr at CState::m_c (cue lookups)
+struct CNetStatPacket;  // the 0x10-byte stat packet the Send* family ships
+struct CNetCtrlMsg;     // control-message arg (HandleControlMsg)
+struct CNetVersionMsg;  // version-check message arg (HandleVersionCheck)
+struct CNetChannel;     // per-channel record (BroadcastOneChannel)
+struct CNetSession;     // the +0x520 command-session facet (Session() accessor)
 
 // CMultiMgr IS the CGruntzMgr game-manager singleton (*0x64556c, the object
 // <Gruntz/GruntzMgr.h> / <Gruntz/GameRegistry.h> canonically model) viewed by the
@@ -312,6 +324,31 @@ public:
     CMultiMgr* Mgr() {
         return (CMultiMgr*)m_4;
     }
+    // The +0x524 join/report gate IS the real small CNetMgr (the DirectPlay session
+    // wrapper, ??1 @0xb6000). The 0xb9xxx net-stat/session methods (below) reach it as
+    // such; was the CMultiReportGate view / ((CNetMgr*)m_netGate) casts.
+    CNetMgr* Peer() {
+        return (CNetMgr*)m_netGate;
+    }
+    // The local player descriptor at +0x5bc (the roster/dialog TUs view the slot as an
+    // i32 token, so the canonical member stays i32; this accessor is the typed view).
+    CNetPlayerEntry* LocalPlayer() {
+        return (CNetPlayerEntry*)m_5bc;
+    }
+    // The game-manager (CState::m_4) as its network facet (m_wnd/m_6c/m_channels/m_38);
+    // the net methods reach it as CNetGameMgr (was the Frankenstein CNetMgr::m_4 view).
+    CNetGameMgr* NetGameMgr() {
+        return (CNetGameMgr*)m_4;
+    }
+    // The resync WM_COMMAND lParam latch (CState +0x1c base-class field, unmodeled here).
+    i32& ResyncLParam() {
+        return *(i32*)((char*)this + 0x1c);
+    }
+    // The +0x520 session as its command-slot facet (CNetSession); the per-frame lobby
+    // methods use the CNetSession2 lobby view of the same object (identity-TODO).
+    CNetSession* Session() {
+        return (CNetSession*)m_session;
+    }
 
     // Teardown helper run first by the dtor (and standalone @0xb6110): drains the
     // lobby sub-objects and pushes the final stat flags.
@@ -353,10 +390,11 @@ public:
     // The multiplayer net-game / lobby-watchdog dialog helpers reach these on the
     // g_64bd5c singleton (Ghidra labels them CNetMgr::, the same-object dual-view).
     // Folded here from the former per-TU CNetSession / WatchSess lens types.
-    void DropPlayer(i32 id);  // 0x0bb510  (CNetMgr::DropChannelPlayer)
-    i32 Poll(i32 token);      // 0x0bba10  (via ILT 0x1249; verify-custom-level poll)
-    i32 ResolveLocalPlayer(); // 0x0ba7d0
-    void ReportAckLatency();  // 0x0bd000
+    void DropPlayer(i32 id);        // 0x0bb510 (roster-side declared-only alias)
+    i32 DropChannelPlayer(i32 idx); // 0x0bb510
+    i32 Poll(i32 token);            // 0x0bba10  (via ILT 0x1249; verify-custom-level poll)
+    i32 ResolveLocalPlayer();       // 0x0ba7d0
+    void ReportAckLatency();        // 0x0bd000
     i32 VerifyCustomLevel(void* h, i32 token); // 0x0b8fc0
     i32 PollSession();                         // 0x0b95f0 (drain the receive queue; ret i32)
     void AutoTuneCmdDelay();                   // 0x0bcc10
@@ -367,15 +405,15 @@ public:
     // The connect-drive helpers the Net-side coordinator (NetMgrMisc.cpp) reaches
     // off the g_64bd5c singleton. In the 0xb6110-0xbc420 lobby cluster; Ghidra labels
     // them CNetMgr:: (Broadcast*), a heuristic mis-attribution of this CMulti cluster.
-    i32 BroadcastChannelTable(i32 entry); // 0x0ba810
-    i32 BroadcastOneChannel(i32 chan);    // 0x0baf00
+    i32 BroadcastChannelTable(CNetPlayerEntry* recipient); // 0x0ba810
+    i32 BroadcastOneChannel(i32 chan);                     // 0x0baf00
     // Register a channel from a host template (CNetMgr-shared, RVA 0x0baa90); the
     // host-open path calls it on `this`. Reloc-masked.
-    i32 RegisterChannelFrom(i32 a, i32 b, i32 c, i32 d); // 0x0baa90
+    i32 RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f); // 0x0baa90
     // Assemble + broadcast one chat line (stat 0x3f0), optionally appending it
     // to the hWnd chat edit (the lobby DlgProcs' chat submit path).
-    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, HWND hWnd); // 0x0bb190
-    i32 ReadGroupSel();                                                    // 0x0b76a0
+    i32 BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd); // 0x0bb190
+    i32 ReadGroupSel();                                                     // 0x0b76a0
     i32 PumpA();             // 0x0b6b40  (timeGetTime/wsprintf helper)
     i32 PumpAReady();        // PumpA head probe (thiscall) 0x??
     void PumpAReset();       // PumpA idle reset (thiscall) 0x??
@@ -402,56 +440,121 @@ public:
     void OnRegion2(i32 v); // 0x0d8a00  arm overlay-A (m_overlayAActive, deadline m_430/+0x438)
     void OnRegion1(i32 v); // 0x0d8aa0  arm overlay-B (m_overlayBActive, deadline m_440/+0x448)
 
+    // ---- The 0xb5xxx-0xbdxxx network/lobby method cluster (wave5-F2 fold) ----
+    // Recovered from the Frankenstein <Net/NetMgr.h> CNetMgr onto their true owner
+    // (this CMulti): retail runs each on this=g_curMulti (a CMulti at offset 0). The
+    // small real CNetMgr is reached via Peer() (+0x524). Defined in Multi.cpp.
+    i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3);                         // 0x0b5460
+    i32 SetupServices();                                                         // 0x0b78b0
+    i32 DetectConnectionConfig();                                                // 0x0b82e0
+    void ApplyCmdDelayDefaults();                                                // 0x0b85a0
+    i32 JoinAndRegisterChannel();                                                // 0x0b8b10
+    i32 OnJoinConfirm(void* hDlg);                                               // 0x0b8cf0
+    i32 PollSessionGated(i32 a1, i32 a2);                                        // 0x0b9180
+    i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);                              // 0x0b91f0
+    i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);                         // 0x0b92e0
+    i32 SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c);    // 0x0b9330
+    i32 SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c);                   // 0x0b93a0
+    i32 SendStat3(i32 id, u32 value, i32 flag);                                  // 0x0b9410
+    i32 SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c);     // 0x0b9490
+    i32 SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c); // 0x0b9500
+    i32 SendStatValue(i32 id, i32 statId, i32 value, i32 flag);                  // 0x0b9570
+    i32 DispatchRecvMsg(i32 sender, char* buf, i32 size);                        // 0x0b9750
+    i32 HandleControlMsg(CNetCtrlMsg* msg, i32 arg2);                            // 0x0ba1a0
+    i32 OnPlayerLeft(i32 playerId);                                              // 0x0ba3b0
+    void AckDropPlayer(i32 id);                                                  // 0x0ba590
+    i32 LoadMenuSelectSprite(void* evp);                                         // 0x0ba620
+    i32 ParseChannelTable(void* packet);                                         // 0x0ba980
+    i32 RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e); // 0x0baac0
+    i32 RegisterChannelRec(void* rec);                                           // 0x0bac40
+    i32 RemoveChannel(i32 idx);                                                  // 0x0bac90
+    i32 OnPauseChannel();                                                        // 0x0bad00
+    void OnMultiPause();                                                         // 0x0bad40
+    void OnMultiOptions();                                                       // 0x0badd0
+    i32 ParseOneChannel(void* rec);                                              // 0x0baff0
+    i32 SendChannelStat422();                                                    // 0x0bb0b0
+    i32 SendChannelStat423();                                                    // 0x0bb120
+    i32 CreateSession();                                                         // 0x0bbc90
+    u32 FrameSyncWait();                                                         // 0x0bc070
+    i32 SetupTcpIpConfig();                                                      // 0x0bc460
+    i32 CreateLocalPlayer();                                                     // 0x0bc750
+    i32 WaitForConnect();                                                        // 0x0bca50
+    i32 SaveConfig(CNetPlayerEntry* recipient);                                  // 0x0bccd0
+    i32 LoadConfig(void* cfg);                                                   // 0x0bce80
+    i32 ResetPlayerCommands(i32 id);                                             // 0x0bcf20
+    u32 GetMaxAckLatency();                                                      // 0x0bd030
+    void HandleVersionCheck(CNetVersionMsg* msg);                                // 0x0bd0b0
+    void AnnounceVersion(i32 param);                                             // 0x0bd180
+    // External thunked helpers the cluster fires (no body here so the call reloc-masks).
+    i32 MeasurePing();            // round-trip sample
+    i32 ProbeLatency(i32 flag);   // secondary latency probe
+    void WriteCmdDelay(i32 flag); // persist m_5a4/m_drainReload
+    void SendStatPacket(i32 param, const void* packet, i32 size, i32 flag); // stat dispatcher
+    void ShowChatLine(void* hWnd, const char* text);                        // 0xbb3e0 (external)
+    void HandleSpriteMsg(CNetCtrlMsg* msg);                                 // 0xba620 (external)
+    void RejoinIfNeeded(i32 flag);                                          // 0xba810 (external)
+    void ReportConnectFailed(i32);                                          // 0xb7f60 (external)
+    i32 DispatchServices(const char* cmd, i32 flag, void* cb);              // 0xbc250 (external)
+    CString GetGameName();                         // 0xb7a90 (external; == GetString59c)
+    void ApplyDynSetting(CString s);               // 0xb76c0 (external)
+    i32 GetAmbientId();                            // 0xda200 (external)
+    void SetServiceName(CString s);                // 0xb7730 (external)
+    void PopulateGroupList(void* hList, i32 flag); // 0x1784be (external)
+    static void ReportError(char* file, i32 line, i32 hr, void* hWnd);   // netmgrerror (static)
+    static void SetReportMode(i32 log, i32 msgBox, i32 beep, i32 third); // netmgrerror (static)
+
     // --- layout (placeholder names; offsets are the load-bearing truth) ---
     // --- CMulti-own multiplayer block (after CPlay base @0x518) ---
     char _padMp[0x520 - 0x51c];
     CNetSession2* m_session;     // +0x520
     CMultiReportGate* m_netGate; // +0x524
-    i32 m_isHost;                // +0x528
+    i32 m_isHost;                // +0x528  (== Frankenstein m_useChannelLatency)
     i32 m_sessionTerminated;     // +0x52c
     i32 m_530;                   // +0x530
     i32 m_534;                   // +0x534
-    i32 m_538;                   // +0x538
-    i32 m_53c;                   // +0x53c
-    char _p53c[0x564 - 0x540];
-    i32 m_pollAbort; // +0x564
-    i32 m_568;       // +0x568
-    i32 m_56c;       // +0x56c
-    i32 m_570;       // +0x570
-    i32 m_574;       // +0x574
-    char _p574[0x57c - 0x578];
-    i32 m_pumpGuard;     // +0x57c
-    i32 m_connected;     // +0x580
-    i32 m_584;           // +0x584
-    i32 m_588;           // +0x588
-    i32 m_58c;           // +0x58c
-    i32 m_590;           // +0x590
-    i32 m_594;           // +0x594
-    CString m_598;       // +0x598
-    CString m_groupName; // +0x59c
-    CString m_hostName;  // +0x5a0
-    i32 m_5a4;           // +0x5a4
-    i32 m_drainReload;   // +0x5a8
-    i32 m_5ac;           // +0x5ac
-    i32 m_5b0;           // +0x5b0
-    CString m_5b4;       // +0x5b4
-    CString m_5b8;       // +0x5b8
-    i32 m_5bc;           // +0x5bc
-    i32 m_hostIndex;     // +0x5c0
-    i32 m_lastSenderId;  // +0x5c4
+    i32 m_538;                   // +0x538  (Frankenstein m_removedFromGame)
+    i32 m_53c;                   // +0x53c  (Frankenstein m_levelVerifyResult)
+    i32 m_verifyDone;     // +0x540  Poll's exit gate (gap-named; == Frankenstein m_verifyDone)
+    i32 m_recordAcked[4]; // +0x544  Poll's per-record ack latch (gap-named)
+    i32 m_recordToken[4]; // +0x554  Poll's per-record vote/token latch (gap-named)
+    i32 m_pollAbort;      // +0x564
+    i32 m_568;            // +0x568
+    i32 m_56c;            // +0x56c  (Frankenstein m_gameFull)
+    i32 m_570;            // +0x570  (Frankenstein m_versionMismatch)
+    i32 m_574;            // +0x574  (Frankenstein m_outOfSyncGuard)
+    i32 m_syncGate;       // +0x578  frame-sync long-frame toggle gate (gap-named)
+    i32 m_pumpGuard;      // +0x57c  (== Frankenstein m_57c reconnect/rejoin gate)
+    i32 m_connected;      // +0x580
+    i32 m_584;            // +0x584
+    i32 m_588;            // +0x588
+    i32 m_58c;            // +0x58c  (Frankenstein m_admitted)
+    i32 m_590;            // +0x590
+    i32 m_594;            // +0x594
+    CString m_598;        // +0x598  (Frankenstein m_configSection)
+    CString m_groupName;  // +0x59c
+    CString m_hostName;   // +0x5a0
+    i32 m_5a4;            // +0x5a4  (Frankenstein m_cmdDelay)
+    i32 m_drainReload;    // +0x5a8  (Frankenstein m_resend)
+    i32 m_5ac;            // +0x5ac  (Frankenstein m_gameClosed)
+    i32 m_5b0;            // +0x5b0
+    CString m_5b4;        // +0x5b4  config name CString A
+    CString m_5b8;        // +0x5b8  config name CString B
+    i32 m_5bc;            // +0x5bc  local player descriptor (typed via LocalPlayer())
+    i32 m_hostIndex;      // +0x5c0  (== Frankenstein m_localPlayerId)
+    i32 m_lastSenderId;   // +0x5c4
     char _p5c4[0x5cc - 0x5c8];
-    i32 m_curSlotId;  // +0x5cc
-    i32 m_5d0;        // +0x5d0
-    i32 m_drainTimer; // +0x5d4
-    i32 m_frameDelta; // +0x5d8
-    i32 m_lastTime;   // +0x5dc
-    i32 m_accumTime;  // +0x5e0
-    i32 m_5e4;        // +0x5e4
-    i32 m_5e8;        // +0x5e8
-    i32 m_5ec;        // +0x5ec
-    char _p5ec[0x600 - 0x5f0];
-    i32 m_600;        // +0x600
-    CByteArray m_604; // +0x604
+    i32 m_curSlotId;         // +0x5cc  (== Frankenstein m_resyncTick)
+    i32 m_5d0;               // +0x5d0
+    i32 m_drainTimer;        // +0x5d4
+    i32 m_frameDelta;        // +0x5d8
+    i32 m_lastTime;          // +0x5dc
+    i32 m_accumTime;         // +0x5e0  (== Frankenstein m_lastFrameDelta)
+    i32 m_5e4;               // +0x5e4  (Frankenstein m_lastFrameTime)
+    i32 m_5e8;               // +0x5e8
+    i32 m_5ec;               // +0x5ec
+    i32 m_channelLatency[4]; // +0x5f0  per-channel ack-latency values (gap-named)
+    i32 m_600;               // +0x600
+    CByteArray m_604; // +0x604  (drop-id array; net methods view m_pData/m_nSize as dropIds/count)
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

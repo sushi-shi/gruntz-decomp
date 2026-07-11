@@ -669,9 +669,9 @@ struct CNetSess {
 //     not reproduced inline. Final sweep: needs the real CSBI_RectOnly + a catalogued
 //     CNetMgr vtable (which would also close walls 2/3).
 RVA(0x000b5460, 0x914)
-i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
+i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
 #define TF(o) (*(i32*)((char*)this + (o)))
-#define MF(o) (*(i32*)((char*)m_4 + (o)))
+#define MF(o) (*(i32*)((char*)NetGameMgr() + (o)))
 
     *(i32*)((char*)g_gameReg + 0x134) = 2;
     if (a1 == 0) {
@@ -680,7 +680,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if ((((CAssetLoader*)this)->LoadGameAssetNamespaces((AssetMgr*)a1, a2, a3), 0)) {
         return 0;
     }
-    g_connectRptMgr = this;
+    g_connectRptMgr = (CNetMgr*)this;
 
     // --- zero the connect-state field block (disasm order) ---
     TF(0x470) = 0;
@@ -731,20 +731,20 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
 
     MF(0x114) = 0;
-    m_4->ResetClockGlobals();
-    m_4->ClearOptionsSlots();
+    NetGameMgr()->ResetClockGlobals();
+    NetGameMgr()->ClearOptionsSlots();
     ChannelSlots_InitAll();
 
     // (1) peer CNetMgr
     CNetPeer* peer = new CNetPeer();
-    m_peer = (CNetMgr*)peer;
+    m_netGate = (CMultiReportGate*)peer;
     g_groupEnumMgr = (CNetMgr*)peer;
 
     MF(0xac) = 1;
-    if (m_4->InitializeLobbyConnectionSettings() != 0) {
+    if (NetGameMgr()->InitializeLobbyConnectionSettings() != 0) {
         if (((CMulti*)this)->StartTitle() != 0) {
             MF(0xac) = 0;
-            (this->*(((CNetConnectSlotView*)*(void**)this)->Abort))();
+            (((CNetMgr*)this)->*(((CNetConnectSlotView*)*(void**)this)->Abort))();
             return 0;
         }
     } else {
@@ -769,10 +769,10 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
     TF(0x590) = MF(0x110);
     MF(0x110) = 1;
-    if ((this->*(((CNetConnectSlotView*)*(void**)this)->OnStart))() == 0) {
+    if ((((CNetMgr*)this)->*(((CNetConnectSlotView*)*(void**)this)->OnStart))() == 0) {
         return 0;
     }
-    (this->*(((CNetConnectSlotView*)*(void**)this)->OnReady))();
+    (((CNetMgr*)this)->*(((CNetConnectSlotView*)*(void**)this)->OnReady))();
     TF(0x2c) = (i32)((CSymParser*)*(void**)((char*)this + 8))->ResolvePath("STATEZ_MULTI");
     if (TF(0x2c) == 0) {
         return 0;
@@ -789,12 +789,12 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     // --- custom-level path ---
     if (TF(0x5b0) != 0) {
         MF(0x12c) = 0;
-        *(CString*)((char*)m_4 + 0xc8) = "custom\\" + GetConfigNameB();
+        *(CString*)((char*)NetGameMgr() + 0xc8) = "custom\\" + ((CNetMgr*)this)->GetConfigNameB();
     } else {
         MF(0x12c) = 1;
-        *(CString*)((char*)m_4 + 0xc8) = GetConfigNameA();
+        *(CString*)((char*)NetGameMgr() + 0xc8) = ((CNetMgr*)this)->GetConfigNameA();
     }
-    if (m_4->GetWorldFileName().GetLength() == 0) {
+    if (NetGameMgr()->GetWorldFileName().GetLength() == 0) {
         return 0;
     }
 
@@ -803,14 +803,15 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     TF(0x2e0) = (i32)iface;
     // CChatBoxOwner::Attach is void (QAEX): no failure signal, so no failure branch (the
     // reconstruction's `== 0` guard was an artifact - the real shape just attaches + proceeds).
-    ((CChatBoxOwner*)iface)->Attach((void*)m_c, (CChatBoxTextHost*)m_4->m_5c);
+    ((CChatBoxOwner*)iface)
+        ->Attach((void*)((CSndSubMgr*)m_c), (CChatBoxTextHost*)NetGameMgr()->m_5c);
     ((CNetIface*)TF(0x2e0))->m_10 = 0;
     ((CChatBoxOwner*)TF(0x2e0))->Configure(1);
 
     // (3) session (CSBI_RectOnly)
     CNetSess* sess = new CNetSess();
     TF(0x2dc) = (i32)sess;
-    if (((CSBI_RectOnly*)sess)->LoadBattlezItemConfig((i32)m_c) == 0) {
+    if (((CSBI_RectOnly*)sess)->LoadBattlezItemConfig((i32)((CSndSubMgr*)m_c)) == 0) {
         CNetSess* so = (CNetSess*)TF(0x2dc);
         if (so == 0) {
             return 0;
@@ -834,12 +835,12 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
 
     // --- kick off the connect wait + first poll ---
-    if ((this->*(((CNetConnectSlotView*)*(void**)this)->OnConnect))(1, 1) == 0) {
+    if ((((CNetMgr*)this)->*(((CNetConnectSlotView*)*(void**)this)->OnConnect))(1, 1) == 0) {
         return 0;
     }
     TF(0x57c) = 1;
     TF(0x534) = 0;
-    i32 wr = WaitForOtherPlayers();
+    i32 wr = ((CNetMgr*)this)->WaitForOtherPlayers();
     TF(0x57c) = 0;
     if (wr == 0) {
         return 0;
@@ -853,7 +854,7 @@ i32 CNetMgr::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     g_645580 = 0;
     g_645588 = 0;
     TF(0x1cc) = 0;
-    ((CFontConfig*)m_4->m_5c)->FreeNodes();
+    ((CFontConfig*)NetGameMgr()->m_5c)->FreeNodes();
     TF(0x580) = 1;
     return 1;
 
@@ -1689,15 +1690,15 @@ i32 NetSessionOpener::Open() {
 // temps under the /GX frame are byte-faithful; the ~2% residual is a scheduling
 // nuance in the config-store write block. §2a scoring-tail. Final sweep.
 RVA(0x000b78b0, 0x17f)
-i32 CNetMgr::SetupServices() {
-    if (m_peer->EnumServiceProviders(0) != 0) {
+i32 CMulti::SetupServices() {
+    if (Peer()->EnumServiceProviders(0) != 0) {
         ReportConnectFailed(0);
         return 0;
     }
 
     if (g_hostServicesMode != 0) {
         if (DispatchServices("MULTI_HOSTSERVICES", 0, (void*)&ServicesDispatchCb) != 0) {
-            Utils::RegistryHelper* store = m_4->m_configStore;
+            Utils::RegistryHelper* store = NetGameMgr()->m_configStore;
             if (store != 0 && g_serviceId != 0x3e7) {
                 store->SetValueDword("Service", g_serviceId);
                 {
@@ -1712,7 +1713,7 @@ i32 CNetMgr::SetupServices() {
         }
     } else {
         if (DispatchServices("MULTI_JOINSERVICES", 0, (void*)&ServicesDispatchCb) != 0) {
-            Utils::RegistryHelper* store = m_4->m_configStore;
+            Utils::RegistryHelper* store = NetGameMgr()->m_configStore;
             if (store != 0) {
                 if (g_serviceId != 0x3e7) {
                     store->SetValueDword("Service", g_serviceId);
@@ -1722,7 +1723,7 @@ i32 CNetMgr::SetupServices() {
             }
         }
     }
-    return m_peer->m_groupSel;
+    return Peer()->m_groupSel;
 }
 
 // GetString59c (0x0b7a90): return m_groupName by value (CString copy into the
@@ -1962,47 +1963,47 @@ i32 Gap_0b8020(void) {
 // scoped CString temps + their stack-slot packing is not expressible from clean
 // C++ scopes. Same family as SetupTcpIpConfig / JoinAndRegisterChannel. Final sweep.
 RVA(0x000b82e0, 0x230)
-i32 CNetMgr::DetectConnectionConfig() {
-    m_gameClosed = 0;
-    InterfaceObject* provider = (InterfaceObject*)m_peer->m_groupSel;
+i32 CMulti::DetectConnectionConfig() {
+    m_5ac = 0;
+    InterfaceObject* provider = (InterfaceObject*)Peer()->m_groupSel;
     if (provider == 0) {
         return 0;
     }
 
-    m_configSection = "Other";
+    m_598 = "Other";
     if (provider->IsInterface1()) {
-        m_configSection = "IPX";
-        m_cmdDelay = 2;
-        m_resend = 0xa;
+        m_598 = "IPX";
+        m_5a4 = 2;
+        m_drainReload = 0xa;
     } else if (provider->IsInterface2()) {
-        m_configSection = "TcpIp";
-        m_cmdDelay = 3;
-        m_resend = 0xa;
+        m_598 = "TcpIp";
+        m_5a4 = 3;
+        m_drainReload = 0xa;
     } else if (provider->IsInterface3()) {
-        m_configSection = "Modem";
-        m_cmdDelay = 4;
-        m_resend = 0x1e;
+        m_598 = "Modem";
+        m_5a4 = 4;
+        m_drainReload = 0x1e;
     } else if (provider->IsInterface4()) {
-        m_configSection = "Serial";
-        m_cmdDelay = 2;
-        m_resend = 0xa;
+        m_598 = "Serial";
+        m_5a4 = 2;
+        m_drainReload = 0xa;
     } else {
-        m_cmdDelay = 2;
-        m_resend = 0xa;
+        m_5a4 = 2;
+        m_drainReload = 0xa;
     }
 
-    Utils::RegistryHelper* cfg = m_4->m_configStore;
-    CString kDelay = m_configSection + "_CmdDelay";
-    CString kResend = m_configSection + "_Resend";
-    CString kDyn = m_configSection + "_DynCmdDelay";
+    Utils::RegistryHelper* cfg = NetGameMgr()->m_configStore;
+    CString kDelay = m_598 + "_CmdDelay";
+    CString kResend = m_598 + "_Resend";
+    CString kDyn = m_598 + "_DynCmdDelay";
     i32 cd = cfg->GetValueDword((char*)(const char*)(kDelay), -1);
     i32 rs = cfg->GetValueDword((char*)(const char*)(kResend), -1);
     if (cd != -1 && rs != -1) {
-        m_cmdDelay = cd;
-        m_resend = rs;
+        m_5a4 = cd;
+        m_drainReload = rs;
     }
 
-    CNetChannel* ch0 = m_4->m_channels;
+    CNetChannel* ch0 = NetGameMgr()->m_channels;
     {
         CString name = GetString5a0();
         ch0->m_name = name;
@@ -2011,7 +2012,7 @@ i32 CNetMgr::DetectConnectionConfig() {
 
     i32 r = JoinAndRegisterChannel();
     if (r != 0) {
-        m_peer->m_playerSel = r;
+        Peer()->m_playerSel = r;
         return 1;
     }
     return 0;
@@ -2025,15 +2026,15 @@ i32 CNetMgr::DetectConnectionConfig() {
 // "_Resend"; the "_DynCmdDelay" temp is built but its write is elided here. The
 // three temporaries' dtors run under the C++ EH frame (=> /GX).
 RVA(0x000b85a0, 0xd2)
-void CNetMgr::ApplyCmdDelayDefaults() {
+void CMulti::ApplyCmdDelayDefaults() {
     Utils::RegistryHelper* reg = ((CGameMgr*)g_gameReg)->m_38;
 
-    CString cmdDelayName = m_configSection + "_CmdDelay";
-    CString resendName = m_configSection + "_Resend";
-    CString dynCmdName = m_configSection + "_DynCmdDelay";
+    CString cmdDelayName = m_598 + "_CmdDelay";
+    CString resendName = m_598 + "_Resend";
+    CString dynCmdName = m_598 + "_DynCmdDelay";
 
-    reg->SetValueDword((char*)(const char*)cmdDelayName, m_cmdDelay);
-    reg->SetValueDword((char*)(const char*)resendName, m_resend);
+    reg->SetValueDword((char*)(const char*)cmdDelayName, m_5a4);
+    reg->SetValueDword((char*)(const char*)resendName, m_drainReload);
 }
 
 RVA(0x000b86c0, 0x206)
@@ -2175,14 +2176,14 @@ void FillPlayerList(HWND hList, Session* sess) {
 // : 0" into a split neg/sbb/and mask carried across the name CString's /GX dtor,
 // which a clean ternary won't reproduce exactly. Final sweep.
 RVA(0x000b8b10, 0x175)
-i32 CNetMgr::JoinAndRegisterChannel() {
+i32 CMulti::JoinAndRegisterChannel() {
     char buf[0x100];
     buf[0] = g_emptyString[0];
     memset(&buf[1], 0, 0xff);
     Cfg_SetSection(buf, "%s", *(i32*)((char*)this + 0x59c));
-    Cfg_AppendKeyVal(buf, "CMDDELAY", m_cmdDelay);
-    Cfg_AppendKeyVal(buf, "RESEND", m_resend);
-    Cfg_AppendKeyVal(buf, "LEVEL", m_resyncLParam);
+    Cfg_AppendKeyVal(buf, "CMDDELAY", m_5a4);
+    Cfg_AppendKeyVal(buf, "RESEND", m_drainReload);
+    Cfg_AppendKeyVal(buf, "LEVEL", ResyncLParam());
 
     i32 enumResult = g_groupEnumMgr->EnumGroupsInto((void*)4, buf, 0, (i32)g_emptyString);
     if (enumResult == 0) {
@@ -2190,18 +2191,18 @@ i32 CNetMgr::JoinAndRegisterChannel() {
         return 0;
     }
 
-    void* lp = (void*)m_peer->CreatePlayer((void*)"Player", (i32)g_emptyString, 0);
-    m_localPlayer = (CNetPlayerEntry*)lp;
+    void* lp = (void*)Peer()->CreatePlayer((void*)"Player", (i32)g_emptyString, 0);
+    m_5bc = (i32)(CNetPlayerEntry*)lp;
     if (lp == 0) {
         ReportConnectFailed(0);
         return 0;
     }
 
-    m_localPlayerId = *(i32*)((char*)lp + 4);
-    CNetChannel* ch0 = m_4->m_channels;
+    m_hostIndex = *(i32*)((char*)lp + 4);
+    CNetChannel* ch0 = NetGameMgr()->m_channels;
     i32 chField = ch0->m_slotId;
     CString name = ch0->GetName();
-    i32 ok = RegisterChannelFrom(name, chField, -1, m_localPlayerId);
+    i32 ok = RegisterChannelFrom(name, chField, -1, m_hostIndex);
     return ok != 0 ? enumResult : 0;
 }
 
@@ -2219,13 +2220,13 @@ i32 CNetMgr::JoinAndRegisterChannel() {
 // strcpy + SendStatFrom are reproduced, but retail's EH-state cookies over the scoped
 // CString temps and its packet stack-slot packing aren't source-steerable. Final sweep.
 RVA(0x000b8cf0, 0x23b)
-i32 CNetMgr::OnJoinConfirm(void* hDlg) {
+i32 CMulti::OnJoinConfirm(void* hDlg) {
     if (hDlg == 0) {
         return 0;
     }
 
     g_groupEnumMgr->ReadPlayerSel(g_pGetDlgItem((HWND)hDlg, 0x3fc));
-    void* sel = (void*)m_peer->m_playerSel;
+    void* sel = (void*)Peer()->m_playerSel;
     if (sel == 0) {
         return 0;
     }
@@ -2233,9 +2234,9 @@ i32 CNetMgr::OnJoinConfirm(void* hDlg) {
     void* lp;
     {
         CString name = GetString5a0();
-        lp = (void*)m_peer->EnumPlayersCb(sel, (i32)(const char*)name, (i32)g_emptyString, 0);
+        lp = (void*)Peer()->EnumPlayersCb(sel, (i32)(const char*)name, (i32)g_emptyString, 0);
     }
-    m_localPlayer = (CNetPlayerEntry*)lp;
+    m_5bc = (i32)(CNetPlayerEntry*)lp;
     if (lp == 0) {
         ReportConnectFailed(0);
         return 0;
@@ -2244,19 +2245,19 @@ i32 CNetMgr::OnJoinConfirm(void* hDlg) {
     const char* cfgStr = *(const char**)((char*)sel + 0x34);
     char buf[0x28];
     if (Cfg_GetKey(buf, cfgStr, "CMDDELAY")) {
-        m_cmdDelay = atoi(buf);
+        m_5a4 = atoi(buf);
     }
     if (Cfg_GetKey(buf, cfgStr, "RESEND")) {
-        m_resend = atoi(buf);
+        m_drainReload = atoi(buf);
     }
     if (Cfg_GetKey(buf, cfgStr, "DynCmdDelay")) {
         ApplyDynSetting(CString(buf));
     }
     m_syncGate = 0;
-    m_resyncLParam = 1;
-    m_localPlayerId = *(i32*)((char*)lp + 4);
+    ResyncLParam() = 1;
+    m_hostIndex = *(i32*)((char*)lp + 4);
     if (Cfg_GetKey(buf, cfgStr, "LEVEL")) {
-        m_resyncLParam = atoi(buf);
+        ResyncLParam() = atoi(buf);
     }
 
     char packet[0x28];
@@ -2270,7 +2271,7 @@ i32 CNetMgr::OnJoinConfirm(void* hDlg) {
     packet[0xc] = 0x63;
     packet[0xd] = 0xf;
     packet[0xe] = 0;
-    *(i32*)(packet + 0x10) = m_localPlayerId;
+    *(i32*)(packet + 0x10) = m_hostIndex;
     CString name2 = GetString5a0();
     strcpy(packet + 0x14, name2);
     SendStatFrom((CNetStatPacket*)packet, 0x28, 1);
@@ -2299,11 +2300,11 @@ i32 CNetMgr::OnJoinConfirm(void* hDlg) {
 // CMultiStartDlg::VerifyCustomLevel (0xc4c00, parked ~55%); not source-steerable.
 // See docs/patterns/gx-scoped-local-eh-frame-size.md. Final sweep.
 RVA(0x000b8fc0, 0x151)
-i32 CNetMgr::VerifyCustomLevel(i32 a1, i32 a2) {
-    if (a1 == 0) {
+i32 CMulti::VerifyCustomLevel(void* h, i32 playerTok) {
+    if (h == 0) {
         return 0;
     }
-    if (a2 == 0) {
+    if (playerTok == 0) {
         return 0;
     }
     if (m_530 == 0) {
@@ -2313,10 +2314,10 @@ i32 CNetMgr::VerifyCustomLevel(i32 a1, i32 a2) {
 
     void* token;
     if (m_5b0 != 0) {
-        CString b = GetConfigNameB();
+        CString b = ((CNetMgr*)this)->GetConfigNameB();
         token = ((CNetGameMgr*)g_gameReg)->BuildRezPath(0, (void*)m_5b0, 0, 0, b);
     } else {
-        CString a = GetConfigNameA();
+        CString a = ((CNetMgr*)this)->GetConfigNameA();
         token = ((CNetGameMgr*)g_gameReg)->BuildRezPath(0, (void*)m_5b0, 0, 0, a);
     }
 
@@ -2340,7 +2341,7 @@ i32 CNetMgr::VerifyCustomLevel(i32 a1, i32 a2) {
 // success; otherwise poll the session once (PollSession) and report whether the poll
 // set the latch.
 RVA(0x000b9180, 0x4a)
-i32 CNetMgr::PollSessionGated(i32 a1, i32 a2) {
+i32 CMulti::PollSessionGated(i32 a1, i32 a2) {
     if (a1 == 0) {
         return 0;
     }
@@ -2361,9 +2362,9 @@ i32 CNetMgr::PollSessionGated(i32 a1, i32 a2) {
 // (m_peer->SetGroupDataFrom(localPlayer, flag, pkt, 0x10)). Returns the
 // success bool (hr == 0).
 RVA(0x000b91f0, 0x31)
-i32 CNetMgr::SendStatBuf(CNetStatPacket* pkt, i32 flag) {
+i32 CMulti::SendStatBuf(CNetStatPacket* pkt, i32 flag) {
     pkt->m_0 |= 0x80;
-    i32 hr = m_peer->SetGroupDataFrom(m_localPlayer, flag, (i32)pkt, 0x10);
+    i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), flag, (i32)pkt, 0x10);
     return hr == 0;
 }
 
@@ -2372,11 +2373,11 @@ i32 CNetMgr::SendStatBuf(CNetStatPacket* pkt, i32 flag) {
 // Builds the 0x10-byte stat header {id, localPlayer.id} on the stack and ships
 // it through SendStatBuf with the caller's flag.
 RVA(0x000b9240, 0x38)
-void CNetMgr::SendStatFlag(i32 id, i32 flag) {
+void CMulti::SendStatFlag(i32 id, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
     pkt.m_4 = id;
-    pkt.m_8 = m_localPlayer->m_4;
+    pkt.m_8 = LocalPlayer()->m_4;
     SendStatBuf(&pkt, flag);
 }
 
@@ -2385,7 +2386,7 @@ void CNetMgr::SendStatFlag(i32 id, i32 flag) {
 // Builds the 0x10-byte stat header {id, value} on the stack and ships it
 // through SendStatBuf with the caller's flag.
 RVA(0x000b9290, 0x32)
-void CNetMgr::SendNetStat(i32 id, u32 value, i32 flag) {
+void CMulti::SendNetStat(i32 id, u32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
     pkt.m_4 = id;
@@ -2398,11 +2399,11 @@ void CNetMgr::SendNetStat(i32 id, u32 value, i32 flag) {
 // No-op on a null packet; otherwise ships the caller's packet to the local
 // player's peer group via SetGroupDataFrom(localPlayer, c, pkt, b).
 RVA(0x000b92e0, 0x34)
-i32 CNetMgr::SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c) {
+i32 CMulti::SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c) {
     if (pkt == 0) {
         return 0;
     }
-    i32 hr = m_peer->SetGroupDataFrom(m_localPlayer, c, (i32)pkt, b);
+    i32 hr = Peer()->SetGroupDataFrom(LocalPlayer(), c, (i32)pkt, b);
     return hr == 0;
 }
 
@@ -2411,12 +2412,12 @@ i32 CNetMgr::SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c) {
 // Null-recipient -> 0; otherwise sets the packet's bit7 flag and ships both
 // through SetGroupData2(localPlayer, recipient, c, packet, 0x10).
 RVA(0x000b9330, 0x41)
-i32 CNetMgr::SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c) {
+i32 CMulti::SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c) {
     if (recipient == 0) {
         return 0;
     }
     pkt->m_0 |= 0x80;
-    i32 hr = m_peer->SetGroupData2(m_localPlayer, recipient, c, (i32)pkt, 0x10);
+    i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, (i32)pkt, 0x10);
     return hr == 0;
 }
 
@@ -2426,14 +2427,14 @@ i32 CNetMgr::SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c
 // {flag, id, localPlayer.id} on the stack and ships it to that one player via
 // SendStatPair.
 RVA(0x000b93a0, 0x47)
-i32 CNetMgr::SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c) {
+i32 CMulti::SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c) {
     if (recipient == 0) {
         return 0;
     }
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
     pkt.m_4 = id;
-    pkt.m_8 = m_localPlayer->m_4;
+    pkt.m_8 = LocalPlayer()->m_4;
     return SendStatPair(recipient, &pkt, c);
 }
 
@@ -2443,12 +2444,12 @@ i32 CNetMgr::SendStatTo(CNetPlayerEntry* recipient, i32 id, i32 c) {
 // {flag, value, localPlayer.id} on the stack and ships it through SetData
 // (a=localPlayer.id, b=id, c=flag). Returns the success bool.
 RVA(0x000b9410, 0x51)
-i32 CNetMgr::SendStat3(i32 id, u32 value, i32 flag) {
+i32 CMulti::SendStat3(i32 id, u32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
     pkt.m_4 = value;
-    pkt.m_8 = m_localPlayer->m_4;
-    i32 hr = m_peer->SetData(m_localPlayer->m_4, id, flag, (i32)&pkt, 0x10);
+    pkt.m_8 = LocalPlayer()->m_4;
+    i32 hr = Peer()->SetData(LocalPlayer()->m_4, id, flag, (i32)&pkt, 0x10);
     return hr == 0;
 }
 
@@ -2457,7 +2458,7 @@ i32 CNetMgr::SendStat3(i32 id, u32 value, i32 flag) {
 // SendStatTo's explicit-value twin: null-recipient -> 0; otherwise builds the 0x10-byte
 // stat header {id, value} on the stack and ships it to that one player via SendStatPair.
 RVA(0x000b9490, 0x42)
-i32 CNetMgr::SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c) {
+i32 CMulti::SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c) {
     if (recipient == 0) {
         return 0;
     }
@@ -2474,14 +2475,14 @@ i32 CNetMgr::SendNetStatTo(CNetPlayerEntry* recipient, i32 id, u32 value, i32 c)
 // caller-supplied size): null-recipient or null-packet -> 0, else ships
 // SetGroupData2(localPlayer, recipient, c, pkt, size). Returns the success bool.
 RVA(0x000b9500, 0x46)
-i32 CNetMgr::SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c) {
+i32 CMulti::SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i32 c) {
     if (recipient == 0) {
         return 0;
     }
     if (pkt == 0) {
         return 0;
     }
-    i32 hr = m_peer->SetGroupData2(m_localPlayer, recipient, c, (i32)pkt, size);
+    i32 hr = Peer()->SetGroupData2(LocalPlayer(), recipient, c, (i32)pkt, size);
     return hr == 0;
 }
 
@@ -2490,12 +2491,12 @@ i32 CNetMgr::SendStatPairRaw(CNetPlayerEntry* recipient, void* pkt, i32 size, i3
 // Builds the 0x10-byte stat header {flag, statId, value} on the stack and ships
 // it through SetData (a=localPlayer.id, b=id, c=flag). Returns the success bool.
 RVA(0x000b9570, 0x53)
-i32 CNetMgr::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
+i32 CMulti::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
     CNetStatPacket pkt;
     pkt.m_0 |= 0x80;
     pkt.m_4 = statId;
     pkt.m_8 = value;
-    i32 hr = m_peer->SetData(m_localPlayer->m_4, id, flag, (i32)&pkt, 0x10);
+    i32 hr = Peer()->SetData(LocalPlayer()->m_4, id, flag, (i32)&pkt, 0x10);
     return hr == 0;
 }
 
@@ -2519,18 +2520,18 @@ i32 CNetMgr::SendStatValue(i32 id, i32 statId, i32 value, i32 flag) {
 // lpdwDataSize) which a clean C++ shape won't express. See
 // docs/patterns/stack-buffer-size-drives-frame.md. Deferred to the final sweep.
 RVA(0x000b95f0, 0x10f)
-i32 CNetMgr::PollSession() {
-    if (m_localPlayer == 0) {
+i32 CMulti::PollSession() {
+    if (LocalPlayer() == 0) {
         return 0;
     }
 
     i32 count;
-    if (m_localPlayer == 0) {
+    if (LocalPlayer() == 0) {
         count = 0;
     } else {
-        IDirectPlay4Z* dp = m_peer->m_directPlay;
+        IDirectPlay4Z* dp = Peer()->m_directPlay;
         count = 0;
-        i32 hr = dp->GetMessageCount(m_localPlayer->m_4, &count);
+        i32 hr = dp->GetMessageCount(LocalPlayer()->m_4, &count);
         if (hr) {
             count = 0;
         }
@@ -2547,8 +2548,8 @@ i32 CNetMgr::PollSession() {
         }
 
         i32 size = 0x800;
-        i32 idTo = m_localPlayer->m_4;
-        IDirectPlay4Z* dp = m_peer->m_directPlay;
+        i32 idTo = LocalPlayer()->m_4;
+        IDirectPlay4Z* dp = Peer()->m_directPlay;
         i32 hr = dp->Receive(&size, &idTo, 1, (void*)g_recvBuffer, &size);
         if (hr) {
             ReportError("c:\\proj\\incs\\netmgr.h", 0x141, hr, 0);
@@ -2557,7 +2558,7 @@ i32 CNetMgr::PollSession() {
             }
         }
         count--;
-        if (sender != m_localPlayer->m_4) {
+        if (sender != LocalPlayer()->m_4) {
             DispatchRecvMsg(sender, g_recvBuffer, size);
             dispatched++;
         }
@@ -2627,7 +2628,7 @@ struct CNetMsg {
 // running-ping-average (0x420) and record-ack (0x41c/0x421) arms (eax<->edx /
 // esi<->edi recolor, store-order permutation). Not further source-steerable. Final sweep.
 RVA(0x000b9750, 0x74e)
-i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
+i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
     CNetMsg* msg = (CNetMsg*)buf;
     if (msg == 0) {
         return 0;
@@ -2636,10 +2637,10 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         return HandleControlMsg((CNetCtrlMsg*)msg, size);
     }
 
-    CNetPlayerEntry* pd = (CNetPlayerEntry*)m_peer->GetPlayerData(sender);
-    if (m_connected != 0 || m_57c != 0) {
+    CNetPlayerEntry* pd = (CNetPlayerEntry*)Peer()->GetPlayerData(sender);
+    if (m_connected != 0 || m_pumpGuard != 0) {
         if (pd != 0) {
-            CNetCmdSlot* slot = m_session->FindCmdSlot(pd->m_4);
+            CNetCmdSlot* slot = Session()->FindCmdSlot(pd->m_4);
             if (slot != 0) {
                 slot->m_latency = 0;
             }
@@ -2663,14 +2664,14 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_534 != 0) {
                 break;
             }
-            RecordDropPlayer2((i32)pd, sender);
+            ((CNetMgr*)this)->RecordDropPlayer2((i32)pd, sender);
             break;
 
         case 0x422: {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = m_4->FindPlayer();
+            GruntzPlayer* player = NetGameMgr()->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2686,7 +2687,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = m_4->FindPlayer();
+            GruntzPlayer* player = NetGameMgr()->FindPlayer();
             if (player == 0) {
                 return 1;
             }
@@ -2706,12 +2707,12 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = m_4->FindPlayer();
+            GruntzPlayer* player = NetGameMgr()->FindPlayer();
             if (player == 0) {
                 return 1;
             }
-            ((CFontConfig*)m_4->m_5c)->AddItem(msg->m_c, 0x30, player->m_008);
-            CSndHost* host = m_c->m_28;
+            ((CFontConfig*)NetGameMgr()->m_5c)->AddItem(msg->m_c, 0x30, player->m_008);
+            CSndHost* host = ((CSndSubMgr*)m_c)->m_28;
             if (host->m_emitGate != 0) {
                 break;
             }
@@ -2728,8 +2729,8 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_pollAbort != 0) {
                 break;
             }
-            ReportNetError("You have been dropped from the game.", 0);
-            g_pPostMessageA(m_4->m_wnd->m_hwnd, 0x111, 0x8023, 0);
+            ReportVersionMsg("You have been dropped from the game.", 0);
+            g_pPostMessageA(NetGameMgr()->m_wnd->m_hwnd, 0x111, 0x8023, 0);
             m_pollAbort = 1;
             break;
 
@@ -2744,14 +2745,14 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             break;
 
         case 0x3f7:
-            if (m_useChannelLatency == 0) {
+            if (m_isHost == 0) {
                 break;
             }
             BroadcastChannelTable(pd);
             break;
 
         case 0x3f8:
-            if (m_useChannelLatency != 0) {
+            if (m_isHost != 0) {
                 break;
             }
             ParseChannelTable(msg);
@@ -2759,13 +2760,13 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             break;
 
         case 0x3f9:
-            if (m_useChannelLatency == 0) {
+            if (m_isHost == 0) {
                 break;
             }
             if (m_connected != 0) {
                 break;
             }
-            if (m_4->CountReadyOptionsSlots(1) >= 4) {
+            if (NetGameMgr()->CountReadyOptionsSlots(1) >= 4) {
                 break;
             }
             if (ChannelSlots_Get(((u8*)&msg->m_8)[1]) == 0) {
@@ -2779,13 +2780,13 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             break;
 
         case 0x3fa: {
-            if (m_useChannelLatency == 0) {
+            if (m_isHost == 0) {
                 break;
             }
             if (m_connected != 0) {
                 break;
             }
-            GruntzPlayer* player = m_4->FindPlayer();
+            GruntzPlayer* player = NetGameMgr()->FindPlayer();
             if (player == 0) {
                 return 0;
             }
@@ -2800,31 +2801,31 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         }
 
         case 0x3fb:
-            if (m_useChannelLatency != 0) {
+            if (m_isHost != 0) {
                 break;
             }
-            m_removedFromGame = 1;
+            m_538 = 1;
             break;
 
         case 0x419:
-            if (m_useChannelLatency != 0) {
+            if (m_isHost != 0) {
                 break;
             }
             m_568 = 1;
             break;
 
         case 0x3fd:
-            if (m_useChannelLatency != 0) {
+            if (m_isHost != 0) {
                 break;
             }
-            m_gameClosed = 1;
+            m_5ac = 1;
             break;
 
         case 0x3fe:
-            if (m_useChannelLatency != 0) {
+            if (m_isHost != 0) {
                 break;
             }
-            m_gameFull = 1;
+            m_56c = 1;
             break;
 
         case 0x41f:
@@ -2847,7 +2848,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
         }
 
         case 0x421: {
-            if (m_useChannelLatency == 0) {
+            if (m_isHost == 0) {
                 break;
             }
             GruntzPlayer* player = ((CNetGameMgr*)g_gameReg)->FindPlayer();
@@ -2860,11 +2861,11 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
 
         case 0x41d:
             m_verifyDone = 1;
-            m_levelVerifyResult = 1;
+            m_53c = 1;
             return 1;
 
         case 0x41e:
-            m_levelVerifyResult = 0;
+            m_53c = 0;
             m_verifyDone = 1;
             return 1;
 
@@ -2884,7 +2885,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             return 1;
 
         case 0x403:
-            if (m_useChannelLatency == 0) {
+            if (m_isHost == 0) {
                 break;
             }
             if (m_connected == 0) {
@@ -2912,7 +2913,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             break;
 
         case 0x415:
-            if (m_useChannelLatency == 0) {
+            if (m_isHost == 0) {
                 break;
             }
             SaveConfig(pd);
@@ -2922,7 +2923,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (LoadConfig(msg) == 0) {
                 break;
             }
-            m_admitted = 1;
+            m_58c = 1;
             break;
 
         case 0x417:
@@ -2940,7 +2941,7 @@ i32 CNetMgr::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (g_dlgResultSink != 0) {
                 ShowChatLine((void*)g_dlgResultSink, result);
             } else {
-                ((CFontConfig*)m_4->m_5c)->AddItem(result, 0, 0x11);
+                ((CFontConfig*)NetGameMgr()->m_5c)->AddItem(result, 0, 0x11);
             }
             break;
         }
@@ -2980,7 +2981,7 @@ CString CNetPlayerEntry::GetName() {
 // differently-named switchdataD_004ba2xx symbols. See
 // docs/patterns/jumptable-data-overlap.md (topic:scoring-artifact). Logic correct.
 RVA(0x000ba1a0, 0x83)
-i32 CNetMgr::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
+i32 CMulti::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
     if (msg == 0) {
         return 0;
     }
@@ -2997,7 +2998,7 @@ i32 CNetMgr::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
             g_playerLeftFlag = 1;
             return 1;
         case 0x31:
-            m_useChannelLatency = 1;
+            m_isHost = 1;
             return 1;
         case 0x101:
             m_sessionTerminated = 1;
@@ -3019,13 +3020,13 @@ i32 CNetMgr::HandleControlMsg(CNetCtrlMsg* msg, i32 arg2) {
 // and not yet connected, fires the rejoin finalizer and sets g_playerLeftFlag.
 // The two CString temps' dtors run under the /GX frame.
 RVA(0x000ba3b0, 0x17f)
-i32 CNetMgr::OnPlayerLeft(i32 playerId) {
-    CNetPlayerObj* blob = (CNetPlayerObj*)m_peer->GetPlayerData(playerId);
-    if (blob == (CNetPlayerObj*)m_localPlayer) {
+i32 CMulti::OnPlayerLeft(i32 playerId) {
+    CNetPlayerObj* blob = (CNetPlayerObj*)Peer()->GetPlayerData(playerId);
+    if (blob == (CNetPlayerObj*)LocalPlayer()) {
         return 0;
     }
 
-    CNetGameMgr* gm = m_4;
+    CNetGameMgr* gm = NetGameMgr();
     GruntzPlayer* slot = gm->FindPlayer();
     if (slot == 0) {
         return 0;
@@ -3045,12 +3046,12 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
     ChannelSlots_Set(slot->m_008, 1);
 
     CString line = ((CNetMgr*)slot)->GetName() + " has left the game.";
-    ((CFontConfig*)m_4->m_5c)->AddItem((char*)(const char*)line, 0x20, 0x11);
+    ((CFontConfig*)NetGameMgr()->m_5c)->AddItem((char*)(const char*)line, 0x20, 0x11);
 
     if (blob != 0) {
-        m_peer->RemovePlayerObj(blob);
+        Peer()->RemovePlayerObj(blob);
     }
-    if (m_useChannelLatency != 0 && m_connected == 0) {
+    if (m_isHost != 0 && m_connected == 0) {
         RejoinIfNeeded(0);
         g_playerLeftFlag = 1;
     }
@@ -3061,15 +3062,15 @@ i32 CNetMgr::OnPlayerLeft(i32 playerId) {
 // CNetMgr::AckDropPlayer  (__thiscall).
 // Finalizes a dropped player. When the host-mode flag (m_534) is clear it records
 // the drop (RecordDropPlayer), then looks the player's command slot up
-// (m_session->FindCmdSlot) and, if found, latches+resets it (Touch + FullReset)
+// (Session()->FindCmdSlot) and, if found, latches+resets it (Touch + FullReset)
 // and arms both the slot and its command-list head (slot->m_state = 1,
 // slot->m_cmdHead[+0x2c] = 1). In host mode it instead tears the player down directly
 // (OnPlayerLeft) and flushes their resend buffers (ResetPlayerCommands).
 RVA(0x000ba590, 0x63)
-void CNetMgr::AckDropPlayer(i32 id) {
+void CMulti::AckDropPlayer(i32 id) {
     if (m_534 == 0) {
-        RecordDropPlayer2(0, id);
-        CNetCmdSlot* slot = m_session->FindCmdSlot(id);
+        ((CNetMgr*)this)->RecordDropPlayer2(0, id);
+        CNetCmdSlot* slot = Session()->FindCmdSlot(id);
         if (slot != 0) {
             slot->Touch();
             slot->FullReset();
@@ -3096,7 +3097,7 @@ void CNetMgr::AckDropPlayer(i32 id) {
 // @confidence: med
 // @source: decomp-xref
 RVA(0x000ba620, 0x14a)
-i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
+i32 CMulti::LoadMenuSelectSprite(void* evp) {
     MenuSelectEvent* ev = (MenuSelectEvent*)evp;
     if (ev == 0) {
         return 0;
@@ -3104,26 +3105,26 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
     if (ev->m_armed != 1) {
         return 0;
     }
-    PlayerNode* node = (PlayerNode*)((CNetMgr*)m_peer)->GetPlayerData(ev->m_id);
+    PlayerNode* node = (PlayerNode*)((CNetMgr*)Peer())->GetPlayerData(ev->m_id);
     if (node == 0) {
         node =
-            (PlayerNode*)((CNetMgr*)m_peer)
+            (PlayerNode*)((CNetMgr*)Peer())
                 ->AddSessionNode(ev->m_id, (const char*)ev->m_20, (const char*)ev->m_24, (i32)node);
         if (node == 0) {
             return 0;
         }
     }
     if (m_530 == 0 && m_connected == 0) {
-        if (m_useChannelLatency != 0) {
-            if (m_4->CountReadyOptionsSlots(1) >= 4) {
+        if (m_isHost != 0) {
+            if (NetGameMgr()->CountReadyOptionsSlots(1) >= 4) {
                 SendStat3(ev->m_id, 0x3fe, 1);
                 return 0;
             }
-            if (m_useChannelLatency != 0) {
+            if (m_isHost != 0) {
                 AnnounceVersion((i32)node);
             }
         }
-        CSndHost* host = m_c->m_28;
+        CSndHost* host = ((CSndSubMgr*)m_c)->m_28;
         if (host->m_emitGate == 0) {
             LeafCue* out = 0;
             host->m_10.Lookup("GAME_MENUS_SELECT", &out);
@@ -3152,12 +3153,12 @@ i32 CNetMgr::LoadMenuSelectSprite(void* evp) {
 // the local player id (m_localPlayerId) up in the peer's player list and latches the
 // result into m_5bc, returning whether one was found.
 RVA(0x000ba7d0, 0x2e)
-i32 CNetMgr::ResolveLocalPlayer() {
-    if (m_peer == 0) {
+i32 CMulti::ResolveLocalPlayer() {
+    if (Peer() == 0) {
         return 0;
     }
-    m_localPlayer = m_peer->FindPlayerById(m_localPlayerId);
-    return m_localPlayer != 0;
+    m_5bc = (i32)Peer()->FindPlayerById(m_hostIndex);
+    return LocalPlayer() != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -3176,7 +3177,7 @@ i32 CNetMgr::ResolveLocalPlayer() {
 // (eax,ebp vs ebp,eax) differently; none move under source restructuring (the
 // inverse parse ParseChannelTable is 99.9%). Deferred to the final sweep.
 RVA(0x000ba810, 0x11c)
-i32 CNetMgr::BroadcastChannelTable(CNetPlayerEntry* recipient) {
+i32 CMulti::BroadcastChannelTable(CNetPlayerEntry* recipient) {
     char packet[0x88];
     memset(packet, 0, 0x88);
     packet[0] |= 0x80;
@@ -3184,7 +3185,7 @@ i32 CNetMgr::BroadcastChannelTable(CNetPlayerEntry* recipient) {
 
     char* rec = packet + 9;
     for (i32 i = 0; i < 4; i++) {
-        CNetChannel* ch = &m_4->m_channels[i];
+        CNetChannel* ch = &NetGameMgr()->m_channels[i];
         if (ch != 0) {
             rec[-1] = (char)ch->m_active;
             rec[0] = (char)ch->m_slotId;
@@ -3218,17 +3219,17 @@ i32 CNetMgr::BroadcastChannelTable(CNetPlayerEntry* recipient) {
 // (SIB base/index swap of m_4 vs the loop counter); not steerable from source
 // (m_4 is reloaded each iteration so a running pointer diverges). Final sweep.
 RVA(0x000ba980, 0xca)
-i32 CNetMgr::ParseChannelTable(void* packet) {
+i32 CMulti::ParseChannelTable(void* packet) {
     if (packet == 0) {
         return 0;
     }
-    if (m_useChannelLatency == 0) {
+    if (m_isHost == 0) {
         ResetNetSlots();
     }
 
     char* rec = (char*)packet + 9;
     for (i32 i = 0; i < 4; i++) {
-        CNetChannel* ch = &m_4->m_channels[i];
+        CNetChannel* ch = &NetGameMgr()->m_channels[i];
         if (ch != 0) {
             ch->m_active = (u8)rec[-1];
             ch->m_slotId = (u8)rec[0];
@@ -3242,7 +3243,7 @@ i32 CNetMgr::ParseChannelTable(void* packet) {
             ch->m_228 = (u8)rec[4];
             ch->m_name = rec + 0xb;
             ch->m_playerId = *(i32*)(rec + 7);
-            if (m_useChannelLatency == 0 && ch->m_active != 0) {
+            if (m_isHost == 0 && ch->m_active != 0) {
                 ChannelSlots_Set(ch->m_slotId, 0);
             }
         }
@@ -3256,7 +3257,7 @@ i32 CNetMgr::ParseChannelTable(void* packet) {
 // Thin forwarder: fixes the c=1 / idx=0 register arguments and tail-calls
 // RegisterChannel with the caller's four fields (name, id, e, f).
 RVA(0x000baa90, 0x20)
-i32 CNetMgr::RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f) {
+i32 CMulti::RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f) {
     return RegisterChannel(name, b, 1, 0, e, f);
 }
 
@@ -3275,20 +3276,20 @@ i32 CNetMgr::RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f) {
 // TU-wide EH-state numbering. See docs/patterns/gx-scoped-local-eh-frame-size.md +
 // eh-state-numbering-base.md. Deferred to the final sweep.
 RVA(0x000baac0, 0x12e)
-i32 CNetMgr::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e) {
-    if (m_4->CountReadyOptionsSlots(1) >= 4) {
+i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e) {
+    if (NetGameMgr()->CountReadyOptionsSlots(1) >= 4) {
         return 0;
     }
 
     CNetChannel* ch = 0;
     if (idx >= 0 && idx <= 4) {
-        ch = &m_4->m_channels[idx];
+        ch = &NetGameMgr()->m_channels[idx];
         if (ch != 0 && ch->m_active != 0) {
             ch = 0;
         }
     }
     if (ch == 0) {
-        CNetChannel* p = m_4->m_channels;
+        CNetChannel* p = NetGameMgr()->m_channels;
         for (i32 i = 0; i < 4; i++) {
             ch = p;
             if (p != 0 && p->m_active == 0) {
@@ -3325,7 +3326,7 @@ i32 CNetMgr::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i3
 // and the four header bytes (+0x9..+0xc) plus the id dword (+0x10) and registers
 // the channel.
 RVA(0x000bac40, 0x38)
-i32 CNetMgr::RegisterChannelRec(void* rec) {
+i32 CMulti::RegisterChannelRec(void* rec) {
     u8* r = (u8*)rec;
     if (r[8] != 0) {
         RegisterChannel((const char*)(r + 0x14), r[9], r[0xa], r[0xb], r[0xc], *(i32*)(r + 0x10));
@@ -3339,8 +3340,8 @@ i32 CNetMgr::RegisterChannelRec(void* rec) {
 // if it was already inactive; otherwise clears its active gate and frees its net
 // slot (ChannelSlots_Set(id, 1)). Returns 1 when a slot was removed.
 RVA(0x000bac90, 0x46)
-i32 CNetMgr::RemoveChannel(i32 idx) {
-    CNetChannel* ch = &m_4->m_channels[idx];
+i32 CMulti::RemoveChannel(i32 idx) {
+    CNetChannel* ch = &NetGameMgr()->m_channels[idx];
     if (ch == 0) {
         return 0;
     }
@@ -3357,7 +3358,7 @@ i32 CNetMgr::RemoveChannel(i32 idx) {
 // No-op (returns 0) unless connected (m_580); otherwise announces the pause
 // (SendStatFlag(0x407, 1)) and runs the multiplayer pause handler (OnMultiPause).
 RVA(0x000bad00, 0x2d)
-i32 CNetMgr::OnPauseChannel() {
+i32 CMulti::OnPauseChannel() {
     if (m_connected == 0) {
         return 0;
     }
@@ -3371,7 +3372,7 @@ i32 CNetMgr::OnPauseChannel() {
 // Reentrancy-guarded fire of MULTI_PAUSE. When the dispatch returns 0x4cc,
 // forwards WM_COMMAND(0x80d7, m_1c) to the engine window.
 RVA(0x000bad40, 0x6c)
-void CNetMgr::OnMultiPause() {
+void CMulti::OnMultiPause() {
     if (g_pauseGuard) {
         return;
     }
@@ -3383,8 +3384,8 @@ void CNetMgr::OnMultiPause() {
     g_sharedFlag = 0;
 
     if (r == DISPATCH_RESYNC) {
-        HWND hwnd = m_4->m_wnd->m_hwnd;
-        PostMessageA(hwnd, WM_COMMAND, 0x80d7, m_resyncLParam);
+        HWND hwnd = NetGameMgr()->m_wnd->m_hwnd;
+        PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
     }
 }
 
@@ -3397,7 +3398,7 @@ void CNetMgr::OnMultiPause() {
 // Reentrancy-guarded fire of the MULTI_OPTIONZ command. Clears m_584, dispatches
 // (return value ignored), then clears the shared flag.
 RVA(0x000badd0, 0x43)
-void CNetMgr::OnMultiOptions() {
+void CMulti::OnMultiOptions() {
     if (g_optionzGuard) {
         return;
     }
@@ -3415,26 +3416,26 @@ void CNetMgr::OnMultiOptions() {
 // dispatch result: 0x4cc -> the same WM_COMMAND(0x80d7, m_1c) as Pause;
 // 0x4cd -> nothing; otherwise -> WM_COMMAND(0x8023, 0).
 RVA(0x000bae40, 0x84)
-void CNetMgr::OnOutOfSync() {
-    if (m_outOfSyncGuard) {
+void CMulti::OnOutOfSync() {
+    if (m_574) {
         return;
     }
 
-    m_outOfSyncGuard = 1;
+    m_574 = 1;
     m_584 = 0;
     i32 r = MultiDispatch("MULTI_OUTOFSYNC", MultiOutOfSyncCallback, 0);
     g_sharedFlag = 0;
 
     switch (r) {
         case DISPATCH_RESYNC: {
-            HWND hwnd = m_4->m_wnd->m_hwnd;
-            PostMessageA(hwnd, WM_COMMAND, 0x80d7, m_resyncLParam);
+            HWND hwnd = NetGameMgr()->m_wnd->m_hwnd;
+            PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
             break;
         }
         case DISPATCH_RESET:
             break;
         default: {
-            HWND hwnd = m_4->m_wnd->m_hwnd;
+            HWND hwnd = NetGameMgr()->m_wnd->m_hwnd;
             PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
             break;
         }
@@ -3455,7 +3456,8 @@ void CNetMgr::OnOutOfSync() {
 // (movb;movb), shuffling the field-store order. Same wall as
 // BroadcastChannelTable; not steerable from source. Deferred to the final sweep.
 RVA(0x000baf00, 0xb2)
-i32 CNetMgr::BroadcastOneChannel(CNetChannel* ch) {
+i32 CMulti::BroadcastOneChannel(i32 chan) {
+    CNetChannel* ch = (CNetChannel*)chan;
     char packet[0x2c];
     memset(packet, 0, 0x2c);
     packet[0] |= 0x80;
@@ -3485,7 +3487,7 @@ i32 CNetMgr::BroadcastOneChannel(CNetChannel* ch) {
 // on a null record / out-of-range index / null slot. Restores the channel name
 // CString (+0x4) and the header bytes, then marks the slot active.
 RVA(0x000baff0, 0x88)
-i32 CNetMgr::ParseOneChannel(void* rec) {
+i32 CMulti::ParseOneChannel(void* rec) {
     if (rec == 0) {
         return 0;
     }
@@ -3494,7 +3496,7 @@ i32 CNetMgr::ParseOneChannel(void* rec) {
     if (idx < 0 || idx >= 4) {
         return 0;
     }
-    CNetChannel* ch = &m_4->m_channels[idx];
+    CNetChannel* ch = &NetGameMgr()->m_channels[idx];
     if (ch == 0) {
         return 0;
     }
@@ -3519,11 +3521,11 @@ i32 CNetMgr::ParseOneChannel(void* rec) {
 // Stamps the static stat-0x422 packet (flag bit7, value 0) and ships it to the
 // local player's group via SetGroupDataFrom.
 RVA(0x000bb0b0, 0x44)
-i32 CNetMgr::SendChannelStat422() {
+i32 CMulti::SendChannelStat422() {
     g_chanStat422_id = 0x422;
     g_chanStat422_flag |= 0x80;
     g_chanStat422_val = 0;
-    m_peer->SetGroupDataFrom(m_localPlayer, 1, (i32)&g_chanStat422_flag, 0xc);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, (i32)&g_chanStat422_flag, 0xc);
     return 1;
 }
 
@@ -3531,11 +3533,11 @@ i32 CNetMgr::SendChannelStat422() {
 // CNetMgr::SendChannelStat423  (__thiscall).
 // As SendChannelStat422 but for the static stat-0x423 packet.
 RVA(0x000bb120, 0x44)
-i32 CNetMgr::SendChannelStat423() {
+i32 CMulti::SendChannelStat423() {
     g_chanStat423_id = 0x423;
     g_chanStat423_flag |= 0x80;
     g_chanStat423_val = 0;
-    m_peer->SetGroupDataFrom(m_localPlayer, 1, (i32)&g_chanStat423_flag, 0xc);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, (i32)&g_chanStat423_flag, 0xc);
     return 1;
 }
 
@@ -3559,7 +3561,7 @@ i32 CNetMgr::SendChannelStat423() {
 // folds the send-size strlen differently (`dec;add 0xd` vs `add 0xc`), reordering
 // the static stores. Big function, scheduling-class; deferred to the final sweep.
 RVA(0x000bb190, 0x1c5)
-i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
+i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
     if (text == 0) {
         return 0;
     }
@@ -3582,7 +3584,7 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
 
     char line[0x12c];
     if (toChat != 0) {
-        GruntzPlayer* player = m_4->FindPlayer();
+        GruntzPlayer* player = NetGameMgr()->FindPlayer();
         CString name = ((CNetMgr*)player)->GetName();
         sprintf(line, "%s: %s", (const char*)name, text);
     } else {
@@ -3593,9 +3595,9 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
         if (hWnd != 0) {
             ShowChatLine(hWnd, line);
         } else {
-            GruntzPlayer* player = m_4->FindPlayer();
+            GruntzPlayer* player = NetGameMgr()->FindPlayer();
             if (player != 0) {
-                ((CFontConfig*)m_4->m_5c)->AddItem(line, 0x30, player->m_008);
+                ((CFontConfig*)NetGameMgr()->m_5c)->AddItem(line, 0x30, player->m_008);
             }
         }
     }
@@ -3604,7 +3606,7 @@ i32 CNetMgr::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) 
     g_chatPacket_val = 0;
     strcpy(&g_chatPacket_buf, line);
     g_chatPacket_flag |= 0x80;
-    m_peer->SetGroupDataFrom(m_localPlayer, 1, (i32)&g_chatPacket_flag, strlen(line) + 0xd);
+    Peer()->SetGroupDataFrom(LocalPlayer(), 1, (i32)&g_chatPacket_flag, strlen(line) + 0xd);
     return 1;
 }
 
@@ -3650,20 +3652,20 @@ namespace NetLobby {
 // (ch->m_14) in edi (callee-saved across the calls) where cl keeps it in ecx, and
 // shares the failure epilogue one instruction tighter. Final sweep.
 RVA(0x000bb510, 0x9d)
-i32 CNetMgr::DropChannelPlayer(i32 idx) {
+i32 CMulti::DropChannelPlayer(i32 idx) {
     if (idx < 0 || idx >= 4) {
         return 0;
     }
-    if (m_useChannelLatency == 0) {
+    if (m_isHost == 0) {
         return 0;
     }
 
-    CNetChannel* ch = &m_4->m_channels[idx];
+    CNetChannel* ch = &NetGameMgr()->m_channels[idx];
     if (ch == 0) {
         return 0;
     }
 
-    void* data = m_peer->GetPlayerData(ch->m_playerId);
+    void* data = Peer()->GetPlayerData(ch->m_playerId);
     i32 active = ch->m_14;
     if (data == 0) {
         if (active != 0) {
@@ -3877,8 +3879,8 @@ i32 CNetMgr::WaitForOtherPlayers() {
 // retail tail-duplicates it (je; mov eax,1; ...; ret 4) - a regalloc/block-layout
 // wall, not steerable here. See docs/wall-instructions.md.
 RVA(0x000bba10, 0x1fb)
-i32 CNetMgr::Poll(i32 token) {
-    if (m_useChannelLatency == 0) {
+i32 CMulti::Poll(i32 token) {
+    if (m_isHost == 0) {
         SendNetStat(STAT_VERIFY_REQUEST, token, 1);
         i32 resend = 0x1388;
         i32 abort = 0x3a98;
@@ -3938,7 +3940,7 @@ i32 CNetMgr::Poll(i32 token) {
         CNetGameMgr* mgr = (CNetGameMgr*)g_gameReg;
         for (i32 i = 0; i < 4; i++) {
             CNetChannel* ch = &mgr->m_channels[i];
-            if (ch->m_playerId != m_localPlayerId && ch->m_active != 0 && ch->m_14 != 0) {
+            if (ch->m_playerId != m_hostIndex && ch->m_active != 0 && ch->m_14 != 0) {
                 if (m_recordAcked[i] == 0) {
                     allAcked = 0;
                 } else if (!(m_recordToken[i] == token && token != 0)) {
@@ -3949,11 +3951,11 @@ i32 CNetMgr::Poll(i32 token) {
         if (allAcked != 0) {
             if (allAgree != 0) {
                 SendStatFlag(STAT_VERIFY_AGREE, 1);
-                m_levelVerifyResult = 1;
+                m_53c = 1;
                 m_verifyDone = 1;
             } else {
                 SendStatFlag(STAT_VERIFY_DISAGREE, 1);
-                m_levelVerifyResult = 0;
+                m_53c = 0;
                 m_verifyDone = 1;
             }
         }
@@ -3980,26 +3982,26 @@ i32 CNetMgr::Poll(i32 token) {
 // them Boundary_/CGruntWingzTimeSprite - unalignable reloc names), and a 4-insn
 // register shuffle around the m_session->m_c store. Final sweep.
 RVA(0x000bbc90, 0x1b8)
-i32 CNetMgr::CreateSession() {
+i32 CMulti::CreateSession() {
     void* rec = g_648cf4->m_74;
     if (rec == 0) {
         return 0;
     }
-    m_peer->EnumGroupsRange(rec, 0);
+    Peer()->EnumGroupsRange(rec, 0);
     if (ResolveLocalPlayer() == 0) {
         return 0;
     }
 
     CNetSession* session = new CNetSession();
-    m_session = session;
+    m_session = (CNetSession2*)session;
     if (session == 0) {
         return 0;
     }
-    if (session->Init(m_4, this, m_peer) == 0) {
+    if (session->Init(NetGameMgr(), (CNetMgr*)this, Peer()) == 0) {
         return 0;
     }
 
-    m_session->m_c = (i32)m_localPlayer;
+    Session()->m_c = (i32)LocalPlayer();
     i32 raw10 = m_session->m_10;
     u8 b = (u8)raw10;
     if (b == 0) {
@@ -4007,15 +4009,15 @@ i32 CNetMgr::CreateSession() {
     } else {
         b = b - 1;
     }
-    m_resyncTick = b;
+    m_curSlotId = b;
 
     for (i32 i = 0; i < 4; i++) {
-        CNetChannel* ch = &m_4->m_channels[i];
+        CNetChannel* ch = &NetGameMgr()->m_channels[i];
         i32 code = 1;
         if (ch->m_active != 0 && ch->m_14 != 0) {
-            code = (ch->m_playerId == m_localPlayerId) ? 2 : 3;
+            code = (ch->m_playerId == m_hostIndex) ? 2 : 3;
         }
-        if (m_session->CreateSlot(i, code) == 0) {
+        if (Session()->CreateSlot(i, code) == 0) {
             return 0;
         }
     }
@@ -4130,16 +4132,16 @@ void CNetSession::ResetAll() {
 // and now->edi and orders `m_lastFrameDelta` store before `m_lastFrameTime`; cl swaps
 // the callee-saved pins (this->edi) and reorders the two stores. Not steerable. Final sweep.
 RVA(0x000bc070, 0x73)
-u32 CNetMgr::FrameSyncWait() {
+u32 CMulti::FrameSyncWait() {
     u32 now = timeGetTime();
-    u32 delta = now - m_lastFrameTime;
+    u32 delta = now - m_5e4;
     u32 ret = 0;
-    m_lastFrameDelta = delta;
-    m_lastFrameTime = now;
+    m_accumTime = delta;
+    m_5e4 = now;
 
     if (delta <= 0x1e) {
         ActiveWait(0x1f - delta);
-        m_lastFrameTime = (now - m_lastFrameDelta) + 0x1f;
+        m_5e4 = (now - m_accumTime) + 0x1f;
         return 0;
     }
     if (delta > 0x28 && m_syncGate) {
@@ -4157,7 +4159,7 @@ u32 CNetMgr::FrameSyncWait() {
 // 0x4ea reports the leaving player (stat 0x411 if still present), broadcasts
 // the drop (stat 0x410), acks it, and resets the buffers.
 RVA(0x000bc110, 0xf6)
-void CNetMgr::OnDropPlayer() {
+void CMulti::OnDropPlayer() {
     if (g_dropGuard) {
         return;
     }
@@ -4170,23 +4172,23 @@ void CNetMgr::OnDropPlayer() {
 
     switch (r) {
         case DISPATCH_RESET:
-            m_session->ResetCmdBuffers();
+            Session()->ResetCmdBuffers();
             break;
         case DISPATCH_ABORT: {
-            m_session->ResetCmdBuffers();
-            HWND hwnd = m_4->m_wnd->m_hwnd;
+            Session()->ResetCmdBuffers();
+            HWND hwnd = NetGameMgr()->m_wnd->m_hwnd;
             PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
             break;
         }
         case DISPATCH_PLAYERLEFT:
             if (g_611d88 != -999) {
-                if (m_peer->FindPlayerById(g_611d88)) {
+                if (Peer()->FindPlayerById(g_611d88)) {
                     SendStat3(g_611d88, STAT_PLAYERLEFT_LOCAL, 1);
                 }
             }
             SendNetStat(STAT_PLAYERLEFT, g_611d88, 1);
             AckDropPlayer(g_611d88);
-            m_session->ResetCmdBuffers();
+            Session()->ResetCmdBuffers();
             break;
     }
 }
@@ -4282,24 +4284,24 @@ void CMulti::AckJoinFailure() {
 // scoped CString temps + their stack packing is not source-steerable. Same family
 // as DetectConnectionConfig. Final sweep.
 RVA(0x000bc460, 0x24e)
-i32 CNetMgr::SetupTcpIpConfig() {
-    m_configSection = "TcpIp";
-    m_gameClosed = 0;
-    m_cmdDelay = 5;
-    m_resend = 0x3c;
+i32 CMulti::SetupTcpIpConfig() {
+    m_598 = "TcpIp";
+    m_5ac = 0;
+    m_5a4 = 5;
+    m_drainReload = 0x3c;
 
-    Utils::RegistryHelper* cfg = m_4->m_configStore;
-    CString kDelay = m_configSection + "_CmdDelay";
-    CString kResend = m_configSection + "_Resend";
-    CString kDyn = m_configSection + "_DynCmdDelay";
+    Utils::RegistryHelper* cfg = NetGameMgr()->m_configStore;
+    CString kDelay = m_598 + "_CmdDelay";
+    CString kResend = m_598 + "_Resend";
+    CString kDyn = m_598 + "_DynCmdDelay";
     i32 cd = cfg->GetValueDword((char*)(const char*)(kDelay), -1);
     i32 rs = cfg->GetValueDword((char*)(const char*)(kResend), -1);
     if (cd != -1 && rs != -1) {
-        m_cmdDelay = cd;
-        m_resend = rs;
+        m_5a4 = cd;
+        m_drainReload = rs;
     }
 
-    CNetChannel* ch0 = m_4->m_channels;
+    CNetChannel* ch0 = NetGameMgr()->m_channels;
     {
         CString name = GetString5a0();
         ch0->m_name = name;
@@ -4309,18 +4311,18 @@ i32 CNetMgr::SetupTcpIpConfig() {
     void* lp;
     {
         CString cn = ch0->GetName();
-        lp = (void*)m_peer->CreatePlayer((void*)(const char*)cn, (i32)g_emptyString, 0);
+        lp = (void*)Peer()->CreatePlayer((void*)(const char*)cn, (i32)g_emptyString, 0);
     }
-    m_localPlayer = (CNetPlayerEntry*)lp;
+    m_5bc = (i32)(CNetPlayerEntry*)lp;
     if (lp == 0) {
         ReportConnectFailed(0);
         return 0;
     }
 
-    m_localPlayerId = *(i32*)((char*)lp + 4);
+    m_hostIndex = *(i32*)((char*)lp + 4);
     i32 chField = ch0->m_slotId;
     CString cn2 = ch0->GetName();
-    i32 ok = RegisterChannelFrom(cn2, chField, -1, m_localPlayerId);
+    i32 ok = RegisterChannelFrom(cn2, chField, -1, m_hostIndex);
     return ok != 0;
 }
 
@@ -4339,18 +4341,18 @@ i32 CNetMgr::SetupTcpIpConfig() {
 // read kept in the return reg vs re-read from the temp slot, and the order MSVC
 // schedules the adjacent packet byte-stores (0x63/0xf and the m_localPlayerId load). Final sweep.
 RVA(0x000bc750, 0x151)
-i32 CNetMgr::CreateLocalPlayer() {
+i32 CMulti::CreateLocalPlayer() {
     {
         CString name = GetString5a0();
-        m_localPlayer =
-            (CNetPlayerEntry*)m_peer->CreatePlayer((void*)(const char*)name, (i32)g_emptyString, 0);
+        m_5bc = (i32)(CNetPlayerEntry*)Peer()
+                    ->CreatePlayer((void*)(const char*)name, (i32)g_emptyString, 0);
     }
-    if (m_localPlayer == 0) {
+    if (LocalPlayer() == 0) {
         ReportConnectFailed(0);
         return 0;
     }
 
-    m_localPlayerId = m_localPlayer->m_4;
+    m_hostIndex = LocalPlayer()->m_4;
     if (WaitForConnect() == 0) {
         return 0;
     }
@@ -4366,7 +4368,7 @@ i32 CNetMgr::CreateLocalPlayer() {
     pkt.m_c = 0x63;
     pkt.m_d = 0xf;
     pkt.m_e = 0;
-    pkt.m_10 = m_localPlayerId;
+    pkt.m_10 = m_hostIndex;
     {
         CString name = GetString5a0();
         strcpy(pkt.m_14, (const char*)name);
@@ -4402,7 +4404,7 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
         return 0;
     }
     m_hostIndex = ((i32*)m_5bc)[1];
-    return RegisterChannelFrom(a1, a2, -1, m_hostIndex) != 0;
+    return RegisterChannelFrom((const char*)a1, a2, -1, m_hostIndex) != 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -4420,18 +4422,18 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
 // import ptr in ebp; cl tail-merges the identical zero-return epilogues and uses ebx.
 // See identical-return-epilogue-tailmerge.md (topic:wall). Final sweep.
 RVA(0x000bca50, 0x155)
-i32 CNetMgr::WaitForConnect() {
-    if (m_peer == 0) {
+i32 CMulti::WaitForConnect() {
+    if (Peer() == 0) {
         return 0;
     }
-    if (m_localPlayer == 0) {
+    if (LocalPlayer() == 0) {
         return 0;
     }
 
     SendStatFlag(STAT_CONNECTING, 1);
-    m_admitted = 0;
+    m_58c = 0;
     u32 start = timeGetTime();
-    if (m_admitted != 0) {
+    if (m_58c != 0) {
         return 1;
     }
 
@@ -4443,29 +4445,29 @@ i32 CNetMgr::WaitForConnect() {
         }
         PollSession();
         if (m_sessionTerminated) {
-            ReportNetError("The game session has been terminated.", 0);
+            ReportVersionMsg("The game session has been terminated.", 0);
             return 0;
         }
-        if (m_removedFromGame) {
-            ReportNetError("You have been removed from the game by the host.", 0);
+        if (m_538) {
+            ReportVersionMsg("You have been removed from the game by the host.", 0);
             return 0;
         }
-        if (m_gameClosed) {
-            ReportNetError("This game is closed.", 0);
+        if (m_5ac) {
+            ReportVersionMsg("This game is closed.", 0);
             return 0;
         }
-        if (m_gameFull) {
-            ReportNetError("This game is already full.", 0);
+        if (m_56c) {
+            ReportVersionMsg("This game is already full.", 0);
             return 0;
         }
-        if (m_versionMismatch) {
-            ReportNetError(
+        if (m_570) {
+            ReportVersionMsg(
                 "This version is not the same as the host computer's version of the game.",
                 0
             );
             return 0;
         }
-    } while (m_admitted == 0);
+    } while (m_58c == 0);
     return 1;
 }
 
@@ -4486,7 +4488,7 @@ i32 CNetMgr::WaitForConnect() {
 // 0x88888889;shr4) and folds the (>2?1:0)+1 bump into a single lea - none steerable
 // from C source. Final sweep (an optimizer-math idiom).
 RVA(0x000bcc10, 0x8e)
-void CNetMgr::AutoTuneCmdDelay() {
+void CMulti::AutoTuneCmdDelay() {
     if (m_530 != 0) {
         return;
     }
@@ -4499,13 +4501,13 @@ void CNetMgr::AutoTuneCmdDelay() {
 
     i32 probe = ProbeLatency(0);
     base += (probe > 2 ? 1 : 0) + 1;
-    m_cmdDelay = base;
+    m_5a4 = base;
     if (base <= 5) {
-        m_resend = 0xa;
+        m_drainReload = 0xa;
         WriteCmdDelay(0);
         return;
     }
-    m_resend = (base > 8 ? 0x14 : 0x1e);
+    m_drainReload = (base > 8 ? 0x14 : 0x1e);
     WriteCmdDelay(0);
 }
 
@@ -4553,24 +4555,24 @@ SIZE(CNetConfigBlob, 0x11c); // fully-known fixed stat-0x416 config blob
 // the CString-buffer read kept in the return reg vs re-read from the temp slot, and
 // a tail `mov eax,1` materialization. Final sweep.
 RVA(0x000bccd0, 0x141)
-i32 CNetMgr::SaveConfig(CNetPlayerEntry* recipient) {
+i32 CMulti::SaveConfig(CNetPlayerEntry* recipient) {
     CNetConfigBlob blob;
     memset(&blob, 0, sizeof(blob));
     blob.m_0 |= 0x80;
     blob.m_4 = STAT_CONFIG;
     blob.m_8 = m_5b0;
     {
-        CString a = GetConfigNameA();
+        CString a = ((CNetMgr*)this)->GetConfigNameA();
         wsprintfA(blob.m_nameA, (const char*)a);
     }
     {
-        CString b = GetConfigNameB();
+        CString b = ((CNetMgr*)this)->GetConfigNameB();
         wsprintfA(blob.m_nameB, (const char*)b);
     }
-    blob.m_10c = m_cmdDelay;
-    blob.m_110 = m_resend;
+    blob.m_10c = m_5a4;
+    blob.m_110 = m_drainReload;
     blob.m_114 = m_600;
-    blob.m_118 = m_2d8;
+    blob.m_118 = m_rngSeed;
 
     if (recipient != 0) {
         return SendStatPairRaw(recipient, &blob, 0x11c, 1);
@@ -4585,7 +4587,7 @@ i32 CNetMgr::SaveConfig(CNetPlayerEntry* recipient) {
 // cfg+0x8c -> m_5b8) and four dwords (cfg+0x10c -> m_cmdDelay, +0x110 ->
 // m_resend, +0x114 -> m_600, +0x118 -> m_2d8). No-op (0) on a null blob; else 1.
 RVA(0x000bce80, 0x77)
-i32 CNetMgr::LoadConfig(void* cfg) {
+i32 CMulti::LoadConfig(void* cfg) {
     if (cfg == 0) {
         return 0;
     }
@@ -4594,10 +4596,10 @@ i32 CNetMgr::LoadConfig(void* cfg) {
     m_5b0 = *(i32*)(c + 8);
     m_5b4 = (const char*)(c + 0xc);
     m_5b8 = (const char*)(c + 0x8c);
-    m_cmdDelay = *(i32*)(c + 0x10c);
-    m_resend = *(i32*)(c + 0x110);
+    m_5a4 = *(i32*)(c + 0x10c);
+    m_drainReload = *(i32*)(c + 0x110);
     m_600 = *(i32*)(c + 0x114);
-    m_2d8 = *(i32*)(c + 0x118);
+    m_rngSeed = *(i32*)(c + 0x118);
     return 1;
 }
 
@@ -4614,12 +4616,12 @@ i32 CNetMgr::LoadConfig(void* cfg) {
 // then ecx) and picks ecx/edx for the two ClearRange lea'd args where cl reads it
 // earlier (into ecx) and picks edx/eax. Instruction-schedule permutation. Final sweep.
 RVA(0x000bcf20, 0xaf)
-i32 CNetMgr::ResetPlayerCommands(i32 id) {
+i32 CMulti::ResetPlayerCommands(i32 id) {
     if (m_connected == 0) {
         return 0;
     }
 
-    CNetCmdSlot* slot = m_session->FindCmdSlot(id);
+    CNetCmdSlot* slot = Session()->FindCmdSlot(id);
     if (slot == 0) {
         return 0;
     }
@@ -4628,11 +4630,11 @@ i32 CNetMgr::ResetPlayerCommands(i32 id) {
     }
 
     slot->Touch();
-    i32 seq = (slot->m_baseSeq + 1) * (i32)m_cmdDelay;
-    i32 end = seq + (i32)m_cmdDelay * 3;
+    i32 seq = (slot->m_baseSeq + 1) * (i32)m_5a4;
+    i32 end = seq + (i32)m_5a4 * 3;
     for (; seq < end; seq++) {
-        m_4->m_6c->Dispatch(*slot->m_cmdHead, seq);
-        slot->RemoveCmd(seq / (i32)m_cmdDelay);
+        NetGameMgr()->m_6c->Dispatch(*slot->m_cmdHead, seq);
+        slot->RemoveCmd(seq / (i32)m_5a4);
     }
     slot->ResetTriple(slot->m_rangeA);
     slot->ResetTriple(slot->m_rangeB);
@@ -4644,7 +4646,7 @@ i32 CNetMgr::ResetPlayerCommands(i32 id) {
 // Thin wrapper: samples the current worst ack latency and ships it to the
 // engine command dispatcher as stat 0x421.
 RVA(0x000bd000, 0x19)
-void CNetMgr::ReportAckLatency() {
+void CMulti::ReportAckLatency() {
     u32 latency = GetMaxAckLatency();
     SendNetStat(STAT_ACKLATENCY, latency, 0);
 }
@@ -4657,20 +4659,20 @@ void CNetMgr::ReportAckLatency() {
 // slots hanging off m_4 (stride 0x238), each counted only when BOTH of its
 // "slot active" gate flags (m_164, m_170) are nonzero.
 RVA(0x000bd030, 0x5d)
-u32 CNetMgr::GetMaxAckLatency() {
+u32 CMulti::GetMaxAckLatency() {
     u32 max = 0;
 
-    if (m_useChannelLatency != 0) {
+    if (m_isHost != 0) {
         for (i32 i = 0; i < 4; i++) {
             if (m_channelLatency[i] > max) {
                 max = m_channelLatency[i];
             }
         }
     } else {
-        // The retail leaf addresses each slot m_4-relative (base m_4, disp +0x164/
+        // The retail leaf addresses each slot NetGameMgr()-relative (base NetGameMgr(), disp +0x164/
         // +0x170/+0x37c), NOT via the +0x150 channel base - a distinct authentic
         // encoding, so the CNetPlayerSlot view is kept (removing it shifts base/disp).
-        CNetPlayerSlot* slot = (CNetPlayerSlot*)m_4;
+        CNetPlayerSlot* slot = (CNetPlayerSlot*)NetGameMgr();
         for (i32 i = 0; i < 4; i++) {
             if (slot->m_164 && slot->m_170) {
                 if (slot->m_37c > max) {
@@ -4691,7 +4693,7 @@ u32 CNetMgr::GetMaxAckLatency() {
 // posts WM_COMMAND(0x8023) to the engine window; then fires stat 0x418 and
 // sleeps 250ms before returning.
 RVA(0x000bd0b0, 0x9a)
-void CNetMgr::HandleVersionCheck(CNetVersionMsg* msg) {
+void CMulti::HandleVersionCheck(CNetVersionMsg* msg) {
     if (msg == 0) {
         return;
     }
@@ -4706,13 +4708,13 @@ void CNetMgr::HandleVersionCheck(CNetVersionMsg* msg) {
 
     if (mismatch) {
         i32 wasConnected = m_connected;
-        m_versionMismatch = 1;
+        m_570 = 1;
         if (wasConnected) {
             ReportVersionMsg(
                 "This version is not the same as the host computer's version of the game.",
                 0
             );
-            HWND hwnd = m_4->m_wnd->m_hwnd;
+            HWND hwnd = NetGameMgr()->m_wnd->m_hwnd;
             PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
         }
     }
@@ -4733,7 +4735,7 @@ void CNetMgr::HandleVersionCheck(CNetVersionMsg* msg) {
 // packet field stores and the stack-arg-block setup at a different anchor than cl;
 // an instruction-schedule permutation of the same store multiset. Final sweep.
 RVA(0x000bd180, 0x66)
-void CNetMgr::AnnounceVersion(i32 param) {
+void CMulti::AnnounceVersion(i32 param) {
     CNetVersionPacket packet;
     memset(&packet, 0, sizeof(packet));
 
