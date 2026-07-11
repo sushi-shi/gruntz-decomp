@@ -66,24 +66,55 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
-#include <Gruntz/AreaMgr.h> // CAreaMgr (g_61139c; CPlayLevelLoad::LoadByMode, waveP)
+#include <Gruntz/AreaMgr.h>              // CAreaMgr (g_61139c; CPlayLevelLoad::LoadByMode, waveP)
+#include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader (BuildAssetNamespacePrefixes, waveP)
+// The GRUNTZ_/GAME image worker registry (owner+0x10): 18 vtable slots then the
+// virtual LoadTree at +0x48; plus the non-virtual key probe + direct-load (same shape
+// as <DDrawMgr/DDrawAssetRegistryViews.h>, augmented here with the RVA-tagged names
+// this TU's other callers use - HasKeyEqual_155550 / RemoveKeysEqual_155360 /
+// AnyValueMatches_155630 - since Play already carries a local view of it).
 class CDDrawWorkerRegistry {
 public:
-    i32 HasKeyEqual_155550(const char* k);
-    i32 RemoveKeysEqual_155360(const char* a, const char* b);
-    i32
-    AnyValueMatches_155630(i32 a, i32 b, i32 c); // 0x155630 (CArchiveLoadRec::Load default helper)
-}; // 0x155550/0x155360
+    virtual void s00();
+    virtual void s04();
+    virtual void s08();
+    virtual void s0c();
+    virtual void s10();
+    virtual void s14();
+    virtual void s18();
+    virtual void s1c();
+    virtual void s20();
+    virtual void s24();
+    virtual void s28();
+    virtual void s2c();
+    virtual void s30();
+    virtual void s34();
+    virtual void s38();
+    virtual void s3c();
+    virtual void s40();
+    virtual void s44();
+    virtual void LoadTree(void* tree, const char* prefix, const char* sep); // +0x48
+    i32 HasKeyEqual_155550(const char* k);                                  // 0x155550
+    i32 HasKeyEqual(const char* key); // 0x155550 (BuildAssetNamespacePrefixes)
+    i32 RemoveKeysEqual_155360(const char* a, const char* b); // 0x155360
+    void
+    LoadTreeDirect(const char* prefix, const char* sep); // 0x155360 (BuildAssetNamespacePrefixes)
+    i32 AnyValueMatches_155630(i32 a, i32 b, i32 c);     // 0x155630 (CArchiveLoadRec::Load)
+};
 class
     CSymTab; // ScanTree_152ad0's real 1st arg (the anim namespace tree); cast at the void* call sites
 class CDDrawSubMgrAni {
 public:
-    i32 ScanTree_152ad0(
-        CSymTab* n,
-        const char* a,
-        const char* b
-    ); // 0x152ad0 (real: i32 ret, CSymTab* arg)
-}; // 0x152ad0
+    i32 ScanTree_152ad0(CSymTab* n, const char* a, const char* b); // 0x152ad0 (real: CSymTab* arg)
+    i32 HasKeyPrefix(const char* key); // 0x152c50 (BuildAssetNamespacePrefixes)
+    void ScanTree(
+        void* tree,
+        const char* prefix,
+        const char* sep
+    ); // 0x152ad0 (BuildAssetNamespacePrefixes)
+    void
+    ScanTreeDirect(const char* prefix, const char* sep); // 0x1527d0 (BuildAssetNamespacePrefixes)
+};
 #include <Bute/SymTab.h>
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
@@ -5988,6 +6019,120 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
     }
     return 1;
 }
+// ===========================================================================
+// CNamespaceLoader::BuildAssetNamespacePrefixes (0x0dca70; re-homed from the former
+// assetnamespaceprefixes unit, waveP - TU_MIGRATION MOVE row `0x0dca70 -> 0xd5960 play`).
+// The GRUNTZ_ per-object asset-namespace loader (/GX). The three worker-registry views
+// (m_c->m_10/m_28/m_2c) reuse THIS TU's CDDrawWorkerRegistry / canonical CDDrawSubMgrLeafScan
+// / CDDrawSubMgrAni (augmented above with LoadTree/HasKeyEqual/... ). g_gameReg is the
+// 0x64556c singleton, g_resourceInstallActive is reused. Callees reloc-masked.
+// ===========================================================================
+DATA(0x002bf37c)
+extern i32 g_resourceInstallActive; // 0x6bf37c
+
+struct AssetRoot { // this->m_c
+    char m_pad00[0x10];
+    CDDrawWorkerRegistry* m_10; // +0x10
+    char m_pad14[0x28 - 0x14];
+    CDDrawSubMgrLeafScan* m_28; // +0x28
+    CDDrawSubMgrAni* m_2c;      // +0x2c
+};
+
+// The lighting/preview draw helpers off g_gameReg (0x64556c).
+struct GRAssetMgr {
+    char m_pad00[0x24];
+    void* m_24; // +0x24  (rect source at +0x10)
+};
+DATA(0x0024556c)
+extern CGameRegistry* g_gameReg; // *0x64556c
+
+// The preview draw (0x1c5d) + the finish hook (0x35e4).
+extern "C" void
+DrawPreview(GRAssetMgr* ctx, CString* text, RECT* rc, i32 y, i32 f, i32 b, i32 g, i32 r, i32 a9);
+void FinishAssetLoad(); // 0x35e4
+
+// @source: decomp-xref
+// @early-stop
+// /GX shared-return block-layout wall (~90.5%): the logic, both mode branches, the
+// three GRUNTZ_ namespace registrations, the lighting/preview draw, g_resourceInstallActive
+// gating and the vtable-LoadTree/direct-load split are all byte-identical to retail.
+// The residual is where cl places the single return-cleanup epilogue: the recompile
+// makes the ResolvePath-fail path the fall-through (epilogue mid-body at ~0x173) and
+// reaches LoadTree by branch, while retail makes the success path the fall-through
+// (epilogue at the tail); that block-ordering drift cascades stack-offset/branch bytes
+// through the back half. Both `return 0`/single-`goto done` spellings compile identical
+// (block-layout heuristic, not source-steerable). The rest is reloc/EH scoring artifact
+// (differently-named externs, the __except handler-index push, __imp__CopyRect vs the
+// 0x6c44bc pointer). Verified llvm-objdump -dr, base main body vs delinked target.
+RVA(0x000dca70, 0x4a4)
+i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
+    const CString& name,
+    i32 mode,
+    i32 lightGate,
+    i32 finishGate
+) {
+    i32 result;
+    if (mode != 0) {
+        if (m_c->m_10->HasKeyEqual("GRUNTZ_" + name) == 0) {
+            ((CGruntSpawnConfig*)g_gameReg->m_cueSink)->DtorBody();
+            ((CTriggerMgr*)g_gameReg->m_cmdGrid)->DestroyAllAnims();
+            if (lightGate != 0) {
+                CString cs;
+                cs.LoadString(0x819b);
+                RECT r = *(RECT*)g_gameReg->m_world->m_24->m_barRect;
+                RECT r2;
+                CopyRect(&r2, &r);
+                DrawPreview((GRAssetMgr*)g_gameReg->m_world, &cs, &r2, 0x82, 1, 0xff, 0xff, 0, 1);
+            }
+            g_resourceInstallActive = 1;
+            void* tree = m_30->ResolvePath("IMAGEZ_" + name);
+            if (tree == 0) {
+                result = 0;
+                goto done;
+            }
+            m_c->m_10->LoadTree(tree, "GRUNTZ_" + name, "_");
+            g_resourceInstallActive = 0;
+            if (finishGate != 0) {
+                FinishAssetLoad();
+            }
+        }
+        if (m_c->m_28->HasKeyEqual_1583c0("GRUNTZ_" + name) == 0) {
+            void* tree = m_30->ResolvePath("SOUNDZ_" + name);
+            if (tree != 0) {
+                m_c->m_28->ScanTree_157ee0((DirNode*)tree, "GRUNTZ_" + name, "_");
+            }
+        }
+        if (m_c->m_2c->HasKeyPrefix("GRUNTZ_" + name) == 0) {
+            void* tree = m_30->ResolvePath("ANIZ_" + name);
+            if (tree == 0) {
+                result = 0;
+                goto done;
+            }
+            m_c->m_2c->ScanTree(tree, "GRUNTZ_" + name, "_");
+        }
+        result = 1;
+        goto done;
+    }
+
+    if (m_c->m_10->HasKeyEqual("GRUNTZ_" + name) != 0) {
+        m_c->m_10->LoadTreeDirect("GRUNTZ_" + name, "_");
+        if (finishGate != 0) {
+            FinishAssetLoad();
+        }
+    }
+    if (m_c->m_28->HasKeyEqual_1583c0("GRUNTZ_" + name) != 0) {
+        m_c->m_28->RemoveKeysEqual_157c70("GRUNTZ_" + name, "_");
+    }
+    if (m_c->m_2c->HasKeyPrefix("GRUNTZ_" + name) != 0) {
+        m_c->m_2c->ScanTreeDirect("GRUNTZ_" + name, "_");
+    }
+    result = 1;
+done:
+    return result;
+}
+SIZE_UNKNOWN(AssetRoot);
+SIZE_UNKNOWN(GRAssetMgr);
+SIZE_UNKNOWN(CSymTree);
 
 // ===========================================================================
 // CPlay::BuildSpriteImageKeyTable (0x0dd540) - install the per-grunt IMAGE namespaces

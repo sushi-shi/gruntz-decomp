@@ -37,7 +37,9 @@
 #include <Gruntz/BattlezData.h>   // CBattlezData::InBounds (CheckPerfectBonus frame-ready gate)
 #include <Gruntz/WwdGameReg.h> // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_mgr; CBattleStatsView::DrawBattleStats, waveP)
-#include <Io/MoviePlayer.h>      // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
+#include <Gruntz/BzState.h> // canonical BzGameReg/BzState + Bz* graph (BootyMessages overlays, waveP)
+#include <Globals.h>        // g_secretMsgA/B, g_secretRatioScale, g_idleSpriteIds (moved overlays)
+#include <Io/MoviePlayer.h> // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
 
 // CMultiBootyState::Render's HUD line is drawn through the shared GlyphStringDraw.cpp
 // free function (0x115520); declared here (reloc-masked) so the call co-names with retail.
@@ -92,19 +94,41 @@ struct BzGameClock {
     char m_pad00[0x10];
     i32 m_elapsedMs; // +0x10  elapsed game milliseconds (Render / 1000 -> seconds)
 };
-SIZE_UNKNOWN(BzGameReg);
-struct BzGameReg { // == *0x24556c (g_mgrSettings), viewed for the world sound set
-    char m_pad00[4];
-    BzGameWnd* m_gameWnd; // +0x04  the game window (KeyHost::Check posts to m_hwnd)
-    char m_pad08[0x30 - 0x08];
-    BootySndWorld* m_world; // +0x30
-    char m_pad34[0x7c - 0x34];
-    BzGameClock* m_7c; // +0x7c  elapsed-time clock (Render countdown source)
-    char m_pad80[0x11c - 0x80];
-    i32 m_soundToken; // +0x11c  ambient sound token
+// The *0x24556c game registry is now the canonical BzGameReg (<Gruntz/BzState.h>): its
+// m_wnd(+0x04)/m_soundHolder(+0x30)/m_levelRecord(+0x7c)/m_soundToken(+0x11c) are the same
+// slots this TU read as m_gameWnd/m_world/m_7c/m_soundToken, cast at use to the local
+// BzGameWnd/BootySndWorld/BzGameClock facet types (the BootyMessages overlays folded here,
+// waveP, share the canonical view).
+// --- globals the folded BootyMessages overlays (0x18f00/0x1ce60) reach (waveP) ---
+struct BzGeomPair {
+    i32 m_y; // +0x00  onscreen y
+    i32 m_x; // +0x04  onscreen x
 };
-DATA(0x0024556c)
-extern BzGameReg* g_mgrSettings;
+SIZE_UNKNOWN(BzGeomPair);
+DATA(0x001e8fe4)
+extern BzGeomPair g_idleGeom[4]; // 0x5e8fe4
+DATA(0x0021ab24)
+extern i32 g_sndCueTag; // 0x61ab24 (?g_sndCueTag@@3HA)
+struct SecretMsgRow {
+    char strA[0x20]; // +0x00  encoded line A
+    char strB[0x80]; // +0x20  encoded line B
+};
+SIZE_UNKNOWN(SecretMsgRow);
+DATA(0x00229f30)
+extern SecretMsgRow g_secretMsgRows[]; // 0x629f30  (0xa0 stride)
+// The shared HUD message-sprite helper (0x1154b0, __cdecl).
+void ShowHudMessage(
+    void* sink,
+    CString* text,
+    RECT* rect,
+    i32 dur,
+    i32 a,
+    i32 b,
+    i32 c,
+    i32 d,
+    i32 e
+);
+
 // USER32 PostMessageA reached through the game-owned IAT-style fn-ptr (ff 15 [ptr]);
 // same global CGruntzMgr/Attract/Play bind. KeyHost::Check posts through it.
 DATA(0x002c44c8)
@@ -257,7 +281,7 @@ i32 CBootyState::Vslot09(i32) {
     BuildPage(0x50, 0x3e8, 0, 1);
 
     BzGameReg* reg = g_mgrSettings;
-    BootySndSet* set = reg->m_world->m_soundSet;
+    BootySndSet* set = ((BootySndWorld*)reg->m_soundHolder)->m_soundSet;
     i32 token = reg->m_soundToken;
     if (set->m_activeGuard == 0) {
         BootySndEntry* res = 0;
@@ -295,6 +319,99 @@ i32 CBootyState::FrameSlot28(i32) {
                 m_c->m_28->m_2c->PurgeVoiceList(-1);
             }
         }
+    }
+    return 1;
+}
+// ===========================================================================
+// (re-homed from the former bootymessages unit, waveP - BzState overlay method;
+// g_mgrSettings/BzState are the canonical <Gruntz/BzState.h> graph.)
+// ===========================================================================
+// ShowSecretBonusMessage @0x18f00 - draws the "Secret Bonus" overlay. With a
+// completed single record (m_secretBannerOnce + AllRecordsInBounds) it shows the
+// static "Secret of Secretz" banner + the two cipher-decoded lines; otherwise it
+// grades the group ratio into 1/2/3 rows and draws "Secret Bonus Acquired:" + that
+// many cipher-decoded row pairs (each row offset by the level's rowBase).
+// ===========================================================================
+// @early-stop
+// /GX EH-frame + nested-temp wall: complete + correct reconstruction (the
+// m_secretBannerOnce/AllRecordsInBounds banner arm, the GroupRatio*scale -> 1/2/3
+// grading, the rowBase=(m_levelIndex-1)/4 row index, the per-(category,row) SetRect
+// coordinate table, and the `-=0x3d` SetAt decode cipher). Residual = the delinked
+// `Unwind@..` EH frame (docs/seh-eh.md) + the per-CString-temp EH-state ordering /
+// callee-saved regalloc across the many destructible RECT+CString locals. Logic +
+// externs/strings named.
+RVA(0x00018f00, 0x4fb)
+i32 BzState::ShowSecretBonusMessage() {
+    if (m_secretBannerOnce != 0
+        && ((CBattlezData*)g_mgrSettings->m_levelRecord)->AllRecordsInBounds()) {
+        CString s;
+        if (!RegisterMultiNamespaces("multi", 0, 0, 0, 0, 1)) {
+            return 0;
+        }
+        RECT r1, r2, r3;
+        SetRect(&r1, 0, -15, 0x280, 0x1d1);
+        SetRect(&r2, 0, 0x19, 0x280, 0x1f9);
+        SetRect(&r3, 0, 0x38, 0x280, 0x78);
+        s.Format("The Secret of Secretz:");
+        ShowHudMessage(m_sink, &s, &r1, 0x82, 1, 0xff, 0xff, 0, 1);
+
+        CString s2(g_secretMsgA);
+        CString s3(g_secretMsgB);
+        for (i32 k = 0; k < s2.GetLength(); k++) {
+            s2.SetAt(k, (char)(((const char*)s2)[k] - 0x3d));
+        }
+        ShowHudMessage(m_sink, &s2, &r3, 0x78, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_sink, &s3, &r2, 0x6e, 1, 0xff, 0xff, 0, 1);
+        return 1;
+    }
+
+    i32 count =
+        (i32)(((CBattlezData*)g_mgrSettings->m_levelRecord)->GroupRatio() * g_secretRatioScale);
+    i32 rowBase = (g_mgrSettings->m_levelRecord->m_levelIndex - 1) / 4;
+    i32 category = (count >= 0x64) ? 3 : ((count >= 0x32) ? 2 : 1);
+
+    if (!RegisterMultiNamespaces("multi", 0, 0, 0, 0, 1)) {
+        return 0;
+    }
+    CString title;
+    RECT rTitle;
+    SetRect(&rTitle, 0, 0x38, 0x280, 0x78);
+    title.Format("Secret Bonus Acquired:");
+    ShowHudMessage(m_sink, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
+
+    for (i32 j = 0; j < category; j++) {
+        RECT rA, rB;
+        if (category == 1) {
+            SetRect(&rA, 0, -15, 0x280, 0x1d1);
+            SetRect(&rB, 0, 0x19, 0x280, 0x1f9);
+        } else if (category == 2) {
+            if (j == 0) {
+                SetRect(&rA, 0, -20, 0x280, 0x1cc);
+                SetRect(&rB, 0, 0x14, 0x280, 0x1f4);
+            } else {
+                SetRect(&rA, 0, 0x46, 0x280, 0x226);
+                SetRect(&rB, 0, 0x6e, 0x280, 0x24e);
+            }
+        } else {
+            if (j == 0) {
+                SetRect(&rA, 0, -60, 0x280, 0x1a4);
+                SetRect(&rB, 0, -20, 0x280, 0x1cc);
+            } else if (j == 1) {
+                SetRect(&rA, 0, 0x1e, 0x280, 0x1fe);
+                SetRect(&rB, 0, 0x46, 0x280, 0x226);
+            } else {
+                SetRect(&rA, 0, 0x78, 0x280, 0x24e);
+                SetRect(&rB, 0, 0xa0, 0x280, 0x276);
+            }
+        }
+        i32 idx = rowBase * 3 + j;
+        CString s5(g_secretMsgRows[idx].strA);
+        CString s6(g_secretMsgRows[idx].strB);
+        for (i32 k = 0; k < s5.GetLength(); k++) {
+            s5.SetAt(k, (char)(((const char*)s5)[k] - 0x3d));
+        }
+        ShowHudMessage(m_sink, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_sink, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
     }
     return 1;
 }
@@ -539,6 +656,136 @@ i32 CMultiBootyState::ReadyAndPaint() {
         return 0;
     }
     return Paint() != 0;
+}
+// ===========================================================================
+// (re-homed from the former bootymessages unit, waveP - BzState overlay method;
+// g_mgrSettings/BzState are the canonical <Gruntz/BzState.h> graph.)
+// ===========================================================================
+// BuildBootyGruntIdleAnimation @0x1ce60 - the per-frame booty/secret idle-grunt
+// animation state machine. On the first entry in state 0xc7/0xc8 it installs the
+// "bg" namespace, seeds the four player idle grunts (visibility + the per-player
+// "GRUNTZ_PICKUPS_<W/A/R/P>" or "GRUNTZ_NORMALGRUNT" cycle) and the trailing idle
+// sprites, then kicks the loader + timer; on later ticks it grades the secret bonus
+// and advances/ends the state. Sibling of CGruntSprintAnim (same CString cycle-name
+// idiom) reusing the BzState helpers above.
+// ===========================================================================
+// @early-stop
+// /GX EH-frame + sub-object-regalloc wall: complete + correct reconstruction (the
+// 0xc7/0xc8 guard, the m_suppressGate PostMessage arm, the m_initOnce init path with
+// the wand-cue sound, the 4-player loop + WARP jump-table CString build, the
+// trailing-sprite geometry loop, and the m_initOnce!=0 step/tick arms grading the
+// secret bonus). Residual = the delinked `Unwind@..` EH frame (docs/seh-eh.md) +
+// callee-saved regalloc across the many engine sub-objects reached by raw
+// this+offset. Logic + externs/strings named.
+RVA(0x0001ce60, 0x450)
+i32 BzState::BuildBootyGruntIdleAnimation() {
+    i32 state = m_stateId;
+    if (state != 0xc7 && state != 0xc8) {
+        m_initGate = 1;
+        return 1;
+    }
+    BzLevelRecord* rec = g_mgrSettings->m_levelRecord;
+    if (rec->m_suppressGate != 0) {
+        PostMessageA((HWND)g_mgrSettings->m_wnd->m_hwnd, 0x111, 0x8023, 0);
+        return 1;
+    }
+    if (m_initOnce == 0) {
+        if (rec->m_worldFlag != 0) {
+            m_initOnce = 1;
+            BzSoundSet* ss = g_mgrSettings->m_soundHolder->m_soundSet;
+            if (ss->m_playing == 0) {
+                BzSoundEntry* res = 0;
+                ((CMapStringToPtr*)&ss->m_findTable)
+                    ->Lookup("GRUNTZ_WANDGRUNT_WANDZGRUNTI3A", (void*&)res);
+                if (res != 0) {
+                    ((LeafCue*)res)->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
+                }
+            }
+            if (g_mgrSettings->m_levelRecord->m_levelIndex < 0x24) {
+                for (i32 p = 0; p < 4; p++) {
+                    m_visSprites[p]->m_stateFlags |= 1;
+                    m_animSprites[p]->m_screenX = g_idleSpriteIds[p];
+                    m_animSprites[p]->m_screenY = 0xdc;
+                    m_animSprites[p]->m_stateFlags &= ~1;
+                    if (((CBattlezData*)g_mgrSettings->m_levelRecord)->GetRecordValue(p) != 0) {
+                        CString letter;
+                        switch (p) {
+                            case 0:
+                                letter = "W";
+                                break;
+                            case 1:
+                                letter = "A";
+                                break;
+                            case 2:
+                                letter = "R";
+                                break;
+                            case 3:
+                                letter = "P";
+                                break;
+                        }
+                        m_animSprites[p]->ApplyName("GRUNTZ_PICKUPS");
+                        m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_PICKUPS_" + letter, 0);
+                    } else {
+                        m_animSprites[p]->ApplyName("GRUNTZ_NORMALGRUNT_SOUTH_IDLE");
+                        m_animSprites[p]->ApplyLookupGeometry("GRUNTZ_NORMALGRUNT_IDLE4", 0);
+                    }
+                }
+            }
+            for (i32 k = 0; k < 4; k++) {
+                m_trailSprites[k]->m_screenX = g_idleGeom[k].m_x;
+                m_trailSprites[k]->m_screenY = g_idleGeom[k].m_y;
+                m_trailSprites[k]->m_stateFlags &= ~1;
+            }
+            if (!RegisterMultiNamespaces("bg", 0, 0, 0, 0, 1)) {
+                return 0;
+            }
+            ShowLevelCompleteMessage();
+            ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158ee0();
+            m_sink->m_notify->OnLoaded(m_sink->m_loader->m_data);
+            ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158e90();
+            StartTimer(0x50, 0x3e8, 0, 1);
+            if (!RegisterMultiNamespaces("bg", 0, 0, 0, 0, 1)) {
+                return 0;
+            }
+            ShowLevelCompleteMessage();
+            return 1;
+        }
+    } else if (rec->m_worldFlag != 0 && rec->m_levelIndex < 0x24 && state == 0xc7) {
+        if (((CBattlezData*)rec)->GroupAllScored()) {
+            if (!ShowSecretBonusMessage()) {
+                return 0;
+            }
+            ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158ee0();
+            StartTimer(0x50, 0x3e8, 0, 1);
+            m_stateId = 0xfffffffe;
+            return 1;
+        }
+    }
+
+    if (m_stateId == 0xfffffffe
+        && ((CBattlezData*)g_mgrSettings->m_levelRecord)->AllRecordsInBounds()
+        && m_secretBannerOnce == 0) {
+        m_secretBannerOnce = 1;
+        if (!ShowSecretBonusMessage()) {
+            return 0;
+        }
+        ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158ee0();
+        StartTimer(0x50, 0x3e8, 0, 1);
+        return 1;
+    }
+
+    BzLevelRecord* rec2 = g_mgrSettings->m_levelRecord;
+    if (rec2->m_levelIndex == 0x20) {
+        BzSinkSub* sub = m_sink->m_dropped->m_sprite;
+        if (sub != 0) {
+            ((SoundStream*)sub)->Stop();
+        }
+        g_mgrSettings->ChangeState_8fab0(3);
+        PostMessageA((HWND)g_mgrSettings->m_wnd->m_hwnd, 0x111, 0x8021, 0);
+    } else {
+        PassClickToPlayState((rec2->m_levelIndex % 0x28) + 1, 0, 1);
+    }
+    return 1;
 }
 
 // CBootyState::Vslot0c (0x1d420, vtable slot 12): tail-forward to the shared booty-grunt
@@ -893,7 +1140,7 @@ i32 CMultiBootyState::Render() {
     m_c->m_8->FrameBegin(1);
     m_c->m_8->FramePresent(m_c->m_drawTarget->m_14);
 
-    u32 secs = g_mgrSettings->m_7c->m_elapsedMs / 1000; // signed /1000, then unsigned H:M:S
+    u32 secs = ((BzGameClock*)g_mgrSettings->m_levelRecord)->m_elapsedMs / 1000;
     CString s;
     RECT rc;
     SetRect(&rc, 8, 0x41, 0xcb, 0xae);
@@ -1005,7 +1252,7 @@ SIZE_UNKNOWN(PendingCmdKeyHost);
 RVA(0x0001f8a0, 0x30)
 i32 PendingCmdKeyHost::PostCommandIfKey() {
     if (m_cmdKey == 0xc7) {
-        g_pPostMessageA(g_mgrSettings->m_gameWnd->m_hwnd, 0x111, 0x8023, 0);
+        g_pPostMessageA(((BzGameWnd*)g_mgrSettings->m_wnd)->m_hwnd, 0x111, 0x8023, 0);
     }
     return 1;
 }

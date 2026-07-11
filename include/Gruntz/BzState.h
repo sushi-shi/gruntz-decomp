@@ -100,7 +100,10 @@ struct BzGameReg {
     char m_pad64[0x74 - 0x64];
     BzSelSource* m_selSource; // +0x74
     char m_pad78[0x7c - 0x78];
-    BzLevelRecord* m_levelRecord; // +0x7c
+    BzLevelRecord* m_levelRecord; // +0x7c  (BootyStateActivate reads this same slot as its
+                                  // elapsed-time clock via a BzGameClock* cast - same object)
+    char m_pad80[0x11c - 0x80];
+    i32 m_soundToken; // +0x11c  ambient sound token (BootyStateActivate's glitter setup)
     // *g_64556c's own game-mgr method (== CGruntzMgr::ChangeState_8fab0, reloc-masked)
     // so g_mgrSettings->ChangeState_8fab0() calls direct - no cross-cast to CGruntzMgr*.
     i32 ChangeState_8fab0(i32 arg); // 0x08fab0

@@ -313,11 +313,6 @@ source = "src/Gruntz/LevelRezPath.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "assetnamespaceprefixes"
-source = "src/Gruntz/AssetNamespacePrefixes.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "brickzload"
 source = "src/Gruntz/BrickzLoad.cpp"
 flags = "base"
