@@ -27,6 +27,15 @@ For each non-main cluster in a flagged file, decide which it is:
   different class than the file's main cluster (e.g. CState methods inside Play.cpp,
   CBrickzGrid inside Brickz.cpp). Carve into its own RVA-named `.cpp`, then chase
   its owner.
+- **(c) lone method INTERLEAVED within another unit → NOT a separate obj.** A single
+  method surrounded on BOTH sides by another unit's functions (e.g. CGruntzMgr::
+  SetCellHeight @0x111ec0 sitting inside the tileswitchlogic block) is a COMDAT:
+  either an INLINE method defined in a header (emitted out-of-line where referenced)
+  or an out-of-line method defined in that surrounding unit's `.cpp`. Do NOT give it
+  a standalone `.cpp` (that's a workaround, as GruntzMgr2.cpp currently is) — model it
+  as inline-in-header, or home it into the surrounding unit's source. Distinguish (b)
+  from (c) by neighbours: a run of ≥2 foreign methods, or a lone block at a BOUNDARY
+  between two units, is (b); a lone method with the SAME unit on both sides is (c).
 
 Gate on BUILD INTEGRITY only; take any %-hit (structure-recovery phase). Never
 `git stash` in the shared worktree. Absolute paths only.
