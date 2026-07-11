@@ -24,9 +24,13 @@ BUILD INTEGRITY only; NEVER revert a structurally-correct move/fold/binding for 
 (`python -m gruntz.analysis.reloc_fidelity` — every reference bound to the rva retail
 actually uses) and **view debt** now outrank match %. The push-to-100 mandate below
 still governs an ordinary from-scratch reconstruction; it does NOT license reverting
-a correct structural change to protect a number. (Reloc-masked fixes — retargeting a
-call/global — ARE byte-neutral, so there a %-drop DOES mean you changed layout/args:
-revert that specific edit, not the retarget.)
+a correct structural change to protect a number. Retargeting a call/global to the RIGHT
+function/rva and dropping the fake view is USUALLY byte-neutral — but **not always** (a
+real signature or type can genuinely differ from the fake view's), and when it isn't,
+**take the %-hit anyway**: keep the correct binding, mark `@early-stop` + note it, and
+NEVER revert the retarget to protect %. The only thing you ever revert is an ACCIDENT —
+an edit you didn't intend or a wrong value you can fix to the *right* one. A deliberate
+correct change that costs % stays.
 
 ## Reconstruction mandate (non-negotiable)
 
