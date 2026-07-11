@@ -3378,8 +3378,8 @@ rva,name,lib,confidence,source
 0x1bade1,Thunk_1bade1,MSVC-THUNK,HIGH,asm-carveout
 0x1d3330,Thunk_1d3330,MSVC-THUNK,HIGH,asm-carveout
 0x169be0,CButeMgrHelper_FuncA,MSVC-THUNK,HIGH,asm-carveout
+0x1915a8,_DirectSoundCreate@12,MSVC-THUNK,HIGH,dsound-import-thunk
 0x17f570,Dtor_17f570,GAME-ASM,HIGH,asm-carveout
-0x136fe0,SoundTick_Ctor,GAME-ASM,HIGH,asm-carveout
 0x1d4a18,FreeLibHost_Dtor,GAME-ASM,HIGH,asm-carveout
 0x1c7e6d,Dtor_1c7e6d,GAME-ASM,HIGH,asm-carveout
 0x18c1f5,IntegerScale,GAME-ASM,HIGH,asm-carveout

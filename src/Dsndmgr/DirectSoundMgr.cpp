@@ -41,7 +41,8 @@
 #include <dsound.h> // real DirectSound SDK (IDirectSound/Buffer, DSBUFFERDESC, DSBCAPS)
 #include <rva.h>
 #include <math.h>   // acos / pow (intrinsic __CIacos / __CIpow) in the volume curves
-#include <stdio.h>  // engine sprintf (reloc-masked); FILE - the CRT stream Eng_fopen returns
+#include <stdio.h>  // engine sprintf (reloc-masked); FILE + fopen/fread/fclose (RIFF loaders)
+#include <io.h>     // _filelength (0x18c480) - the RIFF file-size query
 #include <string.h> // inline strcpy/memcpy (rep movs / repne scasb)
 
 #include <Globals.h> // c_volScale/c_volNum/c_acosNorm/c_powExp + g_panTable
@@ -76,9 +77,11 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
 DATA(0x00253ab8)
 i32 g_volumeTable[100];
 
-// Engine fopen 0x11f870 (CRT FILE*) + file-size query 0x18c480 (reads FILE._file fd).
-extern "C" FILE* Eng_fopen(const char* path, const char* mode); // 0x11f870
-extern "C" u32 Eng_filelength(i32 fd);                          // 0x18c480
+// The RIFF loaders read the file directly with the CRT: fopen (0x11f870 = _fopen),
+// _filelength (0x18c480 = __filelength, reads FILE._file fd), fread (0x18c220 =
+// _fread) + fclose (0x11f780 = _fclose) - all LIBCMT (config/library_labels.csv),
+// so these calls bind library-exempt. (<stdio.h> is included above; <io.h> below
+// declares _filelength.)
 
 // "rb" open-mode string the loader passes fopen (.data, rva 0x20b668). Bound via
 // @data-symbol, not DATA: clang mangles the const-char[] extern with a `Q` storage
@@ -88,15 +91,12 @@ extern "C" u32 Eng_filelength(i32 fd);                          // 0x18c480
 // @data-symbol: ?s_rb@@3PBDB 0x0020b668
 extern const char s_rb[];
 
-// The app resource-module accessor AcquireResource/ReloadResource read the
-// HINSTANCE from (global accessor 0x1d3631, module handle @+0x08; the same local
-// view ResourceLoaders.cpp keeps for its RT_BITMAP/PALETTE loaders).
-struct AppModule_136a30 {
-    char m_pad0[8];
-    HINSTANCE m_8; // +0x08 = the resource module handle
-};
-SIZE_UNKNOWN(AppModule_136a30);
-AppModule_136a30* AppModule_1d3631(); // RVA 0x1d3631 (global accessor)
+// The WAVE resource loaders (AcquireResource/ReloadResource) read the module's
+// resource HINSTANCE through MFC's AfxGetModuleState (NAFXCW, 0x1d3631) - the
+// standard `AfxGetModuleState()->m_hCurrentInstanceHandle` (+0x08). Both the class
+// AFX_MODULE_STATE and the accessor come from the real MFC headers already pulled
+// in via <Rez/RezMgr.h> -> <Mfc.h> -> <afx.h> -> <afxstat_.h>; the call binds
+// library-exempt (?AfxGetModuleState@@YGPAVAFX_MODULE_STATE@@XZ, library_labels.csv).
 
 // The retail game-global timeGetTime fn-ptr (_g_pTimeGetTime @ 0x6c4650), NOT the
 // WINMM import; PurgeVoiceList calls ds:[0x6c4650] - do NOT swap for timeGetTime.
@@ -1200,18 +1200,18 @@ DirectSoundMgr* SoundDevice::AcquireFile(char* path, u32 flags, u32 reserved) {
     if (m_initialized == 0) {
         return 0;
     }
-    FILE* fp = Eng_fopen(path, s_rb);
+    FILE* fp = fopen(path, s_rb);
     if (fp == 0) {
         return 0;
     }
-    u32 size = Eng_filelength(fp->_file);
+    u32 size = _filelength(fp->_file);
     void* buf = operator new(size);
-    if (RezFRead(buf, size, 1, fp) != 1) {
-        RezFClose(fp);
+    if (fread(buf, size, 1, fp) != 1) {
+        fclose(fp);
         operator delete(buf);
         return 0;
     }
-    RezFClose(fp);
+    fclose(fp);
     DirectSoundMgr* wrapper = Acquire(buf, flags, reserved);
     operator delete(buf);
     return wrapper;
@@ -1278,12 +1278,12 @@ DirectSoundMgr* SoundDevice::AcquireResource(const char* name, u32 flags, u32 re
     if (m_initialized == 0) {
         return 0;
     }
-    HINSTANCE mod1 = AppModule_1d3631()->m_8;
+    HINSTANCE mod1 = AfxGetModuleState()->m_hCurrentInstanceHandle;
     HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
     if (!hRsrc) {
         return 0;
     }
-    HINSTANCE mod2 = AppModule_1d3631()->m_8;
+    HINSTANCE mod2 = AfxGetModuleState()->m_hCurrentInstanceHandle;
     HGLOBAL hRes = LoadResource(mod2, hRsrc);
     if (!hRes) {
         return 0;
@@ -1327,18 +1327,18 @@ i32 SoundDevice::ReloadFile(DirectSoundMgr* buf, char* path, u32 reserved) {
     if (buf->IsLooping() == 0) {
         return 1;
     }
-    FILE* fp = Eng_fopen(path, s_rb);
+    FILE* fp = fopen(path, s_rb);
     if (fp == 0) {
         return 0;
     }
-    u32 size = Eng_filelength(fp->_file);
+    u32 size = _filelength(fp->_file);
     void* data = operator new(size);
-    if (RezFRead(data, size, 1, fp) != 1) {
-        RezFClose(fp);
+    if (fread(data, size, 1, fp) != 1) {
+        fclose(fp);
         operator delete(data);
         return 0;
     }
-    RezFClose(fp);
+    fclose(fp);
     i32 r = ReloadRiff(buf, data, reserved);
     operator delete(data);
     return r;
@@ -1405,12 +1405,12 @@ i32 SoundDevice::ReloadResource(DirectSoundMgr* probe, const char* name, u32 res
     if (probe->IsLooping() == 0) {
         return 1;
     }
-    HINSTANCE mod1 = AppModule_1d3631()->m_8;
+    HINSTANCE mod1 = AfxGetModuleState()->m_hCurrentInstanceHandle;
     HRSRC hRsrc = FindResourceA(mod1, name, "WAVE");
     if (!hRsrc) {
         return 0;
     }
-    HINSTANCE mod2 = AppModule_1d3631()->m_8;
+    HINSTANCE mod2 = AfxGetModuleState()->m_hCurrentInstanceHandle;
     HGLOBAL hRes = LoadResource(mod2, hRsrc);
     if (!hRes) {
         return 0;
@@ -1562,9 +1562,26 @@ void DSoundList::RemoveMatching(void* key, u32 tag) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x136fe0 - the DSoundVoice 6-arg ctor ("SoundTick_Ctor", 123 B): stamps the
-// 0x5ef6d0 vtable + the play params. NOT yet reconstructed (the dossier's one
-// remaining in-obj gap); CloneAndPlay's `new DSoundVoice(...)` reloc-masks to it.
+// DSoundVoice 6-arg ctor (0x136fe0, "SoundTick_Ctor", 123 B, __thiscall): stamps
+// the 0x5ef6d0 vtable (cl-auto, PureSoundElem-derived concrete voice) and the
+// volume-ramp play params. The stamp arg == -1 means "start now" -> latch the
+// global-clock reading (_g_pTimeGetTime @ 0x6c4650); otherwise use it verbatim.
+// CloneAndPlay's `new DSoundVoice(...)` binds here.
+// @early-stop
+// /GX ctor-EH-frame wall: the class has a class-specific operator delete (the
+// PureSoundElem RezFree base), so cl wraps construction in an SEH scope (push -1 /
+// handler / state var) to run operator delete if the body throws; the field-store
+// + vptr-stamp + timeGetTime body is byte-exact, the EH scaffold is the residual.
+RVA(0x00136fe0, 0x7b)
+DSoundVoice::DSoundVoice(i32 key, i32 pct, i32 mode, DirectSoundMgr* owner, i32 slot, i32 stamp) {
+    m_live = 1;
+    m_buffer = owner;
+    m_stopAndRewind = slot;
+    m_rampStartVolume = pct;
+    m_rampEndVolume = key;
+    m_rampDurationMs = mode;
+    m_rampStartTime = (stamp == -1) ? g_pTimeGetTime() : stamp;
+}
 
 // ---------------------------------------------------------------------------
 // DSoundVoice::Tick (0x137060, vtbl slot 0, __thiscall, 1 arg = the current
