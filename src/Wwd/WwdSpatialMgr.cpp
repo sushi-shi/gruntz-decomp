@@ -86,14 +86,15 @@ struct WwdBucketHead {
 // _body_counts artifact of this reduced view - the header carries the OVERRIDE.)
 // Data fields (offsets per WwdGrid.h) are read by the iterator: the rect bounds,
 // the log2 cell shifts, the column count, and the 8-byte bucket-head array.
+struct WwdRegion; // canonical grid node type (== WwdGridNode); real Add/Clear param
 class CWwdGrid {
 public:
     virtual void Slot00();
     virtual ~CWwdGrid(); // slot 1 (deleting dtor -> cl-emitted ??_G)
     i32 Scroll_1918c0(WwdRect r, i32 flag);
-    i32 Add_191840(void* region);
+    i32 Add(WwdRegion* region); // 0x191840 (real body in wwdgrid)
     i32 Remove_191890(WwdGridNode* region);
-    i32 RemoveAll_191a70();
+    i32 Clear(); // 0x191a70 (real body in wwdgrid)
 
     i32 m_allocated; // +0x04  buckets-allocated flag
     i32 m_count;     // +0x08  live object count
@@ -355,13 +356,13 @@ RVA(0x001688b0, 0x40)
 i32 CWwdSpatialMgr::PruneCount() {
     i32 n = 0;
     if (m_grid0) {
-        n = m_grid0->RemoveAll_191a70();
+        n = m_grid0->Clear();
     }
     if (m_grid1) {
-        n += m_grid1->RemoveAll_191a70();
+        n += m_grid1->Clear();
     }
     if (m_grid2) {
-        n += m_grid2->RemoveAll_191a70();
+        n += m_grid2->Clear();
     }
     if (m_mgr) {
         m_mgr->PruneOrphans_15b1d0();
@@ -378,13 +379,13 @@ RVA(0x001688f0, 0x6d)
 void CWwdSpatialMgr::RemoveObject(CWwdObject* obj) {
     i32 flags = obj->m_flags;
     if (flags & 0x800000) {
-        m_grid1->Add_191840(&obj->m_region);
+        m_grid1->Add((WwdRegion*)&obj->m_region);
         m_mgr->AddToMap48_15aba0(obj);
     } else if (flags & 0x1000000) {
-        m_grid2->Add_191840(&obj->m_region);
+        m_grid2->Add((WwdRegion*)&obj->m_region);
         m_mgr->AddToMap48_15aba0(obj);
     } else {
-        m_grid0->Add_191840(&obj->m_region);
+        m_grid0->Add((WwdRegion*)&obj->m_region);
         m_mgr->AddToMap48_15aba0(obj);
     }
 }

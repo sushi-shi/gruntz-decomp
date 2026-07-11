@@ -136,9 +136,11 @@ struct CGameObject {
     i32 ApplyLookupGeometry(const char* key, i32 flag);        // 0x1505b0
     i32 LookupAnimSprite(const char* name);                    // 0x150610  (anim-set cache)
     void ApplyGeometryDirect(i32 srcSprite, i32 applyDefault); // 0x58b60
-    i32 EnsureWorker80(CGameObject* src);  // 0x150eb0  (lazy worker @ +0x80, dispatch)
-    void EnsureWorker88(CGameObject* src); // 0x150f90  (lazy worker @ +0x88, dispatch)
-    void EnsureWorker90(CGameObject* src); // 0x151070  (lazy worker @ +0x90, dispatch)
+    i32 EnsureWorker80(CGameObject* src); // 0x150eb0  (lazy worker @ +0x80, dispatch)
+    i32
+    EnsureWorker88(CGameObject* src); // 0x150f90  (lazy worker @ +0x88, dispatch; returns Slot09)
+    i32
+    EnsureWorker90(CGameObject* src); // 0x151070  (lazy worker @ +0x90, dispatch; returns Slot09)
 
     // The world's logic-handler name map (m_0c -> +0x14 -> +0x10). m_0c is the
     // family's generically-typed world/context slot; reached by documented offset.

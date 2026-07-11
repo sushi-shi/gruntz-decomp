@@ -34,7 +34,8 @@
 #include <Gruntz/AniRecordView.h>   // the primary-facet class (CAniRecordView : CObject)
 #include <DDrawMgr/DDSurface.h>     // CDDSurface::SetPalette (Slot13_168fd0, reloc-masked)
 #include <DDrawMgr/DirectDrawMgr.h> // canonical CDDPalette (the +0x10 work buffer's real class)
-#include <string.h>                 // strlen (inline repnz scas)
+#include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections - the real +0x1c pool allocator
+#include <string.h>                       // strlen (inline repnz scas)
 #include <Globals.h>
 
 // The three vftables (g_aniRecordVtbl @0x5f02c0, CAniRecordBase2 @0x5f02d8, the shared
@@ -57,17 +58,11 @@ void RezFree(void* p);
 
 // ---------------------------------------------------------------------------
 // The pool allocator the buffer virtuals route through: the owner (record+0x0c)
-// holds at +0x1c a manager whose Alloc(handle, size) / Free(p) (re)allocate the
-// record's +0x10 work buffer from a fixed pool. Modeled as a tiny __thiscall
-// helper so `mov ecx,[owner+0x1c]; call` falls out with no stack cleanup.
-class CAniRecordPool {
-public:
-    void* Alloc1_142fc0(i32 handle, i32 size);        // 0x142fc0
-    void* Alloc2_142f40(i32 handle, i32 size);        // 0x142f40
-    void* Alloc3_1430c0(i32 a, i32 handle, i32 size); // 0x1430c0
-    void* Create_143040(i32 handle, i32 size);        // 0x143040
-    void Free_142f10(void* p);                        // 0x142f10
-};
+// holds at +0x1c the real CDDrawPtrCollections pool allocator (canonical
+// <DDrawMgr/DDrawPtrCollections.h>): its MakeB/MakeB2/MakeB3/Create build a
+// CDDPalette work buffer, RemoveItemB frees it. (Was a fake local CAniRecordPool
+// view whose Alloc*/Free names masked the real 0x142f40..0x1430c0 / 0x142f10
+// CDDrawPtrCollections methods.)
 
 // The owner node (record+0x0c). Its +0x08 is a flags word the buffer virtuals OR
 // a bit into; its +0x1c is the pool above.
@@ -80,7 +75,7 @@ public:
     i32 m_00, m_04; // +0x00..+0x07
     i32 m_flags;    // +0x08  flags
     char _pad0c[0x1c - 0x0c];
-    CAniRecordPool* m_pool; // +0x1c  the pool allocator
+    CDDrawPtrCollections* m_pool; // +0x1c  the pool allocator (real CDDrawPtrCollections)
 };
 
 // The freshly-allocated +0x10 palette buffer is a real CDDPalette (canonical
@@ -276,12 +271,12 @@ CString CAniStrArray::GetAt(int index) {
 
 // ---------------------------------------------------------------------------
 // 0x168ea0: (re)allocate the +0x10 work buffer from the owner's pool with size
-// 0x44 (Alloc2_142f40). On success, if the caller's flag bit 0x1 is set, mark the
+// 0x44 (CDDrawPtrCollections::MakeB2). On success, if the caller's flag bit 0x1 is set, mark the
 // owner's +0x08 flags and run the buffer's second-stage init. Returns 1.
 // Frameless leaf.
 RVA(0x00168ea0, 0x40)
 void* CAniRecordView::Alloc168ea0(i32 size, i32 flag) {
-    CDDPalette* buf = (CDDPalette*)m_owner->m_pool->Alloc2_142f40(size, 0x44);
+    CDDPalette* buf = m_owner->m_pool->MakeB2(size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0; // tail returns 1 only on the success path below
@@ -294,11 +289,11 @@ void* CAniRecordView::Alloc168ea0(i32 size, i32 flag) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x168ee0: as 0x168ea0 but through Alloc1_142fc0 (the canonical 0x44 allocator).
+// 0x168ee0: as 0x168ea0 but through CDDrawPtrCollections::MakeB (the canonical 0x44 allocator).
 // Frameless leaf.
 RVA(0x00168ee0, 0x40)
 void* CAniRecordView::Alloc168ee0(i32 size, i32 flag) {
-    CDDPalette* buf = (CDDPalette*)m_owner->m_pool->Alloc1_142fc0(size, 0x44);
+    CDDPalette* buf = m_owner->m_pool->MakeB((void*)size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
@@ -311,10 +306,10 @@ void* CAniRecordView::Alloc168ee0(i32 size, i32 flag) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x168f20 (slot 9): as 0x168ea0 but through the Create_143040 allocator. Frameless leaf.
+// 0x168f20 (slot 9): as 0x168ea0 but through CDDrawPtrCollections::Create. Frameless leaf.
 RVA(0x00168f20, 0x40)
 void* CAniRecordView::Alloc168f20(i32 handle, i32 flag) {
-    CDDPalette* buf = (CDDPalette*)m_owner->m_pool->Create_143040(handle, 0x44);
+    CDDPalette* buf = m_owner->m_pool->Create(handle, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
@@ -327,10 +322,10 @@ void* CAniRecordView::Alloc168f20(i32 handle, i32 flag) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x168f60: the three-arg buffer allocator (Alloc3_1430c0, ret 0xc). Frameless leaf.
+// 0x168f60: the three-arg buffer allocator (CDDrawPtrCollections::MakeB3, ret 0xc). Frameless leaf.
 RVA(0x00168f60, 0x45)
 void* CAniRecordView::Alloc168f60(i32 a, i32 size, i32 flag) {
-    CDDPalette* buf = (CDDPalette*)m_owner->m_pool->Alloc3_1430c0(a, size, 0x44);
+    CDDPalette* buf = m_owner->m_pool->MakeB3(a, size, 0x44);
     m_buf = (i32)buf;
     if (buf == 0) {
         return (void*)0;
@@ -343,13 +338,13 @@ void* CAniRecordView::Alloc168f60(i32 a, i32 size, i32 flag) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x168fb0: free the +0x10 work buffer back to the owner's pool (Free_142f10) and
+// 0x168fb0: free the +0x10 work buffer back to the owner's pool (CDDrawPtrCollections::RemoveItemB) and
 // clear it. Frameless leaf.
 RVA(0x00168fb0, 0x1f)
 void CAniRecordView::FreeBuf_168fb0() {
     i32 buf = m_buf;
     if (buf != 0) {
-        m_owner->m_pool->Free_142f10((void*)buf);
+        m_owner->m_pool->RemoveItemB((CDDPalette*)buf);
         m_buf = 0;
     }
 }
@@ -390,7 +385,6 @@ i32 CAniRecordView::Slot13_168fd0() {
 SIZE_UNKNOWN(CAniMapOwner);
 SIZE_UNKNOWN(CAniRecordBase2);
 SIZE_UNKNOWN(CAniRecordOwner);
-SIZE_UNKNOWN(CAniRecordPool);
 
 VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
 VTBL(CAniRecordView, 0x001f02c0);  // ??_7CAniRecordPrimary@@6B@ (5-slot CObject-derived)

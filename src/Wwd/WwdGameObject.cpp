@@ -728,9 +728,9 @@ void CGameObject::AddLogicHit(char* key) {
 // an early `xor eax,eax;ret` block where cl shares the epilogue - the swap cascades
 // every esi/edi. Logic exact; a pure allocator coin-flip, not source-steerable.
 RVA(0x00150f90, 0x98)
-void CGameObject::EnsureWorker88(CGameObject* src) {
+i32 CGameObject::EnsureWorker88(CGameObject* src) {
     if (src == 0) {
-        return;
+        return 0;
     }
     if (m_88 != 0) {
         m_88->Slot07();
@@ -754,9 +754,9 @@ void CGameObject::EnsureWorker88(CGameObject* src) {
         m_88 = w;
     }
     if (m_88 == 0) {
-        return;
+        return 0;
     }
-    m_88->Slot09(src->m_10, 0);
+    return m_88->Slot09(src->m_10, 0);
 }
 
 // @early-stop
@@ -774,9 +774,9 @@ void CGameObject::AddLogicAttack(char* key) {
 // @early-stop
 // same zero-register-pinning wall as EnsureWorker88 (this/0 in esi<->edi).
 RVA(0x00151070, 0x98)
-void CGameObject::EnsureWorker90(CGameObject* src) {
+i32 CGameObject::EnsureWorker90(CGameObject* src) {
     if (src == 0) {
-        return;
+        return 0;
     }
     if (m_collideWorker != 0) {
         m_collideWorker->Slot07();
@@ -800,9 +800,9 @@ void CGameObject::EnsureWorker90(CGameObject* src) {
         m_collideWorker = w;
     }
     if (m_collideWorker == 0) {
-        return;
+        return 0;
     }
-    m_collideWorker->Slot09(src->m_10, 0);
+    return m_collideWorker->Slot09(src->m_10, 0);
 }
 
 // @early-stop
@@ -1070,7 +1070,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     if (strlen(name) != 0) {
         void* found = 0;
         m_mgr->m_14->m_map.Lookup(name, found);
-        if (Resolve150eb0(found) == 0) {
+        if (((CGameObject*)this)->EnsureWorker80((CGameObject*)found) == 0) {
             return 0;
         }
     }
@@ -1079,7 +1079,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     if (strlen(name) != 0) {
         void* found = 0;
         m_mgr->m_14->m_map.Lookup(name, found);
-        if (Resolve150f90(found) == 0) {
+        if (((CGameObject*)this)->EnsureWorker88((CGameObject*)found) == 0) {
             return 0;
         }
     }
@@ -1088,7 +1088,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
     if (strlen(name) != 0) {
         void* found = 0;
         m_mgr->m_14->m_map.Lookup(name, found);
-        if (Resolve151070(found) == 0) {
+        if (((CGameObject*)this)->EnsureWorker90((CGameObject*)found) == 0) {
             return 0;
         }
     }
@@ -1135,8 +1135,10 @@ i32 CWwdGameObject::Sub151b90(i32 gate) {
 // ~96% reloc/scheduling plateau: the two externals (Build/Dtor) reloc-mask
 // against differently-named symbols (entropy tail) and a couple of record-field
 // stores schedule one slot off retail. Logic complete; not steerable.
+// Two __thiscall params (ret 8): dst = the archive (used), the 2nd is unused (retail
+// never reads [esp+0xb4]); modeling both fixes the epilogue ret operand.
 RVA(0x00151c00, 0x118)
-i32 CWwdGameObject::WriteSnapshot(i32 dst) {
+i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
     CSerialArchive* ar = (CSerialArchive*)dst;
     if (ar == 0) {
         return 0;

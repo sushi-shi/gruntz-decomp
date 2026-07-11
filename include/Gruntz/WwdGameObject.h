@@ -109,17 +109,17 @@ public:
     // (m_198) against the camera rect or the plane grid limits (via m_mgr).
     i32 Test();
     // Dispatch entry (0x150a70) and the methods it routes to.
-    i32 Dispatch(i32 a1, i32 type, i32 a3, i32 a4);    // 0x150a70
-    i32 ReadState(i32 src);                            // 0x150b00
-    i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4);         // 0x150d60 (vtbl +0x28)
-    i32 Play(i32 a1, i32 type, i32 a3, i32 a4);        // 0x151150 (vtbl +0x3c)
-    i32 Serialize(i32 ar);                             // 0x151320
-    i32 WriteSnapshot(i32 dst);                        // 0x151c00
-    i32 Init(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x15b940
-    i32 ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4); // 0x1665e0
+    i32 Dispatch(i32 a1, i32 type, i32 a3, i32 a4);             // 0x150a70
+    i32 ReadState(i32 src);                                     // 0x150b00
+    i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4);                  // 0x150d60 (vtbl +0x28)
+    i32 Play(i32 a1, i32 type, i32 a3, i32 a4);                 // 0x151150 (vtbl +0x3c)
+    i32 Serialize(i32 ar);                                      // 0x151320
+    i32 WriteSnapshot(i32 dst, i32 unused);                     // 0x151c00 (ret 8; 2nd arg unused)
+    i32 Init(i32 a1, i32 a2, i32 a3, i32 a4);                   // 0x15b940
+    i32 ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4);          // 0x1665e0
     i32 SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag); // 0x15c1d0 (out-of-line)
     i32 SetupDeferred(i32 a3, i32 a4);                          // 0x15bc30 (out-of-line)
-    void RenderDot(WwdRenderCtx* a); // 0x1660f0
+    void RenderDot(WwdRenderCtx* a);                            // 0x1660f0
 
     // Sibling helpers (modeled as same-class methods so ecx=this matches).
     i32 Helper164790(i32 a2, i32 a1); // 0x164790  __thiscall
@@ -128,10 +128,9 @@ public:
     i32 Sub151b90(i32 a1);            // 0x151b90  cache linked object (m_98) from key m_184
 
     // The three "resolve object reference" setters Sub151780 dispatches the
-    // deserialized name lookups into (sibling __thiscall methods, reloc-masked).
-    i32 Resolve150eb0(void* obj); // 0x150eb0
-    i32 Resolve150f90(void* obj); // 0x150f90
-    i32 Resolve151070(void* obj); // 0x151070
+    // deserialized name lookups into are CGameObject::EnsureWorker80/88/90 (0x150eb0/
+    // 0x150f90/0x151070) - the same wide object under the CGameObject view; called
+    // through a CGameObject* cast, no fake local placeholders.
 
     // +0x00 is the CObject base vptr (the 17-slot table); m_04 at +0x04.
     i32 m_04;         // +0x04

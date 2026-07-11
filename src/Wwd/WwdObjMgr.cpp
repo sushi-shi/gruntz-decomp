@@ -91,14 +91,6 @@ public:
 };
 SIZE_UNKNOWN(CWwdObject);
 
-// A worker held in the +0x2c/+0x48 maps that exposes a __thiscall probe at
-// 0x151c00 (called from ForEachProbe_15acb0).
-class CWwdProbeObject : public CWwdObject {
-public:
-    i32 Probe_151c00(i32 a1, i32 a2);
-};
-SIZE_UNKNOWN(CWwdProbeObject);
-
 // CPtrList CNode shape (pNext@0, pPrev@4, data@8); the list head node is at
 // CWwdObjMgr+0x14 (= m_10.m_pNodeHead).
 struct CWwdNode {
@@ -150,6 +142,9 @@ class CWwdGameObject {
 public:
     char m_pad0[0x7c];
     WwdGameObjAux* m_7c; // +0x7c
+    // 0x151c00 - the +0x2c/+0x48-map objects are real CWwdGameObjects; WriteSnapshot
+    // emits their 0xa0-byte snapshot record (ForEachProbe calls it; 2nd arg unused).
+    i32 WriteSnapshot(i32 dst, i32 unused);
 };
 SIZE_UNKNOWN(CWwdGameObject);
 
@@ -550,7 +545,9 @@ i32 CSpriteFactory::AttachSprite(
     if (!obj->Init(a1, a2, a3, tmpl)) {
         return 0;
     }
-    AddChild(obj, 1);
+    // 0x159e40 is CWwdObjMgr::InsertSorted_159e40 (the factory IS the object manager -
+    // same `this`); bind the real method (reloc-masked ?InsertSorted_159e40@CWwdObjMgr).
+    ((CWwdObjMgr*)this)->InsertSorted_159e40((CWwdObject*)obj, 1);
     if (flags & 0x200000) {
         obj->m_7c->Entry(obj);
     }
@@ -1465,7 +1462,7 @@ i32 CWwdObjMgr::ForEachProbe_15acb0(i32 a1, i32 a2) {
             CWwdObject* val = 0;
             m_48.GetNextAssoc(pos, key, (void*&)val);
             if (val != 0 && !(val->m_flags & 0x4000000)) {
-                ((CWwdProbeObject*)val)->Probe_151c00(a1, a2);
+                ((CWwdGameObject*)val)->WriteSnapshot(a1, a2);
             }
         } while (pos != 0);
     }

@@ -28,9 +28,10 @@ public:
 
     // Reset/clear the wide object: release the four +0x7c..0x90 sub-objects and
     // reset the geometry/status fields. Documented raw-offset access. (I obj.)
-    void Reset_15b980();  // 0x15b980
-    void Reset_15bf00();  // 0x15bf00
-    void Reload_166810(); // 0x166810 (external base reset, no body)
+    void Reset_15b980(); // 0x15b980
+    void Reset_15bf00(); // 0x15bf00
+    // 0x166810 base reset is CWwdGameObjectB::Clear_166810 (same wide object; called
+    // through a CWwdGameObjectB* view in Reset_15bf00) - no fake local placeholder.
 
     // Release the four +0x7c..0x90 sub-objects + re-seed status (the dtor's
     // shared "drop members" helper; two identical instantiations + a +0x18c

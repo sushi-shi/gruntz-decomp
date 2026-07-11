@@ -447,7 +447,10 @@ CWwdGameObjectB::~CWwdGameObjectB() {
 RVA(0x0015bf00, 0xa1)
 void CWwdFactoryObject::Reset_15bf00() {
     char* o = (char*)this;
-    Reload_166810();
+    // 0x166810 is CWwdGameObjectB::Clear_166810 (the wide object's base reset); this
+    // CWwdFactoryObject is the same wide object under a second view, so call the real
+    // method (reloc binds to ?Clear_166810@CWwdGameObjectB@@QAEXXZ).
+    ((CWwdGameObjectB*)this)->Clear_166810();
     *(i32*)(o + 0x1f8) = 0;
     *(i32*)(o + 0x18c) = -1;
     *(i32*)(o + 0x190) = -1;

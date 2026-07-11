@@ -89,7 +89,7 @@ public:
     virtual void v06();
     virtual void v07();
     virtual void v08();
-    virtual void FrameBegin(i32 flag);      // slot 9  (+0x24)  begin/apply the frame worker
+    virtual void FrameBegin(i32 flag);       // slot 9  (+0x24)  begin/apply the frame worker
     virtual void FramePresent(void* target); // slot 10 (+0x28)  present onto the draw surface
 
     // Public entry: look the template up by class-NAME, forward to the impl. __thiscall,
@@ -99,7 +99,8 @@ public:
     CGameObject* CreateSpriteImpl(i32 kind, i32 geoB, i32 geoA, i32 hint, CSprite* tmpl, i32 flags);
     // Initialise an already-allocated sprite against a named template. __thiscall, ret 0x18.
     i32 AttachSprite(CSprite2* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags);
-    void AddChild(CSprite2* obj, i32 flag); // 0x159e40 (external/no-body)
+    // 0x159e40 is CWwdObjMgr::InsertSorted_159e40 (the factory IS the object manager);
+    // AttachSprite calls it through a CWwdObjMgr* view - no fake local placeholder.
 
     char m_pad04[0xc - 0x4]; // vptr occupies +0x00..+0x03
     CResMgr* m_c;            // +0x0c
