@@ -686,7 +686,7 @@ void CLobbySync::Reconcile() {
         i32 n = 4;
         do {
             if (s && s->m_state == 3) {
-                s->Init();
+                ((CCluster0c*)s)->Init(); // 0xc0c20 (== CCluster0c::Init; retarget to bound sym)
                 SlotInfo* p = s->m_desc;
                 s->m_state = 1;
                 p->m_dirty = 1;
@@ -698,7 +698,7 @@ void CLobbySync::Reconcile() {
         i32 n = 4;
         do {
             if (s && s->m_state == 3 && s->m_isRemote != 0 && m_seq > s->m_08 + 2) {
-                s->Init();
+                ((CCluster0c*)s)->Init(); // 0xc0c20 (== CCluster0c::Init; retarget to bound sym)
                 SlotInfo* p = s->m_desc;
                 s->m_state = 1;
                 p->m_dirty = 1;
@@ -717,14 +717,14 @@ i32 CLobbySync::Advance() {
         return 1;
     }
     Reconcile();
-    if (!M_c0290(nextSeq)) {
+    if (!((CNetSession*)this)->Verify(nextSeq)) { // 0xc0290 (== CNetSession::Verify(i32))
         return 0;
     }
     CLobbyChannel* s = m_slots;
     i32 n = 4;
     do {
         if (s && s->m_state == 3 && s->m_isRemote == 0) {
-            s->M_c11b0(m_seq - 4);
+            ((CNetCmdSlot*)s)->RemoveCmd(m_seq - 4); // 0xc11b0 (== CNetCmdSlot::RemoveCmd)
         }
         s++;
     } while (--n);

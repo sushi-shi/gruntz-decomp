@@ -2904,7 +2904,7 @@ namerecord	?SetNames@CNameRecord@@QAEHPAD0H@Z	96.5909	96.5909	3	d3bfd5a67cb7	0x1
 namerecord	?Update@C1181d0@@QAEHHHH@Z	100.0000	100.0000	2	9d75be17c048	0x1181d0
 netcmdmgr	?SelectColor@CNetSessHost@@QAEHHH@Z	100.0000	100.0000	6	1cd69ad7fceb	0xc4b60
 netcmdslot	?AddCmd@CNetCmdSlot@@QAEXPAUCNetCmd@@@Z	100.0000	100.0000	2	ebcc8ed183a9	0xc1170
-netcmdslot	?Advance@CLobbySync@@QAEHXZ	100.0000	100.0000	1	5aff9f84d64c	0xc01d0
+netcmdslot	?Advance@CLobbySync@@QAEHXZ	100.0000	100.0000	2	442d0d97c985	0xc01d0
 netcmdslot	?AdvanceAllSlots@CNetSession@@QAEXH@Z	100.0000	100.0000	1	5ac8a6f6c503	0xc0370
 netcmdslot	?AdvanceSeq@CNetCmdSlot@@QAEXH@Z	86.5686	86.5686	3	0dccff057157	0xc0f10
 netcmdslot	?AllSlotsReachedSeq@CNetSession@@QAEHH@Z	100.0000	100.0000	1	8c9998f2ccc1	0xc0320
@@ -2931,7 +2931,7 @@ netcmdslot	?Poll@CLobbySync@@QAEHH@Z	61.6869	61.6869	1	68d30d8cd8d4	0xbf5a0
 netcmdslot	?ProcessCmd@CNetCmdSlot@@QAEHHPAXH@Z	75.0000	75.0000	9	3f9e69b91945	0xc0c70
 netcmdslot	?RaiseAllSlotsMax@CNetSession@@QAEXH@Z	100.0000	100.0000	1	3cd87a7ec28c	0xc03b0
 netcmdslot	?RaiseMax@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	3	3fea3964c857	0xc0fa0
-netcmdslot	?Reconcile@CLobbySync@@QAEXXZ	100.0000	100.0000	1	a150a5854ab3	0xc00f0
+netcmdslot	?Reconcile@CLobbySync@@QAEXXZ	100.0000	100.0000	2	4ca173bb066a	0xc00f0
 netcmdslot	?RecycleCmd@@YAXPAX@Z	100.0000	100.0000	1	17b19269447b	0xbf580
 netcmdslot	?RemoveCmd@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	4	c04af5539d80	0xc11b0
 netcmdslot	?Reset@CLobbySync@@QAEXXZ	84.7260	84.7260	1	1fcd74c2d47a	0xbf000
