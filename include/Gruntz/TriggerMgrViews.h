@@ -1,0 +1,422 @@
+// TriggerMgrViews.h - the shared reconstruction views of the CTriggerMgr TU
+// family (TriggerMgrGrid.cpp / TriggerMgrHitTest.cpp / TriggerMgr.cpp - the one
+// retail `triggermgr` conflation split into its three original objs, see the
+// per-file headers). The CTm* shapes below are the unit-wide placed-cell /
+// level / world / registry views every leaf shares; they were TriggerMgr.cpp
+// file-locals before the split. All are acknowledged reconstruction scaffolding
+// over UNMATCHED engine classes (the fold worklist is in each struct's comment);
+// only offsets + code bytes are load-bearing.
+//
+// The 0x64556c singleton is viewed here as CTmGameReg through the extern
+// g_tmGameReg (renamed from the historical g_gameReg: <Gruntz/TileGridCommand.h>
+// - pulled by the merged rock-break leaf - owns `g_gameReg` as the canonical
+// CGameRegistry*, and one TU cannot carry both types under one name). Folding
+// CTmGameReg onto canonical CGameRegistry is deferred (sub-object views
+// CTmWorld/CTmRegSub30 diverge from CState/CSpriteFactoryHolder).
+#ifndef GRUNTZ_TRIGGERMGR_VIEWS_H
+#define GRUNTZ_TRIGGERMGR_VIEWS_H
+
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr + CTrigPoint + CTmObList/CTmByteArray (+ <Mfc.h>)
+
+#include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr (the +0x6c command/report sub-mgr)
+#include <Gruntz/SBI_RectOnly.h>  // CSBI_RectOnly (the world's +0x2dc status-bar item)
+#include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
+#include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
+#include <Gruntz/Viewport.h>      // shared world tile-grid geometry (dims here)
+#include <rva.h>
+
+// The pending-fx sprite-id base: a cell's logic kind maps to its pending overlay-fx sprite
+// id as (kind + kPendingFxIdBase), latched into m_pendingFxKind and handed to the world.
+enum {
+    kPendingFxIdBase = 0xc8
+};
+
+// A list node: { CTmNode* m_next; ; (x,y)* m_payload }. The payload is an (x,y)
+// pair at +0/+4. Opaque otherwise. These are the record-list / selection-list nodes.
+struct CTmNode {
+    CTmNode* m_next; // +0x00
+    i32 m_4;         // +0x04
+    i32* m_payload;  // +0x08  -> { x@+0, y@+4 }
+};
+
+// A grid cell's config/type sub-object (cell->m_14): its +0x1c is the config-name id the
+// name registry maps to a string. And the goal object (cell->m_154 / the manager's goal),
+// whose +0x8 flags word gets the 0x10000 done-bit; full CTmGoal is defined below.
+struct CTmGoal;
+struct CTmSpriteDesc;
+struct CTmNotifyHook; // a cell's opaque +0x368 notify hook (only null-tested)
+struct CTmCellConfig {
+    char p0[0x1c];
+    i32 m_1c; // +0x1c  config-name id
+};
+
+// The display sub-object hung at a grid cell's +0x10: the world position (m_5c/m_60),
+// the archive id (m_188) and the clickable/hit gate (m_198). Reached as cell->m_10.
+struct CTmDisplay {
+    char p0[0x5c];
+    i32 m_5c; // +0x5c  world x
+    i32 m_60; // +0x60  world y
+    char p64[0x188 - 0x64];
+    i32 m_188; // +0x188  archive/serialize id
+    char p18c[0x198 - 0x18c];
+    i32 m_198; // +0x198  clickable/hit gate
+};
+
+// A placed grid-cell game object (a CGrunt) as EVERY trigger/switch leaf views it - one
+// unified shape. m_grid[] holds CTmCell*. The reloc-masked __thiscall engine hooks the
+// leaves dispatch are declared here; the raw this+offset fields the leaves read are named
+// data members (recovered from usage). Config/goal/display sub-objects are typed pointers.
+struct CTmCell {
+    void ClearAllSprites();                                 // 0x4b240
+    void ExitGrid();                                        // 0x641b0
+    void Route(i32 kind, i32 a);                            // 0x60150
+    void DestroyAnims();                                    // 0x57d80
+    void Recall();                                          // 0x68520 (row-recall variant)
+    void ReadConfigFromButeMgr();                           // type-tag address (DestroyAllAnims)
+    void SelectMoveIcon(i32 icon);                          // 0x57800
+    i32 CanShowStamina();                                   // 0x514a0
+    void ResetA();                                          // 0x6a40c
+    void ResetB();                                          // 0x6a2ae
+    void ResetC();                                          // 0x6c216
+    i32 ResetMagic();                                       // 0x6c498
+    i32 Disarm(i32 a, i32 b);                               // 0x6f970
+    i32 ApplyBox(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x6fc40
+    i32 Type13Check();                                      // 0x71f80
+    void Apply13(i32 a, i32 b);                             // 0x70520
+    i32 Dispatch(i32 kind, i32 a);                          // per-kind dispatch
+    // ApplyTriggerA's per-kind hooks (thunk targets resolved via sema xref; all are
+    // the placed grunt's real methods - CGrunt/CUserLogic bodies, reloc-masked):
+    void RunMoveConfig(i32 x, i32 y);                    // 0x65630 (CGrunt)
+    i32 RectContains(i32 x, i32 y);                      // 0x51850 (CGrunt)
+    i32 CommitNeighbor(i32 r, i32 c, i32 x, i32 y);      // 0x5b050 (CGrunt)
+    i32 BeginAttack(i32 x, i32 y);                       // 0x5b570 (CGrunt)
+    void PlayMoveSound(i32 x, i32 y);                    // 0x511b0 (CGrunt)
+    void ResetEntranceAnimation(i32 a, i32 b, i32 c);    // 0x62e10 (CGrunt)
+    void LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d); // 0x4dd50 (CUserLogic base)
+
+    char p0[0x10];
+    CTmDisplay* m_10;    // +0x10  display sub-object (world pos / hit gate / archive id)
+    CTmCellConfig* m_14; // +0x14  config/type object (its +0x1c is the config-name id)
+    char p18[0x7c - 0x18];
+    CTmSpriteDesc* m_7c; // +0x7c  sprite descriptor (Init hook + logic object at desc+0x18)
+    char p80[0x114 - 0x80];
+    i32 m_114; // +0x114  placement param
+    i32 m_118; // +0x118  placement param
+    char p11c[0x124 - 0x11c];
+    i32 m_124; // +0x124  placement param
+    char p128[0x154 - 0x128];
+    CTmGoal* m_154; // +0x154  goal object (its +0x8 is the flags word)
+    char p158[0x170 - 0x158];
+    i32 m_170; // +0x170  logic kind
+    char p174[0x17c - 0x174];
+    CTrigPoint m_pos; // +0x17c  world (x,y), tile-snapped - a real point pair
+                      //         (NotifyCell copies it whole)
+    char p184[0x198 - 0x184];
+    i32 m_198; // +0x198  alt kind
+    i32 m_19c; // +0x19c  remapped kind
+    char p1a0[0x1e4 - 0x1a0];
+    i32 m_1e4; // +0x1e4  pending/triggered flag (also cleared by the k=0x14 entrance reset)
+    i32 m_1e8; // +0x1e8  recall-done flag
+    i32 m_1ec; // +0x1ec  owning area index
+    i32 m_1f0; // +0x1f0  owner sub-id
+    i32 m_1f4; // +0x1f4  move-icon (stash source)
+    i32 m_1f8; // +0x1f8  stashed move-icon (-1 idle)
+    i32 m_1fc; // +0x1fc  alive flag
+    char p200[0x218 - 0x200];
+    i32 m_218; // +0x218  entrance-anim state   (ApplyTriggerA k=0x14 reset clears 218/21c/220)
+    i32 m_21c; // +0x21c  entrance-anim gate
+    i32 m_220; // +0x220  entrance-anim pending
+    char p224[0x248 - 0x224];
+    i32 m_248; // +0x248  state flags
+    char p24c[0x2d0 - 0x24c];
+    i32 m_2d0; // +0x2d0
+    char p2d4[0x2dc - 0x2d4];
+    i32 m_2dc; // +0x2dc  proximity cutoff
+    char p2e0[0x308 - 0x2e0];
+    i32 m_308; // +0x308
+    i32 m_30c; // +0x30c
+    i32 m_310; // +0x310
+    i32 m_314; // +0x314
+    char p318[0x368 - 0x318];
+    CTmNotifyHook* m_368; // +0x368  notify hook (opaque; only null-tested)
+    i32 m_36c;            // +0x36c  notified flag
+    char p370[0x384 - 0x370];
+    i32 m_384; // +0x384  applier scratch
+    char p388[0x38c - 0x388];
+    i32 m_38c; // +0x38c  fx param (the k=0x14 spawn's 5th arg)
+    char p390[0x3e4 - 0x390];
+    i32 m_3e4; // +0x3e4  fx pose x
+    i32 m_3e8; // +0x3e8  fx pose y
+    char p3ec[0x420 - 0x3ec];
+    i32 m_420; // +0x420  cleared flag
+    char p424[0x880 - 0x424];
+    i32 m_880; // +0x880  combat timer base (= game clock)
+    i32 m_884; // +0x884
+    i32 m_888; // +0x888  combat timeout config
+    i32 m_88c; // +0x88c
+};
+
+// The goal object at CTriggerMgr+0x23c; ResetAll ORs 0x10000 into its +0x8 flags.
+struct CTmGoal {
+    char p0[0x8];
+    i32 m_8; // +0x08  flags
+};
+
+// The embedded MFC pointer-list (CObList @+0x240, base @+0, the ten +0x2d0 selection
+// slots) is the canonical CTmObList real member (see <Gruntz/TriggerMgr.h>); the leaves
+// call m_recList/m_baseList/m_selLists[i] methods directly (no this+offset cast).
+
+// The level/group base-index sentinel (DAT_00644c54) the selection helpers guard on
+// (same global the StatzTab toggle keys off; see StatusBarUpdaters.cpp / CPlay.h).
+extern "C" i32 g_644c54;
+
+// The global game-registry singleton (?g_tmGameReg@@3PAUWwdGameReg@@A @0x64556c). Only
+// the +0x2c world back-ptr is read here; the world's hooks are reloc-masked.
+// The status-bar item at world->m_2dc is the real CSBI_RectOnly (<Gruntz/SBI_RectOnly.h>,
+// included above): SetMode @0x10bb90, TryActivate/Reset/Place/Run; the reset path reads its
+// offset-0 subtype tag (*(i32*)), sub-state (m_activeTab @0x10c), busy flag (m_hlBusy @0x548)
+// and frees its retab notifier (m_retabNotify @0x54c). The former CTmStatusItem flat view is
+// gone - m_2dc is typed CSBI_RectOnly* so the method calls need no per-site cast.
+
+// The booty/score sub-object at world->m_3f4 (booty & trigger modes): a running i64 score
+// tally (m_38) plus the per-column status counters HitTestApply zeroes.
+struct CTmScoreSub {
+    char p0[0x30];
+    i32 m_30; // +0x30
+    i32 m_34; // +0x34
+    i64 m_38; // +0x38  score tally (i64)
+    i32 m_40; // +0x40
+    i32 m_44; // +0x44
+    i32 m_48; // +0x48
+    i32 m_4c; // +0x4c
+};
+
+// The active game-state (g_tmGameReg->m_curState, a CPlay/CState) as the leaves view it: one
+// unified shape. LoadCursorSprites (== the retail's StopFx, 0xd0120) loads/clears the pending
+// cursor fx; the rest are the world refresh / stat / scroll / fx hooks. Reloc-masked.
+struct CTmWorld {
+    void LoadCursorSprites(i32 kind, i32 flag); // 0xd0120
+    void Refresh();                             // 0xda2d0
+    void SetStat(i32 a, i32 b);                 // 0xd9240
+    void Center(i32 cx, i32 cy);                // 0xd5f00 (scroll-center on a tile)
+    void StopFx2(i32 a, i32 b);                 // 0xd0b3a
+    i32 OnRegion4(i32 z);                       // 0xd8bc0
+    void Place2(i32 a, i32 b, i32 c);           // ReinitGroup state place (reloc-masked)
+    char p0[0x2dc];
+    CSBI_RectOnly* m_2dc; // +0x2dc  status-bar item (real class, no per-site cast)
+    char p2e0[0x384 - 0x2e0];
+    struct Anchor {
+        i32 m_x;
+        i32 m_y;
+    } m_anchors[4]; // +0x384  fx anchors (stride 8)
+    char p3a4[0x3f4 - 0x3a4];
+    CTmScoreSub* m_3f4; // +0x3f4  booty/score sub-object
+    char p3f8[0x504 - 0x3f8];
+    i32 m_504; // +0x504  pending-fx flag (only null-tested)
+};
+// The level/plane grid the active-selection center reads its dims from: the chain
+// g_tmGameReg->m_world->m_24->m_5c lands on the shared CViewport
+// (<Gruntz/Viewport.h>) whose m_worldWidth/m_worldHeight are the (cols,rows) read here.
+struct CTmGridHolder {
+    void Snap(i32* outR, i32* outC); // ReinitGroup snap-to-cell (reloc-masked)
+    char p0[0x5c];
+    CViewport* m_5c; // +0x5c  the grid object
+};
+struct CTmRegSub30 {
+    char p0[0x24];
+    CTmGridHolder* m_24; // +0x24
+};
+// The tile occupancy grid at g_tmGameReg->m_tileGrid (+0x70) is the canonical CTileGrid
+// (<Gruntz/TileGrid.h>): a row-pointer table (m_8), width (m_c), height (m_10).
+
+// The HUD/score board at g_tmGameReg->m_scoreBoard (+0x7c, a reused per-mode slot):
+// a running score (+0x10) and the per-row placed-object counters (+0x48).
+struct CTmScoreBoard {
+    char p0[0x10];
+    i32 m_score; // +0x10  score accumulator
+    char p1[0x48 - 0x14];
+    i32 m_counts[4]; // +0x48  per-row placed-object counters
+};
+
+// The fx/target sub-mgr at g_tmGameReg->m_68 (a reused per-mode slot; the fx TUs' "light-fx
+// target"): its fx-sprite spawner (0x90b48) and its group-reset driver (0x79520). Both
+// reloc-masked __thiscall bodies.
+// The command/report sub-mgr at g_tmGameReg->m_6c: the per-record reporter (0x90db8),
+// the group enqueue action (0x23c30) and the single/multi command posts (0x23c30/
+// 0x23ca0). Reloc-masked; the two 0x23c30 views (Action / EnqueueSingle) carry the
+// retail's two arg shapes for their two call sites.
+struct CTmGameReg {
+    char p0[0x2c];
+    CTmWorld* m_curState;        // +0x2c  the active world/play object (CState/CPlay view)
+    CTmRegSub30* m_world;        // +0x30  the level/plane grid holder
+    char p1[0x34];               // +0x34
+    CTriggerMgr* m_68;           // +0x68  reused per-mode slot (fx/target sub-mgr here)
+    CGruntzCmdMgr* m_6c;         // +0x6c  command/report sub-mgr
+    CTileGrid* m_tileGrid;       // +0x70  tile occupancy grid
+    char p2[0x8];                // +0x74..0x78
+    CTmScoreBoard* m_scoreBoard; // +0x7c  HUD/score board (reused per-mode)
+    char p3[0x134 - 0x80];       // +0x80
+    i32 m_134;                   // +0x134  gate/outcome discriminator (==1 live play)
+    // *g_64556c's own game-mgr methods (== CGruntzMgr's, reloc-masked to the shared
+    // RVAs) so g_tmGameReg->M() calls direct - no cross-cast to an unrelated CGruntzMgr*.
+    // (Folding this whole view onto canonical CGameRegistry is deferred: its sub-object
+    // fields CTmWorld/CTmRegSub30/... diverge from CState/CWorldZ - needs a sub-object
+    // class reconciliation. See the matcher report.)
+    class CState* PickPausedThenPlayState(); // 0x0929b0
+    void ReportError(i32 id, i32 tag);       // 0x08dc60
+};
+extern CTmGameReg* g_tmGameReg;
+
+// ?g_buteMgr@@3VCButeMgr@@A @0x6453d8 - the canonical CButeMgr (via TriggerMgr.h);
+// the int-with-default getter (0x1721e0) is reloc-masked __thiscall.
+extern CButeMgr g_buteMgr;
+extern "C" u32 g_645588; // DAT_00645588 (the level base score / id sentinel)
+extern i32 g_644ca4;     // DAT_00644ca4 (the secondary group sentinel; serialized by ScanGroup)
+
+// The DAT_006bf650 config-name registry (its method maps a sprite-type id to a config-name
+// string; @0x6bf66c/@0x6bf670 are its node array + count). Reloc-masked.
+struct CTmNameReg {
+    char** Lookup(i32 id); // 0x46e0c0
+};
+extern CTmNameReg g_nameReg; // 0x6bf650
+void Str_Free(void* node);   // CString teardown, 0x1b9b93
+
+// A DirectSound channel helper (?StopAndRewind@DirectSoundMgr, @0x135380, __thiscall,
+// reloc-masked); DestroyAllAnims rewinds three channels.
+
+// The level's sprite factory (level->m_8) is the canonical CSpriteFactory
+// (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0, reloc-masked) builds a sprite
+// from a config key, and the factory owns the live display-object list at +0x14
+// (m_liveObjects / CSpriteListNode). The created sprite is the shared CGameObject,
+// cast to this TU's placed-object view CTmCell (the unit-wide B-view; its full fold
+// onto CGameObject is deferred). The sprite carries a descriptor at +0x7c whose
+// slot-4 (+0x10) is an Init thunk run on the fresh sprite.
+struct CTmCell;
+struct CTmSpriteDesc {
+    void* s0[4];
+    void (*Init)(void*); // +0x10
+    char p14[0x18 - 0x14];
+    void* m_18; // +0x18  the sprite's logic object (per-kind: userlogic / puddle target)
+};
+
+// The level view at level->m_24: ScreenToCell biases the input by its scroll origin - the
+// view holds the origin (m_10/m_14) and the scroll object (m_5c), whose +0x40/+0x44 is the
+// current scroll (x,y).
+struct CTmLevelView {
+    char p0[0x10];
+    i32 m_10; // +0x10  view origin x
+    i32 m_14; // +0x14  view origin y
+    char p18[0x4c - 0x18];
+    void** m_4c; // +0x4c  tile-class object table (cell id -> type object; PlaceObjectFull)
+    char p50[0x5c - 0x50];
+    CViewport* m_5c; // +0x5c  the plane viewport (real CViewport: tile grid + edge/scroll origin)
+};
+
+// The level object stored at CTriggerMgr+0x22c (set by SetLevel): its +0x8 is the sprite
+// factory the spawners create from, +0x24 the level view.
+struct CTmLevel {
+    char p0[0x8];
+    CSpriteFactory* m_8; // +0x08  sprite/object factory + live-object list holder
+    char pc[0x24 - 0xc];
+    CTmLevelView* m_24; // +0x24  the level view (scroll origin)
+};
+
+// The level's display-object list (level->m_8->m_liveObjects, the canonical
+// CSpriteListNode chain): each node carries the next ptr @+0 and the bound object
+// @+8. The object's type is identified by a fixed entry in its descriptor
+// (obj+0x7c) slot-4 (+0x10) matching the CGrunt::ReadConfigFromButeMgr method
+// address; on a match, +0x18 names the target whose +0x200 channel marker is cleared.
+// The grid-cell object's ReadConfigFromButeMgr method address is the retail's type tag
+// (DestroyAllAnims compares a level-list object's descriptor slot-4 against it, reloc-
+// masked DIR32); &CTmCell::ReadConfigFromButeMgr carries that reloc.
+
+// The puddle's placement target (sprite desc +0x18): a CUserLogic-ish object whose
+// PlacePuddle(a,b,c,d) does the real placement (reloc-masked @0x9c3f0) and whose +0x38
+// goal carries the +0x8 flags ORed with 0x10000 on failure. The (x,y,z) the record-list
+// walk matches against live at +0x54/+0x58/+0x5c.
+struct CTmPuddleTarget {
+    i32 Place(i32 a, i32 b, i32 c, i32 d); // 0x9c3f0
+    char p0[0x38];
+    CTmGoal* m_38; // +0x38  goal object (its +0x8 is the flags word)
+    char p1[0x54 - 0x3c];
+    i32 m_54; // +0x54  match x
+    i32 m_58; // +0x58  match y
+    i32 m_5c; // +0x5c  busy flag
+};
+// The cell record nodes PlacePuddle walks: this+0x4 is the intrusive CPtrList head node,
+// this+0xc its count. Each node carries the next ptr @+0 and the placed-object @+0x8.
+struct CTmRecNode {
+    CTmRecNode* m_next;     // +0x00
+    char p0[0x4];           // +0x04
+    CTmPuddleTarget* m_obj; // +0x08  placed object (the puddle target shape)
+};
+
+// The pending-fx sub-object at CTriggerMgr+0x2a0; its Pulse() is the reloc-masked thiscall.
+struct CTmPendingFx {
+    void Pulse(); // reloc-masked
+};
+
+// The overlay snapshot source `obj`: a sprite whose +0x2c / +0x30 vtable slots are the
+// 8-byte field getters RebuildOverlay copies into the manager's three pose blocks. Modeled
+// polymorphic so `src->GetA/GetB` lower to the retail `mov eax,[esi]; call [eax+0x2c/0x30]`
+// virtual dispatch (GetA at slot 11=+0x2c, GetB at slot 12=+0x30); slots 0..10 are unused
+// placeholders that only pin the vtable layout.
+//
+// NOT reparentable to a named sprite base: `obj` arrives as the opaque first arg (a0) of
+// CGruntzMgr::BroadcastCmd (0x93460), a broadcast-command payload whose concrete class is
+// not determinable from the reconstructed set - GetA/GetB are a generic 2-getter sprite
+// interface, not a modeled shared base. Kept as a documented genuine interface view (the
+// task's "else leave"); RebuildOverlay is byte-exact (100%) so a speculative retype would
+// only risk it.
+struct CTmOverlaySrc {
+    virtual void vf00();
+    virtual void vf01();
+    virtual void vf02();
+    virtual void vf03();
+    virtual void vf04();
+    virtual void vf05();
+    virtual void vf06();
+    virtual void vf07();
+    virtual void vf08();
+    virtual void vf09();
+    virtual void vf10();
+    virtual void GetA(void* dst, i32 n); // [11] vtbl +0x2c
+    virtual void GetB(void* dst, i32 n); // [12] vtbl +0x30
+};
+
+// The world's report/spawn sub-mgrs ResetGroup dispatches through (gameReg+0x6c reporter,
+// +0x68 fx-mgr, +0x60 cursor-mgr), all reloc-masked.
+struct CTmCursorMgr {
+    void Spawn(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x90bf4 (gameReg+0x60)
+};
+extern i32 g_6455b0; // DAT_006455b0 (the alt-group gate)
+
+// Class-metadata size annotations (all partial modeling views -> SIZE_UNKNOWN).
+// Placed at end-of-TU: interspersed placement (right after each class) reschedules
+// ResetGroup/HitTestCell codegen in this codegen-sensitive unit (measured -0.18/-0.02);
+// end-of-TU (after all bodies) is matching-neutral.
+SIZE_UNKNOWN(CTmNode);
+SIZE_UNKNOWN(CTmDisplay);
+SIZE_UNKNOWN(CTmCellConfig);
+SIZE_UNKNOWN(CTmOverlay);
+SIZE_UNKNOWN(CTmGoal);
+SIZE_UNKNOWN(CTmWorld);
+SIZE_UNKNOWN(CTmScoreSub);
+SIZE_UNKNOWN(CTmGridHolder);
+SIZE_UNKNOWN(CTmRegSub30);
+SIZE_UNKNOWN(CTmGameReg);
+SIZE_UNKNOWN(CTmScoreBoard);
+SIZE_UNKNOWN(CTmNameReg);
+SIZE_UNKNOWN(CTmSpriteDesc);
+SIZE_UNKNOWN(CTmLevel);
+SIZE_UNKNOWN(CTmPuddleTarget);
+SIZE_UNKNOWN(CTmRecNode);
+SIZE_UNKNOWN(CTmCell);
+SIZE_UNKNOWN(CTmPendingFx);
+SIZE_UNKNOWN(CTmOverlaySrc);
+SIZE_UNKNOWN(CTmCursorMgr);
+SIZE_UNKNOWN(CTmScroll);
+SIZE_UNKNOWN(CTmLevelView);
+
+#endif // GRUNTZ_TRIGGERMGR_VIEWS_H

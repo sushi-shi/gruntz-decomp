@@ -45,29 +45,8 @@ void CEffect6b::Apply(i32 a, i32 b) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x75a40: a 2D grid lookup - bounds-check (x, y) against the width/height, then
-// return the first dword of the (28-byte-stride) cell at rows[y][x]; out of bounds
-// returns 1.
-SIZE_UNKNOWN(CGridCell);
-struct CGridCell {
-    i32 m_0;
-    char _pad[0x1c - 4];
-};
-struct CGridLookup {
-    char _00[8];
-    CGridCell** m_8;          // +0x08  rows
-    i32 m_c;                  // +0x0c  width
-    i32 m_10;                 // +0x10  height
-    i32 Lookup(i32 x, i32 y); // 0x75a40
-};
-
-RVA(0x00075a40, 0x34)
-i32 CGridLookup::Lookup(i32 x, i32 y) {
-    if ((u32)x < (u32)m_c && (u32)y < (u32)m_10) {
-        return m_8[y][x].m_0;
-    }
-    return 1;
-}
+// (CGridLookup::Lookup 0x75a40 is merged into src/Gruntz/TriggerMgrHitTest.cpp -
+// called only by that TU's megafn FUN_6f2f0; interval verdict.)
 
 // ---------------------------------------------------------------------------
 // 0x95140: a state-machine step - poke the input sub-object, gate on the worker

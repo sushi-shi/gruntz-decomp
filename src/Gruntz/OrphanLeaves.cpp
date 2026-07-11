@@ -119,25 +119,11 @@ void Register6446d8Range() {
     ((CZDArrayDerived*)&g_6446d8)->Construct(0x7d0, 0x7da);
 }
 
-// ---------------------------------------------------------------------------
-// 0x75a10: a 2-field setter (CPoint/CSize-style) that fills m_0/m_4 and returns this.
-struct CPairXY {
-    i32 m_0;
-    i32 m_4;
-    CPairXY* Set(i32 a, i32 b); // 0x75a10
-};
-
-// CPairXY::Set (0x75a10) - fill m_0/m_4 and return this. @identity-TODO: owner unrecovered.
-RVA(0x00075a10, 0x12)
-CPairXY* CPairXY::Set(i32 a, i32 b) {
-    m_0 = a;
-    m_4 = b;
-    return this;
-}
+// (CPairXY::Set 0x75a10 is merged into src/Gruntz/TriggerMgrHitTest.cpp -
+// called only by that TU's megafn FUN_6f2f0; interval verdict.)
 
 // RunHelper2914 (0xb4330) re-homed to src/Gruntz/Ufo.cpp as CUFO::Tick (matcher-6).
 SIZE_UNKNOWN(CZDArrayDerived);
 SIZE_UNKNOWN(COwnerWithSubs);
-SIZE_UNKNOWN(CPairXY);
 SIZE_UNKNOWN(CSubObj8);
 SIZE_UNKNOWN(CSubObjC);

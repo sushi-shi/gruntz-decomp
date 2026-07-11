@@ -1,3 +1,26 @@
+// TriggerMgr.cpp - CTriggerMgr, the playfield tile-object / switch-trigger grid
+// manager (trace placeholder tomalla-23, C:\Proj\Gruntz). See TriggerMgr.h.
+//
+// ONE ORIGINAL TU = retail .text [0x77f80..0x7d7ca] (dossier 10b,
+// docs/exe-map/interval-dossiers.md, verdict strong): the 37 CTriggerMgr leaves
+// PLUS the iconloaders unit (4 sprite loaders) PLUS the seven foreign
+// singletons embedded fn-by-fn between the CTriggerMgr runs (trigger-spawn /
+// FX / icon / selection helpers - none forms a contiguous second obj). Its CRT
+// init-fragment run (7@0x7d8f0) directly follows the block. The old
+// `triggermgr` unit's other two intervals are split out per the same oracle:
+// see TriggerMgrGrid.cpp (0x6b640) and TriggerMgrHitTest.cpp (0x759e0).
+// ~CTriggerMgr @0x85c50 stays at end-of-file: it sits in the gruntzmgr-region
+// manager-dtor pocket (0x85b50..0x86040, COMDAT-at-usage emission), not in
+// this interval.
+//
+// Functions in retail-RVA order. Shared CTm* views + singleton externs live in
+// <Gruntz/TriggerMgrViews.h>; each merged foreign singleton keeps its own
+// donor views/externs (identities are placeholders, @identity-TODO per the
+// dossier ledger - no class renames in the migration). The 0x64556c singleton
+// is reached under FIVE historical names in this one TU (g_tmGameReg /
+// g_mgrSettings / g_gameRegSel / g_pGameRegistry / g_resSettings), one per
+// donor view - the canonical-CGameRegistry fold that unifies them is deferred
+// cleanup work.
 #include <Gruntz/TriggerMgr.h>
 
 #include <Gruntz/ActionOptionsMenuBar.h>
@@ -13,583 +36,27 @@
 #include <stdlib.h>               // rand (0x11fee0, reloc-masked)
 #include <Globals.h>
 
-// TriggerMgr.cpp - CTriggerMgr, the playfield tile-object / switch-trigger grid
-// manager (trace placeholder tomalla-23, C:\Proj\Gruntz). See TriggerMgr.h.
-//
-// CTriggerMgr's fields are named data members (see TriggerMgr.h); void*/char members are
-// cast to the file-local opaque shells (CTmCell/CTmGrunt/CTmLevel/...) at their use sites
-// because the grid cells, the level/plane objects and the list-node payloads are full
-// UNMATCHED engine classes whose reads / helper calls must reloc-mask. Functions in
-// retail-RVA order.
+// Merged-donor headers (the dossier-10b one-TU merge):
+#include <Gruntz/Play.h>              // CWorld::WorldTimeline (HudRect @0x78060) + CPlay
+#include <Gruntz/GameLevel.h>         // CLevelPlane (PositionUpdate @0x788d0 tail call)
+#include <Gruntz/BoundaryTailViews.h> // CSnd788d0 (the 0x788d0 emitter view)
+#include <Gruntz/GameRegistry.h>      // canonical singleton view (icon/selection donors)
+#include <Gruntz/Grunt.h>             // CGruntTileMgr (CombatCue @0x7b930) + g_pGameRegistry
+#include <Gruntz/String.h>
+#include <Gruntz/PickupType.h>      // the shared pickup/toy/tool id space (0x7c620)
+#include <Gruntz/IconLoaderViews.h> // EngineLabelBacklog (the four icon loaders)
+#include <Gruntz/Brickz.h>          // CBrickzGrid (rock-break ComputeCellFlags)
+#include <Gruntz/SoundCueMgr.h>     // canonical CSoundCueMgr (ConfigureItem @0x1360d0)
+#include <Gruntz/SoundCue.h>        // CSndHost (the finish-level cue holder)
+#include <Gruntz/LeafCue.h>         // LeafCue (the finish-level looked-up cue)
+#include <Gruntz/LightFx.h>         // CLightFx (resurrect flash Activate)
+#include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/TileTriggerContainer.h>   // canonical CTileTriggerContainer (rock-break)
+#include <Gruntz/TileActionEvent.h>        // canonical CTileActionEvent (rock-break)
+#include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (rock-break)
+#include <Gruntz/TileGridCommand.h>        // canonical CTileGridCommand (rock-break)
 
-// The pending-fx sprite-id base: a cell's logic kind maps to its pending overlay-fx sprite
-// id as (kind + kPendingFxIdBase), latched into m_pendingFxKind and handed to the world.
-enum {
-    kPendingFxIdBase = 0xc8
-};
-
-// A list node: { CTmNode* m_next; ; (x,y)* m_payload }. The payload is an (x,y)
-// pair at +0/+4. Opaque otherwise. These are the record-list / selection-list nodes.
-struct CTmNode {
-    CTmNode* m_next; // +0x00
-    i32 m_4;         // +0x04
-    i32* m_payload;  // +0x08  -> { x@+0, y@+4 }
-};
-
-// A grid cell's config/type sub-object (cell->m_14): its +0x1c is the config-name id the
-// name registry maps to a string. And the goal object (cell->m_154 / the manager's goal),
-// whose +0x8 flags word gets the 0x10000 done-bit; full CTmGoal is defined below.
-struct CTmGoal;
-struct CTmSpriteDesc;
-struct CTmNotifyHook; // a cell's opaque +0x368 notify hook (only null-tested)
-struct CTmCellConfig {
-    char p0[0x1c];
-    i32 m_1c; // +0x1c  config-name id
-};
-
-// The display sub-object hung at a grid cell's +0x10: the world position (m_5c/m_60),
-// the archive id (m_188) and the clickable/hit gate (m_198). Reached as cell->m_10.
-struct CTmDisplay {
-    char p0[0x5c];
-    i32 m_5c; // +0x5c  world x
-    i32 m_60; // +0x60  world y
-    char p64[0x188 - 0x64];
-    i32 m_188; // +0x188  archive/serialize id
-    char p18c[0x198 - 0x18c];
-    i32 m_198; // +0x198  clickable/hit gate
-};
-
-// A placed grid-cell game object (a CGrunt) as EVERY trigger/switch leaf views it - one
-// unified shape. m_grid[] holds CTmCell*. The reloc-masked __thiscall engine hooks the
-// leaves dispatch are declared here; the raw this+offset fields the leaves read are named
-// data members (recovered from usage). Config/goal/display sub-objects are typed pointers.
-struct CTmCell {
-    void ClearAllSprites();                                 // 0x4b240
-    void ExitGrid();                                        // 0x641b0
-    void Route(i32 kind, i32 a);                            // 0x60150
-    void DestroyAnims();                                    // 0x57d80
-    void Recall();                                          // 0x68520 (row-recall variant)
-    void ReadConfigFromButeMgr();                           // type-tag address (DestroyAllAnims)
-    void SelectMoveIcon(i32 icon);                          // 0x57800
-    i32 CanShowStamina();                                   // 0x514a0
-    void ResetA();                                          // 0x6a40c
-    void ResetB();                                          // 0x6a2ae
-    void ResetC();                                          // 0x6c216
-    i32 ResetMagic();                                       // 0x6c498
-    i32 Disarm(i32 a, i32 b);                               // 0x6f970
-    i32 ApplyBox(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x6fc40
-    i32 Type13Check();                                      // 0x71f80
-    void Apply13(i32 a, i32 b);                             // 0x70520
-    i32 Dispatch(i32 kind, i32 a);                          // per-kind dispatch
-    // ApplyTriggerA's per-kind hooks (thunk targets resolved via sema xref; all are
-    // the placed grunt's real methods - CGrunt/CUserLogic bodies, reloc-masked):
-    void RunMoveConfig(i32 x, i32 y);                    // 0x65630 (CGrunt)
-    i32 RectContains(i32 x, i32 y);                      // 0x51850 (CGrunt)
-    i32 CommitNeighbor(i32 r, i32 c, i32 x, i32 y);      // 0x5b050 (CGrunt)
-    i32 BeginAttack(i32 x, i32 y);                       // 0x5b570 (CGrunt)
-    void PlayMoveSound(i32 x, i32 y);                    // 0x511b0 (CGrunt)
-    void ResetEntranceAnimation(i32 a, i32 b, i32 c);    // 0x62e10 (CGrunt)
-    void LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d); // 0x4dd50 (CUserLogic base)
-
-    char p0[0x10];
-    CTmDisplay* m_10;    // +0x10  display sub-object (world pos / hit gate / archive id)
-    CTmCellConfig* m_14; // +0x14  config/type object (its +0x1c is the config-name id)
-    char p18[0x7c - 0x18];
-    CTmSpriteDesc* m_7c; // +0x7c  sprite descriptor (Init hook + logic object at desc+0x18)
-    char p80[0x114 - 0x80];
-    i32 m_114; // +0x114  placement param
-    i32 m_118; // +0x118  placement param
-    char p11c[0x124 - 0x11c];
-    i32 m_124; // +0x124  placement param
-    char p128[0x154 - 0x128];
-    CTmGoal* m_154; // +0x154  goal object (its +0x8 is the flags word)
-    char p158[0x170 - 0x158];
-    i32 m_170; // +0x170  logic kind
-    char p174[0x17c - 0x174];
-    CTrigPoint m_pos; // +0x17c  world (x,y), tile-snapped - a real point pair
-                      //         (NotifyCell copies it whole)
-    char p184[0x198 - 0x184];
-    i32 m_198; // +0x198  alt kind
-    i32 m_19c; // +0x19c  remapped kind
-    char p1a0[0x1e4 - 0x1a0];
-    i32 m_1e4; // +0x1e4  pending/triggered flag (also cleared by the k=0x14 entrance reset)
-    i32 m_1e8; // +0x1e8  recall-done flag
-    i32 m_1ec; // +0x1ec  owning area index
-    i32 m_1f0; // +0x1f0  owner sub-id
-    i32 m_1f4; // +0x1f4  move-icon (stash source)
-    i32 m_1f8; // +0x1f8  stashed move-icon (-1 idle)
-    i32 m_1fc; // +0x1fc  alive flag
-    char p200[0x218 - 0x200];
-    i32 m_218; // +0x218  entrance-anim state   (ApplyTriggerA k=0x14 reset clears 218/21c/220)
-    i32 m_21c; // +0x21c  entrance-anim gate
-    i32 m_220; // +0x220  entrance-anim pending
-    char p224[0x248 - 0x224];
-    i32 m_248; // +0x248  state flags
-    char p24c[0x2d0 - 0x24c];
-    i32 m_2d0; // +0x2d0
-    char p2d4[0x2dc - 0x2d4];
-    i32 m_2dc; // +0x2dc  proximity cutoff
-    char p2e0[0x308 - 0x2e0];
-    i32 m_308; // +0x308
-    i32 m_30c; // +0x30c
-    i32 m_310; // +0x310
-    i32 m_314; // +0x314
-    char p318[0x368 - 0x318];
-    CTmNotifyHook* m_368; // +0x368  notify hook (opaque; only null-tested)
-    i32 m_36c;            // +0x36c  notified flag
-    char p370[0x384 - 0x370];
-    i32 m_384; // +0x384  applier scratch
-    char p388[0x38c - 0x388];
-    i32 m_38c; // +0x38c  fx param (the k=0x14 spawn's 5th arg)
-    char p390[0x3e4 - 0x390];
-    i32 m_3e4; // +0x3e4  fx pose x
-    i32 m_3e8; // +0x3e8  fx pose y
-    char p3ec[0x420 - 0x3ec];
-    i32 m_420; // +0x420  cleared flag
-    char p424[0x880 - 0x424];
-    i32 m_880; // +0x880  combat timer base (= game clock)
-    i32 m_884; // +0x884
-    i32 m_888; // +0x888  combat timeout config
-    i32 m_88c; // +0x88c
-};
-
-// The goal object at CTriggerMgr+0x23c; ResetAll ORs 0x10000 into its +0x8 flags.
-struct CTmGoal {
-    char p0[0x8];
-    i32 m_8; // +0x08  flags
-};
-
-// The embedded MFC pointer-list (CObList @+0x240, base @+0, the ten +0x2d0 selection
-// slots) is the canonical CTmObList real member (see <Gruntz/TriggerMgr.h>); the leaves
-// call m_recList/m_baseList/m_selLists[i] methods directly (no this+offset cast).
-
-// The level/group base-index sentinel (DAT_00644c54) the selection helpers guard on
-// (same global the StatzTab toggle keys off; see StatusBarUpdaters.cpp / CPlay.h).
-extern i32 g_644c54;
-
-// The global game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). Only
-// the +0x2c world back-ptr is read here; the world's hooks are reloc-masked.
-// The status-bar item at world->m_2dc is the real CSBI_RectOnly (<Gruntz/SBI_RectOnly.h>,
-// included above): SetMode @0x10bb90, TryActivate/Reset/Place/Run; the reset path reads its
-// offset-0 subtype tag (*(i32*)), sub-state (m_activeTab @0x10c), busy flag (m_hlBusy @0x548)
-// and frees its retab notifier (m_retabNotify @0x54c). The former CTmStatusItem flat view is
-// gone - m_2dc is typed CSBI_RectOnly* so the method calls need no per-site cast.
-
-// The booty/score sub-object at world->m_3f4 (booty & trigger modes): a running i64 score
-// tally (m_38) plus the per-column status counters HitTestApply zeroes.
-struct CTmScoreSub {
-    char p0[0x30];
-    i32 m_30; // +0x30
-    i32 m_34; // +0x34
-    i64 m_38; // +0x38  score tally (i64)
-    i32 m_40; // +0x40
-    i32 m_44; // +0x44
-    i32 m_48; // +0x48
-    i32 m_4c; // +0x4c
-};
-
-// The active game-state (g_gameReg->m_curState, a CPlay/CState) as the leaves view it: one
-// unified shape. LoadCursorSprites (== the retail's StopFx, 0xd0120) loads/clears the pending
-// cursor fx; the rest are the world refresh / stat / scroll / fx hooks. Reloc-masked.
-struct CTmWorld {
-    void LoadCursorSprites(i32 kind, i32 flag); // 0xd0120
-    void Refresh();                             // 0xda2d0
-    void SetStat(i32 a, i32 b);                 // 0xd9240
-    void Center(i32 cx, i32 cy);                // 0xd5f00 (scroll-center on a tile)
-    void StopFx2(i32 a, i32 b);                 // 0xd0b3a
-    i32 OnRegion4(i32 z);                       // 0xd8bc0
-    void Place2(i32 a, i32 b, i32 c);           // ReinitGroup state place (reloc-masked)
-    char p0[0x2dc];
-    CSBI_RectOnly* m_2dc; // +0x2dc  status-bar item (real class, no per-site cast)
-    char p2e0[0x384 - 0x2e0];
-    struct Anchor {
-        i32 m_x;
-        i32 m_y;
-    } m_anchors[4]; // +0x384  fx anchors (stride 8)
-    char p3a4[0x3f4 - 0x3a4];
-    CTmScoreSub* m_3f4; // +0x3f4  booty/score sub-object
-    char p3f8[0x504 - 0x3f8];
-    i32 m_504; // +0x504  pending-fx flag (only null-tested)
-};
-// The level/plane grid the active-selection center reads its dims from: the chain
-// g_gameReg->m_world->m_24->m_5c lands on the shared CViewport
-// (<Gruntz/Viewport.h>) whose m_worldWidth/m_worldHeight are the (cols,rows) read here.
-struct CTmGridHolder {
-    void Snap(i32* outR, i32* outC); // ReinitGroup snap-to-cell (reloc-masked)
-    char p0[0x5c];
-    CViewport* m_5c; // +0x5c  the grid object
-};
-struct CTmRegSub30 {
-    char p0[0x24];
-    CTmGridHolder* m_24; // +0x24
-};
-// The tile occupancy grid at g_gameReg->m_tileGrid (+0x70) is the canonical CTileGrid
-// (<Gruntz/TileGrid.h>): a row-pointer table (m_8), width (m_c), height (m_10).
-
-// The HUD/score board at g_gameReg->m_scoreBoard (+0x7c, a reused per-mode slot):
-// a running score (+0x10) and the per-row placed-object counters (+0x48).
-struct CTmScoreBoard {
-    char p0[0x10];
-    i32 m_score; // +0x10  score accumulator
-    char p1[0x48 - 0x14];
-    i32 m_counts[4]; // +0x48  per-row placed-object counters
-};
-
-// The fx/target sub-mgr at g_gameReg->m_68 (a reused per-mode slot; the fx TUs' "light-fx
-// target"): its fx-sprite spawner (0x90b48) and its group-reset driver (0x79520). Both
-// reloc-masked __thiscall bodies.
-// The command/report sub-mgr at g_gameReg->m_6c: the per-record reporter (0x90db8),
-// the group enqueue action (0x23c30) and the single/multi command posts (0x23c30/
-// 0x23ca0). Reloc-masked; the two 0x23c30 views (Action / EnqueueSingle) carry the
-// retail's two arg shapes for their two call sites.
-struct CTmGameReg {
-    char p0[0x2c];
-    CTmWorld* m_curState;        // +0x2c  the active world/play object (CState/CPlay view)
-    CTmRegSub30* m_world;        // +0x30  the level/plane grid holder
-    char p1[0x34];               // +0x34
-    CTriggerMgr* m_68;           // +0x68  reused per-mode slot (fx/target sub-mgr here)
-    CGruntzCmdMgr* m_6c;         // +0x6c  command/report sub-mgr
-    CTileGrid* m_tileGrid;       // +0x70  tile occupancy grid
-    char p2[0x8];                // +0x74..0x78
-    CTmScoreBoard* m_scoreBoard; // +0x7c  HUD/score board (reused per-mode)
-    char p3[0x134 - 0x80];       // +0x80
-    i32 m_134;                   // +0x134  gate/outcome discriminator (==1 live play)
-    // *g_64556c's own game-mgr methods (== CGruntzMgr's, reloc-masked to the shared
-    // RVAs) so g_gameReg->M() calls direct - no cross-cast to an unrelated CGruntzMgr*.
-    // (Folding this whole view onto canonical CGameRegistry is deferred: its sub-object
-    // fields CTmWorld/CTmRegSub30/... diverge from CState/CWorldZ - needs a sub-object
-    // class reconciliation. See the matcher report.)
-    class CState* PickPausedThenPlayState(); // 0x0929b0
-    void ReportError(i32 id, i32 tag);       // 0x08dc60
-};
-extern CTmGameReg* g_gameReg;
-
-// ?g_buteMgr@@3VCButeMgr@@A @0x6453d8 - the canonical CButeMgr (via TriggerMgr.h);
-// the int-with-default getter (0x1721e0) is reloc-masked __thiscall.
-extern CButeMgr g_buteMgr;
-extern i32 g_645588; // DAT_00645588 (the level base score / id sentinel)
-extern i32 g_644ca4; // DAT_00644ca4 (the secondary group sentinel; serialized by ScanGroup)
-
-// The DAT_006bf650 config-name registry (its method maps a sprite-type id to a config-name
-// string; @0x6bf66c/@0x6bf670 are its node array + count). Reloc-masked.
-struct CTmNameReg {
-    char** Lookup(i32 id); // 0x46e0c0
-};
-extern CTmNameReg g_nameReg; // 0x6bf650
-void Str_Free(void* node);   // CString teardown, 0x1b9b93
-
-// A DirectSound channel helper (?StopAndRewind@DirectSoundMgr, @0x135380, __thiscall,
-// reloc-masked); DestroyAllAnims rewinds three channels.
-
-// The level's sprite factory (level->m_8) is the canonical CSpriteFactory
-// (<Gruntz/SpriteFactory.h>): CreateSprite (@0x1597b0, reloc-masked) builds a sprite
-// from a config key, and the factory owns the live display-object list at +0x14
-// (m_liveObjects / CSpriteListNode). The created sprite is the shared CGameObject,
-// cast to this TU's placed-object view CTmCell (the unit-wide B-view; its full fold
-// onto CGameObject is deferred). The sprite carries a descriptor at +0x7c whose
-// slot-4 (+0x10) is an Init thunk run on the fresh sprite.
-struct CTmCell;
-struct CTmSpriteDesc {
-    void* s0[4];
-    void (*Init)(void*); // +0x10
-    char p14[0x18 - 0x14];
-    void* m_18; // +0x18  the sprite's logic object (per-kind: userlogic / puddle target)
-};
-
-// The level view at level->m_24: ScreenToCell biases the input by its scroll origin - the
-// view holds the origin (m_10/m_14) and the scroll object (m_5c), whose +0x40/+0x44 is the
-// current scroll (x,y).
-struct CTmLevelView {
-    char p0[0x10];
-    i32 m_10; // +0x10  view origin x
-    i32 m_14; // +0x14  view origin y
-    char p18[0x4c - 0x18];
-    void** m_4c;     // +0x4c  tile-class object table (cell id -> type object; PlaceObjectFull)
-    char p50[0x5c - 0x50];
-    CViewport* m_5c; // +0x5c  the plane viewport (real CViewport: tile grid + edge/scroll origin)
-};
-
-// The level object stored at CTriggerMgr+0x22c (set by SetLevel): its +0x8 is the sprite
-// factory the spawners create from, +0x24 the level view.
-struct CTmLevel {
-    char p0[0x8];
-    CSpriteFactory* m_8; // +0x08  sprite/object factory + live-object list holder
-    char pc[0x24 - 0xc];
-    CTmLevelView* m_24; // +0x24  the level view (scroll origin)
-};
-
-// The level's display-object list (level->m_8->m_liveObjects, the canonical
-// CSpriteListNode chain): each node carries the next ptr @+0 and the bound object
-// @+8. The object's type is identified by a fixed entry in its descriptor
-// (obj+0x7c) slot-4 (+0x10) matching the CGrunt::ReadConfigFromButeMgr method
-// address; on a match, +0x18 names the target whose +0x200 channel marker is cleared.
-// The grid-cell object's ReadConfigFromButeMgr method address is the retail's type tag
-// (DestroyAllAnims compares a level-list object's descriptor slot-4 against it, reloc-
-// masked DIR32); &CTmCell::ReadConfigFromButeMgr carries that reloc.
-
-// 0x6b640: SetLevel - store the supplied level at +0x22c, clear m_230 + m_pendingFx
-// and raise m_2a4; returns 1 (0 when arg is null).
-RVA(0x0006b640, 0x2f)
-i32 CTriggerMgr::SetLevel(CTmLevel* lvl) {
-    if (lvl == 0) {
-        return 0;
-    }
-    m_level = lvl;
-    m_230 = 0;
-    m_pendingFx = 0;
-    m_2a4 = 1;
-    return 1;
-}
-
-// 0x6b680: Cleanup - destruct+free the overlay sub-object (+0x25c) when present, then
-// drain the record and selection lists. The overlay's Clear runs the in-place dtor,
-// then __cdecl operator delete frees it.
-RVA(0x0006b680, 0x39)
-void CTriggerMgr::Cleanup() {
-    CActionOptionsMenuBar* ov = m_overlay;
-    if (ov != 0) {
-        ov->Clear();
-        operator delete(ov);
-        m_overlay = 0;
-    }
-    ClearRecords();
-    ClearSelections();
-}
-
-// 0x6bc20: DispatchCellForObject(obj, startRow, kind, arg) - scan the placed-object
-// grid (+0x1c) for the cell whose pointer == `obj` (startRow, or rows 0..3 when
-// startRow==5) and hand it to CellDispatch(row,col,kind,arg); ret 0 when not found.
-RVA(0x0006bc20, 0x6f)
-i32 CTriggerMgr::DispatchCellForObject(CTmCell* obj, i32 startRow, i32 kind, i32 arg) {
-    i32 last;
-    if (startRow == 5) {
-        startRow = 0;
-        last = 3;
-    } else {
-        last = startRow;
-    }
-    for (i32 row = startRow; row <= last; row++) {
-        CTmCell** cell = &m_grid[row * 15];
-        for (i32 col = 0; col < 15; col++) {
-            if (cell[col] == obj) {
-                return CellDispatch(row, col, kind, arg);
-            }
-        }
-    }
-    return 0;
-}
-
-// 0x6bd40: ClearGridRange(startRow) - ResetAll, then for rows startRow..3 (5 = all)
-// flag each live cell's goal (+0x154) done and clear the cell, its parallel grid slot
-// (+0x11c) and the per-row state words (+0x10c/+0x20c/+0x21c); then ClearSelections.
-// @early-stop
-// 60->65: the "5 = all" decode is now the if/else form (jmp-merge). Residual is a
-// byte-or-vs-dword-RMW regalloc cascade: our cl pins the zero constant in ebp and peepholes
-// `m_8 |= 0x10000` to `or byte [mem+2],1` (frees a reg -> keeps `this` in ebx); retail pins
-// zero in ebx and emits the full `mov r,[m_8];or r,0x10000;mov [m_8],r` RMW (the reg temp
-// forces `this` to spill to [esp+0x10] + one extra `push ecx` frame slot). Same expr matches
-// as dword-RMW in the lower-pressure ResetAll; not source-steerable here. topic:wall topic:regalloc.
-RVA(0x0006bd40, 0xb3)
-i32 CTriggerMgr::ClearGridRange(i32 startRow) {
-    i32 row, last;
-    if (startRow == 5) {
-        row = 0;
-        last = 3;
-    } else {
-        last = startRow;
-        row = startRow;
-    }
-    ResetAll();
-    if (row <= last) {
-        i32 n = last - row + 1;
-        CTmCell** cell = &m_grid[row * 15];
-        i32* perRow = m_rowStateB + row;
-        i32 g2 = row * 15;
-        do {
-            i32 col = 0;
-            do {
-                CTmCell* c = *cell;
-                if (c != 0) {
-                    c->m_154->m_8 |= 0x10000;
-                    *cell = 0;
-                    m_cellFlag[g2 + col] = 0;
-                }
-                col++;
-                cell++;
-            } while (col < 15);
-            *(i32*)((char*)perRow - 0x100) = 0;
-            perRow[0] = 0;
-            perRow[4] = 0;
-            perRow++;
-            g2 += 15;
-            n--;
-        } while (n != 0);
-    }
-    ClearSelections();
-    return 1;
-}
-
-// 0x6bcb0: CellDispatch(row, col, kind, arg) - look up grid[row*15+col] (+0x1c);
-// if it has a notify hook run NotifyCell(row,col,0) (ret 0); else route the cell by
-// `kind` (0xd => ExitGrid, else Route(kind,arg)) and ret 1; ret 0 when no cell.
-RVA(0x0006bcb0, 0x6a)
-i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
-    CTmCell* cell = m_grid[row * 15 + col];
-    if (cell == 0) {
-        return 0;
-    }
-    if (cell->m_368 != 0) {
-        NotifyCell(row, col, 0);
-        return 0;
-    }
-    if (kind == 0xd) {
-        cell->ExitGrid();
-    } else {
-        cell->Route(kind, arg);
-    }
-    return 1;
-}
-
-// 0x6be30: ScreenToCell - bias the input (sx,sy) by the level view's scroll origin
-// (view@m_24: scroll struct embedded at [m_5c]+0x40, origin @m_10/m_14) and forward to
-// CellHitTest.
-// @early-stop
-// reassociation/scheduling residual (~85%): the scroll/view loads + the CellHitTest arg
-// pushes are byte-exact; retail loads scroll[0]/[4] together up front and accumulates px
-// from scroll[0] (`(scroll0-view10)+sx`), our cl reloads sx and accumulates from it
-// (`(sx-view10)+scroll0`) - same value, swapped operand order. topic:wall topic:scheduling.
-RVA(0x0006be30, 0x47)
-void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
-    CTmLevelView* view = m_level->m_24;
-    i32 px = view->m_5c->m_edgeL - view->m_10 + sx;
-    i32 py = view->m_5c->m_edgeT - view->m_14 + sy;
-    return CellHitTest(px, py, outRow, outCol, startRow);
-}
-
-// 0x6bea0: CellHitTest - scan the grid for the cell whose 30x30 object bounds contain
-// (px,py). startRow==5 means "rows 0..3"; otherwise just that one row. Writes the hit
-// (row,col) through the out-ptrs and returns the cell pointer (0 when none).
-// @early-stop
-// 70.9->71.2: the "5 = all" decode is now the if/else form (row/last kept in eax/edx).
-// Residual regalloc wall: retail spills px to [esp+0x1c] and reloads it for each box-edge
-// compare (freeing esi to precompute y0+30), and tail-merges the loop exit; our cl pins px
-// in ebx. High register pressure (5 args + this + nested loop) -> different spill picks.
-// Logic + offsets byte-exact. topic:wall topic:regalloc.
-RVA(0x0006bea0, 0xe2)
-void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 startRow) {
-    i32 row, last;
-    if (startRow == 5) {
-        row = 0;
-        last = 3;
-    } else {
-        last = startRow;
-        row = startRow;
-    }
-    while (row <= last) {
-        CTmCell** cell = &m_grid[row * 15];
-        for (i32 col = 0; col < 15; col++) {
-            CTmCell* g = cell[col];
-            if (g != 0 && g->m_1fc != 0) {
-                CTmDisplay* o = g->m_10;
-                if (o->m_198 != 0) {
-                    i32 x0 = o->m_5c - 15;
-                    i32 y0 = o->m_60 - 15;
-                    if (px < x0 + 30 && px >= x0 && py < y0 + 30 && py >= y0) {
-                        if (outRow != 0) {
-                            *outRow = row;
-                        }
-                        if (outCol != 0) {
-                            *outCol = col;
-                        }
-                        return m_grid[row * 15 + col];
-                    }
-                }
-            }
-        }
-        row++;
-    }
-    return 0;
-}
-
-// 0x759e0: GetOriginXY - copy the cached origin pair (m_cellFlag[0x16],[0x17] ==
-// +0x174,+0x178) into the caller's out-slot and return it.
-RVA(0x000759e0, 0x18)
-CTrigPoint* CTriggerMgr::GetOriginXY(CTrigPoint* out) {
-    out->x = m_cellFlag[0x16];
-    out->y = m_cellFlag[0x17];
-    return out;
-}
-
-// 0x75c60: CTriggerMgr::FindGruntAt - given a pixel point + tile-span rect (or an
-// explicit source rect), scan the surrounding tile cells: read each cell's packed
-// owner word out of the tile grid, index the placed-object grid (m_grid[col+row*15]),
-// and return the first live cell (m_1fc) whose 15x15 display box hits the rect, with
-// its (col,row) reported via out-params. The sibling of CellHitTest (same m_grid /
-// m_10->m_5c scan). (Re-homed from ApiWrappers; the GruntHitMgr/HitGrunt/HitTileRect/
-// HitGrid views folded onto CTmCell / CTmDisplay / CTileGrid.)
-//
-// @early-stop
-// 75% - nested-loop regalloc wall: identical instruction selection/logic, but MSVC5
-// assigns the point/rect args to a permuted register set (a0->edi, a1->esi vs retail
-// a0->ebx/a1->edi) and spills one fewer local, so the frame is 0x1c vs retail 0x20 and
-// every [esp+N] stack offset shifts. Not steerable from source (llvm-objdump -dr: same
-// mnemonics, shifted operands).
-RVA(0x00075c60, 0x1ba)
-CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* outRow, RECT* src) {
-    i32 tcol = px >> 5;
-    i32 trow = py >> 5;
-    RECT rc;
-    if (src) {
-        CopyRect(&rc, src);
-    } else {
-        SetRect(
-            &rc,
-            px - span->left * 32 - 7,
-            py - span->top * 32 - 7,
-            span->right * 32 + px + 7,
-            span->bottom * 32 + py + 7
-        );
-    }
-    i32 xEnd = span->right + tcol + 1;
-    for (i32 x = tcol - span->left - 1; (u32)x <= (u32)xEnd; x++) {
-        i32 yEnd = span->bottom + trow + 1;
-        for (i32 y = trow - span->top - 1; (u32)y <= (u32)yEnd; y++) {
-            if ((u32)x >= (u32)g_gameReg->m_tileGrid->m_c) {
-                continue;
-            }
-            CTileGrid* grid = g_gameReg->m_tileGrid;
-            if ((u32)y >= (u32)grid->m_10) {
-                continue;
-            }
-            i32 val;
-            if ((u32)x < (u32)grid->m_c && (u32)y < (u32)grid->m_10) {
-                val = *(i32*)((char*)grid->m_8[y] + x * 0x1c + 4);
-            } else {
-                val = -1;
-            }
-            if (val == -1) {
-                continue;
-            }
-            i32 col = val & 0xff;
-            i32 row = (val >> 8) & 0xff;
-            CTmCell* g = m_grid[col + row * 15];
-            if (!g) {
-                continue;
-            }
-            if (!g->m_1fc) {
-                continue;
-            }
-            i32 sx = g->m_10->m_5c - 7;
-            i32 sy = g->m_10->m_60 - 7;
-            if (rc.left <= sx + 0xe && rc.right >= sx && rc.top <= sy + 0xe && rc.bottom >= sy) {
-                *outCol = row;
-                *outRow = col;
-                return g;
-            }
-        }
-    }
-    return 0;
-}
+#include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
 
 // 0x77f80: FindNearestInRow(g) - the grunt-to-cell proximity probe: scan the 15 cells
 // of grid row g->m_1ec for the live cell whose display object (cell->m_10) is nearest g's
@@ -625,6 +92,61 @@ CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
         i--;
     } while (i != 0);
     return best;
+}
+
+// -------------------------------------------------------------------------
+// CWorld::WorldTimeline::HudRect (0x78060) - the combat-region scan
+// CPlay::PostHudRect / CPlay::DispatchHudClick invoke on m_4w()->m_68 (decl in
+// <Gruntz/Play.h>'s WorldTimeline view). Merged from Play.cpp per dossier 10b
+// (embedded singleton, this TU by retail position; @identity-TODO - the
+// WorldTimeline view's +0x1c grunt grid / +0x23c goal ARE CTriggerMgr's
+// m_grid/m_goal, the +0x68 registry slot GameRegistry.h already resolves to
+// CTriggerMgr): screen-transform the world rect via the active viewport, then
+// for each occupied grunt slot whose 30x30 screen box hits the rect, either
+// re-arm the local player's grunt (Method_36ed/ResetCell29cd on g_curPlayer)
+// or arm a foe's combat state (health sprite + CombatTimeout clock).
+
+DATA(0x00244c54)
+extern i32 g_curPlayer; // 0x644c54  local-player index
+// @early-stop
+// regalloc/CSE wall (~80% - and 0x78060 is not play's .obj, so the frame is re-scored):
+// logic + instruction selection match, but cl pins `this`->ebx (retail ebp) and CSEs
+// view->m_viewport once where retail reloads it per rect pair (a symmetric ebx<->ebp swap).
+RVA(0x00078060, 0x18d)
+void CWorld::WorldTimeline::HudRect(RECT r, i32 flag) {
+    CombatView* view = m_viewHost->m_view;
+    r.left += view->m_viewport->m_rect.left - view->m_originX;
+    r.top += view->m_viewport->m_rect.top - view->m_originY;
+    r.right += view->m_viewport->m_rect.left - view->m_originX;
+    r.bottom += view->m_viewport->m_rect.top - view->m_originY;
+    for (i32 i = 0; i < 4; i++) {
+        for (i32 j = 0; j < 15; j++) {
+            CombatGrunt* g = m_grunts[j];
+            if (g) {
+                i32 cx = g->m_pos->m_screenX;
+                i32 cy = g->m_pos->m_screenY;
+                RECT box;
+                SetRect(&box, cx - 0xf, cy - 0xf, cx + 0xf, cy + 0xf);
+                if (r.left <= box.right && r.right >= box.left && r.top <= box.bottom
+                    && r.bottom >= box.top) {
+                    if (i == g_curPlayer) {
+                        if (flag == 0 && g->m_1fc != 0) {
+                            Method_36ed();
+                            flag = 1;
+                        }
+                        ResetCell29cd(g_curPlayer, j, 1, 1);
+                    } else {
+                        g->CreateHealthSprite();
+                        g->m_combatTimeout =
+                            g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
+                        g->m_88c = 0;
+                        g->m_880 = g_645588;
+                        g->m_884 = 0;
+                    }
+                }
+            }
+        }
+    }
 }
 
 // 0x78260: RemoveCellRecord(x, y, fromSelection) - when fromSelection, first unlink the
@@ -705,11 +227,15 @@ found:
 // referenced grid cell's sprites (grid[ y + 15*x ] @+0x1c) and recycle the node to
 // the free list; RemoveAll the +0x240 list, run StopPendingFx, flag the goal (+0x23c).
 // @early-stop
-// 99.39% - TRIGGER: the Phase-1 TriggerMgrEh merge moved this base method into the
-// unit's /GX (eh) profile (100%->99.39%); the residual is a /GX EH-state-id artifact
-// on an otherwise byte-identical body. The same merge IMPROVED the sibling base
-// methods (Load 65->80%, ToggleRegionA 53->59%), confirming the real dev TU was one
-// /GX unit. Accepted per the cleanup-over-% mandate.
+// 99.39% - TRIGGER: TU recomposition. First the Phase-1 TriggerMgrEh merge (100%
+// ->99.39, /GX EH-state artifact), later recovered; the wave2-G dossier-10b
+// one-TU merge re-flipped it: the residual is `add ecx,eax` vs `add eax,ecx` on
+// the idx = payload[1]+15*payload[0] sum plus an ecx->edx coloring of the
+// g_freeList load - pure /O2 environment sensitivity (same source scored 100 in
+// the smaller TU). Operand-commutation respell is canonicalized away; the
+// permuter finds no better spelling (FINAL 99.024, no change). The same merges
+// IMPROVED siblings (DestroyGroup 64.8->66.4, ToggleRegionA 68.9->75.4,
+// BuildRockBreakParticles 81.1->83.9). Accepted per the migration mandate.
 RVA(0x00078430, 0x7f)
 void CTriggerMgr::ResetAll() {
     CTmNode* n = m_recList.m_head;
@@ -760,6 +286,83 @@ i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
     return 0;
 }
 
+// 0x78520: ReportRecordsA(a14, a18, a1c, a20, a24) - when the level flag (+0x400) is set,
+// scan the record list (+0x244) collecting the byte of each magic-group, un-triggered cell;
+// if exactly one matched, hand it to the world's single-record reporter, else hand the whole
+// collected array to the manager's multi-record reporter. (__stdcall: ret 0xc.)
+// @early-stop
+// reporter-dispatch arg-shape wall (~72%): the record scan is now byte-exact (u8 count +
+// `bytes[count]=payload[4]` collected byte, size matches retail 0x106). The residual is the
+// trailing count==1/else dispatch: retail calls two 8-arg reporter methods on g_tmGameReg->m_6c
+// passing a per-iter firstByte dword slot (`*(u8*)payload` stored beside count) + the count/
+// array as separate args; our 7-arg self-call ReportN/Report1 shape approximates it. topic:wall.
+RVA(0x00078520, 0x106)
+void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
+    if (m_groupFlag == 0) {
+        return;
+    }
+    u8 bytes[0x88];
+    u8 count = 0;
+    CTmNode* n = m_recList.m_head;
+    while (n != 0) {
+        CTmNode* next = n->m_next;
+        u8* payload = (u8*)n->m_payload;
+        CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
+        if (cell->m_1ec == g_644c54 && cell->m_1e4 == 0) {
+            bytes[count] = payload[4];
+            count++;
+        }
+        n = next;
+    }
+    if (count == 1) {
+        g_tmGameReg->m_6c->Report1(2, bytes[0], a14, a18, 0, a1c, 0);
+    } else {
+        this->ReportN(2, a14, bytes, a18, a1c, a20, a24);
+    }
+}
+
+// 0x78680: ReportRecordsB(a14, a18, a1c, a20, a24, a28) - the four-way variant of
+// ReportRecordsA: same magic-group byte scan, then dispatch by (count==1, a14!=0) to one of
+// four (single/multi x kind 3/9) report calls. (__stdcall: ret 0x10.)
+// @early-stop
+// reporter-dispatch arg-shape wall (~62%): same fixed record scan as ReportRecordsA (u8 count +
+// payload[4] collected byte). The residual is the 4-way (count==1 x a28) dispatch to the two
+// 8-arg g_tmGameReg->m_6c reporter methods with the firstByte dword slot; our self-call shape
+// approximates it. topic:wall.
+RVA(0x00078680, 0x189)
+void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28) {
+    if (m_groupFlag == 0) {
+        return;
+    }
+    u8 bytes[0x88];
+    u8 count = 0;
+    CTmNode* n = m_recList.m_head;
+    while (n != 0) {
+        CTmNode* next = n->m_next;
+        u8* payload = (u8*)n->m_payload;
+        CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
+        if (cell->m_1ec == g_644c54 && cell->m_1e4 == 0) {
+            bytes[count] = payload[4];
+            count++;
+        }
+        n = next;
+    }
+    CGruntzCmdMgr* rep = g_tmGameReg->m_6c;
+    if (count == 1) {
+        if (a28 != 0) {
+            rep->Report1(9, bytes[0], a14, a18, 0, 0, 0);
+        } else {
+            rep->Report1(3, bytes[0], a14, a18, 0, 0, 0);
+        }
+    } else {
+        if (a28 != 0) {
+            this->ReportN(9, a14, bytes, a18, a1c, a20, a24);
+        } else {
+            this->ReportN(3, a14, bytes, a18, a1c, a20, a24);
+        }
+    }
+}
+
 // 0x78880: ClearRecords - drain the record list (+0x244) back to the free list,
 // then RemoveAll the +0x240 MFC pointer list. The free-list head is cached in a
 // register across the loop (g_freeList read once, written each iteration).
@@ -785,6 +388,90 @@ void CTriggerMgr::ClearRecords() {
     m_recList.RemoveAll();
 }
 
+// 0x788d0: sound-emitter screen-position update, called by CMulti::PumpB/Tick
+// (and CPlay::Render). Merged from Multi.cpp per dossier 10b (embedded
+// singleton, this TU by retail position; the private-state oracle agrees: it
+// reads NO globals, and its field walk is CTriggerMgr-shaped - m_1c[m_234*15+
+// m_238] is m_grid[recX*15+recY], m_22c->m_24->m_5c the m_level->view->plane
+// chain). @identity-TODO: kept the placeholder CSnd788d0 view
+// (<Gruntz/BoundaryTailViews.h>) - no class renames in the migration.
+
+// @early-stop
+// /O2 x87 scheduling wall (~63%): logic byte-for-byte identical, but retail
+// materialises m_5c/m_60 in GP regs and spills them to stack temps for the int->float
+// `fild` (register pressure from the m_22c->m_24->m_5c walk reusing edx), then uses
+// `fmul mem`+fxch; our /O2 emits the shorter `fild [struct]` direct + `fmulp`.
+// Confirmed NOT /O1 (o1 profile 45%). Pure instruction scheduling/regalloc.
+RVA(0x000788d0, 0x64)
+i32 CSnd788d0::PositionUpdate() {
+    ElemSrc788d0* src = m_1c[m_234 * 15 + m_238]->m_10;
+    i32 v60 = src->m_60;
+    i32 v5c = src->m_5c;
+    Emitter788d0* t = m_22c->m_24->m_5c;
+    float f60 = (float)v60;
+    float f5c = (float)v5c;
+    if (!(t->m_8 & 1)) {
+        f5c *= t->m_18;
+        f60 *= t->m_1c;
+    }
+    t->m_10 = f5c;
+    t->m_14 = f60;
+    ((CLevelPlane*)t)->RecomputePlaneCoords();
+    return 1;
+}
+
+// ===========================================================================
+// The four EngineLabelBacklog icon/sprite loaders (0x78960 / 0x7a3f0 / 0x7b330
+// / 0x7c620) - the iconloaders unit, merged wholesale per dossier 10b (its 4
+// fns are embedded between the CTriggerMgr runs; the unit's other two fns
+// 0x1c070/0x1e720 stay in IconLoaders.cpp). Holder view + factory chain in
+// <Gruntz/IconLoaderViews.h>; the singleton is the canonical CGameRegistry
+// via g_pGameRegistry (<Gruntz/Grunt.h>).
+// ===========================================================================
+// Two icon-class init-slot fns the toybox de-dup test compares an existing
+// icon's m_7c->Init against (the in-game-icon / in-game-text classes).
+// Declared extern so each `cmp esi, OFFSET fn` immediate carries a DIR32 reloc
+// that pairs with retail's reloc at 0x40288d / 0x402bad (names are reloc-masked).
+extern "C" void IconClassInitA(); // 0x40288d
+extern "C" void IconClassInitB(); // 0x402bad
+
+// ===========================================================================
+// LoadCameraSprite @0x078960
+// ===========================================================================
+//
+// Lazily creates the "DoNothing" camera sprite once (gated on this+0x23c being
+// empty). It positions the sprite from the viewport (g_pGameRegistry->m_viewportX/m_viewportY) offset
+// by a per-tile bias selected from the current map's first travel count, runs the
+// sprite's init virtual (vtbl slot +0x10), then caches its first frame.
+// __thiscall (this @ esi). Returns 1 on (re)creation, 0 if already present.
+
+RVA(0x00078960, 0x9b)
+i32 EngineLabelBacklog::LoadCameraSprite() {
+    if (m_cameraSprite != 0) {
+        return 0;
+    }
+
+    i32 vx = g_pGameRegistry->m_modeW;
+    i32 vy = g_pGameRegistry->m_modeH;
+    i32 count = *(*(i32**)((char*)g_pGameRegistry->m_curState + 0x2dc));
+
+    i32 ax, cx;
+    if (count == 0) {
+        ax = vx - 0xc8;
+        cx = vy - 0x28;
+    } else if (count > 0 && count <= 2) {
+        ax = vx - 0x28;
+        cx = vy - 0x28;
+    }
+
+    CSpriteFactory* fac = m_factoryHolder->m_8;
+    CGameObject* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
+    m_cameraSprite = spr;
+    spr->m_7c->Init(spr);
+    m_cameraSprite->ApplyName("GAME_CAMERASPRITE");
+    return 1;
+}
+
 // 0x78a30: OverlayTick - dispatch the overlay sub-object's Tick when present.
 RVA(0x00078a30, 0x10)
 void CTriggerMgr::OverlayTick() {
@@ -792,6 +479,244 @@ void CTriggerMgr::OverlayTick() {
     if (ov) {
         ov->Deactivate();
     }
+}
+
+// 0x78a50: PlaceObjectFull(x, y) - the largest tile-object trigger driver (0x845 B). Look up
+// the magic-group record cell; if an overlay (+0x25c) owns it, forward (x,y) to it. Else, when
+// no pending fx (+0x2a8) and the type-13 trigger check fails, rewind the world fx. Otherwise
+// hit-test the (x,y) target (HitTest5) and run the dense per-kind jump table over the two
+// coordinate sub-tables (DAT_00683ea0..eb4), building/dispatching the per-kind object and
+// stashing the rebuilt cell. ret 1. (__thiscall: ret 0x8.) Reconstructed to plateau.
+// @early-stop  (8.3% -> 18.3%)
+// largest driver (0x845 B): the common path (record decode, overlay/fx fast-paths,
+// CellHitTest, the viewport cell-type resolve, and the pending-fx>=0xdf tile-attr branch)
+// is reconstructed faithfully. FRAME WALL: retail allocates all the tail's spill slots
+// up front (`sub esp,0x18`, spilling this@[esp+0x18]/world@[esp+0x10]/cell@[esp+0x1c]/
+// hitFlag@[esp+0x20]/kind@[esp+0x14]) for the dense per-kind jump table (0x78e09: kind-1
+// -> the 0x4792cc byte table -> 0x479298 jumps, ~12 stanzas incl. the WrapCoord write-back
+// to cell+0x414..0x428). The stubbed tail here uses fewer locals (`sub esp,0xc`), so the
+// head's esp offsets + this-in-edi-vs-ebx regalloc shift wholesale - fully matching the
+// head requires reconstructing that jump table. Deferred to the final sweep. topic:wall.
+RVA(0x00078a50, 0x845)
+i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
+    // Decode the single record cell (row*15 + col into the placed grid).
+    CTmCell* cell;
+    if (m_recList.m_count != 1) {
+        cell = 0;
+    } else {
+        i32* rec = m_recList.m_head->m_payload;
+        cell = m_grid[rec[0] * 15 + rec[1]];
+    }
+    if (cell == 0) {
+        return 1;
+    }
+    if (cell->m_1ec != g_644c54) {
+        return 1;
+    }
+    // An active overlay eats the click.
+    CActionOptionsMenuBar* ov = m_overlay;
+    if (ov != 0 && ov->m_active != 0) {
+        ov->Forward(x, y);
+        return 1;
+    }
+    CTmWorld* world = g_tmGameReg->m_curState;
+    if (m_pendingFxKind == 0) {
+        if (cell->CanShowStamina() == 0) {
+            world->LoadCursorSprites(0, 0);
+            return 1;
+        }
+    }
+    // Hit-test the (x,y) target against the placed grid (startRow==5 -> all rows).
+    i32 hitFlag = 0;
+    if (CellHitTest(x, y, 0, 0, 5)) {
+        hitFlag = 1;
+    }
+    // Resolve the tile-cell's type object from the level viewport (result discarded:
+    // the virtual GetTypeId dispatch is kept for its side effect).
+    CTmLevelView* view = m_level->m_24;
+    CViewport* grid = view->m_5c;
+    i32 tx = x >> 5;
+    i32 ty = y >> 5;
+    i32 cx = tx;
+    if (tx < 0) {
+        cx = 0;
+    } else if (tx >= grid->m_tileWidth) {
+        cx = grid->m_tileWidth - 1;
+    }
+    i32 cy = ty;
+    if (ty < 0) {
+        cy = 0;
+    } else if (ty >= grid->m_tileHeight) {
+        cy = grid->m_tileHeight - 1;
+    }
+    i32 cval = grid->m_cells[grid->m_rowBase[cy] + cx];
+    if (cval != (i32)0xeeeeeeee && cval != -1) {
+        void* tc = view->m_4c[cval & 0xffff];
+        (*(i32(**)(void*, i32, i32))(*(void***)tc + 8))(tc, 0, 0);
+    }
+    // Pending-fx dispatch.
+    i32 pfk = m_pendingFxKind;
+    if (pfk >= 0xdf) {
+        i32 alt = cell->m_198;
+        if (hitFlag != 0) {
+            world->LoadCursorSprites(alt + 0xc8, 1);
+            return 1;
+        }
+        CTileGrid* plane = g_tmGameReg->m_tileGrid;
+        i32 attr;
+        if ((u32)tx >= (u32)plane->m_c || (u32)ty >= (u32)plane->m_10) {
+            attr = 1;
+        } else {
+            attr = plane->m_8[ty][tx * 7];
+        }
+        if ((attr & 0x939) != 0 || (attr & 2) != 0) {
+            world->LoadCursorSprites(pfk, 0);
+        } else {
+            world->LoadCursorSprites(alt + 0xc8, 1);
+        }
+        return 1;
+    }
+    // Block H (pfk < 0xdf): the dense per-kind jump table + write-back stanzas.
+    // Reconstructed to plateau (see @early-stop above).
+    (void)hitFlag;
+    return 1;
+}
+
+// 0x79520: ResetGroup(a14, a18, ...) - when the level flag (+0x400) is set, hit-test the
+// magic group, classify the (a14,a18) target into one of three branches and place/report the
+// matching cursor / lightfx / warpstone sprite; on factory success Init it and report it.
+// ret 1 (0 on flag-clear / placement failure). (__stdcall: ret 0x1c.)
+// @early-stop
+// big switch-driver wall (0x2e3 B): the three-way classify ladder + the three CreateSprite
+// /Init/Report stanzas pin esi(sprite)/ebx/ebp differently than retail and the string-arg
+// pushes spill. Logic + offsets + the reloc-masked externs byte-exact. topic:wall.
+RVA(0x00079520, 0x2e3)
+i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28, i32 a2c) {
+    (void)a1c;
+    (void)a20;
+    (void)a24;
+    (void)a2c;
+    if (m_groupFlag == 0) {
+        return 0;
+    }
+    CTmCell* hit = this->Hit5(a14, a18, 0, 0, 5);
+    CTmCell* cell;
+    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
+        cell = 0;
+    } else {
+        i32* rec = m_recList.m_head->m_payload;
+        cell = m_grid[rec[1] + rec[0] * 15];
+    }
+    i32 sel;
+    if (cell != 0 && cell->m_1ec == g_644c54) {
+        if (a28 != 0) {
+            sel = 0;
+        } else if (hit == 0) {
+            sel = 1;
+        } else if (hit == cell) {
+            // toggle off the pending-fx and rewind
+            m_pendingFxKind = 0;
+            (g_tmGameReg->m_curState)->StopFx2(0, 0);
+            CTmDisplay* o = hit->m_10;
+            this->PlaceA(o->m_5c, o->m_60, a18, a14);
+            return 1;
+        } else {
+            sel = 2;
+        }
+    } else {
+        sel = (hit != 0) ? 2 : 1;
+    }
+
+    CTmCell* sprite = 0;
+    i32 kindArg = 0;
+    i32 logicArg = 0;
+    if (sel == 0) {
+        // place-on-self path
+        this->PlaceB(a14, a18, 1);
+        return 1;
+    } else if (sel == 1) {
+        // spawn the cursor target sprite
+        CGruntzCmdMgr* rep = g_tmGameReg->m_6c;
+        if (cell != 0) {
+            rep->Report1(1, cell->m_1ec, cell->m_1f0, a18, a14, 0, 0);
+        } else {
+            rep->Report1(1, a14, a18, 0, 0, 0, 0);
+        }
+        if (*(i32*)((char*)this + 0x2c) == 0) { // placeholder gate (see raw)
+            return 0;
+        }
+        CSpriteFactory* fac = m_level->m_8;
+        sprite = (CTmCell*)fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+        kindArg = 3;
+        logicArg = 1;
+    } else {
+        // sel==2: place-and-report variant -> WarpStone factory
+        this->PlaceB(a14, a18, 1);
+        CSpriteFactory* fac = m_level->m_8;
+        sprite = (CTmCell*)fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
+        kindArg = 2;
+        logicArg = 1;
+    }
+    if (sprite == 0) {
+        return 0;
+    }
+    sprite->m_7c->Init(sprite);
+    void* logic = sprite->m_7c->m_18;
+    ((CUserLogic*)logic)->Arm("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, logicArg);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// The /GX (eh) CTriggerMgr methods below (DestroyGroup 0x798d0, ReinitGroup
+// 0x79b80, Load 0x7abc0, and ~CTriggerMgr 0x85c50 at end-of-file) own
+// destructible locals / new+ctor lifetimes (CString temporaries, the overlay
+// rebuild); the whole unit compiles /GX (the former TriggerMgrEh split is
+// folded back - the real dev TU was one /GX unit, see ResetAll's note).
+// LAYOUT NOTE: these methods touch `this` by raw offset in places (the
+// opaque-shell convention); only offsets + reloc-masked helpers are modelled.
+
+// 0x798d0: DestroyGroup(col, row, force) - lazily create the overlay sub-object (+0x25c) via
+// new+ctor (the /GX frame guards the partially-constructed object); if it fails to take, tear
+// it back down and ReportError(0x800a). When it already exists, route by the magic group to
+// the place helper. ret 1 on placement. (__stdcall: ret 0x10.) Reconstructed to plateau.
+// @early-stop
+// /GX new+ctor wall: the placement-new lifetime + the teardown-on-failure path carry the EH
+// frame whose state numbering + partial-object cleanup diverge from retail; the alloc/ctor/
+// teardown shape is faithful. topic:wall topic:eh.
+RVA(0x000798d0, 0x1b6)
+i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
+    (void)force;
+    CActionOptionsMenuBar* ov = m_overlay;
+    if (ov == 0) {
+        m_overlay = new CActionOptionsMenuBar;
+        if (this->Probe() == 0) {
+            CActionOptionsMenuBar* o2 = m_overlay;
+            if (o2 != 0) {
+                o2->Dtor();
+                operator delete(o2);
+                m_overlay = 0;
+            }
+            g_tmGameReg->ReportError(0x800a, 0x3ff);
+        }
+        return 0;
+    }
+    if (ov->m_active != 0 || m_recList.m_count != 1) {
+        return 0;
+    }
+    i32* rec = m_recList.m_head->m_payload;
+    char* cellp = (char*)m_grid[rec[1] + rec[0] * 15];
+    if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_644c54) {
+        return 0;
+    }
+    if (this->PlaceCell(*(i32*)(cellp + 0x1f0), *(i32*)(cellp + 0x1ec), 0) == 0) {
+        return 0;
+    }
+    char* view = *(char**)((char*)m_level + 0x24);
+    char* sc = *(char**)(view + 0x5c) + 0x40;
+    i32 ox = *(i32*)(sc) - *(i32*)(view + 0x14) + row;
+    i32 oy = *(i32*)(sc + 0x4) - *(i32*)(view + 0x10) + col;
+    this->PlaceCell(oy, ox, 1);
+    return 1;
 }
 
 // 0x79b00: OverlayRelease - release the overlay sub-object when present; ret 1.
@@ -823,200 +748,317 @@ i32 CTriggerMgr::ByteTableHas(i32 b) {
     return 0;
 }
 
-// 0x7be10: StopPendingFx - when our overlay-fx (+0x2a8) is live, or the world has a
-// pending flag (world+0x504), stop the world's fx and clear +0x2a8.
-RVA(0x0007be10, 0x34)
-void CTriggerMgr::StopPendingFx() {
-    CTmWorld* world = g_gameReg->m_curState;
-    if (m_pendingFxKind == 0 && world->m_504 == 0) {
-        return;
+// 0x79b80: ReinitGroup(col, row) - when not already done (+0x284) and the level is active,
+// Format a "Level%i" CString from the level index, read the WarpStone config color, hit-test
+// the (col,row) target, lazily re-init the status-bar item (+0x2dc) and either flag it done or
+// recycle the record node; mark +0x284 done. (__stdcall: ret 0x8.) Reconstructed to plateau.
+// @early-stop
+// /GX CString-temp wall: the Level%i Format temporary forces the EH frame whose state +
+// cleanup diverge; the Format/GetColor/hit-test/status path is faithful. topic:wall topic:eh.
+RVA(0x00079b80, 0x194)
+i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
+    if (m_284 != 0) {
+        return 0;
     }
-    world->LoadCursorSprites(0, 0);
-    m_pendingFxKind = 0;
-}
-
-// 0x7d0c0: ClearSelections - drain all 10 selection lists (+0x2d0, stride 0x1c) back
-// to the free list (skipping null-payload nodes), RemoveAll each list, reset +0x3e8.
-RVA(0x0007d0c0, 0x57)
-void CTriggerMgr::ClearSelections() {
-    CTmObList* list = m_selLists;
-    i32 k = 10;
-    do {
-        CTmNode* n = list->m_head;
-        if (n != 0) {
-            void* head = g_freeList;
-            do {
-                CTmNode* cur = n;
-                n = n->m_next;
-                i32* payload = cur->m_payload;
-                if (payload != 0) {
-                    void** slot = (void**)((char*)payload - g_freeListNodeBias);
-                    *slot = head;
-                    head = slot;
-                    g_freeList = head;
-                }
-            } while (n != 0);
-        }
-        list->RemoveAll();
-        list++;
-        k--;
-    } while (k != 0);
-    m_selSentinel = -1;
-}
-
-// 0x7d140: ClearRow(row) - run ExitGrid on the 15 live, hook-less cells of grid
-// row `row` (+0x1c); clear +0x400 when row is the magic group, then refresh world.
-RVA(0x0007d140, 0x61)
-i32 CTriggerMgr::ClearRow(i32 row) {
-    CTmCell** cell = &m_grid[row * 15];
-    i32 i = 15;
-    do {
-        CTmCell* c = *cell;
-        if (c != 0 && c->m_368 == 0) {
-            c->ExitGrid();
-        }
-        cell++;
-        i--;
-    } while (i != 0);
-    if (row == g_644c54) {
-        m_groupFlag = 0;
+    if (*(i32*)((char*)g_tmGameReg + 0x134) != 1) {
+        return 0;
     }
-    g_gameReg->m_curState->Refresh();
+    char* lvl = (char*)g_tmGameReg->m_curState;
+    CString name;
+    name.Format("Level%i", *(i32*)(lvl + 0x1c), 0);
+    i32 color = g_buteMgr.GetIntDef((char*)(const char*)name, "WarpStone", 0);
+    i32 hx = col;
+    i32 hy = row;
+    if (hy >= *(i32*)((char*)g_tmGameReg + 0x144) || hy < *(i32*)((char*)g_tmGameReg + 0x13c)
+        || hx >= *(i32*)((char*)g_tmGameReg + 0x148) || hx < *(i32*)((char*)g_tmGameReg + 0x140)) {
+        ((CTmWorld*)lvl)->Place2(hy, hx, 0);
+    }
+    CTmGridHolder* plane = (CTmGridHolder*)*(char**)(*(char**)((char*)g_tmGameReg + 0x30) + 0x24);
+    i32 outR = col;
+    i32 outC = row;
+    plane->Snap(&outR, &outC);
+    CSBI_RectOnly* sbi = (CSBI_RectOnly*)*(char**)((char*)lvl + 0x2dc);
+    if (sbi->m_hlBusy == 0) {
+        if (*(i32*)sbi == 2) {
+            sbi->Reset();
+        }
+        if (sbi->m_activeTab != 5) {
+            sbi->Place(5, 3, 0);
+        }
+        sbi->Place(5, 1, 0);
+        sbi->Run();
+    }
+    if (sbi->Place(color, outR, outC) != 0) {
+        sbi->m_hlBusy = 1;
+    } else {
+        m_byteArr.Place(m_byteArr.m_count, 0, 0);
+    }
+    m_284 = 1;
     return 1;
 }
 
-// 0x7d1d0: NearestCellDist - the minimum squared (>>5 tile) distance from (px,py) to
-// any live, clickable grid cell, scanning rows 0..3 but skipping row `skipRow`.
-// CRACKED (77->100): (1) branchless abs() on the squared sum -> cdq;xor;sub (the
-// `if(d<0)d=-d` branch form emits jns;neg); (2) the m_5c distance term declared/evaluated
-// BEFORE m_60 (load-order); (3) `r` declared before `row` + `r++` before `row+=15` so the
-// loop counter takes the [esp+0x20] slot. docs/patterns/signed-modulo-pow2-abs-restore.md.
-RVA(0x0007d1d0, 0x9d)
-i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
-    i32 tx = px >> 5;
-    i32 ty = py >> 5;
-    i32 best = 0x7fffffff;
-    i32 r = 0;
-    CTmCell** row = m_grid;
-    do {
-        if (r != skipRow) {
-            i32 i = 15;
-            CTmCell** cell = row;
-            do {
-                CTmCell* g = *cell;
-                if (g != 0 && g->m_1fc != 0) {
-                    CTmDisplay* o = g->m_10;
-                    i32 dx = (o->m_5c >> 5) - tx;
-                    i32 dy = (o->m_60 >> 5) - ty;
-                    i32 d = abs(dx * dx + dy * dy);
-                    if (d < best) {
-                        best = d;
-                    }
-                }
-                cell++;
-                i--;
-            } while (i != 0);
+// ===========================================================================
+// CTriggerMgr::ResetSpawnState  (0x79d90)
+// ===========================================================================
+
+// The +0x260 byte table is the canonical CTmByteArray real member m_byteArr (see
+// <Gruntz/TriggerMgr.h>): RemoveAt (ResetSpawnState) + SetSize/SetAtGrow (Load) called
+// directly. Plus the two build-state notifiers (0x100930 / 0x104d60).
+extern void Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd)
+extern void __cdecl operator delete(void*);
+
+RVA(0x00079d90, 0xc5)
+void CTriggerMgr::ResetSpawnState() {
+    if (g_tmGameReg->m_134 != 1) {
+        return;
+    }
+    if (m_284 == 0) {
+        return;
+    }
+    CTmWorld* world = g_tmGameReg->m_curState;
+    CSBI_RectOnly* st = world->m_2dc;
+    if (st->m_retabNotify != 0) {
+        operator delete(st->m_retabNotify);
+        st->m_retabNotify = 0;
+    }
+    world->m_2dc->m_hlBusy = 0;
+    if (m_byteArr.m_count > 0) {
+        m_byteArr.RemoveAt(m_byteArr.m_count - 1, 1);
+        CSBI_RectOnly* ctx = world->m_2dc;
+        if (*(i32*)ctx != 2 && ctx->m_activeTab == 5) {
+            Eng_BuildNotifyA(0);
+            world->m_2dc->TryActivate();
         }
-        r++;
-        row += 15;
-    } while (r < 4);
-    return best;
+    }
+    if (g_tmGameReg->m_134 == 1) {
+        CTmPendingFx* fx = m_pendingFx;
+        if (fx != 0) {
+            fx->Pulse();
+        }
+    }
+    this->RefreshB(6);
 }
 
-// 0x7d2a0: SelectionListFind(key, y) - only when key == g_644c54, scan the 10
-// selection lists (+0x2d4, stride 0x1c) for a node whose payload (x,y) matches
-// (key,y); ret the first matching list index, 0xa on a second match, else 0.
+// The world fx-spawner (0x7c620, thunk 0x152d): a __stdcall sprite spawner.
+extern void __stdcall Eng_SpawnFx(i32 type, i32 x, i32 y, i32 a3, i32 a4, i32 a5); // 0x7c620
+
+// 0x79ea0: SpawnTileFx(x, y, a3) - only when the active state is live
+// (gameReg->m_134==1): read the tile at (x>>5, y>>5); if it carries neither the
+// 0x40939 mask nor bit 0x2, spawn a type-0x14 fx centered on the tile. Otherwise
+// (the bit path) map (a3-1) into the world's 4 fx anchors and spawn there. ret 1.
+// __stdcall free function (cleans its own 3 args; retail ends in `ret 0xc`).
 // @early-stop
-// loop-rotation + interleaved-epilogue wall: the list-walk body is byte-exact, but
-// retail loops with `jl top` (fall-through exit) and interleaves `mov eax,0xa` between
-// the pops; our cl emits `jge end; jmp top` + a clean epilogue. topic:wall.
-RVA(0x0007d2a0, 0x64)
-i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
-    if (key != g_644c54) {
+// regalloc wall (~81%): body + offsets + the tile double-index byte-exact; retail homes
+// gameReg in edi, the grid in esi and the width in ebx (3 callee-saved regs), our cl uses
+// gameReg=esi/width=edi (2 regs). Not source-steerable. topic:wall topic:regalloc.
+RVA(0x00079ea0, 0xc2)
+i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
+    if (g_tmGameReg->m_134 != 1) {
         return 0;
     }
-    i32 result = 0;
-    i32 i = 0;
-    CTmObList* list = m_selLists;
-    do {
-        CTmNode* n = list->m_head;
-        while (n != 0) {
-            CTmNode* cur = n;
-            n = n->m_next;
-            i32* payload = cur->m_payload;
-            if (payload[0] == key && payload[1] == y) {
-                if (result != 0) {
-                    return 10;
-                }
-                result = i;
-            }
-        }
-        i++;
-        list++;
-    } while (i < 10);
-    return result;
+    CTileGrid* grid = g_tmGameReg->m_tileGrid;
+    i32 tx = x >> 5;
+    i32 ty = y >> 5;
+    i32 tile;
+    if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
+        tile = 1;
+    } else {
+        tile = grid->m_8[ty][tx * 8 - tx];
+    }
+    if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
+        Eng_SpawnFx(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, a3, 0);
+        return 1;
+    }
+    CTmWorld* world = g_tmGameReg->m_curState;
+    i32 idx = a3 - 1;
+    CTmWorld::Anchor* rec = ((u32)idx < 4) ? &world->m_anchors[idx] : 0;
+    if (rec != 0) {
+        Eng_SpawnFx(0x14, rec->m_x, rec->m_y, 0, a3, 0);
+    }
+    return 1;
 }
 
-// 0x7d330: DestroyAllAnims - DestroyAnims on every live grid cell (4 rows x 15), then
-// walk the level's display-object list clearing the +0x200 marker on each object whose
-// type-descriptor (obj+0x7c) slot-4 matches the switch tag, then stop the three sound
-// channels (+0x3f0, +0x3f4, and the active grunt's +0x618).
+// 0x79fb0: NotifyCell(row, col, z) - the notify-cell hook CellDispatch tails into. If the
+// cell is live and not yet notified, Recall it (when not recall-done), clear its tile-attr
+// bit + reset the plane cell, null the grid slot, decrement the per-row count and, when z
+// set, bump the per-row alt count and re-arm; mark the cell notified. (__stdcall: ret 0xc.)
 // @early-stop
-// regalloc wall: retail homes the row counter in ebp and the zero-compare const in ebx;
-// our cl swaps them (ebx counter, ebp zero). Code bytes + offsets byte-exact, externs
-// reloc-masked (DirectSoundMgr::StopAndRewind, ReadConfigFromButeMgr tag). topic:wall.
-RVA(0x0007d330, 0xd3)
-void CTriggerMgr::DestroyAllAnims() {
-    CTmCell** cell = m_grid;
-    i32 r = 4;
-    do {
-        i32 i = 15;
-        do {
-            CTmCell* g = *cell;
-            if (g != 0) {
-                g->DestroyAnims();
+// 50.7->76.6 this audit: fixed the tile-attr column stride (*28 = 7 dwords, the SAME grid
+// HitTestCell walks - the old *8 was a logic bug), RecallCell's real arg order (cell,x,y),
+// tg cached once (only ->m_8 re-read: retail holds the CTileGrid ptr in edx across both
+// stores), and the z!=0 path inline / z==0 far. Residual: retail homes the pos pair to a
+// sub esp,8 frame with two DEAD stores while forwarding the regs (its spill pick; plain
+// locals / whole-struct copy / inlined out-param getter all get DSE'd by our cl - measured
+// 75.4/76.6/75.4), which cascades into the esi<->edi coloring + the late push ebp.
+// topic:wall topic:regalloc.
+RVA(0x00079fb0, 0x169)
+void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
+    i32 idx = col * 15 + row; // grid[col][row] base
+    CTmCell* cell = m_grid[idx];
+    if (cell == 0) {
+        return;
+    }
+    if (cell->m_36c != 0) {
+        return;
+    }
+    if (cell->m_1e8 == 0) {
+        this->RecallCell(cell, cell->m_pos.x, cell->m_pos.y);
+    }
+    CTrigPoint pt = cell->m_pos;
+    CTileGrid* tg = g_tmGameReg->m_tileGrid;
+    i32 rowIdx = pt.y >> 5;
+    i32 colByte = (pt.x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
+    ((char*)tg->m_8[rowIdx])[colByte + 0x3] &= 0xdf;
+    *(i32*)((char*)tg->m_8[rowIdx] + colByte + 0x4) = -1;
+    m_grid[idx] = 0;
+    m_rowCount[col] -= 1;
+    if (z != 0) {
+        m_cellFlag[idx] = 1;
+        m_rowStateB[col] += 1;
+        i32 k = cell->m_170;
+        if (k > 0x16) {
+            k = cell->m_19c;
+        }
+        if (k == 0x14) {
+            if (g_tmGameReg->m_134 == 1) {
+                CTmPendingFx* fx = m_pendingFx;
+                if (fx != 0) {
+                    fx->Pulse();
+                }
             }
-            cell++;
-            i--;
-        } while (i != 0);
-        r--;
-    } while (r != 0);
+            this->RefreshB(1);
+        }
+        cell->m_36c = 1;
+        return;
+    }
+    i32 k = cell->m_170;
+    if (k > 0x16) {
+        k = cell->m_19c;
+    }
+    if (k == 0x14) {
+        this->RefreshC();
+    }
+    m_rowStateC[col] += 1;
+    cell->m_36c = 1;
+}
 
-    CSpriteListNode* node = m_level->m_8->m_liveObjects;
+// 0x7a180: SpawnPuddle(x, y, f124, dir, color, f118) - create a "GruntPuddle" sprite from
+// the level's factory; on failure ReportError and ret 0. On success run its Init hook,
+// stash the placement fields (+0x124/+0x114/+0x118) and tail into PlacePuddle. (ret 0x18.)
+RVA(0x0007a180, 0x86)
+i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118) {
+    CSpriteFactory* fac = m_level->m_8;
+    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
+    if (sprite == 0) {
+        g_tmGameReg->ReportError(0x8009, 0x400);
+        return 0;
+    }
+    sprite->m_7c->Init(sprite);
+    sprite->m_124 = f124;
+    sprite->m_114 = f114;
+    sprite->m_118 = f118;
+    return PlacePuddle(sprite, color);
+}
+
+// 0x7a240: PlacePuddle(sprite, color) - hand the sprite's placement params to its target's
+// PlacePuddle; on failure flag the goal + ReportError(0x8009,0x401). On success walk the
+// record list twice (full (x,y) match, then x-only when count>0x3b) flagging+unlinking each
+// matching node, then RemoveAll the list. (__thiscall: ret 0x8.)
+// @early-stop
+// regalloc + dual-loop scheduling wall: the two record-walk loops + the found/unlinked flags
+// spill to different stack slots than retail and the (x,y)==busy fast-path goto reorders.
+// Logic + offsets + the RemoveAt/RemoveAll recycle byte-exact. topic:wall.
+RVA(0x0007a240, 0x143)
+i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
+    CTmPuddleTarget* tgt = (CTmPuddleTarget*)sprite->m_7c->m_18;
+    i32 d = sprite->m_118;
+    if (d == 0) {
+        d = 0x19;
+    }
+    if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
+        tgt->m_38->m_8 |= 0x10000;
+        g_tmGameReg->ReportError(0x8009, 0x401);
+        return 0;
+    }
+    CTmRecNode* n = (CTmRecNode*)m_baseList.m_head;
+    i32 manyFlag = (m_baseList.m_count > 0x3b) ? 1 : 0;
+    i32 unlinked = 0;
+    while (n != 0 && unlinked == 0) {
+        CTmRecNode* cur = n;
+        n = n->m_next;
+        CTmPuddleTarget* o = cur->m_obj;
+        if (o->m_54 == tgt->m_54 && o->m_58 == tgt->m_58) {
+            if (o->m_5c != 0) {
+                tgt->m_38->m_8 |= 0x10000;
+                return 0;
+            }
+            o->m_38->m_8 |= 0x10000;
+            m_baseList.RemoveAt(cur);
+            unlinked = 1;
+        }
+    }
+    if (manyFlag != 0 && unlinked == 0) {
+        n = (CTmRecNode*)m_baseList.m_head;
+        while (n != 0) {
+            CTmRecNode* cur = n;
+            n = n->m_next;
+            CTmPuddleTarget* o = cur->m_obj;
+            if (o->m_5c == 0) {
+                o->m_38->m_8 |= 0x10000;
+                m_baseList.RemoveAt(cur);
+            }
+        }
+    }
+    m_baseList.AddTail(tgt);
+    return 1;
+}
+
+// ===========================================================================
+// LoadToyBoxIcon @0x07a3f0
+// ===========================================================================
+//
+// Lazily creates the "GAME_TOYBOX" in-game icon at tile (x>>5, y>>5): first walks
+// the factory's live-icon list (m_factoryHolder->m_8->m_liveObjects) and bails (return 0) if an
+// existing icon of one of the two icon classes already sits on that tile;
+// otherwise CreateSprite("InGameIcon"), cache its frame, stamp the four config
+// slots and the +0x40 visible bit.  __thiscall, ret 0x14 (5 args).
+//
+// Byte-identical (99.94%): the only residual is the reloc-typing artifact on the
+// two `cmp esi, OFFSET fn` de-dup comparisons (base names IconClassInitA/B vs
+// retail thunk_FUN_004bf150 / CSingleAnimation; code bytes match).
+
+RVA(0x0007a3f0, 0xd7)
+i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
+    CSpriteFactory* fac = m_factoryHolder->m_8;
+    i32 tx = x >> 5;
+    i32 ty = y >> 5;
+
+    CSpriteListNode* node = fac->m_liveObjects;
     while (node != 0) {
-        CTmCell* obj = (CTmCell*)node->m_sprite;
+        CSpriteListNode* cur = node;
         node = node->next;
-        if (obj != 0) {
-            char* desc = *(char**)((char*)obj + 0x7c);
-            void (CTmCell::*tag)() = &CTmCell::ReadConfigFromButeMgr;
-            if (*(void**)(desc + 0x10) == *(void**)&tag) {
-                char* tgt = *(char**)(desc + 0x18);
-                *(i32*)(tgt + 0x200) = 0;
+        CGameObject* obj = cur->m_sprite;
+        void* init = (void*)obj->m_7c->Init;
+        if (init == (void*)&IconClassInitA || init == (void*)&IconClassInitB) {
+            i32 ox = obj->m_screenX >> 5;
+            i32 oy = obj->m_screenY >> 5;
+            if (tx == ox && ty == oy) {
+                return 0;
             }
         }
     }
 
-    DirectSoundMgr* ch0 = m_soundChanA;
-    if (ch0 != 0) {
-        ch0->StopAndRewind();
-        m_soundChanA = 0;
+    CGameObject* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
+    if (!spr) {
+        g_pGameRegistry->Report(0x8009, 0x402);
+        return 0;
     }
-    DirectSoundMgr* ch1 = m_soundChanB;
-    if (ch1 != 0) {
-        ch1->StopAndRewind();
-        m_soundChanB = 0;
-    }
-    void* state = g_gameReg->PickPausedThenPlayState();
-    if (state != 0) {
-        char* sub = *(char**)((char*)state + 0x2dc);
-        if (sub != 0) {
-            DirectSoundMgr* ch2 = *(DirectSoundMgr**)(sub + 0x618);
-            if (ch2 != 0) {
-                ch2->StopAndRewind();
-                *(DirectSoundMgr**)(sub + 0x618) = 0;
-            }
-        }
-    }
+    spr->ApplyName("GAME_TOYBOX");
+    spr->m_118 = a4;
+    spr->m_130 = a5;
+    spr->m_114 = a3;
+    spr->m_stateFlags |= 1;
+    return 1;
 }
 
 // 0x7a510: ClearRowAndRefresh(startRow) - Recall every live, hook-less cell of rows
@@ -1056,137 +1098,12 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
     if (startRow == g_644c54) {
         m_groupFlag = 0;
     }
-    CTmWorld* world = g_gameReg->m_curState;
+    CTmWorld* world = g_tmGameReg->m_curState;
     world->Refresh();
     world->SetStat(0, 0xbb7);
     world->m_2dc->SetMode(1);
     return 1;
 }
-
-// 0x7a180: SpawnPuddle(x, y, f124, dir, color, f118) - create a "GruntPuddle" sprite from
-// the level's factory; on failure ReportError and ret 0. On success run its Init hook,
-// stash the placement fields (+0x124/+0x114/+0x118) and tail into PlacePuddle. (ret 0x18.)
-RVA(0x0007a180, 0x86)
-i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f118) {
-    CSpriteFactory* fac = m_level->m_8;
-    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, x, y, 0xa, "GruntPuddle", 0x40003);
-    if (sprite == 0) {
-        g_gameReg->ReportError(0x8009, 0x400);
-        return 0;
-    }
-    sprite->m_7c->Init(sprite);
-    sprite->m_124 = f124;
-    sprite->m_114 = f114;
-    sprite->m_118 = f118;
-    return PlacePuddle(sprite, color);
-}
-
-// The puddle's placement target (sprite desc +0x18): a CUserLogic-ish object whose
-// PlacePuddle(a,b,c,d) does the real placement (reloc-masked @0x9c3f0) and whose +0x38
-// goal carries the +0x8 flags ORed with 0x10000 on failure. The (x,y,z) the record-list
-// walk matches against live at +0x54/+0x58/+0x5c.
-struct CTmPuddleTarget {
-    i32 Place(i32 a, i32 b, i32 c, i32 d); // 0x9c3f0
-    char p0[0x38];
-    CTmGoal* m_38; // +0x38  goal object (its +0x8 is the flags word)
-    char p1[0x54 - 0x3c];
-    i32 m_54; // +0x54  match x
-    i32 m_58; // +0x58  match y
-    i32 m_5c; // +0x5c  busy flag
-};
-// The cell record nodes PlacePuddle walks: this+0x4 is the intrusive CPtrList head node,
-// this+0xc its count. Each node carries the next ptr @+0 and the placed-object @+0x8.
-struct CTmRecNode {
-    CTmRecNode* m_next;     // +0x00
-    char p0[0x4];           // +0x04
-    CTmPuddleTarget* m_obj; // +0x08  placed object (the puddle target shape)
-};
-
-// 0x7a240: PlacePuddle(sprite, color) - hand the sprite's placement params to its target's
-// PlacePuddle; on failure flag the goal + ReportError(0x8009,0x401). On success walk the
-// record list twice (full (x,y) match, then x-only when count>0x3b) flagging+unlinking each
-// matching node, then RemoveAll the list. (__thiscall: ret 0x8.)
-// @early-stop
-// regalloc + dual-loop scheduling wall: the two record-walk loops + the found/unlinked flags
-// spill to different stack slots than retail and the (x,y)==busy fast-path goto reorders.
-// Logic + offsets + the RemoveAt/RemoveAll recycle byte-exact. topic:wall.
-RVA(0x0007a240, 0x143)
-i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
-    CTmPuddleTarget* tgt = (CTmPuddleTarget*)sprite->m_7c->m_18;
-    i32 d = sprite->m_118;
-    if (d == 0) {
-        d = 0x19;
-    }
-    if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
-        tgt->m_38->m_8 |= 0x10000;
-        g_gameReg->ReportError(0x8009, 0x401);
-        return 0;
-    }
-    CTmRecNode* n = (CTmRecNode*)m_baseList.m_head;
-    i32 manyFlag = (m_baseList.m_count > 0x3b) ? 1 : 0;
-    i32 unlinked = 0;
-    while (n != 0 && unlinked == 0) {
-        CTmRecNode* cur = n;
-        n = n->m_next;
-        CTmPuddleTarget* o = cur->m_obj;
-        if (o->m_54 == tgt->m_54 && o->m_58 == tgt->m_58) {
-            if (o->m_5c != 0) {
-                tgt->m_38->m_8 |= 0x10000;
-                return 0;
-            }
-            o->m_38->m_8 |= 0x10000;
-            m_baseList.RemoveAt(cur);
-            unlinked = 1;
-        }
-    }
-    if (manyFlag != 0 && unlinked == 0) {
-        n = (CTmRecNode*)m_baseList.m_head;
-        while (n != 0) {
-            CTmRecNode* cur = n;
-            n = n->m_next;
-            CTmPuddleTarget* o = cur->m_obj;
-            if (o->m_5c == 0) {
-                o->m_38->m_8 |= 0x10000;
-                m_baseList.RemoveAt(cur);
-            }
-        }
-    }
-    m_baseList.AddTail(tgt);
-    return 1;
-}
-
-// The pending-fx sub-object at CTriggerMgr+0x2a0; its Pulse() is the reloc-masked thiscall.
-struct CTmPendingFx {
-    void Pulse(); // reloc-masked
-};
-
-// The overlay snapshot source `obj`: a sprite whose +0x2c / +0x30 vtable slots are the
-// 8-byte field getters RebuildOverlay copies into the manager's three pose blocks. Modeled
-// polymorphic so `src->GetA/GetB` lower to the retail `mov eax,[esi]; call [eax+0x2c/0x30]`
-// virtual dispatch (GetA at slot 11=+0x2c, GetB at slot 12=+0x30); slots 0..10 are unused
-// placeholders that only pin the vtable layout.
-//
-// NOT reparentable to a named sprite base: `obj` arrives as the opaque first arg (a0) of
-// CGruntzMgr::BroadcastCmd (0x93460), a broadcast-command payload whose concrete class is
-// not determinable from the reconstructed set - GetA/GetB are a generic 2-getter sprite
-// interface, not a modeled shared base. Kept as a documented genuine interface view (the
-// task's "else leave"); RebuildOverlay is byte-exact (100%) so a speculative retype would
-// only risk it.
-struct CTmOverlaySrc {
-    virtual void vf00();
-    virtual void vf01();
-    virtual void vf02();
-    virtual void vf03();
-    virtual void vf04();
-    virtual void vf05();
-    virtual void vf06();
-    virtual void vf07();
-    virtual void vf08();
-    virtual void vf09();
-    virtual void vf10();
-    virtual void GetA(void* dst, i32 n); // [11] vtbl +0x2c
-    virtual void GetB(void* dst, i32 n); // [12] vtbl +0x30
-};
 
 // 0x7a5e0: RebuildOverlay(obj, kind, ., .) - copy the source object's two pose getters into
 // the manager's three 0x8-byte pose blocks (+0x290/+0x2b0/+0x2c0), selecting getter +0x30 for
@@ -1250,349 +1167,6 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
         return 1;
     }
     return 1;
-}
-
-// 0x6bfd0: ResetCell(col, row, force, ...) - if grid[row*15+col] (+0x1c) is live: for a
-// non-magic row, run its three sub-state resetters then re-seed its CombatTimeout config
-// fields (+0x880..+0x88c); for the magic row (== g_644c54), when not forced recycle the
-// (row,col) record node onto the free list, AddTail it to +0x240, and run ResetMagic. ret 1
-// only when a magic cell was recycled, else 0. (__stdcall: ret 0x10.)
-// @early-stop
-// regalloc + free-list-recycle scheduling wall: the node-bias recycle and the GetInt arg
-// push order pin ebx/edi differently than retail. Logic + offsets byte-exact. topic:wall.
-RVA(0x0006bfd0, 0x106)
-i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
-    i32 idx = col * 15 + row;
-    CTmCell* cell = m_grid[idx];
-    if (cell == 0 || cell->m_1fc == 0) {
-        return 0;
-    }
-    if (col != g_644c54) {
-        cell->ResetA();
-        cell->ResetB();
-        cell->ResetC();
-        cell->m_888 = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
-        cell->m_88c = 0;
-        cell->m_880 = g_645588;
-        cell->m_884 = 0;
-        return 0;
-    }
-    if (force != 0) {
-        if (keep == 0) {
-            if (this->Reset3(col, row, 0) != 0) {
-                return 1;
-            }
-        }
-    } else {
-        this->RefreshC(); // self-call 0x6c068 (reloc-masked)
-    }
-    void* node = g_freeList;
-    i32* slot = 0;
-    if (*(void**)node != 0) {
-        slot = (i32*)((char*)node + 4);
-        slot[0] = col;
-        slot[1] = row;
-        g_freeList = *(void**)g_freeList;
-    }
-    m_recList.AddTail(slot);
-    return cell->ResetMagic();
-}
-
-// 0x6ea00: HitTestApply(x, y, kind) - hit-test the cell at (x,y); only for the magic group
-// (out-col == g_644c54) and a cell whose config name is NOT "B" and kind 0x14, add the world's
-// score delta, zero the status fields, SetStat(0,0xbb7), re-arm the status item (SetMode 1)
-// and ClearMagic(g_644c54). void - no path materialises a return value. (__stdcall: ret 0xc.)
-// @early-stop
-// inline-strcmp result-register coloring wall (~80%): void return + strcmp `!= 0` bool steer +
-// i64 score sub are byte-exact and size now matches retail (0x125). The residual is the inline
-// strcmp landing its sbb result in ecx (retail eax) with the `differ` bool in al vs retail's cl,
-// so the `setne`+null-test colors as `cmpb bl,al` vs retail `testb cl,cl`. Not source-steerable
-// (the `bool` local is required for the setne form but shifts the result register). topic:wall.
-RVA(0x0006ea00, 0x125)
-void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
-    i32 outRow = 0;
-    i32 outCol = 0;
-    CTmCell* cell = this->Hit(kind, y, y, &outRow, &outCol);
-    if (cell == 0 || outCol != g_644c54) {
-        return;
-    }
-    char* name = *g_nameReg.Lookup(cell->m_14->m_1c);
-    bool differ = strcmp(name, "B") != 0;
-    if (!differ) {
-        return;
-    }
-    i32 k = cell->m_170;
-    if (k > 0x16) {
-        k = cell->m_19c;
-    }
-    if (k != 0x14) {
-        return;
-    }
-    CTmWorld* world = g_gameReg->m_curState;
-    CTmScoreSub* sub = world->m_3f4;
-    i64 diff = (i64)(u32)g_645588 - sub->m_38;
-    if (diff < 0) {
-        diff = 0;
-    }
-    g_gameReg->m_scoreBoard->m_score += (i32)diff;
-    sub->m_40 = 0;
-    sub->m_44 = 0;
-    sub->m_30 = 0;
-    sub->m_34 = 0;
-    sub->m_48 = 0;
-    sub->m_4c = 0;
-    world->SetStat(0, 0xbb7);
-    world->m_2dc->SetMode(1);
-    this->ClearMagic(g_644c54);
-}
-
-// The stop-fx hook the TriggerCell driver uses (reloc-masked).
-// 0x7b1b0: TriggerCell(x, y) - clear the pending-fx slot; only when the overlay sub-object
-// (+0x25c) is live with its +0x2c set, look up the magic record cell, classify (x,y) and by
-// the resulting kind spawn the matching fx sprite (kind 2 -> remapped 0x13, kind 3 -> alt
-// 0x1e, else generic +0xc8 into +0x2a8), then Refresh + Record. ret 1. (ret 0x8.)
-// @early-stop
-// regalloc + switch-on-kind wall: the classify result drives a cmp/je ladder that pins ebx
-// (world) and esi (cell) differently than retail, and the fx arg pushes spill. topic:wall.
-RVA(0x0007b1b0, 0x12b)
-i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
-    CActionOptionsMenuBar* ov = m_overlay;
-    m_pendingFxKind = 0;
-    if (ov == 0 || ov->m_active == 0) {
-        return 0;
-    }
-    CTmCell* cell;
-    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
-        cell = 0;
-    } else {
-        i32* rec = m_recList.m_head->m_payload;
-        cell = m_grid[rec[1] + rec[0] * 15];
-    }
-    CTmWorld* world = g_gameReg->m_curState;
-    i32 kind = this->Classify(x, y);
-    if (kind == 2) {
-        i32 alt = cell->m_170;
-        if (alt > 0x16) {
-            alt = cell->m_19c;
-        }
-        if (alt == 0x13) {
-            g_gameReg->m_68->Spawn(cell->m_pos.x, cell->m_pos.y, 0, 0, 0, 2, 1);
-        }
-    } else if (kind == 3) {
-        if (cell->m_198 == 0x1e) {
-            CTmDisplay* o = cell->m_10;
-            g_gameReg->m_68->Spawn(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
-        }
-    } else if (kind != 0) {
-        i32 v = kind + kPendingFxIdBase;
-        m_pendingFxKind = v;
-        world->StopFx2(v, 0);
-    }
-    this->Refresh2();
-    this->Record2(x, y);
-    return 1;
-}
-
-// The sprite's bound logic (sprite desc +0x18) is the canonical CUserLogic
-// (<Gruntz/UserLogic.h>): its multi-arg Place driver (@0x4c1c4) and target-cursor Arm
-// (@0x4e517) are reached through the base pointer (former CTmUserLogic view folded away).
-
-// 0x7c110: SpawnGrunt(col, row, a18, a1c) - find the first free column of grid row `row`;
-// if full ret 0. Snap the source cell[col]'s display pos to a tile, run a prep self-call,
-// create a "Grunt" sprite at that pos, Init it, place it via its userlogic; on placement
-// failure flag the goal and ret 0, else stash the cell + bump the per-row counters. ret 1.
-// (__stdcall: ret 0x10.)
-// @early-stop
-// regalloc + free-column-scan wall: the inner "first free col" loop and the snap arithmetic
-// pin ebp/edi differently than retail; the placement-failure goal-flag path tail-merges.
-RVA(0x0007c110, 0x166)
-i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
-    CTmCell* src = m_grid[col * 15 + a1c];
-    i32 free = 0;
-    CTmCell** rowBase = &m_grid[row * 15];
-    if (*rowBase != 0) {
-        CTmCell** p = rowBase;
-        while (free < 15 && *p != 0) {
-            p++;
-            free++;
-        }
-    }
-    if (free >= 15) {
-        return 0;
-    }
-    CTmDisplay* o = src->m_10;
-    i32 sx = (o->m_5c & ~0x1f) + 0x10;
-    i32 sy = (o->m_60 & ~0x1f) + 0x10;
-    i32 k = src->m_170;
-    if (k > 0x16) {
-        k = src->m_19c;
-    }
-    i32 vis = src->m_198;
-    this->Reset3(col, k, vis); // prep self-call 0x7ec96
-    CSpriteFactory* fac = m_level->m_8;
-    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
-    if (sprite == 0) {
-        return 0;
-    }
-    sprite->m_7c->Init(sprite);
-    void* logic = sprite->m_7c->m_18;
-    if (((CUserLogic*)logic)->Place(col, row, vis, k, 0, 0, 0, 0, 0, 0, 0, 0) == 0) {
-        *(i32*)(*(char**)((char*)logic + 0x154) + 0x8) |= 0x10000;
-        return 0;
-    }
-    m_grid[row * 15 + free] = sprite;
-    m_rowCount[row] += 1;
-    m_cellFlag[(row * 15 + free)] = 0;
-    return 1;
-}
-
-// CTriggerMgr::GetOriginXY (0x000759e0) is now an inline member in the header.
-
-// 0x75a90: TmFlagsAllow(a, b, c) - a __cdecl trigger-flag compatibility test on the
-// shared bits m = a & b: bit 0x20000000 vetoes outright; with no shared bits, allow;
-// otherwise allow only when (a & c) is also set.
-RVA(0x00075a90, 0x27)
-i32 TmFlagsAllow(i32 a, i32 b, i32 c) {
-    i32 m = b & a;
-    if (m & 0x20000000) {
-        return 0;
-    }
-    if (m != 0 && (c & a) == 0) {
-        return 0;
-    }
-    return 1;
-}
-
-// 0x75af0: HitTestCell(x, y, outRow, outCol, exact) - sample the plane tile-attr at
-// (x>>5, y>>5); its high byte is the row, low byte the col. Look up grid[row*15+col]; if
-// live+clickable, either exact-match its world pos (exact) or its 30x30 bounds, then write
-// (row,col) through the out-ptrs. ret 0 on any miss. (__stdcall: ret 0x14.)
-// @early-stop
-// regalloc + bounds-arith wall: the row/col high/low-byte split pins edi/ebp and the
-// ±7 box arithmetic spills to different slots than retail. Logic + offsets byte-exact.
-RVA(0x00075af0, 0x111)
-i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) {
-    CTileGrid* plane = g_gameReg->m_tileGrid;
-    i32 ix = x >> 5;
-    i32 iy = y >> 5;
-    i32 attr;
-    if (ix >= plane->m_c || iy >= plane->m_10) {
-        attr = -1;
-    } else {
-        attr = plane->m_8[iy][ix * 7 + 1];
-    }
-    if (attr == -1) {
-        return 0;
-    }
-    i32 row = (attr >> 8) & 0xff;
-    i32 col = attr & 0xff;
-    CTmCell* cell = m_grid[col + row * 15];
-    if (cell == 0 || cell->m_1fc == 0) {
-        return 0;
-    }
-    if (exact != 0) {
-        CTmDisplay* o = cell->m_10;
-        if (o->m_5c != x || o->m_60 != y) {
-            return 0;
-        }
-        if (outRow != 0) {
-            *outRow = row;
-        }
-        if (outCol != 0) {
-            *outCol = col;
-        }
-        return 1;
-    }
-    CTmDisplay* o = cell->m_10;
-    i32 ox = o->m_5c;
-    i32 oy = o->m_60;
-    if (x + 7 > ox + 14 || x - 7 < ox - 7 || y + 7 > oy + 14 || y - 7 < oy - 7) {
-        return 0;
-    }
-    if (outRow != 0) {
-        *outRow = row;
-    }
-    if (outCol != 0) {
-        *outCol = col;
-    }
-    return 1;
-}
-
-// 0x78520: ReportRecordsA(a14, a18, a1c, a20, a24) - when the level flag (+0x400) is set,
-// scan the record list (+0x244) collecting the byte of each magic-group, un-triggered cell;
-// if exactly one matched, hand it to the world's single-record reporter, else hand the whole
-// collected array to the manager's multi-record reporter. (__stdcall: ret 0xc.)
-// @early-stop
-// reporter-dispatch arg-shape wall (~72%): the record scan is now byte-exact (u8 count +
-// `bytes[count]=payload[4]` collected byte, size matches retail 0x106). The residual is the
-// trailing count==1/else dispatch: retail calls two 8-arg reporter methods on g_gameReg->m_6c
-// passing a per-iter firstByte dword slot (`*(u8*)payload` stored beside count) + the count/
-// array as separate args; our 7-arg self-call ReportN/Report1 shape approximates it. topic:wall.
-RVA(0x00078520, 0x106)
-void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
-    if (m_groupFlag == 0) {
-        return;
-    }
-    u8 bytes[0x88];
-    u8 count = 0;
-    CTmNode* n = m_recList.m_head;
-    while (n != 0) {
-        CTmNode* next = n->m_next;
-        u8* payload = (u8*)n->m_payload;
-        CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
-        if (cell->m_1ec == g_644c54 && cell->m_1e4 == 0) {
-            bytes[count] = payload[4];
-            count++;
-        }
-        n = next;
-    }
-    if (count == 1) {
-        g_gameReg->m_6c->Report1(2, bytes[0], a14, a18, 0, a1c, 0);
-    } else {
-        this->ReportN(2, a14, bytes, a18, a1c, a20, a24);
-    }
-}
-
-// 0x78680: ReportRecordsB(a14, a18, a1c, a20, a24, a28) - the four-way variant of
-// ReportRecordsA: same magic-group byte scan, then dispatch by (count==1, a14!=0) to one of
-// four (single/multi x kind 3/9) report calls. (__stdcall: ret 0x10.)
-// @early-stop
-// reporter-dispatch arg-shape wall (~62%): same fixed record scan as ReportRecordsA (u8 count +
-// payload[4] collected byte). The residual is the 4-way (count==1 x a28) dispatch to the two
-// 8-arg g_gameReg->m_6c reporter methods with the firstByte dword slot; our self-call shape
-// approximates it. topic:wall.
-RVA(0x00078680, 0x189)
-void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28) {
-    if (m_groupFlag == 0) {
-        return;
-    }
-    u8 bytes[0x88];
-    u8 count = 0;
-    CTmNode* n = m_recList.m_head;
-    while (n != 0) {
-        CTmNode* next = n->m_next;
-        u8* payload = (u8*)n->m_payload;
-        CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
-        if (cell->m_1ec == g_644c54 && cell->m_1e4 == 0) {
-            bytes[count] = payload[4];
-            count++;
-        }
-        n = next;
-    }
-    CGruntzCmdMgr* rep = g_gameReg->m_6c;
-    if (count == 1) {
-        if (a28 != 0) {
-            rep->Report1(9, bytes[0], a14, a18, 0, 0, 0);
-        } else {
-            rep->Report1(3, bytes[0], a14, a18, 0, 0, 0);
-        }
-    } else {
-        if (a28 != 0) {
-            this->ReportN(9, a14, bytes, a18, a1c, a20, a24);
-        } else {
-            this->ReportN(3, a14, bytes, a18, a1c, a20, a24);
-        }
-    }
 }
 
 // The serialization archive ScanGroup writes through is the shared CSerialArchive
@@ -1714,909 +1288,6 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     ar->Write(&m_selSentinel, 4);
     return 1;
 }
-
-// The world's report/spawn sub-mgrs ResetGroup dispatches through (gameReg+0x6c reporter,
-// +0x68 fx-mgr, +0x60 cursor-mgr), all reloc-masked.
-struct CTmCursorMgr {
-    void Spawn(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x90bf4 (gameReg+0x60)
-};
-extern i32 g_6455b0; // DAT_006455b0 (the alt-group gate)
-
-// 0x79520: ResetGroup(a14, a18, ...) - when the level flag (+0x400) is set, hit-test the
-// magic group, classify the (a14,a18) target into one of three branches and place/report the
-// matching cursor / lightfx / warpstone sprite; on factory success Init it and report it.
-// ret 1 (0 on flag-clear / placement failure). (__stdcall: ret 0x1c.)
-// @early-stop
-// big switch-driver wall (0x2e3 B): the three-way classify ladder + the three CreateSprite
-// /Init/Report stanzas pin esi(sprite)/ebx/ebp differently than retail and the string-arg
-// pushes spill. Logic + offsets + the reloc-masked externs byte-exact. topic:wall.
-RVA(0x00079520, 0x2e3)
-i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28, i32 a2c) {
-    (void)a1c;
-    (void)a20;
-    (void)a24;
-    (void)a2c;
-    if (m_groupFlag == 0) {
-        return 0;
-    }
-    CTmCell* hit = this->Hit5(a14, a18, 0, 0, 5);
-    CTmCell* cell;
-    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
-        cell = 0;
-    } else {
-        i32* rec = m_recList.m_head->m_payload;
-        cell = m_grid[rec[1] + rec[0] * 15];
-    }
-    i32 sel;
-    if (cell != 0 && cell->m_1ec == g_644c54) {
-        if (a28 != 0) {
-            sel = 0;
-        } else if (hit == 0) {
-            sel = 1;
-        } else if (hit == cell) {
-            // toggle off the pending-fx and rewind
-            m_pendingFxKind = 0;
-            (g_gameReg->m_curState)->StopFx2(0, 0);
-            CTmDisplay* o = hit->m_10;
-            this->PlaceA(o->m_5c, o->m_60, a18, a14);
-            return 1;
-        } else {
-            sel = 2;
-        }
-    } else {
-        sel = (hit != 0) ? 2 : 1;
-    }
-
-    CTmCell* sprite = 0;
-    i32 kindArg = 0;
-    i32 logicArg = 0;
-    if (sel == 0) {
-        // place-on-self path
-        this->PlaceB(a14, a18, 1);
-        return 1;
-    } else if (sel == 1) {
-        // spawn the cursor target sprite
-        CGruntzCmdMgr* rep = g_gameReg->m_6c;
-        if (cell != 0) {
-            rep->Report1(1, cell->m_1ec, cell->m_1f0, a18, a14, 0, 0);
-        } else {
-            rep->Report1(1, a14, a18, 0, 0, 0, 0);
-        }
-        if (*(i32*)((char*)this + 0x2c) == 0) { // placeholder gate (see raw)
-            return 0;
-        }
-        CSpriteFactory* fac = m_level->m_8;
-        sprite = (CTmCell*)fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
-        kindArg = 3;
-        logicArg = 1;
-    } else {
-        // sel==2: place-and-report variant -> WarpStone factory
-        this->PlaceB(a14, a18, 1);
-        CSpriteFactory* fac = m_level->m_8;
-        sprite = (CTmCell*)fac->CreateSprite(0, a14, a18, 0xf4240, "LightFx", 0x40003);
-        kindArg = 2;
-        logicArg = 1;
-    }
-    if (sprite == 0) {
-        return 0;
-    }
-    sprite->m_7c->Init(sprite);
-    void* logic = sprite->m_7c->m_18;
-    ((CUserLogic*)logic)->Arm("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, logicArg);
-    return 1;
-}
-
-// 0x6dae0: ApplyTriggerA(a18, col, row, a24, a28, a2c) - look up grid[a18*15+col]; if live,
-// un-pending and matching the snapped source pos, dispatch the cell's trigger logic by its
-// kind (the 0x13/0xf branch families); update its state and return the applier result. Else
-// -1 / 0. (__stdcall: ret 0x10.) Reconstructed to plateau.
-// @early-stop
-// big branchy trigger-applier (0x4b7 B): the kind-dispatch ladder + the snapped-pos compares
-// pin esi(cell)/edi/ebp differently than retail; the body is structurally faithful but its
-// regalloc diverges across the many branches. topic:wall.
-RVA(0x0006dae0, 0x4b7)
-i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
-    CTmCell* cell = m_grid[col * 15 + row];
-    if (cell == 0 || cell->m_1fc == 0) {
-        return 0;
-    }
-    CTmDisplay* o = cell->m_10;
-    if (o->m_5c != cell->m_pos.x) {
-        if (o->m_60 != cell->m_pos.y) {
-            return -1;
-        }
-    }
-    i32 k = cell->m_170;
-    if (k > 0x16) {
-        k = cell->m_19c;
-    }
-    if (k == 0x13) {
-        CTmCell* tc = cell;
-        if (tc->Type13Check() != 0) {
-            tc->Apply13(row, a28 + 1);
-            return 1;
-        }
-    }
-    if (k == 0xf) {
-        cell->Dispatch(k, row);
-    }
-    return 0;
-}
-
-// 0x6e120: ApplyTriggerB(a1c, col, row, a28, a2c, a30) - the exit variant of ApplyTriggerA:
-// same cell lookup + validation, then snap (a28,a2c) to a tile and route the cell's exit
-// logic; updates +0x384 and returns the applier's boolean. (__stdcall: ret 0x10.)
-// Reconstructed to plateau.
-// @early-stop
-// big branchy trigger-applier (0x552 B): mirrors ApplyTriggerA's wall - kind-dispatch ladder
-// + snapped-box arithmetic diverge in regalloc across the branches. topic:wall.
-RVA(0x0006e120, 0x552)
-i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
-    CTmCell* cell = m_grid[col * 15 + row];
-    if (cell == 0 || cell->m_1fc == 0 || cell->m_1e4 != 0) {
-        return 0;
-    }
-    CTmDisplay* o = cell->m_10;
-    if (o->m_5c != cell->m_pos.x) {
-        if (o->m_60 != cell->m_pos.y) {
-            return -1;
-        }
-    }
-    if (o->m_5c == cell->m_pos.x && o->m_60 == cell->m_pos.y && cell->m_198 != 0x1e
-        && g_6455b0 == 0) {
-        return 0;
-    }
-    i32 by = (a2c & ~0x1f) + 0x10;
-    i32 bx = (a28 & ~0x1f) + 0x10;
-    cell->m_384 = 0;
-    i32 r = cell->ApplyBox(bx, by, row, -1, 1, 0);
-    return r != 0 ? 1 : 0;
-}
-
-// 0x6b6d0: PlaceObject - the tile-object placer/factory. Validates the (col,row) against the
-// plane bounds + the tile attribute mask (0x4000911), finds the first free grid column, then
-// by the supplied kind (a dense jump table mapping kind->internal id, with Wormhole/Entrance
-// special-cases that CreateSprite from the level factory + read the EntranceColor config),
-// stashes the new cell into the grid (+0x1c) and bumps the per-row/level counters. ret the
-// placed column (or -1). (__stdcall: ret 0x34.) Reconstructed to plateau.
-// @early-stop
-// big factory/jump-table driver (0x3f4 B): the kind jump table + the two CreateSprite stanzas
-// pin ebp(this)/esi/edi differently than retail and the attribute-mask test ladder spills.
-// Structurally faithful; regalloc diverges across the table. topic:wall.
-RVA(0x0006b6d0, 0x3f4)
-i32 CTriggerMgr::PlaceObject(
-    i32 a8,
-    i32 ax,
-    i32 ay,
-    i32 col,
-    i32 row,
-    i32 kind,
-    i32 a18,
-    i32 a1c,
-    i32 a20,
-    i32 a24,
-    i32 a28,
-    i32 a2c,
-    i32 a30
-) {
-    (void)a8;
-    (void)a18;
-    (void)a24;
-    (void)a28;
-    (void)a2c;
-    if (m_level == 0) {
-        return -1;
-    }
-    i32 special = 0;
-    i32 wantSlot = 0;
-    if (a30 == 0x12) {
-        special = 0x100;
-        wantSlot = 1;
-    }
-    CTileGrid* plane = g_gameReg->m_tileGrid;
-    i32 attr;
-    if ((ax >> 5) >= plane->m_c || (ay >> 5) >= plane->m_10) {
-        attr = 1;
-    } else {
-        attr = plane->m_8[ay >> 5][(ax >> 5) * 7];
-    }
-    if ((attr & 0x4000911) != 0 && (special & attr) == 0) {
-        return -1;
-    }
-    if ((attr & 0x82) != 0 || (attr & 0x400) != 0) {
-        return -1;
-    }
-    if (wantSlot == 0 || (attr & 0x100) == 0) {
-        return -1;
-    }
-    if (a20 != 0) {
-        return -1;
-    }
-    // find the first free grid column of row `row`
-    CTmCell** rowBase = &m_grid[row * 15];
-    i32 free = 0;
-    if (*rowBase != 0) {
-        CTmCell** p = rowBase;
-        while (free < 15 && *p != 0) {
-            p++;
-            free++;
-        }
-    }
-    if (free >= 15) {
-        return -1;
-    }
-    CSpriteFactory* fac = m_level->m_8;
-    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, ax, ay, ay, "Grunt", 0x40003);
-    if (sprite == 0) {
-        return -1;
-    }
-    sprite->m_7c->Init(sprite);
-    void* logicTag = sprite->m_7c->m_18;
-    (void)logicTag;
-    // (the dense kind jump table -> internal id + the Wormhole / Entrance sub-ctors elide
-    // here; reconstructed to plateau)
-    m_grid[row * 15 + free] = sprite;
-    m_rowCount[row] += 1;
-    m_cellFlag[(row * 15 + free)] = 0;
-    g_gameReg->m_scoreBoard->m_counts[row] += 1;
-    return free;
-}
-
-// 0x78a50: PlaceObjectFull(x, y) - the largest tile-object trigger driver (0x845 B). Look up
-// the magic-group record cell; if an overlay (+0x25c) owns it, forward (x,y) to it. Else, when
-// no pending fx (+0x2a8) and the type-13 trigger check fails, rewind the world fx. Otherwise
-// hit-test the (x,y) target (HitTest5) and run the dense per-kind jump table over the two
-// coordinate sub-tables (DAT_00683ea0..eb4), building/dispatching the per-kind object and
-// stashing the rebuilt cell. ret 1. (__thiscall: ret 0x8.) Reconstructed to plateau.
-// @early-stop  (8.3% -> 18.3%)
-// largest driver (0x845 B): the common path (record decode, overlay/fx fast-paths,
-// CellHitTest, the viewport cell-type resolve, and the pending-fx>=0xdf tile-attr branch)
-// is reconstructed faithfully. FRAME WALL: retail allocates all the tail's spill slots
-// up front (`sub esp,0x18`, spilling this@[esp+0x18]/world@[esp+0x10]/cell@[esp+0x1c]/
-// hitFlag@[esp+0x20]/kind@[esp+0x14]) for the dense per-kind jump table (0x78e09: kind-1
-// -> the 0x4792cc byte table -> 0x479298 jumps, ~12 stanzas incl. the WrapCoord write-back
-// to cell+0x414..0x428). The stubbed tail here uses fewer locals (`sub esp,0xc`), so the
-// head's esp offsets + this-in-edi-vs-ebx regalloc shift wholesale - fully matching the
-// head requires reconstructing that jump table. Deferred to the final sweep. topic:wall.
-RVA(0x00078a50, 0x845)
-i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
-    // Decode the single record cell (row*15 + col into the placed grid).
-    CTmCell* cell;
-    if (m_recList.m_count != 1) {
-        cell = 0;
-    } else {
-        i32* rec = m_recList.m_head->m_payload;
-        cell = m_grid[rec[0] * 15 + rec[1]];
-    }
-    if (cell == 0) {
-        return 1;
-    }
-    if (cell->m_1ec != g_644c54) {
-        return 1;
-    }
-    // An active overlay eats the click.
-    CActionOptionsMenuBar* ov = m_overlay;
-    if (ov != 0 && ov->m_active != 0) {
-        ov->Forward(x, y);
-        return 1;
-    }
-    CTmWorld* world = g_gameReg->m_curState;
-    if (m_pendingFxKind == 0) {
-        if (cell->CanShowStamina() == 0) {
-            world->LoadCursorSprites(0, 0);
-            return 1;
-        }
-    }
-    // Hit-test the (x,y) target against the placed grid (startRow==5 -> all rows).
-    i32 hitFlag = 0;
-    if (CellHitTest(x, y, 0, 0, 5)) {
-        hitFlag = 1;
-    }
-    // Resolve the tile-cell's type object from the level viewport (result discarded:
-    // the virtual GetTypeId dispatch is kept for its side effect).
-    CTmLevelView* view = m_level->m_24;
-    CViewport* grid = view->m_5c;
-    i32 tx = x >> 5;
-    i32 ty = y >> 5;
-    i32 cx = tx;
-    if (tx < 0) {
-        cx = 0;
-    } else if (tx >= grid->m_tileWidth) {
-        cx = grid->m_tileWidth - 1;
-    }
-    i32 cy = ty;
-    if (ty < 0) {
-        cy = 0;
-    } else if (ty >= grid->m_tileHeight) {
-        cy = grid->m_tileHeight - 1;
-    }
-    i32 cval = grid->m_cells[grid->m_rowBase[cy] + cx];
-    if (cval != (i32)0xeeeeeeee && cval != -1) {
-        void* tc = view->m_4c[cval & 0xffff];
-        (*(i32(**)(void*, i32, i32))(*(void***)tc + 8))(tc, 0, 0);
-    }
-    // Pending-fx dispatch.
-    i32 pfk = m_pendingFxKind;
-    if (pfk >= 0xdf) {
-        i32 alt = cell->m_198;
-        if (hitFlag != 0) {
-            world->LoadCursorSprites(alt + 0xc8, 1);
-            return 1;
-        }
-        CTileGrid* plane = g_gameReg->m_tileGrid;
-        i32 attr;
-        if ((u32)tx >= (u32)plane->m_c || (u32)ty >= (u32)plane->m_10) {
-            attr = 1;
-        } else {
-            attr = plane->m_8[ty][tx * 7];
-        }
-        if ((attr & 0x939) != 0 || (attr & 2) != 0) {
-            world->LoadCursorSprites(pfk, 0);
-        } else {
-            world->LoadCursorSprites(alt + 0xc8, 1);
-        }
-        return 1;
-    }
-    // Block H (pfk < 0xdf): the dense per-kind jump table + write-back stanzas.
-    // Reconstructed to plateau (see @early-stop above).
-    (void)hitFlag;
-    return 1;
-}
-
-// 0x6e800: ClearCell(col, row, a18, a1c, a20) - if grid[col*15+row] is live, reset its
-// trigger/anim sub-state (unless already cleared via +0x420), bail if it has a pending
-// flag (+0x1e4), look up its config name; when it equals "I" run the manager's fx with the
-// cell's pose; then ApplyBox the snapped (a18..a20) bounds and return its boolean result.
-// (__stdcall: ret 0x14.)
-// @early-stop
-// regalloc + inline-strcmp wall: the "I" compare inlines as a byte loop pinning ah/bl
-// differently than retail and the box arithmetic spills. Logic + offsets byte-exact.
-RVA(0x0006e800, 0x189)
-i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
-    i32 idx = col * 15 + row;
-    CTmCell* cell = m_grid[idx];
-    if (cell == 0 || cell->m_1fc == 0) {
-        return 0;
-    }
-    if (cell->m_420 == 0) {
-        cell->m_308 = 0;
-        cell->m_310 = 0;
-        cell->m_30c = 0;
-        cell->m_314 = 0;
-        cell->m_248 &= 0xe7fbfbfd;
-        cell->m_420 = 0;
-        cell->m_2d0 = 0;
-        cell->Disarm(1, 1);
-    }
-    if (cell->m_1e4 != 0) {
-        return 0;
-    }
-    char* name = *g_nameReg.Lookup(cell->m_14->m_1c);
-    if (strcmp(name, "I") == 0) {
-        i32 px = cell->m_3e4;
-        i32 py = cell->m_3e8;
-        this->Fx(px, py, py, cell->m_170, -1, py);
-    }
-    i32 by = (a20 & ~0x1f) + 0x10;
-    i32 bx = (a1c & ~0x1f) + 0x10;
-    cell->m_384 = 0;
-    i32 r = cell->ApplyBox(bx, by, a18, -1, 1, 0);
-    return r != 0 ? 1 : 0;
-}
-
-// 0x79fb0: NotifyCell(row, col, z) - the notify-cell hook CellDispatch tails into. If the
-// cell is live and not yet notified, Recall it (when not recall-done), clear its tile-attr
-// bit + reset the plane cell, null the grid slot, decrement the per-row count and, when z
-// set, bump the per-row alt count and re-arm; mark the cell notified. (__stdcall: ret 0xc.)
-// @early-stop
-// 50.7->76.6 this audit: fixed the tile-attr column stride (*28 = 7 dwords, the SAME grid
-// HitTestCell walks - the old *8 was a logic bug), RecallCell's real arg order (cell,x,y),
-// tg cached once (only ->m_8 re-read: retail holds the CTileGrid ptr in edx across both
-// stores), and the z!=0 path inline / z==0 far. Residual: retail homes the pos pair to a
-// sub esp,8 frame with two DEAD stores while forwarding the regs (its spill pick; plain
-// locals / whole-struct copy / inlined out-param getter all get DSE'd by our cl - measured
-// 75.4/76.6/75.4), which cascades into the esi<->edi coloring + the late push ebp.
-// topic:wall topic:regalloc.
-RVA(0x00079fb0, 0x169)
-void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
-    i32 idx = col * 15 + row; // grid[col][row] base
-    CTmCell* cell = m_grid[idx];
-    if (cell == 0) {
-        return;
-    }
-    if (cell->m_36c != 0) {
-        return;
-    }
-    if (cell->m_1e8 == 0) {
-        this->RecallCell(cell, cell->m_pos.x, cell->m_pos.y);
-    }
-    CTrigPoint pt = cell->m_pos;
-    CTileGrid* tg = g_gameReg->m_tileGrid;
-    i32 rowIdx = pt.y >> 5;
-    i32 colByte = (pt.x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
-    ((char*)tg->m_8[rowIdx])[colByte + 0x3] &= 0xdf;
-    *(i32*)((char*)tg->m_8[rowIdx] + colByte + 0x4) = -1;
-    m_grid[idx] = 0;
-    m_rowCount[col] -= 1;
-    if (z != 0) {
-        m_cellFlag[idx] = 1;
-        m_rowStateB[col] += 1;
-        i32 k = cell->m_170;
-        if (k > 0x16) {
-            k = cell->m_19c;
-        }
-        if (k == 0x14) {
-            if (g_gameReg->m_134 == 1) {
-                CTmPendingFx* fx = m_pendingFx;
-                if (fx != 0) {
-                    fx->Pulse();
-                }
-            }
-            this->RefreshB(1);
-        }
-        cell->m_36c = 1;
-        return;
-    }
-    i32 k = cell->m_170;
-    if (k > 0x16) {
-        k = cell->m_19c;
-    }
-    if (k == 0x14) {
-        this->RefreshC();
-    }
-    m_rowStateC[col] += 1;
-    cell->m_36c = 1;
-}
-
-// ===========================================================================
-// The two tiny grid-action wrappers (0x6da60 / 0x6daa0) + the tile-fx spawner
-// (0x79ea0), proximity-attributed to CTriggerMgr but really FREE __stdcall thunks
-// (no `this`): each drives the game registry's spawn/fx sub-managers.
-// ===========================================================================
-
-// The world fx-spawner (0x7c620, thunk 0x152d): a __stdcall sprite spawner.
-extern void __stdcall Eng_SpawnFx(i32 type, i32 x, i32 y, i32 a3, i32 a4, i32 a5); // 0x7c620
-
-// 0x6da60: GridAction6(a, b) - dispatch the spawn sub-mgr's action with kind 6.
-// __stdcall free function (cleans its own 2 args; retail ends in `ret 8`).
-RVA(0x0006da60, 0x27)
-i32 __stdcall GridAction6(i32 a, i32 b) {
-    g_gameReg->m_6c->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
-    return 0;
-}
-
-// 0x6daa0: GridAction7(a, b) - dispatch the spawn sub-mgr's action with kind 7.
-RVA(0x0006daa0, 0x27)
-i32 __stdcall GridAction7(i32 a, i32 b) {
-    g_gameReg->m_6c->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
-    return 0;
-}
-
-// 0x79ea0: SpawnTileFx(x, y, a3) - only when the active state is live
-// (gameReg->m_134==1): read the tile at (x>>5, y>>5); if it carries neither the
-// 0x40939 mask nor bit 0x2, spawn a type-0x14 fx centered on the tile. Otherwise
-// (the bit path) map (a3-1) into the world's 4 fx anchors and spawn there. ret 1.
-// __stdcall free function (cleans its own 3 args; retail ends in `ret 0xc`).
-// @early-stop
-// regalloc wall (~81%): body + offsets + the tile double-index byte-exact; retail homes
-// gameReg in edi, the grid in esi and the width in ebx (3 callee-saved regs), our cl uses
-// gameReg=esi/width=edi (2 regs). Not source-steerable. topic:wall topic:regalloc.
-RVA(0x00079ea0, 0xc2)
-i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
-    if (g_gameReg->m_134 != 1) {
-        return 0;
-    }
-    CTileGrid* grid = g_gameReg->m_tileGrid;
-    i32 tx = x >> 5;
-    i32 ty = y >> 5;
-    i32 tile;
-    if ((u32)tx >= (u32)grid->m_c || (u32)ty >= (u32)grid->m_10) {
-        tile = 1;
-    } else {
-        tile = grid->m_8[ty][tx * 8 - tx];
-    }
-    if ((tile & 0x40939) == 0 && (tile & 2) == 0) {
-        Eng_SpawnFx(0x14, (tx << 5) + 0x10, (ty << 5) + 0x10, 0, a3, 0);
-        return 1;
-    }
-    CTmWorld* world = g_gameReg->m_curState;
-    i32 idx = a3 - 1;
-    CTmWorld::Anchor* rec = ((u32)idx < 4) ? &world->m_anchors[idx] : 0;
-    if (rec != 0) {
-        Eng_SpawnFx(0x14, rec->m_x, rec->m_y, 0, a3, 0);
-    }
-    return 1;
-}
-
-// ===========================================================================
-// CTriggerMgr::ResetSpawnState  (0x79d90)
-// ===========================================================================
-
-// The +0x260 byte table is the canonical CTmByteArray real member m_byteArr (see
-// <Gruntz/TriggerMgr.h>): RemoveAt (ResetSpawnState) + SetSize/SetAtGrow (Load) called
-// directly. Plus the two build-state notifiers (0x100930 / 0x104d60).
-extern void Eng_BuildNotifyA(i32 a); // 0x100930 (thunk 0x12fd)
-extern void __cdecl operator delete(void*);
-
-RVA(0x00079d90, 0xc5)
-void CTriggerMgr::ResetSpawnState() {
-    if (g_gameReg->m_134 != 1) {
-        return;
-    }
-    if (m_284 == 0) {
-        return;
-    }
-    CTmWorld* world = g_gameReg->m_curState;
-    CSBI_RectOnly* st = world->m_2dc;
-    if (st->m_retabNotify != 0) {
-        operator delete(st->m_retabNotify);
-        st->m_retabNotify = 0;
-    }
-    world->m_2dc->m_hlBusy = 0;
-    if (m_byteArr.m_count > 0) {
-        m_byteArr.RemoveAt(m_byteArr.m_count - 1, 1);
-        CSBI_RectOnly* ctx = world->m_2dc;
-        if (*(i32*)ctx != 2 && ctx->m_activeTab == 5) {
-            Eng_BuildNotifyA(0);
-            world->m_2dc->TryActivate();
-        }
-    }
-    if (g_gameReg->m_134 == 1) {
-        CTmPendingFx* fx = m_pendingFx;
-        if (fx != 0) {
-            fx->Pulse();
-        }
-    }
-    this->RefreshB(6);
-}
-
-// 0x7c2e0: CycleMoveIcons(skipRow, enable) - for grid rows 0..3 except `skipRow`, either
-// roll a random move-icon onto each live cell (stashing the prior +0x1f8 when -1) and tick
-// the world's region-4, or restore each cell's stashed icon. ret 1.
-// @early-stop
-// scheduling residual (~93%): logic + offsets + externs byte-exact; retail hoists the -1
-// sentinel into ebp and schedules the rand()/idiv differently. topic:wall.
-RVA(0x0007c2e0, 0xb5)
-i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
-    CTmCell** grid = m_grid;
-    for (i32 r = 0; r < 4; r++) {
-        if (r != skipRow) {
-            CTmCell** cell = grid;
-            i32 i = 15;
-            do {
-                CTmCell* g = *cell;
-                if (g != 0) {
-                    if (enable != 0) {
-                        i32 t = rand() % 0x11;
-                        if (g->m_1f8 == -1) {
-                            g->m_1f8 = g->m_1f4;
-                        }
-                        g->SelectMoveIcon(t);
-                        (g_gameReg->m_curState)->OnRegion4(1);
-                    } else if (g->m_1f8 != -1) {
-                        g->SelectMoveIcon(g->m_1f8);
-                        g->m_1f8 = -1;
-                    }
-                }
-                cell++;
-                i--;
-            } while (i != 0);
-        }
-        grid += 15;
-    }
-    return 1;
-}
-
-// 0x7cc60: RebuildSelectionList(idx) - recycle selection list `idx` (+0x2d4) to the free
-// list, RemoveAll it (+0x2d0), then allocate a fresh node per record-list entry (+0x244)
-// copying its (x,y) payload; reset +0x3e8. ret 1.
-// @early-stop
-// regalloc wall (~86%): the free-list recycle + node-alloc bodies are byte-exact; retail
-// pins this/idx-base differently across the two list walks. topic:wall.
-RVA(0x0007cc60, 0xa7)
-i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
-    CTmObList* sel = &m_selLists[idx];
-    CTmNode* n = m_selLists[idx].m_head;
-    if (n != 0) {
-        void* head = g_freeList;
-        do {
-            CTmNode* cur = n;
-            n = n->m_next;
-            i32* payload = cur->m_payload;
-            if (payload != 0) {
-                void** slot = (void**)((char*)payload - g_freeListNodeBias);
-                *slot = head;
-                head = slot;
-                g_freeList = head;
-            }
-        } while (n != 0);
-    }
-    sel->RemoveAll();
-    CTmNode* rec = m_recList.m_head;
-    while (rec != 0) {
-        CTmNode* cur = rec;
-        rec = rec->m_next;
-        i32* src = cur->m_payload;
-        void** fh = (void**)g_freeList;
-        void* nextFree = *fh;
-        i32* dst = 0;
-        if (nextFree != 0) {
-            dst = (i32*)((char*)fh + 4);
-            g_freeList = nextFree;
-        }
-        dst[0] = src[0];
-        dst[1] = src[1];
-        sel->AddTail(dst);
-    }
-    m_selSentinel = -1;
-    return 1;
-}
-
-// 0x7cd40: CenterSelectionGroup(slot) - ResetAll, tick the live overlay, then walk the
-// slot's selection list (+0x2d4[slot*0x1c]). For each node look up grid[15*x+y]: if the
-// cell is live, ResetCell(x,y,1,0) and (on the second pass for the same slot, m_3e8==slot)
-// fold its display pos into a running bbox seeded from the level grid dims; if dead, recycle
-// the node back to the free list and RemoveAt it from the slot list. On the centering pass
-// scroll the world to the bbox centre and clear m_3e8; else latch m_3e8=slot. ret 1 (0 when
-// the slot list is empty).
-// @early-stop
-// regalloc wall (~87%): logic + offsets + all reloc-masked externs (ResetAll/OverlayTick/
-// ResetCell/RemoveAt/Center/g_freeList*/g_gameReg) byte-exact, but retail pins this=ebp,
-// node=esi, y=edi (a perfect 5-reg fit); our cl swaps this/node into esi/ebp and spills
-// `this` to the stack, reusing esi for y. Same systematic esi<->ebp swap the rest of this
-// TU exhibits; not source-steerable. topic:wall.
-RVA(0x0007cd40, 0x18f)
-i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
-    ResetAll();
-    CActionOptionsMenuBar* ov = m_overlay;
-    if (ov != 0 && ov->m_active != 0) {
-        OverlayTick();
-    }
-    CTmNode* n = m_selLists[slot].m_head;
-    if (n == 0) {
-        m_selSentinel = -1;
-        return 0;
-    }
-    i32 maxX = 0;
-    i32 maxY = 0;
-    CViewport* grid = g_gameReg->m_world->m_24->m_5c;
-    i32 minX = grid->m_worldWidth - 1;
-    i32 minY = grid->m_worldHeight - 1;
-    do {
-        CTmNode* cur = n;
-        n = n->m_next;
-        i32* payload = cur->m_payload;
-        i32 idx = payload[1] + 15 * payload[0];
-        CTmCell* cell = m_grid[idx];
-        if (cell != 0) {
-            ResetCell(payload[0], payload[1], 1, 0);
-            if (m_selSentinel == slot) {
-                CTmDisplay* disp = cell->m_10;
-                i32 x = disp->m_5c;
-                i32 y = disp->m_60;
-                if (x < minX) {
-                    minX = x;
-                }
-                if (x > maxX) {
-                    maxX = x;
-                }
-                if (y < minY) {
-                    minY = y;
-                }
-                if (y > maxY) {
-                    maxY = y;
-                }
-            }
-        } else {
-            void** node = (void**)((char*)payload - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
-            m_selLists[slot].RemoveAt(cur);
-        }
-    } while (n != 0);
-    if (m_selSentinel == slot) {
-        g_gameReg->m_curState->Center(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
-        m_selSentinel = -1;
-        return 1;
-    }
-    m_selSentinel = slot;
-    return 1;
-}
-
-// 0x7d450: ToggleRegionA - clear a live pending-fx (LoadCursorSprites(0,0), ret 0); else,
-// for the active record cell of the magic group, gate on CanShowStamina and dispatch by its
-// logic kind (+0x170/+0x19c): kind 0x13 => ResetGroup, else set a pending fx (+0x2a8). ret 1.
-// @early-stop
-// 58.8->76.6 this audit: the cell decode is the negated-far if/else (`count!=1 -> cell=0`
-// inline, lookup FAR - retail's je/xor/jmp layout) and the v==0x13 ResetGroup body sits
-// INLINE with the pending-fx tail far. Residual: the pos-pair dead-store frame (retail
-// homes cell->m_pos into a sub esp,8 frame while forwarding the regs into the ResetGroup
-// pushes; struct copy / unused copy / i32[2] array spellings all DSE'd by our cl - same
-// wall as NotifyCell) + the m_2a8=0 per-branch stores our cl hoists above the test.
-// topic:wall topic:regalloc.
-RVA(0x0007d450, 0x112)
-i32 CTriggerMgr::ToggleRegionA() {
-    if (m_pendingFxKind != 0) {
-        m_pendingFxKind = 0;
-        (g_gameReg->m_curState)->LoadCursorSprites(0, 0);
-        return 0;
-    }
-    m_pendingFxKind = 0;
-    // negated-condition-far-block: the lookup body lands FAR, cell=0 inline (retail layout)
-    CTmCell* cell;
-    if (m_recList.m_count != 1) {
-        cell = 0;
-    } else {
-        i32* rec = m_recList.m_head->m_payload;
-        cell = m_grid[rec[0] * 15 + rec[1]];
-    }
-    if (cell == 0) {
-        return 1;
-    }
-    if (cell->m_1ec != g_644c54) {
-        return 1;
-    }
-    if (cell->CanShowStamina() == 0) {
-        OverlayTick();
-        return 1;
-    }
-    i32 v = cell->m_170;
-    if (v > 0x16) {
-        v = cell->m_19c;
-    }
-    if (v == 0x13) {
-        CTrigPoint pt = cell->m_pos;
-        g_gameReg->m_68->ResetGroup(pt.x, pt.y, 0, 0, 0, 2, 1);
-        OverlayTick();
-        return 1;
-    }
-    m_pendingFxKind = v + kPendingFxIdBase;
-    (g_gameReg->m_curState)->LoadCursorSprites(v + kPendingFxIdBase, 0);
-    OverlayTick();
-    return 1;
-}
-
-// 0x7d5c0: ToggleRegionB - the sibling of ToggleRegionA: clear a live pending-fx; else, for
-// the active record cell, gate on +0x170<0x17 and dispatch by +0x198: 0x1e => ResetGroup on
-// the cell's display pos, 0 => just tick, else set a pending fx (+0x2a8). ret 1.
-// @early-stop
-// regalloc wall (~82%): logic + offsets + externs byte-exact; retail pins this->esi and the
-// magic const into edi across the dispatch ladder. topic:wall.
-RVA(0x0007d5c0, 0xdc)
-i32 CTriggerMgr::ToggleRegionB() {
-    if (m_pendingFxKind != 0) {
-        m_pendingFxKind = 0;
-        (g_gameReg->m_curState)->LoadCursorSprites(0, 0);
-        return 0;
-    }
-    m_pendingFxKind = 0;
-    CTmCell* cell;
-    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
-        cell = 0;
-    } else {
-        i32* rec = m_recList.m_head->m_payload;
-        cell = m_grid[rec[0] * 15 + rec[1]];
-    }
-    if (cell == 0) {
-        return 1;
-    }
-    if (cell->m_1ec != g_644c54) {
-        return 1;
-    }
-    if (cell->m_170 >= 0x17) {
-        OverlayTick();
-        return 1;
-    }
-    i32 kind = cell->m_198;
-    if (kind == 0x1e) {
-        CTmDisplay* o = cell->m_10;
-        g_gameReg->m_68->ResetGroup(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
-        OverlayTick();
-        return 1;
-    }
-    if (kind == 0) {
-        OverlayTick();
-        return 1;
-    }
-    m_pendingFxKind = kind + kPendingFxIdBase;
-    (g_gameReg->m_curState)->LoadCursorSprites(kind + kPendingFxIdBase, 0);
-    OverlayTick();
-    return 1;
-}
-
-// 0x7d6e0: EnqueueGroupCells - when armed (+0x400), collect the y-byte of every magic-group
-// record cell with a clear +0x1e4 flag, then post the group to the command mgr (+0x6c):
-// EnqueueSingle when exactly one, else EnqueueMulti with the y-byte buffer. ret 1.
-// @early-stop
-// stack-frame-size wall (~90%): the record scan (now with the matched byte counter, so the
-// cl/byte-store/dword-reload sequence matches) + the two CGruntzCmdMgr enqueue calls are
-// byte-exact; retail's frame is 0x88 vs our 0x6c (extra scratch slots) so every esp-relative
-// displacement shifts by a constant. topic:wall.
-RVA(0x0007d6e0, 0xea)
-i32 CTriggerMgr::EnqueueGroupCells() {
-    if (m_groupFlag == 0) {
-        return 0;
-    }
-    u8 buf[0x68];
-    u8 count = 0;
-    char x = 0;
-    CTmNode* n = m_recList.m_head;
-    if (n != 0) {
-        i32 magic = g_644c54;
-        do {
-            CTmNode* cur = n;
-            n = n->m_next;
-            i32* p = cur->m_payload;
-            x = *(char*)p;
-            CTmCell* cell = m_grid[p[0] * 15 + p[1]];
-            if (cell->m_1ec == magic && cell->m_1e4 == 0) {
-                buf[count] = ((u8*)p)[4];
-                count++;
-            }
-        } while (n != 0);
-    }
-    if (count == 1) {
-        g_gameReg->m_6c->EnqueueSingle(1, x, (char)buf[0], 5, 0, 0, 0, 0);
-    } else {
-        g_gameReg->m_6c->EnqueueMulti(1, x, count, (u8*)buf, 5, 0, 0, 0);
-    }
-    return 1;
-}
-
-// Class-metadata size annotations (all partial modeling views -> SIZE_UNKNOWN).
-// Placed at end-of-TU: interspersed placement (right after each class) reschedules
-// ResetGroup/HitTestCell codegen in this codegen-sensitive unit (measured -0.18/-0.02);
-// end-of-TU (after all bodies) is matching-neutral.
-SIZE_UNKNOWN(CTmNode);
-SIZE_UNKNOWN(CTmDisplay);
-SIZE_UNKNOWN(CTmCellConfig);
-SIZE_UNKNOWN(CTmOverlay);
-SIZE_UNKNOWN(CTmGoal);
-SIZE_UNKNOWN(CTmWorld);
-SIZE_UNKNOWN(CTmScoreSub);
-SIZE_UNKNOWN(CTmGridHolder);
-SIZE_UNKNOWN(CTmRegSub30);
-SIZE_UNKNOWN(CTmGameReg);
-SIZE_UNKNOWN(CTmScoreBoard);
-SIZE_UNKNOWN(CTmNameReg);
-SIZE_UNKNOWN(CTmSpriteDesc);
-SIZE_UNKNOWN(CTmLevel);
-SIZE_UNKNOWN(CTmPuddleTarget);
-SIZE_UNKNOWN(CTmRecNode);
-SIZE_UNKNOWN(CTmCell);
-SIZE_UNKNOWN(CTmPendingFx);
-SIZE_UNKNOWN(CTmOverlaySrc);
-SIZE_UNKNOWN(CTmCursorMgr);
-SIZE_UNKNOWN(CTmScroll);
-SIZE_UNKNOWN(CTmLevelView);
-
-// ============================================================================
-// merged from TriggerMgrEh.cpp (the /GX EH-frame sibling; unit flags -> eh)
-// ============================================================================
-// TriggerMgrEh.cpp - the /GX (eh) CTriggerMgr methods, split off the frameless triggermgr
-// TU (C:\Proj\Gruntz). MSVC5's /GX frames any method that owns a destructible local (a
-// CString error/Format temporary) or a `new`+ctor lifetime; these four cannot share the base
-// TU's frameless flags without re-framing its matched leaves. The split is matching-neutral
-// (each method is RVA-keyed); see docs/patterns/split-tu-eh-dtor-vs-frameless-cstring.md and
-// the SBI_RectOnly / ChatBox precedents.
-//
-// LAYOUT NOTE: these methods touch `this` by raw offset (the opaque-shell convention of the
-// whole class). Only the offsets + reloc-masked helpers each method touches are modelled.
-
-// g_gameReg / g_644c54 / g_buteMgr come from the base section's CTmGameReg view
-// above (the former per-TU CTmGameRegE view is folded away - CTmGameReg is a
-// superset carrying the same ReportError @0x8dc60 + m_curState @+0x2c). The two
-// EH methods that took m_curState as char* now cast it (matching-neutral).
-
-// The error-Format temporaries are the real MFC CString (from <Mfc.h>): its ctor/dtor +
-// Format are the static MFC bodies (reloc-masked); the destructible temp forces the /GX
-// frame. (Former CTmStr view folded onto the canonical CString.)
-
-// (The former generic CTmObj cross-cast shell is axed: its heterogeneous dispatch is
-// routed to each object's real type - the switch/trigger logic objects to the canonical
-// CUserLogic virtual slots (Apply @slot8/+0x20, Run @slot3/+0xc), the manager's own
-// placement/probe self-calls to CTriggerMgr methods, the overlay/status-item/grid-holder
-// and the embedded container dtors to their existing views.)
 
 // ---------------------------------------------------------------------------
 // Load (0x7abc0) collaborators. The manager reads its state through the archive
@@ -2824,157 +1495,1666 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     return 1;
 }
 
-// 0x6d300: ApplySwitch(sx, sy) - the /GX switch-logic driver. Clamp (sx,sy) to the plane,
-// sample the tile attribute, decode the logic class, switch over the kind dispatching the
-// matching switch/trigger logic object's Apply; on a miss Format an error CString ("No switch
-// logic found for switch at: x=%d, y=%d" / "No trigger logic ...") into a stack temp and
-// ReportError. (__stdcall: ret 0xc.) Reconstructed to plateau.
+// The stop-fx hook the TriggerCell driver uses (reloc-masked).
+// 0x7b1b0: TriggerCell(x, y) - clear the pending-fx slot; only when the overlay sub-object
+// (+0x25c) is live with its +0x2c set, look up the magic record cell, classify (x,y) and by
+// the resulting kind spawn the matching fx sprite (kind 2 -> remapped 0x13, kind 3 -> alt
+// 0x1e, else generic +0xc8 into +0x2a8), then Refresh + Record. ret 1. (ret 0x8.)
 // @early-stop
-// big /GX switch driver (0x5b2 B): the dense jump table + the six CString-error stanzas
-// (ctor/Format/ReportError/dtor under the EH frame) diverge wholesale in regalloc and the
-// __ehfuncinfo state numbering; the validated head + the error-Format shape are faithful.
-// topic:wall topic:eh.
-RVA(0x0006d300, 0x5b2)
-i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
-    char* plane = (char*)g_gameReg->m_curState;
-    char* view = *(char**)((char*)m_level + 0x24);
-    i32 x = sx;
-    i32 y = sy;
-    if (x < 0) {
-        x = 0;
-    } else {
-        i32 w = *(i32*)(*(char**)(view + 0x5c) + 0x30);
-        if (x >= w) {
-            x = w - 1;
-        }
-    }
-    if (y < 0) {
-        y = 0;
-    } else {
-        i32 h = *(i32*)(*(char**)(view + 0x5c) + 0x34);
-        if (y >= h) {
-            y = h - 1;
-        }
-    }
-    char* scroll = *(char**)(view + 0x5c);
-    i32 sh = *(i32*)(scroll + 0x8c);
-    i32 sw = *(i32*)(scroll + 0x90);
-    i32 cell = *(i32*)(*(char**)(scroll + 0x24) + (y >> sw) * 4) + (x >> sh);
-    i32 attr = *(i32*)(*(char**)(scroll + 0x20) + cell * 4);
-    i32 kind;
-    if (attr == (i32)0xeeeeeeee || attr == -1) {
-        kind = 0;
-    } else {
-        CUserLogic* logic = (CUserLogic*)*(void**)(*(char**)(view + 0x4c) + (attr & 0xffff) * 4);
-        kind = logic->UserLogicVfunc6(); // Apply = vtbl slot 8 (+0x20)
-    }
-    i32 op = kind - 0x34;
-    if ((u32)op > 0xe) {
-        return 0;
-    }
-    i32 cx = x;
-    i32 cy = y;
-    CUserLogic* obj = (CUserLogic*)*(void**)(*(char**)(plane + 0x2e4) + 0);
-    if (obj == 0) {
-        CString msg;
-        msg.Format("No switch logic found for switch at: x=%d, y=%d", cx >> 5, cy >> 5);
-        g_gameReg->ReportError(0x80dd, 0x3f7);
-        return 0;
-    }
-    obj->UserLogicVfunc1(); // Run = vtbl slot 3 (+0xc)
-    return 1;
-}
-
-// 0x798d0: DestroyGroup(col, row, force) - lazily create the overlay sub-object (+0x25c) via
-// new+ctor (the /GX frame guards the partially-constructed object); if it fails to take, tear
-// it back down and ReportError(0x800a). When it already exists, route by the magic group to
-// the place helper. ret 1 on placement. (__stdcall: ret 0x10.) Reconstructed to plateau.
-// @early-stop
-// /GX new+ctor wall: the placement-new lifetime + the teardown-on-failure path carry the EH
-// frame whose state numbering + partial-object cleanup diverge from retail; the alloc/ctor/
-// teardown shape is faithful. topic:wall topic:eh.
-RVA(0x000798d0, 0x1b6)
-i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
-    (void)force;
+// regalloc + switch-on-kind wall: the classify result drives a cmp/je ladder that pins ebx
+// (world) and esi (cell) differently than retail, and the fx arg pushes spill. topic:wall.
+RVA(0x0007b1b0, 0x12b)
+i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     CActionOptionsMenuBar* ov = m_overlay;
-    if (ov == 0) {
-        m_overlay = new CActionOptionsMenuBar;
-        if (this->Probe() == 0) {
-            CActionOptionsMenuBar* o2 = m_overlay;
-            if (o2 != 0) {
-                o2->Dtor();
-                operator delete(o2);
-                m_overlay = 0;
-            }
-            g_gameReg->ReportError(0x800a, 0x3ff);
+    m_pendingFxKind = 0;
+    if (ov == 0 || ov->m_active == 0) {
+        return 0;
+    }
+    CTmCell* cell;
+    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
+        cell = 0;
+    } else {
+        i32* rec = m_recList.m_head->m_payload;
+        cell = m_grid[rec[1] + rec[0] * 15];
+    }
+    CTmWorld* world = g_tmGameReg->m_curState;
+    i32 kind = this->Classify(x, y);
+    if (kind == 2) {
+        i32 alt = cell->m_170;
+        if (alt > 0x16) {
+            alt = cell->m_19c;
         }
-        return 0;
+        if (alt == 0x13) {
+            g_tmGameReg->m_68->Spawn(cell->m_pos.x, cell->m_pos.y, 0, 0, 0, 2, 1);
+        }
+    } else if (kind == 3) {
+        if (cell->m_198 == 0x1e) {
+            CTmDisplay* o = cell->m_10;
+            g_tmGameReg->m_68->Spawn(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
+        }
+    } else if (kind != 0) {
+        i32 v = kind + kPendingFxIdBase;
+        m_pendingFxKind = v;
+        world->StopFx2(v, 0);
     }
-    if (ov->m_active != 0 || m_recList.m_count != 1) {
-        return 0;
-    }
-    i32* rec = m_recList.m_head->m_payload;
-    char* cellp = (char*)m_grid[rec[1] + rec[0] * 15];
-    if (cellp == 0 || *(i32*)(cellp + 0x1ec) != g_644c54) {
-        return 0;
-    }
-    if (this->PlaceCell(*(i32*)(cellp + 0x1f0), *(i32*)(cellp + 0x1ec), 0) == 0) {
-        return 0;
-    }
-    char* view = *(char**)((char*)m_level + 0x24);
-    char* sc = *(char**)(view + 0x5c) + 0x40;
-    i32 ox = *(i32*)(sc) - *(i32*)(view + 0x14) + row;
-    i32 oy = *(i32*)(sc + 0x4) - *(i32*)(view + 0x10) + col;
-    this->PlaceCell(oy, ox, 1);
+    this->Refresh2();
+    this->Record2(x, y);
     return 1;
 }
 
-// 0x79b80: ReinitGroup(col, row) - when not already done (+0x284) and the level is active,
-// Format a "Level%i" CString from the level index, read the WarpStone config color, hit-test
-// the (col,row) target, lazily re-init the status-bar item (+0x2dc) and either flag it done or
-// recycle the record node; mark +0x284 done. (__stdcall: ret 0x8.) Reconstructed to plateau.
+// ===========================================================================
+// LoadExplosionSprites @0x07b330
+// ===========================================================================
+//
+// Creates a random "GAME_EXPLOSION%d" explosion sprite via the "Explosion" class
+// template, resolves its geometry, and records the chosen variant index at
+// this+0x124 with the loaded flag at this+0x114. __thiscall ret 0x10 (4 args).
+
+RVA(0x0007b330, 0xc6)
+i32 EngineLabelBacklog::LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy) {
+    CSpriteFactory* fac = m_factoryHolder->m_8;
+    CGameObject* spr = fac->CreateSprite(0, geoB, geoA, 0, "Explosion", 0x40003);
+    if (spr) {
+        i32 v = variant;
+        if (v == 0) {
+            v = (rand(), 1);
+        }
+        CString key;
+        key.Format("GAME_EXPLOSION%d", v);
+        spr->ApplyLookupGeometry(key, 0);
+        spr->m_124 = v;
+        spr->m_114 = 1;
+    }
+    return spr != 0;
+}
+
+// ===========================================================================
+// CRockBreakMgr::BuildRockBreakParticles (0x7b440) - merged from
+// RockBreakParticles.cpp per dossier 10b (rock-break FX spawned by triggers;
+// embedded singleton, this TU by retail position). @identity-TODO: the
+// CRockBreakMgr/Rock* identities are placeholders; the Rock* views below are
+// the donor's (RockMgr is the 0x64556c singleton under its extern-"C" csv name
+// g_mgrSettings - the name every unit's reloc matches).
+// ===========================================================================
+// FUN_001b2cf5 __cdecl: format into a CString (the LoadBootyCheatState FormatStr).
+void FormatStr(CString* out, const char* fmt, ...);
+
+// The eye-candy sprite the factory returns is the shared CGameObject (ApplyName
+// @0x150540 / ApplyLookupGeometry @0x1505b0); the factory is the canonical
+// CSpriteFactory (m_22c->m_8; <Gruntz/SpriteFactory.h>).
+
+// The rate-limited sound cue (the shared Booty* sound-chain idiom).
+struct RockSndPlayer {
+    // Play @0x1360d0 IS CSoundCueMgr::ConfigureItem; cast at the call.
+};
+struct RockSndEntry {
+    char m_pad00[0x10];
+    RockSndPlayer* m_10; // +0x10
+    u32 m_14;            // +0x14  last-played stamp
+    u32 m_18;            // +0x18  interval
+};
+struct RockSndTable {
+    // Find @0x1b8438 IS CMapStringToOb::Lookup; cast at the call.
+};
+struct RockSndSet { // this->m_22c->m_28
+    char m_pad00[0x10];
+    RockSndTable m_10; // +0x10
+    char m_pad11[0x30 - 0x11];
+    i32 m_30; // +0x30  active guard
+};
+
+// The level tile grid (board->m_5c): a sparse row-offset cell store.
+struct RockGrid {
+    char m_pad00[0x20];
+    i32* m_20; // +0x20  cell array (row-offset + col)
+    i32* m_24; // +0x24  per-row base index
+    i32 m_28;  // +0x28  storage cols
+    i32 m_2c;  // +0x2c  storage rows
+    i32 m_30;  // +0x30  active cols
+    i32 m_34;  // +0x34  active rows
+};
+// A cell's type object (board->m_4c[cell & 0xffff]). This is a FOREIGN engine
+// class: its ??_7 and the intermediate slots 0..7 are unreconstructed engine code,
+// so the only honest model is the ONE dispatched slot. GetType is the __thiscall
+// virtual at vtable byte offset +0x20, modeled as a 4-byte PMF loaded from the
+// vtable (`char m_pad00[0x20]` documents the un-recovered slots) so `o->GetType(0,0)`
+// emits `mov edx,[ecx]; call [edx+0x20]`. The class is COMPLETE before the T::*
+// typedef to keep the PMF 4 bytes (docs/patterns/pmf-complete-class-4byte.md).
+// Real polymorphic view: GetType is the one dispatched slot (slot 8, +0x20), a real
+// virtual (8 filler slots precede it); declared-only. o->GetType() -> call [eax+0x20].
+struct RockCellObj {
+    virtual void Slot0();
+    virtual void Slot1();
+    virtual void Slot2();
+    virtual void Slot3();
+    virtual void Slot4();
+    virtual void Slot5();
+    virtual void Slot6();
+    virtual void Slot7();
+    virtual i32 GetType(i32 a, i32 b); // +0x20 (slot 8)
+};
+struct RockBoard { // this->m_22c->m_24 (and g_mgrSettings->m_world->m_24)
+    char m_pad00[0x4c];
+    RockCellObj** m_4c; // +0x4c  cell type-object table
+    char m_pad50[0x5c - 0x50];
+    RockGrid* m_5c; // +0x5c
+};
+struct RockMapHost { // this->m_22c (== g_mgrSettings->m_world)
+    char m_pad00[0x8];
+    CSpriteFactory* m_8; // +0x08
+    char m_pad0c[0x24 - 0xc];
+    RockBoard* m_24;  // +0x24
+    RockSndSet* m_28; // +0x28
+};
+
+// The per-cell "logic object" the registry hands out.
+struct RockLogicObj {
+    // Retire @0x3af8 IS CTileTriggerSwitchLogic::BuildRockBreakInGameText; cast at the call.
+    // SetType @0x1a00 IS CTileGridCommand::ApplyMove; cast at the call.
+    // Reconcile @0x3adf IS CTileActionEvent::Process; cast at the call.
+};
+struct RockLogicMgr { // g_mgrSettings->m_curState->m_2e4
+    // FindAt IS CTileTriggerSwitchLogic::ScanNeighborhood; cast at the call.
+    // FindCell IS CTileTriggerSwitchLogic::FindByField0C; cast at the call.
+    // Acquire IS CTileTriggerContainer::FindInLists12; cast at the call.
+    // Release IS CTileTriggerContainer::DelFromList1; cast at the call.
+    // Reap IS CTileTriggerContainer::DelFromList3; cast at the call.
+};
+struct RockSettingsRoot { // g_mgrSettings->m_curState
+    char m_pad00[0x2e4];
+    RockLogicMgr* m_2e4; // +0x2e4
+};
+struct RockMgr { // g_mgrSettings (*0x64556c), this method's typed alias
+    char m_pad00[0x2c];
+    RockSettingsRoot* m_curState; // +0x2c
+    RockMapHost* m_world;         // +0x30  write-grid host
+    char m_pad34[0x70 - 0x34];
+    CBrickzGrid* m_tileGrid; // +0x70
+    char m_pad74[0x13c - 0x74];
+    RECT m_13c; // +0x13c  visible rect
+    // *g_64556c's own game-mgr methods (== CGruntzMgr's, reloc-masked) - call direct,
+    // no cross-cast. Full fold onto canonical CGameRegistry deferred (RockSettingsRoot/
+    // RockMapHost sub-object views diverge from CState/CWorldZ).
+    void EnterModalUI(i32 arg);        // 0x08ef10
+    void ReportError(i32 id, i32 tag); // 0x08dc60
+};
+DATA(0x0024556c)
+extern "C" RockMgr* g_mgrSettings; // _g_mgrSettings
+DATA(0x0021ab20)
+extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
+DATA(0x0021ab24)
+extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
+DATA(0x002bf3c0)
+extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
+
+class CRockBreakMgr {
+public:
+    void Prepare(i32 cx, i32 cy, i32 r, i32, i32); // FUN @ 0x400c __thiscall
+    i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4);
+
+    char m_pad00[0x22c];
+    RockMapHost* m_22c; // +0x22c
+};
+
+// @source: string-xref
 // @early-stop
-// /GX CString-temp wall: the Level%i Format temporary forces the EH frame whose state +
-// cleanup diverge; the Format/GetColor/hit-test/status path is faithful. topic:wall topic:eh.
-RVA(0x00079b80, 0x194)
-i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
-    if (m_284 != 0) {
+// regalloc/loop-strength-reduction wall: the logic - the M400c prep call, the
+// radius rect, the doubly-nested tile scan, the col/row clamp, the cell-type
+// dispatch (0x1e/0x1f rock-break + Particlez sprite + rate-limited sound,
+// 0x21 giant-rock resurrect + "No giant rock logic found" CString diagnostic,
+// 0x97/0x98/0x99 hazard reconcile), the PtInRect gate and the return-1/return-0
+// tails - is byte-faithful (instruction selection, calls, constants, strings). The
+// residual is the induction-variable set: retail carries pixelX/pixelY, the packed
+// (tileX<<8) cell base and the loop bounds as spilled strength-reduced accumulators
+// on a 0x1c frame, and pins the two loop counters (tileX->ebp, tileY->edi) with a
+// specific spill coloring the /O2 recompile re-derives differently, cascading a
+// +N [esp+N] shift across the body. Not source-steerable (see
+// docs/patterns/loop-invariant-multiply-strength-reduce-vs-memreread.md +
+// zero-register-pinning.md). Logic complete.
+RVA(0x0007b440, 0x3f0)
+i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
+    Prepare(cx, cy, r, 6, a4);
+
+    RockSettingsRoot* root = g_mgrSettings->m_curState;
+    i32 tileCx = cx >> 5;
+    i32 tileCy = cy >> 5;
+    i32 hiX = tileCx + r;
+    for (i32 tx = tileCx - r; tx <= hiX; tx++) {
+        i32 pxX = (tx << 5) + 0x10;
+        for (i32 ty = tileCy - r; ty <= tileCy + r; ty++) {
+            i32 pxY = (ty << 5) + 0x10;
+            if (pxX < 0x10 || pxY < 0x10) {
+                continue;
+            }
+            RockBoard* board = m_22c->m_24;
+            RockGrid* grid = board->m_5c;
+            if (tx >= grid->m_30 || ty >= grid->m_34) {
+                continue;
+            }
+            i32 col;
+            if (pxX < 0x10) {
+                col = 0;
+            } else if (tx >= grid->m_28) {
+                col = grid->m_28 - 1;
+            } else {
+                col = tx;
+            }
+            i32 row = (ty >= grid->m_2c) ? grid->m_2c - 1 : ty;
+            i32 cell = grid->m_20[grid->m_24[row] + col];
+            i32 type;
+            if (cell == (i32)0xeeeeeeee || cell == -1) {
+                type = 0;
+            } else {
+                RockCellObj* o = board->m_4c[cell & 0xffff];
+                type = o->GetType(0, 0);
+            }
+
+            if (type != 0x1e && type != 0x1f) {
+                if (type == 0x21) {
+                    RockLogicObj* gr = (RockLogicObj*)((CTileTriggerSwitchLogic*)root->m_2e4)
+                                           ->ScanNeighborhood(tx, ty);
+                    if (gr == 0) {
+                        CString msg;
+                        FormatStr(&msg, "No giant rock logic found around: x=%d, y=%d", cx, cy);
+                        g_mgrSettings->EnterModalUI((i32)(const char*)(msg));
+                        g_mgrSettings->ReportError(0x80dd, 0x403);
+                        return 0;
+                    }
+                    ((CTileTriggerSwitchLogic*)gr)->BuildRockBreakInGameText();
+                    ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)gr);
+                    continue;
+                }
+                if (type != 0x97 && type != 0x98 && type != 0x99) {
+                    continue;
+                }
+                RockLogicObj* o = (RockLogicObj*)((CTileTriggerSwitchLogic*)root->m_2e4)
+                                      ->FindByField0C(ty + (tx << 8));
+                if (((CTileActionEvent*)o)->Process(0)) {
+                    ((CTileTriggerContainer*)root->m_2e4)->DelFromList3((void*)o);
+                }
+                continue;
+            }
+
+            // type == 0x1e || type == 0x1f: rock-break marker + particle
+            RockLogicObj* lo = (RockLogicObj*)((CTileTriggerContainer*)root->m_2e4)
+                                   ->FindInLists12(ty + (tx << 8), 0x1a);
+            if (lo != 0) {
+                ((CTileGridCommand*)lo)->ApplyMove(type);
+                ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)lo);
+            } else {
+                RockGrid* wg = g_mgrSettings->m_world->m_24->m_5c;
+                i32 off = wg->m_24[ty];
+                if (type == 0x1e) {
+                    wg->m_20[off + tx] = 0x5a;
+                    g_mgrSettings->m_tileGrid->ComputeCellFlags(tx, ty, 0x5a);
+                } else {
+                    wg->m_20[off + tx] = 0x5b;
+                    g_mgrSettings->m_tileGrid->ComputeCellFlags(tx, ty, 0x5b);
+                }
+            }
+
+            POINT pt;
+            pt.x = pxX;
+            pt.y = pxY;
+            if (!PtInRect(&g_mgrSettings->m_13c, pt)) {
+                continue;
+            }
+            CGameObject* spr = m_22c->m_8->CreateSprite(0, pxX, pxY, 0xcf84f, "Particlez", 0x40003);
+            if (spr == 0) {
+                continue;
+            }
+            spr->ApplyName("LEVEL_ROCKBREAK");
+            spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
+
+            RockSndSet* set = m_22c->m_28;
+            if (set->m_30 == 0) {
+                RockSndEntry* e = 0;
+                ((CMapStringToOb*)&set->m_10)->Lookup("LEVEL_ROCKBREAK", (CObject*&)e);
+                if (e != 0 && g_sndEnabled != 0) {
+                    u32 now = g_killCueClock;
+                    if (now - e->m_14 >= e->m_18) {
+                        e->m_14 = now;
+                        ((CSoundCueMgr*)e->m_10)->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                    }
+                }
+            }
+        }
+    }
+    return 1;
+}
+SIZE_UNKNOWN(CRockBreakMgr);
+SIZE_UNKNOWN(RockBoard);
+SIZE_UNKNOWN(RockCellObj);
+SIZE_UNKNOWN(RockGrid);
+SIZE_UNKNOWN(RockLogicMgr);
+SIZE_UNKNOWN(RockLogicObj);
+SIZE_UNKNOWN(RockMapHost);
+SIZE_UNKNOWN(RockMgr);
+SIZE_UNKNOWN(RockNotify);
+SIZE_UNKNOWN(RockSettingsRoot);
+SIZE_UNKNOWN(RockSndEntry);
+SIZE_UNKNOWN(RockSndPlayer);
+SIZE_UNKNOWN(RockSndSet);
+SIZE_UNKNOWN(RockSndTable);
+
+// ===========================================================================
+// CGruntTileMgr::CombatCue (0x7b930) - merged from GruntTileMgr.cpp per
+// dossier 10b (the grunt tile-mgr spell-area cue; embedded singleton, this TU
+// by retail position). CGruntTileMgr + g_pGameRegistry come from
+// <Gruntz/Grunt.h>; the LightFx/flash key statics are the donor's.
+// ===========================================================================
+// The LightFx / flash key strings (reloc-masked .rodata literals).
+static const char s_LightFx[] = "LightFx";
+static const char s_GAME_FLASH[] = "GAME_FLASH";
+static const char s_GAME_LIGHTING_FLASH[] = "GAME_LIGHTING_FLASH";
+// The combat-timeout bute keys (GetIntDef takes char*).
+static char s_Grunt[] = "Grunt";
+static char s_CombatTimeout[] = "CombatTimeout";
+
+// @early-stop
+// prologue-scheduling + grid-pointer-register regalloc wall (~82%): the body is
+// byte-correct in shape/offsets/symbols/CFG (the 4x15 grid scan, the +-((r<<5)+7)
+// AABB, the tail-merged tier-1/6/7 ApplyCellEffect cases, the tier-2 teleport
+// re-roll loop, the tier-3/5/4 health/toyz/freeze LightFx flashes + shared Activate
+// tail all match instruction-for-instruction). Residual is the documented prologue
+// coin-flip: retail spills `this` to esp+0x14 and materialises the running grid
+// pointer with `lea 0x1c(ecx),eax` (this preserved, pointer in eax/memory), while cl
+// spills `this` to esp+0x10 and reuses ecx via `add 0x1c,ecx` (pointer in ecx) - a
+// one-slot shift that cascades displacement bytes through the whole prologue + loop
+// control. Source-invariant; deferred to the final sweep.
+RVA(0x0007b930, 0x3b7)
+i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
+    i32 r = radius << 5;
+    i32 xLo = x - r - 7;
+    i32 yLo = y - r - 7;
+    i32 xHi = x + r + 7;
+    i32 yHi = y + r + 7;
+    i32 rangeA = m_22c->m_24->m_5c->m_28 - 2;
+    i32 rangeB = m_22c->m_24->m_5c->m_2c - 2;
+
+    CGrunt** p = &m_grid[0][0];
+    for (i32 i = 0; i < 4; i++) {
+        for (i32 j = 0; j < 15; j++, p++) {
+            CGrunt* g = *p;
+            if (g == 0) {
+                continue;
+            }
+            if (g->m_entranceCommitted == 0) {
+                continue;
+            }
+            if (g->m_entranceDropActive != 0) {
+                continue;
+            }
+            i32 gx = g->m_10->m_5c;
+            i32 gy = g->m_10->m_60;
+            i32 lx = gx - 7;
+            i32 ly = gy - 7;
+            i32 hx = lx + 14;
+            i32 hy = ly + 14;
+            if (xLo <= hx && xHi >= lx && yLo <= hy && yHi >= ly) {
+                switch (tier) {
+                    case 1:
+                        if (g->m_gruntKind != 0x38) {
+                            ApplyCellEffect(i, j, 0, flag);
+                        }
+                        break;
+                    case 6:
+                        if (g->m_gruntKind != 0x38) {
+                            ApplyCellEffect(i, j, 0xb, flag);
+                        }
+                        break;
+                    case 7:
+                        if (g->m_gruntKind != 0x38) {
+                            ApplyCellEffect(i, j, 2, flag);
+                        }
+                        break;
+                    case 2: { // teleport-scatter
+                        if (gx == x && gy == y) {
+                            break;
+                        }
+                        i32 done = 0;
+                        do {
+                            i32 dx = rangeA ? GruntRand() % rangeA + 1 : GruntRand() & 1;
+                            i32 dy = rangeB ? GruntRand() % rangeB + 1 : GruntRand() & 1;
+                            if (g->TeleportMove(dx, dy, 0, 1)) {
+                                CHudSprite* spr =
+                                    (CHudSprite*)g_pGameRegistry->m_world->m_8
+                                        ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
+                                done = 1;
+                                spr->m_7c->m_init(spr);
+                                spr->m_7c->m_18
+                                    ->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 3, 1);
+                            }
+                        } while (done == 0);
+                        break;
+                    }
+                    case 3: { // health
+                        if (gx == x && gy == y) {
+                            break;
+                        }
+                        g->m_health = 0x64;
+                        g->UpdateCombatTimer();
+                        g->m_combatTimeoutLo =
+                            g_buteMgr.GetIntDef(s_Grunt, s_CombatTimeout, 0x1388);
+                        g->m_combatTimeoutHi = 0;
+                        g->m_combatClockLo = g_645588;
+                        g->m_combatClockHi = 0;
+                        CHudSprite* spr =
+                            (CHudSprite*)g_pGameRegistry->m_world->m_8
+                                ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
+                        spr->m_7c->m_init(spr);
+                        spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 2, 1);
+                        break;
+                    }
+                    case 5: { // toyz
+                        if (gx == x && gy == y) {
+                            break;
+                        }
+                        i32 toy = GruntRand() % 9 + 0x17;
+                        if (toy == 0x1e) {
+                            toy = 0x20;
+                        }
+                        g->SetMoveStateA(toy, 1, 0, 0);
+                        CHudSprite* spr =
+                            (CHudSprite*)g_pGameRegistry->m_world->m_8
+                                ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
+                        spr->m_7c->m_init(spr);
+                        spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 7, 1);
+                        break;
+                    }
+                    case 4: { // freeze
+                        if (gx == x && gy == y) {
+                            break;
+                        }
+                        g->FreezeApply();
+                        CGruntHud* h = g->m_10;
+                        CHudSprite* spr =
+                            (CHudSprite*)g_pGameRegistry->m_world->m_8
+                                ->CreateSprite(0, h->m_5c, h->m_60, 0xf4240, s_LightFx, 0x40003);
+                        spr->m_7c->m_init(spr);
+                        spr->m_7c->m_18->Activate(s_GAME_LIGHTING_FLASH, s_GAME_FLASH, 9, 1);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return 1;
+}
+
+// 0x7be10: StopPendingFx - when our overlay-fx (+0x2a8) is live, or the world has a
+// pending flag (world+0x504), stop the world's fx and clear +0x2a8.
+RVA(0x0007be10, 0x34)
+void CTriggerMgr::StopPendingFx() {
+    CTmWorld* world = g_tmGameReg->m_curState;
+    if (m_pendingFxKind == 0 && world->m_504 == 0) {
+        return;
+    }
+    world->LoadCursorSprites(0, 0);
+    m_pendingFxKind = 0;
+}
+
+// ===========================================================================
+// CGruntResurrector::LoadGruntResurrectTuning (0x7be60) - merged from
+// GruntResurrectRadius.cpp per dossier 10b (the resurrect-radius pass, sibling
+// of the rock-break scan; called by CGrunt::LoadGruntAbilityTuning @0x572db).
+// @identity-TODO: CGruntResurrector/Res* identities are placeholders (the
+// owning `this` is the grunt-list manager; g_resSettings/g_resButeMgr are the
+// donor's names for the 0x64556c / 0x2453d8 singletons).
+// ===========================================================================
+SIZE_UNKNOWN(ResGruntLogic);
+struct ResGruntLogic { // grunt->m_38
+    char m_pad00[0x8];
+    u32 m_8; // +0x08  flags (|= 0x10000 on resurrect)
+};
+struct ResHost; // grunt->m_6c (opaque; passed through to Resurrect)
+SIZE_UNKNOWN(ResGrunt);
+struct ResGrunt {
+    char m_pad00[0x38];
+    ResGruntLogic* m_38; // +0x38
+    char m_pad3c[0x54 - 0x3c];
+    i32 m_54; // +0x54  x tile
+    i32 m_58; // +0x58  y tile
+    i32 m_5c; // +0x5c  busy/skip gate
+    char m_pad60[0x68 - 0x60];
+    i32 m_68;      // +0x68  grunt type index
+    ResHost* m_6c; // +0x6c
+};
+SIZE_UNKNOWN(ResNode);
+struct ResNode {
+    ResNode* m_next; // +0x00
+    char m_pad04[0x4];
+    ResGrunt* m_grunt; // +0x08
+};
+SIZE_UNKNOWN(ResMgrCfgEntry);
+struct ResMgrCfgEntry { // g_mgrSettings + 0x150 + type*0x238
+    char m_pad00[0x14];
+    i32 m_14; // +0x14
+    char m_pad18[0x20 - 0x18];
+    i32 m_20; // +0x20
+    i32 m_24; // +0x24
+    char m_pad28[0x2c - 0x28];
+    i32 m_2c; // +0x2c
+    char m_pad30[0x38 - 0x30];
+    CBattlezMapConfig m_38; // +0x38
+    char m_pad3c[0x238 - 0x3c];
+};
+// The factory (m_world->m_8) is the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>);
+// the created "LightFx" eye-candy sprite is the shared CGameObject whose +0x7c
+// CGameObjAux carries the Init driver (+0x10) and the per-class setup slot m_18
+// (+0x18) - here the LightFx flash config below, downcast at the site.
+SIZE_UNKNOWN(ResFactoryHost);
+struct ResFactoryHost {
+    char m_pad00[0x8];
+    CSpriteFactory* m_8; // +0x08
+};
+SIZE_UNKNOWN(ResSettings);
+struct ResSettings {
+    char m_pad00[0x30];
+    ResFactoryHost* m_world; // +0x30
+    char m_pad34[0x134 - 0x34];
+    i32 m_134; // +0x134  resurrect mode
+    char m_pad138[0x150 - 0x138];
+    ResMgrCfgEntry m_150[1]; // +0x150  per-type config (stride 0x238)
+};
+SIZE_UNKNOWN(ResButeMgr);
+struct ResButeMgr {};
+DATA(0x002453d8)
+extern ResButeMgr g_resButeMgr;
+DATA(0x0024556c)
+extern ResSettings* g_resSettings;
+SIZE_UNKNOWN(CGruntResurrector);
+struct CGruntResurrector {
+    char m_pad00[0x4];
+    ResNode* m_4; // +0x04  grunt list head
+    // FUN_000040bb __thiscall: spawn/resurrect one grunt (ret != -1 on success).
+    i32 Resurrect(
+        i32 type,
+        i32 px,
+        i32 py,
+        i32 a3,
+        i32 a4,
+        ResHost* host,
+        i32 a6,
+        i32 a7,
+        i32 aiType,
+        i32 radius,
+        i32 a10,
+        i32 a11,
+        i32 a12
+    );
+    void Notify(ResNode* node); // FUN_001b4ac7 __thiscall
+    i32 LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r);
+};
+
+// @early-stop
+// regalloc/frame-layout wall (~65%): instruction selection, calls, constants,
+// strings + the rect/loop/spawn structure are byte-faithful, but retail
+// frame-allocates the `node` loop variable (a dedicated 4-byte slot at [esp+0x14]
+// inside a 0x18 frame) while this /O2 recompile reuses an incoming-arg slot, yielding
+// a 0x14 frame and a +4 cascade across every [esp+N] operand. Not source-steerable
+// (the slot-vs-frame choice is the allocator's). Logic complete. See
+// docs/patterns/zero-register-pinning.md + const-materialize-into-reg-vs-immediate.md.
+RVA(0x0007be60, 0x21e)
+i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
+    RECT rect;
+    i32 hx = cx >> 5;
+    i32 hy = cy >> 5;
+    rect.left = hx - r;
+    rect.right = hx + r;
+    rect.top = hy - r;
+    rect.bottom = hy + r;
+
+    for (ResNode* node = m_4; node != 0; node = node->m_next) {
+        ResGrunt* g = node->m_grunt;
+        if (g->m_5c != 0) {
+            continue;
+        }
+        POINT pt;
+        pt.x = g->m_54;
+        pt.y = g->m_58;
+        if (!PtInRect(&rect, pt)) {
+            continue;
+        }
+
+        i32 type = g->m_68;
+        ResSettings* s = g_resSettings;
+        ResMgrCfgEntry* cfg = &s->m_150[type];
+        i32 aiType = 0;
+        i32 ok = 0;
+        i32 px = (g->m_54 << 5) + 0x10;
+        i32 py = (g->m_58 << 5) + 0x10;
+
+        if (s->m_134 == 1) {
+            i32 radius = 0;
+            if (cfg->m_14 == 0) {
+                aiType = ((CButeMgr*)&g_resButeMgr)->GetInt("Grunt", "RessurectAIType");
+                radius = ((CButeMgr*)&g_resButeMgr)->GetInt("Grunt", "RessurectAIRadius");
+            }
+            if (Resurrect(type, px, py, 0x186a0, 3, g->m_6c, 0, 0, aiType, radius, 0, 0, 0) != -1) {
+                ok = 1;
+            }
+        } else if (cfg->m_20 != 0 && cfg->m_2c == 0 && cfg->m_24 == 0) {
+            if (cfg->m_14 != 0) {
+                if (Resurrect(type, px, py, 0x186a0, 3, g->m_6c, 0, 0, 0, 0, 0, 0, 0) != -1) {
+                    ok = 1;
+                }
+            } else if (cfg->m_38.Method_030990(g->m_54, g->m_58) != 0) {
+                ok = 1;
+            }
+        }
+
+        if (ok) {
+            g->m_38->m_8 |= 0x10000;
+            Notify(node);
+            CGameObject* spr =
+                g_resSettings->m_world->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
+            spr->m_7c->Init(spr);
+            ((CLightFx*)spr->m_7c->m_logic)
+                ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 8, 1);
+        }
+    }
+    return 1;
+}
+
+// The sprite's bound logic (sprite desc +0x18) is the canonical CUserLogic
+// (<Gruntz/UserLogic.h>): its multi-arg Place driver (@0x4c1c4) and target-cursor Arm
+// (@0x4e517) are reached through the base pointer (former CTmUserLogic view folded away).
+
+// 0x7c110: SpawnGrunt(col, row, a18, a1c) - find the first free column of grid row `row`;
+// if full ret 0. Snap the source cell[col]'s display pos to a tile, run a prep self-call,
+// create a "Grunt" sprite at that pos, Init it, place it via its userlogic; on placement
+// failure flag the goal and ret 0, else stash the cell + bump the per-row counters. ret 1.
+// (__stdcall: ret 0x10.)
+// @early-stop
+// regalloc + free-column-scan wall: the inner "first free col" loop and the snap arithmetic
+// pin ebp/edi differently than retail; the placement-failure goal-flag path tail-merges.
+RVA(0x0007c110, 0x166)
+i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
+    CTmCell* src = m_grid[col * 15 + a1c];
+    i32 free = 0;
+    CTmCell** rowBase = &m_grid[row * 15];
+    if (*rowBase != 0) {
+        CTmCell** p = rowBase;
+        while (free < 15 && *p != 0) {
+            p++;
+            free++;
+        }
+    }
+    if (free >= 15) {
         return 0;
     }
-    if (*(i32*)((char*)g_gameReg + 0x134) != 1) {
+    CTmDisplay* o = src->m_10;
+    i32 sx = (o->m_5c & ~0x1f) + 0x10;
+    i32 sy = (o->m_60 & ~0x1f) + 0x10;
+    i32 k = src->m_170;
+    if (k > 0x16) {
+        k = src->m_19c;
+    }
+    i32 vis = src->m_198;
+    this->Reset3(col, k, vis); // prep self-call 0x7ec96
+    CSpriteFactory* fac = m_level->m_8;
+    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
+    if (sprite == 0) {
         return 0;
     }
-    char* lvl = (char*)g_gameReg->m_curState;
+    sprite->m_7c->Init(sprite);
+    void* logic = sprite->m_7c->m_18;
+    if (((CUserLogic*)logic)->Place(col, row, vis, k, 0, 0, 0, 0, 0, 0, 0, 0) == 0) {
+        *(i32*)(*(char**)((char*)logic + 0x154) + 0x8) |= 0x10000;
+        return 0;
+    }
+    m_grid[row * 15 + free] = sprite;
+    m_rowCount[row] += 1;
+    m_cellFlag[(row * 15 + free)] = 0;
+    return 1;
+}
+
+// 0x7c2e0: CycleMoveIcons(skipRow, enable) - for grid rows 0..3 except `skipRow`, either
+// roll a random move-icon onto each live cell (stashing the prior +0x1f8 when -1) and tick
+// the world's region-4, or restore each cell's stashed icon. ret 1.
+// @early-stop
+// scheduling residual (~93%): logic + offsets + externs byte-exact; retail hoists the -1
+// sentinel into ebp and schedules the rand()/idiv differently. topic:wall.
+RVA(0x0007c2e0, 0xb5)
+i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
+    CTmCell** grid = m_grid;
+    for (i32 r = 0; r < 4; r++) {
+        if (r != skipRow) {
+            CTmCell** cell = grid;
+            i32 i = 15;
+            do {
+                CTmCell* g = *cell;
+                if (g != 0) {
+                    if (enable != 0) {
+                        i32 t = rand() % 0x11;
+                        if (g->m_1f8 == -1) {
+                            g->m_1f8 = g->m_1f4;
+                        }
+                        g->SelectMoveIcon(t);
+                        (g_tmGameReg->m_curState)->OnRegion4(1);
+                    } else if (g->m_1f8 != -1) {
+                        g->SelectMoveIcon(g->m_1f8);
+                        g->m_1f8 = -1;
+                    }
+                }
+                cell++;
+                i--;
+            } while (i != 0);
+        }
+        grid += 15;
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CFinishLevelState::LoadFinishLevelSprite (0x7c3d0) - merged from
+// FinishLevelSprite.cpp per dossier 10b (the finish-level overlay state
+// driver; embedded singleton, this TU by retail position). @identity-TODO:
+// CFinishLevelState is a placeholder identity. The 6-way state transition:
+// entering state 1 looks up the GAME\FINISHLEVEL sprite, latches its
+// completion timer and (when the live surface is free) plays its sound cue;
+// the other states reseat the timer or run the grunt death animation.
+// g_sndEnabled/g_sndCueTag/g_killCueClock are declared in the rock-break
+// section above; g_645588 in <Gruntz/TriggerMgrViews.h>.
+// ===========================================================================
+// CSoundCueMgr - ConfigureItem pushes a cue; +0x28 carries the cue duration (both
+// modeled in <Gruntz/SoundCueMgr.h>). The +0x28 cue holder (name->cue map @+0x10,
+// emit gate @+0x30) is the canonical CSndHost, its looked-up cue the LeafCue -
+// both in <Gruntz/SoundCue.h> (the former CueObj / CStatusBarHolder folded onto them).
+
+SIZE_UNKNOWN(FinishLevelMgr);
+struct FinishLevelMgr {
+    char m_pad00[0x28];
+    CSndHost* m_28; // +0x28  the +0x28 cue/status holder (canonical CSndHost)
+};
+
+SIZE_UNKNOWN(CFinishLevelState);
+class CFinishLevelState {
+public:
+    void LoadFinishLevelSprite(i32 state);
+    char m_pad000[0x22c];
+    FinishLevelMgr* m_22c; // +0x22c
+    char m_pad230[0x288 - 0x230];
+    i32 m_288; // +0x288 phase
+    char m_pad28c[0x290 - 0x28c];
+    i32 m_290;     // +0x290 timer base
+    i32 m_294;     // +0x294
+    i32 m_298;     // +0x298 timer duration
+    i32 m_29c;     // +0x29c
+    CGrunt* m_2a0; // +0x2a0
+    char m_pad2a4[0x3ec - 0x2a4];
+    i32 m_3ec; // +0x3ec last state
+    char m_pad3f0[0x400 - 0x3f0];
+    i32 m_400; // +0x400
+};
+
+// @early-stop
+// Dense 6-case switch (~61%). Two stacked residuals, both confirmed by llvm-objdump
+// -dr base vs target: (1) the jump-table artifact - MSVC emits the table as a
+// separate $L COMDAT (jmp reloc -> $L19166), the delinker inlines it at fn+0x1b0
+// (jmp reloc -> fn) - documented ~79% ceiling, docs/patterns/
+// switch-jumptable-separate-comdat.md. (2) case-1 /O2 scheduling below that ceiling:
+// caching CSndHost* h28 = m_22c->m_28 recovered the m_28 share between the
+// m_30 check and the 2nd Lookup (58->61), but MSVC still (a) re-materializes edi=0
+// with a redundant `xor edi,edi` (the header zero doesn't propagate through the
+// indirect switch jmp in this build) and (b) HOISTS the m_22c reload for h28 up into
+// the m_298 computation, which reorders the independent m_298/m_29c stores. Cases
+// 2-6 are byte-identical to retail; only case-1 instruction scheduling diverges,
+// not source-steerable.
+RVA(0x0007c3d0, 0x1ae)
+void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
+    switch (state) {
+        case 1:
+            if (m_288 != 2) {
+                LeafCue* p = 0;
+                ((CMapStringToOb*)&m_22c->m_28->m_10)->Lookup("GAME\\FINISHLEVEL", (CObject*&)p);
+                m_298 = p->m_10->m_28 + 500;
+                m_29c = 0;
+                m_290 = g_645588;
+                m_294 = 0;
+                CSndHost* h28 = m_22c->m_28;
+                if (h28->m_emitGate == 0) {
+                    p = 0;
+                    h28->m_10.Lookup("GAME\\FINISHLEVEL", &p);
+                    if (p != 0 && g_sndEnabled != 0
+                        && (u32)(g_killCueClock - p->m_14) >= (u32)p->m_18) {
+                        p->m_14 = g_killCueClock;
+                        p->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                    }
+                }
+                m_288 = 1;
+                m_400 = 0;
+                m_3ec = state;
+                return;
+            }
+            goto Lab_56b;
+        case 2:
+            m_288 = 1;
+            break;
+        case 3:
+            if (m_288 == 0) {
+                m_288 = 2;
+                if (m_2a0 != 0) {
+                    m_2a0->ResolveDeathAnimation();
+                }
+            }
+            goto Lab_522;
+        case 4:
+            m_288 = 2;
+            m_298 = 3000;
+            m_29c = 0;
+            m_290 = g_645588;
+            goto Lab_565;
+        case 5:
+            m_288 = 2;
+            break;
+        case 6:
+            m_288 = 2;
+        Lab_522:
+            m_298 = 3000;
+            m_29c = 0;
+            m_290 = g_645588;
+            goto Lab_565;
+        default:
+            return;
+    }
+    m_298 = 3000;
+    m_29c = 0;
+    m_290 = g_645588;
+Lab_565:
+    m_294 = 0;
+Lab_56b:
+    m_400 = 0;
+    m_3ec = state;
+}
+
+// ===========================================================================
+// LoadPowerupIconSprites @0x07c620
+// ===========================================================================
+//
+// The big in-game-icon loader: a switch on the powerup/toy/tool type id selects
+// the sprite-set key, then the common path CreateSprite("InGameIcon", ...) +
+// CacheFirstFrame + zeroes the +0x114-block. Two special cases: WARPSTONE (a
+// per-level key resolved through g_buteMgr) and the closing TIMEBOMB type that
+// runs its own CreateSprite("TimeBomb", ...) + a CoveredTimeBombTime default.
+// __thiscall-free ret 0x18 (6 args). Returns 1 on success.
+
+// The in-game-icon type id LoadPowerupIconSprites dispatches on (type) is PickupType,
+// the shared object/pickup/grunt-kind id space in <Gruntz/PickupType.h>. Each name is
+// confirmed by its case's GAME_INGAMEICONZ_* sprite key + verified against the retail
+// jump table (VA 0x47c9e8/0x47cab4); the ids AGREE with CGrunt's LoadPickupSprites (both
+// traced to the retail switch). Same immediates as the bare labels -> matching-neutral.
+// (The warp-letter cases are PICKUP_W/A/R/P; the icon-only covered timebomb is
+// PICKUP_COVEREDTIMEBOMB = 99.)
+
+RVA(0x0007c620, 0x3c5)
+i32 EngineLabelBacklog::LoadPowerupIconSprites(
+    i32 type,
+    i32 geoB,
+    i32 geoA,
+    i32 m130,
+    i32 warpIdx,
+    i32 m120
+) {
+    if (type == 0) {
+        return 0;
+    }
+
     CString name;
-    name.Format("Level%i", *(i32*)(lvl + 0x1c), 0);
-    i32 color = g_buteMgr.GetIntDef((char*)(const char*)name, "WarpStone", 0);
-    i32 hx = col;
-    i32 hy = row;
-    if (hy >= *(i32*)((char*)g_gameReg + 0x144) || hy < *(i32*)((char*)g_gameReg + 0x13c)
-        || hx >= *(i32*)((char*)g_gameReg + 0x148) || hx < *(i32*)((char*)g_gameReg + 0x140)) {
-        ((CTmWorld*)lvl)->Place2(hy, hx, 0);
-    }
-    CTmGridHolder* plane = (CTmGridHolder*)*(char**)(*(char**)((char*)g_gameReg + 0x30) + 0x24);
-    i32 outR = col;
-    i32 outC = row;
-    plane->Snap(&outR, &outC);
-    CSBI_RectOnly* sbi = (CSBI_RectOnly*)*(char**)((char*)lvl + 0x2dc);
-    if (sbi->m_hlBusy == 0) {
-        if (*(i32*)sbi == 2) {
-            sbi->Reset();
+    switch (type) {
+        case PICKUP_BOMB:
+            name = "GAME_INGAMEICONZ_TOOLZ_BOMBZ";
+            break;
+        case PICKUP_BOOMERANG:
+            name = "GAME_INGAMEICONZ_TOOLZ_BOOMERANGZ";
+            break;
+        case PICKUP_BRICK:
+            name = "GAME_INGAMEICONZ_TOOLZ_BRICKZ";
+            break;
+        case PICKUP_CLUB:
+            name = "GAME_INGAMEICONZ_TOOLZ_CLUBZ";
+            break;
+        case PICKUP_GAUNTLETZ:
+            name = "GAME_INGAMEICONZ_TOOLZ_GAUNTLETZ";
+            break;
+        case PICKUP_GLOVEZ:
+            name = "GAME_INGAMEICONZ_TOOLZ_GLOVEZ";
+            break;
+        case PICKUP_GOOBER:
+            name = "GAME_INGAMEICONZ_TOOLZ_GOOBERZ";
+            break;
+        case PICKUP_GRAVITYBOOTZ:
+            name = "GAME_INGAMEICONZ_TOOLZ_GRAVITYBOOTZ";
+            break;
+        case PICKUP_GUNHAT:
+            name = "GAME_INGAMEICONZ_TOOLZ_GUNHATZ";
+            break;
+        case PICKUP_NERFGUN:
+            name = "GAME_INGAMEICONZ_TOOLZ_NERFGUNZ";
+            break;
+        case PICKUP_ROCK:
+            name = "GAME_INGAMEICONZ_TOOLZ_ROCKZ";
+            break;
+        case PICKUP_SHIELD:
+            name = "GAME_INGAMEICONZ_TOOLZ_SHIELDZ";
+            break;
+        case PICKUP_SHOVEL:
+            name = "GAME_INGAMEICONZ_TOOLZ_SHOVELZ";
+            break;
+        case PICKUP_SPRING:
+            name = "GAME_INGAMEICONZ_TOOLZ_SPRINGZ";
+            break;
+        case PICKUP_SPY:
+            name = "GAME_INGAMEICONZ_TOOLZ_SPYZ";
+            break;
+        case PICKUP_SWORD:
+            name = "GAME_INGAMEICONZ_TOOLZ_SWORDZ";
+            break;
+        case PICKUP_TIMEBOMB:
+            name = "GAME_INGAMEICONZ_TOOLZ_TIMEBOMBZ";
+            break;
+        case PICKUP_TOOB:
+            name = "GAME_INGAMEICONZ_TOOLZ_TOOBZ";
+            break;
+        case PICKUP_WAND:
+            name = "GAME_INGAMEICONZ_TOOLZ_WANDZ";
+            break;
+        case PICKUP_WARPSTONE:
+            if (g_pGameRegistry->m_134 == 1) {
+                CResourceTracker* rt = (CResourceTracker*)g_pGameRegistry->m_curState;
+                CString lvl;
+                lvl.Format("Level%i", rt->m_levelNumber);
+                name.Format(
+                    "GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i",
+                    g_buteMgr.GetInt("WarpStone", (const char*)lvl)
+                );
+            } else {
+                name.Format("GAME_INGAMEICONZ_TOOLZ_WARPSTONEZ%i", warpIdx);
+            }
+            break;
+        case PICKUP_WELDER:
+            name = "GAME_INGAMEICONZ_TOOLZ_WELDERZ";
+            break;
+        case PICKUP_WINGZ:
+            name = "GAME_INGAMEICONZ_TOOLZ_WINGZ";
+            break;
+        case PICKUP_BABYWALKER:
+            name = "GAME_INGAMEICONZ_TOYZ_BABYWALKERZ";
+            break;
+        case PICKUP_BEACHBALL:
+            name = "GAME_INGAMEICONZ_TOYZ_BEACHBALLZ";
+            break;
+        case PICKUP_BIGWHEEL:
+            name = "GAME_INGAMEICONZ_TOYZ_BIGWHEELZ";
+            break;
+        case PICKUP_GOKART:
+            name = "GAME_INGAMEICONZ_TOYZ_GOKARTZ";
+            break;
+        case PICKUP_JACKINTHEBOX:
+            name = "GAME_INGAMEICONZ_TOYZ_JACKINTHEBOXZ";
+            break;
+        case PICKUP_JUMPROPE:
+            name = "GAME_INGAMEICONZ_TOYZ_JUMPROPEZ";
+            break;
+        case PICKUP_POGOSTICK:
+            name = "GAME_INGAMEICONZ_TOYZ_POGOSTICKZ";
+            break;
+        case PICKUP_SCROLL:
+            name = "GAME_INGAMEICONZ_TOYZ_SCROLLZ";
+            break;
+        case PICKUP_SQUEAKTOY:
+            name = "GAME_INGAMEICONZ_TOYZ_SQUEAKTOYZ";
+            break;
+        case PICKUP_YOYO:
+            name = "GAME_INGAMEICONZ_TOYZ_YOYOZ";
+            break;
+        case PICKUP_MEGAPHONE:
+            name = "GAME_INGAMEICONZ_POWERUPZ_MEGAPHONEZ";
+            break;
+        case PICKUP_HEALTH1:
+            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH1";
+            break;
+        case PICKUP_HEALTH2:
+            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH2";
+            break;
+        case PICKUP_HEALTH3:
+            name = "GAME_INGAMEICONZ_POWERUPZ_HEALTH3";
+            break;
+        case PICKUP_CONVERSION:
+            name = "GAME_INGAMEICONZ_POWERUPZ_CONVERSION";
+            break;
+        case PICKUP_DEATHTOUCH:
+            name = "GAME_INGAMEICONZ_POWERUPZ_DEATHTOUCH";
+            break;
+        case PICKUP_GHOST:
+            name = "GAME_INGAMEICONZ_POWERUPZ_GHOST";
+            break;
+        case PICKUP_REACTIVEARMOR:
+            name = "GAME_INGAMEICONZ_POWERUPZ_REACTIVEARMOR";
+            break;
+        case PICKUP_ROIDZ:
+            name = "GAME_INGAMEICONZ_POWERUPZ_ROIDZ";
+            break;
+        case PICKUP_INVULNERABILITY:
+            name = "GAME_INGAMEICONZ_POWERUPZ_INVULNERABILITY";
+            break;
+        case PICKUP_SUPERSPEED:
+            name = "GAME_INGAMEICONZ_POWERUPZ_SUPERSPEED";
+            break;
+        case PICKUP_W:
+            name = "GAME_INGAMEICONZ_SECRETW";
+            break;
+        case PICKUP_A:
+            name = "GAME_INGAMEICONZ_SECRETA";
+            break;
+        case PICKUP_R:
+            name = "GAME_INGAMEICONZ_SECRETR";
+            break;
+        case PICKUP_P:
+            name = "GAME_INGAMEICONZ_SECRETP";
+            break;
+        case PICKUP_STOPWATCH:
+            name = "GAME_INGAMEICONZ_POWERUPZ_STOPWATCH";
+            break;
+        case PICKUP_COIN:
+            name = "GAME_INGAMEICONZ_POWERUPZ_COIN";
+            break;
+        case PICKUP_COVEREDTIMEBOMB: {
+            CGameObject* tb = g_pGameRegistry->m_world->m_8
+                                  ->CreateSprite(0, geoB, geoA, 0xf, "TimeBomb", 0x40003);
+            if (tb) {
+                tb->m_120 = g_buteMgr.GetDwordDef("Powerupz", "CoveredTimeBombTime", 0x7d0);
+            }
+            return tb != 0;
         }
-        if (sbi->m_activeTab != 5) {
-            sbi->Place(5, 3, 0);
-        }
-        sbi->Place(5, 1, 0);
-        sbi->Run();
+        default:
+            return 0;
     }
-    if (sbi->Place(color, outR, outC) != 0) {
-        sbi->m_hlBusy = 1;
+
+    CGameObject* spr =
+        g_pGameRegistry->m_world->m_8->CreateSprite(0, geoB, geoA, 0x17318, "InGameIcon", 0x40003);
+    if (!spr) {
+        return 0;
+    }
+    spr->ApplyName(name);
+    spr->m_120 = m120;
+    spr->m_114 = 0;
+    spr->m_118 = 0;
+    spr->m_124 = 0;
+    spr->m_11c = 0;
+    spr->m_placeMode = 0;
+    spr->m_12c = 0;
+    spr->m_130 = m130;
+    return 1;
+}
+
+// 0x7cc60: RebuildSelectionList(idx) - recycle selection list `idx` (+0x2d4) to the free
+// list, RemoveAll it (+0x2d0), then allocate a fresh node per record-list entry (+0x244)
+// copying its (x,y) payload; reset +0x3e8. ret 1.
+// @early-stop
+// regalloc wall (~86%): the free-list recycle + node-alloc bodies are byte-exact; retail
+// pins this/idx-base differently across the two list walks. topic:wall.
+RVA(0x0007cc60, 0xa7)
+i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
+    CTmObList* sel = &m_selLists[idx];
+    CTmNode* n = m_selLists[idx].m_head;
+    if (n != 0) {
+        void* head = g_freeList;
+        do {
+            CTmNode* cur = n;
+            n = n->m_next;
+            i32* payload = cur->m_payload;
+            if (payload != 0) {
+                void** slot = (void**)((char*)payload - g_freeListNodeBias);
+                *slot = head;
+                head = slot;
+                g_freeList = head;
+            }
+        } while (n != 0);
+    }
+    sel->RemoveAll();
+    CTmNode* rec = m_recList.m_head;
+    while (rec != 0) {
+        CTmNode* cur = rec;
+        rec = rec->m_next;
+        i32* src = cur->m_payload;
+        void** fh = (void**)g_freeList;
+        void* nextFree = *fh;
+        i32* dst = 0;
+        if (nextFree != 0) {
+            dst = (i32*)((char*)fh + 4);
+            g_freeList = nextFree;
+        }
+        dst[0] = src[0];
+        dst[1] = src[1];
+        sel->AddTail(dst);
+    }
+    m_selSentinel = -1;
+    return 1;
+}
+
+// 0x7cd40: CenterSelectionGroup(slot) - ResetAll, tick the live overlay, then walk the
+// slot's selection list (+0x2d4[slot*0x1c]). For each node look up grid[15*x+y]: if the
+// cell is live, ResetCell(x,y,1,0) and (on the second pass for the same slot, m_3e8==slot)
+// fold its display pos into a running bbox seeded from the level grid dims; if dead, recycle
+// the node back to the free list and RemoveAt it from the slot list. On the centering pass
+// scroll the world to the bbox centre and clear m_3e8; else latch m_3e8=slot. ret 1 (0 when
+// the slot list is empty).
+// @early-stop
+// regalloc wall (~87%): logic + offsets + all reloc-masked externs (ResetAll/OverlayTick/
+// ResetCell/RemoveAt/Center/g_freeList*/g_tmGameReg) byte-exact, but retail pins this=ebp,
+// node=esi, y=edi (a perfect 5-reg fit); our cl swaps this/node into esi/ebp and spills
+// `this` to the stack, reusing esi for y. Same systematic esi<->ebp swap the rest of this
+// TU exhibits; not source-steerable. topic:wall.
+RVA(0x0007cd40, 0x18f)
+i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
+    ResetAll();
+    CActionOptionsMenuBar* ov = m_overlay;
+    if (ov != 0 && ov->m_active != 0) {
+        OverlayTick();
+    }
+    CTmNode* n = m_selLists[slot].m_head;
+    if (n == 0) {
+        m_selSentinel = -1;
+        return 0;
+    }
+    i32 maxX = 0;
+    i32 maxY = 0;
+    CViewport* grid = g_tmGameReg->m_world->m_24->m_5c;
+    i32 minX = grid->m_worldWidth - 1;
+    i32 minY = grid->m_worldHeight - 1;
+    do {
+        CTmNode* cur = n;
+        n = n->m_next;
+        i32* payload = cur->m_payload;
+        i32 idx = payload[1] + 15 * payload[0];
+        CTmCell* cell = m_grid[idx];
+        if (cell != 0) {
+            ResetCell(payload[0], payload[1], 1, 0);
+            if (m_selSentinel == slot) {
+                CTmDisplay* disp = cell->m_10;
+                i32 x = disp->m_5c;
+                i32 y = disp->m_60;
+                if (x < minX) {
+                    minX = x;
+                }
+                if (x > maxX) {
+                    maxX = x;
+                }
+                if (y < minY) {
+                    minY = y;
+                }
+                if (y > maxY) {
+                    maxY = y;
+                }
+            }
+        } else {
+            void** node = (void**)((char*)payload - g_freeListNodeBias);
+            *node = g_freeList;
+            g_freeList = node;
+            m_selLists[slot].RemoveAt(cur);
+        }
+    } while (n != 0);
+    if (m_selSentinel == slot) {
+        g_tmGameReg->m_curState->Center(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
+        m_selSentinel = -1;
+        return 1;
+    }
+    m_selSentinel = slot;
+    return 1;
+}
+
+// ===========================================================================
+// CGroupSel::CenterOnGroup (0x7cf40) - merged from GroupOps.cpp per dossier
+// 10b (directly abuts ?CenterSelectionGroup@CTriggerMgr @0x7cd40, same
+// selection feature). @identity-TODO: CGroupSel is a placeholder view - its
+// +0x1c grid / +0x230..+0x238 latch / +0x244 list head ARE CTriggerMgr's
+// m_grid / m_230-m_recX-m_recY / m_recList.m_head; the fold onto CTriggerMgr
+// is deferred (the m_grid[1] flexible-index idiom + CSel* sub-views diverge
+// from the CTm* shapes). GroupOps.cpp keeps CGroupBroadcast::Broadcast
+// (0x112080, a different interval).
+// ===========================================================================
+// ===========================================================================
+// CenterOnGroup (0x7cf40)
+// ===========================================================================
+// The view-centre helper reached as g_gameReg->m_curState->Center(x, y) (0x2e28 thunk).
+// The map dimensions grid (gameReg->m_world->m_24->m_5c) is the shared
+// CViewport (<Gruntz/Viewport.h>); only its m_worldWidth/m_worldHeight are read here.
+struct CMapHolderB {
+    char m_pad00[0x5c];
+    CViewport* m_5c; // +0x5c
+};
+struct CMapHolderA {
+    char m_pad00[0x24];
+    CMapHolderB* m_24; // +0x24
+};
+DATA(0x0024556c)
+extern CGameRegistry* g_gameRegSel; // 0x64556c
+
+// A selected cell's grunt (cell->m_10) carries its tile position at +0x5c/+0x60.
+struct CSelGrunt {
+    char m_pad00[0x5c];
+    i32 m_5c; // +0x5c x
+    i32 m_60; // +0x60 y
+};
+// A grid cell: +0x10 the grunt, +0x1ec/+0x1f0 the latch values.
+struct CSelGridCell {
+    char m_pad00[0x10];
+    CSelGrunt* m_10; // +0x10
+    char m_pad14[0x1ec - 0x14];
+    i32 m_1ec; // +0x1ec
+    i32 m_1f0; // +0x1f0
+};
+// A selection list node: next @0, the cell-key object @0x08.
+struct CSelKey {
+    i32 m_0; // +0x00 grid x-ish
+    i32 m_4; // +0x04 grid y-ish
+};
+struct CSelNode {
+    CSelNode* m_next; // +0x00
+    void* m_pad04;
+    CSelKey* m_8; // +0x08
+};
+
+struct CGroupSel {
+    char m_pad00[0x1c];
+    CSelGridCell* m_grid[1]; // +0x1c  grid cell pointer table (indexed by x*15 + y)
+    // The latch / state fields below live well past the grid; the modeled grid
+    // stays size-1 (indexed past its end) so these keep their true offsets.
+    char m_pad20[0x230 - 0x20];
+    i32 m_230; // +0x230  select-latch gate
+    i32 m_234; // +0x234  latched x
+    i32 m_238; // +0x238  latched y
+    char m_pad23c[0x244 - 0x23c];
+    CSelNode* m_244; // +0x244  selection list head
+    char m_pad248[0x24c - 0x248];
+    i32 m_24c;                       // +0x24c  single-selection flag
+    i32 CenterOnGroup(i32 doSelect); // 0x7cf40
+    i32 TrySelect(i32 a, i32 b);     // 0x33aa
+    void Commit();                   // 0x3d1e
+};
+
+// @early-stop
+// 83% - regalloc wall: the list walk, grid-hash (x*15 + y), bounding-box min/max
+// fold, midpoint centre call and single-selection latch are byte-faithful; the
+// residual is min/max register colouring + the doubled grid-lookup spill.  No EH.
+RVA(0x0007cf40, 0x12e)
+i32 CGroupSel::CenterOnGroup(i32 doSelect) {
+    CSelNode* n = m_244;
+    if (n == 0) {
+        return 0;
+    }
+    CViewport* dims = (CViewport*)g_gameRegSel->m_world->m_24->m_5c;
+    i32 minX = dims->m_worldWidth - 1;
+    i32 minY = dims->m_worldHeight - 1;
+    i32 maxX = 0;
+    i32 maxY = 0;
+    i32 count = 0;
+    do {
+        CSelKey* k = n->m_8;
+        n = n->m_next;
+        CSelGridCell* cell = m_grid[k->m_0 * 15 + k->m_4];
+        if (cell != 0) {
+            count++;
+            CSelGrunt* g = cell->m_10;
+            i32 gx = g->m_5c;
+            i32 gy = g->m_60;
+            if (gx < minX) {
+                minX = gx;
+            }
+            if (gx > maxX) {
+                maxX = gx;
+            }
+            if (gy < minY) {
+                minY = gy;
+            }
+            if (gy > maxY) {
+                maxY = gy;
+            }
+        }
+    } while (n != 0);
+    i32 cy = minY + (maxY - minY) / 2;
+    i32 cx = minX + (maxX - minX) / 2;
+    i32 r = ((CPlay*)g_gameRegSel->m_curState)->ResetGoals(cx, cy);
+    if (r != 0 && count == 1 && m_24c == 1) {
+        CSelKey* head = m_244->m_8;
+        CSelGridCell* cell2 = m_grid[head->m_0 * 15 + head->m_4];
+        if (cell2 != 0) {
+            i32 v1f0 = cell2->m_1f0;
+            i32 v1ec = cell2->m_1ec;
+            if (TrySelect(v1ec, v1f0)) {
+                m_234 = v1ec;
+                m_238 = v1f0;
+                m_230 = 1;
+                Commit();
+            }
+        }
+    }
+    return 1;
+}
+
+// 0x7d0c0: ClearSelections - drain all 10 selection lists (+0x2d0, stride 0x1c) back
+// to the free list (skipping null-payload nodes), RemoveAll each list, reset +0x3e8.
+RVA(0x0007d0c0, 0x57)
+void CTriggerMgr::ClearSelections() {
+    CTmObList* list = m_selLists;
+    i32 k = 10;
+    do {
+        CTmNode* n = list->m_head;
+        if (n != 0) {
+            void* head = g_freeList;
+            do {
+                CTmNode* cur = n;
+                n = n->m_next;
+                i32* payload = cur->m_payload;
+                if (payload != 0) {
+                    void** slot = (void**)((char*)payload - g_freeListNodeBias);
+                    *slot = head;
+                    head = slot;
+                    g_freeList = head;
+                }
+            } while (n != 0);
+        }
+        list->RemoveAll();
+        list++;
+        k--;
+    } while (k != 0);
+    m_selSentinel = -1;
+}
+
+// 0x7d140: ClearRow(row) - run ExitGrid on the 15 live, hook-less cells of grid
+// row `row` (+0x1c); clear +0x400 when row is the magic group, then refresh world.
+RVA(0x0007d140, 0x61)
+i32 CTriggerMgr::ClearRow(i32 row) {
+    CTmCell** cell = &m_grid[row * 15];
+    i32 i = 15;
+    do {
+        CTmCell* c = *cell;
+        if (c != 0 && c->m_368 == 0) {
+            c->ExitGrid();
+        }
+        cell++;
+        i--;
+    } while (i != 0);
+    if (row == g_644c54) {
+        m_groupFlag = 0;
+    }
+    g_tmGameReg->m_curState->Refresh();
+    return 1;
+}
+
+// 0x7d1d0: NearestCellDist - the minimum squared (>>5 tile) distance from (px,py) to
+// any live, clickable grid cell, scanning rows 0..3 but skipping row `skipRow`.
+// CRACKED (77->100): (1) branchless abs() on the squared sum -> cdq;xor;sub (the
+// `if(d<0)d=-d` branch form emits jns;neg); (2) the m_5c distance term declared/evaluated
+// BEFORE m_60 (load-order); (3) `r` declared before `row` + `r++` before `row+=15` so the
+// loop counter takes the [esp+0x20] slot. docs/patterns/signed-modulo-pow2-abs-restore.md.
+RVA(0x0007d1d0, 0x9d)
+i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
+    i32 tx = px >> 5;
+    i32 ty = py >> 5;
+    i32 best = 0x7fffffff;
+    i32 r = 0;
+    CTmCell** row = m_grid;
+    do {
+        if (r != skipRow) {
+            i32 i = 15;
+            CTmCell** cell = row;
+            do {
+                CTmCell* g = *cell;
+                if (g != 0 && g->m_1fc != 0) {
+                    CTmDisplay* o = g->m_10;
+                    i32 dx = (o->m_5c >> 5) - tx;
+                    i32 dy = (o->m_60 >> 5) - ty;
+                    i32 d = abs(dx * dx + dy * dy);
+                    if (d < best) {
+                        best = d;
+                    }
+                }
+                cell++;
+                i--;
+            } while (i != 0);
+        }
+        r++;
+        row += 15;
+    } while (r < 4);
+    return best;
+}
+
+// 0x7d2a0: SelectionListFind(key, y) - only when key == g_644c54, scan the 10
+// selection lists (+0x2d4, stride 0x1c) for a node whose payload (x,y) matches
+// (key,y); ret the first matching list index, 0xa on a second match, else 0.
+// @early-stop
+// loop-rotation + interleaved-epilogue wall: the list-walk body is byte-exact, but
+// retail loops with `jl top` (fall-through exit) and interleaves `mov eax,0xa` between
+// the pops; our cl emits `jge end; jmp top` + a clean epilogue. topic:wall.
+RVA(0x0007d2a0, 0x64)
+i32 CTriggerMgr::SelectionListFind(i32 key, i32 y) {
+    if (key != g_644c54) {
+        return 0;
+    }
+    i32 result = 0;
+    i32 i = 0;
+    CTmObList* list = m_selLists;
+    do {
+        CTmNode* n = list->m_head;
+        while (n != 0) {
+            CTmNode* cur = n;
+            n = n->m_next;
+            i32* payload = cur->m_payload;
+            if (payload[0] == key && payload[1] == y) {
+                if (result != 0) {
+                    return 10;
+                }
+                result = i;
+            }
+        }
+        i++;
+        list++;
+    } while (i < 10);
+    return result;
+}
+
+// 0x7d330: DestroyAllAnims - DestroyAnims on every live grid cell (4 rows x 15), then
+// walk the level's display-object list clearing the +0x200 marker on each object whose
+// type-descriptor (obj+0x7c) slot-4 matches the switch tag, then stop the three sound
+// channels (+0x3f0, +0x3f4, and the active grunt's +0x618).
+// @early-stop
+// regalloc wall: retail homes the row counter in ebp and the zero-compare const in ebx;
+// our cl swaps them (ebx counter, ebp zero). Code bytes + offsets byte-exact, externs
+// reloc-masked (DirectSoundMgr::StopAndRewind, ReadConfigFromButeMgr tag). topic:wall.
+RVA(0x0007d330, 0xd3)
+void CTriggerMgr::DestroyAllAnims() {
+    CTmCell** cell = m_grid;
+    i32 r = 4;
+    do {
+        i32 i = 15;
+        do {
+            CTmCell* g = *cell;
+            if (g != 0) {
+                g->DestroyAnims();
+            }
+            cell++;
+            i--;
+        } while (i != 0);
+        r--;
+    } while (r != 0);
+
+    CSpriteListNode* node = m_level->m_8->m_liveObjects;
+    while (node != 0) {
+        CTmCell* obj = (CTmCell*)node->m_sprite;
+        node = node->next;
+        if (obj != 0) {
+            char* desc = *(char**)((char*)obj + 0x7c);
+            void (CTmCell::*tag)() = &CTmCell::ReadConfigFromButeMgr;
+            if (*(void**)(desc + 0x10) == *(void**)&tag) {
+                char* tgt = *(char**)(desc + 0x18);
+                *(i32*)(tgt + 0x200) = 0;
+            }
+        }
+    }
+
+    DirectSoundMgr* ch0 = m_soundChanA;
+    if (ch0 != 0) {
+        ch0->StopAndRewind();
+        m_soundChanA = 0;
+    }
+    DirectSoundMgr* ch1 = m_soundChanB;
+    if (ch1 != 0) {
+        ch1->StopAndRewind();
+        m_soundChanB = 0;
+    }
+    void* state = g_tmGameReg->PickPausedThenPlayState();
+    if (state != 0) {
+        char* sub = *(char**)((char*)state + 0x2dc);
+        if (sub != 0) {
+            DirectSoundMgr* ch2 = *(DirectSoundMgr**)(sub + 0x618);
+            if (ch2 != 0) {
+                ch2->StopAndRewind();
+                *(DirectSoundMgr**)(sub + 0x618) = 0;
+            }
+        }
+    }
+}
+
+// 0x7d450: ToggleRegionA - clear a live pending-fx (LoadCursorSprites(0,0), ret 0); else,
+// for the active record cell of the magic group, gate on CanShowStamina and dispatch by its
+// logic kind (+0x170/+0x19c): kind 0x13 => ResetGroup, else set a pending fx (+0x2a8). ret 1.
+// @early-stop
+// 58.8->76.6 this audit: the cell decode is the negated-far if/else (`count!=1 -> cell=0`
+// inline, lookup FAR - retail's je/xor/jmp layout) and the v==0x13 ResetGroup body sits
+// INLINE with the pending-fx tail far. Residual: the pos-pair dead-store frame (retail
+// homes cell->m_pos into a sub esp,8 frame while forwarding the regs into the ResetGroup
+// pushes; struct copy / unused copy / i32[2] array spellings all DSE'd by our cl - same
+// wall as NotifyCell) + the m_2a8=0 per-branch stores our cl hoists above the test.
+// topic:wall topic:regalloc.
+RVA(0x0007d450, 0x112)
+i32 CTriggerMgr::ToggleRegionA() {
+    if (m_pendingFxKind != 0) {
+        m_pendingFxKind = 0;
+        (g_tmGameReg->m_curState)->LoadCursorSprites(0, 0);
+        return 0;
+    }
+    m_pendingFxKind = 0;
+    // negated-condition-far-block: the lookup body lands FAR, cell=0 inline (retail layout)
+    CTmCell* cell;
+    if (m_recList.m_count != 1) {
+        cell = 0;
     } else {
-        m_byteArr.Place(m_byteArr.m_count, 0, 0);
+        i32* rec = m_recList.m_head->m_payload;
+        cell = m_grid[rec[0] * 15 + rec[1]];
     }
-    m_284 = 1;
+    if (cell == 0) {
+        return 1;
+    }
+    if (cell->m_1ec != g_644c54) {
+        return 1;
+    }
+    if (cell->CanShowStamina() == 0) {
+        OverlayTick();
+        return 1;
+    }
+    i32 v = cell->m_170;
+    if (v > 0x16) {
+        v = cell->m_19c;
+    }
+    if (v == 0x13) {
+        CTrigPoint pt = cell->m_pos;
+        g_tmGameReg->m_68->ResetGroup(pt.x, pt.y, 0, 0, 0, 2, 1);
+        OverlayTick();
+        return 1;
+    }
+    m_pendingFxKind = v + kPendingFxIdBase;
+    (g_tmGameReg->m_curState)->LoadCursorSprites(v + kPendingFxIdBase, 0);
+    OverlayTick();
+    return 1;
+}
+
+// 0x7d5c0: ToggleRegionB - the sibling of ToggleRegionA: clear a live pending-fx; else, for
+// the active record cell, gate on +0x170<0x17 and dispatch by +0x198: 0x1e => ResetGroup on
+// the cell's display pos, 0 => just tick, else set a pending fx (+0x2a8). ret 1.
+// @early-stop
+// regalloc wall (~82%): logic + offsets + externs byte-exact; retail pins this->esi and the
+// magic const into edi across the dispatch ladder. topic:wall.
+RVA(0x0007d5c0, 0xdc)
+i32 CTriggerMgr::ToggleRegionB() {
+    if (m_pendingFxKind != 0) {
+        m_pendingFxKind = 0;
+        (g_tmGameReg->m_curState)->LoadCursorSprites(0, 0);
+        return 0;
+    }
+    m_pendingFxKind = 0;
+    CTmCell* cell;
+    if (m_recList.m_count != 1) { // negated-far cell decode (see ToggleRegionA)
+        cell = 0;
+    } else {
+        i32* rec = m_recList.m_head->m_payload;
+        cell = m_grid[rec[0] * 15 + rec[1]];
+    }
+    if (cell == 0) {
+        return 1;
+    }
+    if (cell->m_1ec != g_644c54) {
+        return 1;
+    }
+    if (cell->m_170 >= 0x17) {
+        OverlayTick();
+        return 1;
+    }
+    i32 kind = cell->m_198;
+    if (kind == 0x1e) {
+        CTmDisplay* o = cell->m_10;
+        g_tmGameReg->m_68->ResetGroup(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
+        OverlayTick();
+        return 1;
+    }
+    if (kind == 0) {
+        OverlayTick();
+        return 1;
+    }
+    m_pendingFxKind = kind + kPendingFxIdBase;
+    (g_tmGameReg->m_curState)->LoadCursorSprites(kind + kPendingFxIdBase, 0);
+    OverlayTick();
+    return 1;
+}
+
+// 0x7d6e0: EnqueueGroupCells - when armed (+0x400), collect the y-byte of every magic-group
+// record cell with a clear +0x1e4 flag, then post the group to the command mgr (+0x6c):
+// EnqueueSingle when exactly one, else EnqueueMulti with the y-byte buffer. ret 1.
+// @early-stop
+// stack-frame-size wall (~90%): the record scan (now with the matched byte counter, so the
+// cl/byte-store/dword-reload sequence matches) + the two CGruntzCmdMgr enqueue calls are
+// byte-exact; retail's frame is 0x88 vs our 0x6c (extra scratch slots) so every esp-relative
+// displacement shifts by a constant. topic:wall.
+RVA(0x0007d6e0, 0xea)
+i32 CTriggerMgr::EnqueueGroupCells() {
+    if (m_groupFlag == 0) {
+        return 0;
+    }
+    u8 buf[0x68];
+    u8 count = 0;
+    char x = 0;
+    CTmNode* n = m_recList.m_head;
+    if (n != 0) {
+        i32 magic = g_644c54;
+        do {
+            CTmNode* cur = n;
+            n = n->m_next;
+            i32* p = cur->m_payload;
+            x = *(char*)p;
+            CTmCell* cell = m_grid[p[0] * 15 + p[1]];
+            if (cell->m_1ec == magic && cell->m_1e4 == 0) {
+                buf[count] = ((u8*)p)[4];
+                count++;
+            }
+        } while (n != 0);
+    }
+    if (count == 1) {
+        g_tmGameReg->m_6c->EnqueueSingle(1, x, (char)buf[0], 5, 0, 0, 0, 0);
+    } else {
+        g_tmGameReg->m_6c->EnqueueMulti(1, x, count, (u8*)buf, 5, 0, 0, 0);
+    }
     return 1;
 }
 
@@ -2990,5 +3170,14 @@ RVA(0x00085c50, 0x83)
 CTriggerMgr::~CTriggerMgr() {
     Cleanup();
 }
+
+// Donor-view size annotations (the moved singletons' placeholder shapes).
+SIZE_UNKNOWN(CMapHolderB);
+SIZE_UNKNOWN(CMapHolderA);
+SIZE_UNKNOWN(CSelGrunt);
+SIZE_UNKNOWN(CSelGridCell);
+SIZE_UNKNOWN(CSelKey);
+SIZE_UNKNOWN(CSelNode);
+SIZE_UNKNOWN(CGroupSel);
 
 // --- vtable catalog ---

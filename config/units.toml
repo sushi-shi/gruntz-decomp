@@ -225,6 +225,20 @@ unit = "triggermgr"
 source = "src/Gruntz/TriggerMgr.cpp"
 flags = "eh"
 
+[[unit]]
+# CTriggerMgr grid/placement obj [0x6b640..0x6eb25] - split off the triggermgr
+# conflation (own init-frag run 10@0x6b370; original filename unknown).
+unit = "triggermgrgrid"
+source = "src/Gruntz/TriggerMgrGrid.cpp"
+flags = "eh"
+
+[[unit]]
+# CTriggerMgr hit-test/probe obj [0x759e0..0x75e1a] - split off the triggermgr
+# conflation (tail of the unreconstructed FUN_6f2f0 megafn's TU).
+unit = "triggermgrhittest"
+source = "src/Gruntz/TriggerMgrHitTest.cpp"
+flags = "eh"
+
 
 [[unit]]
 unit = "userlogic"
@@ -315,11 +329,6 @@ flags = "eh"
 [[unit]]
 unit = "assetnamespaceprefixes"
 source = "src/Gruntz/AssetNamespacePrefixes.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "rockbreakparticles"
-source = "src/Gruntz/RockBreakParticles.cpp"
 flags = "eh"
 
 [[unit]]
@@ -786,13 +795,6 @@ source = "src/Gruntz/ResourceLoaders.cpp"
 flags = "base"
 
 [[unit]]
-# CGruntTileMgr::CombatCue (0x7b930) - the grunt path/occupancy mgr's spell-area
-# cue (re-homed from ApiCallers). No destructible locals -> /base.
-unit = "grunttilemgr"
-source = "src/Gruntz/GruntTileMgr.cpp"
-flags = "base"
-
-[[unit]]
 # CGruntzMgr::HandleCommand (0x862f0) - the WM_COMMAND / accelerator + cheat-code
 # dispatcher (the binary's single largest function). Re-homed from the
 # src/Stub/ApiCallers.cpp winapi grab-bag; a destructible /GX config-command
@@ -906,12 +908,6 @@ flags = "base"
 # (load-side sibling of savegamemenu; opened by CGruntzMgr::RunLoadGameDialog).
 unit = "loadgamemenu"
 source = "src/Gruntz/LoadGameMenu.cpp"
-flags = "base"
-
-[[unit]]
-# CGruntResurrector::LoadGruntResurrectTuning (0x7be60) - sibling of CRockBreakMgr.
-unit = "gruntresurrectradius"
-source = "src/Gruntz/GruntResurrectRadius.cpp"
 flags = "base"
 
 [[unit]]
@@ -2401,11 +2397,6 @@ flags = "base"
 [[unit]]
 unit = "stateimages"
 source = "src/Gruntz/StateImages.cpp"
-flags = "base"
-
-[[unit]]
-unit = "finishlevelsprite"
-source = "src/Gruntz/FinishLevelSprite.cpp"
 flags = "base"
 
 [[unit]]
