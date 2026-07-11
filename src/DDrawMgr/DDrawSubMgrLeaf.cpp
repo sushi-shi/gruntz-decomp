@@ -1,151 +1,107 @@
-#include <rva.h>
-// DDrawSubMgrLeaf.cpp - the tomalla-named class CDDrawSubMgrLeaf, a CObject-
-// derived string-keyed catalog in the CDirectDrawMgr surface/page-manager (DDraw
-// surface-manager) family (sibling of CDDrawWorkerRegistry). Its primary vftable is at
-// RVA 0x1efc78; the scalar-deleting destructor (0x1577c0) calls the real
-// ~CDDrawSubMgrLeaf at 0x1577e0.
+// DDrawSubMgrLeaf.cpp - the 0x152640-0x152e83 original TU (wave4-L dossier #15,
+// block S2): ONE first-link obj weaving the CDDrawSubMgrLeaf string-catalog meat
+// (A) with the CDDrawSubMgrAni 'ANI' catalog factory/walker (B) A-B-A, closed by
+// ??1CAniElement (the element class the ani factory news). The leaf's
+// IsReady/dtor quartet + ClearContext/ClearMap live in the G obj
+// (src/DDrawMgr/DDrawSubMgr.cpp); CAniElement's meat in the T obj.
 //
-// Layout (offsets/sizes load-bearing; field NAMES are placeholders):
-//   +0x00  vptr (CObject-derived)
-//   +0x04  m_04  (i32, -1 when inactive)
-//   +0x08  m_08  (i32)
-//   +0x0c  m_0c  (i32, parent/root handle)
-//   +0x10  m_map (CMapStringToOb, 0x1c bytes; keyed by const char* name)
-//
-// CDDrawSubMgrLeaf owns a CMapStringToOb at +0x10 keyed by name; values are
-// 0x28-byte CObject-derived node elements (vtable @ 0x5efba8) created by the
-// factory (0x1528d0) from a directory tree (recursive walker at 0x152ad0). The
-// teardown/scan helpers iterate the map via GetNextAssoc and destroy each value
-// through its own scalar-deleting destructor (vtbl +0x4, arg 1) - the same idiom
-// as the sibling CDDrawWorkerRegistry. Several methods carry a /GX EH frame for a
-// local CString key, so the TU is flags="eh".
-//
-// IsReady is the standard CDDrawSubMgr-derived readiness predicate (ready
-// when +0x0c is present and +0x04 is not the -1 sentinel). ClearContext
-// clears a separate map then zeroes the handle. Cleanup is the
-// cleanup virtual (tail-calls FreeAll).
+// original TU: filename unknown (@identity-TODO - no __FILE__ anchor; the
+// DDrawMgr keyed-catalog module).
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
 // bytes are load-bearing (campaign doctrine).
-// ---------------------------------------------------------------------------
-
+#include <rva.h>
+#include <Gruntz/ParseSource.h> // CParseSource (GetEntryTag) - keep BEFORE any
+// header that fwd-declares `class CParseSource` (MSVC5 default-access quirk)
 #include <Mfc.h>                          // real MFC CObject / CMapStringToOb / CString / POSITION
+#include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf + CCatalogNode (hoisted)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan (sibling class)
+#include <Gruntz/AniElement.h>            // canonical CAniElement (the 0x28 'ANI' element)
+#include <Bute/SymTab.h>                  // CSymTab - the directory/scope tree the walker iterates
+#include <stdio.h>                        // sprintf (the %s%s%s path-join, 0x11f890)
+#include <string.h>                       // strcpy inline CRT (rep movs / repnz scas)
 
-// The looked-up catalog value: only the scalar-deleting destructor slot (+0x04)
-// is load-bearing. Declarations only - never defined here, so no ??_7 is emitted.
-class CCatalogNode {
-public:
-    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~CCatalogNode();        // slot 1 (deleting dtor -> cl-emitted ??_G)
+// The %s%s%s path-join format the walker sprintf's through (reloc-masked DIR32).
+DATA(0x0061ab18)
+extern const char g_fmtPathJoin[];
+
+// The path buffer is freed at the walker tail (_RezFree @0x1b9b82, __cdecl).
+extern "C" void RezFree(void* p);
+// Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.
+void* operator new(u32 n);
+// operator delete (called by the scalar-deleting dtor under the delete flag).
+void operator delete(void*);
+
+// The +0x08 "CObject subobject" embedded in the ani element (0x14 bytes): a real
+// member whose (potentially throwing) ctor is 0x1b55e9 (a __thiscall on element+0x8,
+// the NAFXCW CObArray default ctor). Modeling it as a member auto-runs its ctor
+// during CAniElementObj construction (after the CObject base, before the body) -
+// reproducing retail's base-stamp / CObject-construct / primary-stamp / field-zero order.
+struct CAniElemSub {
+    CAniElemSub();       // 0x1b55e9 (reloc-masked rel32 callee)
+    char _vft0[4];       // +0x00 foreign object vptr (reduced view; not owned/dispatched)
+    char _pad[0x14 - 4]; // +0x04..+0x13
 };
+SIZE_UNKNOWN(CAniElemSub);
 
-// CDDrawSubMgrLeafScan: the real sibling class (its full body + own vtable 0x5efca0
-// live in CDDrawSubMgrLeafScan.cpp) now comes from the shared
-// <DDrawMgr/DDrawSubMgrLeafScan.h> (included above). Three of its methods landed in
-// THIS TU: the readiness predicate (vtable slot [5], 0x157530), the map-clear
-// (0x157bc0), and the ??_G scalar-deleting dtor (0x157550, which forwards to the real
-// member-teardown ~CDDrawSubMgrLeafScan at 0x157570 in the sibling TU). The virtual
-// dtor's key function is out-of-line (own TU), so no ??_7 is emitted here (the ??_G is
-// hand-written + SYMBOL-pinned, not an auto scalar-deleting dtor).
-
-// CDDrawSubMgrGrandBase - the CObject-like family grand-base (vptr + the three header
-// fields +0x04..+0x0c). Modeled as a REAL polymorphic base (its 5-slot vtable is
-// the shared g_wapObjectDtorVtbl @0x5e8cb4 = sub_1bef01 / scalar-dtor / sub_0028ec /
-// sub_00106e / sub_004034) so cl emits the implicit grand-base vptr re-stamp (masks
-// 0x5e8cb4) at the leaf dtor's tail - no manual `*(void**)this = &g_wapObjectDtorVtbl`.
-// Slot 1 is a REGULAR virtual (not a C++ dtor) so the leaf can override it with its
-// explicit ??_G scalar-deleting destructor scalar-dtor@0x1577c0 WITHOUT cl auto-generating
-// a clashing ??_G. The field resets live in the non-virtual ~ (its body); the base
-// transition stamp is implicit (the leaf dtor teardown ORDER: ~CMapStringToOb member
-// BEFORE the field stores reproduces retail).
-// NAME-AUDIT (vtable_hierarchy --name-audit): maps to RTTI CObject @0x1e8cb4, but
-// KEPT as a real intermediate - it carries the m_04/m_08/m_0c header past the bare
-// vptr, so it is NOT a bare-CObject fold (Wap32/Object.h). Do not rename to
-// CObject (would ODR-clash + collapse the /GX dtor teardown level).
-// The CObject grand-base carries the m_04/m_08/m_0c header; cl inherits the 5 shared
-// CObject slots (GetRuntimeClass/Serialize/AssertValid/Dump + the dtor) and this class
-// OVERRIDEs only slot 1 with the real teardown dtor. No flat slot redeclarations.
-class CDDrawSubMgrGrandBase : public CObject {
-public:
-    virtual ~CDDrawSubMgrGrandBase() OVERRIDE; // [1] real teardown dtor
-
-    i32 m_04; // +0x04  -1 when inactive
-    i32 m_08; // +0x08
-    i32 m_0c; // +0x0c  parent/root handle
-    CDDrawSubMgrGrandBase() {}
-};
-
-inline CDDrawSubMgrGrandBase::~CDDrawSubMgrGrandBase() {
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-}
-
-class CDDrawSubMgrLeaf : public CDDrawSubMgrGrandBase {
-public:
-    // The leaf vtable (??_7CDDrawSubMgrLeaf @0x5efc78) is 9 slots: 5 shared CObject
-    // slots from CDDrawSubMgrGrandBase (slot 1 overridden below by scalar-dtor@0x1577c0),
-    // then 4 leaf virtuals at slots 5..8 in declaration order (the unreconstructed
-    // slots 6/8 are declared-only -> reloc-masked references).
-    // slot 1 is the virtual dtor below (cl auto-generates the ??_G from it).
-    RVA(0x001577a0, 0x16)
-    virtual i32 IsReady() {
-        if (m_0c == 0) {
-        goto fail;
-        }
-        if (m_04 != -1) {
-        return 1;
-        }
-        
-        fail:
-        return 0;
+// The 0x28-byte animation element (primary vftable @0x5efba8) under its ctor-shape
+// view: a real MFC ::CObject leaf (5 slots; slot 1 = the cl-auto ??_G scalar-deleting
+// dtor @0x152e10). IDENTITY: the same 0x28 object as the canonical CAniElement
+// (<Gruntz/AniElement.h>); this view models the CTOR-in-flight EH shape (the +0x08
+// member's throwing ctor), the canonical models the record array. One class, two
+// method-set views (dossier #15).
+struct CAniElementObj : public CObject {
+    CAniElementObj() {
+        m_04 = 0;
+        m_1c = 0;
     }
-    RVA(0x00152640, 0x6)
-    virtual i32 Slot06_152640() {
-        return 1;
-    }
-    RVA(0x00152650, 0x5)
-    virtual void Cleanup() {
-        FreeAll_152720();
-    }
-    virtual void Slot08_154a00(); // [8] 0x154a00 (shared, declared-only)
+    virtual ~CAniElementObj() OVERRIDE; // [1] 0x152e10, declared-only (cl-auto ??_G)
 
-    // Non-vtable members.
-    void ClearContext(); // 0x157ae0 (not a vtable slot)
-    CObject* LookupValue_06b2a0(const char* key);
-    void RemoveValue_152660(CCatalogNode* target);
-    void FreeAll_152720();
-    i32 RemoveKeysEqual_1527d0(const char* base, const char* str);
-    i32 HasKeyPrefix_152c50(const char* str);
-    CString KeyOfValue_152d30(CObject* target);
-    virtual ~CDDrawSubMgrLeaf() OVERRIDE; // slot 1 (real ~; cl auto-gens the ??_G @0x1577c0)
-
-    CMapStringToOb m_10; // +0x10  m_map
-};
-
-// CDDrawSubMgrLeaf::IsReady (0x001577a0) is now an inline member in the header.
-
+    i32 m_04;         // +0x04 = 0
+    CAniElemSub m_08; // +0x08..+0x1b  embedded CObject subobject
+    i32 m_1c;         // +0x1c = 0
+}; // size = 0x28
+SIZE(CAniElementObj, 0x28);
+VTBL(CAniElementObj, 0x001efba8); // ??_7CAniElementObj (was g_aniElemVtbl, 5 slots)
 
 // ---------------------------------------------------------------------------
-// Clears the parent map then zeroes a member field.
+// The ANI catalog sub-manager. Map at +0x10; the owning manager at +0x0c.
 // ---------------------------------------------------------------------------
-RVA(0x00157ae0, 0x11)
-void CDDrawSubMgrLeaf::ClearContext() {
-    ((CDDrawSubMgrLeafScan*)this)->ClearMap();
-    m_0c = 0;
+class CDDrawSubMgrAni : public CObject {
+public:
+    CAniElementObj* CreateAniEntry_1528d0(const char* key, void* entry);
+    CAniElementObj* CreateAniEntry2_1529b0(const char* key, void* entry);
+    i32 ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix);
+
+    i32 m_04;            // +0x04  status word
+    i32 m_08;            // +0x08
+    void* m_0c;          // +0x0c  owning CDirectDrawMgr / CDDrawSurfaceMgr manager
+    CMapStringToOb m_10; // +0x10  keyed animation catalog
+};
+
+// Read the owning manager's +0x28 sub-manager slot (forwarded to Configure).
+static inline void* AniMgrSubObject(void* mgr) {
+    return *(void**)((char*)mgr + 0x28);
 }
-
-// CDDrawSubMgrLeaf::Cleanup (0x00152650) is now an inline member in the header.
-
 
 // ---------------------------------------------------------------------------
 // Look up `key` in the map; return the found value (or null), ignoring the bool.
+// COMDAT-at-usage exile kept at the 0x6bxxx obj (file-head position).
 RVA(0x0006b2a0, 0x23)
 CObject* CDDrawSubMgrLeaf::LookupValue_06b2a0(const char* key) {
     CObject* val = 0;
     m_10.Lookup(key, val);
     return val;
+}
+
+// The leaf vtable slots 6/7 (S2-resident tiny virtuals, out-of-line like retail).
+RVA(0x00152640, 0x6)
+i32 CDDrawSubMgrLeaf::Slot06_152640() {
+    return 1;
+}
+RVA(0x00152650, 0x5)
+void CDDrawSubMgrLeaf::Cleanup() {
+    FreeAll_152720();
 }
 
 // ---------------------------------------------------------------------------
@@ -237,6 +193,105 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual_1527d0(const char* base, const char* str) 
 }
 
 // ---------------------------------------------------------------------------
+// 0x1528d0: the 0x28-byte element factory. Allocate the element; on success stamp
+// the base-dtor vtable, CObject-construct it, stamp the primary vtable, zero +0x4
+// and +0x1c; then run its Configure keyed by the entry, forwarding the owning
+// manager's +0x28 sub-manager. On Configure failure destroy via the scalar dtor
+// and return 0; on success link into the map under `key`. /GX EH frame.
+// 2 stack args (ret 8). Returns the element (or 0).
+// @early-stop
+// ~99.99% - modeling the +0x08 subobject as a real CObject member (CAniElemSub, ctor
+// 0x1b55e9) + deriving CAniElementObj from real ::CObject reproduces the ctor-in-flight
+// frame exactly. The whole body (new-merge null shape + failure-path scalar-deleting
+// dtor dispatch) is byte-identical to retail; the sole residue is the appended
+// exception-cleanup unwind funclet (retail section-splits it out of the delinked
+// range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
+RVA(0x001528d0, 0xdd)
+CAniElementObj* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* entry) {
+    CAniElementObj* el = new CAniElementObj;
+    if (el == 0) {
+        return 0;
+    }
+    if (((CAniElement*)el)->Configure_1655c0(AniMgrSubObject(m_0c), entry, 0) == 0) {
+        // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
+        delete el;
+        return 0;
+    }
+    m_10[key] = (CObject*)el;
+    return el;
+}
+
+// ---------------------------------------------------------------------------
+// 0x1529b0: the element factory variant - byte-for-byte twin of CreateAniEntry_1528d0
+// except the element configure goes through the second Configure (0x165620).
+// @early-stop
+// ~99.99% - twin of CreateAniEntry_1528d0's wall; the only residue is the appended
+// exception-cleanup unwind funclet (retail section-splits it out of the delinked
+// range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
+RVA(0x001529b0, 0xdd)
+CAniElementObj* CDDrawSubMgrAni::CreateAniEntry2_1529b0(const char* key, void* entry) {
+    CAniElementObj* el = new CAniElementObj;
+    if (el == 0) {
+        return 0;
+    }
+    if (((CAniElement*)el)->LoadFile_165620(AniMgrSubObject(m_0c), entry, 0) == 0) {
+        // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
+        delete el;
+        return 0;
+    }
+    m_10[key] = (CObject*)el;
+    return el;
+}
+
+// ---------------------------------------------------------------------------
+// 0x152ad0: recursive CSymTab directory walker. Allocate a 0x100-byte path buffer
+// (return 0 on failure), then for each child scope build the joined path and
+// recurse, summing the count; then for each leaf entry, for each 'ANI'-tagged
+// record not yet cached, build its path and create the element, counting
+// successes. Frees the buffer and returns the count. 3 stack args (ret 0xc).
+RVA(0x00152ad0, 0x17f)
+i32 CDDrawSubMgrAni::ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix) {
+    i32 count = 0;
+    char* buf = (char*)operator new(0x100);
+    if (buf == 0) {
+        return 0;
+    }
+    buf[0] = 0;
+    CSymTab* node = (CSymTab*)tree->FirstSub();
+    while (node != 0) {
+        if (prefix != 0 && *prefix != 0) {
+            sprintf(buf, g_fmtPathJoin, prefix, suffix, node->m_name);
+        } else {
+            strcpy(buf, node->m_name);
+        }
+        count += ScanTree_152ad0(node, buf, suffix);
+        node = (CSymTab*)tree->NextSub(node);
+    }
+    void* grp = tree->FirstSym();
+    if (grp != 0) {
+        do {
+            CSymTab* fn = (CSymTab*)tree->NextSym2(grp);
+            while (fn != 0) {
+                if (((CParseSource*)fn)->GetEntryTag() == 0x414e49) {
+                    if (prefix != 0 && *prefix != 0) {
+                        sprintf(buf, g_fmtPathJoin, prefix, suffix, fn->m_name);
+                    } else {
+                        strcpy(buf, fn->m_name);
+                    }
+                    if (CreateAniEntry_1528d0(buf, fn) != 0) {
+                        ++count;
+                    }
+                }
+                fn = (CSymTab*)tree->NextSym3(fn);
+            }
+            grp = tree->NextSym(grp);
+        } while (grp != 0);
+    }
+    RezFree(buf);
+    return count;
+}
+
+// ---------------------------------------------------------------------------
 // Return 1 if any key strncmp-equals `str` over strlen(str), else 0.
 RVA(0x00152c50, 0xdc)
 i32 CDDrawSubMgrLeaf::HasKeyPrefix_152c50(const char* str) {
@@ -275,76 +330,20 @@ CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
     return key;
 }
 
-// ---------------------------------------------------------------------------
-// Destructor (real ??1 body; the scalar-deleting scalar-dtor at 0x1577c0 calls it):
-// now a real polymorphic teardown. cl stamps ??_7CDDrawSubMgrLeaf (masks g_catalogVtbl
-// @0x5efc78) at entry, runs the cleanup virtual (FreeAll/VM1C), then the embedded map
-// dtor and the CDDrawSubMgrGrandBase grand-base dtor (field resets + implicit ??_7-base
-// re-stamp masking 0x5e8cb4). No manual `m_vptr = &g_*Vtbl`. /GX EH frame.
-// @early-stop
-// vptr-position wall + reloc-masked EH-state push (~95%): the instruction stream is
-// byte-identical to retail EXCEPT the grand-base re-stamp position (cl emits it before
-// the m_04/m_08/m_0c resets; retail sinks it after - the implicit base transition
-// forces stamp-first; same wall as CDDrawWorker/CDDrawWorkerMapSmall) + the entry
-// `push <ehfuncinfo>` reloc operand. docs/patterns/eh-state-numbering-base.md.
-RVA(0x001577e0, 0x68)
-CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
-    Cleanup();
-    // implicit: ~m_10 (CMapStringToOb), then ~CDDrawSubMgrGrandBase (resets the three
-    // header fields + restamps the base vtable) - reproduces retail's teardown order.
+// ===========================================================================
+// 0x152e30 - ~CAniElement: stamp own vtable, run DeleteAll (the most-derived
+// teardown), then the CObArray member destructs and ~CObject folds in to
+// restore the grand-base vtable. /GX frame from the destructible base+member.
+// (The S2 obj's tail: the element class the ani factory above news.)
+// ===========================================================================
+// Real polymorphic: cl emits the implicit ??_7CAniElement own-vptr stamp in
+// the ENTRY state (stamp-first, == retail), then DeleteAll, then the member
+// ~CAniRecordArray (trylevel 0) and ~CObject grand-base re-stamp fold in.
+// (eh-dtor-implicit-vptr-stamp-first.md.)
+RVA(0x00152e30, 0x53)
+CAniElement::~CAniElement() {
+    DeleteAll();
+    // m_records.~CAniRecordArray() (trylevel 0) + ~CObject() (grand-base restore) fold here.
 }
 
-// operator delete (called by the scalar-deleting dtor under the delete flag).
-void operator delete(void*);
-
-// ---------------------------------------------------------------------------
-// Scalar-deleting destructor (the vtable slot+4 override): run the real ~, then
-// operator delete this if the low flag bit is set. The scalar-deleting dtor ??_G
-// @0x1577c0 is now COMPILER-GENERATED from the class's virtual ~ (delete-site lowering);
-// @rva-symbol names the auto-emitted thunk instead of a hand-written scalar-dtor method.
-// @rva-symbol: ??_GCDDrawSubMgrLeaf@@UAEPAXI@Z 0x001577c0 0x1e
-
-// Engine-label backlog stubs (moved from src/Stub/CDDrawMapHolder.cpp).
-
-// CDDrawSubMgrLeaf::Slot06_152640 (0x00152640) is now an inline member in the header.
-
-
-// CDDrawSubMgrLeafScan::IsReady (0x00157530) is now an inline member in the header.
-
-
-// ---------------------------------------------------------------------------
-// The slot-1 ??_G scalar-deleting dtor of CDDrawSubMgrLeafScan (0x157550) is now
-// reconstructed as a hand-written CDDrawSubMgrLeafScan::ScalarDtor in
-// DDrawSubMgrLeafScan.cpp (the CFileImageSurface::ScalarDelete pattern).
-
-// ---------------------------------------------------------------------------
-// 0x157bc0: iterate every entry of the name-keyed map via GetNextAssoc, destroying
-// each value through its scalar-deleting destructor (vtbl +0x4 arg 1), then RemoveAll.
-// /GX EH frame for the local CString key. Same shape as FreeAll_152720.
-// @early-stop
-// store-scheduling coin-flip (~94%): byte-identical to retail except the `val = 0`
-// store position + the reloc-masked EH-state push (same family wall as FreeAll_152720).
-// docs/patterns/zero-register-pinning.md.
-RVA(0x00157bc0, 0xa2)
-void CDDrawSubMgrLeafScan::ClearMap() {
-    CObject* val = 0;
-    POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
-    CString key;
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_10.GetNextAssoc(pos, key, val);
-            if (val != 0) {
-                delete ((CCatalogNode*)val);
-            }
-        } while (pos != 0);
-    }
-    m_10.RemoveAll();
-}
-
-SIZE_UNKNOWN(CCatalogNode);
-// CDDrawSubMgrLeafScan SIZE_UNKNOWN now lives in the shared header.
-SIZE_UNKNOWN(CDDrawSubMgrGrandBase);
-SIZE_UNKNOWN(CDDrawSubMgrLeaf);
-VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)
-
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+SIZE_UNKNOWN(CDDrawSubMgrAni);

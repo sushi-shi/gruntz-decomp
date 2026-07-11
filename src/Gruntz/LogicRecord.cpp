@@ -1,113 +1,20 @@
-// LogicRecord.cpp - CLogicRecord: the CObject-derived ~0x17c-byte serialized
-// "logic record" the per-grunt logic owner (AddLogicHit/Attack/Bump at
-// 0x150f50/0x151030/0x151110) new's and stows at owner+0x80. The record holds a
-// flat block of replayable state read/written through a stream object
-// (Write@slot 0x2c, Read@slot 0x30). Non-RTTI vtable (0x5efb80) + a base vtable
-// (0x5e8cb4) re-stamped by the dtor; both modeled as external reloc-masked
-// DATA() symbols while the class's virtuals are not all matched.
-//
-// Matched methods (RVA order):
-//   ~CLogicRecord  0x151da0  /GX dtor (vptr re-stamp + sub-record teardown)
-//   Init           0x151e20  bind primary data + zero the record
-//   Consume        0x15b340  subtract from the remaining-count at +0x20
-//   Dispatch       0x164830  switch(mode) over the record's actions
-//   Load           0x164960  read the flat block back from a stream
-//
-// NOTE: 0x495750/0x495890/0x4aa6e0 (the three identical message handlers that
-// switch on owner->m_7c->m_1c and `new` a sub-record) were trace-clustered here
-// but are __cdecl free functions that never touch ecx - NOT members. Left
-// stubbed in src/Stub/Discovered.cpp; see the report.
+// LogicRecord.cpp - CLogicRecord's runtime/IO methods (the 0x164830-0x1651b0 run
+// inside the T "family-meat" obj, wave4-L dossier #15). The record's lifecycle
+// leaves live in their retail objs: ~CLogicRecord/Init in the S1 obj
+// (src/Wwd/WwdGameObject.cpp), Consume in the I obj (src/Wwd/WwdFactoryObject.cpp).
+// IDENTITY (dossier #15): CLogicRecord IS the 0x17c AnimWorkerObj under a second
+// view (its dtor re-stamps ??_7AnimWorkerObj @0x1efb80) - unification is a separate
+// identity pass. This file will fold into the T host (DDrawSurfacePair.cpp) when
+// that obj's assembly lands; kept as a single-block correct partial meanwhile.
 #include <Gruntz/LogicRecord.h>
 #include <rva.h>
 #include <Mfc.h> // CMapPtrToPtr::Lookup (0x1b8760)
 
-// The most-derived record vftable (0x1efb80 == ??_7AnimWorkerObj) stamped at dtor
-// entry, and the shared CObject base-subobject vftable (0x1e8cb4) re-stamped at
-// dtor exit - transitional reloc-masked DIR32 stores while the class stays
-// non-polymorphic (its /GX dtor frame needs the real base subobject; letting cl
-// emit a vtable would diverge - see the @early-stop note + the header identity note).
-//
-// 0x1efb80 is cl-emitted as ??_7AnimWorkerObj (VTBL() in CDDrawWorkerCache.cpp) -
-// this 0x17c-byte class IS that worker under a second view - so the derived stamp
-// can't name that ??_7 and stays a reloc-masked extern. The base stamp uses the
-// canonical shared g_wapObjectDtorVtbl (bound once in ReconBatch2.cpp), the same
-// name every other CObject-base manual restamp uses - so its reloc resolves.
-
 // Engine operator delete (0x1b9b82, __cdecl) - reloc-masked rel32.
 extern "C" void Engine_Delete(void* p);
 
-// ---------------------------------------------------------------------------
-// ~CLogicRecord (0x151da0, __thiscall, /GX). Stamp the derived vptr, free the
-// owned heap block (m_14), tear down the polymorphic sub-record (m_18) via its
-// virtual slot-0 destructor, zero the live fields, then restamp the base vptr.
-// @early-stop
-// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
-// the body (derived vptr stamp, m_14 free, m_18->vtbl[0](1), field zeroing, base
-// vptr restamp) is byte-exact, but the retail /GX frame (push -1 / fs:0 / trylevel)
-// comes from a non-trivial CObject base subobject the manual-vptr non-polymorphic
-// model can't emit. Defer to the final sweep once the base + full vtable are modeled.
-RVA(0x00151da0, 0x80)
-CLogicRecord::~CLogicRecord() {
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-    m_10 = 0;
-    if (m_14) {
-        Engine_Delete(m_14);
-        m_14 = 0;
-        m_178 = 0;
-    }
-    if (m_18) {
-        m_18->Destroy(1);
-        m_18 = 0;
-    }
-    m_170 = 0;
-    m_08 = 0;
-    m_0c = 0;
-    m_04 = -1;
-    // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
-}
-
-// ---------------------------------------------------------------------------
-// Init (0x151e20, __thiscall). Bind the primary data pointer (m_10) and the
-// frame stamp (m_08), zeroing the working fields. Returns 0 if pData is null.
-RVA(0x00151e20, 0x46)
-i32 CLogicRecord::Init(void* pData, i32 frame) {
-    if (pData == 0) {
-        return 0;
-    }
-    m_10 = pData;
-    m_08 = frame;
-    m_14 = 0;
-    m_18 = 0;
-    m_serial[(0x20 - 0x20) / 4] = 0; // m_20
-    m_serial[(0x24 - 0x20) / 4] = 0; // m_24
-    m_serial[(0x2c - 0x20) / 4] = 0; // m_2c
-    m_serial[(0x34 - 0x20) / 4] = 0; // m_34
-    m_serial[(0x30 - 0x20) / 4] = 0; // m_30
-    m_serial[(0x38 - 0x20) / 4] = 0; // m_38
-    m_168 = 0;
-    m_16c = 0;
-    m_serial[(0x28 - 0x20) / 4] = 0; // m_28
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// Consume (0x15b340, __thiscall). Draw `amount` from the remaining-count at
-// m_20: returns 1 with the balance debited while it covers the request, else
-// clamps to 0 and returns 0. No-op (returns into eax undefined per retail) when
-// the count is already 0.
-RVA(0x0015b340, 0x2b)
-i32 CLogicRecord::Consume(i32 amount) {
-    i32 remaining = m_serial[(0x20 - 0x20) / 4]; // m_20
-    if (remaining == 0) {
-        return remaining; // eax already holds 0
-    }
-    if ((u32)amount >= (u32)remaining) {
-        m_serial[(0x20 - 0x20) / 4] = 0;
-        return 0;
-    }
-    m_serial[(0x20 - 0x20) / 4] = remaining - amount;
-    return 1;
-}
+// The global NAFXCW allocator (Save's payload alloc).
+extern void* operator new(u32 size);
 
 // ---------------------------------------------------------------------------
 // Dispatch (0x164830, __thiscall). Run one of the record's six actions selected
@@ -266,11 +173,9 @@ i32 CLogicRecord::Load(LogicArchive* ar) {
 
 // ---------------------------------------------------------------------------
 // Save (0x164d80, __thiscall). The slot-0x2c (Write) counterpart of Load: the
-// same flat block (tag 0x1c, the 4-byte run 0x20..0x164 skipping the runtime-only
-// m_168/m_16c/m_170, the six 16-byte blocks 0xd0..0x120, the trailer 0x174/0x178)
-// transferred through the archive's Write slot. The trailer allocates the m_14
-// payload (operator new of the m_178 byte count) before transferring it (so the
-// archive sizes/owns the block on the load pass).
+// same flat block transferred through the archive's Write slot. The trailer
+// allocates the m_14 payload (operator new of the m_178 byte count) before
+// transferring it (so the archive sizes/owns the block on the load pass).
 RVA(0x00164d80, 0x421)
 i32 CLogicRecord::Save(LogicArchive* ar) {
     if (ar == 0) {

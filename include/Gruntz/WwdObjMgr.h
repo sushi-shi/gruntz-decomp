@@ -83,5 +83,6 @@ public:
     CMapPtrToPtr m_2c;  // +0x2c key -> object (primary)
     CMapPtrToPtr m_48;  // +0x48 key -> object (active set / dedup)
 };
+SIZE_UNKNOWN(CWwdObjMgr);
 
 #endif // GRUNTZ_GRUNTZ_CWWDOBJMGR_H

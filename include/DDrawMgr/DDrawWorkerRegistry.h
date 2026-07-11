@@ -37,6 +37,16 @@ class CSymTab;         // probe chain (foreign, other TU)
 // the view, only reached by direct name-mangled calls to the registry's own methods).
 // Unifies the two former per-TU views (the 23-slot vtable view + RegView48).
 // ---------------------------------------------------------------------------
+// The looked-up map value as torn down by the registry method set: only the
+// scalar-deleting destructor slot (+0x04) is load-bearing. Declarations only -
+// never defined, so no ??_7 is emitted (shared by the E/G/T method hosts).
+class CWorkerValue {
+public:
+    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
+    virtual ~CWorkerValue();        // slot 1 (deleting dtor -> cl-emitted ??_G)
+};
+SIZE_UNKNOWN(CWorkerValue);
+
 class CWorkerVtableView : public CObject {
 public:
     virtual ~CWorkerVtableView() OVERRIDE; // slot 1; slots 0/2/3/4 inherited from CObject

@@ -1,80 +1,54 @@
+// DDrawWorkerRegistry.cpp - the 0x1549d0-0x155833 original TU (wave4-L dossier
+// #15, block E; the leading 0x1549d0 CResolveNode COMDAT pocket rides this obj's
+// contribution and stays in ResolveNode.cpp): the CDDrawWorkerRegistry keyed
+// worker registry - the four DispatchKeyed*/Forward* pairs, the tree
+// insert/lookup walkers, the map scans/teardowns, ~CDDrawWorker, and the
+// ??_GCDDrawSubMgr far-sibling scalar dtor. Held at the dossier-#9 boundary 1
+// (0x155840); the registry's tiny virtuals in the G obj + its DestroyAll/
+// FindKeyOfValue in the T obj live in those hosts.
+//
+// original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
+//
+// Field names are placeholders; only the OFFSETS + emitted code bytes are load-
+// bearing (campaign doctrine).
 #include <rva.h>
 #include <Bute/SymTab.h>
 #include <Image/ImageSet.h>
 
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
-// CDDrawWorkerRegistry.cpp - leaf method(s) of the tomalla-named ddrawmgr surface-family
-// sub-manager CDDrawWorkerRegistry (a CDirectDrawMgr surface/page sub-manager in the
-// "DDraw surface manager" family; see docs/ddraw-family-names.md).
-//
-// CDDrawWorkerRegistry owns a CMapStringToOb at +0x10 (m_map) keyed by const char*
-// strings. RemoveByKey is a keyed remove-and-destroy: Lookup the key in
-// the map; if present, RemoveKey it and run the found value's scalar-deleting
-// destructor (vtable +0x4, arg 1). Plain /O2 /MT leaf: NO SEH frame, NO data
-// relocations - the only relocations are the reloc-masked rel32 thunk calls
-// (CMapStringToOb::Lookup / RemoveKey, both out-of-line NAFXCW), and the found
-// value's destructor is dispatched through its own vtable.
-//
-// Field names are placeholders; only the OFFSETS + emitted code bytes are load-
-// bearing (campaign doctrine). The looked-up value is modeled as a polymorphic
-// stub (virtuals at the right slots) ONLY so `delete val` lowers to the
-// exact `mov eax,[val]; push 1; call [eax+4]` __thiscall dispatch; its virtuals are
-// never defined, so no vtable is emitted in this TU.
-//
-// The four factory methods construct a 0x6c-byte worker with a CByteArray member
-// at +0x10, hence the TU is /GX so the inlined heap construction emits the same
-// EH frame as retail.
-// ---------------------------------------------------------------------------
-
-// <Mfc.h> brings real MFC afxcoll: CObject / CByteArray / CMapStringToOb / POSITION
-// (CString / CMapStringToOb signatures also via the shim includes below).
+// <Mfc.h> brings real MFC afxcoll: CObject / CByteArray / CMapStringToOb / POSITION.
 #include <Mfc.h>
 #include <string.h> // strncpy (the StringCopy leaf, reloc-masked)
 #include <stdio.h>  // sprintf ("%s%s%s" path builder in InsertWorkerKey / LookupWorkerKey)
 #include <Globals.h>
-// The canonical CDDrawWorkerRegistry + its unified own-vtable view CWorkerVtableView.
+// The canonical CDDrawWorkerRegistry + its unified own-vtable view CWorkerVtableView
+// + the CWorkerValue teardown view.
 #include <DDrawMgr/DDrawWorkerRegistry.h>
-
-// CString (4-byte char* wrapper). Only the default ctor + dtor are needed;
-// GetNextAssoc writes the key output into it.
 #include <Gruntz/String.h>
+#include <Gruntz/MapStringToOb.h>
+#include <Gruntz/Loadable.h> // the ONE canonical CLoadable base
 
 inline void* operator new(u32, void* p) {
     return p;
 }
 
-// The looked-up value: only the scalar-deleting destructor slot (+0x04) is load-
-// bearing. Declarations only - never defined, so no ??_7 is emitted here.
-class CWorkerValue {
-public:
-    virtual void GetRuntimeClass(); // [0] 0x1bef01 (shared thunk, declared-only)
-    virtual ~CWorkerValue();        // slot 1 (deleting dtor -> cl-emitted ??_G)
-};
+// A map value as seen by the scan helpers: it exposes a dword at +0x10 and a
+// non-virtual probe (called from AnyValueMatches_155630).
 
-// A map value as seen by the scan helpers: it exposes a dword at +0x10 (compared
-// in FindKeyOfValue_165360) and a non-virtual probe at RVA 0x152xc0 (called from
-// AnyValueMatches_155630). Modeled with a typed +0x10 field + the probe method so
-// `val->m_frameArrayBase` and `val->Probe(...)` lower to the exact loads/thiscall; the
-// probe is declared only (its body is another TU), so it is a reloc-masked call.
-
-// CMapStringToOb lives at CDDrawWorkerRegistry+0x10. Lookup/RemoveKey are out-of-line
-// NAFXCW thunks (reloc-masked rel32 calls); declared with the exact MFC signatures
-// so clang mangles them to the MFC-canonical names.
-#include <Gruntz/MapStringToOb.h>
-#include <Gruntz/Loadable.h> // the ONE canonical CLoadable base
-
-// Real polymorphic two-level model (ALL-VTABLES mandate). CDDrawWorker derives the ONE
-// canonical CLoadable (<Gruntz/Loadable.h>) - the former base-less "CLoadable" here was a
-// FAKE base that baked CDDrawWorker's own slot-5/7/8 OVERRIDES into it. Ground truth: the
-// real CLoadable vtable @0x1efc30 has [5] 0x155700 / [7] 0x155740 / [8] 0x154a00; CDDrawWorker's
-// own vtable @0x1efbe8 OVERRIDES them (IsLoaded->0x155750, Unload->DeleteAll 0x151eb0,
-// GetClassId->0x155770 = CLASSID_WORKER) and adds slots 9..16. `new CDDrawWorker` makes cl
+// Real polymorphic two-level model (ALL-VTABLES mandate). CDDrawWorker derives the
+// ONE canonical CLoadable. Ground truth: the real CLoadable vtable @0x1efc30 has
+// [5] 0x155700 / [7] 0x155740 / [8] 0x154a00; CDDrawWorker's own vtable @0x1efbe8
+// OVERRIDES them (IsLoaded->0x155750, Unload->DeleteAll 0x151eb0, GetClassId->
+// 0x155770 = CLASSID_WORKER) and adds slots 9..16. `new CDDrawWorker` makes cl
 // auto-emit ??_7CLoadable + ??_7CDDrawWorker and the two-phase vptr stamps.
+// IDENTITY NOTE: this is the SAME retail class as <DDrawMgr/DDrawWorker.h>'s
+// CDDrawWorker (whose frame-collection methods live in the S1 obj); this TU's
+// view models the registry-side slots - a reconcile for the family-unification pass.
 struct CDDrawWorker : public CLoadable {
-    virtual ~CDDrawWorker() OVERRIDE;     // [1] cl-auto-gen ??_G @0x155780
+    virtual ~CDDrawWorker() OVERRIDE;     // [1] 0x1557a0 (below); cl-auto-gen ??_G @0x155780
     virtual i32 IsLoaded() OVERRIDE;      // [5] 0x155750
     virtual i32 IsReady() OVERRIDE;       // [6] 0x001c08 (CWapObj default, inherited-shape)
-    virtual i32 Unload() OVERRIDE;        // [7] 0x151eb0 (CDDrawWorker::DeleteAll)
+    virtual i32 Unload() OVERRIDE;        // [7] 0x151eb0 (CDDrawWorker::DeleteAll, S1 obj)
     virtual i32 GetClassId() OVERRIDE;    // [8] 0x155770 -> CLASSID_WORKER
     virtual i32 Vfunc24(const char* key); // [9]  0x155810
     virtual void Slot10_1521f0();         // [10] 0x1521f0
@@ -91,39 +65,34 @@ struct CDDrawWorker : public CLoadable {
     i32 m_64; // +0x64  0x1869f
     i32 m_68; // +0x68  0
 }; // 0x6c
+SIZE(CDDrawWorker, 0x6c);
 
 DATA(0x002bf37c)
 extern i32 g_resourceInstallActive;
 
-// operator delete + the member-teardown host (real ~ at 0x156e10, CDDrawSubMgr.cpp,
-// as CDDrawRegistryDtorHost::~) that this class's ??_G scalar-dtor (0x156df0) calls.
-// The dtor is virtual (FamilyMapBase-derived) so it mangles ??1..@@UAE@XZ, matching
-// the 0x156e10 binding; ScalarDtor (0x156df0) runs it then RezFree(this).
+// operator delete + the engine free.
 void operator delete(void*);
-extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil) - the scalar-dtor free
-class CDDrawRegistryDtorHost {
+extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil)
+
+// The far sibling class (real member-teardown ~ at 0xd5d70, CImage.cpp) whose ??_G
+// scalar-deleting destructor (0x155720) landed in this obj; referenced so the
+// ??_G call reloc names it.
+class CDDrawSubMgrFar {
 public:
-    virtual ~CDDrawRegistryDtorHost(); // 0x156e10 (defined in DDrawSubMgr.cpp)
-    void* ScalarDtor(u32 flags);       // 0x156df0
+    virtual ~CDDrawSubMgrFar();
 };
+SIZE_UNKNOWN(CDDrawSubMgrFar);
 
-// Helpers for ProbeWorkerKey (0x156e80): a probe chain (0x13b900 -> object, whose
-// 0x13a230 yields the result) and the parent's +0x48 vtable dispatch.
-DATA(0x006293f4)
-extern char g_emptyString[]; // 0x6293f4
-
-// A directory-tree cursor: 0x13a260 (first child), 0x13a280 (next child); each entry's
-// +0x00 is a name string.
+// Helpers for the tree walkers: a directory-tree cursor (0x13a260 first child,
+// 0x13a280 next child); each entry's +0x00 is a name string.
 class RegDirEntry {
 public:
     char* m_name; // +0x00
 };
+SIZE_UNKNOWN(RegDirEntry);
 
-// A CDDrawWorker (vtable 0x5efbe8) viewed for the +0x28/+0x3c dispatches + the +0x18
-// status field; slots named from their retail slot-function RVAs. Slot28 (0x1521f0)
-// and Slot3C (0x1522b0) are the dispatched ops, modeled with the arg arity the
-// InsertWorkerKey/155160 call sites use (the CDDrawWorker slot declarations elsewhere
-// model them 0-arg - an arity reconcile for the deferred family-unification pass).
+// A CDDrawWorker (vtable 0x5efbe8) viewed for the +0x28/+0x3c dispatches + the
+// +0x18 status field; slots named from their retail slot-function RVAs.
 class RegWorkerValue {
 public:
     virtual void Slot00_1bef01();        // slot 0  0x1bef01 (CObject thunk)
@@ -145,6 +114,11 @@ public:
     char m_pad04[0x18 - 0x04];
     i32 m_18; // +0x18  status field
 };
+SIZE_UNKNOWN(RegWorkerValue);
+RELOC_VTBL(
+    RegWorkerValue,
+    0x001efbe8
+); // reduced/derived view aliases CDDrawWorker (slot-RVA verified)
 
 static inline i32 ReadRegistryField1c(const CDDrawWorkerRegistry* p) {
     return *(const i32*)((const char*)p + 0x1c);
@@ -248,266 +222,39 @@ i32 CDDrawWorkerRegistry::DispatchKeyed2C(i32 a1, i32 a2, const char* key, i32 a
 }
 
 // ---------------------------------------------------------------------------
-// Thin forwarder to worker slot +0x34.
+// Thin forwarders to worker slots +0x34/+0x38/+0x30/+0x2c.
 RVA(0x00154f00, 0x1b)
 i32 CDDrawWorkerRegistry::Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4) {
     return worker->Vfunc34(a1, a3, a4);
 }
 
-// ---------------------------------------------------------------------------
-// Thin forwarder to worker slot +0x38.
 RVA(0x00154f20, 0x1b)
 i32 CDDrawWorkerRegistry::Forward38(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4) {
     return worker->Vfunc38(a1, a3, a4);
 }
 
-// ---------------------------------------------------------------------------
-// Thin forwarder to worker slot +0x30.
 RVA(0x00154f40, 0x20)
 i32 CDDrawWorkerRegistry::Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5) {
     return worker->Vfunc30(a1, a2, a4, a5);
 }
 
-// ---------------------------------------------------------------------------
-// Thin forwarder to worker slot +0x2c.
 RVA(0x00154f60, 0x20)
 i32 CDDrawWorkerRegistry::Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5) {
     return worker->Vfunc2C(a1, a2, a4, a5);
 }
 
 // ---------------------------------------------------------------------------
-// Removes a non-null worker from the map by its key at +0x24, then destroys it.
-RVA(0x00155280, 0x22)
-void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
-    if (worker != 0) {
-        m_map.RemoveKey((const char*)((char*)worker + 0x24));
-        delete worker;
-    }
-}
-
-// CDDrawWorkerRegistry::GetStateId (0x156de0): the class's state id. Out-of-line (matcher-5).
-RVA(0x00156de0, 0x6)
-StateId CDDrawWorkerRegistry::GetStateId() {
-    return STATE_WORKERREGISTRY; // 0x12
-}
-
-// CDDrawWorkerRegistry::IsReady (0x001576d0) is now an inline member in the header.
-
-// ---------------------------------------------------------------------------
-// Lookup `key` in the map; if found, RemoveKey it and run the value's scalar-
-// deleting destructor (vtbl +0x4, arg 1).
-//
-// RESIDUE (~77.5%, NOT a logic/offset/type/CFG error - register-allocation +
-// store/load-scheduling entropy, matching-patterns.md / match-learnings.md
-// "register-alloc coin-flip"): the logic, CFG, the val=0 init, both library calls,
-// their args, and the dtor dispatch are all reproduced; only the register schedule
-// the allocator picked differs. The target holds `key` in EDI and keeps `val`
-// purely on the stack, reloading it (`mov ecx,[esp+8]`) AFTER RemoveKey and
-// branching on Lookup's return in EAX. MSVC5 on this (isolated) TU instead caches
-// `key` in EBX and `val` in EDI across the calls and branches on the cached val -
-// equivalent codegen, an extra callee-saved register, a different ecx/edx pairing.
-// Every source form tried (if(Lookup(...)) / if(...!=0) / captured `int found` /
-// volatile val) produced the identical schedule; the surrounding symbol-set is what
-// re-rolls the allocation, so no in-function lever flips it. Left as the plateau.
-RVA(0x00156ec0, 0x40)
-void CDDrawWorkerRegistry::RemoveByKey(const char* key) {
-    CObject* val = 0;
-    if (m_map.Lookup(key, val)) {
-        m_map.RemoveKey(key);
-        delete ((CWorkerValue*)val);
-    }
-}
-
-// ---------------------------------------------------------------------------
-// Map teardown: iterate all entries in m_map via GetNextAssoc, destroying each
-// CObject* value via its scalar-deleting destructor (vtbl +0x4 arg 1), then
-// RemoveAll the map. Same pattern as CDDrawWorkerMapSmall::DestroyAll but
-// without the final m_64 clear (that field does not exist in this class).
-//
-// Carries a /GX EH frame for the local CString key (destructor must fire on
-// unwind through the iteration loop).
-RVA(0x00165210, 0xa2)
-void CDDrawWorkerRegistry::DestroyAll() {
-    CObject* val = 0;
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
-    CString key;
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_map.GetNextAssoc(pos, key, val);
-            if (val != 0) {
-                delete ((CWorkerValue*)val);
-            }
-        } while (pos != 0);
-    }
-    m_map.RemoveAll();
-}
-
-// ---------------------------------------------------------------------------
-// Map teardown leaf (SEH)
-// Iterates m_map via GetNextAssoc, destroys each CObject* value via
-// scalar-deleting dtor (vtbl+0x4 arg 1), then RemoveAll.
-RVA(0x001552b0, 0xa2)
-void CDDrawWorkerRegistry::MapTeardown_1552b0() {
-    CObject* val = 0;
-    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
-    CString key;
-    if (*(volatile i32*)&pos != 0) {
-        do {
-            m_map.GetNextAssoc(pos, key, val);
-            if (val != 0) {
-                delete ((CWorkerValue*)val);
-            }
-        } while (pos != 0);
-    }
-    m_map.RemoveAll();
-}
-
-// ---------------------------------------------------------------------------
-// String copy leaf
-// Copies at most 0x3F bytes from src into this+0x24, null-terminates at
-// this+0x63, returns 1.
-RVA(0x00155810, 0x23)
-i32 CDDrawWorkerRegistry::StringCopy_155810(const char* src) {
-    strncpy((char*)this + 0x24, src, 0x3f);
-    *((char*)this + 0x63) = 0;
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// Map scan: remove every entry whose key strncmp-equals `str` (over its full
-// length), destroying each removed value via its scalar dtor; returns the count.
-// The compare string is a CString built from `base` then assigned `str`.
-RVA(0x00155360, 0xf8)
-i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* str) {
-    CString match(base);
-    match = str;
-    i32 len = match.GetLength();
-    CString key;
-    CObject* val = 0;
-    POSITION pos = m_map.GetStartPosition();
-    i32 n = 0;
-    while (pos != 0) {
-        m_map.GetNextAssoc(pos, key, val);
-        if (strncmp(key, match, len) == 0) {
-            m_map.RemoveKey(key);
-            if (val != 0) {
-                delete ((CWorkerValue*)val);
-            }
-            ++n;
-        }
-    }
-    return n;
-}
-
-// ---------------------------------------------------------------------------
-// Map scan: sum each non-null value's ComputeSize_1523f0(a2) over the entries
-// whose key strncmp-matches `str` (a null/empty `str` matches every entry).
-// Carries a /GX EH frame for the local CString key.
-// @early-stop
-// zero-register-pin wall (~69%): map-scan idiom applied (GetStartPosition + the
-// str==0||*str==0||strncmp==0 shared-add || chain replaces the diverging matched-
-// bool neg/sbb/inc; docs/patterns/mfc-map-walk-while-not-guard-dowhile.md). The
-// GetNextAssoc scan, match-all guard, strlen+strncmp compare, and per-value
-// ComputeSize_1523f0 thiscall accumulation all reproduced. Residue: retail pins 0
-// in edi (xor edi,edi + cmp edi,X) and holds a2 in ebx across the body where our
-// cl uses test/immediate + a per-call a2 reload - regalloc coin-flip, no source
-// lever. docs/patterns/zero-register-pinning.md.
-RVA(0x00155460, 0xe2)
-i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
-    CString key;
-    CObject* val = 0;
-    POSITION pos = m_map.GetStartPosition();
-    i32 total = 0;
-    if (pos != 0) {
-        do {
-            m_map.GetNextAssoc(pos, key, val);
-            if (val != 0) {
-                if (str == 0 || *str == 0 || strncmp(key, str, strlen(str)) == 0) {
-                    total += ((CImageSet*)val)->GetMemoryUsage(a2);
-                }
-            }
-        } while (pos != 0);
-    }
-    return total;
-}
-
-// ---------------------------------------------------------------------------
-// Map scan: return 1 if any key strncmp-equals `str` over strlen(str), else 0.
-RVA(0x00155550, 0xdc)
-i32 CDDrawWorkerRegistry::HasKeyEqual_155550(const char* str) {
-    i32 len = strlen(str);
-    CString key;
-    CObject* val = 0;
-    POSITION pos = m_map.GetStartPosition();
-    while (pos != 0) {
-        m_map.GetNextAssoc(pos, key, val);
-        if (strncmp(key, str, len) == 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-// ---------------------------------------------------------------------------
-// Map scan: probe every non-null value via its Probe_1525c0(a1,a2,a3); return 1
-// on the first that returns nonzero, else 0. Returns 0 immediately if a1 is null.
-// @early-stop
-// regalloc wall (~75.9%) - complete & correct: a1==0 guard, the per-value
-// Probe_1525c0 thiscall, the loop CFG all reproduced. Residue is the same
-// val/loop-flag stack-slot swap + reloc-masked EH-state push as RemoveKeysEqual.
-RVA(0x00155630, 0xc5)
-i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
-    if (a1 == 0) {
-        return 0;
-    }
-    CString key;
-    CObject* val = 0;
-    POSITION pos = m_map.GetStartPosition();
-    while (pos != 0) {
-        m_map.GetNextAssoc(pos, key, val);
-        if (val != 0 && ((CImageSet*)val)->FindFrame((CImageFrame*)a1, (char*)a2, (int*)a3)) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-// ---------------------------------------------------------------------------
-// Map scan: return (by value) the key of the first entry whose value's +0x10
-// dword equals target's +0x10; empty CString if none. Closed by the map-scan idiom
-// (top-tested while + real GetStartPosition) plus spelling the no-match return as a
-// named `CString empty; return empty;` so cl materializes the empty temp + copy-
-// ctor exactly as retail (a bare `return CString()` RVOs it into the return slot).
-RVA(0x00165360, 0xf1)
-CString CDDrawWorkerRegistry::FindKeyOfValue_165360(CImageSet* target) {
-    CObject* val = 0;
-    POSITION pos = m_map.GetStartPosition();
-    CString key;
-    while (pos != 0) {
-        m_map.GetNextAssoc(pos, key, val);
-        if (val != 0 && *(i32*)((CImageSet*)val)->m_array == *(i32*)target->m_array) {
-            return key;
-        }
-    }
-    CString empty;
-    return empty;
-}
-
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// ---------------------------------------------------------------------------
 // 0x154f80: walk the directory tree under `dir`; for each entry build a path string
-// ("<sub><prefix><name>" when sub is set, else just the name) into a 0x100 heap buffer
-// and accumulate this->+0x48(entry, buf, prefix). Then, when sub is set, find-or-create
-// the keyed worker, dispatch its +0x28(dir), and either run this->+0x54(sub) (worker
-// inactive) or bump the count. /GX EH frame for the partially-built worker.
+// ("<sub><prefix><name>" when sub is set, else just the name) into a 0x100 heap
+// buffer and accumulate this->+0x48(entry, buf, prefix). Then, when sub is set,
+// find-or-create the keyed worker, dispatch its +0x28(dir), and either run
+// this->+0x54(sub) (worker inactive) or bump the count. /GX EH frame.
 // @early-stop
-// worker-ctor + regalloc wall: the directory walk / sprintf-vs-strcpy / +0x48 dispatch
-// / find-or-create (CDDrawWorker) / +0x28 / status branch are reproduced; retail's
+// worker-ctor + regalloc wall: the directory walk / sprintf-vs-strcpy / +0x48
+// dispatch / find-or-create / +0x28 / status branch are reproduced; retail's
 // inline worker construction seeds fields before the CByteArray ctor + stamps the
-// derived vtable last, and the buffer/entry register schedule differs. Reloc-masked
-// EH-state + map/thunk names. Logic/CFG/offsets complete.
+// derived vtable last, and the buffer/entry register schedule differs.
+// Reloc-masked EH-state + map/thunk names. Logic/CFG/offsets complete.
 RVA(0x00154f80, 0x1d5)
 i32 CDDrawWorkerRegistry::InsertWorkerKey(CSymTab* dir, const char* sub, const char* prefix) {
     char* buf = (char*)operator new(0x100);
@@ -543,11 +290,11 @@ i32 CDDrawWorkerRegistry::InsertWorkerKey(CSymTab* dir, const char* sub, const c
 }
 
 // ---------------------------------------------------------------------------
-// 0x155160: the read-side twin of InsertWorkerKey - walk the directory tree, build the
-// same path string, and accumulate this->+0x4c(entry, buf, prefix) (a negative result
-// aborts to -1). Then, when sub is set, Lookup it in the map; if present, dispatch its
-// +0x3c(dir) (a -1 aborts to -1) and bump the count when the value's +0x18 is positive.
-// No EH frame (plain /O2 leaf). Returns the accumulated count.
+// 0x155160: the read-side twin of InsertWorkerKey - walk the directory tree, build
+// the same path string, and accumulate this->+0x4c(entry, buf, prefix) (a negative
+// result aborts to -1). Then, when sub is set, Lookup it in the map; if present,
+// dispatch its +0x3c(dir) (a -1 aborts to -1) and bump the count when the value's
+// +0x18 is positive. No EH frame (plain /O2 leaf).
 // @early-stop
 // regalloc/loop-schedule wall: the walk / sprintf-vs-strcpy / +0x4c dispatch + <0
 // abort / Lookup / +0x3c dispatch + -1 abort / +0x18 count are reproduced; the
@@ -589,47 +336,156 @@ i32 CDDrawWorkerRegistry::LookupWorkerKey(CSymTab* dir, const char* sub, const c
 }
 
 // ---------------------------------------------------------------------------
-// 0x156df0: the ??_G scalar-deleting destructor of the 1-map sibling
-// CDDrawRegistryDtorHost - run the real member-teardown ~ (0x156e10, CDDrawSubMgr.cpp)
-// then, when the low deleting-flag bit is set, RezFree(this); return this. Modeled as
-// a hand-written RVA-pinned method (the CGruntzCommand::ScalarDtor pattern) so cl emits
-// the exact `call ~; test flag; RezFree; ret 4` bytes (cl won't synth ??_G with no
-// delete site in this TU).
-RVA(0x00156df0, 0x1e)
-void* CDDrawRegistryDtorHost::ScalarDtor(u32 flags) {
-    this->CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost();
-    if (flags & 1) {
-        RezFree(this);
+// Removes a non-null worker from the map by its key at +0x24, then destroys it.
+RVA(0x00155280, 0x22)
+void CDDrawWorkerRegistry::RemoveWorker(CDDrawWorker* worker) {
+    if (worker != 0) {
+        m_map.RemoveKey((const char*)((char*)worker + 0x24));
+        delete worker;
     }
-    return this;
 }
 
 // ---------------------------------------------------------------------------
-// 0x156e80: probe `arg1` through 0x13b900(arg2) -> object, deref via 0x13a230; if
-// the result is non-null, dispatch this->+0x48 with (result, g_emptyString,
-// &g_dat60b588) and return it, else 0. __thiscall, 2 args (ret 8).
-RVA(0x00156e80, 0x38)
-i32 CDDrawWorkerRegistry::ProbeWorkerKey(CSymTab* arg1, i32 arg2) {
-    CSymTab* obj = arg1->Get_13b900();
-    void* result = obj->FindSub((const char*)arg2);
-    if (result == 0) {
-        return 0;
+// Map teardown leaf (SEH): iterates m_map via GetNextAssoc, destroys each
+// CObject* value via its scalar-deleting dtor (vtbl+0x4 arg 1), then RemoveAll.
+RVA(0x001552b0, 0xa2)
+void CDDrawWorkerRegistry::MapTeardown_1552b0() {
+    CObject* val = 0;
+    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
+    CString key;
+    if (*(volatile i32*)&pos != 0) {
+        do {
+            m_map.GetNextAssoc(pos, key, val);
+            if (val != 0) {
+                delete ((CWorkerValue*)val);
+            }
+        } while (pos != 0);
     }
-    return ((CWorkerVtableView*)this)->Vfunc48(result, g_emptyString, &g_dat60b588);
+    m_map.RemoveAll();
 }
 
-SIZE_UNKNOWN(CDDrawRegistryDtorHost);
-SIZE_UNKNOWN(RegDirEntry);
-SIZE_UNKNOWN(RegDirHandle);
-SIZE_UNKNOWN(RegWorkerValue);
-RELOC_VTBL(
-    RegWorkerValue,
-    0x001efbe8
-); // reduced/derived view aliases CDDrawWorker (slot-RVA verified)
-SIZE_UNKNOWN(CWorkerMapValue);
-SIZE_UNKNOWN(CWorkerValue);
-SIZE(CDDrawWorker, 0x6c);
+// ---------------------------------------------------------------------------
+// Map scan: remove every entry whose key strncmp-equals `str` (over its full
+// length), destroying each removed value via its scalar dtor; returns the count.
+RVA(0x00155360, 0xf8)
+i32 CDDrawWorkerRegistry::RemoveKeysEqual_155360(const char* base, const char* str) {
+    CString match(base);
+    match = str;
+    i32 len = match.GetLength();
+    CString key;
+    CObject* val = 0;
+    POSITION pos = m_map.GetStartPosition();
+    i32 n = 0;
+    while (pos != 0) {
+        m_map.GetNextAssoc(pos, key, val);
+        if (strncmp(key, match, len) == 0) {
+            m_map.RemoveKey(key);
+            if (val != 0) {
+                delete ((CWorkerValue*)val);
+            }
+            ++n;
+        }
+    }
+    return n;
+}
 
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+// ---------------------------------------------------------------------------
+// Map scan: sum each non-null value's GetMemoryUsage(a2) over the entries whose
+// key strncmp-matches `str` (a null/empty `str` matches every entry). /GX frame.
+// @early-stop
+// zero-register-pin wall (~69%): the GetNextAssoc scan, match-all guard,
+// strlen+strncmp compare, and per-value thiscall accumulation all reproduced.
+// Residue: retail pins 0 in edi and holds a2 in ebx across the body where our
+// cl uses test/immediate + a per-call a2 reload - regalloc coin-flip.
+RVA(0x00155460, 0xe2)
+i32 CDDrawWorkerRegistry::SumSizesEqual_155460(const char* str, i32 a2) {
+    CString key;
+    CObject* val = 0;
+    POSITION pos = m_map.GetStartPosition();
+    i32 total = 0;
+    if (pos != 0) {
+        do {
+            m_map.GetNextAssoc(pos, key, val);
+            if (val != 0) {
+                if (str == 0 || *str == 0 || strncmp(key, str, strlen(str)) == 0) {
+                    total += ((CImageSet*)val)->GetMemoryUsage(a2);
+                }
+            }
+        } while (pos != 0);
+    }
+    return total;
+}
 
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+// ---------------------------------------------------------------------------
+// Map scan: return 1 if any key strncmp-equals `str` over strlen(str), else 0.
+RVA(0x00155550, 0xdc)
+i32 CDDrawWorkerRegistry::HasKeyEqual_155550(const char* str) {
+    i32 len = strlen(str);
+    CString key;
+    CObject* val = 0;
+    POSITION pos = m_map.GetStartPosition();
+    while (pos != 0) {
+        m_map.GetNextAssoc(pos, key, val);
+        if (strncmp(key, str, len) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Map scan: probe every non-null value via its FindFrame(a1,a2,a3); return 1
+// on the first that returns nonzero, else 0. Returns 0 immediately if a1 is null.
+// @early-stop
+// regalloc wall (~75.9%) - complete & correct: a1==0 guard, the per-value
+// FindFrame thiscall, the loop CFG all reproduced. Residue is the same
+// val/loop-flag stack-slot swap + reloc-masked EH-state push as RemoveKeysEqual.
+RVA(0x00155630, 0xc5)
+i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
+    if (a1 == 0) {
+        return 0;
+    }
+    CString key;
+    CObject* val = 0;
+    POSITION pos = m_map.GetStartPosition();
+    while (pos != 0) {
+        m_map.GetNextAssoc(pos, key, val);
+        if (val != 0 && ((CImageSet*)val)->FindFrame((CImageFrame*)a1, (char*)a2, (int*)a3)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x155720: a COMDAT ??_G scalar-deleting dtor retail placed in this obj's span
+// (its ??1 body is 0xd5d70, CImage.cpp). The label + row live in DDrawSubMgr.cpp
+// (the unit whose base obj auto-emits ??_GCDDrawSubMgr - labels.py's authority
+// check requires the emitting obj); retail-span home here is a deferred
+// identity-pass item.
+
+// ===========================================================================
+// 0x1557a0 - ~CDDrawWorker: stamp own vtable, run DeleteAll (the slot-7 Unload,
+// devirtualized in the dtor to a direct call - the body lives in the S1 obj as
+// CDDrawWorker::DeleteAll, reloc-masked), then the array member destructs and
+// ~CLoadable folds in. /GX frame from the destructible base+member.
+// ===========================================================================
+// 100%: re-basing onto the canonical CLoadable : CWapObj : CObject resolved the
+// grand-base vptr-stamp-position wall - the real CObject grand-base sinks the
+// 0x5e8cb4 re-stamp after the m_04/m_08/m_0c resets exactly as retail.
+RVA(0x001557a0, 0x68)
+CDDrawWorker::~CDDrawWorker() {
+    Unload(); // devirtualized direct call == retail's DeleteAll (0x151eb0)
+    // m_10.~CByteArray() (trylevel 0) + ~CLoadable() (field resets +
+    // grand-base vtable stamp) fold here.
+}
+
+// ---------------------------------------------------------------------------
+// String copy leaf: copies at most 0x3F bytes from src into this+0x24,
+// null-terminates at this+0x63, returns 1.
+RVA(0x00155810, 0x23)
+i32 CDDrawWorkerRegistry::StringCopy_155810(const char* src) {
+    strncpy((char*)this + 0x24, src, 0x3f);
+    *((char*)this + 0x63) = 0;
+    return 1;
+}

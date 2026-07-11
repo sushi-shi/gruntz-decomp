@@ -1,0 +1,1204 @@
+// WwdFactoryObject.cpp - the 0x15b2c0-0x15ccc8 original TU (wave4-L dossier #15,
+// block I): the wwd object-lifecycle obj - the base-object ctors (CResolveNode
+// 3-arg / WorkerFull / CWwdGameObj15b390 / CAniAdvanceCursor), the five
+// ??1CWwdGameObject[A-F] /GX destructors, the CWwdFactoryObject Release/Reset
+// pass + Notify, CDDrawBlitParam (init/setup/serialize), the animation Advance
+// cursor + its Clamp pair, and the Init/SetupDeferred/SetupFlagged out-of-lines.
+// Held at the dossier-#9 boundary 4 (0x15b2c0); a correct partial - it may yet
+// merge with block H (weave across 0x15b2c0 is limited to the COMDAT-able factory
+// ctor 0x15b390).
+//
+// original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
+#include <Mfc.h>
+#include <rva.h>
+#include <Ints.h>
+#include <string.h>                  // strcpy/strlen (blit-param label buffer)
+#include <Wwd/WwdGameObjectFamily.h> // the CWwdGameObjectE/A/F/B/C dtor-family hierarchy
+#include <Gruntz/WwdGameObject.h>    // canonical CWwdGameObject (Init/Setup* out-of-lines)
+#include <Gruntz/LogicRecord.h>      // CLogicRecord (Consume @0x15b340)
+#include <Gruntz/Sprite.h>           // CSprite (GetFrame @0x15cc30 + the Clamp pair)
+#include <Gruntz/ResolveNode.h>      // canonical CResolveNode (3-arg ctor @0x15b2c0)
+#include <Gruntz/AnimWorkerFull.h>   // WorkerFull (the 0x17c worker ctor @0x15b300)
+#include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (ctor/dtor/Advance)
+#include <DDrawMgr/AniAdvance.h>     // CAniRenderCtx/CAniDesc/CAniBlitTrigger satellites
+#include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
+#include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam (the +0x1a0 command sub-object)
+#include <Gruntz/SerialArchive.h>    // the shared CSerialArchive stream (Read/Write)
+#include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CWwdNotifier/CDDrawRect
+#include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObj15b390/WwdAnimWorker
+#include <Gruntz/LeafCue.h>          // LeafCue (PlayIfElapsed_01f940 - Advance's sound cue)
+#include <Globals.h>
+
+// The engine RNG @0x15cbe0 is the free __cdecl Rng::Next2 (its body stays in
+// Random.cpp - a foreign inline-COMDAT exile hole in this obj's span).
+namespace Rng {
+    i32 Next2();
+}
+
+// The sound-cue enable/tag globals + pan scale (DATA bindings owned by the G obj).
+extern i32 g_sndEnabled;    // 0x61ab20
+extern float g_sndPanScale; // 0x5eff2c
+extern i32 g_aniCueItem;    // 0x61ab24
+
+// The small per-frame blit-param source (the +0x14 resolved source of
+// CDDrawBlitParam). Field +0x0c points at a worker-node-like object; +0x10 is a
+// count; +0x20 a float scale.
+class CDDrawBlitParamSrc {
+public:
+    char m_pad00[0x0c]; // +0x00 .. +0x0b
+    // authentic: worker-node-like element ptr; only ever raw-offset read ([+0x34]
+    // flag, [0]->[+0x1c]), exact node class unproven from these sites - kept void*.
+    void* m_elements; // +0x0c -> worker node
+    i32 m_count;      // +0x10 count
+    char m_pad14[0x20 - 0x14];
+    float m_scale; // +0x20
+};
+SIZE_UNKNOWN(CDDrawBlitParamSrc);
+
+// The worker held at CDDrawBlitParam+0x0c: holds a sub-object at +0x2c whose
+// 0x152d30 method returns a CString (the label written by Serialize).
+class CDDrawBlitLabelSource;
+class CDDrawBlitWorker {
+public:
+    char m_pad00[0x2c];                   // +0x00..0x2b
+    CDDrawBlitLabelSource* m_labelSource; // +0x2c sub-object (GetLabel_152d30 -> CString)
+};
+SIZE_UNKNOWN(CDDrawBlitWorker);
+// The label map embedded at +0x10 in the worker sub-object: Lookup(key, &out)
+// resolves a worker-label string to its worker pointer. 0x1b8438, reloc-masked.
+class CBlitLabelMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
+SIZE_UNKNOWN(CBlitLabelMap);
+class CDDrawBlitLabelSource {
+public:
+    CString GetLabel_152d30(CDDrawBlitParamSrc* a);
+    char m_pad00[0x10];       // +0x00..+0x0f
+    CBlitLabelMap m_labelMap; // +0x10 label -> worker map
+};
+SIZE_UNKNOWN(CDDrawBlitLabelSource);
+
+// ---------------------------------------------------------------------------
+// 0x15b2c0 - the parameterized CResolveNode ctor (the factory base sub-object).
+// @early-stop
+// sentinel-seed ctor store-scheduling wall (docs/patterns/sentinel-seed-ctor-store-schedule.md):
+// identical instruction multiset, but cl floats the m_08 (edx=arg3) store and the
+// m_38 (-1) store to different positions than retail; 3 field-order spellings all
+// ~60%. Source steers which arg lands in edx, not the store schedule. Logic complete.
+RVA(0x0015b2c0, 0x3d)
+CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
+    m_04 = field04;
+    m_08 = field08;
+    m_0c = owner;
+    m_20 = (i32)0x80000000;
+    m_38 = -1;
+    m_5c = (i32)0x80000000;
+    m_64 = (i32)0x80000000;
+    m_3c = 0;
+    m_40 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b300 - the out-of-line 3-arg anim-worker constructor (the body the 0x150eb0
+// factory / CreateWorker24 inlines). The arg-store order (b,c,a into
+// m_04/m_08/m_0c) is load-bearing.
+// @early-stop
+// vptr-last wall: retail stamps the vptr AFTER m_04/m_08/m_0c, but a real-virtual
+// class forces cl's implicit vptr-first store at ctor entry. Field-store order
+// preserved; only the vptr position diverges (mandate: convert anyway).
+RVA(0x0015b300, 0x40)
+WorkerFull::WorkerFull(i32 a, i32 b, i32 c) {
+    m_04 = b;
+    m_08 = c;
+    m_0c = a;
+    m_10 = 0;
+    m_14 = 0;
+    m_18 = 0;
+    m_170 = 0;
+    m_1c = 0;
+    m_174 = 0;
+    m_178 = 0;
+}
+SIZE_UNKNOWN(WorkerFull);
+RELOC_VTBL(WorkerFull, 0x001efb80); // vtable reloc-masks a bound datum (dtor-stamp verified)
+
+// ---------------------------------------------------------------------------
+// CLogicRecord::Consume (0x15b340, __thiscall). Draw `amount` from the
+// remaining-count at m_20: returns 1 with the balance debited while it covers the
+// request, else clamps to 0 and returns 0.
+RVA(0x0015b340, 0x2b)
+i32 CLogicRecord::Consume(i32 amount) {
+    i32 remaining = m_serial[(0x20 - 0x20) / 4]; // m_20
+    if (remaining == 0) {
+        return remaining; // eax already holds 0
+    }
+    if ((u32)amount >= (u32)remaining) {
+        m_serial[(0x20 - 0x20) / 4] = 0;
+        return 0;
+    }
+    m_serial[(0x20 - 0x20) / 4] = remaining - amount;
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CWwdGameObj15b390::Construct (0x15b390) - the shared CWwdGameObject base-object
+// ctor the wide-object factories call (CreateObject_1598d0/166640; also
+// WwdFile::ReadPlaneObjects 0x162af0). A REAL /GX ctor: the CResolveNode base
+// subobject stamps ??_7CResolveNode (0x5efbc0) + its +0x04..+0xd8 fields, then the
+// CString label member (+0xdc) constructs, then the derived body final-stamps the
+// wide-object vtable, `new`-allocates the +0x7c anim worker (WwdAnimWorkerInit), and
+// publishes g_wwdObjIdCounter.
+// @early-stop
+// eh-member-state wall (59.7%): the real /GX ctor is byte-faithful store-for-store,
+// but MSVC5 declines to emit the retail member-construction EH-state machine
+// (state cookies around the CString ctor + the worker op-new). Not source-steerable:
+// `::operator new`+placement REGRESSED (57.2%), a declared worker dtor is neutral,
+// out-of-lining the worker ctor would mismatch retail's inline stores.
+// docs/patterns/eh-state-numbering-base.md + throwing-operator-new-eh-state-transition.md.
+RVA(0x0015b390, 0x128)
+CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c) {
+    // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
+    m_5c = (int)0x80000000;
+    m_78 = 0;
+    m_7c = new WwdAnimWorkerInit(b, a);
+    m_98 = 0;
+    m_80 = 0;
+    m_88 = 0;
+    m_90 = 0;
+    m_188 = g_wwdObjIdCounter;
+    g_wwdObjIdCounter = g_wwdObjIdCounter + 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b4f0 - the base ~CWwdGameObject ("Mid"): vtable 0x5f0020. Frees the four
+// workers, clears m_c0/m_d8 + the EdgeA shadow (groupX), then the CString member
+// dtor, then folds EdgeA, EdgeB and the wap-object grand base.
+// @early-stop
+// zero-register-pinning regalloc wall (docs/patterns/zero-register-pinning.md):
+// logic + /GX trylevel chain (3->2) byte-exact, residual is the callee-saved
+// zero/0x80000000/-1 register coloring (edi/ebx/ebp vs retail ebp/edi/ebx).
+RVA(0x0015b4f0, 0xde)
+CWwdGameObjectE::~CWwdGameObjectE() {
+    WORKER_FREE(m_7c);
+    WORKER_FREE(m_80);
+    WORKER_FREE(m_88);
+    WORKER_FREE(m_90);
+    m_c0 = (i32)0x80000000;
+    m_d8 = -1;
+    m_20.c = (i32)0x80000000; // 0x5c
+    m_20.a = (i32)0x80000000; // 0x20
+    m_20.b = -1;              // 0x38
+    // m_dc (CString) destroyed as a member; then EdgeA, EdgeB, base fold in.
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b5d0: drop the four +0x7c/+0x80/+0x88/+0x90 sub-objects (each via its
+// scalar-dtor virtual, delete flag) and re-seed the status fields (+0xc0/+0x5c/
+// +0x20 = 0x80000000, +0xd8/+0x38 = -1). No geometry reset. __thiscall, ret 0.
+RVA(0x0015b5d0, 0x7c)
+void CWwdFactoryObject::ReleaseSubs_15b5d0() {
+    char* o = (char*)this;
+    CWwdFactoryObject* s;
+    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
+        delete s;
+        *(i32*)(o + 0x7c) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
+        delete s;
+        *(i32*)(o + 0x80) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
+        delete s;
+        *(i32*)(o + 0x88) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
+        delete s;
+        *(i32*)(o + 0x90) = 0;
+    }
+    *(i32*)(o + 0xc0) = (i32)0x80000000;
+    *(i32*)(o + 0xd8) = -1;
+    *(i32*)(o + 0x5c) = (i32)0x80000000;
+    *(i32*)(o + 0x20) = (i32)0x80000000;
+    *(i32*)(o + 0x38) = -1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b650: per-tick notify. When flag bit 0x8 is set, subtract `p`'s +0x120
+// budget from this+0x128 and, if non-positive, latch error 0x1c on the +0x7c
+// worker. Otherwise hand `p` to the +0x80 notifier's +0x10 cdecl callback (with
+// the owner), after recording `p` at +0x84. __thiscall, 1 arg (ret 0x4).
+// @early-stop
+// 84% - structure/CFG/offsets/stores byte-exact; the residual is two instruction-
+// selection coin-flips MSVC5 won't flip from source: the flag test (`movb;testb`
+// vs retail `testb mem`) and the budget subtract (mem-operand vs reg-load first).
+// Entropy-tail / zero-register-pinning wall.
+RVA(0x0015b650, 0x4d)
+void CWwdFactoryObject::Notify_15b650(void* p) {
+    char* o = (char*)this;
+    if (*(unsigned char*)(o + 0x8) & 0x8) {
+        i32 d = *(i32*)(o + 0x128) - *(i32*)((char*)p + 0x120);
+        *(i32*)(o + 0x128) = d;
+        if (d <= 0) {
+            *(i32*)(*(char**)(o + 0x7c) + 0x1c) = 0x1c;
+        }
+    } else {
+        CWwdNotifier* h = *(CWwdNotifier**)(o + 0x80);
+        if (h != 0) {
+            *(void**)(o + 0x84) = p;
+            h->m_callback(this);
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b6d0 - the out-of-line ~CAniAdvanceCursor: stamp derived (0x5f0128), run the
+// CLoadable slot-7 Unload/Reset (0x15c2c0 == CAniAdvanceCursor's own Reset; the
+// (CDDrawBlitParam*) cast is a reloc-masked placeholder for it), then reset
+// m_4/m_8/m_c. Kept a DISTINCT placeholder identity (C15b6d0): the real
+// CAniAdvanceCursor's ??1 is emitted per-COMDAT from its declared dtor, so this
+// out-of-line ??1 cannot wear the same name (one-source/N-COMDAT wall;
+// @identity-TODO). Grand-base fold @0x15b71b is the REAL ??_7CObject
+// (0x5e8cb4, disasm-verified).
+struct C15b6d0 : CObject {
+    i32 m_4; // +0x4
+    i32 m_8; // +0x8
+    i32 m_c; // +0xc
+    virtual ~C15b6d0() OVERRIDE;
+};
+SIZE_UNKNOWN(C15b6d0);
+RELOC_VTBL(C15b6d0, 0x001f0128); // aliases CAniAdvanceCursor (dtor-stamp verified)
+RVA(0x0015b6d0, 0x5b)
+C15b6d0::~C15b6d0() {
+    ((CDDrawBlitParam*)this)->Reset_15c2c0();
+    m_4 = -1;
+    m_8 = 0;
+    m_c = 0;
+}
+
+// cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable
+// header fields (m_0c=owner, m_04=field04, m_08=field08) then zeroes m_10/m_14/m_18.
+// 100%: deriving from the real CLoadable base reproduces retail's vptr-first store
+// schedule exactly.
+RVA(0x0015b730, 0x2b)
+CAniAdvanceCursor::CAniAdvanceCursor(i32 owner, i32 field04, i32 field08)
+    : CLoadable(owner, field04, field08) {
+    m_10 = 0;
+    m_14 = 0;
+    m_18 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b790 - the complete destructor: a thin derived class (vtable 0x5f00a8) on top
+// of Mid, adding the m_18c block + the embedded WwdSubA command object at +0x1a0.
+// @early-stop
+// zero-register-pinning regalloc wall: three-level fold (A -> WwdSubA member ->
+// Mid -> wap-object base) + trylevel chain reproduced; residual is the callee-saved
+// const register coloring across the two worker passes.
+RVA(0x0015b790, 0x1a6)
+CWwdGameObjectA::~CWwdGameObjectA() {
+    m_18c = -1;
+    m_190 = -1;
+    m_198 = 0;
+    m_194 = 0;
+    WORKER_FREE(m_7c);
+    WORKER_FREE(m_80);
+    WORKER_FREE(m_88);
+    WORKER_FREE(m_90);
+    m_d8 = -1;
+    m_c0 = (i32)0x80000000;
+    m_20.c = (i32)0x80000000; // 0x5c
+    m_20.b = -1;              // 0x38
+    m_20.a = (i32)0x80000000; // 0x20
+    // m_1a0 (WwdSubA) member destroyed; then Mid (E) folds.
+}
+
+// ---------------------------------------------------------------------------
+// Init (0x15b940): zero +0x19c, construct the +0x1a0 command map, then Setup.
+// ---------------------------------------------------------------------------
+RVA(0x0015b940, 0x38)
+i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
+    m_19c = 0;
+    m_cmdMap.Construct(this);
+    return Setup(a1, a2, a3, a4);
+}
+
+// ---------------------------------------------------------------------------
+// CWwdGameObject reset (0x15b980): drop the four sub-objects at +0x7c/+0x80/
+// +0x88/+0x90 via their scalar-dtor virtual (slot 1, delete flag), null the
+// geometry cache (+0x18c..+0x198), then re-seed the status fields. __thiscall.
+RVA(0x0015b980, 0x96)
+void CWwdFactoryObject::Reset_15b980() {
+    char* o = (char*)this;
+    *(i32*)(o + 0x18c) = -1;
+    *(i32*)(o + 0x190) = -1;
+    *(i32*)(o + 0x198) = 0;
+    *(i32*)(o + 0x194) = 0;
+    CWwdFactoryObject* s;
+    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
+        delete s;
+        *(i32*)(o + 0x7c) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
+        delete s;
+        *(i32*)(o + 0x80) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
+        delete s;
+        *(i32*)(o + 0x88) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
+        delete s;
+        *(i32*)(o + 0x90) = 0;
+    }
+    *(i32*)(o + 0xd8) = -1;
+    *(i32*)(o + 0xc0) = (i32)0x80000000;
+    *(i32*)(o + 0x5c) = (i32)0x80000000;
+    *(i32*)(o + 0x20) = (i32)0x80000000;
+    *(i32*)(o + 0x38) = -1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15bad0 - the 0x159440-final variant: thin derived class (vtable 0x5f0060) on top
+// of Mid. Re-runs the worker pass + groupX, then folds Mid + wap-object base.
+// @early-stop
+// zero-register-pinning regalloc wall: two-level fold + double worker pass +
+// trylevel chain reproduced; residual is callee-saved const register coloring.
+RVA(0x0015bad0, 0x153)
+CWwdGameObjectF::~CWwdGameObjectF() {
+    WORKER_FREE(m_7c);
+    WORKER_FREE(m_80);
+    WORKER_FREE(m_88);
+    WORKER_FREE(m_90);
+    m_c0 = (i32)0x80000000;
+    m_d8 = -1;
+    m_20.c = (i32)0x80000000; // 0x5c
+    m_20.a = (i32)0x80000000; // 0x20
+    m_20.b = -1;              // 0x38
+    // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + base-vtable stamp.
+}
+
+// CWwdGameObject::SetupDeferred (0x15bc30): Setup with a1/a2 zeroed. Out-of-line.
+RVA(0x0015bc30, 0x16)
+i32 CWwdGameObject::SetupDeferred(i32 a3, i32 a4) {
+    return Setup(0, 0, a3, a4);
+}
+
+// ---------------------------------------------------------------------------
+// 0x15bc50: identical instantiation of ReleaseSubs_15b5d0 in a sibling subclass.
+RVA(0x0015bc50, 0x7c)
+void CWwdFactoryObject::ReleaseSubs_15bc50() {
+    char* o = (char*)this;
+    CWwdFactoryObject* s;
+    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
+        delete s;
+        *(i32*)(o + 0x7c) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
+        delete s;
+        *(i32*)(o + 0x80) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
+        delete s;
+        *(i32*)(o + 0x88) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
+        delete s;
+        *(i32*)(o + 0x90) = 0;
+    }
+    *(i32*)(o + 0xc0) = (i32)0x80000000;
+    *(i32*)(o + 0xd8) = -1;
+    *(i32*)(o + 0x5c) = (i32)0x80000000;
+    *(i32*)(o + 0x20) = (i32)0x80000000;
+    *(i32*)(o + 0x38) = -1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15bd10 - the CResolveNode-derived variant (extra +0x1dc CObList, leading init
+// call 0x166810, trailing base CResolveNode dtor 0x429b): the 4-level polymorphic
+// chain CWwdGameObjectB : WwdBLevel2 : WwdBMid : WwdBResolve (family header).
+// @early-stop
+// eh-dtor multi-level trylevel wall: the real 4-level polymorphic chain reproduces
+// the four cl-emitted vptr restamps + the per-phase field re-clears + the CString/
+// WwdSub/CObList member folds; residual is the /GX trylevel numbering across the four
+// destruct phases (the same zero-register-pinning const coloring as the A/C/F
+// variants) - not source-steerable.
+RVA(0x0015bd10, 0x1ef)
+CWwdGameObjectB::~CWwdGameObjectB() {
+    Clear_166810(); // 0x166810; same-class call, no cast-to-view of this
+    WORKER_FREE(m_7c);
+    m_1f8 = 0;
+    m_18c = -1;
+    m_190 = -1;
+    m_198 = 0;
+    m_194 = 0;
+    WORKER_FREE(m_80);
+    WORKER_FREE(m_88);
+    WORKER_FREE(m_90);
+    m_d8 = -1;
+    m_c0 = (i32)0x80000000;
+    m_5c = (i32)0x80000000;
+    m_20 = (i32)0x80000000;
+    m_38 = -1;
+    // m_1dc (CObList) auto-destroyed (DtorList), then ~WwdBLevel2 folds.
+}
+
+// ---------------------------------------------------------------------------
+// CWwdGameObject reset (0x15bf00): the deeper-reset twin - first run the base
+// reset (Reload_166810), clear +0x1f8, then the identical sub-object teardown +
+// status re-seed as Reset_15b980. __thiscall, ret 0.
+RVA(0x0015bf00, 0xa1)
+void CWwdFactoryObject::Reset_15bf00() {
+    char* o = (char*)this;
+    Reload_166810();
+    *(i32*)(o + 0x1f8) = 0;
+    *(i32*)(o + 0x18c) = -1;
+    *(i32*)(o + 0x190) = -1;
+    *(i32*)(o + 0x198) = 0;
+    *(i32*)(o + 0x194) = 0;
+    CWwdFactoryObject* s;
+    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
+        delete s;
+        *(i32*)(o + 0x7c) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
+        delete s;
+        *(i32*)(o + 0x80) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
+        delete s;
+        *(i32*)(o + 0x88) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
+        delete s;
+        *(i32*)(o + 0x90) = 0;
+    }
+    *(i32*)(o + 0xd8) = -1;
+    *(i32*)(o + 0xc0) = (i32)0x80000000;
+    *(i32*)(o + 0x5c) = (i32)0x80000000;
+    *(i32*)(o + 0x20) = (i32)0x80000000;
+    *(i32*)(o + 0x38) = -1;
+}
+
+// 0x15bfb0: rect-overlap predicate (RECT a, RECT b): true iff a.left <= b.right,
+// a.right >= b.left, a.top <= b.bottom, a.bottom >= b.top. __stdcall, 2 args.
+RVA(0x0015bfb0, 0x4a)
+i32 __stdcall RectsOverlap_15bfb0(CDDrawRect* a, CDDrawRect* b) {
+    if (a->left > b->right) {
+        return 0;
+    }
+    if (a->right < b->left) {
+        return 0;
+    }
+    if (a->top > b->bottom) {
+        return 0;
+    }
+    return a->bottom >= b->top;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15c070 - the 0x159250-final variant: thin derived class (vtable 0x5effd0) on top
+// of Mid; clears the byte flag m_18c, re-runs the worker pass + groupX, then folds
+// Mid + wap-object base.
+// @early-stop
+// zero-register-pinning regalloc wall: two-level fold + byte-flag clear + double
+// worker pass + trylevel chain reproduced; residual is callee-saved const coloring.
+RVA(0x0015c070, 0x159)
+CWwdGameObjectC::~CWwdGameObjectC() {
+    m_18c = 0;
+    WORKER_FREE(m_7c);
+    WORKER_FREE(m_80);
+    WORKER_FREE(m_88);
+    WORKER_FREE(m_90);
+    m_c0 = (i32)0x80000000;
+    m_d8 = -1;
+    m_20.c = (i32)0x80000000; // 0x5c
+    m_20.a = (i32)0x80000000; // 0x20
+    m_20.b = -1;              // 0x38
+    // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + base-vtable stamp.
+}
+
+// CWwdGameObject::SetupFlagged (0x15c1d0): stash the dot-color flag byte then Setup.
+RVA(0x0015c1d0, 0x26)
+i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
+    *(char*)&m_dotColor = (char)flag;
+    return Setup(a1, a2, a3, a4);
+}
+
+// ---------------------------------------------------------------------------
+// 0x15c200: the +0x18c-clearing twin - clear the byte at +0x18c first, then the
+// identical sub-object release + status re-seed. __thiscall, ret 0.
+RVA(0x0015c200, 0x82)
+void CWwdFactoryObject::ReleaseSubsClearKey_15c200() {
+    char* o = (char*)this;
+    *(char*)(o + 0x18c) = 0;
+    CWwdFactoryObject* s;
+    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
+        delete s;
+        *(i32*)(o + 0x7c) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
+        delete s;
+        *(i32*)(o + 0x80) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
+        delete s;
+        *(i32*)(o + 0x88) = 0;
+    }
+    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
+        delete s;
+        *(i32*)(o + 0x90) = 0;
+    }
+    *(i32*)(o + 0xc0) = (i32)0x80000000;
+    *(i32*)(o + 0xd8) = -1;
+    *(i32*)(o + 0x5c) = (i32)0x80000000;
+    *(i32*)(o + 0x20) = (i32)0x80000000;
+    *(i32*)(o + 0x38) = -1;
+}
+
+// 0x15c290: blit-param init.
+// @early-stop
+// 94.75% - structure/offsets/stores byte-exact; retail pins `src` in edx and the
+// constant `1` in eax, our cl swaps them (eax<->edx phase shift), a regalloc
+// coin-flip with no source lever (docs/patterns/zero-register-pinning.md).
+RVA(0x0015c290, 0x2f)
+void CDDrawBlitParam::Construct(void* srcv) {
+    CDDrawBlitParamSrc* src = (CDDrawBlitParamSrc*)srcv;
+    m_10 = (i32)src;
+    m_28 = 1;
+    m_srcRef = 0;
+    m_scale = 1.0f;
+    m_24 = 1;
+    m_2c = *(i32*)((char*)src->m_elements + 0x34) & 0x40;
+}
+
+// CDDrawBlitParam::Reset_15c2c0 (0x15c2c0): clear the param source refs.
+RVA(0x0015c2c0, 0xc)
+void CDDrawBlitParam::Reset_15c2c0() {
+    m_10 = 0;
+    m_srcRef = 0;
+    m_element = 0;
+}
+
+// 0x15c2d0: blit-param setup from a worker source.
+RVA(0x0015c2d0, 0x45)
+void CDDrawBlitParam::Setup_15c2d0(CDDrawBlitParamSrc* src) {
+    char* e;
+    i32 v;
+    m_srcRef = src;
+    if (!src) {
+        return;
+    }
+    m_index = 0;
+    if (src->m_count > 0) {
+        e = *(char**)src->m_elements;
+    } else {
+        e = 0;
+    }
+    m_element = e;
+    m_20 = 0;
+    m_28 = 0;
+    v = *(i32*)(e + 0x1c);
+    m_30 = v;
+    m_34 = v;
+    {
+        float f = src->m_scale;
+        m_scale = f;
+    }
+}
+
+// 0x15c320: recompute the blit-param from the already-stored m_srcRef source (the
+// Setup twin that keeps m_srcRef, fixes the scale to 1.0f, and only clears m_20
+// when `a1` is set).
+RVA(0x0015c320, 0x40)
+void CDDrawBlitParam::Recompute_15c320(i32 a1) {
+    CDDrawBlitParamSrc* src = m_srcRef;
+    if (src == 0) {
+        return;
+    }
+    m_index = 0;
+    char* e;
+    if (src->m_count > 0) {
+        e = *(char**)src->m_elements;
+    } else {
+        e = 0;
+    }
+    m_element = e;
+    m_28 = 0;
+    i32 v = *(i32*)(e + 0x1c);
+    m_scale = 1.0f;
+    m_30 = v;
+    m_34 = v;
+    if (a1 != 0) {
+        m_20 = 0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x15c360: advance the animation cursor by `elapsed` ticks. __thiscall, 1 arg
+// (ret 4).
+// @early-stop
+// Zero-register-pinning plateau (1365 B, two jump-table switches): the body is a
+// complete, logic-correct reconstruction. Byte-exact: the entry + timer-decrement
+// block, both jump-table switches (both emit the retail .rdata table AND match its
+// physical case-body order), the pos-mode update, the random blit/sound trigger,
+// the float speed scale (fild/fmul/__ftol), the descriptor-advance variants, and
+// the buffer-consuming return tail. The residual is purely the documented
+// register-pinning wall: (1) switch1's increment/step cases pin the new frame
+// index in a callee-saved ebx as a TWIN copy where our cl keeps it single-register
+// in eax; (2) the back half re-materializes the zero in ecx vs our reuse of the
+// ebp=0 pin, and the pos-mode switch swaps eax<->ecx for the switch value. Same
+// values, same stores, same CFG; no source lever flips the homing. Deferred to the
+// final sweep per the big-function stop rule. docs/patterns/zero-register-pinning.md
+// + linked-list-walk-node-eax-rotation.md (the twin-copy idiom).
+RVA(0x0015c360, 0x555)
+i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
+    if (m_14 == 0) {
+        return -1;
+    }
+
+    // --- per-frame timer decrement --------------------------------------------
+    if (m_20 > 0) {
+        if (m_24 != 0) {
+            if (elapsed >= m_20) {
+                m_20 = 0;
+                m_curDraw = m_pendingDraw;
+            } else {
+                m_20 -= elapsed;
+                return m_curDraw;
+            }
+        } else {
+            m_20 -= 1;
+            return m_curDraw;
+        }
+    } else {
+        m_curDraw = m_pendingDraw;
+    }
+
+    if (m_28 == 0) {
+        CAniRenderCtx* ctx = m_10;
+        CAniDesc* d = m_18;
+
+        // --- step the active frame sequence one step (7-way on d->m_stepMode) --------
+        switch (d->m_stepMode - 1) {
+            case 0: { // advance + wrap-to-first on overrun
+                CAniRenderCtx* c = m_10;
+                CSprite* seq = c->m_frameSeq;
+                if (seq == 0) {
+                    break;
+                }
+                i32 idx = c->m_frameCursor + 1;
+                c->m_frameCursor = idx;
+                c->m_curFrame = seq->GetFrame(idx);
+                if (c->m_curFrame == 0) {
+                    i32 first = c->m_frameSeq->m_firstFrame;
+                    c->m_frameCursor = first;
+                    c->m_curFrame = c->m_frameSeq->GetFrame(first);
+                }
+                break;
+            }
+            case 1: { // wrap-to-last when at first, else step back
+                CAniRenderCtx* c = m_10;
+                CSprite* seq = c->m_frameSeq;
+                if (seq == 0) {
+                    break;
+                }
+                i32 idx = c->m_frameCursor;
+                if (idx == seq->m_firstFrame) {
+                    c->m_frameCursor = seq->m_lastFrame;
+                } else {
+                    c->m_frameCursor = idx - 1;
+                }
+                c->m_curFrame = seq->GetFrame(c->m_frameCursor);
+                break;
+            }
+            case 2: { // jump to an explicit frame (d->m_param)
+                CAniRenderCtx* c = m_10;
+                i32 frame = d->m_param;
+                CSprite* seq = c->m_frameSeq;
+                if (seq == 0) {
+                    break;
+                }
+                c->m_curFrame = seq->GetFrame(frame);
+                c->m_frameCursor = frame;
+                break;
+            }
+            case 3: { // reset to first
+                CAniRenderCtx* c = m_10;
+                CSprite* seq = c->m_frameSeq;
+                if (seq == 0) {
+                    break;
+                }
+                i32 first = seq->m_firstFrame;
+                c->m_frameCursor = first;
+                c->m_curFrame = seq->GetFrame(first);
+                break;
+            }
+            case 4: { // reset to last
+                CAniRenderCtx* c = m_10;
+                CSprite* seq = c->m_frameSeq;
+                if (seq == 0) {
+                    break;
+                }
+                i32 last = seq->m_lastFrame;
+                c->m_frameCursor = last;
+                c->m_curFrame = seq->GetFrame(last);
+                break;
+            }
+            case 5: { // advance by d->m_param, clamp-last on overrun
+                CAniRenderCtx* c = m_10;
+                i32 step = d->m_param;
+                CSprite* seq = c->m_frameSeq;
+                if (seq == 0) {
+                    break;
+                }
+                i32 idx = c->m_frameCursor + step;
+                c->m_frameCursor = idx;
+                c->m_curFrame = seq->GetFrame(idx);
+                if (c->m_curFrame == 0) {
+                    c->ClampLast_15cc90();
+                }
+                break;
+            }
+            case 6: { // retreat by d->m_param, clamp-first on underrun
+                CAniRenderCtx* c = m_10;
+                i32 step = d->m_param;
+                CSprite* seq = c->m_frameSeq;
+                if (seq == 0) {
+                    break;
+                }
+                i32 idx = c->m_frameCursor - step;
+                c->m_frameCursor = idx;
+                c->m_curFrame = seq->GetFrame(idx);
+                if (c->m_curFrame == 0) {
+                    c->ClampFirst_15cc50();
+                }
+                break;
+            }
+            default:
+                break;
+        }
+
+        // --- apply the per-frame position delta (3-way on d->m_posMode) ------------
+        ctx = m_10;
+        ctx->m_posModeX = 0;
+        ctx->m_posModeY = 0;
+        d = m_18;
+        switch (d->m_posMode) {
+            case 1:
+                m_10->m_posModeX = d->m_posDX;
+                m_10->m_posModeY = d->m_posDY;
+                break;
+            case 2: {
+                CAniRenderCtx* c = m_10;
+                i32 x = c->m_screenX;
+                if (c->m_byteFlags & 0x2) {
+                    i32 dy = d->m_posDY;
+                    i32 dx = d->m_posDX;
+                    c->m_screenX = x - dx;
+                    c->m_screenY = c->m_screenY + dy;
+                } else {
+                    i32 dy = d->m_posDY;
+                    i32 dx = d->m_posDX;
+                    c->m_screenX = x + dx;
+                    c->m_screenY = c->m_screenY + dy;
+                }
+                break;
+            }
+            case 3:
+                m_10->m_screenX = d->m_posDX;
+                m_10->m_screenY = d->m_posDY;
+                break;
+            default:
+                break;
+        }
+
+        // --- per-frame draw/sound trigger -------------------------------------
+        CAniRenderCtx* c = m_10;
+        i32 fire = 1;
+        if (!(c->m_flags & 0x2000000) && !(m_18->m_flags & 0x8)) {
+            if (c->m_anchor == -1) {
+                fire = 0;
+            }
+        }
+        if (fire) {
+            CAniDesc* dd = m_18;
+            if (dd->m_flags & 0x4) {
+                i32 cue = c->m_screenX;
+                i32* tbl;
+                i32 entry;
+                if (dd->m_randMod == 0) {
+                    entry = 0;
+                } else {
+                    tbl = dd->m_randTable;
+                    entry = tbl[Rng::Next2() % dd->m_randMod];
+                }
+                if (entry != 0) {
+                    ((CAniBlitTrigger*)this)->TriggerBlit_1587f0(cue, 0, 0, 0);
+                }
+            } else {
+                i32* tbl;
+                i32 entry;
+                if (dd->m_randMod == 0) {
+                    entry = 0;
+                } else {
+                    tbl = dd->m_randTable;
+                    entry = tbl[Rng::Next2() % dd->m_randMod];
+                }
+                if (entry != 0) {
+                    ((LeafCue*)entry)->PlayIfElapsed_01f940(g_aniCueItem, 0, 0, 0);
+                }
+            }
+        }
+
+        // --- reload the per-frame timer (optionally float-scaled) -------------
+        CAniDesc* rd = m_18;
+        i32 reload = rd->m_frameTime;
+        m_20 = reload;
+        m_24 = (~rd->m_flags) & 1;
+        if (m_speed != 0x3f800000) {
+            m_20 = (i32)((double)(u32)reload * (*(float*)&m_speed));
+        }
+
+        // --- select the NEXT descriptor (10-way loop-mode on rd->m_loopMode) --------
+        // Cases are ordered to reproduce retail's physical case-body layout
+        // (9, 8, 7, 1, 2, 3, 4, 0, 5). Cases 2/3/4 test a sequence-position
+        // predicate and, on a hit, fall into case 0's shared inline loop-restart
+        // body (a goto into the single emitted block).
+        i32 modeWord = rd->m_loopMode;
+        CAniElement* arr;
+        i32 i;
+        CAniDesc* nd;
+        switch (modeWord & 0xffff) {
+            case 9: // pause
+                m_28 = 1;
+                break;
+            case 8: { // reset to the first descriptor and unscaled timing
+                if (m_14 != 0) {
+                    m_1c = 0;
+                    m_18 = (CAniDesc*)m_14->AtChecked_06b270(0);
+                    m_28 = 0;
+                    m_speed = 0x3f800000;
+                    m_pendingDraw = m_18->m_drawValue;
+                    m_curDraw = m_18->m_drawValue;
+                }
+                break;
+            }
+            case 7: { // hold on the first two descriptors (m_1c = 1 then 0)
+                m_1c = 1;
+                m_18 = (CAniDesc*)m_14->AtChecked_06b270(1);
+                if (m_18 == 0) {
+                    m_1c = 0;
+                    m_18 = (CAniDesc*)m_14->AtChecked_06b270(0);
+                }
+                if (m_18 != 0) {
+                    m_28 = 0;
+                    m_20 = 0;
+                    m_curDraw = m_pendingDraw;
+                    m_pendingDraw = m_18->m_drawValue;
+                }
+                break;
+            }
+            case 1: { // advance only when the cursor's frame reached the descriptor param
+                CAniRenderCtx* c2 = m_10;
+                if (c2->m_frameCursor == m_18->m_param) {
+                    if (modeWord != 9) {
+                        CAniElement* a = m_14;
+                        i32 j = m_1c + 1;
+                        m_1c = j;
+                        m_18 = (CAniDesc*)a->AtChecked_06b270(j);
+                        if (m_18 == 0) {
+                            m_1c = 0;
+                            m_18 = (CAniDesc*)a->AtChecked_06b270(0);
+                        }
+                        if (m_18 != 0) {
+                            m_curDraw = m_pendingDraw;
+                            m_pendingDraw = m_18->m_drawValue;
+                        }
+                    }
+                }
+                break;
+            }
+            case 2: { // advance only when the cursor reached the seq low frame
+                CAniRenderCtx* c2 = m_10;
+                CSprite* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_firstFrame) {
+                    goto loop_restart;
+                }
+                break;
+            }
+            case 3: { // advance only when the cursor reached the seq high frame
+                CAniRenderCtx* c2 = m_10;
+                CSprite* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_lastFrame) {
+                    goto loop_restart;
+                }
+                break;
+            }
+            case 4: { // advance one past the seq low frame
+                CAniRenderCtx* c2 = m_10;
+                CSprite* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_firstFrame + 1) {
+                    goto loop_restart;
+                }
+                break;
+            }
+            case 0: // loop the playlist forward, inline bounds-checked fetch
+            loop_restart:
+                if (modeWord != 9) {
+                    arr = m_14;
+                    i = m_1c + 1;
+                    m_1c = i;
+                    if (i >= 0 && i < arr->m_records.m_nSize) {
+                        nd = (CAniDesc*)arr->m_records.m_pData[i];
+                    } else {
+                        nd = 0;
+                    }
+                    m_18 = nd;
+                    if (nd == 0) {
+                        m_1c = 0;
+                        m_18 = (CAniDesc*)arr->AtChecked_06b270(0);
+                    }
+                    if (m_18 != 0) {
+                        m_curDraw = m_pendingDraw;
+                        m_pendingDraw = m_18->m_drawValue;
+                    }
+                }
+                break;
+            case 5: { // advance only when the cursor reached one before the high frame
+                CAniRenderCtx* c2 = m_10;
+                CSprite* seq = c2->m_frameSeq;
+                if (c2->m_frameCursor == seq->m_lastFrame - 1) {
+                    if (modeWord != 9) {
+                        CAniElement* a = m_14;
+                        i32 j = m_1c + 1;
+                        m_1c = j;
+                        CAniDesc* p;
+                        if (j >= 0 && j < a->m_records.m_nSize) {
+                            p = (CAniDesc*)a->m_records.m_pData[j];
+                        } else {
+                            p = 0;
+                        }
+                        m_18 = p;
+                        if (p == 0) {
+                            m_1c = 0;
+                            i32 cnt = a->m_records.m_nSize;
+                            CAniDesc* first;
+                            if (cnt > 0) {
+                                first = (CAniDesc*)a->m_records.m_pData[0];
+                            } else {
+                                first = 0;
+                            }
+                            m_18 = first;
+                        }
+                        if (m_18 != 0) {
+                            m_curDraw = m_pendingDraw;
+                            m_pendingDraw = m_18->m_drawValue;
+                        }
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    // --- return the per-frame draw value, consuming it when buffer-owned ------
+    if (m_2c != 0) {
+        if (m_20 != 0) {
+            i32 r = m_curDraw;
+            m_curDraw = 0;
+            return r;
+        }
+        i32 r = m_pendingDraw;
+        m_pendingDraw = 0;
+        return r;
+    }
+    if (m_20 != 0) {
+        return m_curDraw;
+    }
+    return m_pendingDraw;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15c900: dispatch on `type` - type 4 serializes, type 7 deserializes (both
+// via the named sibling), every other type is a no-op that returns 1. A
+// serialize/deserialize that returns 0 propagates the 0.
+// @early-stop
+// 80% - logic exact. Residual is the switch lowering: retail emits a `.rdata`
+// jump table, but MSVC5 folds our empty cases into a cmp/je-subtract chain.
+// Not source-steerable. docs/patterns/switch-cmpje-tree-vs-jumptable.md.
+RVA(0x0015c900, 0x42)
+i32 CDDrawBlitParam::Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4) {
+    if (ar == 0) {
+        return 0;
+    }
+    switch (type) {
+        case 3:
+            break;
+        case 4:
+            if (Serialize_15c970(ar) == 0) {
+                return 0;
+            }
+            break;
+        case 5:
+            break;
+        case 6:
+            break;
+        case 7:
+            if (Deserialize_15ca70(ar) == 0) {
+                return 0;
+            }
+            break;
+        case 8:
+            break;
+        default:
+            break;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15c970: serialize the blit-param. Writes the eight dwords m_index..m_scale to
+// the archive (4 bytes each via slot +0x30), zeroes a 0x80-byte label buffer,
+// and if m_srcRef is set, fetches the worker label (a returns-by-value CString
+// from the +0x2c sub-object's 0x152d30) and strcpy's it into the buffer; then
+// writes the whole 0x80-byte buffer. Returns 1.
+// @early-stop
+// 99.4% - the eight Writes + the buffer zero + the GetLabel call + the inline
+// strcpy all byte-exact; the only residual is the NRVO-temp addressing of the
+// returned CString. Entropy tail; no source lever.
+RVA(0x0015c970, 0xfe)
+i32 CDDrawBlitParam::Serialize_15c970(CSerialArchive* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    ar->Write(&m_index, 4);
+    ar->Write(&m_20, 4);
+    ar->Write(&m_24, 4);
+    ar->Write(&m_28, 4);
+    ar->Write(&m_2c, 4);
+    ar->Write(&m_30, 4);
+    ar->Write(&m_34, 4);
+    ar->Write(&m_scale, 4);
+    char buf[0x80];
+    for (i32 i = 0; i < 0x20; ++i) {
+        ((i32*)buf)[i] = 0;
+    }
+    if (m_srcRef != 0) {
+        CString label = m_worker->m_labelSource->GetLabel_152d30(m_srcRef);
+        strcpy(buf, label);
+    }
+    ar->Write(buf, 0x80);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15ca70: deserialize the blit-param (the Serialize_15c970 twin). Reads the
+// eight dwords from the archive, reads the 0x80-byte label buffer, and - when the
+// label is non-empty - looks it up in the worker sub-object's +0x10 map to recover
+// the worker into m_srcRef. Then the Setup_15c2d0-style tail. __thiscall, ret 0x4.
+// @early-stop
+// 89.9% - every instruction/CFG/offset present and the logic is byte-faithful;
+// residual is a register-allocation cascade seeded at the first field read:
+// retail keeps &m_30 in callee-saved ebp across the function, our cl spills it
+// (frame 0x94) and rotates eax/ebp through the eight reads + the index tail.
+// docs/patterns/pin-local-for-callee-saved-reg.md / zero-register-pinning.md.
+RVA(0x0015ca70, 0x15b)
+i32 CDDrawBlitParam::Deserialize_15ca70(CSerialArchive* ar) {
+    if (ar == 0) {
+        return 0;
+    }
+    ar->Read(&m_index, 4);
+    ar->Read(&m_20, 4);
+    ar->Read(&m_24, 4);
+    ar->Read(&m_28, 4);
+    ar->Read(&m_2c, 4);
+    ar->Read(&m_30, 4);
+    ar->Read(&m_34, 4);
+    ar->Read(&m_scale, 4);
+    char buf[0x80];
+    ar->Read(buf, 0x80);
+    if (strlen(buf) == 0) {
+        m_srcRef = 0;
+    } else {
+        void* out = 0;
+        ((CMapStringToOb*)&m_worker->m_labelSource->m_labelMap)->Lookup(buf, (CObject*&)out);
+        m_srcRef = (CDDrawBlitParamSrc*)out;
+    }
+    CDDrawBlitParamSrc* w = m_srcRef;
+    if (w != 0) {
+        char* e;
+        if (m_index >= 0 && m_index < w->m_count) {
+            e = ((char**)w->m_elements)[m_index];
+        } else {
+            e = 0;
+        }
+        m_element = e;
+        if (e == 0) {
+            m_index = 0;
+            if (w->m_count > 0) {
+                e = *(char**)w->m_elements;
+            } else {
+                e = 0;
+            }
+            m_element = e;
+        }
+        if (m_element != 0) {
+            m_20 = 0;
+            m_28 = 0;
+            m_34 = m_30;
+            m_30 = *(i32*)(m_element + 0x1c);
+        }
+    }
+    return 1;
+}
+
+// CSprite::GetFrame (0x15cc30): the frame handle for index n (in [m_firstFrame,
+// m_lastFrame]), or 0. Position-homed exile (a CSprite inline getter kept at this
+// obj; the CSprite frame methods live in the S1 obj, WwdGameObject.cpp).
+RVA(0x0015cc30, 0x1e)
+i32 CSprite::GetFrame(i32 n) {
+    if (n >= m_firstFrame && n <= m_lastFrame) {
+        return (i32)m_frames.m_pData[n];
+    }
+    return 0;
+}
+
+// CAniRenderCtx::ClampFirst (0x15cc50) / ClampLast (0x15cc90): clamp the +0x190
+// frame cursor to the active sequence's low/high frame and re-resolve +0x198
+// through the same bounds-checked fetch GetFrame (0x15cc30) inlines.
+// @early-stop
+// shrink-wrapped-callee-save-push wall (~62%, docs/patterns/shrink-wrapped-callee-
+// save-push.md): retail defers `push esi` past the null guard and emits the
+// esi-pop epilogue inline per exit; cl hoists push esi to the prologue and
+// tail-merges the exits. Body byte-exact; not source-steerable.
+RVA(0x0015cc50, 0x38)
+void CAniRenderCtx::ClampFirst_15cc50() {
+    CSprite* seq = m_frameSeq;
+    if (seq == 0) {
+        return;
+    }
+    i32 n = seq->m_firstFrame;
+    m_frameCursor = n;
+    if (n >= seq->m_firstFrame && n <= seq->m_lastFrame) {
+        m_curFrame = (i32)seq->m_frames.m_pData[n];
+    } else {
+        m_curFrame = 0;
+    }
+}
+
+// @early-stop
+// shrink-wrapped-callee-save-push wall (~62%); twin of ClampFirst above.
+RVA(0x0015cc90, 0x38)
+void CAniRenderCtx::ClampLast_15cc90() {
+    CSprite* seq = m_frameSeq;
+    if (seq == 0) {
+        return;
+    }
+    i32 n = seq->m_lastFrame;
+    m_frameCursor = n;
+    if (n >= seq->m_firstFrame && n <= seq->m_lastFrame) {
+        m_curFrame = (i32)seq->m_frames.m_pData[n];
+    } else {
+        m_curFrame = 0;
+    }
+}

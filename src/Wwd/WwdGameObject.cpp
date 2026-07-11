@@ -1,4 +1,4 @@
-#include <Mfc.h> // real MFC CString (FindKeyOfValue returns it by value; ~CString 0x1b9cde)
+#include <Mfc.h> // real MFC CString/CObArray/CMapStringToOb (NAFXCW, reloc-masked)
 #include <Gruntz/BoundaryUpperViews.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawSurfacePair.h> // Slot30/34/38 render targets (held surface @+0x2c)
@@ -8,59 +8,41 @@
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawGroupChild/Node - the broadcast child interface
 #include <rva.h>
 #include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
-#include <stdlib.h>               // abs() (cdq/xor/sub) for the Slot34/38 dirty-rect deltas
+#include <stdlib.h>               // abs() / atoi()
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/WwdGameObject.h>
 #include <Ints.h>
-#include <Wap32/Object.h>                 // CObject - the shared engine grand-base
+#include <Wap32/Object.h>       // CObject - the shared engine grand-base
+#include <Gruntz/ParseSource.h> // CParseSource value records (m_name/GetEntryTag) - MUST
+// precede DDrawSubMgrLeafScan.h (its `class CParseSource` fwd flips MSVC5's default
+// access for the later struct definition)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (mgr+0x28 reader)
-// WwdGameObject.cpp - leaf methods of CWwdGameObject, a runtime "plane object"
-// deserialized from WWD level data (constructed by WwdFile::ReadPlaneObjects,
-// 0x162af0, via the EH-frame ctor at 0x15b390 which is NOT reconstructed here).
+#include <Wwd/WwdGameObjectFamily.h>      // the CWwdGameObjectE/A/F/B/C dtor-family hierarchy
+#include <Gruntz/UserLogic.h>             // CGameObject (the sprite-resource/worker leaves)
+#include <Gruntz/ResMgr.h>                // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
+#include <Gruntz/Sprite.h>                // CSprite (frame-data), CSpriteHashTable, CFrameArray
+#include <Gruntz/LogicRecord.h>           // CLogicRecord (the +0x80 worker under its record view)
+#include <DDrawMgr/AnimWorkerObj.h>       // AnimWorkerObj (the 0x17c worker; Clear @0x151e70)
+#include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (frame collection; slots 10/14/15/16)
+#include <Bute/SymTab.h>                  // CSymTab iteration (FirstSym/NextSym{,2,3})
+#include <DDrawMgr/DDrawSurfaceMgr.h>     // m_0c owner (m_flags bit 0x100 = single-frame)
+#include <Image/ImageSet.h>               // CImageSet (sparse CImage-frame collection)
+#include <Gruntz/AniAdvanceCursor.h>      // canonical CAniAdvanceCursor (Advance_15c360)
+// WwdGameObject.cpp - the 0x1504d0-0x152636 original TU (wave4-L dossier #15, block
+// S1): ONE first-link obj weaving the CWwdGameObject live methods + CWwdGameObjectA
+// render slots, the CGameObject sprite-resource/worker leaves (spriteresource +
+// userbaselink), the AnimWorkerObj/CLogicRecord record leaves, and the
+// CDDrawWorker/CImageSet frame-collection methods (??_7CDDrawWorker slots 10-16 span
+// the whole weave - one class's virtuals across all of them). The file IS that obj;
+// its former 0x15bxxx dtor block lives in src/Wwd/WwdFactoryObject.cpp (block I) and
+// the 0x166xxx render block in src/Wwd/WwdGameObjectRender.cpp (block R).
 //
-// The object owns a sprite-animation worker at +0x7c (WwdAnimWorker, foreign
-// vtable - virtuals dispatched, never defined), a command-dispatch sub-object
-// at +0x1a0 (CmdMap), and a back-pointer to its owning manager at +0x0c.
+// original TU: filename unknown (@identity-TODO - no __FILE__ anchor; the wwd
+// game-object/plane-object module of the WAP32 engine).
 //
-// Fields are typed named members of CWwdGameObject at their retail offsets
-// (matching-neutral: a named member at offset N lowers to the same [this+N] as
-// the raw this-offset read it replaced). Provable roles are named (pos/clip/
-// worker/mgr/name/flags/command-map/sub-list); the opaque serialized state block
-// keeps m_<hexoffset> placeholders. Only the OFFSETS + emitted bytes are
-// load-bearing (campaign doctrine).
-//
-// These are plain /O2 /MT leaves: NO SEH frame (the throwing ctor lives in the
-// eh unit). External callees (the sub-object ctor/find, archive Read/Write
-// virtual [+0x30], CString dtor, NAFXCW Lookup, sibling readers) are modeled
-// with no body so their rel32 calls reloc-mask.
-//
-// DE-FRAGMENTATION ASSESSMENT (matcher-1, misplacement-flatline pass): NOT
-// splittable - this TU is /Gy-COMDAT function-level scattered, the case-(b)
-// verdict (cf. LightFxRender). Its two class families - CWwdGameObject (plane
-// object, :CObject) and the render-worker family CWwdGameObjectE -> A/F/C +
-// CWwdGameObjectB - are BOTH independently threaded across three far-apart .text
-// bands (0x150xxx live methods + A slots / 0x15bxxx all six dtors + Init /
-// 0x166xxx RenderDot + C slots + B methods), and WITHIN each band the linker
-// interleaves foreign COMDATs (UserBaseLink CGameObject splits Setup..Play;
-// DDrawSubMgr CWwdFactoryObject + WwdObjMgrFactories + AniAdvanceCursor thread
-// between the dtors; WwdObjMgrFactories splits ResetAndSetup..B). Splitting by
-// class/family leaves BOTH resulting TUs still spanning the full ~88KB range
-// (0x150660..0x166984) - zero contiguity gained. The scatter is the /Gy linker's,
-// not a source misplacement; one .cpp already = one .obj here.
+// Fields are typed named members at their retail offsets (matching-neutral); only
+// the OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
 
-// CmdMap (+0x1a0), the CObList m_subList (+0x1dc) and the CWwdGameObject class
-// itself now live in the canonical <Gruntz/WwdGameObject.h> (included above). The
-// list holds MFC CObject payloads (their scalar-deleting dtor is slot 1, exactly
-// CObject::~CObject); ResetAndSetup walks it with the real CObList::GetNext +
-// `delete` - no walk-view struct.
-
-// The owning manager at +0x0c, modeled as a real typed object (WwdMgr, below)
-// with its nested reader/map sub-objects, so the chained derefs lower to the
-// exact [[mgr+slot]+off] loads with no cast.
-//
-// The name->object lookup maps each reader sub-object embeds at +0x10 (each a
-// distinct NAFXCW CMapStringTo* instantiation -> distinct Lookup body) and the
-// kill-cue map at +0x48. Reloc-masked no-body callees.
 // Reduced reloc-masked views of the real MFC map containers (only the +0 map base
 // is load-bearing here). The Lookup member is declared external so the call binds
 // directly (m_map.Lookup(...)) with no per-site container cast; the reloc masks the
@@ -72,28 +54,9 @@ struct CMapStringToObLite { // MFC CMapPtrToPtr (Lookup @0x1b8760)
     i32 Lookup(void* key, void*& val);
 };
 
-// mgr+0x28 is the canonical CDDrawSubMgrLeafScan (<DDrawMgr/DDrawSubMgrLeafScan.h>,
-// included above). FindKeyOfValue_158570(LeafScanValue* target) reverse-looks-up a key
-// CString by the map value, and its +0x10 CMapStringToOb (m_10) resolves a name ->
-// CObject (Lookup @0x1b8438). The former local reader-slice + its MapLookupB view are
-// folded onto that single-source header (disasm 0x158570: the arg is a pointer compared
-// for equality -> LeafScanValue*; 0x1b8438 delinks to ?Lookup@CMapStringToOb, the same
-// carve-out symbol SerialObjRef binds - so both use-sites stay reloc-masked).
-
-// The archive/stream passed to ReadState/Serialize/Sub150c30/Sub151780/WriteSnapshot
-// is the shared WAP32 CSerialArchive (Read @ vtable +0x2c - the read/load direction;
-// Write @ +0x30 - the store direction), now the one modeled class in
-// <Gruntz/SerialArchive.h> - the former local `Archive` view is folded away.
-// authentic: the retail mangling of those methods carries an `int` param (`H`, e.g.
-// ?ReadState@CWwdGameObject@@QAEHH@Z) - the archive enters as an int handle, so the
-// source param stays `int` (dev-faithful) and the `(CSerialArchive*)` reinterpret of
-// that handle is the real operation. Retyping the param would rewrite the symbol and
-// diverge from what the devs wrote.
-// mgr+0x14: the real CDDrawWorkerRegistry (full def in DDrawMgr units) -
-// FindKeyOfValue_165360 reverse-looks-up a key CString by CWorkerMapValue through
-// its +0x10 map. Reloc-masked reader view onto the real class.
-class
-    CImageSet; // real FindKeyOfValue_165360 arg (worker map value); cast at the WwdWorker* call sites
+// mgr+0x14: the real CDDrawWorkerRegistry (full def in DDrawMgr units, as
+// CWorkerVtableView) - FindKeyOfValue_165360 reverse-looks-up a key CString by
+// CWorkerMapValue through its +0x10 map. Reloc-masked reader view onto the real class.
 struct CDDrawWorkerRegistry {
     CString FindKeyOfValue_165360(CImageSet* obj); // 0x165360  __thiscall -> CString (by value)
     char m_pad00[0x10];
@@ -169,17 +132,6 @@ struct WwdSnapshot {
     i32 m_9c;          // m_74
 };
 
-// CString::operator=(LPCSTR) on the +0xdc name member (NAFXCW, reloc-masked).
-// authentic: m_name is the engine's bare CString handle (one `char*`); its
-// operator= is an out-of-line extern, so it is modeled as a method on a tiny
-// helper the &m_name handle is reinterpreted through (no member to fold into).
-
-// CWwdGameObject is defined in <Gruntz/WwdGameObject.h> (canonical). These two
-// render sub-objects are defined further below; forward-declare them for the
-// method bodies + WwdRenderCtx::m_2c.
-struct WwdRenderCtx;
-struct WwdSurface;
-
 // The sub-object hung off the worker at WwdAnimWorker+0x18 (own vtable; its +0x8
 // virtual is read in WriteSnapshot).
 class WorkerSub {
@@ -189,37 +141,306 @@ public:
     virtual i32 Vfunc8(); // +0x08
 };
 
-// (WwdSelf folded onto CWwdGameObject's real 17-slot virtual interface above -
-// WriteSnapshot now dispatches Vfunc20/Vfunc40 through `this` with no cast.)
-
-// The render context RenderDot (0x1660f0) plots into: a clip extent at +0x10/
-// +0x14 and the destination surface at +0x2c.
-struct WwdRenderCtx {
-    char m_pad00[0x10];
-    i32 m_10; // +0x10  clip width
-    i32 m_14; // +0x14  clip height
-    char m_pad18[0x2c - 0x18];
-    CDDSurface* m_2c; // +0x2c  destination surface
-};
-
-// The 8-bit destination surface: GetRowBase (0x13e6d0) yields the buffer base
-// offset for a row, +0x20 is the row pitch, +0xb0 the per-column stride, +0x08 a
-// post-plot notifier whose vtable slot +0x80 is a free function fn(self, 0).
-
 // Raw this-offset read of a foreign engine object reached as an opaque void*/int
 // handle (found-object refs, the a4 setup source). authentic: these referents are
 // heterogeneous unmodeled engine objects (no single concrete class to type), so a
 // documented offset read is the deliberate access - only the offset is load-bearing.
 #define F(p, off, ty) (*(ty*)((char*)(p) + (off)))
 
+// The global NAFXCW allocator (inlined frame-worker construction) + the engine
+// __cdecl heap pair (0x1b9b46 / 0x1b9b82; reloc-masked rel32).
+extern void* operator new(u32 size);
+extern "C" void* RezAlloc(u32 n);       // 0x1b9b46
+extern "C" void Engine_Delete(void* p); // 0x1b9b82 (CLogicRecord teardown name)
+extern "C" void RezFree(void* p);       // 0x1b9b82 (AnimWorkerObj::Clear name)
+
+// The global default geometry source ApplyLookupGeometry/ApplyGeometryDirect consume.
+DATA(0x002bf3bc)
+extern i32 g_defaultGeo; // VA 0x6bf3bc (RVA 0x2bf3bc)
+
 // ---------------------------------------------------------------------------
-// Dispatch (0x150a70): look the request up in the +0x1a0 command map; on a hit,
-// route by `type`: 4 -> ReadState, 7 -> Sub150c30 (abort on failure), then play.
+// The frame-worker is a CImage (RTTI .?AVCImage@@, SHARED vtable ??_7CImage@@6B@
+// @0x1eaa2c / VA 0x5eaa2c, cataloged in config/vtable_names.csv). The insert
+// allocates a raw 0x34-byte CImage and INLINES its construction (vptr stamp + field
+// init) at the new-site, then drives the slot-11 Resolve virtual and, on failure,
+// the slot-1 scalar dtor. Real-polymorphic (all-vtables mandate).
 // ---------------------------------------------------------------------------
-// CWwdGameObject::Test (0x1509c0, re-homed from src/Stub/BoundaryUpper2.cpp): on-screen
-// visibility cull. Derive the object's four edges from its centre (m_posX/m_posY) and the
-// sprite half-extents (m_198), then bounds-check against either the camera rect (when the
-// 0x40000 flag is set) or the plane grid limits. __thiscall, 0 args.
+struct CFrameWorker {
+    virtual void GetRuntimeClass();          // [0]  +0x00
+    virtual ~CFrameWorker();                 // slot 1 (deleting dtor -> cl-emitted ??_G)
+    virtual void Serialize();                // [2]  +0x08 (ILT)
+    virtual void AssertValid();              // [3]  +0x0c (ILT)
+    virtual void Dump();                     // [4]  +0x10 (ILT)
+    virtual void HasFrames();                // [5]  +0x14 (ILT)
+    virtual void IsValidImage();             // [6]  +0x18 (ILT)
+    virtual void FreeAll();                  // [7]  +0x1c  CImage::FreeAll
+    virtual void GetImageCategory();         // [8]  +0x20 (ILT)
+    virtual void Create24();                 // [9]  +0x24  CImage::Create24
+    virtual void LoadDispatch();             // [10] +0x28  CImage::LoadDispatch
+    virtual i32 Resolve(void* src, i32 arg); // [11] +0x2c  CImage::Resolve
+
+    inline CFrameWorker(i32 frameNumber, void* parent) {
+        m_04 = frameNumber;
+        m_08 = 0;
+        m_0c = parent;
+        m_10 = 0;
+        m_14 = 0;
+        m_2c = 0;
+        m_30 = 0;
+    }
+
+    i32 m_04;              // +0x04  frame number
+    i32 m_08;              // +0x08
+    void* m_0c;            // +0x0c  parent (sprite->m_c)
+    i32 m_10;              // +0x10  (zeroed)
+    i32 m_14;              // +0x14  (zeroed)
+    char _18[0x2c - 0x18]; // +0x18  (untouched)
+    i32 m_2c;              // +0x2c
+    i32 m_30;              // +0x30
+};
+SIZE(CFrameWorker, 0x34);
+
+// The image format/state helper (CImageFrame::m_format) is a ShadeSelector; its Select
+// @0x14dd90 resolves the shade table for a format. TU-local decl (shade-table unit).
+struct ShadeDescr;
+class ShadeSelector {
+public:
+    void Select(i32 type, ShadeDescr* desc);
+};
+
+// The frame ctor CreateFrame24/28/30 inline (vptr stamp + field init at the new-site).
+inline CImageFrame::CImageFrame(void* owner, i32 index) {
+    m_index = index;
+    m_8 = 0;
+    m_owner = owner;
+    m_width = 0;
+    m_height = 0;
+    m_surface = 0;
+    m_format = 0;
+}
+
+// Stamp helper retired: the worker builds are real `new`-less inline constructions
+// whose vptr install is dropped (compiler-emitted vtable; % ok per drive-to-0).
+static inline void StampWorkerVtbl(CAnimWorker* w) {
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
+}
+
+// ===========================================================================
+// CGameObject::ApplyGeometryDirect @0x58b60 - COMDAT-at-usage exile of this TU's
+// geometry-apply pair, kept at the 0x58xxx gruntcombat obj (file-head position).
+// The direct counterpart of ApplyLookupGeometry: the sprite source is passed in
+// directly (no name lookup). __thiscall, ret 8.
+// ===========================================================================
+RVA(0x00058b60, 0x2d)
+void CGameObject::ApplyGeometryDirect(i32 srcSprite, i32 applyDefault) {
+    ((CDDrawBlitParam*)((char*)this + 0x1a0))->Setup_15c2d0((CDDrawBlitParamSrc*)srcSprite);
+    if (applyDefault) {
+        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_defaultGeo);
+    }
+}
+
+// ===========================================================================
+// CGameObject::ApplyLookupSprite @0x1504d0 - look the named sprite up through
+// m_c->m_10, cache it + the caller-supplied frame number/frame ptr.
+// (Role-union note: CGameObject's m_0c/+0x190/+0x194/+0x198/+0x19c are ROLE-UNION -
+// for a WwdFile-loaded object they are world/source-def/layer/stamp; for a
+// CreateSprite'd sprite they are the resource holder / cached CSprite / frame ptr /
+// frame number. The reinterpreting casts are the authentic union access.)
+// ===========================================================================
+// @early-stop
+// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
+// the `mov [&spr],0` sinks past the arg pushes + the extra frame arg flips the
+// sprite/frame eax<->ecx allocation; identical instruction multiset, ~84%. Same
+// wall as the sibling ApplyName (89%). Logic complete.
+RVA(0x001504d0, 0x6c)
+void CGameObject::ApplyLookupSprite(const char* name, i32 frame) {
+    CSprite* spr = 0;
+    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_10->m_10map)->Lookup(name, (CObject*&)spr);
+    m_194 = (char*)spr; // +0x194 union: cached sprite
+    if (spr) {
+        if (frame >= spr->m_firstFrame && frame <= spr->m_lastFrame) {
+            m_190 = frame;
+            m_layer = (CGameObjLayer*)spr->m_frames.m_pData[frame]; // +0x198 union: frame ptr
+        } else {
+            m_190 = frame;
+            m_layer = 0;
+        }
+    }
+}
+
+// ===========================================================================
+// CGameObject::ApplyName @0x150540 - as ApplyLookupSprite, but the frame number is
+// the sprite's own first frame (spr->m_64). The first compare of the inlined range
+// guard is m_64 vs m_64 (always equal); written verbatim so MSVC emits both reads.
+// ===========================================================================
+RVA(0x00150540, 0x65)
+void CGameObject::ApplyName(const char* name) {
+    CSprite* spr = 0;
+    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_10->m_10map)->Lookup(name, (CObject*&)spr);
+    m_194 = (char*)spr; // +0x194 role-union: the cached sprite (vs a trigger's source-def)
+    if (spr) {
+        i32 n = spr->m_firstFrame;
+        m_190 = n; // +0x190 role-union: the cached frame number
+        if (n >= spr->m_firstFrame && n <= spr->m_lastFrame) {
+            m_layer = (CGameObjLayer*)spr->m_frames.m_pData[n]; // +0x198 union: the frame ptr
+            return;
+        }
+    }
+    m_layer = 0;
+}
+
+// ===========================================================================
+// CGameObject::ApplyLookupGeometry @0x1505b0 - look a named sprite-set up through
+// this->m_c->m_2c->map and, on a hit, drive the geometry sub-player @this+0x1a0:
+// Setup_15c2d0(spr); then, when the second arg is set, apply the global default
+// geometry source g_defaultGeo via Advance_15c360. __thiscall, ret 8.
+// ===========================================================================
+RVA(0x001505b0, 0x5c)
+i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
+    CSprite* spr = 0;
+    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_2c->m_10map)->Lookup(name, (CObject*&)spr);
+    if (!spr) {
+        return 0;
+    }
+    // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
+    ((CDDrawBlitParam*)((char*)this + 0x1a0))->Setup_15c2d0((CDDrawBlitParamSrc*)(i32)spr);
+    if (applyDefault) {
+        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_defaultGeo);
+    }
+    return 1;
+}
+
+// ===========================================================================
+// CGameObject::LookupAnimSprite @0x150610 - look the named sprite-set up through
+// this->m_c->m_28->map; on a hit cache it at +0x19c and return 1. __thiscall, ret 4.
+// ===========================================================================
+// @early-stop
+// out-param zero-init scheduling wall (docs/patterns/outparam-zeroinit-scheduling.md):
+// identical instruction multiset to the sibling Apply* lookups; the `mov [&spr],0`
+// sinks past the arg pushes. ~73%; logic complete, deferred to the final sweep.
+RVA(0x00150610, 0x41)
+i32 CGameObject::LookupAnimSprite(const char* name) {
+    CSprite* spr = 0;
+    ((CMapStringToOb*)&((CResMgr*)m_0c)->m_28->m_10map)->Lookup(name, (CObject*&)spr);
+    if (spr != 0) {
+        m_19c = (i32)spr; // +0x19c union: the cached anim sprite (vs a WwdFile stamp)
+        return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// 0x150660 (vtable slot 12): snapshot the live 9-dword dirty-rect record (0x18..0x3c)
+// into the shadow block (0xb8..0xdc); then, if the live record is armed (m_20.b !=
+// -1), BltFast the source pair's surface onto the target pair's at the record's
+// (left, top) with the record as the source rect + colorkey/wait, and disarm the
+// record. __thiscall, 2 args (ret 8).
+RVA(0x00150660, 0x49)
+void CWwdGameObjectA::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
+    memcpy(&m_b8, &m_18, 36);
+    if (m_20.b != -1) {
+        RECT* r = (RECT*)&m_20;
+        a->m_surface->BltFast(r->left, r->top, b->m_surface, r, 0x10);
+        m_20.b = -1;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x1506b0 (vtable slot 13): CWwdGameObjectA's dirty-rect BltEx dispatch. Same
+// two-record (live m_38 / shadow m_d8) structure as CWwdGameObjectC::Slot34, but
+// the "both armed" combine uses the Win32 rect API: IntersectRect tests overlap
+// and, if they overlap, UnionRect gives the covering rect {left,top,right+1,
+// bottom+1}; if disjoint, blit each record separately. Only one armed -> that
+// record. Each rect is {x,y,x+w,y+h}. Arg `c` unused. __thiscall, 3 args (ret 0xc).
+// @early-stop
+// ~74% tail-merge + regalloc wall (twin of CWwdGameObjectC::Slot34 @76%): logic/CFG/
+// the IntersectRect/UnionRect union path + the four {x,y,x+w,y+h} BltEx sites over the
+// one shared rc buffer all reproduced, but cl cross-jumps (tail-merges) the identical
+// BltEx(rc,b->m_surface,rc,...) calls where retail keeps them inline, plus a callee-saved
+// record-base coloring swap. Not source-steerable. docs/patterns/zero-register-pinning.md.
+RVA(0x001506b0, 0x1ec)
+void CWwdGameObjectA::Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+    i32 rc[4]; // reused src+dst blit rect buffer
+    if (m_20.b != -1 && m_d8 != -1) {
+        RECT ir;
+        if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
+            UnionRect(&ir, (RECT*)&m_20, (RECT*)&m_c0);
+            i32 w = ir.right - ir.left + 1;
+            i32 h = ir.bottom - ir.top + 1;
+            rc[0] = ir.left;
+            rc[1] = ir.top;
+            rc[2] = ir.left + w;
+            rc[3] = ir.top + h;
+            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+        } else {
+            rc[0] = m_18;
+            rc[1] = m_1c;
+            rc[2] = m_18 + m_20.m_w;
+            rc[3] = m_1c + m_20.m_h;
+            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+            rc[0] = m_b8;
+            rc[1] = m_bc;
+            rc[2] = m_b8 + m_d0;
+            rc[3] = m_bc + m_d4;
+            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+        }
+    } else if (m_20.b != -1) {
+        rc[0] = m_18;
+        rc[1] = m_1c;
+        rc[2] = m_18 + m_20.m_w;
+        rc[3] = m_1c + m_20.m_h;
+        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+    } else if (m_d8 != -1) {
+        rc[0] = m_b8;
+        rc[1] = m_bc;
+        rc[2] = m_b8 + m_d0;
+        rc[3] = m_bc + m_d4;
+        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 0x1508a0 (vtable slot 14): CWwdGameObjectA's dirty-rect blit-hook dispatch. Same
+// as Slot34 but dispatches the empty 0x164650 hook per (pos,size) region instead of
+// BltEx. "Both armed" combine again via IntersectRect/UnionRect: one region over the
+// union {pos={left,top}, size={w,h}} when they overlap, else both records. Only one
+// armed -> that record. Arg `c` unused. __thiscall, 3 args (ret 0xc).
+// @early-stop
+// ~91% zero-register-pinning wall (twin of CWwdGameObjectC::Slot38 @99.7%): logic/CFG/
+// the union pos/size build + all four BlitDirtyRect sites byte-exact. Residual is the
+// callee-saved coloring of the two hoisted record bases (&m_18,&m_b8) -> retail edi/ebx
+// vs cl ebx/edi, cascading a few push operands; the extra IntersectRect/UnionRect path
+// (absent in the twin) adds the register pressure that keeps this below the twin's 99.7%.
+// Permuter found no operand-order gain. docs/patterns/zero-register-pinning.md.
+RVA(0x001508a0, 0x117)
+void CWwdGameObjectA::Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
+    if (m_20.b != -1 && m_d8 != -1) {
+        RECT ir;
+        if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
+            UnionRect(&ir, (RECT*)&m_20, (RECT*)&m_c0);
+            i32 pos[2];
+            i32 size[2];
+            pos[0] = ir.left;
+            size[0] = ir.right - ir.left + 1;
+            size[1] = ir.bottom - ir.top + 1;
+            pos[1] = ir.top;
+            a->BlitDirtyRect_164650(b, pos, size);
+        } else {
+            a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record
+            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);     // shadow record
+        }
+    } else if (m_20.b != -1) {
+        a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record only
+    } else if (m_d8 != -1) {
+        a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only
+    }
+}
+
+// ---------------------------------------------------------------------------
+// CWwdGameObject::Test (0x1509c0): on-screen visibility cull. Derive the object's
+// four edges from its centre (m_posX/m_posY) and the sprite half-extents (m_198),
+// then bounds-check against either the camera rect (when the 0x40000 flag is set)
+// or the plane grid limits. __thiscall, 0 args.
 // @early-stop
 // regalloc wall (~73%): the four derived edges + m_198/m_mgr/m_flags want 4 callee-saved
 // regs where retail packs them into 3 (ebx/esi/edi, m_198 kept in edi, m_flags tested from
@@ -262,6 +483,10 @@ i32 CWwdGameObject::Test() {
     }
 }
 
+// ---------------------------------------------------------------------------
+// Dispatch (0x150a70): look the request up in the +0x1a0 command map; on a hit,
+// route by `type`: 4 -> ReadState, 7 -> Sub150c30 (abort on failure), then play.
+// ---------------------------------------------------------------------------
 RVA(0x00150a70, 0x89)
 i32 CWwdGameObject::Dispatch(i32 a1, i32 type, i32 a3, i32 a4) {
     if (a1 == 0) {
@@ -435,6 +660,159 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
         m_flags |= 0x1000000;
     }
     return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CGameObject::EnsureWorker80 (0x150eb0): the +0x80 worker variant of
+// EnsureWorker88/90 - same lazy build/reuse/feed, but it RETURNS the slot-9 result
+// (or 0 on the null guards). Called by AddLogicHit (0x150f50).
+// @early-stop
+// Expected to share the zero-register-pinning wall of EnsureWorker88/90 (this/0 in
+// esi<->edi). Logic byte-exact; a pure allocator coin-flip, not source-steerable.
+RVA(0x00150eb0, 0x98)
+i32 CGameObject::EnsureWorker80(CGameObject* src) {
+    if (src == 0) {
+        return 0;
+    }
+    if (m_80 != 0) {
+        m_80->Slot07();
+    } else {
+        CAnimWorker* w = (CAnimWorker*)RezAlloc(0x17c);
+        if (w != 0) {
+            w->m_04 = m_04;
+            w->m_08 = 0;
+            w->m_0c = m_0c;
+            StampWorkerVtbl(w);
+            w->m_collideNotify = 0;
+            w->m_14 = 0;
+            w->m_18 = 0;
+            w->m_170 = 0;
+            w->m_1c = 0;
+            w->m_174 = 0;
+            w->m_178 = 0;
+        } else {
+            w = 0;
+        }
+        m_80 = w;
+    }
+    if (m_80 == 0) {
+        return 0;
+    }
+    return m_80->Slot09(src->m_10, 0);
+}
+
+// CGameObject's three built-in logic-handler registrars: look the logic-name key
+// up in the world's CMapStringToOb (m_0c -> +0x14 -> +0x10), then feed the found
+// handler through the matching lazy worker slot (Hit -> 80, Attack -> 88, Bump -> 90).
+// @early-stop
+// scheduling coin-flip: body byte-exact EXCEPT the `handler = 0` slot-init lands one
+// push early (push &out; STORE; push key) where retail schedules it after both pushes
+// (push &out; push key; STORE). Same slot, independent store; MSVC5's scheduler places
+// it between the arg pushes. No source ordering of the init reproduces the late slot.
+RVA(0x00150f50, 0x33)
+void CGameObject::AddLogicHit(char* key) {
+    CGameObject* handler = 0;
+    CLogicHandlerMap* map = LogicMap();
+    ((CMapStringToPtr*)map)->Lookup(key, (void*&)handler);
+    EnsureWorker80(handler);
+}
+
+// CGameObject::EnsureWorker88 (0x150f90): lazily build the +0x88 worker - if one
+// already exists, just re-run its slot-7 reuse hook; otherwise operator new a
+// fresh 0x17c-byte worker (seeded m_04=this->m_4, m_08=0, m_0c=this->m_c, all other
+// fields 0), stow it at +0x88, then feed src->m_10 through slot 9.
+// @early-stop
+// zero-register-pinning wall (docs/patterns/zero-register-pinning.md): the whole
+// build sequence + both dispatches are byte-identical, but retail pins this->edi
+// and 0->esi while cl pins this->esi and 0->edi, and lowers the `arg==0` guard as
+// an early `xor eax,eax;ret` block where cl shares the epilogue - the swap cascades
+// every esi/edi. Logic exact; a pure allocator coin-flip, not source-steerable.
+RVA(0x00150f90, 0x98)
+void CGameObject::EnsureWorker88(CGameObject* src) {
+    if (src == 0) {
+        return;
+    }
+    if (m_88 != 0) {
+        m_88->Slot07();
+    } else {
+        CAnimWorker* w = (CAnimWorker*)RezAlloc(0x17c);
+        if (w != 0) {
+            w->m_04 = m_04;
+            w->m_08 = 0;
+            w->m_0c = m_0c;
+            StampWorkerVtbl(w);
+            w->m_collideNotify = 0;
+            w->m_14 = 0;
+            w->m_18 = 0;
+            w->m_170 = 0;
+            w->m_1c = 0;
+            w->m_174 = 0;
+            w->m_178 = 0;
+        } else {
+            w = 0;
+        }
+        m_88 = w;
+    }
+    if (m_88 == 0) {
+        return;
+    }
+    m_88->Slot09(src->m_10, 0);
+}
+
+// @early-stop
+// same `handler = 0` scheduling coin-flip as AddLogicHit.
+RVA(0x00151030, 0x33)
+void CGameObject::AddLogicAttack(char* key) {
+    CGameObject* handler = 0;
+    CLogicHandlerMap* map = LogicMap();
+    ((CMapStringToPtr*)map)->Lookup(key, (void*&)handler);
+    EnsureWorker88(handler);
+}
+
+// CGameObject::EnsureWorker90 (0x151070): identical to EnsureWorker88 but for the
+// +0x90 worker slot.
+// @early-stop
+// same zero-register-pinning wall as EnsureWorker88 (this/0 in esi<->edi).
+RVA(0x00151070, 0x98)
+void CGameObject::EnsureWorker90(CGameObject* src) {
+    if (src == 0) {
+        return;
+    }
+    if (m_collideWorker != 0) {
+        m_collideWorker->Slot07();
+    } else {
+        CAnimWorker* w = (CAnimWorker*)RezAlloc(0x17c);
+        if (w != 0) {
+            w->m_04 = m_04;
+            w->m_08 = 0;
+            w->m_0c = m_0c;
+            StampWorkerVtbl(w);
+            w->m_collideNotify = 0;
+            w->m_14 = 0;
+            w->m_18 = 0;
+            w->m_170 = 0;
+            w->m_1c = 0;
+            w->m_174 = 0;
+            w->m_178 = 0;
+        } else {
+            w = 0;
+        }
+        m_collideWorker = w;
+    }
+    if (m_collideWorker == 0) {
+        return;
+    }
+    m_collideWorker->Slot09(src->m_10, 0);
+}
+
+// @early-stop
+// same `handler = 0` scheduling coin-flip as AddLogicHit.
+RVA(0x00151110, 0x33)
+void CGameObject::AddLogicBump(char* key) {
+    CGameObject* handler = 0;
+    CLogicHandlerMap* map = LogicMap();
+    ((CMapStringToPtr*)map)->Lookup(key, (void*&)handler);
+    EnsureWorker90(handler);
 }
 
 // ---------------------------------------------------------------------------
@@ -822,1131 +1200,481 @@ i32 B_151d20::Notify(void* arg) {
 }
 
 // ---------------------------------------------------------------------------
-// Init (0x15b940): zero +0x19c, construct the +0x1a0 command map, then Setup.
-// ---------------------------------------------------------------------------
-RVA(0x0015b940, 0x38)
-i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
-    m_19c = 0;
-    m_cmdMap.Construct(this);
-    return Setup(a1, a2, a3, a4);
-}
-
-// ---------------------------------------------------------------------------
-// ResetAndSetup (0x1665e0): delete every owned MFC CObject in the +0x1dc CObList
-// (walked with the real CObList::GetHeadPosition/GetNext + `delete`), empty the
-// list, then re-run Setup with the four forwarded args. Returns Setup() != 0.
-// EXACT: modeling the list as a real CObList of MFC CObject payloads (was a
-// fabricated node/payload walk-view) reproduced retail's register schedule that the
-// view could not - the former ~80% "shrink-wrapped-push" wall is closed.
-// ---------------------------------------------------------------------------
-RVA(0x001665e0, 0x55)
-i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
-    POSITION pos = m_subList.GetHeadPosition();
-    while (pos != 0) {
-        CObject* p = (CObject*)(void*)m_subList.GetNext(pos);
-        if (p != 0) {
-            delete p;
-        }
-    }
-    m_subList.RemoveAll();
-    return Setup(a1, a2, a3, a4) != 0;
-}
-
-// CWwdGameObject::SetupDeferred (0x15bc30): Setup with a1/a2 zeroed. Out-of-line (matcher-5).
-RVA(0x0015bc30, 0x16)
-i32 CWwdGameObject::SetupDeferred(i32 a3, i32 a4) {
-    return Setup(0, 0, a3, a4);
-}
-
-// CWwdGameObject::SetupFlagged (0x15c1d0): stash the dot-color flag byte then Setup.
-// Out-of-line (matcher-5).
-RVA(0x0015c1d0, 0x26)
-i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
-    *(char*)&m_dotColor = (char)flag;
-    return Setup(a1, a2, a3, a4);
-}
-
-// ---------------------------------------------------------------------------
-// RenderDot (0x1660f0): plot the object's (+0x5c,+0x60) position as a single
-// 8-bit pixel into the render context's surface, after a bounds check (either
-// against the context clip extent when +0x64 is unbounded (0x80000000) or
-// against the object's own +0x64..+0x70 clip rect). On a successful plot, cache
-// the position to +0x18/+0x1c, mark +0x30/+0x34 dirty and +0x38 = 0; on a clip
-// reject, +0x38 = -1.  __thiscall, 1 stack arg (ret 4), no EH frame.
-//
+// ~CLogicRecord (0x151da0, __thiscall, /GX). Stamp the derived vptr, free the
+// owned heap block (m_14), tear down the polymorphic sub-record (m_18) via its
+// virtual slot-0 destructor, zero the live fields, then restamp the base vptr.
+// (Identity: this record class IS the 0x17c AnimWorkerObj under a second view -
+// see <DDrawMgr/AnimWorkerObj.h>.)
 // @early-stop
-// regalloc-coloring wall (~57%): logic byte-equivalent, but cl swaps x/y across
-// the lone free callee-saved pair (x->ebp,y->ebx vs retail x->ebx,y->ebp) so
-// every x/y modrm differs, and the 8-bit color either pins bl (forcing an x
-// spill + `push ecx`, 47%) or reads inline (dropping retail's early-load+stack-
-// spill of color, shrinking the body). No source spelling reproduces retail's
-// "x in ebx + color spilled" layout. See const-materialize-into-reg-vs-immediate.
-// ---------------------------------------------------------------------------
-RVA(0x001660f0, 0xd1)
-void CWwdGameObject::RenderDot(WwdRenderCtx* a) {
-    i32 x = m_posX;
-    i32 m64 = m_clipLeft;
-    i32 y;
-    if (m64 == (i32)0x80000000) {
-        if (x < 0) {
-            goto reject;
-        }
-        y = m_posY;
-        if (y < 0) {
-            goto reject;
-        }
-        if (x >= a->m_10) {
-            goto reject;
-        }
-        if (y >= a->m_14) {
-            goto reject;
-        }
-    } else {
-        if (x < m64) {
-            goto reject;
-        }
-        y = m_posY;
-        if (y < m_clipTop) {
-            goto reject;
-        }
-        if (x > m_clipRight) {
-            goto reject;
-        }
-        if (y > m_clipBottom) {
-            goto reject;
-        }
+// eh-dtor-needs-base-subobject wall (docs/patterns/eh-dtor-needs-base-subobject.md):
+// the body (derived vptr stamp, m_14 free, m_18->vtbl[0](1), field zeroing, base
+// vptr restamp) is byte-exact, but the retail /GX frame (push -1 / fs:0 / trylevel)
+// comes from a non-trivial CObject base subobject the manual-vptr non-polymorphic
+// model can't emit. Defer to the final sweep once the base + full vtable are modeled.
+RVA(0x00151da0, 0x80)
+CLogicRecord::~CLogicRecord() {
+    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
+    m_10 = 0;
+    if (m_14) {
+        Engine_Delete(m_14);
+        m_14 = 0;
+        m_178 = 0;
     }
-
-    {
-        CDDSurface* surf = a->m_2c;
-        i32 base = surf->Lock((void*)0);
-        if (base != 0) {
-            i32 row = surf->m_pitch * y;
-            i32 col = surf->m_b0 * x;
-            *(char*)(base + row + col) = *(char*)&m_dotColor;
-            void* n = surf->m_8;
-            (*(void (**)(void*, i32))((char*)*(void**)n + 0x80))(n, 0);
-        }
+    if (m_18) {
+        m_18->Destroy(1);
+        m_18 = 0;
     }
-    m_lastX = m_posX;
-    m_lastY = m_posY;
-    m_30 = 1;
-    m_34 = 1;
-    m_clipResult = 0;
-    return;
-reject:
-    m_clipResult = -1;
-}
-
-// class-metadata sweep: grunt/game-object family size annotations (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
-SIZE_UNKNOWN(CMapStringToObLite);
-// CmdMap is SIZE-annotated in the canonical header; m_subList is a real MFC CObList
-// of MFC CObject payloads (both real classes, no walk-view).
-SIZE_UNKNOWN(MapLookupA);
-// CDDrawSubMgrLeafScan (mgr+0x28) is the canonical class (its own header's SIZE);
-// CDDrawWorkerRegistry is annotated on its real def (DDrawMgr unit) - this TU only
-// holds the reloc-masked reader views.
-SIZE_UNKNOWN(WorkerSub);
-SIZE_UNKNOWN(WwdMgr);
-SIZE_UNKNOWN(WwdMgrSub08);
-SIZE_UNKNOWN(WwdMgrSub10);
-SIZE_UNKNOWN(WwdRenderCtx);
-SIZE_UNKNOWN(WwdSnapshot);
-SIZE_UNKNOWN(WwdSurface);
-
-// ============================================================================
-// merged from WwdGameObjectEh.cpp (the /GX EH-frame sibling; unit flags -> eh)
-// ============================================================================
-// WwdGameObjectEh.cpp - the /GX destructor family of CWwdGameObject and its factory
-// variants. Modeled as a REAL local polymorphic hierarchy
-// (docs/patterns/eh-dtor-multilevel-polymorphic-chain.md): a base CWwdGameObject
-// "Mid" level (vtable 0x5f0020) owns the four polymorphic worker pointers, a CString
-// name (+0xdc), and two RAII sentinel-handle members (EdgeA/EdgeB) whose call-free
-// dtors clear the base fields; its grand-base CObject (vtable 0x5e8cb4) just
-// re-stamps. The thin factory variants A/C/F derive from Mid (each with its own
-// most-derived vtable) and re-run the worker pass before folding Mid. cl emits the
-// per-level vptr re-stamps + /GX trylevel chain; the stamps reloc-mask against the
-// retail engine vtables. Field names are placeholders; only offsets + code bytes
-// are load-bearing.
-
-// The teardown grand-base is CObject (the SAME class as the flat model's MFC
-// CObject - one ??_7CObject@0x1e8cb4, VA 0x5e8cb4). The EH dtors intentionally use
-// the CObject reconstruction rather than the real <Mfc.h> CObject because its
-// INLINE empty dtor folds into each derived dtor's vptr re-stamp (call-free); the
-// real MFC ~CObject is out-of-line in NAFXCW, so cl would emit a CALL and break the
-// fold. (The non-dtor flat CWwdGameObject has no dtor to fold, so it uses real MFC
-// CObject.) Folded LAST - was the manual `m_vptr = &g_wapObjectDtorVtbl` store.
-
-// An owned polymorphic worker. Its scalar-deleting destructor is vtable slot 1
-// (`mov eax,[ecx]; push 1; call [eax+4]`); declared-only (foreign vtable).
-class WwdWorker {
-public:
-    virtual void Slot00();
-    virtual void DeleteThis(i32 flag); // +0x04
-};
-
-// The CString name at +0xdc (NAFXCW dtor 0x1b9cde, reloc-masked).
-struct WwdName {
-    // DtorImpl @0x1b9cde IS a CString teardown (~CString family); cast at the call.
-    ~WwdName() {
-        ((CString*)this)->~CString();
-    }
-    char* m_data;
-};
-
-// The embedded +0x1a0 command sub-object (B variant). Real polymorphic base
-// (CObject, vtable 0x5e8cb4): cl auto-emits the grand-base vptr re-stamp at
-// teardown (was a manual `m_vptr = &g_wapObjectDtorVtbl` store). Mirrors WwdSubA.
-struct WwdSub : public CObject {
-    virtual ~WwdSub() OVERRIDE {
-        ((CDDrawBlitParam*)this)->Reset_15c2c0();
-    }
-    i32 m_04; // 0x1a4
-    i32 m_08; // 0x1a8
-    i32 m_0c; // 0x1ac
-};
-
-// Manual scalar-delete of an owned worker pointer (the retail idiom).
-#define WORKER_FREE(p)                                                                             \
-    do {                                                                                           \
-        if (p) {                                                                                   \
-            (p)->DeleteThis(1);                                                                    \
-            (p) = 0;                                                                               \
-        }                                                                                          \
-    } while (0)
-
-// Two RAII sentinel-handle members of the Mid level: each is a small object whose
-// (inline, call-free) destructor resets its fields to the "invalid" sentinel. They
-// are destroyed in reverse declaration order after the CString member, giving
-// retail's groupY tail (EdgeA: 5c,20,38 ; then EdgeB: 04,08,0c) and bumping the /GX
-// trylevel (each is a fully-constructed top-level destructible subobject).
-struct WwdEdgeB { // 0x04..0x0c
-    ~WwdEdgeB();
-    i32 a; // 0x04
-    i32 b; // 0x08
-    i32 c; // 0x0c
-};
-inline WwdEdgeB::~WwdEdgeB() {
-    a = -1;
-    b = 0;
-    c = 0;
-}
-// WwdEdgeA doubles as the tail of the live dirty-rect record (0x18-block): its `a`
-// (0x20) / `b` (0x38 == the record's flag) fields are the sentinel words the /GX dtor
-// resets, and it also carries the record's size corner m_w/m_h (0x30/0x34) that the
-// Slot34/38 blit-dispatch reads. Kept as one struct so the dtor RAII tail is unchanged;
-// the extra size fields are matching-neutral (the dtor never touches them).
-struct WwdEdgeA { // 0x20..0x5c
-    ~WwdEdgeA();
-    i32 a;     // 0x20  live dirty-rect left (RECT.left)
-    i32 top24; // 0x24  live dirty-rect top  (RECT.top)
-    char _p28[0x30 - 0x28];
-    i32 m_w; // 0x30  live dirty-rect size x (the "second corner" the blit uses)
-    i32 m_h; // 0x34  live dirty-rect size y
-    i32 b;   // 0x38  == the record's flag word (-1 == disarmed)
-    char _p2[0x5c - 0x3c];
-    i32 c; // 0x5c
-};
-inline WwdEdgeA::~WwdEdgeA() {
-    c = (i32)0x80000000;
-    a = (i32)0x80000000;
-    b = -1;
-}
-
-// A's embedded +0x1a0 command sub-object, modeled polymorphically: its own vtable
-// 0x5f0128, a member-teardown helper (0x15c2c0), an EdgeB sentinel, then the wap-object base
-// base re-stamp folded in.
-struct WwdSubA : public CObject {
-    virtual ~WwdSubA() OVERRIDE;
-    WwdEdgeB m_04; // +0x04 (0x1a4/0x1a8/0x1ac)
-};
-inline WwdSubA::~WwdSubA() {
-    ((CDDrawBlitParam*)this)->Reset_15c2c0();
+    m_170 = 0;
+    m_08 = 0;
+    m_0c = 0;
+    m_04 = -1;
+    // base-subobject vptr restore is compiler-managed via the CObject base
 }
 
 // ---------------------------------------------------------------------------
-// 0x15b4f0 - the base ~CWwdGameObject ("Mid"): vtable 0x5f0020. Frees the four
-// workers, clears m_c0/m_d8 + the EdgeA shadow (groupX), then the CString member
-// dtor, then folds EdgeA, EdgeB and the wap-object grand base (groupY + base-vtable stamp).
-// ---------------------------------------------------------------------------
-class CWwdGameObjectE : public CObject {
-public:
-    virtual ~CWwdGameObjectE() OVERRIDE; // 0x15b4f0 (slot 1 scalar-deleting dtor)
-    // Derived game-object slots 5-15 (the shared CWwdGameObject interface; slot RVAs
-    // are the 0x5f0020 table's ground truth). Declared-only so A/F/C inherit the full
-    // 16-slot shape and cl emits the sized ??_7; reloc-masked, matching-neutral.
-    virtual void Slot14_15b370(); // slot 5  @0x15b370
-    virtual void IsValidImage();  // slot 6  @0x001c08 (shared base thunk)
-    virtual void ReleaseSubs();   // slot 7  @0x15b5d0
-    virtual i32 Vfunc20();        // slot 8  @0x154a00
-    virtual i32 Slot24_164790();  // slot 9  @0x164790
-    virtual i32 Setup28();        // slot 10 @0x150d60
-    virtual void Slot2C();        // slot 11 @0x11fec0 (__purecall)
-    // slots 12-14: dirty-rect blit ops on the two render surface-pairs (front/back).
-    virtual void
-    Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b); // slot 12 @0x11fec0 (__purecall)
-    virtual void
-    Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 13 @0x11fec0 (__purecall)
-    virtual void
-    Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 14 @0x11fec0 (__purecall)
-    virtual i32 Play3C();                                      // slot 15 @0x151150
-
-    WwdEdgeB m_04; // 0x04
-    char _p10[0x18 - 0x10];
-    i32 m_18;      // 0x18  live position x (start of the 9-dword state block copied to m_b8)
-    i32 m_1c;      // 0x1c  live position y
-    WwdEdgeA m_20; // 0x20
-    char _p60[0x7c - 0x60];
-    WwdWorker* m_7c; // 0x7c
-    WwdWorker* m_80; // 0x80
-    char _p84[0x88 - 0x84];
-    WwdWorker* m_88; // 0x88
-    char _p8c[0x90 - 0x8c];
-    WwdWorker* m_90; // 0x90
-    char _p94[0xb8 - 0x94];
-    i32 m_b8; // 0xb8  shadow position x (the previous-frame copy of the 0x18 block)
-    i32 m_bc; // 0xbc  shadow position y
-    i32 m_c0; // 0xc0  shadow record's f2 word (dtor sentinel)
-    char _pc4[0xd0 - 0xc4];
-    i32 m_d0;     // 0xd0  shadow dirty-rect size x
-    i32 m_d4;     // 0xd4  shadow dirty-rect size y
-    i32 m_d8;     // 0xd8  shadow record's flag word (-1 == disarmed)
-    WwdName m_dc; // 0xdc  CString name
-};
-
-// @early-stop
-// zero-register-pinning regalloc wall (docs/patterns/zero-register-pinning.md):
-// logic + /GX trylevel chain (3->2) byte-exact, residual is the callee-saved
-// zero/0x80000000/-1 register coloring (edi/ebx/ebp vs retail ebp/edi/ebx).
-RVA(0x0015b4f0, 0xde)
-inline CWwdGameObjectE::~CWwdGameObjectE() {
-    WORKER_FREE(m_7c);
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_c0 = (i32)0x80000000;
-    m_d8 = -1;
-    m_20.c = (i32)0x80000000; // 0x5c
-    m_20.a = (i32)0x80000000; // 0x20
-    m_20.b = -1;              // 0x38
-    // m_dc (CString) destroyed as a member; then EdgeA, EdgeB, base fold in.
-}
-
-// ---------------------------------------------------------------------------
-// 0x15b790 - the complete destructor: a thin derived class (vtable 0x5f00a8) on top
-// of Mid, adding the m_18c block + the embedded WwdSubA command object at +0x1a0.
-// ---------------------------------------------------------------------------
-class CWwdGameObjectA : public CWwdGameObjectE {
-public:
-    virtual ~CWwdGameObjectA() OVERRIDE; // slot 1  0x15b790
-    // Overrides of the CWwdGameObjectE slots this variant re-points (0x5f00a8 table).
-    virtual void ReleaseSubs() OVERRIDE; // slot 7  @0x15b980
-    virtual i32 Vfunc20() OVERRIDE;      // slot 8  @0x15b760
-    virtual i32 Setup28() OVERRIDE;      // slot 10 @0x15b940 (Init)
-    virtual void Slot2C() OVERRIDE;      // slot 11 @0x15ba20
-    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x150660
-    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
-        OVERRIDE; // slot 13 @0x1506b0
-    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
-        OVERRIDE;                  // slot 14 @0x1508a0
-    virtual i32 Play3C() OVERRIDE; // slot 15 @0x150a70 (Dispatch)
-
-    char _pe0[0x18c - 0xe0];
-    i32 m_18c; // 0x18c
-    i32 m_190; // 0x190
-    i32 m_194; // 0x194
-    i32 m_198; // 0x198
-    char _p19c[0x1a0 - 0x19c];
-    WwdSubA m_1a0; // 0x1a0
-};
-
-// @early-stop
-// zero-register-pinning regalloc wall: three-level fold (A -> WwdSubA member ->
-// Mid -> wap-object base) + trylevel chain reproduced; residual is the callee-saved const
-// register coloring across the two worker passes.
-RVA(0x0015b790, 0x1a6)
-CWwdGameObjectA::~CWwdGameObjectA() {
-    m_18c = -1;
-    m_190 = -1;
-    m_198 = 0;
-    m_194 = 0;
-    WORKER_FREE(m_7c);
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_d8 = -1;
-    m_c0 = (i32)0x80000000;
-    m_20.c = (i32)0x80000000; // 0x5c
-    m_20.b = -1;              // 0x38
-    m_20.a = (i32)0x80000000; // 0x20
-    // m_1a0 (WwdSubA) member destroyed; then Mid (E) folds.
-}
-
-// ---------------------------------------------------------------------------
-// 0x150660 (vtable slot 12): snapshot the live 9-dword dirty-rect record (0x18..0x3c)
-// into the shadow block (0xb8..0xdc); then, if the live record is armed (m_20.b !=
-// -1), BltFast the source pair's surface onto the target pair's at the record's
-// (left, top) with the record as the source rect + colorkey/wait, and disarm the
-// record. __thiscall, 2 args (ret 8).
-RVA(0x00150660, 0x49)
-void CWwdGameObjectA::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    memcpy(&m_b8, &m_18, 36);
-    if (m_20.b != -1) {
-        RECT* r = (RECT*)&m_20;
-        a->m_surface->BltFast(r->left, r->top, b->m_surface, r, 0x10);
-        m_20.b = -1;
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 0x1506b0 (vtable slot 13): CWwdGameObjectA's dirty-rect BltEx dispatch. Same
-// two-record (live m_38 / shadow m_d8) structure as CWwdGameObjectC::Slot34, but
-// the "both armed" combine uses the Win32 rect API: IntersectRect tests overlap
-// and, if they overlap, UnionRect gives the covering rect {left,top,right+1,
-// bottom+1}; if disjoint, blit each record separately. Only one armed -> that
-// record. Each rect is {x,y,x+w,y+h}. Arg `c` unused. __thiscall, 3 args (ret 0xc).
-// @early-stop
-// ~74% tail-merge + regalloc wall (twin of CWwdGameObjectC::Slot34 @76%): logic/CFG/
-// the IntersectRect/UnionRect union path + the four {x,y,x+w,y+h} BltEx sites over the
-// one shared rc buffer all reproduced, but cl cross-jumps (tail-merges) the identical
-// BltEx(rc,b->m_surface,rc,...) calls where retail keeps them inline, plus a callee-saved
-// record-base coloring swap. Not source-steerable. docs/patterns/zero-register-pinning.md.
-RVA(0x001506b0, 0x1ec)
-void CWwdGameObjectA::Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    i32 rc[4]; // reused src+dst blit rect buffer
-    if (m_20.b != -1 && m_d8 != -1) {
-        RECT ir;
-        if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
-            UnionRect(&ir, (RECT*)&m_20, (RECT*)&m_c0);
-            i32 w = ir.right - ir.left + 1;
-            i32 h = ir.bottom - ir.top + 1;
-            rc[0] = ir.left;
-            rc[1] = ir.top;
-            rc[2] = ir.left + w;
-            rc[3] = ir.top + h;
-            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-        } else {
-            rc[0] = m_18;
-            rc[1] = m_1c;
-            rc[2] = m_18 + m_20.m_w;
-            rc[3] = m_1c + m_20.m_h;
-            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-            rc[0] = m_b8;
-            rc[1] = m_bc;
-            rc[2] = m_b8 + m_d0;
-            rc[3] = m_bc + m_d4;
-            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-        }
-    } else if (m_20.b != -1) {
-        rc[0] = m_18;
-        rc[1] = m_1c;
-        rc[2] = m_18 + m_20.m_w;
-        rc[3] = m_1c + m_20.m_h;
-        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-    } else if (m_d8 != -1) {
-        rc[0] = m_b8;
-        rc[1] = m_bc;
-        rc[2] = m_b8 + m_d0;
-        rc[3] = m_bc + m_d4;
-        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 0x1508a0 (vtable slot 14): CWwdGameObjectA's dirty-rect blit-hook dispatch. Same
-// as Slot34 but dispatches the empty 0x164650 hook per (pos,size) region instead of
-// BltEx. "Both armed" combine again via IntersectRect/UnionRect: one region over the
-// union {pos={left,top}, size={w,h}} when they overlap, else both records. Only one
-// armed -> that record. Arg `c` unused. __thiscall, 3 args (ret 0xc).
-// @early-stop
-// ~91% zero-register-pinning wall (twin of CWwdGameObjectC::Slot38 @99.7%): logic/CFG/
-// the union pos/size build + all four BlitDirtyRect sites byte-exact. Residual is the
-// callee-saved coloring of the two hoisted record bases (&m_18,&m_b8) -> retail edi/ebx
-// vs cl ebx/edi, cascading a few push operands; the extra IntersectRect/UnionRect path
-// (absent in the twin) adds the register pressure that keeps this below the twin's 99.7%.
-// Permuter found no operand-order gain. docs/patterns/zero-register-pinning.md.
-RVA(0x001508a0, 0x117)
-void CWwdGameObjectA::Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    if (m_20.b != -1 && m_d8 != -1) {
-        RECT ir;
-        if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
-            UnionRect(&ir, (RECT*)&m_20, (RECT*)&m_c0);
-            i32 pos[2];
-            i32 size[2];
-            pos[0] = ir.left;
-            size[0] = ir.right - ir.left + 1;
-            size[1] = ir.bottom - ir.top + 1;
-            pos[1] = ir.top;
-            a->BlitDirtyRect_164650(b, pos, size);
-        } else {
-            a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record
-            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);     // shadow record
-        }
-    } else if (m_20.b != -1) {
-        a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record only
-    } else if (m_d8 != -1) {
-        a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 0x15bad0 - the 0x159440-final variant: thin derived class (vtable 0x5f0060) on top
-// of Mid. Re-runs the worker pass + groupX, then folds Mid + wap-object base.
-// ---------------------------------------------------------------------------
-class CWwdGameObjectF : public CWwdGameObjectE {
-public:
-    virtual ~CWwdGameObjectF() OVERRIDE; // slot 1  0x15bad0
-    // Overrides of the CWwdGameObjectE slots this variant re-points (0x5f0060 table).
-    virtual void Slot14_15b370() OVERRIDE;                                    // slot 5  @0x15ba40
-    virtual void ReleaseSubs() OVERRIDE;                                      // slot 7  @0x15bc50
-    virtual i32 Vfunc20() OVERRIDE;                                           // slot 8  @0x15ba60
-    virtual void Slot2C() OVERRIDE;                                           // slot 11 @0x15ba70
-    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x15ba80
-    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
-        OVERRIDE; // slot 13 @0x15ba90
-    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
-        OVERRIDE;                  // slot 14 @0x15baa0
-    virtual void SetupDeferredV(); // slot 16 @0x15bc30 (new)
-};
-
-// @early-stop
-// zero-register-pinning regalloc wall: two-level fold + double worker pass +
-// trylevel chain reproduced; residual is callee-saved const register coloring.
-RVA(0x0015bad0, 0x153)
-CWwdGameObjectF::~CWwdGameObjectF() {
-    WORKER_FREE(m_7c);
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_c0 = (i32)0x80000000;
-    m_d8 = -1;
-    m_20.c = (i32)0x80000000; // 0x5c
-    m_20.a = (i32)0x80000000; // 0x20
-    m_20.b = -1;              // 0x38
-    // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + base-vtable stamp.
-}
-
-// ---------------------------------------------------------------------------
-// 0x15bd10 - the CResolveNode-derived variant (extra +0x1dc CObList, leading init call
-// 0x166810, trailing base CResolveNode dtor 0x429b). REAL-POLYMORPHIC 4-level chain
-// (the vtable @0x5f00e8 was g_wwd1598d0FinalVtbl / vtbl-50): the destructor's
-// four manual vtable restamps become the cl-emitted per-level vptr stamps of
-//   CWwdGameObjectB (0x5f00e8) : WwdBLevel2 (0x5f00a8) : WwdBMid (0x5f0020)
-//                             : WwdBResolve (0x5efbc0, virtual dtor -> DtorBase 0x429b)
-// so cl auto-generates the multi-phase restamp + /GX trylevel chain; each stamp
-// reloc-masks against the retail engine vtable. Each level owns a contiguous field
-// range + one destructible member (CString@+0xdc / WwdSub@+0x1a0 / CObList@+0x1dc);
-// the derived-level dtor bodies re-clear inherited base fields exactly like retail's
-// per-phase re-clears. This is the CResolveNode-derived variant the flat model was
-// @early-stop on (eh-dtor-multilevel-polymorphic-chain.md).
-// ---------------------------------------------------------------------------
-
-// The +0x1dc CObList member; its dtor is DtorList (0x1b5a2b, reloc-masked __thiscall).
-struct WwdObList {
-    void DtorImpl(); // 0x1b5a2b
-    ~WwdObList() {
-        ((CString*)this)->~CString();
-    }
-    // CObList AddTail/RemoveAt (reloc-masked rel32 callees 0x1b5af6 / 0x1b5c2c).
-    POSITION AddTail(CObject* p);
-    void RemoveAt(POSITION pos);
-    i32 m_head; // +0x1dc
-};
-
-// Grand-base (vtable 0x5efbc0): a CResolveNode-style base with a virtual dtor (making
-// the whole chain polymorphic). Restamps its vftable then tail-calls the base
-// CResolveNode teardown (0x429b). Owns the +0x04..+0x5c fields; folded LAST.
-struct WwdBResolve : public CObject { // CObject slots 0/2/3/4 inherited; dtor=slot1
-    virtual ~WwdBResolve() OVERRIDE;  // slot 1
-    void DtorBase();                  // 0x429b
-    i32 m_04;                         // +0x04
-    i32 m_08;                         // +0x08
-    i32 m_0c;                         // +0x0c
-    char _p10[0x20 - 0x10];
-    i32 m_20; // +0x20
-    char _p24[0x38 - 0x24];
-    i32 m_38; // +0x38
-    char _p3c[0x5c - 0x3c];
-    i32 m_5c;                   // +0x5c
-    char _p60[0x7c - 0x60];     // pad so WwdBMid's m_7c lands at +0x7c
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
-};
-inline WwdBResolve::~WwdBResolve() {
-    m_5c = (i32)0x80000000;
-    m_20 = (i32)0x80000000;
-    m_38 = -1;
-    DtorBase();
-}
-
-// Mid level (vtable 0x5f0020): frees the four workers, clears m_c0/m_d8 + the
-// inherited edge fields, then its CString member folds, then ~WwdBResolve.
-struct WwdBMid : public WwdBResolve {
-    virtual ~WwdBMid() OVERRIDE;
-    WwdWorker* m_7c; // +0x7c
-    WwdWorker* m_80; // +0x80
-    char _p84[0x88 - 0x84];
-    WwdWorker* m_88; // +0x88
-    char _p8c[0x90 - 0x8c];
-    WwdWorker* m_90; // +0x90
-    char _p94[0xc0 - 0x94];
-    i32 m_c0; // +0xc0
-    char _pc4[0xd8 - 0xc4];
-    i32 m_d8;                // +0xd8
-    WwdName m_dc;            // +0xdc  CString
-    char _pe0[0x18c - 0xe0]; // pad so WwdBLevel2's m_18c lands at +0x18c
-};
-inline WwdBMid::~WwdBMid() {
-    WORKER_FREE(m_7c);
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_c0 = (i32)0x80000000;
-    m_d8 = -1;
-    m_5c = (i32)0x80000000;
-    m_20 = (i32)0x80000000;
-    m_38 = -1;
-    // m_dc (CString) auto-destroyed, then ~WwdBResolve folds.
-}
-
-// Level-2 (vtable 0x5f00a8): clears the m_18c block + runs SubB (@0x15b5d0), then its
-// embedded WwdSub command object folds, then ~WwdBMid.
-struct WwdBLevel2 : public WwdBMid {
-    virtual ~WwdBLevel2() OVERRIDE;
-    void SubB(); // 0x15b5d0
-    i32 m_18c;   // +0x18c
-    i32 m_190;   // +0x190
-    i32 m_194;   // +0x194
-    i32 m_198;   // +0x198
-    char _p19c[0x1a0 - 0x19c];
-    WwdSub m_1a0;              // +0x1a0
-    char _p1b0[0x1dc - 0x1b0]; // pad so CWwdGameObjectB's m_1dc lands at +0x1dc
-};
-inline WwdBLevel2::~WwdBLevel2() {
-    m_18c = -1;
-    m_190 = -1;
-    m_198 = 0;
-    m_194 = 0;
-    SubB(); // 0x15b5d0 (ReleaseSubs); same-class call, no cast-to-view of this
-    // m_1a0 (WwdSub) auto-destroyed, then ~WwdBMid folds.
-}
-
-// Most-derived (vtable 0x5f00e8): leading InitDtor, the worker + field pass, then
-// its CObList member folds (DtorList), then ~WwdBLevel2.
-class CWwdGameObjectB : public WwdBLevel2 {
-public:
-    virtual ~CWwdGameObjectB() OVERRIDE; // 0x15bd10
-    // Own vtable @0x5f00e8: overrides WwdBResolve's slots 5/7/8 + adds 10..15 (binary RVAs).
-    virtual void VtSlotFill0() OVERRIDE;                // slot 5  0x15bcd0
-    virtual void VtSlotFill2() OVERRIDE;                // slot 7  0x15bf00
-    virtual void VtSlotFill3() OVERRIDE;                // slot 8  0x15bce0
-    virtual void Slot10_1665e0();                       // slot 10 0x1665e0
-    virtual void Slot11_1668b0(i32 a1);                 // slot 11 0x1668b0 (broadcast Slot2C)
-    virtual void Slot12_1668e0(i32 a1, i32 a2);         // slot 12 0x1668e0 (broadcast Slot30)
-    virtual void Slot13_166910(i32 a1, i32 a2, i32 a3); // slot 13 0x166910 (broadcast Vfunc34)
-    virtual void Slot14_166950(i32 a1, i32 a2, i32 a3); // slot 14 0x166950 (broadcast Vfunc38)
-    virtual void Slot15_150a70();                       // slot 15 0x150a70
-    void Clear_166810();                                // 0x166810 (destroy m_1dc list + RemoveAll)
-    i32 AddChild_1667e0(CDDrawGroupChild* child);       // 0x1667e0
-    i32 RemoveChild_166850(CDDrawGroupChild* child);    // 0x166850
-    i32 WalkChildWorkers_166880();                      // 0x166880 (per-child worker cb + count)
-    WwdObList m_1dc;                                    // +0x1dc  CObList (vptr only in view)
-    CDDrawGroupNode* m_listHead; // +0x1e0  CObList m_pNodeHead (broadcast list)
-    char _p1e4[0x1f8 - 0x1e4];
-    i32 m_1f8; // +0x1f8
-};
-
-// @early-stop
-// eh-dtor multi-level trylevel wall: the real 4-level polymorphic chain reproduces
-// the four cl-emitted vptr restamps + the per-phase field re-clears + the CString/
-// WwdSub/CObList member folds; residual is the /GX trylevel numbering across the four
-// destruct phases (the same zero-register-pinning const coloring as the A/C/F
-// variants) - not source-steerable.
-RVA(0x0015bd10, 0x1ef)
-CWwdGameObjectB::~CWwdGameObjectB() {
-    Clear_166810(); // 0x166810; same-class call, no cast-to-view of this
-    WORKER_FREE(m_7c);
-    m_1f8 = 0;
-    m_18c = -1;
-    m_190 = -1;
-    m_198 = 0;
-    m_194 = 0;
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_d8 = -1;
-    m_c0 = (i32)0x80000000;
-    m_5c = (i32)0x80000000;
-    m_20 = (i32)0x80000000;
-    m_38 = -1;
-    // m_1dc (CObList) auto-destroyed (DtorList), then ~WwdBLevel2 folds.
-}
-
-// ---------------------------------------------------------------------------
-// CWwdGameObjectB::Clear_166810 (0x166810): walk the +0x1dc CObList's raw nodes
-// (m_listHead = its m_pNodeHead), scalar-delete each node's owned CDDrawGroupChild,
-// then RemoveAll the list. Called by ~CWwdGameObjectB (this) + CWwdFactoryObject::
-// Reset. Folded from Stub/BoundaryUpper.cpp (B_166810 - the Node/payload walk-view
-// IS the CObList CNode / CDDrawGroupChild pair). Same delete idiom as ResetAndSetup.
-// ---------------------------------------------------------------------------
-RVA(0x00166810, 0x32)
-void CWwdGameObjectB::Clear_166810() {
-    CDDrawGroupNode* n = m_listHead;
-    while (n) {
-        CDDrawGroupNode* cur = n;
-        n = n->m_next;
-        if (cur->m_obj) {
-            delete cur->m_obj;
-        }
-    }
-    ((CObList*)&m_1dc)->RemoveAll();
-}
-
-// ---------------------------------------------------------------------------
-// 0x15c070 - the 0x159250-final variant: thin derived class (vtable 0x5effd0) on top
-// of Mid; clears the byte flag m_18c, re-runs the worker pass + groupX, then folds
-// Mid + wap-object base.
-// ---------------------------------------------------------------------------
-class CWwdGameObjectC : public CWwdGameObjectE {
-public:
-    virtual ~CWwdGameObjectC() OVERRIDE; // slot 1  0x15c070
-    // Overrides of the CWwdGameObjectE slots this variant re-points (0x5effd0 table).
-    virtual void Slot14_15b370() OVERRIDE; // slot 5  @0x15c000
-    virtual void ReleaseSubs() OVERRIDE;   // slot 7  @0x15c200
-    virtual i32 Vfunc20() OVERRIDE;        // slot 8  @0x15c020
-    virtual void Slot2C() OVERRIDE;        // slot 11 @0x1660f0 (RenderDot)
-    virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x1661d0
-    virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
-        OVERRIDE; // slot 13 @0x1662a0
-    virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
-        OVERRIDE; // slot 14 @0x1664a0
-    // Slots 16-18 unique to the C variant (0x5effd0 is a 19-slot table).
-    virtual i32 SetupFlagged16(); // slot 16 @0x15c1d0
-    virtual void Slot44();        // slot 17 @0x15c030
-    virtual void Slot48();        // slot 18 @0x15c040
-
-    char _pe0[0x18c - 0xe0];
-    u8 m_18c; // 0x18c (byte flag)
-};
-
-// @early-stop
-// zero-register-pinning regalloc wall: two-level fold + byte-flag clear + double
-// worker pass + trylevel chain reproduced; residual is callee-saved const coloring.
-RVA(0x0015c070, 0x159)
-CWwdGameObjectC::~CWwdGameObjectC() {
-    m_18c = 0;
-    WORKER_FREE(m_7c);
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_c0 = (i32)0x80000000;
-    m_d8 = -1;
-    m_20.c = (i32)0x80000000; // 0x5c
-    m_20.a = (i32)0x80000000; // 0x20
-    m_20.b = -1;              // 0x38
-    // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + base-vtable stamp.
-}
-
-// ---------------------------------------------------------------------------
-// 0x1661d0 (vtable slot 12): snapshot the live 9-dword state block (@0x18) into the
-// shadow block (@0xb8), then - if the shadow's just-copied flag (m_d8, == old m_38)
-// is still armed - restore the background pixel at the shadow position (m_b8,m_bc):
-// read it from the back pair `b`'s surface and write it onto the front pair `a`'s,
-// then disarm the live flag (m_38 = -1). __thiscall, 2 ptr args (ret 0x8).
-// @early-stop
-// ~73% zero-register-pinning regalloc wall. Logic/CFG/offsets/the 9-dword rep-movs
-// snapshot/both lock-read-unlock + lock-write-unlock pixel ops/m_38 disarm all
-// reproduced. Residual: retail dedicates the callee-saved ebp to `this` for the whole
-// body (surviving the rep-movs + both Lock calls) and spills the restored pixel to a
-// stack local (ebx is reused for m_b8); our cl keeps `this` in caller-saved eax and
-// spills IT instead, keeping the pixel in bl - so the register operands differ
-// throughout. Same values/stores. The permuter found no source spelling that flips
-// the this/pixel spill choice. docs/patterns/zero-register-pinning.md.
-RVA(0x001661d0, 0xc2)
-void CWwdGameObjectC::Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    memcpy(&m_b8, &m_18, 36);
-    if (m_d8 != -1) {
-        i32 x = m_b8;
-        i32 y = m_bc;
-        char pixel;
-        CDDSurface* sb = b->m_surface;
-        char* base = (char*)sb->Lock(0);
-        if (base != 0) {
-            pixel = base[sb->m_b0 * x + sb->m_pitch * y];
-            sb->m_8->Unlock(0);
-        } else {
-            pixel = 0;
-        }
-        CDDSurface* sa = a->m_surface;
-        char* base2 = (char*)sa->Lock(0);
-        if (base2 != 0) {
-            base2[sa->m_b0 * x + sa->m_pitch * y] = pixel;
-            sa->m_8->Unlock(0);
-        }
-        m_20.b = -1; // m_38
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 0x1662a0 (vtable slot 13): blit the object's dirty region(s) from the back pair
-// `b`'s surface onto the front pair `a`'s (CDDSurface::BltEx, same rect for src+dst).
-// When both the live (m_38) and shadow (m_d8) records are armed, cover them with ONE
-// BltEx over the union rect if their corners are within 32 px in both axes, else two
-// BltEx (one per record). Only one armed -> just that record's rect. Each rect is
-// {x, y, x+w, y+h}. Arg `c` unused. __thiscall, 3 args (ret 0xc).
-// @early-stop
-// ~76% tail-merge + regalloc wall (twin of Slot38 which hits 99.7%). Logic/CFG/the
-// abs+min bbox/the four BltEx sites + their {x,y,x+w,y+h} rect builds all reproduced,
-// AND the single reused rect buffer gives retail's `sub esp,0x14` frame. Residual:
-// because every region calls the IDENTICAL `BltEx(rc, b->m_surface, rc, ...)` on the
-// one shared `rc` buffer, our cl CROSS-JUMPS (tail-merges) block-C's BltEx to a shared
-// copy (a `jmp`) where retail keeps each inline; plus a callee-saved m_b8/m_1c coloring
-// swap cascading from the extra BltEx register pressure. Slot38's twin avoids this
-// because its four dispatch calls take DIFFERENT pointer args (no merge). Not source-
-// steerable (separate rc buffers fix the merge but re-inflate the frame; permuter
-// no-op). docs/patterns/zero-register-pinning.md / tail-merge layout.
-RVA(0x001662a0, 0x1fa)
-void CWwdGameObjectC::Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    i32 rc[4];                        // one reused src+dst rect buffer
-    if (m_20.b != -1 && m_d8 != -1) { // both armed
-        i32 dx = abs(m_18 - m_b8) + 1;
-        i32 dy = abs(m_1c - m_bc) + 1;
-        if (dx > 0x20 || dy > 0x20) {
-            rc[0] = m_18;
-            rc[1] = m_1c;
-            rc[2] = m_18 + m_20.m_w;
-            rc[3] = m_1c + m_20.m_h;
-            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-            rc[0] = m_b8;
-            rc[1] = m_bc;
-            rc[2] = m_b8 + m_d0;
-            rc[3] = m_bc + m_d4;
-            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-        } else {
-            i32 left = m_18 < m_b8 ? m_18 : m_b8;
-            i32 top = m_1c < m_bc ? m_1c : m_bc;
-            rc[0] = left;
-            rc[1] = top;
-            rc[2] = left + dx;
-            rc[3] = top + dy;
-            a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-        }
-    } else if (m_20.b != -1) {
-        rc[0] = m_18;
-        rc[1] = m_1c;
-        rc[2] = m_18 + m_20.m_w;
-        rc[3] = m_1c + m_20.m_h;
-        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-    } else if (m_d8 != -1) {
-        rc[0] = m_b8;
-        rc[1] = m_bc;
-        rc[2] = m_b8 + m_d0;
-        rc[3] = m_bc + m_d4;
-        a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 0x1664a0 (vtable slot 14): dispatch the front pair `a`'s empty dirty-rect blit
-// hook (0x164650) over the object's dirty region(s). When both the live (m_38) and
-// shadow (m_d8) records are armed, cover them with ONE combined region if their
-// corners are within 32 px in both axes (the union {min pos, |delta|+1 size}), else
-// emit both records separately. Only one armed -> just that record. Arg `c` unused.
-// __thiscall, 3 args (ret 0xc).
-// @early-stop
-// 99.70% - logic/CFG/block-layout/the abs+min bbox/all four dispatch sites byte-exact.
-// The lone residual is a callee-saved coin-flip: the two hoisted record base addresses
-// (&m_18, &m_b8) land in retail's edi/ebx but our cl's ebx/edi (swapped), which cascades
-// only the two push operands in the large-delta path. Same addresses. The permuter found
-// no source spelling that flips the pair. docs/patterns/zero-register-pinning.md.
-RVA(0x001664a0, 0x133)
-void CWwdGameObjectC::Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    if (m_20.b != -1 && m_d8 != -1) { // both armed -> combined region
-        i32 dx = abs(m_18 - m_b8) + 1;
-        i32 dy = abs(m_1c - m_bc) + 1;
-        if (dx > 0x20 || dy > 0x20) {
-            a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record
-            a->BlitDirtyRect_164650(b, &m_b8, &m_d0);     // shadow record
-        } else {
-            i32 left = m_18 < m_b8 ? m_18 : m_b8; // min x
-            i32 top = m_1c < m_bc ? m_1c : m_bc;  // min y
-            i32 pos[2];
-            i32 size[2];
-            size[1] = dy;
-            size[0] = dx;
-            pos[1] = top;
-            pos[0] = left;
-            a->BlitDirtyRect_164650(b, pos, size);
-        }
-    } else if (m_20.b != -1) {
-        a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record only
-    } else if (m_d8 != -1) {
-        a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only
-    }
-}
-
-// ===========================================================================
-// The CWwdObjMgr "L" factory pair (0x166640 / 0x166780), re-homed from
-// src/Wwd/WwdObjMgrFactories.cpp: retail birth-positions both INSIDE this
-// CWwdGameObject block (wave1-C). The wide-object base ctor they placement-call
-// (??0CWwdGameObj15b390 @0x15b390) stays defined in WwdObjMgrFactories.cpp -
-// declared-only here so the call reloc-masks, exactly as retail calls it
-// cross-obj. Support views duplicated from that TU (same honest minimal models).
-// ===========================================================================
-#include <Gruntz/WwdWorker.h> // the shared per-object worker (+0x7c; Kick at vtbl+0x10)
-
-inline void* operator new(u32, void* p) {
-    return p;
-} // placement (factory base-object ctor)
-
-// Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
-extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46
-
-// The shared CWwdGameObject base-object ctor (0x15b390, defined in
-// src/Wwd/WwdObjMgrFactories.cpp with the full field view). Ctor-only decl here.
-struct CWwdGameObj15b390 {
-    CWwdGameObj15b390(int a, int b, int c); // 0x15b390
-};
-
-// The level-file handle CWwdObjMgrL::m_0c points at: the name->value resolve map
-// (a CMapStringToPtr) sits at m_14 + 0x10. Local completion (same view
-// WwdObjMgr.cpp / WwdObjMgrFactories.cpp use).
-struct WwdFile {
-    char m_pad0[0x14];
-    char* m_14; // +0x14  fronts the string-resolve map (CMapStringToPtr @ +0x10)
-};
-
-// The wide object's polymorphic interface (cast-only; declared-only virtuals so
-// cl emits no ??_7): Build slot +0x28 (4 args), scalar-deleting dtor at +0x04.
-class CWwdFactoryA {
-public:
-    virtual void Vs00();
-    virtual ~CWwdFactoryA(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Vs08();
-    virtual void Vs0C();
-    virtual void Vs10();
-    virtual void Vs14();
-    virtual void Vs18();
-    virtual void Vs1C();
-    virtual void Vs20();
-    virtual void Vs24();
-    virtual int Build4(int a, int b, int c, int d); // +0x28
-};
-
-// ===========================================================================
-// 0x166640 - factory for the 0x1dc-byte kind, sibling of the above but published
-// into the manager's own CPtrList (AddTail) at +0x1dc rather than InsertSorted.
-// __thiscall, 6 stack args (ret 0x18).  Build slot +0x28 (4 args), dtor +0x04.
-// @early-stop
-// rezalloc-placement-new wall (same family as 0x1598d0): the object construction
-// + field stores + vtable stamps are byte-exact, but retail allocates the object
-// through the throwing class operator new and carries the /GX ctor-in-flight EH
-// frame (push -1/fs:0 + trylevel-0 cleanup), while the RezAlloc + placement body
-// emits no frame.  docs/patterns/rezalloc-placement-new-no-eh-frame.md.
-// ===========================================================================
-// The manager's own published-objects list (CPtrList) at +0x1dc; AddTail returns
-// the new node pointer (stored into the object's +0x78).  Reloc-masked thiscall.
-class CWwdObjMgrL {
-public:
-    CWwdGameObject* CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6);
-    CWwdGameObject*
-    CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
-    char m_pad00[0x0c];
-    WwdFile* m_0c; // +0x0c parent file handle (name-resolve map at m_14 + 0x10)
-    char m_pad10[0x1dc - 0x10];
-    CObList m_1dc; // +0x1dc published-objects list (real MFC, main's fold)
-};
-SIZE_UNKNOWN(CWwdObjMgrL);
-
-RVA(0x00166640, 0x13b)
-CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
-    char* obj = (char*)RezAlloc(0x1dc);
-    CWwdGameObject* result;
-    if (obj != 0) {
-        int root = (int)m_0c;
-        new (obj) CWwdGameObj15b390(root, a1, a6);
-        *(int*)(obj + 0x1a4) = a1;
-        *(int*)(obj + 0x1a8) = a6;
-        *(int*)(obj + 0x1ac) = root;
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(int*)(obj + 0x1b0) = 0;
-        *(int*)(obj + 0x1b4) = 0;
-        *(int*)(obj + 0x1b8) = 0;
-        // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
-        *(int*)(obj + 0x18c) = -1;
-        *(int*)(obj + 0x190) = -1;
-        *(int*)(obj + 0x198) = 0;
-        *(int*)(obj + 0x194) = 0;
-        *(int*)(obj + 0x19c) = 0;
-        result = (CWwdGameObject*)obj;
-    } else {
-        result = 0;
-    }
-    if (result == 0) {
+// CLogicRecord::Init (0x151e20, __thiscall). Bind the primary data pointer (m_10)
+// and the frame stamp (m_08), zeroing the working fields. Returns 0 if pData null.
+RVA(0x00151e20, 0x46)
+i32 CLogicRecord::Init(void* pData, i32 frame) {
+    if (pData == 0) {
         return 0;
     }
-    if (((CWwdFactoryA*)result)->Build4(a2, a3, a4, a5) == 0) {
-        delete ((CWwdFactoryA*)result);
-        return 0;
-    }
-    void* node = m_1dc.AddTail((CObject*)result);
-    if (node == 0) {
-        delete ((CWwdFactoryA*)result);
-        return 0;
-    }
-    *(void**)(obj + 0x78) = node;
-    if (*(int*)(obj + 8) & 0x200000) {
-        ((CWwdWorker*)*(void**)(obj + 0x7c))->Kick(result);
-    }
-    return result;
-}
-
-// CreateNamed_166780 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if
-// nothing resolved, bail; else create the 0x1dc-byte kind with the value as arg5.
-// @early-stop
-// 94% - logic byte-exact; same val=0 arg-push scheduling residual as CreateNamed_1593e0.
-RVA(0x00166780, 0x57)
-CWwdGameObject*
-CWwdObjMgrL::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6) {
-    void* val = 0;
-    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
-    if (val == 0) {
-        return 0;
-    }
-    return CreateObject_166640(a1, a2, a3, a4, (int)val, a6);
-}
-
-// ---------------------------------------------------------------------------
-// CWwdGameObjectB broadcast slots 11-14 (0x1668b0/0x1668e0/0x166910/0x166950): walk
-// the +0x1e0 child list, dispatching each child's matching broadcast virtual with the
-// forwarded args. No post-loop dispatch. __thiscall.
-RVA(0x001668b0, 0x26)
-void CWwdGameObjectB::Slot11_1668b0(i32 a1) {
-    CDDrawGroupNode* n = m_listHead;
-    if (n != 0) {
-        do {
-            CDDrawGroupNode* cur = n;
-            n = n->m_next;
-            cur->m_obj->Slot2C(a1);
-        } while (n != 0);
-    }
-}
-RVA(0x001668e0, 0x2d)
-void CWwdGameObjectB::Slot12_1668e0(i32 a1, i32 a2) {
-    CDDrawGroupNode* n = m_listHead;
-    if (n != 0) {
-        do {
-            CDDrawGroupNode* cur = n;
-            n = n->m_next;
-            cur->m_obj->Slot30(a1, a2);
-        } while (n != 0);
-    }
-}
-RVA(0x00166910, 0x34)
-void CWwdGameObjectB::Slot13_166910(i32 a1, i32 a2, i32 a3) {
-    CDDrawGroupNode* n = m_listHead;
-    if (n != 0) {
-        do {
-            CDDrawGroupNode* cur = n;
-            n = n->m_next;
-            cur->m_obj->Vfunc34(a1, a2, a3);
-        } while (n != 0);
-    }
-}
-RVA(0x00166950, 0x34)
-void CWwdGameObjectB::Slot14_166950(i32 a1, i32 a2, i32 a3) {
-    CDDrawGroupNode* n = m_listHead;
-    if (n != 0) {
-        do {
-            CDDrawGroupNode* cur = n;
-            n = n->m_next;
-            cur->m_obj->Vfunc38(a1, a2, a3);
-        } while (n != 0);
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 0x1667e0: link `child` into the broadcast child list (CObList::AddTail) and cache
-// its returned POSITION in child->m_78. Rejects a null child or a failed insert.
-// __thiscall, 1 arg (ret 4).
-RVA(0x001667e0, 0x2f)
-i32 CWwdGameObjectB::AddChild_1667e0(CDDrawGroupChild* child) {
-    if (child == 0) {
-        return 0;
-    }
-    POSITION pos = m_1dc.AddTail((CObject*)child);
-    if (pos == 0) {
-        return 0;
-    }
-    child->m_78 = (i32)pos;
+    m_10 = pData;
+    m_08 = frame;
+    m_14 = 0;
+    m_18 = 0;
+    m_serial[(0x20 - 0x20) / 4] = 0; // m_20
+    m_serial[(0x24 - 0x20) / 4] = 0; // m_24
+    m_serial[(0x2c - 0x20) / 4] = 0; // m_2c
+    m_serial[(0x34 - 0x20) / 4] = 0; // m_34
+    m_serial[(0x30 - 0x20) / 4] = 0; // m_30
+    m_serial[(0x38 - 0x20) / 4] = 0; // m_38
+    m_168 = 0;
+    m_16c = 0;
+    m_serial[(0x28 - 0x20) / 4] = 0; // m_28
     return 1;
 }
 
 // ---------------------------------------------------------------------------
-// 0x166850: unlink `child` from the broadcast child list at its cached POSITION
-// (CObList::RemoveAt). Rejects a null child or an unlinked one (m_78 == 0).
-// __thiscall, 1 arg (ret 4).
-RVA(0x00166850, 0x29)
-i32 CWwdGameObjectB::RemoveChild_166850(CDDrawGroupChild* child) {
-    if (child == 0) {
-        return 0;
+// AnimWorkerObj::Clear (0x151e70, vtable slot 7): reset the worker - zero m_10,
+// release the owned +0x14 buffer (+ its m_178 size), scalar-delete the +0x18
+// sub-object (slot 0, arg 1), zero m_170.
+// ---------------------------------------------------------------------------
+RVA(0x00151e70, 0x3b)
+void AnimWorkerObj::Clear() {
+    m_10 = 0;
+    if (m_14) {
+        RezFree(m_14);
+        m_14 = 0;
+        m_178 = 0;
     }
-    POSITION pos = (POSITION)child->m_78;
-    if (pos == 0) {
-        return 0;
+    if (m_18) {
+        m_18->Destroy(1);
+        m_18 = 0;
     }
-    m_1dc.RemoveAt(pos);
-    return 1;
+    m_170 = 0;
 }
 
-// ---------------------------------------------------------------------------
-// 0x166880 (__thiscall, ret): walk the broadcast child list (m_listHead), invoke
-// each child's per-child worker callback (child->m_7c->m_fn10(child), __cdecl), and
-// return the number of children visited. Advances to the next node BEFORE the
-// callback (so a callback that unlinks the child is safe).
-RVA(0x00166880, 0x29)
-i32 CWwdGameObjectB::WalkChildWorkers_166880() {
+// ===========================================================================
+// 0x151eb0 - CDDrawWorker::DeleteAll: delete every owned element via its
+// scalar-deleting dtor (vtbl slot 1, arg 1), RemoveAll the array, then seed the
+// +0x64 cached-index sentinel (99999) and clear +0x68. Plain /O2 leaf.
+// ===========================================================================
+RVA(0x00151eb0, 0x43)
+void CDDrawWorker::DeleteAll() {
+    for (i32 i = 0; i < m_items.m_nSize; i++) {
+        CWorkerElement* el = m_items.m_pData[i];
+        if (el != 0) {
+            el->Delete(1);
+        }
+    }
+    m_items.SetSize(0, -1); // CObArray::RemoveAll (inlined as SetSize(0,-1))
+    m_64 = 99999;
+    m_68 = 0;
+}
+
+// ===========================================================================
+// CSprite::InsertFrame @0x151f00 - build and install a frame worker (a CImage,
+// vftable @0x5eaa2c) at frame number `n` in the sprite's +0x10 frame CObArray.
+// __thiscall, ret 0xc.
+// @early-stop
+// regalloc wall (pin-local-for-callee-saved-reg.md): the body is byte-identical
+// from the operator-new site (off 0x22) to the end, but retail colors the
+// callee-saved triple this->esi / n->edi / worker->ebx (loading n from the stack
+// late, post-prologue) while MSVC5 here colors this->edi / n->ebx / worker->esi
+// (n loaded eagerly). The rotation is the entry coloring, not source-steerable;
+// flipping the guard operands didn't move it. ~84%, logic complete.
+RVA(0x00151f00, 0xa4)
+CFrameWorker* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
+    if (n < m_frames.m_nSize && m_frames.m_pData[n] != 0) {
+        return 0;
+    }
+    CFrameWorker* worker = new CFrameWorker(n, m_c);
+    if (!worker->Resolve(src, mode)) { // slot 11 @+0x2c  CImage::Resolve
+        if (worker) {
+            delete worker; // slot 1 @+0x04  scalar-deleting dtor
+        }
+        return 0;
+    }
+    ((CObArray*)&m_frames)->SetAtGrow(n, (CObject*)worker);
+    if (n < m_firstFrame) {
+        m_firstFrame = n;
+    }
+    if (n > m_lastFrame) {
+        m_lastFrame = n;
+    }
+    return worker;
+}
+
+// CImageSet::CreateFrame30 (__thiscall, ret 0xc). Refuse if a frame already
+// occupies `index`; else allocate a CImageFrame, run its loader virtual at slot
+// +0x30, insert it (SetAtGrow at `index`) and widen the populated index range.
+RVA(0x00151fb0, 0xa4)
+CImageFrame* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
+    if (index < m_count && m_frames[index] != 0) {
+        return 0;
+    }
+
+    CImageFrame* nf = new CImageFrame(m_owner, index);
+
+    if (nf->Create(a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
+        if (nf != 0) {
+            delete nf; // slot 1 @+0x04  scalar-deleting dtor
+        }
+        return 0;
+    }
+
+    ((CObArray*)&m_array)->SetAtGrow(index, (CObject*)nf);
+    if (index < m_minIndex) {
+        m_minIndex = index;
+    }
+    if (index > m_maxIndex) {
+        m_maxIndex = index;
+    }
+    return nf;
+}
+
+// CreateFrame28 (__thiscall, ret 0x10). As CreateFrame30, but the loader
+// virtual is at slot +0x28 and takes (a0, a1, a3, 1).
+RVA(0x00152060, 0xab)
+CImageFrame* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
+    if (index < m_count && m_frames[index] != 0) {
+        return 0;
+    }
+
+    CImageFrame* nf = new CImageFrame(m_owner, index);
+
+    if (nf->LoadDispatch(a0, a1, a3, 1) == 0) { // slot 10 @+0x28  CImage::LoadDispatch
+        if (nf != 0) {
+            delete nf; // slot 1 @+0x04  scalar-deleting dtor
+        }
+        return 0;
+    }
+
+    ((CObArray*)&m_array)->SetAtGrow(index, (CObject*)nf);
+    if (index < m_minIndex) {
+        m_minIndex = index;
+    }
+    if (index > m_maxIndex) {
+        m_maxIndex = index;
+    }
+    return nf;
+}
+
+// CreateFrame24 (__thiscall, ret 0x10). As CreateFrame30, but the loader
+// virtual is at slot +0x24 and takes (a0, a1, a3).
+RVA(0x00152110, 0xa9)
+CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
+    if (index < m_count && m_frames[index] != 0) {
+        return 0;
+    }
+
+    CImageFrame* nf = new CImageFrame(m_owner, index);
+
+    if (nf->Create24(a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
+        if (nf != 0) {
+            delete nf; // slot 1 @+0x04  scalar-deleting dtor
+        }
+        return 0;
+    }
+
+    ((CObArray*)&m_array)->SetAtGrow(index, (CObject*)nf);
+    if (index < m_minIndex) {
+        m_minIndex = index;
+    }
+    if (index > m_maxIndex) {
+        m_maxIndex = index;
+    }
+    return nf;
+}
+
+// ===========================================================================
+// 0x1521c0: store `elem` at frame index `index` (CObArray::SetAtGrow) and widen the
+// cached sentinel window [m_64, m_68] to include it. __thiscall, 2 args (ret 8).
+// ===========================================================================
+RVA(0x001521c0, 0x2b)
+void CDDrawWorker::AddFrameAt_1521c0(void* elem, i32 index) {
+    m_items.SetAtGrow(index, elem);
+    if (index < m_64) {
+        m_64 = index;
+    }
+    if (index > m_68) {
+        m_68 = index;
+    }
+}
+
+// ===========================================================================
+// 0x1521f0 (slot 10): build frames from a CSymTab scope. Walk every value record
+// of every symbol; parse a frame index out of each value's name (the first digit
+// run) and dispatch InsertFrame(rec, index, 1) (slot 14). Count the frames that
+// took. When the owner surface-mgr's single-frame flag (m_flags & 0x100) is set,
+// stop after the first success. __thiscall(tab), ret 4.
+// ===========================================================================
+RVA(0x001521f0, 0xbc)
+i32 CDDrawWorker::BuildFramesFromSymTab(CSymTab* tab) {
     i32 count = 0;
-    for (CDDrawGroupNode* n = m_listHead; n != 0;) {
-        CDDrawGroupNode* cur = n;
-        n = n->m_next;
-        CDDrawGroupChild* o = cur->m_obj;
-        o->m_7c->m_fn10(o);
-        count++;
+    void* sym = tab->FirstSym();
+    while (sym != 0) {
+        void* val = tab->NextSym2(sym);
+        while (val != 0) {
+            char* p = ((CParseSource*)val)->m_name;
+            while (*p != 0) {
+                if (*p >= '0' && *p <= '9') {
+                    break;
+                }
+                p++;
+            }
+            i32 fi = atoi(p);
+            if (InsertFrame(val, fi, 1) != 0) {
+                count++;
+            }
+            val = tab->NextSym3(val);
+            if ((((CDDrawSurfaceMgr*)m_0c)->m_flags & 0x100) && count > 0) {
+                val = 0;
+            }
+        }
+        sym = tab->NextSym(sym);
+        if ((((CDDrawSurfaceMgr*)m_0c)->m_flags & 0x100) && count > 0) {
+            sym = 0;
+        }
     }
     return count;
 }
 
-// Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:
-// A=0x166640 (0x1dc), B=0x1598d0 (0x1fc), C=0x159250 (0x190), F=0x159440 (0x18c).
-// E (Mid) is the shared base subobject, not directly allocated -> size unresolved.
-SIZE(CWwdGameObjectA, 0x1dc);
-SIZE(CWwdGameObjectB, 0x1fc);
-SIZE(CWwdGameObjectC, 0x190);
-SIZE_UNKNOWN(CWwdGameObjectE);
-SIZE(CWwdGameObjectF, 0x18c);
-// Per-variant game-object vtables (slot RVAs = each table's ground truth).
-VTBL(CWwdGameObjectE, 0x001f0020); // ??_7 (Mid base, 16 slots)
-VTBL(CWwdGameObjectA, 0x001f00a8); // ??_7 (Level2, 16 slots)
-VTBL(CWwdGameObjectF, 0x001f0060); // ??_7 (17 slots)
-VTBL(CWwdGameObjectC, 0x001effd0); // ??_7 (19 slots)
-VTBL(CWwdGameObjectB, 0x001f00e8); // ??_7 (16 slots, 4-level MI chain)
-SIZE_UNKNOWN(WwdEdgeA);
-SIZE_UNKNOWN(WwdEdgeB);
-SIZE_UNKNOWN(WwdName);
+// ===========================================================================
+// 0x1522b0 (slot 15): validate that a CSymTab scope's image-type value records
+// (tags 'PCX'/'BMP'/'RID'/'PID') each resolve to a frame in the cached window via
+// slot 16 (Slot40_1523b0). Returns -1 the moment a resolve fails, or if fewer
+// records matched than the count of live frames in [m_64, m_68]; else the match
+// count. __thiscall(tab), ret 4.
+// ===========================================================================
+// @early-stop
+// regalloc-coloring wall: body is byte-structure-exact but MSVC colors `this`->ebx
+// and coalesces cnt/tab->edi, whereas retail keeps `this`->edi and coalesces
+// cnt/tab->ebx (a consistent ebx<->edi swap) plus retail push-saves all 4 GPRs up
+// front where cl shrink-wraps them. Every mnemonic/operand-shape matches; only the
+// two callee-saved colors differ. permute (start 87.755%) found no better spelling.
+RVA(0x001522b0, 0xf7)
+i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
+    i32 matched = 0;
+    i32 liveFrames;
+    liveFrames = 0;
+    i32 n = m_items.m_nSize;
+    if (n > 0) {
+        i32 cnt;
+        cnt = 0;
+        for (i32 i = 0; i < n; i++) {
+            CWorkerElement* el;
+            if (i >= m_64 && i <= m_68) {
+                el = m_items.m_pData[i];
+            } else {
+                el = 0;
+            }
+            if (el != 0) {
+                cnt++;
+            }
+        }
+        liveFrames = cnt;
+    }
+    void* sym = tab->FirstSym();
+    while (sym != 0) {
+        void* val = tab->NextSym2(sym);
+        while (val != 0) {
+            i32 tag = ((CParseSource*)val)->GetEntryTag();
+            if (tag == 'PCX' || tag == 'BMP' || tag == 'RID' || tag == 'PID') {
+                char* p = ((CParseSource*)val)->m_name;
+                while (*p != 0) {
+                    if (*p >= '0' && *p <= '9') {
+                        break;
+                    }
+                    p++;
+                }
+                i32 fi = atoi(p);
+                if (0 == Slot40_1523b0((i32)val, fi, 1)) {
+                    return -1;
+                }
+                matched++;
+            }
+            val = tab->NextSym3(val);
+        }
+        sym = tab->NextSym(sym);
+    }
+    return (matched >= liveFrames) ? matched : -1;
+}
+
+// ===========================================================================
+// 0x1523b0 (slot 16): range-query dispatch - if the frame index `n` is within the
+// cached sentinel window [m_64, m_68], fetch element m_items[n] and dispatch its
+// slot-13 query (rec, flag), returning it as a bool; otherwise 0. __thiscall, ret 0xc.
+// ===========================================================================
+RVA(0x001523b0, 0x3b)
+i32 CDDrawWorker::Slot40_1523b0(i32 rec, i32 n, i32 flag) {
+    CWorkerElement* el;
+    if (n >= m_64 && n <= m_68) {
+        el = m_items.m_pData[n];
+    } else {
+        el = 0;
+    }
+    if (el == 0) {
+        return 0;
+    }
+    return el->Query34(rec, flag) != 0;
+}
+
+// CImageSet::GetMemoryUsage (__thiscall, ret 4). Walk every populated frame in
+// [m_minIndex, m_maxIndex] (the inlined bounds-checked GetAt) and accumulate its
+// decoded byte size: width*height, doubled for a 16bpp held surface or tripled for
+// 24bpp, overridden by the owned object's exact count when one is present, plus a
+// fixed 0x34-byte per-frame overhead when `raw` is 0.
+// @early-stop
+// 99.96% - every instruction byte-identical except the commutative `width*height` imul:
+// retail keeps m_height in esi and reads m_width as the imul memory operand; cl canonicalizes
+// to the reverse (keeps m_width, reads m_height) for EVERY spelling (a*b, b*a, temp + *=). A
+// 2-byte (displacement) instruction-selection canonicalization, not source-steerable.
+RVA(0x001523f0, 0x82)
+i32 CImageSet::GetMemoryUsage(i32 raw) {
+    i32 sum = 0;
+    for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
+        CImageFrame* frame = GetAt(i);
+        if (frame) {
+            i32 size = frame->m_height * frame->m_width;
+            if (frame->m_surface && frame->m_surface->m_bitDepth == 0x10) {
+                size += size;
+            }
+            if (frame->m_surface && frame->m_surface->m_bitDepth == 0x18) {
+                size = size * 3;
+            }
+            if (frame->m_format) {
+                size = frame->m_format->m_decodedByteCount;
+            }
+            if (raw == 0) {
+                size += 0x34;
+            }
+            sum += size;
+        }
+    }
+    return sum;
+}
+
+// SetAllTypes (__thiscall, ret 4). Returns the number of frames touched.
+RVA(0x00152480, 0x4e)
+i32 CImageSet::SetAllTypes(i32 type) {
+    i32 count = 0;
+    for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
+        CImageFrame* frame = GetAt(i);
+        if (frame && frame->m_format) {
+            ((ShadeSelector*)frame->m_format)->Select(type, 0);
+            count++;
+        }
+    }
+    return count;
+}
+
+// SetAllField18 (__thiscall, ret 4). Walk every populated frame in
+// [m_minIndex, m_maxIndex] and write `value` into its format helper's +0x18 field;
+// returns the count touched. Unlike SetAllFormats there is no up-front null guard -
+// the empty range simply yields count 0 (the `jg` skips straight to the return).
+RVA(0x001524d0, 0x41)
+i32 CImageSet::SetAllField18(i32 value) {
+    i32 count = 0;
+    for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
+        CImageFrame* frame = GetAt(i);
+        if (frame && frame->m_format) {
+            frame->m_format->m_18 = value;
+            count++;
+        }
+    }
+    return count;
+}
+
+// SetAllFormats (__thiscall, ret 4). Returns the number of frames touched.
+RVA(0x00152520, 0x4b)
+i32 CImageSet::SetAllFormats(i32 format) {
+    if (!format) {
+        return 0;
+    }
+    i32 count = 0;
+    for (i32 i = m_minIndex; i <= m_maxIndex; i++) {
+        CImageFrame* frame = GetAt(i);
+        if (frame && frame->m_format) {
+            frame->m_format->m_resolvedFormat = format;
+            count++;
+        }
+    }
+    return count;
+}
+
+// GetFirstFrameState (__thiscall, ret 0). Read the shade/type state (+0x14) of the
+// lowest-indexed frame's format helper; returns 1 when that frame or its format is null.
+RVA(0x00152570, 0x24)
+i32 CImageSet::GetFirstFrameState() {
+    CImageFrame* frame = m_frames[m_minIndex];
+    if (frame == 0) {
+        return 1;
+    }
+    CImageFormat* fmt = frame->m_format;
+    if (fmt == 0) {
+        return 1;
+    }
+    return fmt->m_14;
+}
+
+// FindFrame (__thiscall, ret 0xc). Returns 1 on a hit, 0 otherwise.
+RVA(0x001525c0, 0x76)
+i32 CImageSet::FindFrame(CImageFrame* frame, char* outName, i32* outIndex) {
+    if (frame) {
+        for (i32 i = 0; i < m_count; i++) {
+            CImageFrame* cur = m_frames[i];
+            if (cur && cur == frame) {
+                if (outName) {
+                    strcpy(outName, m_name);
+                }
+                if (outIndex) {
+                    *outIndex = i;
+                }
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+// g_logicTypesRegistered (RVA 0x2bf674, VA 0x6bf674): the one-shot logic-type guard.
+DATA(0x002bf674)
+i32 g_logicTypesRegistered;
+
+// class-metadata sweep (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
+SIZE_UNKNOWN(CMapStringToObLite);
+SIZE_UNKNOWN(MapLookupA);
+SIZE_UNKNOWN(WorkerSub);
+SIZE_UNKNOWN(WwdMgr);
+SIZE_UNKNOWN(WwdMgrSub08);
+SIZE_UNKNOWN(WwdMgrSub10);
+SIZE_UNKNOWN(WwdSnapshot);
 SIZE_UNKNOWN(CObject);
-SIZE_UNKNOWN(WwdSub);
-SIZE_UNKNOWN(WwdSubA);
-SIZE_UNKNOWN(WwdWorker);
-SIZE_UNKNOWN(WwdBResolve);
-SIZE_UNKNOWN(WwdBMid);
-SIZE_UNKNOWN(WwdBLevel2);
-SIZE_UNKNOWN(WwdObList);
-
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(WwdBResolve, 0x001efbc0);
-
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
+SIZE_UNKNOWN(CImageFormat);
+SIZE_UNKNOWN(CImageFrameSurface);
+SIZE(CImageFrame, 0x34);
+SIZE_UNKNOWN(CDDrawWorker);
+SIZE_UNKNOWN(CWorkerObArray);
+SIZE_UNKNOWN(CWorkerElement);

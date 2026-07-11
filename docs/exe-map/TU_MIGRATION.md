@@ -4,7 +4,7 @@
 
 **Ground truth**: placements are first-link birth positions (demo-oracle: 170/181 outliers identically placed in GruntDem.exe; only 3 ilink moves in the whole EXE), and every obj's contribution is contiguous at first link. So retail `.text` order faithfully records the ORIGINAL TU composition, and the CRT init-table gives the original obj LINK ORDER.
 
-Outlier mechanisms: REHOME-CANDIDATE 182, COMDAT-POOL-EXILE 47, COMDAT-AT-USAGE 16, ILINK-MOVED 1.
+Outlier mechanisms: REHOME-CANDIDATE 208, COMDAT-POOL-EXILE 47, COMDAT-AT-USAGE 22, ILINK-MOVED 1.
 
 
 ## MERGE candidates — multi-core intervals (VERIFY per group)
@@ -13,17 +13,19 @@ Outlier mechanisms: REHOME-CANDIDATE 182, COMDAT-POOL-EXILE 47, COMDAT-AT-USAGE 
 
 | interval | fns | verdict | weave | combine/verify these units |
 |---|---|---|---|---|
-| `0x154aa0-0x15ccc8` | 183 | mixed | 0.19 | ddrawsubmgr (69), ddrawworkerregistry (23), ddrawsubmgrleafscan (17), ddrawsurfacemgr (10), ddrawchildgroup (10), ddrawworkerlist (7), ddrawsubmgrpages (7), wwdobjmgrfactories (7), ddrawworkermapsmall (4), ddrawworkers (4), ddrawsubmgrleaf (3), filemem (3), wwdgameobject (3) |
+| `0x1396f0-0x145e00` | 236 | ~~mixed~~ **RESOLVED wave4-K** (dossier #14): SEVEN TUs - sym `0x1396f0` / hash `0x13c240` / rez `0x13c4e0` / GameWnd `0x13cf00` / GameApp `0x13d590` / DIRSURF `0x13e060` / DDRAWMGR `0x1413d0` / codec `0x143cf0` | 0.21 | dissolved: cremusreadstream+symrec+symparser->symtab, rezfile->rezmgr, image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext->ddsurface/fileimage/pocket, ddrawptrcollections in-band->directdrawmgr |
+| `0x154aa0-0x15ccc8` | 183 | ~~mixed~~ **RESOLVED wave4-L** (dossier #15): FIVE objs - D pocket `0x1549d0` resolvenode / E `0x154aa0` ddrawworkerregistry / F `0x155840` ddrawsurfacemgr / G `0x156cb0` ddrawsubmgr (woven; #9 sub-splits refuted) / H `0x1591e0` wwdobjmgr / I `0x15b2c0` wwdfactoryobject (NEW) | 0.19 | dissolved: ddrawsubmgrleafscan+ddrawworkermapsmall+ddrawworkerlist+ddrawworkercache+ddrawworkers+ddrawchildgroup+soundresmap+filemem(+basedtor)+helperhost->ddrawsubmgr, wwdobjmgrfactories+ddrawchildgroup-walks->wwdobjmgr, animworkerctor+aniadvancecursor->wwdfactoryobject |
 | `0x08b8c0-0x093ce7` | 137 | seam-glued | 0.01 | gruntzmgr (115), menustate (4) |
 | `0x184610-0x185a0e` | 50 | seam-glued | 0.02 | menuitem (19), debugprintf (13), rezcoll (11), rezlist (5) |
 | `0x0bef80-0x0c13a5` | 48 | mixed | 0.24 | netcmdslot (18), lobbysync (12), netcmdsession (8), netsession2 (4) |
 | `0x17e450-0x182935` | 42 | seam-glued | 0.05 | fader (28), fxmodedesc (7), lighteffectsetup (5) |
-| `0x1504d0-0x152636` | 40 | seam-glued | 0.12 | wwdgameobject (13), imageset (9), userbaselink (6), spriteresource (5), ddrawworker (5) |
+| `0x1504d0-0x152636` | 40 | ~~seam-glued~~ **RESOLVED wave4-L** (dossier #15): ONE obj (S1, host wwdgameobject) | 0.12 | dissolved: imageset+userbaselink+spriteresource+ddrawworker->wwdgameobject |
 | `0x03ac30-0x03e135` | 39 | WOVEN | 0.30 | animworkerhandlers (11), customworlddialog (5), democameratools (5), orphanleaves (4), customworldinfodlg (3) |
 | `0x10cb10-0x10fad9` | 33 | seam-glued | 0.20 | tiletrigger (10), tilelogicpump (6), checkpointtrigger (6), warpstonepad (4), tiletriggerswitch (4) |
 | `0x0e5ad0-0x0e8733` | 22 | mixed | 0.24 | aniplayer (9), sbi_menuitem (8), sbi_rectonly (3) |
 | `0x17c040-0x17d8a8` | 22 | seam-glued | 0.14 | smackervideowindow (10), ddpagemgr (4), ddscreen (3) |
-| `0x152640-0x152e04` | 10 | seam-glued | 0.12 | ddrawsubmgrleaf (7), ddrawsubmgrani (3) |
+| `0x148840-0x148cd8` | 10 | WOVEN | 0.29 | ddrawptrcollections (6), image (3) |
+| `0x152640-0x152e04` | 10 | ~~seam-glued~~ **RESOLVED wave4-L** (dossier #15): ONE obj (S2, host ddrawsubmgrleaf) | 0.12 | dissolved: ddrawsubmgrani->ddrawsubmgrleaf |
 | `0x007c60-0x0085de` | 7 | seam-glued | 0.25 | actionarea (3), projactregistry (3) |
 
 ## SPLIT — units with core presence in several intervals (conflated)
@@ -31,18 +33,20 @@ Outlier mechanisms: REHOME-CANDIDATE 182, COMDAT-POOL-EXILE 47, COMDAT-AT-USAGE 
 | unit | intervals (lo, fns) |
 |---|---|
 | battlezmapconfig | `0x24dc0` (7), `0x29a30` (31), `0x343f0` (8) |
-| play | `0xc8700` (13), `0xcdb10` (24), `0xd5960` (57) |
+| play | `0xc8700` (13), `0xcdb10` (23), `0xd5960` (57) |
 | sbi_rectonly | `0xe5ad0` (3), `0xfdc00` (23), `0x104d60` (58) |
-| wwdgameobject | `0x1504d0` (13), `0x154aa0` (3), `0x1660f0` (15) |
+| wwdgameobject | ~~fragmented~~ RESOLVED wave4-L: S1 `0x1504d0` only; `0x1660f0` tail -> wwdgameobjectrender (NEW holding unit) |
 | attract | `0x13fb0` (10), `0xfa1f0` (16) |
 | orphanleaves | `0x183d0` (3), `0x3ac30` (4) |
 | bootystateactivate | `0x18c90` (6), `0x1c0f0` (13) |
 | gruntzmgr | `0x855e0` (3), `0x8b8c0` (115) |
 | menustate | `0x8b8c0` (4), `0xa02c0` (10) |
 | logicworkerhandlers | `0xa9a40` (15), `0xaf0a0` (6) |
-| ddrawsubmgrleaf | `0x152640` (7), `0x154aa0` (3) |
-| ddrawworkermapsmall | `0x154aa0` (4), `0x165810` (8) |
-| filemem | `0x154aa0` (3), `0x165e30` (5) |
+| image | `0x1396f0` (27), `0x148840` (3) |
+| ddrawptrcollections | `0x1396f0` (34), `0x148840` (6) |
+| ddrawsubmgrleaf | ~~fragmented~~ RESOLVED wave4-L: S2 `0x152640` only; `0x154aa0` strays -> ddrawsubmgr |
+| ddrawworkermapsmall | ~~fragmented~~ RESOLVED wave4-L: unit dissolved (quartet -> ddrawsubmgr, meat -> ddrawsurfacepair) |
+| filemem | ~~fragmented~~ RESOLVED wave4-L: unit dissolved (ctor/dtor pocket -> ddrawsubmgr, runtime core -> ddrawsurfacepair) |
 | wwdspatialmgr | `0x1682f0` (13), `0x191ad0` (3) |
 
 ## MOVE — lone strays inside a foreign interval
@@ -144,10 +148,9 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x050a50` | `?SetupTubeAnim@CGruntTube@@QAEHH@Z` | grunttubeanim | `0x50a50` ? |
 | `0x0555e0` | `?Load@CGameStateRecord@@QAEHPAUCSerialArchive@@@Z` | gamestaterecordload | `0x555e0` ? |
 | `0x056eb0` | `?DeserializeStrings@GruntDataRecord@@QAEHPAUCSerialArchive@@` | gruntdatarecord | `0x56eb0` ? |
-| `0x058b60` | `?ApplyGeometryDirect@CGameObject@@QAEXHH@Z` | spriteresource | `0x56f80` gruntcombat |
 | `0x058bc0` | `?SetParams@CMotionState@@QAEHNNNNNNNNNNN@Z` | motionstate | `0x56f80` gruntcombat |
-| `0x058ca0` | `?SetZ@CMotionState@@QAEXN@Z` | motionstate | `0x56f80` gruntcombat |
 | `0x058cd0` | `??0CUserLogic@@QAE@PAUCGameObject@@@Z` | userlogicctoremit | `0x56f80` gruntcombat |
+| `0x05b7e0` | `?Lookup_05b7e0@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z` | ddrawsubmgrleafscan | `0x56f80` gruntcombat |
 | `0x05d210` | `?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z` | userlogic | `0x5d210` ? |
 | `0x05ecd0` | `?RunPositionInterpStep@CGrunt@@QAEHH@Z` | gruntentrancearrival | `0x5ecd0` ? |
 | `0x05f310` | `?MovingSlot16@CGrunt@@UAEXXZ` | grunt | `0x5f310` ? |
@@ -217,7 +220,6 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0a0a30` | `?Activate@CAttract@@QAEHXZ` | attract | `0xa02c0` menustate |
 | `0x0a1190` | `?SetMenuTextRect@@YAXXZ` | mainmenubuilder | `0xa1190` ? |
 | `0x0a11d0` | `?BuildMainMenuTree@@YAXPAX@Z` | mainmenubuilder | `0xa11d0` ? |
-| `0x0ac1d0` | `??0CDoNothing@@QAE@PAUCGameObject@@@Z` | donothing | `0xabfa0` frontcandyani |
 | `0x0ac3f0` | `??0CBehindCandy@@QAE@PAUCGameObject@@@Z` | behindcandy | `0xabfa0` frontcandyani |
 | `0x0ac620` | `??0CEyeCandy@@QAE@PAUCGameObject@@@Z` | eyecandy | `0xabfa0` frontcandyani |
 | `0x0acb30` | `?InitLogicDispatch_646060@@YAXXZ` | logicdispatchinit | `0xabfa0` frontcandyani |
@@ -227,8 +229,6 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0adfc0` | `?RegisterXLogic_646010@@YAXXZ` | logicactreg | `0xadfc0` ? |
 | `0x0ae2a0` | `?AdvanceAnim@CMenuSparkle@@QAEHXZ` | menusparkle | `0xae2a0` ? |
 | `0x0ae360` | `?GameIconFlashEffect@@YAHPAUCGameObject@@@Z` | gameiconflasheffect | `0xae360` ? |
-| `0x0ae3f0` | `??0CWayPoint@@QAE@PAUCGameObject@@@Z` | waypoint | `0xae3f0` ? |
-| `0x0ae5f0` | `??0CGuardPoint@@QAE@PAUCGameObject@@@Z` | guardpoint | `0xae5f0` ? |
 | `0x0b15b0` | `?ConstructActRange_646188@@YAXXZ` | logicactregistrars | `0xb1200` spotlightctor |
 | `0x0b1790` | `?RegisterActs_646188@@YAXXZ` | logicactregistrars | `0xb1200` spotlightctor |
 | `0x0b1ee0` | `?Update_0b1ee0@CSpotLight@@QAEHXZ` | spotlight | `0xb1ee0` ? |
@@ -251,7 +251,6 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0c46b0` | `?Watchdog@CMultiStartDlg@@QAEXXZ` | netgamedlgwatch | `0xc2980` multistartdlgroster |
 | `0x0c4b60` | `?SelectColor@CNetSessHost@@QAEHHH@Z` | netcmdmgr | `0xc2980` multistartdlgroster |
 | `0x0c7ec0` | `?Vfunc1@CPlay@@UAEHHHH@Z` | modeobjinit | `0xc7ec0` ? |
-| `0x0c8980` | `?DtorMembers@CSBI_RectOnly@@QAEXXZ` | sbi_rectonly | `0xc8700` play |
 | `0x0ca200` | `?LoadByMode@CPlayLevelLoad@@QAEHHH@Z` | loadlevelbymode | `0xc8700` play |
 | `0x0cb800` | `?OnActivate@CPlay@@QAEHXZ` | playstateactivate | `0xc8700` play |
 | `0x0cbcc0` | `?DispatchKey@CGamePlayInput@@QAEHHH@Z` | gamekeyhandler | `0xcbcc0` ? |
@@ -358,8 +357,12 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x11d100` | `?Stamp@CNoTrackObjectStamp@@QAEXXZ` | wapmisc | `0x11d100` ? |
 | `0x133380` | `?vector_deleting_destructor@CGameMgr@WAP32@@QAEPAXI@Z` | gameapp | `0x132ce0` directinputmgr2 |
 | `0x138aa0` | `?Load@CGruntzSoundInnerZ@@UAEHPBD0@Z` | soundbankload | `0x138490` gruntzsoundz |
-| `0x13dfe0` | `?ActiveWait@@YAXI@Z` | debugtiming | `0x13dfe0` ? |
-| `0x13e010` | `?DebugTrace@@YAXPBDZZ` | debugtiming | `0x13e010` ? |
+| `0x139bf0` | `??0CSymRec@@QAE@PAXPAUCSymTab@@HH@Z` | symrec | `0x1396f0` ddrawptrcollections |
+| `0x139c80` | `??0CSymRec@@QAE@PAXPAUCSymTab@@H@Z` | symrec | `0x1396f0` ddrawptrcollections |
+| `0x13dfe0` | `?ActiveWait@@YAXI@Z` | debugtiming | `0x1396f0` ddrawptrcollections |
+| `0x13e010` | `?DebugTrace@@YAXPBDZZ` | debugtiming | `0x1396f0` ddrawptrcollections |
+| `0x13f460` | `?ShadeRect@CDDSurface@@QAEHHPAUtagRECT@@@Z` | lutshaderect | `0x1396f0` ddrawptrcollections |
+| `0x144270` | `?Load@ResLoad_144270@ResLoaders@@QAEHHPADH@Z` | resourceloaders | `0x1396f0` ddrawptrcollections |
 | `0x145e00` | `?WarpIsPow2@@YAHH@Z` | warptextureblit | `0x145e00` ? |
 | `0x145e30` | `?PolyIsConvexCW@@YAHPAUPolyVtx@@H@Z` | imagepolyclip | `0x145e30` ? |
 | `0x145f60` | `?ImageRotateBlit@@YAXHHPAHHPAUImgRect@@HMMHH@Z` | imagerotate | `0x145f60` ? |
@@ -368,6 +371,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x146a20` | `?WarpTextureBlit@@YAHPAUWarpVtx@@HPAVCDDSurface@@1HH@Z` | warptextureblit | `0x146a20` ? |
 | `0x146fe0` | `?FillPolygon@@YAHPAUFillVert@@HPAVCDDSurface@@F@Z` | ddrawpolyfill | `0x146fe0` ? |
 | `0x1471d0` | `?ProjectWallQuad@@YAHHHHHHHHHHHH@Z` | wallproject | `0x1471d0` ? |
+| `0x148940` | `?LoadByExt@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PADHH@Z` | fileimageloadbyext | `0x148840` ddrawptrcollections |
 | `0x149250` | `?SaveBmp@CImageSaver@@QAEHVCString@@HHHHHHHH@Z` | imagesavebmp | `0x148ce0` imageowned |
 | `0x1495d0` | `?EncodeRle16@CImageRle16@@QAEPAXPBE@Z` | imagerle16encode | `0x1495d0` ? |
 | `0x14dcf0` | `?SetShadeDescr@@YAXPAUShadeDescr@@H@Z` | shadedescrtable | `0x14dcf0` ? |
@@ -457,6 +461,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 
 **Mixed-profile merge groups (unify; EH evidence decides):**
 - `0x03ac30-0x03e135` (19 EH sites): orphanleaves (base), customworlddialog (base), customworldinfodlg (base), democameratools (eh), animworkerhandlers (eh)
+- `0x1396f0-0x145e00` (53 EH sites): **RESOLVED wave4-K** - symtab/rezmgr/gameapp/ddsurface/directdrawmgr/fileimage all eh (per-obj EH sites); gamewnd stays base (zero sites, own obj); the fileimagerundecode `od` singleton was a `#pragma optimize("",off)` island (docs/patterns/od-island-pragma-optimize-off.md)
 - `0x1504d0-0x152636` (1 EH sites): spriteresource (base), wwdgameobject (eh), userbaselink (eh), ddrawworker (eh), imageset (base)
 - `0x154aa0-0x15ccc8` (49 EH sites): ddrawworkerregistry (eh), ddrawsurfacemgr (eh), ddrawsubmgr (eh), ddrawworkermapsmall (eh), ddrawworkerlist (base), ddrawworkers (base), ddrawsubmgrpages (eh), ddrawsubmgrleafscan (eh), ddrawchildgroup (base), ddrawsubmgrleaf (eh), filemem (eh), wwdobjmgrfactories (eh), wwdgameobject (eh)
 - `0x17c040-0x17d8a8` (1 EH sites): ddpagemgr (base), smackervideowindow (eh), ddscreen (base)
@@ -474,7 +479,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 
 - **RTTI = /GR per project**: 222/295 vtables carry RTTI; the engine band (0x130000-0x180000) has 18/78 — and the non-iostream RTTI'd classes there are GAME-project (/GR) files sitting inside the band: CGameApp, CGameMgr, CGameWnd, CImage. Use RTTI-vs-not to assign mega-interval files to their project.
 - **Vtable .rdata order** is 73% monotone with the methods' .text order — a third link-order witness (vtables are COMDATs kept at the first-constructing obj and never move); use it to order fragment-less TUs and cluster no-RTTI engine vtables.
-- **Private globals**: 6407/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 100% monotone with TU order. A private global decides a seam function's membership; 325 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
+- **Private globals**: 6405/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 100% monotone with TU order. A private global decides a seam function's membership; 325 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
 - **Extent-overlap merge evidence** (two neighbor intervals whose private .data extents interleave are ONE obj):
   - `0x7c60` (actionarea,projactregistry) + `0x9090` (actionoptionsmenubar)
   - `0x19cd0` (gamemode) + `0x18740` (?)
@@ -489,8 +494,8 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 - `C:\Proj\DinMgr2\InputDevice.cpp` -> inputdevice (12)
 - `C:\Proj\Dsndmgr\DSNDMGR.CPP` -> directsoundmgr (34)
 - `C:\Proj\Dsndmgr\DSndMgSR.cpp` -> soundstream (1)
-- `C:\Proj\DDrawMgr\DIRSURF.CPP` -> ddsurface (16)
-- `C:\Proj\DDrawMgr\DDRAWMGR.CPP` -> directdrawmgr (9)
+- `C:\Proj\DDrawMgr\DIRSURF.CPP` -> ddsurface (15), image (1)
+- `C:\Proj\DDrawMgr\DDRAWMGR.CPP` -> directdrawmgr (7), ddrawptrcollections (2)
 - `C:\Proj\DDrawMgr\ddrawmgr.h` **(header => inline-at-usage)** -> directdrawmgr (1)
 - `C:\Proj\DDrawMgr\DIRPAL.CPP` -> ddpalette (10)
 - `C:\Proj\NetMgr\NetMgr.cpp` -> netmgr (21)
@@ -529,8 +534,8 @@ tiletriggertransition | sbi_rectonlyx7 | warpstonepad | tiletriggerswitch | tile
 checkpointtrigger | tiletrigger | tiletriggertransition | checkpointtriggerx3 | tiletriggerx6 |
 tileswitchlogic | toobspikez | tileswitchlogicx7 | toobspikez | tileswitchlogicx9 | wapmisc | fonts
 | tiletriggercontainer | fontsx2 | tiletriggercontainerx18 | gruntvoicex20 | rezutilx3 |
-comhelperthunks | wapmisc | rezutil | ?x2 | comhelperthunksx8 | ? | m3mfcleavesx2 | ddsurface |
+comhelperthunks | wapmisc | rezutil | ?x2 | comhelperthunksx8 | ? | m3mfcleavesx2 | image |
 directdrawmgr | typekeycollx7 | debugprintf | comhelperthunks
 ```
 
-*Caveats: the engine-resource mega-interval (0x1396f0+) is glued by our own coarse units and needs per-function re-attribution before it splits (DIRSURF/DDRAWMGR/DIRPAL anchors mark three distinct files inside it). Splits invisible to layout (adjacent objs, e.g. DinMgr2.cpp + InputDevice.cpp inside our directinputmgr2) are only visible via anchors/init-frags.*
+*Caveats: the engine-resource mega-interval (0x1396f0-0x145e00) was re-attributed + split in wave4-K (dossier #14; DIRSURF/DDRAWMGR anchored, seven TUs); the 0x145e00-0x148840 warp/rotate strip and the 0x148840 pocket's original names remain open. Splits invisible to layout (adjacent objs, e.g. DinMgr2.cpp + InputDevice.cpp inside our directinputmgr2) are only visible via anchors/init-frags.*

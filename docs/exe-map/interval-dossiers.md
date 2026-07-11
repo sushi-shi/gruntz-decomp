@@ -758,3 +758,128 @@ image+fileimageblit+fileimagerundecode+lutshaderect+fileimageloadbyext
   gruntzmgr's cells. Either PumpIdleFrame/g_pendingFrame belong to the gametext
   obj (a seam fn), or gametext+gruntzmgr are one obj (consistent with
   gruntzmgr's 0x855e0 split-row). Needs a dedicated audit - not executed.
+
+## 15. wave4-L - the ddraw-submgr region `0x1504d0-0x15ccc8` + tail `0x163a40-0x166100`
+
+**Verdict: 4 STRONG one-obj blocks (S1/S2/C/T) + a 5-block E/F/G/H/I complex held
+at the dossier-#9 boundaries (documented-ambiguous, leaning fewer objs).**
+Evidence per boundary below. Negative oracles first: ZERO $E init frags anywhere
+in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchors
+(asserts compiled out); initialized-.data references are THIN (the region runs on
+.bss + heap), so the privates oracle is weak here.
+
+| # | block | span | verdict | our file (host) | flags |
+|---|---|---|---|---|---|
+| S1 | wwd game-object core + worker frames | `0x1504d0-0x152636` | ONE obj (WOVEN, strong) | src/Wwd/WwdGameObject.cpp | eh |
+| S2 | submgr leaf/ani catalog | `0x152640-0x152e83` | ONE obj (A-B-A, strong) | src/DDrawMgr/DDrawSubMgrLeaf.cpp | eh |
+| C | CImage impl (Create/Render/Blit*) | `0x152e90-0x1549c5` | ONE obj (single class, strong) | src/Image/CImage.cpp | eh |
+| D | CResolveNode/base-slot COMDAT pocket | `0x1549d0-0x154a90` | E's leading COMDATs (high) | src/Gruntz/ResolveNode.cpp (held) | eh |
+| E | CDDrawWorkerRegistry + ~CDDrawWorker | `0x154aa0-0x155833` | block held (#9 boundary 1 @0x155840) | src/DDrawMgr/DDrawWorkerRegistry.cpp | eh |
+| F | CDDrawSurfaceMgr (+Snapshot/Restore) | `0x155840-0x156ca2` | block held (#9 boundary 2 @0x156cb0); LEANS F==G | src/DDrawMgr/DDrawSurfaceMgr.cpp | eh |
+| G | submgr worker-family (quartets+meat) | `0x156cb0-0x1591c9` | ONE block (WOVEN internally); #9's ~0x157a80/~0x1588f0 sub-splits REFUTED | src/DDrawMgr/DDrawSubMgr.cpp | eh |
+| H | CWwdObjMgr finds/foreach/factories + childgroup walks | `0x1591e0-0x15b2b0` | block held (#9 boundary 3 @0x1591e0) | src/Wwd/WwdObjMgr.cpp | eh |
+| I | CWwdFactoryObject/CWwdGameObject dtors + CDDrawBlitParam + cursor | `0x15b2c0-0x15ccc8` | block held (#9 boundary 4 @0x15b2c0) | src/Wwd/WwdFactoryObject.cpp (new) | eh |
+| T | family "meat" file (pair draw + workers + mapsmall + filemem core + logicrecord IO) | `0x163a40-0x1660e6` | ONE obj (WOVEN, strong) | src/DDrawMgr/DDrawSurfacePair.cpp | eh |
+| R | wwd render + imageset1/2/3 Parse/Query | `0x1660f0-0x1670d0+` | UNMAPPED (beyond brief); render fns held | src/Wwd/WwdGameObjectRender.cpp (holding) | eh |
+
+* **S1 (ONE obj).** Fn-granularity weave of five of our units:
+  sprite(0x1504d0) | wwd(0x150660) | userbaselink(0x150eb0) | wwd(0x151150) |
+  logicrecord(0x151da0) | workercache(0x151e70) | worker(0x151eb0) |
+  sprite(0x151f00) | imageset(0x151fb0) | worker(0x1521c0) | imageset(0x1523f0).
+  Class proof: ??_7CDDrawWorker (0x1efbe8) slots [10]-[16] = our "CImageSet::
+  CreateFrame24/28/30" + "CSprite::InsertFrame" + the worker Build/Validate fns -
+  ONE class's virtuals spanning the whole weave (the imageset/spriteresource
+  names were views of CDDrawWorker slots). ??_7AnimWorkerObj (0x1efb80) is
+  first-stamped by the userbaselink EnsureWorker fns and its slot bodies are the
+  0x151d60-0x151e70 run; ??1CLogicRecord (0x151da0) re-stamps it => our
+  "CLogicRecord" IS AnimWorkerObj (identity note, not renamed this wave).
+* **S2 (ONE obj).** A-B-A: leaf(0x152640-0x1527d0) | ani(0x1528d0-0x152ad0) |
+  leaf(0x152c50-0x152d30). ??1CAniElement@0x152e30 directly after = the element
+  class the ani CreateAniEntry fns stamp (??_7CAniElementObj first-stamp
+  0x1528d0) -> S2's tail.
+* **C (ONE obj).** 0x152e90-0x1549c5 is ALL CImage: the RTTI vtable 0x1eaa2c
+  slots [7]-[15] point 0x152e90-0x153470; Blit*@0x1538c0-0x154750 are CImage
+  methods. The 0xd5c10-0xd5e80 quartet (Gap/dtor/Slot17) are COMDAT-at-usage
+  exiles kept at the play-region obj (which first-references the vtable ->
+  carries the /GR RTTI). Whether C itself is a Gruntz(/GR) or DDrawMgr file is
+  OPEN (its own vtable emission was discarded); one obj regardless.
+* **D (pocket).** ??0/??1CResolveNode + four tiny unnamed slot bodies
+  (0x154a00-0x154a80). 0x154a00 is the SHARED slot-[8] body of ??_7WwdBResolve/
+  ??_7CDDrawSubMgr/??_7LeafElementObj/??_7CWwdGameObjectE - a grand-base inline
+  virtual; the pocket is the COMDAT cluster kept at the first obj emitting those
+  vtables. ??_7WwdBResolve first-stamp = 0x1549d0 itself; next obj (E) starts
+  0x154aa0 -> pocket rides E's contribution head. Held in ResolveNode.cpp.
+* **E/F/G (held at 0x155840 + 0x156cb0, LEANING ONE-TO-TWO objs).** The
+  keeper-argument LEANS F==G: ALL eight family vtables (??_7CDDrawSubMgrLeaf/
+  LeafScan/MapSmall/Cache/List/ChildGroup/Pages/CWorkerVtableView 0x1efc78-
+  0x1efe08) are FIRST-stamped by CDDrawSurfaceMgr::Init@0x155900 (F), yet their
+  tiny-slot bodies (IsReady/GetStateId/ScalarDtor quartets) sit at
+  0x156cd0-0x1577e0 (G) - if F and G were different objs, F (the keeper) would
+  hold those inline-slot COMDATs inside its own span. Same for ??_7CFileMem
+  (first-stamp SnapshotChildren@0x156020=F; the inline ctor/dtor pocket
+  0x157850-0x157a66 sits in G). ESCAPE (why held, not merged): the quartet
+  bodies may be real out-of-line definitions in a second file (1997 code often
+  wrote 6-byte getters out-of-line), which no oracle here can exclude. The
+  .data band 0x21ab14-0x21ab30 (g_wwdObjIdCounter / a shared symtab cell /
+  g_sndEnabled / g_sndCueTag / three Gap_15a210 cells) binds S2+E+G+H+I if its
+  cells are file-statics - but every one is plausibly extern, so not decisive.
+* **G internal sub-splits REFUTED.** #9 suggested ~0x157a80 and ~0x1588f0 as
+  possible boundaries; the weave crosses both: leaf fns at 0x1577a0-0x1577e0 AND
+  0x157ae0/0x157bc0 (filemem pocket between); submgr's TriggerBlit@0x1587f0
+  between the leafscan block and the pages block; pages fns run 0x1588f0-0x158ee0
+  continuously then subworker|pair|subworker|pair alternates 0x158f30-0x1591b0.
+  G is internally woven -> one block.
+* **H/I (held at 0x15b2c0).** H = the CWwdObjMgr collection file (finds/foreach/
+  serialize + the CreateObject factories + CDDrawChildGroup walk dispatchers
+  woven in, exactly #9's picture). I = the object-lifecycle tail: the five
+  ??1CWwdGameObject[A-F] dtors + CWwdFactoryObject Release/Reset + CDDrawBlitParam
+  + ??0CAniAdvanceCursor + Advance. Weave across 0x15b2c0 is limited to
+  factory-ctor 0x15b390 (EH ctor, COMDAT-able) - held as two blocks.
+* **T (ONE obj, strong).** 0x163a40-0x1660e6 is a TOTAL fn-granularity weave of
+  twelve units: spatial-dtor | workerhost-dtor | list | pair(13 fns) | pages |
+  helper | resolvenode | logicrecord(Load/Save 1KB each) | registry | cache |
+  anielement | entrylist | anirecord | mapsmall(8) | anirecord | filemem(core:
+  Open/Read/Write) | workers | helper | workers. Sizes up to 1KB with EH => a
+  real TU (not a COMDAT pool): the family's "runtime meat" file, sitting after
+  levelplane (its own obj per dossier #8). Vtable corroboration: ??_7CAniRecordView
+  (0x1f02c0, first-stamp Build_165460) and ??_7CAniRecordBase2 (0x1f02d8,
+  first-stamp 0x1658c0) are kept HERE, in .rdata order right after levelplane's
+  vtables - monotone with T as the next obj.
+* **Vtable .rdata run (order oracle).** 0x1efb80..0x1f02d8 is one unbroken
+  adjacency run whose first-stamper .text positions are PERFECTLY monotone
+  (0x150eb0 -> 0x1528d0 -> 0x1549d0 -> 0x154ae0 -> 0x155840 -> 0x155900 ->
+  0x156020 -> ... -> 0x15ccd0(gamelevel) -> 0x15d820 -> 0x1615a0 -> 0x1628f0
+  (levelplane) -> 0x165460 -> 0x1658c0 (T)) - corroborates .text order == obj
+  link order across the whole region, and places gamelevel/levelplane/T's
+  vtables in their own contributions.
+* **Strays (position-homed or left as exiles).** CSoundResMap::RemoveByValue
+  @0x157b00 -> G (the leaf/ani catalog IS the sound-res map neighborhood);
+  CSpriteFactory pair @0x1597b0/0x159830 -> H; CSprite::GetFrame@0x15cc30 -> I;
+  Rng::Next2@0x15cbe0 LEFT in Random.cpp (foreign inline-COMDAT exile hole in
+  I's span); leafscan's far exiles 0x1f940/0x5b7e0/0x114120 ride G's file head;
+  CAniElement::AtChecked@0x6b270 rides T's file head; leaf's 0x6b2a0 rides S2's
+  file head; SpriteResource's 0x58b60 exile rides the S1 file head.
+
+### #15 execution notes (wave4-L, as landed)
+
+* **Executed:** S1 -> `src/Wwd/WwdGameObject.cpp`; S2 -> `src/DDrawMgr/DDrawSubMgrLeaf.cpp`;
+  C -> `src/Image/CImage.cpp` (Blit family merged in); D pocket -> `src/Gruntz/ResolveNode.cpp`
+  (ctor/dtor only); E -> `src/DDrawMgr/DDrawWorkerRegistry.cpp`; F -> `src/DDrawMgr/DDrawSurfaceMgr.cpp`
+  (reordered ascending); G -> `src/DDrawMgr/DDrawSubMgr.cpp` (~90 fns, woven); H -> `src/Wwd/WwdObjMgr.cpp`;
+  I -> `src/Wwd/WwdFactoryObject.cpp` (NEW unit); T -> `src/DDrawMgr/DDrawSurfacePair.cpp`;
+  R holding file -> `src/Wwd/WwdGameObjectRender.cpp` (NEW unit). 22 units dissolved, 2 added.
+  Shared class hierarchies hoisted to headers so split method sets can live in their objs:
+  WwdGameObjectFamily.h, WwdGameObjCtor.h, WwdFactoryObject.h, ResolveNode.h, AnimWorkerObj.h,
+  DDrawWorkerCache.h, DDrawWorkerList.h, DDrawWorkerMapSmall.h, DDrawSubMgrLeaf.h, AniAdvance.h.
+* **Held correct-partials (documented, NOT merged):** DDrawSurfaceMgrSerialize.cpp stays a
+  separate F-block file (its CFileMem/CDDrawSurfaceMgr/CDDrawSubMgrPages local views clash with
+  F's; fold deferred); WwdSpatialMgr.cpp keeps the 0x163a40 dtor (co-located with FreeGrids);
+  DDrawWorkerHost.cpp keeps 0x163af0; AniRecord.cpp keeps the 0x1657a0/0x165dd0 dtor pair;
+  Random.cpp keeps Rng::Next2@0x15cbe0 (foreign inline-COMDAT exile hole in I's span).
+* **0x155720 (`??_GCDDrawSubMgr`, E span):** the @rva-symbol row must stay in DDrawSubMgr.cpp -
+  labels.py's authority check requires the base obj that actually emits the COMDAT ??_G (only G's
+  local CDDrawSubMgr does). Retail-span home in E is a deferred identity-pass item.
+* **Recovered in verification:** four previously-100% fns dropped by the shuffle were restored
+  (CResolveNode::Init@0x1647e0, CDDrawWorkerRegistry::DestroyAll@0x165210 +
+  FindKeyOfValue@0x165360 -> ddrawsurfacepair; CDDrawChildGroup::IsReady@0x1575e0 -> ddrawsubmgr);
+  all back at 100%. CImageSet::CreateFrame30's stale size annotation fixed (0xdc -> 0xa4, retail 164 B).

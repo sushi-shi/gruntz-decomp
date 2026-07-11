@@ -195,26 +195,6 @@ struct CWwdSpatialMgr {
     CWwdObject* GetNextObject();
 };
 
-// ===========================================================================
-// 0x1682f0 - drop the three plane grids, null the master pointer.
-// ===========================================================================
-RVA(0x001682f0, 0x4a)
-void CWwdSpatialMgr::FreeGrids() {
-    if (m_grid0) {
-        delete m_grid0;
-        m_grid0 = 0;
-    }
-    if (m_grid1) {
-        delete m_grid1;
-        m_grid1 = 0;
-    }
-    if (m_grid2) {
-        delete m_grid2;
-        m_grid2 = 0;
-    }
-    m_mgr = 0;
-}
-
 // 0x163a40 (re-homed from src/Stub/BoundaryUpperEh.cpp): a /GX dtor whose destructible
 // CObject base subobject lives at +0x70 and whose member teardown is CWwdSpatialMgr::
 // FreeGrids on `this` - i.e. it destructs a CWwdSpatialMgr. Co-located here next to
@@ -234,6 +214,26 @@ SIZE_UNKNOWN(C163a40);
 RVA(0x00163a40, 0x41)
 C163a40::~C163a40() {
     ((CWwdSpatialMgr*)this)->FreeGrids();
+}
+
+// ===========================================================================
+// 0x1682f0 - drop the three plane grids, null the master pointer.
+// ===========================================================================
+RVA(0x001682f0, 0x4a)
+void CWwdSpatialMgr::FreeGrids() {
+    if (m_grid0) {
+        delete m_grid0;
+        m_grid0 = 0;
+    }
+    if (m_grid1) {
+        delete m_grid1;
+        m_grid1 = 0;
+    }
+    if (m_grid2) {
+        delete m_grid2;
+        m_grid2 = 0;
+    }
+    m_mgr = 0;
 }
 
 // ===========================================================================

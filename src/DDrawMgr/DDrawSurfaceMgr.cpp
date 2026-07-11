@@ -76,6 +76,46 @@ CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
     Cleanup_155e20();
 }
 
+// Engine-label backlog stubs (moved from src/Stub/DDrawSurfaceMgr.cpp).
+
+// 0x155900 IS the real 5-arg virtual Init(hWnd,w,h,bpp,flags) —
+// the SurfaceMgr Init that heap-allocates all 11 owned sub-managers, validates
+// each, and configures the display.  Deferred to the final sweep: it is a 1305-B
+// /GX method whose FULL nested construction-EH funclet can only be reproduced once
+// every child is modeled as a real MFC-derived class (each child's ctor inlines
+// CMap*/CList member ctors, and the parent funclet unwinds the in-flight child +
+// its half-built map members).  The constituent leaf ctors themselves are still
+// @early-stop walls (CDDrawWorkerMapSmall/CDDrawSubMgrLeaf/CDDrawSubMgrLeafScan at
+// 94–96%), so this parent cannot exceed them until they land — a leaf-first job.
+//
+// DECODED STRUCTURE (for the final sweep — retail-verified from 0x155900):
+//   m_hWnd = hWnd (arg1);  m_flags = flags (arg5).
+//   Then a run of `child = new T(...)` blocks (EH state in [esp+0x1c]/[esp+0x20]),
+//   each: op-new(size) -> if non-null: base-ctor 0x156cb0(0,0,this) [surface-desc
+//   children instead stamp base vtbl 0x5efc30 + [+4]=[+8]=0 + [+c]=this], inline
+//   CMap member ctors(0xa), then stamp the derived vtbl; store into this->m_XX:
+//     m_pages = new(0x1c)  vtbl 0x5efe08                                   (CDDrawSubMgrPages)
+//     m_childGroup = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (CDDrawChildGroup / CWwdObjMgr view)
+//     m_workerList = new(0x2c)  ctor156cb0 + map@0x10          vtbl 0x5efd88    (CDDrawWorkerList)
+//     m_surfaceDesc = new(0x2c)  CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (CDDrawSurfaceDesc submgr)
+//     m_workerCache = new(0x2c)  CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (CDDrawWorkerCache)
+//     m_workerMap = new(0x68)  ctor156cb0 + maps@0x10/2c/48(0x1b7e17) vtbl 0x5efcc8 (CDDrawWorkerMapSmall)
+//     m_resolveSubMgr = new(0x6d4) ctor 0x15ccd0                                   (CDDrawResolveSubMgr)
+//     m_leafScan = new(0x38)  CObject-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
+//     m_leaf = new(0x2c)  CObject-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)
+//     m_ptrColl = new(0x948) ctor 0x141cc0                                   (CDDrawPtrCollections)
+//     m_soundStream = new(0x9c)  ctor 0x1376d0                                   (SoundStream)
+//   Validate phase: for m_childGroup,m_workerList,m_surfaceDesc,m_workerCache,m_workerMap,m_leaf call child->vslot0x18(); on
+//   0 (and m_initError==0) set m_initError = 0x3e9..0x3ee and return 0; m_resolveSubMgr->vslot0x34(w,h) ->
+//   0x3ef; m_pages->vslot0x24(w,h,flags,arg5) -> 0x3f0.  Then flags&0x20 => m_resolveSubMgr[+8]|=4;
+//   SoundStream setup via 0x137720 with mode (bl&0x80?2:1), teardown-on-fail via
+//   vslot0/[+0] scalar-delete + 0x3f1; finally m_leafScan->0x157a80(1) validate.  ret 0x14.
+// @confidence: high
+// @source: tomalla
+// @stub
+RVA(0x00155900, 0x519)
+void CDDrawSurfaceMgr::Init() {}
+
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::Cleanup_155e20() (0x155e20, __thiscall)
 // Tear down every owned child in the engine's fixed teardown order:
@@ -176,6 +216,37 @@ extern void __cdecl RelayHwnd(void* hWnd);
 extern i32 __stdcall CreateChildSurface(i32 x, i32 y, i32 flags);
 
 // ---------------------------------------------------------------------------
+// CDDrawSurfaceMgr::SetHwnd()
+// Relays the hWnd argument to an external manager function.
+RVA(0x00155f50, 0x10)
+void CDDrawSurfaceMgr::SetHwnd(void* hWnd) {
+    RelayHwnd(hWnd);
+}
+
+// ---------------------------------------------------------------------------
+// CDDrawSurfaceMgr::SetDimensions()
+// Validates/sets surface dimensions.
+RVA(0x00155f60, 0x56)
+i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
+    CDDrawSurfacePair* child = m_pages->m_frontPair;
+    if (child->m_width != x || child->m_height != y) {
+        if (CreateChildSurface(x, y, flags) == 0) {
+            return 0;
+        }
+    }
+    if (m_resolveSubMgr != 0) {
+        // FLAG(retype-deferred): m_resolveSubMgr is generically typed CDDrawSubMgr*
+        // in the canonical owner header; Init always stores a CDDrawResolveSubMgr
+        // (new(0x6d4), ctor 0x15ccd0) there, so the member's true type is
+        // CDDrawResolveSubMgr* (DDrawSurfaceMgr.h is additive-only this session).
+        if (((CDDrawSurfaceMgr*)m_resolveSubMgr)->SetDimensions(x, y, 0) == 0) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::FreeContext()
 // Frees context - Stop (0x137a80, pause/reset) the leaf-scan child's held stream +
 // clear its keyed map, then Free (0x137740, full reap+shutdown) the owner's own
@@ -215,37 +286,6 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 }
 
 // ---------------------------------------------------------------------------
-// CDDrawSurfaceMgr::SetDimensions()
-// Validates/sets surface dimensions.
-RVA(0x00155f60, 0x56)
-i32 CDDrawSurfaceMgr::SetDimensions(i32 x, i32 y, i32 flags) {
-    CDDrawSurfacePair* child = m_pages->m_frontPair;
-    if (child->m_width != x || child->m_height != y) {
-        if (CreateChildSurface(x, y, flags) == 0) {
-            return 0;
-        }
-    }
-    if (m_resolveSubMgr != 0) {
-        // FLAG(retype-deferred): m_resolveSubMgr is generically typed CDDrawSubMgr*
-        // in the canonical owner header; Init always stores a CDDrawResolveSubMgr
-        // (new(0x6d4), ctor 0x15ccd0) there, so the member's true type is
-        // CDDrawResolveSubMgr* (DDrawSurfaceMgr.h is additive-only this session).
-        if (((CDDrawSurfaceMgr*)m_resolveSubMgr)->SetDimensions(x, y, 0) == 0) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-// ---------------------------------------------------------------------------
-// CDDrawSurfaceMgr::SetHwnd()
-// Relays the hWnd argument to an external manager function.
-RVA(0x00155f50, 0x10)
-void CDDrawSurfaceMgr::SetHwnd(void* hWnd) {
-    RelayHwnd(hWnd);
-}
-
-// ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::InvokeCallback()
 // Dispatches arguments through the m_callback callback function pointer,
 // returning 1 on success / 0 on failure.
@@ -259,46 +299,6 @@ i32 CDDrawSurfaceMgr::InvokeCallback(void* arg1, i32 arg2, i32 arg3, i32 arg4) {
     }
     return m_callback(this, arg1, arg2, arg3, arg4) != 0;
 }
-
-// Engine-label backlog stubs (moved from src/Stub/DDrawSurfaceMgr.cpp).
-
-// 0x155900 IS the real 5-arg virtual Init(hWnd,w,h,bpp,flags) —
-// the SurfaceMgr Init that heap-allocates all 11 owned sub-managers, validates
-// each, and configures the display.  Deferred to the final sweep: it is a 1305-B
-// /GX method whose FULL nested construction-EH funclet can only be reproduced once
-// every child is modeled as a real MFC-derived class (each child's ctor inlines
-// CMap*/CList member ctors, and the parent funclet unwinds the in-flight child +
-// its half-built map members).  The constituent leaf ctors themselves are still
-// @early-stop walls (CDDrawWorkerMapSmall/CDDrawSubMgrLeaf/CDDrawSubMgrLeafScan at
-// 94–96%), so this parent cannot exceed them until they land — a leaf-first job.
-//
-// DECODED STRUCTURE (for the final sweep — retail-verified from 0x155900):
-//   m_hWnd = hWnd (arg1);  m_flags = flags (arg5).
-//   Then a run of `child = new T(...)` blocks (EH state in [esp+0x1c]/[esp+0x20]),
-//   each: op-new(size) -> if non-null: base-ctor 0x156cb0(0,0,this) [surface-desc
-//   children instead stamp base vtbl 0x5efc30 + [+4]=[+8]=0 + [+c]=this], inline
-//   CMap member ctors(0xa), then stamp the derived vtbl; store into this->m_XX:
-//     m_pages = new(0x1c)  vtbl 0x5efe08                                   (CDDrawSubMgrPages)
-//     m_childGroup = new(0x6c)  ctor156cb0 + maps@0x10/0x2c/0x48 vtbl 0x5efdc0  (CDDrawChildGroup / CWwdObjMgr view)
-//     m_workerList = new(0x2c)  ctor156cb0 + map@0x10          vtbl 0x5efd88    (CDDrawWorkerList)
-//     m_surfaceDesc = new(0x2c)  CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd28 (CDDrawSurfaceDesc submgr)
-//     m_workerCache = new(0x2c)  CObject-base + map@0x10(0x1b7e17) vtbl 0x5efd00 (CDDrawWorkerCache)
-//     m_workerMap = new(0x68)  ctor156cb0 + maps@0x10/2c/48(0x1b7e17) vtbl 0x5efcc8 (CDDrawWorkerMapSmall)
-//     m_resolveSubMgr = new(0x6d4) ctor 0x15ccd0                                   (CDDrawResolveSubMgr)
-//     m_leafScan = new(0x38)  CObject-base + map@0x10(0x1b8247) vtbl 0x5efca0 (= CDDrawSubMgrLeafScan)
-//     m_leaf = new(0x2c)  CObject-base + map@0x10(0x1b8247) vtbl 0x5efc78 (= CDDrawSubMgrLeaf)
-//     m_ptrColl = new(0x948) ctor 0x141cc0                                   (CDDrawPtrCollections)
-//     m_soundStream = new(0x9c)  ctor 0x1376d0                                   (SoundStream)
-//   Validate phase: for m_childGroup,m_workerList,m_surfaceDesc,m_workerCache,m_workerMap,m_leaf call child->vslot0x18(); on
-//   0 (and m_initError==0) set m_initError = 0x3e9..0x3ee and return 0; m_resolveSubMgr->vslot0x34(w,h) ->
-//   0x3ef; m_pages->vslot0x24(w,h,flags,arg5) -> 0x3f0.  Then flags&0x20 => m_resolveSubMgr[+8]|=4;
-//   SoundStream setup via 0x137720 with mode (bl&0x80?2:1), teardown-on-fail via
-//   vslot0/[+0] scalar-delete + 0x3f1; finally m_leafScan->0x157a80(1) validate.  ret 0x14.
-// @confidence: high
-// @source: tomalla
-// @stub
-RVA(0x00155900, 0x519)
-void CDDrawSurfaceMgr::Init() {}
 
 // @identity-TODO (matcher-5): 0x156ad0 (466 B, free __stdcall 5 args, /GX) == a CFileMem
 // "load file into buffer" helper (RVA-adjacent to CFileMemBase @0x157850; belongs to

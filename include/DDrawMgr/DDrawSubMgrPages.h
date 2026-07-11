@@ -61,6 +61,7 @@
 #include <Wap32/WapObj.h>   // CWapObj : CObject - the real 7-slot grand-base
 
 class CDDrawSurfaceMgr;  // +0x0c root manager back-pointer
+class CDDSurface;        // the held surface (CDDrawSurfaceChildA::m_surface)
 class CDDrawSurfacePair; // +0x10/+0x14/+0x18 front/back/overlay surface elements
 
 // ---------------------------------------------------------------------------
@@ -76,7 +77,7 @@ public:
     // ~CDDrawSubMgrPages (direct call), conditionally RezFree, return this. Hand-written
     // non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern) so the body emits.
     void* ScalarDtor(u32 flags); // 0x1574b0
-    i32 IsLoaded() OVERRIDE;               // slot 5 (@0x14) 0x157480 ("all children present?")
+    i32 IsLoaded() OVERRIDE;     // slot 5 (@0x14) 0x157480 ("all children present?")
     // slot 6 (@0x18) IsReady 0x001c08 inherited from CWapObj (not re-declared).
     virtual void DestroyChildren(); // slot 7 (@0x1c) 0x158ac0
     RVA(0x001574a0, 0x6)
@@ -114,7 +115,7 @@ public:
     i32 Method_158e40();                       // 0x158e40
     i32 Method_158e90();                       // 0x158e90
     i32 Method_158ee0();                       // 0x158ee0
-    void Method_159ef0(); // 0x159ef0 (out-of-line)
+    void Method_159ef0();                      // 0x159ef0 (out-of-line)
 
     // vptr @+0x00 (grand-base); the three-word header at +0x04..+0x0c.
     i32 m_04;                         // +0x04  (reset to -1 on teardown)
@@ -125,5 +126,33 @@ public:
     CDDrawSurfacePair* m_overlayPair; // +0x18  overlay (composite)
 };
 VTBL(CDDrawSubMgrPages, 0x001efe08); // ??_7CDDrawSubMgrPages@@6B@ (10-slot CWapObj-derived vtable)
+
+// The "A" child built by CreateChildren (0x30 bytes, ctor 0x158f30, vtable
+// 0x5eff70). Real CWapObj-derived: slots 0..4 inherited, slot 5 the IsLoaded
+// override (0x159150, G obj); own slots 7..10 named from their retail slot RVAs
+// (SetGeom_1646b0 lives in the T obj). Hoisted from DDrawSubMgrPages.cpp
+// (wave4-L). IDENTITY: the ctor 0x158f30 is shared with the CDrawSubWorker view
+// (DDrawSubMgr.cpp) - one retail class, two method-set views (identity pass TODO).
+class CDDrawSurfaceChildA : public CWapObj {
+public:
+    virtual ~CDDrawSurfaceChildA() OVERRIDE; // slot 1 (dtor 0x159190)
+    virtual i32 IsLoaded() OVERRIDE;         // slot 5 (@0x14) 0x159150 (G obj)
+    virtual i32 IsReady() OVERRIDE;          // slot 6 (@0x18) 0x001c08 (CWapObj default)
+    virtual void Slot07_1591d0();            // slot 7 (@0x1c) 0x1591d0
+    virtual void Slot08_159180();            // slot 8 (@0x20) 0x159180
+    virtual i32 CreateModeSurface_1644a0(i32 a1, i32 a2, i32 a3); // slot 9 (@0x24) 0x1644a0
+    virtual i32 SetGeom_1646b0(i32 w, i32 h, i32 bpp); // slot 10 (@0x28) 0x1646b0 (T obj)
+    CDDrawSurfaceChildA(i32 handle, i32 a2, i32 a3);   // 0x158f30
+    i32 m_status;                                      // +0x04  status word (-1 inactive)
+    char m_pad08[0x0c - 0x08];
+    CDDrawSurfaceMgr* m_mgr; // +0x0c  parent surface manager (its pool at +0x1c)
+    i32 m_width;             // +0x10
+    i32 m_height;            // +0x14
+    i32 m_bpp;               // +0x18
+    i32 m_srcRect[4];        // +0x1c  {x,y,w,h}
+    CDDSurface* m_surface;   // +0x2c  held surface
+}; // 0x30
+SIZE(CDDrawSurfaceChildA, 0x30);
+VTBL(CDDrawSurfaceChildA, 0x001eff70); // ??_7CDDrawSurfaceChildA@@6B@ (11-slot CWapObj-derived)
 
 #endif // GRUNTZ_DDRAWMGR_CDDRAWSUBMGRPAGES_H

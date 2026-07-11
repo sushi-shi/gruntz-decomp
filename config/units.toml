@@ -186,16 +186,6 @@ source = "src/Gruntz/SBI_StatzTabArrowEh.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "cremusentrylist"
-source = "src/Gruntz/AniElementCollection.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "ddrawworker"
-source = "src/DDrawMgr/DDrawWorker.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "sbi_imageset"
 source = "src/Gruntz/SBI_ImageSet.cpp"
 flags = "eh"
@@ -483,11 +473,6 @@ source = "src/Wap32/EngStr.cpp"
 flags = "base"
 
 [[unit]]
-unit = "userbaselink"
-source = "src/Gruntz/UserBaseLink.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "dialogs"
 source = "src/Gruntz/Dialogs.cpp"
 flags = "eh"
@@ -510,11 +495,6 @@ flags = "eh"
 [[unit]]
 unit = "wwdfile"
 source = "src/Wwd/WwdFile.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "aniadvancecursor"
-source = "src/Wwd/AniAdvanceCursor.cpp"
 flags = "eh"
 
 [[unit]]
@@ -574,16 +554,6 @@ source = "src/Io/SaveGame.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "filemem"
-source = "src/Io/FileMem.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "filemembasedtor"
-source = "src/Io/FileMemBaseDtor.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "rezmgr"
 source = "src/Rez/RezMgr.cpp"
 flags = "eh"
@@ -594,19 +564,9 @@ source = "src/Image/CImage.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "imagespriteblit"
-source = "src/Image/ImageSpriteBlit.cpp"
-flags = "base"
-
-[[unit]]
 unit = "imageowned"
 source = "src/Image/ImageOwned.cpp"
 flags = "eh"
-
-[[unit]]
-unit = "imageset"
-source = "src/Image/ImageSet.cpp"
-flags = "base"
 
 [[unit]]
 # wave4-K: the 0x143cf0-0x145dff surface file-CODEC obj (dossier #14I; original
@@ -1076,11 +1036,6 @@ source = "src/Gruntz/SpriteLoaders.cpp"
 flags = "base"
 
 [[unit]]
-unit = "spriteresource"
-source = "src/Gruntz/SpriteResource.cpp"
-flags = "base"
-
-[[unit]]
 unit = "cremusnode"
 source = "src/Gruntz/ResolveNode.cpp"
 flags = "base"
@@ -1305,26 +1260,6 @@ source = "src/Image/PolyClipRaster.cpp"
 flags = "base"
 
 [[unit]]
-unit = "ddrawworkerlist"
-source = "src/DDrawMgr/DDrawWorkerList.cpp"
-flags = "base"
-
-[[unit]]
-unit = "ddrawsubmgrpages"
-source = "src/DDrawMgr/DDrawSubMgrPages.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "ddrawchildgroup"
-source = "src/DDrawMgr/DDrawChildGroup.cpp"
-flags = "base"
-
-[[unit]]
-unit = "ddrawworkermapsmall"
-source = "src/DDrawMgr/DDrawWorkerMapSmall.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "ddrawsurfacemgr"
 source = "src/DDrawMgr/DDrawSurfaceMgr.cpp"
 flags = "eh"
@@ -1375,33 +1310,13 @@ source = "src/DDrawMgr/DDrawSubMgrLeaf.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "ddrawsubmgrleafscan"
-source = "src/DDrawMgr/DDrawSubMgrLeafScan.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "leafelementobj"
 source = "src/Gruntz/LeafElementObj.cpp"
 flags = "base"
 
 [[unit]]
-unit = "ddrawsubmgrani"
-source = "src/DDrawMgr/DDrawSubMgrAni.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "anielement"
-source = "src/Gruntz/AniElement.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "anirecord"
 source = "src/Gruntz/AniRecord.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "ddrawworkercache"
-source = "src/DDrawMgr/DDrawWorkerCache.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1420,9 +1335,14 @@ source = "src/Wwd/WwdGameObject.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "ddrawworkers"
-source = "src/DDrawMgr/DDrawWorkers.cpp"
-flags = "base"
+unit = "wwdfactoryobject"
+source = "src/Wwd/WwdFactoryObject.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "wwdgameobjectrender"
+source = "src/Wwd/WwdGameObjectRender.cpp"
+flags = "eh"
 
 [[unit]]
 unit = "ddrawsubmgr"
@@ -1606,11 +1526,6 @@ source = "src/Gruntz/GruntIndicatorWorkerHandlers.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "animworkerctor"
-source = "src/Gruntz/AnimWorkerCtor.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "ingameworkerhandlers"
 source = "src/Gruntz/InGameWorkerHandlers.cpp"
 flags = "eh"
@@ -1751,11 +1666,6 @@ flags = "eh"
 [[unit]]
 unit = "engstrrendertext"
 source = "src/Wap32/EngStrRenderText.cpp"
-flags = "base"
-
-[[unit]]
-unit = "helperhost"
-source = "src/Gruntz/HelperHost.cpp"
 flags = "base"
 
 [[unit]]
@@ -1900,11 +1810,6 @@ flags = "eh"
 # imagevflip/scanlinesurfacesave/imagerectfill. /GX (CFileIO/CFile stack dtors).
 unit = "imagepool"
 source = "src/Image/ImagePool.cpp"
-flags = "eh"
-
-[[unit]]
-unit = "wwdobjmgrfactories"
-source = "src/Wwd/WwdObjMgrFactories.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2054,10 +1959,6 @@ flags = "eh"
 unit = "latencylist"
 source = "src/Net/LatencyList.cpp"
 flags = "base"
-[[unit]]
-unit = "soundresmap"
-source = "src/Dsndmgr/SoundResMap.cpp"
-flags = "eh"
 [[unit]]
 unit = "menusparkleserial"
 source = "src/Gruntz/MenuSparkleSerial.cpp"

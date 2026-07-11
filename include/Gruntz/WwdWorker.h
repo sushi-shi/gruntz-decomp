@@ -17,6 +17,7 @@ public:
     virtual void V0C();
     virtual i32 Kick(void* owner); // +0x10
 };
+SIZE_UNKNOWN(CWwdWorker);
 
 // --- vtable catalog ---
 

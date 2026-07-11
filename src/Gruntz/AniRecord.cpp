@@ -137,15 +137,6 @@ struct CAniRecordBase2 : public CObject { // was : CAniRecordObjBase (merged int
     }
 };
 
-RVA(0x00165dd0, 0x5b)
-CAniRecordBase2::~CAniRecordBase2() {
-    FreeBuf_168fb0();
-    m_04 = -1;
-    m_08 = 0;
-    m_0c = 0;
-    // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
-}
-
 // ---------------------------------------------------------------------------
 // 0x1657a0: the PRIMARY base (g_aniRecordVtbl @0x5f02c0, 5 slots == the grand-base
 // layout, no extra slots) destructor. /GX. Real virtual: cl stamps ??_7 (masks 0x5f02c0)
@@ -160,6 +151,15 @@ CAniRecordView::~CAniRecordView() {
     r->m_owner = (CAniRecordOwner*)0xffff;
     r->m_count = 0;
     r->m_indices = 0;
+    // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
+}
+
+RVA(0x00165dd0, 0x5b)
+CAniRecordBase2::~CAniRecordBase2() {
+    FreeBuf_168fb0();
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
     // implicit grand-base re-stamp (masks 0x5e8cb4) folds in here as the last store.
 }
 
@@ -254,6 +254,24 @@ i32 CAniRecordView::GetSize_168e50() {
         return n * 22;
     }
     return n;
+}
+
+// ---------------------------------------------------------------------------
+// CAniStrArray::GetAt (0x168e70) - a by-value CString-array element accessor,
+// re-homed from src/Stub/MallocConstructors. Returns (via the RVO return slot) a
+// copy of the CString at this->m_data[index] (`lea &m_data[i]; CString::CString`
+// copy-ctor 0x1b9ba3). xref (gruntz.analysis.xref): CAniRecordView::ResolveIndices
+// (0x168d00). Modeled as the small string-array view CAniRecord indexes.
+struct CAniStrArray {
+    char m_00[4];             // +0x00
+    CString* m_data;          // +0x04  CString array base (4-byte elements)
+    CString GetAt(int index); // 0x168e70
+};
+SIZE_UNKNOWN(CAniStrArray);
+// CAniStrArray::GetAt (0x168e70) - copy of the CString at m_data[index].
+RVA(0x00168e70, 0x27)
+CString CAniStrArray::GetAt(int index) {
+    return m_data[index];
 }
 
 // ---------------------------------------------------------------------------
@@ -367,24 +385,6 @@ i32 CAniRecordView::Slot13_168fd0() {
         return 1;
     }
     return sd->m_2c->SetPalette((CDDPalette*)m_buf, 0);
-}
-
-// ---------------------------------------------------------------------------
-// CAniStrArray::GetAt (0x168e70) - a by-value CString-array element accessor,
-// re-homed from src/Stub/MallocConstructors. Returns (via the RVO return slot) a
-// copy of the CString at this->m_data[index] (`lea &m_data[i]; CString::CString`
-// copy-ctor 0x1b9ba3). xref (gruntz.analysis.xref): CAniRecordView::ResolveIndices
-// (0x168d00). Modeled as the small string-array view CAniRecord indexes.
-struct CAniStrArray {
-    char m_00[4];             // +0x00
-    CString* m_data;          // +0x04  CString array base (4-byte elements)
-    CString GetAt(int index); // 0x168e70
-};
-SIZE_UNKNOWN(CAniStrArray);
-// CAniStrArray::GetAt (0x168e70) - copy of the CString at m_data[index].
-RVA(0x00168e70, 0x27)
-CString CAniStrArray::GetAt(int index) {
-    return m_data[index];
 }
 
 SIZE_UNKNOWN(CAniMapOwner);
