@@ -96,12 +96,12 @@ i32 ToobSpikezLogic(CGameObject* obj) {
 // coordinate maps to an Entry* either directly (when within the fast
 // [g_toobLo, g_toobHi] range) via g_toobBase + (coord-lo)*stride, or by a slow
 // Find in the collection (0x16da80, __thiscall ret 8), which on miss rebuilds
-// (GetRetAddr 0x16d990 -> g_actCache, Insert 0x16d850 __thiscall ret 0xc) and
+// (GetRetAddr 0x16d990 -> g_projActCache, Insert 0x16d850 __thiscall ret 0xc) and
 // yields g_toobCur. The entry's first dword is a fn-ptr; a nonzero entry's
 // handler is called __thiscall on `this`. All globals are unnamed BSS
 // (DATA-pinned so the loads reloc-mask); the collection methods are
 // external/no-body (the SAME shared engine functions every registry calls). The
-// alloc-cache pair (g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME
+// alloc-cache pair (g_projActCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the SAME
 // shared global every registry writes (already named by KitchenSlime.cpp -
 // re-declared here, address-pinned).
 struct CToobEntry; // an entry: first dword is the registered handler
@@ -114,7 +114,7 @@ extern void* GetRetAddr(); // 0x16d990
 DATA(0x0024e978)
 extern CToobColl g_toobColl;
 DATA(0x002bf464)
-extern void* g_actCache;
+extern void* g_projActCache;
 extern void* g_retAddrBreadcrumb;
 
 // The entry's first dword is a pointer-to-member-function of CToobSpikez
@@ -136,7 +136,7 @@ static inline CToobEntry* ToobLookup(i32 coord) {
     if ((i32)((_zvec*)&g_toobColl)->GrowTo(coord, 0)) {
         return (CToobEntry*)(g_toobBase + (coord - g_toobLo) * g_toobStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_toobColl2->Set(&g_toobColl, (i32)item, 0xc);
     return g_toobCur;
@@ -194,7 +194,7 @@ static inline char* ActNameLookup(i32 id) {
     if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;

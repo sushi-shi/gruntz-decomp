@@ -16,16 +16,16 @@
 #include <Wap32/ZVec.h>             // _zvec::GrowTo (Find 0x16da80)
 #include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (0x408710)
 #include <Gruntz/TriggerMgr.h>      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
-#include <Gruntz/GruntSpawnConfig.h>        // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
-#include <Gruntz/Trigger.h>                 // CTrigger (point-probe result, its m_10 HUD sprite)
-#include <Gruntz/Viewport.h>                // CViewport (visible-rect base at +0x5c)
-#include <Gruntz/GameRegistry.h>            // the canonical *0x24556c singleton (m_world/m_cmdGrid/
-                                            // m_cueSink/m_scoreHud typed; CSpriteFactoryHolder)
-#include <Gruntz/SpriteFactory.h>           // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/ActColl.h>                 // CActColl/GetRetAddr + g_actCache/g_retAddrBreadcrumb
-#include <Gruntz/ActNameRegistry.h>         // the SHARED activation-name registry (g_buteTree/
-                                            // g_nextActId/s_actKeyA/g_nameReg*/ActNameLookup)
-#include <Gruntz/ActReg.h>                  // the shared CActReg coordinate-registry archetype
+#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
+#include <Gruntz/Trigger.h>          // CTrigger (point-probe result, its m_10 HUD sprite)
+#include <Gruntz/Viewport.h>         // CViewport (visible-rect base at +0x5c)
+#include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (m_world/m_cmdGrid/
+                                     // m_cueSink/m_scoreHud typed; CSpriteFactoryHolder)
+#include <Gruntz/SpriteFactory.h>    // the ONE CSpriteFactory (CreateSprite @0x1597b0)
+#include <Gruntz/ActColl.h>          // CActColl/GetRetAddr + g_projActCache/g_retAddrBreadcrumb
+#include <Gruntz/ActNameRegistry.h>  // the SHARED activation-name registry (g_buteTree/
+                                     // g_nextActId/s_actKeyA/g_nameReg*/ActNameLookup)
+#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
 #include <Gruntz/SecretTeleporterTrigger.h> // the canonical class
 #include <Gruntz/SecretLevelTrigger.h>      // canonical CSecretLevelTrigger : CUserLogic
 #include <Gruntz/SerialObjRef.h>            // CSerialObjRef::Chain (0x8c00) - the +0x34 round-trip
@@ -87,7 +87,7 @@ static inline CActEntry* ActLookup(i32 coord) {
     if ((i32)((_zvec*)&g_actColl)->GrowTo(coord, 0)) {
         return (CActEntry*)(g_actBase + (coord - g_actLo) * g_actStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_actColl2->Set(&g_actColl, (i32)item, 0xc);
     return g_actCur;

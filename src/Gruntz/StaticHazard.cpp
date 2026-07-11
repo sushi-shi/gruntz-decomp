@@ -111,7 +111,7 @@ void ConstructHaznRange() {
     ((CZDArrayDerived*)&g_haznColl)->Construct(0x7d0, 0x7da);
 }
 DATA(0x002bf464)
-extern void* g_actCache;
+extern void* g_projActCache;
 extern void* g_retAddrBreadcrumb;
 
 // The entry's first dword is a pointer-to-member-function of CStaticHazard
@@ -169,10 +169,10 @@ static inline char* ActNameLookup(i32 id) {
     if (id >= g_nameRegLo && id <= g_nameRegHi) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    if (g_nameReg.Find(id, 0)) { // CCoordColl::Find == _zvec::GrowTo @0x16da80
+    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) { // slow lookup == _zvec::GrowTo @0x16da80
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;
@@ -184,10 +184,10 @@ static inline CHaznEntry* HaznLookup(i32 coord) {
     if (coord >= g_haznLo && coord <= g_haznHi) {
         return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
     }
-    if (g_haznColl.Find(coord, 0)) { // CCoordColl::Find == _zvec::GrowTo @0x16da80
+    if ((i32)((_zvec*)&g_haznColl)->GrowTo(coord, 0)) { // slow lookup == _zvec::GrowTo @0x16da80
         return (CHaznEntry*)(g_haznBase + (coord - g_haznLo) * g_haznStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_haznColl2->Set(&g_haznColl, (i32)item, 0xc);
     return g_haznCur;

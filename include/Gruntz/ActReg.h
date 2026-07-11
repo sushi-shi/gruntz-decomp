@@ -24,7 +24,7 @@ class CVariantSlot; // folded CActColl2
 
 #include <rva.h>
 
-#include <Gruntz/ActColl.h> // CActColl/CVariantSlot/GetRetAddr + g_actCache/g_retAddrBreadcrumb
+#include <Gruntz/ActColl.h> // CActColl/CVariantSlot/GetRetAddr + g_projActCache/g_retAddrBreadcrumb
 
 // The registry IS-A CActColl (its +0x00 collection object is the CActColl base);
 // the slow lookup is a direct base Find call, no (CActColl*)this view cast.
@@ -49,7 +49,7 @@ struct CActReg : public CActColl {
         if ((i32)((_zvec*)this)->GrowTo(id, 0)) {
             return m_base + (id - m_lo) * m_stride;
         }
-        void* item = g_actCache;
+        void* item = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
         m_coll2->Set(this, (i32)item, 0xc);
         return m_cur;

@@ -30,7 +30,7 @@ class CVariantSlot; // folded CActColl2
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>   // CButeTree::Find / Insert
-#include <Gruntz/ActColl.h> // CActColl/CVariantSlot/GetRetAddr + g_actCache/g_retAddrBreadcrumb
+#include <Gruntz/ActColl.h> // CActColl/CVariantSlot/GetRetAddr + g_projActCache/g_retAddrBreadcrumb
 
 // g_buteTree (0x6bf620) doubles as the name->id map here: Find (0x16d190) returns
 // the id (0 == absent); Insert (0x16db90) maps a new key->id. Owned by the bute
@@ -48,7 +48,7 @@ DATA(0x0020a454)
 extern char s_actKeyA[];
 
 // The shared coordinate-registry collection methods + alloc scratch (CActColl /
-// CVariantSlot / GetRetAddr + g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) come from
+// CVariantSlot / GetRetAddr + g_projActCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) come from
 // <Gruntz/ActColl.h> - the SAME engine functions/globals every registry reuses.
 
 // ---------------------------------------------------------------------------
@@ -93,7 +93,7 @@ static inline char* ActNameLookup(i32 id) {
     } else if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         slot = g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     } else {
-        void* item = g_actCache;
+        void* item = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
         g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
         slot = g_nameRegCur;

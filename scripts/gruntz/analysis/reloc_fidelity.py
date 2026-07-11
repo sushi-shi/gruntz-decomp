@@ -111,7 +111,7 @@ def load_libnames():
 
 def is_exempt(sym, lib):
     return (sym in lib or sym.startswith((
-        "__imp_", "$L", "$S", "??_C@", "__real@", "__xmm@", "_CxxThrow",
+        "__imp_", "$L", "$S", "$T", "??_C@", "__real@", "__xmm@", "_CxxThrow",
         "__CxxFrameHandler", "__except_list", "__load_config", "?__L", "__ehhandler"))
         or sym in ("___security_cookie",))
 

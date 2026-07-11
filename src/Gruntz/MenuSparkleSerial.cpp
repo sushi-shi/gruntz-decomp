@@ -5,6 +5,7 @@
 // vtbl[0x2c]). Plain /O2 leaf (no /GX). The base/sub serialize + the archive
 // Read/Write are reloc-masked.
 #include <Gruntz/MenuSparkleSerial.h>
+#include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - the real slot-1 base serialize
 #include <Globals.h>
 
 // The two serialized 4-byte globals (.data). Reloc-masked DIR32 referents.
@@ -17,7 +18,9 @@ i32 CMenuSparkle::SerializeMove(CGruntArchive* arc, i32 mode, i32 a3, i32 a4) {
     if (arc == 0) {
         return 0;
     }
-    if (!CUserLogic::SerializeMove(arc, mode, a3, a4)) {
+    // The slot-1 base serialize is the shared CMovingLogicBase::Serialize @0x16e7f0
+    // (the real callee - CUserLogic::SerializeMove was a fake, unbound name for it).
+    if (!((CMovingLogicBase*)this)->Serialize((CSerialArchive*)arc, mode, a3, a4)) {
         return 0;
     }
     if (!m_34.Chain((CSerialArchive*)arc, mode, a3, (CSerialObj*)a4)) {

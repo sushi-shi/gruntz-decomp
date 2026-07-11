@@ -15,6 +15,12 @@
 #include <Wap32/ZDArrayDerived.h>
 extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
+// DATA-bind the class registry singleton here (in the main_file .cpp): labels.py
+// only scans DATA() macros in the TU source, not in included headers, so the
+// binding must live in a .cpp that references the global.
+DATA(0x00244d80)
+extern CIndicatorActReg g_healthActReg; // 0x644d80
+
 // CGruntHealthSprite::~CGruntHealthSprite @0x011fb0 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic
 // teardown: store the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link

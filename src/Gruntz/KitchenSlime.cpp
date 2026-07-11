@@ -142,12 +142,12 @@ extern i32 g_slimeTick; // VA 0x6bf3bc
 // 0x244688). A coordinate maps to an Entry* either directly (when within the
 // fast [g_kslimeLo,g_kslimeHi] range) via g_kslimeBase + (coord-lo)*stride, or
 // by a slow Find in the collection (0x16da80, __thiscall ret 8), which on miss
-// rebuilds (GetRetAddr 0x16d990 -> g_actCache, Insert 0x16d850 __thiscall ret
+// rebuilds (GetRetAddr 0x16d990 -> g_projActCache, Insert 0x16d850 __thiscall ret
 // 0xc) and yields g_kslimeCur. The entry's first dword is a fn-ptr; a nonzero
 // entry's handler is called __thiscall on `this`. All globals are unnamed BSS
 // (DATA-pinned so the loads reloc-mask); the collection methods are
 // external/no-body (shared with the trigger registry's engine functions). The
-// alloc-cache pair (g_actCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the
+// alloc-cache pair (g_projActCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) is the
 // SAME shared global both registries write.
 struct CKSlimeEntry;       // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
@@ -155,7 +155,7 @@ extern void* GetRetAddr(); // 0x16d990
 DATA(0x00246228)
 extern CTypeKeyColl g_kslimeColl;
 DATA(0x002bf464)
-extern void* g_actCache;
+extern void* g_projActCache;
 extern void* g_retAddrBreadcrumb;
 
 // The entry's first dword is a pointer-to-member-function of CKitchenSlime
@@ -176,7 +176,7 @@ static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
     if ((i32)((_zvec*)&g_kslimeColl)->GrowTo(coord, 0)) {
         return (CKSlimeEntry*)(g_kslimeBase + (coord - g_kslimeLo) * g_kslimeStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_kslimeColl2->Set(&g_kslimeColl, (i32)item, 0xc);
     return g_kslimeCur;
@@ -350,7 +350,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     if ((i32)((_zvec*)&g_typeColl)->GrowTo(key, 0)) {
         return (CTypeNameEntry*)(g_typeBase + (key - g_typeLo) * g_typeStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
     return g_typeCur;

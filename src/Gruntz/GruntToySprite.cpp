@@ -13,6 +13,11 @@
 #include <Wap32/ZDArrayDerived.h>
 extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 
+// DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
+// DATA() only in TU source, not headers).
+DATA(0x00244d58)
+extern CIndicatorActReg g_toyActReg; // 0x644d58
+
 // ~CGruntToySprite @0x0122b0 - the CUserLogic-folded /GX leaf dtor (see header).
 RVA(0x000122b0, 0x44)
 CGruntToySprite::~CGruntToySprite() {}

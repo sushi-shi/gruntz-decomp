@@ -1673,7 +1673,7 @@ gameapp	?WaitKeyEdge@@YAXHH@Z	97.0422	97.0422	1	e5333596230e	0x13df30
 gameapp	?vector_deleting_destructor@CGameMgr@WAP32@@QAEPAXI@Z	100.0000	100.0000	4	3a60f2ba211e	0x133380
 gameassetnamespaces	?LoadGameAssetNamespaces@CAssetLoader@@QAEXPAUAssetMgr@@HH@Z	72.7569	72.7569	18	36218ee3669a	0xf9ea0
 gamechecksum	?ComputeSignature@CGameSyncSig@@QAEHXZ	57.6960	57.6960	15	866540f0e362	0xc0590
-gameiconflasheffect	?GameIconFlashEffect@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	0bb1b808ef3c	0xae360
+gameiconflasheffect	?GameIconFlashEffect@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	dfde6cf4496c	0xae360
 gameinfostring	?BuildGameDate@@YAHPAUCGameInfoTime@@@Z	92.6667	92.6667	1	4f350faa4de0	0x118330
 gameinfostring	?Check1@CGameInfo@@QAEHXZ	100.0000	100.0000	1	b83b42b69830	0x1182f0
 gameinfostring	?FormatGameInfoString@CGameInfo@@QAEHXZ	100.0000	100.0000	2	ed47a2c5b35a	0x1183b0
@@ -2706,7 +2706,7 @@ menusparkle	??0CMenuSparkle@@QAE@PAUCGameObject@@@Z	90.2526	90.2526	1	e9feb05a8c
 menusparkle	??1CMenuSparkle@@UAE@XZ	100.0000	100.0000	1	482591037e85	0x101b0
 menusparkle	?AdvanceAnim@CMenuSparkle@@QAEHXZ	95.0000	95.0000	1	6103fda223d2	0xae2a0
 menusparkle	?GetTypeTag@CMenuSparkle@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:a0a634f5274b	0x10160
-menusparkleserial	?SerializeMove@CMenuSparkle@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	cpp:37b9dd3787ea	0xae1c0
+menusparkleserial	?SerializeMove@CMenuSparkle@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	0caf705a1f39	0xae1c0
 menustate	??1CMenuState@@UAE@XZ	100.0000	100.0000	1	340ab9091e63	0x8ce60
 menustate	?BuildVersionString@CMenuState@@QAEXHHHH@Z	100.0000	100.0000	1	5be9c72d727e	0xa0d80
 menustate	?FormatHudText@CMenuState@@QAEXPAVCString@@H@Z	88.6375	88.6375	1	1130f9820976	0x1af70

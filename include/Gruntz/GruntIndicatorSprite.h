@@ -122,13 +122,12 @@ extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 // ---------------------------------------------------------------------------
 struct CIndicatorActReg : public CActReg {};
 
-DATA(0x00244d80)
-extern CIndicatorActReg g_healthActReg; // 0x644d80
-DATA(0x00244d30)
-extern CIndicatorActReg g_powerupActReg; // 0x644d30
-DATA(0x00244da8)
+// These four registry singletons are DATA-bound in their owning sprite .cpp files
+// (GruntHealthSprite.cpp / GruntPowerupSprite.cpp / GruntSelectedSprite.cpp /
+// GruntToySprite.cpp): labels.py scans DATA() only in the TU source, not headers.
+extern CIndicatorActReg g_healthActReg;   // 0x644d80
+extern CIndicatorActReg g_powerupActReg;  // 0x644d30
 extern CIndicatorActReg g_selectedActReg; // 0x644da8
-DATA(0x00244d58)
-extern CIndicatorActReg g_toyActReg; // 0x644d58
+extern CIndicatorActReg g_toyActReg;      // 0x644d58
 
 #endif // GRUNTZ_GRUNTINDICATORSPRITE_H
