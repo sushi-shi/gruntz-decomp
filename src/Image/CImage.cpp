@@ -27,8 +27,8 @@
 #include <Win32.h>                   // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                   // real IDirectDrawSurface dispatch (m_8->IsLost/Restore)
 
-// The engine __cdecl deallocator (reloc-masked rel32). _RezFree @0x1b9b82.
-extern "C" void RezFree(void* p);
+// The engine heap free is the NAFXCW global operator delete (??3@YAXPAX@Z @0x1b9b82,
+// declared by <Mfc.h>); reloc-masked rel32.
 
 // The per-frame draw-delta mirror (BSS @0x6bf3bc) the RenderImage animate path
 // consumes to advance/wrap the request's m_44 counter. Canonical binding in
@@ -373,7 +373,7 @@ void CImage::FreeAll() {
     CDDrawShadeBlit* owned = m_owned;
     if (owned != 0) {
         owned->Teardown();
-        RezFree(owned);
+        ::operator delete(owned);
         m_owned = 0;
     }
 }
@@ -684,9 +684,10 @@ void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
 // clip rect (@0x6bf28c) before the dispatch. __thiscall, ret 0x14 (5 stack args).
 // ---------------------------------------------------------------------------
 
-// The static clip rect updated each call (4 consecutive ints @0x6bf28c). File
-// scope so it lands in .bss adjacent to the function's singleton; reloc-masked.
-static i32 g_imageClipRect[4]; // @0x6bf28c
+// The static clip rect updated each call (4 consecutive ints @0x2bf28c .bss);
+// DATA-bound so the four DIR32 stores pair to the retail address. reloc-masked.
+DATA(0x002bf28c)
+extern i32 g_imageClipRect[4]; // 0x2bf28c
 
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {

@@ -20,9 +20,9 @@
 
 #include <string.h> // memcpy (inlined to rep movs)
 
-// The engine allocator/deallocator (reloc-masked rel32). Global operator new
-// @0x1b9b46 (NAFXCW) is declared by <Mfc.h> (via FileStream.h); _RezFree @0x1b9b82.
-extern "C" void RezFree(void* p);
+// The engine heap is the statically-linked NAFXCW global operator new/delete (both
+// declared by <Mfc.h> via FileStream.h): ??2@YAPAXI@Z @0x1b9b46, ??3@YAXPAX@Z
+// @0x1b9b82. reloc-masked rel32.
 
 // ---------------------------------------------------------------------------
 // The constructor. Zero the buffers/counters; prime m_drawType=1, m_light=0x80,
@@ -51,10 +51,10 @@ CDDrawShadeBlit::CDDrawShadeBlit() {
 RVA(0x00148d10, 0x25)
 void CDDrawShadeBlit::Teardown() {
     if (m_rleData) {
-        RezFree(m_rleData);
+        ::operator delete(m_rleData);
     }
     if (m_palette) {
-        RezFree(m_palette);
+        ::operator delete(m_palette);
     }
 }
 
@@ -152,10 +152,10 @@ i32 CDDrawShadeBlit::BuildRle(
     }
 
     if (m_rleData != 0) {
-        RezFree(m_rleData);
+        ::operator delete(m_rleData);
     }
     m_rleLen = ba.m_size;
-    m_rleData = (u8*)operator new(ba.m_size);
+    m_rleData = (u8*)::operator new(ba.m_size);
     i32 n = m_rleLen;
     for (i32 k = 0; k < n; k++) {
         m_rleData[k] = ba.m_data[k];
@@ -163,9 +163,9 @@ i32 CDDrawShadeBlit::BuildRle(
 
     if (palette != 0) {
         if (m_palette != 0) {
-            RezFree(m_palette);
+            ::operator delete(m_palette);
         }
-        m_palette = (u8*)operator new(0x400);
+        m_palette = (u8*)::operator new(0x400);
         memcpy(m_palette, palette, 0x400);
     }
     return 1;
@@ -200,15 +200,15 @@ i32 CDDrawShadeBlit::BuildFromSurface(CDDSurface* surf, i32 keyVal, void* palett
 // ---------------------------------------------------------------------------
 RVA(0x00148fc0, 0x104)
 i32 CDDrawShadeBlit::LoadFromFile(CString name, i32 fmt) {
-    CFileIO file;
+    CFile file;
     if (!file.Open(name, 0x8000, 0)) {
         return 0;
     }
-    void* buf = operator new(file.GetLength());
+    void* buf = ::operator new(file.GetLength());
     file.Read(buf, file.GetLength());
     i32 r = Build((CImageBuildDesc*)buf, file.GetLength(), fmt);
     file.Close();
-    RezFree(buf);
+    ::operator delete(buf);
     return r;
 }
 
@@ -268,9 +268,9 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
         m_rleLen = stride;
         if ((u8)fmt == 0x10) {
             if (m_palette != 0) {
-                RezFree(m_palette);
+                ::operator delete(m_palette);
             }
-            m_palette = (u8*)operator new(0x400);
+            m_palette = (u8*)::operator new(0x400);
             i32 i = 0;
             i32 d = 0;
             do {
@@ -286,16 +286,16 @@ i32 CDDrawShadeBlit::Build(CImageBuildDesc* src, i32 size, i32 fmt) {
     m_width = src->m_width;
     m_height = src->m_height;
     if (m_rleData != 0) {
-        RezFree(m_rleData);
+        ::operator delete(m_rleData);
     }
-    m_rleData = (u8*)operator new(m_rleLen);
+    m_rleData = (u8*)::operator new(m_rleLen);
     memcpy(m_rleData, src->m_frameData, m_rleLen);
 
     if (m_srcBpp == 2) {
         void* remapped = Remap(m_rleData);
-        RezFree(m_rleData);
+        ::operator delete(m_rleData);
         m_rleData = (u8*)remapped;
-        RezFree(m_palette);
+        ::operator delete(m_palette);
         m_palette = 0;
     }
     return 1;

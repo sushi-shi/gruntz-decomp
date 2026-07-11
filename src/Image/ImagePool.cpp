@@ -66,13 +66,8 @@ struct PidHeader {
 };
 SIZE_UNKNOWN(PidHeader);
 
-// The five file-extension literals (reloc-masked .rdata globals). Declared at
-// file scope so each `push OFFSET` matches the binary's direct-address push.
-static const char s_extBmp[] = ".BMP";
-static const char s_extPcx[] = ".PCX";
-static const char s_extRid[] = ".RID";
-static const char s_extPid[] = ".PID";
-static const char s_extPal[] = ".PAL"; // the file-loader dispatcher (0x176f90) variant
+// The five file-extension string LITERALS (??_C@ .rdata constants, pooled + shared
+// with the DirPal.cpp / Image.cpp loaders; reloc-masked, so each `push OFFSET` pairs).
 
 // The resource module handle the .DEFAULT loader pulls RT_BITMAP resources from
 // and the pool's AddSurfaceRez/AddImageFile latch before a file-backed add
@@ -215,7 +210,7 @@ void CImagePool::Free(CRezImage* node) {
         m_surfaces.RemoveAt((POSITION)node->m_listPosition);
     }
     node->Free();
-    RezFree(node);
+    ::operator delete(node);
 }
 
 // ===========================================================================
@@ -231,7 +226,7 @@ void CImagePool::RemovePalette(CImagePaletteNode* node) {
         m_palettes.RemoveAt(node->m_listPosition);
     }
     node->Run();
-    RezFree(node);
+    ::operator delete(node);
 }
 
 // ===========================================================================
@@ -244,7 +239,7 @@ void CImagePool::ClearSurfaces() {
         CRezImage* item = (CRezImage*)m_surfaces.GetNext(pos);
         if (item) {
             item->Free();
-            RezFree(item);
+            ::operator delete(item);
         }
     }
     m_surfaces.RemoveAll();
@@ -261,7 +256,7 @@ void CImagePool::ClearPalettes() {
         CImagePaletteNode* item = (CImagePaletteNode*)m_palettes.GetNext(pos);
         if (item) {
             item->Run();
-            RezFree(item);
+            ::operator delete(item);
         }
     }
     m_palettes.RemoveAll();
@@ -290,7 +285,7 @@ RVA(0x00174fe0, 0xfe)
 CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node;
-    CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
+    CRezImage* raw = (CRezImage*)::operator new(0x45c);
     if (raw) {
         raw->m_dibSection = 0;
         raw->m_pixels = 0;
@@ -315,7 +310,7 @@ CRezImage* CImagePool::AddSurfaceBmp(i32 width, i32 height, i32 bitCount, i32 fl
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
             node->Free();
-            RezFree(node);
+            ::operator delete(node);
         }
         return 0;
     }
@@ -334,7 +329,7 @@ RVA(0x001750e0, 0x103)
 CRezImage* CImagePool::AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCount, i32 flag) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node;
-    CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
+    CRezImage* raw = (CRezImage*)::operator new(0x45c);
     if (raw) {
         raw->m_dibSection = 0;
         raw->m_pixels = 0;
@@ -359,7 +354,7 @@ CRezImage* CImagePool::AddSurfaceBlit(i32 src, i32 width, i32 height, i32 bitCou
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
             node->Free();
-            RezFree(node);
+            ::operator delete(node);
         }
         return 0;
     }
@@ -378,7 +373,7 @@ RVA(0x001751f0, 0xf9)
 CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node;
-    CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
+    CRezImage* raw = (CRezImage*)::operator new(0x45c);
     if (raw) {
         raw->m_dibSection = 0;
         raw->m_pixels = 0;
@@ -403,7 +398,7 @@ CRezImage* CImagePool::AddSurfaceOp(void* buf, i32 kind, i32 ctrl) {
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
             node->Free();
-            RezFree(node);
+            ::operator delete(node);
         }
         return 0;
     }
@@ -423,7 +418,7 @@ CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
     HDC hdc = GetDC(m_sourceHwnd);
     g_hResModule = m_resourceModuleHandle;
     CRezImage* node;
-    CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
+    CRezImage* raw = (CRezImage*)::operator new(0x45c);
     if (raw) {
         raw->m_dibSection = 0;
         raw->m_pixels = 0;
@@ -448,7 +443,7 @@ CRezImage* CImagePool::AddSurfaceRez(i32 name, i32 ctrl) {
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
             node->Free();
-            RezFree(node);
+            ::operator delete(node);
         }
         return 0;
     }
@@ -467,7 +462,7 @@ RVA(0x001753f0, 0xf4)
 CRezImage* CImagePool::AddSurfaceConvert(i32 src, i32 pal) {
     HDC hdc = GetDC(m_sourceHwnd);
     CRezImage* node;
-    CRezImage* raw = (CRezImage*)RezAlloc(0x45c);
+    CRezImage* raw = (CRezImage*)::operator new(0x45c);
     if (raw) {
         raw->m_dibSection = 0;
         raw->m_pixels = 0;
@@ -492,7 +487,7 @@ CRezImage* CImagePool::AddSurfaceConvert(i32 src, i32 pal) {
         ReleaseDC(m_sourceHwnd, hdc);
         if (node) {
             node->Free();
-            RezFree(node);
+            ::operator delete(node);
         }
         return 0;
     }
@@ -521,7 +516,7 @@ CRezImage* CImagePool::AddSurfaceConvert(i32 src, i32 pal) {
 RVA(0x001754f0, 0x7b)
 CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flags) {
     CImagePaletteNode* node;
-    CImagePaletteNode* raw = (CImagePaletteNode*)RezAlloc(0x414);
+    CImagePaletteNode* raw = (CImagePaletteNode*)::operator new(0x414);
     if (raw) {
         raw->m_palette = 0;
         raw->m_systemTuned = 0;
@@ -533,7 +528,7 @@ CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
     if (node->Build(entries, flags) == 0) {
         if (node) {
             node->Run();
-            RezFree(node);
+            ::operator delete(node);
         }
         return 0;
     }
@@ -547,7 +542,7 @@ CImagePaletteNode* CImagePool::AddPaletteEntries(PALETTEENTRY* entries, i32 flag
 RVA(0x00175570, 0x7b)
 CImagePaletteNode* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
     CImagePaletteNode* node;
-    CImagePaletteNode* raw = (CImagePaletteNode*)RezAlloc(0x414);
+    CImagePaletteNode* raw = (CImagePaletteNode*)::operator new(0x414);
     if (raw) {
         raw->m_palette = 0;
         raw->m_systemTuned = 0;
@@ -559,7 +554,7 @@ CImagePaletteNode* CImagePool::AddPaletteRGB(void* rgb, i32 flags) {
     if (node->ProcessPal(rgb, flags) == 0) {
         if (node) {
             node->Run();
-            RezFree(node);
+            ::operator delete(node);
         }
         return 0;
     }
@@ -571,7 +566,7 @@ RVA(0x001755f0, 0x82)
 CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
     g_hResModule = m_resourceModuleHandle;
     CImagePaletteNode* node;
-    CImagePaletteNode* raw = (CImagePaletteNode*)RezAlloc(0x414);
+    CImagePaletteNode* raw = (CImagePaletteNode*)::operator new(0x414);
     if (raw) {
         raw->m_palette = 0;
         raw->m_systemTuned = 0;
@@ -583,7 +578,7 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
     if (node->LoadByExtension(path, arg) == 0) {
         if (node) {
             node->Run();
-            RezFree(node);
+            ::operator delete(node);
         }
         return 0;
     }
@@ -597,7 +592,7 @@ CImagePaletteNode* CImagePool::AddImageFile(char* path, i32 arg) {
 RVA(0x00175680, 0x85)
 CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i32 ctrl) {
     CImagePaletteNode* node;
-    CImagePaletteNode* raw = (CImagePaletteNode*)RezAlloc(0x414);
+    CImagePaletteNode* raw = (CImagePaletteNode*)::operator new(0x414);
     if (raw) {
         raw->m_palette = 0;
         raw->m_systemTuned = 0;
@@ -609,7 +604,7 @@ CImagePaletteNode* CImagePool::AddImageDispatch(void* buf, u32 size, i32 type, i
     if (node->ParseDispatch(buf, size, type, ctrl) == 0) {
         if (node) {
             node->Run();
-            RezFree(node);
+            ::operator delete(node);
         }
         return 0;
     }
@@ -697,7 +692,7 @@ i32 CRezImage::DecodeBmpHeader(void* a2, i32 width, i32 height, i32 bitcount, vo
     if (!m_dibSection) {
         return 0;
     }
-    m_rowOffsets = (i32*)operator new(m_height * 4);
+    m_rowOffsets = (i32*)::operator new(m_height * 4);
     for (i32 i = 0; i < m_height; i++) {
         m_rowOffsets[i] = (m_height - i - 1) * (m_bitCount / 8) * m_stride;
     }
@@ -767,13 +762,13 @@ RVA(0x00175a90, 0xee)
 i32 CRezImage::LoadFromRez(char* name, void* a2, void* a3) {
     char* ext = strrchr(name, '.');
 
-    if (ext && _stricmp(ext, s_extBmp) == 0) {
+    if (ext && _strcmpi(ext, ".BMP") == 0) {
         return LoadBmp(name, a2, a3);
-    } else if (ext && _stricmp(ext, s_extPcx) == 0) {
+    } else if (ext && _strcmpi(ext, ".PCX") == 0) {
         return LoadPcx(name, a2, a3);
-    } else if (ext && _stricmp(ext, s_extRid) == 0) {
+    } else if (ext && _strcmpi(ext, ".RID") == 0) {
         return LoadRid(name, a2, a3);
-    } else if (ext && _stricmp(ext, s_extPid) == 0) {
+    } else if (ext && _strcmpi(ext, ".PID") == 0) {
         return LoadPid(name, a2, a3);
     }
 
@@ -826,7 +821,7 @@ void CRezImage::Free() {
         m_dibSection = 0;
     }
     if (m_rowOffsets) {
-        RezFree(m_rowOffsets);
+        ::operator delete(m_rowOffsets);
         m_rowOffsets = 0;
     }
     m_pixels = 0;
@@ -900,7 +895,7 @@ i32 CRezImage::DecodeResData(void* buf, void* a2, void* a3) {
 // steerable (bpp-local spelling is byte-identical); everything else exact.
 RVA(0x00175e40, 0x1b3)
 i32 CRezImage::LoadBmp(char* name, void* a2, void* a3) {
-    CFileIO file;
+    CFile file;
     BITMAPFILEHEADER fh;
     BITMAPINFOHEADER ih;
 
@@ -950,7 +945,7 @@ i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
 
     u8* src = hdr + 0x80;
     i32 scanBytes = (width * (i8)hdr[0x41] * (i8)hdr[3] + 7) / 8;
-    u8* scan = (u8*)operator new(scanBytes);
+    u8* scan = (u8*)::operator new(scanBytes);
 
     for (i32 y = 0; y < height; y++) {
         u8* dst = m_pixels + m_rowOffsets[y];
@@ -989,7 +984,7 @@ i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
         }
     }
 
-    operator delete(scan);
+    ::operator delete(scan);
     return 1;
 }
 
@@ -1000,7 +995,7 @@ i32 CRezImage::DecodePcxData(void* buf, void* a2, void* a3) {
 // the PCX decode helper, free the buffer and return the decoder's result.
 RVA(0x00176190, 0x126)
 i32 CRezImage::LoadPcx(char* name, void* a2, void* a3) {
-    CFileIO file;
+    CFile file;
 
     if (!file.Open(name, 0, 0)) {
         return 0;
@@ -1009,13 +1004,13 @@ i32 CRezImage::LoadPcx(char* name, void* a2, void* a3) {
     if (len == 0) {
         return 0;
     }
-    void* buf = operator new(len);
+    void* buf = ::operator new(len);
     if (!buf) {
         return 0;
     }
     file.Read(buf, len);
     i32 result = DecodePcxData(buf, a2, a3);
-    operator delete(buf);
+    ::operator delete(buf);
     return result;
 }
 
@@ -1042,7 +1037,7 @@ i32 CRezImage::DecodeRidData(void* buf, void* a2, void* a3) {
 // reader DecodeRidData).
 RVA(0x00176310, 0x126)
 i32 CRezImage::LoadRid(char* name, void* a2, void* a3) {
-    CFileIO file;
+    CFile file;
 
     if (!file.Open(name, 0, 0)) {
         return 0;
@@ -1051,13 +1046,13 @@ i32 CRezImage::LoadRid(char* name, void* a2, void* a3) {
     if (len == 0) {
         return 0;
     }
-    void* buf = operator new(len);
+    void* buf = ::operator new(len);
     if (!buf) {
         return 0;
     }
     file.Read(buf, len);
     i32 result = DecodeRidData(buf, a2, a3);
-    operator delete(buf);
+    ::operator delete(buf);
     return result;
 }
 
@@ -1151,7 +1146,7 @@ i32 CRezImage::DecodePidData(void* buf, void* a2, void* a3) {
 // Byte-identical to LoadPcx/LoadRid except for the .PID decode helper.
 RVA(0x001766a0, 0x126)
 i32 CRezImage::LoadPid(char* name, void* a2, void* a3) {
-    CFileIO file;
+    CFile file;
 
     if (!file.Open(name, 0, 0)) {
         return 0;
@@ -1160,13 +1155,13 @@ i32 CRezImage::LoadPid(char* name, void* a2, void* a3) {
     if (len == 0) {
         return 0;
     }
-    void* buf = operator new(len);
+    void* buf = ::operator new(len);
     if (!buf) {
         return 0;
     }
     file.Read(buf, len);
     i32 result = DecodePidData(buf, a2, a3);
-    operator delete(buf);
+    ::operator delete(buf);
     return result;
 }
 
@@ -1202,7 +1197,7 @@ i32 CRezImage::LoadDefault(char* name, void* a2, void* a3) {
 // row i with row (m_height-1-i) through a m_width-byte scratch row.
 // @early-stop
 // strength-reduction / merged-induction wall (~43.6%). Logic verified exact: guard
-// (m_height<=1), RezAlloc(m_width) scratch, the height/2 row-pair swap (scratch=bot;
+// (m_height<=1), ::operator new(m_width) scratch, the height/2 row-pair swap (scratch=bot;
 // bot=top; top=scratch), RezFree. Retail's /O2 fuses the three per-pair byte copies
 // into merged inductions where one register is BOTH the scratch index and the source
 // offset (`[eax+ecx-1]`, `[edx+ebp-1]`) and accumulates the row offsets in stack spill
@@ -1215,7 +1210,7 @@ void CRezImage::FlipVertical() {
     if (m_height <= 1) {
         return;
     }
-    u8* scratch = (u8*)RezAlloc(m_width);
+    u8* scratch = (u8*)::operator new(m_width);
     if (scratch == 0) {
         return;
     }
@@ -1236,7 +1231,7 @@ void CRezImage::FlipVertical() {
         top += m_width;
         bot -= m_width;
     }
-    RezFree(scratch);
+    ::operator delete(scratch);
 }
 
 // ---------------------------------------------------------------------------
@@ -1484,11 +1479,11 @@ RVA(0x00176f90, 0xa4)
 i32 ApiCallerStubs::CImagePaletteNode::LoadByExtension(char* path, i32 arg) {
     char* ext = strrchr(path, '.');
 
-    if (ext && _stricmp(ext, s_extBmp) == 0) {
+    if (ext && _strcmpi(ext, ".BMP") == 0) {
         return LoadBmpFile(path, arg);
-    } else if (ext && _stricmp(ext, s_extPcx) == 0) {
+    } else if (ext && _strcmpi(ext, ".PCX") == 0) {
         return LoadPcxFile(path, arg);
-    } else if (ext && _stricmp(ext, s_extPal) == 0) {
+    } else if (ext && _strcmpi(ext, ".PAL") == 0) {
         return LoadPalFile(path, arg);
     }
 
@@ -1586,7 +1581,7 @@ void ApiCallerStubs::winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalet
 // stack object forces the /GX EH frame. __thiscall, ret 8.
 RVA(0x001771f0, 0xe2)
 i32 ApiCallerStubs::CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
-    CFileIO file;
+    CFile file;
     char rgb[0x300];
 
     if (!file.Open(path, 0, 0)) {
@@ -1613,7 +1608,7 @@ i32 ApiCallerStubs::CImagePaletteNode::LoadPalFile(char* path, i32 arg) {
 // store; not source-steerable. Logic 100% correct (256 RGB triples -> RGBQUAD).
 RVA(0x001772e0, 0x117)
 i32 ApiCallerStubs::CImagePaletteNode::LoadPcxFile(char* path, i32 arg) {
-    CFileIO file;
+    CFile file;
     u8 rgb[0x300];
     u8 rgbq[0x400];
 

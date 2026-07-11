@@ -8,6 +8,7 @@
 // 0x150180 / 0x150190 / 0x1501a0 / 0x1503c0) and operator new/delete are
 // external/reloc-masked.
 #include <DDrawMgr/ShadeTableCache.h>
+#include <Gruntz/DataBuffer.h> // the real CDataBuffer (CShadeTable's dual-view): Free/Reset bind here
 #include <Wap32/MfcArchive.h> // CShadeTableArray::Serialize archive accessor
 
 #include <math.h> // pow (__CIpow) in HsvShiftTable
@@ -53,10 +54,10 @@ struct Hsv {
 extern "C" Hsv* RgbToHsv(Hsv* out, i32 packedRgb);                     // 0x14fcc0
 extern "C" u8 NearestPaletteIndex(i32 r, PalEntry* pal, i32 g, i32 b); // 0x14fbf0
 
-// Rez heap (reloc-masked): operator new is RezAlloc-backed; RezFree frees the
-// element-array buffer in the inlined SetSize of the AddFrom* loaders.
-extern "C" void* RezAlloc(u32 size); // 0x1b9b46
-extern "C" void RezFree(void* p);    // 0x1b9b82
+// The engine heap is the NAFXCW global operator new/delete (??2@YAPAXI@Z @0x1b9b46,
+// ??3@YAXPAX@Z @0x1b9b82; declared by <Mfc.h>). The element-array buffer of the
+// inlined SetSize in the AddFrom* loaders is (de)allocated through it. reloc-masked.
+void* ::operator new(u32); // matches ??2@YAPAXI@Z
 
 // The CString temp AddFromArray builds over the name (ctor 0x1b9ba3 / dtor
 // 0x1b9cde external, reloc-masked). Modeled as a tiny holder so the __thiscall
@@ -92,7 +93,7 @@ inline CShadeTableArray::~CShadeTableArray() {
     // out-of-line makes 0x14de50 CALL it (dropping 0x14de50 100% -> ~61%), so
     // 0x14fe30 stays a standalone placeholder in BoundaryUpperEh.cpp (binary-proven).
     if (m_pData) {
-        operator delete(m_pData);
+        ::operator delete(m_pData);
     }
 }
 // Class metadata (hosted here, not in ShadeTableCache.h, which is parsed before
@@ -135,15 +136,17 @@ i32 CShadeTableCache::Init() {
 RVA(0x0014ded0, 0x64)
 void CShadeTableCache::FreeNodes() {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {
-        m_arr.m_pData[i]->Free();
+        // CShadeTable IS CDataBuffer (dual-view): Free/Reset bind to CDataBuffer's real
+        // out-of-line bodies (0x1503c0 / 0x150190) via the cross-view cast.
+        ((CDataBuffer*)m_arr.m_pData[i])->Free();
         CShadeTable* t = m_arr.m_pData[i];
         if (t) {
-            t->Reset();
-            operator delete(t);
+            ((CDataBuffer*)t)->Reset();
+            ::operator delete(t);
         }
     }
     if (m_arr.m_pData) {
-        operator delete(m_arr.m_pData);
+        ::operator delete(m_arr.m_pData);
         m_arr.m_pData = 0;
     }
     m_arr.m_nMaxSize = 0;
@@ -188,13 +191,13 @@ CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 sta
     i32 newSize = oldSize + 1;
     if (newSize == 0) {
         if (m_arr.m_pData) {
-            RezFree(m_arr.m_pData);
+            ::operator delete(m_arr.m_pData);
             m_arr.m_pData = 0;
         }
         m_arr.m_nMaxSize = 0;
         m_arr.m_nSize = 0;
     } else if (m_arr.m_pData == 0) {
-        m_arr.m_pData = (CShadeTable**)RezAlloc(newSize * 4);
+        m_arr.m_pData = (CShadeTable**)::operator new(newSize * 4);
         memset(m_arr.m_pData, 0, newSize * 4);
         m_arr.m_nMaxSize = newSize;
         m_arr.m_nSize = newSize;
@@ -217,10 +220,10 @@ CShadeTable* CShadeTableCache::FlashTable(PalEntry* pal, i32 nA, i32 nB, i32 sta
         if (newSize > newMax) {
             newMax = newSize;
         }
-        CShadeTable** data = (CShadeTable**)RezAlloc(newMax * 4);
+        CShadeTable** data = (CShadeTable**)::operator new(newMax * 4);
         memcpy(data, m_arr.m_pData, m_arr.m_nSize * 4);
         memset(&data[m_arr.m_nSize], 0, (newSize - m_arr.m_nSize) * 4);
-        RezFree(m_arr.m_pData);
+        ::operator delete(m_arr.m_pData);
         m_arr.m_pData = data;
         m_arr.m_nSize = newSize;
         m_arr.m_nMaxSize = newMax;
@@ -527,7 +530,7 @@ CShadeTable* CShadeTableCache::GreyTable() {
     }
     if (!t->Set(0x20000, 0)) {
         t->Reset();
-        operator delete(t);
+        ::operator delete(t);
         return 0;
     }
     i32 idx = m_arr.m_nSize;
@@ -566,7 +569,7 @@ CShadeTable* CShadeTableCache::AddTable(float scale) {
     }
     if (!t->Set(0x20000, 0)) {
         t->Reset();
-        operator delete(t);
+        ::operator delete(t);
         return 0;
     }
     i32 idx = m_arr.m_nSize;
@@ -618,7 +621,7 @@ CShadeTable* CShadeTableCache::SubTable(i32 color) {
     }
     if (!t->Set(0x20000, 0)) {
         t->Reset();
-        operator delete(t);
+        ::operator delete(t);
         return 0;
     }
     i32 idx = m_arr.m_nSize;
@@ -663,7 +666,7 @@ CShadeTable* CShadeTableCache::AlphaTable(u8* pal) {
     }
     if (!t->Set(0x200, 0)) {
         t->Reset();
-        operator delete(t);
+        ::operator delete(t);
         return 0;
     }
     i32 idx = m_arr.m_nSize;
@@ -699,13 +702,13 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
     i32 newSize = oldSize + 1;
     if (newSize == 0) {
         if (m_arr.m_pData) {
-            RezFree(m_arr.m_pData);
+            ::operator delete(m_arr.m_pData);
             m_arr.m_pData = 0;
         }
         m_arr.m_nMaxSize = 0;
         m_arr.m_nSize = 0;
     } else if (m_arr.m_pData == 0) {
-        m_arr.m_pData = (CShadeTable**)RezAlloc(newSize * 4);
+        m_arr.m_pData = (CShadeTable**)::operator new(newSize * 4);
         memset(m_arr.m_pData, 0, newSize * 4);
         m_arr.m_nMaxSize = newSize;
         m_arr.m_nSize = newSize;
@@ -728,10 +731,10 @@ CShadeTable* CShadeTableCache::AddFromArray(const char* name) {
         if (newSize > newMax) {
             newMax = newSize;
         }
-        CShadeTable** data = (CShadeTable**)RezAlloc(newMax * 4);
+        CShadeTable** data = (CShadeTable**)::operator new(newMax * 4);
         memcpy(data, m_arr.m_pData, m_arr.m_nSize * 4);
         memset(&data[m_arr.m_nSize], 0, (newSize - m_arr.m_nSize) * 4);
-        RezFree(m_arr.m_pData);
+        ::operator delete(m_arr.m_pData);
         m_arr.m_pData = data;
         m_arr.m_nSize = newSize;
         m_arr.m_nMaxSize = newMax;
@@ -763,13 +766,13 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
     i32 newSize = oldSize + 1;
     if (newSize == 0) {
         if (m_arr.m_pData) {
-            RezFree(m_arr.m_pData);
+            ::operator delete(m_arr.m_pData);
             m_arr.m_pData = 0;
         }
         m_arr.m_nMaxSize = 0;
         m_arr.m_nSize = 0;
     } else if (m_arr.m_pData == 0) {
-        m_arr.m_pData = (CShadeTable**)RezAlloc(newSize * 4);
+        m_arr.m_pData = (CShadeTable**)::operator new(newSize * 4);
         memset(m_arr.m_pData, 0, newSize * 4);
         m_arr.m_nMaxSize = newSize;
         m_arr.m_nSize = newSize;
@@ -792,10 +795,10 @@ CShadeTable* CShadeTableCache::AddFromFile(const char* name, i32 size) {
         if (newSize > newMax) {
             newMax = newSize;
         }
-        CShadeTable** data = (CShadeTable**)RezAlloc(newMax * 4);
+        CShadeTable** data = (CShadeTable**)::operator new(newMax * 4);
         memcpy(data, m_arr.m_pData, m_arr.m_nSize * 4);
         memset(&data[m_arr.m_nSize], 0, (newSize - m_arr.m_nSize) * 4);
-        RezFree(m_arr.m_pData);
+        ::operator delete(m_arr.m_pData);
         m_arr.m_pData = data;
         m_arr.m_nSize = newSize;
         m_arr.m_nMaxSize = newMax;
@@ -878,7 +881,7 @@ void CShadeTableCache::FindRemove(CShadeTable* key) {
         CShadeTable* t = m_arr.m_pData[i];
         if (t) {
             t->Reset();
-            operator delete(t);
+            ::operator delete(t);
         }
         i32 cnt = m_arr.m_nSize - i - 1;
         CShadeTable** dst = &m_arr.m_pData[i];
@@ -944,13 +947,13 @@ void CShadeTableArray::Serialize(CArchive& arc) {
         i32 n = ar->ReadCount();
         if (n == 0) {
             if (m_pData != 0) {
-                RezFree(m_pData);
+                ::operator delete(m_pData);
                 m_pData = 0;
             }
             m_nMaxSize = 0;
             m_nSize = 0;
         } else if (m_pData == 0) {
-            m_pData = (CShadeTable**)RezAlloc(n * 4);
+            m_pData = (CShadeTable**)::operator new(n * 4);
             memset(m_pData, 0, n * 4);
             m_nMaxSize = n;
             m_nSize = n;
@@ -973,10 +976,10 @@ void CShadeTableArray::Serialize(CArchive& arc) {
             if (n >= newcap) {
                 newcap = n;
             }
-            CShadeTable** nd = (CShadeTable**)RezAlloc(newcap * 4);
+            CShadeTable** nd = (CShadeTable**)::operator new(newcap * 4);
             memcpy(nd, m_pData, m_nSize * 4);
             memset(nd + m_nSize, 0, (n - m_nSize) * 4);
-            RezFree(m_pData);
+            ::operator delete(m_pData);
             m_pData = nd;
             m_nSize = n;
             m_nMaxSize = newcap;
@@ -998,9 +1001,8 @@ void CShadeTableArray::Serialize(CArchive& arc) {
 // to CShadeTableArray here: the real CShadeTableArray::~ is INLINE (folds into
 // ~CShadeTableCache @0x14de50, 100%); making it out-of-line makes 0x14de50 CALL it
 // (0x14de50 100% -> ~61%), so this out-of-line ??1 can't be the real dtor (inline XOR
-// out-of-line). RezFreeEh kept C++-linkage (potentially-throwing) so cl keeps the /GX
-// base-subobject unwind frame (the extern "C" RezFree above is treated non-throwing).
-void RezFreeEh(void* p); // 0x1b9b82 (C++ linkage; reloc-masked)
+// out-of-line). The free is the NAFXCW global operator delete (??3@YAXPAX@Z @0x1b9b82),
+// which cl treats as potentially-throwing so the /GX base-subobject unwind frame stays.
 // Grand-base fold @0x14fe71 is the REAL ??_7CObject (0x5e8cb4, disasm-verified) - the
 // same CObject base the canonical CShadeTableArray carries - so C14fe30 derives from
 // the real CObject (no Sev shell). (Still a distinct placeholder identity: name-
@@ -1014,7 +1016,7 @@ RELOC_VTBL(C14fe30, 0x001efb28); // aliases CShadeTableArray (dtor-stamp verifie
 RVA(0x0014fe30, 0x51)
 C14fe30::~C14fe30() {
     if (m_4) {
-        RezFreeEh(m_4);
+        ::operator delete(m_4);
     }
 }
 
@@ -1038,12 +1040,12 @@ void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
     }
     if (nNewSize == 0) {
         if (m_pData != 0) {
-            RezFree(m_pData);
+            ::operator delete(m_pData);
             m_pData = 0;
         }
         m_nSize = m_nMaxSize = 0;
     } else if (m_pData == 0) {
-        m_pData = (CShadeTable**)RezAlloc(nNewSize * sizeof(CShadeTable*));
+        m_pData = (CShadeTable**)::operator new(nNewSize * sizeof(CShadeTable*));
         memset(m_pData, 0, nNewSize * sizeof(CShadeTable*));
         m_nSize = m_nMaxSize = nNewSize;
     } else if (nNewSize <= m_nMaxSize) {
@@ -1067,10 +1069,10 @@ void CShadeTableArray::SetSizeGrow(i32 nNewSize, i32 nGrowBy) {
         } else {
             nNewMax = nNewSize;
         }
-        CShadeTable** pNewData = (CShadeTable**)RezAlloc(nNewMax * sizeof(CShadeTable*));
+        CShadeTable** pNewData = (CShadeTable**)::operator new(nNewMax * sizeof(CShadeTable*));
         memcpy(pNewData, m_pData, m_nSize * sizeof(CShadeTable*));
         memset(&pNewData[m_nSize], 0, (nNewSize - m_nSize) * sizeof(CShadeTable*));
-        RezFree(m_pData);
+        ::operator delete(m_pData);
         m_pData = pNewData;
         m_nSize = nNewSize;
         m_nMaxSize = nNewMax;

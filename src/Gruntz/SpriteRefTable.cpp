@@ -16,9 +16,9 @@
 // (Lookup @0x1b8008, brought in via <Mfc.h>); no local view.
 #include <stdio.h> // engine sprintf (reloc-masked) - LoadGruntzPalette's name format
 
-// Engine CRT/resource helpers reached by Add()/Clear(); reloc-masked DIR32/REL32.
-extern "C" void* RezAlloc(u32 n); // 0x1b9b46 (operator new / RezAlloc)
-extern "C" void RezFree(void* p); // 0x1b9b82
+// The engine heap reached by Add()/Clear() is the NAFXCW global operator new/delete
+// (??2@YAPAXI@Z @0x1b9b46, ??3@YAXPAX@Z @0x1b9b82); reloc-masked DIR32/REL32.
+void* ::operator new(u32); // matches ??2@YAPAXI@Z
 
 // m_spriteMgrHolder->m_spriteMgr is the sprite manager; +0x10 of it is the name->sprite hash table.
 struct CSpriteMgrHolder {
@@ -69,12 +69,12 @@ void CSpriteRefTable::Clear() {
             CSpriteRef* a = GetA(i);
             if (a) {
                 a->Free();
-                RezFree(a);
+                ::operator delete(a);
             }
             CSpriteRef* b = GetB(i);
             if (b) {
                 b->Free();
-                RezFree(b);
+                ::operator delete(b);
             }
         }
         for (i32 j = 0; j < 0x11; j++) {
@@ -140,7 +140,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
         return 0;
     }
     CSpriteRef* node;
-    CSpriteRef* tmp = (CSpriteRef*)RezAlloc(0x10);
+    CSpriteRef* tmp = (CSpriteRef*)::operator new(0x10);
     if (tmp) {
         tmp->m_cache = 0;
         tmp->m_alphaKey = 0;
@@ -151,7 +151,7 @@ CSpriteRef* CSpriteRefTable::Add(char* szName, i32 kind) {
     if (node->Build((i32)m_factory, alpha, kind) == 0) {
         if (node) {
             node->Free();
-            RezFree(node);
+            ::operator delete(node);
         }
         return 0;
     }

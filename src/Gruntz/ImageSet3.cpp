@@ -20,7 +20,7 @@
 RVA(0x001614b0, 0x1c)
 void CImageSet3::FreePixels() {
     if (m_pixels) {
-        RezFree(m_pixels);
+        ::operator delete(m_pixels);
     }
     m_pixels = 0;
 }
@@ -48,7 +48,7 @@ i32 CImageSet3::Parse(void* record) {
     if ((1 << m_heightLog2) != w) {
         return 0;
     }
-    void* dst = operator new(m_byteSize);
+    void* dst = ::operator new(m_byteSize);
     m_pixels = dst;
     if (dst == 0) {
         return 0;

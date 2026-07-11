@@ -26,9 +26,8 @@
 
 // Engine heap free (0x1b9b82). C++ linkage (NOT extern "C") so cl treats it as
 // potentially-throwing and keeps the /GX base-subobject unwind frame in the
-// collapsed ~CImageSet3 below (the reloc is masked either way; retail's canonical
-// name is _RezFree - a reloc-name-only mismatch on the Cleanup call).
-void RezFree(void* p);
+// collapsed ~CImageSet3 below. The Cleanup free is the NAFXCW global operator delete
+// (??3@YAXPAX@Z @0x1b9b82), reloc-masked.
 
 // The +0xb0 spatial grid: Prune (0x1688b0) sweeps its four sub-managers, GetSize
 // (0x168430) sums their element counts, and the dtor (0x163a40) frees the grids.
@@ -79,7 +78,7 @@ RELOC_VTBL(C161500, 0x001f0228); // aliases CImageSet3 (dtor-stamp verified)
 RVA(0x00161500, 0x58)
 C161500::~C161500() {
     if (m_14) {
-        RezFree(m_14);
+        ::operator delete(m_14);
     }
     m_14 = 0;
 }

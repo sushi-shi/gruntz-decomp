@@ -32,10 +32,8 @@
 
 #define DIRPAL_FILE "C:\\Proj\\DDrawMgr\\DIRPAL.CPP"
 
-// The Rez heap allocator/free + operator new (reloc-masked engine leaves).
-extern "C" void* RezAlloc(unsigned int); // 0x1b9b46
-extern "C" void RezFree(void* p);        // 0x1b9b82
-void* operator new(u32);                 // engine allocator (reloc-masked rel32)
+// The engine heap is the NAFXCW global operator new/delete (??2@YAPAXI@Z @0x1b9b46,
+// ??3@YAXPAX@Z @0x1b9b82), declared by <Mfc.h> via FileStream.h. reloc-masked rel32.
 
 // The cached frame-clock fn-ptr (retail _g_pTimeGetTime @ 0x6c4650, DATA-bound in
 // cplay/globals); FadeRange/Tick time through `call ds:[0x6c4650]`, NOT the WINMM
@@ -46,12 +44,9 @@ extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 // ResourceLoaders.cpp). LoadDefault resolves "PALETTE" resources against it.
 extern HINSTANCE g_resModule;
 
-// The three file-extension literals the LoadFromFile dispatcher stricmp-ladders over
-// (reloc-masked .rdata globals; .BMP/.PCX share the Image.cpp addresses). File-scope so
-// each `push OFFSET` matches the binary's direct-address push.
-static const char s_extBmp[] = ".BMP";
-static const char s_extPcx[] = ".PCX";
-static const char s_extPal[] = ".PAL";
+// The LoadFromFile dispatcher strcmpi-ladders over the three file-extension string
+// LITERALS (??_C@ .rdata constants, pooled + shared with the Image.cpp / ImagePool.cpp
+// loaders at 0x21a0e4/0x21a0dc/0x21aadc; reloc-masked, so the `push OFFSET` pairs).
 
 // A stack LOGPALETTE with a full 256-entry table (the 0x410-byte frame of
 // CaptureSystemPalette / BlackoutSystemPalette).
@@ -66,14 +61,14 @@ struct LogPal256 {
 // DirectDraw palette via IDirectDraw::CreatePalette into m_palette.
 RVA(0x00147390, 0x78)
 i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
-    m_cacheA = (u8*)operator new(0x400);
+    m_cacheA = (u8*)::operator new(0x400);
     // Plateau note: byte-for-byte except the copy loop's SIB base/index roles
     // (retail encodes [entries+i]/[m_cacheA+i] with i as the index; MSVC here makes i
     // the base) - a 1-byte-per-insn encoding choice, semantically identical.
     for (i32 i = 0; i < 0x400; i += 4) {
         *(i32*)(m_cacheA + i) = *(i32*)((char*)entries + i);
     }
-    m_cacheB = (u8*)operator new(0x400);
+    m_cacheB = (u8*)::operator new(0x400);
     i32 hr = dd->CreatePalette(flags, (LPPALETTEENTRY)entries, &m_palette, 0);
     if (hr == 0) {
         return 1;
@@ -91,11 +86,11 @@ i32 CDDPalette::Create(IDirectDraw2* dd, void* entries, u32 flags) {
 RVA(0x00147410, 0xbc)
 i32 CDDPalette::LoadFromFile(IDirectDraw2* dd, char* filename, u32 flags) {
     char* ext = strrchr(filename, '.');
-    if (ext && _stricmp(ext, s_extBmp) == 0) {
+    if (ext && _strcmpi(ext, ".BMP") == 0) {
         return LoadBmp(dd, filename, flags);
-    } else if (ext && _stricmp(ext, s_extPcx) == 0) {
+    } else if (ext && _strcmpi(ext, ".PCX") == 0) {
         return LoadPcx(dd, filename, flags);
-    } else if (ext && _stricmp(ext, s_extPal) == 0) {
+    } else if (ext && _strcmpi(ext, ".PAL") == 0) {
         return LoadPal(dd, filename, flags);
     }
     return LoadDefault(dd, filename, flags);
@@ -129,15 +124,15 @@ void CDDPalette::Destroy() {
         m_palette = 0;
     }
     if (m_cacheA != 0) {
-        operator delete(m_cacheA);
+        ::operator delete(m_cacheA);
         m_cacheA = 0;
     }
     if (m_cacheB != 0) {
-        operator delete(m_cacheB);
+        ::operator delete(m_cacheB);
         m_cacheB = 0;
     }
     if (m_sourcePalette != 0) {
-        operator delete(m_sourcePalette);
+        ::operator delete(m_sourcePalette);
         m_sourcePalette = 0;
     }
     m_active = 0;
@@ -161,7 +156,7 @@ i32 CDDPalette::LoadBmp(IDirectDraw2* dd, char* filename, u32 flags) {
     u8 pe[0x400];    // expanded PALETTEENTRY[256]
     u8 info[0x428];  // BITMAPINFOHEADER + the in-file palette region
     u8 quads[0x400]; // 256-entry RGBQUAD palette
-    CFileIO file;
+    CFile file;
     if (file.Open(filename, 0, 0) == 0) {
         return 0;
     }
@@ -196,7 +191,7 @@ RVA(0x00147710, 0x122)
 i32 CDDPalette::LoadPcx(IDirectDraw2* dd, char* filename, u32 flags) {
     u8 pe[0x400];  // expanded PALETTEENTRY[256]
     u8 rgb[0x300]; // 256 packed RGB triplets (trailing VGA palette)
-    CFileIO file;
+    CFile file;
     if (file.Open(filename, 0, 0) == 0) {
         return 0;
     }
@@ -257,7 +252,7 @@ RVA(0x001478c0, 0x112)
 i32 CDDPalette::LoadPal(IDirectDraw2* dd, char* filename, u32 flags) {
     u8 pe[0x400];  // expanded PALETTEENTRY[256]
     u8 rgb[0x300]; // 256 packed RGB triplets
-    CFileIO file;
+    CFile file;
     if (file.Open(filename, 0, 0) == 0) {
         return 0;
     }
@@ -333,7 +328,7 @@ i32 CDDPalette::SetAndNotify(i32 start, i32 count, i32* data, i32 a4) {
 // LoadBmp) into PALETTEENTRY, SetAndNotify the range, free, return the HRESULT.
 RVA(0x00147b10, 0x8b)
 i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4) {
-    u8* buf = (u8*)RezAlloc(count * 4);
+    u8* buf = (u8*)::operator new(count * 4);
     if (buf == 0) {
         return 0x80070057;
     }
@@ -344,7 +339,7 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4) {
         buf[i * 4 + 3] = 0;
     }
     i32 hr = SetAndNotify(start, count, (i32*)buf, a4);
-    RezFree(buf);
+    ::operator delete(buf);
     return hr;
 }
 
@@ -357,7 +352,7 @@ i32 CDDPalette::SetEntriesQuad(i32 start, i32 count, u8* quads, i32 a4) {
 // Twin SetEntriesQuad (stride-4 read) IS exact; the stride-3 read reshuffles the tail.
 RVA(0x00147ba0, 0x82)
 i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4) {
-    u8* buf = (u8*)RezAlloc(count * 4);
+    u8* buf = (u8*)::operator new(count * 4);
     if (buf == 0) {
         return 0x80070057;
     }
@@ -371,7 +366,7 @@ i32 CDDPalette::SetEntriesRGB(i32 start, i32 count, u8* rgb, i32 a4) {
         d += 4;
     }
     i32 hr = SetAndNotify(start, count, (i32*)buf, a4);
-    RezFree(buf);
+    ::operator delete(buf);
     return hr;
 }
 
@@ -385,7 +380,7 @@ i32 CDDPalette::GetEntries() {
     // `xor eax,eax` this `return 0` emits. MSVC 5.0 C++ forbids fall-off
     // (C2561), so the one-instruction `xor` gap can't be reproduced from clean C.
     if (m_cacheB == 0) {
-        m_cacheB = (u8*)operator new(0x400);
+        m_cacheB = (u8*)::operator new(0x400);
         if (m_cacheB == 0) {
             return 0;
         }
@@ -457,7 +452,7 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DIRPAL_FILE, 0x2c0, hr);
     }
-    u8* snapshot = (u8*)RezAlloc(0x400);
+    u8* snapshot = (u8*)::operator new(0x400);
     for (i32 i = 0; i < 0x400; i += 4) {
         *(i32*)(snapshot + i) = *(i32*)(m_cacheA + i);
     }
@@ -478,7 +473,7 @@ void CDDPalette::FadeRange(i32 start, i32 count, i32 r, i32 g, i32 b, i32 durati
         prev = t;
     }
     SetRange(start, count, r, g, b, 0);
-    RezFree(snapshot);
+    ::operator delete(snapshot);
 }
 
 // CDDPalette::StartFadeToColor (0x147f30, __thiscall (start,count,r,g,b,durationMs);
@@ -505,7 +500,7 @@ void CDDPalette::StartFadeToColor(i32 start, i32 count, char r, char g, char b, 
     m_fixedG = g;
     m_fixedB = b;
     if (!m_sourcePalette) {
-        m_sourcePalette = (u8*)RezAlloc(0x400);
+        m_sourcePalette = (u8*)::operator new(0x400);
     }
     for (i32 i = 0; i < 0x400; i += 4) {
         *(i32*)(m_sourcePalette + i) = *(i32*)(m_cacheA + i);
@@ -533,7 +528,7 @@ void CDDPalette::StartFadeToPalette(i32 start, i32 count, u8* target, i32 durati
     m_targetPalette = target;
     m_lastElapsedMs = -1;
     if (!m_sourcePalette) {
-        m_sourcePalette = (u8*)RezAlloc(0x400);
+        m_sourcePalette = (u8*)::operator new(0x400);
     }
     for (i32 i = 0; i < 0x400; i += 4) {
         *(i32*)(m_sourcePalette + i) = *(i32*)(m_cacheA + i);
