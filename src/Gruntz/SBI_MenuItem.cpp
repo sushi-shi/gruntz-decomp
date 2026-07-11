@@ -13,12 +13,6 @@
 #include <Gruntz/SbiConfig.h>    // canonical config-host family (one shape)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (LoadTabSprites)
 #include <Image/CImage.h>        // canonical frame-record class (CImage::RenderFrame @0x153790)
-class CDDrawWorkerRegistry {
-public:
-    i32 HasKeyEqual_155550(const char* k);
-    i32 RemoveKeysEqual_155360(const char* a, const char* b);
-    void Method_155630(i32 h, char* t, i32* o);
-}; // 0x155550/0x155360/0x155630
 // The former per-TU `class CSBI_RectOnly { ClearTabGroup; Deactivate; }` view is
 // folded onto the canonical chain CSBI_RectOnly (SBI_Image.h) - same mangled symbols.
 
@@ -70,74 +64,8 @@ extern i32 g_serialCounter;
 // The frame-name reverse-lookup is CImageRegistry::ReadField (mgr->m_10,
 // <Gruntz/ResMgr.h>); the former CMiNameReg view is gone. The archive is CSerialArchive.
 
-// CSBI_MenuItem::ClearFrame (0xe6d90): drop the resolved frame. Out-of-line (matcher-5).
-RVA(0x000e6d90, 0x8)
-void CSBI_MenuItem::ClearFrame() {
-    m_30 = 0;
-}
-
-// ---------------------------------------------------------------------------
-// CSBI_MenuItem::SerializeChain - the CSBI_Image-subobject leg of Serialize:
-// transfer the resolved frame's registry name + index (read -> Lookup + frame
-// range probe; write -> reverse name lookup), then tail-chain into the next base
-// (CSBI_RectOnly::SerializeFields).
-// @early-stop
-// ~85% regalloc + stack-packing wall (CTimer::Serialize family): the switch, the
-// vtable transfer, the strlen/Lookup/frame-range probe + the memset/ReadField are
-// byte-correct. The residual is a register-naming coin-flip (retail pins ar in
-// ebx + this in esi; the recompile swaps them) plus the dead-spill-slot packing
-// (retail's temps share a slot, shifting the esp+ frame offsets by 4). Deferred.
-RVA(0x000e6e40, 0x17c)
-i32 CSBI_MenuItem::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
-    CSerialArchive* ar = (CSerialArchive*)arP;
-    if (ar == 0) {
-        return 0;
-    }
-    CResMgr* mgr = (CResMgr*)g_gameReg->m_world;
-    if (mgr == 0) {
-        return 0;
-    }
-
-    char name[0x80];
-    i32 idx;
-    switch (kind) {
-        case 7:
-            // Read leg: pull the cue name + frame index from the archive, look up the
-            // cue by name, and latch frame[index] (else clear).
-            g_serialCounter++;
-            ar->Read(name, 0x80);
-            ar->Read(&idx, 4);
-            if (strlen(name) != 0) {
-                CSprite* r = 0;
-                ((CMapStringToOb*)&mgr->m_10->m_10map)->Lookup(name, (CObject*&)r);
-                if (r && idx >= r->m_firstFrame && idx <= r->m_lastFrame) {
-                    m_30 = (i32)r->m_frames.m_pData[idx];
-                } else {
-                    m_30 = 0;
-                }
-            } else {
-                m_30 = 0;
-            }
-            break;
-        case 4:
-            // Write leg: reverse-look-up the resolved frame's registry name + index.
-            idx = 0;
-            g_serialCounter++;
-            memset(name, 0, sizeof(name));
-            if (m_30) {
-                // The registry's reverse name->id helper: CImageRegistry::ReadField
-                // (0x155630) on mgr->m_10 (was the CMiNameReg protective view; folded to
-                // the canonical wave 3). Adding ReadField to CImageRegistry ripples this
-                // TU's DecCounter regalloc (100->74%, an accepted clean-room cost - the
-                // "protective" view is not a valid keep; logic byte-unchanged).
-                ((CDDrawWorkerRegistry*)mgr->m_10)->Method_155630(m_30, name, &idx);
-            }
-            ar->Write(name, 0x80);
-            ar->Write(&idx, 4);
-            break;
-    }
-    return SerializeFields(ar, kind, a, b) != 0;
-}
+// (0xe6d90 ClearFrame + 0xe6e40 SerializeChain re-attributed to CSBI_Image -
+// SBI_Image.cpp; dossier #16.)
 
 // ---------------------------------------------------------------------------
 // CSBI_MenuItem::InitItem - configure the menu entry from its config record,
@@ -406,10 +334,12 @@ CSBI_MenuItem::~CSBI_MenuItem() {
 }
 
 // ---------------------------------------------------------------------------
-// CSBI_MenuItem::SerializeFields - the CSBI_RectOnly leg: transfer the six
-// owned rect/flag fields (m_4..m_18, then +0x28) through the archive.
+// CStatusBarItem::SerializeFields (0x10bfc0, vtable slot 1 base leg - thunk 0x1848;
+// re-attributed from CSBI_MenuItem, dossier #16): transfer the six base-region
+// rect/flag fields (m_4..m_rect14, then +0x28) through the archive. Body kept in
+// this TU (its retail obj neighborhood is the 0xfdc00/0x10bxxx band).
 RVA(0x0010bfc0, 0xe8)
-i32 CSBI_MenuItem::SerializeFields(void* arP, i32 kind, i32 a, i32 b) {
+i32 CStatusBarItem::SerializeFields(void* arP, i32 kind, i32 a, i32 b) {
     CSerialArchive* ar = (CSerialArchive*)arP;
     if (ar == 0) {
         return 0;

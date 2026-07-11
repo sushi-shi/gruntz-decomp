@@ -1,87 +1,36 @@
-// AniPlayer.h - a timed cel-animation playback object (placeholder name; the
-// RTTI class was not pinned - it is a non-virtual sprite-sequence player, NOT
-// CAniCycle/CSimpleAnimation, whose vtables do not contain these methods).
+// AniPlayer.h - CAniPlayer, the timed-play SBI leaf (placeholder name; the exact
+// RTTI leaf is unpinned - @identity-TODO below).
 //
-// Two __thiscall methods (ascending RVA):
-//   0x0e7980  Init  (seed the player from a sequence + rect + cel key; 14 args)
-//   0x0e7b00  Tick  (timeGetTime-driven cel advance within the [+0x4c,+0x50] range)
-//
-// Layout recovered from the field stores (only OFFSETS + code bytes are
-// load-bearing; names are placeholders):
-//   +0x04 active flag        +0x24 sequence ptr (== +0x2c)
-//   +0x0c int (arg2)         +0x28 frame countdown
-//   +0x10 int (arg3)         +0x2c sequence ptr (== +0x24)
-//   +0x14..0x20 rect (4 int) +0x30 current cel ptr
-//   +0x34 cel-anim sub-obj   +0x38 current frame
-//   +0x3c interval           +0x40 last time (timeGetTime)
-//   +0x44 frame step         +0x48 wrap step
-//   +0x4c low frame bound    +0x50 high frame bound
+// IDENTITY (dossier #16, waveM-judgment): the old standalone "CAniPlayer" view was
+// a parallel model of the SBI item chain itself - its +0x04/+0x14/+0x24/+0x28/
+// +0x2c/+0x30/+0x34/+0x38 fields are CStatusBarItem/CSBI_Image/CSBI_ImageSet's,
+// its +0x3c..+0x50 block is CSBI_ImageSetAni's m_3c..m_50, and its Init/Tick/
+// SetRange/TickRenderCurrent/TickRenderFrame bodies are those classes' vtable
+// slot bodies (proven via vtbl 0x1eac0c/0x1eac4c/0x1ead6c thunks; re-attributed
+// to SBI_Image.h / SBI_ImageSet.h / SBI_ImageSetAni.h). What remains HERE is the
+// deeper leaf that adds the i64 timed-play window at +0x58/+0x60 and the four
+// non-slot methods driving it:
+//   0x0e5ad0  Start        (Init + stamp the timed-play window)
+//   0x0e5b90  TickToggle   (flip the frame between the range endpoints on expiry)
+//   0x0e5c10  RenderCel    (resolve + blit the current cel)
+//   0x0e5c90  Serialize    (chain the CSBI_ImageSetAni leg + round-trip the window)
+// @identity-TODO: no vtable slot points at these four (non-virtual) and no direct
+// caller survives outside their ILT thunks; the class is a CSBI_ImageSetAni-derived
+// leaf (Serialize chains 0xe7cd0 as its direct base leg) - likely the statz-tab /
+// warlord-head family, unpinned. Its obj is the [0xe5800-frags .. 0xe5d17] block.
 #ifndef GRUNTZ_GRUNTZ_CANIPLAYER_H
 #define GRUNTZ_GRUNTZ_CANIPLAYER_H
 
 #include <rva.h>
-#include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CDrawTarget)
 
-// The g_gameReg singleton (VA 0x64556c) viewed by Tick: m_30 is the canonical
-// resource manager (CResMgr); Tick reaches the active render context through
-// g->m_30->m_drawTarget->m_drawContext (+0x30 ->+0x04 ->+0x14). Typed CResMgr* so
-// the render path reaches it with no reinterpret cast.
-SIZE_UNKNOWN(CAniPlayerGameReg);
-struct CAniPlayerGameReg {
-    char m_pad00[0x30];
-    CResMgr* m_world; // +0x30  resource manager
-};
-extern CAniPlayerGameReg* g_gameReg;
+#include <Gruntz/SBI_ImageSetAni.h> // the proven base chain (fields m_3c..m_50 + slot bodies)
+#include <Gruntz/SerialArchive.h>   // CSerialArchive (Serialize's stream view)
 
-// The cel-animation sub-object held at CAniPlayer+0x34. Its +0x14 is the cel
-// pointer table, indexed by frame; +0x64/+0x68 are the inclusive frame range.
-struct AniCelTable {
-    char _pad00[0x14];
-    void** m_cels; // +0x14  cel pointer table (m_cels[frame] -> cel)
-    char _pad18[0x64 - 0x18];
-    i32 m_firstFrame; // +0x64  first frame
-    i32 m_lastFrame;  // +0x68  last frame
-};
-
-// One cel: it renders itself onto a surface context via RenderFrame (0x153790,
-// the shared frame-worker blit - external, reloc-masked); +0x18/+0x1c are the x/y
-// draw offsets the render call adds to the player's +0x14/+0x18 base.
-struct AniCel {
-    char _pad00[0x18];
-    i32 m_offsetX; // +0x18
-    i32 m_offsetY; // +0x1c
-};
-
-// The sequence object passed to Init (held at +0x24/+0x2c). Its +0x10 holds a
-// CMap (+0x10 into it) keyed by the cel key; lookup yields the AniCelTable.
-struct AniSeq {
-    char _pad00[0x10];
-    void* m_celMapHolder; // +0x10  -> map holder (+0x10 is the CMap)
-};
-
-class CAniPlayer {
+class CAniPlayer : public CSBI_ImageSetAni {
 public:
-    i32 Init(
-        AniSeq* seq,
-        AniSeq* seq2,
-        i32 a2,
-        i32 a3,
-        i32 r0,
-        i32 r1,
-        i32 r2,
-        i32 r3,
-        i32 key,
-        i32 b0,
-        i32 b1,
-        i32 b2,
-        i32 b3,
-        i32 b4
-    );          // 0x0e7980
-    // 0x0e5ad0: forward the same 14 args to Init; on success record the timed-play
-    // window (start clock @+0x58, duration = m_interval @+0x60), return 1.
     i32 Start(
-        AniSeq* seq,
-        AniSeq* seq2,
+        i32 cfg,
+        CSbiConfigHost* host,
         i32 a2,
         i32 a3,
         i32 r0,
@@ -94,43 +43,16 @@ public:
         i32 b2,
         i32 b3,
         i32 b4
-    );          // 0x0e5ad0
-    // 0x0e5c90: the full serialize - chain the base-state serialize (0xe7cd0, a
-    // COMDAT-folded shared body the delinker labels CSBI_WarlordHead::Serialize), then
-    // round-trip the timed-play window (+0x58/+0x60). SerializeBase = the folded base leg.
-    i32 Serialize(struct CSerialArchive* arc, i32 mode, i32 a3, i32 a4);     // 0x0e5c90
-    i32 SerializeBase(struct CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x0e7cd0 (folded)
-    i32 Tick(); // 0x0e7b00
+    );                                                            // 0xe5ad0
+    i32 TickToggle_0e5b90(i32 param);                             // 0xe5b90
+    i32 RenderCel_0e5c10();                                       // 0xe5c10
+    i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0xe5c90
 
-    i32 TickToggle_0e5b90(i32 param);                                            // 0x0e5b90
-    i32 RenderCel_0e5c10();                                                      // 0x0e5c10
-    i32 TickRenderCurrent_0e6dd0();                                              // 0x0e6dd0
-    i32 TickRenderFrame_0e7440();                                                // 0x0e7440
-    void SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i32 interval);  // 0x0e7c30
-
-    i32 m_00;                // +0x00
-    i32 m_active;            // +0x04  active flag
-    char _pad08[4];          // +0x08
-    i32 m_0c;                // +0x0c  (Init arg2)
-    i32 m_10;                // +0x10  (Init arg3)
-    i32 m_rect[4];           // +0x14..0x20  rect (drawn through a common base)
-    AniSeq* m_seq2;          // +0x24  sequence (Init arg1)
-    i32 m_repeatCount;       // +0x28  remaining play cycles
-    AniSeq* m_seq;           // +0x2c  sequence (Init arg0)
-    AniCel* m_cel;           // +0x30  current cel
-    AniCelTable* m_celTable; // +0x34
-    i32 m_frame;             // +0x38  current frame
-    i32 m_interval;          // +0x3c  ms between advances
-    i32 m_lastTime;          // +0x40  last timeGetTime
-    i32 m_loop;              // +0x44  loop-forever flag (else stop at end)
-    i32 m_step;              // +0x48  per-advance frame delta (signed)
-    i32 m_endFrame;          // +0x4c  clamp/stop frame
-    i32 m_startFrame;        // +0x50  start / loop-reset frame
-    i32 m_54;                // +0x54
-    i32 m_startTimeLo;       // +0x58  timed-play start clock (i64 lo; Start stamps g_645588)
-    i32 m_startTimeHi;       // +0x5c  (hi)
-    i32 m_durationLo;        // +0x60  timed-play window = m_interval (i64 lo)
-    i32 m_durationHi;        // +0x64  (hi)
+    i32 m_58; // +0x58  timed-play window start (i64 lo)
+    i32 m_5c; // +0x5c  (i64 hi)
+    i32 m_60; // +0x60  timed-play window duration (i64 lo)
+    i32 m_64; // +0x64  (i64 hi)
 };
+SIZE_UNKNOWN(CAniPlayer);
 
-#endif
+#endif // GRUNTZ_GRUNTZ_CANIPLAYER_H

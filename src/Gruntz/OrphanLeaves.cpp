@@ -1,16 +1,19 @@
 // OrphanLeaves.cpp - a handful of tiny orphan-COMDAT leaf functions (getters,
-// global teardowns, member sub-object dtors, a range registrar, a 2-field setter)
-// that survive in the low-RVA COMDAT pool with no recoverable owning class. Each
-// is modeled from its disassembly with a PLACEHOLDER class/name; only the OFFSETS
-// + emitted code bytes are load-bearing (campaign doctrine). All engine callees
-// are external/no-body so their call rel32 / DIR32 reloc-mask.
+// dialog confirms, an MFC wait-cursor helper) that survive in the low-RVA COMDAT
+// pool with no recoverable owning class. Each is modeled from its disassembly with
+// a PLACEHOLDER class/name; only the OFFSETS + emitted code bytes are load-bearing
+// (campaign doctrine). All engine callees are external/no-body so their call
+// rel32 / DIR32 reloc-mask.
+//
+// The unit's ex 0x3ac30-interval members were re-homed by birth position (dossier
+// #16, waveM-judgment): FreeGlobal62c25c 0x3ac30 -> CustomWorldDialog.cpp;
+// COwnerWithSubs::DtorSubC/DtorSub8 0x3cbc0/0x3cbf0 -> Demo.cpp;
+// Register6446d8Range 0x3e120 -> GruntStartingPoint.cpp. The old "orphanleaves"
+// membership was an aggregation artifact spanning two objs.
 #include <Ints.h>
-#include <Wap32/ZDArrayDerived.h>
 #include <rva.h>
-#include <Mfc.h> // CString (0x1b9b93 default ctor)
-#include <new>
+#include <Mfc.h>
 #include <Globals.h>
-#include <Wap32/ZVec.h>
 
 // ---------------------------------------------------------------------------
 // 0x183d0: return the address of a fixed global (a runtime-class / map pointer).
@@ -64,66 +67,7 @@ void EndWaitCursorOnThread() {
     thread->EndWaitCursor();
 }
 
-// ---------------------------------------------------------------------------
-// 0x3ac30: tear down a global CString-like object (tail-call its Free at 0x1b9b93).
-DATA(0x0022c25c)
-extern CString g_62c25c;
-
-RVA(0x0003ac30, 0xa)
-void FreeGlobal62c25c() {
-    new (&g_62c25c) CString();
-}
-
-// ---------------------------------------------------------------------------
-// 0x3cbc0 / 0x3cbf0: member sub-object destructors - run the embedded sub-object's
-// two-phase teardown (a derived clear + the shared base dtor 0x169d70).
-struct CSubObjC {
-    void Clear();    // 0x16a240
-    void BaseDtor(); // 0x169d70
-};
-struct CSubObj8 {
-    void Clear();    // 0x16a8e0
-    void BaseDtor(); // 0x169d70
-};
-struct COwnerWithSubs {
-    char _00[0x08];
-    CSubObj8 m_08; // +0x08  (empty reloc-masked view)
-    char _09[0x0c - 0x09];
-    CSubObjC m_0c;   // +0x0c
-    void DtorSubC(); // 0x3cbc0
-    void DtorSub8(); // 0x3cbf0  (acts on +0x08)
-};
-
-RVA(0x0003cbc0, 0x14)
-void COwnerWithSubs::DtorSubC() {
-    CSubObjC* s = &m_0c;
-    s->Clear();
-    s->BaseDtor();
-}
-
-RVA(0x0003cbf0, 0x14)
-void COwnerWithSubs::DtorSub8() {
-    CSubObj8* s = &m_08;
-    s->Clear();
-    s->BaseDtor();
-}
-
-// ---------------------------------------------------------------------------
-// 0x3e120: register the default activation-id range [0x7d0, 0x7da] on a per-class
-// registry (g_6446d8) via the shared SetActiveRange ILT thunk (0x3742).
-DATA(0x002446d8)
-extern CZDArrayDerived g_6446d8;
-
-RVA(0x0003e120, 0x15)
-void Register6446d8Range() {
-    ((CZDArrayDerived*)&g_6446d8)->Construct(0x7d0, 0x7da);
-}
-
 // (CPairXY::Set 0x75a10 is merged into src/Gruntz/TriggerMgrHitTest.cpp -
 // called only by that TU's megafn FUN_6f2f0; interval verdict.)
 
 // RunHelper2914 (0xb4330) re-homed to src/Gruntz/Ufo.cpp as CUFO::Tick (matcher-6).
-SIZE_UNKNOWN(CZDArrayDerived);
-SIZE_UNKNOWN(COwnerWithSubs);
-SIZE_UNKNOWN(CSubObj8);
-SIZE_UNKNOWN(CSubObjC);

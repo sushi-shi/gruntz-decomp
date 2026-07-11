@@ -135,42 +135,8 @@ i32 CSBI_RectOnly::SbiVfunc0() {
     return 1;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_RectOnly::Setup - vtable slot 2 (0xe86e0). The 10-arg config setter (the
-// last two args are accepted by the ABI but unused). Bails (returns 0) if either
-// the object id (a2) or the owner (a1) is null; otherwise stores the eight live
-// args into the base-region fields, marks m_4 = 1 (active) and returns 1.
-// @early-stop
-// 90.4%: every field/store and the control flow are correct, BUT retail writes the
-// +0x14 sub-block through a `lea edx,[ecx+0x14]` base (strict sequential load-store)
-// while MSVC5 here folds it to ecx-relative disp8 stores and interleaves the loads.
-// A pure instruction-selection/scheduling residual (docs/patterns/
-// statement-schedule-faithful.md) - direct, array, and struct-pointer spellings all
-// fold the same; not steerable from C. Deferred to the final sweep.
-RVA(0x000e86e0, 0x53)
-i32 CSBI_RectOnly::
-    Setup(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9, i32 a10) {
-    if (a2 == 0 || a1 == 0) {
-        return 0;
-    }
-    m_2c = a1;
-    m_24 = a2;
-    m_10 = a4;
-    m_rect14.m_0 = a5;
-    m_rect14.m_4 = a6;
-    m_rect14.m_8 = a7;
-    m_rect14.m_c = a8;
-    m_c = a3;
-    m_4 = 1;
-    return 1;
-}
-
-// m_34 = m_30 = 0.
-RVA(0x000e7400, 0x9)
-void CSBI_RectOnly::ResetCounters() {
-    m_34 = 0;
-    m_30 = 0;
-}
+// (0xe86e0 Setup -> SBI_RectOnlyBase.cpp (the thin chain CSBI_RectOnly's own obj);
+// 0xe7400 ResetCounters -> SBI_ImageSet.cpp (vtbl 0x1eac4c slot [3]) - dossier #16.)
 
 // Reset slots 0..4, then m_activeSlot = -1.
 RVA(0x00105520, 0x21)
@@ -2686,68 +2652,8 @@ void CSBI_RectOnly::ClearTabGroup() {
     }
 }
 
-// Configure a rect-only item from a descriptor: bail unless both the host and the
-// subtype are valid; latch the descriptor fields (subtype, command, the four rect
-// coords, the rect-test command), then look the cue key up in the host's map and,
-// if found, resolve the start frame from the cue's frame range/table.
-// @early-stop
-// ~62%: the gate, every field latch (same statement order as retail), the map
-// lookup and the frame-range resolution are byte-correct in instruction selection,
-// but retail stages the four rect coords through a reused `edx = this+0x14`
-// pointer where the recompile addresses them as direct `[this+0x14..]` offsets,
-// and the surrounding store schedule + register naming diverge accordingly. An
-// addressing-mode/scheduling wall, not steerable from C; deferred.
-RVA(0x000e72f0, 0xc4)
-i32 CSBI_RectOnly::ConfigureRect(
-    i32 sub,
-    CSbiConfigHost* host,
-    i32 cmd,
-    i32 obj,
-    i32 r0,
-    i32 r1,
-    i32 r2,
-    i32 r3,
-    i32 key,
-    i32 frame,
-    i32 extra
-) {
-    (void)extra;
-    char* B = (char*)this;
-    if (host == 0 || sub == 0) {
-        return 0;
-    }
-    *(i32*)(B + 0x2c) = sub;
-    *(i32*)(B + 0x10) = obj;
-    i32* rc = (i32*)(B + 0x14);
-    m_24 = (i32)host;
-    m_28 = 0;
-    m_4 = 1;
-    rc[0] = r0;
-    rc[1] = r1;
-    rc[2] = r2;
-    rc[3] = r3;
-    *(i32*)(B + 0xc) = cmd;
-    if (key == 0) {
-        return 0;
-    }
-    CSbiConfigRecord* rec = 0;
-    ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup((const char*)key, (void*&)rec);
-    m_34 = (i32)rec;
-    if (rec == 0) {
-        return 0;
-    }
-    i32 f = frame;
-    if (f == -1) {
-        f = rec->m_64;
-    }
-    *(i32*)(B + 0x38) = f;
-    if (f >= rec->m_64 && f <= rec->m_68) {
-        m_30 = rec->m_14[f];
-    } else {
-        m_30 = 0;
-    }
-    return 1;
-}
+// (0xe72f0 "ConfigureRect" -> CSBI_ImageSet::SetupImage in SBI_ImageSet.cpp
+// (vtbl 0x1eac4c slot [11]) - dossier #16.)
 
 // Drive the tab-selection sprites: require the five bank-A sprites all present,
 // then switch on the tab id to Show the selected sprite (with flag) and Hide the

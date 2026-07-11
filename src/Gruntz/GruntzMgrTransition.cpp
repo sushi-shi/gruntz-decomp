@@ -185,7 +185,7 @@ struct CSplashState : CState { // param 14, 0x1bc
     }
 };
 // CDemo is the canonical <Gruntz/Demo.h> class (included below); its ctor + the
-// `new CDemo` factory case + CDemo::Vslot15 (0x3c030) live in this TU.
+// `new CDemo` factory case live in this TU (Vslot15 re-homed to Demo.cpp).
 struct CMultiBootyState : CState { // param 18, 0x244
     i32 m_1b4;                     // +0x1b4
     i32 m_1b8;                     // +0x1b8
@@ -393,17 +393,8 @@ CMulti::CMulti() {
 // factory of this size is not source-steerable. Logic complete. topic:wall topic:eh.
 // ===========================================================================
 
-// The cached PostMessageA fn-ptr (bare 0x6c44c8; DATA home in Play.cpp). Reloc-masked.
-extern i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x6c44c8
-
-// CDemo::Vslot15 (slot 21, 0x3c030): post WM_COMMAND 0x8027 to the owner HWND (the
-// CState/CWorld back-ptr chain m_4w()->m_4->m_4), the demo-state re-post twin of
-// CPlay::Vslot15. Returns 1.
-RVA(0x0003c030, 0x22)
-i32 CDemo::Vslot15() {
-    g_pPostMessageA((HWND)m_4w()->m_4->m_4, 0x111, 0x8027, 0);
-    return 1;
-}
+// (CDemo::Vslot15 @0x3c030 re-homed to Demo.cpp - dossier #16: its birth position
+// is the demo obj's head run.)
 
 RVA(0x0008b960, 0x7c4)
 i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {

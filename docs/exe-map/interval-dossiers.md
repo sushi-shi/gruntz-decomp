@@ -883,3 +883,152 @@ in `0x1504d0-0x166100` (no static ctors in any of these TUs); no __FILE__ anchor
   (CResolveNode::Init@0x1647e0, CDDrawWorkerRegistry::DestroyAll@0x165210 +
   FindKeyOfValue@0x165360 -> ddrawsurfacepair; CDDrawChildGroup::IsReady@0x1575e0 -> ddrawsubmgr);
   all back at 100%. CImageSet::CreateFrame30's stale size annotation fixed (0xdc -> 0xa4, retail 164 B).
+
+## 16. waveM-judgment - the final three merge groups (customworld / sbi-items / menu-tail)
+
+### 16a. `0x03ac30-0x03e135` customworld group - TWO objs, boundary `0x3bc78/0x3bfa0` (strong)
+
+**Verdict: TWO original objs** (the "WOVEN 0.30" metric was intra-half weave plus the
+orphanleaves aggregation artifact spanning both halves; no unit truly crosses the
+boundary once orphanleaves' members are re-attributed):
+
+1. **CustomWorldDialog.cpp** `[0x3ac10(frag i513) .. 0x3bc78]` - the custom-world
+   picker feature file: launcher + DlgProc + level-list filler + info-pane filler +
+   CUSTOM_WORLDINFO popup + path builder + the two WwdFile statics. /GX (EH
+   prologues at 0x3b470/0x3b940/0x3bb50).
+2. **Demo.cpp** `[0x3bfa0 .. 0x3dee1]` - the demo/attract feature file: CDemo
+   slot bodies + CDemoSetup + BuildWorldLevelKey + the auto-scroll camera + Orient3
+   + the bute debug editors + CButeMgr::Parse + CTriRecord::Serialize + the
+   COwnerWithSubs teardown pair + the ten anim-worker Handlers. /GX (0x3c0e0/0x3cc20).
+
+Method notes (the conflicting-evidence reconciliation the brief asked for):
+* **Init-frag slot HOLES are NOT obj boundaries.** The confirmed one-obj
+  DroppedObject TU (dossier #11) has a 3-null hole (i923-925) INSIDE its own frag
+  run, so the original "i514-515 vs i519-550 = two runs = two objs" reading was
+  unsound as stated. The frag evidence that DOES hold: the region has FIVE
+  positional frag clusters (i513-515 head singletons; the 9-frag {0,1,1}-triple
+  groups i519-527 @0x3bcd0, i530-538 @0x3c520, i541-549 @0x3cfe0; i550 @0x3e100),
+  and the i539-540 hole separates two clusters both INSIDE the demo obj's text -
+  intra-obj holes proven in-region.
+* **The 9-frag {0,1,1} triple groups** ($E jmp -> `mov eax,1; mov cell,0; mov
+  cell+4,eax; mov cell+8,eax; ret`, cells .bss, referenced by nothing else) are
+  positional-only markers. i530-538 + i541-549 BRACKET democameratools fns inside
+  the demo block (A-B-A -> one obj); i519-527 sits between the two objs (0-gap
+  adjacent to the demo block's first fn, 88-B pad after the cw block) - lean
+  demo-head, execution-neutral (frags are not carved).
+* **Initialized-.data privates** (the decisive band): cw extent 0x20cf80..0x20cfe4
+  with cross-unit private cells (0x20cfa4 FillLevelInfoDialog+CustomWorldInfoDlgProc;
+  0x20cfbc LoadCustomWorldSelection+LoadCustomWorldInfo+BuildCustomWwdPath;
+  0x20cfc4) binding customworlddialog+customworldinfodlg+customwwdpath into ONE
+  obj; demo extent 0x20d008..0x20d148 (StepA/StepB/Gap_03c990/Gap_03cdd0/
+  ??0CGruntStartingPoint) monotone; the two bands DISJOINT at the text boundary.
+  The .bss statics 0x22c25c-0x22c274 are read intermixed by cw-dialog AND
+  cw-info-dlg fns (same-obj corroboration). Zero cross-half shared private cells.
+* **Demo-oracle**: all probed fns sit at IDENTICAL relative offsets in GruntDem.exe
+  (uniform -6560 shift; the ten Handlers differ in bytes - class-size immediates -
+  but their space is preserved). No boundary discrimination, attributions corroborated.
+* **The tail `[0x3df30..0x3e135]` is NOT the demo obj**: g_actReg4 @0x6446d8 is
+  PRIVATE to {0x3e12b, 0x3e185, 0x3e1cd/20a/242/284, 0x3e42b, 0x3e46e} - the
+  GruntStartingPoint activation cluster {ctor 0x3df30, Register6446d8Range 0x3e120,
+  FireActivation 0x3e1a0, ActReg4RegisterType 0x3e300 (+uncarved 0x3e185/0x3e42x)},
+  the same {handler, ctor, registrars, triples} shape as the CCursorSnapSprite
+  cluster at 0x3a200-0x3ac10. Executed: ActReg4.cpp + Register6446d8Range folded
+  into GruntStartingPoint.cpp (the class file; wormhole-#12 registrar precedent).
+* **GameKeyStr dissolved**: its methods were the anchored MFC CString entry points
+  (Set=??4 0x1b9e74, Append=?+= 0x1ba0c8, Reset=?Empty 0x1b9c69, Free1b9b93=??0
+  0x1b9b93 per config/library_labels.csv) - g_pathStr/g_levelStr are plain CString
+  globals; the CustomWorldDialog/CustomWorldInfoDlg/OrphanLeaves triple-decl of
+  0x22c25c unified. The 0x22c26c/0x22c270 cells are the popup's parent HWND /
+  HINSTANCE (semantic names won over g_dat62c26c/70).
+* Executed moves: customworldinfodlg+customlevellist+customwwdpath+wwdfile(2 fns)
+  +FreeGlobal62c25c -> CustomWorldDialog.cpp; gruntzmgrtransition's Vslot15 +
+  demosetup+worldlevelkey+democameratools+animworkerhandlers(11)+butemgrparse+
+  trirecordserialize(0x3c8f0)+orphanleaves(DtorSubC/8) -> Demo.cpp; Handler03a200
+  -> CursorSnapSprite.cpp (its own cluster). Nine units dissolved. Every moved fn
+  held its % (RunCustomWorldDialog ROSE 72.7->95.7 under the obj's real /GX profile;
+  FreeGlobal62c25c 0->100 via the explicit-ctor-call spelling).
+
+### 16b. `0x0e5ad0-0x0e8733` sbi-items region - PER-CLASS objs (strong); the "3-interval sbi_rectonly conflation" resolved here
+
+**Verdict: NOT one obj - a SEQUENCE of one-file-per-class SBI item objs**, each
+headed by its own 9-frag {0,1,1} static group, exactly the structure the *Eh.cpp
+collapse already posited ("the original one-file-per-class SBI TUs"):
+
+| frag group (9x{0,1,1}) | class block | our file |
+|---|---|---|
+| i1005-1013 @0xe5800 | `[0xe5ad0..0xe5d17]` timed-play leaf (CAniPlayer, @identity-TODO) | src/Gruntz/AniPlayer.cpp |
+| i1016-1024 @0xe5d50 | `[0xe6020..0xe68a7]` CSBI_WellGoo | src/Gruntz/SBI_WellGoo.cpp |
+| i1027-1035 @0xe69b0 | `[0xe6c80..0xe6fbc]` CSBI_Image | src/Gruntz/SBI_Image.cpp |
+| i1038-1046 @0xe7020 | `[0xe72f0..0xe7642]` CSBI_ImageSet | src/Gruntz/SBI_ImageSet.cpp |
+| i1049-1057 @0xe76b0 | `[0xe7980..0xe7dc8]` CSBI_ImageSetAni | src/Gruntz/SBI_ImageSetAni.cpp |
+| i1060-1068 @0xe7e10 | `[0xe80e0..0xe8672]` CSBI_MenuItem | src/Gruntz/SBI_MenuItem.cpp |
+| (headless tail) | `[0xe86e0..0xe8733+]` thin CSBI_RectOnly | src/Gruntz/SBI_RectOnlyBase.cpp (NEW) |
+
+* **The "suspicious-width 1-frag run i1016-1068"** decomposes into FIVE 9-groups
+  with 2-3-slot holes between them; each group sits in the inter-class gap at its
+  class's head. The savegame region before (i984-1013) and statusbartabbuilders
+  after (i1071-1101) continue the same per-file 9-group pattern.
+* **The apparent weave was ATTRIBUTION NOISE** (the brief's "frag-run boundary
+  inside woven text means wrong attributions" case). Vtable-slot proof (gruntz
+  sema class, thunks resolved): 0xe6d90/0xe6dd0/0xe6e40 are CSBI_Image slots
+  3/5/1 (were CSBI_MenuItem::ClearFrame / CAniPlayer::TickRenderCurrent /
+  CSBI_MenuItem::SerializeChain); 0xe72f0/0xe7400/0xe7440 are CSBI_ImageSet slots
+  11/3/5 (were CSBI_RectOnly::ConfigureRect / CSBI_RectOnly::ResetCounters /
+  CAniPlayer::TickRenderFrame); 0xe7980/0xe7b00/0xe7c30 are CSBI_ImageSetAni
+  slots 13/5/14 (were CAniPlayer::Init/Tick/SetRange); 0xe6020 is CSBI_WellGoo
+  slot 2 (was the AniPlayer-TU StubOwner_e6020); 0xe86e0 is the thin RTTI
+  CSBI_RectOnly's slot 2 (vtbl 0x1eab8c); 0x10bfc0 is CStatusBarItem's slot-1
+  base leg (was CSBI_MenuItem::SerializeFields). With those identities the region
+  is CLEANLY class-blocked - zero cross-class weave.
+* **CAniPlayer identity fold**: the old standalone CAniPlayer view WAS the SBI item
+  chain (fields +0x04..+0x38 = CStatusBarItem/CSBI_Image/CSBI_ImageSet's,
+  +0x3c..+0x50 = CSBI_ImageSetAni's m_3c..m_50; its "AniSeq" = CSbiConfigHost, its
+  "AniCelTable" = CSbiConfigRecord/CSprite). CAniPlayer is now the
+  CSBI_ImageSetAni-derived timed-play leaf (adds the i64 window at +0x58/+0x60)
+  holding only the four non-slot methods 0xe5ad0/0xe5b90/0xe5c10/0xe5c90
+  (@identity-TODO: no vtable slot / no surviving direct caller; likely the
+  statz-tab/warlord-head family).
+* **The sbi_rectonly 3-interval conflation** dissolves for THIS interval: its three
+  fns here were the thin chain's (2 -> CSBI_ImageSet, 1 -> the thin CSBI_RectOnly's
+  own headless obj, hosted in the NEW SBI_RectOnlyBase.cpp). The 0xfdc00 and
+  0x104d60 cores (the 0x570 HOST wearing the same class name - the known
+  conflation) were left alone per the brief.
+* Executed at held %s (TickRenderCurrent_0e6dd0 went 74 -> 100 EXACT once defined
+  on its real class); discovered-but-uncarved slot bodies for a later pass:
+  0xe6db0 (CSBI_Image slot 4), 0xe7420 (CSBI_ImageSet slot 4), 0xe74c0
+  (CSBI_ImageSet slot 12), 0xe7ae0 (CSBI_ImageSetAni slot 4).
+
+### 16c. `0x184610-0x185a0e` menu-tail pocket - boundaries CONFIRMED; pocket = FIVE objs (strong)
+
+**Verdict: dossier #6's boundaries hold under the full oracle kit**; the pocket
+sub-structure is now resolved (was "weak, resolution not required"):
+
+1. **`0x1848b0` (MenuPage | pocket) CONFIRMED.** The 0x184610-0x1848a6
+   CMenuItem/CMenuItem2 accessor/dtor cluster is MenuPage-obj COMDAT-at-usage
+   content: ??_7CMenuItem@@6B@ (0x1f08c0) is first-stamped at 0x183510 (a
+   CMenuPage::AddItem new-site) with all four ctor-side stamps in MenuPage's text,
+   and the CRT ??_G__non_rtti_object COMDAT sits interleaved at 0x1847c0 - a
+   COMDAT pool zone, not re-homes. The definitions STAY in MenuItem.cpp (the class
+   file) per the legend + the inline-member-crater constraint (retail's inline-in-
+   header members must be defined out-of-line in our tree or MSVC5 /O2 inlines
+   them into MenuPage's callers); the MenuItem-vs-pocket rows in tu_order_check
+   are this documented COMDAT-pool artifact, not a fixable misplacement.
+2. **Pocket `[0x1848b0..0x185460)` = FIVE objs**, current tree layout already
+   correct - no moves:
+   - RezColl.cpp `[0x1848b0..0x184b5d]` (RezNode/CSymList/CHashBase - the rez
+     hash/collection utility; no frags, no privates, clean block);
+   - DebugPrintf.cpp `[0x184b70..0x1851d3]` - its OWN obj, positively proven: own
+     init frag i1493 @0x184b60 (ctor-attributed -> RezDebugInit) + own PRIVATE
+     initialized-.data band 0x224eb4..0x224f0c (AddFromString + InitFromEnv);
+   - RezList.cpp `[0x1851e0..0x185315]` (CRezList + CObjList::Remove);
+   - vendor zlib uncompr.obj @0x185320 (references zlib's shared 0x224f14 with the
+     deflate/inflate band);
+   - WapUncompress.cpp @0x1853b0 (the engine wrapper; its 0x224f14 ref is use of
+     zlib's public cell, not a merge proof).
+   No cross-binding between the three engine objs (zero weave, zero shared
+   privates) -> held split per the conservative precedent (WormholeActs, #12).
+3. **`0x185460` (pocket | MenuItem out-of-line block) CONFIRMED** (Init/virtuals
+   run 0x185460-0x185a0e, zero foreign fns).
+* EH scan: all 11 EH prologues in [0x1832d0..0x185a10] are MenuPage-block fns +
+  the two dtors in the COMDAT cluster - consistent with menupage/menuitem 'eh'
+  and the pocket units 'base' (current flags correct; no flips).

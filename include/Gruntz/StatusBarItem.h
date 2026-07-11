@@ -104,6 +104,11 @@ public:
     // Member teardown run by the inline destructor of the CHAIN-DTOR device below
     // (reloc-masked extern; the retail standalone body is 0x10bfa0).
     void DtorStatus(); // 0x10bfa0
+
+    // slot-1 base leg (vtbl slot [1] thunk 0x1848 -> 0x10bfc0): serialize the six
+    // base-region fields (m_4..m_rect14, m_28). Re-attributed from CSBI_MenuItem
+    // (dossier #16); the body TU is SBI_MenuItem.cpp (its retail obj neighborhood).
+    i32 SerializeFields(void* ar, i32 kind, i32 a, i32 b); // 0x10bfc0
 };
 SIZE_UNKNOWN(CStatusBarItem);
 

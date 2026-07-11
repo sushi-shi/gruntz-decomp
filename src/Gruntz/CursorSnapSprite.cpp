@@ -10,6 +10,9 @@
 // identities.
 #include <Gruntz/CursorSnapSprite.h>
 
+#include <Gruntz/AnimWorker.h> // shared Owner / Worker views + Worker_DefaultPump (Handler03a200)
+#include <Gruntz/UserLogic.h>  // the dispatched CUserLogic slot layout
+
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.
 DATA(0x002bf620)
@@ -25,9 +28,7 @@ i32 CCursorSnapSprite::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
     if (!SerializeChain(ar, tag, c, d)) {
         return 0;
     }
-    return SerialRef34()
-               ->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d)
-           != 0;
+    return SerialRef34()->Chain((CSerialArchive*)ar, tag, c, (CSerialObj*)d) != 0;
 }
 
 // CCursorSnapSprite::~CCursorSnapSprite @0x011920 - the leaf adds no destructible
@@ -38,6 +39,48 @@ i32 CCursorSnapSprite::Serialize(i32 ar, i32 tag, i32 c, i32 d) {
 // (0x010e90) / ~CTeleporter (0x010dd0); the empty body is enough for cl.
 RVA(0x00011920, 0x44)
 CCursorSnapSprite::~CCursorSnapSprite() {}
+
+// Handler03a200 @0x3a200 - this class's state-0 anim-worker dispatch handler (the
+// same pump archetype as Demo.cpp's Handler03d2b0 family; the class file carries
+// its own handler here, text-adjacent to the ctor below - dossier #16). __cdecl
+// FREE function; reads owner->m_7c (the worker) and pumps on the state tag.
+RVA(0x0003a200, 0xf1)
+i32 Handler03a200(Owner* owner) {
+    Worker* rec = owner->m_7c;
+    switch (rec->m_1c) {
+        case 0: {
+            rec->m_1c = 0x3e8;
+            CUserLogic* sub = new CCursorSnapSprite((CGameObject*)owner);
+            sub->Activate();
+            rec->m_18 = sub;
+            break;
+        }
+        case 0x1d:
+            rec->m_18->UserLogicVfunc9();
+            break;
+        case 0x1e:
+            rec->m_18->UserLogicVfunc8();
+            break;
+        case 0x50:
+            rec->m_18->UserLogicVfuncC();
+            break;
+        case 0x53:
+            rec->m_18->UserLogicVfuncD();
+            break;
+        case 0x52:
+            rec->m_18->UserLogicVfuncA();
+            break;
+        case 0x51:
+            rec->m_18->UserLogicVfuncB();
+            break;
+        case 0x3e8:
+            break;
+        default:
+            Worker_DefaultPump(rec->m_18);
+            break;
+    }
+    return 1;
+}
 
 // CCursorSnapSprite::CCursorSnapSprite @0x03a340 - fold the shared CUserLogic(obj)
 // init, name the bound object, snapshot its geometry id (+0x40), apply the single-

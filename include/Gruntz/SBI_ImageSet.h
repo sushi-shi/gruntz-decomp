@@ -54,10 +54,16 @@ public:
     virtual void SbiSlot4() OVERRIDE;  // slot 4
     virtual void SbiSlot5() OVERRIDE;  // slot 5
     virtual i32 SetupImage(i32, CSbiConfigHost*, i32, i32, i32, i32, i32, i32, i32, i32, i32)
-        OVERRIDE;                                                    // slot 11
-    virtual void SbiSlot12();                                        // slot 12 (new)
-    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);     // vslot 1 (0xe74f0)
-    i32 BaseSerialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // 0xe6e40 base slot 1
+        OVERRIDE;                                                // slot 11
+    virtual void SbiSlot12();                                    // slot 12 (new)
+    i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // vslot 1 (0xe74f0)
+    // (the 0xe6e40 base slot-1 leg is the real CSBI_Image::SerializeChain - SBI_Image.h)
+    // slot-3 body (vtbl 0x1eac4c slot [3], thunk 0x2a09): reset the resolved record +
+    // latched value. Re-attributed from the SBI_RectOnly host TU (dossier #16).
+    void ResetCounters(); // 0xe7400
+    // slot-5 body (vtbl 0x1eac4c slot [5], thunk 0x2e78): one play step re-resolving the
+    // frame from the record table. Ex CAniPlayer view (dossier #16).
+    i32 TickRenderFrame_0e7440(); // 0xe7440
     // Member teardown run by the CHAIN-DTOR device (see StatusBarItem.h).
     void DtorImageSet(); // slot-3 teardown (reloc-masked extern)
 

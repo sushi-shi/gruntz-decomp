@@ -27,6 +27,27 @@ DATA(0x0024556c)
 extern CGooGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
+// vtable slot 2 (0xe6020, thunk 0x24eb): CSBI_WellGoo's Setup override (dossier
+// #16 identity: vtbl 0x1eadfc slot [2] jmps here; ex the AniPlayer-TU
+// "StubOwner_e6020" placeholder). Kept as the 86% artifact stub pending a full
+// reconstruction (final sweep).
+// @early-stop
+// return-0 stub (the old ~86% score was a base-length normalization artifact of
+// the previous unit's epilogue alignment; in this unit it scores ~1% - equally
+// meaningless for a stub). A faithful full-body reconstruction (the 10-arg
+// setup: geometry stash + mgr-alloc + 3 bounded map lookups + SetRect) reaches
+// only ~42%: target keeps 4 callee-saved regs and reuses the dead incoming-arg
+// slots as SetRect/lookup scratch, while cl spills a fresh `sub esp,0x10` RECT
+// frame + drops ebp - a uniform frame shift that mismatches every [esp+X]
+// operand. Frame/regalloc wall; full reconstruction deferred to the final sweep.
+struct StubOwner_e6020 {
+    i32 winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32);
+};
+SIZE_UNKNOWN(StubOwner_e6020);
+RVA(0x000e6020, 0x288)
+i32 StubOwner_e6020::winapi_0e6020_SetRect(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32) {
+    return 0;
+}
 
 // vtable slot 5 (0xe6380): the per-frame goo Tick. Idle (return 1) while the
 // countdown is non-positive; then tick it down and idle again if no fill scale is

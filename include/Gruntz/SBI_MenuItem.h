@@ -143,9 +143,9 @@ public:
     ) OVERRIDE; // slot 11
 
     // ----- reconstructed methods (RVA-ascending) -----
-    void ClearFrame();                                    // 0xe6d90 (out-of-line)
-    void ClearFrame2();                                   // 0xe81a0 (out-of-line)
-    i32 SerializeChain(void* ar, i32 kind, i32 a, i32 b); // 0xe6e40  serialize tail-chain
+    // (0xe6d90 ClearFrame + 0xe6e40 SerializeChain are the real CSBI_Image slot-3/
+    // slot-1 bodies - re-attributed to SBI_Image.h/.cpp, dossier #16.)
+    void ClearFrame2(); // 0xe81a0 (out-of-line)
     i32 InitItem(
         i32 cfg,
         i32 host,
@@ -158,15 +158,16 @@ public:
         void* obj,
         i32 key,
         i32 unused
-    );                                                     // 0xe80e0  (vtable slot 11)
-    i32 ResolveFrame(i32 key, i32 a);                      // 0xe81e0
-    i32 DecCounter();                                      // 0xe82a0  decrement-and-blit
-    i32 SetState(i32 state, i32 a);                        // 0xe8310
-    i32 ProbeState(i32 state);                             // 0xe8480
-    i32 Blit();                                            // 0xe84f0  conditional blit
-    i32 Serialize(void* ar, i32 kind, i32 a, i32 b);       // 0xe8520  top serialize
-    void SetSubtype();                                     // 0x1005b0 (out-of-line)
-    i32 SerializeFields(void* ar, i32 kind, i32 a, i32 b); // 0x10bfc0  field block
+    );                                               // 0xe80e0  (vtable slot 11)
+    i32 ResolveFrame(i32 key, i32 a);                // 0xe81e0
+    i32 DecCounter();                                // 0xe82a0  decrement-and-blit
+    i32 SetState(i32 state, i32 a);                  // 0xe8310
+    i32 ProbeState(i32 state);                       // 0xe8480
+    i32 Blit();                                      // 0xe84f0  conditional blit
+    i32 Serialize(void* ar, i32 kind, i32 a, i32 b); // 0xe8520  top serialize
+    void SetSubtype();                               // 0x1005b0 (out-of-line)
+    // (0x10bfc0 SerializeFields is the real CStatusBarItem slot-1 base leg -
+    // decl on the base in StatusBarItem.h; body stays in SBI_MenuItem.cpp.)
 
     // ----- own fields (after CSBI_Image @0x34) -----
     i32 m_34; // +0x34  menu state tag

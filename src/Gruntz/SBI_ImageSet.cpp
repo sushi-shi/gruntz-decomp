@@ -6,6 +6,8 @@
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CImageRegistry + CSprite)
 #include <Gruntz/SBI_ImageSet.h> // canonical CSBI_ImageSet + CImageSetStream (the frameless method view)
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton (CSpriteFactoryHolder m_world)
+#include <Gruntz/SbiConfig.h>    // canonical config-host family (SetupImage's map lookup)
+#include <Image/CImage.h>        // the resolved frame record (TickRenderFrame's blit)
 // SBI_ImageSet.cpp - Gruntz CSBI_ImageSet (C:\Proj\Gruntz), the frameless methods.
 // RTTI .?AVCSBI_ImageSet@@; the most-derived of the SBI image chain
 //   CSBI_ImageSet : CSBI_Image : CSBI_RectOnly : CStatusBarItem.
@@ -29,6 +31,114 @@ extern CGameRegistry* g_gameReg;
 // The serialize-sequence counter bumped once per non-trivial pass.
 DATA(0x00229ad0)
 extern i32 g_serialCounter;
+
+// ---------------------------------------------------------------------------
+// CSBI_ImageSet::SetupImage (0xe72f0, vtable slot 11 - the CSBI_Image::SetupImage
+// override): validate + latch the config descriptor (subtype, command, the four
+// rect coords, the rect-test command), then look the record key up in the host's
+// map and, if found, resolve the start frame from the record's frame range/table.
+// Re-attributed from the SBI_RectOnly host TU's "ConfigureRect" (dossier #16:
+// vtbl 0x1eac4c slot [11] thunk 0x263a -> 0xe72f0; the fields are the thin chain's).
+// @early-stop
+// ~62%: the gate, every field latch (same statement order as retail), the map
+// lookup and the frame-range resolution are byte-correct in instruction selection,
+// but retail stages the four rect coords through a reused `edx = this+0x14`
+// pointer where the recompile addresses them as direct `[this+0x14..]` offsets,
+// and the surrounding store schedule + register naming diverge accordingly. An
+// addressing-mode/scheduling wall, not steerable from C; deferred.
+RVA(0x000e72f0, 0xc4)
+i32 CSBI_ImageSet::SetupImage(
+    i32 sub,
+    CSbiConfigHost* host,
+    i32 cmd,
+    i32 obj,
+    i32 r0,
+    i32 r1,
+    i32 r2,
+    i32 r3,
+    i32 key,
+    i32 frame,
+    i32 extra
+) {
+    (void)extra;
+    if (host == 0 || sub == 0) {
+        return 0;
+    }
+    m_2c = sub;
+    m_10 = obj;
+    i32* rc = (i32*)&m_rect14;
+    m_24 = (i32)host;
+    m_28 = 0;
+    m_4 = 1;
+    rc[0] = r0;
+    rc[1] = r1;
+    rc[2] = r2;
+    rc[3] = r3;
+    m_c = cmd;
+    if (key == 0) {
+        return 0;
+    }
+    CSbiConfigRecord* rec = 0;
+    ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup((const char*)key, (void*&)rec);
+    m_34 = (CSprite*)rec;
+    if (rec == 0) {
+        return 0;
+    }
+    i32 f = frame;
+    if (f == -1) {
+        f = rec->m_64;
+    }
+    m_38 = f;
+    if (f >= rec->m_64 && f <= rec->m_68) {
+        m_30 = rec->m_14[f];
+    } else {
+        m_30 = 0;
+    }
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
+// CSBI_ImageSet::ResetCounters (0xe7400, vtable slot 3): m_34 = m_30 = 0.
+// Re-attributed from the SBI_RectOnly host TU (dossier #16: vtbl 0x1eac4c
+// slot [3] thunk 0x2a09 -> 0xe7400).
+RVA(0x000e7400, 0x9)
+void CSBI_ImageSet::ResetCounters() {
+    m_34 = 0;
+    m_30 = 0;
+}
+
+// ---------------------------------------------------------------------------
+// CSBI_ImageSet::TickRenderFrame (0xe7440, vtable slot 5): one play step that
+// re-resolves the frame from the record table and renders it: while cycles remain,
+// consume one, look up the frame (0 when out of range), record it, and - when
+// present - blit it. Returns 1. Ex CAniPlayer view (dossier #16).
+// @early-stop
+// 86.7% - logic + externs byte-exact; residual is the same RenderFrame surface-context
+// chain regalloc as TickRenderCurrent_0e6dd0 plus the record-table range-test register
+// pairing. Final sweep.
+RVA(0x000e7440, 0x5e)
+i32 CSBI_ImageSet::TickRenderFrame_0e7440() {
+    if (m_28 > 0) {
+        m_28--;
+        CSbiConfigRecord* tbl = (CSbiConfigRecord*)m_34;
+        CImage* cel;
+        if (m_38 >= tbl->m_64 && m_38 <= tbl->m_68) {
+            cel = (CImage*)tbl->m_14[m_38];
+        } else {
+            cel = 0;
+        }
+        m_30 = (i32)cel;
+        if (cel != 0) {
+            cel->RenderFrame(
+                (void*)(i32)((CResMgr*)g_gameReg->m_world)->m_drawTarget->m_14,
+                (void*)(cel->m_anchorX + m_rect14.m_0),
+                (void*)(cel->m_anchorY + m_rect14.m_4),
+                (void*)0
+            );
+        }
+    }
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // vtable slot 1 (0xe74f0): serialize the config id + name. mode 7 = load (read id,
@@ -75,7 +185,7 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
             s->WriteBytes(buf, 0x80);
             break;
     }
-    return BaseSerialize(s, mode, a3, a4) != 0;
+    return SerializeChain(s, mode, a3, a4) != 0; // the CSBI_Image base leg (0xe6e40)
 }
 
 // ---------------------------------------------------------------------------

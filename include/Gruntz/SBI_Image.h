@@ -89,10 +89,16 @@ public:
         i32 a11
     );
 
-    // Member teardown run by the CHAIN-DTOR device (see StatusBarItem.h). The retail
-    // body is 0xe6d90 (also claimed as CSBI_MenuItem::ClearFrame - the attribution is
-    // menu-item-TU-resident; the reloc is masked either way).
-    void DtorImage(); // 0xe6d90
+    // slot-3 body AND the dtor's member teardown (ONE retail body, 0xe6d90 - the
+    // chain dtors call it; the vtable slot-3 thunk 0x1b59 jmps to it). Re-attributed
+    // from CSBI_MenuItem (dossier #16: vtbl 0x1eac0c slot [3]); body in SBI_Image.cpp.
+    void ClearFrame(); // 0xe6d90
+    // slot-5 body (vtbl 0x1eac0c slot [5], thunk 0x16e5): one play step rendering the
+    // CURRENT resolved frame m_30 (no table re-lookup). Ex CAniPlayer view (dossier #16).
+    i32 TickRenderCurrent_0e6dd0(); // 0xe6dd0
+    // slot-1 body (vtbl 0x1eac0c slot [1], thunk 0x2077): the CSBI_Image serialize leg;
+    // tail-chains the base SerializeFields. Re-attributed from CSBI_MenuItem (dossier #16).
+    i32 SerializeChain(void* ar, i32 kind, i32 a, i32 b); // 0xe6e40
 
     // +0x2c is the inherited base CStatusBarItem::m_2c (the id slot SetupImage latches).
     i32 m_30; // +0x30  latched config value
@@ -105,7 +111,7 @@ VTBL(CSBI_Image, 0x001eac0c); // vtable_names -> code (RTTI game class)
 // (SBI_Image.cpp, RVA 0x100870).
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGE_DTOR)
 inline CSBI_Image::~CSBI_Image() {
-    DtorImage();
+    ClearFrame();
 }
 #endif
 

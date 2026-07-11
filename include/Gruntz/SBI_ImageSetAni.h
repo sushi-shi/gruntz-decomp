@@ -33,6 +33,32 @@ public:
     // the stream's Read/WriteBytes, then chain the CSBI_ImageSet base serialize.
     i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);
 
+    // slot-13 body (vtbl 0x1ead6c slot [13], thunk 0x3b48 -> 0xe7980): seed the item
+    // from a config host + rect + record key; 14 args (the caller passes the host as
+    // BOTH arg0 and arg1). Ex CAniPlayer::Init (dossier #16 identity fold).
+    i32 Init(
+        i32 cfg,
+        CSbiConfigHost* host,
+        i32 a2,
+        i32 a3,
+        i32 r0,
+        i32 r1,
+        i32 r2,
+        i32 r3,
+        i32 key,
+        i32 b0,
+        i32 b1,
+        i32 b2,
+        i32 b3,
+        i32 b4
+    ); // 0xe7980
+    // slot-5 body (vtbl 0x1ead6c slot [5], thunk 0x2dfb): the timeGetTime-driven cel
+    // advance within [m_4c, m_50]. Ex CAniPlayer::Tick (dossier #16 identity fold).
+    i32 Tick(); // 0xe7b00
+    // slot-14 body (vtbl 0x1ead6c slot [14], thunk 0x3bde): re-arm with a new frame
+    // window without re-resolving the record. Ex CAniPlayer::SetRange (dossier #16).
+    void SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i32 interval); // 0xe7c30
+
     i32 m_3c; // +0x3c  persistent serialized ints (Serialize save/load block)
     i32 m_40; // +0x40
     i32 m_44; // +0x44

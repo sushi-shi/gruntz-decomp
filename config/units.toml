@@ -164,6 +164,12 @@ source = "src/Gruntz/SBI_MenuItem.cpp"
 flags = "eh"
 
 [[unit]]
+# The thin RTTI CSBI_RectOnly intermediate's own obj (dossier #16): slot-2 Setup @0xe86e0.
+unit = "sbi_rectonlybase"
+source = "src/Gruntz/SBI_RectOnlyBase.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "sbi_rectonly"
 source = "src/Gruntz/SBI_RectOnly.cpp"
 flags = "eh"
@@ -660,11 +666,6 @@ source = "src/Bute/ButeMgr.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "butemgrparse"
-source = "src/Bute/ButeMgrParse.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "gamestaterecordload"
 source = "src/Gruntz/GameStateRecordLoad.cpp"
 flags = "base"
@@ -818,12 +819,6 @@ source = "src/Gruntz/BootyStateActivate.cpp"
 flags = "eh"
 
 [[unit]]
-# LoadCustomWorldInfo (0x3b7c0) CUSTOM_WORLDINFO dialog helper (sibling of CustomWorldDialog).
-unit = "customworldinfodlg"
-source = "src/Gruntz/CustomWorldInfoDlg.cpp"
-flags = "base"
-
-[[unit]]
 # CPlay::vfunc_16 (slot 16) in-game pointer/click dispatcher (sibling of GameKeyHandler).
 unit = "gamemousehandler"
 source = "src/Gruntz/GameMouseHandler.cpp"
@@ -955,17 +950,10 @@ source = "src/Gruntz/PlayMessageImage.cpp"
 flags = "eh"
 
 [[unit]]
-# CDemo (CPlay-derived demo/attract-playback state) own methods (Vfunc1 0x3bfa0);
-# non-EH (no destructible locals).
+# The demo/attract feature obj [0x3bfa0..0x3dee1] (dossier #16): CDemo methods +
+# demo setup/camera + bute debug editors + the anim-worker dispatch family. /GX.
 unit = "demo"
 source = "src/Gruntz/Demo.cpp"
-flags = "base"
-
-[[unit]]
-# Ghidra-missed 0x3c300.. block: demo auto-scroll camera + orphan orientation
-# steppers + the bute-config debug DialogProcs (CString temps -> /GX).
-unit = "democameratools"
-source = "src/Gruntz/DemoCameraTools.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1515,11 +1503,6 @@ source = "src/Gruntz/LogicRecord.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "animworkerhandlers"
-source = "src/Gruntz/AnimWorkerHandlers.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "gruntindicatorworkerhandlers"
 source = "src/Gruntz/GruntIndicatorWorkerHandlers.cpp"
 flags = "eh"
@@ -1621,11 +1604,6 @@ flags = "eh"
 
 
 [[unit]]
-unit = "actreg4"
-source = "src/Gruntz/ActReg4.cpp"
-flags = "base"
-
-[[unit]]
 unit = "tilescan"
 source = "src/Gruntz/TileScan.cpp"
 flags = "base"
@@ -1638,11 +1616,6 @@ flags = "eh"
 [[unit]]
 unit = "gamesave"
 source = "src/Io/GameSave.cpp"
-flags = "base"
-
-[[unit]]
-unit = "demosetup"
-source = "src/Gruntz/DemoSetup.cpp"
 flags = "base"
 
 [[unit]]
@@ -1879,10 +1852,6 @@ unit = "ddrawpolyfill"
 source = "src/DDrawMgr/DDrawPolyFill.cpp"
 flags = "framed"
 [[unit]]
-unit = "customwwdpath"
-source = "src/Wwd/CustomWwdPath.cpp"
-flags = "eh"
-[[unit]]
 unit = "grunttubeanim"
 source = "src/Gruntz/GruntTubeAnim.cpp"
 flags = "base"
@@ -1972,7 +1941,7 @@ flags = "base"
 [[unit]]
 unit = "customworlddialog"
 source = "src/Gruntz/CustomWorldDialog.cpp"
-flags = "base"
+flags = "eh"
 
 [[unit]]
 unit = "packetpool"
@@ -2114,11 +2083,6 @@ unit = "imageprobe"
 source = "src/Image/ImageProbe.cpp"
 flags = "base"
 
-[[unit]]
-unit = "worldlevelkey"
-source = "src/Gruntz/WorldLevelKey.cpp"
-flags = "eh"
-
 # filegetstatus unit REMOVED: CFile::GetStatus (0x1c152f) is statically-linked
 # NAFXCW/MFC library code (FID-anchored in config/library_labels.csv), not game
 # scope - it is carved out there rather than hand-reconstructed.
@@ -2160,12 +2124,6 @@ flags = "base"
 # matcher-4: the two dialog flash-rect helpers (EH + severus/imgHolder scratch).
 unit = "flashrect"
 source = "src/Gruntz/FlashRect.cpp"
-flags = "eh"
-
-[[unit]]
-# matcher-4: custom-level listbox filler (findfirst/next walk + lock + CString).
-unit = "customlevellist"
-source = "src/Gruntz/CustomLevelList.cpp"
 flags = "eh"
 
 [[unit]]
