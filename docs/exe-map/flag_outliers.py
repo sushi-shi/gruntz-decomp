@@ -22,8 +22,22 @@ GAP = 0x4000       # cluster split threshold
 WIN = 0x2000       # territory window around an outlier
 
 
+import re as _re
+# COMDAT-pooled members MSVC5 exiles from the TU block into shared low-RVA pools -
+# not misplacements, just linker pooling (same reason dtors are dropped). Besides
+# the base ??1 + deleting ??_G/??_E dtors: GetTypeTag / GetRuntimeClass, the
+# reconstructed base-class inline virtuals (VslotNN), the msgmap default/stub
+# handlers, and Serialize (also pooled). Excluding these keeps the finder from
+# counting a correctly-placed pooled virtual as an "outlier".
+_POOLED_RE = _re.compile(
+    r"\?(GetTypeTag|GetRuntimeClass|Serialize|Vslot[0-9a-f]{2}|"
+    r"Wap32GameMgrVfunc[0-9]|SbiSlot[0-9]|DoDefault|UnusedMsgHandler|"
+    r"On(DrawItem|MeasureItem|ActionBtn|StubBtn|InitDialog|Ok|OkCommand))@")
+
+
 def is_dtor(name):
-    return name.startswith(("??1", "??_G", "??_E")) or "DeletingDtor" in name
+    return (name.startswith(("??1", "??_G", "??_E")) or "DeletingDtor" in name
+            or bool(_POOLED_RE.match(name)))
 
 
 def _family(r):
