@@ -98,6 +98,7 @@ public:
     virtual void WndVsl47();                      // slot 47
     void SetWindowTextA(const char* lpszString);
     void EnableWindow(i32 bEnable);
+    i32 IsWindowEnabled(); // 0x1be68c (NAFXCW ::IsWindowEnabled(m_hWnd); reloc-masked)
     void GetWindowTextA(CString& rString);
     void GetLBText1ce7db(i32 nIndex, CString& rString);
     // GetSafeHwnd (inline, folds into callers): (this != 0) ? m_hWnd : 0. Same
@@ -254,6 +255,12 @@ public:
     // WM_MEASUREITEM forwarder (0x16570): pass (nIDCtl, lpmis) straight to the base
     // CWnd default (via the CWndOnMeasure shim); no owner-draw sizing of its own.
     void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
+    // WM_DRAWITEM (0x165a0): owner-draw the four team-color swatch controls
+    // (0x501/0x503/0x505/0x507). If the matching child is enabled, fill it with the
+    // slot's team color (a 17-entry index->COLORREF switch); disabled -> light gray.
+    // Then chain the base CWnd owner-draw default. /GX EH frame for the CDC/CBrush
+    // locals.
+    void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
     // 0x17440: an unused message-map handler - `xor eax,eax; ret` (returns 0).
     i32 UnusedMsgHandler();
     // 0x17d40: IDOK command trampoline - virtual-dispatch to this->DlgVsl51 (OnOK,
@@ -455,6 +462,10 @@ public:
     CWnd* GetCtrlC(i32 index); // 0xc27c0
     CWnd* GetCtrlD(i32 index); // 0xc2840
     i32 GetComboSelC(i32 id);  // 0xc2940  GetCtrlC combo cur-sel + 1 (-1 if missing)
+    // WM_DRAWITEM (0xc3100): owner-draw the four team-color swatch controls
+    // (0x501/0x503/0x505/0x507) - the exact twin of CBattlezDlg::OnDrawItem, over the
+    // m_host slot array's per-slot color index. Chains the base CWnd owner-draw default.
+    void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
 
     // The GetSafeHwnd-style accessor the builders fold inline: (this != 0) ?
     // (handle @ +0x1c) : 0. Inline member so MSVC inlines it and keeps the null

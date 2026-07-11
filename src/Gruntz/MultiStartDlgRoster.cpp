@@ -268,6 +268,334 @@ void CMultiStartDlg::AppendChatLine(char* str) {
 }
 
 // ---------------------------------------------------------------------------
+// Owner-draw swatch-fill shims for CMultiStartDlg::OnDrawItem (twin of the
+// CBattlezDlg swatch draw in Dialogs.cpp). All bodies are NAFXCW/game externals
+// reached by call-rel32 (reloc-masked); the holder hierarchy is modeled with real
+// virtual dtors so cl emits the /GX EH frame + the inline vptr-stamp dtor chain
+// (0x5e8cd4 own, 0x5e8cb4 grand-base) retail shows. Placeholder names; only offsets
+// + code bytes are load-bearing. Local to this TU (the vtables reloc-mask).
+SIZE_UNKNOWN(CSwatchDrawBase);
+struct CSwatchDrawBase {
+    virtual ~CSwatchDrawBase() {}
+};
+struct CSwatchBrush : CSwatchDrawBase {
+    HBRUSH m_hObject;        // +0x04
+    CSwatchBrush(u32 color); // 0x1c6b18 (CreateSolidBrush + attach; external)
+    void Release1c6a5c();    // 0x1c6a5c (DeleteObject; external)
+    virtual ~CSwatchBrush() OVERRIDE {
+        Release1c6a5c();
+    }
+    HBRUSH SafeBrush() {
+        return this ? m_hObject : (HBRUSH)0;
+    }
+};
+SIZE_UNKNOWN(CSwatchBrush);
+// Minimal MFC CDC wrapper (vptr + m_hDC@4 + m_hAttribDC@8 + zero-init field@0xc = 0x10).
+SIZE_UNKNOWN(CSwatchDC);
+struct CSwatchDC {
+    char m_vfptr[4];    // +0x00  (CDC::CDC stamps the CObject vptr here; opaque slot)
+    HDC m_hDC;          // +0x04
+    HDC m_hAttribDC;    // +0x08
+    i32 m_0c;           // +0x0c
+    CSwatchDC();        // 0x1c563b  CDC::CDC
+    void Attach(HDC h); // 0x1c5705  CDC::Attach
+    void Detach();      // 0x1c573c  CDC::Detach
+    ~CSwatchDC();       // 0x1c5783  CDC::~CDC
+};
+// CWnd::OnDrawItem @0x1bbde7 (NAFXCW default owner-draw handler; reloc-masked shim).
+SIZE_UNKNOWN(CWndOnDrawR);
+struct CWndOnDrawR {
+    void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
+};
+// The game's FillRect fn-ptr (the .idata IAT slot, reloc-masked indirect call). The
+// canonical DATA binding is in Dialogs.cpp (g_pFillRectDlg @0x006c44e0); reference-
+// only here so the roster call reloc-masks without a duplicate DATA binding.
+extern int(WINAPI* g_pFillRectR)(HDC, const RECT*, HBRUSH); // 0x006c44e0
+
+// CMultiStartDlg::OnDrawItem (0xc3100): owner-draw the four team-color swatch static
+// controls (0x501/0x503/0x505/0x507) of the multiplayer roster - the exact twin of
+// CBattlezDlg::OnDrawItem, over this dialog's GetCtrlD (0xc2840) + the m_host slot
+// array's per-slot color index (+0x158, stride 0x238). Disabled child -> light gray;
+// then chains the base CWnd owner-draw default. /GX EH frame unwinds the CDC/CBrush.
+//
+// @early-stop
+// jump-table-data split artifact (~71.5%; docs/patterns/jumptable-data-overlap.md) -
+// the exact same wall as the CBattlezDlg twin (0x165a0): prologue, /GX EH frame (0x18),
+// dispatch, the four inlined palette switches, and the whole CDC/CBrush/FillRect/Detach
+// + base tail are byte-exact. The residual is the delinker splitting the 5 INLINE .text
+// jump tables (MSVC5 emits them at 0x491..0x5c0) into separate switchdataD_* data
+// symbols (Ghidra boundary 0x491), so objdiff scores our 0x5c0 base against a 0x491
+// target. Not source-steerable (this shape momentarily scored 98.7% when the delinker
+// carved the full 0x5c0).
+RVA(0x000c3100, 0x5c0)
+void CMultiStartDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
+    COLORREF color;
+    i32 bDraw = 0;
+    switch (nIDCtl) {
+        case 0x501:
+            if (GetCtrlD(0)->IsWindowEnabled()) {
+                switch (((CBattlezSlot*)m_host)[0].m_158) {
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 4:
+                        color = 0x800080;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
+                        color = 0;
+                        break;
+                    case 8:
+                        color = 0x800000;
+                        break;
+                    case 9:
+                        color = 0x008000;
+                        break;
+                    case 10:
+                        color = 0x808000;
+                        break;
+                    case 11:
+                        color = 0x000080;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 13:
+                        color = 0x008080;
+                        break;
+                    case 14:
+                        color = 0x808080;
+                        break;
+                    case 15:
+                        color = 0xffff00;
+                        break;
+                    case 16:
+                        color = 0xffffff;
+                        break;
+                    default:
+                        color = 0;
+                        break;
+                }
+            } else {
+                color = 0xc8c8c8;
+            }
+            bDraw = 1;
+            break;
+        case 0x503:
+            if (GetCtrlD(1)->IsWindowEnabled()) {
+                switch (((CBattlezSlot*)m_host)[1].m_158) {
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 4:
+                        color = 0x800080;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
+                        color = 0;
+                        break;
+                    case 8:
+                        color = 0x800000;
+                        break;
+                    case 9:
+                        color = 0x008000;
+                        break;
+                    case 10:
+                        color = 0x808000;
+                        break;
+                    case 11:
+                        color = 0x000080;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 13:
+                        color = 0x008080;
+                        break;
+                    case 14:
+                        color = 0x808080;
+                        break;
+                    case 15:
+                        color = 0xffff00;
+                        break;
+                    case 16:
+                        color = 0xffffff;
+                        break;
+                    default:
+                        color = 0;
+                        break;
+                }
+            } else {
+                color = 0xc8c8c8;
+            }
+            bDraw = 1;
+            break;
+        case 0x505:
+            if (GetCtrlD(2)->IsWindowEnabled()) {
+                switch (((CBattlezSlot*)m_host)[2].m_158) {
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 4:
+                        color = 0x800080;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
+                        color = 0;
+                        break;
+                    case 8:
+                        color = 0x800000;
+                        break;
+                    case 9:
+                        color = 0x008000;
+                        break;
+                    case 10:
+                        color = 0x808000;
+                        break;
+                    case 11:
+                        color = 0x000080;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 13:
+                        color = 0x008080;
+                        break;
+                    case 14:
+                        color = 0x808080;
+                        break;
+                    case 15:
+                        color = 0xffff00;
+                        break;
+                    case 16:
+                        color = 0xffffff;
+                        break;
+                    default:
+                        color = 0;
+                        break;
+                }
+            } else {
+                color = 0xc8c8c8;
+            }
+            bDraw = 1;
+            break;
+        case 0x507:
+            if (GetCtrlD(3)->IsWindowEnabled()) {
+                switch (((CBattlezSlot*)m_host)[3].m_158) {
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 4:
+                        color = 0x800080;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
+                        color = 0;
+                        break;
+                    case 8:
+                        color = 0x800000;
+                        break;
+                    case 9:
+                        color = 0x008000;
+                        break;
+                    case 10:
+                        color = 0x808000;
+                        break;
+                    case 11:
+                        color = 0x000080;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 13:
+                        color = 0x008080;
+                        break;
+                    case 14:
+                        color = 0x808080;
+                        break;
+                    case 15:
+                        color = 0xffff00;
+                        break;
+                    case 16:
+                        color = 0xffffff;
+                        break;
+                    default:
+                        color = 0;
+                        break;
+                }
+            } else {
+                color = 0xc8c8c8;
+            }
+            bDraw = 1;
+            break;
+    }
+    if (bDraw) {
+        CSwatchDC dc;
+        dc.Attach(lpdis->hDC);
+        CSwatchBrush brush(color);
+        g_pFillRectR(dc.m_hDC, &lpdis->rcItem, brush.SafeBrush());
+        dc.Detach();
+    }
+    ((CWndOnDrawR*)this)->OnDrawItem(nIDCtl, lpdis);
+}
+
+// ---------------------------------------------------------------------------
 // Per-slot colour handlers (0xc3830/0xc3950/0xc3a70/0xc3b90). Slot N owns swatch
 // control 0x501+2*N. The pick is allowed when the host set the slot's colour gate
 // (m_164==0) or when it is unlocked (m_16c==0) and owned by us (m_168==m_hostIndex).

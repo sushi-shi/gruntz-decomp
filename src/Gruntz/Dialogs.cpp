@@ -650,6 +650,342 @@ void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     ((CWndOnMeasure*)this)->OnMeasureItem(nIDCtl, lpmis);
 }
 
+// CWnd::OnDrawItem @0x1bbde7 - the NAFXCW default owner-draw handler chained at the
+// end of the swatch draw (reloc-masked; same reduced-MFC shim as CWndOnMeasure).
+SIZE_UNKNOWN(CWndOnDraw);
+struct CWndOnDraw {
+    void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
+};
+
+// The game's FillRect fn-ptr global (the .idata IAT slot, reloc-masked indirect
+// call). Twin of FlashRect's g_pFillRect; DATA-bound here.
+DATA(0x006c44e0)
+extern int(WINAPI* g_pFillRectDlg)(HDC, const RECT*, HBRUSH);
+
+// A minimal MFC CDC wrapper for the owner-draw swatch fill: vptr + the two device
+// contexts. The dialog Attach()es the DRAWITEMSTRUCT hDC, fills, then Detach()es
+// so ~CDC does not release the borrowed DC. All four members are NAFXCW bodies
+// reached by call-rel32 (external/no-body -> reloc-masked).
+SIZE_UNKNOWN(CDlgDC);
+struct CDlgDC {
+    char m_vfptr[4];    // +0x00  (CDC::CDC stamps the CObject vptr here; opaque slot)
+    HDC m_hDC;          // +0x04
+    HDC m_hAttribDC;    // +0x08
+    i32 m_0c;           // +0x0c  (CDC::CDC zero-inits it; keeps the 0x10-byte size)
+    CDlgDC();           // 0x1c563b  CDC::CDC
+    void Attach(HDC h); // 0x1c5705  CDC::Attach
+    void Detach();      // 0x1c573c  CDC::Detach
+    ~CDlgDC();          // 0x1c5783  CDC::~CDC
+};
+
+// The owner-draw fill brush: a game GDI-object holder on the CImgHolderBase grand-
+// base (twin of FlashRect's ImgHolder). Constructed from a COLORREF (0x1c6b18 ==
+// CreateSolidBrush + attach; external/reloc-masked); its /GX inline virtual dtor
+// stamps its own vtable, releases the brush (DeleteObject @0x1c6a5c), then folds in
+// the CImgHolderBase re-stamp. SafeBrush NULL-guards the receiver (retail keeps the
+// neg/sbb/and select even for the stack object).
+struct CDrawBrush : CImgHolderBase {
+    HBRUSH m_hObject;      // +0x04
+    CDrawBrush(u32 color); // 0x1c6b18 (external)
+    void Release1c6a5c();  // 0x1c6a5c (external)
+    virtual ~CDrawBrush() OVERRIDE {
+        Release1c6a5c();
+    }
+    HBRUSH SafeBrush() {
+        return this ? m_hObject : (HBRUSH)0;
+    }
+};
+SIZE_UNKNOWN(CDrawBrush);
+
+// CBattlezDlg::OnDrawItem (0x165a0): owner-draw the four team-color swatch static
+// controls (0x501/0x503/0x505/0x507). Each maps to slot index 0..3; if the
+// matching child window is enabled, fill the item rect with the slot's team color
+// (the 17-entry palette-index -> COLORREF switch, inlined per control); a disabled
+// child paints light gray. Always chains the base CWnd owner-draw default. /GX EH
+// frame unwinds the CDC/CBrush locals.
+//
+// @early-stop
+// jump-table-data split artifact (~71.5%; docs/patterns/jumptable-data-overlap.md) -
+// the same wall that caps the sibling GetCtrlA/GetCtrlD in this TU at ~70%. COMPLETE +
+// correct: prologue, /GX EH frame (0x18), outer nIDCtl dispatch (GetCtrlD(i)->
+// IsWindowEnabled), the four inlined palette switches (index-declaration order - PROVEN
+// right: the byte-identical CMultiStartDlg twin momentarily scored 98.7% off this exact
+// shape when the delinker carved its full 0x5c0), and the whole CDC/CBrush/FillRect/
+// Detach + base-OnDrawItem tail are all byte-exact. The residual is purely a delinker/
+// scoring boundary: MSVC5 emits the 5 switch jump tables INLINE in .text (function =
+// 0x5c0), but Ghidra carves the OnDrawItem boundary at 0x491 (code only) and splits the
+// tables into separate switchdataD_00416a34.. data symbols, so objdiff compares our
+// 0x5c0 base against a 0x491 target and scores the ~0x12f trailing jump-table bytes
+// unmatched. Not source-steerable (a delinker fix that absorbs trailing in-range jump
+// tables would lift this + GetCtrlA/D to ~98%).
+RVA(0x000165a0, 0x5c0)
+void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
+    COLORREF color;
+    i32 bDraw = 0;
+    switch (nIDCtl) {
+        case 0x501:
+            if (GetCtrlD(0)->IsWindowEnabled()) {
+                switch (((CBattlezSlot*)m_slots)[0].m_158) {
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 4:
+                        color = 0x800080;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
+                        color = 0;
+                        break;
+                    case 8:
+                        color = 0x800000;
+                        break;
+                    case 9:
+                        color = 0x008000;
+                        break;
+                    case 10:
+                        color = 0x808000;
+                        break;
+                    case 11:
+                        color = 0x000080;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 13:
+                        color = 0x008080;
+                        break;
+                    case 14:
+                        color = 0x808080;
+                        break;
+                    case 15:
+                        color = 0xffff00;
+                        break;
+                    case 16:
+                        color = 0xffffff;
+                        break;
+                    default:
+                        color = 0;
+                        break;
+                }
+            } else {
+                color = 0xc8c8c8;
+            }
+            bDraw = 1;
+            break;
+        case 0x503:
+            if (GetCtrlD(1)->IsWindowEnabled()) {
+                switch (((CBattlezSlot*)m_slots)[1].m_158) {
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 4:
+                        color = 0x800080;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
+                        color = 0;
+                        break;
+                    case 8:
+                        color = 0x800000;
+                        break;
+                    case 9:
+                        color = 0x008000;
+                        break;
+                    case 10:
+                        color = 0x808000;
+                        break;
+                    case 11:
+                        color = 0x000080;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 13:
+                        color = 0x008080;
+                        break;
+                    case 14:
+                        color = 0x808080;
+                        break;
+                    case 15:
+                        color = 0xffff00;
+                        break;
+                    case 16:
+                        color = 0xffffff;
+                        break;
+                    default:
+                        color = 0;
+                        break;
+                }
+            } else {
+                color = 0xc8c8c8;
+            }
+            bDraw = 1;
+            break;
+        case 0x505:
+            if (GetCtrlD(2)->IsWindowEnabled()) {
+                switch (((CBattlezSlot*)m_slots)[2].m_158) {
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 4:
+                        color = 0x800080;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
+                        color = 0;
+                        break;
+                    case 8:
+                        color = 0x800000;
+                        break;
+                    case 9:
+                        color = 0x008000;
+                        break;
+                    case 10:
+                        color = 0x808000;
+                        break;
+                    case 11:
+                        color = 0x000080;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 13:
+                        color = 0x008080;
+                        break;
+                    case 14:
+                        color = 0x808080;
+                        break;
+                    case 15:
+                        color = 0xffff00;
+                        break;
+                    case 16:
+                        color = 0xffffff;
+                        break;
+                    default:
+                        color = 0;
+                        break;
+                }
+            } else {
+                color = 0xc8c8c8;
+            }
+            bDraw = 1;
+            break;
+        case 0x507:
+            if (GetCtrlD(3)->IsWindowEnabled()) {
+                switch (((CBattlezSlot*)m_slots)[3].m_158) {
+                    case 0:
+                        color = 0x0080ff;
+                        break;
+                    case 1:
+                        color = 0x00ff00;
+                        break;
+                    case 2:
+                        color = 0xff0000;
+                        break;
+                    case 3:
+                        color = 0x0000ff;
+                        break;
+                    case 4:
+                        color = 0x800080;
+                        break;
+                    case 5:
+                        color = 0x00ffff;
+                        break;
+                    case 6:
+                        color = 0x8000ff;
+                        break;
+                    case 7:
+                        color = 0;
+                        break;
+                    case 8:
+                        color = 0x800000;
+                        break;
+                    case 9:
+                        color = 0x008000;
+                        break;
+                    case 10:
+                        color = 0x808000;
+                        break;
+                    case 11:
+                        color = 0x000080;
+                        break;
+                    case 12:
+                        color = 0xff00ff;
+                        break;
+                    case 13:
+                        color = 0x008080;
+                        break;
+                    case 14:
+                        color = 0x808080;
+                        break;
+                    case 15:
+                        color = 0xffff00;
+                        break;
+                    case 16:
+                        color = 0xffffff;
+                        break;
+                    default:
+                        color = 0;
+                        break;
+                }
+            } else {
+                color = 0xc8c8c8;
+            }
+            bDraw = 1;
+            break;
+    }
+    if (bDraw) {
+        CDlgDC dc;
+        dc.Attach(lpdis->hDC);
+        CDrawBrush brush(color);
+        g_pFillRectDlg(dc.m_hDC, &lpdis->rcItem, brush.SafeBrush());
+        dc.Detach();
+    }
+    ((CWndOnDraw*)this)->OnDrawItem(nIDCtl, lpdis);
+}
+
 // Unused message-map handler (0x17440): `xor eax,eax; ret` (returns 0).
 RVA(0x00017440, 0x3)
 i32 CBattlezDlg::UnusedMsgHandler() {

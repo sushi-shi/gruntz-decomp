@@ -88,7 +88,7 @@ debugtiming	2	2
 deflate	15	15
 demo	24	16
 destructbutton	1	1
-dialogs	53	38
+dialogs	54	38
 directdrawmgr	61	34
 directinputmgr2	40	33
 directionclassify	1	0
@@ -174,7 +174,7 @@ gruntzcmdmgr	40	33
 gruntzmapmgr	1	1
 gruntzmgr	129	88
 gruntzmgr2	1	0
-gruntzmgrcmd	4	1
+gruntzmgrcmd	5	1
 gruntzmgrtransition	1	1
 gruntzrandom	5	3
 gruntzsoundz	31	28
@@ -246,7 +246,7 @@ movieplayer	3	2
 movinglogic	6	2
 multi	100	52
 multistartdlg	15	7
-multistartdlgroster	30	18
+multistartdlgroster	31	18
 namerecord	4	3
 netcmdmgr	1	1
 netcmdslot	43	23
@@ -1226,6 +1226,7 @@ dialogs	?OnActionBtn0@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	b8ad1804f49d	0x172
 dialogs	?OnActionBtn1@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	571caeaa41c3	0x172e0
 dialogs	?OnActionBtn2@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	7f738448a68e	0x17300
 dialogs	?OnActionBtn3@CBattlezDlg@@QAEXXZ	100.0000	100.0000	2	a2f20c8d0ba6	0x17320
+dialogs	?OnDrawItem@CBattlezDlg@@QAEXHPAUtagDRAWITEMSTRUCT@@@Z	71.4981	71.4981	1	084c3f9090ea	0x165a0
 dialogs	?OnMeasureItem@CBattlezDlg@@QAEXHPAUtagMEASUREITEMSTRUCT@@@Z	100.0000	100.0000	1	0de8caa96755	0x16570
 dialogs	?OnMeasureItem@CBattlezDlgColors@@QAEXHPAUtagMEASUREITEMSTRUCT@@@Z	100.0000	100.0000	1	1d032d148dfc	0x17ae0
 dialogs	?OnOkCommand@CBattlezDlg@@QAEXXZ	100.0000	100.0000	1	5d3236e65838	0x17d40
@@ -2236,6 +2237,7 @@ gruntzmgrcmd	?Fwd114ec0@@YAXHHHHHH@Z	100.0000	100.0000	1	6e3eaa7b5f8a	0x114ec0
 gruntzmgrcmd	?Fwd114f00@@YAXHHHHHH@Z	87.6923	87.6923	1	5437ef455e1e	0x114f00
 gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHHH@Z	70.4619	70.4619	2	c3eaab59033e	0x862f0
 gruntzmgrcmd	?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z	97.5532	97.5532	1	7c305eac392e	0xd210
+gruntzmgrcmd	?SerialObjectFactory@@YAHPAX0HHPAPAX@Z	0.1115	0.1115	1	62668d32f506	0xd2a0
 gruntzmgrtransition	?Vslot15@CDemo@@UAEHXZ	100.0000	100.0000	1	1e57c056f6a2	0x3c030
 gruntzrandom	?Flip@CoinFlip@Rng@@QAEHXZ	100.0000	100.0000	10	380dfe4050a7	0xda200
 gruntzrandom	?Next2@Rng@@YAHXZ	100.0000	100.0000	10	4d6036b96397	0x15cbe0
@@ -2852,7 +2854,7 @@ multi	?Vslot09@CMulti@@UAEHH@Z	98.5897	98.5897	1	9a4b89340945	0xb6330
 multi	?Vslot0b@CMulti@@UAEHHH@Z	100.0000	100.0000	1	7a60f11f8ccb	0xbd210
 multi	?Vslot16@CState@@UAEHXZ	100.0000	100.0000	1	cpp:8f81bd0e2424	0x8c6b0
 multi	?WaitForConnect@CNetMgr@@QAEHXZ	74.0809	74.0809	1	1ee53b127418	0xbca50
-multi	?WaitForOtherPlayers@CNetMgr@@QAEHXZ	75.0380	75.0380	2	5470e1bdaad4	0xbb700
+multi	?WaitForOtherPlayers@CNetMgr@@QAEHXZ	75.0380	75.0380	3	93d15ed9af12	0xbb700
 multistartdlg	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	1	1d80ea73491f	0xc1750
 multistartdlg	?BuildNamedGruntTable@@YAXXZ	100.0000	100.0000	1	9d400f7576ea	0xc16b0
 multistartdlg	?BuildSlotList@CMultiStartDlg@@QAEXXZ	87.6823	87.6823	1	607ad84c676e	0xc1e60
@@ -2886,6 +2888,7 @@ multistartdlgroster	?OnColorSlot1@CMultiStartDlg@@QAEXXZ	99.8387	99.8387	1	5b170
 multistartdlgroster	?OnColorSlot2@CMultiStartDlg@@QAEXXZ	99.8387	99.8387	1	053d19ab2753	0xc3a70
 multistartdlgroster	?OnColorSlot3@CMultiStartDlg@@QAEXXZ	99.8387	99.8387	1	a4e780e8365f	0xc3b90
 multistartdlgroster	?OnCustomWorld@CMultiStartDlg@@QAEXXZ	86.5417	86.5417	1	4b55ba248150	0xc3cb0
+multistartdlgroster	?OnDrawItem@CMultiStartDlg@@QAEXHPAUtagDRAWITEMSTRUCT@@@Z	71.4981	71.4981	1	5cc515f4e66b	0xc3100
 multistartdlgroster	?OnInitDialog@AreaTimerDlg@@QAEHXZ	100.0000	100.0000	1	045d1833ab0a	0xc2cb0
 multistartdlgroster	?OnSlotSelect0@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	3	aa9c757f3e7d	0xc4ee0
 multistartdlgroster	?OnSlotSelect1@CMultiStartDlg@@QAEXXZ	100.0000	100.0000	3	ca0043725d60	0xc4f30
@@ -4263,5 +4266,5 @@ zdarrayderived	?Construct@CZDArrayDerived@@QAEPAU1@HH@Z	86.2500	86.2500	3	ed5829
 zutil	_zcalloc	100.0000	100.0000	1	55f82c5a172f	0x188410
 zutil	_zcfree	100.0000	100.0000	1	e741567a7e95	0x188430
 zvec	?Destroy@zDArray@@QAEHXZ	57.8571	57.8571	3	03316a940df9	0x8750
-zvec	?IndexToPtr@_zvec@@QAEHH@Z	83.7778	83.7778	5	607e350e4d39	0x312a0
-zvec	?IndexToPtr@zDArray@@QAEHH@Z	100.0000	100.0000	6	69088c7ff375	0x310f0
+zvec	?IndexToPtr@_zvec@@QAEHH@Z	83.7778	83.7778	6	34b2409a2038	0x312a0
+zvec	?IndexToPtr@zDArray@@QAEHH@Z	100.0000	100.0000	7	6137a6c224e1	0x310f0
