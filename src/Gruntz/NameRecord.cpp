@@ -14,8 +14,11 @@ public:
     i32 SetNames(char* name, char* name2, i32 unused); // 0x118040
     i32 CopyBody(char* body);                          // 0x118130
     // Sibling predicate (0x1182f0, == the m_08==1 success check, reloc-masked near
-    // call): the CPred1182f0::IsOne view in BoundaryLowerThunks.cpp is this same field.
-    i32 IsOne(); // 0x1182f0
+    // call). @identity-TODO (RECOVERED, model deferred): retail_rva 0x1182f0 =
+    // ?Check1@CGameInfo@@QAEHXZ [gameinfostring] (`return m_8==1`, called on `this`),
+    // so CNameRecord IS a CGameInfo facet (same m_8 flag). Tying needs a shared
+    // CGameInfo header (currently GameInfoString.cpp-local); left reloc-masked.
+    i32 IsOne(); // 0x1182f0 (= CGameInfo::Check1)
 
     char _vft0[4];              // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     i32 m_04;                   // +0x04 (head of the zeroed body)

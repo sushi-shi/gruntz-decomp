@@ -24,7 +24,9 @@
 i32 Unmatched_0face0(); // ?Unmatched_0face0@@YA...XZ
 
 // The cursor-show counter, cached in a game-owned function pointer (ff 15).
-DATA(0x006c44c4)
+// reloc-fidelity: RVA 0x2c44c4 (was the VA 0x6c44c4 = 0x400000+RVA typo, which
+// keep-last-wins poisoned the shared ?g_ShowCursor binding for `play`/apphelpers).
+DATA(0x002c44c4)
 extern i32(WINAPI* g_ShowCursor)(i32);
 
 // ---------------------------------------------------------------------------

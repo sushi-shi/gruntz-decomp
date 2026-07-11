@@ -10,7 +10,12 @@
 
 // The recursive snapshot run-callback handed to SnapshotChildren; modeled NO-body
 // so the call/address-of reloc-mask. Its type is the canonical HP_Callback.
-extern i32 __cdecl SaveRunCallback(void* mgr, void* ser, i32 mode, i32, i32); // 0x24e6 thunk
+// reloc-fidelity note: retail passes the ILT jmp-THUNK address 0x24e6 (the real
+// body is at 0xd2a0, unreconstructed); &SaveRunCallback from a reconstructed body
+// would resolve to 0xd2a0, not the thunk, so this address-of stays a documented
+// incremental-link thunk-address artifact (declared-only, reloc-masked).
+extern i32 __cdecl
+SaveRunCallback(void* mgr, void* ser, i32 mode, i32, i32); // 0x24e6 thunk (-> 0xd2a0)
 
 // The game-state host being saved; its +0x30 is the bound surface manager. Modeled
 // as a view (only +0x30 is touched here); the opaque head is the game-mgr region.
@@ -21,9 +26,10 @@ struct CGameSaveHost {
 
 // The 0x24-dword snapshot scratch buffer (zeroed each save) + the serialize
 // sequence counter (shared with Grunt.cpp's per-record counter).
-extern i32 g_saveBuf[0x24]; // VA 0x629930
+DATA(0x00229930)
+extern i32 g_saveBuf[0x24]; // 0x229930
 DATA(0x00229ad0)
-extern i32 g_serialCounter; // VA 0x629ad0
+extern i32 g_serialCounter; // 0x229ad0
 
 // SaveGame(host, name) - bail on a null host/name or an empty name; reset the
 // sequence counter + scratch buffer (buf[0]=1 marks it live); then, when the host

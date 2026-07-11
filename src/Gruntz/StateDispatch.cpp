@@ -22,9 +22,11 @@
 // The default case runs the type-keyed record transfer/dispatch: NOT a bespoke
 // "fallback" - it is the shared CTypeKeyColl serializer ProjTypeXfer (0x16e4f0,
 // owned + matched in TypeKeyColl.cpp), which resolves the handler's type-registry
-// entry and xfers it through the handler's own vtable slots. The active handler (the
-// logic leaf) is passed as the record arg (CUserLogic -> cast-free).
-i32 ProjTypeXfer(CUserLogic* rec); // 0x16e4f0
+// entry and xfers it through the handler's own vtable slots. Its REAL arg is the
+// CXferArchive record (<Gruntz/XferArchive.h>, ?ProjTypeXfer@@YAHPAUCXferArchive@@@Z);
+// the active handler (the logic leaf) aliases that record at this call site.
+struct CXferArchive;
+i32 ProjTypeXfer(CXferArchive* ar); // 0x16e4f0
 
 // The old "throwing-operator-new /GX frame wall" was a FLAGS MIS-PROFILE, not a
 // codegen wall: this unit was compiled flags="base" (no /GX at all), so nothing
@@ -70,7 +72,7 @@ i32 StateDispatch(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ProjTypeXfer(aux->m_logic);
+            ProjTypeXfer((CXferArchive*)aux->m_logic);
             break;
     }
     return 1;

@@ -95,8 +95,9 @@ namespace m4 {
     // Cached measured text width (0x0062b434), read by the caller after measure.
     extern i32 g_62b434;
 
-    // DrawTextA through the game Win32 pointer table (0x6c454c) -> reloc-masked.
-    extern int(WINAPI* g_pDrawTextA)(HDC, LPCSTR, int, LPRECT, UINT); // 0x006c454c
+    // DrawTextA through the game Win32 pointer table (RVA 0x2c454c) -> reloc-masked.
+    DATA(0x002c454c)
+    extern int(WINAPI* g_pDrawTextA)(HDC, LPCSTR, int, LPRECT, UINT); // 0x2c454c
 
     // The image-worker/imgHolder scratch (see m4_FlashRect): inline dtor chain, but
     // this call site builds it with a 3-arg out-of-line ctor.
@@ -138,8 +139,9 @@ namespace m4 {
     };
 
     // The game's Win32 pointer table entries (0x6c44xx/0x6c3exx) -> reloc-masked.
-    extern SHORT(WINAPI* g_pGetAsyncKeyState)(int);        // 0x006c4500
-    extern HGDIOBJ(WINAPI* g_pSelectObject)(HDC, HGDIOBJ); // 0x006c3ec4
+    extern SHORT(WINAPI* g_pGetAsyncKeyState)(int); // 0x006c4500
+    DATA(0x002c3ec4)
+    extern HGDIOBJ(WINAPI* g_pSelectObject)(HDC, HGDIOBJ); // 0x2c3ec4
 
     // Password blink timer + last-format cache (reached by address).
     extern i32 g_645584; // 0x00645584 elapsed-time delta

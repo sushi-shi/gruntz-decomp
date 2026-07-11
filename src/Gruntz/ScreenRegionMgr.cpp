@@ -3,10 +3,18 @@
 // object far from the CGruntzMgr block, interleaved with the CSBI_RectOnly .text
 // (SBI_RectOnly.cpp) at 0x0fe4xx. Same "eh" flags; byte-neutral TU cut.
 //
-// @identity-TODO: reached as a sub-object [owner+0x2dc] (xref: CGruntzMgr::SetVideoMode,
-// CPlay::OnKeyCommand, CSBI_RectOnly::LoadBattlezItemConfig all call it on `this+0x2dc`);
-// an embedded sub-object whose concrete RTTI name is not yet recovered. Field NAMES are
-// placeholders (only offsets + code bytes are load-bearing).
+// @identity-TODO (RECOVERED, model deferred): Open/Reset's `this` IS a CSBI_RectOnly
+// (they call its own methods on `this`) - a sub-object [owner+0x2dc] of the game mgr.
+// reloc-fidelity map (retail_rva -> real callee, all reloc-masked here):
+//   Prep_12fd(1)  @0x12fd->0x100930 = CSBI_RectOnly::ResetWidgets(1)      [sbi_rectonly]
+//   Sub194c(v)    @0x194c->0x0fe3e0 = CSBI_RectOnly::SetState(v)          [sbi_rectonly]
+//   Validate()    @0x3a08->0x0ffde0 = CSBI_RectOnly::BuildStatusBarTabs() [sbi_rectonly]
+//   Activate(a,n) @0x1d61->0x100d70 = CSBI_RectOnly::SetTabState(a,n)     [sbi_rectonly]
+//   g_gameReg->m_curState->Open() @0x3d55->0xd8c60 = ((CPlay*)g_mgrSettings->m_2c)->ResetViewport()
+//   g_gameReg->ReportError()      @0x346d->0x8dc60 = ((CGruntzMgr*)g_mgrSettings)->ReportError()
+// Modeling this on the (huge, multiply-defined) CSBI_RectOnly + CPlay/CGruntzMgr is a
+// dedicated structural task; the calls stay reloc-masked fake views until then.
+// Field NAMES are placeholders (only offsets + code bytes are load-bearing).
 #include <Mfc.h>                 // RECT / Win32 SetRect (via the afx-controlled windows.h)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_curState / ReportError)
 #include <rva.h>
