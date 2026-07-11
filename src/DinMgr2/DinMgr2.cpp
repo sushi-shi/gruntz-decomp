@@ -86,19 +86,21 @@ public:
 // by address so the `push offset` operand carries a reloc-masked DIR32.
 extern "C" i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref); // 0x132fc0
 
-// DirectInput reporting-mode globals (live in .data; DirectInput-specific, hence the
-// g_dinput* names - disambiguated from NetMgr's own same-role g_logEnabled/... set at
-// 0x2bf6e8 which collided on the extern "C" name). g_dinputLogEnabled drives the
-// format-line path, g_dinputMsgBoxEnabled the MessageBox path; g_dinputBeepEnabled gates
-// the startup beep, g_dinputThirdEnabled is a third "any output wanted" gate at entry.
-DATA(0x00253aac)
-extern "C" i32 g_dinputBeepEnabled; // 0x653aac
+// DirectInput reporting-mode flags (zero-init .bss, DirectInput-specific, hence the
+// g_dinput* names - the same-role NetMgr set lives at 0x2bf6e8). Referenced only within
+// this TU (GetErrorString reads them, SetDInputReportModes writes them), so they are
+// DEFINED here (private storage, DATA()-pinned to their retail rvas) with no header
+// extern. g_dinputLogEnabled drives the format-line path, g_dinputMsgBoxEnabled the
+// MessageBox path; g_dinputBeepEnabled gates the startup beep, g_dinputThirdEnabled is
+// a third "any output wanted" gate at entry.
 DATA(0x00253aa4)
-extern "C" i32 g_dinputLogEnabled; // 0x653aa4
+i32 g_dinputLogEnabled; // 0x653aa4
 DATA(0x00253aa8)
-extern "C" i32 g_dinputMsgBoxEnabled; // 0x653aa8
+i32 g_dinputMsgBoxEnabled; // 0x653aa8
+DATA(0x00253aac)
+i32 g_dinputBeepEnabled; // 0x653aac
 DATA(0x00253ab0)
-extern "C" i32 g_dinputThirdEnabled; // 0x653ab0
+i32 g_dinputThirdEnabled; // 0x653ab0
 
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)
