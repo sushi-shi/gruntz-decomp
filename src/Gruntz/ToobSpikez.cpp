@@ -14,6 +14,7 @@
 #include <Wap32/ZDArrayDerived.h>
 #include <Bute/ButeTree.h>
 #include <Gruntz/ToobSpikez.h>
+#include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
 #include <Globals.h>
 
 // ===========================================================================
@@ -44,8 +45,10 @@
 // cast-free) and m_1c the phase code (a generic int|ptr slot - here a phase int; the
 // int reinterpret at the site is authentic, cf. the field note in UserLogic.h).
 
-// The shared logic-error reporter (0x16e4f0, __cdecl) for an unresolved phase.
-extern void ToobLogicError(CUserLogic* inst);
+// The unresolved-phase fallback is the shared 0x16e4f0 handler, bound as
+// ?ProjTypeXfer@@YAHPAUCXferArchive@@@Z (a generic __cdecl per-object handler many
+// logic pumps funnel through; <Gruntz/XferArchive.h>). The old "ToobLogicError"
+// decl was an unbound alias of it.
 
 // 0x114480: dispatch the bound object's current logic phase.
 RVA(0x00114480, 0xf1)
@@ -80,7 +83,7 @@ i32 ToobSpikezLogic(CGameObject* obj) {
         case 0x3e8:
             break;
         default:
-            ToobLogicError(rec->m_logic);
+            ProjTypeXfer((CXferArchive*)rec->m_logic);
             break;
     }
     return 1;

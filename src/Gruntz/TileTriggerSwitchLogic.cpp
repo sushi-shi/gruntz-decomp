@@ -1658,17 +1658,17 @@ i32 CTileTriggerSwitchLogic::ApplyByType(void* obj, i32 type, i32 a3, i32 a4) {
     if (obj == 0) {
         return 0;
     }
-    if (ApplyBase(obj, type, a3, a4) == 0) {
+    if (ValidateByType(obj, type, a3, a4) == 0) {
         return 0;
     }
     switch (type) {
         case 4:
-            if (ApplyType4(obj) == 0) {
+            if (SerializeMatrix((CSerialArchive*)obj) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (ApplyType7(obj) == 0) {
+            if (DeserializeMatrix((CSerialArchive*)obj) == 0) {
                 return 0;
             }
             break;

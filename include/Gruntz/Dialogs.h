@@ -268,13 +268,12 @@ public:
     // 0x17540: the shared do-nothing button handler (`ret 4`; ignores its index arg).
     void StubBtnHandler(i32 index);
     // Four more button trampolines (0x172c0/0x172e0/0x17300/0x17320): each forwards
-    // its fixed index 0..3 to the shared handler Sub01c340 (an external __thiscall
-    // body in another TU that acts on this->m_28; reloc-masked, no body here).
+    // its fixed index 0..3 to ReadCtrlBText (0x17340, above) - the retail reloc
+    // target (the old "Sub01c340" placeholder was a misnamed alias of 0x17340).
     void OnActionBtn0();
     void OnActionBtn1();
     void OnActionBtn2();
     void OnActionBtn3();
-    void Sub01c340(i32 index); // 0x1c340 (external TU; identity unconfirmed - operates on m_28)
     // 0x14b10 (first fn in the TU): a message-map handler that just runs MFC's
     // default processing - `return Default();` tail-jmps to CWnd::Default.
     long DoDefault();

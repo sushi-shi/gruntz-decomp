@@ -657,22 +657,23 @@ i32 CBattlezDlg::UnusedMsgHandler() {
 }
 
 // Four button trampolines (0x172c0/0x172e0/0x17300/0x17320): each forwards its
-// fixed index 0..3 to the shared external handler Sub01c340 (`push N; call; ret`).
+// fixed index 0..3 to ReadCtrlBText (0x17340; the retail reloc target - the
+// former "Sub01c340" placeholder misnamed 0x17340 as an external 0x1c340 body).
 RVA(0x000172c0, 0x8)
 void CBattlezDlg::OnActionBtn0() {
-    Sub01c340(0);
+    ReadCtrlBText(0);
 }
 RVA(0x000172e0, 0x8)
 void CBattlezDlg::OnActionBtn1() {
-    Sub01c340(1);
+    ReadCtrlBText(1);
 }
 RVA(0x00017300, 0x8)
 void CBattlezDlg::OnActionBtn2() {
-    Sub01c340(2);
+    ReadCtrlBText(2);
 }
 RVA(0x00017320, 0x8)
 void CBattlezDlg::OnActionBtn3() {
-    Sub01c340(3);
+    ReadCtrlBText(3);
 }
 
 // OnOK (vtable slot 51, 0x174a0): forward to the base CDialog::OnOK (tail-jmp).

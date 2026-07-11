@@ -63,14 +63,9 @@ public:
     i32 TransferFlag74(CSerialArchive* s);                   // 0x117e20
     i32 LoadFlag74(CSerialArchive* s);                       // 0x117e70 (read via slot +0x2c)
     i32 ApplyByType(void* obj, i32 type, i32 a3, i32 a4);    // 0x113d40
-    i32 SerializeMatrix(CSerialArchive* s);   // 0x113dd0 (write; == ApplyType4 target)
-    i32 DeserializeMatrix(CSerialArchive* s); // 0x113e70 (read; == ApplyType7 target)
+    i32 SerializeMatrix(CSerialArchive* s);   // 0x113dd0 (ApplyByType type-4 apply target)
+    i32 DeserializeMatrix(CSerialArchive* s); // 0x113e70 (ApplyByType type-7 apply target)
     i32 LoadState(CSerialArchive* s);         // 0x1139a0 (read via slot +0x2c)
-
-    // __thiscall validators/appliers used by ApplyByType (reloc-masked).
-    i32 ApplyBase(void* obj, i32 type, i32 a3, i32 a4);
-    i32 ApplyType4(void* obj);
-    i32 ApplyType7(void* obj);
 
     // Per-cell probe (reloc-masked rel32 callee); cell is (y) + (x << 8).
     i32 ProbeCell(i32 cell, i32 kind);

@@ -18,10 +18,11 @@
 // mirrors the "disable prompts" checkbox into its m_isCheckpointPrompts flag.
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
-// The game's SendMessageA fn-ptr global (reloc-masked indirect call). Bound via
-// DATA(0x006c44a4) (shared with Dialogs.cpp / BattlezDlgRow.cpp).
-DATA(0x006c44a4)
-extern long(WINAPI* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp);
+// The game's SendMessageA fn-ptr global (reloc-masked indirect call). Reference
+// the canonical extern "C" binding _g_pSendMessageA (DATA home @0x2c44a4 in
+// GruntzMgr.cpp); the old local DATA(0x006c44a4) was the VA, not the RVA - it
+// mis-bound the C++-mangled ?g_pSendMessageA to 0x6c44a4 (retail wants 0x2c44a4).
+extern "C" long(WINAPI* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp);
 
 // The active modeless-dialog HWND cache (NetLobby::g_curDlg_64557c; DATA home in
 // Net/LobbyDialogs.cpp). Referenced reloc-masked.

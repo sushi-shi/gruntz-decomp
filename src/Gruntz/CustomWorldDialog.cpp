@@ -93,8 +93,8 @@ extern "C" CGameRegistry* g_gameReg;
 
 // The game-root-dir resolver (FUN_0011fc10) + the OpenFile(OF_EXIST) existence
 // probe (FUN_00004282) both dialogs' loaders funnel through (reloc-masked).
-i32 GetGameDir(char* buf, i32 cb);    // 0x11fc10 (__cdecl)
-i32 PathFileExists(const char* path); // 0x4282  (__cdecl)
+i32 GetGameDir(char* buf, i32 cb); // 0x11fc10 (__cdecl)
+i32 FileExists(char* path);        // 0x1189c0 (heapdiag; "PathFileExists 0x4282" was a thunk to it)
 
 // FreeGlobal62c25c @0x03ac30 - reset the g_pathStr global in place (the
 // explicit-ctor-call tail-jmp to ??0CString@@QAE@XZ; the file's leading static,
@@ -367,7 +367,7 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     g_pathStr += "\\Custom\\";
     g_pathStr += itemText;
     g_pathStr += ".WWD";
-    if (!PathFileExists(g_pathStr)) {
+    if (!FileExists((char*)(const char*)g_pathStr)) {
         g_pathStr.Empty();
         return 0;
     }
@@ -434,7 +434,7 @@ INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPAR
             WwdHeader info;
             char num[0x20];
             i32 bad = 1;
-            if (g_dat62c268 != 0 && PathFileExists(g_pathStr)
+            if (g_dat62c268 != 0 && FileExists((char*)(const char*)g_pathStr)
                 && ((WwdWorldHolder*)g_dat62c268)
                        ->m_24->IsValidWwd((const char*)g_pathStr, &info)) {
                 SetDlgItemTextA(hDlg, 0x408, (const char*)g_levelStr);
@@ -495,7 +495,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
     g_pathStr += "\\Custom\\";
     g_pathStr += szLevel;
     g_pathStr += ".WWD";
-    if (!PathFileExists(g_pathStr)) {
+    if (!FileExists((char*)(const char*)g_pathStr)) {
         g_pathStr.Empty();
         return 0;
     }
