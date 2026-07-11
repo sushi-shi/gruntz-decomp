@@ -142,9 +142,19 @@ class Coff:
         self.secs = []
         for i in range(self.nsec):
             o = 20 + opt + i * 40
+            rawsize, rawptr = struct.unpack_from("<II", b, o + 16)
             relptr = struct.unpack_from("<I", b, o + 24)[0]
             nrel = struct.unpack_from("<H", b, o + 32)[0]
-            self.secs.append((relptr, nrel))
+            self.secs.append((relptr, nrel, rawptr, rawsize))
+
+    def addend(self, sec, off):
+        """The 4-byte DIR32 addend stored in the section at `off`. Our COMDAT
+        encodes a constant array index there (g_bfP[1] -> addend 4), so the real
+        target is name2rva[sym] + addend, not the bare symbol base."""
+        _rp, _nr, rawptr, rawsize = self.secs[sec - 1]
+        if rawptr and 0 <= off + 4 <= rawsize:
+            return struct.unpack_from("<i", self.b, rawptr + off)[0]
+        return 0
 
     def name(self, idx):
         base = self.symptr + idx * 18
@@ -171,7 +181,7 @@ class Coff:
         COMDAT names the callee and marks the exact operand offset, so for a
         byte-exact function retail's displacement at that same offset gives the
         real callee - no disassembler needed."""
-        relptr, nrel = self.secs[sec - 1]
+        relptr, nrel = self.secs[sec - 1][:2]
         out = {}
         for r in range(nrel):
             ro = relptr + r * 10
@@ -231,8 +241,13 @@ def analyze(funcs, comdat, lib, exact, unit_filter=None):
         for voff, (sym, kind) in c.reloc_sites(sec).items():
             if is_exempt(sym, lib):
                 continue
+            base = _NAME2RVA.get(sym)     # our binding for the symbol (or None)
             if kind == "D":
                 want = rt.get(voff)      # retail absolute target at this offset
+                # fold the DIR32 addend: g_arr[k] emits a reloc naming g_arr with
+                # addend k*elemsize in the section bytes, so our real target is
+                # base+addend - else every constant array index false-reports.
+                have = None if base is None else base + c.addend(sec, voff)
             else:                        # REL32 call: retail callee from displacement
                 if voff + 4 <= len(fb):
                     disp = struct.unpack("<i", fb[voff:voff + 4])[0]
@@ -240,7 +255,7 @@ def analyze(funcs, comdat, lib, exact, unit_filter=None):
                     want = resolve_thunk(t) if TEXT[0] <= t < TEXT[1] else None
                 else:
                     want = None
-            have = _NAME2RVA.get(sym)     # our binding (or None = unbound)
+                have = base
             if have is None:
                 v = "UNBOUND"
             elif want is None:
