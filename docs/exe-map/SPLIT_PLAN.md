@@ -12,33 +12,33 @@ categories, most-confident first:
 
 Regenerate: `python docs/exe-map/split_plan.py`.
 
-## A. SPLIT — cross-module (1) · highest confidence
+## A. SPLIT — cross-module (2) · highest confidence
 
 Blocks sit in **different `.text` regions** (game vs engine) — a single class whose
 methods were compiled in two modules (the `CNetMgr` pattern). Split the file so each
 block becomes its own unit at its true region.
 
-### `src/Gruntz/Multi.cpp` → 2 units
-- **game** block @ `0x0b5380` (18 fns) → `MultiGame.cpp`  ·  ?InitStr6473d8@@YAXXZ, ?ConstructFileIOGlobal@@YAXXZ, ?Teardown@CMulti@@QAEXXZ, ?FrameSlot28@CMulti@@UAEHH@Z …
-- **engine** block @ `0x0bc250` (5 fns) → `MultiEngine.cpp`  ·  ?RunErrorDialog@CMulti@@QAEHPADPAXH@Z, ?DropTimeout@CMulti@@QAEXXZ, ?AckJoinFailure@CMulti@@QAEXXZ, ?OpenHostChannel@CMulti@@QAEHPAXHHHHHHH@ …
+### `src/Wwd/WwdGameObject.cpp` → 2 units
+- **engine** block @ `0x150660` (14 fns) → `WwdGameObjectEngine.cpp`  ·  ?Slot30@CWwdGameObjectA@@UAEXPAVCDDrawSu, ?Slot34@CWwdGameObjectA@@UAEXPAVCDDrawSu, ?Slot38@CWwdGameObjectA@@UAEXPAVCDDrawSu, ?Test@CWwdGameObject@@QAEHXZ …
+- **game** block @ `0x1660f0` (15 fns) → `WwdGameObjectGame.cpp`  ·  ?RenderDot@CWwdGameObject@@QAEXPAUWwdRen, ?Slot30@CWwdGameObjectC@@UAEXPAVCDDrawSu, ?Slot34@CWwdGameObjectC@@UAEXPAVCDDrawSu, ?Slot38@CWwdGameObjectC@@UAEXPAVCDDrawSu …
 
-## B. SPLIT — same-module (10) · review
+### `src/DDrawMgr/DDrawWorkerMapSmall.cpp` → 2 units
+- **engine** block @ `0x156cd0` (4 fns) → `DDrawWorkerMapSmallEngine.cpp`  ·  ?IsReady@CDDrawWorkerMapSmall@@UAEHXZ, ?Slot06_156db0@CDDrawWorkerMapSmall@@UAE, ?GetStateId@CDDrawWorkerMapSmall@@QAE?AW, ?ScalarDtor@CDDrawChildGroupDtorHost@@QA
+- **game** block @ `0x165810` (8 fns) → `DDrawWorkerMapSmallGame.cpp`  ·  ?DestroyAll@CDDrawWorkerMapSmall@@UAEXXZ, ?Factory_1658c0@CDDrawWorkerMapSmall@@UA, ?CreateWorker28@CDDrawWorkerMapSmall@@UA, ?CreateWorker2C@CDDrawWorkerMapSmall@@UA …
+
+## B. SPLIT — same-module (6) · review
 
 Two+ substantial blocks in the *same* region — likely two TUs of one module, but could
 be COMDAT scatter or a mis-group. Confirm before splitting.
 
-- `src/Gruntz/GruntzMgr.cpp` — 2 blocks: 4@0x083030(game)  112@0x08b8c0(game)
-- `src/Gruntz/GameLevel.cpp` — 2 blocks: 62@0x15ccd0(engine)  12@0x167130(engine)
-- `src/Gruntz/TriggerMgr.cpp` — 2 blocks: 16@0x06b640(game)  41@0x0759e0(game)
-- `src/DDrawMgr/DDrawPtrCollections.cpp` — 2 blocks: 34@0x141cc0(engine)  6@0x148a50(engine)
-- `src/Wwd/WwdGameObject.cpp` — 2 blocks: 14@0x150660(engine)  13@0x1660f0(engine)
-- `src/Gruntz/MenuState.cpp` — 2 blocks: 9@0x036860(game)  10@0x0a02c0(game)
-- `src/Gruntz/Brickz.cpp` — 2 blocks: 4@0x081e10(game)  12@0x09ea60(game)
-- `src/Gruntz/LogicWorkerHandlers.cpp` — 2 blocks: 10@0x0a9a40(game)  6@0x0af0a0(game)
-- `src/Gruntz/Attract.cpp` — 2 blocks: 10@0x013fb0(game)  4@0x0fa1f0(game)
-- `src/Bute/Hash.cpp` — 2 blocks: 6@0x13c240(engine)  7@0x1849d0(engine)
+- `src/Gruntz/GruntzMgr.cpp` — 2 blocks: 4@0x083030(game)  115@0x08b8c0(game)
+- `src/Gruntz/Attract.cpp` — 2 blocks: 10@0x013fb0(game)  16@0x0fa1f0(game)
+- `src/Gruntz/FortressFlag.cpp` — 2 blocks: 4@0x010e40(game)  18@0x045d30(game)
+- `src/Gruntz/LogicWorkerHandlers.cpp` — 2 blocks: 15@0x0a9a40(game)  6@0x0af0a0(game)
+- `src/Gruntz/FrontCandyAni.cpp` — 2 blocks: 5@0x00fa40(game)  10@0x0abfa0(game)
+- `src/Gruntz/MenuState.cpp` — 2 blocks: 4@0x08c4b0(game)  10@0x0a02c0(game)
 
-## C. RE-HOME HINTS — unknown-class / bucket functions (71) · low confidence
+## C. RE-HOME HINTS — unknown-class / bucket functions (45) · low confidence
 
 What's left after A/B/D. **Named classes are (verified) filed correctly** — e.g. all 12
 `CPlaneRender` methods are in `WwdFile.cpp`; the scattered ones were just header-inlines
@@ -49,40 +49,40 @@ improves — **not** a confident semantic move. Do not apply blindly.
 
 | function | currently in | → hint | distance |
 |---|---|---|---|
-| `?Reset@CButeStore212a0@@QAEXXZ` | ButeStoreClear.cpp | **FontConfig.cpp** (8 fns) | 1331.4 KB |
 | `?BltSelf@CDDrawSurfacePair@@QAEXPAV1@@Z` | DDrawSurfacePair.cpp | **CreditsState.cpp** (14 fns) | 1190.7 KB |
-| `?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z` | GruntzMgrCmd.cpp | **WorldSoundSet.cpp** (14 fns) | 1055.1 KB |
-| `?Lookup_05b7e0@CDDrawSubMgrLeafScan@@QAEPAVCObje` | DDrawSubMgrLeafScan.cpp | **Grunt.cpp** (5 fns) | 1007.3 KB |
-| `?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@` | AniElement.cpp | **TriggerMgr.cpp** (9 fns) | 1000.5 KB |
-| `?Unmatched_c76d0@@YAXXZ` | WapMisc.cpp | **DroppedObject.cpp** (6 fns) | 991.6 KB |
-| `?ApplyGeometryDirect@CGameObject@@QAEXHH@Z` | SpriteResource.cpp | **Grunt.cpp** (13 fns) | 990.3 KB |
-| `??4CRect@@QAEAAU0@ABUtagRECT@@@Z` | Rect.cpp | **TileTriggerContainer.cpp** (14 fns) | 944.1 KB |
-| `?Reset@CGameModeBase@@QAEXXZ` | GameMode.cpp | **SplashState.cpp** (6 fns) | 890.6 KB |
+| `?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z` | GruntzMgrCmd.cpp | **WorldSoundSet.cpp** (27 fns) | 1055.1 KB |
+| `?Lookup_05b7e0@CDDrawSubMgrLeafScan@@QAEPAVCObje` | DDrawSubMgrLeafScan.cpp | **GruntCombat.cpp** (8 fns) | 1007.3 KB |
+| `?AtChecked_06b270@CAniElement@@QBEPAVCObject@@H@` | AniElement.cpp | **TriggerMgrGrid.cpp** (9 fns) | 1000.5 KB |
+| `?ApplyGeometryDirect@CGameObject@@QAEXHH@Z` | SpriteResource.cpp | **GruntCombat.cpp** (16 fns) | 990.3 KB |
+| `?PointInBounds@CGameLevel@@SAHPBULevelCoordRect@` | GameLevel.cpp | **TriggerMgrGrid.cpp** (10 fns) | 966.4 KB |
+| `??4CRect@@QAEAAU0@ABUtagRECT@@@Z` | Rect.cpp | **TileTriggerContainer.cpp** (22 fns) | 944.1 KB |
+| `?Reset@CGameModeBase@@QAEXXZ` | GameMode.cpp | **Attract.cpp** (16 fns) | 890.6 KB |
+| `?LookupTile@CGameLevel@@QAEHHH@Z` | GameLevel.cpp | **GruntzApp.cpp** (8 fns) | 873.6 KB |
 | `?ResetPreview@CGameModeBase@@QAEXXZ` | GameMode.cpp | **LevelPreview.cpp** (8 fns) | 780.9 KB |
-| `?Unmatched_1155b0@@YAXXZ` | WapMisc.cpp | **TileTriggerContainer.cpp** (13 fns) | 679.9 KB |
-| `?Blit@CObj23d90@@QAEXHHHHH@Z` | GameKeyHandler.cpp | **GruntzCommand.cpp** (20 fns) | 671.7 KB |
+| `?StepArrivalDefenseLean@CGrunt@@QAEHXZ` | Grunt.cpp | **Attract.cpp** (7 fns) | 682.6 KB |
+| `?Unmatched_1155b0@@YAXXZ` | WapMisc.cpp | **TileTriggerContainer.cpp** (19 fns) | 679.9 KB |
 | `?GetName@GruntzPlayer@@QAE?AVCString@@XZ` | MultiStartDlgRoster.cpp | **BootyStateActivate.cpp** (8 fns) | 653.3 KB |
-| `?HandlerA9E00@@YAHPAUOwner@@@Z` | DoNothing.cpp | **LogicWorkerHandlers.cpp** (10 fns) | 617.4 KB |
-| `?LogicDispatchC@@YAHPAULogicDispatchOwner@@@Z` | LogicRecordDispatch.cpp | **Grunt.cpp** (9 fns) | 607.8 KB |
-| `?ApplyGameOptions@CPlay@@QAEXXZ` | Play.cpp | **MenuState.cpp** (9 fns) | 582.6 KB |
-| `?StepArrivalDefenseLean@CGrunt@@QAEHXZ` | Grunt.cpp | **SplashState.cpp** (6 fns) | 564.0 KB |
-| `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | MultiStartDlgRoster.cpp | **CreditsState.cpp** (14 fns) | 553.7 KB |
-| `?MakeButeSectionKey@@YAHPADPBD1@Z` | FxModeDesc.cpp | **SplashState.cpp** (6 fns) | 533.1 KB |
+| `?ResolveArrivalReposition@CGrunt@@QAEHXZ` | Grunt.cpp | **SBI_WarlordHead.cpp** (5 fns) | 635.7 KB |
+| `?GetTileHandle@CPlaneRender@@QAEHHH@Z` | WwdFile.cpp | **Play.cpp** (9 fns) | 613.8 KB |
+| `?MainPlaneQueryA@CGameLevel@@QAEHXZ` | GameLevel.cpp | **Play.cpp** (18 fns) | 567.7 KB |
+| `?MainPlaneQueryB@CGameLevel@@QAEHXZ` | GameLevel.cpp | **Play.cpp** (18 fns) | 567.7 KB |
+| `?GetSelItemData@@YGHPAUHWND__@@HPAH1@Z` | MultiStartDlgRoster.cpp | **VideoConfig.cpp** (18 fns) | 553.7 KB |
+| `?MakeButeSectionKey@@YAHPADPBD1@Z` | FxModeDesc.cpp | **Attract.cpp** (16 fns) | 533.1 KB |
 | `?FormatHudText@CMenuState@@QAEXPAVCString@@H@Z` | MenuState.cpp | **BootyStateActivate.cpp** (6 fns) | 531.9 KB |
-| `?ResolveArrivalReposition@CGrunt@@QAEHXZ` | Grunt.cpp | **SBI_WarlordHead.cpp** (5 fns) | 517.0 KB |
-| `?Gap_0d5c10@@YAHXZ` | CImage.cpp | **Play.cpp** (8 fns) | 500.1 KB |
-| `?ConstructLogicActRange_646010@@YAXXZ` | LogicActReg.cpp | **FrontCandyAni.cpp** (6 fns) | 461.3 KB |
-| `?RegisterXLogic_646010@@YAXXZ` | LogicActReg.cpp | **FrontCandyAni.cpp** (6 fns) | 461.3 KB |
+| `?Gap_0d5c10@@YAHXZ` | CImage.cpp | **Play.cpp** (9 fns) | 500.1 KB |
+| `?ConstructLogicActRange_646010@@YAXXZ` | LogicActReg.cpp | **FrontCandyAni.cpp** (10 fns) | 461.3 KB |
+| `?RegisterXLogic_646010@@YAXXZ` | LogicActReg.cpp | **FrontCandyAni.cpp** (10 fns) | 461.3 KB |
 | `?g_typeDesc2@@3PADA` | Globals.cpp | **NetCmdSlot.cpp** (17 fns) | 451.8 KB |
-| `?RegisterLogic_6445e8@@YAXXZ` | LogicActRegistrars.cpp | **Wormhole.cpp** (8 fns) | 447.1 KB |
-| `?CTeleporter_RegisterActs@@YAXXZ` | LogicActRegistrars.cpp | **Wormhole.cpp** (8 fns) | 447.1 KB |
-| `?winapi_092ab0_EndDialog@@YGHPAXIIJ@Z` | GruntzCommand.cpp | **GruntzMgr.cpp** (47 fns) | 440.6 KB |
-| `?Load@CGrunt@@QAEHPAUCGruntArchive@@@Z` | Grunt.cpp | **Play.cpp** (20 fns) | 435.5 KB |
-| `?InitLogicDispatch_646060@@YAXXZ` | LogicDispatchInit.cpp | **FrontCandyAni.cpp** (6 fns) | 433.1 KB |
+| `?winapi_092ab0_EndDialog@@YGHPAUHWND__@@IIJ@Z` | GruntzCmdMgr.cpp | **GruntzMgr.cpp** (47 fns) | 440.0 KB |
+| `_$E4` | GameText.cpp | **Dialogs.cpp** (17 fns) | 424.5 KB |
+| `?RegisterActs_6514d8@@YAXXZ` | LogicActRegistrars.cpp | **GruntVoice.cpp** (13 fns) | 408.1 KB |
+| `?GetWarlordName@@YG?AVCString@@H@Z` | GameText.cpp | **BootyStateActivate.cpp** (11 fns) | 399.2 KB |
+| `?Clip@CBrickzGrid@@QAEXPBUtagRECT@@@Z` | Brickz.cpp | **BattlezMapConfig.cpp** (15 fns) | 346.5 KB |
+| `?GetWorldFileName@CGruntzMgr@@QAE?AVCString@@XZ` | WorldLevelPath.cpp | **GruntzMgr.cpp** (52 fns) | 292.9 KB |
 
-_(+41 more — see the generator output.)_
+_(+15 more — see the generator output.)_
 
-## D. HEADER-INLINE — reconstruct in the header (112) · not a move
+## D. HEADER-INLINE — reconstruct in the header (98) · not a move
 
 Small or virtual member functions sitting **scattered from their own class body**.
 They were defined **inline in a header**: MSVC still emits one out-of-line COMDAT copy
@@ -96,11 +96,9 @@ Top classes by inline-scattered method count:
 - `CAttract` — 7
 - `CWwdGameObject` — 5
 - `CVoiceTrigger` — 3
-- `RezMgr` — 3
 - `CDDrawWorkerMapSmall` — 3
 - `CDDrawSubMgrLeaf` — 3
 - `CMotionState` — 3
-- `CPlaneRender` — 3
 - `CToobSpikez` — 2
 - `CTileTriggerTransition` — 2
 - `CTileTrigger` — 2
@@ -109,10 +107,12 @@ Top classes by inline-scattered method count:
 - `CBehindCandyAni` — 2
 - `CEyeCandyAni` — 2
 - `CAniCycle` — 2
-- `CFortressFlag` — 2
 - `CParticlez` — 2
+- `CSBI_MenuItem` — 2
 - `Rng` — 2
-- `WwdFile` — 2
+- `CProjectile` — 2
+- `CSecretLevelTrigger` — 2
+- `CLogicRecord` — 2
 
 Examples (virtual first):
 
@@ -128,7 +128,7 @@ Examples (virtual first):
 | `?SerializeMove@CWarpStonePad@@EAEHPAUCGruntA` | CWarpStonePad | 71 B | ✓ |
 | `?SerializeMove@CStatusBarSprite@@UAEHPAUCGru` | CStatusBarSprite | 71 B | ✓ |
 | `?GetTypeTag@CStaticHazard@@UAE?AW4LogicTypeI` | CStaticHazard | 6 B | ✓ |
-| `?PerFrameTick@RezMgr@@UAEHXZ` | RezMgr | 301 B | ✓ |
+| `?GetTypeTag@CObjectDropper@@UAE?AW4LogicType` | CObjectDropper | 6 B | ✓ |
 | `?GetTypeTag@CPathHazard@@UAE?AW4LogicTypeId@` | CPathHazard | 6 B | ✓ |
 | `?GetTypeTag@CBehindCandyAni@@UAE?AW4LogicTyp` | CBehindCandyAni | 6 B | ✓ |
 | `?GetTypeTag@CEyeCandyAni@@UAE?AW4LogicTypeId` | CEyeCandyAni | 6 B | ✓ |
@@ -140,9 +140,9 @@ Examples (virtual first):
 | `?GetTypeTag@CGruntWingzTimeSprite@@UAE?AW4Lo` | CGruntWingzTimeSprite | 6 B | ✓ |
 | `?GetTypeTag@CGruntToyTimeSprite@@UAE?AW4Logi` | CGruntToyTimeSprite | 6 B | ✓ |
 | `?GetTypeTag@CGruntStaminaSprite@@UAE?AW4Logi` | CGruntStaminaSprite | 6 B | ✓ |
-| `?GetTypeTag@CFortressFlag@@UAE?AW4LogicTypeI` | CFortressFlag | 6 B | ✓ |
 | `?GetTypeTag@CParticlez@@UAE?AW4LogicTypeId@@` | CParticlez | 6 B | ✓ |
 | `?GetTypeTag@CTeleporter@@UAE?AW4LogicTypeId@` | CTeleporter | 6 B | ✓ |
+| `?GetTypeTag@CExitTrigger@@UAE?AW4LogicTypeId` | CExitTrigger | 6 B | ✓ |
 
 ## How to execute a split (NetMgr worked example)
 
