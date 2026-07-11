@@ -416,6 +416,86 @@ def flag_analysis(intervals, by_target):
             "singletons": single}
 
 
+def oracle_analysis(intervals, by_target, fdata):
+    """Oracles 3-5 (2026-07-11): RTTI = /GR project map, vtable .rdata order as a
+    link-order witness, and the private-globals oracle (file-scope statics decide
+    membership; per-obj data extents; extent OVERLAP between neighbor intervals =
+    they are one obj)."""
+    from gruntz.analysis import vtable_scan as vs
+
+    ivs = sorted((s["lo"], s["hi"], i) for i, s in enumerate(intervals))
+    ilo = [x[0] for x in ivs]
+
+    def interval_of(rva):
+        k = bisect.bisect_right(ilo, rva) - 1
+        if k >= 0 and rva < ivs[k][1]:
+            return ivs[k][2]
+
+    # ---- vtables: RTTI flag + median method position + order stats
+    vts = []
+    for v in vs.VTABLES:
+        conf = vs.confidence(v)
+        if conf not in ("rtti", "code-ref"):
+            continue
+        bodies = [b for _, _, _, b in vs.iter_slots(v)
+                  if b is not None and TEXT[0] <= b < TEXT[1]]
+        if not bodies:
+            continue
+        tmed = sorted(bodies)[len(bodies) // 2]
+        vts.append({"rva": v["start"], "rtti": bool(v["rtti"]),
+                    "cls": v["rtti"] or "", "tmed": tmed,
+                    "iv": interval_of(tmed)})
+    vts.sort(key=lambda x: x["rva"])
+    meds = [x["tmed"] for x in vts]
+    mono = sum(1 for a, b in zip(meds, meds[1:]) if b >= a)
+    # engine band (0x130000-0x180000) RTTI exceptions = game-project (/GR) files
+    band = [x for x in vts if 0x130000 <= x["tmed"] < 0x180000]
+    exc = [x for x in band if x["rtti"]]
+    iostream = {"strstreambuf", "istrstream", "ostrstream", "strstream", "ios",
+                "ifstream", "ofstream", "filebuf", "streambuf", "istream",
+                "istream_withassign", "ostream", "ostream_withassign", "iostream"}
+    exc_real = [x for x in exc if x["cls"].split(" ")[0] not in iostream]
+
+    # ---- private globals: membership, extents, overlap merge-evidence, order
+    own = {}
+    for t, ss in by_target.items():
+        seen = {interval_of(s) for s in ss if TEXT[0] <= s < TEXT[1]}
+        seen.discard(None)
+        if len(seen) == 1:
+            own[t] = next(iter(seen))
+    ext = defaultdict(lambda: [None, None, 0])
+    for t, iv in own.items():
+        if t >= 0x208000:                      # .data+bss contribution
+            e = ext[iv]
+            e[0] = t if e[0] is None else min(e[0], t)
+            e[1] = t if e[1] is None else max(e[1], t)
+            e[2] += 1
+    seq = [own[t] for t in sorted(own) if own[t] is not None and t >= 0x208000]
+    pmono = sum(1 for a, b in zip(seq, seq[1:]) if b >= a)
+    exts = sorted((lo, hi, iv) for iv, (lo, hi, n) in ext.items()
+                  if lo is not None and n >= 2)
+    overlaps = []
+    for (l1, h1, i1), (l2, h2, i2) in zip(exts, exts[1:]):
+        if l2 < h1:
+            overlaps.append({"a": intervals[i1]["lo"], "b": intervals[i2]["lo"],
+                             "a_units": list(intervals[i1]["core"])[:3],
+                             "b_units": list(intervals[i2]["core"])[:3]})
+    # static-keyword worklist: DATA()-annotated globals private to one interval
+    statics = [{"rva": a, "unit": u, "name": n} for a, (u, n, _sz) in fdata.items()
+               if a in own and not n.startswith(("??_7", "??_R"))]
+
+    return {"vtables": {"n": len(vts), "rtti": sum(1 for x in vts if x["rtti"]),
+                        "order_mono": round(mono / max(1, len(vts) - 1), 2),
+                        "engine_band": [len(exc), len(band)],
+                        "engine_band_rtti_game_files":
+                            sorted({x["cls"] for x in exc_real})},
+            "privates": {"targets": len(by_target), "private": len(own),
+                         "data_order_mono": round(pmono / max(1, len(seq) - 1), 2),
+                         "extent_overlaps": overlaps,
+                         "static_worklist_n": len(statics),
+                         "static_worklist": statics}}
+
+
 def main():
     funcs, meta = em.load()
     frva, fdata = load_symbols()
@@ -482,6 +562,7 @@ def main():
 
     intervals = partition(frva, units_map, exempt)
     flags_x = flag_analysis(intervals, by_target)
+    oracles = oracle_analysis(intervals, by_target, fdata)
 
     # zone bins for the strip
     bins = defaultdict(lambda: {"fam": Counter(), "pairs": 0, "same": 0, "cc": 0})
@@ -514,6 +595,7 @@ def main():
            "verdict_counts": dict(Counter(v["verdict"] for v in verdicts)),
            "intervals": intervals,
            "flags": flags_x,
+           "oracles": oracles,
            "zone": zone}
     with open(os.path.join(DIR, "deep_layout.json"), "w") as f:
         json.dump(out, f)
@@ -526,6 +608,13 @@ def main():
           % (len(intervals), len(multi), strays))
     print("flags: %d EH sites, %d flagged intervals, %d *Eh.cpp pairs"
           % (flags_x["eh_sites_total"], len(flags_x["rows"]), len(flags_x["eh_pairs"])))
+    print("oracles: %d vtables (order %.0f%%), %d/%d private globals "
+          "(order %.0f%%), %d extent-overlap merge hints, %d static-kw worklist"
+          % (oracles["vtables"]["n"], 100 * oracles["vtables"]["order_mono"],
+             oracles["privates"]["private"], oracles["privates"]["targets"],
+             100 * oracles["privates"]["data_order_mono"],
+             len(oracles["privates"]["extent_overlaps"]),
+             oracles["privates"]["static_worklist_n"]))
     write_migration(out, units_map, itab)
 
 
@@ -624,6 +713,38 @@ def write_migration(out, units_map, itab):
                  "shape/TU composition:**")
         for u, p, src in fx["singletons"]:
             L.append("- %s (`%s`) — %s" % (u, p, src))
+
+    orc = out.get("oracles", {})
+    if orc:
+        vt, pv = orc["vtables"], orc["privates"]
+        L.append("\n## ORACLES — /GR map, vtable order, private globals\n")
+        L.append("- **RTTI = /GR per project**: %d/%d vtables carry RTTI; the "
+                 "engine band (0x130000-0x180000) has %d/%d — and the non-iostream "
+                 "RTTI'd classes there are GAME-project (/GR) files sitting inside "
+                 "the band: %s. Use RTTI-vs-not to assign mega-interval files to "
+                 "their project." % (vt["rtti"], vt["n"], vt["engine_band"][0],
+                                     vt["engine_band"][1],
+                                     ", ".join(vt["engine_band_rtti_game_files"]))),
+        L.append("- **Vtable .rdata order** is %.0f%% monotone with the methods' "
+                 ".text order — a third link-order witness (vtables are COMDATs "
+                 "kept at the first-constructing obj and never move); use it to "
+                 "order fragment-less TUs and cluster no-RTTI engine vtables."
+                 % (100 * vt["order_mono"]))
+        L.append("- **Private globals**: %d/%d code-referenced data targets are "
+                 "private to one interval (file-scope statics/consts); .data "
+                 "contribution order is %.0f%% monotone with TU order. A private "
+                 "global decides a seam function's membership; %d annotated "
+                 "globals should carry `static` in src (worklist in "
+                 "deep_layout.json oracles.privates.static_worklist)."
+                 % (pv["private"], pv["targets"],
+                    100 * pv["data_order_mono"], pv["static_worklist_n"]))
+        if pv["extent_overlaps"]:
+            L.append("- **Extent-overlap merge evidence** (two neighbor intervals "
+                     "whose private .data extents interleave are ONE obj):")
+            for o in pv["extent_overlaps"][:20]:
+                L.append("  - `%#x` (%s) + `%#x` (%s)"
+                         % (o["a"], ",".join(o["a_units"]) or "?",
+                            o["b"], ",".join(o["b_units"]) or "?"))
 
     L.append("\n## ANCHORED facts (__FILE__ strings)\n")
     for a in out["anchors"]:
