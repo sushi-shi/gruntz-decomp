@@ -43,13 +43,11 @@
 // Fields are typed named members at their retail offsets (matching-neutral); only
 // the OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
 
-// Reduced reloc-masked views of the real MFC map containers (only the +0 map base
-// is load-bearing here). The Lookup member is declared external so the call binds
-// directly (m_map.Lookup(...)) with no per-site container cast; the reloc masks the
-// real CMapStringToPtr/CMapPtrToPtr Lookup symbol.
-struct MapLookupA { // MFC CMapStringToPtr (Lookup @0x1b8008)
-    i32 Lookup(const char* key, void*& val);
-};
+// The name->object maps below are the real MFC CMapStringToPtr (Lookup @0x1b8008):
+// m_map members are typed to it directly so `m_map.Lookup(...)` binds to the library
+// symbol with no per-site container cast (only the +0 map base is load-bearing). The
+// +0x48 kill-cue map is the real MFC CMapPtrToPtr under a reduced CMapStringToObLite
+// view (Lookup @0x1b8760, reloc-masked).
 struct CMapStringToObLite { // MFC CMapPtrToPtr (Lookup @0x1b8760)
     i32 Lookup(void* key, void*& val);
 };
@@ -60,7 +58,7 @@ struct CMapStringToObLite { // MFC CMapPtrToPtr (Lookup @0x1b8760)
 struct CDDrawWorkerRegistry {
     CString FindKeyOfValue_165360(CImageSet* obj); // 0x165360  __thiscall -> CString (by value)
     char m_pad00[0x10];
-    MapLookupA m_map; // +0x10  name -> object (0x1b8008)
+    CMapStringToPtr m_map; // +0x10  name -> object (0x1b8008)
 };
 
 // mgr+0x08 sub-object: holds the per-frame kill-cue name map at +0x48.
@@ -71,7 +69,7 @@ struct WwdMgrSub08 {
 // mgr+0x10 sub-object: a name->object resolver (lookup map at +0x10).
 struct WwdMgrSub10 {
     char m_pad00[0x10];
-    MapLookupA m_map; // +0x10  (0x1b8008)
+    CMapStringToPtr m_map; // +0x10  (0x1b8008)
 };
 // The visibility-test chain (CWwdGameObject::Test @0x1509c0): the object's sprite
 // extent (from m_198) plus the manager's spatial-grid limits (+0x04) and camera rect
@@ -147,16 +145,15 @@ public:
 // documented offset read is the deliberate access - only the offset is load-bearing.
 #define F(p, off, ty) (*(ty*)((char*)(p) + (off)))
 
-// The global NAFXCW allocator (inlined frame-worker construction) + the engine
-// __cdecl heap pair (0x1b9b46 / 0x1b9b82; reloc-masked rel32).
+// The global NAFXCW allocator/deallocator (::operator new @0x1b9b46 = ??2@YAPAXI@Z,
+// ::operator delete @0x1b9b82 = ??3@YAXPAX@Z; both reloc-masked rel32).
 extern void* operator new(u32 size);
-extern "C" void* RezAlloc(u32 n);       // 0x1b9b46
-extern "C" void Engine_Delete(void* p); // 0x1b9b82 (CLogicRecord teardown name)
-extern "C" void RezFree(void* p);       // 0x1b9b82 (AnimWorkerObj::Clear name)
+extern void operator delete(void* p);
 
-// The global default geometry source ApplyLookupGeometry/ApplyGeometryDirect consume.
-DATA(0x002bf3bc)
-extern i32 g_defaultGeo; // VA 0x6bf3bc (RVA 0x2bf3bc)
+// The per-frame draw-delta / advance-context global handed to Advance_15c360. Canonical
+// _g_6bf3bc, DATA-defined in the GruntCreationPoint (tilelogicpump) TU @ RVA 0x2bf3bc;
+// referenced by that name so the reloc binds (the former g_defaultGeo was a local misnomer).
+extern "C" u32 g_6bf3bc; // 0x2bf3bc
 
 // ---------------------------------------------------------------------------
 // The frame-worker is a CImage (RTTI .?AVCImage@@, SHARED vtable ??_7CImage@@6B@
@@ -235,7 +232,7 @@ RVA(0x00058b60, 0x2d)
 void CGameObject::ApplyGeometryDirect(i32 srcSprite, i32 applyDefault) {
     ((CDDrawBlitParam*)((char*)this + 0x1a0))->Setup_15c2d0((CDDrawBlitParamSrc*)srcSprite);
     if (applyDefault) {
-        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_defaultGeo);
+        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_6bf3bc);
     }
 }
 
@@ -293,7 +290,7 @@ void CGameObject::ApplyName(const char* name) {
 // CGameObject::ApplyLookupGeometry @0x1505b0 - look a named sprite-set up through
 // this->m_c->m_2c->map and, on a hit, drive the geometry sub-player @this+0x1a0:
 // Setup_15c2d0(spr); then, when the second arg is set, apply the global default
-// geometry source g_defaultGeo via Advance_15c360. __thiscall, ret 8.
+// geometry source g_6bf3bc via Advance_15c360. __thiscall, ret 8.
 // ===========================================================================
 RVA(0x001505b0, 0x5c)
 i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
@@ -305,7 +302,7 @@ i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
     // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
     ((CDDrawBlitParam*)((char*)this + 0x1a0))->Setup_15c2d0((CDDrawBlitParamSrc*)(i32)spr);
     if (applyDefault) {
-        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_defaultGeo);
+        ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_6bf3bc);
     }
     return 1;
 }
@@ -677,7 +674,7 @@ i32 CGameObject::EnsureWorker80(CGameObject* src) {
     if (m_80 != 0) {
         m_80->Slot07();
     } else {
-        CAnimWorker* w = (CAnimWorker*)RezAlloc(0x17c);
+        CAnimWorker* w = (CAnimWorker*)::operator new(0x17c);
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -735,7 +732,7 @@ i32 CGameObject::EnsureWorker88(CGameObject* src) {
     if (m_88 != 0) {
         m_88->Slot07();
     } else {
-        CAnimWorker* w = (CAnimWorker*)RezAlloc(0x17c);
+        CAnimWorker* w = (CAnimWorker*)::operator new(0x17c);
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -781,7 +778,7 @@ i32 CGameObject::EnsureWorker90(CGameObject* src) {
     if (m_collideWorker != 0) {
         m_collideWorker->Slot07();
     } else {
-        CAnimWorker* w = (CAnimWorker*)RezAlloc(0x17c);
+        CAnimWorker* w = (CAnimWorker*)::operator new(0x17c);
         if (w != 0) {
             w->m_04 = m_04;
             w->m_08 = 0;
@@ -1218,7 +1215,7 @@ CLogicRecord::~CLogicRecord() {
     // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
     m_10 = 0;
     if (m_14) {
-        Engine_Delete(m_14);
+        ::operator delete(m_14);
         m_14 = 0;
         m_178 = 0;
     }
@@ -1266,7 +1263,7 @@ RVA(0x00151e70, 0x3b)
 void AnimWorkerObj::Clear() {
     m_10 = 0;
     if (m_14) {
-        RezFree(m_14);
+        ::operator delete(m_14);
         m_14 = 0;
         m_178 = 0;
     }
@@ -1290,7 +1287,7 @@ void CDDrawWorker::DeleteAll() {
             el->Delete(1);
         }
     }
-    m_items.SetSize(0, -1); // CObArray::RemoveAll (inlined as SetSize(0,-1))
+    ((CDWordArray*)&m_items)->SetSize(0, -1); // CDWordArray::SetSize @0x1b5653 (RemoveAll inlined)
     m_64 = 99999;
     m_68 = 0;
 }
@@ -1416,7 +1413,7 @@ CImageFrame* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 // ===========================================================================
 RVA(0x001521c0, 0x2b)
 void CDDrawWorker::AddFrameAt_1521c0(void* elem, i32 index) {
-    m_items.SetAtGrow(index, elem);
+    ((CDWordArray*)&m_items)->SetAtGrow(index, (DWORD)elem); // CDWordArray::SetAtGrow @0x1b5822
     if (index < m_64) {
         m_64 = index;
     }
@@ -1667,7 +1664,6 @@ i32 g_logicTypesRegistered;
 
 // class-metadata sweep (SIZE_UNKNOWN = retail size TBD, at .cpp EOF).
 SIZE_UNKNOWN(CMapStringToObLite);
-SIZE_UNKNOWN(MapLookupA);
 SIZE_UNKNOWN(WorkerSub);
 SIZE_UNKNOWN(WwdMgr);
 SIZE_UNKNOWN(WwdMgrSub08);

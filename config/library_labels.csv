@@ -3448,6 +3448,7 @@ rva,name,lib,confidence,source
 0x1bf121,??1CFileIO@@UAE@XZ,NAFXCW,HIGH,reloc-R23
 0x1bf505,?GetLength@CFileIO@@UAEIXZ,NAFXCW,HIGH,reloc-R23
 0x1bf328,?Read@CFileIO@@UAEIPAXI@Z,NAFXCW,HIGH,reloc-R23
+0x1bf426,?Close@CFileIO@@UAEXXZ,NAFXCW,HIGH,reloc-R40
 0x1b9b46,_RezAlloc,NAFXCW,HIGH,reloc-R23
 0x1ba0c8,??YCString@@QAEABV0@PBD@Z,NAFXCW,HIGH,reloc-R23-append
 0x11fc10,__getcwd,LIBCMT,AMBIG,anchored

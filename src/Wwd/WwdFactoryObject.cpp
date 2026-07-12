@@ -249,28 +249,18 @@ void CWwdFactoryObject::Notify_15b650(void* p) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x15b6d0 - the out-of-line ~CAniAdvanceCursor: stamp derived (0x5f0128), run the
-// CLoadable slot-7 Unload/Reset (0x15c2c0 == CAniAdvanceCursor's own Reset; the
-// (CDDrawBlitParam*) cast is a reloc-masked placeholder for it), then reset
-// m_4/m_8/m_c. Kept a DISTINCT placeholder identity (C15b6d0): the real
-// CAniAdvanceCursor's ??1 is emitted per-COMDAT from its declared dtor, so this
-// out-of-line ??1 cannot wear the same name (one-source/N-COMDAT wall;
-// @identity-TODO). Grand-base fold @0x15b71b is the REAL ??_7CObject
-// (0x5e8cb4, disasm-verified).
-struct C15b6d0 : CObject {
-    i32 m_4; // +0x4
-    i32 m_8; // +0x8
-    i32 m_c; // +0xc
-    virtual ~C15b6d0() OVERRIDE;
-};
-SIZE_UNKNOWN(C15b6d0);
-RELOC_VTBL(C15b6d0, 0x001f0128); // aliases CAniAdvanceCursor (dtor-stamp verified)
+// 0x15b6d0 - CAniAdvanceCursor::~CAniAdvanceCursor (the out-of-line base ??1): stamp the
+// derived ??_7CAniAdvanceCursor (0x5f0128, bound), run the CLoadable slot-7 Unload/Reset
+// (0x15c2c0; the (CDDrawBlitParam*) cast reloc-masks CAniAdvanceCursor's own Reset there),
+// reset the CLoadable header (m_04/m_08/m_0c), then fold the grand base (??_7CObject
+// 0x5e8cb4 @0x15b71b, disasm-verified). Dissolved from the ex-C15b6d0 : CObject placeholder
+// onto the real class so the vptr stamp binds to ??_7CAniAdvanceCursor@@6B@ (was RELOC_VTBL).
 RVA(0x0015b6d0, 0x5b)
-C15b6d0::~C15b6d0() {
+CAniAdvanceCursor::~CAniAdvanceCursor() {
     ((CDDrawBlitParam*)this)->Reset_15c2c0();
-    m_4 = -1;
-    m_8 = 0;
-    m_c = 0;
+    m_04 = -1;
+    m_08 = 0;
+    m_0c = 0;
 }
 
 // cl auto-stamps the ??_7CAniAdvanceCursor vptr @+0, seeds the three CLoadable

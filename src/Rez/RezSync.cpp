@@ -18,6 +18,7 @@
 #include <rva.h>
 #include <Ints.h>
 #include <Mfc.h>                      // CString + the MFC collection ctors/dtors (reloc-masked)
+#include <Wap32/Wap32.h>              // WAP32::CGameMgr (the base ~CGameMgr tail-calls its Close)
 #include <Bute/ButeMgr.h>             // canonical CButeMgr / CButeStore (one shape)
 #include <Gruntz/BoundaryTailViews.h> // Obj85500 (fuzzy-identity 0x85500 CString getter)
 #include <string.h>
@@ -765,7 +766,7 @@ i32 RezSync::Init(void* a1, char* a2) {
 // (ret 4). A standalone forwarder with no owning class.
 RVA(0x000853d0, 0x10)
 void __stdcall RezFreeStdcall(void* a) {
-    RezFree(a);
+    ::operator delete(a); // 0x1b9b82 == ??3@YAXPAX@Z (the __cdecl rez-free helper)
 }
 
 // 0x85500 (re-homed from src/Stub/BoundaryTail.cpp): return a CString member (offset
@@ -795,6 +796,11 @@ CString Obj85500::GetName() {
 // dtor COMDAT emitter in the now-deleted src/Stub/BoundaryLowerThunks.cpp; it was
 // dropped - it can only be emitted by an inline dtor whose ??_G inlines it, which
 // conflicts with this TU's out-of-line ~CGameMgr, so no clean single-TU home exists.)
+// The real 0x2c engine base whose Close (0x13ddb0) the placeholder dtor tail-calls;
+// aliased at file scope so the qualified call avoids MSVC 5.0's class-scope lookup of
+// the WAP32 namespace inside the same-named global placeholder below.
+typedef WAP32::CGameMgr CGameMgrBase;
+
 struct CGameMgr {
     virtual ~CGameMgr(); // 0x85540 (slot 0): implicit base-vtable restamp + Close
     virtual void s1();
@@ -802,10 +808,18 @@ struct CGameMgr {
     virtual void s3();
     virtual void s4();
     virtual void s5();
-    void Close(); // 0x13ddb0 (reloc-masked)
 };
 SIZE_UNKNOWN(CGameMgr);
+// The vptr restamp at +0x2 is the cl-emitted ??_7CGameMgr@@6B@ of THIS global
+// placeholder, reloc-MASKING the real WAP32::CGameMgr vtable at 0x1e9b8c (bound in
+// gruntzmgr as ??_7CGameMgr@WAP32@@6B@). It cannot bind to 0x1e9b8c directly: that rva
+// is occupied by the WAP32 name, and making this dtor a real WAP32::CGameMgr method
+// would collide with WAP32::CGameMgr's INLINE header dtor (load-bearing for
+// CGruntzMgr's inlined base teardown - a cross-unit regression). Matching-neutral
+// masked reloc; the tail Close is bound below to the real WAP32 body.
 RVA(0x00085540, 0xb)
 CGameMgr::~CGameMgr() {
-    Close();
+    // devirtualized tail-call to WAP32::CGameMgr::Close (0x13ddb0); the qualified call
+    // binds the reloc directly to ?Close@CGameMgr@WAP32@@UAEXXZ (this@+0 == the base).
+    ((CGameMgrBase*)this)->CGameMgrBase::Close();
 }
