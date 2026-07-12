@@ -46,7 +46,8 @@
 // All of these resolve to NAFXCW (the statically linked MFC) - their bodies are
 // never matched here; only the exact mangled symbol + arg shape matter.
 // ---------------------------------------------------------------------------
-#include <Mfc.h> // real MFC CString / CFile / CArchive / CFileException
+#include <Mfc.h>        // real MFC CString / CFile / CArchive / CFileException (kept first)
+#include <Wap32/Rect.h> // canonical CRect (the 16-B by-value rect bundle; ctor 0x29ac0)
 
 // ---------------------------------------------------------------------------
 // A single glyph's metric record (the m_glyphs[] element, 8 B). The pixel
@@ -104,19 +105,10 @@ SIZE(TextExtent, 0x8); // sret 8-byte {w,h} pair
 // points below are matched here; the lower-level blit/glyph callees stay
 // external (no body) so their calls reloc-mask.
 // ---------------------------------------------------------------------------
-// A 16-byte rectangle bundle passed by value to the inner glyph-blit
-// (DrawGlyphRun) - four ints carried as one block on the stack. Built by the
-// out-of-line Rect(i32,i32,i32,i32) ctor at 0x29ac0 (external/no-body here).
-// Field roles proven by DrawGlyphRun 0x179e70: IntersectRect writes the RECT
-// {left,top,right,bottom} through (RECT*)&rc.
-struct Rect {
-    Rect(i32 l, i32 t, i32 r, i32 b); // 0x29ac0
-    i32 left;                         // +0x00
-    i32 top;                          // +0x04
-    i32 right;                        // +0x08
-    i32 bottom;                       // +0x0c
-};
-SIZE(Rect, 0x10); // 16-byte by-value rectangle bundle
+// The 16-byte by-value rectangle bundle passed to the inner glyph-blit
+// (DrawGlyphRun) is the canonical CRect (Wap32/Rect.h): four ints {left,top,right,
+// bottom} built by the out-of-line CRect(i32,i32,i32,i32) ctor at 0x29ac0. The former
+// per-TU `struct Rect` view of it is dissolved (MODEL THE CLASS, NOT THE VIEW).
 
 // The draw target of the whole draw family is the DirectDraw surface wrapper
 // (proven by DrawGlyphRun 0x179e70: arg2 is Lock()ed / m_width / m_height /
@@ -137,10 +129,10 @@ public:
     // the surface, then blit each glyph's 8bpp coverage bitmap as the packed
     // 16bpp m_color - alpha-blended per pixel when `blend` is set, opaque
     // threshold otherwise.
-    void DrawGlyphRun(CString text, CDDSurface* surf, Rect rc, i32 x, i32 y, i32 blend);
+    void DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend);
 
-    void DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z);                 // 0x179c30
-    void DrawLineClipped(CString text, CDDSurface* surf, Rect rc, i32 x, i32 y, i32 z); // 0x179d10
+    void DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z);                  // 0x179c30
+    void DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z); // 0x179d10
 
     // Word-wrap entry points (the two big greedy-wrap methods).
     //   MeasureWrapped - bounding {w,h} of greedily wrapped text (0x17ad10)

@@ -3431,7 +3431,9 @@ rva,name,lib,confidence,source
 0x1b4867,??0CPtrList@@QAE@H@Z,NAFXCW,HIGH,reloc-R21
 0x1b48c6,??1CPtrList@@UAE@XZ,NAFXCW,HIGH,reloc-R21
 0x1b48a6,?RemoveAll@CPtrList@@QAEXXZ,NAFXCW,HIGH,reloc-R21
+0x1b4967,?AddHead@CPtrList@@QAEPAU__POSITION@@PAX@Z,NAFXCW,HIGH,reloc-R30
 0x1b4991,?AddTail@CPtrList@@QAEPAU__POSITION@@PAX@Z,NAFXCW,HIGH,reloc-R21
+0x1b4a03,?RemoveHead@CPtrList@@QAEPAXXZ,NAFXCW,HIGH,reloc-R30
 0x1b4ac7,?RemoveAt@CPtrList@@QAEXPAU__POSITION@@@Z,NAFXCW,HIGH,reloc-R21
 0x1b4f0b,??0CPtrArray@@QAE@XZ,NAFXCW,HIGH,reloc-R21
 0x1b4f3e,??1CPtrArray@@UAE@XZ,NAFXCW,HIGH,reloc-R21

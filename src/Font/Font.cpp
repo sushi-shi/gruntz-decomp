@@ -223,7 +223,7 @@ void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z)
     if (m_font->GetMaxHeight() + y > limit) {
         return;
     }
-    DrawLineClipped(text, surf, Rect(0, 0, ext.width, ext.height), x, y, z);
+    DrawLineClipped(text, surf, CRect(0, 0, ext.width, ext.height), x, y, z);
 }
 
 // =========================================================================
@@ -234,7 +234,7 @@ void FontRenderer::DrawLine(CString text, CDDSurface* surf, i32 x, i32 y, i32 z)
 // the inner glyph-blit (DrawGlyphRun, external). The CString is taken by value
 // (destroyed by the EH frame).
 RVA(0x00179d10, 0x15c)
-void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, Rect rc, i32 x, i32 y, i32 z) {
+void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 z) {
     i32 savedColor = m_color;
     if (m_clip) {
         SetColor(0xffffff);

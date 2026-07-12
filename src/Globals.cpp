@@ -634,8 +634,8 @@ DATA(0x00684af0)
 extern u8 g_grayRamp[];
 DATA(0x006bf400)
 extern "C" i32 g_helperRefCount; // 0x6bf400
-DATA(0x006bf8dc)
-extern i32 g_6bf8dc; // debug-output mode
+DATA(0x002bf8dc)
+extern i32 g_6bf8dc; // debug-output mode (VA 0x6bf8dc - image base 0x400000)
 DATA(0x006c3fdc)
 extern int(__stdcall* g_impFreeLibrary)(void*);
 

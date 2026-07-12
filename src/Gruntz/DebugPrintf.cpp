@@ -19,22 +19,22 @@
 #include <Gruntz/RangeSet.h> // canonical CRangeSet + CRange (the debug-channel set)
 
 // The debug-output sink object; its first dword is reset, then it is configured
-// from the parsed keyword string.
-DATA(0x006bf850)
+// from the parsed keyword string. (RVA = VA 0x6bf850 - image base 0x400000.)
+DATA(0x002bf850)
 extern CRangeSet g_6bf850;
 
 // The open debug-output FILE handle (mode 5/8/9/10); DebugClose fcloses it.
-DATA(0x006bf8e0)
+DATA(0x002bf8e0)
 extern void* g_6bf8e0;
 
 // The MONO-mode (DPRINTF=MONO) text-console state: the 80x25 word buffer base
 // (0xfa0 bytes, 0x0720 = grey space), the current row (0..24) and column. Reached
 // as free globals like the rest of the debug config.
-DATA(0x006bf84c)
+DATA(0x002bf84c)
 extern char* g_monoBuffer;
-DATA(0x006bf8d4)
+DATA(0x002bf8d4)
 extern i32 g_monoRow;
-DATA(0x006bf8d8)
+DATA(0x002bf8d8)
 extern i32 g_monoCol;
 
 // The cursor-position forwarder (0x184fb0 -> 0x184fd0(0, x, y), defined below - the
@@ -42,8 +42,11 @@ extern i32 g_monoCol;
 // (0x11f780) the printf variants / DebugClose reach; external no-body so their
 // call relocs mask.
 void Fwd_184fb0(i32 x, i32 y);
-void Sub_184fd0(i32, i32, i32);     // 0x184fd0 (cursor set with mode; reloc-masked)
-extern "C" i32 RezFClose(void* fp); // 0x11f780 (CRT fclose)
+// @reloc-TODO: Sub_184fd0 @0x184fd0 (cursor-set-with-mode) is unreconstructed
+// (Ghidra mis-sizes it 1 B); @rva-symbol only binds obj-DEFINED thunks, so Fwd_184fb0's
+// rel32 CALL stays UNBOUND until this is reconstructed in its own TU band.
+void Sub_184fd0(i32, i32, i32);  // 0x184fd0 (cursor set with mode; reloc-masked)
+extern "C" i32 fclose(void* fp); // 0x11f780 (CRT fclose, library row _fclose)
 
 SIZE_UNKNOWN(CDebugConfig);
 class CDebugConfig {
@@ -51,10 +54,10 @@ public:
     CDebugConfig* InitFromEnv(); // 0x185000
 };
 
-// The debug-config singleton (VA 0x6bf848); InitFromEnv drives its members g_6bf850
-// (the +0x8 CRangeSet) and g_6bf8dc (the +0x94 mode word), which this TU also reaches
-// as free globals.
-DATA(0x006bf848)
+// The debug-config singleton (VA 0x6bf848 -> RVA 0x2bf848); InitFromEnv drives its
+// members g_6bf850 (the +0x8 CRangeSet) and g_6bf8dc (the +0x94 mode word), which this
+// TU also reaches as free globals.
+DATA(0x002bf848)
 extern CDebugConfig g_debugConfig;
 
 // 0x184b70 - re-initialise the debug config from %DPRINTF% (tail-forward to InitFromEnv
@@ -322,6 +325,6 @@ CDebugConfig* CDebugConfig::InitFromEnv() {
 RVA(0x001851b0, 0x23)
 void DebugClose() {
     if (g_6bf8dc == 5 || (g_6bf8dc > 7 && g_6bf8dc <= 10)) {
-        RezFClose(g_6bf8e0);
+        fclose(g_6bf8e0);
     }
 }

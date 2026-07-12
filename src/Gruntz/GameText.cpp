@@ -7,9 +7,8 @@
 #include <rva.h>
 #include <Wap32/ZDArrayDerived.h> // CZDArrayDerived::Construct (the 0x82aa0 register thunk)
 #include <Globals.h>              // g_desc60aac8 (the registered descriptor)
-#include <Bute/ButeSection.h>     // real CButeSection (g_resButeMgr's dynamic init @0x82b20)
+#include <Bute/ButeSection.h>     // real CButeSection (the 0x82b20 in-place ctor)
 #include <Gruntz/FreeNodePool.h>  // g_coordPool (the 0x82fa0/0x82ff0 coord-pool reset/clear tail)
-#include <Rez/RezMgr.h>           // RezFree (ClearCoordPool frees the pool's backing block)
 
 // ---------------------------------------------------------------------------
 // The two name tables are file-scope arrays of CString with brace-initializers.
@@ -67,15 +66,20 @@ void Register82aa0() {
 // reloc-masked, so only the OFFSETS + code bytes are load-bearing.
 // ---------------------------------------------------------------------------
 
-// g_resButeMgr (?g_resButeMgr@@3UResButeMgr@@A @0x6453d8): the resource-config bute
-// manager the game reads via ((CButeMgr*)&g_resButeMgr)->GetInt(...) (canonical decl
-// in GruntResurrectRadius.cpp). Its dynamic init constructs the section in place; the
-// global IS a CButeSection (its ctor 0x170210 is CButeSection::CButeSection - the real
-// class, <Bute/ButeSection.h>). Reloc-masked.
-extern CButeSection g_resButeMgr;
+// The resource-config bute manager @0x6453d8 (RVA 0x2453d8). Tree-wide it is the
+// CButeMgr singleton g_buteMgr (?g_buteMgr@@3VCButeMgr@@A, DATA-bound in FontConfig.cpp,
+// read by Projectile/DoNothing/... via GetInt/GetDword); its dynamic init here constructs
+// it in place through the CButeSection ctor (0x170210 == CButeSection::CButeSection). Bind
+// the reloc to the canonical g_buteMgr symbol (NOT a private g_resButeMgr - that leaves it
+// UNBOUND). @identity-TODO: CButeMgr and CButeSection are the same 280-B config object (one
+// ctor 0x170210) modeled as two classes; the (CButeSection*) cast is that conflation, to be
+// dissolved when the CButeMgr<->CButeSection hierarchy is unified. (Forward-decl only -
+// ButeMgr.h re-defines zPTree/zErrHandling that ButeSection.h already brings.)
+class CButeMgr;
+extern CButeMgr g_buteMgr;
 RVA(0x00082b20, 0xa)
 void InitResButeMgr82b20() {
-    g_resButeMgr.CButeSection::CButeSection();
+    ((CButeSection*)&g_buteMgr)->CButeSection::CButeSection();
 }
 
 // The debug-overlay / profiler text-sink CString globals (0x645524..0x645530).
@@ -160,7 +164,9 @@ void ResetCoordPool() {
 RVA(0x00082ff0, 0x2f)
 void ClearCoordPool() {
     if (g_coordPool.m_0 != 0) {
-        RezFree((void*)g_coordPool.m_0);
+        // The retail call @0x82ffd targets 0x1b9b82 == ??3@YAXPAX@Z (MFC operator
+        // delete, library row), NOT a RezFree wrapper - bind to the real symbol.
+        ::operator delete((void*)g_coordPool.m_0);
     }
     g_coordPool.m_0 = 0;
     g_coordPool.m_4 = 0;

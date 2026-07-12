@@ -40,9 +40,9 @@ struct CCmdHandler {
     void Defended(i32 a, i32 b);                                          // 0x40213f
 };
 
-// Bute-config manager (g_buteMgr @0x6453d8): read the defender-radius value via
-// the canonical CButeMgr::GetIntDef (0x171aa0, include/Bute/ButeMgr.h).
-DATA(0x006453d8)
+// Bute-config manager (g_buteMgr @ VA 0x6453d8 -> RVA 0x2453d8): read the defender-radius
+// value via the canonical CButeMgr::GetIntDef (0x171aa0, include/Bute/ButeMgr.h).
+DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
 // The missed-select complaint cue lives at 0x61ab24 (the engine ?g_sndCueTag@@3HA int;

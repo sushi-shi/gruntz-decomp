@@ -2055,10 +2055,10 @@ struct ResSettings {
     char m_pad138[0x150 - 0x138];
     ResMgrCfgEntry m_150[1]; // +0x150  per-type config (stride 0x238)
 };
-SIZE_UNKNOWN(ResButeMgr);
-struct ResButeMgr {};
-DATA(0x002453d8)
-extern ResButeMgr g_resButeMgr;
+// The resource-config manager @0x2453d8 IS the canonical CButeMgr singleton g_buteMgr
+// (?g_buteMgr@@3VCButeMgr@@A, DATA-bound tree-wide; the former ResButeMgr {} view + its
+// (CButeMgr*) cross-casts were a fake facet - dissolved onto the real class).
+extern CButeMgr g_buteMgr;
 SIZE_UNKNOWN(CGruntResurrector);
 struct CGruntResurrector {
     char m_pad00[0x4];
@@ -2124,8 +2124,8 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
         if (s->m_134 == 1) {
             i32 radius = 0;
             if (cfg->m_14 == 0) {
-                aiType = ((CButeMgr*)&g_resButeMgr)->GetInt("Grunt", "RessurectAIType");
-                radius = ((CButeMgr*)&g_resButeMgr)->GetInt("Grunt", "RessurectAIRadius");
+                aiType = g_buteMgr.GetInt("Grunt", "RessurectAIType");
+                radius = g_buteMgr.GetInt("Grunt", "RessurectAIRadius");
             }
             if (Resurrect(type, px, py, 0x186a0, 3, g->m_6c, 0, 0, aiType, radius, 0, 0, 0) != -1) {
                 ok = 1;
