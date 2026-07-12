@@ -1,7 +1,8 @@
 // BootyWalkAnim.cpp - the per-frame update of the booty ("WARP" spell) walking-
 // grunt animation state machine. A sibling
-// of BzState::BuildBootyGruntIdleAnimation (src/Gruntz/BootyMessages.cpp) on the
-// same booty game-state object: `this` carries the per-player grunt arrays at
+// of CBootyState::BuildBootyGruntIdleAnimation (src/Gruntz/BootyMessages.cpp) on the
+// same booty game-state object (the former BzState view is folded onto the canonical
+// CBootyState : CState, <Gruntz/GameMode.h>): `this` carries the per-player grunt arrays at
 // +0x2c8 / +0x2d8, the active-player step index m_stepIndex, and the sub-state flags
 // m_walkStarted / m_soundStarted; m_initGate gates the init vs step path.
 //
@@ -21,7 +22,8 @@
 #include <Gruntz/LeafCue.h>
 #include <Mfc.h> // CString letter temp (/GX) + operator+
 
-#include <Gruntz/BzState.h>
+#include <Gruntz/GameMode.h> // canonical CBootyState : CState (the folded booty state)
+#include <Gruntz/BzState.h>  // the deferred g_gameReg sub-object views
 
 #include <rva.h>
 #include <Globals.h>
@@ -48,7 +50,7 @@ extern char g_secretChars[]; // "WARP"
 // ===========================================================================
 // BuildBootyWalkingGruntz @0x1b450 - the ONE-TIME setup that creates the four
 // per-player idle/walking grunt sprite pairs (mis-homed on CState by the trace;
-// really a BzState method, re-homed here beside its per-frame Update sibling). Bails
+// really a CBootyState method, re-homed here beside its per-frame Update sibling). Bails
 // when the level record is suppressed or past area 0x24, resolves the active
 // selection handle, then per player builds an "anim" sprite (NORTH_WALK cycle) and a
 // "vis" sprite (the "<GAME_INGAMEICONZ_|BOOTY_DIM>SECRET<W/A/R/P>" cue) through the
@@ -68,7 +70,7 @@ extern char g_secretChars[]; // "WARP"
 // classes but are modeled as BzSprite/BzSpriteFactory/BzSelSource methods (code bytes
 // identical, REL32 masked); (3) the /GX static-CString-guard EH frame (docs/seh-eh.md).
 RVA(0x0001b450, 0x1ac)
-i32 BzState::BuildBootyWalkingGruntz() {
+i32 CBootyState::BuildBootyWalkingGruntz() {
     if (g_gameReg->m_levelRecord->m_suppressGate != 0) {
         return 1;
     }
@@ -136,7 +138,7 @@ i32 BzState::BuildBootyWalkingGruntz() {
 //  (5) jumptable-data-overlap: the two 4-entry WARP `$L` jump tables + pooled W/R/P
 //      `??_C@` string-constant labels (docs/patterns/jumptable-data-overlap.md).
 RVA(0x0001b690, 0x7bf)
-i32 BzState::UpdateBootyWalkingGruntz() {
+i32 CBootyState::UpdateBootyWalkingGruntz() {
     BzLevelRecord* rec = g_gameReg->m_levelRecord;
     if (rec->m_suppressGate != 0) {
         return 1;

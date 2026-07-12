@@ -347,8 +347,8 @@ public:
     i32 m_1c0; // +0x1c0 fade countdown ms (LoadCreditzAssets arms 3000 on the rising edge)
     i32 m_1c4; // +0x1c4 conditional-FX gate / credits-music toggle
     char m_pad1c8[0x1e8 - 0x1c8];
-    CImgHolder m_1e8; // +0x1e8 embedded image list (freed by ~CCreditsState)
-    CString m_caption;       // +0x1f0 credits caption CString (freed by ~CCreditsState)
+    CImgHolder m_1e8;  // +0x1e8 embedded image list (freed by ~CCreditsState)
+    CString m_caption; // +0x1f0 credits caption CString (freed by ~CCreditsState)
     char m_pad1f4[0x208 - 0x1f4];
     i32 m_videoPlaying; // +0x208 video playing gate
     char m_pad20c[0x210 - 0x20c];
@@ -405,19 +405,45 @@ public:
     // name-independent). These are SHARED bodies owned by other classes but dispatched
     // with a CBootyState `this` (same functions its sibling CMultiBootyState calls):
     //   FadeInTitle @0xfa1f0 is a CState base method (inherited - no local shadow;
-    //   its callers reach it cast-free), BuildPage == CSoundFxEmitter's 0xfa8f0.
-    //   ShowSecretBonusMessage/ShowLevelCompleteMessage are the booty-toast helpers
-    //   the slot-8 activator (StateImages.cpp) pops. Homed here so StateImages' and
-    //   BootyStateActivate's local CBootyState views fold onto this canonical class.
+    //   its callers reach it cast-free), BuildPage == CSoundFxEmitter's 0xfa8f0
+    //   (the booty idle-anim tick reaches the same 0xfa8f0 through BuildPage too).
     i32 BuildPage(i32 a, i32 b, i32 c, i32 d); // 0xfa8f0
+    // The booty HUD/idle overlays + the per-frame walking-grunt tick (BootyMessages.cpp,
+    // BootyWalkAnim.cpp) - the former BzState view folded onto this canonical class. The
+    // Show* toasts are popped by the slot-8 activator (StateImages.cpp::InputVirtual),
+    // which now binds to these real CBootyState symbols (was an @rva SYMBOL override).
     i32
-    BuildBootyGruntIdleAnimation(); // 0x1ce60 (reloc-masked; the shared booty idle-anim builder Vslot0c tail-calls)
-    i32 ShowSecretBonusMessage();    // 0x18f00 (ret int; the secret-bonus toast, BootyMessages.cpp)
-    void ShowLevelCompleteMessage(); // 0x1c9d0 (the level-complete toast, BootyMessages.cpp)
+    BuildBootyGruntIdleAnimation(); // 0x1ce60  the shared booty idle-anim builder Vslot0c tail-calls
+    i32 ShowSecretBonusMessage();   // 0x18f00  the secret-bonus toast (ret int)
+    void ShowLevelCompleteMessage(); // 0x1c9d0  the level-complete toast
+    i32 BuildBootyWalkingGruntz();   // 0x1b450  one-time per-player idle/walk sprite setup
+    i32 UpdateBootyWalkingGruntz();  // 0x1b690  per-frame walking-grunt state machine
 
-    // --- CBootyState members (placeholders, beyond the CState layout) ---
-    char m_pad1a8[0x1bc - 0x1a8];
-    i32 m_activation; // +0x1bc  activation discriminator (==200 -> secret-bonus toast)
+    // --- CBootyState members (offsets are the ctor ground truth; folded from the
+    // former BzState view). m_activation@+0x1bc doubles as the overlay/animation state
+    // id (0xc7/0xc8/-2 in the idle-anim tick, ==200 -> secret-bonus toast in slot 8).
+    // The +0xc HUD sink the booty toasts read IS the inherited CState::m_c holder.
+    char m_pad1a8[0x1b4 - 0x1a8];
+    i32 m_initGate; // +0x1b4  init/step gate (armed flag)
+    char m_pad1b8[0x1bc - 0x1b8];
+    i32 m_activation; // +0x1bc  activation / overlay-animation state id
+    char m_pad1c0[0x1d0 - 0x1c0];
+    i32 m_initOnce;         // +0x1d0  init-once gate
+    i32 m_secretBannerOnce; // +0x1d4  secret-banner once gate
+    char m_pad1d8[0x1ec - 0x1d8];
+    CGameObject* m_trailSprites[4]; // +0x1ec  trailing idle sprites
+    char m_pad1fc[0x200 - 0x1fc];
+    i32 m_levelCompleteGate; // +0x200  level-complete gate
+    char m_pad204[0x284 - 0x204];
+    i32 m_readyFlags[8];    // +0x284  per-slot "ready text" flags
+    i32 m_templateFlags[8]; // +0x2a4  per-slot "template" flags
+    char m_pad2c4[0x2c8 - 0x2c4];
+    CGameObject* m_visSprites[4];  // +0x2c8  per-player idle sprites (visibility)
+    CGameObject* m_animSprites[4]; // +0x2d8  per-player idle sprites (animation)
+    i32 m_stepIndex;               // +0x2e8  active-player step index
+    i32 m_walkStarted;             // +0x2ec  walk-animation-started gate
+    i32 m_soundStarted;            // +0x2f0  sound-started gate
+    i32 m_secretGate;              // +0x2f4  secret-message gate
 };
 VTBL(CBootyState, 0x001e9cec);
 

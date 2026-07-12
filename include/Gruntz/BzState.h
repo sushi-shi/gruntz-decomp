@@ -1,8 +1,9 @@
-// BzState.h - the shared object graph of the booty ("WARP" spell) game-state and
-// its g_gameReg (0x64556c) sub-objects. ONE canonical definition of every Bz*
-// type, included by BootyMessages.cpp (the HUD message / secret-bonus / idle-grunt
-// overlays) and BootyWalkAnim.cpp (the per-frame walking-grunt tick). Both TUs are
-// __thiscall methods on BzState reaching the same retail sub-objects; the two files
+// BzState.h - the deferred sub-object VIEWS of the booty ("WARP" spell) game-state's
+// g_gameReg (0x64556c) object web + HUD sink. Co-included with <Gruntz/GameMode.h>
+// by BootyMessages.cpp (the HUD message / secret-bonus / idle-grunt overlays) and
+// BootyWalkAnim.cpp (the per-frame walking-grunt tick), whose bodies are real
+// CBootyState:: methods (the former `class BzState` view is dissolved onto the
+// canonical CBootyState - see the note near the end of this header). The two files
 // previously carried divergent partial VIEWS of these types (e.g. GetRecordValue was
 // declared 0-arg in one and (i32) in the other for the SAME retail fn 0xfced0 -
 // reconciled here to its true 1-arg shape, MEASURED from the `ret 0x4` + `[esp+8]`
@@ -103,6 +104,9 @@ struct BzGameReg {
     BzLevelRecord* m_levelRecord; // +0x7c
     // *g_gameReg's own game-mgr method (== CGruntzMgr::ChangeState_8fab0, reloc-masked)
     // so g_gameReg->ChangeState_8fab0() calls direct - no cross-cast to CGruntzMgr*.
+    // (The booty idle tick's per-area click relay reaches the singleton's real
+    // CGruntzMgr::PassClickToPlayState @0x8d780 via the g_gameReg -> CGruntzMgr cast -
+    // DISASM-PROVEN receiver: ecx = *0x24556c, not `this`.)
     i32 ChangeState_8fab0(i32 arg); // 0x08fab0
 };
 
@@ -156,52 +160,16 @@ struct BzSink {
 SIZE_UNKNOWN(BzSink);
 SIZE_UNKNOWN(BzSink8);
 
-// The booty/secret game-state object hosting the HUD overlays + the per-frame
-// walking-grunt tick. m_sink is the HUD message sink; m_trailSprites the trailing
-// idle sprites; m_visSprites / m_animSprites the per-player idle sprites (visibility
-// / animation); m_stepIndex the active-player step index.
-class BzState {
-public:
-    // Overlays (BootyMessages.cpp).
-    void ShowLevelCompleteMessage();            // 0x1c9d0
-    i32 ShowSecretBonusMessage();               // 0x18f00
-    i32 BuildBootyGruntIdleAnimation();         // 0x1ce60
-    void FormatHudText(CString& out, i32 slot); // 0x1af70 (thunk 0x238d)
-    i32
-    RegisterMultiNamespaces(const char* mode, i32, i32, i32, i32, i32); // 0xfa1f0 (thunk 0x1e60)
-    void StartTimer(i32, i32, i32, i32);                                // 0xfa8f0 (thunk 0x1843)
-    void PassClickToPlayState(i32, i32, i32);                           // 0x8d780 (thunk 0x17c1)
-    // One-time setup of the per-player idle/walking grunt sprite pairs + the per-frame
-    // walking-grunt tick (BootyWalkAnim.cpp).
-    i32 BuildBootyWalkingGruntz();  // 0x1b450
-    i32 UpdateBootyWalkingGruntz(); // 0x1b690
-
-    char m_pad00[0xc];
-    BzSink* m_sink; // +0x0c  HUD message sink
-    char m_pad10[0x1b4 - 0x10];
-    i32 m_initGate; // +0x1b4  init/step gate (armed flag)
-    char m_pad1b8[0x1bc - 0x1b8];
-    i32 m_stateId; // +0x1bc  overlay/animation state id (0xc7/0xc8/-2)
-    char m_pad1c0[0x1d0 - 0x1c0];
-    i32 m_initOnce;         // +0x1d0  init-once gate
-    i32 m_secretBannerOnce; // +0x1d4  secret-banner once gate
-    char m_pad1d8[0x1ec - 0x1d8];
-    CGameObject* m_trailSprites[4]; // +0x1ec  trailing idle sprites
-    char m_pad1fc[0x200 - 0x1fc];
-    i32 m_levelCompleteGate; // +0x200  level-complete gate
-    char m_pad204[0x284 - 0x204];
-    i32 m_readyFlags[8];    // +0x284  per-slot "ready text" flags
-    i32 m_templateFlags[8]; // +0x2a4  per-slot "template" flags
-    char m_pad2c4[0x2c8 - 0x2c4];
-    CGameObject* m_visSprites[4];  // +0x2c8  per-player idle sprites (visibility)
-    CGameObject* m_animSprites[4]; // +0x2d8  per-player idle sprites (animation)
-    i32 m_stepIndex;               // +0x2e8  active-player step index
-    i32 m_walkStarted;             // +0x2ec  walk-animation-started gate
-    i32 m_soundStarted;            // +0x2f0  sound-started gate
-    i32 m_secretGate;              // +0x2f4  secret-message gate
-};
-SIZE_UNKNOWN(BzState);
-
-// --- vtable catalog ---
+// NOTE: the former `class BzState` VIEW is dissolved - the booty/secret game-state
+// object IS the canonical CBootyState (<Gruntz/GameMode.h>): the booty members
+// (m_initGate/m_activation/m_trailSprites/m_visSprites/m_animSprites/m_stepIndex/...)
+// now live on CBootyState; the HUD message sink the toasts read at +0xc IS the
+// inherited CState::m_c holder (this header's BzSink is the still-deferred sub-object
+// VIEW of that holder - the g_gameReg / m_c web reconciliation is a separate task).
+// The overlay/tick bodies (BootyMessages.cpp, BootyWalkAnim.cpp) are real
+// CBootyState:: methods; RegisterMultiNamespaces folds onto CState::FadeInTitle
+// (0xfa1f0), StartTimer onto CBootyState::BuildPage (0xfa8f0), FormatHudText onto
+// CState::FormatHudText (0x1af70), PassClickToPlayState onto CGruntzMgr (0x8d780,
+// reached via the g_gameReg -> CGruntzMgr singleton cast).
 
 #endif // GRUNTZ_GRUNTZ_BZSTATE_H

@@ -18,11 +18,11 @@
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GruntzMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>
-#include <Dsndmgr/SoundStream.h>
-#include <Gruntz/LeafCue.h>
-#include <Mfc.h> // CString temps (/GX) + RECT/CopyRect/SetRect
+#include <Gruntz/LeafCue.h> // LeafCue + SoundStream (the CSndHost+0x2c stream) via SoundCue.h
+#include <Mfc.h>            // CString temps (/GX) + RECT/CopyRect/SetRect
 
-#include <Gruntz/BzState.h>
+#include <Gruntz/GameMode.h> // canonical CBootyState : CState (the folded booty state)
+#include <Gruntz/BzState.h>  // the deferred g_gameReg / BzSink sub-object views
 
 #include <rva.h>
 #include <Globals.h>
@@ -71,6 +71,13 @@ void ShowHudMessage(
     i32 e
 ); // 0x1154b0
 
+// The booty HUD message sink: CState::m_c (the +0xc holder) viewed as BzSink. The
+// idle-anim tick reaches the sink's loader/notify/dropped sub-objects through this
+// view (the m_c / CSpriteFactoryHolder web reconciliation is a separate task).
+static inline BzSink* Sink(CBootyState* self) {
+    return (BzSink*)self->m_c;
+}
+
 // ===========================================================================
 // ShowLevelCompleteMessage @0x1c9d0 - draws the per-slot ready/template overlays,
 // then the level/world-completed banner, then the WARP-letterz status line.
@@ -81,28 +88,24 @@ void ShowHudMessage(
 // vs cl's `$L..`+`__except_list` frame (docs/seh-eh.md), plus a callee-saved-reg
 // NAMING choice in the post-loop banner/WARP blocks (cl hoists the 0x24 rect-top
 // constant into ebx, retail into edi; equivalent). Logic + all externs/strings named.
-// reloc-fidelity: the REAL owner is CBootyState (BzState is this TU's detailed member
-// VIEW of the same object - m_stateId@+0x1bc == CBootyState::m_activation, the 0xc8=200
-// discriminator; m_sink@+0xc == CState::m_c). SYMBOL exports it under the canonical
-// CBootyState name so the CState-slot-8 activator (StateImages) binds; the byte-exact
-// BzState body-shape fold onto GameMode.h's CBootyState is deferred (BootyStateActivate
-// co-includes both headers, so a class rename would ODR-clash).
-SYMBOL(?ShowLevelCompleteMessage@CBootyState@@QAEXXZ)
+// reloc-fidelity: FOLDED - now the real CBootyState:: method (was a BzState view + a
+// SYMBOL override). m_sink@+0xc == inherited CState::m_c; the CState-slot-8 activator
+// (StateImages::InputVirtual) binds to this canonical symbol structurally.
 RVA(0x0001c9d0, 0x351)
-void BzState::ShowLevelCompleteMessage() {
+void CBootyState::ShowLevelCompleteMessage() {
     for (i32 i = 0; i < 8; i++) {
         if (m_templateFlags[i]) {
             RECT r1;
             CopyRect(&r1, &g_levelMsgRectsA[i]);
             CString t(g_levelMsgStrings[i]);
-            ShowHudMessage(m_sink, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_c, &t, &r1, 0x78, 1, 0xff, 0xff, 0, 1);
         }
         if (m_readyFlags[i]) {
             RECT r2;
             CopyRect(&r2, &g_levelMsgRectsB[i]);
             CString t2;
-            FormatHudText(t2, i);
-            ShowHudMessage(m_sink, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
+            FormatHudText(&t2, i);
+            ShowHudMessage(m_c, &t2, &r2, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -110,11 +113,11 @@ void BzState::ShowLevelCompleteMessage() {
         if (g_gameReg->m_levelRecord->m_worldFlag != 0) {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("World Completed!");
-            ShowHudMessage(m_sink, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_c, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
         } else {
             RECT r = {0, 0x24, 0x1ea, 0x64};
             CString s("Level Completed!");
-            ShowHudMessage(m_sink, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
+            ShowHudMessage(m_c, &s, &r, 0x82, 1, 0xff, 0xff, 0, 1);
         }
     }
 
@@ -145,7 +148,7 @@ void BzState::ShowLevelCompleteMessage() {
             }
             SetRect(&r, 0x194, 0xe6, 0x263, 0x1e0);
         }
-        ShowHudMessage(m_sink, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_c, &s, &r, 0x6e, 1, 0xff, 0xff, 0, 1);
     }
 }
 
@@ -164,15 +167,15 @@ void BzState::ShowLevelCompleteMessage() {
 // `Unwind@..` EH frame (docs/seh-eh.md) + the per-CString-temp EH-state ordering /
 // callee-saved regalloc across the many destructible RECT+CString locals. Logic +
 // externs/strings named.
-// reloc-fidelity: REAL owner CBootyState (see ShowLevelCompleteMessage note); SYMBOL
-// binds the CState-slot-8 activator (StateImages) to the canonical name.
-SYMBOL(?ShowSecretBonusMessage@CBootyState@@QAEHXZ)
+// reloc-fidelity: FOLDED - now the real CBootyState:: method (was a BzState view + a
+// SYMBOL override). RegisterMultiNamespaces == inherited CState::FadeInTitle (0xfa1f0).
+// StateImages::InputVirtual binds to this canonical symbol structurally.
 RVA(0x00018f00, 0x4fb)
-i32 BzState::ShowSecretBonusMessage() {
+i32 CBootyState::ShowSecretBonusMessage() {
     if (m_secretBannerOnce != 0
         && ((CBattlezData*)g_gameReg->m_levelRecord)->AllRecordsInBounds()) {
         CString s;
-        if (!RegisterMultiNamespaces("multi", 0, 0, 0, 0, 1)) {
+        if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
             return 0;
         }
         RECT r1, r2, r3;
@@ -180,15 +183,15 @@ i32 BzState::ShowSecretBonusMessage() {
         SetRect(&r2, 0, 0x19, 0x280, 0x1f9);
         SetRect(&r3, 0, 0x38, 0x280, 0x78);
         s.Format("The Secret of Secretz:");
-        ShowHudMessage(m_sink, &s, &r1, 0x82, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_c, &s, &r1, 0x82, 1, 0xff, 0xff, 0, 1);
 
         CString s2(g_secretMsgA);
         CString s3(g_secretMsgB);
         for (i32 k = 0; k < s2.GetLength(); k++) {
             s2.SetAt(k, (char)(((const char*)s2)[k] - 0x3d));
         }
-        ShowHudMessage(m_sink, &s2, &r3, 0x78, 1, 0xff, 0xff, 0, 1);
-        ShowHudMessage(m_sink, &s3, &r2, 0x6e, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_c, &s2, &r3, 0x78, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_c, &s3, &r2, 0x6e, 1, 0xff, 0xff, 0, 1);
         return 1;
     }
 
@@ -196,14 +199,14 @@ i32 BzState::ShowSecretBonusMessage() {
     i32 rowBase = (g_gameReg->m_levelRecord->m_levelIndex - 1) / 4;
     i32 category = (count >= 0x64) ? 3 : ((count >= 0x32) ? 2 : 1);
 
-    if (!RegisterMultiNamespaces("multi", 0, 0, 0, 0, 1)) {
+    if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
         return 0;
     }
     CString title;
     RECT rTitle;
     SetRect(&rTitle, 0, 0x38, 0x280, 0x78);
     title.Format("Secret Bonus Acquired:");
-    ShowHudMessage(m_sink, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
+    ShowHudMessage(m_c, &title, &rTitle, 0x82, 1, 0xff, 0xff, 0, 1);
 
     for (i32 j = 0; j < category; j++) {
         RECT rA, rB;
@@ -236,8 +239,8 @@ i32 BzState::ShowSecretBonusMessage() {
         for (i32 k = 0; k < s5.GetLength(); k++) {
             s5.SetAt(k, (char)(((const char*)s5)[k] - 0x3d));
         }
-        ShowHudMessage(m_sink, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
-        ShowHudMessage(m_sink, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_c, &s5, &rA, 0x78, 1, 0xff, 0xff, 0, 1);
+        ShowHudMessage(m_c, &s6, &rB, 0x6e, 1, 0xff, 0xff, 0, 1);
     }
     return 1;
 }
@@ -249,7 +252,7 @@ i32 BzState::ShowSecretBonusMessage() {
 // "GRUNTZ_PICKUPS_<W/A/R/P>" or "GRUNTZ_NORMALGRUNT" cycle) and the trailing idle
 // sprites, then kicks the loader + timer; on later ticks it grades the secret bonus
 // and advances/ends the state. Sibling of CGruntSprintAnim (same CString cycle-name
-// idiom) reusing the BzState helpers above.
+// idiom) reusing the shared CBootyState helpers above.
 // ===========================================================================
 // @early-stop
 // /GX EH-frame + sub-object-regalloc wall: complete + correct reconstruction (the
@@ -259,12 +262,13 @@ i32 BzState::ShowSecretBonusMessage() {
 // secret bonus). Residual = the delinked `Unwind@..` EH frame (docs/seh-eh.md) +
 // callee-saved regalloc across the many engine sub-objects reached by raw
 // this+offset. Logic + externs/strings named.
-// reloc-fidelity: REAL owner CBootyState (see ShowLevelCompleteMessage note); SYMBOL
-// binds BootyStateActivate's CBootyState slot 12/14/17 tail-callers to the canonical name.
-SYMBOL(?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ)
+// reloc-fidelity: FOLDED - now the real CBootyState:: method (was a BzState view + a
+// SYMBOL override), so BootyStateActivate's slot 12/14/17 tail-callers bind structurally.
+// RegisterMultiNamespaces == CState::FadeInTitle (0xfa1f0), StartTimer == BuildPage
+// (0xfa8f0), PassClickToPlayState == CGruntzMgr::PassClickToPlayState (0x8d780, ecx=reg).
 RVA(0x0001ce60, 0x450)
-i32 BzState::BuildBootyGruntIdleAnimation() {
-    i32 state = m_stateId;
+i32 CBootyState::BuildBootyGruntIdleAnimation() {
+    i32 state = m_activation;
     if (state != 0xc7 && state != 0xc8) {
         m_initGate = 1;
         return 1;
@@ -321,15 +325,15 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
                 m_trailSprites[k]->m_screenY = g_idleGeom[k].m_y;
                 m_trailSprites[k]->m_stateFlags &= ~1;
             }
-            if (!RegisterMultiNamespaces("bg", 0, 0, 0, 0, 1)) {
+            if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                 return 0;
             }
             ShowLevelCompleteMessage();
-            ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158ee0();
-            m_sink->m_notify->OnLoaded(m_sink->m_loader->m_data);
-            ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158e90();
-            StartTimer(0x50, 0x3e8, 0, 1);
-            if (!RegisterMultiNamespaces("bg", 0, 0, 0, 0, 1)) {
+            ((CDDrawSubMgrPages*)Sink(this)->m_loader)->Method_158ee0();
+            Sink(this)->m_notify->OnLoaded(Sink(this)->m_loader->m_data);
+            ((CDDrawSubMgrPages*)Sink(this)->m_loader)->Method_158e90();
+            BuildPage(0x50, 0x3e8, 0, 1);
+            if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
                 return 0;
             }
             ShowLevelCompleteMessage();
@@ -340,34 +344,37 @@ i32 BzState::BuildBootyGruntIdleAnimation() {
             if (!ShowSecretBonusMessage()) {
                 return 0;
             }
-            ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158ee0();
-            StartTimer(0x50, 0x3e8, 0, 1);
-            m_stateId = 0xfffffffe;
+            ((CDDrawSubMgrPages*)Sink(this)->m_loader)->Method_158ee0();
+            BuildPage(0x50, 0x3e8, 0, 1);
+            m_activation = 0xfffffffe;
             return 1;
         }
     }
 
-    if (m_stateId == 0xfffffffe && ((CBattlezData*)g_gameReg->m_levelRecord)->AllRecordsInBounds()
+    if (m_activation == 0xfffffffe
+        && ((CBattlezData*)g_gameReg->m_levelRecord)->AllRecordsInBounds()
         && m_secretBannerOnce == 0) {
         m_secretBannerOnce = 1;
         if (!ShowSecretBonusMessage()) {
             return 0;
         }
-        ((CDDrawSubMgrPages*)m_sink->m_loader)->Method_158ee0();
-        StartTimer(0x50, 0x3e8, 0, 1);
+        ((CDDrawSubMgrPages*)Sink(this)->m_loader)->Method_158ee0();
+        BuildPage(0x50, 0x3e8, 0, 1);
         return 1;
     }
 
     BzLevelRecord* rec2 = g_gameReg->m_levelRecord;
     if (rec2->m_levelIndex == 0x20) {
-        BzSinkSub* sub = m_sink->m_dropped->m_sprite;
+        BzSinkSub* sub = Sink(this)->m_dropped->m_sprite;
         if (sub != 0) {
             ((SoundStream*)sub)->Stop();
         }
         g_gameReg->ChangeState_8fab0(3);
         PostMessageA((HWND)g_gameReg->m_wnd->m_hwnd, 0x111, 0x8021, 0);
     } else {
-        PassClickToPlayState((rec2->m_levelIndex % 0x28) + 1, 0, 1);
+        // 0x8d780: DISASM-PROVEN receiver ecx = *0x24556c (the CGruntzMgr singleton),
+        // NOT `this`; g_gameReg IS that singleton, so cast the view to its real class.
+        ((CGruntzMgr*)g_gameReg)->PassClickToPlayState((rec2->m_levelIndex % 0x28) + 1, 0, 1);
     }
     return 1;
 }
