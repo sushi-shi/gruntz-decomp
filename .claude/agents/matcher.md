@@ -261,9 +261,23 @@ convention across `src/` + `config/match-queue.md`; leave the size arg unpadded.
    class. When a target's class/owner is unclear, xref FIRST — don't guess from the name.
 2. **Reconstruct the types** (class layout from offsets/sizes; each extern's *real* signature)
    **and the bodies** (C++ that lowers to the same instruction selection + scheduling).
-3. **Build + diff:** `gruntz build`, then read the per-function objdiff. **Run it INSIDE one
-   open `nix develop .#build` shell** — `cd` into your assigned worktree FIRST, enter the shell
-   once, and run every `gruntz build`/`status` *inside* it (don't spawn `nix develop` per command).
+3. **Build + diff — iterate with `gruntz build --fast`.** `--fast` runs the FULL ninja graph
+   (compile → gen_labels → `symbol_names.csv` → delink → objdiff → `report.json`), prints the
+   objdiff %, and STOPS before the ~20 s structural gate tail (verify_*/class_sizes/vtable_*/status).
+   Read the per-function objdiff after each `--fast` build. It is the proper inner-loop tool for
+   **every** task, including:
+     - **reloc-fixing:** `--fast` still regenerates `symbol_names.csv` + re-delinks, so a new
+       `DATA()`/`RVA()`/`SYMBOL()` rebinds — run `python -m gruntz.analysis.reloc_fidelity` right
+       after it (that tool was never part of the gate tail; it reads the fresh `report.json`).
+     - **view-axing / folds:** a fold's correctness is *compiles + objdiff %*, both in `--fast`;
+       run the view-debt tool manually if you need the count.
+   Run ONE full `gruntz build` (all gates) ONLY at the very end before you leave the tree — that is
+   where the FATAL gates a fold/rebind can trip fire (`verify_unique_names`, `vtable_hierarchy
+   --audit`, `class_sizes`) and the baseline is written. Never `gruntz clean` for a metric (it wipes
+   the Ghidra DB → cold re-import); the reloc/delink pairing is refreshed by any `--fast` build.
+   **Run everything INSIDE one open `nix develop .#build` shell** — `cd` into your assigned worktree
+   FIRST, enter the shell once, and run every `gruntz build --fast`/`status` *inside* it (don't spawn
+   `nix develop` per command — that re-pays the entry hook every time).
    `GRUNTZ_DIR`/`WINEPREFIX`/`REPO` are fixed at shell entry to `$PWD`, so a shell opened in main —
    or a `cd` *after* `nix develop` — builds and scores **main, not your worktree**. Use absolute
    paths; never touch the repo root.

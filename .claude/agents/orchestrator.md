@@ -67,10 +67,13 @@ done
 
 Verify a slot can build before dispatching — **cd-first** so `GRUNTZ_DIR`/`REPO`
 resolve to the worktree, NOT main:
-`cd .claude/worktrees/matcher-1 && nix develop .#build --command gruntz build`.
+`cd .claude/worktrees/matcher-1 && nix develop .#build --command gruntz build --fast`.
 **`cd` AFTER `nix develop` builds *main*** (`GRUNTZ_DIR` is fixed at shell entry).
-Better: open ONE `nix develop .#build` shell per slot and run `gruntz build`/status
-inside it — avoids `nix develop` startup per command.
+Better: open ONE `nix develop .#build` shell per slot and run `gruntz build --fast`/status
+inside it — avoids `nix develop` startup per command. **Brief every agent to iterate with
+`gruntz build --fast`** (full ninja + delink + objdiff %, skips the ~20 s gate tail) and run
+ONE full `gruntz build` only before committing — the full gate/`clean` is the orchestrator's
+integration step (§ below), NOT the agent inner loop.
 
 (Filesystem is ext4 → no reflink; `cp -a` is a full ~680 MB copy per slot, seconds
 each. If ever too heavy, copy only `build/{exe,gen,ghidra-named,ghidra-enrich,clangd,

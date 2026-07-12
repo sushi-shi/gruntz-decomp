@@ -91,7 +91,9 @@ change only names, never*:
 - **definition ORDER** within a TU (it drives inlining + COMDAT order),
 - **`RVA()`/`DATA()` macros** (keep the 8-hex-digit address + size exactly).
 
-**After every rename/de-hack pass, run `gruntz build` and check the per-function %.**
+**After every rename/de-hack pass, run `gruntz build --fast` and check the per-function %.**
+(`--fast` = full compile + delink + objdiff %, skipping the ~20 s gate tail; run ONE full
+`gruntz build` only before you leave the tree. Never `gruntz clean` for a metric.)
 For a pure RENAME a drop means you changed something load-bearing (a width, an offset, an
 order) — **revert that edit** and find the mistake. For a DE-HACK/re-typing edit whose new
 shape is binary-proven correct, a regalloc/header-leak drop is **accepted, not reverted**
