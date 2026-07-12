@@ -865,11 +865,14 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
 }
 
 // ---------------------------------------------------------------------------
-// Three forwarders to a method on the main plane; no-op / 0 when none.
+// Three forwarders to a method on the main plane; no-op / 0 when none. The render
+// leaves are the canonical CPlaneRender's (its Draw/CenterScroll*/InitScrollRects/
+// ResolveColorKey own the retail RVAs) - the same object CLevelPlane views; these
+// call the real symbol (CLevelPlane's QueryA/QueryB/Notify aliases were fake decls).
 RVA(0x000cedf0, 0xf)
 i32 CGameLevel::MainPlaneQueryA() {
     if (m_mainPlane != 0) {
-        return (m_mainPlane)->QueryA();
+        return ((CPlaneRender*)m_mainPlane)->CenterScrollA(); // 0x163300
     }
     return 0;
 }
@@ -877,7 +880,7 @@ i32 CGameLevel::MainPlaneQueryA() {
 RVA(0x000cee10, 0xf)
 i32 CGameLevel::MainPlaneQueryB() {
     if (m_mainPlane != 0) {
-        return (m_mainPlane)->QueryB();
+        return ((CPlaneRender*)m_mainPlane)->CenterScrollB(); // 0x163370
     }
     return 0;
 }
@@ -885,7 +888,7 @@ i32 CGameLevel::MainPlaneQueryB() {
 RVA(0x00160ee0, 0xd)
 void CGameLevel::MainPlaneNotify() {
     if (m_mainPlane != 0) {
-        (m_mainPlane)->Notify();
+        ((CPlaneRender*)m_mainPlane)->InitScrollRects(); // 0x163420
     }
 }
 
@@ -899,7 +902,7 @@ i32 CGameLevel::ValidateAllPlanes(char* errOut) {
         *errOut = 0;
     }
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        if (((CLevelPlane*)m_planes[i])->ValidateTiles(errOut) == 0) {
+        if (((CPlaneRender*)m_planes[i])->ValidateTiles(errOut) == 0) { // 0x163510
             ok = 0;
         }
     }
@@ -969,7 +972,7 @@ void CGameLevel::SyncToMainIndex(void* visitor) {
     i32 i = 0;
     if (m_mainIndex >= 0) {
         do {
-            ((CLevelPlane*)m_planes.GetData()[i])->Sync(visitor);
+            ((CPlaneRender*)m_planes.GetData()[i])->Draw((CPlaneDrawCtx*)visitor); // 0x162010
             ++i;
         } while (i <= m_mainIndex);
     }
@@ -983,7 +986,7 @@ void CGameLevel::SyncAfterMainIndex(void* visitor) {
     i32 i = m_mainIndex + 1;
     if (i < m_planes.GetSize()) {
         do {
-            ((CLevelPlane*)m_planes.GetData()[i])->Sync(visitor);
+            ((CPlaneRender*)m_planes.GetData()[i])->Draw((CPlaneDrawCtx*)visitor); // 0x162010
             ++i;
         } while (i < m_planes.GetSize());
     }
@@ -1175,7 +1178,7 @@ void CGameLevel::VisitVisible(void* visitor, CGameObjChain* ctx) {
 RVA(0x00160f40, 0x23)
 void CGameLevel::NotifyAllPlanes() {
     for (i32 i = 0; i < m_planes.GetSize(); i++) {
-        ((CLevelPlane*)m_planes[i])->Refresh();
+        ((CPlaneRender*)m_planes[i])->ResolveColorKey(); // 0x163670
     }
 }
 
@@ -2071,7 +2074,7 @@ i32 __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf) {
         return 0;
     }
 
-    WwdInputStream stream;
+    CFileIO stream; // the WWD file stream IS a CFileIO (ctor/Open/Read/dtor @0x1befd7.. NAFXCW)
 
     if (stream.Open(name, 0, 0) == 0) { // Open returns 0 on failure
         return 0;
@@ -2105,7 +2108,7 @@ i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut) {
         return 0;
     }
 
-    WwdInputStream stream;
+    CFileIO stream; // the WWD file stream IS a CFileIO (ctor/Open/Read/dtor @0x1befd7.. NAFXCW)
 
     if (stream.Open(name, 0, 0) == 0) { // Open returns 0 on failure
         return 0;

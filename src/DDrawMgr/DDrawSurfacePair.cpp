@@ -112,6 +112,8 @@ struct CDDrawSurfaceMgrT {
 // 0x03a1d0: BltFast `src`'s held surface onto ours at (0,0) with the source's
 // offset window (&src->m_srcRect) as the src rect and DDBLTFAST_SRCCOLORKEY|WAIT
 // (0x10) flags.  __thiscall, one ptr arg.
+// @interleaver CDDrawSurfacePair - own-class out-of-line COMDAT at 0x3a1d0, far from the
+// main block @0x163bf0+; RVA-placement artifact, kept in its own class file.
 RVA(0x0003a1d0, 0x1d)
 void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
     m_surface->BltFast(0, 0, src->m_surface, &src->m_srcRect, 0x10);
@@ -130,6 +132,10 @@ void CDDrawSurfacePair::BltSelf(CDDrawSurfacePair* src) {
 
 // ---------------------------------------------------------------------------
 // 0x06b270: bounds-checked CObArray fetch. 1 stack arg (ret 4).
+// @interleaver CAniElement - CAniElement is co-hosted in THIS obj (its Build_165460 /
+// Configure_1655c0 / LoadFile_165620 / DeleteAll methods sit in the main block); this
+// lone bounds-check is the same obj's COMDAT pooled out at 0x6b270. Not a foreign class
+// to carve (no separate CAniElement TU) - own-obj interleaver, kept + flagged.
 RVA(0x0006b270, 0x1b)
 ::CObject* CAniElement::AtChecked_06b270(i32 i) const {
     if (i >= 0 && i < m_records.m_nSize) {

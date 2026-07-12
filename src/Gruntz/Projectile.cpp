@@ -128,6 +128,10 @@ CMovingLogic::~CMovingLogic() {}
 // cannot be emitted from this TU (the no-arg ctor must keep CMovingLogic() inline
 // to fold it; forcing the standalone drops this ctor 99%->19.7%; nothing here
 // calls CMovingLogic out-of-line). See the CAVEAT in the pattern doc. ~99% wall.
+// @interleaver CProjectile - own-class out-of-line COMDAT pooled in the 0x12xxx leaf-
+// ctor band (physical neighbours are other classes' COMDATs: CTimeBomb dtor @0x12a70,
+// CMotionState ctor @0x136d0, CMovingLogic ctor @0x13940). RVA-placement artifact of
+// the /INCREMENTAL COMDAT pool, not a conflation - kept in its own class file.
 RVA(0x000126e0, 0x1fc)
 CProjectile::CProjectile() {}
 
@@ -137,6 +141,8 @@ CProjectile::CProjectile() {}
 // ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
 // link forces the /GX EH frame. Byte-identical in shape to ~CKitchenSlime
 // @0x013100 / the established leaf dtors; the empty body is enough for cl.
+// @interleaver CTimeBomb - own-class COMDAT-pooled leaf dtor in the 0x12xxx dtor pool
+// (CTimeBomb shares this merged TU; kept here, RVA-placement artifact not conflation).
 RVA(0x00012a70, 0x44)
 CTimeBomb::~CTimeBomb() {}
 
@@ -204,6 +210,8 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
 // ---------------------------------------------------------------------------
 typedef void (CProjectile::*ProjCallback)();
 
+// @interleaver CProjectile - own-class out-of-line COMDAT in the 0x13xxx leaf pool
+// (far from the projectile main block @0xdec60+); RVA-placement artifact, kept here.
 RVA(0x00013c70, 0x47)
 void CProjectile::ReleaseDeferred(i32) {
     if (m_04 != 0) {
@@ -1384,33 +1392,6 @@ i32 CProjectile::LaunchSound(const char* key) {
     return 1;
 }
 
-// ===========================================================================
-// 0x0ade60 - per-coordinate action dispatch over the per-logic-class dispatch
-// table g_logicActReg_646010 (@0x246010, a CLogicActTable - NOT the projectile's
-// own g_projActColl @0x24c758; that was a lookup-table conflation). Resolves the
-// activation entry for `coord` (ResolveEntry, inlined twice); if the entry's
-// leading handler slot is non-null, re-resolves and invokes it __thiscall on this
-// dispatcher object. Sits in the MenuSparkle/logic leaf-init COMDAT pool
-// (LogicActReg646010.cpp), not the projectile bodies.
-extern CLogicActTable g_logicActReg_646010; // 0x246010 (bound in LogicActReg646010.cpp)
-
-SIZE_UNKNOWN(CProjActDispatcher);
-class CProjActDispatcher {
-public:
-    void Dispatch(i32 coord); // 0x0ade60
-};
-
-// The entry's leading slot is a __thiscall handler taking this dispatcher; MSVC5
-// rejects the __thiscall keyword, so model it as a single-inheritance member
-// pointer (a bare 4-byte code address) reinterpreted from the entry word.
-typedef void (CProjActDispatcher::*ProjActHandler)();
-
-RVA(0x000ade60, 0x102)
-void CProjActDispatcher::Dispatch(i32 coord) {
-    char* e = g_logicActReg_646010.ResolveEntry(coord);
-    if (*(void**)e != 0) {
-        char* e2 = g_logicActReg_646010.ResolveEntry(coord);
-        ProjActHandler h = *(ProjActHandler*)e2;
-        (this->*h)();
-    }
-}
+// (CProjActDispatcher::Dispatch @0x0ade60 carved out to src/Gruntz/LogicActReg646010.cpp
+// in REHOME D9: it dispatches over g_logicActReg_646010 @0x246010 and its .text sits in
+// that dispatch-table's 0xadde0-0xadfc0 COMDAT band, not the projectile bodies.)

@@ -41,6 +41,8 @@
 // the SEH-restore load into the post-link slot the way the byte-exact CPathHazard
 // no-arg ctor (0x13170, no double init -> ecx free) does. A non-steerable cl
 // scheduling/DSE micro-decision; logic complete. Deferred to the final sweep.
+// @interleaver CMovingLogic - own-class out-of-line COMDAT (0x13xxx leaf-ctor pool, run
+// methods sit in the engine band 0x16cdd0+); RVA-placement artifact per the header note.
 RVA(0x00013940, 0x1e1)
 CMovingLogic::CMovingLogic() {
     m_78 = 0;

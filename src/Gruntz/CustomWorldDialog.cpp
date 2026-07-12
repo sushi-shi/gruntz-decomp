@@ -93,6 +93,9 @@ extern "C" CGameRegistry* g_gameReg;
 
 // The game-root-dir resolver (FUN_0011fc10) + the OpenFile(OF_EXIST) existence
 // probe (FUN_00004282) both dialogs' loaders funnel through (reloc-masked).
+// Bind the unreconstructed __cdecl GetGameDir to its retail RVA (declared-only game
+// callee; @rva-symbol names the real target the calls hit).
+// @rva-symbol: ?GetGameDir@@YAHPADH@Z 0x0011fc10 0x2f
 i32 GetGameDir(char* buf, i32 cb); // 0x11fc10 (__cdecl)
 i32 FileExists(char* path);        // 0x1189c0 (heapdiag; "PathFileExists 0x4282" was a thunk to it)
 

@@ -57,6 +57,10 @@ public:
 // sub-systems through it: SetRunState @0x092340, StoreInputFlag @0x0919d0,
 // StoreInputState @0x091a10, SetSoundLevelState @0x0923b0, and the m_sound
 // object's XMIDI volume push/read (0x138950/0x1389c0). All reloc-masked.
+// Bind the two unreconstructed CGameRegistry commit leaves to their retail RVAs
+// (declared-only game callees; @rva-symbol names the real target the calls hit).
+// @rva-symbol: ?SetRunState@CGameRegistry@@QAEXH@Z 0x00092340
+// @rva-symbol: ?SetSoundLevelState@CGameRegistry@@QAEXH@Z 0x000923b0
 extern "C" {
     DATA(0x0024556c)
     extern "C" CGameRegistry* g_gameReg;

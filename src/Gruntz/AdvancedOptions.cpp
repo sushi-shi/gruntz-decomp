@@ -25,8 +25,12 @@
 #define IDC_DISABLE_MOVIE 0x470
 #define IDC_DEFAULTS 0x426
 
-// File-scope globals. The reloc that
-// names them is masked in objdiff; only the address-load bytes are load-bearing.
+// File-scope globals. The reloc that names them is masked in objdiff; only the
+// address-load bytes are load-bearing. Bound to their retail DATA rvas by exact
+// base-obj symbol name (MSVC internal-linkage $S mangling; clang mangles differently
+// so @data-symbol pins the exact name the reloc uses).
+// @data-symbol: _g_registryHelper$S17358 0x002295d8
+// @data-symbol: _g_hInstance$S17373 0x00251618
 static Utils::RegistryHelper g_registryHelper;
 static HINSTANCE g_hInstance;
 

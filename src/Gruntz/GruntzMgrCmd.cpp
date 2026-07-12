@@ -103,74 +103,19 @@ extern CString g_brickText1;
 DATA(0x00645528)
 extern CString g_brickText2;
 
-// The serial/key validator (ParseSerial @0x0000d210): __cdecl (mgr, string). Takes
-// the manager through its MFC-free CGameRegistry view (the dual-view bridge cast at
-// the call site - same object as `this`). Re-homed from src/Stub/BoundaryMisc.cpp;
-// the WM_COMMAND 0x807e path (HandleCommand) calls it with the CGruntzMgr `this`.
-extern int g_saveBuf[];     // ?g_saveBuf@@3PAHA       (VA 0x629930)
-extern int g_serialCounter; // ?g_serialCounter@@3HA   (VA 0x629ad0)
-extern void Lab4024e6();    // VA 0x4024e6 (code-table entry passed as a ptr)
-int __stdcall Parse156530(void* table, char* s, int z); // 0x156530
-// @early-stop
-// 97.55% - regalloc wall: the test-only mgr->m_world temp lands in eax; retail uses
-// ecx (both are 0/free after the rep-stosd). Logic + the inline strlen/memset + the
-// parse-callback dispatch are byte-exact; the single reg pick is not source-steerable.
-RVA(0x0000d210, 0x65)
-i32 ParseSerial(CGameRegistry* mgr, char* s) {
-    if (mgr == 0) {
-        return 0;
-    }
-    if (s == 0) {
-        return 0;
-    }
-    if (strlen(s) == 0) {
-        return 0;
-    }
-    g_serialCounter = 0;
-    memset(g_saveBuf, 0, 0x90);
-    if (mgr->m_world == 0) {
-        return 0;
-    }
-    return Parse156530((void*)&Lab4024e6, s, 0) != 0;
-}
-
-// SerialObjectFactory (0xd2a0, __cdecl, ends 0xec24): the game's (de)serialize object
-// dispatch - the callback ParseSerial's Parse156530 code table (0x4024e6/0x401e9c) and
-// gamesave:SaveGame hand to the parser. args (ctx, ar, mode, typeId, ppObj): guards
-// ctx/ar non-null, then a first switch on `mode` (1..0xa) - modes 1/2 virtual-call the
-// archive (slot 0x30 / 0x2c) over the 0x90-byte g_saveBuf (0x629930) header; mode 9 is
-// the OBJECT FACTORY: a second switch on typeId-1000 (0..0x44, 69 cases) that `operator
-// new`s the class for that tag (CGrunt 0x8d8, CRollingBall 0xa0, ...) and INLINES its
-// full ctor - stamping the derived + CUserBase (0x5e70b4) vtables, constructing the
-// embedded members, zero-initing the scalar fields - then writes the object through
-// ppObj and returns 1. ~80 game classes are constructed inline (??_7CGrunt/CRollingBall/
-// CAniCycle/CSingleFrameMessage/CDoNothing/.../CGuardPoint - the full vtable set is in
-// the reloc table 0xd3af..0xe9e5).
-//
-// @early-stop
-// >512B leaf-first megafunction (6532 B). Deferred to the leaf-first final sweep per the
-// same >512B REVERT rule as BattlezSetupDlgInit above: this body inlines the FULL ctor of
-// ~80 distinct CUserBase-derived game object classes (verified: each case is
-// operator-new + an inlined ctor that stamps ??_7C<Class> + ??_7CUserBase and runs the
-// embedded-member ctors, e.g. CGrunt's 0x21a-byte inline ctor at 0xd37a). A faithful
-// match REQUIRES every one of those ~80 leaf ctors matched first AND MSVC5 to inline each
-// identically here; none are set up to inline-match yet, so any partial would under-count
-// AND diverge its own regalloc. The structural dossier above (mode dispatch + typeId->
-// class->size->vtable factory table) is the final-sweep starting point; the return-0
-// normalization artifact is kept per the >512B rule.
-i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void** ppObj);
-RVA(0x0000d2a0, 0x1984)
-i32 __cdecl SerialObjectFactory(void* ctx, void* ar, i32 mode, i32 typeId, void** ppObj) {
-    return 0;
-}
+// ParseSerial (@0x0d210) + SerialObjectFactory (@0x0d2a0) carved out to
+// src/Gruntz/SerialObjectFactory.cpp in REHOME D9 (their contiguous 0xd210-0xec24
+// .text block is a separate obj). HandleCommand's WM_COMMAND 0x807e path calls
+// ParseSerial cross-TU (declared here, defined there).
+i32 ParseSerial(CGameRegistry* mgr, char* s); // 0x0d210 (SerialObjectFactory.cpp)
 
 // The world-present toolbar builder chain (thunk 0x277a -> the 6-arg __cdecl
-// forwarder Fwd114ec0 @0x114ec0 -> the guarded forwarder Fwd114f00 @0x114f00, via
-// the 0x21c1 thunk). The real param shapes are unrecovered; the i32 tuple mirrors
-// the forwarder. Fwd114f00's body lives at the tail of this TU now (its
-// a2->m_30->m_4->m_10->m_2c deref chain still uses placeholder command-context views).
-void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6);
-void Fwd114f00(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114f00 (0x21c1 thunk target)
+// forwarder Fwd114ec0 @0x114ec0 -> the guarded forwarder Fwd114f00 @0x114f00). Both
+// forwarders were carved out to src/Gruntz/Fwd114ec0.cpp in REHOME D9 (their
+// 0x114ec0-0x114f3e block is a separate obj); HandleCommand's WM_COMMAND 0x8070 path
+// calls Fwd114ec0 cross-TU (declared here, defined there). The real param shapes are
+// unrecovered; the i32 tuple mirrors the forwarder.
+void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd114ec0.cpp)
 
 // Play a named cue when the world's cue host is not muted: resolve via the
 // host's CueLookup (a real CSndHost __thiscall @0x05b7e0 - ecx is the host at
@@ -1262,38 +1207,5 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
 #undef RESTART
 #undef RESTART2
 
-// 0x114ec0 - straight 6-arg forwarder to the guarded forwarder Fwd114f00 (via the
-// 0x21c1 thunk). The HandleCommand toolbar-builder path (thunk 0x277a) calls this.
-// __cdecl. Re-homed from src/Stub/BoundaryLowerMethods.cpp (was Fwd114ec0).
-RVA(0x00114ec0, 0x27)
-void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    Fwd114f00(a1, a2, a3, a4, a5, a6);
-}
-
-// 0x114f00 - the guarded forwarder Fwd114ec0 hands off to (via the 0x21c1 thunk): its
-// a2 IS `this` (a CGruntzMgr - Fwd114ec0's case-0x8070 caller passes `(i32)this`), so
-// the chain a2->m_30->m_4->m_10->m_2c dissolves onto the real m_world (CWorldZ) ->
-// m_4 (CWorldSub4) -> m_10 (the command-context object) -> +0x2c, which it forwards
-// plus the six args to 0x267b. __cdecl(6 args). Only the final +0x2c object's class is
-// unrecovered (a small placeholder). Re-homed from src/Stub/BoundaryLowerMethods.cpp.
-struct CObj114f { // the CWorldSub4::m_10 command-context object (identity-TODO)
-    char pad0[0x2c];
-    void* m_2c; // +0x2c
-};
-SIZE_UNKNOWN(CObj114f);
-extern "C" void Func267b(void* v, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x267b
-// @early-stop
-// identical-return-epilogue tail-merge wall (docs/patterns): cl shares one pop;ret
-// tail across the two null guards; retail emits the inline ret at each site. Deref
-// chain + 6-arg re-push forward are byte-faithful.
-RVA(0x00114f00, 0x3e)
-void Fwd114f00(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
-    CObj114f* obj = (CObj114f*)((CGruntzMgr*)a2)->m_world->m_4->m_10;
-    if (obj == 0) {
-        return;
-    }
-    if (obj->m_2c == 0) {
-        return;
-    }
-    Func267b(obj->m_2c, a1, a2, a3, a4, a5, a6);
-}
+// (Fwd114ec0 @0x114ec0 + Fwd114f00 @0x114f00 carved out to src/Gruntz/Fwd114ec0.cpp
+// in REHOME D9 - see the forward-declaration note above.)

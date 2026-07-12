@@ -757,6 +757,23 @@ source = "src/Gruntz/GruntzMgrCmd.cpp"
 flags = "eh"
 
 [[unit]]
+# SerialObjectFactory (0xd2a0) + its ParseSerial helper (0xd210) - the game's
+# (de)serialize object dispatch, a separate obj (contiguous 0xd210-0xec24 block).
+# Carved out of GruntzMgrCmd.cpp (REHOME D9); kept "eh" to preserve ParseSerial's
+# exact build flags (byte-neutral - no destructible locals in either fn yet).
+unit = "serialobjectfactory"
+source = "src/Gruntz/SerialObjectFactory.cpp"
+flags = "eh"
+
+[[unit]]
+# Fwd114ec0 (0x114ec0) + Fwd114f00 (0x114f00) - the world-present toolbar-builder
+# forwarder pair, a separate obj (0x114ec0-0x114f3e block). Carved out of
+# GruntzMgrCmd.cpp (REHOME D9). No destructible locals; "eh" == its old base+/GX.
+unit = "fwd114ec0"
+source = "src/Gruntz/Fwd114ec0.cpp"
+flags = "eh"
+
+[[unit]]
 # CGrunt nearest-enemy / arrival-target scan (0xf42f0) - sibling of the three
 # GruntArrivalScan steps (re-homed from ApiCallers). No destructible locals -> /base.
 unit = "grunttargetscan"

@@ -15,6 +15,8 @@ DATA(0x001f0500)
 extern const double g_motionZero;
 
 // ---------------------------------------------------------------------------
+// @interleaver CMotionState - own-class out-of-line COMDAT in the 0x13xxx leaf-ctor
+// pool (main block sits at 0x16ecd0+); RVA-placement artifact, kept in its class file.
 RVA(0x000136d0, 0x184)
 CMotionState::CMotionState() {
     m_40 = 0.0;
@@ -47,6 +49,8 @@ CMotionState::CMotionState() {
 }
 
 // ---------------------------------------------------------------------------
+// @interleaver CMotionState - own-class out-of-line COMDAT pair (SetParams @0x58bc0 +
+// SetZ @0x58ca0) pooled far from the main block @0x16ecd0+; RVA-placement artifact.
 RVA(0x00058bc0, 0xa1)
 i32 CMotionState::SetParams(
     double a0,

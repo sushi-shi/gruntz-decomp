@@ -58,6 +58,34 @@ void ConstructLogicActRange_646010() {
     ((CZDArrayDerived*)&g_logicActReg_646010)->Construct(0x7d0, 0x7da);
 }
 
+// CProjActDispatcher::Dispatch @0x0ade60 - per-coordinate action dispatch over this
+// dispatch table (g_logicActReg_646010). Resolves the activation entry for `coord`
+// (ResolveEntry, inlined twice); if the entry's leading handler slot is non-null,
+// re-resolves and invokes it __thiscall on this dispatcher object. Carved out of
+// src/Gruntz/Projectile.cpp (REHOME D9): its .text sits in this table's 0xadde0-0xadfc0
+// COMDAT band, and it operates on g_logicActReg_646010 (not the projectile's own
+// g_projActColl) - so it belongs to the 0x646010 subsystem, not the projectile bodies.
+SIZE_UNKNOWN(CProjActDispatcher);
+class CProjActDispatcher {
+public:
+    void Dispatch(i32 coord); // 0x0ade60
+};
+
+// The entry's leading slot is a __thiscall handler taking this dispatcher; MSVC5
+// rejects the __thiscall keyword, so model it as a single-inheritance member
+// pointer (a bare 4-byte code address) reinterpreted from the entry word.
+typedef void (CProjActDispatcher::*ProjActHandler)();
+
+RVA(0x000ade60, 0x102)
+void CProjActDispatcher::Dispatch(i32 coord) {
+    char* e = g_logicActReg_646010.ResolveEntry(coord);
+    if (*(void**)e != 0) {
+        char* e2 = g_logicActReg_646010.ResolveEntry(coord);
+        ProjActHandler h = *(ProjActHandler*)e2;
+        (this->*h)();
+    }
+}
+
 // RegisterXLogic @0x0adfc0 - bind the logic class behind dispatch table 0x646010 to
 // its activation handler. Same archetype/wall as 0x03a710.
 // @early-stop

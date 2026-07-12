@@ -88,6 +88,8 @@ namespace Rng {
 
     // __stdcall(lo, hi): lazily-seeded LCG random in [lo,hi]. When the span is
     // empty (hi==lo-1) it coin-flips between the endpoints on bit 0x10000.
+    // @interleaver Rng - own-namespace LCG helper COMDAT scattered at 0x19f50 (the Rng
+    // helpers are each their own tiny COMDAT); RVA-placement artifact, kept together here.
     RVA(0x00019f50, 0xb2)
     i32 __stdcall RangeStd(i32 lo, i32 hi) {
         i32 span = hi - lo + 1;
@@ -117,6 +119,7 @@ namespace Rng {
 
     // __thiscall coin-flip: deterministic ((m_1c+1)%2) in replay mode, otherwise a
     // once-per-frame random bit lazily seeded from timeGetTime.
+    // @interleaver Rng - own-namespace helper COMDAT scattered at 0xda200; RVA-placement.
     RVA(0x000da200, 0x9b)
     i32 CoinFlip::Flip() {
         CoinGameReg* gr = g_gameReg;
@@ -139,6 +142,7 @@ namespace Rng {
     }
 
     // __cdecl rand(): lazily seed from timeGetTime, then advance the MS-CRT LCG.
+    // @interleaver Rng - own-namespace helper COMDAT scattered at 0x15cbe0; RVA-placement.
     RVA(0x0015cbe0, 0x46)
     i32 Next2() {
         i32 seed;
