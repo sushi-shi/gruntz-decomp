@@ -89,9 +89,9 @@ DATA(0x00244c54) // RVA (was VA-typo 0x644c54, which shadowed the canonical _g_6
 extern i32 g_644c54; // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
 DATA(0x00648cf0)
 extern i32 g_isHost_648cf0;
-DATA(0x006c44c0)
+DATA(0x002c44c0)
 extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
-DATA(0x006c44c4)
+DATA(0x002c44c4)
 extern i32(WINAPI* g_ShowCursor)(i32); // ?g_ShowCursor@@3P6GHH@ZA
 DATA(0x006c44c8)
 extern i32(WINAPI* g_pPostMessageA)(HWND, u32, u32, i32);

@@ -90,7 +90,8 @@ static i32 RandRange(i32 lo, i32 hi) {
 // keeps scrollY in its stack home while this cl pins `pm` in ebp / scrollY in ebx;
 // the register/stack-slot assignment is not source-steerable here.
 RVA(0x000ebd70, 0x366)
-void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag, i32 unused) {
+// __cdecl 3-arg (retail callers push 3; the former 4th `unused` param was spurious).
+void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
     ScrollView* v = ((MgrSub*)pm->m_world)->m_sub->m_view;
     i32 scrollX = v->m_curScrollX;
     i32 scrollY = v->m_curScrollY;

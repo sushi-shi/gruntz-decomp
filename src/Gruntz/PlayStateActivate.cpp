@@ -20,7 +20,7 @@
 #include <Gruntz/ResMgr.h>     // canonical CImageRegistry (+0x10 image registrar)
 #include <Gruntz/View.h>       // canonical CSpriteFactoryHolder sub-objects (CRenderer @+0xc)
 #include <rva.h>
-#include <Globals.h>                   // g_glsResetMgr (DAT_00645570)
+#include <Globals.h>                   // g_gameReg / shared globals
 #include <Gruntz/GameLevel.h>          // canonical CGameLevel (VisitVisible)
 #include <DinMgr2/DirectInputMgr2.h>   // canonical DirectInputMgr2 (ReadAll)
 #include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (Method_158e90/159ef0)
@@ -33,6 +33,17 @@ class CDDSurface {
 public:
     i32 Fill(unsigned int c);
 }; // 0x13e760
+// 0xface0: the shared image-load activate gate (CState base method; the recovered
+// symbol is CMgrPersistObj::Init, Attract.cpp). 0xfa8f0: the shared state-timer arm
+// (CSoundFxEmitter::Method_fa8f0, Attract.cpp). Both dispatched on the state `this`.
+class CMgrPersistObj {
+public:
+    i32 Init();
+};
+class CSoundFxEmitter {
+public:
+    i32 Method_fa8f0(i32, i32, i32, i32);
+};
 
 // The global empty C string (0x6293f4).
 extern "C" char g_emptyString[];
@@ -75,23 +86,19 @@ struct GLSMapMgr { // this->m_2dc
     // Finalize @0x125d IS CSBI_RectOnly::Deactivate; cast at the call.
     // Activate2 @0x21b7 IS CSBI_RectOnly::LoadMainStatusBarSprite; cast at the call.
 };
-// GLSResetMgr is forward-declared in <Globals.h> (g_glsResetMgr @0x645570); complete
-// it here so ((DirectInputMgr2*)g_glsResetMgr)->ReadAll() falls out.
-struct GLSResetMgr {
-    // Reset @0x133110 IS DirectInputMgr2::ReadAll; cast at the call.
-};
+// The +0xc4 reset manager is the DirectInputMgr2 input singleton g_645570
+// (DAT_00245570, bound extern "C" in GruntzMgr.cpp): ReadAll (@0x133110) polls devices.
+extern "C" DirectInputMgr2* g_645570;
 // The game-manager singleton (0x64556c); mangled ?g_gameReg@@3PAUWwdGameReg@@A.
 DATA(0x0024556c)
-// cdecl level-init helper (g_gameReg, this->m_2dc, this->m_470).
-void LevelInit2356(WwdGameReg* gameReg, GLSMapMgr* mapMgr, i32 a3); // reloc-masked
+// The camera auto-scroll/clamp update (MgrAutoScroll.cpp @0xebd70, cdecl 3-arg),
+// called with (g_gameReg, this->m_2dc, this->m_470).
+class CGruntzMgr;
+void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag); // reloc-masked
 
 // The CPlay activation facet: `this` cast once, so the field accesses take CPlay's
 // activation offsets without disturbing Play.cpp's Render-side member typing.
 struct PlayActivate {
-    i32 BaseOnActivate();                // base vfunc8 (reloc-masked)
-    void ArmActivation();                // FUN_00401ae6 __thiscall (m_474 != 0 arm)
-    void StartTimer(i32, i32, i32, i32); // FUN_00401843 __thiscall
-
     char m_pad00[0xc];
     GLSAssetRoot* m_c; // +0x0c
     char m_pad10[0x28 - 0x10];
@@ -110,7 +117,7 @@ struct PlayActivate {
 RVA(0x000cb800, 0x191)
 i32 CPlay::OnActivate() {
     PlayActivate* p = (PlayActivate*)this;
-    if (!p->BaseOnActivate()) {
+    if (!((CMgrPersistObj*)this)->Init()) { // shared base activate gate @0xface0
         return 0;
     }
     while (ShowCursor(FALSE) >= 0)
@@ -140,15 +147,15 @@ i32 CPlay::OnActivate() {
         return 0;
     }
 
-    ((DirectInputMgr2*)g_glsResetMgr)->ReadAll();
+    g_645570->ReadAll();
     while (ShowCursor(FALSE) >= 0)
         ;
 
     ((CDDSurface*)p->m_c->m_4->m_14->m_2c)->Fill(0);
-    LevelInit2356((WwdGameReg*)g_gameReg, p->m_2dc, p->m_470);
+    UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)p->m_2dc, p->m_470);
 
     if (p->m_474 != 0) {
-        p->ArmActivation();
+        NotifyVisibleEntities(); // CPlay @0xd9050
     } else {
         ((CGameLevel*)p->m_c->m_24)
             ->VisitVisible((void*)p->m_c->m_4->m_14, (CGameObjChain*)p->m_c->m_8);
@@ -159,7 +166,7 @@ i32 CPlay::OnActivate() {
     ((CSBI_RectOnly*)p->m_2dc)->LoadMainStatusBarSprite();
     p->m_510 = 2;
     ((CDDrawSubMgrPages*)p->m_c->m_4)->Method_158e90();
-    p->StartTimer(0x50, 0x3e8, 0, 1);
+    ((CSoundFxEmitter*)this)->Method_fa8f0(0x50, 0x3e8, 0, 1); // state-timer arm @0xfa8f0
     return 1;
 }
 
@@ -167,7 +174,6 @@ SIZE_UNKNOWN(GLSAssetRoot);
 SIZE_UNKNOWN(GLSMapMgr);
 SIZE_UNKNOWN(GLSNamespace);
 SIZE_UNKNOWN(GLSObj24);
-SIZE_UNKNOWN(GLSResetMgr);
 SIZE_UNKNOWN(GLSSub14);
 SIZE_UNKNOWN(GLSSub2c);
 SIZE_UNKNOWN(GLSSubA);

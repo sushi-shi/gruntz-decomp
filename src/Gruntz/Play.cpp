@@ -220,8 +220,6 @@ extern "C" {
     // --- StepInputA ---
     i32 __stdcall Eng_InputProbe(i32 a, i32 b, i32 axis, void* edge, i32 n);
     void Eng_InputDispatch(i32 z0, i32 z1, i32 probe); // (cdecl, 3)
-    // --- OnRegion3/4 leaf cues ---
-    void Eng_RegionCueA(i32 a, i32 b, i32 c, i32 d, i32 e); // (cdecl, 5)
     // --- PlayCueAt cue renderers (cdecl, 9 args each) ---
     void Eng_CueRenderTop(
         void* cueObj,
@@ -249,10 +247,8 @@ extern "C" {
     void Eng_HudStrip(void* target, void* obj, i32 x, i32 w, i32 one, i32 zero);
 }
 
-// A reg->m_68 sink that OnRegion4 posts to.
-struct CRegSink {
-    void Post(i32 a, i32 b);
-};
+// OnRegion3's scroll-region re-arm cue (CmdScrollApply.cpp @0x0ec1c0, cdecl 5-arg).
+void Cmd_ApplyScrollParams_0ec1c0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4);
 // PlayCueAt's per-cue de-dupe object at this+0x410.
 struct CCueState {
     // Probe @0x12da IS CPlay::BuildGruntTypeNameTable (extra args reloc-masked); cast at the call.
@@ -1547,9 +1543,12 @@ public:
     void ClearWorkers();
 };
 // The submgr leaf (FreeAll_152720 @0x152720); TU-local method view (header-less unit).
+// Also the anim registry's (m_c->m_animRegistry, a CDDrawSubMgrAni : CDDrawSubMgrLeaf)
+// key-prefix probe @0x152c50.
 class CDDrawSubMgrLeaf {
 public:
     void FreeAll_152720();
+    i32 HasKeyPrefix_152c50(const char* str); // 0x152c50
 };
 // The view holder (this->m_c) as the exit walk reads it.
 struct CExitView {
@@ -1670,7 +1669,7 @@ i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
         return 1;
     }
     if (key == 0x3d || key == 0x2b) {
-        m_guts->Guts123f();
+        ((CSBI_RectOnly*)m_guts)->RefreshState();
         m_hitTest->Configure(m_guts->m_state == 1 ? 2 : 1);
         return 1;
     }
@@ -1726,6 +1725,12 @@ i32 CPlay::Vslot1c(i32 category) {
         (ar)->Write((p) + 2, 8);                                                                   \
     }
 
+// The +0x2dc guts child-sync is CLevelSync::Sync (0x1084d0, SBI_RectOnly.cpp);
+// header-less unit, so a minimal local decl binds the reloc.
+struct CLevelSync {
+    i32 Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5); // 0x1084d0
+};
+
 RVA(0x000d7520, 0x3b9)
 i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     if (ar == 0) {
@@ -1769,7 +1774,7 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     i32* p;
     p = &m_syncTimerLo;
     SYNC_PAIR(ar, mode, p);
-    if (!((CPlay*)m_guts)->SyncState(ar, mode, a2, a3)) {
+    if (!((CLevelSync*)m_guts)->Sync(ar, mode, a2, a3)) { // guts child-sync @0x1084d0
         return 0;
     }
     if (!m_frameMarker->HandleEvent(ar, mode, a2, a3)) { // CTimer's real serialize entry
@@ -2506,7 +2511,7 @@ i32 CPlay::OnRegion3(i32 z) // (region-2 / gate m_region2Gate, timer +0x450)
     if (z != 0) {
         m_region2Gate = 1;
         RegionEnter();
-        Eng_RegionCueA(REGION_INTERVAL_MS, 6, 6, 0, 0x2d);
+        Cmd_ApplyScrollParams_0ec1c0(REGION_INTERVAL_MS, 6, 6, 0, 0x2d);
     } else {
         m_region2Gate = 0;
         RegionLeave();
@@ -2526,7 +2531,7 @@ i32 CPlay::OnRegion4(i32 z) // (region-3 / gate m_region3Gate, timer +0x460)
     } else {
         m_region3Gate = 0;
         RegionLeave();
-        ((CRegSink*)g_gameReg->m_cmdGrid)->Post(-1, 0); // reg->m_68->Post(0xffffffff, 0)
+        g_gameReg->m_cmdGrid->CycleMoveIcons(-1, 0); // reg->m_68 (CTriggerMgr) @0x7c2e0
     }
     m_region3Interval = REGION_INTERVAL_MS;
     m_region3IntervalHi = 0;
@@ -3492,7 +3497,7 @@ i32 CPlay::FlushPendingOps() {
         changed = 1;
     }
     fx->m_pendingFxKind = 0;
-    ClearDragBoxes(0, 0); // via the 0x35da ILT thunk in retail
+    LoadCursorSprites(0, 0); // CPlay @0xd0120 (via the 0x35da ILT thunk in retail)
     return changed;
 }
 
@@ -3838,8 +3843,10 @@ void ChannelSlots_InitAll() {
 // @identity-TODO (owner unrecovered - +0x08-only evidence; the neighbors are
 // GruntzPlayer whose m_008 the int-seeded ctor writes an INDEX into, so the
 // holder-pointer reading here cannot be pinned onto it without more xrefs).
-extern "C" i32 Check11f9(void* p);          // 0x11f9
-extern "C" void Toggle3bbb(void* p, i32 f); // 0x3bbb
+// Swap's probes are the channel-slot free fns (defined below): the slot read
+// (ChannelSlots_Get @0xdb2d0) and the slot set (ChannelSlots_Set @0xdb2b0).
+i32 ChannelSlots_Get(i32 i);          // 0xdb2d0
+void ChannelSlots_Set(i32 i, i32 v);  // 0xdb2b0
 struct Cdb200 {
     char pad0[8];
     void* m_8; // +0x08
@@ -3850,9 +3857,9 @@ i32 Cdb200::Swap(void* arg) {
     if (m_8 == arg) {
         return 1;
     }
-    if (Check11f9(arg)) {
-        Toggle3bbb(m_8, 1);
-        Toggle3bbb(arg, 0);
+    if (ChannelSlots_Get((i32)arg)) {
+        ChannelSlots_Set((i32)m_8, 1);
+        ChannelSlots_Set((i32)arg, 0);
         m_8 = arg;
         return 1;
     }
@@ -4657,7 +4664,7 @@ drag_path: {
     // m_guts->m_state != 2: guts-rect dispatch
     RECT* gr = &m_guts->m_rect10;
     if (xr < gr->right && xr >= gr->left && y < gr->bottom && y >= gr->top) {
-        Helper2c7f();
+        FlushPendingOps();
         return m_guts->UpdateStatusBarTabHl428c(a, xr, y);
     }
     if (m_hitTest->HitTest43e0(xr, y)) {
@@ -4688,7 +4695,7 @@ drag_box: {
             g_gameReg->m_cmdGrid->ResetGroup(ex, ey, 0, 0, 0, 3, 1);
         }
         g_gameReg->m_cmdGrid->m_pendingFxKind = 0;
-        ClearDragBoxes(0, 0);
+        LoadCursorSprites(0, 0);
         m_dragClampMaxX = xr;
         m_dragClampMaxY = y;
         m_hudRect.left = xr;
@@ -4718,7 +4725,7 @@ drag_box: {
                 ->SpawnVoiceDriver39f4((i32)slot, 0x324, -1, 0, -1, -1);
         }
     }
-    ClearDragBoxes(0, 0);
+    LoadCursorSprites(0, 0);
     i32 hit = m_guts->HitTest3ad5(xr, y);
     if (hit != -1) {
         m_guts->PlaceCursorTarget20b8(hit, 0);
@@ -4959,26 +4966,26 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
     m_overlayDrag = 1;
     m_worldReady = 0;
     m_dragSnapActive = 0;
-    Helper2c7f();
+    FlushPendingOps();
     if (arg == 0) {
         GutsSubsystem* g = m_guts;
         if (g->m_state == 2) {
-            g->Guts123f();
+            ((CSBI_RectOnly*)g)->RefreshState();
         }
         if (g->m_mode != 5) {
-            g->Guts1d61(5, 3);
+            ((CSBI_RectOnly*)g)->SetTabState(5, 3);
         }
-        g->Guts427d(0x1fb, 1);
-        g->Guts125d();
+        ((CSBI_RectOnly*)g)->SetTab(0x1fb, 1);
+        ((CSBI_RectOnly*)g)->Deactivate();
     }
-    m_guts->Guts35b2(1);
+    ((CSBI_RectOnly*)m_guts)->BuildGameTabResumeButton(1);
     GutsSubsystem* g = m_guts;
     g->m_busyA = 1;
     g->m_busyB = arg;
-    g->Guts12fd(0);
-    g->Guts16ea();
+    ((CSBI_RectOnly*)g)->ResetWidgets(0);
+    ((CSBI_RectOnly*)g)->TryActivate();
     g->m_548 = 1;
-    g->Guts125d();
+    ((CSBI_RectOnly*)g)->Deactivate();
     m_savedClock = g_645588;
     return 1;
 }
@@ -5016,11 +5023,11 @@ i32 CPlay::ForwardReady() {
 // clock into m_savedClock. Migrated from engine_boundary (CPlay).
 RVA(0x000cee90, 0x49)
 i32 CPlay::PauseGame() {
-    Helper2c7f();
+    FlushPendingOps();
     if (m_paused) {
-        m_guts->Guts35b2(0);
+        ((CSBI_RectOnly*)m_guts)->BuildGameTabResumeButton(0);
     } else {
-        m_guts->Guts35b2(1);
+        ((CSBI_RectOnly*)m_guts)->BuildGameTabResumeButton(1);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
@@ -5033,11 +5040,11 @@ i32 CPlay::PauseGame() {
 // is live) run its resume sub-step. Migrated from engine_boundary (CPlay).
 RVA(0x000cef00, 0x39)
 i32 CPlay::ResumeGame() {
-    m_guts->Guts367a();
+    ((CSBI_RectOnly*)m_guts)->BuildGameTabPauseButton();
     g_645588 = m_savedClock;
     m_paused = 0;
     if (m_guts != 0) {
-        m_guts->Guts125d();
+        ((CSBI_RectOnly*)m_guts)->Deactivate();
     }
     return 1;
 }
@@ -5592,11 +5599,11 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
             break;
         case 18:
             name = "TOOBGRUNT";
-            if (this->BindWarlordName(name, a2, a3, a4) == 0) {
+            if (((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(name, a2, a3, a4) == 0) {
                 return 0;
             }
             name = "TOOBWATERGRUNT";
-            return this->BindWarlordName(name, a2, a3, a4);
+            return ((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(name, a2, a3, a4);
         case 19:
             name = "WANDGRUNT";
             break;
@@ -5646,7 +5653,7 @@ i32 CPlay::BuildGruntTypeNameTable(i32 typeIdx, i32 a2, i32 a3, i32 a4) {
             name = "REAPERGRUNT";
             break;
     }
-    return this->BindWarlordName(name, a2, a3, a4);
+    return ((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(name, a2, a3, a4);
 }
 
 // ===========================================================================
@@ -5872,7 +5879,7 @@ i32 CPlay::LoadGameAnims(i32 force) {
     if (!self->m_c) {
         return 0;
     }
-    if (((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GAME")) {
+    if (((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GAME")) {
         return 1;
     }
 
@@ -5901,18 +5908,14 @@ struct CParseSource {
     void* m_c;        // +0xc  install key
     i32 BeginParse(); // 0x139960
 };
-// The destination category table (the sound manager at m_4->m_48).
-struct CMusicCatTable {
-    void Clear();                                   // 0x538530 (thiscall, no arg)
-    void Install(void* res, void* key, char* name); // 0x538670 (thiscall)
-};
-// Typed view of `this` for the m_4->m_48 sound category table.
+// The destination category table is the CGruntzSoundZ manager at m_4->m_48
+// (StopAndFlush @0x138530, CreateBank @0x138670; GruntzSoundZ.h).
 struct CMusicOwner {
     char p0[0x4];
     struct SndHolder {
         char p0[0x48];
-        CMusicCatTable* m_48; // +0x48
-    }* m_4;                   // +0x04
+        CGruntzSoundZ* m_48; // +0x48
+    }* m_4;                  // +0x04
 };
 
 #define MUSIC_TAG_XMI 0x584d49 // 'XMI'
@@ -5920,7 +5923,7 @@ struct CMusicOwner {
 RVA(0x000dba30, 0x1ca)
 i32 CPlay::BuildMusicCategoryTable(i32) {
     CMusicOwner* self = (CMusicOwner*)this;
-    self->m_4->m_48->Clear();
+    self->m_4->m_48->StopAndFlush();
 
     CSymTab* levelSet = (CSymTab*)m_levelBank->ResolvePath("MIDIZ");
     if (levelSet) {
@@ -5928,28 +5931,28 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->Install(res, e->m_c, "AMBIENT0");
+                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "AMBIENT0");
             }
         }
         e = (CParseSource*)levelSet->Insert("AMBIENT1", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->Install(res, e->m_c, "AMBIENT1");
+                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "AMBIENT1");
             }
         }
         e = (CParseSource*)levelSet->Insert("INTRO0", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->Install(res, e->m_c, "INTRO0");
+                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "INTRO0");
             }
         }
         e = (CParseSource*)levelSet->Insert("INTRO1", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->Install(res, e->m_c, "INTRO1");
+                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "INTRO1");
             }
         }
     }
@@ -5960,21 +5963,21 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->Install(res, e->m_c, "POWERUP");
+                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "POWERUP");
             }
         }
         e = (CParseSource*)gameSet->Insert("CURSE", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->Install(res, e->m_c, "CURSE");
+                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "CURSE");
             }
         }
         e = (CParseSource*)gameSet->Insert("MONOLITH", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->Install(res, e->m_c, "MONOLITH");
+                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "MONOLITH");
             }
         }
     }
@@ -6281,8 +6284,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
     if (!self->m_c) {
         return 0;
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
-             ->HasKeyEqual_155550("GRUNTZ_NORMALGRUNT")) {
+    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)
+             ->HasKeyPrefix_152c50("GRUNTZ_NORMALGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_NORMALGRUNT");
         if (!s) {
             return 0;
@@ -6293,7 +6296,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GRUNTZ_DEATHZ")) {
+    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_DEATHZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_DEATHZ");
         if (!s) {
             return 0;
@@ -6304,8 +6307,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
-             ->HasKeyEqual_155550("GRUNTZ_ENTRANCEZ")) {
+    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)
+             ->HasKeyPrefix_152c50("GRUNTZ_ENTRANCEZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
@@ -6316,7 +6319,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GRUNTZ_EXITZ")) {
+    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_EXITZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_EXITZ");
         if (!s) {
             return 0;
@@ -6327,8 +6330,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
-             ->HasKeyEqual_155550("GRUNTZ_GRUNTPUDDLE")) {
+    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)
+             ->HasKeyPrefix_152c50("GRUNTZ_GRUNTPUDDLE")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_GRUNTPUDDLE");
         if (!s) {
             return 0;
@@ -6339,7 +6342,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)->HasKeyEqual_155550("GRUNTZ_PICKUPS")) {
+    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_PICKUPS")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_PICKUPS");
         if (!s) {
             return 0;
@@ -6350,8 +6353,8 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawWorkerRegistry*)self->m_c->m_animRegistry)
-             ->HasKeyEqual_155550("GRUNTZ_BOMBGRUNT")) {
+    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)
+             ->HasKeyPrefix_152c50("GRUNTZ_BOMBGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
@@ -6415,7 +6418,7 @@ i32 CPlay::ResetForMode(i32 mode) {
         if (mode != 9) {
             ((CWorldSoundSet*)m_4w()->m_54)->Resume();
         }
-        m_4w()->m_68->Reset();
+        ((CTriggerMgr*)m_4w()->m_68)->DestroyAllAnims(); // reg m_68 CTriggerMgr @0x7d330
         ((CGruntSpawnConfig*)m_4w()->m_60)->DtorBody();
     }
     return 1;
@@ -7316,31 +7319,31 @@ RVA(0x000dd050, 0x24b)
 i32 CPlay::BuildGruntNamespaceList(i32 arg) {
     CString s;
     s = "NORMALGRUNT";
-    if (!RegisterNamespace(s, 1, 0, arg)) {
+    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "DEATHZ";
-    if (!RegisterNamespace(s, 1, 0, arg)) {
+    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "ENTRANCEZ";
-    if (!RegisterNamespace(s, 1, 0, arg)) {
+    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "EXITZ";
-    if (!RegisterNamespace(s, 1, 0, arg)) {
+    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "GRUNTPUDDLE";
-    if (!RegisterNamespace(s, 1, 0, arg)) {
+    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "PICKUPS";
-    if (!RegisterNamespace(s, 1, 0, arg)) {
+    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     s = "BOMBGRUNT";
-    if (!RegisterNamespace(s, 1, 0, arg)) {
+    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, arg)) {
         return 0;
     }
     return 1;
@@ -7353,26 +7356,26 @@ i32 CPlay::BuildGruntNamespaceList(i32 arg) {
 RVA(0x000dd340, 0x189)
 i32 CPlay::BuildWarlordNameTable(i32 arg) {
     for (i32 id = 2; id <= 0x20; id++) {
-        if (!ProbeWarlord(id, 0, 0, 0)) {
+        if (!BuildGruntTypeNameTable(id, 0, 0, 0)) {
             return 0;
         }
     }
-    if (!ProbeWarlord(0x39, 0, 0, arg)) {
+    if (!BuildGruntTypeNameTable(0x39, 0, 0, arg)) {
         return 0;
     }
-    if (!ProbeWarlord(0x3a, 0, 0, arg)) {
+    if (!BuildGruntTypeNameTable(0x3a, 0, 0, arg)) {
         return 0;
     }
     CString s("WARLORDZ_NAPOLEAN");
-    if (!BindWarlordName(s, 0, 0, arg)) {
+    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
         return 0;
     }
     s = "WARLORDZ_VIKING";
-    if (!BindWarlordName(s, 0, 0, arg)) {
+    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
         return 0;
     }
     s = "WARLORDZ_PATTON";
-    if (!BindWarlordName(s, 0, 0, arg)) {
+    if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 0, 0, arg)) {
         return 0;
     }
     return 1;
@@ -7429,18 +7432,18 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                 WarlordLoadTick(0);
                 loaded[id] = 1;
             }
-            if (!ProbeWarlord(id, 1, 0, ctx)) {
+            if (!BuildGruntTypeNameTable(id, 1, 0, ctx)) {
                 return 0;
             }
         }
-        if (!ProbeWarlord(0x39, 1, 0, ctx)) {
+        if (!BuildGruntTypeNameTable(0x39, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x21] == 0) {
             WarlordLoadTick(0);
             loaded[0x21] = 1;
         }
-        if (!ProbeWarlord(0x3a, 1, 0, ctx)) {
+        if (!BuildGruntTypeNameTable(0x3a, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x22] == 0) {
@@ -7448,7 +7451,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             loaded[0x22] = 1;
         }
         CString s("WARLORDZ_NAPOLEAN");
-        if (!BindWarlordName(s, 1, 0, ctx)) {
+        if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x23] == 0) {
@@ -7456,7 +7459,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             loaded[0x23] = 1;
         }
         s = "WARLORDZ_VIKING";
-        if (!BindWarlordName(s, 1, 0, ctx)) {
+        if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x24] == 0) {
@@ -7464,7 +7467,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             loaded[0x24] = 1;
         }
         s = "WARLORDZ_PATTON";
-        if (!BindWarlordName(s, 1, 0, ctx)) {
+        if (!((CNamespaceLoader*)this)->BuildAssetNamespacePrefixes(s, 1, 0, ctx)) {
             return 0;
         }
         if (loaded[0x25] == 0) {
@@ -7486,7 +7489,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
             if (marker == (void*)CreateGruntStartingPoint) {
                 i32 v = obj->m_11c;
                 if (v) {
-                    if (!ProbeWarlord(v, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(v, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[v] == 0) {
@@ -7496,7 +7499,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                 }
                 v = obj->m_120;
                 if (v) {
-                    if (!ProbeWarlord(v, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(v, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[v] == 0) {
@@ -7506,7 +7509,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                 }
                 switch (obj->m_118) {
                     case 0x7:
-                        if (!ProbeWarlord(1, 1, 0, ctx)) {
+                        if (!BuildGruntTypeNameTable(1, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[1] == 0) {
@@ -7515,7 +7518,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         }
                         break;
                     case 0x8:
-                        if (!ProbeWarlord(3, 1, 0, ctx)) {
+                        if (!BuildGruntTypeNameTable(3, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[3] == 0) {
@@ -7524,7 +7527,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         }
                         break;
                     case 0x9:
-                        if (!ProbeWarlord(5, 1, 0, ctx)) {
+                        if (!BuildGruntTypeNameTable(5, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[5] == 0) {
@@ -7533,7 +7536,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         }
                         break;
                     case 0xa:
-                        if (!ProbeWarlord(7, 1, 0, ctx)) {
+                        if (!BuildGruntTypeNameTable(7, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[7] == 0) {
@@ -7542,7 +7545,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         }
                         break;
                     case 0xb:
-                        if (!ProbeWarlord(0xd, 1, 0, ctx)) {
+                        if (!BuildGruntTypeNameTable(0xd, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0xd] == 0) {
@@ -7551,7 +7554,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         }
                         break;
                     case 0xc:
-                        if (!ProbeWarlord(0x11, 1, 0, ctx)) {
+                        if (!BuildGruntTypeNameTable(0x11, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0x11] == 0) {
@@ -7560,7 +7563,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         }
                         break;
                     case 0xf:
-                        if (!ProbeWarlord(0x13, 1, 0, ctx)) {
+                        if (!BuildGruntTypeNameTable(0x13, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0x13] == 0) {
@@ -7569,7 +7572,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         }
                         break;
                     case 0x10:
-                        if (!ProbeWarlord(0x1e, 1, 0, ctx)) {
+                        if (!BuildGruntTypeNameTable(0x1e, 1, 0, ctx)) {
                             return 0;
                         }
                         if (loaded[0x1e] == 0) {
@@ -7591,7 +7594,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                 }
                 i32 d = obj->m_124;
                 if (d <= 0x20) {
-                    if (!ProbeWarlord(d, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(d, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[obj->m_124] == 0) {
@@ -7599,7 +7602,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         loaded[obj->m_124] = 1;
                     }
                 } else if (d == 0x39) {
-                    if (!ProbeWarlord(0x39, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(0x39, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
@@ -7607,7 +7610,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         loaded[0x21] = 1;
                     }
                 } else if (d == 0x3a) {
-                    if (!ProbeWarlord(0x3a, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(0x3a, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
@@ -7615,7 +7618,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         loaded[0x22] = 1;
                     }
                 } else if (d == 0x55 || d == 0x32) {
-                    if (!ProbeWarlord(obj->m_118, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(obj->m_118, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[obj->m_118] == 0) {
@@ -7636,7 +7639,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                 }
                 i32 e = obj->m_11c;
                 if (e <= 0x20) {
-                    if (!ProbeWarlord(e, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(e, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[obj->m_11c] == 0) {
@@ -7644,7 +7647,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         loaded[obj->m_11c] = 1;
                     }
                 } else if (obj->m_124 == 0x39) {
-                    if (!ProbeWarlord(0x39, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(0x39, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x21] == 0) {
@@ -7652,7 +7655,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         loaded[0x21] = 1;
                     }
                 } else if (obj->m_124 == 0x3a) {
-                    if (!ProbeWarlord(0x3a, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(0x3a, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[0x22] == 0) {
@@ -7660,7 +7663,7 @@ i32 CPlay::LoadWarlordSprites(i32 ctx, i32* loaded) {
                         loaded[0x22] = 1;
                     }
                 } else if (e == 0x55 || e == 0x32) {
-                    if (!ProbeWarlord(obj->m_118, 1, 0, ctx)) {
+                    if (!BuildGruntTypeNameTable(obj->m_118, 1, 0, ctx)) {
                         return 0;
                     }
                     if (loaded[obj->m_118] == 0) {
@@ -7905,7 +7908,6 @@ SIZE_UNKNOWN(CExitWorld);
 SIZE_UNKNOWN(CHitMarker);
 SIZE_UNKNOWN(CImageRegistry);
 SIZE_UNKNOWN(CInputDispatch);
-SIZE_UNKNOWN(CMusicCatTable);
 SIZE_UNKNOWN(CMusicEntry);
 SIZE_UNKNOWN(CMusicOwner);
 SIZE_UNKNOWN(CMusicSet);
@@ -7917,7 +7919,6 @@ SIZE_UNKNOWN(CProfFlush);
 SIZE_UNKNOWN(CRegExit);
 SIZE_UNKNOWN(CRegHitGate);
 SIZE_UNKNOWN(CRegHitView);
-SIZE_UNKNOWN(CRegSink);
 SIZE_UNKNOWN(CRegSlot);
 SIZE_UNKNOWN(StateMgrBZ);
 SIZE_UNKNOWN(CRenderer);

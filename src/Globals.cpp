@@ -595,9 +595,9 @@ DATA(0x002c1288)
 extern i32 g_randSeed; // 0x6c1288  LCG seed
 DATA(0x005eab40)
 extern float g_zeroF;
-DATA(0x00612f78)
+DATA(0x00212f78)
 extern char* g_colorNames[]; // "Color 0".."Color 7"
-DATA(0x00612fc0)
+DATA(0x00212fc0)
 extern char* g_difficultyNames[]; // "Easy"/"Normal"/"Hard"
 DATA(0x0061aabc)
 extern char g_imageTag[];
@@ -611,8 +611,9 @@ DATA(0x00644ca4)
 extern void* g_renderCtx; // g_644ca4
 DATA(0x006454e8)
 extern char* g_areaNames[];
-DATA(0x00645570)
-extern GLSResetMgr* g_glsResetMgr;
+// g_645570 (the DirectInputMgr2 reset singleton @0x245570) is bound canonically in
+// GruntzMgr.cpp; the former g_glsResetMgr view (VA-typo'd 0x645570, mis-typed
+// GLSResetMgr*) was folded onto it (PlayStateActivate uses g_645570 directly).
 DATA(0x0064c814)
 extern CImagePool* g_previewMgr;
 DATA(0x0064c868)

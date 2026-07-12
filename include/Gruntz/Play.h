@@ -386,8 +386,9 @@ public:
     // Body in PlayMessageImage.cpp.
     void DrawMessageFrame(i32 index, i32 useFront);              // 0x0d1650
     void LoadSBITextEdges(char* name);                           // 0x0d1710 (THIS TU)
-    i32 BuildGruntNamespaceList(i32 arg);                        // 0x0dd050 (THIS TU)
-    i32 RegisterNamespace(CString& name, i32 a, i32 b, i32 arg); // call 0x2bc1 (THIS TU sibling)
+    i32 BuildGruntNamespaceList(i32 arg); // 0x0dd050 (THIS TU)
+    // The namespace-register op IS CNamespaceLoader::BuildAssetNamespacePrefixes
+    // (0xdca70, AssetNamespaceLoader.h) - reached via ((CNamespaceLoader*)this)->...
     void PostHud(i32 wParam);
     void MarkerBegin(i32 now);
     void StepC(); // (THIS TU)
@@ -497,7 +498,6 @@ public:
     i32 PresentAndFlush();  // 0x0cba10 (restore-mode guard + present-or-notify + flush)
     // Overlay sub-step migrated from the engine_boundary backlog:
     i32 EnterOverlayDrag(i32 arg); // 0x0d6440 (arm overlay-drag + guts busy words)
-    void Helper2c7f();             // 0x0d6440 prep sub-step (thiscall on this, reloc-masked)
     // leaf engine callees the above dispatch to (external, reloc-masked):
     void HudClickInRect(i32 a, i32 x, i32 y); // 0x4a9500 (thiscall on this)
     // HandleDragMove's own leaf callees (external, reloc-masked):
@@ -505,7 +505,6 @@ public:
     void DragSnapTo(i32 x, i32 y);           // 0x4fe860 (thiscall on this)
     void EndDragSel();                       // 0x4da2d0 (thiscall on this)
     // OnMouseUp (0x0cdb10) own-this leaf callees (reloc-masked, thiscall):
-    void ClearDragBoxes(i32 a, i32 b);                          // 0x35da  reset the drag-box rects
     i32 FindStartPointAt309e(i32 sx, i32 sy, i32* px, i32* py); // 0x309e  snap click -> tile
     i32 ApplyOverlay3e59(i32 a, i32 x, i32 y);                  // 0x3e59  (on m_overlayActive cast)
 
@@ -562,9 +561,9 @@ public:
     i32 PrepareReset();                 // 0x1d75 thunk  (this) -> proceed gate
     // FreeListTeardown's reloc-masked CPlay-thiscall leaf (external):
     void Teardown1780(); // 0x1780 thunk  (this) early teardown step
-    // BuildWarlordNameTable's reloc-masked CPlay-thiscall leaves (external):
-    i32 ProbeWarlord(i32 id, i32 a, i32 b, i32 c);                 // 0x12da thunk  -> found
-    i32 BindWarlordName(const CString& name, i32 a, i32 b, i32 c); // 0x2bc1 thunk
+    // BuildWarlordNameTable/LoadWarlordSprites leaves: ProbeWarlord IS
+    // CPlay::BuildGruntTypeNameTable (0xdc6d0); BindWarlordName IS
+    // CNamespaceLoader::BuildAssetNamespacePrefixes (0xdca70, reached via cast).
     // LoadWarlordSprites (0x0d65d0): ensure every sprite set a placed warlord needs is
     // loaded - full campaign preload (registry m_134 != 1) or the in-level walk of the
     // placed-object display list (renderer A's m_10). Re-homed from the ApiCaller
@@ -618,15 +617,10 @@ public:
         void StepBracketR(); // 0x4fe520  (']')
         void StepBracketL(); // 0x4fe460  ('[')
         void StepMinus();    // 0x4fe600  ('-')
-        // EnterOverlayDrag (0x0d6440) guts sub-steps (reloc-masked ILT thunks):
-        void Guts123f();             // (thiscall, no arg)  m_state==2 path
-        void Guts1d61(i32 a, i32 b); // (thiscall, 2 args)  m_mode!=5 path
-        void Guts427d(i32 a, i32 b); // (thiscall, 2 args)
-        void Guts125d();             // (thiscall, no arg)
-        void Guts35b2(i32 a);        // (thiscall, 1 arg)
-        void Guts12fd(i32 a);        // (thiscall, 1 arg)
-        void Guts16ea();             // (thiscall, no arg)
-        void Guts367a();             // (thiscall, no arg)  ResumeGame
+        // The EnterOverlayDrag/PauseGame/ResumeGame/OnKeyCommand guts sub-steps are the
+        // real CSBI_RectOnly widget methods (RefreshState/SetTab/SetTabState/Deactivate/
+        // BuildGameTab*/ResetWidgets/TryActivate @0xfe670/0x100xxx/0x102xxx) - reached via
+        // ((CSBI_RectOnly*)m_guts)->... at the call sites (SBI_RectOnly.h), not local decls.
         // HandleTileClick HUD hit-test dispatch (thiscall, reloc-masked):
         i32 HitTest3ad5(i32 x, i32 y); // -> slot index or -1
         void Apply3ebd(i32 idx);       // apply the hit slot
