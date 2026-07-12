@@ -298,6 +298,13 @@ struct CNetCmdSlot {
     void AdvanceSeq(i32 id);             // c0f10  fold an ack id into the high-water window
     void RaiseMax(i32 v);                // c0fa0  keep the high-water sequence
     void ResetTriple(i32* p);            // c10a0  splat -1 over three dwords
+    // The three command-id-window helpers (0xc0fd0/0xc1010/0xc1060, __thiscall). Retail
+    // passes the window (m_rangeA/m_rangeB) explicitly and ignores `this`, so at every
+    // call site cl loads ecx = this even though the body never reads it - modeling them as
+    // members reproduces that (and binds SendBatch/SendOne's cross-view calls).
+    i32 NetCmdIdFind(i32* arr, i32 v);   // c0fd0  is `v` one of the three ids in `arr`?
+    void NetCmdIdAdd(i32* arr, i32 v);   // c1010  add `v` to the first free (-1) slot
+    void NetCmdIdClear(i32* arr, i32 v); // c1060  clear (-1) the first slot equal to `v`
     void AddCmd(CNetCmd* cmd);           // c1170  enqueue a command (dedup by seq)
     void RemoveCmd(i32 seq);             // c11b0  drop one queued command
     void GetRange(i32* pMin, i32* pMax); // c1230  min/max queued sequence
@@ -308,9 +315,9 @@ struct CNetCmdSlot {
     i32
     Init(i32 a1, i32* a2, i32 a3); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
     i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record
-    // Slot-readiness check CNetSession::Verify(i32) dispatches on each slot (0xc1320,
-    // reloc-masked). Retail owner is CNetSyncCheck::AllSlotsReady - a cross-object
-    // dispatch on the slot cursor; declared here so the __thiscall call shape falls out.
+    // Slot-readiness check 0xc1320 (CNetSession::Verify dispatches it on each slot cursor).
+    // `this` is the slot: reads m_owner (+0x1c) -> m_session -> m_slots[], gated by this
+    // slot's m_ackFlags (+0x3c). (Was a stray CNetSyncCheck view; folded back to the slot.)
     i32 Ready(); // c1320
 };
 SIZE(CNetCmdSlot, 0x64); // fully-laid-out inline command slot (array stride 0x64)

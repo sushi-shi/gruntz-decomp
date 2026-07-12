@@ -23,9 +23,11 @@ void SplitMillisToHMS(unsigned n, unsigned* hh, unsigned* mm, unsigned* ss) {
 
 // BlockScreenSaver (0x1192d0, __cdecl): return 1 to swallow a SC_SCREENSAVE/
 // SC_MONITORPOWER WM_SYSCOMMAND while the window is not iconic. (Re-homed from
-// ApiMiscHelpers.)
+// ApiMiscHelpers.) A DlgProc pre-handler - its only callers are the Net/LobbyDialogs
+// DlgProcs, which pass all four dialog params (lParam unused here), so the retail
+// signature is 4-arg; keeping it 4-arg makes those calls bind to this RVA.
 RVA(0x001192d0, 0x39)
-i32 BlockScreenSaver(HWND hWnd, i32 msg, i32 wParam) {
+i32 BlockScreenSaver(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     if (msg == 0x112) {
         i32 sc = wParam & 0xfff0;
         if (sc == 0xf140 || sc == 0xf170) {

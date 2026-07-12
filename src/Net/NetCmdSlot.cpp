@@ -44,11 +44,8 @@ extern char g_idListBuf[0x40];
 DATA(0x0024aca8)
 extern CPtrList g_pool; // 0x64aca8
 
-// The three __stdcall id-set helpers are defined further down (RVA order); forward-
-// declare so ProcessCmd / AdvanceSeq above them can fold their windows through them.
-i32 __stdcall NetCmdIdFind(i32* arr, i32 v);
-void __stdcall NetCmdIdAdd(i32* arr, i32 v);
-void __stdcall NetCmdIdClear(i32* arr, i32 v);
+// The three id-window helpers (NetCmdIdFind/Add/Clear) are now CNetCmdSlot __thiscall
+// methods (declared in <Net/NetMgr.h>); ProcessCmd / AdvanceSeq call them as this->...
 
 // The recycled-command-packet allocator (0xbf530, __cdecl): hands back a node from
 // the global packet pool. Modeled by its delinker name so the call is named.
@@ -84,18 +81,6 @@ struct CCluster0c {
     void Init(); // 0xc0c20
 };
 SIZE_UNKNOWN(CCluster0c);
-
-// The owner of AllSlotsReady: caches a CNetMgr* at +0x1c and a per-slot local-ack
-// flag array at +0x3c. Its real class is not yet pinned; modeled minimally.
-struct CNetSyncCheck {
-    char m_pad0[0x1c]; // +0x00
-    CNetMgr* m_netMgr; // +0x1c  the owning net manager
-    char m_pad20[0x3c - 0x20];
-    i32 m_localAckFlags[4]; // +0x3c  per-slot local-ack flags
-
-    i32 AllSlotsReady(); // c1320
-};
-SIZE_UNKNOWN(CNetSyncCheck); // minimal view (only +0x1c/+0x3c pinned); retail size TBD
 
 // The slot object whose +0x3c..+0x48 range ClearRange@0xbf120 zeroes (== the same
 // 0x64-byte slot; ClearRange IS CLobbyChannel::InitSub3c, absorbed from NetMgrMisc).
@@ -161,7 +146,6 @@ struct CLobbyChannel {
     char pad5c[0x64 - 0x5c];
 
     void Init();                        // 0xc0c20 (== CCluster0c::Init)
-    i32 M_c0fd0(void* p, i32 v);        // 0xc0fd0
     void M_c1230(i32* a, i32* b);       // 0xc1230
     GruntRec* M_c12b0(i32 v);           // 0xc12b0  find the record for `v`, or 0
     void M_c11b0(i32 v);                // 0xc11b0
@@ -552,25 +536,25 @@ i32 CLobbySync::SendBatch() {
                 }
             }
             i32 v = m_seq + 1;
-            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
+            if (s->m_sentSeq < v && ((CNetCmdSlot*)s)->NetCmdIdFind((i32*)&s->m_58, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
             }
             v = m_seq;
-            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
+            if (s->m_sentSeq < v && ((CNetCmdSlot*)s)->NetCmdIdFind((i32*)&s->m_58, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
             }
             v = m_seq - 1;
-            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
+            if (s->m_sentSeq < v && ((CNetCmdSlot*)s)->NetCmdIdFind((i32*)&s->m_58, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
             }
             v = m_seq - 2;
-            if (s->m_sentSeq < v && s->M_c0fd0(&s->m_58, v) == 0) {
+            if (s->m_sentSeq < v && ((CNetCmdSlot*)s)->NetCmdIdFind((i32*)&s->m_58, v) == 0) {
                 if (SendOne(s, v)) {
                     count++;
                 }
@@ -594,10 +578,10 @@ i32 CLobbySync::SendOne(CLobbyChannel* slot, i32 val) {
     }
     unsigned char flags = 0;
     i32 baseSeq = slot->m_baseSeq;
-    if (slot->M_c0fd0(&slot->m_4c, baseSeq + 2)) {
+    if (((CNetCmdSlot*)slot)->NetCmdIdFind((i32*)&slot->m_4c, baseSeq + 2)) {
         flags = 0x10;
     }
-    if (slot->M_c0fd0(&slot->m_4c, baseSeq + 3)) {
+    if (((CNetCmdSlot*)slot)->NetCmdIdFind((i32*)&slot->m_4c, baseSeq + 3)) {
         flags |= 0x20;
     }
     gB_flag = flags;
@@ -1091,10 +1075,11 @@ void CNetCmdSlot::RaiseMax(i32 v) {
 }
 
 // ---------------------------------------------------------------------------
-// NetCmdIdFind (0x0c0fd0, __stdcall) - is `v` one of the three ids in `arr`?
+// CNetCmdSlot::NetCmdIdFind (0x0c0fd0, __thiscall; `this` unused) - is `v` one of the
+// three ids in `arr`?
 // ---------------------------------------------------------------------------
 RVA(0x000c0fd0, 0x24)
-i32 __stdcall NetCmdIdFind(i32* arr, i32 v) {
+i32 CNetCmdSlot::NetCmdIdFind(i32* arr, i32 v) {
     for (i32 i = 0; i < 3; i++) {
         if (v == arr[i]) {
             return 1;
@@ -1104,10 +1089,11 @@ i32 __stdcall NetCmdIdFind(i32* arr, i32 v) {
 }
 
 // ---------------------------------------------------------------------------
-// NetCmdIdAdd (0x0c1010, __stdcall) - add `v` to the first free (-1) slot.
+// CNetCmdSlot::NetCmdIdAdd (0x0c1010, __thiscall; `this` unused) - add `v` to the first
+// free (-1) slot.
 // ---------------------------------------------------------------------------
 RVA(0x000c1010, 0x32)
-void __stdcall NetCmdIdAdd(i32* arr, i32 v) {
+void CNetCmdSlot::NetCmdIdAdd(i32* arr, i32 v) {
     if (NetCmdIdFind(arr, v)) {
         return;
     }
@@ -1120,10 +1106,11 @@ void __stdcall NetCmdIdAdd(i32* arr, i32 v) {
 }
 
 // ---------------------------------------------------------------------------
-// NetCmdIdClear (0x0c1060, __stdcall) - clear (-1) the first slot equal to `v`.
+// CNetCmdSlot::NetCmdIdClear (0x0c1060, __thiscall; `this` unused) - clear (-1) the first
+// slot equal to `v`.
 // ---------------------------------------------------------------------------
 RVA(0x000c1060, 0x29)
-void __stdcall NetCmdIdClear(i32* arr, i32 v) {
+void CNetCmdSlot::NetCmdIdClear(i32* arr, i32 v) {
     for (i32 i = 0; i < 3; i++) {
         if (v == arr[i]) {
             arr[i] = -1;
@@ -1266,23 +1253,25 @@ void CNetCmdSlot::ClearCmds() {
 }
 
 // ---------------------------------------------------------------------------
-// CNetSyncCheck::AllSlotsReady (0x0c1320, __thiscall) - false (0) if any active,
-// unreset command slot has not yet been acked locally; true (1) otherwise.
+// CNetCmdSlot::Ready (0x0c1320, __thiscall) - dispatched by CNetSession::Verify on each
+// slot cursor: false (0) if any active, unreset command slot has not yet been acked
+// locally (per THIS slot's m_ackFlags); true (1) otherwise. `this` is the slot: m_owner
+// (+0x1c) -> m_session -> m_slots[], gated by m_ackFlags (+0x3c).
 // ---------------------------------------------------------------------------
 // @early-stop
 // induction-var/regalloc wall (~79%): logic byte-exact. Retail keeps `sess` in
 // esi and recomputes the slot via `lea ecx,[esi+eax+0x20]` each iteration; cl folds
 // sess+offset into one running slot pointer and counts i<4. An IV-selection coin-flip.
 RVA(0x000c1320, 0x4a)
-i32 CNetSyncCheck::AllSlotsReady() {
-    CNetMgr* mgr = m_netMgr;
+i32 CNetCmdSlot::Ready() {
+    CNetMgr* mgr = m_owner;
     if (mgr == 0) {
         return 0;
     }
     CNetSession* sess = mgr->m_session;
     for (i32 i = 0; i < 4; i++) {
         CNetCmdSlot* slot = &sess->m_slots[i];
-        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0 && m_localAckFlags[i] == 0) {
+        if (slot != 0 && slot->m_state == 3 && slot->m_resetGuard == 0 && m_ackFlags[i] == 0) {
             return 0;
         }
     }

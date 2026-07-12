@@ -220,39 +220,20 @@ inline void* operator new(u32, void* p) {
     return p;
 }
 
-// AddGroupNode's node: the DirectPlay group-list entry (0x10 bytes), the real
-// polymorphic InterfaceObject shape (InterfaceObject.cpp owns ??_7InterfaceObject
-// @0x5f0748). Derives from the shared engine grand-base CObject (5-slot
-// interface, grand-base vtbl 0x5e8cb4) - vtable_hierarchy confirms the CObject slot
-// prefix (0x1bef01/0x0028ec/0x00106e/0x004034 + dtor). Real polymorphic (ALL-VTABLES
-// mandate): `new CNetGroupNode()` makes cl emit the two-phase vptr stamp (CObject
-// base 0x5e8cb4 then own 0x5f0748) around the +0x8 CString member ctor and the /GX
-// new-cleanup frame - no manual `*(void**)node = &g_net*Vtbl` stamp. The vtables cl
-// emits here are orphans (reloc-mask 0x5e8cb4 / 0x5f0748; the latter owned by
-// InterfaceObject.cpp's VTBL, so no VTBL is attached here -> no dup-DATA).
-SIZE_UNKNOWN(CNetGroupNode);
-struct CNetGroupNode : public CObject {
-    i32 m_4;        // +0x04  the service-provider GUID (stored raw)
-    CString m_name; // +0x08  the provider name
-    i32 m_c;        // +0x0c  cached AddTail position
-    CNetGroupNode() {
-        m_4 = 0;
-        m_c = 0;
-    }
-    virtual ~CNetGroupNode() OVERRIDE;
-};
-inline CNetGroupNode::~CNetGroupNode() {}
-
 // ---------------------------------------------------------------------------
 // CNetMgr::AddGroupNode  (__thiscall; ret 0x8, 2 args; /GX EH frame in retail).
-// `new`-constructs a 0x10-byte group node (real polymorphic ctor: two-phase vptr
-// stamp around the name CString ctor), then (given a non-null GUID + name) records
-// the GUID, assigns the name, and AddTail's the node onto the +0x1c group CObList
-// (caching the position at +0xc). On a null GUID/name it deletes the node (the
-// slot-1 scalar-deleting dtor) and returns 0.
+// `new`-constructs the 0x10-byte DirectPlay group node - the canonical polymorphic
+// InterfaceObject (own vtable ??_7InterfaceObject@0x5f0748, owned by InterfaceObject.cpp's
+// VTBL; base CObject vtbl 0x5e8cb4). The inline InterfaceObject ctor stamps both vptrs
+// around the +0x8 name CString ctor and zeroes m_4/m_c; the /GX new-cleanup frame is
+// retail. Given a non-null GUID + name it records the GUID, assigns the name, and
+// AddTail's the node onto the +0x1c group CObList (caching the position at +0xc). On a
+// null GUID/name it deletes the node (the slot-1 scalar-deleting dtor) and returns 0.
+// (Was a CNetGroupNode ctor-side view of this same node; folded onto InterfaceObject so
+// the own-vptr stamp binds to ??_7InterfaceObject rather than reloc-masking.)
 RVA(0x00178360, 0xc8)
 i32 CNetMgr::AddGroupNode(void* guid, void* name) {
-    CNetGroupNode* node = new CNetGroupNode();
+    InterfaceObject* node = new InterfaceObject();
 
     if (guid == 0 || name == 0) {
         delete node;
@@ -1098,17 +1079,26 @@ InterfaceObject* CNetMgr::Find(i32 kind) {
 // CWapNodeB (a NetMgr node type, declared in <Font/Font.h> for now).
 // ===========================================================================
 
-// GUIDs for the DirectPlay service-provider interface checks (IsInterfaceX).
+// GUIDs for the DirectPlay service-provider interface checks (IsInterfaceX). Given
+// EXTERNAL linkage (`extern const`) so cl emits a STABLE mangled name (internal `const`
+// gets a non-deterministic $S-suffixed local name that shifts every build). clang mangles
+// the const-array storage class as `Q` where cl5 uses `P`, so DATA() would miss; bind by
+// the exact cl name via @data-symbol (authority-checked against netmgr.obj).
+// @data-symbol: ?g_guid1@@3PBEB 0x00224d58
+// @data-symbol: ?g_guid2@@3PBEB 0x00224d68
+// @data-symbol: ?g_guid3@@3PBEB 0x00224d78
+// @data-symbol: ?g_guid4@@3PBEB 0x00224d88
+// @data-symbol: ?g_guid5@@3PBEB 0x00224d98
 // clang-format off
-const u8 g_guid1[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
+extern const u8 g_guid1[16] = {0x00, 0xc4, 0x5b, 0x68, 0x2c, 0x9d, 0xcf, 0x11,
                                    0xa9, 0xcd, 0x00, 0xaa, 0x00, 0x68, 0x86, 0xe3};
-const u8 g_guid2[16] = {0xe0, 0x5e, 0xe9, 0x36, 0x77, 0x85, 0xcf, 0x11,
+extern const u8 g_guid2[16] = {0xe0, 0x5e, 0xe9, 0x36, 0x77, 0x85, 0xcf, 0x11,
                                    0x96, 0x0c, 0x00, 0x80, 0xc7, 0x53, 0x4e, 0x82};
-const u8 g_guid3[16] = {0x60, 0xa7, 0xea, 0x44, 0x68, 0xcb, 0xcf, 0x11,
+extern const u8 g_guid3[16] = {0x60, 0xa7, 0xea, 0x44, 0x68, 0xcb, 0xcf, 0x11,
                                    0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
-const u8 g_guid4[16] = {0x60, 0x68, 0x1d, 0x0f, 0xd9, 0x88, 0xcf, 0x11,
+extern const u8 g_guid4[16] = {0x60, 0x68, 0x1d, 0x0f, 0xd9, 0x88, 0xcf, 0x11,
                                    0x9c, 0x4e, 0x00, 0xa0, 0xc9, 0x05, 0x42, 0x5e};
-const u8 g_guid5[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
+extern const u8 g_guid5[16] = {0x00, 0xb4, 0x23, 0xd2, 0x7d, 0x0a, 0xd1, 0x11,
                                    0x90, 0xc3, 0x00, 0x60, 0x97, 0x72, 0x58, 0x40};
 // clang-format on
 

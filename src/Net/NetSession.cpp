@@ -12,8 +12,9 @@
 #include <rva.h>
 
 // The engine 3-arg string builder at 0x0f9280 (__cdecl, returns 1): concatenates
-// a fixed prefix + `a` + `b` into `dst`. External to this TU (reloc-masked).
-extern "C" i32 NetStrBuild(char* dst, const char* a, const char* b);
+// a fixed prefix + `section` + `key` into `dst`. This IS MakeButeSectionKey (its home
+// is src/Gruntz/FxModeDesc.cpp); referenced by its real name so the call relocs.
+i32 MakeButeSectionKey(char* dst, const char* section, const char* key);
 
 // ---------------------------------------------------------------------------
 // AppendInt() - 0x0f93b0. Format `n` as decimal into a 256-byte scratch buffer
@@ -23,5 +24,5 @@ RVA(0x000f93b0, 0x41)
 void AppendInt(char* dst, const char* sep, i32 n) {
     char buf[256];
     sprintf(buf, "%i", n);
-    NetStrBuild(dst, sep, buf);
+    MakeButeSectionKey(dst, sep, buf);
 }

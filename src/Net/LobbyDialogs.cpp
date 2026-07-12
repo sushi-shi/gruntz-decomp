@@ -35,16 +35,24 @@
 // The CGameRegistry singleton: the lobby DlgProcs read its current game-state
 // (m_curState, +0x2c) which - while a network game is open - IS the CMulti.
 extern "C" CGameRegistry* g_gameReg;
-// GetDlgItem(hWnd, 0x4b6) cache (DAT_00648ce0; homed in Globals.cpp), shared by the
-// timer wrappers.
-extern HWND g_dlgItem_648ce0;
+// GetDlgItem(hWnd, 0x4b6) cache (DAT_00648ce0; canonical home g_dlgResultSink in
+// Globals.cpp - the modeless dialog's cached child HWND, stored raw as i32), shared by
+// the timer wrappers. Bound to the Globals.cpp DATA home name so the store relocs.
+extern i32 g_dlgResultSink;
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 extern "C" char g_emptyString[];
-// The "client status" CString global (?g_6473d8@@3VCString@@A; homed in Multi.cpp).
-extern CString g_clientStatus;
-// CString-data ptr (DAT_00649618): the pending drop-in player's name; its CString
-// length lives 8 bytes before the data. Homed in BoundaryLowerThunks.cpp.
-extern char* g_playerName_649618;
+// The DirectPlay session/client-status CString global (0x6473d8; canonical home
+// g_6473d8 in Multi.cpp). Referenced by its home name so the read relocs.
+extern CString g_6473d8;
+
+// BlockScreenSaver (0x1192d0, GLOBAL scope; home Utils/TimeSplit.cpp): the shared
+// WM_SYSCOMMAND screensaver/monitor-power swallow each lobby DlgProc runs first. 4-arg
+// (lParam unused) so every DlgProc's push count matches. Declared at file scope (NOT
+// inside NetLobby) so it mangles to the global ?BlockScreenSaver@@ TimeSplit binds. First
+// param is void* (not HWND): TimeSplit compiles under the non-STRICT <Win32.h> where HWND
+// is void* (PAX), so the mangled name is ?BlockScreenSaver@@YAHPAXIIJ@Z - this TU's STRICT
+// <Mfc.h> HWND (HWND__*, PAU) would mis-mangle. The HWND args convert to void* implicitly.
+i32 BlockScreenSaver(void*, UINT, WPARAM, LPARAM);
 // DAT_00648cec: the "connection established / abort" latch the join-wait timer polls
 // (nonzero = keep waiting, skip the timeout EndDialog). Home elsewhere; extern-only pin.
 extern "C" i32 g_648cec;
@@ -60,24 +68,24 @@ namespace NetLobby {
     DATA(0x002487e0)
     extern char g_sessionFlag; // DAT_006487e0
 
-    // Per-dialog init helpers (cdecl, reached through ILT jmp-thunks).
-    void Init_42b4(HWND hWnd, void* ctx);            // RVA 0x42b4
-    void Init_1924(HWND hWnd, void* ctx);            // RVA 0x1924
-    void Init_bddb0(HWND hWnd, void* ctx);           // RVA 0xbddb0
-    void Init_2522(HWND hWnd, void* ctx);            // RVA 0x2522
-    void Init_2ed7(HWND hWnd, void* ctx);            // RVA 0x2ed7
-    void InitDropPrompt_be3e0(HWND hWnd, void* ctx); // thunk 0x2185 -> 0xbe3e0
-    // Lobby DlgProc message helpers (cdecl, reached through ILT jmp-thunks).
-    i32 PreHandleLobbyMsg_38c3(HWND, u32, u32, i32); // RVA 0x38c3 -> 0x1192d0
+    // Per-dialog init/timer hooks: empty 1-byte `ret` helpers defined below in this
+    // TU in RVA order (were the unbound Init_42b4/Init_1924/InitDropPrompt/OnLobbyTimerB/
+    // OnLobbyTimerC fake decls that reloc-masked instead of binding). Each RVA is
+    // reached by both a WM_INITDIALOG and a WM_TIMER path, so both call sites bind to
+    // the one empty function at that RVA.
+    void Init_bda50(HWND hWnd, void* ctx); // 0xbda50 (host-wait init/timer hook)
+    void Init_bdbe0(HWND hWnd, void* ctx); // 0xbdbe0 (join-wait init/timer hook)
+    void Init_bddb0(HWND hWnd, void* ctx); // 0xbddb0 (lobby init/timer hook)
+    void Init_be3e0(HWND hWnd, void* ctx); // 0xbe3e0 (drop-wait init/timer hook)
+    void Init_2522(HWND hWnd, void* ctx);  // 0xbe030 (session-wait button enable)
+    void Init_2ed7(HWND hWnd, void* ctx);  // 0xbe820 (drop-in button enable)
     // These four ARE the real dialog helpers defined later in this TU (reloc-masked
     // calls now bind to the correct RVAs); forward-declared so the early DlgProcs
     // above their definitions can call them.
-    void NetDlgInit_bdd60(HWND, void*);     // 0xbdd60 (ex OnLobbyInit_2c66)
-    void NetDlgInitDropWait(HWND, void*);   // 0xbe2f0 (ex OnLobbyInit_371f)
-    void NetDlgSessionStop(HWND, CMulti*);  // 0xbe490 (ex OnLobbyTimerA_265d)
-    void OnLobbyTimerB_154b(HWND, CMulti*); // RVA 0x154b
-    void OnLobbyTimerC_2185(HWND, CMulti*); // RVA 0x2185 -> 0xbe3e0
-    void NetChatSubmit(HWND, void*);        // 0xbe400 (ex OnLobbyCancel_2ae0)
+    void NetDlgInit_bdd60(HWND, void*);    // 0xbdd60 (ex OnLobbyInit_2c66)
+    void NetDlgInitDropWait(HWND, void*);  // 0xbe2f0 (ex OnLobbyInit_371f)
+    void NetDlgSessionStop(HWND, CMulti*); // 0xbe490 (ex OnLobbyTimerA_265d)
+    void NetChatSubmit(HWND, void*);       // 0xbe400 (ex OnLobbyCancel_2ae0)
     // WM_INITDIALOG init helpers defined later in this TU (forward-declared so the
     // sibling wait/drop DlgProcs below can call them before their definitions).
     void NetDlgInit_bda00(HWND hWnd, void* ctx); // 0xbda00
@@ -94,8 +102,9 @@ namespace NetLobby {
     // 0x0bd7f0 (RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - the compiler-
     // generated dynamic initializer for the pending drop-in player-name CString
     // g_str649618: tail-construct it empty in place (CString::CString @0x1b9b93, the
-    // NAFXCW default ctor - reloc-masked). The SAME 4 bytes are read as the char*
-    // g_playerName_649618 (the CString's m_pszData) by NetDlgInitDropIn below.
+    // NAFXCW default ctor - reloc-masked). NetDlgInitDropIn below reads the pending
+    // drop-in name through this CString's LPCTSTR (m_pszData, the char* at 0x249618) -
+    // one DATA home, no separate g_playerName_* char* alias.
     DATA(0x00249618)
     extern CString g_str649618;
     RVA(0x000bd7f0, 0xa)
@@ -109,7 +118,7 @@ namespace NetLobby {
     RVA(0x000bd850, 0x141)
     i32 CALLBACK HostWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg_64557c = hWnd;
-        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+        if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
@@ -137,7 +146,7 @@ namespace NetLobby {
                     return 1;
                 }
                 NetDlgSessionStop(hWnd, g_curMulti);
-                Init_42b4(hWnd, g_curMulti);
+                Init_bda50(hWnd, g_curMulti);
                 return 1;
         }
         return 0;
@@ -147,11 +156,17 @@ namespace NetLobby {
     RVA(0x000bda00, 0x3e)
     void NetDlgInit_bda00(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
-            Init_42b4(hWnd, ctx);
+            Init_bda50(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
-            g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
+
+    // 0xbda50 - empty per-dialog init/timer hook (host-wait), reached from both the
+    // WM_INITDIALOG (NetDlgInit_bda00) and WM_TIMER (HostWaitDlgProc) paths. Compiles
+    // to a bare `ret`; kept so both call sites bind their reloc to this RVA.
+    RVA(0x000bda50, 0x1)
+    void Init_bda50(HWND, void*) {}
 
     // __stdcall DlgProc: the join-wait dialog. WM_TIMER services the session then, if
     // the connection latch (g_648cec) has cleared, kills the timer and ends with 0x4d2;
@@ -159,7 +174,7 @@ namespace NetLobby {
     RVA(0x000bda70, 0xda)
     i32 CALLBACK JoinWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg_64557c = hWnd;
-        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+        if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
@@ -176,7 +191,7 @@ namespace NetLobby {
                 break;
             case 0x113:
                 NetDlgSessionStop(hWnd, g_curMulti);
-                Init_1924(hWnd, g_curMulti);
+                Init_bdbe0(hWnd, g_curMulti);
                 if (g_648cec) {
                     return 1;
                 }
@@ -191,17 +206,22 @@ namespace NetLobby {
     RVA(0x000bdb90, 0x3e)
     void NetDlgInit_bdb90(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
-            Init_1924(hWnd, ctx);
+            Init_bdbe0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
-            g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
+
+    // 0xbdbe0 - empty per-dialog init/timer hook (join-wait), reached from both
+    // NetDlgInit_bdb90 (init) and JoinWaitDlgProc (timer). Bare `ret`.
+    RVA(0x000bdbe0, 0x1)
+    void Init_bdbe0(HWND, void*) {}
 
     // __stdcall DlgProc(hWnd, msg, wParam, lParam): the network-lobby dialog proc.
     RVA(0x000bdc00, 0x10c)
     i32 CALLBACK LobbyDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg_64557c = hWnd;
-        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+        if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
@@ -228,7 +248,7 @@ namespace NetLobby {
                 break;
             case 0x113:
                 NetDlgSessionStop(hWnd, g_curMulti);
-                OnLobbyTimerB_154b(hWnd, g_curMulti);
+                Init_bddb0(hWnd, g_curMulti);
                 return 1;
         }
         return 0;
@@ -240,9 +260,14 @@ namespace NetLobby {
         if (hWnd && ctx) {
             Init_bddb0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
-            g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
+
+    // 0xbddb0 - empty per-dialog init/timer hook (lobby), reached from both
+    // NetDlgInit_bdd60 (init) and LobbyDlgProc (timer). Bare `ret`.
+    RVA(0x000bddb0, 0x1)
+    void Init_bddb0(HWND, void*) {}
 
     // __stdcall DlgProc: an in-game session-wait dialog (sibling of NetGameDlgProc).
     // WM_COMMAND ends on 0x4cc/0x4cd/0x4ce - each kills the timer, and (when host)
@@ -250,7 +275,7 @@ namespace NetLobby {
     RVA(0x000bddd0, 0x193)
     i32 CALLBACK SessionWaitDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg_64557c = hWnd;
-        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+        if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
@@ -303,7 +328,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             Init_2522(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
-            g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -326,7 +351,7 @@ namespace NetLobby {
     RVA(0x000be0a0, 0x1c7)
     i32 CALLBACK NetGameDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg_64557c = hWnd;
-        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+        if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
@@ -366,7 +391,7 @@ namespace NetLobby {
                     return 1;
                 }
                 NetDlgSessionStop(hWnd, g_curMulti);
-                OnLobbyTimerC_2185(hWnd, g_curMulti);
+                Init_be3e0(hWnd, g_curMulti);
                 if (g_curMulti->m_session->CheckLatency(0x2710)) {
                     PostMessageA(hWnd, 0x111, 0x4cd, 0);
                 }
@@ -380,15 +405,20 @@ namespace NetLobby {
     void NetDlgInitDropWait(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             CString banner;
-            if (g_clientStatus.GetLength() != 0) {
-                banner.Format("Not Receiving Data From Client: %s", (LPCTSTR)g_clientStatus);
+            if (g_6473d8.GetLength() != 0) {
+                banner.Format("Not Receiving Data From Client: %s", (LPCTSTR)g_6473d8);
                 SetDlgItemTextA(hWnd, 0x44b, (LPCTSTR)banner);
             }
-            InitDropPrompt_be3e0(hWnd, ctx);
+            Init_be3e0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
-            g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
+
+    // 0xbe3e0 - empty per-dialog init/timer hook (drop-wait/in-game), reached from both
+    // NetDlgInitDropWait (init) and NetGameDlgProc (timer). Bare `ret`.
+    RVA(0x000be3e0, 0x1)
+    void Init_be3e0(HWND, void*) {}
 
     // __cdecl(hWnd, gate): read the chat-edit text and, if non-empty, broadcast it.
     RVA(0x000be400, 0x6c)
@@ -430,7 +460,7 @@ namespace NetLobby {
     RVA(0x000be550, 0x193)
     i32 CALLBACK DropInDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         g_curDlg_64557c = hWnd;
-        if (PreHandleLobbyMsg_38c3(hWnd, msg, wParam, lParam)) {
+        if (BlockScreenSaver(hWnd, msg, wParam, lParam)) {
             return 1;
         }
         switch (msg) {
@@ -482,13 +512,16 @@ namespace NetLobby {
     void NetDlgInitDropIn(HWND hWnd, void* ctx) {
         if (hWnd && ctx) {
             char buf[0x80];
-            if (*(i32*)(g_playerName_649618 - 8)) {
-                sprintf(buf, "New Player Drop-In Request: %s", g_playerName_649618);
+            // The pending drop-in player's name = g_str649618's CString data (m_pszData,
+            // the char* stored at 0x249618); its length lives 8 bytes before the data.
+            const char* pn = g_str649618;
+            if (*(i32*)(pn - 8)) {
+                sprintf(buf, "New Player Drop-In Request: %s", pn);
                 SetDlgItemTextA(hWnd, 0x44b, buf);
             }
             Init_2ed7(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
-            g_dlgItem_648ce0 = GetDlgItem(hWnd, 0x4b6);
+            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
 

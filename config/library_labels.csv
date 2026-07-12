@@ -718,9 +718,6 @@ rva,name,lib,confidence,source
 0x0bd730,__inc,LIBCMT,LOW,anchored
 0x0bd780,__inc,LIBCMT,LOW,anchored
 0x0bd810,___inittime,LIBCMT,LOW,anchored
-0x0bda50,__fpclear,LIBCMT,LOW,anchored
-0x0bdbe0,__fpclear,LIBCMT,LOW,anchored
-0x0be3e0,__fpclear,LIBCMT,LOW,anchored
 0x0be890,__inc,LIBCMT,LOW,anchored
 0x0be8e0,__inc,LIBCMT,LOW,anchored
 0x0be930,__inc,LIBCMT,LOW,anchored
@@ -2159,6 +2156,7 @@ rva,name,lib,confidence,source
 0x18f830,_ldexp,LIBCMT,HIGH,offstart-ghidra-missed
 0x191d00,??0DNameNode@@IAE@XZ,LIBCMT,AMBIG,anchored
 0x191d10,__fpclear,LIBCMT,LOW,anchored
+0x1937c6,_DirectPlayEnumerate@8,DPLAYX,HIGH,reloc-R26
 0x1937e0,_strtod,LIBCMT,HIGH,anchored
 0x193900,__access,LIBCMT,AMBIG,anchored
 0x1b26d2,??0CString@@QAE@DH@Z,NAFXCW,HIGH,anchored
