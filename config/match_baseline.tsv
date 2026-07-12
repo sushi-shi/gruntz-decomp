@@ -125,7 +125,7 @@ gameinfostring	4	3
 gamekeyhandler	1	0
 gamelevel	74	31
 gamelevelmove	12	1
-gamemode	7	2
+gamemode	5	0
 gamemodebase	1	0
 gameobjectfactory	2	2
 gamesave	1	1
@@ -225,7 +225,7 @@ leveltimedtor	4	3
 lightfx	11	8
 lightfxmgr	3	3
 lightfxrender	23	8
-loadgamemenu	2	1
+loadgamemenu	4	3
 lobbygrouplist	1	0
 logicactreg646010	2	1
 logicdispatchinit	1	1
@@ -241,7 +241,7 @@ menuitem	21	15
 menupage	35	19
 menusparkle	4	2
 menusparkleserial	1	1
-menustate	27	23
+menustate	13	9
 menustateassets	2	1
 mgrautoscroll	1	0
 mgrlistfind	1	0
@@ -250,7 +250,7 @@ modeobjinit	1	0
 motionstate	6	5
 movieplayer	3	2
 movinglogic	6	2
-multi	100	52
+multi	98	50
 multistartdlg	15	7
 multistartdlgroster	31	18
 namerecord	4	3
@@ -294,7 +294,7 @@ rezmgr	3	1
 rezsync	4	3
 rockbreakeffectupdate	1	0
 rollingball	8	5
-savegame	36	26
+savegame	34	24
 savescreenshot	1	0
 sbi_image	5	3
 sbi_imageset	5	2
@@ -332,6 +332,7 @@ spriteloaders	10	5
 spriteref	3	2
 spritereftable	10	8
 startupprompt	1	0
+state	18	18
 statedispatch	1	1
 stateimages	2	2
 statemgrbz	7	5
@@ -1778,8 +1779,6 @@ gamelevelmove	?ResolveBottomY@CGameLevel@@AAEHPAUCGameObject@@HH@Z	96.7664	96.76
 gamelevelmove	?ResolveLeftX@CGameLevel@@AAEHPAUCGameObject@@HH@Z	92.9813	92.9813	1	9464d2396500	0x167b40
 gamelevelmove	?ResolveRightX@CGameLevel@@AAEHPAUCGameObject@@HH@Z	92.9813	92.9813	1	af4a34591d86	0x167a20
 gamelevelmove	?ResolveTopY@CGameLevel@@AAEHPAUCGameObject@@HH@Z	96.7664	96.7664	1	13d78f605061	0x167d80
-gamemode	??0CState@@QAE@XZ	100.0000	100.0000	6	15a8ff66e66e	0x8c750
-gamemode	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:2601fb2a9496	0x8c710
 gamemode	?GenMenuRandPos@@YGXHPAH0@Z	89.3724	89.3724	4	a7117d0311d6	0x19cd0
 gamemode	?LevelMsgHudDriver@CState@@QAEHXZ	84.7371	84.7371	3	e4b7686e20d8	0x1a700
 gamemode	?LoadGruntEffectSprites@CState@@QAEHXZ	96.3379	96.3379	9	6129d1a52860	0x1a040
@@ -2513,22 +2512,22 @@ leafelementobj	?LoadSoundB@LeafElementObj@@QAEHPAX@Z	100.0000	100.0000	3	8ae3ec9
 levelplane	??0CDDrawWorkerHost@@QAE@HHH@Z	67.7143	67.7143	1	39673132efaa	0x1615a0
 levelplane	?Build@CLevelPlane@@QAEXPAULevelCoordRect@@@Z	90.4318	90.4318	1	fc89fcd98c90	0x161e80
 levelplane	?CenterScrollA@CPlaneRender@@QAEHXZ	87.9464	87.9464	1	d483ea7c1725	0x163300
-levelplane	?CenterScrollB@CPlaneRender@@QAEHXZ	87.9464	87.9464	1	ed8fe7ecf0d2	0x163370
-levelplane	?Cleanup_161bf0@CImageSet3@@QAEXXZ	100.0000	100.0000	1	345e58d43f5c	0x161bf0
+levelplane	?CenterScrollB@CPlaneRender@@QAEHXZ	87.8750	87.8750	1	ed8fe7ecf0d2	0x163370
+levelplane	?Cleanup_161bf0@CImageSet3@@QAEXXZ	100.0000	100.0000	2	8046b85705dd	0x161bf0
 levelplane	?Draw@CPlaneRender@@QAEXPAUCPlaneDrawCtx@@@Z	85.6551	85.6551	1	383e12d17fa5	0x162010
 levelplane	?Gap_161640@@YAHXZ	0.4127	0.4127	1	987000a9cc1e	0x161640
-levelplane	?GetSize_1633e0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	7f9647f557fc	0x1633e0
+levelplane	?GetSize_1633e0@CImageSet3@@QAEHXZ	100.0000	100.0000	2	b5dd43102469	0x1633e0
 levelplane	?InitGeometry_1619f0@CLevelPlane@@QAEHHHHHHHPAULevelCoordRect@@PAD@Z	78.3314	78.3314	2	5e072104b684	0x1619f0
 levelplane	?InitScrollRects@CPlaneRender@@QAEXXZ	99.9157	99.9157	1	a1d9e8e8e1c5	0x163420
-levelplane	?Load@CPlaneRender@@QAEHPAUCWwdStream@@@Z	99.9841	99.9841	1	3a6e9b1ff690	0x1638c0
+levelplane	?Load@CPlaneRender@@QAEHPAUCWwdStream@@@Z	100.0000	100.0000	1	3a6e9b1ff690	0x1638c0
 levelplane	?PlaneSerializeDispatch@@YGHPAXHHH@Z	84.2727	84.2727	1	57deee4f53c4	0x163710
-levelplane	?Prune_1628d0@CImageSet3@@QAEHXZ	100.0000	100.0000	1	f3947d454f08	0x1628d0
+levelplane	?Prune_1628d0@CImageSet3@@QAEHXZ	100.0000	100.0000	2	9365c4f633f7	0x1628d0
 levelplane	?ReadPlaneObjects@WwdFile@@QAEHPBH@Z	76.1228	76.1228	1	ebd4ae8fd084	0x162af0
 levelplane	?RebuildPlanes@WwdFile@@QAEHHH@Z	49.5000	49.5000	1	02807a63511e	0x1628f0
 levelplane	?RecomputePlaneCoords@CLevelPlane@@QAEXXZ	97.0640	97.0640	1	94d4485a43e3	0x161c90
 levelplane	?RegisterNamed@CDDrawWorkerHost@@QAEXDPBD@Z	90.4762	90.4762	1	9269a334b455	0x161c50
 levelplane	?ResolveColorKey@CPlaneRender@@QAEXXZ	64.7451	64.7451	1	8712a53d2140	0x163670
-levelplane	?Save@CPlaneRender@@QAEHPAUCWwdStream@@@Z	100.0000	100.0000	1	8511ace0b40f	0x163780
+levelplane	?Save@CPlaneRender@@QAEHPAUCWwdStream@@@Z	99.9833	99.9833	1	8511ace0b40f	0x163780
 levelplane	?SetTileSize@CPlaneRender@@QAEXHH@Z	88.3846	88.3846	1	0b7361931da3	0x161f00
 levelplane	?SetTileSizeFromImageSet@CPlaneRender@@QAEXPAVCImageSet@@@Z	100.0000	100.0000	1	a0576baf25ee	0x161fa0
 levelplane	?ValidateTiles@CPlaneRender@@QAEHPAD@Z	92.4786	92.4786	1	eb26bfc743d5	0x163510
@@ -2586,7 +2585,9 @@ lightfxrender	?Shape5@CLightFxRender@@QAEHXZ	73.7256	73.7256	2	518d52e6c679	0xa6
 lightfxrender	?Shape6@CLightFxRender@@QAEHXZ	77.0121	77.0121	2	053bfdf01474	0xa7260
 lightfxrender	?Shape7@CLightFxRender@@QAEHXZ	73.5430	73.5430	2	67db6c9338be	0xa7d50
 lightfxrender	?Shape8@CLightFxRender@@QAEHXZ	69.7278	69.7278	2	d25b846364de	0xa8900
+loadgamemenu	?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	1	1c5aceaaa979	0x9e0b0
 loadgamemenu	?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	3623a9e392cb	0x9dff0
+loadgamemenu	?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	1	3c865e9fe307	0x9e2d0
 loadgamemenu	?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	79.2708	79.2708	3	db9eac931d10	0x9e390
 lobbygrouplist	?PopulateGroupList@CLobbyGroupMgr@@QAEXPAUHWND__@@H@Z	78.5714	78.5714	3	368b74a6e162	0x178470
 logicactreg646010	?ConstructLogicActRange_646010@@YAXXZ	100.0000	100.0000	1	cf5bb9a36c06	0xadde0
@@ -2723,26 +2724,12 @@ menustate	?FrameSlot28@CMenuState@@UAEHH@Z	100.0000	100.0000	1	8d3d8fb32989	0xa0
 menustate	?ReadyGate@CMenuState@@QAEHXZ	100.0000	100.0000	3	004b4a24a05e	0xa0d40
 menustate	?ReleaseResources@CMenuState@@UAEXXZ	99.4737	99.4737	1	84abb24cda4c	0xa02c0
 menustate	?Render@CMenuState@@UAEHXZ	100.0000	100.0000	1	6d4dededba9f	0xa0750
-menustate	?Render@CState@@UAEHXZ	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c4d0
 menustate	?StartMusic@CMenuState@@QAEXXZ	94.7561	94.7561	2	de07157005a6	0xa05a0
 menustate	?StopMusicChain@CMenuState@@QAEXXZ	99.7059	99.7059	1	c82647304c38	0xa0640
 menustate	?Update@CMenuState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:84d1bc2f78e0	0x8ce10
-menustate	?Update@CState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c4b0
-menustate	?Vslot06@CState@@UAEHXZ	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c4f0
-menustate	?Vslot0b@CState@@UAEHHH@Z	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c550
 menustate	?Vslot0c@CMenuState@@UAEHHH@Z	100.0000	100.0000	1	7d59ffb0cdb8	0xa0b90
-menustate	?Vslot0c@CState@@UAEHHH@Z	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c570
-menustate	?Vslot0d@CState@@UAEHHH@Z	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c590
 menustate	?Vslot0e@CMenuState@@UAEHHHH@Z	100.0000	100.0000	1	e3e3e93a9186	0xa0ca0
-menustate	?Vslot0e@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c5b0
-menustate	?Vslot0f@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c5d0
 menustate	?Vslot10@CMenuState@@UAEHHHH@Z	100.0000	100.0000	1	34aac2157843	0xa0ce0
-menustate	?Vslot10@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c5f0
-menustate	?Vslot11@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c610
-menustate	?Vslot12@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c630
-menustate	?Vslot13@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c650
-menustate	?Vslot14@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c670
-menustate	?Vslot15@CState@@UAEHXZ	100.0000	100.0000	1	cpp:433ed825f7cf	0x8c690
 menustateassets	?Init@TileRegion@@QAEHPAUTileSrcHost@@HPAUtagRECT@@HHH@Z	100.0000	100.0000	2	7944d4fe98ba	0x182ab0
 menustateassets	?LoadAssets@CMenuState@@QAEHHHH@Z	89.8000	89.8000	9	68a1b9bacc3c	0x9fe50
 mgrautoscroll	?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAHHH@Z	58.0113	58.0113	12	e18371f103e6	0xebd70
@@ -2858,10 +2845,8 @@ multi	?StartTitle@CMulti@@QAEHXZ	35.7440	35.7440	5	73053a35a1ef	0xb72c0
 multi	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	4	e8b07e3251fc	0xb6110
 multi	?Tick@CMulti@@QAEHXZ	86.6074	86.6074	5	820d65d4e270	0xb6890
 multi	?VerifyCustomLevel@CMulti@@QAEHPAXH@Z	6.2021	6.2021	1	99ae85460cbe	0xb8fc0
-multi	?Vfunc3@CState@@UAEHXZ	100.0000	100.0000	1	cpp:197e8cd58a5c	0x8c490
 multi	?Vslot09@CMulti@@UAEHH@Z	98.5897	98.5897	1	9a4b89340945	0xb6330
 multi	?Vslot0b@CMulti@@UAEHHH@Z	100.0000	100.0000	1	7a60f11f8ccb	0xbd210
-multi	?Vslot16@CState@@UAEHXZ	100.0000	100.0000	1	cpp:8f81bd0e2424	0x8c6b0
 multi	?WaitForConnect@CMulti@@QAEHXZ	74.0809	74.0809	1	ba5664aa6490	0xbca50
 multi	?WaitForOtherPlayers@CNetMgr@@QAEHXZ	75.0380	75.0380	3	93d15ed9af12	0xbb700
 multistartdlg	??0CMultiStartDlg@@QAE@HPAVCWnd@@@Z	100.0000	100.0000	1	1d80ea73491f	0xc1750
@@ -3278,7 +3263,6 @@ savegame	?CopySlot@CSaveGame@@QAEHPAUSaveSlot@@PBU2@@Z	100.0000	100.0000	5	6d37b
 savegame	?Decode@CSaveGame@@QAEHPAE@Z	100.0000	100.0000	3	da01d285603e	0xe5460
 savegame	?DrawSaveGameMenu@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	62.6117	62.6117	2	b52205a4f1ff	0xe3f40
 savegame	?Encode@CSaveGame@@QAEHPAE@Z	89.2917	89.2917	3	6aa88946b27d	0xe5410
-savegame	?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	6	1c5aceaaa979	0x9e0b0
 savegame	?FillSaveDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z	100.0000	100.0000	6	ca1104101c3c	0xe3c60
 savegame	?FillSlot2@CSaveGame@@QAEHPAUSaveSlot@@HPAX@Z	100.0000	100.0000	5	5a716fffca1c	0xe5240
 savegame	?FillSlot@CSaveGame@@QAEHPAUSaveSlot@@PBDPAX@Z	100.0000	100.0000	5	1d54e786b6a5	0xe5130
@@ -3286,7 +3270,6 @@ savegame	?FillSlotByIndex@CSaveGame@@QAEHHHPAX@Z	100.0000	100.0000	3	6152b75ccb8
 savegame	?GetSlot@CSaveGame@@QAEPAUSaveSlot@@H@Z	100.0000	100.0000	3	18bbdbfc92fd	0xe54b0
 savegame	?InfoLineDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	d15e922fca34	0xe3b20
 savegame	?Init@CSaveGame@@QAEXXZ	100.0000	100.0000	4	daf40cfba844	0xe4d50
-savegame	?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	1	3c865e9fe307	0x9e2d0
 savegame	?LabelSaveSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.0000	1	9e1d6233cf16	0xe3e80
 savegame	?LevelPreviewDlgProc@@YGHPAUHWND__@@IIJ@Z	80.3200	80.3200	2	1b2d5f266c31	0xe3690
 savegame	?Load@CSaveGame@@QAEHXZ	100.0000	100.0000	4	4ba9cd12d8af	0xe4d90
@@ -3596,6 +3579,24 @@ spritereftable	?LoadGruntzPalette@CSpriteRefTable@@QAEHHH@Z	96.9231	96.9231	5	db
 spritereftable	?LoadToolToyPalettes@CSpriteRefTable@@QAEHH@Z	100.0000	100.0000	3	1a9eb19ce5cf	0xe2980
 spritereftable	?Reset@CSpriteRefTable@@QAEXXZ	100.0000	100.0000	3	b98326fd1a72	0xe2290
 startupprompt	?StartUpPrompt@@YAHPAUHWND__@@@Z	97.9951	97.9951	14	e6441b5d9b5e	0x1f9b0
+state	??0CState@@QAE@XZ	100.0000	100.0000	1	15a8ff66e66e	0x8c750
+state	??_GCState@@UAEPAXI@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c710
+state	?Render@CState@@UAEHXZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c4d0
+state	?Update@CState@@UAE?AW4GameStateId@@XZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c4b0
+state	?Vfunc3@CState@@UAEHXZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c490
+state	?Vslot06@CState@@UAEHXZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c4f0
+state	?Vslot0b@CState@@UAEHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c550
+state	?Vslot0c@CState@@UAEHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c570
+state	?Vslot0d@CState@@UAEHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c590
+state	?Vslot0e@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c5b0
+state	?Vslot0f@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c5d0
+state	?Vslot10@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c5f0
+state	?Vslot11@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c610
+state	?Vslot12@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c630
+state	?Vslot13@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c650
+state	?Vslot14@CState@@UAEHHHH@Z	100.0000	100.0000	1	cpp:9361044cd364	0x8c670
+state	?Vslot15@CState@@UAEHXZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c690
+state	?Vslot16@CState@@UAEHXZ	100.0000	100.0000	1	cpp:9361044cd364	0x8c6b0
 statedispatch	?StateDispatch@@YAHPAUCGameObject@@@Z	100.0000	100.0000	2	2290ba5d8474	0x9b770
 stateimages	?InputVirtual@CBootyState@@UAEHXZ	100.0000	100.0000	5	b35a4363c2fc	0x1c8a0
 stateimages	?LoadStateImages@CImageState@@QAEHXZ	100.0000	100.0000	8	54cfbd9f554f	0xa09a0

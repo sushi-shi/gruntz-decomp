@@ -38,19 +38,17 @@
 // scan; the three non-EH leaf methods below are birth-positioned INSIDE this
 // plane TU. Local view duplicated from that TU (@identity-TODO: the grid-owner's
 // name-conflation with the Gruntz CImageSet3 variant record is unresolved).
-// Engine heap free (0x1b9b82). C++ linkage (NOT extern "C") - parity with the
-// donor TU; the reloc is masked either way.
-void RezFree(void* p);
-
-// The +0xb0 spatial grid: Prune (0x1688b0) sweeps its four sub-managers, GetSize
-// (0x168430) sums their element counts, and the dtor (0x163a40) frees the grids.
+// The +0xb0 spatial grid is a CWwdSpatialMgr (canonical, <DDrawMgr/DDrawWorkerHost.h>).
+// CImageSet3::Cleanup prunes it (PruneCount 0x1688b0), runs its OUT-OF-LINE /GX dtor
+// (C163a40::~C163a40 @0x163a40 - the wwdspatialmgr placeholder for the class's out-of-
+// line complete dtor; its most-derived vptr is not at offset 0, so it is a distinct
+// symbol from the class's inline dtor), then ::operator delete (0x1b9b82) frees it.
+// GetSize (0x168430) is the serialized-size accessor (WwdSpatialMgr.cpp defines it).
 // All reloc-masked __thiscall callees (no body).
-class CWwdGrid {
-public:
-    i32 Prune_1688b0();   // 0x1688b0
-    i32 GetSize_168430(); // 0x168430
-    void Dtor_163a40();   // 0x163a40
+struct C163a40 {
+    ~C163a40(); // 0x163a40  CWwdSpatialMgr out-of-line /GX dtor (body in WwdSpatialMgr.cpp)
 };
+SIZE_UNKNOWN(C163a40);
 
 class CImageSet3 {
 public:
@@ -62,7 +60,7 @@ public:
     void* m_20;                // +0x20  RezAlloc'd buffer
     void* m_24;                // +0x24  RezAlloc'd buffer
     char m_pad28[0xb0 - 0x28]; // +0x28 .. +0xaf
-    CWwdGrid* m_b0;            // +0xb0  spatial grid
+    CWwdSpatialMgr* m_b0;      // +0xb0  spatial grid (canonical CWwdSpatialMgr)
 };
 
 // ===========================================================================
@@ -203,19 +201,19 @@ i32 CLevelPlane::InitGeometry_1619f0(
 RVA(0x00161bf0, 0x5e)
 void CImageSet3::Cleanup_161bf0() {
     if (m_b0 != 0) {
-        m_b0->Prune_1688b0();
+        m_b0->PruneCount();
     }
-    CWwdGrid* g = m_b0;
+    CWwdSpatialMgr* g = m_b0;
     if (g != 0) {
-        g->Dtor_163a40();
-        RezFree(g);
+        ((C163a40*)g)->~C163a40();
+        ::operator delete(g);
     }
     if (m_20 != 0) {
-        RezFree(m_20);
+        ::operator delete(m_20);
         m_20 = 0;
     }
     if (m_24 != 0) {
-        RezFree(m_24);
+        ::operator delete(m_24);
         m_24 = 0;
     }
 }
@@ -732,7 +730,7 @@ i32 CImageSet3::Prune_1628d0() {
     if (m_b0 == 0) {
         return 0;
     }
-    return m_b0->Prune_1688b0();
+    return m_b0->PruneCount();
 }
 
 // @early-stop
@@ -1127,13 +1125,13 @@ i32 CPlaneRender::CenterScrollB() {
 
 // GetSize_1633e0 (0x1633e0): forward the grid's serialized size when present
 // (else 0). Out-of-line (retail emits it standalone, tail-forwarding to
-// CWwdGrid::GetSize; an inline member folds away and never emits).
+// CWwdSpatialMgr::GetSize 0x168430; an inline member folds away and never emits).
 RVA(0x001633e0, 0x12)
 i32 CImageSet3::GetSize_1633e0() {
     if (m_b0 == 0) {
         return 0;
     }
-    return m_b0->GetSize_168430();
+    return m_b0->GetSize();
 }
 
 // ---------------------------------------------------------------------------

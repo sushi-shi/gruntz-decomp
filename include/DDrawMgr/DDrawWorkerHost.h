@@ -25,6 +25,7 @@ struct CWwdSpatialMgr {
     char m_pad04[0x70 - 0x04]; // +0x04..+0x6f
     void* m_baseVtbl;          // +0x70  base/secondary vtable restamped on teardown
     i32 PruneCount();          // 0x1688b0  (reloc-masked external)
+    i32 GetSize();             // 0x168430  (reloc-masked external; serialized-size accessor)
     void FreeGrids();          // 0x1682f0  (reloc-masked external scalar-dtor body)
     ~CWwdSpatialMgr();         // inline: FreeGrids() then restamp m_baseVtbl
 };
