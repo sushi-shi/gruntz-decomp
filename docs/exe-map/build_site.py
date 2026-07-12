@@ -15,6 +15,7 @@ STEPS = ["scatter.py",         # scatter.json + scatter_methods.json (+ printed 
          "flag_outliers.py",   # flags.json (+ printed misplacement worklist)
          "make_chart.py",      # scatter.html + scatter_methods.html
          "make_dashboard.py",  # misplacement.html
+         "make_reloc.py",      # reloc.html (self-regenerates reloc_fidelity.json live)
          "homm2_baseline.py",  # homm2_va.csv snapshot (reads homm2-decomp, read-only)
          "make_homm2.py",      # homm2.html (ground-truth baseline vs Gruntz)
          "split_plan.py",      # SPLIT_PLAN.md (actionable split/move worklist)

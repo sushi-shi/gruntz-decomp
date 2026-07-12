@@ -1,12 +1,28 @@
 #!/usr/bin/env python3
 """Build reloc.html - the reloc-fidelity dashboard (the metric objdiff can't see).
-Reads reloc_fidelity.json (from `reloc_fidelity --json`). Self-contained vanilla
-JS, same tokens as the other exe-map pages."""
+Regenerates reloc_fidelity.json live (via `reloc_fidelity --json`) so the page can
+never go stale, then renders. Self-contained vanilla JS, same tokens as the other
+exe-map pages. If the live regen fails (no delink data), falls back to the committed
+JSON so build_site.py still completes."""
 import json
 import os as _os
+import subprocess as _sp
+import sys as _sys
 
 DIR = _os.path.dirname(_os.path.abspath(__file__))
-D = json.load(open(DIR + "/reloc_fidelity.json"))
+JSON = DIR + "/reloc_fidelity.json"
+
+# Refresh the JSON from the live analysis so reloc.html always reflects current src/
+# (make_reloc used to read a committed snapshot -> the dashboard silently went stale).
+try:
+    _out = _sp.run([_sys.executable, "-m", "gruntz.analysis.reloc_fidelity", "--json"],
+                   capture_output=True, text=True, check=True).stdout
+    json.loads(_out)  # validate before overwriting
+    open(JSON, "w").write(_out)
+except Exception as _e:  # noqa: BLE001 - degrade to the committed snapshot
+    print(f"  (reloc live-regen failed: {_e}; using committed reloc_fidelity.json)")
+
+D = json.load(open(JSON))
 UNITS = [u for u in D["units"] if u["misbound"] + u["unbound"] > 0][:40]
 WORST = D["worst"]
 pct = 100 * D["faithful"] // max(D["n"], 1)
