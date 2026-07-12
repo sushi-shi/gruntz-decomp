@@ -1087,7 +1087,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
             do {
                 CTmCell* c = *cell;
                 if (c != 0 && c->m_368 == 0) {
-                    c->Recall();
+                    ((CGrunt*)c)->StartBombGruntRun(); // Recall==CGrunt::StartBombGruntRun @0x68520
                 }
                 cell++;
                 i--;
@@ -1098,10 +1098,12 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
     if (startRow == g_644c54) {
         m_groupFlag = 0;
     }
-    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
-    world->Refresh();
-    world->SetStat(0, 0xbb7);
-    world->m_2dc->SetMode(1);
+    // m_curState is the live CPlay state (Refresh==FlushPendingOps @0xda2d0,
+    // SetStat==ArmSnapshot @0xd9240, m_2dc==CPlay::m_guts the SBI_RectOnly host @0x2dc).
+    CPlay* world = (CPlay*)g_gameReg->m_curState;
+    world->FlushPendingOps();
+    world->ArmSnapshot(0, 0xbb7);
+    ((CSBI_RectOnly*)world->m_guts)->SetMode(1);
     return 1;
 }
 
@@ -1989,11 +1991,11 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
 // pending flag (world+0x504), stop the world's fx and clear +0x2a8.
 RVA(0x0007be10, 0x34)
 void CTriggerMgr::StopPendingFx() {
-    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
-    if (m_pendingFxKind == 0 && world->m_504 == 0) {
+    CPlay* world = (CPlay*)g_gameReg->m_curState;
+    if (m_pendingFxKind == 0 && world->m_dragEndNotify == 0) { // m_504 == CPlay::m_dragEndNotify
         return;
     }
-    world->LoadCursorSprites(0, 0);
+    world->LoadCursorSprites(0, 0); // CPlay::LoadCursorSprites @0xd0120
     m_pendingFxKind = 0;
 }
 
@@ -2872,7 +2874,8 @@ i32 CTriggerMgr::ClearRow(i32 row) {
     do {
         CTmCell* c = *cell;
         if (c != 0 && c->m_368 == 0) {
-            c->ExitGrid();
+            ((CGrunt*)c)
+                ->BuildGruntExitAnimation(); // ExitGrid==CGrunt::BuildGruntExitAnimation @0x641b0
         }
         cell++;
         i--;
@@ -2880,7 +2883,7 @@ i32 CTriggerMgr::ClearRow(i32 row) {
     if (row == g_644c54) {
         m_groupFlag = 0;
     }
-    ((CTmWorld*)g_gameReg->m_curState)->Refresh();
+    ((CPlay*)g_gameReg->m_curState)->FlushPendingOps(); // Refresh==CPlay::FlushPendingOps @0xda2d0
     return 1;
 }
 

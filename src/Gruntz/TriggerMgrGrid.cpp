@@ -32,6 +32,7 @@
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
 #include <Gruntz/Viewport.h>      // shared world tile-grid geometry (dims here)
+#include <Gruntz/Grunt.h>         // real CGrunt (the grid cells) + CGruntTileMgr (FindAtPixel)
 #include <Globals.h>
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
@@ -191,10 +192,14 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
         NotifyCell(row, col, 0);
         return 0;
     }
+    // The grid cell is a real CGrunt (m_grid holds "Grunt" sprites); route it via the
+    // real CGrunt methods so the calls bind (ExitGrid==BuildGruntExitAnimation @0x641b0,
+    // Route==LoadGruntDeathAnimations @0x60150). The m_grid CTmCell*->CGrunt* retype is
+    // deferred cross-lane (FindGruntAt's return type ripples into Play.cpp et al.).
     if (kind == 0xd) {
-        cell->ExitGrid();
+        ((CGrunt*)cell)->BuildGruntExitAnimation();
     } else {
-        cell->Route(kind, arg);
+        ((CGrunt*)cell)->LoadGruntDeathAnimations(kind, arg);
     }
     return 1;
 }
@@ -619,6 +624,15 @@ i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
     cell->m_384 = 0;
     i32 r = cell->ApplyBox(bx, by, row, -1, 1, 0);
     return r != 0 ? 1 : 0;
+}
+
+// 0x6e7e0: CGruntTileMgr::FindAtPixel(x, y) - the HUD/pixel grunt probe stub: always
+// returns null (the live-grunt scan was compiled out in retail - `xor eax,eax; ret 8`).
+// A real 5-byte leaf sitting in this grid obj's band; binds CGrunt's HudRect caller
+// (0x4a9f0) which reads m_tileMgr->FindAtPixel(m_10->m_5c, m_10->m_60).
+RVA(0x0006e7e0, 0x5)
+CGrunt* CGruntTileMgr::FindAtPixel(i32 x, i32 y) {
+    return 0;
 }
 
 // 0x6e800: ClearCell(col, row, a18, a1c, a20) - if grid[col*15+row] is live, reset its
