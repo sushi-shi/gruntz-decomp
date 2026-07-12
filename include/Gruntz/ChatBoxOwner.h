@@ -33,8 +33,10 @@ public:
     void Configure(i32 mode);
     // Hit-test a screen point against the box rectangle for the current mode.
     i32 HitTest(i32 x, i32 y);
-    // Return the box's caption/key CString (m_1c) by value (copy-ctor into sret).
-    CString GetField1c(); // 0x00020ef0
+    // (The ex-`GetField1c` @0x20ef0 was a misattribution: 0x20ef0 is
+    // CFontConfig::GetInputText, the +0x14 text host's inline CString accessor whose COMDAT
+    // this obj emitted. It is defined in ChatBoxOwner.cpp - its rva-order home - but
+    // declared on CFontConfig, and the invented +0x1c CString member is gone with it.)
     // The chat-box cheat-code processor ("Enable Cheatzfile" command).
     void ProcessCheatInput(i32 a, i32 b);
     // Render the chat-box sprite + stamp its text for the current mode.
@@ -47,9 +49,9 @@ public:
     i32 m_8;                // +0x08  mode (1/2/3)
     i32 m_c;                // +0x0c  active flag
     i32 m_10;               // +0x10  enabled flag (hit-test gate)
-    CChatBoxTextHost* m_14; // +0x14  text-stamp host
+    CChatBoxTextHost* m_14; // +0x14  text-stamp host (IS a CFontConfig - TypeChar/GetInputText/
+                            //        ClearInput run on it; fold deferred, see FontConfig.h)
     CChatBoxRegRoot* m_18;  // +0x18  source registry root
-    CString m_1c;           // +0x1c  caption/key string
 };
 SIZE_UNKNOWN(CChatBoxOwner);
 

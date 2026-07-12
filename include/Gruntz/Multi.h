@@ -14,8 +14,8 @@
 // INHERITANCE MODELED (the devs' true shape): `class CMulti : public CPlay`
 // (single chain CMulti : CPlay : CState; CPlay derives CState per <Gruntz/Play.h>).
 // CMulti's low-offset members are the CState/CPlay sub-object fields, accessed by
-// their canonical names/types: the owner back-ptr is CState::m_4 downcast to
-// CMultiMgr* where the lobby methods need it; the shared-offset scalar/pointer views
+// their canonical names/types: the owner back-ptr is CState::m_4, the real CGruntzMgr
+// the lobby methods drive; the shared-offset scalar/pointer views
 // (m_2c asset slot, m_hudRect inline RECT, m_hitTest, m_guts, m_beginMarker as a
 // CTileTriggerContainer view, m_overlayActive as a CLobbyObjA view, the region/ambient
 // timers, the cue fields) fold onto CPlay's named members. CMulti keeps only its own
@@ -41,16 +41,15 @@
 //
 // Per-frame sub-objects driven by PumpA (0x0b6b40); reconstructed TU-local in
 // CMulti.cpp (thiscall receivers, all out-of-line -> reloc-masked).
-class CGameApp;              // WAP32 app (<Wap32/Wap32.h>); CMultiMgr::m_owner (+0x08)
+class CGameApp;              // WAP32 app (<Wap32/Wap32.h>); CGruntzMgr::m_owner (+0x08)
 class CMultiSubDC;           // CMulti::m_fxOverlay
 class CTileTriggerContainer; // CMulti::m_2e4
-class CGruntzSoundZ;         // CMultiMgr::m_48 (real sound object; PlayByName/FindBank)
-class CFontConfig;           // CMultiMgr::m_5c (real chat/text-input config)
-class CMultiSub68;           // CMultiMgr::m_68
+class CGruntzSoundZ;         // CGruntzMgr::m_sound (+0x48; PlayByName/FindBank)
+class CFontConfig;           // CGruntzMgr::m_chatLog (+0x5c; the chat/text-input config)
+class CMultiSub68;           // CGruntzMgr::m_cmdGrid (+0x68) multiplayer facet
 class CChatBoxOwner;         // CMulti::m_2e0 (per-frame LoadChatBoxSprite sub)
-class CBrickzGrid;           // CMultiMgr::m_70
-class CMultiMgr;             // CState owner at CMulti+0x04 (fwd for CSlotConfig::Load)
-class CWorldSoundSet;        // CMultiMgr::m_54 (Retune @0xbd60)
+class CBrickzGrid;           // CGruntzMgr::m_cmdNotify (+0x70) multiplayer facet
+class CWorldSoundSet;        // CGruntzMgr::m_inputState (+0x54; Retune @0xbd60)
 // The small real CNetMgr (the +0x524 DirectPlay wrapper) and the network views of
 // CMulti's base sub-objects, forward-declared so the accessors below compile without
 // pulling the heavy <Net/NetMgr.h> into every Multi.h includer (Multi.cpp has it).
@@ -64,38 +63,32 @@ struct CNetVersionMsg;  // version-check message arg (HandleVersionCheck)
 struct CNetChannel;     // per-channel record (BroadcastOneChannel)
 struct CNetSession;     // the +0x520 command-session facet (Session() accessor)
 
-// CMultiMgr IS the CGruntzMgr game-manager singleton (*0x64556c, the object
-// <Gruntz/GruntzMgr.h> / <Gruntz/GameRegistry.h> canonically model) viewed by the
-// multiplayer/lobby subsystem: the CState owner at CMulti+0x04 (CState::m_4). Its
-// +0x48 sound object and its +0x150 4-entry 0x238-stride options table are the
-// SAME slots the canonical class names (m_sound / m_options[4]); the state factory
-// CGruntzMgr::TransitionState passes `this`=this manager to each state's activate.
+// DISSOLVED (RELOC-Multi): the ex-`CMultiMgr` view IS the CGruntzMgr game-manager
+// singleton (*0x64556c) - the CState owner at CMulti+0x04 (CState::m_4, already typed
+// CGruntzMgr* in <Gruntz/State.h>). Every one of its "own" methods was a fake alias of a
+// real CGruntzMgr method at the SAME rva (disasm-proven): LogLine == EnterModalUI@0x8ef10
+// (it forwards the text to CGameApp::ShowMessage@0x80c00), RunDialog ==
+// RunModalDialog@0x90260, ProbeSession == PassClickToPlayState@0x8d780, ResolveHost ==
+// FindOptionsSlot@0x92e80, ReportError == ReportError@0x8dc60, Step2d33 ==
+// AdvanceOptionsCycle@0x933e0 (ILT 0x2d33). Its members are CGruntzMgr's canonical slots
+// (m_48 == m_sound, m_54 == m_inputState, m_5c == m_chatLog, m_60 == m_timer, m_9c ==
+// m_lobbyResult, m_c0 == m_lobby, m_150 == m_options[4], m_0c == CGameMgr::m_frameGate).
+// Mgr() below now returns the REAL CGruntzMgr*, so those calls reloc-bind.
 //
-// @early-stop (keystone follow-up): this facet is the ONE CGruntzMgr view not yet
-// dissolved into the canonical class. It types SEVEN per-mode REUSED slots for
-// multiplayer mode (m_54 output sink, m_5c/m_6c list managers, m_60 dialog hook,
-// m_68/m_70 per-frame subs, m_c4 host descriptor) and dispatches five reloc-masked
-// lobby methods (LogLine/RunDialog/ProbeSession/ResolveHost + the Ack error path)
-// that are meaningless outside multiplayer - folding them onto the 60-TU canonical
-// would fabricate a per-mode mega-type (the anti-pattern CGameRegistry.h warns
-// against), and re-casting ~30 sites in this 73%-partial TU risks shuffling its
-// documented regalloc walls. So it stays a TU-local, honestly-NAMED per-mode
-// downcast-view of the singleton (the CGruntzMgr/CGameRegistry MFC/Win32 split
-// precedent), no longer masquerading under the canonical `CGruntzMgr` name. The
-// final sweep can dissolve it once the multiplayer sub-object types are modeled.
+// The ex-`CMultiDialogHook` (+0x60 pre-dialog receiver) IS CGruntzMgr::m_timer, the real
+// CGruntSpawnConfig: its PreDialog/StartTitleHook were both aliases of
+// CGruntSpawnConfig::DtorBody@0x11c7b0 (the 2-iter pair teardown; CGruntzMgr::EnterModalUI
+// itself calls it through ILT 0x20a4 on the same +0x60 slot).
 //
-// CMulti's lobby / error-report methods drive it through thiscall entry points (all
-// out-of-line -> reloc-masked): a 1-arg log sink (the "%s (%i)" line), a 3-arg
-// modal-dialog runner, and a chain to a Win32 focus restore.
-// The pre-dialog hook receiver (CMultiMgr::m_60); PreDialog() runs as a
-// thiscall (ecx = the receiver) with no stack args (reloc-masked).
-class CMultiDialogHook {
-public:
-    void PreDialog();      // 0x0051c7b0
-    void StartTitleHook(); // 0x0011c7b0  (m_logic->m_60 chain in StartTitle)
-};
+// STILL DEFERRED (blocked on the GruntzMgr lane): five CGruntzMgr members whose canonical
+// type in <Gruntz/GruntzMgr.h> is still a placeholder (m_cmdGrid/CTriggerMgr,
+// m_cmdSubMgr/CmdSink, m_cmdNotify/CmdSinkV, m_connSettings/void*, m_options/
+// CGruntzMgrOptions - the last three are only declared, or padded, in that header). The
+// multiplayer facets those slots wear are modeled below and reached by a documented
+// reinterpret at the (9) use sites in Multi.cpp; once GruntzMgr.h types them, the facets
+// fold away too.
 
-// CMultiMgrOptions's inner slot-config sub-object (+0x38). StartSession drives it
+// CGruntzMgr::m_options[i]'s inner slot-config sub-object (+0x38). StartSession drives it
 // per-slot through three thiscall entry points (ecx = &m_inner; out-of-line ->
 // reloc-masked); only the +0x38 offset + 0x200 span are load-bearing.
 class CSlotConfig {
@@ -103,9 +96,10 @@ public:
     char m_pad[0x238 - 0x38];
 };
 
-// A per-frame entry of CMultiMgr's +0x150 sub-object table (stride 0x238). The
-// session-start path arms each entry's inner sub-object (+0x38) and conditionally
-// pokes it; placeholder offsets, only the stride/offsets are load-bearing.
+// The multiplayer facet of one CGruntzMgr::m_options[] entry (+0x150, stride 0x238).
+// The session-start path arms each entry's inner sub-object (+0x38) and conditionally
+// pokes it; placeholder offsets, only the stride/offsets are load-bearing. (m_10/m_14 are
+// the same fields GruntzMgr.cpp's OptionsSlot names; deferred fold - see the note above.)
 class CMultiMgrOptions {
 public:
     char m_pad00_10[0x10];
@@ -136,7 +130,9 @@ public:
     void Step20b3(i32 v);          // per-frame poke (PumpA, thiscall)
 };
 
-// A small descriptor referenced through CMultiMgr+0xc4 (flags at +0x4, name at +0x8).
+// The DirectPlay launch connection-settings buffer CGruntzMgr::m_connSettings (+0xc4)
+// points at (flags at +0x4, player/host name at +0x8) - the multiplayer facet of that
+// still-`void*` canonical member.
 class CMultiLogicDesc {
 public:
     void* m_0;
@@ -146,49 +142,8 @@ public:
     CMultiLogicDesc* m_c; // +0x0c  linked descriptor; its m_8 host-name is copied into a CString
 };
 
-class CMultiMgr {
-public:
-    void* m_0;      // +0x00
-    CMultiMgr* m_4; // +0x04  the inner object (the focus-restore chain)
-    // +0x08 == WAP32::CGameMgr::m_owner (the owning CGameApp; its +0x0c
-    // m_hInstance feeds LoadStringA in CMulti::ReportStatusId @0xb7ec0).
-    CGameApp* m_owner; // +0x08
-    i32 m_c;           // +0x0c  active gate (PumpA)
-    char m_pad10_48[0x48 - 0x10];
-    CGruntzSoundZ* m_48; // +0x48  ambient sound object (PumpA; PlayByName/FindBank/m_pCurrent)
-    char m_pad4c_54[0x54 - 0x4c];
-    CWorldSoundSet* m_54; // +0x54  (Retune)
-    char m_pad58_5c[0x5c - 0x58];
-    CFontConfig* m_5c;      // +0x5c  chat/text-input font config (FreeNodes/Scroll/TypeChar)
-    CMultiDialogHook* m_60; // +0x60  the pre-dialog thiscall receiver
-    char m_pad64_68[0x68 - 0x64];
-    CMultiSub68* m_68;     // +0x68  per-frame sub (PumpA, Step3017)
-    CMultiLogicList* m_6c; // +0x6c  the RemoveHead list manager
-    CBrickzGrid* m_70;     // +0x70  per-frame sub (PumpA, Step3562)
-    char m_pad74_9c[0x9c - 0x74];
-    i32 m_9c;        // +0x9c  zeroed at StartTitle entry
-    void Step2d33(); // 0x??  per-frame finish (PumpA tail)
-    char m_padA0_C0[0xc0 - 0xa0];
-    i32 m_c0;              // +0xc0  must be non-null to proceed
-    CMultiLogicDesc* m_c4; // +0xc4  host descriptor
-    char m_padC8_110[0x110 - 0xc8];
-    i32 m_110; // +0x110 receives CMulti::m_590 on teardown
-    char m_pad114_150[0x150 - 0x114];
-    CMultiMgrOptions m_150[4]; // +0x150  the 4-entry slot table (stride 0x238)
-
-    // 1-arg log/append sink (reloc-masked); takes the formatted line.
-    void LogLine(char* line);
-    // the 3-arg modal-dialog runner (reloc-masked, thiscall on this=m_logic).
-    i32 RunDialog(char* tmpl, void* handler, i32 lparam);
-    // session-start probe (3-arg thiscall): (mode, 0, 0) -> nonzero on success. 0x0048d780
-    i32 ProbeSession(i32 mode, i32 a, i32 b);
-    // report a netbind failure (2-arg thiscall: code, sub). 0x0008dc60
-    void ReportError(i32 code, i32 sub);
-    // resolve the host index from m_hostIndex (1-arg thiscall) -> pointer or 0. 0x00492e80
-    i32* ResolveHost(i32 host);
-};
-
-// Win32 focus restore on the innermost window (m_logic->m_4->m_4); __cdecl, reloc-masked.
+// Win32 focus restore on the innermost window (m_logic->m_gameWnd->m_hwnd); __cdecl,
+// reloc-masked.
 void SetActiveAndFocus(void* hwnd); // 0x00518930 (ex MultiRestoreFocus)
 
 // The opened-player object OpenPlayer returns (group-name accessor @0x4b76a0).
@@ -289,11 +244,12 @@ public:
     CMultiSlotView* vtbl() {
         return *(CMultiSlotView**)this;
     }
-    // The owner back-ptr (CState::m_4, generic CGruntzMgr*) is the multiplayer
-    // manager for a CMulti state; the lobby methods need it as CMultiMgr*. One
-    // typed accessor centralizes the downcast (was ~28 scattered (CMultiMgr*)m_4).
-    CMultiMgr* Mgr() {
-        return (CMultiMgr*)m_4;
+    // The owner back-ptr (CState::m_4) IS the real CGruntzMgr - the game-manager
+    // singleton the lobby methods drive. No downcast: the ex-CMultiMgr view is dissolved
+    // (see the note above), so LogLine/RunDialog/... now resolve to the canonical
+    // EnterModalUI/RunModalDialog/... at their real rvas.
+    CGruntzMgr* Mgr() {
+        return m_4;
     }
     // The +0x524 join/report gate IS the real small CNetMgr (the DirectPlay session
     // wrapper, ??1 @0xb6000). The 0xb9xxx net-stat/session methods (below) reach it as

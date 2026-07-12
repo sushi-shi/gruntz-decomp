@@ -8,6 +8,7 @@
 #include <ddraw.h> // real IDirectDrawSurface (the chatbox DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/ChatBoxOwner.h>
+#include <Gruntz/FontConfig.h> // CFontConfig - the +0x14 text host; owns 0x20ef0 (see below)
 
 // The text-stamp host's StampText @0x1cd0 IS m4::PwdHost::Render22160 (header-less DrawText unit);
 // TU-local decl, cast at each call.
@@ -226,10 +227,22 @@ void CChatBoxOwner::ProcessCheatInput(i32 a, i32 b) {
 // at a shifted esp offset (same instruction multiset, /O2-invariant), plus the
 // frame guard `mov ecx,[..]; test` vs cl's `cmp [..],0` materialization. No local
 // source diff closes these (hoisting rect[0] regressed 83->82%). ~83%.
-// GetField1c (0x00020ef0) - return the box's caption/key CString (m_1c) by value.
+// CFontConfig::GetInputText (0x00020ef0) - return the accumulated chat-input line
+// (CFontConfig::m_inputText, +0x1c) by value.
+//
+// IDENTITY (RELOC-Multi): this is NOT a CChatBoxOwner method (it was homed here as a
+// fabricated `GetField1c` + an invented +0x1c CString member, purely because the body
+// sits inside this obj's rva band). Every caller runs it on a CFontConfig: this TU's
+// ProcessCheatInput calls it on m_14 - the same object it drives with
+// CFontConfig::TypeChar (ILT 0x3508 -> 0x21e20) - and CMulti::Vslot0b calls it on
+// CGruntzMgr::m_chatLog (a CFontConfig*), reading the CString the very next TypeChar
+// appends to. It returns *(CString*)(this+0x1c), which is CFontConfig::m_inputText.
+// It is an INLINE (COMDAT) accessor - MSVC 5.0 does not inline a by-value CString
+// return - so the linker kept the copy this obj emitted, which is why the body lands in
+// this TU's band. Defined here (its true rva-order home); declared on CFontConfig.
 RVA(0x00020ef0, 0x20)
-CString CChatBoxOwner::GetField1c() {
-    return m_1c;
+CString CFontConfig::GetInputText() {
+    return m_inputText;
 }
 
 RVA(0x00020f40, 0x188)

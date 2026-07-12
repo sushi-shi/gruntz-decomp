@@ -17,7 +17,11 @@ public:
     i32 AddItem(const char* str, i32 type, i32 data);
     void Scroll(i32 delta);
     i32 TypeChar(i32 ch, i32 a2);
-    CString GetInputText(); // 0x12a3 (via thunk) - returns m_inputText (+0x1c) by value
+    // Returns m_inputText (+0x1c) by value. An INLINE accessor: MSVC 5.0 emits a by-value
+    // CString return out-of-line, so it is a COMDAT and the surviving copy is the one the
+    // ChatBoxOwner obj emitted (rva 0x00020ef0, inside THAT unit's band) - which is where
+    // it is DEFINED, and which is why callers reach it through ILT thunk 0x12a3.
+    CString GetInputText(); // 0x00020ef0 (def: src/Gruntz/ChatBoxOwner.cpp)
     void EndInput();
     virtual ~CFontConfig() OVERRIDE;
     i32 winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32);

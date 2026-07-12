@@ -24,7 +24,8 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr (Vslot09 PerFrameTick; ShowMultiStartDlg ExitModalUI)
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr - the REAL CState::m_4 game mgr (ex-CMultiMgr view)
+#include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig - CGruntzMgr::m_timer (+0x60; DtorBody)
 #include <Gruntz/Dialogs.h>   // CMultiStartDlg (stack-constructed by ShowMultiStartDlg @0xb86c0)
 #include <Gruntz/LightFxRender.h> // CLightFxRender (the +0x320 attract overlay; teardown Ctor @0xa3360)
 #include <Gruntz/TileTriggerContainer.h>
@@ -954,7 +955,7 @@ void CMulti::Teardown() {
         ::operator delete(p320);
         m_overlayActive = 0;
     }
-    Mgr()->m_110 = m_590;
+    Mgr()->m_isEffectsEnabled = m_590;
     CPlayDtorBody();
 }
 
@@ -963,6 +964,15 @@ void CMulti::Teardown() {
 // vector-destroys the embedded 4x CNetCmdSlot slot table at +0x20 (per-element dtor
 // = ~CNetCmdSlot). The /GX frame + ResetSync call + 'eh vector destructor iterator'
 // fall out of the member array (eh-dtor-model-members-as-destructible.md). 100%.
+//
+// reloc-fidelity note (NOT a defect): the tool reports the DIR32 at +0x2b as MISBOUND
+// (ours 0xb62a0, retail 0x1636). It is the same function. +0x2b is the `push
+// offset <element dtor>` argument to the MFC 'eh vector destructor iterator'
+// (0x11f640); retail's operand is the /INCREMENTAL linker's ILT thunk at 0x401636,
+// whose 5 bytes are `e9 65 4c 0b 00` = jmp 0xb62a0 = ??1CNetCmdSlot@@QAE@XZ - exactly
+// the symbol we emit. reloc_fidelity chases ILT jmp-thunks for CALL operands but not
+// for an address-taken DIR32, so the thunk address reads as a different target. Nothing
+// to fix in source: the reference names the right function and links.
 RVA(0x000b6220, 0x54)
 CNetSession::~CNetSession() {
     ResetSync();
@@ -1068,7 +1078,9 @@ i32 CMulti::FrameSlot28(i32 arg) {
 RVA(0x000b6580, 0x1eb)
 i32 CMulti::StartSession(i32 mode, i32 unused) {
     g_6455fc = 0;
-    i32* host = Mgr()->ResolveHost(m_hostIndex);
+    // FindOptionsSlot's OptionsSlot is defined in GruntzMgr.cpp; only its +0x00 field is
+    // read here (g_644c54 = *host), so the row is taken as i32*.
+    i32* host = (i32*)Mgr()->FindOptionsSlot(m_hostIndex);
     if (!host) {
         return 0;
     }
@@ -1093,7 +1105,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
-        CMultiMgrOptions* e = &Mgr()->m_150[i];
+        CMultiMgrOptions* e = (CMultiMgrOptions*)&Mgr()->m_options[i];
         if (e == 0) {
             return 0;
         }
@@ -1121,9 +1133,9 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_5e4 = timeGetTime();
     m_curSlotId = m_session->m_10 - 1;
     m_574 = 0;
-    Mgr()->m_5c->FreeNodes();
+    Mgr()->m_chatLog->FreeNodes();
     m_session->Reset(); // 0xbf150  (was StartTick view)
-    Mgr()->m_60->StartTitleHook();
+    Mgr()->m_timer->DtorBody();
     return 1;
 }
 
@@ -1143,7 +1155,7 @@ RVA(0x000b67f0, 0x74)
 i32 CMulti::Connect(i32 mode) {
     m_connected = 0;
     m_534 = 0;
-    if (Mgr()->ProbeSession(mode, 0, 0) == 0) {
+    if (Mgr()->PassClickToPlayState(mode, 0, 0) == 0) {
         Mgr()->ReportError(0x8005, 0x446);
         return 0;
     }
@@ -1183,7 +1195,7 @@ i32 CMulti::Tick() {
     i32 newId = m_session->m_10;
     if (m_curSlotId != newId) {
         m_curSlotId = newId;
-        CMultiLogicList* lst = Mgr()->m_6c;
+        CMultiLogicList* lst = (CMultiLogicList*)Mgr()->m_cmdSubMgr;
         CMultiLogicNode* node;
         if (lst->m_28 == 0) {
             node = 0;
@@ -1314,13 +1326,14 @@ struct McHost { // CMulti::m_view
 };
 
 // Per-frame receivers (thiscall, out-of-line -> reloc-masked).
-// CMultiMgr::m_48 IS the real CGruntzSoundZ (<Dsndmgr/GruntzSoundZ.h>): the former
+// CGruntzMgr::m_sound (+0x48) IS the real CGruntzSoundZ (<Dsndmgr/GruntzSoundZ.h>): the former
 // CMultiSoundZ view is dissolved - PlayByName (0x138840) / FindBank (0x138730) and
 // the +0x1c inner (m_pCurrent) are CGruntzSoundZ's own members.
 //
 // CMultiSub68 (m_68): the single per-frame FX-driver object, merged with the former
 // PBSub68 view (Step3017 poke + the +0x230 armed gate / Fire1398 / Reset2b85).
-class CMultiSub68 { // CMultiMgr::m_68
+class CMultiSub68 { // the multiplayer facet of CGruntzMgr::m_cmdGrid (+0x68); GruntzMgr.h
+                    // still types that slot CTriggerMgr* - fold deferred to that lane
 public:
     void Step3017(i32 dt); // 0x3017
     char m_pad00_230[0x230];
@@ -1344,7 +1357,7 @@ public:
 RVA(0x000b6b40, 0x29e)
 i32 CMulti::PumpA() {
     i32 ready = PumpAReady();
-    if (m_594 == 0 && Mgr()->m_c != 0 && ready == 0) {
+    if (m_594 == 0 && Mgr()->m_frameGate != 0 && ready == 0) {
         PumpAReset();
         return 1;
     }
@@ -1358,20 +1371,20 @@ i32 CMulti::PumpA() {
             char name[0x40];
             wsprintfA(name, "AMBIENT%d", PumpAIndex());
             if (g_gameReg->m_14 != 0) {
-                Mgr()->m_48->PlayByName(name, 1);
+                Mgr()->m_sound->PlayByName(name, 1);
             } else {
-                CGruntzSoundInnerZ* p = Mgr()->m_48->FindBank(name);
+                CGruntzSoundInnerZ* p = Mgr()->m_sound->FindBank(name);
                 if (p) {
-                    Mgr()->m_48->m_pCurrent = p;
+                    Mgr()->m_sound->m_pCurrent = p;
                 }
-                if (Mgr()->m_48->m_pCurrent) {
-                    Mgr()->m_48->m_pCurrent->SetLoop(1);
+                if (Mgr()->m_sound->m_pCurrent) {
+                    Mgr()->m_sound->m_pCurrent->SetLoop(1);
                 }
             }
             m_ambientInitDone = 1;
         }
     }
-    Mgr()->m_6c->Step20b3(m_curSlotId % 128);
+    ((CMultiLogicList*)Mgr()->m_cmdSubMgr)->Step20b3(m_curSlotId % 128);
     m_session->Step2437();
     g_64558c++;
     u32 t1 = g_645590 ? g_645590 : 0x32;
@@ -1406,7 +1419,7 @@ i32 CMulti::PumpA() {
     }
     ((McHost*)m_c)->m_8->CallSlot24();
     ((McHost*)m_c)->m_8->CallSlot40();
-    Mgr()->m_68->Step3017(g_645584);
+    ((CMultiSub68*)Mgr()->m_cmdGrid)->Step3017(g_645584);
     ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->LoadDestructButtonSprite(g_645584);
     CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_c + 0x20);
     if (win) {
@@ -1415,11 +1428,11 @@ i32 CMulti::PumpA() {
         win->TickWinB(now);
     }
     ((CTileTriggerContainer*)m_beginMarker)->FilterList2((void*)g_645584);
-    Mgr()->m_70->UpdateDiagonals((i32)Mgr());
+    ((CBrickzGrid*)Mgr()->m_cmdNotify)->UpdateDiagonals((i32)Mgr());
     if (ready == 0) {
         PumpAReset();
     }
-    Mgr()->Step2d33();
+    Mgr()->AdvanceOptionsCycle();
     return 1;
 }
 
@@ -1471,8 +1484,8 @@ public:
     char m_pad10_24[0x24 - 0x10];
     CGameLevel* m_24; // +0x24
 };
-// The output sink hung off CMultiMgr::m_54 (thiscall 2-arg blit).
-// (CMultiMgr::m_68's FX-driver view PBSub68 is folded into CMultiSub68 above.)
+// The output sink hung off CGruntzMgr::m_inputState (+0x54; thiscall 2-arg blit).
+// (The +0x68 FX-driver view PBSub68 is folded into CMultiSub68 above.)
 class PBSub320 { // CMulti::m_attractOverlay (attract-mode overlay)
 public:
     void Tick1fa0(u32 clock, i32 flag);    // 0x00001fa0
@@ -1492,7 +1505,7 @@ extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
     PBMgr* mgr = (PBMgr*)m_c;
-    if (m_594 == 0 && Mgr()->m_c != 0) {
+    if (m_594 == 0 && Mgr()->m_frameGate != 0) {
         StepInputA();
         mgr->m_24->VisitVisible(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
@@ -1513,14 +1526,14 @@ void CMulti::PumpB() {
         ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->Deactivate();
     }
     if (m_worldReady == 0) {
-        if (Mgr()->m_68->m_armed != 0) {
-            Mgr()->m_68->Fire1398();
+        if (((CMultiSub68*)Mgr()->m_cmdGrid)->m_armed != 0) {
+            ((CMultiSub68*)Mgr()->m_cmdGrid)->Fire1398();
         } else {
             LoadScrollSpeedOptions();
         }
     }
     StepScroll();
-    Mgr()->m_54->Retune(
+    Mgr()->m_inputState->Retune(
         ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_84,
         ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_88
     );
@@ -1548,14 +1561,14 @@ void CMulti::PumpB() {
             ov->Render14dd(mgr->m_4->m_14, &rc);
         }
     }
-    Mgr()->m_5c->Scroll(g_645584);
+    Mgr()->m_chatLog->Scroll(g_645584);
     CDDrawSurfacePair* h = mgr->m_4->m_14;
     if (h == 0) {
         return;
     }
     m_hitTest->LoadChatBoxSprite((i32)h);
     DrawDebugStats();
-    Mgr()->m_68->Reset2b85();
+    ((CMultiSub68*)Mgr()->m_cmdGrid)->Reset2b85();
     StepGridWalk(g_645584);
     CopyRect(h);
     if (m_worldReady != 0) {
@@ -1601,7 +1614,7 @@ public:
 // correct, byte-match deferred to the final sweep.
 RVA(0x000b72c0, 0x30b)
 i32 CMulti::StartTitle() {
-    Mgr()->m_9c = 0;
+    Mgr()->m_lobbyResult = 0;
     m_588 = 1;
     if (!m_netGate) {
         return 0;
@@ -1625,10 +1638,10 @@ i32 CMulti::StartTitle() {
     m_2c = saved;
     while (g_ShowCursor(1) < 0) {
     }
-    if (!Mgr()->m_c0) {
+    if (!Mgr()->m_lobby) {
         return 0;
     }
-    CMultiLogicDesc* desc = Mgr()->m_c4;
+    CMultiLogicDesc* desc = (CMultiLogicDesc*)Mgr()->m_connSettings;
     if (!desc) {
         return 0;
     }
@@ -1891,9 +1904,9 @@ void CMulti::ReportVersionMsg(char* msg, i32 code) {
     if (msg && *msg && Mgr()) {
         if (code > 0) {
             sprintf(buf, "%s (%i)", msg, code);
-            Mgr()->LogLine(buf);
+            Mgr()->EnterModalUI((i32)buf);
         } else {
-            Mgr()->LogLine(msg);
+            Mgr()->EnterModalUI((i32)msg);
         }
     }
 }
@@ -1949,9 +1962,7 @@ SIZE_UNKNOWN(CNetCueRec);
 SIZE_UNKNOWN(CNetMgrLite);
 SIZE_UNKNOWN(CRegBute);
 SIZE_UNKNOWN(CMulti);
-SIZE_UNKNOWN(CMultiDialogHook);
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
-SIZE_UNKNOWN(CMultiMgr);
 SIZE_UNKNOWN(CMultiLogicDesc);
 SIZE_UNKNOWN(CMultiMgrOptions);
 SIZE_UNKNOWN(CSlotConfig);
@@ -2806,7 +2817,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected != 0) {
                 break;
             }
-            if (NetGameMgr()->CountReadyOptionsSlots(1) >= 4) {
+            if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
                 break;
             }
             if (ChannelSlots_Get(((u8*)&msg->m_8)[1]) == 0) {
@@ -3136,13 +3147,17 @@ void CMulti::AckDropPlayer(i32 id) {
 // options host and the +0xc sound sub-mgr are cast from their shared-class slots.
 // @confidence: med
 // @source: decomp-xref
-// NOTE (reloc-fidelity, deferred): the `host->m_10.Lookup(...)` call at +0xe0 is a
-// DIRECT retail call to 0x1b8438, which is the MFC library CMapStringToOb::Lookup
-// (NAFXCW, AMBIG carve-out) - NOT a game method. `CSndFinder::Lookup` is a fake-view
-// alias; the real fix is to model CSndFinder's map member as a real CMapStringToOb and
-// call it directly (binds via the library mechanism). Deferred: touches shared
-// <Gruntz/SoundCue.h> (parallel lane). A game @data-symbol here overlaps the library
-// symbol (verify_library_overlap fails), so it is NOT bound here.
+// RELOC-Multi: the cue lookup at +0xe0 is a DIRECT retail call to 0x1b8438, which IS the
+// MFC library `CMapStringToOb::Lookup` (?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z,
+// NAFXCW - disasm-proven: it tail-calls CMapStringToOb::GetAssocAt@0x1b83de and reuses the
+// `key` arg slot as the out-nHash local). `CSndFinder::Lookup` was a fake-view alias of it,
+// so the rel32 bound to nothing. The finder embedded at CSndHost+0x10 IS a CMapStringToOb
+// (its 0x1c bytes exactly fill +0x10..+0x2c), so the call is made through the real MFC
+// class here and now links against the library symbol. It is reached by a reinterpret
+// rather than by typing CSndHost::m_10: <Gruntz/SoundCue.h> is pulled into
+// <Gruntz/GameRegistry.h> and thus into ~60 pure-Win32 TUs, where naming an MFC collection
+// trips C1189 - that is the deferred ~85-TU <Mfc.h> umbrella swap, not this lane. The
+// out-value is CObject* because that is what the MFC container's own API types it.
 RVA(0x000ba620, 0x14a)
 i32 CMulti::LoadMenuSelectSprite(void* evp) {
     MenuSelectEvent* ev = (MenuSelectEvent*)evp;
@@ -3163,7 +3178,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
     }
     if (m_530 == 0 && m_connected == 0) {
         if (m_isHost != 0) {
-            if (NetGameMgr()->CountReadyOptionsSlots(1) >= 4) {
+            if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
                 SendStat3(ev->m_id, 0x3fe, 1);
                 return 0;
             }
@@ -3173,9 +3188,9 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
         }
         CSndHost* host = ((CSndSubMgr*)m_c)->m_28;
         if (host->m_emitGate == 0) {
-            LeafCue* out = 0;
-            host->m_10.Lookup("GAME_MENUS_SELECT", &out);
-            LeafCue* e = out;
+            CObject* out = 0;
+            ((CMapStringToOb*)&host->m_10)->Lookup("GAME_MENUS_SELECT", out);
+            LeafCue* e = (LeafCue*)out;
             if (e != 0) {
                 i32 enabled = g_sndEnabled;
                 i32 tag = g_sndCueTag;
@@ -3324,7 +3339,7 @@ i32 CMulti::RegisterChannelFrom(const char* name, i32 b, i32 e, i32 f) {
 // eh-state-numbering-base.md. Deferred to the final sweep.
 RVA(0x000baac0, 0x12e)
 i32 CMulti::RegisterChannel(const char* name, i32 id, i32 c, i32 d, i32 idx, i32 e) {
-    if (NetGameMgr()->CountReadyOptionsSlots(1) >= 4) {
+    if (Mgr()->CountReadyOptionsSlots(1) >= 4) {
         return 0;
     }
 
@@ -4250,9 +4265,9 @@ i32 CMulti::RunErrorDialog(char* tmpl, void* handler, i32 lparam) {
     if (!Mgr()) {
         return 2;
     }
-    Mgr()->m_60->PreDialog();
-    i32 r = Mgr()->RunDialog(tmpl, handler, lparam);
-    SetActiveAndFocus(Mgr()->m_4->m_4);
+    Mgr()->m_timer->DtorBody();
+    i32 r = Mgr()->RunModalDialog(tmpl, handler, lparam);
+    SetActiveAndFocus(Mgr()->m_gameWnd->m_hwnd);
     AckJoinFailure();
     return r;
 }
@@ -4807,15 +4822,15 @@ RVA(0x000bd210, 0x14d)
 i32 CMulti::Vslot0b(i32 arg0, i32 arg1) {
     if (m_hitTest && m_hitTest->m_10) {
         if (m_connected) {
-            if (Mgr()->m_5c->TypeChar(arg0, arg1)) {
-                CString line = Mgr()->m_5c->GetInputText();
+            if (Mgr()->m_chatLog->TypeChar(arg0, arg1)) {
+                CString line = Mgr()->m_chatLog->GetInputText();
                 i32 n = line.GetLength();
                 if (n > 9) {
                     CString text = line.Right(n - 9);
                     char buf[0x100];
                     strcpy(buf, text);
                     BroadcastChatLine(buf, 1, 1, 0);
-                    Mgr()->m_5c->m_inputText.Empty();
+                    Mgr()->m_chatLog->m_inputText.Empty();
                 }
             }
         }

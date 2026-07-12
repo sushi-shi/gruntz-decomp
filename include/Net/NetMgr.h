@@ -935,8 +935,12 @@ SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size T
 // CNetMgr::ResolveLocalPlayer; cast at that call. The full type-identity merge of the
 // sub-object fields into CGruntzMgr is a separate reconciliation - see the report.)
 struct CNetGameMgr {
-    i32 CountReadyOptionsSlots(i32 anyState); // 0x092e30 (== CGruntzMgr::CountReadyOptionsSlots)
-    void ResetClockGlobals();                 // 0x08f4f0
+    // (CountReadyOptionsSlots @0x92e30 was a fake alias of the real
+    // CGruntzMgr::CountReadyOptionsSlots at the same rva - dropped; Multi.cpp now calls the
+    // canonical method through CMulti::Mgr(). The rest of this view is the same object
+    // (*0x64556c) seen through its network facet; folding it onto CGruntzMgr is deferred
+    // work for the GruntzMgr lane - see <Gruntz/Multi.h>.)
+    void ResetClockGlobals(); // 0x08f4f0
     void ClearOptionsSlots();                 // 0x092ec0
     i32 InitializeLobbyConnectionSettings();  // 0x08eca0
     CString GetWorldFileName();               // 0x0928c0
