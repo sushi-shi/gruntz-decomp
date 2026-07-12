@@ -382,10 +382,6 @@ DATA(0x0021aabc)
 extern char g_imageTag[];
 DATA(0x0021ab14)
 extern "C" u32 g_61ab14;
-DATA(0x0022c00c)
-extern char g_mapNamePre[4];
-DATA(0x0022c010)
-extern char g_mapNameBuf[0x200];
 DATA(0x00244ca4)
 extern void* g_renderCtx; // g_644ca4
 DATA(0x002454e8)
