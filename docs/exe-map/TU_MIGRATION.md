@@ -4,7 +4,7 @@
 
 **Ground truth**: placements are first-link birth positions (demo-oracle: 170/181 outliers identically placed in GruntDem.exe; only 3 ilink moves in the whole EXE), and every obj's contribution is contiguous at first link. So retail `.text` order faithfully records the ORIGINAL TU composition, and the CRT init-table gives the original obj LINK ORDER.
 
-Outlier mechanisms: REHOME-CANDIDATE 71, COMDAT-AT-USAGE 13.
+Outlier mechanisms: REHOME-CANDIDATE 64, COMDAT-AT-USAGE 11.
 
 
 ## MERGE candidates — multi-core intervals (VERIFY per group)
@@ -13,7 +13,7 @@ Outlier mechanisms: REHOME-CANDIDATE 71, COMDAT-AT-USAGE 13.
 
 | interval | fns | verdict | weave | combine/verify these units |
 |---|---|---|---|---|
-| `0x184610-0x185a0e` | 39 | seam-glued | 0.03 | debugprintf (13), rezcoll (12), menuitem (7), rezlist (5) |
+| `0x184610-0x185a0e` | 40 | seam-glued | 0.03 | rezcoll (13), debugprintf (13), menuitem (7), rezlist (5) |
 | `0x163bf0-0x1660a6` | 27 | seam-glued | 0.04 | ddrawsurfacepair (22), logicrecord (5) |
 
 ## SPLIT — units with core presence in several intervals (conflated)
@@ -37,15 +37,15 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x008a40` | `?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z` | logictypetable | `0x8a40` ? |
 | `0x008b90` | `?Finalize@CFinalize8b90@@QAEXH@Z` | logictypetable | `0x8b90` ? |
 | `0x008c00` | `?Chain@CSerialObjRef@@QAEHPAUCSerialArchive@@HHPAVCSerialObj` | serialobjref | `0x8c00` ? |
-| `0x009bb0` | `?Deserialize@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z` | streamrecordloaders | `0x9bb0` ? |
+| `0x009bb0` | `?Deserialize@CTriggerLoadRec@@QAEHPAUCSerialArchive@@@Z` | triggerloadrec | `0x9bb0` ? |
 | `0x00a000` | `?WrapCoord@CPlaneRender@@QAEXPAH0@Z` | wwdfile | `0xa000` ? |
 | `0x00a3b0` | `?RegisterGameObjectTypes@@YAXPAUGameObjFactoryCtx@@@Z` | gameobjectfactory | `0xa3b0` ? |
 | `0x00af50` | `?ResetDat6295d8@@YAXXZ` | gameobjectfactory | `0xaf50` ? |
 | `0x00cd00` | `?Next@Rng@@YAHXZ` | gruntzrandom | `0xcd00` ? |
 | `0x00cd70` | `?Roll@RangeBox@Rng@@QAEXHHHH@Z` | gruntzrandom | `0xcd70` ? |
 | `0x00d170` | `?SaveGame@@YAHPAUCGameSaveHost@@PAD@Z` | gamesave | `0xd170` ? |
-| `0x00d210` | `?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z` | gruntzmgrcmd | `0xd210` ? |
-| `0x00d2a0` | `?SerialObjectFactory@@YAHPAX0HHPAPAX@Z` | gruntzmgrcmd | `0xd2a0` ? |
+| `0x00d210` | `?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z` | serialobjectfactory | `0xd210` ? |
+| `0x00d2a0` | `?SerialObjectFactory@@YAHPAX0HHPAPAX@Z` | serialobjectfactory | `0xd2a0` ? |
 | `0x010b20` | `??0CSecretLevelTrigger@@QAE@XZ` | secretteleportertrigger | `0x10b20` ? |
 | `0x011160` | `??0CTileTrigger@@QAE@XZ` | tilelogicpump | `0x11160` ? |
 | `0x011ef0` | `??0CGruntHealthSprite@@QAE@XZ` | grunthealthsprite | `0x11ef0` ? |
@@ -72,7 +72,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x01c9d0` | `?ShowLevelCompleteMessage@BzState@@QAEXXZ` | bootymessages | `0x1c0f0` bootystateactivate |
 | `0x01ce60` | `?BuildBootyGruntIdleAnimation@BzState@@QAEHXZ` | bootymessages | `0x1c0f0` bootystateactivate |
 | `0x01e720` | `?BuildPowerupIconKeys@@YGXPAVPowerupKeyRegistry@@H@Z` | iconloaders | `0x1c0f0` bootystateactivate |
-| `0x01f940` | `?PlayIfElapsed_01f940@LeafCue@@QAEHHHHH@Z` | ddrawsubmgr | `0x1f940` ? |
+| `0x01f940` | `?PlayIfElapsed_01f940@LeafCue@@QAEHHHHH@Z` | leafcueplay | `0x1f940` ? |
 | `0x01f9b0` | `?StartUpPrompt@@YAHPAUHWND__@@@Z` | startupprompt | `0x1f9b0` ? |
 | `0x0212a0` | `?Reset@CButeStore212a0@@QAEXXZ` | butestoreclear | `0x212a0` ? |
 | `0x0213a0` | `?GetVBaseField@CVBaseFieldHost@@QAEHXZ` | butemgr | `0x213a0` ? |
@@ -81,6 +81,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x02b340` | `?Clip@CBrickzGrid@@QAEXPBUtagRECT@@@Z` | brickzclip | `0x29a30` battlezmapconfig |
 | `0x0310f0` | `?IndexToPtr@zDArray@@QAEHH@Z` | zvec | `0x29a30` battlezmapconfig |
 | `0x0311b0` | `?Push@FreeNodePool@@QAEXPAX@Z` | freenodepool | `0x29a30` battlezmapconfig |
+| `0x031250` | `?Drain_031250@CQueueDrainHost@@QAEPAXXZ` | queuedrainhost | `0x29a30` battlezmapconfig |
 | `0x0312a0` | `?IndexToPtr@_zvec@@QAEHH@Z` | zvec | `0x29a30` battlezmapconfig |
 | `0x032ce0` | `?ScanRegion32ce0@CScanMgr@@QAEHPAVCGrunt@@@Z` | grunttilescan | `0x32ce0` ? |
 | `0x033520` | `?Step33520@CStepMgr@@QAEHPAVCGrunt@@@Z` | gruntstatestep | `0x33520` ? |
@@ -137,6 +138,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x085480` | `?FreeNodes@CMapLogic@@QAEXXZ` | maplogic | `0x83450` rezsync |
 | `0x0860b0` | `?UpdateScoreHud@CGruntzMgr@@QAEXXZ` | gruntzmgr | `0x860b0` ? |
 | `0x0861e0` | `?AccrueScoreTime@CGruntzMgr@@QAEXXZ` | gruntzmgr | `0x861e0` ? |
+| `0x08c750` | `??0CState@@QAE@XZ` | state | `0x8b8c0` gruntzmgr |
 | `0x08c970` | `?SetBeginClearParams@CState@@QAEHHHH@Z` | play | `0x8b8c0` gruntzmgr |
 | `0x08dd80` | `?BltChecked@DDrawBltHost@@QAEHXZ` | ddrawblterrthunk | `0x8b8c0` gruntzmgr |
 | `0x08e470` | `?HandleDebugPosition@RezMgr@@QAEHXZ` | rezmgr | `0x8b8c0` gruntzmgr |
@@ -157,10 +159,6 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x09b8b0` | `??0CLevelTime@@QAE@PAUCGameObject@@@Z` | leveltimedtor | `0x9b8b0` ? |
 | `0x09c650` | `?Load@CEventLoadRec@@QAEHPAUCSerialArchive@@@Z` | streamrecordloaders | `0x9c650` ? |
 | `0x09cab0` | `?LookupPtr@C9cab0@@QAEHH@Z` | streamrecordloaders | `0x9cab0` ? |
-| `0x09dff0` | `?GruntzLoadGameDlgProc@@YGHPAUHWND__@@IIJ@Z` | loadgamemenu | `0x9dff0` ? |
-| `0x09e0b0` | `?FillGameInfoDialog@@YAXPAUHWND__@@PAVCSaveGame@@@Z` | savegame | `0x9e0b0` ? |
-| `0x09e2d0` | `?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z` | savegame | `0x9e2d0` ? |
-| `0x09e390` | `?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z` | loadgamemenu | `0x9e390` ? |
 | `0x09fe50` | `?LoadAssets@CMenuState@@QAEHHHH@Z` | menustateassets | `0x9fe50` ? |
 | `0x0a0280` | `?Init@CChatBox@@QAEXXZ` | chatbox | `0xa0280` ? |
 | `0x0a03f0` | `?LoadTitleConfig@CAttract@@QAEHH@Z` | attract | `0xa03f0` ? |
@@ -173,9 +171,6 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0ac620` | `??0CEyeCandy@@QAE@PAUCGameObject@@@Z` | eyecandy | `0xabfa0` frontcandyani |
 | `0x0acb30` | `?InitLogicDispatch_646060@@YAXXZ` | logicdispatchinit | `0xabfa0` frontcandyani |
 | `0x0adbe0` | `??0CMenuSparkle@@QAE@PAUCGameObject@@@Z` | menusparkle | `0xadbe0` ? |
-| `0x0adde0` | `?ConstructLogicActRange_646010@@YAXXZ` | logicactreg646010 | `0xadde0` ? |
-| `0x0ade60` | `?Dispatch@CProjActDispatcher@@QAEXH@Z` | projectile | `0xade60` ? |
-| `0x0adfc0` | `?RegisterXLogic_646010@@YAXXZ` | logicactreg646010 | `0xadfc0` ? |
 | `0x0ae2a0` | `?AdvanceAnim@CMenuSparkle@@QAEHXZ` | menusparkle | `0xae2a0` ? |
 | `0x0ae360` | `?GameIconFlashEffect@@YAHPAUCGameObject@@@Z` | gameiconflasheffect | `0xae360` ? |
 | `0x0ae3f0` | `??0CWayPoint@@QAE@PAUCGameObject@@@Z` | waypoint | `0xae3f0` ? |
@@ -216,16 +211,16 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0dbc80` | `?BuildWorldLevelPath@CWorldState@@QAEHH@Z` | worldlevelpath | `0xd5960` play |
 | `0x0de140` | `?ResetPreview@CGameModeBase@@QAEXXZ` | gamemode | `0xde030` levelpreview |
 | `0x0e0650` | `??0CBoomerang@@QAE@PAUCGameObject@@@Z` | boomerang | `0xdec60` projectile |
-| `0x0e0d40` | `?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@` | streamrecordloaders | `0xdec60` projectile |
+| `0x0e0d40` | `?Load@CProjLoadRec@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@` | projloadrec | `0xdec60` projectile |
 | `0x0e6020` | `?winapi_0e6020_SetRect@StubOwner_e6020@@QAEHHHHHHHHHHH@Z` | sbi_wellgoo | `0xe6020` ? |
 | `0x0e6380` | `?Tick@CSBI_WellGoo@@QAEHXZ` | sbi_wellgoo | `0xe6380` ? |
 | `0x0e6d90` | `?ClearFrame@CSBI_Image@@QAEXXZ` | sbi_image | `0xe6d90` ? |
 | `0x0e6dd0` | `?TickRenderCurrent_0e6dd0@CSBI_Image@@QAEHXZ` | sbi_image | `0xe6dd0` ? |
 | `0x0e7400` | `?ResetCounters@CSBI_ImageSet@@QAEXXZ` | sbi_imageset | `0xe7400` ? |
 | `0x0e7440` | `?TickRenderFrame_0e7440@CSBI_ImageSet@@QAEHXZ` | sbi_imageset | `0xe7440` ? |
-| `0x0ea990` | `?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z` | streamrecordloaders | `0xea990` ? |
+| `0x0ea990` | `?Load@CGruntStateRec@@QAEHPAUCSerialArchive@@HHH@Z` | gruntstaterec | `0xea990` ? |
 | `0x0ebd30` | `?Cmd_ResetScroll_0ebd30@@YAXXZ` | cmdscrollapply | `0xebd30` ? |
-| `0x0ebd70` | `?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAHHH@Z` | mgrautoscroll | `0xebd70` ? |
+| `0x0ebd70` | `?UpdateMgrScroll@@YAXPAVCGruntzMgr@@PAHH@Z` | mgrautoscroll | `0xebd70` ? |
 | `0x0ec1c0` | `?Cmd_ApplyScrollParams_0ec1c0@@YAXHHHHH@Z` | cmdscrollapply | `0xec1c0` ? |
 | `0x0ec670` | `?ResolveArrivalReposition@CGrunt@@QAEHXZ` | grunt | `0xec670` ? |
 | `0x0ecc90` | `?ArrivalScanA@CGrunt@@QAEHXZ` | gruntarrivalscan | `0xecc90` ? |
@@ -272,8 +267,8 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x1128b0` | `?DoSwap@CSlotHolder@@QAEHXZ` | mgrslotswap | `0x110430` tileswitchlogic |
 | `0x112a50` | `?BuildSmall@CCheckpointTriggerSwitchLogic@@QAEHHHHHHPAUCStat` | checkpointswitchbuild | `0x110430` tileswitchlogic |
 | `0x114120` | `?RefreshAsset_114120@CDDrawSubMgrLeafScan@@QAEHPBD@Z` | ddrawsubmgr | `0x114120` ? |
-| `0x114ec0` | `?Fwd114ec0@@YAXHHHHHH@Z` | gruntzmgrcmd | `0x114ec0` ? |
-| `0x114f00` | `?Fwd114f00@@YAXHHHHHH@Z` | gruntzmgrcmd | `0x114f00` ? |
+| `0x114ec0` | `?Fwd114ec0@@YAXHHHHHH@Z` | fwd114ec0 | `0x114ec0` ? |
+| `0x114f00` | `?Fwd114f00@@YAXHHHHHH@Z` | fwd114ec0 | `0x114f00` ? |
 | `0x114f50` | `?ChainForward14@@YAXHPAUChainRoot@@HHHH@Z` | chainforward | `0x114f50` ? |
 | `0x114fa0` | `?ChainForward@@YAXHPAUChainRoot@@HHHH@Z` | chainforward | `0x114fa0` ? |
 | `0x114ff0` | `?SaveScreenshot@@YAHHPAUScrConfig@@PAUScrOwner@@HHPADH@Z` | savescreenshot | `0x114ff0` ? |
@@ -336,8 +331,8 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x182940` | `?ScatterSamples@@YAXPAHHHH@Z` | scattersamples | `0x182940` ? |
 | `0x182a80` | `?IsPrime@@YAHH@Z` | scattersamples | `0x182a80` ? |
 | `0x182ab0` | `?Init@TileRegion@@QAEHPAUTileSrcHost@@HPAUtagRECT@@HHH@Z` | menustateassets | `0x182ab0` ? |
-| `0x185320` | `_uncompress` | uncompr | `0x184610` debugprintf |
-| `0x1853b0` | `?WapUncompress@@YAHPAEPAK0K@Z` | wapuncompress | `0x184610` debugprintf |
+| `0x185320` | `_uncompress` | uncompr | `0x184610` rezcoll |
+| `0x1853b0` | `?WapUncompress@@YAHPAEPAK0K@Z` | wapuncompress | `0x184610` rezcoll |
 | `0x1882d0` | `_adler32` | adler32 | `0x1882d0` ? |
 | `0x188410` | `_zcalloc` | zutil | `0x188410` ? |
 | `0x188430` | `_zcfree` | zutil | `0x188430` ? |
@@ -365,7 +360,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 
 - **RTTI = /GR per project**: 222/295 vtables carry RTTI; the engine band (0x130000-0x180000) has 18/78 — and the non-iostream RTTI'd classes there are GAME-project (/GR) files sitting inside the band: CGameApp, CGameMgr, CGameWnd, CImage. Use RTTI-vs-not to assign mega-interval files to their project.
 - **Vtable .rdata order** is 73% monotone with the methods' .text order — a third link-order witness (vtables are COMDATs kept at the first-constructing obj and never move); use it to order fragment-less TUs and cluster no-RTTI engine vtables.
-- **Private globals**: 6190/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 99% monotone with TU order. A private global decides a seam function's membership; 347 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
+- **Private globals**: 6200/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 99% monotone with TU order. A private global decides a seam function's membership; 436 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
 - **Extent-overlap merge evidence** (two neighbor intervals whose private .data extents interleave are ONE obj):
   - `0x7c60` (actionarea) + `0x9090` (actionoptionsmenubar)
   - `0x19cd0` (gamemode) + `0x18740` (?)
@@ -398,27 +393,26 @@ bootywalkanim | dialogsx6 | globals | gametext | bootystateactivatex9 | fontconf
 gruntzcmdmgrx18 | checkpointdlgx2 | gruntzcmdmgr | battlezmapconfig | gruntzcmdmgrx7 |
 battlezmapconfigx56 | videoconfigx35 | creditsstatex9 | cursorsnapactreg | customworlddialogx12 |
 demox27 | gruntstartingpoint | gruntcreationpoint | wormholeacts | wormholex3 |
-secretteleportertriggerx2 | warlord | fortressflagx12 | gruntstepsx2 | directionclassify |
-gruntstepsx5 | directionclassify | gruntcombatx19 | triggermgrgrid | triggermgr | triggermgrgridx7 |
-triggermgr | gruntselectedsprite | triggermgrx7 | gruntselectedsprite | grunthealthsprite |
-grunttoysprite | gruntpowerupsprite | gruntzappx18 | gametext | play | gametextx6 | gruntzcmdmgr |
-gametextx12 | gruntzwndx19 | ingameicon | gruntzwndx7 | ingameiconx3 | areamgrx10 | spriteloaders |
-lightfx | spriteloadersx7 | lightfx | mapmgrx28 | menustatex2 | mainmenubuilder | menustatex6 |
-mainmenubuilder | lightfxrenderx9 | logicworkerhandlersa | behindcandyani | singleframemessage |
-logicworkerhandlersax6 | anicycle | singleframemessage | simpleanimation | logicdispatchinit |
-frontcandyani | behindcandyani | logicactreg646010 | singleanimation | logicworkerhandlersb |
-rollingball | logicworkerhandlersbx7 | rollingball | spotlightactreg | kitchenslime |
-pathhazardactreg | multix13 | netlobbydialogs | multix6 | netlobbydialogsx5 | netcmdslotx14 |
-packetpool | netcmdslotx10 | multistartdlgroster | netcmdslotx7 | multistartdlg |
-multistartdlgrosterx8 | droppedobjectx11 | gruntzrandom | droppedobject | playx18 | levelpreviewx18
-| projectilex2 | spritereftable | savegame | spritereftablex5 | savegamex38 | sbi_menuitemx26 |
-statusbartabbuildersx28 | sbi_warlordheadx9 | maplogic | sbi_warlordheadx18 | ?x45 | gruntx9 |
-gruntarrivalscanx7 | gruntx20 | ?x27 | soundfontpathx18 | attract | splashstate | attractx7 |
-netmgrmisc | attractx10 | statichazard | attractx7 | statichazard | battlezdatax18 | sbi_rectonlyx9
-| statusbarspriteacts | tilelogicpumpx24 | tileswitchlogic | toobspikez | tileswitchlogicx7 |
-toobspikez | tileswitchlogicx9 | wapmisc | fonts | tiletriggercontainer | fontsx2 |
-tiletriggercontainerx18 | gruntvoicex20 | ?x19 | ddsurface | directdrawmgr | typekeycollx7 |
-debugprintf | ?
+secretteleportertriggerx2 | warlord | fortressflagx12 | gruntstepsx8 | directionclassify |
+gruntcombatx19 | triggermgrgrid | triggermgr | triggermgrgridx7 | triggermgr | gruntselectedsprite |
+triggermgrx7 | gruntselectedsprite | grunthealthsprite | grunttoysprite | gruntpowerupsprite |
+gruntzappx18 | gametext | play | gametextx6 | gruntzcmdmgr | gametextx12 | gruntzwndx19 | ingameicon
+| gruntzwndx7 | ingameiconx3 | areamgrx10 | spriteloaders | lightfx | spriteloadersx7 | lightfx |
+mapmgrx28 | menustatex2 | mainmenubuilder | menustatex6 | mainmenubuilder | lightfxrenderx9 |
+logicworkerhandlersa | behindcandyani | singleframemessage | logicworkerhandlersax6 | anicycle |
+singleframemessage | simpleanimation | logicdispatchinit | frontcandyani | behindcandyani |
+logicactreg646010 | singleanimation | logicworkerhandlersb | rollingball | logicworkerhandlersbx7 |
+rollingball | spotlightactreg | kitchenslime | pathhazardactreg | multix13 | netlobbydialogs |
+multix6 | netlobbydialogsx5 | netcmdslotx14 | packetpool | netcmdslotx10 | multistartdlgroster |
+netcmdslotx7 | multistartdlg | multistartdlgrosterx8 | droppedobjectx11 | gruntzrandom |
+droppedobject | playx18 | levelpreviewx18 | projectilex2 | spritereftable | savegame |
+spritereftablex5 | savegamex38 | sbi_menuitemx26 | statusbartabbuildersx28 | sbi_warlordheadx9 |
+maplogic | sbi_warlordheadx18 | ?x45 | gruntx9 | gruntarrivalscanx7 | gruntx20 | ?x27 |
+soundfontpathx18 | attract | splashstate | attractx7 | netmgrmisc | attractx10 | statichazard |
+attractx7 | statichazard | battlezdatax18 | sbi_rectonlyx9 | statusbarspriteacts | tilelogicpumpx24
+| tileswitchlogic | toobspikez | tileswitchlogicx7 | toobspikez | tileswitchlogicx9 | wapmisc |
+fonts | tiletriggercontainer | fontsx2 | tiletriggercontainerx18 | gruntvoicex20 | ?x19 | ddsurface
+| directdrawmgr | typekeycollx7 | debugprintf | ?
 ```
 
 *Caveats: the engine-resource mega-interval (0x1396f0+) is glued by our own coarse units and needs per-function re-attribution before it splits (DIRSURF/DDRAWMGR/DIRPAL anchors mark three distinct files inside it). Splits invisible to layout (adjacent objs, e.g. DinMgr2.cpp + InputDevice.cpp inside our directinputmgr2) are only visible via anchors/init-frags.*
