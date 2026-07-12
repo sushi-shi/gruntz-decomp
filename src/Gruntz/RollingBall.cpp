@@ -63,7 +63,9 @@ struct CRollingBallActEntry {
 // global symbol is unchanged.
 struct CRollingBallActReg : public CActReg {};
 DATA(0x002461b0)
-extern CRollingBallActReg g_rollingBallActReg; // 0x6461b0
+CRollingBallActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x24-byte
+                                        // CActReg extent covers the interior fields
+                                        // 0x2461b4..0x2461d0, bound as g_obj+offset)
 
 // ---------------------------------------------------------------------------
 // Shared singletons (named so their DIR32 datum reloc-masks).
