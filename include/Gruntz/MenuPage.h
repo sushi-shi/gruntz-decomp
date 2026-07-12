@@ -58,8 +58,14 @@ public:
     void Clear();                                     // 0x1833c0  free child items + RemoveAll
     i32 ResolveSubPage(const char* key);              // 0x1833f0  catalog Lookup -> cache m_subPage
     void* Append(CMenuItem* item);                    // 0x183430  AddTail(item) -> item->m_2c
-    CMenuItem* AddItem(i32, i32, i32, i32, i32, i32); // 0x183460
-    CMenuItem* AddSubItem(i32, i32, i32, i32, i32, i32); // 0x1835a0
+    // 0x183460 (ret 0x14 = 5 args, __thiscall): alloc + construct a CMenuItem,
+    // Init(this, a0..a4), append. Args = (label, key, flags, label2, z); Init
+    // also receives the owning page (`this`). Arg count binary-proven by the
+    // caller (MainMenuBuilder BuildMainMenuTree pushes 5) and the callee ret 0x14.
+    CMenuItem* AddItem(i32, i32, i32, i32, i32); // 0x183460
+    // 0x1835a0 (ret 0x1c = 7 args): like AddItem but two extra params seed the new
+    // item's m_1c (a4) and m_cmdParam/+0x30 (a3); Init gets (this, a0,a1,a2,a5,a6).
+    CMenuItem* AddSubItem(i32, i32, i32, i32, i32, i32, i32); // 0x1835a0
     i32 ReleaseAll();                                    // 0x183990  release focus + items
     i32 RestoreFocus();                        // 0x1839d0  focus saved name / first focusable
     i32 SetFocus(CMenuItem* item, i32 notify); // 0x183ad0

@@ -815,12 +815,12 @@ i32 CMenuPage::SelectBackward() {
 // eh-dtor-vptr-stamp-vs-trylevel-order.md; topic:eh/topic:wall). Logic complete;
 // deferred to the final sweep (match the child ctor as a leaf, then inline it).
 RVA(0x00183460, 0x13d)
-CMenuItem* CMenuPage::AddItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
+CMenuItem* CMenuPage::AddItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4) {
     CMenuItem* item = (CMenuItem*)RezAlloc(0x5c);
     if (item) {
         new (item) CMenuItem();
     }
-    if (item->Init(a0, a1, a2, a3, a4, a5) == 0) {
+    if (item->Init((i32)this, a0, a1, a2, a3, a4) == 0) {
         if (item) {
             delete item;
         }
@@ -833,19 +833,19 @@ CMenuItem* CMenuPage::AddItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
 // @early-stop
 // same /GX placement-new wall as AddItem (the inlined child ctor + EH trylevel).
 RVA(0x001835a0, 0x14b)
-CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
+CMenuItem* CMenuPage::AddSubItem(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     CMenuItem* item = (CMenuItem*)RezAlloc(0x5c);
     if (item) {
         new (item) CMenuItem();
     }
-    if (item->Init(a0, a1, a2, a3, a4, a5) == 0) {
+    if (item->Init((i32)this, a0, a1, a2, a5, a6) == 0) {
         if (item) {
             delete item;
         }
         return 0;
     }
     item->m_1c = a4;
-    item->m_cmdParam = a5;
+    item->m_cmdParam = a3;
     return Append(item) ? item : 0;
 }
 
