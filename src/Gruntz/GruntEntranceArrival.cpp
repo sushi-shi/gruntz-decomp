@@ -50,9 +50,9 @@ struct GruntTileIcon {
     i32 PlaceAt(i32 idx, i32 gridBase); // 0x0986b0
 };
 
-// The default geometry-source token (g_defaultGeo @0x6bf3bc; defined in
-// SpriteResource.cpp, reloc-masked here) each step arms the entrance sub-player with.
-extern i32 g_defaultGeo;
+// The entrance geometry-source global (0x2bf3bc) each step arms the entrance
+// sub-player with is declared with its DATA() binding below as the tree-wide
+// keep-last winner `_g_6bf3bc` (see the conflation note there).
 // g_645588 (the running game clock) is declared by MovingLogic.h via Grunt.h.
 
 // The primary MS-CRT LCG generator state (inlined by the re-roll step; reloc-masked).
@@ -125,10 +125,6 @@ static const char s_animKeyK[] = "K";
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
 extern "C" u32 g_645588;
-
-// The global default geometry source the entrance geometry-state setter consumes
-// (g_defaultGeo @0x6bf3bc; defined in SpriteResource.cpp, reloc-masked here).
-extern i32 g_defaultGeo;
 
 // The scratch CString teardown the GetNameRecords reject paths run (defined with the
 // dispatch-machine cluster below); forward-declared for the two entrance-step
@@ -228,7 +224,12 @@ const char g_codeE[] = "E";
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite + the bound object)
 DATA(0x002bf3bc)
-extern "C" i32 g_6bf3bc; // the sub-logic clock fed to the tick
+// The entrance geometry-source global at 0x2bf3bc every step in this TU arms the
+// entrance sub-player with (fed to CAniAdvanceCursor::Advance_15c360). 0x2bf3bc is a
+// tree-wide name conflation: ~17 TUs bind it via this extern "C" `_g_6bf3bc` (the
+// keep-last DATA() winner), others as `g_slimeTick`/`g_defaultGeo` (unconfirmed
+// guesses). Bound here as the winner so all refs resolve to 0x2bf3bc (reloc-faithful).
+extern "C" i32 g_6bf3bc;
 // g_645588 (the running game clock stamped into the downtime timer record) comes
 // from <Gruntz/MovingLogic.h> (extern "C" u32; Projectile.cpp owns the DATA pin).
 
@@ -473,7 +474,7 @@ i32 CGrunt::UpdateGruntStatus() {
         return 0;
     }
 
-    m_154->m_1a0.Advance_15c360((u32)g_defaultGeo);
+    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
 
     if (m_stamina >= 0x64) {
         if (m_neighborValid == 0) {
@@ -1131,7 +1132,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 // coord list / update the arrival.
 RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
-    i32 ready = m_154->m_1a0.Advance_15c360((u32)g_defaultGeo);
+    i32 ready = m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
         if (m_arrived != 0) {
@@ -1440,7 +1441,7 @@ void CGrunt::ResolveEntranceArrival() {
         }
     }
 
-    i32 ready = m_154->m_1a0.Advance_15c360((u32)g_defaultGeo);
+    i32 ready = m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
 
     if ((i64)(u32)g_645588 - *(i64*)&m_idleTimerLo >= *(i64*)&m_idleWindowLo) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
@@ -1613,7 +1614,7 @@ i32 CGrunt::StepEntranceReinit() {
 // cue operands. Correct shape + control flow; a codegen wall.
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
-    m_154->m_1a0.Advance_15c360((u32)g_defaultGeo);
+    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
     i64 diff = (i64)(u32)g_645588 - *(i64*)&m_8c0;
     u32 elapsed;
     if (diff >= 0) {
@@ -1739,7 +1740,7 @@ static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNT
 // (the documented regalloc tail).
 RVA(0x00063db0, 0x32f)
 void CGrunt::LoadVehicleGruntAnimations() {
-    m_154->m_1a0.Advance_15c360((u32)g_defaultGeo);
+    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
 
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
@@ -2202,7 +2203,7 @@ tail:
 // reset the geometry.
 RVA(0x00065300, 0x148)
 i32 CGrunt::StepArrivalCommitA() {
-    m_154->m_1a0.Advance_15c360((u32)g_defaultGeo);
+    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;
@@ -2249,7 +2250,7 @@ i32 CGrunt::StepArrivalCommitA() {
 RVA(0x000654b0, 0x130)
 i32 CGrunt::StepArrivalCommitB() {
     // 0x15c360 is CAniAdvanceCursor::Advance_15c360 (cast the m_1a0 geometry facet)
-    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_defaultGeo);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;
@@ -2457,7 +2458,7 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
 // PlaceAt / cue operands. A register-allocation/scheduling wall, not a shape error.
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
-    i32 ready = m_154->m_1a0.Advance_15c360((u32)g_defaultGeo);
+    i32 ready = m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
     if (ready > 0) {
         m_tileMgr->Load6(
             m_tileOwnerHi,
