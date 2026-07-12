@@ -39,9 +39,17 @@ public:
     void Dtor_163a40();   // 0x163a40
 };
 
-class CImageSet3 {
+// CImageSet3 is the kind-3 WWD image-set collision record (its own vtable
+// ??_7CImageSet3@@6B@ @0x1f0228, VTBL-bound in GameLevel.cpp; CObject grand-base).
+// This TU carries its out-of-line /GX dtor (0x161500) + the 0x166e00 pixel scan.
+// The grid-owner facet (Prune/GetSize/Cleanup, m_b0@+0xb0) is defined in
+// LevelPlane.cpp and is a separate unresolved identity-TODO (a 0xb0-sized object
+// cannot be the 0x18 kind-3 record - the name is conflated); its decls stay as
+// documentation. Deriving from CObject makes the dtor stamp the REAL vtable.
+class CImageSet3 : public CObject {
 public:
-    i32 Prune_1628d0();    // 0x1628d0
+    virtual ~CImageSet3() OVERRIDE; // 0x161500  out-of-line /GX dtor (vtable slot 1)
+    i32 Prune_1628d0();    // 0x1628d0 (LevelPlane.cpp - grid-owner facet, @identity-TODO)
     i32 GetSize_1633e0();  // 0x1633e0 (out-of-line: m_b0 ? m_b0->GetSize_168430() : 0)
     void Cleanup_161bf0(); // 0x161bf0
     // 0x166e00 (vtable slot 10): scan left from (x,y) along the row for the first pixel
@@ -49,7 +57,8 @@ public:
     // buffer, m_c the row-stride shift (row width == 1<<m_c).
     i32 ScanRunLeft_166e00(i32 x, i32 y, i32* outX, i32* outVal);
 
-    char m_pad00[0x0c];        // +0x00 .. +0x0b (vptr + CLoadable base)
+    // CObject supplies the vptr @+0x00; +0x04..+0x0b is the CLoadable base region.
+    char m_pad04[0x0c - 0x04]; // +0x04 .. +0x0b
     i32 m_c;                   // +0x0c  row-stride shift (log2 of the row width)
     char m_pad10[0x14 - 0x10]; // +0x10 .. +0x13
     u8* m_14;                  // +0x14  pixel buffer base
@@ -61,22 +70,13 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// 0x161500 - the out-of-line ~CImageSet3: stamp derived (0x5f0228), free the +0x14
-// pixel buffer and zero it, fold the CObject base dtor (0x5e8cb4). Kept a DISTINCT
-// placeholder identity (C161500): folding onto the real CImageSet3 (below) needs
-// its CLoadable base modeled as a non-trivial subobject to emit the EH frame (the
-// deferred archetype on CDDrawSurfacePair::~; @identity-TODO). 0x5f0228 ==
-// ??_7CImageSet3 (bound by VTBL in GameLevel.cpp). Grand-base fold @0x161548 is the
-// REAL ??_7CObject (0x5e8cb4, disasm-verified). Collapsed from ImageSet3Eh.cpp.
-struct C161500 : CObject {
-    char _4[0x14 - 0x4];
-    char* m_14; // +0x14  pixel buffer
-    virtual ~C161500() OVERRIDE;
-};
-SIZE_UNKNOWN(C161500);
-RELOC_VTBL(C161500, 0x001f0228); // aliases CImageSet3 (dtor-stamp verified)
+// 0x161500 - the out-of-line /GX ~CImageSet3: stamp the derived vtable (0x5f0228 ==
+// ??_7CImageSet3@@6B@, VTBL-bound in GameLevel.cpp), free the +0x14 pixel buffer and
+// zero it, then fold the CObject grand-base dtor (0x5e8cb4 == ??_7CObject,
+// disasm-verified). Collapsed from ImageSet3Eh.cpp; folded off the old C161500
+// placeholder view so the vptr stamp binds the REAL vtable rva (reloc-faithful).
 RVA(0x00161500, 0x58)
-C161500::~C161500() {
+CImageSet3::~CImageSet3() {
     if (m_14) {
         ::operator delete(m_14);
     }

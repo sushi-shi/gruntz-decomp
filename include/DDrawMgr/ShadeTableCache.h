@@ -77,8 +77,7 @@ struct CShadeTableArray : CObject {
 
     CShadeTableArray();
     virtual ~CShadeTableArray() OVERRIDE; // 0x150020  overrides CObject dtor slot 1
-    virtual void Serialize(CArchive& ar)
-        OVERRIDE; // slot 2  0x14fe90 (declared-only; folds C14fe30's dtor)
+    virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2  0x14fe90
     // slots 0/3/4 (GetRuntimeClass/AssertValid/Dump) inherited from MFC CObject
     void SetSizeGrow(i32 n, i32 grow); // 0x150040
 };

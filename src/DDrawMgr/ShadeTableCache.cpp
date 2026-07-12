@@ -995,30 +995,15 @@ void CShadeTableArray::Serialize(CArchive& arc) {
     }
 }
 
-// 0x14fe30 (re-homed from src/Stub/BoundaryUpperEh.cpp): the standalone OUT-OF-LINE
-// ~CShadeTableArray - stamp ??_7CShadeTableArray (0x5efb28), free the +0x4 element
-// buffer, fold the CObject base. Kept a DISTINCT placeholder identity (C14fe30) next
-// to CShadeTableArray here: the real CShadeTableArray::~ is INLINE (folds into
-// ~CShadeTableCache @0x14de50, 100%); making it out-of-line makes 0x14de50 CALL it
-// (0x14de50 100% -> ~61%), so this out-of-line ??1 can't be the real dtor (inline XOR
-// out-of-line). The free is the NAFXCW global operator delete (??3@YAXPAX@Z @0x1b9b82),
-// which cl treats as potentially-throwing so the /GX base-subobject unwind frame stays.
-// Grand-base fold @0x14fe71 is the REAL ??_7CObject (0x5e8cb4, disasm-verified) - the
-// same CObject base the canonical CShadeTableArray carries - so C14fe30 derives from
-// the real CObject (no Sev shell). (Still a distinct placeholder identity: name-
-// injectivity forbids a 2nd ??1CShadeTableArray at 0x14fe30 - one-source/N-COMDAT wall.)
-struct C14fe30 : CObject {
-    char* m_4; // +0x4
-    virtual ~C14fe30() OVERRIDE;
-};
-SIZE_UNKNOWN(C14fe30);
-RELOC_VTBL(C14fe30, 0x001efb28); // aliases CShadeTableArray (dtor-stamp verified)
-RVA(0x0014fe30, 0x51)
-C14fe30::~C14fe30() {
-    if (m_4) {
-        ::operator delete(m_4);
-    }
-}
+// 0x14fe30 - the standalone OUT-OF-LINE ~CShadeTableArray. cl already AUTO-EMITS this
+// body as the COMDAT ??1CShadeTableArray@@UAE@XZ (from the inline virtual dtor above,
+// which is required out-of-line for the vtable slot) - it stamps ??_7CShadeTableArray
+// (0x5efb28), frees the +0x4 element buffer, then folds the CObject grand-base
+// (0x5e8cb4). The inline copy still folds into ~CShadeTableCache @0x14de50 (RVA is
+// clang-only, MSVC-neutral, so 0x14de50's inlining is unchanged). Binding the
+// auto-emitted dtor directly makes its vptr stamp reloc-faithful and dissolves the old
+// C14fe30 placeholder view (whose ??_7C14fe30 stamp was UNBOUND).
+// @rva-symbol: ??1CShadeTableArray@@UAE@XZ 0x0014fe30 0x51
 
 // CShadeTableArray::SetSizeGrow (0x150040) - the out-of-line MFC CArray::SetSize over
 // the 4-byte CShadeTable* element (its 6 callers are all CShadeTableCache table
