@@ -543,30 +543,14 @@ RVA(0x00112050, 0x12)
 CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
 
 // --- CTileTriggerLogic family (base = 1 virtual) ---------------------------
-class CGiantRockLogic : public CTileTriggerLogic {
-public:
-    CGiantRockLogic();
-};
-SIZE_UNKNOWN(CGiantRockLogic);
-VTBL(CGiantRockLogic, 0x001eaee4); // vtable_names -> code (RTTI game class)
+// Class shapes now live in <Gruntz/TileTriggerLogic.h> (shared with the AddLogic
+// factory in TileTriggerContainer.cpp that news them); the ctor bodies stay here.
 RVA(0x00112210, 0x12)
 CGiantRockLogic::CGiantRockLogic() {}
 
-class CCoveredPowerupLogic : public CTileTriggerLogic {
-public:
-    CCoveredPowerupLogic();
-};
-SIZE_UNKNOWN(CCoveredPowerupLogic);
-VTBL(CCoveredPowerupLogic, 0x001eaef4); // vtable_names -> code (RTTI game class)
 RVA(0x00112240, 0x12)
 CCoveredPowerupLogic::CCoveredPowerupLogic() {}
 
-class CTileTimeTriggerLogic : public CTileTriggerLogic {
-public:
-    CTileTimeTriggerLogic();
-};
-SIZE_UNKNOWN(CTileTimeTriggerLogic);
-VTBL(CTileTimeTriggerLogic, 0x001eaf04); // vtable_names -> code (RTTI game class)
 RVA(0x00112270, 0x12)
 CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 
@@ -766,13 +750,6 @@ i32 CTileGridCommand::ApplyMove(i32 verb) {
     return 1;
 }
 
-class CTileSecretTriggerLogic : public CTileTriggerLogic {
-    virtual i32 TileLogicVfunc0() OVERRIDE; // slot 0
-public:
-    CTileSecretTriggerLogic();
-};
-SIZE_UNKNOWN(CTileSecretTriggerLogic);
-VTBL(CTileSecretTriggerLogic, 0x001eaf14); // vtable_names -> code (RTTI game class)
 RVA(0x00112760, 0x12)
 CTileSecretTriggerLogic::CTileSecretTriggerLogic() {}
 

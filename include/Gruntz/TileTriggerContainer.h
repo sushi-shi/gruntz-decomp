@@ -14,11 +14,13 @@
 
 #include <Mfc.h> // MFC CObList (the m_base/m_list1-3 sub-object list methods)
 #include <Ints.h>
-#include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
-#include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
+#include <Gruntz/SerialArchive.h>     // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
+#include <Gruntz/TileTriggerWiring.h> // CTrigParam / CTrigSourceRecord (AddLogic marshaling blocks)
+#include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below
 
 // The owning container; back-stamped into the list elements (m_14 / m_20).
 class CTileTriggerContainer;
+class CTileTriggerLogic; // the per-id logic leaf AddLogic news (def in TileTriggerLogic.h)
 
 // The Rez heap alloc/free (RVA 0x1b9b46 _RezAlloc / 0x1b9b82 _RezFree);
 // reloc-masked rel32 callees.
@@ -164,6 +166,33 @@ public:
     // m_base (auto member teardown, reverse declaration order).
     ~CTileTriggerContainer(); // 0xc8640
 
+    // The per-id logic-leaf factory (0x116610): switches on `logicType` (0x15..0x1a),
+    // news the matching 0x9c CTileTriggerLogic leaf, fills it from the args + six
+    // CTrigParam blocks (into m_block), appends it to m_list1 (or m_list2 for id 0x17),
+    // and latches it into m_70 for id-0x15 board tiles 0x67/0x68.  Returns the leaf,
+    // 0 on alloc/double-init.  /GX (per-`new` trylevel EH frame).
+    CTileTriggerLogic* AddLogic(
+        i32 a1,
+        i32 logicType,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        CTrigParam p1,
+        CTrigParam p2,
+        CTrigParam p3,
+        CTrigParam p4,
+        CTrigParam p5,
+        CTrigParam p6,
+        i32 a6,
+        i32 a7,
+        i32 a8,
+        i32 a9
+    );
+    // 0x1163b0: forward to AddLogic with six default (zeroed) parameter blocks.
+    void AddLogicDefaults(i32 type, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9);
+    // 0x1164a0: forward with the five ids + six CTrigParam blocks from a source record.
+    void AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord* rec);
+
     // Allocates a 0x28-byte mark, initialises it from the call args, notifies it,
     // and appends it to m_list3 (the +0x54 list).  /GX (the mark is a stack-tracked
     // partial during ctor).
@@ -215,8 +244,8 @@ public:
     TtcObList m_base;  // +0x00 (head @ +0x04)  the base CObList sub-object
     TtcObList m_list1; // +0x1c (head @ +0x20)
     TtcObList m_list2; // +0x38 (head @ +0x3c)
-    TtcObList m_list3; // +0x54 (head @ +0x58)
-    i32 m_70;          // +0x70
+    TtcObList m_list3;      // +0x54 (head @ +0x58)
+    CTileTriggerLogic* m_70; // +0x70  id-0x15 latches the built logic leaf here
     i32 m_74;          // +0x74  gates DtorBase's RemoveAll call, then cleared (0/nonzero)
 };
 SIZE_UNKNOWN(CTileTriggerContainer);

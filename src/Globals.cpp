@@ -229,8 +229,6 @@ DATA(0x002293a0)
 extern i32 g_projRegStride; // 0x6293a0
 DATA(0x002293a8)
 extern i32 g_projRegScratch; // 0x6293a8
-DATA(0x002295d8)
-extern "C" i32 g_dat6295d8;
 DATA(0x0022990c)
 extern i32 g_posSoundReq; // DAT_0062990c
 DATA(0x00229f50)

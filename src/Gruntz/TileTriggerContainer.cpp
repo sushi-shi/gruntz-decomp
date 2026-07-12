@@ -31,6 +31,7 @@
 #include <Gruntz/TileActionEvent.h>
 #include <Gruntz/TileGridCommand.h>
 #include <Gruntz/TileTriggerContainer.h>
+#include <Gruntz/TileTriggerLogic.h> // CTileTriggerLogic + the per-id leaves AddLogic news
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TileTriggerWiring.h>
 
@@ -152,7 +153,7 @@ i32 CTileTriggerSwitchLogic::RemoveByKeys(i32 k1, i32 k2) {
 // regalloc coin-flip with no source lever. ~75.9%, logic complete; deferred to the
 // final sweep.
 RVA(0x001163b0, 0xb2)
-void CTileTriggerWiring::
+void CTileTriggerContainer::
     AddLogicDefaults(i32 type, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9) {
     AddLogic(
         type,
@@ -181,7 +182,7 @@ void CTileTriggerWiring::
 // a3/a4/a5 = rec->m_164/m_168/m_4; p1..p6 = rec->m_134/m_144/m_154/m_64 and the
 // +0x7c sub-object's m_f0/m_100. __thiscall, ret 0xc.
 RVA(0x001164a0, 0x116)
-void CTileTriggerWiring::AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord* rec) {
+void CTileTriggerContainer::AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord* rec) {
     AddLogic(
         type,
         a2,
@@ -199,6 +200,116 @@ void CTileTriggerWiring::AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord*
         rec->m_118,
         rec->m_128
     );
+}
+
+// ===========================================================================
+// CTileTriggerContainer::AddLogic  (0x116610)
+// ===========================================================================
+// The per-id logic-leaf factory the two forwarders above call.  Switch on the
+// SECOND arg (logicType, the retail switch reads [esp+0x88]; ids 0x15..0x1a = 21..26,
+// the same id space the serialize Build factory 0x117800 uses):
+//   0x15/0x18 -> CTileTriggerLogic     (ILT 0x43b3 -> ??0 0x1107f0)  trylevel 0
+//   0x19      -> CTileSecretTriggerLogic(ILT 0x310c -> ??0 0x112760)  trylevel 1
+//   0x1a      -> CCoveredPowerupLogic  (ILT 0x2a4f -> ??0 0x112240)  trylevel 2
+//   0x17      -> CTileTimeTriggerLogic (ILT 0x18de -> ??0 0x112270)  trylevel 3
+//   0x16/other-> 0
+// Then (when the leaf's m_1c init-gate is clear) copy the six CTrigParam blocks into
+// the leaf's m_block, fill the id/owner/clock fields, append it to m_list1 (m_list2
+// for id 0x17), and latch id-0x15 board tiles 0x67/0x68 into m_70.  The failure path
+// deletes the leaf (inline ~CTileTriggerLogic: ??_7 stamp + m_1c=0 + RezFree).
+// @early-stop  (~70%)
+// /GX jump-table + per-`new` trylevel regalloc wall.  Full body + all four ctor / new /
+// delete / AddTail / ??_7CTileTriggerLogic / g_645588 relocs bind - this is what binds
+// both forwarders' CALLs (reloc_fidelity tiletriggercontainer -> 0 UNBOUND).  The
+// residual is the documented /O2 register-allocation coin-flip (same lever as the
+// AddLogicDefaults @early-stop just above): retail keeps exactly THREE callee-saved regs
+// (ebx/esi/edi) and reads the switch arg straight through edi (`lea eax,[edi-0x15]`);
+// cl picks up ebp as a FIFTH live register, reshapes the frame, and reads the switch
+// value from a shifted spill slot (`mov eax,[esp+0x7c]; add eax,-0x15`), so every
+// prologue/arg-load operand shifts.  Compounded by MSVC5 tail-merging the four
+// independent operator-new EH trylevel state machines differently.  Logic complete;
+// byte-match parked for the final sweep.
+RVA(0x00116610, 0x32c)
+CTileTriggerLogic* CTileTriggerContainer::AddLogic(
+    i32 a1,
+    i32 logicType,
+    i32 a3,
+    i32 a4,
+    i32 a5,
+    CTrigParam p1,
+    CTrigParam p2,
+    CTrigParam p3,
+    CTrigParam p4,
+    CTrigParam p5,
+    CTrigParam p6,
+    i32 a6,
+    i32 a7,
+    i32 a8,
+    i32 a9
+) {
+    CTileTriggerLogic* obj = 0;
+    switch (logicType) {
+        case 0x15:
+        case 0x18:
+            obj = new CTileTriggerLogic;
+            break;
+        case 0x19:
+            obj = new CTileSecretTriggerLogic;
+            break;
+        case 0x1a:
+            obj = new CCoveredPowerupLogic;
+            break;
+        case 0x17:
+            obj = new CTileTimeTriggerLogic;
+            break;
+    }
+    if (obj == 0) {
+        return 0;
+    }
+
+    CTrigParam local[6];
+    local[0] = p1;
+    local[1] = p2;
+    local[2] = p3;
+    local[3] = p4;
+    local[4] = p5;
+    local[5] = p6;
+
+    i32 ok = 0;
+    if (obj->m_1c == 0) {
+        memcpy(obj->m_block, local, sizeof(local));
+        if (obj->m_1c == 0) {
+            obj->m_0c = a4;
+            obj->m_08 = a3;
+            obj->m_20 = this;
+            obj->m_04 = logicType;
+            obj->m_10 = a5;
+            obj->m_1c = 1;
+            obj->m_34 = a6;
+            obj->m_24 = g_645588;
+            obj->m_2c = a8;
+            obj->m_38 = 0;
+            obj->m_28 = a7;
+            obj->m_30 = a9;
+            if (logicType != 0x1a && a9 == 0) {
+                obj->m_30 = a7;
+            }
+            obj->m_24 = g_645588;
+            ok = 1;
+        }
+    }
+
+    if (ok == 0) {
+        delete obj;
+        return 0;
+    }
+
+    TtcObList* list = logicType == 0x17 ? &m_list2 : &m_list1;
+    list->AddTail(obj);
+    if (logicType == 0x15 && (a1 == 0x67 || a1 == 0x68)) {
+        m_70 = obj;
+    }
+    return obj;
 }
 
 // ---------------------------------------------------------------------------

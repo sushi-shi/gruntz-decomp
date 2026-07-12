@@ -7,7 +7,6 @@
 // load-bearing; every create-fn / follow-up helper is a reloc-masked external
 // (an unnamed ILT jmp-thunk to the real ctor/helper).
 #include <rva.h>
-#include <Globals.h>                  // g_dat6295d8 (the 0xaf50 reset thunk's target global)
 #include <Gruntz/ObjTypeRegistrars.h> // real per-type registrar entry points (reloc fidelity)
 
 typedef void* (*ObjCreateFn)();
@@ -341,24 +340,6 @@ void RegisterGameObjectTypes(GameObjFactoryCtx* ctx) {
     CLightFx::RegisterActs();
     ctx->m_14->RegisterType(CreateDemoMover, "DemoMover", 0);
     ctx->m_14->RegisterType(CreateDemoSign, "DemoSign", 0);
-}
-
-// ---------------------------------------------------------------------------
-// 0x00af50 - reset a global DWORD to 0 (the global at VA 0x6295d8 / RVA 0x2295d8).
-// __cdecl free function. RVA-homed here (RVA-contiguous with the factory registrar).
-// @orphan: only caller is an unrecovered fn (~0xaa92); free reset with no owner.
-// @reloc-TODO: g_dat6295d8's DATA store stays reloc-UNBOUND. RVA 0x2295d8 is really
-// AdvancedOptions.cpp's `static RegistryHelper g_registryHelper` (m_open @ +0x00) -
-// advancedoptions is 100% reloc-faithful referencing 0x2295d8, so this reset writes
-// that same object's m_open. But symbol_names.csv is RVA-keyed last-wins, so 0x2295d8
-// carries only ONE name (_g_registryHelper$S17358, advancedoptions), leaving _g_dat6295d8
-// unbound. Clean fix = rehome ResetDat6295d8 INTO advancedoptions.cpp (it is
-// RVA-adjacent, 0xaf50 just below advancedoptions' 0xafb0) and write g_registryHelper.m_open
-// = 0 through the SAME static symbol - out of THIS lane's authorized set (advancedoptions).
-// ---------------------------------------------------------------------------
-RVA(0x0000af50, 0xb)
-void ResetDat6295d8() {
-    g_dat6295d8 = 0;
 }
 
 SIZE_UNKNOWN(GameObjFactoryCtx);

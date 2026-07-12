@@ -105,6 +105,19 @@ void SaveOptions(HWND hWnd, Utils::RegistryHelper* pRegistryHelper) {
 }
 
 // ---------------------------------------------------------------------------
+// ResetRegistryHelper (0xaf50)
+// Zeroes g_registryHelper.m_open (the open/result gate) - marks the shared
+// AdvancedOptions registry helper as not-open without RegCloseKey'ing its keys.
+// __cdecl free function (single `mov ds:[&g_registryHelper],0; ret`); the store
+// binds to the SAME static (_g_registryHelper$S17358 @ RVA 0x2295d8) that the
+// dialog proc / LoadOptions / SaveOptions use. Rehomed here from gameobjectfactory
+// (its true obj neighbour: 0xaf50 sits just below the dialog proc at 0xafb0).
+RVA(0x0000af50, 0xb)
+void ResetRegistryHelper() {
+    g_registryHelper.m_open = 0;
+}
+
+// ---------------------------------------------------------------------------
 // AdvancedOptionsDialogProc
 // INT_PTR CALLBACK (__stdcall, `ret 0x10`). On WM_INITDIALOG it (re)opens the
 // HKLM config key, loads the options, and activates the dialog window (setting

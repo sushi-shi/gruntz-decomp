@@ -138,7 +138,6 @@ extern char* g_projRegBase;
 extern struct R3Entry* g_projRegCur;
 extern i32 g_projRegStride;
 extern i32 g_projRegScratch;
-extern "C" i32 g_dat6295d8;
 extern i32 g_posSoundReq;
 extern char g_cheatTable[];
 extern char g_secretMsgA[0x20];

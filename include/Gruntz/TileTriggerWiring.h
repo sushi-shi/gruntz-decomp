@@ -1,13 +1,13 @@
-// TileTriggerWiring.h - a tile-trigger logic container's "build with default
-// params" forwarder (C:\Proj\Gruntz; the 0x1163xx region, called from
-// WireTileSwitchLogic @0x6c130). AddLogicDefaults (0x1163b0) is a thin __thiscall
-// forwarder onto the full factory AddLogic (0x116610, a 0x15..0x1a type switch
-// that news the per-type 0x9c-byte logic object): it forwards its five leading
-// ids + four trailing ids and materializes the six zeroed 16-byte parameter
-// blocks the factory wants in between.
+// TileTriggerWiring.h - the by-value parameter blocks the tile-trigger container's
+// AddLogic factory (0x116610) and its two forwarders (AddLogicDefaults 0x1163b0 /
+// AddLogicFromRecord 0x1164a0, both CTileTriggerContainer methods) marshal into the
+// per-id logic leaf. AddLogicDefaults passes six zeroed blocks; AddLogicFromRecord
+// pulls them from a source tile record. (The old CTileTriggerWiring "class" here was
+// a view of the container - the three AddLogic* methods operate on the container's
+// own m_list1/m_list2/m_70, so they are CTileTriggerContainer methods; the class was
+// dissolved onto CTileTriggerContainer.)
 //
-// The factory + its parameter blocks are reloc-masked externs; field/method names
-// are placeholders, only the call shape is load-bearing (campaign doctrine).
+// Only the offsets / call shape are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_TILETRIGGERWIRING_H
 #define GRUNTZ_TILETRIGGERWIRING_H
 
@@ -55,42 +55,5 @@ struct CTrigSourceRecord {
     i32 m_168;        // +0x168
 };
 SIZE_UNKNOWN(CTrigSourceRecord);
-
-class CTileTriggerWiring {
-public:
-    // 0x116610: the full factory (this, five ids, six param blocks, four ids).
-    // Declared-only (no body) - both AddLogic* forwarders' CALLs to it stay
-    // reloc-UNBOUND. @reloc-TODO: @rva-symbol cannot bind an undefined external,
-    // so this only binds once 0x116610's body is reconstructed in this TU's gap
-    // (0x1165b6..0x116a40). It is an 812-byte /GX factory (a 0x15..0x1a jump-table
-    // type switch that news the per-type 0x9c CTileTriggerLogic leaf, vptr-stamps
-    // ??_7CTileTriggerLogic@@6B@, and shares an operator-new EH tail) - a full
-    // reconstruction, deferred (a >512 B EH/jump-table body, not a reloc-pass edit).
-    void AddLogic(
-        i32 type,
-        i32 a2,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        CTrigParam p1,
-        CTrigParam p2,
-        CTrigParam p3,
-        CTrigParam p4,
-        CTrigParam p5,
-        CTrigParam p6,
-        i32 a6,
-        i32 a7,
-        i32 a8,
-        i32 a9
-    );
-
-    // 0x1163b0: forward with six default (zeroed) parameter blocks.
-    void AddLogicDefaults(i32 type, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8, i32 a9);
-
-    // 0x1164a0: forward with the five ids + six CTrigParam blocks pulled from a source
-    // tile record (rec) instead of zeroed.
-    void AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord* rec);
-};
-SIZE_UNKNOWN(CTileTriggerWiring);
 
 #endif // GRUNTZ_TILETRIGGERWIRING_H
