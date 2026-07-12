@@ -44,6 +44,7 @@
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Wwd/WwdFile.h>
@@ -122,7 +123,7 @@ struct UnitLevel;    // +0x10 board geometry (defined below; m_worldX/m_worldY)
 struct GridCandNode; // the candidate-list node (m_triggerMgr->m_objListHead)
 
 // The unit's type/anim sub-object (held at unit+0x14): its +0x1c is a name index
-// resolved through g_animNameResolver.
+// resolved through g_typeColl.
 struct UnitAnim {
     char m_pad00[0x1c];
     i32 m_1c; // +0x1c  anim-name index
@@ -412,7 +413,7 @@ extern "C" CGameRegistry* g_gameReg;
 // array. Probe (0x016da80) / Reserve (0x034960, thunk 0x02685) back the second
 // dispatch. External, reloc-masked (no body).
 DATA(0x002bf650)
-extern CAnimNameResolver g_animNameResolver;
+extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view)
 
 // The second-resolver scratch CString[] (data @ g_6bf66c, count @ g_6bf670) plus
 // the candidate-index bounds (g_6bf658/65c lo/hi, g_6bf660 base, g_6bf668 stride,
@@ -473,7 +474,7 @@ extern i32 g_stepTimer;
 // The remaining cluster giants - logic NOT yet reconstructed. Each owns its RVA
 // here (moved out of src/Stub/) and links so its sibling callers resolve; the
 // bodies are placeholders for the final sweep. They share the I/G/L/P/J/C/R
-// anim-name dispatch (g_animNameResolver) + the g_freeList/coord recycling +
+// anim-name dispatch (g_typeColl) + the g_freeList/coord recycling +
 // FindPath/CObList path-swap idioms already modeled above.
 // ===========================================================================
 
@@ -1006,42 +1007,42 @@ i32 CBattlezMapConfig::Method_025d90() {
                 }
                 i32 idx = unit->m_anim->m_1c;
                 i32 eq;
-                eq = (strcmp((*g_animNameResolver.GetNameRecord((void*)(idx))), "I") == 0);
+                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(idx))), "I") == 0);
                 if (eq) {
                     continue;
                 }
                 eq =
-                    (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "G")
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "G")
                      == 0);
                 if (eq) {
                     continue;
                 }
                 eq =
-                    (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "L")
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "L")
                      == 0);
                 if (eq) {
                     continue;
                 }
                 eq =
-                    (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "P")
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "P")
                      == 0);
                 if (eq) {
                     continue;
                 }
                 eq =
-                    (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "J")
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "J")
                      == 0);
                 if (eq) {
                     continue;
                 }
                 eq =
-                    (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "C")
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "C")
                      == 0);
                 if (eq) {
                     continue;
                 }
                 eq =
-                    (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "R")
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "R")
                      == 0);
                 if (eq) {
                     continue;
@@ -1978,23 +1979,23 @@ i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
         return 0;
     }
     bool eq;
-    eq = (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "J") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "J") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "C") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "C") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "R") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "R") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "G") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "G") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "L") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "L") == 0);
     if (eq) {
         return 0;
     }
@@ -3444,23 +3445,23 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
                 continue;
             }
             bool ne;
-            ne = strcmp((*g_animNameResolver.GetNameRecord((void*)(u->m_anim->m_1c))), "C") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_anim->m_1c))), "C") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_animNameResolver.GetNameRecord((void*)(u->m_anim->m_1c))), "R") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_anim->m_1c))), "R") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_animNameResolver.GetNameRecord((void*)(u->m_anim->m_1c))), "J") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_anim->m_1c))), "J") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_animNameResolver.GetNameRecord((void*)(u->m_anim->m_1c))), "G") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_anim->m_1c))), "G") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_animNameResolver.GetNameRecord((void*)(u->m_anim->m_1c))), "L") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_anim->m_1c))), "L") != 0;
             if (!ne) {
                 continue;
             }
@@ -3733,7 +3734,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 bool eq;
                 eq =
                     (strcmp(
-                         (*g_animNameResolver.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
+                         (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
                                                                             + 0x1c)))),
                          "I"
                      )
@@ -3741,7 +3742,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_animNameResolver.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
                                                                                 + 0x1c)))),
                              "G"
                          )
@@ -3750,7 +3751,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_animNameResolver.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
                                                                                 + 0x1c)))),
                              "L"
                          )
@@ -3759,7 +3760,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_animNameResolver.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
                                                                                 + 0x1c)))),
                              "P"
                          )
@@ -3768,7 +3769,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_animNameResolver.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
                                                                                 + 0x1c)))),
                              "J"
                          )
@@ -3777,7 +3778,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_animNameResolver.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
                                                                                 + 0x1c)))),
                              "C"
                          )
@@ -3786,7 +3787,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_animNameResolver.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
                                                                                 + 0x1c)))),
                              "R"
                          )
@@ -3922,7 +3923,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     // setcc'd bool (the `bool eq` local, not the inline neg/sbb form) - see
     // docs/patterns/strcmp-eq-bool-local-setcc.md.
     bool eq;
-    eq = (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "I") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "I") == 0);
     if (eq) {
         return 0;
     }
@@ -3931,7 +3932,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     CString* slot;
     i32 cnt;
 
-    recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
     slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
@@ -3946,7 +3947,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         return 0;
     }
 
-    recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
     slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
@@ -3961,7 +3962,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         return 0;
     }
 
-    recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
     slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
@@ -3976,7 +3977,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         return 0;
     }
 
-    recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
     slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
@@ -3991,7 +3992,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         return 0;
     }
 
-    recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
     slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
@@ -4006,7 +4007,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         return 0;
     }
 
-    recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
     slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
@@ -5625,15 +5626,15 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     // result is materialized as a bool (setcc form) - see
     // docs/patterns/return-bool-via-local-setcc.md.
     i32 eq;
-    eq = (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "I") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "I") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "G") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "G") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_animNameResolver.GetNameRecord((void*)(unit->m_anim->m_1c))), "L") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "L") == 0);
     if (eq) {
         return 0;
     }
@@ -5643,7 +5644,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     CString* slot;
     i32 cnt;
 
-    recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
     slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
@@ -5658,7 +5659,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
         return 0;
     }
 
-    recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
     slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
@@ -5673,7 +5674,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
         return 0;
     }
 
-    recs = g_animNameResolver.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
     slot = (CString*)g_nameScratch;
     cnt = g_nameScratchCount;
     while (cnt != 0) {
@@ -5694,10 +5695,10 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     g_nameScratchCount = 0;
     if (ci >= g_candLo && ci <= g_candHi) {
         sel = g_candBase + (ci - g_candLo) * g_candStride;
-    } else if (g_animNameResolver.Probe(ci, 0) != 0) {
+    } else if (g_typeColl.Probe(ci, 0) != 0) {
         sel = g_candBase + (ci - g_candLo) * g_candStride;
     } else {
-        g_animNameResolver.Reserve((CAnimNameRecord*)g_defaultRec, 0xc);
+        g_typeColl.Reserve((CAnimNameRecord*)g_defaultRec, 0xc);
         sel = g_candFallback;
     }
 

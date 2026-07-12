@@ -448,41 +448,15 @@ public:
 extern CEntranceAnimSrc g_entranceAnimSrc; // DAT_006bf620
 #define EntranceLookupAnimSet(k) (((CButeTree*)&g_entranceAnimSrc)->Find(k))
 
-// The grunt's current-anim-name resolver (the global at DAT_006bf650). Its
-// GetNameRecord (thunk_FUN_004310f0, __thiscall ret 4) maps an anim-set node to
-// a record whose first field is the anim's name char*. External/no-body.
-//
-// GetNameRecords (thunk_FUN_004312a0, ret 4) is the SECOND resolver: it resolves
-// into the g_animScratch CString[] (count g_animScratchCount), returning the
-// record whose +0 is the name char*. The grunt anim-dispatch state machines that
-// reject by single-letter type code use the scratch form for the later codes (so
-// each reject is followed by the scratch CString teardown loop, the shared
-// loop-strength-reduction wall from docs/patterns).
-SIZE_UNKNOWN(CAnimNameRecord);
-class CAnimNameRecord {
-public:
-    char* m_name; // +0x00
-};
-SIZE_UNKNOWN(CAnimNameResolver);
-class CAnimNameResolver {
-public:
-    char** GetNameRecord(void* node);            // thunk_FUN_004310f0 (ret 4)
-    CAnimNameRecord* GetNameRecords(void* node); // thunk_FUN_004312a0 (ret 4)
-    i32 Probe(i32 a, i32 b);                     // 0x016da80
-    i32 Reserve(CAnimNameRecord* rec, i32 n);    // 0x034960
-    // The scratch-resolve variant (thunk 0x3864, zDArray::IndexToPtr-class): returns
-    // the resolved record; the caller then tears down the g_animScratch CString[]
-    // (the inlined teardown loop) before reading rec->m_name. Reloc-masked.
-    CAnimNameRecord* ScratchResolve(void* node); // 0x3864
-    // The entrance-cell coordinate -> record-index mappers the arrival recycle
-    // step (0x59230) drives when the raw bounds test misses. Both __thiscall on the
-    // resolver (this = 0x6bf650); external/no-body so the calls reloc-mask.
-    i32 MapCellIndex(i32 coord, i32 flag);  // FUN_0056da80 (ret 8)
-    i32 MapCellRecord(i32 base, i32 size);  // FUN_00434960 (ret 8; block-1 fallback)
-    i32 MapCellRecord2(i32 base, i32 size); // FUN_0056d850 (ret 0xc; block-2 fallback)
-    i32 PinCellIndex();                     // FUN_0056d990 (ret 0; pop/push/ret stub)
-};
-extern CAnimNameResolver g_animNameResolver; // DAT_006bf650
+// The grunt's current-anim-name resolver is the shared global g_typeColl @0x6bf650
+// (RTTI CTypeKeyColl, <Gruntz/TypeKeyColl.h>). The former CAnimNameResolver /
+// g_animNameResolver view (a duplicate of this global) is DISSOLVED: its methods
+// (GetNameRecord/GetNameRecords/ScratchResolve/Probe/Reserve/MapCell*) now live on
+// the canonical CTypeKeyColl, and the consuming grunt TUs reference `g_typeColl`
+// (extern CTypeKeyColl, DATA 0x002bf650) directly. GetNameRecord (thunk 0x4310f0)
+// maps an anim-set node to a record whose +0 is the anim-name char*; GetNameRecords
+// (thunk 0x4312a0) resolves into the g_animScratch CString[] (torn down per reject,
+// the loop-strength-reduction wall from docs/patterns).
 
 // The resolver's coordinate-range fields (consecutive globals at 0x6bf654..0x6bf664;
 // the cell-resolve path reads them by name - separate externs, reloc-masked - the same
@@ -1407,7 +1381,7 @@ public:
     // EngStr link is CUserLogic::m_18. CGrunt's own members begin at +0x30.
     // +0x30 opaque anim-set node handle (m_14->m_1c). The shared CUserLogic base
     // (<Gruntz/UserLogic.h>) authoritatively types this +0x30 slot void*; it is a
-    // bute-tree node token passed straight to g_animNameResolver.GetNameRecord(void*),
+    // bute-tree node token passed straight to g_typeColl.GetNameRecord(void*),
     // so void* is the authentic recovered type (not a placeholder).
     void* m_prevAnimSetNode; // +0x30  (saved old m_14->m_1c before re-latch)
     char m_pad34[0x38 - 0x34];
@@ -1775,7 +1749,7 @@ public:
 
     // ---- grunt movement / anim-name dispatch state machines (this TU) ----
     // The 5 big per-pose/anim-name resolution state machines: each resolves the
-    // grunt's current anim name (via g_animNameResolver) and dispatches on its
+    // grunt's current anim name (via g_typeColl) and dispatches on its
     // single-letter type code (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's
     // movement/arrival state + occupied-coord recycle + a re-latch of m_14->m_1c.
     // The arrival/update dispatch trio (ex-CUserLogic_* stubs; really CGrunt - every
@@ -1939,7 +1913,7 @@ public:
 
     // @0x646b0 (ret 0x20, 8 stack args) - the combat-reaction anim-dispatch state
     // machine. MISATTRIBUTED to CUserLogic by proximity bracketing; the +0x1fc gate,
-    // g_animNameResolver grunt anim codes (A/D/I/G/L/P/O/Q/J/N), m_10 HUD dirty bit
+    // g_typeColl grunt anim codes (A/D/I/G/L/P/O/Q/J/N), m_10 HUD dirty bit
     // and "Grunt"/"CombatTimeout" bute section all prove `this` is a CGrunt (CUserLogic
     // is only 0x40 bytes; +0x1fc is impossible). Re-homed here.
     i32 StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);

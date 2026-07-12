@@ -22,6 +22,7 @@
 // TU is unrecovered (@identity-TODO), it stays here pending that partition.
 //
 #include <Gruntz/Grunt.h>
+#include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 #include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (value member of the warp/decay views)
@@ -86,7 +87,7 @@ static void GruntPosScratchTeardown() {
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
 CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
-CAnimNameResolver g_animNameResolver; // DAT_006bf650
+extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view; DATA in TypeKeyColl.cpp)
 i32 g_focusedGruntSentinel;           // DAT_00644c54
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
@@ -146,7 +147,7 @@ static __inline i32 s_TileFlags(GruntBoard* b, i32 tx, i32 ty) {
 // The 5 grunt movement / anim-name dispatch state machines (formerly the
 // CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
 // resolves the grunt's current anim-set node name
-// (g_animNameResolver.GetNameRecord(m_14->m_1c), or the scratch-teardown
+// (g_typeColl.GetNameRecord(m_14->m_1c), or the scratch-teardown
 // GetNameRecords form) and dispatches on its single-letter type code
 // (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
 // its occupied-coord nodes onto the shared freelist, and re-latching m_14->m_1c to
@@ -333,8 +334,8 @@ i32 CGrunt::RunPositionInterpStep(i32 arg) {
     FinalizeStep(arg);
     MovingSlot16();
     if (m_424 != 0) {
-        bool neL = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeL) != 0);
-        if (neL && strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeG) != 0) {
+        bool neL = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeL) != 0);
+        if (neL && strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeG) != 0) {
             ClearSubA();
         }
     }
@@ -351,7 +352,7 @@ i32 CGrunt::RunPositionInterpStep(i32 arg) {
             }
         }
     }
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeO) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeO) == 0) {
         // "O": flip the entrance cell col/row (0<->2), interpolate toward the target.
         if (m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
             return 0;
@@ -384,7 +385,7 @@ i32 CGrunt::RunPositionInterpStep(i32 arg) {
         return 0;
     }
     // scratch-resolved branch: tear down the scratch CString[], latch on k_60df94.
-    CAnimNameRecord* rec = g_animNameResolver.ScratchResolve(m_14->m_1c);
+    CAnimNameRecord* rec = g_typeColl.ScratchResolve(m_14->m_1c);
     GruntPosScratchTeardown();
     if (strcmp(rec->m_name, k_60df94) == 0) {
         if (m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
@@ -1292,7 +1293,7 @@ RVA(0x00062e10, 0x47e)
 void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
     m_resetApplied = 0;
 
-    i32 notIdle = strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), s_animKeyA) != 0;
+    i32 notIdle = strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_animKeyA) != 0;
     i32 applied = 0;
 
     if (notIdle && cycle == 0) {
@@ -1515,11 +1516,11 @@ tail:
 RVA(0x000637a0, 0x2f8)
 i32 CGrunt::StepEntranceReinit() {
     bool eq;
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeD) == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeL) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeL) == 0);
     if (eq) {
         return 0;
     }
@@ -1531,7 +1532,7 @@ i32 CGrunt::StepEntranceReinit() {
     m_8c4 = 0;
     m_358 = 0;
 
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeI) == 0);
     if (eq) {
         // code "I": re-notify the tile mgr of the arrival.
         m_tileMgr->ArrivalNotify6(
@@ -1964,7 +1965,7 @@ i32 CUserLogic::winapi_064540_PostMessageA() {
 // The combat-reaction anim-dispatch state machine (proximity-MISATTRIBUTED to
 // CUserLogic; really CGrunt - see the header note). Gated on the entrance being
 // committed (m_1fc) and idle (m_entranceDropActive==0), it clamps the HUD scroll, resolves the
-// grunt's current anim name via g_animNameResolver and dispatches on its single-
+// grunt's current anim name via g_typeColl and dispatches on its single-
 // letter type code (A/D/I/G/L/P/O/Q/J/N), driving the grunt's combat/arrival
 // bookkeeping; then the shared tail re-arms the combat-timeout window, forwards the
 // 8 args down, resolves the "F"/"O" scratch codes, drives the attack-pose geometry +
@@ -1993,13 +1994,13 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         }
     }
 
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeA) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeA) == 0) {
         goto tail;
     }
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeD) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeD) == 0) {
         goto tail;
     }
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeI) == 0) {
         if (m_entranceReason == 0x13) {
             g_gameReg->m_cueSink->Cue1(m_10->m_188);
         }
@@ -2013,27 +2014,27 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         );
         goto tail;
     }
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeG) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeG) == 0) {
         goto reject;
     }
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeL) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeL) == 0) {
         goto reject;
     }
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeP) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeP) == 0) {
         goto reject;
     }
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeO) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeO) == 0) {
         ApplySetState1(1);
         m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
         goto tail;
     }
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeQ) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeQ) == 0) {
         m_tileMgr->SetTile(m_tileOwnerHi, m_tileOwnerLo, 6, a2);
         return 0;
     }
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeJ) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeJ) == 0) {
         m_entranceActive = 0;
-        if (strcmp(*g_animNameResolver.GetNameRecord(m_prevAnimSetNode), g_codeD) == 0) {
+        if (strcmp(*g_typeColl.GetNameRecord(m_prevAnimSetNode), g_codeD) == 0) {
             if (m_poweredUp != 0 && m_neighborValid == 0) {
                 m_entranceActive = 0;
                 m_combatActive = 0;
@@ -2072,7 +2073,7 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
         }
         goto tail;
     }
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeN) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeN) == 0) {
         CGruntHud* h = m_10;
         i32 hx = (h->m_5c & ~0x1f) + 0x10;
         i32 hy = (h->m_60 & ~0x1f) + 0x10;
@@ -2126,7 +2127,7 @@ tail:
     }
 
     {
-        CAnimNameRecord* rec = g_animNameResolver.GetNameRecords(m_14->m_1c);
+        CAnimNameRecord* rec = g_typeColl.GetNameRecords(m_14->m_1c);
         GruntScratchTeardown();
         if (strcmp(rec->m_name, g_codeF) == 0) {
             if (m_entranceCommitted != 0) {
@@ -2136,7 +2137,7 @@ tail:
     }
     m_entranceActive = 1;
     {
-        CAnimNameRecord* rec = g_animNameResolver.GetNameRecords(m_14->m_1c);
+        CAnimNameRecord* rec = g_typeColl.GetNameRecords(m_14->m_1c);
         GruntScratchTeardown();
         if (strcmp(rec->m_name, g_codeO) != 0) {
             m_prevAnimSetNode = m_14->m_1c;
@@ -2311,7 +2312,7 @@ RVA(0x00065630, 0x34b)
 void CGrunt::RunMoveConfig(i32 a, i32 b) {
     i32 poseIdx = 0; // ebx
 
-    i32 eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    i32 eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeI) == 0);
     if (eq) {
         m_tileMgr
             ->Load6(m_tileOwnerHi, m_tileOwnerLo, m_moveTileX, m_moveTileY, m_entranceReason, -1);

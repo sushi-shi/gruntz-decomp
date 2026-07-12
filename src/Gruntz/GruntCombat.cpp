@@ -86,7 +86,6 @@ static const char s_keyF[] = "F";
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
 CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
-CAnimNameResolver g_animNameResolver; // DAT_006bf650
 i32 g_focusedGruntSentinel;           // DAT_00644c54
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
@@ -129,7 +128,7 @@ static void GruntScratchTeardown();
 // The 5 grunt movement / anim-name dispatch state machines (formerly the
 // CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
 // resolves the grunt's current anim-set node name
-// (g_animNameResolver.GetNameRecord(m_14->m_1c), or the scratch-teardown
+// (g_typeColl.GetNameRecord(m_14->m_1c), or the scratch-teardown
 // GetNameRecords form) and dispatches on its single-letter type code
 // (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
 // its occupied-coord nodes onto the shared freelist, and re-latching m_14->m_1c to
@@ -1365,7 +1364,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     // Occupied-coord recycle: three sequential resolver reject codes. Each block
     // resolves the current anim-set node's cell record (the resolver's coord-range
     // map; the bounds hit is the fast path, the two fallbacks are engine helpers).
-    char* nm0 = *g_animNameResolver.GetNameRecord(m_14->m_1c);
+    char* nm0 = *g_typeColl.GetNameRecord(m_14->m_1c);
     if (strcmp(nm0, g_codeH) == 0) {
         return 1;
     }
@@ -1374,10 +1373,10 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         g_animScratchCount = 0;
         i32 rec;
         if (coord < g_cellLo || coord > g_cellHi) {
-            if (g_animNameResolver.MapCellIndex(coord, 0) != 0) {
+            if (g_typeColl.MapCellIndex(coord, 0) != 0) {
                 rec = (coord - g_cellLo) * g_cellScale + g_cellBase;
             } else {
-                g_animNameResolver.MapCellRecord(g_cellRecordBase, 0xc);
+                g_typeColl.MapCellRecord(g_cellRecordBase, 0xc);
                 rec = g_cellRet;
             }
         } else {
@@ -1386,7 +1385,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         GruntScratchTeardown();
         (void)rec;
     }
-    char* nm1 = *g_animNameResolver.GetNameRecord(m_14->m_1c);
+    char* nm1 = *g_typeColl.GetNameRecord(m_14->m_1c);
     if (strcmp(nm1, g_codeF) == 0) {
         return 1;
     }
@@ -1395,11 +1394,11 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         g_animScratchCount = 0;
         i32 rec;
         if (coord < g_cellLo || coord > g_cellHi) {
-            if (g_animNameResolver.MapCellIndex(coord, 0) != 0) {
+            if (g_typeColl.MapCellIndex(coord, 0) != 0) {
                 rec = (coord - g_cellLo) * g_cellScale + g_cellBase;
             } else {
-                i32 pin = g_animNameResolver.PinCellIndex();
-                g_cellRecordRet = g_animNameResolver.MapCellRecord2(g_cellRecordBase, 0xc);
+                i32 pin = g_typeColl.PinCellIndex();
+                g_cellRecordRet = g_typeColl.MapCellRecord2(g_cellRecordBase, 0xc);
                 rec = g_cellRet;
                 (void)pin;
             }
@@ -1409,7 +1408,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         GruntScratchTeardown();
         (void)rec;
     }
-    char* nm2 = *g_animNameResolver.GetNameRecord(m_14->m_1c);
+    char* nm2 = *g_typeColl.GetNameRecord(m_14->m_1c);
     if (strcmp(nm2, g_codeO) == 0) {
         return 1;
     }
@@ -1957,7 +1956,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
 
     bool eq;
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeF) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeF) == 0);
     if (eq) {
         return 0;
     }
@@ -1970,7 +1969,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         return 1;
     }
 
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeI) == 0);
     if (eq) {
         m_tileMgr->ArrivalNotify6(
             m_tileOwnerHi,
@@ -1981,7 +1980,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             -1
         );
     } else {
-        eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeN) == 0);
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeN) == 0);
         if (eq) {
             i32 px = (m_10->m_5c & ~0x1f) + 0x10;
             i32 py = (m_10->m_60 & ~0x1f) + 0x10;
@@ -2048,7 +2047,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     if (m_entranceCommitted == 0) {
         return 0;
     }
-    char* nm = g_animNameResolver.GetNameRecords(m_14->m_1c)->m_name;
+    char* nm = g_typeColl.GetNameRecords(m_14->m_1c)->m_name;
     GruntScratchTeardown();
     bool eq = (strcmp(nm, g_codeF) == 0);
     if (eq) {

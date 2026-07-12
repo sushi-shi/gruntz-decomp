@@ -19,6 +19,7 @@
 // GruntTubeAnim.cpp (0x50a50, gap 139 before 0x50ca0) is a PROBABLE head of this
 // TU but stays split (no privates/frags to prove it; noted there).
 #include <Gruntz/Grunt.h>
+#include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 #include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
@@ -44,7 +45,7 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
 CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
-CAnimNameResolver g_animNameResolver; // DAT_006bf650
+extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view; DATA in TypeKeyColl.cpp)
 i32 g_focusedGruntSentinel;           // DAT_00644c54
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
@@ -187,7 +188,7 @@ static __inline void SerRecord(CGruntArchive* ar, i32 mode, char* p) {
 // The 5 grunt movement / anim-name dispatch state machines (formerly the
 // CUserLogic_* stubs @0x4b370 / 0x4c170 / 0x52fb0 / 0x5f310 / 0x6a6d0). Each
 // resolves the grunt's current anim-set node name
-// (g_animNameResolver.GetNameRecord(m_14->m_1c), or the scratch-teardown
+// (g_typeColl.GetNameRecord(m_14->m_1c), or the scratch-teardown
 // GetNameRecords form) and dispatches on its single-letter type code
 // (A/D/I/G/L/P/O/Q/J/N/M/K), driving the grunt's movement/arrival state, recycling
 // its occupied-coord nodes onto the shared freelist, and re-latching m_14->m_1c to
@@ -1074,15 +1075,15 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     }
 
     bool eq;
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeA) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeA) == 0);
     if (eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeD) == 0);
     if (eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeI) == 0);
     if (eq) {
         // code "I": arrival cue (m_170==0x13) then re-notify the tile mgr.
         if (m_entranceReason == 0x13) {
@@ -1102,30 +1103,30 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_tileMgr->SetTileState4(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         goto applyTail;
     }
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeG) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeG) == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeL) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeL) == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeP) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeP) == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeO) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeO) == 0);
     if (eq) {
         // code "O": commit the move directly.
         ApplySetState1(1);
         CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
         goto applyTail;
     }
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeQ) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeQ) == 0);
     if (eq) {
         return 1;
     }
-    eq = (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeJ) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeJ) == 0);
     if (eq) {
         // code "J": clear the entrance gate, re-latch a fresh anim set, drive the
         // geometry sub-player.
