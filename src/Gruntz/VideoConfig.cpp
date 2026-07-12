@@ -57,10 +57,9 @@ public:
 // sub-systems through it: SetRunState @0x092340, StoreInputFlag @0x0919d0,
 // StoreInputState @0x091a10, SetSoundLevelState @0x0923b0, and the m_sound
 // object's XMIDI volume push/read (0x138950/0x1389c0). All reloc-masked.
-// Bind the two unreconstructed CGameRegistry commit leaves to their retail RVAs
-// (declared-only game callees; @rva-symbol names the real target the calls hit).
-// @rva-symbol: ?SetRunState@CGameRegistry@@QAEXH@Z 0x00092340
-// @rva-symbol: ?SetSoundLevelState@CGameRegistry@@QAEXH@Z 0x000923b0
+// SetRunState/SetSoundLevelState are the canonical CGruntzMgr's (their retail RVAs
+// are defined as CGruntzMgr:: in gruntzmgr), so the commits reach them through a
+// CGruntzMgr view of the same singleton (CGameRegistry's own decls were fake aliases).
 extern "C" {
     DATA(0x0024556c)
     extern "C" CGameRegistry* g_gameReg;
@@ -359,7 +358,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
     }
     if (g_optLockAll == 0) {
         if (g_optLockAudio == 0) {
-            g_gameReg->SetRunState(IsDlgButtonChecked(hDlg, 0x46d));
+            ((CGruntzMgr*)g_gameReg)->SetRunState(IsDlgButtonChecked(hDlg, 0x46d));
             i32 mv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x470);
             if (mv >= 0 && mv <= 100) {
                 g_gameReg->StoreInputFlag(mv);
@@ -372,7 +371,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
         }
         if (g_optLockAll == 0 && g_optLockSpeech == 0
             && ((CGruntzMgr*)g_gameReg)->m_sound->m_enabled != 0) {
-            g_gameReg->SetSoundLevelState(IsDlgButtonChecked(hDlg, 0x471));
+            ((CGruntzMgr*)g_gameReg)->SetSoundLevelState(IsDlgButtonChecked(hDlg, 0x471));
             i32 pv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x472);
             if (pv >= 0 && pv <= 100) {
                 ((CGruntzMgr*)g_gameReg)->m_sound->SetXMidiVolume(pv);
@@ -410,14 +409,14 @@ void CPlay::ApplyGameOptions() {
     g_videoResolutionMode = g_opt_22bdc8;
     if (g_optLockAll == 0) {
         if (g_optLockAudio == 0) {
-            g_gameReg->SetRunState(g_opt_22bd84);
+            ((CGruntzMgr*)g_gameReg)->SetRunState(g_opt_22bd84);
             g_gameReg->StoreInputFlag(g_opt_22bd6c);
             g_gameReg->m_isVoiceEnabled = g_opt_22bdd4;
             g_gameReg->StoreInputState(g_opt_22bdc4);
         }
         if (g_optLockAll == 0 && g_optLockSpeech == 0
             && ((CGruntzMgr*)g_gameReg)->m_sound->m_enabled != 0) {
-            g_gameReg->SetSoundLevelState(g_opt_22bdd0);
+            ((CGruntzMgr*)g_gameReg)->SetSoundLevelState(g_opt_22bdd0);
             ((CGruntzMgr*)g_gameReg)->m_sound->SetXMidiVolume(g_opt_22bdcc);
         }
     }
@@ -436,7 +435,7 @@ RVA(0x00036d00, 0x40)
 void OnToggleMusicOption(HWND hWnd) {
     if (g_gameReg) {
         i32 state = IsDlgButtonChecked(hWnd, 0x46d);
-        g_gameReg->SetRunState(state);
+        ((CGruntzMgr*)g_gameReg)->SetRunState(state);
         EnableWindow(GetDlgItem(hWnd, 0x470), state);
     }
 }
@@ -456,7 +455,7 @@ RVA(0x00036da0, 0x40)
 void OnToggleSpeechOption(HWND hWnd) {
     if (g_gameReg) {
         i32 state = IsDlgButtonChecked(hWnd, 0x471);
-        g_gameReg->SetSoundLevelState(state);
+        ((CGruntzMgr*)g_gameReg)->SetSoundLevelState(state);
         EnableWindow(GetDlgItem(hWnd, 0x472), state);
     }
 }

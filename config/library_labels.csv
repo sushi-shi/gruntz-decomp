@@ -161,7 +161,6 @@ rva,name,lib,confidence,source
 0x016430,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x0164d0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x016da0,__inc,LIBCMT,LOW,anchored
-0x0173e0,__fpclear,LIBCMT,LOW,anchored
 0x017660,__inc,LIBCMT,LOW,anchored
 0x0176b0,__inc,LIBCMT,LOW,anchored
 0x017700,__inc,LIBCMT,LOW,anchored
@@ -3441,3 +3440,11 @@ rva,name,lib,confidence,source
 0x1b4f3e,??1CPtrArray@@UAE@XZ,NAFXCW,HIGH,reloc-R21
 0x1b4f75,?SetSize@CPtrArray@@QAEXHH@Z,NAFXCW,HIGH,reloc-R21
 0x1915b4,_DirectDrawEnumerateA@8,DDRAW,HIGH,reloc-R21
+0x1befd7,??0CFileIO@@QAE@XZ,NAFXCW,HIGH,reloc-R23
+0x1bf200,?Open@CFileIO@@UAEHPBDIPAX@Z,NAFXCW,HIGH,reloc-R23
+0x1bf121,??1CFileIO@@UAE@XZ,NAFXCW,HIGH,reloc-R23
+0x1bf505,?GetLength@CFileIO@@UAEIXZ,NAFXCW,HIGH,reloc-R23
+0x1bf328,?Read@CFileIO@@UAEIPAXI@Z,NAFXCW,HIGH,reloc-R23
+0x1b9b46,_RezAlloc,NAFXCW,HIGH,reloc-R23
+0x1ba0c8,??YCString@@QAEABV0@PBD@Z,NAFXCW,HIGH,reloc-R23-append
+0x11fc10,__getcwd,LIBCMT,AMBIG,anchored

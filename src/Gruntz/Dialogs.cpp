@@ -457,6 +457,12 @@ void CBattlezDlg::SetCtrlBText(i32 index, const char* text) {
     w->SetWindowTextA(text);
 }
 
+// Sub0173e0 (0x173e0) is the CBattlezDlg dialog-refresh helper the ApplyOption
+// handlers call - a 1-byte `ret` no-op in retail (the "__fpclear" FID row at 0x173e0
+// was a LOW false positive). Defined here so the ApplyOption calls bind to it.
+RVA(0x000173e0, 0x1)
+void CBattlezDlg::Sub0173e0() {}
+//
 // ApplyOption0..3 (0x15de0/15e60/15ee0/15f60): set the active option N, refresh
 // the dialog, then enable IDOK (GetDlgItem(1)) when any of slots 1..3 is occupied
 // (the short-circuit `||` reuses the failed-probe's zero in eax on the false path).
@@ -1041,6 +1047,9 @@ SIZE_UNKNOWN(CImgHolder);
 // model wall (cl emits ??_7CImgHolderBase for the inline-empty base, not CObject).
 VTBL(CImgHolder, 0x001e8cd4);
 SIZE_UNKNOWN(CImgHolder2);
-RELOC_VTBL(CImgHolder2, 0x001e8cd4); // inline-dtor twin: aliases CImgHolder's vtable (dtor-stamp verified)
+RELOC_VTBL(
+    CImgHolder2,
+    0x001e8cd4
+); // inline-dtor twin: aliases CImgHolder's vtable (dtor-stamp verified)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

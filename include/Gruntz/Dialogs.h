@@ -23,8 +23,8 @@
 #include <rva.h>
 #include <Ints.h>
 
-class CString; // full def via <Gruntz/String.h> below; needed by CWnd::GetWindowText
-struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h>)
+class CString;               // full def via <Gruntz/String.h> below; needed by CWnd::GetWindowText
+struct HWND__;               // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h>)
 struct tagMEASUREITEMSTRUCT; // windows.h owner-draw measure (CWnd::OnMeasureItem arg)
 struct tagDRAWITEMSTRUCT;    // windows.h owner-draw item    (CWnd::OnDrawItem arg)
 
@@ -99,8 +99,8 @@ public:
     virtual void WndVsl46();                      // slot 46
     virtual void WndVsl47();                      // slot 47
     void SetWindowTextA(const char* lpszString);
-    i32 EnableWindow(i32 bEnable);        // 0x1be6a7 ?EnableWindow@CWnd (returns BOOL)
-    i32 IsWindowEnabled(); // 0x1be68c (NAFXCW ::IsWindowEnabled(m_hWnd); reloc-masked)
+    i32 EnableWindow(i32 bEnable); // 0x1be6a7 ?EnableWindow@CWnd (returns BOOL)
+    i32 IsWindowEnabled();         // 0x1be68c (NAFXCW ::IsWindowEnabled(m_hWnd); reloc-masked)
     void GetWindowTextA(CString& rString);
     void GetLBText1ce7db(i32 nIndex, CString& rString);
     // GetDlgItem @0x1be27d (NAFXCW ::GetDlgItem(m_hWnd,nID) wrapped as CWnd*): a CWnd

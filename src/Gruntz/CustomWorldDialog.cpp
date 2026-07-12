@@ -91,13 +91,11 @@ struct GmInner8 {
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
-// The game-root-dir resolver (FUN_0011fc10) + the OpenFile(OF_EXIST) existence
-// probe (FUN_00004282) both dialogs' loaders funnel through (reloc-masked).
-// Bind the unreconstructed __cdecl GetGameDir to its retail RVA (declared-only game
-// callee; @rva-symbol names the real target the calls hit).
-// @rva-symbol: ?GetGameDir@@YAHPADH@Z 0x0011fc10 0x2f
-i32 GetGameDir(char* buf, i32 cb); // 0x11fc10 (__cdecl)
-i32 FileExists(char* path);        // 0x1189c0 (heapdiag; "PathFileExists 0x4282" was a thunk to it)
+// The "game root dir" the loaders resolve is just the current working directory:
+// 0x11fc10 is the CRT _getcwd (LIBCMT __getcwd), the same routine BuildCustomWwdPath
+// (below) and FecCrypt call; the former GetGameDir decl was a fake alias of it.
+// The OpenFile(OF_EXIST) existence probe (FUN_00004282) is reloc-masked.
+i32 FileExists(char* path); // 0x1189c0 (heapdiag; "PathFileExists 0x4282" was a thunk to it)
 
 // FreeGlobal62c25c @0x03ac30 - reset the g_pathStr global in place (the
 // explicit-ctor-call tail-jmp to ??0CString@@QAE@XZ; the file's leading static,
@@ -363,7 +361,7 @@ i32 LoadCustomWorldSelection(HWND hWnd) {
     if (SendMessageA(lb, 0x189, sel, (LPARAM)itemText) == -1) {
         return 0;
     }
-    if (!GetGameDir(dirBuf, 0xfe)) {
+    if (!_getcwd(dirBuf, 0xfe)) {
         return 0;
     }
     g_pathStr = dirBuf;
@@ -491,7 +489,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
         return 0;
     }
     g_levelStr = szLevel;
-    if (!GetGameDir(szDir, 0xfe)) {
+    if (!_getcwd(szDir, 0xfe)) {
         return 0;
     }
     g_pathStr = szDir;

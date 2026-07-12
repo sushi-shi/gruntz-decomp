@@ -1428,5 +1428,4 @@ SIZE_UNKNOWN(WwdObjList);
 SIZE_UNKNOWN(WwdPlaneHdr);
 SIZE_UNKNOWN(WwdRegOwner);
 SIZE_UNKNOWN(WwdPlaneRender);
-SIZE_UNKNOWN(CWwdGrid);
 SIZE_UNKNOWN(CLevelPlane);
