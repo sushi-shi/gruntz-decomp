@@ -392,7 +392,7 @@ wwdfactoryobject	32	16
 wwdfile	3	1
 wwdgameobject	43	17
 wwdgameobjectrender	15	9
-wwdgrid	13	7
+wwdgrid	14	7
 wwdobjmgr	50	24
 wwdspatialmgr	14	9
 zdarrayderived	1	0
@@ -2072,7 +2072,7 @@ gruntwingztimesprite	?GetTypeTag@CGruntWingzTimeSprite@@UAE?AW4LogicTypeId@@XZ	1
 gruntwingztimesprite	?GetWingzTime@@YGHPAVCGrunt@@@Z	100.0000	100.0000	2	e29c7c585d04	0x7fd90
 gruntzapp	??0CGruntzApp@@QAE@XZ	100.0000	100.0000	7	b346beed7561	0x80850
 gruntzapp	??1CGruntzApp@@UAE@XZ	100.0000	100.0000	8	3edd722cbf69	0x808b0
-gruntzapp	?CreateU10O@@YAPAXXZ	100.0000	100.0000	6	d954894e295e	0x809a0
+gruntzapp	?CreateU10O@@YAPAXXZ	100.0000	100.0000	7	1f772e0773db	0x809a0
 gruntzapp	?ErrorDialogProc@CGruntzApp@@SGHPAUHWND__@@IIJ@Z	100.0000	100.0000	6	2126b651c634	0x80c70
 gruntzapp	?Init@CGruntzApp@@UAEHPAUHINSTANCE__@@PAD11HHH@Z	100.0000	100.0000	2	642ebe91fc86	0x80930
 gruntzapp	?InitializeGameManager@CGruntzApp@@UAEPAVCGameMgr@WAP32@@XZ	100.0000	100.0000	8	23e8636feda4	0x80a20
@@ -4233,13 +4233,14 @@ wwdgrid	??1CWwdGrid@@UAE@XZ	100.0000	100.0000	2	88bfe082ba73	0x1682a0
 wwdgrid	??_EBucketHead@@QAEPAXI@Z	78.3529	78.3529	1	cpp:51d154bb0dd3	0x191720
 wwdgrid	?Add@CWwdGrid@@QAEHPAUWwdRegion@@@Z	100.0000	100.0000	4	c619ac2fd1c2	0x191840
 wwdgrid	?Clear@CWwdGrid@@QAEHXZ	100.0000	100.0000	4	c32aedba425a	0x191a70
-wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	4	98c1f36d43e5	0x191800
+wwdgrid	?FreeBuckets@CWwdGrid@@QAEXXZ	100.0000	100.0000	5	41cfbbc394b9	0x191800
 wwdgrid	?Gap_191770@@YAHXZ	1.3559	1.3559	1	31df55904c43	0x191770
 wwdgrid	?GetNext@CWwdGridIter@@QAEPAUWwdGridNode@@XZ	93.7073	93.7073	1	496234414222	0x191c30
 wwdgrid	?Init@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@UWwdRect@@H@Z	95.5000	95.5000	1	2856c328f6ce	0x191b10
 wwdgrid	?Query@CWwdGrid@@QAEHHHHHH@Z	99.7188	99.7188	5	3c70bed64c49	0x1918c0
 wwdgrid	?Remove@CWwdGrid@@QAEXPAUWwdRegion@@@Z	100.0000	100.0000	4	ffac9a50e9e4	0x191890
 wwdgrid	?Start@CWwdGridIter@@QAEPAUWwdGridNode@@PAVCWwdGrid@@H@Z	100.0000	100.0000	1	838b0d935f99	0x191ad0
+wwdgrid	empty_stub	0.0000	0.0000	1	cpp:fc1e2ffa4d87	
 wwdobjmgr	??0CWwdSlot9c@@QAE@XZ	100.0000	100.0000	1	ded1af0c668b	0x15b2a0
 wwdobjmgr	??0Obj15b270@@QAE@XZ	100.0000	100.0000	1	0db58a16cd6b	0x15b270
 wwdobjmgr	??0Obj15b2b0@@QAE@XZ	100.0000	100.0000	1	e19a44aafde2	0x15b2b0
