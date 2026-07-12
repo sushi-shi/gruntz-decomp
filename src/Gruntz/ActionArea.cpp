@@ -63,7 +63,8 @@ extern void* GetRetAddr();        // 0x16d990
 class CProjActObj {
 public:
     void FireActivation(i32 coord); // 0x80e0
-    void RegisterType();            // 0x8240
+    static void RegisterType();     // 0x8240  (static: level-load registrar, no this;
+                                    //  called this-less by the game-object factory)
 };
 typedef void (CProjActObj::*ProjActHandler)();
 struct R3Entry {

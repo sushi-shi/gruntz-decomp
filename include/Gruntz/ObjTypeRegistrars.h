@@ -38,6 +38,18 @@ struct CStaticHazard : public CUserLogic {
 struct CStatusBarSprite : public CUserLogic {
     static void RegisterActs();
 };
+struct CTimeBomb : public CUserLogic {
+    static void RegisterActs(); // 0x0e1990 (home: Projectile.cpp)
+};
+struct CToobSpikez : public CUserLogic {
+    static void RegisterActs(); // 0x1149c0 (home: ToobSpikez.cpp)
+};
+struct CVoiceTrigger : public CUserLogic {
+    static void RegisterActs(); // 0x11a500 (home: GruntVoice.cpp)
+};
+struct CTileTriggerTransition : public CUserLogic {
+    static void RegisterActs(); // 0x10fe70 (home: TileLogicPump.cpp)
+};
 // CTileTrigger (+ its RegisterActs @0x10e600) comes from <Gruntz/UserLogic.h>.
 struct CTileSecretTrigger : public CTileTrigger {
     static void RegisterActs();
@@ -53,6 +65,9 @@ struct CWormhole : public CUserLogic {
 };
 
 // non-RTTI helper registrars: CClass::RegisterActs()/RegisterType() -> ?..@@SAXXZ
+struct CProjActObj {
+    static void RegisterType(); // 0x8240 (home: ActionArea.cpp)
+};
 struct CAniCycle {
     static void RegisterActs();
 };

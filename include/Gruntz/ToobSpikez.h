@@ -33,13 +33,16 @@ public:
     // 0x00012ba0 vtable slot 2: per-class logic-type id, inline (one
     // deduped COMDAT copy in retail; see docs on header-inline members).
     RVA(0x00012ba0, 0x6)
-    virtual LogicTypeId GetTypeTag() OVERRIDE { return LOGIC_TOOBSPIKEZ; }
+    virtual LogicTypeId GetTypeTag() OVERRIDE {
+        return LOGIC_TOOBSPIKEZ;
+    }
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
     virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
     i32 Serialize(i32 a, i32 b, i32 c, i32 d); // 0x012bc0 (vtable slot 1: serialize chain)
     void Register_1147e0();                    // 0x1147e0 (reserve the activation range)
     void FireActivation(i32 coord);            // 0x114860 (vtable slot 4)
-    void RegisterActs();                       // 0x1149c0 (binds the logic handler to key "A")
+    static void RegisterActs();                // 0x1149c0 (binds the logic handler to key "A";
+                                               //  static: no this, called this-less by the factory)
     virtual ~CToobSpikez() OVERRIDE;           // 0x012c60 (folds the CUserLogic teardown)
 
     i32 m_40;                  // +0x40 (leaf field, written by the ctor)

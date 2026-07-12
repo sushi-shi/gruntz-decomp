@@ -59,7 +59,13 @@ SIZE_UNKNOWN(CTrigSourceRecord);
 class CTileTriggerWiring {
 public:
     // 0x116610: the full factory (this, five ids, six param blocks, four ids).
-    // Reloc-masked (no body).
+    // Declared-only (no body) - both AddLogic* forwarders' CALLs to it stay
+    // reloc-UNBOUND. @reloc-TODO: @rva-symbol cannot bind an undefined external,
+    // so this only binds once 0x116610's body is reconstructed in this TU's gap
+    // (0x1165b6..0x116a40). It is an 812-byte /GX factory (a 0x15..0x1a jump-table
+    // type switch that news the per-type 0x9c CTileTriggerLogic leaf, vptr-stamps
+    // ??_7CTileTriggerLogic@@6B@, and shares an operator-new EH tail) - a full
+    // reconstruction, deferred (a >512 B EH/jump-table body, not a reloc-pass edit).
     void AddLogic(
         i32 type,
         i32 a2,

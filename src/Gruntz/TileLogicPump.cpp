@@ -130,7 +130,8 @@ public:
     virtual LogicTypeId GetTypeTag() OVERRIDE;
     void Register_10fc90();         // 0x10fc90
     void FireActivation(i32 coord); // 0x10fd10 (vtable slot 4: per-coord PMF dispatch)
-    void RegisterActs();            // 0x10fe70  intern "A", bind Handler
+    static void RegisterActs();     // 0x10fe70  intern "A", bind Handler (static: no this;
+                                    //           called this-less by the game-object factory)
     i32 ApplyAnimation(char* sprite, char* geom); // 0x110070
     i32 Handler_110110();                         // 0x110110  the per-frame handler bound here
 

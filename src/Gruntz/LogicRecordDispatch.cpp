@@ -8,7 +8,9 @@
 #include <Ints.h>
 #include <rva.h>
 
-#include <Gruntz/XferArchive.h> // ProjTypeXfer (0x16e4f0) = the default-case fall-through
+#include <Gruntz/StaticHazard.h> // CStaticHazard (state-0 leaf of LogicDispatchA, ctor 0xfb7a0)
+#include <Gruntz/TimeBomb.h>     // CTimeBomb    (state-0 leaf of LogicDispatchD, ctor 0xe1b90)
+#include <Gruntz/XferArchive.h>  // ProjTypeXfer (0x16e4f0) = the default-case fall-through
 
 // global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.
 void* operator new(u32 n);
@@ -62,31 +64,23 @@ struct LogicDispatchOwner {
     LogicDispatchRecord* m_7c; // +0x7c embedded record
 };
 
-// State-0 sub-record types (built lazily). External ctors (reloc-masked).
-class LogicSubRecA : public LogicSubRec {
-public:
-    LogicSubRecA(LogicDispatchOwner* owner); // 0x2c70 (via thunk)
-    char m_pad[0x6c - 4];
-};
-SIZE(LogicSubRecA, 0x6c);
-
+// State-0 sub-record types (built lazily). LogicSubRecA (0x6c, ctor 0xfb7a0) and
+// LogicSubRecD (0x68, ctor 0xe1b90) are the real CStaticHazard / CTimeBomb (bound
+// below via their shared headers); the remaining LogicSubRec{E,Boomerang} views
+// stay until their real classes (CProjectile MFC-full/SIZE_UNKNOWN, CBoomerang no
+// shared header) are size-exact enough to `new` directly.
+//
 // LogicSubRecB (the state-0 sub-record built by LogicDispatchB@0x10d3d0) is really CBrickz
 // (ctor thunk 0x3701 -> 0x10e800); LogicDispatchB was folded into src/Gruntz/TileLogicPump.cpp
 // (waveM-strays: it sits inside the tile-trigger obj's contiguous .text block) and modeled on
 // the real CBrickz, so the LogicSubRecB view is gone.
 
-class LogicSubRecD : public LogicSubRec {
-public:
-    LogicSubRecD(LogicDispatchOwner* owner); // 0x1348 (via thunk)
-    char m_pad[0x68 - 4];
-};
-SIZE(LogicSubRecD, 0x68);
-
 // State-0 sub-record built by LogicDispatchE (0xde8a0): the ctor 0xdec60 is really
-// ??0CProjectile@@QAE@PAUCGameObject@@@Z (CProjectile, 0x228 bytes). Kept in the
-// LogicSubRec family view for now (matches the 4 committed siblings' shape); folding
-// the whole LogicSubRec family onto the real CUserLogic/CProjectile hierarchy is a
-// deferred family-wide refactor (LogicRecord.cpp note).
+// ??0CProjectile@@QAE@PAUCGameObject@@@Z (CProjectile, 0x228 bytes). @reloc-TODO:
+// to bind the ctor CALL like the D/A siblings, `new CProjectile((CGameObject*)owner)`
+// needs a size-EXACT CProjectile (0x228). Its shared header <Gruntz/Projectile.h>
+// is currently SIZE_UNKNOWN (partial field model) and MFC-full; making it 0x228
+// touches a many-includer header - deferred. View kept until then.
 class LogicSubRecE : public LogicSubRec {
 public:
     LogicSubRecE(LogicDispatchOwner* owner); // 0xdec60 (via thunk 0x37d8) = CProjectile ctor
@@ -144,9 +138,11 @@ i32 LogicDispatchE(LogicDispatchOwner* owner) {
 }
 
 // State-0 sub-record built by LogicDispatchBoomerang (0xde9e0): the ctor 0xe0650 is
-// ??0CBoomerang@@QAE@PAUCGameObject@@@Z (CBoomerang : CProjectile, 0x260 bytes). Kept
-// in the LogicSubRec family view (same shape as the siblings); the family-wide fold
-// onto the real CUserLogic/CProjectile hierarchy is a deferred refactor.
+// ??0CBoomerang@@QAE@PAUCGameObject@@@Z (CBoomerang : CProjectile, 0x260 bytes).
+// @reloc-TODO: CBoomerang has NO shared header (defined .cpp-locally in Boomerang.cpp,
+// SIZE_UNKNOWN) so it can't be `new`d size-exactly here yet. Binding needs CBoomerang
+// promoted to a size-EXACT shared header (which itself needs CProjectile size-exact,
+// its base) - deferred with the CProjectile refactor above. View kept until then.
 class LogicSubRecBoomerang : public LogicSubRec {
 public:
     LogicSubRecBoomerang(LogicDispatchOwner* owner); // 0xe0650 (via thunk) = CBoomerang ctor
@@ -200,7 +196,9 @@ i32 LogicDispatchBoomerang(LogicDispatchOwner* owner) {
     return 1;
 }
 
-// LogicDispatchD @0x0deb20 - state-0 builds a 0x68 sub-record (ctor 0x1348).
+// LogicDispatchD @0x0deb20 - state-0 builds a CTimeBomb (0x68, ctor 0xe1b90). The
+// object is CUserLogic-derived; the LogicSubRec view is its shared vtable lens
+// (Init = CUserLogic::Activate, slot 6) so the dispatch bytes are unchanged.
 RVA(0x000deb20, 0xf1)
 i32 LogicDispatchD(LogicDispatchOwner* owner) {
     LogicDispatchRecord* rec = owner->m_7c;
@@ -208,7 +206,7 @@ i32 LogicDispatchD(LogicDispatchOwner* owner) {
         case kLogicStateInit:
             rec->m_1c = kLogicStateBuilt;
             {
-                LogicSubRecD* obj = new LogicSubRecD(owner);
+                LogicSubRec* obj = (LogicSubRec*)new CTimeBomb((CGameObject*)owner);
                 obj->Init();
                 rec->m_18 = obj;
             }
@@ -240,7 +238,9 @@ i32 LogicDispatchD(LogicDispatchOwner* owner) {
     return 1;
 }
 
-// LogicDispatchA @0x0fb660 - state-0 builds a 0x6c sub-record (ctor 0x2c70).
+// LogicDispatchA @0x0fb660 - state-0 builds a CStaticHazard (0x6c, ctor 0xfb7a0).
+// The object is CUserLogic-derived; the LogicSubRec view is its shared vtable lens
+// (Init = CUserLogic::Activate, slot 6) so the dispatch bytes are unchanged.
 RVA(0x000fb660, 0xf1)
 i32 LogicDispatchA(LogicDispatchOwner* owner) {
     LogicDispatchRecord* rec = owner->m_7c;
@@ -248,7 +248,7 @@ i32 LogicDispatchA(LogicDispatchOwner* owner) {
         case kLogicStateInit:
             rec->m_1c = kLogicStateBuilt;
             {
-                LogicSubRecA* obj = new LogicSubRecA(owner);
+                LogicSubRec* obj = (LogicSubRec*)new CStaticHazard((CGameObject*)owner);
                 obj->Init();
                 rec->m_18 = obj;
             }

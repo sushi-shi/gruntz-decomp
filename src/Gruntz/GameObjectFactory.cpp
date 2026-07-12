@@ -107,21 +107,13 @@ extern "C" {
     void* CreateLightFx();
     void* CreateDemoMover();
     void* CreateDemoSign();
-    // The remaining follow-up registrars are __thiscall members (QAE) in their home
-    // TUs, but the retail factory calls them as plain `call rel32` with no `this`
-    // set up (they ignore ecx). Binding them to the real ??@..@@QAEXXZ symbols would
-    // force a `mov ecx,..` here and change the code bytes, so they stay reloc-masked
-    // externs. Real identities (retail RVA -> symbol):
-    //   RegHelper_1e65 0x8240   ?RegisterType@CProjActObj@@QAEXXZ
-    //   RegHelper_272a 0x10fe70 ?RegisterActs@CTileTriggerTransition@@QAEXXZ
-    //   RegHelper_10a5 0x1149c0 ?RegisterActs@CToobSpikez@@QAEXXZ
-    //   RegHelper_146f 0xe1990  ?RegisterActs@CTimeBomb@@QAEXXZ
-    //   RegHelper_2400 0x11a500 ?RegisterActs@CVoiceTrigger@@QAEXXZ
-    void RegHelper_10a5();
-    void RegHelper_146f();
-    void RegHelper_1e65();
-    void RegHelper_2400();
-    void RegHelper_272a();
+    // (The five remaining follow-up registrars are now bound as real static-member
+    // calls via <Gruntz/ObjTypeRegistrars.h>: their home TUs declare them `static`
+    // (SAXXZ), so the retail this-less `call rel32` binds to the exact RVA without a
+    // `mov ecx`. See the call sites below - CProjActObj::RegisterType (0x8240),
+    // CTileTriggerTransition::RegisterActs (0x10fe70), CToobSpikez::RegisterActs
+    // (0x1149c0), CTimeBomb::RegisterActs (0xe1990), CVoiceTrigger::RegisterActs
+    // (0x11a500).)
 }
 
 // Reloc-fidelity bindings for the factory-fn pointers the registrar pushes.
@@ -208,13 +200,11 @@ extern "C" {
 // @data-symbol: _CreateDemoMover 0x00002eb9
 // @data-symbol: _CreateDemoSign 0x0000448a
 //
-// The five RegHelper CALL sites stay UNBOUND (see the extern block above): the
-// retail target is a __thiscall (QAE) member called this-less (`call <thunk>`
-// with no `mov ecx`), so retargeting the call to the real `?..@@QAEXXZ` symbol
-// would insert a `mov ecx` and desync this 0x6e2-byte function below 100%. And a
-// fake `_RegHelper_<rva>` label cannot bind at the real body RVA: read_names_map
-// is RVA-keyed last-wins, so a second symbol there would rename the real function
-// in the synth PDB and break its home unit's delink. Left unbound by necessity.
+// The five former RegHelper CALL sites are now real static-member calls
+// (CProjActObj::RegisterType / C{TileTriggerTransition,ToobSpikez,TimeBomb,
+// VoiceTrigger}::RegisterActs). Each registrar's home TU declares it `static`
+// (SAXXZ), so the retail this-less `call rel32` binds to its exact RVA with no
+// `mov ecx` inserted (the bodies never touch `this`). Reloc-fidelity CORRECT.
 
 // @source: string-xref
 RVA(0x0000a3b0, 0x6e2)
@@ -243,7 +233,7 @@ void RegisterGameObjectTypes(GameObjFactoryCtx* ctx) {
     ctx->m_14->RegisterType(CreateAmbientPosSound, "AmbientPosSound", 0);
     ctx->m_14->RegisterType(CreateSpotAmbientSound, "SpotAmbientSound", 0);
     ctx->m_14->RegisterType(CreateActionArea, "ActionArea", 4);
-    RegHelper_1e65();
+    CProjActObj::RegisterType();
     ctx->m_14->RegisterType(CreateStatusBarSprite, "StatusBarSprite", 2);
     CStatusBarSprite::RegisterActs();
     ctx->m_14->RegisterType(CreateParticlez, "Particlez", 4);
@@ -275,7 +265,7 @@ void RegisterGameObjectTypes(GameObjFactoryCtx* ctx) {
     ctx->m_14->RegisterType(CreateBrickz, "Brickz", 4);
     CCheckpointTrigger::RegisterActs();
     ctx->m_14->RegisterType(CreateTileTriggerTransition, "TileTriggerTransition", 4);
-    RegHelper_272a();
+    CTileTriggerTransition::RegisterActs();
     ctx->m_14->RegisterType(CreateGruntStartingPoint, "GruntStartingPoint", 4);
     ActReg4RegisterType();
     ctx->m_14->RegisterType(CreateGruntCreationPoint, "GruntCreationPoint", 4);
@@ -319,9 +309,9 @@ void RegisterGameObjectTypes(GameObjFactoryCtx* ctx) {
     ctx->m_14->RegisterType(CreateStaticHazard, "StaticHazard", 4);
     CStaticHazard::RegisterActs();
     ctx->m_14->RegisterType(CreateToobSpikez, "ToobSpikez", 4);
-    RegHelper_10a5();
+    CToobSpikez::RegisterActs();
     ctx->m_14->RegisterType(CreateTimeBomb, "TimeBomb", 4);
-    RegHelper_146f();
+    CTimeBomb::RegisterActs();
     ctx->m_14->RegisterType(CreateSpotLight, "SpotLight", 4);
     RegisterActs_646188();
     ctx->m_14->RegisterType(CreateKitchenSlime, "KitchenSlime", 4);
@@ -343,7 +333,7 @@ void RegisterGameObjectTypes(GameObjFactoryCtx* ctx) {
     CWarpStonePad::RegisterActs();
     ctx->m_14->RegisterType(CreateGuardPoint, "GuardPoint", 4);
     ctx->m_14->RegisterType(CreateVoiceTrigger, "VoiceTrigger", 4);
-    RegHelper_2400();
+    CVoiceTrigger::RegisterActs();
     ctx->m_14->RegisterType(CreateLevelTime, "LevelTime", 4);
     ctx->m_14->RegisterType(CreateCursorSnapSprite, "CursorSnapSprite", 1);
     RegisterXLogic_62bfa0();
@@ -357,6 +347,14 @@ void RegisterGameObjectTypes(GameObjFactoryCtx* ctx) {
 // 0x00af50 - reset a global DWORD to 0 (the global at VA 0x6295d8 / RVA 0x2295d8).
 // __cdecl free function. RVA-homed here (RVA-contiguous with the factory registrar).
 // @orphan: only caller is an unrecovered fn (~0xaa92); free reset with no owner.
+// @reloc-TODO: g_dat6295d8's DATA store stays reloc-UNBOUND. RVA 0x2295d8 is really
+// AdvancedOptions.cpp's `static RegistryHelper g_registryHelper` (m_open @ +0x00) -
+// advancedoptions is 100% reloc-faithful referencing 0x2295d8, so this reset writes
+// that same object's m_open. But symbol_names.csv is RVA-keyed last-wins, so 0x2295d8
+// carries only ONE name (_g_registryHelper$S17358, advancedoptions), leaving _g_dat6295d8
+// unbound. Clean fix = rehome ResetDat6295d8 INTO advancedoptions.cpp (it is
+// RVA-adjacent, 0xaf50 just below advancedoptions' 0xafb0) and write g_registryHelper.m_open
+// = 0 through the SAME static symbol - out of THIS lane's authorized set (advancedoptions).
 // ---------------------------------------------------------------------------
 RVA(0x0000af50, 0xb)
 void ResetDat6295d8() {
