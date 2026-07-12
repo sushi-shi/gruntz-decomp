@@ -13,8 +13,9 @@
 // (GameRegistry.h) and the canonical CMulti game-state (Multi.h). Field names are
 // placeholders (m_<hexoffset>); only offsets + code bytes are load-bearing.
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/Multi.h>        // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
-#include <Gruntz/NetDlgHost.h>   // CNetDlgHost (m_host +0x5c facet; FindOptionsSlot @0x92e80)
+#include <Gruntz/Multi.h>      // the real CMulti (the 0x64bd5c multiplayer game-state singleton)
+#include <Gruntz/NetDlgHost.h> // CNetDlgHost (m_host +0x5c facet)
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr::FindOptionsSlot (0x92e80, the m_host FindOptionsSlot callee)
 #include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
 #include <Net/NetSessHost.h>     // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet
 #include <Net/NetMgr.h>          // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
@@ -64,13 +65,11 @@ extern char s_UsingCmdDelay[];
 // m_14/m_20 roles + FormatName_3e54) now live on the canonical (name-preserving
 // union; no offset conflicted, so no conflation to split).
 
-// Dialog-item resolvers (push id; __stdcall) that rely on the caller's live ecx=this:
-// each is really a thiscall control accessor spelled __stdcall so the byte stream omits
-// the `mov ecx` the caller already satisfied (same RVAs as the CMultiStartDlg thiscall
-// accessors below; reloc-masks either way).
-CWnd* __stdcall ResolveItem_1753(i32 slot); // 0x01753
-CWnd* __stdcall ResolveItem_1159(i32 idx);  // 0x01159
-CWnd* __stdcall ResolveItem_c27c0(i32 id);  // 0xc27c0
+// Dialog-item resolver (push idx; __stdcall) that relies on the caller's live ecx=this:
+// a thiscall ready-checkbox accessor (0x1159) spelled __stdcall so the byte stream omits
+// the `mov ecx` the caller already satisfied. (SetListCurSel / OnSlotSelect0..3 now call
+// the real CMultiStartDlg::GetCtrlC @0xc27c0 directly - those shims are dissolved.)
+CWnd* __stdcall ResolveItem_1159(i32 idx); // 0x01159
 // Roster free helpers (__stdcall, reloc-masked).
 void __stdcall Func1d70(i32 flag);            // 0x01d70
 void __stdcall Refresh185c(CFocusSlot* slot); // 0x0185c
@@ -137,11 +136,11 @@ i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     return 1;
 }
 
-// __stdcall(id, wParam): if item `id` resolves, set its list selection to wParam-1
-// (LB_SETCURSEL). Free helper preserving the caller's ecx=this (see resolvers above).
+// __thiscall(id, wParam): if list control `id` resolves (GetCtrlC @0xc27c0), set its
+// LB_SETCURSEL to wParam-1. ecx=this passes through to GetCtrlC (no `mov ecx` emitted).
 RVA(0x000c2980, 0x28)
-void __stdcall SetListCurSel(i32 id, i32 wParam) {
-    CWnd* it = ResolveItem_1753(id);
+void CMultiStartDlg::SetListCurSel(i32 id, i32 wParam) {
+    CWnd* it = GetCtrlC(id);
     if (it) {
         SendMessageA(it->m_hWnd, 0x14e, wParam - 1, 0);
     }
@@ -237,16 +236,14 @@ void CMultiStartDlg::SyncChannelSlot(i32 ch) {
 // then arms a 50 ms repaint timer; the HWND lives at +0x1c (CWnd::m_hWnd of a
 // CDialog subclass). Concrete dialog identity not yet recovered
 // (@identity-TODO); modeled minimally (offsets + code bytes load-bearing).
-struct AreaTimerDlg {
-    char m_pad0[0x1c];
-    HWND m_hWnd;            // +0x1c  CWnd::m_hWnd
-    i32 OnInitDialog();     // 0x0c2cb0
-    i32 BaseOnInitDialog(); // 0x1bac5e (CDialog::OnInitDialog)
+struct AreaTimerDlg : public CDialog {
+    i32 OnInitDialog(); // 0x0c2cb0  (this dialog's WM_INITDIALOG handler; m_hWnd @+0x1c
+                        //  is CWnd::m_hWnd, inherited via CDialog)
 };
 SIZE_UNKNOWN(AreaTimerDlg);
 RVA(0x000c2cb0, 0x1f)
 i32 AreaTimerDlg::OnInitDialog() {
-    BaseOnInitDialog();
+    CDialog::OnInitDialog(); // 0x1bac5e ?OnInitDialog@CDialog@@UAEHXZ (base call, exempt)
     SetTimer(m_hWnd, 1, 0x32, 0);
     return 1;
 }
@@ -721,7 +718,7 @@ void CMultiStartDlg::OnCustomWorld() {
             g_64bd5c->m_5b0 = 1;
             g_64bd5c->m_5b8 = (LPCTSTR)dlg.m_customName;
             g_64bd5c->m_5b4 = g_emptyString;
-            g_64bd5c->Commit3ada(0);
+            g_64bd5c->SaveConfig(0);
         }
     }
 }
@@ -743,14 +740,14 @@ void CMultiStartDlg::Sub_c3e30() {
             i32 r = SendMessageA(item->m_hWnd, 0x147, 0, 0);
             if (r != -1) {
                 CString name;
-                item->GetLBText1ce7db(r, name);
+                ((CComboBox*)item)->GetLBText(r, name); // CComboBox::GetLBText @0x1ce7db
                 if (name.GetLength() != 0) {
                     m_6c = 0;
                 }
                 g_64bd5c->m_5b0 = 0;
                 g_64bd5c->m_5b8 = g_emptyString;
                 g_64bd5c->m_5b4 = (LPCTSTR)name;
-                g_64bd5c->Commit3ada(0);
+                g_64bd5c->SaveConfig(0);
             }
         }
     }
@@ -773,7 +770,12 @@ void CMultiStartDlg::OnChatSend() {
         a += b;
         AppendChatLine((char*)(const char*)a);
         input->SetWindowTextA(g_emptyString);
-        ((CNetMgr*)g_64bd5c)->BroadcastChatLine((char*)(const char*)a, 0, 0, 0);
+        g_64bd5c->BroadcastChatLine(
+            (char*)(const char*)a,
+            0,
+            0,
+            0
+        ); // CMulti::BroadcastChatLine @0xbb190
     }
 }
 
@@ -788,7 +790,7 @@ void CMultiStartDlg::Drive() {
         netMgr->BroadcastChannelTable(0);
         UpdatePlayers(1); // 0xc4230 (reloc-masked; return discarded)
     } else {
-        i32 transformedPlayerId = (i32)((CNetDlgHost*)m_host)->FindOptionsSlot(netMgr->m_hostIndex);
+        i32 transformedPlayerId = (i32)((CGruntzMgr*)m_host)->FindOptionsSlot(netMgr->m_hostIndex);
         g_64bd5c->BroadcastOneChannel(transformedPlayerId);
     }
 }
@@ -1078,7 +1080,7 @@ void CMultiStartDlg::Watchdog() {
 // OptOwner_c4b30::Resolve view; m_5c is CMultiStartDlg::m_host, xref-proven).
 RVA(0x000c4b30, 0x1f)
 i32 CMultiStartDlg::GetSlotIndex() {
-    i32* slot = (i32*)((CNetDlgHost*)m_host)->FindOptionsSlot(g_64bd5c->m_hostIndex);
+    i32* slot = (i32*)((CGruntzMgr*)m_host)->FindOptionsSlot(g_64bd5c->m_hostIndex);
     if (slot == 0) {
         return -1;
     }
@@ -1120,7 +1122,7 @@ void CMultiStartDlg::VerifyCustomLevel() {
         EnableWindow(1);
     } else if (g_64bd5c->m_53c == 0) {
         g_64bd5c->m_530 = 1;
-        OnOK();
+        CDialog::OnOK(); // 0x1bacc3 direct base call (?OnOK@CDialog@@MAEXXZ, reloc-masked)
     } else {
         g_64bd5c->m_530 = 0;
         EnableWindow(0);
@@ -1131,31 +1133,31 @@ void CMultiStartDlg::VerifyCustomLevel() {
 
 // __thiscall(): cache list N's current selection (+1) into the Nth player-slot's combo
 // value, then re-drive the connect state. Four handlers, one per player slot; slot 2
-// resolves its list through GetCtrlC (ResolveItem_c27c0), the rest through 0x1753.
+// each resolves its list through the real CMultiStartDlg::GetCtrlC accessor (0xc27c0).
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnSlotSelect0() {
-    HWND h = ResolveItem_1753(0)->m_hWnd;
+    HWND h = GetCtrlC(0)->m_hWnd;
     g_gameReg->m_focusSlots[0].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4f30, 0x33)
 void CMultiStartDlg::OnSlotSelect1() {
-    HWND h = ResolveItem_1753(1)->m_hWnd;
+    HWND h = GetCtrlC(1)->m_hWnd;
     g_gameReg->m_focusSlots[1].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4f80, 0x33)
 void CMultiStartDlg::OnSlotSelect2() {
-    HWND h = ResolveItem_c27c0(2)->m_hWnd;
+    HWND h = GetCtrlC(2)->m_hWnd;
     g_gameReg->m_focusSlots[2].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4fd0, 0x33)
 void CMultiStartDlg::OnSlotSelect3() {
-    HWND h = ResolveItem_1753(3)->m_hWnd;
+    HWND h = GetCtrlC(3)->m_hWnd;
     g_gameReg->m_focusSlots[3].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
@@ -1182,7 +1184,7 @@ void CMultiStartDlg::CommitLatencyOption() {
         g_64bd5c->m_5a4 = lo;
         g_64bd5c->m_drainReload = hi;
         g_64bd5c->m_600 = 0;
-        g_64bd5c->Commit3ada(0);
+        g_64bd5c->SaveConfig(0);
     } else {
         g_64bd5c->m_600 = 1;
     }
@@ -1229,9 +1231,8 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
 // unidentified per-session net object: release+free the +0x60 CNetThing child,
 // then run the final Destroy_1bbb7c. @orphan (class identity unrecovered; its Init
 // sibling homes to src/Net/NetCmdSlot.cpp).
-extern "C" void RezFree(void*); // 0x1b9b82
-struct CNetThing {              // TU-local view of the header-less CNetThing (netthingdtor unit)
-    ~CNetThing();               // dtor @0xc5280 (Release IS ~CNetThing)
+struct CNetThing { // TU-local view of the header-less CNetThing (netthingdtor unit)
+    ~CNetThing();  // dtor @0xc5280 (Release IS ~CNetThing)
 };
 struct CCluster0c {
     char pad00[0x60];
@@ -1244,10 +1245,12 @@ void CCluster0c::Cleanup() {
     CNetThing* p = m_60;
     if (p) {
         p->~CNetThing();
-        RezFree(p);
+        ::operator delete(p); // 0x1b9b82 == ??3@YAXPAX@Z (reloc-masked/exempt)
         m_60 = 0;
     }
-    Destroy_1bbb7c();
+    Destroy_1bbb7c(); // 0x1bbb7c == CWnd::DestroyWindow (direct base call; needs a CWnd base
+                      // model - deferred: adding the virtual to Dialogs.h CWnd would append a
+                      // slot and perturb the CBattlezDlg/CMultiStartDlg derived vtables)
 }
 SIZE_UNKNOWN(CCluster0c);
 SIZE_UNKNOWN(CNetThing);

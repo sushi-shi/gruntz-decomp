@@ -601,7 +601,7 @@ void CBattlezDlg::CopyComboSelToChild() {
         return;
     }
     CString s;
-    combo->GetLBText1ce7db(sel, s);
+    ((CComboBox*)combo)->GetLBText(sel, s); // CComboBox::GetLBText @0x1ce7db
     if (s.GetLength() != 0) {
         CWnd* child = CWnd::FromHandle(GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
         if (child != 0) {
@@ -1003,10 +1003,11 @@ void CBattlezDlg::OnActionBtn3() {
     ReadCtrlBText(3);
 }
 
-// OnOK (vtable slot 51, 0x174a0): forward to the base CDialog::OnOK (tail-jmp).
+// OnOK (vtable slot 51, 0x174a0): forward to the base CDialog::OnOK (tail-jmp to
+// ?OnOK@CDialog@@MAEXXZ @0x1bacc3, the NAFXCW protected virtual - reloc-masked/exempt).
 RVA(0x000174a0, 0x5)
-void CBattlezDlg::DlgVsl51() {
-    CDialog::DlgVsl51();
+void CBattlezDlg::OnOK() {
+    CDialog::OnOK();
 }
 
 // Four button trampolines (0x174c0/0x174e0/0x17500/0x17520): each forwards its
@@ -1035,7 +1036,7 @@ void CBattlezDlg::StubBtnHandler(i32) {}
 // (slot 51 / +0xcc) - `mov eax,[ecx]; jmp [eax+0xcc]`.
 RVA(0x00017d40, 0x8)
 void CBattlezDlg::OnOkCommand() {
-    DlgVsl51();
+    OnOK();
 }
 
 SIZE_UNKNOWN(CImgHolderBase);
@@ -1051,5 +1052,11 @@ RELOC_VTBL(
     CImgHolder2,
     0x001e8cd4
 ); // inline-dtor twin: aliases CImgHolder's vtable (dtor-stamp verified)
+// The polymorphic grand-base's re-stamp target: cl emits ??_7CImgHolderBase@@6B@ for the
+// empty inline-dtor base, but retail's base vtable IS the shared CObject vtable @0x1e8cb4
+// (MSVC5 has no ICF; the base subobject's vtable equals CObject's). Bind the emitted
+// ??_7CImgHolderBase symbol to that rva so the ~CImgHolderBase/~CImgHolder2/~CImgHolder
+// base re-stamp DIR32s are reloc-CORRECT (was UNBOUND - the 0x1e8cb4 row is ??_7CObject).
+RELOC_VTBL(CImgHolderBase, 0x001e8cb4);
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

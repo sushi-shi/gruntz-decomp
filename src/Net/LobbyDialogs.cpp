@@ -27,9 +27,10 @@
 #include <rva.h>
 #include <Gruntz/GameRegistry.h> // canonical CGameRegistry (g_gameReg->m_curState @ +0x2c)
 #include <Gruntz/Multi.h>        // canonical CMulti (the network game-state) + CNetSession2
-#include <Wap32/Wap32.h>         // CGameApp (m_logic->m_owner->m_hInstance, ReportStatusId)
-#include <string.h>              // strcpy/strcat (inline CRT, reloc-masked)
-#include <stdio.h>               // sprintf (the drop-in banner)
+#include <Net/NetMgr.h> // canonical CNetSession (m_session command-slot facet; CheckLatency @0xc04a0)
+#include <Wap32/Wap32.h> // CGameApp (m_logic->m_owner->m_hInstance, ReportStatusId)
+#include <string.h>      // strcpy/strcat (inline CRT, reloc-masked)
+#include <stdio.h>       // sprintf (the drop-in banner)
 
 // --- shared globals (canonical home elsewhere; extern-only pins here) ---
 // The CGameRegistry singleton: the lobby DlgProcs read its current game-state
@@ -392,7 +393,9 @@ namespace NetLobby {
                 }
                 NetDlgSessionStop(hWnd, g_curMulti);
                 Init_be3e0(hWnd, g_curMulti);
-                if (g_curMulti->m_session->CheckLatency(0x2710)) {
+                if (g_curMulti->Session()->CheckLatency(
+                        0x2710
+                    )) { // CNetSession::CheckLatency @0xc04a0
                     PostMessageA(hWnd, 0x111, 0x4cd, 0);
                 }
                 return 1;

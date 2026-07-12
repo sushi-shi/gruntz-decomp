@@ -103,8 +103,7 @@ public:
     void SetWindowTextA(const char* lpszString);
     i32 EnableWindow(i32 bEnable); // 0x1be6a7 ?EnableWindow@CWnd (returns BOOL)
     i32 IsWindowEnabled();         // 0x1be68c (NAFXCW ::IsWindowEnabled(m_hWnd); reloc-masked)
-    void GetWindowTextA(CString& rString);
-    void GetLBText1ce7db(i32 nIndex, CString& rString);
+    void GetWindowTextA(CString& rString) const; // 0x1bbd01 ?GetWindowTextA@CWnd@@QBEX... (const)
     // GetDlgItem @0x1be27d (NAFXCW ::GetDlgItem(m_hWnd,nID) wrapped as CWnd*): a CWnd
     // method, NOT CDialog's - the return CWnd* mangles as PAV1@ (back-ref to CWnd).
     CWnd* GetDlgItem(i32 nID) const;
@@ -124,6 +123,16 @@ protected:
 public:
     char m_pad04[0x1c - 4]; // +0x04 (vptr @+0x00)
     HWND__* m_hWnd;         // +0x1c  wrapped window handle
+};
+
+// CComboBox - the MFC combo-box control wrapper. Only GetLBText is reached (the
+// world/name combos downcast their GetDlgItem(CWnd*) to CComboBox* and read a row's
+// text). NAFXCW body reloc-masks; the const-qualified GetLBText mangles to the exact
+// library symbol ?GetLBText@CComboBox@@QBEXHAAVCString@@@Z (0x1ce7db, EXEMPT).
+SIZE_UNKNOWN(CComboBox);
+class CComboBox : public CWnd {
+public:
+    void GetLBText(i32 nIndex, CString& rString) const; // 0x1ce7db
 };
 
 // CString - the MFC string. Only its default ctor is touched (the embedded
@@ -155,7 +164,11 @@ public:
     virtual void DlgVsl48();
     virtual i32 OnInitDialog(); // 0x1bac5e slot 49 (returns BOOL)
     virtual void DlgVsl50();
-    virtual void DlgVsl51(); // OnOK
+
+protected:
+    virtual void
+    OnOK(); // 0x1bacc3 slot 51 (CDialog::OnOK - protected virtual, ?OnOK@CDialog@@MAEXXZ)
+public:
     virtual void DlgVsl52();
     virtual void DlgVsl53();
     i32 DoModal();             // 0x1ba9d2
@@ -199,7 +212,7 @@ public:
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl35() OVERRIDE;             // slot 35
     virtual i32 OnInitDialog() OVERRIDE;          // slot 49  OnInitDialog (0x160d0)
-    virtual void DlgVsl51() OVERRIDE;             // slot 51  OnOK
+    virtual void OnOK() OVERRIDE;                 // slot 51  OnOK (0x174a0)
 
     i32 m_slots;          // +0x5c  (= a0; the CBattlezSlot* slot-array base)
     char m_pad60[8];      // +0x60
@@ -276,8 +289,8 @@ public:
     void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
     // 0x17440: an unused message-map handler - `xor eax,eax; ret` (returns 0).
     i32 UnusedMsgHandler();
-    // 0x17d40: IDOK command trampoline - virtual-dispatch to this->DlgVsl51 (OnOK,
-    // vtable slot 51 / +0xcc): `mov eax,[ecx]; jmp [eax+0xcc]`.
+    // 0x17d40: IDOK command trampoline - virtual-dispatch to this->OnOK
+    // (vtable slot 51 / +0xcc): `mov eax,[ecx]; jmp [eax+0xcc]`.
     void OnOkCommand();
     // Four button trampolines (0x174c0/0x174e0/0x17500/0x17520): each forwards its
     // fixed index 0..3 to the (currently do-nothing) StubBtnHandler (0x17540).
@@ -361,7 +374,7 @@ public:
     virtual void WndVsl24() OVERRIDE;             // slot 24
     virtual void WndVsl35() OVERRIDE;             // slot 35
     virtual i32 OnInitDialog() OVERRIDE;          // slot 49  OnInitDialog
-    virtual void DlgVsl51() OVERRIDE;             // slot 51  OnOK
+    virtual void OnOK() OVERRIDE;                 // slot 51  OnOK
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void InitPlayerSlots();
@@ -392,6 +405,9 @@ public:
     // their methods dispatch this class's per-slot accessors 0x1929/0x298c/0x1753/
     // 0x1159/GetCtrlD(0xc2840) on `this` and self-call Drive @0xc40b0. See the
     // "net-game-config facet" block below.
+    // SetListCurSel (0xc2980): if list `id` resolves (GetCtrlC), set its LB_SETCURSEL to
+    // wParam-1. A __thiscall member (ecx=this passthrough to GetCtrlC).
+    void SetListCurSel(i32 id, i32 wParam);
     void AppendChatLine(char* str); // 0xc2ce0  append a line to the 0x511 log edit
     i32 UpdatePlayers(i32 force);   // 0xc4230  refresh every player row from the roster
     void OnSlotSelect0();           // 0xc4ee0  cache slot 0's list cursel + re-drive
@@ -459,8 +475,9 @@ public:
     // this-side MFC forwarders the net facet reaches (CWnd/CDialog methods,
     // reloc-masked; CDialog is modeled without its CWnd base so declare here).
     void EnableWindow(i32 bEnable); // 0x1be6a7 (CWnd::EnableWindow on this)
-    void OnOK();                    // 0x1bacc3 (CDialog::OnOK)
-    void M1bab37(i32);              // 0x1bab37 (NAFXCW forwarder; the Watchdog abort/reshow)
+    // (CDialog::OnOK @0x1bacc3 is the inherited protected virtual slot-51 above;
+    //  VerifyCustomLevel reaches it as CDialog::OnOK() - no separate non-virtual decl.)
+    void M1bab37(i32); // 0x1bab37 (NAFXCW forwarder; the Watchdog abort/reshow)
 
     // Watchdog (0xc46b0): the per-timer multiplayer-session watchdog (body in
     // NetGameDlgWatch.cpp) - refresh the roster, advance the blink counters, then walk

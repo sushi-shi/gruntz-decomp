@@ -10,7 +10,8 @@
 // load-bearing (campaign doctrine).
 // ---------------------------------------------------------------------------
 #include <Gruntz/Dialogs.h>
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr (g_gameReg; m_isCheckpointPrompts)
+#include <Gruntz/GruntzMgr.h>     // CGruntzMgr (g_gameReg; m_isCheckpointPrompts)
+#include <Gruntz/GruntzCommand.h> // canonical g_singleCmdList/g_multiCmdList (@0x62b5d0/0x62b640)
 #include <rva.h>
 #include <Globals.h> // g_msgmap_CCheckpointDlg
 
@@ -67,22 +68,21 @@ void CCheckpointDlg::OnToggleCheckpointPrompts() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0238d0 / 0x023960 - the two module dynamic-initializers that construct a pair of
-// global MFC CObList objects (g_container62b5d0 @0x62b5d0, g_container62b640 @0x62b640)
-// with block size 0xa via the NAFXCW CObList block-size ctor (0x1b4867 ==
-// ??0CObList@@QAE@H@Z, reloc-masked). __cdecl free fns. Re-homed from
-// src/Stub/BoundaryMisc.cpp.
+// 0x0238d0 / 0x023960 - the two module dynamic-initializers that construct the pair of
+// command recycle-list globals (g_singleCmdList @0x62b5d0, g_multiCmdList @0x62b640; the
+// canonical CGruntzCmdList == an MFC CObList) with block size 0xa via the NAFXCW CObList
+// block-size ctor (0x1b4867 == ??0CObList@@QAE@H@Z, reloc-masked). __cdecl free fns.
+// Re-homed from src/Stub/BoundaryMisc.cpp. The DIR32 for each global's address binds to
+// the tree-winning ?g_singleCmdList/?g_multiCmdList@CGruntzCmdList symbol (DATA home
+// GruntzCmdMgr.cpp) - the old TU-local CObList g_container62b5d0/g_container62b640 views
+// were dedup-losers to those canonicals and reloc-masked UNBOUND.
 // @orphan: both callers are unrecovered fns; module-init thunks with no owner class.
 // ---------------------------------------------------------------------------
-DATA(0x0022b5d0)
-extern CObList g_container62b5d0;
-DATA(0x0022b640)
-extern CObList g_container62b640;
 RVA(0x000238d0, 0xd)
 void Init238d0() {
-    g_container62b5d0.CObList::CObList(0xa);
+    ((CObList*)&g_singleCmdList)->CObList::CObList(0xa);
 }
 RVA(0x00023960, 0xd)
 void InitGlobalObList62b640() {
-    g_container62b640.CObList::CObList(0xa);
+    ((CObList*)&g_multiCmdList)->CObList::CObList(0xa);
 }

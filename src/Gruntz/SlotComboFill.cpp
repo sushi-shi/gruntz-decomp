@@ -15,13 +15,14 @@
 
 // The engine's cached USER32 imports, held as function-pointer globals (the dialog
 // helpers call THESE, not the raw USER32 imports - reloc-masked indirect calls).
-// hDlg carries the dialog handle as an i32 here, so g_pGetDlgItem is modeled with an
-// i32 first param (the value flows in without a cast; the reloc name is the same
-// extern-"C" `_g_pGetDlgItem` regardless of param spelling). SelectItem @0x38150 uses
-// both (0x6c4564 / 0x6c44a4).
-extern "C" HWND(WINAPI* g_pGetDlgItem)(i32 hDlg, i32 id); // 0x6c4564
-DATA(0x006c44a4)
-extern long(WINAPI* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp);
+// Both reference their canonical DATA homes (no local DATA here): g_pGetDlgItem is the
+// C++-mangled ?g_pGetDlgItem@@3P6GPAUHWND__@@PAU1@H@ZA (home CustomWorldDialog.cpp
+// @0x2c4564) and g_pSendMessageA is the extern-"C" _g_pSendMessageA (home GruntzMgr.cpp
+// @0x2c44a4) - so both DIR32 references reloc against the tree-winning symbol at the
+// right RVA (the old extern-"C" _g_pGetDlgItem + DATA(0x006c44a4) VA-typo mis-bound them).
+extern HWND(WINAPI* g_pGetDlgItem)(HWND, int); // 0x2c4564
+extern "C" long(WINAPI*
+                    g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp); // 0x2c44a4
 
 // The control lookup + the four combo messages go through the engine's cached USER32
 // function-pointer globals (g_pGetDlgItem / g_pSendMessageA), not the raw imports:
@@ -39,7 +40,7 @@ i32 CLatencyList::FillCombo(i32 hDlg, i32 ctrlId) {
     if (m_nCount <= 0) {
         return 0;
     }
-    HWND combo = g_pGetDlgItem(hDlg, ctrlId);
+    HWND combo = g_pGetDlgItem((HWND)hDlg, ctrlId);
     if (combo == 0) {
         return 0;
     }
@@ -87,7 +88,7 @@ CString CLatencyItem::GetName() {
 // so the local pSend caches it here.
 RVA(0x00038150, 0x91)
 i32 CLatencyList::SelectItem(i32 hDlg, i32 id, i32 lo, i32 hi) {
-    HWND list = g_pGetDlgItem(hDlg, id);
+    HWND list = g_pGetDlgItem((HWND)hDlg, id);
     if (!list) {
         return 0;
     }

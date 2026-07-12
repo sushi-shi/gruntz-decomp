@@ -97,20 +97,21 @@ namespace m4 {
 // masked __thiscall). Its caller is the (unmodeled) CMultiStartDlg init routine at
 // 0xc1690, one function before the ctor (0xc1750).
 // ---------------------------------------------------------------------------
-struct EngStrAssign {
-    char* m_pszData;
-    void operator=(const char* s); // CString::operator=, FUN_001b9d4c
-};
-// 4 contiguous CString globals at 0x64bdb0 (defined in the engine's data).
+// 4 contiguous CString globals at 0x64bdb0 (the multiplayer channel-label table; also
+// modeled as g_64bdb0 in MultiStartDlgRoster.cpp). BuildNamedGruntTable is the array's
+// dynamic initializer: it in-place constructs each element from its default-name literal
+// via CString::CString(const char*) (0x1b9d4c == ??0CString@@QAE@PBD@Z, reloc-masked
+// NAFXCW). The former EngStrAssign::operator= view mis-named that ctor and reloc-masked
+// UNBOUND; a real CString ctor call binds it to the library symbol.
 DATA(0x0024bdb0)
-extern EngStrAssign g_gruntNames[4];
+extern CString g_gruntNames[4];
 
 RVA(0x000c16b0, 0x3d)
 void BuildNamedGruntTable() {
-    g_gruntNames[0] = "Beefy";
-    g_gruntNames[1] = "Zed";
-    g_gruntNames[2] = "Serra";
-    g_gruntNames[3] = "Jebediah";
+    g_gruntNames[0].CString::CString("Beefy");
+    g_gruntNames[1].CString::CString("Zed");
+    g_gruntNames[2].CString::CString("Serra");
+    g_gruntNames[3].CString::CString("Jebediah");
 }
 
 // ---------------------------------------------------------------------------
@@ -454,6 +455,5 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
 }
 
 SIZE_UNKNOWN(CMultiSlot);
-SIZE_UNKNOWN(EngStrAssign);
 SIZE_UNKNOWN(MpSymItem);
 SIZE_UNKNOWN(MpSymTable);
