@@ -904,6 +904,13 @@ source = "src/Gruntz/GameMode.cpp"
 flags = "eh"
 
 [[unit]]
+# CState base-class impl obj: ctor (0x08c750) + slot-0 ??_G (0x08c710) + slot-1/2 vtable-
+# order anchors. Carved out of GameMode.cpp (REHOME D7); stamps ??_7CState@0x5ea21c.
+unit = "state"
+source = "src/Gruntz/State.cpp"
+flags = "eh"
+
+[[unit]]
 # CCreditsState (credits/attract CState leaf) + CCreditzOwner (SetupTitle), split out of
 # the GameMode.cpp god-TU. eh: ~CCreditsState / DrawScrollingCredits (CString temp) /
 # SetupTitle (operator new/delete + CString) carry the /GX SEH frame.

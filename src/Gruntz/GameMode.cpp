@@ -1,9 +1,12 @@
-// GameMode.cpp - the CState base of the game-state ("mode") hierarchy + the
-// CGameModeBase cleanup pair + the free menu/HUD helpers the base drives. The concrete
-// leaf states were split into per-class TUs (per-class TU cut of the former god-TU):
+// GameMode.cpp - the free menu/HUD helpers the CState base drives + the CGameModeBase
+// cleanup pair (out-of-line COMDATs). The concrete leaf states were split into per-class
+// TUs (per-class TU cut of the former god-TU):
 //   CMenuState     -> src/Gruntz/MenuState.cpp
 //   CCreditsState  -> src/Gruntz/CreditsState.cpp  (+ CCreditzOwner)
 //   CBootyState + CMultiBootyState -> src/Gruntz/BootyStateActivate.cpp
+// The CState BASE implementation (ctor @0x08c750 + slot-0 ??_G @0x08c710 + slot-1/2
+// vtable-order anchors) was carved to src/Gruntz/State.cpp (unit "state", REHOME D7),
+// which now stamps ??_7CState and hosts all 18 CState inline virtuals.
 // See GameMode.h for the hierarchy. Names are placeholders; only offsets + code bytes
 // are load-bearing.
 //
@@ -11,9 +14,8 @@
 //   GenMenuRandPos            @0x019cd0 - free __stdcall edge-spawn RNG helper.
 //   CState::LoadGruntEffectSprites @0x01a040 - preload the in-game effect sprite set.
 //   CState::LevelMsgHudDriver @0x01a700 - the per-frame level-message HUD + explosion driver.
-//   CState::~CState (??_G)     @0x08c710 - the slot-0 scalar-deleting dtor.
-//   CState::CState()          @0x08c750 - the base ctor (scalar zero/seed).
-//   CGameModeBase::ResetPreview @0x0de140 / ::Reset @0x0f9840 - the base cleanup pair.
+//   CGameModeBase::ResetPreview @0x0de140 (@interleaver -> levelpreview) / ::Reset
+//     @0x0f9840 (@interleaver -> scattered COMDAT) - the base cleanup pair, out-of-line.
 #include <Bute/SymTab.h>                  // CSymTab (LoadGruntEffectSprites m_30 ResolvePath)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // RemoveKeysEqual_157c70 (CGameModeBase::ResetPreview)
 #include <Gruntz/SpriteRefTable.h>        // CSpriteRefTable (LoadGruntEffectSprites m_74 GetSel)
@@ -27,9 +29,8 @@
 #include <Gruntz/LeafCue.h>  // LeafCue (PlayIfElapsed_01f940 + m_10/m_14/m_18)
 #include <rva.h>
 
-// The scalar-deleting dtor's `operator delete` (reached by the synthesized `??_G`);
-// declare it so /GX tracks the EH state.
-void operator delete(void*);
+// (CState's ??_G scalar-deleting dtor - and the `operator delete` it reaches - moved to
+// src/Gruntz/State.cpp with the ctor; REHOME package D7.)
 
 // The global game registry (canonical <Gruntz/WwdGameReg.h>): the Rand()/RandRange()
 // __thiscall helpers GenMenuRandPos calls (all reloc-masked).
@@ -547,61 +548,12 @@ i32 CState::LevelMsgHudDriver() {
 }
 
 // ===========================================================================
-// CState - the base game-state class.
+// CState - the base game-state class. Its ctor (0x0008c750) + slot-0 scalar-deleting
+// dtor ??_G (0x0008c710) + the slot-1/2 vtable-order anchors were carved to their own
+// obj src/Gruntz/State.cpp (REHOME package D7) - that TU stamps ??_7CState. The two
+// CState methods above (LoadGruntEffectSprites / LevelMsgHudDriver) are NON-virtual
+// out-of-line members, so this TU no longer emits the CState vtable.
 // ===========================================================================
-
-// CState::CState(): store the vftable, then zero a flat list of scalar members in
-// source-declaration order, seeding four time/budget fields to 0x40. NO embedded
-// sub-object ctors and NO EH frame (plain /O2). This ctor (with the leaf dtors in the
-// per-class TUs) anchors the CState vtable + inline-virtual emission.
-RVA(0x0008c750, 0xa9)
-CState::CState() {
-    m_4 = 0;
-    m_8 = 0;
-    m_c = 0;
-    m_levelBank = 0;
-    m_2c = 0;
-    m_14 = 0;
-    m_18 = 0;
-    m_38 = 0;
-    m_ready = 0;
-    m_4c = 0;
-    m_24 = 0;
-    m_160 = 0;
-    m_164 = 0;
-    m_168 = 0;
-    m_170 = 0x40;
-    m_16c = 0;
-    m_174 = 0x40;
-    m_178 = 0;
-    m_180 = 0x40;
-    m_17c = 0;
-    m_184 = 0x40;
-    m_188 = 0;
-    m_190 = 0;
-    m_18c = 0;
-    m_194 = 0;
-    m_198 = 0;
-    m_1a0 = 0;
-    m_19c = 0;
-    m_1a4 = 0;
-    m_cursorX = 0;
-    m_cursorY = 0;
-}
-
-// CState::~CState() - the slot-0 scalar-deleting dtor `??_G` (0x8c710). Its body is
-// defined INLINE in the header so MSVC folds it into the synth `??_G` thunk; the thunk
-// has no source body, so pin its symbol by mangled name here.
-// @rva-symbol: ??_GCState@@UAEPAXI@Z 0x0008c710 0x24
-
-// CState::Update (0x0008c4b0) / Render (0x0008c4d0) are inline members in the header.
-
-// The intervening vtable slots (1,2) - out-of-line stubs that anchor the vftable order
-// so Update lands at slot 4 (+0x10) and Render at slot 5 (+0x14).
-i32 CState::Vfunc1(i32, i32, i32) {
-    return 0;
-}
-void CState::ReleaseResources() {}
 
 // ===========================================================================
 // CGameModeBase cleanup pair (the base the game-state classes chain their teardown to).
@@ -610,6 +562,11 @@ void CState::ReleaseResources() {}
 // ===========================================================================
 
 // 0x0de140 - ResetPreview: prune the PREVIEW-prefixed keys instead of clearing.
+// @interleaver CGameModeBase::ResetPreview emitted-in levelpreview
+// Lone CGameModeBase method inside the levelpreview .text obj block (CPreviewState::Enter
+// @0x0de030 precedes it, CPreviewState::NextScreenCmd_0de190 follows it - both levelpreview).
+// Homing into LevelPreview.cpp is deferred (CGameModeBase not modeled there); flagged
+// in-host per REHOME rule (c). REHOME package D7.
 // @early-stop
 // ~98.8% - m_28-intermediate regalloc wall (retail reuses eax->eax->ecx; cl picks fresh
 // ecx/edx) - a 2-3 byte modrm micro-diff, not source-steerable.
@@ -624,6 +581,11 @@ void CGameModeBase::ResetPreview() {
 }
 
 // 0x0f9840 - Reset: ClearMap the whole sub-manager map.
+// @interleaver CGameModeBase::Reset emitted-in <scattered COMDAT; home ambiguous>
+// Lone CGameModeBase method at a unit BOUNDARY (CSplashState::LoadSounds @0x0f9780 before,
+// CTitleApp::OnStart @0x0f9880 after) - a separate 1-fn obj whose owning TU the xref does
+// not crack (its two siblings BaseCleanup @0xfa150 and ResetPreview @0xde140 are each in
+// yet-other objs). Kept in-host with its RVA name; owner-recovery deferred. REHOME D7.
 // @early-stop
 // ~98.7% - same m_28-intermediate regalloc wall as ResetPreview.
 RVA(0x000f9840, 0x29)

@@ -28,16 +28,17 @@
 #include <stdlib.h> // _itoa
 #include <string.h> // memset -> inline rep stos
 
-// The two per-slot dialog labellers (0x0e3e80 for the save dialog, 0x9e2d0 for the
-// GAME_INFO dialog): each labels one CSaveGame::GetSlot() record into four dialog
-// controls (same signature, different control-state side effects). Their real owner
-// TU (they walk this file's save slots); forward-declared here (the FillSaveDialog /
-// FillGameInfoDialog callers precede them in retail-RVA order), DEFINED at the end.
-// The slot pointer flows in as the real Io/SaveGame.h SaveSlot* GetSlot() returns.
+// The save dialog's per-slot labeller (0x0e3e80): labels one CSaveGame::GetSlot()
+// record into four dialog controls. Forward-declared here (the FillSaveDialog caller
+// precedes it in retail-RVA order), DEFINED at the end. The slot pointer flows in as
+// the real Io/SaveGame.h SaveSlot* GetSlot() returns. All reloc-masked.
+// (The GAME_INFO-dialog twin FillGameInfoDialog @0x9e0b0 + LabelGameInfoSlot @0x9e2d0
+// were re-homed to src/Gruntz/LoadGameMenu.cpp - they sit inside the loadgamemenu
+// .text obj block, between GruntzLoadGameDlgProc @0x9dff0 and LoadGameCommand @0x9e390,
+// and are called by both; REHOME package D7.)
 // IsSlotOccupied (0x2694 -> 0xe5700) is the slot-occupancy probe. All reloc-masked.
 i32 IsSlotOccupied(SaveSlot* item); // 0x2694 (jmp-thunk -> 0xe5700)
-void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);     // 0x0e3e80
-void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x09e2d0
+void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
 
 // --- the dialog half's shared state/decls (ex LevelInfoDlg.cpp/SaveGameMenu.cpp) ---
 // g_gameReg comes typed from <Io/SaveGame.h> (the DATA(0x0024556c) binding lives in
@@ -606,28 +607,8 @@ void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item) {
     }
 }
 
-// ---------------------------------------------------------------------------
-// FillGameInfoDialog  (0x0009e0b0): the GAME_INFO dialog's slot roster filler -
-// the twin of FillSaveDialog, but labelling through the 0x9e2d0 variant of the
-// per-slot helper. Same ten rows / same four base control IDs (0x435 / 0x490 /
-// 0x49a / 0x4a4 + slot index). __cdecl(HWND, CSaveGame*); both pointers null-
-// checked up front.
-RVA(0x0009e0b0, 0x1a3)
-void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
-    if (hWnd == 0 || sg == 0) {
-        return;
-    }
-    LabelGameInfoSlot(hWnd, sg->GetSlot(0), 0x435, 0x490, 0x49a, 0x4a4);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(1), 0x436, 0x491, 0x49b, 0x4a5);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(2), 0x437, 0x492, 0x49c, 0x4a6);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(3), 0x438, 0x493, 0x49d, 0x4a7);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(4), 0x439, 0x494, 0x49e, 0x4a8);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(5), 0x43a, 0x495, 0x49f, 0x4a9);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(6), 0x43b, 0x496, 0x4a0, 0x4aa);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(7), 0x43c, 0x497, 0x4a1, 0x4ab);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(8), 0x43d, 0x498, 0x4a2, 0x4ac);
-    LabelGameInfoSlot(hWnd, sg->GetSlot(9), 0x43e, 0x499, 0x4a3, 0x4ad);
-}
+// (FillGameInfoDialog @0x0009e0b0 re-homed to src/Gruntz/LoadGameMenu.cpp - see the
+// labeller note at the top of this file.)
 
 // ---------------------------------------------------------------------------
 // CSaveGame::~CSaveGame  (0x00085b50)
@@ -1074,29 +1055,12 @@ int TempFileExists_e5700(SaveTempRec* p) {
 }
 
 // ---------------------------------------------------------------------------
-// The two per-slot dialog labellers (re-homed from src/Stub/ApiCallers.cpp - they
-// walk this file's CSaveGame::GetSlot() records). __cdecl(hWnd, item, id3..id6):
+// LabelSaveSlot (0xe3e80, save dialog variant, re-homed from src/Stub/ApiCallers.cpp -
+// it walks this file's CSaveGame::GetSlot() records). __cdecl(hWnd, item, id3..id6):
 // label the slot's short name (m_name) into id3, "(Empty)" when IsSlotOccupied (0x2694 ->
-// 0xe5700 slot-occupancy probe) fails; then set the four control enables.
-// 0x9e2d0 (GAME_INFO dialog variant): all four enables track occupancy.
-RVA(0x0009e2d0, 0x84)
-void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
-    i32 flag;
-    if (IsSlotOccupied(item)) {
-        SetDlgItemTextA(hWnd, id3, item->m_name);
-        flag = 1;
-    } else {
-        SetDlgItemTextA(hWnd, id3, "(Empty)");
-        flag = 0;
-    }
-    EnableWindow(GetDlgItem(hWnd, id3), flag);
-    EnableWindow(GetDlgItem(hWnd, id4), flag);
-    EnableWindow(GetDlgItem(hWnd, id5), flag);
-    EnableWindow(GetDlgItem(hWnd, id6), flag);
-}
-
-// 0xe3e80 (save dialog variant): first two enables unconditional, last two
-// track occupancy.
+// 0xe5700 slot-occupancy probe) fails; then set the four control enables. Here the first
+// two enables are unconditional, the last two track occupancy. (Its GAME_INFO twin
+// LabelGameInfoSlot @0x9e2d0 moved to LoadGameMenu.cpp - REHOME package D7.)
 RVA(0x000e3e80, 0x86)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
     i32 flag;
@@ -1139,6 +1103,11 @@ SIZE_UNKNOWN(BlitDrawSink);
 SIZE_UNKNOWN(BlitDrawOwner);
 SIZE_UNKNOWN(BlitRectSrc);
 SIZE_UNKNOWN(BlitHost);
+// @interleaver BlitHost emitted-in play
+// Lone method (0x0d00a0) inside the `play` .text obj block - CPlay::Vslot1c @0x0d0050
+// precedes it and CPlay::LoadCursorSprites @0x0d0120 follows it, both `play`. Its
+// concrete class is unrecovered (BlitHost is a placeholder view), so homing it into
+// Play.cpp is BLOCKED on @identity-recovery; flagged in-host per REHOME rule (c).
 RVA(0x000d00a0, 0x5a)
 void BlitHost::Show(i32 arg) {
     RECT src = *(RECT*)(m_c->m_24 + 0x10);

@@ -23,10 +23,19 @@ DATA(0x00245ca4)
 extern CSaveGame* g_dlgLoadSink; // DAT_00645ca4
 
 // The GAME_INFO / GAME_DELETE sub-dialog procs the load dialog runs (reloc-masked code
-// ptrs) and the dialog (re)init helper (a __cdecl reached via ILT thunk 0x2ee6).
-extern "C" void LoadInfoDlgProc();                  // 0x1e3d (GAME_INFO)
-extern "C" void LoadDeleteDlgProc();                // 0x121c (GAME_DELETE)
-void FillGameInfoDialog(HWND hDlg, CSaveGame* dlg); // 0x2ee6 (fill the slot list)
+// ptrs).
+extern "C" void LoadInfoDlgProc();   // 0x1e3d (GAME_INFO)
+extern "C" void LoadDeleteDlgProc(); // 0x121c (GAME_DELETE)
+
+// FillGameInfoDialog @0x9e0b0 (the slot-roster filler, reached at WM_INITDIALOG via ILT
+// thunk 0x2ee6) + LabelGameInfoSlot @0x9e2d0 (its per-slot labeller) are DEFINED below in
+// retail-RVA order (they sit inside this loadgamemenu .text obj, between the DlgProc and
+// LoadGameCommand); forward-declared here so GruntzLoadGameDlgProc/LoadGameCommand can
+// call them. IsSlotOccupied (0x2694 -> 0xe5700) is the slot-occupancy probe (reloc-masked,
+// defined in savegame). REHOME package D7 (was in src/Io/SaveGame.cpp's obj).
+void FillGameInfoDialog(HWND hDlg, CSaveGame* dlg);
+void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6);
+i32 IsSlotOccupied(SaveSlot* item);
 
 i32 LoadGameCommand(HWND hwnd, i32 cmdId, CSaveGame* dlg); // 0x9e390 (WM_COMMAND handler)
 
@@ -59,6 +68,48 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
             return 1;
         }
     }
+}
+
+// -------------------------------------------------------------------------
+// FillGameInfoDialog (0x0009e0b0): the GAME_INFO/GAME_LOAD dialog's slot roster filler -
+// the twin of SaveGame.cpp's FillSaveDialog, but labelling through the 0x9e2d0 variant of
+// the per-slot helper. Same ten rows / same four base control IDs (0x435 / 0x490 / 0x49a /
+// 0x4a4 + slot index). __cdecl(HWND, CSaveGame*); both pointers null-checked up front.
+RVA(0x0009e0b0, 0x1a3)
+void FillGameInfoDialog(HWND hWnd, CSaveGame* sg) {
+    if (hWnd == 0 || sg == 0) {
+        return;
+    }
+    LabelGameInfoSlot(hWnd, sg->GetSlot(0), 0x435, 0x490, 0x49a, 0x4a4);
+    LabelGameInfoSlot(hWnd, sg->GetSlot(1), 0x436, 0x491, 0x49b, 0x4a5);
+    LabelGameInfoSlot(hWnd, sg->GetSlot(2), 0x437, 0x492, 0x49c, 0x4a6);
+    LabelGameInfoSlot(hWnd, sg->GetSlot(3), 0x438, 0x493, 0x49d, 0x4a7);
+    LabelGameInfoSlot(hWnd, sg->GetSlot(4), 0x439, 0x494, 0x49e, 0x4a8);
+    LabelGameInfoSlot(hWnd, sg->GetSlot(5), 0x43a, 0x495, 0x49f, 0x4a9);
+    LabelGameInfoSlot(hWnd, sg->GetSlot(6), 0x43b, 0x496, 0x4a0, 0x4aa);
+    LabelGameInfoSlot(hWnd, sg->GetSlot(7), 0x43c, 0x497, 0x4a1, 0x4ab);
+    LabelGameInfoSlot(hWnd, sg->GetSlot(8), 0x43d, 0x498, 0x4a2, 0x4ac);
+    LabelGameInfoSlot(hWnd, sg->GetSlot(9), 0x43e, 0x499, 0x4a3, 0x4ad);
+}
+
+// -------------------------------------------------------------------------
+// LabelGameInfoSlot (0x0009e2d0, GAME_INFO dialog variant): label one CSaveGame slot's
+// short name (m_name) into id3, "(Empty)" when IsSlotOccupied fails; then set the four
+// control enables (here ALL four track occupancy). __cdecl(hWnd, item, id3..id6).
+RVA(0x0009e2d0, 0x84)
+void LabelGameInfoSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
+    i32 flag;
+    if (IsSlotOccupied(item)) {
+        SetDlgItemTextA(hWnd, id3, item->m_name);
+        flag = 1;
+    } else {
+        SetDlgItemTextA(hWnd, id3, "(Empty)");
+        flag = 0;
+    }
+    EnableWindow(GetDlgItem(hWnd, id3), flag);
+    EnableWindow(GetDlgItem(hWnd, id4), flag);
+    EnableWindow(GetDlgItem(hWnd, id5), flag);
+    EnableWindow(GetDlgItem(hWnd, id6), flag);
 }
 
 // -------------------------------------------------------------------------
