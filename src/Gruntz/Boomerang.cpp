@@ -15,26 +15,11 @@
 // implicit post-base-ctor vptr stamp. The base ctor stays DECLARED only (out-of-line;
 // its `call` reloc-masks to 0xdec60 via thunk 0x37d8). Replaces the old fabricated
 // `CProjectileBase` stand-in.
-#include <Gruntz/Projectile.h>   // real CProjectile base (: CMovingLogic : CUserLogic)
-#include <Gruntz/Grunt.h>        // CGrunt (launcher grunt return-record) + CGruntArchive
+#include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
+#include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CGruntArchive
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
 #include <Globals.h>             // g_projPhase0, g_freeList, g_freeListNodeBias, g_645588
 #include <rva.h>
-
-SIZE_UNKNOWN(CBoomerang);
-class CBoomerang : public CProjectile {
-public:
-    CBoomerang(CGameObject* owner);
-    // The five slots CBoomerang overrides over CProjectile's vtable (all declared
-    // only; their vftable references reloc-mask). slot 0 = scalar-deleting dtor.
-    virtual ~CBoomerang() OVERRIDE; // slot 0  (origin CUserBase)
-    virtual i32 SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4)
-        OVERRIDE;                              // slot 1  (origin CUserBase)
-    virtual LogicTypeId GetTypeTag() OVERRIDE; // slot 2  (origin CUserBase)
-    virtual void MovingSlot16() OVERRIDE;      // slot 16 (origin CMovingLogic)
-    virtual i32 LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i32 t0, i32 t1)
-        OVERRIDE; // slot 17 (origin CProjectile)
-};
 
 // @confidence: high
 // @source: rtti-vptr
@@ -164,4 +149,7 @@ i32 CBoomerang::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a4) {
     return CProjectile::SerializeMove(ar, mode, a3, a4) ? 1 : 0;
 }
 
-VTBL(CBoomerang, 0x001e792c);
+// CBoomerang::MovingSlot16 (slot 16 @0xe08b0, the boomerang motion step) is defined
+// out-of-line in Projectile.cpp (interleaved in the CProjectile .text band, and it
+// shares g_645584/g_projPhase* with CProjectile::MovingSlot16 there). SIZE + VTBL
+// live in <Gruntz/Boomerang.h>.

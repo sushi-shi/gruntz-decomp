@@ -11,6 +11,7 @@
 // Like the rest of the family it constructs a throwing CUserBaseLink (in the
 // CUserLogic base) + a CObList, so MSVC emits the /GX EH frame -> built eh.
 #include <Gruntz/Projectile.h>
+#include <Gruntz/Boomerang.h> // CBoomerang::MovingSlot16 (@0xe08b0) is defined here, interleaved
 #include <Gruntz/LightFx.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/GameRegistry.h>  // CGameRegistry singleton (pulls SoundCue.h + TileGrid.h)
@@ -861,10 +862,18 @@ i32 CProjectile::DetachRenderObj() {
 }
 
 // ---------------------------------------------------------------------------
-// CProjectile::StepMotion (0xe08b0) - advance the projectile one frame. On the
-// launch frame it snaps the render objects to the muzzle (m_targetX/m_targetY); once past
-// the second phase threshold it expires (scan for the terminal impact, raise the
-// hide bit on the shadow + owner). Otherwise it integrates the sin/cos parabola
+// CBoomerang::MovingSlot16 (0xe08b0) - the boomerang's per-frame motion step
+// (vtable slot 16, override of CMovingLogic's Update; the retail slot holds thunk
+// 0x317f -> 0xe08b0). Formerly mis-homed as CProjectile::StepMotion: it reads the
+// return-trajectory fields (m_dirX/m_originX/m_phase/m_launched at +0x230..+0x258)
+// which live in CBoomerang (sizeof 0x260), NOT CProjectile (sizeof 0x228). It stays
+// defined here (interleaved in the CProjectile .text band, sharing g_645584 /
+// g_projPhase* with CProjectile::MovingSlot16); CBoomerang inherits ScanTargets and
+// the render/motion members it also touches.
+//
+// On the launch frame it snaps the render objects to the muzzle (m_targetX/m_targetY);
+// once past the second phase threshold it expires (scan for the terminal impact, raise
+// the hide bit on the shadow + owner). Otherwise it integrates the sin/cos parabola
 // into the render position and rounds it into the render objects' screen coords.
 //
 // @early-stop
@@ -874,7 +883,7 @@ i32 CProjectile::DetachRenderObj() {
 // the FP body's stack ordering is not steerable from C source. ~70% plateau.
 // ---------------------------------------------------------------------------
 RVA(0x000e08b0, 0x1de)
-void CProjectile::StepMotion() {
+void CBoomerang::MovingSlot16() {
     i32 impact = 0;
     if (m_launched == 0) {
         if (m_phase > g_projPhase0) {

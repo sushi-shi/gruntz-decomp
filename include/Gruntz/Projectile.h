@@ -37,7 +37,7 @@ class CLightFx; // folded CProjShadowActivate
 // two state gates the fire step's finish tail reads live at +0x20/+0x28 of this
 // sub-object == m_1c0/m_1c8.
 struct CProjAnim {
-    void SetGeometry(void* src); // -> CDDrawBlitParam::Setup_15c2d0 (0x15c2d0)
+    void SetGeometry(void* src);   // -> CDDrawBlitParam::Setup_15c2d0 (0x15c2d0)
     i32 Advance_15c360(u32 clock); // -> CAniAdvanceCursor::Advance_15c360 (0x15c360)
 };
 SIZE_UNKNOWN(CProjAnim);
@@ -113,10 +113,10 @@ struct CProjSample {};
 // ---------------------------------------------------------------------------
 // CProjectile : CMovingLogic - 18 virtuals (vftable 0x5e798c). Adds the
 // tracked-hit CObList at +0x204 plus the projectile's render/motion state
-// (+0x140..+0x258). Field names are placeholders; the OFFSETS + code bytes are
-// the load-bearing facts.
+// (+0x140..+0x224); sizeof == 0x228. Field names are placeholders; the OFFSETS +
+// code bytes are the load-bearing facts.
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CProjectile);
+SIZE(CProjectile, 0x228);
 class CProjectile : public CMovingLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -147,7 +147,6 @@ public:
     static void RegisterType();    // 0xdfb00 (level-load class registrar)
     void ReleaseDeferred(i32 arg); // 0x13c70 (fire/release the two queued callbacks; arg ignored)
     i32 DetachRenderObj();         // 0xe05e0  (clear +0x154's flag, detach, gate hide)
-    void StepMotion();             // 0xe08b0  (advance the parabolic motion + render pos)
     void ScanTargets(i32 impact);  // 0xe0b10  (15x15 grid hit-scan against nearby grunts)
     i32 LaunchSound(const char* key);     // 0xe2190 (create + play the launch CSample)
     virtual void MovingSlot16() OVERRIDE; // slot 16 @0xdfd00 (impact/particle effects)
@@ -187,11 +186,9 @@ public:
     CProjSample* m_sound;         // +0x200  launch sound sample
     CObList m_hitList;            // +0x204  tracked-hit list (block size 10)
     i32 m_targetId, m_ownerId;    // +0x220/+0x224  target/owner ids passed to DeliverHit
-    i32 m_launchX, m_launchY;    // +0x228/+0x22c  owner launch screen pos (boomerang return origin)
-    double m_dirX, m_dirY;       // +0x230/+0x238  trajectory direction basis
-    double m_originX, m_originY; // +0x240/+0x248  trajectory origin (base position)
-    double m_phase;              // +0x250  trajectory parameter (sin/cos arg; phase gate)
-    i32 m_launched;              // +0x258  launched flag
+    // sizeof(CProjectile) == 0x228 (proven: LogicDispatchE @0xde8a0 `new CProjectile`
+    // pushes 0x228). The boomerang return-trajectory fields (+0x228..+0x258) belong to
+    // the derived CBoomerang (<Gruntz/Boomerang.h>), NOT here - see StepMotion.
 };
 VTBL(CProjectile, 0x1e798c);
 
