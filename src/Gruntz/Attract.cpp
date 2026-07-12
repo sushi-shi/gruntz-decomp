@@ -188,7 +188,12 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         menuRoot()->m_04->TransExit();
     }
 
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (was fake CAttract::BuildMenuPage)
+    RetireScene(
+        0x50,
+        0x3e8,
+        0,
+        1
+    ); // 0xfa8f0 CState::RetireScene (was fake CAttract::BuildMenuPage)
     ShowCursorFn showCursor = g_ShowCursor;
     if (showCursor(1) < 0) {
         do {
@@ -242,7 +247,12 @@ i32 CAttract::Activate() {
         ->ShadeRect(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
     menuRoot()->m_04->TransTitle();
 
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (was fake CAttract::BuildMenuPage)
+    RetireScene(
+        0x50,
+        0x3e8,
+        0,
+        1
+    ); // 0xfa8f0 CState::RetireScene (was fake CAttract::BuildMenuPage)
     ShowCursorFn showCursor = g_ShowCursor;
     if (showCursor(1) < 0) {
         do {
@@ -929,7 +939,7 @@ i32 CMgrPersistObj::Save(CSerialArchive* w) {
     return 1;
 }
 
-SIZE_UNKNOWN(CAttract);
+SIZE(CAttract, 0x1c0); // retail operator-new size (TransitionState 0x8bacf)
 SIZE_UNKNOWN(CAttractHost);
 SIZE_UNKNOWN(CAttractPooledRes);
 SIZE_UNKNOWN(CAttractRegistrar);

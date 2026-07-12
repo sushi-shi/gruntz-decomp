@@ -171,10 +171,10 @@ public:
     // Non-virtual attract methods (the rest of the title/menu logic). EnterAttractMode
     // is the slot-1 body (0x13fb0) but is reached non-virtually; its (int,int,int)
     // signature differs from CState's slot-1 placeholder, so it stays non-virtual.
-    i32 EnterAttractMode(i32 a, i32 b, i32 mode);    // 0x13fb0 (slot 1, called non-virtually)
-    i32 RefreshTitle(i32 unused);                    // 0x39160
-    i32 LoadTitleConfig(i32 mode);                   // 0xa03f0
-    i32 Activate(); // 0xa0a30
+    i32 EnterAttractMode(i32 a, i32 b, i32 mode); // 0x13fb0 (slot 1, called non-virtually)
+    i32 RefreshTitle(i32 unused);                 // 0x39160
+    i32 LoadTitleConfig(i32 mode);                // 0xa03f0
+    i32 Activate();                               // 0xa0a30
 
     // The pre-flight gate for EnterAttractMode (engine 0xf9ea0, non-virtual __thiscall
     // ret 0xc, reached via ILT thunk): a zero result aborts the entry. It IS

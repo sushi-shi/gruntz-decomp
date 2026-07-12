@@ -406,7 +406,7 @@ CAttract::~CAttract() {
     ReleaseResources();
 }
 
-SIZE_UNKNOWN(CAttract);
+SIZE(CAttract, 0x1c0); // retail operator-new size (TransitionState 0x8bacf)
 SIZE_UNKNOWN(CAttractHost);
 SIZE_UNKNOWN(CAttractPooledRes);
 SIZE_UNKNOWN(CAttractRegistrar);

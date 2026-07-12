@@ -352,6 +352,11 @@ public:
     i32 m_videoPlaying; // +0x208 video playing gate
     char m_pad20c[0x210 - 0x20c];
     CMoviePlayer* m_videoHandle; // +0x210 Smacker video player (real CMoviePlayer)
+    // Tail padding to the TRUE retail object size. Ground truth is the operator-new size
+    // in CGruntzMgr::TransitionState (0x8b960): `push 0x218; call ??2@YAPAXI@Z` @0x8bf7f,
+    // then the inline `mov [esi],??_7CCreditsState@@6B@` (0x5e9c64) stamp. Without this
+    // the class is 0x214 and cannot host the `new` that GruntzMgr.cpp performs.
+    char m_pad214[0x218 - 0x214];
 
     i32 LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3); // 0x38d20 (slot 1, called non-virtually)
     i32 InitAttractTitle();
@@ -443,6 +448,9 @@ public:
     i32 m_walkStarted;             // +0x2ec  walk-animation-started gate
     i32 m_soundStarted;            // +0x2f0  sound-started gate
     i32 m_secretGate;              // +0x2f4  secret-message gate
+    // Tail padding to the TRUE retail size: TransitionState `push 0x320; call ??2` @0x8bebc,
+    // then the inline `mov [esi],??_7CBootyState@@6B@` (0x5e9cec) stamp.
+    char m_pad2f8[0x320 - 0x2f8];
 };
 VTBL(CBootyState, 0x001e9cec);
 

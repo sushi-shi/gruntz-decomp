@@ -19,36 +19,23 @@
 #include <Bute/SymParser.h>
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::Method_158bc0 (m_c->m_04 page gate)
 
-#include <Gruntz/BankMgr.h>   // CBankMgr::Lookup (inherited m_8) -> CResSource
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
+#include <Gruntz/BankMgr.h>      // CBankMgr::Lookup (inherited m_8) -> CResSource
+#include <Gruntz/GruntzMgr.h>    // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
 #include <Gruntz/GameModeBase.h> // CGameModeBase::Reset (the 0x8d000 dtor teardown body)
+#include <Gruntz/HelpState.h>    // canonical CHelpState (was defined locally here)
 #include <Gruntz/SplashState.h>  // CSplashState (the 0x8d000 /GX out-of-line dtor)
 #include <Gruntz/StatusBarUpdatersViews.h> // CRegHolder view of CState::m_c (m_04 page mgr)
-#include <Gruntz/Attract.h> // CMenuRoot chain (m_c): Render's busy surface + attract registrar
+#include <Gruntz/Attract.h>     // CMenuRoot chain (m_c): Render's busy surface + attract registrar
 #include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
-#include <ddraw.h>             // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
-#include <Globals.h>           // g_6111b0 (RunTitleSeq title buffer) + g_actorList (Render)
+#include <ddraw.h>              // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
+#include <Globals.h>            // g_6111b0 (RunTitleSeq title buffer) + g_actorList (Render)
 #include <rva.h>
 
 // The 11 overridden CState slots (vtbl@0x1e9dfc; the other slots inherited). The
 // override bodies live in the class's other (unmatched) TUs; declared-only here.
-class CHelpState : public CState {
-public:
-    virtual ~CHelpState() OVERRIDE;              // slot 0  (0x8cf30)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot06() OVERRIDE;              // slot 6
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8
-    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
-    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
-
-    i32 LoadAssets(i32, i32, i32); // 0x95090
-    // LoadGameAssetNamespaces (0xf9ea0) is inherited from CState (called cast-free).
-};
+// CHelpState is the canonical <Gruntz/HelpState.h> class (included above). It had to
+// leave this .cpp so CGruntzMgr::TransitionState can `new` the REAL class instead of a
+// reduced local twin whose all-base-slot ??_7CHelpState was an ODR landmine.
 
 RVA(0x0008cf30, 0x55)
 CHelpState::~CHelpState() {
@@ -195,5 +182,3 @@ i32 CHelpState::Vslot0e(i32, i32, i32) {
     PostMessageA(m_4->m_gameWnd->m_hwnd, 0x111, 0x8036, 0);
     return 1;
 }
-
-SIZE_UNKNOWN(CHelpState);

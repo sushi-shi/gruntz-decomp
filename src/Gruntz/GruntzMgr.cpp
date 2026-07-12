@@ -26,6 +26,7 @@
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
 #include <Gruntz/Demo.h> // canonical CDemo (the CPlay-derived demo state; its dtor lives in this obj)
+#include <Gruntz/HelpState.h> // canonical CHelpState (same; extracted out of HelpState.cpp)
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzPlayer.h> // GruntzPlayer::Reset (0xda9e0) - the options slots ARE GruntzPlayer
 #include <Gruntz/BattlezData.h>
@@ -912,19 +913,51 @@ void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 a
 // Declared-only => no definition is emitted here, so each reference binds to the one real
 // body. The classes are polymorphic already (CState's dtor is virtual), so this changes
 // no layout and no vtable slot - it is byte-neutral.
+// CAttract stays a LOCAL layout twin rather than including <Gruntz/Attract.h>, for one
+// measured tooling reason: Attract.h defines CAttract::Update INLINE and carries its
+// RVA(0x0008cd40) on that inline body. Pulling the header in makes THIS TU emit the same
+// inline COMDAT, so the rva ends up claimed by two units and merge_labels re-attributes
+// ?Update@CAttract@@... from attractstate to gruntzmgr - the function drops out of
+// attractstate's diff entirely (measured: 1 LOST). Un-inlining Update in Attract.h is the
+// real fix and is left for its owner. The ODR hazard itself is closed the same way as the
+// other leaves below: by declaring the canonical overrides, so this obj's ??_7CAttract is
+// byte-identical to attractstate's. sizeof == 0x1c0 = retail's operator-new size
+// (TransitionState `push 0x1c0` @0x8bacf).
 struct CAttract : CState { // param 2, 0x1c0
     char m_pad[0x1c0 - 0x1b4];
     CAttract() {
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     }
-    virtual ~CAttract(); // 0x0008cd90 (AttractState.cpp)
+    virtual ~CAttract() OVERRIDE;                // 0x0008cd90 (AttractState.cpp)
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
+    virtual void ReleaseResources() OVERRIDE;    // slot 2
+    virtual GameStateId Update() OVERRIDE;       // slot 4
+    virtual i32 Render() OVERRIDE;               // slot 5
+    virtual i32 Vslot06() OVERRIDE;              // slot 6
+    virtual i32 Vslot07() OVERRIDE;              // slot 7
+    virtual i32 InputVirtual() OVERRIDE;         // slot 8
+    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
+    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
 };
+SIZE(CAttract, 0x1c0);
 // NOT foldable onto the canonical <Gruntz/GameMode.h> `CMenuState : CState` (Bucket-C
 // base-fold wall): a canonical polymorphic CMenuState would make cl emit + stamp a
 // LOCAL ??_7CMenuState here (the ctor references its own vtable), claiming the retail
 // vtable RVA 0x5e9e84 that gamemode already owns. This non-poly shell + manual g_st*
 // stamp is the deliberate whole-family pattern (see file header); the loader-view fold
 // happened in MenuStateAssets.cpp, which does not construct the class.
+// EVERY leaf below RE-DECLARES ITS CANONICAL VIRTUAL OVERRIDES. This is the ODR fix, not
+// decoration. A `new CX` here forces cl to emit ??_7CX@@6B@ in THIS obj (the ctor is
+// inlined at the new-site and stamps the vptr - see retail 0x8bacf..). When the leaf
+// declared no overrides, that emitted vtable was 26 CState BASE slots - byte-different
+// from the real vtable its own TU emits. cl5 keeps ONE vtable COMDAT per name and picks
+// arbitrarily, so the linker could bind every CMenuState/CBootyState/... to a vtable that
+// dispatches straight to CState: a silent, shipping-severity mis-dispatch that costs 0%
+// in objdiff (vtable contents are reloc-masked). Declaring the same overrides in the same
+// slot order makes this obj's vtable byte-identical to the leaf TU's, so the duplicate is
+// benign. Bodies stay in the leaf TU (declared-only here => reloc-masked references).
 struct CMenuState : CState { // param 5, 0x1c0
     i32 m_1b4;               // +0x1b4
     char m_pad1b8[0x1c0 - 0x1b8];
@@ -932,15 +965,23 @@ struct CMenuState : CState { // param 5, 0x1c0
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
         m_1b4 = 0;
     }
-    virtual ~CMenuState(); // 0x0008ce60 (MenuState.cpp)
+    virtual ~CMenuState() OVERRIDE;              // 0x0008ce60 (MenuState.cpp)
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
+    virtual void ReleaseResources() OVERRIDE;    // slot 2
+    virtual GameStateId Update() OVERRIDE;       // slot 4
+    virtual i32 Render() OVERRIDE;               // slot 5
+    virtual i32 Vslot06() OVERRIDE;              // slot 6
+    virtual i32 Vslot07() OVERRIDE;              // slot 7
+    virtual i32 InputVirtual() OVERRIDE;         // slot 8
+    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
+    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
+    virtual i32 Vslot10(i32, i32, i32) OVERRIDE; // slot 16
+    virtual i32 Vslot14(i32, i32, i32) OVERRIDE; // slot 20
 };
-struct CHelpState : CState { // param 9, 0x1b8
-    char m_pad[0x1b8 - 0x1b4];
-    CHelpState() {
-        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-    }
-    virtual ~CHelpState(); // 0x0008cf30 (HelpState.cpp)
-};
+// CHelpState is the canonical <Gruntz/HelpState.h> class (included above) - the reduced
+// local twin is GONE (its all-base-slot ??_7CHelpState was the same ODR landmine).
 struct CSplashState : CState { // param 14, 0x1bc
     i32 m_1b4;                 // +0x1b4
     char m_pad1b8[0x1bc - 0x1b8];
@@ -948,7 +989,17 @@ struct CSplashState : CState { // param 14, 0x1bc
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
         m_1b4 = 0;
     }
-    virtual ~CSplashState(); // 0x0008d000 (HelpState.cpp)
+    virtual ~CSplashState() OVERRIDE;            // 0x0008d000 (HelpState.cpp)
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
+    virtual void ReleaseResources() OVERRIDE;    // slot 2
+    virtual GameStateId Update() OVERRIDE;       // slot 4
+    virtual i32 Render() OVERRIDE;               // slot 5
+    virtual i32 Vslot06() OVERRIDE;              // slot 6
+    virtual i32 InputVirtual() OVERRIDE;         // slot 8
+    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
+    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
 };
 // CDemo is the canonical <Gruntz/Demo.h> class (included below); its ctor + the
 // `new CDemo` factory case + CDemo::Vslot15 (0x3c030) live in this TU.
@@ -961,7 +1012,19 @@ struct CMultiBootyState : CState { // param 18, 0x244
         m_1b4 = 0;
         m_1b8 = 0x64;
     }
-    virtual ~CMultiBootyState(); // 0x0008d510 (BootyStateActivate.cpp)
+    virtual ~CMultiBootyState() OVERRIDE;        // 0x0008d510 (BootyStateActivate.cpp)
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
+    virtual void ReleaseResources() OVERRIDE;    // slot 2
+    virtual GameStateId Update() OVERRIDE;       // slot 4
+    virtual i32 Render() OVERRIDE;               // slot 5
+    virtual i32 Vslot06() OVERRIDE;              // slot 6
+    virtual i32 Vslot07() OVERRIDE;              // slot 7
+    virtual i32 InputVirtual() OVERRIDE;         // slot 8
+    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
+    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
+    virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17
 };
 struct CBootyState : CState { // param 10, 0x320
     i32 m_1b4;                // +0x1b4
@@ -991,7 +1054,19 @@ struct CBootyState : CState { // param 10, 0x320
     i32 m_2f4; // +0x2f4
     char m_pad2f8[0x320 - 0x2f8];
     CBootyState();
-    virtual ~CBootyState(); // 0x0008d440 (BootyStateActivate.cpp)
+    virtual ~CBootyState() OVERRIDE;             // 0x0008d440 (BootyStateActivate.cpp)
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
+    virtual void ReleaseResources() OVERRIDE;    // slot 2
+    virtual GameStateId Update() OVERRIDE;       // slot 4
+    virtual i32 Render() OVERRIDE;               // slot 5
+    virtual i32 Vslot06() OVERRIDE;              // slot 6
+    virtual i32 Vslot07() OVERRIDE;              // slot 7
+    virtual i32 InputVirtual() OVERRIDE;         // slot 8
+    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
+    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
+    virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17
 };
 // NOTE for matcher-4 (the vtbl-stamp owner of this file): the canonical
 // CCreditsState : CState EXISTS in <Gruntz/GameMode.h> (RTTI vtbl@0x1e9c64) and
@@ -1021,7 +1096,17 @@ struct CCreditsState : CState { // param 8, 0x218
     i32 m_210;                  // +0x210
     char m_pad214[0x218 - 0x214];
     CCreditsState();
-    virtual ~CCreditsState(); // 0x0008d5e0 (CreditsState.cpp)
+    virtual ~CCreditsState() OVERRIDE;           // 0x0008d5e0 (CreditsState.cpp)
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
+    virtual void ReleaseResources() OVERRIDE;    // slot 2
+    virtual GameStateId Update() OVERRIDE;       // slot 4
+    virtual i32 Render() OVERRIDE;               // slot 5
+    virtual i32 Vslot06() OVERRIDE;              // slot 6
+    virtual i32 InputVirtual() OVERRIDE;         // slot 8
+    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
+    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
+    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
+    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
 };
 // CPlay (param 3, 0x520) is the canonical `class CPlay : public CState` from
 // <Gruntz/Play.h>; its five destructible MFC members + CState base give the same
@@ -1042,7 +1127,20 @@ struct CMulti : CPlay { // param 17, 0x660
     CByteArray m_604; // +0x604
     char m_pad618[0x660 - 0x618];
     CMulti();
-    virtual ~CMulti(); // (Multi.cpp)
+    virtual ~CMulti() OVERRIDE;                 // 0x0008d270 (Multi.cpp)
+    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1  (CState)
+    virtual void ReleaseResources() OVERRIDE;   // slot 2  (CState)
+    virtual GameStateId Update() OVERRIDE;      // slot 4  (CState)
+    virtual i32 Render() OVERRIDE;              // slot 5  (CState)
+    virtual i32 Vslot09(i32) OVERRIDE;          // slot 9  (CState)
+    virtual i32 FrameSlot28(i32) OVERRIDE;      // slot 10 (CState)
+    virtual i32 Vslot0b(i32, i32) OVERRIDE;     // slot 11 (CState)
+    virtual i32 Vslot15() OVERRIDE;             // slot 21 (CState)
+    virtual i32 Vslot1a() OVERRIDE;             // slot 26 (CPlay)
+    virtual i32 GetFrame() OVERRIDE;            // slot 27 (CPlay)
+    virtual i32 Vslot1e(i32, i32) OVERRIDE;     // slot 30 (CPlay)
+    virtual void Vslot20() OVERRIDE;            // slot 32 (CPlay)
+    virtual void Vslot26() OVERRIDE;            // slot 38 (CPlay)
 };
 
 // Field-heavy leaf ctors defined out-of-line for readability (still inline-folded
@@ -1260,11 +1358,9 @@ install:
     }
 }
 
-SIZE_UNKNOWN(CAttract);
 SIZE_UNKNOWN(CBootyState);
 SIZE_UNKNOWN(CCreditsState);
 SIZE_UNKNOWN(CDInputMgrZ);
-SIZE_UNKNOWN(CHelpState);
 VTBL(CHelpState, 0x001e9dfc); // vtable_names -> code (RTTI game class)
 SIZE_UNKNOWN(CMenuState);
 SIZE_UNKNOWN(CMulti);

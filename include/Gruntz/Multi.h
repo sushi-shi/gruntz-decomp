@@ -328,8 +328,8 @@ public:
     // CPlayDtorBody @0xc8700 is CPlay::CPlayDtorBody (inherited - no CMulti redecl, so
     // Teardown's call binds to the real CPlay method).
     void OnDropPlayer(); // 0x0bc110
-    i32 RebindHost();     // 0x0bc750  (also CNetMgr-shared)
-    i32 RebindHostAlt();  // 0x0bc460
+    i32 RebindHost();    // 0x0bc750  (also CNetMgr-shared)
+    i32 RebindHostAlt(); // 0x0bc460
     // The connect-drive helpers the Net-side coordinator (NetMgrMisc.cpp) reaches
     // off the g_64bd5c singleton. In the 0xb6110-0xbc420 lobby cluster; Ghidra labels
     // them CNetMgr:: (Broadcast*), a heuristic mis-attribution of this CMulti cluster.
@@ -372,14 +372,14 @@ public:
     // Recovered from the Frankenstein <Net/NetMgr.h> CNetMgr onto their true owner
     // (this CMulti): retail runs each on this=g_curMulti (a CMulti at offset 0). The
     // small real CNetMgr is reached via Peer() (+0x524). Defined in Multi.cpp.
-    i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3);                         // 0x0b5460
-    i32 Open();                                                                  // 0x0b77a0  (was the NetSessionOpener this-view)
-    i32 SetupServices();                                                         // 0x0b78b0
-    i32 DetectConnectionConfig();                                                // 0x0b82e0
-    void ApplyCmdDelayDefaults();                                                // 0x0b85a0
-    i32 JoinAndRegisterChannel();                                                // 0x0b8b10
-    i32 OnJoinConfirm(void* hDlg);                                               // 0x0b8cf0
-    i32 PollSessionGated(i32 a1, i32 a2);                                        // 0x0b9180
+    i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3); // 0x0b5460
+    i32 Open();                           // 0x0b77a0  (was the NetSessionOpener this-view)
+    i32 SetupServices();                  // 0x0b78b0
+    i32 DetectConnectionConfig();         // 0x0b82e0
+    void ApplyCmdDelayDefaults();         // 0x0b85a0
+    i32 JoinAndRegisterChannel();         // 0x0b8b10
+    i32 OnJoinConfirm(void* hDlg);        // 0x0b8cf0
+    i32 PollSessionGated(i32 a1, i32 a2); // 0x0b9180
     i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);                              // 0x0b91f0
     i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);                         // 0x0b92e0
     i32 SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c);    // 0x0b9330
@@ -484,6 +484,9 @@ public:
     i32 m_channelLatency[4]; // +0x5f0  per-channel ack-latency values (gap-named)
     i32 m_600;               // +0x600
     CByteArray m_604; // +0x604  (drop-id array; net methods view m_pData/m_nSize as dropIds/count)
+    // Tail padding to the TRUE retail size: TransitionState `push 0x660; call ??2` @0x8bd24,
+    // then the inline `mov [esi],??_7CMulti@@6B@` (0x5e9fe4) stamp.
+    char m_pad618[0x660 - 0x618];
 };
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
