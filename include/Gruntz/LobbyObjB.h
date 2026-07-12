@@ -2,11 +2,26 @@
 #define GRUNTZ_GRUNTZ_CLOBBYOBJB_H
 
 // CLobbyObjB.h - the CMulti m_520 lobby object and its embedded 4x0x64 slot table.
-// Mis-attributed to CMulti by the dynamic-this tracer; these are their own classes
-// (CMulti only holds m_520 as a pointer). Modeled standalone (not via CMulti.h's
-// tiny placeholder decls) so the matched cmulti TU is untouched. Field names are
-// placeholders; only the OFFSETS + emitted bytes are load-bearing. The body calls
-// and the member teardown are external no-body fns -> their `call rel32` reloc-mask.
+//
+// @identity-TODO / FAKE VIEWS (do not trust the class names here): these are NOT their
+// own classes - they are placeholder views of the real net/session classes that live
+// (as local structs) in src/Net/NetCmdSlot.cpp:
+//   CLobbyObjB      == CLobbySync   (same +0x10 field + +0x20 4x0x64 slot table;
+//                                    ~@0xb6220, Body_bf000 == CLobbySync::Reset @0xbf000)
+//   CLobbySlot      == the 0x64-byte slot class (CLobbyChannel/CNetCmdSlot - the SAME
+//                      element Multi.cpp types as `CNetCmdSlot* m_session->m_slots`;
+//                      Body_c0bb0 == CNetCmdSlot::ResetAll @0xc0bb0)
+//   CLobbySlotInner == MFC ::CInternetSession (the +0x20 EH member; ~@0x1b48c6 stamps
+//                      ??_7CObject@@6B@)
+//   CLobbySlotMgr   == the slot's +0xc inner manager
+// FULL DISSOLUTION IS BLOCKED (downstream fold): the real CLobbySync / 0x64-slot classes
+// are the DEFERRED cross-view CONFLATION that NetCmdSlot.cpp already flags - that 0x64
+// slot wears THREE local views there (CCluster0c/CLobbyChannel/CNetSlotAux) and the
+// CLobbySync<->CNetSession unification needs field-name re-matching. Dissolving this
+// header requires FIRST unifying those into one real slot class in a shared <Net/> header,
+// then retyping CMulti's +0x520/+0x320 dtors + m_session onto it. Until then these views
+// stay (their Body_bf000/Body_c0bb0/~CLobbySlotInner calls reloc-mask, so unbound).
+// Field names are placeholders; only the OFFSETS + emitted bytes are load-bearing.
 
 #include <rva.h>
 #include <Mfc.h> // CString (BuildHostName fills one)
