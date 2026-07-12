@@ -81,28 +81,28 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
         }
         case 2: {
             SbzInputDevice* d =
-                (src->m_devices.m_size > 0) ? (SbzInputDevice*)src->m_devices.m_data[0] : 0;
+                (src->m_devices.GetSize() > 0) ? (SbzInputDevice*)src->m_devices.GetAt(0) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 3: {
             SbzInputDevice* d =
-                (src->m_devices.m_size > 1) ? (SbzInputDevice*)src->m_devices.m_data[1] : 0;
+                (src->m_devices.GetSize() > 1) ? (SbzInputDevice*)src->m_devices.GetAt(1) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 4: {
             SbzInputDevice* d =
-                (src->m_devices.m_size > 2) ? (SbzInputDevice*)src->m_devices.m_data[2] : 0;
+                (src->m_devices.GetSize() > 2) ? (SbzInputDevice*)src->m_devices.GetAt(2) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 5: {
             SbzInputDevice* d =
-                (src->m_devices.m_size > 3) ? (SbzInputDevice*)src->m_devices.m_data[3] : 0;
+                (src->m_devices.GetSize() > 3) ? (SbzInputDevice*)src->m_devices.GetAt(3) : 0;
             m_joystick = d;
             m_device = d;
             break;
@@ -110,7 +110,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
         case 6: {
             m_keyboard = (SbzInputDevice*)src->m_deviceA;
             SbzInputDevice* d =
-                (src->m_devices.m_size > 0) ? (SbzInputDevice*)src->m_devices.m_data[0] : 0;
+                (src->m_devices.GetSize() > 0) ? (SbzInputDevice*)src->m_devices.GetAt(0) : 0;
             m_joystick = d;
             m_deviceList =
                 (SbzDeviceList*)src->AddControllerArr((i32)m_keyboard, (i32)d, 0, 0, 0, 0, 0);
@@ -119,7 +119,7 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
         case 8: {
             m_keyboard = (SbzInputDevice*)src->m_deviceA;
             SbzInputDevice* d =
-                (src->m_devices.m_size > 0) ? (SbzInputDevice*)src->m_devices.m_data[0] : 0;
+                (src->m_devices.GetSize() > 0) ? (SbzInputDevice*)src->m_devices.GetAt(0) : 0;
             m_joystick = d;
             m_joystick2 = (SbzInputDevice*)src->m_deviceB;
             m_deviceList =

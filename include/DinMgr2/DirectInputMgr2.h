@@ -31,9 +31,11 @@
 // IDirectInputDevice2A (the dispatched device, Poll @ slot 25), plus the DI* flag
 // constants (DIDEVTYPE_*/DISCL_*/DIEDFL_*/DIERR_*) and the DIPROP* property structs
 // the manager uses. It drags in the Win32 COM/HANDLE chain (<objbase.h>), so pull
-// <windows.h> (via <Win32.h>) first and pin the version the game compiled against.
+// <windows.h> (via <Mfc.h>, MFC-first) before it and pin the version the game
+// compiled against. <Mfc.h> (superset of <Win32.h>) also supplies the real MFC
+// CPtrList / CPtrArray the manager holds as value members (m_deviceList / m_devices).
 #define DIRECTINPUT_VERSION 0x0500
-#include <Win32.h>
+#include <Mfc.h>
 #include <dinput.h>
 
 // The device base (defined near the bottom); the manager holds it by pointer.
@@ -54,62 +56,31 @@ class CInputDevice;
 typedef CInputDevice CDeviceConfigA;
 
 // ---------------------------------------------------------------------------
-// CDevicePtrArray - DirectInputMgr2's embedded CPtrArray (m_devices). 0x14-byte MFC
-// CObArray/CPtrArray layout; the dtor empties it via SetSize(0,-1) (reloc-masked
-// thiscall). Elements are the polymorphic device bases.
-// ---------------------------------------------------------------------------
-SIZE(CDevicePtrArray, 0x14); // MFC CPtrArray layout (vptr + 4 dwords)
-RELOC_VTBL(
-    CDevicePtrArray,
-    0x001ec2dc
-); // IS MFC CPtrArray (non-CObject CInputDevBase* elems; array-family FID labels, 0x14 size)
-struct CDevicePtrArray {
-    virtual ~CDevicePtrArray();            // 0x1b4f3e (external, reloc-masked; implicit vptr@0)
-    void SetSize(i32 newSize, i32 growBy); // 0x1b4f75 (CObArray::SetSize)
-
-    // vptr @+0x00 (implicit, polymorphic CPtrArray vftable)
-    CInputDevBase** m_data; // +0x04  element storage
-    i32 m_size;             // +0x08  element count
-    i32 m_maxSize;          // +0x0c
-    i32 m_growBy;           // +0x10
-};
-
-// ---------------------------------------------------------------------------
-// CDeviceListNode - the 0x88-byte MFC-style list node (CObList::CNode shape) that
-// AddController allocates and FreeDeviceList frees. next@0, prev@4, payload@8; the
-// payload is destructed via ConfigDtor then freed. The ctor zeroes the two link
-// pointers (matching the retail `new`-then-init), so `new CDeviceListNode` lowers
-// to the exact operator-new + guarded field-zero the manager emits.
+// The device collections are real MFC containers (afxcoll, via <Mfc.h>):
+//   m_devices    : CPtrArray (0x14) - the extra CInputDevBase* devices. Empties via
+//                  SetSize(0,-1); the dtor is ??1CPtrArray@@UAE@XZ (0x1b4f3e).
+//   m_deviceList : CPtrList  (0x1c) - the AddController device-config list. Appends
+//                  via AddTail (0x1b4991), empties via RemoveAll (0x1b48a6); dtor
+//                  ??1CPtrList@@UAE@XZ (0x1b48c6). Each element is a CDeviceListNode.
+// (Former CDevicePtrArray / CDeviceList local views dissolved onto the real MFC
+// classes - the container-method CALLs now bind to their NAFXCW library rvas.)
+//
+// CDeviceListNode - the 0x88-byte device-config element AddController allocates and
+// FreeDeviceList frees (stored in m_deviceList as a void* payload). The ctor zeroes
+// the two leading dwords (matching the retail `new`-then-init), so `new
+// CDeviceListNode` lowers to the exact operator-new + guarded field-zero the manager
+// emits; it is filled/cleared through its CFixedPtrArray32 face.
 // ---------------------------------------------------------------------------
 SIZE(CDeviceListNode, 0x88); // operator new(0x88) in AddController
 struct CDeviceListNode {
     CDeviceListNode() {
-        m_next = 0;
-        m_prev = 0;
+        m_00 = 0;
+        m_04 = 0;
     }
 
-    CDeviceListNode* m_next;    // +0x00  intrusive-list forward link
-    CDeviceListNode* m_prev;    // +0x04  intrusive-list back link (CObList::CNode)
-    CDeviceListNode* m_payload; // +0x08  owned config payload (ConfigDtor + free)
-    char m_body[0x88 - 0x0c];   // +0x0c..0x87  node body (only the links load-bearing)
-};
-
-// ---------------------------------------------------------------------------
-// CDeviceList - DirectInputMgr2's embedded device collection (m_deviceList). An
-// MFC-derived intrusive list (CObList shape: head@+4, tail@+8). Methods are
-// reloc-masked thiscall.
-// ---------------------------------------------------------------------------
-SIZE(CDeviceList, 0x18);             // MFC CObList layout (vptr + head/tail + count/free/block)
-RELOC_VTBL(CDeviceList, 0x001ed4b4); // IS MFC CObList (Add=CObList::AddTail@0x1b4991, FID-verified)
-struct CDeviceList {
-    virtual ~CDeviceList();          // 0x1b48c6 (external, reloc-masked; implicit vptr@0)
-    void Add(CDeviceListNode* node); // 0x1b4991 (append, sets [+8] tail)
-    void RemoveAll();                // 0x1b48a6
-
-    // vptr @+0x00 (implicit, polymorphic)
-    CDeviceListNode* m_head; // +0x04  (manager-relative +0x30)
-    CDeviceListNode* m_tail; // +0x08
-    char _pad0c[0x18 - 0x0c];
+    i32 m_00;                 // +0x00  (CFixedPtrArray32 tag; zeroed by ctor, reset by FillFrom)
+    i32 m_04;                 // +0x04  (CFixedPtrArray32 count; zeroed by ctor)
+    char m_body[0x88 - 0x08]; // +0x08..0x87  element body (CFixedPtrArray32 items)
 };
 
 // ---------------------------------------------------------------------------
@@ -171,10 +142,10 @@ public:
     void* m_owner;             // +0x04  owner window (Create arg1; the cooperative-level HWND)
     void* m_hinst;             // +0x08  the HINSTANCE passed to DirectInputCreateA
     u32 m_flags;               // +0x0c  the device-type flags (Create arg3)
-    CInputDevBase* m_deviceB;  // +0x10  keyboard/mouse device B (InitB)
-    CInputDevBase* m_deviceA;  // +0x14  keyboard device A (InitA)
-    CDevicePtrArray m_devices; // +0x18  extra devices (CPtrArray; data@1c size@20)
-    CDeviceList m_deviceList;  // +0x2c  device-config list (head@30 tail@34)
+    CInputDevBase* m_deviceB; // +0x10  keyboard/mouse device B (InitB)
+    CInputDevBase* m_deviceA; // +0x14  keyboard device A (InitA)
+    CPtrArray m_devices;      // +0x18  extra devices (MFC CPtrArray; data@1c size@20)
+    CPtrList m_deviceList;    // +0x2c  device-config list (MFC CPtrList; head@30 tail@34)
 };
 
 // ===========================================================================

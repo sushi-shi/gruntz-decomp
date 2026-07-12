@@ -50,18 +50,11 @@
 // (Free360/Free6d0 device-leaf teardowns re-homed onto CDeviceConfigB/CDeviceConfigC
 // below; the DevCfg placeholder view is dissolved.)
 
-// m_devices IS MFC CDWordArray (stores each device ptr as a DWORD): SetSize @0x1b4f75
-// == ?SetSize@CDWordArray@@QAEXHH@Z, SetAtGrow @0x1b5144 == ?SetAtGrow@CDWordArray@@QAEXHK@Z
-// (coherent with the array's SetAtGrow; the FID CByteArray/CObArray sibling names are
-// AMBIG folds of the byte-identical array-family methods). Minimal local decl in this
-// MFC-free (<Win32.h>) TU so both calls emit the exact library-bound CDWordArray names;
-// the full m_devices : CDWordArray member remodel is the pending MFC-container task.
-SIZE_UNKNOWN(CDWordArray);
-class CDWordArray {
-public:
-    void SetSize(i32 n, i32 grow);
-    void SetAtGrow(i32 nIndex, u32 newElement);
-};
+// m_devices is the real MFC CPtrArray (DirectInputMgr2.h). Its SetSize/SetAtGrow are
+// reached through a (CDWordArray*) sibling cast so the byte-identical array-family
+// methods emit the FID-bound CDWordArray library names (?SetSize@CDWordArray@@QAEXHH@Z
+// @0x1b4f75 / ?SetAtGrow@CDWordArray@@QAEXHK@Z @0x1b5144) - the CPtrArray-named
+// variants are not FID-labelled. CDWordArray comes from the real <afxcoll.h>.
 
 // The DInput SDK constants (DIRECTINPUT_VERSION / DIDEVTYPE_JOYSTICK / DIEDFL_* /
 // DISCL_* / DIPROP_RANGE / DIPROP_DEADZONE / DIERR_*) now come from the real
@@ -260,9 +253,10 @@ void DirectInputMgr2::Shutdown() {
         delete m_deviceA;
         m_deviceA = 0;
     }
-    i32 n = m_devices.m_size;
+    i32 n = m_devices.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = (i >= 0 && i < m_devices.m_size) ? m_devices.m_data[i] : 0;
+        CInputDevBase* d =
+            (i >= 0 && i < m_devices.GetSize()) ? (CInputDevBase*)m_devices.GetAt(i) : 0;
         if (d != 0) {
             delete d;
         }
@@ -378,7 +372,7 @@ i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
         return 1;
     }
     if (dev != 0) {
-        ((CDWordArray*)&mgr->m_devices)->SetAtGrow(mgr->m_devices.m_size, (u32)dev);
+        ((CDWordArray*)&mgr->m_devices)->SetAtGrow(mgr->m_devices.GetSize(), (u32)dev);
     }
     return 1;
 }
@@ -406,9 +400,9 @@ i32 DirectInputMgr2::PollAll() {
 RVA(0x001330d0, 0x3a)
 i32 DirectInputMgr2::PollArrayA() {
     i32 failed = 0;
-    i32 n = m_devices.m_size;
+    i32 n = m_devices.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = m_devices.m_data[i];
+        CInputDevBase* d = (CInputDevBase*)m_devices.GetAt(i);
         if (d != 0 && d->Poll() == 0) {
             failed = 1;
         }
@@ -438,9 +432,9 @@ i32 DirectInputMgr2::ReadAll() {
 RVA(0x00133160, 0x3a)
 i32 DirectInputMgr2::PollArrayB() {
     i32 failed = 0;
-    i32 n = m_devices.m_size;
+    i32 n = m_devices.GetSize();
     for (i32 i = 0; i < n; i++) {
-        CInputDevBase* d = m_devices.m_data[i];
+        CInputDevBase* d = (CInputDevBase*)m_devices.GetAt(i);
         if (d != 0 && d->ResetState() == 0) {
             failed = 1;
         }
@@ -453,11 +447,9 @@ i32 DirectInputMgr2::PollArrayB() {
 // list (RemoveAll).
 RVA(0x001331a0, 0x37)
 void DirectInputMgr2::FreeDeviceList() {
-    CDeviceListNode* node = m_deviceList.m_head;
-    while (node != 0) {
-        CDeviceListNode* cur = node;
-        node = node->m_next;
-        CDeviceListNode* payload = cur->m_payload;
+    POSITION pos = m_deviceList.GetHeadPosition();
+    while (pos != 0) {
+        CDeviceListNode* payload = (CDeviceListNode*)m_deviceList.GetNext(pos);
         if (payload != 0) {
             ((CFixedPtrArray32*)payload)->Clear();
             operator delete(payload);
@@ -483,7 +475,7 @@ void* DirectInputMgr2::AddController(i32 count, i32 a2, i32 a3) {
         }
         return 0;
     }
-    m_deviceList.Add(node);
+    m_deviceList.AddTail(node);
     return node;
 }
 
