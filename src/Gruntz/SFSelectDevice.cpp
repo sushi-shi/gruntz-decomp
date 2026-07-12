@@ -19,10 +19,48 @@
 #include <Dsndmgr/SfManager.h> // real SFMANL101API device + the SFManager factory
 #include <Globals.h>
 
-extern WORD g_sfDeviceId; // 0x64dd28 (best device index)
+extern WORD g_sfDeviceId; // 0x64dd28 (best device index; shared with soundfontpath)
 
+// The 4 unpacked low-7-bit device-id bytes (0x613dff..0x613e02, .data). Owned by
+// this TU; DEFINED here (DATA()-pinned), reference externs kept in <Globals.h>.
+extern "C" {
+    DATA(0x00213dff)
+    char g_id0_613dff = 0;
+    DATA(0x00213e00)
+    char g_id1_613e00 = 0;
+    DATA(0x00213e01)
+    char g_id2_613e01 = 0;
+    DATA(0x00213e02)
+    char g_id3_613e02 = 0;
+}
+
+// The device-picker's module statics - sfselectdevice.obj's own .bss block, DEFINED
+// here (zero-init), DATA()-pinned to their retail rvas; reference externs kept in
+// <Globals.h>. Ascending retail RVA. (Were extern-only in the Globals.cpp pool.)
+DATA(0x0024da80)
+u16 g_idx_64da80 = 0; // current device index
+DATA(0x0024da84)
+u32 g_ratingRaw_64da84 = 0;
+DATA(0x0024da88)
+i32 g_factoryRc_64da88 = 0;
+DATA(0x0024da90)
+char g_traceBuf_64da90[60] = {0}; // sprintf scratch
+DATA(0x0024dbe0)
+char g_ratingBuf_64dbe0[72] = {0};
+DATA(0x0024df30)
+u16 g_caps_64df30 = 0; // caps query buffer base / size field
+DATA(0x0024df36)
+u32 g_capsFlags_64df36 = 0; // caps flags (caps + 6)
+DATA(0x0024df46)
+char g_capsName_64df46[82] = {0}; // caps name (caps + 0x16)
+DATA(0x0024df98)
+u16 g_remaining_64df98 = 0;
+DATA(0x0024df9c)
+u32 g_id_64df9c = 0; // packed device id
 DATA(0x0024e0ac)
-extern SfManagerFactory* g_factory_64e0ac; // the "SFManager" data export (ptr-to-fnptr)
+SfManagerFactory* g_factory_64e0ac = 0; // the "SFManager" data export (ptr-to-fnptr)
+DATA(0x0024e0c0)
+u8 g_ratings_64e0c0[344] = {0}; // per-device rating bytes
 
 // @early-stop
 // MSVC5 u16-global codegen wall (~74%): the full control flow - the SFMAN32.DLL

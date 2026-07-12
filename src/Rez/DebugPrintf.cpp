@@ -18,24 +18,30 @@
 #include <Globals.h>
 #include <Gruntz/RangeSet.h> // canonical CRangeSet + CRange (the debug-channel set)
 
-// The debug-output sink object; its first dword is reset, then it is configured
-// from the parsed keyword string. (RVA = VA 0x6bf850 - image base 0x400000.)
-DATA(0x002bf850)
-extern CRangeSet g_6bf850;
+// The debug config's free-global state, DEFINED here (this TU owns the .bss block).
+// g_6bf8dc keeps its reference `extern` in <Globals.h>; the rest are TU-local. All
+// zero-init .bss; the DATA() binding now rides these definitions (was extern-only in
+// the Globals.cpp pool). Listed in ascending retail RVA.
 
+// The MONO-mode (DPRINTF=MONO) text-console 80x25 word buffer base (0xfa0 bytes,
+// 0x0720 = grey space).
+DATA(0x002bf84c)
+char* g_monoBuffer = 0;
+// The debug-output sink object (the debug-channel range set); its first dword is
+// reset, then it is configured from the parsed keyword string. (VA 0x6bf850.)
+DATA(0x002bf850)
+CRangeSet g_6bf850 = {0};
+// The MONO console's current row (0..24) and column.
+DATA(0x002bf8d4)
+i32 g_monoRow = 0;
+DATA(0x002bf8d8)
+i32 g_monoCol = 0;
+// The debug-output mode word (g_debugConfig +0x94); reference extern in <Globals.h>.
+DATA(0x002bf8dc)
+i32 g_6bf8dc = 0;
 // The open debug-output FILE handle (mode 5/8/9/10); DebugClose fcloses it.
 DATA(0x002bf8e0)
-extern void* g_6bf8e0;
-
-// The MONO-mode (DPRINTF=MONO) text-console state: the 80x25 word buffer base
-// (0xfa0 bytes, 0x0720 = grey space), the current row (0..24) and column. Reached
-// as free globals like the rest of the debug config.
-DATA(0x002bf84c)
-extern char* g_monoBuffer;
-DATA(0x002bf8d4)
-extern i32 g_monoRow;
-DATA(0x002bf8d8)
-extern i32 g_monoCol;
+void* g_6bf8e0 = 0;
 
 // The cursor-position forwarder (0x184fb0 -> 0x184fd0(0, x, y), defined below - the
 // RezDebugPrintf*XY variants position the cursor through it) and the CRT fclose

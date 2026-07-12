@@ -12,7 +12,24 @@
 struct ShadeDescr;
 
 // Seven global ShadeDescr* slots; only +0x6bf218 carries a real RTTI name.
+// The six mode-keyed slots are owned by this TU (SetShadeDescr writes them,
+// ShadeSelector::Select reads them); DEFINED here (shadedescrtable.obj's .bss,
+// zero-init), DATA()-pinned, reference externs kept in <Globals.h>. Ascending RVA;
+// g_blendDescr (0x6bf218, the RTTI-named slot) keeps its extern. (Were extern-only
+// in the Globals.cpp pool.)
+DATA(0x002bf208)
+ShadeDescr* g_shadeDescr208 = 0;
+DATA(0x002bf20c)
+ShadeDescr* g_shadeDescr20c = 0;
+DATA(0x002bf210)
+ShadeDescr* g_shadeDescr210 = 0;
+DATA(0x002bf214)
+ShadeDescr* g_shadeDescr214 = 0;
 extern ShadeDescr* g_blendDescr; // 0x6bf218
+DATA(0x002bf21c)
+ShadeDescr* g_shadeDescr21c = 0;
+DATA(0x002bf220)
+ShadeDescr* g_shadeDescr220 = 0;
 
 // @early-stop
 // Code bytes byte-exact (all 8 global stores + reloc-named globals pair); residual is

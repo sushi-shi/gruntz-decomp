@@ -32,14 +32,22 @@
 // Module-distinct names (g_dd*): each engine module has its OWN copy of these debug
 // flags at a module-specific rva (DDrawMgr @0x283exx); the shared donor name
 // g_<flag>Enabled conflated four modules' cells onto one symbol (wave5-R5 split).
-DATA(0x00283ec0)
-extern "C" i32 g_ddBeepEnabled; // 0x683ec0
-DATA(0x00283eb8)
-extern "C" i32 g_ddLogEnabled; // 0x683eb8
-DATA(0x00283ebc)
-extern "C" i32 g_ddMsgBoxEnabled; // 0x683ebc
-DATA(0x00283ec4)
-extern "C" i32 g_ddThirdEnabled; // 0x683ec4
+extern "C" {
+    DATA(0x00283ec0)
+    i32 g_ddBeepEnabled = 0; // 0x683ec0
+    DATA(0x00283eb8)
+    i32 g_ddLogEnabled = 0; // 0x683eb8
+    DATA(0x00283ebc)
+    i32 g_ddMsgBoxEnabled = 0; // 0x683ebc
+    DATA(0x00283ec4)
+    i32 g_ddThirdEnabled = 0; // 0x683ec4
+}
+
+// The global "restore lost surfaces" handler slot (RelayHwnd installs it,
+// RestoreLostSurfaces_1437f0 reads it). Owned by this TU; DEFINED here (zero-init
+// .bss), DATA()-pinned; reference extern kept in <Globals.h>.
+DATA(0x00283edc)
+i32 (*g_restoreHandler)() = 0; // 0x683edc
 
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)
@@ -59,12 +67,18 @@ extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
 
 // The process-wide DirectDraw object + the enumerated-display-mode array + the create
 // context (owner window) that produced the current g_DirectDraw object (.data).
-DATA(0x00283ee8)
-extern "C" IDirectDraw2* g_DirectDraw; // 0x683ee8
+// g_DirectDraw + g_ddCreateCtx DEFINED here (directdrawmgr.obj's .bss, zero-init).
+// g_modeArray (0x283ec8) is a real MFC CPtrArray shared with GruntzMgr's display-bounds
+// checks; its non-trivial ctor is run explicitly by ClearModeArray_141c80, so it keeps
+// its extern binding here (defining it would emit an unwanted dynamic initializer).
+extern "C" {
+    DATA(0x00283ee8)
+    IDirectDraw2* g_DirectDraw = 0; // 0x683ee8
+}
 DATA(0x00283ec8)
 extern CPtrArray g_modeArray; // 0x683ec8 (real MFC CPtrArray of 0x6c-byte mode records)
 DATA(0x00283ee4)
-extern void* g_ddCreateCtx; // 0x683ee4
+void* g_ddCreateCtx = 0; // 0x683ee4
 
 // The RGB low-bit-position / 8-minus-bitcount pair tables ComputeColorMasks fills from
 // the back-buffer's pixel format (reloc-masked .data globals; named g_683* across the

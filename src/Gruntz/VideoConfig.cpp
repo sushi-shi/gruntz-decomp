@@ -36,7 +36,7 @@
 // manager's saved mode. The reloc that names it is masked in objdiff.
 // ---------------------------------------------------------------------------
 DATA(0x0020ccc4)
-extern i32 g_videoResolutionMode;
+i32 g_videoResolutionMode = 1; // retail .data initial value 1
 
 // ---------------------------------------------------------------------------
 // MFC controls reached by call-rel32 (external/no-body so the call displacements
@@ -82,24 +82,52 @@ extern i32 g_optLockAudio;
 DATA(0x002455c0)
 extern i32 g_optLockSpeech;
 
+// The options-dialog staging cells (0x22bd64..0x22bdd4): a snapshot of the live
+// settings LoadGameOptionsToDialog captures so IDCANCEL/Apply can restore/commit
+// them. Owned by this TU (videoconfig.obj's .bss); DEFINED here, zero-init, with the
+// reference externs kept in <Globals.h>. extern "C" (their consolidated linkage).
+extern "C" {
+    DATA(0x0022bd64)
+    i32 g_opt_22bd64 = 0;
+    DATA(0x0022bd68)
+    i32 g_opt_22bd68 = 0;
+    DATA(0x0022bd6c)
+    i32 g_opt_22bd6c = 0;
+    DATA(0x0022bd70)
+    i32 g_opt_22bd70 = 0;
+    DATA(0x0022bd84)
+    i32 g_opt_22bd84 = 0;
+    DATA(0x0022bdc4)
+    i32 g_opt_22bdc4 = 0;
+    DATA(0x0022bdc8)
+    i32 g_opt_22bdc8 = 0;
+    DATA(0x0022bdcc)
+    i32 g_opt_22bdcc = 0;
+    DATA(0x0022bdd0)
+    i32 g_opt_22bdd0 = 0;
+    DATA(0x0022bdd4)
+    i32 g_opt_22bdd4 = 0;
+}
+
 // The eight option-control HWNDs the dialog caches at init (GetDlgItem of the
 // music / voice / speech / easy / resolution-slider / and three more checkboxes).
+// Owned by this TU; DEFINED here (zero-init .bss), DATA()-pinned to their retail rvas.
 DATA(0x0022bdd8)
-extern HWND g_optHwndMusic; // IDC 0x46d
+HWND g_optHwndMusic = 0; // IDC 0x46d
 DATA(0x0022bddc)
-extern HWND g_optHwndVoice; // IDC 0x475
+HWND g_optHwndVoice = 0; // IDC 0x475
 DATA(0x0022bde0)
-extern HWND g_optHwndSpeech; // IDC 0x471
+HWND g_optHwndSpeech = 0; // IDC 0x471
 DATA(0x0022bde4)
-extern HWND g_optHwndEasy; // IDC 0x455
+HWND g_optHwndEasy = 0; // IDC 0x455
 DATA(0x0022bde8)
-extern HWND g_optHwndResSlider; // IDC 0x52c
+HWND g_optHwndResSlider = 0; // IDC 0x52c
 DATA(0x0022bdec)
-extern HWND g_optHwndCk6; // IDC 0x472
+HWND g_optHwndCk6 = 0; // IDC 0x472
 DATA(0x0022bdf0)
-extern HWND g_optHwndCk7; // IDC 0x470
+HWND g_optHwndCk7 = 0; // IDC 0x470
 DATA(0x0022bdf4)
-extern HWND g_optHwndCk8; // IDC 0x476
+HWND g_optHwndCk8 = 0; // IDC 0x476
 // The scroll-cue throttle globals ScrollDialog's config-cue chain reads.
 extern i32 g_sndEnabled;       // 0x61ab20 (?g_sndEnabled@@3HA)
 extern i32 g_sndCueTag;        // 0x61ab24 (?g_sndCueTag@@3HA)

@@ -17,16 +17,35 @@
 #include <stdio.h>             // sprintf (0x11f890, _sprintf)
 #include <string.h>            // strlen (inline repne scas)
 
-// The config blocks A (0x64dacc) and the load token (0x64dd28) are the same WORD
-// globals SfDeviceInitKeys (below) seeds; this TU owns their DATA() binding now.
+// Config block A (0x64dacc) - the same WORD globals SfDeviceInitKeys (below) seeds;
+// DEFINED here (soundfontpath.obj's .bss), zero-init, DATA()-pinned. The load token
+// g_sfDeviceId (0x64dd28) is shared with sfselectdevice, so its binding stays extern.
 DATA(0x0024dacc)
-extern WORD g_sfCfgA0; // config block A +0 (=1)
+WORD g_sfCfgA0 = 0; // config block A +0 (runtime =1)
 DATA(0x0024dace)
-extern WORD g_sfCfgA2; // config block A +2 (=0)
+WORD g_sfCfgA2 = 0; // config block A +2 (runtime =0)
 DATA(0x0024dd28)
-extern WORD g_sfDeviceId; // soundfont load token
+extern WORD g_sfDeviceId; // soundfont load token (shared: sfselectdevice)
 
-// The soundfont path/state globals.
+// The soundfont path/state globals - config block B + the four candidate SF2 path
+// buffers + the current-directory scratch. Owned by this TU; DEFINED here (zero-init
+// .bss), DATA()-pinned, reference externs kept in <Globals.h>. Ascending retail RVA.
+DATA(0x0024dad0)
+u32 g_sfCfgB0 = 0; // config block B +0 (runtime =0x80)
+DATA(0x0024dad4)
+char* g_sfCurPath = 0; // the path currently being tried
+DATA(0x0024dadc)
+u16 g_sfCfgB12 = 0; // config block B +0xc
+DATA(0x0024dae0)
+char g_sfMusic4[256] = {0}; // "<drive>:\MUSIC\Gruntz4.SF2"
+DATA(0x0024dc28)
+char g_sfLocal4[256] = {0}; // "<dir>\Gruntz4.SF2"
+DATA(0x0024dd30)
+char g_sfMusic[256] = {0}; // "<drive>:\MUSIC\Gruntz.SF2"
+DATA(0x0024de30)
+char g_sfLocal[256] = {0}; // "<dir>\Gruntz.SF2"
+DATA(0x0024dfa0)
+char g_sfDir[256] = {0}; // current-directory scratch (0xff)
 
 // 0xf8ec0: re-seed the music device key table (defined below, in RVA order between
 // CloseSoundFontDevice and BuildSoundFontPath; forward-declared here for Close).

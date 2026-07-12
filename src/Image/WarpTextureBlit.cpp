@@ -62,6 +62,24 @@ extern "C" i32 g_rasterDestRow; // 0x6a2ce8  (current dest scanline base)
 DATA(0x002becf4)
 extern "C" i32 g_rasterDestPtr; // 0x6becf4  (current dest pixel ptr)
 
+// The per-span texture-walk accumulators/steps. Owned by this TU; DEFINED here
+// (warptextureblit.obj's .bss, zero-init), DATA()-pinned; reference externs kept in
+// <Globals.h>. Ascending retail RVA. (Were extern-only in the Globals.cpp pool.)
+DATA(0x002856f0)
+i32 g_warpU = 0; // 0x6856f0  (u accumulator)
+DATA(0x002856f4)
+i32 g_warpV = 0; // 0x6856f4  (v accumulator)
+DATA(0x002a16f8)
+i32 g_warpTexBase = 0; // 0x6a16f8  (locked texture base)
+DATA(0x002a16fc)
+i32 g_warpUStep = 0; // 0x6a16fc  (u per-pixel step)
+DATA(0x002a1700)
+i32 g_warpVStep = 0; // 0x6a1700  (v per-pixel step)
+DATA(0x002becf0)
+i32 g_warpUMask = 0; // 0x6becf0  (texture index row-mask)
+DATA(0x002becfc)
+i16 g_warpColorkey = 0; // 0x6becfc
+
 // The fixed-point scale constants (0x5efb18, 0x5efb1c = its negation).
 DATA(0x001efb18)
 extern "C" const float g_rasterScale; // 0x5efb18

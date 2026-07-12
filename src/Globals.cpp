@@ -170,14 +170,11 @@ DATA(0x0020dc0c)
 extern char k_60dc0c[];
 DATA(0x0020df94)
 extern char k_60df94[];
-DATA(0x0020dfff)
-extern "C" char g_id0_613dff;
-DATA(0x0020e000)
-extern "C" char g_id1_613e00;
-DATA(0x0020e001)
-extern "C" char g_id2_613e01;
-DATA(0x0020e002)
-extern "C" char g_id3_613e02;
+// g_id0_613dff..g_id3_613e02 (the 4 unpacked device-id bytes) are DEFINED at their
+// REAL rvas 0x213dff..0x213e02 in their owning TU src/Gruntz/SFSelectDevice.cpp; the
+// prior DATA(0x0020dfff..0x0020e002) here MISBOUND them to 0x60dfff (inside a string
+// literal "...NTZ_DEAT..."), 0x6000 low - the "613dff" name suffix is the real home.
+// Reference externs stay in <Globals.h>.
 DATA(0x0020fab8)
 extern "C" i32 g_dplayAppGuid[4]; // 0x60fab8  the 16-byte DirectPlay app GUID (also the
                                   // net-bind template; kept i32[4] - the Bind path reads
@@ -346,42 +343,13 @@ DATA(0x0024cfd0)
 extern i32 g_lastScrollX; // 0x64cfd0
 DATA(0x0024cfd4)
 extern i32 g_lastScrollY; // 0x64cfd4
-DATA(0x0024da80)
-extern u16 g_idx_64da80; // current device index
-DATA(0x0024da84)
-extern u32 g_ratingRaw_64da84;
-DATA(0x0024da88)
-extern i32 g_factoryRc_64da88;
-DATA(0x0024da90)
-extern char g_traceBuf_64da90[]; // sprintf scratch
-DATA(0x0024dad0)
-extern u32 g_sfCfgB0; // 0x64dad0  config block B +0 (=0x80)
-DATA(0x0024dad4)
-extern char* g_sfCurPath; // 0x64dad4  the path currently being tried
-DATA(0x0024dadc)
-extern u16 g_sfCfgB12; // 0x64dadc  config block B +0xc (=0)
-DATA(0x0024dae0)
-extern char g_sfMusic4[]; // 0x64dae0  "<drive>:\MUSIC\Gruntz4.SF2"
-DATA(0x0024dbe0)
-extern char g_ratingBuf_64dbe0[];
-DATA(0x0024dc28)
-extern char g_sfLocal4[]; // 0x64dc28  "<dir>\Gruntz4.SF2"
-DATA(0x0024dd30)
-extern char g_sfMusic[]; // 0x64dd30  "<drive>:\MUSIC\Gruntz.SF2"
-DATA(0x0024de30)
-extern char g_sfLocal[]; // 0x64de30  "<dir>\Gruntz.SF2"
-DATA(0x0024df30)
-extern u16 g_caps_64df30; // caps query buffer base / size field
-DATA(0x0024df36)
-extern u32 g_capsFlags_64df36; // caps flags (caps + 6)
-DATA(0x0024df46)
-extern char g_capsName_64df46[]; // caps name (caps + 0x16)
-DATA(0x0024df98)
-extern u16 g_remaining_64df98;
-DATA(0x0024df9c)
-extern u32 g_id_64df9c; // packed device id
-DATA(0x0024dfa0)
-extern char g_sfDir[]; // 0x64dfa0  current-directory scratch (0xff)
+// The SFMAN32 device-picker statics (0x24da80..0x24df9c, 0x24e0c0) are DEFINED in
+// their owning TU src/Gruntz/SFSelectDevice.cpp (sfselectdevice.obj's .bss); the
+// soundfont config-block-B + path buffers (0x24dad0..0x24dfa0) in
+// src/Gruntz/SoundFontPath.cpp (soundfontpath.obj's .bss). The DATA() bindings ride
+// those definitions now; the reference externs stay in <Globals.h>. The shared
+// device-interface state below (g_sfVer/g_sfDeviceCount/g_sfDll/g_sfDevice/g_sfReady,
+// used by BOTH TUs) keeps its binding here.
 DATA(0x0024e0a0)
 extern u32 g_sfVer; // 0x64e0a0  build/version selector
 DATA(0x0024e0a4)
@@ -392,8 +360,7 @@ DATA(0x0024e0b0)
 extern SFMANL101API* g_sfDevice; // 0x64e0b0  SFMAN32 device interface
 DATA(0x0024e0b8)
 extern void* g_sfReady; // 0x64e0b8  device-selected flag (1 = ready)
-DATA(0x0024e0c0)
-extern u8 g_ratings_64e0c0[]; // per-device rating bytes
+// g_ratings_64e0c0 (0x24e0c0) DEFINED in src/Gruntz/SFSelectDevice.cpp.
 DATA(0x0024e360)
 extern i32 g_suppress_64e360;
 // g_hazn* fields DEFINED in src/Gruntz/StaticHazard.cpp (owner TU).
@@ -442,40 +409,21 @@ DATA(0x00273ca0)
 extern u8 g_lutBank0_673ca0[];
 DATA(0x00283ca0)
 extern u16 g_lut16[256];
-DATA(0x00283edc)
-extern i32 (*g_restoreHandler)(); // 0x683edc
+// g_restoreHandler (0x683edc) DEFINED in src/DDrawMgr/DirectDrawMgr.cpp; the
+// reference extern stays in <Globals.h>.
 DATA(0x00283ef0)
 extern u8 g_683ef0[];
-DATA(0x002856f0)
-extern i32 g_warpU; // 0x6856f0  (u accumulator)
-DATA(0x002856f4)
-extern i32 g_warpV; // 0x6856f4  (v accumulator)
-DATA(0x002a16f8)
-extern i32 g_warpTexBase; // 0x6a16f8  (locked texture base)
-DATA(0x002a16fc)
-extern i32 g_warpUStep; // 0x6a16fc  (u per-pixel step)
-DATA(0x002a1700)
-extern i32 g_warpVStep; // 0x6a1700  (v per-pixel step)
-DATA(0x002becf0)
-extern i32 g_warpUMask; // 0x6becf0  (texture index row-mask)
-DATA(0x002becfc)
-extern i16 g_warpColorkey; // 0x6becfc
+// g_warpU..g_warpColorkey (the texture-walk accumulators/steps, 0x2856f0/0x2856f4,
+// 0x2a16f8..0x2a1700, 0x2becf0/0x2becfc) are DEFINED in their owning TU
+// src/Image/WarpTextureBlit.cpp (warptextureblit.obj's .bss); the reference externs
+// stay in <Globals.h>.
 DATA(0x002bed00)
 extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 DATA(0x002bed08)
 extern u8 g_scratch[]; // 0x6bed08
-DATA(0x002bf208)
-extern ShadeDescr* g_shadeDescr208;
-DATA(0x002bf20c)
-extern ShadeDescr* g_shadeDescr20c;
-DATA(0x002bf210)
-extern ShadeDescr* g_shadeDescr210;
-DATA(0x002bf214)
-extern ShadeDescr* g_shadeDescr214;
-DATA(0x002bf21c)
-extern ShadeDescr* g_shadeDescr21c;
-DATA(0x002bf220)
-extern ShadeDescr* g_shadeDescr220;
+// g_shadeDescr208..g_shadeDescr220 (the six mode-keyed ShadeDescr* slots) are DEFINED
+// in their owning TU src/DDrawMgr/ShadeDescrTable.cpp (shadedescrtable.obj's .bss);
+// the reference externs stay in <Globals.h>.
 DATA(0x002bf318)
 extern i32 g_bltFxScratch[25];
 DATA(0x002bf380)
@@ -535,32 +483,16 @@ DATA(0x00684af0)
 extern u8 g_grayRamp[];
 DATA(0x006bf400)
 extern "C" i32 g_helperRefCount; // 0x6bf400
-DATA(0x002bf8dc)
-extern i32 g_6bf8dc; // debug-output mode (VA 0x6bf8dc - image base 0x400000)
+// g_6bf8dc (debug-output mode word, VA 0x6bf8dc) is DEFINED in its owning TU
+// src/Rez/DebugPrintf.cpp (debugprintf.obj's .bss); the reference extern stays in
+// <Globals.h>.
 DATA(0x006c3fdc)
 extern int(__stdcall* g_impFreeLibrary)(void*);
 
 extern "C" {
-    DATA(0x0022bd64)
-    extern i32 g_opt_22bd64;
-    DATA(0x0022bd68)
-    extern i32 g_opt_22bd68;
-    DATA(0x0022bd6c)
-    extern i32 g_opt_22bd6c;
-    DATA(0x0022bd70)
-    extern i32 g_opt_22bd70;
-    DATA(0x0022bd84)
-    extern i32 g_opt_22bd84;
-    DATA(0x0022bdc4)
-    extern i32 g_opt_22bdc4;
-    DATA(0x0022bdc8)
-    extern i32 g_opt_22bdc8;
-    DATA(0x0022bdcc)
-    extern i32 g_opt_22bdcc;
-    DATA(0x0022bdd0)
-    extern i32 g_opt_22bdd0;
-    DATA(0x0022bdd4)
-    extern i32 g_opt_22bdd4;
+    // g_opt_22bd64..g_opt_22bdd4 (the options-dialog staging cells, 0x22bd64..0x22bdd4)
+    // are DEFINED in their owning TU src/Gruntz/VideoConfig.cpp (videoconfig.obj's .bss);
+    // the reference externs stay in <Globals.h>.
     DATA(0x002455bc)
     extern i32 g_gate_2455bc;
     DATA(0x002455c0)
