@@ -277,6 +277,17 @@ def analyze(funcs, comdat, lib, exact, unit_filter=None):
                 # addend k*elemsize in the section bytes, so our real target is
                 # base+addend - else every constant array index false-reports.
                 have = None if base is None else base + c.addend(sec, voff)
+                # An ADDRESS-TAKEN function can route through an /INCREMENTAL ILT
+                # jmp-thunk on either side (e.g. `push offset <element dtor>` for the
+                # MFC eh-vector-dtor iterator: retail's DIR32 names the thunk, we name
+                # the body). Both reach the same code -> CORRECT. Resolve E9 chains on
+                # BOTH sides, exactly as the REL32 branch below already does.
+                # resolve_thunk is identity for data and for a real function start, so
+                # every existing binding is unaffected.
+                want = (resolve_thunk(want)
+                        if want is not None and TEXT[0] <= want < TEXT[1] else want)
+                have = (resolve_thunk(have)
+                        if have is not None and TEXT[0] <= have < TEXT[1] else have)
             else:                        # REL32 call: retail callee from displacement
                 if voff + 4 <= len(fb):
                     disp = struct.unpack("<i", fb[voff:voff + 4])[0]
