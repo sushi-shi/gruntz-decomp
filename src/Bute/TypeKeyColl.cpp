@@ -1309,9 +1309,19 @@ i32 Gap_16e7a0(void) {
 // written as a method. (CButeStore==CButeTree, the same 0x2c-byte class.)
 //
 // @reloc-TODO / emission: this @rva-symbol binds only once cl EMITS ??_GCButeTree in
-// THIS obj, which needs a delete-expression / vtable instantiation of CButeTree in the
-// TU. Today g_buteTree is `extern` and constructed via the reloc-masked Construct
-// (0x16dff0), so the class vtable/??_G is never emitted here (the documented
-// "g_buteTree defined-not-extern with the real ~CButeTree chain" deferred restructure).
-// The model is the proper virtual destructor; the bound body is pending that restructure.
+// THIS obj, which needs g_buteTree defined (not extern) as a real global CButeTree so
+// its compiler-generated ctor/dtor/vtable emit here. That is BLOCKED by a dual-vtable
+// identity (the butenode-dual-model, OUT OF SCOPE for this pass), PROVEN by disasm:
+//   * construction (DynInitButeTree 0x16e6a0) stamps ??_7CButeTree     @0x5f04e0 /
+//     ??_7CButeStore@@6BCButeStoreSecond @0x5f04dc   (the CButeTree identity);
+//   * destruction (0x16e9c0 ??_G AND 0x16e6e0 atexit) stamps ??_7zPTree @0x5e94ac /
+//     ??_7CButeStore@@6BCButeNodeEntry  @0x5e949c    (the zPTree/CButeStore identity).
+// A single cl-generated class stamps ONE ??_7 identity in BOTH its ctor and dtor, so
+// no clean CButeTree definition reproduces the ctor(0x5f04e0)+dtor(0x5e94ac) split:
+// byte-exact + reloc-faithful emission of 0x16e9c0/0x16e6e0 requires first FOLDING
+// CButeTree == zPTree == CButeStore (one class, one vtable identity). The vtable
+// address operands ARE reloc-masked, so a forced def would byte-match at ~fuzzy but
+// bind the WRONG vtable rva (??_7CButeTree where retail uses ??_7zPTree) - reloc-
+// infidel, hence deferred to the dual-model fold rather than forced here.
+// The model is the proper virtual destructor; the bound body is pending that fold.
 // @rva-symbol: ??_GCButeTree@@UAEPAXI@Z 0x0016e9c0 0x45

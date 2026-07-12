@@ -20,7 +20,7 @@
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/ScanRectInit.h>
 #include <Gruntz/ScanGrid.h>
-#include <Gruntz/TypeColl.h>
+#include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/CoordNode.h>
 #include <rva.h>
 
@@ -33,9 +33,11 @@
 // The shared game-manager singleton (*0x64556c); reached typed as CGameRegistry.
 extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 
-// Type-name collection (g_typeColl @0x6bf650): Lookup(key)->node, node->m_0 = name.
+// Anim-name registry (g_typeColl @0x6bf650, RTTI ?g_typeColl@@3VCTypeKeyColl@@A):
+// GetNameRecord(m_14->m_1c) -> char**; *rec = the grunt-type name char* (retail call
+// 0x437c -> zDArray::IndexToPtr @0x310f0). Canonical CTypeKeyColl model, no casts.
 DATA(0x006bf650)
-extern CTypeColl g_typeColl;
+extern CTypeKeyColl g_typeColl;
 
 DATA(0x00645588)
 extern u32 g_clock; // game clock (g_645588)
@@ -263,7 +265,7 @@ L8b5:
 // Final-sweep candidate.
 RVA(0x000ecc90, 0x86a)
 i32 CGrunt::ArrivalScanA() {
-    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, "I") == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0) {
         return 1;
     }
     F(this, 0x300) = F(this, 0x17c);
@@ -908,7 +910,7 @@ i32 CGrunt::ArrivalReticleScan() {
 //     the grunt-under-HUD pointer / clock / grid bases.
 RVA(0x000f0130, 0x7c0)
 i32 CGrunt::UpdateArrival() {
-    char* name = ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0;
+    char* name = *g_typeColl.GetNameRecord(m_14->m_1c);
     if (strcmp(name, "I") != 0) {
         return 1;
     }
@@ -1131,7 +1133,7 @@ i32 CGrunt::UpdateArrival() {
 // deep-regalloc + slot-recycle wall family. Final-sweep candidate.
 RVA(0x000f0e20, 0x928)
 i32 CGrunt::ArrivalScanB() {
-    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, "I") == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0) {
         return 1;
     }
     F(this, 0x300) = F(this, 0x17c);
@@ -1945,7 +1947,7 @@ i32 CGrunt::StepArrivalDefense() {
 // same deep-regalloc + slot-recycle wall family. Final-sweep candidate.
 RVA(0x000f36a0, 0x78e)
 i32 CGrunt::ArrivalScanC() {
-    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, "I") == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), "I") == 0) {
         return 1;
     }
     CScanGrid* grid = (CScanGrid*)g_gameReg->m_tileGrid;
@@ -2163,8 +2165,7 @@ i32 CGrunt::PhaseStep() {
     GruntTilePos pb;
 
     m_358 = 0;
-    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, g_codeF)
-        == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeF) == 0) {
         return 1;
     }
     m_defenderX = m_lastTilePxX;
@@ -2213,8 +2214,7 @@ i32 CGrunt::PhaseStep() {
     return 1;
 
 state2: {
-    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, g_codeF)
-        == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeF) == 0) {
         goto common;
     }
     i32 x = m_arrivalCol;
@@ -2644,7 +2644,7 @@ RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
-    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, g_codeI) == 0) {
+    if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeI) == 0) {
         return 1;
     }
     CGrunt* occ;
