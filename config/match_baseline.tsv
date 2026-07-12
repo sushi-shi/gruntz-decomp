@@ -657,8 +657,8 @@ bridgemovesprites	?LoadBridgeMove@CPlayLevelLoad@@QAEXH@Z	77.0457	77.0457	3	30d2
 buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9756	70.9756	5	da7ee0abdb88	0xbf1d0
 butemgr	??0CButeValueNode@@QAE@HPAU0@@Z	93.0435	93.0435	1	32e9764d3ec7	0x1741b0
 butemgr	??1CButeMgr@@QAE@XZ	68.2759	68.2759	2	37d592bdd452	0x213c0
-butemgr	??1CButeTree21a@@UAE@XZ	100.0000	100.0000	1	6eaa1fb3022b	0x21310
-butemgr	??1CButeTree21b@@UAE@XZ	100.0000	100.0000	2	b670f04dc9b9	0x21570
+butemgr	??1CButeStoreSection@@UAE@XZ	100.0000	100.0000	1	81dc1d89964a	0x21570
+butemgr	??1CButeStoreZPTree@@UAE@XZ	100.0000	100.0000	1	163efe7d5273	0x21310
 butemgr	??1CButeValue@@QAE@XZ	68.6364	68.6364	2	97a8aef9f785	0x172160
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	3	61c18d639c2a	0x1703e0
 butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	7	5f0b1dee4dfd	0x171a40
