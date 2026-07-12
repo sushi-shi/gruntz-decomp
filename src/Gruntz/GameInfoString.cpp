@@ -20,10 +20,12 @@
 // decomposes a ms timestamp into unsigned hh/mm/ss out-values (was the DecodeGameTime view).
 i32 ValidateGameTime(CGameInfoTime* t);                  // 0x118310
 void SplitMillisToHMS(u32 n, u32* hh, u32* mm, u32* ss); // 0x119210
-DATA(0x0024ecf8)
-extern char g_infoMaster[0x800]; // 0x64ecf8  query accumulator
+// The two query buffers DEFINED here (owner TU gameinfostring.obj's .bss, zero-init)
+// - REHOME DD-D: extern-only (only FormatGameInfoString references them). RVA-ascending.
 DATA(0x0024ebf8)
-extern char g_infoScratch[0x100]; // 0x64ebf8  per-piece scratch
+char g_infoScratch[0x100] = {0}; // 0x64ebf8  per-piece scratch
+DATA(0x0024ecf8)
+char g_infoMaster[0x800] = {0}; // 0x64ecf8  query accumulator
 
 // ---------------------------------------------------------------------------
 // CGameInfo::Check1 (0x1182f0; RVA-homed from src/Stub/BoundaryLowerThunks.cpp) - the

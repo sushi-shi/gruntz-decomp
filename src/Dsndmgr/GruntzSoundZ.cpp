@@ -31,10 +31,13 @@
 // The AIL MIDI driver state globals (.data), shared with the RezSync game-init.
 DATA(0x00253c5c)
 extern HMDIDRIVER g_ailMidiDriver; // 0x653c5c  AIL/digital MIDI driver handle (0 = none open)
+                                   // (shared with RezSync game-init - stays extern)
+// g_midiSeqCounter/g_ailDriver64 DEFINED here (owner TU gruntzsoundz.obj's .bss,
+// zero-init) - REHOME DD-D: extern-only (only this TU references them).
 DATA(0x00253c60)
-extern i32 g_midiSeqCounter; // 0x653c60  monotonic auto-name counter ("MIDI%i")
+i32 g_midiSeqCounter = 0; // 0x653c60  monotonic auto-name counter ("MIDI%i")
 DATA(0x00253c64)
-extern HMDIDRIVER g_ailDriver64; // 0x653c64  cached driver handle passed to Init
+HMDIDRIVER g_ailDriver64 = 0; // 0x653c64  cached driver handle passed to Init
 
 // ---------------------------------------------------------------------------
 // ~CGruntzSoundZ scalar destructor: stop/flush everything via Shutdown, then the

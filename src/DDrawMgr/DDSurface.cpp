@@ -39,6 +39,10 @@ void* operator new(u32);                          // engine allocator (reloc-mas
 // The live screen RGB-format shift table (same globals ShadeTableCache reads): the
 // per-channel "up" shifts (ea0/ea4/ea8 = R/G/B) and the device "down" widths
 // (eac/eb0/eb4). Reloc-masked DIR32.
+// g_lut16 (the 16-bit palette LUT, 256 u16) sits just before g_rUp (0x283ca0..0x283ea0):
+// DEFINED here (owner ddsurface.obj's .bss, zero-init) - REHOME DD-D, extern-only.
+DATA(0x00283ca0)
+u16 g_lut16[256] = {0}; // 0x683ca0
 DATA(0x00283ea0)
 extern i32 g_rUp; // 0x683ea0
 DATA(0x00283ea4)
@@ -62,6 +66,10 @@ extern void(__stdcall* g_pCopyRect)(struct tagRECT*, const struct tagRECT*);
 class CRezSurfaceItem;
 DATA(0x00253c88)
 extern CPtrArray g_imageCache; // 0x653c88
+// g_imageCacheIndex (the next-free slot, an i32 right after the 8-byte CPtrArray)
+// DEFINED here (owner ddsurface.obj's .bss, zero-init) - REHOME DD-D, extern-only.
+DATA(0x00253c90)
+i32 g_imageCacheIndex = 0; // 0x653c90
 
 // Global image-cache in-place reconstruction (0x13e070): mov ecx,&g_imageCache; jmp
 // ??0CPtrArray@@QAE@XZ (0x1b4f0b). This is the in-place re-construct of the CPtrArray

@@ -336,14 +336,12 @@ DATA(0x00253c70)
 extern i32 g_wap32Now; // ?g_wap32Now@@3HA
 DATA(0x00253c74)
 extern i32 g_wap32FrameDelta;
-DATA(0x00253c78)
-extern i32 g_wap32ClockReset;
-DATA(0x00253c7c)
-extern i32 g_wap32Run7c; // ?g_wap32Run7c@@3HA  (run-state countdown)
+// g_wap32ClockReset (0x253c78) + g_wap32Run7c (0x253c7c) DEFINED in src/Wap32/GameApp.cpp
+// (owner gameapp.obj's .bss); reference externs stay in <Globals.h>. (REHOME DD-D)
 DATA(0x00253c80)
 extern i32 g_wap32Run80; // ?g_wap32Run80@@3HA  (run-state reload value)
-DATA(0x00253c90)
-extern i32 g_imageCacheIndex; // 0x653c90
+// g_imageCacheIndex (0x253c90) DEFINED in src/DDrawMgr/DDSurface.cpp (owner
+// ddsurface.obj's .bss); reference extern stays in <Globals.h>. (REHOME DD-D)
 DATA(0x00253c9e)
 extern u8 g_clut[]; // 0x653c9e (G; B=+0x10000, R=+0x20000)
 DATA(0x00253ca0)
@@ -352,8 +350,8 @@ DATA(0x00263ca0)
 extern u8 g_lutBank2_663ca0[];
 DATA(0x00273ca0)
 extern u8 g_lutBank0_673ca0[];
-DATA(0x00283ca0)
-extern u16 g_lut16[256];
+// g_lut16 (0x283ca0) DEFINED in src/DDrawMgr/DDSurface.cpp (owner ddsurface.obj's
+// .bss); reference extern stays in <Globals.h>. (REHOME DD-D)
 // g_restoreHandler (0x683edc) DEFINED in src/DDrawMgr/DirectDrawMgr.cpp; the
 // reference extern stays in <Globals.h>.
 DATA(0x00283ef0)

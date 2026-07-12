@@ -514,6 +514,17 @@ WAP32::CGameMgr::CGameMgr() {
     InitializeTimeGlobal();
 }
 
+// The two clock-run globals owned by this TU (0x253c78/0x253c7c): g_wap32ClockReset
+// is the timeGetTime latch InitializeTimeGlobal reseeds, g_wap32Run7c the run-timing
+// countdown. DEFINED here (owner gameapp.obj's .bss, zero-init) - REHOME DD-D:
+// extern-only (only CGameMgr's clock code references them). Reference externs stay in
+// <Globals.h> (included above); the neighbouring g_wap32Now/FrameDelta/Run80 are shared
+// (multi-TU) and keep their binding in src/Globals.cpp.
+DATA(0x00253c78)
+i32 g_wap32ClockReset = 0; // 0x653c78
+DATA(0x00253c7c)
+i32 g_wap32Run7c = 0; // 0x653c7c  run-state countdown
+
 // -------------------------------------------------------------------------
 // CGameMgr::Run  (__thiscall; vtable +0x04, the engine-start entry).
 // Binds the manager to the game window (records the window + its owner app),
