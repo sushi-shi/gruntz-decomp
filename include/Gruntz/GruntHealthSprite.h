@@ -29,7 +29,6 @@
 #include <Gruntz/GruntIndicatorSprite.h> // CIndicatorActReg + g_healthActReg + CGruntRenderable/CGruntLayerHolder
 #include <Gruntz/UserLogic.h>     // CUserLogic base (CGruntHealthSprite : CUserLogic)
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive (Read +0x2c / Write +0x30)
-#include <Gruntz/SerialObjRef.h>  // the +0x34 serialized-object-reference (Chain @0x8c00)
 
 SIZE_UNKNOWN(CGruntHealthSprite);
 class CGruntHealthSprite : public CUserLogic {

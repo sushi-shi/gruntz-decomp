@@ -1167,7 +1167,7 @@ idleReseed:
         }
     }
     if (m_toyTimeSprite != 0) {
-        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite->m_flags |= 0x10000;
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;
@@ -1288,7 +1288,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CHudSprite* sp = m_selectedSprite;
+        CGameObject* sp = m_selectedSprite;
         if (sp) {
             tmp = *(i32*)((char*)sp + 0x188);
         }
@@ -1297,7 +1297,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CHudSprite* sp = m_toySprite;
+        CGameObject* sp = m_toySprite;
         if (sp) {
             tmp = *(i32*)((char*)sp + 0x188);
         }
@@ -1306,7 +1306,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CHudSprite* sp = m_healthSprite;
+        CGameObject* sp = m_healthSprite;
         if (sp) {
             tmp = *(i32*)((char*)sp + 0x188);
         }
@@ -1315,7 +1315,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CHudSprite* sp = m_staminaSprite;
+        CGameObject* sp = m_staminaSprite;
         if (sp) {
             tmp = *(i32*)((char*)sp + 0x188);
         }
@@ -1324,7 +1324,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CHudSprite* sp = m_toyTimeSprite;
+        CGameObject* sp = m_toyTimeSprite;
         if (sp) {
             tmp = *(i32*)((char*)sp + 0x188);
         }
@@ -1333,7 +1333,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CHudSprite* sp = m_wingzTimeSprite;
+        CGameObject* sp = m_wingzTimeSprite;
         if (sp) {
             tmp = *(i32*)((char*)sp + 0x188);
         }
@@ -1342,7 +1342,7 @@ i32 CGrunt::Save(CGruntArchive* ar) {
     g_serialCounter++;
     tmp = 0;
     {
-        CHudSprite* sp = m_powerupSprite;
+        CGameObject* sp = m_powerupSprite;
         if (sp) {
             tmp = *(i32*)((char*)sp + 0x188);
         }

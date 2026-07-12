@@ -479,23 +479,23 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
     m_entranceActive = 1;
     m_moveMode = type;
     if (m_healthSprite != 0) {
-        m_healthSprite->m_8 |= 0x10000;
+        m_healthSprite->m_flags |= 0x10000;
         m_healthSprite = 0;
     }
     if (m_staminaSprite != 0) {
-        m_staminaSprite->m_8 |= 0x10000;
+        m_staminaSprite->m_flags |= 0x10000;
         m_staminaSprite = 0;
     }
     if (m_toySprite != 0) {
-        m_toySprite->m_8 |= 0x10000;
+        m_toySprite->m_flags |= 0x10000;
         m_toySprite = 0;
     }
     if (m_toyTimeSprite != 0) {
-        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite->m_flags |= 0x10000;
         m_toyTimeSprite = 0;
     }
     if (m_wingzTimeSprite != 0) {
-        m_wingzTimeSprite->m_8 |= 0x10000;
+        m_wingzTimeSprite->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
     }
     m_prevEntranceDesc = m_154->m_1b4;

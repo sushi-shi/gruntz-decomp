@@ -969,11 +969,11 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 
         m_entranceStamped = 0;
         if (m_healthSprite != 0) {
-            m_healthSprite->m_8 |= 0x10000;
+            m_healthSprite->m_flags |= 0x10000;
             m_healthSprite = 0;
         }
         if (m_toySprite != 0) {
-            m_toySprite->m_8 |= 0x10000;
+            m_toySprite->m_flags |= 0x10000;
             m_toySprite = 0;
         }
 
@@ -1172,7 +1172,7 @@ i32 CGrunt::StepEntranceRelatchA() {
     i64 diff = (i64)(u32)g_645588 - *(i64*)&m_toyClockLo;
     if (diff >= *(i64*)&m_toyDurationLo && m_entranceStamped == 0 && ready == 1) {
         if (m_toyTimeSprite != 0) {
-            m_toyTimeSprite->m_8 |= 0x10000;
+            m_toyTimeSprite->m_flags |= 0x10000;
             m_toyTimeSprite = 0;
         }
         m_prevEntranceDesc = m_154->m_1b4;
@@ -1775,7 +1775,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
     if (elapsed >= *(i64*)&m_toyDurationLo) {
         if (m_entranceStamped == 0 && m_10->m_5c == m_lastTilePxX && m_10->m_60 == m_lastTilePxY) {
             if (m_toyTimeSprite) {
-                m_toyTimeSprite->m_8 |= 0x10000;
+                m_toyTimeSprite->m_flags |= 0x10000;
                 m_toyTimeSprite = 0;
             }
             SetEntrancePos(1, 1);
@@ -1858,31 +1858,31 @@ i32 CGrunt::BuildGruntExitAnimation() {
     m_deathAnimStarted = 1;
 
     if (m_healthSprite) {
-        m_healthSprite->m_8 |= 0x10000;
+        m_healthSprite->m_flags |= 0x10000;
         m_healthSprite = 0;
     }
     if (m_staminaSprite) {
-        m_staminaSprite->m_8 |= 0x10000;
+        m_staminaSprite->m_flags |= 0x10000;
         m_staminaSprite = 0;
     }
     if (m_toySprite) {
-        m_toySprite->m_8 |= 0x10000;
+        m_toySprite->m_flags |= 0x10000;
         m_toySprite = 0;
     }
     if (m_toyTimeSprite) {
-        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite->m_flags |= 0x10000;
         m_toyTimeSprite = 0;
     }
     if (m_wingzTimeSprite) {
-        m_wingzTimeSprite->m_8 |= 0x10000;
+        m_wingzTimeSprite->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
     }
     if (m_powerupSprite) {
-        m_powerupSprite->m_8 |= 0x10000;
+        m_powerupSprite->m_flags |= 0x10000;
         m_powerupSprite = 0;
     }
     if (m_selectedSprite) {
-        m_selectedSprite->m_8 |= 0x10000;
+        m_selectedSprite->m_flags |= 0x10000;
         m_selectedSprite = 0;
     }
 
@@ -2107,7 +2107,7 @@ reject:
         }
     }
     if (m_toyTimeSprite != 0) {
-        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite->m_flags |= 0x10000;
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;

@@ -44,6 +44,7 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Gruntz/ScanRectInit.h>  // the PathScan dirty-rect Set34a4 helper
 #include <Gruntz/Brickz.h>        // canonical CBrickzGrid (SearchEdge)
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
 #include <new>
 #pragma intrinsic(strcmp, sqrt)
@@ -597,11 +598,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
     switch (idx) {
         case SPELLZ_FREEZE: { // freeze
-            CHudSprite* spr =
-                (CHudSprite*)g_gameReg->m_world->m_8
+            CGameObject* spr =
+                g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 9, 1);
+            spr->m_7c->Init(spr);
+            ((CLightFx*)spr->m_7c->m_logic)->Activate((i32)"GAME_LIGHTING_FLASH", (i32)"GAME_FLASH", 9, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -611,11 +612,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELLZ_HEALTH: { // health
-            CHudSprite* spr =
-                (CHudSprite*)g_gameReg->m_world->m_8
+            CGameObject* spr =
+                g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 2, 1);
+            spr->m_7c->Init(spr);
+            ((CLightFx*)spr->m_7c->m_logic)->Activate((i32)"GAME_LIGHTING_FLASH", (i32)"GAME_FLASH", 2, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -625,11 +626,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELLZ_RESURRECTION: { // resurrection
-            CHudSprite* spr =
-                (CHudSprite*)g_gameReg->m_world->m_8
+            CGameObject* spr =
+                g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 8, 1);
+            spr->m_7c->Init(spr);
+            ((CLightFx*)spr->m_7c->m_logic)->Activate((i32)"GAME_LIGHTING_FLASH", (i32)"GAME_FLASH", 8, 1);
             return m_tileMgr->ResurrectCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -637,11 +638,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELLZ_TOYZ: { // toyz
-            CHudSprite* spr =
-                (CHudSprite*)g_gameReg->m_world->m_8
+            CGameObject* spr =
+                g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 7, 1);
+            spr->m_7c->Init(spr);
+            ((CLightFx*)spr->m_7c->m_logic)->Activate((i32)"GAME_LIGHTING_FLASH", (i32)"GAME_FLASH", 7, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -651,11 +652,11 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELLZ_TELEPORT: { // teleport
-            CHudSprite* spr =
-                (CHudSprite*)g_gameReg->m_world->m_8
+            CGameObject* spr =
+                g_gameReg->m_world->m_8
                     ->CreateSprite(0, m_lastTilePxX, m_lastTilePxY, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->m_init(spr);
-            spr->m_7c->m_18->Activate("GAME_LIGHTING_FLASH", "GAME_FLASH", 3, 1);
+            spr->m_7c->Init(spr);
+            ((CLightFx*)spr->m_7c->m_logic)->Activate((i32)"GAME_LIGHTING_FLASH", (i32)"GAME_FLASH", 3, 1);
             return m_tileMgr->CombatCue(
                 m_lastTilePxX,
                 m_lastTilePxY,
@@ -665,7 +666,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
             );
         }
         case SPELLZ_ROLLINGBALL: { // rolling ball (4 directions)
-            CHudSprite* n = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
+            CGameObject* n = g_gameReg->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX,
                 m_lastTilePxY - 0x20,
@@ -673,13 +674,13 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            n->CacheFirstFrame("LEVEL_ROLLINGBALL_NORTH");
-            CSpriteInner* ni = n->m_7c;
+            n->ApplyName("LEVEL_ROLLINGBALL_NORTH");
+            CGameObjAux* ni = n->m_7c;
             ni->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             n->m_124 = 0;
             n->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CHudSprite* e = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
+            CGameObject* e = g_gameReg->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX + 0x20,
                 m_lastTilePxY,
@@ -687,13 +688,13 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            e->CacheFirstFrame("LEVEL_ROLLINGBALL_EAST");
-            CSpriteInner* ei = e->m_7c;
+            e->ApplyName("LEVEL_ROLLINGBALL_EAST");
+            CGameObjAux* ei = e->m_7c;
             ei->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             e->m_124 = 0;
             e->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CHudSprite* s = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
+            CGameObject* s = g_gameReg->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX,
                 m_lastTilePxY + 0x20,
@@ -701,13 +702,13 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            s->CacheFirstFrame("LEVEL_ROLLINGBALL_SOUTH");
-            CSpriteInner* si = s->m_7c;
+            s->ApplyName("LEVEL_ROLLINGBALL_SOUTH");
+            CGameObjAux* si = s->m_7c;
             si->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             s->m_124 = 0;
             s->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
 
-            CHudSprite* w = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
+            CGameObject* w = g_gameReg->m_world->m_8->CreateSprite(
                 0,
                 m_lastTilePxX - 0x20,
                 m_lastTilePxY,
@@ -715,8 +716,8 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
                 "RollingBall",
                 0x40003
             );
-            w->CacheFirstFrame("LEVEL_ROLLINGBALL_WEST");
-            CSpriteInner* wi = w->m_7c;
+            w->ApplyName("LEVEL_ROLLINGBALL_WEST");
+            CGameObjAux* wi = w->m_7c;
             wi->m_bc = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzSpeed, 0x3e8);
             w->m_124 = 0;
             w->m_118 = (i32)g_buteMgr.GetDwordDef(s_Spellz, s_RollingBallzTime, 0x3e8);
@@ -810,10 +811,10 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
         return 0;
     }
 
-    CHudSprite* spr =
-        (CHudSprite*)(CHudSprite*)g_gameReg->m_world->m_8
+    CGameObject* spr =
+        g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0xcf850, s_SingleAnimation, 0x40003);
-    spr->CacheFirstFrame(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
+    spr->ApplyName(s_GRUNTZ_ + m_animSetName + s__LOSEITEM);
     spr->ApplyLookupGeometry(s_GRUNTZ_ + m_animSetName + s__LOSEITEM, 0);
 
     CGameRegistry* g = (CGameRegistry*)g_gameReg;

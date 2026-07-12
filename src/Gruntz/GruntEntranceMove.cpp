@@ -659,31 +659,31 @@ RVA(0x00068520, 0x2a2)
 i32 CGrunt::StartBombGruntRun() {
     StepAnimDispatchB();
     if (m_healthSprite != 0) {
-        m_healthSprite->m_8 |= 0x10000;
+        m_healthSprite->m_flags |= 0x10000;
         m_healthSprite = 0;
     }
     if (m_staminaSprite != 0) {
-        m_staminaSprite->m_8 |= 0x10000;
+        m_staminaSprite->m_flags |= 0x10000;
         m_staminaSprite = 0;
     }
     if (m_toySprite != 0) {
-        m_toySprite->m_8 |= 0x10000;
+        m_toySprite->m_flags |= 0x10000;
         m_toySprite = 0;
     }
     if (m_toyTimeSprite != 0) {
-        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite->m_flags |= 0x10000;
         m_toyTimeSprite = 0;
     }
     if (m_wingzTimeSprite != 0) {
-        m_wingzTimeSprite->m_8 |= 0x10000;
+        m_wingzTimeSprite->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
     }
     if (m_powerupSprite != 0) {
-        m_powerupSprite->m_8 |= 0x10000;
+        m_powerupSprite->m_flags |= 0x10000;
         m_powerupSprite = 0;
     }
     if (m_selectedSprite != 0) {
-        m_selectedSprite->m_8 |= 0x10000;
+        m_selectedSprite->m_flags |= 0x10000;
         m_selectedSprite = 0;
     }
     m_gruntKind = 0;
@@ -812,7 +812,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         m_wingzDurationLo = 0;
         m_wingzDurationHi = 0;
         if (m_wingzTimeSprite != 0) {
-            m_wingzTimeSprite->m_8 |= 0x10000;
+            m_wingzTimeSprite->m_flags |= 0x10000;
             m_wingzTimeSprite = 0;
         }
 
@@ -1122,7 +1122,7 @@ idleReseed:
         }
     }
     if (m_toyTimeSprite != 0) {
-        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite->m_flags |= 0x10000;
         m_toyTimeSprite = 0;
     }
     m_toyTime = 0;
@@ -1154,23 +1154,23 @@ modeDispatch: {
 finalize:
     ConsiderArrival(1);
     if (m_healthSprite != 0) {
-        m_healthSprite->m_8 |= 0x10000;
+        m_healthSprite->m_flags |= 0x10000;
         m_healthSprite = 0;
     }
     if (m_staminaSprite != 0) {
-        m_staminaSprite->m_8 |= 0x10000;
+        m_staminaSprite->m_flags |= 0x10000;
         m_staminaSprite = 0;
     }
     if (m_toySprite != 0) {
-        m_toySprite->m_8 |= 0x10000;
+        m_toySprite->m_flags |= 0x10000;
         m_toySprite = 0;
     }
     if (m_toyTimeSprite != 0) {
-        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite->m_flags |= 0x10000;
         m_toyTimeSprite = 0;
     }
     if (m_wingzTimeSprite != 0) {
-        m_wingzTimeSprite->m_8 |= 0x10000;
+        m_wingzTimeSprite->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
     }
     if (m_poweredUp == 0 && m_neighborValid == 0) {

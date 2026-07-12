@@ -37,69 +37,31 @@ class DirectSoundMgr; // folded GruntSoundSample
 #include <Gruntz/MovingLogic.h>
 
 // ---------------------------------------------------------------------------
-// The receiver the Add* registration call runs on: edi = sprite->m_7c->m_18.
-// On failure the creators do `edi = edi->m_38; edi->m_8 |= 0x10000`. The Add*
-// methods are unmatched engine methods (reached via incremental-link thunks);
-// declared external/no-body so their `call rel32` displacements reloc-mask.
-//   AddA(a, b, c)  (Health/Stamina/ToyTime/WingzTime; 3 args)
-//   AddB(a, b)    (Toy; 2 args)
-//   AddC(a, b, c)  (Powerup; 3 args)
-//   AddD(a, b)    (Selected; 2 args)
+// The grunt HUD/indicator sprites (health/stamina/toy/toytime/wingz/powerup/
+// selected) are plain CGameObject instances built by the factory (CreateSprite
+// -> CGameObject*). The former CHudSprite / CSpriteRegistrar / CSpriteRegRecord
+// views are DISSOLVED onto the real classes: the created object IS a CGameObject
+// (m_flags @+0x08 is the retire-flag word; m_118/m_124 the rolling-ball fields);
+// its +0x7c inner object is CGameObjAux (Init @+0x10, bound logic leaf m_logic
+// @+0x18); the per-kind registration receiver is that leaf's CONCRETE class -
+// CGruntHealthSprite::SetHealthGlyph @0x7f0d0 (shared by stamina/toytime/wingz,
+// which derive from it), CGruntToySprite::SetCell @0x7f920, CGruntSelectedSprite::
+// SetCell @0x7e9c0, CGruntPowerupSprite::SetCell @0x80380. On registration failure
+// the creators reach the bound object's flags via leaf->m_38->m_flags |= 0x10000.
+// (<Gruntz/UserLogic.h> CGameObject/CGameObjAux + the per-kind headers model these
+// directly, cast-free.)
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CSpriteRegRecord);
-struct CSpriteRegRecord {
-    char m_pad0[0x8];
-    u32 m_8; // +0x08  failure flag word (|= 0x10000)
-};
-
-SIZE_UNKNOWN(CSpriteRegistrar);
-class CSpriteRegistrar {
-public:
-    i32 AddA(i32 a, i32 b, i32 c);
-    i32 AddB(i32 a, i32 b);
-    i32 AddC(i32 a, i32 b, i32 c);
-    i32 AddD(i32 a, i32 b);
-    // The LightFx activate (0x2117): m_18->Activate(setKey, flashKey, frame, loop).
-    void Activate(const char* setKey, const char* flashKey, i32 frame, i32 loop);
-
-    char m_pad0[0x38];
-    CSpriteRegRecord* m_38; // +0x38  (failure-flag record holder)
-};
-
-// ---------------------------------------------------------------------------
-// The HUD sprite the factory builds. The creators read sprite->m_7c (an inner
-// object), call sprite->m_7c->[0x10](sprite) (init), and reach the registrar at
-// sprite->m_7c->m_18. Layout-free apart from m_7c.
-// ---------------------------------------------------------------------------
+// CSpriteInner - GruntObjEntry's +0x7c inner object as SEEN by <Gruntz/SpriteFactory.h>
+// (a lean duplicate of the canonical CGameObjAux; its full fold is a SpriteFactory.h
+// TODO). Kept only for that consumer; the grunt creators use CGameObjAux directly.
 SIZE_UNKNOWN(CSpriteInner);
 struct CSpriteInner {
     char m_pad0[0x10];
-    void (*m_init)(void* self); // +0x10  init virtual (called with sprite)
+    void (*m_init)(void* self); // +0x10  init driver (== CGameObjAux::Init)
     char m_pad14[0x18 - 0x14];
-    CSpriteRegistrar* m_18; // +0x18  the registrar
+    CUserLogic* m_18; // +0x18  bound logic leaf (== CGameObjAux::m_logic)
     char m_pad1c[0xbc - 0x1c];
     i32 m_bc; // +0xbc  (rolling-ball speed; LoadGruntAbilityTuning)
-};
-
-SIZE_UNKNOWN(CHudSprite);
-struct CHudSprite {
-    // The CGameObject-base name/geometry setters the one-shot "SingleAnimation"
-    // sprite (BuildGruntLoseItemAnimation) drives: ApplyName(key) (0x150540, ret 4)
-    // and ApplyLookupGeometry(key, frame) (0x1505b0, ret 8). External/reloc-masked.
-    // The CGameObject-base name/sprite setters, folded here (the former per-TU CGruntSprite
-    // facet view is gone); the created sprite IS this game object.
-    void CacheFirstFrame(const char* name);               // 0x1504d0
-    void CacheFrame(const char* key, i32 frame);          // 0x150540 (ApplyName)
-    void ApplyLookupGeometry(const char* key, i32 frame); // 0x1505b0
-
-    char m_pad0[0x8];
-    i32 m_8; // +0x08  (sprite flag word; arrival sets |= 0x10000 to retire it)
-    char m_padc[0x7c - 0xc];
-    CSpriteInner* m_7c; // +0x7c
-    char m_pad80[0x118 - 0x80];
-    i32 m_118; // +0x118  (rolling-ball time; LoadGruntAbilityTuning)
-    char m_pad11c[0x124 - 0x11c];
-    i32 m_124; // +0x124  (rolling-ball; cleared)
 };
 
 // The on-screen cue gate's visibility rect, reached as
@@ -1447,14 +1409,14 @@ public:
     i32 m_1ac;                     // +0x1ac (serialized)
     i32 m_1b0;                     // +0x1b0 (serialized)
     i32 m_1b4;                     // +0x1b4 (serialized)
-    CHudSprite* m_selectedSprite;  // +0x1b8
-    CHudSprite* m_toySprite;       // +0x1bc
-    CString m_animSetName;         // +0x1c0  (anim-name loader: "GRUNTZ_"+m_animSetName+...)
-    CHudSprite* m_healthSprite;    // +0x1c4
-    CHudSprite* m_staminaSprite;   // +0x1c8
-    CHudSprite* m_toyTimeSprite;   // +0x1cc
-    CHudSprite* m_wingzTimeSprite; // +0x1d0
-    CHudSprite* m_powerupSprite;   // +0x1d4
+    CGameObject* m_selectedSprite;  // +0x1b8  (folded CHudSprite -> CGameObject)
+    CGameObject* m_toySprite;       // +0x1bc
+    CString m_animSetName;          // +0x1c0  (anim-name loader: "GRUNTZ_"+m_animSetName+...)
+    CGameObject* m_healthSprite;    // +0x1c4
+    CGameObject* m_staminaSprite;   // +0x1c8
+    CGameObject* m_toyTimeSprite;   // +0x1cc
+    CGameObject* m_wingzTimeSprite; // +0x1d0
+    CGameObject* m_powerupSprite;   // +0x1d4
     i32 m_arrived;                 // +0x1d8 (entrance-arrival gate)
     i32 m_1dc;                     // +0x1dc
     i32 m_1e0;                     // +0x1e0

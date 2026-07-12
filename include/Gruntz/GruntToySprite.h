@@ -11,7 +11,6 @@
 
 #include <Gruntz/GruntIndicatorSprite.h> // shared registry/entry/renderable types
 #include <Gruntz/SerialArchive.h>        // shared CSerialArchive (Read +0x2c / Write +0x30)
-#include <Gruntz/SerialObjRef.h>         // the +0x34 serialized-object-reference (Chain @0x8c00)
 
 SIZE_UNKNOWN(CGruntToySprite);
 VTBL(CGruntToySprite, 0x001e7b4c); // vtable_names -> code (RTTI game class)

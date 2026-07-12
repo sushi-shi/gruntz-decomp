@@ -72,6 +72,10 @@
 // return 0; else return 1.
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
+#include <Gruntz/GruntHealthSprite.h>  // CGruntHealthSprite::SetHealthGlyph (health/stamina/toytime/wingz)
+#include <Gruntz/GruntToySprite.h>      // CGruntToySprite::SetCell
+#include <Gruntz/GruntPowerupSprite.h>  // CGruntPowerupSprite::SetCell
+#include <Gruntz/GruntSelectedSprite.h> // CGruntSelectedSprite::SetCell
 #include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry (g_reg_644af0 dispatch, RunAct)
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
@@ -1057,28 +1061,28 @@ i32 CGrunt::CommitArrival() {
 RVA(0x0004b240, 0xaa)
 void CGrunt::ClearAllSprites() {
     if (m_selectedSprite) {
-        m_selectedSprite->m_8 |= 0x10000;
+        m_selectedSprite->m_flags |= 0x10000;
         m_selectedSprite = 0;
     }
     if (m_healthSprite) {
-        m_healthSprite->m_8 |= 0x10000;
+        m_healthSprite->m_flags |= 0x10000;
         m_healthSprite = 0;
     }
     if (m_toySprite) {
-        m_toySprite->m_8 |= 0x10000;
+        m_toySprite->m_flags |= 0x10000;
         m_toySprite = 0;
     }
     if (m_entranceCommitted == 0) {
         if (m_staminaSprite) {
-            m_staminaSprite->m_8 |= 0x10000;
+            m_staminaSprite->m_flags |= 0x10000;
             m_staminaSprite = 0;
         }
         if (m_toyTimeSprite) {
-            m_toyTimeSprite->m_8 |= 0x10000;
+            m_toyTimeSprite->m_flags |= 0x10000;
             m_toyTimeSprite = 0;
         }
         if (m_wingzTimeSprite) {
-            m_wingzTimeSprite->m_8 |= 0x10000;
+            m_wingzTimeSprite->m_flags |= 0x10000;
             m_wingzTimeSprite = 0;
         }
     }
@@ -1695,14 +1699,14 @@ i32 CGrunt::CreateHealthSprite() {
     }
 
     m_healthSprite =
-        (CHudSprite*)g_gameReg->m_world->m_8
+        g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntHealthSprite, 0x40003);
-    m_healthSprite->m_7c->m_init(m_healthSprite);
+    m_healthSprite->m_7c->Init(m_healthSprite);
 
-    CSpriteInner* inner = m_healthSprite->m_7c;
-    CSpriteRegistrar* reg = inner->m_18;
-    if (!reg->AddA(m_tileOwnerHi, m_tileOwnerLo, m_health)) {
-        reg->m_38->m_8 |= 0x10000;
+    CGameObjAux* inner = m_healthSprite->m_7c;
+    CGruntHealthSprite* reg = (CGruntHealthSprite*)inner->m_logic;
+    if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_health)) {
+        reg->m_38->m_flags |= 0x10000;
         m_healthSprite = 0;
         return 0;
     }
@@ -1720,13 +1724,13 @@ i32 CGrunt::CreateToySprite() {
     }
 
     m_toySprite =
-        (CHudSprite*)g_gameReg->m_world->m_8
+        g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60 - 0x19, 0xdbba0, s_GruntToySprite, 0x40003);
-    m_toySprite->m_7c->m_init(m_toySprite);
+    m_toySprite->m_7c->Init(m_toySprite);
 
-    CSpriteRegistrar* reg = m_toySprite->m_7c->m_18;
-    if (!reg->AddB(m_tileOwnerHi, m_tileOwnerLo)) {
-        reg->m_38->m_8 |= 0x10000;
+    CGruntToySprite* reg = (CGruntToySprite*)m_toySprite->m_7c->m_logic;
+    if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
+        reg->m_38->m_flags |= 0x10000;
         m_toySprite = 0;
         return 0;
     }
@@ -1743,7 +1747,7 @@ i32 CGrunt::CreateStaminaSprite() {
         return 0;
     }
 
-    m_staminaSprite = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
+    m_staminaSprite = g_gameReg->m_world->m_8->CreateSprite(
         0,
         m_10->m_5c,
         m_10->m_60 - 0x20,
@@ -1751,12 +1755,12 @@ i32 CGrunt::CreateStaminaSprite() {
         s_GruntStaminaSprite,
         0x40003
     );
-    m_staminaSprite->m_7c->m_init(m_staminaSprite);
+    m_staminaSprite->m_7c->Init(m_staminaSprite);
 
-    CSpriteInner* inner = m_staminaSprite->m_7c;
-    CSpriteRegistrar* reg = inner->m_18;
-    if (!reg->AddA(m_tileOwnerHi, m_tileOwnerLo, m_stamina)) {
-        reg->m_38->m_8 |= 0x10000;
+    CGameObjAux* inner = m_staminaSprite->m_7c;
+    CGruntHealthSprite* reg = (CGruntHealthSprite*)inner->m_logic;
+    if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_stamina)) {
+        reg->m_38->m_flags |= 0x10000;
         m_staminaSprite = 0;
         return 0;
     }
@@ -1776,15 +1780,15 @@ i32 CGrunt::CreateToyTimeSprite() {
     }
 
     if (m_staminaSprite) {
-        m_staminaSprite->m_8 |= 0x10000;
+        m_staminaSprite->m_flags |= 0x10000;
         m_staminaSprite = 0;
     }
     if (m_wingzTimeSprite) {
-        m_wingzTimeSprite->m_8 |= 0x10000;
+        m_wingzTimeSprite->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
     }
 
-    m_toyTimeSprite = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
+    m_toyTimeSprite = g_gameReg->m_world->m_8->CreateSprite(
         0,
         m_10->m_5c,
         m_10->m_60 - 0x20,
@@ -1792,12 +1796,12 @@ i32 CGrunt::CreateToyTimeSprite() {
         s_GruntToyTimeSprite,
         0x40003
     );
-    m_toyTimeSprite->m_7c->m_init(m_toyTimeSprite);
+    m_toyTimeSprite->m_7c->Init(m_toyTimeSprite);
 
-    CSpriteInner* inner = m_toyTimeSprite->m_7c;
-    CSpriteRegistrar* reg = inner->m_18;
-    if (!reg->AddA(m_tileOwnerHi, m_tileOwnerLo, m_toyTime)) {
-        reg->m_38->m_8 |= 0x10000;
+    CGameObjAux* inner = m_toyTimeSprite->m_7c;
+    CGruntHealthSprite* reg = (CGruntHealthSprite*)inner->m_logic;
+    if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_toyTime)) {
+        reg->m_38->m_flags |= 0x10000;
         m_toyTimeSprite = 0;
         return 0;
     }
@@ -1816,11 +1820,11 @@ i32 CGrunt::CreateWingzTimeSprite() {
     }
 
     if (m_toyTimeSprite) {
-        m_toyTimeSprite->m_8 |= 0x10000;
+        m_toyTimeSprite->m_flags |= 0x10000;
         m_toyTimeSprite = 0;
     }
 
-    m_wingzTimeSprite = (CHudSprite*)g_gameReg->m_world->m_8->CreateSprite(
+    m_wingzTimeSprite = g_gameReg->m_world->m_8->CreateSprite(
         0,
         m_10->m_5c,
         m_10->m_60 - 0x26,
@@ -1828,12 +1832,12 @@ i32 CGrunt::CreateWingzTimeSprite() {
         s_GruntWingzTimeSprite,
         0x40003
     );
-    m_wingzTimeSprite->m_7c->m_init(m_wingzTimeSprite);
+    m_wingzTimeSprite->m_7c->Init(m_wingzTimeSprite);
 
-    CSpriteInner* inner = m_wingzTimeSprite->m_7c;
-    CSpriteRegistrar* reg = inner->m_18;
-    if (!reg->AddA(m_tileOwnerHi, m_tileOwnerLo, m_wingzTime)) {
-        reg->m_38->m_8 |= 0x10000;
+    CGameObjAux* inner = m_wingzTimeSprite->m_7c;
+    CGruntHealthSprite* reg = (CGruntHealthSprite*)inner->m_logic;
+    if (!reg->SetHealthGlyph(m_tileOwnerHi, m_tileOwnerLo, m_wingzTime)) {
+        reg->m_38->m_flags |= 0x10000;
         m_wingzTimeSprite = 0;
         return 0;
     }
@@ -1851,14 +1855,14 @@ i32 CGrunt::CreatePowerupSprite(i32 a) {
     }
 
     m_powerupSprite =
-        (CHudSprite*)g_gameReg->m_world->m_8
+        g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x15, s_GruntPowerupSprite, 0x40003);
-    m_powerupSprite->m_7c->m_init(m_powerupSprite);
+    m_powerupSprite->m_7c->Init(m_powerupSprite);
 
-    CSpriteInner* inner = m_powerupSprite->m_7c;
-    CSpriteRegistrar* reg = inner->m_18;
-    if (!reg->AddC(m_tileOwnerHi, m_tileOwnerLo, a)) {
-        reg->m_38->m_8 |= 0x10000;
+    CGameObjAux* inner = m_powerupSprite->m_7c;
+    CGruntPowerupSprite* reg = (CGruntPowerupSprite*)inner->m_logic;
+    if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo, a)) {
+        reg->m_38->m_flags |= 0x10000;
         m_powerupSprite = 0;
         return 0;
     }
@@ -1876,13 +1880,13 @@ i32 CGrunt::CreateSelectedSprite() {
     }
 
     m_selectedSprite =
-        (CHudSprite*)g_gameReg->m_world->m_8
+        g_gameReg->m_world->m_8
             ->CreateSprite(0, m_10->m_5c, m_10->m_60, 0x14, s_GruntSelectedSprite, 0x40003);
-    m_selectedSprite->m_7c->m_init(m_selectedSprite);
+    m_selectedSprite->m_7c->Init(m_selectedSprite);
 
-    CSpriteRegistrar* reg = m_selectedSprite->m_7c->m_18;
-    if (!reg->AddD(m_tileOwnerHi, m_tileOwnerLo)) {
-        reg->m_38->m_8 |= 0x10000;
+    CGruntSelectedSprite* reg = (CGruntSelectedSprite*)m_selectedSprite->m_7c->m_logic;
+    if (!reg->SetCell(m_tileOwnerHi, m_tileOwnerLo)) {
+        reg->m_38->m_flags |= 0x10000;
         m_selectedSprite = 0;
         return 0;
     }

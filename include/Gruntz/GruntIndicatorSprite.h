@@ -100,8 +100,11 @@ extern "C" u32 g_6bf3bc; // canonical _g_6bf3bc @ 0x6bf3bc (draw-delta mirror)
 // the RegisterActs id->entry resolve uses.
 #include <Bute/ButeMgr.h>
 #include <Gruntz/ActNameRegistry.h>
-#include <Gruntz/ActReg.h>           // the shared CActReg coordinate-registry archetype
-extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+// NOTE: the g_gameReg singleton is NOT declared here - a header extern would force the
+// CGameRegistry view on every includer, clashing with the WwdGameReg view Grunt.cpp uses
+// (which now includes the concrete HUD-sprite headers). The consuming .cpp files declare
+// `extern "C" CGameRegistry* g_gameReg;` locally.
 
 // ---------------------------------------------------------------------------
 // CIndicatorActReg - the per-class activation-coordinate registry singleton each

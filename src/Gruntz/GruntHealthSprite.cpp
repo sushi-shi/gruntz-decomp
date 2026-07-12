@@ -10,6 +10,7 @@
 // Only offsets / code bytes are load-bearing; names are placeholders for the
 // recovered engine identities.
 #include <Gruntz/GruntHealthSprite.h>
+#include <Gruntz/SerialObjRef.h> // (moved from header; +0x34 serialized-object-ref, .cpp-only)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
