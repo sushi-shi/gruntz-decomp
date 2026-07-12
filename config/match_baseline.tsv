@@ -468,12 +468,12 @@ areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	3	5faa6e31be7e	0x9a0b0
 areamgr	?SameGroup@CAreaMgr@@QAEHH@Z	58.5000	58.5000	3	0d6263294c55	0x9b430
 areamgr	?TokenMgrReset99b80@@YAXXZ	100.0000	100.0000	2	eb9ce7ee67f4	0x99b80
 arrayserialize	?Serialize@CMovieScratch@@UAEXAAVCArchive@@@Z	72.6849	72.6849	1	adba7d3f736d	0x39fa0
-attract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	6	07fd10f26015	0xa0a30
+attract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	7	701b2517f1fd	0xa0a30
 attract	?FadeInTitle@CState@@QAEHPBDHHHHH@Z	75.3691	75.3691	1	ca3dbe62c1f4	0xfa1f0
 attract	?HeaderSerialize@CPlay@@QAEHPAUCSerialArchive@@HHH@Z	0.0000	0.0000	1	cpp:634a5e635029	0xfafa0
 attract	?InputVirtual@CState@@UAEHXZ	0.0000	0.0000	1	cpp:100030976c43	0xface0
 attract	?Load@CMgrPersistObj@@QAEHPAUCSerialArchive@@@Z	95.9116	95.9116	1	a73bcd8f7217	0xfaff0
-attract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	6	01f1fa9e42e0	0xa03f0
+attract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	7	0c14cf88c529	0xa03f0
 attract	?Method_fa410@CSoundFxEmitter@@QAEHHHHH@Z	100.0000	100.0000	1	57400620ae41	0xfa410
 attract	?Method_fa550@CSoundFxEmitter@@QAEHHHHH@Z	98.6759	98.6759	1	d3060c458c2d	0xfa550
 attract	?Method_fa790@CSoundFxEmitter@@QAEHHHH@Z	99.0566	99.0566	1	897d297d4323	0xfa790
