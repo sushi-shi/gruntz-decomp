@@ -141,7 +141,7 @@ extern i32 g_projRegScratch;
 extern i32 g_posSoundReq;
 extern char g_cheatTable[];
 extern char g_secretMsgA[0x20];
-extern char g_secretMsgB[0x20];
+extern char g_secretMsgB[0x80]; // strB extent 0x80 (SecretMsgRow[24].strB), not 0x20 (DD-G)
 extern char g_cheatTableEnd[];
 extern i32 g_bootyCheatBuilt;
 extern i32 g_stepRun;
@@ -327,7 +327,7 @@ extern i32 g_randSeed;
 extern float g_zeroF;
 extern char* g_colorNames[];
 extern char* g_difficultyNames[];
-extern char g_imageTag[];
+// g_imageTag folded onto g_bmpHeaderTemplate (same 0x21aabc "BM" datum). (DD-G)
 extern "C" u32 g_61ab14;
 extern char g_mapNamePre[4];
 extern char g_mapNameBuf[0x200];
@@ -336,11 +336,9 @@ extern char* g_areaNames[];
 extern CImagePool* g_previewMgr;
 extern void* g_previewImage;
 extern i32 g_buildNumber;
-extern i32 g_pfRedShift;
-extern i32 g_pfGreenSize;
-extern i32 g_pfRedSize;
-extern i32 g_pfGreenShift;
-extern i32 g_pfBlueSize;
+// g_pfRedShift/GreenSize/RedSize/GreenShift/BlueSize folded onto the canonical RGB565
+// ints g_rUp/g_gUp/g_rDown/g_gDown/g_bDown (their extern decls stay local to the using
+// TUs, matching the pre-fold convention). (DD-G)
 extern u8 g_grayRamp[];
 extern "C" i32 g_helperRefCount;
 extern i32 g_6bf8dc;

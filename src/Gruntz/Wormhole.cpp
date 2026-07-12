@@ -151,6 +151,13 @@ struct CTeleMgrSub {
 // binding lives in LogicActRegistrars.cpp).
 extern char s_actKeyB[];
 
+// The teleporter geometry-lookup key strings (.data literals). DEFINED here (owner
+// TU), reference externs stay in <Globals.h>. (REHOME DD-G)
+DATA(0x0020a72c)
+char g_teleporterSpawnKey[] = "Teleporter"; // 0x60a72c
+DATA(0x0020d1fc)
+char g_teleporterCloseKey[] = "GAME_TELEPORTERCLOSE"; // 0x60d1fc
+
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
 // NameVec is the shared def in <Gruntz/NameVec.h>. (The address is DATA-bound as

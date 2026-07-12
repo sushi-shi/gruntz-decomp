@@ -35,6 +35,10 @@ struct BzGeomPair {
 };
 DATA(0x001e8fe4)
 extern BzGeomPair g_idleGeom[4]; // 0x5e8fe4
+// The secret-bonus group-ratio scale (0x5e93b0, .rdata const 100.0); DEFINED here
+// (owner TU), reference extern stays in <Globals.h>. (REHOME DD-G)
+DATA(0x001e93b0)
+float g_secretRatioScale = 100.0f; // 0x5e93b0
 DATA(0x0021ab24)
 extern i32 g_sndCueTag; // 0x61ab24 (?g_sndCueTag@@3HA)
 
@@ -56,6 +60,13 @@ struct SecretMsgRow {
 };
 DATA(0x00229f30)
 extern SecretMsgRow g_secretMsgRows[]; // 0x629f30  (0xa0 stride)
+// The single-record banner's encoded string pair (.bss, decoded in place at runtime).
+// They are the strA[0x20]/strB[0x80] of the LAST SecretMsgRow (row 24 @0x629f30+0xf00 =
+// 0x62ae30/0x62ae50); DEFINED here (owner TU), reference externs stay in <Globals.h>. (DD-G)
+DATA(0x0022ae30)
+char g_secretMsgA[0x20]; // 0x62ae30  encoded line A
+DATA(0x0022ae50)
+char g_secretMsgB[0x80]; // 0x62ae50  encoded line B (strB extent 0x80, not 0x20)
 
 // The shared HUD message-sprite helper (0x1154b0, __cdecl): pushes a transient
 // text sprite carrying `text` into `rect` with the given duration/colour flags.

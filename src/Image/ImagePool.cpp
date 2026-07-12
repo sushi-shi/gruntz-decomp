@@ -122,10 +122,13 @@ namespace ApiCallerStubs {
     void winapi_177160_CreatePalette_DeleteObject_GetDC_RealizePalette_ReleaseD();
 } // namespace ApiCallerStubs
 
-// The 14-byte "BM" BITMAPFILEHEADER template SaveBmp copies up front ($SG .rdata
-// @0x61aabc; canonical in Globals.h - re-declared bare here, the fat Globals.h
-// include perturbs this TU's regalloc).
-extern char g_bmpHeaderTemplate[];
+// The "BM" BITMAPFILEHEADER magic (0x61aabc, .data). SaveBmp copies 14 bytes up front
+// (over-reading past the 4-byte "BM\0\0" into the adjacent DIRPAL.CPP path literal -
+// only the leading "BM" bfType matters; bfSize/bfOffBits are patched after). DEFINED
+// here (owner TU): this is the SINGLE datum FileImage's `g_imageTag` alias folded onto
+// (both were 0x21aabc). Reference extern stays in <Globals.h>. (REHOME DD-G)
+DATA(0x0021aabc)
+char g_bmpHeaderTemplate[4] = "BM"; // 0x61aabc  = 42 4d 00 00
 
 // The engine's cached GDI fn-ptr globals (retail reaches GDI via `call ds:[0x6c44xx]`);
 // DATA-bound once in DirPal.cpp, re-declared here (extern only) so the calls reloc-mask.

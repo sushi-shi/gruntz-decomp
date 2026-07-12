@@ -60,8 +60,6 @@ DATA(0x001e8e98)
 extern void* g_5e8e98;
 DATA(0x001e9068)
 extern i32 g_idleSpriteIds[4]; // 0x5e9068
-DATA(0x001e93b0)
-extern float g_secretRatioScale; // 0x5e93b0
 DATA(0x001e94b8)
 extern const i32 g_msgmap_CCheckpointDlg;
 DATA(0x001ea3e0)
@@ -76,20 +74,6 @@ DATA(0x001ef6a8)
 extern const double c_powExp; // 0x5ef6a8  pow() exponent
 DATA(0x001ef6b0)
 extern const double c_acosNorm; // 0x5ef6b0  acos() normalizer arg
-DATA(0x001efb40)
-extern float g_one; // 1.0
-DATA(0x001efb44)
-extern float g_255; // 255.0
-DATA(0x001efb48)
-extern float g_p01; // 0.01
-DATA(0x001efb4c)
-extern float g_lumaR; // 0.5859375
-DATA(0x001efb50)
-extern float g_lumaG; // 0.296875
-DATA(0x001efb54)
-extern float g_lumaB; // 0.109375
-DATA(0x001efb58)
-extern float g_inv255; // 1/255
 // The GetRetAddr diagnostic breadcrumb: the coordinate registries (ActColl / ProjAct
 // / ZVec / TypeKeyColl) stamp the caller's return address here right before an Insert.
 // Write-only (no reader); the "ActAlloc"/"ProjActAlloc"/"zvecErr" names were misnomers.
@@ -100,8 +84,6 @@ DATA(0x001f0464)
 extern u32 g_zvecErrSentinel; // 0x6bf464
 DATA(0x001f04f8)
 extern const double g_motionNegHalf;
-DATA(0x0020a72c)
-extern char g_teleporterSpawnKey[]; // "Teleporter" @ 0x60a72c
 DATA(0x0020a7ac)
 extern char g_wormholeSpawnKey[]; // "Wormhole" @ 0x60a7ac
 DATA(0x0020aac8)
@@ -124,8 +106,6 @@ DATA(0x0020cca0)
 extern char k_60cca0[];
 DATA(0x0020cca4)
 extern char s_codeD[]; // "D"
-DATA(0x0020d1fc)
-extern char g_teleporterCloseKey[]; // "GAME_TELEPORTERCLOSE" @ 0x60d1fc
 DATA(0x0020d2e8)
 extern char k_60d2e8[];
 DATA(0x0020d2ec)
@@ -157,16 +137,8 @@ extern char s_GameMessagez[]; // s_GAME_MESSAGEZ_00611ab8 (image-set name litera
 // g_archiveDefault612618 / g_dat613054 DEFINED in src/Gruntz/Play.cpp (owner TU).
 DATA(0x002135e8)
 extern char s_PREVIEW_6135e8[]; // "PREVIEW"
-DATA(0x0021aabc)
-extern char g_bmpHeaderTemplate[]; // 0x61aabc
 DATA(0x0021ab14)
 extern i32 g_wwdObjIdCounter; // 0x61ab14
-DATA(0x0021cf40)
-extern "C" i16 g_charClass[]; // 0x61cf40
-DATA(0x0021d140)
-extern "C" i16 g_transTable[]; // 0x61d140  (state x class table, row stride 147)
-DATA(0x0021d142)
-extern "C" i16 g_transTable142[][147]; // 0x61d142
 DATA(0x00224fe8)
 extern u16 g_modeTab_e8; // 0x624fe8
 DATA(0x00224fea)
@@ -178,14 +150,6 @@ extern u16 g_modeTab_ee; // 0x624fee
 DATA(0x002256f0)
 extern double g_scale6256f0;
 // g_projReg* R3-registry fields: DEFINED in src/Gruntz/ActionArea.cpp (owner TU).
-DATA(0x00229f50)
-extern char g_cheatTable[];
-DATA(0x0022ae30)
-extern char g_secretMsgA[0x20]; // 0x62ae30  encoded
-DATA(0x0022ae50)
-extern char g_secretMsgB[0x20]; // 0x62ae50  encoded
-DATA(0x0022aef0)
-extern char g_cheatTableEnd[];
 // g_stepRun/g_stepCol/g_stepRow/g_diffTier DEFINED in src/Gruntz/BattlezMapConfig.cpp (owner TU).
 // g_act* fields DEFINED in src/Gruntz/SecretTeleporterTrigger.cpp (owner TU).
 // g_actReg4* fields DEFINED in src/Gruntz/GruntStartingPoint.cpp (owner TU).
@@ -267,8 +231,6 @@ DATA(0x00253c80)
 extern i32 g_wap32Run80; // ?g_wap32Run80@@3HA  (run-state reload value)
 // g_imageCacheIndex (0x253c90) DEFINED in src/DDrawMgr/DDSurface.cpp (owner
 // ddsurface.obj's .bss); reference extern stays in <Globals.h>. (REHOME DD-D)
-DATA(0x00253c9e)
-extern u8 g_clut[]; // 0x653c9e (G; B=+0x10000, R=+0x20000)
 DATA(0x00253ca0)
 extern u8 g_lutBank1_653ca0[];
 DATA(0x00263ca0)
@@ -279,8 +241,6 @@ extern u8 g_lutBank0_673ca0[];
 // .bss); reference extern stays in <Globals.h>. (REHOME DD-D)
 // g_restoreHandler (0x683edc) DEFINED in src/DDrawMgr/DirectDrawMgr.cpp; the
 // reference extern stays in <Globals.h>.
-DATA(0x00283ef0)
-extern u8 g_683ef0[];
 // g_warpU..g_warpColorkey (the texture-walk accumulators/steps, 0x2856f0/0x2856f4,
 // 0x2a16f8..0x2a1700, 0x2becf0/0x2becfc) are DEFINED in their owning TU
 // src/Image/WarpTextureBlit.cpp (warptextureblit.obj's .bss); the reference externs
@@ -310,34 +270,14 @@ DATA(0x002c1288)
 extern i32 g_randSeed; // 0x6c1288  LCG seed
 // g_zeroF (0x5eab40, shared 0.0f .rdata const) DEFINED in src/Gruntz/BattlezData.cpp.
 // g_colorNames / g_difficultyNames DEFINED in src/Gruntz/Play.cpp (owner TU).
-DATA(0x0021aabc)
-extern char g_imageTag[];
 DATA(0x0021ab14)
 extern "C" u32 g_61ab14;
 DATA(0x00244ca4)
 extern void* g_renderCtx; // g_644ca4
-DATA(0x002454e8)
-extern char* g_areaNames[];
 // g_645570 (the DirectInputMgr2 reset singleton @0x245570) is bound canonically in
 // GruntzMgr.cpp; the former g_glsResetMgr view (VA-typo'd 0x645570, mis-typed
 // GLSResetMgr*) was folded onto it (PlayStateActivate uses g_645570 directly).
-DATA(0x0024c814)
-extern CImagePool* g_previewMgr;
-DATA(0x0024c868)
-extern void* g_previewImage;
 // g_buildNumber (0x651614) DEFINED in src/Gruntz/GameAssetNamespaces.cpp (owner TU).
-DATA(0x00283ea0)
-extern i32 g_pfRedShift; // 0x683ea0
-DATA(0x00283ea4)
-extern i32 g_pfGreenSize; // 0x683ea4
-DATA(0x00283eac)
-extern i32 g_pfRedSize; // 0x683eac
-DATA(0x00283eb0)
-extern i32 g_pfGreenShift; // 0x683eb0
-DATA(0x00283eb4)
-extern i32 g_pfBlueSize; // 0x683eb4
-DATA(0x00284af0)
-extern u8 g_grayRamp[];
 DATA(0x002bf400)
 extern "C" i32 g_helperRefCount; // 0x6bf400
 // g_6bf8dc (debug-output mode word, VA 0x6bf8dc) is DEFINED in its owning TU

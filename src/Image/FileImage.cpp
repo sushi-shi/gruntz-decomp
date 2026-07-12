@@ -33,8 +33,15 @@ extern HINSTANCE g_resModule;
 // the buffer addresses are differently-named symbols in the base obj (the absolute
 // pushes/compares reloc-mask against the retail DAT_* names). Declared in their
 // retail BSS order so the layout follows the binary.
-static u8 s_palBmp[0x400];     // 0x6842f0
-static u8 s_palPcx[0x400];     // 0x6846f0
+// The shared RGB palette-ramp buffers (.bss). g_683ef0 (the 8-bit source's reversed
+// RGB ramp) + g_grayRamp (the greyscale ramp). DEFINED here (owner TU), reference
+// externs stay in <Globals.h>. (REHOME DD-G)
+DATA(0x00283ef0)
+u8 g_683ef0[0x400];        // 0x683ef0
+static u8 s_palBmp[0x400]; // 0x6842f0
+static u8 s_palPcx[0x400]; // 0x6846f0
+DATA(0x00284af0)
+u8 g_grayRamp[0x401];          // 0x684af0  (indices [1..0x400] written)
 static u8 s_palPidData[0x400]; // 0x684ef0 (CDDSurface::DecodePid)
 static u8 s_palPcxData[0x400]; // 0x6852f0 (CDDSurface::DecodePcxData)
 
@@ -305,13 +312,13 @@ i32 CDDSurface::SaveDispatch(char* a1, void* a2, void* a3) {
 // (IsValid), the filename (non-null, non-empty), the 8-bit depth, and the palette
 // source (arg2->m_0c). Builds a BITMAPINFOHEADER + a 256-entry RGBQUAD palette (the
 // source palette's bytes 0/1/2 swizzled across the quad lanes), a 14-byte file header
-// (the "BM" magic strcpy'd from g_imageTag + the size/offset fields), locks the
+// (the "BM" magic strcpy'd from g_bmpHeaderTemplate + the size/offset fields), locks the
 // surface, opens the file (mode 0x2001 / 0x1001 by `mode`), seeks past the magic,
 // writes the headers + the rows bottom-up, then unlocks. /GX EH frame (the local
 // CFile). ret 0xc.
 //
 // @early-stop
-// large /GX export wall: the inline strlen+strcpy of g_imageTag, the pointer-biased
+// large /GX export wall: the inline strlen+strcpy of g_bmpHeaderTemplate, the pointer-biased
 // 256-entry RGBQUAD palette swizzle, the BITMAPINFOHEADER field stores and the
 // bottom-up row-write loop are logic/offset/CFG-faithful, but the 0x44c-byte frame's
 // spill scheduling + the EH-state numbering diverge from retail; not source-steerable.
@@ -367,7 +374,7 @@ i32 CDDSurface::SaveBmp(const char* path, void* pal, i32 mode) {
 
     BmpFileHeader fh;
     memset(&fh, 0, sizeof(fh));
-    strcpy(fh.magic, g_imageTag);
+    strcpy(fh.magic, g_bmpHeaderTemplate);
     fh.bfSize = bi.biSize * m_width + 0x436;
     fh.bfOffBits = 0x436;
 
@@ -554,7 +561,7 @@ i32 CDDSurface::SaveTga(const char* path, void* pal, i32 mode) {
     TgaHeader hdr;
     memset(&hdr, 0, 0x2c);
     i32 height = m_height;
-    strcpy(hdr.magic, g_imageTag);
+    strcpy(hdr.magic, g_bmpHeaderTemplate);
     i32 width = m_width;
     hdr.size = width * height * 3 + 0x3a;
     hdr.planes = 1;

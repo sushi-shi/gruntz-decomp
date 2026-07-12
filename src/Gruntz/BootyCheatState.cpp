@@ -41,6 +41,13 @@ extern "C" char g_emptyString[];
 // The hardware-cursor hide fn-ptr (?g_ShowCursor@@3P6GHH@ZA, 0x6c44c4); the
 // `mov edi,ds:g_ShowCursor; call edi` cached-ptr loop idiom (AppHelpers.cpp).
 extern int(WINAPI* g_ShowCursor)(int);
+// The 25-entry cheat text/desc table (0x629f50 .. 0x62aef0, stride 0xa0) + its end
+// sentinel g_cheatTableEnd (0x62aef0). .bss (built at runtime); DEFINED here (owner
+// TU), reference externs stay in <Globals.h>. (REHOME DD-G)
+DATA(0x00229f50)
+char g_cheatTable[0xfa0]; // 0x629f50  (25 entries x 0xa0 stride)
+DATA(0x0022aef0)
+char g_cheatTableEnd[4]; // 0x62aef0  (loop end sentinel = &g_cheatTable[0xfa0])
 // First-run guard (DAT_0062af10): 0 until the cheat table is built. DEFINED here
 // (owner TU); a plain `extern` stays in Globals.h.
 DATA(0x0022af10)

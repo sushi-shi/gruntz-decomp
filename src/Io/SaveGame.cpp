@@ -44,18 +44,28 @@ int TempFileExists_e5700(SaveTempRec* p); // 0x0e5700 (defined below)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
 
 // --- the dialog half's shared state/decls (ex LevelInfoDlg.cpp/SaveGameMenu.cpp) ---
+// The 8-entry area-name pointer table (.bss, runtime-filled). DEFINED here (owner
+// TU), reference extern stays in <Globals.h>. (REHOME DD-G)
+DATA(0x002454e8)
+char* g_areaNames[8]; // 0x6454e8
 // g_gameReg comes typed from <Io/SaveGame.h> (the DATA(0x0024556c) binding lives in
 // GruntzMgr.cpp); g_gameReg is the CGruntzMgr view of the SAME 0x24556c datum.
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // *0x64556c
 DATA(0x00213a9c)
 extern i32 g_savedMenuCmd; // DAT_00613a9c  pending deferred save-menu command
+// The level-preview image pool + previewed DIB (.bss). DEFINED here (owner TU),
+// reference externs stay in <Globals.h>. (REHOME DD-G)
+DATA(0x0024c814)
+CImagePool* g_previewMgr; // 0x64c814
 // The last-selected save record @0x24c864: read as an i32 SaveSlot* handle in the
 // selection code and as a char*/SaveTempRec* (its leading bytes) in the save-confirm
 // info dialog - ONE datum, so the ex `g_dlgInfoText` char* view folds onto g_slotState
 // (the tree winner; the C++-mangled g_dlgInfoText lost the per-rva dedup).
 DATA(0x0024c864)
-extern i32 g_slotState;                            // DAT_0064c864 (== the ex g_dlgInfoText)
+extern i32 g_slotState; // DAT_0064c864 (== the ex g_dlgInfoText)
+DATA(0x0024c868)
+void* g_previewImage;                              // 0x64c868  (CRezImage* previewed DIB)
 i32 __stdcall CloseTempFile_e5550(SaveTempRec* r); // defined below (0x0e5550)
 // The SetDlgItemTextA helper (0x0e4850) + the title builder (0x0e44e0), defined below.
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);

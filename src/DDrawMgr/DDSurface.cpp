@@ -26,7 +26,7 @@
 #include <rva.h>
 #include <stdio.h>
 #include <string.h>  // inline strcpy / memcpy / memset
-#include <Globals.h> // g_clut, g_lutBank0/1/2, g_pfRedSize/GreenShift/BlueSize/RedShift/GreenSize
+#include <Globals.h> // g_clut, g_lutBank0/1/2 (the RGB565 shift/size ints are local: g_rUp/g_gUp/g_rDown/g_gDown/g_bDown)
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
@@ -43,18 +43,23 @@ void* operator new(u32);                          // engine allocator (reloc-mas
 // DEFINED here (owner ddsurface.obj's .bss, zero-init) - REHOME DD-D, extern-only.
 DATA(0x00283ca0)
 u16 g_lut16[256] = {0}; // 0x683ca0
+// The live screen RGB565 pixel-format shift/size ints (0x683ea0..0x683eb4, .bss set at
+// device init). DEFINED here (owner TU); the g_pf* names (g_rUp/GreenSize/RedSize/
+// GreenShift/BlueSize) in Globals.cpp were a redundant SECOND labeling of these same
+// datums - FOLDED onto the canonical g_rUp/g_gUp/g_rDown/g_gDown/g_bDown. Reference
+// externs stay local in the using TUs. (REHOME DD-G, conflation resolved)
 DATA(0x00283ea0)
-extern i32 g_rUp; // 0x683ea0
+i32 g_rUp; // 0x683ea0  (== ex g_rUp)
 DATA(0x00283ea4)
-extern i32 g_gUp; // 0x683ea4
+i32 g_gUp; // 0x683ea4  (== ex g_gUp)
 DATA(0x00283ea8)
-extern i32 g_bUp; // 0x683ea8
+i32 g_bUp; // 0x683ea8
 DATA(0x00283eac)
-extern i32 g_rDown; // 0x683eac
+i32 g_rDown; // 0x683eac  (== ex g_rDown)
 DATA(0x00283eb0)
-extern i32 g_gDown; // 0x683eb0
+i32 g_gDown; // 0x683eb0  (== ex g_gDown)
 DATA(0x00283eb4)
-extern i32 g_bDown; // 0x683eb4
+i32 g_bDown; // 0x683eb4  (== ex g_bDown)
 
 // The engine RECT-copier fn-ptr (0x6c44bc), used by ShadeBlt to snapshot the rects.
 DATA(0x002c44bc)
@@ -70,6 +75,12 @@ extern CPtrArray g_imageCache; // 0x653c88
 // DEFINED here (owner ddsurface.obj's .bss, zero-init) - REHOME DD-D, extern-only.
 DATA(0x00253c90)
 i32 g_imageCacheIndex = 0; // 0x653c90
+// The 3-plane 16bpp colour LUT (0x653c9e; G plane @+0, B @+0x10000, R @+0x20000 -
+// 0x30000 bytes ending just before g_lut16 @0x683ca0). .bss, built at runtime; the
+// g_lutBank0/1/2 plane markers (0x653ca0/0x663ca0/0x673ca0) are interior aliases into
+// it. DEFINED here (owner TU), reference extern stays in <Globals.h>. (REHOME DD-G)
+DATA(0x00253c9e)
+u8 g_clut[0x30000]; // 0x653c9e
 
 // Global image-cache in-place reconstruction (0x13e070): mov ecx,&g_imageCache; jmp
 // ??0CPtrArray@@QAE@XZ (0x1b4f0b). This is the in-place re-construct of the CPtrArray
@@ -875,8 +886,7 @@ i32 CDDSurface::ShadeBlt(
     u16* temp = (u16*)RezAlloc(dstW * 4);
     i32 bank = ((shade & 0xff) >> 3) << 0xb;
 
-    if (g_pfRedSize == 3 && g_pfGreenShift == 3 && g_pfBlueSize == 3 && g_pfRedShift == 0xa
-        && g_pfGreenSize == 5) {
+    if (g_rDown == 3 && g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
         // 565
         i32 rows = dstH;
         if (rows > 0) {
@@ -904,8 +914,7 @@ i32 CDDSurface::ShadeBlt(
                 srcPtr += srcRowAdv;
             } while (--rows != 0);
         }
-    } else if (g_pfRedSize == 3 && g_pfGreenShift == 2 && g_pfBlueSize == 3 && g_pfRedShift == 0xb
-               && g_pfGreenSize == 5) {
+    } else if (g_rDown == 3 && g_gDown == 2 && g_bDown == 3 && g_rUp == 0xb && g_gUp == 5) {
         // 555
         i32 rows = dstH;
         if (rows > 0) {
@@ -999,8 +1008,8 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
     u16* scratch = (u16*)operator new(width * 4);
     i32 off = scale << 11;
 
-    if (g_pfRedSize == 3) {
-        if (g_pfGreenShift == 3 && g_pfBlueSize == 3 && g_pfRedShift == 0xa && g_pfGreenSize == 5) {
+    if (g_rDown == 3) {
+        if (g_gDown == 3 && g_bDown == 3 && g_rUp == 0xa && g_gUp == 5) {
             for (; height > 0; height--) {
                 memcpy(scratch, srcPix, width * 2);
                 u16* rd = scratch;
@@ -1016,8 +1025,7 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                 }
                 srcPix += stride;
             }
-        } else if (g_pfGreenShift == 2 && g_pfBlueSize == 3 && g_pfRedShift == 0xb
-                   && g_pfGreenSize == 5) {
+        } else if (g_gDown == 2 && g_bDown == 3 && g_rUp == 0xb && g_gUp == 5) {
             for (; height > 0; height--) {
                 memcpy(scratch, srcPix, width * 2);
                 u16* rd = scratch;
@@ -2024,7 +2032,15 @@ extern void ImageRotateBlit(
 // ImageRotateBlit slot it flows into (float rot/scale, int mode/colorkey) so no
 // int<->float conversion is inserted and the dword pushes match retail exactly.
 RVA(0x00141040, 0x36)
-i32 CDDSurface::RotateBlit(i32 rect, i32 pivot, i32 a1, i32 a2, float scale, i32 mode, i32 colorkey) {
+i32 CDDSurface::RotateBlit(
+    i32 rect,
+    i32 pivot,
+    i32 a1,
+    i32 a2,
+    float scale,
+    i32 mode,
+    i32 colorkey
+) {
     // Rotation fixed at 0.0f (no rotate); the 5th param carries the scale.
     ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, 0.0f, scale, mode, colorkey);
     return 1;
@@ -2041,7 +2057,15 @@ i32 Gap_141080(void) {
 }
 
 RVA(0x00141200, 0x39)
-i32 CDDSurface::ScaleBlit(i32 rect, i32 pivot, i32 a1, i32 a2, float angle, i32 mode, i32 colorkey) {
+i32 CDDSurface::ScaleBlit(
+    i32 rect,
+    i32 pivot,
+    i32 a1,
+    i32 a2,
+    float angle,
+    i32 mode,
+    i32 colorkey
+) {
     // Scale fixed at 1.0f (no scale); the 5th param carries the rotation.
     ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, angle, 1.0f, mode, colorkey);
     return 1;

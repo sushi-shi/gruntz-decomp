@@ -28,7 +28,7 @@ struct DecodeSrc {
 #pragma pack(pop)
 
 // The on-stack 14-byte BITMAPFILEHEADER SaveBmp builds (the 2-byte "BM" magic is
-// strcpy'd from g_imageTag, then bfSize / bfOffBits).
+// strcpy'd from g_bmpHeaderTemplate, then bfSize / bfOffBits).
 struct BmpFileHeader {
     char magic[2]; // +0x00  "BM"
     char _02[0x06 - 0x02];
@@ -38,7 +38,7 @@ struct BmpFileHeader {
 };
 
 // The on-stack 0x2c-byte header the 24-bit export (SaveTga) writes (a TGA-ish record):
-// the "BM"-style magic strcpy'd from g_imageTag at +0, the width/height + a +0x06 size
+// the "BM"-style magic strcpy'd from g_bmpHeaderTemplate at +0, the width/height + a +0x06 size
 // (width*height*3 + 0x3a), and the +0x10/+0x12 plane/bitcount words.
 struct TgaHeader {
     char magic[2]; // +0x00
