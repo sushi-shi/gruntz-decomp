@@ -174,7 +174,9 @@ extern "C" char g_id2_613e01;
 DATA(0x0020e002)
 extern "C" char g_id3_613e02;
 DATA(0x0020fab8)
-extern "C" i32 g_60fab8[4]; // 0x60fab8  the 16-byte net-bind template
+extern "C" i32 g_dplayAppGuid[4]; // 0x60fab8  the 16-byte DirectPlay app GUID (also the
+                                  // net-bind template; kept i32[4] - the Bind path reads
+                                  // it as 4 ints, InitFromProvider casts it to GUID)
 DATA(0x002111b0)
 extern u8 g_6111b0; // 0x6111b0
 DATA(0x00211d88)

@@ -115,12 +115,38 @@ public:
 
 extern "C" CGameRegistry* g_gameReg;
 
-// File-scope reentrancy guards.
-static i32 g_optionzGuard;
-static i32 g_pauseGuard;
-static i32 g_sharedFlag;
-static i32 g_dropGuard;  // OnDropPlayer reentrancy guard (DAT_00648d10)
-static i32 g_syncToggle; // FrameSyncWait alternating low-bit flag (DAT_00648d0c)
+// File-scope reentrancy guards. Retail .data globals - bound to their RVAs so the
+// On* handlers' DIR32 references are reloc-faithful (extern refs; DIR32 reloc-masked).
+DATA(0x00248d08)
+extern "C" i32 g_optionzGuard; // 0x248d08
+DATA(0x00248d04)
+extern "C" i32 g_pauseGuard; // 0x248d04
+DATA(0x00248ce0)
+extern "C" i32 g_sharedFlag; // 0x248ce0
+DATA(0x00248d10)
+extern "C" i32 g_dropGuard; // 0x248d10  OnDropPlayer reentrancy guard
+DATA(0x00248d0c)
+extern "C" i32 g_syncToggle; // 0x248d0c  FrameSyncWait alternating low-bit flag
+
+// Channel-stat packets + version words: declared extern "C" in <Net/NetMgr.h> where
+// DATA() is ignored (headers carry no bindings), so the RVA bind lands here (.cpp).
+// Each channel-stat field is its own disp-0 DIR32 .data symbol (see NetMgr.h note).
+DATA(0x00246fd8)
+extern "C" u8 g_chanStat422_flag; // 0x246fd8
+DATA(0x00246fdc)
+extern "C" i32 g_chanStat422_id; // 0x246fdc
+DATA(0x00246fe0)
+extern "C" i32 g_chanStat422_val; // 0x246fe0
+DATA(0x00246378)
+extern "C" u8 g_chanStat423_flag; // 0x246378
+DATA(0x0024637c)
+extern "C" i32 g_chanStat423_id; // 0x24637c
+DATA(0x00246380)
+extern "C" i32 g_chanStat423_val; // 0x246380
+DATA(0x0020fa70)
+extern "C" i32 g_localVersion; // 0x20fa70
+DATA(0x0020fa74)
+extern "C" i32 g_remoteVersion; // 0x20fa74
 
 // MultiDispatch outcome codes the message handlers switch on (engine command
 // dispatcher result space; names reconstructed from the branches, values
@@ -228,9 +254,8 @@ SIZE(CNetJoinPacket, 0x28); // fully-known fixed stat-0x3f9 announce packet
 // --- (from MultiResumeSlots.cpp) the cached timeGetTime import fn-ptr (0x6c4650);
 // pinned in a callee-saved reg by CMulti::Vslot09.
 extern "C" u32(WINAPI* g_pTimeGetTime)();
-// The DirectPlay application GUID (DAT_0060fab8), passed by value to InitFromProvider.
-DATA(0x0020fab8)
-extern GUID g_dplayAppGuid;
+// The DirectPlay application GUID (DAT_0060fab8) lives at 0x20fab8 as g_dplayAppGuid
+// (i32[4], bound in Globals.cpp); the Open path casts it to GUID for InitFromProvider.
 DATA(0x00248cf0)
 extern i32 g_isHost_648cf0; // DAT_00648cf0: nonzero when hosting
 
@@ -438,7 +463,8 @@ public:
 // mov ecx before the call - which the member spelling reproduces.)
 
 // The engine heap free (CLobbyObjA/B teardown above pairs with it).
-extern "C" void RezFree(void* p); // 0x001b9b82 (_RezFree, __cdecl)
+// The engine's global free (0x1b9b82) IS MFC's ::operator delete (??3@YAXPAX@Z,
+// library-labelled); call it directly so the reloc binds (no fake RezFree view).
 
 // CState's base teardown (the dtor tail-calls it after stamping the CState
 // vtable) - reloc-masked thiscall; modeled on a tiny helper so `mov ecx,esi; call`
@@ -902,7 +928,7 @@ void CMulti::Teardown() {
     CNetSession2* p520 = m_session;
     if (p520) {
         p520->Teardown();
-        RezFree(p520);
+        ::operator delete(p520);
         m_session = 0;
     }
     if (m_netGate) {
@@ -912,7 +938,7 @@ void CMulti::Teardown() {
     CLobbyObjA* p320 = (CLobbyObjA*)m_overlayActive;
     if (p320) {
         p320->Teardown();
-        RezFree(p320);
+        ::operator delete(p320);
         m_overlayActive = 0;
     }
     Mgr()->m_110 = m_590;
@@ -1595,10 +1621,10 @@ i32 CMulti::StartTitle() {
     }
     m_isHost = (desc->m_flags & 2) ? 1 : 0;
     i32 tmpl[4];
-    tmpl[0] = g_60fab8[0];
-    tmpl[1] = g_60fab8[1];
-    tmpl[2] = g_60fab8[2];
-    tmpl[3] = g_60fab8[3];
+    tmpl[0] = g_dplayAppGuid[0];
+    tmpl[1] = g_dplayAppGuid[1];
+    tmpl[2] = g_dplayAppGuid[2];
+    tmpl[3] = g_dplayAppGuid[3];
     if (m_netGate->Bind(tmpl) == 0) {
         return 0;
     }
@@ -1660,7 +1686,7 @@ i32 NetSessionOpener::Open() {
     if (!descriptor) {
         return 0;
     }
-    if (!m_524->InitFromProvider((void*)descriptor, g_dplayAppGuid)) {
+    if (!m_524->InitFromProvider((void*)descriptor, *(const GUID*)g_dplayAppGuid)) {
         return 0;
     }
     if (g_isHost_648cf0) {
@@ -3379,7 +3405,7 @@ void CMulti::OnMultiPause() {
 
     m_584 = 0;
     g_pauseGuard = 1;
-    i32 r = MultiDispatch("MULTI_PAUSE", MultiPauseCallback, 0);
+    i32 r = RunErrorDialog("MULTI_PAUSE", (void*)&MultiPauseCallback, 0);
     g_pauseGuard = 0;
     g_sharedFlag = 0;
 
@@ -3405,7 +3431,7 @@ void CMulti::OnMultiOptions() {
 
     m_584 = 0;
     g_optionzGuard = 1;
-    MultiDispatch("MULTI_OPTIONZ", MultiOptionzCallback, 0);
+    RunErrorDialog("MULTI_OPTIONZ", (void*)&MultiOptionzCallback, 0);
     g_optionzGuard = 0;
     g_sharedFlag = 0;
 }
@@ -3423,7 +3449,7 @@ void CMulti::OnOutOfSync() {
 
     m_574 = 1;
     m_584 = 0;
-    i32 r = MultiDispatch("MULTI_OUTOFSYNC", MultiOutOfSyncCallback, 0);
+    i32 r = RunErrorDialog("MULTI_OUTOFSYNC", (void*)&MultiOutOfSyncCallback, 0);
     g_sharedFlag = 0;
 
     switch (r) {
@@ -4166,7 +4192,7 @@ void CMulti::OnDropPlayer() {
 
     m_584 = 0;
     g_dropGuard = 1;
-    i32 r = MultiDispatch("MULTI_DROPPLAYER", MultiDropPlayerCallback, 0);
+    i32 r = RunErrorDialog("MULTI_DROPPLAYER", (void*)&MultiDropPlayerCallback, 0);
     g_dropGuard = 0;
     g_sharedFlag = 0;
 

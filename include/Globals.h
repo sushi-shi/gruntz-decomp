@@ -110,7 +110,7 @@ extern "C" char g_id0_613dff;
 extern "C" char g_id1_613e00;
 extern "C" char g_id2_613e01;
 extern "C" char g_id3_613e02;
-extern "C" i32 g_60fab8[4];
+extern "C" i32 g_dplayAppGuid[4]; // 0x60fab8  DirectPlay app GUID / net-bind template
 extern u8 g_6111b0;
 extern "C" i32 g_611d88;
 extern char s_GameMessagez[];

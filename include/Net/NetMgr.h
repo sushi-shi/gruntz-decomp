@@ -103,17 +103,12 @@ SIZE_UNKNOWN(CGameMgr);     // partial view (only +0x38 pinned) - full retail si
 VTBL(CGameMgr, 0x001e9b8c); // vtable_names -> code (RTTI game class)
 
 // ---------------------------------------------------------------------------
-// The multiplayer command dispatcher (reached through an
-// incremental-link thunk so its `call rel32` reloc-masks). __stdcall (cleans
-// its own args - the call site has no `add esp`). Args: the command-name
-// string, a per-command CALLBACK function pointer, and a flag; returns the
-// dispatched message id. Each handler passes a distinct callback (the engine
-// routines, also via incremental-link thunks so the
-// `push &callback` reloc-masks); modeled as external no-body functions whose
-// address is taken.
+// The multiplayer command dispatcher IS CMulti::RunErrorDialog (0xbc250): the
+// pause/optionz/outofsync/dropplayer handlers call it as `this->RunErrorDialog(cmd,
+// &callback, flag)`. Each handler passes a distinct callback (engine routines reached
+// via incremental-link thunks so the `push &callback` reloc-masks); modeled as external
+// no-body functions whose address is taken.
 // ---------------------------------------------------------------------------
-typedef void (*MultiCallbackFn)();
-extern "C" i32 __stdcall MultiDispatch(const char* cmd, MultiCallbackFn cb, i32 flag);
 
 // Per-command callbacks (address-taken only; bodies are external/no-body).
 extern "C" void MultiOptionzCallback();
