@@ -10,6 +10,7 @@
 // call shape are load-bearing; names are placeholders.
 #include <rva.h>
 
+#include <DDrawMgr/DirectDrawMgr.h> // CDirectDrawMgr::GetErrorString (the DDraw error reporter)
 #include <Ints.h>
 
 // The held surface/display object: COM-ABI, so its virtuals are __stdcall with the
@@ -38,16 +39,13 @@ struct DDrawBltHost {
     char m_184[16];          // +0x184 source RECT (passed as &m_184)
 };
 
-// The DDraw error sink (src/DDrawMgr/DirectDrawMgr.cpp @0x141400): __cdecl
-// (file, line, hr); call displacement reloc-masked.
-extern void __cdecl DirSurfLog(const char* file, i32 line, i32 hr);
-
-// Blt the two RECTs through the held surface; log a nonzero HRESULT.
+// Blt the two RECTs through the held surface; log a nonzero HRESULT through the
+// DDraw error reporter CDirectDrawMgr::GetErrorString (0x141400, static __cdecl).
 RVA(0x0008dd80, 0x31)
 i32 DDrawBltHost::BltChecked() {
     i32 hr = m_0->Blt(&m_8, &m_184);
     if (hr != 0) {
-        DirSurfLog("c:\\proj\\incs\\ddrawmgr.h", 0x135, hr);
+        CDirectDrawMgr::GetErrorString((char*)"c:\\proj\\incs\\ddrawmgr.h", 0x135, hr);
     }
     return hr;
 }

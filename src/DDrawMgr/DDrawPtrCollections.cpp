@@ -18,10 +18,6 @@
 #include <string.h>                       // memset (inlined to rep stos at /O2 /Oi)
 #include <Globals.h>
 
-// The engine's own strrchr / case-insensitive compare (cdecl C-linkage helpers).
-extern "C" char* RezStrrchr(const char* s, i32 c);       // FUN_00120680 (_RezStrrchr)
-extern "C" i32 RezStricmp(const char* a, const char* b); // FUN_0011fdf0 (_RezStricmp)
-
 // The RGB low-bit-position / 8-minus-bitcount pair tables InstallColorFormat fills
 // (the same six .data words ComputeColorMasks in the DDRAWMGR obj writes).
 extern "C" {
@@ -124,16 +120,16 @@ RVA(0x00148940, 0x102)
 i32 CDDSurface::LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags, i32 key) {
     flags |= 0x40;
     i32 doFill = 1;
-    char* ext = RezStrrchr(path, '.');
-    if (ext != 0 && RezStricmp(ext, ".BMP") == 0) {
+    char* ext = strrchr(path, '.');
+    if (ext != 0 && _strcmpi(ext, ".BMP") == 0) {
         if (LoadFile2(info, path, flags) == 0) {
             return 0;
         }
-    } else if (ext != 0 && RezStricmp(ext, ".PCX") == 0) {
+    } else if (ext != 0 && _strcmpi(ext, ".PCX") == 0) {
         if (LoadFile(info, path, flags) == 0) {
             return 0;
         }
-    } else if (ext != 0 && RezStricmp(ext, ".PID") == 0) {
+    } else if (ext != 0 && _strcmpi(ext, ".PID") == 0) {
         if (DecodePcxEx(info, path, (void*)flags, (void*)key) == 0) {
             return 0;
         }

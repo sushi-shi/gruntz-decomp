@@ -2202,7 +2202,7 @@ rva,name,lib,confidence,source
 0x1b4867,??0CObList@@QAE@H@Z,NAFXCW,AMBIG,anchored
 0x1b488a,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x1b48a6,?RemoveAll@CObList@@QAEXXZ,NAFXCW,AMBIG,anchored
-0x1b48c6,??1CInternetSession@@UAE@XZ,NAFXCW,AMBIG,anchored
+0x1b48c6,??1CObList@@UAE@XZ,NAFXCW,AMBIG,anchored
 0x1b48f9,?NewNode@CObList@@IAEPAUCNode@1@PAU21@0@Z,NAFXCW,AMBIG,anchored
 0x1b494e,?FreeNode@CObList@@IAEXPAUCNode@1@@Z,NAFXCW,AMBIG,anchored
 0x1b4967,?AddHead@CObList@@QAEPAU__POSITION@@PAVCObject@@@Z,NAFXCW,AMBIG,anchored

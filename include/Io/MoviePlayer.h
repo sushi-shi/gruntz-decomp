@@ -130,11 +130,11 @@ public:
     i32 CloseSmacker();                                     // 0x17c9b0
     i32 PlayList(i32 loops);                               // 0x17d720
     i32 Begin(i32 a2, i32 useDS, i32 a4, i32 a5);           // 0x17cfc0 (external)
-    i32 Frame();                                            // 0x17caa0
-    void SnapshotPalette();                     // 0x17ca10 (Frame: new-palette snapshot)
-    void BlitDirty(i32 x, i32 y, i32 w, i32 h); // 0x17cdf0 (Frame: dirty-rect blit)
-    void Free17d6b0();                          // 0x17d6b0
-    void Free17cc80();                          // 0x17cc80
+    i32 Frame(); // 0x17caa0
+    // Frame's new-palette snapshot (0x17ca10) + dirty-rect blit (0x17cdf0) and
+    // Teardown's teardowns (FreeAll 0x17d6b0 / HandleError 0x17cc80) are CDDScreen/
+    // CDDPageMgr methods this same object owns - called via the real classes in
+    // DDPageMgr.cpp (this cluster is one retail class split into 4 reconstruction views).
 
     // ----- layout (placeholders; offsets are the load-bearing fact) -----
     // +0x00: NOT a vptr - plain data zeroed by Teardown (no stamp anywhere in the

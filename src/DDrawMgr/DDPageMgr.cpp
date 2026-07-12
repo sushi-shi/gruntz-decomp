@@ -51,10 +51,6 @@
 #include <string.h> // memset / inlined memcpy (rep movsd)
 #include <Globals.h>
 
-// The Rez heap free (0x1b9b82, __cdecl); reloc-masked. DDPageMgr calls it RezFree,
-// the Smacker paths call it RezFree_call - two extern "C" names for the same address.
-extern "C" void RezFree(void* p);
-extern "C" void RezFree_call(void* p);
 // The engine heap allocator (0x1b9b46) - Configure's explicit-blit RECT nodes.
 extern "C" void* RezAlloc(u32 size);
 
@@ -65,8 +61,9 @@ extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
 DATA(0x001ef888)
 extern "C" const GUID IID_IDirectDrawSurface3; // 0x5ef888
 
-// The IAT ShowCursor pointer the 0x17c3f0 command handler hides the cursor through.
-extern "C" int(WINAPI* g_pShowCursor_6c44c4)(int); // 0x6c44c4
+// The game's cached ShowCursor fn-ptr global (?g_ShowCursor@@3P6GHH@ZA, def in
+// stateimages) the 0x17c3f0 command handler hides the cursor through.
+extern int(WINAPI* g_ShowCursor)(int); // 0x6c44c4
 
 // --- The 0x17c3f0 page/cursor command handler's transient shapes (a STACK-LOCAL
 // 0x520-byte command block CGruntzMgr::ChangeState_8fab0 builds + Init()s; no
@@ -138,10 +135,10 @@ struct Handler_17c3f0 {
     i32 m_518; // +0x518
     i32 m_51c; // +0x51c
     i32 m_520; // +0x520
-    void M_17cd90(void* a1);
-    void M_17cc80();
-    i32 M_17d2b0();
-    void M_17d6b0();
+    // The command block IS the CDDScreen/CDDPageMgr display object (esi==this used
+    // directly as the ecx for all four cross-view calls); the retargets below bind to
+    // the real methods. The 4-view conflation (CDDScreen/CDDPageMgr/CMoviePlayer/this)
+    // is pre-existing deferred-fold structural work.
     i32 Init(
         void* a1,
         ObjA2_17c3f0* a2,
@@ -350,22 +347,22 @@ i32 Handler_17c3f0::Init(
     m_14 = a2;
     m_c = 1;
     m_1c = a3;
-    M_17cd90(a1);
+    ((CDDScreen*)this)->Snapshot((HWND)a1);
     if (kind == 8) {
         if (m_14->fn5(4, &m_108, &m_2c, 0)) {
-            M_17cc80();
+            ((CDDScreen*)this)->HandleError();
             return 0;
         }
         m_1c->fn31(m_2c);
         m_510 = 0;
     }
     if (kind == 0x18) {
-        M_17cc80();
+        ((CDDScreen*)this)->HandleError();
         return 0;
     }
     if (kind == 0x10) {
-        if (!M_17d2b0()) {
-            M_17cc80();
+        if (!((CDDPageMgr*)this)->CheckMode16()) {
+            ((CDDScreen*)this)->HandleError();
             return 0;
         }
     }
@@ -377,9 +374,9 @@ i32 Handler_17c3f0::Init(
     m_24 = 0;
     m_28 = 0;
     m_508 = a31;
-    g_pShowCursor_6c44c4(0);
+    g_ShowCursor(0);
     m_4 = 1;
-    M_17d6b0();
+    ((CDDPageMgr*)this)->FreeAll();
     return 1;
 }
 
@@ -390,10 +387,10 @@ void CMoviePlayer::Teardown() {
         return;
     }
     CloseSmacker();
-    Free17d6b0();
+    ((CDDPageMgr*)this)->FreeAll();
     m_0 = 0; // +0x00 plain data (no vptr evidence; zeroed at teardown)
     m_active = 0;
-    Free17cc80();
+    ((CDDScreen*)this)->HandleError();
     if (m_videoWnd) {
         m_videoWnd->DestroyWindow();
         delete m_videoWnd; // virtual dtor -> the compiler's own null-guarded slot-1 dispatch
@@ -572,7 +569,7 @@ i32 CMoviePlayer::CloseSmacker() {
     SmackClose(m_smackHandle);
     m_smackHandle = 0;
     if (m_rezBuffer) {
-        RezFree_call(m_rezBuffer);
+        ::operator delete(m_rezBuffer);
         m_rezBuffer = 0;
     }
     m_streamOpen = 0;
@@ -585,7 +582,7 @@ i32 CMoviePlayer::CloseSmacker() {
 RVA(0x0017caa0, 0x13b)
 i32 CMoviePlayer::Frame() {
     if (m_smackHandle->NewPalette && m_520 == 8) {
-        SnapshotPalette();
+        ((CDDScreen*)this)->UploadPalette();
     }
     i32 hr = m_24->Lock(0, (LPDDSURFACEDESC)m_desc, 1, 0);
     while (hr == (i32)0x887601c2) {
@@ -603,15 +600,16 @@ i32 CMoviePlayer::Frame() {
 afterLock:
     if (m_514 != 1) {
         while (SmackToBufferRect(m_smackHandle, 0) != 0) {
-            BlitDirty(
-                m_smackHandle->LastRectx,
-                m_smackHandle->LastRecty,
-                m_smackHandle->LastRectw,
-                m_smackHandle->LastRecth
-            );
+            ((CDDScreen*)this)
+                ->BlitRegion(
+                    m_smackHandle->LastRectx,
+                    m_smackHandle->LastRecty,
+                    m_smackHandle->LastRectw,
+                    m_smackHandle->LastRecth
+                );
         }
     } else {
-        BlitDirty(0, 0, m_smackHandle->Width, m_smackHandle->Height);
+        ((CDDScreen*)this)->BlitRegion(0, 0, m_smackHandle->Width, m_smackHandle->Height);
     }
     Smack* s = m_smackHandle;
     if (s->FrameNum == s->Frames - 1) {
@@ -938,15 +936,15 @@ i32 CDDPageMgr::RemoveAt(i32 idx) {
     }
     CPageRec* rec = m_data[idx - 1];
     if (rec->m_00) {
-        RezFree(rec->m_00);
+        ::operator delete(rec->m_00);
         rec->m_00 = 0;
     }
     if (rec->m_10) {
-        RezFree(rec->m_10);
+        ::operator delete(rec->m_10);
         rec->m_10 = 0;
     }
     if (rec->m_14) {
-        RezFree(rec->m_14);
+        ::operator delete(rec->m_14);
         rec->m_14 = 0;
     }
     i32 n = m_count - idx;
@@ -955,7 +953,7 @@ i32 CDDPageMgr::RemoveAt(i32 idx) {
         memcpy(dst, dst + 1, n * sizeof(CPageRec*));
     }
     m_count--;
-    RezFree(rec);
+    ::operator delete(rec);
     return 1;
 }
 
@@ -972,7 +970,7 @@ i32 CDDPageMgr::FreeAll() {
         }
     }
     if (m_data) {
-        RezFree(m_data);
+        ::operator delete(m_data);
         m_data = 0;
     }
     m_8698 = 0;
