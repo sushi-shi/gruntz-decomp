@@ -360,14 +360,21 @@ The mandate is the OPPOSITE of chasing %: **reduce all views to real `struct`/`c
   as a proper method of its real class and put every type it touches in a shared header with a real
   identity **before** you commit. Never move a view from stub into the main tree — that trades a free
   backlog view for a counted one. Both numbers must not go UP when you home; they only ratchet down.
-- **CAST RATCHET (the fake-view VECTOR).** `)this casts` and `)m_ casts` are ALSO ratcheted down now —
-  a `((SomeView*)this)->x` or `(CFoo*)m_54` cast is *how* a fake view propagates. When you home a
-  function, do NOT reach for these: give `this`'s class / the member its REAL engine type so the cast
-  is unnecessary. `)this` has **no exception** — casting `this` is always a mis-modelled class. `)m_`
-  has ONE allowed exception: a **string cast** `(char*)m_x` / `(const char*)m_x` on a byte-buffer member
-  (excluded from the ratchet, tracked under `(char*) casts`). Every other `)m_` cast must dissolve by
-  typing the member. If your homed function needs a cast to compile, the referent's class is wrong —
-  fix the type, don't cast.
+- **CASTS ARE A SYMPTOM, NEVER A TARGET. Do not force-remove a cast.** A `((SomeView*)this)->x` or
+  `(CFoo*)m_54` cast exists because the **type above it is wrong** — it is how a fake view propagates.
+  There are exactly two root causes, and they are the things you actually fix:
+    1. a **`void* m_` member** you must cast at every use  → give the member its REAL engine type;
+    2. a **`.cpp`-local view** that isn't the real class    → dissolve it onto the canonical class.
+  Fix the type and **the cast falls out on its own**. That is the ONLY acceptable way one disappears.
+  Deleting a cast *without* fixing the type does not remove the defect — it relocates it (or converts
+  it to a `reinterpret_cast`, which is strictly worse: same lie, now hidden from the metric). A cast
+  that is still *needed* is telling you the truth — the type above it is still fake. **Leave it and go
+  fix the type.** If you cannot prove the real type, leave the cast and say so.
+  So the ratchet is on the DRIVERS (`void* m_ members`, `.cpp-local views`, `placeholder classes`);
+  `)this casts` / `)m_ casts` are the dependent readouts that fall as those drain. `)this` has **no**
+  legitimate form — casting `this` is always a mis-modelled class. `)m_` has ONE allowed exception: a
+  **string cast** `(char*)m_x` / `(const char*)m_x` on a byte-buffer member (tracked separately under
+  `(char*) casts`). If your homed function needs a cast to compile, the referent's class is wrong.
 - When a fn dereferences a real class, `#include` that class's header and use the real type — never
   a local shadow. If the real class isn't modeled yet, define it **in `include/<Module>/`** (a real
   header other TUs share), not inline in your `.cpp`.
