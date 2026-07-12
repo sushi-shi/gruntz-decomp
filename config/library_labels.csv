@@ -1990,7 +1990,6 @@ rva,name,lib,confidence,source
 0x17f9d0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x17fdd0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x180430,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
-0x180630,__fpclear,LIBCMT,LOW,anchored
 0x181700,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x184660,___init_collate,LIBCMT,LOW,anchored
 0x184670,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
@@ -3457,4 +3456,5 @@ rva,name,lib,confidence,source
 0x1b8546,?GetNextAssoc@CMapStringToPtr@@QBEXAAPAU__POSITION@@AAVCString@@AAPAX@Z,NAFXCW,HIGH,reloc-R24
 0x1b82d0,?RemoveAll@CMapStringToPtr@@QAEXXZ,NAFXCW,HIGH,reloc-R24
 0x1b8322,??1CMapStringToPtr@@UAE@XZ,NAFXCW,HIGH,reloc-R24
+0x1b8322,??1CMapStringToOb@@UAE@XZ,NAFXCW,HIGH,reloc-R45
 0x177660,_DirectPlayLobbyCreateA@20,DPLAYX,HIGH,reloc-R24

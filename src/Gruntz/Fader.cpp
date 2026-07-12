@@ -235,22 +235,28 @@ struct EmbedBase17e990 {
 };
 SIZE_UNKNOWN(EmbedBase17e990);
 inline EmbedBase17e990::~EmbedBase17e990() {}
+// The dtor-side sub-object views reloc-mask the real retail vtables: EmbedBase17e990's
+// ??_7 masks 0x1e8cb4 (== ??_7CObject, catalog-bound), EmbedSub17e990's masks 0x1f07d8
+// (== ??_7CRezBufferObject, VTBL-bound in RezBufferObjectDtor.cpp). reloc-fidelity (R45).
+RELOC_VTBL(EmbedBase17e990, 0x001e8cb4);
 struct EmbedSub17e990 : EmbedBase17e990 {
     char* m_4; // +0x4 (outer +0x5c)
     virtual ~EmbedSub17e990() OVERRIDE;
 };
 SIZE_UNKNOWN(EmbedSub17e990);
+RELOC_VTBL(EmbedSub17e990, 0x001f07d8);
 inline EmbedSub17e990::~EmbedSub17e990() {
     if (m_4) {
         ::operator delete(m_4);
     }
 }
-struct FaderBaseC17e990 {
-    virtual ~FaderBaseC17e990(); // out-of-line @0x17e4a0 (== ~CFader; reloc-masked)
-};
-SIZE_UNKNOWN(FaderBaseC17e990);
-struct C17e990 : FaderBaseC17e990 {
-    char _4[0x58 - 0x4];
+// The base subobject IS the real CFader (its ~CFader @0x17e4a0 is bound in this unit) -
+// so the base-dtor teardown call binds to ??1CFader instead of a placeholder. C17e990
+// stays a dtor-side view of CFaderMesh (m_58 modeled destructible; the ctor-side
+// CFaderMesh models m_58 non-destructible - the split fold onto CFaderMesh needs the
+// cross-lane inline ~CRezBufferObject). reloc-fidelity (R45).
+struct C17e990 : CFader {
+    char _pad38[0x58 - 0x38];
     EmbedSub17e990 m_58; // +0x58
     virtual ~C17e990() OVERRIDE;
 };
@@ -626,11 +632,14 @@ i32 CFaderLightApply::Setup(LightDesc* d) {
     return 1;
 }
 
-// 0x180630 - CFaderLight::SubFree180630 (declared-only, call left UNBOUND): the empty
-// member-teardown ~CFaderLight calls is a bare `ret` that the retail linker COMDAT-
-// folded onto the identical CRT stub __fpclear (config/library_labels.csv owns 0x180630).
-// So it is a library carve-out, not a reconstructable game body - defining it here
-// double-claims the RVA (library-overlap guard). Genuine empty-COMDAT-fold artifact.
+// 0x180630 - CFaderLight::SubFree180630: the empty member-teardown ~CFaderLight calls,
+// a bare `ret`. The __fpclear FID row that owned 0x180630 was a false positive (that
+// 1-byte-`ret` fingerprint matched ~35 rvas at LOW confidence, incl. CFader::v3/v4
+// @0x17e790/0x17e7a0); the retail dtor calls it thiscall (ecx=this), so it is the game
+// member, not a CRT stub. Reconstructed here (library label removed) - the dtor's call
+// binds. reloc-fidelity (R45).
+RVA(0x00180630, 0x1)
+void CFaderLight::SubFree180630() {}
 
 // @early-stop
 // 0x180640 (2412 B) = a large light/circle-shade blit worker; homed pending leaf-first

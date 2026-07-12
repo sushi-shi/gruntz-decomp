@@ -90,6 +90,10 @@ struct CFaderMeshSub { // nested sub-object at +0x58 (own vftable 0x5f07d8)
         m_08 = 0;
     }
 };
+// The member sub-object's cl-emitted ??_7CFaderMeshSub reloc-masks the retail vtable
+// at 0x1f07d8 (== ??_7CRezBufferObject, owned by RezBufferObjectDtor.cpp's VTBL) - the
+// ctor's member vptr-store binds to the real rva. reloc-fidelity (R45).
+RELOC_VTBL(CFaderMeshSub, 0x001f07d8);
 
 SIZE(CFaderMesh, 0x6c);
 VTBL(CFaderMesh, 0x001f07c0);

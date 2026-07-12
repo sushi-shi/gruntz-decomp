@@ -89,9 +89,8 @@ struct CDDrawRegistryDtorHost : public FamilyMapBase {
 };
 SIZE_UNKNOWN(CDDrawRegistryDtorHost);
 
-// operator delete + the scalar-dtor free.
+// operator delete (NAFXCW ??3@YAXPAX@Z @0x1b9b82) - the scalar-dtor free path.
 void operator delete(void*);
-extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil)
 
 // The CLoadable-shaped base arg-ctor class (its own local model; the CObject-derived
 // <DDrawMgr/DDrawSubMgr.h> base is a DIFFERENT class wearing the same name - the
@@ -328,8 +327,7 @@ public:
 
     const char* m_name; // +0x00
 };
-// The buffer freed at the walker's tail (_RezFree @0x1b9b82).
-extern "C" void RezFree(void* p);
+// The buffer freed at the walker's tail (::operator delete, ??3 @0x1b9b82).
 // Global operator new/delete (engine NAFXCW, operator_new @0x1b9b46); external/
 // no-body. `delete e` on the polymorphic element routes through operator delete.
 void* operator new(u32 n);
@@ -496,7 +494,7 @@ RVA(0x00156df0, 0x1e)
 void* CDDrawRegistryDtorHost::ScalarDtor(u32 flags) {
     this->CDDrawRegistryDtorHost::~CDDrawRegistryDtorHost();
     if (flags & 1) {
-        RezFree(this);
+        ::operator delete(this);
     }
     return this;
 }
@@ -819,7 +817,7 @@ RVA(0x001574b0, 0x1e)
 void* CDDrawSubMgrPages::ScalarDtor(u32 flags) {
     this->CDDrawSubMgrPages::~CDDrawSubMgrPages();
     if (flags & 1) {
-        RezFree(this);
+        ::operator delete(this);
     }
     return this;
 }
@@ -844,7 +842,7 @@ RVA(0x00157550, 0x1e)
 void* CDDrawSubMgrLeafScan::ScalarDtor(u32 flags) {
     this->CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan();
     if (flags & 1) {
-        RezFree(this);
+        ::operator delete(this);
     }
     return this;
 }
@@ -895,7 +893,7 @@ RVA(0x00157610, 0x1e)
 void* CDDrawChildGroupDtorHost::ScalarDtor(u32 flags) {
     this->CDDrawChildGroupDtorHost::~CDDrawChildGroupDtorHost();
     if (flags & 1) {
-        RezFree(this);
+        ::operator delete(this);
     }
     return this;
 }
@@ -974,7 +972,9 @@ fail:
 // operand. docs/patterns/eh-state-numbering-base.md.
 RVA(0x001577e0, 0x68)
 CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
-    Cleanup();
+    // retail's dtor calls the non-virtual map teardown (0x152720) DIRECTLY, not the
+    // virtual Cleanup slot (0x152650, which merely tail-calls it) - bind to 0x152720.
+    FreeAll_152720();
     // implicit: ~m_10 (CMapStringToOb), then ~CDDrawSubMgrGrandBase (resets the three
     // header fields + restamps the base vtable) - reproduces retail's teardown order.
 }
@@ -1305,7 +1305,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
             file = ((CSymTab*)tree)->NextSym(file);
         } while (file != 0);
     }
-    RezFree(buf);
+    ::operator delete(buf);
     return count;
 }
 
