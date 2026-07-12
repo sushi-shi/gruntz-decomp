@@ -31,7 +31,7 @@ extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A, RVA 0x24556c /
 // VA 0x64556c). Update gates the play on the +0x54 active-level object's armed/
-// playable gate (m_inputState->m_armed; CInput54 in <Gruntz/InputState.h>). The
+// playable gate (m_inputState->m_active; CWorldSoundSet in <Gruntz/WorldSoundSet.h>). The
 // interval roller in Step also loads g_gameReg as a dead receiver before the rand
 // call (the binary proves the load even though rand ignores it).
 DATA(0x0024556c)

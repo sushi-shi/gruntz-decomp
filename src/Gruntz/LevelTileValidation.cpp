@@ -36,8 +36,9 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/TriggerMgr.h>
 
-#include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
-#include <Gruntz/Viewport.h>   // the shared world tile-grid geometry
+#include <Gruntz/WwdGameReg.h>   // the canonical WwdGameReg singleton (g_gameReg)
+#include <Gruntz/ChatBoxOwner.h> // CChatBoxOwner (this->m_2e0; Configure @0x20530)
+#include <Gruntz/Viewport.h>     // the shared world tile-grid geometry
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -229,7 +230,6 @@ static char s_CouldNotAdd[] = "Could not add Grunt: Player=%d, x=%d, y=%d";
 // the trigger registrar. (m_gameReg is also viewed as an LvWorld in
 // PositionBridgeToggle - the same +0x4 pointer, a second model of that object.)
 // ---------------------------------------------------------------------------
-struct LvBridgeUi;    // this+0x2e0  bridge-toggle UI sub-object (defined below)
 struct LvBridgePoint; // this+0x3f4  bridge-toggle screen point (defined below)
 
 class CLevelValidator {
@@ -244,7 +244,7 @@ public:
     PlayMgr* m_playMgr; // +0x0c
     char m_pad10[0x2dc - 0x10];
     PlayfieldMgr* m_playfieldMgr;         // +0x2dc
-    LvBridgeUi* m_2e0;                    // +0x2e0  bridge-toggle UI sub-object
+    CChatBoxOwner* m_2e0;                 // +0x2e0  hit-test/region sink (Configure @0x20530)
     TriggerRegistrar* m_triggerRegistrar; // +0x2e4
     char m_pad2e8[0x3f4 - 0x2e8];
     LvBridgePoint* m_bridgePoint; // +0x3f4  bridge-toggle screen point
@@ -792,10 +792,10 @@ struct LvWorld {
     i32 m_8c; // +0x8c  viewport-clamp horizontal limit
     i32 m_90; // +0x90  viewport-clamp vertical limit
 };
-// The bridge-toggle UI sub-object (this->m_2e0): Toggle(mode) sets its state.
-struct LvBridgeUi {
-    // Toggle @0xd5b20 IS CLevelValidator::PositionBridgeToggle; cast at each call.
-};
+// The this->m_2e0 sub-object is the REAL CChatBoxOwner (<Gruntz/ChatBoxOwner.h>): the
+// three branch-calls are CChatBoxOwner::Configure(mode) @0x20530 (thunk 0x171c), NOT a
+// recursive PositionBridgeToggle - the old `((CLevelValidator*)m_2e0)->Position...`
+// self-alias was a mis-model of that reloc-masked call.
 // The {x,y} screen point the toggle position is written to (this->m_3f4).
 struct LvBridgePoint {
     i32 x; // +0x0
@@ -825,21 +825,21 @@ i32 CLevelValidator::PositionBridgeToggle(i32 mode, i32) {
     i32 ey = w->m_90;
     LvBridgePoint* pt;
     if (mode == 1) {
-        ((CLevelValidator*)m_2e0)->PositionBridgeToggle(2, 0);
+        m_2e0->Configure(2);
         pt = m_bridgePoint;
         if (pt == 0) {
             goto done;
         }
         ex -= 0x37;
     } else if (mode == 0) {
-        ((CLevelValidator*)m_2e0)->PositionBridgeToggle(1, 0);
+        m_2e0->Configure(1);
         pt = m_bridgePoint;
         if (pt == 0) {
             goto done;
         }
         ex -= 0xd7;
     } else {
-        ((CLevelValidator*)m_2e0)->PositionBridgeToggle(3, 0);
+        m_2e0->Configure(3);
         pt = m_bridgePoint;
         if (pt == 0) {
             goto done;

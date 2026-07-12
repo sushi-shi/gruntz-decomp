@@ -45,8 +45,8 @@ struct AmbientBox {
 // ---------------------------------------------------------------------------
 // The big game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
 // Update gates the (re)start on the active-level handle (+0x10) and the +0x54
-// active-level object's armed/playable gate (m_inputState->m_armed; CInput54 in
-// <Gruntz/InputState.h> - the same object CRandomAmbientSound taps).
+// active-level object's armed/playable gate (m_inputState->m_active; CWorldSoundSet in
+// <Gruntz/WorldSoundSet.h> - the same object CRandomAmbientSound taps).
 // ---------------------------------------------------------------------------
 DATA(0x0024556c)
 

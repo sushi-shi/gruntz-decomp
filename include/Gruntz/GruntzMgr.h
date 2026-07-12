@@ -35,7 +35,6 @@
 // the definition rather than a file-scope `struct X;`/`class X;` fwd-decl keeps the
 // SBI_MenuItem TU's transitive fwd-decl count under the DecCounter regalloc-butterfly
 // threshold (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md).
-#include <Gruntz/InputState.h>     // CInput54 (+0x54)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (+0x74)
 #include <Gruntz/SaveInfo.h> // SaveInfo (m_saveInfoRec) + SaveSink58 (+0x58) + HudGuard44 (+0x44)
 
@@ -80,6 +79,8 @@ struct CStateStackZ {
 // CSndFinder (Lookup 0x1b8438). +0x520 is a 4-slot status array the paused-state
 // poll walks (status id at each slot's +0x20).
 struct CWorldView;
+struct CSndHost; // +0x28 sound/anim cue host (full def in <Gruntz/SoundCue.h>; was
+                 // implicitly fwd-declared by the old InputState.h method signature)
 // The world's +0x10 recolor lookup holder (its own +0x10 is an embedded CColorLookup);
 // CWorldZ::m_10 is a pointer, so a forward declaration suffices - the holder's full
 // layout lives in GruntzMgr.cpp, the only TU that walks it.
@@ -131,9 +132,13 @@ struct CWorldZ {
 // which dispatches on it, includes <dplobby.h>).
 struct IDirectPlayLobby;
 
-// CInput54 (+0x54 active-level input/spatial-sound object; Flush/Arm/Disarm/InitInput/
-// StoreFlag; the ambient TU reads its +0x24 armed==playable gate + its
-// +0x08 spatial voice CObList) is defined by the <Gruntz/InputState.h> include above.
+// +0x54 active-level input/spatial-sound object: the REAL CWorldSoundSet
+// (<Gruntz/WorldSoundSet.h>). The mgr's "input/state" facet is just method aliases of
+// that class: Flush=Deactivate, Arm=Resume, Disarm=Stop, InitInput=Init,
+// StoreFlag=Restart, Teardown=Teardown; its +0x24 active flag is the mgr's armed gate.
+// A pointer member here, so a forward declaration suffices (GruntzMgr.cpp includes the
+// real header). The former per-TU CInput54 view is dissolved.
+class CWorldSoundSet;
 
 // The manager's owned engine sub-objects, each a real class reached only through a
 // reloc-masked thiscall / vtable slot from GruntzMgr.cpp; the members are pointers,
@@ -321,9 +326,6 @@ public:
     struct CActiveObj* GetActiveObj(); // reloc-masked sibling (active game object)
     void RunWinHook();                 // reloc-masked sibling (win/level-complete hook)
     i32 CheckLevelActive();            // reloc-masked sibling (level-active predicate)
-    CString GetLevelName();            // reloc-masked sibling (current level name; ==0x928c0
-                                       // GetWorldFileName, but that is inline-header so the
-                                       // call here stays under this out-of-line name)
     // A sibling state-transition pusher reached by PassClickToPlayState's reloc-
     // masked 4-arg call (deferred body / matched elsewhere).
     i32 ChangeToPlayState(i32 a, i32 b, i32 c, i32 d);
@@ -411,9 +413,10 @@ public:
     EngObj* m_50;                    // +0x50  engine sub-object (teardown-only)
     // +0x54..+0x78 sub-controllers (real engine sub-object pointers reached through
     // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):
-    CInput54* m_inputState; // +0x54  input/state object (Flush/Arm/Disarm/StoreFlag)
-    SaveSink58* m_saveSink; // +0x58  save-record sink (SaveSink58::Store)
-    CFontConfig* m_chatLog; // +0x5c  chat/message log (CFontConfig::AddItem @0x21c60)
+    CWorldSoundSet* m_inputState; // +0x54  active-level sound object (Deactivate/Resume/
+                                  //         Stop/Init/Restart aliased as Flush/Arm/Disarm)
+    SaveSink58* m_saveSink;       // +0x58  save-record sink (SaveSink58::Store)
+    CFontConfig* m_chatLog;       // +0x5c  chat/message log (CFontConfig::AddItem @0x21c60)
     CGruntSpawnConfig*
         m_timer; // +0x60  per-frame timer/poll (== the spawn-config obj; Stop/Tick; m_2c mirror)
     i32 m_64;    // +0x64

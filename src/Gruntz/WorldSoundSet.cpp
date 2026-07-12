@@ -25,7 +25,6 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/AmbientSound.h>       // canonical CAmbientSound / CAmbientPosSound
 #include <Gruntz/RandomAmbientSound.h> // canonical CRandomAmbientSound
-#include <Gruntz/InputState.h>         // CInput54 (g_gameReg->m_inputState @+0x54) + CObListSub
 #include <Rez/RezMgr.h>                // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
 #include <Gruntz/UserLogic.h>              // CUserBase (real base of CAmbientSound)
@@ -103,7 +102,7 @@ struct PosSoundObj {
 };
 // The spatial-sound voice CObList lives at g_gameReg->m_inputState + 0x08 (the same
 // embedded CObList the manager ctors/tears down); RemoveAt unlinks the voice's node.
-// Shared shape: CObListSub in <Gruntz/InputState.h>.
+// g_gameReg->m_inputState is the CWorldSoundSet modeled in this TU's header.
 
 // The factory the spawn path calls (Stub_00b960 via the 0x20e5 thunk). It news a
 // 0x48-byte voice; modeled __stdcall (callee-cleaned, no `add esp`).
@@ -615,7 +614,7 @@ void CAmbientSound::Restart() {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (g_gameReg->m_inputState->m_armed == 0) {
+    if (g_gameReg->m_inputState->m_active == 0) {
         return;
     }
     m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);
@@ -650,7 +649,7 @@ void CAmbientSound::Restart() {
 // @early-stop
 // Tail-merge wall (~77%): retail folds the two identical (re)start tails - the
 // unbounded path's and the bounded `force` path's - into ONE block reached by an
-// unconditional `jmp`, and the merge drags a dead `g_gameReg->m_inputState->m_armed` probe
+// unconditional `jmp`, and the merge drags a dead `g_gameReg->m_inputState->m_active` probe
 // into the unbounded path. Our cl emits the tail TWICE (and DCEs the unused m_24
 // load), so the back half re-permutes. The bounded hit-test + the shared back
 // half are byte-exact; only the duplicate-vs-shared tail + a couple of regalloc
@@ -675,7 +674,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
         if (g_gameReg->m_soundEnabled == 0) {
             return;
         }
-        // Retail also probes g_gameReg->m_inputState->m_armed here, then (re)starts
+        // Retail also probes g_gameReg->m_inputState->m_active here, then (re)starts
         // regardless; our cl DCEs that unused load (tail-merge wall, see below).
         if (m_voice == 0) {
             return;
@@ -709,7 +708,7 @@ void CAmbientSound::Update(i32 x, i32 y, i32 force) {
     if (inRange == 0) {
         return;
     }
-    if (g_gameReg->m_soundEnabled == 0 || g_gameReg->m_inputState->m_armed == 0) {
+    if (g_gameReg->m_soundEnabled == 0 || g_gameReg->m_inputState->m_active == 0) {
         return;
     }
     if (force != 0) {
@@ -756,7 +755,7 @@ i32 CAmbientSound::SetLevel(i32 value, i32 mode, i32 extra) {
 // ---------------------------------------------------------------------------
 // CRandomAmbientSound::Update (0x00c2a0, __thiscall, 3 args playFlag/pos/kind):
 // the play/stop driver. Gated on the mgr handle, the playing flag, and the active
-// level (g_gameReg->m_soundEnabled and g_gameReg->m_inputState->m_armed). On play it
+// level (g_gameReg->m_soundEnabled and g_gameReg->m_inputState->m_active). On play it
 // reseeds the voice (ApplyAndPlay(1,m_panIndex,0,1)), scales pos by (m_scaleA
 // clamped)/100 then m_scaleB/100 (both signed magic-/100), clamps the result to
 // [0,100], and dispatches SetVolumeByIndex (kind==0) or CloneAndPlay (kind!=0);
@@ -794,7 +793,7 @@ void CRandomAmbientSound::Update(i32 playFlag, i32 pos, i32 kind) {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (g_gameReg->m_inputState->m_armed == 0) {
+    if (g_gameReg->m_inputState->m_active == 0) {
         return;
     }
 
@@ -972,7 +971,7 @@ void CRandomAmbientSound::UpdateAt(i32 x, i32 y, i32 force) {
     if (g_gameReg->m_soundEnabled == 0) {
         return;
     }
-    if (g_gameReg->m_inputState->m_armed == 0) {
+    if (g_gameReg->m_inputState->m_active == 0) {
         return;
     }
     m_voice->ApplyAndPlay(1, m_panIndex, 0, 1);

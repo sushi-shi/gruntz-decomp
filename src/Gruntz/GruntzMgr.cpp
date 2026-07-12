@@ -39,8 +39,8 @@
 #include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (m_spriteFactory @+0x74; Reset teardown)
 #include <Gruntz/LightFxMgr.h>     // CLightFxMgr (m_logicPump @+0x78; Reset teardown @0x9dc80)
-#include <Gruntz/InputState.h> // CInput54 (m_inputState @+0x54) + CObListSub (its +0x08 CObList)
-#include <Gruntz/FontConfig.h> // CFontConfig (m_chatLog @+0x5c; AddItem @0x21c60)
+#include <Gruntz/WorldSoundSet.h>  // CWorldSoundSet (m_inputState @+0x54; the +0x54 sound object)
+#include <Gruntz/FontConfig.h>     // CFontConfig (m_chatLog @+0x5c; AddItem @0x21c60)
 #include <Gruntz/Enums.h>
 #include <Io/FileStream.h> // CFileIO (the engine file reader IsBattlezMapFile opens)
 #include <dplobby.h>       // real DirectPlay lobby SDK: IDirectPlayLobby + DirectPlayLobbyCreate.
@@ -202,20 +202,25 @@ struct CCheckpointDlg {
     char m_pad[0x5c];
 };
 
-// The save-as name dialog SaveGameAs pops (0x14b30 ctor(owner, 0), run through
-// ExitModalUI). Its entered name is a CString member behind the CDialog base; the
-// use-"custom\" flag sits at +0x68. The class's implicit destructor destructs the
-// CString member then the CDialog base (reloc-masked ~CString + CDialog::~CDialog
-// 0x1ba51d) - the two /GX destructibles this method's EH frame tracks.
+// The save-as name dialog SaveGameAs pops IS a CBattlezDlg (proven: its ctor @0x14b30
+// == ??0CBattlezDlg@@QAE@HPAVCWnd@@@Z, and its +0x68 custom-name flag + +0x6c CString
+// name match <Gruntz/Dialogs.h>'s CBattlezDlg exactly). It is modeled LOCALLY here
+// (not via the canonical Dialogs.h) for ONE codegen reason: retail INLINES this local
+// object's destruction (~CString m_6c + CDialog::~CDialog 0x1ba51d, no vptr restamp),
+// whereas Dialogs.h's OUT-OF-LINE ~CBattlezDlg (0x14c90, needed for the vtable slot)
+// would force a `call ??1CBattlezDlg` and diverge SaveGameAs's /GX frame. So this TU
+// keeps an implicit-dtor twin - a per-TU dtor-emission split, not a conflation. The
+// ctor is declared-only, so its call reloc-binds to the real 0x14b30; CSaveDlgBase
+// stands in for CDialog's reloc-masked virtual dtor (0x1ba51d).
 class CSaveDlgBase {
 public:
     virtual ~CSaveDlgBase(); // 0x1ba51d  CDialog::~CDialog (virtual, reloc-masked)
 };
-class CSaveNameDlg : public CSaveDlgBase {
+class CBattlezDlg : public CSaveDlgBase {
 public:
-    CSaveNameDlg(class CGruntzMgr* owner, i32 flag); // 0x14b30
+    CBattlezDlg(i32 a0, CWnd* pParent); // 0x14b30  ??0CBattlezDlg@@QAE@HPAVCWnd@@@Z
     char m_pad04[0x68 - 0x4];
-    i32 m_68;     // +0x68  use-custom-prefix flag
+    i32 m_68;     // +0x68  use-custom-prefix flag (== CBattlezDlg::m_customNameFlag)
     CString m_6c; // +0x6c  entered name
 };
 
@@ -485,8 +490,8 @@ struct CRezSurface94 {
     void Build();                   // FUN_0053aa10 (this) reloc-masked
     i32 Apply(i32 a, i32 b, i32 c); // FUN_0053ad00 (this, *p, 1, 0) reloc-masked
 };
-// CObListSub (the +0x08 spatial CObList) + CInput54 (the +0x54 object) now live in
-// the shared <Gruntz/InputState.h> - the same object the ambient-sound TU reads.
+// The +0x54 object is the real CWorldSoundSet (<Gruntz/WorldSoundSet.h>) - the same
+// object the ambient-sound TU reads; its +0x08 is that class's CObList voice list.
 
 // The world's polymorphic mode-set vtable (slot 7 = +0x1c notify; slot 6 = +0x18
 // SetVideoMode(hwnd, w, h, depth, flag)). MSVC5 forbids __thiscall on a fn-ptr,
@@ -2760,9 +2765,9 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         return 0;
     }
 
-    CInput54* in = m_inputState;
+    CWorldSoundSet* in = m_inputState;
     if (in) {
-        in->Flush();
+        in->Deactivate();
         ((CObList*)((char*)in + 8))->CObList::~CObList();
         RezFree(in);
     }
@@ -2823,40 +2828,40 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
 
     SetColorDepth(m_colorDepth);
 
-    CInput54* in2 = m_inputState;
+    CWorldSoundSet* in2 = m_inputState;
     if (in2) {
-        in2->Flush();
+        in2->Deactivate();
         ((CObList*)((char*)in2 + 8))->CObList::~CObList();
         RezFree(in2);
     }
     m_inputState = 0;
 
     void* no = RezAlloc(0x30);
-    CInput54* ni;
+    CWorldSoundSet* ni;
     if (no) {
         new ((char*)no + 8) CObList(0xa);
         *(i32*)no = 0;
         *(i32*)((char*)no + 4) = 0x64;
-        ni = (CInput54*)no;
+        ni = (CWorldSoundSet*)no;
     } else {
         ni = 0;
     }
     m_inputState = ni;
-    if (ni->InitInput(m_world->m_28, m_inputFlag) == 0) {
+    if (ni->Init(m_world->m_28, m_inputFlag) == 0) {
         ReportError(0x800a, 0x442);
         return 0;
     }
 
-    CInput54* cur = m_inputState;
+    CWorldSoundSet* cur = m_inputState;
     if (m_isAmbientEnabled != 0) {
-        if (cur->m_armed == 0) {
-            cur->m_armed = 1;
-            cur->Arm();
+        if (cur->m_active == 0) {
+            cur->m_active = 1;
+            cur->Resume();
         }
     } else {
-        if (cur->m_armed != 0) {
-            cur->m_armed = 0;
-            cur->Disarm();
+        if (cur->m_active != 0) {
+            cur->m_active = 0;
+            cur->Stop();
         }
     }
     StoreInputFlag(m_inputFlag);
@@ -3156,9 +3161,9 @@ void CGruntzMgr::SetRunState(i32 v) {
     }
     g_sndEnabled = m_soundEnabled;
     if (m_soundEnabled) {
-        m_inputState->Arm();
+        m_inputState->Resume();
     } else {
-        m_inputState->Disarm();
+        m_inputState->Stop();
     }
 }
 
@@ -3780,12 +3785,14 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     if (src == 0) {
         return 0;
     }
-    // Consume GetLevelName()'s returned CString temp inline (no named local):
+    // Consume GetWorldFileName()'s returned CString temp inline (no named local):
     // MSVC reads m_pszData straight off the live return pointer in eax (`mov
     // edi,[eax]`) instead of re-addressing a stack slot, and - with no throwing
     // call live during the temp's range (the strcpy is inlined rep-movs) - /GX
-    // still elides the EH frame, matching retail's frameless body.
-    strcpy(dst->m_levelName, GetLevelName());
+    // still elides the EH frame, matching retail's frameless body. (0x928c0 returns
+    // CString by value -> MSVC emits it out-of-line + CALLs it here, as at every
+    // other site; the old separate GetLevelName alias for that call is dissolved.)
+    strcpy(dst->m_levelName, GetWorldFileName());
     dst->m_isWon = (m_134 == 3);
     dst->m_f8 = m_130;
     // The +0x58 sink IS CSaveGame; Store == CSaveGame::CopySlot (0xe51d0) copying the
@@ -3837,7 +3844,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
 
     if (full) {
         if (m_inputState) {
-            m_inputState->Disarm();
+            m_inputState->Stop();
         }
         if (m_world) {
             CSndHost* sub = m_world->m_28;
@@ -3860,7 +3867,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
         }
     }
     if (m_soundEnabled) {
-        m_inputState->Arm();
+        m_inputState->Resume();
         if (m_cmdGrid && m_soundEnabled) {
             m_cmdGrid->DestroyAllAnims();
         }
@@ -4082,9 +4089,9 @@ void CGruntzMgr::StoreInputFlag(i32 v) {
     if (m_world && m_world->m_28) {
         g_sndCueTag = v;
     }
-    CInput54* in = m_inputState;
+    CWorldSoundSet* in = m_inputState;
     if (in) {
-        in->StoreFlag(v);
+        in->Restart((void*)v); // "StoreFlag" IS CWorldSoundSet::Restart @0xbc30 (stores v at +0x04)
     }
 }
 
@@ -4603,7 +4610,7 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
 // (with its CString member) is the compound /GX frame's two destructibles.
 RVA(0x00092f00, 0x1ef)
 i32 CGruntzMgr::SaveGameAs() {
-    CSaveNameDlg dlg(this, 0);
+    CBattlezDlg dlg((i32)this, 0); // ctor 0x14b30 (a0 = this, pParent = null)
     i32 st = m_curState->Update();
     if (st != 5 && st != 2 && st != 3 && st != 7) {
         return 0;
@@ -5091,7 +5098,7 @@ SIZE_UNKNOWN(CPlayStateView);
 SIZE_UNKNOWN(CPointXY);
 SIZE_UNKNOWN(CRezSurface94);
 SIZE_UNKNOWN(CSaveDlgBase);
-SIZE_UNKNOWN(CSaveNameDlg);
+SIZE_UNKNOWN(CBattlezDlg);
 SIZE_UNKNOWN(CSettingsWriter);
 SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CWorldDelete);

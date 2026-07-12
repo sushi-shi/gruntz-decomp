@@ -65,7 +65,7 @@ class CGruntCueSink;   // +0x60 on-screen cue receiver; Grunt.h completes it (or
                        // completed locally with just the 0x4039f4 6-arg cue - a
                        // data-less method handle, so layout-neutral, no cross-cast)
 class CState;          // +0x2c current game-state; CState.h completes it
-struct CInput54;       // +0x54 active-level input/spatial-sound object (InputState.h)
+class CWorldSoundSet;  // +0x54 active-level input/spatial-sound object (WorldSoundSet.h)
 // +0x68 world command/trigger grid. RESOLVED -> CTriggerMgr (<Gruntz/TriggerMgr.h>):
 // the ~10 per-TU downcasts (CTeleIconTable/CTriggerSink/CSbIconSet/CSlimeCueGate/
 // CPathCueGate/TgcRegion/MgrObj/RbCmdGrid/...) are all VIEWS of the ONE non-polymorphic
@@ -280,9 +280,10 @@ struct CGameRegistry {
     //   SUBSTANCE-DIVERGENCE FLAGS (one physical field, but the two views disagree on
     //   what it IS - the name unifies to the manager's, endgame to resolve the real
     //   single type):
-    //   +0x54 RESOLVED -> CInput54 (<Gruntz/InputState.h>): ONE object (proven by the
-    //     LoadWorldMode ctor). The mgr's input facet and the ambient TU's active-level
-    //     facet are the same record; +0x24 is the mgr's armed flag == the ambient's
+    //   +0x54 RESOLVED -> CWorldSoundSet (<Gruntz/WorldSoundSet.h>): ONE object (proven by
+    //     the LoadWorldMode ctor + all "input" methods being CWorldSoundSet methods at the
+    //     exact rvas: StoreFlag=Restart@0xbc30, Arm=Resume, Disarm=Stop, Flush=Deactivate,
+    //     InitInput=Init). +0x24 m_active is the mgr's armed flag == the ambient's
     //     "playable"/object-count gate, +0x08 the shared spatial-sound voice CObList.
     //   +0x60 m_cueSink (cue
     //   receiver, 60+ grunt sites) vs GruntzMgr m_timer (per-frame tick + Voice_Volume);
@@ -313,12 +314,13 @@ struct CGameRegistry {
     char m_pad3c[0x48 - 0x3c];
     void* m_sound; // +0x48  sound/bank object (== GruntzMgr m_sound, CGruntzSoundZ*)
     char m_pad4c[0x54 - 0x4c];
-    CInput54* m_inputState; // +0x54  active-level input/spatial-sound object (ONE object,
-                            //         proven: the mgr's input facet == the ambient TU's
-                            //         active-level facet, +0x24 armed==playable gate,
-                            //         +0x08 CObList spatial voice list; see InputState.h)
-    void* m_saveSink;       // +0x58  save-record sink (consumers read save-game progress:
-                            //         MenuProgress->m_1c / final-movie availability)
+    CWorldSoundSet* m_inputState; // +0x54  active-level input/spatial-sound object (ONE
+                                  //         object, proven: the mgr's input facet == the
+                                  //         ambient TU's active-level facet, +0x24 m_active
+                                  //         armed==playable gate, +0x08 CObList spatial voice
+                                  //         list; see WorldSoundSet.h)
+    void* m_saveSink;             // +0x58  save-record sink (consumers read save-game progress:
+                                  //         MenuProgress->m_1c / final-movie availability)
     char m_pad5c[0x60 - 0x5c];
     CGruntCueSink* m_cueSink; // +0x60  on-screen cue receiver (Cue/CueA/CueSpawn;
                               //         GruntzMgr m_timer per-frame poll view)

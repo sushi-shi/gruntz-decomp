@@ -45,6 +45,7 @@
 #include <Gruntz/Grunt.h>         // CGrunt (grid cells) + GruntObjEntry (death chain)
 #include <Gruntz/SBI_RectOnly.h>  // CSBI_RectOnly (the play state's +0x2dc guts receiver)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ (m_sound)
+#include <Gruntz/WorldSoundSet.h> // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
 
 // The record-list node (CTriggerMgr::m_recHead): the MFC CObList node shape
 // {next, prev, data}; the data payload of a record node is the placed (x,y)
@@ -85,8 +86,8 @@ DATA(0x002455f8)
 extern i32 g_explosionz; // "Explosionz"
 DATA(0x002bf3c0)
 extern i32 g_time6bf3c0; // cue-cooldown clock (0x8247 throttle)
-DATA(0x00244c54) // RVA (was VA-typo 0x644c54, which shadowed the canonical _g_644c54)
-extern i32 g_644c54; // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
+DATA(0x00244c54)         // RVA (was VA-typo 0x644c54, which shadowed the canonical _g_644c54)
+extern i32 g_644c54;     // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
 DATA(0x00248cf0) // RVA (was VA-typo 0x648cf0, which shadowed multi's canonical 0x248cf0 binding)
 extern i32 g_isHost_648cf0;
 DATA(0x002c44c0)
@@ -1149,9 +1150,9 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
             m_soundEnabled = v;
             g_sndEnabled = v;
             if (v == 0) {
-                m_inputState->Disarm(); // 0x29b9->0xbc80 (== CInput54::Disarm, ghidra "Stop")
+                m_inputState->Stop(); // 0x29b9->0xbc80 CWorldSoundSet::Stop (was CInput54::Disarm)
             } else {
-                m_inputState->Arm(); // 0x18e8->0xbcf0 (== CInput54::Arm, ghidra "Resume")
+                m_inputState->Resume(); // 0x18e8->0xbcf0 CWorldSoundSet::Resume (was CInput54::Arm)
             }
             return 1;
         }
