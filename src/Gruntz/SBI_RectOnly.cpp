@@ -41,7 +41,7 @@
 // is exactly why CStatusBarItem's ctor is inline in the shared header (MSVC 5.0
 // will not fold an out-of-line base ctor).
 
-// CSBI_RectOnly + all its engine-referent views (CSbiSlot/CSbiSprite/...) and the
+// CSBI_RectOnly + all its engine-referent views (CSbiSlot/CSbiRect/...) and the
 // slot-state enum/consts now live in the canonical shared header <Gruntz/SBI_RectOnly.h>
 // (included above); the serialize stream is the shared CSerialArchive. Only the
 // RVA-keyed method bodies and the DATA()-bound globals remain in this TU.
@@ -901,53 +901,53 @@ RVA(0x00101420, 0x110)
 i32 CSBI_RectOnly::ClearTabSprites(i32 idx) {
     if (idx == -1 || idx == 0) {
         if (m_tabSprite0) {
-            m_tabSprite0->Release();
+            m_tabSprite0->Blit();
         }
         if (m_tabSprite2) {
-            m_tabSprite2->Release();
+            m_tabSprite2->Blit();
         }
         if (m_tabSprite1) {
-            m_tabSprite1->Release();
+            m_tabSprite1->Blit();
         }
         if (m_tabSprite3) {
-            m_tabSprite3->Release();
+            m_tabSprite3->Blit();
         }
         if (m_tabSprite4) {
-            m_tabSprite4->Release();
+            m_tabSprite4->Blit();
         }
     }
     if (idx == 5 || idx == -1) {
         if (m_tabSprite5) {
-            m_tabSprite5->Release();
+            m_tabSprite5->Blit();
         }
         if (m_tabSprite6) {
-            m_tabSprite6->Release();
+            m_tabSprite6->Blit();
         }
         if (m_tabSprite7) {
-            m_tabSprite7->Release();
+            m_tabSprite7->Blit();
         }
         if (m_tabSprite8) {
-            m_tabSprite8->Release();
+            m_tabSprite8->Blit();
         }
         if (m_tabSprite9) {
-            m_tabSprite9->Release();
+            m_tabSprite9->Blit();
         }
         if (m_tabSprite10) {
-            m_tabSprite10->Release();
+            m_tabSprite10->Blit();
         }
     }
     if (idx == 6 || idx == -1) {
         if (m_tabSprite11) {
-            m_tabSprite11->Release();
+            m_tabSprite11->Blit();
         }
         if (m_tabSprite12) {
-            m_tabSprite12->Release();
+            m_tabSprite12->Blit();
         }
         if (m_tabSprite13) {
-            m_tabSprite13->Release();
+            m_tabSprite13->Blit();
         }
         if (m_tabSprite14) {
-            m_tabSprite14->Release();
+            m_tabSprite14->Blit();
         }
     }
     return 1;
@@ -2697,143 +2697,143 @@ i32 CSBI_RectOnly::SetTabState(i32 tab, i32 state) {
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite0->Show(state, 1);
-            m_tabSprite2->Hide(state);
-            m_tabSprite1->Hide(state);
-            m_tabSprite3->Hide(state);
-            m_tabSprite4->Hide(state);
+            m_tabSprite0->SetState(state, 1);
+            m_tabSprite2->ProbeState(state);
+            m_tabSprite1->ProbeState(state);
+            m_tabSprite3->ProbeState(state);
+            m_tabSprite4->ProbeState(state);
             return 1;
         case 2:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite0->Hide(state);
-            m_tabSprite2->Show(state, 1);
-            m_tabSprite1->Hide(state);
-            m_tabSprite3->Hide(state);
-            m_tabSprite4->Hide(state);
+            m_tabSprite0->ProbeState(state);
+            m_tabSprite2->SetState(state, 1);
+            m_tabSprite1->ProbeState(state);
+            m_tabSprite3->ProbeState(state);
+            m_tabSprite4->ProbeState(state);
             return 1;
         case 3:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite0->Hide(state);
-            m_tabSprite2->Hide(state);
-            m_tabSprite1->Show(state, 1);
-            m_tabSprite3->Hide(state);
-            m_tabSprite4->Hide(state);
+            m_tabSprite0->ProbeState(state);
+            m_tabSprite2->ProbeState(state);
+            m_tabSprite1->SetState(state, 1);
+            m_tabSprite3->ProbeState(state);
+            m_tabSprite4->ProbeState(state);
             return 1;
         case 4:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite0->Hide(state);
-            m_tabSprite2->Hide(state);
-            m_tabSprite1->Hide(state);
-            m_tabSprite3->Show(state, 1);
-            m_tabSprite4->Hide(state);
+            m_tabSprite0->ProbeState(state);
+            m_tabSprite2->ProbeState(state);
+            m_tabSprite1->ProbeState(state);
+            m_tabSprite3->SetState(state, 1);
+            m_tabSprite4->ProbeState(state);
             return 1;
         case 5:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite0->Hide(state);
-            m_tabSprite2->Hide(state);
-            m_tabSprite1->Hide(state);
-            m_tabSprite3->Hide(state);
-            m_tabSprite4->Show(state, 1);
+            m_tabSprite0->ProbeState(state);
+            m_tabSprite2->ProbeState(state);
+            m_tabSprite1->ProbeState(state);
+            m_tabSprite3->ProbeState(state);
+            m_tabSprite4->SetState(state, 1);
             return 1;
         case 0x1f4:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->Show(state, 1);
-            m_tabSprite6->Hide(state);
-            m_tabSprite7->Hide(state);
-            m_tabSprite8->Hide(state);
-            m_tabSprite9->Hide(state);
-            m_tabSprite10->Hide(state);
+            m_tabSprite5->SetState(state, 1);
+            m_tabSprite6->ProbeState(state);
+            m_tabSprite7->ProbeState(state);
+            m_tabSprite8->ProbeState(state);
+            m_tabSprite9->ProbeState(state);
+            m_tabSprite10->ProbeState(state);
             return 1;
         case 0x1f5:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->Hide(state);
-            m_tabSprite6->Show(state, 1);
-            m_tabSprite7->Hide(state);
-            m_tabSprite8->Hide(state);
-            m_tabSprite9->Hide(state);
-            m_tabSprite10->Hide(state);
+            m_tabSprite5->ProbeState(state);
+            m_tabSprite6->SetState(state, 1);
+            m_tabSprite7->ProbeState(state);
+            m_tabSprite8->ProbeState(state);
+            m_tabSprite9->ProbeState(state);
+            m_tabSprite10->ProbeState(state);
             return 1;
         case 0x1f6:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->Hide(state);
-            m_tabSprite6->Hide(state);
-            m_tabSprite7->Show(state, 1);
-            m_tabSprite8->Hide(state);
-            m_tabSprite9->Hide(state);
-            m_tabSprite10->Hide(state);
+            m_tabSprite5->ProbeState(state);
+            m_tabSprite6->ProbeState(state);
+            m_tabSprite7->SetState(state, 1);
+            m_tabSprite8->ProbeState(state);
+            m_tabSprite9->ProbeState(state);
+            m_tabSprite10->ProbeState(state);
             return 1;
         case 0x1f7:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->Hide(state);
-            m_tabSprite6->Hide(state);
-            m_tabSprite7->Hide(state);
-            m_tabSprite8->Show(state, 1);
-            m_tabSprite9->Hide(state);
-            m_tabSprite10->Hide(state);
+            m_tabSprite5->ProbeState(state);
+            m_tabSprite6->ProbeState(state);
+            m_tabSprite7->ProbeState(state);
+            m_tabSprite8->SetState(state, 1);
+            m_tabSprite9->ProbeState(state);
+            m_tabSprite10->ProbeState(state);
             return 1;
         case 0x1f8:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->Hide(state);
-            m_tabSprite6->Hide(state);
-            m_tabSprite7->Hide(state);
-            m_tabSprite8->Hide(state);
-            m_tabSprite9->Show(state, 1);
-            m_tabSprite10->Hide(state);
+            m_tabSprite5->ProbeState(state);
+            m_tabSprite6->ProbeState(state);
+            m_tabSprite7->ProbeState(state);
+            m_tabSprite8->ProbeState(state);
+            m_tabSprite9->SetState(state, 1);
+            m_tabSprite10->ProbeState(state);
             return 1;
         case 0x1f9:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite5->Hide(state);
-            m_tabSprite6->Hide(state);
-            m_tabSprite7->Hide(state);
-            m_tabSprite8->Hide(state);
-            m_tabSprite9->Hide(state);
-            m_tabSprite10->Show(state, 1);
+            m_tabSprite5->ProbeState(state);
+            m_tabSprite6->ProbeState(state);
+            m_tabSprite7->ProbeState(state);
+            m_tabSprite8->ProbeState(state);
+            m_tabSprite9->ProbeState(state);
+            m_tabSprite10->SetState(state, 1);
             return 1;
         case 0x1fa:
             if (m_hlBusy) {
                 return 1;
             }
-            m_tabSprite10->Show(state, 1);
+            m_tabSprite10->SetState(state, 1);
             return 1;
         case 0x324:
             if (m_tabSprite11) {
-                m_tabSprite11->Show(state, 1);
+                m_tabSprite11->SetState(state, 1);
             }
-            m_tabSprite12->Hide(state);
+            m_tabSprite12->ProbeState(state);
             return 1;
         case 0x325:
             if (m_tabSprite11) {
-                m_tabSprite11->Hide(state);
+                m_tabSprite11->ProbeState(state);
             }
-            m_tabSprite12->Show(state, 1);
+            m_tabSprite12->SetState(state, 1);
             return 1;
         case 0x327:
-            m_tabSprite13->Show(state, 1);
-            m_tabSprite14->Hide(state);
+            m_tabSprite13->SetState(state, 1);
+            m_tabSprite14->ProbeState(state);
             return 1;
         case 0x328:
-            m_tabSprite13->Hide(state);
-            m_tabSprite14->Show(state, 1);
+            m_tabSprite13->ProbeState(state);
+            m_tabSprite14->SetState(state, 1);
             return 1;
     }
     return 1;
@@ -3363,7 +3363,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         return 0;
     }
     ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
-    m_tabSprite0 = (CSbiSprite*)it;
+    m_tabSprite0 = (CSBI_MenuItem*)it;
 
     // ---- GRUNTZTAB (menu item, type 2) ----
     it = new CSBI_MenuItem;
@@ -3378,7 +3378,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         return 0;
     }
     ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
-    m_tabSprite2 = (CSbiSprite*)it;
+    m_tabSprite2 = (CSBI_MenuItem*)it;
 
     // ---- RESOURCETAB (menu item, type 3) ----
     it = new CSBI_MenuItem;
@@ -3393,7 +3393,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         return 0;
     }
     ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
-    m_tabSprite1 = (CSbiSprite*)it;
+    m_tabSprite1 = (CSBI_MenuItem*)it;
 
     // ---- MULTIPLAYERTAB (menu item, type 4) ----
     it = new CSBI_MenuItem;
@@ -3408,7 +3408,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         return 0;
     }
     ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
-    m_tabSprite3 = (CSbiSprite*)it;
+    m_tabSprite3 = (CSBI_MenuItem*)it;
     if (g_gameReg->m_134 == 1) {
         CSBI_MenuItem* mp = (CSBI_MenuItem*)it;
         mp->m_34 = 4;
@@ -3437,7 +3437,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         return 0;
     }
     ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
-    m_tabSprite4 = (CSbiSprite*)it;
+    m_tabSprite4 = (CSBI_MenuItem*)it;
 
     if (Probe2e69() == 0) {
         return 0;
@@ -4184,7 +4184,7 @@ void CSBI_RectOnly::BuildGameTabResumeButton(i32 show) {
         SetTabState(5, 3);
     }
     if (m_tabSprite5) {
-        m_tabSprite5->Configure("GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
+        m_tabSprite5->ResolveFrame((i32) "GAME_STATUSBAR_TABZ_GAMETAB_RESUME", 1);
         Deactivate();
         m_tabSprite5->Refresh();
     }
@@ -4196,7 +4196,7 @@ void CSBI_RectOnly::BuildGameTabResumeButton(i32 show) {
 RVA(0x00102200, 0x37)
 void CSBI_RectOnly::BuildGameTabPauseButton() {
     if (m_tabSprite5) {
-        m_tabSprite5->Configure("GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
+        m_tabSprite5->ResolveFrame((i32) "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
         Deactivate();
         m_tabSprite5->Refresh();
     }

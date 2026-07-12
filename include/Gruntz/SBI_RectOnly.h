@@ -16,6 +16,7 @@
 #define GRUNTZ_SBI_RECTONLY_H
 
 class CWarpStoneFly; // folded CSbiMode54c
+class CSBI_MenuItem; // the per-tab menu-item widget (defined below; folded CSbiSprite view)
 
 #include <Ints.h>
 #include <Gruntz/SoundCueMgr.h>
@@ -57,31 +58,14 @@ struct CSbiSeqHolder {
 };
 SIZE_UNKNOWN(CSbiSeqHolder);
 
-// A per-tab sprite/menu widget: ClearTabSprites calls Release(); SetTabState shows
-// the selected tab's sprite (Show, +flag) and hides the rest (Hide); the game-tab
-// button builders drive Configure(key, on) + the slot-0x28 refresh virtual. It is a
-// polymorphic engine object (vptr at +0, refresh at vtable slot 10); Release/Show/
-// Hide/Configure are non-virtual (call rel32, reloc-masked - only the arg shape is
-// load-bearing). Making it polymorphic is codegen-neutral for the non-virtual calls.
-class CSbiSprite {
-public:
-    virtual void Destroy();                  // slot 0  scalar-deleting dtor
-    virtual void Serialize();                // slot 1
-    virtual void Setup();                    // slot 2
-    virtual void ClearFrame();               // slot 3
-    virtual void Poll();                     // slot 4
-    virtual void Tick();                     // slot 5
-    virtual void HitHandlerA();              // slot 6
-    virtual void HitHandlerB();              // slot 7
-    virtual void HitHandlerC();              // slot 8
-    virtual void HitHandlerD();              // slot 9
-    virtual void Refresh();                  // +0x28 (slot 10)
-    void Release();                          // __thiscall, no args (sibling thunk_FUN_004e84f0)
-    void Show(i32 idx, i32 on);              // 2 args (call 0x2059)
-    void Hide(i32 idx);                      // 1 arg  (call 0x3279)
-    void Configure(const char* key, i32 on); // 2 args (call 0x2aea)
-};
-SIZE_UNKNOWN(CSbiSprite);
+// The per-tab sprite/menu widgets (m_tabSprite0..14) are the real CSBI_MenuItem
+// (vtable 0x1eab4c; defined below): ClearTabSprites drives Blit() (0xe84f0),
+// SetTabState shows the selected tab via SetState(state,1) (0xe8310) and hides the
+// rest via ProbeState(state) (0xe8480), the game-tab button builders resolve the
+// asset frame via ResolveFrame(key,on) (0xe81e0), and Refresh() is the slot-10
+// virtual (CSbiTab). The former fake `class CSbiSprite` view is folded away; the
+// four non-virtual methods are declared on CSBI_MenuItem below (reloc-masked
+// call rel32 to the real rvas bound in SBI_MenuItem.cpp).
 
 // A hit-test rect widget held in m_hitRects[] / the hit-test lists: a polymorphic
 // object (vptr at +0) with the m_enabled gate at +4, m_xLo/m_xHi the x span, and
@@ -402,7 +386,7 @@ public:
     void ReportTab(i32 tab);
     // siblings dispatched (reloc-masked ILT thunks / bodies elsewhere)
     i32 RefreshA(); // 0xfe460  armed-refresh rect-setup variant
-    i32 HideRect();   // 0xfe600  hide/off-screen rect-setup variant
+    i32 HideRect(); // 0xfe600  hide/off-screen rect-setup variant
 
     // ----- third batch -----
     void AdvanceTab(i32 reverse); // 0x10b4f0 periodic highlight-cursor tick
@@ -439,21 +423,21 @@ public:
     i32 m_statFlags[15];          // +0x114  per-stat toggle flag array
     CSbiRect* m_hitRects[15];     // +0x150  hit-test rect widgets
     CSbiStatObj* m_statObj[15];   // +0x18c  per-stat object array (notified on clear)
-    CSbiSprite* m_tabSprite0;     // +0x1c8  per-tab sprite widgets (cleared by
-    CSbiSprite* m_tabSprite1;     // +0x1cc  ClearTabSprites in declaration order)
-    CSbiSprite* m_tabSprite2;     // +0x1d0
-    CSbiSprite* m_tabSprite3;     // +0x1d4
-    CSbiSprite* m_tabSprite4;     // +0x1d8
-    CSbiSprite* m_tabSprite5;     // +0x1dc
-    CSbiSprite* m_tabSprite6;     // +0x1e0
-    CSbiSprite* m_tabSprite7;     // +0x1e4
-    CSbiSprite* m_tabSprite8;     // +0x1e8
-    CSbiSprite* m_tabSprite9;     // +0x1ec
-    CSbiSprite* m_tabSprite10;    // +0x1f0
-    CSbiSprite* m_tabSprite11;    // +0x1f4
-    CSbiSprite* m_tabSprite12;    // +0x1f8
-    CSbiSprite* m_tabSprite13;    // +0x1fc
-    CSbiSprite* m_tabSprite14;    // +0x200
+    CSBI_MenuItem* m_tabSprite0;  // +0x1c8  per-tab sprite widgets (cleared by
+    CSBI_MenuItem* m_tabSprite1;  // +0x1cc  ClearTabSprites in declaration order)
+    CSBI_MenuItem* m_tabSprite2;  // +0x1d0
+    CSBI_MenuItem* m_tabSprite3;  // +0x1d4
+    CSBI_MenuItem* m_tabSprite4;  // +0x1d8
+    CSBI_MenuItem* m_tabSprite5;  // +0x1dc
+    CSBI_MenuItem* m_tabSprite6;  // +0x1e0
+    CSBI_MenuItem* m_tabSprite7;  // +0x1e4
+    CSBI_MenuItem* m_tabSprite8;  // +0x1e8
+    CSBI_MenuItem* m_tabSprite9;  // +0x1ec
+    CSBI_MenuItem* m_tabSprite10; // +0x1f0
+    CSBI_MenuItem* m_tabSprite11; // +0x1f4
+    CSBI_MenuItem* m_tabSprite12; // +0x1f8
+    CSBI_MenuItem* m_tabSprite13; // +0x1fc
+    CSBI_MenuItem* m_tabSprite14; // +0x200
     CSbiSlotPtr* m_slotNotify[1]; // +0x204  slot pointer array (4-byte stride)
     char m_pad208[0x218 - 0x208];
     CSbiGaugeNotify* m_gaugeNotify; // +0x218  gauge notifier (vfunc 0x28)
@@ -798,9 +782,17 @@ public:
         m_30 = 0;
         m_38 = 0;
     }
-    i32 m_30; // +0x30
-    i32 m_34; // +0x34
-    i32 m_38; // +0x38
+    // The tab-widget drivers CSBI_RectOnly reaches through m_tabSprite* (non-virtual
+    // reloc-masked call rel32; bodies + rvas bound in SBI_MenuItem.cpp). These fold
+    // the former fake CSbiSprite view onto the real class: Release->Blit, Show->
+    // SetState, Hide->ProbeState, Configure->ResolveFrame (proven by shared rva).
+    i32 ResolveFrame(i32 key, i32 a); // 0xe81e0  (was CSbiSprite::Configure)
+    i32 SetState(i32 state, i32 a);   // 0xe8310  (was CSbiSprite::Show)
+    i32 ProbeState(i32 state);        // 0xe8480  (was CSbiSprite::Hide)
+    i32 Blit();                       // 0xe84f0  (was CSbiSprite::Release)
+    i32 m_30;                         // +0x30
+    i32 m_34;                         // +0x34
+    i32 m_38;                         // +0x38
 };
 SIZE(CSBI_MenuItem, 0x3c);
 
