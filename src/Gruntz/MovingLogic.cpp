@@ -102,39 +102,40 @@ CMovingLogic::~CMovingLogic() {}
 // @0x191d20 / (double) @0x191df0 are library-carved. Carved to config/library_labels.csv
 // (LIBCIMT, ??6ostream@@QAEAAV0@PBD@Z), not reconstructed - game-not-CRT policy.)
 
-// 0x16cdd0 - WriteCurve(accum, curve): 29 doubles + 1 int, returning accum.
+// 0x16cdd0 - WriteCurve(accum, curve): stream 29 doubles + 1 int into the ostream
+// accumulator (the library ostream::operator<< overloads), returning accum.
 RVA(0x0016cdd0, 0x22f)
-CButeText& WriteCurve(CButeText& accum, const CMotionState& c) {
-    accum.AppendDouble(c.m_00);
-    accum.AppendDouble(c.m_08);
-    accum.AppendDouble(c.m_10);
-    accum.AppendDouble(c.m_18);
-    accum.AppendDouble(c.m_20);
-    accum.AppendDouble(c.m_28);
-    accum.AppendDouble(c.m_30);
-    accum.AppendDouble(c.m_38);
-    accum.AppendDouble(c.m_40);
-    accum.AppendDouble(c.m_48);
-    accum.AppendDouble(c.m_50);
-    accum.AppendDouble(c.m_70);
-    accum.AppendDouble(c.m_78);
-    accum.AppendDouble(c.m_80);
-    accum.AppendDouble(c.m_88);
-    accum.AppendDouble(c.m_90);
-    accum.AppendDouble(c.m_98);
-    accum.AppendDouble(c.m_a0);
-    accum.AppendDouble(c.m_a8);
-    accum.AppendDouble(c.m_b0);
-    accum.AppendInt(c.m_b8);
-    accum.AppendDouble(c.m_c0);
-    accum.AppendDouble(c.m_c8);
-    accum.AppendDouble(c.m_d0);
-    accum.AppendDouble(c.m_d8);
-    accum.AppendDouble(c.m_e0);
-    accum.AppendDouble(c.m_e8);
-    accum.AppendDouble(c.m_f0);
-    accum.AppendDouble(c.m_f8);
-    accum.AppendDouble(c.m_100);
+ostream& WriteCurve(ostream& accum, const CMotionState& c) {
+    accum << c.m_00;
+    accum << c.m_08;
+    accum << c.m_10;
+    accum << c.m_18;
+    accum << c.m_20;
+    accum << c.m_28;
+    accum << c.m_30;
+    accum << c.m_38;
+    accum << c.m_40;
+    accum << c.m_48;
+    accum << c.m_50;
+    accum << c.m_70;
+    accum << c.m_78;
+    accum << c.m_80;
+    accum << c.m_88;
+    accum << c.m_90;
+    accum << c.m_98;
+    accum << c.m_a0;
+    accum << c.m_a8;
+    accum << c.m_b0;
+    accum << c.m_b8; // int (?g_b8 is i32) -> operator<<(int) 0x191d20
+    accum << c.m_c0;
+    accum << c.m_c8;
+    accum << c.m_d0;
+    accum << c.m_d8;
+    accum << c.m_e0;
+    accum << c.m_e8;
+    accum << c.m_f0;
+    accum << c.m_f8;
+    accum << c.m_100;
     return accum;
 }
 
@@ -334,7 +335,7 @@ i32 CMovingLogic::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         char buf[0x100];
         CButeWriteTemp accum;
         accum.Ctor(buf, 0x100, 2, 1);
-        WriteCurve(*(CButeText*)&accum, *Motion());
+        WriteCurve(*(ostream*)&accum, *Motion());
         i32 len = accum.Length();
         arc->Write(&len, 4);
         arc->Write(accum.GetBuffer(), len);
@@ -352,7 +353,7 @@ i32 CMovingLogic::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
         arc->Read(buf, len);
         CButeReadTemp accum;
         accum.Ctor(buf, len, 1);
-        ReadCurve(*(CButeText*)&accum, *Motion());
+        ReadCurve(*(istream*)&accum, *Motion());
         RezFree(buf);
         arc->Read(&m_140, 4);
         arc->Read(&m_144, 4);
@@ -365,8 +366,8 @@ i32 CMovingLogic::Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4) {
 }
 
 SIZE_UNKNOWN(CButeReadTemp);
-SIZE_UNKNOWN(CButeText);
 SIZE_UNKNOWN(CButeVbaseTeardown);
 SIZE_UNKNOWN(CButeWriteTemp);
 SIZE_UNKNOWN(CMlSerialCtx);
+SIZE_UNKNOWN(ostream); // CRT ostream (declared-only; library operator<< appends)
 SIZE_UNKNOWN(CMovingLogicBase);

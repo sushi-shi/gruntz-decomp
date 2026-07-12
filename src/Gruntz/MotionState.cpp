@@ -7,10 +7,11 @@
 #include <Globals.h>
 
 // The shared .rdata bound/easing doubles the methods read by plain dword loads.
-DATA(0x001f04b0)
-extern const double g_motionMin;
-DATA(0x001f04b8)
-extern const double g_motionMax;
+// The [MIN,MAX] box (0x1f04b0 / 0x1f04b8) is the SAME .rdata pair CMovingLogic's
+// ctor seeds - the tree winner is g_movingLogicMin/g_movingLogicMax (defined in
+// projectile, declared in <Gruntz/MovingLogic.h>); bind to it, not a dup local view.
+extern const double g_movingLogicMin; // 0x1f04b0 (-2147483647.0)
+extern const double g_movingLogicMax; // 0x1f04b8 (2147483646.0)
 DATA(0x001f0500)
 extern const double g_motionZero;
 
@@ -34,18 +35,18 @@ CMotionState::CMotionState() {
     m_c8 = 0.0;
     m_d0 = 0.0;
     m_b8 = 0;
-    m_70 = g_motionMin;
-    m_88 = g_motionMax;
-    m_78 = g_motionMin;
-    m_90 = g_motionMax;
-    m_80 = g_motionMin;
-    m_98 = g_motionMax;
-    m_d8 = g_motionMax;
-    m_e0 = g_motionMax;
-    m_e8 = g_motionMax;
-    m_f0 = g_motionMax;
-    m_f8 = g_motionMax;
-    m_100 = g_motionMax;
+    m_70 = g_movingLogicMin;
+    m_88 = g_movingLogicMax;
+    m_78 = g_movingLogicMin;
+    m_90 = g_movingLogicMax;
+    m_80 = g_movingLogicMin;
+    m_98 = g_movingLogicMax;
+    m_d8 = g_movingLogicMax;
+    m_e0 = g_movingLogicMax;
+    m_e8 = g_movingLogicMax;
+    m_f0 = g_movingLogicMax;
+    m_f8 = g_movingLogicMax;
+    m_100 = g_movingLogicMax;
 }
 
 // ---------------------------------------------------------------------------

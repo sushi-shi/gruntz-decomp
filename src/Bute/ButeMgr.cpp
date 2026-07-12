@@ -164,6 +164,8 @@ public:
     // the string write-back path passes 0x22 = '"').
     void Trim(i32 n);
 };
+SIZE_UNKNOWN(CButeText); // (was covered by MovingLogic's shared annotation, now
+                         // dissolved to the real CRT ostream there; home it here)
 
 // The object m_pText points at: the value-text accumulator (a CButeText / MFC
 // CString) lives at +0xc inside it. Parse reaches it as m_pText->accum so the

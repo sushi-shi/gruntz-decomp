@@ -15,14 +15,20 @@
 #include <Gruntz/MovingLogic.h> // the canonical CMovingLogic + CMotionState (+0x38 curve)
 #include <rva.h>
 
-// The bute-text accumulator (an MFC-CString-backed value text). Its formatted
-// appends are reloc-masked engine externs (no body): AppendDouble (0x191df0)
-// and AppendInt (0x191d20) each format one value and return the accumulator.
-class CButeText {
+// The bute-text accumulator is a CRT ostream (an ostrstream - its virtual base
+// `ios` is the vbase-teardown wall the CBute*Temp helpers below reproduce). The
+// formatted appends WriteCurve streams are the LIBRARY ostream::operator<<
+// overloads, not game code: int (0x191d20, ??6ostream@@QAEAAV0@H@Z) and double
+// (0x191df0, ??6ostream@@QAEAAV0@N@Z), both LIBCIMT and bound in
+// config/library_labels.csv - reloc-masked, not reconstructed (game-not-CRT).
+class ostream {
 public:
-    CButeText& AppendInt(i32 v);       // 0x191d20
-    CButeText& AppendDouble(double v); // 0x191df0
+    ostream& operator<<(i32 v);    // ??6ostream@@QAEAAV0@H@Z  0x191d20
+    ostream& operator<<(double v); // ??6ostream@@QAEAAV0@N@Z  0x191df0
 };
+// The read side's accumulator is the matching istream (istrstream). ReadCurve is
+// declared-only (reloc-masked); a forward decl suffices for its reference param.
+class istream;
 
 // CMovingLogic's movement-curve coefficient block (CMovingLogic+0x38) IS the
 // CMotionState kinematic band (<Gruntz/MotionState.h>): the writer streams its
@@ -47,8 +53,8 @@ public:
 extern "C" void* RezAlloc(i32 size); // 0x1b9b46
 extern "C" void RezFree(void* p);    // 0x1b9b82
 
-// ReadCurve (0x16d000): parse a CButeText accumulator back into the curve block.
-void ReadCurve(CButeText& accum, CMotionState& c); // 0x16d000
+// ReadCurve (0x16d000): parse an istream accumulator back into the curve block.
+void ReadCurve(istream& accum, CMotionState& c); // 0x16d000
 
 // The vbase-subobject teardown helpers (reloc-masked, the +0xc this used by the
 // retail destruct path).
