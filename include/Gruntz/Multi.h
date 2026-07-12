@@ -266,10 +266,8 @@ public:
     i32 m_10; // +0x10  slot-count / id base
 };
 SIZE_UNKNOWN(CNetSession2); // CMulti lobby-session view (identity-recovery TODO above)
-class CLobbyObjA {          // m_attractOverlay
-public:
-    void Teardown(); // 0x004a3360
-};
+// (The CLobbyObjA m_attractOverlay view is dissolved: the +0x320 overlay's teardown is
+//  CLightFxRender::Ctor @0xa3360 - bound directly in CMulti::Teardown.)
 
 // A CNetSession2 slot element (returned by FindSlot, stride 0x64): the canonical
 // CLobbySlot lives in <Gruntz/LobbyObjB.h> (BuildHostName @0xbc3f0, ~ @0xb62a0,
@@ -399,8 +397,9 @@ public:
     i32 VerifyCustomLevel(void* h, i32 token); // 0x0b8fc0
     i32 PollSession();                         // 0x0b95f0 (drain the receive queue; ret i32)
     void AutoTuneCmdDelay();                   // 0x0bcc10
-    void CPlayDtorBody(); // 0x04c8700 (the CPlay sub-object teardown, thiscall)
-    void OnDropPlayer();  // 0x0bc110
+    // CPlayDtorBody @0xc8700 is CPlay::CPlayDtorBody (inherited - no CMulti redecl, so
+    // Teardown's call binds to the real CPlay method).
+    void OnDropPlayer(); // 0x0bc110
     i32 RebindHost();     // 0x0bc750  (also CNetMgr-shared)
     i32 RebindHostAlt();  // 0x0bc460
     // The connect-drive helpers the Net-side coordinator (NetMgrMisc.cpp) reaches
@@ -446,6 +445,7 @@ public:
     // (this CMulti): retail runs each on this=g_curMulti (a CMulti at offset 0). The
     // small real CNetMgr is reached via Peer() (+0x524). Defined in Multi.cpp.
     i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3);                         // 0x0b5460
+    i32 Open();                                                                  // 0x0b77a0  (was the NetSessionOpener this-view)
     i32 SetupServices();                                                         // 0x0b78b0
     i32 DetectConnectionConfig();                                                // 0x0b82e0
     void ApplyCmdDelayDefaults();                                                // 0x0b85a0

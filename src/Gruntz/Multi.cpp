@@ -26,7 +26,8 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (Vslot09 PerFrameTick; ShowMultiStartDlg ExitModalUI)
 #include <Gruntz/Dialogs.h>   // CMultiStartDlg (stack-constructed by ShowMultiStartDlg @0xb86c0)
-#include <Gruntz/LobbyObjB.h> // CLobbyObjB/CLobbySlot (the m_520 lobby object, dtors @0xb6220/0xb62a0)
+#include <Gruntz/LobbyObjB.h>     // CLobbyObjB/CLobbySlot (the m_520 lobby object, dtors @0xb6220/0xb62a0)
+#include <Gruntz/LightFxRender.h> // CLightFxRender (the +0x320 attract overlay; teardown Ctor @0xa3360)
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
@@ -250,7 +251,7 @@ struct CNetJoinPacket {
 SIZE(CNetJoinPacket, 0x28); // fully-known fixed stat-0x3f9 announce packet
 
 // --- re-homed stray context (dossier #4b seam ledger) ---
-#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (NetSessionOpener m_c->m_4)
+#include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
 // --- (from MultiResumeSlots.cpp) the cached timeGetTime import fn-ptr (0x6c4650);
 // pinned in a callee-saved reg by CMulti::Vslot09.
 extern "C" u32(WINAPI* g_pTimeGetTime)();
@@ -259,23 +260,9 @@ extern "C" u32(WINAPI* g_pTimeGetTime)();
 DATA(0x00248cf0)
 extern i32 g_isHost_648cf0; // DAT_00648cf0: nonzero when hosting
 
-struct NetSessionHolder {
-    char m_pad0[4];
-    CDDrawSubMgrPages* m_4; // +0x04  the sub-object (Init == Method_158dc0)
-};
-// The session-setup coordinator (`this`). Reached via CNetMgr::SetupMultiplayerSession.
-struct NetSessionOpener {
-    char m_pad0[0xc];
-    NetSessionHolder* m_c; // +0x0c
-    char m_pad10[0x524 - 0x10];
-    CNetMgr* m_524;                                         // +0x524  the CNetMgr connection
-    i32 m_528;                                              // +0x528  host/join role flag
-    void Configure(char* name, i32 a, i32 b, i32 c, i32 d); // RVA 0x3445 (near-thunk)
-    i32 Build();                                            // RVA 0x3db9
-    i32 HostStart();                                        // RVA 0x39bd
-    i32 JoinStart();                                        // RVA 0x2487
-    i32 Open();
-};
+// (The former NetSessionHolder / NetSessionOpener this-cast views are dissolved: Open is
+//  CMulti::Open @0xb77a0, and its +0xc holder is the inherited CState::m_c
+//  (CSpriteFactoryHolder), +0x524 the real CNetMgr via Peer().)
 // The menu-select event the handler is handed (edi): +0x4 the "armed" gate (==1),
 // +0x8 the player/slot id, +0x20/+0x24 the session-add params.
 struct MenuSelectEvent {
@@ -591,8 +578,8 @@ struct CNetConnectSlotView {
 SIZE_UNKNOWN(CNetConnectThis);
 struct CNetConnectThis {
     // InitConnect IS CAssetLoader::LoadGameAssetNamespaces; cast at the call.
-    // StartTitle IS CMulti::StartTitle; cast at the call.
-    // Open IS NetSessionOpener::Open; cast at the call.
+    // StartTitle IS CMulti::StartTitle (called cast-free from SetupMultiplayerSession).
+    // Open IS CMulti::Open @0xb77a0 (called cast-free; the NetSessionOpener view is gone).
     // ShowMultiStartDlg IS CNetMgrLite::ShowMultiStartDlg; cast at the call.
     // LoadCursorSprites IS CPlay::LoadCursorSprites; cast at the call.
 };
@@ -768,13 +755,13 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
 
     MF(0xac) = 1;
     if (NetGameMgr()->InitializeLobbyConnectionSettings() != 0) {
-        if (((CMulti*)this)->StartTitle() != 0) {
+        if (StartTitle() != 0) {
             MF(0xac) = 0;
             (((CNetMgr*)this)->*(((CNetConnectSlotView*)*(void**)this)->Abort))();
             return 0;
         }
     } else {
-        if (((NetSessionOpener*)this)->Open() != 0) {
+        if (Open() != 0) {
             MF(0xac) = 0;
             while (g_ShowCursor(0) >= 0) {
             }
@@ -925,9 +912,13 @@ void CMulti::Teardown() {
         SendNetStat(0x402, 0x4d2, 1);
         SendStatFlag(0x3ea, 1);
     }
-    CNetSession2* p520 = m_session;
+    // The +0x520 session object is destroyed as ~CLobbyObjB (0xb6220) - that IS its
+    // real dtor (CNetSession2 is the per-frame lobby-session view of the same object;
+    // full CNetSession2<->CLobbyObjB fold is the deferred identity-recovery). `delete`
+    // shape: dtor then engine free.
+    CLobbyObjB* p520 = (CLobbyObjB*)m_session;
     if (p520) {
-        p520->Teardown();
+        p520->~CLobbyObjB();
         ::operator delete(p520);
         m_session = 0;
     }
@@ -935,9 +926,13 @@ void CMulti::Teardown() {
         delete m_netGate;
         m_netGate = 0;
     }
-    CLobbyObjA* p320 = (CLobbyObjA*)m_overlayActive;
+    // The +0x320 attract overlay is destroyed via CLightFxRender::Ctor (0xa3360) - the
+    // engine reuses the field-zeroing "ctor" as the pre-free cleanup - then the engine
+    // free. (Was the CLobbyObjA decl-only view; m_overlayActive is the i32 gate reused
+    // as the CLightFxRender* here.)
+    CLightFxRender* p320 = (CLightFxRender*)m_overlayActive;
     if (p320) {
-        p320->Teardown();
+        p320->Ctor();
         ::operator delete(p320);
         m_overlayActive = 0;
     }
@@ -1673,30 +1668,34 @@ CString& CMulti::ClearString5a0(CString& s) {
     return s;
 }
 
-// __thiscall(): configure the session, build it, connect via DirectPlay using the app
-// GUID, then host- or join-start depending on g_isHost_648cf0.
+// CMulti::Open @0xb77a0 (__thiscall; was the NetSessionOpener this-cast view): roll the
+// "BACKGND" title fade, init the DDraw sub-mgr pages, build the session services, connect
+// via DirectPlay using the app GUID, then host- or join-start per g_isHost. The +0x524
+// join gate is the small real CNetMgr (Peer()); Configure/Build/HostStart/JoinStart were
+// the fake view's names for RunTitleSeq(CState)/SetupServices/DetectConnectionConfig/
+// JoinSession (all real CMulti/CState methods now - the calls bind).
 RVA(0x000b77a0, 0xb5)
-i32 NetSessionOpener::Open() {
-    if (!m_524) {
+i32 CMulti::Open() {
+    if (!Peer()) {
         return 0;
     }
-    Configure("BACKGND", 0, 0, 1, 0);
-    m_c->m_4->Method_158dc0();
-    i32 descriptor = Build();
+    RunTitleSeq("BACKGND", 0, 0, 1, 0);                      // 0xfa350 (CState base)
+    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158dc0(); // m_c->m_4
+    i32 descriptor = SetupServices();                        // 0xb78b0
     if (!descriptor) {
         return 0;
     }
-    if (!m_524->InitFromProvider((void*)descriptor, *(const GUID*)g_dplayAppGuid)) {
+    if (!Peer()->InitFromProvider((void*)descriptor, *(const GUID*)g_dplayAppGuid)) {
         return 0;
     }
     if (g_isHost_648cf0) {
-        m_528 = 1;
-        if (!HostStart()) {
+        m_isHost = 1;
+        if (!DetectConnectionConfig()) { // 0xb82e0
             return 0;
         }
     } else {
-        m_528 = 0;
-        if (!JoinStart()) {
+        m_isHost = 0;
+        if (!JoinSession()) { // 0xb7fe0
             return 0;
         }
     }
@@ -1931,9 +1930,6 @@ SIZE_UNKNOWN(CNetCfgSub);
 SIZE_UNKNOWN(CNetCueRec);
 SIZE_UNKNOWN(CNetMgrLite);
 SIZE_UNKNOWN(CRegBute);
-SIZE_UNKNOWN(NetSessionHolder);
-SIZE_UNKNOWN(NetSessionOpener);
-SIZE_UNKNOWN(CLobbyObjA);
 SIZE_UNKNOWN(CMulti);
 SIZE_UNKNOWN(CMultiDialogHook);
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
@@ -4424,7 +4420,7 @@ i32 CMulti::OpenHostChannel(void* a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i3
     m_drainReload = a4;
     m_levelIndex = 1;
     m_rngSeed = timeGetTime();
-    m_5bc = m_netGate->CreatePlayer((void*)(const char*)GetString5a0(), (i32)g_emptyString, 0);
+    m_5bc = Peer()->CreatePlayer((void*)(const char*)GetString5a0(), (i32)g_emptyString, 0);
     if (m_5bc == 0) {
         ReportNetError(m_5bc);
         return 0;
