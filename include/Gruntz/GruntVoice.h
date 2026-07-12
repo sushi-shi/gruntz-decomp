@@ -33,10 +33,9 @@ struct CVariantSlot; // folded CVActColl2 (struct tag = canonical PAU mangling, 
 // is owned by another TU - redeclared here so the Find call reloc-masks.
 extern CButeTree g_buteTree;
 
-// The idle-anim bute key "A" (0x60a454) the reset path looks up. Its own rdata
-// (DAT_0060a454, also referenced by Grunt.cpp). The DATA binding lives in
-// GruntVoice.cpp (a header DATA() is not scanned by labels.py).
-extern char g_voiceKeyA[]; // 0x20a454  s_A_0060a454
+// The idle-anim bute key "A" (0x60a454) the reset path looks up is the canonical
+// s_codeA (bound in toobspikez, declared locally in GruntVoice.cpp); the former
+// per-TU g_voiceKeyA alias lost the per-rva dedup and was folded onto it.
 
 // ---------------------------------------------------------------------------
 // The audio/sample object Setup is handed as `sample` (arg2). Its rate helper

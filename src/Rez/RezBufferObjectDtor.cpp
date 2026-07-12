@@ -35,10 +35,11 @@ extern "C" void* RezAlloc(i32 n); // 0x1b9b46
 // dtor vtable (0x5e8cb4) is now restamped by the compiler-folded ~CObject (no
 // manual g_wapObjectDtorVtbl reference remains here - the pin lives in ReconBatch2.cpp).
 
-// The Rez heap free (0x1b9b82, __cdecl) the worker's +0x4 buffer is released
-// through (reloc-masked rel32). C++ linkage (not extern "C") so MSVC5 treats it
-// as potentially-throwing and keeps the /GX base-subobject unwind frame.
-void RezFree(void* p);
+// The Rez heap free (0x1b9b82) the worker's +0x4 buffer is released through is the
+// engine's ::operator delete (library ??3@YAXPAX@Z); C++ linkage keeps MSVC5's
+// potentially-throwing treatment so the /GX base-subobject unwind frame stays. Was a
+// fake `RezFree` decl whose ?RezFree@@YAXPAX@Z mangling matched neither the ??3 nor
+// the _RezFree library label at 0x1b9b82, leaving the rel32 CALL reloc UNBOUND.
 
 // The CObject base subobject is CObject (Wap32/Object.h): empty dtor body; cl
 // stamps ??_7Wap@@CObject (masks g_wapObjectDtorVtbl @0x5e8cb4) as the folded base.
@@ -55,7 +56,7 @@ void RezFree(void* p);
 RVA(0x0017f330, 0x51)
 CRezBufferObject::~CRezBufferObject() {
     if (m_pData) {
-        RezFree(m_pData);
+        ::operator delete(m_pData);
     }
 }
 
@@ -81,7 +82,7 @@ void CRezBufferObject::Serialize(CArchive& ar) {
         i32 n = a->ReadCount();
         if (n == 0) {
             if (m_pData != 0) {
-                RezFree(m_pData);
+                ::operator delete(m_pData);
                 m_pData = 0;
             }
             m_nMaxSize = 0;
@@ -113,7 +114,7 @@ void CRezBufferObject::Serialize(CArchive& ar) {
             RezElem40* nd = (RezElem40*)RezAlloc(newMax * sizeof(RezElem40));
             memcpy(nd, m_pData, m_nSize * sizeof(RezElem40));
             ConstructRezElems(&nd[m_nSize], n - m_nSize);
-            RezFree(m_pData);
+            ::operator delete(m_pData);
             m_pData = nd;
             m_nSize = n;
             m_nMaxSize = newMax;

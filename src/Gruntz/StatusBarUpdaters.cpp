@@ -1,8 +1,9 @@
 #include <rva.h>
-#include <Gruntz/GameRegistry.h>           // g_gameReg singleton (0x24556c) canonical view
-#include <Gruntz/SoundCueMgr.h>            // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
-#include <Gruntz/LeafCue.h>                // the canonical cue record (was the CStatusBarTab view)
-#include <Gruntz/StatusBarUpdatersViews.h> // referent views + EngineLabelBacklog host
+#include <Gruntz/GameRegistry.h>            // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/SoundCueMgr.h>             // the ONE CSoundCueMgr shape (ConfigureItem @0x1360d0)
+#include <Gruntz/LeafCue.h>                 // the canonical cue record (was the CStatusBarTab view)
+#include <Gruntz/StatusBarUpdatersViews.h>  // referent views + EngineLabelBacklog host
+#include <Gruntz/TileTriggerSwitchLogic.h>  // real owner of Vf2/Vf3 @0x110570/0x1106b0
 
 // StatusBarUpdaters.cpp - the switch-tile sprite loaders (C:\Proj\Gruntz). The five
 // in-game status-bar updaters that used to live here (UpdateGruntOven/DestructButton/
@@ -36,14 +37,19 @@ DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // the game-manager singleton
 
 // ===========================================================================
-// EngineLabelBacklog::LoadSwitchDownSprite @0x110570
+// CTileTriggerSwitchLogic::Vf2 @0x110570  (base vtable slot 2)
 // ===========================================================================
 //
-// Drives a tile switch into its DOWN state: it bumps the switch tile's cell-state
-// counter in the map grid (grid->m_20[grid->m_24[m_switchTileY] + m_switchTileX]) and notifies the
-// tile system, then - if the switch tile is on-screen (its pixel rect inside the
-// view bounds) and the status bar surface is live - runs the GAME_SWITCHDOWN
-// status-bar advance. Latches m_14 = 1 (down). __thiscall, returns 1.
+// The switch-logic slot-2 virtual: drives the switch tile into its DOWN state. It
+// bumps the switch tile's cell-state counter in the map grid
+// (grid->m_cellState[grid->m_rowOffset[y] + x]) and notifies the tile system, then -
+// if the switch tile is on-screen (its pixel rect inside the view bounds) and the
+// status bar surface is live - runs the GAME_SWITCHDOWN status-bar advance. Latches
+// the switch state (+0x14) = 1 (down). __thiscall, returns 1. The leaf overrides
+// (CTileSecretTriggerSwitchLogic/CTileTimeTriggerSwitchLogic::Vf2) call this base and
+// normalize the result to a bool. Re-homed off the EngineLabelBacklog placeholder to
+// its real owner (the leaf callers at 0x112820/0x112840 bind here).
+// switch coords: m_08 == tile X, m_key0c == tile Y, m_linkGate (+0x14) == down/up state.
 // @early-stop
 // ~72% CSE/regalloc wall: the int(1) return (was void) is now correct, but retail
 // RE-DERIVES `g_gameReg->m_world->m_tileHolder->m_grid` for the store leg (pinning
@@ -52,15 +58,15 @@ extern "C" CGameRegistry* g_gameReg; // the game-manager singleton
 // cascades from that CSE choice. No source spelling defeats MSVC5's CSE of the two
 // identical multi-level loads without an intervening store. Logic byte-correct.
 RVA(0x00110570, 0xfb)
-i32 EngineLabelBacklog::LoadSwitchDownSprite() {
+i32 CTileTriggerSwitchLogic::Vf2() {
     CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_world)->m_tileHolder->m_grid;
-    i32 v = g->m_cellState[g->m_rowOffset[m_switchTileY] + m_switchTileX] + 1;
+    i32 v = g->m_cellState[g->m_rowOffset[m_key0c] + m_08] + 1;
     CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_world)->m_tileHolder->m_grid;
-    g2->m_cellState[g2->m_rowOffset[m_switchTileY] + m_switchTileX] = v;
-    g_gameReg->m_tileGrid->Notify(m_switchTileX, m_switchTileY, v);
+    g2->m_cellState[g2->m_rowOffset[m_key0c] + m_08] = v;
+    g_gameReg->m_tileGrid->Notify(m_08, m_key0c, v);
 
-    i32 px = (m_switchTileX << 5) + 0x10;
-    i32 py = (m_switchTileY << 5) + 0x10;
+    i32 px = (m_08 << 5) + 0x10;
+    i32 py = (m_key0c << 5) + 0x10;
     if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
         CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
@@ -75,29 +81,31 @@ i32 EngineLabelBacklog::LoadSwitchDownSprite() {
             }
         }
     }
-    m_switchState = 1;
+    m_linkGate = 1;
     return 1;
 }
 
 // ===========================================================================
-// EngineLabelBacklog::LoadSwitchUpSprite @0x1106b0
+// CTileTriggerSwitchLogic::Vf3 @0x1106b0  (base vtable slot 3)
 // ===========================================================================
 //
-// The UP mirror of LoadSwitchDownSprite: decrements the cell-state counter, runs
-// the GAME_SWITCHUP advance, and latches m_14 = 0 (up). __thiscall, returns 1.
+// The UP mirror of Vf2 (slot 3): decrements the cell-state counter, runs the
+// GAME_SWITCHUP advance, and latches the switch state (+0x14) = 0 (up). __thiscall,
+// returns 1. The leaf override (CTileTimeTriggerSwitchLogic::Vf3 @0x112860) calls this
+// base and normalizes to a bool.
 // @early-stop
-// ~70% CSE/regalloc wall (same as LoadSwitchDownSprite): int(1) return now correct;
-// residual is the grid-chain CSE that pins grid instead of g_gameReg. Logic exact.
+// ~70% CSE/regalloc wall (same as Vf2): int(1) return now correct; residual is the
+// grid-chain CSE that pins grid instead of g_gameReg. Logic exact.
 RVA(0x001106b0, 0xf4)
-i32 EngineLabelBacklog::LoadSwitchUpSprite() {
+i32 CTileTriggerSwitchLogic::Vf3() {
     CMapTileGrid* g = ((CRegHolder*)g_gameReg->m_world)->m_tileHolder->m_grid;
-    i32 v = g->m_cellState[g->m_rowOffset[m_switchTileY] + m_switchTileX] - 1;
+    i32 v = g->m_cellState[g->m_rowOffset[m_key0c] + m_08] - 1;
     CMapTileGrid* g2 = ((CRegHolder*)g_gameReg->m_world)->m_tileHolder->m_grid;
-    g2->m_cellState[g2->m_rowOffset[m_switchTileY] + m_switchTileX] = v;
-    g_gameReg->m_tileGrid->Notify(m_switchTileX, m_switchTileY, v);
+    g2->m_cellState[g2->m_rowOffset[m_key0c] + m_08] = v;
+    g_gameReg->m_tileGrid->Notify(m_08, m_key0c, v);
 
-    i32 px = (m_switchTileX << 5) + 0x10;
-    i32 py = (m_switchTileY << 5) + 0x10;
+    i32 px = (m_08 << 5) + 0x10;
+    i32 py = (m_key0c << 5) + 0x10;
     if (px < g_gameReg->m_viewOriginR && px >= g_gameReg->m_viewOriginL
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
         CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
@@ -112,6 +120,6 @@ i32 EngineLabelBacklog::LoadSwitchUpSprite() {
             }
         }
     }
-    m_switchState = 0;
+    m_linkGate = 0;
     return 1;
 }

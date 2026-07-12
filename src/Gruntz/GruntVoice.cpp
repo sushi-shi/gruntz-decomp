@@ -37,8 +37,9 @@ extern "C" u32 g_645588;
 // in the owning .cpp - same header-extern/cpp-DATA split as Globals). The shared
 // alloc-scratch cache is the canonical g_projActCache @0x2bf464 (the old
 // g_actCache spelling was an unbound VA-typo alias).
-DATA(0x0020a454)
-extern char g_voiceKeyA[];
+// (The "A" bute key @0x20a454 is the canonical s_codeA, bound in toobspikez and
+// declared below; the former per-TU g_voiceKeyA alias lost the per-rva dedup and is
+// folded away - all uses now reference s_codeA.)
 DATA(0x002514e0)
 extern i32 g_vactLo;
 DATA(0x002514e4)
@@ -100,8 +101,8 @@ static inline CVTrigEntry* VTrigLookup(i32 coord) {
 // name registry is @0x6bf650 (same shape as g_vtrigColl).
 DATA(0x0021aea8)
 extern i32 g_typeCounter;
-// (s_codeA is the same "A" key byte-array as GruntVoice.h's g_voiceKeyA
-// @0x60a454; the DATA binding lives on the g_voiceKeyA decl.)
+// s_codeA is the "A" key byte-array @0x60a454 (RVA 0x20a454); the DATA binding lives
+// in toobspikez (?s_codeA@@3PADA), so this is a plain extern here.
 extern char s_codeA[];
 struct CTypeNameEntry; // canonical g_typeCur slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
@@ -364,7 +365,7 @@ CGruntVoice::CGruntVoice(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_stateFlags |= 1;
     m_playFlags = 0;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(g_voiceKeyA);
+    m_objAux->m_1c = g_buteTree.Find(s_codeA);
     m_source = 0;
     m_owner = 0;
 }
@@ -575,7 +576,7 @@ RVA(0x0011a870, 0x38)
 void CGruntVoice::Reset() {
     m_sample = 0;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(g_voiceKeyA);
+    m_objAux->m_1c = g_buteTree.Find(s_codeA);
     m_playFlags = 0;
     m_source = 0;
 }
@@ -601,7 +602,7 @@ i32 CGruntVoice::Update() {
         m_source = 0;
         m_object->m_stateFlags |= 1;
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find(g_voiceKeyA);
+        m_objAux->m_1c = g_buteTree.Find(s_codeA);
         m_playFlags = 0;
         return 0;
     }

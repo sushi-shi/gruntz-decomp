@@ -41,11 +41,11 @@ extern i32 g_monoCol;
 // RezDebugPrintf*XY variants position the cursor through it) and the CRT fclose
 // (0x11f780) the printf variants / DebugClose reach; external no-body so their
 // call relocs mask.
-void Fwd_184fb0(i32 x, i32 y);
-// @reloc-TODO: Sub_184fd0 @0x184fd0 (cursor-set-with-mode) is unreconstructed
-// (Ghidra mis-sizes it 1 B); @rva-symbol only binds obj-DEFINED thunks, so Fwd_184fb0's
-// rel32 CALL stays UNBOUND until this is reconstructed in its own TU band.
-void Sub_184fd0(i32, i32, i32);  // 0x184fd0 (cursor set with mode; reloc-masked)
+void DebugSetCursorXY(i32 x, i32 y);
+// DebugSetCursor @0x184fd0 is the cursor-set-with-mode sink, stripped to a bare `ret` in
+// the release build (its body compiled out); reconstructed below in this TU's band so
+// DebugSetCursorXY's rel32 CALL binds. __cdecl (caller-cleans), returns void.
+void DebugSetCursor(i32, i32, i32); // 0x184fd0
 extern "C" i32 fclose(void* fp); // 0x11f780 (CRT fclose, library row _fclose)
 
 SIZE_UNKNOWN(CDebugConfig);
@@ -241,7 +241,7 @@ extern "C" {
     void RezDebugPrintfXY(i32 x, i32 y, char* fmt, ...) {
         char buf[256];
         if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(0)) {
-            Fwd_184fb0(x, y);
+            DebugSetCursorXY(x, y);
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);
         }
@@ -264,7 +264,7 @@ extern "C" {
     void RezDebugPrintfChXY(i32 channel, i32 x, i32 y, char* fmt, ...) {
         char buf[256];
         if (g_6bf8dc != 1 && g_6bf8dc != 0 && !((CRangeSet*)&g_6bf850)->Contains(channel)) {
-            Fwd_184fb0(x, y);
+            DebugSetCursorXY(x, y);
             vsprintf(buf, fmt, (char*)(&fmt + 1));
             DebugSink_184df0(buf);
         }
@@ -272,11 +272,16 @@ extern "C" {
 }
 
 // 0x184fb0 - the cursor-position forwarder the XY printf variants above call:
-// `Sub_184fd0(0, x, y)` (mode 0). __cdecl. Re-homed from src/Stub/BoundaryUpper.cpp.
+// `DebugSetCursor(0, x, y)` (mode 0). __cdecl. Re-homed from src/Stub/BoundaryUpper.cpp.
 RVA(0x00184fb0, 0x15)
-void Fwd_184fb0(i32 a, i32 b) {
-    Sub_184fd0(0, a, b);
+void DebugSetCursorXY(i32 a, i32 b) {
+    DebugSetCursor(0, a, b);
 }
+
+// 0x184fd0 - the cursor-set-with-mode sink, stripped to a bare `ret` in the release
+// build (empty body -> single-byte ret). Reconstructed so DebugSetCursorXY binds.
+RVA(0x00184fd0, 1)
+void DebugSetCursor(i32, i32, i32) {}
 
 RVA(0x00185000, 0x1a6)
 CDebugConfig* CDebugConfig::InitFromEnv() {

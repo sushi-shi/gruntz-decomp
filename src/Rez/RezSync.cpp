@@ -816,7 +816,8 @@ SIZE_UNKNOWN(CGameMgr);
 // is occupied by the WAP32 name, and making this dtor a real WAP32::CGameMgr method
 // would collide with WAP32::CGameMgr's INLINE header dtor (load-bearing for
 // CGruntzMgr's inlined base teardown - a cross-unit regression). Matching-neutral
-// masked reloc; the tail Close is bound below to the real WAP32 body.
+// masked reloc (vptr-store stays unbound); the tail Close is bound below to the real
+// WAP32 body.
 RVA(0x00085540, 0xb)
 CGameMgr::~CGameMgr() {
     // devirtualized tail-call to WAP32::CGameMgr::Close (0x13ddb0); the qualified call

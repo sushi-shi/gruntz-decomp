@@ -363,7 +363,10 @@ void CFaderMgr::DeleteAll() {
 // name would force an external ~CFaderArray, breaking that inline (a real MISBOUND). Its
 // vtable stamps therefore stay placeholder-named (??_7C17e240 / ??_7Sev17e240); the real
 // ??_7CFaderArray / ??_7CObject are bound at 0x1f0790 / 0x1e8cb4 by the canonical class,
-// so a VTBL alias here would keep-last-collide. A genuine duplicate-emission limit.
+// so a VTBL alias here would keep-last-collide. A genuine duplicate-emission limit. The
+// Sev17e240 base vptr-store (masks ??_7CObject @0x1e8cb4) stays reloc-masked/unbound -
+// realizing C17e240 as the real CFaderArray would bind it but forces ~CFaderMgr's inline
+// teardown external (a %-hit) - a deferred structural change, not a RELOC_VTBL shell.
 struct Sev17e240 {
     virtual ~Sev17e240();
 };

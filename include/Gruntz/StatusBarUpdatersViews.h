@@ -126,8 +126,8 @@ public:
     // (UpdateGruntOven/ChipGrinder/DestructButton StatusBar + ChipGrinderFinishStep
     // folded off this fake host onto their real owner CSBI_RectOnly - see SBI_RectOnly.cpp.)
     i32 LoadStatzTabToggleSprite(i32 value, i32 idx);
-    i32 LoadSwitchDownSprite();
-    i32 LoadSwitchUpSprite();
+    // (LoadSwitchDownSprite/UpSprite @0x110570/0x1106b0 re-homed onto their real owner
+    // CTileTriggerSwitchLogic::Vf2/Vf3 - see StatusBarUpdaters.cpp / TileTriggerSwitchLogic.h.)
     i32 UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i32 srcY);
     i32 LoadExplosionSprites(i32 a, i32 b, i32 c, i32 d); // 0x... (time-bomb tile move-at)
 

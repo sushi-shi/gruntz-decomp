@@ -1299,8 +1299,19 @@ i32 Gap_16e7a0(void) {
 }
 
 // ===========================================================================
-// CButeTree::`scalar deleting destructor' (0x16e9c0) - restamp the dtor-phase
-// vtables, run the member + base teardown, and free the object when bit0 of the
-// flag is set. Returns `this`.
-// ===========================================================================
-// @rva-symbol: ??_GCButeTree@@UAEPAXI@Z 0x0016e9c0 0x45  (cl-auto-gen scalar-deleting dtor)
+// CButeTree::`scalar deleting destructor' ??_GCButeTree (0x16e9c0) - the compiler-
+// synthesized slot-0 scalar-deleting dtor of CButeTree's virtual destructor (declared
+// in <Bute/ButeTree.h>): cl inlines the dtor teardown (dtor-phase vptr re-stamps
+// 0x5e94ac @+0 / 0x5e949c @+8, ClearRecursive(0) @0x16e070, the second-base restore
+// @0x16dfc0 on the masked this+8, then the primary BaseDtor @0x16da60), then
+// ::operator delete when bit0 of the deleting-flag is set; returns this. It is NOT
+// dev source (a compiler ??_G thunk), so it is pinned by mangled name here, not
+// written as a method. (CButeStore==CButeTree, the same 0x2c-byte class.)
+//
+// @reloc-TODO / emission: this @rva-symbol binds only once cl EMITS ??_GCButeTree in
+// THIS obj, which needs a delete-expression / vtable instantiation of CButeTree in the
+// TU. Today g_buteTree is `extern` and constructed via the reloc-masked Construct
+// (0x16dff0), so the class vtable/??_G is never emitted here (the documented
+// "g_buteTree defined-not-extern with the real ~CButeTree chain" deferred restructure).
+// The model is the proper virtual destructor; the bound body is pending that restructure.
+// @rva-symbol: ??_GCButeTree@@UAEPAXI@Z 0x0016e9c0 0x45

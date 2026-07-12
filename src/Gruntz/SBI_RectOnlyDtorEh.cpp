@@ -26,31 +26,12 @@ CSBI_RectOnly::~CSBI_RectOnly() {
 }
 
 // -------------------------------------------------------------------------
-// 0x100780 (spatially re-homed from src/Stub/BoundaryLowerThunks.cpp). A
-// CStatusBarItem-base vptr restore: cl's implicit vptr-restore stamps the
-// status-base vtable (0x5eabcc) then tail-jumps the base init/teardown (0x1d6b).
-// Placeholder polymorphic class (the real CStatusBarItem dtor is modeled in
-// StatusBarItem.cpp; this is a distinct restore, so its ??_7 reloc-masks by shape).
-struct CStatusBaseSub100780 {
-    void Base1d6b(); // 0x1d6b (reloc-masked)
-    virtual ~CStatusBaseSub100780();
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill6(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill7(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill8(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill9(); // vtable-slot filler (real slot; declared-only)
-};
-SIZE_UNKNOWN(CStatusBaseSub100780);
-RELOC_VTBL(
-    CStatusBaseSub100780,
-    0x001eabcc
-); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x00100780, 0xb)
-CStatusBaseSub100780::~CStatusBaseSub100780() {
-    Base1d6b();
-}
+// 0x100780 == the standalone out-of-line CStatusBarItem::~CStatusBarItem() COMDAT.
+// The /GX funclet above ODR-uses ??1CStatusBarItem (the base-subobject unwind leg),
+// so cl emits its inline body (`mov [ecx],??_7CStatusBarItem; jmp DtorStatus`) as an
+// out-of-line COMDAT - byte-identical to retail 0x100780. Bind that emitted symbol to
+// its RVA (like the ??_G scalar-dtor above); this replaces the former fake
+// CStatusBaseSub100780 placeholder view (whose ??_7/Base1d6b reloc-masked the real
+// ??_7CStatusBarItem/DtorStatus by shape) and binds BOTH the funclet reloc @0x100700
+// and this body's DtorStatus @0x10bfa0.
+// @rva-symbol: ??1CStatusBarItem@@UAE@XZ 0x00100780 0xb
