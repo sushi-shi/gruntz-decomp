@@ -84,6 +84,30 @@ flags mop up. It also explains why **mass eviction was the wrong tool**: the "in
 scattered file's span are the whole program between two of that file's own pooled COMDATs, not a
 foreign cluster to move.
 
+## Corollary — the misplacement finder was over-counting (measured on ISLE)
+
+We ran `flag_outliers.py`'s misplacement heuristic **verbatim** on the ISLE `/MAP`, where the
+linker's grouping is ground truth so every flag is a **false positive**, under two pre-exclusion
+filters. Grouping by **class** (exactly how Gruntz homes functions to `src/` files):
+
+| filter | flagged units | misplaced | interleaver | conflated | % of all fns |
+|---|---|---|---|---|---|
+| CURRENT (dtors + vslots only) — `/O2` | 30 | 17 | 44 | 7 | **2.0%** |
+| CURRENT — `/Od` | 120 | 271 | 218 | 44 | **9.3%** |
+| **UPDATED** (full `??` + shared `i`-flag COMDATs) — both | **0** | **0** | **0** | **0** | **0.0%** |
+
+Grouping by the linker's own **obj** flags 0 under both filters. So the finder has *no* intrinsic
+false-positive floor — every flag traces to a homing-vs-placement mismatch — and the *entire*
+misplacement signal from the old dtor-only filter is shared-inline/template COMDAT displacement
+(STL iterators, `Matrix4`, `Mx*` bases), not real mis-homing. `/Od` is ~4.7× worse because with no
+optimization no inline is inlined away, so every one is a standalone displaced COMDAT.
+
+**Fix applied:** `flag_outliers.py` now excludes the same set as `scatter_core` — `scatter.py::is_pooled`
+(every `??` special + init-fragments + pooled vslots) plus the `@interleaver`/`@orphan`-flagged RVAs
+(our stand-in for the COMDAT `i`-flag the delinked binary doesn't carry). On Gruntz this drops the
+dashboard from *9 misplaced + 66 interleaver + conflated* to **0 misplaced + 35 interleaver + 0
+conflated** — i.e. the genuine mis-homing worklist is essentially empty; what remained was noise.
+
 ## Reproduce
 
 Wine MSVC 5.0 from `nix develop .#build`. Scripts + maps were kept in the session scratchpad

@@ -16,6 +16,7 @@ import json
 from collections import defaultdict
 
 import gruntz.analysis.exe_map as em
+from scatter import is_pooled, interleaver_rvas  # shared irreducible-scatter predicate
 
 import os as _os; DIR = _os.path.dirname(_os.path.abspath(__file__))
 GAP = 0x4000       # cluster split threshold
@@ -112,7 +113,15 @@ def clusters(recs):
 def main():
     funcs, meta = em.load()
     funcs = [r for r in funcs if not r["source"].startswith("src/Stub/")]
-    meth = [r for r in funcs if not is_dtor(r["name"])]           # dtors removed
+    # Exclude the FULL irreducible-scatter set, same as scatter_core: every ?? special
+    # (ctors/dtors/operators) + init-fragments + pooled vtable-slots + @interleaver/
+    # @orphan-flagged boundary COMDATs. Measured on ISLE ground truth (docs/experiments/
+    # gy-scatter.md): the OLD dtor-only filter false-flagged 2-9% of correctly-homed
+    # functions as "misplaced" - pure /Gy shared-COMDAT displacement, not real work. The
+    # @interleaver/@orphan flags are our stand-in for the COMDAT `i`-flag we can't see in
+    # the delinked binary; what survives this filter is the REAL mis-homing worklist.
+    _il = interleaver_rvas(DIR + "/../../src")
+    meth = [r for r in funcs if not is_pooled(r["name"]) and r["rva"] not in _il]
     owned = [r for r in meth if r["category"] == "unit" and r["source"]]
     gstarts = sorted(owned, key=lambda r: r["rva"])
     grva = [r["rva"] for r in gstarts]
