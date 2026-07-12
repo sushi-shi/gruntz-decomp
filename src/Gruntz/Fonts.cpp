@@ -28,6 +28,9 @@ DATA(0x0024eb00)
 extern Font g_smallFont;
 DATA(0x0024ea58)
 extern Font g_tinyFont;
+// The POD load-once gate, DEFINED here (owner TU); a plain `extern` stays in Globals.h.
+DATA(0x0024eb14)
+i32 g_loadedFlag = 0; // 0x24eb14  Fonts::EnsureLoaded once-gate
 
 #define s_large_fnt "large.fnt"
 #define s_medium_fnt "medium.fnt"

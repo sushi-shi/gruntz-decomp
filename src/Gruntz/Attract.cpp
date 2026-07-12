@@ -80,6 +80,11 @@ extern i32 g_attractStateCount;
 DATA(0x002455c4)
 extern i32 g_fxDirectGate;
 
+// The present-suppress latch (DAT_0064e360), private to the attract loop; DEFINED
+// here (owner TU), a plain `extern` stays in Globals.h.
+DATA(0x0024e360)
+i32 g_suppress_64e360 = 0; // 0x24e360
+
 // The "ShowCursor" Win32 import slot (PTR_ShowCursor_006c44c4).
 typedef i32(WINAPI* ShowCursorFn)(i32);
 DATA(0x002c44c4)

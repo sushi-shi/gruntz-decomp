@@ -41,7 +41,7 @@ typedef u32 u32;
 // The main-menu credits/version text rectangle (BSS @0x645d88, contiguous RECT).
 // SetMenuTextRect (0x0a1190) seeds it each time the main-menu page opens.
 DATA(0x00245d88)
-extern RECT g_menuTextRect;
+RECT g_menuTextRect = {0}; // 0x245d88  (owner-TU definition)
 
 // The embedded CString/CObList sub-objects, declared with real (no-body, reloc-
 // masked) ctors/dtors so the page ctor/dtor emit the EH-tracked construct/destruct

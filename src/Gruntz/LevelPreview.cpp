@@ -297,7 +297,7 @@ i32 CPreviewState::LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3) {
 // (m_4->m_gameWnd->m_hwnd). The old PreviewCancelHost/PreviewCancelWnd placeholders were a
 // second view of CPreviewState + CGruntzMgr; dissolved onto the real ones.
 DATA(0x0024c69c)
-extern i32 g_flag64c69c; // DAT_0064c69c
+i32 g_flag64c69c = 0; // DAT_0064c69c  (owner-TU definition)
 RVA(0x000de590, 0x2e)
 void CPreviewState::Cancel() {
     if (g_flag64c69c) {

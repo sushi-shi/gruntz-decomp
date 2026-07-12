@@ -39,7 +39,7 @@ extern i32 g_bDown; // 0x683eb4
 // The working palette base (0x6bf224): the sort/remap builders stash the active
 // palette pointer here for their __cdecl comparators. Reloc-masked DATA.
 DATA(0x002bf224)
-extern PalEntry* g_pal; // 0x6bf224
+PalEntry* g_pal = 0; // 0x6bf224  (owner-TU definition)
 
 // A {h,s,v} float triple produced by RgbToHsv (0x14fcc0). The comparator and the
 // HSV builder read .h (.s/.v populated but only .h drives the hue sort).

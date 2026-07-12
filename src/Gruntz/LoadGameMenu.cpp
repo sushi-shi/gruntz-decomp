@@ -20,7 +20,7 @@ extern "C" CGameRegistry* g_gameReg;
 extern i32 g_slotState; // ?g_slotState@@3HA @0x64c864
 // The active GAME_LOAD dialog's CSaveGame sink, latched at WM_INITDIALOG.
 DATA(0x00245ca4)
-extern CSaveGame* g_dlgLoadSink; // DAT_00645ca4
+CSaveGame* g_dlgLoadSink = 0; // DAT_00645ca4  (owner-TU definition)
 
 // The GAME_INFO / GAME_DELETE sub-dialog procs the load dialog runs (reloc-masked code
 // ptrs).

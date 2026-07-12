@@ -265,7 +265,7 @@ void CSpriteRef::Free() {
 // @0xe3f40, FillSaveDialog @0xe3c60, g_savedMenuCmd @0x213a9c), reloc-masked.
 extern "C" CGameRegistry* g_gameReg;
 DATA(0x0024c86c)
-extern i32 g_dlg64c86c;    // DAT_0064c86c (the active save-sink)
+i32 g_dlg64c86c = 0;       // DAT_0064c86c (the active save-sink; owner-TU definition)
 extern i32 g_savedMenuCmd; // 0x213a9c (canonical, DATA-bound in savegame)
 class CSaveGame;
 i32 DrawSaveGameMenu(HWND hDlg, i32 wParam, CSaveGame* cur); // 0xe3f40 (savegame)

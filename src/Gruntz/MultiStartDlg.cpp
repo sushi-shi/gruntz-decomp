@@ -106,6 +106,10 @@ namespace m4 {
 // UNBOUND; a real CString ctor call binds it to the library symbol.
 DATA(0x0024bdb0)
 extern CString g_gruntNames[4];
+// The saved original window proc of the roster child (GWL_WNDPROC), private to this
+// dialog; DEFINED here (owner TU), a plain `extern` stays in Globals.h.
+DATA(0x0024bdc0)
+i32 g_64bdc0 = 0; // 0x24bdc0
 
 RVA(0x000c16b0, 0x3d)
 void BuildNamedGruntTable() {

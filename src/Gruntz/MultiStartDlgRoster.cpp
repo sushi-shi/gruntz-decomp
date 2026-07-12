@@ -55,9 +55,10 @@ extern HWND(WINAPI* g_pGetFocus)();
 // More USER32 entry points via the game's own IAT-style pointers.
 DATA(0x002c44d8)
 extern HWND(WINAPI* g_pGetWindow)(HWND, UINT);
-// "Using CmdDelay of %d and ResendDelay of %d\n" (the EchoLatencySettings format).
+// The EchoLatencySettings printf format (.data), DEFINED here (owner TU). The retail
+// bytes are exactly this 44-byte string, so the initializer is byte-faithful.
 DATA(0x0021243c)
-extern char s_UsingCmdDelay[];
+char s_UsingCmdDelay[] = "Using CmdDelay of %d and ResendDelay of %d.";
 
 // The per-player roster record IS the canonical CFocusSlot (GameRegistry.h,
 // CGameRegistry::m_focusSlots[] +0x150, stride 0x238) - the former local RosterSlot

@@ -53,8 +53,13 @@ namespace NetLobby {
 // churn. `extern "C"` gives the fixed, renumber-proof `_g_errorText`; DATA() pins it to
 // 0x244ea0. The buffer is only address-taken here (no init/sizeof), so a definition-free
 // extern is sufficient - the DIR32 loads/stores stay reloc-masked (byte-neutral).
+// error message buffer @ 0x244ea0, DEFINED here (owner TU) with C linkage (_g_errorText).
+// The extern "C" block keeps the fixed, renumber-proof symbol while the def line itself
+// carries no `extern` keyword (a real, initialized definition).
+extern "C" {
 DATA(0x00244ea0)
-extern "C" char g_errorText[0x100]; // error message buffer @ 0x244ea0
+char g_errorText[0x100] = {0};
+}
 // (g_gameAppInstanceCount is declared in Wap32.h, defined in
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
 

@@ -28,8 +28,10 @@ extern "C" i32 __stdcall DirectPlayEnumerate(void* lpEnumCallback, void* lpConte
 
 // The "already-validated" gate the provider-enum callback reads: when nonzero the
 // callback skips the DirectPlayCreate round-trip probe (0x6bf840).
+extern "C" {
 DATA(0x002bf840)
-extern "C" i32 g_spEnumValidated; // 0x6bf840
+i32 g_spEnumValidated = 0; // 0x6bf840  (owner-TU definition, C linkage _g_spEnumValidated)
+}
 
 // The DirectPlayEnumerate callback (0x1782d0, DPENUMDPCALLBACK, __stdcall): its
 // address is handed to DirectPlayEnumerate by EnumServiceProviders (below), so the

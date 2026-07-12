@@ -707,7 +707,7 @@ void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
 // The static clip rect updated each call (4 consecutive ints @0x2bf28c .bss);
 // DATA-bound so the four DIR32 stores pair to the retail address. reloc-masked.
 DATA(0x002bf28c)
-extern i32 g_imageClipRect[4]; // 0x2bf28c
+i32 g_imageClipRect[4] = {0}; // 0x2bf28c  (owner-TU definition)
 
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {

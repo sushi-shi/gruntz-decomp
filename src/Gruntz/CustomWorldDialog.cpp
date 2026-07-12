@@ -50,27 +50,31 @@ extern "C" INT_PTR CALLBACK CustomWorldInfoDlgProcThunk(HWND, UINT, WPARAM, LPAR
 namespace NetLobby {
     extern HWND g_curDlg_64557c;
 }
-// The picker's level listbox (id 0x3fc) cached at WM_INITDIALOG (DAT_0062c274).
-DATA(0x0022c274)
-extern HWND g_customLevelList; // 0x62c274
-
-// The custom-world exchange globals (this file's statics; see the header comment).
-// g_pathStr carries the selected world's full path (returned by value from the
-// launcher); g_levelStr the popup's level name; g_str62c264 the source name copied
-// back to the launcher's out-param.
+// This file's private .data/.bss globals, DEFINED here (the owning TU) in ascending
+// RVA order. The map-name scratch pair (used by GetMapBaseName below), g_dat62c268
+// (RunCustomWorldDialog's world-slot exchange) and the two launcher handles + the
+// level listbox are POD, so a plain zero-init definition is byte-neutral. The three
+// exchange CStrings stay `extern`: their storage is default-constructed in place by
+// this obj's .CRT$XC init statics (FreeGlobal62c25c/InitStr62c264/FreeLevelStr), so
+// a real `CString g_x;` definition here would emit a duplicate dynamic initializer.
+DATA(0x0022c00c)
+char g_mapNamePre[4] = {0}; // 0x62c00c  GetMapBaseName: NUL-at-len-4 via the preceding slot
+DATA(0x0022c010)
+char g_mapNameBuf[0x200] = {0}; // 0x62c010  GetMapBaseName filename scratch
 DATA(0x0022c25c)
-extern CString g_pathStr; // 0x62c25c
+extern CString g_pathStr; // 0x62c25c  selected world's full path (returned by value)
 DATA(0x0022c260)
-extern CString g_levelStr; // 0x62c260
+extern CString g_levelStr; // 0x62c260  the popup's level name
 DATA(0x0022c264)
-extern CString g_str62c264; // 0x62c264
-
-// The launcher's parent-window/instance exchange slots (seeded from the manager,
-// cleared after the dialog closes; the popup's DialogBoxParamA reads them).
+extern CString g_str62c264; // 0x62c264  source name copied back to the out-param
+DATA(0x0022c268)
+i32 g_dat62c268 = 0; // 0x62c268  the manager's world slot, seeded for the popup
 DATA(0x0022c26c)
-extern HWND g_customWorldParent; // 0x62c26c
+HWND g_customWorldParent = 0; // 0x62c26c  launcher parent-window exchange
 DATA(0x0022c270)
-extern HINSTANCE g_customWorldInst; // 0x62c270
+HINSTANCE g_customWorldInst = 0; // 0x62c270  launcher instance exchange
+DATA(0x0022c274)
+HWND g_customLevelList = 0; // 0x62c274  the picker's level listbox (id 0x3fc)
 
 // The launcher's command dispatchers (defined below in RVA order).
 namespace m4 {
