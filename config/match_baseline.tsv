@@ -1156,7 +1156,7 @@ ddsurface	?WaitFlip@B_13ee30@@QAEXXZ	100.0000	100.0000	1	57b1a5a55a81	0x13ee30
 debugprintf	?AddFromString@CRangeSet@@QAEXPAD@Z	92.1466	92.1466	1	e26f492b32aa	0x184c10
 debugprintf	?AddRange@CRangeSet@@QAEXII@Z	100.0000	100.0000	1	37eb845462f8	0x184be0
 debugprintf	?Contains@CRangeSet@@QAE_NI@Z	100.0000	100.0000	1	657817a9193c	0x184ba0
-debugprintf	?DebugClose@@YAXXZ	100.0000	100.0000	1	bc7aba9ef03c	0x1851b0
+debugprintf	?DebugClose@@YAXXZ	100.0000	100.0000	2	1b67100d7174	0x1851b0
 debugprintf	?Fwd_184fb0@@YAXHH@Z	100.0000	100.0000	1	2d5c88c46d7d	0x184fb0
 debugprintf	?InitFromEnv@CDebugConfig@@QAEPAV1@XZ	100.0000	100.0000	2	980ad70bfc9b	0x185000
 debugprintf	?MonoClear@@YAXXZ	60.5000	60.5000	1	bb45a8919cfc	0x184db0
@@ -1577,8 +1577,8 @@ flashrect	?FlashRectC2e20@FlashHost@m4@@QAEHXZ	94.6266	94.6266	7	2f5a218e3674	0x
 font	??0Font@@QAE@XZ	100.0000	100.0000	5	88e5f8e36a9a	0x179700
 font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	4	8328abcb5c12	0x179be0
 font	?AllocateMemory@Font@@QAEHH@Z	92.1429	92.1429	6	1823f6280d0a	0x179720
-font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	2	2a9d389b9065	0x179c30
-font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@URect@@HHH@Z	100.0000	100.0000	2	67e471f48cd6	0x179d10
+font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	3	48ba966aeb23	0x179c30
+font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@UCRect@@HHH@Z	100.0000	100.0000	1	86e8144fd715	0x179d10
 font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHHHHHH@Z	71.4598	71.4598	2	0e6ba523b180	0x17a460
 font	?FreeMemory@Font@@QAEXXZ	100.0000	100.0000	6	c2c94940f860	0x1797b0
 font	?GetChar@CharCursor@@QAEEH@Z	100.0000	100.0000	2	01060dbcb5a1	0x17b4f0
@@ -1794,9 +1794,9 @@ gameobjectfactory	?ResetDat6295d8@@YAXXZ	100.0000	100.0000	1	dc9247fd7cfd	0xaf50
 gamesave	?SaveGame@@YAHPAUCGameSaveHost@@PAD@Z	100.0000	100.0000	15	f99d28195d50	0xd170
 gamestaterecordload	?Load@CGameStateRecord@@QAEHPAUCSerialArchive@@@Z	91.7927	91.7927	6	36d21fda6110	0x555e0
 gametext	??0CContainerErr@@QAE@PBD@Z	85.2632	85.2632	5	cebb8940e752	0x16d9c0
-gametext	?ClearCoordPool@@YAXXZ	100.0000	100.0000	1	25d95e28ac12	0x82ff0
+gametext	?ClearCoordPool@@YAXXZ	100.0000	100.0000	2	c6490478d4ed	0x82ff0
 gametext	?GetWarlordName@@YG?AVCString@@H@Z	89.2553	89.2553	5	6d699a7c4ad7	0x1ec20
-gametext	?InitResButeMgr82b20@@YAXXZ	100.0000	100.0000	1	41ecdc3f4a37	0x82b20
+gametext	?InitResButeMgr82b20@@YAXXZ	100.0000	100.0000	2	a75184c373cf	0x82b20
 gametext	?InitStr645514@@YAXXZ	100.0000	100.0000	1	4e805c0a0d19	0x82da0
 gametext	?InitStr645518@@YAXXZ	100.0000	100.0000	1	d4db0877660a	0x82e20
 gametext	?InitStr64551c@@YAXXZ	100.0000	100.0000	1	f7728b7060b1	0x82ea0
@@ -3894,7 +3894,7 @@ triggermgr	?Load@CTriggerMgr@@QAEHPAUCSerialArchive@@@Z	80.0213	80.0213	5	88517c
 triggermgr	?LoadCameraSprite@EngineLabelBacklog@@QAEHXZ	86.8000	86.8000	2	786371f77c97	0x78960
 triggermgr	?LoadExplosionSprites@EngineLabelBacklog@@QAEHHHHH@Z	98.0727	98.0727	1	5b16375695ee	0x7b330
 triggermgr	?LoadFinishLevelSprite@CFinishLevelState@@QAEXH@Z	61.0294	61.0294	1	84a297b47aa6	0x7c3d0
-triggermgr	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	63.4917	63.4917	2	efa1a898b5b2	0x7be60
+triggermgr	?LoadGruntResurrectTuning@CGruntResurrector@@QAEHHHH@Z	63.4917	63.4917	3	81947deb2f46	0x7be60
 triggermgr	?LoadPowerupIconSprites@EngineLabelBacklog@@QAEHHHHHHH@Z	33.8559	33.8559	2	7ae371b9b2e4	0x7c620
 triggermgr	?LoadToyBoxIcon@EngineLabelBacklog@@QAEHHHHHH@Z	99.9444	99.9444	2	080209d265ae	0x7a3f0
 triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	5	c6c07d7dacd5	0x7d1d0
