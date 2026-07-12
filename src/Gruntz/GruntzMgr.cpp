@@ -213,6 +213,14 @@ struct CCheckpointDlg {
 // keeps an implicit-dtor twin - a per-TU dtor-emission split, not a conflation. The
 // ctor is declared-only, so its call reloc-binds to the real 0x14b30; CSaveDlgBase
 // stands in for CDialog's reloc-masked virtual dtor (0x1ba51d).
+// @link-defect: ??1CSaveDlgBase@@UAE@XZ is a PHANTOM (no obj, no .LIB defines it) - an
+// unresolved external at link. The right base is the REAL CDialog (0x5c bytes), which
+// binds this same reloc-masked dtor call to ??1CDialog@@UAE@XZ in NAFXCW.LIB. BLOCKED
+// twice, both measured: <afxwin.h> collides with a CDialog already reaching this TU
+// transitively (C2011 redefinition), and <Gruntz/Dialogs.h> (which has its own
+// reconstructed `class CDialog : public CWnd`) would drag in its canonical CBattlezDlg,
+// whose OUT-OF-LINE dtor breaks SaveGameAs (see below). Dissolving the TU-local CDialog/
+// CModalDialog views is the prerequisite; leaving the shell until then.
 class CSaveDlgBase {
 public:
     virtual ~CSaveDlgBase(); // 0x1ba51d  CDialog::~CDialog (virtual, reloc-masked)
@@ -220,6 +228,17 @@ public:
 class CBattlezDlg : public CSaveDlgBase {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent); // 0x14b30  ??0CBattlezDlg@@QAE@HPAVCWnd@@@Z
+    // The dtor stays IMPLICIT here - do NOT declare it out-of-line. Retail's SaveGameAs
+    // (0x92f00) INLINES the CBattlezDlg teardown at the stack local's scope exit:
+    //     lea ecx,[esp+0x78]; call 0x1b9cde   ; ~CString  (the m_6c member)
+    //     lea ecx,[esp+0xc];  call 0x1ba51d   ; ~CDialog  (the base)
+    // - there is no `call ??1CBattlezDlg` anywhere in it. So cl saw an INLINE (compiler-
+    // generated) dtor for this class; the out-of-line 0x14c90 body is just the COMDAT copy
+    // emitted where its address is needed (the vtable slot). Declaring it out-of-line here
+    // forces a call and desyncs the whole function (measured: SaveGameAs 100% -> broken).
+    // ??1CBattlezDlg IS still an ODR-divergent duplicate (dialogs models this class as
+    // `: public CDialog`, we model it as `: CSaveDlgBase`) - but the fix for THAT is to
+    // unify the class shape, not to change the dtor's linkage. Reported, not bodged.
     char m_pad04[0x68 - 0x4];
     i32 m_68;     // +0x68  use-custom-prefix flag (== CBattlezDlg::m_customNameFlag)
     CString m_6c; // +0x6c  entered name
@@ -844,18 +863,12 @@ struct CTsState {
 
 // The minimal destructible MFC members that force the per-object EH-state ladder;
 // their ctors/dtors are the reloc-masked NAFXCW bodies (0x1b9b93 / 0x1b4f0b ...).
-struct MfcStr {
-    MfcStr();
-    ~MfcStr();
-    char* m_p;
-};
-struct MfcBytes {
-    char _vft0[4]; // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
-    MfcBytes();
-    ~MfcBytes();
-    void* m_data;
-    i32 m_size, m_max, m_grow;
-};
+// (MfcStr / MfcBytes are GONE: they were fake views of the REAL MFC CString and
+// CByteArray. Identical layout - CString is one LPTSTR; CByteArray is a CObject vptr +
+// m_pData + m_nSize/m_nMaxSize/m_nGrowBy - and the same reloc-masked NAFXCW ctor/dtor
+// calls. But the real types RESOLVE at link out of NAFXCW.LIB, whereas ??0MfcStr@@QAE@XZ
+// / ??1MfcStr@@QAE@XZ / ??0MfcBytes / ??1MfcBytes were PHANTOMS: mangled names that no
+// obj and no .LIB defines. <Mfc.h> is already included above.)
 
 // The two out-of-line base ctors (0x8c750 = CState base; 0x8c9d0 = CPlay base for
 // the multiplayer/param-7 states). Declared no-body -> reloc-masked base calls. Both
@@ -880,11 +893,31 @@ void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 a
 
 // ---- the CState-derived state objects (reduced local layouts of the real classes;
 // the retail vtable is stamped by hand from the externals above) ----------------
+//
+// EVERY LEAF BELOW DECLARES ITS DTOR OUT-OF-LINE (declaration only, no body). This is
+// load-bearing, not style. Left IMPLICIT, cl5 synthesises a per-TU inline dtor for each
+// leaf and emits it as a COMDAT under the leaf's REAL mangled name (??1CAttract@@UAE@XZ
+// ...). Because CState::~CState is inline in <Gruntz/State.h>, that synthesised body
+// inlines the base dtor, and /O2 dead-stores away the derived vptr write that precedes
+// it - leaving a 16-byte stub:
+//     mov dword ptr [ecx], offset ??_7CState@@6B@
+//     jmp  ?BaseCleanup@CGameModeBase@@QAEXXZ
+// which is an ODR-DIVERGENT DUPLICATE of the real 96-byte /GX chain dtor that the leaf's
+// own TU (attractstate/menustate/helpstate/bootystateactivate/creditsstate/multi/dialogs)
+// defines at its retail rva. cl5 keeps ONE COMDAT per name and picks arbitrarily, so the
+// linker could bind every `delete state` to the stub and skip the real teardown. It also
+// made reloc_fidelity score the STUB's relocs against retail's real body - the phantom
+// "MISBOUND ??_7CState@@6B@ @+0x2 / ?BaseCleanup @+0x7" rows, which were never a defect
+// in the state TUs at all (their bodies match retail byte-for-byte).
+// Declared-only => no definition is emitted here, so each reference binds to the one real
+// body. The classes are polymorphic already (CState's dtor is virtual), so this changes
+// no layout and no vtable slot - it is byte-neutral.
 struct CAttract : CState { // param 2, 0x1c0
     char m_pad[0x1c0 - 0x1b4];
     CAttract() {
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     }
+    virtual ~CAttract(); // 0x0008cd90 (AttractState.cpp)
 };
 // NOT foldable onto the canonical <Gruntz/GameMode.h> `CMenuState : CState` (Bucket-C
 // base-fold wall): a canonical polymorphic CMenuState would make cl emit + stamp a
@@ -899,12 +932,14 @@ struct CMenuState : CState { // param 5, 0x1c0
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
         m_1b4 = 0;
     }
+    virtual ~CMenuState(); // 0x0008ce60 (MenuState.cpp)
 };
 struct CHelpState : CState { // param 9, 0x1b8
     char m_pad[0x1b8 - 0x1b4];
     CHelpState() {
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
     }
+    virtual ~CHelpState(); // 0x0008cf30 (HelpState.cpp)
 };
 struct CSplashState : CState { // param 14, 0x1bc
     i32 m_1b4;                 // +0x1b4
@@ -913,6 +948,7 @@ struct CSplashState : CState { // param 14, 0x1bc
         // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
         m_1b4 = 0;
     }
+    virtual ~CSplashState(); // 0x0008d000 (HelpState.cpp)
 };
 // CDemo is the canonical <Gruntz/Demo.h> class (included below); its ctor + the
 // `new CDemo` factory case + CDemo::Vslot15 (0x3c030) live in this TU.
@@ -925,6 +961,7 @@ struct CMultiBootyState : CState { // param 18, 0x244
         m_1b4 = 0;
         m_1b8 = 0x64;
     }
+    virtual ~CMultiBootyState(); // 0x0008d510 (BootyStateActivate.cpp)
 };
 struct CBootyState : CState { // param 10, 0x320
     i32 m_1b4;                // +0x1b4
@@ -954,6 +991,7 @@ struct CBootyState : CState { // param 10, 0x320
     i32 m_2f4; // +0x2f4
     char m_pad2f8[0x320 - 0x2f8];
     CBootyState();
+    virtual ~CBootyState(); // 0x0008d440 (BootyStateActivate.cpp)
 };
 // NOTE for matcher-4 (the vtbl-stamp owner of this file): the canonical
 // CCreditsState : CState EXISTS in <Gruntz/GameMode.h> (RTTI vtbl@0x1e9c64) and
@@ -972,7 +1010,7 @@ struct CCreditsState : CState { // param 8, 0x218
     char m_1c8[0x10];           // +0x1c8  Set-initialized rect sub-object
     char m_1d8[0x10];           // +0x1d8  Set-initialized rect sub-object
     CTsSub45 m_1e8;             // +0x1e8
-    MfcStr m_1f0;               // +0x1f0
+    CString m_1f0;              // +0x1f0
     i32 m_1f4;                  // +0x1f4
     i32 m_1f8;                  // +0x1f8
     i32 m_1fc;                  // +0x1fc
@@ -983,6 +1021,7 @@ struct CCreditsState : CState { // param 8, 0x218
     i32 m_210;                  // +0x210
     char m_pad214[0x218 - 0x214];
     CCreditsState();
+    virtual ~CCreditsState(); // 0x0008d5e0 (CreditsState.cpp)
 };
 // CPlay (param 3, 0x520) is the canonical `class CPlay : public CState` from
 // <Gruntz/Play.h>; its five destructible MFC members + CState base give the same
@@ -994,15 +1033,16 @@ struct CMulti : CPlay { // param 17, 0x660
     char m_pad528[0x590 - 0x528];
     i32 m_590; // +0x590
     char m_pad594[0x598 - 0x594];
-    MfcStr m_598, m_59c, m_5a0; // +0x598/+0x59c/+0x5a0
+    CString m_598, m_59c, m_5a0; // +0x598/+0x59c/+0x5a0
     char m_pad5a4[0x5b0 - 0x5a4];
-    i32 m_5b0;           // +0x5b0
-    MfcStr m_5b4, m_5b8; // +0x5b4/+0x5b8
+    i32 m_5b0;            // +0x5b0
+    CString m_5b4, m_5b8; // +0x5b4/+0x5b8
     char m_pad5bc[0x600 - 0x5bc];
-    i32 m_600;      // +0x600
-    MfcBytes m_604; // +0x604
+    i32 m_600;        // +0x600
+    CByteArray m_604; // +0x604
     char m_pad618[0x660 - 0x618];
     CMulti();
+    virtual ~CMulti(); // (Multi.cpp)
 };
 
 // Field-heavy leaf ctors defined out-of-line for readability (still inline-folded
@@ -1235,8 +1275,6 @@ SIZE_UNKNOWN(CState);
 SIZE_UNKNOWN(CPlay);
 SIZE_UNKNOWN(CTsState);
 SIZE_UNKNOWN(CTsSub45);
-SIZE_UNKNOWN(MfcBytes);
-SIZE_UNKNOWN(MfcStr);
 
 VTBL(CPlay, 0x001ea0bc);
 
@@ -5105,8 +5143,8 @@ SIZE_UNKNOWN(CMonoWorld);
 SIZE_UNKNOWN(CPlayStateView);
 SIZE_UNKNOWN(CPointXY);
 SIZE_UNKNOWN(CRezSurface94);
-SIZE_UNKNOWN(CSaveDlgBase);
 SIZE_UNKNOWN(CBattlezDlg);
+SIZE_UNKNOWN(CSaveDlgBase);
 SIZE_UNKNOWN(CSettingsWriter);
 SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CWorldDelete);
