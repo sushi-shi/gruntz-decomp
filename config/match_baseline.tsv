@@ -77,7 +77,7 @@ ddpagemgr	17	10
 ddpalette	23	6
 ddrawblterrthunk	1	1
 ddrawpolyfill	1	0
-ddrawptrcollections	10	7
+ddrawptrcollections	10	6
 ddrawshadeblit	10	2
 ddrawsubmgr	96	63
 ddrawsubmgrleaf	12	8
@@ -368,7 +368,7 @@ typekeycoll	29	10
 ufo	5	4
 uncompr	1	1
 unknownfileioctor	1	1
-userlogic	3	0
+userlogic	18	0
 userlogicctoremit	2	1
 videoconfig	18	10
 voicesoundlist	1	0
@@ -456,7 +456,7 @@ areamgr	??0CAreaMgr@@QAE@XZ	100.0000	100.0000	2	a6bca3bf76c7	0x99ba0
 areamgr	??1CAreaMgr@@QAE@XZ	100.0000	100.0000	4	9145dd54e0a7	0x99c20
 areamgr	??1CSpawnList@@QAE@XZ	100.0000	100.0000	1	300ac8464c18	0x99ca0
 areamgr	?ClearFlags@CSpawnList@@QAEXXZ	100.0000	100.0000	2	e03e28780710	0x9a420
-areamgr	?DeleteAllEntries@CSpawnList@@QAEXXZ	100.0000	100.0000	2	63ac6c0133c4	0x9a450
+areamgr	?DeleteAllEntries@CSpawnList@@QAEXXZ	100.0000	100.0000	3	7c8cc73b44f7	0x9a450
 areamgr	?Dispatch@CAreaMgr@@QAEHH@Z	78.8584	78.8584	3	d462c21627bc	0x99d40
 areamgr	?FindByName@CSpawnList@@QAEPAVCSpawnEntry@@ABVCString@@@Z	80.3838	80.3838	2	f005e0b9e076	0x9a290
 areamgr	?FindEntry@CSpawnList@@QAEPAVCSpawnEntry@@VCString@@H@Z	74.3367	74.3367	2	a24f0182578b	0x9a0d0
@@ -854,20 +854,20 @@ databuffer	?Set@CDataBuffer@@QAEHIH@Z	100.0000	100.0000	4	93d5093b8d02	0x1501a0
 ddpagemgr	?Advance@CMoviePlayer@@QAEHHH@Z	100.0000	100.0000	1	fe8558754244	0x17c8e0
 ddpagemgr	?BlitRegion@CDDScreen@@QAEHHHHH@Z	100.0000	100.0000	1	82fe2bc05c83	0x17cdf0
 ddpagemgr	?CheckMode16@CDDPageMgr@@QAEHXZ	83.9000	83.9000	1	f48fb44ffcc8	0x17d2b0
-ddpagemgr	?CloseSmacker@CMoviePlayer@@QAEHXZ	100.0000	100.0000	1	a654089ecb8e	0x17c9b0
+ddpagemgr	?CloseSmacker@CMoviePlayer@@QAEHXZ	100.0000	100.0000	2	2523c76f1141	0x17c9b0
 ddpagemgr	?Configure@CDDScreen@@QAEHHHPAUtagPOINT@@PAUtagRECT@@@Z	97.3969	97.3969	1	a4fb3e518213	0x17cfc0
 ddpagemgr	?CreateVideoWindow@CMoviePlayer@@QAEHHH@Z	98.0097	98.0097	1	8505ede7a8ce	0x17c2a0
-ddpagemgr	?Frame@CMoviePlayer@@QAEHXZ	100.0000	100.0000	1	ae70b389d323	0x17caa0
-ddpagemgr	?FreeAll@CDDPageMgr@@QAEHXZ	100.0000	100.0000	3	54ec58c0e1d7	0x17d6b0
+ddpagemgr	?Frame@CMoviePlayer@@QAEHXZ	100.0000	100.0000	2	1c2c82624adb	0x17caa0
+ddpagemgr	?FreeAll@CDDPageMgr@@QAEHXZ	100.0000	100.0000	4	632848a30456	0x17d6b0
 ddpagemgr	?HandleError@CDDScreen@@QAEXXZ	100.0000	100.0000	1	c9262e729c0e	0x17cc80
 ddpagemgr	?Init@CDDPageMgr@@QAEHPAXPAUDDModeInfo@@I@Z	98.0496	98.0496	1	48bd482e7d03	0x17c040
-ddpagemgr	?Init@Handler_17c3f0@@QAEHPAXPAUObjA2_17c3f0@@PAUObjA3_17c3f0@@HHHHHHHHHHHHHHHHHHHHHHHHHHHH@Z	100.0000	100.0000	1	281652a124a6	0x17c3f0
+ddpagemgr	?Init@Handler_17c3f0@@QAEHPAXPAUObjA2_17c3f0@@PAUObjA3_17c3f0@@HHHHHHHHHHHHHHHHHHHHHHHHHHHH@Z	100.0000	100.0000	2	b4bb8a11c806	0x17c3f0
 ddpagemgr	?OpenHi@CMoviePlayer@@QAEHHHHHH@Z	70.7324	70.7324	1	9cb9857717a8	0x17c630
 ddpagemgr	?OpenLo@CMoviePlayer@@QAEHHHHHH@Z	70.7324	70.7324	1	c027f6cc0175	0x17c570
 ddpagemgr	?PlayList@CMoviePlayer@@QAEHH@Z	100.0000	100.0000	1	071fd13289a1	0x17d720
 ddpagemgr	?Pump@CMoviePlayer@@QAEHHH@Z	100.0000	100.0000	1	8f4d23ffa42b	0x17c790
-ddpagemgr	?RemoveAt@CDDPageMgr@@QAEHH@Z	86.3971	86.3971	3	e3f1084d39c4	0x17d600
-ddpagemgr	?Teardown@CMoviePlayer@@QAEXXZ	100.0000	100.0000	1	f48775ab18c1	0x17c510
+ddpagemgr	?RemoveAt@CDDPageMgr@@QAEHH@Z	86.3971	86.3971	4	82671c0a1ade	0x17d600
+ddpagemgr	?Teardown@CMoviePlayer@@QAEXXZ	100.0000	100.0000	2	217aede70a54	0x17c510
 ddpalette	?Apply@CDDPalette@@QAEXH@Z	97.5758	97.5758	1	9a8cf5e75d83	0x147c80
 ddpalette	?BlackoutSystemPalette@@YAHXZ	99.1936	99.1936	1	00deb5409747	0x148720
 ddpalette	?BlendRange@CDDPalette@@QAEXHHHHHH@Z	93.7778	93.7778	1	e1a8e3db84bc	0x1482c0
@@ -891,12 +891,12 @@ ddpalette	?SetRange@CDDPalette@@QAEHHHEEEI@Z	100.0000	100.0000	1	b4e2d9ac9064	0x
 ddpalette	?StartFadeToColor@CDDPalette@@QAEXHHDDDH@Z	99.6552	99.6552	2	7df788d1eb5f	0x147f30
 ddpalette	?StartFadeToPalette@CDDPalette@@QAEXHHPAEH@Z	99.6226	99.6226	2	34a432a7df1f	0x147ff0
 ddpalette	?Tick@CDDPalette@@QAEHXZ	100.0000	100.0000	1	eb076c2b4433	0x1480a0
-ddrawblterrthunk	?BltChecked@DDrawBltHost@@QAEHXZ	100.0000	100.0000	2	23d2fff77aaa	0x8dd80
+ddrawblterrthunk	?BltChecked@DDrawBltHost@@QAEHXZ	100.0000	100.0000	3	b9a296f42c71	0x8dd80
 ddrawpolyfill	?FillPolygon@@YAHPAUFillVert@@HPAVCDDSurface@@F@Z	64.7818	64.7818	16	9de3820c8125	0x146fe0
 ddrawptrcollections	?Init1@CPoolItemAB8@@UAEHPAVCDDrawPtrCollections@@H@Z	100.0000	100.0000	1	519424803f3f	0x148b50
 ddrawptrcollections	?Init1@CPoolItemAE8@@UAEHPAVCDDrawPtrCollections@@H@Z	100.0000	100.0000	1	24247f8ea08a	0x148cc0
 ddrawptrcollections	?InstallColorFormat@CPoolItemAB8@@UAEHXZ	99.7000	99.7000	2	5bfe5fd06dd4	0x148b80
-ddrawptrcollections	?LoadByExt@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PADHH@Z	100.0000	100.0000	1	4c1f6011dafe	0x148940
+ddrawptrcollections	?LoadByExt@CDDSurface@@QAEHPAVCDDrawPtrCollections@@PADHH@Z	99.8899	99.8899	2	d1bf8f2ba38f	0x148940
 ddrawptrcollections	?LoadKeyed@CDDSurface@@QAEHPAXHHHHH@Z	100.0000	100.0000	1	58b16c9ddf2b	0x148840
 ddrawptrcollections	?ResolveEx@CDDSurface@@QAEHPAX0HIHH@Z	100.0000	100.0000	1	08312b1366c4	0x148890
 ddrawptrcollections	?UpdateOverlay@CDDSurface@@QAEHPAXPAV1@0I0@Z	100.0000	100.0000	1	f481599a8719	0x148ac0
@@ -3984,8 +3984,23 @@ ufo	?SerializeMove@CUFO@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	1	73b5628
 ufo	?Tick@CUFO@@UAEHXZ	100.0000	100.0000	1	41b9dc44dedf	0xb4330
 uncompr	_uncompress	100.0000	100.0000	1	b40cccad8cc9	0x185320
 unknownfileioctor	??0FileIOOwner@@QAE@XZ	100.0000	100.0000	6	01b3d14d4690	0x8fea0
+userlogic	?Activate@CUserLogic@@UAEHXZ	0.0000	0.0000	1	a8e3cb02fde8	0x33dc
+userlogic	?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ	0.0000	0.0000	1	8baca66053b5	0x242d
 userlogic	?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z	0.0646	0.0646	3	6997bbd3ffc7	0x5d210
 userlogic	?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z	0.0415	0.0415	3	0cf4fef43b2a	0x4dd50
+userlogic	?SerializeMove@CUserBase@@UAEHPAUCGruntArchive@@HHH@Z	0.0000	0.0000	1	b11675028000	0x39e0
+userlogic	?UserLogicVfunc1@CUserLogic@@UAEHXZ	0.0000	0.0000	1	0947b750351e	0x3413
+userlogic	?UserLogicVfunc2@CUserLogic@@UAEHXZ	0.0000	0.0000	1	cbd4b57ac942	0x246e
+userlogic	?UserLogicVfunc3@CUserLogic@@UAEHXZ	0.0000	0.0000	1	2a9f57c88701	0x3913
+userlogic	?UserLogicVfunc5@CUserLogic@@UAEHXZ	0.0000	0.0000	1	22577e8d342a	0x2162
+userlogic	?UserLogicVfunc6@CUserLogic@@UAEHXZ	0.0000	0.0000	1	ebb474615b5e	0x26b7
+userlogic	?UserLogicVfunc7@CUserLogic@@UAEHXZ	0.0000	0.0000	1	b811643951c8	0x1361
+userlogic	?UserLogicVfunc8@CUserLogic@@UAEHXZ	0.0000	0.0000	1	aaa06ddf1d0e	0x23f6
+userlogic	?UserLogicVfunc9@CUserLogic@@UAEHXZ	0.0000	0.0000	1	4a4bd047108b	0x225c
+userlogic	?UserLogicVfuncA@CUserLogic@@UAEHXZ	0.0000	0.0000	1	38bf0e79a6b1	0x150a
+userlogic	?UserLogicVfuncB@CUserLogic@@UAEHXZ	0.0000	0.0000	1	2fe3cd32fc47	0x3116
+userlogic	?UserLogicVfuncC@CUserLogic@@UAEHXZ	0.0000	0.0000	1	3cdcccf34536	0x1730
+userlogic	?UserLogicVfuncD@CUserLogic@@UAEHXZ	0.0000	0.0000	1	4f7f96da4f64	0x3607
 userlogic	?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z	0.6786	0.6786	4	ea5a56c47dbc	0x4d800
 userlogicctoremit	??0CUserLogic@@QAE@PAUCGameObject@@@Z	89.0446	89.0446	1	cpp:aca2e8db625f	0x58cd0
 userlogicctoremit	??0CUserLogic@@QAE@XZ	100.0000	100.0000	1	cpp:aca2e8db625f	0x138d0
