@@ -109,7 +109,7 @@ feccrypt	10	7
 fileimage	19	7
 filestream	3	2
 flashrect	2	0
-font	18	13
+font	19	13
 fontconfig	14	6
 fonts	5	4
 fortconquered	1	0
@@ -1574,6 +1574,7 @@ flashrect	?FlashRectC2e20@FlashHost@m4@@QAEHXZ	94.6266	94.6266	7	2f5a218e3674	0x
 font	??0Font@@QAE@XZ	100.0000	100.0000	5	88e5f8e36a9a	0x179700
 font	??0FontRenderer@@QAE@XZ	100.0000	100.0000	4	8328abcb5c12	0x179be0
 font	?AllocateMemory@Font@@QAEHH@Z	92.1429	92.1429	6	1823f6280d0a	0x179720
+font	?DrawGlyphRun@FontRenderer@@QAEXVCString@@PAVCDDSurface@@UCRect@@HHH@Z	61.5787	61.5787	1	21b60f804a11	0x179e70
 font	?DrawLine@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHH@Z	100.0000	100.0000	3	48ba966aeb23	0x179c30
 font	?DrawLineClipped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@UCRect@@HHH@Z	100.0000	100.0000	1	86e8144fd715	0x179d10
 font	?DrawWrapped@FontRenderer@@QAEXVCString@@PAVCDDSurface@@HHHHHHH@Z	71.4598	71.4598	2	0e6ba523b180	0x17a460
