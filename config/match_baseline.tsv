@@ -103,7 +103,7 @@ engstr	1	0
 engstrrendertext	1	0
 exittrigger	4	2
 eyecandy	4	3
-fader	46	27
+fader	47	27
 fadermgr	10	7
 feccrypt	10	7
 fileimage	19	7
@@ -918,7 +918,7 @@ ddrawsubmgr	??0CDrawSubWorker@@QAE@HHH@Z	96.3000	96.3000	3	e41c4ab50b8e	0x158f30
 ddrawsubmgr	??0CFileMemBase@@QAE@XZ	100.0000	100.0000	1	c0ad1f62a683	0x157850
 ddrawsubmgr	??1CDDrawChildGroupDtorHost@@UAE@XZ	95.9000	95.9000	1	fe3d192f4902	0x157630
 ddrawsubmgr	??1CDDrawRegistryDtorHost@@UAE@XZ	94.8750	94.8750	1	3f128385bf08	0x156e10
-ddrawsubmgr	??1CDDrawSubMgrLeaf@@UAE@XZ	100.0000	100.0000	1	cced5c78364e	0x1577e0
+ddrawsubmgr	??1CDDrawSubMgrLeaf@@UAE@XZ	100.0000	100.0000	2	75695e83935d	0x1577e0
 ddrawsubmgr	??1CDDrawSubMgrLeafScan@@UAE@XZ	100.0000	100.0000	1	8db13c9be157	0x157570
 ddrawsubmgr	??1CDDrawSubMgrPages@@UAE@XZ	100.0000	100.0000	1	eacae0c8e71a	0x1574d0
 ddrawsubmgr	??1CDDrawSurfacePair@@UAE@XZ	100.0000	100.0000	1	ae1440419366	0x1590f0
@@ -994,11 +994,11 @@ ddrawsubmgr	?RemoveByValue@CSoundResMap@@QAEXPAVCSoundRes@@@Z	74.8000	74.8000	1	
 ddrawsubmgr	?RemoveKeysEqual_157c70@CDDrawSubMgrLeafScan@@QAEHPBD0@Z	100.0000	100.0000	1	5c81592bbd22	0x157c70
 ddrawsubmgr	?Reset@CFileMem@@UAEXXZ	100.0000	100.0000	1	cpp:053c6c4df6ba	0x157a50
 ddrawsubmgr	?Reset@CFileMemBase@@UAEXXZ	100.0000	100.0000	1	cpp:053c6c4df6ba	0x157a40
-ddrawsubmgr	?ScalarDtor@CDDrawChildGroupDtorHost@@QAEPAXI@Z	100.0000	100.0000	1	0fb70a049127	0x157610
-ddrawsubmgr	?ScalarDtor@CDDrawRegistryDtorHost@@QAEPAXI@Z	100.0000	100.0000	1	7d04525b43a3	0x156df0
-ddrawsubmgr	?ScalarDtor@CDDrawSubMgrLeafScan@@QAEPAXI@Z	100.0000	100.0000	1	6898e0056a36	0x157550
-ddrawsubmgr	?ScalarDtor@CDDrawSubMgrPages@@QAEPAXI@Z	100.0000	100.0000	1	cefb93abc2df	0x1574b0
-ddrawsubmgr	?ScanTree_157ee0@CDDrawSubMgrLeafScan@@QAEHPAVDirNode@@PBD1@Z	100.0000	100.0000	1	7c284b23451b	0x157ee0
+ddrawsubmgr	?ScalarDtor@CDDrawChildGroupDtorHost@@QAEPAXI@Z	100.0000	100.0000	2	273170ecc380	0x157610
+ddrawsubmgr	?ScalarDtor@CDDrawRegistryDtorHost@@QAEPAXI@Z	100.0000	100.0000	2	933bb7fe6775	0x156df0
+ddrawsubmgr	?ScalarDtor@CDDrawSubMgrLeafScan@@QAEPAXI@Z	100.0000	100.0000	2	79c8a59a070e	0x157550
+ddrawsubmgr	?ScalarDtor@CDDrawSubMgrPages@@QAEPAXI@Z	100.0000	100.0000	2	7b7774c9e0d1	0x1574b0
+ddrawsubmgr	?ScanTree_157ee0@CDDrawSubMgrLeafScan@@QAEHPAVDirNode@@PBD1@Z	100.0000	100.0000	2	2b446d106a77	0x157ee0
 ddrawsubmgr	?SelectCue_157a80@CDDrawBlitParam@@QAEHPAX@Z	100.0000	100.0000	3	59a4435658ad	0x157a80
 ddrawsubmgr	?SetGeom_159020@CDrawSubWorker@@UAEHHHH@Z	100.0000	100.0000	1	97bd3a0009d7	0x159020
 ddrawsubmgr	?SetGeometry_158fd0@CDDrawSurfacePair@@UAEHHHH@Z	83.8571	83.8571	1	f828cce26f63	0x158fd0
@@ -1505,7 +1505,7 @@ fader	??1CFaderShape@@UAE@XZ	100.0000	100.0000	2	6b480fdde2f7	0x181720
 fader	??1CFaderSine@@UAE@XZ	100.0000	100.0000	2	bf7762dd95ae	0x17fdf0
 fader	?Apply@CFaderElem@@QAEHPAUFaderArg@@@Z	89.7442	89.7442	2	409d09cd8267	0x17f5e0
 fader	?ApplyInit@CFaderMesh@@QAEHPAUCFaderInit@@@Z	67.4405	67.4405	3	a9d6f4a86943	0x17ea00
-fader	?ApplyInit@CFaderSine@@QAEHPAUCFaderInit@@@Z	73.5588	73.5588	1	4d98ac4a7a87	0x17fe00
+fader	?ApplyInit@CFaderSine@@QAEHPAUCFaderInit@@@Z	73.5392	73.5392	1	4d98ac4a7a87	0x17fe00
 fader	?Build@CFaderRadialApply@@QAEHPAUFrConfig@@@Z	73.7544	73.7544	4	0b83189f6956	0x17fa40
 fader	?FreeBuffer17fc40@CFaderRadial@@QAEXXZ	100.0000	100.0000	2	1c3253647a56	0x17fc40
 fader	?Gap_17f660@@YAHXZ	0.4727	0.4727	1	c5b64f4dd24e	0x17f660
@@ -1529,6 +1529,7 @@ fader	?v2@CFaderLight@@UAEHXZ	43.9179	43.9179	1	7d9f9a3c15b6	0x1814f0
 fader	?v2@CFaderShape@@UAEHXZ	100.0000	100.0000	1	a5d442cb08f3	0x182900
 fader	?v3@CFaderLight@@UAEXXZ	100.0000	100.0000	1	e32b67a9817f	0x181660
 fader	?v4@CFaderLight@@UAEXXZ	100.0000	100.0000	1	1e84543ad536	0x1816a0
+fader	empty_stub	0.0000	0.0000	1	cpp:d5b77d3d2ef3	
 fadermgr	??0CFaderMgr@@QAE@XZ	100.0000	100.0000	2	7fcbeb7688ce	0x17d8f0
 fadermgr	??1C17e240@@UAE@XZ	100.0000	100.0000	2	eb8fdaf30aef	0x17e240
 fadermgr	??1CFaderMgr@@QAE@XZ	100.0000	100.0000	2	b7d521a26e4e	0x17d910
