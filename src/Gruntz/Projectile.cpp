@@ -146,6 +146,37 @@ CProjectile::CProjectile() {}
 RVA(0x00012a70, 0x44)
 CTimeBomb::~CTimeBomb() {}
 
+// ---------------------------------------------------------------------------
+// CProjectile::ReleaseDeferred (0x13c70) - fire the two queued one-shot callbacks
+// (m_08 first, gated on the recorded hit-handle still matching m_28; then m_04
+// unconditionally), reset the handle to its default 0x3e9, then run the slot-16
+// virtual. The callbacks are raw __thiscall code pointers cached in the inherited
+// CUserLogic int slots m_04/m_08 (a heterogeneous "user data" slot). MSVC5 has no
+// __thiscall on free fn-ptrs, so the code address is called through a
+// single-inheritance pointer-to-member-function (one word == the raw address),
+// yielding `mov ecx,this; call ptr`. Typing the base member as a PMF is not an option
+// (MSVC5 fattens the PMF to the general 16-byte form, shifting the shared CUserLogic
+// layout and regressing every leaf that folds the base ctor), so the int slot's bits
+// are reinterpreted at the call with reinterpret_cast (byte-identical to the store).
+// ---------------------------------------------------------------------------
+typedef void (CProjectile::*ProjCallback)();
+
+// @interleaver CProjectile - own-class out-of-line COMDAT in the 0x13xxx leaf pool
+// (far from the projectile main block @0xdec60+); RVA-placement artifact, kept here.
+RVA(0x00013c70, 0x47)
+void CProjectile::ReleaseDeferred(i32) {
+    if (m_04 != 0) {
+        if (m_08 != 0 && (i32)m_objAux->m_1c == m_28) {
+            (this->*reinterpret_cast<ProjCallback&>(m_08))();
+            m_08 = 0;
+        }
+        (this->*reinterpret_cast<ProjCallback&>(m_04))();
+        m_04 = 0;
+        m_28 = 0x3e9;
+    }
+    MovingSlot16(); // virtual slot 16 (vtable offset 0x40) - CMovingLogic's one new virtual
+}
+
 // The 1-arg ctor's spawn constants (reloc-masked DIR32 loads).
 extern "C" {
     DATA(0x00245588)
@@ -198,32 +229,6 @@ CProjectile::CProjectile(CGameObject* owner) : CMovingLogic(owner) {
     memset(&m_frame1, 0, 0x1c); // zero the seven +0x1e0..+0x1fb sprite-frame slots
     m_sound = 0;
     m_shadow = 0;
-}
-
-// ---------------------------------------------------------------------------
-// CProjectile::ReleaseDeferred (0x13c70) - fire the two queued one-shot callbacks
-// (m_08 first, gated on the recorded hit-handle still matching m_28; then m_04
-// unconditionally), reset the handle to its default 0x3e9, then run the slot-16
-// virtual. The callbacks are raw __thiscall code pointers cached in the inherited
-// CUserLogic m_04/m_08 ints; expressed as pointer-to-member-functions so the
-// `mov ecx,this; call ptr` falls out (MSVC5 reserves the __thiscall keyword).
-// ---------------------------------------------------------------------------
-typedef void (CProjectile::*ProjCallback)();
-
-// @interleaver CProjectile - own-class out-of-line COMDAT in the 0x13xxx leaf pool
-// (far from the projectile main block @0xdec60+); RVA-placement artifact, kept here.
-RVA(0x00013c70, 0x47)
-void CProjectile::ReleaseDeferred(i32) {
-    if (m_04 != 0) {
-        if (m_08 != 0 && (i32)m_objAux->m_1c == m_28) {
-            (this->*(ProjCallback&)m_08)();
-            m_08 = 0;
-        }
-        (this->*(ProjCallback&)m_04)();
-        m_04 = 0;
-        m_28 = 0x3e9;
-    }
-    MovingSlot16(); // virtual slot 16 (vtable offset 0x40) - CMovingLogic's one new virtual
 }
 
 // ---------------------------------------------------------------------------
