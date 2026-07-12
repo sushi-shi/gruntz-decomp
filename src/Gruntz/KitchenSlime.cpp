@@ -83,23 +83,11 @@ struct CSlimeLevel {
 // The level tile map reached via g_gameReg->m_tileGrid is the canonical CTileGrid
 // (<Gruntz/TileGrid.h>): m_c/m_10 = grid extents, m_8 = the row table
 // (row[gy][gx*7] is the tile-flags word).
-// The on-screen object reached as g_gameReg->m_68 (the visibility/cue gate). Its
-// QueryAt resolves the entity under the slime's screen rect and ScrollTo posts a
-// scroll; modeled NO-body so both calls reloc-mask.
-namespace m4 {
-    struct HitGrunt;
-    struct HitTileRect;
-    class GruntHitMgr {
-    public:
-        HitGrunt* FindGruntAt(i32 x, i32 y, HitTileRect* r, i32* a, i32* b, struct tagRECT* rect);
-    };
-} // namespace m4
-#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (CellDispatch)
-struct CSlimeCueGate {
-    // QueryAt(level->m_5c, level->m_60, &level->m_144, &outA, &outB, 0) -> entity*.
-    // QueryAt IS m4::GruntHitMgr::FindGruntAt; cast at the call.
-    // ScrollTo IS CTriggerMgr::CellDispatch; cast at the call.
-};
+// The on-screen object reached as g_gameReg->m_cmdGrid (the +0x68 CTriggerMgr slot,
+// the visibility/cue gate): FindGruntAt @0x75c60 resolves the entity under the slime's
+// screen rect and CellDispatch posts a scroll - both real CTriggerMgr methods, called
+// cast-free (<Gruntz/TriggerMgr.h>).
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (FindGruntAt @0x75c60, CellDispatch)
 
 // The canonical CGameRegistry view of the singleton; m_posY (cue gate) and m_dirX
 // (tile map) are void*/CTileGrid* here, cast locally at the deref sites.
@@ -437,15 +425,9 @@ i32 CKitchenSlime::Tick() {
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
         CSlimeLevel* lvl = Level();
         i32 outX, outY;
-        CSlimeEntity* ent = (CSlimeEntity*)((m4::GruntHitMgr*)reg->m_cmdGrid)
-                                ->FindGruntAt(
-                                    lvl->m_5c,
-                                    lvl->m_60,
-                                    (m4::HitTileRect*)&lvl->m_144,
-                                    &outY,
-                                    &outX,
-                                    (struct tagRECT*)0
-                                );
+        CSlimeEntity* ent =
+            (CSlimeEntity*)reg->m_cmdGrid
+                ->FindGruntAt(lvl->m_5c, lvl->m_60, (RECT*)&lvl->m_144, &outY, &outX, (RECT*)0);
         if (ent && ent->m_258 != 0x38) {
             ((CTriggerMgr*)g_gameReg->m_cmdGrid)->CellDispatch(outY, outX, 5, -1);
         }
@@ -720,7 +702,6 @@ i32 CKitchenSlime::LoadSprites() {
 SIZE_UNKNOWN(CKSlimeEntry);
 SIZE_UNKNOWN(CSlimeAnimPlayer);
 SIZE_UNKNOWN(CSlimeCtorObj);
-SIZE_UNKNOWN(CSlimeCueGate);
 SIZE_UNKNOWN(CSlimeEntity);
 SIZE_UNKNOWN(CSlimeLevel);
 SIZE_UNKNOWN(CSlimeSubMgr);

@@ -38,6 +38,7 @@
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CSiblingActReg)
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/TriggerMgr.h>    // canonical CTriggerMgr (m_cmdGrid; FindGruntAt @0x75c60)
 #include <Gruntz/LightFxMgr.h>    // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
@@ -74,7 +75,8 @@ extern "C" {
 
 extern void* GetRetAddr(); // 0x16d990
 DATA(0x002bf464)
-extern void* g_actCache;
+extern void* g_projActCache; // 0x2bf464 canonical (bound in GruntStartingPoint.cpp); the old
+                             // g_actCache spelling was an unbound VA-typo alias of this global
 extern void* g_retAddrBreadcrumb;
 
 // ---------------------------------------------------------------------------
@@ -144,7 +146,7 @@ static inline char* ActNameLookup(i32 id) {
     if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
         return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
     return g_nameRegCur;
@@ -170,7 +172,7 @@ static inline CDropEntry* DropLookup(i32 coord) {
     if ((i32)((_zvec*)&g_dropColl)->GrowTo(coord, 0)) {
         return (CDropEntry*)(g_dropBase + (coord - g_dropLo) * g_dropStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     g_dropColl2->Set(&g_dropColl, (i32)item, 0xc);
     return g_dropCur;
@@ -263,21 +265,10 @@ struct DropperFound {
     char m_pad00[0x10];
     CObjDropObj* m_obj; // +0x10
 };
-// The world tile map ((DropperMap*)g_gameReg->m_68, the reused +0x68 slot's
-// dropper facet): picks a random reachable destination tile in the wander box and
-// returns the object it lands on. FindDest @0x475c60, __thiscall (0x32ce ILT thunk).
-SIZE_UNKNOWN(DropperMap);
-namespace m4 {
-    struct HitGrunt;
-    struct HitTileRect;
-    class GruntHitMgr {
-    public:
-        HitGrunt* FindGruntAt(i32 x, i32 y, HitTileRect* r, i32* a, i32* b, struct tagRECT* rect);
-    };
-} // namespace m4
-struct DropperMap {
-    // FindDest IS m4::GruntHitMgr::FindGruntAt; cast at the call.
-};
+// The world tile map is g_gameReg->m_cmdGrid (the +0x68 CTriggerMgr slot): the drop
+// destination probe IS CTriggerMgr::FindGruntAt @0x75c60 (__thiscall, 0x32ce ILT
+// thunk) - it picks the reachable destination tile in the wander box and returns the
+// CTmCell it lands on. Called cast-free on the real CTriggerMgr (<Gruntz/TriggerMgr.h>).
 // One terrain-plane cell of the registry's tile grid (g_gameReg->m_tileGrid, the
 // canonical CTileGrid): a 0x1c-byte (7-dword) record; dword 0 holds the flags.
 // Reached as ((DropperTile*)grid->m_8[row])[col] - the authentic CTileGrid cell
@@ -606,15 +597,14 @@ i32 CObjectDropper::Update() {
             box.bottom = o->m_screenY + o->m_footprint->m_halfHeight - 7;
             i32 tx;
             i32 ty;
-            DropperFound* found = (DropperFound*)((m4::GruntHitMgr*)g_gameReg->m_cmdGrid)
-                                      ->FindGruntAt(
-                                          o->m_screenX,
-                                          o->m_screenY,
-                                          (m4::HitTileRect*)&o->m_144,
-                                          &tx,
-                                          &ty,
-                                          (struct tagRECT*)&box
-                                      );
+            DropperFound* found = (DropperFound*)g_gameReg->m_cmdGrid->FindGruntAt(
+                o->m_screenX,
+                o->m_screenY,
+                (RECT*)&o->m_144,
+                &tx,
+                &ty,
+                (RECT*)&box
+            );
             if (found != 0) {
                 if (m_lastDropTileX != tx || m_lastDropTileY != ty) {
                     if (m_scrollMode == 0 || tx == 0) {

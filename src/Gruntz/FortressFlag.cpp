@@ -102,7 +102,7 @@ extern "C" WwdGameReg* g_gameReg;
 // archetype as CTimeBomb::FireActivation's, but CParticlez's OWN instance. A
 // coordinate maps to an Entry* either directly (fast [g_partLo, g_partHi] range)
 // via g_partBase + (coord-lo)*stride, or by a slow Find in the collection
-// (0x16da80), which on miss rebuilds (GetRetAddr 0x16d990 -> g_actCache, Insert
+// (0x16da80), which on miss rebuilds (GetRetAddr 0x16d990 -> g_projActCache, Insert
 // 0x16d850) and yields g_partCur. All globals unnamed BSS (DATA-pinned so the
 // loads reloc-mask); the collection methods external/no-body.
 struct CPartEntry; // an entry: first dword is the registered handler
@@ -134,7 +134,7 @@ static inline CPartEntry* PartLookup(i32 coord) {
     if ((i32)((_zvec*)&g_partColl)->GrowTo(coord, 0)) {
         return (CPartEntry*)(g_partBase + (coord - g_partLo) * g_partStride);
     }
-    void* item = g_actCache;
+    void* item = g_projActCache; // canonical bound alloc-scratch (0x2bf464, from ActColl.h)
     g_retAddrBreadcrumb = GetRetAddr();
     g_partColl2->Set(&g_partColl, (i32)item, 0xc);
     return g_partCur;
