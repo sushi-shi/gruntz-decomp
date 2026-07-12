@@ -45,6 +45,7 @@ brickzcellflags	3	1
 brickzclip	1	0
 brickzload	1	0
 bridgemovesprites	1	0
+bsecobj10fctor	1	1
 buildgruntzcrcinfo	1	0
 butemgr	54	32
 butenode	2	2
@@ -298,7 +299,7 @@ sbi_imageset	5	2
 sbi_imagesetani	5	2
 sbi_menuitem	12	7
 sbi_rectonly	90	42
-sbi_rectonlybase	1	0
+sbi_rectonlybase	2	0
 sbi_rectonlydtor_eh	2	2
 sbi_statztabarrow_eh	1	1
 sbi_statztabgruntbar	5	4
@@ -465,7 +466,7 @@ areamgr	?LoadObjectSoundResources@CAreaMgr@@QAEHPAUObjSpawnEntry@@PAVCSymTab@@@Z
 areamgr	?QueryToken@@YAHH@Z	100.0000	100.0000	1	dbb2fda8d63c	0x99d10
 areamgr	?Reset@CAreaMgr@@QAEXXZ	100.0000	100.0000	3	5faa6e31be7e	0x9a0b0
 areamgr	?SameGroup@CAreaMgr@@QAEHH@Z	58.5000	58.5000	3	0d6263294c55	0x9b430
-areamgr	?TokenMgrReset99b80@@YAXXZ	100.0000	100.0000	1	f78fe176a96a	0x99b80
+areamgr	?TokenMgrReset99b80@@YAXXZ	100.0000	100.0000	2	eb9ce7ee67f4	0x99b80
 arrayserialize	?Serialize@CMovieScratch@@UAEXAAVCArchive@@@Z	72.6849	72.6849	1	adba7d3f736d	0x39fa0
 attract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	6	07fd10f26015	0xa0a30
 attract	?FadeInTitle@CState@@QAEHPBDHHHHH@Z	75.3691	75.3691	1	ca3dbe62c1f4	0xfa1f0
@@ -650,6 +651,7 @@ brickzcellflags	?SetCell@BrickzGridDesc@@QAEXHHH@Z	100.0000	100.0000	1	7b878db76
 brickzclip	?Clip@CBrickzGrid@@QAEXPBUtagRECT@@@Z	81.3000	81.3000	1	e000b5d07dd4	0x2b340
 brickzload	?LoadAttributes@CBrickz@@QAEHHH@Z	12.3458	12.3458	6	fbd0da02aa4f	0x810f0
 bridgemovesprites	?LoadBridgeMove@CPlayLevelLoad@@QAEXH@Z	77.0457	77.0457	3	30d25159f8bf	0x110860
+bsecobj10fctor	??0CBSecObj10f@@QAE@XZ	100.0000	100.0000	1	3c54db61bd36	0x16f680
 buildgruntzcrcinfo	?BuildGruntzCrcInfo@CrcOwner@@QAEXXZ	70.9756	70.9756	5	da7ee0abdb88	0xbf1d0
 butemgr	??0CButeValueNode@@QAE@HPAU0@@Z	93.0435	93.0435	1	32e9764d3ec7	0x1741b0
 butemgr	??1CButeMgr@@QAE@XZ	68.2759	68.2759	2	37d592bdd452	0x213c0
@@ -3409,6 +3411,7 @@ sbi_rectonly	?UpdateWarpStoneStatusBar@EngineLabelBacklog@@QAEHHHHH@Z	80.4714	80
 sbi_rectonly	?winapi_0fe520_SetRect@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	9	76f021035e15	0xfe520
 sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	88.4253	88.4253	7	e70a23d91c8e	0x107d00
 sbi_rectonlybase	?Setup@CSBI_RectOnly@@UAEHHHHHHHHHHH@Z	90.3846	90.3846	1	144f31e3e83d	0xe86e0
+sbi_rectonlybase	empty_stub	0.0000	0.0000	1	cpp:c3bdb2104f2b	
 sbi_rectonlydtor_eh	??1CSBI_RectOnly@@UAE@XZ	100.0000	100.0000	2	85e859afeaea	0x100700
 sbi_rectonlydtor_eh	??1CStatusBarItem@@UAE@XZ	100.0000	100.0000	1	cpp:a2ee71327842	0x100780
 sbi_statztabarrow_eh	??1CSBI_StatzTabArrow@@UAE@XZ	100.0000	100.0000	2	25c1549131f7	0x1048f0
