@@ -46,9 +46,9 @@
 // engine calls (reloc-masked). ParseTagLine constructs a store node + carries a
 // C++ EH frame (the CString copy + the node ctor under unwind) -> /GX.
 #include <Bute/ButeMgr.h>
+#include <Bute/ButeStoreLeafDtors.h> // the 0x21310/0x21570 zPTree/CBSecStream store dtors
 #include <rva.h>
 #include <Globals.h>
-#include <Gruntz/BoundaryLowerDtorsViews.h> // CButeTree21b (the 0x21570 /GX MI leaf dtor)
 
 #include <stdio.h>  // vsprintf (NAFXCW varargs formatter)
 #include <stdlib.h> // atoi (0x11ffb0)
@@ -222,17 +222,20 @@ static const char s_strLBrack[] = "[";
 static const char s_strRBrack[] = "]";
 
 // ===========================================================================
-// 0x021310 - ~CButeTree21a (/GX, multiple inheritance): the RVA-contiguous twin of
-// ~CButeTree21b below. Stamp both base vtables (0x5e94ac @+0, 0x5e949c @+8), run the
-// body teardown (CButeStore::ClearRecursive @0x16e070), then fold the +0x08 second
-// base (dtor 0x16dfc0, MI this-adjust null guard) and the +0x00 first base (0x16da60).
-// Re-homed from src/Stub/BoundaryLowerDtors.cpp (nearest real TU; its ClearRecursive
-// callee is the canonical CButeStore here). A distinct derived class sharing
-// CButeStore's base vtables; RTTI name unrecovered. __thiscall.
+// 0x021310 - zPTree::~zPTree (/GX), RTTI-proven: ??_7zPTree@@6B@ (0x1e94ac) slot 0
+// -> ??_G 0x212e0 -> here. Byte-identical to CButeStore::~CButeStore (0x174d70): stamp
+// both base vtables (0x5e94ac @+0, 0x5e949c @+8), run the recursive keyed-node free
+// (0x16e070), then auto-fold the +0x08 second base (0x16dfc0, MI this-adjust null guard)
+// and the +0x00 first base (0x16da60 == CContainerErr::~CContainerErr, bound in typekeycoll).
+// The bases are the REAL CContainerErr (+0, <Wap32/zBitVec.h>) and the CButeNodeEntry-shape
+// second base (+8); the fabricated CButeBase*_21 view is deleted. __thiscall. See
+// <Bute/ButeStoreLeafDtors.h> for the identity proof + the vptr-stamp aliasing: the two
+// stamps reloc-mask the RVA-shared base vtables (0x1e94ac / 0x1e949c) but cannot NAME-bind -
+// those rvas are one-name-per-rva, already owned by ??_7zPTree / ??_7CButeStore (RELOC_VTBL).
 // ===========================================================================
 RVA(0x00021310, 0x70)
-CButeTree21a::~CButeTree21a() {
-    ClearRecursive(0); // inherited from the +0 base (CButeBase1_21 == CContainerErr subobject)
+CButeStoreZPTree::~CButeStoreZPTree() {
+    ClearRecursive(0); // 0x16e070 (recursive keyed-node free, on this+0)
 }
 
 // ---------------------------------------------------------------------------
@@ -291,16 +294,17 @@ RVA(0x000213c0, 0x14c)
 CButeMgr::~CButeMgr() {}
 
 // ---------------------------------------------------------------------------
-// 0x021570 - ~CButeTree21b (/GX, multiple inheritance): stamp both base vtables
-// (0x5e94ac @+0, 0x5e949c @+8), run the body teardown (0x16e070 == CButeStore::
-// ClearRecursive), then fold the +0x08 second base (dtor 0x16dfc0, MI this-adjust null
-// guard) and the +0x00 first base (dtor 0x16da60). __thiscall. RVA-homed here (its
-// ClearRecursive callee is the canonical CButeStore in <Bute/ButeMgr.h>). A distinct
-// derived class sharing CButeStore's base vtables; RTTI name unrecovered (its
-// RVA-contiguous twin CButeTree21a @0x21310 stays in BoundaryLowerDtors.cpp).
+// 0x021570 - CBSecStream::~CBSecStream (/GX), RTTI-proven: ??_7CBSecStream@@6BzErrHandling@@@
+// (0x1f0510) slot 0 -> ??_G 0x174d30 -> here. Byte-identical to CButeStore::~CButeStore
+// (0x174d70) and its RVA twin zPTree::~zPTree (0x21310 above): stamp both base vtables
+// (0x5e94ac @+0, 0x5e949c @+8), run the recursive keyed-node free (0x16e070), then auto-fold
+// the +0x08 second base (0x16dfc0) and the +0x00 first base (0x16da60). Same real bases as
+// 0x21310 (CContainerErr @+0 / CButeNodeEntry-shape second base @+8); CBSecStream itself lives
+// in butesection. The two vptr stamps reloc-mask 0x1e94ac / 0x1e949c (RELOC_VTBL alias; see
+// the 0x21310 note). __thiscall.
 RVA(0x00021570, 0x70)
-CButeTree21b::~CButeTree21b() {
-    ClearRecursive(0); // inherited from the +0 base (CButeBase1_21 == CContainerErr subobject)
+CButeStoreSection::~CButeStoreSection() {
+    ClearRecursive(0); // 0x16e070 (recursive keyed-node free, on this+0)
 }
 
 // ---------------------------------------------------------------------------

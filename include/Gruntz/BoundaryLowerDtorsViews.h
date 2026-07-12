@@ -53,36 +53,12 @@ SIZE_UNKNOWN(CCredits390a0);
 // the real class via <Gruntz/SplashState.h>, dtor body in HelpState.cpp. (Was the
 // CMenuState8d000 placeholder here.)
 
-// 0x021310 / 0x021570 - the out-of-line /GX destructors of TWO distinct classes that each
-// multiply-inherit the same two REAL bases (identities RTTI-confirmed; only the DERIVED
-// class name is unrecovered - each dtor is out-of-line with no Complete-Object-Locator):
-//   +0x00 first base  = CContainerErr (dtor 0x16da60; vtable 0x5e94ac == ??_7zPTree);
-//                       it owns the recursive-clear body method 0x16e070 (the store root
-//                       lives in this +0 subobject, so ClearRecursive runs on `this`+0).
-//   +0x08 second base = the CButeStore vtable subobject (dtor 0x16dfc0; vtable 0x5e949c).
-// The dtor stamps both base vtables, runs ClearRecursive(0), then folds the +0x08 base
-// (MI this-adjust null guard) and the +0x00 base. Modeled with the real bases so no cast
-// of `this` is needed; kept standalone (not one class) to avoid duplicating the base vtables.
-struct CButeBase1_21 {               // == CContainerErr subobject (+0x00)
-    virtual ~CButeBase1_21();        // +0x00 vptr (0x5e94ac), dtor 0x16da60 (~CContainerErr)
-    void ClearRecursive(void* node); // 0x16e070 (== CButeStore::ClearRecursive)
-    i32 m_4; // +0x04 (pads the first base to 8 so the second base lands at +0x08)
-};
-SIZE_UNKNOWN(CButeBase1_21);
-struct CButeBase2_21 {        // == CButeStore vtable subobject (+0x08)
-    virtual ~CButeBase2_21(); // +0x08 vptr (0x5e949c), dtor 0x16dfc0
-};
-SIZE_UNKNOWN(CButeBase2_21);
-struct CButeTree21a : CButeBase1_21, CButeBase2_21 {
-    virtual ~CButeTree21a() OVERRIDE;
-};
-SIZE_UNKNOWN(CButeTree21a);
-RELOC_VTBL(CButeTree21a, 0x001e949c); // aliases CButeStore (dtor-stamp verified)
-struct CButeTree21b : CButeBase1_21, CButeBase2_21 {
-    virtual ~CButeTree21b() OVERRIDE;
-};
-SIZE_UNKNOWN(CButeTree21b);
-RELOC_VTBL(CButeTree21b, 0x001e949c); // aliases CButeStore (dtor-stamp verified)
+// 0x021310 / 0x021570 - the out-of-line /GX destructors of zPTree and CBSecStream
+// (both byte-identical to CButeStore::~CButeStore @0x174d70; RTTI-proven distinct
+// classes conflated onto CButeStore's base vtables). Re-modeled as real CButeStore-
+// derived classes in <Bute/ButeStore.h>; dtor bodies in src/Bute/ButeMgr.cpp. The old
+// fabricated CButeBase1_21/CButeBase2_21 fake-base view (+ its RELOC_VTBL placeholders)
+// is deleted (matcher R54).
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 
