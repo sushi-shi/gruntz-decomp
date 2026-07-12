@@ -26,7 +26,7 @@
 #include <rva.h>
 #include <stdio.h>
 #include <string.h>  // inline strcpy / memcpy / memset
-#include <Globals.h> // g_clut, g_lutBank0/1/2 (the RGB565 shift/size ints are local: g_rUp/g_gUp/g_rDown/g_gDown/g_bDown)
+#include <Globals.h> // g_clut (bank planes = interior slices; RGB565 shift/size ints are local: g_rUp/g_gUp/g_rDown/g_gDown/g_bDown)
 
 #define DIRSURF_FILE "C:\\Proj\\DDrawMgr\\DIRSURF.CPP"
 
@@ -76,9 +76,11 @@ extern CPtrArray g_imageCache; // 0x653c88
 DATA(0x00253c90)
 i32 g_imageCacheIndex = 0; // 0x653c90
 // The 3-plane 16bpp colour LUT (0x653c9e; G plane @+0, B @+0x10000, R @+0x20000 -
-// 0x30000 bytes ending just before g_lut16 @0x683ca0). .bss, built at runtime; the
-// g_lutBank0/1/2 plane markers (0x653ca0/0x663ca0/0x673ca0) are interior aliases into
-// it. DEFINED here (owner TU), reference extern stays in <Globals.h>. (REHOME DD-G)
+// 0x30000 bytes ending just before g_lut16 @0x683ca0). .bss, built at runtime. The
+// per-plane read pointers are interior slices of g_clut: bank1 (G) = g_clut+0x2
+// (0x653ca0), bank2 (B) = g_clut+0x10002 (0x663ca0), bank0 (R) = g_clut+0x20002
+// (0x673ca0) - SUBSUMED, no separate bank symbols. DEFINED here (owner TU), reference
+// extern stays in <Globals.h>. (REHOME DD-G / DD-Drain-1)
 DATA(0x00253c9e)
 u8 g_clut[0x30000]; // 0x653c9e
 
@@ -898,11 +900,11 @@ i32 CDDSurface::ShadeBlt(
                     do {
                         u32 tp = *t;
                         u32 sp = *srcPtr;
-                        u16 v = *(u16*)(g_lutBank2_663ca0 + bank
+                        u16 v = *(u16*)((g_clut + 0x10002) + bank
                                         + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
-                        v |= *(u16*)(g_lutBank0_673ca0 + bank
+                        v |= *(u16*)((g_clut + 0x20002) + bank
                                      + ((sp >> 0xa) + ((tp >> 5) & ~0x1f)) * 2);
-                        v |= *(u16*)(g_lutBank1_653ca0 + bank
+                        v |= *(u16*)((g_clut + 0x2) + bank
                                      + ((((tp >> 5) & 0x1f) << 5) + (0x1f & (sp >> 5))) * 2);
                         *dstPtr = v;
                         dstPtr++;
@@ -926,11 +928,11 @@ i32 CDDSurface::ShadeBlt(
                     do {
                         u32 tp = *t;
                         u32 sp = *srcPtr;
-                        u16 v = *(u16*)(g_lutBank2_663ca0 + bank
+                        u16 v = *(u16*)((g_clut + 0x10002) + bank
                                         + (((tp & 0x1f) << 5) + (sp & 0x1f)) * 2);
-                        v |= *(u16*)(g_lutBank0_673ca0 + bank
+                        v |= *(u16*)((g_clut + 0x20002) + bank
                                      + ((sp >> 0xb) + ((tp >> 6) & ~0x1f)) * 2);
-                        v |= *(u16*)(g_lutBank1_653ca0 + bank
+                        v |= *(u16*)((g_clut + 0x2) + bank
                                      + ((((tp >> 6) & 0x1f) << 5) + ((sp >> 6) & 0x1f)) * 2);
                         *dstPtr = v;
                         dstPtr++;
@@ -1019,9 +1021,9 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 hi = p >> 5;
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
-                    *srcPix++ = (u16)(*(u16*)((char*)g_lutBank2_663ca0 + off + (blue << 6))
-                                      | *(u16*)((char*)g_lutBank1_653ca0 + off + (green << 6))
-                                      | *(u16*)((char*)g_lutBank0_673ca0 + off + red * 2));
+                    *srcPix++ = (u16)(*(u16*)((char*)(g_clut + 0x10002) + off + (blue << 6))
+                                      | *(u16*)((char*)(g_clut + 0x2) + off + (green << 6))
+                                      | *(u16*)((char*)(g_clut + 0x20002) + off + red * 2));
                 }
                 srcPix += stride;
             }
@@ -1035,9 +1037,9 @@ i32 CDDSurface::ShadeRect(i32 pct, RECT* clip) {
                     u32 hi = p >> 6;
                     u32 green = hi & 0x1f;
                     u32 red = hi & 0xffffffe0;
-                    *srcPix++ = (u16)(*(u16*)((char*)g_lutBank2_663ca0 + off + (blue << 6))
-                                      | *(u16*)((char*)g_lutBank1_653ca0 + off + (green << 6))
-                                      | *(u16*)((char*)g_lutBank0_673ca0 + off + red * 2));
+                    *srcPix++ = (u16)(*(u16*)((char*)(g_clut + 0x10002) + off + (blue << 6))
+                                      | *(u16*)((char*)(g_clut + 0x2) + off + (green << 6))
+                                      | *(u16*)((char*)(g_clut + 0x20002) + off + red * 2));
                 }
                 srcPix += stride;
             }

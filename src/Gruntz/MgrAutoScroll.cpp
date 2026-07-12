@@ -78,6 +78,24 @@ i32 g_lastScrollX; // 0x64cfd0
 DATA(0x0024cfd4)
 i32 g_lastScrollY; // 0x64cfd4
 
+// State singletons owned by the camera auto-scroll manager (.bss, zero-init),
+// RVA-ascending. Referenced by CGruntzMgr / CmdScrollApply too; the reference
+// externs stay in <Globals.h>. (REHOME DD-Drain-1)
+DATA(0x002452a4)
+i32 g_jitterX;
+DATA(0x002452cc)
+i32 g_jitterY;
+DATA(0x00245508)
+i32 g_panMinX;
+DATA(0x0024550c)
+i32 g_panMaxX;
+DATA(0x0024c27c)
+ScrollView* g_backView;
+DATA(0x0024cfb8)
+i64 g_scrollLimit;
+DATA(0x0024cfc4)
+u32 g_scrollTimer;
+
 // timeGetTime-driven random value in [lo, hi]; inlined three times by retail.
 static i32 RandRange(i32 lo, i32 hi) {
     i32 range = hi - lo + 1;

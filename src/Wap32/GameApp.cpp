@@ -514,16 +514,25 @@ WAP32::CGameMgr::CGameMgr() {
     InitializeTimeGlobal();
 }
 
-// The two clock-run globals owned by this TU (0x253c78/0x253c7c): g_wap32ClockReset
-// is the timeGetTime latch InitializeTimeGlobal reseeds, g_wap32Run7c the run-timing
-// countdown. DEFINED here (owner gameapp.obj's .bss, zero-init) - REHOME DD-D:
-// extern-only (only CGameMgr's clock code references them). Reference externs stay in
-// <Globals.h> (included above); the neighbouring g_wap32Now/FrameDelta/Run80 are shared
-// (multi-TU) and keep their binding in src/Globals.cpp.
+// The WAP32 frame-timing / app-instance state owned by CGameApp/CGameMgr (.bss,
+// zero-init), RVA-ascending. g_gameAppInstanceCount is the CGameApp instance counter
+// (bumped in the ctor above); g_wap32Now/g_wap32FrameDelta the canonical frame clock +
+// delta this TU's UpdateTimeGlobal writes; g_wap32ClockReset the timeGetTime latch
+// InitializeTimeGlobal reseeds; g_wap32Run7c/g_wap32Run80 the run-timing countdown + its
+// reload value (primed to 100 here). Referenced by RezMgr/GruntzMgr/GruntzApp/... too;
+// reference externs stay in <Globals.h> (included above). (REHOME DD-Drain-1 / DD-D)
+DATA(0x00253c6c)
+i32 g_gameAppInstanceCount = 0; // CGameApp instance counter
+DATA(0x00253c70)
+i32 g_wap32Now = 0; // frame clock (timeGetTime latch)
+DATA(0x00253c74)
+i32 g_wap32FrameDelta = 0; // frame delta
 DATA(0x00253c78)
 i32 g_wap32ClockReset = 0; // 0x653c78
 DATA(0x00253c7c)
 i32 g_wap32Run7c = 0; // 0x653c7c  run-state countdown
+DATA(0x00253c80)
+i32 g_wap32Run80 = 0; // 0x653c80  run-state reload value
 
 // -------------------------------------------------------------------------
 // CGameMgr::Run  (__thiscall; vtable +0x04, the engine-start entry).

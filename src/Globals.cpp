@@ -154,15 +154,7 @@ extern double g_scale6256f0;
 // g_act* fields DEFINED in src/Gruntz/SecretTeleporterTrigger.cpp (owner TU).
 // g_actReg4* fields DEFINED in src/Gruntz/GruntStartingPoint.cpp (owner TU).
 // g_part* fields DEFINED in src/Gruntz/FortressFlag.cpp (owner TU).
-DATA(0x002452a4)
-extern i32 g_jitterX; // 0x6452a4
-DATA(0x002452cc)
-extern i32 g_jitterY; // 0x6452cc
 // g_msgScratch DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
-DATA(0x00245508)
-extern i32 g_panMinX; // 0x645508
-DATA(0x0024550c)
-extern i32 g_panMaxX; // 0x64550c
 DATA(0x0024553c)
 extern "C" i32 g_64553c;
 DATA(0x00245548)
@@ -186,14 +178,8 @@ extern "C" i32 g_648cec; // 0x648cec
 DATA(0x0024acb4)
 extern i32 g_poolCount; // 0x64acb4 (g_pool.m_count)
 // g_drop* fields DEFINED in src/Gruntz/DroppedObject.cpp (owner TU).
-DATA(0x0024c27c)
-extern ScrollView* g_backView; // 0x64c27c
 // g_64c3f0[17] DEFINED in src/Gruntz/Play.cpp (owner TU).
 // g_projAct*/g_tbomb* fields DEFINED in src/Gruntz/Projectile.cpp (owner TU).
-DATA(0x0024cfb8)
-extern i64 g_scrollLimit; // 0x64cfb8 (64-bit)
-DATA(0x0024cfc4)
-extern u32 g_scrollTimer; // 0x64cfc4
 // g_lastScrollX (0x64cfd0) + g_lastScrollY (0x64cfd4) DEFINED in
 // src/Gruntz/MgrAutoScroll.cpp (owner TU); reference externs stay in <Globals.h>.
 // The SFMAN32 device-picker statics (0x24da80..0x24df9c, 0x24e0c0) are DEFINED in
@@ -203,40 +189,16 @@ extern u32 g_scrollTimer; // 0x64cfc4
 // those definitions now; the reference externs stay in <Globals.h>. The shared
 // device-interface state below (g_sfVer/g_sfDeviceCount/g_sfDll/g_sfDevice/g_sfReady,
 // used by BOTH TUs) keeps its binding here.
-DATA(0x0024e0a0)
-extern u32 g_sfVer; // 0x64e0a0  build/version selector
-DATA(0x0024e0a4)
-extern u16 g_sfDeviceCount; // 0x64e0a4  SFMAN32 device count
-DATA(0x0024e0a8)
-extern void* g_sfDll; // 0x64e0a8  SFMAN32.DLL handle
-DATA(0x0024e0b0)
-extern SFMANL101API* g_sfDevice; // 0x64e0b0  SFMAN32 device interface
-DATA(0x0024e0b8)
-extern void* g_sfReady; // 0x64e0b8  device-selected flag (1 = ready)
 // g_ratings_64e0c0 (0x24e0c0) DEFINED in src/Gruntz/SFSelectDevice.cpp.
 // g_hazn* fields DEFINED in src/Gruntz/StaticHazard.cpp (owner TU).
 // g_toob* fields DEFINED in src/Gruntz/ToobSpikez.cpp (owner TU).
 // g_vtrig* fields DEFINED in src/Gruntz/GruntVoice.cpp (owner TU).
 // g_panTable[8] (0x653c48) DEFINED in src/Dsndmgr/DirectSoundMgr.cpp; g_activeGameWnd
 // (0x653c68) DEFINED in src/Wap32/GameWnd.cpp (owner TUs). Externs stay in <Globals.h>.
-DATA(0x00253c6c)
-extern i32 g_gameAppInstanceCount; // was placeholder g_instCount653c6c (CGameApp instance counter)
-DATA(0x00253c70)
-extern i32 g_wap32Now; // ?g_wap32Now@@3HA
-DATA(0x00253c74)
-extern i32 g_wap32FrameDelta;
 // g_wap32ClockReset (0x253c78) + g_wap32Run7c (0x253c7c) DEFINED in src/Wap32/GameApp.cpp
 // (owner gameapp.obj's .bss); reference externs stay in <Globals.h>. (REHOME DD-D)
-DATA(0x00253c80)
-extern i32 g_wap32Run80; // ?g_wap32Run80@@3HA  (run-state reload value)
 // g_imageCacheIndex (0x253c90) DEFINED in src/DDrawMgr/DDSurface.cpp (owner
 // ddsurface.obj's .bss); reference extern stays in <Globals.h>. (REHOME DD-D)
-DATA(0x00253ca0)
-extern u8 g_lutBank1_653ca0[];
-DATA(0x00263ca0)
-extern u8 g_lutBank2_663ca0[];
-DATA(0x00273ca0)
-extern u8 g_lutBank0_673ca0[];
 // g_lut16 (0x283ca0) DEFINED in src/DDrawMgr/DDSurface.cpp (owner ddsurface.obj's
 // .bss); reference extern stays in <Globals.h>. (REHOME DD-D)
 // g_restoreHandler (0x683edc) DEFINED in src/DDrawMgr/DirectDrawMgr.cpp; the
@@ -245,18 +207,10 @@ extern u8 g_lutBank0_673ca0[];
 // 0x2a16f8..0x2a1700, 0x2becf0/0x2becfc) are DEFINED in their owning TU
 // src/Image/WarpTextureBlit.cpp (warptextureblit.obj's .bss); the reference externs
 // stay in <Globals.h>.
-DATA(0x002bed00)
-extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
 // g_scratch[] (0x6bed08) DEFINED in src/DDrawMgr/DDrawShadeBlit.cpp (owner TU).
 // g_shadeDescr208..g_shadeDescr220 (the six mode-keyed ShadeDescr* slots) are DEFINED
 // in their owning TU src/DDrawMgr/ShadeDescrTable.cpp (shadedescrtable.obj's .bss);
 // the reference externs stay in <Globals.h>.
-DATA(0x002bf318)
-extern i32 g_bltFxScratch[25];
-DATA(0x002bf380)
-extern i32 g_surfaceColorKey;
-DATA(0x002bf3c4)
-extern i32 g_aniParsedNameLen;
 DATA(0x002bf454)
 extern void* g_projActName; // 0x6bf454 (the bad-arg diagnostic record cell)
 // g_zArrayTag (0x6bf468) DEFINED in src/Bute/TypeKeyColl.cpp (owner TU).
@@ -264,10 +218,6 @@ extern void* g_projActName; // 0x6bf454 (the bad-arg diagnostic record cell)
 // src/Net/NetMgrReportError.cpp (netmgrerror.obj's .bss); the DATA() binding lives on
 // those definitions now. Their reference `extern`s stay in <Globals.h> (canonical
 // reference header - removing them perturbs MSVC5 regalloc in matched includers).
-DATA(0x002c127d)
-extern u8 g_randSeeded; // 0x6c127d  seed-init flag (bit 0)
-DATA(0x002c1288)
-extern i32 g_randSeed; // 0x6c1288  LCG seed
 // g_zeroF (0x5eab40, shared 0.0f .rdata const) DEFINED in src/Gruntz/BattlezData.cpp.
 // g_colorNames / g_difficultyNames DEFINED in src/Gruntz/Play.cpp (owner TU).
 DATA(0x0021ab14)

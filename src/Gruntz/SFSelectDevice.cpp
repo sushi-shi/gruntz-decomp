@@ -57,6 +57,19 @@ DATA(0x0024df98)
 u16 g_remaining_64df98 = 0;
 DATA(0x0024df9c)
 u32 g_id_64df9c = 0; // packed device id
+// Shared SFMAN32 device-interface state (used by BuildSoundFontPath too); homed to
+// this device-picker owner TU (.bss zero-init). Reference externs stay in
+// <Globals.h>. (REHOME DD-Drain-1)
+DATA(0x0024e0a0)
+u32 g_sfVer = 0; // build/version selector
+DATA(0x0024e0a4)
+u16 g_sfDeviceCount = 0; // SFMAN32 device count
+DATA(0x0024e0a8)
+void* g_sfDll = 0; // SFMAN32.DLL handle
+DATA(0x0024e0b0)
+SFMANL101API* g_sfDevice = 0; // SFMAN32 device interface
+DATA(0x0024e0b8)
+void* g_sfReady = 0; // device-selected flag (1 = ready)
 DATA(0x0024e0ac)
 SfManagerFactory* g_factory_64e0ac = 0; // the "SFManager" data export (ptr-to-fnptr)
 DATA(0x0024e0c0)

@@ -7,17 +7,20 @@
 #include <Win32.h>
 #include <rva.h>
 
-// The primary generator's state (canonical DATA in src/Globals.cpp:
-// g_randSeeded @0x2c127d / g_randSeed @0x2c1288 - bind to the tree winners).
-extern u8 g_randSeeded; // 0x6c127d bit0 set once seeded
-extern i32 g_randSeed;  // 0x6c1288 32-bit LCG state
-
-// Owner-TU definitions of this TU's private generator/coin state (.bss zero),
-// RVA-ascending. Per-frame cached coin bit used by the deterministic coin-flip helper:
+// Owner-TU definitions of this TU's generator/coin state (.bss zero), RVA-ascending.
+// The srand/rand LCG helpers live here, so the primary generator's state is homed to
+// this owner TU; reference externs stay in <Globals.h> (referenced by
+// SpotLightCtor/BootyWalkAnim/...). (REHOME DD-Drain-1)
+// Per-frame cached coin bit used by the deterministic coin-flip helper:
 DATA(0x0024c22c)
 char g_coinRolled; // bit0 set once this frame's coin was rolled
 DATA(0x0024c26c)
 i32 g_coinValue; // the cached 0/1 result
+// The primary 214013/2531011 LCG generator's seed-init flag + 32-bit state:
+DATA(0x002c127d)
+u8 g_randSeeded; // 0x6c127d bit0 set once seeded
+DATA(0x002c1288)
+i32 g_randSeed; // 0x6c1288 32-bit LCG state
 // The second generator's state, seeded lazily from timeGetTime:
 DATA(0x002c278c)
 char g_rng2Seeded; // bit0 set once seeded

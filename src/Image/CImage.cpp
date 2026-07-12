@@ -708,6 +708,14 @@ void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
 // DATA-bound so the four DIR32 stores pair to the retail address. reloc-masked.
 DATA(0x002bf28c)
 i32 g_imageClipRect[4] = {0}; // 0x2bf28c  (owner-TU definition)
+// The 25-int BltEx fx block ([1] = blend-mode word) + the surface color-key value
+// (keyed blits pass it as the fx flags arg). Shared with CDDrawWorkerRegistry /
+// GruntzMgr; homed to this image TU (.bss zero-init). Reference externs stay in
+// <Globals.h>. (REHOME DD-Drain-1)
+DATA(0x002bf318)
+i32 g_bltFxScratch[25] = {0}; // 0x2bf318
+DATA(0x002bf380)
+i32 g_surfaceColorKey = 0; // 0x2bf380
 
 RVA(0x00153810, 0x95)
 void CImage::RenderFrameClipped(void* a, void* b, void* c, void* rect, void* d) {

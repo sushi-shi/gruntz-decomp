@@ -28,6 +28,14 @@
 #define DDRAWMGR_FILE "C:\\Proj\\DDrawMgr\\DDRAWMGR.CPP"
 #define DDRAWMGR_H_FILE "C:\\Proj\\DDrawMgr\\ddrawmgr.h"
 
+// The process-wide CDirectDrawMgr singleton (Init installs `this`, teardown nulls it;
+// DirPal.cpp reads it). Owned by this TU; DEFINED here (.bss zero-init), reference
+// extern kept in <Globals.h>. (REHOME DD-Drain-1)
+extern "C" {
+    DATA(0x002bed00)
+    CDirectDrawMgr* g_DirectDrawMgr = 0; // 0x6bed00
+}
+
 // Reporting-mode globals (live in .data), consumed by SetDDrawReportModes/GetErrorString.
 // Module-distinct names (g_dd*): each engine module has its OWN copy of these debug
 // flags at a module-specific rva (DDrawMgr @0x283exx); the shared donor name

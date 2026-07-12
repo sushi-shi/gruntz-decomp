@@ -111,9 +111,9 @@ i32 CDDrawShadeBlit::Blit(ShadeRect* p0, CDDSurface* src, ShadeRect* clip, i32 s
     }
     if (drawType == 8 || drawType == 0xb) {
         i32 bank = (m_light >> 3) * 0x800;
-        m_lutBank0 = g_lutBank0_673ca0 + bank;
-        m_lutBank1 = g_lutBank1_653ca0 + bank;
-        m_lutBank2 = g_lutBank2_663ca0 + bank;
+        m_lutBank0 = g_clut + 0x20002 + bank; // g_clut interior plane R (0x673ca0)
+        m_lutBank1 = g_clut + 0x2 + bank;     // g_clut interior plane G (0x653ca0)
+        m_lutBank2 = g_clut + 0x10002 + bank; // g_clut interior plane B (0x663ca0)
     }
 
     if (sel) {

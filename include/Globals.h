@@ -291,10 +291,7 @@ extern i32 g_wap32ClockReset;
 extern i32 g_wap32Run7c;
 extern i32 g_wap32Run80;
 extern i32 g_imageCacheIndex;
-extern u8 g_clut[];
-extern u8 g_lutBank1_653ca0[];
-extern u8 g_lutBank2_663ca0[];
-extern u8 g_lutBank0_673ca0[];
+extern u8 g_clut[]; // 3-plane 16bpp LUT; interior slices +0x2/+0x10002/+0x20002 (subsumed banks)
 extern u16 g_lut16[256];
 extern i32 (*g_restoreHandler)();
 extern u8 g_683ef0[];

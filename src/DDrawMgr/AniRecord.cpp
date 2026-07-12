@@ -45,7 +45,11 @@
 // in other TUs (CAniElement / CDDrawWorkerMapSmall / the CObject family) so the target stays named.
 
 // g_aniParsedNameLen (0x6bf3c4): the parsed name length the catalog builder uses
-// to advance the record stream cursor; Parse sets it (strlen of the name).
+// to advance the record stream cursor; Parse sets it (strlen of the name). Owned by
+// this TU; DEFINED here (.bss zero-init), reference extern stays in <Globals.h>.
+// (REHOME DD-Drain-1)
+DATA(0x002bf3c4)
+i32 g_aniParsedNameLen = 0; // 0x6bf3c4
 
 // Global operator new (engine NAFXCW _RezAlloc @0x1b9b46); external/no-body.
 void* operator new(u32 n);
