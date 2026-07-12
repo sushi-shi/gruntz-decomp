@@ -288,6 +288,15 @@ const i32 kSetTabErrTag = 0x44a;
 class CSBI_RectOnly : public CStatusBarItem {
 public:
     CSBI_RectOnly();
+    // Declared OUT-OF-LINE (no body here): the ONE real ~CSBI_RectOnly is the /GX chain
+    // dtor in SBI_RectOnlyDtorEh.cpp (0x100700). Left IMPLICIT, cl5 synthesised a per-TU
+    // inline copy in THIS TU and emitted it as a 16-byte COMDAT under the same mangled
+    // name - an ODR-divergent duplicate of the real 96-byte body (the inlined base
+    // ~CStatusBarItem, with the derived vptr store dead-stored away by /O2). The linker
+    // keeps ONE copy per name and may pick the stub over the real teardown; it also made
+    // reloc_fidelity score the stub's relocs against retail's real body (the phantom
+    // ??1CStatusBarItem MISBOUND row). Declared-only => no definition here.
+    virtual ~CSBI_RectOnly(); // 0x00100700 (SBI_RectOnlyDtorEh.cpp)
     virtual i32 SbiVfunc0() OVERRIDE;
 
     // vtable slot 2 (0xe86e0): the 10-arg setup; inherited by CSBI_Image/_ImageSet.
