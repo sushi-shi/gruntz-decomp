@@ -56,11 +56,14 @@ def is_pooled(name):
 
 
 def interleaver_rvas(src_root):
-    """RVAs of functions flagged `// @interleaver` in src/ - proven boundary COMDATs
-    the /Gy linker placed between two OTHER units (retail neighbours differ on each
-    side), so our build cannot home them without tripping the dup-RVA guard. They are
-    genuine irreducible scatter, excluded from the core-body flatline. Anchor: the
-    `@interleaver` comment sits just above the function's RVA(0x...) macro."""
+    """RVAs of functions flagged `// @interleaver` or `// @orphan` in src/ - proven
+    irreducible /Gy scatter our build cannot home without tripping the dup-RVA guard:
+      @interleaver = boundary COMDAT the linker placed between two OTHER units (retail
+        neighbours differ on each side);
+      @orphan = a pooled COMDAT whose real class identity is unrecovered (interior to
+        a holding-TU span; homing it needs the class first).
+    Both are excluded from the core-body flatline. Anchor: the flag comment sits just
+    above the function's RVA(0x...) macro."""
     import os
     rvas = set()
     for dirpath, _, files in os.walk(src_root):
@@ -69,7 +72,7 @@ def interleaver_rvas(src_root):
                 continue
             lines = open(os.path.join(dirpath, fn), errors="ignore").read().splitlines()
             for i, ln in enumerate(lines):
-                if "@interleaver" not in ln:
+                if "@interleaver" not in ln and "@orphan" not in ln:
                     continue
                 for j in range(i + 1, min(i + 20, len(lines))):  # next RVA(0x...) below
                     m = re.search(r"\bRVA\(\s*0x0*([0-9a-fA-F]+)", lines[j])

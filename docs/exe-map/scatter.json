@@ -1820,19 +1820,6 @@
   "spread": 1.8702782979272938
  },
  {
-  "file": "src/Gruntz/TriggerMgrGrid.cpp",
-  "n": 17,
-  "bytes": 10288,
-  "lo": 439872,
-  "hi": 453413,
-  "span": 13541,
-  "frags": 2,
-  "avg_cluster": 8.5,
-  "frag_ratio": 0.11764705882352941,
-  "occupancy": 0.7597666346650912,
-  "spread": 1.3161936236391913
- },
- {
   "file": "src/Gruntz/TriggerMgrHitTest.cpp",
   "n": 6,
   "bytes": 848,
@@ -3092,6 +3079,19 @@
   "frag_ratio": 0.07142857142857142,
   "occupancy": 0.7732194498621293,
   "spread": 1.293293902757241
+ },
+ {
+  "file": "src/Gruntz/TriggerMgrGrid.cpp",
+  "n": 18,
+  "bytes": 10293,
+  "lo": 439872,
+  "hi": 453413,
+  "span": 13541,
+  "frags": 1,
+  "avg_cluster": 18.0,
+  "frag_ratio": 0.05555555555555555,
+  "occupancy": 0.7601358836127317,
+  "spread": 1.315554260176819
  },
  {
   "file": "src/Gruntz/GooWellMgr.cpp",
