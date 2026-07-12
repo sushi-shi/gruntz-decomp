@@ -117,7 +117,10 @@ extern "C" BzGameReg* g_gameReg;
 // (sbi_rectonly); the C++-mangled form ?g_pPostMessageA@@... never bound (silently dropped).
 extern "C" i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32); // 0x2c44c8
 DATA(0x0021ab20)
-extern i32 g_sndEnabled; // BOOTY_LOOP enable gate
+// extern "C" so the reloc emits _g_sndEnabled - the canonical name bound @0x21ab20
+// (GruntCombat.cpp owns it); the C++-mangled ?g_sndEnabled@@3HA never binds (per-rva
+// dedup keeps _g_sndEnabled), same reason as g_pPostMessageA above. Reloc-masked.
+extern "C" i32 g_sndEnabled; // BOOTY_LOOP enable gate
 DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // wrap-safe draw clock
 
