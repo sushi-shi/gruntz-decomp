@@ -1448,7 +1448,6 @@ rva,name,lib,confidence,source
 0x11fa30,__findnext,LIBCMT,HIGH,anchored
 0x11fb50,__findclose,LIBCMT,HIGH,anchored
 0x11fb80,___timet_from_ft,LIBCMT,HIGH,anchored
-0x11fc10,__getcwd,LIBCMT,AMBIG,anchored
 0x11fc40,__getdcwd,LIBCMT,AMBIG,offstart-ghidra-missed
 0x11fc80,__getdcwd_lk,LIBCMT,HIGH,anchored
 0x11fdb0,__validdrive,LIBCMT,HIGH,anchored

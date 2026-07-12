@@ -116,6 +116,7 @@ fortconquered	1	0
 fortressflag	26	19
 freenodepool	1	1
 frontcandyani	19	14
+fwd114ec0	2	1
 fxmodedesc	1	1
 gameapp	28	24
 gameassetnamespaces	1	0
@@ -179,7 +180,7 @@ gruntzcmdmgr	40	33
 gruntzmapmgr	1	1
 gruntzmgr	129	88
 gruntzmgr2	1	0
-gruntzmgrcmd	5	1
+gruntzmgrcmd	1	0
 gruntzmgrtransition	1	1
 gruntzrandom	5	3
 gruntzsoundz	31	28
@@ -227,7 +228,7 @@ lightfxmgr	3	3
 lightfxrender	23	8
 loadgamemenu	4	3
 lobbygrouplist	1	0
-logicactreg646010	2	1
+logicactreg646010	3	2
 logicdispatchinit	1	1
 logicrecord	5	3
 logicrecorddispatch	4	4
@@ -280,7 +281,7 @@ playstateactivate	1	1
 polyclipraster	1	0
 portalpath	2	2
 projactcache	3	2
-projectile	23	10
+projectile	22	9
 projloadrec	1	0
 queuedrainhost	1	0
 raincloud	1	1
@@ -311,6 +312,7 @@ scattersamples	2	1
 screenregionmgr	2	2
 secretteleportertrigger	17	13
 serializesyncmarker	1	1
+serialobjectfactory	2	0
 serialobjref	1	0
 sfselectdevice	1	0
 shadedescrtable	2	0
@@ -1656,6 +1658,8 @@ frontcandyani	?RunAct@CEyeCandyAni@@QAEHH@Z	100.0000	100.0000	1	388d7457e273	0xa
 frontcandyani	?Serialize@CEyeCandyAni@@QAEHHHHH@Z	100.0000	100.0000	2	f271b84f2fde	0xff20
 frontcandyani	?Serialize@CFrontCandy@@QAEHHHHH@Z	100.0000	100.0000	2	534ff3df0380	0xfa60
 frontcandyani	?Serialize@CFrontCandyAni@@QAEHHHHH@Z	100.0000	100.0000	2	af07c5828bae	0xfdf0
+fwd114ec0	?Fwd114ec0@@YAXHHHHHH@Z	100.0000	100.0000	1	cpp:137ad6825dc3	0x114ec0
+fwd114ec0	?Fwd114f00@@YAXHHHHHH@Z	87.6923	87.6923	1	cpp:137ad6825dc3	0x114f00
 fxmodedesc	?MakeButeSectionKey@@YAHPADPBD1@Z	100.0000	100.0000	2	0208b4d9f3e0	0xf9280
 gameapp	??0CGameApp@@QAE@XZ	100.0000	100.0000	8	93447e082456	0x13d590
 gameapp	??0CGameMgr@WAP32@@QAE@XZ	100.0000	100.0000	6	e2cef0a2fe37	0x13dd10
@@ -2247,11 +2251,7 @@ gruntzmgr	?WarpDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	2d3e437a7201	
 gruntzmgr	?XorLiveObjectFlags@CGruntzMgr@@QAEXH@Z	87.5882	87.5882	1	394013aacc15	0x8dc20
 gruntzmgr	?winapi_092a30_EndDialog@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	c98847ead13e	0x92a30
 gruntzmgr2	?SetCellHeight@CGruntzMgr@@QAEXHHH@Z	50.0870	50.0870	1	63d41c4eb257	0x111ec0
-gruntzmgrcmd	?Fwd114ec0@@YAXHHHHHH@Z	100.0000	100.0000	1	6e3eaa7b5f8a	0x114ec0
-gruntzmgrcmd	?Fwd114f00@@YAXHHHHHH@Z	87.6923	87.6923	1	5437ef455e1e	0x114f00
 gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHHH@Z	70.4619	70.4619	2	c3eaab59033e	0x862f0
-gruntzmgrcmd	?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z	97.5532	97.5532	1	7c305eac392e	0xd210
-gruntzmgrcmd	?SerialObjectFactory@@YAHPAX0HHPAPAX@Z	0.1115	0.1115	1	62668d32f506	0xd2a0
 gruntzmgrtransition	?Vslot15@CDemo@@UAEHXZ	100.0000	100.0000	1	1e57c056f6a2	0x3c030
 gruntzrandom	?Flip@CoinFlip@Rng@@QAEHXZ	100.0000	100.0000	10	380dfe4050a7	0xda200
 gruntzrandom	?Next2@Rng@@YAHXZ	100.0000	100.0000	10	4d6036b96397	0x15cbe0
@@ -2591,6 +2591,7 @@ loadgamemenu	?LabelGameInfoSlot@@YAXPAUHWND__@@PAUSaveSlot@@HHHH@Z	100.0000	100.
 loadgamemenu	?LoadGameCommand@@YAHPAUHWND__@@HPAVCSaveGame@@@Z	79.2708	79.2708	3	db9eac931d10	0x9e390
 lobbygrouplist	?PopulateGroupList@CLobbyGroupMgr@@QAEXPAUHWND__@@H@Z	78.5714	78.5714	3	368b74a6e162	0x178470
 logicactreg646010	?ConstructLogicActRange_646010@@YAXXZ	100.0000	100.0000	1	cf5bb9a36c06	0xadde0
+logicactreg646010	?Dispatch@CProjActDispatcher@@QAEXH@Z	100.0000	100.0000	1	cpp:5d5882ab30bf	0xade60
 logicactreg646010	?RegisterXLogic_646010@@YAXXZ	91.1739	91.1739	1	3d059ed56456	0xadfc0
 logicdispatchinit	?InitLogicDispatch_646060@@YAXXZ	100.0000	100.0000	2	012ba9d95f06	0xacb30
 logicrecord	?CacheTargetId@CLogicRecord@@QAEHPAX@Z	100.0000	100.0000	1	70172432001c	0x164920
@@ -3166,7 +3167,6 @@ projectile	??1CProjectile@@UAE@XZ	89.8367	89.8367	4	01157e8209ec	0xdef60
 projectile	??1CTimeBomb@@UAE@XZ	100.0000	100.0000	1	60e9ec8a4aa5	0x12a70
 projectile	?ConstructTBombRange@@YAXXZ	100.0000	100.0000	1	9a53b05db40c	0xe17b0
 projectile	?DetachRenderObj@CProjectile@@QAEHXZ	100.0000	100.0000	7	14d8c7151c74	0xe05e0
-projectile	?Dispatch@CProjActDispatcher@@QAEXH@Z	100.0000	100.0000	3	56e9255a38cb	0xade60
 projectile	?FireActivation@CTimeBomb@@QAEXH@Z	100.0000	100.0000	1	7d3624842f2b	0xe1830
 projectile	?GetTypeTag@CProjectile@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:cb6c32e06c4c	0x12960
 projectile	?GetTypeTag@CTimeBomb@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:cb6c32e06c4c	0x12a20
@@ -3445,6 +3445,8 @@ secretteleportertrigger	?Serialize@CSecretTeleporterTrigger@@QAEHHHHH@Z	100.0000
 secretteleportertrigger	?SpawnTeleporter@CSecretTeleporterTrigger@@QAEHXZ	100.0000	100.0000	3	5a7c3e4c4271	0x42b80
 secretteleportertrigger	?Tick@CSecretLevelTrigger@@QAEHXZ	100.0000	100.0000	2	67e8bbb82e5c	0x42ac0
 serializesyncmarker	?SerializeSyncMarker@@YAHPAUCSerialArchive@@HPBDH@Z	100.0000	100.0000	2	d7abb8fcdfcd	0x13610
+serialobjectfactory	?ParseSerial@@YAHPAUCGameRegistry@@PAD@Z	97.5532	97.5532	1	cpp:10920344f413	0xd210
+serialobjectfactory	?SerialObjectFactory@@YAHPAX0HHPAPAX@Z	0.1115	0.1115	1	cpp:10920344f413	0xd2a0
 serialobjref	?Chain@CSerialObjRef@@QAEHPAUCSerialArchive@@HHPAVCSerialObj@@@Z	88.0496	88.0496	14	365bf0bebf01	0x8c00
 sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	72.9488	72.9488	7	21efe3fa97ea	0xf8970
 shadedescrtable	?Select@ShadeSelector@@QAEXHPAUShadeDescr@@@Z	68.5938	68.5938	16	63d0618b069e	0x14dd90
