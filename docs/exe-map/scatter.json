@@ -1,18 +1,5 @@
 [
  {
-  "file": "src/Gruntz/Play.cpp",
-  "n": 108,
-  "bytes": 44108,
-  "lo": 575792,
-  "hi": 908488,
-  "span": 332696,
-  "frags": 19,
-  "avg_cluster": 5.684210526315789,
-  "frag_ratio": 0.17592592592592593,
-  "occupancy": 0.13257748815735687,
-  "spread": 7.5427586832320666
- },
- {
   "file": "src/Gruntz/TileLogicPump.cpp",
   "n": 57,
   "bytes": 10859,
@@ -39,6 +26,32 @@
   "spread": 3.1559847685461304
  },
  {
+  "file": "src/Gruntz/Play.cpp",
+  "n": 110,
+  "bytes": 44138,
+  "lo": 575792,
+  "hi": 908488,
+  "span": 332696,
+  "frags": 18,
+  "avg_cluster": 6.111111111111111,
+  "frag_ratio": 0.16363636363636364,
+  "occupancy": 0.1326676605670041,
+  "spread": 7.537631972450043
+ },
+ {
+  "file": "src/Gruntz/UserLogic.cpp",
+  "n": 18,
+  "bytes": 15217,
+  "lo": 4961,
+  "hi": 386643,
+  "span": 381682,
+  "frags": 17,
+  "avg_cluster": 1.0588235294117647,
+  "frag_ratio": 0.9444444444444444,
+  "occupancy": 0.03986826730105166,
+  "spread": 25.082604981270947
+ },
+ {
   "file": "src/Gruntz/GameText.cpp",
   "n": 16,
   "bytes": 676,
@@ -53,29 +66,16 @@
  },
  {
   "file": "src/DDrawMgr/DDrawSubMgr.cpp",
-  "n": 97,
-  "bytes": 7991,
-  "lo": 374752,
+  "n": 96,
+  "bytes": 7956,
+  "lo": 1130784,
   "hi": 1413577,
-  "span": 1038825,
-  "frags": 15,
-  "avg_cluster": 6.466666666666667,
-  "frag_ratio": 0.15463917525773196,
-  "occupancy": 0.007692344716386302,
-  "spread": 129.9993742960831
- },
- {
-  "file": "src/Gruntz/Fader.cpp",
-  "n": 46,
-  "bytes": 14822,
-  "lo": 1565776,
-  "hi": 1583413,
-  "span": 17637,
-  "frags": 12,
-  "avg_cluster": 3.8333333333333335,
-  "frag_ratio": 0.2608695652173913,
-  "occupancy": 0.8403923569768101,
-  "spread": 1.1899203886115235
+  "span": 282793,
+  "frags": 14,
+  "avg_cluster": 6.857142857142857,
+  "frag_ratio": 0.14583333333333334,
+  "occupancy": 0.02813365253029601,
+  "spread": 35.54462041226747
  },
  {
   "file": "src/Gruntz/BootyStateActivate.cpp",
@@ -91,17 +91,17 @@
   "spread": 51.99836619104673
  },
  {
-  "file": "src/Gruntz/SBI_RectOnly.cpp",
-  "n": 88,
-  "bytes": 32350,
-  "lo": 821632,
-  "hi": 1096724,
-  "span": 275092,
-  "frags": 10,
-  "avg_cluster": 8.8,
-  "frag_ratio": 0.11363636363636363,
-  "occupancy": 0.11759702208715629,
-  "spread": 8.503616692426585
+  "file": "src/Gruntz/Fader.cpp",
+  "n": 47,
+  "bytes": 14823,
+  "lo": 1565776,
+  "hi": 1583413,
+  "span": 17637,
+  "frags": 11,
+  "avg_cluster": 4.2727272727272725,
+  "frag_ratio": 0.23404255319148937,
+  "occupancy": 0.8404490559618982,
+  "spread": 1.189840113337381
  },
  {
   "file": "src/Gruntz/FrontCandyAni.cpp",
@@ -167,19 +167,6 @@
   "frag_ratio": 0.4090909090909091,
   "occupancy": 0.010138244514475063,
   "spread": 98.63640579710145
- },
- {
-  "file": "src/Gruntz/WorldSoundSet.cpp",
-  "n": 32,
-  "bytes": 4330,
-  "lo": 34736,
-  "hi": 548634,
-  "span": 513898,
-  "frags": 8,
-  "avg_cluster": 4.0,
-  "frag_ratio": 0.25,
-  "occupancy": 0.0084257965588502,
-  "spread": 118.68314087759815
  },
  {
   "file": "src/Gruntz/Grunt.cpp",
@@ -273,6 +260,19 @@
   "spread": 8.066426259066509
  },
  {
+  "file": "src/Gruntz/SBI_RectOnly.cpp",
+  "n": 90,
+  "bytes": 32554,
+  "lo": 821632,
+  "hi": 1096724,
+  "span": 275092,
+  "frags": 8,
+  "avg_cluster": 11.25,
+  "frag_ratio": 0.08888888888888889,
+  "occupancy": 0.11833859218007067,
+  "spread": 8.450328684647047
+ },
+ {
   "file": "src/Gruntz/TileTriggerSwitchLogic.cpp",
   "n": 41,
   "bytes": 8934,
@@ -310,6 +310,19 @@
   "frag_ratio": 0.27586206896551724,
   "occupancy": 0.8560457516339869,
   "spread": 1.168161862950945
+ },
+ {
+  "file": "src/Gruntz/WorldSoundSet.cpp",
+  "n": 33,
+  "bytes": 4368,
+  "lo": 34736,
+  "hi": 548634,
+  "span": 513898,
+  "frags": 7,
+  "avg_cluster": 4.714285714285714,
+  "frag_ratio": 0.21212121212121213,
+  "occupancy": 0.008499741193777754,
+  "spread": 117.65064102564102
  },
  {
   "file": "src/DinMgr2/DinMgr2.cpp",
@@ -388,19 +401,6 @@
   "frag_ratio": 0.35294117647058826,
   "occupancy": 0.002198250956847378,
   "spread": 454.90711462450594
- },
- {
-  "file": "src/Net/LobbyDialogs.cpp",
-  "n": 17,
-  "bytes": 3027,
-  "lo": 776176,
-  "hi": 780393,
-  "span": 4217,
-  "frags": 6,
-  "avg_cluster": 2.8333333333333335,
-  "frag_ratio": 0.35294117647058826,
-  "occupancy": 0.7178088688641214,
-  "spread": 1.393128510075983
  },
  {
   "file": "src/Gruntz/MovingLogic.cpp",
@@ -492,19 +492,6 @@
   "frag_ratio": 0.11627906976744186,
   "occupancy": 0.49886523289743867,
   "spread": 2.0045493934142113
- },
- {
-  "file": "src/Bute/SymTab.cpp",
-  "n": 56,
-  "bytes": 10253,
-  "lo": 1283824,
-  "hi": 1294890,
-  "span": 11066,
-  "frags": 5,
-  "avg_cluster": 11.2,
-  "frag_ratio": 0.08928571428571429,
-  "occupancy": 0.9265317187782397,
-  "spread": 1.0792938652101824
  },
  {
   "file": "src/Rez/RezFile.cpp",
@@ -897,32 +884,6 @@
   "spread": 1.369250985545335
  },
  {
-  "file": "src/Gruntz/GruntCombat.cpp",
-  "n": 24,
-  "bytes": 17544,
-  "lo": 356224,
-  "hi": 381060,
-  "span": 24836,
-  "frags": 4,
-  "avg_cluster": 6.0,
-  "frag_ratio": 0.16666666666666666,
-  "occupancy": 0.7063939442744404,
-  "spread": 1.415640674874601
- },
- {
-  "file": "src/Gruntz/GameLevel.cpp",
-  "n": 74,
-  "bytes": 16311,
-  "lo": 439088,
-  "hi": 1446690,
-  "span": 1007602,
-  "frags": 4,
-  "avg_cluster": 18.5,
-  "frag_ratio": 0.05405405405405406,
-  "occupancy": 0.01618793928555124,
-  "spread": 61.774385384096625
- },
- {
   "file": "src/Wap32/GameApp.cpp",
   "n": 28,
   "bytes": 2558,
@@ -989,16 +950,16 @@
  },
  {
   "file": "src/Gruntz/SBI_MenuItem.cpp",
-  "n": 11,
-  "bytes": 1431,
+  "n": 12,
+  "bytes": 1432,
   "lo": 950496,
   "hi": 1097896,
   "span": 147400,
   "frags": 4,
-  "avg_cluster": 2.75,
-  "frag_ratio": 0.36363636363636365,
-  "occupancy": 0.009708276797829037,
-  "spread": 103.00489168413696
+  "avg_cluster": 3.0,
+  "frag_ratio": 0.3333333333333333,
+  "occupancy": 0.00971506105834464,
+  "spread": 102.93296089385476
  },
  {
   "file": "src/Gruntz/Fonts.cpp",
@@ -1038,6 +999,19 @@
   "frag_ratio": 0.13333333333333333,
   "occupancy": 0.9203241053342336,
   "spread": 1.086573734409391
+ },
+ {
+  "file": "src/Bute/SymTab.cpp",
+  "n": 57,
+  "bytes": 10257,
+  "lo": 1283824,
+  "hi": 1294890,
+  "span": 11066,
+  "frags": 4,
+  "avg_cluster": 14.25,
+  "frag_ratio": 0.07017543859649122,
+  "occupancy": 0.9268931863365263,
+  "spread": 1.0788729648045237
  },
  {
   "file": "src/Gruntz/AniRecord.cpp",
@@ -1142,19 +1116,6 @@
   "frag_ratio": 1.0,
   "occupancy": 0.00032795117011295697,
   "spread": 3049.2344322344325
- },
- {
-  "file": "src/Globals.cpp",
-  "n": 3,
-  "bytes": 635,
-  "lo": 46624,
-  "hi": 796294,
-  "span": 749670,
-  "frags": 3,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.0008470393639868209,
-  "spread": 1180.5826771653544
  },
  {
   "file": "src/Gruntz/BehindCandy.cpp",
@@ -1352,6 +1313,19 @@
   "spread": 7.104046242774566
  },
  {
+  "file": "src/Gruntz/GruntCombat.cpp",
+  "n": 25,
+  "bytes": 17579,
+  "lo": 356224,
+  "hi": 381060,
+  "span": 24836,
+  "frags": 3,
+  "avg_cluster": 8.333333333333334,
+  "frag_ratio": 0.12,
+  "occupancy": 0.7078031889193107,
+  "spread": 1.41282211729905
+ },
+ {
   "file": "src/Wwd/WwdGameObject.cpp",
   "n": 43,
   "bytes": 8080,
@@ -1389,6 +1363,19 @@
   "frag_ratio": 1.0,
   "occupancy": 0.0009791275405519205,
   "spread": 1021.3174061433447
+ },
+ {
+  "file": "src/Gruntz/GameLevel.cpp",
+  "n": 72,
+  "bytes": 16281,
+  "lo": 439088,
+  "hi": 1446690,
+  "span": 1007602,
+  "frags": 3,
+  "avg_cluster": 24.0,
+  "frag_ratio": 0.041666666666666664,
+  "occupancy": 0.01615816562491936,
+  "spread": 61.88821325471408
  },
  {
   "file": "src/Gruntz/GruntzApp.cpp",
@@ -1612,6 +1599,19 @@
   "spread": 1.1302228412256268
  },
  {
+  "file": "src/Gruntz/LogicTypeTable.cpp",
+  "n": 2,
+  "bytes": 264,
+  "lo": 35392,
+  "hi": 35792,
+  "span": 400,
+  "frags": 2,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 0.66,
+  "spread": 1.5151515151515151
+ },
+ {
   "file": "src/Gruntz/UserLogicCtorEmit.cpp",
   "n": 2,
   "bytes": 480,
@@ -1781,19 +1781,6 @@
   "spread": 1.297337278106509
  },
  {
-  "file": "src/Gruntz/UserLogic.cpp",
-  "n": 3,
-  "bytes": 15142,
-  "lo": 317440,
-  "hi": 386643,
-  "span": 69203,
-  "frags": 2,
-  "avg_cluster": 1.5,
-  "frag_ratio": 0.6666666666666666,
-  "occupancy": 0.21880554311229283,
-  "spread": 4.570268128384625
- },
- {
   "file": "src/Gruntz/GruntSteps.cpp",
   "n": 15,
   "bytes": 14052,
@@ -1805,6 +1792,19 @@
   "frag_ratio": 0.13333333333333333,
   "occupancy": 0.798409090909091,
   "spread": 1.2524907486478793
+ },
+ {
+  "file": "src/Globals.cpp",
+  "n": 2,
+  "bytes": 597,
+  "lo": 333072,
+  "hi": 796294,
+  "span": 463222,
+  "frags": 2,
+  "avg_cluster": 1.0,
+  "frag_ratio": 1.0,
+  "occupancy": 0.001288798891244371,
+  "spread": 775.9162479061977
  },
  {
   "file": "src/Gruntz/GruntEntranceArrival.cpp",
@@ -2028,6 +2028,19 @@
   "spread": 2.810692375109553
  },
  {
+  "file": "src/Net/LobbyDialogs.cpp",
+  "n": 21,
+  "bytes": 3031,
+  "lo": 776176,
+  "hi": 780393,
+  "span": 4217,
+  "frags": 2,
+  "avg_cluster": 10.5,
+  "frag_ratio": 0.09523809523809523,
+  "occupancy": 0.7187574104813849,
+  "spread": 1.3912900032992412
+ },
+ {
   "file": "src/Net/PacketPool.cpp",
   "n": 2,
   "bytes": 72,
@@ -2234,19 +2247,6 @@
   "frag_ratio": 0.06666666666666667,
   "occupancy": 0.7568819841918779,
   "spread": 1.3212099387828593
- },
- {
-  "file": "src/Gruntz/ScreenRegionMgr.cpp",
-  "n": 2,
-  "bytes": 204,
-  "lo": 1041504,
-  "hi": 1041993,
-  "span": 489,
-  "frags": 2,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.4171779141104294,
-  "spread": 2.3970588235294117
  },
  {
   "file": "src/Gruntz/GlyphStringDraw.cpp",
@@ -2533,19 +2533,6 @@
   "frag_ratio": 1.0,
   "occupancy": 1.0,
   "spread": 1.0
- },
- {
-  "file": "src/Gruntz/LogicTypeTable.cpp",
-  "n": 2,
-  "bytes": 264,
-  "lo": 35392,
-  "hi": 35792,
-  "span": 400,
-  "frags": 1,
-  "avg_cluster": 2.0,
-  "frag_ratio": 0.5,
-  "occupancy": 0.66,
-  "spread": 1.5151515151515151
  },
  {
   "file": "src/Gruntz/SerialObjRef.cpp",

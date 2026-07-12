@@ -4,7 +4,7 @@
 
 **Ground truth**: placements are first-link birth positions (demo-oracle: 170/181 outliers identically placed in GruntDem.exe; only 3 ilink moves in the whole EXE), and every obj's contribution is contiguous at first link. So retail `.text` order faithfully records the ORIGINAL TU composition, and the CRT init-table gives the original obj LINK ORDER.
 
-Outlier mechanisms: REHOME-CANDIDATE 64, COMDAT-AT-USAGE 11.
+Outlier mechanisms: REHOME-CANDIDATE 66, COMDAT-AT-USAGE 8.
 
 
 ## MERGE candidates — multi-core intervals (VERIFY per group)
@@ -21,9 +21,9 @@ Outlier mechanisms: REHOME-CANDIDATE 64, COMDAT-AT-USAGE 11.
 | unit | intervals (lo, fns) |
 |---|---|
 | battlezmapconfig | `0x24dc0` (7), `0x29a30` (33), `0x343f0` (8) |
-| play | `0xc8700` (12), `0xcdb10` (23), `0xd5960` (60) |
+| play | `0xc8700` (12), `0xcdb10` (25), `0xd5960` (60) |
 | bootystateactivate | `0x19540` (3), `0x1c0f0` (6) |
-| sbi_rectonly | `0xfdc00` (23), `0x104d60` (58) |
+| sbi_rectonly | `0xfdc00` (25), `0x104d60` (58) |
 
 ## MOVE — lone strays inside a foreign interval
 
@@ -251,13 +251,12 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x0fa150` | `?BaseCleanup@CGameModeBase@@QAEXXZ` | gamemodebase | `0xfa150` ? |
 | `0x0fab90` | `?LoadScreen@CPreviewState@@QAEHPADHHH@Z` | levelpreview | `0xfa1f0` attract |
 | `0x0fb660` | `?LogicDispatchA@@YAHPAULogicDispatchOwner@@@Z` | logicrecorddispatch | `0xfb660` ? |
-| `0x0fe460` | `?Open@ScreenRegionMgr@@QAEHXZ` | screenregionmgr | `0xfdc00` sbi_rectonly |
-| `0x0fe600` | `?Reset@ScreenRegionMgr@@QAEHXZ` | screenregionmgr | `0xfdc00` sbi_rectonly |
 | `0x1005d0` | `??0CStatusBarItem@@QAE@XZ` | statusbaritem | `0xfdc00` sbi_rectonly |
 | `0x101580` | `?BuildGameMenu@CGameMenuMgr@@QAEXXZ` | statusbargamemenu | `0xfdc00` sbi_rectonly |
 | `0x102250` | `?LoadTabSprites@CStatusBarMgr@@QAEHXZ` | statusbarmgr | `0x102250` ? |
 | `0x104c80` | `?Free@CSBI_WellGoo@@QAEXXZ` | sbi_wellgoo | `0x104c80` ? |
 | `0x10bc30` | `?UpdateDestructButton@CSBI_RectOnly@@QAEXH@Z` | destructbutton | `0x10bc30` ? |
+| `0x10bfa0` | `?DtorStatus@CStatusBarItem@@QAEXXZ` | sbi_menuitem | `0x10bfa0` ? |
 | `0x110460` | `?Accept@CVtEmitRecv@@QAEHHHHHHPAHHHH@Z` | vtblforward | `0x110430` tileswitchlogic |
 | `0x110570` | `?LoadSwitchDownSprite@EngineLabelBacklog@@QAEHXZ` | statusbarupdaters | `0x110430` tileswitchlogic |
 | `0x1106b0` | `?LoadSwitchUpSprite@EngineLabelBacklog@@QAEHXZ` | statusbarupdaters | `0x110430` tileswitchlogic |
@@ -279,7 +278,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x118f60` | `?LegacyFindModule@WinAPI@Utils@@YAHKKPAXK@Z` | winapimodule | `0x118f60` ? |
 | `0x1190f0` | `?FormatElapsedTime@@YA?AVCString@@I@Z` | timestring | `0x1190f0` ? |
 | `0x119210` | `?SplitMillisToHMS@@YAXIPAI00@Z` | timesplit | `0x119210` ? |
-| `0x1192d0` | `?BlockScreenSaver@@YAHPAXHH@Z` | timesplit | `0x1192d0` ? |
+| `0x1192d0` | `?BlockScreenSaver@@YAHPAXIIJ@Z` | timesplit | `0x1192d0` ? |
 | `0x119fa0` | `?RegisterActs_6514d8@@YAXXZ` | gruntvoiceactreg | `0x119620` gruntvoice |
 | `0x11c210` | `?BuildVoiceSoundList@CGruntSpawnConfig@@QAEPAVCSpawnList@@H@` | voicesoundlist | `0x11adc0` gruntspawnconfig |
 | `0x11c630` | `??0CSpawnEntry@@QAE@VCString@@H@Z` | cspawnentry | `0x11adc0` gruntspawnconfig |
@@ -290,7 +289,7 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x13e010` | `?DebugTrace@@YAXPBDZZ` | debugtiming | `0x13e010` ? |
 | `0x145e00` | `?WarpIsPow2@@YAHH@Z` | warptextureblit | `0x145e00` ? |
 | `0x145e30` | `?PolyIsConvexCW@@YAHPAUPolyVtx@@H@Z` | imagepolyclip | `0x145e30` ? |
-| `0x145f60` | `?ImageRotateBlit@@YAXHHPAHHPAUImgRect@@HMMHH@Z` | imagerotate | `0x145f60` ? |
+| `0x145f60` | `?ImageRotateBlit@@YAXHHPAHPAX1MMHH@Z` | imagerotate | `0x145f60` ? |
 | `0x1461b0` | `?ImagePolyClipRect@@YAHPAUPolyVtx@@HHHHH@Z` | imagepolyclip | `0x1461b0` ? |
 | `0x146550` | `?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z` | polyclipraster | `0x146550` ? |
 | `0x146a20` | `?WarpTextureBlit@@YAHPAUWarpVtx@@HPAVCDDSurface@@1HH@Z` | warptextureblit | `0x146a20` ? |
@@ -307,15 +306,15 @@ Function-level re-homes; target = the interval's dominant unit.
 | `0x15cbe0` | `?Next2@Rng@@YAHXZ` | gruntzrandom | `0x15b2c0` wwdfactoryobject |
 | `0x166e00` | `?ScanRunLeft_166e00@CImageSet3@@QAEHHHPAH0@Z` | imageset3 | `0x166e00` ? |
 | `0x16b230` | `?Gap_16b230@@YAHXZ` | anirecord | `0x16b230` ? |
-| `0x16cdd0` | `?WriteCurve@@YAAAVCButeText@@AAV1@ABVCMotionState@@@Z` | movinglogic | `0x16cdd0` ? |
+| `0x16cdd0` | `?WriteCurve@@YAAAVostream@@AAV1@ABVCMotionState@@@Z` | movinglogic | `0x16cdd0` ? |
 | `0x16d990` | `?GetRetAddr@@YAPAXXZ` | getretaddr | `0x16d000` typekeycoll |
 | `0x16ea20` | `?ScalarDelete@CTypeCollRuntime@@QAEPAXI@Z` | typecollruntime | `0x16ea20` ? |
 | `0x16f6e0` | `?Copy_16f6e0@@YGXPAVistream@@PAVostream@@@Z` | blowfishcopy | `0x16f6c0` blowfish |
 | `0x16f760` | `?BitStreamBlowfishDecode@@YGXPAVistream@@PAVostream@@@Z` | bitstreamblowfish | `0x16f6c0` blowfish |
 | `0x170210` | `??0CButeSection@@QAE@XZ` | butesectionctor | `0x170210` ? |
 | `0x174d00` | `??0CButeCfgNode174d@@QAE@H@Z` | butenode | `0x174d00` ? |
-| `0x177480` | `?LoadBmpPalette@CPalLoader@@QAEHPBDH@Z` | palettebmp | `0x177480` ? |
-| `0x1775f0` | `?Apply@CPalLoader@@QAEHPBDH@Z` | palettebmp | `0x1775f0` ? |
+| `0x177480` | `?LoadBmpFile@CImagePaletteNode@ApiCallerStubs@@QAEHPADH@Z` | palettebmp | `0x177480` ? |
+| `0x1775f0` | `?Apply@CImagePaletteNode@ApiCallerStubs@@QAEHPADH@Z` | palettebmp | `0x1775f0` ? |
 | `0x177670` | `?SetReportMode@CNetMgr@@SAXHHHH@Z` | netmgrerror | `0x177670` ? |
 | `0x1776a0` | `?ReportError@CNetMgr@@SAXPADHHPAX@Z` | netmgrerror | `0x1776a0` ? |
 | `0x178470` | `?PopulateGroupList@CLobbyGroupMgr@@QAEXPAUHWND__@@H@Z` | lobbygrouplist | `0x1780b0` netmgr |
@@ -360,7 +359,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 
 - **RTTI = /GR per project**: 222/295 vtables carry RTTI; the engine band (0x130000-0x180000) has 18/78 — and the non-iostream RTTI'd classes there are GAME-project (/GR) files sitting inside the band: CGameApp, CGameMgr, CGameWnd, CImage. Use RTTI-vs-not to assign mega-interval files to their project.
 - **Vtable .rdata order** is 73% monotone with the methods' .text order — a third link-order witness (vtables are COMDATs kept at the first-constructing obj and never move); use it to order fragment-less TUs and cluster no-RTTI engine vtables.
-- **Private globals**: 6200/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 99% monotone with TU order. A private global decides a seam function's membership; 436 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
+- **Private globals**: 6200/21112 code-referenced data targets are private to one interval (file-scope statics/consts); .data contribution order is 99% monotone with TU order. A private global decides a seam function's membership; 465 annotated globals should carry `static` in src (worklist in deep_layout.json oracles.privates.static_worklist).
 - **Extent-overlap merge evidence** (two neighbor intervals whose private .data extents interleave are ONE obj):
   - `0x7c60` (actionarea) + `0x9090` (actionoptionsmenubar)
   - `0x19cd0` (gamemode) + `0x18740` (?)
@@ -387,7 +386,7 @@ The original build had per-.dsp (plus rare per-file) settings; one obj = ONE fla
 Compressed unit sequence of the 978 attributed $E initializer fragments (of 1075 live; 501 slots zeroed by relinks). This is the obj order of the original project files:
 
 ```
-?x5 | actionareax10 | actionoptionsmenubarx2 | play | actionoptionsmenubarx15 | worldsoundsetx9 |
+?x5 | actionareax10 | actionoptionsmenubarx2 | play | actionoptionsmenubarx14 | worldsoundsetx10 |
 gameobjectfactory | worldsoundsetx18 | attractstatex9 | dialogsx19 | customleveldlg | dialogsx8 |
 bootywalkanim | dialogsx6 | globals | gametext | bootystateactivatex9 | fontconfigx9 |
 gruntzcmdmgrx18 | checkpointdlgx2 | gruntzcmdmgr | battlezmapconfig | gruntzcmdmgrx7 |
@@ -398,12 +397,12 @@ gruntcombatx19 | triggermgrgrid | triggermgr | triggermgrgridx7 | triggermgr | g
 triggermgrx7 | gruntselectedsprite | grunthealthsprite | grunttoysprite | gruntpowerupsprite |
 gruntzappx18 | gametext | play | gametextx6 | gruntzcmdmgr | gametextx12 | gruntzwndx19 | ingameicon
 | gruntzwndx7 | ingameiconx3 | areamgrx10 | spriteloaders | lightfx | spriteloadersx7 | lightfx |
-mapmgrx28 | menustatex2 | mainmenubuilder | menustatex6 | mainmenubuilder | lightfxrenderx9 |
+mapmgrx27 | menustatex3 | mainmenubuilder | menustatex6 | mainmenubuilder | lightfxrenderx9 |
 logicworkerhandlersa | behindcandyani | singleframemessage | logicworkerhandlersax6 | anicycle |
 singleframemessage | simpleanimation | logicdispatchinit | frontcandyani | behindcandyani |
 logicactreg646010 | singleanimation | logicworkerhandlersb | rollingball | logicworkerhandlersbx7 |
 rollingball | spotlightactreg | kitchenslime | pathhazardactreg | multix13 | netlobbydialogs |
-multix6 | netlobbydialogsx5 | netcmdslotx14 | packetpool | netcmdslotx10 | multistartdlgroster |
+multix3 | netlobbydialogsx13 | netcmdslotx9 | packetpool | netcmdslotx10 | multistartdlgroster |
 netcmdslotx7 | multistartdlg | multistartdlgrosterx8 | droppedobjectx11 | gruntzrandom |
 droppedobject | playx18 | levelpreviewx18 | projectilex2 | spritereftable | savegame |
 spritereftablex5 | savegamex38 | sbi_menuitemx26 | statusbartabbuildersx28 | sbi_warlordheadx9 |

@@ -764,6 +764,81 @@
    ]
   },
   {
+   "file": "src/Gruntz/UserLogic.cpp",
+   "n": 16,
+   "bytes": 15207,
+   "main_lo": 4961,
+   "main_hi": 14616,
+   "main_n": 13,
+   "main_share": 0.8125,
+   "clusters": 3,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 4961,
+     "hi": 14616,
+     "n": 13
+    },
+    {
+     "lo": 317440,
+     "hi": 327696,
+     "n": 2
+    },
+    {
+     "lo": 381456,
+     "hi": 386643,
+     "n": 1
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 317440,
+     "name": "?winapi_04d800_CopyRect@CUserLogic@@QAEHHHHHHHHHHHHH@Z",
+     "dist": 302824,
+     "cluster_n": 2,
+     "kind": "interleaver",
+     "home": "src/Gruntz/Grunt.cpp",
+     "home_n": 9
+    },
+    {
+     "rva": 318800,
+     "name": "?LoadGruntTypeTable@CUserLogic@@QAEXHHHH@Z",
+     "dist": 302824,
+     "cluster_n": 2,
+     "kind": "interleaver",
+     "home": "src/Gruntz/Grunt.cpp",
+     "home_n": 9
+    },
+    {
+     "rva": 381456,
+     "name": "?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z",
+     "dist": 366840,
+     "cluster_n": 1,
+     "kind": "interleaver",
+     "home": "src/Gruntz/GruntCombat.cpp",
+     "home_n": 8
+    }
+   ],
+   "rvas": [
+    4961,
+    5386,
+    5936,
+    8546,
+    8796,
+    9206,
+    9326,
+    9911,
+    12566,
+    13276,
+    13331,
+    13831,
+    14611,
+    317440,
+    318800,
+    381456
+   ]
+  },
+  {
    "file": "src/DDrawMgr/DDrawSurfacePair.cpp",
    "n": 43,
    "bytes": 6311,
@@ -1333,59 +1408,6 @@
    ]
   },
   {
-   "file": "src/Globals.cpp",
-   "n": 3,
-   "bytes": 635,
-   "main_lo": 333072,
-   "main_hi": 333599,
-   "main_n": 1,
-   "main_share": 0.3333333333333333,
-   "clusters": 3,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 46624,
-     "hi": 46662,
-     "n": 1
-    },
-    {
-     "lo": 333072,
-     "hi": 333599,
-     "n": 1
-    },
-    {
-     "lo": 796224,
-     "hi": 796294,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 46624,
-     "name": "?g_typeDesc3@@3PADA",
-     "dist": 286410,
-     "cluster_n": 1,
-     "kind": "interleaver",
-     "home": "src/Gruntz/WorldSoundSet.cpp",
-     "home_n": 27
-    },
-    {
-     "rva": 796224,
-     "name": "?g_typeDesc2@@3PADA",
-     "dist": 462625,
-     "cluster_n": 1,
-     "kind": "interleaver",
-     "home": "src/Net/NetCmdSlot.cpp",
-     "home_n": 18
-    }
-   ],
-   "rvas": [
-    46624,
-    333072,
-    796224
-   ]
-  },
-  {
    "file": "src/Gruntz/OrphanMethods.cpp",
    "n": 3,
    "bytes": 293,
@@ -1466,18 +1488,18 @@
      "name": "_CreateAmbientSound",
      "dist": 31578,
      "cluster_n": 2,
-     "kind": "misplaced",
-     "home": "",
-     "home_n": 0
+     "kind": "interleaver",
+     "home": "src/Gruntz/UserLogic.cpp",
+     "home_n": 13
     },
     {
      "rva": 10321,
      "name": "_CreateSpotAmbientSound",
      "dist": 31578,
      "cluster_n": 2,
-     "kind": "misplaced",
-     "home": "",
-     "home_n": 0
+     "kind": "interleaver",
+     "home": "src/Gruntz/UserLogic.cpp",
+     "home_n": 13
     }
    ],
    "rvas": [
@@ -2188,6 +2210,44 @@
    ]
   },
   {
+   "file": "src/Globals.cpp",
+   "n": 2,
+   "bytes": 597,
+   "main_lo": 333072,
+   "main_hi": 333599,
+   "main_n": 1,
+   "main_share": 0.5,
+   "clusters": 2,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 333072,
+     "hi": 333599,
+     "n": 1
+    },
+    {
+     "lo": 796224,
+     "hi": 796294,
+     "n": 1
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 796224,
+     "name": "?g_typeDesc2@@3PADA",
+     "dist": 462625,
+     "cluster_n": 1,
+     "kind": "interleaver",
+     "home": "src/Net/NetCmdSlot.cpp",
+     "home_n": 18
+    }
+   ],
+   "rvas": [
+    333072,
+    796224
+   ]
+  },
+  {
    "file": "src/Gruntz/GruntzCmdMgr.cpp",
    "n": 33,
    "bytes": 2826,
@@ -2572,12 +2632,12 @@
   },
   {
    "file": "src/Gruntz/SBI_RectOnly.cpp",
-   "n": 82,
-   "bytes": 30838,
+   "n": 84,
+   "bytes": 31042,
    "main_lo": 1039360,
    "main_hi": 1096724,
-   "main_n": 81,
-   "main_share": 0.9878048780487805,
+   "main_n": 83,
+   "main_share": 0.9880952380952381,
    "clusters": 2,
    "conflated": false,
    "cluster_list": [
@@ -2589,7 +2649,7 @@
     {
      "lo": 1039360,
      "hi": 1096724,
-     "n": 81
+     "n": 83
     }
    ],
    "outliers": [
@@ -2608,7 +2668,9 @@
     1039360,
     1041232,
     1041376,
+    1041504,
     1041696,
+    1041920,
     1042032,
     1042096,
     1042528,
@@ -2772,6 +2834,56 @@
     34640,
     200944,
     201376
+   ]
+  },
+  {
+   "file": "src/Gruntz/SBI_MenuItem.cpp",
+   "n": 9,
+   "bytes": 735,
+   "main_lo": 950496,
+   "main_hi": 951558,
+   "main_n": 7,
+   "main_share": 0.7777777777777778,
+   "clusters": 3,
+   "conflated": false,
+   "cluster_list": [
+    {
+     "lo": 950496,
+     "hi": 951558,
+     "n": 7
+    },
+    {
+     "lo": 1050032,
+     "hi": 1050040,
+     "n": 1
+    },
+    {
+     "lo": 1097632,
+     "hi": 1097633,
+     "n": 1
+    }
+   ],
+   "outliers": [
+    {
+     "rva": 1097632,
+     "name": "?DtorStatus@CStatusBarItem@@QAEXXZ",
+     "dist": 146074,
+     "cluster_n": 1,
+     "kind": "interleaver",
+     "home": "src/Gruntz/TileLogicPump.cpp",
+     "home_n": 16
+    }
+   ],
+   "rvas": [
+    950496,
+    950688,
+    950752,
+    950944,
+    951056,
+    951424,
+    951536,
+    1050032,
+    1097632
    ]
   },
   {
@@ -3003,45 +3115,6 @@
     939664,
     939696,
     939776
-   ]
-  },
-  {
-   "file": "src/Gruntz/UserLogic.cpp",
-   "n": 3,
-   "bytes": 15142,
-   "main_lo": 317440,
-   "main_hi": 327696,
-   "main_n": 2,
-   "main_share": 0.6666666666666666,
-   "clusters": 2,
-   "conflated": false,
-   "cluster_list": [
-    {
-     "lo": 317440,
-     "hi": 327696,
-     "n": 2
-    },
-    {
-     "lo": 381456,
-     "hi": 386643,
-     "n": 1
-    }
-   ],
-   "outliers": [
-    {
-     "rva": 381456,
-     "name": "?LoadGruntTuningConstants@CUserLogic@@QAEXH@Z",
-     "dist": 53760,
-     "cluster_n": 1,
-     "kind": "interleaver",
-     "home": "src/Gruntz/GruntCombat.cpp",
-     "home_n": 8
-    }
-   ],
-   "rvas": [
-    317440,
-    318800,
-    381456
    ]
   },
   {
