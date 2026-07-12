@@ -411,16 +411,25 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     }
     return 1;
 }
-// The 8 compass grunt-voice records (3 DWORDs each, runtime-filled .data) +
+// The 8 compass grunt-voice records (3 DWORDs each, runtime-filled .bss) +
 // PlaySound (the @0x4ac10 entrance handler, external/reloc-masked). TU-local
-// definitions so each `mov ds:addr` reloc-masks against retail.
+// definitions bound to their retail .bss RVAs so each `mov ds:addr` reloc-checks
+// against the real target (array mangling -> @data-symbol names the exact cl sym).
+// @data-symbol: ?g_voiceN@@3PAHA 0x002448e8
 i32 g_voiceN[3];
+// @data-symbol: ?g_voiceS@@3PAHA 0x002448d8
 i32 g_voiceS[3];
+// @data-symbol: ?g_voiceE@@3PAHA 0x002448c8
 i32 g_voiceE[3];
+// @data-symbol: ?g_voiceW@@3PAHA 0x002448f8
 i32 g_voiceW[3];
+// @data-symbol: ?g_voiceSE@@3PAHA 0x00244928
 i32 g_voiceSE[3];
+// @data-symbol: ?g_voiceNW@@3PAHA 0x00244918
 i32 g_voiceNW[3];
+// @data-symbol: ?g_voiceNE@@3PAHA 0x00244908
 i32 g_voiceNE[3];
+// @data-symbol: ?g_voiceSW@@3PAHA 0x00244948
 i32 g_voiceSW[3];
 
 // CGrunt::PlayMoveSound(x, y) @0x511b0 - directional grunt-voice dispatcher.

@@ -86,7 +86,11 @@ static const char s_animKeyK[] = "K";
 extern "C" u32 g_645588;
 
 // The global default geometry source the entrance geometry-state setter consumes
-// (g_defaultGeo @0x6bf3bc; defined in SpriteResource.cpp, reloc-masked here).
+// (0x2bf3bc). NOTE: 0x2bf3bc is a tree-wide name conflation - 16 TUs bind it as the
+// placeholder `_g_6bf3bc` (the keep-last winner), kitchenslime as `g_slimeTick`, and
+// wormhole/wwdgameobject/this as `?g_defaultGeo@@3HA`. A DATA() here loses keep-last
+// (sort order), so the ref stays reloc-UNBOUND until a tree-wide unification renames
+// all 19 refs to one canonical name (cross-lane; deferred). Semantic name kept here.
 extern i32 g_defaultGeo;
 
 // The scratch CString teardown the GetNameRecords reject paths run (defined with the
