@@ -2644,7 +2644,7 @@ RVA(0x000f8240, 0x5b9)
 i32 CGrunt::StepArrivalDefenseLean() {
     m_defenderX = m_lastTilePxX;
     m_defenderY = m_lastTilePxY;
-    if (strcmp(*g_animNameResolver.GetNameRecord(m_14->m_1c), g_codeI) == 0) {
+    if (strcmp(((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr((i32)m_14->m_1c))->m_0, g_codeI) == 0) {
         return 1;
     }
     CGrunt* occ;
