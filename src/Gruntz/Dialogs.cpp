@@ -29,12 +29,12 @@
 // option handlers persist per-slot dropdowns into its m_options array.
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
-// CImgHolder::DeleteImageList @0x1c6a5c IS MFC CImageList::DeleteImageList (afxcmn); minimal local
-// decl (links from MFC).
+// CImgHolder::DeleteImageList @0x1c6a5c IS MFC CImageList::DeleteImageList (afxcmn;
+// ?DeleteImageList@CImageList@@QAEHXZ - returns BOOL); minimal local decl (links from MFC).
 SIZE_UNKNOWN(CImageList);
 class CImageList {
 public:
-    void DeleteImageList();
+    i32 DeleteImageList();
 };
 
 // ---------------------------------------------------------------------------
@@ -270,21 +270,13 @@ const void* CBattlezDlgColors::GetMessageMap() {
     return &g_msgmap_CBattlezDlgColors;
 }
 
-// CWnd::OnMeasureItem @0x1bbf18 - the NAFXCW default owner-draw measure handler,
-// not surfaced by the reduced afxwin.h CWnd; minimal shim so the __thiscall
-// reloc-masks (same reduced-MFC pattern as the CImageList shim above).
-SIZE_UNKNOWN(CWndOnMeasure);
-struct CWndOnMeasure {
-    void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
-};
-
 // CBattlezDlgColors::OnMeasureItem (0x17ae0): the owner-draw colour-swatch list
-// measures each item at 200x30, then chains the base CWnd handler.
+// measures each item at 200x30, then chains the base CWnd::OnMeasureItem (0x1bbf18).
 RVA(0x00017ae0, 0x20)
 void CBattlezDlgColors::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     lpmis->itemWidth = 0xc8;
     lpmis->itemHeight = 0x1e;
-    ((CWndOnMeasure*)this)->OnMeasureItem(nIDCtl, lpmis);
+    CWnd::OnMeasureItem(nIDCtl, lpmis);
 }
 
 // ---------------------------------------------------------------------------
@@ -638,8 +630,8 @@ void CBattlezDlg::ReadCtrlBText(i32 index) {
 // OnInitDialog (vtable slot 49, 0x160d0): chain the base CDialog::OnInitDialog,
 // then return TRUE (keep the dialog's default control focus).
 RVA(0x000160d0, 0xb)
-i32 CBattlezDlg::DlgVsl49() {
-    CDialog::DlgVsl49();
+i32 CBattlezDlg::OnInitDialog() {
+    CDialog::OnInitDialog();
     return 1;
 }
 
@@ -647,15 +639,8 @@ i32 CBattlezDlg::DlgVsl49() {
 // measure handler (no swatch sizing of its own, unlike CBattlezDlgColors').
 RVA(0x00016570, 0x10)
 void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
-    ((CWndOnMeasure*)this)->OnMeasureItem(nIDCtl, lpmis);
+    CWnd::OnMeasureItem(nIDCtl, lpmis);
 }
-
-// CWnd::OnDrawItem @0x1bbde7 - the NAFXCW default owner-draw handler chained at the
-// end of the swatch draw (reloc-masked; same reduced-MFC shim as CWndOnMeasure).
-SIZE_UNKNOWN(CWndOnDraw);
-struct CWndOnDraw {
-    void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
-};
 
 // The game's FillRect fn-ptr global (the .idata IAT slot, reloc-masked indirect
 // call). Twin of FlashRect's g_pFillRect; DATA-bound here.
@@ -983,7 +968,7 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
         g_pFillRectDlg(dc.m_hDC, &lpdis->rcItem, brush.SafeBrush());
         dc.Detach();
     }
-    ((CWndOnDraw*)this)->OnDrawItem(nIDCtl, lpdis);
+    CWnd::OnDrawItem(nIDCtl, lpdis);
 }
 
 // Unused message-map handler (0x17440): `xor eax,eax; ret` (returns 0).
@@ -1049,8 +1034,13 @@ void CBattlezDlg::OnOkCommand() {
 
 SIZE_UNKNOWN(CImgHolderBase);
 SIZE_UNKNOWN(CImgHolder);
-RELOC_VTBL(CImgHolder, 0x001e8cd4); // vtable reloc-masks a bound datum (dtor-stamp verified)
+// CImgHolder is the canonical owner of the shared image-holder vtable @0x1e8cd4 (the
+// same vtable the inline-dtor twins CImgHolder2 here + CHolder8c400 in
+// BoundaryLowerDtors alias); VTBL binds ??_7CImgHolder@@6B@ so its own-stamp is
+// reloc-CORRECT. The base re-stamp -> ??_7CObject@@6B@ (0x1e8cb4) stays a compiler-
+// model wall (cl emits ??_7CImgHolderBase for the inline-empty base, not CObject).
+VTBL(CImgHolder, 0x001e8cd4);
 SIZE_UNKNOWN(CImgHolder2);
-RELOC_VTBL(CImgHolder2, 0x001e8cd4); // aliases CGdiObject vtable (dtor-stamp verified)
+RELOC_VTBL(CImgHolder2, 0x001e8cd4); // inline-dtor twin: aliases CImgHolder's vtable (dtor-stamp verified)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

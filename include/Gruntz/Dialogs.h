@@ -25,6 +25,8 @@
 
 class CString; // full def via <Gruntz/String.h> below; needed by CWnd::GetWindowText
 struct HWND__; // the opaque Win32 HWND (windows.h arrives with <Gruntz/String.h>)
+struct tagMEASUREITEMSTRUCT; // windows.h owner-draw measure (CWnd::OnMeasureItem arg)
+struct tagDRAWITEMSTRUCT;    // windows.h owner-draw item    (CWnd::OnDrawItem arg)
 
 // ---------------------------------------------------------------------------
 // Minimal MFC base models. Only the exact mangled symbol + the calling
@@ -97,17 +99,27 @@ public:
     virtual void WndVsl46();                      // slot 46
     virtual void WndVsl47();                      // slot 47
     void SetWindowTextA(const char* lpszString);
-    void EnableWindow(i32 bEnable);
+    i32 EnableWindow(i32 bEnable);        // 0x1be6a7 ?EnableWindow@CWnd (returns BOOL)
     i32 IsWindowEnabled(); // 0x1be68c (NAFXCW ::IsWindowEnabled(m_hWnd); reloc-masked)
     void GetWindowTextA(CString& rString);
     void GetLBText1ce7db(i32 nIndex, CString& rString);
+    // GetDlgItem @0x1be27d (NAFXCW ::GetDlgItem(m_hWnd,nID) wrapped as CWnd*): a CWnd
+    // method, NOT CDialog's - the return CWnd* mangles as PAV1@ (back-ref to CWnd).
+    CWnd* GetDlgItem(i32 nID) const;
     // GetSafeHwnd (inline, folds into callers): (this != 0) ? m_hWnd : 0. Same
     // null-this idiom as CMultiStartDlg::GetSafe1c; keeps retail's test/jne/xor shape.
     HWND__* GetSafeHwnd() {
         return this == 0 ? 0 : m_hWnd;
     }
     static CWnd* __stdcall FromHandle(HWND__* hWnd); // 0x1bb23a
-    long Default();         // 0x1bb18f ?Default@CWnd (NAFXCW default message processing)
+protected:
+    long Default(); // 0x1bb18f ?Default@CWnd (NAFXCW default message processing; protected)
+    // NAFXCW default owner-draw handlers (protected afx_msg, non-virtual): the swatch
+    // dialogs chain them by name (real CWnd::On* -> library_labels EXEMPT), not via a
+    // .cpp-local shim view.
+    void OnMeasureItem(i32 nIDCtl, tagMEASUREITEMSTRUCT* lpmis); // 0x1bbf18
+    void OnDrawItem(i32 nIDCtl, tagDRAWITEMSTRUCT* lpdis);       // 0x1bbde7
+public:
     char m_pad04[0x1c - 4]; // +0x04 (vptr @+0x00)
     HWND__* m_hWnd;         // +0x1c  wrapped window handle
 };
@@ -139,12 +151,11 @@ public:
     virtual void WndVsl45() OVERRIDE;             // slot 45
     virtual void WndVsl47() OVERRIDE;             // slot 47
     virtual void DlgVsl48();
-    virtual i32 DlgVsl49(); // OnInitDialog (returns BOOL)
+    virtual i32 OnInitDialog(); // 0x1bac5e slot 49 (returns BOOL)
     virtual void DlgVsl50();
     virtual void DlgVsl51(); // OnOK
     virtual void DlgVsl52();
     virtual void DlgVsl53();
-    CWnd* GetDlgItem(i32 nID) const;
     i32 DoModal();             // 0x1ba9d2
     char m_pad20[0x5c - 0x20]; // +0x20  pad to 0x5c (subclass members land at +0x5c)
 };
@@ -185,7 +196,7 @@ public:
     virtual ~CBattlezDlg() OVERRIDE;              // 0x14c90 (destroy CString m_6c, chain ~CDialog)
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl35() OVERRIDE;             // slot 35
-    virtual i32 DlgVsl49() OVERRIDE;              // slot 49  OnInitDialog
+    virtual i32 OnInitDialog() OVERRIDE;          // slot 49  OnInitDialog (0x160d0)
     virtual void DlgVsl51() OVERRIDE;             // slot 51  OnOK
 
     i32 m_slots;          // +0x5c  (= a0; the CBattlezSlot* slot-array base)
@@ -347,7 +358,7 @@ public:
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl24() OVERRIDE;             // slot 24
     virtual void WndVsl35() OVERRIDE;             // slot 35
-    virtual i32 DlgVsl49() OVERRIDE;              // slot 49  OnInitDialog
+    virtual i32 OnInitDialog() OVERRIDE;          // slot 49  OnInitDialog
     virtual void DlgVsl51() OVERRIDE;             // slot 51  OnOK
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
