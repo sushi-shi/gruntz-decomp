@@ -37,9 +37,13 @@ LOLLI = sorted(({"file": f["file"].rsplit("/", 1)[-1], "name": o["name"],
 
 SHARES = [f["main_share"] for f in flagged] + [1.0] * (len(methods) - len(flagged))
 
+_out = [o for f in flagged for o in f["outliers"]]
 tiles = {
     "flagged": len(flagged),
-    "misplaced": sum(len(f["outliers"]) for f in flagged),
+    # genuine wrong-file only; interleavers (own class compiled in another unit,
+    # kept in host + flagged) are NOT misplacements - tracked separately.
+    "misplaced": sum(1 for o in _out if o.get("kind") != "interleaver"),
+    "interleaver": sum(1 for o in _out if o.get("kind") == "interleaver"),
     "conflated": sum(1 for f in flagged if f["conflated"]),
     "share": round(st.median(SHARES), 2),
 }
@@ -110,7 +114,8 @@ TUs). __FLAGGED__ files flagged, __MISPLACED__ functions, __CONFLATED__ conflate
 
 <div class="tiles">
   <div class="tile"><div class="v" style="color:var(--red)">__FLAGGED__</div><div class="k">files with outlier methods<br>(of __NFILES__ analysed)</div></div>
-  <div class="tile"><div class="v">__MISPLACED__</div><div class="k">functions possibly in<br>the wrong file</div></div>
+  <div class="tile"><div class="v" style="color:var(--red)">__MISPLACED__</div><div class="k">genuinely misplaced<br>(wrong file)</div></div>
+  <div class="tile"><div class="v">__INTERLEAVER__</div><div class="k">interleavers<br>(own class in another obj &mdash; keep+flag)</div></div>
   <div class="tile"><div class="v">__CONFLATED__</div><div class="k">conflated units<br>(&ge;2 blocks of &ge;3 methods)</div></div>
   <div class="tile"><div class="v">__SHARE__</div><div class="k">median main-block share<br>(1.0 = all methods in one block)</div></div>
 </div>
@@ -277,6 +282,7 @@ for k, v in {"__SCATTER__": json.dumps(SCATTER, separators=(",", ":")),
              "__TLO__": str(flags["text_lo"]), "__THI__": str(flags["text_hi"]),
              "__NFILES__": str(len(methods)),
              "__FLAGGED__": str(tiles["flagged"]), "__MISPLACED__": str(tiles["misplaced"]),
+             "__INTERLEAVER__": str(tiles["interleaver"]),
              "__CONFLATED__": str(tiles["conflated"]), "__SHARE__": str(tiles["share"])}.items():
     HTML = HTML.replace(k, v)
 

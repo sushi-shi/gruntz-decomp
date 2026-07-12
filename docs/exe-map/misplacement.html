@@ -60,11 +60,12 @@ svg{width:100%;height:auto;display:block;overflow:visible}
 <p class="sub">Destructors (the COMDAT-pooled members) are removed; what's left should sit in one tight per-TU
 block. A function far from its file's main block is flagged &mdash; either a <b>mis-attribution</b> (belongs
 in another file) or a <b>conflated TU</b> (one <code style="font-size:.9em">src/</code> name covering two real
-TUs). 49 files flagged, 75 functions, 3 conflated.</p>
+TUs). 49 files flagged, 9 functions, 3 conflated.</p>
 
 <div class="tiles">
   <div class="tile"><div class="v" style="color:var(--red)">49</div><div class="k">files with outlier methods<br>(of 368 analysed)</div></div>
-  <div class="tile"><div class="v">75</div><div class="k">functions possibly in<br>the wrong file</div></div>
+  <div class="tile"><div class="v" style="color:var(--red)">9</div><div class="k">genuinely misplaced<br>(wrong file)</div></div>
+  <div class="tile"><div class="v">66</div><div class="k">interleavers<br>(own class in another obj &mdash; keep+flag)</div></div>
   <div class="tile"><div class="v">3</div><div class="k">conflated units<br>(&ge;2 blocks of &ge;3 methods)</div></div>
   <div class="tile"><div class="v">1.0</div><div class="k">median main-block share<br>(1.0 = all methods in one block)</div></div>
 </div>
