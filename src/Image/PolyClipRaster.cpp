@@ -8,13 +8,8 @@
 // defaults to the source image's own w/h (img->m_18/m_1c). Field names are
 // placeholders; offsets + code bytes are the load-bearing fact.
 #include <Ints.h>
+#include <Image/RasterVtx.h> // ClipVtx + RotateRasterize decl (shared with ImageRotate.cpp)
 #include <rva.h>
-
-// A clip vertex: x,y plus interpolated attributes (28-byte stride). The clip lerps
-// indices 1..3 (y + two attrs); the clipped axis takes the boundary value exactly.
-struct ClipVtx {
-    float x, y, a, b, c, d, e;
-};
 
 // The source image (clip-default box): width @+0x18, height @+0x1c.
 struct ClipImg {
@@ -36,7 +31,14 @@ extern "C" ClipVtx g_rasterVtxB[]; // 0x6a21f8
 // (both the 28-byte {x,y,+attrs} raster vertex); a4 is the dst/src surface.
 struct WarpVtx;
 class CDDSurface;
-i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey); // 0x146a20
+i32 WarpTextureBlit(
+    WarpVtx* va,
+    i32 n,
+    CDDSurface* dst,
+    CDDSurface* src,
+    i32 mode,
+    i32 colorkey
+); // 0x146a20
 
 // @early-stop
 // x87 scheduling wall (~53%, complete + correct; RE-PROVEN 2026-07-05 - the old
