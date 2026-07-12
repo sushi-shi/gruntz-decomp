@@ -88,11 +88,13 @@ extern void* g_retAddrBreadcrumb;
 //   g_shadowActReg  @0x64bf00 (ex "g_64bf00")
 // ---------------------------------------------------------------------------
 DATA(0x0024be90)
-extern CSiblingActReg g_dropperActReg; // 0x64be90
+CSiblingActReg g_dropperActReg; // 0x64be90 (owner TU: real definition; interior
+                                // fields 0x24be94..0x24beb0 are this object's members)
 DATA(0x0024bed8)
 extern CTypeKeyColl g_dropColl; // 0x64bed8
 DATA(0x0024bf00)
-extern CSiblingActReg g_shadowActReg; // 0x64bf00
+CSiblingActReg g_shadowActReg; // 0x64bf00 (owner TU: real definition; interior
+                               // fields 0x24bf04..0x24bf20 are this object's members)
 
 // The registered-handler entries (first dword = the handler PMF; single
 // inheritance -> 4-byte code pointers; the classes are COMPLETE above so each
@@ -165,6 +167,23 @@ typedef void (CDroppedObject::*DropHandler)();
 struct CDropEntry {
     DropHandler m_fn; // [entry]
 };
+// g_drop* registry-field globals (referenced only from this TU): real
+// definitions DATA-pinned here; the single extern is in <Globals.h>.
+DATA(0x0024bedc)
+CVariantSlot* g_dropColl2;
+DATA(0x0024bee0)
+i32 g_dropLo;
+DATA(0x0024bee4)
+i32 g_dropHi;
+DATA(0x0024bee8)
+char* g_dropBase;
+DATA(0x0024beec)
+CDropEntry* g_dropCur;
+DATA(0x0024bef0)
+i32 g_dropStride;
+DATA(0x0024bef8)
+i32 g_dropScratch;
+
 static inline CDropEntry* DropLookup(i32 coord) {
     g_dropScratch = 0;
     if (coord >= g_dropLo && coord <= g_dropHi) {

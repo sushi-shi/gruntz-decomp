@@ -79,6 +79,23 @@ struct CActEntry {
 };
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
+// g_act* registry-field globals (referenced only from this TU): real
+// definitions DATA-pinned here; the single extern is in <Globals.h>.
+DATA(0x0024468c)
+CVariantSlot* g_actColl2;
+DATA(0x00244690)
+i32 g_actLo;
+DATA(0x00244694)
+i32 g_actHi;
+DATA(0x00244698)
+char* g_actBase;
+DATA(0x0024469c)
+CActEntry* g_actCur;
+DATA(0x002446a0)
+i32 g_actStride;
+DATA(0x002446a8)
+i32 g_actScratch;
+
 static inline CActEntry* ActLookup(i32 coord) {
     g_actScratch = 0;
     if (coord >= g_actLo && coord <= g_actHi) {
@@ -116,7 +133,8 @@ SIZE_UNKNOWN(CSecretActEntry);
 struct CSecretActReg : public CActReg {};
 SIZE_UNKNOWN(CSecretActReg);
 DATA(0x00244598)
-extern CSecretActReg g_secretActReg; // 0x644598
+CSecretActReg g_secretActReg; // 0x644598 (owner TU: real definition; interior
+                             // fields 0x24459c..0x2445b8 are this object's members)
 
 // The probed trigger object is the shared <Gruntz/Trigger.h> class: its
 // +0x170/+0x198 are the level/layer ids the bound sprite's +0x11c/+0x120 must

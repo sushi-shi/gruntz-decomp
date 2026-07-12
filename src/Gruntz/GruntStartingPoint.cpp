@@ -137,6 +137,23 @@ struct StartActEntry {
 };
 SIZE_UNKNOWN(StartActEntry);
 
+// g_actReg4* R4-registry-field globals (referenced only from this TU): real
+// definitions DATA-pinned here; the single extern is in <Globals.h>.
+DATA(0x002446dc)
+CVariantSlot* g_actReg4Coll2;
+DATA(0x002446e0)
+i32 g_actReg4Lo;
+DATA(0x002446e4)
+i32 g_actReg4Hi;
+DATA(0x002446e8)
+char* g_actReg4Base;
+DATA(0x002446ec)
+R4Entry* g_actReg4Cur;
+DATA(0x002446f0)
+i32 g_actReg4Stride;
+DATA(0x002446f8)
+i32 g_actReg4Scratch;
+
 static inline R4Entry* R4Lookup(i32 coord) {
     g_actReg4Scratch = 0;
     if (coord >= g_actReg4Lo && coord <= g_actReg4Hi) {

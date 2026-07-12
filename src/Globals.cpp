@@ -220,20 +220,7 @@ DATA(0x00224fee)
 extern u16 g_modeTab_ee; // 0x624fee
 DATA(0x002256f0)
 extern double g_scale6256f0;
-DATA(0x0022938c)
-extern struct CVariantSlot* g_projRegColl2; // 0x62938c  (Insert dispatcher)
-DATA(0x00229390)
-extern i32 g_projRegLo; // 0x629390
-DATA(0x00229394)
-extern i32 g_projRegHi; // 0x629394
-DATA(0x00229398)
-extern char* g_projRegBase; // 0x629398
-DATA(0x0022939c)
-extern struct R3Entry* g_projRegCur; // 0x62939c
-DATA(0x002293a0)
-extern i32 g_projRegStride; // 0x6293a0
-DATA(0x002293a8)
-extern i32 g_projRegScratch; // 0x6293a8
+// g_projReg* R3-registry fields: DEFINED in src/Gruntz/ActionArea.cpp (owner TU).
 DATA(0x0022990c)
 extern i32 g_posSoundReq; // DAT_0062990c
 DATA(0x00229f50)
@@ -256,49 +243,9 @@ DATA(0x0022b738)
 extern i32 g_diffTier;
 DATA(0x0022c268)
 extern i32 g_dat62c268; // 0x62c268
-DATA(0x0024468c)
-extern CVariantSlot* g_actColl2;
-DATA(0x00244690)
-extern i32 g_actLo;
-DATA(0x00244694)
-extern i32 g_actHi;
-DATA(0x00244698)
-extern char* g_actBase;
-DATA(0x0024469c)
-extern CActEntry* g_actCur;
-DATA(0x002446a0)
-extern i32 g_actStride;
-DATA(0x002446a8)
-extern i32 g_actScratch;
-DATA(0x002446dc)
-class CVariantSlot; // Bute/ButeTree.h (Set @0x16d850)
-extern CVariantSlot* g_actReg4Coll2;
-DATA(0x002446e0)
-extern i32 g_actReg4Lo;
-DATA(0x002446e4)
-extern i32 g_actReg4Hi;
-DATA(0x002446e8)
-extern char* g_actReg4Base;
-DATA(0x002446ec)
-extern struct R4Entry* g_actReg4Cur;
-DATA(0x002446f0)
-extern i32 g_actReg4Stride;
-DATA(0x002446f8)
-extern i32 g_actReg4Scratch;
-DATA(0x00244874)
-extern CVariantSlot* g_partColl2;
-DATA(0x00244878)
-extern i32 g_partLo;
-DATA(0x0024487c)
-extern i32 g_partHi;
-DATA(0x00244880)
-extern char* g_partBase;
-DATA(0x00244884)
-extern CPartEntry* g_partCur;
-DATA(0x00244888)
-extern i32 g_partStride;
-DATA(0x00244890)
-extern i32 g_partScratch;
+// g_act* fields DEFINED in src/Gruntz/SecretTeleporterTrigger.cpp (owner TU).
+// g_actReg4* fields DEFINED in src/Gruntz/GruntStartingPoint.cpp (owner TU).
+// g_part* fields DEFINED in src/Gruntz/FortressFlag.cpp (owner TU).
 DATA(0x002452a4)
 extern i32 g_jitterX; // 0x6452a4
 DATA(0x002452cc)
@@ -321,20 +268,7 @@ DATA(0x002455f0)
 extern "C" i32 g_6455f0; // 0x6455f0
 DATA(0x002455f4)
 extern u8 g_debugFlags; // 0x6455f4  debug-overlay flag bits
-DATA(0x0024622c)
-extern CVariantSlot* g_kslimeColl2;
-DATA(0x00246230)
-extern i32 g_kslimeLo;
-DATA(0x00246234)
-extern i32 g_kslimeHi;
-DATA(0x00246238)
-extern char* g_kslimeBase;
-DATA(0x0024623c)
-extern CKSlimeEntry* g_kslimeCur;
-DATA(0x00246240)
-extern i32 g_kslimeStride;
-DATA(0x00246248)
-extern i32 g_kslimeScratch;
+// g_kslime* fields DEFINED in src/Gruntz/KitchenSlime.cpp (owner TU).
 DATA(0x00248ce0)
 extern i32 g_dlgResultSink; // DAT_00648ce0 (cleared after the modal run)
 DATA(0x00248cec)
@@ -371,20 +305,7 @@ DATA(0x0024acb4)
 extern i32 g_poolCount; // 0x64acb4 (g_pool.m_count)
 DATA(0x0024bdc0)
 extern i32 g_64bdc0; // DAT_0064bdc0
-DATA(0x0024bedc)
-extern CVariantSlot* g_dropColl2;
-DATA(0x0024bee0)
-extern i32 g_dropLo;
-DATA(0x0024bee4)
-extern i32 g_dropHi;
-DATA(0x0024bee8)
-extern char* g_dropBase;
-DATA(0x0024beec)
-extern CDropEntry* g_dropCur;
-DATA(0x0024bef0)
-extern i32 g_dropStride;
-DATA(0x0024bef8)
-extern i32 g_dropScratch;
+// g_drop* fields DEFINED in src/Gruntz/DroppedObject.cpp (owner TU).
 DATA(0x0024c27c)
 extern ScrollView* g_backView; // 0x64c27c
 DATA(0x0024c3f0)
@@ -475,34 +396,8 @@ DATA(0x0024e0c0)
 extern u8 g_ratings_64e0c0[]; // per-device rating bytes
 DATA(0x0024e360)
 extern i32 g_suppress_64e360;
-DATA(0x0024e3d4)
-extern CVariantSlot* g_haznColl2;
-DATA(0x0024e3d8)
-extern i32 g_haznLo;
-DATA(0x0024e3dc)
-extern i32 g_haznHi;
-DATA(0x0024e3e0)
-extern char* g_haznBase;
-DATA(0x0024e3e4)
-extern CHaznEntry* g_haznCur;
-DATA(0x0024e3e8)
-extern i32 g_haznStride;
-DATA(0x0024e3f0)
-extern i32 g_haznScratch;
-DATA(0x0024e97c)
-extern CVariantSlot* g_toobColl2;
-DATA(0x0024e980)
-extern i32 g_toobLo;
-DATA(0x0024e984)
-extern i32 g_toobHi;
-DATA(0x0024e988)
-extern char* g_toobBase;
-DATA(0x0024e98c)
-extern CToobEntry* g_toobCur;
-DATA(0x0024e990)
-extern i32 g_toobStride;
-DATA(0x0024e998)
-extern i32 g_toobScratch;
+// g_hazn* fields DEFINED in src/Gruntz/StaticHazard.cpp (owner TU).
+// g_toob* fields DEFINED in src/Gruntz/ToobSpikez.cpp (owner TU).
 DATA(0x0024eb14)
 extern i32 g_loadedFlag;
 DATA(0x00251504)

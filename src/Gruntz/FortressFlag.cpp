@@ -66,7 +66,8 @@ struct CFortressFlagActEntry {
 // unchanged.
 struct CFortressFlagActReg : public CActReg {};
 DATA(0x00244638)
-extern CFortressFlagActReg g_fortressFlagActReg; // 0x644638
+CFortressFlagActReg g_fortressFlagActReg; // 0x644638 (owner TU: real definition;
+                                          // interior fields 0x24463c..0x244658 are members)
 
 // The per-frame draw-delta mirror (_g_6bf3bc); the value-load reloc-masks.
 DATA(0x002bf3bc)
@@ -126,6 +127,23 @@ struct CPartEntryI32 {
 };
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
+// g_part* registry-field globals (referenced only from this TU): real
+// definitions DATA-pinned here; the single extern is in <Globals.h>.
+DATA(0x00244874)
+CVariantSlot* g_partColl2;
+DATA(0x00244878)
+i32 g_partLo;
+DATA(0x0024487c)
+i32 g_partHi;
+DATA(0x00244880)
+char* g_partBase;
+DATA(0x00244884)
+CPartEntry* g_partCur;
+DATA(0x00244888)
+i32 g_partStride;
+DATA(0x00244890)
+i32 g_partScratch;
+
 static inline CPartEntry* PartLookup(i32 coord) {
     g_partScratch = 0;
     if (coord >= g_partLo && coord <= g_partHi) {
@@ -143,7 +161,8 @@ static inline CPartEntry* PartLookup(i32 coord) {
 // The CExplosion class dispatch table (@0x6447f8), constructed by
 // InitLogicDispatch_6447f8 below and bound by RegisterXLogic_6447f8.
 DATA(0x002447f8)
-extern CLogicActTable g_logicActReg_6447f8; // 0x6447f8
+CLogicActTable g_logicActReg_6447f8; // 0x6447f8 (owner TU: the merged CExplosion
+                                     // dispatch table; interior 0x2447fc..0x244818 are members)
 
 // The explosion activation handler (ILT thunk; referenced by address so the
 // entry store emits a reloc-masked DIR32 to the named symbol).

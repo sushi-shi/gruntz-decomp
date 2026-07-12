@@ -128,6 +128,23 @@ struct CToobEntry {
 };
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
+// g_toob* registry-field globals (referenced only from this TU): real
+// definitions DATA-pinned here; the single extern is in <Globals.h>.
+DATA(0x0024e97c)
+CVariantSlot* g_toobColl2;
+DATA(0x0024e980)
+i32 g_toobLo;
+DATA(0x0024e984)
+i32 g_toobHi;
+DATA(0x0024e988)
+char* g_toobBase;
+DATA(0x0024e98c)
+CToobEntry* g_toobCur;
+DATA(0x0024e990)
+i32 g_toobStride;
+DATA(0x0024e998)
+i32 g_toobScratch;
+
 static inline CToobEntry* ToobLookup(i32 coord) {
     g_toobScratch = 0;
     if (coord >= g_toobLo && coord <= g_toobHi) {

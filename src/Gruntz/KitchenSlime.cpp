@@ -149,6 +149,23 @@ struct CKSlimeEntry {
 };
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
+// g_kslime* registry-field globals (referenced only from this TU): real
+// definitions DATA-pinned here; the single extern is in <Globals.h>.
+DATA(0x0024622c)
+CVariantSlot* g_kslimeColl2;
+DATA(0x00246230)
+i32 g_kslimeLo;
+DATA(0x00246234)
+i32 g_kslimeHi;
+DATA(0x00246238)
+char* g_kslimeBase;
+DATA(0x0024623c)
+CKSlimeEntry* g_kslimeCur;
+DATA(0x00246240)
+i32 g_kslimeStride;
+DATA(0x00246248)
+i32 g_kslimeScratch;
+
 static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
     g_kslimeScratch = 0;
     if (coord >= g_kslimeLo && coord <= g_kslimeHi) {

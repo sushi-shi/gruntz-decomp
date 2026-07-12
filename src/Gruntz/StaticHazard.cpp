@@ -181,6 +181,23 @@ static inline char* ActNameLookup(i32 id) {
 }
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
+// g_hazn* registry-field globals (referenced only from this TU): real
+// definitions DATA-pinned here; the single extern is in <Globals.h>.
+DATA(0x0024e3d4)
+CVariantSlot* g_haznColl2;
+DATA(0x0024e3d8)
+i32 g_haznLo;
+DATA(0x0024e3dc)
+i32 g_haznHi;
+DATA(0x0024e3e0)
+char* g_haznBase;
+DATA(0x0024e3e4)
+CHaznEntry* g_haznCur;
+DATA(0x0024e3e8)
+i32 g_haznStride;
+DATA(0x0024e3f0)
+i32 g_haznScratch;
+
 static inline CHaznEntry* HaznLookup(i32 coord) {
     g_haznScratch = 0;
     if (coord >= g_haznLo && coord <= g_haznHi) {
