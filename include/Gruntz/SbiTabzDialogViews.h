@@ -67,12 +67,18 @@ public:
 SIZE(CSbDialogItem, 0x34);
 
 // tag 3 image item: m_8=3, clear m_30.  vtable 0x5eac0c
+// The dtor is declared OUT-OF-LINE (no body): an implicit one makes cl5 emit a
+// divergent 5-byte COMDAT `??1CSBI_Image@@UAE@XZ = jmp ??1CSbDialogItem@@UAE@XZ`,
+// duplicating the real dtor (SBI_Image.cpp 0x100870) and calling a base dtor no obj
+// defines (CSbDialogItem is a view) -> unresolved external at link. Declared-only =>
+// the reference binds to the one real body at its retail rva.
 class CSBI_Image : public CSbDialogItem {
 public:
     CSBI_Image() {
         m_8 = 3;
         m_30 = 0;
     }
+    virtual ~CSBI_Image(); // 0x00100870 (SBI_Image.cpp)
 }; // size 0x34
 SIZE(CSBI_Image, 0x34);
 
@@ -103,8 +109,9 @@ public:
         m_8 = 4;
         m_34 = 0;
     }
-    i32 m_34; // +0x34
-    i32 m_38; // +0x38
+    virtual ~CSBI_ImageSet(); // 0x00102000 (SBI_ImageSet.cpp) - see CSBI_Image above
+    i32 m_34;                 // +0x34
+    i32 m_38;                 // +0x38
 }; // size 0x3c
 SIZE(CSBI_ImageSet, 0x3c);
 

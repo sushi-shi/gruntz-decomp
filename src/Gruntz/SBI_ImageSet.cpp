@@ -190,13 +190,13 @@ i32 CSBI_ImageSet::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
 
 // ---------------------------------------------------------------------------
 // ~CSBI_ImageSet (0x102000): the /GX chain destructor - stamp ??_7CSBI_ImageSet,
-// run DtorImageSet (reloc-masked), then MSVC folds the three inline base dtors in
-// (??_7CSBI_Image + DtorImage, ??_7CSBI_RectOnly + DtorRect, ??_7CStatusBarItem +
-// DtorStatus - the SBI_DTOR_CHAIN device; this TU owns ~CSBI_ImageSet itself via
-// SBI_OWN_IMAGESET_DTOR) behind the /GX SEH frame with 0/1/2/-1 trylevels.
-// Collapsed from SBI_ImageSetEh.cpp (4-level case of
+// run ResetCounters (0xe7400, this class's own member teardown), then MSVC folds the
+// three inline base dtors in (??_7CSBI_Image + ClearFrame, ??_7CSBI_RectOnly +
+// DtorRect, ??_7CStatusBarItem + DtorStatus - the SBI_DTOR_CHAIN device; this TU owns
+// ~CSBI_ImageSet itself via SBI_OWN_IMAGESET_DTOR) behind the /GX SEH frame with
+// 0/1/2/-1 trylevels. Collapsed from SBI_ImageSetEh.cpp (4-level case of
 // docs/patterns/eh-dtor-multilevel-polymorphic-chain.md).
 RVA(0x00102000, 0x7f)
 CSBI_ImageSet::~CSBI_ImageSet() {
-    DtorImageSet();
+    ResetCounters();
 }

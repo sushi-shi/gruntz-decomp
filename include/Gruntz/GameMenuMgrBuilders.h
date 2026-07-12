@@ -91,6 +91,11 @@ SIZE_UNKNOWN(CSBI_Image);
 // (0x5eab4c) vtables (catalogued in config/vtable_names.csv) - no manual stamp. The
 // inline ctor sets the per-tag fields the retail mk* helper wrote after the ctor
 // (m_tag = tag, m_34 = m_30 = m_38 = 0). Both are 0x3c bytes (the base CSBI_Image size).
+// Both leaves declare the dtor OUT-OF-LINE, exactly as CSBI_Image above does: an
+// IMPLICIT dtor makes cl5 emit a divergent 5-byte COMDAT `??1CSBI_X@@UAE@XZ =
+// jmp ??1CSBI_Image@@UAE@XZ`, an ODR-conflicting duplicate of the real body in
+// SBI_ImageSet.cpp / SBI_MenuItem.cpp. Declared-only => no definition here, so the
+// reference binds to the one real dtor at its retail rva.
 class CSBI_ImageSet : public CSBI_Image { // vtable 0x5eac4c, tag 4
 public:
     CSBI_ImageSet() {
@@ -99,6 +104,7 @@ public:
         m_30 = 0;
         m_38 = 0;
     }
+    virtual ~CSBI_ImageSet(); // 0x00102000 (SBI_ImageSet.cpp)
 };
 SIZE(CSBI_ImageSet, 0x3c);
 class CSBI_MenuItem : public CSBI_Image { // vtable 0x5eab4c, tag 2
@@ -109,6 +115,7 @@ public:
         m_30 = 0;
         m_38 = 0;
     }
+    virtual ~CSBI_MenuItem(); // 0x001007d0 (SBI_MenuItem.cpp)
 };
 SIZE(CSBI_MenuItem, 0x3c);
 

@@ -200,11 +200,12 @@ i32 CSBI_WarlordHead::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
 
 // ---------------------------------------------------------------------------
 // ~CSBI_WarlordHead (0x104a00): the /GX chain destructor - stamp
-// ??_7CSBI_WarlordHead, run DtorReset (0xe7400, reloc-masked), then MSVC folds
+// ??_7CSBI_WarlordHead, run the inherited ResetCounters (0xe7400), then MSVC folds
 // the four inline base dtors in (ImageSet/Image/RectOnly/StatusBarItem - the
-// SBI_DTOR_CHAIN device) behind the /GX SEH frame. Collapsed from
-// SBI_WarlordHeadEh.cpp.
+// SBI_DTOR_CHAIN device) behind the /GX SEH frame. The folded ImageSet level calls
+// ResetCounters AGAIN, so retail shows two `call 0xe7400` here (@0x2c and @0x41).
+// Collapsed from SBI_WarlordHeadEh.cpp.
 RVA(0x00104a00, 0x94)
 CSBI_WarlordHead::~CSBI_WarlordHead() {
-    DtorReset();
+    ResetCounters();
 }

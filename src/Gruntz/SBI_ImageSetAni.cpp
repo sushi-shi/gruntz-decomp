@@ -214,12 +214,13 @@ i32 CSBI_ImageSetAni::Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4) {
 
 // ---------------------------------------------------------------------------
 // ~CSBI_ImageSetAni (0x1047f0): the /GX chain destructor - stamp
-// ??_7CSBI_ImageSetAni, run DtorImageSetAni (reloc-masked), then MSVC folds the
-// four inline base dtors in (ImageSet/Image/RectOnly/StatusBarItem - the
-// SBI_DTOR_CHAIN device) behind the /GX SEH frame. Collapsed from
-// SBI_ImageSetAniEh.cpp (5-level case of
+// ??_7CSBI_ImageSetAni, run the inherited ResetCounters (0xe7400), then MSVC folds
+// the four inline base dtors in (ImageSet/Image/RectOnly/StatusBarItem - the
+// SBI_DTOR_CHAIN device) behind the /GX SEH frame. The folded ImageSet level calls
+// ResetCounters AGAIN, so retail shows two `call 0xe7400` here (@0x2c and @0x41).
+// Collapsed from SBI_ImageSetAniEh.cpp (5-level case of
 // docs/patterns/eh-dtor-multilevel-polymorphic-chain.md).
 RVA(0x001047f0, 0x94)
 CSBI_ImageSetAni::~CSBI_ImageSetAni() {
-    DtorImageSetAni();
+    ResetCounters();
 }

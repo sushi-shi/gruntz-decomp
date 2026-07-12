@@ -28,12 +28,24 @@
 // config/vtable_names.csv names it on the target side (reloc-masked). The inline
 // ctor sets the per-tag fields the retail Construct wrote after the base ctor
 // (m_8 = tag, m_30 = 0). Trailing padding pins each operator-new size to retail.
+//
+// EACH LEAF DECLARES ITS DTOR OUT-OF-LINE (declaration only, no body). Retail's
+// CSBI_* all have a user-declared out-of-line virtual dtor, defined ONCE in the
+// leaf's own TU (SBI_Image.cpp 0x100870, SBI_ImageSet.cpp 0x102000, ...). Leaving
+// it IMPLICIT here made cl5 synthesize a per-TU inline dtor and emit a 5-byte
+// COMDAT `??1CSBI_X@@UAE@XZ = jmp ??1CSbConfigItem@@UAE@XZ` - a DIVERGENT duplicate
+// of the real definition, calling a base dtor that exists in NO obj (CSbConfigItem
+// is a builder-facet view, not a retail class): an unresolved external at link, and
+// an ODR-divergent COMDAT the linker could pick over the real teardown. Declaring
+// the dtor emits no definition here, so the reference binds to the one real body at
+// its retail rva. Slot 0 is already the base's virtual dtor => layout/vtable-neutral.
 class CSBI_Image : public CSbConfigItem { // vtable 0x5eac0c, size 0x34
 public:
     CSBI_Image() {
         m_8 = 3;
         m_30 = 0;
     }
+    virtual ~CSBI_Image(); // 0x00100870 (SBI_Image.cpp)
 };
 SIZE(CSBI_Image, 0x34);
 
@@ -45,7 +57,8 @@ public:
         m_8 = 4;
         m_34 = 0;
     }
-    CImageSet* m_34; // +0x34  owned/resolved icon-set
+    virtual ~CSBI_ImageSet(); // 0x00102000 (SBI_ImageSet.cpp)
+    CImageSet* m_34;          // +0x34  owned/resolved icon-set
     char _pad38[0x3c - 0x38];
 };
 SIZE(CSBI_ImageSet, 0x3c);
@@ -56,6 +69,7 @@ public:
         m_8 = 7;
         m_30 = 0;
     }
+    virtual ~CSBI_WellGoo(); // 0x00104bb0 (SBI_WellGoo.cpp)
     char _pad34[0x6c - 0x34];
 };
 SIZE(CSBI_WellGoo, 0x6c);
@@ -68,7 +82,8 @@ public:
         m_8 = 0xb;
         m_34 = 0;
     }
-    i32 m_34; // +0x34
+    virtual ~CSBI_WarlordHead(); // 0x00104a00 (SBI_WarlordHead.cpp)
+    i32 m_34;                    // +0x34
     char _pad38[0x40 - 0x38];
 };
 SIZE(CSBI_WarlordHead, 0x40);
@@ -84,7 +99,8 @@ public:
         m_44 = 0;
         m_3c = 0x64;
     }
-    i32 m_34; // +0x34
+    virtual ~CSBI_ImageSetAni(); // 0x001047f0 (SBI_ImageSetAni.cpp)
+    i32 m_34;                    // +0x34
     char _pad38[0x3c - 0x38];
     i32 m_3c; // +0x3c
     i32 m_40; // +0x40
@@ -104,7 +120,8 @@ public:
         m_3c = 0x64;
         m_8 = 5;
     }
-    i32 m_34; // +0x34
+    virtual ~CSBI_StatzTabArrow(); // 0x001048f0 (SBI_StatzTabArrowEh.cpp)
+    i32 m_34;                      // +0x34
     char _pad38[0x3c - 0x38];
     i32 m_3c; // +0x3c
     i32 m_40; // +0x40

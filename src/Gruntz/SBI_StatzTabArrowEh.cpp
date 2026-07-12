@@ -15,7 +15,10 @@
 #include <Ints.h>
 #include <Gruntz/SBI_ImageSetAni.h> // canonical chain up to CSBI_ImageSetAni + CSBI_StatzTabArrow
 
+// The deepest leaf: its own level + the folded ImageSetAni and ImageSet levels each
+// run the ONE inherited CSBI_ImageSet::ResetCounters (0xe7400), so retail shows three
+// `call 0xe7400` here (@0x2c, @0x41, @0x56).
 RVA(0x001048f0, 0xa9)
 CSBI_StatzTabArrow::~CSBI_StatzTabArrow() {
-    DtorStatzTabArrow();
+    ResetCounters();
 }

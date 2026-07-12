@@ -99,9 +99,10 @@ public:
         i32,
         i32
     ) OVERRIDE; // slot 11
-    // Member teardown run by the dtor: 0xe7400 (the ImageSet-level counter reset the
-    // chain view called DtorReset; reloc-masked extern).
-    void DtorReset(); // 0xe7400
+    // Member teardown = the INHERITED CSBI_ImageSet::ResetCounters (0xe7400); retail's
+    // ~CSBI_WarlordHead calls it at its own level and again at the folded ImageSet level
+    // (two `call 0xe7400`). The old declared-only DtorReset alias was a fake view of that
+    // same function (unbound - would not link).
 
     // vtable slot 1 (0xeb970): serialize the head's single direction (m_3c), then
     // chain to the CSBI_ImageSet base serialize (0xe74f0). (The six-int slot-1

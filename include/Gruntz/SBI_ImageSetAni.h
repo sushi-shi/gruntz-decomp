@@ -26,8 +26,10 @@ public:
     virtual void SbiSlot5() OVERRIDE;     // slot 5
     virtual void AniInit();               // slot 13 (new)
     virtual void AniSetRange();           // slot 14 (new; 0xe7c30 SetRange)
-    // Member teardown run by the dtor (reloc-masked extern).
-    void DtorImageSetAni();
+    // Member teardown = the INHERITED CSBI_ImageSet::ResetCounters (0xe7400); retail's
+    // ~CSBI_ImageSetAni calls it at its own level and again at the folded ImageSet level
+    // (two `call 0xe7400`). The old declared-only DtorImageSetAni alias was a fake view
+    // of that same function (unbound - would not link).
 
     // vtable slot 1 (0xe7cd0): serialize the six persistent ints (m_3c..m_50) through
     // the stream's Read/WriteBytes, then chain the CSBI_ImageSet base serialize.
@@ -76,7 +78,7 @@ VTBL(CSBI_ImageSetAni, 0x001ead6c); // vtable_names -> code (RTTI game class; wa
 // device (was <Gruntz/SbiDtorChain.h>, now retired). See StatusBarItem.h.
 #if defined(SBI_DTOR_CHAIN) && !defined(SBI_OWN_IMAGESETANI_DTOR)
 inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
-    DtorImageSetAni();
+    ResetCounters();
 }
 #endif
 
@@ -87,8 +89,10 @@ inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
 // the builder-facet view (CSbConfigItem base) is in <Gruntz/StatusBarMgrBuilders.h> (the SBI
 // two-view split, never co-included).
 struct CSBI_StatzTabArrow : CSBI_ImageSetAni {
+    // Its /GX dtor's member teardown is the INHERITED CSBI_ImageSet::ResetCounters
+    // (0xe7400), called three times: own level + the folded ImageSetAni + ImageSet
+    // levels. (DtorStatzTabArrow was a declared-only fake view of that function.)
     virtual ~CSBI_StatzTabArrow() OVERRIDE;
-    void DtorStatzTabArrow();
 };
 SIZE_UNKNOWN(CSBI_StatzTabArrow);
 

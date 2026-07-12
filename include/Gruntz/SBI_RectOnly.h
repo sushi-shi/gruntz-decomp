@@ -798,6 +798,11 @@ public:
 SIZE(CSbiRectSub, 0x30);
 
 // tag-2 menu item (0x3c). vtable 0x5eab4c -> auto-named ??_7CSBI_MenuItem@@6B@.
+// The dtor is declared OUT-OF-LINE (no body): an implicit one makes cl5 emit a
+// divergent 5-byte COMDAT `??1CSBI_MenuItem@@UAE@XZ = jmp ??1CSbiTab@@UAE@XZ`,
+// duplicating the real dtor (SBI_MenuItem.cpp 0x1007d0) and calling a base dtor no
+// obj defines (CSbiTab is a view) -> unresolved external at link. Declared-only =>
+// the reference binds to the one real body at its retail rva.
 class CSBI_MenuItem : public CSbiTab {
 public:
     CSBI_MenuItem() {
@@ -806,6 +811,7 @@ public:
         m_30 = 0;
         m_38 = 0;
     }
+    virtual ~CSBI_MenuItem(); // 0x001007d0 (SBI_MenuItem.cpp)
     // The tab-widget drivers CSBI_RectOnly reaches through m_tabSprite* (non-virtual
     // reloc-masked call rel32; bodies + rvas bound in SBI_MenuItem.cpp). These fold
     // the former fake CSbiSprite view onto the real class: Release->Blit, Show->
