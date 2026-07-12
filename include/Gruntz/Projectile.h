@@ -26,20 +26,21 @@ class CLightFx; // folded CProjShadowActivate
 #include <Gruntz/MovingLogic.h> // CMovingLogic base (pulls UserLogic.h) + bound externs
 #include <rva.h>
 
-// The animation sub-object embedded in a render object at +0x1a0. Tick
-// (0x15c360, __thiscall, 1 arg) advances the active animation by the draw clock
-// (every call site feeds g_6bf3bc) and returns the anim state (2 = the fire/cue
-// point - the grunt fire step gates on ==2; the detach path discards it). Setup
-// (0x15c2d0, __thiscall, 1 arg) installs the resolved frame-0 sprite. The two
-// state gates the fire step's finish tail reads live at +0x20/+0x28 of this
-// sub-object == CProjRenderObj::m_1c0/m_1c8.
-SIZE_UNKNOWN(CProjAnim);
+// The animation sub-object embedded in a render object at +0x1a0. It bridges the two
+// canonical engine classes for this slot: Advance_15c360 (@0x15c360) IS
+// CAniAdvanceCursor::Advance_15c360 (advances the active animation by the draw clock -
+// every call site feeds g_6bf3bc - and returns the anim state: 2 = the fire/cue point
+// the grunt fire step gates on), and SetGeometry (@0x15c2d0) IS
+// CDDrawBlitParam::Setup_15c2d0 (installs the resolved frame-0 sprite). Both are
+// out-of-line forwarders to the real (reloc-masked) methods (defined in
+// Projectile.cpp, so Projectile.h stays light and no phantom symbol is emitted). The
+// two state gates the fire step's finish tail reads live at +0x20/+0x28 of this
+// sub-object == m_1c0/m_1c8.
 struct CProjAnim {
-    // The +0x1a0 geometry sub-player setter/probe (external/reloc-masked; formerly reached
-    // by per-TU CDDrawBlitParam / CAniAdvanceCursor facet casts on &renderObj->m_1a0).
-    void SetGeometry(void* src);   // 0x15c2d0  (src == a CProjRenderObj::m_frameN slot)
-    i32 Advance_15c360(i32 clock); // 0x15c360
+    void SetGeometry(void* src); // -> CDDrawBlitParam::Setup_15c2d0 (0x15c2d0)
+    i32 Advance_15c360(u32 clock); // -> CAniAdvanceCursor::Advance_15c360 (0x15c360)
 };
+SIZE_UNKNOWN(CProjAnim);
 
 // The name->sprite geometry map the sprite object owns (the CMapStringToOb the
 // loaders Lookup by frame name). Reached via m_154->m_c->m_2c, map embedded @+0x10.
@@ -74,7 +75,7 @@ struct CProjRenderObj {
     char m_pad64[0x7c - 0x64];
     struct CProjShadowSub* m_7c; // +0x7c  shadow sub-table (Init @+0x10, host @+0x18)
     char m_pad80[0x1a0 - 0x80];
-    CProjAnim m_1a0; // +0x1a0  animation sub-object (SetAnim(g_6bf3bc))
+    CProjAnim m_1a0; // +0x1a0  animation sub-object (CAniAdvanceCursor/CDDrawBlitParam bridge)
     char m_pad1a4[0x1b4 - 0x1a4];
     i32 m_1b4; // +0x1b4  geometry word (saved into CProjectile::m_savedFrameGeo)
     char m_pad1b8[0x1c0 - 0x1b8];
@@ -82,10 +83,11 @@ struct CProjRenderObj {
     char m_pad1c4[0x1c8 - 0x1c4];
     i32 m_1c8; // +0x1c8
 
-    // The CGameObject-base name/sprite setters, folded here (external/reloc-masked; the
-    // former per-TU CGruntSprite facet view is gone). The render object IS the game object.
-    void CacheFirstFrame(const char* name);             // 0x150540
-    i32 ApplyLookupGeometry(const char* key, i32 flag); // 0x1505b0
+    // The render object IS a CGameObject: these out-of-line forwarders (defined in
+    // Projectile.cpp) bind to CGameObject::ApplyName (0x150540, first-frame cache) /
+    // ApplyLookupGeometry (0x1505b0), so no phantom symbol is emitted.
+    void CacheFirstFrame(const char* name);             // -> CGameObject::ApplyName
+    i32 ApplyLookupGeometry(const char* key, i32 flag); // -> CGameObject::ApplyLookupGeometry
 };
 
 // The shadow companion's post-create sub-table (m_1fc->m_7c): an Init fn-ptr at

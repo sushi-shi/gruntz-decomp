@@ -8,7 +8,8 @@
 #include <string.h> // inline strcmp for the ctor's direction-name match
 #include <Bute/ButeMgr.h>
 #include <Gruntz/StringNode.h> // the type-name teardown slot
-#include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) for the leaf-dtor fold
+#include <Gruntz/UserLogic.h> // CUserLogic base (CKitchenSlime : CUserLogic) + CGameObject::ApplyName (0x150540)
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360) - the +0x1a0 sub-object
 #include <Gruntz/Sprite.h>    // CSprite (frame-data value; the looked-up direction sprite)
 #include <Globals.h>
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
@@ -28,28 +29,20 @@
 
 // CSprite (frame-data value) comes from <Gruntz/Sprite.h>.
 
-// The sub-object embedded in the anim player at +0x1a0 (a CSubMgr-style member);
-// Tick advances it once per frame via its 0x15c360 method (one int arg). External/
-// reloc-masked (the former per-TU CAniAdvanceCursor facet view is gone).
-struct CSlimeSubMgr {
-    i32 Advance_15c360(i32 clock); // 0x15c360
-};
-
 // The animation player @this+0x38 that holds the current direction sprite at
-// +0x194 and the cached first-frame trio at +0x190/+0x194/+0x198. Its CGameObject-base
-// CacheFirstFrame (0x150540) is folded here (external/reloc-masked; the former per-TU
-// CGruntSprite facet view is gone).
+// +0x194 and the cached first-frame trio at +0x190/+0x194/+0x198. It IS the bound
+// CGameObject (Anim() reinterprets m_38): the first-frame cache is CGameObject::
+// ApplyName (0x150540, cast at each call) and the +0x1a0 sub-object is the canonical
+// CAniAdvanceCursor (Advance_15c360 @0x15c360).
 struct CSlimeAnimPlayer {
-    void CacheFirstFrame(const char* name); // 0x150540
-
     char m_pad0[0x8];
     i32 m_8; // +0x08  status/flags word (Tick sets bit 0x10000 when stalled)
     char m_padc[0x190 - 0xc];
-    i32 m_190;          // +0x190  first frame number
-    CSprite* m_194;     // +0x194  the current direction sprite
-    i32* m_198;         // +0x198  first frame pointer
-    char m_pad19c[4];   // +0x19c
-    CSlimeSubMgr m_1a0; // +0x1a0  per-frame sub-mgr (Advance)
+    i32 m_190;             // +0x190  first frame number
+    CSprite* m_194;        // +0x194  the current direction sprite
+    i32* m_198;            // +0x198  first frame pointer
+    char m_pad19c[4];      // +0x19c
+    CAniAdvanceCursor m_1a0; // +0x1a0  per-frame advance cursor (Advance_15c360)
 };
 
 // The slime's resource/level holder (this->m_10). m_124 = travel direction
@@ -626,7 +619,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0;
             *((i32*)&m_dirY + 1) = 0xbff00000;
             if (changed) {
-                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_NORTH");
+                ((CGameObject*)Anim())->ApplyName("LEVEL_KITCHENSLIME_NORTH");
             }
             break;
         case 1: // east
@@ -637,7 +630,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0x3ff00000;
             *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_EAST");
+                ((CGameObject*)Anim())->ApplyName("LEVEL_KITCHENSLIME_EAST");
             }
             break;
         case 2: // south
@@ -648,7 +641,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirY + 1) = 0x3ff00000;
             *((i32*)&m_dirX + 1) = 0;
             if (changed) {
-                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_SOUTH");
+                ((CGameObject*)Anim())->ApplyName("LEVEL_KITCHENSLIME_SOUTH");
             }
             break;
         case 3: // west
@@ -658,7 +651,7 @@ i32 CKitchenSlime::LoadSprites() {
             *((i32*)&m_dirX + 1) = 0xbff00000;
             *((i32*)&m_dirY + 1) = 0;
             if (changed) {
-                Anim()->CacheFirstFrame("LEVEL_KITCHENSLIME_WEST");
+                ((CGameObject*)Anim())->ApplyName("LEVEL_KITCHENSLIME_WEST");
             }
             break;
     }
@@ -704,7 +697,6 @@ SIZE_UNKNOWN(CSlimeAnimPlayer);
 SIZE_UNKNOWN(CSlimeCtorObj);
 SIZE_UNKNOWN(CSlimeEntity);
 SIZE_UNKNOWN(CSlimeLevel);
-SIZE_UNKNOWN(CSlimeSubMgr);
 SIZE_UNKNOWN(CSlimeTiming);
 SIZE_UNKNOWN(CSprite);
 SIZE_UNKNOWN(CStringNode);

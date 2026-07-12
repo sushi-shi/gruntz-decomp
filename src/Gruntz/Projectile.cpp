@@ -37,12 +37,26 @@
 #include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
 #include <Gruntz/ActName.h>       // CActName (shared)
 #include <Gruntz/ActReg.h>        // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
+#include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam::Setup_15c2d0 (0x15c2d0) for the m_1a0 forwarder
 
-// The +0x1a0 anim sub-object's setter/probe (CProjAnim::SetGeometry / Advance_15c360) and
-// the render object's CGameObject-base name/sprite setters (CProjRenderObj::CacheFirstFrame /
-// ApplyLookupGeometry) are folded onto the real classes (<Gruntz/Projectile.h>), reached
-// directly; the former per-TU CDDrawBlitParam / CAniAdvanceCursor / CGruntSprite facet
-// views are gone.
+// The CProjAnim/CProjRenderObj facet methods forward (out-of-line, defined here so the
+// shared Projectile.h stays light) to the canonical engine classes: the +0x1a0 anim
+// sub-object's SetGeometry/Advance_15c360 -> CDDrawBlitParam::Setup_15c2d0 /
+// CAniAdvanceCursor::Advance_15c360, and the render object's CacheFirstFrame/
+// ApplyLookupGeometry -> CGameObject::ApplyName / ApplyLookupGeometry. All calls
+// reloc-mask, so no phantom symbol is emitted and the sites stay cast-free.
+void CProjAnim::SetGeometry(void* src) {
+    ((CDDrawBlitParam*)this)->Setup_15c2d0((CDDrawBlitParamSrc*)src);
+}
+i32 CProjAnim::Advance_15c360(u32 clock) {
+    return ((CAniAdvanceCursor*)this)->Advance_15c360(clock);
+}
+void CProjRenderObj::CacheFirstFrame(const char* name) {
+    ((CGameObject*)this)->ApplyName(name);
+}
+i32 CProjRenderObj::ApplyLookupGeometry(const char* key, i32 flag) {
+    return ((CGameObject*)this)->ApplyLookupGeometry(key, flag);
+}
 
 // StepMotion's two motion-phase thresholds (.rdata doubles) + the int amplitude
 // global it folds into the trajectory (loaded as a double via fild). DATA pins so
@@ -837,9 +851,8 @@ void CProjectile::MovingSlot16() {
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_sprite->m_40 &= ~1u;
-    // m_1a0 is a CAniAdvanceCursor (the CProjAnim view is a reduced facet of it);
-    // bind Advance_15c360 to the real ?..@CAniAdvanceCursor@@QAEHI@Z (0x15c360).
-    ((CAniAdvanceCursor*)&m_sprite->m_1a0)->Advance_15c360(g_6bf3bc);
+    // m_1a0.Advance_15c360 forwards to CAniAdvanceCursor::Advance_15c360 (0x15c360).
+    m_sprite->m_1a0.Advance_15c360(g_6bf3bc);
     CProjRenderObj* r = m_sprite;
     if (r->m_1c8 != 0 && r->m_1c0 == 0) {
         r->m_08 |= 0x10000;

@@ -3,6 +3,8 @@
 // only OFFSETS + code bytes are load-bearing. Engine callees are external/no-body.
 #include <Ints.h>
 #include <Gruntz/Effect6b.h>
+#include <DDrawMgr/DDrawBlitParam.h>     // CDDrawBlitParam::Setup_15c2d0 (0x15c2d0) - +0x1a0 geo setter
+#include <Gruntz/AniAdvanceCursor.h>     // CAniAdvanceCursor::Advance_15c360 (0x15c360) - +0x1a0 advance
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GruntzMgr.h>
 #include <rva.h>
@@ -25,12 +27,9 @@
 DATA(0x002bf3bc)
 extern "C" u32 g_6bf3bc;
 
-// The anim sub-player's geometry setter/probe (external/reloc-masked); folded onto its
-// own type (the former per-TU CDDrawBlitParam / CAniAdvanceCursor facet views are gone).
-struct CAnimSink2 {
-    void SetGeometry(i32 src);     // 0x15c2d0
-    i32 Advance_15c360(i32 clock); // 0x15c360
-};
+// The anim sub-player at owner+0x1a0 IS a CDDrawBlitParam (geo setter Setup_15c2d0
+// @0x15c2d0) / CAniAdvanceCursor (advance @0x15c360) - the two canonical engine
+// classes for the +0x1a0 sub-object; reached cast-at-use like the rest of the tree.
 struct CAnimOwner6b {
     char _00[0x1b4];
     i32 m_1b4; // +0x1b4
@@ -42,11 +41,11 @@ struct CAnimOwner6b {
 // reconstructed host on both sides. True obj is the unreconstructed 0x6b2xx run.)
 RVA(0x0006b2e0, 0x39)
 void CEffect6b::Apply(i32 a, i32 b) {
-    CAnimSink2* anim = (CAnimSink2*)((char*)m_4 + 0x1a0);
+    char* anim = (char*)m_4 + 0x1a0;
     m_c = m_4->m_1b4;
-    anim->SetGeometry(a);
+    ((CDDrawBlitParam*)anim)->Setup_15c2d0((CDDrawBlitParamSrc*)a);
     if (b != 0) {
-        anim->Advance_15c360((i32)g_6bf3bc);
+        ((CAniAdvanceCursor*)anim)->Advance_15c360((i32)g_6bf3bc);
     }
 }
 
@@ -158,7 +157,6 @@ i32 CStrikeEffect::Tick() {
     return 0;
 }
 SIZE_UNKNOWN(CAnimOwner6b);
-SIZE_UNKNOWN(CAnimSink2);
 SIZE_UNKNOWN(CGridLookup);
 SIZE_UNKNOWN(CMenuHolder95);
 SIZE_UNKNOWN(CGameRegistry);

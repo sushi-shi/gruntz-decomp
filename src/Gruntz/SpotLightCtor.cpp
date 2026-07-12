@@ -17,6 +17,7 @@
 #include <Gruntz/UserLogic.h>       // CUserLogic / CGameObject base init + g_buteMgr
 #include <Bute/ButeMgr.h>           // CButeTree / CButeMgr
 #include <Gruntz/GameRegistry.h>    // canonical *0x24556c singleton (color table via m_78)
+#include <Gruntz/TriggerMgr.h>      // CTriggerMgr::CellDispatch (0x6bcb0) - g_gameReg->m_cmdGrid cue dispatch
 #include <Gruntz/ActReg.h>          // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/SerialArchive.h>   // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>    // the +0x34 serialized-object-reference (Chain @0x8c00)
@@ -266,11 +267,9 @@ i32 CSpotLight::SerializeMove(CGruntArchive* arc, i32 mode, i32 c, i32 d) {
 extern "C" void* Probe_32ce(i32 x, i32 y, void* rect, i32* outA, i32* outB, i32 flag);
 extern "C" void Activate_4322(void* target, i32 f);
 extern "C" i32 SoundPlay_1360d0(i32 a, i32 b, i32 c, i32 d);
-// The per-cell sound-cue emitter, a __thiscall method on the cue subsystem
-// (g_gameReg->m_68); modeled on a tiny host so `mov ecx,mgr; ...; call` falls out.
-struct CSpotSoundMgr {
-    i32 EmitCue_2e96(i32 col, i32 row, i32 tag, i32 z); // 0x2e96
-};
+// The per-cell sound-cue emitter is CTriggerMgr::CellDispatch (0x6bcb0, reached
+// through the ILT thunk 0x2e96) on the registry's +0x68 command grid
+// (g_gameReg->m_cmdGrid); see <Gruntz/GameRegistry.h> / <Gruntz/TriggerMgr.h>.
 // The seeded PRNG (inline LCG) the laser id draws from: seed once from timeGetTime.
 extern "C" unsigned char g_randSeeded; // 0x6c127d
 extern "C" i32 g_randSeed;             // 0x6c1288
@@ -329,7 +328,7 @@ i32 CSpotLight::Tick_0b1af0() {
             *(i32*)(o + 0x5c) = *(i32*)(t + 0x5c);
             *(i32*)(o + 0x60) = *(i32*)(t + 0x60);
             if (*(i32*)(o + 0x114) == 1) {
-                ((CSpotSoundMgr*)*(void**)((char*)reg + 0x68))->EmitCue_2e96(m_9c, m_a0, 5, -1);
+                reg->m_cmdGrid->CellDispatch(m_9c, m_a0, 5, -1);
                 i32 seed;
                 if ((g_randSeeded & 1) == 0) {
                     g_randSeeded |= 1;
@@ -352,7 +351,7 @@ i32 CSpotLight::Tick_0b1af0() {
                 }
             } else {
                 Activate_4322(tgt, 1);
-                ((CSpotSoundMgr*)*(void**)((char*)reg + 0x68))->EmitCue_2e96(m_9c, m_a0, 0xa, -1);
+                reg->m_cmdGrid->CellDispatch(m_9c, m_a0, 0xa, -1);
             }
             return 0;
         }
@@ -382,6 +381,5 @@ SIZE_UNKNOWN(CSpotMgrTable);
 SIZE_UNKNOWN(CSpotActEntry);
 SIZE_UNKNOWN(CSpotFocus);
 SIZE_UNKNOWN(CSpotResMgr);
-SIZE_UNKNOWN(CSpotSoundMgr);
 SIZE_UNKNOWN(CSpotTarget);
 SIZE_UNKNOWN(CSpotLaser);
