@@ -39,8 +39,8 @@
 // The global empty C string the sound loader's prefix is seeded from (0x6293f4).
 extern "C" char g_emptyString[]; // 0x6293f4
 
-// The global asset-root CString whose emptiness gates the load (0x64e25c).
-DATA(0x0064e25c)
+// The global asset-root CString whose emptiness gates the load (0x24e25c).
+DATA(0x0024e25c)
 extern CString g_assetRoot;
 
 // The engine's just-refreshed per-frame clock delta (?g_wap32FrameDelta@@3HA); the
