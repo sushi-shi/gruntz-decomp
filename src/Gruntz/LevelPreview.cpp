@@ -26,9 +26,9 @@
 #include <Globals.h>
 
 extern "C" {
-    DATA(0x0061ab20)
+    DATA(0x0021ab20)
     extern i32 g_sndEnabled;
-    DATA(0x0061ab24)
+    DATA(0x0021ab24)
     extern i32 g_sndCueTag;
     DATA(0x002bf3c0)
     extern u32 g_killCueClock;

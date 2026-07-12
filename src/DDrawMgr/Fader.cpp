@@ -483,7 +483,7 @@ CFaderLight::~CFaderLight() {
 
 // The corner-distance exponent (retail .rdata double @0x5f0888 = 2.0); passed to the
 // __CIpow intrinsic so the squarings emit `fild x; fld K; call pow`.
-DATA(0x005f0888)
+DATA(0x001f0888)
 extern const double g_faderPowK; // 2.0
 
 // SIZE annotations for the ShadeTableCache.h classes are hosted here (a neutral
@@ -495,7 +495,7 @@ SIZE(PalEntry, 0x4);          // 4-byte palette record (256-entry array stride)
 SIZE(CShadeTableCache, 0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
 
 // PtInRect reached through a game-owned function pointer (ff 15).
-DATA(0x006c456c)
+DATA(0x002c456c)
 extern BOOL(WINAPI* g_pPtInRect)(const RECT*, POINT);
 
 struct Surf {
@@ -1302,15 +1302,15 @@ extern "C" int __ftol(double v); // 0x11f570 (CRT double->long, x87 fstcw/fldcw)
 
 // The radial-fade FP constants (retail .rdata): fade divisor half, the sqrt->units
 // scale, and the two -1.0 bias subtractions the per-cell fade formula applies.
-DATA(0x005f0828)
+DATA(0x001f0828)
 extern const float g_faderHalf; // 0.5
-DATA(0x005f0830)
+DATA(0x001f0830)
 extern const double g_faderScale; // 10000.0
-DATA(0x005f0838)
+DATA(0x001f0838)
 extern const double g_faderBiasR; // -1.0  (r - K == r + 1.0)
-DATA(0x005f0840)
+DATA(0x001f0840)
 extern const float g_faderBiasFade; // -1.0  (fade - K == fade + 1.0)
-DATA(0x005f0844)
+DATA(0x001f0844)
 extern const float g_faderOne; // 1.0  (per-cell render threshold: fade - frame > 1.0)
 
 // The image-source descriptor reached via FrConfig::m_imageSrc: dimension/handle

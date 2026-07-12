@@ -36,10 +36,10 @@ extern "C" CGameRegistry* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A (0x64556c)
 // Anim-name registry (g_typeColl @0x6bf650, RTTI ?g_typeColl@@3VCTypeKeyColl@@A):
 // GetNameRecord(m_14->m_1c) -> char**; *rec = the grunt-type name char* (retail call
 // 0x437c -> zDArray::IndexToPtr @0x310f0). Canonical CTypeKeyColl model, no casts.
-DATA(0x006bf650)
+DATA(0x002bf650)
 extern CTypeKeyColl g_typeColl;
 
-DATA(0x00645588)
+DATA(0x00245588)
 extern u32 g_clock; // game clock (g_645588)
 DATA(0x00245544)    // canonical binding 0x245544
 extern void* g_freeList;
@@ -47,7 +47,7 @@ DATA(0x0024554c) // canonical binding 0x24554c
 extern i32 g_freeListBias;
 extern i32 g_freeListNodeBias; // second name for 0x24554c (PhaseStep), reloc-masked extern
 
-DATA(0x00645540)
+DATA(0x00245540)
 extern FreeNodePool g_dropList;
 
 extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0 (MgrListFind)

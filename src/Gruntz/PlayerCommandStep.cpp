@@ -47,10 +47,10 @@ extern CButeMgr g_buteMgr;
 
 // The missed-select complaint cue lives at 0x61ab24 (the engine ?g_sndCueTag@@3HA int;
 // its address is the LeafCue the Complain path fires).
-DATA(0x0061ab24)
+DATA(0x0021ab24)
 extern i32 g_sndCueTag;
 
-DATA(0x00644c54)
+DATA(0x00244c54)
 extern i32 g_localPlayer; // g_644c54
 DATA(0x0024556c)
 extern "C" char* g_gameReg; // ->m_134

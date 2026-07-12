@@ -61,29 +61,29 @@ struct CTmNode {
 // IS. The two sites below that need the CGameRegistry facet (m_focusSlots /
 // m_modeW) bridge-cast; the WwdGameReg->CGameRegistry view unification is a
 // deferred Grunt.h-scale fold.
-DATA(0x0061ab24)
+DATA(0x0021ab24)
 extern i32 g_sndCueTag;
-DATA(0x0061ab20)
+DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA (mirrors m_soundEnabled)
 // Cheat toggles (named from their own ShowToggleMessage strings).
-DATA(0x006455a4)
+DATA(0x002455a4)
 extern i32 g_gruntDestruction; // "Grunt destruction"
-DATA(0x006455a8)
+DATA(0x002455a8)
 extern i32 g_gruntCreation; // "Grunt creation"
-DATA(0x006455ac)
+DATA(0x002455ac)
 extern i32 g_gooPuddlez; // "Goo puddlez"
-DATA(0x006455b0)
+DATA(0x002455b0)
 extern i32 g_traitorMode; // "Traitor Mode"
-DATA(0x006455e8)
+DATA(0x002455e8)
 extern i32 g_monologoShown; // the MONOLITH logo is on screen (LoadMonologoSprite)
-DATA(0x006455ec)
+DATA(0x002455ec)
 extern i32 g_6455ec; // load/quicksave-UI suppress gate (role unproven)
-DATA(0x006455f4)
+DATA(0x002455f4)
 extern i32 g_debugDisplayFlags; // bits: 1 obj count, 4 world pos, 0x10 frame rate,
                                 // 0x20/0x400 ?, 0x40/0x100 brick text, 0x80 elapsed time
-DATA(0x006455f8)
+DATA(0x002455f8)
 extern i32 g_explosionz; // "Explosionz"
-DATA(0x006bf3c0)
+DATA(0x002bf3c0)
 extern i32 g_time6bf3c0; // cue-cooldown clock (0x8247 throttle)
 DATA(0x00244c54) // RVA (was VA-typo 0x644c54, which shadowed the canonical _g_644c54)
 extern i32 g_644c54; // the magic group/kind id (grid-cheat gate; == TriggerMgr's)
@@ -93,14 +93,14 @@ DATA(0x002c44c0)
 extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
 DATA(0x002c44c4)
 extern i32(WINAPI* g_ShowCursor)(i32); // ?g_ShowCursor@@3P6GHH@ZA
-DATA(0x006c44c8)
+DATA(0x002c44c8)
 extern i32(WINAPI* g_pPostMessageA)(HWND, u32, u32, i32);
 
 // The two brick-display strings the 0x8068/0x806f cheats clear (real CStrings;
 // the "brick text" debug overlay renders them).
-DATA(0x00645524)
+DATA(0x00245524)
 extern CString g_brickText1;
-DATA(0x00645528)
+DATA(0x00245528)
 extern CString g_brickText2;
 
 // ParseSerial (@0x0d210) + SerialObjectFactory (@0x0d2a0) carved out to

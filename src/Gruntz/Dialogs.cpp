@@ -155,7 +155,7 @@ extern "C" char g_emptyString[];
 // The saved original window-proc of the edit child this subclass wraps (reloc-masked
 // DATA; the installer snapshots it via GetWindowLongA). Twin of MultiStartDlgWorld's
 // g_64bdc0.
-DATA(0x00629d10)
+DATA(0x00229d10)
 extern i32 g_629d10;
 
 // WndProc_15a10 (0x15a10) - the subclass window-proc installed on a read-only combo
@@ -584,7 +584,7 @@ void CBattlezDlg::ApplyColorSlot3() {
 // local CString) and, if non-empty, push it into the combo's child edit
 // (GetWindow(GW_CHILD) -> FromHandle -> SetWindowText) and latch m_68 = 0. /GX EH
 // frame unwinds the local CString.
-DATA(0x006c44a4)
+DATA(0x002c44a4)
 extern long(WINAPI* g_pSendMessageA)(void* hWnd, unsigned msg, unsigned wp, long lp);
 // @early-stop
 // 96.8%: full logic byte-exact (combo GetCurSel via g_pSendMessageA, GetLBText into the
@@ -650,7 +650,7 @@ void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
 
 // The game's FillRect fn-ptr global (the .idata IAT slot, reloc-masked indirect
 // call). Twin of FlashRect's g_pFillRect; DATA-bound here.
-DATA(0x006c44e0)
+DATA(0x002c44e0)
 extern int(WINAPI* g_pFillRectDlg)(HDC, const RECT*, HBRUSH);
 
 // A minimal MFC CDC wrapper for the owner-draw swatch fill: vptr + the two device

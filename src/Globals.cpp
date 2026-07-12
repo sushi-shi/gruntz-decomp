@@ -378,45 +378,45 @@ extern i32 g_randSeed; // 0x6c1288  LCG seed
 DATA(0x001eab40)
 extern float g_zeroF; // 0x5eab40  the shared 0.0f .rdata constant (was a VA-typo 0x5eab40 RVA)
 // g_colorNames / g_difficultyNames DEFINED in src/Gruntz/Play.cpp (owner TU).
-DATA(0x0061aabc)
+DATA(0x0021aabc)
 extern char g_imageTag[];
-DATA(0x0061ab14)
+DATA(0x0021ab14)
 extern "C" u32 g_61ab14;
-DATA(0x0062c00c)
+DATA(0x0022c00c)
 extern char g_mapNamePre[4];
-DATA(0x0062c010)
+DATA(0x0022c010)
 extern char g_mapNameBuf[0x200];
-DATA(0x00644ca4)
+DATA(0x00244ca4)
 extern void* g_renderCtx; // g_644ca4
-DATA(0x006454e8)
+DATA(0x002454e8)
 extern char* g_areaNames[];
 // g_645570 (the DirectInputMgr2 reset singleton @0x245570) is bound canonically in
 // GruntzMgr.cpp; the former g_glsResetMgr view (VA-typo'd 0x645570, mis-typed
 // GLSResetMgr*) was folded onto it (PlayStateActivate uses g_645570 directly).
-DATA(0x0064c814)
+DATA(0x0024c814)
 extern CImagePool* g_previewMgr;
-DATA(0x0064c868)
+DATA(0x0024c868)
 extern void* g_previewImage;
-DATA(0x00651614)
+DATA(0x00251614)
 extern i32 g_buildNumber;
-DATA(0x00683ea0)
+DATA(0x00283ea0)
 extern i32 g_pfRedShift; // 0x683ea0
-DATA(0x00683ea4)
+DATA(0x00283ea4)
 extern i32 g_pfGreenSize; // 0x683ea4
-DATA(0x00683eac)
+DATA(0x00283eac)
 extern i32 g_pfRedSize; // 0x683eac
-DATA(0x00683eb0)
+DATA(0x00283eb0)
 extern i32 g_pfGreenShift; // 0x683eb0
-DATA(0x00683eb4)
+DATA(0x00283eb4)
 extern i32 g_pfBlueSize; // 0x683eb4
-DATA(0x00684af0)
+DATA(0x00284af0)
 extern u8 g_grayRamp[];
-DATA(0x006bf400)
+DATA(0x002bf400)
 extern "C" i32 g_helperRefCount; // 0x6bf400
 // g_6bf8dc (debug-output mode word, VA 0x6bf8dc) is DEFINED in its owning TU
 // src/Rez/DebugPrintf.cpp (debugprintf.obj's .bss); the reference extern stays in
 // <Globals.h>.
-DATA(0x006c3fdc)
+DATA(0x002c3fdc)
 extern int(__stdcall* g_impFreeLibrary)(void*);
 
 extern "C" {

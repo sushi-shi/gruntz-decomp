@@ -100,11 +100,11 @@ struct CChatSprite {
 };
 
 // The horizontal-scroll edge state read by the two scroll-step methods.
-DATA(0x0061ab20)
+DATA(0x0021ab20)
 extern i32 g_scrollEnabled; // 0x61ab20
-DATA(0x0061ab24)
+DATA(0x0021ab24)
 extern i32 g_scrollDelta; // 0x61ab24
-DATA(0x006bf3c0)
+DATA(0x002bf3c0)
 extern i32 g_scrollClock; // 0x6bf3c0
 
 // The sprite poke target hung off a scroll-timer's m_10 (0x1360d0). __thiscall.
