@@ -22,11 +22,14 @@
 
 #include <rva.h>
 
-// g_mapCurve's DATA binding must live in a .cpp (labels.py collect_vars is
-// main-file-only; a header DATA() is ignored). extern "C" sidesteps the C++
-// array-global mangling divergence between clang and MSVC5.
-DATA(0x0024cfb0)
-extern "C" float g_mapCurve[12];
+// The scroll-state block at 0x24cfb0: g_scrollAccum (i64) leads it, and the
+// serializer below streams the accumulator pair (two i64) plus six scroll dwords.
+// (Ex g_mapCurve[12] - a fake float view: MapSerializeCurve is really the
+// scroll-state serializer, and the fake name's DATA(0x0024cfb0) binding collided
+// with the real g_scrollAccum at the same RVA and won the per-RVA keep-last dedup,
+// leaving cmdscrollapply's `?g_scrollAccum@@3_JA` reference UNBOUND. Anchored on the
+// real g_scrollAccum now - its DATA binding lives in MgrAutoScroll.cpp.)
+extern i64 g_scrollAccum; // 0x24cfb0 (bound in MgrAutoScroll.cpp)
 
 // ===========================================================================
 // CMapLogic::~CMapLogic  (0x0113c0)
@@ -42,11 +45,12 @@ CMapLogic::~CMapLogic() {}
 // ===========================================================================
 // MapSerializeCurve  (0x0ec230) - __cdecl
 // ===========================================================================
-// Stream the monotone float curve g_mapCurve through the archive `ar` keyed by
-// `mode`: mode 7 reads (vtable slot +0x2c), mode 4 writes (slot +0x30). The first
-// block transfers the two leading floats as one 8-byte block each; the second
-// transfers six trailing floats one at a time (size 4). Any other mode is a no-op
-// that still returns 1. Returns 0 only for a null archive.
+// Stream the scroll-state block (anchored on g_scrollAccum @0x24cfb0) through the
+// archive `ar` keyed by `mode`: mode 7 reads (vtable slot +0x2c), mode 4 writes
+// (slot +0x30). The first block transfers the two leading 8-byte accumulators; the
+// second transfers six trailing dwords (size 4). Any other mode is a no-op that
+// still returns 1. Returns 0 only for a null archive. (Every operand is
+// g_scrollAccum+addend -> reloc-masked, byte-identical to the ex g_mapCurve[k] form.)
 RVA(0x000ec230, 0x11c)
 i32 MapSerializeCurve(CSerialArchive* ar, i32 mode) {
     if (ar == 0) {
@@ -54,30 +58,30 @@ i32 MapSerializeCurve(CSerialArchive* ar, i32 mode) {
     }
     switch (mode) {
         case 4:
-            ar->Write(&g_mapCurve[0], 8);
-            ar->Write(&g_mapCurve[2], 8);
+            ar->Write(&g_scrollAccum, 8);
+            ar->Write((char*)&g_scrollAccum + 0x8, 8);
             break;
         case 7:
-            ar->Read(&g_mapCurve[0], 8);
-            ar->Read(&g_mapCurve[2], 8);
+            ar->Read(&g_scrollAccum, 8);
+            ar->Read((char*)&g_scrollAccum + 0x8, 8);
             break;
     }
     switch (mode) {
         case 4:
-            ar->Write(&g_mapCurve[4], 4);
-            ar->Write(&g_mapCurve[5], 4);
-            ar->Write(&g_mapCurve[6], 4);
-            ar->Write(&g_mapCurve[7], 4);
-            ar->Write(&g_mapCurve[8], 4);
-            ar->Write(&g_mapCurve[9], 4);
+            ar->Write((char*)&g_scrollAccum + 0x10, 4);
+            ar->Write((char*)&g_scrollAccum + 0x14, 4);
+            ar->Write((char*)&g_scrollAccum + 0x18, 4);
+            ar->Write((char*)&g_scrollAccum + 0x1c, 4);
+            ar->Write((char*)&g_scrollAccum + 0x20, 4);
+            ar->Write((char*)&g_scrollAccum + 0x24, 4);
             break;
         case 7:
-            ar->Read(&g_mapCurve[4], 4);
-            ar->Read(&g_mapCurve[5], 4);
-            ar->Read(&g_mapCurve[6], 4);
-            ar->Read(&g_mapCurve[7], 4);
-            ar->Read(&g_mapCurve[8], 4);
-            ar->Read(&g_mapCurve[9], 4);
+            ar->Read((char*)&g_scrollAccum + 0x10, 4);
+            ar->Read((char*)&g_scrollAccum + 0x14, 4);
+            ar->Read((char*)&g_scrollAccum + 0x18, 4);
+            ar->Read((char*)&g_scrollAccum + 0x1c, 4);
+            ar->Read((char*)&g_scrollAccum + 0x20, 4);
+            ar->Read((char*)&g_scrollAccum + 0x24, 4);
             break;
     }
     return 1;

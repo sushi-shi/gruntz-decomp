@@ -412,8 +412,8 @@ public:
     i32 BuildPage(i32 a, i32 b, i32 c, i32 d); // 0xfa8f0
     i32
     BuildBootyGruntIdleAnimation(); // 0x1ce60 (reloc-masked; the shared booty idle-anim builder Vslot0c tail-calls)
-    void ShowSecretBonusMessage();   // 0xfa540
-    void ShowLevelCompleteMessage(); // 0xfa120
+    i32 ShowSecretBonusMessage();    // 0x18f00 (ret int; the secret-bonus toast, BootyMessages.cpp)
+    void ShowLevelCompleteMessage(); // 0x1c9d0 (the level-complete toast, BootyMessages.cpp)
 
     // --- CBootyState members (placeholders, beyond the CState layout) ---
     char m_pad1a8[0x1bc - 0x1a8];
@@ -465,12 +465,11 @@ public:
     // formerly the CBootyAnimSelf `this`-alias view). FadeInTitle @0xfa1f0 is a CState
     // base method (inherited - no local shadow; callers reach it cast-free).
     void BuildPage(i32 x, i32 w, i32 h, i32 flag); // FUN_004fa8f0
-    // Slot-8 activator (OnActivate2 @0x1f6f0, booty-activate TU) tail helpers:
-    // BaseOnActivate is the shared image-load gate (0xface0, == CImageState's
-    // Unmatched_0face0 / CMgrPersistObj::Init), dispatched here with the state `this`;
-    // OnActivated (0x1ed30) runs after the namespaces install. Reloc-masked externals.
-    i32 BaseOnActivate(); // 0xface0
-    void OnActivated();   // 0x1ed30
+    // Slot-8 activator (OnActivate2 @0x1f6f0, booty-activate TU) tail helper:
+    // OnActivated (0x1ed30) runs after the namespaces install. (The shared image-load
+    // gate at 0xface0 is CState's slot-8 base virtual - reached via CState::InputVirtual(),
+    // not a CMultiBootyState-local BaseOnActivate alias; see StateImages / Attract.cpp.)
+    void OnActivated(); // 0x1ed30
 
     // Ready-gate + paint (0x1ce30): if the active/ready virtual (CState slot 3) fires,
     // run the per-frame paint and return its normalized result, else 0.

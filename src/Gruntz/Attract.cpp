@@ -730,6 +730,13 @@ struct CMgrPersistObj {
 // CMgrPersistObj::Init: hide the cursor, gate on the level being ready,
 // draw the "loading imagez" splash (once), resolve the GAME_IMAGEZ rez and load it
 // into the image-set, then mark the object started.
+// reloc-fidelity: 0xface0 IS CState's slot-8 base virtual (data-ref @0x1ea23c ==
+// ??_7CState@@6B@+0x20; called on state `this` as the base image-load gate by
+// CBootyState/CMultiBootyState/CImageState/CPlay slot-8 overrides). SYMBOL exports it
+// under the canonical CState::InputVirtual name so those overrides' base calls bind;
+// the CMgrPersistObj member VIEW is a fake facet of CState (m_levelData@+0x0c ==
+// CState::m_c) - its body-shape fold onto CState is deferred.
+SYMBOL(?InputVirtual@CState@@UAEHXZ)
 RVA(0x000face0, 0x17c)
 i32 CMgrPersistObj::Init() {
     if (m_levelData == 0) {

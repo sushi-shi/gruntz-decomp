@@ -39,6 +39,7 @@
 #include <Gruntz/UserLogic.h>   // canonical CGameObject (the movement target) + world chain types
 #include <Io/FileStream.h>      // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <Gruntz/ImageSets.h>   // CImageSet1/2/3 variant records + RezAlloc/RezFree
+#include <Gruntz/CustomWorldInfoDlg.h> // WwdLevelInfoSrc (0x160530 IsValidWwd is its method)
 #include <rva.h>
 
 #include <string.h> // strcpy, memset
@@ -2062,13 +2063,17 @@ i32 CGameLevel::ProbeHeadSoft(CGameObject* t, i32 dy) {
 }
 
 // ---------------------------------------------------------------------------
-// WwdFile::IsValidWwd
-// Open(name) -> Read(headerBuf, 0x5F4) -> require read == 0x5F4 and first u32
-// (the header signature) <= 0x5F4. The two null guards return BEFORE the stream
-// is constructed (no destructor on those paths); the stream's ctor runs only
-// after both guards, so its dtor unwinds the remaining exits.
+// WwdLevelInfoSrc::IsValidWwd (0x160530) - the world's level-info source validates a
+// selected .WWD: Open(name) -> Read(headerBuf, 0x5F4) -> require read == 0x5F4 and first
+// u32 (the header signature) <= 0x5F4. The two null guards return BEFORE the stream is
+// constructed (no destructor on those paths); the stream's ctor runs only after both
+// guards, so its dtor unwinds the remaining exits. The method IGNORES its `this` (reads
+// only the two args), so it is byte-identical to a __stdcall free fn - the caller
+// (CustomWorldInfoDlgProc, `m_world->m_24->IsValidWwd(...)`) still loads ecx=this
+// (the R57 "thiscall-ignoring-this"). Modeled as the real WwdLevelInfoSrc method (not a
+// SYMBOL-renamed free-fn view) so the caller's mangled reference binds naturally.
 RVA(0x00160530, 0x125)
-i32 __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf) {
+i32 WwdLevelInfoSrc::IsValidWwd(const char* name, void* headerBuf) {
     if (name == 0) {
         return 0;
     }

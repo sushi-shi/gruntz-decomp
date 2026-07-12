@@ -942,7 +942,7 @@ i32 CMultiBootyState::Render() {
 // the post-activate hook, then kick the render worker apply + the page timer.
 RVA(0x0001f6f0, 0x10b)
 i32 CMultiBootyState::InputVirtual() {
-    if (!BaseOnActivate()) {
+    if (!CState::InputVirtual()) { // 0xface0: the shared CState slot-8 base image-load gate
         return 0;
     }
 

@@ -81,6 +81,13 @@ void ShowHudMessage(
 // vs cl's `$L..`+`__except_list` frame (docs/seh-eh.md), plus a callee-saved-reg
 // NAMING choice in the post-loop banner/WARP blocks (cl hoists the 0x24 rect-top
 // constant into ebx, retail into edi; equivalent). Logic + all externs/strings named.
+// reloc-fidelity: the REAL owner is CBootyState (BzState is this TU's detailed member
+// VIEW of the same object - m_stateId@+0x1bc == CBootyState::m_activation, the 0xc8=200
+// discriminator; m_sink@+0xc == CState::m_c). SYMBOL exports it under the canonical
+// CBootyState name so the CState-slot-8 activator (StateImages) binds; the byte-exact
+// BzState body-shape fold onto GameMode.h's CBootyState is deferred (BootyStateActivate
+// co-includes both headers, so a class rename would ODR-clash).
+SYMBOL(?ShowLevelCompleteMessage@CBootyState@@QAEXXZ)
 RVA(0x0001c9d0, 0x351)
 void BzState::ShowLevelCompleteMessage() {
     for (i32 i = 0; i < 8; i++) {
@@ -157,6 +164,9 @@ void BzState::ShowLevelCompleteMessage() {
 // `Unwind@..` EH frame (docs/seh-eh.md) + the per-CString-temp EH-state ordering /
 // callee-saved regalloc across the many destructible RECT+CString locals. Logic +
 // externs/strings named.
+// reloc-fidelity: REAL owner CBootyState (see ShowLevelCompleteMessage note); SYMBOL
+// binds the CState-slot-8 activator (StateImages) to the canonical name.
+SYMBOL(?ShowSecretBonusMessage@CBootyState@@QAEHXZ)
 RVA(0x00018f00, 0x4fb)
 i32 BzState::ShowSecretBonusMessage() {
     if (m_secretBannerOnce != 0
@@ -249,6 +259,9 @@ i32 BzState::ShowSecretBonusMessage() {
 // secret bonus). Residual = the delinked `Unwind@..` EH frame (docs/seh-eh.md) +
 // callee-saved regalloc across the many engine sub-objects reached by raw
 // this+offset. Logic + externs/strings named.
+// reloc-fidelity: REAL owner CBootyState (see ShowLevelCompleteMessage note); SYMBOL
+// binds BootyStateActivate's CBootyState slot 12/14/17 tail-callers to the canonical name.
+SYMBOL(?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ)
 RVA(0x0001ce60, 0x450)
 i32 BzState::BuildBootyGruntIdleAnimation() {
     i32 state = m_stateId;

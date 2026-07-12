@@ -27,12 +27,10 @@
 // CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
 // <Gruntz/SerialArchive.h> - the former local `CMapArchive` view is folded away.
 
-// The serializable float curve (a monotone lookup ramp in .data at VA 0x64cfb0;
-// 0xec230 reads/writes a 12-float slice). Modeled extern + DATA() so the
-// `push offset` operands reloc-mask against the retail .data symbol.
-// extern "C" (C++ array-global mangling diverges clang vs MSVC5). The DATA binding
-// lives in MapLogic.cpp (a header DATA() is ignored - collect_vars is main-file-only).
-extern "C" float g_mapCurve[12]; // 0x64cfb0..0x64cfddf slice the serializer touches
+// The .data block at 0x24cfb0 that 0xec230 serializes is the scroll-state block
+// (g_scrollAccum @0x24cfb0, bound in MgrAutoScroll.cpp) - not a float curve. The
+// former g_mapCurve[12] fake float view is dissolved onto g_scrollAccum (its DATA
+// binding collided with the real g_scrollAccum at the same RVA); see MapLogic.cpp.
 
 // The intrusive free-list node allocator the +0x84 pointer-array serializer pulls
 // nodes from (shared with Projectile.cpp / BattlezMapConfig.cpp). The node body

@@ -19,9 +19,8 @@
 #include <Gruntz/BankMgr.h> // CResSource::LookupSet (the state's +0x2c/+0x30 asset source)
 #include <Gruntz/GameMode.h> // canonical CBootyState : CState + the shared CSpriteFactoryHolder facet
 
-// The engine helper at 0xface0 (returns nonzero when the state may load images; the same
-// image-load gate CMultiBootyState reaches as BaseOnActivate).
-i32 Unmatched_0face0(); // ?Unmatched_0face0@@YA...XZ
+// 0xface0 is CState's slot-8 base virtual (the shared image-load/activate gate every
+// state override calls first via CState::InputVirtual(); def SYMBOL-bound in Attract.cpp).
 
 // The cursor-show counter, cached in a game-owned function pointer (ff 15).
 // reloc-fidelity: RVA 0x2c44c4 (was the VA 0x6c44c4 = 0x400000+RVA typo, which
@@ -43,7 +42,7 @@ public:
 
 RVA(0x000a09a0, 0x6a)
 i32 CImageState::LoadStateImages() {
-    if (Unmatched_0face0() == 0) {
+    if (CState::InputVirtual() == 0) {
         return 0;
     }
     void* tree = SymTab2c()->ResolvePath("IMAGEZ");
@@ -71,7 +70,7 @@ i32 CImageState::LoadStateImages() {
 // (m_c->m_drawTarget->Flush) and build the booty page.
 RVA(0x0001c8a0, 0xec)
 i32 CBootyState::InputVirtual() {
-    if (Unmatched_0face0() == 0) {
+    if (CState::InputVirtual() == 0) {
         return 0;
     }
     i32(WINAPI * sc)(i32) = g_ShowCursor;

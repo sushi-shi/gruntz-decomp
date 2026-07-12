@@ -36,14 +36,21 @@
 // ---------------------------------------------------------------------------
 #include <Gruntz/GruntzMgr.h>
 
-// File-scope statics referenced by ErrorDialogProc / ShowError / ShowMessage (an
-// HWND and the error-text buffer). Bound to their real .bss RVAs via @data-symbol:
-// cl5 names an internal (static) global `_<name>$S<idx>`, so @data-symbol names the
-// exact cl5 symbol (the DIR32 loads/stores are reloc-masked, only the address bytes
-// are load-bearing).
-// @data-symbol: _g_errorHwnd$S18951 0x0024557c
-// @data-symbol: _g_errorText$S18952 0x00244ea0
-static HWND g_errorHwnd;        // last dialog HWND @ 0x24557c
+// The dialog HWND that ErrorDialogProc caches @0x24557c is the SHARED active-dialog
+// HWND NetLobby::g_curDlg_64557c (every dialog proc - error/lobby/checkpoint/
+// custom-world - caches its HWND at the SAME .bss slot; DATA home Net/LobbyDialogs.cpp).
+// It is a cross-TU global, not a GruntzApp static: modeling it as a local `g_errorHwnd`
+// static split 0x24557c into a second name (`_g_errorHwnd$S18951`) that won the per-RVA
+// keep-last and left the NetLobby users (CheckpointDlg/CustomWorldDialog/GruntzWnd)
+// UNBOUND. Unified onto the shared extern here (DIR32 masked - byte-neutral).
+namespace NetLobby {
+    extern HWND g_curDlg_64557c;
+}
+// The error-text buffer stays a genuine GruntzApp file-static (@data-symbol names the
+// exact cl5 `_<name>$S<idx>` symbol; the DIR32 loads/stores are reloc-masked). NB the
+// $S index shifted 18952->18949 when the ex-g_errorHwnd$S18951 static was folded onto
+// the shared NetLobby::g_curDlg_64557c above (cl5 renumbers per-TU statics).
+// @data-symbol: _g_errorText$S18949 0x00244ea0
 static char g_errorText[0x100]; // error message buffer @ 0x244ea0
 // (g_gameAppInstanceCount is declared in Wap32.h, defined in
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
@@ -187,7 +194,7 @@ WAP32::CGameMgr* CGruntzApp::InitializeGameManager() {
 RVA(0x00080c70, 0x55)
 INT_PTR CALLBACK
 CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    g_errorHwnd = hWnd;
+    NetLobby::g_curDlg_64557c = hWnd;
 
     switch (message) {
         case WM_INITDIALOG:

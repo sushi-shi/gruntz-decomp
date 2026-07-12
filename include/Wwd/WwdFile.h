@@ -372,10 +372,11 @@ extern "C" i32 uncompress(Bytef* dest, uLongf* destLen, const Bytef* source, uLo
 // __stdcall free function (callee cleans 12 bytes).
 extern "C" i32 __stdcall WwdFile_InflateMainBlock(WwdHeader* src, Bytef* dest, u32 destLen);
 
-// Validate a WWD file by name: open it, read the 1524-byte header into the
-// caller buffer, require read == 0x5F4 and header signature <= 0x5F4.
-// __stdcall free function (callee cleans 8 bytes); returns 1 / 0.
-i32 __stdcall WwdFile_IsValidWwd(const char* name, void* headerBuf);
+// (0x160530, "validate a WWD by name": Open -> Read the 1524-byte header -> require
+// read == 0x5F4 and header signature <= 0x5F4, returns 1/0, callee cleans 8 bytes - is
+// NOT a free WwdFile_* symbol: its only caller invokes it as WwdLevelInfoSrc::IsValidWwd,
+// a thiscall method that ignores `this`. Modeled there - <Gruntz/CustomWorldInfoDlg.h> /
+// GameLevel.cpp.)
 
 // Validate a WWD file by name into a private 1524-byte buffer, then copy that
 // header into the caller buffer. __stdcall (callee cleans 8 bytes); returns 1 / 0.
@@ -384,9 +385,10 @@ i32 __stdcall WwdFile_CheckHeader(const char* name, void* headerOut);
 // (real MFC CString from <Mfc.h> at the top; the WwdFile members take it by value)
 
 // ---------------------------------------------------------------------------
-// WwdFile - the WWD level-file loader namespace-class. IsValidWwd/CheckHeader/
-// InflateMainBlock are exposed above as the free `WwdFile_*` symbols the engine
-// actually emits; the two methods below carry the `@WwdFile@@` mangling.
+// WwdFile - the WWD level-file loader namespace-class. CheckHeader/InflateMainBlock
+// are exposed above as the free `WwdFile_*` symbols the engine actually emits (the
+// 0x160530 validator is instead WwdLevelInfoSrc::IsValidWwd - see above); the two
+// methods below carry the `@WwdFile@@` mangling.
 //   - ValidateMainBlock: a static caller-cleaned helper (Ghidra mis-derived its
 //     prototype as `void(void)`); takes a CString by value, returns an int.
 //   - ReadPlaneObjects: __thiscall, reads one object record at `src` into a new
