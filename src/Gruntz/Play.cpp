@@ -1732,6 +1732,16 @@ struct CLevelSync {
     i32 Sync(CSerialArchive* s, i32 op, i32 p4, i32 p5); // 0x1084d0
 };
 
+// The +0x2e4 begin-marker child-sync is CTileTriggerContainer::Serialize (0x117280,
+// TileTriggerContainer.cpp) - NOT CPlay::SyncState. Minimal local view (RemoveAll/dtor
+// used by the ~CPlay teardown views below) so SyncState's serialize call binds the reloc
+// to the real rva instead of self-recursing into CPlay::SyncState (0xd7520).
+struct CTileTriggerContainer {
+    i32 Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x117280
+    void RemoveAll();                                         // 0x116fa0
+    ~CTileTriggerContainer();
+};
+
 RVA(0x000d7520, 0x3b9)
 i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     if (ar == 0) {
@@ -1783,7 +1793,7 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     }
     p = &m_cueTimerLo;
     SYNC_PAIR(ar, mode, p);
-    if (!((CPlay*)m_beginMarker)->SyncState(ar, mode, a2, a3)) {
+    if (!((CTileTriggerContainer*)m_beginMarker)->Serialize(ar, mode, a2, a3)) { // 0x117280
         return 0;
     }
     p = &m_region0TimerLo;
@@ -1907,6 +1917,11 @@ struct CArchiveDefInt {
 // parking one extra scratch slot (frame 0x294 vs retail 0x28c) + a few zero-init
 // store positions - the entropy tail the CTriggerLoadRec/CEventLoadRec siblings
 // share; not source-steerable.
+// reloc-fidelity: 0xd79d0 IS CPlay::SyncWrite19fb - CPlay::SyncState (0xd7520) calls it
+// __thiscall (mov ecx,edi=this; push ar) as the mode-4 (write) play-state serializer.
+// SYMBOL exports it under the canonical CPlay name so that call binds; the CArchiveLoadRec
+// view is a full-object (0x514) recovered-symbol placeholder of CPlay (body-fold deferred).
+SYMBOL(?SyncWrite19fb@CPlay@@QAEHPAUCSerialArchive@@@Z)
 RVA(0x000d79d0, 0x537)
 i32 CArchiveLoadRec::Load(CSerialArchive* s) {
     if (s == 0) {
@@ -2066,6 +2081,11 @@ SIZE_UNKNOWN(CArchiveSubArray);
 // shape/order. Residue is the ~90 archive-Read + collection + map-lookup call
 // operands pairing to differently named retail symbols (the whole referent set
 // is external). Final sweep.
+// reloc-fidelity: 0xd8060 IS CPlay::SyncRead2f7c - CPlay::SyncState (0xd7520) calls it
+// __thiscall (mov ecx,edi=this; push ar) as the mode-7 (read) play-state serializer.
+// SYMBOL exports it under the canonical CPlay name so that call binds; the CGrunt::Load
+// view is the recovered-symbol placeholder for CPlay's Read serializer (body-fold deferred).
+SYMBOL(?SyncRead2f7c@CPlay@@QAEHPAUCSerialArchive@@@Z)
 RVA(0x000d8060, 0x6ce)
 i32 CGrunt::Load(CGruntArchive* ar) {
     if (ar == 0) {
@@ -6841,11 +6861,8 @@ struct CRtResMgr { // this->m_c
 };
 // CRtThis's begin-marker is a CTileTriggerContainer (RemoveAll @0x116fa0); its frame-marker is a
 // CTimer (Reset @0x9bc70, <Gruntz/Timer.h>) - same shapes CDtorThis already uses. Declared here so
-// CRtThis (below) can name them.
-struct CTileTriggerContainer {
-    void RemoveAll(); // 0x116fa0
-    ~CTileTriggerContainer();
-};
+// CRtThis (below) can name them. (CTileTriggerContainer is declared above, near
+// SyncState, with its serialize entry.)
 struct CRtReg { // g_gameReg (only its +0x68 timeline is touched here)
     char p0[0x68];
     CRtTimeline* m_68; // +0x68

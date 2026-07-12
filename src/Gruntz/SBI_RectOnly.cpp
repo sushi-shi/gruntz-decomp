@@ -1194,6 +1194,10 @@ extern void(WINAPI* g_pCopyRect)(RECT* dst, const RECT* src);
 // registers and emits the 1 as inline immediates instead. Already spelled with a
 // shared `i32 one=1` local, which MSVC5 declines to keep in a register - a regalloc
 // pressure coin-flip, not source-steerable; deferred to the final sweep.
+// reloc-fidelity: 0x104e60 IS CSBI_RectOnly::LoadStatzTabToggleSprite (ToggleStat calls
+// it unqualified on `this`); SYMBOL exports it under the canonical name so that call
+// binds. The EngineLabelBacklog view is the recovered-symbol placeholder (fold deferred).
+SYMBOL(?LoadStatzTabToggleSprite@CSBI_RectOnly@@QAEXHH@Z)
 RVA(0x00104e60, 0xed)
 i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     i32* m = (i32*)this;
@@ -1713,6 +1717,11 @@ CWarpStoneFly::CWarpStoneFly() {
 // temp (eax) and branch-selects into edi in retail, where this toolchain fuses the
 // load directly into edi (`mov edi,[ecx+4*edi]`). Same select-register-fusion family
 // as the 64-bit clamp; not source-steerable; deferred to the final sweep.
+// reloc-fidelity: 0x109bd0 IS CWarpStoneFly::Init - CSBI_RectOnly::EnsureSub news a
+// CWarpStoneFly and calls o->Init(this,a,b,c) on it; SYMBOL exports it under the
+// canonical CWarpStoneFly::Init name so that call binds (a0 is the CSBI_RectOnly owner).
+// The EngineLabelBacklog view is the recovered-symbol placeholder (fold deferred).
+SYMBOL(?Init@CWarpStoneFly@@QAEHPAXHHH@Z)
 RVA(0x00109bd0, 0x1b5)
 i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i32 srcY) {
     i32* m = (i32*)this;

@@ -1215,6 +1215,11 @@ i32 CGrunt::StepEntranceRelatchA() {
 // structure are byte-faithful in shape/order. Residue = the x87 register-stack
 // scheduling + which spill slot holds each interpolation operand (source-invariant
 // on this leaf). Deferred to the final sweep.
+// reloc-fidelity: 0x62b70 IS CGrunt::RectSegProbe - CGrunt's rect/seg-probe caller
+// (winapi_04a9f0) invokes it thiscall-style (mov ecx,this ignored; 3 pushed args) so it
+// emits ?RectSegProbe@CGrunt@@. SYMBOL exports it under that name so those 4 calls bind;
+// the body stays the byte-matched __stdcall leaf (it ignores ecx / uses pure stack args).
+SYMBOL(?RectSegProbe@CGrunt@@QAEHPAX00@Z)
 RVA(0x00062b70, 0x205)
 i32 __stdcall CGrunt_SegBoxOverlap(GruntBox* p, GruntSegEnd* e1, GruntSegEnd* e2) {
     i32 e1y = e1->m_4;

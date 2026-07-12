@@ -366,7 +366,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                             return 1;
                         }
                         char buf[128];
-                        g_pwsprintfA(buf, "AMBIENT%d", _g->Flip());
+                        g_pwsprintfA(buf, "AMBIENT%d", _g->GetAmbientId()); // 0xda200 (canonical)
                         m_sound->PlayByName(buf, 1);
                         return 1;
                     }

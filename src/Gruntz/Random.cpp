@@ -121,6 +121,12 @@ namespace Rng {
     // __thiscall coin-flip: deterministic ((m_1c+1)%2) in replay mode, otherwise a
     // once-per-frame random bit lazily seeded from timeGetTime.
     // @interleaver Rng - own-namespace helper COMDAT scattered at 0xda200; RVA-placement.
+    // reloc-fidelity: 0xda200 IS CPlay::GetAmbientId - CPlay::SyncState (0xd7520) and the
+    // Monolith AMBIENT cheat (GruntzMgrCmd) both call it __thiscall on a CPlay `this` to
+    // pick the "AMBIENT%d" variant index. SYMBOL exports it under the canonical CPlay
+    // name so those calls bind; the Rng::CoinFlip view is the recovered-symbol placeholder
+    // (m_1c == CPlay+0x1c replay-seed; body-fold onto CPlay deferred).
+    SYMBOL(?GetAmbientId@CPlay@@QAEHXZ)
     RVA(0x000da200, 0x9b)
     i32 CoinFlip::Flip() {
         CoinGameReg* gr = g_gameReg;

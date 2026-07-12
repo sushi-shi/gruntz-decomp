@@ -834,6 +834,12 @@ i32 __stdcall Check7_36bb(i32 h); // 0x0fb1c0 (kind 7)
 // jne / kind7 inline / kind4 trailing) is byte-identical to retail; residual is
 // a0 landing in ecx (cl) vs eax (retail) - so the a0==0 return needs an extra
 // xor eax, and the push/cmp register encodings shift. Not source-steerable. ~93.3%.
+// reloc-fidelity: 0xfafa0 IS CPlay::HeaderSerialize - CPlay::SyncState (0xd7520,
+// play) calls it __thiscall (mov ecx,edi=this; push ar/mode/a2/a3) as the header
+// serialize/mode pre-step. SYMBOL exports it under the canonical CPlay name so that
+// call binds; the free-fn Validate_fafa0 view is the recovered-symbol placeholder
+// (body-fold onto CPlay deferred - it touches no members here).
+SYMBOL(?HeaderSerialize@CPlay@@QAEHPAUCSerialArchive@@HHH@Z)
 RVA(0x000fafa0, 0x3b)
 i32 __stdcall Validate_fafa0(i32 a0, i32 kind, i32 a2, i32 a3) {
     if (a0 == 0) {

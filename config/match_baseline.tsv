@@ -179,7 +179,7 @@ gruntzmgr	129	88
 gruntzmgr2	1	0
 gruntzmgrcmd	1	0
 gruntzmgrtransition	1	1
-gruntzrandom	5	3
+gruntzrandom	5	2
 gruntzsoundz	31	28
 gruntzwnd	16	15
 guardpoint	4	3
@@ -470,6 +470,7 @@ areamgr	?TokenMgrReset99b80@@YAXXZ	100.0000	100.0000	2	eb9ce7ee67f4	0x99b80
 arrayserialize	?Serialize@CMovieScratch@@UAEXAAVCArchive@@@Z	72.6849	72.6849	1	adba7d3f736d	0x39fa0
 attract	?Activate@CAttract@@QAEHXZ	99.0000	99.0000	6	07fd10f26015	0xa0a30
 attract	?FadeInTitle@CState@@QAEHPBDHHHHH@Z	75.3691	75.3691	1	ca3dbe62c1f4	0xfa1f0
+attract	?HeaderSerialize@CPlay@@QAEHPAUCSerialArchive@@HHH@Z	0.0000	0.0000	1	cpp:634a5e635029	0xfafa0
 attract	?InputVirtual@CState@@UAEHXZ	0.0000	0.0000	1	cpp:100030976c43	0xface0
 attract	?Load@CMgrPersistObj@@QAEHPAUCSerialArchive@@@Z	95.9116	95.9116	1	a73bcd8f7217	0xfaff0
 attract	?LoadTitleConfig@CAttract@@QAEHH@Z	99.0991	99.0991	6	01f1fa9e42e0	0xa03f0
@@ -484,7 +485,6 @@ attract	?RunTitle@CState@@QAEHHHHHH@Z	99.5238	99.5238	1	a07677cce3b7	0xfa300
 attract	?RunTitleSeq@CState@@QAEHPBDHHHH@Z	100.0000	100.0000	1	6ba3a7569ea9	0xfa350
 attract	?Save@CMgrPersistObj@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	2	4cfa2b4c9d7b	0xfb1c0
 attract	?ShadeScreen@CState@@QAEHH@Z	100.0000	100.0000	1	e876d2deb587	0xfaf50
-attract	?Validate_fafa0@@YGHHHHH@Z	93.3333	93.3333	1	dbcad3c4c56f	0xfafa0
 attract	?Vslot07@CState@@UAEHXZ	100.0000	100.0000	1	ccb2a53a171d	0xfac70
 attract	?Vslot17@CState@@UAEHHHPADHH@Z	100.0000	100.0000	1	95c50c89cc25	0xfa6b0
 attractstate	??1CAttract@@UAE@XZ	100.0000	100.0000	1	b2b974d351ac	0x8cd90
@@ -1909,11 +1909,11 @@ gruntcreationpoint	?Serialize@CGruntCreationPoint@@QAEHHHHH@Z	84.1875	84.1875	3	
 gruntdatarecord	?DeserializeStrings@GruntDataRecord@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	18	b10f73aebf05	0x56eb0
 gruntdatarecord	?SerializeStrings@GruntDataRecord@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	18	35652e0ddcb8	0x56da0
 gruntentrancearrival	?BuildGruntExitAnimation@CGrunt@@QAEHXZ	99.0509	99.0509	3	80876f52189e	0x641b0
-gruntentrancearrival	?CGrunt_SegBoxOverlap@@YGHPAUGruntBox@@PAUGruntSegEnd@@1@Z	78.7228	78.7228	1	bd79606db41e	0x62b70
 gruntentrancearrival	?LoadVehicleGruntAnimations@CGrunt@@QAEXXZ	95.4385	95.4385	4	991a5b2fee60	0x63db0
 gruntentrancearrival	?LoadWandGruntItemConfig@CGruntBehaviorLeaf@@QAEHXZ	95.1277	95.1277	1	30c3d4c7d916	0x65a60
 gruntentrancearrival	?RearmAttackAnim2@CGrunt@@QAEHXZ	95.7843	95.7843	1	4b653dfe18cf	0x61bc0
 gruntentrancearrival	?RearmAttackAnim@CGrunt@@QAEHHH@Z	61.6031	61.6031	1	cd840be03124	0x61940
+gruntentrancearrival	?RectSegProbe@CGrunt@@QAEHPAX00@Z	0.0000	0.0000	1	cpp:0e7084f9a67c	0x62b70
 gruntentrancearrival	?ResetEntranceAnimation@CGrunt@@QAEXHHH@Z	29.1548	29.1548	3	42bad4b574e7	0x62e10
 gruntentrancearrival	?ResetGeometry@CGrunt@@QAEHXZ	80.9600	80.9600	1	17dc102ba997	0x616e0
 gruntentrancearrival	?ResolveEntranceArrival@CGrunt@@QAEXXZ	86.4115	86.4115	3	d898ccc5fe73	0x633e0
@@ -2251,9 +2251,9 @@ gruntzmgr	?WarpDialogProc@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	2d3e437a7201	
 gruntzmgr	?XorLiveObjectFlags@CGruntzMgr@@QAEXH@Z	87.5882	87.5882	1	394013aacc15	0x8dc20
 gruntzmgr	?winapi_092a30_EndDialog@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	1	c98847ead13e	0x92a30
 gruntzmgr2	?SetCellHeight@CGruntzMgr@@QAEXHHH@Z	50.0870	50.0870	1	63d41c4eb257	0x111ec0
-gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHHH@Z	70.4619	70.4619	2	c3eaab59033e	0x862f0
+gruntzmgrcmd	?HandleCommand@CGruntzMgr@@UAEHHHH@Z	70.4619	70.4619	3	16b676d0698e	0x862f0
 gruntzmgrtransition	?Vslot15@CDemo@@UAEHXZ	100.0000	100.0000	1	1e57c056f6a2	0x3c030
-gruntzrandom	?Flip@CoinFlip@Rng@@QAEHXZ	100.0000	100.0000	11	29ad8432aa0b	0xda200
+gruntzrandom	?GetAmbientId@CPlay@@QAEHXZ	0.0000	0.0000	1	cpp:8cce7690bec5	0xda200
 gruntzrandom	?Next2@Rng@@YAHXZ	100.0000	100.0000	10	4d6036b96397	0x15cbe0
 gruntzrandom	?Next@Rng@@YAHXZ	100.0000	100.0000	11	a23c20baaf4a	0xcd00
 gruntzrandom	?RangeStd@Rng@@YGHHH@Z	14.4444	14.4444	11	dea2279d1c51	0x19f50
@@ -3088,8 +3088,6 @@ play	?GetFrame@CPlay@@UAEHXZ	100.0000	100.0000	1	3c26f0462b60	0x8c950
 play	?HandleDragMove@CPlay@@QAEHHHH@Z	34.9962	34.9962	5	22d426061a41	0xd0db0
 play	?HandleMousePress@CPlay@@QAEHHHH@Z	84.2056	84.2056	1	e3f0ea106666	0xce660
 play	?HandleTileClick@CPlay@@QAEHHHH@Z	80.7050	80.7050	8	4d7d52f3e5c1	0xceae0
-play	?Load@CArchiveLoadRec@@QAEHPAUCSerialArchive@@@Z	99.7718	99.7718	1	63220632eec9	0xd79d0
-play	?Load@CGrunt@@QAEHPAUCGruntArchive@@@Z	87.0148	87.0148	1	975bdf5d01f6	0xd8060
 play	?LoadActionTileSprites@CPlay@@QAEHH@Z	100.0000	100.0000	5	dd46839bc6c2	0xdb600
 play	?LoadByMode@CPlayLevelLoad@@QAEHHH@Z	78.8338	78.8338	2	9cb5513b1e85	0xca200
 play	?LoadCursorSprites@CPlay@@QAEHHH@Z	92.6389	92.6389	5	f9dd69297635	0xd0120
@@ -3138,10 +3136,12 @@ play	?SetEffectSpriteDurations@CPlay@@QAEHXZ	67.0648	67.0648	3	71f7c15b670c	0xdc
 play	?StepC@CPlay@@QAEXXZ	85.4545	85.4545	2	adb4377193c9	0xd8d90
 play	?StepGridWalk@CPlay@@QAEHH@Z	66.6667	66.6667	2	30549333890a	0xd0a60
 play	?StepInputA@CPlay@@QAEHXZ	89.8077	89.8077	3	79a0630162f5	0xd11e0
-play	?StepScroll@CPlay@@QAEXXZ	71.6207	71.6207	4	de3d9251c114	0xd1ac0
+play	?StepScroll@CPlay@@QAEXXZ	63.5172	63.5172	4	de3d9251c114	0xd1ac0
 play	?Swap@Cdb200@@QAEHPAX@Z	100.0000	100.0000	2	83df11f5f199	0xdb200
 play	?SyncLevelKey@Cdb750@@QAEHPAX@Z	100.0000	100.0000	2	a5e33ff983b5	0xdb750
-play	?SyncState@CPlay@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	3	021f83886ec7	0xd7520
+play	?SyncRead2f7c@CPlay@@QAEHPAUCSerialArchive@@@Z	0.0000	0.0000	1	cpp:81ca999532df	0xd8060
+play	?SyncState@CPlay@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	4	f035e707b177	0xd7520
+play	?SyncWrite19fb@CPlay@@QAEHPAUCSerialArchive@@@Z	0.0000	0.0000	1	cpp:81ca999532df	0xd79d0
 play	?Teardown@Ccef50@@QAEHXZ	77.6818	77.6818	1	98943f7207a1	0xcef50
 play	?Vslot0d@CPlay@@UAEHHH@Z	100.0000	100.0000	1	c90f1ee38774	0xcda70
 play	?Vslot13@CPlay@@UAEHHHH@Z	100.0000	100.0000	1	05d470882497	0xceab0
@@ -3356,6 +3356,7 @@ sbi_rectonly	?HitTestRects@CSBI_RectOnly@@QAEPAVCSbiRect@@HH@Z	95.2717	95.2717	3
 sbi_rectonly	?HlClickGroup0@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	11	3297b15eb03f	0x10b5d0
 sbi_rectonly	?HlClickGroup1@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	11	c525e39e64f8	0x10b6f0
 sbi_rectonly	?HlClickGroup2@CSBI_RectOnly@@QAEHH@Z	94.1884	94.1884	11	49eb139070a0	0x10b810
+sbi_rectonly	?Init@CWarpStoneFly@@QAEHPAXHHH@Z	0.0000	0.0000	1	cpp:5895fec7fd12	0x109bd0
 sbi_rectonly	?InitTabRects@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	4	7dfbfaaa60bb	0x106900
 sbi_rectonly	?InsertPtr@CSBI_RectOnly@@QAEHHH@Z	75.8491	75.8491	4	ee14d7849a05	0x108410
 sbi_rectonly	?LoadBattlezItemConfig@CSBI_RectOnly@@QAEHH@Z	93.6625	93.6625	8	41978b7960dd	0xfdc00
@@ -3365,7 +3366,7 @@ sbi_rectonly	?LoadGooCookingSprite@CSBI_RectOnly@@QAEHH@Z	96.6667	96.6667	11	752
 sbi_rectonly	?LoadMainStatusBarSprite@CSBI_RectOnly@@QAEHXZ	88.5526	88.5526	11	8a24358653de	0xfe6b0
 sbi_rectonly	?LoadMultiplayerBattlezConfig@CSBI_RectOnly@@QAEXH@Z	90.4545	90.4545	9	04be425c3f73	0x107ae0
 sbi_rectonly	?LoadRezMachineConfig@CSBI_RectOnly@@QAEXXZ	71.7037	71.7037	14	f76bd0162a2c	0x105e40
-sbi_rectonly	?LoadStatzTabToggleSprite@EngineLabelBacklog@@QAEHHH@Z	79.3067	79.3067	1	178d13a0ef0d	0x104e60
+sbi_rectonly	?LoadStatzTabToggleSprite@CSBI_RectOnly@@QAEXHH@Z	0.0000	0.0000	1	cpp:5895fec7fd12	0x104e60
 sbi_rectonly	?NotifyAllSlots@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	6	601438384dca	0x106a00
 sbi_rectonly	?PlaceCursorTarget@CSBI_RectOnly@@QAEHHH@Z	70.9091	70.9091	9	9ab04427f0e2	0x105800
 sbi_rectonly	?RefreshA@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	1	9108abceef14	0xfe460
@@ -3407,7 +3408,6 @@ sbi_rectonly	?UpdateRezConveyorStatusBar@CSBI_RectOnly@@QAEXXZ	84.7770	84.7770	1
 sbi_rectonly	?UpdateRezMachineSnoozeStatusBar@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	5	5a23d8978628	0x106660
 sbi_rectonly	?UpdateRezMachineWakeStatusBar@CSBI_RectOnly@@QAEHXZ	96.1290	96.1290	4	735f3e56ff0c	0x107a10
 sbi_rectonly	?UpdateStatusBarTabHighlight@CSBI_RectOnly@@QAEHHHH@Z	47.1088	47.1088	11	bf3008146f75	0xfe910
-sbi_rectonly	?UpdateWarpStoneStatusBar@EngineLabelBacklog@@QAEHHHHH@Z	80.4714	80.4714	1	0f4707d319a9	0x109bd0
 sbi_rectonly	?winapi_0fe520_SetRect@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	9	76f021035e15	0xfe520
 sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	88.4253	88.4253	7	e70a23d91c8e	0x107d00
 sbi_rectonlybase	?Setup@CSBI_RectOnly@@UAEHHHHHHHHHHH@Z	90.3846	90.3846	1	144f31e3e83d	0xe86e0
