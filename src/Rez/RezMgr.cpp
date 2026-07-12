@@ -21,15 +21,24 @@
 extern i32 g_wap32Now;        // 0x253c70 (last timeGetTime sample)
 extern i32 g_wap32FrameDelta; // 0x253c74 (ms since previous frame)
 
-static i32 g_lastNow;
-static i32 g_lastDelta;  // (frame delta, clamped to <= 0x64)
-static i32 g_accumMs;    // (running accumulated frame time)
-static i32 g_frameTicks; // (per-frame counter)
-static i32 g_timer32;    // (seed 0x32 ms)
-static i32 g_timer100;   // (seed 0x64 ms)
-static i32 g_timer200;   // (seed 0xc8 ms)
-static i32 g_timer400;   // (seed 0x190 ms)
-static i32 g_timer500;   // (seed 0x1f4 ms)
+// The per-frame accumulators PerFrameTick reads/writes are SHARED WAP32 globals
+// (0x245580..0x2455a0), not rezmgr file-statics: multi/projectile/gruntzmgr/
+// lightfxrender/RezSync/CreditsState all touch the same cells (Play.h documents
+// g_645580==g_lastNow, g_645584==g_lastDelta). Bind rezmgr's refs to the tree's
+// current keep-last winners (hex placeholder names); keep the semantic spelling
+// via #define so PerFrameTick stays readable. A canonical semantic rename of the
+// whole block (g_lastNow/... everywhere) is DATA-def-campaign follow-up.
+extern "C" i32 g_645580, g_645584, g_645588, g_64558c, g_645590, g_645598, g_64559c, g_6455a0;
+extern i32 g_645594;       // 0x245594 C++ winner ?g_645594@@3HA (lightfxrender)
+#define g_lastNow g_645580 // 0x245580
+#define g_lastDelta g_645584 // 0x245584 (frame delta, clamped to <= 0x64)
+#define g_accumMs g_645588 // 0x245588 (running accumulated frame time)
+#define g_frameTicks g_64558c // 0x24558c (per-frame counter)
+#define g_timer32 g_645590 // 0x245590 (seed 0x32 ms)
+#define g_timer100 g_645594 // 0x245594 (seed 0x64 ms)
+#define g_timer200 g_645598 // 0x245598 (seed 0xc8 ms)
+#define g_timer400 g_64559c // 0x24559c (seed 0x190 ms)
+#define g_timer500 g_6455a0 // 0x2455a0 (seed 0x1f4 ms)
 
 // ---------------------------------------------------------------------------
 // RezMgr::PerFrameTick()  (virtual, vtable slot +0x10).

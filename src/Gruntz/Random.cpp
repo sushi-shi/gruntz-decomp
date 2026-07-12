@@ -7,9 +7,10 @@
 #include <Win32.h>
 #include <rva.h>
 
-// The primary generator's state (canonical DATA in src/Globals.cpp).
-extern char g_rngSeeded; // 0x6c127d bit0 set once seeded
-extern i32 g_rngState;   // 0x6c1288 32-bit LCG state
+// The primary generator's state (canonical DATA in src/Globals.cpp:
+// g_randSeeded @0x2c127d / g_randSeed @0x2c1288 - bind to the tree winners).
+extern u8 g_randSeeded; // 0x6c127d bit0 set once seeded
+extern i32 g_randSeed;  // 0x6c1288 32-bit LCG state
 
 // The second generator's state, seeded lazily from timeGetTime.
 DATA(0x002c278c)
@@ -38,14 +39,14 @@ namespace Rng {
     RVA(0x0000cd00, 0x46)
     i32 Next() {
         i32 seed;
-        if (!(g_rngSeeded & 1)) {
-            g_rngSeeded |= 1;
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
             seed = timeGetTime();
         } else {
-            seed = g_rngState;
+            seed = g_randSeed;
         }
-        g_rngState = seed * 214013 + 2531011;
-        return (g_rngState >> 0x10) & 0x7fff;
+        g_randSeed = seed * 214013 + 2531011;
+        return (g_randSeed >> 0x10) & 0x7fff;
     }
 
     // __thiscall(lo, hi, a3, a4): roll a random value in [lo,hi] (lazily-seeded
@@ -59,14 +60,14 @@ namespace Rng {
         m_4c = a4;
         i32 seed;
         if (span == 0) {
-            if (!(g_rngSeeded & 1)) {
-                g_rngSeeded |= 1;
+            if (!(g_randSeeded & 1)) {
+                g_randSeeded |= 1;
                 seed = timeGetTime();
             } else {
-                seed = g_rngState;
+                seed = g_randSeed;
             }
-            g_rngState = seed * 214013 + 2531011;
-            if (g_rngState & 0x10000) {
+            g_randSeed = seed * 214013 + 2531011;
+            if (g_randSeed & 0x10000) {
                 m_54 = 1;
                 m_50 = lo;
             } else {
@@ -75,15 +76,15 @@ namespace Rng {
             }
             return;
         }
-        if (!(g_rngSeeded & 1)) {
-            g_rngSeeded |= 1;
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
             seed = timeGetTime();
         } else {
-            seed = g_rngState;
+            seed = g_randSeed;
         }
-        g_rngState = seed * 214013 + 2531011;
+        g_randSeed = seed * 214013 + 2531011;
         m_54 = 1;
-        m_50 = lo + ((g_rngState >> 0x10) & 0x7fff) % span;
+        m_50 = lo + ((g_randSeed >> 0x10) & 0x7fff) % span;
     }
 
     // __stdcall(lo, hi): lazily-seeded LCG random in [lo,hi]. When the span is
@@ -95,23 +96,23 @@ namespace Rng {
         i32 span = hi - lo + 1;
         i32 seed;
         if (span != 0) {
-            if (!(g_rngSeeded & 1)) {
-                g_rngSeeded |= 1;
+            if (!(g_randSeeded & 1)) {
+                g_randSeeded |= 1;
                 seed = timeGetTime();
             } else {
-                seed = g_rngState;
+                seed = g_randSeed;
             }
-            g_rngState = seed * 214013 + 2531011;
-            return lo + ((g_rngState >> 0x10) & 0x7fff) % span;
+            g_randSeed = seed * 214013 + 2531011;
+            return lo + ((g_randSeed >> 0x10) & 0x7fff) % span;
         }
-        if (!(g_rngSeeded & 1)) {
-            g_rngSeeded |= 1;
+        if (!(g_randSeeded & 1)) {
+            g_randSeeded |= 1;
             seed = timeGetTime();
         } else {
-            seed = g_rngState;
+            seed = g_randSeed;
         }
-        g_rngState = seed * 214013 + 2531011;
-        if (g_rngState & 0x10000) {
+        g_randSeed = seed * 214013 + 2531011;
+        if (g_randSeed & 0x10000) {
             return lo;
         }
         return hi;
@@ -129,14 +130,14 @@ namespace Rng {
         if (!(g_coinRolled & 1)) {
             i32 seed;
             g_coinRolled |= 1;
-            if (!(g_rngSeeded & 1)) {
-                g_rngSeeded |= 1;
+            if (!(g_randSeeded & 1)) {
+                g_randSeeded |= 1;
                 seed = timeGetTime();
             } else {
-                seed = g_rngState;
+                seed = g_randSeed;
             }
-            g_rngState = seed * 214013 + 2531011;
-            g_coinValue = ((g_rngState >> 0x10) & 0x7fff) % 2;
+            g_randSeed = seed * 214013 + 2531011;
+            g_coinValue = ((g_randSeed >> 0x10) & 0x7fff) % 2;
         }
         return g_coinValue;
     }
