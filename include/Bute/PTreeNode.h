@@ -70,4 +70,33 @@ public:
 SIZE(zPTree, 0x2c);              // measured: new(0x2c) -> ctor 0x16dff0
 VTBL(zPTree, 0x001e94ac);        // ??_7zPTree@@6B@ (primary base vtable, RTTI-real)
 
+// ---------------------------------------------------------------------------
+// CButeNode - the concrete .bute config-tree node: a per-tag keyed store. Both the
+// out-of-line ctor at 0x174d00 (butenode) and ParseTagLine's inlined `new
+// CButeNode(&ButeValueTeardown, 2)` (butemgr) build it, and BOTH stamp the same pair
+// of most-derived vtables - primary 0x1f051c @+0x00, second-base-in-derived 0x1f0518
+// @+0x08. That shared vtable pair is the proof that butenode's former
+// `CButeCfgNode174d` and butemgr's `CButeNode` were ONE class, split across two TUs;
+// they are folded here into the single shared definition, so both TUs emit the same
+// ??_7CButeNode symbols and the two retail vtable cells bind.
+//
+// The `desc` every node is constructed with is NOT data: it is the address of the
+// store's __cdecl per-value teardown callback (ButeValueTeardown @0x174df0), which
+// CButeStore::ClearRecursive fires on each node's value. The former `g_nodeDescriptor`
+// / `g_node174df0Tag` int/byte externs were phantoms for that function's address
+// (0x174df0 lies in .text - a CODE address that had been modeled as data).
+class CButeNode : public zPTree {
+public:
+    virtual ~CButeNode() OVERRIDE; // slot 0 (zPTree dtor); external no-body
+
+    // 0x174d00 (butenode): the 1-arg form - passes the fixed teardown callback.
+    CButeNode(i32 kind);
+    // ParseTagLine inlines this 2-arg form (`new CButeNode(&ButeValueTeardown, 2)`).
+    CButeNode(void (__cdecl* teardown)(void*), i32 n) : zPTree((void*)teardown, n) {}
+};
+SIZE(CButeNode, 0x2c);       // new CButeNode(0x2c); zPTree provides the full layout
+VTBL(CButeNode, 0x001f051c); // node primary (most-derived) vtable @+0x00
+// (The two through-base ??_7CButeNode @data-symbol pins live in src/Bute/ButeNode.cpp -
+//  labels.py reads @data-symbol out of the TU's .cpp only, never a header.)
+
 #endif // SRC_BUTE_PTREENODE_H

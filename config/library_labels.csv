@@ -3389,9 +3389,6 @@ rva,name,lib,confidence,source
 0x11cf30,mfc_exception_base_dtor_11cf30,NAFXCW,MED,manual-stub-reclass
 0x11eaa8,mfc_exception_base_dtor_11eaa8,NAFXCW,MED,manual-stub-reclass
 0x11eaf5,mfc_exception_base_dtor_11eaf5,NAFXCW,MED,manual-stub-reclass
-0x16dfc0,bute_node_entry_base_dtor_16dfc0,LIBCMT,LOW,manual-stub-reclass
-0x16dfc0,??1CButeBase2_21@@UAE@XZ,LIBCMT,LOW,reloc-alias
-0x16dfc0,??1CButeNodeEntry@@UAE@XZ,LIBCMT,LOW,reloc-alias
 0x16b510,??0istream@@QAE@PAVstreambuf@@@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x16bfa0,??0ostream@@QAE@PAVstreambuf@@@Z,LIBCIMT,HIGH,manual-crt-reclass
 0x16c570,?seekp@ostream@@QAEAAV1@JW4seek_dir@ios@@@Z,LIBCIMT,HIGH,manual-crt-reclass

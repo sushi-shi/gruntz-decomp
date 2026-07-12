@@ -863,6 +863,22 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
     m_nodeCount = 0;
 }
 
+// ===========================================================================
+// CButeNodeEntry::~CButeNodeEntry (0x16dfc0) - the +0x08 second base's virtual
+// destructor: an EMPTY body, so all cl emits is the implicit re-stamp of the class's
+// own vptr and a return (`mov [ecx],offset ??_7CButeNodeEntry@@6B@ (0x5f04d8); ret` -
+// exactly the 7 retail bytes). Its scalar-deleting ??_G sits at 0x16dfa0.
+//
+// This is the REAL identity of the `CButeNodeSecondBase` phantom: the store/config-node
+// destructors (0x174d70 butenode, 0x21310 / 0x21570 butemgr) all fold their +0x08 base
+// through THIS dtor with the MI `this ? this+8 : 0` adjust. It had no definition
+// anywhere in the tree, so every one of those calls dangled; defining it here - in the
+// TU that owns the class's ctor and whose RVA band contains 0x16dfc0 (between
+// ~zDArray @0x16df40 and the zPTree ctor @0x16dff0) - binds them all.
+// ===========================================================================
+RVA(0x0016dfc0, 7)
+CButeNodeEntry::~CButeNodeEntry() {}
+
 // zPTree ctor (0x16dff0, ex ButeNode.cpp): run the zErrHandling primary base
 // ctor + the CButeNodeEntry second-base ctor, then cl auto-stamps the two
 // most-derived vptrs (??_7zPTree @+0 = 0x5e94ac, and the second-base-in-derived

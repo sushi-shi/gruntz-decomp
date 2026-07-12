@@ -42,83 +42,10 @@
 // so the class below can use both. (afx.h is the period-correct windows.h path.)
 #include <Gruntz/String.h>
 
-// The CButeValue::type discriminant. Recovered from the type-tag each getter
-// compares against (GetInt==0, GetDword==1, GetDouble==2, GetFloat==3,
-// GetString==4) and the typed-reference getters (GetRef5..8). The numeric values
-// are load-bearing (the exact immediates the getters cmp); the enum only names
-// them. Kept as an `int`-width enum so it is interchangeable with the `i32 type`
-// field/params at /O2.
-enum ButeType {
-    kButeInt = 0,    // stored int      (GetInt/GetIntDef)
-    kButeDword = 1,  // stored DWORD    (GetDword/GetDwordDef)
-    kButeDouble = 2, // stored double   (GetDouble)
-    kButeFloat = 3,  // stored float    (GetFloat)
-    kButeString = 4, // stored char*    (GetString/GetStringDef)
-    kButeRef5 = 5,   // 16-byte struct  (GetRef5)
-    kButeRef6 = 6,   // 8-byte struct   (GetRef6)
-    kButeRef7 = 7,   // 24-byte struct  (GetRef7)
-    kButeRef8 = 8,   // 16-byte struct  (GetRef8)
-};
-
-// ---------------------------------------------------------------------------
-// CButeTree - the keyed store node. The getters/parser reach it through a single
-// __thiscall lookup helper that, given a key string, returns
-// the matching child record (or null). The store is two-level: the outer tree
-// (CButeMgr::m_tree) maps a tag name to a per-tag sub-tree; the sub-tree maps a
-// key name to a typed value record. Find() is modeled returning the record, and
-// the typed getters interpret it:
-//   +0x00  type   : ButeType - the value's type-tag (see enum above).
-//   +0x04  pValue : void* - pointer to the stored value (the int/dword/float/
-//                           double sits at [pValue]; for strings the char* IS
-//                           [pValue] -- GetString returns it directly).
-// Insert adds a (key,node) pair; the node ctor + its two
-// vtable stores are modeled as external/no-body calls (reloc-masked).
-// ---------------------------------------------------------------------------
-struct CButeValue {
-    i32 type;     // +0x00  ButeType discriminant (kept i32-width for the ABI)
-    void* pValue; // +0x04
-
-    // Destructor: free the owned pValue storage, sized/typed by the type-tag via a
-    // dense ButeType jump table (string frees the CString first; all others are a
-    // plain operator delete).
-    ~CButeValue();
-
-    // Value constructors: allocate storage, store the value, return `this`.
-    CButeValue* SetInt(i32 type, i32 val);
-    CButeValue* SetDword(i32 type, u32 val);
-    CButeValue* SetFloat(i32 type, float val);
-    CButeValue* SetDouble(i32 type, double val);
-    // The struct/string value setters: op-new a payload block, copy-construct the
-    // source into it, store the type-tag (+0x00) + payload ptr (+0x04). SetString
-    // boxes a CString (kButeString, /GX unwind on the throwing copy-ctor),
-    // SetRef5/SetRef8 a 16-byte struct (kButeRef5/kButeRef8), SetRef7 a 24-byte
-    // struct (kButeRef7). Re-homed from src/Stub/MallocConstructors (were
-    // BoxedStr/Boxed16a/Boxed16b/Boxed24).
-    CButeValue* SetString(i32 type, const CString& src);
-    CButeValue* SetRef5(i32 type, const struct ButeRef16* src);
-    CButeValue* SetRef7(i32 type, const struct ButeRef24* src);
-    CButeValue* SetRef8(i32 type, const struct ButeRef16* src);
-
-    // CopyValue (@0x172040): copy `other`'s payload into this value's storage,
-    // sized by THIS value's type-tag (a jump-table switch over ButeType). Returns
-    // this.
-    CButeValue* CopyValue(CButeValue* other);
-};
-SIZE(CButeValue, 0x8); // { type @0, pValue @4 }
-
-// The 16-byte (kButeRef5 / kButeRef8) payload, copied as a struct so MSVC lowers
-// it to four memberwise dword stores (SetRef5/SetRef8's op-new'd copy).
-struct ButeRef16 {
-    i32 w[4];
-};
-SIZE(ButeRef16, 0x10); // 16-byte kButeRef5/kButeRef8 payload
-
-// The 24-byte (kButeRef7) payload, copied as a struct so MSVC lowers it to the
-// retail `rep movsd` (6 dwords).
-struct ButeRef24 {
-    i32 w[6];
-};
-SIZE(ButeRef24, 0x18); // 24-byte kButeRef7 payload
+// ButeType / CButeValue / ButeRef16 / ButeRef24 - the typed value record every key
+// maps to. Canonical (one shape) in <Bute/ButeValue.h>, shared with src/Bute/ButeNode.cpp
+// (which reproduces the store's __cdecl per-value teardown callback over the same type).
+#include <Bute/ButeValue.h>
 
 // The statically-linked MSVC 5.0 <iostream.h> `ios` base (RTTI `.?AVios@@`, vtable
 // 0x5f03bc) that CButeMgr embeds at +0x14 is LIBRARY code (LIBCP.LIB / LIBCMT), not
@@ -154,22 +81,11 @@ struct CButeTail {
 };
 SIZE(CButeTail, 0x1); // 1-byte embedded tail object
 
-// ---------------------------------------------------------------------------
-// CButeNode - a per-tag store node allocated by ParseTagLine (0x2c bytes). Built
-// via `new CButeNode(descriptor, 2)`: the engine base ctor (zPTree 0x16dff0) runs,
-// then the derived ctor re-stamps its two most-derived vptrs @+0x00 / +0x08.
-//
-// REAL POLYMORPHIC / STRUCTURE-RECOVERY: CButeNode derives the RTTI-real zPTree
-// (<Bute/PTreeNode.h>: zErrHandling @0, CButeNodeEntry/zPtrColl @8), the SAME single
-// model every config-tree node uses (CButeCfgNode174d / CBSecStream in butenode/
-// butesection). The former base-less zPTree stand-in + CButeNodeSub view are dissolved.
-class CButeNode : public zPTree {
-public:
-    virtual ~CButeNode() OVERRIDE; // slot 0 (zPTree dtor); external no-body
-
-    CButeNode(void* desc, i32 n) : zPTree(desc, n) {}
-};
-SIZE(CButeNode, 0x2c); // new CButeNode(0x2c); zPTree provides the full 0x2c layout
+// (CButeNode - the per-tag store node ParseTagLine allocates - now lives in the
+//  SHARED <Bute/PTreeNode.h>, folded with butenode's former `CButeCfgNode174d`: the
+//  two were one class all along (same pair of most-derived vtables, 0x1f051c @+0 and
+//  0x1f0518 @+8 - see the fold note there). Both TUs now emit the same ??_7CButeNode
+//  names, so the two runtime vtable data cells bind.)
 
 // A fabricated-name placeholder for CString::operator+=(char) (a real NAFXCW
 // method). Currently UNREFERENCED (no call sites), so it cannot be re-expressed as

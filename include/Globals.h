@@ -129,8 +129,11 @@ extern void* g_desc_6156f4;
 extern char g_bmpHeaderTemplate[];
 extern i32 g_wwdObjIdCounter;
 extern "C" i16 g_charClass[];
-extern "C" i16 g_transTable[];
-extern "C" i16 g_transTable142[][147];
+// The lexer DFA transition table: [state][charclass] -> {nextState, tokType, lexState}.
+// (The former `g_transTable142` extern is gone: 0x61d142 is UNALIGNED - the interior
+// address of this table's [0][0][1] cell, i.e. the tokType word, not a separate
+// object. PeekState2 now indexes the owning table directly.)
+extern "C" i16 g_transTable[97][49][3];
 extern u16 g_modeTab_e8;
 extern u16 g_modeTab_ea;
 extern u16 g_modeTab_ec;
