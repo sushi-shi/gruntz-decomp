@@ -1203,18 +1203,22 @@ i32 ProjTypeXfer(CXferArchive* ar) {
 // `dynamic initializer for g_buteTree' (0x16e6a0) - construct the global bute
 // tree (deeper base ctor 0x16dff0) then stamp its runtime vtables.
 // ===========================================================================
-// g_buteTree is the canonical CButeTree (crit-bit trie, include/Bute/ButeTree.h);
-// Construct (0x16dff0 == the zPTree ctor above, seen through the CButeTree facet)
-// runs the deeper base ctor. The +0x00 / +0x08 runtime vptrs are stamped via raw
-// casts (CButeTree is now real-polymorphic MI, no manual vptr fields).
+// g_buteTree is the canonical CButeTree (crit-bit trie), now `CButeTree : public zPTree`
+// (<Bute/ButeTree.h>). Construct (0x16dff0 == the zPTree base ctor above) runs the base
+// ctor; the +0x00 / +0x08 runtime vptr re-stamps (0x5f04e0/0x5f04dc, CButeTree's most-
+// derived vtables) are dropped here - they emit only when g_buteTree is DEFINED (not
+// extern) as a real global (see the ??_GCButeTree @emission-TODO below). Kept extern +
+// hand-written this pass; @early-stop until the coupled emission lands.
+// @early-stop
+// hand-written construct (~71%): the CButeTree runtime vptr re-stamps are elided (they
+// need g_buteTree defined so cl auto-emits the ctor+vtables). Deferred to the coupled
+// emission (docs at ??_GCButeTree below).
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
 RVA(0x0016e6a0, 0x26)
 void DynInitButeTree() {
     g_buteTree.Construct(&g_buteTreeArg, 0);
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)
 }
 
 // @early-stop
@@ -1316,12 +1320,19 @@ i32 Gap_16e7a0(void) {
 //     ??_7CButeStore@@6BCButeStoreSecond @0x5f04dc   (the CButeTree identity);
 //   * destruction (0x16e9c0 ??_G AND 0x16e6e0 atexit) stamps ??_7zPTree @0x5e94ac /
 //     ??_7CButeStore@@6BCButeNodeEntry  @0x5e949c    (the zPTree/CButeStore identity).
-// A single cl-generated class stamps ONE ??_7 identity in BOTH its ctor and dtor, so
-// no clean CButeTree definition reproduces the ctor(0x5f04e0)+dtor(0x5e94ac) split:
-// byte-exact + reloc-faithful emission of 0x16e9c0/0x16e6e0 requires first FOLDING
-// CButeTree == zPTree == CButeStore (one class, one vtable identity). The vtable
-// address operands ARE reloc-masked, so a forced def would byte-match at ~fuzzy but
-// bind the WRONG vtable rva (??_7CButeTree where retail uses ??_7zPTree) - reloc-
-// infidel, hence deferred to the dual-model fold rather than forced here.
-// The model is the proper virtual destructor; the bound body is pending that fold.
+// CORRECTION (RTTI-proven): the split is NOT irreducible. It is exactly what
+// `class CButeTree : public zPTree` (now modeled, <Bute/ButeTree.h>) with an EMPTY
+// ~CButeTree produces - the ctor re-stamps CButeTree's most-derived 0x5f04e0/0x5f04dc
+// after the zPTree base ctor; the empty derived dtor elides its protective re-stamp so
+// ??_G goes straight to ~zPTree (which stamps zPTree's 0x5e94ac/0x5e949c). Real classes
+// are zErrHandling(@0), zPtrColl(fabricated "CButeNodeEntry", @8), zPTree : those.
+// @emission-TODO (COUPLED, not this pass): binding 0x16e9c0 needs g_buteTree DEFINED so
+// cl emits ??_G/??__E/??__F/the CButeTree vtables. Requires as one atomic unit: (1) an
+// INLINE ~zPTree { ClearRecursive(0); } + ClearRecursive as a zPTree method (0x16e070),
+// which forces CButeStore : zPTree so its Reset/leaf-dtor callers still bind faithfully;
+// (2) @data-symbol on the emitted ??_7CButeTree@@6BCButeNodeEntry@@ @0x5f04dc (the
+// fabricated ??_7CButeStore@@6BCButeStoreSecond@@ name won't auto-match) + butemgr
+// dropping that binding; (3) @rva-symbols for the cl-mangled init/atexit thunks. Gate on
+// ClearRecursive/~CButeMgr staying byte-exact (the +0x10 store-flag is a BYTE read;
+// zPTree's m_kind is i16 - a real byte-risk to the 100% ClearRecursive).
 // @rva-symbol: ??_GCButeTree@@UAEPAXI@Z 0x0016e9c0 0x45
