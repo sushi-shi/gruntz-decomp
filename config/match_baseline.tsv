@@ -1471,7 +1471,7 @@ droppedobject	?RegisterRange@CDroppedObject@@SAXXZ	100.0000	100.0000	3	5482bdc88
 droppedobject	?Serialize@CDroppedObject@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	2	12d84c1a3297	0xc73a0
 droppedobject	?Serialize@CObjectDropper@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	2	a4087a2eb8d4	0xc6680
 droppedobject	?SerializeMove@CDroppedObjectShadow@@UAEHPAUCGruntArchive@@HHH@Z	100.0000	100.0000	2	fa3f205f1906	0xc7b40
-droppedobject	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	1	8144543092a9	0xc62e0
+droppedobject	?Update@CObjectDropper@@QAEHXZ	100.0000	100.0000	2	3cbcfc49f510	0xc62e0
 droppedobject	?UserLogicVfunc5@CDroppedObject@@UAEHXZ	100.0000	100.0000	1	af4a6042e6f5	0xc7350
 engstr	?EngStr_DrawText@@YAXPAUEngStrRenderObj@@HHHHHHHH@Z	94.2857	94.2857	4	b3fa527a69a6	0x115440
 engstrrendertext	_EngStr_RenderText	60.0763	60.0763	4	b60671aac6d3	0x115930
@@ -2501,7 +2501,7 @@ kitchenslime	?LoadSprites@CKitchenSlime@@QAEHXZ	68.5768	68.5768	14	7f5548630735	
 kitchenslime	?RegisterRange@CKitchenSlime@@SAXXZ	100.0000	100.0000	3	7e1ceaa8f94f	0xb28c0
 kitchenslime	?RegisterType@CKitchenSlime@@SAXXZ	91.1739	91.1739	4	896e380e599d	0xb2aa0
 kitchenslime	?Serialize@CKitchenSlime@@QAEHPAXHHH@Z	100.0000	100.0000	5	ca9bce8aec8f	0xb2ff0
-kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.5841	94.5841	13	1729ba3ec336	0xb2ca0
+kitchenslime	?Tick@CKitchenSlime@@QAEHXZ	94.5841	94.5841	14	2c22aa498374	0xb2ca0
 latencylist	?Populate1@CLatencyList@@QAEHXZ	100.0000	100.0000	7	f83cebcf46fb	0x37b40
 latencylist	?Populate3@CLatencyList@@QAEHXZ	100.0000	100.0000	7	4eaf811725e6	0x37d20
 leafcueplay	?PlayIfElapsed_01f940@LeafCue@@QAEHHHHH@Z	66.0000	66.0000	1	5589bc2c7789	0x1f940
