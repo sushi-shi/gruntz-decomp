@@ -40,6 +40,9 @@ extern void* g_projActCache; // 0x6bf464 (== the mislabeled g_zvecErrSentinel)
 
 // ---------------------------------------------------------------------------
 // zDArray::Destroy() - re-stamp the live vtable, then run ~zDArray. 0x8750.
+// @interleaver zDArray::Destroy emitted-in <boundary: ZDArrayDerived.cpp Construct
+// @0x8710 (before) + crt ??_G__non_rtti_object @0x8780 (after)>. A template-accessor
+// COMDAT the /Gy linker placed by first-use between two OTHER units, not this TU block.
 // @early-stop
 // 21B dead-store oddity: retail reserves a stack slot (push ecx; mov [esp],
 // m_base) for a discarded local then `call ~zDArray`; cl folds our local into a
@@ -55,6 +58,9 @@ i32 zDArray::Destroy() {
 
 // zDArray::IndexToPtr(i) - the base accessor plus the per-slot member-ptr fixup
 // over the freshly-grown region. 0x310f0.
+// @interleaver zDArray::IndexToPtr emitted-in <boundary: BattlezMapConfig.cpp
+// Method_030f20 @0x30f20 (before) + FreeNodePool.cpp Push @0x311b0 (after)>. A
+// template-accessor COMDAT the /Gy linker placed by first-use between two OTHER units.
 RVA(0x000310f0, 0x8d)
 i32 zDArray::IndexToPtr(i32 i) {
     i32 r;
@@ -81,6 +87,9 @@ i32 zDArray::IndexToPtr(i32 i) {
 }
 
 // _zvec::IndexToPtr(idx) - the plain accessor; grows on a bounds miss. 0x312a0.
+// @interleaver _zvec::IndexToPtr emitted-in <boundary: QueueDrainHost.cpp Drain_031250
+// @0x31250 (before) + BattlezMapConfig.cpp Step @0x31610 (after)>. A template-accessor
+// COMDAT the /Gy linker placed by first-use between two OTHER units, not this TU block.
 // @early-stop
 // regalloc wall: retail pins idx in esi / this in edi (arg-before-this) and
 // merges the in-range + grow-success offset tails; our recompile mirrors the

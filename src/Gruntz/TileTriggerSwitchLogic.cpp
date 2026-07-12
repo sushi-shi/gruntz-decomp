@@ -288,6 +288,10 @@ CTileTriggerLogic::CTileTriggerLogic() {
 // CTileTriggerSwitchLogic::FindIndexByKey
 // Linear scan of the 24-dword m_block; returns 1 on a hit, 0 otherwise.
 // ---------------------------------------------------------------------------
+// @interleaver CTileTriggerSwitchLogic::FindIndexByKey emitted-in <boundary:
+// StatusBarUpdaters.cpp LoadSwitchUpSprite @0x1106b0 (before) + BridgeMoveSprites.cpp
+// LoadBridgeMove @0x110860 (after)>. A /Gy first-use COMDAT the linker scattered
+// between two OTHER units inside this woven interval.
 RVA(0x00110820, 0x23)
 i32 CTileTriggerSwitchLogic::FindIndexByKey(i32 key) {
     // Scans the 24-dword array that begins at +0x3c (== &m_block[4]).
@@ -368,6 +372,10 @@ public:
 // table, the per-bridge inner grid-scan loops, and the descending /GX exception thread -
 // is the documented wall shared by the sibling /GX megafunctions. Deferred to the final
 // sweep (docs/patterns/jumptable-data-overlap.md; big-seh-fuzzy-desync.md).
+// @interleaver CPlayLevelLoad::LoadPyramidBridge emitted-in <boundary:
+// BridgeMoveSprites.cpp LoadBridgeMove @0x110860 (before) + GruntzMgr2.cpp SetCellHeight
+// @0x111ec0 (after)>. A foreign-class (CPlayLevelLoad; home Play.cpp, cross-lane skip)
+// /Gy COMDAT the linker scattered between two OTHER units - not this TU's body run.
 RVA(0x00110c10, 0xe3f)
 void CPlayLevelLoad::LoadPyramidBridge(i32 spriteType) {
     void* desc = this;                   // edi
@@ -478,6 +486,9 @@ CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 // byte-identical; retail reserves a `push ecx` stack local for `this` + reloads it
 // to seed the `child` loop cursor, the recompile seeds it from a register. Dead seed
 // value, non-steerable frame choice. See docs/patterns/this-spilled-to-local-for-loop-seed.md
+// @interleaver CTileTriggerSwitchLogic::VerifyBlockLinksB emitted-in <boundary:
+// GruntzMgr2.cpp SetCellHeight @0x111ec0 (before) + GroupOps.cpp Broadcast @0x112080
+// (after)>. A /Gy first-use COMDAT the linker scattered between two OTHER units.
 RVA(0x00111f40, 0xc4)
 i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
     if (m_linkGate == 0) {
@@ -852,6 +863,9 @@ void CTileGridCommand::RecordMove() {
 // @early-stop
 // entropy-tail (~96%): logic + the single-ret1 convergence match; only the last
 // type==0x17 case's ret1 is tail-duplicated instead of merged into the shared tail.
+// @interleaver CTileGridCommand::Classify emitted-in <boundary: MgrSlotSwap.cpp DoSwap
+// @0x1128b0 (before) + CheckpointSwitchBuild.cpp BuildSmall @0x112a50 (after)>. A /Gy
+// first-use COMDAT the linker scattered between two OTHER units.
 RVA(0x00112970, 0xad)
 i32 CTileGridCommand::Classify(i32 arg) {
     u32 elapsed = g_645588 - m_24;

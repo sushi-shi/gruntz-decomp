@@ -39,6 +39,9 @@ extern Font g_tinyFont;
 // _initterm entry): construct it in place via the explicit-ctor-call tail-jmp
 // (mov ecx,&g_mediumFont; jmp ??0Font@@QAE@XZ - no placement-new null-guard).
 // Folded here from Stub/ReconBatch2.cpp (g_mediumFont is this TU's font global).
+// @interleaver Forward_115630 (g_mediumFont dyn-init) emitted-in <boundary: WapMisc
+// Unmatched_1155b0/crt ___inittime @0x1155b0 (before) + crt ___inittime @0x115650
+// (after)>. A dyn-init COMDAT the /Gy linker placed in the init region, not this TU block.
 RVA(0x00115630, 0xa)
 void Forward_115630() {
     g_mediumFont.Font::Font();
@@ -46,6 +49,9 @@ void Forward_115630() {
 
 // The sibling dynamic initializer for the g_tinyFont global (same explicit-ctor-call
 // tail-jmp). Re-homed from src/Stub/BoundaryLowerThunks.cpp (was FontForward115730).
+// @interleaver Forward_115730 (g_tinyFont dyn-init) emitted-in <boundary: crt thunk
+// Init_smallFont/___inittime @0x1156b0 (before) + crt ___inittime @0x115750 (after)>. A
+// dyn-init COMDAT the /Gy linker placed in the init region, not this TU block.
 RVA(0x00115730, 0xa)
 void Forward_115730() {
     g_tinyFont.Font::Font();
@@ -58,6 +64,9 @@ void Forward_115730() {
 // FontForward1157b0).
 DATA(0x0024ead8)
 extern FontRenderer g_font64ead8;
+// @interleaver Forward_1157b0 (g_font64ead8 FontRenderer dyn-init) emitted-in <boundary:
+// crt ___inittime @0x1156d0 (before) + crt ___inittime @0x1157d0 (after)>. A dyn-init
+// COMDAT the /Gy linker placed in the init region, not this TU block.
 RVA(0x001157b0, 0xa)
 void Forward_1157b0() {
     g_font64ead8.FontRenderer::FontRenderer();

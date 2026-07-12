@@ -274,6 +274,10 @@ struct CPathHazardActEntry {
 // ??_7CPathHazard@@6B@+0x10 / CUFO / CRainCloud), but the fat base models slot 4
 // with the no-arg UserLogicVfunc2() placeholder, so the int-arg real shape can't
 // spell OVERRIDE - kept a plain method; the leaf vtable slot stays base-attributed.
+// @interleaver CPathHazard::RunAct emitted-in <boundary: PathHazardActReg.cpp
+// ConstructActRange_646250 @0xb3ae0 (before) + PathHazardActReg.cpp RegisterActs_646250
+// @0xb3cc0 (after)>. A /Gy first-use COMDAT the linker placed inside PathHazardActReg's
+// block, not this TU's body run.
 RVA(0x000b3b60, 0x102)
 i32 CPathHazard::RunAct(i32 id) {
     CPathHazardActEntry* e = (CPathHazardActEntry*)g_actReg_646250.ResolveEntry(id);
@@ -472,6 +476,9 @@ i32 CLightningHazard::SiblingTick() {
 // ~95%: code bytes byte-exact; residual is the same TU-wide reloc-naming artifact
 // SiblingTick carries (the obj names g_lightGameReg as _g_mgrSettings and
 // g_strikeClock as _g_645588). Logic byte-for-byte correct.
+// @interleaver CLightningHazard::ArmStrike emitted-in <boundary: PathHazardActReg.cpp
+// RegisterActs_646250 @0xb3cc0 (before) + Ufo.cpp Method_b4cb0 @0xb4cb0 (after)>. A /Gy
+// first-use COMDAT the linker scattered between OTHER units, not this TU's body run.
 RVA(0x000b4640, 0x104)
 i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
     m_strikeArmed = 1;
@@ -569,6 +576,9 @@ i32 CPathHazard::BeginLeg() {
 // ForwardTick (0x0b5070): thin non-virtual forwarder that tail-jumps virtual
 // slot 16 (Tick). Out-of-line (retail emits it standalone; the inline member
 // folded into its callers and never emitted).
+// @interleaver CPathHazard::ForwardTick emitted-in <boundary: Ufo.cpp Method_b4cb0
+// @0xb4cb0 (before) + Multi.cpp ConstructFileIOGlobal @0xb5400 (after)>. A /Gy first-use
+// COMDAT the linker scattered between OTHER units, not this TU's body run.
 RVA(0x000b5070, 0x5)
 void CPathHazard::ForwardTick() {
     Tick(); // virtual slot 16 (+0x40); tail-jump `mov eax,[ecx]; jmp [eax+0x40]`

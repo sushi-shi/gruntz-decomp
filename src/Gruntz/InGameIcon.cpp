@@ -1254,6 +1254,9 @@ i32 CInGameText::Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b) {
 // ===========================================================================
 // When v != 0, look it up in the registry's CMap (g_gameReg->m_world->m_28, Lookup
 // at +0x10) into a local, then store the located value (or 0) into +0x54.
+// @interleaver CInGameIcon::SetField54 emitted-in <boundary: InGameTextUpdate.cpp
+// Update@CInGameText @0x997c0 (before) + AreaMgr.cpp TokenMgrReset99b80 @0x99b80
+// (after)>. A /Gy first-use COMDAT the linker scattered between two OTHER units.
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetField54(i32 v) {
     void* found = 0;

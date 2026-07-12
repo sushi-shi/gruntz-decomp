@@ -715,6 +715,10 @@ i32 CAreaMgr::LoadObjectAnimResources(ObjSpawnEntry* entry, CSymTab* src) {
 // `push esi` past it, computing the arg group first; the recompile commits `a` to
 // callee-saved esi at entry (push esi upfront) and computes the current index group first.
 // Not source-steerable.  See docs/patterns/shrink-wrapped-callee-save-push.md
+// @interleaver CAreaMgr::SameGroup emitted-in <boundary: foreign ILT thunk-table
+// FUN_0049afXX..b410 @0x9af30-0x9b410 (before) + StateDispatch.cpp StateDispatch @0x9b770
+// (after)>. A /Gy first-use COMDAT the linker placed past the thunk table, isolated from
+// this TU's body run.
 RVA(0x0009b430, 0x49)
 i32 CAreaMgr::SameGroup(i32 a) {
     if (a <= 0) {
