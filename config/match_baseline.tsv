@@ -79,7 +79,7 @@ ddrawblterrthunk	1	1
 ddrawpolyfill	1	0
 ddrawptrcollections	10	7
 ddrawshadeblit	10	2
-ddrawsubmgr	97	64
+ddrawsubmgr	96	63
 ddrawsubmgrleaf	12	8
 ddrawsurfacemgr	13	8
 ddrawsurfacepair	44	23
@@ -124,7 +124,7 @@ gamechecksum	1	0
 gameiconflasheffect	1	1
 gameinfostring	4	3
 gamekeyhandler	1	0
-gamelevel	74	31
+gamelevel	72	29
 gamelevelmove	12	1
 gamemode	5	0
 gamemodebase	1	0
@@ -144,7 +144,7 @@ gruntarrivalstep	1	0
 gruntassetloaders	1	0
 gruntbehaviorleaf	2	0
 gruntchargestep	1	0
-gruntcombat	24	10
+gruntcombat	25	11
 gruntcreationpoint	8	5
 gruntdatarecord	2	2
 gruntentrancearrival	22	1
@@ -273,7 +273,7 @@ palettecopy	1	0
 palettesnapshot	1	1
 pathhazard	12	7
 pathhazardactreg	2	1
-play	108	50
+play	110	52
 playercommandstep	1	0
 playmessageimage	2	0
 playplanescan	2	0
@@ -969,7 +969,6 @@ ddrawsubmgr	?IsReady@CDDrawWorkerCache@@UAEHXZ	100.0000	100.0000	1	cpp:053c6c4df
 ddrawsubmgr	?IsReady@CDDrawWorkerList@@UAEHXZ	100.0000	100.0000	1	7497eb7740e1	0x156f00
 ddrawsubmgr	?IsReady@CDDrawWorkerMapSmall@@UAEHXZ	100.0000	100.0000	1	26734955164e	0x156cd0
 ddrawsubmgr	?IsReadyPredicate@CDDrawWorkerList@@UAEHXZ	100.0000	100.0000	1	66c2126d7823	0x156fc0
-ddrawsubmgr	?Lookup_05b7e0@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	1	df2ec1ef456d	0x5b7e0
 ddrawsubmgr	?MatchSub_1584f0@CDDrawSubMgrLeafScan@@QAEHPAVLeafScanSoundArg@@H@Z	99.9800	99.9800	1	c7c0d59a6144	0x1584f0
 ddrawsubmgr	?Method_158b10@CDDrawSubMgrPages@@QAEHHH@Z	100.0000	100.0000	1	ef04116a2a05	0x158b10
 ddrawsubmgr	?Method_158b40@CDDrawSubMgrPages@@QAEHHH@Z	100.0000	100.0000	3	6fd9d2e35cf8	0x158b40
@@ -1719,8 +1718,6 @@ gamelevel	?LoadName@CGameLevel@@QAEHPAX@Z	100.0000	100.0000	1	43461c871d4e	0x161
 gamelevel	?LoadWwd@CGameLevel@@UAEHPAUWwdHeader@@@Z	81.9295	81.9295	6	084ccbbac28f	0x15d280
 gamelevel	?LookupTile@CGameLevel@@QAEHHH@Z	100.0000	100.0000	7	913a56d394f5	0x82600
 gamelevel	?MainPlaneNotify@CGameLevel@@QAEXXZ	100.0000	100.0000	4	0cd0f0c4b5f5	0x160ee0
-gamelevel	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	5	79c5e8e9a800	0xcedf0
-gamelevel	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	5	17305dac4ee5	0xcee10
 gamelevel	?MoveHandlerA@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	64.9560	64.9560	3	a4faca9ae0ba	0x15e130
 gamelevel	?MoveHandlerB@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	78.8602	78.8602	3	265c56c907be	0x15e4b0
 gamelevel	?MoveHandlerC@CGameLevel@@QAEHPAUCGameObject@@HHH@Z	80.8854	80.8854	3	84c5c941a1db	0x15e2f0
@@ -1887,6 +1884,7 @@ gruntcombat	?FindGridNeighbor@CGrunt@@QAEPAV1@H@Z	100.0000	100.0000	1	f04e5512a3
 gruntcombat	?GruntSpawnPump@@YAHPAUOwner@@@Z	100.0000	100.0000	2	d16f8084bdd8	0x5baf0
 gruntcombat	?LoadGruntAbilityTuning@CGrunt@@QAEHH@Z	90.5457	90.5457	2	4bfa29be0959	0x57100
 gruntcombat	?LoadGruntCombatAnimations@CGruntCombat@@QAEHHHHHHHHH@Z	34.2999	34.2999	2	566921eb677a	0x597a0
+gruntcombat	?Lookup_05b7e0@CDDrawSubMgrLeafScan@@QAEPAVCObject@@PBD@Z	100.0000	100.0000	1	df2ec1ef456d	0x5b7e0
 gruntcombat	?OnStruck@CGrunt@@QAEXH@Z	75.4762	75.4762	2	ffe50de4ad8d	0x588f0
 gruntcombat	?PathScan57db0@CGrunt@@QAEHXZ	38.7616	38.7616	2	0ac67e75a066	0x57db0
 gruntcombat	?ReapplyVoiceParams@CGrunt@@QAEXXZ	100.0000	100.0000	2	d6381ed551ed	0x57d10
@@ -3100,8 +3098,10 @@ play	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	4	9567653c832a	0xcffe0
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	5	1d7fd4fc8082	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	5	fd1ac9b2399d	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	4	8309f61d38e2	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.1450	86.1450	3	b94f48adc376	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.8450	85.8450	3	b94f48adc376	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	7	30e45f615576	0xd65d0
+play	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	1	79c5e8e9a800	0xcedf0
+play	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	1	17305dac4ee5	0xcee10
 play	?ModeCleanup@CPlay@@QAEXXZ	99.6154	99.6154	3	cfa5101aa629	0xcb740
 play	?NotifyVisibleEntities@CPlay@@QAEHXZ	76.3529	76.3529	5	5c7e2ae1589a	0xd9050
 play	?OnExit@CPlay@@QAEXXZ	94.7917	94.7917	5	ca4b357d6d2d	0xcb400
