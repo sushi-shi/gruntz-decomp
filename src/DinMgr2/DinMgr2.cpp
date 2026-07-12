@@ -50,10 +50,14 @@
 // (Free360/Free6d0 device-leaf teardowns re-homed onto CDeviceConfigB/CDeviceConfigC
 // below; the DevCfg placeholder view is dissolved.)
 
-// CDevicePtrArray::SetSize @0x1b4f75 IS MFC CObArray::SetSize; SetAtGrow @0x1b5144 IS
-// CDWordArray::SetAtGrow (stores the device ptr as a DWORD). Minimal local decl.
-SIZE_UNKNOWN(CObArray);
-class CObArray {
+// m_devices IS MFC CDWordArray (stores each device ptr as a DWORD): SetSize @0x1b4f75
+// == ?SetSize@CDWordArray@@QAEXHH@Z, SetAtGrow @0x1b5144 == ?SetAtGrow@CDWordArray@@QAEXHK@Z
+// (coherent with the array's SetAtGrow; the FID CByteArray/CObArray sibling names are
+// AMBIG folds of the byte-identical array-family methods). Minimal local decl in this
+// MFC-free (<Win32.h>) TU so both calls emit the exact library-bound CDWordArray names;
+// the full m_devices : CDWordArray member remodel is the pending MFC-container task.
+SIZE_UNKNOWN(CDWordArray);
+class CDWordArray {
 public:
     void SetSize(i32 n, i32 grow);
     void SetAtGrow(i32 nIndex, u32 newElement);
@@ -263,7 +267,7 @@ void DirectInputMgr2::Shutdown() {
             delete d;
         }
     }
-    ((CObArray*)&m_devices)->SetSize(0, -1);
+    ((CDWordArray*)&m_devices)->SetSize(0, -1);
     FreeDeviceList();
     m_directInput->Release();
     m_directInput = 0;
@@ -374,7 +378,7 @@ i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
         return 1;
     }
     if (dev != 0) {
-        ((CObArray*)&mgr->m_devices)->SetAtGrow(mgr->m_devices.m_size, (u32)dev);
+        ((CDWordArray*)&mgr->m_devices)->SetAtGrow(mgr->m_devices.m_size, (u32)dev);
     }
     return 1;
 }
