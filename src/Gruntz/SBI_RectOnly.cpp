@@ -1300,13 +1300,18 @@ i32 CStatzTabBuilder::Build() {
 // cl here is MORE optimized than retail's exact MSVC5 build. A toolchain-microversion
 // codegen wall, not source-steerable; deferred to the final sweep.
 RVA(0x00105310, 0x11a)
-void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
-    CTabWidget** slot = m_slots;
-    CTabRec* tab = m_tabs;
+void CSBI_RectOnly::UpdateGruntOvenStatusBar() {
+    // The 5 grunt-oven cooking tabs ARE this class's own +0x220 slot records
+    // (m_slots, CSbiSlot) with their +0x204 notifier array (m_slotNotify): the
+    // slot's m_value (+4) is the animation frame, m_8/m_c (+8/+c) the 64-bit
+    // start clock, and the notifier's slot-12 Notify(frame) is the set-frame hook.
+    // (Folded off the fake EngineLabelBacklog view onto the canonical class.)
+    CSbiSlotPtr** slot = m_slotNotify;
+    CSbiSlot* tab = m_slots;
     i32 n = 5;
     do {
         if (tab->m_state == 1) {
-            i64 d = (i64)(u32)g_645588 - *(i64*)&tab->m_startLo;
+            i64 d = (i64)(u32)g_645588 - *(i64*)&tab->m_8;
             i32 elapsed = (d >= 0) ? (i32)d : 0;
             u32 delay = g_buteMgr.GetDwordDef("StatusBar", "GruntOvenDelay", 0xc8);
             i32 frame = (i32)((u32)elapsed / delay) + 1;
@@ -1325,11 +1330,11 @@ void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
                     }
                 }
             }
-            if (frame != tab->m_frame) {
-                tab->m_frame = frame;
-                CTabWidget* w = *slot;
+            if (frame != tab->m_value) {
+                tab->m_value = frame;
+                CSbiSlotPtr* w = *slot;
                 if (w) {
-                    w->SetFrame(frame);
+                    w->Notify(frame);
                 }
             }
         }
@@ -1358,7 +1363,7 @@ void EngineLabelBacklog::UpdateGruntOvenStatusBar() {
 // ebp - a 1-instr phase shift cascading through every `mov [field],0` store. A
 // regalloc coin-flip, not source-steerable; deferred to the final sweep.
 RVA(0x001076a0, 0x1f3)
-void EngineLabelBacklog::UpdateChipGrinderStatusBar() {
+void CSBI_RectOnly::UpdateChipGrinderStatusBar() {
     i32* m = (i32*)this;
     if (m[0x4e8 / 4] == 0) {
         return;
@@ -2252,43 +2257,48 @@ i32 CTabzBuilder::BuildTabzDialog() {
 // and an inlined widget test; neither pins the store order. Not source-steerable;
 // deferred to the final sweep.
 RVA(0x0010b320, 0x167)
-void EngineLabelBacklog::UpdateDestructButtonStatusBar() {
-    CDestructBlock* b = &m_destruct;
-    switch (b->m_state) {
+void CSBI_RectOnly::UpdateDestructButtonStatusBar() {
+    // The destruct-warning block is this class's own +0x558 state machine:
+    // m_destructWarnActive (+0x558) = 3-state (0 idle / 1 warn-down / 2 warn-up),
+    // m_modeState (+0x55c) = the warning frame counter, m_destructWarnLast/Delay
+    // (+0x560/+0x568) the 64-bit retrigger clock + delay, m_modeNotify (+0x570) the
+    // widget (slot-12 Notify == the set-frame hook). (Folded off the EngineLabelBacklog
+    // CDestructBlock view onto the canonical class.)
+    switch (m_destructWarnActive) {
         case 1: {
-            i64 d = (i64)(u32)g_645588 - *(i64*)&b->m_retriggerLo;
-            if (d >= *(i64*)&b->m_delayLo) {
-                if (++b->m_frame >= 6) {
-                    b->m_frame = 6;
-                    b->m_state = 2;
+            i64 d = (i64)(u32)g_645588 - *(i64*)&m_destructWarnLast;
+            if (d >= *(i64*)&m_destructWarnDelay) {
+                if (++m_modeState >= 6) {
+                    m_modeState = 6;
+                    m_destructWarnActive = 2;
                 }
-                b->m_delayLo =
+                m_destructWarnDelay =
                     g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
-                b->m_delayHi = 0;
-                b->m_retriggerLo = g_645588;
-                b->m_retriggerHi = 0;
-                CTabWidget* w = b->m_widget;
+                m_destructWarnDelayHi = 0;
+                m_destructWarnLast = g_645588;
+                m_destructWarnLastHi = 0;
+                CSbiSlotPtr* w = m_modeNotify;
                 if (w) {
-                    w->SetFrame(b->m_frame);
+                    w->Notify(m_modeState);
                 }
             }
             break;
         }
         case 2: {
-            i64 d = (i64)(u32)g_645588 - *(i64*)&b->m_retriggerLo;
-            if (d >= *(i64*)&b->m_delayLo) {
-                if (--b->m_frame <= 2) {
-                    b->m_frame = 2;
-                    b->m_state = 1;
+            i64 d = (i64)(u32)g_645588 - *(i64*)&m_destructWarnLast;
+            if (d >= *(i64*)&m_destructWarnDelay) {
+                if (--m_modeState <= 2) {
+                    m_modeState = 2;
+                    m_destructWarnActive = 1;
                 }
-                b->m_delayLo =
+                m_destructWarnDelay =
                     g_buteMgr.GetDwordDef("StatusBar", "DestructButtonWarningDelay", 0x32);
-                b->m_delayHi = 0;
-                b->m_retriggerLo = g_645588;
-                b->m_retriggerHi = 0;
-                CTabWidget* w = b->m_widget;
+                m_destructWarnDelayHi = 0;
+                m_destructWarnLast = g_645588;
+                m_destructWarnLastHi = 0;
+                CSbiSlotPtr* w = m_modeNotify;
                 if (w) {
-                    w->SetFrame(b->m_frame);
+                    w->Notify(m_modeState);
                 }
             }
             break;

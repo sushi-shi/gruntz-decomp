@@ -347,6 +347,7 @@ public:
     i32 GaugeComplete();   // call 0x3e2c - gauge-at-100 completion test
     void GaugeFinish(i32); // call 0x39ef - completion hook
     void UpdateChipGrinderStatusBar();
+    void ChipGrinderFinishStep(); // 0x106a00 (grinder finish-step; reloc-masked)
     void UpdateDestructButtonStatusBar();
     i32 Activate();
     i32 SetTabState(i32 tab, i32 state);

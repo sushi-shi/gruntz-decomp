@@ -123,10 +123,8 @@ SIZE_UNKNOWN(CStatzTabItem);
 
 class EngineLabelBacklog {
 public:
-    void UpdateGruntOvenStatusBar();
-    void UpdateDestructButtonStatusBar();
-    void UpdateChipGrinderStatusBar();
-    void ChipGrinderFinishStep(); // thunk_FUN_00506a00 (external, reloc-masked)
+    // (UpdateGruntOven/ChipGrinder/DestructButton StatusBar + ChipGrinderFinishStep
+    // folded off this fake host onto their real owner CSBI_RectOnly - see SBI_RectOnly.cpp.)
     i32 LoadStatzTabToggleSprite(i32 value, i32 idx);
     i32 LoadSwitchDownSprite();
     i32 LoadSwitchUpSprite();
