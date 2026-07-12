@@ -53,14 +53,13 @@ extern CAreaMgr g_areaMgr;
 
 // TokenMgrReset99b80 @0x099b80 - the singleton-init body the $E frag @0x99b60 calls:
 // retail tail-jmps the CAreaMgr ctor @0x99ba0 (through ILT 0x3bac) to re-construct
-// the singleton in place. @early-stop / reloc-defect: modeling this as a guardless
-// direct-ctor tail-call needs the compiler's own dynamic-initializer shape - placement
-// new here adds a null-guard (test/je) retail lacks; `Reset()` keeps the byte-exact
-// 10-byte `mov ecx,&g_areaMgr; jmp <tgt>` shape but binds the jmp to Reset@0x9a0b0
-// instead of the ctor. Deferred: dynamic-initializer / guardless-ctor modeling.
+// the singleton in place. The explicit-ctor-call form gives the clean 10-byte
+// `mov ecx,&g_areaMgr; jmp CAreaMgr::CAreaMgr` tail-jmp with NO placement-new null-guard
+// (docs/patterns/explicit-ctor-call-inplace-tail-jmp.md), binding the jmp to the real
+// ctor @0x99ba0.
 RVA(0x00099b80, 0xa)
 void TokenMgrReset99b80() {
-    g_areaMgr.Reset();
+    g_areaMgr.CAreaMgr::CAreaMgr();
 }
 
 // ---------------------------------------------------------------------------

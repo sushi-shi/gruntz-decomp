@@ -30,10 +30,9 @@
 // @data-symbol: ??_7CBSecStream@@6BzErrHandling@@@ 0x001f0510
 
 // CBSecObj10f's ctor (0x16f680, a 3-byte `mov eax,ecx; ret` - empty __thiscall ctor
-// returning `this`) lives in a foreign .text band (<this obj's 0x170210), so it stays
-// an undefined external here. @rva-symbol only binds obj-DEFINED thunks, so this CALL
-// stays reloc-UNBOUND until CBSecObj10f's ctor is reconstructed in its own 0x16f6xx TU
-// band (cross-TU work). @reloc-TODO.
+// returning `this`) lives in a foreign .text band (<this obj's 0x170210), an orphan
+// COMDAT reconstructed in its own 1-fn TU src/Bute/BSecObj10fCtor.cpp; the CALL here
+// binds through that definition's RVA.
 
 RVA(0x00170210, 0x118)
 CButeSection::CButeSection() {

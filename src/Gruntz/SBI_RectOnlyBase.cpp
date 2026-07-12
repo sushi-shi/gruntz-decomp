@@ -40,3 +40,9 @@ i32 CSBI_RectOnly::
     m_4 = 1;
     return 1;
 }
+
+// CSBI_RectOnly::DtorRect (0xe8760) - the empty 1-byte `ret` member-teardown the
+// CHAIN-DTOR device (~CSBI_RectOnly) calls; an orphan COMDAT homed here in its owner
+// class's band (this TU models CSBI_RectOnly), binding the dtor's CALL @0x100700+0x2c.
+RVA(0x000e8760, 1)
+void CSBI_RectOnly::DtorRect() {}

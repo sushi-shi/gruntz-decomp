@@ -48,9 +48,9 @@ namespace NetLobby {
 }
 // The error-text buffer stays a genuine GruntzApp file-static (@data-symbol names the
 // exact cl5 `_<name>$S<idx>` symbol; the DIR32 loads/stores are reloc-masked). NB the
-// $S index shifted 18952->18949 when the ex-g_errorHwnd$S18951 static was folded onto
-// the shared NetLobby::g_curDlg_64557c above (cl5 renumbers per-TU statics).
-// @data-symbol: _g_errorText$S18949 0x00244ea0
+// $S index renumbers per-TU whenever this TU's string pool changes (cl5 renumbers
+// per-TU statics); currently 18960 - verify with `llvm-objdump -t` if it drifts again.
+// @data-symbol: _g_errorText$S18960 0x00244ea0
 static char g_errorText[0x100]; // error message buffer @ 0x244ea0
 // (g_gameAppInstanceCount is declared in Wap32.h, defined in
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)

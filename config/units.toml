@@ -1822,6 +1822,13 @@ source = "src/Bute/ButeSectionCtor.cpp"
 # CButeNode streams) -> /GX EH frame + 8-trylevel member-unwind state machine.
 flags = "eh"
 
+[[unit]]
+unit = "bsecobj10fctor"
+# CBSecObj10f::CBSecObj10f (0x16f680) - orphan 3-byte empty-ctor COMDAT (returns this);
+# dedicated 1-fn TU so CButeSection's ctor CALL binds to the real RVA.
+source = "src/Bute/BSecObj10fCtor.cpp"
+flags = "base"
+
 # LogicActRegistrars.cpp + LogicActReg.cpp DRAINED + DELETED (REHOME D1): each was a
 # pure holding TU conflating unrelated per-class activation registrars. Each
 # Construct+Register pair split into its own RVA-block .cpp, named by the CRACKED
