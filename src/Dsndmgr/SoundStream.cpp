@@ -40,14 +40,17 @@
 // Reporting-mode globals (.data): g_ssLogEnabled -> OutputDebugStringA, g_ssMsgBoxEnabled
 // -> MessageBox, g_ssBeepEnabled -> startup beep, g_ssThirdEnabled -> "any output" gate.
 // (Bound here with the GetErrorString/SetDSoundReportModes pair that owns them.)
-DATA(0x00253c54)
-extern "C" i32 g_ssBeepEnabled; // 0x653c54
+// Owner-TU definitions (.bss zero), RVA-ascending; C linkage.
+extern "C" {
 DATA(0x00253c4c)
-extern "C" i32 g_ssLogEnabled; // 0x653c4c
+i32 g_ssLogEnabled; // 0x653c4c -> OutputDebugStringA
 DATA(0x00253c50)
-extern "C" i32 g_ssMsgBoxEnabled; // 0x653c50
+i32 g_ssMsgBoxEnabled; // 0x653c50 -> MessageBox
+DATA(0x00253c54)
+i32 g_ssBeepEnabled; // 0x653c54 -> startup beep
 DATA(0x00253c58)
-extern "C" i32 g_ssThirdEnabled; // 0x653c58
+i32 g_ssThirdEnabled; // 0x653c58 -> "any output" gate
+}
 
 // Empty mutable string in .data copied into the working buffer up front.
 DATA(0x002293f4)

@@ -523,6 +523,23 @@ struct CProjActEntry;
 DATA(0x0024c758)
 extern CActColl g_projActColl;
 
+// The projectile activation-registry field globals (referenced only from this TU):
+// real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.
+DATA(0x0024c75c)
+CVariantSlot* g_projActColl2;
+DATA(0x0024c760)
+i32 g_projActLo;
+DATA(0x0024c764)
+i32 g_projActHi;
+DATA(0x0024c768)
+char* g_projActBase;
+DATA(0x0024c76c)
+CProjActEntry* g_projActCur;
+DATA(0x0024c770)
+i32 g_projActStride;
+DATA(0x0024c778)
+i32 g_projActScratch;
+
 // The per-slot CString teardown node the type-name table walks is the shared
 // CStringNode (<Gruntz/StringNode.h>: m_0 slot + Free 0x1b9b93 __thiscall); name
 // assign into the resolved record is the real CString::operator= (0x1b9e74).
@@ -1050,6 +1067,23 @@ extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024c780)
 extern CCoordColl g_tbombColl;
+
+// The timebomb activation-registry field globals (referenced only from this TU):
+// real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.
+DATA(0x0024c784)
+CVariantSlot* g_tbombColl2;
+DATA(0x0024c788)
+i32 g_tbombLo;
+DATA(0x0024c78c)
+i32 g_tbombHi;
+DATA(0x0024c790)
+char* g_tbombBase;
+DATA(0x0024c794)
+CTBombEntry* g_tbombCur;
+DATA(0x0024c798)
+i32 g_tbombStride;
+DATA(0x0024c7a0)
+i32 g_tbombScratch;
 
 // ConstructTBombRange @0x0e17b0 - the static initializer that builds g_tbombColl's fast
 // [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from

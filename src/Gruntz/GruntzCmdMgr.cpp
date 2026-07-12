@@ -861,12 +861,14 @@ const u16 g_cmdBitTable[16] = {
 // .bss). Bound to their real RVAs here (a DATA() in GruntzCommand.h is invisible to
 // labels.py's per-.cpp text scan). Allocate/FreeAll gate on the count and RemoveTail
 // a node off the list to reuse it.
+// The two count globals are owned here (.bss); real definitions, canonical externs
+// in <Gruntz/GruntzCommand.h>. (The g_*CmdList recycle heads stay extern - shared.)
 DATA(0x0022b5dc)
-extern i32 g_singleCmdCount;
+i32 g_singleCmdCount;
 DATA(0x0022b5d0)
 extern CGruntzCmdList g_singleCmdList;
 DATA(0x0022b64c)
-extern i32 g_multiCmdCount;
+i32 g_multiCmdCount;
 DATA(0x0022b640)
 extern CGruntzCmdList g_multiCmdList;
 

@@ -592,10 +592,14 @@ extern "C" {
     extern u32 g_645584; // game-side delta mirror (DAT_00645584)
     extern u32 g_645588; // game-side abs clock (DAT_00645588)
     extern u32 g_6bf3bc; // draw-clock delta (cleared) - g_6bf3c0 is g_killCueClock
+    // The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
+    // extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_645600 below.
+    DATA(0x002452d8)
+    char g_msgScratch[256]; // 0x6452d8
     // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
     // here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
     DATA(0x00245600)
-    extern u32 g_645600; // DAT_00645600
+    u32 g_645600; // DAT_00645600 (owner-TU definition, .bss)
     DATA(0x002455b0)
     extern u32 g_traitorMode; // ("Traitor Mode" cheat toggle)
     DATA(0x002455a4)
@@ -662,9 +666,15 @@ extern "C" {
 // ON/OFF" into before logging it (reloc-masked DATA ref). The format helper is
 // the statically-linked CRT sprintf (FUN_0051f890; reloc-masked call).
 
-// The deferred per-frame pump flag (0x60fac8; otherwise-unnamed BSS int).
+// Owner-TU .data definitions, RVA-ascending. The deferred per-frame pump flag
+// (0x60fac8, init 1); the two warp-target ints (0x612610/0x612614, init -1; canonical
+// externs in <Globals.h>).
 DATA(0x0020fac8)
-extern i32 g_pendingFrame;
+i32 g_pendingFrame = 1;
+DATA(0x00212610)
+i32 g_warpX = -1;
+DATA(0x00212614)
+i32 g_warpY = -1;
 
 // The game-manager singleton (*0x64556c) - the CGruntzMgr (MFC) view of the datum the
 // engine TUs see as CGameRegistry* g_gameReg; same _g_mgrSettings symbol.

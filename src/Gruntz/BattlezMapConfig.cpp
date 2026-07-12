@@ -456,10 +456,20 @@ extern i32 g_tickDelta;
 // 0x238-stride block (the m_ctx-indexed 0x238-stride records); the fields the spawn state
 // machine reaches (+0x170/+0x174 ready-flags, +0x188 edge sub-object, +0x258/+0x25c
 // queued point, record+0x280 re-route gate) are read by raw offset like the siblings.
+// Owner-TU definitions, RVA-ascending per section. g_step*/g_diffTier carry canonical
+// externs in <Globals.h>; g_spawnCfg/g_spawnState are TU-private.
 DATA(0x0020ccc0)
-extern i32 g_spawnCfg;
+i32 g_spawnCfg = 0x98f; // .data (map-config seed 2447)
+DATA(0x0022b6dc)
+i32 g_stepRun;
+DATA(0x0022b730)
+i32 g_stepCol;
+DATA(0x0022b734)
+i32 g_stepRow;
+DATA(0x0022b738)
+i32 g_diffTier;
 DATA(0x0022b7ec)
-extern i32 g_spawnState;
+i32 g_spawnState;
 
 // The global step timer (?g_stepTimer, DAT_00645588 @ VA 0x645588): the 32-bit
 // tick counter the m_arrived latch debounces against the bundle's m_scratch78..m_084 pair.

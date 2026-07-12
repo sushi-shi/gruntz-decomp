@@ -168,12 +168,16 @@ extern LogicFnTable g_wormholeDispatch;
 // InitLogicDispatch_6445e8 below. Modeled through the CActReg lookup path
 // (ResolveEntry).
 DATA(0x002445e8)
-extern CLogicActTable g_logicDispatch_6445e8;
+CLogicActTable g_logicDispatch_6445e8; // owner-TU definition; its 0x24-byte CActReg
+                                       // extent covers the interior fields
+                                       // 0x2445ec..0x244608 (bind as g_obj+offset)
 
 // CTeleporter's activation-coordinate registry singleton (@0x6446b0), built over
 // the fixed [2000, 2010] range by the shared registry ctor (0x408710).
 DATA(0x002446b0)
-extern CTeleporterActReg g_teleporterActReg; // 0x6446b0
+CTeleporterActReg g_teleporterActReg; // 0x6446b0 (owner-TU definition; its 0x24-byte
+                                      // CActReg extent covers interior fields
+                                      // 0x2446b4..0x2446d0, bind as g_obj+offset)
 
 // The handler member function loaded into the wormhole dispatch slot
 // (LAB_0040181b, a CWormhole logic method). Referenced by address so its DIR32

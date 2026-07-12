@@ -1814,6 +1814,11 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
 // ===========================================================================
 extern i32 g_serialCounter; // ?g_serialCounter@@3HA @0x629ad0 (bumped per string field)
 
+// The archive default sentinel this TU streams after m_40c (.data, init -1). Owner-TU
+// definition here; canonical extern in <Globals.h>.
+DATA(0x00212618)
+i32 g_archiveDefault612618 = -1;
+
 struct CArchiveMgr {
     char m_pad00[0x10];
     CDDrawWorkerRegistry* m_10; // +0x10
@@ -2947,6 +2952,16 @@ i32 CPlay::ProfileDeltaFrame() {
 // the guts subsystem and the region-0 gate. 0xebd70. reloc-masked.
 extern "C" void ProfReport(void* mgr, void* guts, i32 gate);
 
+// The cross-frame profiler accumulators (.bss): owner-TU definitions here; the
+// canonical externs are in <Globals.h>. g_profAccB caches the flush start/duration,
+// g_profAccA the camera draw-B duration - read next frame at ProfLog time.
+extern "C" {
+DATA(0x0024c284)
+i32 g_profAccA;
+DATA(0x0024c288)
+i32 g_profAccB;
+}
+
 // ===========================================================================
 // CPlay::ProfileInputFrame (0x0c9e40) - the fully-instrumented frame: nine
 // timeGetTime-bracketed phases (input/activate/deact/update/hit-test/draw/fixed/
@@ -3792,6 +3807,15 @@ CString GruntzPlayer::GetDefaultName() {
     return name;
 }
 
+// The color / difficulty name tables (.data pointer arrays -> the "Color N" /
+// "Easy"/"Normal"/"Hard" string literals). Owner-TU definitions here; canonical
+// externs in <Globals.h>. The pointer slots reloc-mask; the strings match by content.
+DATA(0x00212f78)
+char* g_colorNames[] = {"Color 0", "Color 1", "Color 2", "Color 3",
+                        "Color 4", "Color 5", "Color 6", "Color 7"};
+DATA(0x00212fc0)
+char* g_difficultyNames[] = {"Easy", "Normal", "Hard"};
+
 // ===========================================================================
 // GetColorName  @0x0db050  (/GX EH frame, free fn)
 // Build a CString from the color-name table (g_colorNames[idx]); uppercase it
@@ -3827,8 +3851,14 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
 // accessors (ex src/Net/ChannelSlots.cpp; the channelslots init frag sits INSIDE
 // this TU's frag run - one obj). A 17-DWORD array of per-channel "free" flags
 // (1 = free, 0 = taken); CNetMgr and CGruntzMgr init/scan/claim channels through
-// these. The table is an extern (its storage lives in retail .data).
+// these. Zero-init (.bss) storage, runtime-reset to 1 by ChannelSlots_InitAll.
 // ===========================================================================
+
+// Owner-TU definition of the channel-slot table (canonical extern in <Globals.h>).
+extern "C" {
+DATA(0x0024c3f0)
+i32 g_64c3f0[17];
+}
 
 // Reset every slot to "free" (1).
 RVA(0x000db1d0, 0x14)
@@ -5778,6 +5808,11 @@ i32 CPlay::LoadLevelSounds(i32 force) {
     ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->ScanTree_157ee0((DirNode*)sounds, "LEVEL", "_");
     return 1;
 }
+
+// The "ANIZ" symtab-path tag SyncLevelKey resolves (owner-TU .data definition; the
+// canonical extern is in <Globals.h>). RVA-ascending: 0x213054 follows the name arrays.
+DATA(0x00213054)
+char g_dat613054[8] = "ANIZ";
 
 // ---------------------------------------------------------------------------
 // 0x0db750 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). "LEVEL"

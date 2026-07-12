@@ -118,7 +118,7 @@ extern char s_GameKey[];
 extern i32 g_warpX;
 extern i32 g_warpY;
 extern i32 g_archiveDefault612618;
-extern u8 g_dat613054;
+extern char g_dat613054[8];
 extern char s_PREVIEW_6135e8[];
 extern void* g_desc_6156f4;
 extern char g_bmpHeaderTemplate[];

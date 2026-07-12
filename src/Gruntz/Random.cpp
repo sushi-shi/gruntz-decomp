@@ -12,17 +12,17 @@
 extern u8 g_randSeeded; // 0x6c127d bit0 set once seeded
 extern i32 g_randSeed;  // 0x6c1288 32-bit LCG state
 
-// The second generator's state, seeded lazily from timeGetTime.
-DATA(0x002c278c)
-extern char g_rng2Seeded; // bit0 set once seeded
-DATA(0x002c2798)
-extern i32 g_rng2State; // 32-bit LCG state
-
-// Per-frame cached coin bit used by the deterministic coin-flip helper.
+// Owner-TU definitions of this TU's private generator/coin state (.bss zero),
+// RVA-ascending. Per-frame cached coin bit used by the deterministic coin-flip helper:
 DATA(0x0024c22c)
-extern char g_coinRolled; // bit0 set once this frame's coin was rolled
+char g_coinRolled; // bit0 set once this frame's coin was rolled
 DATA(0x0024c26c)
-extern i32 g_coinValue; // the cached 0/1 result
+i32 g_coinValue; // the cached 0/1 result
+// The second generator's state, seeded lazily from timeGetTime:
+DATA(0x002c278c)
+char g_rng2Seeded; // bit0 set once seeded
+DATA(0x002c2798)
+i32 g_rng2State; // 32-bit LCG state
 
 // The game-registry singleton (0x24556c); only its replay-mode flags are read
 // here, so a minimal local view (canonical DATA in src/Stub/ApiCallers.cpp).

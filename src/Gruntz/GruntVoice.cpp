@@ -55,7 +55,7 @@ extern i32 g_vactScratch;
 DATA(0x002514d8)
 extern CVActColl g_vactColl;
 DATA(0x002514dc)
-extern CVariantSlot* g_vactColl2;
+CVariantSlot* g_vactColl2; // owner-TU definition (referenced only here)
 extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA), bound in GruntStartingPoint.cpp
 
 // The global game/manager registry singleton (*0x64556c; _g_mgrSettings - the C
@@ -79,6 +79,23 @@ struct CVTrigEntry {
     void (CVoiceTrigger::*m_fn)(); // [entry]
 };
 SIZE_UNKNOWN(CVTrigEntry);
+
+// The voice-trigger activation-registry field globals (referenced only from this
+// TU): real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.
+DATA(0x00251504)
+CVariantSlot* g_vtrigColl2;
+DATA(0x00251508)
+i32 g_vtrigLo;
+DATA(0x0025150c)
+i32 g_vtrigHi;
+DATA(0x00251510)
+char* g_vtrigBase;
+DATA(0x00251514)
+CVTrigEntry* g_vtrigCur;
+DATA(0x00251518)
+i32 g_vtrigStride;
+DATA(0x00251520)
+i32 g_vtrigScratch;
 
 // The inlined coordinate->Entry* lookup the registration resolves the slot with.
 static inline CVTrigEntry* VTrigLookup(i32 coord) {

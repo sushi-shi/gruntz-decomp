@@ -195,7 +195,8 @@ i32 Gap_043670(void) {
 // fixed [2000, 2010] range via Construct (0x408710); Lookup (0x3864) resolves a
 // per-type slot (used by RegisterWarlordActions below).
 DATA(0x00244610)
-extern CActReg g_actionTable; // 0x644610
+CActReg g_actionTable; // 0x644610 (owner-TU definition; its 0x24-byte CActReg extent
+                       // covers interior fields 0x244614..0x244630, bind as g_obj+offset)
 
 // ===========================================================================
 // CWarlord::InitActReg  (0x0445c0)

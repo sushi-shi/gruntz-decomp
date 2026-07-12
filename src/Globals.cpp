@@ -187,14 +187,8 @@ DATA(0x00211ab8)
 extern char s_GameMessagez[]; // s_GAME_MESSAGEZ_00611ab8 (image-set name literal)
 DATA(0x00211ec4)
 extern char s_GameKey[]; // s_GAME_KEY_00611ec4 (registry key literal)
-DATA(0x00212610)
-extern i32 g_warpX; // 0x612610
-DATA(0x00212614)
-extern i32 g_warpY; // 0x612614
-DATA(0x00212618)
-extern i32 g_archiveDefault612618;
-DATA(0x00213054)
-extern u8 g_dat613054; // 0x613054 (new pin)
+// g_warpX / g_warpY DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
+// g_archiveDefault612618 / g_dat613054 DEFINED in src/Gruntz/Play.cpp (owner TU).
 DATA(0x002135e8)
 extern char s_PREVIEW_6135e8[]; // "PREVIEW"
 DATA(0x0021aabc)
@@ -230,14 +224,7 @@ DATA(0x0022aef0)
 extern char g_cheatTableEnd[];
 DATA(0x0022af10)
 extern i32 g_bootyCheatBuilt;
-DATA(0x0022b6dc)
-extern i32 g_stepRun;
-DATA(0x0022b730)
-extern i32 g_stepCol;
-DATA(0x0022b734)
-extern i32 g_stepRow;
-DATA(0x0022b738)
-extern i32 g_diffTier;
+// g_stepRun/g_stepCol/g_stepRow/g_diffTier DEFINED in src/Gruntz/BattlezMapConfig.cpp (owner TU).
 DATA(0x0022c268)
 extern i32 g_dat62c268; // 0x62c268
 // g_act* fields DEFINED in src/Gruntz/SecretTeleporterTrigger.cpp (owner TU).
@@ -247,8 +234,7 @@ DATA(0x002452a4)
 extern i32 g_jitterX; // 0x6452a4
 DATA(0x002452cc)
 extern i32 g_jitterY; // 0x6452cc
-DATA(0x002452d8)
-extern "C" char g_msgScratch[]; // 0x6452d8
+// g_msgScratch DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
 DATA(0x00245508)
 extern i32 g_panMinX; // 0x645508
 DATA(0x0024550c)
@@ -305,36 +291,8 @@ extern i32 g_64bdc0; // DAT_0064bdc0
 // g_drop* fields DEFINED in src/Gruntz/DroppedObject.cpp (owner TU).
 DATA(0x0024c27c)
 extern ScrollView* g_backView; // 0x64c27c
-DATA(0x0024c3f0)
-extern "C" i32 g_64c3f0[17];
-DATA(0x0024c75c)
-extern CVariantSlot* g_projActColl2;
-DATA(0x0024c760)
-extern i32 g_projActLo;
-DATA(0x0024c764)
-extern i32 g_projActHi;
-DATA(0x0024c768)
-extern char* g_projActBase;
-DATA(0x0024c76c)
-extern CProjActEntry* g_projActCur;
-DATA(0x0024c770)
-extern i32 g_projActStride;
-DATA(0x0024c778)
-extern i32 g_projActScratch;
-DATA(0x0024c784)
-extern CVariantSlot* g_tbombColl2;
-DATA(0x0024c788)
-extern i32 g_tbombLo;
-DATA(0x0024c78c)
-extern i32 g_tbombHi;
-DATA(0x0024c790)
-extern char* g_tbombBase;
-DATA(0x0024c794)
-extern CTBombEntry* g_tbombCur;
-DATA(0x0024c798)
-extern i32 g_tbombStride;
-DATA(0x0024c7a0)
-extern i32 g_tbombScratch;
+// g_64c3f0[17] DEFINED in src/Gruntz/Play.cpp (owner TU).
+// g_projAct*/g_tbomb* fields DEFINED in src/Gruntz/Projectile.cpp (owner TU).
 DATA(0x0024cfb8)
 extern i64 g_scrollLimit; // 0x64cfb8 (64-bit)
 DATA(0x0024cfc4)
@@ -367,20 +325,7 @@ extern i32 g_suppress_64e360;
 // g_toob* fields DEFINED in src/Gruntz/ToobSpikez.cpp (owner TU).
 DATA(0x0024eb14)
 extern i32 g_loadedFlag;
-DATA(0x00251504)
-extern CVariantSlot* g_vtrigColl2;
-DATA(0x00251508)
-extern i32 g_vtrigLo;
-DATA(0x0025150c)
-extern i32 g_vtrigHi;
-DATA(0x00251510)
-extern char* g_vtrigBase;
-DATA(0x00251514)
-extern CVTrigEntry* g_vtrigCur;
-DATA(0x00251518)
-extern i32 g_vtrigStride;
-DATA(0x00251520)
-extern i32 g_vtrigScratch;
+// g_vtrig* fields DEFINED in src/Gruntz/GruntVoice.cpp (owner TU).
 DATA(0x00253c48)
 extern i32 g_panTable[];
 DATA(0x00253c68)
@@ -444,10 +389,7 @@ DATA(0x002c1288)
 extern i32 g_randSeed; // 0x6c1288  LCG seed
 DATA(0x001eab40)
 extern float g_zeroF; // 0x5eab40  the shared 0.0f .rdata constant (was a VA-typo 0x5eab40 RVA)
-DATA(0x00212f78)
-extern char* g_colorNames[]; // "Color 0".."Color 7"
-DATA(0x00212fc0)
-extern char* g_difficultyNames[]; // "Easy"/"Normal"/"Hard"
+// g_colorNames / g_difficultyNames DEFINED in src/Gruntz/Play.cpp (owner TU).
 DATA(0x0061aabc)
 extern char g_imageTag[];
 DATA(0x0061ab14)
@@ -503,8 +445,5 @@ extern "C" {
     extern i32 g_6455dc; // DAT_006455dc
     DATA(0x002455e0)
     extern i32 g_6455e0; // DAT_006455e0
-    DATA(0x0024c284)
-    extern i32 g_profAccA; // DAT_0064c284
-    DATA(0x0024c288)
-    extern i32 g_profAccB; // DAT_0064c288
+    // g_profAccA/g_profAccB DEFINED in src/Gruntz/Play.cpp (owner TU).
 }
