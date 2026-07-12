@@ -29,7 +29,9 @@
 
 // The DirectInput manager singleton (DAT_00645570, owned by GruntzMgrTransition.cpp);
 // its m_devices array element count is the enumerated game-controller/joystick count.
-extern DirectInputMgr2* g_645570;
+// extern "C" to emit the bound `_g_645570` (the definition's C-linkage name @0x245570);
+// a plain C++ extern mangles to ?g_645570@@3PAVDirectInputMgr2@@A and leaves the DIR32 UNBOUND.
+extern "C" DirectInputMgr2* g_645570;
 
 // ---------------------------------------------------------------------------
 // CInputConfig - the input-device option holder. Only the device-id discriminator

@@ -84,7 +84,6 @@ struct CChatCatalog {
     i32 m_64; // current frame/index, read straight through the lookup result
 };
 
-extern "C" void RezFree(void* p); // 0x1b9b82
 
 // The font/sprite passed into Draw: anchor coords m_44/m_48 (0xeeeeeeee = "use the
 // caller's fallback coords") and a virtual Measure() at vtable slot +0x14 (index 5).
@@ -195,7 +194,7 @@ void CChatBox::Clear() {
         CMenuPage* payload = (CMenuPage*)cur->data;
         if (payload) {
             payload->~CMenuPage();
-            RezFree(payload);
+            operator delete(payload); // engine ::operator delete (??3@YAXPAX@Z @0x1b9b82), reloc-masked
         }
     }
     m_nodeList.RemoveAll();

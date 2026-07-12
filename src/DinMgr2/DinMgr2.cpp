@@ -118,17 +118,20 @@ extern "C" char g_emptyString[]; // 0x6293f4
 
 // The keyboard DIDATAFORMAT (c_dfDIKeyboard) CreateDev passes to SetDataFormat
 // (@0x590aa0, a const in .text). Pushed by address (reloc-masked DIR32 operand).
-DATA(0x00190aa0)
+// @data-symbol (not DATA): clang mangles the const-u8[] extern with a `Q` storage
+// class while cl 5.0 emits `P` (?g_X@@3PBEB), so a DATA() label's mangling misses
+// the base obj's undefined external (leaving the push-by-address reloc UNBOUND).
+// @data-symbol: ?g_keyboardDataFormat@@3PBEB 0x00190aa0
 extern const u8 g_keyboardDataFormat[]; // 0x590aa0
 
 // The mouse DIDATAFORMAT (c_dfDIMouse, 0x10-byte DIMOUSESTATE) the device-B
 // bring-up (CDeviceConfigB::CreateDev) passes to SetDataFormat; reloc-masked DIR32.
-DATA(0x00190b30)
+// @data-symbol: ?g_mouseDataFormat@@3PBEB 0x00190b30
 extern const u8 g_mouseDataFormat[]; // 0x590b30
 
 // The joystick DIDATAFORMAT (c_dfDIJoystick2, 0x110-byte DIJOYSTATE2) the joystick
 // bring-up (CDeviceConfigB::CreateDevJoystick) passes to SetDataFormat; reloc-masked DIR32.
-DATA(0x00191590)
+// @data-symbol: ?g_joystickDataFormat@@3PBEB 0x00191590
 extern const u8 g_joystickDataFormat[]; // 0x591590
 
 // USER32 GetAsyncKeyState - polled across the key table by Poll (0x133d00). Loaded
@@ -136,11 +139,12 @@ extern const u8 g_joystickDataFormat[]; // 0x591590
 // reused across the run; comes from the real <windows.h> via <Win32.h>.
 
 // The config blob InitA passes to CDeviceConfigA::CreateDev (@0x5ef548), pushed
-// by address (reloc-masked DIR32 operand).
-DATA(0x001ef548)
+// by address (reloc-masked DIR32 operand). @data-symbol (not DATA): same const-u8[]
+// P-vs-Q mangling drop as the DIDATAFORMAT externs above.
+// @data-symbol: ?g_deviceConfigA@@3PBEB 0x001ef548
 extern const u8 g_deviceConfigA[]; // 0x5ef548
 
-DATA(0x001ef538)
+// @data-symbol: ?g_deviceConfigB@@3PBEB 0x001ef538
 extern const u8 g_deviceConfigB[]; // 0x5ef538 - device-B CreateDev config blob
 
 // ---------------------------------------------------------------------------
@@ -1087,12 +1091,14 @@ i32 CDeviceConfigB::CreateDev(IDirectInputA* di, const void* cfg, void* owner, u
 // buffer (m_stateBuffer/+0x2a0), then run the shared grand-base cleanup. Retail calls
 // the 0x1342b0 incremental-link jmp-thunk, which lands on CInputDevRoot::ReleaseDevices
 // @0x134d50; binding the call to that resolved target (qualified direct call) is
-// reloc-masked + byte-neutral. __thiscall.
-extern "C" void RezFree(void* p); // 0x1b9b82 (engine operator delete; reloc-masked)
+// reloc-masked + byte-neutral. __thiscall. The snapshot buffer is freed through the
+// engine's ::operator delete (??3@YAXPAX@Z @0x1b9b82, library-exempt), same as the
+// sibling CInputDevice::Teardown - not a fake `RezFree` decl (that leaves the call
+// rel32 UNBOUND).
 RVA(0x00134360, 0x33)
 void CDeviceConfigB::Free360() {
     if (m_stateBuffer) {
-        RezFree(m_stateBuffer);
+        operator delete(m_stateBuffer);
         m_stateBuffer = 0;
         m_stateBufferSize = 0;
     }
@@ -1220,7 +1226,7 @@ i32 CDeviceConfigB::CreateDevJoystick(IDirectInputA* di, const void* cfg, void* 
 RVA(0x001346d0, 0x33)
 void CDeviceConfigC::Free6d0() {
     if (m_stateBuffer) {
-        RezFree(m_stateBuffer);
+        operator delete(m_stateBuffer);
         m_stateBuffer = 0;
         m_stateBufferSize = 0;
     }
