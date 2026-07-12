@@ -109,29 +109,30 @@ struct CShadowActEntry {
 // CTimeBomb/CKitchenSlime use) + the running id counter and the two key strings.
 // ---------------------------------------------------------------------------
 DATA(0x0021aea8)
-extern i32 g_nextActId;
+extern i32 g_typeCounter;
 DATA(0x0020a454)
-extern char s_actKeyA[]; // "A"
+extern char s_codeA[]; // "A"
 DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"
+struct CTypeNameEntry;   // canonical g_typeCur slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
-extern CTypeKeyColl g_nameReg; // 0x6bf650
+extern CTypeKeyColl g_typeColl; // 0x6bf650
 DATA(0x002bf654)
-extern CVariantSlot* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_typeColl2; // 0x6bf654
 DATA(0x002bf658)
-extern i32 g_nameRegLo;
+extern i32 g_typeLo;
 DATA(0x002bf65c)
-extern i32 g_nameRegHi;
+extern i32 g_typeHi;
 DATA(0x002bf660)
-extern char* g_nameRegBase;
+extern char* g_typeBase;
 DATA(0x002bf668)
-extern i32 g_nameRegStride;
+extern i32 g_typeStride;
 DATA(0x002bf664)
-extern char* g_nameRegCur; // slow-path result slot
+extern CTypeNameEntry* g_typeCur; // slow-path result slot
 DATA(0x002bf66c)
-extern void** g_nameRegCurList; // the slot's CString list base
+extern void* g_typeNodes; // the slot's CString list base
 DATA(0x002bf670)
-extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
+extern i32 g_typeCount; // zeroed first; doubles as the list count
 
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
@@ -139,17 +140,17 @@ extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
 
 // The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
-    g_nameRegScratch = 0;
-    if (id >= g_nameRegLo && id <= g_nameRegHi) {
-        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    g_typeCount = 0;
+    if (id >= g_typeLo && id <= g_typeHi) {
+        return g_typeBase + (id - g_typeLo) * g_typeStride;
     }
-    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
-        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
+        return g_typeBase + (id - g_typeLo) * g_typeStride;
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
-    return g_nameRegCur;
+    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
+    return (char*)g_typeCur;
 }
 
 // The two per-frame handlers bound into CDroppedObject's registry slots
@@ -555,13 +556,13 @@ void CObjectDropper::FireAct(i32 actId) {
 // ebp,[eax+1]`). Identical to CAniCycle::RegisterActs. Deferred to the final sweep.
 RVA(0x000c60e0, 0x18d)
 void CObjectDropper::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
-        id = g_nextActId;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        id = g_typeCounter;
         char* slot = ActNameLookup(id);
-        i32 cnt = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 cnt = g_typeCount;
+        void** list = (void**)g_typeNodes;
         if (cnt != 0) {
             do {
                 if (list != 0) {
@@ -570,8 +571,8 @@ void CObjectDropper::RegisterActs() {
                 list++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CDropperActEntry*)g_dropperActReg.ResolveEntry(id))->m_fn = &CObjectDropper::Update;
 }
@@ -814,31 +815,31 @@ void CDroppedObject::FireActivation(i32 coord) {
 // callee-saved register choice cascading into the free-loop counts. Deferred.
 RVA(0x000c6d30, 0x2ac)
 void CDroppedObject::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     *(void**)DropLookup(id) = (void*)&DropActA_c7090;
 
     i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
     if (id2 == 0) {
-        id2 = g_nextActId;
+        id2 = g_typeCounter;
         g_buteTree.Insert(s_actKeyB, (void*)id2);
         char* slot = ActNameLookup(id2);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -846,7 +847,7 @@ void CDroppedObject::RegisterActs() {
             list++;
         }
         ((CString*)slot)->operator=(s_actKeyB);
-        g_nextActId++;
+        g_typeCounter++;
     }
     *(void**)DropLookup(id2) = (void*)&DropActB_c7be0;
 }
@@ -1046,13 +1047,13 @@ void CDroppedObjectShadow::FireActivation(i32 coord) {
 // byte byte-faithful; only the regalloc/free-loop-count materialization diverges).
 RVA(0x000c78b0, 0x18d)
 void CDroppedObjectShadow::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
-        id = g_nextActId;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        id = g_typeCounter;
         char* slot = ActNameLookup(id);
-        i32 cnt = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 cnt = g_typeCount;
+        void** list = (void**)g_typeNodes;
         if (cnt != 0) {
             do {
                 if (list != 0) {
@@ -1061,8 +1062,8 @@ void CDroppedObjectShadow::RegisterActs() {
                 list++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CShadowActEntry*)g_shadowActReg.ResolveEntry(id))->m_fn = &CDroppedObjectShadow::Advance;
 }

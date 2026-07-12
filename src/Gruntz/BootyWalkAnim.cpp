@@ -35,7 +35,7 @@ extern i32 g_sndEnabled; // 0x61ab20
 DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 DATA(0x0020a454)
-extern char s_actKeyA[]; // "A" (0x60a454)
+extern char s_codeA[]; // "A" (0x60a454)
 extern "C" {
     DATA(0x002c4650)
     extern u32(WINAPI* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
@@ -118,7 +118,7 @@ i32 BzState::BuildBootyWalkingGruntz() {
 // ===========================================================================
 // @early-stop
 // ~90.5% - complete + correct reconstruction (all logic, externs, globals, and the
-// s_actKeyA "A" reloc named). Residual is layered documented walls, none steerable
+// s_codeA "A" reloc named). Residual is layered documented walls, none steerable
 // from source:
 //  (1) global regalloc register-SELECTION: retail pins the persistent 0 constant in
 //      ebx (`xor ebx,ebx` at entry) whereas cl selects ebp for it, cascading to
@@ -168,7 +168,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                                 letter = "W";
                                 break;
                             case 1:
-                                letter = s_actKeyA;
+                                letter = s_codeA;
                                 break;
                             case 2:
                                 letter = "R";
@@ -242,7 +242,7 @@ i32 BzState::UpdateBootyWalkingGruntz() {
                     letter = "W";
                     break;
                 case 1:
-                    letter = s_actKeyA;
+                    letter = s_codeA;
                     break;
                 case 2:
                     letter = "R";

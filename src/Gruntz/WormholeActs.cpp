@@ -74,21 +74,21 @@ void CWormhole::FireActivation(i32 coord) {
 // register choice cascading into the free-loop count materialization. Deferred.
 RVA(0x0003f3f0, 0x18d)
 void CWormhole::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CWormholeActEntry*)g_wormholeActReg.ResolveEntry(id))->m_fn = &CWormhole::AdvanceAnim;
 }

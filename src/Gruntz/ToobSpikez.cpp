@@ -146,35 +146,37 @@ static inline CToobEntry* ToobLookup(i32 coord) {
 // The shared activation-NAME registry CToobSpikez::RegisterActs (0x1149c0) interns
 // the key "A" into g_buteTree (Find returns the id, 0 == absent); on a fresh id it
 // records the key in the shared scratch name registry (@0x6bf650, the SAME range/
-// cache shape as g_toobColl) and bumps g_nextActId. Then it resolves id->Entry in
+// cache shape as g_toobColl) and bumps g_typeCounter. Then it resolves id->Entry in
 // CToobSpikez's OWN registry (g_toobColl via ToobLookup, the SAME instance
 // FireActivation uses) and stores the logic handler (the ILT to the logic method
 // @0x114bc0). g_buteTree (0x6bf620, named by mangled symbol) doubles as the
-// name->id map; g_nextActId (0x61aea8) is the running id counter; s_actKeyA
+// name->id map; g_typeCounter (0x61aea8) is the running id counter; s_codeA
 // (0x60a454) is the "A" key.
 // ---------------------------------------------------------------------------
 DATA(0x0021aea8)
-extern i32 g_nextActId;
+extern i32 g_typeCounter;
 DATA(0x0020a454)
-extern char s_actKeyA[];
+extern char s_codeA[];
+class CTypeKeyColl;    // canonical g_typeColl @0x6bf650 (<Gruntz/TypeKeyColl.h>)
+struct CTypeNameEntry; // canonical g_typeCur slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
-extern CToobColl g_nameReg; // 0x6bf650
+extern CTypeKeyColl g_typeColl; // 0x6bf650
 DATA(0x002bf654)
-extern CVariantSlot* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_typeColl2; // 0x6bf654
 DATA(0x002bf658)
-extern i32 g_nameRegLo;
+extern i32 g_typeLo;
 DATA(0x002bf65c)
-extern i32 g_nameRegHi;
+extern i32 g_typeHi;
 DATA(0x002bf660)
-extern char* g_nameRegBase;
+extern char* g_typeBase;
 DATA(0x002bf668)
-extern i32 g_nameRegStride;
+extern i32 g_typeStride;
 DATA(0x002bf664)
-extern char* g_nameRegCur; // slow-path result slot
+extern CTypeNameEntry* g_typeCur; // slow-path result slot
 DATA(0x002bf66c)
-extern void** g_nameRegCurList; // the slot's CString list base
+extern void* g_typeNodes; // the slot's CString list base
 DATA(0x002bf670)
-extern i32 g_nameRegScratch; // zeroed first; doubles as the list count
+extern i32 g_typeCount; // zeroed first; doubles as the list count
 
 // The shared bute store the key is interned in (?g_buteTree@@3VCButeTree@@A
 // @0x6bf620, pulled via UserLogic.h; named by mangled symbol so Find/Insert
@@ -187,17 +189,17 @@ extern CButeTree g_buteTree;
 
 // The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
-    g_nameRegScratch = 0;
-    if (id >= g_nameRegLo && id <= g_nameRegHi) {
-        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    g_typeCount = 0;
+    if (id >= g_typeLo && id <= g_typeHi) {
+        return g_typeBase + (id - g_typeLo) * g_typeStride;
     }
-    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
-        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
+        return g_typeBase + (id - g_typeLo) * g_typeStride;
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
-    return g_nameRegCur;
+    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
+    return (char*)g_typeCur;
 }
 
 // The logic handler bound into the registry slot (the ILT to the toob-spikez logic
@@ -276,21 +278,21 @@ void CToobSpikez::FireActivation(i32 coord) {
 // than retail. Not source-steerable; the SAME plateau as CParticlez::RegisterActs.
 RVA(0x001149c0, 0x18d)
 void CToobSpikez::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     *(void**)ToobLookup(id) = (void*)&ToobLogic_114bc0;
 }

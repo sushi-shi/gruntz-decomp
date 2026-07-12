@@ -14,10 +14,10 @@
 #include <rva.h>
 
 #include <Gruntz/GruntVoice.h>
-#include <Gruntz/VoiceTrigger.h>           // canonical CVoiceTrigger : CUserLogic
-#include <Gruntz/TileTriggerTransition.h>  // CTileTransitionController/State worker-pump view
-#include <Gruntz/GameRegistry.h>           // g_gameReg / g_gameReg->m_world->m_8
-#include <Gruntz/TriggerMgr.h>             // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free)
+#include <Gruntz/VoiceTrigger.h>          // canonical CVoiceTrigger : CUserLogic
+#include <Gruntz/TileTriggerTransition.h> // CTileTransitionController/State worker-pump view
+#include <Gruntz/GameRegistry.h>          // g_gameReg / g_gameReg->m_world->m_8
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr::FindGruntAt (m_cmdGrid @0x75c60, cast-free)
 #include <Gruntz/BoundaryLeafLogicViews.h> // L_13400 (CUFO fold-flat leaf dtor, RVA-homed here)
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 #include <Gruntz/TypeKeyColl.h>
@@ -95,47 +95,48 @@ static inline CVTrigEntry* VTrigLookup(i32 coord) {
 }
 
 // The shared activation-NAME registry (the first block interns "A"). g_buteTree
-// (0x6bf620, mangled-named) doubles as the name->id map; g_nextActId (0x61aea8)
-// is the running id counter; s_actKeyA (0x60a454) is the "A" key; the scratch
+// (0x6bf620, mangled-named) doubles as the name->id map; g_typeCounter (0x61aea8)
+// is the running id counter; s_codeA (0x60a454) is the "A" key; the scratch
 // name registry is @0x6bf650 (same shape as g_vtrigColl).
 DATA(0x0021aea8)
-extern i32 g_nextActId;
-// (s_actKeyA is the same "A" key byte-array as GruntVoice.h's g_voiceKeyA
+extern i32 g_typeCounter;
+// (s_codeA is the same "A" key byte-array as GruntVoice.h's g_voiceKeyA
 // @0x60a454; the DATA binding lives on the g_voiceKeyA decl.)
-extern char s_actKeyA[];
+extern char s_codeA[];
+struct CTypeNameEntry; // canonical g_typeCur slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
-extern CTypeKeyColl g_nameReg; // 0x6bf650
+extern CTypeKeyColl g_typeColl; // 0x6bf650
 DATA(0x002bf654)
-extern CVariantSlot* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_typeColl2; // 0x6bf654
 DATA(0x002bf658)
-extern i32 g_nameRegLo;
+extern i32 g_typeLo;
 DATA(0x002bf65c)
-extern i32 g_nameRegHi;
+extern i32 g_typeHi;
 DATA(0x002bf660)
-extern char* g_nameRegBase;
+extern char* g_typeBase;
 DATA(0x002bf668)
-extern i32 g_nameRegStride;
+extern i32 g_typeStride;
 DATA(0x002bf664)
-extern char* g_nameRegCur;
+extern CTypeNameEntry* g_typeCur;
 DATA(0x002bf66c)
-extern void** g_nameRegCurList;
+extern void* g_typeNodes;
 DATA(0x002bf670)
-extern i32 g_nameRegScratch;
+extern i32 g_typeCount;
 
 extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 
 static inline char* ActNameLookup(i32 id) {
-    g_nameRegScratch = 0;
-    if (id >= g_nameRegLo && id <= g_nameRegHi) {
-        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    g_typeCount = 0;
+    if (id >= g_typeLo && id <= g_typeHi) {
+        return g_typeBase + (id - g_typeLo) * g_typeStride;
     }
-    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
-        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
+        return g_typeBase + (id - g_typeLo) * g_typeStride;
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
-    return g_nameRegCur;
+    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
+    return (char*)g_typeCur;
 }
 
 // The logic handler bound into the slot (the ILT to CVoiceTrigger::Tick @0x11a700);
@@ -400,7 +401,7 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_38->m_flags |= 2;
     m_38->m_stateFlags |= 1;
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
+    m_objAux->m_1c = g_buteTree.Find(s_codeA);
     m_object->m_screenX = (m_object->m_screenX & ~0x1f) + 0x10;
     m_object->m_screenY = (m_object->m_screenY & ~0x1f) + 0x10;
     m_object->m_areaL = m_object->m_screenX - (m_object->m_extentL << 5) - 7;
@@ -470,21 +471,21 @@ void CVoiceTrigger::FireActivation(i32 coord) {
 // than retail. Not source-steerable; the SAME plateau as CParticlez::RegisterActs.
 RVA(0x0011a500, 0x18d)
 void CVoiceTrigger::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     *(void**)VTrigLookup(id) = (void*)&VTrigLogic_11a700;
 }

@@ -297,9 +297,9 @@ extern "C" CombatConvCue* CombatConvLookup(const char* key); // 0x2cca (__cdecl,
 
 // The active-anim-set type-name registry: ((_zvec*)&g_typeColl)->IndexToPtr(node) -> record whose
 // first field is the name string; g_typeNodes[0..g_typeCount) each get Reset.
-extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3UCTypeKeyColl@@A @0x6bf650
-extern "C" char* g_typeNodes;   // ?g_typeNodes@@3PAXA @0x6bf66c
-extern "C" i32 g_typeCount;     // ?g_typeCount@@3HA @0x6bf670
+extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3VCTypeKeyColl@@A @0x6bf650
+extern void* g_typeNodes;       // ?g_typeNodes@@3PAXA @0x6bf66c
+extern i32 g_typeCount;         // ?g_typeCount@@3HA @0x6bf670
 
 // The keyed config tree (canonical CButeTree, include/Bute/ButeTree.h): Find
 // (0x16d190) is reloc-masked __thiscall.
@@ -545,11 +545,11 @@ SIZE_UNKNOWN(CombatTypeNode);
     {                                                                                              \
         i32 id = (i32)g_buteTree.Find(key);                                                        \
         if (id == 0) {                                                                             \
-            g_buteTree.Insert(key, (void*)g_nextActId);                                            \
-            id = g_nextActId;                                                                      \
+            g_buteTree.Insert(key, (void*)g_typeCounter);                                          \
+            id = g_typeCounter;                                                                    \
             char* slot = (char*)((_zvec*)&g_nameRegColl)->IndexToPtr(id);                          \
-            i32 n = g_nameRegScratch;                                                              \
-            void** list = g_nameRegCurList;                                                        \
+            i32 n = g_typeCount;                                                                   \
+            void** list = (void**)g_typeNodes;                                                     \
             while (n-- != 0) {                                                                     \
                 if (list != 0) {                                                                   \
                     ((CString*)list)->CString::~CString();                                         \
@@ -557,7 +557,7 @@ SIZE_UNKNOWN(CombatTypeNode);
                 list++;                                                                            \
             }                                                                                      \
             ((CString*)slot)->operator=(key);                                                      \
-            g_nextActId++;                                                                         \
+            g_typeCounter++;                                                                       \
         }                                                                                          \
         *(void**)(char*)((_zvec*)&g_reg_644af0)->IndexToPtr(id) = (void*)(handler);                \
     }
@@ -1008,18 +1008,17 @@ void CGrunt::DestroyAnims() {
 // The shared activation-name registry pieces (same shape <Gruntz/ActNameRegistry.h>
 // models; declared bare here because this TU's CGrunt world already carries its own
 // CString/bute decls). All reloc-masked.
-extern CButeTree g_buteTree;    // 0x6bf620
-extern i32 g_nextActId;         // 0x61aea8
-extern char s_actKeyA[];        // 0x60a454 "A"
-extern char s_actKeyB[];        // 0x60d1bc "B"
-extern i32 g_nameRegScratch;    // 0x6bf670 (zeroed first; doubles as the list count)
-extern void** g_nameRegCurList; // 0x6bf66c (the slot's CString list base)
+extern CButeTree g_buteTree; // 0x6bf620
+extern i32 g_typeCounter;    // 0x61aea8
+extern char s_codeA[];       // 0x60a454 "A"
+extern char s_actKeyB[];     // 0x60d1bc "B"
+// (g_typeCount @0x6bf670 / g_typeNodes @0x6bf66c declared canonically above)
 DATA(0x002bf650)
 extern CLookupColl g_nameRegColl; // 0x6bf650  (name registry)
 DATA(0x00244af0)
 extern CLookupColl g_reg_644af0; // 0x644af0  (CGrunt's per-class activation table)
 
-// The 19 action-key strings (s_actKeyA/B above; the rest are .rdata string
+// The 19 action-key strings (s_codeA/B above; the rest are .rdata string
 // constants named by address, declared in <Globals.h> or here).
 extern char k_60cca4[];
 extern char k_60d2ec[];
@@ -1683,7 +1682,7 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
     char** typeRec =
         (char**)((_zvec*)&g_typeColl)->IndexToPtr((i32)(*(void**)(P(this, 0x14) + 0x1c)));
     if (g_typeCount != 0) {
-        char* p = g_typeNodes;
+        char* p = (char*)g_typeNodes;
         i32 n = g_typeCount;
         do {
             if (p != 0) {
@@ -2194,7 +2193,7 @@ i32 CGrunt::RunAct(i32 id) {
 // slot-vs-id callee-saved coloring repeated per block. Not source-steerable.
 RVA(0x0005be30, 0x9e5)
 void RegisterActs_644af0() {
-    REGISTER_KEY_644AF0(s_actKeyA, &H_402ac2);
+    REGISTER_KEY_644AF0(s_codeA, &H_402ac2);
     REGISTER_KEY_644AF0(s_actKeyB, &H_4013cf);
     REGISTER_KEY_644AF0(k_60cc90, &H_402888);
     REGISTER_KEY_644AF0(k_60cca4, &H_402491);

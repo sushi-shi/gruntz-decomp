@@ -18,7 +18,7 @@
 #include <Gruntz/ActReg.h> // the shared activation-registrar archetype (CActReg)
 #include <Globals.h>
 
-// The second activation key string "B" (0x60d1bc); "A" + g_nextActId + the name
+// The second activation key string "B" (0x60d1bc); "A" + g_typeCounter + the name
 // registry come from <Gruntz/ActNameRegistry.h>.
 DATA(0x0020d1bc)
 extern char s_actKeyB[];
@@ -33,8 +33,8 @@ extern "C" void Handler_402252(); // 0x402252
 
 // The shared name-slot free loop both key blocks run before assigning the key.
 static inline void FreeNameSlotNodes() {
-    i32 n = g_nameRegScratch;
-    void** list = g_nameRegCurList;
+    i32 n = g_typeCount;
+    void** list = (void**)g_typeNodes;
     while (n-- != 0) {
         if (list != 0) {
             ((CString*)list)->CString::~CString();
@@ -57,25 +57,25 @@ void ConstructActRange_646250() {
 // A/B inline asymmetry + register-pinning wall (see SpotLightActReg.cpp header).
 RVA(0x000b3cc0, 0x2ac)
 void RegisterActs_646250() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
-        id = g_nextActId;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        id = g_typeCounter;
         char* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     *(void**)g_actReg_646250.ResolveEntry(id) = (void*)&Handler_4021d5;
 
     i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
     if (id2 == 0) {
-        g_buteTree.Insert(s_actKeyB, (void*)g_nextActId);
-        id2 = g_nextActId;
+        g_buteTree.Insert(s_actKeyB, (void*)g_typeCounter);
+        id2 = g_typeCounter;
         char* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
         ((CString*)slot)->operator=(s_actKeyB);
-        g_nextActId++;
+        g_typeCounter++;
     }
     *(void**)g_actReg_646250.ResolveEntry(id2) = (void*)&Handler_402252;
 }

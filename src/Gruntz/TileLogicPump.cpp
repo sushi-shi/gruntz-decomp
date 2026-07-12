@@ -26,7 +26,7 @@
 //     LogicSubRecB view dissolved), identical shape to the 6 sibling pumps.
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
-#include <Gruntz/ActNameRegistry.h> // g_buteTree / s_actKeyA / g_nextActId / g_nameReg* / ActNameLookup
+#include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA / g_typeCounter / g_typeColl* / ActNameLookup
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
@@ -46,7 +46,7 @@
 #include <rva.h>
 
 // The activation key "B" (0x60d1bc) CTileSecretTrigger's second registration interns;
-// s_actKeyA/g_buteTree/g_nextActId come from <Gruntz/ActNameRegistry.h>.
+// s_codeA/g_buteTree/g_typeCounter come from <Gruntz/ActNameRegistry.h>.
 DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"
 
@@ -430,21 +430,21 @@ void CWarpStonePad::FireWarp(i32 coord) {
 // into the free-loop count materialization. Deferred.
 RVA(0x0010da20, 0x18d)
 void CWarpStonePad::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CWarpStonePadActEntry*)g_warpStonePadActReg.ResolveEntry(id))->m_fn =
         &CWarpStonePad::AdvanceAnim;
@@ -486,21 +486,21 @@ void CTileTriggerSwitch::FireActivation(i32 coord) {
 // byte-faithful; residual is the slot-vs-id callee-saved register choice. Deferred.
 RVA(0x0010e000, 0x18d)
 void CTileTriggerSwitch::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CTileTriggerSwitchActEntry*)g_tileTriggerSwitchActReg.ResolveEntry(id))->m_fn =
         &CTileTriggerSwitch::AdvanceAnim;
@@ -543,21 +543,21 @@ void CTileTrigger::FireActivation(i32 coord) {
 // byte-faithful; residual is the slot-vs-id callee-saved register choice. Deferred.
 RVA(0x0010e600, 0x18d)
 void CTileTrigger::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CTileTriggerActEntry*)g_tileTriggerActReg.ResolveEntry(id))->m_fn =
         &CTileTrigger::AdvanceAnim;
@@ -608,13 +608,13 @@ void CCheckpointTrigger::FireActivation(i32 coord) {
 // the regalloc/free-loop-count materialization diverges. Deferred.
 RVA(0x0010ebe0, 0x18d)
 void CCheckpointTrigger::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
-        id = g_nextActId;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        id = g_typeCounter;
         char* slot = ActNameLookup(id);
-        i32 cnt = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 cnt = g_typeCount;
+        void** list = (void**)g_typeNodes;
         if (cnt != 0) {
             do {
                 if (list != 0) {
@@ -623,8 +623,8 @@ void CCheckpointTrigger::RegisterActs() {
                 list++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CCheckpointActEntry*)g_checkpointActReg.ResolveEntry(id))->m_fn =
         &CCheckpointTrigger::Trigger;
@@ -641,7 +641,7 @@ RVA(0x0010ee20, 0x27d)
 CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
+    m_objAux->m_1c = g_buteTree.Find(s_codeA);
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
     i32 zk = m_object->m_layer->m_1c + m_object->m_screenY + 0x186a0;
@@ -711,32 +711,32 @@ void CTileSecretTrigger::FireActivation(i32 coord) {
 // choice cascading into the free-loop counts. Deferred.
 RVA(0x0010f340, 0x2ac)
 void CTileSecretTrigger::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id))->m_fn =
         &CTileSecretTrigger::Act_10f6a0;
 
     i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
     if (id2 == 0) {
-        id2 = g_nextActId;
+        id2 = g_typeCounter;
         g_buteTree.Insert(s_actKeyB, (void*)id2);
         char* slot = ActNameLookup(id2);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -744,7 +744,7 @@ void CTileSecretTrigger::RegisterActs() {
             list++;
         }
         ((CString*)slot)->operator=(s_actKeyB);
-        g_nextActId++;
+        g_typeCounter++;
     }
     ((CTileSecretTriggerActEntry*)g_tileSecretTriggerActReg.ResolveEntry(id2))->m_fn =
         &CTileSecretTrigger::Act_10f970;
@@ -842,21 +842,21 @@ void CTileTriggerTransition::FireActivation(i32 coord) {
 // name-list free-loop count materialization - identical wall to CSecretLevelTrigger::RegisterActs.
 RVA(0x0010fe70, 0x18d)
 void CTileTriggerTransition::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((TileActEntry*)g_tileActReg.ResolveEntry(id))->m_fn = &CTileTriggerTransition::Handler_110110;
 }

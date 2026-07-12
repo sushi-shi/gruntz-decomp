@@ -50,7 +50,7 @@
 #include <Gruntz/ActReg.h>          // shared activation-registrar archetype
 #include <Gruntz/GameRegistry.h>    // the ONE CGameRegistry
 #include <Gruntz/SpriteFactory.h>   // the ONE CSpriteFactory (CreateSprite @0x1597b0)
-#include <Gruntz/ActNameRegistry.h> // g_buteTree/g_nextActId/s_actKeyA/ActNameLookup
+#include <Gruntz/ActNameRegistry.h> // g_buteTree/g_typeCounter/s_codeA/ActNameLookup
 #include <Bute/ButeMgr.h>
 #include <Globals.h>
 #include <Mfc.h> // CString (the scratch name-vec element)
@@ -141,8 +141,8 @@ struct CTeleMgrSub {
 };
 
 // ===========================================================================
-// The shared per-class registration infrastructure. g_buteTree / g_nextActId /
-// s_actKeyA / ActNameLookup / g_nameRegScratch / g_nameRegCurList come from
+// The shared per-class registration infrastructure. g_buteTree / g_typeCounter /
+// s_codeA / ActNameLookup / g_typeCount / g_typeNodes come from
 // <Gruntz/ActNameRegistry.h>. (The former Wormhole.cpp-local aliases
 // g_logicRegCounter/s_wormholeLogicKey were the SAME globals - folded.)
 // ===========================================================================
@@ -154,7 +154,7 @@ extern char s_actKeyB[];
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
 // NameVec is the shared def in <Gruntz/NameVec.h>. (The address is DATA-bound as
-// g_nameReg by <Gruntz/ActNameRegistry.h>; this field-modeled alias stays a bare
+// g_typeColl by <Gruntz/ActNameRegistry.h>; this field-modeled alias stays a bare
 // extern so the loads reloc-mask.)
 extern NameVec g_buteNameVec;
 
@@ -232,8 +232,8 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
 // The shared name-slot free loop both key blocks of a registrar run before
 // assigning the key (the same archetype LogicActRegistrars.cpp keeps).
 static inline void FreeNameSlotNodes() {
-    i32 n = g_nameRegScratch;
-    void** list = g_nameRegCurList;
+    i32 n = g_typeCount;
+    void** list = (void**)g_typeNodes;
     while (n-- != 0) {
         if (list != 0) {
             ((CString*)list)->CString::~CString();
@@ -299,7 +299,7 @@ CWormhole::CWormhole(CGameObject* obj) : CUserLogic(obj) {
         m_object->m_flags |= 0x20000;
     }
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
+    m_objAux->m_1c = g_buteTree.Find(s_codeA);
     i32 kind = m_object->m_124;
     i32 color;
     if (kind == -1) {
@@ -395,12 +395,12 @@ void CWormhole::Dispatch(i32 idx) {
 // register assignment is not source-steerable.
 RVA(0x000401b0, 0x18d)
 void RegisterWormholeLogic() {
-    i32 idx = (i32)g_buteTree.Find(s_actKeyA);
+    i32 idx = (i32)g_buteTree.Find(s_codeA);
     if (idx == 0) {
-        g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_nextActId);
-        *(CString*)slot = s_actKeyA;
-        g_nextActId++;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        *(CString*)slot = s_codeA;
+        g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_wormholeDispatch, idx);
     *(void**)dslot = (void*)&WormholeLogic_40181b;
@@ -528,25 +528,25 @@ void CGruntPuddle::FireActivation(i32 id) {
 // A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
 RVA(0x000408b0, 0x2ac)
 void RegisterLogic_6445e8() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
-        id = g_nextActId;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        id = g_typeCounter;
         char* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     *(void**)g_logicDispatch_6445e8.ResolveEntry(id) = (void*)&Handler_4021f8;
 
     i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
     if (id2 == 0) {
-        g_buteTree.Insert(s_actKeyB, (void*)g_nextActId);
-        id2 = g_nextActId;
+        g_buteTree.Insert(s_actKeyB, (void*)g_typeCounter);
+        id2 = g_typeCounter;
         char* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
         ((CString*)slot)->operator=(s_actKeyB);
-        g_nextActId++;
+        g_typeCounter++;
     }
     *(void**)g_logicDispatch_6445e8.ResolveEntry(id2) = (void*)&Handler_403418;
 }
@@ -785,7 +785,7 @@ i32 CWormhole::ReapplyConfig() {
     m_prevAnimNode = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_TELEPORTEROPEN", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
+    m_objAux->m_1c = g_buteTree.Find(s_codeA);
     m_54 = 1;
     m_68 = 0;
     m_38->m_stateFlags &= ~1;
@@ -867,25 +867,25 @@ void CTeleporter::FireActivation(i32 coord) {
 // A/B inline asymmetry + register-pinning wall (see LogicActRegistrars.cpp header).
 RVA(0x00041680, 0x2ac)
 void CTeleporter_RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
-        id = g_nextActId;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        id = g_typeCounter;
         char* slot = ActNameLookup(id);
         FreeNameSlotNodes();
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     *(void**)g_teleporterActReg.ResolveEntry(id) = (void*)&Handler_40187a;
 
     i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
     if (id2 == 0) {
-        g_buteTree.Insert(s_actKeyB, (void*)g_nextActId);
-        id2 = g_nextActId;
+        g_buteTree.Insert(s_actKeyB, (void*)g_typeCounter);
+        id2 = g_typeCounter;
         char* slot = ActNameLookup(id2);
         FreeNameSlotNodes();
         ((CString*)slot)->operator=(s_actKeyB);
-        g_nextActId++;
+        g_typeCounter++;
     }
     *(void**)g_teleporterActReg.ResolveEntry(id2) = (void*)&Handler_403846;
 }

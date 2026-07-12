@@ -135,29 +135,31 @@ struct CHaznEntry2 {
 // instance CTimeBomb/CDroppedObject use), then resolves the id in CStaticHazard's
 // OWN registry (HaznLookup) and stores the per-key handler PMF.
 DATA(0x0021aea8)
-extern i32 g_nextActId;
+extern i32 g_typeCounter;
 DATA(0x0020a454)
-extern char s_actKeyA[]; // "A"
+extern char s_codeA[]; // "A"
 DATA(0x0020d1bc)
 extern char s_actKeyB[]; // "B"
+class CTypeKeyColl;      // canonical g_typeColl @0x6bf650 (<Gruntz/TypeKeyColl.h>)
+struct CTypeNameEntry;   // canonical g_typeCur slot record (<Gruntz/TypeNameEntry.h>)
 DATA(0x002bf650)
-extern CCoordColl g_nameReg; // 0x6bf650
+extern CTypeKeyColl g_typeColl; // 0x6bf650
 DATA(0x002bf654)
-extern CVariantSlot* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_typeColl2; // 0x6bf654
 DATA(0x002bf658)
-extern i32 g_nameRegLo;
+extern i32 g_typeLo;
 DATA(0x002bf65c)
-extern i32 g_nameRegHi;
+extern i32 g_typeHi;
 DATA(0x002bf660)
-extern char* g_nameRegBase;
+extern char* g_typeBase;
 DATA(0x002bf668)
-extern i32 g_nameRegStride;
+extern i32 g_typeStride;
 DATA(0x002bf664)
-extern char* g_nameRegCur;
+extern CTypeNameEntry* g_typeCur;
 DATA(0x002bf66c)
-extern void** g_nameRegCurList;
+extern void* g_typeNodes;
 DATA(0x002bf670)
-extern i32 g_nameRegScratch;
+extern i32 g_typeCount;
 
 // The CString in the resolved name slot: ~CString (0x1b9b93) frees the old list,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
@@ -165,17 +167,17 @@ extern i32 g_nameRegScratch;
 
 // The id->name-slot resolve (fast range path + slow Find/GetRetAddr/Insert rebuild).
 static inline char* ActNameLookup(i32 id) {
-    g_nameRegScratch = 0;
-    if (id >= g_nameRegLo && id <= g_nameRegHi) {
-        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    g_typeCount = 0;
+    if (id >= g_typeLo && id <= g_typeHi) {
+        return g_typeBase + (id - g_typeLo) * g_typeStride;
     }
-    if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) { // slow lookup == _zvec::GrowTo @0x16da80
-        return g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) { // slow lookup == _zvec::GrowTo @0x16da80
+        return g_typeBase + (id - g_typeLo) * g_typeStride;
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
-    return g_nameRegCur;
+    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
+    return (char*)g_typeCur;
 }
 
 // The inlined coordinate->Entry* lookup FireActivation folds in twice.
@@ -298,31 +300,31 @@ void CStaticHazard::FireActivation(i32 coord) {
 // callee-saved register choice cascading into the free-loop counts. Deferred.
 RVA(0x000fbd50, 0x2ac)
 void CStaticHazard::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CHaznEntry2*)HaznLookup(id))->m_fn = &CStaticHazard::LoadAttributes2;
 
     i32 id2 = (i32)g_buteTree.Find(s_actKeyB);
     if (id2 == 0) {
-        id2 = g_nextActId;
+        id2 = g_typeCounter;
         g_buteTree.Insert(s_actKeyB, (void*)id2);
         char* slot = ActNameLookup(id2);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
@@ -330,7 +332,7 @@ void CStaticHazard::RegisterActs() {
             list++;
         }
         ((CString*)slot)->operator=(s_actKeyB);
-        g_nextActId++;
+        g_typeCounter++;
     }
     ((CHaznEntry2*)HaznLookup(id2))->m_fn = &CStaticHazard::LoadAttributes;
 }

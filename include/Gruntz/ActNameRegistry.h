@@ -4,11 +4,11 @@
 //
 //   id = g_buteTree.Find(key);          // name -> id
 //   if (id == 0) {                       // not yet registered:
-//       id = g_nextActId;
+//       id = g_typeCounter;
 //       g_buteTree.Insert(key, id);      // map name -> id
 //       slot = ActNameLookup(id);        // resolve id -> a name slot
 //       <free the slot's old CString list>; slot->name = key;
-//       g_nextActId++;
+//       g_typeCounter++;
 //   }
 //   *ClassRegLookup(id) = handler;       // bind id -> the class's handler entry
 //
@@ -25,7 +25,9 @@
 #include <Bute/ButeTree.h>
 #include <Wap32/ZVec.h>
 
-class CVariantSlot; // folded CActColl2
+class CVariantSlot;    // folded CActColl2
+class CTypeKeyColl;    // canonical g_typeColl @0x6bf650 (<Gruntz/TypeKeyColl.h>)
+struct CTypeNameEntry; // canonical g_typeCur slot record (<Gruntz/TypeNameEntry.h>)
 
 #include <rva.h>
 
@@ -41,11 +43,11 @@ extern CButeTree g_buteTree;
 // The running activation-id counter (0x61aea8): the next id handed out, bumped
 // after each new name is registered.
 DATA(0x0021aea8)
-extern i32 g_nextActId;
+extern i32 g_typeCounter;
 
 // The activation key string "A" (0x60a454) every RegisterActs registers under.
 DATA(0x0020a454)
-extern char s_actKeyA[];
+extern char s_codeA[];
 
 // The shared coordinate-registry collection methods + alloc scratch (CActColl /
 // CVariantSlot / GetRetAddr + g_projActCache 0x6bf464 / g_retAddrBreadcrumb 0x6bf428) come from
@@ -60,23 +62,23 @@ extern char s_actKeyA[];
 // (CString::operator= 0x1b9e74).
 // ---------------------------------------------------------------------------
 DATA(0x002bf650)
-extern CActColl g_nameReg; // 0x6bf650
+extern CTypeKeyColl g_typeColl; // 0x6bf650
 DATA(0x002bf654)
-extern CVariantSlot* g_nameReg2; // 0x6bf654
+extern CVariantSlot* g_typeColl2; // 0x6bf654
 DATA(0x002bf658)
-extern i32 g_nameRegLo; // 0x6bf658
+extern i32 g_typeLo; // 0x6bf658
 DATA(0x002bf65c)
-extern i32 g_nameRegHi; // 0x6bf65c
+extern i32 g_typeHi; // 0x6bf65c
 DATA(0x002bf660)
-extern char* g_nameRegBase; // 0x6bf660
+extern char* g_typeBase; // 0x6bf660
 DATA(0x002bf668)
-extern i32 g_nameRegStride; // 0x6bf668
+extern i32 g_typeStride; // 0x6bf668
 DATA(0x002bf664)
-extern char* g_nameRegCur; // 0x6bf664 (slow-path result slot)
+extern CTypeNameEntry* g_typeCur; // 0x6bf664 (slow-path result slot)
 DATA(0x002bf66c)
-extern void** g_nameRegCurList; // 0x6bf66c (the slot's CString list base)
+extern void* g_typeNodes; // 0x6bf66c (the slot's CString list base)
 DATA(0x002bf670)
-extern i32 g_nameRegScratch; // 0x6bf670 (zeroed first; doubles as the list count)
+extern i32 g_typeCount; // 0x6bf670 (zeroed first; doubles as the list count)
 
 // A CString in the resolved name slot: ~CString (0x1b9b93) frees the old entries,
 // operator= (0x1b9e74) assigns the new key. Modeled so the calls reloc-mask.
@@ -86,17 +88,17 @@ extern i32 g_nameRegScratch; // 0x6bf670 (zeroed first; doubles as the list coun
 // rebuild), then free the old name list and assign the key. Folded inline by
 // RegisterActs once, in the build-id branch.
 static inline char* ActNameLookup(i32 id) {
-    g_nameRegScratch = 0;
+    g_typeCount = 0;
     char* slot;
-    if (id >= g_nameRegLo && id <= g_nameRegHi) {
-        slot = g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
-    } else if ((i32)((_zvec*)&g_nameReg)->GrowTo(id, 0)) {
-        slot = g_nameRegBase + (id - g_nameRegLo) * g_nameRegStride;
+    if (id >= g_typeLo && id <= g_typeHi) {
+        slot = g_typeBase + (id - g_typeLo) * g_typeStride;
+    } else if ((i32)((_zvec*)&g_typeColl)->GrowTo(id, 0)) {
+        slot = g_typeBase + (id - g_typeLo) * g_typeStride;
     } else {
         void* item = g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
-        g_nameReg2->Set(&g_nameReg, (i32)item, 0xc);
-        slot = g_nameRegCur;
+        g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
+        slot = (char*)g_typeCur;
     }
     return slot;
 }

@@ -99,7 +99,7 @@ CStatusBarSprite::CStatusBarSprite(CGameObject* obj) : CUserLogic(obj) {
     m_40 = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_SINGLEIMAGEANI", 0);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
+    m_objAux->m_1c = g_buteTree.Find(s_codeA);
     if (m_object->m_latchedAnimId != 0xf4240) {
         m_object->m_latchedAnimId = 0xf4240;
         m_object->m_flags |= 0x20000;
@@ -141,21 +141,21 @@ void CStatusBarSprite::FireActivation(i32 coord) {
 // register choice cascading into the free-loop count materialization. Deferred.
 RVA(0x0010c610, 0x18d)
 void CStatusBarSprite::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CStatusBarSpriteActEntry*)g_statusBarSpriteActReg.ResolveEntry(id))->m_fn =
         &CStatusBarSprite::AdvanceAnim;

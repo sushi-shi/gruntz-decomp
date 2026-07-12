@@ -154,14 +154,14 @@ extern "C" void LogicHandler_0466b0(); // thunk 0x4041ec -> 0x466b0
 // resolve its name-table slot, free the slot's old CString nodes, assign the key,
 // bump the global counter; returns the (possibly newly-allocated) action id.
 static inline i32 RegisterActionName() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        g_buteTree.Insert(s_actKeyA, (void*)g_nextActId);
-        i32 key = g_nextActId;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        i32 key = g_typeCounter;
         id = key;
         char* slot = ActNameLookup(key);
-        i32 cnt = g_nameRegScratch;
-        void** nodes = g_nameRegCurList;
+        i32 cnt = g_typeCount;
+        void** nodes = (void**)g_typeNodes;
         if (cnt != 0) {
             do {
                 if (nodes != 0) {
@@ -170,8 +170,8 @@ static inline i32 RegisterActionName() {
                 nodes++;
             } while (--cnt);
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     return id;
 }
@@ -266,7 +266,7 @@ CFortressFlag::CFortressFlag(CGameObject* obj) : CUserLogic(obj) {
     }
     m_38->ApplyName(name);
     m_prevAnimSetNode = m_objAux->m_1c;
-    m_objAux->m_1c = g_buteTree.Find(s_actKeyA);
+    m_objAux->m_1c = g_buteTree.Find(s_codeA);
     m_prevAnimNode = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
     m_38->m_flags |= 3;
@@ -312,21 +312,21 @@ void CFortressFlag::FireActivation(i32 coord) {
 // register choice cascading into the free-loop count materialization. Deferred.
 RVA(0x000461e0, 0x18d)
 void CFortressFlag::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CFortressFlagActEntry*)g_fortressFlagActReg.ResolveEntry(id))->m_fn =
         &CFortressFlag::AdvanceAnim;
@@ -541,21 +541,21 @@ void CParticlez::FireActivation(i32 coord) {
 // register choice cascading into the free-loop count materialization. Deferred.
 RVA(0x00046e90, 0x18d)
 void CParticlez::RegisterActs() {
-    i32 id = (i32)g_buteTree.Find(s_actKeyA);
+    i32 id = (i32)g_buteTree.Find(s_codeA);
     if (id == 0) {
-        id = g_nextActId;
-        g_buteTree.Insert(s_actKeyA, (void*)id);
+        id = g_typeCounter;
+        g_buteTree.Insert(s_codeA, (void*)id);
         char* slot = ActNameLookup(id);
-        i32 n = g_nameRegScratch;
-        void** list = g_nameRegCurList;
+        i32 n = g_typeCount;
+        void** list = (void**)g_typeNodes;
         while (n-- != 0) {
             if (list != 0) {
                 ((CString*)list)->CString::~CString();
             }
             list++;
         }
-        ((CString*)slot)->operator=(s_actKeyA);
-        g_nextActId++;
+        ((CString*)slot)->operator=(s_codeA);
+        g_typeCounter++;
     }
     ((CPartEntryI32*)PartLookup(id))->m_fn = &CParticlez::Update;
 }

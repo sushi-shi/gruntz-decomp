@@ -15,7 +15,7 @@
 
 extern "C" unsigned g_645584; // 0x645584 frame delta
 extern CButeTree g_buteTree;  // 0x6bf620
-extern char s_actKeyA[];      // 0x60a454 "A"
+extern char s_codeA[];        // 0x60a454 "A"
 
 struct SpotM10 {
     char pad[0x114];
@@ -84,7 +84,7 @@ int CSpotLight::Update_0b1ee0() {
     }
     if (((MgrObj68*)g_gameReg->m_cmdGrid)->arr[m_gridCol + m_gridRow * 15] == 0) {
         m_prevNode = m_lightCfg->m_buteNode;
-        m_lightCfg->m_buteNode = g_buteTree.Find(s_actKeyA);
+        m_lightCfg->m_buteNode = g_buteTree.Find(s_codeA);
     }
     return 0;
 }
