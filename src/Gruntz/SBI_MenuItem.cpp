@@ -334,6 +334,15 @@ CSBI_MenuItem::~CSBI_MenuItem() {
 }
 
 // ---------------------------------------------------------------------------
+// CStatusBarItem::DtorStatus (0x10bfa0): the base member-teardown leg the SBI
+// SBI_DTOR_CHAIN device runs from every ~CSBI_X. CStatusBarItem holds only scalar
+// fields (m_4..m_2c), so the standalone body is a bare `ret` (1 byte). Defined here
+// (its retail obj neighborhood is the 0x10bxxx band, immediately before
+// SerializeFields) so the many dtor-chain callers reloc-bind to the real 0x10bfa0.
+RVA(0x0010bfa0, 0x1)
+void CStatusBarItem::DtorStatus() {}
+
+// ---------------------------------------------------------------------------
 // CStatusBarItem::SerializeFields (0x10bfc0, vtable slot 1 base leg - thunk 0x1848;
 // re-attributed from CSBI_MenuItem, dossier #16): transfer the six base-region
 // rect/flag fields (m_4..m_rect14, then +0x28) through the archive. Body kept in

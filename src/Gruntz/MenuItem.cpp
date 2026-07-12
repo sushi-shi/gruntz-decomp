@@ -138,6 +138,8 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     }
     if (!OnInit()) {
         void* slot = 0;
+        // real MFC CMapStringToPtr::Lookup (COMDAT-folded with CMapStringToOb::Lookup
+        // to 0x1b8008); the reloc names ?Lookup@CMapStringToPtr@@... (a library row).
         m_owner->m_10->m_10.Lookup((const char*)a2, slot);
         m_sprite = slot;
         if (!slot) {

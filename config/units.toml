@@ -606,12 +606,8 @@ unit = "gruntzmgr2"
 source = "src/Gruntz/GruntzMgr2.cpp"
 flags = "eh"
 
-# The screen/video-region manager (Open 0x0fe460 / Reset 0x0fe600) - a separate retail
-# object far from GruntzMgr.cpp, interleaved with the CSBI_RectOnly .text at 0x0fe4xx.
-[[unit]]
-unit = "screenregionmgr"
-source = "src/Gruntz/ScreenRegionMgr.cpp"
-flags = "eh"
+# (RefreshA 0x0fe460 / HideRect 0x0fe600 were the ScreenRegionMgr fake-view unit -
+# folded into SBI_RectOnly.cpp as CSBI_RectOnly methods, their true interleaved home.)
 
 # SerializeSyncMarker (0x13610) - the free WAP32 serialize round validator, a separate
 # retail object far from GruntzMgr.cpp (among the CVoiceTrigger serialize .text).

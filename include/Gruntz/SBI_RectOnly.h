@@ -202,10 +202,11 @@ struct CSbiPtrList {
 };
 SIZE_UNKNOWN(CSbiPtrList);
 
-// The pooled-ptr collection embedded at +0x530; teardown calls RemoveAll(-1, 0).
+// The pooled-ptr collection embedded at +0x530 is an MFC CPtrArray whose head (vptr)
+// sits at +0x530 and whose m_pData/m_nSize are the m_ptrTable/m_ptrCount fields of
+// CSBI_RectOnly; teardown frees it via CPtrArray::SetSize(0,-1) (0x1b4f75, cast at call).
 struct CSbiPtrCollection {
-    char m_pad0[0x4];
-    void RemoveAll(i32 a, i32 b); // __thiscall, 2 args
+    char m_pad0[0x4]; // +0x530  CPtrArray head (vptr slot)
 };
 SIZE_UNKNOWN(CSbiPtrCollection);
 
@@ -399,8 +400,8 @@ public:
     i32 InsertPtr(i32 a, i32 b);
     void ReportTab(i32 tab);
     // siblings dispatched (reloc-masked ILT thunks / bodies elsewhere)
-    i32 StateProbe(); // call 0x2b2b - the subtype-2 activation probe
-    i32 RefreshA();   // jmp 0x2b8a
+    i32 RefreshA(); // 0xfe460  armed-refresh rect-setup variant
+    i32 HideRect();   // 0xfe600  hide/off-screen rect-setup variant
 
     // ----- third batch -----
     void AdvanceTab(i32 reverse); // 0x10b4f0 periodic highlight-cursor tick

@@ -231,7 +231,8 @@ public:
 
     // CMenuState's own methods (the rel32 thunks Render dispatches to with
     // `mov ecx,this`). External no-body -> reloc-masked.
-    void DrawVersion(CGMVerRect r); // (this, RECT by value)
+    // (the version-banner draw at 0xa0d80 IS BuildVersionString below - the former
+    //  fake DrawVersion alias was folded away)
 
     // Non-virtual menu helpers (called from FrameSlot28 / its siblings).
     void StartMusic();     // 0xa05a0 - music start gate
@@ -263,7 +264,7 @@ public:
     char m_pad1c0[0x1d0 - 0x1c0];
     i32 m_liveGame; // +0x1d0  live-game flag (FormatHudText getter-path gate)
 
-    void BuildVersionString(i32, i32, i32, i32);
+    void BuildVersionString(CGMVerRect r); // 0xa0d80 (RECT by value; Render's tail draw)
 };
 VTBL(CMenuState, 0x1e9e84);
 

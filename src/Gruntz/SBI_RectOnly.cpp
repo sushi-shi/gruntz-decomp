@@ -659,11 +659,11 @@ i32 CSBI_RectOnly::Deserialize(CSerialArchive* s) {
             g_freeList = node;
         }
     }
-    m_ptrPool.RemoveAll(0, -1);
+    ((CPtrArray*)&m_ptrPool)->SetSize(0, -1);
 
     i32 count = 0;
     s->Read(&count, 4);
-    m_ptrPool.RemoveAll(count, -1);
+    ((CPtrArray*)&m_ptrPool)->SetSize(count, -1);
     for (u32 n = 0; n < (u32)count; n++) {
         char* head = (char*)g_freeList;
         void* node = 0;
@@ -1055,7 +1055,9 @@ void CSBI_RectOnly::Teardown() {
             g_freeList = node;
         }
     }
-    m_ptrPool.RemoveAll(0, -1);
+    // The +0x530 head is an MFC CPtrArray (m_ptrTable/m_ptrCount are its m_pData/m_nSize);
+    // its teardown is CPtrArray::SetSize(0,-1) inlined from RemoveAll (0x1b4f75, library).
+    ((CPtrArray*)&m_ptrPool)->SetSize(0, -1);
 }
 
 // Activate the rect-only item; gate on the offset-0 subtype tag and a probe.
@@ -1078,43 +1080,32 @@ i32 CSBI_RectOnly::TryActivate() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x104dd0 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp). Lazy-
-// create the StatusBarSprite: clamp +0x24/+0x28 to the manager's screen bounds,
-// then build it via the +0x0c factory (CreateSprite @0x1597b0). @orphan: this ==
-// an unmodeled +0x2c status-bar-sprite holder (CSBI_RectOnly's m_2c); owner class
-// unrecovered.
+// 0x104dd0 - CSBI_RectOnly::Activate: lazily create the status-bar sprite. Both
+// SetState (subtype-2 probe) and TryActivate call it with `mov ecx,this` (proven:
+// ecx==this in both call-sites' disasm), so `this` IS the CSBI_RectOnly - not the
+// former StatusBarSpriteHolder @orphan view. Its m_8/m_c/m_24/m_28 are the base
+// CStatusBarItem fields reused here as sprite/factory-holder/x/y (a proven-
+// heterogeneous slot set: Setup args on other paths, sprite state on this one).
 // @early-stop
 // scheduling wall: retail computes m_8c-0x22 via lea eax,[ecx-0x22] and loads m_x
 // late; cl uses sub + an earlier m_x load. Clamp logic, factory call and literal faithful.
-// Real CSpriteFactoryHolder (+0x08 -> CSpriteFactory) + CSpriteFactory::CreateSprite +
-// CGameObject dissolved in; only the receiver (CSBI_RectOnly's +0x2c holder) is an
-// unrecovered-identity view.
-struct StatusBarSpriteHolder {
-    char pad0[8];
-    CGameObject* m_sprite;                 // +0x08 the created StatusBarSprite instance
-    CSpriteFactoryHolder* m_factoryHolder; // +0x0c
-    char pad10[0x24 - 0x10];
-    i32 m_x; // +0x24
-    i32 m_y; // +0x28
-    i32 Create();
-};
 RVA(0x00104dd0, 0x6b)
-i32 StatusBarSpriteHolder::Create() {
-    if (m_sprite != 0) {
+i32 CSBI_RectOnly::Activate() {
+    if (m_8 != 0) {
         return 0;
     }
     i32 a = g_gameReg->m_modeW - 0x22;
     i32 d = g_gameReg->m_modeH;
-    if (m_x > a) {
-        m_x = a;
+    if (m_24 > a) {
+        m_24 = a;
     }
-    if (m_y > d - 9) {
-        m_y = d - 0x22;
+    if (m_28 > d - 9) {
+        m_28 = d - 0x22;
     }
-    m_sprite = m_factoryHolder->m_8->CreateSprite(0, m_x, m_y, 0xf4240, "StatusBarSprite", 1);
-    return m_sprite != 0;
+    m_8 = (i32)((CSpriteFactoryHolder*)m_c)
+              ->m_8->CreateSprite(0, m_24, m_28, 0xf4240, "StatusBarSprite", 1);
+    return m_8 != 0;
 }
-SIZE_UNKNOWN(StatusBarSpriteHolder);
 
 // ===========================================================================
 // wave1-E one-TU merge block [0x104e60 .. 0x10b320] - see the include-block note.
@@ -3088,7 +3079,7 @@ i32 CSBI_RectOnly::SetState(i32 state) {
         return 1;
     }
     if (state == 2) {
-        if (StateProbe() == 0) {
+        if (Activate() == 0) { // 0x104dd0 - the subtype-2 lazy sprite-create probe
             return 0;
         }
         m_4 = *(i32*)this;
@@ -3098,6 +3089,26 @@ i32 CSBI_RectOnly::SetState(i32 state) {
     old = *(i32*)this;
     *(i32*)this = state;
     ((CPlay*)g_gameReg->m_curState)->SetState(state, old);
+    return 1;
+}
+
+// 0xfe460 - RefreshA: the armed-refresh rect-setup variant (RefreshState's m_4==1
+// leg). Same call shape as winapi_0fe520_SetRect but gated on state!=1 with the fixed
+// 0xa0-wide x full-height rect and SetState(1). Was the ScreenRegionMgr::Open fake-view
+// (interleaved in this .text at 0x0fe4xx; the ScreenRegionMgr class was our invention).
+RVA(0x000fe460, 0x83)
+i32 CSBI_RectOnly::RefreshA() {
+    if (m_hlBusy == 0 && *(i32*)this != 1) {
+        ResetWidgets(1);
+        SetRect((LPRECT)&m_10, 0, 0, 0xa0, 0x1e0);
+        SetState(1);
+        ((CPlay*)g_gameReg->m_curState)->ResetViewport();
+        if (BuildStatusBarTabs() == 0) {
+            g_gameReg->ReportError(kActivateErrId, 0x448);
+            return 0;
+        }
+        SetTabState(m_activeTab, 3);
+    }
     return 1;
 }
 
@@ -3129,6 +3140,21 @@ i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
         return 0;
     }
     SetTabState(m_activeTab, 3);
+    return 1;
+}
+
+// 0xfe600 - HideRect: the hide/off-screen rect-setup variant (state!=2 gate) - moves
+// the +0x10 rect off-screen (-1,-1,-1,-1), latches state 2, resets the play viewport.
+// Was the ScreenRegionMgr::Reset fake-view (interleaved in this .text; reached via an
+// ILT jmp-thunk, no direct in-TU caller).
+RVA(0x000fe600, 0x49)
+i32 CSBI_RectOnly::HideRect() {
+    if (m_hlBusy == 0 && *(i32*)this != 2) {
+        ResetWidgets(1);
+        SetRect((LPRECT)&m_10, -1, -1, -1, -1);
+        SetState(2);
+        ((CPlay*)g_gameReg->m_curState)->ResetViewport();
+    }
     return 1;
 }
 
@@ -4855,7 +4881,7 @@ void CSBI_RectOnly::LoadMultiplayerBattlezConfig(i32) {
             g_freeList = node;
         }
     }
-    m_ptrPool.RemoveAll(0, -1);
+    ((CPtrArray*)&m_ptrPool)->SetSize(0, -1);
     m_2b0 = 0;
     m_2b8 = 0;
     m_2b4 = 0;

@@ -1148,7 +1148,6 @@ rva,name,lib,confidence,source
 0x10beb0,__inc,LIBCMT,LOW,anchored
 0x10bf00,__inc,LIBCMT,LOW,anchored
 0x10bf50,__inc,LIBCMT,LOW,anchored
-0x10bfa0,__fpclear,LIBCMT,LOW,anchored
 0x10c460,___inittime,LIBCMT,LOW,anchored
 0x10c840,__inc,LIBCMT,LOW,anchored
 0x10c890,__inc,LIBCMT,LOW,anchored
@@ -2327,6 +2326,7 @@ rva,name,lib,confidence,source
 0x1b7f85,?FreeNode@CStringList@@IAEXPAUCNode@1@@Z,NAFXCW,AMBIG,anchored
 0x1b7fae,?GetAssocAt@CMapStringToOb@@IBEPAUCAssoc@1@PBDAAI@Z,NAFXCW,AMBIG,anchored
 0x1b8008,?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z,NAFXCW,AMBIG,anchored
+0x1b8008,?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z,NAFXCW,AMBIG,reloc-r27-comdat-fold
 0x1b802a,?Lookup@CMapPtrToPtr@@QBEHPAXAAPAX@Z,NAFXCW,AMBIG,anchored
 0x1b804c,??ACMapStringToOb@@QAEAAPAVCObject@@PBD@Z,NAFXCW,AMBIG,anchored
 0x1b80ae,?RemoveKey@CMapStringToOb@@QAEHPBD@Z,NAFXCW,AMBIG,anchored

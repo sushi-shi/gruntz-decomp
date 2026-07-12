@@ -41,6 +41,14 @@ extern "C" {
     extern "C" CGruntzMgr* g_gameReg; // = g_gameReg (the CGruntzMgr singleton)
 }
 
+// The Render menu-entity list (aliases g_actorList @0x245574) and the version-string
+// RECT source (aliases g_versionRectL @0x245cc8). Declared in GameMode.h; the DATA
+// binding lives here (the .cpp) so Render's absolute loads reloc-bind to the real RVAs.
+DATA(0x00245574)
+extern "C" CGMEntityList* g_645574;
+DATA(0x00245cc8)
+extern "C" CGMVerRect g_645cc8;
+
 // ===========================================================================
 // CMenuState per-frame + teardown methods (moved from the former GameMode.cpp
 // god-TU). The ~CMenuState `??1` anchors the CMenuState vtable/inline-virtual
@@ -366,7 +374,7 @@ i32 CMenuState::Render() {
 tail:
     m_1b4->Step(g_645584);
     m_1b4->Pre();
-    DrawVersion(g_645cc8);
+    BuildVersionString(g_645cc8); // 0xa0d80 (the fake DrawVersion alias folded away)
     m_1b4->Post();
     return 1;
 }
@@ -445,12 +453,15 @@ DATA(0x0025160c)
 extern "C" i32 g_65160c; // 0x25160c  build/patch field (0 -> two-number format)
 DATA(0x00251610)
 extern "C" i32 g_651610; // 0x251610  version field B
-// The shared HUD message-sprite helper (0x1154b0 via the 0x1f00 ILT thunk,
-// __cdecl): push a transient text sprite carrying `text` into `rect`.
+// The shared HUD message-sprite helper (0x1154b0, glyphstr): push a transient text
+// sprite carrying a CString into a RECT. Canonical signature is
+// ?ShowHudMessage@@YAXPAUHudMsgSink@@HHHHHHHH@Z (1 sink ptr + 8 int words) - the
+// text/rect ptrs ride the trailing int args (cast at the call, as in BootyStateActivate).
+struct HudMsgSink;
 void ShowHudMessage(
-    void* sink,
-    CString* text,
-    RECT* rect,
+    HudMsgSink* sink,
+    i32 text,
+    i32 rect,
     i32 dur,
     i32 a,
     i32 b,
@@ -459,7 +470,7 @@ void ShowHudMessage(
     i32 e
 ); // 0x1154b0
 RVA(0x000a0d80, 0xd7)
-void CMenuState::BuildVersionString(i32 rectLeft, i32, i32, i32) {
+void CMenuState::BuildVersionString(CGMVerRect r) {
     CString str;
     if (g_65160c == 0) {
         str.Format("Gruntz v%d.%d", g_651608, g_651610);
@@ -469,5 +480,5 @@ void CMenuState::BuildVersionString(i32 rectLeft, i32, i32, i32) {
     if (g_cdPromptResult) {
         str += " (SPAWN MODE)";
     }
-    ShowHudMessage(m_c, &str, (RECT*)&rectLeft, 0x64, 1, 0xff, 0xff, 0, 0);
+    ShowHudMessage((HudMsgSink*)m_c, (i32)&str, (i32)&r, 0x64, 1, 0xff, 0xff, 0, 0);
 }
