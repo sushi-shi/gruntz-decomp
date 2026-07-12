@@ -92,7 +92,7 @@ deflate	15	15
 demo	24	16
 destructbutton	1	1
 dialogs	55	38
-directdrawmgr	62	34
+directdrawmgr	62	35
 directinputmgr2	40	33
 directionclassify	1	0
 directsoundmgr	72	50
@@ -1268,11 +1268,11 @@ directdrawmgr	??1CFileImageSurface@@UAE@XZ	100.0000	100.0000	2	65de606701b9	0x14
 directdrawmgr	??1CPoolItemA88@@UAE@XZ	100.0000	100.0000	1	bfe6900227ed	0x142820
 directdrawmgr	??1CPoolItemAB8@@UAE@XZ	100.0000	100.0000	1	606207689a7a	0x142a40
 directdrawmgr	??1CPoolItemAE8@@UAE@XZ	100.0000	100.0000	1	5884fe6e5949	0x142d40
-directdrawmgr	?AddDisplayMode@@YGHPAXH@Z	66.1111	66.1111	1	59a8489b2a17	0x143390
+directdrawmgr	?AddDisplayMode@@YGHPAXH@Z	100.0000	100.0000	2	8c7e19568094	0x143390
 directdrawmgr	?AddItemA@CDDrawPtrCollections@@QAEXPAVCDDSurface@@@Z	100.0000	100.0000	1	063e773f1091	0x142100
 directdrawmgr	?AddItemB@CDDrawPtrCollections@@QAEXPAUCDDPalette@@@Z	100.0000	100.0000	1	91ef022570de	0x142eb0
 directdrawmgr	?Clear@CDDrawPtrCollections@@QAEXH@Z	100.0000	100.0000	2	5270b982fbf5	0x142060
-directdrawmgr	?ClearModeArray_141c80@@YAXXZ	100.0000	100.0000	1	72f3d0439b0f	0x141c80
+directdrawmgr	?ClearModeArray_141c80@@YAXXZ	100.0000	100.0000	2	0607cdca4581	0x141c80
 directdrawmgr	?Compare@CDirectDrawMgr@@SGHPAX0@Z	100.0000	100.0000	1	e671162f4fd3	0x1433d0
 directdrawmgr	?ComputeColorMasks@CDDrawPtrCollections@@QAEHXZ	100.0000	100.0000	2	edcd0c5f9998	0x143b20
 directdrawmgr	?ConfigureSurface@CDDrawPtrCollections@@QAEHHHHHH@Z	100.0000	100.0000	1	313c4f41abe3	0x143c20
@@ -1322,7 +1322,7 @@ directdrawmgr	?ScalarDelete@CFileImageSurface@@QAEPAXI@Z	100.0000	100.0000	2	821
 directdrawmgr	?SetDDrawReportModes@@YAXHHHH@Z	100.0000	100.0000	2	ad2b0f55c6b9	0x1413d0
 directdrawmgr	?SetDisplayPaletteDirect_1439b0@CDDrawPtrCollections@@QAEXPAHH@Z	82.5714	82.5714	1	087460dd4a92	0x1439b0
 directdrawmgr	?SetDisplayPaletteFrom_143900@CDDrawPtrCollections@@QAEXPAUCDDPalette@@H@Z	64.9655	64.9655	1	14cb0aedc0d2	0x143900
-directdrawmgr	?SetupCaps@CDirectDrawMgr@@QAEXXZ	82.9099	82.9099	4	5b9be041ab9b	0x143240
+directdrawmgr	?SetupCaps@CDirectDrawMgr@@QAEXXZ	83.0901	83.0901	5	95abd7a1f791	0x143240
 directdrawmgr	empty_stub	0.0000	0.0000	1	cpp:44b0fad6614a	
 directinputmgr2	??1CDeviceConfigB@@UAE@XZ	100.0000	100.0000	2	38bfb6014d70	0x1334f0
 directinputmgr2	??1CDeviceConfigC@@UAE@XZ	100.0000	100.0000	3	965ca9e80d3b	0x133460
