@@ -61,7 +61,7 @@ extern void* deviceConfigRootTable; // 0x5ef670 (the CInputDevRoot vtable datum)
 // The DirectInput device-config grand-base (full class in <DinMgr2/DirectInputMgr2.h>);
 // partial view for the base teardown this dtor runs.
 struct CInputDevRoot {
-    void ReleaseDevices(); // 0x134d50
+    virtual void ReleaseDevices(); // 0x134d50 (?ReleaseDevices@CInputDevRoot@@UAEXXZ)
 };
 void operator delete(void*); // engine allocator (0x1b9b82)
 
@@ -86,7 +86,10 @@ void operator delete(void*); // engine allocator (0x1b9b82)
 RVA(0x00133380, 0x24)
 void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
     *(void**)this = &deviceConfigRootTable;
-    ((CInputDevRoot*)this)->ReleaseDevices();
+    // Qualified (non-virtual) call to the virtual ~-adjacent teardown so cl emits a
+    // DIRECT call to ?ReleaseDevices@CInputDevRoot@@UAEXXZ (0x134d50) - matching retail's
+    // devirtualized base-teardown call - instead of the fake non-virtual Q name.
+    ((CInputDevRoot*)this)->CInputDevRoot::ReleaseDevices();
     if (flags & 1) {
         operator delete(this);
     }

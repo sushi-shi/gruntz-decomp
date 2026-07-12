@@ -27,6 +27,7 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/Demo.h> // canonical CDemo (the CPlay-derived demo state; its dtor lives in this obj)
 #include <Gruntz/GruntSpawnConfig.h>
+#include <Gruntz/GruntzPlayer.h> // GruntzPlayer::Reset (0xda9e0) - the options slots ARE GruntzPlayer
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/GameLevel.h>
 #include <Gruntz/BattlezMapConfig.h>
@@ -232,7 +233,7 @@ void ChannelSlots_InitAll(); // 0xdb1d0
 // @data-symbol: _GruntzSaveGameDlgProc 0x00001041
 // @data-symbol: _GruntzSaveMsgDlgProc 0x000011d1
 // @data-symbol: _LevelNumberDialogProcThunk 0x00002ab8
-extern "C" void GruntzLoadGameDlgProc();   // thunk 0x2167 -> body 0x9dff0 (LoadGameMenu.cpp)
+extern "C" void GruntzLoadGameDlgProc();    // thunk 0x2167 -> body 0x9dff0 (LoadGameMenu.cpp)
 extern "C" void GruntzDebugGruntTypeProc(); // thunk 0x21e9
 extern "C" void GruntzSaveGameDlgProc();    // thunk 0x1041 (GAME_SAVE)
 extern "C" void GruntzSaveMsgDlgProc();     // thunk 0x11d1 (GAME_SAVEMSG)
@@ -604,11 +605,10 @@ extern "C" {
     DATA(0x002455ac)
     extern u32 g_gooPuddlez; // ("Goo puddlez" cheat toggle)
     DATA(0x002455f8)
-    extern u32 g_explosionz;        // ("Explosionz" cheat toggle)
-    extern u32 g_debugDisplayFlags; // DAT_006455f4 == ?g_debugFlags@@3EA (u8; retail
-                                    // over-wide dword-zeroes it via a shared eax, so the
-                                    // globals-unit u8 binding cannot host this dword store
-                                    // - this ref stays UNBOUND. reloc-fidelity NOTE)
+    extern u32 g_explosionz; // ("Explosionz" cheat toggle)
+    // g_debugFlags (0x6455f4, the u8 debug-overlay byte) comes from <Globals.h>;
+    // ResetClockGlobals over-wide dword-zeroes it via `*(u32*)&g_debugFlags`, which
+    // reloc-binds the real ?g_debugFlags@@3EA symbol while keeping the dword store.
 }
 
 // The two engine input/state singletons TickStateMgrs drives once per call
@@ -1228,7 +1228,12 @@ VTBL(CPlay, 0x001ea0bc);
 // CPlayDtorBody, the five members, the CState base).
 RVA(0x0008d0d0, 0xc4)
 CDemo::~CDemo() {
-    DerivedCleanup();
+    // The retail +0x2b call targets the ILT thunk 0x3c010, itself a 5-byte jmp to
+    // CPlayDtorBody (0xc8700) - so the "derived cleanup" resolves to the CPlay
+    // teardown body. Bind to CPlayDtorBody (0xc8700) so the reloc is faithful (the
+    // former ?DerivedCleanup@CDemo view was unbound). The compiler then inline-folds
+    // the ~CPlay base teardown (its own CPlayDtorBody call at +0x40). Byte-neutral.
+    CPlay::CPlayDtorBody();
 }
 
 // -------------------------------------------------------------------------
@@ -2066,7 +2071,7 @@ void CGruntzMgr::ResetClockGlobals() {
     g_gruntCreation = 0;
     g_gooPuddlez = 0;
     g_explosionz = 0;
-    g_debugDisplayFlags = 0;
+    *(u32*)&g_debugFlags = 0; // dword-zero the u8 debug-overlay byte + 3 trailing bytes
 }
 
 // -------------------------------------------------------------------------
@@ -3294,7 +3299,10 @@ i32 CGruntzMgr::Quickload() {
         m_timer->DtorBody();
     }
     if (m_saveInfoRec && (m_saveInfoRec->m_flags & 1)) {
-        if (m_saveSink->Check(m_saveInfoRec) == 0) {
+        // The +0x58 sink IS CSaveGame; Check == CSaveGame::VerifySlot (0xe52c0) and
+        // the record IS a SaveSlot (elsewhere this file casts g_gameReg->m_saveSink
+        // to CSaveGame). Bind to the real callee so the reloc is faithful.
+        if (((CSaveGame*)m_saveSink)->VerifySlot((SaveSlot*)m_saveInfoRec) == 0) {
             return 1;
         }
         g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
@@ -3373,7 +3381,8 @@ i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
     if (s->m_20 == 0) {
         return 0;
     }
-    return s->Reset();
+    // The options slot IS a GruntzPlayer; Reset == GruntzPlayer::Reset (0xda9e0).
+    return ((GruntzPlayer*)s)->Reset();
 }
 
 // -------------------------------------------------------------------------
@@ -3384,7 +3393,7 @@ void CGruntzMgr::ResetAllOptionsSlots() {
     OptionsSlot* s = (OptionsSlot*)&m_options[0];
     for (i32 d = 4; d != 0; d--) {
         if (s != 0) {
-            s->Reset();
+            ((GruntzPlayer*)s)->Reset(); // options slot IS GruntzPlayer (Reset 0xda9e0)
         }
         s = (OptionsSlot*)((char*)s + 0x238);
     }
@@ -3769,7 +3778,9 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     strcpy(dst->m_levelName, GetLevelName());
     dst->m_isWon = (m_134 == 3);
     dst->m_f8 = m_130;
-    m_saveSink->Store(dst, src + 0x1d0);
+    // The +0x58 sink IS CSaveGame; Store == CSaveGame::CopySlot (0xe51d0) copying the
+    // source state's SaveSlot block (+0x1d0) into the record. Bind the real callee.
+    ((CSaveGame*)m_saveSink)->CopySlot((SaveSlot*)dst, (const SaveSlot*)(src + 0x1d0));
     m_saveInfoRec = dst;
     if (snapshot) {
         strncpy((char*)dst->m_snapshot, (char*)snapshot, 0x20);
