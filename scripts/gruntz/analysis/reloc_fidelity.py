@@ -31,6 +31,7 @@ import bisect
 import csv
 import glob
 import os
+import re
 import struct
 import sys
 from collections import Counter, defaultdict
@@ -72,6 +73,29 @@ def resolve_thunk(t, d=0):
     return t
 
 
+_RELOC_VTBL_RE = re.compile(r"\bRELOC_VTBL\s*\(\s*([\w:]+)\s*,\s*(0x[0-9a-fA-F]+)\s*\)")
+
+
+def reloc_vtbl_vtable_names():
+    """{??_7<class>@@6B@ -> rva} for every RELOC_VTBL(class, addr) tree-wide. The
+    placeholder class's cl-emitted vtable symbol reloc-masks the retail vtable at
+    `addr` (which a DIFFERENT real class already binds via VTBL(), so it can't ALSO
+    live in symbol_names.csv - the per-rva dedup keeps the real name). The vptr-store
+    reference IS correctly bound to `addr` by design; without this it false-reports as
+    UNBOUND. A WRONG addr still surfaces as MISBOUND (have != the retail want)."""
+    out = {}
+    for pat in ("src/**/*.cpp", "src/**/*.h", "include/**/*.h"):
+        for p in glob.glob(str(REPO / pat), recursive=True):
+            try:
+                txt = open(p, "r", errors="ignore").read()
+            except OSError:
+                continue
+            for m in _RELOC_VTBL_RE.finditer(txt):
+                cls = m.group(1).split("::")[-1]
+                out.setdefault("??_7%s@@6B@" % cls, int(m.group(2), 16))
+    return out
+
+
 def load_bindings():
     name2rva, funcs = {}, []
     for r in csv.DictReader(open(REPO / "build/gen/symbol_names.csv")):
@@ -79,6 +103,11 @@ def load_bindings():
         name2rva[r["name"]] = a
         if r["kind"] == "func":
             funcs.append((a, int(r["size"] or "0", 16), r["name"], r["unit"]))
+    # RELOC_VTBL placeholder vtable symbols aren't in symbol_names.csv (their rva is
+    # bound under the real class's ??_7); resolve them so their vptr-store DIR32s are
+    # counted CORRECT/MISBOUND against the retail target, not blanket-UNBOUND.
+    for nm, a in reloc_vtbl_vtable_names().items():
+        name2rva.setdefault(nm, a)
     funcs.sort()
     return name2rva, funcs
 
