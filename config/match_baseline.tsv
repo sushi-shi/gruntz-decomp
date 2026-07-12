@@ -86,7 +86,7 @@ ddrawsurfacepair	44	23
 ddrawworkerhost	1	0
 ddrawworkerregistry	21	15
 ddsurface	53	34
-debugprintf	13	10
+debugprintf	14	10
 debugtiming	2	2
 deflate	15	15
 demo	24	16
@@ -283,7 +283,7 @@ queuedrainhost	1	0
 raincloud	1	1
 recordfill	1	1
 registryhelper	11	11
-rezbufferobjectdtor	2	1
+rezbufferobjectdtor	2	0
 rezcoll	13	5
 rezfile	21	17
 rezlist	5	3
@@ -1152,15 +1152,16 @@ debugprintf	?AddFromString@CRangeSet@@QAEXPAD@Z	92.1466	92.1466	1	e26f492b32aa	0
 debugprintf	?AddRange@CRangeSet@@QAEXII@Z	100.0000	100.0000	1	37eb845462f8	0x184be0
 debugprintf	?Contains@CRangeSet@@QAE_NI@Z	100.0000	100.0000	1	657817a9193c	0x184ba0
 debugprintf	?DebugClose@@YAXXZ	100.0000	100.0000	2	1b67100d7174	0x1851b0
-debugprintf	?Fwd_184fb0@@YAXHH@Z	100.0000	100.0000	1	2d5c88c46d7d	0x184fb0
+debugprintf	?DebugSetCursorXY@@YAXHH@Z	100.0000	100.0000	1	d063bc7512f3	0x184fb0
 debugprintf	?InitFromEnv@CDebugConfig@@QAEPAV1@XZ	100.0000	100.0000	2	980ad70bfc9b	0x185000
 debugprintf	?MonoClear@@YAXXZ	60.5000	60.5000	1	bb45a8919cfc	0x184db0
 debugprintf	?MonoNewline@@YAXXZ	90.9524	90.9524	1	e65e5d8748bf	0x184d50
 debugprintf	?RezDebugInit@@YAXXZ	100.0000	100.0000	1	b24f25ad6ccf	0x184b70
 debugprintf	_RezAssertFail	100.0000	100.0000	2	e4dfd15df8e4	0x184e00
 debugprintf	_RezDebugPrintfCh	100.0000	100.0000	1	64691a1c3b3e	0x184ed0
-debugprintf	_RezDebugPrintfChXY	100.0000	100.0000	1	1f6ab7e657bf	0x184f30
-debugprintf	_RezDebugPrintfXY	100.0000	100.0000	1	a7834fe8fd99	0x184e60
+debugprintf	_RezDebugPrintfChXY	100.0000	100.0000	2	a8c6da39fce4	0x184f30
+debugprintf	_RezDebugPrintfXY	100.0000	100.0000	2	a5cb95188822	0x184e60
+debugprintf	empty_stub	0.0000	0.0000	1	cpp:f6d48905c3bd	
 debugtiming	?ActiveWait@@YAXI@Z	100.0000	100.0000	1	ce35ad37620d	0x13dfe0
 debugtiming	?DebugTrace@@YAXPBDZZ	100.0000	100.0000	1	c41411bd66ab	0x13e010
 deflate	_deflate	100.0000	100.0000	1	3bf3a6c067ea	0x186620
@@ -2042,7 +2043,7 @@ grunttoytimesprite	??1CGruntToyTimeSprite@@UAE@XZ	4.7059	4.7059	2	87752f9edfc8	0
 grunttoytimesprite	?GetToyTime@@YGHPAVCGrunt@@@Z	100.0000	100.0000	1	e22dd904c96c	0x7fca0
 grunttoytimesprite	?GetTypeTag@CGruntToyTimeSprite@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:b9e62c4596ee	0x120e0
 grunttubeanim	?SetupTubeAnim@CGruntTube@@QAEHH@Z	72.3636	72.3636	8	836bcd553ec7	0x50a50
-gruntvoice	??0CGruntVoice@@QAE@PAUCGameObject@@@Z	90.1339	90.1339	7	c47889f1be64	0x1198a0
+gruntvoice	??0CGruntVoice@@QAE@PAUCGameObject@@@Z	90.1339	90.1339	8	3f68a9817882	0x1198a0
 gruntvoice	??0CVoiceTrigger@@QAE@PAUCGameObject@@@Z	86.5917	86.5917	2	4b6376b95678	0x119b50
 gruntvoice	??0CVoiceTrigger@@QAE@XZ	100.0000	100.0000	2	4b6376b95678	0x13470
 gruntvoice	??1CGruntVoice@@UAE@XZ	100.0000	100.0000	2	a4ff03b9d865	0x119ae0
@@ -2054,12 +2055,12 @@ gruntvoice	?GetTypeTag@CVoiceTrigger@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1
 gruntvoice	?GruntVoiceStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	3f926902e476	0x119620
 gruntvoice	?InitActReg@CGruntVoice@@SAXXZ	100.0000	100.0000	3	752b0459e56b	0x119dc0
 gruntvoice	?InitActReg@CVoiceTrigger@@SAXXZ	100.0000	100.0000	1	c8445e2356cd	0x11a320
-gruntvoice	?RegisterActs@CVoiceTrigger@@SAXXZ	92.9130	92.9130	1	cpp:20986d2d7220	0x11a500
-gruntvoice	?Reset@CGruntVoice@@QAEXXZ	100.0000	100.0000	4	884d193a2ffa	0x11a870
+gruntvoice	?RegisterActs@CVoiceTrigger@@SAXXZ	92.9130	92.9130	1	e8254bdf664e	0x11a500
+gruntvoice	?Reset@CGruntVoice@@QAEXXZ	100.0000	100.0000	5	cae08a1c2a40	0x11a870
 gruntvoice	?Serialize@CVoiceTrigger@@QAEHHHHH@Z	100.0000	100.0000	2	6272c8bdd8e0	0x134e0
 gruntvoice	?Setup@CGruntVoice@@QAEHHPAXHH@Z	85.2500	85.2500	5	79a39a4d4483	0x11a7e0
 gruntvoice	?Tick@CVoiceTrigger@@QAEHXZ	100.0000	100.0000	2	e3c612ba4a65	0x11a700
-gruntvoice	?Update@CGruntVoice@@QAEHXZ	73.2416	73.2416	3	aba68558b4fc	0x11a8e0
+gruntvoice	?Update@CGruntVoice@@QAEHXZ	73.2416	73.2416	4	0be6fcac404d	0x11a8e0
 gruntvoice	?VoiceTriggerStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	639b0adb02c6	0x119760
 gruntvoiceactreg	?RegisterActs_6514d8@@YAXXZ	79.1144	79.1144	2	0b1697ef2f62	0x119fa0
 gruntwingztimesprite	??0CGruntWingzTimeSprite@@QAE@PAUCGameObject@@@Z	94.7619	94.7619	1	80c08ed0ab82	0x7fcc0
@@ -3195,8 +3196,8 @@ registryhelper	?Open@RegistryHelper@Utils@@QAEHPAD000PAUHKEY__@@0@Z	100.0000	100
 registryhelper	?SetValueBinary@RegistryHelper@Utils@@QAEHPADPAXI@Z	100.0000	100.0000	1	35482b830beb	0x139410
 registryhelper	?SetValueDword@RegistryHelper@Utils@@QAEHPADK@Z	100.0000	100.0000	7	d5d45f636f2a	0x139460
 registryhelper	?SetValueString@RegistryHelper@Utils@@QAEHPAD0@Z	100.0000	100.0000	7	f8f1dcbddaba	0x1393b0
-rezbufferobjectdtor	??1CRezBufferObject@@UAE@XZ	100.0000	100.0000	3	bc86a34ac102	0x17f330
-rezbufferobjectdtor	?Serialize@CRezBufferObject@@UAEXAAVCArchive@@@Z	71.5876	71.5876	1	8346c3f4635f	0x17f130
+rezbufferobjectdtor	??1CRezBufferObject@@UAE@XZ	46.2609	46.2609	4	510ef74d34da	0x17f330
+rezbufferobjectdtor	?Serialize@CRezBufferObject@@UAEXAAVCArchive@@@Z	71.5876	71.5876	2	cc42124e0add	0x17f130
 rezcoll	??0CHash@@QAE@XZ	100.0000	100.0000	1	470c41ddfbfa	0x184950
 rezcoll	??0CHashSlot@@QAE@XZ	100.0000	100.0000	1	fa393bcbed01	0x184a20
 rezcoll	?Construct@CHashBase@@QAEPAV1@H@Z	61.4872	61.4872	2	0ce81c8c7dfb	0x184960
@@ -3406,7 +3407,7 @@ sbi_rectonly	?winapi_0fe520_SetRect@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	9	76
 sbi_rectonly	?winapi_107d00_SetRect@CSBI_RectOnly@@QAEHXZ	88.4253	88.4253	7	e70a23d91c8e	0x107d00
 sbi_rectonlybase	?Setup@CSBI_RectOnly@@UAEHHHHHHHHHHH@Z	90.3846	90.3846	1	144f31e3e83d	0xe86e0
 sbi_rectonlydtor_eh	??1CSBI_RectOnly@@UAE@XZ	100.0000	100.0000	2	85e859afeaea	0x100700
-sbi_rectonlydtor_eh	??1CStatusBaseSub100780@@UAE@XZ	100.0000	100.0000	1	c7bd4b768e55	0x100780
+sbi_rectonlydtor_eh	??1CStatusBarItem@@UAE@XZ	100.0000	100.0000	1	cpp:a2ee71327842	0x100780
 sbi_statztabarrow_eh	??1CSBI_StatzTabArrow@@UAE@XZ	100.0000	100.0000	2	25c1549131f7	0x1048f0
 sbi_statztabgruntbar	??1CSBI_StatzTabGruntBar@@UAE@XZ	100.0000	100.0000	1	526d272501bb	0x104b00
 sbi_statztabgruntbar	?Blit@CSBI_StatzTabGruntBar@@QAEHXZ	100.0000	100.0000	2	c370f6eb52e8	0xea4e0
@@ -3645,8 +3646,8 @@ statusbartabbuilders	?Reset@CSBI_SideTab@@QAEXXZ	100.0000	100.0000	1	bb44fbcd4bb
 statusbartabbuilders	?SetDirection@CSbConfigItem@@QAEXHH@Z	100.0000	100.0000	1	afbdc908a433	0xea0f0
 statusbartabbuilders	?SetDirectionAlt@CSbConfigItem@@QAEXHH@Z	100.0000	100.0000	1	ed53a180673c	0xea170
 statusbartabbuilders	?SetFrames@CSBI_GruntMachine@@QAEXHH@Z	100.0000	100.0000	1	75abcbe5ef59	0xe8dc0
-statusbarupdaters	?LoadSwitchDownSprite@EngineLabelBacklog@@QAEHXZ	64.7816	64.7816	4	217429906df8	0x110570
-statusbarupdaters	?LoadSwitchUpSprite@EngineLabelBacklog@@QAEHXZ	67.4253	67.4253	4	739a7ae91fe3	0x1106b0
+statusbarupdaters	?Vf2@CTileTriggerSwitchLogic@@UAEHXZ	64.7816	64.7816	1	b9c498b2459a	0x110570
+statusbarupdaters	?Vf3@CTileTriggerSwitchLogic@@UAEHXZ	67.4253	67.4253	1	bf55d434e155	0x1106b0
 streamrecordloaders	?Load@CEventLoadRec@@QAEHPAUCSerialArchive@@@Z	93.9657	93.9657	3	45af7a8f2a76	0x9c650
 streamrecordloaders	?LookupPtr@C9cab0@@QAEHH@Z	100.0000	100.0000	1	d0c076d8e391	0x9cab0
 surfacepalette	?ResetPalette@CDDScreen@@QAEXXZ	100.0000	100.0000	7	09079b6f5cdf	0x17ca60
@@ -3805,9 +3806,9 @@ tileswitchlogic	?ValidateByType@CTileTriggerSwitchLogic@@QAEHPAXHHH@Z	93.3333	93
 tileswitchlogic	?VerifyBlockLinks@CTileTriggerSwitchLogic@@QAEHXZ	85.9080	85.9080	4	b5981750eda5	0x112c70
 tileswitchlogic	?VerifyBlockLinksB@CTileTriggerSwitchLogic@@QAEHXZ	85.9080	85.9080	4	6995ea121e10	0x111f40
 tileswitchlogic	?Vf0@CTileTriggerSwitchLogic@@UAEHHHHHHHHH@Z	100.0000	100.0000	1	c221ba369f17	0x1104f0
-tileswitchlogic	?Vf2@CTileSecretTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	1	a9e8d65dbeb8	0x112820
-tileswitchlogic	?Vf2@CTileTimeTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	1	afb500b3e0e9	0x112840
-tileswitchlogic	?Vf3@CTileTimeTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	1	5741e7ba63f3	0x112860
+tileswitchlogic	?Vf2@CTileSecretTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	2	29d74841aa97	0x112820
+tileswitchlogic	?Vf2@CTileTimeTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	2	316709fb606f	0x112840
+tileswitchlogic	?Vf3@CTileTimeTriggerSwitchLogic@@EAEHXZ	100.0000	100.0000	2	a9393042b4e8	0x112860
 tiletriggercontainer	??1CTileTriggerContainer@@QAE@XZ	85.7143	85.7143	2	918efab0d5aa	0xc8640
 tiletriggercontainer	?AddLogic@CTileTriggerContainer@@QAEPAVCTileTriggerLogic@@HHHHHUCTrigParam@@00000HHHH@Z	70.2327	70.2327	1	82c67efc6303	0x116610
 tiletriggercontainer	?AddLogicDefaults@CTileTriggerContainer@@QAEXHHHHHHHHH@Z	75.8788	75.8788	1	e671124c992b	0x1163b0
