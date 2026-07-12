@@ -87,12 +87,14 @@ struct StreamVoice {
 
     // DirectSoundMgr base run, reloc-masked __thiscall (defined in their own TUs).
     // BaseInit == the DSoundCloneInst ctor 0x135b10 (its 2nd param is the owning
-    // SoundDevice, so a SoundStream* upcasts implicitly).
+    // SoundDevice, so a SoundStream* upcasts implicitly). The volume/pan/freq setters
+    // (0x1355c0/0x1357a0/0x135920) are NOT redeclared here - they are the real
+    // DirectSoundMgr::SetVolumeByIndex/SetPanByIndex/SetField2 methods, which Configure
+    // reaches through the authentic offset-0 base upcast (their fake StreamVoice decls
+    // left the call rel32 UNBOUND). ComputeDuration/BaseInit/BaseDtor stay reloc-masked
+    // decls pending the full StreamVoice : DSoundCloneInst derivation.
     void BaseInit(IDirectSoundBuffer* buf, SoundDevice* owner); // 0x135b10
     void BaseDtor();                                            // 0x135bb0
-    i32 SetVolumeByIndex(i32 idx);                              // 0x1355c0
-    i32 SetPanByIndex(i32 idx);                                 // 0x1357a0
-    i32 SetFreqByIndex(i32 idx);                                // 0x135920
     void ComputeDuration(); // 0x1359a0  (DirectSoundMgr base: m_durationMs =
                             //  m_sampleCount*1000/m_sampleRate; reloc-masked)
 };

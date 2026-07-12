@@ -180,14 +180,20 @@ i32 StreamVoice::Configure(i32 vol, i32 pan, i32 freq, i32 loop) {
     if (m_owner->m_initialized == 0) {
         return 0;
     }
+    // Authentic offset-0 base upcast: StreamVoice IS-A DirectSoundMgr (layout-proven
+    // identical over +0x00..+0x58; the real derivation is the pending StreamVoice
+    // class-modeling task, same upcast OpenStream uses). Binds the three setters to the
+    // real DirectSoundMgr::SetVolumeByIndex/SetPanByIndex/SetField2 (0x1355c0/0x1357a0/
+    // 0x135920) instead of the former fake StreamVoice::Set* decls (call rel32 UNBOUND).
+    DirectSoundMgr* base = (DirectSoundMgr*)this;
     i32 ok = 1;
-    if (SetVolumeByIndex(vol) == 0) {
+    if (base->SetVolumeByIndex(vol) == 0) {
         ok = 0;
     }
-    if (SetPanByIndex(pan) == 0) {
+    if (base->SetPanByIndex(pan) == 0) {
         ok = 0;
     }
-    if (SetFreqByIndex(freq) == 0) {
+    if (base->SetField2(freq) == 0) {
         ok = 0;
     }
     m_feeder.m_loop = loop;
