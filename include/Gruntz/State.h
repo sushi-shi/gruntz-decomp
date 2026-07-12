@@ -170,6 +170,13 @@ public:
     FxResource* fxRes() {
         return (FxResource*)m_c;
     }
+    // The per-area GAME asset-namespace loader (0xf9ea0, GameAssetNamespaces.cpp,
+    // entered via the 0x43a9 ILT thunk). Every leaf state (CSplashState/CHelpState/
+    // CCreditsState/CBootyState/CMenuState/CAttract/CPreviewState/CMulti) calls it on
+    // its own `this` and TESTs the int result -> it IS a CState-level non-virtual
+    // (the former per-TU CAssetLoader/CCreditzOwner/LoadAttractScene/LoadAssetNamespaces
+    // views were sibling facets of this one method). Returns 1 on success, 0 on bail.
+    i32 LoadGameAssetNamespaces(i32 mgr, i32 areaArg, i32 a3); // 0x0f9ea0
     // The title cluster's typed views of the shared CState slots (m_c is the menu
     // root, m_2c the fade screen-resolver when a title rolls). Inline -> the same
     // `mov reg,[this+off]` falls out; forward-declared facets (attract-scoped types).

@@ -10,12 +10,17 @@
 
 // The recursive snapshot run-callback handed to SnapshotChildren; modeled NO-body
 // so the call/address-of reloc-mask. Its type is the canonical HP_Callback.
-// reloc-fidelity note: retail passes the ILT jmp-THUNK address 0x24e6 (the real
-// body is at 0xd2a0, unreconstructed); &SaveRunCallback from a reconstructed body
-// would resolve to 0xd2a0, not the thunk, so this address-of stays a documented
-// incremental-link thunk-address artifact (declared-only, reloc-masked).
+// reloc-fidelity note: the real body IS reconstructed - it is SerialObjectFactory
+// @0xd2a0 (?SerialObjectFactory@@YAHPAX0HHPAPAX@Z, SerialObjectFactory.cpp). But
+// retail's incremental linker routes this address-of through the ILT jmp-THUNK
+// 0x24e6 (jmp 0xd2a0), so the DIR32 stored here is 0x24e6, NOT 0xd2a0. reloc_fidelity
+// resolves thunks only for CALL(rel32), not for address-of(DIR32): referencing the
+// real SerialObjectFactory would resolve to 0xd2a0 and flip UNBOUND -> the more-toxic
+// MISBOUND, and no annotation binds a *function* symbol to a code-thunk RVA (it lives
+// in the engine_label_stubs ILT band). So this stays a declared-only, reloc-masked
+// UNBOUND-by-design incremental-link thunk-address artifact.
 extern i32 __cdecl
-SaveRunCallback(void* mgr, void* ser, i32 mode, i32, i32); // 0x24e6 thunk (-> 0xd2a0)
+SaveRunCallback(void* mgr, void* ser, i32 mode, i32, i32); // ILT thunk 0x24e6 -> 0xd2a0
 
 // The game-state host being saved; its +0x30 is the bound surface manager. Modeled
 // as a view (only +0x30 is touched here); the opaque head is the game-mgr region.

@@ -46,8 +46,8 @@ public:
     virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
 
-    i32 LoadAssets(i32, i32, i32);              // 0x95090
-    i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked external
+    i32 LoadAssets(i32, i32, i32); // 0x95090
+    // LoadGameAssetNamespaces (0xf9ea0) is inherited from CState (called cast-free).
 };
 
 RVA(0x0008cf30, 0x55)

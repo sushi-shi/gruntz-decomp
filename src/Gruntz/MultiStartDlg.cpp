@@ -47,10 +47,11 @@ struct CMultiSlot {
     char m_pad170[0x238 - 0x170];
 };
 
-// GetCtrlE (0xc2640): the fifth per-index combo getter (control IDs 0x500/0x50e/
-// 0x50f/0x510 on the shared multiplayer-setup dialog). A free __stdcall helper;
-// declared-only here (owned as a data mislabel in globals), so the call reloc-masks.
-extern CWnd* __stdcall GetCtrlE(i32 index);
+// GetCtrlE's per-case control fetch. The retail free-function body threads the
+// caller's dialog `this` straight through ecx into CWnd::GetDlgItem (0x1be27d)
+// WITHOUT reloading it, so the call is modeled as a reloc-masked free helper that
+// emits the bare `push id; call; ret 4` (stdcall, no ecx setup). Declared-only.
+extern CWnd* __stdcall GetDlgItemThreaded(i32 id);
 
 // The subclass window-proc installed on the combo's edit child (0x4c1a10). Only
 // its address is taken (push offset -> DIR32 reloc-masks).
@@ -328,6 +329,41 @@ i32 CMultiStartDlg::UpdateSlot() {
 // @stub
 RVA(0x000c20a0, 0x45a)
 void CMultiStartDlg::InitPlayerSlots() {}
+
+// ---------------------------------------------------------------------------
+// GetCtrlE (0xc2640, free __stdcall): the fifth per-index combo getter over control
+// IDs 0x500/0x50e/0x50f/0x510. Reclaimed from the globals unit's bogus g_typeDesc2
+// char-array DATA mislabel - 0xc2640 is this function, not a data global. Unlike the
+// member CMultiStartDlg::GetCtrlA..D, this is a FREE __stdcall function whose body
+// threads the caller's dialog `this` (ecx) straight into GetDlgItem (see the helper
+// decl above). Callers SetComboSelE/GetComboSelE now bind to it.
+// @early-stop
+// ~69%: the switch shape, hoisted `xor eax,eax`, per-case `push id; call; ret 4` and
+// the 4-entry jump table all match retail; residual is (1) the index register - retail
+// keeps it in edx because ecx is live holding the threaded `this` (the body IS a member
+// threading ecx into GetDlgItem), but the free __stdcall reconstruction (forced by the
+// ?GetCtrlE@@YG.. symbol the callers reference) leaves ecx free so MSVC picks ecx for
+// the index; no C++ spelling reserves ecx without a `this` param. (2) jump-table-data
+// scoring artifact - docs/patterns/jumptable-data-overlap.md.
+RVA(0x000c2640, 0x46)
+CWnd* __stdcall GetCtrlE(i32 index) {
+    CWnd* result = 0;
+    switch (index) {
+        case 0:
+            result = GetDlgItemThreaded(0x500);
+            break;
+        case 1:
+            result = GetDlgItemThreaded(0x50e);
+            break;
+        case 2:
+            result = GetDlgItemThreaded(0x50f);
+            break;
+        case 3:
+            result = GetDlgItemThreaded(0x510);
+            break;
+    }
+    return result;
+}
 
 // ---------------------------------------------------------------------------
 // CMultiStartDlg per-slot control accessors: switch(index) over a 4-entry

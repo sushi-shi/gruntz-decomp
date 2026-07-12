@@ -83,7 +83,9 @@ struct BcStateRoot { // this->m_4
 class CBootyCheatState {
 public:
     i32 LoadAssets(i32 a1, i32 a2, i32 a3);     // 0x18830
-    i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader FUN_000043a9
+    i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader FUN_000043a9 -> 0xf9ea0
+                                                // (declared-only; this local view is not
+                                                // CState-derived + this fn isn't byte-exact)
 
     // The five-stage tail init chain (__thiscall(this), reloc-masked).
     i32 Init1(); // FUN_...11c2

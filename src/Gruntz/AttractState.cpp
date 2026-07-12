@@ -102,7 +102,7 @@ extern int(WINAPI* g_pwsprintfA)(char* buf, const char* fmt, ...);
 // ===========================================================================
 
 // CAttract::EnterAttractMode - enter (or re-enter) the attract scene.
-// Gates on LoadAttractScene(a, b, mode); on failure returns that result.
+// Gates on CState::LoadGameAssetNamespaces(a, b, mode); on failure returns that result.
 // Otherwise hides the cursor, re-asserts the video mode, resolves the
 // "STATEZ_ATTRACT" state (stored into m_2c), loads its "SOUNDZ" set, registers
 // the sound handle on the menu page under the "ATTRACT"/"_" tags, hides the
@@ -110,7 +110,7 @@ extern int(WINAPI* g_pwsprintfA)(char* buf, const char* fmt, ...);
 // cleared when mode == 3 (else set to 1). Returns 1 on success, 0 on early-out.
 RVA(0x00013fb0, 0xd5)
 i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
-    if (LoadAttractScene(a, b, mode) == 0) {
+    if (LoadGameAssetNamespaces(a, b, mode) == 0) {
         return 0;
     }
 

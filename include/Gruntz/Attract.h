@@ -176,9 +176,9 @@ public:
     i32 LoadTitleConfig(i32 mode);                   // 0xa03f0
     i32 Activate(); // 0xa0a30
 
-    // The pre-flight gate for EnterAttractMode (engine FUN_004f9ea0, non-virtual
-    // __thiscall ret 0xc, reached via ILT thunk): a zero result aborts the entry.
-    i32 LoadAttractScene(i32 a, i32 b, i32 mode); // FUN_004f9ea0
+    // The pre-flight gate for EnterAttractMode (engine 0xf9ea0, non-virtual __thiscall
+    // ret 0xc, reached via ILT thunk): a zero result aborts the entry. It IS
+    // CState::LoadGameAssetNamespaces (inherited), called cast-free on `this`.
 
     // (FadeInTitle 0xfa1f0 / RunTitle 0xfa300 / RunTitleSeq 0xfa350 / RetireScene 0xfa8f0
     //  are CState-base title-roll/transition methods now - declared in <Gruntz/State.h>,

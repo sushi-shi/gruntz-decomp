@@ -1236,9 +1236,11 @@ struct CNetThing { // TU-local view of the header-less CNetThing (netthingdtor u
 };
 struct CCluster0c {
     char pad00[0x60];
-    CNetThing* m_60;       // +0x60 owned child
-    void Destroy_1bbb7c(); // 0x1bbb7c
-    void Cleanup();        // 0xc5240
+    CNetThing* m_60; // +0x60 owned child
+    void Cleanup();  // 0xc5240
+    // 0x1bbb7c is CWnd::DestroyWindow (the reduced-view `this` IS a CWnd-derived; full
+    // identity unrecovered - @orphan). Reached below via the shared Dialogs.h CWnd's
+    // slot-24 DestroyWindow, called qualified (direct, non-virtual) to bind the near call.
 };
 RVA(0x000c5240, 0x2c)
 void CCluster0c::Cleanup() {
@@ -1248,9 +1250,12 @@ void CCluster0c::Cleanup() {
         ::operator delete(p); // 0x1b9b82 == ??3@YAXPAX@Z (reloc-masked/exempt)
         m_60 = 0;
     }
-    Destroy_1bbb7c(); // 0x1bbb7c == CWnd::DestroyWindow (direct base call; needs a CWnd base
-                      // model - deferred: adding the virtual to Dialogs.h CWnd would append a
-                      // slot and perturb the CBattlezDlg/CMultiStartDlg derived vtables)
+    // 0x1bbb7c == CWnd::DestroyWindow (?DestroyWindow@CWnd@@UAEHXZ, slot 24). Qualified
+    // (direct, non-virtual) call so it binds as the real MFC symbol instead of a fake
+    // CCluster0c method. Renaming CWnd's slot-24 placeholder to DestroyWindow does NOT
+    // perturb derived vtables: CBattlezDlg inherits it, CMultiStartDlg's override is
+    // declared-only (both reloc-masked).
+    ((CWnd*)this)->CWnd::DestroyWindow();
 }
 SIZE_UNKNOWN(CCluster0c);
 SIZE_UNKNOWN(CNetThing);

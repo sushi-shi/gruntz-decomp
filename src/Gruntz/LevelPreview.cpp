@@ -69,7 +69,7 @@ public:
     // LoadGameAssetNamespaces @0xf9ea0; the CState/CGameModeBase family share the base
     // state layout - the codegen-neutral cross-view State.h already uses). Declared-
     // only so the __thiscall call reloc-masks.
-    i32 LoadAssetNamespaces(void* mgr, i32 a, i32 b);               // 0x0f9ea0
+    // LoadGameAssetNamespaces (0x0f9ea0) inherited from CState (called cast-free).
     i32 Tick();                                  // 0x0de200
     // RetireScene (0x0fa8f0) is a CState base method (inherited from <Gruntz/State.h>);
     // the cast-free calls below bind ?RetireScene@CState@@ - no local decl needed.
@@ -102,7 +102,7 @@ extern "C" {
 // the PREVIEW scratch string + counter and pump one window message. Returns 1.
 RVA(0x000de030, 0xc2)
 i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
-    if (LoadAssetNamespaces(mgr, a1, a2) == 0) {
+    if (LoadGameAssetNamespaces((i32)mgr, a1, a2) == 0) {
         return 0;
     }
     while (ShowCursor(FALSE) >= 0) {

@@ -39,10 +39,15 @@ struct ShadeDescr;
 // g_typeDesc3 had a bogus DATA(0x0000b620): 0xb620 is CODE (CWorldSoundSet::Deactivate,
 // reconstructed in worldsoundset), which Ghidra mis-typed as 38 B of data. The real
 // g_typeDesc3 address is unrecovered; left as an unbound extern (Globals.h) pending it.
+// g_typeDesc2 was likewise bogus DATA(0x000c2640): 0xc2640 is CODE (GetCtrlE,
+// reconstructed in multistartdlg). These g_typeDescN symbols are a factory-pointer
+// stand-in in BattlezMapConfig's three marker loops - the reloc-masked cmp compares a
+// level object's creation-fn ptr (m_7c->m_10) to a real factory: loop1 == &CreateGrunt-
+// CreationPoint(0x4017e4), loop2(g_typeDesc2) == &CreateExitTrigger(0x40192e), loop3 ==
+// &CreateWayPoint(0x401087). g_typeDesc2 is left an unbound extern (Globals.h) pending
+// the real-factory rewrite (deferred; same as g_typeDesc3).
 DATA(0x00051510)
 extern char g_typeDesc1[];
-DATA(0x000c2640)
-extern char g_typeDesc2[];
 DATA(0x00104358)
 extern i32 g_screenTag;
 DATA(0x0016ea10)

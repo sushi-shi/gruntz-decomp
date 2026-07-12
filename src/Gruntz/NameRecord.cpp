@@ -8,17 +8,18 @@
 // / rep movs), no relocations. Names are placeholders; the offsets + emitted
 // bytes are load-bearing.
 #include <string.h>
+#include <Gruntz/GameInfo.h> // shared CGameInfo (CopyBody calls its Check1 @0x1182f0 on `this`)
 
 class CNameRecord {
 public:
     i32 SetNames(char* name, char* name2, i32 unused); // 0x118040
     i32 CopyBody(char* body);                          // 0x118130
-    // Sibling predicate (0x1182f0, == the m_08==1 success check, reloc-masked near
-    // call). @identity-TODO (RECOVERED, model deferred): retail_rva 0x1182f0 =
-    // ?Check1@CGameInfo@@QAEHXZ [gameinfostring] (`return m_8==1`, called on `this`),
-    // so CNameRecord IS a CGameInfo facet (same m_8 flag). Tying needs a shared
-    // CGameInfo header (currently GameInfoString.cpp-local); left reloc-masked.
-    i32 IsOne(); // 0x1182f0 (= CGameInfo::Check1)
+    // The success predicate CopyBody polls (retail 0x1182f0) is CGameInfo::Check1
+    // (`return m_8 == 1`): CNameRecord IS a CGameInfo facet (shared +0x08 ready flag),
+    // so CopyBody calls it through the shared CGameInfo header - `((CGameInfo*)this)->
+    // Check1()` - which binds the near call to 0x1182f0 (was a reloc-masked local decl).
+    // The +0x36 tails still diverge (name buffer vs Location/Time/Type), so the classes
+    // are not fully unified yet (@identity-TODO: merge the divergent tail).
 
     char _vft0[4];              // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     i32 m_04;                   // +0x04 (head of the zeroed body)
@@ -66,7 +67,7 @@ i32 CNameRecord::SetNames(char* name, char* name2, i32 unused) {
 // embedded name (at body+0x10, i.e. the m_name field position within the body)
 // being 1..15 chars; then run the m_08==1 predicate (side-effect call, discarded)
 // and return 1. Rejects a null source or an out-of-range name (returns 0). Inline
-// /Oi CRT (repnz scasb strlen + rep movsd), no relocations except the near IsOne call.
+// /Oi CRT (repnz scasb strlen + rep movsd), no relocations except the near Check1 call.
 // ===========================================================================
 RVA(0x00118130, 0x44)
 i32 CNameRecord::CopyBody(char* body) {
@@ -74,7 +75,7 @@ i32 CNameRecord::CopyBody(char* body) {
         i32 len = (i32)strlen(body + 0x10);
         if (len > 0 && len < 16) {
             memcpy(&m_04, body, 212);
-            IsOne();
+            ((CGameInfo*)this)->Check1(); // 0x1182f0 (facet: same +0x08 ready flag)
             return 1;
         }
     }

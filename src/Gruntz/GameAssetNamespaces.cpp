@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <Bute/SymParser.h>               // the shared CSymParser (ResolvePath 0x13c030)
+#include <Gruntz/State.h>                 // CState: the real owner of the loader (all leaf states inherit it)
 #include <Gruntz/SpriteRefTable.h>        // the shared CSpriteRefTable (g_gameReg->m_74)
 #include <DDrawMgr/DDrawPtrCollections.h> // the ONE CDDrawPtrCollections shape (MakeAndAddB)
 #include <DDrawMgr/DDrawAssetRegistryViews.h> // shared CDDrawWorkerRegistry/LeafScan/Ani namespace views
@@ -45,11 +46,13 @@ struct AssetMgr {
     CSpriteRefTable* m_spriteRefTable; // +0x74
 };
 
+// CAssetLoader is the loader's field-view of the CState-derived state object the
+// method runs on (the +0x04..+0x164 asset-loading scratch slots CState reuses; a
+// full field reconciliation onto CState/CGruntzMgr is out of scope - those are
+// frozen mega-folds). The method itself is CState::LoadGameAssetNamespaces so every
+// leaf state binds cast-free; the body casts `this` to this view once for the names.
 SIZE_UNKNOWN(CAssetLoader);
-class CAssetLoader {
-public:
-    void LoadGameAssetNamespaces(AssetMgr* mgr, i32 areaArg, i32 a3);
-
+struct CAssetLoader {
     char m_pad00[0x4];
     AssetMgr* m_mgr;              // +0x04
     CSymParser* m_symParser;      // +0x08
@@ -73,73 +76,78 @@ public:
 };
 
 // @early-stop
-// 73% - /O2 register-allocation/scheduling entropy on a large loader: the branch
+// ~94.5% - /O2 register-allocation/scheduling entropy on a large loader: the branch
 // structure, every extern call and the namespace strings match retail, but the
 // optimizer distributes the descriptor/holder loads across eax/ecx/edx differently
 // and schedules the a3 store later (with the version-string lea). Logic + externs
-// match retail. Final sweep.
+// match retail. Return type is int (retail sets eax=1 on success; every leaf state
+// TESTs it - the int fix lifted 73% -> ~94.5%) - re-homed onto CState so the ~7 leaf
+// callers bind cast-free. Final sweep.
 RVA(0x000f9ea0, 0x21d)
-void CAssetLoader::LoadGameAssetNamespaces(AssetMgr* mgr, i32 areaArg, i32 a3) {
-    m_mgr = mgr;
-    m_symParser = mgr->m_symParser;
-    m_workerHolder = mgr->m_workerHolder;
-    m_10 = mgr->m_40;
-    m_areaArg = areaArg;
+i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
+    CAssetLoader* self = (CAssetLoader*)this;
+    AssetMgr* mgr = (AssetMgr*)mgrArg;
+    self->m_mgr = mgr;
+    self->m_symParser = mgr->m_symParser;
+    self->m_workerHolder = mgr->m_workerHolder;
+    self->m_10 = mgr->m_40;
+    self->m_areaArg = areaArg;
     i32 t = (areaArg - 1) % 0x24;
-    m_44 = -1;
-    m_48 = -1;
-    m_14c = 0;
-    m_24 = a3;
-    m_areaIndex = t / 4 + 1;
-    sprintf(m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
+    self->m_44 = -1;
+    self->m_48 = -1;
+    self->m_14c = 0;
+    self->m_24 = a3;
+    self->m_areaIndex = t / 4 + 1;
+    sprintf(self->m_versionString, "Alpha Version, Build %i, Monolith Productions Inc.", g_buildNumber);
     char area[32];
-    sprintf(area, "AREA%i", m_areaIndex);
-    void* node = m_symParser->ResolvePath(area);
-    m_areaNode = node;
+    sprintf(area, "AREA%i", self->m_areaIndex);
+    void* node = self->m_symParser->ResolvePath(area);
+    self->m_areaNode = node;
     if (node == 0) {
-        return;
+        return 0;
     }
-    if (m_workerHolder->m_imageReg->HasKeyEqual("GAME") == 0) {
-        void* img = m_symParser->ResolvePath("GAME_IMAGEZ");
+    if (self->m_workerHolder->m_imageReg->HasKeyEqual("GAME") == 0) {
+        void* img = self->m_symParser->ResolvePath("GAME_IMAGEZ");
         if (img == 0) {
-            return;
+            return 0;
         }
         g_resourceInstallActive = 1;
-        m_workerHolder->m_imageReg->LoadTree(img, "GAME", "_");
+        self->m_workerHolder->m_imageReg->LoadTree(img, "GAME", "_");
         g_resourceInstallActive = 0;
     }
-    if (m_workerHolder->m_soundScan->HasKeyEqual_1583c0("GAME") == 0) {
-        void* snd = m_symParser->ResolvePath("GAME_SOUNDZ");
+    if (self->m_workerHolder->m_soundScan->HasKeyEqual_1583c0("GAME") == 0) {
+        void* snd = self->m_symParser->ResolvePath("GAME_SOUNDZ");
         if (snd == 0) {
-            return;
+            return 0;
         }
-        m_workerHolder->m_soundScan->ScanTree_157ee0((DirNode*)snd, "GAME", "_");
+        self->m_workerHolder->m_soundScan->ScanTree_157ee0((DirNode*)snd, "GAME", "_");
     }
-    if (m_workerHolder->m_aniScan->HasKeyPrefix("GAME") == 0) {
-        void* aniz = m_symParser->ResolvePath("GAME_ANIZ");
+    if (self->m_workerHolder->m_aniScan->HasKeyPrefix("GAME") == 0) {
+        void* aniz = self->m_symParser->ResolvePath("GAME_ANIZ");
         if (aniz == 0) {
-            return;
+            return 0;
         }
-        m_workerHolder->m_aniScan->ScanTree(aniz, "GAME", "_");
+        self->m_workerHolder->m_aniScan->ScanTree(aniz, "GAME", "_");
     }
     // the shared CSpriteRefTable types the source resolver as i32 (a raw 4-byte
     // handle); the parser pointer is passed through unchanged (reloc-masked).
-    if (m_mgr->m_spriteRefTable->BuildToolToyColorTable((i32)m_mgr->m_symParser) == 0) {
-        return;
+    if (self->m_mgr->m_spriteRefTable->BuildToolToyColorTable((i32)self->m_mgr->m_symParser) == 0) {
+        return 0;
     }
-    if (m_scratch0 == 0 && m_scratch1 == 0) {
-        CDDrawPtrCollections* coll = m_workerHolder->m_ptrCollections;
+    if (self->m_scratch0 == 0 && self->m_scratch1 == 0) {
+        CDDrawPtrCollections* coll = self->m_workerHolder->m_ptrCollections;
         if (coll == 0) {
-            return;
+            return 0;
         }
-        m_scratch0 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
-        if (m_scratch0 == 0) {
-            return;
+        self->m_scratch0 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
+        if (self->m_scratch0 == 0) {
+            return 0;
         }
-        m_scratch1 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
-        if (m_scratch1 == 0) {
-            return;
+        self->m_scratch1 = coll->MakeAndAddB(0x40, 0x40, 0x10, 0, -1);
+        if (self->m_scratch1 == 0) {
+            return 0;
         }
     }
-    m_loaded = 1;
+    self->m_loaded = 1;
+    return 1;
 }

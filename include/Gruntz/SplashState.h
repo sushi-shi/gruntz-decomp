@@ -27,9 +27,8 @@ public:
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
 
     i32 LoadSounds(i32 a, i32 b, i32 c);
-    // The base asset-namespace loader chained first (reloc-masked external, called
-    // on `this`; the same 0x43a9 ILT thunk the other state loaders enter).
-    i32 LoadGameAssetNamespaces(i32 a, i32 b, i32 c);
+    // The base asset-namespace loader (0x43a9 ILT thunk -> 0xf9ea0) is inherited from
+    // CState now (LoadSounds calls it cast-free on `this`).
 
     char m_pad1a8[0x1b8 - 0x1a8];
     i32 m_1b8; // +0x1b8 splash-title countdown timer (frame-delta decremented, clamped 0)

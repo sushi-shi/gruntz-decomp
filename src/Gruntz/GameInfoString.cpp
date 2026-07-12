@@ -11,38 +11,15 @@
 #include <Mfc.h>  // real MFC CTime (GetCurrentTime / GetLocalTm) - the BuildGameDate clock
 #include <time.h> // struct tm (GetLocalTm's return record)
 #include <rva.h>
-#include <stdio.h>  // sprintf (reloc-masked)
-#include <string.h> // strlen/strcat/memset (inlined /O2)
+#include <stdio.h>            // sprintf (reloc-masked)
+#include <string.h>          // strlen/strcat/memset (inlined /O2)
+#include <Gruntz/GameInfo.h> // the shared CGameInfo / CGameInfoTime record (NameRecord shares it)
 
-SIZE_UNKNOWN(CGameInfoTime);
-struct CGameInfoTime { // this+0xb8 (0x1c bytes; zeroed on a failed validate)
-    i32 m_0;           // +0x00 (this+0xb8)
-    u32 m_4;           // +0x04 (this+0xbc)  S (seconds, %lu)
-    i32 m_8;           // +0x08 (this+0xc0)  timestamp fed to DecodeGameTime
-    i32 m_c;           // +0x0c (this+0xc4)  Month
-    i32 m_10;          // +0x10 (this+0xc8)  Day
-    i32 m_14;          // +0x14 (this+0xcc)  Year
-    i32 m_18;          // +0x18 (this+0xd0)
-};
 // FUN_00118310 __cdecl(&time) -> validity flag; the real 0x119210 is the shared
 // TimeSplit helper ?SplitMillisToHMS@@YAXIPAI00@Z (src/Utils/TimeSplit.cpp) which
 // decomposes a ms timestamp into unsigned hh/mm/ss out-values (was the DecodeGameTime view).
 i32 ValidateGameTime(CGameInfoTime* t);                  // 0x118310
 void SplitMillisToHMS(u32 n, u32* hh, u32* mm, u32* ss); // 0x119210
-SIZE_UNKNOWN(CGameInfo);
-class CGameInfo {
-public:
-    i32 Check1();               // FUN_001182f0 __thiscall (ready/dirty gate)
-    i32 FormatGameInfoString(); // 0x1183b0
-
-    char m_pad0[0x8];
-    u32 m_8; // +0x08  Version (%lu)
-    char m_pad0c[0x14 - 0xc];
-    char m_14[0x36 - 0x14]; // +0x14  Name buffer
-    char m_36[0xb8 - 0x36]; // +0x36  Location buffer
-    CGameInfoTime m_b8;     // +0xb8
-    u32 m_d4;               // +0xd4  Type (%i)
-};
 DATA(0x0024ecf8)
 extern char g_infoMaster[0x800]; // 0x64ecf8  query accumulator
 DATA(0x0024ebf8)

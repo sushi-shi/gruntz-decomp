@@ -166,7 +166,8 @@ struct CCreditzOwner {
     i32 m_20c;         // +0x20c
     i32 SetupTitle();  // RVA 0x39a60 __thiscall (credits title/scroll setup)
     i32 FinishState(); // RVA 0x439c40 __thiscall
-    i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked near call
+    // LoadGameAssetNamespaces (0xf9ea0) is inherited from CState; call it on `this`
+    // (CCreditsState), not on this CCreditzOwner facet view.
 };
 
 // InitAttractTitle sub-object views: the menu page brightness holders + surface.
@@ -254,7 +255,7 @@ RVA(0x00038d20, 0x176)
 i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     CCreditzOwner* self = (CCreditzOwner*)this;
 
-    if (!self->LoadGameAssetNamespaces(a1, a2, a3)) {
+    if (!LoadGameAssetNamespaces(a1, a2, a3)) { // inherited CState method on `this`
         return 0;
     }
     while (ShowCursor(0) >= 0)

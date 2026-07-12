@@ -87,11 +87,9 @@ public:
 #include <Gruntz/SoundCue.h>     // DispatchRecvMsg's chat cue (m_c sound sub-mgr -> "GAME_CHAT")
 // (The former local CGruntzMgr shadow is gone: m_4's game-mgr methods are now declared
 // directly on CNetGameMgr in <Net/NetMgr.h>, so m_4->Method() needs no cross-cast.)
-struct AssetMgr;
-class CAssetLoader {
-public:
-    void LoadGameAssetNamespaces(AssetMgr* a, i32 b, i32 c);
-};
+// LoadGameAssetNamespaces (0xf9ea0) is now CState::LoadGameAssetNamespaces; CMulti
+// (: CPlay : CState) inherits it and calls it cast-free (the CAssetLoader this-view
+// is dissolved).
 // (The former local CPlay/CMulti/NetSessionOpener/CNetMgrLite this-cast view
 // classes are gone: the REAL CMulti/CPlay come via <Gruntz/Multi.h>, and the
 // NetSessionOpener/CNetMgrLite hosts are defined below with their re-homed
@@ -577,7 +575,7 @@ struct CNetConnectSlotView {
 // The external `this`-methods the driver calls (thunked -> reloc-masked no-body):
 SIZE_UNKNOWN(CNetConnectThis);
 struct CNetConnectThis {
-    // InitConnect IS CAssetLoader::LoadGameAssetNamespaces; cast at the call.
+    // InitConnect IS CState::LoadGameAssetNamespaces (inherited); called cast-free.
     // StartTitle IS CMulti::StartTitle (called cast-free from SetupMultiplayerSession).
     // Open IS CMulti::Open @0xb77a0 (called cast-free; the NetSessionOpener view is gone).
     // ShowMultiStartDlg IS CNetMgrLite::ShowMultiStartDlg; cast at the call.
@@ -690,7 +688,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if (a1 == 0) {
         return 0;
     }
-    if ((((CAssetLoader*)this)->LoadGameAssetNamespaces((AssetMgr*)a1, a2, a3), 0)) {
+    if ((LoadGameAssetNamespaces(a1, a2, a3), 0)) {
         return 0;
     }
     g_connectRptMgr = (CNetMgr*)this;

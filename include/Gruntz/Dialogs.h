@@ -76,7 +76,7 @@ public:
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
     virtual void WndVsl22();                      // slot 22
     virtual void WndVsl23();                      // slot 23
-    virtual void WndVsl24();                      // slot 24
+    virtual i32 DestroyWindow();                  // slot 24 (0x1bbb7c, MFC CWnd::DestroyWindow, U-virtual)
     virtual void WndVsl25();                      // slot 25
     virtual void WndVsl26();                      // slot 26
     virtual void WndVsl27();                      // slot 27
@@ -371,7 +371,7 @@ public:
     virtual ~CMultiStartDlg()
         OVERRIDE; // 0x0b8960 (destroy CObList m_74, CString m_70, chain ~CDialog)
     virtual const void* GetMessageMap() OVERRIDE; // slot 12
-    virtual void WndVsl24() OVERRIDE;             // slot 24
+    virtual i32 DestroyWindow() OVERRIDE;         // slot 24 (own override @0x00218a, origin CWnd)
     virtual void WndVsl35() OVERRIDE;             // slot 35
     virtual i32 OnInitDialog() OVERRIDE;          // slot 49  OnInitDialog
     virtual void OnOK() OVERRIDE;                 // slot 51  OnOK

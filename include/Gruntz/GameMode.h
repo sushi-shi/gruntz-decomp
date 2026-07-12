@@ -254,8 +254,7 @@ public:
     // IMAGEZ/SOUNDZ namespaces through the m_c (CSpriteFactoryHolder) resource facet, primes the
     // state core, then builds the menu HUD object + wires its keys/sound cues.
     i32 LoadAssets(i32 a1, i32 a2, i32 a3);
-    // Base namespace loader chained first (reloc-masked near call).
-    i32 LoadGameAssetNamespaces(i32, i32, i32);
+    // Base namespace loader (0xf9ea0) inherited from CState (called cast-free).
 
     char m_pad1a8[0x1b4 - 0x1a8];
     CChatBox* m_1b4;   // +0x1b4 the menu UI object the scans drive (the real CChatBox)
