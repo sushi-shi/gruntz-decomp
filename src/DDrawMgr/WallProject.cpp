@@ -30,9 +30,15 @@ extern float g_c20;
 DATA(0x002becf8)
 extern "C" i32 g_rasterVtxCount;
 
-// The build/draw helpers (still Boundary stubs; reloc-masked __cdecl externs).
-extern "C" i32 BuildWallQuad(float* ws, i32 n, i32 a, i32 b, i32 c, i32 d); // 0x1461b0
-extern "C" void DrawWallQuad(float* ws, i32 surf, i32 e, i32 f);            // 0x146fe0
+// The clip + fill helpers the quad is handed to (reloc-masked __cdecl free fns):
+// the 4-edge polygon clipper ImagePolyClipRect (0x1461b0, ImagePolyClip.cpp) and the
+// scanline polygon fill FillPolygon (0x146fe0, DDrawPolyFill.cpp). g_rasterVtxB is
+// the shared 28-byte-vertex workspace (PolyVtx == FillVert); p0 is the dest surface.
+struct PolyVtx;
+struct FillVert;
+class CDDSurface;
+i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5); // 0x1461b0
+i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color);    // 0x146fe0
 
 // @early-stop
 // intrinsic-FPU wall: retail inlined fpatan/fsin/fcos/fsqrt (/Oi) into one fxch-
@@ -85,8 +91,8 @@ i32 ProjectWallQuad(
         v += 7;
     }
 
-    if (BuildWallQuad(g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
-        DrawWallQuad(g_rasterVtxB, g_rasterVtxCount, p0, p6);
+    if (ImagePolyClipRect((PolyVtx*)g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
+        FillPolygon((FillVert*)g_rasterVtxB, g_rasterVtxCount, (CDDSurface*)p0, (i16)p6);
     }
     return 1;
 }

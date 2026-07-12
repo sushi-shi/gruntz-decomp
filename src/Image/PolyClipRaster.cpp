@@ -31,8 +31,12 @@ extern "C" ClipVtx g_rasterVtxA[]; // 0x6a1708
 DATA(0x002a21f8)
 extern "C" ClipVtx g_rasterVtxB[]; // 0x6a21f8
 
-// The span rasterizer the clipped polygon is handed to.
-extern "C" void RasterSpans(ClipVtx* poly, i32 n, i32 a3, i32 a4, i32 a5, i32 a6); // 0x146a20
+// The span rasterizer the clipped polygon is handed to: the textured-polygon
+// rasterizer WarpTextureBlit (0x146a20, WarpTextureBlit.cpp). ClipVtx == WarpVtx
+// (both the 28-byte {x,y,+attrs} raster vertex); a4 is the dst/src surface.
+struct WarpVtx;
+class CDDSurface;
+i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mode, i32 colorkey); // 0x146a20
 
 // @early-stop
 // x87 scheduling wall (~53%, complete + correct; RE-PROVEN 2026-07-05 - the old
@@ -181,7 +185,7 @@ i32 RotateRasterize(
         return 0;
     }
 
-    RasterSpans(g_rasterVtxB, n, a4, a4, a5, a6);
+    WarpTextureBlit((WarpVtx*)g_rasterVtxB, n, (CDDSurface*)a4, (CDDSurface*)a4, a5, a6);
     return 1;
 }
 SIZE_UNKNOWN(ClipImg);
