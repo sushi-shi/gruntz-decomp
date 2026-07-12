@@ -385,7 +385,7 @@ winapicdrom	4	3
 winapimodule	1	0
 winmain	2	2
 worldlevelpath	2	2
-worldsoundset	32	15
+worldsoundset	33	16
 wormhole	28	16
 wormholeacts	3	2
 wwdfactoryobject	32	16
@@ -3098,7 +3098,7 @@ play	?LoadImageBanks@CPlay@@QAEHXZ	100.0000	100.0000	4	9567653c832a	0xcffe0
 play	?LoadLevelImages@CPlay@@QAEHH@Z	100.0000	100.0000	5	1d7fd4fc8082	0xdb7e0
 play	?LoadLevelSounds@CPlay@@QAEHH@Z	100.0000	100.0000	5	fd1ac9b2399d	0xdb6c0
 play	?LoadSBITextEdges@CPlay@@QAEXPAD@Z	97.7831	97.7831	4	8309f61d38e2	0xd1710
-play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	85.8450	85.8450	3	b94f48adc376	0xd12b0
+play	?LoadScrollSpeedOptions@CPlay@@QAEHXZ	86.1450	86.1450	3	b94f48adc376	0xd12b0
 play	?LoadWarlordSprites@CPlay@@QAEHHPAH@Z	91.0888	91.0888	7	30e45f615576	0xd65d0
 play	?MainPlaneQueryA@CGameLevel@@QAEHXZ	100.0000	100.0000	1	79c5e8e9a800	0xcedf0
 play	?MainPlaneQueryB@CGameLevel@@QAEHXZ	100.0000	100.0000	1	17305dac4ee5	0xcee10
@@ -3156,7 +3156,7 @@ playplanescan	?ScanBuildTiles@CPlay@@QAEHXZ	95.8323	95.8323	6	a47f36c6bbe1	0xd53
 playplanescan	?ScanShuffleQuads@CPlay@@QAEHXZ	77.6802	77.6802	3	bb9c05cd9c24	0xd9290
 playstateactivate	?OnActivate@CPlay@@QAEHXZ	100.0000	100.0000	5	85197bfbfb1a	0xcb800
 polyclipraster	?RotateRasterize@@YAHPAUClipVtx@@HHHHHHHHH@Z	53.9844	53.9844	16	44918c575c83	0x146550
-portalpath	?LaunchPortalExe@@YGHPAD@Z	100.0000	100.0000	14	0e1979fd966c	0x90550
+portalpath	?LaunchPortalExe@@YGHPAD@Z	100.0000	100.0000	15	3ef14b990f16	0x90550
 portalpath	?LaunchProcessInDir@@YGHPAD0@Z	100.0000	100.0000	14	fb8a85f3980e	0x90860
 projactcache	?EnsureSize@zBitVec@@QAEHH@Z	100.0000	100.0000	4	6b0fd950b18e	0x1936e0
 projactcache	?Insert@CProjActMap@@QAEPAXPBDPAX@Z	58.2085	58.2085	3	f738ace50ee8	0x1933b0
@@ -3189,7 +3189,7 @@ raincloud	??0CRainCloud@@QAE@PAUCGameObject@@@Z	100.0000	100.0000	2	935eb55a6fa3
 recordfill	?ZeroRecords@@YGXPAXH@Z	100.0000	100.0000	14	82bc3969e03d	0x17f500
 registryhelper	?Close@RegistryHelper@Utils@@QAEXXZ	100.0000	100.0000	6	1b8d60dd8144	0x139330
 registryhelper	?DeleteValue@RegistryHelper@Utils@@QAEHPAD@Z	100.0000	100.0000	1	97e6fbb5adea	0x139620
-registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	4	32b0d4c450ca	0x139650
+registryhelper	?GetRegistryKey@RegistryHelper@Utils@@QAEHPAUHKEY__@@PADPAPAU3@@Z	100.0000	100.0000	5	39e366ebdba2	0x139650
 registryhelper	?GetValueBinary@RegistryHelper@Utils@@QAEPAXPADPAXPAI1I@Z	100.0000	100.0000	1	86f86af0928f	0x139540
 registryhelper	?GetValueDword@RegistryHelper@Utils@@QAEKPADK@Z	100.0000	100.0000	6	ece037340456	0x1395d0
 registryhelper	?GetValueString@RegistryHelper@Utils@@QAEPADPAD0PAI0@Z	100.0000	100.0000	7	64881affb913	0x1394a0
@@ -3244,7 +3244,7 @@ rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	8	401d496aa449	0x91670
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	7	d5c92db455a7	0x8b740
 rezsync	??1CGameMgr@@UAE@XZ	100.0000	100.0000	1	f087e28e2647	0x85540
 rezsync	?GetName@Obj85500@@QAE?AVCString@@XZ	100.0000	100.0000	1	a603b2ac0b4f	0x85500
-rezsync	?Init@RezSync@@QAEHPAXPAD@Z	62.7253	62.7253	6	a1f8a93d5917	0x83450
+rezsync	?Init@RezSync@@QAEHPAXPAD@Z	62.8399	62.8399	6	a1f8a93d5917	0x83450
 rezsync	?RezFreeStdcall@@YGXPAX@Z	100.0000	100.0000	1	48489ae7a771	0x853d0
 rockbreakeffectupdate	?Update@RbEffect@@QAEHXZ	98.4848	98.4848	1	f4915d1b337e	0x476b0
 rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	77.7835	77.7835	10	77630de6ea08	0xaf820
@@ -3913,7 +3913,7 @@ triggermgr	?RemoveCellRecord@CTriggerMgr@@QAEHHHH@Z	74.1040	74.1040	7	0f8d57aa06
 triggermgr	?ReportRecordsA@CTriggerMgr@@QAEXHHHHH@Z	72.4823	72.4823	8	cb2c784b2f27	0x78520
 triggermgr	?ReportRecordsB@CTriggerMgr@@QAEXHHHHHH@Z	60.7674	60.7674	8	3630e5157955	0x78680
 triggermgr	?ResetAll@CTriggerMgr@@QAEXXZ	99.3902	99.3902	7	6f3d39279f72	0x78430
-triggermgr	?ResetGroup@CTriggerMgr@@QAEHHHHHHHH@Z	46.6561	46.6561	14	af449fa93ebc	0x79520
+triggermgr	?ResetGroup@CTriggerMgr@@QAEHHHHHHHH@Z	46.4783	46.4783	14	af449fa93ebc	0x79520
 triggermgr	?ResetSpawnState@CTriggerMgr@@QAEXXZ	97.7885	97.7885	11	4421d3885703	0x79d90
 triggermgr	?ScanGroup@CTriggerMgr@@QAEHPAUCSerialArchive@@@Z	77.9083	77.9083	2	f98831f70849	0x7a760
 triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	84.5833	84.5833	6	d04fb4993349	0x7d2a0
@@ -3923,7 +3923,7 @@ triggermgr	?SpawnTileFx@@YGHHHH@Z	80.9595	80.9595	6	2c63ad5782e3	0x79ea0
 triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	9	a1a7da888a6a	0x7be10
 triggermgr	?ToggleRegionA@CTriggerMgr@@QAEHXZ	75.3976	75.3976	12	79a82ddf4e6b	0x7d450
 triggermgr	?ToggleRegionB@CTriggerMgr@@QAEHXZ	87.4324	87.4324	11	0aee7909bfba	0x7d5c0
-triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	77.3824	77.3824	12	4fc291d53932	0x7b1b0
+triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	84.4804	84.4804	12	4fc291d53932	0x7b1b0
 triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	21.1671	21.1671	2	a7a24cddf40d	0x6d300
 triggermgrgrid	?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z	12.3795	12.3795	1	c58fc78ef1cf	0x6dae0
 triggermgrgrid	?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z	13.0886	13.0886	1	a6ca6ebb3fa7	0x6e120
@@ -4036,16 +4036,16 @@ wapmisc	?Unmatched_1155b0@@YAXXZ	100.0000	100.0000	4	7fc827fdf728	0x1155b0
 wapuncompress	?WapUncompress@@YAHPAEPAK0K@Z	85.9259	85.9259	16	57d86b7a525e	0x1853b0
 warlord	??0CWarlord@@QAE@H@Z	3.6994	3.6994	2	dadd1b8d2840	0x42d40
 warlord	??1CWarlord@@UAE@XZ	73.9524	73.9524	2	829ad0e3e01f	0x107f0
-warlord	?AdvanceMovingAnim@CWarlord@@QAEHXZ	90.3333	90.3333	2	f454f573b39b	0x44e70
+warlord	?AdvanceMovingAnim@CWarlord@@QAEHXZ	90.3333	90.3333	3	727d97d81bea	0x44e70
 warlord	?BuildFortSplashParticles@CWarlord@@QAEXXZ	1.1905	1.1905	2	bc15c473da86	0x44f80
 warlord	?Gap_043670@@YAHXZ	0.1353	0.1353	1	91b1163148e8	0x43670
 warlord	?GetTypeTag@CWarlord@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:9db7af409c04	0x107a0
 warlord	?InitActReg@CWarlord@@SAXXZ	100.0000	100.0000	2	d573a1f1f364	0x445c0
-warlord	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	11	587f1659ab3c	0x44d10
-warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	10	c9eed843a4e3	0x44c00
+warlord	?LoadAttributes2@CWarlord@@QAEHXZ	91.6296	91.6296	12	42cb4f419f0e	0x44d10
+warlord	?LoadAttributes@CWarlord@@QAEHXZ	100.0000	100.0000	11	267934681e1e	0x44c00
 warlord	?NotifyFortUnderAttack@CWarlord@@QAEXXZ	0.5464	0.5464	2	56337ef6b3f2	0x45270
-warlord	?RearmMoving2@CWarlord@@QAEHXZ	100.0000	100.0000	2	61bfb8051196	0x44f30
-warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	5	cef92e384e2f	0x44bb0
+warlord	?RearmMoving2@CWarlord@@QAEHXZ	100.0000	100.0000	3	53134e15e8b6	0x44f30
+warlord	?RearmMoving@CWarlord@@QAEHXZ	100.0000	100.0000	6	2e3a297193bb	0x44bb0
 warlord	?RegisterWarlordActions@@YAXXZ	96.8930	96.8930	3	21a8f1e7ceb3	0x447a0
 warlord	?ResolveAnimation@CGrunt@@QAEHXZ	95.0947	95.0947	2	7ab076689307	0x457b0
 warlord	?ResolveBattlecryAnimation@CGrunt@@QAEHXZ	90.3365	90.3365	2	8ed71bf1c21f	0x45b60
@@ -4075,28 +4075,29 @@ worldsoundset	??1CUserBaseSubB940@@UAE@XZ	100.0000	100.0000	1	aefd7f9bbc0c	0xb94
 worldsoundset	??1CWorldSoundSet@@QAE@XZ	100.0000	100.0000	2	f05960ce5d30	0x85ed0
 worldsoundset	??1L_8860@@UAE@XZ	100.0000	100.0000	1	05c2c0155f06	0x8860
 worldsoundset	?CommitSpriteAction@@YAHPAUPosSoundObj@@@Z	93.8598	93.8598	1	a92663ecaa40	0xc840
-worldsoundset	?CreateAmbient5_b7b0@CWorldSoundSet@@QAEPAVCAmbientSound@@HHHHH@Z	87.1321	87.1321	1	a1fed0857c6f	0xb7b0
-worldsoundset	?CreateAmbient6_b6a0@CWorldSoundSet@@QAEPAVCAmbientSound@@HHHHH@Z	88.6000	88.6000	1	394f72512d9d	0xb6a0
-worldsoundset	?CreatePos5_b960@CWorldSoundSet@@QAEPAVCAmbientPosSound@@HHHHH@Z	86.1321	86.1321	1	88a173792d42	0xb960
-worldsoundset	?CreatePos6_b850@CWorldSoundSet@@QAEPAVCAmbientPosSound@@HHHHH@Z	87.6364	87.6364	1	50222da00ab8	0xb850
-worldsoundset	?CreateRandomBox_ba00@CWorldSoundSet@@QAEPAVCRandomAmbientSound@@HHHHHHHHH@Z	83.8111	83.8111	1	2a1441321315	0xba00
-worldsoundset	?CreateRandom_bb60@CWorldSoundSet@@QAEPAVCRandomAmbientSound@@HHHHHHHHH@Z	88.3333	88.3333	1	e5dce4828d12	0xbb60
-worldsoundset	?Dispatch@CObj_bdd0@@QAEPAXPAUArg1_bdd0@@PBDHHHH@Z	100.0000	100.0000	1	811a9e1ae238	0xbdd0
+worldsoundset	?CreateAmbient5_b7b0@CWorldSoundSet@@QAEPAVCAmbientSound@@HHHHH@Z	87.1321	87.1321	2	f81b220c3b13	0xb7b0
+worldsoundset	?CreateAmbient6_b6a0@CWorldSoundSet@@QAEPAVCAmbientSound@@HHHHH@Z	88.6000	88.6000	2	2d7227397f60	0xb6a0
+worldsoundset	?CreatePos5_b960@CWorldSoundSet@@QAEPAVCAmbientPosSound@@HHHHH@Z	86.1321	86.1321	2	509bf5960f0f	0xb960
+worldsoundset	?CreatePos6_b850@CWorldSoundSet@@QAEPAVCAmbientPosSound@@HHHHH@Z	87.6364	87.6364	2	7b3a6f7b8a6a	0xb850
+worldsoundset	?CreateRandomBox_ba00@CWorldSoundSet@@QAEPAVCRandomAmbientSound@@HHHHHHHHH@Z	83.8111	83.8111	2	0d3f2334542e	0xba00
+worldsoundset	?CreateRandom_bb60@CWorldSoundSet@@QAEPAVCRandomAmbientSound@@HHHHHHHHH@Z	88.3333	88.3333	2	ca7b22052938	0xbb60
+worldsoundset	?Deactivate@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	1	a84e1e57b4bb	0xb620
+worldsoundset	?Dispatch@CRandomAmbientSound@@QAEPAXPAUArg1_bdd0@@PBDHHPAUAmbientBox@@H@Z	100.0000	100.0000	1	7ae47946500d	0xbdd0
 worldsoundset	?Init@CWorldSoundSet@@QAEHPAXH@Z	100.0000	100.0000	1	34c79894e363	0xb5e0
 worldsoundset	?Recompute@CSoundChannel@@QAEXH@Z	97.9268	97.9268	4	5ddfa87b5370	0xbf10
 worldsoundset	?Restart@CAmbientSound@@QAEXXZ	100.0000	100.0000	1	dec501cc4249	0xbfb0
-worldsoundset	?Restart@CWorldSoundSet@@QAEXPAX@Z	100.0000	100.0000	5	498389ed15f5	0xbc30
-worldsoundset	?Resume@CWorldSoundSet@@QAEXXZ	99.6970	99.6970	4	2c79fe5fe18d	0xbcf0
-worldsoundset	?Retune@CWorldSoundSet@@QAEXHH@Z	86.2571	86.2571	4	da91b54f112d	0xbd60
+worldsoundset	?Restart@CWorldSoundSet@@QAEXPAX@Z	100.0000	100.0000	6	e6514cbc51ea	0xbc30
+worldsoundset	?Resume@CWorldSoundSet@@QAEXXZ	99.6970	99.6970	5	65796b7f443c	0xbcf0
+worldsoundset	?Retune@CWorldSoundSet@@QAEXHH@Z	99.7143	99.7143	5	b0dc7178ef1f	0xbd60
 worldsoundset	?SetLevel@CAmbientSound@@QAEHHHH@Z	100.0000	100.0000	1	aa37ffe4161b	0xc200
 worldsoundset	?Setup@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientBox@@H@Z	100.0000	100.0000	1	1160403cb0a4	0xbe50
 worldsoundset	?SetupFromMap@CRandomAmbientSound@@QAEXPAUAmbSoundMapHolder@@PAXHHPAUAmbientPoint@@H@Z	88.7500	88.7500	1	d081a94a729f	0xc4b0
 worldsoundset	?SetupPos@CRandomAmbientSound@@QAEHPAVDirectSoundMgr@@HHPAUAmbientPoint@@H@Z	100.0000	100.0000	1	c7f498719a75	0xc530
 worldsoundset	?SpawnPosSound@@YAXPAUPosSoundObj@@@Z	74.3374	74.3374	1	1729c20a06b2	0xca00
 worldsoundset	?Step@CRandomAmbientSound@@QAEXHHH@Z	89.7391	89.7391	1	bb174477fc6f	0xcb30
-worldsoundset	?Stop@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	5	1da08fb5accd	0xbc80
+worldsoundset	?Stop@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	6	0f9c44f46798	0xbc80
 worldsoundset	?StopPosSound@@YAXPAUPosSoundObj@@@Z	100.0000	100.0000	1	10aed329bc3f	0xc9d0
-worldsoundset	?Teardown@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	3	92a1d61df9c8	0xb660
+worldsoundset	?Teardown@CWorldSoundSet@@QAEXXZ	100.0000	100.0000	4	89e77e614a41	0xb660
 worldsoundset	?Update@CAmbientSound@@UAEXHHH@Z	76.7857	76.7857	1	63d1fec56014	0xc090
 worldsoundset	?Update@CRandomAmbientSound@@UAEXHHH@Z	35.3264	35.3264	1	9a6cdc2b05df	0xc2a0
 worldsoundset	?UpdateAt@CRandomAmbientSound@@QAEXHHH@Z	89.2874	89.2874	1	6141b65f78c2	0xc5b0
