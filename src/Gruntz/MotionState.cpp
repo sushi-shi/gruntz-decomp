@@ -14,6 +14,8 @@ extern const double g_movingLogicMin; // 0x1f04b0 (-2147483647.0)
 extern const double g_movingLogicMax; // 0x1f04b8 (2147483646.0)
 DATA(0x001f0500)
 extern const double g_motionZero;
+DATA(0x001f0508)
+const double g_motionNegTwo = -2.0; // 0x5f0508  discriminant term (owner-TU def)
 
 // ---------------------------------------------------------------------------
 // @interleaver CMotionState - own-class out-of-line COMDAT in the 0x13xxx leaf-ctor

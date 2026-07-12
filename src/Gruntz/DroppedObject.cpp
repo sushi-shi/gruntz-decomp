@@ -79,6 +79,12 @@ extern void* g_projActCache; // 0x2bf464 canonical (bound in GruntStartingPoint.
                              // g_actCache spelling was an unbound VA-typo alias of this global
 extern void* g_retAddrBreadcrumb;
 
+// The drop-motion .rdata FP constants (owner-TU defs; VA 0x5ea9f0/0x5eaa00).
+DATA(0x001ea9f0)
+const double g_objDropDiv = 32.0; // 0x5ea9f0  m_speed = g_objDropDiv / time
+DATA(0x001eaa00)
+double g_dropFallBias = -0.5; // 0x5eaa00  landed = m_fallY - g_dropFallBias
+
 // ---------------------------------------------------------------------------
 // The three per-class activation-coordinate registries (one per leaf class; all
 // the shared <Gruntz/ActReg.h> CActReg archetype, each built over the fixed

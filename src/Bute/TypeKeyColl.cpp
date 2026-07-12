@@ -72,6 +72,8 @@ VTBL(zDArray, 0x001f04d4); // ~zDArray-entry vtable (0x5f04d4)
 // (g_retAddrBreadcrumb / g_projActCache / g_projActName / g_containerName /
 // g_defaultProjActSize + GetCallerRetAddr come from <Wap32/zBitVec.h>.)
 // ===========================================================================
+DATA(0x002bf468)
+u8 g_zArrayTag; // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zArrayTag)
 DATA(0x002bf658)
 extern i32 g_typeLo;
 DATA(0x002bf65c)

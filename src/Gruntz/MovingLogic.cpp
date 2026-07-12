@@ -27,6 +27,10 @@
 #include <Globals.h>                  // Update: g_5f04f0 / g_motionNegHalf / g_645588
 #include <rva.h>
 
+// The per-tick time scale (owner-TU def; VA 0x5f04f0). Update: g_645588 * g_5f04f0.
+DATA(0x001f04f0)
+const double g_5f04f0 = 0.001; // 0x5f04f0
+
 // The standalone ctor. The +0x38..+0x10c motion ints are zeroed in retail's
 // scheduled "column" order (all .a/low fields, then all .b/high fields), then the
 // twelve coordinate bounds are seeded to the default [MIN,MAX] box.

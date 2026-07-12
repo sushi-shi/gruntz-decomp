@@ -34,6 +34,11 @@ extern "C" {
     extern i32 g_683eb4; // blue  shift-down
 }
 
+// The per-scanline RLE-decode scratch (owner-TU def; .bss, VA 0x6bed08). The shaded
+// blit memcpy's the source run here, then indexes it through the palette LUT.
+DATA(0x002bed08)
+u8 g_scratch[1280]; // 0x6bed08 (0x500 B, up to g_shadeDescr208@0x6bf208; a 640-px 16bpp line)
+
 // The secondary palette/format descriptor (DAT_006bf218) used by the 16-bit alpha
 // path (case 7); its +0x8 LUT base is read as u16*. Reloc-masked.
 DATA(0x002bf218)

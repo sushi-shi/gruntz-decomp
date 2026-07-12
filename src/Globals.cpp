@@ -64,26 +64,10 @@ DATA(0x001e93b0)
 extern float g_secretRatioScale; // 0x5e93b0
 DATA(0x001e94b8)
 extern const i32 g_msgmap_CCheckpointDlg;
-DATA(0x001e96ec)
-extern const float g_diffScale;
-DATA(0x001e9a48)
-extern double g_wingzScale; // 0x5e9a48
-DATA(0x001e9a50)
-extern double g_wingzBias; // 0x5e9a50
-DATA(0x001ea3d4)
-extern i32 g_5ea3d4; // 0x5ea3d4
-DATA(0x001ea3d8)
-extern i32 g_5ea3d8; // 0x5ea3d8
 DATA(0x001ea3e0)
 extern const double g_slimeSpeedNum; // VA 0x5ea3e0
-DATA(0x001ea9f0)
-extern const double g_objDropDiv;
-DATA(0x001eaa00)
-extern double g_dropFallBias;
 DATA(0x001eaae8)
 extern const double g_projPhase0;
-DATA(0x001eab00)
-extern const double g_projPhase1;
 DATA(0x001ef698)
 extern const double c_volScale; // 0x5ef698  v / c_volScale, and the final * c_volScale
 DATA(0x001ef6a0)
@@ -92,8 +76,6 @@ DATA(0x001ef6a8)
 extern const double c_powExp; // 0x5ef6a8  pow() exponent
 DATA(0x001ef6b0)
 extern const double c_acosNorm; // 0x5ef6b0  acos() normalizer arg
-DATA(0x001efb24)
-extern float g_c24;
 DATA(0x001efb40)
 extern float g_one; // 1.0
 DATA(0x001efb44)
@@ -108,8 +90,6 @@ DATA(0x001efb54)
 extern float g_lumaB; // 0.109375
 DATA(0x001efb58)
 extern float g_inv255; // 1/255
-DATA(0x001f03e0)
-extern "C" void* g_pButeDefaults; // 0x5f03e0
 // The GetRetAddr diagnostic breadcrumb: the coordinate registries (ActColl / ProjAct
 // / ZVec / TypeKeyColl) stamp the caller's return address here right before an Insert.
 // Write-only (no reader); the "ActAlloc"/"ProjActAlloc"/"zvecErr" names were misnomers.
@@ -118,16 +98,8 @@ DATA(0x002bf428)
 extern void* g_retAddrBreadcrumb; // 0x6bf428
 DATA(0x001f0464)
 extern u32 g_zvecErrSentinel; // 0x6bf464
-DATA(0x001f04f0)
-extern const double g_5f04f0;
 DATA(0x001f04f8)
 extern const double g_motionNegHalf;
-DATA(0x001f0508)
-extern const double g_motionNegTwo;
-DATA(0x001f07ec)
-extern float g_fxBias; // 0x5f07ec
-DATA(0x001f07f4)
-extern float g_fxEps; // 0x5f07f4
 DATA(0x0020a72c)
 extern char g_teleporterSpawnKey[]; // "Teleporter" @ 0x60a72c
 DATA(0x0020a7ac)
@@ -206,8 +178,6 @@ extern u16 g_modeTab_ee; // 0x624fee
 DATA(0x002256f0)
 extern double g_scale6256f0;
 // g_projReg* R3-registry fields: DEFINED in src/Gruntz/ActionArea.cpp (owner TU).
-DATA(0x0022990c)
-extern i32 g_posSoundReq; // DAT_0062990c
 DATA(0x00229f50)
 extern char g_cheatTable[];
 DATA(0x0022ae30)
@@ -260,10 +230,8 @@ DATA(0x0024cfb8)
 extern i64 g_scrollLimit; // 0x64cfb8 (64-bit)
 DATA(0x0024cfc4)
 extern u32 g_scrollTimer; // 0x64cfc4
-DATA(0x0024cfd0)
-extern i32 g_lastScrollX; // 0x64cfd0
-DATA(0x0024cfd4)
-extern i32 g_lastScrollY; // 0x64cfd4
+// g_lastScrollX (0x64cfd0) + g_lastScrollY (0x64cfd4) DEFINED in
+// src/Gruntz/MgrAutoScroll.cpp (owner TU); reference externs stay in <Globals.h>.
 // The SFMAN32 device-picker statics (0x24da80..0x24df9c, 0x24e0c0) are DEFINED in
 // their owning TU src/Gruntz/SFSelectDevice.cpp (sfselectdevice.obj's .bss); the
 // soundfont config-block-B + path buffers (0x24dad0..0x24dfa0) in
@@ -285,10 +253,8 @@ extern void* g_sfReady; // 0x64e0b8  device-selected flag (1 = ready)
 // g_hazn* fields DEFINED in src/Gruntz/StaticHazard.cpp (owner TU).
 // g_toob* fields DEFINED in src/Gruntz/ToobSpikez.cpp (owner TU).
 // g_vtrig* fields DEFINED in src/Gruntz/GruntVoice.cpp (owner TU).
-DATA(0x00253c48)
-extern i32 g_panTable[];
-DATA(0x00253c68)
-extern CGameWnd* g_activeGameWnd; // was placeholder g_singleton653c68 (the active-window singleton)
+// g_panTable[8] (0x653c48) DEFINED in src/Dsndmgr/DirectSoundMgr.cpp; g_activeGameWnd
+// (0x653c68) DEFINED in src/Wap32/GameWnd.cpp (owner TUs). Externs stay in <Globals.h>.
 DATA(0x00253c6c)
 extern i32 g_gameAppInstanceCount; // was placeholder g_instCount653c6c (CGameApp instance counter)
 DATA(0x00253c70)
@@ -321,8 +287,7 @@ extern u8 g_683ef0[];
 // stay in <Globals.h>.
 DATA(0x002bed00)
 extern "C" CDirectDrawMgr* g_DirectDrawMgr; // 0x6bed00
-DATA(0x002bed08)
-extern u8 g_scratch[]; // 0x6bed08
+// g_scratch[] (0x6bed08) DEFINED in src/DDrawMgr/DDrawShadeBlit.cpp (owner TU).
 // g_shadeDescr208..g_shadeDescr220 (the six mode-keyed ShadeDescr* slots) are DEFINED
 // in their owning TU src/DDrawMgr/ShadeDescrTable.cpp (shadedescrtable.obj's .bss);
 // the reference externs stay in <Globals.h>.
@@ -334,8 +299,7 @@ DATA(0x002bf3c4)
 extern i32 g_aniParsedNameLen;
 DATA(0x002bf454)
 extern void* g_projActName; // 0x6bf454 (the bad-arg diagnostic record cell)
-DATA(0x002bf468)
-extern u8 g_zArrayTag;
+// g_zArrayTag (0x6bf468) DEFINED in src/Bute/TypeKeyColl.cpp (owner TU).
 // g_hr/g_code/g_szCode/g_szMsg (0x2bf6f8..0x2bf840) are DEFINED in their owning TU
 // src/Net/NetMgrReportError.cpp (netmgrerror.obj's .bss); the DATA() binding lives on
 // those definitions now. Their reference `extern`s stay in <Globals.h> (canonical
@@ -344,8 +308,7 @@ DATA(0x002c127d)
 extern u8 g_randSeeded; // 0x6c127d  seed-init flag (bit 0)
 DATA(0x002c1288)
 extern i32 g_randSeed; // 0x6c1288  LCG seed
-DATA(0x001eab40)
-extern float g_zeroF; // 0x5eab40  the shared 0.0f .rdata constant (was a VA-typo 0x5eab40 RVA)
+// g_zeroF (0x5eab40, shared 0.0f .rdata const) DEFINED in src/Gruntz/BattlezData.cpp.
 // g_colorNames / g_difficultyNames DEFINED in src/Gruntz/Play.cpp (owner TU).
 DATA(0x0021aabc)
 extern char g_imageTag[];
@@ -362,8 +325,7 @@ DATA(0x0024c814)
 extern CImagePool* g_previewMgr;
 DATA(0x0024c868)
 extern void* g_previewImage;
-DATA(0x00251614)
-extern i32 g_buildNumber;
+// g_buildNumber (0x651614) DEFINED in src/Gruntz/GameAssetNamespaces.cpp (owner TU).
 DATA(0x00283ea0)
 extern i32 g_pfRedShift; // 0x683ea0
 DATA(0x00283ea4)

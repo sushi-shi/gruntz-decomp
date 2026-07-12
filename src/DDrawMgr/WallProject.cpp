@@ -25,6 +25,8 @@ DATA(0x001efb10)
 extern float g_c10;
 DATA(0x001efb20)
 extern float g_c20;
+DATA(0x001efb24)
+float g_c24 = -3.1415927f; // 0x5efb24  -pi (owner-TU def; len = sqrt(dx*dx+dy*dy - g_c24))
 
 // A draw param the draw helper consumes (0x6becf8).
 DATA(0x002becf8)

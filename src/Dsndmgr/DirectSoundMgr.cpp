@@ -76,6 +76,9 @@ extern "C" i32 ParseWaveChunks(void* riff, ParseFmt* out, void** dataOut, u32* s
 // SetPanByIndex's +arg reads the negated entry.
 DATA(0x00253ab8)
 i32 g_volumeTable[100];
+// The pan-attenuation table (owner-TU def; .bss, VA 0x653c48), indexed by SetPanByIndex.
+DATA(0x00253c48)
+i32 g_panTable[8]; // 0x653c48 (0x20 B; up to g_activeGameWnd@0x653c68)
 
 // The RIFF loaders read the file directly with the CRT: fopen (0x11f870 = _fopen),
 // _filelength (0x18c480 = __filelength, reads FILE._file fd), fread (0x18c220 =

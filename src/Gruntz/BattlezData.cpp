@@ -8,6 +8,10 @@
 #include <Gruntz/GameRegistry.h>
 #include <Globals.h>
 
+// The shared 0.0f seed / divide-by-zero-guard constant (owner-TU def; VA 0x5eab40).
+DATA(0x001eab40)
+float g_zeroF = 0.0f; // 0x5eab40
+
 // The game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). Minimal local
 // view: FillRecord folds reg->m_118 into each record. The DATA pin reloc-masks
 // the `mov ds:g_gameReg` load against the already-named symbol.

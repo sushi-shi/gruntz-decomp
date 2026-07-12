@@ -72,6 +72,11 @@ DATA(0x0024cfc0)
 extern u32 g_scrollClock; // 0x64cfc0
 DATA(0x0024cfb0)
 extern i64 g_scrollAccum; // 0x64cfb0 (64-bit)
+// Last-frame scroll position (owner-TU defs; .bss, VA 0x64cfd0/0x64cfd4).
+DATA(0x0024cfd0)
+i32 g_lastScrollX; // 0x64cfd0
+DATA(0x0024cfd4)
+i32 g_lastScrollY; // 0x64cfd4
 
 // timeGetTime-driven random value in [lo, hi]; inlined three times by retail.
 static i32 RandRange(i32 lo, i32 hi) {

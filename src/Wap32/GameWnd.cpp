@@ -17,9 +17,10 @@ CGameWnd::CGameWnd() {
 
 // Active-window singleton (declared in Wap32.h so the inline ~CGameWnd resolves
 // it). Set by CreateAndShow; read by GameWindowProc to dispatch to this object.
-// Canonical DATA binding (0x253c68) lives in src/Globals.cpp (the retail global the
-// placeholder g_singleton653c68 named); referenced here (was VA-typo'd 0x653c68).
-extern CGameWnd* g_activeGameWnd;
+// Owner-TU definition (.bss, VA 0x653c68; the retail global the placeholder
+// g_singleton653c68 named); reference extern stays in <Globals.h>.
+DATA(0x00253c68)
+CGameWnd* g_activeGameWnd; // 0x653c68
 
 // -------------------------------------------------------------------------
 // CGameWnd::CreateAndShow

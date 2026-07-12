@@ -36,6 +36,11 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Globals.h>
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
+// The wingz-arrival timing constants (owner-TU defs; VA 0x5e9a48/0x5e9a50).
+DATA(0x001e9a48)
+double g_wingzScale = 100.0; // 0x5e9a48
+DATA(0x001e9a50)
+double g_wingzBias = -0.5; // 0x5e9a50
 CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
 extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view; DATA in TypeKeyColl.cpp)
 i32 g_focusedGruntSentinel;           // DAT_00644c54

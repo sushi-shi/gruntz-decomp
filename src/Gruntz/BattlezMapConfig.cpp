@@ -448,7 +448,9 @@ extern i32 g_tickDelta;
 // The unit-side state mutator (RVA 0x065e80, thunk 0x03c6a): a __thiscall on a
 // GridUnit taking (value, 0, 0, 1, 1). External, reloc-masked (no body).
 // The difficulty/spawn scale factor (?g_diffScale@@3MB, a `const float` @ VA
-// 0x5e96ec). Reloc-masked DATA; read by the fild/fmul spawn-budget computation.
+// 0x5e96ec; owner-TU def). Read by the fild/fmul spawn-budget computation.
+DATA(0x001e96ec)
+const float g_diffScale = 0.01f; // 0x5e96ec
 
 // The two runtime-config globals the spawn state machine copies into the unit's
 // m_pathCfg/m_pathState slots (DAT_0060ccc0 = 0x98f, DAT_0062b7ec = a state code). Reloc-

@@ -8,7 +8,12 @@
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - the real slot-1 base serialize
 #include <Globals.h>
 
-// The two serialized 4-byte globals (.data). Reloc-masked DIR32 referents.
+// The two serialized 4-byte globals (owner-TU defs; VA 0x5ea3d4/0x5ea3d8). Reloc-
+// masked DIR32 referents; defaults 1000/5000, round-tripped through the archive.
+DATA(0x001ea3d4)
+i32 g_5ea3d4 = 1000; // 0x5ea3d4
+DATA(0x001ea3d8)
+i32 g_5ea3d8 = 5000; // 0x5ea3d8
 
 // ===========================================================================
 // CMenuSparkle::SerializeMove  (0xae1c0) - the class's vtable slot-1 serialize.

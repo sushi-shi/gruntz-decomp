@@ -63,6 +63,13 @@ extern "C" PostMessageFn g_pPostMessageA;
 extern AttractActorList* g_actorList;
 extern "C" u32 g_645584;
 
+// The ButeFileStream `defaults` arg CButeMgr::Parse hands the stream ctor (owner-TU
+// def; VA 0x5f03e0). Holds the sentinel 0x1a4 (loaded + pushed as the void* arg).
+extern "C" {
+DATA(0x001f03e0)
+void* g_pButeDefaults = (void*)0x1a4; // 0x5f03e0
+}
+
 // The first arg is the game-manager/entry context whose CString at +0xc8 (a
 // pending-name latch) is cleared before delegating to the CPlay base entry.
 SIZE_UNKNOWN(CDemoEnterCtx);

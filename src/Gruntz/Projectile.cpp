@@ -199,6 +199,8 @@ extern "C" {
 }
 DATA(0x001eaa88)
 const double g_5eaa88 = 0.0;
+DATA(0x001eab00)
+const double g_projPhase1 = 6.2831854; // 0x5eab00  2*pi phase wrap (m_phase > g_projPhase1)
 DATA(0x001f04e8)
 u32 g_5f04e8 = 0;
 

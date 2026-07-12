@@ -38,9 +38,12 @@
 
 // ApplyInit's two .rdata FP constants. Kept as minimal externs (not a fat
 // <Globals.h> include, which leaks regalloc into the sibling render helpers - see
-// docs on globals consolidation); the DATA binding lives in Globals.cpp.
-extern float g_fxBias;
-extern float g_fxEps;
+// docs on globals consolidation). Owner-TU defs; the reference extern stays in
+// <Globals.h>.
+DATA(0x001f07ec)
+float g_fxBias = -50.0f; // 0x5f07ec
+DATA(0x001f07f4)
+float g_fxEps = 1.0f; // 0x5f07f4
 
 // ============================================================================
 // section: Fader.cpp
