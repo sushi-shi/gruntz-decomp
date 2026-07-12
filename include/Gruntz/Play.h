@@ -476,9 +476,13 @@ public:
     // it repositions the game-timer HUD widget (+0x3f4 CTimer) at a fixed inset from the
     // screen size (m_4->m_modeW/m_modeH) with the mode + X inset chosen by `mode`.
     i32 PositionBridgeToggle(i32 mode, i32 unused); // 0x0d5b20 (body: LevelTileValidation.cpp)
-    i32 HiRefresh(i32 a);                           // 0x0d6560  highlight-cursor refresh
-    i32 BuildHelpReveal();                          // 0x0d72c0 (THIS TU)
-    i32 RegisterInputBindings();                    // 0x0d9160 (THIS TU)
+    // The other two ex-CLevelValidator methods, homed here for the same reason (that fake class
+    // IS CPlay - see the fold note in LevelTileValidation.cpp, where all three bodies live).
+    i32 PlaceStartGruntz();   // 0x0d2b20 (called by ResetPlayState @0x0d60b0 on this same `this`)
+    i32 ValidateLevelTiles(); // 0x0d2dd0
+    i32 HiRefresh(i32 a);     // 0x0d6560  highlight-cursor refresh
+    i32 BuildHelpReveal();    // 0x0d72c0 (THIS TU)
+    i32 RegisterInputBindings(); // 0x0d9160 (THIS TU)
     // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
     i32 ForwardReady(); // 0x0cee70 (out-of-line: tail-call the slot-3 ready gate Vfunc3)
     // Region pause/resume pair (vtable slots 24/25, shared by CDemo/CMulti):

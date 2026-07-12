@@ -16,7 +16,8 @@
 // single-player trigger grid (CTriggerMgr) and the registry writer (RegistryHelper).
 #include <Gruntz/Play.h>
 #include <Gruntz/TriggerMgr.h>
-#include <Gruntz/GruntzMgr.h> // the REAL *0x24556c singleton class (ReportError @0x08dc60)
+#include <Gruntz/GruntzMgr.h>    // the REAL *0x24556c singleton class (ReportError @0x08dc60)
+#include <Gruntz/StatusBarMgr.h> // CStatusBarMgr::LoadTabSprites @0x102250 (SetTab's real callee)
 #include <Utils/RegistryHelper.h>
 #include <Globals.h>
 // wave1-E one-TU merge (interval dossier 0x104d60-0x10bc14): this TU absorbed
@@ -1031,7 +1032,15 @@ i32 CSBI_RectOnly::SetTab(i32 tab, i32 flag) {
     m_tabSprite9 = 0;
     m_tabSprite10 = 0;
     m_activeTab = tab;
-    if (!RefreshState()) {
+    // WRONG-CALLEE FIX (assert_relocs): this called RefreshState() @0xfe670 (43 B). Retail
+    // calls `this->LoadTabSprites()` @0x102250 (7629 B) - `mov ecx,edi; call 0x1690` right
+    // after the m_activeTab store. Both exist, so it linked and objdiff reloc-masked it: a
+    // silently-wrong callee. LoadTabSprites is modeled on CStatusBarMgr (StatusBarMgr.cpp),
+    // reached by the cast SBI_MenuItem.cpp:208 already uses. (The cast is itself a smell -
+    // SetTab @0x1020a0 and LoadTabSprites @0x102250 are adjacent and run on the SAME `this`,
+    // so CSBI_RectOnly and CStatusBarMgr are very likely one class - an identity fold for a
+    // later pass, not something to fabricate here.)
+    if (!((CStatusBarMgr*)this)->LoadTabSprites()) {
         g_gameReg->ReportError(kActivateErrId, kSetTabErrTag);
         return 0;
     }

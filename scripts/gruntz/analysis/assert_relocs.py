@@ -34,7 +34,7 @@ delinker's COMDAT-folded empty stubs), which are a delinker-side concern, not a 
 
 Exits 1 on any wrong/fabricated reloc target.
 """
-import sys, os, re, csv, json, glob, argparse, subprocess
+import sys, os, re, csv, json, glob, struct, argparse, subprocess
 from collections import Counter
 from pathlib import Path
 
@@ -55,6 +55,46 @@ def _find_repo():
 REPO = str(_find_repo())
 IMAGE_BASE = 0x400000
 THRESHOLD = 99.5  # a wrong reloc costs ~0.005% -> audit NEAR-exact, not just ==100
+
+# ---------------------------------------------------------------------------
+# ILT jmp-thunk canonicalisation. THE dominant false-positive class if omitted.
+#
+# The retail EXE was linked INCREMENTALLY, so essentially every cross-TU call goes
+# through a 5-byte ILT jmp-thunk (`jmp rel32`) in the 0x1000..0x5000 band. The
+# delinker therefore names the TARGET-side rel32 after the THUNK ("ClearFrame2",
+# "DtorStatus" - Ghidra's thunk labels), while cl gives our BASE-side rel32 the real
+# mangled body symbol (?ClearFrame2@CSBI_MenuItem@@QAEXXZ -> the body's rva). Two
+# different RVAs for ONE call that both route to the same body.
+#
+# Comparing raw RVAs flags every such call as "WRONG: base references <body> - retail
+# never does". It is not wrong: it is the same callee, and at link time our direct
+# call resolves to the same symbol (the linker re-creates the thunk itself). So
+# canonicalise BOTH sides by chasing jmp-thunks to the ultimate body before comparing
+# - exactly what reloc_fidelity.py already does (its resolve_thunk); this tool was
+# ported without that step. resolve_thunk is the identity for data addresses and for
+# a real function start, so it is safe to apply to every resolved reloc target.
+# ---------------------------------------------------------------------------
+EXE = os.environ.get("GRUNTZ_EXE", "")
+TEXT = (0x1000, 0x1E626B)
+_D = open(EXE, "rb").read() if EXE and os.path.isfile(EXE) else None
+
+
+def _fo(r):  # RVA -> file offset (same section map as reloc_fidelity.fo)
+    if r < 0x1E6800:
+        return r - 0x1000 + 0x400
+    if r < 0x208000:
+        return 0x1E5800 + (r - 0x1E7000)
+    return 0x206800 + (r - 0x208000)
+
+
+def resolve_thunk(t, d=0):
+    """Chase `jmp rel32` ILT thunks to the ultimate body. Identity for data / real starts."""
+    if _D is None:
+        return t
+    while d < 4 and TEXT[0] <= t < TEXT[1] and _D[_fo(t)] == 0xE9:
+        t = t + 5 + struct.unpack("<i", _D[_fo(t) + 1 : _fo(t) + 5])[0]
+        d += 1
+    return t
 
 
 def _norm(s):
@@ -92,7 +132,93 @@ def load_symbols():
                 m = re.search(r"DATA\(0x([0-9a-fA-F]+)\).*?\b([A-Za-z_]\w*)\s*(?:\[|;|=)", ln)
                 if m:
                     data[m.group(2)] = int(m.group(1), 16) - IMAGE_BASE
+    # The TARGET side's symbol names are the delinker's, i.e. the fake PDB's, i.e. GHIDRA's
+    # labels - NOT cl's mangled names and NOT symbol_names.csv. Without this table a target
+    # reloc naming a Ghidra-labelled ILT thunk ("ClearFrame2", "DtorStatus") resolves to
+    # None and is SILENTLY DROPPED from the retail multiset, so every such call reports as
+    # "base references <body> - retail never does". Ghidra gives the thunk and the body the
+    # SAME label (0x3fd5 ClearFrame2 = thunk, 0xe81a0 ClearFrame2 = body), so both land in
+    # `dups` and resolve_thunk() collapses them onto the one body. This was the dominant
+    # false-positive class in the port (~1400 of the 1547 WRONG).
+    # (functions.csv: rva,size,name)  (symbols.csv: rva,name,is_primary - the DATA labels,
+    # e.g. `0x21aef4,DAT_0061aef4`, which is how the delinker names an unlabelled global's
+    # ELEMENT: base says `?g_bfP@@3PAIA + 0x44`, retail says `DAT_0061aef4` - one address.)
+    for fname, ncol in (("functions.csv", 2), ("symbols.csv", 1)):
+        gpath = os.path.join(REPO, "build/ghidra-enrich/exports", fname)
+        if not os.path.exists(gpath):
+            continue
+        for r in csv.reader(open(gpath, encoding="latin-1")):
+            if len(r) <= ncol or not r[0].startswith("0x"):
+                continue
+            try:
+                v = int(r[0], 16)
+            except ValueError:
+                continue  # the export carries a few negative/bogus rvas
+            if v < 0:
+                continue
+            for k in (r[ncol], _norm(r[ncol]), _key(r[ncol])):
+                dups.setdefault(k, set()).add(v)  # dups ONLY: never shadow cl's own symbols
     return sym, data, dups
+
+
+# Ghidra auto-labels embed the VA: DAT_0061aef4 / FUN_00401000 / LAB_ / PTR_ / UNK_ ...
+_AUTO = re.compile(r"^(?:DAT|FUN|LAB|SUB|UNK|PTR|s|u)_(?:[A-Za-z]+_)*([0-9a-fA-F]{8})$")
+
+# --- MSVC mangled string constants -----------------------------------------------------
+# The delinker INVENTS the name for a string literal, using MSVC's content-hash mangling
+# (??_C@_0BF@JCCE@GAME_TELEPORTERCLOSE?$AA@). That name is in NO table - not
+# symbol_names.csv, not Ghidra - so it can never resolve to an RVA, and any base reference
+# to the same string reports WRONG. But the name ENCODES THE STRING'S BYTES, so we can
+# decode it and check it against the bytes at the address our base actually references.
+# That is an exact content check, not a guess: if retail references a literal "FOO" and we
+# reference an address that holds "FOO", it is the same datum. (Our src often gives such a
+# literal a real NAME - `char g_teleporterCloseKey[] = "GAME_TELEPORTERCLOSE";` - which is
+# what makes the two sides' symbols differ in the first place.)
+_STR_SPECIAL = ",/\\:. \n\t'-"  # MSVC's ?0..?9 table
+
+
+def _demangle_str(s):
+    """??_C@_0<len>@<hash>@<encoded>@ -> the raw bytes, or None if anything is unrecognised."""
+    m = re.match(r"^\?\?_C@_\w+?@\w+?@(.*)@$", s)
+    if not m:
+        return None
+    enc, out, i = m.group(1), bytearray(), 0
+    while i < len(enc):
+        c = enc[i]
+        if c != "?":
+            out.append(ord(c))
+            i += 1
+        elif enc[i : i + 2] == "??":
+            out.append(0x3F)
+            i += 2
+        elif i + 1 < len(enc) and enc[i + 1] == "$":
+            if i + 3 >= len(enc):
+                return None
+            hi, lo = enc[i + 2], enc[i + 3]
+            if not ("A" <= hi <= "P" and "A" <= lo <= "P"):
+                return None
+            out.append((ord(hi) - 65) * 16 + (ord(lo) - 65))
+            i += 4
+        elif i + 1 < len(enc) and enc[i + 1].isdigit():
+            out.append(ord(_STR_SPECIAL[int(enc[i + 1])]))
+            i += 2
+        else:
+            return None  # unknown escape -> refuse to guess
+    return bytes(out).rstrip(b"\x00")
+
+
+def _str_at(rva):
+    """The NUL-terminated bytes the retail image holds at `rva` (or None)."""
+    if _D is None:
+        return None
+    try:
+        o = _fo(rva)
+        if not (0 <= o < len(_D)):
+            return None
+        e = _D.index(b"\x00", o, min(o + 512, len(_D)))
+        return _D[o:e]
+    except (ValueError, IndexError):
+        return None
 
 
 def resolve(sym, data, typ, s, add):
@@ -102,12 +228,18 @@ def resolve(sym, data, typ, s, add):
     else:
         b = sym.get(s) or sym.get(_norm(s)) or sym.get(_key(s))
         if b is None:
+            ma = _AUTO.match(s)  # a Ghidra auto-label carries its own VA
+            if ma:
+                b = int(ma.group(1), 16)
+                b -= IMAGE_BASE if b >= IMAGE_BASE else 0
+        if b is None:
             mm = re.match(r"\?(\w+)@@", s)  # ?<name>@@... -> a DATA()-pinned global
             if mm:
                 b = data.get(mm.group(1))
     if b is None:
         return None
-    return b if typ == "REL32" else (b + add) & 0xFFFFFFFF
+    v = b if typ == "REL32" else (b + add) & 0xFFFFFFFF
+    return resolve_thunk(v)  # canonicalise ILT jmp-thunks (see the note at the top)
 
 
 def _lib_symbols():
@@ -149,16 +281,30 @@ def _addend(insn):
     return int(imms[-1], 16) & 0xFFFFFFFF if imms else 0  # -0x4c disp -> 0xffffffb4 addend
 
 
+IMAGE_END = IMAGE_BASE + 0x400000  # generous upper bound on the mapped image
+
+
 def parse_obj(obj):
-    """llvm-objdump -dr -> {func_name: [(type, symbol, addend), ...]} in order; __imp__ skipped."""
+    """llvm-objdump -dr -> ({func: [(type, symbol, addend), ...]}, {func: [rva, ...]}).
+
+    The 2nd dict is the RAW-ABSOLUTE set: addresses an instruction references *in its own bytes*
+    with NO relocation attached. The delinked TARGET obj is carved from a LINKED image, and the
+    delinker does not emit a reloc for every absolute reference it leaves behind - notably the
+    import table: retail's `call dword ptr [0x6c44c8]` (an IAT slot) arrives with the address
+    baked in and no reloc. Our base models that slot as a DATA()-bound fn-pointer and DOES emit a
+    DIR32, so a naive reloc-vs-reloc diff reports "base references 0x2c44c8 - retail never does".
+    Retail plainly DOES reference it; it just is not expressed as a reloc. Feeding these into the
+    retail multiset removes that whole false-positive class without weakening the check (an
+    address retail truly references is not a defect by definition)."""
     out = subprocess.run(["llvm-objdump", "-dr", obj], capture_output=True, text=True).stdout
-    funcs, cur, prev = {}, None, ""
+    funcs, raw, cur, prev, had = {}, {}, None, "", True
     for ln in out.splitlines():
         m = re.match(r"^[0-9a-f]+ <(.+?)>:", ln)
         if m:
             cur = m.group(1)
             funcs.setdefault(cur, [])
-            prev = ""
+            raw.setdefault(cur, [])
+            prev, had = "", True
             continue
         if cur is None:
             continue
@@ -167,11 +313,39 @@ def parse_obj(obj):
             s = mr.group(2)
             if not s.startswith("__imp__"):
                 funcs[cur].append((mr.group(1), s, _addend(prev)))
+            had = True
             continue
         mi = re.match(r"^\s*[0-9a-f]+:\s+(?:[0-9a-f]{2}\s+)+(.+)$", ln)
         if mi:
+            if not had and prev:
+                _raw_refs(prev, raw[cur])
             prev = mi.group(1).replace("\t", " ").strip()
-    return funcs
+            had = False
+    if cur is not None and not had and prev:
+        _raw_refs(prev, raw[cur])
+    return funcs, raw
+
+
+def _raw_refs(insn, out):
+    """Every address/symbol an UNRELOCATED instruction still references.
+
+    Two shapes, both delinker gaps rather than source bugs:
+      (a) absolute operand baked in - `call dword ptr [0x6c44c8]` (an IAT slot). Yield its RVA.
+      (b) an intra-object relative call/jmp - the linker already resolved the displacement, so no
+          reloc survives; llvm-objdump still annotates the destination symbol. The classic case is
+          RECURSION: `calll 0x8e0 <?Load@CRezDirNode@@QAEHH@Z>` inside ?Load itself. cl must emit a
+          REL32 for that call (separate COMDAT); the delinked image must not. Yield the symbol name.
+    """
+    body = insn.split("#")[0]
+    for h in re.findall(r"0x([0-9a-f]{6,8})\b", body):
+        v = int(h, 16)
+        if IMAGE_BASE <= v < IMAGE_END:
+            out.append(v - IMAGE_BASE)
+    if re.match(r"^(?:call|jmp)", body):
+        m = re.search(r"<([^>]+)>", body)
+        if m:
+            out.append(re.sub(r"\+0x[0-9a-f]+$", "", m.group(1)))  # name, resolved by _tvas
+    return out
 
 
 # Pre-existing discrepancies to triage, keyed (unit, function, base-symbol). Keep EMPTY if possible:
@@ -179,36 +353,57 @@ def parse_obj(obj):
 ALLOWLIST = set()
 
 
-def _cands(dups, s, add):
-    """Every address a target reloc name could denote, +addend. Content-hashed (??_C@) names collide:
-    one name, several value-identical addresses; the reloc may mean ANY, so accept all."""
+def _cands(dups, typ, s, add):
+    """Every address a target reloc name could denote, thunk-canonicalised. TWO sources of
+    one-name-many-addresses: (a) content-hashed ??_C@ string names collide (one name, several
+    value-identical addresses); (b) Ghidra labels the ILT jmp-thunk AND the body it jumps to with
+    the SAME name. In both cases the reloc may mean ANY of them, so accept all. REL32 takes no
+    addend (the displacement is relative to the next insn, not an offset into the symbol)."""
     c = dups.get(s) or dups.get(_norm(s)) or dups.get(_key(s)) or set()
-    return {(a + add) & 0xFFFFFFFF for a in c}
+    if typ == "REL32":
+        return {resolve_thunk(a) for a in c}
+    return {resolve_thunk((a + add) & 0xFFFFFFFF) for a in c}
 
 
-def _tvas(sym, data, dups, tgt_relocs):
-    """Multiset of every RVA retail references. An ambiguous (dup) name contributes ALL its candidate
-    addrs per occurrence, so a base ref to any one of them clears."""
-    tvas = Counter()
+def _tvas(sym, data, dups, tgt_relocs, tgt_raw=()):
+    """Multiset of every RVA retail references. An ambiguous name contributes ALL its candidate
+    addrs per occurrence, so a base ref to any one of them clears. Candidates are consulted FIRST:
+    a target symbol may be a Ghidra-only label (a thunk) that resolve() - which reads cl's
+    symbol_names.csv - cannot see at all. Dropping those silently is what made the retail multiset
+    incomplete and manufactured ~1400 phantom WRONGs."""
+    tvas, tstrs = Counter(), Counter()
     for r in tgt_relocs:
-        v = resolve(sym, data, *r)
-        if v is None:
-            continue
-        cs = _cands(dups, r[1], r[2]) if r[0] != "REL32" else set()
+        cs = _cands(dups, *r)
         if len(cs) > 1:
             for c in cs:
                 tvas[c] += 1
-        else:
+            continue
+        if cs:
+            tvas[next(iter(cs))] += 1
+            continue
+        v = resolve(sym, data, *r)
+        if v is not None:
             tvas[v] += 1
-    return tvas
+        else:
+            b = _demangle_str(r[1])  # an unresolvable delinker-invented string-literal name:
+            if b:  # remember its CONTENT so a base ref to that same string clears
+                tstrs[b] += 1
+    for v in tgt_raw:  # references retail makes with NO reloc attached (IAT slot / intra-object call)
+        if isinstance(v, str):
+            for c in _cands(dups, "REL32", v, 0) or {resolve(sym, data, "REL32", v, 0)}:
+                if c is not None:
+                    tvas[c] += 1
+        else:
+            tvas[resolve_thunk(v)] += 1
+    return tvas, tstrs
 
 
-def check_fn(sym, data, dups, unit, name, base_relocs, tgt_relocs):
+def check_fn(sym, data, dups, unit, name, base_relocs, tgt_relocs, tgt_raw=()):
     probs = []
     for r in base_relocs:  # (1) fabricated function/data symbol -> would be an unresolved external
         if is_fake(sym, data, r[1]) and (unit, name, r[1]) not in ALLOWLIST:
             probs.append("FAKE ref '%s' - in neither CodeView nor a DATA() global" % r[1])
-    tvas = _tvas(sym, data, dups, tgt_relocs)
+    tvas, tstrs = _tvas(sym, data, dups, tgt_relocs, tgt_raw)
     bvas, va_sym = Counter(), {}
     for r in base_relocs:
         v = resolve(sym, data, *r)
@@ -218,6 +413,13 @@ def check_fn(sym, data, dups, unit, name, base_relocs, tgt_relocs):
     for v, n in (bvas - tvas).items():  # (2) base references an addr retail never does (or fewer)
         bs = va_sym[v]
         if "_00A@" in bs or (unit, name, bs) in ALLOWLIST:
+            continue
+        # Retail may name that datum as a mangled STRING LITERAL the delinker invented, which
+        # resolves to no address at all. Cancel by CONTENT: if the bytes at the address we
+        # reference are exactly a string retail references, it is the same datum.
+        s = _str_at(v)
+        if s and tstrs.get(s, 0) >= n:
+            tstrs[s] -= n
             continue
         probs.append(
             "WRONG: base references 0x%x (%s) x%d - retail never does (or fewer)" % (v, bs, n)
@@ -245,12 +447,12 @@ def review(rva):
             if f.get("address") not in (want, want + IMAGE_BASE):
                 continue
             nm = f["name"]
-            bf, tf = parse_obj(base_obj), parse_obj(tgt_obj)
+            (bf, _br), (tf, tr) = parse_obj(base_obj), parse_obj(tgt_obj)
             if nm not in bf or nm not in tf:
                 print("  %s: no COMDAT on one side" % nm)
                 return 0
             print("%s  %s  (fuzzy %.2f%%)" % (u["name"], nm, f.get("fuzzy_match_percent", 0)))
-            for p in check_fn(sym, data, dups, u["name"], nm, bf[nm], tf[nm]):
+            for p in check_fn(sym, data, dups, u["name"], nm, bf[nm], tf[nm], tr.get(nm, [])):
                 print("  !! " + p)
             print("  base relocs=%d  target relocs=%d" % (len(bf[nm]), len(tf[nm])))
             return 0
@@ -283,12 +485,12 @@ def main():
         base_obj, tgt_obj = _objs(unit)
         if not (os.path.exists(base_obj) and os.path.exists(tgt_obj)):
             continue
-        bf, tf = parse_obj(base_obj), parse_obj(tgt_obj)
+        (bf, _br), (tf, tr) = parse_obj(base_obj), parse_obj(tgt_obj)
         for name in sorted(near):
             if name not in bf or name not in tf:
                 continue
             seen += 1
-            for p in check_fn(sym, data, dups, unit, name, bf[name], tf[name]):
+            for p in check_fn(sym, data, dups, unit, name, bf[name], tf[name], tr.get(name, [])):
                 bad.append((unit, name, p))
     for unit, name, p in bad:
         print("  %-22s %-46s %s" % (unit, name[:46], p))

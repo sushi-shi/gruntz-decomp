@@ -236,26 +236,22 @@ static char s_CouldNotAdd[] = "Could not add Grunt: Player=%d, x=%d, y=%d";
 // ---------------------------------------------------------------------------
 struct LvBridgePoint; // this+0x3f4  bridge-toggle screen point (defined below)
 
-class CLevelValidator {
-public:
-    i32 ValidateLevelTiles();
-    i32 PlaceStartGruntz(); // 0x0d2b20
-    // PositionBridgeToggle (0x0d5b20) HOMED onto ::CPlay - CLevelValidator IS CPlay (see the
-    // body below). The rest of this class is the SAME fold, deferred: PlaceStartGruntz /
-    // ValidateLevelTiles are referenced under ?...@CLevelValidator@@ by the play lane, so
-    // renaming them is that lane's call (no reloc defect today). @identity-TODO.
-
-    char m_pad00[0x4];
-    WwdGameReg* m_gameReg; // +0x04  game registry back-ptr
-    char m_pad08[0xc - 0x8];
-    PlayMgr* m_playMgr; // +0x0c
-    char m_pad10[0x2dc - 0x10];
-    PlayfieldMgr* m_playfieldMgr;         // +0x2dc
-    CChatBoxOwner* m_2e0;                 // +0x2e0  hit-test/region sink (Configure @0x20530)
-    TriggerRegistrar* m_triggerRegistrar; // +0x2e4
-    char m_pad2e8[0x3f4 - 0x2e8];
-    LvBridgePoint* m_bridgePoint; // +0x3f4  bridge-toggle screen point
-};
+// The fake class CLevelValidator is GONE - it WAS ::CPlay, and all three of its methods are
+// now CPlay's (PositionBridgeToggle @0x0d5b20 landed last batch; PlaceStartGruntz @0x0d2b20 and
+// ValidateLevelTiles @0x0d2dd0 land here). The identity is proven, not assumed:
+//   - CPlay::ResetPlayState @0x0d60b0 calls PlaceStartGruntz with `mov ecx,esi` - the SAME
+//     `this` it writes at +0x4f8 (`gruntz sema xref --tree`);
+//   - every field lines up at the same offset, and +0x2e0 is CChatBoxOwner* in BOTH models.
+// CPlay's canonical names for the slots this TU used:
+//     m_gameReg (+0x04) == CState::m_4 (CGruntzMgr*)      m_playMgr  (+0x0c)  == CState::m_c
+//     m_playfieldMgr (+0x2dc) == CPlay::m_guts            m_2e0 (+0x2e0) == CPlay::m_hitTest
+//     m_triggerRegistrar (+0x2e4) == CPlay::m_beginMarker m_bridgePoint (+0x3f4) == m_frameMarker
+// The two bodies below open with same-named local aliases for the four slots whose CANONICAL
+// type is a different (still-unreconciled) view of the same sub-object - PlayMgr/PlayfieldMgr/
+// TriggerRegistrar/WwdGameReg. That keeps this fold byte-honest and confines the residual view
+// casts to one line each, instead of scattering them through 200 lines of body. Reconciling
+// those four sub-object classes with CState::m_c / CPlay::m_guts / CPlay::m_beginMarker is the
+// remaining @identity-TODO here; the OWNER class is no longer in doubt.
 
 // The level tile-id lookup: clamp (x,y) to the grid bounds, shift to tile
 // coords, resolve the tile-class through the row/cell tables, and call its
@@ -285,7 +281,7 @@ static inline i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
 }
 
 // ===========================================================================
-// CLevelValidator::PlaceStartGruntz  (0x0d2b20) - /GX EH method. Walk the placed-
+// CPlay::PlaceStartGruntz  (0x0d2b20) - /GX EH method. Walk the placed-
 // object list (renderer+0x10): for each "start grunt" object (identity 0x4024a5)
 // PlaceObject it into the trigger grid at its snapped tile centre, OR'ing in the
 // 0x10000 "placed" flag; on PlaceObject failure build a "Could not add Grunt..."
@@ -301,7 +297,13 @@ static inline i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
 // keeps `this` in ecx and enregisters counter/flag14, a systematic register rename across
 // the whole body. Same EH/regalloc wall ValidateLevelTiles (this TU) hits. topic:wall.
 RVA(0x000d2b20, 0x21f)
-i32 CLevelValidator::PlaceStartGruntz() {
+i32 CPlay::PlaceStartGruntz() {
+    // CPlay slot aliases (see the fold note above): SAME names, so the body below is unchanged.
+    WwdGameReg* m_gameReg = (WwdGameReg*)m_4;                                // +0x04
+    PlayMgr* m_playMgr = (PlayMgr*)m_c;                                      // +0x0c
+    PlayfieldMgr* m_playfieldMgr = (PlayfieldMgr*)m_guts;                    // +0x2dc
+    TriggerRegistrar* m_triggerRegistrar = (TriggerRegistrar*)m_beginMarker; // +0x2e4
+    CTimer* m_bridgePoint = m_frameMarker;                                   // +0x3f4
     StartList* list = (StartList*)((char*)m_playMgr->m_08 + 0x10);
     if (list == 0) {
         return 0;
@@ -377,10 +379,16 @@ i32 CLevelValidator::PlaceStartGruntz() {
 }
 
 // ===========================================================================
-// CLevelValidator::ValidateLevelTiles  (0x0d2dd0)
+// CPlay::ValidateLevelTiles  (0x0d2dd0)
 // ===========================================================================
 RVA(0x000d2dd0, 0x1de4)
-i32 CLevelValidator::ValidateLevelTiles() {
+i32 CPlay::ValidateLevelTiles() {
+    // CPlay slot aliases (see the fold note above): SAME names, so the body below is unchanged.
+    WwdGameReg* m_gameReg = (WwdGameReg*)m_4;                                // +0x04
+    PlayMgr* m_playMgr = (PlayMgr*)m_c;                                      // +0x0c
+    PlayfieldMgr* m_playfieldMgr = (PlayfieldMgr*)m_guts;                    // +0x2dc
+    TriggerRegistrar* m_triggerRegistrar = (TriggerRegistrar*)m_beginMarker; // +0x2e4
+    CTimer* m_bridgePoint = m_frameMarker;                                   // +0x3f4
     i32 validCount = 0; // [esp+0x10]  count of objects validated
     i32 counts[4];      // per-kind pressure-pad tallies (0x40164f arm)
     counts[0] = 0;
@@ -889,7 +897,6 @@ done:
     return 1;
 }
 
-SIZE_UNKNOWN(CLevelValidator);
 SIZE_UNKNOWN(GameObjAux7c);
 SIZE_UNKNOWN(LvBridgePoint);
 SIZE_UNKNOWN(LvBridgeUi);
