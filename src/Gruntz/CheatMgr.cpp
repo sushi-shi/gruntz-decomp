@@ -29,11 +29,15 @@ extern "C" char g_emptyString[];
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
-// The 19 built-in cheat-code string buffers (obfuscated .data byte arrays passed
-// to AddCheat by address as the map key). Bound to their real .data RVAs here (not
-// via DATA() in the header: a header DATA() is invisible to labels.py's per-.cpp
-// text scan, and clang mangles a char[] extern differently than cl5, so @data-symbol
-// names the exact cl5 symbol `?s_cheat_<rva>@@3PADA`).
+// The 19 built-in cheat-code string buffers - obfuscated .data byte arrays passed
+// to AddCheat by address as the map key. Each holds a cheat code obfuscated as
+// (uppercase-ASCII + 0x3d) per byte (CheckCode uppercases + adds 0x3d to the typed
+// code before Lookup, so the stored key matches). Recovered from the retail .data
+// bytes at each rva; de-obfuscated (byte-0x3d) plaintext shown in each comment.
+// Defined here (not extern-only) so the bytes land in cheatmgr.obj; the array
+// storage class is `char[]` (mutable), so cl5 mangles `?s_cheat_<rva>@@3PADA`
+// which a header DATA() (clang's mangledName) would miss - @data-symbol names the
+// exact cl5 symbol and is authority-checked against the base obj.
 // @data-symbol: ?s_cheat_20c920@@3PADA 0x0020c920
 // @data-symbol: ?s_cheat_20c918@@3PADA 0x0020c918
 // @data-symbol: ?s_cheat_20c90c@@3PADA 0x0020c90c
@@ -53,6 +57,31 @@ extern CButeMgr g_buteMgr;
 // @data-symbol: ?s_cheat_20c85c@@3PADA 0x0020c85c
 // @data-symbol: ?s_cheat_20c84c@@3PADA 0x0020c84c
 // @data-symbol: ?s_cheat_20c838@@3PADA 0x0020c838
+//
+// Definitions in ascending-rva order (the retail .data layout). The explicit array
+// size = the retail symbol stride; the string literal's implicit NUL + zero-fill
+// reproduce the trailing NUL padding exactly (verified byte-for-byte vs retail).
+// clang-format off
+char s_cheat_20c838[20] = "\x8a\x8d\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e\x94\x7e"; // "MPWAWAWAWAWAWA"
+char s_cheat_20c84c[16] = "\x8a\x8d\x94\x86\x89\x81\x94\x7e\x80\x88\x96";             // "MPWILDWACKY"
+char s_cheat_20c85c[12] = "\x8a\x8d\x7f\x92\x86\x89\x81";                             // "MPBUILD"
+char s_cheat_20c868[16] = "\x8a\x8d\x81\x82\x93\x85\x82\x7e\x81\x90";                 // "MPDEVHEADS"
+char s_cheat_20c878[12] = "\x8a\x8c\x8b\x8c\x89\x86\x91\x85";                         // "MONOLITH"
+char s_cheat_20c884[16] = "\x8a\x8d\x8a\x8c\x8b\x8c\x89\x86\x91\x85";                 // "MPMONOLITH"
+char s_cheat_20c894[8] = "\x8a\x8d\x89\x8c\x84\x8c";                                  // "MPLOGO"
+char s_cheat_20c89c[8] = "\x8a\x8d\x89\x86\x91\x85";                                  // "MPLITH"
+char s_cheat_20c8a4[8] = "\x8a\x8d\x80\x85\x8c\x8d";                                  // "MPCHOP"
+char s_cheat_20c8ac[12] = "\x8a\x8d\x90\x80\x8c\x8f\x8d\x86\x8c";                     // "MPSCORPIO"
+char s_cheat_20c8b8[12] = "\x8a\x8d\x84\x8c\x7f\x89\x82";                             // "MPGOBLE"
+char s_cheat_20c8c4[16] = "\x8a\x8d\x89\x7e\x8a\x7f\x82\x8f\x91\x86\x7e\x8b";         // "MPLAMBERTIAN"
+char s_cheat_20c8d4[12] = "\x8a\x8d\x89\x7e\x8a\x7f\x82\x8f\x91";                     // "MPLAMBERT"
+char s_cheat_20c8e0[16] = "\x8a\x8d\x85\x8c\x89\x8c\x84\x8f\x7e\x8a";                 // "MPHOLOGRAM"
+char s_cheat_20c8f0[16] = "\x8a\x8d\x90\x91\x8c\x8d\x94\x7e\x91\x80\x85";             // "MPSTOPWATCH"
+char s_cheat_20c900[12] = "\x8a\x8d\x8b\x8c\x86\x8b\x83\x8c";                         // "MPNOINFO"
+char s_cheat_20c90c[12] = "\x8a\x8d\x8c\x7f\x87\x82\x80\x91\x90";                     // "MPOBJECTS"
+char s_cheat_20c918[8] = "\x8a\x8d\x8d\x8c\x90";                                      // "MPPOS"
+char s_cheat_20c920[8] = "\x8a\x8d\x83\x8d\x90";                                      // "MPFPS"
+// clang-format on
 
 // The cheat-config tag/key string literals (objdiff matches these .data relocs by
 // value). The obfuscated code stored under each "Cheat%i" group's "Text" key is
