@@ -2154,7 +2154,6 @@ rva,name,lib,confidence,source
 0x18f830,_ldexp,LIBCMT,HIGH,offstart-ghidra-missed
 0x18fa90,_DirectInputCreateA@16,DINPUT,HIGH,dinput-import-thunk
 0x191d00,??0DNameNode@@IAE@XZ,LIBCMT,AMBIG,anchored
-0x191d10,__fpclear,LIBCMT,LOW,anchored
 0x1937c6,_DirectPlayEnumerate@8,DPLAYX,HIGH,reloc-R26
 0x1937e0,_strtod,LIBCMT,HIGH,anchored
 0x193900,__access,LIBCMT,AMBIG,anchored
@@ -3452,6 +3451,7 @@ rva,name,lib,confidence,source
 0x1bf328,?Read@CFileIO@@UAEIPAXI@Z,NAFXCW,HIGH,reloc-R23
 0x1bf426,?Close@CFileIO@@UAEXXZ,NAFXCW,HIGH,reloc-R40
 0x1b9b46,_RezAlloc,NAFXCW,HIGH,reloc-R23
+0x1b9b82,_RezFree,NAFXCW,HIGH,reloc-R57
 0x1ba0c8,??YCString@@QAEABV0@PBD@Z,NAFXCW,HIGH,reloc-R23-append
 0x11fc10,__getcwd,LIBCMT,AMBIG,anchored
 0x1b8546,?GetNextAssoc@CMapStringToPtr@@QBEXAAPAU__POSITION@@AAVCString@@AAPAX@Z,NAFXCW,HIGH,reloc-R24

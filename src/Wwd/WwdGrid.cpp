@@ -11,15 +11,17 @@
 
 // --- reloc-masked engine externs -------------------------------------------
 
-// The engine bucket-array deallocator path: the MSVC vector dtor iterator
-// (__ehvec_dtor, __stdcall - callee-clean, NO `add esp` after the call) over the
-// element dtor, then RezFree of the backing block. (The ctor's alloc + element
-// ctor fall out of `new BucketHead[n]`; see array-new-cookie-ehvec-ctor.md.)
-// operator delete (0x1b9b82, ??3@YAXPAX@Z): the engine Rez heap free IS the global
-// operator delete (FID-verified library label).
+// The engine bucket-array deallocator path: the MSVC vector dtor iterator (the
+// `'eh vector destructor iterator'` runtime, __stdcall - callee-clean, NO `add esp`
+// after the call) over the element dtor, then operator delete of the backing block.
+// (The ctor's alloc + element ctor fall out of `new BucketHead[n]`; see
+// array-new-cookie-ehvec-ctor.md.) Tm_DestroyArray stands in for the un-spellable
+// ??_M and is library-labelled at 0x11f640 (config/library_labels.csv), so its reloc
+// site is EXEMPT. operator delete (0x1b9b82, ??3@YAXPAX@Z): the engine Rez heap free
+// IS the global operator delete (FID-verified library label).
 void operator delete(void* p);
-extern "C" void __stdcall EhVecDtor_11f640(void* arr, u32 elemSize, i32 count, void* dtor);
-extern "C" void DNameNodeDtor_191d10(); // the element dtor, passed by address (reloc-masked)
+void __stdcall Tm_DestroyArray(void* base, i32 stride, u32 count, void (*dtor)()); // 0x11f640
+void BucketHead_Dtor(); // 0x191d10 (no-op per-element BucketHead dtor; defined below)
 extern "C" double log(double);
 extern "C" double pow(double, double);
 
@@ -86,7 +88,7 @@ void CWwdGrid::FreeBuckets() {
     if (m_allocated) {
         if (m_buckets) {
             i32* raw = (i32*)m_buckets - 1; // count cookie precedes the array
-            EhVecDtor_11f640(m_buckets, 0x8, *raw, (void*)DNameNodeDtor_191d10);
+            Tm_DestroyArray(m_buckets, 0x8, *raw, &BucketHead_Dtor);
             ::operator delete(raw);
         }
         m_allocated = 0;
@@ -341,6 +343,14 @@ walk:
     }
     goto top;
 }
+
+// 0x191d10 - BucketHead_Dtor: the no-op per-element bucket destructor (a bare
+// 1-byte `ret`; a BucketHead {head,tail} DSoundList has trivial teardown). Its
+// address is handed to the vector-dtor iterator (Tm_DestroyArray/??_M) in
+// FreeBuckets; defining it here (its true band) binds the &BucketHead_Dtor fn-ptr
+// reloc to 0x191d10. (Ghidra's __fpclear FID label was a 1-byte-`ret` false hit.)
+RVA(0x00191d10, 1)
+void BucketHead_Dtor() {}
 
 // ===========================================================================
 // 0x1915c0 - ctor: normalize the rect, compute log2 cell shifts + power-of-two

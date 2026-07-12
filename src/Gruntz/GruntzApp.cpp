@@ -41,8 +41,8 @@
 // cl5 names an internal (static) global `_<name>$S<idx>`, so @data-symbol names the
 // exact cl5 symbol (the DIR32 loads/stores are reloc-masked, only the address bytes
 // are load-bearing).
-// @data-symbol: _g_errorHwnd$S18928 0x0024557c
-// @data-symbol: _g_errorText$S18929 0x00244ea0
+// @data-symbol: _g_errorHwnd$S18951 0x0024557c
+// @data-symbol: _g_errorText$S18952 0x00244ea0
 static HWND g_errorHwnd;        // last dialog HWND @ 0x24557c
 static char g_errorText[0x100]; // error message buffer @ 0x244ea0
 // (g_gameAppInstanceCount is declared in Wap32.h, defined in
@@ -222,23 +222,22 @@ void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
 
 // ---------------------------------------------------------------------------
 // CreateU10O
-// Free function `void *CreateU10O()`: `return new U10O;`
-// - operator new(sizeof(U10O)) then a throwing ctor under a C++ EH frame, then
-// returns the raw pointer. Only the new+ctor shape is load-bearing; a forward
-// class with a declared ctor suffices to give `new U10O` a size + ctor call.
-struct U10O {
-    U10O();
-    char m_pad[0x10]; // 0x10-byte object (the `new` size operand)
+// Free function `void *CreateU10O()`: `return new CGruntzWnd;` - operator
+// new(0x10) then the throwing CGruntzWnd ctor (0x94640, ??0CGruntzWnd@@QAE@XZ -
+// stamps ??_7CGruntzWnd@@6B@) under a C++ EH frame, returning the raw pointer.
+// The object is the real CGruntzWnd (the game window, a CGameWnd subclass that
+// adds no fields, so sizeof == the 0x10 CGameWnd base = the `new` size operand).
+// Its canonical definition is .cpp-local in GruntzWnd.cpp (no shared header yet);
+// a reduced forward view here gives `new CGruntzWnd` the size + ctor call, binds
+// the ctor reloc to 0x94640, and (deriving CGameWnd) keeps the RTTI hierarchy
+// honest for the vtable-audit. The ctor is external (no body here).
+struct CGruntzWnd : public CGameWnd {
+    CGruntzWnd();
 };
 RVA(0x000809a0, 0x57)
 void* CreateU10O() {
-    U10O* p = new U10O;
+    CGruntzWnd* p = new CGruntzWnd;
     return p;
 }
 
 // CGruntzApp::TryLoadSwitchDownSprite (0x00112820) is now an inline member in the header.
-
-
-// size 0x254 recovered from operator-new sites (gruntz.analysis.news)
-
-SIZE_UNKNOWN(U10O);

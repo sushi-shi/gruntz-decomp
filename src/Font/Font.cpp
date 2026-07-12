@@ -252,6 +252,14 @@ void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32
     DrawGlyphRun(text, surf, rc, x, y, z);
 }
 
+// FontRenderer::DrawGlyphRun (0x179e70, 0x5ec = 1516 B) - the inner glyph-run
+// blit (clip rc against the surface + measured extent, Lock, blit each glyph's
+// 8bpp coverage as packed 16bpp m_color). NOT yet reconstructed. reloc-fidelity:
+// DrawLineClipped's three CALLs to it stay UNBOUND - @rva-symbol cannot bind it
+// (its authority check needs the symbol DEFINED in the base obj, but DrawGlyphRun
+// is only an undefined external reference here). Binding requires reconstructing
+// the 1516-byte glyph blitter (a real RVA() body) - out of scope for a reloc pass.
+
 // =========================================================================
 // FontRenderer::DrawWrapped  (0x17a460, 0x7ec = 2028 B), the cluster's largest.
 // Word-wrap layout + draw: measures the block (MeasureWrapped) for vertical
