@@ -2153,6 +2153,7 @@ rva,name,lib,confidence,source
 0x18f760,__isnan,LIBCMT,HIGH,offstart-ghidra-missed
 0x18f790,__fpclass,LIBCMT,HIGH,anchored
 0x18f830,_ldexp,LIBCMT,HIGH,offstart-ghidra-missed
+0x18fa90,_DirectInputCreateA@16,DINPUT,HIGH,dinput-import-thunk
 0x191d00,??0DNameNode@@IAE@XZ,LIBCMT,AMBIG,anchored
 0x191d10,__fpclear,LIBCMT,LOW,anchored
 0x1937c6,_DirectPlayEnumerate@8,DPLAYX,HIGH,reloc-R26
