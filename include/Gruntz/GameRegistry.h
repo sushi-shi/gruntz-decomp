@@ -252,7 +252,7 @@ struct CGameRegistry {
     // g_gameReg/g_gameReg view (CTmGameReg/RockMgr/LevelSettings/...) must fold onto
     // this canonical first - see the matcher report's CGameRegistry-side worklist.
     CState* PickPausedThenPlayState();        // 0x0929b0
-    void EnterModalUI(i32 arg);               // 0x08ef10
+    void EnterModalUI(const char* msg);       // 0x08ef10 (msg = the modal text)
     i32 IsBattlezMapFile(class CString path); // (== CGruntzMgr::IsBattlezMapFile)
     i32 ChangeState_8fab0(i32 arg);           // 0x08fab0
     // Win32-safe options/run-state setters (== CGruntzMgr's, reloc-masked to the shared

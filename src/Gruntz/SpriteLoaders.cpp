@@ -7,14 +7,14 @@
 #include <Gruntz/TriggerMgr.h>   // canonical CTriggerMgr (g_gameReg->m_cmdGrid; ClearRowAndRefresh)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/ResMgr.h>        // CResMgr (m_8 key table, m_10 image registry) + CKeyTable
-#include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CSpriteHashTable
+#include <Gruntz/Sprite.h>        // CSprite (frame-data value) + CMapStringToOb
 #include <Gruntz/Timer.h>         // CTimer + CImage (canonical; def was local here)
 #include <DDrawMgr/DDrawWorkerRegistry.h> // canonical CDDrawWorkerRegistry (AnyValueMatches_155630)
 // SpriteLoaders.cpp - two sibling HUD/UI sprite loaders that pull a named sprite
 // out of the engine's string-keyed sprite-set hash table and cache individual
 // animation frames off it (C:\Proj\Gruntz). Both share the same idiom:
 //   1. look the sprite up by class-name string through the matched sprite-set
-//      hash table (CSpriteHashTable::Lookup, external);
+//      hash table (CMapStringToOb::Lookup, external);
 //   2. for each wanted frame number N, extract the frame pointer from the
 //      sprite's frame table ONLY when N lies inside the sprite's valid frame
 //      range [m_firstFrame(+0x64) .. m_lastFrame(+0x68)], else cache 0.
@@ -40,7 +40,7 @@
 // (returning a found-flag). Modeled minimally so the `ecx=<map>; call <helper>`
 // shape reloc-masks against the matched lookup helper.
 // ---------------------------------------------------------------------------
-// CSprite (frame-data value) + CSpriteHashTable come from <Gruntz/Sprite.h>;
+// CSprite (frame-data value) + CMapStringToOb come from <Gruntz/Sprite.h>;
 // CResMgr (image registry at m_10, key table at m_8) + CKeyTable from ResMgr.h.
 // The registry's embedded name->sprite hash table is <registry>->m_10map.
 
@@ -87,8 +87,9 @@ public:
 
 RVA(0x000d7440, 0xad)
 i32 CLoadingBar::LoadLoadingBarSprite() {
-    CSprite* spr = 0;
-    ((CMapStringToOb*)&m_resMgr->m_10->m_10map)->Lookup("GAME_LOADINGBAR", (CObject*&)spr);
+    CObject* spr_ob = 0;
+    m_resMgr->m_10->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
+    CSprite* spr = (CSprite*)spr_ob;
     if (!spr) {
         return 0;
     }
@@ -142,8 +143,9 @@ CTimer* CTimer::Init() {
 // ---------------------------------------------------------------------------
 RVA(0x0009bb00, 0x119)
 i32 CTimer::LoadTimerSprite(i32 a, i32 b) {
-    CSprite* spr = 0;
-    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)->Lookup("GAME_TIMER", (CObject*&)spr);
+    CObject* spr_ob = 0;
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_TIMER", spr_ob);
+    CSprite* spr = (CSprite*)spr_ob;
     m_sprite = spr;
     if (!spr) {
         return 0;

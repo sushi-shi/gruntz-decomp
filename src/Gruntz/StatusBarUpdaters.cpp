@@ -71,8 +71,9 @@ i32 CTileTriggerSwitchLogic::Vf2() {
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
         CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
         if (h->m_emitGate == 0) {
-            LeafCue* spr = 0;
-            h->m_10.Lookup("GAME_SWITCHDOWN", &spr);
+            CObject* spr_ob = 0;
+            h->m_10.Lookup("GAME_SWITCHDOWN", spr_ob);
+            LeafCue* spr = (LeafCue*)spr_ob;
             if (spr) {
                 if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
                     spr->m_14 = g_6bf3c0;
@@ -110,8 +111,9 @@ i32 CTileTriggerSwitchLogic::Vf3() {
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
         CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
         if (h->m_emitGate == 0) {
-            LeafCue* spr = 0;
-            h->m_10.Lookup("GAME_SWITCHUP", &spr);
+            CObject* spr_ob = 0;
+            h->m_10.Lookup("GAME_SWITCHUP", spr_ob);
+            LeafCue* spr = (LeafCue*)spr_ob;
             if (spr) {
                 if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
                     spr->m_14 = g_6bf3c0;

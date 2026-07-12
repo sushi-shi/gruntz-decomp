@@ -238,10 +238,11 @@ struct CombatCue {
     i32 m_14;           // +0x14 last-fire clock
     i32 m_18;           // +0x18 cooldown window
 };
-struct CombatCueMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom whose only "method" was a fake
+// alias of the MFC library CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 struct CombatSprInner {
     char m_pad0[0x10];
-    CombatCueMap m_10; // +0x10 the launch-sound lookup map
+    CMapStringToOb m_10; // +0x10 the launch-sound lookup map
 };
 struct CombatSprCat {
     char m_pad0[0x28];
@@ -359,7 +360,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         CombatCue* out = 0;                                                                        \
-        ((CMapStringToOb*)&reg->m_world->m_28->m_10)->Lookup((key), (CObject*&)out);               \
+        reg->m_world->m_28->m_10.Lookup((key), (CObject*&)out);               \
         cue = out;                                                                                 \
     } while (0)
 
@@ -530,7 +531,6 @@ SIZE_UNKNOWN(CGruntCombat);
 SIZE_UNKNOWN(CombatConvCue);
 SIZE_UNKNOWN(CombatCoordList);
 SIZE_UNKNOWN(CombatCue);
-SIZE_UNKNOWN(CombatCueMap);
 SIZE_UNKNOWN(CombatGrid);
 SIZE_UNKNOWN(CombatItemOwner);
 SIZE_UNKNOWN(CombatReg);
@@ -895,8 +895,9 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (*(i32*)((char*)g_gameReg + 0x10) == 0) {
         return;
     }
-    GruntSoundEntry* entry = 0;
-    ((CMapStringToOb*)&g_gameReg->m_world->m_28->m_10)->Lookup(key, (CObject*&)entry);
+    CObject* entry_ob = 0;
+    g_gameReg->m_world->m_28->m_10.Lookup(key, entry_ob);
+    GruntSoundEntry* entry = (GruntSoundEntry*)entry_ob;
     if (entry == 0) {
         return;
     }
@@ -941,8 +942,9 @@ void CGrunt::EnsureStruckVoice(const char* key) {
     if (sample != 0) {
         return;
     }
-    GruntSoundEntry* entry = 0;
-    ((CMapStringToOb*)&g_gameReg->m_world->m_28->m_10)->Lookup(key, (CObject*&)entry);
+    CObject* entry_ob = 0;
+    g_gameReg->m_world->m_28->m_10.Lookup(key, entry_ob);
+    GruntSoundEntry* entry = (GruntSoundEntry*)entry_ob;
     if (entry == 0) {
         return;
     }

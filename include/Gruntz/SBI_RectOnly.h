@@ -562,8 +562,8 @@ public:
 };
 
 // The cue-lookup string map embedded at host->m_28 + 0x10 (CMapStringToOb).
-struct CSbiLookupMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
-SIZE_UNKNOWN(CSbiLookupMap);
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
+// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 
 // A resolved cue record: a player at +0x10 plus a draw-clock gate (+0x14 last,
 // +0x18 interval). Same shape as GameMode's CBootyFound.
@@ -594,7 +594,7 @@ SIZE_UNKNOWN(CSbiCueRecord);
 // (== CResMgr::m_28 viewed as its cue facet; see the consolidation note above).
 struct CSbiMusicHost {
     char m_pad0[0x10];         // +0x00..0x0f
-    CSbiLookupMap m_map10;     // +0x10  cue lookup map (CMapStringToOb view)
+    CMapStringToOb m_map10;     // +0x10  cue lookup map (CMapStringToOb view)
     char m_pad11[0x30 - 0x11]; // +0x11..0x2f
     i32 m_30; // +0x30  reentrancy gate flag (opaque; only null-tested => skip the cue play)
 };

@@ -17,7 +17,7 @@
 
 #include <Ints.h>
 #include <rva.h>
-#include <Gruntz/Sprite.h> // CSpriteHashTable (each registry's +0x10 map)
+#include <Gruntz/Sprite.h> // CMapStringToOb (each registry's +0x10 map)
 
 struct CMenuViewObj;       // the level/view object at CResMgr+0x24 (ActionOptionsMenuBar-local)
 struct IDirectDrawSurface; // CDrawTarget::SurfaceA::Surface2c::m_8 (the real DDraw surface: the
@@ -120,7 +120,7 @@ struct CImageRegistry {
     virtual i32 LoadNamespace(void* tree, const char* szName, const char* szKey);
 
     char m_pad04[0x10 - 0x4]; // vptr occupies +0x00..+0x03
-    CSpriteHashTable m_10map; // +0x10  the name->sprite hash table
+    CMapStringToOb m_10map; // +0x10  the name->sprite hash table
 };
 
 // The sound registry at CResMgr+0x28 (plain non-virtual helpers) + its +0x10 map + the
@@ -129,7 +129,7 @@ struct CImageRegistry {
 SIZE_UNKNOWN(CSoundRegistry);
 struct CSoundRegistry {
     char m_pad00[0x10];
-    CSpriteHashTable m_10map; // +0x10
+    CMapStringToOb m_10map; // +0x10
     char m_pad14[0x2c - 0x14];
     CViewPooledRes* m_2c; // +0x2c  pooled resource (Free() if set)
 };
@@ -144,7 +144,7 @@ struct CAnimRegistry {
     void Release(const char* szName, const char* szKey);  // 0x152720 (credits reg, loader alias)
     void Install(void* set, const char* szName, const char* szKey); // 0x152ad0 __thiscall
     char m_pad00[0x10];
-    CSpriteHashTable m_10map; // +0x10
+    CMapStringToOb m_10map; // +0x10
 };
 
 // The game's resource/level manager. Different callers pull the manager they need

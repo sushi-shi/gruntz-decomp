@@ -669,8 +669,9 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
     if (sreg->m_emitGate != 0) {
         return;
     }
-    LeafCue* out = 0;
-    sreg->m_10.Lookup("LEVEL_ROCKBREAK", &out);
+    CObject* out_ob = 0;
+    sreg->m_10.Lookup("LEVEL_ROCKBREAK", out_ob);
+    LeafCue* out = (LeafCue*)out_ob;
     if (out == 0) {
         return;
     }

@@ -1611,12 +1611,9 @@ struct RockSndEntry {
     u32 m_14;            // +0x14  last-played stamp
     u32 m_18;            // +0x18  interval
 };
-struct RockSndTable {
-    // Find @0x1b8438 IS CMapStringToOb::Lookup; cast at the call.
-};
 struct RockSndSet { // this->m_22c->m_28
     char m_pad00[0x10];
-    RockSndTable m_10; // +0x10
+    CMapStringToOb m_10; // +0x10
     char m_pad11[0x30 - 0x11];
     i32 m_30; // +0x30  active guard
 };
@@ -1773,10 +1770,8 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                     if (gr == 0) {
                         CString msg;
                         FormatStr(&msg, "No giant rock logic found around: x=%d, y=%d", cx, cy);
-                        ((CGruntzMgr*)g_gameReg)
-                            ->EnterModalUI((i32)(const char*)(msg)); // dual-view bridge (0x08ef10)
-                        ((CGruntzMgr*)g_gameReg)
-                            ->ReportError(0x80dd, 0x403); // dual-view bridge; see SpawnPuddle
+                        g_gameReg->EnterModalUI(msg);
+                        g_gameReg->ReportError(0x80dd, 0x403);
                         return 0;
                     }
                     ((CTileTriggerSwitchLogic*)gr)->BuildRockBreakInGameText();
@@ -1827,8 +1822,9 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
 
             RockSndSet* set = m_22c->m_28;
             if (set->m_30 == 0) {
-                RockSndEntry* e = 0;
-                ((CMapStringToOb*)&set->m_10)->Lookup("LEVEL_ROCKBREAK", (CObject*&)e);
+                CObject* e_ob = 0;
+                set->m_10.Lookup("LEVEL_ROCKBREAK", e_ob);
+                RockSndEntry* e = (RockSndEntry*)e_ob;
                 if (e != 0 && g_sndEnabled != 0) {
                     u32 now = g_killCueClock;
                     if (now - e->m_14 >= e->m_18) {
@@ -1854,7 +1850,7 @@ SIZE_UNKNOWN(RockSettingsRoot);
 SIZE_UNKNOWN(RockSndEntry);
 SIZE_UNKNOWN(RockSndPlayer);
 SIZE_UNKNOWN(RockSndSet);
-SIZE_UNKNOWN(RockSndTable);
+SIZE_UNKNOWN(CMapStringToOb);
 
 // ===========================================================================
 // CGruntTileMgr::CombatCue (0x7b930) - merged from GruntTileMgr.cpp per
@@ -2327,8 +2323,9 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
     switch (state) {
         case 1:
             if (m_288 != 2) {
-                LeafCue* p = 0;
-                ((CMapStringToOb*)&m_22c->m_28->m_10)->Lookup("GAME\\FINISHLEVEL", (CObject*&)p);
+                CObject* p_ob = 0;
+                m_22c->m_28->m_10.Lookup("GAME\\FINISHLEVEL", p_ob);
+                LeafCue* p = (LeafCue*)p_ob;
                 m_298 = p->m_10->m_28 + 500;
                 m_29c = 0;
                 m_290 = g_645588;
@@ -2336,7 +2333,7 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
                 CSndHost* h28 = m_22c->m_28;
                 if (h28->m_emitGate == 0) {
                     p = 0;
-                    h28->m_10.Lookup("GAME\\FINISHLEVEL", &p);
+                    h28->m_10.Lookup("GAME\\FINISHLEVEL", (CObject*&)p);
                     if (p != 0 && g_sndEnabled != 0
                         && (u32)(g_killCueClock - p->m_14) >= (u32)p->m_18) {
                         p->m_14 = g_killCueClock;

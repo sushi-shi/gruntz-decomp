@@ -97,7 +97,8 @@ SIZE_UNKNOWN(ChannelSlot);
 // split; not unified here). Only the two touched methods are modeled.
 struct CGameSettings {
     void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
-    void ShowModal(const char* msg);                                  // 0x8ef10
+    // (ShowModal @0x8ef10 was a fake alias of the real CGruntzMgr::EnterModalUI at the same
+    //  rva - dropped; the two reporters below call the canonical method.)
 };
 extern "C" CGameRegistry* g_gameReg; // _g_mgrSettings (0x64556c)
 SIZE_UNKNOWN(CGameSettings);
@@ -1119,7 +1120,8 @@ void CMultiStartDlg::VerifyCustomLevel() {
     if (g_64bd5c->Poll((i32)token) == 0) {
         g_64bd5c->m_530 = 0;
         EnableWindow(0);
-        ((CNetGameMgr*)g_gameReg)->ShowModal("Unable to verify custom level with other players");
+        ((CGruntzMgr*)(void*)g_gameReg)
+            ->EnterModalUI("Unable to verify custom level with other players");
         EnableWindow(1);
     } else if (g_64bd5c->m_53c == 0) {
         g_64bd5c->m_530 = 1;
@@ -1127,7 +1129,7 @@ void CMultiStartDlg::VerifyCustomLevel() {
     } else {
         g_64bd5c->m_530 = 0;
         EnableWindow(0);
-        ((CNetGameMgr*)g_gameReg)->ShowModal("Not all players have the (same) custom level.");
+        ((CGruntzMgr*)(void*)g_gameReg)->EnterModalUI("Not all players have the (same) custom level.");
         EnableWindow(1);
     }
 }

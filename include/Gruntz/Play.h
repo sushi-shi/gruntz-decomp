@@ -283,7 +283,7 @@ struct CPlaySerialChild {
 // failure). Each TU now declares the singleton itself, with the type it actually
 // needs; MFC TUs use the real `extern "C" CGruntzMgr* g_gameReg;`.
 // The level/tile frame grid (CPlay::m_grid @+0x4cc) GrabTile/AdvanceTile walk. Top-level
-// so the CState::m_c->m_10 image-registry map can return it typed (CSpriteHashTable::Lookup
+// so the CState::m_c->m_10 image-registry map can return it typed (CMapStringToOb::Lookup
 // frame-grid overload), cast-free.
 SIZE_UNKNOWN(CFrameGrid);
 struct CFrameGrid {

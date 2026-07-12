@@ -276,8 +276,8 @@ i32 CueVisible(i32 viewport, i32 x, i32 y);
 // ---------------------------------------------------------------------------
 struct CSprite; // opaque looked-up sprite
 
-SIZE_UNKNOWN(CEntranceHashTable);
-class CEntranceHashTable {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom whose only "method" was a fake
+// alias of the MFC library CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 
 SIZE_UNKNOWN(CEntranceSpriteMgr);
 struct CEntranceSpriteMgr {
@@ -287,7 +287,7 @@ struct CEntranceSpriteMgr {
     void* LookupValue_06b2a0(const char* key); // 0x6b2a0 (external/reloc-masked)
 
     char m_pad0[0x10];
-    CEntranceHashTable m_10map; // +0x10
+    CMapStringToOb m_10map; // +0x10
 };
 
 // The grunt's exit-animation holder at CGrunt+0x150 (a 4-byte member just before
@@ -554,12 +554,12 @@ struct GruntSoundEntry {
     char m_pad0[0x10];
     CSoundCueMgr* m_10; // +0x10  the sample factory
 };
-SIZE_UNKNOWN(GruntSoundMap);
-struct GruntSoundMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
+// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 SIZE_UNKNOWN(GruntSoundInner);
 struct GruntSoundInner {
     char m_pad0[0x10];
-    GruntSoundMap m_10; // +0x10  the lookup map (call this->m_10.Lookup)
+    CMapStringToOb m_10; // +0x10  the lookup map (call this->m_10.Lookup)
 };
 
 // The intrusive coord-node freelist the grunt machines recycle occupied-coord

@@ -7,7 +7,7 @@
 // parallel buckets of CSpriteRef nodes: m_refA[17] (+0x08) and m_refB[17] (+0x4c)
 // -- a "normal" and an "alternate" set. Init(p0,p1) caches two engine sub-objects
 // (m_factory = sprite source, m_spriteMgrHolder = the sprite-mgr holder), Add() looks a named sprite
-// up in m_spriteMgrHolder's CSpriteHashTable and builds a CSpriteRef from it, and GetSel(i,bAlt)
+// up in m_spriteMgrHolder's CMapStringToOb and builds a CSpriteRef from it, and GetSel(i,bAlt)
 // returns the resolved sprite/frame pointer of the chosen bucket's node -- the hot
 // accessor (~30 call sites, incl. BuildGruntSprintAnimation). m_built (+0x90) is a
 // count/flag reset to 0 on Init/Clear.
@@ -41,7 +41,7 @@ public:
     u16 m_pad0e;      // +0x0e  pad to 0x10
 };
 
-// The sprite name->object hash table (CSpriteHashTable at +0x10 of the sprite mgr).
+// The sprite name->object hash table (CMapStringToOb at +0x10 of the sprite mgr).
 // Lookup is the engine's 0x1b8008; modeled NO-body so its `call` reloc-masks.
 SIZE_UNKNOWN(CSpriteRefHashTable);
 class CSpriteRefHashTable {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at the call

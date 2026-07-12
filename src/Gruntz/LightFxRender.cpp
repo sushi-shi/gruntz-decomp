@@ -10,7 +10,8 @@
 //
 // Field names are placeholders (m_<hexoffset>); only offsets + code bytes are
 // load-bearing. See <Gruntz/LightFxRender.h> for the layout.
-#include <Win32.h> // windows.h base types (ddraw.h needs them first)
+#include <Mfc.h> // MFC superset of <Win32.h> (afx first): <Gruntz/SoundCue.h> now needs
+                 // the real CMapStringToOb. Still supplies the windows.h base types ddraw.h wants.
 #include <DDrawMgr/DDrawPtrCollections.h>
 #include <Gruntz/SpriteRefTable.h>
 #include <ddraw.h> // real IDirectDrawSurface dispatch (Unlock, slot 32 +0x80) - this TU

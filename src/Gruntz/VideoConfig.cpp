@@ -712,8 +712,9 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (host->m_emitGate) {
             return;
         }
-        LeafCue* cue = 0;
-        host->m_10.Lookup("GAME_VOICE", &cue);
+        CObject* cue_ob = 0;
+        host->m_10.Lookup("GAME_VOICE", cue_ob);
+        LeafCue* cue = (LeafCue*)cue_ob;
         if (!cue) {
             return;
         }
@@ -736,8 +737,9 @@ void ScrollDialog(HWND hDlg, HWND hCtrl, i32 code, i32 pos) {
         if (host->m_emitGate) {
             return;
         }
-        LeafCue* cue = 0;
-        host->m_10.Lookup("GAME_CHIPFALLOUT", &cue);
+        CObject* cue_ob = 0;
+        host->m_10.Lookup("GAME_CHIPFALLOUT", cue_ob);
+        LeafCue* cue = (LeafCue*)cue_ob;
         if (!cue) {
             return;
         }

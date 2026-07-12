@@ -65,11 +65,12 @@ struct CLookObj {
 
 // The two keyed stores reached through g_gameReg->m_world: a name->record map at
 // (->m_nameMap + 0x10) and an id->record map at (->m_idMap + 0x48).
-struct CResMapStr {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
+// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 struct CResMapInt {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at each call
 struct CResHolder {
     char _0[0x10];
-    CResMapStr m_map10; // +0x10
+    CMapStringToOb m_map10; // +0x10
 };
 struct CResHolder2 {
     char _0[0x48];
@@ -369,7 +370,6 @@ SIZE_UNKNOWN(CObj7c);
 SIZE_UNKNOWN(CSoundHandle);
 SIZE_UNKNOWN(CSoundFactory);
 SIZE_UNKNOWN(CLookObj);
-SIZE_UNKNOWN(CResMapStr);
 SIZE_UNKNOWN(CResMapInt);
 SIZE_UNKNOWN(CResHolder);
 SIZE_UNKNOWN(CResHolder2);

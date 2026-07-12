@@ -4049,14 +4049,12 @@ i32 CPlay::DispatchHudClick(i32 a, i32 x, i32 y) {
 // are modeled minimally as this-facet views; only offsets / code bytes load-bearing,
 // every helper reloc-masked external.
 // ===========================================================================
-SIZE_UNKNOWN(SbiSndTable);
-struct SbiSndTable {
-    // Find @0x1b8438 IS CMapStringToOb::Lookup; cast at the call.
-};
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
+// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 SIZE_UNKNOWN(SbiSndSet);
 struct SbiSndSet { // m_4->m_30->m_28
     char m_pad00[0x10];
-    SbiSndTable m_10; // +0x10
+    CMapStringToOb m_10; // +0x10
     char m_pad11[0x30 - 0x11];
     i32 m_30; // +0x30  active guard
 };
@@ -4160,8 +4158,9 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
     if (((SbiChild*)m_guts)->m_0 == 2 && SbiPointInChild(x, y)) {
         SbiSndSet* set = ((SbiHost*)m_4)->m_30->m_28;
         if (set->m_30 == 0) {
-            LeafCue* e = 0;
-            ((CMapStringToOb*)&set->m_10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)e);
+            CObject* e_ob = 0;
+            set->m_10.Lookup("GAME_TABHIGHLIGHT1", e_ob);
+            LeafCue* e = (LeafCue*)e_ob;
             if (e != 0) {
                 e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
             }
@@ -4253,7 +4252,7 @@ i32 CPlay::BeginGridWalk(const char* key, i32 index, i32 e8, i32 delay, i32 hasG
     }
     CFrameGrid* grid = 0;
     // frame-grid probe into the image registry's name->object map (frame-grid Lookup overload).
-    ((CMapStringToOb*)&m_c->m_10->m_10map)->Lookup(key, (CObject*&)grid);
+    m_c->m_10->m_10map.Lookup(key, (CObject*&)grid);
     m_grid = grid;
     if (grid == 0) {
         return 1;
@@ -7767,10 +7766,10 @@ struct CEffDesc {
     i32 m_18; // +0x18  display duration (ms)
 };
 // m_c->m_28 + 0x10 is an MFC CMapStringToOb (Lookup @0x1b8438); cast at each call.
-struct CEffMap {};
+// (ex-`CMapStringToOb`: empty phantom aliasing MFC CMapStringToOb::Lookup @0x1b8438 - real map now.)
 struct CEffResMgr { // m_c->m_28
     char p0[0x10];
-    CEffMap m_10; // +0x10  embedded name map
+    CMapStringToOb m_10; // +0x10  embedded name map
 };
 struct CEffMgr { // this->m_c
     char p0[0x28];
@@ -7793,107 +7792,107 @@ i32 CPlay::SetEffectSpriteDurations() {
     CPlayEff* self = (CPlayEff*)this;
     CEffDesc* d;
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_PYRAMIDMOVE", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("GAME_PYRAMIDMOVE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_TELEPORTEROPEN", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("GAME_TELEPORTEROPEN", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_TELEPORTERCLOSE", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("GAME_TELEPORTERCLOSE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 1000;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_TELEPORTERALL", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("GAME_TELEPORTERALL", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 4000;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_BRICKBREAK", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("GAME_BRICKBREAK", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_DEATHBRIDGEMOVE", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_DEATHBRIDGEMOVE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_WATERBRIDGEMOVE", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_WATERBRIDGEMOVE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_ROCKBREAK", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_ROCKBREAK", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_LAVAGEYSER", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_LAVAGEYSER", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_TRAPDOORCLOSE", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_TRAPDOORCLOSE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_TRAPDOOROPEN", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_TRAPDOOROPEN", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_CANDLEIGNITE", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_CANDLEIGNITE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_CANDLEUP", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_CANDLEUP", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_CANDLEDOWN", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_CANDLEDOWN", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_GOLFBALLAIR2", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_GOLFBALLAIR2", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_GOLFBALLHOLE", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_GOLFBALLHOLE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_GOLFBALLSINK", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_GOLFBALLSINK", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 250;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GAME_EXPLOSION1", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("GAME_EXPLOSION1", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_OUTLETHAZARD", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_OUTLETHAZARD", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE1A", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE1A", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE2A", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZFREEZE2A", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
@@ -7910,22 +7909,22 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GRUNTZ_DEATHZ_RESSURECT", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_RESSURECT", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("GRUNTZ_DEATHZ_DEATHZSQUASH1A", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("GRUNTZ_DEATHZ_DEATHZSQUASH1A", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 100;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_CLOUDHAZARDMOVE", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_CLOUDHAZARDMOVE", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 10000;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_CLOUDHAZARDKILL", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_CLOUDHAZARDKILL", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 3000;
     }
@@ -7954,7 +7953,7 @@ i32 CPlay::SetEffectSpriteDurations() {
         d->m_18 = 1000;
     }
     d = 0;
-    ((CMapStringToOb*)&self->m_c->m_28->m_10)->Lookup("LEVEL_PLANEHAZARDFLY", (CObject*&)d);
+    self->m_c->m_28->m_10.Lookup("LEVEL_PLANEHAZARDFLY", (CObject*&)d);
     if (d != 0) {
         d->m_18 = 5000;
     }
@@ -7978,7 +7977,6 @@ SIZE_UNKNOWN(CAnimRegistry);
 SIZE_UNKNOWN(CCueState);
 SIZE_UNKNOWN(CDtorThis);
 SIZE_UNKNOWN(CEffDesc);
-SIZE_UNKNOWN(CEffMap);
 SIZE_UNKNOWN(CEffMgr);
 SIZE_UNKNOWN(CEffResMgr);
 SIZE_UNKNOWN(CExitV44);

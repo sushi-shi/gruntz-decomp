@@ -331,8 +331,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
 
         case DEATH_MELT: {     // GRUNTZ_DEATHZ_MELT
             ApplySetState1(1); // 0x4322
-            CSprite* out = 0;
-            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup(s_DEATHZ_MELT, (CObject*&)out);
+            CObject* out_ob = 0;
+            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_MELT, out_ob);
+            CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
@@ -342,8 +343,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         }
 
         case DEATH_KAROKE: { // GRUNTZ_DEATHZ_KAROKE
-            CSprite* out = 0;
-            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup(s_DEATHZ_KAROKE, (CObject*&)out);
+            CObject* out_ob = 0;
+            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_KAROKE, out_ob);
+            CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);
@@ -358,8 +360,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 m_154->m_1a0.SetGeometry(m_poseDeath);
                 goto pathA;
             }
-            CSprite* out = 0;
-            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup(s_DEATHZ_EXPLODE, (CObject*&)out);
+            CObject* out_ob = 0;
+            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_EXPLODE, out_ob);
+            CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseDeath);
@@ -369,8 +372,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         }
 
         case DEATH_DRAIN: { // GRUNTZ_EXITZ_DRAIN (apply EXITZ), re-latch "B"
-            CSprite* out = 0;
-            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup(s_EXITZ_DRAIN, (CObject*&)out);
+            CObject* out_ob = 0;
+            m_154->m_c->m_2c->m_10map.Lookup(s_EXITZ_DRAIN, out_ob);
+            CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->m_1a0.SetGeometry(m_poseDeath);

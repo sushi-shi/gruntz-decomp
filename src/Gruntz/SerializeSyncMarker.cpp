@@ -39,7 +39,7 @@ i32 SerializeSyncMarker(CSerialArchive* arc, i32 mode, const char* name, i32 lin
         arc->Read(&readVal, 4);
         if (readVal != g_serialCounter + 0x1234666) {
             wsprintfA(g_629a50, "save/load out of sync at %s, %d", name, line);
-            g_gameReg->EnterModalUI((i32)g_629a50);
+            g_gameReg->EnterModalUI(g_629a50);
             return 0;
         }
     }

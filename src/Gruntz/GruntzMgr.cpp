@@ -2469,7 +2469,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
         return 0;
     }
     void* found = 0;
-    ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("GAME_DEVHEADS", (void*&)found);
+    ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("GAME_DEVHEADS", found);
     void* out = found;
     if (out == 0) {
         return 0;
@@ -2511,7 +2511,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 RVA(0x00091250, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->Update() == 3 && m_world) {
-        void* found = 0;
+        CObject* found = 0;
         ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("Gruntz", (void*&)found);
         CImageSet* set = (CImageSet*)found;
         if (set) {
@@ -2530,7 +2530,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
                     CSndHost* host = m_world->m_28;
                     if (host->m_emitGate == 0) {
                         found = 0;
-                        host->m_10.Lookup("GAME_MINORCHEAT", (LeafCue**)&found);
+                        host->m_10.Lookup("GAME_MINORCHEAT", found);
                         LeafCue* cue = (LeafCue*)found;
                         if (cue) {
                             i32 tag = g_sndCueTag;
@@ -2568,7 +2568,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
 RVA(0x00091390, 0x11d)
 void CGruntzMgr::CheatEclipseToggle() {
     if (m_curState && m_curState->Update() == 3 && m_world) {
-        void* found = 0;
+        CObject* found = 0;
         ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("Gruntz", (void*&)found);
         CImageSet* set = (CImageSet*)found;
         if (set) {
@@ -2588,7 +2588,7 @@ void CGruntzMgr::CheatEclipseToggle() {
                     CSndHost* host = m_world->m_28;
                     if (host->m_emitGate == 0) {
                         found = 0;
-                        host->m_10.Lookup("GAME_MINORCHEAT", (LeafCue**)&found);
+                        host->m_10.Lookup("GAME_MINORCHEAT", found);
                         LeafCue* cue = (LeafCue*)found;
                         if (cue) {
                             i32 tag = g_sndCueTag;
@@ -3285,7 +3285,7 @@ i32 CGruntzMgr::Quicksave() {
     if (m_hudGuard->m_124 != 0) {
         CString name;
         name.LoadStringA(0x81aa);
-        EnterModalUI((i32)(const char*)name);
+        EnterModalUI(name);
         return 1;
     }
     if (m_saveInfoRec == 0 || !(m_saveInfoRec->m_flags & 1)) {
@@ -3302,7 +3302,7 @@ i32 CGruntzMgr::Quicksave() {
         m_chatLog->AddItem("Game Quicksaved successfully.", 0, 0x11);
         return 1;
     }
-    EnterModalUI((i32) "ERROR - Cannot Save Game.");
+    EnterModalUI("ERROR - Cannot Save Game.");
     return 1;
 }
 
@@ -3897,7 +3897,7 @@ extern "C" CGameRegistry* g_gameReg; // 0x64556c
 // modal screen: stops the +0x60 timer if any, forces a map redraw + ticks the
 // world's dispatch object, then brings the hardware cursor visible
 // (while (ShowCursor(TRUE) < 0)), runs the modal handler on the app
-// (m_8->RunModal(arg, hwnd)) with the cursor-busy gate raised, clears the gate,
+// (m_8->RunModal(msg, hwnd)) with the cursor-busy gate raised, clears the gate,
 // and - if the cursor was already shown on entry - hides it again
 // (while (ShowCursor(FALSE) >= 0)). No-op when there is no app bound.
 // @early-stop
@@ -3906,7 +3906,7 @@ extern "C" CGameRegistry* g_gameReg; // 0x64556c
 // for `this`, edi for the ptr) - a pure esi<->edi naming swap (call ff d6 vs
 // ff d7). Not steerable from source; see docs/patterns/zero-register-pinning.md.
 RVA(0x0008ef10, 0x9e)
-void CGruntzMgr::EnterModalUI(i32 arg) {
+void CGruntzMgr::EnterModalUI(const char* msg) {
     CGameApp* app = m_owner;
     if (app == 0) {
         return;
@@ -3926,7 +3926,7 @@ void CGruntzMgr::EnterModalUI(i32 arg) {
     }
 
     m_modalBusy = 1;
-    app->RunModal(arg, m_gameWnd->m_hwnd);
+    app->RunModal(msg, m_gameWnd->m_hwnd);
     g_64557c = 0;
     m_modalBusy = 0;
     if (shown <= 0) {
@@ -4601,7 +4601,7 @@ i32 CGruntzMgr::LoadSaveMessageSprite() {
     if (m_hudGuard->m_124 != 0) {
         CString name;
         name.LoadStringA(0x81aa);
-        EnterModalUI((i32)(const char*)name);
+        EnterModalUI(name);
     } else if (RunModalDialog("GAME_SAVE", (void*)GruntzSaveGameDlgProc, 0) == 1) {
         RunModalDialog("GAME_SAVEMSG", (void*)GruntzSaveMsgDlgProc, 0);
     }

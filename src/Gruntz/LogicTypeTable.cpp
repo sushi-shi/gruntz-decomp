@@ -35,12 +35,13 @@ extern "C" {
 
 // ---------------------------------------------------------------------------
 // The logic-type registry: its vtable (slot +0x24 = the registrar) lives at +0,
-// and a string-keyed lookup sub-object (CLogicMap, used by Lookup) is embedded at
+// and a string-keyed lookup sub-object (CMapStringToOb, used by Lookup) is embedded at
 // +0x10. Modeled minimally so the `ecx=<registry+0x10>; call 0x1b8008` and
 // `call [vtbl+0x24]` shapes reloc-mask.
 // ---------------------------------------------------------------------------
 struct CLogicType;
-class CLogicMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
+// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 class CLogicRegistry {
 public:
     // slot +0x24: install (factoryFn, key, flags) for a not-yet-present type.
@@ -56,7 +57,7 @@ public:
     virtual void RegisterType(void* factoryFn, char* szKey, i32 flags); // +0x24
 
     char m_pad04[0x10 - 4];
-    CLogicMap m_10map; // +0x10  lookup sub-object
+    CMapStringToOb m_10map; // +0x10  lookup sub-object
 };
 
 // The intermediate object reached through this->m_c: its +0x14 slot points at the
@@ -83,22 +84,25 @@ struct CLogicTypeBuilder {
 RVA(0x00008a40, 0xc8)
 void __stdcall BuildLogicTypeTable(CLogicTypeBuilder* obj) {
     {
-        CLogicType* found = 0;
-        ((CMapStringToOb*)&obj->m_c->m_14->m_10map)->Lookup("LogicHit", (CObject*&)found);
+        CObject* found_ob = 0;
+        obj->m_c->m_14->m_10map.Lookup("LogicHit", found_ob);
+        CLogicType* found = (CLogicType*)found_ob;
         if (!found) {
             obj->m_c->m_14->RegisterType((void*)LogicHitFactory, "LogicHit", 2);
         }
     }
     {
-        CLogicType* found = 0;
-        ((CMapStringToOb*)&obj->m_c->m_14->m_10map)->Lookup("LogicAttack", (CObject*&)found);
+        CObject* found_ob = 0;
+        obj->m_c->m_14->m_10map.Lookup("LogicAttack", found_ob);
+        CLogicType* found = (CLogicType*)found_ob;
         if (!found) {
             obj->m_c->m_14->RegisterType((void*)LogicAttackFactory, "LogicAttack", 2);
         }
     }
     {
-        CLogicType* found = 0;
-        ((CMapStringToOb*)&obj->m_c->m_14->m_10map)->Lookup("LogicBump", (CObject*&)found);
+        CObject* found_ob = 0;
+        obj->m_c->m_14->m_10map.Lookup("LogicBump", found_ob);
+        CLogicType* found = (CLogicType*)found_ob;
         if (!found) {
             obj->m_c->m_14->RegisterType((void*)LogicBumpFactory, "LogicBump", 2);
         }
@@ -145,7 +149,6 @@ void CFinalize8b90::Finalize(i32 arg) {
 }
 
 SIZE_UNKNOWN(CLogicCtx);
-SIZE_UNKNOWN(CLogicMap);
 SIZE_UNKNOWN(CLogicRegistry);
 
 // --- vtable catalog ---

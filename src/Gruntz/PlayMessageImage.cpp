@@ -46,8 +46,9 @@ struct PresentHost_faec0 {
 // tip m_c out of esi. Not source-steerable (permuter: no change).
 RVA(0x000d1650, 0x90)
 void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
-    CImageSet* set = 0;
-    ((CMapStringToOb*)&m_c->m_10->m_10map)->Lookup(s_GameMessagez, (CObject*&)set);
+    CObject* set_ob = 0;
+    m_c->m_10->m_10map.Lookup(s_GameMessagez, set_ob);
+    CImageSet* set = (CImageSet*)set_ob;
     if (set != 0) {
         CImageFrame* frame = set->GetAt(index);
         if (frame != 0) {
@@ -74,8 +75,9 @@ RVA(0x000cfef0, 0xbc)
 i32 CPlay::Vslot23() {
     ((PresentHost_faec0*)this)->Present(0x3c);
 
-    CImageSet* lookup = 0;
-    ((CMapStringToOb*)&m_c->m_10->m_10map)->Lookup(s_GameMessagez, (CObject*&)lookup);
+    CObject* lookup_ob = 0;
+    m_c->m_10->m_10map.Lookup(s_GameMessagez, lookup_ob);
+    CImageSet* lookup = (CImageSet*)lookup_ob;
     CImageSet* set = lookup;
     if (set == 0) {
         return 0;

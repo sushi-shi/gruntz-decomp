@@ -953,7 +953,8 @@ struct CNetGameMgr {
     // exposes (the former per-TU CGameSettings view, now folded here): the net verify
     // path calls g_gameReg->BuildRezPath / ->ShowModal. Reloc-masked externs.
     void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
-    void ShowModal(const char* msg);                                  // 0x8ef10
+    // (ShowModal @0x8ef10 was a fake alias of the real CGruntzMgr::EnterModalUI at the same
+    //  rva - dropped; the verify-level reporters call the canonical method.)
     char m_pad0[4];                                                   // +0x00
     CNetGameWnd* m_wnd; // +0x04  the window (its +0x4 is the engine HWND)
     char m_pad8[0x38 - 8];

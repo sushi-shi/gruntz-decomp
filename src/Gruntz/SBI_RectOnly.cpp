@@ -55,7 +55,7 @@ extern i32 g_dat645588;
 DATA(0x00244c54)
 extern i32 g_644c54;
 
-// CSbiLookupMap/CSbiCueRecord/CSoundCueMgr/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
+// CMapStringToOb/CSbiCueRecord/CSoundCueMgr/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
 // CSbiTile*/CSbiActiveObj/CSbiLogger/CSbiWndHost/CGameReg moved to
 // <Gruntz/SBI_RectOnly.h>.
 // 0x24556c: the game-mgr singleton, typed as the REAL class (CGruntzMgr, the RTTI-true
@@ -1229,8 +1229,9 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
             ((CStatzTabSub*)m[idx + 0x18c / 4])->Toggle(m[0], one);
             CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
             if (h->m_emitGate == 0) {
-                LeafCue* spr = 0;
-                h->m_10.Lookup("GAME_STATZTABTOGGLE", &spr);
+                CObject* spr_ob = 0;
+                h->m_10.Lookup("GAME_STATZTABTOGGLE", spr_ob);
+                LeafCue* spr = (LeafCue*)spr_ob;
                 if (spr) {
                     if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
                         spr->m_14 = g_6bf3c0;
@@ -1330,8 +1331,9 @@ void CSBI_RectOnly::UpdateGruntOvenStatusBar() {
                 frame = 0x1a;
                 CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
                 if (h->m_emitGate == 0) {
-                    LeafCue* spr = 0;
-                    h->m_10.Lookup("GAME_COOKINGCOMPLETE", &spr);
+                    CObject* spr_ob = 0;
+                    h->m_10.Lookup("GAME_COOKINGCOMPLETE", spr_ob);
+                    LeafCue* spr = (LeafCue*)spr_ob;
                     if (spr) {
                         if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
                             spr->m_14 = g_6bf3c0;
@@ -1392,8 +1394,9 @@ void CSBI_RectOnly::UpdateChipGrinderStatusBar() {
                 if (m[0x10c / 4] == 3 && m[0] != 2) {
                     CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
                     if (h->m_emitGate == 0) {
-                        LeafCue* spr = 0;
-                        h->m_10.Lookup("GAME_REZGRINDING", &spr);
+                        CObject* spr_ob = 0;
+                        h->m_10.Lookup("GAME_REZGRINDING", spr_ob);
+                        LeafCue* spr = (LeafCue*)spr_ob;
                         if (spr) {
                             if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
                                 spr->m_14 = g_6bf3c0;
@@ -1733,10 +1736,11 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
     i32* m = (i32*)this;
     m[0x3c / 4] = a0;
 
-    CSprite* spr = 0;
+    CObject* spr_ob = 0;
     i32 n = phase + 1;
     ((CRegHolder*)g_gameReg->m_world)
-        ->m_statusBar->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", &spr);
+        ->m_statusBar->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
+    CSprite* spr = (CSprite*)spr_ob;
     i32* frame =
         (spr && n >= spr->m_firstFrame && n <= spr->m_lastFrame) ? spr->m_frames.m_pData[n] : 0;
     m[0x38 / 4] = (i32)frame;
@@ -1783,8 +1787,9 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
 
     CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
     if (h->m_emitGate == 0) {
-        LeafCue* fly = 0;
-        h->m_10.Lookup("GAME_WARPSTONEFLY", &fly);
+        CObject* fly_ob = 0;
+        h->m_10.Lookup("GAME_WARPSTONEFLY", fly_ob);
+        LeafCue* fly = (LeafCue*)fly_ob;
         if (fly) {
             if (g_sndEnabled != 0 && g_6bf3c0 - fly->m_14 >= fly->m_18) {
                 fly->m_14 = g_6bf3c0;

@@ -33,7 +33,8 @@
 // trylevel-slot threading can be reproduced, then re-attack.
 
 #include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
-#include <Win32.h>               // RECT (the menu credits-text rectangle @0x645d88)
+#include <Mfc.h> // MFC superset of <Win32.h> (afx first): <Gruntz/SoundCue.h> now needs the
+                 // real CMapStringToOb. Still supplies RECT (credits-text rect @0x645d88).
 #include <rva.h>
 
 typedef u32 u32;

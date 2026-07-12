@@ -20,7 +20,7 @@
 #include <Wwd/WwdGameObjectFamily.h>      // the CWwdGameObjectE/A/F/B/C dtor-family hierarchy
 #include <Gruntz/UserLogic.h>             // CGameObject (the sprite-resource/worker leaves)
 #include <Gruntz/ResMgr.h>                // CResMgr + the three registries (m_10/m_14/m_28/m_2c)
-#include <Gruntz/Sprite.h>                // CSprite (frame-data), CSpriteHashTable, CFrameArray
+#include <Gruntz/Sprite.h>                // CSprite (frame-data), CMapStringToOb, CFrameArray
 #include <Gruntz/LogicRecord.h>           // CLogicRecord (the +0x80 worker under its record view)
 #include <DDrawMgr/AnimWorkerObj.h>       // AnimWorkerObj (the 0x17c worker; Clear @0x151e70)
 #include <DDrawMgr/DDrawWorker.h>         // CDDrawWorker (frame collection; slots 10/14/15/16)

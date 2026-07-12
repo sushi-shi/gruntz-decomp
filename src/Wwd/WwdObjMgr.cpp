@@ -509,8 +509,9 @@ SIZE_UNKNOWN(CSprite2SubTable);
 RVA(0x001597b0, 0x57)
 CGameObject*
 CSpriteFactory::CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags) {
-    CSprite* tmpl = 0;
-    ((CMapStringToOb*)&m_c->m_14->m_10map)->Lookup(name, (CObject*&)tmpl);
+    CObject* tmpl_ob = 0;
+    m_c->m_14->m_10map.Lookup(name, tmpl_ob);
+    CSprite* tmpl = (CSprite*)tmpl_ob;
     if (!tmpl) {
         return 0;
     }
@@ -536,8 +537,9 @@ i32 CSpriteFactory::AttachSprite(
     if (!obj) {
         return 0;
     }
-    CSprite* tmpl = 0;
-    ((CMapStringToOb*)&m_c->m_14->m_10map)->Lookup(name, (CObject*&)tmpl);
+    CObject* tmpl_ob = 0;
+    m_c->m_14->m_10map.Lookup(name, tmpl_ob);
+    CSprite* tmpl = (CSprite*)tmpl_ob;
     if (!tmpl) {
         return 0;
     }

@@ -357,10 +357,11 @@ struct CNetCueRec {
     i32 m_20; // +0x20
 };
 // The embedded registry/bute object at (m_c->m_28 + 0x10); Lookup @0x1b8438.
-struct CRegBute {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
+// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 struct CNetCfgSub { // m_c->m_28
     char m_pad0[0x10];
-    CRegBute m_10;             // +0x10  embedded registry/bute (Lookup 0x1b8438)
+    CMapStringToOb m_10;             // +0x10  embedded registry/bute (Lookup 0x1b8438)
     char m_pad11[0x30 - 0x11]; // to +0x30
     i32 m_30;                  // +0x30
 };
@@ -1904,9 +1905,9 @@ void CMulti::ReportVersionMsg(char* msg, i32 code) {
     if (msg && *msg && Mgr()) {
         if (code > 0) {
             sprintf(buf, "%s (%i)", msg, code);
-            Mgr()->EnterModalUI((i32)buf);
+            Mgr()->EnterModalUI(buf);
         } else {
-            Mgr()->EnterModalUI((i32)msg);
+            Mgr()->EnterModalUI(msg);
         }
     }
 }
@@ -1960,7 +1961,6 @@ SIZE_UNKNOWN(CNetCfg);
 SIZE_UNKNOWN(CNetCfgSub);
 SIZE_UNKNOWN(CNetCueRec);
 SIZE_UNKNOWN(CNetMgrLite);
-SIZE_UNKNOWN(CRegBute);
 SIZE_UNKNOWN(CMulti);
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
 SIZE_UNKNOWN(CMultiLogicDesc);
@@ -2113,8 +2113,9 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
         Sub386e();
     } else {
         if (m_c->m_28->m_30 == 0) {
-            CNetCueRec* rec = 0;
-            ((CMapStringToOb*)&m_c->m_28->m_10)->Lookup(s_GameKey, (CObject*&)rec);
+            CObject* rec_ob = 0;
+            m_c->m_28->m_10.Lookup(s_GameKey, rec_ob);
+            CNetCueRec* rec = (CNetCueRec*)rec_ob;
             if (rec != 0) {
                 i32 snd = g_sndEnabled;
                 i32 cue = g_sndCueTag;
@@ -2375,11 +2376,12 @@ i32 CMulti::VerifyCustomLevel(void* h, i32 playerTok) {
     g_connectRptMgr->m_levelVerifyResult = 0;
     if (g_connectRptMgr->Poll((i32)token) == 0) {
         m_530 = 0;
-        ((CNetGameMgr*)g_gameReg)->ShowModal("Unable to verify custom level with other players");
+        ((CGruntzMgr*)(void*)g_gameReg)
+            ->EnterModalUI("Unable to verify custom level with other players");
         return 0;
     }
     if (g_connectRptMgr->m_levelVerifyResult == 0) {
-        ((CNetGameMgr*)g_gameReg)->ShowModal("Not all players have the (same) custom level.");
+        ((CGruntzMgr*)(void*)g_gameReg)->EnterModalUI("Not all players have the (same) custom level.");
         m_530 = 0;
         return 0;
     }
@@ -2767,8 +2769,9 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (host->m_emitGate != 0) {
                 break;
             }
-            LeafCue* e = 0;
-            host->m_10.Lookup("GAME_CHAT", &e);
+            CObject* e_ob = 0;
+            host->m_10.Lookup("GAME_CHAT", e_ob);
+            LeafCue* e = (LeafCue*)e_ob;
             if (e == 0) {
                 break;
             }
@@ -3153,11 +3156,12 @@ void CMulti::AckDropPlayer(i32 id) {
 // `key` arg slot as the out-nHash local). `CSndFinder::Lookup` was a fake-view alias of it,
 // so the rel32 bound to nothing. The finder embedded at CSndHost+0x10 IS a CMapStringToOb
 // (its 0x1c bytes exactly fill +0x10..+0x2c), so the call is made through the real MFC
-// class here and now links against the library symbol. It is reached by a reinterpret
-// rather than by typing CSndHost::m_10: <Gruntz/SoundCue.h> is pulled into
-// <Gruntz/GameRegistry.h> and thus into ~60 pure-Win32 TUs, where naming an MFC collection
-// trips C1189 - that is the deferred ~85-TU <Mfc.h> umbrella swap, not this lane. The
+// class here and now links against the library symbol. (The feared C1189 wall on typing
+// CSndHost::m_10 was measured and was only TWO Win32-umbrella TUs deep, not ~60: both were
+// switched to <Mfc.h> and the member is now the real CMapStringToOb.) The
 // out-value is CObject* because that is what the MFC container's own API types it.
+// (RELOC-Multi follow-up: CSndHost::m_10 is now TYPED CMapStringToOb in <Gruntz/SoundCue.h>
+// - the ex-CSndFinder view is dissolved - so this call is cast-free.)
 RVA(0x000ba620, 0x14a)
 i32 CMulti::LoadMenuSelectSprite(void* evp) {
     MenuSelectEvent* ev = (MenuSelectEvent*)evp;
@@ -3189,7 +3193,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
         CSndHost* host = ((CSndSubMgr*)m_c)->m_28;
         if (host->m_emitGate == 0) {
             CObject* out = 0;
-            ((CMapStringToOb*)&host->m_10)->Lookup("GAME_MENUS_SELECT", out);
+            host->m_10.Lookup("GAME_MENUS_SELECT", out);
             LeafCue* e = (LeafCue*)out;
             if (e != 0) {
                 i32 enabled = g_sndEnabled;

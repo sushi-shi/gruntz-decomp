@@ -16,7 +16,7 @@
 
 // ---------------------------------------------------------------------------
 // Engine objects reached through the game-manager singleton (g_gameReg).
-// CSprite (frame-data) + CSpriteHashTable come from <Gruntz/Sprite.h>; the
+// CSprite (frame-data) + CMapStringToOb come from <Gruntz/Sprite.h>; the
 // resource manager + its image registry (m_10) from <Gruntz/ResMgr.h>.
 // ---------------------------------------------------------------------------
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
@@ -475,6 +475,5 @@ i32 CActionOptionsMenuBar::Serialize(CSerialArchive* ar) {
 SIZE_UNKNOWN(CActionOptionsMenuBar);
 SIZE_UNKNOWN(CDrawTarget);
 SIZE_UNKNOWN(CMenuBarFrame);
-SIZE_UNKNOWN(CSpriteHashTable);
 SIZE_UNKNOWN(CSpriteMgr);
 SIZE_UNKNOWN(CViewport);

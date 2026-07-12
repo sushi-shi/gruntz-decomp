@@ -78,10 +78,11 @@ struct HazLookupEntry {
     char m_pad00[0x24];
     i32 m_aniPadBias; // +0x24  the per-effect AniPad bias
 };
-struct HazStrMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at the call
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
+// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 struct HazSndCat {
     char m_pad00[0x10];
-    HazStrMap m_map; // +0x10  the lookup map
+    CMapStringToOb m_map; // +0x10  the lookup map
 };
 struct HazSndRoot {
     char m_pad00[0x2c];
@@ -535,7 +536,6 @@ SIZE_UNKNOWN(HazGridMgr);
 SIZE_UNKNOWN(HazLookupEntry);
 SIZE_UNKNOWN(HazSndCat);
 SIZE_UNKNOWN(HazSndRoot);
-SIZE_UNKNOWN(HazStrMap);
 SIZE_UNKNOWN(HazSwitchSrc);
 // Tree-wide SIZE anchor for the unified CCoordColl coordinate/activation-registry
 // archetype (<Gruntz/HaznColl.h>; the former CTBombColl/CHaznColl views, used across

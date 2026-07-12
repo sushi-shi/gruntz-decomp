@@ -42,11 +42,10 @@ struct CMenuListNode {
 // The catalog map reached through m_owner->m_catalog->m_map (CMapStringToPtr::Lookup, 0x1b8008).
 // The catalog map reached through m_0->m_10->m_10 (CMapStringToPtr::Lookup, 0x1b8008).
 // The string->item map base is an MFC CMapStringToOb (Lookup @0x1b8438); cast at the call.
-SIZE_UNKNOWN(CMenuMap);
-struct CMenuMap {};
+SIZE_UNKNOWN(CMapStringToOb);
 struct CMenuCatalog {
     char pad0[0x10];
-    CMenuMap m_map; // +0x10 the string->item map base
+    CMapStringToOb m_map; // +0x10 the string->item map base
 };
 SIZE_UNKNOWN(CMenuCatalog);
 struct CMenuHost {
@@ -119,8 +118,9 @@ i32 CMenuPage::Configure(
     *(Geom4*)&m_rectLeft = *(Geom4*)((char*)tmpl + 0x8);
     m_offsetX = 0;
     m_offsetY = 0;
-    void* slot = 0;
-    ((CMapStringToOb*)&m_owner->m_catalog->m_map)->Lookup(key, (CObject*&)slot);
+    CObject* slot_ob = 0;
+    m_owner->m_catalog->m_map.Lookup(key, slot_ob);
+    void* slot = (void*)slot_ob;
     m_subPage = (CMenuPage*)slot;
     return slot != 0;
 }
@@ -160,8 +160,9 @@ void CMenuPage::Clear() {
 // them (cl). Permuter confirmed no source spelling reorders it (90.238 -> 90.238).
 RVA(0x001833f0, 0x38)
 i32 CMenuPage::ResolveSubPage(const char* key) {
-    void* slot = 0;
-    ((CMapStringToOb*)&m_owner->m_catalog->m_map)->Lookup(key, (CObject*&)slot);
+    CObject* slot_ob = 0;
+    m_owner->m_catalog->m_map.Lookup(key, slot_ob);
+    void* slot = (void*)slot_ob;
     m_subPage = (CMenuPage*)slot;
     return slot != 0;
 }

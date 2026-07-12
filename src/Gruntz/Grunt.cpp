@@ -247,7 +247,7 @@ static void GruntScratchTeardown();
 //
 // The pose-suffix strings + "GRUNTZ_" prefix are literal .rodata (reloc-masked
 // DIR32 operands). Each `LOAD_POSE` builds the key via the two AFXAPI (__stdcall)
-// operator+ overloads -> a pair of stack CString temps -> CEntranceHashTable::
+// operator+ overloads -> a pair of stack CString temps -> CMapStringToOb::
 // Lookup(key, &out) (writes node->m_c on a hit; out defaults 0).
 static const char s_pose_WALK[] = "_WALK";
 static const char s_pose_ATTACK1[] = "_ATTACK1";

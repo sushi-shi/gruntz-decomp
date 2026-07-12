@@ -46,14 +46,12 @@ struct HbSndEntry {
     u32 m_14;          // +0x14  last-played stamp
     u32 m_18;          // +0x18  interval
 };
-SIZE_UNKNOWN(HbSndTable);
-struct HbSndTable {
-    // Find @0x1b8438 IS CMapStringToOb::Lookup; cast at the call.
-};
+// (The ex-`HbSndTable` view is DISSOLVED: an empty phantom aliasing the MFC library
+// CMapStringToOb::Lookup @0x1b8438 - the member below is the real map.)
 SIZE_UNKNOWN(HbSndSet);
 struct HbSndSet {
     char m_pad00[0x10];
-    HbSndTable m_10; // +0x10
+    CMapStringToOb m_10; // +0x10
     char m_pad11[0x30 - 0x11];
     i32 m_30; // +0x30  active guard
 };
@@ -155,8 +153,9 @@ i32 CInGameText::Update() {
         && y >= g_gameReg->m_140) {
         HbSndSet* set = g_gameReg->m_world->m_28;
         if (set->m_30 == 0) {
-            HbSndEntry* res = 0;
-            ((CMapStringToOb*)&set->m_10)->Lookup("GAME_HELPBOOK", (CObject*&)res);
+            CObject* res_ob = 0;
+            set->m_10.Lookup("GAME_HELPBOOK", res_ob);
+            HbSndEntry* res = (HbSndEntry*)res_ob;
             if (res != 0) {
                 i32 enable = g_sndEnabled;
                 i32 token = g_sndCueTag;

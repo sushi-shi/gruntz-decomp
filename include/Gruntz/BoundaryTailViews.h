@@ -105,13 +105,11 @@ struct Entry_bdd0 {
     void* m_10; // 0x10
 };
 SIZE_UNKNOWN(Entry_bdd0);
-struct Map_bdd0 {
-    // Lookup @0x1b8438 IS CMapStringToOb::Lookup; cast at the call.
-};
-SIZE_UNKNOWN(Map_bdd0);
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
+// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 struct Arg1_bdd0 {
     char _0[0x10];
-    Map_bdd0 m_10; // 0x10 (Map_bdd0)
+    CMapStringToOb m_10; // 0x10 (CMapStringToOb)
 };
 SIZE_UNKNOWN(Arg1_bdd0);
 // (CObj_bdd0 dissolved: its Dispatch (0xbdd0) is CRandomAmbientSound::Dispatch and

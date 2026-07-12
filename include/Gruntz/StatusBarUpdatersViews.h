@@ -9,7 +9,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/SoundCueMgr.h> // CSoundCueMgr (ConfigureItem @0x1360d0)
-#include <Gruntz/Sprite.h>      // CSprite (frame-data value) + CSpriteHashTable
+#include <Gruntz/Sprite.h>      // CSprite (frame-data value) + CMapStringToOb
 #include <Gruntz/SoundCue.h> // the ONE +0x28 status/cue holder (CSndHost; folds the former CStatusBarHolder)
 
 // The status-bar item the named cue Lookup resolves IS the canonical LeafCue

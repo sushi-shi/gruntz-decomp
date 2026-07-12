@@ -73,13 +73,13 @@ struct CChatAnim {
 // value type differs per instance (CChatAnim for the rows, CChatTimer for scroll),
 // so the out-param is generic. __thiscall.
 // The key->node map is an MFC CMapStringToOb (Lookup @0x1b8438); cast at each call.
-struct CChatMap {};
+// (ex-`CMapStringToOb`: empty phantom aliasing MFC CMapStringToOb::Lookup @0x1b8438 - real map now.)
 
 // The on-screen catalog reached through CChatPage::m_10; the key->node map lives
 // at +0x10 inside it (the `add ecx,0x10` in the row-advance lookups).
 struct CChatCatalog {
     char pad0[0x10];
-    CChatMap m_10map;
+    CMapStringToOb m_10map;
     char pad14[0x64 - 0x14];
     i32 m_64; // current frame/index, read straight through the lookup result
 };
@@ -120,7 +120,7 @@ struct CChatTimer {
 // +0x10 and a "busy" gate at +0x30.
 struct CChatRoster {
     char pad0[0x10];
-    CChatMap m_10; // +0x10 key->timer map
+    CMapStringToOb m_10; // +0x10 key->timer map
     char pad14[0x30 - 0x14];
     i32 m_30; // +0x30 busy gate
 };
@@ -367,8 +367,9 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
-    CChatAnim* a = 0;
-    ((CMapStringToOb*)&m_page->m_10->m_10map)->Lookup((const char*)key, (CObject*&)a);
+    CObject* a_ob = 0;
+    m_page->m_10->m_10map.Lookup((const char*)key, a_ob);
+    CChatAnim* a = (CChatAnim*)a_ob;
     m_row0Anim = a;
     if (!a) {
         return 0;
@@ -390,8 +391,9 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
-    CChatAnim* a = 0;
-    ((CMapStringToOb*)&m_page->m_10->m_10map)->Lookup((const char*)key, (CObject*&)a);
+    CObject* a_ob = 0;
+    m_page->m_10->m_10map.Lookup((const char*)key, a_ob);
+    CChatAnim* a = (CChatAnim*)a_ob;
     m_row1Anim = a;
     if (!a) {
         return 0;
@@ -501,8 +503,9 @@ i32 CChatBox::ScrollRow0() {
     if (roster->m_30) {
         return 0;
     }
-    CChatTimer* t = 0;
-    ((CMapStringToOb*)&roster->m_10)->Lookup((const char*)m_row0Key, (CObject*&)t);
+    CObject* t_ob = 0;
+    roster->m_10.Lookup((const char*)m_row0Key, t_ob);
+    CChatTimer* t = (CChatTimer*)t_ob;
     if (!t) {
         return 0;
     }
@@ -533,8 +536,9 @@ i32 CChatBox::ScrollRow1() {
     if (roster->m_30) {
         return 0;
     }
-    CChatTimer* t = 0;
-    ((CMapStringToOb*)&roster->m_10)->Lookup((const char*)m_row1Key, (CObject*&)t);
+    CObject* t_ob = 0;
+    roster->m_10.Lookup((const char*)m_row1Key, t_ob);
+    CChatTimer* t = (CChatTimer*)t_ob;
     if (!t) {
         return 0;
     }
@@ -606,7 +610,6 @@ i32 CChatBox::HitTest4() {
 SIZE_UNKNOWN(CChatAnim);
 SIZE_UNKNOWN(CChatCatalog);
 SIZE_UNKNOWN(CChatListNode);
-SIZE_UNKNOWN(CChatMap);
 SIZE_UNKNOWN(CChatPage);
 SIZE_UNKNOWN(CChatPoker);
 SIZE_UNKNOWN(CChatRoster);

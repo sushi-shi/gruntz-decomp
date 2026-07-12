@@ -1,11 +1,11 @@
 // Sprite.h - the ONE shape for the sprite value-object family (CSprite) and its
-// name->object hash table (CSpriteHashTable), shared across the sprite/HUD/timer
+// name->object hash table (CMapStringToOb), shared across the sprite/HUD/timer
 // loaders. Previously each TU (ActionOptionsMenuBar / KitchenSlime / SpriteResource
 // / StatusBarUpdaters / SpriteLoaders) carried its own divergent partial view of
 // the same retail classes; this is the single reconstructed layout.
 //
 // Two distinct retail classes were both spelled "CSprite" across the tree:
-//   * the FRAME-DATA sprite here (the value CSpriteHashTable::Lookup returns) --
+//   * the FRAME-DATA sprite here (the value CMapStringToOb::Lookup returns) --
 //     a CObArray of frame-workers at +0x10 and an inclusive valid frame range
 //     [m_64..m_68], reached by all the name-lookup loaders; and
 //   * the factory-created HUD/anim OWNER sprite (config block +0x114..+0x130, an
@@ -17,6 +17,7 @@
 #define GRUNTZ_SPRITE_H
 
 #include <Ints.h>
+#include <Mfc.h> // the registries' +0x10 map IS the real MFC CMapStringToOb
 #include <rva.h>
 
 struct CSprite;
@@ -30,10 +31,10 @@ struct CFrameGrid; // the frame-grid value the image registry's map yields (CPla
 // with NO body so the `ecx=<map>; call <helper>` shape reloc-masks (engine 0x1b8008).
 // The map stores CObject-derived values; overloads type the out-ptr per consumer so
 // the found value is typed cast-free (same reloc-masked call either way).
-class CSpriteHashTable {
-public:
-    // Lookup @0x1b8438 IS CMapStringToOb::Lookup; cast at each call.
-};
+// (The ex-`CMapStringToOb` view is DISSOLVED: it was an EMPTY phantom whose only
+// "method" was a fake alias of the MFC library CMapStringToOb::Lookup @0x1b8438, so every
+// call through it needed an object-cast AND bound to nothing. The registries' +0x10 map
+// members are now the real CMapStringToOb.)
 
 // The CSprite frame table is a CObArray of CImage frame-workers living AT
 // CSprite+0x10 (so its m_pData is +0x14, its m_nSize +0x18). The frame INSERT

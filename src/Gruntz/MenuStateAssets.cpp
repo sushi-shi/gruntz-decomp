@@ -33,7 +33,7 @@ public:
 
 // --- the sound-cue lookup: the sound registry's embedded name->cue map (+0x10)
 // exposes a by-name Find (0x1b8438) whose value is a domain-specific cue entry (the
-// entry's m_10->m_28 is the cached DS token). The generic CSpriteHashTable does not
+// entry's m_10->m_28 is the cached DS token). The generic CMapStringToOb does not
 // model this Find, so the sound registry keeps a small TYPED local view here - a
 // MenuSndEntry**-typed Find, so the resolve sites take no out-param cast. ---
 struct MenuSndEntryInner {

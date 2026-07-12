@@ -45,8 +45,8 @@ SIZE_UNKNOWN(CMiCue);
 
 // The cue lookup map embedded at the music host's +0x10 (CMapStringToOb::Lookup,
 // 0x1b8438, ret 8) - the cue-facet map, distinct from the image registry's m_10map.
-struct CMiCueMap {}; // MFC CMapStringToOb (Lookup @0x1b8438); cast at each call
-SIZE_UNKNOWN(CMiCueMap);
+// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
+// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 
 // The music host reached as g_gameReg->m_world->m_28 viewed as its cue facet: a
 // non-null +0x30 gate suppresses the cue play; the cue map is the sub-object at

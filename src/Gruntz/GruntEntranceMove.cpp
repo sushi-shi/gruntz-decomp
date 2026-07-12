@@ -228,7 +228,7 @@ static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 // The entrance-cell record's WALK/IDLE anim-name CStrings (m_cells[k] at +0x08/+0x0c).
 #define CELL_WALK(k) (m_cells[(k)].m_walk)
 #define CELL_IDLE(k) (m_cells[(k)].m_idle)
-#define WLOOKUP(key) (((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)->Lookup((key), (CObject*&)_out))
+#define WLOOKUP(key) (m_154->m_c->m_2c->m_10map.Lookup((key), (CObject*&)_out))
 
 // ---------------------------------------------------------------------------
 // CGrunt::RunEntranceMove()   @0x67850   (ret 0)

@@ -513,7 +513,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     ((CGruntzMgr*)g_gameReg)->FillSaveInfo((SaveInfo*)(i32)obj->GetSlot(slot), (void*)name);
     EndDialog(hDlg, 1);
     if (!obj->Save((i32)obj->GetSlot(slot) + 0x35, 0x81a6)) {
-        g_gameReg->EnterModalUI((i32) "ERROR - Cannot Save Game.");
+        g_gameReg->EnterModalUI("ERROR - Cannot Save Game.");
     }
     return 1;
 }

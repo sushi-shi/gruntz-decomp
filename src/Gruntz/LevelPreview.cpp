@@ -232,8 +232,9 @@ void CPreviewState::LoadLevelPreviewScreen() {
     } else {
         CSndHost* h = ((CRegHolder*)m_c)->m_statusBar;
         if (h->m_emitGate == 0) {
-            LeafCue* p = 0;
-            h->m_10.Lookup("GAME_TELEPORTEROPEN", &p);
+            CObject* p_ob = 0;
+            h->m_10.Lookup("GAME_TELEPORTEROPEN", p_ob);
+            LeafCue* p = (LeafCue*)p_ob;
             if (p != 0) {
                 i32 tag = g_sndCueTag;
                 if (g_sndEnabled != 0 && (u32)(g_killCueClock - p->m_14) >= (u32)p->m_18) {

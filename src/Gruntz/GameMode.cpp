@@ -465,8 +465,9 @@ i32 CState::LevelMsgHudDriver() {
                 if (shown == 0) {
                     CSndHost* host = ((CSndSubMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_emitGate == 0) {
-                        LeafCue* cue = 0;
-                        host->m_10.Lookup("GAME_EXPLOSION1", &cue);
+                        CObject* cue_ob = 0;
+                        host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
+                        LeafCue* cue = (LeafCue*)cue_ob;
                         if (cue != 0) {
                             cue->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
                         }
@@ -533,8 +534,9 @@ i32 CState::LevelMsgHudDriver() {
             self->m_slot++;
             CSndHost* host = ((CSndSubMgr*)g_gameReg->m_world)->m_28;
             if (host->m_emitGate == 0) {
-                LeafCue* cue = 0;
-                host->m_10.Lookup("GAME_EXPLOSION1", &cue);
+                CObject* cue_ob = 0;
+                host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
+                LeafCue* cue = (LeafCue*)cue_ob;
                 if (cue != 0 && g_sndEnabled != 0
                     && (u32)(g_killCueClock - cue->m_14) >= (u32)cue->m_18) {
                     cue->m_14 = g_killCueClock;
