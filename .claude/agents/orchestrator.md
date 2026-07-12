@@ -104,23 +104,53 @@ Spawn a **matcher** agent (subagent_type `matcher`), **`run_in_background: true`
    `ErrorThunk_*`/`Stub_*` name routinely hides the real owner). If the matcher
    recovers the true owner, it SHOULD migrate the body into the real class's TU,
    remove the stub, and update the header — report every file touched.
-6. Report: final per-function % + a one-line summary + the **complete
+6. **NO file-exclusion list** (see the section below — this is the #1 brief defect).
+   Say instead: *take whatever files the job needs; the orchestrator resolves any
+   same-file collision at integration.*
+7. **Never fabricate an identity.** Recover the real class/symbol from the binary
+   (RTTI, vtable, xrefs, disasm) or say you couldn't. A wrong-shape hack that scores
+   higher is a FAILURE; an honest gap is not. Explicitly invite the agent to **refute
+   the orchestrator's own diagnosis** — measured 2026-07-13, lanes correctly overturned
+   the coordinator's read three times (a `~CState` "missing call" that was a COMDAT
+   -shadowing artifact; a MISBOUND that was a `.text$x` EH-funclet scoring artifact;
+   a "C1189 wall" that was a stale claim). A compliant agent contorting byte-exact
+   code to satisfy a bad instruction is the worst outcome.
+8. Report: final per-function % + a one-line summary + the **complete
    `git diff`** of its worktree changes (so integration is a clean `git apply`).
+
+### Deferrals and reuse
+
+- **A deferral goes back to the agent that made it.** It already holds the context;
+  a fresh agent would re-derive it. Send the deferred list back explicitly and by name.
+  If it fails the same item a second time, retire it and move to more promising work.
+- **Reuse warm agents** (SendMessage) rather than spawning cold ones — they carry the
+  idioms they just cracked. Rotate only near the token ceiling.
+- **Axe an agent that produced only comments/plans instead of code.** Reset its worktree
+  and give the task to a fresh one.
 
 Run the 3 dispatches in the background and let the harness notify you as each
 finishes.
 
-### Lane discipline (avoid same-file collisions)
+### NEVER give an agent a file-exclusion list
 
-Two matchers editing the **same file** collide at integration (duplicate
-top-of-file class/extern decls → a build error, not a clean merge). So keep each
-multi-stub file a **single lane**: route all of one file's targets (e.g. all of
-`src/Stub/ApiCallers.cpp`'s) through ONE slot, another file's through another.
-Cluster siblings in one file also share idioms — feeding the next sibling to the
-same lane lets the matcher reference the just-landed one (a later sibling can even
-*correct* a prior one's misdiagnosed `@early-stop`). The other slots take
-distinct-file targets — prefer methods/loaders over ctors/dtors, which
-systematically plateau ~60% on the `flags="base"` EH wall.
+**Do NOT tell an agent "do not touch X, another lane owns it."** It is the single
+worst thing you can do to a lane. Measured (2026-07-13): exclusion lists made good
+agents *defer real work* — they'd diagnose a defect precisely, then stop at the file
+boundary and hand it back as "cross-lane". Chasing those deferrals round-trips cost
+far more than any merge ever did. Agents also read an exclusion list as a warning
+that they might break something, and they get conservative.
+
+**Brief every agent to take whatever files the job actually needs.** Same-file
+collisions are the ORCHESTRATOR's problem, resolved at integration — and in practice
+they are trivial (a stale ledger file, or one stale hunk where a sibling lane already
+improved the same line; take the better version). A merge conflict costs minutes; a
+deferred fix costs a whole round-trip and a fresh agent's context.
+
+Do still **shape the batches** so lanes naturally point at different work (that's
+what the target list is for). Cluster siblings from one file into ONE lane where you
+can, because they share idioms — a later sibling can even *correct* a prior one's
+misdiagnosed `@early-stop`. But shaping is a preference, never a prohibition: if a
+lane needs a file, it takes the file.
 
 ## Integration protocol (SERIAL — the heart of this doc)
 
