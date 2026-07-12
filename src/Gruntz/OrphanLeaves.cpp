@@ -30,19 +30,17 @@ void* GetGlobal5e8e98() {
 // selection (!= LB_ERR), run CDialog::OnOK (0x1bacc3). __thiscall, no args.
 // @orphan: only inbound edge is a fn-ptr-table slot (~g_5e8e98+0x1c, via thunk
 // 0x3d5f) - no class vtable / new-site trace, so the concrete CDialog subclass is
-// unrecovered; modeled on the canonical CWnd (@identity-TODO for the leaf dialog).
-struct DlgHost_183f0 : public CWnd {
-    // OnPick == CDialog::OnOK (0x1bacc3), dispatched with this dialog's `this`. Binding
-    // it needs the CDialog vtable slot renamed to OnOK (shared Dialogs.h/Dialogs.cpp/
-    // MultiStartDlgRoster.cpp change); DEFERRED cross-lane, left reloc-masked here.
-    void OnPick();         // thiscall, RVA 0x1bacc3
+// unrecovered (@identity-TODO for the leaf dialog). Modeled on the canonical CDialog
+// (Dialogs.h): the "OnPick" retire == CDialog::OnOK (0x1bacc3), reached cast-free via
+// the base's own protected virtual (qualified call -> the retail direct rel32).
+struct DlgHost_183f0 : public CDialog {
     void PickIfSelected(); // thiscall, RVA 0x183f0
 };
 RVA(0x000183f0, 0x2e)
 void DlgHost_183f0::PickIfSelected() {
     HWND h = GetDlgItem(0x516)->m_hWnd;
     if (SendMessageA(h, 0x188, 0, 0) != -1) {
-        OnPick();
+        CDialog::OnOK(); // 0x1bacc3 ?OnOK@CDialog@@MAEXXZ (qualified base call, reloc-masked)
     }
 }
 SIZE_UNKNOWN(DlgHost_183f0);

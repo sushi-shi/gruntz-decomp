@@ -34,15 +34,11 @@ public:
     i32 Fill(unsigned int c);
 }; // 0x13e760
 // 0xface0: the shared image-load activate gate (CState base method; the recovered
-// symbol is CMgrPersistObj::Init, Attract.cpp). 0xfa8f0: the shared state-timer arm
-// (CSoundFxEmitter::Method_fa8f0, Attract.cpp). Both dispatched on the state `this`.
+// symbol is CMgrPersistObj::Init, Attract.cpp). 0xfa8f0 is CState::RetireScene (the
+// shared state-timer arm, inherited by CPlay - called cast-free below).
 class CMgrPersistObj {
 public:
     i32 Init();
-};
-class CSoundFxEmitter {
-public:
-    i32 Method_fa8f0(i32, i32, i32, i32);
 };
 
 // The global empty C string (0x6293f4).
@@ -166,7 +162,7 @@ i32 CPlay::OnActivate() {
     ((CSBI_RectOnly*)p->m_2dc)->LoadMainStatusBarSprite();
     p->m_510 = 2;
     ((CDDrawSubMgrPages*)p->m_c->m_4)->Method_158e90();
-    ((CSoundFxEmitter*)this)->Method_fa8f0(0x50, 0x3e8, 0, 1); // state-timer arm @0xfa8f0
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited by CPlay, cast-free)
     return 1;
 }
 

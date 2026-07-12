@@ -5,26 +5,21 @@
 // base dtor are external (reloc-masked). Best-guess class; offsets/calls are what
 // is load-bearing.
 #include <rva.h>
+// Base subobject whose destructor (0x1b48c6) the derived dtor chains to: the canonical
+// GzObList (== the COMDAT-folded ~CObList, library_labels ??1GzObList@@QAE@XZ). The real
+// shared struct, not a local view - CNetThing derives it and the chained base dtor binds/
+// exempts. (Was a mis-guessed CInternetSession/CNetThingBase local placeholder.)
+#include <Gruntz/GruntzCmdMgr.h>
 
-// Base subobject whose destructor (0x1b48c6) the derived dtor chains to. IDENTITY
-// (sema rva 0x1b48c6): ??1CInternetSession@@UAE@XZ - the MFC NAFXCW CInternetSession
-// dtor (a library carve-out, excluded from the match %). So CNetThing derives the real
-// MFC CInternetSession; kept as this reloc-masked dtor-chain view rather than pulling
-// <afxinet.h> into a tiny /GX dtor TU (the chained call reloc-masks either way).
-struct CNetThingBase { // == MFC CInternetSession (0x1b48c6 base dtor)
-    ~CNetThingBase();  // 0x1b48c6 (external, reloc-masked)
-};
-SIZE_UNKNOWN(CNetThingBase); // dtor-chain view of CInternetSession; retail size TBD
+// The keyed-list the dtor clears (Clear @0x379a0): the canonical CKeyedList (real
+// shared struct, <Net/KeyedList.h>). 0xc5280 IS CKeyedList::~CKeyedList (Clear() + the
+// ~CObList base chain @0x1b48c6); the reinterpret here is the CNetThing<->CKeyedList
+// identity (both share the CObList/GzObList base) - full unification (CNetThing is
+// referenced as an opaque child by netcmdslot/multistartdlgroster) is a cross-unit
+// rename, deferred.
+#include <Net/KeyedList.h>
 
-// The keyed-list the dtor clears (Clear @0x379a0); TU-local method view of the real
-// header-less CKeyedList (keyedlist unit - defined in src/Gruntz/KeyedList.cpp, no
-// shared header to fold onto yet).
-class CKeyedList {
-public:
-    void Clear();
-};
-
-struct CNetThing : CNetThingBase {
+struct CNetThing : GzObList {
     ~CNetThing();
 };
 SIZE_UNKNOWN(CNetThing); // dtor-only view; retail size TBD

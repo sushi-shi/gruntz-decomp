@@ -37,6 +37,10 @@ class CAttractScreenObj;     // m_2c's fade-screen-resolver facet (FadeInTitle's
 class CGruntzMgr;            // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
                              // Forward-declared (MFC-free) so this widely-included header stays
                              // afx-neutral; GruntzMgr.h/GameRegistry.h complete the two views.
+class CFaderMgr;             // +0x10 fader manager (the CSoundFxEmitter facet's fader mgr;
+                             // RetireScene's Add/Remove target). Opaque here.
+struct FxResource;           // +0x0c viewed as the emitter resource chain (== m_c; the DDraw
+                             // worker + gate RetireScene walks). Full shape in SoundFxEmitter.h.
 
 // The base game-state vtable (RTTI ??_7CState@@6B@ @0x005ea21c, 26 slots); the retail
 // CState ctor @0x08c750 (reconstructed in GameMode.cpp) stamps it. Explicit VTBL()
@@ -153,6 +157,19 @@ public:
     i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
     i32 RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e);                      // 0x0fa300
     i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);        // 0x0fa350
+    // RetireScene (0xfa8f0): the two-channel screen-transition emitter every screen state
+    // runs on its own `this` (xref: CBootyState/CMultiBootyState/CCreditsState/CAttract/
+    // CPreviewState/CMulti/CPlay/... all call it). It reads the CState resource-chain facet
+    // (fxRes()/m_faderMgr) only, so it IS a CState-level helper; its former CSoundFxEmitter::
+    // Method_fa8f0 view was the sibling-facet lie. Definition lives in Attract.cpp (the
+    // attract unit owns 0xfa8f0.. RVAs) as a CState:: method; reloc-masked.
+    i32 RetireScene(i32 a1, i32 a2, i32 a3, i32 a4); // 0x0fa8f0
+    // The emitter resource-chain view of the +0x0c holder (== m_c reinterpreted): its
+    // +0x04 DDraw worker + +0x1c gate are what RetireScene walks. Inline -> the same
+    // `mov reg,[this+0x0c]` as the direct member read (forward-declared facet).
+    FxResource* fxRes() {
+        return (FxResource*)m_c;
+    }
     // The title cluster's typed views of the shared CState slots (m_c is the menu
     // root, m_2c the fade screen-resolver when a title rolls). Inline -> the same
     // `mov reg,[this+off]` falls out; forward-declared facets (attract-scoped types).
@@ -179,7 +196,7 @@ public:
     // shadows are folded away. (The former `CView`/`CSpriteFactoryHolder` render view is folded onto
     // CSpriteFactoryHolder; its render sub-object facets live in <Gruntz/View.h>.)
     CSpriteFactoryHolder* m_c; // +0x0c
-    char m_pad10[0x14 - 0x10];
+    CFaderMgr* m_faderMgr;     // +0x10  fader mgr (RetireScene's CSoundFxEmitter facet)
     i32 m_14;         // +0x14
     i32 m_18;         // +0x18
     i32 m_levelIndex; // +0x1c  play-state level index 1..0x28 (CGruntzMgr::GoToNext/PrevLevel)

@@ -183,7 +183,7 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         menuRoot()->m_04->TransExit();
     }
 
-    BuildMenuPage(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (was fake CAttract::BuildMenuPage)
     ShowCursorFn showCursor = g_ShowCursor;
     if (showCursor(1) < 0) {
         do {
@@ -237,7 +237,7 @@ i32 CAttract::Activate() {
         ->ShadeRect(g_attractButeMgr.GetIntDef(s_Menu, s_BrightnessPercent, 0x32), (tagRECT*)0);
     menuRoot()->m_04->TransTitle();
 
-    BuildMenuPage(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (was fake CAttract::BuildMenuPage)
     ShowCursorFn showCursor = g_ShowCursor;
     if (showCursor(1) < 0) {
         do {
@@ -508,30 +508,35 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
-// 0xfa8f0: two-channel type-3 emitter (4 args); channel B chosen via a4 +
-// CDDrawWorkerMgr::Method_158d20. No bank-stop bracketing on this variant.
+// CState::RetireScene(a1,a2,a3,a4) (0xfa8f0): two-channel type-3 screen-transition
+// emitter; channel B chosen via a4 + CDDrawWorkerMgr::Method_158d20. No bank-stop
+// bracketing on this variant. HOISTED onto CState (was CSoundFxEmitter::Method_fa8f0):
+// the retail caller graph shows every screen state (CPreviewState/CAttract/CBootyState/
+// CCreditsState/CMulti/CPlay/...) invokes it on its OWN `this`, and the body reads only
+// the CState resource-chain facet - so it IS a CState-level helper. m_faderMgr is the
+// CState +0x10 member; fxRes() views the +0x0c holder as the emitter resource chain.
 // @early-stop
 // 98.4% - logic byte-faithful. Same chanA/chanB esi<->edi regalloc swap as
 // 0xfa790 plus the deferred-branch arg-temp register choice (see those notes);
 // /O2 scheduling/regalloc, not source-steerable.
 RVA(0x000fa8f0, 0x118)
-i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
+i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
     CFaderMgr* mgr = m_faderMgr;
     if (mgr == 0) {
         return 0;
     }
-    if (m_resChain->m_gate == 0) {
+    if (fxRes()->m_gate == 0) {
         return 0;
     }
-    CDDSurface* chanA = m_resChain->m_worker->m_frontPair->m_surface;
+    CDDSurface* chanA = fxRes()->m_worker->m_frontPair->m_surface;
     if (chanA == 0) {
         return 0;
     }
     CDDrawSurfacePair* holderB;
-    if (a4 != 0 && m_resChain->m_worker->Method_158d20() != 0) {
-        holderB = m_resChain->m_worker->m_overlayPair;
+    if (a4 != 0 && fxRes()->m_worker->Method_158d20() != 0) {
+        holderB = fxRes()->m_worker->m_overlayPair;
     } else {
-        holderB = m_resChain->m_worker->m_backPair;
+        holderB = fxRes()->m_worker->m_backPair;
     }
     CDDSurface* chanB = holderB->m_surface;
     if (chanB == 0) {
@@ -550,7 +555,7 @@ i32 CSoundFxEmitter::Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4) {
 
     if (g_fxDirectGate != 0) {
         ActiveWait(a2);
-        m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
+        fxRes()->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
         f->RunFade(a2, a3, 0);
     }

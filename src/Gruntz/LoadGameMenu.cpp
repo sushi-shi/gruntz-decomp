@@ -52,7 +52,11 @@ i32 CALLBACK GruntzLoadGameDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lP
     switch (msg) {
         case WM_COMMAND: // 0x111
             if (wParam == 2 || wParam == 1) {
-                CPlay* obj = g_gameReg->PickPlayOrPausedState();
+                // PickPlayOrPausedState (0x92990) is a CGruntzMgr method; g_gameReg is
+                // the CGameRegistry facet of the same 0x24556c object - reach it through
+                // the established CGruntzMgr dual-view cast (as m_saveInfoRec/m_gameWnd
+                // below) so the call binds ?PickPlayOrPausedState@CGruntzMgr@@ at 0x92990.
+                CPlay* obj = ((CGruntzMgr*)g_gameReg)->PickPlayOrPausedState();
                 if (obj) {
                     obj->m_stepCountdown = 2;
                 }

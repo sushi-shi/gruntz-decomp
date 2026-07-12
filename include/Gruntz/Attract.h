@@ -180,11 +180,11 @@ public:
     // __thiscall ret 0xc, reached via ILT thunk): a zero result aborts the entry.
     i32 LoadAttractScene(i32 a, i32 b, i32 mode); // FUN_004f9ea0
 
-    // (FadeInTitle 0xfa1f0 / RunTitle 0xfa300 / RunTitleSeq 0xfa350 are CState-base
-    //  title-roll methods now - declared in <Gruntz/State.h>, inherited here.)
+    // (FadeInTitle 0xfa1f0 / RunTitle 0xfa300 / RunTitleSeq 0xfa350 / RetireScene 0xfa8f0
+    //  are CState-base title-roll/transition methods now - declared in <Gruntz/State.h>,
+    //  inherited here. The former fake CAttract::BuildMenuPage @0xfa8f0 view is dissolved.)
     // engine tail helpers (__thiscall, reached via ILT thunks).
-    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag); // FUN_004fa8f0
-    void CommitStage();                               // FUN_004a05a0
+    void CommitStage(); // FUN_004a05a0
 
     // Typed views of the inherited CState slots re-typed to the attract facets that
     // share them (the object at each slot IS that facet in the attract state; the

@@ -68,7 +68,9 @@ public:
     i32 Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4); // 0xfa410
     i32 Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4); // 0xfa550
     i32 Method_fa790(i32 a1, i32 a2, i32 a3);         // 0xfa790
-    i32 Method_fa8f0(i32 a1, i32 a2, i32 a3, i32 a4); // 0xfa8f0
+    // (0xfa8f0 was Method_fa8f0 - HOISTED to CState::RetireScene: it is called on every
+    //  screen state's own `this`, so it is a CState-level helper, not this facet's. The
+    //  other four here have no such cross-state caller set and stay on this emitter view.)
     i32 Method_faa60(i32 a1, i32 a2, i32 a3);         // 0xfaa60
 
     char _00[0x04];

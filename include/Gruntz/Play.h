@@ -469,12 +469,11 @@ public:
     // restores the clock + unpauses. Migrated from engine_boundary (CPlay).
     i32 PauseGame();  // 0x0cee90
     i32 ResumeGame(); // 0x0cef00
-    // FrameSlot28's two own-this reloc-masked callees (external bodies elsewhere;
-    // both invoked with ecx=this in the status/pause overlay). Method_cef50
-    // (0x0cef50, no-arg notify when the m_40 latch is set); Method_fa8f0 (0x0fa8f0,
-    // the status-message ticker, args 0x50/0x3e8/0/1).
-    void Method_cef50();                          // 0x0cef50
-    i32 Method_fa8f0(i32 a, i32 b, i32 c, i32 d); // 0x0fa8f0
+    // FrameSlot28's own-this reloc-masked callee (external body elsewhere; invoked
+    // with ecx=this in the status/pause overlay). Method_cef50 (0x0cef50, no-arg notify
+    // when the m_40 latch is set). (0x0fa8f0 is CState::RetireScene - the status-message
+    // ticker, inherited from the CState base, called cast-free; no CPlay decl.)
+    void Method_cef50(); // 0x0cef50
     // The HandleCommand cheat receivers (reloc-masked; reached via the play-state
     // lookup PickPlayOrPausedState): SetCursorFrame gives the selected grunt item
     // `item` (the 0x80e5..0x8104 ITEMCHEAT family; thunk 0x17a8); Flip returns the

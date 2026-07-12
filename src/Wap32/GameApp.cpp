@@ -458,6 +458,31 @@ void CGameApp::FreeGameManager() {
     }
 }
 
+// -------------------------------------------------------------------------
+// CGameApp::ReportError (vtbl +0x1c, slot 7; 0x13dcb0) - the engine's report-once
+// error latch. It is a CGameApp base virtual: the SAME body pointer sits at
+// ??_7CGameApp@@6B@+0x1c AND ??_7CGruntzApp@@6B@+0x1c (CGruntzApp inherits, no override).
+// Guarded by m_errorReported: the first call latches it and - when the game window is up
+// and not already closing (m_closeGuard == 0) - posts WM_CLOSE to it; then clears the run
+// gate and stashes the (code, detail) pair ShowError later reads. __thiscall(2).
+// The cached PostMessageA fn-ptr @0x6c44c8 (extern "C" so the reloc emits the canonical
+// _g_pPostMessageA - the single name bound there).
+extern "C" i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x2c44c8
+RVA(0x0013dcb0, 0x57)
+void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
+    if (m_errorReported != 0) {
+        return;
+    }
+    CGameWnd* wnd = m_gameWnd;
+    m_errorReported = 1;
+    if (wnd != 0 && wnd->m_closeGuard == 0) {
+        g_pPostMessageA(wnd->m_hwnd, 0x10, 0, 0); // WM_CLOSE
+    }
+    m_running = 0;
+    m_errorCode = wParam;
+    m_errorDetail = lParam;
+}
+
 // ~CGameApp is now inline in Wap32.h (CloseResources() + counter dec); it is
 // still emitted in this TU (the vtable's scalar-deleting dtor references it).
 

@@ -12,7 +12,8 @@
 // the real CAttract::RunTitleSeq at 0xfa350). Resolve the +0x1b8 conflict + the obj
 // placement in a dedicated CAttract pass before binding.
 #include <rva.h>
-#include <Mfc.h> // afx-first (unified CObject; superset of Win32.h) - g_ShowCursor fn-ptr
+#include <Mfc.h>          // afx-first (unified CObject; superset of Win32.h) - g_ShowCursor fn-ptr
+#include <Gruntz/State.h> // the CState base this title state derives (RunTitleSeq @0xfa350)
 
 extern int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (RVA 0x2c44c4)
 // The title-sequence's const-char* arg source at RVA 0x24e25c (the CString/asset-root
@@ -23,11 +24,16 @@ extern int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (RVA 0x2c44c4
 // until the owning (forbidden) units unify on one name at 0x24e25c.
 extern void* g_64e25c; // 0x24e25c (conflated; see note)
 
-struct CTitleApp {
-    char pad[0x1b8];
-    int m_1b8;                                            // +0x1b8 timer
-    int RunTitleSeq(void* a, int b, int c, int d, int e); // 0xfa350 (= CAttract::RunTitleSeq)
-    int OnStart(int unused);                              // 0xf9880
+// CTitleApp is a CState leaf (OnStart calls RunTitleSeq @0xfa350 - a CState base method -
+// on its own `this`; retail passes `this` as the CState). Its exact leaf identity is
+// still @identity-TODO, but deriving CState is proven + sufficient to bind the base
+// symbol. The +0x1b8 timer sits past the CState base (which ends at +0x1a8), exactly as
+// CPreviewState's own m_1b8 does.
+class CTitleApp : public CState {
+public:
+    int OnStart(int unused); // 0xf9880
+    char m_pad1a8[0x1b8 - 0x1a8];
+    int m_1b8; // +0x1b8 timer
 };
 
 RVA(0x000f9880, 0x43)
@@ -35,7 +41,7 @@ int CTitleApp::OnStart(int) {
     int(WINAPI * sc)(int) = g_ShowCursor;
     while (sc(0) >= 0) {
     }
-    RunTitleSeq(g_64e25c, 1, 1, 1, 0);
+    RunTitleSeq((const char*)g_64e25c, 1, 1, 1, 0); // CState::RunTitleSeq @0xfa350
     m_1b8 = 0xea60;
     return 1;
 }

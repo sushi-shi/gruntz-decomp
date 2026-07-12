@@ -1032,7 +1032,7 @@ i32 CMulti::FrameSlot28(i32 arg) {
     r.left = 0;
     r.top = 0;
     ShowHudMessage(m_c, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
-    Method_fa8f0(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited via CPlay, cast-free)
     if (m_4w() && m_4w()->m_68) {
         m_4w()->m_68->Method_6bd40(5);
     }

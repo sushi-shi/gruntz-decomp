@@ -10,7 +10,7 @@
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
-#include <Gruntz/SoundFxEmitter.h> // CSoundFxEmitter::Method_fa8f0 (0xfa8f0) - shared body dispatched
+#include <Gruntz/State.h>      // CState base (CState95 derives it; RetireScene/FadeInTitle @0xfa8f0/0xfa1f0)
 // (FadeInTitle @0xfa1f0 is now a CState base method via <Gruntz/State.h>; no Attract.h.)
 #include <Globals.h>
 
@@ -57,23 +57,13 @@ void CEffect6b::Apply(i32 a, i32 b) {
 // 0x95140: a state-machine step - poke the input sub-object, gate on the worker
 // being busy or acquirable, then run the start sequence + report. Returns 1 on the
 // full path, 0 on either early-out.
-struct CMenuHolder95 {
-    char _00[4];
-    CDDrawSubMgrPages* m_4; // +0x04
-};
-
-struct CState95 {
-    char _00[4];
-    CGruntzMgr* m_4; // +0x04
-    char _08[0xc - 8];
-    CMenuHolder95* m_c; // +0x0c
-    i32 Step(i32 arg);  // 0x95140
-    // Start/Report are SHARED bodies: FadeInTitle @0xfa1f0 is a CState base method
-    // (so `this` reaches it via its true base CState, not a sibling cross-cast), and
-    // Method_fa8f0 @0xfa8f0 is CSoundFxEmitter's. CState95's own identity is still
-    // unrecovered (@identity-TODO) so it stays a local placeholder whose object IS a
-    // CState-base (the (CState*)this reinterpret is honest; the (CAttract*) sibling
-    // cross-cast it replaced was a fakeness).
+// CState95 IS a CState leaf (its Step runs FadeInTitle/RetireScene on its own `this` -
+// CState base methods - and reads only the CState m_4/m_c facets). Its exact leaf identity
+// is still @identity-TODO, but it DERIVES CState here (no cross-cast): FadeInTitle/
+// RetireScene are cast-free inherited calls. The +0x0c holder's +0x04 DDraw worker is
+// reached as CDDrawSubMgrPages (the tree-wide CSpriteFactoryHolder::m_drawTarget facet).
+struct CState95 : public CState {
+    i32 Step(i32 arg); // 0x95140
 };
 
 // @interleaver CState95::Step emitted-in helpstate - blocked: CState95 is a local
@@ -85,13 +75,14 @@ struct CState95 {
 RVA(0x00095140, 0x6e)
 i32 CState95::Step(i32 arg) {
     m_4->RestoreVideoMode(0);
-    if (m_c->m_4->Method_158d20() == 0 && m_c->m_4->Method_158cb0(0, 0x30000) == 0) {
+    CDDrawSubMgrPages* w = (CDDrawSubMgrPages*)m_c->m_drawTarget;
+    if (w->Method_158d20() == 0 && w->Method_158cb0(0, 0x30000) == 0) {
         return 0;
     }
-    if (((CState*)this)->FadeInTitle((const char*)&g_6111b0, 0, 0, 0, 0, 1) == 0) {
+    if (FadeInTitle((const char*)&g_6111b0, 0, 0, 0, 0, 1) == 0) {
         return 0;
     }
-    ((CSoundFxEmitter*)this)->Method_fa8f0(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
     return 1;
 }
 

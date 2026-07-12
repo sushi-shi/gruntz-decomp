@@ -87,7 +87,10 @@ void InitResButeMgr82b20() {
 // g_brickText1); the g_str6455xx names are the still-anonymous siblings. Externs
 // (storage lives in the owning subsystem TU); the DATA pins name the ones this
 // cluster owns.
-extern CString g_profSink; // 0x645524 (?..@@3VCString@@A; pinned as g_profSink in Play.cpp)
+// extern "C" so the reloc emits the canonical `_g_profSink` - the single name bound
+// at 0x245524 (play owns it as extern "C"); the C++-mangled ?g_profSink@@3VCString@@A
+// never bound.
+extern "C" CString g_profSink; // 0x645524 (_g_profSink; pinned in Play.cpp)
 DATA(0x00245528)
 extern CString g_str645528; // 0x645528 (== GruntzMgrCmd's g_brickText2)
 DATA(0x0024552c)

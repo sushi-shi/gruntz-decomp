@@ -323,7 +323,7 @@ i32 CPlay::FrameSlot28(i32 arg) {
     r.left = 0;
     r.top = 0;
     ShowHudMessage(m_c, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
-    Method_fa8f0(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
     if (m_4w() && m_4w()->m_68) {
         m_4w()->m_68->Method_6bd40(5);
     }
@@ -5706,10 +5706,8 @@ extern "C" char g_emptyString[];    // _g_emptyString @0x6293f4
 // in-place (declaration order preserved) rather than at the top so the fold stays
 // codegen-neutral for this TU.
 #include <Gruntz/BankMgr.h>
-class CSoundFxEmitter {
-public:
-    i32 Method_fa8f0(i32 a, i32 b, i32 c, i32 d);
-};
+// (0xfa8f0 is CState::RetireScene - inherited by CPlay; the former local CSoundFxEmitter
+//  view is dissolved, the loader calls it cast-free on the CPlay `self`.)
 // (0xfa150 cleanup is CGameModeBase::BaseCleanup - reached via the CState<->CGameModeBase
 // reinterpret at offset 0, the same pattern CState.h uses; no local view needed.)
 // The loader family reaches its resource state directly through `this` (a CPlay):
@@ -7178,7 +7176,7 @@ i32 CPlay::EnterMode(i32 mode) {
         self->m_c->m_4->m_14->m_2c->Fill(0);
         EmRegWorldStep((CGruntzMgr*)g_gameReg, self->m_guts, self->m_470);
         if (self->m_474 != 0) {
-            ((CPlay*)self)->NotifyVisibleEntities();
+            NotifyVisibleEntities();
         } else {
             self->m_c->m_24->VisitVisible(self->m_c->m_4->m_14, (CGameObjChain*)self->m_c->m_8);
             self->m_c->m_c->Present(self->m_c->m_4->m_14, self->m_c->m_4->m_18);
@@ -7187,7 +7185,7 @@ i32 CPlay::EnterMode(i32 mode) {
         ((CSBI_RectOnly*)self->m_guts)->LoadMainStatusBarSprite();
     } else {
         if (self->m_474 != 0) {
-            ((CPlay*)self)->NotifyVisibleEntities();
+            NotifyVisibleEntities();
         } else {
             self->m_c->m_24->VisitVisible(self->m_c->m_4->m_14, (CGameObjChain*)self->m_c->m_8);
             self->m_c->m_c->Present(self->m_c->m_4->m_14, self->m_c->m_4->m_18);
@@ -7208,7 +7206,7 @@ i32 CPlay::EnterMode(i32 mode) {
 
 finish:
     ((CDDrawSubMgrPages*)self->m_c->m_4)->Method_158e90();
-    ((CSoundFxEmitter*)self)->Method_fa8f0(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited by CPlay `this`, cast-free)
     if (self->m_c->m_24->m_mainPlane != 0) {
         ((CPlaneRender*)self->m_c->m_24->m_mainPlane)->CenterScrollB();
     }
@@ -7223,7 +7221,7 @@ finish:
         g_645588_clk = self->m_savedClock;
     }
     ((CSBI_RectOnly*)self->m_guts)->Deactivate();
-    ((CPlay*)self)->RegisterInputBindings();
+    RegisterInputBindings();
     self->m_484 = 0;
     return 1;
 }

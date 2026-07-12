@@ -38,8 +38,8 @@
 #include <Gruntz/WwdGameReg.h> // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_mgr; CBattleStatsView::DrawBattleStats, waveP)
 #include <Io/MoviePlayer.h>      // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
-// (FadeInTitle @0xfa1f0 is now a CState base method via <Gruntz/State.h>; no Attract.h.)
-#include <Gruntz/SoundFxEmitter.h> // CSoundFxEmitter::Method_fa8f0 (0xfa8f0) - shared page builder
+// (FadeInTitle @0xfa1f0 and RetireScene @0xfa8f0 are now CState base methods via
+//  <Gruntz/State.h>, called cast-free on the CBootyState/CMultiBootyState `this`.)
 // NOTE: BzState::BuildBootyGruntIdleAnimation (0x1ce60) stays via GameMode.h's
 // CBootyState decl (reloc-UNBOUND) - the proper bind needs <Gruntz/BzState.h>, blocked
 // by the BzGameReg / *0x24556c view-conflation between this TU's local Booty* views and
@@ -256,7 +256,7 @@ i32 CBootyState::Vslot09(i32) {
         return 0;
     }
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
-    ((CSoundFxEmitter*)this)->Method_fa8f0(0x50, 0x3e8, 0, 1); // 0xfa8f0 (shared page builder)
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
     BzGameReg* reg = g_gameReg;
     BootySndSet* set = reg->m_world->m_soundSet;
@@ -547,7 +547,7 @@ i32 CMultiBootyState::ReadyAndPaint() {
     if (Vfunc3() == 0) {
         return 0;
     }
-    return ((CState*)this)->CState::Vslot07() != 0; // 0xfac70 (== CState::Vslot07 slot)
+    return CState::Vslot07() != 0; // 0xfac70 (qualified base call, cast-free)
 }
 
 // CBootyState::Vslot0e (0x1d3e0, vtable slot 14) and Vslot11 (0x1d400, slot 17): the
@@ -606,7 +606,7 @@ i32 CMultiBootyState::Vslot09(i32) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
-    ((CSoundFxEmitter*)this)->Method_fa8f0(0x50, 0x3e8, 0, 1); // 0xfa8f0 (shared page builder)
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
 
     CBootyMusicHost* host = BOOTY_REG->m_30;
     i32 item = BOOTY_REG->m_11c;
@@ -982,7 +982,7 @@ i32 CMultiBootyState::InputVirtual() {
 
     ((CBattleStatsView*)this)->DrawBattleStats(); // 0x1ed30 (OnActivated slot)
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
-    ((CSoundFxEmitter*)this)->Method_fa8f0(0x50, 0x3e8, 0, 1); // 0xfa8f0 (shared page builder)
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited, cast-free)
     return 1;
 }
 
@@ -1005,7 +1005,7 @@ i32 CMultiBootyState::Vslot07() {
     if (Vfunc3() == 0) {
         return 0;
     }
-    return ((CState*)this)->CState::Vslot07() != 0; // 0xfac70 (== CState::Vslot07 slot)
+    return CState::Vslot07() != 0; // 0xfac70 (qualified base call, cast-free)
 }
 
 // ---------------------------------------------------------------------------

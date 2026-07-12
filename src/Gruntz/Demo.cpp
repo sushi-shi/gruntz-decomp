@@ -53,7 +53,10 @@
 // PostMessageA reached through the IAT slot (the engine's ff15 indirect); the exit
 // WM_COMMANDs (0x8023 / 0x8027). Symbol bound by Attract.cpp's DATA; extern here.
 typedef i32(WINAPI* PostMessageFn)(void* hwnd, u32 msg, u32 wparam, i32 lparam);
-extern PostMessageFn g_pPostMessageA;
+// extern "C" so the fn-ptr reloc emits the canonical `_g_pPostMessageA` (the single
+// name bound at 0x2c44c8 by sbi_rectonly); the C++-mangled spelling never bound and
+// shadowed gruntzmgrtransition's correct copy of the duplicate CDemo::Vslot15 (0x3c030).
+extern "C" PostMessageFn g_pPostMessageA;
 
 // The per-frame attract actor list (DAT_00645574; bound in Globals.cpp) and the
 // per-frame time delta (DAT_00645584; bound in Attract.cpp). Extern here (reloc-masked).
