@@ -85,6 +85,28 @@ i32 CUserLogic::UserLogicVfuncD() {
     return 0;
 }
 
+// reloc-fidelity: pin the obj-defined base virtuals above to the real retail vtable-
+// slot RVAs (CUserBase vtbl 0x5e70b4 slots 1-2; CUserLogic vtbl 0x5e705c slots 3-15,
+// from `sema class`). Every tile-logic leaf obj emits ??_7CUserBase / ??_7CUserLogic
+// with these slots as DIR32 relocs to the base virtual symbols; unpinned they bound
+// to NO rva (reloc-masked but wrong). Bodies are NOT matched (dummy anchors) - the
+// pin only binds the slot symbol to the address retail's slot uses.
+// @rva-symbol: ?SerializeMove@CUserBase@@UAEHPAUCGruntArchive@@HHH@Z 0x000039e0
+// @rva-symbol: ?GetTypeTag@CUserBase@@UAE?AW4LogicTypeId@@XZ 0x0000242d
+// @rva-symbol: ?UserLogicVfunc1@CUserLogic@@UAEHXZ 0x00003413
+// @rva-symbol: ?UserLogicVfunc2@CUserLogic@@UAEHXZ 0x0000246e
+// @rva-symbol: ?UserLogicVfunc3@CUserLogic@@UAEHXZ 0x00003913
+// @rva-symbol: ?Activate@CUserLogic@@UAEHXZ 0x000033dc
+// @rva-symbol: ?UserLogicVfunc5@CUserLogic@@UAEHXZ 0x00002162
+// @rva-symbol: ?UserLogicVfunc6@CUserLogic@@UAEHXZ 0x000026b7
+// @rva-symbol: ?UserLogicVfunc7@CUserLogic@@UAEHXZ 0x00001361
+// @rva-symbol: ?UserLogicVfunc8@CUserLogic@@UAEHXZ 0x000023f6
+// @rva-symbol: ?UserLogicVfunc9@CUserLogic@@UAEHXZ 0x0000225c
+// @rva-symbol: ?UserLogicVfuncA@CUserLogic@@UAEHXZ 0x0000150a
+// @rva-symbol: ?UserLogicVfuncB@CUserLogic@@UAEHXZ 0x00003116
+// @rva-symbol: ?UserLogicVfuncC@CUserLogic@@UAEHXZ 0x00001730
+// @rva-symbol: ?UserLogicVfuncD@CUserLogic@@UAEHXZ 0x00003607
+
 // ---------------------------------------------------------------------------
 // CSecretTeleporterTrigger virtual support. Two engine externs the Serialize
 // override (0x010a10) chains; both __thiscall ret 0x10 (4 args), modeled NO-body

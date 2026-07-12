@@ -102,7 +102,7 @@ extern i32 g_typeCount;
 DATA(0x002bf650)
 extern CTypeColl g_typeColl;
 DATA(0x002bf654)
-extern CTypeColl2* g_typeColl2;
+extern CVariantSlot* g_typeColl2; // canonical name (was CTypeColl2* - lost keep-last to typekeycoll)
 DATA(0x002bf66c)
 extern void* g_typeNodes;
 DATA(0x0021aea8)
@@ -125,7 +125,7 @@ static inline CTypeNameEntry* TypeLookup(i32 key) {
     }
     void* item = g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    ((CVariantSlot*)g_typeColl2)->Set(&g_typeColl, (i32)item, 0xc);
+    g_typeColl2->Set(&g_typeColl, (i32)item, 0xc);
     return g_typeCur;
 }
 
