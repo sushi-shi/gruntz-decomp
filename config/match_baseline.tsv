@@ -401,7 +401,7 @@ actionarea	?FireActivation@CProjActObj@@QAEXH@Z	100.0000	100.0000	1	51a5f3f9ebc9
 actionarea	?Gap_007c60@@YAHXZ	2.2619	2.2619	1	2ab84119eb10	0x7c60
 actionarea	?GetTypeTag@CActionArea@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:d969ab47eace	0x7f80
 actionarea	?ProjActRegisterDefaults@@YAXXZ	100.0000	100.0000	1	d5645e6fad77	0x8060
-actionarea	?RegisterType@CProjActObj@@QAEXXZ	91.1739	91.1739	1	1796d203e1d0	0x8240
+actionarea	?RegisterType@CProjActObj@@SAXXZ	91.1739	91.1739	1	1796d203e1d0	0x8240
 actionarea	?Serialize@CPulseHighlight@@QAEHPAUCSerialArchive@@HHH@Z	100.0000	100.0000	2	f8c498cff0de	0x8600
 actionarea	?Tick@CPulseHighlight@@QAEHXZ	100.0000	100.0000	1	fbb24a4a3d40	0x8440
 actionbeginhost	?Begin@ActionBeginHost@@QAEHH@Z	100.0000	100.0000	1	98fc9510fed5	0xd7220
@@ -1782,7 +1782,7 @@ gamemode	?LoadGruntEffectSprites@CState@@QAEHXZ	96.3379	96.3379	9	6129d1a52860	0
 gamemode	?Reset@CGameModeBase@@QAEXXZ	98.6667	98.6667	1	484f4f40f1d1	0xf9840
 gamemode	?ResetPreview@CGameModeBase@@QAEXXZ	98.8235	98.8235	1	8dd14f2c8d69	0xde140
 gamemodebase	?BaseCleanup@CGameModeBase@@QAEXXZ	94.5238	94.5238	1	5bfe4ee0f89b	0xfa150
-gameobjectfactory	?RegisterGameObjectTypes@@YAXPAUGameObjFactoryCtx@@@Z	100.0000	100.0000	3	92b3d806f824	0xa3b0
+gameobjectfactory	?RegisterGameObjectTypes@@YAXPAUGameObjFactoryCtx@@@Z	100.0000	100.0000	4	4e2c17500744	0xa3b0
 gameobjectfactory	?ResetDat6295d8@@YAXXZ	100.0000	100.0000	1	dc9247fd7cfd	0xaf50
 gamesave	?SaveGame@@YAHPAUCGameSaveHost@@PAD@Z	100.0000	100.0000	15	f99d28195d50	0xd170
 gamestaterecordload	?Load@CGameStateRecord@@QAEHPAUCSerialArchive@@@Z	91.7927	91.7927	6	36d21fda6110	0x555e0
@@ -2054,7 +2054,7 @@ gruntvoice	?GetTypeTag@CVoiceTrigger@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1
 gruntvoice	?GruntVoiceStep@@YAHPAUCGameObject@@@Z	100.0000	100.0000	1	3f926902e476	0x119620
 gruntvoice	?InitActReg@CGruntVoice@@SAXXZ	100.0000	100.0000	3	752b0459e56b	0x119dc0
 gruntvoice	?InitActReg@CVoiceTrigger@@SAXXZ	100.0000	100.0000	1	c8445e2356cd	0x11a320
-gruntvoice	?RegisterActs@CVoiceTrigger@@QAEXXZ	92.9130	92.9130	2	e8254bdf664e	0x11a500
+gruntvoice	?RegisterActs@CVoiceTrigger@@SAXXZ	92.9130	92.9130	1	cpp:20986d2d7220	0x11a500
 gruntvoice	?Reset@CGruntVoice@@QAEXXZ	100.0000	100.0000	4	884d193a2ffa	0x11a870
 gruntvoice	?Serialize@CVoiceTrigger@@QAEHHHHH@Z	100.0000	100.0000	2	6272c8bdd8e0	0x134e0
 gruntvoice	?Setup@CGruntVoice@@QAEHHPAXHH@Z	85.2500	85.2500	5	79a39a4d4483	0x11a7e0
@@ -2594,9 +2594,9 @@ logicrecord	?Dispatch@CLogicRecord@@QAEHHHPAX0@Z	79.6203	79.6203	3	871c69a5c76b	
 logicrecord	?Load@CLogicRecord@@QAEHPAVLogicArchive@@@Z	100.0000	100.0000	2	a7f3d5c77541	0x164960
 logicrecord	?ResolveTarget@CLogicRecord@@QAEHPAX@Z	99.3333	99.3333	1	46d1e6aa2be0	0x1651b0
 logicrecord	?Save@CLogicRecord@@QAEHPAVLogicArchive@@@Z	100.0000	100.0000	2	236b7df67d07	0x164d80
-logicrecorddispatch	?LogicDispatchA@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	4	e612dd64ed9f	0xfb660
+logicrecorddispatch	?LogicDispatchA@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	5	4763444968d6	0xfb660
 logicrecorddispatch	?LogicDispatchBoomerang@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	1	72e21b4a139e	0xde9e0
-logicrecorddispatch	?LogicDispatchD@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	4	30b26d97a464	0xdeb20
+logicrecorddispatch	?LogicDispatchD@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	5	3723efce542e	0xdeb20
 logicrecorddispatch	?LogicDispatchE@@YAHPAULogicDispatchOwner@@@Z	100.0000	100.0000	1	4a578af0a1f6	0xde8a0
 logictypetable	?BuildLogicTypeTable@@YGXPAUCLogicTypeBuilder@@@Z	84.5833	84.5833	7	c0e472d4ee72	0x8a40
 logictypetable	?Finalize@CFinalize8b90@@QAEXH@Z	100.0000	100.0000	1	eff7707afcff	0x8b90
@@ -3172,7 +3172,7 @@ projectile	?LaunchSound@CProjectile@@QAEHPBD@Z	33.9778	33.9778	9	d9d2c6213fb3	0x
 projectile	?LoadAttributes@CTimeBomb@@QAEHXZ	90.5000	90.5000	1	2df6cf229aa5	0xe1e60
 projectile	?LoadProjectileSprites@CProjectile@@UAEHHHHHHHH@Z	57.1201	57.1201	3	8d915567e1a1	0xdf050
 projectile	?MovingSlot16@CProjectile@@UAEXXZ	69.7359	69.7359	2	499851a02191	0xdfd00
-projectile	?RegisterActs@CTimeBomb@@QAEXXZ	92.9130	92.9130	2	87220b0c5cc4	0xe1990
+projectile	?RegisterActs@CTimeBomb@@SAXXZ	92.9130	92.9130	1	cpp:a75ee075859b	0xe1990
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	2	1fc33c782a2a	0xdf920
 projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	5	d0aea3f6c5a2	0xdfb00
 projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	6	56bf773f2c4d	0x13c70
@@ -3752,7 +3752,7 @@ tilelogicpump	?RegisterActs@CCheckpointTrigger@@SAXXZ	91.1739	91.1739	2	b9acf768
 tilelogicpump	?RegisterActs@CTileSecretTrigger@@SAXXZ	78.5970	78.5970	2	42ea5b1a3e78	0x10f340
 tilelogicpump	?RegisterActs@CTileTrigger@@SAXXZ	92.9130	92.9130	2	2af0fb966c2d	0x10e600
 tilelogicpump	?RegisterActs@CTileTriggerSwitch@@SAXXZ	92.9130	92.9130	2	cdde3a098306	0x10e000
-tilelogicpump	?RegisterActs@CTileTriggerTransition@@QAEXXZ	92.9130	92.9130	2	d720489113b5	0x10fe70
+tilelogicpump	?RegisterActs@CTileTriggerTransition@@SAXXZ	92.9130	92.9130	1	d720489113b5	0x10fe70
 tilelogicpump	?RegisterActs@CWarpStonePad@@SAXXZ	92.9130	92.9130	2	25ffd74a32b7	0x10da20
 tilelogicpump	?Register_10fc90@CTileTriggerTransition@@QAEXXZ	100.0000	100.0000	1	3c3ad01bef92	0x10fc90
 tilelogicpump	?Serialize@CBrickz@@QAEHHHHH@Z	100.0000	100.0000	2	d64b09affe38	0x11320
@@ -3843,7 +3843,7 @@ toobspikez	??0CToobSpikez@@QAE@PAUCGameObject@@@Z	92.8491	92.8491	1	6a7df4a1fa9a
 toobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	2	3ac34800696b	0x12c60
 toobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	2	81db8e498faa	0x114860
 toobspikez	?GetTypeTag@CToobSpikez@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:514c2f1e5574	0x12ba0
-toobspikez	?RegisterActs@CToobSpikez@@QAEXXZ	92.9130	92.9130	3	ec7d24bdbe61	0x1149c0
+toobspikez	?RegisterActs@CToobSpikez@@SAXXZ	92.9130	92.9130	1	cpp:cbd101f698dc	0x1149c0
 toobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	2	f7b5552e258b	0x1147e0
 toobspikez	?Serialize@CToobSpikez@@QAEHHHHH@Z	100.0000	100.0000	3	e5bac151333d	0x12bc0
 toobspikez	?ToobSpikezLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	3	eee484680499	0x114480
