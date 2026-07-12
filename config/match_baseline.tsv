@@ -346,7 +346,7 @@ statusbartabbuilders	16	8
 statusbarupdaters	2	0
 streamrecordloaders	2	1
 surfacepalette	1	1
-symtab	56	28
+symtab	57	29
 terraintileloader	2	1
 tilelogicpump	57	43
 tilescan	1	0
@@ -712,7 +712,7 @@ butemgr	empty_stub	0.0000	0.0000	1	cpp:08adc88270f9
 butenode	??0CButeCfgNode174d@@QAE@H@Z	100.0000	100.0000	3	90323fc57900	0x174d00
 butenode	??1CButeStore@@UAE@XZ	100.0000	100.0000	1	257993575905	0x174d70
 butesectionctor	??0CButeSection@@QAE@XZ	100.0000	100.0000	2	d9115f492116	0x170210
-butestoreclear	?Reset@CButeStore212a0@@QAEXXZ	100.0000	100.0000	1	8cad8b05f136	0x212a0
+butestoreclear	?Reset@CButeStore212a0@@QAEXXZ	100.0000	100.0000	2	8fd1ec81f044	0x212a0
 butetree	?Walk@CButeTree@@QAEXP6AXPADPAX1@Z1PAUCButeTreeNode@@@Z	100.0000	100.0000	1	4a2a61ea1c8a	0x193340
 bzkinddispatch	?Dispatch@CLatencyList@@QAEHH@Z	79.1379	79.1379	6	cccd94f6bc01	0x37910
 chainforward	?ChainForward14@@YAXHPAUChainRoot@@HHHH@Z	87.6923	87.6923	1	a9c311d37b75	0x114f50
@@ -3013,14 +3013,14 @@ netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	3	3c2d70d366e0	0x17942
 netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	3	92ace19fe500	0x1795a0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	2	efbf31726082	0xc5280
 obj0f7d90	?Update_0f7d90@Obj0f7d90@@QAEHXZ	97.9915	97.9915	5	bbe42fe5ba8a	0xf7d90
-orphanleaves	?EndWaitCursorOnThread@@YAXXZ	100.0000	100.0000	1	d85affe0f716	0x18430
+orphanleaves	?EndWaitCursorOnThread@@YAXXZ	100.0000	100.0000	2	2fe8c1810007	0x18430
 orphanleaves	?GetGlobal5e8e98@@YAPAXXZ	100.0000	100.0000	2	4173b2b46bf6	0x183d0
-orphanleaves	?PickIfSelected@DlgHost_183f0@@QAEXXZ	100.0000	100.0000	1	331baa9fb4f8	0x183f0
+orphanleaves	?PickIfSelected@DlgHost_183f0@@QAEXXZ	100.0000	100.0000	2	723586163464	0x183f0
 orphanmethods	?Apply@CEffect6b@@QAEXHH@Z	76.3333	76.3333	4	4bb3670d583d	0x6b2e0
-orphanmethods	?Step@CState95@@QAEHH@Z	100.0000	100.0000	2	d50e2192695a	0x95140
+orphanmethods	?Step@CState95@@QAEHH@Z	100.0000	100.0000	3	b346675696ca	0x95140
 orphanmethods	?Tick@CStrikeEffect@@QAEHXZ	98.9429	98.9429	6	c6f411c31ff9	0xb4350
-packetpool	?Unmatched_bef10@@YAXXZ	100.0000	100.0000	14	0fbf71763051	0xbef10
-packetpool	?Unmatched_bf530@@YAPAXH@Z	100.0000	100.0000	15	d7509b251826	0xbf530
+packetpool	?Unmatched_bef10@@YAXXZ	100.0000	100.0000	15	01c3f92f33d9	0xbef10
+packetpool	?Unmatched_bf530@@YAPAXH@Z	100.0000	100.0000	16	b860f508b01a	0xbf530
 palettebmp	?Apply@CImagePaletteNode@ApiCallerStubs@@QAEHPADH@Z	100.0000	100.0000	1	a9bd58be1c62	0x1775f0
 palettebmp	?LoadBmpFile@CImagePaletteNode@ApiCallerStubs@@QAEHPADH@Z	98.7222	98.7222	1	eee148ead452	0x177480
 palettecopy	?UploadPalette@CDDScreen@@QAEXXZ	61.1613	61.1613	9	183c5f6cfddf	0x17ca10
@@ -3659,23 +3659,23 @@ symtab	??0CSymRec@@QAE@HPAVCSymTab@@H@Z	100.0000	100.0000	1	d80e18b4ef6e	0x139c8
 symtab	??0CSymRec@@QAE@HPAVCSymTab@@HH@Z	99.1290	99.1290	1	d80e18b4ef6e	0x139bf0
 symtab	??0CSymTab@@QAE@PAVCSymParser@@PAXPBD111HH@Z	97.3333	97.3333	3	bfa9a0d040c7	0x139de0
 symtab	??1CAbstract13aaf0@@UAE@XZ	100.0000	100.0000	1	dc65c47e0f17	0x13aaf0
-symtab	??1CSymParser@@QAE@XZ	99.9908	99.9908	1	0fd3faaa1f57	0x13abc0
+symtab	??1CSymParser@@QAE@XZ	99.9908	99.9908	2	ec10b81a8e24	0x13abc0
 symtab	??1CSymRec@@QAE@XZ	98.3099	98.3099	2	ea384930d87d	0x139cf0
-symtab	??1CSymTab@@QAE@XZ	92.8061	92.8061	5	e74500e3507b	0x139ee0
+symtab	??1CSymTab@@QAE@XZ	92.8061	92.8061	6	b8f44356f8e4	0x139ee0
 symtab	?AddNamedValue@CSymTab@@QAEHPAX0H@Z	88.0520	88.0520	1	03a3a71e32cb	0x13a400
 symtab	?AddNode@CSymParser@@QAEXPAX@Z	100.0000	100.0000	1	105a1b75dc4e	0x13c210
 symtab	?AddNodeEntry@CSymTab@@QAEHPAX000@Z	100.0000	100.0000	1	1ae81a302496	0x13a4b0
 symtab	?AddNodeSubEntry@CSymTab@@QAEHPAX0@Z	100.0000	100.0000	2	a6d6b3afb31d	0x13a530
 symtab	?ApplyRange@CSymTab@@QAEHHHHH@Z	74.9119	74.9119	5	e497e53a1f77	0x13a640
 symtab	?ApplyRecursive@CSymTab@@QAEHHHHH@Z	70.4657	70.4657	3	5725744b9c99	0x13a580
-symtab	?BeginParse@CParseSource@@QAEHXZ	99.7660	99.7660	1	0bab22bc9eb6	0x139960
+symtab	?BeginParse@CParseSource@@QAEHXZ	99.7660	99.7660	2	8a47808e7ab5	0x139960
 symtab	?Build@CSymLeafBuilder@@QAEXPAXPBD000000000@Z	96.2963	96.2963	4	ab58a8e3b9fc	0x139710
 symtab	?CheckNodes@CSymParser@@QAEHXZ	100.0000	100.0000	1	a46f9f5c2329	0x13ba20
-symtab	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	1	2912b500d101	0x13b850
+symtab	?Clear@CSymParser@@QAEPAXH@Z	91.3803	91.3803	2	569dc663b5ae	0x13b850
 symtab	?CreateSub@CSymTab@@QAEPAV1@PBD@Z	78.2500	78.2500	6	daf0ff9fe336	0x13a330
-symtab	?EndParse@CParseSource@@QAEHXZ	100.0000	100.0000	1	1e6a41c92cbf	0x1399d0
+symtab	?EndParse@CParseSource@@QAEHXZ	100.0000	100.0000	2	2e30c4cb79c7	0x1399d0
 symtab	?Find@CSymTab@@QAEPAXPBD@Z	98.2759	98.2759	3	ce01d0d5bba5	0x13a040
-symtab	?FindEntry@CRezDir@@QAEHPAD@Z	100.0000	100.0000	1	966e946f941f	0x13c080
+symtab	?FindEntry@CRezDir@@QAEHPAD@Z	100.0000	100.0000	2	c82a563fb2e5	0x13c080
 symtab	?FindOrAddSym@CSymTab@@QAEPAVCSymRec@@H@Z	85.7746	85.7746	3	16cafec85b68	0x13a940
 symtab	?FindQualified@CSymTab@@QAEPAXPBD@Z	94.5444	94.5444	3	826d292df4e2	0x13bca0
 symtab	?FindSub@CSymTab@@QAEPAXPBD@Z	100.0000	100.0000	2	e94578f7a585	0x13a230
@@ -3684,9 +3684,10 @@ symtab	?FirstSym@CSymTab@@QAEPAXXZ	100.0000	100.0000	3	242d0c6015c1	0x13a2b0
 symtab	?Gap_139810@@YAHXZ	1.0448	1.0448	1	5f0e651af37b	0x139810
 symtab	?Gap_139950@@YAHXZ	46.6667	46.6667	1	2fdfbaaa03d2	0x139950
 symtab	?GetEntryTag@CParseSource@@QAEHXZ	100.0000	100.0000	1	5061867b0010	0x139800
+symtab	?GetRoot@CSymParser@@QAEPAVCSymTab@@XZ	100.0000	100.0000	1	7345efee5383	0x13b900
 symtab	?Init@CParseSource@@QAEPAU1@XZ	56.6667	56.6667	1	cb74ced2c6b2	0x1396f0
 symtab	?Insert@CSymTab@@QAEHPBDPAX@Z	100.0000	100.0000	4	0f4aa01a582d	0x13a000
-symtab	?Load@CRezDirNode@@QAEHH@Z	100.0000	100.0000	2	3993db74a11f	0x13a0f0
+symtab	?Load@CRezDirNode@@QAEHH@Z	100.0000	100.0000	3	8abaa76a96ba	0x13a0f0
 symtab	?LoadEntry@CSymParser@@QAEHPADH@Z	98.2888	98.2888	1	a6cd04fffbfa	0x13b0c0
 symtab	?MakeSeed@CSymParser@@QAEHXZ	100.0000	100.0000	1	440bbd06b531	0x13ba70
 symtab	?NextSub@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	3	e0165966e560	0x13a280
@@ -3696,18 +3697,18 @@ symtab	?NextSym@CSymTab@@QAEPAXPAX@Z	100.0000	100.0000	3	fad7f9a33744	0x13a2d0
 symtab	?PackTag@@YGIPBD@Z	100.0000	100.0000	1	5427b9365e37	0x13b910
 symtab	?ParseBuffer@CSymParser@@QAEHPAXHH@Z	78.1500	78.1500	2	7f514f4e3f94	0x13ad00
 symtab	?ParseRecords@CSymParser@@QAEHPAXPAVCSymTab@@PADH@Z	56.1996	56.1996	1	5de5ecf79f1e	0x13b300
-symtab	?PopParseSlot@CSymParser@@QAEPAXXZ	77.1304	77.1304	1	86a7301697bc	0x13c0c0
+symtab	?PopParseSlot@CSymParser@@QAEPAXXZ	77.1304	77.1304	2	22d99fc5dfa9	0x13c0c0
 symtab	?ReParse@CSymParser@@QAEHXZ	100.0000	100.0000	1	5f22edcbb006	0x13c050
 symtab	?Read@CParseSource@@QAEHPAXIH@Z	91.1848	91.1848	1	c59d38a63c63	0x139af0
 symtab	?ReadAt@CParseSource@@QAEHPAXHI@Z	99.9833	99.9833	1	e55faa5935a8	0x139a40
-symtab	?ReleaseParseBuffers@CSymTab@@QAEHH@Z	100.0000	100.0000	4	5a7a212d0f6e	0x13a190
+symtab	?ReleaseParseBuffers@CSymTab@@QAEHH@Z	100.0000	100.0000	5	5bebcd892ec2	0x13a190
 symtab	?ResolvePath@CSymParser@@QAEPAXPBD@Z	100.0000	100.0000	1	1120e25b57d9	0x13c030
 symtab	?ResolvePath@CSymTab@@QAEPAXPBD@Z	94.6891	94.6891	2	86485b3db900	0x13bae0
 symtab	?ResolveQualified@CSymParser@@QAEHPBDPAX@Z	100.0000	100.0000	1	c8408db1a5d3	0x13bff0
 symtab	?ResolveQualified@CSymTab@@QAEHPBDPAX@Z	91.7399	91.7399	3	38918a96e4f4	0x13be40
-symtab	?SetDelims@CSymParser@@QAEXPAD@Z	100.0000	100.0000	1	dccfcd925519	0x13ba80
+symtab	?SetDelims@CSymParser@@QAEXPAD@Z	100.0000	100.0000	2	8e9704e517bc	0x13ba80
 symtab	?SetPos@CParseSource@@QAEHH@Z	100.0000	100.0000	1	f99ec430fef5	0x139ae0
-symtab	?Teardown@Obj1397a0@@QAEXXZ	100.0000	100.0000	1	5b465eda3716	0x1397a0
+symtab	?Teardown@Obj1397a0@@QAEXXZ	100.0000	100.0000	2	70404f95b464	0x1397a0
 symtab	?UnpackTag@@YGXIPAD@Z	100.0000	100.0000	1	258ab999f52f	0x13b970
 terraintileloader	?Load@CTerrainTileLoader@@QAEHHHHHHH@Z	7.8554	7.8554	4	f09918990f78	0x75e90
 terraintileloader	?Validate@ValidateHost@@QAEHXZ	100.0000	100.0000	2	085bfb3cabb2	0x94bc0
