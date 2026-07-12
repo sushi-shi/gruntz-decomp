@@ -21,7 +21,23 @@
 // `call rel32` displacements reloc-mask in objdiff.
 #include <DDrawMgr/DDSurface.h> // CDDSurface - the draw family's surface arg (m_height in DrawLine)
 #include <Font/Font.h>
+#include <ddraw.h> // IDirectDrawSurface::Unlock (surf->m_8 COM dispatch in DrawGlyphRun)
 #include <rva.h>
+
+// The live screen RGB-format shift table at 0x683ea0..0x683eb4 (file RVA 0x283ea0..) -
+// already named by SpriteRef.cpp / FileImage.cpp / LightFxRender.cpp. DrawGlyphRun packs
+// m_color into the screen 16bpp format and (in the blend path) unpacks the dest pixel
+// through these. Reloc-masked DIR32 data refs.
+DATA(0x00283ea0)
+extern i32 g_rUp; // 0x683ea0  red   up-shift   (channel position in the 16bpp word)
+DATA(0x00283ea4)
+extern i32 g_gUp; // 0x683ea4  green up-shift
+DATA(0x00283eac)
+extern i32 g_rDown; // 0x683eac  red   down-shift (scale 8-bit -> 5/6-bit)
+DATA(0x00283eb0)
+extern i32 g_gDown; // 0x683eb0  green down-shift
+DATA(0x00283eb4)
+extern i32 g_bDown; // 0x683eb4  blue  down-shift
 
 // The FontInterfaceObject::IsInterface1-5 GUID predicates (0x1794b0-0x179570), their
 // g_guid1-5 tables, and CWapNodeB::FreeStrings (0x179680) are re-homed to the
@@ -252,13 +268,178 @@ void FontRenderer::DrawLineClipped(CString text, CDDSurface* surf, CRect rc, i32
     DrawGlyphRun(text, surf, rc, x, y, z);
 }
 
-// FontRenderer::DrawGlyphRun (0x179e70, 0x5ec = 1516 B) - the inner glyph-run
-// blit (clip rc against the surface + measured extent, Lock, blit each glyph's
-// 8bpp coverage as packed 16bpp m_color). NOT yet reconstructed. reloc-fidelity:
-// DrawLineClipped's three CALLs to it stay UNBOUND - @rva-symbol cannot bind it
-// (its authority check needs the symbol DEFINED in the base obj, but DrawGlyphRun
-// is only an undefined external reference here). Binding requires reconstructing
-// the 1516-byte glyph blitter (a real RVA() body) - out of scope for a reloc pass.
+// FontRenderer::DrawGlyphRun (0x179e70, 0x5ec = 1516 B) - the inner glyph-run blit.
+// Clip `rc` against the surface (m_width/m_height) and the measured text extent
+// {0,0,mw,mh} (Win32 IntersectRect), Lock the surface, pack m_color into the screen
+// 16bpp format, walk the run left-to-right skipping glyphs left of rc.left and stopping
+// past rc.right, and for each visible glyph blit its 8bpp coverage buffer as 16bpp
+// pixels: opaque (any non-zero coverage writes m_color) when `blend`==0, else per-pixel
+// alpha-blended by the coverage byte (0=skip, 0xff=opaque, else src*cov+dst*(255-cov)).
+// The by-value CString `text` forces the /GX EH frame; the MeasureText call copy-
+// constructs a CString temp (destroyed by MeasureText); rc/x/y are text-space clip
+// coords, (x,y) positions the run on the surface.
+// @early-stop
+// ~62% (from 0%): full body + control flow + the whole call/data set byte-match
+// (MeasureText, IntersectRect, Lock, GetGlyph x3, GetSurface, m_8->Unlock, the 5
+// g_r/g/b Up/Down pixel-format globals, the 16bpp pack + per-pixel alpha blend). The
+// three DrawLineClipped CALLs (0x179d10 +0x84/+0xe3/+0x132) now BIND. Residual is a
+// callee-saved-register-assignment wall: retail pins this=edi / surf=ebp / x=ebx, cl
+// pins this=ebp / surf=esi, so every this/surf/x access re-encodes (different modrm)
+// and cl additionally materializes m_color into a GP reg + spill to extract its bytes
+// where retail reads this->m_color fresh (+~10 insns, +3 stack dwords -> frame 0x88 vs
+// retail 0x7c). A global allocation decision, not steerable by operand order. Verified
+// base-vs-target with the objdiff mnemonic stream (442 vs 432 insns).
+RVA(0x00179e70, 0x5ec)
+void FontRenderer::DrawGlyphRun(CString text, CDDSurface* surf, CRect rc, i32 x, i32 y, i32 blend) {
+    if (m_font == 0) {
+        return;
+    }
+    if (rc.left < 0) {
+        return;
+    }
+    if (rc.top < 0) {
+        return;
+    }
+    if (x < 0) {
+        return;
+    }
+    if (y < 0) {
+        return;
+    }
+
+    // Clip the run's extent to the surface (in-place widen/narrow of rc).
+    if (x - rc.left + rc.right > surf->m_width) {
+        rc.right = rc.right + rc.right - rc.left + x - surf->m_width;
+    }
+    if (y - rc.top + rc.bottom > surf->m_height) {
+        rc.bottom = rc.bottom + rc.bottom - rc.top + y - surf->m_height;
+    }
+
+    // Intersect the clip rect with the measured text extent {0,0,mw,mh}.
+    TextExtent m = MeasureText(text);
+    RECT extent;
+    extent.right = m.width;
+    extent.bottom = m.height;
+    extent.left = 0;
+    extent.top = 0;
+    if (!IntersectRect(&rc, &rc, &extent)) {
+        return;
+    }
+    if (rc.right > m.width) {
+        rc.right = m.width;
+    }
+    if (rc.bottom > m.height) {
+        rc.bottom = m.height;
+    }
+
+    u16* bits = (u16*)surf->Lock(0);
+    if (bits == 0) {
+        return;
+    }
+    i32 pitch = surf->m_pitch;
+
+    // Pack m_color into the screen 16bpp format.
+    i32 destX = x;
+    i32 red = m_color & 0xff;
+    i32 green = (m_color >> 8) & 0xff;
+    i32 blue = (m_color >> 16) & 0xff;
+    i32 rightPartial = 0;
+    i32 firstCol = 0;
+    i32 packedColor = ((u8)((u8)red >> (u8)g_rDown) << g_rUp)
+                    | ((u8)((u8)green >> (u8)g_gDown) << g_gUp) | ((u8)blue >> (u8)g_bDown);
+
+    // Left clip: skip glyphs entirely left of rc.left; firstCol is the sub-glyph
+    // column offset into the first partly-visible glyph.
+    i32 startChar = 0;
+    i32 acc = 0;
+    if (rc.left != 0) {
+        i32 prev = 0;
+        while (acc < rc.left) {
+            Glyph g;
+            prev = acc;
+            m_font->GetGlyph(g, text[startChar]);
+            acc += g.width;
+            startChar++;
+        }
+        startChar--;
+        firstCol = rc.left - prev;
+    }
+
+    // Right clip: find the end char index + the right overshoot of the last glyph.
+    i32 endChar;
+    i32 w = 0;
+    if (rc.right == m.width) {
+        endChar = text.GetLength();
+    } else {
+        i32 j = 0;
+        endChar = 0;
+        if (rc.right >= 0) {
+            do {
+                Glyph g;
+                m_font->GetGlyph(g, text[j]);
+                w += g.width;
+                j++;
+            } while (w <= rc.right);
+            endChar = j;
+        }
+        rightPartial = w - rc.right;
+    }
+
+    // Blit each visible glyph's coverage buffer as 16bpp pixels.
+    i32 lastChar = endChar - 1;
+    for (i32 ci = startChar; ci < endChar; ci++) {
+        Glyph g;
+        Glyph gm = m_font->GetGlyph(g, text[ci]);
+        i32 gw = gm.width;
+        i32 clippedW;
+        if (ci == lastChar) {
+            clippedW = gw - rightPartial;
+        } else {
+            clippedW = gw;
+        }
+        u8* glyphBuf = (u8*)m_font->GetSurface(text[ci])[0];
+        i32 startCol = firstCol;
+        if (blend) {
+            for (i32 row = rc.top; row < rc.bottom; row++) {
+                u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
+                for (i32 col = startCol; col < clippedW; col++) {
+                    u8 cover = glyphBuf[row * gw + col];
+                    if (cover == 0) {
+                    } else if (cover == 0xff) {
+                        *dst = (u16)packedColor;
+                    } else {
+                        i32 inv = 255 - cover;
+                        u16 dp = *dst;
+                        i32 dr = (u8)((u8)(dp >> g_rUp) << g_rDown);
+                        i32 dg = (u8)((u8)(dp >> g_gUp) << g_gDown);
+                        i32 db = (u8)((u8)dp << g_bDown);
+                        i32 bB = (db * inv) / 256 + (blue * cover) / 256;
+                        i32 rB = (dr * inv) / 256 + (red * cover) / 256;
+                        i32 gB = (dg * inv) / 256 + (green * cover) / 256;
+                        *dst = (u16)((u8)((u8)bB >> (u8)g_bDown)
+                                     | ((u8)((u8)rB >> (u8)g_rDown) << g_rUp)
+                                     | ((u8)((u8)gB >> (u8)g_gDown) << g_gUp));
+                    }
+                    dst++;
+                }
+            }
+        } else {
+            for (i32 row = rc.top; row < rc.bottom; row++) {
+                u16* dst = bits + ((row - rc.top + y) * pitch) / 2 + destX;
+                for (i32 col = startCol; col < clippedW; col++) {
+                    if (glyphBuf[row * gw + col] != 0) {
+                        *dst = (u16)packedColor;
+                    }
+                    dst++;
+                }
+            }
+        }
+        destX += clippedW - startCol;
+        firstCol = 0;
+    }
+
+    surf->m_8->Unlock(0);
+}
 
 // =========================================================================
 // FontRenderer::DrawWrapped  (0x17a460, 0x7ec = 2028 B), the cluster's largest.
