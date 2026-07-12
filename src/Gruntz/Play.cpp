@@ -1548,7 +1548,8 @@ public:
 class CDDrawSubMgrLeaf {
 public:
     void FreeAll_152720();
-    i32 HasKeyPrefix_152c50(const char* str); // 0x152c50
+    i32 HasKeyPrefix_152c50(const char* str);                      // 0x152c50
+    i32 RemoveKeysEqual_1527d0(const char* base, const char* str); // 0x1527d0
 };
 // The view holder (this->m_c) as the exit walk reads it.
 struct CExitView {
@@ -5761,23 +5762,17 @@ i32 CPlay::LoadLevelSounds(i32 force) {
 // config sync through the +0x0c owner's +0x2c config leaf (the 0x152xxx registry
 // API - distinct from this TU's 0x157xxx CDDrawSubMgrLeafScan). @orphan (owner
 // unrecovered; the 0x152xxx leaf + symtab kept as unique local views).
-struct Cdb750Cfg {
-    i32 HasKeyPrefix_152c50(const char* key);                   // 0x152c50 (ret != 0 tested)
-    i32 RemoveKeysEqual_1527d0(const char* key, const char* v); // 0x1527d0
-    void ScanTree_152ad0(void* val, const char* key, void* v);  // 0x152ad0
-};
+// m_2c is a CDDrawSubMgrAni : CDDrawSubMgrLeaf (0x152xxx config leaf); m_28 is a
+// CSymTab (ResolvePath @0x13bae0). Reached via cast at the call sites (real classes).
 struct CHolder_db750 {
     char pad0[0x2c];
-    Cdb750Cfg* m_2c; // +0x2c
-};
-struct Cdb750SymTab {
-    void* ResolvePath(const char* arg); // 0x13bae0
+    void* m_2c; // +0x2c  (CDDrawSubMgrAni)
 };
 struct Cdb750 {
     char pad0[0xc];
     CHolder_db750* m_c; // +0x0c
     char pad10[0x28 - 0x10];
-    Cdb750SymTab* m_28; // +0x28
+    void* m_28; // +0x28  (CSymTab)
     i32 SyncLevelKey(void* arg);
 };
 RVA(0x000db750, 0x70)
@@ -5786,21 +5781,19 @@ i32 Cdb750::SyncLevelKey(void* arg) {
         return 0;
     }
     if (arg == 0) {
-        if (m_c->m_2c->HasKeyPrefix_152c50("LEVEL") != 0) {
+        if (((CDDrawSubMgrLeaf*)m_c->m_2c)->HasKeyPrefix_152c50("LEVEL") != 0) {
             return 1;
         }
     }
-    m_c->m_2c->RemoveKeysEqual_1527d0("LEVEL", (const char*)&g_dat60b588);
-    void* e = m_28->ResolvePath((const char*)&g_dat613054);
+    ((CDDrawSubMgrLeaf*)m_c->m_2c)->RemoveKeysEqual_1527d0("LEVEL", (const char*)&g_dat60b588);
+    void* e = ((CSymTab*)m_28)->ResolvePath((const char*)&g_dat613054);
     if (e == 0) {
         return 0;
     }
-    m_c->m_2c->ScanTree_152ad0(e, "LEVEL", &g_dat60b588);
+    ((CDDrawSubMgrAni*)m_c->m_2c)->ScanTree_152ad0((CSymTab*)e, "LEVEL", (const char*)&g_dat60b588);
     return 1;
 }
-SIZE_UNKNOWN(Cdb750Cfg);
 SIZE_UNKNOWN(CHolder_db750);
-SIZE_UNKNOWN(Cdb750SymTab);
 SIZE_UNKNOWN(Cdb750);
 
 // LoadLevelImages (0x0db7e0) - sibling of LoadActionTileSprites; a single Register
