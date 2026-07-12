@@ -43,33 +43,15 @@ struct CSoundChannel {
     i32 m_14;                // +0x14  cleared on stop/retune
 };
 
-// MFC CPtrList node, walked raw: next at +0x00, the channel payload at +0x08.
+// The embedded list of channels (+0x08) is the REAL MFC CObList (vtable
+// ??_7CObList@@6B@ @0x1ed4b4; AddTail 0x1b4991 / RemoveAll 0x1b48a6 / ~CObList
+// 0x1b48c6 all reloc-mask). The raw node walks read its m_pNodeHead directly via
+// GetHeadPosition() (byte-identical to the old m_head field read). Its CNode is
+// modeled here as CSoundNode (next at +0x00, prev +0x04, channel payload +0x08).
 struct CSoundNode {
     CSoundNode* m_next;    // +0x00
     CSoundNode* m_prev;    // +0x04
     CSoundChannel* m_data; // +0x08
-};
-
-// The MFC CPlex block the list's node allocator chains (CPtrList::m_pBlocks);
-// only its type identity is needed here (layout owned by MFC, never walked).
-struct CSoundBlock;
-
-// The embedded MFC CPtrList of channels (the +0x08 sub-object). Modeled minimally:
-// the raw node walks read m_head directly; RemoveAll + the destructor are engine
-// externs (reloc-masked __thiscall on the sub-object address).
-struct CSoundChannelList {
-    virtual void
-    VSlot0(); // +0x00 (== object +0x08) list vftable slot  // real polymorphic vptr @+0x00 (was m_vptr)
-    CSoundNode* m_head;    // +0x04 (== object +0x0c)  MFC CPtrList::m_pNodeHead
-    CSoundNode* m_tail;    // +0x08                    m_pNodeTail
-    CSoundNode* m_free;    // +0x0c                    m_pNodeFree (free-node list)
-    CSoundBlock* m_blocks; // +0x10                   m_pBlocks (MFC CPlex block chain)
-    i32 m_blockSize;       // +0x14
-    i32 m_count;           // +0x18
-
-    void* AddTail(void* p); // 0x1b4991  (returns the new node)
-    void RemoveAll();       // 0x1b48a6
-    ~CSoundChannelList();   // 0x1b48c6
 };
 
 // The sound-channel objects the Create* factories allocate + add to the list are
@@ -96,7 +78,7 @@ public:
     void Stop();                   // 0x00bc80
     void Resume();                 // 0x00bcf0
     void Retune(i32 pan, i32 vol); // 0x00bd60
-    void Deactivate();             // 0x00b620  (sibling, defined elsewhere)
+    void Deactivate();             // 0x00b620
     ~CWorldSoundSet();             // 0x085ed0
 
     // Factories: allocate + seed a sound channel (the real RTTI channel classes),
@@ -115,7 +97,7 @@ public:
 
     CRandomAmbientWorld* m_world; // +0x00
     void* m_04;                   // +0x04
-    CSoundChannelList m_list;     // +0x08  head at +0x0c
+    CObList m_list;               // +0x08  MFC CObList (head at +0x0c)
     i32 m_active;                 // +0x24  active flag
     i32 m_pan;                    // +0x28  pan
     i32 m_vol;                    // +0x2c  vol

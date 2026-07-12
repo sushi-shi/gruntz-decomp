@@ -15,9 +15,9 @@
 #include <rva.h>
 #include <string.h> // inline strlen/strcat/strcpy
 
-// FUN_00004282 __cdecl: probe whether a path exists (OpenFile OF_EXIST). Reloc-
-// masked external (same helper LoadCustomWorldInfo uses).
-extern i32 PathFileExists(char* path);
+// FileExists (0x1189c0, __cdecl): probe whether a path exists (OpenFile OF_EXIST).
+// Reloc-masked external (reconstructed in heapdiag; same helper LoadCustomWorldInfo uses).
+extern i32 FileExists(char* path);
 
 // @source: decomp-xref
 RVA(0x00090550, 0x1e6)
@@ -49,7 +49,7 @@ i32 __stdcall LaunchPortalExe(char* outPath) {
         strcat(regBuf, "\\");
     }
     strcat(regBuf, "portal.exe");
-    if (!PathFileExists(regBuf)) {
+    if (!FileExists(regBuf)) {
         return 0;
     }
     if (outPath != 0) {

@@ -254,12 +254,13 @@ namespace Utils {
         }
     }
 
-    static char s_lpClass[1];
+    // lpClass is the shared empty mutable global string in .data (0x6293f4); bound
+    // to the canonical extern "C" _g_emptyString (the tree-wide keep-last winner).
+    extern "C" char g_emptyString[]; // 0x6293f4
 
     // -------------------------------------------------------------------------
     // RegistryHelper::GetRegistryKey  (static __stdcall)
     // Creates/opens szSubKey under hKey with KEY_ALL_ACCESS; returns success.
-    // (lpClass is an empty mutable global string in the original .data.)
     RVA(0x00139650, 0x32)
     i32 RegistryHelper::GetRegistryKey(HKEY hKey, char* szSubKey, PHKEY phKeyResult) {
         DWORD dwDisposition;
@@ -267,7 +268,7 @@ namespace Utils {
                    hKey,
                    szSubKey,
                    0,
-                   s_lpClass,
+                   g_emptyString,
                    0,
                    0xf003f /*KEY_ALL_ACCESS*/,
                    0,

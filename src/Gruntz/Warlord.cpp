@@ -26,6 +26,7 @@
 #include <Gruntz/Grunt.h>       // CGrunt + CGruntHud/CAnimElem/g_animLookupTree/GruntRand
                                 // (the five Resolve*Animation bodies below)
 #include <Gruntz/AniElement.h>  // full CAniElement (ResolveIdleAnimation's desc walk)
+#include <Gruntz/TriggerMgr.h>  // CTriggerMgr::NearestCellDist (0x7d1d0) - the m_cmdGrid helper
 
 #include <Bute/ButeTree.h> // the real CButeTree (g_buteTree @0x6bf620)
 
@@ -249,7 +250,7 @@ void RegisterWarlordActions() {
 // move (m_28 != 0 && m_20 == 0), resolve the moving animation. Returns 0.
 RVA(0x00044bb0, 0x38)
 i32 CWarlord::RearmMoving() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         ((CGrunt*)this)->ResolveMovingAnimation();
@@ -267,15 +268,15 @@ i32 CWarlord::RearmMoving() {
 // Returns int 0 on every path. Plain /O2 leaf (no destructible local, no /GX use).
 RVA(0x00044c00, 0xc6)
 i32 CWarlord::LoadAttributes() {
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo) != 1) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc) != 1) {
         return 0;
     }
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CGameObject* o = m_object;
-        i32 dist = ((CRegThreatHelper*)reg->m_cmdGrid)
-                       ->NearestEnemyDist(o->m_124, o->m_screenX, o->m_screenY);
+        i32 dist =
+            ((CTriggerMgr*)reg->m_cmdGrid)->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist < g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             NotifyFortUnderAttack();
             return 0;
@@ -310,15 +311,15 @@ i32 CWarlord::LoadAttributes() {
 // m_2c-chain split; all no-change at the same ~91% plateau).
 RVA(0x00044d10, 0x106)
 i32 CWarlord::LoadAttributes2() {
-    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo) != 1) {
+    if (((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc) != 1) {
         return 0;
     }
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_134 != 1) {
         CGameObject* o = m_object;
-        i32 dist = ((CRegThreatHelper*)reg->m_cmdGrid)
-                       ->NearestEnemyDist(o->m_124, o->m_screenX, o->m_screenY);
+        i32 dist =
+            ((CTriggerMgr*)reg->m_cmdGrid)->NearestCellDist(o->m_124, o->m_screenX, o->m_screenY);
         if (dist >= g_buteMgr.GetIntDef("Warlordz", "PanicRadius", 0x40)) {
             RaiseBattleAlert();
             return 0;
@@ -361,7 +362,7 @@ i32 CWarlord::LoadAttributes2() {
 extern i32 g_curPlayer; // 0x644c54 (current local player index)
 RVA(0x00044e70, 0x87)
 i32 CWarlord::AdvanceMovingAnim() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 == 0 || sub->m_20 != 0) {
         return 0;
@@ -386,7 +387,7 @@ i32 CWarlord::AdvanceMovingAnim() {
 // animation when the sub's state words say it is ready. Returns 0.
 RVA(0x00044f30, 0x38)
 i32 CWarlord::RearmMoving2() {
-    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_defaultGeo);
+    ((CAniAdvanceCursor*)((char*)m_38 + 0x1a0))->Advance_15c360(g_6bf3bc);
     CWarlordAnimSub* sub = (CWarlordAnimSub*)((char*)m_38 + 0x1a0);
     if (sub->m_28 != 0 && sub->m_20 == 0) {
         ((CGrunt*)this)->ResolveMovingAnimation();
@@ -401,7 +402,7 @@ i32 CWarlord::RearmMoving2() {
 // particle at the warlord's clamped screen position (registry effect dispatch),
 // arm the panic timer on the registry sub-object, then flag the anim player.
 // DECODED (for the final sweep):
-//   ((CAniAdvanceCursor*)sub)->Advance_15c360(g_defaultGeo);                      // m_38+0x1a0, 0x15c360
+//   ((CAniAdvanceCursor*)sub)->Advance_15c360(g_6bf3bc);                      // m_38+0x1a0, 0x15c360
 //   if (sub->m_28 == 0 || sub->m_20 != 0) return;         // ready-to-move gate
 //   CGameObject* o = m_10; i32 x=o->m_5c, y=o->m_60;
 //   if (x in [reg->m_13c, reg->m_144) && y in [reg->m_140, reg->m_148)) {

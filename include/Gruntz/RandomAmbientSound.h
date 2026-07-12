@@ -75,6 +75,8 @@ struct AmbSoundRecord {
     DirectSoundMgr* m_mgr; // +0x10
 };
 
+struct Arg1_bdd0; // the keyed-map holder Dispatch resolves against (<Gruntz/BoundaryTailViews.h>)
+
 VTBL(CRandomAmbientSound, 0x001e713c);
 class CRandomAmbientSound : public CAmbientSound {
 public:
@@ -82,6 +84,11 @@ public:
     // Setup(world, a2, a3, box, a5): seed the mgr handle + play params, copy/clear
     // the primary box, clear the secondary box. Returns 1 (0 on a null world).
     i32 Setup(DirectSoundMgr* mgr, i32 a2, i32 a3, AmbientBox* box, i32 a5); // 0x00be50
+    // 0xbdd0: resolve a mgr record for `key` from a1's embedded CMapStringToOb (+0x10),
+    // then Setup(record->m_10, a3, a4, box, a6). Null return on a miss. (This is the
+    // real home of the old CObj_bdd0::Dispatch placeholder - `this` is a CRandomAmbientSound,
+    // proven by the tail-call into Setup @0xbe50.)
+    void* Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, AmbientBox* box, i32 a6);
     // Update(playFlag, pos, kind): start or stop the sound this frame. 0x00c2a0.
     virtual void Update(i32 playFlag, i32 pos, i32 kind) OVERRIDE; // slot 3 (0x00c2a0)
     // The positional variant's entry points (same CAmbientSound base layout, but

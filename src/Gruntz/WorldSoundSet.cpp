@@ -29,7 +29,7 @@
 #include <Rez/RezMgr.h>                // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
 #include <Gruntz/UserLogic.h>              // CUserBase (real base of CAmbientSound)
-#include <Gruntz/BoundaryTailViews.h>      // CObj_bdd0/Arg1_bdd0/Entry_bdd0 (fuzzy-identity 0xbdd0)
+#include <Gruntz/BoundaryTailViews.h>      // Arg1_bdd0/Entry_bdd0 (0xbdd0 Dispatch arg views)
 #include <Gruntz/BoundaryLeafLogicViews.h> // L_8860 (CUserLogic leaf dtor, RVA-homed here)
 #include <Globals.h>                       // g_posSoundReq
 
@@ -155,12 +155,26 @@ i32 CWorldSoundSet::Init(void* world, i32 a2) {
 }
 
 // ---------------------------------------------------------------------------
+// Deactivate (0x0000b620): stop the world's sound device (FreeSamples, if live),
+// tear down every channel (Teardown), then clear the world back-pointer. 0xb620 is
+// CODE; Ghidra mis-typed it as g_typeDesc3 data (that bogus Globals DATA removed).
+// ---------------------------------------------------------------------------
+RVA(0x0000b620, 0x26)
+void CWorldSoundSet::Deactivate() {
+    if (m_world != 0 && m_world->m_soundDev != 0) {
+        m_world->m_soundDev->FreeSamples();
+    }
+    Teardown();
+    m_world = 0;
+}
+
+// ---------------------------------------------------------------------------
 // Teardown: scalar-delete every channel in the list (vtbl slot 0, flag 1), then
 // RemoveAll the now-dangling list.
 // ---------------------------------------------------------------------------
 RVA(0x0000b660, 0x2b)
 void CWorldSoundSet::Teardown() {
-    CSoundNode* node = m_list.m_head;
+    CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
@@ -202,7 +216,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient6_b6a0(i32 a0, i32 a1, i32 a2, i32 a
         delete obj;
         return 0;
     }
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
     return obj;
 }
 
@@ -240,7 +254,7 @@ CAmbientSound* CWorldSoundSet::CreateAmbient5_b7b0(i32 a0, i32 a1, i32 a2, i32 a
         delete obj;
         return 0;
     }
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
     return obj;
 }
 
@@ -265,7 +279,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3
         delete obj;
         return 0;
     }
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
     return obj;
 }
 
@@ -306,7 +320,7 @@ CAmbientPosSound* CWorldSoundSet::CreatePos5_b960(i32 a0, i32 a1, i32 a2, i32 a3
         delete obj;
         return 0;
     }
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
     return obj;
 }
 
@@ -347,7 +361,7 @@ CRandomAmbientSound* CWorldSoundSet::
         return 0;
     }
     obj->Init2(a4, a5, a6, a7);
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
     return obj;
 }
 
@@ -384,7 +398,7 @@ CRandomAmbientSound* CWorldSoundSet::
         return 0;
     }
     obj->Init2(a4, a5, a6, a7);
-    obj->m_listNode = m_list.AddTail(obj);
+    obj->m_listNode = (void*)m_list.AddTail((CObject*)obj);
     return obj;
 }
 
@@ -398,7 +412,7 @@ void CWorldSoundSet::Restart(void* a1) {
     if (m_world->m_soundDev != 0) {
         m_world->m_soundDev->FreeSamples();
     }
-    CSoundNode* node = m_list.m_head;
+    CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
@@ -418,7 +432,7 @@ void CWorldSoundSet::Stop() {
     if (m_world != 0 && m_world->m_soundDev != 0) {
         m_world->m_soundDev->FreeSamples();
     }
-    CSoundNode* node = m_list.m_head;
+    CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
@@ -441,7 +455,7 @@ void CWorldSoundSet::Stop() {
 // one byte. No source lever flips the dead-this reuse. See zero-register-pinning.md.
 RVA(0x0000bcf0, 0x43)
 void CWorldSoundSet::Resume() {
-    CSoundNode* node = m_list.m_head;
+    CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
@@ -472,7 +486,7 @@ RVA(0x0000bd60, 0x4b)
 void CWorldSoundSet::Retune(i32 pan, i32 vol) {
     m_pan = pan;
     m_vol = vol;
-    CSoundNode* node = m_list.m_head;
+    CSoundNode* node = (CSoundNode*)m_list.GetHeadPosition();
     while (node != 0) {
         CSoundNode* cur = node;
         node = node->m_next;
@@ -486,20 +500,27 @@ void CWorldSoundSet::Retune(i32 pan, i32 vol) {
     }
 }
 
-// 0xbdd0 (re-homed from src/Stub/BoundaryTail.cpp): CObj_bdd0::Dispatch - look a key
-// up in arg1's embedded CMapStringToOb (at +0x10) into a zero-initialised out slot; on
-// miss return the (null) slot, on hit dispatch this->DispatchEntry with the found
-// entry's m_10 plus the four trailing args. __thiscall, 6 stack args (ret 0x18).
-// Called by CWorldSoundSet::CreateAmbient6_b6a0 (ambient-sound entry dispatch);
-// `this` identity is genuinely unrecovered (kept placeholder CObj_bdd0). 100% EXACT.
+// 0xbdd0: CRandomAmbientSound::Dispatch - look `key` up in arg1's embedded
+// CMapStringToOb (at +0x10) into a zero-initialised out slot; on miss return the
+// (null) slot, on hit tail-call this->Setup with the found entry's m_10 (the mgr
+// handle) plus the four trailing args. __thiscall, 6 stack args (ret 0x18). The old
+// CObj_bdd0 placeholder is dissolved: the tail call binds to Setup @0xbe50, which
+// PROVES `this` is a CRandomAmbientSound. 100% EXACT.
 RVA(0x0000bdd0, 0x53)
-void* CObj_bdd0::Dispatch(Arg1_bdd0* a1, const char* key, i32 a3, i32 a4, i32 a5, i32 a6) {
+void* CRandomAmbientSound::Dispatch(
+    Arg1_bdd0* a1,
+    const char* key,
+    i32 a3,
+    i32 a4,
+    AmbientBox* box,
+    i32 a6
+) {
     Entry_bdd0* out = 0;
     ((CMapStringToOb*)&a1->m_10)->Lookup(key, (CObject*&)out);
     if (out == 0) {
         return (void*)out;
     }
-    return DispatchEntry(out->m_10, a3, a4, a5, a6);
+    return (void*)Setup((DirectSoundMgr*)out->m_10, a3, a4, box, a6);
 }
 
 // ---------------------------------------------------------------------------
@@ -1234,10 +1255,5 @@ SIZE_UNKNOWN(PosSoundObj);
 SIZE_UNKNOWN(PosSoundVoice);
 SIZE_UNKNOWN(CRandomAmbientWorld);
 SIZE_UNKNOWN(CSoundChannel);
-SIZE_UNKNOWN(CSoundChannelList);
-RELOC_VTBL(
-    CSoundChannelList,
-    0x001ed4b4
-); // IS MFC CObList (its methods are FID-labeled CObList members)
 SIZE_UNKNOWN(CSoundNode);
 SIZE_UNKNOWN(CWorldSoundSet);

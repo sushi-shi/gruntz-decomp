@@ -36,8 +36,9 @@ typedef struct SFMANL101TAG SFMANL101API;
 struct ScrollView;
 struct ShadeDescr;
 
-DATA(0x0000b620)
-extern char g_typeDesc3[];
+// g_typeDesc3 had a bogus DATA(0x0000b620): 0xb620 is CODE (CWorldSoundSet::Deactivate,
+// reconstructed in worldsoundset), which Ghidra mis-typed as 38 B of data. The real
+// g_typeDesc3 address is unrecovered; left as an unbound extern (Globals.h) pending it.
 DATA(0x00051510)
 extern char g_typeDesc1[];
 DATA(0x000c2640)

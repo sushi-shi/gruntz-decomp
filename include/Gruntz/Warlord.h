@@ -36,25 +36,27 @@ public:
     i32 m_28; // +0x28  state word (!= 0 gates the moving-anim re-arm)
 };
 
-// The global default geometry source the re-arm consumes (DATA 0x2bf3bc).
-DATA(0x002bf3bc)
-extern i32 g_defaultGeo;
+// The global default geometry source the re-arm consumes (0x6bf3bc). Bound to the
+// canonical extern "C" _g_6bf3bc (the tree-wide keep-last winner, DATA'd in
+// tilelogicpump); the old C++-mangled g_defaultGeo alias was reloc-UNBOUND.
+extern "C" u32 g_6bf3bc;
 
 // The running game clock (low 32 bits of a 64-bit counter at 0x645588; the high
 // half lives in the next word, read together as __int64 in the cooldown clamp).
 extern "C" u32 g_645588;
 
 // ---------------------------------------------------------------------------
-// The game-registry singleton's threat/spatial helper (g_gameReg->m_68): nearest
-// squared distance from (x, y) over the warlord's owner index (NearestEnemyDist =
-// engine FUN_0047d1d0, __thiscall ret 0xc, external/no-body). It also carries the
-// fort battle-cue timer sub-block (armed on the per-frame moving tick): m_288 the
-// cue-armed gate, m_290/m_294 the 64-bit start stamp (g_645588), m_298/m_29c the
-// window (0x3e8 ms), m_2a0 the cue-active flag.
+// The game-registry singleton's threat/spatial helper (g_gameReg->m_cmdGrid, a
+// CTriggerMgr): the nearest-enemy squared distance is CTriggerMgr::NearestCellDist
+// (0x7d1d0), called directly on m_cmdGrid (see LoadAttributes). This view carries
+// ONLY the fort battle-cue timer sub-block AdvanceMovingAnim arms (armed on the
+// per-frame moving tick): m_288 the cue-armed gate, m_290/m_294 the 64-bit start
+// stamp (g_645588), m_298/m_29c the window (0x3e8 ms), m_2a0 the cue-active flag.
+// @identity-TODO: these +0x290/+0x2a0 cue fields overlap CTriggerMgr's overlay-
+// descriptor / m_pendingFx modeling (a conflation to reconcile cross-lane).
 // ---------------------------------------------------------------------------
 class CRegThreatHelper {
 public:
-    i32 NearestEnemyDist(i32 owner, i32 x, i32 y);
     char m_pad00[0x288];
     i32 m_288; // +0x288  cue-armed gate
     char m_pad28c[0x290 - 0x28c];
