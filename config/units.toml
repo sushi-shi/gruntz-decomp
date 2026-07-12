@@ -252,11 +252,6 @@ source = "src/Gruntz/UserLogicCtorEmit.cpp"
 flags = "eh"
 
 [[unit]]
-unit = "gruntreticle"
-source = "src/Gruntz/GruntReticle.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "leveltilevalidation"
 source = "src/Gruntz/LevelTileValidation.cpp"
 flags = "eh"
@@ -355,7 +350,7 @@ flags = "eh"
 [[unit]]
 unit = "gruntarrivalscan"
 source = "src/Gruntz/GruntArrivalScan.cpp"
-flags = "base"
+flags = "eh" # REHOME M2: merged the arrival-band over-split files; Reticle/PhaseStep need /GX
 
 [[unit]]
 unit = "playplanescan"
@@ -863,14 +858,6 @@ flags = "eh"
 # ClassUnknown_43 per-tick manager Update re-homed from Discovered.cpp.
 unit = "obj0f7d90"
 source = "src/Gruntz/Obj0f7d90.cpp"
-flags = "base"
-
-[[unit]]
-# CGrunt::StepArrivalDefenseAlt (0xf1c70) - the powered-up arrival-defender variant,
-# trace mis-attributed to ClassUnknown_42; re-homed from Discovered.cpp as the real
-# CGrunt method. No destructible locals -> /base.
-unit = "gruntarrivalstep"
-source = "src/Gruntz/GruntArrivalStep.cpp"
 flags = "base"
 
 [[unit]]
@@ -1943,16 +1930,6 @@ source = "src/Gruntz/HeapDiag.cpp"
 flags = "base"
 
 [[unit]]
-unit = "gruntupdatestep"
-source = "src/Gruntz/GruntUpdateStep.cpp"
-flags = "base"
-
-[[unit]]
-unit = "wanderidlestep"
-source = "src/Gruntz/WanderIdleStep.cpp"
-flags = "base"
-
-[[unit]]
 unit = "playercommandstep"
 source = "src/Gruntz/PlayerCommandStep.cpp"
 flags = "base"
@@ -2193,12 +2170,6 @@ flags = "eh"
 # matcher-3: game-mode/object initializer (four owned sub-objects + /GX teardown).
 unit = "modeobjinit"
 source = "src/Gruntz/ModeObjInit.cpp"
-flags = "eh"
-
-[[unit]]
-# matcher-3: CGrunt arrival/relocation phase state machine (5x5 border scan + tail).
-unit = "gruntphasestep"
-source = "src/Gruntz/GruntPhaseStep.cpp"
 flags = "eh"
 
 [[unit]]
