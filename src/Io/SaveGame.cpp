@@ -36,8 +36,11 @@
 // were re-homed to src/Gruntz/LoadGameMenu.cpp - they sit inside the loadgamemenu
 // .text obj block, between GruntzLoadGameDlgProc @0x9dff0 and LoadGameCommand @0x9e390,
 // and are called by both; REHOME package D7.)
-// IsSlotOccupied (0x2694 -> 0xe5700) is the slot-occupancy probe. All reloc-masked.
-i32 IsSlotOccupied(SaveSlot* item); // 0x2694 (jmp-thunk -> 0xe5700)
+// The slot-occupancy probe IS TempFileExists_e5700 (0x2694 jmp-thunk -> 0xe5700,
+// defined below): a SaveSlot overlaps the SaveTempRec fields it reads (m_type@0 =
+// the flag word, m_savePath@0x35 = the temp path). All reloc-masked.
+struct SaveTempRec;                       // defined below (the temp save-record)
+int TempFileExists_e5700(SaveTempRec* p); // 0x0e5700 (defined below)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6); // 0x0e3e80
 
 // --- the dialog half's shared state/decls (ex LevelInfoDlg.cpp/SaveGameMenu.cpp) ---
@@ -47,12 +50,12 @@ DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // *0x64556c
 DATA(0x00213a9c)
 extern i32 g_savedMenuCmd; // DAT_00613a9c  pending deferred save-menu command
+// The last-selected save record @0x24c864: read as an i32 SaveSlot* handle in the
+// selection code and as a char*/SaveTempRec* (its leading bytes) in the save-confirm
+// info dialog - ONE datum, so the ex `g_dlgInfoText` char* view folds onto g_slotState
+// (the tree winner; the C++-mangled g_dlgInfoText lost the per-rva dedup).
 DATA(0x0024c864)
-extern i32 g_slotState; // DAT_0064c864  last-queried slot state (the previewed level)
-                        // (the ex-LevelInfoDlg DATA(0x0064c864) row was a VA-as-RVA bug)
-// The save-confirm info line (DAT_0064c864-adjacent; pinned in ApiCallers).
-extern char* g_dlgInfoText;
-struct SaveTempRec;                                // defined below (the temp save-record)
+extern i32 g_slotState;                            // DAT_0064c864 (== the ex g_dlgInfoText)
 i32 __stdcall CloseTempFile_e5550(SaveTempRec* r); // defined below (0x0e5550)
 // The SetDlgItemTextA helper (0x0e4850) + the title builder (0x0e44e0), defined below.
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);
@@ -193,11 +196,11 @@ RVA(0x000e3a40, 0xb0)
 i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case 0x110:
-            if (g_dlgInfoText == 0) {
-                EndDialog(hDlg, (INT_PTR)g_dlgInfoText);
+            if (g_slotState == 0) {
+                EndDialog(hDlg, (INT_PTR)g_slotState);
                 return 1;
             }
-            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_dlgInfoText);
+            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, (char*)g_slotState);
             return 1;
         case 0x111:
             if (wParam == 2) {
@@ -205,7 +208,7 @@ i32 CALLBACK winapi_0e3a40_EndDialog(HWND hDlg, UINT msg, WPARAM wParam, LPARAM 
                 return 1;
             }
             if (wParam == 1) {
-                CloseTempFile_e5550((SaveTempRec*)g_dlgInfoText);
+                CloseTempFile_e5550((SaveTempRec*)g_slotState);
                 ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
                 EndDialog(hDlg, 1);
                 return 1;
@@ -223,11 +226,11 @@ RVA(0x000e3b20, 0x86)
 i32 CALLBACK InfoLineDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case 0x110:
-            if (g_dlgInfoText == 0) {
-                EndDialog(hDlg, (INT_PTR)g_dlgInfoText);
+            if (g_slotState == 0) {
+                EndDialog(hDlg, (INT_PTR)g_slotState);
                 return 1;
             }
-            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, g_dlgInfoText);
+            winapi_0e4850_SetDlgItemTextA(hDlg, g_gameReg->m_saveSink, (char*)g_slotState);
             return 1;
         case 0x111:
             if (wParam == 2) {
@@ -485,7 +488,7 @@ i32 DrawSaveGameMenu(HWND hDlg, i32 cmd, CSaveGame* obj) {
     if (_strcmpi(name, "(Empty)") == 0) {
         sprintf(name, "Saved Game #%i", slot + 1);
     }
-    if (IsSlotOccupied(obj->GetSlot(slot))) {
+    if (TempFileExists_e5700((SaveTempRec*)obj->GetSlot(slot))) {
         g_slotState = (i32)obj->GetSlot(slot);
         if (g_slotState != 0) {
             EnableWindow(hDlg, FALSE);
@@ -937,7 +940,9 @@ SaveSlot* CSaveGame::GetSlot(i32 i) {
 // CSaveGame::FillSlotByIndex  (0x000e54e0)
 RVA(0x000e54e0, 0x25)
 i32 CSaveGame::FillSlotByIndex(i32 idx, i32 name, void* src) {
-    return FillSlot2(GetSlot(idx), name, src);
+    // retail forwards to FillSlot (0xe5130, the const char* name-string variant), not
+    // FillSlot2 (0xe5240); `name` flows in as a char* (see DrawSaveGameMenu's caller).
+    return FillSlot(GetSlot(idx), (const char*)name, src);
 }
 
 // CSaveGame::StoreSlot  (0x000e5520) - copy `src` into the slot at index `idx`.
@@ -956,8 +961,8 @@ struct SaveTempRec {
     char m_path[1];     // +0x35  the temp-file path
 };
 
-// DeleteFileA wrapper at 0x1bf559 (__stdcall; throws the OS error on failure).
-extern "C" void __stdcall FileDelete_1bf559(char* lpszFileName);
+// The temp-file delete at 0x1bf559 is the static MFC CFile::Remove (NAFXCW library;
+// library_labels ?Remove@CFile@@SGXPBD@Z) - call it by its real name (reloc-masked).
 
 // ---------------------------------------------------------------------------
 // CloseTempFile  (0x000e5550) - if the record's temp file opens (read), close
@@ -971,7 +976,7 @@ int __stdcall CloseTempFile_e5550(SaveTempRec* p) {
     CFileIO file;
     if (file.Open(p->m_path, 0, 0)) {
         file.Close();
-        FileDelete_1bf559(p->m_path);
+        CFile::Remove(p->m_path);
     }
     p->m_flags = 0;
     return 1;
@@ -1005,8 +1010,9 @@ void CSaveGame::SetMaxLevel(i32 v) {
     m_maxLevel = v;
 }
 
-// SetCurLevel (0x0e5660): clamped update of the current level; re-Init at 0x20.
-// Out-of-line (retail emits it standalone; the inline member folded away).
+// SetCurLevel (0x0e5660): clamped update of the current level; re-stamp the save
+// magic at level 0x20. Out-of-line (retail emits it standalone; the inline member
+// folded away).
 RVA(0x000e5660, 0x1e)
 void CSaveGame::SetCurLevel(i32 v) {
     if (v >= 0x21) {
@@ -1017,7 +1023,7 @@ void CSaveGame::SetCurLevel(i32 v) {
     }
     m_curLevel = v;
     if (v == 0x20) {
-        Init();
+        SetMagic(); // 0xe56b0 (retail calls the magic-stamp here, not Init 0xe4d50)
     }
 }
 
@@ -1064,7 +1070,7 @@ int TempFileExists_e5700(SaveTempRec* p) {
 RVA(0x000e3e80, 0x86)
 void LabelSaveSlot(HWND hWnd, SaveSlot* item, i32 id3, i32 id4, i32 id5, i32 id6) {
     i32 flag;
-    if (IsSlotOccupied(item)) {
+    if (TempFileExists_e5700((SaveTempRec*)item)) {
         SetDlgItemTextA(hWnd, id3, item->m_name);
         flag = 1;
     } else {

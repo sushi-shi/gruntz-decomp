@@ -36,21 +36,13 @@ public:
     CAttractSceneSlot* m_48; // +0x48  scene/scheduler handle
 };
 
-// The attract state machine at CAttract+0x8 (== CState::m_8 re-typed; engine
-// FUN_0053c030, __thiscall ret 4): resolves an attract state object by name.
-class CAttractState; // resolved state object (LookupState result)
-
-class CAttractStateMgr {
-public:
-    CAttractState* LookupState(char* name);
-};
-
-// The resolved attract state object. EnterAttractMode loads its "SOUNDZ" set
-// (engine FUN_0053a230, __thiscall ret 4), yielding an opaque sound handle.
-class CAttractState {
-public:
-    void* LoadSoundz(char* name);
-};
+// The attract "state machine" at CAttract+0x8 (== CState::m_8 re-typed) is the
+// shared ButeMgr parser CSymParser: LookupState == CSymParser::ResolvePath
+// (0x13c030), which resolves a named scope. The resolved scope it returns (stashed
+// in m_2c) is a CSymTab; EnterAttractMode loads its "SOUNDZ" set via
+// CSymTab::FindSub (0x13a230). Both real classes come from <Bute/SymParser.h>.
+class CSymParser; // <Bute/SymParser.h> (ResolvePath 0x13c030); m_8 re-typed
+// CSymTab is forward-declared in <Gruntz/State.h> (m_2c's ResolvePath/FindSub facet).
 
 // ---------------------------------------------------------------------------
 // The menu/brightness sink chain rooted at CAttract+0xc (== CState::m_c). The
@@ -162,7 +154,9 @@ public:
     virtual ~CAttract() OVERRIDE;             // slot 0  0x08cd90 (??1) / 0x08cd60 (??_G)
     virtual void ReleaseResources() OVERRIDE; // slot 2  (+0x08) 0x0140d0
     RVA(0x0008cd40, 0x6)
-    virtual GameStateId Update() OVERRIDE { return GAMESTATE_ATTRACT; }
+    virtual GameStateId Update() OVERRIDE {
+        return GAMESTATE_ATTRACT;
+    }
     virtual i32 Render() OVERRIDE;  // slot 5  (+0x14) 0x0143e0  attract per-frame poll/draw
     virtual i32 Vslot06() OVERRIDE; // slot 6  (+0x18) 0x014630  random-title roll (Vfunc3 gate)
     virtual i32 Vslot07() OVERRIDE; // slot 7  (+0x1c) 0x0147b0  host/paint poll
@@ -200,8 +194,8 @@ public:
     CMenuRoot* menuRoot() {
         return (CMenuRoot*)m_c;
     }
-    CAttractStateMgr* stateMgr() {
-        return (CAttractStateMgr*)m_8;
+    CSymParser* stateMgr() {
+        return (CSymParser*)m_8;
     }
     CAttractVideo* video() {
         return (CAttractVideo*)m_4;
@@ -209,8 +203,8 @@ public:
     CGruntzMgr* owner() {
         return (CGruntzMgr*)m_4;
     }
-    CAttractState* attractState() {
-        return (CAttractState*)m_2c;
+    CSymTab* attractState() {
+        return (CSymTab*)m_2c;
     }
     CAttractScreenObj* screenObj() {
         return (CAttractScreenObj*)m_2c;

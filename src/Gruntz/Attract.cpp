@@ -138,7 +138,7 @@ RVA(0x00039160, 0x46)
 i32 CAttract::RefreshTitle(i32 unused) {
     ((CGruntzSoundZ*)video()->m_48)->IsPlaying();
     ((CGruntzSoundZ*)video()->m_48)->StopAndFlush();
-    m_2c = (CResSource*)stateMgr()->LookupState(s_STATEZ_ATTRACT);
+    m_2c = (CResSource*)stateMgr()->ResolvePath(s_STATEZ_ATTRACT);
     RunTitleSeq(s_TITLE, 0, 0, 1, 0);
     return 1;
 }
@@ -158,8 +158,8 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         sprintf(stateName, s_STATEZ_ATTRACT);
         sprintf(titleName, s_TITLE_d, idx);
 
-        CAttractState* saved = attractState();
-        CAttractState* state = stateMgr()->LookupState(stateName);
+        CSymTab* saved = attractState();
+        CSymTab* state = (CSymTab*)stateMgr()->ResolvePath(stateName);
         m_2c = (CResSource*)state;
         if (state == 0) {
             return 0;
@@ -219,8 +219,8 @@ i32 CAttract::Activate() {
     sprintf(stateName, s_STATEZ_ATTRACT);
     sprintf(titleName, s_TITLE_d, idx);
 
-    CAttractState* saved = attractState();
-    CAttractState* state = stateMgr()->LookupState(stateName);
+    CSymTab* saved = attractState();
+    CSymTab* state = (CSymTab*)stateMgr()->ResolvePath(stateName);
     m_2c = (CResSource*)state;
     if (state == 0) {
         return 0;
@@ -912,8 +912,6 @@ SIZE_UNKNOWN(CAttractPooledRes);
 SIZE_UNKNOWN(CAttractRegistrar);
 SIZE_UNKNOWN(CAttractSceneSlot);
 SIZE_UNKNOWN(CAttractScreenObj);
-SIZE_UNKNOWN(CAttractState);
-SIZE_UNKNOWN(CAttractStateMgr);
 SIZE_UNKNOWN(CAttractVideo);
 SIZE_UNKNOWN(CAttractVoice);
 SIZE_UNKNOWN(CMenuBrightnessHolder);

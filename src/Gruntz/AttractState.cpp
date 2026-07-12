@@ -28,6 +28,7 @@
 #include <Gruntz/String.h> // MFC CString (Vslot09's CMapStringToOb/CObject); MFC-first
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/Attract.h>
+#include <Bute/SymParser.h> // CSymParser (m_8: ResolvePath 0x13c030) + CSymTab (m_2c: FindSub 0x13a230)
 #include <Gruntz/GameRegistry.h> // CGameRegistry / g_gameReg (+ SoundCue chain: DirectSoundMgr/SoundDevice/SoundStream)
 #include <Gruntz/AttractActor.h>       // the shared per-frame g_actorList view
 #include <Gruntz/ResMgr.h>             // CDrawTarget (m_10 frame surface / m_14 draw surface)
@@ -51,9 +52,10 @@ class DirNode;
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
-// The attract-state count divisor (DAT_00645534, a writable global int).
-DATA(0x00245534)
-extern i32 g_attractStateCount;
+// The attract-state count divisor (DAT_00645534, a writable global int). extern "C"
+// so it emits the canonical `_g_645534` - the single name bound at 0x245534 (home
+// `multi`); the ex C++-mangled g_attractStateCount lost the per-rva keep-last dedup.
+extern "C" i32 g_645534;
 
 // The "ShowCursor" Win32 import slot (PTR_ShowCursor_006c44c4).
 typedef i32(WINAPI* ShowCursorFn)(i32);
@@ -61,9 +63,9 @@ DATA(0x002c44c4)
 extern ShowCursorFn g_ShowCursor;
 
 // PostMessageA reached through the IAT slot (matches the engine's ff15 indirect).
-typedef i32(WINAPI* PostMessageFn)(void* hwnd, u32 msg, u32 wparam, i32 lparam);
-DATA(0x002c44c8)
-extern PostMessageFn g_pPostMessageA;
+// extern "C" so the reloc emits `_g_pPostMessageA` - the canonical name bound at
+// 0x2c44c8 (home `sbi_rectonly`); the C++-mangled view was the dedup loser.
+extern "C" i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32);
 
 // The per-frame time delta (countdown source for m_idleTimer). C linkage so the
 // symbol pairs with the target's _g_645584 (the convention across the gamemode units).
@@ -120,13 +122,13 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
 
     owner()->RestoreVideoMode(0);
 
-    CAttractState* state = stateMgr()->LookupState(s_STATEZ_ATTRACT);
+    CSymTab* state = (CSymTab*)stateMgr()->ResolvePath(s_STATEZ_ATTRACT);
     m_2c = (CResSource*)state;
     if (state == 0) {
         return 0;
     }
 
-    void* sound = state->LoadSoundz(s_SOUNDZ);
+    void* sound = state->FindSub(s_SOUNDZ);
     if (sound == 0) {
         return 0;
     }
@@ -160,7 +162,9 @@ void CAttract::ReleaseResources() {
         ((SoundStream*)reg->m_2c)->Stop();
     }
     ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)->RemoveKeysEqual_157c70(s_ATTRACT, s_UNDERSCORE);
-    CState::ReleaseResources();
+    // The base teardown is CGameModeBase::BaseCleanup (0xfa150), not a distinct
+    // CState::ReleaseResources body - same (CGameModeBase*)this bridge the CState dtor uses.
+    ((CGameModeBase*)this)->BaseCleanup();
 }
 
 // CAttract::Vslot09(arg) (slot 9 / +0x24, 0x014120): the full attract title-screen
@@ -187,7 +191,7 @@ i32 CAttract::Vslot09(i32 arg) {
         do {
         } while (showCursor(0) >= 0);
     }
-    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
+    i32 idx = g_gameReg->m_numRuns % g_645534 + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
     RunTitleSeq(s, 0, 0, 1, 0);
@@ -314,7 +318,9 @@ i32 CAttract::Render() {
 // local forces the /GX EH frame. (Render polls this slot each frame.)
 RVA(0x00014520, 0xc3)
 i32 CAttract::InputVirtual() {
-    if (menuRoot()->m_04->IsLoaded() == 0) {
+    // The page "loaded?" gate is CDDrawSubMgrPages::Method_158bc0 (0x158bc0), reached
+    // through the page's real class (the CMenuPage view's IsLoaded @0x158bc0 == this).
+    if (((CDDrawSubMgrPages*)menuRoot()->m_04)->Method_158bc0() == 0) {
         return 0;
     }
     ShowCursorFn showCursor = g_ShowCursor;
@@ -322,7 +328,7 @@ i32 CAttract::InputVirtual() {
         do {
         } while (showCursor(0) >= 0);
     }
-    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
+    i32 idx = g_gameReg->m_numRuns % g_645534 + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
     return RunTitleSeq(s, 0, 0, 1, 0);
@@ -340,7 +346,7 @@ i32 CAttract::Vslot06() {
         do {
         } while (showCursor(0) >= 0);
     }
-    i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
+    i32 idx = g_gameReg->m_numRuns % g_645534 + 1;
     CString s;
     s.Format(s_TITLE_d, idx);
     return RunTitleSeq(s, 0, 0, 1, 0);
@@ -404,8 +410,6 @@ SIZE_UNKNOWN(CAttract);
 SIZE_UNKNOWN(CAttractHost);
 SIZE_UNKNOWN(CAttractPooledRes);
 SIZE_UNKNOWN(CAttractRegistrar);
-SIZE_UNKNOWN(CAttractState);
-SIZE_UNKNOWN(CAttractStateMgr);
 SIZE_UNKNOWN(CAttractVideo);
 SIZE_UNKNOWN(CAttractVoice);
 SIZE_UNKNOWN(CMenuRoot);
