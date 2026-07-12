@@ -3851,7 +3851,7 @@ toobspikez	??0CToobSpikez@@QAE@PAUCGameObject@@@Z	92.8491	92.8491	1	6a7df4a1fa9a
 toobspikez	??1CToobSpikez@@UAE@XZ	100.0000	100.0000	2	3ac34800696b	0x12c60
 toobspikez	?FireActivation@CToobSpikez@@QAEXH@Z	100.0000	100.0000	2	81db8e498faa	0x114860
 toobspikez	?GetTypeTag@CToobSpikez@@UAE?AW4LogicTypeId@@XZ	100.0000	100.0000	1	cpp:514c2f1e5574	0x12ba0
-toobspikez	?RegisterActs@CToobSpikez@@SAXXZ	92.9130	92.9130	1	cpp:cbd101f698dc	0x1149c0
+toobspikez	?RegisterActs@CToobSpikez@@SAXXZ	92.9130	92.9130	1	ec7d24bdbe61	0x1149c0
 toobspikez	?Register_1147e0@CToobSpikez@@QAEXXZ	100.0000	100.0000	2	f7b5552e258b	0x1147e0
 toobspikez	?Serialize@CToobSpikez@@QAEHHHHH@Z	100.0000	100.0000	3	e5bac151333d	0x12bc0
 toobspikez	?ToobSpikezLogic@@YAHPAUCGameObject@@@Z	100.0000	100.0000	3	eee484680499	0x114480
