@@ -387,8 +387,6 @@ public:
     void RecallCell(CTmCell* cell, i32 x, i32 y); // (cell,x,y): NotifyCell pushes y,x,cell
     void RefreshB(i32 a);
     void RefreshC();
-    i32 Probe4(void* obj);
-    i32 Probe7(void* obj);
     CTmCell* Hit(i32 arg, i32 a, i32 b, i32* outRow, i32* outCol);
     void ClearMagic(i32 key);
     i32 Classify(i32 x, i32 y);

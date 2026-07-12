@@ -1123,14 +1123,19 @@ i32 CTriggerMgr::RebuildOverlay(void* obj, i32 kind, i32 /*unusedC*/, i32 /*unus
     }
     // Negated outer test (kind!=4 ... else kind==4): reproduces retail's block layout
     // where the kind==4 body is placed FAR (after the kind==7 body).
+    // The kind-7/kind-4 self-probes ARE this manager's own (de)serialize entry
+    // points reused as boolean probes: retail dispatches kind 7 -> Load (0x7abc0,
+    // via ILT thunk 0x2644) and kind 4 -> ScanGroup (0x7a760, via thunk 0x2351),
+    // both passing `obj` as the archive. (Were the fake Probe7/Probe4 decls; the
+    // real callees are the in-unit round-trip pair.)
     if (kind != 4) {
         if (kind == 7) {
-            if (this->Probe7(obj) == 0) {
+            if (this->Load((CSerialArchive*)obj) == 0) {
                 return 0;
             }
         }
     } else {
-        if (this->Probe4(obj) == 0) {
+        if (this->ScanGroup((CSerialArchive*)obj) == 0) {
             return 0;
         }
     }
