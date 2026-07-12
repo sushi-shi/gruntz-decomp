@@ -7,16 +7,17 @@
 // ctor/dtor of g_buteTree (src/Gruntz/TypeKeyColl.cpp). Field names are
 // placeholders; only the OFFSETS + emitted bytes are load-bearing.
 //
-// NOTE: CButeMgr's owned sub-trees (m_tree/m_tree48/m_tree74) are instances of
-// THIS class, but ButeMgr.h models them from the /GX destructor's teardown view as
-// `struct CButeStore` (also real-polymorphic MI now, two bases at +0/+8). CButeStore
-// and CButeTree are the SAME 0x2c-byte class; fully folding CButeStore into CButeTree
-// is a deep re-match of CButeMgr::~CButeMgr (0x213c0) and is deferred. See the
-// dedup report / docs.
+// STRUCTURE-RECOVERY (RTTI-proven): CButeTree derives the RTTI-real `zPTree`
+// (<Bute/PTreeNode.h>: zErrHandling @0, CButeNodeEntry/zPtrColl @8). The former fake
+// CButeTreePrimary/CButeTreeSecond/CButeTreeBase2 views are dissolved onto zPTree - the
+// single 0x2c-byte config-tree base every node view shares (CButeStore m_tree, CButeNode,
+// CBSecStream). The trie fields (m_root/m_descentCursor/... at +0x18.., m_nodeCount@+0x14,
+// m_errorSink@+0x04) now live on zPTree/zErrHandling/CButeNodeEntry; CButeTree adds none.
 #ifndef SRC_BUTE_BUTETREE_H
 #define SRC_BUTE_BUTETREE_H
 
 #include <rva.h>
+#include <Bute/PTreeNode.h> // the RTTI-real zErrHandling/CButeNodeEntry/zPTree base hierarchy
 
 // The +0x04 error sink the trie/registry/container reports a fatal failure through.
 // __thiscall(this; obj, a, b); the delinker names 0x16d850
@@ -47,36 +48,12 @@ struct CButeTreeNode {
     void* m_value;             // +0x10  stored value
 };
 
-// The +0x08 second-base sub-object dtor (0x16dfc0, __thiscall, `this ? this+8 : 0`
-// adjust). Modeled as a tiny receiver so the masked `this+8` lands in ecx.
-struct CButeTreeBase2 {
-    void Dtor(); // 0x16dfc0
-};
-SIZE(CButeTreeBase2, 0x24); // receiver view of the +0x08 second base (spans +0x08..+0x2c)
-
-// CButeTree is multiply-derived (two vptrs), the same 0x2c-byte shape as CButeStore.
-// REAL POLYMORPHIC (ALL-VTABLES): a primary base at +0x00 and a second base at
-// +0x08. The two runtime/dtor-phase vptr stamps (TypeKeyColl.cpp) write these via raw
-// casts; making the class polymorphic keeps the fields flat but drops the manual vptr
-// field names.
-struct CButeTreePrimary {
-    virtual ~CButeTreePrimary(); // +0x00 slot 0 (primary vptr dtor)
-    CVariantSlot* m_errorSink;   // +0x04
-};
-SIZE(CButeTreePrimary, 0x8); // { vptr, error-sink }
-struct CButeTreeSecond {
-    virtual void S0();              // +0x00 (this+0x08)  second-base vptr
-    char m_pad0c[0x14 - 0x0c];      // +0x04 (+0x0c)
-    i32 m_nodeCount;                // +0x08 (+0x14)
-    CButeTreeNode* m_root;          // +0x0c (+0x18)
-    CButeTreeNode* m_descentCursor; // +0x10 (+0x1c)
-    CButeTreeNode* m_candidateLeaf; // +0x14 (+0x20)
-    i32 m_keyBitLength;             // +0x18 (+0x24)  strlen*8 + 7
-    i32 m_lookupPending;            // +0x1c (+0x28)
-};
-SIZE(CButeTreeSecond, 0x20); // second base (spans +0x08..+0x28 of CButeTree)
-
-class CButeTree : public CButeTreePrimary, public CButeTreeSecond {
+// CButeTree - the string-keyed crit-bit trie, a concrete zPTree-derived view. Its
+// runtime primary/second vtables (0x5f04e0 @+0, 0x5f04dc @+8) are the CButeTree-most-
+// derived stamps the ctor writes over zPTree's (0x5e94ac/0x5e949c); ~CButeTree's
+// ??_G (0x16e9c0) restores zPTree's (the construction/destruction vtable transition of
+// CButeTree : zPTree). Adds no fields - the trie state lives on the zPTree base.
+class CButeTree : public zPTree {
 public:
     virtual ~CButeTree() OVERRIDE;              // slot 0 (scalar-dtor 0x16e9c0)
     void* Find(const char* key);                // 0x16d190

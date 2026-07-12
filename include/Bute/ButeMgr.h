@@ -32,6 +32,11 @@
 
 #include <rva.h>
 #include <Wap32/ZVec.h>
+// The REAL zPTree config-tree hierarchy (zErrHandling @0, zPtrColl/CButeNodeEntry @8;
+// zPTree : those; CButeTree/CButeStore/CButeNode : zPTree). RTTI-proven single model -
+// the former ButeMgr.h stand-in zErrHandling/zPTree/CButeNodeSub views are dissolved
+// onto it (structure-recovery: CButeTree/CButeStore/CButeNode all derive zPTree).
+#include <Bute/PTreeNode.h>
 
 // CString (+ CObject etc.) and the Win32 DWORD come from <Mfc.h>; pulled up here
 // so the class below can use both. (afx.h is the period-correct windows.h path.)
@@ -151,63 +156,20 @@ SIZE(CButeTail, 0x1); // 1-byte embedded tail object
 
 // ---------------------------------------------------------------------------
 // CButeNode - a per-tag store node allocated by ParseTagLine (0x2c bytes). Built
-// via `new CButeNode(2, descriptor)`: the engine base ctor runs, then the derived
-// class's two vtable pointers are written at +0x00 / +0x08 (a multiply-derived node
-// with two vptrs). REAL POLYMORPHIC (ALL-VTABLES): the derived ctor auto-stamps
-// ??_7CButeNode @+0x00 and the second sub-object's vptr @+0x08.
-
-// zPTree - the engine base subobject ctor (__thiscall(this, desc, n), retail
-// 0x16dff0). RTTI-real name (was fabricated "CButeNodeBase"; see ButeNode.cpp for
-// the full multiply-derived zPTree model + the vtable_hierarchy evidence). Here it
-// is only the call-site stand-in for the `new CButeNode` path (empty external base,
-// ctor reloc-masked), a separate model from ButeNode.cpp's to avoid an ODR conflict.
+// via `new CButeNode(descriptor, 2)`: the engine base ctor (zPTree 0x16dff0) runs,
+// then the derived ctor re-stamps its two most-derived vptrs @+0x00 / +0x08.
 //
-// zPTree's RTTI-real primary base is zErrHandling (the container-library exception
-// base; full model in ButeNode.cpp, where the real zPTree derives it). This stand-in
-// is intentionally kept base-less: any structural change here (even an EBO-neutral
-// empty base) perturbs MSVC5's /O2 regalloc in this hot header's many includers
-// (measured: gruntcombatanim / grunt / cplay fuzzy-% regressed). The vtable_hierarchy
-// INHERIT audit therefore still flags this stand-in decl; the substantive fix lives
-// in ButeNode.cpp's real model.
-// The (empty) zErrHandling stand-in base, moved here from <Wap32/ZVec.h>
-// (wave2-H) - this header is its only user, and freeing ZVec.h of the name lets
-// the merged TypeKeyColl TU include ZVec.h alongside the RTTI-real polymorphic
-// zErrHandling of <Bute/PTreeNode.h>. (ButeMgr.h and PTreeNode.h never coexist
-// in one TU - the documented zPTree dual-model split.)
-class zErrHandling {
-public:
-};
-
-SIZE_UNKNOWN(zPTree);
-VTBL(zPTree, 0x001e94ac);
-class zPTree : public zErrHandling {
-public:
-    zPTree(void* desc, i32 n);
-};
-
-// The +0x08 second sub-object: a small polymorphic node subobject whose implicit
-// vptr the CButeNode ctor auto-stamps (== the old raw second-vtable store). Modeled
-// as an embedded polymorphic member so the second vptr lands at +0x08, reloc-masked.
-class CButeNodeSub {
-public:
-    virtual void Slot0(); // +0x00 (this+0x08): second sub-object vptr
-};
-SIZE(CButeNodeSub, 0x4); // second sub-object (vptr only)
-
-// CButeNode - REAL POLYMORPHIC (ALL-VTABLES phase): the derived ctor runs the
-// engine base ctor, then cl auto-stamps ??_7CButeNode @+0x00 and the m_sub member's
-// implicit vptr @+0x08 (== the old two hand-rolled node vtable stores).
+// REAL POLYMORPHIC / STRUCTURE-RECOVERY: CButeNode derives the RTTI-real zPTree
+// (<Bute/PTreeNode.h>: zErrHandling @0, CButeNodeEntry/zPtrColl @8), the SAME single
+// model every config-tree node uses (CButeCfgNode174d / CBSecStream in butenode/
+// butesection). The former base-less zPTree stand-in + CButeNodeSub view are dissolved.
 class CButeNode : public zPTree {
 public:
-    virtual ~CButeNode(); // +0x00 vptr; external no-body dtor
+    virtual ~CButeNode() OVERRIDE; // slot 0 (zPTree dtor); external no-body
 
     CButeNode(void* desc, i32 n) : zPTree(desc, n) {}
-    // vptr implicit @ +0x00 (??_7CButeNode@@6B@)
-    char m_pad04[4];          // +0x04
-    CButeNodeSub m_sub;       // +0x08  second sub-object (implicit vptr)
-    char m_pad0c[0x2c - 0xc]; // pad to 0x2c bytes total
 };
-SIZE(CButeNode, 0x2c); // new CButeNode(0x2c); zPTree base + m_sub @0x08
+SIZE(CButeNode, 0x2c); // new CButeNode(0x2c); zPTree provides the full 0x2c layout
 
 // A fabricated-name placeholder for CString::operator+=(char) (a real NAFXCW
 // method). Currently UNREFERENCED (no call sites), so it cannot be re-expressed as

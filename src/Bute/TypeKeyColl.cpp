@@ -858,7 +858,7 @@ RVA(0x0016df70, 0x22)
 CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
     m_desc = desc;
     m_kind = (i16)n;
-    m_0c = 0;
+    m_nodeCount = 0;
 }
 
 // zPTree ctor (0x16dff0, ex ButeNode.cpp): run the zErrHandling primary base
@@ -872,8 +872,8 @@ CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
 // last-stores. Logic byte-faithful; converted per the ALL-VTABLES mandate.
 RVA(0x0016dff0, 0x73)
 zPTree::zPTree(void* desc, i32 n) : zErrHandling(&g_buteNodeErrMsg), CButeNodeEntry(n, desc) {
-    m_child18 = 0;
-    m_child28 = 0;
+    m_root = 0;
+    m_lookupPending = 0;
 }
 
 // ===========================================================================
