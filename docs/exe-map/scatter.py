@@ -89,7 +89,12 @@ def rows_for(funcs):
     for r in funcs:
         key = r["source"] if (r["category"] == "unit" and r["source"]) else None
         if key is None:
-            prev = "<foreign>"
+            # library / CRT / MFC / EH / ILT-thunk / atexit(__inittime) code the /Gy
+            # linker pooled INTO a unit's span is TRANSPARENT - it must not break the
+            # unit's run (a src file is "fragmented" only when ANOTHER src UNIT's code
+            # interleaves it, not when library pooling lands between its functions).
+            # Measured on ISLE (docs/experiments/gy-scatter.md): grouping by obj is 100%
+            # contiguous; the apparent scatter is shared/pooled COMDAT displacement.
             continue
         s = stats[key]
         s["n"] += 1

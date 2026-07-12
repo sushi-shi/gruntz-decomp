@@ -9,9 +9,22 @@ import statistics as st
 import os as _os; DIR = _os.path.dirname(_os.path.abspath(__file__))
 flags = json.load(open(DIR + "/flags.json"))
 flagged = flags["flagged"]
-methods = json.load(open(DIR + "/scatter_methods.json"))
+# Use the CORE view (scatter_core, = scatter.py::is_pooled + @interleaver/@orphan) for the
+# fragments plot + share histogram - the same corrected exclusion the finder now uses. The
+# old scatter_methods (dtors-only) still rendered ctor/operator/shared-COMDAT fragmentation,
+# making a clean page look busy. See docs/experiments/gy-scatter.md.
+methods = json.load(open(DIR + "/scatter_core.json"))
 
-flagstate = {f["file"]: (2 if f["conflated"] else 1) for f in flagged}
+# Only outliers that are GENUINELY mis-homed count as work. Interleavers (this class's
+# method the /Gy linker placed in another obj - keep in host + flag) are NOT work; the ISLE
+# ground-truth run showed they collapse to 0 once the shared-COMDAT set is excluded, so the
+# residual here is un-flagged boundary COMDATs, tracked separately (the INTERLEAVER tile).
+def real_outs(f):
+    return [o for o in f["outliers"] if o.get("kind") != "interleaver"]
+flagged_real = sorted((f for f in flagged if real_outs(f) or f["conflated"]),
+                      key=lambda f: (f["conflated"], len(real_outs(f))), reverse=True)
+
+flagstate = {f["file"]: (2 if f["conflated"] else 1) for f in flagged_real}
 SCATTER = [{"f": r["file"], "n": r["n"], "g": r["frags"],
             "s": flagstate.get(r["file"], 0)} for r in methods]
 
@@ -21,27 +34,30 @@ CONFLATED = [{"file": f["file"].rsplit("/", 1)[-1], "cl": f["cluster_list"]}
 
 def dom_home(f):
     t = {}
-    for o in f["outliers"]:
+    for o in real_outs(f):
         if o["home"]:
             t[o["home"]] = t.get(o["home"], 0) + 1
     return max(t.items(), key=lambda kv: kv[1])[0].rsplit("/", 1)[-1] if t else ""
 
+# genome/lollipop are the WORKLIST visuals - show genuine misplacements only (red ticks =
+# real outliers, not interleavers), so a clean tree renders an empty worklist not a busy one.
+_realrva = {f["file"]: {o["rva"] for o in real_outs(f)} for f in flagged_real}
 GENOME = [{"file": f["file"].rsplit("/", 1)[-1], "lo": f["main_lo"], "hi": f["main_hi"],
-           "rvas": f["rvas"], "nout": len(f["outliers"]), "home": dom_home(f),
-           "conf": f["conflated"]} for f in flagged[:16]]
+           "rvas": [rv for rv in f["rvas"]
+                    if (f["main_lo"] <= rv <= f["main_hi"]) or rv in _realrva[f["file"]]],
+           "nout": len(real_outs(f)), "home": dom_home(f),
+           "conf": f["conflated"]} for f in flagged_real[:16]]
 
 LOLLI = sorted(({"file": f["file"].rsplit("/", 1)[-1], "name": o["name"],
                  "dist": o["dist"], "home": (o["home"] or "?").rsplit("/", 1)[-1]}
-                for f in flagged for o in f["outliers"] if o["cluster_n"] <= 2),
+                for f in flagged_real for o in real_outs(f) if o["cluster_n"] <= 2),
                key=lambda o: -o["dist"])[:22]
 
-SHARES = [f["main_share"] for f in flagged] + [1.0] * (len(methods) - len(flagged))
+SHARES = [f["main_share"] for f in flagged_real] + [1.0] * (len(methods) - len(flagged_real))
 
 _out = [o for f in flagged for o in f["outliers"]]
 tiles = {
-    "flagged": len(flagged),
-    # genuine wrong-file only; interleavers (own class compiled in another unit,
-    # kept in host + flagged) are NOT misplacements - tracked separately.
+    "flagged": len(flagged_real),  # files with a GENUINE misplacement (or conflation)
     "misplaced": sum(1 for o in _out if o.get("kind") != "interleaver"),
     "interleaver": sum(1 for o in _out if o.get("kind") == "interleaver"),
     "conflated": sum(1 for f in flagged if f["conflated"]),
