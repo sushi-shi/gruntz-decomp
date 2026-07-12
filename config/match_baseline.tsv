@@ -390,7 +390,7 @@ wormhole	28	16
 wormholeacts	3	2
 wwdfactoryobject	32	16
 wwdfile	3	1
-wwdgameobject	43	18
+wwdgameobject	43	17
 wwdgameobjectrender	15	9
 wwdgrid	13	7
 wwdobjmgr	50	24
@@ -3242,10 +3242,10 @@ rezlist	?Remove@CObjList@@QAEXPAVCObjNode@@@Z	100.0000	100.0000	1	f170008c33d6	0
 rezmgr	?HandleDebugPosition@RezMgr@@QAEHXZ	93.1667	93.1667	6	b06fa4bc308c	0x8e470
 rezmgr	?MakeRezPath@RezMgr@@QAEHXZ	92.7923	92.7923	8	401d496aa449	0x91670
 rezmgr	?PerFrameTick@RezMgr@@UAEHXZ	100.0000	100.0000	7	d5c92db455a7	0x8b740
-rezsync	??1CGameMgr@@UAE@XZ	100.0000	100.0000	1	f087e28e2647	0x85540
+rezsync	??1CGameMgr@@UAE@XZ	100.0000	100.0000	2	997dd3d34a29	0x85540
 rezsync	?GetName@Obj85500@@QAE?AVCString@@XZ	100.0000	100.0000	1	a603b2ac0b4f	0x85500
 rezsync	?Init@RezSync@@QAEHPAXPAD@Z	62.8399	62.8399	6	a1f8a93d5917	0x83450
-rezsync	?RezFreeStdcall@@YGXPAX@Z	100.0000	100.0000	1	48489ae7a771	0x853d0
+rezsync	?RezFreeStdcall@@YGXPAX@Z	100.0000	100.0000	2	b9d4502f6f0e	0x853d0
 rockbreakeffectupdate	?Update@RbEffect@@QAEHXZ	98.4848	98.4848	1	f4915d1b337e	0x476b0
 rollingball	??0CRollingBall@@QAE@PAUCGameObject@@@Z	77.7835	77.7835	10	77630de6ea08	0xaf820
 rollingball	??1CRollingBall@@UAE@XZ	100.0000	100.0000	2	83acba8c2baa	0x12f80
@@ -4136,7 +4136,7 @@ wwdfactoryobject	??0CAniAdvanceCursor@@QAE@HHH@Z	100.0000	100.0000	1	0030de0a7d2
 wwdfactoryobject	??0CResolveNode@@QAE@HHH@Z	61.5882	61.5882	1	b1fe50cc3696	0x15b2c0
 wwdfactoryobject	??0CWwdGameObj15b390@@QAE@HHH@Z	58.6582	58.6582	1	3cabe91cb7cc	0x15b390
 wwdfactoryobject	??0WorkerFull@@QAE@HHH@Z	98.1765	98.1765	1	402865e98943	0x15b300
-wwdfactoryobject	??1C15b6d0@@UAE@XZ	100.0000	100.0000	1	ff981b710565	0x15b6d0
+wwdfactoryobject	??1CAniAdvanceCursor@@UAE@XZ	100.0000	100.0000	1	0ed760471ab4	0x15b6d0
 wwdfactoryobject	??1CWwdGameObjectA@@UAE@XZ	57.9244	57.9244	1	859609160ccb	0x15b790
 wwdfactoryobject	??1CWwdGameObjectB@@UAE@XZ	83.1894	83.1894	1	c12f7ff33476	0x15bd10
 wwdfactoryobject	??1CWwdGameObjectC@@UAE@XZ	54.4038	54.4038	1	79b503ac272e	0x15c070
@@ -4167,28 +4167,28 @@ wwdfactoryobject	?Setup_15c2d0@CDDrawBlitParam@@QAEXPAVCDDrawBlitParamSrc@@@Z	10
 wwdfile	?GetTileHandle@CPlaneRender@@QAEHHH@Z	100.0000	100.0000	1	8959e213fb79	0xd53a0
 wwdfile	?SnapToTileCenter@CPlaneRender@@QAEXPAHHH@Z	48.3636	48.3636	2	7f34630bda9b	0x311e0
 wwdfile	?WrapCoord@CPlaneRender@@QAEXPAH0@Z	91.4875	91.4875	2	fdc518a0175a	0xa000
-wwdgameobject	??1CLogicRecord@@QAE@XZ	58.5000	58.5000	1	076b0ff22b1f	0x151da0
-wwdgameobject	?AddFrameAt_1521c0@CDDrawWorker@@QAEXPAXH@Z	100.0000	100.0000	1	66570b0e3dec	0x1521c0
+wwdgameobject	??1CLogicRecord@@QAE@XZ	58.5000	58.5000	2	2680ebe8d5c8	0x151da0
+wwdgameobject	?AddFrameAt_1521c0@CDDrawWorker@@QAEXPAXH@Z	100.0000	100.0000	2	97845afba1ad	0x1521c0
 wwdgameobject	?AddLogicAttack@CGameObject@@QAEXPAD@Z	89.4737	89.4737	1	065cb1281e9b	0x151030
 wwdgameobject	?AddLogicBump@CGameObject@@QAEXPAD@Z	89.4737	89.4737	1	9ac566d71594	0x151110
 wwdgameobject	?AddLogicHit@CGameObject@@QAEXPAD@Z	89.4737	89.4737	1	66c13e37368b	0x150f50
-wwdgameobject	?ApplyGeometryDirect@CGameObject@@QAEXHH@Z	100.0000	100.0000	1	4f1115f67d08	0x58b60
-wwdgameobject	?ApplyLookupGeometry@CGameObject@@QAEHPBDH@Z	93.9394	93.9394	1	04a76f095c28	0x1505b0
+wwdgameobject	?ApplyGeometryDirect@CGameObject@@QAEXHH@Z	100.0000	100.0000	2	083dd6f8773f	0x58b60
+wwdgameobject	?ApplyLookupGeometry@CGameObject@@QAEHPBDH@Z	93.9394	93.9394	2	2f613ca7139c	0x1505b0
 wwdgameobject	?ApplyLookupSprite@CGameObject@@QAEXPBDH@Z	84.2571	84.2571	1	5556f29c8055	0x1504d0
 wwdgameobject	?ApplyName@CGameObject@@QAEXPBD@Z	89.2647	89.2647	1	0b25549f7d13	0x150540
 wwdgameobject	?BuildFramesFromSymTab@CDDrawWorker@@UAEHPAVCSymTab@@@Z	100.0000	100.0000	1	7595c9100ccd	0x1521f0
-wwdgameobject	?Clear@AnimWorkerObj@@UAEXXZ	100.0000	100.0000	1	377572143893	0x151e70
+wwdgameobject	?Clear@AnimWorkerObj@@UAEXXZ	100.0000	100.0000	2	6eea2bb2e23f	0x151e70
 wwdgameobject	?CreateFrame24@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.4267	99.4267	1	c71fc0fff38a	0x152110
 wwdgameobject	?CreateFrame28@CImageSet@@QAEPAVCImageFrame@@HHHH@Z	99.4342	99.4342	1	a80046f322ef	0x152060
 wwdgameobject	?CreateFrame30@CImageSet@@QAEPAVCImageFrame@@HHH@Z	99.4110	99.4110	1	5ce0679d702c	0x151fb0
-wwdgameobject	?DeleteAll@CDDrawWorker@@QAEXXZ	100.0000	100.0000	1	d309e45695dd	0x151eb0
+wwdgameobject	?DeleteAll@CDDrawWorker@@QAEXXZ	100.0000	100.0000	2	7f0441538a50	0x151eb0
 wwdgameobject	?Dispatch@CWwdGameObject@@QAEHHHHH@Z	100.0000	100.0000	6	aafced395e93	0x150a70
-wwdgameobject	?EnsureWorker80@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	1	58df7d894e94	0x150eb0
-wwdgameobject	?EnsureWorker88@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	1	56b86ef954b8	0x150f90
-wwdgameobject	?EnsureWorker90@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	1	0e40c174a9a1	0x151070
+wwdgameobject	?EnsureWorker80@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	2	0e6dcf18060f	0x150eb0
+wwdgameobject	?EnsureWorker88@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	2	a4f60e3f42d8	0x150f90
+wwdgameobject	?EnsureWorker90@CGameObject@@QAEHPAU1@@Z	90.8246	90.8246	2	f2ce57b699ea	0x151070
 wwdgameobject	?FindFrame@CImageSet@@QAEHPAVCImageFrame@@PADPAH@Z	100.0000	100.0000	1	bc8e9af393fa	0x1525c0
 wwdgameobject	?GetFirstFrameState@CImageSet@@QAEHXZ	100.0000	100.0000	1	d29aa1d9be1a	0x152570
-wwdgameobject	?GetMemoryUsage@CImageSet@@QAEHH@Z	100.0000	100.0000	1	8e64c2ef05ca	0x1523f0
+wwdgameobject	?GetMemoryUsage@CImageSet@@QAEHH@Z	99.9623	99.9623	1	8e64c2ef05ca	0x1523f0
 wwdgameobject	?Init@CLogicRecord@@QAEHPAXH@Z	100.0000	100.0000	1	fb94fb1ccb74	0x151e20
 wwdgameobject	?InsertFrame@CSprite@@QAEPAUCFrameWorker@@PAXHH@Z	99.4110	99.4110	1	a39496b27918	0x151f00
 wwdgameobject	?LookupAnimSprite@CGameObject@@QAEHPBD@Z	73.0435	73.0435	1	846b376c464c	0x150610
