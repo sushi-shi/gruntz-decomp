@@ -16,13 +16,13 @@
 #include <Gruntz/State.h> // the CState base this title state derives (RunTitleSeq @0xfa350)
 
 extern int(WINAPI* g_ShowCursor)(int); // ?g_ShowCursor@@3P6GHH@ZA (RVA 0x2c44c4)
-// The title-sequence's const-char* arg source at RVA 0x24e25c (the CString/asset-root
-// whose data ptr RunTitleSeq consumes). reloc-fidelity BLOCKED: 0x24e25c is a
-// name-CONFLATION - netmgrmisc (F2-forbidden) binds it ?g_netE25c and splashstate
-// binds ?g_assetRoot at the VA-typo 0x64e25c; the per-rva keep-last dedup drops any
-// name we add here in favour of the higher-sorting ?g_netE25c, so this stays UNBOUND
-// until the owning (forbidden) units unify on one name at 0x24e25c.
-extern void* g_64e25c; // 0x24e25c (conflated; see note)
+// The title-sequence's const-char* arg source @0x24e25c IS the global asset-root CString
+// `g_assetRoot` (same datum SplashState/GruntzMgr bind); RunTitleSeq consumes its data
+// ptr (CString::operator LPCTSTR -> the +0 m_pszData load). Single-sourced onto the
+// canonical `g_assetRoot` name (was the fake `g_64e25c` void* that lost the per-rva
+// keep-last dedup to netmgrmisc's ex-`g_netE25c` view - now dissolved -> UNBOUND).
+DATA(0x0024e25c)
+extern CString g_assetRoot; // 0x24e25c (the asset-root CString)
 
 // CTitleApp is a CState leaf (OnStart calls RunTitleSeq @0xfa350 - a CState base method -
 // on its own `this`; retail passes `this` as the CState). Its exact leaf identity is
@@ -41,7 +41,7 @@ int CTitleApp::OnStart(int) {
     int(WINAPI * sc)(int) = g_ShowCursor;
     while (sc(0) >= 0) {
     }
-    RunTitleSeq((const char*)g_64e25c, 1, 1, 1, 0); // CState::RunTitleSeq @0xfa350
+    RunTitleSeq((const char*)g_assetRoot, 1, 1, 1, 0); // CState::RunTitleSeq @0xfa350
     m_1b8 = 0xea60;
     return 1;
 }

@@ -10,15 +10,13 @@
 
 // The recursive snapshot run-callback handed to SnapshotChildren; modeled NO-body
 // so the call/address-of reloc-mask. Its type is the canonical HP_Callback.
-// reloc-fidelity note: the real body IS reconstructed - it is SerialObjectFactory
-// @0xd2a0 (?SerialObjectFactory@@YAHPAX0HHPAPAX@Z, SerialObjectFactory.cpp). But
-// retail's incremental linker routes this address-of through the ILT jmp-THUNK
-// 0x24e6 (jmp 0xd2a0), so the DIR32 stored here is 0x24e6, NOT 0xd2a0. reloc_fidelity
-// resolves thunks only for CALL(rel32), not for address-of(DIR32): referencing the
-// real SerialObjectFactory would resolve to 0xd2a0 and flip UNBOUND -> the more-toxic
-// MISBOUND, and no annotation binds a *function* symbol to a code-thunk RVA (it lives
-// in the engine_label_stubs ILT band). So this stays a declared-only, reloc-masked
-// UNBOUND-by-design incremental-link thunk-address artifact.
+// reloc-fidelity: the real body is SerialObjectFactory @0xd2a0
+// (?SerialObjectFactory@@YAHPAX0HHPAPAX@Z, SerialObjectFactory.cpp), but retail's
+// /INCREMENTAL link routes this address-of through the ILT jmp-THUNK 0x24e6 (jmp
+// 0xd2a0), so the DIR32 stored here is 0x24e6, NOT 0xd2a0. Bind the address-taken
+// symbol to the THUNK rva (same idiom as GruntzApp's _ErrorDialogProcThunk @0x33c8):
+// the DIR32 target IS the thunk, so have==want==0x24e6 -> CORRECT (no MISBOUND).
+// @data-symbol: ?SaveRunCallback@@YAHPAX0HHH@Z 0x000024e6
 extern i32 __cdecl
 SaveRunCallback(void* mgr, void* ser, i32 mode, i32, i32); // ILT thunk 0x24e6 -> 0xd2a0
 

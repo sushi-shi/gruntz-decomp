@@ -93,6 +93,13 @@ i32 MapSerializeCurve(CSerialArchive* ar, i32 mode) {
 // Tear-down helper: walk the +0x7c CObArray's pointer body, push each non-null
 // element's node (element - g_freeListNodeBias) back onto the global g_freeList,
 // then shrink the array to empty (SetSize(0, -1)) and run the grid Reset (0x9ec30).
+//
+// The trailing Reset() call: retail routes the rel32 through the ILT jmp-thunk 0x1a91
+// (-> 0x9ec30 = ?Reset@CMapMgr@@UAEXXZ, bound in the mapmgr unit). CMapLogic::Reset is
+// declared-only (MapLogic.h) - it aliases the SAME body, and 0x9ec30 can't take a 2nd
+// func label (dup-RVA guard vs CMapMgr::Reset), so bind the alias to the THUNK the call
+// literally targets; reloc_fidelity thunk-resolves both sides to 0x9ec30 -> CORRECT.
+// @data-symbol: ?Reset@CMapLogic@@QAEXXZ 0x00001a91
 RVA(0x00085480, 0x52)
 void CMapLogic::FreeNodes() {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {

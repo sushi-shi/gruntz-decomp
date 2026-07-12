@@ -852,8 +852,10 @@ void CProjectile::MovingSlot16() {
 RVA(0x000e05e0, 0x4e)
 i32 CProjectile::DetachRenderObj() {
     m_sprite->m_40 &= ~1u;
-    // m_1a0.Advance_15c360 forwards to CAniAdvanceCursor::Advance_15c360 (0x15c360).
-    m_sprite->m_1a0.Advance_15c360(g_6bf3bc);
+    // The +0x1a0 anim sub-object IS a CAniAdvanceCursor (Advance_15c360 @0x15c360); call
+    // it directly (retail's DetachRenderObj rel32s straight to 0x15c360, not a forwarder),
+    // matching the cast-at-use pattern of the sibling site below (~line 1322).
+    ((CAniAdvanceCursor*)&m_sprite->m_1a0)->Advance_15c360(g_6bf3bc);
     CProjRenderObj* r = m_sprite;
     if (r->m_1c8 != 0 && r->m_1c0 == 0) {
         r->m_08 |= 0x10000;

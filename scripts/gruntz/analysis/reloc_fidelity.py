@@ -284,7 +284,15 @@ def analyze(funcs, comdat, lib, exact, unit_filter=None):
                     want = resolve_thunk(t) if TEXT[0] <= t < TEXT[1] else None
                 else:
                     want = None
-                have = base
+                # thunk-resolve OUR side too, symmetric with `want` above: when a call's
+                # target function is bound in another unit under a DIFFERENT name (so the
+                # resolved rva can't take a 2nd func label - the dup-RVA guard), the alias
+                # is bound to the ILT jmp-THUNK the retail rel32 literally targets. Both
+                # sides route through the thunk to the same body -> CORRECT. resolve_thunk
+                # is identity for a real (non-E9) function start, so every existing binding
+                # is unaffected; it only rescues a legitimately thunk-bound alias.
+                have = (resolve_thunk(base)
+                        if base is not None and TEXT[0] <= base < TEXT[1] else base)
             if have is None:
                 v = "UNBOUND"
             elif want is None:

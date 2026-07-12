@@ -40,6 +40,7 @@
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/Brickz.h>        // CBrickzGrid (the pathfinding core homed here)
 #include <Gruntz/MapLogic.h>      // CMapVisitTarget (the 0x9f7f0 seam probe)
+#include <Gruntz/GameMode.h>      // canonical CGMVerRect g_645cc8 (SetVersionRect's version RECT)
 #include <Rez/RezList.h>          // CRezList::AddHead (Search's result hand-off)
 #include <rva.h>
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
@@ -959,21 +960,17 @@ SIZE_UNKNOWN(BrickzFreeRec);
 // version-string RECT {5, 0x1c5, 0x27b, 0x1de} (a bottom strip on the 640x480
 // select screen). @orphan: its only inbound edge is an unrecovered fn at ~0x9face
 // (the gap between MapMgr's last method @0x9f9a0 and MenuStateAssets @0x9fe50);
-// homed here as the offset-0-safe adjacent unit (extends MapMgr's top; the delinker
-// carves the four consecutive DWORDs as separate data symbols, so they are modeled
-// as four i32 globals rather than one RECT to match the reloc set 1:1).
-DATA(0x00245cc8)
-extern i32 g_versionRectL; // 0x645cc8
-DATA(0x00245ccc)
-extern i32 g_versionRectT; // 0x645ccc
-DATA(0x00245cd0)
-extern i32 g_versionRectR; // 0x645cd0
-DATA(0x00245cd4)
-extern i32 g_versionRectB; // 0x645cd4
+// homed here as the offset-0-safe adjacent unit (extends MapMgr's top). The four
+// consecutive DWORDs @0x245cc8..d4 ARE the single CGMVerRect that MenuState reads by
+// value (canonical `g_645cc8` in <Gruntz/GameMode.h>); write its fields so all four
+// stores bind through the one `_g_645cc8` symbol + addend (0/4/8/c). This ends the
+// per-rva conflation (the ex-four `g_versionRect{L,T,R,B}` i32 externs collided with
+// _g_645cc8 at 0x245cc8 and lost the keep-last dedup -> UNBOUND). The DIR32 stores are
+// reloc-masked so single-sourcing onto the RECT is byte-neutral.
 RVA(0x0009fe10, 0x29)
 void SetVersionRect() {
-    g_versionRectL = 5;
-    g_versionRectT = 0x1c5;
-    g_versionRectR = 0x27b;
-    g_versionRectB = 0x1de;
+    g_645cc8.a = 5;
+    g_645cc8.b = 0x1c5;
+    g_645cc8.c = 0x27b;
+    g_645cc8.d = 0x1de;
 }

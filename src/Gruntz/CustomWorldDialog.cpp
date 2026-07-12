@@ -39,6 +39,12 @@
 // The picker's dialog procs (defined below in RVA order).
 extern "C" INT_PTR CALLBACK CustomWorldDlgProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK CustomWorldInfoDlgProc(HWND, UINT, WPARAM, LPARAM);
+// LoadCustomWorldInfo's DialogBoxParamA takes CustomWorldInfoDlgProc's ADDRESS, and the
+// retail /INCREMENTAL link routes it through the proc's ILT jmp-thunk 0x305d (jmp 0x3b600),
+// so the DIR32 stored is 0x305d, not the body 0x3b600. Bind the address-taken symbol to
+// the THUNK rva (same idiom as GruntzApp's _ErrorDialogProcThunk @0x33c8) so have==want.
+// @data-symbol: _CustomWorldInfoDlgProcThunk@16 0x0000305d
+extern "C" INT_PTR CALLBACK CustomWorldInfoDlgProcThunk(HWND, UINT, WPARAM, LPARAM);
 
 // The active modeless dialog HWND, cached on entry (shared NetLobby global @0x64557c).
 namespace NetLobby {
@@ -504,7 +510,7 @@ i32 LoadCustomWorldInfo(HWND hDlg) {
         g_customWorldInst,
         "CUSTOM_WORLDINFO",
         g_customWorldParent,
-        (DLGPROC)CustomWorldInfoDlgProc,
+        (DLGPROC)CustomWorldInfoDlgProcThunk, // ILT thunk 0x305d -> 0x3b600 (retail stores &thunk)
         0
     );
     return 1;

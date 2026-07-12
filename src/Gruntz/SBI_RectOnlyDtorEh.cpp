@@ -20,6 +20,13 @@
 // Stamp ??_7CSBI_RectOnly, run DtorRect, then MSVC folds the base dtor (stamp
 // ??_7CStatusBarItem + DtorStatus). The non-trivial base subobject supplies the
 // /GX frame and the 0/-1 trylevel stamps.
+//
+// DtorRect() is the class's member teardown @0xe8760 (a 1-byte `ret` - CSBI_RectOnly adds
+// no fields); retail routes this call through the ILT jmp-thunk 0x1bd1 (-> 0xe8760). The
+// body is an orphan/library-carveout empty stub (unreconstructed), so bind the alias to
+// the THUNK the call literally targets; reloc_fidelity thunk-resolves both sides to
+// 0xe8760 -> CORRECT (a future pass may home the empty 0xe8760 body proper).
+// @data-symbol: ?DtorRect@CSBI_RectOnly@@QAEXXZ 0x00001bd1
 RVA(0x00100700, 0x55)
 CSBI_RectOnly::~CSBI_RectOnly() {
     DtorRect();

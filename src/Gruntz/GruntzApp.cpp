@@ -46,12 +46,15 @@
 namespace NetLobby {
     extern HWND g_curDlg_64557c;
 }
-// The error-text buffer stays a genuine GruntzApp file-static (@data-symbol names the
-// exact cl5 `_<name>$S<idx>` symbol; the DIR32 loads/stores are reloc-masked). NB the
-// $S index renumbers per-TU whenever this TU's string pool changes (cl5 renumbers
-// per-TU statics); currently 18960 - verify with `llvm-objdump -t` if it drifts again.
-// @data-symbol: _g_errorText$S18960 0x00244ea0
-static char g_errorText[0x100]; // error message buffer @ 0x244ea0
+// The error-text buffer @0x244ea0 is a GruntzApp file-static in retail. Bind it by RVA
+// via a STABLE symbol name: as a C++ `static` it mangles to `_g_errorText$S<idx>`, whose
+// per-TU index cl5 RENUMBERS on any string-pool change (measured 18949->18953->18964...),
+// so a `@data-symbol: _g_errorText$S<n>` bind silently goes UNBOUND on the next pool
+// churn. `extern "C"` gives the fixed, renumber-proof `_g_errorText`; DATA() pins it to
+// 0x244ea0. The buffer is only address-taken here (no init/sizeof), so a definition-free
+// extern is sufficient - the DIR32 loads/stores stay reloc-masked (byte-neutral).
+DATA(0x00244ea0)
+extern "C" char g_errorText[0x100]; // error message buffer @ 0x244ea0
 // (g_gameAppInstanceCount is declared in Wap32.h, defined in
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
 

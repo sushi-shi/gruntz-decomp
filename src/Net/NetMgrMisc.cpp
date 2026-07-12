@@ -10,18 +10,19 @@
 #include <rva.h>
 #include <string.h>
 
-struct CNetSingletonE25c {
-    // Poll @0x1b9b93 IS CString::~CString; cast at the call.
-};
-SIZE_UNKNOWN(CNetSingletonE25c); // method-only singleton view; retail size TBD
+// 0x24e25c is the global asset-root path CString (canonical `g_assetRoot`, also bound by
+// SplashState.cpp / GruntzMgr.cpp / TitleAppStart.cpp); NetPollE25c just destructs it.
+// Modeled as the real CString (was a fake CNetSingletonE25c view whose `g_netE25c` name
+// won the per-rva keep-last dedup and starved TitleAppStart's alias -> single-sourced
+// onto the canonical name here so every user's DIR32 binds to the one 0x24e25c symbol).
 DATA(0x0024e25c)
-extern CNetSingletonE25c g_netE25c; // VA 0x64e25c
+extern CString g_assetRoot; // VA 0x64e25c
 
 // ---------------------------------------------------------------------------
-// Poll the file-scope net singleton.
+// Poll the file-scope net singleton (destruct the asset-root CString).
 // ---------------------------------------------------------------------------
 RVA(0x000f9710, 0xa)
 i32 NetPollE25c() {
-    ((CString*)&g_netE25c)->~CString();
+    g_assetRoot.~CString();
     return 0;
 }

@@ -192,14 +192,15 @@ struct GridUnit {
     // g_freeList, then RemoveAll the +0x31c CObList. Defined out-of-line (retail RVA below).
     void RecycleCoords(); // 0x0343f0
 
-    // The unit-side tile-switch/place (thunk 0x1640 -> 0x04b320): retail calls the
-    // __stdcall CGrunt_TileSwitch @0x4b320 but emits a DEAD `mov ecx,unit` first (the
-    // ecx the free-form sites drop), so byte-faithfulness needs this __thiscall spelling.
-    // Declared-only, reloc-masked. NOT reloc-bindable: 0x4b320 is already the FUNC symbol
-    // CGrunt_TileSwitch, and the dup-RVA guard forbids a 2nd func name there - so the
-    // reloc-fidelity UNBOUND here is a codegen-device artifact, not a defect to "fix" by
-    // dropping the thiscall (that removes retail's dead mov ecx -> breaks Method_035550).
-    i32 TileSwitch(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5); // 0x04b320
+    // The unit-side tile-switch/place: retail's Method_035550 calls this __thiscall
+    // spelling (it emits `mov ecx,unit; push 6; call thunk 0x1640` - the dead ecx the
+    // free-form __stdcall sites drop), so byte-faithfulness needs the method form. The
+    // rel32 targets the ILT jmp-thunk 0x1640 (-> 0x04b320 = ?CGrunt_TileSwitch, bound in
+    // grunt). The resolved 0x4b320 can't take a 2nd func label (dup-RVA guard vs
+    // CGrunt_TileSwitch), so bind THIS alias to the THUNK the call literally targets;
+    // reloc_fidelity thunk-resolves both sides to 0x4b320 -> CORRECT (no cross-cast).
+    // @data-symbol: ?TileSwitch@GridUnit@@QAEHHHHHHH@Z 0x00001640
+    i32 TileSwitch(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5); // thunk 0x1640 -> 0x04b320
 };
 
 // The level's CTriggerMgr, held at this->m_triggerMgr (the real class, <Gruntz/TriggerMgr.h>:
@@ -536,8 +537,17 @@ struct CLevelNode {
     CLevelObj* m_8; // +0x08  payload object
 };
 
-// The +0x7c RTTI record: +0x10 is the engine type-id word the filter compares
-// against `&g_typeDescN + 5` (see the type-descriptor externs above).
+// The +0x7c RTTI record: +0x10 is the engine type-id word the filter compares against
+// the object type's registered FACTORY function pointer (RegisterType stores the create-fn
+// pointer as the type key). The three marker loops match the GruntCreationPoint / ExitTrigger
+// / WayPoint types, so they compare against &Create{GruntCreationPoint,ExitTrigger,WayPoint}
+// (their ILT thunks 0x17e4/0x192e/0x1087, @data-symbol-bound in GameObjectFactory.cpp) - the
+// real factory addresses, not the ex-`g_typeDescN + 5` stand-in (unbound; R63 identified them).
+extern "C" {
+    void* CreateGruntCreationPoint(); // ILT thunk 0x17e4 (GameObjectFactory.cpp)
+    void* CreateExitTrigger();        // ILT thunk 0x192e
+    void* CreateWayPoint();           // ILT thunk 0x1087
+}
 struct CRttiRec {
     char m_pad00[0x10];
     i32 m_10;
@@ -719,7 +729,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     //     cursor idiom on every step. ---
     for (CLevelObj* cur = ListGetFirst(lvl->m_objList->m_8); cur != 0;
          cur = ListGetNext(lvl->m_objList->m_8)) {
-        if (cur->m_7c->m_10 == (i32)(g_typeDesc1 + 5) && cur->m_124 == id) {
+        if (cur->m_7c->m_10 == (i32)&CreateGruntCreationPoint && cur->m_124 == id) {
             CCoordPair* p = (CCoordPair*)g_freeList;
             i32* slot = 0;
             if (p->m_0 != 0) {
@@ -736,7 +746,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     //     and stop (fall straight into loop 3). ---
     for (CLevelObj* cur2 = ListGetFirst(lvl->m_objList->m_8); cur2 != 0;
          cur2 = ListGetNext(lvl->m_objList->m_8)) {
-        if (cur2->m_7c->m_10 == (i32)(g_typeDesc2 + 5) && cur2->m_124 == id) {
+        if (cur2->m_7c->m_10 == (i32)&CreateExitTrigger && cur2->m_124 == id) {
             m_markerX = cur2->m_5c / 32;
             m_markerY = cur2->m_60 / 32;
             break;
@@ -747,7 +757,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
     for (CLevelObj* cur3 = ListGetFirst(lvl->m_objList->m_8); cur3 != 0;
          cur3 = ListGetNext(lvl->m_objList->m_8)) {
-        if (cur3->m_7c->m_10 == (i32)(g_typeDesc3 + 5) && cur3->m_124 == id) {
+        if (cur3->m_7c->m_10 == (i32)&CreateWayPoint && cur3->m_124 == id) {
             CCoordPair* p = (CCoordPair*)g_freeList;
             i32* slot = 0;
             if (p->m_0 != 0) {

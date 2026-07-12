@@ -33,13 +33,10 @@ class CDDSurface {
 public:
     i32 Fill(unsigned int c);
 }; // 0x13e760
-// 0xface0: the shared image-load activate gate (CState base method; the recovered
-// symbol is CMgrPersistObj::Init, Attract.cpp). 0xfa8f0 is CState::RetireScene (the
-// shared state-timer arm, inherited by CPlay - called cast-free below).
-class CMgrPersistObj {
-public:
-    i32 Init();
-};
+// 0xface0: the shared image-load activate gate = CState::InputVirtual (slot-8 base
+// virtual, SYMBOL-bound in Attract.cpp), called qualified (direct) on `this` - the same
+// spelling StateImages.cpp's CBootyState/CImageState use. 0xfa8f0 is CState::RetireScene
+// (the shared state-timer arm, inherited by CPlay - called cast-free below).
 
 // The global empty C string (0x6293f4).
 extern "C" char g_emptyString[];
@@ -113,7 +110,7 @@ struct PlayActivate {
 RVA(0x000cb800, 0x191)
 i32 CPlay::OnActivate() {
     PlayActivate* p = (PlayActivate*)this;
-    if (!((CMgrPersistObj*)this)->Init()) { // shared base activate gate @0xface0
+    if (!CState::InputVirtual()) { // 0xface0 CState base activate gate (was fake CMgrPersistObj::Init)
         return 0;
     }
     while (ShowCursor(FALSE) >= 0)

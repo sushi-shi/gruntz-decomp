@@ -101,6 +101,6 @@ i32 CBootyState::InputVirtual() {
         ShowSecretBonusMessage();
     }
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
-    BuildPage(0x50, 0x3e8, 0, 1);
+    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited; was fake CBootyState::BuildPage)
     return 1;
 }
