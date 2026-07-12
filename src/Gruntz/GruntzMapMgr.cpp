@@ -25,5 +25,5 @@ CGruntzMapMgr::~CGruntzMapMgr() {
         }
     }
     m_arr.SetSize(0, -1);
-    Reset();
+    CMapMgr::Reset(); // @0x9ec30 (base slot-0 grid cleanup, direct call)
 }

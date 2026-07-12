@@ -593,8 +593,8 @@ DATA(0x002c127d)
 extern u8 g_randSeeded; // 0x6c127d  seed-init flag (bit 0)
 DATA(0x002c1288)
 extern i32 g_randSeed; // 0x6c1288  LCG seed
-DATA(0x005eab40)
-extern float g_zeroF;
+DATA(0x001eab40)
+extern float g_zeroF; // 0x5eab40  the shared 0.0f .rdata constant (was a VA-typo 0x5eab40 RVA)
 DATA(0x00212f78)
 extern char* g_colorNames[]; // "Color 0".."Color 7"
 DATA(0x00212fc0)

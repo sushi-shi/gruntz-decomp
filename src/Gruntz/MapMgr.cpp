@@ -97,7 +97,7 @@ struct MapElemA {
 // not source-steerable. Logic 100% correct; deferred to the final sweep.
 RVA(0x0009e740, 0x76)
 i32 CMapArrayA::Allocate(u32 count) {
-    MapElemA* block = (MapElemA*)MapAlloc(count * sizeof(MapElemA));
+    MapElemA* block = (MapElemA*)::operator new(count * sizeof(MapElemA));
     m_0 = block;
     if (!block) {
         return (i32)block;
@@ -125,7 +125,7 @@ i32 CMapArrayA::Allocate(u32 count) {
 RVA(0x0009e7e0, 0x29)
 CMapArrayA::~CMapArrayA() {
     if (m_0) {
-        MapFree(m_0);
+        ::operator delete(m_0);
     }
     m_0 = 0;
     m_block = 0;
@@ -163,7 +163,7 @@ struct MapElemB {
 // source-steerable. Logic 100% correct; deferred to the final sweep.
 RVA(0x0009e860, 0x7a)
 i32 CMapArrayB::Allocate(u32 count) {
-    MapElemB* block = (MapElemB*)MapAlloc(count * sizeof(MapElemB));
+    MapElemB* block = (MapElemB*)::operator new(count * sizeof(MapElemB));
     m_0 = block;
     if (!block) {
         return 0;
@@ -192,7 +192,7 @@ i32 CMapArrayB::Allocate(u32 count) {
 RVA(0x0009e900, 0x28)
 CMapArrayB::~CMapArrayB() {
     if (m_0) {
-        MapFree(m_0);
+        ::operator delete(m_0);
     }
     m_0 = 0;
     m_block = 0;
@@ -295,10 +295,10 @@ i32 CBrickzGrid::AllocGrid(i32 width, i32 height, i32 callback) {
 RVA(0x0009ec30, 0x4b)
 void CMapMgr::Reset() {
     if (m_4) {
-        MapFree(m_4);
+        ::operator delete(m_4);
     }
     if (m_8) {
-        MapFree(m_8);
+        ::operator delete(m_8);
     }
 
     m_colA.~CMapArrayA();

@@ -33,7 +33,9 @@
 // carries two views of the game manager.
 SIZE_UNKNOWN(CMapMgr);
 struct CMapMgr {
-    virtual ~CMapMgr();    // 0x135c (external) slot 0
+    ~CMapMgr();            // 0x9e9e0 (external, NON-virtual QAE) - the base dtor the
+                           //         derived dtor calls directly (reloc-masks)
+    virtual void Reset();  // 0x9ec30 slot 0 (UAE) - the base grid cleanup the dtor calls
     virtual void Vfunc1(); // slot 1 (SerializeNodes; declared-only)
     char m_pad[0x78];      // +0x04..+0x7b (vptr at +0x00)
 };
@@ -42,10 +44,10 @@ SIZE_UNKNOWN(CGruntzMapMgr);
 VTBL(CGruntzMapMgr, 0x001e9bb4); // vtable_names -> code (RTTI game class)
 class CGruntzMapMgr : public CMapMgr {
 public:
-    virtual ~CGruntzMapMgr() OVERRIDE; // 0x85d10 slot 0
-    virtual void Vfunc1() OVERRIDE;    // slot 1 (SerializeNodes 0x16a9)
-    void Reset();                      // 0x9ec30 (external, reloc-masked)
-    CObArray m_arr;                    // +0x7c
+    ~CGruntzMapMgr();               // 0x85d10 (CMapMgr's dtor is non-virtual, so is this)
+    virtual void Reset() OVERRIDE;  // slot 0 (own Reset; the dtor calls the BASE CMapMgr::Reset)
+    virtual void Vfunc1() OVERRIDE; // slot 1 (SerializeNodes 0x16a9)
+    CObArray m_arr;                 // +0x7c
 };
 
 #endif // GRUNTZ_CGRUNTZMAPMGR_H

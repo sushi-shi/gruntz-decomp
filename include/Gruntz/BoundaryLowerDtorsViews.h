@@ -38,20 +38,12 @@ RELOC_VTBL(CHolder8c400, 0x001e8cd4); // vtable reloc-masks a bound datum (dtor-
 // two owned members at +0x138 (dtor 0x1b4b76 == ~CByteArray, MFC) and +0x124 (dtor 0x1bf121 ==
 // ~CFile, MFC) in reverse. Owns an MFC CFile (+0x124) + CByteArray (+0x138); the "CCredits"
 // class name is unconfirmed (a file/page loader).
-struct Member124_390a0 {
-    char pad0[0x14];    // 0x124..0x137 (size 0x14)
-    ~Member124_390a0(); // 0x1bf121
-};
-SIZE_UNKNOWN(Member124_390a0);
-struct Member138_390a0 {
-    char pad0[0x14];
-    ~Member138_390a0(); // 0x1b4b76
-};
-SIZE_UNKNOWN(Member138_390a0);
 struct CCredits390a0 {
-    char pad4[0x124];      // +0x00 .. +0x123
-    Member124_390a0 m_124; // +0x124
-    Member138_390a0 m_138; // +0x138
+    char pad4[0x124];  // +0x00 .. +0x123
+    CFile m_124;       // +0x124  real MFC CFile (dtor ??1CFile@@UAE@XZ @0x1bf121)
+    char m_124tail[4]; // +0x134  retail's CFile is 0x14 B (BOOL m_bCloseOnDelete); the
+                       //         toolchain's is 0x10 B (BYTE) - pad to hold m_138 @+0x138
+    CByteArray m_138;  // +0x138  real MFC CByteArray (dtor ??1CByteArray@@UAE@XZ @0x1b4b76)
     ~CCredits390a0();
 };
 SIZE_UNKNOWN(CCredits390a0);
@@ -75,9 +67,9 @@ RELOC_VTBL(CMenuState8d000, 0x001ea21c); // aliases CState (dtor-stamp verified)
 // The dtor stamps both base vtables, runs ClearRecursive(0), then folds the +0x08 base
 // (MI this-adjust null guard) and the +0x00 base. Modeled with the real bases so no cast
 // of `this` is needed; kept standalone (not one class) to avoid duplicating the base vtables.
-struct CButeBase1_21 {                    // == CContainerErr subobject (+0x00)
-    virtual ~CButeBase1_21();             // +0x00 vptr (0x5e94ac), dtor 0x16da60 (~CContainerErr)
-    void ClearRecursive(void* node);      // 0x16e070 (== CButeStore::ClearRecursive)
+struct CButeBase1_21 {               // == CContainerErr subobject (+0x00)
+    virtual ~CButeBase1_21();        // +0x00 vptr (0x5e94ac), dtor 0x16da60 (~CContainerErr)
+    void ClearRecursive(void* node); // 0x16e070 (== CButeStore::ClearRecursive)
     i32 m_4; // +0x04 (pads the first base to 8 so the second base lands at +0x08)
 };
 SIZE_UNKNOWN(CButeBase1_21);

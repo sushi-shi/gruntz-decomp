@@ -2219,6 +2219,7 @@ rva,name,lib,confidence,source
 0x1b4b43,??0CByteArray@@QAE@XZ,NAFXCW,AMBIG,anchored
 0x1b4b5a,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x1b4b76,??1CByteArray@@UAE@XZ,NAFXCW,AMBIG,anchored
+0x1b4b76,??1CDWordArray@@UAE@XZ,NAFXCW,AMBIG,alias
 0x1b4bad,?SetSize@CDWordArray@@QAEXHH@Z,NAFXCW,AMBIG,anchored
 0x1b4cd0,?Append@CDWordArray@@QAEHABV1@@Z,NAFXCW,AMBIG,anchored
 0x1b4d0a,?Copy@CDWordArray@@QAEXABV1@@Z,NAFXCW,AMBIG,anchored
@@ -2232,6 +2233,7 @@ rva,name,lib,confidence,source
 0x1b4f22,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x1b4f3e,??1CByteArray@@UAE@XZ,NAFXCW,AMBIG,anchored
 0x1b4f75,?SetSize@CDWordArray@@QAEXHH@Z,NAFXCW,AMBIG,anchored
+0x1b4f75,?SetSize@CObArray@@QAEXHH@Z,NAFXCW,AMBIG,alias
 0x1b5098,?Append@CDWordArray@@QAEHABV1@@Z,NAFXCW,AMBIG,anchored
 0x1b50d2,?Copy@CDWordArray@@QAEXABV1@@Z,NAFXCW,AMBIG,anchored
 0x1b50fe,?FreeExtra@CDWordArray@@QAEXXZ,NAFXCW,AMBIG,anchored

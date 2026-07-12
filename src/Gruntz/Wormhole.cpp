@@ -196,7 +196,8 @@ static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
     } else if (v->GrowTo(idx, 0)) {
         r = v->m_base + (idx - v->m_lo) * v->m_stride;
     } else {
-        i32 sentinel = g_zvecErrSentinel;
+        i32 sentinel =
+            (i32)g_projActCache; // scratch cell @0x2bf464 reused as the zvec err sentinel
         g_retAddrBreadcrumb = GetRetAddr();
         v->m_err->Set((void*)v, sentinel, 0xc);
         r = v->m_spare;
@@ -222,7 +223,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
     if (v->GrowTo(idx, 0)) {
         return v->m_base + (idx - v->m_lo) * v->m_stride;
     }
-    i32 sentinel = g_zvecErrSentinel;
+    i32 sentinel = (i32)g_projActCache; // scratch cell @0x2bf464 reused as the zvec err sentinel
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_err->Set((void*)v, sentinel, 0xc);
     return v->m_spare;

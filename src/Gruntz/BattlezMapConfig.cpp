@@ -74,13 +74,6 @@ void* __stdcall ListNodeAdvance(void** pos);
 // CGruntSpawnLevel sub-objects); only the two fields Method_025c20 reads
 // are named. Reloc-masked DATA. A struct (mangles `U`) gives the retail name.
 
-// The per-element refresh method (RVA ~0x021906), a __thiscall on the array
-// bundle taking one int. Modeled as a method on a tiny helper laid over `this`
-// so the `mov ecx,this; push 0; call` falls out, reloc-masked (no body).
-struct ElementRefresher {
-    void Refresh(i32 index); // ~0x021906
-};
-
 // The FOREIGN argument object of Method_02bfc0: a polymorphic unit whose vtable
 // carries two dispatched pair-emit slots at +0x2c (index 11) / +0x30 (index 12); the
 // rest are unreconstructed engine code. The slot call is a __thiscall indirect
@@ -119,17 +112,11 @@ struct EmitArg {
 // modeled class in <Gruntz/SerialArchive.h> - the former local `Serializer` view is
 // folded away. Return values are unused; only the +0x2c/+0x30 dispatch bytes bind.
 
-// A free helper (RVA 0x01146a) that validates a kind-7 EmitArg; NONZERO result means
-// "valid, proceed to emit" (a zero result bails Method_02bfc0 with 0). __stdcall
-// (callee pops its one arg — no add esp at the call site). External, reloc-masked.
-i32 __stdcall Validate_01146a(EmitArg*);
-
-// The kind-4 validator (RVA 0x022040), a __thiscall method on the array bundle.
-// Modeled as a method on a tiny helper laid over `this`, so the `mov ecx,this;
-// call` lowers cleanly and reloc-masks (external, no body).
-struct Kind4Validator {
-    i32 Validate(EmitArg*); // 0x022040
-};
+// Method_02bfc0's two kind validators are CBattlezMapConfig siblings (thiscall on
+// `this`): kind-7 -> Deserialize_02b950 @0x2b950 (via ILT thunk 0x146a), kind-4 ->
+// Serialize_02b420 @0x2b420 (via ILT thunk 0x204a). Declared in the class header;
+// the former Validate_01146a/Kind4Validator fake decls (guessed the thunk rva) are
+// dissolved and the calls retargeted cast-free to the real bound siblings.
 
 struct UnitLevel;    // +0x10 board geometry (defined below; m_worldX/m_worldY)
 struct GridCandNode; // the candidate-list node (m_triggerMgr->m_objListHead)
@@ -204,9 +191,13 @@ struct GridUnit {
     // g_freeList, then RemoveAll the +0x31c CObList. Defined out-of-line (retail RVA below).
     void RecycleCoords(); // 0x0343f0
 
-    // The unit-side tile-switch/place (thunk 0x1640 -> 0x04b320, __thiscall this=unit,
-    // 6 stack args). Same body as the free CGrunt_TileSwitch, but dispatched ON the
-    // unit (the ecx=this the free-form sites drop). Declared-only, reloc-masked.
+    // The unit-side tile-switch/place (thunk 0x1640 -> 0x04b320): retail calls the
+    // __stdcall CGrunt_TileSwitch @0x4b320 but emits a DEAD `mov ecx,unit` first (the
+    // ecx the free-form sites drop), so byte-faithfulness needs this __thiscall spelling.
+    // Declared-only, reloc-masked. NOT reloc-bindable: 0x4b320 is already the FUNC symbol
+    // CGrunt_TileSwitch, and the dup-RVA guard forbids a 2nd func name there - so the
+    // reloc-fidelity UNBOUND here is a codegen-device artifact, not a defect to "fix" by
+    // dropping the thiscall (that removes retail's dead mov ecx -> breaks Method_035550).
     i32 TileSwitch(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5); // 0x04b320
 };
 
@@ -875,7 +866,7 @@ i32 CBattlezMapConfig::Method_025c20() {
     if (g_gameReg->m_focusSlots[m_curCell].m_14 == 0
         && g_gameReg->m_focusSlots[m_curCell].m_20 != 0) {
         for (i32 i = 0; i < m_candArray.GetSize(); i++) {
-            ((ElementRefresher*)this)->Refresh(0);
+            this->Method_026470(0); // @0x26470 (the per-element refresh sibling)
         }
     }
     return 1;
@@ -2332,12 +2323,12 @@ i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     i32 kind = (i32)(i32)kindArg;
     switch (kind) {
         case 4:
-            if (((Kind4Validator*)this)->Validate(obj) == 0) {
+            if (this->Serialize_02b420(obj) == 0) { // kind-4 validator @0x2b420
                 return 0;
             }
             break;
         case 7:
-            if (Validate_01146a(obj) == 0) {
+            if (this->Deserialize_02b950(obj) == 0) { // kind-7 validator @0x2b950
                 return 0;
             }
             break;
@@ -3034,7 +3025,14 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
         if (c0 & 0x20000000) {
             return 1;
         }
-        g->TileSwitch(col, row, 0x987, 0, 1, 0);
+        g->TileSwitch(
+            col,
+            row,
+            0x987,
+            0,
+            1,
+            0
+        ); // @0x4b320 (thiscall spelling: retail's dead mov ecx)
     }
     return 1;
 }
@@ -5906,7 +5904,14 @@ i32 CBattlezMapConfig::Method_035550(i32 unitArg) {
     if ((u32)unit->m_idleTimer <= (u32)m_reserveBudget) {
         return 1;
     }
-    unit->TileSwitch(unit->m_targetX, unit->m_targetY, 0, 0xd87, 0, 0);
+    unit->TileSwitch(
+        unit->m_targetX,
+        unit->m_targetY,
+        0,
+        0xd87,
+        0,
+        0
+    ); // @0x4b320 (thiscall: retail's dead mov ecx)
     unit->m_idleTimer = 0;
     return 1;
 }
@@ -6057,12 +6062,10 @@ SIZE_UNKNOWN(SceneNode);
 SIZE_UNKNOWN(SceneObj);
 SIZE_UNKNOWN(Coord);
 SIZE_UNKNOWN(CoordListWalk);
-SIZE_UNKNOWN(ElementRefresher);
 SIZE_UNKNOWN(EmitArg);
 SIZE_UNKNOWN(GridCand);
 SIZE_UNKNOWN(GridCandNode);
 SIZE_UNKNOWN(GridUnit);
-SIZE_UNKNOWN(Kind4Validator);
 SIZE_UNKNOWN(CAnimNameRecord);
 SIZE_UNKNOWN(ProbePair);
 SIZE_UNKNOWN(RectInit);

@@ -40,13 +40,9 @@ struct CPathEntity {
     i32 m_258; // +0x258
 };
 
-// The visibility / cue gate reached as g_gameReg->m_68; QueryAt resolves the
-// entity under a screen rect. Same shared engine fn (0x75c60) KitchenSlime uses;
-// modeled NO-body so the call reloc-masks.
-struct CPathCueGate {
-    // QueryAt @0x75c60 IS m4::GruntHitMgr::FindGruntAt; cast at each call.
-    // Strike @0x2e96 IS CTriggerMgr::CellDispatch (padded); cast at the call.
-};
+// The visibility / cue gate is reached cast-free as g_gameReg->m_cmdGrid (typed
+// CTriggerMgr*): QueryAt IS CTriggerMgr::FindGruntAt @0x75c60, Strike IS
+// CTriggerMgr::CellDispatch @0x6bcb0 (both via <Gruntz/TriggerMgr.h>).
 
 DATA(0x0024556c)
 
