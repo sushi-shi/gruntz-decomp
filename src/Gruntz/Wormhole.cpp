@@ -1048,10 +1048,11 @@ i32 CTeleporter::Update() {
     m_tickHandled = 1;
     mgr = g_gameReg;
     CGrunt* current;
-    if (((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.m_count != 1) {
+    if (((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.GetCount() != 1) {
         current = 0;
     } else {
-        i32* pair = ((CTeleSelHolder*)((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.m_head)->m_8;
+        i32* pair =
+            ((CTeleSelHolder*)((CTriggerMgr*)mgr->m_cmdGrid)->m_recList.GetHeadPosition())->m_8;
         i32 row = pair[0];
         i32 col = pair[1];
         current = ((CGrunt**)((char*)(CTriggerMgr*)mgr->m_cmdGrid + 0x1c))[row * 15 + col];

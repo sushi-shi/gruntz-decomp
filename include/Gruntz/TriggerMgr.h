@@ -13,7 +13,7 @@
 // typed as void*/char are cast to the file-local opaque shells at their use sites (that
 // keeps those reads / calls reloc-masked). The three embedded MFC containers (base CObList
 // @0, record CObList @0x240, byte-table CByteArray @0x260) and the ten selection lists
-// (@0x2d0) are REAL typed members (CTmObList / CTmByteArray) - the leaves call their methods
+// (@0x2d0) are the REAL MFC classes (<Mfc.h>) - the leaves call their methods
 // directly and ~CTriggerMgr auto-emits their member teardown (no this+offset casts).
 #ifndef SRC_GRUNTZ_TRIGGERMGR_H
 #define SRC_GRUNTZ_TRIGGERMGR_H
@@ -37,10 +37,16 @@ struct CTrigPoint {
 };
 SIZE_UNKNOWN(CTrigPoint);
 
-// The placed grid-cell game object (a CGrunt). The full unified shape is a file-local
-// view in each TU; the grid stores pointers to it, so an incomplete decl suffices here.
-// Same for the level object, sound-channel helper and the two intrusive list-node shapes
-// the record/base lists hang off - each TU completes them as it needs.
+// The placed grid-cell game object. IDENTITY PROVEN: CTmCell IS ::CGrunt - its
+// ClearAllSprites() is ?ClearAllSprites@CGrunt@@QAEXXZ @0x0004b240 (already reconstructed
+// and 100% EXACT in src/Gruntz/Grunt.cpp; `gruntz sema rva 0x0004b240`). Calling it through
+// this view emitted ?ClearAllSprites@CTmCell@@QAEXXZ, a symbol NOTHING defines (an unbound
+// reloc -> link failure); the TriggerMgr.cpp call sites now bridge-cast to CGrunt so the
+// call binds. FOLLOW-UP FOLD (deliberately not done here): replace CTmCell with CGrunt
+// outright. It is a 94-use, 10-file fold whose .cpps (Play/GruntzMgrCmd/GruntVoice/
+// DroppedObject/TriggerMgrGrid/TriggerMgrHitTest) are owned by parallel lanes, so it needs
+// its own pass - not a wall, just cross-lane. Same for the level object, sound-channel
+// helper and the two intrusive list-node shapes - each TU completes them as it needs.
 struct CTmCell;
 struct CTmLevel;
 class DirectSoundMgr; // Dsndmgr/DirectSoundMgr.h (StopAndRewind)
@@ -51,36 +57,22 @@ struct CTmGoal;      // the goal object (+0x23c); completed in each TU
 struct CTmPendingFx; // the pending-fx sub-object (+0x2a0); completed in each TU
 class CActionOptionsMenuBar;
 
-// The embedded MFC containers, modeled as REAL typed members (not this+offset casts):
-// the base/record/selection lists are CObList (0x1c B: vptr + head/tail/count + free/
-// blocks/blocksize), the byte table is CByteArray (0x14 B). The game recycles node
-// payloads through a shared free-list, so the leaves reach the raw head node + walk it -
-// hence the public head/count fields. The methods + destructors are the reloc-masked
-// engine MFC bodies; declaring the dtors lets ~CTriggerMgr auto-emit the member teardown.
-struct CTmObList {
-    void RemoveAll();        // 0x1b48a6  CObList::RemoveAll
-    void RemoveAt(void*);    // 0x1b4ac7  CObList::RemoveAt(POSITION)
-    void AddTail(void*);     // 0x1b4991  CObList::AddTail (returns POSITION; ignored)
-    ~CTmObList();            // CObList::~CObList (reloc-masked; auto-emitted by ~CTriggerMgr)
-    char _vft0[4];           // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    CTmNode* m_head;         // +0x04  head node
-    void* m_tail;            // +0x08
-    i32 m_count;             // +0x0c
-    char _rest[0x1c - 0x10]; // +0x10  free/blocks/blocksize
-};
-SIZE(CTmObList, 0x1c);
-struct CTmByteArray {
-    void RemoveAt(i32 idx, i32 n);   // 0x1b5525  CByteArray::RemoveAt
-    void SetSize(i32 n, i32 grow);   // 0x1b52e8  CByteArray::SetSize
-    void SetAtGrow(i32 i, i32 v);    // 0x1b5485  CByteArray::SetAtGrow
-    void Place(i32 a, i32 b, i32 c); // ReinitGroup drop-last (reloc-masked)
-    ~CTmByteArray();                 // CByteArray::~CByteArray (reloc-masked)
-    char _vft0[4];          // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    u8* m_data;             // +0x04  data pointer
-    i32 m_count;            // +0x08  count
-    char _rest[0x14 - 0xc]; // +0x0c  maxsize/growby
-};
-SIZE(CTmByteArray, 0x14);
+// The embedded MFC containers are the REAL MFC classes from <Mfc.h> (CObList 0x1c B,
+// CByteArray 0x14 B) - the former hand-rolled CTmObList/CTmByteArray views are GONE.
+// They were a fake-view bug with a link-fatal symptom: their decl-only methods/dtors
+// mangled as ?RemoveAll@CTmObList@@QAEXXZ / ??1CTmObList@@QAE@XZ / ??1CTmByteArray@@QAE@XZ,
+// symbols NOTHING defines, while retail calls the static-MFC bodies
+//   ?RemoveAll@CObList@@QAEXXZ  @0x1b48a6
+//   ??1CObList@@UAE@XZ          @0x1b48c6   (note: U == VIRTUAL dtor; the view said Q)
+//   ??1CByteArray@@UAE@XZ       @0x1b52b1
+// (all three confirmed NAFXCW library rows via `gruntz sema rva`). Using the real classes
+// binds every call to the real MFC symbol and is layout-identical.
+//
+// The raw node/count fields the leaves walk (the game recycles node payloads through a
+// shared free-list) are MFC-protected, so the leaves reach them through MFC's PUBLIC
+// accessors - GetHeadPosition() / GetCount() / GetData() / GetSize(), all _AFXCOLL_INLINE
+// (AFXCOLL.INL), so each lowers to the identical single member load, not a call. The
+// former `CTmByteArray::Place(a,b,c)` is MFC's CByteArray::InsertAt(nIndex, byte, nCount).
 
 class CTriggerMgr {
 public:
@@ -408,10 +400,12 @@ public:
 
     // --- data layout (recovered from the raw this+offset field reads across both TUs) ---
     // The three embedded MFC containers (base CObList @0, record CObList @0x240, byte-table
-    // CByteArray @0x260) and the ten-slot selection-list array (@0x2d0, stride 0x1c) are REAL
-    // typed members (CTmObList / CTmByteArray) - the leaves call their methods directly and
-    // ~CTriggerMgr auto-emits their member teardown; no this+offset reinterpret casts remain.
-    CTmObList m_baseList;  // +0x000  base object-list (holds CTmRecNode payloads)
+    // CByteArray @0x260) and the ten-slot selection-list array (@0x2d0, stride 0x1c) are the
+    // REAL MFC classes - the leaves call their methods directly and ~CTriggerMgr auto-emits
+    // their member teardown: 2 scalar ??1CObList CALLs (m_baseList/m_recList) + the
+    // m_selLists[10] array teardown, whose __ehvec_dtor takes ??1CObList as a function
+    // POINTER (that is ~CTriggerMgr's DATA reloc), + 1 ??1CByteArray CALL. No casts remain.
+    CObList m_baseList;    // +0x000  base object-list (holds CTmRecNode payloads)
     CTmCell* m_grid[0x3c]; // +0x01c  the 4x15 placed grid-object cells (stride 4)
     i32 m_rowCount[4];     // +0x10c  per-row placed count (bumped/serialized 0x10 B)
     i32 m_cellFlag[0x3c];  // +0x11c  parallel 4x15 per-cell flag grid; also holds the
@@ -423,9 +417,9 @@ public:
     i32 m_recX;            // +0x234  active-record x
     i32 m_recY;            // +0x238  active-record y
     CTmGoal* m_goal;       // +0x23c  the goal object
-    CTmObList m_recList;   // +0x240  record list (per-cell undo/record nodes)
+    CObList m_recList;     // +0x240  record list (per-cell undo/record nodes)
     CActionOptionsMenuBar* m_overlay; // +0x25c  the allocated overlay sub-object (0x40 B)
-    CTmByteArray m_byteArr;           // +0x260  byte-table array
+    CByteArray m_byteArr;             // +0x260  byte-table array
     char m_274[0x10];                 // +0x274  serialized 16-byte region
     i32 m_284;                        // +0x284  build/reinit gate flag
     i32 m_288;                        // +0x288  serialized scalar
@@ -437,7 +431,7 @@ public:
     char _pad2ac[0x4];                // +0x2ac
     char m_overlayDescB[0x10];        // +0x2b0  overlay descriptor block 1
     char m_overlayDescC[0x10];        // +0x2c0  overlay descriptor block 2
-    CTmObList m_selLists[10];         // +0x2d0  ten selection lists (stride 0x1c)
+    CObList m_selLists[10];           // +0x2d0  ten selection lists (stride 0x1c)
     i32 m_selSentinel;                // +0x3e8  selection-group latch (-1 when idle)
     i32 m_3ec;                        // +0x3ec  serialized scalar
     DirectSoundMgr* m_soundChanA;     // +0x3f0  DirectSound channel A

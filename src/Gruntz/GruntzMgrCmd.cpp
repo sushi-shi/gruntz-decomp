@@ -47,6 +47,11 @@
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ (m_sound)
 #include <Gruntz/WorldSoundSet.h> // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
 
+// The *0x24556c game-manager singleton. Declared here (it used to arrive from
+// <Gruntz/Play.h>, whose header-level decl was removed so each TU can pick the view /
+// real class it needs -- see the note in Play.h). Type unchanged for this TU.
+extern "C" CGameRegistry* g_gameReg;
+
 // The record-list node (CTriggerMgr::m_recHead): the MFC CObList node shape
 // {next, prev, data}; the data payload of a record node is the placed (x,y)
 // pair (CTrigPoint). Completes TriggerMgr.h's forward declaration for this TU
@@ -161,11 +166,12 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell = m_cmdGrid->m_recList.m_count == 1                                          \
-                            ? (CGrunt*)m_cmdGrid->m_grid                                           \
-                                  [m_cmdGrid->m_recList.m_head->m_pt->y                            \
-                                   + m_cmdGrid->m_recList.m_head->m_pt->x * 15]                    \
-                            : 0;                                                                   \
+        CGrunt* _cell =                                                                            \
+            m_cmdGrid->m_recList.GetCount() == 1                                                   \
+                ? (CGrunt*)m_cmdGrid->m_grid                                                       \
+                      [((CTmNode*)m_cmdGrid->m_recList.GetHeadPosition())->m_pt->y                 \
+                       + ((CTmNode*)m_cmdGrid->m_recList.GetHeadPosition())->m_pt->x * 15]         \
+                : 0;                                                                               \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_644c54)                                                      \
@@ -184,11 +190,12 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd
     {                                                                                              \
         if (!PickPlayOrPausedState())                                                              \
             return 0;                                                                              \
-        CGrunt* _cell = m_cmdGrid->m_recList.m_count == 1                                          \
-                            ? (CGrunt*)m_cmdGrid->m_grid                                           \
-                                  [m_cmdGrid->m_recList.m_head->m_pt->y                            \
-                                   + m_cmdGrid->m_recList.m_head->m_pt->x * 15]                    \
-                            : 0;                                                                   \
+        CGrunt* _cell =                                                                            \
+            m_cmdGrid->m_recList.GetCount() == 1                                                   \
+                ? (CGrunt*)m_cmdGrid->m_grid                                                       \
+                      [((CTmNode*)m_cmdGrid->m_recList.GetHeadPosition())->m_pt->y                 \
+                       + ((CTmNode*)m_cmdGrid->m_recList.GetHeadPosition())->m_pt->x * 15]         \
+                : 0;                                                                               \
         if (!_cell)                                                                                \
             return 0;                                                                              \
         if (_cell->m_tileOwnerHi != g_644c54)                                                      \

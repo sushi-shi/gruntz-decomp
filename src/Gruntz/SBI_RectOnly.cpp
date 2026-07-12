@@ -16,6 +16,7 @@
 // single-player trigger grid (CTriggerMgr) and the registry writer (RegistryHelper).
 #include <Gruntz/Play.h>
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GruntzMgr.h> // the REAL *0x24556c singleton class (ReportError @0x08dc60)
 #include <Utils/RegistryHelper.h>
 #include <Globals.h>
 // wave1-E one-TU merge (interval dossier 0x104d60-0x10bc14): this TU absorbed
@@ -57,11 +58,18 @@ extern i32 g_644c54;
 // CSbiLookupMap/CSbiCueRecord/CSoundCueMgr/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
 // CSbiTile*/CSbiActiveObj/CSbiLogger/CSbiWndHost/CGameReg moved to
 // <Gruntz/SBI_RectOnly.h>.
-// 0x24556c: the game-mgr singleton. Its canonical symbol is _g_mgrSettings (an
-// extern-C CGameRegistry*, bound via DATA in userlogic); referencing it by that name
-// pairs the DIR32 relocs -- the former ?g_gameReg@@ alias at 0x24556c mismatched
-// retail's _g_mgrSettings (the real ?g_gameReg@@ lives at 0x245460).
-extern "C" CGameRegistry* g_gameReg;
+// 0x24556c: the game-mgr singleton, typed as the REAL class (CGruntzMgr, the RTTI-true
+// owner of the object `new`'d at 0x080a20 with size 0xa30) rather than the Win32-safe
+// CGameRegistry view. This TU is already MFC (<Mfc.h> above), so it can see the real
+// class -- and it MUST: the three ReportError call sites below are CGruntzMgr::
+// ReportError @0x08dc60, and going through the view emitted a call to
+// ?ReportError@CGameRegistry@@QAEXHH@Z, a symbol NOTHING defines (an unbound reloc that
+// would fail at link). Every member this TU reads off the singleton (m_curState/m_world/
+// m_cmdGrid/m_settings/m_134/m_modeW/m_modeH/m_inputFlag + the CGameMgr base's
+// m_gameWnd/m_frameGate/m_soundEnabled) exists on CGruntzMgr at the same offsets.
+// Its canonical symbol is _g_mgrSettings (extern-C, bound via DATA in userlogic);
+// referencing it by that name pairs the DIR32 relocs.
+extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight handlers play through.
 DATA(0x0021ab20)
@@ -967,7 +975,7 @@ i32 CSBI_RectOnly::ClearTabSprites(i32 idx) {
 RVA(0x00100cb0, 0x8b)
 i32 CSBI_RectOnly::Deactivate() {
     if (*(i32*)this == kSubtypeTag) {
-        CGameRegistry* g = g_gameReg;
+        CGruntzMgr* g = g_gameReg;
         i32 a = g->m_modeW;
         i32 b = g->m_modeH;
         i32 x = a - 0x45;
@@ -3107,7 +3115,7 @@ i32 CSBI_RectOnly::SetState(i32 state) {
     }
     old = *(i32*)this;
     *(i32*)this = state;
-    ((CPlay*)g_gameReg->m_curState)->SetState(state, old);
+    ((CPlay*)g_gameReg->m_curState)->PositionBridgeToggle(state, old);
     return 1;
 }
 

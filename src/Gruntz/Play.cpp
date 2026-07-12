@@ -186,6 +186,14 @@ extern i32 MapLookup(void* map, void* key, void*& out); // CMapPtrToPtr::Lookup
 //      a minimal class so PlayCueAt's `mov ecx,<singleton>; call GetInt`
 //      reloc-masks against the already-matched GetInt (butemgr unit). --
 #include <Bute/ButeMgr.h>
+
+// The *0x24556c game-manager singleton. Declared HERE (file scope) rather than in
+// <Gruntz/Play.h>: a header-level decl pinned one view's type on every includer and
+// blocked the CGameRegistry == CGruntzMgr fold (an MFC includer could not retype the
+// pointer to the real class without an extern "C" type clash). Type unchanged for this
+// TU -- the DATA(0x0024556c) binding below (which re-declares this same extern-"C"
+// entity) is unaffected.
+extern "C" CGameRegistry* g_gameReg;
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
@@ -2976,10 +2984,10 @@ extern "C" void ProfReport(void* mgr, void* guts, i32 gate);
 // canonical externs are in <Globals.h>. g_profAccB caches the flush start/duration,
 // g_profAccA the camera draw-B duration - read next frame at ProfLog time.
 extern "C" {
-DATA(0x0024c284)
-i32 g_profAccA;
-DATA(0x0024c288)
-i32 g_profAccB;
+    DATA(0x0024c284)
+    i32 g_profAccA;
+    DATA(0x0024c288)
+    i32 g_profAccB;
 }
 
 // ===========================================================================
@@ -3831,8 +3839,8 @@ CString GruntzPlayer::GetDefaultName() {
 // "Easy"/"Normal"/"Hard" string literals). Owner-TU definitions here; canonical
 // externs in <Globals.h>. The pointer slots reloc-mask; the strings match by content.
 DATA(0x00212f78)
-char* g_colorNames[] = {"Color 0", "Color 1", "Color 2", "Color 3",
-                        "Color 4", "Color 5", "Color 6", "Color 7"};
+char* g_colorNames[] =
+    {"Color 0", "Color 1", "Color 2", "Color 3", "Color 4", "Color 5", "Color 6", "Color 7"};
 DATA(0x00212fc0)
 char* g_difficultyNames[] = {"Easy", "Normal", "Hard"};
 
@@ -3876,8 +3884,8 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
 
 // Owner-TU definition of the channel-slot table (canonical extern in <Globals.h>).
 extern "C" {
-DATA(0x0024c3f0)
-i32 g_64c3f0[17];
+    DATA(0x0024c3f0)
+    i32 g_64c3f0[17];
 }
 
 // Reset every slot to "free" (1).
@@ -3896,8 +3904,8 @@ void ChannelSlots_InitAll() {
 // holder-pointer reading here cannot be pinned onto it without more xrefs).
 // Swap's probes are the channel-slot free fns (defined below): the slot read
 // (ChannelSlots_Get @0xdb2d0) and the slot set (ChannelSlots_Set @0xdb2b0).
-i32 ChannelSlots_Get(i32 i);          // 0xdb2d0
-void ChannelSlots_Set(i32 i, i32 v);  // 0xdb2b0
+i32 ChannelSlots_Get(i32 i);         // 0xdb2d0
+void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
 struct Cdb200 {
     char pad0[8];
     void* m_8; // +0x08
@@ -4767,7 +4775,7 @@ drag_box: {
     if (m_levelId >= 0xc8) {
         CTriggerMgr* cg = g_gameReg->m_cmdGrid;
         CTmCell* slot = 0;
-        if (1 == cg->m_recList.m_count) { // exactly one record node
+        if (1 == cg->m_recList.GetCount()) { // exactly one record node
             i32* sel = *(i32**)(*(char**)((char*)&cg->m_recList + 4) + 8);
             slot = cg->m_grid[sel[1] * 15 + sel[0]];
         }
@@ -6377,8 +6385,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)
-             ->HasKeyPrefix_152c50("GRUNTZ_ENTRANCEZ")) {
+    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_ENTRANCEZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_ENTRANCEZ");
         if (!s) {
             return 0;
@@ -6423,8 +6430,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
             notify->AckJoinFailure();
         }
     }
-    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)
-             ->HasKeyPrefix_152c50("GRUNTZ_BOMBGRUNT")) {
+    if (!((CDDrawSubMgrLeaf*)self->m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_BOMBGRUNT")) {
         void* s = (self->m_gruntzBank)->ResolvePath("ANIZ_BOMBGRUNT");
         if (!s) {
             return 0;
@@ -7258,7 +7264,12 @@ i32 CPlay::EnterMode(i32 mode) {
 
 finish:
     ((CDDrawSubMgrPages*)self->m_c->m_4)->Method_158e90();
-    RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited by CPlay `this`, cast-free)
+    RetireScene(
+        0x50,
+        0x3e8,
+        0,
+        1
+    ); // 0xfa8f0 CState::RetireScene (inherited by CPlay `this`, cast-free)
     if (self->m_c->m_24->m_mainPlane != 0) {
         ((CPlaneRender*)self->m_c->m_24->m_mainPlane)->CenterScrollB();
     }
@@ -7455,10 +7466,12 @@ i32 CPlay::BuildWarlordNameTable(i32 arg) {
 // `_CreateXxx` symbols, bound to their thunk RVAs there (reloc fidelity). The
 // `cmp eax,offset _CreateXxx` DIR32 reloc is what the match needs; declared here as
 // address tokens (char[]) sharing the factory's decorated `_CreateXxx` symbol.
-extern "C" char CreateGruntStartingPoint[]; // 0x24a5 ("multi-sprite warlord" m_11c/m_120 + m_118 switch)
-extern "C" char CreateInGameIcon[];         // 0x288d (counted object keyed on m_124)
-extern "C" char CreateCoveredPowerup[];     // 0x3d0f (counted object keyed on m_11c)
-extern "C" char CreateGiantRock[];          // 0x137a (counted object keyed on m_11c; sibling of CoveredPowerup)
+extern "C" char
+    CreateGruntStartingPoint[];     // 0x24a5 ("multi-sprite warlord" m_11c/m_120 + m_118 switch)
+extern "C" char CreateInGameIcon[]; // 0x288d (counted object keyed on m_124)
+extern "C" char CreateCoveredPowerup[]; // 0x3d0f (counted object keyed on m_11c)
+extern "C" char
+    CreateGiantRock[]; // 0x137a (counted object keyed on m_11c; sibling of CoveredPowerup)
 
 // A placed object walked in the in-level branch: its +0x7c dynamic-type vtable
 // (whose +0x10 slot carries the type marker) + its sprite/type ids.

@@ -82,8 +82,10 @@ struct GLSMapMgr { // this->m_2dc
 // The +0xc4 reset manager is the DirectInputMgr2 input singleton g_645570
 // (DAT_00245570, bound extern "C" in GruntzMgr.cpp): ReadAll (@0x133110) polls devices.
 extern "C" DirectInputMgr2* g_645570;
-// The game-manager singleton (0x64556c); mangled ?g_gameReg@@3PAUWwdGameReg@@A.
-DATA(0x0024556c)
+// The game-manager singleton (0x64556c). Declared here (it used to arrive from
+// <Gruntz/Play.h>, whose header-level decl was removed so each TU can pick the view /
+// real class it needs -- see the note in Play.h). Type unchanged for this TU.
+extern "C" CGameRegistry* g_gameReg;
 // The camera auto-scroll/clamp update (MgrAutoScroll.cpp @0xebd70, cdecl 3-arg),
 // called with (g_gameReg, this->m_2dc, this->m_470).
 class CGruntzMgr;
@@ -110,7 +112,8 @@ struct PlayActivate {
 RVA(0x000cb800, 0x191)
 i32 CPlay::OnActivate() {
     PlayActivate* p = (PlayActivate*)this;
-    if (!CState::InputVirtual()) { // 0xface0 CState base activate gate (was fake CMgrPersistObj::Init)
+    if (!CState::
+            InputVirtual()) { // 0xface0 CState base activate gate (was fake CMgrPersistObj::Init)
         return 0;
     }
     while (ShowCursor(FALSE) >= 0)

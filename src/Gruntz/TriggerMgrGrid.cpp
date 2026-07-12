@@ -357,7 +357,7 @@ i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
         slot[1] = row;
         g_freeList = *(void**)g_freeList;
     }
-    m_recList.AddTail(slot);
+    m_recList.AddTail((CObject*)slot);
     return cell->ResetMagic();
 }
 

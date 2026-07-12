@@ -273,7 +273,15 @@ struct CPlaySerialChild {
 // drives; the 0x8107 timer cheat (HandleCommand) zeroes its accum/expiry/
 // running/current block ("Ah, who needed that stupid timer anyway?").
 #include <Gruntz/Timer.h>
-extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
+// NOTE: this header deliberately does NOT declare `g_gameReg`. The *0x24556c
+// singleton is ONE object (the real CGruntzMgr); a header-level decl forces ONE
+// view's type on every includer, which is exactly what kept the CGameRegistry ==
+// CGruntzMgr fold frozen: an MFC includer that wants to call a real CGruntzMgr
+// method (ReportError @0x08dc60, ...) could not retype the pointer without an
+// extern "C" type clash against this line, so it emitted a call to a
+// ?...@CGameRegistry@@ symbol that NOTHING defines (an unbound reloc -> link
+// failure). Each TU now declares the singleton itself, with the type it actually
+// needs; MFC TUs use the real `extern "C" CGruntzMgr* g_gameReg;`.
 // The level/tile frame grid (CPlay::m_grid @+0x4cc) GrabTile/AdvanceTile walk. Top-level
 // so the CState::m_c->m_10 image-registry map can return it typed (CSpriteHashTable::Lookup
 // frame-grid overload), cast-free.
@@ -384,9 +392,9 @@ public:
     // DrawMessageFrame (0x0d1650): look up the GAME_MESSAGEZ image set, fetch frame
     // `index`, and blit it centered in the active viewport (LayerBlitFrame @0x115300).
     // Body in PlayMessageImage.cpp.
-    void DrawMessageFrame(i32 index, i32 useFront);              // 0x0d1650
-    void LoadSBITextEdges(char* name);                           // 0x0d1710 (THIS TU)
-    i32 BuildGruntNamespaceList(i32 arg); // 0x0dd050 (THIS TU)
+    void DrawMessageFrame(i32 index, i32 useFront); // 0x0d1650
+    void LoadSBITextEdges(char* name);              // 0x0d1710 (THIS TU)
+    i32 BuildGruntNamespaceList(i32 arg);           // 0x0dd050 (THIS TU)
     // The namespace-register op IS CNamespaceLoader::BuildAssetNamespacePrefixes
     // (0xdca70, AssetNamespaceLoader.h) - reached via ((CNamespaceLoader*)this)->...
     void PostHud(i32 wParam);
@@ -458,10 +466,19 @@ public:
     i32 ResetGoals(i32, i32);                           // 0x0d5f00 (THIS TU)
     // The status-bar HUD (SBI_RectOnly) reaches these on the current play-state
     // (g_gameReg->m_curState downcast to CPlay); reloc-masked, bodies out-of-line.
-    i32 SetState(i32 cur, i32 prev); // 0x0d5b20  set the highlight-cursor state pair
-    i32 HiRefresh(i32 a);            // 0x0d6560  highlight-cursor refresh
-    i32 BuildHelpReveal();           // 0x0d72c0 (THIS TU)
-    i32 RegisterInputBindings();     // 0x0d9160 (THIS TU)
+    // 0x0d5b20 was declared here as the fake `SetState(cur, prev)` while its BODY lived
+    // under a fake class (CLevelValidator, LevelTileValidation.cpp) - so SBI_RectOnly
+    // emitted a call to ?SetState@CPlay@@QAEHHH@Z, a symbol NOTHING defines (an unbound
+    // reloc -> link failure), and the real body sat under ?...@CLevelValidator@@.
+    // CLevelValidator IS CPlay (proven: CPlay::ResetPlayState @0x0d60b0 calls its sibling
+    // PlaceStartGruntz with `mov ecx,esi` - the SAME `this` it writes at +0x4f8 - and both
+    // views type +0x2e0 as CChatBoxOwner*). The body is now homed here, under its real name:
+    // it repositions the game-timer HUD widget (+0x3f4 CTimer) at a fixed inset from the
+    // screen size (m_4->m_modeW/m_modeH) with the mode + X inset chosen by `mode`.
+    i32 PositionBridgeToggle(i32 mode, i32 unused); // 0x0d5b20 (body: LevelTileValidation.cpp)
+    i32 HiRefresh(i32 a);                           // 0x0d6560  highlight-cursor refresh
+    i32 BuildHelpReveal();                          // 0x0d72c0 (THIS TU)
+    i32 RegisterInputBindings();                    // 0x0d9160 (THIS TU)
     // Tiny vtable forwarder: tail-call the slot-3 ready gate (Vfunc3).
     i32 ForwardReady(); // 0x0cee70 (out-of-line: tail-call the slot-3 ready gate Vfunc3)
     // Region pause/resume pair (vtable slots 24/25, shared by CDemo/CMulti):

@@ -15,7 +15,9 @@
 #include <Gruntz/SerialArchive.h> // shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
 #include <Ints.h>
 #include <rva.h>
-extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
+// The *0x24556c singleton is NOT declared here (see the same note in <Gruntz/Play.h>):
+// a header-level decl pins one view's type on every includer and blocks the
+// CGameRegistry == CGruntzMgr fold. Each includer declares it with the type it needs.
 
 // The registry leaf reached as g_gameReg->m_world->m_10: a CDDrawWorkerRegistry with
 // the name map at +0x10 (read path) and the reverse name+index probe (write path).

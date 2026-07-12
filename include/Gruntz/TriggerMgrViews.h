@@ -16,7 +16,7 @@
 #ifndef GRUNTZ_TRIGGERMGR_VIEWS_H
 #define GRUNTZ_TRIGGERMGR_VIEWS_H
 
-#include <Gruntz/TriggerMgr.h> // CTriggerMgr + CTrigPoint + CTmObList/CTmByteArray (+ <Mfc.h>)
+#include <Gruntz/TriggerMgr.h> // CTriggerMgr + CTrigPoint (+ <Mfc.h> CObList/CByteArray)
 
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr (the +0x6c command/report sub-mgr)
 #include <Gruntz/SBI_RectOnly.h>  // CSBI_RectOnly (the world's +0x2dc status-bar item)
@@ -164,7 +164,7 @@ struct CTmGoal {
 };
 
 // The embedded MFC pointer-list (CObList @+0x240, base @+0, the ten +0x2d0 selection
-// slots) is the canonical CTmObList real member (see <Gruntz/TriggerMgr.h>); the leaves
+// slots) is the real MFC CObList member (see <Gruntz/TriggerMgr.h>); the leaves
 // call m_recList/m_baseList/m_selLists[i] methods directly (no this+offset cast).
 
 // The level/group base-index sentinel (DAT_00644c54) the selection helpers guard on

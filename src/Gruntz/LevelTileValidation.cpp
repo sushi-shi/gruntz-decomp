@@ -38,6 +38,10 @@
 
 #include <Gruntz/WwdGameReg.h>   // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/ChatBoxOwner.h> // CChatBoxOwner (this->m_2e0; Configure @0x20530)
+#include <Gruntz/Play.h>         // ::CPlay - the REAL class of this TU's CLevelValidator view
+                                 // (PositionBridgeToggle @0x0d5b20 is homed onto it below)
+#include <Gruntz/GruntzMgr.h>    // ::CGruntzMgr - CState::m_4's real class (m_modeW/m_modeH);
+                                 // Play.h only forward-declares it. This TU is already MFC.
 #include <Gruntz/Viewport.h>     // the shared world tile-grid geometry
 #include <rva.h>
 
@@ -235,8 +239,11 @@ struct LvBridgePoint; // this+0x3f4  bridge-toggle screen point (defined below)
 class CLevelValidator {
 public:
     i32 ValidateLevelTiles();
-    i32 PlaceStartGruntz();                         // 0x0d2b20
-    i32 PositionBridgeToggle(i32 mode, i32 unused); // 0x0d5b20
+    i32 PlaceStartGruntz(); // 0x0d2b20
+    // PositionBridgeToggle (0x0d5b20) HOMED onto ::CPlay - CLevelValidator IS CPlay (see the
+    // body below). The rest of this class is the SAME fold, deferred: PlaceStartGruntz /
+    // ValidateLevelTiles are referenced under ?...@CLevelValidator@@ by the play lane, so
+    // renaming them is that lane's call (no reloc defect today). @identity-TODO.
 
     char m_pad00[0x4];
     WwdGameReg* m_gameReg; // +0x04  game registry back-ptr
@@ -796,68 +803,81 @@ struct LvWorld {
 // three branch-calls are CChatBoxOwner::Configure(mode) @0x20530 (thunk 0x171c), NOT a
 // recursive PositionBridgeToggle - the old `((CLevelValidator*)m_2e0)->Position...`
 // self-alias was a mis-model of that reloc-masked call.
-// The {x,y} screen point the toggle position is written to (this->m_3f4).
-struct LvBridgePoint {
-    i32 x; // +0x0
-    i32 y; // +0x4
-};
 
 // ===========================================================================
-// CLevelValidator::PositionBridgeToggle (0x0d5b20) - place the bridge-toggle UI
-// at a fixed inset from the viewport-clamp limits, with the toggle mode and the
-// X inset selected by `mode` (0 / 1 / other). If the toggle point (+0x3f4) is
-// null, only the mode is set. Then, if a goal object is active (m_gameReg->m_68->m_23c),
-// flag it released, detach it, and run the timeline goal-tail. Migrated from
-// engine_boundary (CLevelValidator: m_gameReg world, m_2e0 toggle UI, m_bridgePoint point).
+// CPlay::PositionBridgeToggle (0x0d5b20) - position the game-timer HUD widget at a
+// fixed inset from the screen size, with the toggle mode and the X inset selected by
+// `mode` (0 / 1 / other). If the timer (+0x3f4) is null, only the mode is set. Then,
+// if a goal object is active (m_4->m_cmdGrid->m_goal), flag it released, detach it,
+// and run the timeline goal-tail.
+//
+// HOMED ONTO ::CPlay (was the fake class CLevelValidator). CLevelValidator IS CPlay:
+//   - CPlay::ResetPlayState @0x0d60b0 calls the sibling PlaceStartGruntz with
+//     `mov ecx,esi`, the SAME `this` it writes at +0x4f8 (`gruntz sema xref --tree`);
+//   - both views type +0x2e0 as CChatBoxOwner*, +0x2dc as the guts/UI subsystem;
+//   - <Gruntz/Play.h> ALREADY claimed this very RVA on CPlay, under the fake name
+//     `SetState(cur, prev)` - declared-only, so SBI_RectOnly's call emitted
+//     ?SetState@CPlay@@QAEHHH@Z, a symbol NOTHING defines (unbound reloc -> link fail).
+// The former per-TU views it used are all fake views of classes we already model, so the
+// body is now CAST-FREE on its own members:
+//   LvWorld       IS ::CGruntzMgr   (+0x8c/+0x90 = m_modeW/m_modeH, +0x68 = m_cmdGrid)
+//   LvBridgePoint IS ::CTimer       (its {x,y} at +0x0/+0x4 ARE CTimer::m_baseX/m_baseY -
+//                                    this positions the on-screen timer, hence the name)
+//   this->m_gameReg IS CState::m_4, this->m_2e0 IS CPlay::m_hitTest,
+//   this->m_bridgePoint IS CPlay::m_frameMarker.
+// The goal tail still walks the LvWorld view (LvTimeline IS ::CTriggerMgr, LvGoal IS
+// ::CTmGoal - same +0x23c goal + 0x10000 "released" bit TriggerMgr.cpp:ResetAll sets);
+// folding it needs GoalTail's real CTriggerMgr name, which this lane did not prove -
+// left as-is so no reference is re-bound on a guess. (@identity-TODO, see report.)
 // ===========================================================================
 // @early-stop
 // ~91%: control flow + offsets byte-identical. Residual is three documented
 // codegen-idiom/regalloc nits: (a) MSVC5 emits `sub edi,K` where retail emits
 // `add edi,-K` for the two X-inset decrements (non-steerable add/sub coin-flip);
-// (b) the tail's m_gameReg reload lands in eax (ours) vs ecx (retail) - a free-list
+// (b) the tail's m_4 reload lands in eax (ours) vs ecx (retail) - a free-list
 // pick; (c) retail keeps a redundant consecutive `test;je` on the goal pointer
 // that MSVC5 collapses in the nested form here (redundant-sibling-guard-retest.md;
 // no intervening call to pin the flag, so de-nesting doesn't apply). Deferred.
 RVA(0x000d5b20, 0xbb)
-i32 CLevelValidator::PositionBridgeToggle(i32 mode, i32) {
-    LvWorld* w = (LvWorld*)m_gameReg;
-    i32 ex = w->m_8c;
-    i32 ey = w->m_90;
-    LvBridgePoint* pt;
+i32 CPlay::PositionBridgeToggle(i32 mode, i32) {
+    CGruntzMgr* w = m_4;
+    i32 ex = w->m_modeW;
+    i32 ey = w->m_modeH;
+    CTimer* pt;
     if (mode == 1) {
-        m_2e0->Configure(2);
-        pt = m_bridgePoint;
+        m_hitTest->Configure(2);
+        pt = m_frameMarker;
         if (pt == 0) {
             goto done;
         }
         ex -= 0x37;
     } else if (mode == 0) {
-        m_2e0->Configure(1);
-        pt = m_bridgePoint;
+        m_hitTest->Configure(1);
+        pt = m_frameMarker;
         if (pt == 0) {
             goto done;
         }
         ex -= 0xd7;
     } else {
-        m_2e0->Configure(3);
-        pt = m_bridgePoint;
+        m_hitTest->Configure(3);
+        pt = m_frameMarker;
         if (pt == 0) {
             goto done;
         }
         ex -= 0x37;
     }
     ey -= 0x16;
-    pt->x = ex;
-    pt->y = ey;
+    pt->m_baseX = ex;
+    pt->m_baseY = ey;
 done:
-    LvWorld::LvTimeline* g = ((LvWorld*)m_gameReg)->m_68;
+    LvWorld::LvTimeline* g = ((LvWorld*)m_4)->m_68;
     LvWorld::LvTimeline::LvGoal* goal = g->m_23c;
     if (goal != 0) {
         if (goal != 0) {
             goal->m_8 |= 0x10000;
             g->m_23c = 0;
         }
-        ((LvWorld*)m_gameReg)->m_68->GoalTail();
+        ((LvWorld*)m_4)->m_68->GoalTail();
     }
     return 1;
 }

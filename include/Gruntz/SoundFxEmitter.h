@@ -31,10 +31,18 @@ extern i32 g_fxDirectGate;
 // canonical single-source CDDSurface header; reloc-masked engine callees.
 #include <DDrawMgr/DDSurface.h>
 
-// The game-manager singleton (0x64556c): the emitter's +0x04 holds the CGruntzMgr,
-// reached here through its Win32-safe canonical view (this is a DirectDraw TU, so
-// it cannot pull the MFC CGruntzMgr). StopBankIfActive/StopBank0IfActive are the
-// reloc-masked bank-stop methods on the singleton.
+// The game-manager singleton (0x64556c): the emitter's +0x04 holds the CGruntzMgr.
+// m_gameMgr is typed as the REAL class (<Gruntz/GruntzMgr.h>), NOT the Win32-safe
+// CGameRegistry view: StopBankIfActive @0x092000 / StopBank0IfActive @0x092030 are
+// CGruntzMgr methods, and calling them through the view emitted a call to a
+// ?...@CGameRegistry@@ symbol that NOTHING defines (an unbound reloc that would fail
+// at link). This header is pulled by the wide <Gruntz/State.h>, so it must stay
+// MFC-free: CGruntzMgr is named via an ELABORATED TYPE SPECIFIER at the member (see
+// the same trick in GameRegistry.h) rather than a file-scope `class CGruntzMgr;`,
+// which keeps this header's forward-decl COUNT unchanged (that count is /O2
+// type-table state - docs/patterns/header-fwd-decl-count-regalloc-butterfly.md).
+// The one TU that CALLS through m_gameMgr (Attract.cpp) includes <Gruntz/GruntzMgr.h>
+// itself and so sees the complete class.
 #include <Gruntz/GameRegistry.h>
 
 // The shared DDraw worker manager (FxResource +0x04): its Method_158d20 "worker
@@ -71,10 +79,11 @@ public:
     // (0xfa8f0 was Method_fa8f0 - HOISTED to CState::RetireScene: it is called on every
     //  screen state's own `this`, so it is a CState-level helper, not this facet's. The
     //  other four here have no such cross-state caller set and stay on this emitter view.)
-    i32 Method_faa60(i32 a1, i32 a2, i32 a3);         // 0xfaa60
+    i32 Method_faa60(i32 a1, i32 a2, i32 a3); // 0xfaa60
 
     char _00[0x04];
-    CGameRegistry* m_gameMgr; // +0x04 sound/bank manager (the CGruntzMgr singleton)
+    class CGruntzMgr* m_gameMgr; // +0x04 the game-manager singleton (real class; the
+                                 //        elaborated-type-specifier keeps this header MFC-free)
     char _08[0x04];
     FxResource* m_resChain; // +0x0c resource chain root
     CFaderMgr* m_faderMgr;  // +0x10 fader manager
