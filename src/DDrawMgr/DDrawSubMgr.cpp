@@ -377,17 +377,12 @@ static inline LeafElementObj* MakeLeafElement(const CDDrawSubMgrLeafScan* parent
 // ===========================================================================
 
 // ---------------------------------------------------------------------------
-// 0x5b7e0: Lookup `key` in the map and return the found CObject* (null if not).
-// @interleaver CDDrawSubMgrLeafScan emitted-in gruntcombat
-// (own-class out-of-line member; retail .text sits inside src/Gruntz/GruntCombat.cpp's
-// block at 0x5b7e0, ~1 MB before this obj. Homing into GruntCombat.cpp is deferred -
-// that TU must fully declare CDDrawSubMgrLeafScan first. Kept in host + flagged.)
-RVA(0x0005b7e0, 0x23)
-CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
-    CObject* val = 0;
-    m_10.Lookup(key, val);
-    return val;
-}
+// 0x5b7e0: CDDrawSubMgrLeafScan::Lookup_05b7e0 was HOMED to src/Gruntz/GruntCombat.cpp
+// (REHOME D10). Retail's out-of-line COMDAT sits inside CGrunt's gruntcombat block
+// (0x0005b6f0 FindGridNeighbor .. 0x0005baf0 GruntSpawnPump) - a rule-(c) interleaver
+// surrounded by gruntcombat on both sides. GruntCombat.cpp now includes
+// <DDrawMgr/DDrawSubMgrLeafScan.h>, unblocking the move. This drops the 0x5b7e0 stray
+// from this obj's .text (contiguity win).
 
 // ---------------------------------------------------------------------------
 // 0x114120: throttled per-asset refresh. While not loading (m_30==0), look up the

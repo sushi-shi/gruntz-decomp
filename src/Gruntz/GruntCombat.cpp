@@ -44,6 +44,7 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Gruntz/ScanRectInit.h>  // the PathScan dirty-rect Set34a4 helper
 #include <Gruntz/Brickz.h>        // canonical CBrickzGrid (SearchEdge)
 #include <Gruntz/TypeKeyColl.h>
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
 #include <new>
 #pragma intrinsic(strcmp, sqrt)
 
@@ -2108,6 +2109,21 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
 
     m_neighborValid = 0;
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// @rehomed CDDrawSubMgrLeafScan::Lookup_05b7e0 <- ddrawsubmgr (rule-(c) interleaver)
+// CDDrawSubMgrLeafScan::Lookup (0x0005b7e0) - homed here from DDrawSubMgr.cpp
+// (REHOME D10). Retail emits this own-class-out-of-line COMDAT INSIDE CGrunt's
+// gruntcombat block (0x0005b6f0 FindGridNeighbor .. 0x0005baf0 GruntSpawnPump, both
+// gruntcombat), a rule-(c) interleaver surrounded by gruntcombat on both sides.
+// Look up `key` in the +0x10 map, return the found CObject* (null if absent). The
+// class is now declared via <DDrawMgr/DDrawSubMgrLeafScan.h> (added above).
+RVA(0x0005b7e0, 0x23)
+CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
+    CObject* val = 0;
+    m_10.Lookup(key, val);
+    return val;
 }
 
 // ==== GruntSpawnPump @0x5baf0 (ex GruntSpawnPump.cpp; a worker-pump handler whose leaf is CGrunt) ====

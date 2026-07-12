@@ -4881,6 +4881,30 @@ i32 CPlay::winapi_0d0b30_CopyRect(i32) {
     return 0;
 }
 
+// ---------------------------------------------------------------------------
+// @rehomed CGameLevel::MainPlaneQueryA/B <- gamelevel (rule-(c) interleaver)
+// CGameLevel::MainPlaneQueryA/B (0x000cedf0 / 0x000cee10) - homed here from
+// GameLevel.cpp (REHOME D10). Retail emits both CGameLevel forwarder COMDATs
+// out-of-line INSIDE CPlay's block (0x000ceae0 HandleTileClick .. 0x000cee70
+// ForwardReady), a rule-(c) interleaver run of 2 surrounded by play on both sides.
+// Each forwards to the main plane's CPlaneRender::CenterScroll{A,B}; no-op/0 when
+// the plane ptr is null. CGameLevel + CPlaneRender both declared in this TU.
+RVA(0x000cedf0, 0xf)
+i32 CGameLevel::MainPlaneQueryA() {
+    if (m_mainPlane != 0) {
+        return ((CPlaneRender*)m_mainPlane)->CenterScrollA(); // 0x163300
+    }
+    return 0;
+}
+
+RVA(0x000cee10, 0xf)
+i32 CGameLevel::MainPlaneQueryB() {
+    if (m_mainPlane != 0) {
+        return ((CPlaneRender*)m_mainPlane)->CenterScrollB(); // 0x163370
+    }
+    return 0;
+}
+
 // ===========================================================================
 // DrawWorldPresent (0x0cefc0) - a present-only world frame: run the two camera
 // sub-steps (DrawB then DrawA), guarded on the camera-geom ptr, twice - each

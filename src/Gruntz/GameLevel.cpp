@@ -865,26 +865,17 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
 }
 
 // ---------------------------------------------------------------------------
-// Three forwarders to a method on the main plane; no-op / 0 when none. The render
-// leaves are the canonical CPlaneRender's (its Draw/CenterScroll*/InitScrollRects/
+// Forwarder to a method on the main plane; no-op when none. The render leaves are
+// the canonical CPlaneRender's (its Draw/CenterScroll*/InitScrollRects/
 // ResolveColorKey own the retail RVAs) - the same object CLevelPlane views; these
 // call the real symbol (CLevelPlane's QueryA/QueryB/Notify aliases were fake decls).
-RVA(0x000cedf0, 0xf)
-i32 CGameLevel::MainPlaneQueryA() {
-    if (m_mainPlane != 0) {
-        return ((CPlaneRender*)m_mainPlane)->CenterScrollA(); // 0x163300
-    }
-    return 0;
-}
-
-RVA(0x000cee10, 0xf)
-i32 CGameLevel::MainPlaneQueryB() {
-    if (m_mainPlane != 0) {
-        return ((CPlaneRender*)m_mainPlane)->CenterScrollB(); // 0x163370
-    }
-    return 0;
-}
-
+//
+// REHOME D10: the sibling forwarders CGameLevel::MainPlaneQueryA (0x000cedf0) and
+// MainPlaneQueryB (0x000cee10) were homed into src/Gruntz/Play.cpp - retail's .text
+// places both out-of-line COMDATs INSIDE CPlay's block (0x000ceae0 HandleTileClick
+// .. 0x000cee70 ForwardReady, both CPlay), i.e. a rule-(c) interleaver run of 2
+// surrounded by play on both sides. Play.cpp already declares CGameLevel
+// (<Gruntz/GameLevel.h>) + CPlaneRender (<Wwd/WwdFile.h>), so the move is unblocked.
 RVA(0x00160ee0, 0xd)
 void CGameLevel::MainPlaneNotify() {
     if (m_mainPlane != 0) {
