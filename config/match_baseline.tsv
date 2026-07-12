@@ -721,7 +721,7 @@ chatbox	?AddNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	5	c46d76db1c3b	0x182ba0
 chatbox	?AdvanceRow0@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	7	da91d4956973	0x182df0
 chatbox	?AdvanceRow1@CChatBox@@QAEHPAXHH@Z	94.8718	94.8718	7	dc26c69e58bd	0x182e60
 chatbox	?AttachNode@CChatBox@@QAEHPAX@Z	100.0000	100.0000	6	50b709dd8580	0x182da0
-chatbox	?Clear@CChatBox@@QAEXXZ	100.0000	100.0000	4	955d67de8c03	0x182b60
+chatbox	?Clear@CChatBox@@QAEXXZ	100.0000	100.0000	5	ac97c7556a15	0x182b60
 chatbox	?Draw@CChatBox@@QAEHHHHH@Z	94.2769	94.2769	6	b13a1def9652	0x182f90
 chatbox	?Find@CChatBox@@QAEHPBD@Z	73.8116	73.8116	6	b2a61156b42f	0x182be0
 chatbox	?FocusSelect@CChatBox@@QAEHHH@Z	100.0000	100.0000	1	8a15a17fa4fc	0x183170
@@ -1341,8 +1341,8 @@ directinputmgr2	?DtorC@DICfgC@@QAEXXZ	50.0000	50.0000	1	4fe1c11857f1	0x133370
 directinputmgr2	?DtorD1@DICfgD@@QAEXXZ	30.4286	30.4286	1	a8ef5c793126	0x1333b0
 directinputmgr2	?EnumGameControllers@DirectInputMgr2@@QAEHI@Z	100.0000	100.0000	5	8ff25d80a5ad	0x132f80
 directinputmgr2	?FillFrom@CFixedPtrArray32@@QAEHPAPAXHH@Z	92.3016	92.3016	1	1bd3ea4762d8	0x134be0
-directinputmgr2	?Free360@CDeviceConfigB@@QAEXXZ	100.0000	100.0000	2	f723f572744f	0x134360
-directinputmgr2	?Free6d0@CDeviceConfigC@@QAEXXZ	100.0000	100.0000	2	9149308231be	0x1346d0
+directinputmgr2	?Free360@CDeviceConfigB@@QAEXXZ	100.0000	100.0000	3	00820cd07f77	0x134360
+directinputmgr2	?Free6d0@CDeviceConfigC@@QAEXXZ	100.0000	100.0000	3	7239922ecbc2	0x1346d0
 directinputmgr2	?FreeDeviceList@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	4	04e95fae3354	0x1331a0
 directinputmgr2	?GetErrorString@DirectInputMgr2@@SAXPADHH@Z	100.0000	100.0000	3	0843fea98857	0x133590
 directinputmgr2	?InitA@DirectInputMgr2@@QAEHI@Z	86.5079	86.5079	5	6636d76ff787	0x132e20
@@ -1361,9 +1361,9 @@ directinputmgr2	?ResetState@CInputDevBase@@UAEHXZ	100.0000	100.0000	2	3ade90ea51
 directinputmgr2	?SetDInputReportModes@@YAXHHHH@Z	100.0000	100.0000	2	be14ee454481	0x133560
 directinputmgr2	?SetupAxes@CDeviceConfigB@@QAEHXZ	100.0000	100.0000	5	c154d635d5f0	0x134710
 directinputmgr2	?SetupKeyTable@CInputDevice@@QAEXXZ	94.5946	94.5946	5	605a946ccdf3	0x133c30
-directinputmgr2	?Shutdown@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	6	be42e49f5d39	0x132d90
+directinputmgr2	?Shutdown@DirectInputMgr2@@QAEXXZ	100.0000	100.0000	7	92018284e84b	0x132d90
 directinputmgr2	?Teardown@CInputDevice@@QAEXXZ	100.0000	100.0000	4	d30d9c7cb236	0x133bf0
-directinputmgr2	_DinEnumDevicesCallback@8	93.7692	93.7692	1	9e43df8d2bc7	0x132fc0
+directinputmgr2	_DinEnumDevicesCallback@8	93.7692	93.7692	2	bb081886e493	0x132fc0
 directionclassify	?Classify@MotionEntity@@QAEPAUDirDesc@@PAU1@D@Z	96.2060	96.2060	1	5399fff1ee9f	0x4a780
 directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@@Z	100.0000	100.0000	3	401bb7a66d82	0x136230
 directsoundmgr	??0DSoundBaseSub@@QAE@PAUIDirectSoundBuffer@@PAVSoundDevice@@PAVDirectSoundMgr@@@Z	100.0000	100.0000	3	401bb7a66d82	0x136180
@@ -3517,7 +3517,7 @@ soundstream	??1SoundStream@@UAE@XZ	100.0000	100.0000	2	c747f9f00c89	0x137710
 soundstream	??1StreamVoice@@UAE@XZ	44.6071	44.6071	1	ef0030c9066d	0x137650
 soundstream	?Cleanup@StreamFeeder@@QAEXXZ	90.9091	90.9091	1	d37c98538d8d	0x137cf0
 soundstream	?ComputeRatio@StreamVoice@@QAEIXZ	100.0000	100.0000	1	0b279428c3b6	0x137590
-soundstream	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	1	0ed0328ae259	0x137520
+soundstream	?Configure@StreamVoice@@QAEHHHHH@Z	100.0000	100.0000	2	16fa03ac1779	0x137520
 soundstream	?CreateStreamBuffer@SoundStream@@QAEPAUStreamVoice@@PAUWaveFormatX@@IHHH@Z	49.0496	49.0496	2	bb3017c38415	0x137780
 soundstream	?DestroyVoice@SoundStream@@QAEXPAUStreamVoice@@@Z	99.9722	99.9722	2	28ca9204750a	0x1379d0
 soundstream	?Feed@StreamVoiceFeeder@@UAEHPAXIPAI0I1@Z	100.0000	100.0000	1	f6116c304cb6	0x137380
