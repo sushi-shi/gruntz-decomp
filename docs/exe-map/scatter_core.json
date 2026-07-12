@@ -65,17 +65,17 @@
   "spread": 223.71412492965672
  },
  {
-  "file": "src/Gruntz/Grunt.cpp",
-  "n": 22,
-  "bytes": 20557,
-  "lo": 295936,
+  "file": "src/Gruntz/GruntArrivalScan.cpp",
+  "n": 13,
+  "bytes": 23492,
+  "lo": 968304,
   "hi": 1017849,
-  "span": 721913,
+  "span": 49545,
   "frags": 5,
-  "avg_cluster": 4.4,
-  "frag_ratio": 0.22727272727272727,
-  "occupancy": 0.028475730455054832,
-  "spread": 35.11762416695043
+  "avg_cluster": 2.6,
+  "frag_ratio": 0.38461538461538464,
+  "occupancy": 0.4741548087597134,
+  "spread": 2.109015835177933
  },
  {
   "file": "src/DDrawMgr/DDPageMgr.cpp",
@@ -167,19 +167,6 @@
   "frag_ratio": 0.6,
   "occupancy": 0.002612184482566904,
   "spread": 382.82135380321006
- },
- {
-  "file": "src/Gruntz/GruntArrivalScan.cpp",
-  "n": 3,
-  "bytes": 6432,
-  "lo": 969872,
-  "hi": 998958,
-  "span": 29086,
-  "frags": 3,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.22113731692223063,
-  "spread": 4.52207711442786
  },
  {
   "file": "src/DDrawMgr/Fader.cpp",
@@ -336,6 +323,19 @@
   "frag_ratio": 1.0,
   "occupancy": 0.4766248574686431,
   "spread": 2.098086124401914
+ },
+ {
+  "file": "src/Gruntz/Grunt.cpp",
+  "n": 18,
+  "bytes": 16405,
+  "lo": 295936,
+  "hi": 317382,
+  "span": 21446,
+  "frags": 2,
+  "avg_cluster": 9.0,
+  "frag_ratio": 0.1111111111111111,
+  "occupancy": 0.7649445117970717,
+  "spread": 1.3072843645230112
  },
  {
   "file": "src/Gruntz/UserLogic.cpp",
@@ -739,19 +739,6 @@
   "frag_ratio": 1.0,
   "occupancy": 0.08097165991902834,
   "spread": 12.35
- },
- {
-  "file": "src/Gruntz/GruntUpdateStep.cpp",
-  "n": 2,
-  "bytes": 3809,
-  "lo": 983344,
-  "hi": 1013985,
-  "span": 30641,
-  "frags": 2,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.12431056427662282,
-  "spread": 8.044368600682594
  },
  {
   "file": "src/Gruntz/TileTriggerSwitchLogic.cpp",
@@ -2730,32 +2717,6 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/WanderIdleStep.cpp",
-  "n": 1,
-  "bytes": 2269,
-  "lo": 973296,
-  "hi": 975565,
-  "span": 2269,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
-  "file": "src/Gruntz/GruntReticle.cpp",
-  "n": 1,
-  "bytes": 2417,
-  "lo": 976896,
-  "hi": 979313,
-  "span": 2417,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
   "file": "src/Gruntz/GruntChargeStep.cpp",
   "n": 1,
   "bytes": 1565,
@@ -2782,38 +2743,12 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/GruntArrivalStep.cpp",
-  "n": 1,
-  "bytes": 1549,
-  "lo": 990320,
-  "hi": 991869,
-  "span": 1549,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
   "file": "src/Gruntz/GruntTargetScan.cpp",
   "n": 1,
   "bytes": 4499,
   "lo": 1000176,
   "hi": 1004675,
   "span": 4499,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
-  "file": "src/Gruntz/GruntPhaseStep.cpp",
-  "n": 1,
-  "bytes": 2864,
-  "lo": 1007856,
-  "hi": 1010720,
-  "span": 2864,
   "frags": 1,
   "avg_cluster": 1.0,
   "frag_ratio": 1.0,

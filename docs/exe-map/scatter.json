@@ -52,19 +52,6 @@
   "spread": 1.7391985672710992
  },
  {
-  "file": "src/Gruntz/Grunt.cpp",
-  "n": 27,
-  "bytes": 25703,
-  "lo": 62112,
-  "hi": 1017849,
-  "span": 955737,
-  "frags": 7,
-  "avg_cluster": 3.857142857142857,
-  "frag_ratio": 0.25925925925925924,
-  "occupancy": 0.026893381756696665,
-  "spread": 37.18386958720772
- },
- {
   "file": "src/Gruntz/SBI_RectOnly.cpp",
   "n": 90,
   "bytes": 32554,
@@ -221,6 +208,19 @@
   "spread": 203.86666666666667
  },
  {
+  "file": "src/Gruntz/GruntArrivalScan.cpp",
+  "n": 13,
+  "bytes": 23492,
+  "lo": 968304,
+  "hi": 1017849,
+  "span": 49545,
+  "frags": 5,
+  "avg_cluster": 2.6,
+  "frag_ratio": 0.38461538461538464,
+  "occupancy": 0.4741548087597134,
+  "spread": 2.109015835177933
+ },
+ {
   "file": "src/DDrawMgr/DDPageMgr.cpp",
   "n": 17,
   "bytes": 4999,
@@ -245,6 +245,19 @@
   "frag_ratio": 0.8,
   "occupancy": 0.000510160329874611,
   "spread": 1960.1680911680912
+ },
+ {
+  "file": "src/Gruntz/Grunt.cpp",
+  "n": 23,
+  "bytes": 21551,
+  "lo": 62112,
+  "hi": 392814,
+  "span": 330702,
+  "frags": 4,
+  "avg_cluster": 5.75,
+  "frag_ratio": 0.17391304347826086,
+  "occupancy": 0.06516743170588626,
+  "spread": 15.345088394970071
  },
  {
   "file": "src/Gruntz/MapLogic.cpp",
@@ -726,19 +739,6 @@
   "frag_ratio": 0.1875,
   "occupancy": 0.03527577136296258,
   "spread": 28.348068982268643
- },
- {
-  "file": "src/Gruntz/GruntArrivalScan.cpp",
-  "n": 3,
-  "bytes": 6432,
-  "lo": 969872,
-  "hi": 998958,
-  "span": 29086,
-  "frags": 3,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.22113731692223063,
-  "spread": 4.52207711442786
  },
  {
   "file": "src/DDrawMgr/DDrawSubMgr.cpp",
@@ -1818,19 +1818,6 @@
   "frag_ratio": 1.0,
   "occupancy": 0.08097165991902834,
   "spread": 12.35
- },
- {
-  "file": "src/Gruntz/GruntUpdateStep.cpp",
-  "n": 2,
-  "bytes": 3809,
-  "lo": 983344,
-  "hi": 1013985,
-  "span": 30641,
-  "frags": 2,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 0.12431056427662282,
-  "spread": 8.044368600682594
  },
  {
   "file": "src/Gruntz/SplashState.cpp",
@@ -3458,32 +3445,6 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/WanderIdleStep.cpp",
-  "n": 1,
-  "bytes": 2269,
-  "lo": 973296,
-  "hi": 975565,
-  "span": 2269,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
-  "file": "src/Gruntz/GruntReticle.cpp",
-  "n": 1,
-  "bytes": 2417,
-  "lo": 976896,
-  "hi": 979313,
-  "span": 2417,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
   "file": "src/Gruntz/GruntChargeStep.cpp",
   "n": 1,
   "bytes": 1565,
@@ -3510,38 +3471,12 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/GruntArrivalStep.cpp",
-  "n": 1,
-  "bytes": 1549,
-  "lo": 990320,
-  "hi": 991869,
-  "span": 1549,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
   "file": "src/Gruntz/GruntTargetScan.cpp",
   "n": 1,
   "bytes": 4499,
   "lo": 1000176,
   "hi": 1004675,
   "span": 4499,
-  "frags": 1,
-  "avg_cluster": 1.0,
-  "frag_ratio": 1.0,
-  "occupancy": 1.0,
-  "spread": 1.0
- },
- {
-  "file": "src/Gruntz/GruntPhaseStep.cpp",
-  "n": 1,
-  "bytes": 2864,
-  "lo": 1007856,
-  "hi": 1010720,
-  "span": 2864,
   "frags": 1,
   "avg_cluster": 1.0,
   "frag_ratio": 1.0,
