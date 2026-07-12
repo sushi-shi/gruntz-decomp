@@ -360,7 +360,7 @@ toypeek	3	2
 trees	21	21
 triggerloadrec	1	0
 triggermgr	49	9
-triggermgrgrid	17	4
+triggermgrgrid	18	5
 triggermgrhittest	6	4
 trirecordserialize	1	1
 typecollruntime	1	0
@@ -3882,8 +3882,8 @@ triggermgr	?ByteTableHas@CTriggerMgr@@QAEHH@Z	84.7778	84.7778	8	69d2eb9deba1	0x7
 triggermgr	?CenterOnGroup@CGroupSel@@QAEHH@Z	82.6018	82.6018	2	e1ee3e10b2ac	0x7cf40
 triggermgr	?CenterSelectionGroup@CTriggerMgr@@QAEHH@Z	86.8284	86.8284	10	455d59d52ee4	0x7cd40
 triggermgr	?ClearRecords@CTriggerMgr@@QAEXXZ	89.2500	89.2500	6	104717388152	0x78880
-triggermgr	?ClearRow@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	9	6c1ce73e4665	0x7d140
-triggermgr	?ClearRowAndRefresh@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	10	8ef8043cc2f1	0x7a510
+triggermgr	?ClearRow@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	10	df58d7bab7ff	0x7d140
+triggermgr	?ClearRowAndRefresh@CTriggerMgr@@QAEHH@Z	100.0000	100.0000	11	91be6cb8b94a	0x7a510
 triggermgr	?ClearSelections@CTriggerMgr@@QAEXXZ	99.8387	99.8387	5	29e4fb683ea3	0x7d0c0
 triggermgr	?CombatCue@CGruntTileMgr@@QAEHHHHHH@Z	82.3978	82.3978	2	11ef692629d6	0x7b930
 triggermgr	?CycleMoveIcons@CTriggerMgr@@QAEHHH@Z	92.9667	92.9667	7	9cbc882928d0	0x7c2e0
@@ -3921,19 +3921,20 @@ triggermgr	?SelectionListFind@CTriggerMgr@@QAEHHH@Z	84.5833	84.5833	6	d04fb49933
 triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	70.2188	70.2188	6	146463a14d78	0x7c110
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	8	ec51e5c1d84b	0x7a180
 triggermgr	?SpawnTileFx@@YGHHHH@Z	80.9595	80.9595	6	2c63ad5782e3	0x79ea0
-triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	9	a1a7da888a6a	0x7be10
+triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	10	e3103b052724	0x7be10
 triggermgr	?ToggleRegionA@CTriggerMgr@@QAEHXZ	75.3976	75.3976	12	79a82ddf4e6b	0x7d450
 triggermgr	?ToggleRegionB@CTriggerMgr@@QAEHXZ	87.4324	87.4324	11	0aee7909bfba	0x7d5c0
 triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	84.4804	84.4804	12	4fc291d53932	0x7b1b0
 triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	21.1671	21.1671	2	a7a24cddf40d	0x6d300
 triggermgrgrid	?ApplyTriggerA@CTriggerMgr@@QAEHHHHH@Z	12.3795	12.3795	1	c58fc78ef1cf	0x6dae0
 triggermgrgrid	?ApplyTriggerB@CTriggerMgr@@QAEHHHHH@Z	13.0886	13.0886	1	a6ca6ebb3fa7	0x6e120
-triggermgrgrid	?CellDispatch@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	1	dd255889bee4	0x6bcb0
+triggermgrgrid	?CellDispatch@CTriggerMgr@@QAEHHHHH@Z	100.0000	100.0000	2	1448b7f1d478	0x6bcb0
 triggermgrgrid	?CellHitTest@CTriggerMgr@@QAEPAXHHPAH0H@Z	71.1744	71.1744	1	87fc9480d88d	0x6bea0
 triggermgrgrid	?Cleanup@CTriggerMgr@@QAEXXZ	100.0000	100.0000	1	66a46838f8de	0x6b680
 triggermgrgrid	?ClearCell@CTriggerMgr@@QAEHHHHHH@Z	59.2576	59.2576	1	0003c897cdc2	0x6e800
 triggermgrgrid	?ClearGridRange@CTriggerMgr@@QAEHH@Z	65.0469	65.0469	1	0aece76adc86	0x6bd40
 triggermgrgrid	?DispatchCellForObject@CTriggerMgr@@QAEHPAUCTmCell@@HHH@Z	100.0000	100.0000	1	a54a821d4d14	0x6bc20
+triggermgrgrid	?FindAtPixel@CGruntTileMgr@@QAEPAVCGrunt@@HH@Z	100.0000	100.0000	1	c529815c0d34	0x6e7e0
 triggermgrgrid	?GridAction6@@YGHHH@Z	92.8571	92.8571	2	4c1f6edb6678	0x6da60
 triggermgrgrid	?GridAction7@@YGHHH@Z	92.8571	92.8571	2	92bba618a4f1	0x6daa0
 triggermgrgrid	?HitTestApply@CTriggerMgr@@QAEXHHH@Z	80.4314	80.4314	2	f332be1a04ec	0x6ea00
