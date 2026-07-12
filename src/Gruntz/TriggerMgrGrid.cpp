@@ -27,6 +27,7 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/SBI_RectOnly.h>
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/BattlezData.h> // CBattlezData - the REAL +0x7c HUD/score board (was CTmScoreBoard)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
@@ -36,7 +37,11 @@
 #include <Globals.h>
 
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
-extern "C" CTmGameReg* g_gameReg;   // *0x24556c (trigger-mgr view)
+// The *0x24556c singleton, typed as the REAL class (CGruntzMgr): the +0x70 board is the real
+// CGruntzMapMgr, the +0x6c sub-manager the real CGruntzCmdMgr, the +0x7c HUD the real
+// CBattlezData - so every deref below is cast-free and ReportError binds to CGruntzMgr::
+// ReportError @0x08dc60 (it used to emit ?ReportError@CTmGameReg@@, which nothing defines).
+extern "C" CGruntzMgr* g_gameReg;
 
 // 0x6b640: SetLevel - store the supplied level at +0x22c, clear m_230 + m_pendingFx
 // and raise m_2a4; returns 1 (0 when arg is null).
@@ -107,7 +112,7 @@ i32 CTriggerMgr::PlaceObject(
         special = 0x100;
         wantSlot = 1;
     }
-    CTileGrid* plane = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
     i32 attr;
     if ((ax >> 5) >= plane->m_c || (ay >> 5) >= plane->m_10) {
         attr = 1;
@@ -152,7 +157,7 @@ i32 CTriggerMgr::PlaceObject(
     m_grid[row * 15 + free] = sprite;
     m_rowCount[row] += 1;
     m_cellFlag[(row * 15 + free)] = 0;
-    g_gameReg->m_scoreBoard->m_counts[row] += 1;
+    g_gameReg->m_scoreHud->m_counts[row] += 1;
     return free;
 }
 
@@ -548,14 +553,14 @@ i32 CTriggerMgr::ApplySwitch(i32 sx, i32 sy) {
 // __stdcall free function (cleans its own 2 args; retail ends in `ret 8`).
 RVA(0x0006da60, 0x27)
 i32 __stdcall GridAction6(i32 a, i32 b) {
-    g_gameReg->m_6c->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
+    g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 6, 0, 0, 0, 0);
     return 0;
 }
 
 // 0x6daa0: GridAction7(a, b) - dispatch the spawn sub-mgr's action with kind 7.
 RVA(0x0006daa0, 0x27)
 i32 __stdcall GridAction7(i32 a, i32 b) {
-    g_gameReg->m_6c->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
+    g_gameReg->m_cmdSubMgr->EnqueueSingle(1, a, b, 7, 0, 0, 0, 0);
     return 0;
 }
 
@@ -706,13 +711,13 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     if (k != 0x14) {
         return;
     }
-    CTmWorld* world = g_gameReg->m_curState;
+    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
     CTmScoreSub* sub = world->m_3f4;
     i64 diff = (i64)(u32)g_645588 - sub->m_38;
     if (diff < 0) {
         diff = 0;
     }
-    g_gameReg->m_scoreBoard->m_score += (i32)diff;
+    g_gameReg->m_scoreHud->m_score += (i32)diff;
     sub->m_40 = 0;
     sub->m_44 = 0;
     sub->m_30 = 0;

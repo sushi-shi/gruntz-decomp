@@ -24,7 +24,6 @@
 #include <rva.h>                  // SIZE_UNKNOWN class-metadata macros used below
 
 #include <Gruntz/TileTriggerContainer.h>
-extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 
 // The running game clock (DAT_00645588); reloc-masked DIR32 datum.
 extern "C" u32 g_645588;

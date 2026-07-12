@@ -35,6 +35,10 @@
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TileTriggerWiring.h>
 
+// The *0x24556c singleton. Declared here: <Gruntz/TileGridCommand.h>'s header-level decl was
+// removed so each TU picks the view/real class it needs (see the note in Play.h). Type unchanged.
+extern "C" CGameRegistry* g_gameReg;
+
 // The mode gate over a container element (defined in TileTriggerSwitchLogic.cpp,
 // its RVA 0x113860 sits in that TU's interval); reloc-masked rel32 callee of
 // SerializeApplyA/B + CTileTriggerFactory::Build.

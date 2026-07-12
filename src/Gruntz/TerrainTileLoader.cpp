@@ -56,6 +56,10 @@
 #include <Gruntz/TileGridCommand.h> // real CTileTriggerContainer (map+0x2e4) + CTileGridCommand (the found set)
 #include <rva.h>
 
+// The *0x24556c singleton. Declared here: <Gruntz/TileGridCommand.h>'s header-level decl was
+// removed so each TU picks the view/real class it needs (see the note in Play.h). Type unchanged.
+extern "C" CGameRegistry* g_gameReg;
+
 // ---------------------------------------------------------------------------
 // Shared singletons + the recycled-node free sink (named so DIR32 reloc-mask).
 // ---------------------------------------------------------------------------

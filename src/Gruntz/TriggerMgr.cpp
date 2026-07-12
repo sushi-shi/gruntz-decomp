@@ -36,6 +36,14 @@
 #include <stdlib.h>               // rand (0x11fee0, reloc-masked)
 #include <Globals.h>
 
+// The *0x24556c singleton, typed as the REAL class (CGruntzMgr). This TU is MFC, so it
+// sees it. Retyping kills BOTH the ((CGruntzMgr*)g_gameReg) dual-view bridge casts and the
+// ((CTmGameReg*)g_gameReg) fake-view casts: every member this TU reads (m_curState/m_world/
+// m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_134/m_modeW/m_modeH/m_viewOriginL) is a real CGruntzMgr
+// member at the same offset. The +0x70 board is now the REAL CGruntzMapMgr and the +0x6c
+// sub-manager the REAL CGruntzCmdMgr, so those derefs are cast-free too.
+extern "C" CGruntzMgr* g_gameReg;
+
 // Merged-donor headers (the dossier-10b one-TU merge):
 #include <Gruntz/Play.h>              // CWorld::WorldTimeline (HudRect @0x78060) + CPlay
 #include <Gruntz/GameLevel.h>         // CLevelPlane (PositionUpdate @0x788d0 tail call)
@@ -294,7 +302,7 @@ i32 CTriggerMgr::RecordListHas(i32 x, i32 y) {
 // @early-stop
 // reporter-dispatch arg-shape wall (~72%): the record scan is now byte-exact (u8 count +
 // `bytes[count]=payload[4]` collected byte, size matches retail 0x106). The residual is the
-// trailing count==1/else dispatch: retail calls two 8-arg reporter methods on ((CTmGameReg*)g_gameReg)->m_6c
+// trailing count==1/else dispatch: retail calls two 8-arg reporter methods on g_gameReg->m_cmdSubMgr
 // passing a per-iter firstByte dword slot (`*(u8*)payload` stored beside count) + the count/
 // array as separate args; our 7-arg self-call ReportN/Report1 shape approximates it. topic:wall.
 RVA(0x00078520, 0x106)
@@ -316,7 +324,7 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
         n = next;
     }
     if (count == 1) {
-        ((CTmGameReg*)g_gameReg)->m_6c->Report1(2, bytes[0], a14, a18, 0, a1c, 0);
+        g_gameReg->m_cmdSubMgr->Report1(2, bytes[0], a14, a18, 0, a1c, 0);
     } else {
         this->ReportN(2, a14, bytes, a18, a1c, a20, a24);
     }
@@ -328,7 +336,7 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
 // @early-stop
 // reporter-dispatch arg-shape wall (~62%): same fixed record scan as ReportRecordsA (u8 count +
 // payload[4] collected byte). The residual is the 4-way (count==1 x a28) dispatch to the two
-// 8-arg ((CTmGameReg*)g_gameReg)->m_6c reporter methods with the firstByte dword slot; our self-call shape
+// 8-arg g_gameReg->m_cmdSubMgr reporter methods with the firstByte dword slot; our self-call shape
 // approximates it. topic:wall.
 RVA(0x00078680, 0x189)
 void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28) {
@@ -348,7 +356,7 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
         }
         n = next;
     }
-    CGruntzCmdMgr* rep = ((CTmGameReg*)g_gameReg)->m_6c;
+    CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
     if (count == 1) {
         if (a28 != 0) {
             rep->Report1(9, bytes[0], a14, a18, 0, 0, 0);
@@ -446,9 +454,22 @@ extern "C" void IconClassInitB(); // 0x402bad
 // sprite's init virtual (vtbl slot +0x10), then caches its first frame.
 // __thiscall (this @ esi). Returns 1 on (re)creation, 0 if already present.
 
+// HOMED onto ::CTriggerMgr (was the placeholder host `EngineLabelBacklog`). PROVEN:
+//  - retail calls 0x78960 with ecx = the game-mgr's +0x68 object, i.e. a CTriggerMgr
+//    (CPlay::PositionBridgeToggle @0x0d5b20's tail: mov ecx,[esi+4]; mov ecx,[ecx+0x68];
+//    ... mov [ecx+0x23c],0 ; call 0x3d1e -> 0x78960). That tail is the "GoalTail" call
+//    LevelTileValidation.cpp used to route through a fake LvWorld::LvTimeline view.
+//  - the host view's fields ARE CTriggerMgr's at the same offsets: m_factoryHolder
+//    (+0x22c) == m_level (the same `m_level->m_8` factory hop SpawnPuddle makes), and
+//    m_cameraSprite (+0x23c) == m_goal (the very slot the caller had just cleared).
+//  - <Gruntz/TriggerMgr.h> ALREADY declared `i32 LoadCameraSprite(); // 0x78960` on
+//    CTriggerMgr and SBI_RectOnly.cpp already CALLS it - so before this, the call emitted
+//    ?LoadCameraSprite@CTriggerMgr@@QAEHXZ, a symbol nothing defined (unbound -> link fail).
+// The two (CGameObject*)m_goal casts below are the residual +0x23c type split (CTmGoal vs
+// CGameObject - one object, two views); reconciling those two classes is follow-up work.
 RVA(0x00078960, 0x9b)
-i32 EngineLabelBacklog::LoadCameraSprite() {
-    if (m_cameraSprite != 0) {
+i32 CTriggerMgr::LoadCameraSprite() {
+    if (m_goal != 0) {
         return 0;
     }
 
@@ -465,11 +486,11 @@ i32 EngineLabelBacklog::LoadCameraSprite() {
         cx = vy - 0x28;
     }
 
-    CSpriteFactory* fac = m_factoryHolder->m_8;
+    CSpriteFactory* fac = m_level->m_8;
     CGameObject* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
-    m_cameraSprite = spr;
+    m_goal = (CTmGoal*)spr;
     spr->m_7c->Init(spr);
-    m_cameraSprite->ApplyName("GAME_CAMERASPRITE");
+    ((CGameObject*)m_goal)->ApplyName("GAME_CAMERASPRITE");
     return 1;
 }
 
@@ -563,7 +584,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
             world->LoadCursorSprites(alt + 0xc8, 1);
             return 1;
         }
-        CTileGrid* plane = g_gameReg->m_tileGrid;
+        CGruntzMapMgr* plane = g_gameReg->m_tileGrid;
         i32 attr;
         if ((u32)tx >= (u32)plane->m_c || (u32)ty >= (u32)plane->m_10) {
             attr = 1;
@@ -637,7 +658,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         return 1;
     } else if (sel == 1) {
         // spawn the cursor target sprite
-        CGruntzCmdMgr* rep = ((CTmGameReg*)g_gameReg)->m_6c;
+        CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
         if (cell != 0) {
             rep->Report1(1, cell->m_1ec, cell->m_1f0, a18, a14, 0, 0);
         } else {
@@ -697,8 +718,7 @@ i32 CTriggerMgr::DestroyGroup(i32 col, i32 row, i32 force) {
                 operator delete(o2);
                 m_overlay = 0;
             }
-            ((CGruntzMgr*)g_gameReg)
-                ->ReportError(0x800a, 0x3ff); // dual-view bridge; see SpawnPuddle
+            g_gameReg->ReportError(0x800a, 0x3ff); // dual-view bridge; see SpawnPuddle
         }
         return 0;
     }
@@ -858,7 +878,7 @@ i32 __stdcall SpawnTileFx(i32 x, i32 y, i32 a3) {
     if (g_gameReg->m_134 != 1) {
         return 0;
     }
-    CTileGrid* grid = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* grid = g_gameReg->m_tileGrid;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 tile;
@@ -907,7 +927,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         this->RecallCell(cell, cell->m_pos.x, cell->m_pos.y);
     }
     CTrigPoint pt = cell->m_pos;
-    CTileGrid* tg = g_gameReg->m_tileGrid;
+    CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
     i32 rowIdx = pt.y >> 5;
     i32 colByte = (pt.x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
     ((char*)tg->m_8[rowIdx])[colByte + 0x3] &= 0xdf;
@@ -961,7 +981,7 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
         // GameRegistry.h (this TU reads it as a tile grid) but `CmdSinkV* m_cmdNotify` in
         // GruntzMgr.h -- one field, two names. Resolving it means renaming in GruntzMgr.h +
         // GruntzMgr.cpp, which a parallel lane owns.
-        ((CGruntzMgr*)g_gameReg)->ReportError(0x8009, 0x400);
+        g_gameReg->ReportError(0x8009, 0x400);
         return 0;
     }
     sprite->m_7c->Init(sprite);
@@ -988,7 +1008,7 @@ i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
     }
     if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
         tgt->m_38->m_8 |= 0x10000;
-        ((CGruntzMgr*)g_gameReg)->ReportError(0x8009, 0x401); // dual-view bridge; see SpawnPuddle
+        g_gameReg->ReportError(0x8009, 0x401); // dual-view bridge; see SpawnPuddle
         return 0;
     }
     CTmRecNode* n = (CTmRecNode*)m_baseList.GetHeadPosition();
@@ -1061,7 +1081,7 @@ i32 EngineLabelBacklog::LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5) {
 
     CGameObject* spr = fac->CreateSprite(0, x, y, 0x17318, "InGameIcon", 0x40003);
     if (!spr) {
-        g_gameReg->Report(0x8009, 0x402);
+        g_gameReg->ReportError(0x8009, 0x402); // was the fake CGameRegistry::Report
         return 0;
     }
     spr->ApplyName("GAME_TOYBOX");
@@ -1543,12 +1563,12 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
             alt = cell->m_19c;
         }
         if (alt == 0x13) {
-            ((CTmGameReg*)g_gameReg)->m_68->Spawn(cell->m_pos.x, cell->m_pos.y, 0, 0, 0, 2, 1);
+            g_gameReg->m_cmdGrid->Spawn(cell->m_pos.x, cell->m_pos.y, 0, 0, 0, 2, 1);
         }
     } else if (kind == 3) {
         if (cell->m_198 == 0x1e) {
             CTmDisplay* o = cell->m_10;
-            ((CTmGameReg*)g_gameReg)->m_68->Spawn(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
+            g_gameReg->m_cmdGrid->Spawn(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
         }
     } else if (kind != 0) {
         i32 v = kind + kPendingFxIdBase;
@@ -1796,7 +1816,7 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                 ((CTileGridCommand*)lo)->ApplyMove(type);
                 ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)lo);
             } else {
-                RockGrid* wg = (RockGrid*)g_gameReg->m_world->m_24->m_5c;
+                RockGrid* wg = (RockGrid*)g_gameReg->m_world->m_24->m_mainPlane;
                 i32 off = wg->m_24[ty];
                 if (type == 0x1e) {
                     wg->m_20[off + tx] = 0x5a;
@@ -2678,7 +2698,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     }
     i32 maxX = 0;
     i32 maxY = 0;
-    CViewport* grid = (CViewport*)g_gameReg->m_world->m_24->m_5c;
+    CViewport* grid = (CViewport*)g_gameReg->m_world->m_24->m_mainPlane;
     i32 minX = grid->m_worldWidth - 1;
     i32 minY = grid->m_worldHeight - 1;
     do {
@@ -2801,7 +2821,7 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     if (n == 0) {
         return 0;
     }
-    CViewport* dims = (CViewport*)g_gameReg->m_world->m_24->m_5c;
+    CViewport* dims = (CViewport*)g_gameReg->m_world->m_24->m_mainPlane;
     i32 minX = dims->m_worldWidth - 1;
     i32 minY = dims->m_worldHeight - 1;
     i32 maxX = 0;
@@ -3050,7 +3070,7 @@ RVA(0x0007d450, 0x112)
 i32 CTriggerMgr::ToggleRegionA() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
-        ((CTmGameReg*)g_gameReg)->m_curState->LoadCursorSprites(0, 0);
+        ((CTmWorld*)g_gameReg->m_curState)->LoadCursorSprites(0, 0);
         return 0;
     }
     m_pendingFxKind = 0;
@@ -3078,12 +3098,12 @@ i32 CTriggerMgr::ToggleRegionA() {
     }
     if (v == 0x13) {
         CTrigPoint pt = cell->m_pos;
-        ((CTmGameReg*)g_gameReg)->m_68->ResetGroup(pt.x, pt.y, 0, 0, 0, 2, 1);
+        g_gameReg->m_cmdGrid->ResetGroup(pt.x, pt.y, 0, 0, 0, 2, 1);
         OverlayTick();
         return 1;
     }
     m_pendingFxKind = v + kPendingFxIdBase;
-    ((CTmGameReg*)g_gameReg)->m_curState->LoadCursorSprites(v + kPendingFxIdBase, 0);
+    ((CTmWorld*)g_gameReg->m_curState)->LoadCursorSprites(v + kPendingFxIdBase, 0);
     OverlayTick();
     return 1;
 }
@@ -3098,7 +3118,7 @@ RVA(0x0007d5c0, 0xdc)
 i32 CTriggerMgr::ToggleRegionB() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
-        ((CTmGameReg*)g_gameReg)->m_curState->LoadCursorSprites(0, 0);
+        ((CTmWorld*)g_gameReg->m_curState)->LoadCursorSprites(0, 0);
         return 0;
     }
     m_pendingFxKind = 0;
@@ -3122,7 +3142,7 @@ i32 CTriggerMgr::ToggleRegionB() {
     i32 kind = cell->m_198;
     if (kind == 0x1e) {
         CTmDisplay* o = cell->m_10;
-        ((CTmGameReg*)g_gameReg)->m_68->ResetGroup(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
+        g_gameReg->m_cmdGrid->ResetGroup(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
         OverlayTick();
         return 1;
     }
@@ -3131,7 +3151,7 @@ i32 CTriggerMgr::ToggleRegionB() {
         return 1;
     }
     m_pendingFxKind = kind + kPendingFxIdBase;
-    ((CTmGameReg*)g_gameReg)->m_curState->LoadCursorSprites(kind + kPendingFxIdBase, 0);
+    ((CTmWorld*)g_gameReg->m_curState)->LoadCursorSprites(kind + kPendingFxIdBase, 0);
     OverlayTick();
     return 1;
 }
@@ -3168,9 +3188,9 @@ i32 CTriggerMgr::EnqueueGroupCells() {
         } while (n != 0);
     }
     if (count == 1) {
-        ((CTmGameReg*)g_gameReg)->m_6c->EnqueueSingle(1, x, (char)buf[0], 5, 0, 0, 0, 0);
+        g_gameReg->m_cmdSubMgr->EnqueueSingle(1, x, (char)buf[0], 5, 0, 0, 0, 0);
     } else {
-        ((CTmGameReg*)g_gameReg)->m_6c->EnqueueMulti(1, x, count, (u8*)buf, 5, 0, 0, 0);
+        g_gameReg->m_cmdSubMgr->EnqueueMulti(1, x, count, (u8*)buf, 5, 0, 0, 0);
     }
     return 1;
 }

@@ -37,6 +37,16 @@
 // threshold (see docs/patterns/header-fwd-decl-count-regalloc-butterfly.md).
 #include <Gruntz/SpriteRefTable.h> // CSpriteRefTable (+0x74)
 #include <Gruntz/SaveInfo.h> // SaveInfo (m_saveInfoRec) + SaveSink58 (+0x58) + HudGuard44 (+0x44)
+// +0x70 is the REAL RTTI class CGruntzMapMgr (: CMapMgr, vtbl 0x1e9bb4). PROVEN by the
+// teardown legs of retail Close() @0x0855e0: the +0x68 leg calls ILT thunk 0x3b1b ->
+// ~CTriggerMgr @0x85c50, and the +0x70 leg calls a DIFFERENT thunk 0x35b7 ->
+// ~CGruntzMapMgr @0x85d10 (already 100% EXACT in src). The old `CmdSinkV` was an INVENTED
+// class; CTileGrid (GameRegistry.h) and CBrickzGrid (Multi.cpp) are views of this same one.
+#include <Gruntz/GruntzMapMgr.h>
+class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declared, not included:
+                     // pulling GruntzCmdMgr.h into this ~100-TU header trips the fwd-decl-count
+                     // regalloc butterfly (cost 1 exact fn when measured). TUs that DEREFERENCE
+                     // m_cmdSubMgr include <Gruntz/GruntzCmdMgr.h> themselves.
 
 // The 0x238-byte options/registry-backed sub-object embedded at +0x150. Its
 // ctor (FUN_0051f5a0) takes (this, 0x238, 4, &thunk_FUN_00431250, &LoadOptions)
@@ -164,9 +174,9 @@ struct TimerObj;   // +0x60 per-frame timer/poll (m_inputMirror/Stop/Tick)
 // 0x3b1b IS ~CTriggerMgr; the +0x20c/+0x21c delta tables == m_rowStateB/C, the
 // +0x288 scored flag == m_288).
 class CTriggerMgr;
-class CPlay;        // PickPlayOrPausedState's concrete return (the PLAY state; Play.h)
-struct CmdSink;     // +0x6c command sub-manager sink (Command)
-class CmdSinkV;     // +0x70 polymorphic command sink (slot 1) + cell-height notify
+class CPlay; // PickPlayOrPausedState's concrete return (the PLAY state; Play.h)
+// +0x6c is the REAL RTTI class CGruntzCmdMgr (dtor @0x85bd0; retail Close thunk 0x4066).
+// Was the invented `CmdSink`.
 class CBattlezData; // +0x7c HUD/score accumulator + command sink (BattlezData.h)
 
 SIZE(CGruntzMgr, 0xa30);
@@ -423,8 +433,13 @@ public:
         m_timer; // +0x60  per-frame timer/poll (== the spawn-config obj; Stop/Tick; m_2c mirror)
     i32 m_64;    // +0x64
     CTriggerMgr* m_cmdGrid;           // +0x68  world command/trigger grid (CTriggerMgr)
-    CmdSink* m_cmdSubMgr;             // +0x6c  command sub-manager sink
-    CmdSinkV* m_cmdNotify;            // +0x70  command sink (vtbl slot 1) + cell-height notify
+    CGruntzCmdMgr* m_cmdSubMgr;       // +0x6c  command sub-manager (REAL class CGruntzCmdMgr)
+    CGruntzMapMgr* m_tileGrid;        // +0x70  the tile/map board - the REAL class
+                                      //         CGruntzMapMgr (slot-1 MapCommand +
+                                      //         SetCellHeight + the m_8/m_c/m_10 board).
+                                      //         Was the invented `CmdSinkV* m_cmdNotify`;
+                                      //         named m_tileGrid so the field has ONE name
+                                      //         across GruntzMgr.h and GameRegistry.h.
     CSpriteRefTable* m_spriteFactory; // +0x74  sprite/animation ref table (LoadSprite/GetSel/
     //         GetByIndex consumers; Close tears it down via Reset)
     CLightFxMgr* m_logicPump; // +0x78  light-FX/shade-table pump (Push + m_tables[10]@+0x14

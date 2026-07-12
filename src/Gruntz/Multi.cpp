@@ -26,7 +26,7 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the REAL CState::m_4 game mgr (ex-CMultiMgr view)
 #include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig - CGruntzMgr::m_timer (+0x60; DtorBody)
-#include <Gruntz/Dialogs.h>   // CMultiStartDlg (stack-constructed by ShowMultiStartDlg @0xb86c0)
+#include <Gruntz/Dialogs.h> // CMultiStartDlg (stack-constructed by ShowMultiStartDlg @0xb86c0)
 #include <Gruntz/LightFxRender.h> // CLightFxRender (the +0x320 attract overlay; teardown Ctor @0xa3360)
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/Brickz.h>
@@ -121,8 +121,12 @@ extern "C" CGameRegistry* g_gameReg;
 DATA(0x0020fa74)
 i32 g_remoteVersion = 1; // 0x20fa74  protocol version word (local build = 1)
 DATA(0x0020fab8)
-i32 g_dplayAppGuid[4] = {(i32)0xf41cf640, 0x11d191b2, (i32)0x6000fc8d,
-                         0x1ea89f97}; // 0x20fab8  DirectPlay app GUID / net-bind template
+i32 g_dplayAppGuid[4] = {
+    (i32)0xf41cf640,
+    0x11d191b2,
+    (i32)0x6000fc8d,
+    0x1ea89f97
+}; // 0x20fab8  DirectPlay app GUID / net-bind template
 DATA(0x00211d88)
 i32 g_611d88 = -999; // 0x211d88  saved dropped-player id (sentinel -999)
 DATA(0x00211ec4)
@@ -1429,7 +1433,8 @@ i32 CMulti::PumpA() {
         win->TickWinB(now);
     }
     ((CTileTriggerContainer*)m_beginMarker)->FilterList2((void*)g_645584);
-    ((CBrickzGrid*)Mgr()->m_cmdNotify)->UpdateDiagonals((i32)Mgr());
+    ((CBrickzGrid*)Mgr()->m_tileGrid)
+        ->UpdateDiagonals((i32)Mgr()); // CBrickzGrid is a view of CGruntzMapMgr (+0x70)
     if (ready == 0) {
         PumpAReset();
     }
@@ -1711,9 +1716,9 @@ i32 CMulti::Open() {
     if (!Peer()) {
         return 0;
     }
-    RunTitleSeq("BACKGND", 0, 0, 1, 0);                      // 0xfa350 (CState base)
+    RunTitleSeq("BACKGND", 0, 0, 1, 0);                       // 0xfa350 (CState base)
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158dc0(); // m_c->m_4
-    i32 descriptor = SetupServices();                        // 0xb78b0
+    i32 descriptor = SetupServices();                         // 0xb78b0
     if (!descriptor) {
         return 0;
     }

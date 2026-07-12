@@ -39,7 +39,7 @@ void CBattlezData::Init() {
     m_count = 0;
     m_08 = 0;
     m_allDone = 0;
-    m_10 = 0;
+    m_score = 0;
     m_14 = 0;
     m_18 = 0;
     m_1c = 0;
@@ -55,10 +55,10 @@ void CBattlezData::Init() {
     m_40 = 0;
     ClearFlags();
     ClearWins();
-    m_48[0] = 0;
-    m_48[1] = 0;
-    m_48[2] = 0;
-    m_48[3] = 0;
+    m_counts[0] = 0;
+    m_counts[1] = 0;
+    m_counts[2] = 0;
+    m_counts[3] = 0;
     i32 i;
     for (i = 0; i < 88; i++) {
         m_band_d8[i] = 0;
@@ -273,7 +273,7 @@ i32 CBattlezData::SumGroupField2c() {
     return sum;
 }
 
-// 0xfcfc0 - sum field m_10 over the 4 records in the current group.
+// 0xfcfc0 - sum field m_score over the 4 records in the current group.
 RVA(0x000fcfc0, 0x37)
 i32 CBattlezData::SumGroupField10() {
     i32 sum = 0;
@@ -411,14 +411,14 @@ i32 CBattlezData::GetRecordValue(i32 b) {
 }
 
 // 0xfd330 - fill the record at `index` (0x40-byte stride, biased -0x40) from the
-// current m_10..m_scoreValue band; phase 0 writes the head fields (+m_118 from the
+// current m_score..m_scoreValue band; phase 0 writes the head fields (+m_118 from the
 // registry), any other phase writes the tail.
 RVA(0x000fd330, 0x84)
 void CBattlezData::FillRecord(i32 index, i32 phase) {
     i32* rec = (i32*)((char*)m_records + index * 0x40 - 0x40);
     if (phase == 0) {
         rec[0] = 1;
-        rec[2] = m_10;
+        rec[2] = m_score;
         rec[3] = m_14;
         rec[4] = m_18;
         rec[5] = m_1c;
@@ -438,7 +438,7 @@ void CBattlezData::FillRecord(i32 index, i32 phase) {
 }
 
 // 0xfd3f0 - flat serialize: op 7 reads, op 4 writes. The 17 leading scalars
-// (m_count..m_scoreValue) are streamed UNROLLED; the m_48 band and the four nested 4xN
+// (m_count..m_scoreValue) are streamed UNROLLED; the m_counts band and the four nested 4xN
 // grids/bands are streamed in counted loops. The op==4 (write) test is the
 // forward `je`; op==7 (read) is the fall-through block.
 // @early-stop
@@ -460,7 +460,7 @@ i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
             s->Read(&m_count, 4);
             s->Read(&m_08, 4);
             s->Read(&m_allDone, 4);
-            s->Read(&m_10, 4);
+            s->Read(&m_score, 4);
             s->Read(&m_14, 4);
             s->Read(&m_18, 4);
             s->Read(&m_1c, 4);
@@ -474,7 +474,7 @@ i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
             s->Read(&m_3c, 4);
             s->Read(&m_40, 4);
             s->Read(&m_scoreValue, 4);
-            for (p = m_48, i = 0; i < 4; i++, p++) {
+            for (p = m_counts, i = 0; i < 4; i++, p++) {
                 s->Read(p, 4);
             }
             p = m_wins;
@@ -519,7 +519,7 @@ i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
     s->Write(&m_count, 4);
     s->Write(&m_08, 4);
     s->Write(&m_allDone, 4);
-    s->Write(&m_10, 4);
+    s->Write(&m_score, 4);
     s->Write(&m_14, 4);
     s->Write(&m_18, 4);
     s->Write(&m_1c, 4);
@@ -533,7 +533,7 @@ i32 CBattlezData::Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3) {
     s->Write(&m_3c, 4);
     s->Write(&m_40, 4);
     s->Write(&m_scoreValue, 4);
-    for (p = m_48, i = 0; i < 4; i++, p++) {
+    for (p = m_counts, i = 0; i < 4; i++, p++) {
         s->Write(p, 4);
     }
     p = m_wins;

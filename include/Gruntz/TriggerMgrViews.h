@@ -7,12 +7,12 @@
 // over UNMATCHED engine classes (the fold worklist is in each struct's comment);
 // only offsets + code bytes are load-bearing.
 //
-// The 0x64556c singleton is viewed here as CTmGameReg through the extern
-// g_gameReg (renamed from the historical g_gameReg: <Gruntz/TileGridCommand.h>
-// - pulled by the merged rock-break leaf - owns `g_gameReg` as the canonical
-// CGameRegistry*, and one TU cannot carry both types under one name). Folding
-// CTmGameReg onto canonical CGameRegistry is deferred (sub-object views
-// CTmWorld/CTmRegSub30 diverge from CState/CSpriteFactoryHolder).
+// The 0x64556c singleton is the REAL ::CGruntzMgr (its extern is declared per-TU). The
+// former CTmGameReg / CTmScoreBoard fake views are DELETED: +0x6c is the real
+// CGruntzCmdMgr, +0x70 the real CGruntzMapMgr, +0x7c the real CBattlezData (whose m_score/
+// m_counts names were migrated off CTmScoreBoard). TileGridCommand.h no longer declares
+// g_gameReg, so each TU picks the type it needs.
+
 #ifndef GRUNTZ_TRIGGERMGR_VIEWS_H
 #define GRUNTZ_TRIGGERMGR_VIEWS_H
 
@@ -158,10 +158,6 @@ struct CTmCell {
 };
 
 // The goal object at CTriggerMgr+0x23c; ResetAll ORs 0x10000 into its +0x8 flags.
-struct CTmGoal {
-    char p0[0x8];
-    i32 m_8; // +0x08  flags
-};
 
 // The embedded MFC pointer-list (CObList @+0x240, base @+0, the ten +0x2d0 selection
 // slots) is the real MFC CObList member (see <Gruntz/TriggerMgr.h>); the leaves
@@ -229,43 +225,9 @@ struct CTmRegSub30 {
 };
 // The tile occupancy grid at g_gameReg->m_tileGrid (+0x70) is the canonical CTileGrid
 // (<Gruntz/TileGrid.h>): a row-pointer table (m_8), width (m_c), height (m_10).
-
-// The HUD/score board at g_gameReg->m_scoreBoard (+0x7c, a reused per-mode slot):
-// a running score (+0x10) and the per-row placed-object counters (+0x48).
-struct CTmScoreBoard {
-    char p0[0x10];
-    i32 m_score; // +0x10  score accumulator
-    char p1[0x48 - 0x14];
-    i32 m_counts[4]; // +0x48  per-row placed-object counters
-};
-
 // The fx/target sub-mgr at g_gameReg->m_68 (a reused per-mode slot; the fx TUs' "light-fx
 // target"): its fx-sprite spawner (0x90b48) and its group-reset driver (0x79520). Both
 // reloc-masked __thiscall bodies.
-// The command/report sub-mgr at g_gameReg->m_6c: the per-record reporter (0x90db8),
-// the group enqueue action (0x23c30) and the single/multi command posts (0x23c30/
-// 0x23ca0). Reloc-masked; the two 0x23c30 views (Action / EnqueueSingle) carry the
-// retail's two arg shapes for their two call sites.
-struct CTmGameReg {
-    char p0[0x2c];
-    CTmWorld* m_curState;        // +0x2c  the active world/play object (CState/CPlay view)
-    CTmRegSub30* m_world;        // +0x30  the level/plane grid holder
-    char p1[0x34];               // +0x34
-    CTriggerMgr* m_68;           // +0x68  reused per-mode slot (fx/target sub-mgr here)
-    CGruntzCmdMgr* m_6c;         // +0x6c  command/report sub-mgr
-    CTileGrid* m_tileGrid;       // +0x70  tile occupancy grid
-    char p2[0x8];                // +0x74..0x78
-    CTmScoreBoard* m_scoreBoard; // +0x7c  HUD/score board (reused per-mode)
-    char p3[0x134 - 0x80];       // +0x80
-    i32 m_134;                   // +0x134  gate/outcome discriminator (==1 live play)
-    // *g_gameReg's own game-mgr methods (== CGruntzMgr's, reloc-masked to the shared
-    // RVAs) so g_gameReg->M() calls direct - no cross-cast to an unrelated CGruntzMgr*.
-    // (Folding this whole view onto canonical CGameRegistry is deferred: its sub-object
-    // fields CTmWorld/CTmRegSub30/... diverge from CState/CWorldZ - needs a sub-object
-    // class reconciliation. See the matcher report.)
-    class CState* PickPausedThenPlayState(); // 0x0929b0
-    void ReportError(i32 id, i32 tag);       // 0x08dc60
-};
 
 // ?g_buteMgr@@3VCButeMgr@@A @0x6453d8 - the canonical CButeMgr (via TriggerMgr.h);
 // the int-with-default getter (0x1721e0) is reloc-masked __thiscall.
@@ -404,8 +366,6 @@ SIZE_UNKNOWN(CTmWorld);
 SIZE_UNKNOWN(CTmScoreSub);
 SIZE_UNKNOWN(CTmGridHolder);
 SIZE_UNKNOWN(CTmRegSub30);
-SIZE_UNKNOWN(CTmGameReg);
-SIZE_UNKNOWN(CTmScoreBoard);
 SIZE_UNKNOWN(CTmNameReg);
 SIZE_UNKNOWN(CTmSpriteDesc);
 SIZE_UNKNOWN(CTmLevel);

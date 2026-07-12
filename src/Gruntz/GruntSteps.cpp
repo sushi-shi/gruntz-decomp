@@ -20,7 +20,7 @@
 // TU but stays split (no privates/frags to prove it; noted there).
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
-#include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
+#include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
@@ -44,9 +44,9 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Gruntz/TriggerMgr.h>           // CTriggerMgr::ApplySwitch
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
-CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
+CEntranceAnimSrc g_entranceAnimSrc; // DAT_006bf620
 extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view; DATA in TypeKeyColl.cpp)
-i32 g_focusedGruntSentinel;           // DAT_00644c54
+i32 g_focusedGruntSentinel;     // DAT_00644c54
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
 //   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
@@ -402,8 +402,8 @@ i32 CGruntCmdObj::LoadVehicleGruntSprites(i32 kind) {
     ((CNamespaceLoader*)((CGruntzMgr*)(void*)g_gameReg)->m_curState)
         ->BuildAssetNamespacePrefixes(name, 1, 1, 0);
 
-    i32 code = ((i32*)((CTileGrid*)((CGruntzMgr*)(void*)g_gameReg)->m_cmdNotify)
-                    ->m_8[m_180 >> 5])[(m_17c >> 5) * 7 + 4];
+    i32 code =
+        ((i32*)((CGruntzMgr*)(void*)g_gameReg)->m_tileGrid->m_8[m_180 >> 5])[(m_17c >> 5) * 7 + 4];
     if (code == 0x41 || code == 0x42) {
         if (m_10->m_5c == m_17c && m_10->m_60 == m_180) {
             ((CTriggerMgr*)m_260)->ApplySwitch(m_17c, m_180);

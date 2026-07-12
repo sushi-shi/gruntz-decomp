@@ -51,6 +51,7 @@
 #include <stdio.h>                // engine sprintf (reloc-masked) for the toggle-message formatter
 #include <string.h>               // engine strstr (reloc-masked) for the Battlez header probe
 #include <Utils/RegistryHelper.h> // Utils::RegistryHelper (the settings/registry writer)
+#include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr - the REAL +0x6c sub-manager (~ @0x85bd0)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -549,25 +550,19 @@ struct OptionsSlot {
 
 // The downstream command sinks BroadcastCmd fans the 4-arg command out to: the
 // +0x68 grid (CTriggerMgr), the live source object (via GetSaveSource), the +0x6c
-// sub-mgr (m_cmdSubMgr), the +0x70 polymorphic object (m_cmdNotify, vtbl slot 1),
+// sub-mgr (m_cmdSubMgr), the +0x70 tile/map board (m_tileGrid, CGruntzMapMgr, vtbl slot 1),
 // and the +0x7c HUD (ScoreHud). Each returns nonzero to keep broadcasting. The
 // +0x6c sub-mgr also shares the Teardown + operator delete (Close). All
 // reloc-masked.
-struct CmdSink {
-    // Command @0x4250 IS CTriggerMgr::RebuildOverlay; cast at each call.
-    // Teardown @0x3b1b IS ~CTriggerMgr; cast at each call.
-};
-// The +0x70 object (CGruntzMgr::m_cmdNotify): dispatches the 4-arg command through
-// vtbl slot 1 (+0x04) as a thiscall (BroadcastCmd), takes a cell-height notify
-// through a non-virtual Set (SetCellHeight), and shares the Teardown + operator
-// delete (Close). Model it as a polymorphic class with anchor slot 0.
-class CmdSinkV {
-public:
-    virtual void s0();
-    virtual i32 Command(i32 a, i32 b, i32 c, i32 d); // slot 1 (+0x04)
-    void Set(i32 row, i32 col, i32 value);           // (this, row, col, value) reloc-masked
-    void Teardown();                                 // (this) reloc-masked (Close)
-};
+// The +0x6c sub-manager is the REAL RTTI class CGruntzCmdMgr (<Gruntz/GruntzCmdMgr.h>):
+// retail's Close() +0x6c teardown leg calls thunk 0x4066 -> ~CGruntzCmdMgr @0x85bd0. The
+// former invented `CmdSink` class that stood here is GONE. NOTE: BroadcastCmd's +0x6c
+// command leg really does target CTriggerMgr::RebuildOverlay @0x7a5e0 (retail thunk 0x4250)
+// - a genuine cross-class call in the original, so that ONE cast stays (binding-correct).
+// The +0x70 object is the REAL RTTI class CGruntzMapMgr (<Gruntz/GruntzMapMgr.h>, pulled by
+// GruntzMgr.h): its slot-1 MapCommand is the 4-arg command dispatch BroadcastCmd drives, and
+// its ~CGruntzMapMgr @0x85d10 is the teardown Close() calls (retail thunk 0x35b7). The former
+// invented `CmdSinkV` class that stood here is GONE - see the note in <Gruntz/GruntzMgr.h>.
 
 // The world's layer/plane object is the shared CViewport (<Gruntz/Viewport.h>): an
 // element of the active view's +0x38 layer array AND the object its +0x5c distinguished-
@@ -582,7 +577,7 @@ public:
 // the distinguished layer/plane (+0x5c), and the mode-reload extent pair (+0x64/+0x68
 // LoadWorldMode stamps to 0xe). The rescale notify is a reloc-masked thiscall.
 
-// (m_cmdNotify's cell-height Set() is a method of the unified CmdSinkV, above.)
+// (the cell-height SetCellHeight() is a method of the real CGruntzMapMgr.)
 
 // The engine's __cdecl CString-formatting helper (sprintf-style into a CString
 // destination; reloc-masked - only the call shape is load-bearing).
@@ -3567,7 +3562,7 @@ void CGruntzMgr::RecomputeViewScale() {
 // (normalized to 0/1) is returned.
 // @early-stop
 // ~78% block-layout wall: logic is exact and the cmd==7 arm + the whole fan-out
-// (options loop, m_cmdGrid/source/m_cmdSubMgr/m_cmdNotify/hook/m_scoreHud) match byte for byte. Retail
+// (options loop, m_cmdGrid/source/m_cmdSubMgr/m_tileGrid/hook/m_scoreHud) match byte for byte. Retail
 // emits the cmd==4 arm OUT-OF-LINE at the function tail (`cmp 4; je <end>`; the
 // 4-block jmps back into the shared m_timer->Tick), but MSVC here keeps it inline
 // between the gate and the cmd==7 test, shifting that one block. Pure basic-block
@@ -3611,7 +3606,7 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
     if (((CTriggerMgr*)m_cmdSubMgr)->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (m_cmdNotify->Command(a0, cmd, a2, a3) == 0) {
+    if (m_tileGrid->MapCommand(a0, cmd, a2, a3) == 0) {
         return 0;
     }
     if (CmdHook(a0, cmd, a2, a3) == 0) {
@@ -4292,10 +4287,13 @@ void CGruntzMgr::Close() {
         operator delete(m_cmdGrid);
         m_cmdGrid = 0;
     }
-    if (m_cmdNotify) {
-        ((CTriggerMgr*)m_cmdNotify)->~CTriggerMgr();
-        operator delete(m_cmdNotify);
-        m_cmdNotify = 0;
+    if (m_tileGrid) {
+        // MISBOUND FIX: this used to call ~CTriggerMgr (thunk 0x3b1b) on the +0x70 object -
+        // a real but WRONG rva. Retail's +0x70 teardown leg calls thunk 0x35b7 ->
+        // ~CGruntzMapMgr @0x85d10. +0x70 IS a CGruntzMapMgr, so the cast is gone too.
+        m_tileGrid->~CGruntzMapMgr();
+        operator delete(m_tileGrid);
+        m_tileGrid = 0;
     }
     if (m_scoreHud) {
         m_scoreHud->Teardown();
@@ -4303,7 +4301,10 @@ void CGruntzMgr::Close() {
         m_scoreHud = 0;
     }
     if (m_cmdSubMgr) {
-        ((CTriggerMgr*)m_cmdSubMgr)->~CTriggerMgr();
+        // MISBOUND FIX (same bug as the +0x70 leg): this called ~CTriggerMgr (thunk 0x3b1b),
+        // a real but WRONG rva. Retail's +0x6c teardown leg calls thunk 0x4066 ->
+        // ~CGruntzCmdMgr @0x85bd0 (already 100% EXACT in src). +0x6c IS a CGruntzCmdMgr.
+        m_cmdSubMgr->~CGruntzCmdMgr();
         operator delete(m_cmdSubMgr);
         m_cmdSubMgr = 0;
     }
@@ -4420,13 +4421,13 @@ void CGruntzMgr::AccrueScoreTime() {
     if (m_134 == 3) {
         LevelClock* clk = ((StateScoreView*)st)->m_3f4;
         i64 d = (i64)g_645588 - clk->m_38;
-        ((GameRegHudView*)g_gameReg)->m_7c->m_10 += (d < 0) ? 0 : (i32)d;
+        ((GameRegHudView*)g_gameReg)->m_7c->m_score += (d < 0) ? 0 : (i32)d;
         TransitionState(0x12, 1, 0, 0);
         return;
     }
     CBattlezData* hud = ((GameRegHudView*)g_gameReg)->m_7c;
     u32 now = g_pTimeGetTime();
-    hud->m_10 += (now - g_648ce8);
+    hud->m_score += (now - g_648ce8);
     TransitionState(0x12, 1, 0, 0);
 }
 
@@ -4669,7 +4670,7 @@ CGruntzMgr::CGruntzMgr() {
     m_timer = 0;
     m_cmdGrid = 0;
     m_cmdSubMgr = 0;
-    m_cmdNotify = 0;
+    m_tileGrid = 0;
     m_spriteFactory = 0;
     m_logicPump = 0;
     m_lobbyResult = 0;
@@ -5112,7 +5113,6 @@ SIZE_UNKNOWN(CWorldDelete);
 SIZE_UNKNOWN(CWorldLookupHolder);
 SIZE_UNKNOWN(CWorldModeIface);
 SIZE_UNKNOWN(CmdSink);
-SIZE_UNKNOWN(CmdSinkV);
 SIZE_UNKNOWN(DirectInputMgr2);
 SIZE_UNKNOWN(EngObj);
 SIZE_UNKNOWN(GameRegHudView);

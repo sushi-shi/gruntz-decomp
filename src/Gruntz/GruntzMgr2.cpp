@@ -4,7 +4,7 @@
 // at 0x111ec0 (interleaved with the tile-trigger-switch-logic .text block), a
 // separate retail object. Split here (same class, same "eh" flags) so each src TU
 // maps to one contiguous retail .text region. Byte-neutral TU cut.
-#include <Gruntz/GruntzMgr.h> // CGruntzMgr / CWorldZ / CGameLevel (m_world->m_24) / CmdSinkV fwd
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr / CWorldZ / CGameLevel (m_world->m_24) / CGruntzMapMgr
 #include <Gruntz/Viewport.h>  // CViewport (the world plane; m_cells / m_rowBase height grid)
 #include <rva.h>
 
@@ -20,5 +20,5 @@ void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
     CViewport* grid = (CViewport*)m_world->m_24->m_mainPlane;
     i32 idx = grid->m_rowBase[col] + row;
     grid->m_cells[idx] = value;
-    RezFree((void*)m_cmdNotify);
+    RezFree((void*)m_tileGrid);
 }

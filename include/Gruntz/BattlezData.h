@@ -13,7 +13,7 @@
 //   +0x10..+0x44     : 14 scalar progress/bound fields (serialized one-by-one).
 //                      0fcd70 gates on m_scoreValue then compares the m_30..m_40 band
 //                      against the m_14..m_2c band (a "within bounds" test).
-//   +0x48  m_48[4]   : a 4-int scalar band (serialized as a run of 4).
+//   +0x48  m_counts[4] : the per-row placed-object counters (serialized as a run of 4).
 //   +0x58  m_wins[16]: 4x4 head-to-head win matrix. 0fcc50 bumps [y][x] for
 //                      y!=x; 0fccb0 sums row y; 0fcc90 clears it.
 //   +0x98  m_flags[16]: 4x4 flag matrix. 0fcb50 sets [y][x]=1; 0fcbc0 sums all
@@ -82,13 +82,16 @@ public:
     void FillRecord(i32 index, i32 phase);   // 0xfd330
     i32 Serialize(CSerialArchive* s, i32 op, i32 a2, i32 a3); // 0xfd3f0
 
-    BattlezRecord* m_records;               // +0x00
-    i32 m_count;                            // +0x04
-    i32 m_08;                               // +0x08
-    i32 m_allDone;                          // +0x0c
-    i32 m_10, m_14, m_18, m_1c, m_20, m_24; // +0x10..
+    BattlezRecord* m_records; // +0x00
+    i32 m_count;              // +0x04
+    i32 m_08;                 // +0x08
+    i32 m_allDone;            // +0x0c
+    // +0x10 / +0x48: names migrated from the now-deleted CTmScoreBoard fake view
+    // (TriggerMgrViews.h), which modeled this same +0x7c object at the same offsets.
+    i32 m_score; // +0x10  score accumulator
+    i32 m_14, m_18, m_1c, m_20, m_24;
     i32 m_28, m_2c, m_30, m_34, m_38, m_3c, m_40, m_scoreValue;
-    i32 m_48[4];        // +0x48
+    i32 m_counts[4];    // +0x48  per-row placed-object counters
     i32 m_wins[16];     // +0x58  4x4
     i32 m_flags[16];    // +0x98  4x4
     i32 m_band_d8[88];  // +0xd8

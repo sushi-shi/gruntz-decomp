@@ -52,8 +52,15 @@ struct CTmLevel;
 class DirectSoundMgr; // Dsndmgr/DirectSoundMgr.h (StopAndRewind)
 struct CTmNode;
 struct CTmRecNode;
-struct CTmOverlay;   // the allocated overlay sub-object (+0x25c); completed in each TU
-struct CTmGoal;      // the goal object (+0x23c); completed in each TU
+struct CTmOverlay; // the allocated overlay sub-object (+0x25c); completed in each TU
+// The goal object (CTriggerMgr::m_goal, +0x23c). Promoted from a per-TU view into the
+// canonical header so every consumer (TriggerMgr.cpp, LevelTileValidation.cpp) shares ONE
+// shape. NOTE: +0x23c is ALSO reached as a CGameObject (LoadCameraSprite creates the
+// "DoNothing" camera sprite into it) - one object, two views, still to reconcile.
+struct CTmGoal {
+    char p0[0x8];
+    i32 m_8; // +0x08  flags (the 0x10000 "released" bit)
+};
 struct CTmPendingFx; // the pending-fx sub-object (+0x2a0); completed in each TU
 class CActionOptionsMenuBar;
 

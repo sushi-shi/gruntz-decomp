@@ -870,14 +870,21 @@ i32 CPlay::PositionBridgeToggle(i32 mode, i32) {
     pt->m_baseX = ex;
     pt->m_baseY = ey;
 done:
-    LvWorld::LvTimeline* g = ((LvWorld*)m_4)->m_68;
-    LvWorld::LvTimeline::LvGoal* goal = g->m_23c;
+    // The goal tail is now CAST-FREE on the real classes: LvWorld WAS ::CGruntzMgr, its
+    // +0x68 IS ::CTriggerMgr and its +0x23c IS CTriggerMgr::m_goal. The former
+    // `LvWorld::LvTimeline::GoalTail()` was a fake method on a fake nested view: it emitted
+    // ?GoalTail@LvTimeline@LvWorld@@QAEXXZ, a symbol NOTHING defines (unbound -> link fail).
+    // Its real target is thunk 0x3d1e -> 0x78960 == CTriggerMgr::LoadCameraSprite (which
+    // lazily re-creates the "DoNothing" camera sprite into the m_goal slot this just cleared
+    // - the two halves finally read as one operation).
+    CTriggerMgr* g = m_4->m_cmdGrid;
+    CTmGoal* goal = g->m_goal;
     if (goal != 0) {
         if (goal != 0) {
             goal->m_8 |= 0x10000;
-            g->m_23c = 0;
+            g->m_goal = 0;
         }
-        ((LvWorld*)m_4)->m_68->GoalTail();
+        m_4->m_cmdGrid->LoadCameraSprite();
     }
     return 1;
 }
