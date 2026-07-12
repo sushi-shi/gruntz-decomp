@@ -34,6 +34,10 @@ struct CAnimOwner6b {
     i32 m_1b4; // +0x1b4
 };
 
+// @interleaver CEffect6b::Apply emitted-in <boundary: unreconstructed>
+// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are ddrawsubmgrleaf
+// @0x6b2a0 (before) and gamelevel PointInBounds @0x6b330 (after), NOT a single
+// reconstructed host on both sides. True obj is the unreconstructed 0x6b2xx run.)
 RVA(0x0006b2e0, 0x39)
 void CEffect6b::Apply(i32 a, i32 b) {
     CAnimSink2* anim = (CAnimSink2*)((char*)m_4 + 0x1a0);
@@ -67,6 +71,12 @@ struct CState95 {
     i32 Step(i32 arg);                                     // 0x95140
 };
 
+// @interleaver CState95::Step emitted-in helpstate - blocked: CState95 is a local
+// placeholder view (this .cpp), identity unrecovered. Retail emits this COMDAT INSIDE
+// helpstate's block (0x95090 CHelpState::LoadAssets .. 0x951f0 CHelpState::Render,
+// both helpstate) - a rule-(c) interleaver surrounded by helpstate on both sides, so
+// CState95 is very likely a sibling menu/help state. Homing to HelpState.cpp is
+// blocked until CState95's identity is recovered into a shared header (@identity-TODO).
 RVA(0x00095140, 0x6e)
 i32 CState95::Step(i32 arg) {
     m_4->RestoreVideoMode(0);
@@ -116,6 +126,11 @@ struct CStrikeEffect {
 // (edx) before m_10 (reusing eax for the sprite ptr); cl loads m_10 first (into ecx)
 // and pins the sprite there. A pure allocator choice on the [this+0x10] load; no
 // source reorder flips it.
+// @interleaver CStrikeEffect::Tick emitted-in <boundary: unreconstructed>
+// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are ufo CUFO::Tick
+// @0xb4330 (before) and pathhazard CLightningHazard::SiblingTick @0xb43f0 (after),
+// NOT a single reconstructed host on both sides. True obj is the unreconstructed
+// leaf-tick pool at 0xb43xx; CStrikeEffect identity is a placeholder view.)
 RVA(0x000b4350, 0x7e)
 i32 CStrikeEffect::Tick() {
     if (m_118 != 0) {

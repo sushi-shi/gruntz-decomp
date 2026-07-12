@@ -197,6 +197,12 @@ static CString g_statLabel[8] = {
 // GetWarlordName - returns CString by value; the boss/warlord display name by
 // id, via a 4-entry jump table:
 //   0 -> "KING"  1 -> "NAPOLEAN"  2 -> "PATTON"  3 -> "VIKING"  default -> "".
+// @interleaver GetWarlordName emitted-in <boundary: unreconstructed / bootystateactivate?>
+// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are iconloaders
+// BuildPowerupIconKeys @0x1e720 (before) and bootystateactivate QueryGruntSlots
+// @0x1ecf0 (after). It heads bootystateactivate's block but is preceded by
+// iconloaders, so NOT surrounded by a single host; free __stdcall fn, no class
+// anchor. Candidate home bootystateactivate, deferred - needs the 0x1e720 obj first.)
 RVA(0x0001ec20, 0x8d)
 CString __stdcall GetWarlordName(i32 id) {
     // The target reserves and zero-inits one dead stack dword (`push ecx; mov
@@ -243,6 +249,13 @@ static char* g_errMsg_Exists;
 static char* g_errMsg_NullArg;
 static char* g_errMsg_BadArg;
 
+// @interleaver CContainerErr::CContainerErr emitted-in typekeycoll - blocked: dual-view
+// wall. Retail emits this ctor COMDAT just before typekeycoll's block, where its sibling
+// ~CContainerErr @0x16da60 lives (getretaddr @0x16d990 is the lone fn before it). Homing
+// to TypeKeyColl.cpp is BLOCKED because that TU models CContainerErr via <Wap32/zBitVec.h>'s
+// vptr-LAST view, and GameText.h (vptr-FIRST ctor view) + zBitVec.h never coexist in one
+// TU (documented wall, see TypeKeyColl.cpp header). Needs the CContainerErr view unification
+// first. Kept-in-place (GameText.h view) + flagged.
 RVA(0x0016d9c0, 0x75)
 CContainerErr::CContainerErr(const char* msg) {
     m_msg = msg ? msg : g_defaultErrMsg; // +0x04 stored first

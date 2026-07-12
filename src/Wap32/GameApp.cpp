@@ -68,6 +68,14 @@ void operator delete(void*); // engine allocator (0x1b9b82)
 // WAP32::CGameMgr::vector_deleting_destructor @0x133380 - the CInputDevRoot scalar-
 // deleting dtor (mangled through CGameMgr for the retail symbol name): stamp the C
 // vftable, run the base teardown, conditionally free, return `this`.
+// @interleaver ?vector_deleting_destructor@CGameMgr@WAP32@@ emitted-in directinputmgr2
+// - blocked: pooled cross-alias dtor. Retail emits this COMDAT INSIDE DinMgr2.cpp's
+// directinputmgr2 block - ?DtorC@DICfgC @0x133370 (before) + ?DtorD1@DICfgD @0x1333b0
+// (after), both directinputmgr2 - a rule-(c) interleaver surrounded on both sides.
+// But it is a POOLED deleting-dtor of a FOREIGN class (really ~CInputDevRoot, mangled
+// under CGameMgr by the delinker); rule (a) leaves COMDAT-pooled dtors in place, and
+// homing to DinMgr2.cpp would collide with the real ~CInputDevRoot ??_G that TU
+// auto-emits. Kept-in-place + flagged (cross-alias wall below).
 // @early-stop
 // cross-class-alias wall: this is really a CInputDevRoot scalar-deleting dtor but
 // the delinker mangled it under CGameMgr, so it cannot be expressed as a real

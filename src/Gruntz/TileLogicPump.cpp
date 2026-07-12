@@ -227,6 +227,12 @@ i32 CTileTriggerSwitch::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i32 a
 RVA(0x000110f0, 0x44)
 CTileTriggerSwitch::~CTileTriggerSwitch() {}
 
+// @interleaver CTileTrigger ctor in tilelogicpump's own 0x11xxx block - KEEP (correctly placed)
+// (REHOME D10: flag_outliers marks 0x11160 a lone "misplaced" outlier (home_n=1, weak), but
+// that is a dtor/virtual-exclusion ARTIFACT: this ctor is surrounded by tilelogicpump on BOTH
+// sides - ~CTileTriggerSwitch @0x110f0 (before) + CTileTrigger::SerializeMove @0x111f0 (after),
+// all tilelogicpump. It heads this TU's OWN low tile-trigger-leaf ctor/dtor/serialize block,
+// linker-separated from the 0x10cb10 pump-logic block. Own-unit, not foreign; leave in place.)
 RVA(0x00011160, 0x4b)
 CTileTrigger::CTileTrigger() {}
 

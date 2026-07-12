@@ -23,6 +23,14 @@
 
 // A roster slot's FormatName_3e54 @0x3e54 IS GruntzPlayer::GetName; cast at the call.
 #include <Gruntz/GruntzPlayer.h> // canonical GruntzPlayer (GetName)
+// @interleaver GruntzPlayer::GetName (0x0001f450) emitted-in bootystateactivate - blocked:
+// inline-header COMDAT (not body-movable). GetName is defined INLINE in
+// <Gruntz/GruntzPlayer.h> (RVA there), so MSVC emits its out-of-line COMDAT in EVERY TU
+// that references it; symbol_names.csv currently attributes 0x1f450 to THIS unit
+// (multistartdlgroster calls it at line ~870). Retail's real home is bootystateactivate
+// (its .text sits between bootystateactivate FrameSlot28 @0x1e660 pool and QueryGruntSlots
+// @0x1ecf0). Fixing this is an inline-header emission-migration (steer which TU emits the
+// COMDAT), NOT a .cpp body relocation - deferred + flagged.
 
 // --- shared globals (canonical homes elsewhere; reloc-masked references here) ---
 // The game-manager singleton (VA 0x64556c); the SelHost/roster handlers cache each
@@ -103,6 +111,13 @@ CString GetConfigNameB();               // 0xb60d0
 
 // __stdcall(hDlg, id, *lo, *hi): split control `id`'s selected listbox item data into
 // two words; returns 1 when a valid item is selected. Generic listbox helper.
+// @interleaver GetSelItemData emitted-in <boundary: slotcombofill?>
+// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are slotcombofill
+// CLatencyList::SelectItem @0x38150 (before) + statemgrbz StateMgrBZ::Init @0x382c0
+// (after), NOT one host both sides; free __stdcall listbox helper, no class anchor.
+// Home hint videoconfig is proximity-only (block 0x363a0.., not adjacent); the
+// preceding slotcombofill (a dialog combo helper) is the thematic candidate but its
+// obj boundary isn't pinned. Kept in place + flagged.)
 RVA(0x00038220, 0x73)
 i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     HWND list = GetDlgItem(hDlg, id);

@@ -77,6 +77,12 @@ void CPlaneRender::WrapCoord(i32* px, i32* py) {
 // caller-saved eax/edx (3 callee-saved pushes) and stores both results last; this
 // build colors a shift count into ebx (a 4th push, ebp) and flips the axis order.
 // Not source-steerable (member-load scheduling / coloring; matching-patterns.md).
+// @interleaver CPlaneRender::SnapToTileCenter emitted-in <boundary: unreconstructed>
+// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are freenodepool
+// FreeNodePool::Push @0x311b0 (before) + ddrawsubmgr CQueueDrainHost::Drain @0x31250
+// (after), NOT one reconstructed host both sides. Home hint battlezmapconfig is a
+// scattered god-TU (proximity only). This is one of WwdFile.cpp's 3 far-flung
+// CPlaneRender strays awaiting individual birth-position attribution; leave + flag.)
 RVA(0x000311e0, 0x4c)
 void CPlaneRender::SnapToTileCenter(i32* out, i32 x, i32 y) {
     i32 sx = m_shiftX;
@@ -90,6 +96,12 @@ void CPlaneRender::SnapToTileCenter(i32* out, i32 x, i32 y) {
 // GetTileHandle (0x0d53a0): index the tile-handle grid by (row, col) -
 // m_tileGrid[m_colOffsets[col] + row]. Out-of-line (retail emits it standalone;
 // the inline member folded into its callers and never emitted).
+// @interleaver CPlaneRender::GetTileHandle emitted-in <boundary: unreconstructed>
+// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are leveltilevalidation
+// CLevelValidator::ValidateLevelTiles @0xd2dd0 (before) + playplanescan CPlay::ScanBuildTiles
+// @0xd53d0 (after), NOT one reconstructed host both sides. Home hint play is a scattered
+// god-TU (proximity only, not locally adjacent). One of WwdFile.cpp's 3 CPlaneRender strays;
+// leave + flag until the 0xd53xx obj boundary is pinned.)
 RVA(0x000d53a0, 0x19)
 i32 CPlaneRender::GetTileHandle(i32 row, i32 col) {
     return m_tileGrid[m_colOffsets[col] + row];

@@ -391,11 +391,15 @@ static inline LeafElementObj* MakeLeafElement(const CDDrawSubMgrLeafScan* parent
 // re-run its player's ConfigureItem with the gated cue-item id. Returns 0 always
 // (the success path falls off the end of ConfigureItem's void return). 1 stack
 // arg (ret 4); same cue-refresh idiom as CSBI_MenuItem's highlight path.
-// @interleaver CDDrawSubMgrLeafScan emitted-in tiletriggerswitchlogic
-// (own-class out-of-line member; retail .text sits inside src/Gruntz/
-// TileTriggerSwitchLogic.cpp's block at 0x114120, ~0.27 MB before this obj. Homing
-// there is deferred - that TU must fully declare CDDrawSubMgrLeafScan first. Kept in
-// host + flagged.)
+// @interleaver CDDrawSubMgrLeafScan::RefreshAsset_114120 emitted-in <boundary: unreconstructed>
+// (REHOME D10 re-classified: this own-class out-of-line COMDAT sits at a BOUNDARY, NOT
+// inside a single host. Retail neighbours are tileswitchlogic
+// CTileActionEvent::DeserializeFields @0x114040 (before) + toobspikez ToobSpikezLogic
+// @0x114480 (after) - different units on each side. The D8 "emitted-in
+// tiletriggerswitchlogic" claim was a proximity-window guess, not adjacency; the true
+// owning obj is the unreconstructed 0x114xxx run. Unlike the 0x5b7e0 twin (a clean
+// rule-(c) interleaver in gruntcombat, now homed), this one has no single reconstructed
+// host to home into. Kept-in-place + flagged.)
 RVA(0x00114120, 0x70)
 i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
     if (m_30 != 0) {

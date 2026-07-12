@@ -824,6 +824,12 @@ extern i32 __stdcall ResolveLevelName(EditSink* sink, i32 a, i32 b, i32 c);
 // ---------------------------------------------------------------------------
 // PointInBounds (free cdecl): tile (x, y) inside the [minX,maxX) x [minY,maxY)
 // half-open box (LevelCoordRect minX/minY/maxX/maxY at +0/+4/+8/+0xc). ret.
+// @interleaver CGameLevel::PointInBounds emitted-in <boundary: unreconstructed>
+// (REHOME D10 not-homeable: this static COMDAT sits at a BOUNDARY - retail .text
+// neighbours are ddrawsubmgrleaf @0x6b2a0 (before) and triggermgrgrid @0x6b640
+// (after), i.e. NOT surrounded by a single reconstructed host. Its true owning obj
+// is the unreconstructed run at 0x6b3xx; home hint triggermgrgrid is proximity-only,
+// not adjacent. Kept-in-place + flagged until the neighbour obj is reconstructed.)
 RVA(0x0006b330, 0x2a)
 i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
     if (x < r->maxX && x >= r->minX && y < r->maxY && y >= r->minY) {
@@ -836,6 +842,11 @@ i32 CGameLevel::PointInBounds(const LevelCoordRect* r, i32 x, i32 y) {
 // LookupTile: clamp (x, y) into the main plane's tile grid, fetch the tile id from
 // its row-indexed tile map, and (when not the empty/clear sentinel) dispatch the
 // referenced image set's slot +0x20 with (0, 0). ret 8.
+// @interleaver CGameLevel::LookupTile emitted-in <boundary: unreconstructed>
+// (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are maplogic
+// @0x82430 (before) and gametext _$E1 @0x82990 (after), NOT a single reconstructed
+// host on both sides. Home hint gruntzapp is proximity-only (its block is 0x80850..
+// 0x80c70, not adjacent). Kept-in-place + flagged until the neighbour obj lands.)
 RVA(0x00082600, 0x73)
 i32 CGameLevel::LookupTile(i32 x, i32 y) {
     CLevelPlane* mp;

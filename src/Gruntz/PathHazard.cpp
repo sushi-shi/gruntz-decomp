@@ -116,6 +116,12 @@ extern CButeTree g_buteTree;
 // --- CPathHazard no-arg ctor (0x013170) --- the deserialize-path ctor: base
 // prologue + link + leaf vptr stamp, then zero the eight leg/strike i64 lo/hi
 // fields (+0x108..+0x12c). Re-homed from the UserLogic.cpp-local view.
+// @interleaver CPathHazard ctor/dtor COMDAT pool - KEEP (own-class, correctly placed)
+// (REHOME D10: flag_outliers marks 0x13170 a lone outlier, but that is a dtor-exclusion
+// ARTIFACT: it heads pathhazard's OWN low ctor/dtor COMDAT block - CLightningHazard::~
+// @0x13280 + ~CPathHazard @0x13340 (both pathhazard) sit immediately after. pathhazard's
+// class methods legitimately span two objs (this ctor/dtor pool + the 0xb35a0 logic block);
+// the pool is linker-COMDAT-separated, NOT foreign conflation. Rule (a): leave in place.)
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {
     m_legTag = 0;
