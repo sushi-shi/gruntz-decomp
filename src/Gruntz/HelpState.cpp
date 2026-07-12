@@ -160,7 +160,7 @@ i32 CHelpState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = ((CAttract*)this)->RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0); // 0xfa350
+    i32 r = RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0); // 0xfa350 (CState base method)
     while (ShowCursor(FALSE) >= 0) {
     }
     return r;
@@ -175,7 +175,7 @@ i32 CHelpState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return ((CAttract*)this)->RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0); // 0xfa350
+    return RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0); // 0xfa350 (CState base method)
 }
 
 // CHelpState::Vslot0c (0x953f0, slot 12) - keydown handler: on ESC/SPACE/ENTER post a

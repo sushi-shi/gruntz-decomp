@@ -174,26 +174,23 @@ public:
     i32 EnterAttractMode(i32 a, i32 b, i32 mode);    // 0x13fb0 (slot 1, called non-virtually)
     i32 RefreshTitle(i32 unused);                    // 0x39160
     i32 LoadTitleConfig(i32 mode);                   // 0xa03f0
-    i32 Activate();                                  // 0xa0a30
-    i32 RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa300 (5 args, ret 0x14)
+    i32 Activate(); // 0xa0a30
 
     // The pre-flight gate for EnterAttractMode (engine FUN_004f9ea0, non-virtual
     // __thiscall ret 0xc, reached via ILT thunk): a zero result aborts the entry.
     i32 LoadAttractScene(i32 a, i32 b, i32 mode); // FUN_004f9ea0
 
+    // (FadeInTitle 0xfa1f0 / RunTitle 0xfa300 / RunTitleSeq 0xfa350 are CState-base
+    //  title-roll methods now - declared in <Gruntz/State.h>, inherited here.)
     // engine tail helpers (__thiscall, reached via ILT thunks).
-    i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // FUN_004fa1f0
-    i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);        // FUN_004fa350
-    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag);                     // FUN_004fa8f0
-    void CommitStage();                                                   // FUN_004a05a0
+    i32 BuildMenuPage(i32 x, i32 w, i32 h, i32 flag); // FUN_004fa8f0
+    void CommitStage();                               // FUN_004a05a0
 
     // Typed views of the inherited CState slots re-typed to the attract facets that
     // share them (the object at each slot IS that facet in the attract state; the
     // base declares them generically because other states put other types there).
     // Inline -> the same `mov reg,[this+off]` falls out with no extra codegen.
-    CMenuRoot* menuRoot() {
-        return (CMenuRoot*)m_c;
-    }
+    // (menuRoot()/screenObj() moved to CState with the title-roll cluster.)
     CSymParser* stateMgr() {
         return (CSymParser*)m_8;
     }
@@ -205,9 +202,6 @@ public:
     }
     CSymTab* attractState() {
         return (CSymTab*)m_2c;
-    }
-    CAttractScreenObj* screenObj() {
-        return (CAttractScreenObj*)m_2c;
     }
 
     // The attract-specific block sits past the CState spine (which ends at +0x1a4).

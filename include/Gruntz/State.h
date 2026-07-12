@@ -32,6 +32,8 @@ struct CSpriteFactoryHolder; // +0x0c render/resource holder == CGameRegistry::m
 struct CBankMgr;             // +0x08 asset-bank manager (resolves a "GRUNTZ"/"GAME"/level bank)
 struct CResSource;           // +0x28/+0x30/+0x34 resolved asset banks (LookupSet a named set)
 class CSymTab;               // m_2c's symbol-table facet (ResolvePath/FindSub; <Bute/SymTab.h>)
+class CMenuRoot;             // m_c's title/menu-root facet (the title-roll cluster's view)
+class CAttractScreenObj;     // m_2c's fade-screen-resolver facet (FadeInTitle's view)
 class CGruntzMgr;            // +0x04 owner back-ptr: the game-manager singleton (*g_gameReg).
                              // Forward-declared (MFC-free) so this widely-included header stays
                              // afx-neutral; GruntzMgr.h/GameRegistry.h complete the two views.
@@ -141,13 +143,25 @@ public:
     // otherwise it shades the draw surface (m_c->m_drawTarget->m_14->m_2c->ShadeRect(pct,0)).
     i32 ShadeScreen(i32 pct); // 0x0faf50 (reloc-masked; defined in StateDrawText.cpp)
 
-    // RunTitleSeq (0x0fa350): the title-roll helper. Its body reads ONLY CState
-    // members (m_c/m_8/m_2c), and the sibling states (CHelpState/CSplashState/...)
-    // call it directly on their own `this`, so it is a CState-level helper. Its
-    // single definition is currently attributed to CAttract (Ghidra RTTI) in
-    // Attract.cpp; declared here so the callers stay cast-free (folding the 0xfa350
-    // body's owner onto CState is deferred - Attract.cpp owns it). Reloc-masked.
-    i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);
+    // The title-roll cluster (0xfa1f0/0xfa300/0xfa350). Each body reads ONLY CState
+    // members (m_c/m_8/m_2c), and every sibling state (CHelpState/CSplashState/
+    // CBootyState/CMultiBootyState/CAttract/...) calls them directly on its own `this`
+    // -> they ARE CState-level helpers. Definitions live in Attract.cpp (the attract
+    // unit owns the 0xfa1f0.. RVAs) as CState:: methods; the callers stay cast-free
+    // (the former ((CAttract*)this)->.. sibling cross-cast is dissolved - that CAttract
+    // was a sibling, not a base, so casting `this` to it was a fakeness). Reloc-masked.
+    i32 FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0
+    i32 RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e);                      // 0x0fa300
+    i32 RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d);        // 0x0fa350
+    // The title cluster's typed views of the shared CState slots (m_c is the menu
+    // root, m_2c the fade screen-resolver when a title rolls). Inline -> the same
+    // `mov reg,[this+off]` falls out; forward-declared facets (attract-scoped types).
+    CMenuRoot* menuRoot() {
+        return (CMenuRoot*)m_c;
+    }
+    CAttractScreenObj* screenObj() {
+        return (CAttractScreenObj*)m_2c;
+    }
 
     // --- scalar members, at the offsets CState::CState pins ---
     // +0x04  owner back-ptr == the game-manager singleton (*g_gameReg). PROVEN one

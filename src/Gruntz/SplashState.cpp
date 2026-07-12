@@ -34,7 +34,7 @@
 #include <Gruntz/ResMgr.h>       // CSoundRegistry (m_c->m_28 Install facet)
 #include <Gruntz/GruntzMgr.h>    // CGruntzMgr::RestoreVideoMode (m_4 facet) + m_gameWnd->m_hwnd
 #include <Gruntz/StatusBarUpdatersViews.h> // CRegHolder view of CState::m_c (m_04 page mgr)
-#include <Gruntz/Attract.h>     // CAttract::RunTitleSeq (0xfa350) - the shared title-roll helper
+#include <Gruntz/Attract.h> // CSymParser (m_8 facet; ResolvePath). RunTitleSeq @0xfa350 is now a CState base method.
 #include <Gruntz/SplashState.h> // CSplashState (shared def; dtor emitted in HelpState.cpp)
 #include <rva.h>
 
@@ -157,7 +157,7 @@ i32 CSplashState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return ((CAttract*)this)->RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0); // 0xfa350
+    return RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0); // 0xfa350 (CState base method)
 }
 
 // CSplashState::Vslot06 (0xf9af0, slot 6) - activation-ready poll: gate on the state's
@@ -169,7 +169,7 @@ i32 CSplashState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return ((CAttract*)this)->RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0); // 0xfa350
+    return RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0); // 0xfa350 (CState base method)
 }
 
 // CSplashState::Vslot0c (0xf9b40, slot 12) - key handler: on ESC/SPACE/ENTER post a

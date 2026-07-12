@@ -8,8 +8,8 @@
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/LightFxMgr.h> // CLightFxMgr (g_gameReg->m_logicPump @+0x78; m_tables[])
-#include <Gruntz/Attract.h>    // CAttract::FadeInTitle (0xfa1f0) - shared body CState95 dispatches
 #include <Gruntz/SoundFxEmitter.h> // CSoundFxEmitter::Method_fa8f0 (0xfa8f0) - shared body dispatched
+// (FadeInTitle @0xfa1f0 is now a CState base method via <Gruntz/State.h>; no Attract.h.)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -69,10 +69,12 @@ struct CState95 {
     char _08[0xc - 8];
     CMenuHolder95* m_c; // +0x0c
     i32 Step(i32 arg);  // 0x95140
-    // Start/Report are SHARED bodies owned by CAttract (FadeInTitle @0xfa1f0) and
-    // CSoundFxEmitter (Method_fa8f0 @0xfa8f0), dispatched here with a CState95 `this`
-    // via ILT thunks - cast to the real owning class at the call so the calls bind to
-    // the retail RVAs (identity of CState95 itself is still unrecovered; @identity-TODO).
+    // Start/Report are SHARED bodies: FadeInTitle @0xfa1f0 is a CState base method
+    // (so `this` reaches it via its true base CState, not a sibling cross-cast), and
+    // Method_fa8f0 @0xfa8f0 is CSoundFxEmitter's. CState95's own identity is still
+    // unrecovered (@identity-TODO) so it stays a local placeholder whose object IS a
+    // CState-base (the (CState*)this reinterpret is honest; the (CAttract*) sibling
+    // cross-cast it replaced was a fakeness).
 };
 
 // @interleaver CState95::Step emitted-in helpstate - blocked: CState95 is a local
@@ -87,7 +89,7 @@ i32 CState95::Step(i32 arg) {
     if (m_c->m_4->Method_158d20() == 0 && m_c->m_4->Method_158cb0(0, 0x30000) == 0) {
         return 0;
     }
-    if (((CAttract*)this)->FadeInTitle((const char*)&g_6111b0, 0, 0, 0, 0, 1) == 0) {
+    if (((CState*)this)->FadeInTitle((const char*)&g_6111b0, 0, 0, 0, 0, 1) == 0) {
         return 0;
     }
     ((CSoundFxEmitter*)this)->Method_fa8f0(0x50, 0x3e8, 0, 1);

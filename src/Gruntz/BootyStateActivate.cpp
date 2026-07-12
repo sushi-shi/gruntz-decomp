@@ -38,7 +38,7 @@
 #include <Gruntz/WwdGameReg.h> // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_mgr; CBattleStatsView::DrawBattleStats, waveP)
 #include <Io/MoviePlayer.h>      // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
-#include <Gruntz/Attract.h>        // CAttract::FadeInTitle (0xfa1f0) - shared title-fade base method
+// (FadeInTitle @0xfa1f0 is now a CState base method via <Gruntz/State.h>; no Attract.h.)
 #include <Gruntz/SoundFxEmitter.h> // CSoundFxEmitter::Method_fa8f0 (0xfa8f0) - shared page builder
 // NOTE: BzState::BuildBootyGruntIdleAnimation (0x1ce60) stays via GameMode.h's
 // CBootyState decl (reloc-UNBOUND) - the proper bind needs <Gruntz/BzState.h>, blocked
@@ -252,7 +252,7 @@ RVA(0x00018d30, 0xcd)
 i32 CBootyState::Vslot09(i32) {
     while (ShowCursor(FALSE) >= 0)
         ;
-    if (!((CAttract*)this)->FadeInTitle("bg", 0, 0, 0, 0, 1)) { // 0xfa1f0
+    if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) { // 0xfa1f0 (CState base method)
         return 0;
     }
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
@@ -601,7 +601,7 @@ void CMultiBootyState::ReleaseResources() {
 // player on the draw-clock window. Returns 1.
 RVA(0x0001e570, 0xb4)
 i32 CMultiBootyState::Vslot09(i32) {
-    i32 ok = ((CAttract*)this)->FadeInTitle("multi", 0, 0, 0, 0, 1); // 0xfa1f0
+    i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1); // 0xfa1f0 (CState base method)
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
@@ -976,7 +976,7 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    if (!((CAttract*)this)->FadeInTitle("multi", 0, 0, 0, 0, 1)) { // 0xfa1f0
+    if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) { // 0xfa1f0 (CState base method)
         return 0;
     }
 

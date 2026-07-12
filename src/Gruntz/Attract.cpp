@@ -250,7 +250,7 @@ i32 CAttract::Activate() {
 // The state-services interval [0x0fa1f0 .. 0x0fb328].
 // ===========================================================================
 
-// CAttract::FadeInTitle(name, a, b, c, d, e) (0x0fa1f0, 6 args, ret 0x18): resolve the
+// CState::FadeInTitle(name, a, b, c, d, e) (0x0fa1f0, 6 args, ret 0x18): resolve the
 // "\SCREENZ\<name>" fade page off m_2c (with the screen-type tag), then run the page
 // worker's fade (mode 2 when `e`, else 1); on `e` retry once with mode 1. ret 1 on a
 // started fade, else 0.
@@ -260,7 +260,7 @@ i32 CAttract::Activate() {
 // 0x34 buf, and the ResolveScreen callee (FUN_00520120) is an unnamed body that can't pair
 // (reloc-masked DIR32). Not source-steerable. topic:wall.
 RVA(0x000fa1f0, 0xc6)
-i32 CAttract::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
+i32 CState::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     (void)a;
     (void)b;
     (void)c;
@@ -293,7 +293,7 @@ i32 CAttract::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
     return 0;
 }
 
-// CAttract::RunTitle(...) (0x0fa300, 5 args, ret 0x14): the title-render entry.
+// CState::RunTitle(...) (0x0fa300, 5 args, ret 0x14): the title-render entry.
 // Bail (0) if the menu root (m_c), state machine (m_8), or active state (m_2c) is
 // null; otherwise flip the menu page's render target and return 1.
 // @early-stop
@@ -303,7 +303,7 @@ i32 CAttract::FadeInTitle(const char* name, i32 a, i32 b, i32 c, i32 d, i32 e) {
 // switches to ecx one deref early (8b 48 10). The SAME inline chain matches in
 // Vslot07 (different surrounding pressure) - a pure allocator choice, no source lever.
 RVA(0x000fa300, 0x3a)
-i32 CAttract::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
+i32 CState::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
     if (!m_c) {
         return 0;
     }
@@ -317,11 +317,11 @@ i32 CAttract::RunTitle(i32 a, i32 b, i32 c, i32 d, i32 e) {
     return 1;
 }
 
-// CAttract::RunTitleSeq(name, a, b, c, d) (0x0fa350, 5 args, ret 0x14): the title-roll
+// CState::RunTitleSeq(name, a, b, c, d) (0x0fa350, 5 args, ret 0x14): the title-roll
 // entry. Bail (0) if the menu root/state-machine/active-state is null; FadeInTitle the
 // screen (mode 0); on success return RunTitle() != 0.
 RVA(0x000fa350, 0x84)
-i32 CAttract::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
+i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
     if (!m_c) {
         return 0;
     }

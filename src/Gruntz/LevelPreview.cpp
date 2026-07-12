@@ -57,9 +57,10 @@ extern "C" {
 //
 // FadeInTitle (0xfa1f0) and RetireScene (0xfa8f0) are SHARED CState base methods, not
 // CPreviewState's own: the retail caller graph shows 8+ CState-derived siblings
-// (CBootyState/CCreditsState/CMulti/CAttract/...) invoke each on their own `this`. They
-// are defined under CAttract / CSoundFxEmitter today; declared-only here (reloc-masked
-// calls) until their cross-TU re-home onto CState lands.
+// (CBootyState/CCreditsState/CMulti/CAttract/...) invoke each on their own `this`.
+// FadeInTitle is now re-homed onto CState (<Gruntz/State.h>) and inherited here (the
+// cast-free calls below bind to it). RetireScene (0xfa8f0, CSoundFxEmitter) is still
+// declared-only here (reloc-masked) until its own re-home onto CState lands.
 SIZE_UNKNOWN(CPreviewState);
 class CPreviewState : public CState {
 public:
@@ -69,9 +70,8 @@ public:
     // state layout - the codegen-neutral cross-view State.h already uses). Declared-
     // only so the __thiscall call reloc-masks.
     i32 LoadAssetNamespaces(void* mgr, i32 a, i32 b);               // 0x0f9ea0
-    i32 Tick();                                                     // 0x0de200
-    i32 FadeInTitle(char* name, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x0fa1f0 (CState base method)
-    void RetireScene(i32 a, i32 b, i32 c, i32 d);                   // 0x0fa8f0 (CState base method)
+    i32 Tick();                                  // 0x0de200
+    void RetireScene(i32 a, i32 b, i32 c, i32 d); // 0x0fa8f0 (CState base method; declared-only)
     void Cancel();                                                  // 0x0de590
     void LoadLevelPreviewScreen();                                  // 0x0de420
     i32 LoadScreen(char* name, i32 doFlip, i32 a2, i32 a3);         // 0x0fab90
