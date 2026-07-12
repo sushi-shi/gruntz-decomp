@@ -3179,7 +3179,7 @@ projectile	?MovingSlot16@CProjectile@@UAEXXZ	69.7359	69.7359	2	499851a02191	0xdf
 projectile	?RegisterActs@CTimeBomb@@QAEXXZ	92.9130	92.9130	2	87220b0c5cc4	0xe1990
 projectile	?RegisterRange@CProjectile@@SAXXZ	100.0000	100.0000	2	1fc33c782a2a	0xdf920
 projectile	?RegisterType@CProjectile@@SAXXZ	91.1739	91.1739	5	d0aea3f6c5a2	0xdfb00
-projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	5	7e9b04860887	0x13c70
+projectile	?ReleaseDeferred@CProjectile@@QAEXH@Z	100.0000	100.0000	6	56bf773f2c4d	0x13c70
 projectile	?RunAct@CProjectile@@QAEHH@Z	100.0000	100.0000	1	2d840d9ff3cc	0xdf9a0
 projectile	?ScanTargets@CProjectile@@QAEXH@Z	93.9254	93.9254	10	2e5263f89750	0xe0b10
 projectile	?SerializeMove@CTimeBomb@@UAEHPAUCGruntArchive@@HHH@Z	78.8913	78.8913	2	6f38953be2d0	0xe2080
