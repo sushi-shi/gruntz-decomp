@@ -207,11 +207,27 @@ NOTE_COMMON = ('Fragmentation is a property of the <b>retail link layout</b>, no
 
 build("scatter.json", "scatter.html",
       "all functions", "(all functions)",
-      "scatter_methods.html", "view without pooled dtors + init fragments",
-      "Here <b>all</b> functions are counted.",
-      "Destructors here still count. MSVC emits the vtable-referenced <b>deleting destructor</b> as a "
-      "COMDAT and the linker pools those (plus the ~Class bodies) into shared low-address runs away from "
-      "the TU block &mdash; so they inflate the scatter. " + NOTE_COMMON)
+      "scatter_core.html", "hide irreducible /Gy COMDAT scatter",
+      "Here <b>all</b> functions are counted &mdash; including the compiler COMDATs the retail /Gy link "
+      "pools away from the TU block (ctors/dtors/operators/init-fragments). Toggle to the core view to "
+      "hide them.",
+      "Destructors + ctors + operators + init fragments here still count. Under <code>/Gy</code> MSVC emits "
+      "every function as a COMDAT and the linker pools the special-members (deleting <code>??_G</code>/<code>??_E</code> "
+      "dtors, <code>??0</code> ctors, <code>??4</code>&hellip; operators) into shared low-address runs away from "
+      "the TU block &mdash; so they inflate the scatter. The <b>core</b> view removes exactly that set. " + NOTE_COMMON)
+
+build("scatter_core.json", "scatter_core.html",
+      "core body (irreducible scatter hidden)", "(core body)",
+      "scatter.html", "show all functions (affirm what's hidden)",
+      "This view hides <b>all irreducible /Gy scatter</b> &mdash; every MSVC special-name COMDAT "
+      "(<code>??0</code> ctors, <code>??1</code>/<code>??_G</code>/<code>??_E</code> dtors, <code>??4</code>&hellip; "
+      "operators), CRT init-fragments (<code>_$E</code>/<code>InitStr</code>) and pooled vtable-slot virtuals. "
+      "What remains is the genuine per-TU body.",
+      "The hidden set is exactly the functions our build CANNOT relocate: the retail <code>/Gy</code> linker places "
+      "each COMDAT by first-use / init order, and re-emitting one in its TU would trip the duplicate-RVA guard "
+      "(see <code>docs/exe-map/interleaved-comdats.md</code>). Flip to <b>all functions</b> to affirm every hidden dot "
+      "is one of those. Once the contiguity drain evicts every foreign mislabel + splits every over-merged TU, this "
+      "line <b>flatlines at 1 fragment</b> &mdash; each TU's body is one contiguous block (as in non-<code>/Gy</code> HoMM2). " + NOTE_COMMON)
 
 build("scatter_methods.json", "scatter_methods.html",
       "destructors removed", "(no destructors)",
@@ -220,4 +236,4 @@ build("scatter_methods.json", "scatter_methods.html",
       "constructors are kept, since they cluster with the methods.",
       "This view drops the destructors &mdash; the COMDAT-pooled members that MSVC exiles from the TU block "
       "(measured dtor median distance-to-sibling 0x7b0, p90 ~645&nbsp;KB, vs 0xa0 / 93%-within-8KB for methods). "
-      "What remains is the true per-TU layout. " + NOTE_COMMON)
+      "For the full irreducible-scatter view see <b>core body</b>. " + NOTE_COMMON)

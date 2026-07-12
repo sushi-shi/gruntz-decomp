@@ -42,6 +42,43 @@ def is_dtor(name):
                               r"Serialize[A-Za-z]*|V?[Ss]lot[0-9a-f]{2})@", name)))
 
 
+def is_pooled(name):
+    """The FULL irreducible-scatter set (superset of is_dtor): every function the
+    /Gy retail link places by first-use / init order rather than in the TU block,
+    which our build CANNOT relocate (multi-emit trips the dup-RVA guard). On top of
+    is_dtor's dtors + init-fragments + pooled vtable-slots, this also drops every
+    MSVC special-name COMDAT: constructors (??0), operators (??2 new, ??3 delete,
+    ??4 =, ??5.. etc) and the rest of the ?? special-member family. What REMAINS is
+    the genuine per-TU BODY - the named non-special methods, which after the
+    contiguity drain form one run per file (the scatter_core.html flatline). ?? DATA
+    symbols (??_7 vtable, ??_R RTTI) never reach .text, so this only trims code."""
+    return name.startswith("??") or is_dtor(name)
+
+
+def interleaver_rvas(src_root):
+    """RVAs of functions flagged `// @interleaver` in src/ - proven boundary COMDATs
+    the /Gy linker placed between two OTHER units (retail neighbours differ on each
+    side), so our build cannot home them without tripping the dup-RVA guard. They are
+    genuine irreducible scatter, excluded from the core-body flatline. Anchor: the
+    `@interleaver` comment sits just above the function's RVA(0x...) macro."""
+    import os
+    rvas = set()
+    for dirpath, _, files in os.walk(src_root):
+        for fn in files:
+            if not fn.endswith((".cpp", ".h")):
+                continue
+            lines = open(os.path.join(dirpath, fn), errors="ignore").read().splitlines()
+            for i, ln in enumerate(lines):
+                if "@interleaver" not in ln:
+                    continue
+                for j in range(i + 1, min(i + 20, len(lines))):  # next RVA(0x...) below
+                    m = re.search(r"\bRVA\(\s*0x0*([0-9a-fA-F]+)", lines[j])
+                    if m:
+                        rvas.add(int(m.group(1), 16))
+                        break
+    return rvas
+
+
 def rows_for(funcs):
     """Per-file fragment stats over the GLOBAL RVA-ordered `funcs` list."""
     stats = defaultdict(lambda: {"n": 0, "bytes": 0, "lo": None, "hi": 0, "frags": 0})
@@ -97,17 +134,29 @@ def main():
     methods = [r for r in funcs if not is_dtor(r["name"])]
     n_dtor = len(funcs) - len(methods)
     meth_rows = rows_for(methods)
+    il = interleaver_rvas(DIR + "/../../src")  # proven @interleaver boundary COMDATs
+    core = [r for r in funcs if not is_pooled(r["name"]) and r["rva"] not in il]
+    n_pooled = len(funcs) - len(core)
+    core_rows = rows_for(core)
 
     json.dump(all_rows, open(DIR + "/scatter.json", "w"), indent=1)
     json.dump(meth_rows, open(DIR + "/scatter_methods.json", "w"), indent=1)
+    json.dump(core_rows, open(DIR + "/scatter_core.json", "w"), indent=1)
 
     print("=" * 70)
     print("RETAIL .text SCATTER  (src/Stub/ backlog excluded)")
     print("=" * 70)
     summarize("ALL functions", all_rows)
     summarize(f"DESTRUCTORS REMOVED (dropped {n_dtor} ??1/??_G; ctors kept)", meth_rows)
-    print(f"\nwrote scatter.json ({len(all_rows)} files) + "
-          f"scatter_methods.json ({len(meth_rows)} files)")
+    summarize(f"CORE BODY (dropped {n_pooled}: ?? COMDATs + init-frags + pooled vslots "
+              f"+ {len(il)} @interleaver boundary COMDATs)", core_rows)
+    non1 = [r for r in core_rows if r["frags"] > 1]
+    print(f"\n  core-view files still fragmented (frags>1): {len(non1)}/{len(core_rows)}"
+          + (":" if non1 else " -- FLATLINE"))
+    for r in sorted(non1, key=lambda r: r["frags"], reverse=True)[:40]:
+        print(f"    {r['frags']:>3} frags  {r['n']:>3} fns  {r['file']}")
+    print(f"\nwrote scatter.json ({len(all_rows)}) + scatter_methods.json ({len(meth_rows)}) + "
+          f"scatter_core.json ({len(core_rows)})")
 
 
 if __name__ == "__main__":

@@ -52,14 +52,14 @@ svg{width:100%;height:auto;display:block;overflow:visible}
 </style></head><body><div class="wrap">
 <div class="bar-top">
   <span class="badge">all functions</span>
-  <a class="xlink" href="scatter_methods.html">↔ view without pooled dtors + init fragments</a>
+  <a class="xlink" href="scatter_core.html">↔ hide irreducible /Gy COMDAT scatter</a>
   <a class="xlink" href="misplacement.html">↔ misplacement finder</a>
   <a class="xlink" href="homm2.html">↔ HoMM2 baseline</a>
   <button class="toggle" onclick="tog()">◐ theme</button>
 </div>
 <h1>GRUNTZ.EXE &mdash; how scattered is each source file across <code style="font-size:.9em">.text</code>?</h1>
 <p class="sub">A source file breaks into contiguous <b>fragments</b>; <b>1 fragment</b> = one solid block,
-<b>fragments = function count</b> = every function isolated. Here <b>all</b> functions are counted. Based on 387 files
+<b>fragments = function count</b> = every function isolated. Here <b>all</b> functions are counted &mdash; including the compiler COMDATs the retail /Gy link pools away from the TU block (ctors/dtors/operators/init-fragments). Toggle to the core view to hide them. Based on 387 files
 (the <code style="font-size:.9em">src/Stub/</code> backlog is excluded).</p>
 
 <div class="tiles">
@@ -82,7 +82,7 @@ svg{width:100%;height:auto;display:block;overflow:visible}
   <svg id="hist" viewBox="0 0 1000 320"></svg>
 </div>
 
-<p class="note">Destructors here still count. MSVC emits the vtable-referenced <b>deleting destructor</b> as a COMDAT and the linker pools those (plus the ~Class bodies) into shared low-address runs away from the TU block &mdash; so they inflate the scatter. Fragmentation is a property of the <b>retail link layout</b>, not the reconstruction: MSVC/link concatenates each TU's COMDATs in source order, so a TU is <i>mostly</i> one contiguous block. Data grouping is our <code>src/</code> files (kept close to the original TUs). Source: <code>scatter*.json</code>.</p>
+<p class="note">Destructors + ctors + operators + init fragments here still count. Under <code>/Gy</code> MSVC emits every function as a COMDAT and the linker pools the special-members (deleting <code>??_G</code>/<code>??_E</code> dtors, <code>??0</code> ctors, <code>??4</code>&hellip; operators) into shared low-address runs away from the TU block &mdash; so they inflate the scatter. The <b>core</b> view removes exactly that set. Fragmentation is a property of the <b>retail link layout</b>, not the reconstruction: MSVC/link concatenates each TU's COMDATs in source order, so a TU is <i>mostly</i> one contiguous block. Data grouping is our <code>src/</code> files (kept close to the original TUs). Source: <code>scatter*.json</code>.</p>
 </div>
 
 <div id="tip"></div>

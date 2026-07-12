@@ -82,7 +82,7 @@ svg{width:100%;height:auto;display:block;overflow:visible}
   <svg id="hist" viewBox="0 0 1000 320"></svg>
 </div>
 
-<p class="note">This view drops the destructors &mdash; the COMDAT-pooled members that MSVC exiles from the TU block (measured dtor median distance-to-sibling 0x7b0, p90 ~645&nbsp;KB, vs 0xa0 / 93%-within-8KB for methods). What remains is the true per-TU layout. Fragmentation is a property of the <b>retail link layout</b>, not the reconstruction: MSVC/link concatenates each TU's COMDATs in source order, so a TU is <i>mostly</i> one contiguous block. Data grouping is our <code>src/</code> files (kept close to the original TUs). Source: <code>scatter*.json</code>.</p>
+<p class="note">This view drops the destructors &mdash; the COMDAT-pooled members that MSVC exiles from the TU block (measured dtor median distance-to-sibling 0x7b0, p90 ~645&nbsp;KB, vs 0xa0 / 93%-within-8KB for methods). For the full irreducible-scatter view see <b>core body</b>. Fragmentation is a property of the <b>retail link layout</b>, not the reconstruction: MSVC/link concatenates each TU's COMDATs in source order, so a TU is <i>mostly</i> one contiguous block. Data grouping is our <code>src/</code> files (kept close to the original TUs). Source: <code>scatter*.json</code>.</p>
 </div>
 
 <div id="tip"></div>
