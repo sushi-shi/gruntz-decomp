@@ -62,7 +62,7 @@ extern "C" const GUID IID_IDirectDraw2; // 0x5ef848
 DATA(0x00283ee8)
 extern "C" IDirectDraw2* g_DirectDraw; // 0x683ee8
 DATA(0x00283ec8)
-extern CDdObArray g_modeArray; // 0x683ec8 (CObArray of 0x6c-byte mode records)
+extern CPtrArray g_modeArray; // 0x683ec8 (real MFC CPtrArray of 0x6c-byte mode records)
 DATA(0x00283ee4)
 extern void* g_ddCreateCtx; // 0x683ee4
 
@@ -370,15 +370,15 @@ void CDirectDrawMgr::GetErrorString(char* file, i32 line, i32 hr) {
 }
 
 // Global-mode-array teardown tail-forward (0x141c80): mov ecx,&g_modeArray; jmp
-// 0x1b4f0b. Folded from Stub/BoundaryUpper.cpp (ClearModeArray_141c80).
-// reloc-fidelity (deferred): retail tail-jmps to the CByteArray/CPtrArray CTOR
-// (0x1b4f0b, stamps vtable 0x5ec2dc + zeroes) - a re-construct-in-place reset, NOT
-// RemoveAll. Fix = retype g_modeArray to real MFC CPtrArray + model the clear as
-// `new (&g_modeArray) CPtrArray()` (tail-jmps to ??0CPtrArray, already a library
-// label) + dissolve the CDdObArray view; the fake RemoveAll call stays UNBOUND meanwhile.
+// ??0CPtrArray@@QAE@XZ (0x1b4f0b). Retail re-runs the CPtrArray CTOR in place (stamps
+// vtable + zeroes the {m_pData,m_nSize,m_nMaxSize,m_nGrowBy} block), NOT RemoveAll.
+// The MSVC5 explicit-ctor-call extension gives the clean guard-free tail-jmp (a
+// placement-new would keep the null-check) - docs/patterns/explicit-ctor-call-inplace-
+// tail-jmp.md. g_modeArray is now a real MFC CPtrArray, so the ctor reloc binds to
+// the HIGH-confidence library label ??0CPtrArray @0x1b4f0b (was UNBOUND CDdObArray::RemoveAll).
 RVA(0x00141c80, 0xa)
 void ClearModeArray_141c80() {
-    g_modeArray.RemoveAll();
+    g_modeArray.CPtrArray::CPtrArray();
 }
 
 // The printf-style TRACE logger (0x141cb0). In the retail RELEASE build the body is
@@ -1086,11 +1086,11 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 // CreatePoolItem builds + initialises one pool item from a descriptor source.
 // ===========================================================================
 
-// The transient global mode array EnumDisplayModes rebuilds (a CObArray @0x683ec8).
-// CDdObArray + the pool comparator/publisher (Compare/AddPoolItem) live on
-// CDirectDrawMgr in <DDrawMgr/DirectDrawMgr.h>.
+// The transient global mode array EnumDisplayModes rebuilds (a real MFC CPtrArray
+// @0x683ec8). CDdObArray (m_poolItems view) + the pool comparator/publisher
+// (Compare/AddPoolItem) live on CDirectDrawMgr in <DDrawMgr/DirectDrawMgr.h>.
 DATA(0x00283ec8)
-extern CDdObArray g_modeArray;
+extern CPtrArray g_modeArray;
 
 // The EnumDisplayModes callback (0x143390); only its address is referenced.
 // (EnumDisplayModes is slot 8 / +0x20 on the IDirectDraw2 interface.)
@@ -1113,8 +1113,8 @@ void CDirectDrawMgr::SetupCaps() {
     if (hr != 0) {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
-    for (i32 j = 0; j < g_modeArray.m_nSize; j++) {
-        arr->SetAtGrow(arr->m_nSize, g_modeArray.m_pData[j]);
+    for (i32 j = 0; j < g_modeArray.GetSize(); j++) {
+        arr->SetAtGrow(arr->m_nSize, g_modeArray.GetData()[j]);
     }
     g_modeArray.SetSize(0, -1);
     i32 n = arr->m_nSize;
@@ -1141,7 +1141,7 @@ RVA(0x00143390, 0x35)
 i32 __stdcall AddDisplayMode(void* mode, i32 a1) {
     void* rec = operator new(0x6c);
     memcpy(rec, mode, 0x6c);
-    g_modeArray.SetAtGrow(g_modeArray.m_nSize, rec);
+    g_modeArray.SetAtGrow(g_modeArray.GetSize(), rec);
     return 1;
 }
 
