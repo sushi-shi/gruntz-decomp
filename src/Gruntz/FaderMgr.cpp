@@ -353,15 +353,17 @@ void CFaderMgr::DeleteAll() {
     m_arr.m_nSize = 0;
 }
 
-// The Rez heap free (0x1b9b82). C++ linkage (NOT extern "C") so cl treats it as
-// potentially-throwing and keeps the /GX base-subobject unwind frame in C17e240.
-void RezFree(void* p);
-
-// 0x17e240 (re-homed from src/Stub/BoundaryUpperEh.cpp): a /GX leaf dtor that aliases
-// CFaderArray's vtable (0x5f0790) and frees the +0x4 heap buffer. Kept a DISTINCT
-// placeholder identity (C17e240): the real ~CFaderArray is INLINE (folds into
-// CFaderMgr callers, 0x17e430), so this out-of-line twin can't be ~CFaderArray
-// (inline XOR out-of-line). Empty base subobject + owned buffer at +0x4.
+// 0x17e240 (re-homed from src/Stub/BoundaryUpperEh.cpp): the standalone out-of-line
+// emission of the CFaderArray teardown - aliases CFaderArray's vtable (0x5f0790) and
+// frees the +0x4 heap buffer via ::operator delete (0x1b9b82, reloc-masked, C++ linkage
+// -> potentially-throwing -> /GX base-subobject unwind frame). Kept a DISTINCT
+// placeholder identity (C17e240): the retail ~CFaderMgr @0x17d910 INLINES the member
+// ~CFaderArray teardown (proven - no call in its retail reloc table), so ~CFaderArray
+// is modeled INLINE (FaderMgr.h); binding this out-of-line COMDAT-duplicate to the same
+// name would force an external ~CFaderArray, breaking that inline (a real MISBOUND). Its
+// vtable stamps therefore stay placeholder-named (??_7C17e240 / ??_7Sev17e240); the real
+// ??_7CFaderArray / ??_7CObject are bound at 0x1f0790 / 0x1e8cb4 by the canonical class,
+// so a VTBL alias here would keep-last-collide. A genuine duplicate-emission limit.
 struct Sev17e240 {
     virtual ~Sev17e240();
 };
@@ -376,7 +378,7 @@ RELOC_VTBL(C17e240, 0x001f0790); // aliases CFaderArray (dtor-stamp verified)
 RVA(0x0017e240, 0x51)
 C17e240::~C17e240() {
     if (m_4) {
-        RezFree(m_4);
+        ::operator delete(m_4);
     }
 }
 

@@ -219,10 +219,17 @@ CFaderMesh::CFaderMesh() {}
 // (C17e990) rather than folded onto ~CFaderMesh: the real CFaderMeshSub (m_58) is
 // modeled with a non-destructible int layout, and giving it a buffer-freeing virtual
 // dtor would change CFaderMeshSub's vtable and crater the matched CFaderMesh ctor
-// (0x17e940). Members destruct before the CFader base. RezFreeEh kept C++-linkage
-// (potentially-throwing) so cl keeps the /GX base-subobject unwind frame (this TU's
-// own RezFree is declared extern "C" further down, treated non-throwing).
-void RezFreeEh(void* p); // 0x1b9b82 (C++ linkage; reloc-masked)
+// (0x17e940). Members destruct before the CFader base. The owned buffer is freed via
+// ::operator delete (0x1b9b82, reloc-masked, C++ linkage -> potentially-throwing ->
+// cl keeps the /GX base-subobject unwind frame).
+//
+// The vtable stamps here (??_7EmbedBase17e990/??_7EmbedSub17e990/??_7C17e990) stay
+// placeholder-named: 0x17e990 IS the real ~CFaderMesh, but reproducing its INLINED
+// member teardown (the retail dtor inlines ~CRezBufferObject's stamp+free rather than
+// calling the out-of-line 0x17f330) needs ~CRezBufferObject made inline in the Rez
+// lane's <Rez/RezBufferObject.h> - a cross-lane change. Deferred to that coordination;
+// the real ??_7CFaderMesh/??_7CRezBufferObject/??_7CObject are already bound (VTBL
+// catalog) at 0x1f07c0/0x1f07d8/0x1e8cb4, so a VTBL alias here would keep-last-collide.
 struct EmbedBase17e990 {
     virtual ~EmbedBase17e990();
 };
@@ -235,7 +242,7 @@ struct EmbedSub17e990 : EmbedBase17e990 {
 SIZE_UNKNOWN(EmbedSub17e990);
 inline EmbedSub17e990::~EmbedSub17e990() {
     if (m_4) {
-        RezFreeEh(m_4);
+        ::operator delete(m_4);
     }
 }
 struct FaderBaseC17e990 {
@@ -619,6 +626,12 @@ i32 CFaderLightApply::Setup(LightDesc* d) {
     return 1;
 }
 
+// 0x180630 - CFaderLight::SubFree180630 (declared-only, call left UNBOUND): the empty
+// member-teardown ~CFaderLight calls is a bare `ret` that the retail linker COMDAT-
+// folded onto the identical CRT stub __fpclear (config/library_labels.csv owns 0x180630).
+// So it is a library carve-out, not a reconstructable game body - defining it here
+// double-claims the RVA (library-overlap guard). Genuine empty-COMDAT-fold artifact.
+
 // @early-stop
 // 0x180640 (2412 B) = a large light/circle-shade blit worker; homed pending leaf-first
 // reconstruction (>512 B).
@@ -715,14 +728,14 @@ CFaderRadial::~CFaderRadial() {
 }
 
 // 0x17fc40 - CFaderRadial::FreeBuffer17fc40: release the owned +0x50 buffer (no
-// zero-out). Re-homed from matcher-5's BoundaryUpper re-attack; its target file
-// (BoundaryUpperEh.cpp) was deleted by the parallel fader-dtor fold, so the body
-// lands here on the real class (the ~CFaderRadial self-call proved the identity).
-extern "C" void RezFree(void* p); // 0x1b9b82 (also declared below; needed here)
+// zero-out) via ::operator delete (0x1b9b82, reloc-masked). Re-homed from matcher-5's
+// BoundaryUpper re-attack; its target file (BoundaryUpperEh.cpp) was deleted by the
+// parallel fader-dtor fold, so the body lands here on the real class (the
+// ~CFaderRadial self-call proved the identity).
 RVA(0x0017fc40, 0x11)
 void CFaderRadial::FreeBuffer17fc40() {
     if (m_50) {
-        RezFree((void*)m_50);
+        ::operator delete((void*)m_50);
     }
 }
 

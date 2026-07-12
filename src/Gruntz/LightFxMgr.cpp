@@ -28,9 +28,13 @@ struct LfxReg {
     CShadeTableCache* m_50; // +0x50  shade-table cache
 };
 
-// The global table registrar (0x14dcf0, __cdecl): store `table` into the screen
-// shade-blit global selected by `key`. External/no-body -> reloc-masked.
-extern "C" void LfxRegisterTable(void* table, i32 key); // 0x14dcf0
+// The global shade-descriptor setter (SetShadeDescr @0x14dcf0, __cdecl, defined in
+// DDrawMgr/ShadeDescrTable.cpp): store `v` into one of the seven global ShadeDescr*
+// slots keyed by `mode` (key 9 = g_blendDescr). External/no-body -> reloc-masked.
+// The grey CShadeTable is registered into the descriptor slot (a retail cross-type
+// store), so the call casts the CShadeTable* to the bound ShadeDescr* param type.
+struct ShadeDescr;
+void SetShadeDescr(ShadeDescr* v, int mode); // 0x14dcf0
 
 // ===========================================================================
 // Init: bind to the registry, fetch the shade cache, build the grey +
@@ -96,7 +100,7 @@ i32 CLightFxMgr::Init(CGameRegistry* reg, void* owner) {
     if (!m_tables[9]) {
         return 0;
     }
-    LfxRegisterTable(m_greyTable, 9);
+    SetShadeDescr((ShadeDescr*)m_greyTable, 9);
     return 1;
 }
 

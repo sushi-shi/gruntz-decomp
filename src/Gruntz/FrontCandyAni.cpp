@@ -13,7 +13,8 @@
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Gruntz/AniAdvanceCursor.h>
-#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
+#include <Gruntz/ActReg.h>       // the shared CActReg coordinate-registry archetype
+#include <Gruntz/LogicFnTable.h> // g_logicDispatch_646060's canonical LogicFnTable type
 #include <Gruntz/FrontCandy.h> // 0xfa60 is CFrontCandy's slot-1 (??_7CFrontCandy+0x4), not CFrontCandyAni's
 #include <Gruntz/FrontCandyAni.h>
 #include <Gruntz/EyeCandyAni.h> // CEyeCandyAni (its TU folds in below, wave3-J)
@@ -110,13 +111,12 @@ CFrontCandy::CFrontCandy(CGameObject* obj) : CUserLogic(obj) {
 // archetype; the sibling registry at 0x646060.
 // ===========================================================================
 
-// CEyeCandyAni's activation-coordinate registry singleton (@0x646060), built over the
-// fixed [2000,2010] range by InitLogicDispatch_646060 (0xacb30, LogicDispatchInit.cpp,
-// where the DATA(0x00246060) symbol is pinned as g_logicDispatch_646060 - the same
-// object viewed as its zDArray dispatch table). Here it is the CActReg activation
-// view (ResolveEntry); referenced extern-only so the loads reloc-mask.
-struct CEyeCandyActReg : public CActReg {};
-extern CEyeCandyActReg g_eyeCandyActReg; // 0x646060
+// CEyeCandyAni's activation-coordinate registry singleton (@0x646060): the SAME cell
+// pinned in LogicDispatchInit.cpp as g_logicDispatch_646060 (built over the fixed
+// [2000,2010] range there via the shared zDArray dispatch-table ctor). That is its
+// one canonical DATA-bound symbol; here we reference it through its CActReg activation
+// facet (ResolveEntry) so the loads reloc-mask against the correctly-bound 0x246060.
+extern LogicFnTable g_logicDispatch_646060; // 0x646060 (?g_logicDispatch_646060@@3ULogicFnTable@@A)
 
 // The handler entry the registry yields: its first dword receives the per-frame
 // handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance class).
@@ -164,21 +164,22 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
 
 // CEyeCandyAni::RunAct @0x0acbb0 - resolve the registry entry for id; if a handler
 // is bound, re-resolve and invoke it as a PMF on this, else return the entry
-// pointer. Same archetype as CAniCycle::RunAct (the g_eyeCandyActReg / 0x646060
-// registry is the CEyeCandyAni facet of the LogicFnTable-shaped global).
+// pointer. Same archetype as CAniCycle::RunAct (g_logicDispatch_646060 @0x646060
+// viewed through its CActReg activation facet).
 RVA(0x000acbb0, 0x102)
 i32 CEyeCandyAni::RunAct(i32 id) {
-    CEyeCandyActEntry* e = (CEyeCandyActEntry*)g_eyeCandyActReg.ResolveEntry(id);
+    CEyeCandyActEntry* e =
+        (CEyeCandyActEntry*)((CActReg*)&g_logicDispatch_646060)->ResolveEntry(id);
     if (e->m_fn != 0) {
-        return (this->*((CEyeCandyActEntry*)g_eyeCandyActReg.ResolveEntry(id))->m_fn)();
+        return (this->*((CEyeCandyActEntry*)((CActReg*)&g_logicDispatch_646060)->ResolveEntry(id))->m_fn)();
     }
     return (i32)e;
 }
 
 // CEyeCandyAni::RegisterActs @0x0acd10 - bind the class's per-frame handler
 // (AdvanceAnim @0x0acf10) to the activation key "A" via the shared name registry,
-// then bind id->entry in the class's coordinate registry (g_eyeCandyActReg
-// @0x646060). The SAME archetype as CFrontCandyAni::RegisterActs (0x0ad310).
+// then bind id->entry in the class's coordinate registry (g_logicDispatch_646060
+// @0x646060, CActReg facet). The SAME archetype as CFrontCandyAni::RegisterActs (0x0ad310).
 //
 // @early-stop
 // register-pinning wall (docs/patterns/zero-register-pinning.md +
@@ -204,7 +205,8 @@ void CEyeCandyAni::RegisterActs() {
         ((CString*)slot)->operator=(s_actKeyA);
         g_nextActId++;
     }
-    ((CEyeCandyActEntry*)g_eyeCandyActReg.ResolveEntry(id))->m_fn = &CEyeCandyAni::AdvanceAnim;
+    ((CEyeCandyActEntry*)((CActReg*)&g_logicDispatch_646060)->ResolveEntry(id))->m_fn =
+        &CEyeCandyAni::AdvanceAnim;
 }
 
 // CEyeCandyAni::AdvanceAnim @0x0acf10 - re-target the bound object's animation
@@ -319,4 +321,3 @@ SIZE_UNKNOWN(CFrontCandyActEntry);
 SIZE_UNKNOWN(CFrontCandyActReg);
 SIZE_UNKNOWN(CFrontCandyAni);
 SIZE_UNKNOWN(CEyeCandyActEntry);
-SIZE_UNKNOWN(CEyeCandyActReg);

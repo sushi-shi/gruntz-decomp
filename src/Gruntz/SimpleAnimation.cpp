@@ -73,8 +73,13 @@ DATA(0x002bf650)
 extern NameVec g_buteNameVec;
 
 // The zvec error globals + the capture helper the inlined accessor touches on a
-// bounds miss (the same set ZVec.cpp models).
-extern void* GetRetAddr(); // 0x16d990
+// bounds miss (the same set ZVec.cpp models). The OOM/overflow error token the
+// accessor passes to Set() is the canonical g_projActCache @0x2bf464 (retail's
+// reloc target); the Globals.h `g_zvecErrSentinel` is the SAME cell under a
+// mis-addressed (0x1f0464) reconstruction name - reference the correctly-bound
+// g_projActCache so this fn's DATA reloc stays faithful.
+extern void* GetRetAddr();   // 0x16d990
+extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA)
 
 // The logic registration key (the .data string constant @ 0x60a454, the SAME key
 // string every per-class register thunk inserts).
@@ -101,7 +106,7 @@ static inline i32 ResolveNameSlot(NameVec* v, i32 idx) {
     } else if (v->GrowTo(idx, 0)) {
         r = v->m_base + (idx - v->m_lo) * v->m_stride;
     } else {
-        i32 sentinel = g_zvecErrSentinel;
+        i32 sentinel = (i32)g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
         v->m_err->Set((void*)v, sentinel, 0xc);
         r = v->m_spare;
@@ -127,7 +132,7 @@ static inline i32 ResolveSlot(_zvec* v, i32 idx) {
     if (v->GrowTo(idx, 0)) {
         return v->m_base + (idx - v->m_lo) * v->m_stride;
     }
-    i32 sentinel = g_zvecErrSentinel;
+    i32 sentinel = (i32)g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
     v->m_err->Set((void*)v, sentinel, 0xc);
     return v->m_spare;

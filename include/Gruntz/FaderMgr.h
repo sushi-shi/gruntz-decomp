@@ -55,10 +55,13 @@ inline CFaderArray::CFaderArray() {
 }
 
 // Free m_pData; cl folds the own vptr stamp (entry) + the ~CObject grand-base
-// restamp (masks 0x5e8cb4) around it.
+// restamp (masks 0x5e8cb4) around it. INLINE: retail ~CFaderMgr @0x17d910 inlines this
+// member teardown (verified - no call at that offset in the retail reloc table), so an
+// external ~CFaderArray introduces a MISBOUND call retail does not have. The standalone
+// out-of-line emission at 0x17e240 is a COMDAT duplicate modeled by C17e240.
 inline CFaderArray::~CFaderArray() {
     if (m_pData) {
-        operator delete(m_pData);
+        ::operator delete(m_pData);
     }
 }
 
