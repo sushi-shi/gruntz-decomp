@@ -52,22 +52,11 @@ struct IDirectDraw;        // <ddraw.h>: the raw device (m_dd1)
 struct IDirectDraw2;       // <ddraw.h>: the QI'd device (m_device)
 struct IDirectDrawPalette; // <ddraw.h>: the held palette
 
-// ---------------------------------------------------------------------------
-// The pool-item / mode-list CObArray sub-object (an MFC CObArray view): SetSize
-// (0,-1) clears it, SetAtGrow is CObArray::Add's out-of-line tail. The methods
-// are reloc-masked engine calls (the MFC runtime TUs).
-// ---------------------------------------------------------------------------
-struct CDdObArray {
-    char _vft0[4];  // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
-    void** m_pData; // +0x04
-    i32 m_nSize;    // +0x08
-    i32 m_nMaxSize; // +0x0c
-    i32 m_nGrowBy;  // +0x10
-    void SetSize(i32 n, i32 grow);  // 0x1b4f75
-    void SetAtGrow(i32 n, void* x); // 0x1b5144
-    void RemoveAll();               // 0x1b4f0b (out-of-line array teardown)
-};
-SIZE(CDdObArray, 0x14);
+// The pool-item / mode-list array (m_poolItems @+0x4b4) is a real MFC CPtrArray -
+// stored void* CDdMode* records; SetSize(0,-1) clears, SetAtGrow appends. <Mfc.h> is
+// already pulled via <DDrawMgr/DDSurface.h> (CDDSurface's own +0x94 CPtrArray member),
+// so the real type is available here with no extra include; the former CDdObArray view
+// is dissolved. The array accessors (GetData/GetSize) are inline (byte-neutral).
 
 // One enumerated display-mode / pool record (stored as void* in m_poolItems); the
 // mode search + sort key on the width/height (m_8/m_c) and a mode tag (m_54).
@@ -158,7 +147,7 @@ public:
     i32 m_caps[0x5f];       // +0x08  driver DDCAPS_DX6 storage (0x17c B); .cpp uses (DDCAPS*)
     i32 m_helCaps[0x5f];    // +0x184 HEL DDCAPS_DX6 storage (0x17c B)
     char m_pad300[0x4b4 - 0x300];
-    CDdObArray m_poolItems; // +0x4b4 pool-item CObArray sub-object
+    CPtrArray m_poolItems; // +0x4b4 pool-item array (m_pData@+0x4b8 / m_nSize@+0x4bc)
     char m_pad4c8[0x534 - 0x4c8];
     i32 m_bltCaps; // +0x534 caps flag (& 0x8000000)
     i32 m_bpp;     // +0x538 cached bpp

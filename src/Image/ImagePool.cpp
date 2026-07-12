@@ -1361,10 +1361,12 @@ void CRezImage::FillRect(CRezFillRect* r, i32 color) {
 // and scanline-fill it.
 // @early-stop
 // ~66% regalloc-pressure wall (extra ebx spill vs retail's tighter esi/edi pick).
-// This function's 100% was TU-shape-dependent; it re-surfaced when the CImageExtLoader
-// view was folded into ApiCallerStubs::CImagePaletteNode (5 loader method decls added
-// to the node class reschedule the whole imagepool /O2 regalloc). Body byte-faithful;
-// kept per the clean-room mandate (correct de-view outranks a collateral regalloc %).
+// This function's 100% is TU-shape-dependent: ANY change to the imagepool TU's type
+// graph reschedules the whole /O2 regalloc and flips it 100<->66. It last re-surfaced
+// when CImageExtLoader was folded into ApiCallerStubs::CImagePaletteNode, and again
+// when CFileImageSurface (Image.h) was reparented onto its real CDDSurface base (R53
+// reloc-fidelity fix). Body byte-faithful; kept per the clean-room mandate (a correct
+// de-view / reloc-fidelity fix outranks a collateral regalloc %).
 RVA(0x00176da0, 0x4b)
 void CRezImage::FillRectAt(i32 dx, i32 dy, CRezFillRect* src, i32 color) {
     CRezFillRect r;

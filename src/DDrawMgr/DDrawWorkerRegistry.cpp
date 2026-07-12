@@ -78,12 +78,15 @@ extern i32 g_resourceInstallActive;
 void operator delete(void*);
 extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil)
 
-// The far sibling class (real member-teardown ~ at 0xd5d70, CImage.cpp) whose ??_G
-// scalar-deleting destructor (0x155720) landed in this obj; referenced so the
-// ??_G call reloc names it.
+// The far sibling class (a FamilyMapBase-shaped, CObject-derived 5-slot class; real
+// member-teardown ~ at 0xd5d70, CImage.cpp) whose scalar-deleting destructor
+// (0x155720) landed in THIS obj's RVA span. Modeled with its ScalarDtor here so the
+// ??_G call reloc binds to the real ??1CDDrawSubMgrFar @0xd5d70 (was misattributed to
+// DDrawSubMgr.cpp's local CDDrawSubMgr, whose empty inline ~ left the call UNBOUND).
 class CDDrawSubMgrFar {
 public:
-    virtual ~CDDrawSubMgrFar();
+    void* ScalarDtor(u32 flags); // 0x155720 (`??_G` scalar-deleting destructor)
+    virtual ~CDDrawSubMgrFar();  // 0xd5d70 (member teardown, CImage.cpp)
 };
 SIZE_UNKNOWN(CDDrawSubMgrFar);
 
@@ -462,11 +465,19 @@ i32 CDDrawWorkerRegistry::AnyValueMatches_155630(i32 a1, i32 a2, i32 a3) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x155720: a COMDAT ??_G scalar-deleting dtor retail placed in this obj's span
-// (its ??1 body is 0xd5d70, CImage.cpp). The label + row live in DDrawSubMgr.cpp
-// (the unit whose base obj auto-emits ??_GCDDrawSubMgr - labels.py's authority
-// check requires the emitting obj); retail-span home here is a deferred
-// identity-pass item.
+// 0x155720: CDDrawSubMgrFar's scalar-deleting destructor (retail placed this COMDAT
+// in this obj's RVA span). Run the real member-teardown ~ (0xd5d70, CImage.cpp),
+// then RezFree when the low deleting-flag bit is set; return this. Hand-written
+// non-virtual + RVA pin (the CDDrawRegistryDtorHost::ScalarDtor pattern) so the
+// member-dtor CALL reloc binds to ??1CDDrawSubMgrFar @0xd5d70 (reloc-fidelity).
+RVA(0x00155720, 0x1e)
+void* CDDrawSubMgrFar::ScalarDtor(u32 flags) {
+    this->CDDrawSubMgrFar::~CDDrawSubMgrFar();
+    if (flags & 1) {
+        ::operator delete(this);
+    }
+    return this;
+}
 
 // ===========================================================================
 // 0x1557a0 - ~CDDrawWorker: stamp own vtable, run DeleteAll (the slot-7 Unload,

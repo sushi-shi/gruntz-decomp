@@ -119,11 +119,11 @@ public:
     CDDrawSurfaceMgr* m_pSurfaceMgr; // +0x0c
 };
 SIZE_UNKNOWN(CDDrawSubMgr);
-// 0x155720 (E span, ddrawworkerregistry): the COMDAT ??_G scalar-deleting dtor of the
-// class above (real member-teardown ~ at 0xd5d70, CImage.cpp, ??1CDDrawSubMgrFar).
-// The row must live in THIS unit - labels.py's authority check requires the base obj
-// that emits the ??_G, and only this TU's local CDDrawSubMgr emits it.
-// @rva-symbol: ??_GCDDrawSubMgr@@UAEPAXI@Z 0x00155720 0x1e  (cl-auto-gen scalar-deleting dtor)
+// 0x155720 is NOT this local CDDrawSubMgr's ??_G: it is CDDrawSubMgrFar's scalar-
+// deleting destructor (member-teardown ~ at 0xd5d70, CImage.cpp), now modeled as
+// CDDrawSubMgrFar::ScalarDtor in DDrawWorkerRegistry.cpp (its RVA-correct obj span)
+// so the member-dtor CALL binds to ??1CDDrawSubMgrFar. The prior @rva-symbol pinned
+// this local class's empty-dtor ??_G here, leaving that call UNBOUND (misattribution).
 
 // The small per-frame blit-param source (Setup/SelectCue's +0x14 resolved source).
 class CDDrawBlitParamSrc {

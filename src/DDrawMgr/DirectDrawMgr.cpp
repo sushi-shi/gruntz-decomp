@@ -644,20 +644,16 @@ void* CFileImageSurface::ScalarDelete(u32 flags) {
 }
 
 // ---------------------------------------------------------------------------
-// CFileImageSurface::~CFileImageSurface - the second compiled teardown
-// copy, byte-identical to ~CDDSurface (0x141350): the virtual destructor's implicit
-// vptr stamp lands stamp-first, then the shared FreeSurfaces teardown runs and the
-// owned CPtrArray member at +0x94 is destroyed (guarded -> the /GX EH frame). The
-// implicit stamp reloc-masks against the shared 0x5ef7f0 surface vtable.
-//
-// This dtor IS the inlined CDDSurface base teardown recompiled under the a58-variant
-// name (single stamp + single FreeSurfaces, so it is NOT modeled by deriving from
-// CDDSurface - that would emit a doubled base-dtor teardown). FreeSurfaces is thus the
-// real CDDSurface::FreeSurfaces (0x13e4d0); the base-subobject cast is language-forced.
+// CFileImageSurface::~CFileImageSurface - the second compiled teardown copy, byte-
+// identical to ~CDDSurface (0x141350). CFileImageSurface now genuinely derives
+// CDDSurface and adds no destructible members of its own, so the empty derived dtor
+// lowers to the /O2-inlined base teardown: MSVC5 elides the derived (0x1efa58) vptr
+// stamp and emits only the base ??_7CDDSurface (0x5ef7f0) stamp, runs the base's
+// FreeSurfaces, then destroys the inherited +0x94 CPtrArray under the /GX EH frame.
+// The dtor's vtable-stamp reloc thus binds to ??_7CDDSurface @0x1ef7f0 (reloc-fidelity;
+// was MISBOUND to this class's own 0x1efa58 when modeled standalone).
 RVA(0x00142360, 0x53)
-CFileImageSurface::~CFileImageSurface() {
-    ((CDDSurface*)this)->CDDSurface::FreeSurfaces();
-}
+CFileImageSurface::~CFileImageSurface() {}
 
 // ---------------------------------------------------------------------------
 // CreateB (0x1423c0).  Same as CreateA but dispatches vtbl[0x2c]. /GX.
@@ -1087,8 +1083,8 @@ CDDPalette* CDDrawPtrCollections::LoadPaletteMakeB(const char* path, i32 z) {
 // ===========================================================================
 
 // The transient global mode array EnumDisplayModes rebuilds (a real MFC CPtrArray
-// @0x683ec8). CDdObArray (m_poolItems view) + the pool comparator/publisher
-// (Compare/AddPoolItem) live on CDirectDrawMgr in <DDrawMgr/DirectDrawMgr.h>.
+// @0x683ec8). The m_poolItems array (real MFC CPtrArray) + the pool comparator/
+// publisher (Compare/AddPoolItem) live on CDirectDrawMgr in <DDrawMgr/DirectDrawMgr.h>.
 DATA(0x00283ec8)
 extern CPtrArray g_modeArray;
 
@@ -1103,9 +1099,9 @@ extern "C" void DdEnumModesCallback(); // 0x143390
 // counter, an induction shape the recompile doesn't reproduce.  No EH frame.
 RVA(0x00143240, 0x143)
 void CDirectDrawMgr::SetupCaps() {
-    CDdObArray* arr = &m_poolItems;
-    for (i32 i = 0; i < arr->m_nSize; i++) {
-        ::operator delete(arr->m_pData[i]);
+    CPtrArray* arr = &m_poolItems;
+    for (i32 i = 0; i < arr->GetSize(); i++) {
+        ::operator delete(arr->GetData()[i]);
     }
     arr->SetSize(0, -1);
     g_modeArray.SetSize(0, -1);
@@ -1114,16 +1110,16 @@ void CDirectDrawMgr::SetupCaps() {
         CDirectDrawMgr::GetErrorString(DDRAWMGR_FILE, 0x507, hr);
     }
     for (i32 j = 0; j < g_modeArray.GetSize(); j++) {
-        arr->SetAtGrow(arr->m_nSize, g_modeArray.GetData()[j]);
+        arr->SetAtGrow(arr->GetSize(), g_modeArray.GetData()[j]);
     }
     g_modeArray.SetSize(0, -1);
-    i32 n = arr->m_nSize;
+    i32 n = arr->GetSize();
     for (i32 a = 0; a < n - 1; a++) {
         for (i32 b = a + 1; b < n; b++) {
-            if (Compare(arr->m_pData[a], arr->m_pData[b])) {
-                void* tmp = arr->m_pData[a];
-                arr->m_pData[a] = arr->m_pData[b];
-                arr->m_pData[b] = tmp;
+            if (Compare(arr->GetData()[a], arr->GetData()[b])) {
+                void* tmp = arr->GetData()[a];
+                arr->GetData()[a] = arr->GetData()[b];
+                arr->GetData()[b] = tmp;
             }
         }
     }
@@ -1148,7 +1144,7 @@ i32 __stdcall AddDisplayMode(void* mode, i32 a1) {
 // ===========================================================================
 // The display-mode pool comparator + searches over m_poolItems (each m_pData[i]
 // is a CDdMode*). Folded from Stub/BoundaryUpper.cpp (Compare_1433d0 + ModeArr::
-// Find*) - ModeArr IS CDirectDrawMgr (m_4b8/m_4bc = m_poolItems.m_pData/m_nSize).
+// Find*) - ModeArr IS CDirectDrawMgr (m_4b8/m_4bc = m_poolItems' m_pData/m_nSize).
 // Compare's the selection-sort predicate (used by SetupCaps above); FindFwd/FindBack
 // are reached via CGruntzMgr::CheckDisplayBoundsA/B.
 // ===========================================================================
@@ -1189,7 +1185,7 @@ void CDirectDrawMgr::FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2) {
         out->a = -1;
         out->b = -1;
     } else {
-        CDdMode* e = (CDdMode*)m_poolItems.m_pData[idx];
+        CDdMode* e = (CDdMode*)m_poolItems.GetData()[idx];
         out->a = e->m_c;
         out->b = e->m_8;
     }
@@ -1199,8 +1195,8 @@ void CDirectDrawMgr::FindMatch(CDdModePair* out, u32 k0, u32 k1, i32 k2) {
 RVA(0x00143470, 0x47)
 i32 CDirectDrawMgr::FindLast(u32 k0, u32 k1, i32 k2) {
     i32 r = -1;
-    for (i32 i = m_poolItems.m_nSize - 1; i >= 0; i--) {
-        CDdMode* e = (CDdMode*)m_poolItems.m_pData[i];
+    for (i32 i = m_poolItems.GetSize() - 1; i >= 0; i--) {
+        CDdMode* e = (CDdMode*)m_poolItems.GetData()[i];
         if (e->m_c >= k0 && e->m_8 >= k1 && e->m_54 == k2) {
             r = i;
         }
@@ -1211,8 +1207,8 @@ i32 CDirectDrawMgr::FindLast(u32 k0, u32 k1, i32 k2) {
 // Exact 3-key match, else -1.
 RVA(0x001434c0, 0x45)
 i32 CDirectDrawMgr::FindIndex(i32 k0, i32 k1, i32 k2) {
-    for (i32 i = 0; i < m_poolItems.m_nSize; i++) {
-        CDdMode* e = (CDdMode*)m_poolItems.m_pData[i];
+    for (i32 i = 0; i < m_poolItems.GetSize(); i++) {
+        CDdMode* e = (CDdMode*)m_poolItems.GetData()[i];
         if (e->m_c == (u32)k0 && e->m_8 == (u32)k1 && e->m_54 == k2) {
             return i;
         }
@@ -1228,11 +1224,11 @@ i32 CDirectDrawMgr::FindIndex(i32 k0, i32 k1, i32 k2) {
 RVA(0x00143510, 0x71)
 void CDirectDrawMgr::FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
     i32 idx = FindIndex(k0, k1, k2);
-    if (idx != -1 && idx < m_poolItems.m_nSize) {
+    if (idx != -1 && idx < m_poolItems.GetSize()) {
         idx++;
-        if (idx < m_poolItems.m_nSize) {
-            for (; idx < m_poolItems.m_nSize; idx++) {
-                CDdMode* e = (CDdMode*)m_poolItems.m_pData[idx];
+        if (idx < m_poolItems.GetSize()) {
+            for (; idx < m_poolItems.GetSize(); idx++) {
+                CDdMode* e = (CDdMode*)m_poolItems.GetData()[idx];
                 if (e->m_54 == k2) {
                     out->a = e->m_c;
                     out->b = e->m_8;
@@ -1251,11 +1247,11 @@ void CDirectDrawMgr::FindFwd(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
 RVA(0x00143590, 0x7e)
 void CDirectDrawMgr::FindBack(CDdModePair* out, i32 k0, i32 k1, i32 k2) {
     i32 idx = FindIndex(k0, k1, k2);
-    if (idx != -1 && idx < m_poolItems.m_nSize) {
+    if (idx != -1 && idx < m_poolItems.GetSize()) {
         idx--;
         if (idx >= 0) {
             for (; idx >= 0; idx--) {
-                CDdMode* e = (CDdMode*)m_poolItems.m_pData[idx];
+                CDdMode* e = (CDdMode*)m_poolItems.GetData()[idx];
                 if (e->m_54 == k2) {
                     out->a = e->m_c;
                     out->b = e->m_8;

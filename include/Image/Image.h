@@ -170,45 +170,30 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CFileImageSurface - the derived surface wrapper whose vtable lives at 0x5efa58
-// (adds LoadKeyed/Refresh etc. on top of CFileImage's slots; shares CFileImage's
-// teardown). The class adds no destructible members of its own, so ~CFileImageSurface
-// (0x142360) is byte-identical to ~CFileImage: it re-stamps the BASE vptr
-// (the shared surface vtable @0x5ef7f0), runs the shared FreeSurfaces teardown and destroys the owned
-// CPtrArray at +0x94. Modeled as a standalone shape (NOT deriving from CFileImage)
-// so its dtor inlines that teardown the way retail's second compiled copy does,
-// without disturbing the already-matched CFileImage dtor. ScalarDelete is its `??_G`
-// (0x142340): destroy + conditional RezFree.
-SIZE_UNKNOWN(CFileImageSurface);
-// reloc-fidelity NOTE (deferred): retail's ~CFileImageSurface (0x142360) re-stamps the
-// BASE CDDSurface vtable (0x1ef7f0 = ??_7CDDSurface@@6B@), but the compiler's implicit
-// dtor stamp references THIS class's own vtable symbol (0x1efa58). Binding this symbol
-// to 0x1ef7f0 instead would fix that stamp BUT dedups/shadows the canonical
-// ??_7CDDSurface@@6B@ (which 4 sibling dtors stamp) - a net regression. The real fix is
-// to derive CFileImageSurface : public CDDSurface so the /O2 dtor inlines the base
-// teardown and stamps ??_7CDDSurface directly (risks the a58 family byte-match; deferred).
-VTBL(CFileImageSurface, 0x001efa58); // ??_7CFileImageSurface@@6B@ (12-slot surface vtable)
-class CFileImageSurface {
+// CFileImageSurface - a CDDSurface-derived pool-item surface (the "a58" subclass,
+// vtable 0x5efa58: overrides the dtor + slot 6 v18, adds the init-tail slots 9/10/11).
+// It is the SAME retail class DDrawPtrCollections.h models as CPoolItemA; its ??_G/~
+// COMDAT (0x142340/0x142360) is emitted under the CFileImageSurface name from
+// DirectDrawMgr.cpp (CPoolItemA there is the declared-only RELOC_VTBL alias).
+//
+// It adds NO destructible members of its own (the +0x94 CPtrArray lives in the
+// CDDSurface base), so ~CFileImageSurface is the /O2-inlined base teardown: MSVC5
+// elides the derived vptr stamp and emits ONLY the base ??_7CDDSurface (0x5ef7f0)
+// stamp, then FreeSurfaces + the base's ~m_elements - byte-identical to ~CDDSurface
+// (0x141350) and matching retail. That is why the dtor's vtable stamp binds to
+// ??_7CDDSurface @0x1ef7f0 (reloc-fidelity), not this class's own 0x1efa58 datum.
+// ScalarDelete is its `??_G` (0x142340): destroy + conditional RezFree.
+SIZE(CFileImageSurface, 0xc0);
+VTBL(CFileImageSurface, 0x001efa58); // ??_7CFileImageSurface@@6B@ (12-slot a58 surface vtable)
+class CFileImageSurface : public CDDSurface {
 public:
-    void* ScalarDelete(u32 flags); // 0x142340 (`??_G` scalar-deleting destructor)
-    virtual ~CFileImageSurface(); // slot 0 0x142360 (virtual: the implicit vptr stamp lands stamp-first)
-    // The 12-slot 0x5efa58 table (CDDSurface-family surface interface). Slots 1-11
-    // declared-only (reloc-masked, matching-neutral) so ??_7CFileImageSurface is sized.
-    virtual i32 Refresh();        // slot 1  @0x13e140
-    virtual i32 Apply();          // slot 2  @0x13e0a0
-    virtual i32 BlitSurf();       // slot 3  @0x13e0d0
-    virtual void FreeSurfaces2(); // slot 4  @0x13e4d0
-    virtual i32 Slot05();         // slot 5  @0x1412d0
-    virtual void ConfigureSurf(); // slot 6 @0x143cc0
-    virtual i32 Slot07();         // slot 7  @0x13f960
-    virtual void Slot08();        // slot 8  @0x13e2e0
-    virtual i32 ResolveEx();      // slot 9  @0x148890
-    virtual i32 LoadByExt();      // slot 10 @0x148940
-    virtual i32 LoadKeyed();      // slot 11 @0x148840
-
-    // vptr @+0x00 (implicit, polymorphic; the compiler emits the dtor's stamp).
-    char m_pad04[0x94 - 0x04]; // +0x04
-    CPtrArray m_elements;      // +0x94  owned element array (auto member-dtor)
+    void* ScalarDelete(u32 flags);         // 0x142340 (`??_G` scalar-deleting destructor)
+    virtual ~CFileImageSurface() OVERRIDE; // slot 0  0x142360
+    virtual i32 v18() OVERRIDE;            // slot 6  0x143cc0
+    // Init-tail slots (declared-only, reloc-masked) so ??_7CFileImageSurface is sized.
+    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148890
+    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148940
+    virtual i32 v2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 11 0x148840
 };
 
 // CFileImage's own surface vtable lives at VA 0x5ef7f0 - the SHARED 9-slot base vtable
