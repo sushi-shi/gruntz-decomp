@@ -1,9 +1,9 @@
-m_<hex> fields	15418
+m_<hex> fields	15416
 Unknown ids	4
-g_<hex> globals	1201
+g_<hex> globals	1169
 Method/Stub/FUN	0
 placeholder classes	43
-.cpp-local views	1252
+.cpp-local views	1255
 placeholder vtable slots	915
 *Vtbl structs	0
 ->vtbl accesses	0

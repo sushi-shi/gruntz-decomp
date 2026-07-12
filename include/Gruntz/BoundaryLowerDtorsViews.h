@@ -48,14 +48,10 @@ struct CCredits390a0 {
 };
 SIZE_UNKNOWN(CCredits390a0);
 
-// 0x08d000 - ~CMenuState8d000 (/GX): derived vtable stamp, teardown body (0x2919),
-// then fold the CState base subobject (base dtor 0x3f53).
-struct CMenuState8d000
-    : CState { // was : CStateBase8d000 (fake base view; folded to real CState @0x5ea21c)
-    virtual ~CMenuState8d000() OVERRIDE;
-};
-SIZE_UNKNOWN(CMenuState8d000);
-RELOC_VTBL(CMenuState8d000, 0x001ea21c); // aliases CState (dtor-stamp verified)
+// 0x08d000 - CSplashState::~CSplashState (/GX): the out-of-line splash-state dtor.
+// Identity recovered (its derived vtable @0x1e9d74 IS ??_7CSplashState); modeled as
+// the real class via <Gruntz/SplashState.h>, dtor body in HelpState.cpp. (Was the
+// CMenuState8d000 placeholder here.)
 
 // 0x021310 / 0x021570 - the out-of-line /GX destructors of TWO distinct classes that each
 // multiply-inherit the same two REAL bases (identities RTTI-confirmed; only the DERIVED

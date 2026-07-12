@@ -3224,6 +3224,7 @@ rva,name,lib,confidence,source
 0x16a0c0,??0ifstream@@QAE@H@Z,LIBCIMT,HIGH,anchored
 0x16a180,??0ifstream@@QAE@HPADH@Z,LIBCIMT,HIGH,anchored
 0x16a240,??1ifstream@@UAE@XZ,LIBCIMT,AMBIG,anchored
+0x16a240,?Clear@CSubObjC@@QAEXXZ,LIBCIMT,MEDIUM,reloc-alias
 0x16a260,?setbuf@ifstream@@QAEPAVstreambuf@@PADH@Z,LIBCIMT,AMBIG,anchored
 0x16a340,?open@ifstream@@QAEXPBDHH@Z,LIBCIMT,HIGH,anchored
 0x16a3b0,?close@ifstream@@QAEXXZ,LIBCIMT,AMBIG,anchored
@@ -3234,6 +3235,7 @@ rva,name,lib,confidence,source
 0x16a760,??0ofstream@@QAE@H@Z,LIBCIMT,HIGH,anchored
 0x16a820,??0ofstream@@QAE@HPADH@Z,LIBCIMT,HIGH,anchored
 0x16a8e0,??1ofstream@@UAE@XZ,LIBCIMT,AMBIG,anchored
+0x16a8e0,?Clear@CSubObj8@@QAEXXZ,LIBCIMT,MEDIUM,reloc-alias
 0x16a900,?setbuf@ifstream@@QAEPAVstreambuf@@PADH@Z,LIBCIMT,AMBIG,anchored
 0x16a9e0,?open@ofstream@@QAEXPBDHH@Z,LIBCIMT,HIGH,anchored
 0x16aa50,?close@ifstream@@QAEXXZ,LIBCIMT,AMBIG,anchored

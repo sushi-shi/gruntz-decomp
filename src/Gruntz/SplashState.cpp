@@ -34,6 +34,8 @@
 #include <Gruntz/ResMgr.h>       // CSoundRegistry (m_c->m_28 Install facet)
 #include <Gruntz/GruntzMgr.h>    // CGruntzMgr::RestoreVideoMode (m_4 facet) + m_gameWnd->m_hwnd
 #include <Gruntz/StatusBarUpdatersViews.h> // CRegHolder view of CState::m_c (m_04 page mgr)
+#include <Gruntz/Attract.h>     // CAttract::RunTitleSeq (0xfa350) - the shared title-roll helper
+#include <Gruntz/SplashState.h> // CSplashState (shared def; dtor emitted in HelpState.cpp)
 #include <rva.h>
 
 // The global empty C string the sound loader's prefix is seeded from (0x6293f4).
@@ -47,32 +49,10 @@ extern CString g_assetRoot;
 // splash title timer counts down by it (0x653c74).
 extern i32 g_wap32FrameDelta; // 0x653c74
 
-class CSplashState : public CState {
-public:
-    // The 11 overridden CState slots (vtbl@0x1e9d74; the other 15 inherited). Their
-    // bodies live in the class's other TUs; declared-only here (never instantiated in
-    // this loader TU) so cl emits no ??_7CSplashState (CState.h declared-only pattern),
-    // leaving LoadSounds' member-offset codegen unchanged.
-    virtual ~CSplashState() OVERRIDE;            // slot 0
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot06() OVERRIDE;              // slot 6
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8
-    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
-    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
-
-    i32 LoadSounds(i32 a, i32 b, i32 c);
-    // The base asset-namespace loader chained first (reloc-masked external, called
-    // on `this`; the same 0x43a9 ILT thunk the other state loaders enter).
-    i32 LoadGameAssetNamespaces(i32 a, i32 b, i32 c);
-
-    char m_pad1a8[0x1b8 - 0x1a8];
-    i32 m_1b8; // +0x1b8 splash-title countdown timer (frame-delta decremented, clamped 0)
-};
+// CSplashState (: CState, vtbl@0x1e9d74) - the shared class def now lives in
+// <Gruntz/SplashState.h> so its out-of-line dtor (0x08d000, emitted in HelpState.cpp)
+// stamps the real ??_7CSplashState. This loader TU never defines a virtual body, so
+// cl emits no ??_7CSplashState here (member-offset codegen unchanged).
 
 // @confidence: high
 // @source: decomp-xref
@@ -177,7 +157,7 @@ i32 CSplashState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0);
+    return ((CAttract*)this)->RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0); // 0xfa350
 }
 
 // CSplashState::Vslot06 (0xf9af0, slot 6) - activation-ready poll: gate on the state's
@@ -189,7 +169,7 @@ i32 CSplashState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0);
+    return ((CAttract*)this)->RunTitleSeq((const char*)g_assetRoot, 0, 0, 1, 0); // 0xfa350
 }
 
 // CSplashState::Vslot0c (0xf9b40, slot 12) - key handler: on ESC/SPACE/ENTER post a

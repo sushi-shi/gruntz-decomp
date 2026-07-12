@@ -22,7 +22,7 @@
 #include <Gruntz/BankMgr.h>   // CBankMgr::Lookup (inherited m_8) -> CResSource
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr m_4 + m_gameWnd->PumpMessages (pulls State.h/Wap32.h)
 #include <Gruntz/GameModeBase.h> // CGameModeBase::Reset (the 0x8d000 dtor teardown body)
-#include <Gruntz/BoundaryLowerDtorsViews.h> // CMenuState8d000 (the 0x8d000 /GX leaf dtor)
+#include <Gruntz/SplashState.h>  // CSplashState (the 0x8d000 /GX out-of-line dtor)
 #include <Gruntz/StatusBarUpdatersViews.h> // CRegHolder view of CState::m_c (m_04 page mgr)
 #include <Gruntz/Attract.h> // CMenuRoot chain (m_c): Render's busy surface + attract registrar
 #include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
@@ -46,28 +46,25 @@ public:
     virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
     virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
 
-    void Teardown();                            // 0x1357  member teardown body
     i32 LoadAssets(i32, i32, i32);              // 0x95090
     i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader; reloc-masked external
 };
 
 RVA(0x0008cf30, 0x55)
 CHelpState::~CHelpState() {
-    Teardown();
+    ((CGameModeBase*)this)->BaseCleanup(); // 0xfa150 (the shared base cleanup)
 }
 
 // ---------------------------------------------------------------------------
-// 0x08d000 - ~CMenuState8d000 (/GX): stamp the derived vtable (0x5e9d74), run the
-// teardown body (0x2919 == CGameModeBase::Reset), then fold the CState base subobject
-// (restamp 0x5ea21c + base dtor 0x3f53). __thiscall. RVA-homed here (RVA-contiguous
-// with ~CHelpState @0x8cf30; a distinct unrecovered CState-derived menu/state).
-// @early-stop
-// EH-dtor base-stamp idiom wall (95.2%): retail stamps the CState base vtable in the
-// DERIVED dtor (mov [esi],0x5ea21c) just before the base cleanup call (0x3f53); the
-// polymorphic-base model stamps it inside the base dtor instead, so our derived omits
-// that one 6-byte store. Derived-vtable stamp, Reset body, /GX frame + states faithful.
+// 0x08d000 - CSplashState::~CSplashState (/GX): the out-of-line splash-state dtor,
+// homed in this RVA band (0x08dxxx, RVA-contiguous with ~CHelpState @0x8cf30). It
+// stamps the derived ??_7CSplashState (0x1e9d74, disasm-proven the real CSplashState
+// vtable - the identity the CMenuState8d000 placeholder concealed), runs the teardown
+// (0x2919 == CGameModeBase::Reset), then folds the CState base (restamp ??_7CState
+// @0x5ea21c + base dtor). The class def is shared via <Gruntz/SplashState.h>; defining
+// slot-0 here is what emits ??_7CSplashState (the loader TU never does).
 RVA(0x0008d000, 0x55)
-CMenuState8d000::~CMenuState8d000() {
+CSplashState::~CSplashState() {
     ((CGameModeBase*)this)->Reset();
 }
 
@@ -163,7 +160,7 @@ i32 CHelpState::InputVirtual() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    i32 r = RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0);
+    i32 r = ((CAttract*)this)->RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0); // 0xfa350
     while (ShowCursor(FALSE) >= 0) {
     }
     return r;
@@ -178,7 +175,7 @@ i32 CHelpState::Vslot06() {
     }
     while (ShowCursor(FALSE) >= 0) {
     }
-    return RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0);
+    return ((CAttract*)this)->RunTitleSeq((char*)&g_6111b0, 0, 0, 1, 0); // 0xfa350
 }
 
 // CHelpState::Vslot0c (0x953f0, slot 12) - keydown handler: on ESC/SPACE/ENTER post a

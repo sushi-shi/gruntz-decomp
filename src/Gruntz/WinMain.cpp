@@ -235,16 +235,17 @@ WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, i32 nShow
 }
 
 // ---------------------------------------------------------------------------
-// 0x11e8dc - a 7-byte base-object vptr restamp: `mov [ecx], &??_7CObject@@6B@; ret`
-// (the reloc masks ??_7CObject @0x5e8cb4). Modeled as an empty-body virtual dtor of a
-// standalone placeholder class, which cl lowers to exactly the stamp+ret; RELOC_VTBL
-// binds its cl-emitted ??_7 to reloc-mask the CObject vtable (cataloged in
-// config/vtable_names.csv). Placeholder identity (a terminal restamp, no ctor to fold
-// an auto-stamp into). Re-homed from src/Stub/ReconBatch2.cpp (its RVA neighborhood).
-struct CObjStamp11e8dc {
-    virtual ~CObjStamp11e8dc();
+// 0x11e8dc - a 7-byte base-object vptr restamp: `mov [ecx], &??_7CObject@@6B@; ret`.
+// A shared CObject-base teardown (called by the scalar-deleting-dtor @0x11ea46 and
+// the EH unwind funclets that cleanup a CObject base). Deriving from the REAL CObject
+// makes cl emit the immediate base ~CObject restamp referencing the REAL
+// ??_7CObject@@6B@ (bound @0x1e8cb4), /O2 dead-store-eliding the derived stamp - so the
+// vtable reference is reloc-FAITHFUL, not a fake RELOC_VTBL placeholder. The class's
+// own identity is still unrecovered (@identity-TODO: xref dead-ends at an unmatched
+// scalar-deleting-dtor host); only the CObject base restamp is proven.
+struct CObjStamp11e8dc : CObject {
+    virtual ~CObjStamp11e8dc() OVERRIDE; // slot 1 (CObject dtor)
 };
 SIZE_UNKNOWN(CObjStamp11e8dc);
-RELOC_VTBL(CObjStamp11e8dc, 0x001e8cb4); // reloc-masks ??_7CObject@@6B@ (dtor-stamp)
 RVA(0x0011e8dc, 0x7)
 CObjStamp11e8dc::~CObjStamp11e8dc() {}

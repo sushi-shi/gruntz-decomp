@@ -38,6 +38,12 @@
 #include <Gruntz/WwdGameReg.h> // WwdGameReg (g_gameReg; CheckPerfectBonus/Vslot09/QueryGruntSlots)
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_mgr; CBattleStatsView::DrawBattleStats, waveP)
 #include <Io/MoviePlayer.h>      // CMoviePlayer (~; CMultiBootyState::ReleaseResources m_4->m_60)
+#include <Gruntz/Attract.h>        // CAttract::FadeInTitle (0xfa1f0) - shared title-fade base method
+#include <Gruntz/SoundFxEmitter.h> // CSoundFxEmitter::Method_fa8f0 (0xfa8f0) - shared page builder
+// NOTE: BzState::BuildBootyGruntIdleAnimation (0x1ce60) stays via GameMode.h's
+// CBootyState decl (reloc-UNBOUND) - the proper bind needs <Gruntz/BzState.h>, blocked
+// by the BzGameReg / *0x24556c view-conflation between this TU's local Booty* views and
+// BzState.h's divergent Bz* shapes (a separate view-reconciliation task).
 
 // CMultiBootyState::Render's HUD line is drawn through the shared GlyphStringDraw.cpp
 // free function (0x115520); declared here (reloc-masked) so the call co-names with retail.
@@ -107,8 +113,9 @@ DATA(0x0024556c)
 extern "C" BzGameReg* g_gameReg;
 // USER32 PostMessageA reached through the game-owned IAT-style fn-ptr (ff 15 [ptr]);
 // same global CGruntzMgr/Attract/Play bind. KeyHost::Check posts through it.
-DATA(0x002c44c8)
-extern i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32); // 0x6c44c8
+// extern "C" so the reloc emits _g_pPostMessageA - the canonical name bound @0x2c44c8
+// (sbi_rectonly); the C++-mangled form ?g_pPostMessageA@@... never bound (silently dropped).
+extern "C" i32(WINAPI* g_pPostMessageA)(void*, u32, u32, i32); // 0x2c44c8
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // BOOTY_LOOP enable gate
 DATA(0x002bf3c0)
@@ -130,10 +137,6 @@ void operator delete(void*);
 // WwdGameReg alias. Same address; codegen-neutral reloc-masked loads. The 0x24556c
 // canonical-type unification is a separate worklist item.
 // ---------------------------------------------------------------------------
-// g_6bf3c0 / g_61ab20 are the draw-clock mirror + reentrancy gate (same 0x6bf3c0 /
-// 0x61ab20 data as g_killCueClock / g_sndEnabled above; the moved bodies use these names).
-extern "C" u32 g_6bf3c0; // draw-clock mirror
-extern i32 g_61ab20;     // DAT_0061ab20 reentrancy gate
 
 // The glitter factory chain (CGlitterMgr view of g_gameReg): m_world->m_8 sprite
 // factory (CreateSprite @0x1597b0), m_7c->m_4 active letter count.
@@ -249,11 +252,11 @@ RVA(0x00018d30, 0xcd)
 i32 CBootyState::Vslot09(i32) {
     while (ShowCursor(FALSE) >= 0)
         ;
-    if (!FadeInTitle("bg", 0, 0, 0, 0, 1)) {
+    if (!((CAttract*)this)->FadeInTitle("bg", 0, 0, 0, 0, 1)) { // 0xfa1f0
         return 0;
     }
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
-    BuildPage(0x50, 0x3e8, 0, 1);
+    ((CSoundFxEmitter*)this)->Method_fa8f0(0x50, 0x3e8, 0, 1); // 0xfa8f0 (shared page builder)
 
     BzGameReg* reg = g_gameReg;
     BootySndSet* set = reg->m_world->m_soundSet;
@@ -502,10 +505,10 @@ i32 CMultiBootyState::CheckPerfectBonus() {
             void* found = 0;
             CMapStringToOb* map = (CMapStringToOb*)((char*)m28 + 0x10);
             map->Lookup("BOOTY_PERFECT", (CObject*&)found);
-            if (found && g_61ab20 != 0) {
+            if (found && g_sndEnabled != 0) {
                 CBootyFound* p = (CBootyFound*)found;
-                if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                    p->m_14 = g_6bf3c0;
+                if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                    p->m_14 = g_killCueClock;
                     ((CSoundCueMgr*)p->m_10)->ConfigureItem(item, 0, 0, 0);
                 }
             }
@@ -544,7 +547,7 @@ i32 CMultiBootyState::ReadyAndPaint() {
     if (Vfunc3() == 0) {
         return 0;
     }
-    return Paint() != 0;
+    return ((CState*)this)->CState::Vslot07() != 0; // 0xfac70 (== CState::Vslot07 slot)
 }
 
 // CBootyState::Vslot0e (0x1d3e0, vtable slot 14) and Vslot11 (0x1d400, slot 17): the
@@ -552,12 +555,12 @@ i32 CMultiBootyState::ReadyAndPaint() {
 // Vslot0c, but with the slot-14/17 (int,int,int) arg frame. Reloc-masked call.
 RVA(0x0001d3e0, 0x8)
 i32 CBootyState::Vslot0e(i32, i32, i32) {
-    return BuildBootyGruntIdleAnimation();
+    return BuildBootyGruntIdleAnimation(); // 0x1ce60 (BzState:: - UNBOUND; needs BzState.h fold)
 }
 
 RVA(0x0001d400, 0x8)
 i32 CBootyState::Vslot11(i32, i32, i32) {
-    return BuildBootyGruntIdleAnimation();
+    return BuildBootyGruntIdleAnimation(); // 0x1ce60 (BzState:: - UNBOUND; needs BzState.h fold)
 }
 
 // CBootyState::Vslot0c (0x1d420, vtable slot 12): tail-forward to the shared booty-grunt
@@ -565,7 +568,7 @@ i32 CBootyState::Vslot11(i32, i32, i32) {
 // call is reloc-masked, so the shared-body owner name is code-neutral.
 RVA(0x0001d420, 0x8)
 i32 CBootyState::Vslot0c(i32, i32) {
-    return BuildBootyGruntIdleAnimation();
+    return BuildBootyGruntIdleAnimation(); // 0x1ce60 (BzState:: - UNBOUND; needs BzState.h fold)
 }
 
 // CBootyState::StateOnEnter (0x1d440): the booty state-enter driver - engine-label
@@ -598,12 +601,12 @@ void CMultiBootyState::ReleaseResources() {
 // player on the draw-clock window. Returns 1.
 RVA(0x0001e570, 0xb4)
 i32 CMultiBootyState::Vslot09(i32) {
-    i32 ok = FadeInTitle("multi", 0, 0, 0, 0, 1);
+    i32 ok = ((CAttract*)this)->FadeInTitle("multi", 0, 0, 0, 0, 1); // 0xfa1f0
     if (!ok) {
         return ok; // eax already 0 (the FadeInTitle result) - no xor/mov re-materialize
     }
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
-    BuildPage(0x50, 0x3e8, 0, 1);
+    ((CSoundFxEmitter*)this)->Method_fa8f0(0x50, 0x3e8, 0, 1); // 0xfa8f0 (shared page builder)
 
     CBootyMusicHost* host = BOOTY_REG->m_30;
     i32 item = BOOTY_REG->m_11c;
@@ -612,10 +615,10 @@ i32 CMultiBootyState::Vslot09(i32) {
         void* found = 0;
         CMapStringToOb* map = (CMapStringToOb*)((char*)m28 + 0x10);
         map->Lookup("BOOTY_LOOP", (CObject*&)found);
-        if (found && g_61ab20 != 0) {
+        if (found && g_sndEnabled != 0) {
             CBootyFound* p = (CBootyFound*)found;
-            if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
-                p->m_14 = g_6bf3c0;
+            if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
+                p->m_14 = g_killCueClock;
                 ((CSoundCueMgr*)p->m_10)->ConfigureItem(item, 0, 0, 1);
             }
         }
@@ -906,7 +909,7 @@ i32 CMultiBootyState::Render() {
         }
     }
     if (m_1b8 == 0x64) {
-        OnActivated(); // 0x1ed30 (== CBattleStatsView::DrawBattleStats)
+        ((CBattleStatsView*)this)->DrawBattleStats(); // 0x1ed30 (OnActivated slot)
         m_1b8 = 0xc7;
     }
     m_c->m_8->FrameBegin(1);
@@ -973,13 +976,13 @@ i32 CMultiBootyState::InputVirtual() {
         return 0;
     }
 
-    if (!FadeInTitle("multi", 0, 0, 0, 0, 1)) {
+    if (!((CAttract*)this)->FadeInTitle("multi", 0, 0, 0, 0, 1)) { // 0xfa1f0
         return 0;
     }
 
-    OnActivated();
+    ((CBattleStatsView*)this)->DrawBattleStats(); // 0x1ed30 (OnActivated slot)
     ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158ee0();
-    BuildPage(0x50, 0x3e8, 0, 1);
+    ((CSoundFxEmitter*)this)->Method_fa8f0(0x50, 0x3e8, 0, 1); // 0xfa8f0 (shared page builder)
     return 1;
 }
 
@@ -1002,7 +1005,7 @@ i32 CMultiBootyState::Vslot07() {
     if (Vfunc3() == 0) {
         return 0;
     }
-    return Paint() != 0;
+    return ((CState*)this)->CState::Vslot07() != 0; // 0xfac70 (== CState::Vslot07 slot)
 }
 
 // ---------------------------------------------------------------------------

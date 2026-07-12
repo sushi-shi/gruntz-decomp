@@ -268,23 +268,24 @@ public:
 };
 VTBL(CMenuState, 0x1e9e84);
 
-// CImageList-owning sub-object embedded at CCreditsState+0x1e8 (an MFC CImageList
-// the credits screen builds). Modeled as the twin of Dialogs' CImgHolder: a
-// CObject-ish grand-base (vtable 0x5e8cb4) + the derived holder (vtable 0x5e8cd4)
-// whose virtual dtor frees the image list (CImageList::DeleteImageList @0x1c6a5c).
-// Real-virtual model - cl emits the implicit ??_7 stamps (reloc-masked); the base
-// dtor folds into ~CCreditsState as the final base-vptr restore.
-SIZE_UNKNOWN(CCreditsImgBase);
-struct CCreditsImgBase {
-    virtual ~CCreditsImgBase() {}
+// CImgHolder - the MFC image-list holder embedded at CCreditsState+0x1e8. Its virtual
+// dtor stamps the derived ??_7CImgHolder (0x1e8cd4), frees the image list
+// (CImageList::DeleteImageList @0x1c6a5c, MFC), then the REAL CObject grand-base restamps
+// ??_7CObject (0x1e8cb4). Deriving from the real CObject (not a fake CCreditsImgBase view)
+// is what binds ~CCreditsState's inlined m_1e8 teardown to the real ??_7CObject /
+// ??_7CImgHolder / CImageList::DeleteImageList (all reloc-FAITHFUL). Twin of Dialogs'
+// CImgHolder (shared-header consolidation with the dialogs TU deferred).
+SIZE_UNKNOWN(CImageList);
+class CImageList { // minimal decl of the MFC class (absent from the vc50 headers)
+public:
+    i32 DeleteImageList(); // 0x1c6a5c (MFC CImageList::DeleteImageList)
 };
-SIZE_UNKNOWN(CCreditsImageList);
-struct CCreditsImageList : CCreditsImgBase {
-    void DeleteImageList(); // 0x1c6a5c (NAFXCW, reloc-masked)
+SIZE_UNKNOWN(CImgHolder);
+struct CImgHolder : CObject {
     // Inline so ~CCreditsState folds the stamp/DeleteImageList/base-restore teardown
     // (retail inlines it; an out-of-line ??1 would emit a `call` and shrink the frame).
-    virtual ~CCreditsImageList() OVERRIDE {
-        DeleteImageList();
+    virtual ~CImgHolder() OVERRIDE {
+        ((CImageList*)this)->DeleteImageList(); // 0x1c6a5c
     }
     void* m_hImageList; // +0x04
 };
@@ -346,7 +347,7 @@ public:
     i32 m_1c0; // +0x1c0 fade countdown ms (LoadCreditzAssets arms 3000 on the rising edge)
     i32 m_1c4; // +0x1c4 conditional-FX gate / credits-music toggle
     char m_pad1c8[0x1e8 - 0x1c8];
-    CCreditsImageList m_1e8; // +0x1e8 embedded image list (freed by ~CCreditsState)
+    CImgHolder m_1e8; // +0x1e8 embedded image list (freed by ~CCreditsState)
     CString m_caption;       // +0x1f0 credits caption CString (freed by ~CCreditsState)
     char m_pad1f4[0x208 - 0x1f4];
     i32 m_videoPlaying; // +0x208 video playing gate

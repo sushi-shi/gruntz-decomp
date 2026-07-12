@@ -18,6 +18,7 @@
 #include <DDrawMgr/DDSurface.h>           // CDDSurface (Render Draw / InitAttractTitle ShadeRect)
 #include <Gruntz/GameMode.h> // CCreditsState : CState + CGMEntityList/CGMOwner/CGMSoundEntry
 #include <Rez/RezMgr.h>      // RezFree (ReleaseResources video-handle teardown)
+#include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ::CreateBank (0x138670) - credits sound-bank loader
 #include <Win32.h>           // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>           // real IDirectDrawSurface (credits-scroll DC + Render input surface)
 #include <rva.h>
@@ -110,11 +111,6 @@ SIZE_UNKNOWN(CCreditzSoundRegistry);
 struct CCreditzSoundRegistry { // this->m_c->+0x28 (the LoadLevelSounds registry)
     void Install(void* set, char* szName, char* szKey); // FUN_00557ee0 __thiscall
 };
-SIZE_UNKNOWN(CCreditzImageRegistry);
-struct CCreditzImageRegistry { // this->m_4->+0x48
-    // FUN_00538670 __thiscall: install a resolved sub-entry under a name.
-    void Install3(void* res, void* host, char* szName);
-};
 SIZE_UNKNOWN(CCreditzStateCore);
 struct CCreditzStateCore { // this->m_c->m_4 (the ready/init pump)
     // IsReady @0x158d20 IS CDDrawSubMgrPages::Method_158d20; cast at the call.
@@ -127,7 +123,7 @@ struct CCreditzStateCore { // this->m_c->m_4 (the ready/init pump)
 SIZE_UNKNOWN(CCreditzImageRoot);
 struct CCreditzImageRoot { // this->m_4 points here; +0x48 is the registry
     char m_pad00[0x48];
-    CCreditzImageRegistry* m_48; // +0x48
+    CGruntzSoundZ* m_48; // +0x48  credits sound-bank store (CreateBank @0x138670)
 };
 SIZE_UNKNOWN(CCreditzSoundMgr);
 struct CCreditzSoundMgr { // this->m_c points here
@@ -285,7 +281,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
         if (e) {
             i32 val = ((CParseSource*)e)->BeginParse();
             if (val) {
-                self->m_4->m_48->Install3((void*)val, e->m_c, "CREDITZ");
+                self->m_4->m_48->CreateBank((void*)val, (u32)e->m_c, "CREDITZ"); // 0x138670
             }
         }
     }
@@ -298,7 +294,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
         if (e2) {
             i32 val = ((CParseSource*)e2)->BeginParse();
             if (val) {
-                self->m_4->m_48->Install3((void*)val, e2->m_c, "MONOLITH");
+                self->m_4->m_48->CreateBank((void*)val, (u32)e2->m_c, "MONOLITH"); // 0x138670
             }
         }
     }
@@ -428,7 +424,10 @@ i32 CCreditsState::Render() {
 RVA(0x000393b0, 0x3a)
 i32 CCreditsState::InputVirtual() {
     CCreditzOwner* self = (CCreditzOwner*)this;
-    if (((CParseSource*)self->m_c->m_4)->BeginParse() == 0) {
+    // the page pump at m_c->m_4 is CDDrawSubMgrPages; the ready gate is Method_158bc0
+    // (0x158bc0) - NOT CParseSource::BeginParse (0x139960); same m_c->m_4 page-gate the
+    // sibling states (CHelpState/CSplashState) poll.
+    if (((CDDrawSubMgrPages*)self->m_c->m_4)->Method_158bc0() == 0) {
         return 0;
     }
     if (ShowCursor(0) >= 0) {

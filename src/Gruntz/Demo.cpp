@@ -383,24 +383,29 @@ i32 Gap_03c990(void) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x3cbc0 / 0x3cbf0: member sub-object destructors - run the embedded sub-object's
-// two-phase teardown (a derived clear + the shared base dtor 0x169d70). The
-// sub-objects are the same bute-store records the debug editors above tear down
-// (their Clear entries 0x16a240 / 0x16a8e0 are in the editors' callee set) - the
-// editors' out-of-lined teardown helpers.
-struct CSubObjC {
-    void Clear();    // 0x16a240
-    void BaseDtor(); // 0x169d70
+// 0x3cbc0 / 0x3cbf0: compiler-generated member destructors for the bute editor's
+// embedded C++ iostream members - each runs the two-phase virtual-base teardown of
+// an fstream (the derived stream clear, then the shared ios virtual-base dtor).
+// PROVEN library (disasm): 0x169d70 = ??1ios@@UAE@XZ (stamps ??_7ios@@6B@ @0x5f03bc,
+// decrements the ios refcount), 0x16a240 = ??1ifstream@@UAE@XZ, 0x16a8e0 =
+// ??1ofstream@@UAE@XZ. Named CButeIosSub-family per the established library_labels
+// reloc-alias convention (0x169be0/0x169d70 already bound to CButeIosSub); the shared
+// base Dtor reuses that alias, the two derived stream clears are reloc-aliased below
+// (config/library_labels.csv) - so all four rel32 calls bind to their real library rvas.
+struct CButeIosSub {
+    void Dtor(); // 0x169d70  ??1ios (shared virtual-base teardown; reloc-alias in lib)
 };
-struct CSubObj8 {
-    void Clear();    // 0x16a8e0
-    void BaseDtor(); // 0x169d70
+struct CSubObjC : CButeIosSub {
+    void Clear(); // 0x16a240  ??1ifstream (input-stream member @+0x0c)
+};
+struct CSubObj8 : CButeIosSub {
+    void Clear(); // 0x16a8e0  ??1ofstream (output-stream member @+0x08)
 };
 struct COwnerWithSubs {
     char _00[0x08];
-    CSubObj8 m_08; // +0x08  (empty reloc-masked view)
+    CSubObj8 m_08; // +0x08  (ofstream sub-object)
     char _09[0x0c - 0x09];
-    CSubObjC m_0c;   // +0x0c
+    CSubObjC m_0c;   // +0x0c  (ifstream sub-object)
     void DtorSubC(); // 0x3cbc0
     void DtorSub8(); // 0x3cbf0  (acts on +0x08)
 };
@@ -409,14 +414,14 @@ RVA(0x0003cbc0, 0x14)
 void COwnerWithSubs::DtorSubC() {
     CSubObjC* s = &m_0c;
     s->Clear();
-    s->BaseDtor();
+    s->Dtor();
 }
 
 RVA(0x0003cbf0, 0x14)
 void COwnerWithSubs::DtorSub8() {
     CSubObj8* s = &m_08;
     s->Clear();
-    s->BaseDtor();
+    s->Dtor();
 }
 
 // ---------------------------------------------------------------------------
@@ -912,6 +917,7 @@ i32 Handler03ddf0(Owner* owner) {
 SIZE_UNKNOWN(CDemoWorld);
 SIZE_UNKNOWN(CDemoSetup);
 SIZE_UNKNOWN(COwnerWithSubs);
+SIZE_UNKNOWN(CButeIosSub);
 SIZE_UNKNOWN(CSubObj8);
 SIZE_UNKNOWN(CSubObjC);
 SIZE_UNKNOWN(CTriRecord);
