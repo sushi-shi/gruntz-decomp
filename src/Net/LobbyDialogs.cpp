@@ -16,7 +16,7 @@
 // (PollSession 0xb95f0 / SendNetStat 0xb9290 / BroadcastChatLine 0xbb190 /
 // ReportVersionMsg 0xb7e30 / ReportStatusId 0xb7ec0, defined below in its RVA-order
 // home). The former TU-local CNetMgrView/CNetSessionView/StrHost_0b7ec0 views are
-// dissolved onto the canonical <Gruntz/Multi.h> CMulti / CNetSession2. The real
+// dissolved onto the canonical <Gruntz/Multi.h> CMulti / <Net/NetMgr.h> CNetSession. The real
 // CNetMgr (the small DirectPlay wrapper, ??1 @0xb6000) lives at CMulti+0x524 and is
 // not touched here.
 //
@@ -26,7 +26,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h> // canonical CGameRegistry (g_gameReg->m_curState @ +0x2c)
-#include <Gruntz/Multi.h>        // canonical CMulti (the network game-state) + CNetSession2
+#include <Gruntz/Multi.h>        // canonical CMulti (the network game-state; m_session is CNetSession)
 #include <Net/NetMgr.h> // canonical CNetSession (m_session command-slot facet; CheckLatency @0xc04a0)
 #include <Wap32/Wap32.h> // CGameApp (m_logic->m_owner->m_hInstance, ReportStatusId)
 #include <string.h>      // strcpy/strcat (inline CRT, reloc-masked)
@@ -36,10 +36,10 @@
 // The CGameRegistry singleton: the lobby DlgProcs read its current game-state
 // (m_curState, +0x2c) which - while a network game is open - IS the CMulti.
 extern "C" CGameRegistry* g_gameReg;
-// GetDlgItem(hWnd, 0x4b6) cache (DAT_00648ce0; canonical home g_dlgResultSink in
-// Globals.cpp - the modeless dialog's cached child HWND, stored raw as i32), shared by
-// the timer wrappers. Bound to the Globals.cpp DATA home name so the store relocs.
-extern i32 g_dlgResultSink;
+// GetDlgItem(hWnd, 0x4b6) cache (0x248ce0; the modeless dialog's cached child HWND,
+// stored raw as i32), shared by the timer wrappers. Bound to the DATA home name
+// (extern "C" g_sharedFlag, DATA @0x248ce0 in Multi.cpp) so the store relocs.
+extern "C" i32 g_sharedFlag;
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 extern "C" char g_emptyString[];
 // The DirectPlay session/client-status CString global (0x6473d8; canonical home
@@ -159,7 +159,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             Init_bda50(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
-            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -209,7 +209,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             Init_bdbe0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
-            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -261,7 +261,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             Init_bddb0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x1f4, 0);
-            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -329,7 +329,7 @@ namespace NetLobby {
         if (hWnd && ctx) {
             Init_2522(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
-            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -414,7 +414,7 @@ namespace NetLobby {
             }
             Init_be3e0(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
-            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
 
@@ -524,7 +524,7 @@ namespace NetLobby {
             }
             Init_2ed7(hWnd, ctx);
             SetTimer(hWnd, 1, 0x2ee, 0);
-            g_dlgResultSink = (i32)GetDlgItem(hWnd, 0x4b6);
+            g_sharedFlag = (i32)GetDlgItem(hWnd, 0x4b6);
         }
     }
 

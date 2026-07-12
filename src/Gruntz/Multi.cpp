@@ -26,7 +26,6 @@
 #include <Gruntz/Multi.h>
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr (Vslot09 PerFrameTick; ShowMultiStartDlg ExitModalUI)
 #include <Gruntz/Dialogs.h>   // CMultiStartDlg (stack-constructed by ShowMultiStartDlg @0xb86c0)
-#include <Gruntz/LobbyObjB.h>     // CLobbyObjB/CLobbySlot (the m_520 lobby object, dtors @0xb6220/0xb62a0)
 #include <Gruntz/LightFxRender.h> // CLightFxRender (the +0x320 attract overlay; teardown Ctor @0xa3360)
 #include <Gruntz/TileTriggerContainer.h>
 #include <Gruntz/Brickz.h>
@@ -910,13 +909,12 @@ void CMulti::Teardown() {
         SendNetStat(0x402, 0x4d2, 1);
         SendStatFlag(0x3ea, 1);
     }
-    // The +0x520 session object is destroyed as ~CLobbyObjB (0xb6220) - that IS its
-    // real dtor (CNetSession2 is the per-frame lobby-session view of the same object;
-    // full CNetSession2<->CLobbyObjB fold is the deferred identity-recovery). `delete`
-    // shape: dtor then engine free.
-    CLobbyObjB* p520 = (CLobbyObjB*)m_session;
+    // The +0x520 session object is destroyed as ~CNetSession (0xb6220) - its real dtor
+    // (ResetSync + vector-destroy the 4 CNetCmdSlot slots). `delete` shape: dtor then
+    // engine free.
+    CNetSession* p520 = m_session;
     if (p520) {
-        p520->~CLobbyObjB();
+        p520->~CNetSession();
         ::operator delete(p520);
         m_session = 0;
     }
@@ -939,22 +937,22 @@ void CMulti::Teardown() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0b6220: ~CLobbyObjB. Runs the lobby drain (body call) then vector-destroys
-// the embedded 4x0x64 slot table at +0x20 (per-element dtor = ~CLobbySlot).
-// The /GX frame + body call + 'eh vector destructor iterator' fall out of the
-// member array (docs/patterns/eh-dtor-model-members-as-destructible.md). 100%.
+// 0x0b6220: ~CNetSession. Runs the lobby-sync drain (ResetSync @0xbf000) then
+// vector-destroys the embedded 4x CNetCmdSlot slot table at +0x20 (per-element dtor
+// = ~CNetCmdSlot). The /GX frame + ResetSync call + 'eh vector destructor iterator'
+// fall out of the member array (eh-dtor-model-members-as-destructible.md). 100%.
 RVA(0x000b6220, 0x54)
-CLobbyObjB::~CLobbyObjB() {
-    Body_bf000();
+CNetSession::~CNetSession() {
+    ResetSync();
 }
 
 // ---------------------------------------------------------------------------
-// 0x0b62a0: ~CLobbySlot. Runs a body call then tears down the +0x20 member.
-// The /GX frame + body call + member ~CLobbySlotInner fall out of the destructible
-// member (docs/patterns/eh-dtor-model-members-as-destructible.md). 100%.
+// 0x0b62a0: ~CNetCmdSlot. Runs ResetAll (0xc0bb0) then tears down the +0x20 CObList
+// member (m_cmds). The /GX frame + ResetAll call + member ~CObList fall out of the
+// destructible member (eh-dtor-model-members-as-destructible.md). 100%.
 RVA(0x000b62a0, 0x4a)
-CLobbySlot::~CLobbySlot() {
-    Body_c0bb0();
+CNetCmdSlot::~CNetCmdSlot() {
+    ResetAll();
 }
 
 // CMulti::Vslot09 (0x0b6330): chain the base ResetForMode gate; on success run the
@@ -1102,7 +1100,7 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
     m_curSlotId = m_session->m_10 - 1;
     m_574 = 0;
     Mgr()->m_5c->FreeNodes();
-    m_session->StartTick();
+    m_session->Reset(); // 0xbf150  (was StartTick view)
     Mgr()->m_60->StartTitleHook();
     return 1;
 }
@@ -1183,7 +1181,7 @@ i32 CMulti::Tick() {
     if ((u32)dt >= g_645584) {
         dt = (i32)g_645584;
     }
-    m_packetsRcvd = m_session->Step(dt);
+    m_packetsRcvd = m_session->Poll(dt); // 0xbf5a0  (was Step view)
     m_packetsSent = 0;
     if ((u32)m_frameDelta < (u32)m_drainTimer) {
         m_drainTimer = m_drainTimer - m_frameDelta;
@@ -1191,11 +1189,11 @@ i32 CMulti::Tick() {
         m_drainTimer = 0;
     }
     if (m_drainTimer == 0) {
-        m_packetsSent = m_session->Drain();
+        m_packetsSent = m_session->Tick(); // 0xbf9e0  (was Drain view)
         m_drainTimer = m_drainReload;
     }
     i32 fin = 0;
-    if (m_session->IsBusy() && m_pollAbort == 0) {
+    if (m_session->Advance() && m_pollAbort == 0) { // 0xc01d0  (was IsBusy view)
         fin = 1;
     }
     vtbl()->PostRedraw(this);
@@ -1204,7 +1202,7 @@ i32 CMulti::Tick() {
         ((CMultiSubTick*)sub)->SubTick(); // FUN_00563300 (thiscall on m_c->m_24->m_5c)
     }
     if (fin == 0) {
-        if (m_session->IsStalled() == 0 && m_574 == 0) {
+        if (m_session->Verify() == 0 && m_574 == 0) { // 0xc04f0  (was IsStalled view)
             if (m_isHost != 0) {
                 SendStatFlag(0x404, 1);
                 OnOutOfSync();
@@ -4013,7 +4011,7 @@ i32 CMulti::CreateSession() {
     }
 
     CNetSession* session = new CNetSession();
-    m_session = (CNetSession2*)session;
+    m_session = session;
     if (session == 0) {
         return 0;
     }
@@ -4253,11 +4251,11 @@ void CMulti::DropTimeout() {
         AckJoinFailure();
         g_648d14 = timeGetTime() + 0x3e8;
     }
-    CLobbySlot* slot = m_session->FindSlot(0x2710);
+    CNetCmdSlot* slot = m_session->FindSlot(0x2710);
     if (slot == 0) {
         return;
     }
-    g_611d88 = *(i32*)((char*)slot->m_mgr + 0x18);
+    g_611d88 = *(i32*)((char*)slot->m_desc + 0x18);
     CString nm;
     g_6473d8 = *slot->BuildHostName(&nm); // slot->FUN_004bc3f0(&nm) -> &nm; g_6473d8 = nm
     SendNetStat(0x40c, g_611d88, 1);
@@ -4274,8 +4272,8 @@ void CMulti::DropTimeout() {
 // matched CMulti.cpp call site (`*slot->BuildHostName(&nm)`), so that temp can't be
 // reproduced. Delegation + return-the-arg are otherwise exact. ~67%.
 RVA(0x000bc3f0, 0x1e)
-CString* CLobbySlot::BuildHostName(CString* out) {
-    *out = ((GruntzPlayer*)m_mgr)->GetName();
+CString* CNetCmdSlot::BuildHostName(CString* out) {
+    *out = ((GruntzPlayer*)m_desc)->GetName();
     return out;
 }
 
@@ -4796,10 +4794,3 @@ i32 CMulti::Vslot0b(i32 arg0, i32 arg1) {
     }
     return OnKeyCommand(arg0, arg1);
 }
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
-// class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
-// .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CLobbyObjB);
-SIZE_UNKNOWN(CLobbySlot);
-SIZE_UNKNOWN(CLobbySlotInner);
-SIZE_UNKNOWN(CLobbySlotMgr);

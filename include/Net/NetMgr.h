@@ -87,6 +87,7 @@ CString __stdcall operator+(const CString& lhs, const char* rhs);
 class GruntzPlayer;  // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
 class CGruntzCmdMgr; // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
 class CNetMgr;       // defined below; the command slot caches one as its +0x1c owner
+struct GruntRec;     // the lobby-sync grunt-state record (defined below CNetCmdSlot)
 struct
     CSndSubMgr; // <Gruntz/SoundCue.h>      - the +0xc sound sub-mgr (deref'd in NetMgr.cpp/MenuSelect)
 
@@ -274,21 +275,61 @@ struct CNetCmd {
 };
 SIZE_UNKNOWN(CNetCmd); // queued-command view (2 fields pinned); retail size TBD
 
+// The per-slot player descriptor the slot's +0xc pointer targets (the lobby-sync
+// view of the command-head target): +0x4 DirectPlay player id, +0x18 peer/target id,
+// +0x2c a per-slot dirty flag (== m_cmdHead[0xb]).
+struct SlotInfo {
+    char pad00[4];
+    i32 m_playerId; // +0x04 DirectPlay player id (SetData `a`, Recv/Read channel)
+    char pad08[0x18 - 0x08];
+    i32 m_netId; // +0x18 peer/target id (SetData `b`)
+    char pad1c[0x2c - 0x1c];
+    i32 m_dirty; // +0x2c set on slot re-init
+};
+SIZE_UNKNOWN(SlotInfo);
+
+// ---------------------------------------------------------------------------
+// The 0x64-byte command slot. ONE real class - the lobby-sync / lobby-channel /
+// per-session ex-views (CLobbyChannel/CCluster0c/CNetSlotAux/CLobbySlot) all folded
+// here: the command-session context (CNetSession command slots) and the lobby-sync
+// context (per-channel state) are the SAME object, so several fields carry a
+// command-view and a lobby-sync-view name via an anonymous union (byte-neutral;
+// offsets unchanged). Only OFFSETS + emitted bytes are load-bearing.
+// ---------------------------------------------------------------------------
 struct CNetCmdSlot {
-    i32 m_state;      // +0x0   "armed" flag (AckDropPlayer sets it to 1; ==3 => active)
-    i32 m_resetGuard; // +0x4   "slot already reset" guard
-    i32 m_latchedSeq; // +0x8   latched sequence (Touch copies m_baseSeq here)
-    i32* m_cmdHead;   // +0xc   -> command-list head value (m_cmdHead[0xb] == +0x2c is its own flag)
-    i32 m_latency;    // +0x10  the slot's latency value (CheckLatency compares vs the cap)
-    i32 m_baseSeq;    // +0x14  base command sequence number
-    i32 m_maxSeq;     // +0x18  high-water sequence (RaiseMax keeps the max)
-    CNetMgr* m_owner; // +0x1c  owning CNetMgr back-pointer (Init <- session; drives ProcessCmd)
+    i32 m_state; // +0x0   "armed"/slot-state flag (AckDropPlayer sets it to 1; ==3 => active)
+    union {
+        i32 m_resetGuard; // +0x4  command: "slot already reset" guard
+        i32 m_isRemote;   //        sync:    0 = local channel
+    };
+    union {
+        i32 m_latchedSeq; // +0x8  command: latched sequence (Touch copies m_baseSeq here)
+        i32 m_08;         //        sync:    counter / CNetMgr* (SendGruntRecord casts)
+    };
+    union {
+        i32* m_cmdHead;   // +0xc  command: -> command-list head value (m_cmdHead[0xb] == +0x2c flag)
+        SlotInfo* m_desc; //       sync:    player descriptor (same target, named view)
+    };
+    union {
+        i32 m_latency; // +0x10  command: latency value (CheckLatency compares vs the cap)
+        i32 m_timer;   //        sync:    activity timer
+    };
+    i32 m_baseSeq; // +0x14  base command sequence number (both views)
+    union {
+        i32 m_maxSeq;  // +0x18  command: high-water sequence (RaiseMax keeps the max)
+        i32 m_sentSeq; //        sync:    highest sequence sent
+    };
+    union {
+        CNetMgr* m_owner; // +0x1c  command: owning CNetMgr back-pointer (Init <- session)
+        i32 m_1c;         //        sync
+    };
     CObList m_cmds;   // +0x20  queued-command list (CObList, 0x1c bytes)
     i32 m_ackFlags[4]; // +0x3c  per-player ack-flag array (ProcessCmd sets m_ackFlags[pid])
-    i32 m_rangeA[3];   // +0x4c  command-range A (reset to -1)
-    i32 m_rangeB[3];   // +0x58  command-range B (reset to -1)
+    i32 m_rangeA[3];   // +0x4c  command-range A (reset to -1) (sync sub-object m_4c)
+    i32 m_rangeB[3];   // +0x58  command-range B (reset to -1) (sync sub-object m_58)
 
     CNetCmdSlot();                       // bbec0  construct m_cmds (/GX EH) + reset fields
+    ~CNetCmdSlot();                      // b62a0  ResetAll + tear down m_cmds (CObList) [multi]
     void ResetAll();                     // c0bb0  zero all fields + ranges
     void AdvanceSeq(i32 id);             // c0f10  fold an ack id into the high-water window
     void RaiseMax(i32 v);                // c0fa0  keep the high-water sequence
@@ -307,6 +348,11 @@ struct CNetCmdSlot {
     void ClearCmds();                    // c12e0  drain + recycle the queue
     void Touch();                        // c1390  latch the slot (sets +4, +8)
     void FullReset();                    // c0c20  zero the command fields + both ranges
+    void ClearAckFlags();                // bf120  zero the +0x3c..+0x48 ack-flag dwords (sync InitSub3c)
+    // Lobby-sync: emit one grunt-state record for the channel (sync SendAll's per-slot
+    // send; reads m_08 as CNetMgr* + m_desc as the descriptor, ships via SetData).
+    i32 SendGruntRecord(i32 seq, GruntRec* rec, i32 flag, i32 slot, i32 gruntId); // bfc70
+    CString* BuildHostName(CString* out); // bc3f0  fill `out` with the slot's host name [multi]
     i32
     Init(i32 a1, i32* a2, i32 a3); // c0b10  seed a fresh slot, then ClearCmds + reset both ranges
     i32 ProcessCmd(i32 playerId, void* rec, i32 size); // c0c70  parse/dispatch a command record
@@ -385,19 +431,110 @@ struct CNetResyncEntry {
 };
 SIZE(CNetResyncEntry, 0x410); // fully-known resync entry (array stride 0x410)
 
+// ---------------------------------------------------------------------------
+// Lobby-sync helper types (the sync-view of the session): a per-period grunt-state
+// record (the +0x3b0 table, same 0x410 stride as CNetResyncEntry - the two are the
+// same array, named per context), the synced game object in the +0x1b0 id-map, the
+// session/game manager the sync object caches, and the sync protocol header.
+// ---------------------------------------------------------------------------
+// A grunt record in the +0x3b0 table (stride 0x410; overlays CNetResyncEntry).
+struct GruntRec {
+    i32 m_seq;             // +0x00 sequence number (== CNetResyncEntry::m_0)
+    i32 m_checksum;        // +0x04 state checksum (== CNetResyncEntry::m_4, Verify compare)
+    unsigned char m_count; // +0x08 grunts serialized into this record
+    char pad09[3];
+    i32 m_payloadLen;             // +0x0c payload length
+    char m_payload[0x410 - 0x10]; // +0x10 payload
+};
+SIZE(GruntRec, 0x410);
+
+// The synced game object stored in the +0x1b0 id-map (GetSlotPtr -> CSyncObj*). A
+// genuine external polymorphic class (>=9 vtable slots; slot 8 @+0x20 is its
+// serializer). @identity-TODO: concrete identity lives in the net-game insert path.
+struct CSyncObj {
+    virtual void v0();
+    virtual void v1();
+    virtual void v2();
+    virtual void v3();
+    virtual void v4();
+    virtual void v5();
+    virtual void v6();
+    virtual void v7();
+    virtual i32 Serialize(char* buf, i32 max); // slot 8 -> vtbl+0x20
+};
+SIZE_UNKNOWN(CSyncObj);
+
+// The game/session manager the sync object caches at +0x04 (only +0x564 net-busy
+// flag + the reloc-masked call shapes are load-bearing).
+struct CSessionMgr {
+    char pad000[0x564];
+    i32 m_busy; // +0x564 net busy flag
+};
+SIZE_UNKNOWN(CSessionMgr);
+
+// A lobby-sync control/command message header (the net protocol's 3-word header).
+struct LobbyMsg {
+    i32 m_type; // +0x00 message type
+    i32 m_04;   // +0x04
+    i32 m_08;   // +0x08
+};
+SIZE_UNKNOWN(LobbyMsg);
+
+// The recycled-command-packet allocator (0xbf530, __cdecl): hands back a node from
+// the global packet pool. Modeled by its delinker name so the call is named.
+void* Unmatched_bf530(i32 zero); // bf530
+// Return a finished command node to the global recycle pool (g_pool.AddTail).
+void RecycleCmd(void* cmd); // bf580  __cdecl
+
+// ---------------------------------------------------------------------------
+// The per-game DirectPlay session (0x20bb0 bytes; new/delete via Rez). ONE real
+// class - the ex-views CLobbyObjB/CNetSession2/CLobbySync all folded here: the
+// command-session context and the lobby-sync context are the SAME +0x520 object
+// (`new CNetSession`, dtor @0xb6220). Several fields carry a command-view and a
+// lobby-sync-view name via an anonymous union (byte-neutral; offsets unchanged).
+// ---------------------------------------------------------------------------
 struct CNetSession {
-    CNetCmdBuf* m_0;                 // +0x00  base of the per-slot command-buffer array (Init a1)
-    i32 m_4;                         // +0x04  owning net manager as an i32 handle (Init a2;
-                                     //        CreateSlot re-passes it to the slot's Init(i32))
-    void* m_8;                       // +0x08  peer/owner back-ptr (Init a3)
-    i32 m_c;                         // +0x0c
-    i32 m_10;                        // +0x10
-    i32 m_14;                        // +0x14
-    i32 m_18;                        // +0x18  resync tick base (Verify: (m_18-2)%128)
-    i32 m_1c;                        // +0x1c  cached owner m_cmdDelay (Init)
-    CNetCmdSlot m_slots[4];          // +0x20  four inline command slots (0x64 each)
-    i32 m_1b0[0x80];                 // +0x1b0  0x200-byte scratch block ResetAll/Reset memsets to 0
-    CNetResyncEntry m_entries[0x80]; // +0x3b0  resync entries (indexed signed, base here)
+    union {
+        CNetCmdBuf* m_0; // +0x00  command: base of the per-slot command-buffer array (Init a1)
+        i32 m_00;        //        sync:    cleared by ResetSync
+    };
+    union {
+        i32 m_4;                // +0x04  command: owning net manager as an i32 handle (Init a2)
+        CSessionMgr* m_session; //        sync:    owning session/game manager (m_busy gate)
+    };
+    union {
+        void* m_8;         // +0x08  command: peer/owner back-ptr (Init a3)
+        CNetMgr* m_netMgr; //        sync:    the DirectPlay CNetMgr (endpoint at +0x18)
+    };
+    union {
+        i32 m_c;               // +0x0c  command
+        SlotInfo* m_localDesc; //        sync:    local player descriptor
+    };
+    union {
+        i32 m_10;   // +0x10  command / lobby slot-count-id base (Multi reads m_10)
+        i32 m_tick; //        sync:    sub-tick counter
+    };
+    union {
+        i32 m_14;           // +0x14  command
+        i32 m_snapshotDone; //        sync:    per-period snapshot-built flag
+    };
+    union {
+        i32 m_18;  // +0x18  command: resync tick base (Verify: (m_18-2)%128)
+        i32 m_seq; //        sync:    reconcile-period sequence
+    };
+    union {
+        i32 m_1c;     // +0x1c  command: cached owner m_cmdDelay (Init)
+        i32 m_period; //        sync:    ticks per period (modulus)
+    };
+    CNetCmdSlot m_slots[4]; // +0x20  four inline command slots (0x64 each)
+    union {
+        i32 m_1b0[0x80];         // +0x1b0  command: 0x200-byte resync scratch
+        CSyncObj* m_idMap[0x80]; //        sync:    synced-object ptr table (GetSlotPtr)
+    };
+    union {
+        CNetResyncEntry m_entries[0x80]; // +0x3b0  command: resync entries (signed-indexed)
+        GruntRec m_records[0x80];        //        sync:    grunt-record table
+    };
 
     CNetCmdSlot* FindCmdSlot(i32 playerId); // c00a0
     void ResetCmdBuffers();                 // c0070
@@ -408,19 +545,33 @@ struct CNetSession {
     CNetCmdSlot* CreateSlot(i32 index, i32 owner); // bfff0  init slot[index]
     i32 Verify();                                  // c04f0  resync consistency check (0-arg)
     void ResetAll();                               // bbf80  full reset: header + 4 slots + entries
-    // The per-game command-session methods (bodies in NetSession2.cpp, formerly the
-    // TU-local CNetSession2 shadow - folded here; the delinker packs these three into
-    // one .text section so Reset/Verify(i32) unpair vs their COMDAT base sections, an
-    // accepted scoring artifact).
     void Reset();      // bf150  re-init header/slots/scratch/entries (session-level reset)
     i32 Verify(i32 n); // c0290  slot-window validation against sequence n
     // Scan the four inline command slots for the first active (m_state==3),
-    // un-reset (m_resetGuard==0) slot whose latency exceeds key (unsigned). The
-    // Multi.h CNetSession2 lobby view named this FindSlot; it is a CNetSession method.
+    // un-reset (m_resetGuard==0) slot whose latency exceeds key (unsigned).
     CNetCmdSlot* FindSlot(u32 key); // c0460
-    // Wiring init (retail symbol ?Init@CNetSession2@@; the folded RVA owner): caches the
-    // owner pointers then Reset()s. Returns TRUE on success. a1=command-buffer array.
+    // Wiring init (caches the owner pointers then Reset()s). a1=command-buffer array.
     i32 Init(void* a1, class CNetMgr* a2, void* a3); // bef80
+
+    // --- lobby-sync methods (ex-CLobbySync, folded onto the same object) ---
+    ~CNetSession();                          // b6220  ResetSync + vector-destroy the 4 slots [multi]
+    void ResetSync();                        // bf000  clear header, recycle each slot, drain pool
+    i32 Poll(i32 delta);                     // bf5a0  advance active channels; drain the endpoint
+    i32 Dispatch(i32 a, LobbyMsg* b, i32 c); // bf700
+    i32 DispatchMsg(LobbyMsg* m, i32 arg2);  // bf7c0
+    i32 Tick();                              // bf9e0  snapshot -> broadcast -> flush
+    i32 SendAll();                           // bfb40
+    i32 SendBatch();                         // bfd40
+    i32 SendOne(CNetCmdSlot* s, i32 v);      // bfeb0
+    void Reconcile();                        // c00f0
+    i32 Advance();                           // c01d0
+    CSyncObj* GetSlotPtr(i32 v);             // c0430
+    // Declared-only lobby-sync siblings (their calls reloc-mask): Checksum @0xc0590
+    // resolves to CGameSyncSig::ComputeSignature, ArmSlot / Step2437 are per-frame
+    // pokes with no bound RVA, kept declared so the CMulti dispatch compiles.
+    i32 Checksum();                          // c0590 (== CGameSyncSig::ComputeSignature)
+    void ArmSlot(void* node, i32 parity);    // per-frame arm (reloc-masked)
+    void Step2437();                         // per-frame poke (reloc-masked)
 
     // The engine routes global new/delete through RezAlloc/RezFree; model that as
     // the class allocator so `new CNetSession()` emits a direct RezAlloc call.

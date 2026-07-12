@@ -50,7 +50,6 @@ class CMultiSub68;           // CMultiMgr::m_68
 class CChatBoxOwner;         // CMulti::m_2e0 (per-frame LoadChatBoxSprite sub)
 class CBrickzGrid;           // CMultiMgr::m_70
 class CMultiMgr;             // CState owner at CMulti+0x04 (fwd for CSlotConfig::Load)
-class CLobbySlot;            // CNetSession2 slot element (fwd for FindSlot's return)
 class CWorldSoundSet;        // CMultiMgr::m_54 (Retune @0xbd60)
 // The small real CNetMgr (the +0x524 DirectPlay wrapper) and the network views of
 // CMulti's base sub-objects, forward-declared so the accessors below compile without
@@ -236,42 +235,16 @@ public:
     CMultiPlayer* m_player; // +0x74  the player StartTitle opened (OpenPlayer result)
 };
 
-// The two lobby heap sub-objects (m_session / m_attractOverlay): each torn down by a thiscall
-// method (ecx = the object, no stack args) then handed to the engine free. The
-// CMulti session loop drives the lobby object (m_session) through a set of thiscall
-// entry points (all out-of-line -> reloc-masked); placeholder names.
-// IDENTITY-RECOVERY TODO (deferred multi-class reconciliation, flagged - NOT a keep):
-// this CMulti::m_session (+0x520) lobby-session object is the SAME 0x20bb0 object the
-// canonical CNetSession (<Net/NetMgr.h>) models - StartTick@0xbf150 == CNetSession::Reset,
-// IsStalled@0xc04f0 == CNetSession::Verify, CheckLatency@0xc04a0 == CNetSession::CheckLatency.
-// But its Step/Drain/IsBusy methods resolve to a THIRD class, CLobbySync (Poll@0xbf5a0,
-// Tick@0xbf9e0, Advance@0xc01d0), so m_session's dispatch spans CNetSession + CLobbySync.
-// Fully folding this (add the lobby/CLobbySync methods to CNetSession, delete this view,
-// retype m_session) needs a dedicated CNetSession<->CLobbySync reconciliation and pulls
-// the heavy <Net/NetMgr.h> into the widely-included Multi.h - deferred, not done here.
-class CNetSession2 { // m_session
-public:
-    void Teardown();                      // 0x004b6220 (NOT a CMulti method)
-    CLobbySlot* FindSlot(i32 key);        // 0x004c0460  scan the +0x20 4x0x64 slot table
-    void StartTick();                     // 0x000bf150 (== CNetSession::Reset)
-    i32 Step(i32 dt);                     // 0x000bf5a0 (== CLobbySync::Poll)
-    i32 Drain();                          // 0x000bf9e0 (== CLobbySync::Tick)
-    i32 IsBusy();                         // 0x000c01d0 (== CLobbySync::Advance)
-    i32 IsStalled();                      // 0x000c04f0 (== CNetSession::Verify)
-    void ArmSlot(void* node, i32 parity); // 0x000c03f0
-    i32 CheckLatency(i32 cap);            // 0x000c04a0 (thunk 0x148d)  == CNetSession::CheckLatency
-    void Step2437();                      // per-frame poke (PumpA, thiscall)
-
-    char m_pad00_10[0x10];
-    i32 m_10; // +0x10  slot-count / id base
-};
-SIZE_UNKNOWN(CNetSession2); // CMulti lobby-session view (identity-recovery TODO above)
-// (The CLobbyObjA m_attractOverlay view is dissolved: the +0x320 overlay's teardown is
-//  CLightFxRender::Ctor @0xa3360 - bound directly in CMulti::Teardown.)
-
-// A CNetSession2 slot element (returned by FindSlot, stride 0x64): the canonical
-// CLobbySlot lives in <Gruntz/LobbyObjB.h> (BuildHostName @0xbc3f0, ~ @0xb62a0,
-// m_mgr @+0xc); only the fwd-decl above is needed here.
+// The +0x520 lobby-session object (m_session) and the +0x320 attract overlay: each
+// torn down by a thiscall method then handed to the engine free (see CMulti::Teardown).
+// IDENTITY RESOLVED (op REHOME MF-Net): m_session IS the canonical CNetSession
+// (<Net/NetMgr.h>) - `new CNetSession`, dtor @0xb6220. Its command-session methods
+// (Reset/Verify/CheckLatency/CreateSlot/FindCmdSlot) and lobby-sync methods
+// (Poll/Tick/Advance/Reconcile) run on the SAME object; the ex-views CNetSession2 /
+// CLobbyObjB / CLobbySync are folded onto CNetSession, its 0x64-byte slots onto
+// CNetCmdSlot. m_session is typed CNetSession* below (fwd-decl only; Multi.cpp pulls
+// the full <Net/NetMgr.h>). The +0x320 overlay's teardown is CLightFxRender::Ctor
+// @0xa3360 - bound directly in CMulti::Teardown (the ex-CLobbyObjA view is dissolved).
 
 // CMulti's own (manually-stamped) vtable. Only the two slots the per-frame Tick
 // dispatches through are typed; the rest are opaque. The slots are thiscall in
@@ -342,10 +315,9 @@ public:
     i32& ResyncLParam() {
         return *(i32*)((char*)this + 0x1c);
     }
-    // The +0x520 session as its command-slot facet (CNetSession); the per-frame lobby
-    // methods use the CNetSession2 lobby view of the same object (identity-TODO).
+    // The +0x520 session (command-slot + lobby-sync facets are the same CNetSession).
     CNetSession* Session() {
-        return (CNetSession*)m_session;
+        return m_session;
     }
 
     // Teardown helper run first by the dtor (and standalone @0xb6110): drains the
@@ -507,7 +479,7 @@ public:
     // --- layout (placeholder names; offsets are the load-bearing truth) ---
     // --- CMulti-own multiplayer block (after CPlay base @0x518) ---
     char _padMp[0x520 - 0x51c];
-    CNetSession2* m_session;     // +0x520
+    CNetSession* m_session;      // +0x520  the DirectPlay command/lobby-sync session
     CMultiReportGate* m_netGate; // +0x524
     i32 m_isHost;                // +0x528  (== Frankenstein m_useChannelLatency)
     i32 m_sessionTerminated;     // +0x52c
