@@ -279,7 +279,7 @@ flags = "eh"
 
 [[unit]]
 unit = "databuffer"
-source = "src/Gruntz/DataBuffer.cpp"
+source = "src/DDrawMgr/DataBuffer.cpp"
 flags = "eh"
 
 [[unit]]
@@ -504,7 +504,7 @@ flags = "eh"
 # files; these 12 movement fns are birth-positioned in their own obj (wave1-C).
 [[unit]]
 unit = "gamelevelmove"
-source = "src/Gruntz/GameLevelMove.cpp"
+source = "src/Wwd/GameLevelMove.cpp"
 flags = "eh"
 
 # The plane/render module (original TU at [0x161350..0x163a00], @identity-TODO;
@@ -515,7 +515,7 @@ flags = "eh"
 # still emitted (and VTBL-bound) in gamelevel via ReadImageSet's `new CImageSetN`.
 [[unit]]
 unit = "levelplane"
-source = "src/Gruntz/LevelPlane.cpp"
+source = "src/DDrawMgr/LevelPlane.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1010,7 +1010,7 @@ flags = "base"
 
 [[unit]]
 unit = "getretaddr"
-source = "src/Gruntz/GetRetAddr.cpp"
+source = "src/Bute/GetRetAddr.cpp"
 flags = "base"
 
 [[unit]]
@@ -1040,7 +1040,7 @@ flags = "base"
 
 [[unit]]
 unit = "cremusnode"
-source = "src/Gruntz/ResolveNode.cpp"
+source = "src/Image/ResolveNode.cpp"
 flags = "base"
 
 [[unit]]
@@ -1308,12 +1308,12 @@ flags = "eh"
 
 [[unit]]
 unit = "leafelementobj"
-source = "src/Gruntz/LeafElementObj.cpp"
+source = "src/DDrawMgr/LeafElementObj.cpp"
 flags = "base"
 
 [[unit]]
 unit = "anirecord"
-source = "src/Gruntz/AniRecord.cpp"
+source = "src/DDrawMgr/AniRecord.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1521,7 +1521,7 @@ flags = "base"
 
 [[unit]]
 unit = "logicrecord"
-source = "src/Gruntz/LogicRecord.cpp"
+source = "src/DDrawMgr/LogicRecord.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1571,7 +1571,7 @@ flags = "base"
 
 [[unit]]
 unit = "fadermgr"
-source = "src/Gruntz/FaderMgr.cpp"
+source = "src/DDrawMgr/FaderMgr.cpp"
 flags = "eh"
 
 [[unit]]
@@ -1591,7 +1591,7 @@ flags = "base"
 
 [[unit]]
 unit = "typecollruntime"
-source = "src/Gruntz/TypeCollRuntime.cpp"
+source = "src/Bute/TypeCollRuntime.cpp"
 flags = "base"
 
 [[unit]]
@@ -1648,7 +1648,7 @@ flags = "base"
 
 [[unit]]
 unit = "fader"
-source = "src/Gruntz/Fader.cpp"
+source = "src/DDrawMgr/Fader.cpp"
 flags = "eh"
 
 
@@ -1751,7 +1751,7 @@ flags = "base"
 
 [[unit]]
 unit = "typekeycoll"
-source = "src/Gruntz/TypeKeyColl.cpp"
+source = "src/Bute/TypeKeyColl.cpp"
 flags = "eh"
 
 [[unit]]
@@ -2117,7 +2117,7 @@ flags = "base"
 [[unit]]
 # ONE original TU (dossier 0x1832d0 pocket, oracle-proven): absorbed rangeset.
 unit = "debugprintf"
-source = "src/Gruntz/DebugPrintf.cpp"
+source = "src/Rez/DebugPrintf.cpp"
 flags = "base"
 
 [[unit]]

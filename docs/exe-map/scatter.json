@@ -364,7 +364,7 @@
   "spread": 1.2938377888536474
  },
  {
-  "file": "src/Gruntz/Fader.cpp",
+  "file": "src/DDrawMgr/Fader.cpp",
   "n": 47,
   "bytes": 14823,
   "lo": 1565776,
@@ -767,7 +767,7 @@
   "spread": 31.48537234042553
  },
  {
-  "file": "src/Gruntz/AniRecord.cpp",
+  "file": "src/DDrawMgr/AniRecord.cpp",
   "n": 13,
   "bytes": 1307,
   "lo": 1464224,
@@ -781,16 +781,16 @@
  },
  {
   "file": "src/Wwd/WwdGrid.cpp",
-  "n": 13,
-  "bytes": 1830,
+  "n": 14,
+  "bytes": 1831,
   "lo": 1475232,
-  "hi": 1645820,
-  "span": 170588,
+  "hi": 1645841,
+  "span": 170609,
   "frags": 3,
-  "avg_cluster": 4.333333333333333,
-  "frag_ratio": 0.23076923076923078,
-  "occupancy": 0.010727601003587592,
-  "spread": 93.21748633879781
+  "avg_cluster": 4.666666666666667,
+  "frag_ratio": 0.21428571428571427,
+  "occupancy": 0.010732141915139295,
+  "spread": 93.1780447842709
  },
  {
   "file": "src/Gruntz/AniCycle.cpp",
@@ -2002,7 +2002,7 @@
   "spread": 9.16308636562911
  },
  {
-  "file": "src/Gruntz/TypeKeyColl.cpp",
+  "file": "src/Bute/TypeKeyColl.cpp",
   "n": 29,
   "bytes": 5239,
   "lo": 1495040,
@@ -4368,7 +4368,7 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/DataBuffer.cpp",
+  "file": "src/DDrawMgr/DataBuffer.cpp",
   "n": 8,
   "bytes": 786,
   "lo": 1376640,
@@ -4381,7 +4381,7 @@
   "spread": 1.0737913486005088
  },
  {
-  "file": "src/Gruntz/ResolveNode.cpp",
+  "file": "src/Image/ResolveNode.cpp",
   "n": 2,
   "bytes": 76,
   "lo": 1395152,
@@ -4420,7 +4420,7 @@
   "spread": 1.0287854889589905
  },
  {
-  "file": "src/Gruntz/LeafElementObj.cpp",
+  "file": "src/DDrawMgr/LeafElementObj.cpp",
   "n": 2,
   "bytes": 104,
   "lo": 1410784,
@@ -4446,7 +4446,7 @@
   "spread": 1.1432065217391305
  },
  {
-  "file": "src/Gruntz/LevelPlane.cpp",
+  "file": "src/DDrawMgr/LevelPlane.cpp",
   "n": 22,
   "bytes": 9058,
   "lo": 1447328,
@@ -4472,7 +4472,7 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/LogicRecord.cpp",
+  "file": "src/DDrawMgr/LogicRecord.cpp",
   "n": 5,
   "bytes": 2464,
   "lo": 1460272,
@@ -4498,7 +4498,7 @@
   "spread": 1.082306554953179
  },
  {
-  "file": "src/Gruntz/GameLevelMove.cpp",
+  "file": "src/Wwd/GameLevelMove.cpp",
   "n": 12,
   "bytes": 4329,
   "lo": 1470768,
@@ -4511,7 +4511,7 @@
   "spread": 1.0214830214830215
  },
  {
-  "file": "src/Gruntz/GetRetAddr.cpp",
+  "file": "src/Bute/GetRetAddr.cpp",
   "n": 1,
   "bytes": 3,
   "lo": 1497488,
@@ -4524,7 +4524,7 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/TypeCollRuntime.cpp",
+  "file": "src/Bute/TypeCollRuntime.cpp",
   "n": 1,
   "bytes": 81,
   "lo": 1501728,
@@ -4732,7 +4732,7 @@
   "spread": 1.0
  },
  {
-  "file": "src/Gruntz/FaderMgr.cpp",
+  "file": "src/DDrawMgr/FaderMgr.cpp",
   "n": 10,
   "bytes": 2758,
   "lo": 1562864,
@@ -4823,7 +4823,7 @@
   "spread": 1.4482029598308668
  },
  {
-  "file": "src/Gruntz/DebugPrintf.cpp",
+  "file": "src/Rez/DebugPrintf.cpp",
   "n": 13,
   "bytes": 1287,
   "lo": 1592176,
