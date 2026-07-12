@@ -260,6 +260,30 @@ const i32 kActivateErrTag = 0x44b;
 // SetTab's own report tag (same error id, line tag 0x44a).
 const i32 kSetTabErrTag = 0x44a;
 
+// @identity-TODO CStatusBar (the CPlay-owned status-bar object at CPlay+0x2dc)
+// -------------------------------------------------------------------------
+// NAME-CONFLATION (proven): this class is the big ~0x570 status-bar HOST, NOT the
+// real CSBI_RectOnly. The real CSBI_RectOnly is the THIN base of CSBI_Image (11-slot
+// vtable 0x5eab8c, size <=0x34, ctor 0x101fa0 which only zeroes m_4/m_24/m_28 + m_8=1;
+// modeled correctly in <Gruntz/SBI_Image.h>). CSBI_Image (size 0x34) : CSBI_RectOnly
+// (RTTI), so the real CSBI_RectOnly CANNOT be 0x570.
+//
+// The HOST here is a distinct, likely NON-polymorphic object owned by CPlay through a
+// pointer at CPlay+0x2dc: PROVEN by DtorMembers (0xc8980) <- CPlay::CPlayDtorBody
+// (0xc8700) at 0xc878d `mov esi,[edi+0x2dc]; call 0x1438(->DtorMembers)` - CPlay tears
+// the host down via a DIRECT (non-virtual) DtorMembers call, so the host has no ??_7 /
+// no RTTI name (its role name CStatusBar is a reconstruction placeholder). The thin
+// CSBI_RectOnly dtor 0x100700 calls ONLY DtorRect (never DtorMembers), confirming the
+// two are different classes. The ctor 0x101fa0 + the base slots below belong to the
+// THIN class; the ~70 tab/gauge/slot/hit-rect methods belong to the HOST.
+//
+// Freeing the CSBI_RectOnly name (so the tab sub-widgets below - CSbiRectSub / the
+// CSbiTab-based CSBI_MenuItem view - can dissolve onto the real CSBI_RectOnly / real
+// CSBI_MenuItem) requires renaming this HOST class + its ~70 methods. That is a
+// CROSS-LANE refactor: the host methods are referenced by CGruntzMgr/CPlay/GooWellMgr/
+// KitchenSlime/DestructButton/ModeObjInit (out of the SBI lane's scope), so it is
+// DEFERRED work for a coordinated pass, not a within-lane fold.
+// -------------------------------------------------------------------------
 // base vftable (CStatusBarItem) anchored out-of-line in this TU.
 class CSBI_RectOnly : public CStatusBarItem {
 public:
