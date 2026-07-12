@@ -2325,8 +2325,7 @@ rva,name,lib,confidence,source
 0x1b7f25,?NewAssoc@CMapStringToOb@@IAEPAUCAssoc@1@XZ,NAFXCW,AMBIG,anchored
 0x1b7f85,?FreeNode@CStringList@@IAEXPAUCNode@1@@Z,NAFXCW,AMBIG,anchored
 0x1b7fae,?GetAssocAt@CMapStringToOb@@IBEPAUCAssoc@1@PBDAAI@Z,NAFXCW,AMBIG,anchored
-0x1b8008,?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z,NAFXCW,AMBIG,anchored
-0x1b8008,?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z,NAFXCW,AMBIG,reloc-r27-comdat-fold
+0x1b8008,?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z,NAFXCW,HIGH,reloc-R24-R27-comdat-fold
 0x1b802a,?Lookup@CMapPtrToPtr@@QBEHPAXAAPAX@Z,NAFXCW,AMBIG,anchored
 0x1b804c,??ACMapStringToOb@@QAEAAPAVCObject@@PBD@Z,NAFXCW,AMBIG,anchored
 0x1b80ae,?RemoveKey@CMapStringToOb@@QAEHPBD@Z,NAFXCW,AMBIG,anchored
@@ -3449,5 +3448,4 @@ rva,name,lib,confidence,source
 0x1b8546,?GetNextAssoc@CMapStringToPtr@@QBEXAAPAU__POSITION@@AAVCString@@AAPAX@Z,NAFXCW,HIGH,reloc-R24
 0x1b82d0,?RemoveAll@CMapStringToPtr@@QAEXXZ,NAFXCW,HIGH,reloc-R24
 0x1b8322,??1CMapStringToPtr@@UAE@XZ,NAFXCW,HIGH,reloc-R24
-0x1b8008,?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z,NAFXCW,HIGH,reloc-R24
 0x177660,_DirectPlayLobbyCreateA@20,DPLAYX,HIGH,reloc-R24
