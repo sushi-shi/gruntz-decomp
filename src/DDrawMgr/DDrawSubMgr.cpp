@@ -370,82 +370,18 @@ static inline LeafElementObj* MakeLeafElement(const CDDrawSubMgrLeafScan* parent
 
 // --- end of type preamble; function bodies below in strict RVA order ---
 // ===========================================================================
-// 0x031250 - a NON-MEMBER of the cluster (foreign exile kept at the 0x31xxx obj;
-// file-head position): a queue-drain probe. Walks the singly-linked list at
-// this+0x68, popping each head node; returns the first node-data object whose
-// slot +0x20 probe yields 5. Empty/exhausted -> 0. __thiscall, no args.
+// Two FOREIGN lone methods carved out of this obj (operation REHOME, package D8):
+//   - 0x1f940 LeafCue::PlayIfElapsed  -> src/Gruntz/LeafCuePlay.cpp
+//   - 0x31250 CQueueDrainHost::Drain  -> src/Gruntz/QueueDrainHost.cpp
+// Both sit ~1.2 MB before the DDraw submgr block (0x156cb0+); each is its own obj.
 // ===========================================================================
-class CQueueProbeData;
-class CQueueProbeNode {
-public:
-    CQueueProbeNode* m_next; // +0x00
-    char m_pad04[0x04];      // +0x04
-    CQueueProbeData* m_data; // +0x08 -> probed object
-};
-SIZE_UNKNOWN(CQueueProbeNode);
-class CQueueProbeData : public CObject {
-public:
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual i32 Probe20(); // +0x20 status probe
-};
-SIZE_UNKNOWN(CQueueProbeData);
-class CQueueDrainHost {
-public:
-    void* Drain_031250();
-    char m_pad00[0x68];      // +0x00 .. +0x67
-    CQueueProbeNode* m_head; // +0x68 list head
-};
-SIZE_UNKNOWN(CQueueDrainHost);
-
-// ---------------------------------------------------------------------------
-// 0x1f940: LeafCue::PlayIfElapsed -- the cue's own gated play entry. When the
-// reentrancy gate is open AND the throttle interval has elapsed since the last
-// draw-clock, restamp the clock and tail-forward the 4 caller args to the player's
-// ConfigureItem (returning its result); otherwise return 0. 4 stack args (ret 0x10).
-// @early-stop
-// 66% -- split-epilogue wall (twin of RefreshAsset_114120's 100% idiom, but 4-arg):
-// the gate/interval guards, the wrap-safe clock compare, the clock restamp, and the
-// identical 4-arg push sequence into ConfigureItem all match. MSVC5 here MERGES the
-// two guard-failure `return 0` exits into one shared `pop esi; ret 0x10` tail
-// (je/jb to a shared epilogue) where retail emits each failure as its own inline
-// `xor eax; pop esi; ret 0x10` (jne/jae split). The ConfigureItem callee is
-// reloc-masked (CStatusBarMgr vs LeafCuePlayer at the same 0x1360d0). Not source-
-// steerable (tried flat + nested guard forms). Logic complete.
-RVA(0x0001f940, 0x4c)
-i32 LeafCue::PlayIfElapsed_01f940(i32 a0, i32 a1, i32 a2, i32 a3) {
-    if (g_sndEnabled == 0) {
-        return 0;
-    }
-    if (g_killCueClock - (u32)m_14 >= (u32)m_18) {
-        m_14 = g_killCueClock;
-        return m_10->ConfigureItem(a0, a1, a2, a3);
-    }
-    return 0;
-}
-
-// @early-stop
-// loop-top member re-read wall - retail re-loads `mov eax,[edi+0x68]` at the loop
-// top (a redundant load the call clobbers) and merges the empty/exhausted zero
-// epilogues into one xor-first tail; our cl carries the head pointer across the
-// back-edge (CSE) and splits the epilogues. Logic/CFG/offsets exact
-// (docs/patterns/reread-member-view-pointer.md).
-RVA(0x00031250, 0x33)
-void* CQueueDrainHost::Drain_031250() {
-    while (m_head != 0) {
-        CQueueProbeNode* head = m_head;
-        m_head = head->m_next;
-        CQueueProbeData* data = head->m_data;
-        if (data->Probe20() == 5) {
-            return data;
-        }
-    }
-    return 0;
-}
 
 // ---------------------------------------------------------------------------
 // 0x5b7e0: Lookup `key` in the map and return the found CObject* (null if not).
+// @interleaver CDDrawSubMgrLeafScan emitted-in gruntcombat
+// (own-class out-of-line member; retail .text sits inside src/Gruntz/GruntCombat.cpp's
+// block at 0x5b7e0, ~1 MB before this obj. Homing into GruntCombat.cpp is deferred -
+// that TU must fully declare CDDrawSubMgrLeafScan first. Kept in host + flagged.)
 RVA(0x0005b7e0, 0x23)
 CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
     CObject* val = 0;
@@ -460,6 +396,11 @@ CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
 // re-run its player's ConfigureItem with the gated cue-item id. Returns 0 always
 // (the success path falls off the end of ConfigureItem's void return). 1 stack
 // arg (ret 4); same cue-refresh idiom as CSBI_MenuItem's highlight path.
+// @interleaver CDDrawSubMgrLeafScan emitted-in tiletriggerswitchlogic
+// (own-class out-of-line member; retail .text sits inside src/Gruntz/
+// TileTriggerSwitchLogic.cpp's block at 0x114120, ~0.27 MB before this obj. Homing
+// there is deferred - that TU must fully declare CDDrawSubMgrLeafScan first. Kept in
+// host + flagged.)
 RVA(0x00114120, 0x70)
 i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
     if (m_30 != 0) {

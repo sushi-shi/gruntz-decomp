@@ -1326,6 +1326,18 @@ unit = "ddrawsubmgr"
 source = "src/DDrawMgr/DDrawSubMgr.cpp"
 flags = "eh"
 
+# Foreign lone methods carved out of ddrawsubmgr (operation REHOME D8): LeafCue and
+# CQueueDrainHost sit ~1.2 MB before the DDraw submgr block - each its own obj.
+[[unit]]
+unit = "leafcueplay"
+source = "src/Gruntz/LeafCuePlay.cpp"
+flags = "eh"
+
+[[unit]]
+unit = "queuedrainhost"
+source = "src/Gruntz/QueueDrainHost.cpp"
+flags = "eh"
+
 [[unit]]
 unit = "wwdobjmgr"
 source = "src/Wwd/WwdObjMgr.cpp"
@@ -1767,6 +1779,23 @@ flags = "eh"
 [[unit]]
 unit = "streamrecordloaders"
 source = "src/Gruntz/StreamRecordLoaders.cpp"
+flags = "base"
+
+# Carved out of streamrecordloaders (operation REHOME D8): the trigger / grunt-state /
+# projectile record loaders each sit at their own far-away .text block (separate objs).
+[[unit]]
+unit = "triggerloadrec"
+source = "src/Gruntz/TriggerLoadRec.cpp"
+flags = "base"
+
+[[unit]]
+unit = "gruntstaterec"
+source = "src/Gruntz/GruntStateRec.cpp"
+flags = "base"
+
+[[unit]]
+unit = "projloadrec"
+source = "src/Gruntz/ProjLoadRec.cpp"
 flags = "base"
 
 [[unit]]
