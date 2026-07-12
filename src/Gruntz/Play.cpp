@@ -1755,9 +1755,9 @@ i32 CPlay::SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             if (m_gridHasSprite) {
                 CWorld* w = m_4w();
                 i32 id = g_644c54;
-                void* spr = w->m_74->LoadSprite(*(void**)(w->m_158 + (id * 0x47) * 8), 0);
+                void* spr = (void*)w->m_74->GetSel((i32) * (void**)(w->m_158 + (id * 0x47) * 8), 0);
                 if (spr == 0) {
-                    spr = g_gameReg->m_spriteFactory->LoadSprite((void*)1, (i32)spr);
+                    spr = (void*)g_gameReg->m_spriteFactory->GetSel(1, (i32)spr);
                 }
                 ((CImageSet*)m_grid)->SetAllTypes(0xa);
                 ((CImageSet*)m_grid)->SetAllFormats((i32)spr);
