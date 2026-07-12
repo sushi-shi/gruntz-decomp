@@ -60,19 +60,21 @@ void Forward_115730() {
     g_tinyFont.Font::Font();
 }
 
-// The dynamic initializer for the g_font64ead8 global - a FontRenderer (the stateful
-// render shim, ctor ??0FontRenderer@@QAE@XZ 0x179be0; DIFFERENT type from the bitmap
-// Font globals above). Constructed in place via the explicit-ctor-call tail-jmp. Its
-// DATA pin lives here now. Re-homed from src/Stub/BoundaryLowerThunks.cpp (was
-// FontForward1157b0).
+// The global text renderer g_textObj (0x64ead8) - a FontRenderer (the stateful render
+// shim, ctor ??0FontRenderer@@QAE@XZ 0x179be0; DIFFERENT type from the bitmap Font
+// globals above). DEFINED here (owner TU: this TU holds its dynamic initializer, the
+// explicit-ctor-call tail-jmp below). It was the address-minted placeholder
+// `g_font64ead8`; the real name comes from its only consumer, EngStr_RenderText
+// (src/Wap32/EngStrRenderText.cpp), which drives it as the engine's one text-render
+// object (SetFont per size class, SetColor, then the wrapped draw).
 DATA(0x0024ead8)
-extern FontRenderer g_font64ead8;
-// @interleaver Forward_1157b0 (g_font64ead8 FontRenderer dyn-init) emitted-in <boundary:
+FontRenderer g_textObj;
+// @interleaver Forward_1157b0 (g_textObj FontRenderer dyn-init) emitted-in <boundary:
 // crt ___inittime @0x1156d0 (before) + crt ___inittime @0x1157d0 (after)>. A dyn-init
 // COMDAT the /Gy linker placed in the init region, not this TU block.
 RVA(0x001157b0, 0xa)
 void Forward_1157b0() {
-    g_font64ead8.FontRenderer::FontRenderer();
+    g_textObj.FontRenderer::FontRenderer();
 }
 
 // ---------------------------------------------------------------------------

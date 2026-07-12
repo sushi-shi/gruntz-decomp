@@ -47,8 +47,11 @@ DATA(0x0024554c) // canonical binding 0x24554c
 extern i32 g_freeListBias;
 extern i32 g_freeListNodeBias; // second name for 0x24554c (PhaseStep), reloc-masked extern
 
-DATA(0x00245540)
-extern FreeNodePool g_dropList;
+// The former `g_dropList` was a SECOND name for 0x245540 - the same FreeNodePool the
+// rest of the tree calls g_coordPool (<Gruntz/Grunt.h>); its DATA pin here was the one
+// binding at
+// that rva, which left every `?g_coordPool@@3VFreeNodePool@@A` reference UNBOUND. Folded
+// onto g_coordPool (defined in GameText.cpp, the pool's reset/clear owner TU).
 
 extern "C" i32 CellTargetable(i32 col, i32 row); // 0x40107d -> 0xf0db0 (MgrListFind)
 
@@ -149,7 +152,7 @@ SIZE_UNKNOWN(CGruntPtAcc);
             CScanListNode* cur = n;                                                                \
             n = cur->m_next;                                                                       \
             if (cur->m_8 != 0) {                                                                   \
-                g_dropList.Push((void*)(cur->m_8));                                                \
+                g_coordPool.Push((void*)(cur->m_8));                                                \
             }                                                                                      \
         }                                                                                          \
         m_31c.RemoveAll();                                                                         \
@@ -551,7 +554,7 @@ i32 CGrunt::WanderStep() {
                                 node = *(void**)node;
                                 i32 data = *(i32*)((char*)cur + 8);
                                 if (data != 0) {
-                                    g_dropList.Push((void*)(data));
+                                    g_coordPool.Push((void*)(data));
                                 }
                             } while (node != 0);
                         }
@@ -628,7 +631,7 @@ i32 CGrunt::WanderStep() {
                         node = *(void**)node;
                         i32 data = *(i32*)((char*)cur + 8);
                         if (data != 0) {
-                            g_dropList.Push((void*)(data));
+                            g_coordPool.Push((void*)(data));
                         }
                     } while (node != 0);
                 }
@@ -2398,7 +2401,7 @@ i32 CGrunt::SeekTarget() {
             i32* link = (i32*)((char*)p + 8);
             p = next;
             if (*link != 0) {
-                g_dropList.Push((void*)(*link));
+                g_coordPool.Push((void*)(*link));
             }
         }
         m_31c.RemoveAll();
@@ -2419,7 +2422,7 @@ i32 CGrunt::SeekTarget() {
                     i32* link = (i32*)((char*)p + 8);
                     p = next;
                     if (*link != 0) {
-                        g_dropList.Push((void*)(*link));
+                        g_coordPool.Push((void*)(*link));
                     }
                 }
                 m_31c.RemoveAll();
@@ -2458,7 +2461,7 @@ i32 CGrunt::SeekTarget() {
                     i32* link = (i32*)((char*)p + 8);
                     p = next;
                     if (*link != 0) {
-                        g_dropList.Push((void*)(*link));
+                        g_coordPool.Push((void*)(*link));
                     }
                 }
                 m_31c.RemoveAll();

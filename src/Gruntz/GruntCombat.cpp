@@ -182,8 +182,8 @@ struct CGruntSndResMgr {
 };
 
 // The launch-sound cue tag (reloc-masked global) + the throttled cue player.
-DATA(0x0021ab24)
-extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
+// DEFINED in GruntzMgr.cpp (owner TU); plain C++ extern here.
+extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA @0x61ab24
 // LeafCue::PlayIfElapsed (0x1f940, __thiscall): plays the cue when the kill-cue clock
 // throttle has elapsed. Reached as a bare call (latent-ecx cue object), so modeled as
 // a flat __stdcall alias through thunk 0x25fe. External -> reloc-masked.
@@ -318,8 +318,11 @@ struct CombatCoordList {
 
 // The kill-clock + sound-enable + cue-tag globals.
 extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
-extern "C" i32 g_sndEnabled;   // ?g_sndEnabled@@3HA @0x61ab20
-// g_sndCueTag is DATA-declared above (LoadGruntAbilityTuning section).
+// C++ linkage: ?g_sndEnabled@@3HA is now the ONE name bound at 0x61ab20 (defined in
+// GruntzMgr.cpp); the old extern "C" spelling emitted _g_sndEnabled, a second name for
+// the same storage.
+extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA @0x61ab20
+// g_sndCueTag is declared above (LoadGruntAbilityTuning section).
 
 // The 8 octant direction-vector triples (16-byte stride) copied into CGrunt+0x43c.
 extern "C" i32 g_dirVec[9][4]; // DAT_00644970

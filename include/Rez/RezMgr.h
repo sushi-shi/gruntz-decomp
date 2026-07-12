@@ -424,10 +424,13 @@ public:
     // installed at vtable slot +0x38). Reconstructed in RezMgr.cpp (0x13ddc0);
     // returns int (the retail symbol is ?UpdateClock@RezMgr@@QAEHXZ).
     i32 UpdateClock();
-    // Its two external/no-body __thiscall callees (reloc-masked): the busy-wait
-    // pacing limiter (0x13dec0) and the window-start time sampler (0x13de70).
+    // The busy-wait pacing limiter (0x13dec0), reconstructed in src/Wap32/GameApp.cpp.
     void SpinWaitUntil(i32 target); // 0x13dec0
-    void InitTimeFields(i32 reset); // 0x13de70
+    // (`InitTimeFields` used to be declared here too. It never existed as a RezMgr method:
+    // 0x13de70 is WAP32::CGameMgr::InitTimeFields, and this duplicate declaration emitted a
+    // ?InitTimeFields@RezMgr@@QAEXH@Z reference that no definition could ever satisfy.
+    // UpdateClock now calls the real base method. See the @identity-TODO in GameApp.cpp:
+    // RezMgr IS CGruntzMgr : WAP32::CGameMgr, a fold owned by the GruntzMgr lane.)
 
     // Frame-rate config: SetFrameRate stores `fps` in the pacing gate (+0x1c) and
     // derives the ms-per-frame budget (+0x28 = 1000/fps); TrySetFrameRate installs it

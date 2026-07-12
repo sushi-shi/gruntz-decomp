@@ -100,10 +100,8 @@ struct CChatSprite {
 };
 
 // The horizontal-scroll edge state read by the two scroll-step methods.
-DATA(0x0021ab20)
-extern i32 g_scrollEnabled; // 0x61ab20
-DATA(0x0021ab24)
-extern i32 g_scrollDelta; // 0x61ab24
+extern i32 g_sndEnabled; // 0x61ab20
+extern i32 g_sndCueTag; // 0x61ab24
 DATA(0x002bf3c0)
 extern i32 g_scrollClock; // 0x6bf3c0
 
@@ -508,10 +506,10 @@ i32 CChatBox::ScrollRow0() {
     if (!t) {
         return 0;
     }
-    if (!g_scrollEnabled) {
+    if (!g_sndEnabled) {
         return 0;
     }
-    i32 delta = g_scrollDelta;
+    i32 delta = g_sndCueTag;
     i32 clock = g_scrollClock;
     u32 elapsed = (u32)clock - (u32)t->m_14;
     if (elapsed < (u32)t->m_18) {
@@ -540,10 +538,10 @@ i32 CChatBox::ScrollRow1() {
     if (!t) {
         return 0;
     }
-    if (!g_scrollEnabled) {
+    if (!g_sndEnabled) {
         return 0;
     }
-    i32 delta = g_scrollDelta;
+    i32 delta = g_sndCueTag;
     i32 clock = g_scrollClock;
     u32 elapsed = (u32)clock - (u32)t->m_14;
     if (elapsed < (u32)t->m_18) {

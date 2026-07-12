@@ -353,37 +353,22 @@ void CFaderMgr::DeleteAll() {
     m_arr.m_nSize = 0;
 }
 
-// 0x17e240 (re-homed from src/Stub/BoundaryUpperEh.cpp): the standalone out-of-line
-// emission of the CFaderArray teardown - aliases CFaderArray's vtable (0x5f0790) and
-// frees the +0x4 heap buffer via ::operator delete (0x1b9b82, reloc-masked, C++ linkage
-// -> potentially-throwing -> /GX base-subobject unwind frame). Kept a DISTINCT
-// placeholder identity (C17e240): the retail ~CFaderMgr @0x17d910 INLINES the member
-// ~CFaderArray teardown (proven - no call in its retail reloc table), so ~CFaderArray
-// is modeled INLINE (FaderMgr.h); binding this out-of-line COMDAT-duplicate to the same
-// name would force an external ~CFaderArray, breaking that inline (a real MISBOUND). Its
-// vtable stamps therefore stay placeholder-named (??_7C17e240 / ??_7Sev17e240); the real
-// ??_7CFaderArray / ??_7CObject are bound at 0x1f0790 / 0x1e8cb4 by the canonical class,
-// so a VTBL alias here would keep-last-collide. A genuine duplicate-emission limit. The
-// Sev17e240 base vptr-store (masks ??_7CObject @0x1e8cb4) stays reloc-masked/unbound -
-// realizing C17e240 as the real CFaderArray would bind it but forces ~CFaderMgr's inline
-// teardown external (a %-hit) - a deferred structural change, not a RELOC_VTBL shell.
-struct Sev17e240 {
-    virtual ~Sev17e240();
-};
-SIZE_UNKNOWN(Sev17e240);
-inline Sev17e240::~Sev17e240() {}
-struct C17e240 : Sev17e240 {
-    char* m_4; // +0x4
-    virtual ~C17e240() OVERRIDE;
-};
-SIZE_UNKNOWN(C17e240);
-RELOC_VTBL(C17e240, 0x001f0790); // aliases CFaderArray (dtor-stamp verified)
-RVA(0x0017e240, 0x51)
-C17e240::~C17e240() {
-    if (m_4) {
-        ::operator delete(m_4);
-    }
-}
+// 0x17e240 - ~CFaderArray, out-of-line. This is NOT a distinct class: it is the COMDAT
+// copy cl emits of CFaderArray's INLINE destructor (<Gruntz/FaderMgr.h>), which the
+// vtable slot's function pointer forces out of line. The former `C17e240 : Sev17e240`
+// pair here was a FAKE VIEW of it - a hand-written clone of the same body over two
+// address-minted placeholder classes, both of whose cl-emitted vtables merely MASKED a
+// real, already-named retail vtable (C17e240 -> ??_7CFaderArray@@6B@ @0x1f0790,
+// Sev17e240 -> the grand-base ??_7CObject@@6B@ @0x1e8cb4). Both are dissolved.
+//
+// No source definition is needed - and none may be written: ~CFaderArray must stay
+// INLINE (retail ~CFaderMgr @0x17d910 inlines this member teardown - no call at that
+// offset in its reloc table), and an out-of-line definition here would break that. cl
+// ALREADY emits `??1CFaderArray@@UAE@XZ` into this obj for the vtable slot; the label
+// just has to NAME it, which is exactly what @rva-symbol is for. Naming it binds the
+// two vptr stores to the real ??_7CFaderArray / ??_7CObject rvas (zero UNBOUND relocs)
+// with no source-level duplicate and no change to the inline teardown.
+// @rva-symbol: ??1CFaderArray@@UAE@XZ 0x0017e240 0x51
 
 // ===========================================================================
 // 0x17e230 - the CString-by-value trace sink CFaderMgr::Add feeds its formatted

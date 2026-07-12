@@ -34,17 +34,28 @@ struct WapRect {
                             // generated trivial copy ctor is what the shadow pass uses.
 };
 
-// The global text renderer g_textObj (DAT_0064ead8) is a FontRenderer (the WAP32
-// font-render object; full class in <Font/Font.h>). Partial view: current font/color
-// + the draw worker. SetFont/SetColor store m_font/m_color. All reloc-masked externs.
-struct FontRenderer {
+// The global text renderer g_textObj (DAT_0064ead8) is THE canonical FontRenderer
+// (<Font/Font.h>); it is DEFINED (with its DATA pin) in src/Gruntz/Fonts.cpp, the TU
+// that holds its dynamic initializer. `class` (not struct) so the reference mangles
+// ?g_textObj@@3VFontRenderer@@A - the one name bound at 0x24ead8; the old struct-key
+// spelling emitted a second name (...@@3U...) that starved Fonts.cpp's reference.
+//
+// @identity-TODO (view debt): this is still a per-TU RE-SIGNATURE of the canonical class,
+// not a distinct type. Its `RenderText(CString, void*, WapRect, i32,i32,i32)` IS
+// FontRenderer::DrawWrapped @0x17a460, whose canonical Font.h declaration spells the
+// same four rect words as four separate i32 params (x0/top/right/bottom). The retail
+// CALLER builds that rect BY VALUE through the converting ctor @0x115b30 (the cracked
+// @early-stop below depends on it), so dissolving this view onto <Font/Font.h> requires
+// first re-spelling the canonical DrawWrapped to take the rect by value (and adding the
+// real SetFont @0x179c10) - a Font.cpp/Font.h change, out of this lane's scope.
+class FontRenderer {
+public:
     Font* m_font;          // +0x00  current font
     i32 m_color;           // +0x04  current color
     void SetFont(Font* f); // 0x179c10
     void SetColor(i32 c);  // 0x179c20
     void RenderText(CString s, void* drawFn, WapRect r, i32 a, i32 b, i32 c); // 0x17a460
 };
-DATA(0x0024ead8)
 extern FontRenderer g_textObj;
 
 // @early-stop

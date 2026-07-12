@@ -115,10 +115,10 @@ extern "C" CGameRegistry* g_gameReg;
 extern i32 g_tileKindMagic;
 
 // The impact-sound sink param (DAT_0061ab24): Process plays the impact one-shot
-// through it (Play(sink, 0,0,0)). Already named g_scrollDelta by the chatbox unit;
+// through it (Play(sink, 0,0,0)). Already named g_sndCueTag by the chatbox unit;
 // reuse that name so the DIR32 reloc pairs by symbol (no competing DATA - chatbox
 // owns the address; Process is deferred so its pairing is non-critical anyway).
-extern i32 g_scrollDelta;
+extern i32 g_sndCueTag;
 
 // The grid manager method the action-set path runs after stamping a tile
 // (thunk_FUN_00477790, __thiscall ret 0). External/no-body -> reloc-masked.
@@ -1209,7 +1209,7 @@ i32 CTileActionEvent::Process(i32 arg) {
                 && ((WwdGrSprHolder*)g_gameReg->m_world)->m_28->m_30 == 0) {
                 CImpactSound* snd = (CImpactSound*)Eng_FindSound("GRUNTZ_NORMALGRUNT_IMPACTMM3");
                 if (snd != 0) {
-                    ((LeafCue*)snd)->PlayIfElapsed_01f940((i32)g_scrollDelta, 0, 0, 0);
+                    ((LeafCue*)snd)->PlayIfElapsed_01f940((i32)g_sndCueTag, 0, 0, 0);
                 }
             }
             if (brick->m_1ec == 5) {

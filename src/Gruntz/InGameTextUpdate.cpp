@@ -97,9 +97,7 @@ DATA(0x002bf3c0)
 extern "C" u32 g_6bf3c0; // wrap-safe draw clock
 DATA(0x00244c54)
 extern "C" i32 g_644c54; // current area index
-DATA(0x0021ab20)
-extern i32 g_61ab20; // cue enable gate
-DATA(0x0021ab24)
+extern i32 g_sndEnabled; // cue enable gate
 extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA (HELPBOOK sound token)
 DATA(0x0020d7f8)
 extern "C" char g_str_K[]; // DAT_0060d7f8 == "K" (placeholder/null type marker)
@@ -160,7 +158,7 @@ i32 CInGameText::Update() {
             HbSndEntry* res = 0;
             ((CMapStringToOb*)&set->m_10)->Lookup("GAME_HELPBOOK", (CObject*&)res);
             if (res != 0) {
-                i32 enable = g_61ab20;
+                i32 enable = g_sndEnabled;
                 i32 token = g_sndCueTag;
                 if (enable != 0) {
                     u32 now = g_6bf3c0;

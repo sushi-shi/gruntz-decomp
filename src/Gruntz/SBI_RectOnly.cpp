@@ -72,10 +72,8 @@ extern i32 g_644c54;
 extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight handlers play through.
-DATA(0x0021ab20)
-extern i32 g_61ab20;
-DATA(0x0021ab24)
-extern i32 g_61ab24;
+extern i32 g_sndEnabled;
+extern i32 g_sndCueTag;
 // The draw-clock mirror (g_6bf3c0), unsigned for the wrap-safe gate compare.
 DATA(0x002bf3c0)
 extern "C" u32 g_6bf3c0;
@@ -727,7 +725,7 @@ void CSBI_RectOnly::AdvanceTab(i32 reverse) {
 // then latch the pending row, clear the handle, and re-notify. Single-exit nesting
 // (success-deepest, one trailing `return 0`) reproduces retail's shared FAIL tail
 // (docs/patterns/nested-if-success-deepest-error-tail.md); the global pair must be
-// read TOGETHER inside the `if (found)` so MSVC lands g_61ab20 in ecx / g_61ab24 in
+// read TOGETHER inside the `if (found)` so MSVC lands g_sndEnabled in ecx / g_sndCueTag in
 // edx like retail.
 // @early-stop
 // ~94.2%: code bytes are byte-exact vs retail; the residual is purely the
@@ -745,8 +743,8 @@ i32 CSBI_RectOnly::HlClickGroup0(i32 row) {
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
                 map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
                 if (found) {
-                    i32 gate = g_61ab20;
-                    i32 item = g_61ab24;
+                    i32 gate = g_sndEnabled;
+                    i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
                         if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
@@ -781,8 +779,8 @@ i32 CSBI_RectOnly::HlClickGroup1(i32 row) {
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
                 map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
                 if (found) {
-                    i32 gate = g_61ab20;
-                    i32 item = g_61ab24;
+                    i32 gate = g_sndEnabled;
+                    i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
                         if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
@@ -816,8 +814,8 @@ i32 CSBI_RectOnly::HlClickGroup2(i32 row) {
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
                 map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
                 if (found) {
-                    i32 gate = g_61ab20;
-                    i32 item = g_61ab24;
+                    i32 gate = g_sndEnabled;
+                    i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
                         if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
@@ -1234,9 +1232,9 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
                 LeafCue* spr = 0;
                 h->m_10.Lookup("GAME_STATZTABTOGGLE", &spr);
                 if (spr) {
-                    if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                    if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
                         spr->m_14 = g_6bf3c0;
-                        spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                        spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                     }
                 }
             }
@@ -1335,9 +1333,9 @@ void CSBI_RectOnly::UpdateGruntOvenStatusBar() {
                     LeafCue* spr = 0;
                     h->m_10.Lookup("GAME_COOKINGCOMPLETE", &spr);
                     if (spr) {
-                        if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                        if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
                             spr->m_14 = g_6bf3c0;
-                            spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                            spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                         }
                     }
                 }
@@ -1397,9 +1395,9 @@ void CSBI_RectOnly::UpdateChipGrinderStatusBar() {
                         LeafCue* spr = 0;
                         h->m_10.Lookup("GAME_REZGRINDING", &spr);
                         if (spr) {
-                            if (g_61ab20 != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
+                            if (g_sndEnabled != 0 && g_6bf3c0 - spr->m_14 >= spr->m_18) {
                                 spr->m_14 = g_6bf3c0;
-                                spr->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                                spr->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                             }
                         }
                     }
@@ -1788,9 +1786,9 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
         LeafCue* fly = 0;
         h->m_10.Lookup("GAME_WARPSTONEFLY", &fly);
         if (fly) {
-            if (g_61ab20 != 0 && g_6bf3c0 - fly->m_14 >= fly->m_18) {
+            if (g_sndEnabled != 0 && g_6bf3c0 - fly->m_14 >= fly->m_18) {
                 fly->m_14 = g_6bf3c0;
-                fly->m_10->ConfigureItem(g_61ab24, 0, 0, 0);
+                fly->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
             }
         }
     }
@@ -2917,8 +2915,8 @@ i32 CSBI_RectOnly::ClickHilite(i32 a, i32 x, i32 y) {
             CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
             map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
             if (found) {
-                i32 gate = g_61ab20;
-                i32 item = g_61ab24;
+                i32 gate = g_sndEnabled;
+                i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
@@ -2952,8 +2950,8 @@ i32 CSBI_RectOnly::ClearStat(i32 idx) {
                 CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
                 map->Lookup("GAME_STATZTABTOGGLE", (CObject*&)found);
                 if (found) {
-                    i32 gate = g_61ab20;
-                    i32 item = g_61ab24;
+                    i32 gate = g_sndEnabled;
+                    i32 item = g_sndCueTag;
                     if (gate != 0) {
                         CSbiCueRecord* p = (CSbiCueRecord*)found;
                         if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
@@ -3040,8 +3038,8 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
             CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
             map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
             if (found) {
-                i32 gate = g_61ab20;
-                i32 item = g_61ab24;
+                i32 gate = g_sndEnabled;
+                i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
@@ -3070,8 +3068,8 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
         CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
         map->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
         if (found) {
-            i32 gate = g_61ab20;
-            i32 item = g_61ab24;
+            i32 gate = g_sndEnabled;
+            i32 item = g_sndCueTag;
             if (gate != 0) {
                 CSbiCueRecord* p = (CSbiCueRecord*)found;
                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
@@ -3822,7 +3820,7 @@ static __inline void HiCueFind() {
     if (host->m_30 == 0) {
         void* obj = ((CDDrawSubMgrLeafScan*)host)->Lookup_05b7e0("GAME_TABHIGHLIGHT1");
         if (obj) {
-            ((LeafCue*)obj)->PlayIfElapsed_01f940(g_61ab24, 0, 0, 0);
+            ((LeafCue*)obj)->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
         }
     }
 }
@@ -3834,7 +3832,7 @@ static __inline void HiCueLookup() {
         void* out = 0;
         ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)out);
         if (out) {
-            ((LeafCue*)out)->PlayIfElapsed_01f940(g_61ab24, 0, 0, 0);
+            ((LeafCue*)out)->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
         }
     }
 }
@@ -3845,8 +3843,8 @@ static __inline void HiCueTimed() {
     if (host->m_30 == 0) {
         void* found = 0;
         ((CMapStringToOb*)&host->m_map10)->Lookup("GAME_TABHIGHLIGHT1", (CObject*&)found);
-        if (found && g_61ab20 != 0) {
-            i32 item = g_61ab24;
+        if (found && g_sndEnabled != 0) {
+            i32 item = g_sndCueTag;
             CSbiCueRecord* p = (CSbiCueRecord*)found;
             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                 p->m_14 = g_6bf3c0;
@@ -4229,7 +4227,7 @@ void CSBI_RectOnly::BuildGameTabPauseButton() {
 // @early-stop
 // ~96.7%: the code bytes are byte-exact vs retail (verified llvm-objdump -dr base vs
 // target). The residual is purely the reloc-symbol-naming scoring tail - this TU models
-// the shared singletons as ?g_gameReg@@... / ?g_dat645588@@... / ?g_61ab20@@... etc.
+// the shared singletons as ?g_gameReg@@... / ?g_dat645588@@... / ?g_sndEnabled@@... etc.
 // while retail names them _g_mgrSettings / _g_645588 / ?g_sndEnabled@@... / ?g_sndCueTag@@
 // ... / _g_killCueClock (+ the GAME_GOOCOOKING1 $SG string), so those DIR32 operands
 // don't pair. A TU-wide rename, not a per-function fix; matcher.md reloc artifact.
@@ -4261,8 +4259,8 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
             CMapStringToOb* map = (CMapStringToOb*)&host->m_map10;
             map->Lookup("GAME_GOOCOOKING1", (CObject*&)found);
             if (found) {
-                i32 gate = g_61ab20;
-                i32 item = g_61ab24;
+                i32 gate = g_sndEnabled;
+                i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CSbiCueRecord* p = (CSbiCueRecord*)found;
                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
@@ -4353,8 +4351,8 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                             void* found = 0;
                             ((CMapStringToOb*)&host->m_map10)
                                 ->Lookup("GAME_REZBELTRETURN", (CObject*&)found);
-                            if (found && g_61ab20 != 0) {
-                                i32 item = g_61ab24;
+                            if (found && g_sndEnabled != 0) {
+                                i32 item = g_sndCueTag;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
                                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                     p->m_14 = g_6bf3c0;
@@ -4374,8 +4372,8 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                             void* found = 0;
                             ((CMapStringToOb*)&host->m_map10)
                                 ->Lookup("GAME_REZBELTBACKUP", (CObject*&)found);
-                            if (found && g_61ab20 != 0) {
-                                i32 item = g_61ab24;
+                            if (found && g_sndEnabled != 0) {
+                                i32 item = g_sndCueTag;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
                                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                     p->m_14 = g_6bf3c0;
@@ -4480,8 +4478,8 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                             void* found = 0;
                             ((CMapStringToOb*)&host->m_map10)
                                 ->Lookup("GAME_REZMACHINE", (CObject*&)found);
-                            if (found && g_61ab20 != 0) {
-                                i32 item = g_61ab24;
+                            if (found && g_sndEnabled != 0) {
+                                i32 item = g_sndCueTag;
                                 CSbiCueRecord* p = (CSbiCueRecord*)found;
                                 if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                     p->m_14 = g_6bf3c0;
@@ -4538,8 +4536,8 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                                 void* fnd = 0;
                                 ((CMapStringToOb*)&host->m_map10)
                                     ->Lookup("GAME_REZBELTRETRACT", (CObject*&)fnd);
-                                if (fnd && g_61ab20 != 0) {
-                                    i32 item = g_61ab24;
+                                if (fnd && g_sndEnabled != 0) {
+                                    i32 item = g_sndCueTag;
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
                                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                         p->m_14 = g_6bf3c0;
@@ -4557,8 +4555,8 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                                 void* fnd = 0;
                                 ((CMapStringToOb*)&host->m_map10)
                                     ->Lookup("GAME_REZBELTDROP", (CObject*&)fnd);
-                                if (fnd && g_61ab20 != 0) {
-                                    i32 item = g_61ab24;
+                                if (fnd && g_sndEnabled != 0) {
+                                    i32 item = g_sndCueTag;
                                     CSbiCueRecord* p = (CSbiCueRecord*)fnd;
                                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                         p->m_14 = g_6bf3c0;
@@ -4659,8 +4657,8 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                         void* found = 0;
                         ((CMapStringToOb*)&host->m_map10)
                             ->Lookup("GAME_CHIPFALLOUT", (CObject*&)found);
-                        if (found && g_61ab20 != 0) {
-                            i32 item = g_61ab24;
+                        if (found && g_sndEnabled != 0) {
+                            i32 item = g_sndCueTag;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
                             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                 p->m_14 = g_6bf3c0;
@@ -4690,8 +4688,8 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                         void* found = 0;
                         ((CMapStringToOb*)&host->m_map10)
                             ->Lookup("GAME_CHIPLAND", (CObject*&)found);
-                        if (found && g_61ab20 != 0) {
-                            i32 item = g_61ab24;
+                        if (found && g_sndEnabled != 0) {
+                            i32 item = g_sndCueTag;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
                             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                 p->m_14 = g_6bf3c0;
@@ -4761,8 +4759,8 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                         void* found = 0;
                         ((CMapStringToOb*)&host->m_map10)
                             ->Lookup("GAME_CHIPLAND", (CObject*&)found);
-                        if (found && g_61ab20 != 0) {
-                            i32 item = g_61ab24;
+                        if (found && g_sndEnabled != 0) {
+                            i32 item = g_sndCueTag;
                             CSbiCueRecord* p = (CSbiCueRecord*)found;
                             if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {
                                 p->m_14 = g_6bf3c0;

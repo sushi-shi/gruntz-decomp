@@ -45,10 +45,8 @@ extern "C" CGruntzMgr* g_gameReg;
 
 // The reentrancy gate + cue-item id pair the highlight cue plays through, and the
 // draw-clock mirror (wrap-safe gate compare).
-DATA(0x0021ab20)
-extern i32 g_61ab20;
-DATA(0x0021ab24)
-extern i32 g_61ab24;
+extern i32 g_sndEnabled;
+extern i32 g_sndCueTag;
 DATA(0x002bf3c0)
 extern "C" u32 g_6bf3c0;
 
@@ -217,8 +215,8 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
             CMiCue* found = 0;
             ((CMapStringToOb*)((char*)mh + 0x10))->Lookup("GAME_TABHIGHLIGHT2", (CObject*&)found);
             if (found) {
-                i32 gate = g_61ab20;
-                i32 item = g_61ab24;
+                i32 gate = g_sndEnabled;
+                i32 item = g_sndCueTag;
                 if (gate != 0) {
                     CMiCue* p = found;
                     if (g_6bf3c0 - (u32)p->m_14 >= (u32)p->m_18) {

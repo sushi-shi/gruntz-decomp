@@ -150,31 +150,42 @@ void InitStr645520() {
     g_str645520.CString::CString();
 }
 
-// The shared coord-node pool object (0x645540); its +0 slot holds the RezAlloc'd
+// The shared coord-node pool object (0x645540) - DEFINED here (owner TU: this obj's
+// RVA-contiguous tail is the pool's reset/clear pair). Its +0 slot holds the RezAlloc'd
 // backing block ClearCoordPool frees. ResetCoordPool (0x082fa0, __cdecl) zeroes
 // the four pool words WITHOUT freeing; ClearCoordPool (0x082ff0) frees the backing
-// block (m_0) if present, then zeroes. RVA-contiguous tail of this obj.
-extern FreeNodePool g_coordPool;
+// block (m_0) if present, then zeroes.
+//
+// This is ONE 16-byte object, not four scalars: the +0x0/+0x4/+0x8/+0xc DIR32s the
+// two routines emit are interior fields of it (addend-relative to the base symbol).
+// The tree used to carry three extra names for the SAME storage - `g_dropList`
+// (GruntArrivalScan, which held the DATA pin at 0x245540 and so kept every
+// `?g_coordPool@@3VFreeNodePool@@A` reference UNBOUND) plus the per-field aliases
+// `g_freeList` @0x245544 (== m_4) and `g_freeListBias` @0x24554c (== m_c). g_dropList
+// is folded onto g_coordPool here; the two per-field aliases are still pinned by
+// GruntArrivalScan (interior-address globals - a separate fold).
+DATA(0x00245540)
+FreeNodePool g_coordPool;
 
 RVA(0x00082fa0, 0x17)
 void ResetCoordPool() {
-    g_coordPool.m_0 = 0;
-    g_coordPool.m_4 = 0;
-    g_coordPool.m_8 = 0;
-    g_coordPool.m_c = 0;
+    g_coordPool.m_block = 0;
+    g_coordPool.m_freeHead = 0;
+    g_coordPool.m_count = 0;
+    g_coordPool.m_linkOffset = 0;
 }
 
 RVA(0x00082ff0, 0x2f)
 void ClearCoordPool() {
-    if (g_coordPool.m_0 != 0) {
+    if (g_coordPool.m_block != 0) {
         // The retail call @0x82ffd targets 0x1b9b82 == ??3@YAXPAX@Z (MFC operator
         // delete, library row), NOT a RezFree wrapper - bind to the real symbol.
-        ::operator delete((void*)g_coordPool.m_0);
+        ::operator delete(g_coordPool.m_block);
     }
-    g_coordPool.m_0 = 0;
-    g_coordPool.m_4 = 0;
-    g_coordPool.m_8 = 0;
-    g_coordPool.m_c = 0;
+    g_coordPool.m_block = 0;
+    g_coordPool.m_freeHead = 0;
+    g_coordPool.m_count = 0;
+    g_coordPool.m_linkOffset = 0;
 }
 
 // ---------------------------------------------------------------------------

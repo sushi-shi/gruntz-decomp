@@ -25,11 +25,13 @@
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ReportError/DelayedQuit + CGameWnd chain)
 #include <Globals.h>
 
+// g_sndEnabled / g_sndCueTag are C++ globals DEFINED in GruntzMgr.cpp (the DATA pins
+// live on those definitions). They used to be pinned HERE as `extern "C"`, which bound
+// _g_sndEnabled/_g_sndCueTag at 0x21ab20/24 and left the C++-mangled ?g_snd*@@3HA
+// references of ~20 other TUs UNBOUND; plain C++ externs now, so every reference agrees.
+extern i32 g_sndEnabled;
+extern i32 g_sndCueTag;
 extern "C" {
-    DATA(0x0021ab20)
-    extern i32 g_sndEnabled;
-    DATA(0x0021ab24)
-    extern i32 g_sndCueTag;
     DATA(0x002bf3c0)
     extern u32 g_killCueClock;
 }

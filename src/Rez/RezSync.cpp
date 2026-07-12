@@ -25,6 +25,7 @@
 #include <stdlib.h> // srand (0x11fed0)
 
 #include <Gruntz/CoordNode.h>     // the shared coord-pool node
+#include <Gruntz/FreeNodePool.h>  // the ONE g_coordPool object (0x645540) Init builds
 #include <Gruntz/ParseSource.h>   // canonical CParseSource (one shape)
 #include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ (m_48 audio host; SetXMidiVolume)
 #include <Gruntz/CheatMgr.h>
@@ -47,10 +48,12 @@ extern "C" void* RezAlloc(unsigned int); // 0x1b9b46 (raw non-EH pool allocs)
 extern "C" void RezFree(void*);          // 0x1b9b82
 
 // ---------- reloc-masked engine globals ----------
-extern CoordNode* g_coordPool;     // 0x645540
-extern CoordNode* g_coordFreeList; // 0x645544
-extern i32 g_coordCount;           // 0x645548
-extern i32 g_freeBias;             // 0x64554c
+// The coord-node recycle pool - ONE 16-byte FreeNodePool object at 0x645540, NOT four
+// scalars. Init below builds it (block / count / free-list head / link offset); the four
+// former per-field globals (g_coordPool/g_coordFreeList/g_coordCount/g_freeBias) were
+// separate fabricated symbols at 0x645540/44/48/4c - interior addresses of this object,
+// so they could never resolve at link. Defined in src/Gruntz/GameText.cpp (owner TU).
+extern FreeNodePool g_coordPool; // 0x645540
 extern void* g_mgrPtr;             // 0x64556c
 extern u32 g_startTick;            // 0x645580
 extern i32 g_645584;               // 0x645584
@@ -275,22 +278,22 @@ RVA(0x00083450, 0x192d)
 i32 RezSync::Init(void* a1, char* a2) {
     // --- Phase 1: coord-pool free list -------------------------------
     CoordNode* pool = (CoordNode*)RezAlloc(0x3a980);
-    g_coordPool = pool;
+    g_coordPool.m_block = pool;
     if (!pool) {
         Error2(0x800a, 0x404);
         return 0;
     }
-    g_coordCount = 0x4e20;
+    g_coordPool.m_count = 0x4e20; // 0x3a980 / sizeof(CoordNode) 0xc
     CoordNode* p = pool;
     u32 i = 0;
     do {
         p->m_next = p + 1;
         p = p->m_next;
         ++i;
-    } while (i < (u32)g_coordCount - 1);
+    } while (i < (u32)g_coordPool.m_count - 1);
     p->m_next = 0;
-    g_coordFreeList = pool;
-    g_freeBias = 4;
+    g_coordPool.m_freeHead = pool;
+    g_coordPool.m_linkOffset = 4;
 
     // --- Phase 2: base game init + timers + cursor -------------------
     if (!Run(a1, a2)) {
@@ -812,12 +815,17 @@ struct CGameMgr {
 SIZE_UNKNOWN(CGameMgr);
 // The vptr restamp at +0x2 is the cl-emitted ??_7CGameMgr@@6B@ of THIS global
 // placeholder, reloc-MASKING the real WAP32::CGameMgr vtable at 0x1e9b8c (bound in
-// gruntzmgr as ??_7CGameMgr@WAP32@@6B@). It cannot bind to 0x1e9b8c directly: that rva
-// is occupied by the WAP32 name, and making this dtor a real WAP32::CGameMgr method
-// would collide with WAP32::CGameMgr's INLINE header dtor (load-bearing for
-// CGruntzMgr's inlined base teardown - a cross-unit regression). Matching-neutral
-// masked reloc (vptr-store stays unbound); the tail Close is bound below to the real
-// WAP32 body.
+// gruntzmgr as ??_7CGameMgr@WAP32@@6B@). It cannot take a VTBL() row at 0x1e9b8c - that
+// rva already carries the WAP32 name, and the two would keep-last-collide - and making
+// this dtor a real WAP32::CGameMgr method would collide with WAP32::CGameMgr's INLINE
+// header dtor (load-bearing for CGruntzMgr's inlined base teardown - a cross-unit
+// regression). RELOC_VTBL records exactly that: the placeholder's vtable IS the retail
+// vtable at 0x1e9b8c, so the vptr-store REFERENCE is bound to the right rva (no dangling
+// reloc) while the symbol_names row stays the real WAP32 name.
+// @identity-TODO: this global-namespace CGameMgr IS WAP32::CGameMgr (0x85540 is the
+// out-of-line COMDAT copy of its inline dtor, emitted for the vtable slot); dissolving it
+// needs the inline-XOR-out-of-line dtor conflict resolved first.
+RELOC_VTBL(CGameMgr, 0x001e9b8c); // == ??_7CGameMgr@WAP32@@6B@ (the real base vtable)
 RVA(0x00085540, 0xb)
 CGameMgr::~CGameMgr() {
     // devirtualized tail-call to WAP32::CGameMgr::Close (0x13ddb0); the qualified call

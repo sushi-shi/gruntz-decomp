@@ -279,10 +279,17 @@ extern "C" {
     extern i32 g_644c54; // DAT_00644c54  (active player/world index)
 }
 
-// The reentrancy/run-state gate SetRunState mirrors the new run-state into
-// (?g_sndEnabled@@3HA; reloc-masked DATA store - the same global ChatBox/GameMode touch).
-extern i32 g_sndEnabled;       // DAT_0061ab20 (?g_sndEnabled@@3HA)
-extern i32 g_sndCueTag;        // DAT_0061ab24 (?g_sndCueTag@@3HA)
+// The two shared sound globals, DEFINED here (owner TU: CGruntzMgr::SetRunState mirrors
+// the run-state into g_sndEnabled and StoreInputFlag latches the cue tag; ~20 TUs read
+// them). C++ linkage, so every `extern i32 g_snd*` reference tree-wide binds to
+// ?g_sndEnabled@@3HA / ?g_sndCueTag@@3HA. (They were previously only DATA-pinned on
+// `extern "C"` DECLARATIONS in LevelPreview.cpp, which bound _g_sndEnabled/_g_sndCueTag
+// and left every C++-mangled reference - the overwhelming majority - UNBOUND.)
+// The plain externs live in <Globals.h>.
+DATA(0x0021ab20)
+i32 g_sndEnabled = 0; // 0x61ab20  sound-on gate (mirrors CGruntzMgr::m_soundEnabled)
+DATA(0x0021ab24)
+i32 g_sndCueTag = 0;           // 0x61ab24  the cue-item id played through PlayIfElapsed
 extern "C" u32 g_killCueClock; // DAT_006bf3c0 (wrap-safe draw clock)
 
 // The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A), modeled here with

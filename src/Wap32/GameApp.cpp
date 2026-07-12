@@ -45,56 +45,14 @@ i32 CGameApp::VirtualUnknownMethod11(i32, i32, i32) {
     return 0;
 }
 
-// -------------------------------------------------------------------------
-// Engine-label backlog stubs.
-// -------------------------------------------------------------------------
-// 0x133380 stores vftable 0x5ef670 and calls dtor body FUN_00534d50 - the
-// scalar-deleting destructor of some OTHER engine class the delinker labelled
-// under CGameMgr@WAP32; it is NEITHER the base WAP32::CGameMgr (vftable
-// 0x5e9b8c) NOR CGruntzMgr (vftable 0x5e9b64). It is a (storage-free) method on
-// CGameMgr ONLY so MSVC mangles it to the retail symbol name; see the note on
-// the declaration in Wap32.h.
-// The DirectInput device-config grand-base (vftable 0x5ef670 == ??_7CInputDevRoot,
-// named in DirectInputMgr2.cpp) + its base-subobject teardown (0x134d50). The
-// engine allocator's operator delete. All reloc-masked.
-extern void* deviceConfigRootTable; // 0x5ef670 (the CInputDevRoot vtable datum)
-// The DirectInput device-config grand-base (full class in <DinMgr2/DirectInputMgr2.h>);
-// partial view for the base teardown this dtor runs.
-struct CInputDevRoot {
-    virtual void ReleaseDevices(); // 0x134d50 (?ReleaseDevices@CInputDevRoot@@UAEXXZ)
-};
-void operator delete(void*); // engine allocator (0x1b9b82)
-
-// WAP32::CGameMgr::vector_deleting_destructor @0x133380 - the CInputDevRoot scalar-
-// deleting dtor (mangled through CGameMgr for the retail symbol name): stamp the C
-// vftable, run the base teardown, conditionally free, return `this`.
-// @interleaver ?vector_deleting_destructor@CGameMgr@WAP32@@ emitted-in directinputmgr2
-// - blocked: pooled cross-alias dtor. Retail emits this COMDAT INSIDE DinMgr2.cpp's
-// directinputmgr2 block - ?DtorC@DICfgC @0x133370 (before) + ?DtorD1@DICfgD @0x1333b0
-// (after), both directinputmgr2 - a rule-(c) interleaver surrounded on both sides.
-// But it is a POOLED deleting-dtor of a FOREIGN class (really ~CInputDevRoot, mangled
-// under CGameMgr by the delinker); rule (a) leaves COMDAT-pooled dtors in place, and
-// homing to DinMgr2.cpp would collide with the real ~CInputDevRoot ??_G that TU
-// auto-emits. Kept-in-place + flagged (cross-alias wall below).
-// @early-stop
-// cross-class-alias wall: this is really a CInputDevRoot scalar-deleting dtor but
-// the delinker mangled it under CGameMgr, so it cannot be expressed as a real
-// ~CInputDevRoot here (that ??_G is auto-emitted, unbound, by DirectInputMgr2). The
-// vptr re-stamp of a FOREIGN class's vtable is a non-ctor stamp cl cannot realize
-// (vtable-realization-ctor-boundary), so it stays an explicit `*(void**)this` store
-// of the reloc-masked CInputDevRoot vtable datum. Code bytes match.
-RVA(0x00133380, 0x24)
-void* WAP32::CGameMgr::vector_deleting_destructor(unsigned int flags) {
-    *(void**)this = &deviceConfigRootTable;
-    // Qualified (non-virtual) call to the virtual ~-adjacent teardown so cl emits a
-    // DIRECT call to ?ReleaseDevices@CInputDevRoot@@UAEXXZ (0x134d50) - matching retail's
-    // devirtualized base-teardown call - instead of the fake non-virtual Q name.
-    ((CInputDevRoot*)this)->CInputDevRoot::ReleaseDevices();
-    if (flags & 1) {
-        operator delete(this);
-    }
-    return this;
-}
+// (0x133380 used to live here as a fake `WAP32::CGameMgr::vector_deleting_destructor`
+// over a fabricated `deviceConfigRootTable` global and a local CInputDevRoot view. It is
+// neither: it is CInputDevRoot's SCALAR-DELETING DESTRUCTOR `??_GCInputDevRoot@@UAEPAXI@Z`
+// - the vptr it stamps, 0x1ef670, IS ??_7CInputDevRoot@@6B@, and retail emits the COMDAT
+// inside DirectInputMgr2's block. cl already auto-emits that ??_G into directinputmgr2's
+// obj, so nothing had to be written at all - it just had to be NAMED there. The label now
+// lives in DinMgr2.cpp (an rva-symbol pin on that ??_G, next to VTBL(CInputDevRoot)), which
+// also homes the function to its real TU. The fake global + view + method decl are gone.)
 
 // -------------------------------------------------------------------------
 // CGameApp::CGameApp()
@@ -573,6 +531,10 @@ void WAP32::CGameMgr::Close() {
 // canonical one-symbol-per-RVA at whole-game link (was the raw __imp__timeGetTime@0).
 extern "C" u32(WINAPI* g_pTimeGetTime)();
 
+// The real 0x2c engine base, aliased at file scope: MSVC 5.0 cannot look up the WAP32
+// namespace from inside a member of a class named CGameMgr (same idiom as RezSync.cpp).
+typedef WAP32::CGameMgr CGameMgrBase;
+
 // -------------------------------------------------------------------------
 // RezMgr::UpdateClock() (0x13ddc0; moved from RezMgr.cpp in wave4-K - its text
 // sits between CGameMgr::Close and InitTimeFields in THIS obj) - the frame-clock
@@ -580,9 +542,34 @@ extern "C" u32(WINAPI* g_pTimeGetTime)();
 // delta into the canonical g_wap32Now/g_wap32FrameDelta cells, run down the
 // run-state countdown, then (when the pacing gate m_pacingGate is armed)
 // busy-wait to the ms budget and, every ~2s window, fold the frame count into
-// m_smoothedFrameCount and rearm the window. The RezMgr receiver view IS
-// WAP32::CGameMgr (m_fps/m_pauseFlag/m_elapsedMs/m_startTick at the same
-// +0x18..+0x24 slots); the view fold is deferred to the gruntzmgr package.
+// m_smoothedFrameCount and rearm the window.
+//
+// @identity-TODO  RezMgr IS the derived game manager (SIZE 0xa30 == CGruntzMgr), and the
+// receiver region it touches here IS its WAP32::CGameMgr base subobject at this@+0. That
+// is proven three ways, not guessed:
+//   (1) RVA interleave - 0x13ddc0 (this fn), 0x13dec0 SpinWaitUntil, 0x13dee0 SetFrameRate
+//       and 0x13df00 TrySetFrameRate sit INSIDE CGameMgr's own contiguous method block
+//       (0x13dd10 ctor / 0x13dd50 Run / 0x13ddb0 Close / 0x13de70 InitTimeFields /
+//       0x13dea0 InitializeTimeGlobal / 0x13df30 WaitKeyEdge) - one obj, one class.
+//   (2) field-for-field slot identity with CGameMgr, each confirmed by both readers:
+//         +0x18 m_smoothedFrameCount == m_fps   (InitTimeFields(reset) arms it to -1;
+//               this fn stores count>>1 over a 2000 ms window == frames per second)
+//         +0x1c m_pacingGate         == m_pauseFlag  (ctor/Run clear it; SetFrameRate
+//               stores the target fps; >0 arms the busy-wait)
+//         +0x20 m_frameCounter       == m_elapsedMs  (InitTimeFields zeroes it; this fn
+//               increments it once per frame -> a COUNT, not ms: m_frameCounter wins)
+//         +0x24 m_windowStartTick    == m_startTick  (InitTimeFields samples timeGetTime;
+//               this fn measures now - it >= 0x7d0)
+//         +0x28 m_frameBudgetMs      == the base's m_pad28 tail (SetFrameRate: 1000/fps)
+//   (3) CGameRegistry (<Gruntz/GameRegistry.h>) models the SAME 0x2c region under a THIRD
+//       set of names (its m_frameGate is annotated "base CGameMgr::m_frameGate").
+// So `RezMgr` / `CGruntzMgr` / `CGameRegistry` are three views of one class hierarchy.
+// Collapsing them into `class CGruntzMgr : public WAP32::CGameMgr` is the project's
+// deferred CGameRegistry==CGruntzMgr fold (owned by the GruntzMgr lane, C1189-gated); it
+// is NOT in this lane's scope. Until it lands, the base-subobject call below is spelled
+// through the real base type so it BINDS to the real ?InitTimeFields@CGameMgr@WAP32@@ at
+// 0x13de70 - RezMgr's own `InitTimeFields` declaration was a duplicate of it that could
+// never resolve at link, and has been deleted from <Rez/RezMgr.h>.
 RVA(0x0013ddc0, 0xaa)
 i32 RezMgr::UpdateClock() {
     // Cache the fnptr in a local so cl loads it once (mov edi,[_g_pTimeGetTime]) and
@@ -615,7 +602,12 @@ i32 RezMgr::UpdateClock() {
     m_frameCounter = count;
     if ((u32)g_wap32Now - (u32)m_windowStartTick >= 0x7d0) {
         m_smoothedFrameCount = count >> 1;
-        InitTimeFields(0);
+        // The real WAP32::CGameMgr::InitTimeFields (0x13de70, defined below) on this@+0 -
+        // the base subobject (see the @identity-TODO above). Non-virtual, so this is the
+        // same direct `call rel32` as before; the difference is that it now binds to a
+        // symbol that EXISTS. (Spelled through the file-scope alias: MSVC 5.0 cannot look
+        // up the WAP32 namespace from inside a member of a class of the same name.)
+        ((CGameMgrBase*)this)->InitTimeFields(0);
     }
     return 1;
 }

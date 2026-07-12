@@ -148,13 +148,10 @@ namespace WAP32 {
         i32 m_elapsedMs;     // +0x20  frame-clock accumulator (cleared by InitTimeFields)
         i32 m_startTick;     // +0x24  start tick (timeGetTime, by InitTimeFields)
 
-        // Engine-label backlog stub @0x133380. NOT actually a CGameMgr method (it
-        // scalar-deletes the DirectInput device-config grand-base, vftable 0x5ef670)
-        // - but the retail symbol is labelled `?...@CGameMgr@WAP32@@QAEXXZ`, so the
-        // base obj must mangle it through this class. A method adds NO storage, so
-        // sizeof stays 0x2c. Vector-deleting form: stamp the C vftable, run the base
-        // subobject teardown (0x134d50), then the delete-flag tail; returns `this`.
-        void* vector_deleting_destructor(unsigned int flags);
+        // (The former `vector_deleting_destructor` stub @0x133380 is gone: it was never
+        // a CGameMgr method at all - it is CInputDevRoot's scalar-deleting destructor
+        // ??_GCInputDevRoot@@UAEPAXI@Z, now named at its real rva in src/DinMgr2/DinMgr2.cpp
+        // where cl already emits that COMDAT.)
 
     private:
         char m_pad28[0x2c - 0x28];

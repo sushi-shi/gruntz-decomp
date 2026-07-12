@@ -204,7 +204,7 @@ struct CMenuMusic {
 
 // The draw-clock mirror + the reentrancy gate the menu music poll save/restores.
 extern "C" u32 g_6bf3c0; // draw-clock mirror
-extern i32 g_61ab20;     // DAT_0061ab20 reentrancy gate
+extern i32 g_sndEnabled;     // DAT_0061ab20 reentrancy gate
 
 // StartMusic reads the game registry through its WwdGameReg view (m_10 presence gate,
 // m_11c configured item); same 0x24556c singleton as g_gameReg, typed WwdGameReg.
@@ -255,11 +255,11 @@ void CMenuState::StartMusic() {
     if (((WwdGameReg*)g_gameReg)->m_10 == 0) {
         return;
     }
-    i32 saved = g_61ab20;
+    i32 saved = g_sndEnabled;
     i32 flag = saved;
     if (!saved) {
         flag = 1;
-        g_61ab20 = 1;
+        g_sndEnabled = 1;
     }
     i32 item = ((WwdGameReg*)g_gameReg)->m_11c;
     CMenuMusic* mus = m_1bc;
@@ -271,7 +271,7 @@ void CMenuState::StartMusic() {
         }
     }
     if (!saved) {
-        g_61ab20 = saved;
+        g_sndEnabled = saved;
     }
 }
 

@@ -138,12 +138,12 @@ public:
 SIZE_UNKNOWN(CDDrawBlitParamSrc);
 
 // The sound-cue enable flag, a float pan/volume scale constant, and the cue tag.
-DATA(0x0021ab20)
-extern i32 g_sndEnabled; // 0x61ab20
+// g_sndEnabled / g_sndCueTag are DEFINED in src/Gruntz/GruntzMgr.cpp (the owner TU);
+// the plain externs come from <Globals.h>. The DATA pins that used to sit on these two
+// DECLARATIONS are gone - a pin on an extern is not a definition, and it was competing
+// with LevelPreview.cpp's extern-"C" pin at the same rvas.
 DATA(0x001eff2c)
 extern float g_sndPanScale; // 0x5eff2c
-DATA(0x0021ab24)
-extern i32 g_sndCueTag; // 0x61ab24  the cue-item id played through PlayIfElapsed (== g_aniCueItem)
 
 // The shared empty-string datum (labeled by netmgrerror; declared-only here).
 extern char g_emptyString[]; // 0x2293f4
@@ -152,10 +152,11 @@ extern char g_emptyString[]; // 0x2293f4
 // The CDDrawSubMgrLeafScan section type skeleton (views/types from the merged
 // DDrawSubMgrLeafScan.cpp, hoisted ahead of the RVA-ordered fn chunks).
 // ===========================================================================
-// The sound-cue globals (g_sndEnabled/g_sndCueTag declared+DATA-bound above;
-// g_killCueClock is bound by triggermgr). Donor-name aliases (g_61ab20/g_61ab24/
-// g_6bf3c0/g_aniCueItem) unified onto these canonicals so the reloc targets bind
-// to their real rvas (wave5-R5); reloc-masked, matching-neutral.
+// The sound-cue globals (g_sndEnabled/g_sndCueTag - defined in GruntzMgr.cpp, declared
+// in <Globals.h>; g_killCueClock is bound by triggermgr). The donor-name aliases
+// (g_61ab20/g_61ab24/g_scrollEnabled/g_scrollDelta/g_6bf3c0/g_aniCueItem) are unified
+// onto these canonicals so the reloc targets bind to their real rvas; reloc-masked,
+// matching-neutral.
 extern "C" u32 g_killCueClock; // 0x2bf3c0
 // DDrawSubMgrLeafScan.cpp - a sibling sub-manager of the tomalla-named
 // CDDrawSubMgrLeaf family (a CDirectDrawMgr surface/page sub-manager in the

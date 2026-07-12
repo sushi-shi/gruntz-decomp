@@ -155,6 +155,16 @@ VTBL(CDeviceConfigC, 0x001ef658); // joystick-device vtable
 VTBL(CInputDevRoot, 0x001ef670);  // grand-base subobject vtable (4 slots)
 VTBL(CInputDevBase, 0x001ef680);  // middle-base subobject vtable (6 slots)
 
+// 0x133380 - CInputDevRoot's SCALAR-DELETING DESTRUCTOR. cl auto-emits this ??_G COMDAT
+// into THIS obj (the class's vtable slot 0 needs its address); retail places it in this
+// same directinputmgr2 block (?DtorC@DICfgC @0x133370 before, ?DtorD1@DICfgD @0x1333b0
+// after). It has no source definition to hang RVA() on, so it is named verbatim - which
+// is what @rva-symbol is for. It was previously mis-modelled in src/Wap32/GameApp.cpp as
+// a fake `WAP32::CGameMgr::vector_deleting_destructor` stamping a fabricated
+// `deviceConfigRootTable` global; that global was really ??_7CInputDevRoot@@6B@ @0x1ef670
+// (bound just above), and the fake view is now dissolved.
+// @rva-symbol: ??_GCInputDevRoot@@UAEPAXI@Z 0x00133380 0x24
+
 // Shared-base ctor: zero the device fields + arm the latch. Inlined into InitA's
 // `new CInputDevice` / InitB's `new CDeviceConfigB`; cl auto-stamps the implicit
 // vptr (no manual device-config vptr store any more).

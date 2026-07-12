@@ -687,6 +687,22 @@ void CImage::RenderImage(CBlitInfo* info, CImage* dst) {
 // `mov ecx,this; call [vptr+0x38]`). The `clip` CResolveNode IS the CBlitInfo blit
 // request the RESOLVE method fills in (same physical layout); the cast is transitional
 // pending a CResolveNode<->CBlitInfo unification.
+//
+// The magic-static trio cl5 emits for `static CResolveNode clip;` has NO source VarDecl
+// to hang DATA() on, so the three compiler-minted symbols are pinned to their retail
+// addresses verbatim (the @data/@rva-symbol carriers). Per local static:
+//   the object   .bss  0x2bf2a0 / 0x2bf228
+//   the once-guard .bss  0x2bf314 / 0x2bf29c   (`$S<n>` byte)
+//   the atexit dtor thunk .text 0x153800 / 0x1538b0 (`$E<n>`, pushed to atexit)
+// The `$S<5-digit>` tail on the .bss names is cl5's per-TU COMDAT sequence number: it
+// SHIFTS if CImage.cpp's earlier statics change, so re-read it from the base obj
+// (`llvm-nm build/objdiff/base/cimage.obj`) if labels.py reports "not in base obj".
+// @data-symbol: _?clip@?1??RenderFrame@CImage@@QAEXPAX000@Z@4VCResolveNode@@A$S26840 0x002bf2a0
+// @data-symbol: _?$S28@?1??RenderFrame@CImage@@QAEXPAX000@Z@4EA$S26842 0x002bf314
+// @rva-symbol: _$E29 0x00153800 0x10
+// @data-symbol: _?clip@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4VCResolveNode@@A$S26863 0x002bf228
+// @data-symbol: _?$S30@?1??RenderFrameClipped@CImage@@QAEXPAX0000@Z@4EA$S26865 0x002bf29c
+// @rva-symbol: _$E31 0x001538b0 0x10
 
 RVA(0x00153790, 0x6a)
 void CImage::RenderFrame(void* a, void* b, void* c, void* d) {
