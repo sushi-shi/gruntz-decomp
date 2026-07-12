@@ -257,7 +257,7 @@ multistartdlgroster	31	18
 namerecord	4	3
 netcmdmgr	1	1
 netcmdslot	43	24
-netlobbydialogs	17	17
+netlobbydialogs	18	17
 netmgr	44	33
 netmgrerror	2	2
 netmgrmisc	1	0
@@ -2905,9 +2905,8 @@ netcmdmgr	?SelectColor@CNetSessHost@@QAEHHH@Z	100.0000	100.0000	6	1cd69ad7fceb	0
 netcmdslot	?AddCmd@CNetCmdSlot@@QAEXPAUCNetCmd@@@Z	100.0000	100.0000	2	ebcc8ed183a9	0xc1170
 netcmdslot	?Advance@CLobbySync@@QAEHXZ	100.0000	100.0000	2	442d0d97c985	0xc01d0
 netcmdslot	?AdvanceAllSlots@CNetSession@@QAEXH@Z	100.0000	100.0000	1	5ac8a6f6c503	0xc0370
-netcmdslot	?AdvanceSeq@CNetCmdSlot@@QAEXH@Z	86.5686	86.5686	3	0dccff057157	0xc0f10
+netcmdslot	?AdvanceSeq@CNetCmdSlot@@QAEXH@Z	95.8824	95.8824	3	0dccff057157	0xc0f10
 netcmdslot	?AllSlotsReachedSeq@CNetSession@@QAEHH@Z	100.0000	100.0000	1	8c9998f2ccc1	0xc0320
-netcmdslot	?AllSlotsReady@CNetSyncCheck@@QAEHXZ	78.5455	78.5455	4	4b5e8d008b8e	0xc1320
 netcmdslot	?CheckLatency@CNetSession@@QAEHH@Z	100.0000	100.0000	1	8e8051d2c355	0xc04a0
 netcmdslot	?ClearCmds@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	2	bb0e5222f712	0xc12e0
 netcmdslot	?ClearRange@CNetSlotAux@@QAEXXZ	84.2857	84.2857	1	739384f3c64e	0xbf120
@@ -2922,14 +2921,15 @@ netcmdslot	?Init@CCluster0c@@QAEXXZ	71.0000	71.0000	1	8d0d61d6ece1	0xc0c20
 netcmdslot	?Init@CNetCmdSlot@@QAEHHPAHH@Z	74.1111	74.1111	1	4164e8912e62	0xc0b10
 netcmdslot	?Init@CNetSession@@QAEHPAXPAVCNetMgr@@0@Z	100.0000	100.0000	1	22eb93af2a0b	0xbef80
 netcmdslot	?M_bfc70@CLobbyChannel@@QAEHHPAUGruntRec@@HHH@Z	90.2632	90.2632	1	aaa51f454837	0xbfc70
-netcmdslot	?NetCmdIdAdd@@YGXPAHH@Z	100.0000	100.0000	2	5fc2fd10aff7	0xc1010
-netcmdslot	?NetCmdIdClear@@YGXPAHH@Z	100.0000	100.0000	2	d218acefa66c	0xc1060
-netcmdslot	?NetCmdIdFind@@YGHPAHH@Z	100.0000	100.0000	2	e4005c2a36bf	0xc0fd0
+netcmdslot	?NetCmdIdAdd@CNetCmdSlot@@QAEXPAHH@Z	100.0000	100.0000	1	4e8334fbe098	0xc1010
+netcmdslot	?NetCmdIdClear@CNetCmdSlot@@QAEXPAHH@Z	100.0000	100.0000	1	ee8bb88a7d4d	0xc1060
+netcmdslot	?NetCmdIdFind@CNetCmdSlot@@QAEHPAHH@Z	100.0000	100.0000	1	d6d962196172	0xc0fd0
 netcmdslot	?NetCmdIdToString@@YGPADPAH@Z	95.3555	95.3555	1	999db54ec357	0xc10d0
 netcmdslot	?Poll@CLobbySync@@QAEHH@Z	61.6869	61.6869	1	68d30d8cd8d4	0xbf5a0
-netcmdslot	?ProcessCmd@CNetCmdSlot@@QAEHHPAXH@Z	75.0000	75.0000	9	3f9e69b91945	0xc0c70
+netcmdslot	?ProcessCmd@CNetCmdSlot@@QAEHHPAXH@Z	76.6700	76.6700	9	3f9e69b91945	0xc0c70
 netcmdslot	?RaiseAllSlotsMax@CNetSession@@QAEXH@Z	100.0000	100.0000	1	3cd87a7ec28c	0xc03b0
 netcmdslot	?RaiseMax@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	3	3fea3964c857	0xc0fa0
+netcmdslot	?Ready@CNetCmdSlot@@QAEHXZ	78.5455	78.5455	1	a1f6260bf7ef	0xc1320
 netcmdslot	?Reconcile@CLobbySync@@QAEXXZ	100.0000	100.0000	2	4ca173bb066a	0xc00f0
 netcmdslot	?RecycleCmd@@YAXPAX@Z	100.0000	100.0000	1	17b19269447b	0xbf580
 netcmdslot	?RemoveCmd@CNetCmdSlot@@QAEXH@Z	100.0000	100.0000	4	c04af5539d80	0xc11b0
@@ -2939,30 +2939,31 @@ netcmdslot	?ResetAll@CNetCmdSlot@@QAEXXZ	73.6667	73.6667	4	c0ecd04fd064	0xc0bb0
 netcmdslot	?ResetCmdBuffers@CNetSession@@QAEXXZ	100.0000	100.0000	3	450f7ab8303a	0xc0070
 netcmdslot	?ResetTriple@CNetCmdSlot@@QAEXPAH@Z	93.3333	93.3333	2	465737501196	0xc10a0
 netcmdslot	?SendAll@CLobbySync@@QAEHXZ	67.4321	67.4321	1	02774bd3166e	0xbfb40
-netcmdslot	?SendBatch@CLobbySync@@QAEHXZ	100.0000	100.0000	1	3973b134fdb1	0xbfd40
-netcmdslot	?SendOne@CLobbySync@@QAEHPAUCLobbyChannel@@H@Z	84.2105	84.2105	1	c3e5f40597d3	0xbfeb0
+netcmdslot	?SendBatch@CLobbySync@@QAEHXZ	100.0000	100.0000	2	0f9564a63758	0xbfd40
+netcmdslot	?SendOne@CLobbySync@@QAEHPAUCLobbyChannel@@H@Z	84.2105	84.2105	2	28fe176bf8b2	0xbfeb0
 netcmdslot	?Tick@CLobbySync@@QAEHXZ	84.8495	84.8495	1	fe67537cbd7f	0xbf9e0
 netcmdslot	?Touch@CNetCmdSlot@@QAEXXZ	100.0000	100.0000	3	b5b3a5ef28fe	0xc1390
 netcmdslot	?Verify@CNetSession@@QAEHH@Z	100.0000	100.0000	1	52e4c932e232	0xc0290
 netcmdslot	?Verify@CNetSession@@QAEHXZ	100.0000	100.0000	1	52e4c932e232	0xc04f0
-netlobbydialogs	?DropInDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	0633aa83e9b1	0xbe550
-netlobbydialogs	?HostWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	60022e3d99f7	0xbd850
+netlobbydialogs	?DropInDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	e7cfa91d2d72	0xbe550
+netlobbydialogs	?HostWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	5e8fb39a498a	0xbd850
 netlobbydialogs	?InitPlayerNameStr@NetLobby@@YAXXZ	100.0000	100.0000	1	9ae43a8858a1	0xbd7f0
 netlobbydialogs	?Init_2522@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	db82003cd0b0	0xbe030
 netlobbydialogs	?Init_2ed7@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	1	43909c964dcb	0xbe820
-netlobbydialogs	?JoinWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	9a388271ba1a	0xbda70
-netlobbydialogs	?LobbyDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	0c4d4073d91e	0xbdc00
+netlobbydialogs	?JoinWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	0001cc482585	0xbda70
+netlobbydialogs	?LobbyDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	5	4e1f22d3e983	0xbdc00
 netlobbydialogs	?NetChatSubmit@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	3	f5eb4b188764	0xbe400
-netlobbydialogs	?NetDlgInitDropIn@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	2	abde448285c7	0xbe760
-netlobbydialogs	?NetDlgInitDropWait@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	2	e1fb85599bab	0xbe2f0
-netlobbydialogs	?NetDlgInit_bda00@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	2	66dce617fa09	0xbda00
-netlobbydialogs	?NetDlgInit_bdb90@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	2	bcec1bd285f5	0xbdb90
-netlobbydialogs	?NetDlgInit_bdd60@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	2	47c2a4f40e9c	0xbdd60
-netlobbydialogs	?NetDlgInit_bdfe0@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	2	40ebdc800fa4	0xbdfe0
+netlobbydialogs	?NetDlgInitDropIn@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	3	aa816184fb08	0xbe760
+netlobbydialogs	?NetDlgInitDropWait@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	3	32425464a165	0xbe2f0
+netlobbydialogs	?NetDlgInit_bda00@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	3	db3599537b3c	0xbda00
+netlobbydialogs	?NetDlgInit_bdb90@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	3	63024f9e9483	0xbdb90
+netlobbydialogs	?NetDlgInit_bdd60@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	3	0f817096e933	0xbdd60
+netlobbydialogs	?NetDlgInit_bdfe0@NetLobby@@YAXPAUHWND__@@PAX@Z	100.0000	100.0000	3	c8c2765a9c69	0xbdfe0
 netlobbydialogs	?NetDlgSessionStop@NetLobby@@YAXPAUHWND__@@PAVCMulti@@@Z	100.0000	100.0000	2	7335768f770f	0xbe490
-netlobbydialogs	?NetGameDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	4	d496fe610961	0xbe0a0
-netlobbydialogs	?SessionWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	2	d533717b9a53	0xbddd0
-netmgr	?AddGroupNode@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	4	382a8c2d6151	0x178360
+netlobbydialogs	?NetGameDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	5	41823b494159	0xbe0a0
+netlobbydialogs	?SessionWaitDlgProc@NetLobby@@YGHPAUHWND__@@IIJ@Z	100.0000	100.0000	3	95e306903063	0xbddd0
+netlobbydialogs	empty_stub	0.0000	0.0000	1	cpp:ce7e0df96575	
+netmgr	?AddGroupNode@CNetMgr@@QAEHPAX0@Z	100.0000	100.0000	5	d8733b4fdfb9	0x178360
 netmgr	?AddPlayerNode@CNetMgr@@QAEHPAX@Z	82.3454	82.3454	5	5250ed488c61	0x1786d0
 netmgr	?AddSessionNode@CNetMgr@@QAEHHPBD0H@Z	68.6606	68.6606	2	40bc6a27cce9	0x178b30
 netmgr	?ClearGroupList@CNetMgr@@QAEXXZ	100.0000	100.0000	4	9c743c8af905	0x178430
@@ -3009,10 +3010,10 @@ netmgr	_NetEnumPlayerCb@16	100.0000	100.0000	2	835d1100d9fb	0x1786a0
 netmgrerror	?ReportError@CNetMgr@@SAXPADHHPAX@Z	100.0000	100.0000	2	f4b89dc04187	0x1776a0
 netmgrerror	?SetReportMode@CNetMgr@@SAXHHHH@Z	100.0000	100.0000	1	48de42730833	0x177670
 netmgrmisc	?NetPollE25c@@YAHXZ	0.0000	0.0000	3	22b13d213a01	0xf9710
-netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	4	a89de0bad5e7	0xf93b0
+netsession	?AppendInt@@YAXPADPBDH@Z	100.0000	100.0000	5	59095ad9beb7	0xf93b0
 netsessionnode	??1CNetPlayerListNode@@UAE@XZ	100.0000	100.0000	2	33d25a36956c	0x1793b0
 netsessionnode	??1CNetSessionNode@@UAE@XZ	97.5952	97.5952	3	3c2d70d366e0	0x179420
-netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	2	c2e73c1b3ee2	0x1795a0
+netsessionnode	?Init@CNetPlayerListNode@@QAEHPAUCNetSessionDesc@@@Z	100.0000	100.0000	3	92ace19fe500	0x1795a0
 netthingdtor	??1CNetThing@@QAE@XZ	100.0000	100.0000	2	efbf31726082	0xc5280
 obj0f7d90	?Update_0f7d90@Obj0f7d90@@QAEHXZ	97.9915	97.9915	5	bbe42fe5ba8a	0xf7d90
 orphanleaves	?EndWaitCursorOnThread@@YAXXZ	100.0000	100.0000	1	d85affe0f716	0x18430
@@ -3836,7 +3837,7 @@ tiletriggercontainer	?SerializeApplyA@@YGHPAUCSerialArchive@@HHHPAUTtcTrigElem@@
 tiletriggercontainer	?SerializeApplyB@@YGHPAUCSerialArchive@@HHHPAUTtcTrigElem@@@Z	33.6667	33.6667	3	0d9d6ee5f5f7	0x117710
 tiletriggercontainer	?SetCell@CTileTriggerContainer@@QAEHHHH@Z	76.6912	76.6912	4	e616e31775a9	0x117f60
 tiletriggercontainer	?TransferFlag74@CTileTriggerSwitchLogic@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	1	78dbefabc930	0x117e20
-timesplit	?BlockScreenSaver@@YAHPAXHH@Z	100.0000	100.0000	1	6e2b29553e4b	0x1192d0
+timesplit	?BlockScreenSaver@@YAHPAXIIJ@Z	100.0000	100.0000	1	88e11613aa98	0x1192d0
 timesplit	?SplitMillisToHMS@@YAXIPAI00@Z	100.0000	100.0000	2	826102945287	0x119210
 timestring	?FormatElapsedTime@@YA?AVCString@@I@Z	100.0000	100.0000	14	560fb0b807fb	0x1190f0
 titleappstart	?OnStart@CTitleApp@@QAEHH@Z	100.0000	100.0000	1	e38a559f4826	0xf9880
