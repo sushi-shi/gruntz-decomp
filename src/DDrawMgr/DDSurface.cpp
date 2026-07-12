@@ -56,27 +56,22 @@ extern i32 g_bDown; // 0x683eb4
 DATA(0x002c44bc)
 extern void(__stdcall* g_pCopyRect)(struct tagRECT*, const struct tagRECT*);
 
-// The global image cache the new item is filed into (elements: the 0xc0
-// CRezSurfaceItem surface items the 0x13e9a0 factory below builds).
+// The global image cache the new item is filed into: a real MFC CPtrArray holding
+// the 0xc0 CRezSurfaceItem surface items the 0x13e9a0 factory below builds. Stored
+// in retail .data at 0x653c88; DATA-referenced (reloc-masked), so declared extern.
 class CRezSurfaceItem;
-class CImageCache {
-public:
-    void SetAtGrow(i32 index, CRezSurfaceItem* item); // 0x1b5144
-    void RemoveAll();                                 // 0x1b4f0b (out-of-line array teardown)
-};
-SIZE_UNKNOWN(CImageCache);
 DATA(0x00253c88)
-extern CImageCache g_imageCache; // 0x653c88
+extern CPtrArray g_imageCache; // 0x653c88
 
-// Global image-cache teardown tail-forward (0x13e070): mov ecx,&g_imageCache; jmp
-// 0x1b4f0b. Folded from Stub/BoundaryUpper.cpp (ClearImageCache_13e070); g_imageCache
-// is this TU's own datum.
-// reloc-fidelity (deferred): retail tail-jmps to the CByteArray/CPtrArray CTOR
-// (0x1b4f0b, re-construct-in-place reset, NOT RemoveAll). Fix = retype g_imageCache to
-// real MFC CPtrArray + `new (&g_imageCache) CPtrArray()` + dissolve the CImageCache view.
+// Global image-cache in-place reconstruction (0x13e070): mov ecx,&g_imageCache; jmp
+// ??0CPtrArray@@QAE@XZ (0x1b4f0b). This is the in-place re-construct of the CPtrArray
+// (vptr-stamp + zero the 4 dwords), NOT RemoveAll (which frees the storage). The
+// explicit-ctor-call extension gives the clean tail-jmp with no placement-new
+// null-guard (docs/patterns/explicit-ctor-call-inplace-tail-jmp.md). Folded from
+// Stub/BoundaryUpper.cpp.
 RVA(0x0013e070, 0xa)
 void ClearImageCache_13e070() {
-    g_imageCache.RemoveAll();
+    g_imageCache.CPtrArray::CPtrArray();
 }
 
 // ---------------------------------------------------------------------------
@@ -1996,32 +1991,34 @@ i32 CDDSurface::DecodeRun24(void* src) {
 #pragma optimize("", on)
 
 // ---------------------------------------------------------------------------
-// The rotated-blit transform-setup worker (ImageRotate.cpp, 0x145f60). Declared
-// locally with the 9-arg tail these three thunks pass (retail under-passes the
-// 10th param); reloc-masked, so the decl shape only drives the push sequence.
-// reloc-fidelity (deferred, cross-unit): the real def is the 10-param
-// ?ImageRotateBlit@@YAXHHPAHHPAUImgRect@@HMMHH@Z; these thunks push only 9 args, so a
-// 9-param decl (needed to keep the 9 pushes) can NEVER mangle to the 10-param name -
-// the call stays UNBOUND. A clean fix needs ImageRotate.cpp (imagerotate lane) to
-// expose a 9-param facade or reconcile the under-pass; not fixable from the caller.
+// The rotated-blit transform-setup worker (ImageRotate.cpp, 0x145f60), __cdecl,
+// 9 args. TRUE signature recovered from the retail def body (fld arg6 -> deg->rad
+// -> fsin/fcos = rotation, fmul arg7 = scale, arg8/arg9 read as ints) AND the three
+// thunks' push sequences: (int,int,int*,void*,void*, float rot, float scale, int
+// mode, int colorkey) => ?ImageRotateBlit@@YAXHHPAHPAX1MMHH@Z. The three thunks feed
+// these slots with per-thunk-typed forwarded params (below) so the call binds and
+// the pushes stay byte-identical.
 extern void ImageRotateBlit(
     i32 a1,
     i32 a2,
     i32* pivot,
     void* dst,
     void* in,
-    i32 a6,
-    float angle,
-    float scale,
-    i32 a9
+    float rot,   // arg6 (deg->rad rotation)
+    float scale, // arg7
+    i32 mode,    // arg8
+    i32 colorkey // arg9
 );
 
 // RotateBlit / ScaleBlit / RotateScaleBlit (0x141040 / 0x141200 / 0x141240) - thin
 // arg-reorder thunks forwarding to ImageRotateBlit with `this` as the destination.
-// Each returns 1. Orphan copies (no caller); __thiscall.
+// Each returns 1. Orphan copies (no caller); __thiscall. Each param is typed by the
+// ImageRotateBlit slot it flows into (float rot/scale, int mode/colorkey) so no
+// int<->float conversion is inserted and the dword pushes match retail exactly.
 RVA(0x00141040, 0x36)
-i32 CDDSurface::RotateBlit(i32 rect, i32 pivot, i32 a1, i32 a2, float angle, float scale, i32 a9) {
-    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, 0, angle, scale, a9);
+i32 CDDSurface::RotateBlit(i32 rect, i32 pivot, i32 a1, i32 a2, float scale, i32 mode, i32 colorkey) {
+    // Rotation fixed at 0.0f (no rotate); the 5th param carries the scale.
+    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, 0.0f, scale, mode, colorkey);
     return 1;
 }
 
@@ -2036,8 +2033,9 @@ i32 Gap_141080(void) {
 }
 
 RVA(0x00141200, 0x39)
-i32 CDDSurface::ScaleBlit(i32 rect, i32 pivot, i32 a1, i32 a2, i32 a6, float scale, i32 a9) {
-    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, a6, 1.0f, scale, a9);
+i32 CDDSurface::ScaleBlit(i32 rect, i32 pivot, i32 a1, i32 a2, float angle, i32 mode, i32 colorkey) {
+    // Scale fixed at 1.0f (no scale); the 5th param carries the rotation.
+    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, angle, 1.0f, mode, colorkey);
     return 1;
 }
 
@@ -2047,12 +2045,12 @@ i32 CDDSurface::RotateScaleBlit(
     i32 pivot,
     i32 a1,
     i32 a2,
-    i32 a6,
     float angle,
     float scale,
-    i32 a9
+    i32 mode,
+    i32 colorkey
 ) {
-    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, a6, angle, scale, a9);
+    ImageRotateBlit(a1, a2, (i32*)pivot, (void*)this, (void*)rect, angle, scale, mode, colorkey);
     return 1;
 }
 

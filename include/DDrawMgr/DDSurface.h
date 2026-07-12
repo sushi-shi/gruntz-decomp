@@ -213,28 +213,30 @@ public:
     void FlipVertical(); // 0x13ebb0
 
     // Rotated-blit forwarders onto ImageRotateBlit (0x145f60): thin arg-reorder
-    // thunks passing `this` as the destination. RotateBlit fixes a6=0; ScaleBlit
-    // fixes angle=1.0f; RotateScaleBlit passes all transform params. (Orphan copies.)
+    // thunks passing `this` as the destination. RotateBlit fixes rotation=0.0f;
+    // ScaleBlit fixes scale=1.0f; RotateScaleBlit passes both. Each param is typed
+    // by the ImageRotateBlit (float rot/scale, int mode/colorkey) slot it feeds so
+    // the pushes match retail. (Orphan copies.)
     i32 RotateBlit(
         i32 rect,
         i32 pivot,
         i32 a1,
         i32 a2,
-        float angle,
         float scale,
-        i32 a9
+        i32 mode,
+        i32 colorkey
     ); // 0x141040
-    i32 ScaleBlit(i32 rect, i32 pivot, i32 a1, i32 a2, i32 a6, float scale,
-                  i32 a9); // 0x141200
+    i32 ScaleBlit(i32 rect, i32 pivot, i32 a1, i32 a2, float angle, i32 mode,
+                  i32 colorkey); // 0x141200
     i32 RotateScaleBlit(
         i32 rect,
         i32 pivot,
         i32 a1,
         i32 a2,
-        i32 a6,
         float angle,
         float scale,
-        i32 a9
+        i32 mode,
+        i32 colorkey
     ); // 0x141240
 
     void DecodeThunk(
