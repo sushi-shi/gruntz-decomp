@@ -188,17 +188,17 @@ SIZE_UNKNOWN(Obj1397a0);
 RVA(0x001397a0, 0x57)
 void Obj1397a0::Teardown() {
     if (m_0) {
-        RezFree(m_0);
+        ::operator delete(m_0);
     }
     if (m_10 != 0) {
         if (m_10->m_48 == 0) {
             if (m_38) {
-                RezFree(m_38);
+                ::operator delete(m_38);
             }
         }
     } else {
         if (m_38) {
-            RezFree(m_38);
+            ::operator delete(m_38);
         }
     }
     m_0 = 0;
@@ -233,7 +233,7 @@ i32 CParseSource::GetEntryTag() {
 // qualified path of the scope at this->+0x10 into dst by walking the CSymTab scope chain up
 // via parent(+0x1c): scratch=RezAlloc(size); dst=""; for(node=this->m_10; node; node=node->
 // +0x1c){ strcpy(scratch,dst); dst = node->+0x1c ? g_sepSlash : ""; strcat(dst,node->m_name);
-// strcat(dst,scratch);} RezFree(scratch); a lone root returns strcpy(dst, g_sepSlash "\").
+// strcat(dst,scratch);} ::operator delete(scratch); a lone root returns strcpy(dst, g_sepSlash "\").
 // The WALKED NODE is the real CSymTab (its ctor @0x139de0 proves m_name@+0, parent@+0x1c);
 // g_sepSlash @0x60cff0, g_emptyString @0x6293f4. But `this`'s OWN class - the holder of a
 // current-scope CSymTab* at +0x10 - is a ZERO-REF ORPHAN (no rel32/vtable/data-ref caller
@@ -275,7 +275,7 @@ i32 CParseSource::BeginParse() {
         return 0;
     }
     if (m_reader->Read(m_base, 0, m_length, (void*)m_buffer) != (i32)m_length) {
-        RezFree((void*)m_buffer);
+        ::operator delete((void*)m_buffer);
         m_buffer = 0;
     }
     return m_buffer;
@@ -287,7 +287,7 @@ i32 CParseSource::BeginParse() {
 RVA(0x001399d0, 0x21)
 i32 CParseSource::EndParse() {
     if (m_buffer != 0) {
-        RezFree((void*)m_buffer);
+        ::operator delete((void*)m_buffer);
         m_buffer = 0;
     }
     return 1;
@@ -484,7 +484,7 @@ CSymTab::~CSymTab() {
         CSymRec* rec = (CSymRec*)cur->m_record;
         if (rec) {
             rec->~CSymRec();
-            RezFree(rec);
+            ::operator delete(rec);
         }
         cur = next;
     }
@@ -494,15 +494,15 @@ CSymTab::~CSymTab() {
         CSymTab* sub = (CSymTab*)cur->m_record;
         if (sub) {
             sub->~CSymTab();
-            RezFree(sub);
+            ::operator delete(sub);
         }
         cur = next;
     }
     if (m_name) {
-        RezFree(m_name);
+        ::operator delete(m_name);
     }
     if (m_buf48) {
-        RezFree(m_buf48);
+        ::operator delete(m_buf48);
     }
     m_name = 0;
     m_14 = 0;
@@ -552,10 +552,6 @@ void* CSymTab::Find(const char* path) {
     return (void*)Insert(fname, arg);
 }
 
-// The "File is not sorted!" assert message - a file-scope literal (its address
-// is the reloc-masked push operand in Load's failure path).
-static const char s_notSorted[] = "CRezDir::Load Failed! (File is not sorted!)";
-
 // ---------------------------------------------------------------------------
 // CRezDirNode::Load(childFlag)
 // Recursive directory parse / load. If already loaded (m_buf != 0) return 1.
@@ -573,7 +569,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
 
     RezSrc* src = m_src;
     if (src->m_8 == 0 || (u32)src->m_1c > 1) {
-        RezAssertFail(s_notSorted);
+        RezAssertFail("CRezDir::Load Failed! (File is not sorted!)");
         return 0;
     }
 
@@ -602,7 +598,7 @@ i32 CRezDirNode::Load(i32 childFlag) {
 RVA(0x0013a190, 0x94)
 i32 CSymTab::ReleaseParseBuffers(i32 recurse) {
     if (m_buf48 != 0) {
-        RezFree(m_buf48);
+        ::operator delete(m_buf48);
         m_buf48 = 0;
     } else {
         void* rec = FirstSym();
@@ -1144,15 +1140,15 @@ CSymParser::~CSymParser() {
     CSymTab* root = m_root;
     if (root) {
         root->~CSymTab();
-        RezFree(root);
+        ::operator delete(root);
         m_root = 0;
     }
     if (m_cachedSourceBuffer) {
-        RezFree(m_cachedSourceBuffer);
+        ::operator delete(m_cachedSourceBuffer);
         m_cachedSourceBuffer = 0;
     }
     if (m_delims) {
-        RezFree(m_delims);
+        ::operator delete(m_delims);
         m_delims = 0;
     }
     // chain head points at &node->m_link (offset 0 in CSlotNode) - direct reinterpret
@@ -1176,9 +1172,9 @@ CSymParser::~CSymParser() {
     m_cachedSourceBuffer = 0;
     if (node) {
         do {
-            RezFree(node->m_buffer);
+            ::operator delete(node->m_buffer);
             m_nodes.Unlink(&node->m_link);
-            RezFree(node);
+            ::operator delete(node);
             node = (CSlotNode*)m_nodes.m_head;
         } while (node);
     }
@@ -1554,11 +1550,11 @@ void* CSymParser::Clear(i32 final) {
     }
     if (m_root) {
         m_root->~CSymTab();
-        RezFree(m_root);
+        ::operator delete(m_root);
         m_root = 0;
     }
     if (m_cachedSourceBuffer) {
-        RezFree(m_cachedSourceBuffer);
+        ::operator delete(m_cachedSourceBuffer);
         m_cachedSourceBuffer = 0;
     }
     m_parseArmed = 0;
@@ -1663,7 +1659,7 @@ i32 CSymParser::MakeSeed() {
 RVA(0x0013ba80, 0x57)
 void CSymParser::SetDelims(char* s) {
     if (m_delims != 0) {
-        RezFree(m_delims);
+        ::operator delete(m_delims);
     }
     m_delims = (char*)::operator new(strlen(s) + 1);
     strcpy(m_delims, s);
@@ -1793,6 +1789,12 @@ i32 CSymTab::ResolveQualified(const char* name, void* arg) {
     return scope->Insert(qual, arg);
 }
 
+// GetRoot (0x13b900): the heap root CSymTab accessor - `mov eax,[ecx+0x44]; ret`.
+RVA(0x0013b900, 0x4)
+CSymTab* CSymParser::GetRoot() {
+    return m_root;
+}
+
 // ResolveQualified (0x13bff0): forward (name, arg) into GetRoot()'s CSymTab.
 RVA(0x0013bff0, 0x19)
 i32 CSymParser::ResolveQualified(const char* name, void* arg) {
@@ -1819,16 +1821,20 @@ i32 CSymParser::ReParse() {
 }
 
 // ---------------------------------------------------------------------------
+// The CRT _stat (0x18c780, LIBCMT) that the RezStatEntry label aliased. Declared
+// with a void* buffer so the RezFindRec byte-view below stays load-bearing.
+extern "C" i32 _stat(const char* path, void* statbuf);
+
 // CRezDir::FindEntry(char* name)
 // Despite the tomalla "binary search" label, the bytes are a stat: build a
-// 0x24-byte find-record on the stack, RezStatEntry(name, &rec); on failure
+// 0x24-byte find-record on the stack, _stat(name, &rec); on failure
 // return 0; on success return whether the entry's attribute dword (at byte +6
 // of the record) has bit 0x4000 set (i.e. the entry is a directory).
 // `this` is never read here.
 RVA(0x0013c080, 0x3c)
 i32 CRezDir::FindEntry(char* name) {
     RezFindRec rec;
-    if (RezStatEntry(name, &rec) != 0) {
+    if (_stat(name, &rec) != 0) {
         return 0;
     }
     // Language-forced int-view over the fixed byte record: the entry's attribute
@@ -1882,7 +1888,7 @@ void* CSymParser::PopParseSlot() {
         }
         node->m_buffer = arr;
         if (arr == 0) {
-            RezFree(node);
+            ::operator delete(node);
             return 0;
         }
         for (i32 j = 0; (u32)j < (u32)m_parseSlotBlockCount; j++) {

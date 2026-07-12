@@ -1,46 +1,27 @@
-// ButeStoreClear.cpp - CButeStore::ClearRecursive (0x16e070), the derived keyed-
-// store's recursive node-free (C:\Proj\Bute). The trace mislabeled it
-// CButeTree_16e070 because the recursion runs on a CButeStore `this`; the class
-// is the CButeStore modeled in <Bute/ButeMgr.h> (whose ~CButeStore already calls
-// this as a no-body external). Kept in its own TU with a local class view so it
-// stays frameless (base flags) and self-contained.
-//
-// The store holds a binary tree at +0x18 keyed by each node's +0x08. The walk
-// post-order frees: it recurses into a child only when that child's key is
-// GREATER than the current node's (the heap-ordered owned-subtree invariant),
-// frees the node's name string (+0x0c), then - when the store's +0x10 flag has
-// bit 2 - runs the store's per-value callback (+0x0c fn-ptr) on the node's value
-// (+0x10) and frees it, and finally frees the node itself. Field names are
-// placeholders; only offsets + code bytes are load-bearing.
+// ButeStoreClear.cpp - the OUT-OF-LINE CButeStore::Reset (0x212a0), the non-inlined
+// twin CChatBoxOwner::ProcessCheatInput calls (C:\Proj\Bute). The real CButeStore::Reset
+// is INLINE in <Bute/ButeStore.h> (folds into CButeMgr::Parse - MUST stay inline; a
+// decl-only Reset craters Parse -22%), so a member is inline XOR out-of-line: this
+// out-of-line twin keeps a distinct host view (CButeStore212a0) beside its class. The
+// recursive free (ClearRecursive @0x16e070) is the REAL CButeStore method (merged
+// container obj src/Gruntz/TypeKeyColl.cpp), reached by casting `this` to CButeStore so
+// its call binds to the retail RVA (byte-neutral: CButeStore's primary base is at +0).
 #include <Bute/ButeMgr.h> // shared CButeStore / CButeStoreNode
 #include <rva.h>
 
-// The engine __cdecl deallocator (reloc-masked rel32). _RezFree @0x1b9b82.
-extern "C" void RezFree(void* p); // 0x1b9b82
-
-// 0x212a0 (re-homed from src/Stub/BoundaryMisc.cpp): the OUT-OF-LINE CButeStore::Reset
-// - the copy CChatBoxOwner::ProcessCheatInput calls non-inlined. The real
-// CButeStore::Reset is INLINE in <Bute/ButeMgr.h> (folded into CButeMgr::Parse, matched);
-// a member can be inline XOR out-of-line, so this out-of-line twin keeps a distinct
-// placeholder identity (CButeStore212a0) next to its class here. ClearRecursive
-// (0x16e070) is the real CButeStore method below, reached reloc-masked.
 struct CButeStore212a0 {
     char m_pad0[0x14];
     void* m_14; // +0x14
     i32 m_18;   // +0x18  tree root
     char m_pad1c[0x28 - 0x1c];
-    i32 m_28;                 // +0x28
-    void ClearRecursive(i32); // 0x16e070 (reloc-masked external)
+    i32 m_28; // +0x28
     void Reset();
 };
 SIZE_UNKNOWN(CButeStore212a0);
 RVA(0x000212a0, 0x21)
 void CButeStore212a0::Reset() {
-    ClearRecursive(0);
+    ((CButeStore*)this)->ClearRecursive(0); // real 0x16e070 (this+0 == CButeStore primary base)
     m_18 = 0;
     m_28 = 0;
     m_14 = 0;
 }
-
-// (CButeStore::ClearRecursive @0x16e070 lives in its retail TU, the merged
-//  container obj src/Gruntz/TypeKeyColl.cpp - wave2-H.)

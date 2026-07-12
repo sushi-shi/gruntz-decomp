@@ -13,6 +13,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Mfc.h>
+#include <Gruntz/Dialogs.h> // canonical CWnd (GetDlgItem) + CCmdTarget (EndWaitCursor)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
@@ -25,45 +26,38 @@ void* GetGlobal5e8e98() {
 
 // ---------------------------------------------------------------------------
 // 0x183f0 (RVA-homed from src/Stub/ApiCallers.cpp) - a dialog list-item confirm:
-// send LB_GETCURSEL (0x188) to item 0x516; if it returned a valid selection
-// (!= LB_ERR), run OnPick(). __thiscall, no args.
+// GetDlgItem(0x516)'s window sends LB_GETCURSEL (0x188); if it returned a valid
+// selection (!= LB_ERR), run CDialog::OnOK (0x1bacc3). __thiscall, no args.
 // @orphan: only inbound edge is a fn-ptr-table slot (~g_5e8e98+0x1c, via thunk
-// 0x3d5f) - no class vtable / new-site trace, so the owning dialog class is unrecovered.
-struct DlgHostItem_183f0 {
-    char m_pad0[0x1c];
-    HWND m_hwnd; // +0x1c
-};
-struct DlgHost_183f0 {
-    DlgHostItem_183f0* GetItem(i32 id); // thiscall, RVA 0x1be27d
-    void OnPick();                      // thiscall, RVA 0x1bacc3
-    void PickIfSelected();              // thiscall, RVA 0x183f0
+// 0x3d5f) - no class vtable / new-site trace, so the concrete CDialog subclass is
+// unrecovered; modeled on the canonical CWnd (@identity-TODO for the leaf dialog).
+struct DlgHost_183f0 : public CWnd {
+    // OnPick == CDialog::OnOK (0x1bacc3), dispatched with this dialog's `this`. Binding
+    // it needs the CDialog vtable slot renamed to OnOK (shared Dialogs.h/Dialogs.cpp/
+    // MultiStartDlgRoster.cpp change); DEFERRED cross-lane, left reloc-masked here.
+    void OnPick();         // thiscall, RVA 0x1bacc3
+    void PickIfSelected(); // thiscall, RVA 0x183f0
 };
 RVA(0x000183f0, 0x2e)
 void DlgHost_183f0::PickIfSelected() {
-    HWND h = GetItem(0x516)->m_hwnd;
+    HWND h = GetDlgItem(0x516)->m_hWnd;
     if (SendMessageA(h, 0x188, 0, 0) != -1) {
         OnPick();
     }
 }
-SIZE_UNKNOWN(DlgHostItem_183f0);
 SIZE_UNKNOWN(DlgHost_183f0);
 
 // ---------------------------------------------------------------------------
 // 0x018430 (re-homed from src/Stub/BoundaryMisc.cpp): end the wait cursor on the
-// current MFC thread - tail-call CWinThread::EndWaitCursor (0x1beb10) on
-// AfxGetModuleState()->m_thread (+0x04). __cdecl, no args.
+// current MFC thread - tail-call CCmdTarget::EndWaitCursor (0x1beb10) on
+// AfxGetModuleState()->m_pCurrentWinThread (+0x04). __cdecl, no args.
 // @orphan: called only from EH unwind funclets (no single owning class); a shared
-// MFC wait-cursor helper. CWinThread's full definition lives in the GUI-heavy
-// <afxwin.h> (not pulled by VC_EXTRALEAN <Mfc.h>), so it is completed with just the
-// one method invoked (the raw +0x04 module-state offset is load-bearing).
-class CWinThread {
-public:
-    void EndWaitCursor();
-};
-SIZE_UNKNOWN(CWinThread);
+// MFC wait-cursor helper. The current thread is a CWinThread (is-a CCmdTarget); the
+// call binds to the CCmdTarget-owned EndWaitCursor. Raw +0x04 module-state offset is
+// load-bearing.
 RVA(0x00018430, 0xd)
 void EndWaitCursorOnThread() {
-    CWinThread* thread = *(CWinThread**)((char*)AfxGetModuleState() + 4);
+    CCmdTarget* thread = *(CCmdTarget**)((char*)AfxGetModuleState() + 4);
     thread->EndWaitCursor();
 }
 

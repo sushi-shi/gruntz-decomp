@@ -63,6 +63,8 @@ public:
     virtual void CtVsl19();              // slot 19
     virtual void CtVsl20();              // slot 20
     virtual void CtVsl21();              // slot 21
+    // NAFXCW non-virtual public method (0x1beb10): end the app wait cursor. Reloc-masked.
+    void EndWaitCursor();
 };
 
 SIZE_UNKNOWN(CWnd);

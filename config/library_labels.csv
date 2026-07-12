@@ -3430,6 +3430,7 @@ rva,name,lib,confidence,source
 0x1c09de,?FreeHandle@GlobalHandleOwner@@QAEXXZ,NAFXCW,LOW,derecon-waveO
 0x1b4867,??0CPtrList@@QAE@H@Z,NAFXCW,HIGH,reloc-R21
 0x1b48c6,??1CPtrList@@UAE@XZ,NAFXCW,HIGH,reloc-R21
+0x1b4a27,?RemoveTail@CPtrList@@QAEPAXXZ,NAFXCW,HIGH,reloc-R34
 0x1b48a6,?RemoveAll@CPtrList@@QAEXXZ,NAFXCW,HIGH,reloc-R21
 0x1b4967,?AddHead@CPtrList@@QAEPAU__POSITION@@PAX@Z,NAFXCW,HIGH,reloc-R30
 0x1b4991,?AddTail@CPtrList@@QAEPAU__POSITION@@PAX@Z,NAFXCW,HIGH,reloc-R21
