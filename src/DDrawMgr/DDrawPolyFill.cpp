@@ -27,17 +27,17 @@ struct FillEdgeRow {
     char p1[0x1c - 0x14];
 };
 DATA(0x002a2cf0)
-extern FillEdgeRow g_edgeDesc[]; // 0x6a2cf0 (descending-edge table; fill reads +0x10)
+extern "C" FillEdgeRow g_rasterEdgeL[]; // 0x6a2cf0 (descending-edge table; fill reads +0x10)
 DATA(0x002856f8)
-extern FillEdgeRow g_edgeAsc[]; // 0x6856f8 (ascending-edge table; fill reads +0x10)
+extern "C" FillEdgeRow g_rasterEdgeR[]; // 0x6856f8 (ascending-edge table; fill reads +0x10)
 DATA(0x002a2ce8)
-extern i32 g_fillRowPtr; // 0x6a2ce8  current scanline base (engine scratch)
+extern "C" i32 g_rasterDestRow; // 0x6a2ce8  current scanline base (engine scratch)
 DATA(0x002becf4)
-extern i32 g_fillSpanPtr; // 0x6becf4  current span start (engine scratch)
+extern "C" i32 g_rasterDestPtr; // 0x6becf4  current span start (engine scratch)
 DATA(0x001efb18)
-extern float g_fixScale; // 0x5efb18  +fixed-point scale
+extern "C" float g_rasterScale; // 0x5efb18  +fixed-point scale
 DATA(0x001efb1c)
-extern float g_fixScaleNeg; // 0x5efb1c -fixed-point scale
+extern "C" float g_rasterScaleNeg; // 0x5efb1c -fixed-point scale
 
 // FillPolygon (0x146fe0, __cdecl) - scanline-fill a polygon into a CDDSurface. Pass 1
 // walks each edge (prev->cur, wrapping), ftol's the endpoints, picks the asc/desc edge
@@ -66,20 +66,20 @@ i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color) {
                 FillVert* bottom;
                 if (prev->m_4 > cur->m_4) {
                     bottom = cur;
-                    table = g_edgeDesc;
+                    table = g_rasterEdgeL;
                 } else {
                     top = cur;
                     bottom = prev;
-                    table = g_edgeAsc;
+                    table = g_rasterEdgeR;
                 }
-                i32 topX = (i32)(top->m_0 * g_fixScale);
-                i32 topYi = (i32)(top->m_4 * g_fixScale);
-                i32 botYi = (i32)(bottom->m_4 * g_fixScale);
+                i32 topX = (i32)(top->m_0 * g_rasterScale);
+                i32 topYi = (i32)(top->m_4 * g_rasterScale);
+                i32 botYi = (i32)(bottom->m_4 * g_rasterScale);
                 i32 topRow = topYi >> 0xe;
                 FillEdgeRow* entry = &table[topRow];
                 i32 botRow = botYi >> 0xe;
                 i32 height = botRow - topRow;
-                i32 botX = (i32)(bottom->m_0 * g_fixScaleNeg);
+                i32 botX = (i32)(bottom->m_0 * g_rasterScaleNeg);
                 i32 xSlope = (-topX - botX) / height;
                 if (topRow < botRow) {
                     i32 x = topX;
@@ -105,11 +105,11 @@ i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color) {
     i32 stride = *(i32*)((char*)surf + 0x20);
     i32 bits = surf->Lock(0);
     i32 rowPtr = bits + stride * minYi;
-    g_fillRowPtr = rowPtr;
+    g_rasterDestRow = rowPtr;
     if (minYi < maxYi) {
         i32 rowCount = maxYi - minYi;
-        i32* pDesc = (i32*)((char*)g_edgeDesc + rowOff + 0x10);
-        i32* pAsc = (i32*)((char*)g_edgeAsc + rowOff + 0x10);
+        i32* pDesc = (i32*)((char*)g_rasterEdgeL + rowOff + 0x10);
+        i32* pAsc = (i32*)((char*)g_rasterEdgeR + rowOff + 0x10);
         do {
             i32 xB = *pAsc >> 0xe;
             i32 xA = *pDesc >> 0xe;
@@ -121,16 +121,16 @@ i32 FillPolygon(FillVert* verts, i32 count, CDDSurface* surf, i16 color) {
             }
             i32 width = hi - lo;
             if (width > 0) {
-                g_fillSpanPtr = rowPtr + lo * 2;
-                i16* p = (i16*)g_fillSpanPtr;
+                g_rasterDestPtr = rowPtr + lo * 2;
+                i16* p = (i16*)g_rasterDestPtr;
                 i32 w = width;
                 do {
                     *p++ = color;
                 } while (--w != 0);
-                rowPtr = g_fillRowPtr;
+                rowPtr = g_rasterDestRow;
             }
             rowPtr += *(i32*)((char*)surf + 0x20);
-            g_fillRowPtr = rowPtr;
+            g_rasterDestRow = rowPtr;
             pAsc = (i32*)((char*)pAsc + 0x1c);
             pDesc = (i32*)((char*)pDesc + 0x1c);
         } while (--rowCount != 0);

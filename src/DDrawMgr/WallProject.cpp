@@ -16,9 +16,9 @@
 #include <Globals.h>
 
 // The static draw workspace (0x6a21f8..). Four vertex records, 0x1c stride; the
-// helpers take &g_drawWS[0].
+// helpers take &g_rasterVtxB[0].
 DATA(0x002a21f8)
-extern float g_drawWS[];
+extern "C" float g_rasterVtxB[];
 
 // Read-only float constants the rotation uses (0x5efb10/0x5efb20/0x5efb24).
 DATA(0x001efb10)
@@ -28,7 +28,7 @@ extern float g_c20;
 
 // A draw param the draw helper consumes (0x6becf8).
 DATA(0x002becf8)
-extern i32 g_drawParam;
+extern "C" i32 g_rasterVtxCount;
 
 // The build/draw helpers (still Boundary stubs; reloc-masked __cdecl externs).
 extern "C" i32 BuildWallQuad(float* ws, i32 n, i32 a, i32 b, i32 c, i32 d); // 0x1461b0
@@ -65,13 +65,13 @@ i32 ProjectWallQuad(
     double c = cos(ang);
     double hw = (double)p5;
 
-    g_drawWS[0] = (float)(-s);
-    g_drawWS[1] = (float)len;
-    g_drawWS[5] = (float)c;
-    g_drawWS[6] = (float)(c + len);
+    g_rasterVtxB[0] = (float)(-s);
+    g_rasterVtxB[1] = (float)len;
+    g_rasterVtxB[5] = (float)c;
+    g_rasterVtxB[6] = (float)(c + len);
 
     // rotate the four base corners through (c, -s) into the workspace records.
-    float* v = &g_drawWS[1];
+    float* v = &g_rasterVtxB[1];
     for (i32 i = 0; i < 4; i++) {
         double bx = (double)v[-1];
         double by = -(double)v[0];
@@ -85,8 +85,8 @@ i32 ProjectWallQuad(
         v += 7;
     }
 
-    if (BuildWallQuad(g_drawWS, 4, p8, p8, p9, p10) != 0) {
-        DrawWallQuad(g_drawWS, g_drawParam, p0, p6);
+    if (BuildWallQuad(g_rasterVtxB, 4, p8, p8, p9, p10) != 0) {
+        DrawWallQuad(g_rasterVtxB, g_rasterVtxCount, p0, p6);
     }
     return 1;
 }

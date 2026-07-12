@@ -24,11 +24,11 @@ struct PolyVtx {
 
 // The two ping-pong clip output buffers and the published result count.
 DATA(0x002a1708)
-extern PolyVtx g_polyBufA[]; // 0x6a1708
+extern "C" PolyVtx g_rasterVtxA[]; // 0x6a1708
 DATA(0x002a21f8)
-extern PolyVtx g_polyBufB[]; // 0x6a21f8
+extern "C" PolyVtx g_rasterVtxB[]; // 0x6a21f8
 DATA(0x002becf8)
-extern i32 g_polyClipCount; // 0x6becf8
+extern "C" i32 g_rasterVtxCount; // 0x6becf8
 
 // ===========================================================================
 // PolyIsConvexCW (0x145e30, __cdecl) - winding-consistency test over a `count`-
@@ -95,7 +95,7 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
     i32 i;
 
     // Pass 1: keep x >= left. poly -> bufA.
-    PolyVtx* out = g_polyBufA;
+    PolyVtx* out = g_rasterVtxA;
     {
         PolyVtx* prev = &poly[n - 1];
         PolyVtx* cur = poly;
@@ -118,16 +118,16 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
             cur++;
         }
     }
-    i32 n1 = (i32)(out - g_polyBufA);
+    i32 n1 = (i32)(out - g_rasterVtxA);
     if (n1 == 0) {
         return 0;
     }
 
     // Pass 2: keep x < right. bufA -> bufB.
-    out = g_polyBufB;
+    out = g_rasterVtxB;
     {
-        PolyVtx* prev = &g_polyBufA[n1 - 1];
-        PolyVtx* cur = g_polyBufA;
+        PolyVtx* prev = &g_rasterVtxA[n1 - 1];
+        PolyVtx* cur = g_rasterVtxA;
         for (i = n1; i > 0; i--) {
             if (prev->x < right) {
                 *out++ = *prev;
@@ -147,16 +147,16 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
             cur++;
         }
     }
-    i32 n2 = (i32)(out - g_polyBufB);
+    i32 n2 = (i32)(out - g_rasterVtxB);
     if (n2 == 0) {
         return 0;
     }
 
     // Pass 3: keep y >= top. bufB -> bufA.
-    out = g_polyBufA;
+    out = g_rasterVtxA;
     {
-        PolyVtx* prev = &g_polyBufB[n2 - 1];
-        PolyVtx* cur = g_polyBufB;
+        PolyVtx* prev = &g_rasterVtxB[n2 - 1];
+        PolyVtx* cur = g_rasterVtxB;
         for (i = n2; i > 0; i--) {
             if (!(prev->y < top)) {
                 *out++ = *prev;
@@ -176,16 +176,16 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
             cur++;
         }
     }
-    i32 n3 = (i32)(out - g_polyBufA);
+    i32 n3 = (i32)(out - g_rasterVtxA);
     if (n3 == 0) {
         return 0;
     }
 
     // Pass 4: keep y < bottom. bufA -> bufB.
-    out = g_polyBufB;
+    out = g_rasterVtxB;
     {
-        PolyVtx* prev = &g_polyBufA[n3 - 1];
-        PolyVtx* cur = g_polyBufA;
+        PolyVtx* prev = &g_rasterVtxA[n3 - 1];
+        PolyVtx* cur = g_rasterVtxA;
         for (i = n3; i > 0; i--) {
             if (prev->y < bottom) {
                 *out++ = *prev;
@@ -205,11 +205,11 @@ i32 ImagePolyClipRect(PolyVtx* poly, i32 n, i32 a2, i32 a3, i32 a4, i32 a5) {
             cur++;
         }
     }
-    i32 n4 = (i32)(out - g_polyBufB);
+    i32 n4 = (i32)(out - g_rasterVtxB);
     if (n4 == 0) {
         return 0;
     }
-    g_polyClipCount = n4;
+    g_rasterVtxCount = n4;
     return 1;
 }
 

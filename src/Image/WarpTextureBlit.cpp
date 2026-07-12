@@ -52,21 +52,21 @@ struct WarpVtx {
 // Per-scanline edge tables (left = 0x6a2cf0, right = 0x6856f8): an array of 0x1c-
 // byte records {x(16.16), u, v} at +0x10/+0x14/+0x18, indexed by scanline.
 DATA(0x002a2cf0)
-extern i32 g_warpEdgeL[]; // 0x6a2cf0
+extern "C" i32 g_rasterEdgeL[]; // 0x6a2cf0
 DATA(0x002856f8)
-extern i32 g_warpEdgeR[]; // 0x6856f8
+extern "C" i32 g_rasterEdgeR[]; // 0x6856f8
 
 // The rasterizer global scratch (all reloc-masked DATA).
 DATA(0x002a2ce8)
-extern i32 g_warpDestRow; // 0x6a2ce8  (current dest scanline base)
+extern "C" i32 g_rasterDestRow; // 0x6a2ce8  (current dest scanline base)
 DATA(0x002becf4)
-extern i32 g_warpDestPtr; // 0x6becf4  (current dest pixel ptr)
+extern "C" i32 g_rasterDestPtr; // 0x6becf4  (current dest pixel ptr)
 
 // The fixed-point scale constants (0x5efb18, 0x5efb1c = its negation).
 DATA(0x001efb18)
-extern const float g_warpScale; // 0x5efb18
+extern "C" const float g_rasterScale; // 0x5efb18
 DATA(0x001efb1c)
-extern const float g_warpScaleNeg; // 0x5efb1c
+extern "C" const float g_rasterScaleNeg; // 0x5efb1c
 
 static i32 warpFtol(double v) {
     return (i32)v;
@@ -118,24 +118,24 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 if (prev->y >= cur->y) {
                     top = prev;
                     bot = cur;
-                    table = g_warpEdgeL;
+                    table = g_rasterEdgeL;
                 } else {
                     top = cur;
                     bot = prev;
-                    table = g_warpEdgeR;
+                    table = g_rasterEdgeR;
                 }
 
-                i32 topU = warpFtol((double)top->u * g_warpScale);
-                i32 topV = warpFtol((double)top->v * g_warpScale);
-                i32 topX = warpFtol((double)top->x * g_warpScale);
-                i32 topYi = warpFtol((double)top->y * g_warpScale) >> 0xe;
-                i32 botYi = warpFtol((double)bot->y * g_warpScale) >> 0xe;
+                i32 topU = warpFtol((double)top->u * g_rasterScale);
+                i32 topV = warpFtol((double)top->v * g_rasterScale);
+                i32 topX = warpFtol((double)top->x * g_rasterScale);
+                i32 topYi = warpFtol((double)top->y * g_rasterScale) >> 0xe;
+                i32 botYi = warpFtol((double)bot->y * g_rasterScale) >> 0xe;
                 i32 h = botYi - topYi;
 
                 i32* rec = (i32*)((char*)table + topYi * 0x1c + 0x10);
-                i32 dx = (-topX - warpFtol((double)bot->x * g_warpScaleNeg)) / h;
-                i32 du = (-topU - warpFtol((double)bot->u * g_warpScaleNeg)) / h;
-                i32 dv = (-topV - warpFtol((double)bot->v * g_warpScaleNeg)) / h;
+                i32 dx = (-topX - warpFtol((double)bot->x * g_rasterScaleNeg)) / h;
+                i32 du = (-topU - warpFtol((double)bot->u * g_rasterScaleNeg)) / h;
+                i32 dv = (-topV - warpFtol((double)bot->v * g_rasterScaleNeg)) / h;
 
                 i32 x = topX;
                 i32 u = topU;
@@ -165,14 +165,14 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
     g_warpTexBase = src->Lock(0);
     i32 destBase = dst->Lock(0);
     i32 dstPitch = dst->m_pitch;
-    g_warpDestRow = destBase + dstPitch * minY;
+    g_rasterDestRow = destBase + dstPitch * minY;
     g_warpUMask = ((src->m_width + 0x3ffff) << 0xe) << shift;
 
     i32 rows = maxY - minY;
     if (mode == 0) {
         // ---- copy-all ----
-        i32* lp = (i32*)((char*)g_warpEdgeL + 0x14 + minY * 0x1c);
-        i32* rp = (i32*)((char*)g_warpEdgeR + 0x14 + minY * 0x1c);
+        i32* lp = (i32*)((char*)g_rasterEdgeL + 0x14 + minY * 0x1c);
+        i32* rp = (i32*)((char*)g_rasterEdgeR + 0x14 + minY * 0x1c);
         for (; rows > 0; rows--) {
             i32 rx = rp[-1] >> 0xe;
             i32 lx = lp[-1] >> 0xe;
@@ -186,8 +186,8 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 dv = (lp[1] - vv) / span;
                 g_warpV = vv << shift;
                 g_warpVStep = dv << shift;
-                g_warpDestPtr = g_warpDestRow + rx * 2;
-                i16* d = (i16*)g_warpDestPtr;
+                g_rasterDestPtr = g_rasterDestRow + rx * 2;
+                i16* d = (i16*)g_rasterDestPtr;
                 i16* tex = (i16*)g_warpTexBase;
                 i32 uu = g_warpU;
                 i32 va2 = g_warpV;
@@ -200,12 +200,12 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
             }
             lp = (i32*)((char*)lp + 0x1c);
             rp = (i32*)((char*)rp + 0x1c);
-            g_warpDestRow += dst->m_pitch;
+            g_rasterDestRow += dst->m_pitch;
         }
     } else if (g_warpColorkey == 0) {
         // ---- skip-zero ----
-        i32* lp = (i32*)((char*)g_warpEdgeL + 0x14 + minY * 0x1c);
-        i32* rp = (i32*)((char*)g_warpEdgeR + 0x14 + minY * 0x1c);
+        i32* lp = (i32*)((char*)g_rasterEdgeL + 0x14 + minY * 0x1c);
+        i32* rp = (i32*)((char*)g_rasterEdgeR + 0x14 + minY * 0x1c);
         for (; rows > 0; rows--) {
             i32 rx = rp[-1] >> 0xe;
             i32 lx = lp[-1] >> 0xe;
@@ -219,8 +219,8 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 dv = (lp[1] - vv) / span;
                 g_warpV = vv << shift;
                 g_warpVStep = dv << shift;
-                g_warpDestPtr = g_warpDestRow + rx * 2;
-                i16* d = (i16*)g_warpDestPtr;
+                g_rasterDestPtr = g_rasterDestRow + rx * 2;
+                i16* d = (i16*)g_rasterDestPtr;
                 i16* tex = (i16*)g_warpTexBase;
                 i32 uu = g_warpU;
                 i32 va2 = g_warpV;
@@ -237,12 +237,12 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
             }
             lp = (i32*)((char*)lp + 0x1c);
             rp = (i32*)((char*)rp + 0x1c);
-            g_warpDestRow += dst->m_pitch;
+            g_rasterDestRow += dst->m_pitch;
         }
     } else {
         // ---- skip-colorkey ----
-        i32* lp = (i32*)((char*)g_warpEdgeL + 0x14 + minY * 0x1c);
-        i32* rp = (i32*)((char*)g_warpEdgeR + 0x14 + minY * 0x1c);
+        i32* lp = (i32*)((char*)g_rasterEdgeL + 0x14 + minY * 0x1c);
+        i32* rp = (i32*)((char*)g_rasterEdgeR + 0x14 + minY * 0x1c);
         for (; rows > 0; rows--) {
             i32 rx = rp[-1] >> 0xe;
             i32 lx = lp[-1] >> 0xe;
@@ -256,8 +256,8 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
                 i32 dv = (lp[1] - vv) / span;
                 g_warpV = vv << shift;
                 g_warpVStep = dv << shift;
-                g_warpDestPtr = g_warpDestRow + rx * 2;
-                i16* d = (i16*)g_warpDestPtr;
+                g_rasterDestPtr = g_rasterDestRow + rx * 2;
+                i16* d = (i16*)g_rasterDestPtr;
                 i16* tex = (i16*)g_warpTexBase;
                 i32 uu = g_warpU;
                 i32 va2 = g_warpV;
@@ -274,7 +274,7 @@ i32 WarpTextureBlit(WarpVtx* va, i32 n, CDDSurface* dst, CDDSurface* src, i32 mo
             }
             lp = (i32*)((char*)lp + 0x1c);
             rp = (i32*)((char*)rp + 0x1c);
-            g_warpDestRow += dst->m_pitch;
+            g_rasterDestRow += dst->m_pitch;
         }
     }
 
