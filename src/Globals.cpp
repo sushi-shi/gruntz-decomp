@@ -175,18 +175,12 @@ extern char k_60df94[];
 // prior DATA(0x0020dfff..0x0020e002) here MISBOUND them to 0x60dfff (inside a string
 // literal "...NTZ_DEAT..."), 0x6000 low - the "613dff" name suffix is the real home.
 // Reference externs stay in <Globals.h>.
-DATA(0x0020fab8)
-extern "C" i32 g_dplayAppGuid[4]; // 0x60fab8  the 16-byte DirectPlay app GUID (also the
-                                  // net-bind template; kept i32[4] - the Bind path reads
-                                  // it as 4 ints, InitFromProvider casts it to GUID)
+// g_dplayAppGuid (0x20fab8) / g_611d88 (0x211d88) / s_GameKey (0x211ec4) DEFINED in
+// src/Gruntz/Multi.cpp (owner TU). Reference externs stay in <Globals.h> / <Net/NetMgr.h>.
 DATA(0x002111b0)
 extern u8 g_6111b0; // 0x6111b0
-DATA(0x00211d88)
-extern "C" i32 g_611d88; // 0x611d88  saved dropped-player id
 DATA(0x00211ab8)
 extern char s_GameMessagez[]; // s_GAME_MESSAGEZ_00611ab8 (image-set name literal)
-DATA(0x00211ec4)
-extern char s_GameKey[]; // s_GAME_KEY_00611ec4 (registry key literal)
 // g_warpX / g_warpY DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
 // g_archiveDefault612618 / g_dat613054 DEFINED in src/Gruntz/Play.cpp (owner TU).
 DATA(0x002135e8)
@@ -252,34 +246,9 @@ DATA(0x00248ce0)
 extern i32 g_dlgResultSink; // DAT_00648ce0 (cleared after the modal run)
 DATA(0x00248cec)
 extern "C" i32 g_648cec; // 0x648cec
-DATA(0x00248d14)
-extern "C" u32 g_648d14; // 0x648d14  drop-throttle deadline
-DATA(0x00249858)
-extern char g_649858[0x800]; // 0x649858
-DATA(0x0024a058)
-extern unsigned char gB_flag; // 0x64a058
-DATA(0x0024a059)
-extern i32 gB_val; // 0x64a059
-DATA(0x0024a05d)
-extern i32 gB_m14; // 0x64a05d
-DATA(0x0024a061)
-extern i32 gB_e04; // 0x64a061
-DATA(0x0024a065)
-extern unsigned char gB_e08; // 0x64a065
-DATA(0x0024a066)
-extern unsigned char gB_data; // 0x64a066
-DATA(0x0024a8a8)
-extern unsigned char gA_flag; // 0x64a8a8
-DATA(0x0024a8a9)
-extern unsigned char gA_slot; // 0x64a8a9
-DATA(0x0024a8aa)
-extern i32 gA_seq; // 0x64a8aa
-DATA(0x0024a8b2)
-extern i32 gA_e04; // 0x64a8b2
-DATA(0x0024a8b6)
-extern unsigned char gA_e08; // 0x64a8b6
-DATA(0x0024a8b7)
-extern unsigned char gA_data; // 0x64a8b7
+// g_648d14 (0x248d14) DEFINED in src/Gruntz/Multi.cpp (owner TU); ref extern in <Globals.h>.
+// g_649858 (0x249858) + gA_*/gB_* command-slot fields (0x24a058.., 0x24a8a8..)
+// DEFINED in src/Net/NetCmdSlot.cpp (owner TU). Reference externs stay in <Globals.h>.
 DATA(0x0024acb4)
 extern i32 g_poolCount; // 0x64acb4 (g_pool.m_count)
 // g_drop* fields DEFINED in src/Gruntz/DroppedObject.cpp (owner TU).

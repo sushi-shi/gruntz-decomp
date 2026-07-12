@@ -113,38 +113,48 @@ public:
 
 extern "C" CGameRegistry* g_gameReg;
 
-// File-scope reentrancy guards. Retail .data globals - bound to their RVAs so the
-// On* handlers' DIR32 references are reloc-faithful (extern refs; DIR32 reloc-masked).
-DATA(0x00248d08)
-extern "C" i32 g_optionzGuard; // 0x248d08
-DATA(0x00248d04)
-extern "C" i32 g_pauseGuard; // 0x248d04
-DATA(0x00248ce0)
-extern "C" i32 g_sharedFlag; // 0x248ce0
-DATA(0x00248d10)
-extern "C" i32 g_dropGuard; // 0x248d10  OnDropPlayer reentrancy guard
-DATA(0x00248d0c)
-extern "C" i32 g_syncToggle; // 0x248d0c  FrameSyncWait alternating low-bit flag
-
-// Channel-stat packets + version words: declared extern "C" in <Net/NetMgr.h> where
-// DATA() is ignored (headers carry no bindings), so the RVA bind lands here (.cpp).
-// Each channel-stat field is its own disp-0 DIR32 .data symbol (see NetMgr.h note).
-DATA(0x00246fd8)
-extern "C" u8 g_chanStat422_flag; // 0x246fd8
-DATA(0x00246fdc)
-extern "C" i32 g_chanStat422_id; // 0x246fdc
-DATA(0x00246fe0)
-extern "C" i32 g_chanStat422_val; // 0x246fe0
-DATA(0x00246378)
-extern "C" u8 g_chanStat423_flag; // 0x246378
-DATA(0x0024637c)
-extern "C" i32 g_chanStat423_id; // 0x24637c
-DATA(0x00246380)
-extern "C" i32 g_chanStat423_val; // 0x246380
-DATA(0x0020fa70)
-extern "C" i32 g_localVersion; // 0x20fa70
+// Owner-TU global DEFINITIONS (this multiplayer TU owns them). Each is referenced
+// only from this TU (data_home: private); the single reference extern lives in
+// <Net/NetMgr.h> / <Globals.h>. DATA() rides the DEFINITION (reloc-masked DIR32 at
+// the use sites). Ordered ascending by RVA per section (.data then .bss).
 DATA(0x0020fa74)
-extern "C" i32 g_remoteVersion; // 0x20fa74
+i32 g_remoteVersion = 1; // 0x20fa74  protocol version word (local build = 1)
+DATA(0x0020fab8)
+i32 g_dplayAppGuid[4] = {(i32)0xf41cf640, 0x11d191b2, (i32)0x6000fc8d,
+                         0x1ea89f97}; // 0x20fab8  DirectPlay app GUID / net-bind template
+DATA(0x00211d88)
+i32 g_611d88 = -999; // 0x211d88  saved dropped-player id (sentinel -999)
+DATA(0x00211ec4)
+char s_GameKey[] = "GAME_KEY"; // 0x211ec4  registry value-name literal
+DATA(0x00246378)
+u8 g_chanStat423_flag; // 0x246378
+DATA(0x0024637c)
+i32 g_chanStat423_id; // 0x24637c
+DATA(0x00246380)
+i32 g_chanStat423_val; // 0x246380
+DATA(0x00246fd8)
+u8 g_chanStat422_flag; // 0x246fd8
+DATA(0x00246fdc)
+i32 g_chanStat422_id; // 0x246fdc
+DATA(0x00246fe0)
+i32 g_chanStat422_val; // 0x246fe0
+DATA(0x00248d04)
+i32 g_pauseGuard; // 0x248d04  OnMultiPause reentrancy guard
+DATA(0x00248d08)
+i32 g_optionzGuard; // 0x248d08  OnMultiOptionz reentrancy guard
+DATA(0x00248d0c)
+i32 g_syncToggle; // 0x248d0c  FrameSyncWait alternating low-bit flag
+DATA(0x00248d10)
+i32 g_dropGuard; // 0x248d10  OnDropPlayer reentrancy guard
+DATA(0x00248d14)
+u32 g_648d14; // 0x248d14  drop-throttle deadline
+
+// Non-worklist siblings referenced here (shared / homed elsewhere): kept as plain
+// extern refs carrying their DATA fallback (no private definition of them here).
+DATA(0x0020fa70)
+extern "C" i32 g_localVersion; // 0x20fa70  version-word sibling (not TU-private)
+DATA(0x00248ce0)
+extern "C" i32 g_sharedFlag; // 0x248ce0  (conflated with g_dlgResultSink @Globals.cpp; shared)
 
 // MultiDispatch outcome codes the message handlers switch on (engine command
 // dispatcher result space; names reconstructed from the branches, values
@@ -462,8 +472,20 @@ public:
 // as the exact thiscall shapes so clang emits the right `mov ecx; call` bytes;
 // the real CString/CByteArray dtors below are pulled from <Mfc.h>.
 
-// The MULTI_JOIN dialog handler whose address is pushed into RunErrorDialog.
-extern void MultiJoinHandler(); // 0x004b8020 (reloc-masked function address)
+// The MULTI_JOIN dialog handler whose address is pushed into RunErrorDialog. The
+// `push &MultiJoinHandler` reloc targets the ILT jmp-thunk (0x222f), not the body
+// (that body is Gap_0b8020 @0xb8020); bind the thunk rva to the referenced symbol so
+// the delinked datum name pairs (R66/GruntzApp _ErrorDialogProcThunk idiom).
+// @data-symbol: ?MultiJoinHandler@@YAXXZ 0x0000222f
+extern void MultiJoinHandler(); // thunk 0x222f -> body 0xb8020 (Gap_0b8020)
+
+// The four On*-handler callbacks (declared in <Net/NetMgr.h>, address-taken in the
+// OnMulti* handlers below) likewise push their ILT jmp-thunks; bind each thunk rva to
+// the referenced symbol (@data-symbol is text-scanned from this .cpp, so it lives here).
+// @data-symbol: _MultiPauseCallback 0x0000113b
+// @data-symbol: _MultiOptionzCallback 0x000027fc
+// @data-symbol: _MultiOutOfSyncCallback 0x0000301c
+// @data-symbol: _MultiDropPlayerCallback 0x00003387
 
 // (0x788d0 ?PositionUpdate@CSnd788d0 is merged into src/Gruntz/TriggerMgr.cpp
 // per dossier 10b - embedded in the [0x77f80..0x7d7ca] one-TU interval.)
@@ -3114,6 +3136,13 @@ void CMulti::AckDropPlayer(i32 id) {
 // options host and the +0xc sound sub-mgr are cast from their shared-class slots.
 // @confidence: med
 // @source: decomp-xref
+// NOTE (reloc-fidelity, deferred): the `host->m_10.Lookup(...)` call at +0xe0 is a
+// DIRECT retail call to 0x1b8438, which is the MFC library CMapStringToOb::Lookup
+// (NAFXCW, AMBIG carve-out) - NOT a game method. `CSndFinder::Lookup` is a fake-view
+// alias; the real fix is to model CSndFinder's map member as a real CMapStringToOb and
+// call it directly (binds via the library mechanism). Deferred: touches shared
+// <Gruntz/SoundCue.h> (parallel lane). A game @data-symbol here overlaps the library
+// symbol (verify_library_overlap fails), so it is NOT bound here.
 RVA(0x000ba620, 0x14a)
 i32 CMulti::LoadMenuSelectSprite(void* evp) {
     MenuSelectEvent* ev = (MenuSelectEvent*)evp;

@@ -110,9 +110,9 @@ extern "C" char g_id0_613dff;
 extern "C" char g_id1_613e00;
 extern "C" char g_id2_613e01;
 extern "C" char g_id3_613e02;
-extern "C" i32 g_dplayAppGuid[4]; // 0x60fab8  DirectPlay app GUID / net-bind template
+extern i32 g_dplayAppGuid[4]; // 0x60fab8  DirectPlay app GUID (DEFINED in src/Gruntz/Multi.cpp)
 extern u8 g_6111b0;
-extern "C" i32 g_611d88;
+// g_611d88 DEFINED in src/Gruntz/Multi.cpp; single reference extern in <Net/NetMgr.h>.
 extern char s_GameMessagez[];
 extern char s_GameKey[];
 extern i32 g_warpX;
@@ -191,7 +191,7 @@ extern i32 g_kslimeStride;
 extern i32 g_kslimeScratch;
 extern i32 g_dlgResultSink;
 extern "C" i32 g_648cec;
-extern "C" u32 g_648d14;
+extern u32 g_648d14; // 0x648d14  DEFINED in src/Gruntz/Multi.cpp (owner TU)
 extern char g_649858[0x800];
 extern unsigned char gB_flag;
 extern i32 gB_val;

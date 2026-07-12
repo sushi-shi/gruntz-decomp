@@ -62,12 +62,13 @@ namespace NetLobby {
     // --- cluster-local globals (DATA home is HERE) ---
     // DAT_0064557c: the active modeless dialog HWND, cached on entry/init.
     DATA(0x0024557c)
-    extern HWND g_curDlg_64557c;
+    extern HWND g_curDlg_64557c; // DAT_0064557c (shared; homed elsewhere - not TU-private)
 
-    DATA(0x002496ac)
-    extern CMulti* g_curMulti; // DAT_006496ac (the current multiplayer game-state)
+    // Owner-TU DEFINITIONS (private to this dialog TU), ascending by RVA (.bss/zero).
     DATA(0x002487e0)
-    extern char g_sessionFlag; // DAT_006487e0
+    char g_sessionFlag; // 0x2487e0
+    DATA(0x002496ac)
+    CMulti* g_curMulti; // 0x2496ac  the current multiplayer game-state
 
     // Per-dialog init/timer hooks: empty 1-byte `ret` helpers defined below in this
     // TU in RVA order (were the unbound Init_42b4/Init_1924/InitDropPrompt/OnLobbyTimerB/

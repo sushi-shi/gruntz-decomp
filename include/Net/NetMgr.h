@@ -117,10 +117,9 @@ extern "C" void MultiPauseCallback();
 extern "C" void MultiOutOfSyncCallback();
 extern "C" void MultiDropPlayerCallback(); // OnDropPlayer (MULTI_DROPPLAYER)
 
-// The pending drop's player id (-999 == none), an external engine global in
-// .data at 0x611d88 (DIR32 reloc-masked). CANONICAL name (shared with CMulti.cpp
-// / Globals.cpp): one symbol per RVA so the whole-game link binds a single decl.
-extern "C" i32 g_611d88; // 0x611d88  saved dropped-player id
+// The pending drop's player id (-999 == none). Owned + DEFINED in src/Gruntz/Multi.cpp
+// (private to that TU); this is the single reference extern (canonical, one per RVA).
+extern i32 g_611d88; // 0x611d88  saved dropped-player id
 
 // ---------------------------------------------------------------------------
 // Reentrancy guards (file-scope globals).
@@ -137,8 +136,8 @@ extern "C" i32 g_611d88; // 0x611d88  saved dropped-player id
 // (g_cfgWord @0x645550) plus the global CButeMgr's +0x4 word go into the
 // version-announce packet.
 // ---------------------------------------------------------------------------
-extern "C" i32 g_localVersion;  // 0x60fa70
-extern "C" i32 g_remoteVersion; // 0x60fa74
+extern "C" i32 g_localVersion; // 0x60fa70  (sibling; not TU-private)
+extern i32 g_remoteVersion;    // 0x60fa74  DEFINED in src/Gruntz/Multi.cpp (owner TU)
 extern "C" i32 g_cfgWord;       // 0x645550
 extern "C" i32 g_buteMgrField4; // *(g_buteMgr + 4) - the CButeMgr config word
 
@@ -992,12 +991,13 @@ extern "C" char g_recvBuffer[]; // 0x6467d8
 // three consecutive addresses), so they are modeled as three separate globals
 // per packet (a single struct would emit base+disp and mis-encode the
 // displacement bytes). External; DIR32 reloc-masked.
-extern "C" u8 g_chanStat422_flag; // 0x646fd8
-extern "C" i32 g_chanStat422_id;  // 0x646fdc
-extern "C" i32 g_chanStat422_val; // 0x646fe0
-extern "C" u8 g_chanStat423_flag; // 0x646378
-extern "C" i32 g_chanStat423_id;  // 0x64637c
-extern "C" i32 g_chanStat423_val; // 0x646380
+// DEFINED in src/Gruntz/Multi.cpp (owner TU); reference externs only here.
+extern u8 g_chanStat422_flag;  // 0x646fd8
+extern i32 g_chanStat422_id;   // 0x646fdc
+extern i32 g_chanStat422_val;  // 0x646fe0
+extern u8 g_chanStat423_flag;  // 0x646378
+extern i32 g_chanStat423_id;   // 0x64637c
+extern i32 g_chanStat423_val;  // 0x646380
 
 // The file-scope static chat-broadcast packet BroadcastChatLine assembles. Like
 // the channel-stat packets, retail emits each field as its own .data symbol
