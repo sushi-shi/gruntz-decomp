@@ -65,44 +65,29 @@ SIZE_UNKNOWN(CCheatMgr);
 // ---------------------------------------------------------------------------
 // The 19 built-in cheat-code strings (obfuscated byte buffers in .data). Each is
 // passed to AddCheat by address as the map key - reloc-masked DIR32 references.
+// These are bound to their real .data RVAs via `// @data-symbol:` in CheatMgr.cpp
+// (a DATA() macro in a header is not seen by labels.py's per-.cpp text scan, and
+// the char[] array mangling diverges clang-vs-cl5, so @data-symbol names the exact
+// cl5 symbol `?s_cheat_<rva>@@3PADA`).
 // ---------------------------------------------------------------------------
-DATA(0x0020c920)
 extern char s_cheat_20c920[];
-DATA(0x0020c918)
 extern char s_cheat_20c918[];
-DATA(0x0020c90c)
 extern char s_cheat_20c90c[];
-DATA(0x0020c900)
 extern char s_cheat_20c900[];
-DATA(0x0020c8f0)
 extern char s_cheat_20c8f0[];
-DATA(0x0020c8e0)
 extern char s_cheat_20c8e0[];
-DATA(0x0020c8d4)
 extern char s_cheat_20c8d4[];
-DATA(0x0020c8c4)
 extern char s_cheat_20c8c4[];
-DATA(0x0020c8b8)
 extern char s_cheat_20c8b8[];
-DATA(0x0020c8ac)
 extern char s_cheat_20c8ac[];
-DATA(0x0020c8a4)
 extern char s_cheat_20c8a4[];
-DATA(0x0020c89c)
 extern char s_cheat_20c89c[];
-DATA(0x0020c894)
 extern char s_cheat_20c894[];
-DATA(0x0020c884)
 extern char s_cheat_20c884[];
-DATA(0x0020c878)
 extern char s_cheat_20c878[];
-DATA(0x0020c868)
 extern char s_cheat_20c868[];
-DATA(0x0020c85c)
 extern char s_cheat_20c85c[];
-DATA(0x0020c84c)
 extern char s_cheat_20c84c[];
-DATA(0x0020c838)
 extern char s_cheat_20c838[];
 
 #endif // GRUNTZ_GRUNTZ_CHEATMGR_H

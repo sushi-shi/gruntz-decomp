@@ -6,8 +6,11 @@
 #include <Gruntz/Demo.h>
 #include <rva.h>
 
-// The cached PostMessageA fn-ptr (bare 0x6c44c8; DATA home in Play.cpp). Reloc-masked.
-extern i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x6c44c8
+// The cached PostMessageA fn-ptr at RVA 0x2c44c8. extern "C" so it emits the
+// canonical `_g_pPostMessageA` (the single name bound at 0x2c44c8) - the C++-mangled
+// spellings diverge per-TU on the fn-ptr's param types (HWND vs void*, LPARAM vs
+// int) and collide under the per-rva keep-last dedup, so they never bind.
+extern "C" i32(WINAPI* g_pPostMessageA)(HWND, UINT, WPARAM, LPARAM); // 0x2c44c8
 
 // CDemo::Vslot15 (slot 21, 0x3c030): post WM_COMMAND 0x8027 to the owner HWND (the
 // CState/CWorld back-ptr chain m_4w()->m_4->m_4). Returns 1.

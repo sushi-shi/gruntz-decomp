@@ -29,6 +29,31 @@ extern "C" char g_emptyString[];
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
+// The 19 built-in cheat-code string buffers (obfuscated .data byte arrays passed
+// to AddCheat by address as the map key). Bound to their real .data RVAs here (not
+// via DATA() in the header: a header DATA() is invisible to labels.py's per-.cpp
+// text scan, and clang mangles a char[] extern differently than cl5, so @data-symbol
+// names the exact cl5 symbol `?s_cheat_<rva>@@3PADA`).
+// @data-symbol: ?s_cheat_20c920@@3PADA 0x0020c920
+// @data-symbol: ?s_cheat_20c918@@3PADA 0x0020c918
+// @data-symbol: ?s_cheat_20c90c@@3PADA 0x0020c90c
+// @data-symbol: ?s_cheat_20c900@@3PADA 0x0020c900
+// @data-symbol: ?s_cheat_20c8f0@@3PADA 0x0020c8f0
+// @data-symbol: ?s_cheat_20c8e0@@3PADA 0x0020c8e0
+// @data-symbol: ?s_cheat_20c8d4@@3PADA 0x0020c8d4
+// @data-symbol: ?s_cheat_20c8c4@@3PADA 0x0020c8c4
+// @data-symbol: ?s_cheat_20c8b8@@3PADA 0x0020c8b8
+// @data-symbol: ?s_cheat_20c8ac@@3PADA 0x0020c8ac
+// @data-symbol: ?s_cheat_20c8a4@@3PADA 0x0020c8a4
+// @data-symbol: ?s_cheat_20c89c@@3PADA 0x0020c89c
+// @data-symbol: ?s_cheat_20c894@@3PADA 0x0020c894
+// @data-symbol: ?s_cheat_20c884@@3PADA 0x0020c884
+// @data-symbol: ?s_cheat_20c878@@3PADA 0x0020c878
+// @data-symbol: ?s_cheat_20c868@@3PADA 0x0020c868
+// @data-symbol: ?s_cheat_20c85c@@3PADA 0x0020c85c
+// @data-symbol: ?s_cheat_20c84c@@3PADA 0x0020c84c
+// @data-symbol: ?s_cheat_20c838@@3PADA 0x0020c838
+
 // The cheat-config tag/key string literals (objdiff matches these .data relocs by
 // value). The obfuscated code stored under each "Cheat%i" group's "Text" key is
 // recovered by CheckCode by uppercasing then adding 0x3d to every byte.

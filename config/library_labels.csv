@@ -3448,3 +3448,8 @@ rva,name,lib,confidence,source
 0x1b9b46,_RezAlloc,NAFXCW,HIGH,reloc-R23
 0x1ba0c8,??YCString@@QAEABV0@PBD@Z,NAFXCW,HIGH,reloc-R23-append
 0x11fc10,__getcwd,LIBCMT,AMBIG,anchored
+0x1b8546,?GetNextAssoc@CMapStringToPtr@@QBEXAAPAU__POSITION@@AAVCString@@AAPAX@Z,NAFXCW,HIGH,reloc-R24
+0x1b82d0,?RemoveAll@CMapStringToPtr@@QAEXXZ,NAFXCW,HIGH,reloc-R24
+0x1b8322,??1CMapStringToPtr@@UAE@XZ,NAFXCW,HIGH,reloc-R24
+0x1b8008,?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z,NAFXCW,HIGH,reloc-R24
+0x177660,_DirectPlayLobbyCreateA@20,DPLAYX,HIGH,reloc-R24

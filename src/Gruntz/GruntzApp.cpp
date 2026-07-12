@@ -36,11 +36,15 @@
 // ---------------------------------------------------------------------------
 #include <Gruntz/GruntzMgr.h>
 
-// File-scope globals referenced by ErrorDialogProc / ShowError (an HWND and the
-// error-text buffer). The relocs that name them are masked in objdiff; only the
-// address-load / address-immediate bytes are load-bearing.
-static HWND g_errorHwnd;        // last dialog HWND
-static char g_errorText[0x100]; // error message buffer
+// File-scope statics referenced by ErrorDialogProc / ShowError / ShowMessage (an
+// HWND and the error-text buffer). Bound to their real .bss RVAs via @data-symbol:
+// cl5 names an internal (static) global `_<name>$S<idx>`, so @data-symbol names the
+// exact cl5 symbol (the DIR32 loads/stores are reloc-masked, only the address bytes
+// are load-bearing).
+// @data-symbol: _g_errorHwnd$S18928 0x0024557c
+// @data-symbol: _g_errorText$S18929 0x00244ea0
+static HWND g_errorHwnd;        // last dialog HWND @ 0x24557c
+static char g_errorText[0x100]; // error message buffer @ 0x244ea0
 // (g_gameAppInstanceCount is declared in Wap32.h, defined in
 // GameApp.cpp; ~CGruntzApp's inlined base ~CGameApp decrements it.)
 
@@ -101,7 +105,10 @@ i32 CGruntzApp::Init(
 // (CGameApp::m_8 @+0x8). No game-manager-pointer member lives on CGruntzApp.
 RVA(0x000808b0, 0x60)
 CGruntzApp::~CGruntzApp() {
-    CloseResources();
+    // CloseResources is NOT overridden by CGruntzApp - the retail dtor calls the
+    // inherited base CGameApp::CloseResources directly (0x13d8c0); the explicit
+    // base qualification binds that real callee (devirtualized, same call bytes).
+    CGameApp::CloseResources();
 }
 
 // ---------------------------------------------------------------------------
@@ -119,6 +126,14 @@ CGruntzApp::~CGruntzApp() {
 // LoadStringA/ShowCursor/DialogBoxParamA are FF15 [IAT] indirect calls; the
 // ErrorDialogProc address is taken (push imm of its incremental-link thunk).
 // strcpy/strcat are emitted inline (repnz scas / rep movs).
+//
+// The pushed DLGPROC is ErrorDialogProc's ILT jmp-thunk (0x33c8 -> jmp 0x80c70), not
+// the body - the retail /INCREMENTAL link routes an address-taken function through
+// its thunk. Modeled as an extern-C thunk symbol bound to 0x33c8 (the same idiom as
+// GameObjectFactory's _CreateXxx thunks); ShowMessage takes the SAME proc's address
+// (both dialogs share ErrorDialogProc), so it pushes the same thunk.
+// @data-symbol: _ErrorDialogProcThunk@16 0x000033c8
+extern "C" INT_PTR CALLBACK ErrorDialogProcThunk(HWND, UINT, WPARAM, LPARAM);
 RVA(0x00080ac0, 0xf3)
 void CGruntzApp::ShowError() {
     // The two error fields are read up front (the optimiser hoists the m_errorDetail
@@ -145,7 +160,7 @@ void CGruntzApp::ShowError() {
     while (ShowCursor(1) < 0)
         ;
 
-    DialogBoxParamA(m_hInstance, "ERROR", 0, &CGruntzApp::ErrorDialogProc, 0);
+    DialogBoxParamA(m_hInstance, "ERROR", 0, &ErrorDialogProcThunk, 0);
 }
 
 // ---------------------------------------------------------------------------
@@ -195,14 +210,14 @@ CGruntzApp::ErrorDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPara
 
 // ---------------------------------------------------------------------------
 // CGruntzApp::ShowMessage
-// Copies the message into the shared g_errorText buffer (inline strcpy) then
-// shows the MESSAGE dialog (DialogBoxParamA, FF15 [IAT]) with MsgDialogProc -
-// the dialog proc lives in another TU, so it is taken via an extern thunk.
-extern "C" INT_PTR CALLBACK MsgDialogProc(HWND, UINT, WPARAM, LPARAM);
+// Copies the message into the shared g_errorText buffer (inline strcpy) then shows
+// the MESSAGE dialog (DialogBoxParamA, FF15 [IAT]). The dialog proc is the SAME
+// ErrorDialogProc as the error dialog - the retail push here is the identical ILT
+// thunk 0x33c8 -> jmp 0x80c70 (the former separate "MsgDialogProc" was a misnomer).
 RVA(0x00080c00, 0x48)
 void CGruntzApp::ShowMessage(char* msg, HWND hParent) {
     strcpy(g_errorText, msg);
-    DialogBoxParamA(m_hInstance, "MESSAGE", hParent, &MsgDialogProc, 0);
+    DialogBoxParamA(m_hInstance, "MESSAGE", hParent, &ErrorDialogProcThunk, 0);
 }
 
 // ---------------------------------------------------------------------------

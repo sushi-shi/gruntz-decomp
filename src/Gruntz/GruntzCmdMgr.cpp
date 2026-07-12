@@ -510,12 +510,13 @@ i32 CGruntzCommand::Vslot05() {
 // when the low bit of the hidden flags arg is set - RezFree(this); return this.
 // Hand-written non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern)
 // so the body emits and matches (MSVC's own synthesized ??_G is a separate symbol).
-extern "C" void RezFree(void* p); // _RezFree @0x1b9b82 (rezutil)
+// The scalar-deleting-dtor free is the global ::operator delete (0x1b9b82 =
+// ??3@YAXPAX@Z, NAFXCW); the `::` forces the global over any CObject member delete.
 RVA(0x00024330, 0x20)
 void* CGruntzCommand::ScalarDtor(u32 flags) {
     this->CGruntzCommand::~CGruntzCommand();
     if (flags & 1) {
-        RezFree(this);
+        ::operator delete(this);
     }
     return this;
 }
@@ -831,9 +832,12 @@ CGruntzCmdMgr::~CGruntzCmdMgr() {
     ClearAndReset();
 }
 
-// The 1<<i bit table (0x5e9608) the mask builder/scanner indexes. DATA-pinned so
-// the *(short*)... mask loop's address operands reloc-mask against it.
-DATA(0x001e9608)
+// The 1<<i bit table (0x5e9608 = RVA 0x1e9608) the mask builder/scanner indexes.
+// Bound via @data-symbol (not DATA): this const u16[] is DEFINED here, and clang
+// mangles a const array with the `Q` storage class while cl5's reloc/definition
+// uses `?g_cmdBitTable@@3PBGB` (PB) - @data-symbol names the exact cl5 symbol so the
+// three DIR32 mask-loop operands reloc-pair.
+// @data-symbol: ?g_cmdBitTable@@3PBGB 0x001e9608
 const u16 g_cmdBitTable[16] = {
     1,
     2,
@@ -852,6 +856,19 @@ const u16 g_cmdBitTable[16] = {
     0x4000,
     0x8000
 };
+
+// The two command recycle-list globals + their non-empty counts (0x22b5d0 region,
+// .bss). Bound to their real RVAs here (a DATA() in GruntzCommand.h is invisible to
+// labels.py's per-.cpp text scan). Allocate/FreeAll gate on the count and RemoveTail
+// a node off the list to reuse it.
+DATA(0x0022b5dc)
+extern i32 g_singleCmdCount;
+DATA(0x0022b5d0)
+extern CGruntzCmdList g_singleCmdList;
+DATA(0x0022b64c)
+extern i32 g_multiCmdCount;
+DATA(0x0022b640)
+extern CGruntzCmdList g_multiCmdList;
 
 // ---------------------------------------------------------------------------
 // The numeric settings DialogProc (0x092ab0, out-of-band stray; re-homed from the

@@ -103,8 +103,6 @@ public:
     static void ReportError(char* file, i32 line, i32 hr, void* hWnd);
 };
 
-void FreeConnectionSettings(void* p); // _RezFree @0x001b9b82 (operator delete wrapper)
-
 void* operator new(u32);
 void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member teardown
 
@@ -224,15 +222,23 @@ public:
 // popping the modal. Reloc-masked __cdecl free fn (0xdb1d0).
 void ChannelSlots_InitAll(); // 0xdb1d0
 
-// The Win32 dialog procedures handed to RunModalDialog. Their pushed code
-// addresses reloc-mask (DIR32 against the named LAB_ symbols); only the push
-// shape is load-bearing.
-i32 CALLBACK GruntzLoadGameDlgProc(HWND, UINT, WPARAM, LPARAM); // 0x9dff0 (LoadGameMenu.cpp)
-extern "C" void GruntzDebugGruntTypeProc();                     // LAB_004021e9
-extern "C" void GruntzSaveGameDlgProc();                        // LAB_00401041 (GAME_SAVE)
-extern "C" void GruntzSaveMsgDlgProc();                         // LAB_004011d1 (GAME_SAVEMSG)
-// The "go to level" developer dialog proc (AppDialogs.cpp @0x08e7c0), handed to
-// RunModalDialog by DebugJumpLevel (its pushed code address reloc-masks).
+// The Win32 dialog procedures handed to RunModalDialog. Each pushed code address is
+// the proc's ILT jmp-thunk (retail /INCREMENTAL routes an address-taken function
+// through its <0x7c20 thunk), so the DIR32 references bind to the THUNK rva - not the
+// proc body. The bodies live in their own TUs (LoadGameMenu / AppDialogs). Modeled as
+// extern-C thunk symbols bound to the thunk rvas (the GameObjectFactory _CreateXxx idiom).
+// @data-symbol: _GruntzLoadGameDlgProc 0x00002167
+// @data-symbol: _GruntzDebugGruntTypeProc 0x000021e9
+// @data-symbol: _GruntzSaveGameDlgProc 0x00001041
+// @data-symbol: _GruntzSaveMsgDlgProc 0x000011d1
+// @data-symbol: _LevelNumberDialogProcThunk 0x00002ab8
+extern "C" void GruntzLoadGameDlgProc();   // thunk 0x2167 -> body 0x9dff0 (LoadGameMenu.cpp)
+extern "C" void GruntzDebugGruntTypeProc(); // thunk 0x21e9
+extern "C" void GruntzSaveGameDlgProc();    // thunk 0x1041 (GAME_SAVE)
+extern "C" void GruntzSaveMsgDlgProc();     // thunk 0x11d1 (GAME_SAVEMSG)
+// The "go to level" developer dialog proc body (AppDialogs.cpp @0x08e7c0); DebugJumpLevel
+// pushes its ILT thunk 0x2ab8 (LevelNumberDialogProcThunk), not the body address.
+extern "C" void LevelNumberDialogProcThunk(); // thunk 0x2ab8 -> body 0x8e7c0
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND, UINT, WPARAM, LPARAM);
 
 // -------------------------------------------------------------------------
@@ -336,9 +342,7 @@ struct CPlayStateView {
 // <Gruntz/SaveInfo.h> (via GruntzMgr.h) - shared with the WM_COMMAND dispatcher TU.
 
 // The engine's out-of-line block copy (FUN_00520340). Retail calls it here (not
-// the inlined rep-movs memcpy intrinsic); modeled as a plain __cdecl free fn so
-// the `push n; push src; push dst; call; add esp,0xc` shape falls out.
-void EngineCopy(void* dst, void* src, i32 n); // FUN_00520340
+// the CRT __strncpy at 0x120340 (`push n; push src; push dst; call; add esp,0xc`).
 
 // The modal dialog/screen handed to ExitModalUI. Run() is virtual slot 48
 // (+0xc0); the leading slots are anchors so the call lands at [vtbl+0xc0] as a
@@ -627,11 +631,20 @@ extern "C" {
     extern StateMgrBZ* g_645578; // DAT_00245578 (canonical binding; also decl'd in Play.h)
 }
 
-// The embedded options object's ctor/dtor are out-of-line NAFXCW-style helpers
-// (FUN_0051f5a0 / FUN_0051f640); only the call (reloc-masked) + the 0x238 size
-// matter. Empty bodies suffice to give the member its destructible EH state.
-CGruntzMgrOptions::CGruntzMgrOptions() {}
-CGruntzMgrOptions::~CGruntzMgrOptions() {}
+// The embedded options object's ctor/dtor are out-of-line helpers whose real bodies
+// (FUN_0051f5a0 / FUN_0051f640) live in another TU. CGruntzMgr's ctor/dtor pass their
+// addresses to the __ehvec ctor/dtor iterators building m_options[4]; the retail /
+// INCREMENTAL link routes those address-of pushes through the element ctor/dtor ILT
+// thunks (0x2a7c ctor, 0x1465 dtor). Declared-only here (no body) so the references
+// are undefined externals bound to the thunk rvas below (binding the empty-body
+// definitions would make objdiff compare them against the thunk bytes).
+// @data-symbol: ??0CGruntzMgrOptions@@QAE@XZ 0x00002a7c
+// @data-symbol: ??1CGruntzMgrOptions@@QAE@XZ 0x00001465
+//
+// The base WAP32::CGameMgr vtable (0x1e9b8c): the CGruntzMgr dtor + its scalar-deleting
+// ??_G restore the base subobject's vptr to it during teardown. Namespaced vtable, so
+// bound via @data-symbol (VTBL() only lowers simple global-namespace class names).
+// @data-symbol: ??_7CGameMgr@WAP32@@6B@ 0x001e9b8c
 
 // -------------------------------------------------------------------------
 // The world's +0x24 view (CWorldView, defined above) exposes a layer array (+0x38
@@ -1492,7 +1505,9 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
     }
 
     if (m_connSettings) {
-        FreeConnectionSettings(m_connSettings);
+        // 0x1b9b82 = ??3@YAXPAX@Z (global ::operator delete; the `::` forces the
+        // global over any member delete) - retail frees the connection settings blob.
+        ::operator delete(m_connSettings);
         m_connSettings = 0;
     }
 
@@ -1692,7 +1707,9 @@ i32 __stdcall LaunchWebBrowser(char* url) {
         return 0;
     }
     i32 quoted = 0;
-    _strlwr(cmd);
+    // 0x18d330 = __strupr (LIBCMT): the command is UPPER-cased before the
+    // "IEXPLORE.EXE" (uppercase) substring test below.
+    _strupr(cmd);
     if (strstr(cmd, "IEXPLORE.EXE")) {
         FindProcessByName("IEXPLORE.EXE", 1, (void**)&quoted);
     }
@@ -3012,7 +3029,10 @@ i32 CGruntzMgr::IsLobbyHostReady() {
 // ---------------------------------------------------------------------------
 // 0x08e880 - when in the PLAY state, register the DEBUG_SETSKILL cheat command.
 // (re-homed from src/Stub/BoundaryLowerMethods.cpp; dissolves the C8e880 view.)
-extern void Lab401947(); // 0x401947 (code address passed as a ptr; reloc-masked)
+// The DEBUG_SETSKILL dialog proc, address-taken through its ILT thunk (0x1947);
+// bound to the thunk rva (the reference is a reloc-masked DIR32 push).
+// @data-symbol: ?Lab401947@@YAXXZ 0x00001947
+extern void Lab401947(); // thunk 0x1947 (code address passed as a ptr; reloc-masked)
 RVA(0x0008e880, 0x27)
 i32 CGruntzMgr::RegisterSetSkillDebugCmd() {
     if (m_curState->Update() == GAMESTATE_PLAY) {
@@ -3303,7 +3323,7 @@ i32 CGruntzMgr::RunDebugGruntTypeDialog() {
 // PassClickToPlayState(level, 0, 1). Returns 0 when the dialog is cancelled.
 RVA(0x0008e780, 0x2a)
 i32 CGruntzMgr::DebugJumpLevel() {
-    i32 level = RunModalDialog("DEBUG_JUMPLEVEL", (void*)LevelNumberDialogProc8e7c0, 1);
+    i32 level = RunModalDialog("DEBUG_JUMPLEVEL", (void*)LevelNumberDialogProcThunk, 1);
     if (level > 0) {
         return PassClickToPlayState(level, 0, 1);
     }
@@ -3752,7 +3772,7 @@ i32 CGruntzMgr::FillSaveInfo(SaveInfo* dst, void* snapshot) {
     m_saveSink->Store(dst, src + 0x1d0);
     m_saveInfoRec = dst;
     if (snapshot) {
-        EngineCopy(dst->m_snapshot, snapshot, 0x20);
+        strncpy((char*)dst->m_snapshot, (char*)snapshot, 0x20);
     }
     return 1;
 }
