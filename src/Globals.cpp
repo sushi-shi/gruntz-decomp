@@ -222,11 +222,7 @@ DATA(0x0022ae50)
 extern char g_secretMsgB[0x20]; // 0x62ae50  encoded
 DATA(0x0022aef0)
 extern char g_cheatTableEnd[];
-DATA(0x0022af10)
-extern i32 g_bootyCheatBuilt;
 // g_stepRun/g_stepCol/g_stepRow/g_diffTier DEFINED in src/Gruntz/BattlezMapConfig.cpp (owner TU).
-DATA(0x0022c268)
-extern i32 g_dat62c268; // 0x62c268
 // g_act* fields DEFINED in src/Gruntz/SecretTeleporterTrigger.cpp (owner TU).
 // g_actReg4* fields DEFINED in src/Gruntz/GruntStartingPoint.cpp (owner TU).
 // g_part* fields DEFINED in src/Gruntz/FortressFlag.cpp (owner TU).
@@ -286,8 +282,6 @@ DATA(0x0024a8b7)
 extern unsigned char gA_data; // 0x64a8b7
 DATA(0x0024acb4)
 extern i32 g_poolCount; // 0x64acb4 (g_pool.m_count)
-DATA(0x0024bdc0)
-extern i32 g_64bdc0; // DAT_0064bdc0
 // g_drop* fields DEFINED in src/Gruntz/DroppedObject.cpp (owner TU).
 DATA(0x0024c27c)
 extern ScrollView* g_backView; // 0x64c27c
@@ -319,12 +313,8 @@ extern SFMANL101API* g_sfDevice; // 0x64e0b0  SFMAN32 device interface
 DATA(0x0024e0b8)
 extern void* g_sfReady; // 0x64e0b8  device-selected flag (1 = ready)
 // g_ratings_64e0c0 (0x24e0c0) DEFINED in src/Gruntz/SFSelectDevice.cpp.
-DATA(0x0024e360)
-extern i32 g_suppress_64e360;
 // g_hazn* fields DEFINED in src/Gruntz/StaticHazard.cpp (owner TU).
 // g_toob* fields DEFINED in src/Gruntz/ToobSpikez.cpp (owner TU).
-DATA(0x0024eb14)
-extern i32 g_loadedFlag;
 // g_vtrig* fields DEFINED in src/Gruntz/GruntVoice.cpp (owner TU).
 DATA(0x00253c48)
 extern i32 g_panTable[];
