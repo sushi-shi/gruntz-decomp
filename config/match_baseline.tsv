@@ -2411,7 +2411,7 @@ imageset2	?Query_166b90@CImageSet2@@UAEHHHPAH0@Z	100.0000	100.0000	1	2e6e9e80848
 imageset2	?Query_166bf0@CImageSet2@@UAEHHHHPAH@Z	100.0000	100.0000	1	95ca28a836cb	0x166bf0
 imageset2	?Query_166c60@CImageSet2@@UAEHHHPAH0@Z	100.0000	100.0000	1	72f0aff8bdb7	0x166c60
 imageset2	?Query_166cd0@CImageSet2@@UAEHHHHPAH@Z	100.0000	100.0000	1	728a86fae753	0x166cd0
-imageset3	??1C161500@@UAE@XZ	100.0000	100.0000	2	e85760eed320	0x161500
+imageset3	??1CImageSet3@@UAE@XZ	100.0000	100.0000	1	9a505cc2ec16	0x161500
 imageset3	?ScanRunLeft_166e00@CImageSet3@@QAEHHHPAH0@Z	100.0000	100.0000	1	b56857274c55	0x166e00
 imageset3g	?FreePixels@CImageSet3@@UAEXXZ	100.0000	100.0000	2	c202868d2a20	0x1614b0
 imageset3g	?Parse@CImageSet3@@UAEHPAX@Z	88.6441	88.6441	2	394b5986748f	0x166d70
@@ -3454,7 +3454,7 @@ sfselectdevice	?SFManager_SelectBestDevice@@YAHXZ	72.9488	72.9488	7	21efe3fa97ea
 shadedescrtable	?Select@ShadeSelector@@QAEXHPAUShadeDescr@@@Z	68.5938	68.5938	16	63d0618b069e	0x14dd90
 shadedescrtable	?SetShadeDescr@@YAXPAUShadeDescr@@H@Z	61.8966	61.8966	15	2e9f29d97b37	0x14dcf0
 shadetablecache	??0CShadeTableCache@@QAE@XZ	100.0000	100.0000	3	47b9b22b6715	0x14de30
-shadetablecache	??1C14fe30@@UAE@XZ	100.0000	100.0000	2	878e309447d8	0x14fe30
+shadetablecache	??1CShadeTableArray@@UAE@XZ	100.0000	100.0000	1	192692053f73	0x14fe30
 shadetablecache	??1CShadeTableCache@@QAE@XZ	100.0000	100.0000	4	f6966bb46107	0x14de50
 shadetablecache	?AddFromArray@CShadeTableCache@@QAEPAUCShadeTable@@PBD@Z	76.9018	76.9018	4	7112b7187346	0x14f6c0
 shadetablecache	?AddFromFile@CShadeTableCache@@QAEPAUCShadeTable@@PBDH@Z	80.9272	80.9272	5	fcd36a98e861	0x14f8b0
