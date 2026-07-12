@@ -69,6 +69,7 @@ struct CGroupSel {
     i32 CenterOnGroup(i32 a);
 };
 #include <Gruntz/FontConfig.h> // canonical CFontConfig (EndInput; non-virtual, cast-neutral)
+#include <Gruntz/SoundCue.h>   // CSndHost (its +0x10 IS the real MFC CMapStringToOb)
 #include <Gruntz/GruntzMgr.h>  // canonical CGruntzMgr (score/run/finish helpers)
 // CObj23d90 (the 0x23d90 grid-snap blit) is the canonical view in
 // <Gruntz/BoundaryTailViews.h>, included below; its Blit body is re-homed here.
@@ -104,10 +105,10 @@ struct RegArea {
 // local per site so MSVC colors its stack slot from local liveness (as retail).
 #define CLEAR_TAB_HINT(base)                                                                       \
     do {                                                                                           \
-        void* _s = P(P(base, 0x30), 0x28);                                                         \
-        if (M(_s, 0x30) == 0) {                                                                    \
+        CSndHost* _s = (CSndHost*)P(P(base, 0x30), 0x28);                                          \
+        if (_s->m_emitGate == 0) {                                                                 \
             CObject* found = 0;                                                                    \
-            ((CMapStringToOb*)((char*)_s + 0x10))->Lookup("GAME_TABHIGHLIGHT1", found);            \
+            _s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);                                          \
             if (found != 0)                                                                        \
                 FreeHintSprite(g_sndCueTag, 0, 0, 0);                                              \
         }                                                                                          \
@@ -355,7 +356,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         void* s = P(P(P(self, 0x4), 0x30), 0x28);
         if (M(s, 0x30) == 0) {
             CObject* found = 0;
-            ((CMapStringToOb*)((char*)s + 0x10))->Lookup("GAME_TABHIGHLIGHT1", found);
+            ((CSndHost*)s)->m_10.Lookup("GAME_TABHIGHLIGHT1", found);
             if (found != 0) {
                 FreeHintSprite(g_sndCueTag, 0, 0, 0);
             }

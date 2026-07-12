@@ -756,21 +756,10 @@ i32 g_animScratchCount;            // DAT_006bf670
 void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
 i32 g_gruntFreeListBias;           // DAT_0064554c (same as g_freePoolBase)
 
-// The single-letter anim type-code literals (1-char .rodata, reloc-masked).
-const char g_codeA[] = "A";
-const char g_codeD[] = "D";
-const char g_codeI[] = "I";
-const char g_codeG[] = "G";
-const char g_codeL[] = "L";
-const char g_codeP[] = "P";
-const char g_codeO[] = "O";
-const char g_codeQ[] = "Q";
-const char g_codeJ[] = "J";
-const char g_codeN[] = "N";
-const char g_codeM[] = "M";
-const char g_codeK[] = "K";
-const char g_codeF[] = "F";
-const char g_codeE[] = "E";
+// The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
+// every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
+// DATA-bound in src/Globals.cpp). They used to be re-DEFINED here - 14 external symbols
+// duplicated across 5 objs = a duplicate-symbol link defect.
 
 // ---------------------------------------------------------------------------
 // CGrunt::SelectMoveIcon(a)   @0x57800   (__thiscall, ret 4)
@@ -1371,7 +1360,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     // resolves the current anim-set node's cell record (the resolver's coord-range
     // map; the bounds hit is the fast path, the two fallbacks are engine helpers).
     char* nm0 = *g_typeColl.GetNameRecord(m_14->m_1c);
-    if (strcmp(nm0, g_codeH) == 0) {
+    if (strcmp(nm0, s_codeH) == 0) {
         return 1;
     }
     {
@@ -1392,7 +1381,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         (void)rec;
     }
     char* nm1 = *g_typeColl.GetNameRecord(m_14->m_1c);
-    if (strcmp(nm1, g_codeF) == 0) {
+    if (strcmp(nm1, s_codeF) == 0) {
         return 1;
     }
     {
@@ -1415,7 +1404,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
         (void)rec;
     }
     char* nm2 = *g_typeColl.GetNameRecord(m_14->m_1c);
-    if (strcmp(nm2, g_codeO) == 0) {
+    if (strcmp(nm2, s_codeO) == 0) {
         return 1;
     }
     ResetGeometry();
@@ -1962,7 +1951,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeF) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeF) == 0);
     if (eq) {
         return 0;
     }
@@ -1975,7 +1964,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
         return 1;
     }
 
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
     if (eq) {
         m_tileMgr->ArrivalNotify6(
             m_tileOwnerHi,
@@ -1986,7 +1975,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             -1
         );
     } else {
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeN) == 0);
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeN) == 0);
         if (eq) {
             i32 px = (m_10->m_5c & ~0x1f) + 0x10;
             i32 py = (m_10->m_60 & ~0x1f) + 0x10;
@@ -2000,7 +1989,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
             SnapToLastTile(1);
             if (redo) {
                 m_prevAnimSetNode = m_14->m_1c;
-                m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
+                m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeD);
                 OnCoordCommit(m_coordToggle);
             }
         }
@@ -2055,7 +2044,7 @@ i32 CGrunt::BeginAttack(i32 a, i32 b) {
     }
     char* nm = g_typeColl.GetNameRecords(m_14->m_1c)->m_name;
     GruntScratchTeardown();
-    bool eq = (strcmp(nm, g_codeF) == 0);
+    bool eq = (strcmp(nm, s_codeF) == 0);
     if (eq) {
         return 0;
     }
@@ -2203,18 +2192,18 @@ void RegisterActs_644af0() {
     REGISTER_KEY_644AF0(k_60cc90, &H_402888);
     REGISTER_KEY_644AF0(k_60cca4, &H_402491);
     REGISTER_KEY_644AF0(k_60d2ec, &H_403de6);
-    REGISTER_KEY_644AF0(k_60d2e8, &H_402211);
-    REGISTER_KEY_644AF0(k_60cc9c, &H_403bc5);
-    REGISTER_KEY_644AF0(k_60d7fc, &H_4040f2);
-    REGISTER_KEY_644AF0(k_60cca0, &H_403e3b);
+    REGISTER_KEY_644AF0(s_codeF, &H_402211);
+    REGISTER_KEY_644AF0(s_codeG, &H_403bc5);
+    REGISTER_KEY_644AF0(s_codeH, &H_4040f2);
+    REGISTER_KEY_644AF0(s_codeI, &H_403e3b);
     REGISTER_KEY_644AF0(k_60cc94, &H_401005);
     REGISTER_KEY_644AF0(k_60d7f8, &H_403edb);
-    REGISTER_KEY_644AF0(k_60cc98, &H_40165e);
-    REGISTER_KEY_644AF0(k_60d7f4, &H_40321a);
-    REGISTER_KEY_644AF0(k_60dc04, &H_4030f3);
-    REGISTER_KEY_644AF0(k_60dc0c, &H_403fe9);
-    REGISTER_KEY_644AF0(k_60beb8, &H_403f21);
-    REGISTER_KEY_644AF0(k_60dc08, &H_401195);
+    REGISTER_KEY_644AF0(s_codeL, &H_40165e);
+    REGISTER_KEY_644AF0(s_codeM, &H_40321a);
+    REGISTER_KEY_644AF0(s_codeN, &H_4030f3);
+    REGISTER_KEY_644AF0(s_codeO, &H_403fe9);
+    REGISTER_KEY_644AF0(s_codeP, &H_403f21);
+    REGISTER_KEY_644AF0(s_codeQ, &H_401195);
     REGISTER_KEY_644AF0(k_60bebc, &H_403e18);
     REGISTER_KEY_644AF0(k_60df94, &H_4036f2);
 }

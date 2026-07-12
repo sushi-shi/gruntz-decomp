@@ -98,7 +98,7 @@ extern "C" i32 g_644c54; // current area index
 extern i32 g_sndEnabled; // cue enable gate
 extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA (HELPBOOK sound token)
 DATA(0x0020d7f8)
-extern "C" char g_str_K[]; // DAT_0060d7f8 == "K" (placeholder/null type marker)
+extern char s_codeK[]; // "K" (0x60d7f8) - the anim type-code literal
 
 // @early-stop
 // regalloc/scheduling wall (~76%): complete + correct, verified instruction-by-
@@ -137,7 +137,7 @@ i32 CInGameText::Update() {
         }
         p++;
     }
-    bool eq = (strcmp(*node, g_str_K) == 0);
+    bool eq = (strcmp(*node, s_codeK) == 0);
     if (eq) {
         return 0;
     }

@@ -1961,4 +1961,25 @@ i32 __stdcall GruntTileSwitchImpl(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
+
+// The single-letter grunt/anim type-code literals ("A".."Q"), one shared copy each in
+// retail .rdata (byte-verified at the rvas below; DATA-bound in src/Globals.cpp). Declared
+// here so the grunt TUs that strcmp against them share ONE symbol instead of each emitting
+// its own definition (which made 14 duplicate external symbols across 5 objs).
+extern char s_codeA[]; // "A" (0x0060a454)
+extern char s_codeD[]; // "D" (0x0060cca4)
+extern char s_codeE[]; // "E" (0x0060d2ec)
+extern char s_codeF[]; // "F" (0x0060d2e8)
+extern char s_codeG[]; // "G" (0x0060cc9c)
+extern char s_codeH[]; // "H" (0x0060d7fc)
+extern char s_codeI[]; // "I" (0x0060cca0)
+extern char s_codeJ[]; // "J" (0x0060cc94)
+extern char s_codeK[]; // "K" (0x0060d7f8)
+extern char s_codeL[]; // "L" (0x0060cc98)
+extern char s_codeM[]; // "M" (0x0060d7f4)
+extern char s_codeN[]; // "N" (0x0060dc04)
+extern char s_codeO[]; // "O" (0x0060dc0c)
+extern char s_codeP[]; // "P" (0x0060beb8)
+extern char s_codeQ[]; // "Q" (0x0060dc08)
+
 #endif // SRC_GRUNTZ_GRUNT_H

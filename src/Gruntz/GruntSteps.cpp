@@ -253,21 +253,10 @@ i32 g_animScratchCount;            // DAT_006bf670
 void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
 i32 g_gruntFreeListBias;           // DAT_0064554c (same as g_freePoolBase)
 
-// The single-letter anim type-code literals (1-char .rodata, reloc-masked).
-const char g_codeA[] = "A";
-const char g_codeD[] = "D";
-const char g_codeI[] = "I";
-const char g_codeG[] = "G";
-const char g_codeL[] = "L";
-const char g_codeP[] = "P";
-const char g_codeO[] = "O";
-const char g_codeQ[] = "Q";
-const char g_codeJ[] = "J";
-const char g_codeN[] = "N";
-const char g_codeM[] = "M";
-const char g_codeK[] = "K";
-const char g_codeF[] = "F";
-const char g_codeE[] = "E";
+// The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
+// every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
+// DATA-bound in src/Globals.cpp). They used to be re-DEFINED here - 14 external symbols
+// duplicated across 5 objs = a duplicate-symbol link defect.
 
 // ==== LoadVehicleGruntSprites @0x50ce0 (ex VehicleGruntSprites.cpp; text-contained) ====
 // CTileWireLogic::WireTileSwitchLogic (0x6c130) now comes from the shared header.
@@ -1075,15 +1064,15 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeA) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeA) == 0);
     if (eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeD) == 0);
     if (eq) {
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
     if (eq) {
         // code "I": arrival cue (m_170==0x13) then re-notify the tile mgr.
         if (m_entranceReason == 0x13) {
@@ -1103,30 +1092,30 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         m_tileMgr->SetTileState4(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeG) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeG) == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeL) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeL) == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeP) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeP) == 0);
     if (eq) {
         goto idleReseed;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeO) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeO) == 0);
     if (eq) {
         // code "O": commit the move directly.
         ApplySetState1(1);
         CommitMoveA(m_lastTilePxY, m_lastTilePxX, 0);
         goto applyTail;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeQ) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeQ) == 0);
     if (eq) {
         return 1;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeJ) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeJ) == 0);
     if (eq) {
         // code "J": clear the entrance gate, re-latch a fresh anim set, drive the
         // geometry sub-player.
@@ -1137,7 +1126,7 @@ i32 CGrunt::StepAnimDispatchA(i32 x, i32 y, i32 c, i32 d) {
         }
         m_35c = 0;
         m_prevAnimSetNode = m_14->m_1c;
-        m_14->m_1c = (void*)EntranceLookupAnimSet(g_codeD);
+        m_14->m_1c = (void*)EntranceLookupAnimSet(s_codeD);
         m_prevEntranceDesc = m_154->m_1b4;
         m_154->m_1a0.SetGeometry(m_poseWalk);
         // Stamp the first entrance-cell frame from m_cells[base].m_walk. The by-value

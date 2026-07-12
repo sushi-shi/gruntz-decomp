@@ -278,8 +278,8 @@ struct CAnimSetNode {
 #define LOAD_POSE(dst, sfx)                                                                        \
     do {                                                                                           \
         CSprite* _out = 0;                                                                         \
-        ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)                                              \
-            ->Lookup("GRUNTZ_" + m_animSetName + (sfx), (CObject*&)_out);                          \
+        m_154->m_c->m_2c->m_10map                                              \
+            .Lookup("GRUNTZ_" + m_animSetName + (sfx), (CObject*&)_out);                          \
         (dst) = (int)_out;                                                                         \
     } while (0)
 
@@ -589,21 +589,10 @@ i32 g_animScratchCount;            // DAT_006bf670
 void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
 i32 g_gruntFreeListBias;           // DAT_0064554c (same as g_freePoolBase)
 
-// The single-letter anim type-code literals (1-char .rodata, reloc-masked).
-const char g_codeA[] = "A";
-const char g_codeD[] = "D";
-const char g_codeI[] = "I";
-const char g_codeG[] = "G";
-const char g_codeL[] = "L";
-const char g_codeP[] = "P";
-const char g_codeO[] = "O";
-const char g_codeQ[] = "Q";
-const char g_codeJ[] = "J";
-const char g_codeN[] = "N";
-const char g_codeM[] = "M";
-const char g_codeK[] = "K";
-const char g_codeF[] = "F";
-const char g_codeE[] = "E";
+// The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
+// every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
+// DATA-bound in src/Globals.cpp). They used to be re-DEFINED here - 14 external symbols
+// duplicated across 5 objs = a duplicate-symbol link defect.
 
 // @early-stop
 // reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified
@@ -922,23 +911,23 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
     }
 
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeF) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeF) == 0);
     if (eq) {
         return;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeD) == 0);
     if (eq) {
         goto walk;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeA) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeA) == 0);
     if (eq) {
         goto idle;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeK) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeK) == 0);
     if (eq) {
         goto idle;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeE) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeE) == 0);
     if (eq) {
         // code "E": drive the ATTACK-IDLE geometry, stamp the cell frame from the
         // latched m_entranceCell triple (cell table base 0x468).
@@ -956,11 +945,11 @@ void CGrunt::PlaySound(i32 range, CGruntVoiceRec rec) {
         }
         goto store;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeI) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeI) == 0);
     if (eq) {
         goto codeI;
     }
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeM) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeM) == 0);
     if (eq) {
         goto walk;
     }
@@ -1116,7 +1105,7 @@ RVA(0x0004b370, 0xafd)
 void CGrunt::StepArrivalDrop(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f) {
     m_arrivalNotified = 0; // m_464 cleared on entry
     bool eq;
-    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeD) == 0);
+    eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeD) == 0);
     if (!eq && a == m_entrancePxX && b == m_entrancePxY) {
         goto reachedTarget;
     }
@@ -1419,7 +1408,7 @@ label_4c6e4:
         CAnimNameRecord* r = g_typeColl.ScratchResolve(m_14->m_1c);
         GruntScratchTeardown();
         bool ne;
-        ne = (strcmp(r->m_name, g_codeL) != 0);
+        ne = (strcmp(r->m_name, s_codeL) != 0);
         if (ne) {
             m_entranceActive = 0;
         }
@@ -1924,7 +1913,7 @@ RVA(0x0005f310, 0xb5e)
 void CGrunt::MovingSlot16() {
     if (m_arrivalState != 0x11) {
         bool eq;
-        eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), g_codeA) == 0);
+        eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeA) == 0);
         if (eq && m_coordCount != 0) {
             GruntCoordNode* head = m_320;
             GruntCoord* co = head->m_coord;
@@ -1959,7 +1948,7 @@ void CGrunt::MovingSlot16() {
     // scratch CString teardown).
     GruntScratchTeardown();
     bool eq2;
-    eq2 = (strcmp(g_typeColl.GetNameRecords(m_14->m_1c)->m_name, g_codeD) == 0);
+    eq2 = (strcmp(g_typeColl.GetNameRecords(m_14->m_1c)->m_name, s_codeD) == 0);
     (void)eq2;
     GruntScratchTeardown();
     OnMoveFinishA(0);

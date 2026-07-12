@@ -23,8 +23,10 @@ struct CSbiConfigRecord; // the value the lookup yields (defined below)
 
 // CMapWordToOb::Lookup (engine 0x1b8008, __thiscall, ret 8): key -> *out record.
 // Modeled with NO body so the `ecx=<map>; call 0x1b8008` shape reloc-masks.
-SIZE_UNKNOWN(CSbiConfigMap);
-struct CSbiConfigMap {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call
+// (The ex-`CMapStringToPtr` view is DISSOLVED: an empty phantom aliasing the MFC library
+// ?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z @0x1b8008 - the rva CSBI_MenuItem::ResolveFrame
+// @0xe81e0 really calls. NOTE: this is a DIFFERENT class from CMapStringToOb (@0x1b8438);
+// the old source cast it to CMapStringToOb, which would have bound the WRONG routine.)
 
 // The registry object held at config-host+0x10: the CMapWordToOb map is embedded
 // at ITS +0x10. Accessing `host->m_10->m_10map` yields the `[host+0x10]+0x10`
@@ -32,7 +34,7 @@ struct CSbiConfigMap {}; // MFC CMapStringToPtr (Lookup @0x1b8008); cast at each
 SIZE_UNKNOWN(CSbiConfigReg);
 struct CSbiConfigReg {
     char m_pad0[0x10];
-    CSbiConfigMap m_10map; // +0x10  embedded lookup map
+    CMapStringToPtr m_10map; // +0x10  embedded lookup map
 };
 
 // The keyed config record: m_14 = frame/value table (i32*, indexed by frame),

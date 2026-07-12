@@ -132,9 +132,10 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     if (key == 0) {
         return key;
     }
-    CSbiConfigRecord* rec = 0;
+    void* rec_v = 0;
     CSbiConfigHost* host = (CSbiConfigHost*)m_24;
-    ((CMapStringToOb*)&host->m_10->m_10map)->Lookup((const char*)key, (CObject*&)rec);
+    host->m_10->m_10map.Lookup((const char*)key, rec_v);
+    CSbiConfigRecord* rec = (CSbiConfigRecord*)rec_v;
     m_38 = rec;
     if (rec == 0) {
         return (i32)rec;
@@ -292,8 +293,9 @@ i32 CSBI_MenuItem::Serialize(void* arP, i32 kind, i32 a, i32 b) {
             g_serialCounter++;
             ar->Read(tmp, 0x80);
             if (strlen(tmp) != 0) {
-                CSprite* found = 0;
-                ((CMapStringToOb*)&mgr->m_10->m_10map)->Lookup(tmp, (CObject*&)found);
+                CObject* found_ob = 0;
+                mgr->m_10->m_10map.Lookup(tmp, found_ob);
+                CSprite* found = (CSprite*)found_ob;
                 m_38 = found;
             } else {
                 m_38 = 0;

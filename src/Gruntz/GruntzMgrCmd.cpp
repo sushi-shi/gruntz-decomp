@@ -680,9 +680,9 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                     case 0x8247: {
                         g_explosionz ^= 1;
                         if (m_world->m_28->m_emitGate == 0) {
-                            LeafCue* _c = 0;
-                            ((CMapStringToOb*)&m_world->m_28->m_10)
-                                ->Lookup("GAME_MAJORCHEAT", (CObject*&)_c);
+                            CObject* _c_ob = 0;
+                            m_world->m_28->m_10.Lookup("GAME_MAJORCHEAT", _c_ob);
+                            LeafCue* _c = (LeafCue*)_c_ob;
                             if (_c && g_sndEnabled) {
                                 i32 now = g_time6bf3c0;
                                 if ((u32)(now - _c->m_14) >= (u32)_c->m_18) {

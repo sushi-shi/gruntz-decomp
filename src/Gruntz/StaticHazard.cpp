@@ -279,9 +279,9 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     m_activeWindow = 0;
     m_idleWindow = m_object->m_120;
     m_pulseEpoch = g_645588;
-    HazLookupEntry* entry = 0;
-    ((CMapStringToOb*)&((HazSndRoot*)g_gameReg->m_world)->m_cat->m_map)
-        ->Lookup("LEVEL_STATICHAZARDGO", (CObject*&)entry);
+    CObject* entry_ob = 0;
+    ((HazSndRoot*)g_gameReg->m_world)->m_cat->m_map.Lookup("LEVEL_STATICHAZARDGO", entry_ob);
+    HazLookupEntry* entry = (HazLookupEntry*)entry_ob;
     if (entry != 0) {
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_aniPadBias;
     } else {

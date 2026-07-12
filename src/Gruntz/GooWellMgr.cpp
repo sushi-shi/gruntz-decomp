@@ -186,9 +186,9 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         // LEVEL_ROLLINGBALL loop (m_rollingballLoop), wanted by m_rollingballWanted.
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
-                CLookObj* out = 0;
-                ((CMapStringToOb*)&((CMgrHolderX*)g_gameReg->m_world)->m_nameMap->m_map10)
-                    ->Lookup("LEVEL_ROLLINGBALL", (CObject*&)out);
+                CObject* out_ob = 0;
+                ((CMgrHolderX*)g_gameReg->m_world)->m_nameMap->m_map10.Lookup("LEVEL_ROLLINGBALL", out_ob);
+                CLookObj* out = (CLookObj*)out_ob;
                 if (out && out->m_soundFactory) {
                     m_rollingballLoop = (DirectSoundMgr*)out->m_soundFactory->GetItem();
                     if (m_rollingballLoop) {
@@ -203,9 +203,9 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         // GAME_TELEPORTLOOP loop (m_teleportLoop), wanted by m_teleportWanted.
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
-                CLookObj* out = 0;
-                ((CMapStringToOb*)&((CMgrHolderX*)g_gameReg->m_world)->m_nameMap->m_map10)
-                    ->Lookup("GAME_TELEPORTLOOP", (CObject*&)out);
+                CObject* out_ob = 0;
+                ((CMgrHolderX*)g_gameReg->m_world)->m_nameMap->m_map10.Lookup("GAME_TELEPORTLOOP", out_ob);
+                CLookObj* out = (CLookObj*)out_ob;
                 if (out && out->m_soundFactory) {
                     m_teleportLoop = (DirectSoundMgr*)out->m_soundFactory->GetItem();
                     if (m_teleportLoop) {

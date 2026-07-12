@@ -37,10 +37,12 @@ extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 // `add ecx,0x10; call Lookup` falls out.
 // The +0x10 table is an MFC CMapStringToOb; Lookup @0x1b8438 is CMapStringToOb::Lookup
 // (reached via a CMapStringToOb cast at the call in InGameIcon.cpp).
-struct CIconMap {};
+// (ex-`CMapStringToOb`: empty phantom; the +0x10 table IS the MFC CMapStringToOb - verified,
+//  CInGameIcon::SetField54 @0x99b10 calls 0x1b8438. The +0x48 map on the sprite factory
+//  is a DIFFERENT class, CMapPtrToPtr @0x1b8760 - do not conflate them.)
 struct CIconMapHolder {
     char m_pad00[0x10];
-    CIconMap m_10map; // +0x10  the lookup table
+    CMapStringToOb m_10map; // +0x10  the lookup table
 };
 struct CGameRegMapHolder {
     char m_pad00[0x28];

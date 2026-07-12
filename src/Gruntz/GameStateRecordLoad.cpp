@@ -174,7 +174,7 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
     }
 
     i32 id;
-    void* obj;
+    void* obj; // the CMapPtrToPtr value type; the CObject-map call below re-types it
     char buf[0x80];
 
     *(void**)(p + 0x424) = 0;

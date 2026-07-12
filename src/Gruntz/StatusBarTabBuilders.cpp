@@ -388,9 +388,9 @@ i32 CSBI_SideTab::BuildHandle() {
     if (m_38 == val) {
         return 1;
     }
-    CSprite* gm = 0;
-    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)
-        ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", (CObject*&)gm);
+    CObject* gm_ob = 0;
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SMALLICONZ", gm_ob);
+    CSprite* gm = (CSprite*)gm_ob;
     i32 glyph;
     if (gm == 0 || val < gm->m_firstFrame || val > gm->m_lastFrame) {
         glyph = 0;

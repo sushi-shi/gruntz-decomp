@@ -234,8 +234,8 @@ i32 CStepMgr::Step33520(CGrunt* g) {
                 const char* nm =
                     ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr(((CStepOwner*)g->m_14)->m_1c))
                         ->m_0;
-                if (strcmp(nm, k_60cca0) != 0 && strcmp(nm, k_60cc9c) != 0
-                    && strcmp(nm, k_60cc98) != 0 && strcmp(nm, k_60beb8) != 0
+                if (strcmp(nm, s_codeI) != 0 && strcmp(nm, s_codeG) != 0
+                    && strcmp(nm, s_codeL) != 0 && strcmp(nm, s_codeP) != 0
                     && strcmp(nm, k_60cc94) != 0 && strcmp(nm, k_60cc90) != 0
                     && strcmp(nm, k_60bebc) != 0) {
                     Finish3e4f(g, cur);

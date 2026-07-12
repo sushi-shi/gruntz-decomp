@@ -162,8 +162,9 @@ i32 CSBI_Image::SerializeChain(void* arP, i32 kind, i32 a, i32 b) {
             ar->Read(name, 0x80);
             ar->Read(&idx, 4);
             if (strlen(name) != 0) {
-                CSprite* r = 0;
-                ((CMapStringToOb*)&mgr->m_10->m_10map)->Lookup(name, (CObject*&)r);
+                CObject* r_ob = 0;
+                mgr->m_10->m_10map.Lookup(name, r_ob);
+                CSprite* r = (CSprite*)r_ob;
                 if (r && idx >= r->m_firstFrame && idx <= r->m_lastFrame) {
                     m_30 = (i32)r->m_frames.m_pData[idx];
                 } else {

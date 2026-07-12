@@ -303,9 +303,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
                 m_10->m_5c = (m_10->m_5c & ~0x1f) + 0x10;
                 m_10->m_60 = (m_10->m_60 & ~0x1f) + 0x10;
             } else {
-                CSprite* out = 0;
-                ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
-                    ->Lookup(s_DEATHZ_FALL2, (CObject*&)out);
+                CObject* out_ob = 0;
+                m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_FALL2, out_ob);
+                CSprite* out = (CSprite*)out_ob;
                 m_poseDeath = (i32)out;
             }
             m_prevEntranceDesc = m_154->m_1b4;
@@ -318,9 +318,9 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
         }
 
         case DEATH_ELECTROCUTE: { // GRUNTZ_DEATHZ_ELECTROCUTE
-            CSprite* out = 0;
-            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
-                ->Lookup(s_DEATHZ_ELECTROCUTE, (CObject*&)out);
+            CObject* out_ob = 0;
+            m_154->m_c->m_2c->m_10map.Lookup(s_DEATHZ_ELECTROCUTE, out_ob);
+            CSprite* out = (CSprite*)out_ob;
             m_poseDeath = (i32)out;
             m_prevEntranceDesc = m_154->m_1b4;
             m_154->ApplyGeometryDirect(m_poseDeath, 0);

@@ -68,7 +68,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     }
 
     char buf[0x80];
-    void* out;
+    CObject* out;
     i32 idx;
 
     s->Read(&m_0, 4);
@@ -78,7 +78,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     s->Read(buf, 0x80);
     if (strlen(buf) != 0) {
         out = 0;
-        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
+        reg->m_10->m_10.Lookup(buf, out);
         m_8 = out;
     } else {
         m_8 = 0;
@@ -92,7 +92,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
+        reg->m_10->m_10.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -111,7 +111,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
+        reg->m_10->m_10.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -130,7 +130,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
+        reg->m_10->m_10.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -149,7 +149,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
+        reg->m_10->m_10.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {
@@ -168,7 +168,7 @@ i32 CEventLoadRec::Load(CSerialArchive* s) {
     if (strlen(buf) != 0) {
         i32 i = idx;
         out = 0;
-        reg->m_10->m_10.Lookup(buf, (CObject*&)out);
+        reg->m_10->m_10.Lookup(buf, out);
         CRegTypeTable* tt = (CRegTypeTable*)out;
         void* r;
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {

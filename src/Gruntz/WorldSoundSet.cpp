@@ -518,8 +518,9 @@ void* CRandomAmbientSound::Dispatch(
     AmbientBox* box,
     i32 a6
 ) {
-    Entry_bdd0* out = 0;
-    ((CMapStringToOb*)&a1->m_10)->Lookup(key, (CObject*&)out);
+    CObject* out_ob = 0;
+    a1->m_10.Lookup(key, out_ob);
+    Entry_bdd0* out = (Entry_bdd0*)out_ob;
     if (out == 0) {
         return (void*)out;
     }

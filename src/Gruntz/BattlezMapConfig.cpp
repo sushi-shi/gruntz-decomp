@@ -1242,8 +1242,8 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 //        if (unit->m_1fc == 0) goto handler;            // + m_368/m_1e4/m_220 guards
 //        name = *g_typeColl.IndexToPtr(unit->m_14->m_1c);   // CTypeKeyColl lookup
 //        if (strcmp(name, "<CODE>") == 0) goto handler;     // MSVC5-inlined strcmp
-//     over ~9 distinct type-code string constants (?s_codeA / ?s_codeJ / k_60cca0 /
-//     k_60cc9c / k_60cc98 / k_60beb8 / k_60bebc / k_60cc90 / k_60cc94), each arm then
+//     over ~9 distinct type-code string constants (?s_codeA / ?s_codeJ / s_codeI /
+//     s_codeG / s_codeL / s_codeP / k_60bebc / k_60cc90 / k_60cc94), each arm then
 //     branching into a per-type behaviour (coord recycle via g_coordPool, GetScreenPos
 //     geometry, CRect clamps, CButeMgr::GetIntDef config reads, and hand-offs to the
 //     sibling state-machine methods in this TU).

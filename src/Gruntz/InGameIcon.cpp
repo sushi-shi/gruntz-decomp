@@ -1259,11 +1259,10 @@ i32 CInGameText::Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b) {
 // (after)>. A /Gy first-use COMDAT the linker scattered between two OTHER units.
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetField54(i32 v) {
-    void* found = 0;
+    CObject* found = 0;
     if (v != 0) {
         found = 0;
-        ((CMapStringToOb*)&((CGameRegMapHolder*)g_gameReg->m_world)->m_28->m_10map)
-            ->Lookup((const char*)v, (CObject*&)found);
+        ((CGameRegMapHolder*)g_gameReg->m_world)->m_28->m_10map.Lookup((const char*)v, found);
     }
     m_cmapId = (i32)found;
 }
@@ -1271,7 +1270,6 @@ void CInGameIcon::SetField54(i32 v) {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CGameRegMapHolder);
-SIZE_UNKNOWN(CIconMap);
 SIZE_UNKNOWN(CIconMapHolder);
 SIZE_UNKNOWN(CIconRecord);
 SIZE_UNKNOWN(CInGameIcon);

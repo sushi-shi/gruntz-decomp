@@ -340,11 +340,10 @@ i32 CSpotLight::Tick_0b1af0() {
                 i32 laser = (((g_randSeed >> 16) & 0x7fff) & 1) + 1;
                 CString name;
                 name.Format(s_LEVEL_UFOHAZARDLASER, laser);
-                char* w = (char*)reg->m_world;   // g_gameReg->m_30 resource holder
-                char* obj = *(char**)(w + 0x28); // world->m_28 (the name->sound map host)
-                if (*(i32*)(obj + 0x30) == 0) {
+                CSndHost* obj = reg->m_world->m_28; // the name->cue map host
+                if (obj->m_emitGate == 0) {
                     CObject* out = 0;
-                    if (((CMapStringToOb*)(obj + 0x10))->Lookup(name, out) && out != 0
+                    if (obj->m_10.Lookup(name, out) && out != 0
                         && g_sndEnabled != 0) {
                         SoundPlay_1360d0((i32)out, 0, 0, g_sndCueTag);
                     }

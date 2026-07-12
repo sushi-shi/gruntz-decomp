@@ -264,8 +264,7 @@ i32 CGrunt::LoadPickupSprites(i32 type, i32 a2, i32 a3, i32 a4, i32 a5) {
         case PICKUP_MEGAPHONE: {
             MegaHolder* mh = *(MegaHolder**)((char*)g_gameReg + 0x2c);
             a4 = 0;
-            ((CMapStringToOb*)&m_154->m_c->m_2c->m_10map)
-                ->Lookup("GRUNTZ_PICKUPS_MEGAPHONE", (CObject*&)a4);
+            m_154->m_c->m_2c->m_10map.Lookup("GRUNTZ_PICKUPS_MEGAPHONE", (CObject*&)a4);
             m_pickupGeoSrc = a4;
             i32 n = mh->m_2dc->M();
             if (a5 != 0) {

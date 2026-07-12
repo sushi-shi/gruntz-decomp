@@ -100,11 +100,11 @@ CActionOptionsMenuBar::CActionOptionsMenuBar() {
 // pushes; our cl emits it before. Identical multiset, permuted. Logic exact.
 RVA(0x000090e0, 0x100)
 i32 CActionOptionsMenuBar::LoadAssets() {
-    CSprite* spr = 0;
+    CObject* spr_ob = 0;
 
     m_active = 0;
-    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)
-        ->Lookup("GAME_ACTIONOPTIONZMENUBAR", (CObject*&)spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_ACTIONOPTIONZMENUBAR", spr_ob);
+    CSprite* spr = (CSprite*)spr_ob;
     m_frame = (spr && spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1)
                   ? (CMenuBarFrame*)spr->m_frames.m_pData[1]
                   : 0;
@@ -113,24 +113,21 @@ i32 CActionOptionsMenuBar::LoadAssets() {
     }
 
     spr = 0;
-    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)
-        ->Lookup("GAME_INGAMEICONZ_NORMCHIPZ", (CObject*&)spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_NORMCHIPZ", (CObject*&)spr);
     m_normChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)
-        ->Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", (CObject*&)spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_HIGHCHIPZ", (CObject*&)spr);
     m_highChipSprite = spr;
     if (!spr) {
         return 0;
     }
 
     spr = 0;
-    ((CMapStringToOb*)&g_gameReg->m_world->m_10->m_10map)
-        ->Lookup("GAME_INGAMEICONZ_GREYCHIPZ", (CObject*&)spr);
+    g_gameReg->m_world->m_10->m_10map.Lookup("GAME_INGAMEICONZ_GREYCHIPZ", (CObject*&)spr);
     m_greyChipSprite = spr;
     if (!spr) {
         return 0;

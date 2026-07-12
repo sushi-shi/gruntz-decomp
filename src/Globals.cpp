@@ -91,7 +91,7 @@ extern i32 g_desc60aac8;
 DATA(0x0020b588)
 extern u8 g_dat60b588; // 0x60b588 (new pin)
 DATA(0x0020beb8)
-extern char k_60beb8[];
+extern char s_codeP[];
 DATA(0x0020bebc)
 extern char k_60bebc[];
 DATA(0x0020cc90)
@@ -99,27 +99,27 @@ extern char k_60cc90[];
 DATA(0x0020cc94)
 extern char s_codeJ[]; // "J"
 DATA(0x0020cc98)
-extern char k_60cc98[];
+extern char s_codeL[];
 DATA(0x0020cc9c)
-extern char k_60cc9c[];
+extern char s_codeG[];
 DATA(0x0020cca0)
-extern char k_60cca0[];
+extern char s_codeI[];
 DATA(0x0020cca4)
 extern char s_codeD[]; // "D"
 DATA(0x0020d2e8)
-extern char k_60d2e8[];
+extern char s_codeF[];
 DATA(0x0020d2ec)
 extern char s_codeE[]; // "E"
 DATA(0x0020d7f4)
-extern char k_60d7f4[];
+extern char s_codeM[];
 DATA(0x0020d7fc)
-extern char k_60d7fc[];
+extern char s_codeH[];
 DATA(0x0020dc04)
-extern char k_60dc04[];
+extern char s_codeN[];
 DATA(0x0020dc08)
-extern char k_60dc08[];
+extern char s_codeQ[];
 DATA(0x0020dc0c)
-extern char k_60dc0c[];
+extern char s_codeO[];
 DATA(0x0020df94)
 extern char k_60df94[];
 // g_id0_613dff..g_id3_613e02 (the 4 unpacked device-id bytes) are DEFINED at their

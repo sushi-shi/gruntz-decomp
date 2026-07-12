@@ -724,8 +724,8 @@ i32 RezSync::Init(void* a1, char* a2) {
         m_30->m_28->ScanTree_157ee0((DirNode*)sz, "GAME", "_");
     }
     {
-        void* mv = 0;
-        ((CMapStringToOb*)((char*)m_30->m_28 + 0x10))->Lookup("GAME_MOVIE", (CObject*&)mv);
+        CObject* mv = 0;
+        m_30->m_28->m_10.Lookup("GAME_MOVIE", mv);
         m_30->m_28->MatchSub_1584f0((LeafScanSoundArg*)mv, 0);
     }
     Fn1ed8();

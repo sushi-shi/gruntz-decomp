@@ -504,9 +504,9 @@ i32 CMultiBootyState::CheckPerfectBonus() {
         i32 item = BOOTY_REG->m_11c;
         CBootyMusicHost::M28* m28 = host->m_28;
         if (m28->m_30 == 0) {
-            void* found = 0;
+            CObject* found = 0;
             CMapStringToOb* map = (CMapStringToOb*)((char*)m28 + 0x10);
-            map->Lookup("BOOTY_PERFECT", (CObject*&)found);
+            map->Lookup("BOOTY_PERFECT", found);
             if (found && g_sndEnabled != 0) {
                 CBootyFound* p = (CBootyFound*)found;
                 if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
@@ -614,9 +614,9 @@ i32 CMultiBootyState::Vslot09(i32) {
     i32 item = BOOTY_REG->m_11c;
     CBootyMusicHost::M28* m28 = host->m_28;
     if (m28->m_30 == 0) {
-        void* found = 0;
+        CObject* found = 0;
         CMapStringToOb* map = (CMapStringToOb*)((char*)m28 + 0x10);
-        map->Lookup("BOOTY_LOOP", (CObject*&)found);
+        map->Lookup("BOOTY_LOOP", found);
         if (found && g_sndEnabled != 0) {
             CBootyFound* p = (CBootyFound*)found;
             if (g_killCueClock - (u32)p->m_14 >= (u32)p->m_18) {
