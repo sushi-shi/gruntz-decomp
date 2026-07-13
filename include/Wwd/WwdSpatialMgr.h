@@ -29,7 +29,7 @@
 
 class CWwdObjMgr; // the master object manager (+0x00)
 class CWwdGrid;   // one plane's spatial bucket index (each TU supplies its own def)
-class CWwdObject; // the engine sprite the grids hold
+class CWwdGameObject; // the engine sprite the grids hold (the canonical managed object)
 
 SIZE(CWwdSpatialMgr, 0xb8); // RebuildPlanes' `operator new(0xb8)`
 struct CWwdSpatialMgr {
@@ -73,13 +73,13 @@ struct CWwdSpatialMgr {
     i32 CountInRect(CWwdGrid* grid);
     i32 Relocate(i32 newX, i32 newY);
     i32 PruneCount();                   // 0x1688b0
-    void RemoveObject(CWwdObject* obj); // 0x1688f0
+    void RemoveObject(CWwdGameObject* obj); // 0x1688f0
     i32 FlushAll();
     i32 FlushGrid(CWwdGrid* grid);
-    i32 ForEach(void(__cdecl* cb)(CWwdObject*));
-    i32 ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdObject*));
-    CWwdObject* GetFirstObject();
-    CWwdObject* GetNextObject();
+    i32 ForEach(void(__cdecl* cb)(CWwdGameObject*));
+    i32 ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdGameObject*));
+    CWwdGameObject* GetFirstObject();
+    CWwdGameObject* GetNextObject();
 };
 
 typedef CWwdSpatialMgr CPlaneScroll; // the ex-WwdFile.h spelling

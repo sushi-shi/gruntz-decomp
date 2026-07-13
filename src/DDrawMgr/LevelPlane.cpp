@@ -1047,7 +1047,7 @@ i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     // registers the object with it. (The old view took the ADDRESS of +0xb0 and called
     // CObList::AddTail on it - a `lea` where retail emits a `mov`, and a mis-bound
     // NAFXCW symbol; +0xb0 holds a POINTER, as RebuildPlanes' `new(0xb8)` store proves.)
-    m_scroll->RemoveObject((CWwdObject*)obj);
+    m_scroll->RemoveObject((CWwdGameObject*)obj);
 
     return (i32)(strCursor - (const char*)src);
 }
