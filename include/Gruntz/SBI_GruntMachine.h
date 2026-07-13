@@ -25,7 +25,7 @@
 // BuildResourceTabStatusBar's owner/config-host pair (pointers only - fwd-decl).
 // `class` vs `struct` is load-bearing for the mangling; both match their real defs.
 class CStatusBarMgr;
-struct CSbiConfigHost;
+struct CSpriteFactoryHolder;
 
 #include <Image/CImage.h> // the canonical frame-record class (CImage::RenderFrame @0x153790)
 
@@ -89,7 +89,7 @@ public:
     // CSbConfigItem base, so the call resolved to NO definition (an unresolved external).
     i32 BuildResourceTabStatusBar(
         CStatusBarMgr* owner,
-        CSbiConfigHost* host,
+        CSpriteFactoryHolder* host,
         i32 p3,
         i32 p4,
         SbRect g,

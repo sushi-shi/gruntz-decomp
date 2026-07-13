@@ -24,6 +24,7 @@
 #include <Gruntz/SpriteFactory.h>         // CSpriteFactory (m_world->m_8 CreateSprite)
 #include <Gruntz/UserLogic.h>             // CGameObject (the created effect sprites)
 #include <Gruntz/WwdGameReg.h>            // g_gameReg (GenMenuRandPos Rand/RandRange)
+#include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (the real m_world class)
 #include <Gruntz/Grunt.h>                 // GruntSoundCat full def (m_world->m_8 factory)
 #include <Gruntz/SoundCue.h> // CSndSubMgr/CSndHost/CSndFinder/CSoundCueMgr (LevelMsgHudDriver cue)
 #include <Gruntz/LeafCue.h>  // LeafCue (PlayIfElapsed_01f940 + m_10/m_14/m_18)
@@ -459,7 +460,9 @@ i32 CBootyState::LevelMsgHudDriver() {
                 e->m_screenX = (g_levelMsgRectsB[i].right + g_levelMsgRectsB[i].left) / 2;
                 e->m_screenY = (g_levelMsgRectsB[i].bottom + g_levelMsgRectsB[i].top) / 2 - 0x10;
                 if (shown == 0) {
-                    CSndHost* host = ((CSndSubMgr*)g_gameReg->m_world)->m_28;
+                    // the +0x30 holder cast to its REAL class (this TU's g_gameReg is
+                    // the WwdGameReg facet whose m_world is still a glitter-view type)
+                    CSndHost* host = ((CSpriteFactoryHolder*)g_gameReg->m_world)->m_28;
                     if (host->m_emitGate == 0) {
                         void* cue_ob = 0;
                         host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
@@ -527,7 +530,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_bomb[i]->m_stateFlags |= 1;
             m_gokart[i]->m_stateFlags |= 1;
             m_slot++;
-            CSndHost* host = ((CSndSubMgr*)g_gameReg->m_world)->m_28;
+            CSndHost* host = ((CSpriteFactoryHolder*)g_gameReg->m_world)->m_28;
             if (host->m_emitGate == 0) {
                 void* cue_ob = 0;
                 host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);

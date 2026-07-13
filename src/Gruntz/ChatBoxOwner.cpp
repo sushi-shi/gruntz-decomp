@@ -7,6 +7,7 @@
 #include <Mfc.h> // MFC (afx brings windows.h the controlled way) - MUST precede <ddraw.h> (ChatBoxOwner.h is an MFC header)
 #include <ddraw.h> // real IDirectDrawSurface (the chatbox DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
+#include <Gruntz/ResMgr.h> // CImageRegistry (m_18->m_10) + its m_10map
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FontConfig.h> // CFontConfig - the +0x14 text host; owns 0x20ef0 (see below)
 
@@ -30,19 +31,11 @@ struct CChatBoxFrame {
     i32 m_64; // +0x64  frame index (mode != 3)
     i32 m_68; // +0x68  frame index (mode == 3)
 };
-// The name->sprite hash embedded at the registry's +0x10 (Lookup 0x1b8008,
-// __thiscall; writes the found set to *out).
-// MFC ::CMapStringToOb (its Lookup IS 0x1b8008 - see mfc_class; CMapStringToPtr's is 0x1b8438,
-// a separate body: MSVC5 has no /OPT:ICF, nothing was folded); cast at the call.
-struct CChatBoxHash {};
-struct CChatBoxRegistry { // m_18->m_10 points here
-    char m_pad00[0x10];
-    CChatBoxHash m_10; // +0x10
-};
-struct CChatBoxRegRoot { // m_18 points here
-    char m_pad00[0x10];
-    CChatBoxRegistry* m_10; // +0x10
-};
+// The m_18 chain is the WORLD HOLDER (dissolved 2026-07-13, Fable lane): the
+// former CChatBoxRegRoot was CSpriteFactoryHolder (Attach receives CState::m_c,
+// the g_gameReg->m_world object), its +0x10 "registry" (ex-CChatBoxRegistry) is
+// the holder's CImageRegistry, and the embedded +0x10 hash (ex-CChatBoxHash) is
+// CImageRegistry::m_10map (::CMapStringToOb, Lookup 0x1b8008 - see mfc_class).
 // arg1->m_2c->m_8: the game's real IDirectDrawSurface (<ddraw.h>). GetDC is slot 17
 // (+0x44), ReleaseDC slot 26 (+0x68); both __stdcall with the surface as the hidden
 // `this`, so `surf->GetDC(&hdc)` lowers to `push &hdc; push surf; mov reg,[surf];
@@ -64,8 +57,8 @@ void __stdcall RenderChatBoxFrame(i32 ctx, void* a, void* b, i32 z);
 // (1 register-materialized, stored last) where our cl folds the direct immediate
 // `mov [m_c],1`; logic + offsets exact, residual is the last store's form/order.
 RVA(0x000204e0, 0x19)
-void CChatBoxOwner::Attach(void* reg, CChatBoxTextHost* host) {
-    m_18 = (CChatBoxRegRoot*)reg;
+void CChatBoxOwner::Attach(CSpriteFactoryHolder* world, CChatBoxTextHost* host) {
+    m_18 = world;
     m_14 = host;
     m_c = 1;
 }
@@ -252,7 +245,7 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
     }
 
     void* spr = 0;
-    ((CMapStringToOb*)&self->m_18->m_10->m_10)->Lookup("GAME_CHATBOX", (CObject*&)spr);
+    self->m_18->m_10->m_10map.Lookup("GAME_CHATBOX", (CObject*&)spr);
     if (!spr) {
         return 0;
     }
@@ -303,6 +296,3 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
 SIZE_UNKNOWN(CChatBoxCtx);
 SIZE_UNKNOWN(CChatBoxDcHost);
 SIZE_UNKNOWN(CChatBoxFrame);
-SIZE_UNKNOWN(CChatBoxHash);
-SIZE_UNKNOWN(CChatBoxRegRoot);
-SIZE_UNKNOWN(CChatBoxRegistry);

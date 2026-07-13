@@ -87,9 +87,10 @@ extern "C" i32 g_curPlayer; // DAT_00644c54
 // All are matcher.md regalloc/scheduling walls; logic + offsets + call shape are exact.
 RVA(0x00102250, 0x1dcd)
 i32 CStatusBarMgr::LoadTabSprites() {
-    CSbiConfigHost* code = m_c; // the setup arg2 config host (spilled to [esp+0x10] in retail)
-    i32 bx = m_10;              // base x
-    i32 by = m_rect14.m_0;      // base y
+    CSpriteFactoryHolder* code =
+        m_c;               // the setup arg2 config host (spilled to [esp+0x10] in retail)
+    i32 bx = m_10;         // base x
+    i32 by = m_rect14.m_0; // base y
     // The item locals are typed by what each leaf actually IS. `it` covers every widget
     // that has the slot-11 setup (CSBI_ImageSet / WellGoo / WarlordHead all derive from
     // CSBI_Image); the four below do not fit that base and used to be reached by casting

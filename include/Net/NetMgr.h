@@ -84,12 +84,11 @@ CString __stdcall operator+(const CString& lhs, const char* rhs);
 // ---------------------------------------------------------------------------
 // Forward declarations (defined in the TU that dereferences them).
 // ---------------------------------------------------------------------------
-class GruntzPlayer;  // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
-class CGruntzCmdMgr; // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
-class CNetMgr;       // defined below; the command slot caches one as its +0x1c owner
-struct GruntRec;     // the lobby-sync grunt-state record (defined below CNetCmdSlot)
-struct
-    CSndSubMgr; // <Gruntz/SoundCue.h>      - the +0xc sound sub-mgr (deref'd in NetMgr.cpp/MenuSelect)
+class GruntzPlayer;          // <Gruntz/GruntzPlayer.h>  - the leaving-player slot
+class CGruntzCmdMgr;         // <Gruntz/GruntzCmdMgr.h>  - the m_4 game-mgr's +0x6c command manager
+class CNetMgr;               // defined below; the command slot caches one as its +0x1c owner
+struct GruntRec;             // the lobby-sync grunt-state record (defined below CNetCmdSlot)
+struct CSpriteFactoryHolder; // <Gruntz/GameRegistry.h> - the +0xc world holder (CState::m_c mirror)
 
 // ---------------------------------------------------------------------------
 // The game-manager singleton - only its +0x38 RegistryHelper is
@@ -1331,10 +1330,10 @@ public:
     CNetGameMgr* m_4; // +0x004
     // A CString member at +0x8 (GetName returns a copy of it by value).
     CString m_8; // +0x008
-    // Another sub-object pointer (like m_4): the sound sub-mgr the chat/menu-select
-    // handlers read for the "GAME_CHAT"/"GAME_MENUS_SELECT" cues (SoundCue.h). Also
-    // handed opaquely to CNetSess::Init(void*) and Attach((i32)m_c), where it decays.
-    CSndSubMgr* m_c; // +0x00c
+    // The world holder (CState::m_c through the CMulti overlay): the chat/menu-select
+    // handlers read its +0x28 CSndHost for the "GAME_CHAT"/"GAME_MENUS_SELECT" cues,
+    // and the session/chat attach sites hand it on (the ex-CSndSubMgr facet is gone).
+    CSpriteFactoryHolder* m_c; // +0x00c
     char m_pad10[0x14 - 0x10];
     INetReleasable* m_releaseIface; // +0x014  the secondary COM interface Destroy releases (slot 2)
     IDirectPlay4Z* m_directPlay; // +0x018  the DirectPlay session interface (IDirectPlay4-shaped)

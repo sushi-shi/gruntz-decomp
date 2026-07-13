@@ -19,7 +19,7 @@
 #include <rva.h>
 #include <Gruntz/ResMgr.h>        // canonical g_gameReg->m_world (CResMgr + draw chain)
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base
-#include <Gruntz/SbiConfig.h>     // canonical CSbiConfigHost (the configure's arg2)
+#include <Gruntz/SbiConfig.h>     // canonical CSpriteFactoryHolder (the configure's arg2)
 #include <Image/CImage.h>         // the m_30/m_34 frame handles ARE CImage (RenderFrame @0x153790)
 
 // A sampled grunt record (an element of the registry unit table at g_gameReg+0x68).
@@ -85,7 +85,7 @@ public:
     // CSBI_SideTab view: two mangled names, so the call resolved to no definition at link.
     i32 BuildStatzTabStatusBar(
         CStatzTabBuilder* parent,
-        CSbiConfigHost* host,
+        CSpriteFactoryHolder* host,
         i32 p3,
         i32 p4,
         i32 p5,

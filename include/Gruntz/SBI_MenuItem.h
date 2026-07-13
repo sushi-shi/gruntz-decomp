@@ -22,9 +22,9 @@
 #include <Gruntz/SBI_Image.h> // canonical chain base CSBI_Image : CSBI_RectOnly : CStatusBarItem
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 
-// The +0x24 config host is the shared canonical CSbiConfigHost (SbiConfig.h, pulled
+// The +0x24 config host is the shared canonical CSpriteFactoryHolder (SbiConfig.h, pulled
 // in the .cpp); only a pointer is needed here, so forward-declare it.
-struct CSbiConfigHost;
+struct CSpriteFactoryHolder;
 
 // ---------------------------------------------------------------------------
 // Engine-referent views the reconstructed CSBI_MenuItem methods drive (modeled
@@ -105,7 +105,7 @@ SIZE_UNKNOWN(CMiSelf);
 // CSBI_MenuItem : CSBI_Image : CSBI_RectOnly : CStatusBarItem. The inherited base
 // region carries: m_4 active flag, m_8 subtype tag (=2), m_c command/tab id, m_10
 // arg0, m_rect14 the rect block (x0/y0/x1/y1; .m_4/.m_8 double as the frame draw
-// origin), m_24 the config host (CSbiConfigHost*, i32 slot - cast at the deref like
+// origin), m_24 the config host (CSpriteFactoryHolder*, i32 slot - cast at the deref like
 // the sibling leaves), m_28 the counter, m_2c the owning tab host (CMiTabHost view
 // at the deref), m_30 the resolved frame handle (CImage* stored as DWORD, the
 // CSBI_Image slot). Adds the menu state tag (+0x34) and the resolved cue/config
@@ -134,7 +134,7 @@ public:
     // exactly as the base and CSBI_ImageSet have it. One function, one slot.
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
-        CSbiConfigHost* host,
+        CSpriteFactoryHolder* host,
         i32 cmd,
         i32 a4,
         SbRect rc,

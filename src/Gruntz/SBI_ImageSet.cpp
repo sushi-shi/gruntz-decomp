@@ -49,7 +49,7 @@ extern i32 g_serialCounter;
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(
     CStatusBarMgr* owner,
-    CSbiConfigHost* host,
+    CSpriteFactoryHolder* host,
     i32 cmd,
     i32 obj,
     SbRect rect,

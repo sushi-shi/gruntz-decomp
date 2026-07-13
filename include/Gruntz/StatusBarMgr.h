@@ -137,7 +137,7 @@ public:
 SIZE_UNKNOWN(CSbiRect);
 
 // The ConfigureRect host (its arg2), its lookup map + record come from the shared
-// canonical family (<Gruntz/SbiConfig.h>): CSbiConfigHost / CSbiConfigMap /
+// canonical family (<Gruntz/SbiConfig.h>): CSpriteFactoryHolder / CSbiConfigMap /
 // CSbiConfigRecord (host->m_10 carries the CMapWordToOb map at its +0x10).
 
 // A per-stat widget object (m_statObj[]): a sibling thunk drives its (tag,on)
@@ -349,7 +349,7 @@ public:
     i32 Probe2e69(); // 0x2e69 (post-build validity probe)
     i32 Probe41a1(); // 0x41a1 (post-build validity probe)
     i32 winapi_107d00_SetRect();
-    i32 LoadBattlezItemConfig(i32);
+    i32 LoadBattlezItemConfig(CSpriteFactoryHolder* world); // stores the world holder into m_c
     i32 LoadMainStatusBarSprite();
     i32 UpdateStatusBarTabHighlight(i32, i32, i32);
     i32 LoadDestructButtonSprite(i32);
@@ -405,7 +405,7 @@ public:
 
     i32 ConfigureRect(
         i32 sub,
-        CSbiConfigHost* host,
+        CSpriteFactoryHolder* host,
         i32 cmd,
         i32 obj,
         i32 r0,
@@ -475,9 +475,9 @@ public:
     // +0x0c: the config host every widget-setup call takes as arg2. Typed from the retail
     // callee: CSBI_Image::SetupImage (0xe6c80) DEREFERENCES this arg at +0x10
     // (`mov eax,[esp+8]` ... `mov ecx,[eax+0x10]`) to reach the lookup map - it is a
-    // CSbiConfigHost*, not the `i32 code` the builders used to pass it as.
-    CSbiConfigHost* m_c; // +0x0c
-    i32 m_10;            // +0x10  tab base x
+    // CSpriteFactoryHolder*, not the `i32 code` the builders used to pass it as.
+    CSpriteFactoryHolder* m_c; // +0x0c
+    i32 m_10;                  // +0x10  tab base x
     // +0x14..0x23: a 4-int block. The tab builder reads m_rect14.m_0 as the tab base y.
     SbiRect m_rect14; // +0x14
     i32 m_24;         // +0x24

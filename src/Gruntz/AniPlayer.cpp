@@ -12,7 +12,7 @@
 #include <rva.h>
 
 #include <Gruntz/GameRegistry.h> // canonical g_gameReg singleton
-#include <Gruntz/SbiConfig.h>    // CSbiConfigHost / CSbiConfigRecord (the record views)
+#include <Gruntz/SbiConfig.h>    // CSpriteFactoryHolder / CSbiConfigRecord (the record views)
 
 // The g_gameReg singleton (*0x24556c); DATA-pinned elsewhere (canonical extern).
 extern "C" CGameRegistry* g_gameReg;
@@ -36,7 +36,7 @@ extern "C" u32 g_645588;
 RVA(0x000e5ad0, 0x84)
 i32 CAniPlayer::Start(
     CStatusBarMgr* owner,
-    CSbiConfigHost* host,
+    CSpriteFactoryHolder* host,
     i32 a2,
     i32 a3,
     SbRect rc,

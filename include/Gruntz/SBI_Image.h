@@ -24,9 +24,9 @@
 #include <Gruntz/SbRect.h>        // SetupImage args 5..8 - ONE by-value geometry rect
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base
 
-// The +0x24 config host is the shared canonical CSbiConfigHost (SbiConfig.h, pulled
+// The +0x24 config host is the shared canonical CSpriteFactoryHolder (SbiConfig.h, pulled
 // in the .cpp); only a pointer is needed here, so forward-declare it.
-struct CSbiConfigHost;
+struct CSpriteFactoryHolder;
 // SetupImage arg1 is the owning status-bar manager (latched into the base m_2c slot);
 // only a pointer is needed here. `class` (not `struct`) - the mangling depends on it.
 class CStatusBarMgr;
@@ -86,7 +86,7 @@ public:
     virtual void SbiSlot5() OVERRIDE; // slot 5
     // vtable slot 11 (0xe6c80): the image setup, 11 dwords of args. The RETAIL BODY pins
     // the arg types (disasm 0xe6c80): entry `mov eax,[esp+8]` reads arg2 and later
-    // `mov ecx,[eax+0x10]` DEREFERENCES it => arg2 is the CSbiConfigHost*; arg1 is only
+    // `mov ecx,[eax+0x10]` DEREFERENCES it => arg2 is the CSpriteFactoryHolder*; arg1 is only
     // null-tested and stored (m_2c = owner), and every call site passes the building
     // manager's `this`. Args 5..8 are ONE by-value rect (the builders fill an SbRect and
     // pass it), arg9 the asset key string. This is the ONE signature: the tab builders
@@ -94,7 +94,7 @@ public:
     // made cl emit a 60 B ??_7CSBI_Image@@6B@ in statusbarmgr against retail's 48 B.
     virtual i32 SetupImage( // slot 11 (new)
         CStatusBarMgr* owner,
-        CSbiConfigHost* host,
+        CSpriteFactoryHolder* host,
         i32 a3,
         i32 a4,
         SbRect rc,

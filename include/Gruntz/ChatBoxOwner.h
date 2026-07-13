@@ -10,7 +10,7 @@
 
 #include <Mfc.h> // CString, HDC
 
-struct CChatBoxRegRoot; // registry root reached via m_18 (defined in ChatBoxOwner.cpp)
+struct CSpriteFactoryHolder; // the world holder latched at m_18 (<Gruntz/GameRegistry.h>)
 
 // The text-stamp host reached through m_14 (its +0x34 is a dirty/redraw flag the
 // configure path raises). External - opaque view. StampText (0x1cd0, __thiscall)
@@ -38,8 +38,9 @@ public:
         m_8 = 1;
     }
 
-    // Latch the source registry root + text host and raise the active flag.
-    void Attach(void* reg, CChatBoxTextHost* host);
+    // Latch the world holder (the sprite/name-registry source) + text host and
+    // raise the active flag.
+    void Attach(CSpriteFactoryHolder* world, CChatBoxTextHost* host);
     // Lower the active flag.
     void Deactivate(); // 0x00020510
     // Configure the box origin from the current viewport for the given mode and
@@ -58,14 +59,14 @@ public:
     // OnMouseUp (CPlay 0x0cdb10) click-consume probe (thiscall(x,y); reloc-masked).
     i32 HitTest43e0(i32 x, i32 y); // 0x43e0
 
-    i32 m_0;                // +0x00  box origin X (or 0/0xa0 by mode)
-    i32 m_4;                // +0x04  box origin Y (viewport-relative)
-    i32 m_8;                // +0x08  mode (1/2/3)
-    i32 m_c;                // +0x0c  active flag
-    i32 m_10;               // +0x10  enabled flag (hit-test gate)
-    CChatBoxTextHost* m_14; // +0x14  text-stamp host (IS a CFontConfig - TypeChar/GetInputText/
-                            //        ClearInput run on it; fold deferred, see FontConfig.h)
-    CChatBoxRegRoot* m_18;  // +0x18  source registry root
+    i32 m_0;                    // +0x00  box origin X (or 0/0xa0 by mode)
+    i32 m_4;                    // +0x04  box origin Y (viewport-relative)
+    i32 m_8;                    // +0x08  mode (1/2/3)
+    i32 m_c;                    // +0x0c  active flag
+    i32 m_10;                   // +0x10  enabled flag (hit-test gate)
+    CChatBoxTextHost* m_14;     // +0x14  text-stamp host (IS a CFontConfig - TypeChar/GetInputText/
+                                //        ClearInput run on it; fold deferred, see FontConfig.h)
+    CSpriteFactoryHolder* m_18; // +0x18  the world holder (name registry source)
 };
 SIZE_UNKNOWN(CChatBoxOwner);
 

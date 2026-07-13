@@ -53,7 +53,7 @@ extern "C" u32 g_killCueClock;
 // CMiTabHost/CMiSelf moved to <Gruntz/SBI_MenuItem.h>.
 
 // The config host + its lookup map + record come from the shared canonical family
-// (<Gruntz/SbiConfig.h>): CSbiConfigHost / CSbiConfigMap / CSbiConfigRecord.
+// (<Gruntz/SbiConfig.h>): CSpriteFactoryHolder / CSbiConfigMap / CSbiConfigRecord.
 
 // Per-serialize round counter the CString archive helpers bump (DAT_00629ad0).
 DATA(0x00229ad0)
@@ -78,7 +78,7 @@ extern i32 g_serialCounter;
 RVA(0x000e80e0, 0x8c)
 i32 CSBI_MenuItem::SetupImage(
     CStatusBarMgr* owner,
-    CSbiConfigHost* host,
+    CSpriteFactoryHolder* host,
     i32 cmd,
     i32 a4,
     SbRect rc,
@@ -94,7 +94,7 @@ i32 CSBI_MenuItem::SetupImage(
         return 0;
     }
     m_2c = (i32)owner; // owning tab host (CMiTabHost view at the deref sites)
-    m_24 = (i32)host;  // config host (CSbiConfigHost, cast at the deref sites)
+    m_24 = (i32)host;  // config host (CSpriteFactoryHolder, cast at the deref sites)
     m_10 = a4;
     m_8 = 2;
     m_30 = 0;
@@ -132,7 +132,7 @@ i32 CSBI_MenuItem::ResolveFrame(i32 key, i32 a) {
     }
     // m_10map IS a CMapStringToOb (Lookup 0x1b8008, mfc_class-proven) -> CObject& out-param.
     CObject* rec_v = 0;
-    CSbiConfigHost* host = (CSbiConfigHost*)m_24;
+    CSpriteFactoryHolder* host = (CSpriteFactoryHolder*)m_24;
     host->m_10->m_10map.Lookup((const char*)key, rec_v);
     CSbiConfigRecord* rec = (CSbiConfigRecord*)rec_v;
     m_38 = rec;

@@ -2791,7 +2791,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     i32 bx = m_10;
     i32 by = m_rect14.m_0;
-    CSbiConfigHost* code = m_c;
+    CSpriteFactoryHolder* code = m_c;
     CStatusBarItem* it;
 
     // ---- rect-only sub-widget A (id 0x259) ----
@@ -2853,7 +2853,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
                  (i32)this,
-                 (CSbiConfigHost*)code,
+                 (CSpriteFactoryHolder*)code,
                  1,
                  0,
                  SbiRect(bx + 0x42, by + 0x82, bx + 0x62, by + 0x99),
@@ -2874,7 +2874,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
                  (i32)this,
-                 (CSbiConfigHost*)code,
+                 (CSpriteFactoryHolder*)code,
                  2,
                  0,
                  SbiRect(bx + 0x04, by + 0x82, bx + 0x24, by + 0x99),
@@ -2895,7 +2895,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
                  (i32)this,
-                 (CSbiConfigHost*)code,
+                 (CSpriteFactoryHolder*)code,
                  3,
                  0,
                  SbiRect(bx + 0x24, by + 0x82, bx + 0x44, by + 0x99),
@@ -2916,7 +2916,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
                  (i32)this,
-                 (CSbiConfigHost*)code,
+                 (CSpriteFactoryHolder*)code,
                  4,
                  0,
                  SbiRect(bx + 0x60, by + 0x82, bx + 0x80, by + 0x99),
@@ -2951,7 +2951,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (!((CSBI_MenuItem*)it)
              ->SetupImage(
                  (i32)this,
-                 (CSbiConfigHost*)code,
+                 (CSpriteFactoryHolder*)code,
                  5,
                  0,
                  SbiRect(bx + 0x7e, by + 0x82, bx + 0x9e, by + 0x99),
@@ -3159,8 +3159,8 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
 // (ff 15 -> __imp_SetRect vs PTR_SetRect) + g_gameReg DIR32 naming. Not source-
 // steerable under /O2; deferred to the final sweep.
 RVA(0x000fdc00, 0x5c2)
-i32 CStatusBarMgr::LoadBattlezItemConfig(i32 arg) {
-    m_c = (CSbiConfigHost*)arg;
+i32 CStatusBarMgr::LoadBattlezItemConfig(CSpriteFactoryHolder* world) {
+    m_c = world;
     m_4 = 0;
     m_position = 0;
     i32 vx = g_gameReg->m_modeW;

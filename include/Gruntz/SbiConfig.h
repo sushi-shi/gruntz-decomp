@@ -10,14 +10,16 @@
 //     Lookup @ 0x1b8008 (reloc-masked, no body), reached as (host->m_10 + 0x10);
 //   * the looked-up record is the SAME shape everywhere: a frame/value table at
 //     +0x14 indexed by frame, and a [+0x64 .. +0x68] valid-frame range;
-//   * the config host also exposes a draw-surface pool at +0x1c (CSBI_WellGoo's
-//     dtor returns its owned surface there via RemoveItemA @ 0x142160).
+//   * the draw-surface pool (RemoveItemA @ 0x142160) is CGooGameMgr's +0x1c, not
+//     the host's (SBI_WellGoo reaches it through (CGooGameMgr*)m_24).
 //
 // Only offsets + code bytes are load-bearing; field names are placeholders.
 #ifndef GRUNTZ_SBICONFIG_H
 #define GRUNTZ_SBICONFIG_H
 
 #include <rva.h>
+#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder - the real config-host class
+#include <Gruntz/ResMgr.h>       // CImageRegistry (host->m_10) + its m_10map
 
 struct CSbiConfigRecord; // the value the lookup yields (defined below)
 
@@ -37,37 +39,30 @@ struct CSbiConfigRecord; // the value the lookup yields (defined below)
 // The four map classes are byte-identical (no COMDAT fold - MSVC5 has no /OPT:ICF), which
 // is why every FID row there is AMBIG.  Ask the binary:
 //     python -m gruntz.analysis.mfc_class 0x1b8008
-SIZE_UNKNOWN(CSbiConfigReg);
-struct CSbiConfigReg {
-    char m_pad0[0x10];
-    CMapStringToOb m_10map; // +0x10  embedded name->record map (Lookup 0x1b8008)
-};
+// FOLDED (2026-07-13, Fable lane): the "config host" IS the world holder
+// CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) - the tree itself already cast
+// `(host)g_gameReg->m_world` at two StatusBarTabBuilders sites, and its +0x10
+// "registry" is the holder's CImageRegistry (<Gruntz/ResMgr.h>), whose embedded
+// name map is the SAME m_10map at the SAME +0x10. The former CSbiConfigHost /
+// CSbiConfigReg shells are gone; consumers include GameRegistry.h + ResMgr.h.
 
 // The keyed config record: m_14 = frame/value table (i32*, indexed by frame),
 // [m_64, m_68] = the valid-frame range (m_64 doubles as the default frame).
+// (Layout-identical to <Image/ImageSet.h> CImageSet - m_frames @+0x14,
+// m_minIndex/m_maxIndex @+0x64/+0x68 - the looked-up record IS a sprite set;
+// fold candidate for the imageset owner lane.)
 SIZE_UNKNOWN(CSbiConfigRecord);
 struct CSbiConfigRecord {
     char m_pad0[0x14];
-    i32* m_14; // +0x14  frame/value table
+    i32* m_14; // +0x14  frame/value table (== CImageSet::m_frames)
     char m_pad18[0x64 - 0x18];
-    i32 m_64; // +0x64  range lo / default frame
-    i32 m_68; // +0x68  range hi
+    i32 m_64; // +0x64  range lo / default frame (== CImageSet::m_minIndex)
+    i32 m_68; // +0x68  range hi               (== CImageSet::m_maxIndex)
 };
 
-// The draw-surface pool held at config-host+0x1c: RemoveItemA (0x142160,
+// The draw-surface pool (CGooGameMgr::m_1c owner): RemoveItemA (0x142160,
 // __thiscall) frees one held surface. Reloc-masked (no body).
 SIZE_UNKNOWN(CSbiSurfacePool);
 struct CSbiSurfacePool {};
-
-// The config host handed to the vslot-11 item setup (arg2). +0x10 -> the registry
-// object whose embedded CMapWordToOb map lives at ITS +0x10 (reach the map as
-// `host->m_10->m_10map`, which lowers to `[host+0x10]+0x10`); +0x1c -> the pool.
-SIZE_UNKNOWN(CSbiConfigHost);
-struct CSbiConfigHost {
-    char m_pad0[0x10];
-    CSbiConfigReg* m_10; // +0x10  registry object (map embedded at +0x10)
-    char m_pad14[0x1c - 0x14];
-    CSbiSurfacePool* m_1c; // +0x1c  draw-surface pool
-};
 
 #endif // GRUNTZ_SBICONFIG_H

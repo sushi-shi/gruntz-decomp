@@ -57,12 +57,12 @@ class CWorldSoundSet;        // CGruntzMgr::m_inputState (+0x54; Retune @0xbd60)
 class CNetMgr;          // CMulti::m_netGate/+0x524 pointee (net-stat/session wrappers)
 struct CNetGameMgr;     // the network facet of CState::m_4 (m_wnd/m_6c/m_channels/m_38)
 struct CNetPlayerEntry; // the local-player descriptor stored at +0x5bc
-struct CSndSubMgr;      // the chat/menu sound sub-mgr at CState::m_c (cue lookups)
-struct CNetStatPacket;  // the 0x10-byte stat packet the Send* family ships
-struct CNetCtrlMsg;     // control-message arg (HandleControlMsg)
-struct CNetVersionMsg;  // version-check message arg (HandleVersionCheck)
-struct CNetChannel;     // per-channel record (BroadcastOneChannel)
-struct CNetSession;     // the +0x520 command-session facet (Session() accessor)
+// (the ex-CSndSubMgr facet of CState::m_c is gone - the holder's m_28 IS the CSndHost)
+struct CNetStatPacket; // the 0x10-byte stat packet the Send* family ships
+struct CNetCtrlMsg;    // control-message arg (HandleControlMsg)
+struct CNetVersionMsg; // version-check message arg (HandleVersionCheck)
+struct CNetChannel;    // per-channel record (BroadcastOneChannel)
+struct CNetSession;    // the +0x520 command-session facet (Session() accessor)
 
 // DISSOLVED (RELOC-Multi): the ex-`CMultiMgr` view IS the CGruntzMgr game-manager
 // singleton (*0x64556c) - the CState owner at CMulti+0x04 (CState::m_4, already typed

@@ -105,8 +105,16 @@ public:
     // same ?SetupImage@CSBI_MenuItem@@ symbol (out-of-line body: InitItem @0xe80e0).
     // slot 11 - args 5..8 are ONE by-value SbRect, the same 11 dwords the sibling
     // builder view (SbiTabzDialogViews.h) already spelled correctly.
-    virtual i32
-    SetupImage(i32 a1, CSbiConfigHost* host, i32 a3, i32 a4, SbiRect rc, i32 key, i32 a10, i32 a11);
+    virtual i32 SetupImage(
+        i32 a1,
+        CSpriteFactoryHolder* host,
+        i32 a3,
+        i32 a4,
+        SbiRect rc,
+        i32 key,
+        i32 a10,
+        i32 a11
+    );
     // The tab-widget drivers CSBI_RectOnly reaches through m_tabSprite* (non-virtual
     // reloc-masked call rel32; bodies + rvas bound in SBI_MenuItem.cpp). These fold
     // the former fake CSbiSprite view onto the real class: Release->Blit, Show->

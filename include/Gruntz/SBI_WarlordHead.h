@@ -90,11 +90,11 @@ public:
     virtual void SbiSlot5() OVERRIDE;     // slot 5 (the Render below)
     // slot 11 (0xeb6b0), the CSBI_Image::SetupImage override. This USED to be split in
     // two: a body-less `virtual` declared purely to pin the slot, plus the real body as a
-    // separate NON-virtual overload distinguished only by `i32 host` vs `CSbiConfigHost*`.
+    // separate NON-virtual overload distinguished only by `i32 host` vs `CSpriteFactoryHolder*`.
     // One function, one slot - the real body IS the override.
     virtual i32 SetupImage(
         CStatusBarMgr* owner,
-        CSbiConfigHost* host,
+        CSpriteFactoryHolder* host,
         i32 a3,
         i32 a4,
         SbRect rc,

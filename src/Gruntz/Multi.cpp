@@ -772,7 +772,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     TF(0x2e0) = (i32)iface;
     // CChatBoxOwner::Attach is void (QAEX): no failure signal, so no failure branch (the
     // reconstruction's `== 0` guard was an artifact - the real shape just attaches + proceeds).
-    iface->Attach((void*)((CSndSubMgr*)m_c), (CChatBoxTextHost*)NetGameMgr()->m_5c);
+    iface->Attach(m_c, (CChatBoxTextHost*)NetGameMgr()->m_5c);
     ((CChatBoxOwner*)TF(0x2e0))->m_10 = 0;
     ((CChatBoxOwner*)TF(0x2e0))->Configure(1);
 
@@ -783,7 +783,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     sess->m_barFrameGate = 0x1e0;
     sess->m_544 = 1;
     TF(0x2dc) = (i32)sess;
-    if (sess->LoadBattlezItemConfig((i32)((CSndSubMgr*)m_c)) == 0) {
+    if (sess->LoadBattlezItemConfig(m_c) == 0) {
         CStatusBarMgr* so = (CStatusBarMgr*)TF(0x2dc);
         if (so == 0) {
             return 0;
@@ -2652,7 +2652,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
                 return 1;
             }
             ((CFontConfig*)NetGameMgr()->m_5c)->AddItem(msg->m_c, 0x30, player->m_008);
-            CSndHost* host = ((CSndSubMgr*)m_c)->m_28;
+            CSndHost* host = m_c->m_28;
             if (host->m_emitGate != 0) {
                 break;
             }
@@ -3076,7 +3076,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
                 AnnounceVersion((i32)node);
             }
         }
-        CSndHost* host = ((CSndSubMgr*)m_c)->m_28;
+        CSndHost* host = m_c->m_28;
         if (host->m_emitGate == 0) {
             void* out = 0;
             host->m_10.Lookup("GAME_MENUS_SELECT", out);

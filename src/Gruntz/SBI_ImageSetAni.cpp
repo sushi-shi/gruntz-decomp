@@ -35,7 +35,7 @@ extern "C" CGameRegistry* g_gameReg;
 RVA(0x000e7980, 0x109)
 i32 CSBI_ImageSetAni::Init(
     CStatusBarMgr* owner,
-    CSbiConfigHost* host,
+    CSpriteFactoryHolder* host,
     i32 a2,
     i32 a3,
     SbRect rc,

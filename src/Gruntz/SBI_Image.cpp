@@ -26,7 +26,7 @@
 // load-bearing; every call through them is reloc-masked).
 
 // The config host + its lookup map + record now come from the shared canonical
-// family (<Gruntz/SbiConfig.h>): CSbiConfigHost / CSbiConfigMap / CSbiConfigRecord.
+// family (<Gruntz/SbiConfig.h>): CSpriteFactoryHolder / CSbiConfigMap / CSbiConfigRecord.
 
 // CSBI_Image (+ its CSBI_RectOnly intermediate) now come from the canonical
 // frameless header <Gruntz/SBI_Image.h>. SetupImage is defined below.
@@ -45,7 +45,7 @@
 RVA(0x000e6c80, 0xc3)
 i32 CSBI_Image::SetupImage(
     CStatusBarMgr* owner,
-    CSbiConfigHost* host,
+    CSpriteFactoryHolder* host,
     i32 a3,
     i32 a4,
     SbRect rc,
