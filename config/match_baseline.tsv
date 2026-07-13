@@ -601,14 +601,14 @@ blowfishcopy	?Copy_16f6e0@@YGXPAVistream@@PAVostream@@@Z	84.8696	84.8696	1	3153f
 boomerang	??0CBoomerang@@QAE@PAUCGameObject@@@Z	97.3077	97.3077	1	acc5f6b75b0a	0xe0650
 boomerang	?LoadProjectileSprites@CBoomerang@@UAEHHHHHHHH@Z	69.3089	69.3089	1	22c0df6b3ae8	0xe0690
 boomerang	?SerializeMove@CBoomerang@@UAEHPAUCGruntArchive@@HHH@Z	96.7364	96.7364	1	68f40a8c0c05	0xe15d0
-bootycheatstate	?Vfunc1@CBootyState@@UAEHHHH@Z	86.2008	86.2008	1	106726e4467d	0x18830
+bootycheatstate	?Vfunc1@CBootyState@@UAEHHHH@Z	86.2008	86.2008	2	107fea7bbfec	0x18830
 bootymessages	?BuildBootyGruntIdleAnimation@CBootyState@@QAEHXZ	53.7584	53.7584	1	9f668f6124d9	0x1ce60
 bootymessages	?ShowLevelCompleteMessage@CBootyState@@QAEXXZ	98.0342	98.0342	1	0bbf5ae60d0a	0x1c9d0
 bootymessages	?ShowSecretBonusMessage@CBootyState@@QAEHXZ	93.1850	93.1850	1	7e0032d07beb	0x18f00
 bootystateactivate	??1CBootyState@@UAE@XZ	100.0000	100.0000	1	7390c8dc8b7b	0x8d440
 bootystateactivate	??1CMultiBootyState@@UAE@XZ	100.0000	100.0000	1	23ab1228bab4	0x8d510
 bootystateactivate	?BuildWarpStoneGlitterAnimation@CBootyState@@QAEHXZ	86.2255	86.2255	1	195e6ada99af	0x19540
-bootystateactivate	?CheckPerfectBonus@CMultiBootyState@@QAEHXZ	100.0000	100.0000	3	44fed01cf195	0x1c0f0
+bootystateactivate	?CheckPerfectBonus@CBootyState@@QAEHXZ	100.0000	100.0000	1	7620d6aa4aeb	0x1c0f0
 bootystateactivate	?DrawBattleStats@CBattleStatsView@@QAEXXZ	84.5575	84.5575	2	378364dbb338	0x1ed30
 bootystateactivate	?FrameSlot28@CBootyState@@UAEHH@Z	79.2955	79.2955	1	27a11c3f1583	0x18e40
 bootystateactivate	?FrameSlot28@CMultiBootyState@@UAEHH@Z	79.2955	79.2955	1	1f3972b71d6f	0x1e660
@@ -3349,9 +3349,9 @@ sbi_rectonly	?AdvanceTab@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	5	73497e139b25
 sbi_rectonly	?AnySlotActive@CSBI_RectOnly@@QAEHXZ	100.0000	100.0000	4	d617d80d72e6	0x105710
 sbi_rectonly	?ArmSlot@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	3	efc1e3efe35a	0x105560
 sbi_rectonly	?Build@CStatzTabBuilder@@QAEHXZ	82.5098	82.5098	3	bd72a728cbb9	0x105070
-sbi_rectonly	?BuildGameTabPauseButton@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	6	3eff003e88e7	0x102200
-sbi_rectonly	?BuildGameTabResumeButton@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	7	f660da177199	0x102180
-sbi_rectonly	?BuildStatusBarTabs@CSBI_RectOnly@@QAEHXZ	71.5763	71.5699	11	1bb0020a7e1a	0xffde0
+sbi_rectonly	?BuildGameTabPauseButton@CSBI_RectOnly@@QAEXXZ	100.0000	100.0000	7	e3c2344b5d74	0x102200
+sbi_rectonly	?BuildGameTabResumeButton@CSBI_RectOnly@@QAEXH@Z	100.0000	100.0000	8	63c53d8a12d1	0x102180
+sbi_rectonly	?BuildStatusBarTabs@CSBI_RectOnly@@QAEHXZ	56.6737	56.6737	12	e3ae1a36d092	0xffde0
 sbi_rectonly	?BuildTabzDialog@CTabzBuilder@@QAEHXZ	83.7185	83.7185	1	f15661bd2dd7	0x10a340
 sbi_rectonly	?ClearHlCell@CSBI_RectOnly@@QAEXHH@Z	100.0000	100.0000	3	f3646e450ada	0x1069c0
 sbi_rectonly	?ClearStat@CSBI_RectOnly@@QAEHH@Z	90.8750	90.8750	10	9e554324eaa0	0x104f90
@@ -3664,7 +3664,7 @@ statusbartabbuilders	?BuildStatzTabStatusBar@CSbTab@StatusBarTabBuilders@@QAEHPA
 statusbartabbuilders	?Gap_0e8e00@@YAHXZ	0.3804	0.3804	1	1f58f992f60f	0xe8e00
 statusbartabbuilders	?Gap_0e9a30@@YAHXZ	0.4605	0.4605	1	500512805759	0xe9a30
 statusbartabbuilders	?Refresh@CSBI_SideTab@@QAEHH@Z	100.0000	100.0000	1	2776bb4ed252	0xe9820
-statusbartabbuilders	?Render@CSBI_GruntMachine@@QAEHH@Z	92.0513	92.0513	1	3a9c6647e8ac	0xe8cb0
+statusbartabbuilders	?Render@CSBI_GruntMachine@@QAEHH@Z	87.8205	87.8205	1	3a9c6647e8ac	0xe8cb0
 statusbartabbuilders	?Render@CSBI_SideTab@@QAEHH@Z	98.1250	98.1250	1	3d4fa687e28c	0xe99c0
 statusbartabbuilders	?Reset@CSBI_GruntMachine@@QAEXXZ	100.0000	100.0000	1	d4cd06936c9a	0xe8c70
 statusbartabbuilders	?Reset@CSBI_SideTab@@QAEXXZ	100.0000	100.0000	1	bb44fbcd4bb5	0xe9800
@@ -3927,7 +3927,7 @@ triggermgr	?NearestCellDist@CTriggerMgr@@QAEHHHH@Z	100.0000	100.0000	6	a143df8e7
 triggermgr	?NotifyCell@CTriggerMgr@@QAEXHHH@Z	75.3824	75.3824	11	37289af932b7	0x79fb0
 triggermgr	?OverlayRelease@CTriggerMgr@@QAEHXZ	100.0000	100.0000	7	aa17ca3713d7	0x79b00
 triggermgr	?OverlayTick@CTriggerMgr@@QAEXXZ	100.0000	100.0000	6	12c00630f681	0x78a30
-triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	18.2909	18.2909	17	031d4b939800	0x78a50
+triggermgr	?PlaceObjectFull@CTriggerMgr@@QAEHHH@Z	18.2459	18.2459	17	031d4b939800	0x78a50
 triggermgr	?PlacePuddle@CTriggerMgr@@QAEHPAUCGameObject@@H@Z	87.8205	87.8205	1	c7f99a7495b4	0x7a240
 triggermgr	?PositionUpdate@CSnd788d0@@QAEHXZ	65.3448	65.3448	1	cf56c7eef15f	0x788d0
 triggermgr	?RebuildOverlay@CTriggerMgr@@QAEHPAXHHH@Z	100.0000	100.0000	4	d4b043a74ed3	0x7a5e0
@@ -3946,7 +3946,7 @@ triggermgr	?SpawnGrunt@CTriggerMgr@@QAEHHHHH@Z	68.5938	68.5938	8	3eebf1fad665	0x
 triggermgr	?SpawnPuddle@CTriggerMgr@@QAEHHHHHHH@Z	100.0000	100.0000	12	bfe9fb070461	0x7a180
 triggermgr	?SpawnTileFx@@YGHHHH@Z	80.9595	80.9595	7	addf42938abd	0x79ea0
 triggermgr	?StopPendingFx@CTriggerMgr@@QAEXXZ	100.0000	100.0000	10	e3103b052724	0x7be10
-triggermgr	?ToggleRegionA@CTriggerMgr@@QAEHXZ	76.5663	76.5663	16	7461e98fe2e5	0x7d450
+triggermgr	?ToggleRegionA@CTriggerMgr@@QAEHXZ	71.9277	71.9277	16	7461e98fe2e5	0x7d450
 triggermgr	?ToggleRegionB@CTriggerMgr@@QAEHXZ	87.4324	87.4324	14	ae3c43f03079	0x7d5c0
 triggermgr	?TriggerCell@CTriggerMgr@@QAEHHH@Z	84.4804	84.4804	15	a3d9c0d35241	0x7b1b0
 triggermgrgrid	?ApplySwitch@CTriggerMgr@@QAEHHH@Z	21.1671	21.1671	2	a7a24cddf40d	0x6d300
