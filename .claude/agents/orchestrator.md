@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-description: Runs the Gruntz matching campaign as a FAN-OUT pipeline — a fixed pool of reused git worktrees, always N matchers in flight, matchers reused to ~650k tokens, but every result integrated SERIALLY into main so the commit history stays a single linear line. Use to drive a sustained wave of function-matching (home stubs to their real TUs, then permute to 100%). The reconstruction doctrine (match-by-shape, STOP-EARLY, @early-stop, the permute skill at walls) lives in matcher.md.
+description: Runs the Gruntz matching campaign as a FAN-OUT pipeline — a fixed pool of reused git worktrees, always N matchers in flight, matchers reused to ~700k tokens, then retired for a fresh one, but every result integrated SERIALLY into main so the commit history stays a single linear line. Use to drive a sustained wave of function-matching (home stubs to their real TUs, then permute to 100%). The reconstruction doctrine (match-by-shape, STOP-EARLY, @early-stop, the permute skill at walls) lives in matcher.md.
 ---
 
 # orchestrator — fan out the work, serialize the history
@@ -118,6 +118,28 @@ Spawn a **matcher** agent (subagent_type `matcher`), **`run_in_background: true`
 8. Report: final per-function % + a one-line summary + the **complete
    `git diff`** of its worktree changes (so integration is a clean `git apply`).
 
+### KEEP THE SLOTS FULL — refill BEFORE you integrate
+
+**The pool must never drain.** Measured 2026-07-13: three lanes finished in a burst, and
+because the orchestrator ran the full **integrate → build → bless → push** chain (~10 min
+of build gates) for each one *before* refilling, the pool fell from 4 running to **1**.
+That is pure wasted capacity — the agents were idle while the coordinator did bookkeeping.
+
+**Correct order, every time a lane reports:**
+1. `git -C <worktree> reset --hard main && git clean -fdq`
+2. **Re-dispatch that slot IMMEDIATELY** (SendMessage the warm agent its next batch).
+3. *Then* cherry-pick / build / bless / push its result.
+
+Steps 1–2 take seconds; step 3 takes minutes. Never let step 3 block step 2.
+
+**Caveat — dispatch from the NEWEST main.** If several lanes land at once, integrate what
+you have *first*, then reset and dispatch them all from the fresh HEAD, so no agent starts
+on a stale tree. Batch the integrations, not the refills.
+
+**Keep exactly one Fable agent running at all times, always on the hardest available work**
+(RELOC_VTBLs; then the largest unidentified phantom family; then whatever is genuinely
+hardest). Do not leave the Fable slot idle just because its current category is finished.
+
 ### Deferrals and reuse
 
 - **A deferral goes back to the agent that made it.** It already holds the context;
@@ -194,11 +216,13 @@ once — main has a single `build/` and a single HEAD):
    dependency).
 7. **Refill:** pick the next target (target cross-check at the top of this doc: skip
    anything already reconstructed or `@early-stop`). **REUSE the same matcher agent** for the
-   next batch — SendMessage it the new worklist — **until it has spent ~650k tokens**
+   next batch — SendMessage it the new worklist — **until it has spent ~700k tokens**
    cumulatively (sum the `subagent_tokens` across its completion reports); a warm
-   matcher carries the idioms it just cracked. Only once it crosses ~650k do you
-   **retire it and spawn a FRESH** matcher into the slot (a new agent starts with a
-   clean budget). Either way the worktree is reused; only the agent identity rotates.
+   matcher carries the idioms it just cracked, which is why reuse beats respawn.
+   **Past ~700k, RETIRE it and spawn a FRESH matcher into the slot** — by then the agent is
+   carrying too much context to be sharp, and a new one starts clean. Either way the worktree
+   is reused; only the agent identity rotates. Hand the fresh agent the retiree's open
+   findings/deferrals in the brief so nothing is lost with the context.
 
 Repeat until the worklist is dry. **Leave the `matcher-N` worktrees in place** so
 the next run reuses them (their `build/` stays warm); `git worktree remove` only if
