@@ -50,8 +50,8 @@ void CCheckpointDlg::DoDataExchange(CDataExchange* pDX) {
 
 // ---------------------------------------------------------------------------
 RVA(0x00023570, 0x6)
-const void* CCheckpointDlg::GetMessageMap() {
-    return &g_msgmap_CCheckpointDlg;
+const AFX_MSGMAP* CCheckpointDlg::GetMessageMap() const {
+    return (const AFX_MSGMAP*)&g_msgmap_CCheckpointDlg; // msgmap global still a placeholder type
 }
 
 // CCheckpointDlg::OnToggleCheckpointPrompts (0x23590): mirror the "disable prompts"
@@ -63,7 +63,7 @@ const void* CCheckpointDlg::GetMessageMap() {
 RVA(0x00023590, 0x31)
 void CCheckpointDlg::OnToggleCheckpointPrompts() {
     CWnd* c = GetDlgItem(0x53a);
-    i32 checked = SendMessageA(c->m_hWnd, 0xf0, 0, 0);
+    i32 checked = ::SendMessageA(c->m_hWnd, 0xf0, 0, 0);
     g_gameReg->m_isCheckpointPrompts = checked == 0;
 }
 

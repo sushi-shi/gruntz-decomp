@@ -147,16 +147,16 @@ i32 CMultiStartDlg::SetupWorldCombo() {
     while (item != 0) {
         CString name(item->m_name);
         name.MakeUpper();
-        SendMessageA(combo->m_hWnd, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name);
+        ::SendMessageA(combo->m_hWnd, CB_ADDSTRING, 0, (LPARAM)(LPCTSTR)name);
         item = (MpSymItem*)st->NextSym3(item);
     }
     CWnd* combo2 = GetDlgItem(0x4ff);
-    CWnd* child = CWnd::FromHandle(GetWindow(combo2->m_hWnd, GW_CHILD));
+    CWnd* child = CWnd::FromHandle(::GetWindow(combo2->m_hWnd, GW_CHILD));
     if (child == 0) {
         return 0;
     }
-    SendMessageA(child->m_hWnd, EM_SETREADONLY, 1, 0);
-    SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
+    ::SendMessageA(child->m_hWnd, EM_SETREADONLY, 1, 0);
+    ::SendMessageA(combo->m_hWnd, CB_SETCURSEL, 0, 0);
     HWND__* h = child->m_hWnd;
     g_64bdc0 = GetWindowLongA(h, GWL_WNDPROC);
     SetWindowLongA(h, GWL_WNDPROC, (i32)WndProc_c1a10);
@@ -467,7 +467,7 @@ RVA(0x000c28c0, 0x27)
 void __stdcall SetComboSelE(i32 index, i32 sel) {
     CWnd* c = GetCtrlE(index);
     if (c != 0) {
-        SendMessageA(c->m_hWnd, 0x14e, sel, 0);
+        ::SendMessageA(c->m_hWnd, 0x14e, sel, 0);
     }
 }
 
@@ -479,7 +479,7 @@ i32 __stdcall GetComboSelE(i32 index) {
     if (c == 0) {
         return -1;
     }
-    return SendMessageA(c->m_hWnd, 0x147, 0, 0);
+    return ::SendMessageA(c->m_hWnd, 0x147, 0, 0);
 }
 
 // GetComboSelC (0xc2940): the GetCtrlC combo's cur-sel + 1 (CB_GETCURSEL 0x147), or
@@ -491,7 +491,7 @@ i32 CMultiStartDlg::GetComboSelC(i32 id) {
     if (c == 0) {
         return -1;
     }
-    return SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    return ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
 }
 
 SIZE_UNKNOWN(CMultiSlot);

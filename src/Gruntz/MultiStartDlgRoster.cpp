@@ -125,11 +125,11 @@ i32 __stdcall GetSelItemData(HWND hDlg, i32 id, i32* outLo, i32* outHi) {
     if (!list) {
         return 0;
     }
-    i32 sel = SendMessageA(list, 0x147, 0, 0);
+    i32 sel = ::SendMessageA(list, 0x147, 0, 0);
     if (sel == -1) {
         return 0;
     }
-    i32 data = SendMessageA(list, 0x150, sel, 0);
+    i32 data = ::SendMessageA(list, 0x150, sel, 0);
     if (data == -1) {
         return 0;
     }
@@ -144,7 +144,7 @@ RVA(0x000c2980, 0x28)
 void CMultiStartDlg::SetListCurSel(i32 id, i32 wParam) {
     CWnd* it = GetCtrlC(id);
     if (it) {
-        SendMessageA(it->m_hWnd, 0x14e, wParam - 1, 0);
+        ::SendMessageA(it->m_hWnd, 0x14e, wParam - 1, 0);
     }
 }
 
@@ -246,7 +246,7 @@ SIZE_UNKNOWN(AreaTimerDlg);
 RVA(0x000c2cb0, 0x1f)
 i32 AreaTimerDlg::OnInitDialog() {
     CDialog::OnInitDialog(); // 0x1bac5e ?OnInitDialog@CDialog@@UAEHXZ (base call, exempt)
-    SetTimer(m_hWnd, 1, 0x32, 0);
+    ::SetTimer(m_hWnd, 1, 0x32, 0);
     return 1;
 }
 
@@ -265,11 +265,11 @@ void CMultiStartDlg::AppendChatLine(char* str) {
     if (!edit || !str || !str[0]) {
         return;
     }
-    i32 len = GetWindowTextLengthA(edit);
+    i32 len = ::GetWindowTextLengthA(edit);
     if (len == 0) {
-        SendMessageA(edit, 0xb1, len, -1);
+        ::SendMessageA(edit, 0xb1, len, -1);
     } else {
-        SendMessageA(edit, 0xb1, len, len);
+        ::SendMessageA(edit, 0xb1, len, len);
     }
     char buf[0x80];
     buf[0] = 0;
@@ -277,8 +277,8 @@ void CMultiStartDlg::AppendChatLine(char* str) {
         strcat(buf, "\r\n");
     }
     strcat(buf, str);
-    SendMessageA(edit, 0xc2, 0, (LPARAM)buf);
-    SendMessageA(edit, 0xb6, 0, 0x270f);
+    ::SendMessageA(edit, 0xc2, 0, (LPARAM)buf);
+    ::SendMessageA(edit, 0xb6, 0, 0x270f);
 }
 
 // ---------------------------------------------------------------------------
@@ -739,7 +739,7 @@ void CMultiStartDlg::Sub_c3e30() {
     if (g_64bd5c->m_isHost != 0) {
         CWnd* item = GetDlgItem(0x4ff);
         if (item != 0) {
-            i32 r = SendMessageA(item->m_hWnd, 0x147, 0, 0);
+            i32 r = ::SendMessageA(item->m_hWnd, 0x147, 0, 0);
             if (r != -1) {
                 CString name;
                 ((CComboBox*)item)->GetLBText(r, name); // CComboBox::GetLBText @0x1ce7db
@@ -1030,7 +1030,7 @@ void CMultiStartDlg::Watchdog() {
         g_watchBlinkB = 0;
     }
     if (g_64bd5c->m_sessionTerminated != 0) {
-        KillTimer(m_hWnd, 1);
+        ::KillTimer(m_hWnd, 1);
         g_64bd5c->ReportVersionMsg("terminated", 0);
         g_watchBusy = 0;
         return;
@@ -1043,16 +1043,16 @@ void CMultiStartDlg::Watchdog() {
     }
     char* msg;
     if (g_64bd5c->m_538 != 0) {
-        KillTimer(m_hWnd, 1);
+        ::KillTimer(m_hWnd, 1);
         msg = "removed";
     } else if (g_64bd5c->m_5ac != 0) {
-        KillTimer(m_hWnd, 1);
+        ::KillTimer(m_hWnd, 1);
         msg = "closed";
     } else if (g_64bd5c->m_56c != 0) {
-        KillTimer(m_hWnd, 1);
+        ::KillTimer(m_hWnd, 1);
         msg = "full";
     } else if (g_64bd5c->m_570 != 0) {
-        KillTimer(m_hWnd, 1);
+        ::KillTimer(m_hWnd, 1);
         msg = "version";
     } else {
         if (g_playerLeftFlag != 0) {
@@ -1129,7 +1129,8 @@ void CMultiStartDlg::VerifyCustomLevel() {
     } else {
         g_64bd5c->m_530 = 0;
         EnableWindow(0);
-        ((CGruntzMgr*)(void*)g_gameReg)->EnterModalUI("Not all players have the (same) custom level.");
+        ((CGruntzMgr*)(void*)g_gameReg)
+            ->EnterModalUI("Not all players have the (same) custom level.");
         EnableWindow(1);
     }
 }
@@ -1140,28 +1141,28 @@ void CMultiStartDlg::VerifyCustomLevel() {
 RVA(0x000c4ee0, 0x33)
 void CMultiStartDlg::OnSlotSelect0() {
     HWND h = GetCtrlC(0)->m_hWnd;
-    g_gameReg->m_focusSlots[0].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_focusSlots[0].m_228 = ::SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4f30, 0x33)
 void CMultiStartDlg::OnSlotSelect1() {
     HWND h = GetCtrlC(1)->m_hWnd;
-    g_gameReg->m_focusSlots[1].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_focusSlots[1].m_228 = ::SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4f80, 0x33)
 void CMultiStartDlg::OnSlotSelect2() {
     HWND h = GetCtrlC(2)->m_hWnd;
-    g_gameReg->m_focusSlots[2].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_focusSlots[2].m_228 = ::SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
 RVA(0x000c4fd0, 0x33)
 void CMultiStartDlg::OnSlotSelect3() {
     HWND h = GetCtrlC(3)->m_hWnd;
-    g_gameReg->m_focusSlots[3].m_228 = SendMessageA(h, 0x147, 0, 0) + 1;
+    g_gameReg->m_focusSlots[3].m_228 = ::SendMessageA(h, 0x147, 0, 0) + 1;
     Drive();
 }
 
@@ -1208,7 +1209,7 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
     if (!it) {
         return;
     }
-    i32 sel = SendMessageA(it->m_hWnd, 0xf0, 0, 0);
+    i32 sel = ::SendMessageA(it->m_hWnd, 0xf0, 0, 0);
     CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + idx * 0x238 + 0x150);
     if (!slot) {
         return;

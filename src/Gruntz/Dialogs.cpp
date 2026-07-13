@@ -195,7 +195,7 @@ void CBattlezDlg::ShowCustomDlg() {
         if (dlg.m_customName.GetLength() != 0) {
             dlg.m_customName.MakeUpper();
             CWnd* item = GetDlgItem(0x4ff);
-            CWnd* child = CWnd::FromHandle(GetWindow(item->m_hWnd, GW_CHILD));
+            CWnd* child = CWnd::FromHandle(::GetWindow(item->m_hWnd, GW_CHILD));
             if (child != 0) {
                 child->SetWindowTextA(dlg.m_customName);
                 m_customNameFlag = 1;
@@ -266,8 +266,8 @@ void CBattlezDlgColors::DoDataExchange(CDataExchange* pDX) {
 
 // ---------------------------------------------------------------------------
 RVA(0x00017ac0, 0x6)
-const void* CBattlezDlgColors::GetMessageMap() {
-    return &g_msgmap_CBattlezDlgColors;
+const AFX_MSGMAP* CBattlezDlgColors::GetMessageMap() const {
+    return (const AFX_MSGMAP*)&g_msgmap_CBattlezDlgColors; // msgmap global still a placeholder type
 }
 
 // CBattlezDlgColors::OnMeasureItem (0x17ae0): the owner-draw colour-swatch list
@@ -387,25 +387,25 @@ CWnd* CBattlezDlg::GetCtrlD(i32 index) {
 RVA(0x00015cc0, 0x23)
 i32 CBattlezDlg::SetCurSelA(i32 id, i32 sel) {
     CWnd* c = GetCtrlA(id);
-    return SendMessageA(c->m_hWnd, 0x14e, sel, 0);
+    return ::SendMessageA(c->m_hWnd, 0x14e, sel, 0);
 }
 
 RVA(0x00015d00, 0x20)
 i32 CBattlezDlg::Query015d00(i32 slot) {
     CWnd* c = GetCtrlA(slot);
-    return SendMessageA(c->m_hWnd, 0x147, 0, 0);
+    return ::SendMessageA(c->m_hWnd, 0x147, 0, 0);
 }
 
 RVA(0x00015d30, 0x21)
 i32 CBattlezDlg::Query015d30(i32 id) {
     CWnd* c = GetCtrlC(id);
-    return SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    return ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
 }
 
 RVA(0x00015d70, 0x24)
 i32 CBattlezDlg::SetCurSelC(i32 id, i32 sel) {
     CWnd* c = GetCtrlC(id);
-    return SendMessageA(c->m_hWnd, 0x14e, sel - 1, 0);
+    return ::SendMessageA(c->m_hWnd, 0x14e, sel - 1, 0);
 }
 
 // SetSlotValue (0x17460) - store val into slot[index].field@0x158; returns TRUE.
@@ -423,28 +423,28 @@ i32 CBattlezDlg::SetSlotValue(i32 index, i32 val) {
 RVA(0x00017560, 0x28)
 i32 CBattlezDlg::SaveOptionCombo0() {
     CWnd* c = GetCtrlC(0);
-    i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    i32 v = ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
     g_gameReg->m_options[0].m_comboSel = v;
     return v;
 }
 RVA(0x000175a0, 0x28)
 i32 CBattlezDlg::SaveOptionCombo1() {
     CWnd* c = GetCtrlC(1);
-    i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    i32 v = ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
     g_gameReg->m_options[1].m_comboSel = v;
     return v;
 }
 RVA(0x000175e0, 0x28)
 i32 CBattlezDlg::SaveOptionCombo2() {
     CWnd* c = GetCtrlC(2);
-    i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    i32 v = ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
     g_gameReg->m_options[2].m_comboSel = v;
     return v;
 }
 RVA(0x00017620, 0x28)
 i32 CBattlezDlg::SaveOptionCombo3() {
     CWnd* c = GetCtrlC(3);
-    i32 v = SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
+    i32 v = ::SendMessageA(c->m_hWnd, 0x147, 0, 0) + 1;
     g_gameReg->m_options[3].m_comboSel = v;
     return v;
 }
@@ -535,7 +535,7 @@ void CBattlezDlg::ApplyColorSlot0() {
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(0, dlg.m_pickedColor)) {
             Sub0173e0();
-            InvalidateRect(GetDlgItem(0x501)->m_hWnd, 0, 1);
+            ::InvalidateRect(GetDlgItem(0x501)->m_hWnd, 0, 1);
         }
     }
 }
@@ -548,7 +548,7 @@ void CBattlezDlg::ApplyColorSlot1() {
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(1, dlg.m_pickedColor)) {
             Sub0173e0();
-            InvalidateRect(GetDlgItem(0x503)->m_hWnd, 0, 1);
+            ::InvalidateRect(GetDlgItem(0x503)->m_hWnd, 0, 1);
         }
     }
 }
@@ -561,7 +561,7 @@ void CBattlezDlg::ApplyColorSlot2() {
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(2, dlg.m_pickedColor)) {
             Sub0173e0();
-            InvalidateRect(GetDlgItem(0x505)->m_hWnd, 0, 1);
+            ::InvalidateRect(GetDlgItem(0x505)->m_hWnd, 0, 1);
         }
     }
 }
@@ -574,7 +574,7 @@ void CBattlezDlg::ApplyColorSlot3() {
     if (dlg.DoModal() == 1) {
         if (SetSlotValue(3, dlg.m_pickedColor)) {
             Sub0173e0();
-            InvalidateRect(GetDlgItem(0x507)->m_hWnd, 0, 1);
+            ::InvalidateRect(GetDlgItem(0x507)->m_hWnd, 0, 1);
         }
     }
 }
@@ -603,7 +603,7 @@ void CBattlezDlg::CopyComboSelToChild() {
     CString s;
     ((CComboBox*)combo)->GetLBText(sel, s); // CComboBox::GetLBText @0x1ce7db
     if (s.GetLength() != 0) {
-        CWnd* child = CWnd::FromHandle(GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
+        CWnd* child = CWnd::FromHandle(::GetWindow(GetDlgItem(0x4ff)->m_hWnd, 5));
         if (child != 0) {
             child->SetWindowTextA(s);
             m_customNameFlag = 0;

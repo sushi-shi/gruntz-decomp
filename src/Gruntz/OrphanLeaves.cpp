@@ -39,7 +39,7 @@ struct DlgHost_183f0 : public CDialog {
 RVA(0x000183f0, 0x2e)
 void DlgHost_183f0::PickIfSelected() {
     HWND h = GetDlgItem(0x516)->m_hWnd;
-    if (SendMessageA(h, 0x188, 0, 0) != -1) {
+    if (::SendMessageA(h, 0x188, 0, 0) != -1) {
         CDialog::OnOK(); // 0x1bacc3 ?OnOK@CDialog@@MAEXXZ (qualified base call, reloc-masked)
     }
 }

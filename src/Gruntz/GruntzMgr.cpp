@@ -197,7 +197,7 @@ void CloseSettingsStore(); // FUN_004f8e20
 
 // The modal dialog OnCheckpointReached pops: a destructible stack local built by
 // FUN_004234a0(this, 0) and torn down by FUN_005ba51d, handed to ExitModalUI as a
-// CModalDialog. Its ctor/dtor reloc-mask; only the size + destructibility (the /GX
+// CModalScreen. Its ctor/dtor reloc-mask; only the size + destructibility (the /GX
 // frame) are load-bearing.
 struct CCheckpointDlg {
     CCheckpointDlg(CWnd* a); // 0x234a0 (real ctor ??0CCheckpointDlg@@QAE@PAVCWnd@@@Z; this, null)
@@ -222,7 +222,7 @@ struct CCheckpointDlg {
 // transitively (C2011 redefinition), and <Gruntz/Dialogs.h> (which has its own
 // reconstructed `class CDialog : public CWnd`) would drag in its canonical CBattlezDlg,
 // whose OUT-OF-LINE dtor breaks SaveGameAs (see below). Dissolving the TU-local CDialog/
-// CModalDialog views is the prerequisite; leaving the shell until then.
+// CModalScreen views is the prerequisite; leaving the shell until then.
 class CSaveDlgBase {
 public:
     virtual ~CSaveDlgBase(); // 0x1ba51d  CDialog::~CDialog (virtual, reloc-masked)
@@ -380,9 +380,21 @@ struct CPlayStateView {
 // the CRT __strncpy at 0x120340 (`push n; push src; push dst; call; add esp,0xc`).
 
 // The modal dialog/screen handed to ExitModalUI. Run() is virtual slot 48
+//
+// @identity-TODO / NAME IS NOT FREE: this was called CModalScreen only because MFC OWNS the
+// obvious name - <afxwin.h> line 2671 literally does `#define CModalDialog CDialog` (the MFC
+// 1.x legacy alias). Any TU that sees afxwin.h and declares a class CModalDialog gets it
+// macro-rewritten into `class CDialog` and collides with MFC's own - which is the ENTIRE
+// cause of the C2011 that previously looked like a structural wall against pulling afxwin.h
+// into this TU. It was our misnamed class, not a real conflict.
+// Strong (but NOT yet proven) hypothesis: this placeholder IS MFC's CDialog. Every argument
+// ExitModalUI is given is a CDialog-derived game dialog (CMultiStartDlg in Multi.cpp,
+// CBattlezDlg/CCheckpointDlg here), MFC itself equates the two names, and its Run()@slot 48
+// lines up with CDialog::DoModal. Confirm the slot, then delete this view, type ExitModalUI
+// as taking a CDialog*, and the (CModalScreen*) casts at its call sites fall out on their own.
 // (+0xc0); the leading slots are anchors so the call lands at [vtbl+0xc0] as a
 // thiscall (MSVC 5.0 forbids the __thiscall keyword, so model it as a vtable).
-class CModalDialog {
+class CModalScreen {
 public:
     virtual void s00();
     virtual void s01();
@@ -4053,7 +4065,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 // post-switch hook, and finalizes the freshly-activated object (+0x2dc sub +
 // self). The dialog's return value is the function's result.
 RVA(0x000903f0, 0x10c)
-i32 CGruntzMgr::ExitModalUI(CModalDialog* dlg, i32 notify) {
+i32 CGruntzMgr::ExitModalUI(CModalScreen* dlg, i32 notify) {
     if (m_timer) {
         m_timer->Stop();
     }
@@ -4553,7 +4565,7 @@ void CGruntzMgr::OnCheckpointReached() {
         return;
     }
     CCheckpointDlg dlg(0);
-    if (ExitModalUI((CModalDialog*)&dlg, 0) == 1) {
+    if (ExitModalUI((CModalScreen*)&dlg, 0) == 1) {
         g_pSendMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80cf, 0);
     }
 }
@@ -4735,7 +4747,7 @@ i32 CGruntzMgr::SaveGameAs() {
         return 0;
     }
     ChannelSlots_InitAll();
-    if (ExitModalUI((CModalDialog*)&dlg, 1) != 1) {
+    if (ExitModalUI((CModalScreen*)&dlg, 1) != 1) {
         return 0;
     }
     if (dlg.m_68 != 0) {
@@ -5205,7 +5217,7 @@ SIZE_UNKNOWN(CActiveObj);
 SIZE_UNKNOWN(CActiveSub2dc);
 SIZE_UNKNOWN(CColorLookup);
 SIZE_UNKNOWN(CColorRow);
-SIZE_UNKNOWN(CModalDialog);
+SIZE_UNKNOWN(CModalScreen);
 SIZE_UNKNOWN(CMonoConfigHolder);
 SIZE_UNKNOWN(CMonoConfigMap);
 SIZE_UNKNOWN(CMonoConfigRec);

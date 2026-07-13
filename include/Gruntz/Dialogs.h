@@ -19,7 +19,18 @@
 #ifndef SRC_GRUNTZ_DIALOGS_H
 #define SRC_GRUNTZ_DIALOGS_H
 
-#include <Wap32/Object.h> // CObject (recognized 5-slot MFC base)
+#include <Wap32/Object.h> // CObject (the single real MFC CObject)
+// The REAL MFC CCmdTarget / CWnd / CComboBox / CDialog / CDataExchange.
+// (Wap32/Object.h already pulled <Mfc.h> -> afx.h, so afx comes FIRST - no windows.h-first
+// C1189 here.) The afxwin*.inl bodies are skipped for the clang LABEL step only: they carry
+// an implicit-int `CMenu::operator==` that clang rejects but wine cl accepts. Without this
+// the label pass emits no IR and every function in the TU silently vanishes from
+// symbol_names.csv (measured: 8 units and 211 functions dropped out of the report).
+// See docs/patterns/afxwin-clang-label-step-skip-inl.md.
+#ifdef __clang__
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h>
 #include <rva.h>
 #include <Ints.h>
 
@@ -42,99 +53,10 @@ struct tagDRAWITEMSTRUCT;    // windows.h owner-draw item    (CWnd::OnDrawItem a
 // MFC vtable hierarchy on CObject (the recognized 5-slot MFC CObject:
 // GetRuntimeClass@0, ~@1, Serialize@2, AssertValid@3, Dump@4). Declared-only
 // virtuals anchor the slot order (NAFXCW bodies reloc-mask).
-SIZE_UNKNOWN(CCmdTarget);
-class CCmdTarget : public CObject {
-public:
-    virtual ~CCmdTarget() OVERRIDE;      // slot 1
-    virtual void CtVsl5();               // slot 5
-    virtual void CtVsl6();               // slot 6
-    virtual void CtVsl7();               // slot 7
-    virtual void CtVsl8();               // slot 8
-    virtual void CtVsl9();               // slot 9
-    virtual void CtVsl10();              // slot 10
-    virtual void CtVsl11();              // slot 11
-    virtual const void* GetMessageMap(); // slot 12
-    virtual void CtVsl13();              // slot 13
-    virtual void CtVsl14();              // slot 14
-    virtual void CtVsl15();              // slot 15
-    virtual void CtVsl16();              // slot 16
-    virtual void CtVsl17();              // slot 17
-    virtual void CtVsl18();              // slot 18
-    virtual void CtVsl19();              // slot 19
-    virtual void CtVsl20();              // slot 20
-    virtual void CtVsl21();              // slot 21
-    // NAFXCW non-virtual public method (0x1beb10): end the app wait cursor. Reloc-masked.
-    void EndWaitCursor();
-};
-
-SIZE_UNKNOWN(CWnd);
-VTBL(CWnd, 0x001eb5c4);
-class CWnd : public CCmdTarget {
-public:
-    virtual ~CWnd() OVERRIDE;                     // slot 1
-    virtual void CtVsl6() OVERRIDE;               // slot 6
-    virtual const void* GetMessageMap() OVERRIDE; // slot 12
-    virtual void WndVsl22();                      // slot 22
-    virtual void WndVsl23();                      // slot 23
-    virtual i32 DestroyWindow();                  // slot 24 (0x1bbb7c, MFC CWnd::DestroyWindow, U-virtual)
-    virtual void WndVsl25();                      // slot 25
-    virtual void WndVsl26();                      // slot 26
-    virtual void WndVsl27();                      // slot 27
-    virtual void WndVsl28();                      // slot 28
-    virtual void WndVsl29();                      // slot 29
-    virtual void WndVsl30();                      // slot 30
-    virtual void WndVsl31();                      // slot 31
-    virtual void WndVsl32();                      // slot 32
-    virtual void WndVsl33();                      // slot 33
-    virtual void WndVsl34();                      // slot 34
-    virtual void WndVsl35();                      // slot 35
-    virtual void WndVsl36();                      // slot 36
-    virtual void WndVsl37();                      // slot 37
-    virtual void WndVsl38();                      // slot 38
-    virtual void WndVsl39();                      // slot 39
-    virtual void WndVsl40();                      // slot 40
-    virtual void WndVsl41();                      // slot 41
-    virtual void WndVsl42();                      // slot 42
-    virtual void WndVsl43();                      // slot 43
-    virtual void WndVsl44();                      // slot 44
-    virtual void WndVsl45();                      // slot 45
-    virtual void WndVsl46();                      // slot 46
-    virtual void WndVsl47();                      // slot 47
-    void SetWindowTextA(const char* lpszString);
-    i32 EnableWindow(i32 bEnable); // 0x1be6a7 ?EnableWindow@CWnd (returns BOOL)
-    i32 IsWindowEnabled();         // 0x1be68c (NAFXCW ::IsWindowEnabled(m_hWnd); reloc-masked)
-    void GetWindowTextA(CString& rString) const; // 0x1bbd01 ?GetWindowTextA@CWnd@@QBEX... (const)
-    // GetDlgItem @0x1be27d (NAFXCW ::GetDlgItem(m_hWnd,nID) wrapped as CWnd*): a CWnd
-    // method, NOT CDialog's - the return CWnd* mangles as PAV1@ (back-ref to CWnd).
-    CWnd* GetDlgItem(i32 nID) const;
-    // GetSafeHwnd (inline, folds into callers): (this != 0) ? m_hWnd : 0. Same
-    // null-this idiom as CMultiStartDlg::GetSafe1c; keeps retail's test/jne/xor shape.
-    HWND__* GetSafeHwnd() {
-        return this == 0 ? 0 : m_hWnd;
-    }
-    static CWnd* __stdcall FromHandle(HWND__* hWnd); // 0x1bb23a
-protected:
-    long Default(); // 0x1bb18f ?Default@CWnd (NAFXCW default message processing; protected)
-    // NAFXCW default owner-draw handlers (protected afx_msg, non-virtual): the swatch
-    // dialogs chain them by name (real CWnd::On* -> library_labels EXEMPT), not via a
-    // .cpp-local shim view.
-    void OnMeasureItem(i32 nIDCtl, tagMEASUREITEMSTRUCT* lpmis); // 0x1bbf18
-    void OnDrawItem(i32 nIDCtl, tagDRAWITEMSTRUCT* lpdis);       // 0x1bbde7
-public:
-    char m_pad04[0x1c - 4]; // +0x04 (vptr @+0x00)
-    HWND__* m_hWnd;         // +0x1c  wrapped window handle
-};
-
 // CComboBox - the MFC combo-box control wrapper. Only GetLBText is reached (the
 // world/name combos downcast their GetDlgItem(CWnd*) to CComboBox* and read a row's
 // text). NAFXCW body reloc-masks; the const-qualified GetLBText mangles to the exact
 // library symbol ?GetLBText@CComboBox@@QBEXHAAVCString@@@Z (0x1ce7db, EXEMPT).
-SIZE_UNKNOWN(CComboBox);
-class CComboBox : public CWnd {
-public:
-    void GetLBText(i32 nIndex, CString& rString) const; // 0x1ce7db
-};
-
 // CString - the MFC string. Only its default ctor is touched (the embedded
 // string members the dialog ctors construct in place).
 // m_pchData = *_afxEmptyString.
@@ -150,30 +72,15 @@ public:
 // virtual decl gives it a vptr at +0x00 and makes the derived vptr-store fall
 // out of the ctor). It is padded to 0x5c bytes so the subclass members land at
 // the offsets the disasm pins (+0x5c upward).
-SIZE_UNKNOWN(CDialog);
-VTBL(CDialog, 0x001eb174);
-class CDialog : public CWnd {
-public:
-    CDialog(u32 nIDTemplate, CWnd* pParent);
-    virtual ~CDialog() OVERRIDE;                  // slot 1
-    virtual void CtVsl5() OVERRIDE;               // slot 5
-    virtual const void* GetMessageMap() OVERRIDE; // slot 12
-    virtual void WndVsl38() OVERRIDE;             // slot 38
-    virtual void WndVsl45() OVERRIDE;             // slot 45
-    virtual void WndVsl47() OVERRIDE;             // slot 47
-    virtual void DlgVsl48();
-    virtual i32 OnInitDialog(); // 0x1bac5e slot 49 (returns BOOL)
-    virtual void DlgVsl50();
-
-protected:
-    virtual void
-    OnOK(); // 0x1bacc3 slot 51 (CDialog::OnOK - protected virtual, ?OnOK@CDialog@@MAEXXZ)
-public:
-    virtual void DlgVsl52();
-    virtual void DlgVsl53();
-    i32 DoModal();             // 0x1ba9d2
-    char m_pad20[0x5c - 0x20]; // +0x20  pad to 0x5c (subclass members land at +0x5c)
-};
+// The MFC window/dialog chain (CCmdTarget / CWnd / CComboBox / CDialog) is the REAL
+// one from <afxwin.h> now. It used to be hand-rolled here with ~40 placeholder virtuals
+// (CtVsl5..21, WndVsl22..47, DlgVsl48..53) whose only job was to anchor MFC's vtable slot
+// order. Every one of those mangled to ?CtVslN@CCmdTarget@@UAEXXZ etc - PHANTOMS that no
+// obj and no .LIB defines, i.e. unresolved externals at link. The real classes carry the
+// real slots and their bodies live in NAFXCW.LIB, so they simply resolve.
+// This assert pins the one load-bearing fact the old pad encoded: the derived dialogs'
+// members start at +0x5c, so CDialog must be 0x5c.
+SIZE(CDialog, 0x5c);
 
 // ---------------------------------------------------------------------------
 // CBattlezDlg
@@ -191,13 +98,7 @@ struct CBattlezSlot {
     char pad174[0x238 - 0x174];
 };
 
-// CDataExchange - the MFC DDX context passed to DoDataExchange. Only its first
-// field is read: m_bSaveAndValidate (0 = load control from member, nonzero = save
-// member from control). Real MFC type; NAFXCW bodies never matched here.
-SIZE_UNKNOWN(CDataExchange);
-struct CDataExchange {
-    i32 m_bSaveAndValidate; // +0x00
-};
+// CDataExchange is the REAL MFC one (<afxwin.h>) now; the local 1-field stand-in is gone.
 
 // The connection-latency slot list CMultiStartDlg::BuildSlotList allocates: the
 // canonical CLatencyList (<Net/LatencyList.h>); only a pointer is needed here.
@@ -208,11 +109,11 @@ VTBL(CBattlezDlg, 0x001e8bac); // vtable_names -> code (RTTI game class)
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent);
-    virtual ~CBattlezDlg() OVERRIDE;              // 0x14c90 (destroy CString m_6c, chain ~CDialog)
-    virtual const void* GetMessageMap() OVERRIDE; // slot 12
-    virtual void WndVsl35() OVERRIDE;             // slot 35
-    virtual i32 OnInitDialog() OVERRIDE;          // slot 49  OnInitDialog (0x160d0)
-    virtual void OnOK() OVERRIDE;                 // slot 51  OnOK (0x174a0)
+    virtual ~CBattlezDlg() OVERRIDE; // 0x14c90 (destroy CString m_6c, chain ~CDialog)
+    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
+    virtual i32 OnInitDialog() OVERRIDE;                      // slot 49  OnInitDialog (0x160d0)
+    virtual void OnOK() OVERRIDE;                             // slot 51  OnOK (0x174a0)
 
     i32 m_slots;          // +0x5c  (= a0; the CBattlezSlot* slot-array base)
     char m_pad60[8];      // +0x60
@@ -322,8 +223,8 @@ class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
     virtual ~CBattlezDlgCustom() OVERRIDE; // 0x17140 (destroy CString m_customName, chain ~CDialog)
-    virtual const void* GetMessageMap() OVERRIDE; // slot 12
-    virtual void WndVsl35() OVERRIDE;             // slot 35
+    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
 
     CString m_customName; // +0x5c  (default CString)
 };
@@ -341,15 +242,14 @@ public:
     // MFC GetMessageMap override: returns &CBattlezDlgColors::messageMap (modeled
     // non-virtual so it does not perturb the compiler-emitted vtable/ctor stamp;
     // only its 6 own bytes `mov eax,OFFSET msgmap; ret` are matched).
-    virtual const void* GetMessageMap() OVERRIDE; // slot 12
-    virtual void WndVsl35() OVERRIDE;             // slot 35
+    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
     // WM_MEASUREITEM handler (0x17ae0): fixes the owner-draw swatch item size.
     void OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis);
     // DDX (0x179b0): save reads the 0x515 colour-list selection's item-data into
     // m_pickedColor (clamped to 0x10); load populates the list with the 17 colours
     // not already taken by an occupied player slot. Modeled non-virtual (like
     // GetMessageMap/OnMeasureItem) so it does not perturb the compiler-emitted vtable.
-    void DoDataExchange(CDataExchange* pDX);
 
     i32 m_slots;       // +0x5c  (= a0; the CBattlezSlot* slot-array base, from parent)
     i32 m_slotIndex;   // +0x60  (= a1; the slot being colored)
@@ -370,11 +270,11 @@ public:
     CMultiStartDlg(i32 a0, CWnd* pParent);
     virtual ~CMultiStartDlg()
         OVERRIDE; // 0x0b8960 (destroy CObList m_74, CString m_70, chain ~CDialog)
-    virtual const void* GetMessageMap() OVERRIDE; // slot 12
-    virtual i32 DestroyWindow() OVERRIDE;         // slot 24 (own override @0x00218a, origin CWnd)
-    virtual void WndVsl35() OVERRIDE;             // slot 35
-    virtual i32 OnInitDialog() OVERRIDE;          // slot 49  OnInitDialog
-    virtual void OnOK() OVERRIDE;                 // slot 51  OnOK
+    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
+    virtual i32 DestroyWindow() OVERRIDE; // slot 24 (own override @0x00218a, origin CWnd)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
+    virtual i32 OnInitDialog() OVERRIDE;                      // slot 49  OnInitDialog
+    virtual void OnOK() OVERRIDE;                             // slot 51  OnOK
 
     // Engine-label backlog stub (non-virtual placeholder; vtable-neutral).
     void InitPlayerSlots();
@@ -523,13 +423,12 @@ public:
     CCheckpointDlg(CWnd* pParent);
     virtual ~CCheckpointDlg() OVERRIDE; // slot 1
     // MFC GetMessageMap override (see CBattlezDlgColors): returns the static map.
-    virtual const void* GetMessageMap() OVERRIDE; // slot 12
-    virtual void WndVsl35() OVERRIDE;             // slot 35
+    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
     // DDX (0x23520): on load, cache this dialog's HWND into NetLobby::g_curDlg and
     // clear the "disable prompts" checkbox (control 0x53a, BM_SETCHECK 0). Modeled
     // non-virtual (like CBattlezDlgColors::DoDataExchange) so it does not perturb
     // the compiler-emitted vtable.
-    void DoDataExchange(CDataExchange* pDX);
     // Checkbox handler (0x23590): mirror control 0x53a into m_isCheckpointPrompts.
     void OnToggleCheckpointPrompts();
 };
@@ -539,9 +438,9 @@ public:
 SIZE_UNKNOWN(CMultiHelpDlg);
 class CMultiHelpDlg : public CDialog {
 public:
-    virtual ~CMultiHelpDlg() OVERRIDE;            // slot 1
-    virtual const void* GetMessageMap() OVERRIDE; // slot 12
-    virtual void WndVsl35() OVERRIDE;             // slot 35
+    virtual ~CMultiHelpDlg() OVERRIDE;                        // slot 1
+    virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
+    virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
 };
 VTBL(CMultiHelpDlg, 0x001ea474);
 

@@ -2096,7 +2096,7 @@ void CMulti::ApplyCmdDelayDefaults() {
 RVA(0x000b86c0, 0x206)
 i32 CNetMgrLite::ShowMultiStartDlg() {
     CMultiStartDlg dlg((i32)m_4, 0);
-    i32 r = m_4->ExitModalUI((CModalDialog*)&dlg, 0);
+    i32 r = m_4->ExitModalUI((CModalScreen*)&dlg, 0);
     g_dlgResultSink = 0;
     if (r != 1) {
         if (m_528 != 0) {
@@ -2187,7 +2187,7 @@ void FillPlayerList(HWND hList, Session* sess) {
     if (!sess) {
         return;
     }
-    SendMessageA(hList, LB_RESETCONTENT, 0, 0);
+    ::SendMessageA(hList, LB_RESETCONTENT, 0, 0);
     PlayerNode* node = sess->m_head;
     sess->m_pos = node;
     PlayerRecord* player;
@@ -2204,9 +2204,9 @@ void FillPlayerList(HWND hList, Session* sess) {
         } else {
             str = player->m_profile;
         }
-        i32 idx = (i32)SendMessageA(hList, LB_ADDSTRING, 0, (LPARAM)str);
+        i32 idx = (i32)::SendMessageA(hList, LB_ADDSTRING, 0, (LPARAM)str);
         if (idx != -1) {
-            SendMessageA(hList, LB_SETITEMDATA, idx, (LPARAM)player);
+            ::SendMessageA(hList, LB_SETITEMDATA, idx, (LPARAM)player);
         }
         PlayerNode* pos = sess->m_pos;
         if (pos) {
@@ -3457,7 +3457,7 @@ void CMulti::OnMultiPause() {
 
     if (r == DISPATCH_RESYNC) {
         HWND hwnd = NetGameMgr()->m_wnd->m_hwnd;
-        PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
+        ::PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
     }
 }
 
@@ -3501,14 +3501,14 @@ void CMulti::OnOutOfSync() {
     switch (r) {
         case DISPATCH_RESYNC: {
             HWND hwnd = NetGameMgr()->m_wnd->m_hwnd;
-            PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
+            ::PostMessageA(hwnd, WM_COMMAND, 0x80d7, ResyncLParam());
             break;
         }
         case DISPATCH_RESET:
             break;
         default: {
             HWND hwnd = NetGameMgr()->m_wnd->m_hwnd;
-            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
+            ::PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
             break;
         }
     }
@@ -3690,11 +3690,11 @@ namespace NetLobby {
         if (!edit || !str || !str[0]) {
             return;
         }
-        i32 len = GetWindowTextLengthA(edit);
+        i32 len = ::GetWindowTextLengthA(edit);
         if (len == 0) {
-            SendMessageA(edit, 0xb1, len, -1);
+            ::SendMessageA(edit, 0xb1, len, -1);
         } else {
-            SendMessageA(edit, 0xb1, len, len);
+            ::SendMessageA(edit, 0xb1, len, len);
         }
         char buf[0x80];
         buf[0] = 0;
@@ -3702,8 +3702,8 @@ namespace NetLobby {
             strcat(buf, "\r\n");
         }
         strcat(buf, str);
-        SendMessageA(edit, 0xc2, 0, (LPARAM)buf);
-        SendMessageA(edit, 0xb6, 0, 0x270f);
+        ::SendMessageA(edit, 0xc2, 0, (LPARAM)buf);
+        ::SendMessageA(edit, 0xb6, 0, 0x270f);
     }
 } // namespace NetLobby
 
@@ -4249,7 +4249,7 @@ void CMulti::OnDropPlayer() {
         case DISPATCH_ABORT: {
             Session()->ResetCmdBuffers();
             HWND hwnd = NetGameMgr()->m_wnd->m_hwnd;
-            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
+            ::PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
             break;
         }
         case DISPATCH_PLAYERLEFT:
@@ -4787,7 +4787,7 @@ void CMulti::HandleVersionCheck(CNetVersionMsg* msg) {
                 0
             );
             HWND hwnd = NetGameMgr()->m_wnd->m_hwnd;
-            PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
+            ::PostMessageA(hwnd, WM_COMMAND, 0x8023, 0);
         }
     }
     if (mismatch) {
