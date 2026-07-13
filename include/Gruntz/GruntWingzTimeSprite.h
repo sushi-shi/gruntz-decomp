@@ -32,10 +32,15 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 
 // NOTE: modeled against Grunt.h's true-0x30 CUserLogic (this header includes Grunt.h
-// for CGrunt); it is NOT part of the canonical-world CTileLogic reparent (that world's
-// UserLogic.h cannot coexist with Grunt.h in one TU). Stays `: CUserLogic` until the
-// stage-5 CGrunt/canonical ODR merge. Adds no members + tail, so 0x30-vs-0x40 is a
-// no-op for its GetTypeTag + link-teardown dtor.
+// for CGrunt); it is NOT part of the canonical-world CTileLogic reparent. Adds no members +
+// tail, so 0x30-vs-0x40 is a no-op for its GetTypeTag + link-teardown dtor.
+//
+// STALE CLAIM REMOVED (2026-07-13): the parenthetical used to read "(that world's
+// UserLogic.h cannot coexist with Grunt.h in one TU)". False - Grunt.h #includes
+// <Gruntz/UserLogic.h> itself, and a TU with UserLogic.h + this header + the other leaf
+// headers compiles clean under the real MSVC 5.0 (that is how the AnimWorkerSpriteLeaves.h
+// size-views were dissolved). Sizeof here is 0x64, matching the retail operator-new
+// immediate exactly (compile-time asserted).
 class CGruntWingzTimeSprite : public CGruntHealthSprite {
 public:
     CGruntWingzTimeSprite(CGameObject* obj); // 0x0007fcc0 (body in GruntWingzTimeSprite.cpp)

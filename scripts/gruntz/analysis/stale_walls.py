@@ -310,8 +310,16 @@ SIZE_PREMISE = re.compile(r"SIZE_UNKNOWN|size (?:is )?(?:not|un)known|unknown si
 # A note that ALREADY records a wall as dead/corrected is not a live claim. Without this the
 # tool re-flags its own fix notes forever ("STALE-WALL NOTE, corrected: ... the wall is DEAD"),
 # which is the fastest way to teach people to ignore it.
+#
+# A killed wall MUST be written down (otherwise the next reader re-derives it from scratch),
+# and writing it down necessarily repeats the dead premise's words - so those notes look
+# exactly like live claims to a keyword scanner. Any of the markers below, in the same comment
+# block, means "this premise is already refuted": prefer the canonical
+#     STALE CLAIM REMOVED (<date>): <what was claimed> ... <why it is false>
 RESOLVED_RE = re.compile(
-    r"is DEAD|was false|STALE-WALL NOTE|now folded|is folded|Do not resurrect|no longer holds",
+    r"STALE CLAIM REMOVED|STALE-WALL NOTE|CLAIM REMOVED|FALSIFIED|is DEAD|is FALSE|was false|"
+    r"is imaginary|no longer exists|now folded|is folded|are dissolved|Do not resurrect|"
+    r"do not re-inherit|no longer holds|not a wall",
     re.I,
 )
 SLOT_PREMISE = re.compile(r"(vtable|vtbl|slot)[^.\n]{0,40}(member|field|size)", re.I)
@@ -410,7 +418,18 @@ def audit(img, opnew):
             # including it cannot raise C2011.
             if RESOLVED_RE.search(blk):
                 pass  # the note already records the wall as dead/corrected - not a live claim
-            elif re.search(r"C2011|coexist|would clash|would collide|walled out", blk, re.I):
+            # The trigger must be a NEGATED coexistence claim. "coexist" on its own is not one:
+            # LogicRecord.h says "The two coexist as a REQUIRED dual-view", which ASSERTS
+            # coexistence (a vtable-emission constraint, not a C2011) - a bare keyword match
+            # flagged it as a dead wall, which is precisely the kind of false alarm that gets
+            # the whole tool ignored.
+            elif re.search(
+                r"C2011|would clash|would collide|walled out|"
+                r"(?:cannot|can't|can not|never|not)\s+(?:\w+\s+){0,3}coexist|"
+                r"coexist\s+(?:\w+\s+){0,2}(?:only|never)",
+                blk,
+                re.I,
+            ):
                 for a, b in HDR_TOK.findall(blk):
                     h = os.path.basename(a or b)
                     hdr_classes = defs_by_file.get(h)

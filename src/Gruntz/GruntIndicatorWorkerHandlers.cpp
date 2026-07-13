@@ -1,15 +1,15 @@
 // GruntIndicatorWorkerHandlers.cpp - the anim-worker message-handler cluster for the
 // grunt-HUD indicator sprites (selected-highlight / health / toy / stamina / toy-time /
 // wingz-time / powerup). One contiguous retail /Gy object (0x7db20..0x7e2a0), split out
-// of AnimWorkerHandlers.cpp (matcher-1) - it needs the sprite-leaf size-views
-// (AnimWorkerSpriteLeaves.h).
+// of AnimWorkerHandlers.cpp.
 //
-// @identity-TODO the reason this file was SPLIT OFF ("the canonical class headers pull the
-// Grunt.h world that cannot coexist with the trigger/point leaf headers the sibling TU
-// uses") is FALSE - falsified 2026-07-13: Grunt.h and UserLogic.h define no class in common,
-// and a TU including UserLogic.h + GruntStaminaSprite.h + GruntWingzTimeSprite.h compiles
-// clean under the real MSVC 5.0. See the note atop <Gruntz/AnimWorkerSpriteLeaves.h>. The
-// split (and the size-views) can be dissolved; the wall is not real.
+// It now uses the REAL leaf classes. The size-views it used to need
+// (AnimWorkerSpriteLeaves.h) are deleted, and the wall that justified them - "the canonical
+// class headers pull the Grunt.h world, which cannot coexist with the canonical UserLogic.h
+// this pump TU uses" - was FALSE. Grunt.h and UserLogic.h define no class in common, the
+// canonical leaf headers compile together with UserLogic.h under the real MSVC 5.0, and each
+// leaf computes exactly the retail operator-new immediate (compile-time size assertions).
+// The remaining reason this TU is separate is only the /Gy object boundary, not any wall.
 //
 // Each handler is a __cdecl FREE function byte-identical to the trigger/point handlers
 // in AnimWorkerHandlers.cpp bar the CUserLogic leaf it `new`s on worker-state 0 (the

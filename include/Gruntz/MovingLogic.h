@@ -20,9 +20,13 @@
 // class's own remaining methods.
 //
 // NOTE (dual-world): the CGrunt world (<Gruntz/Grunt.h>) models CMovingLogic against
-// its OWN CUserBase/CUserLogic (CGruntHud* m_10), so it cannot include this canonical
-// view - the two never coexist in a TU. The CUserLogic 0x30 base is now UNIFIED (this
-// world's CUserLogic is the true 0x30; CTileLogic is the fat tile-logic intermediate);
+// its OWN CUserBase/CUserLogic (CGruntHud* m_10).
+//
+// STALE CLAIM REMOVED (2026-07-13): this used to add "so it cannot include this canonical
+// view - the two never coexist in a TU". False - Grunt.h #includes BOTH <Gruntz/UserLogic.h>
+// AND this header, so they already coexist in every TU that includes Grunt.h; CUserLogic has
+// exactly one definition in the tree (SIZE 0x30) and the "fat 0x40" view it warned about is
+// gone. The CUserLogic 0x30 base is UNIFIED (CTileLogic is the fat tile-logic intermediate);
 // only the remaining CGrunt ODR merge stays deferred (blocked on the inline-vs-out-of-
 // line ctor model + the i32/void vtable-signature split - see the NOTE in UserLogic.h).
 #ifndef GRUNTZ_CMOVINGLOGIC_H

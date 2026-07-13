@@ -3,10 +3,17 @@
 //
 // Extracted verbatim from <Bute/ButeMgr.h> so the OTHER TU that reproduces the
 // value teardown - src/Bute/ButeNode.cpp, home of the store's __cdecl per-value
-// teardown callback at 0x174df0 - can model the value WITHOUT pulling ButeMgr.h
-// (whose <Bute/ButeStore.h> CButeStore would clash with butenode's own store
-// class). ButeMgr.h includes this header, so its many includers see the identical
-// shapes; there is exactly ONE CButeValue in the tree.
+// teardown callback at 0x174df0 - models the value WITHOUT pulling ButeMgr.h.
+// ButeMgr.h includes this header, so its many includers see the identical shapes;
+// there is exactly ONE CButeValue in the tree.
+//
+// STALE CLAIM REMOVED (2026-07-13): the reason given used to be "(whose
+// <Bute/ButeStore.h> CButeStore would clash with butenode's own store class)". That clash is
+// imaginary - ButeNode.cpp ALREADY includes <Bute/ButeStore.h> directly, and its "own store
+// class" (CButeStoreCopy174d) DERIVES from that same canonical CButeStore. Verified: adding
+// #include <Bute/ButeMgr.h> to ButeNode.cpp compiles clean under the real MSVC 5.0. Keeping
+// this header separate is fine (it is a shared canonical header, not a view) - but it is a
+// convenience, NOT a wall, so do not cite a C2011 to justify anything else.
 #ifndef SRC_BUTE_BUTEVALUE_H
 #define SRC_BUTE_BUTEVALUE_H
 

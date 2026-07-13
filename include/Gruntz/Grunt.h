@@ -1076,17 +1076,24 @@ public:
 // placeholders except the ones CGrunt defines in Grunt.cpp (slot 1 SerializeMove
 // 0x53b80, slot 6 Activate 0x5caa0, slot 11 UserLogicVfunc9 0x48360, slot 16
 // MovingSlot16 0x5f310); the rest are declared-only (impls external/reloc-
-// masked). This is a CGrunt-local reconstruction of CUserBase/CUserLogic modeled
-// at CUserLogic's TRUE 0x30 boundary: the base ctor 0x58cd0 inits only through
-// +0x2c, and CGrunt's own byte-exact members start at +0x30, so the base is 0x30
-// (NOT the fat 0x40 the tile-logic family's <Gruntz/UserLogic.h> view uses, which
-// absorbs those leaves' shared 0x30..0x3c tail - a byte-neutral boundary label;
-// see the size NOTE in UserLogic.h + docs/vtable-conversion-log.md). The +0x18
-// EngStr link is the SHARED CUserBaseLink (<Gruntz/UserBaseLink.h>), so this world and
-// the tile-logic world tear it down via the identical ~EngStr (0x16d2a0). The two
-// CUserLogic class views still never coexist in one TU; the CGrunt-HUD sprites
-// that read CGrunt fields (CGruntStaminaSprite/CGruntWingzTimeSprite) include only
-// this header.
+// masked). CUserLogic's base boundary is its TRUE 0x30: the base ctor 0x58cd0 inits only
+// through +0x2c, and CGrunt's own byte-exact members start at +0x30.
+//
+// THE "TWO-WORLD ODR SPLIT" IS DEAD (2026-07-13) - do not re-inherit it. This note used to
+// end: "The two CUserLogic class views still never coexist in one TU". There are no longer
+// TWO views to keep apart, and they demonstrably DO coexist:
+//   * CUserLogic is defined in exactly ONE place in the tree - <Gruntz/UserLogic.h>, at
+//     SIZE(CUserLogic, 0x30). The "fat 0x40" view the note warned about no longer exists.
+//   * This very header ALREADY #includes <Gruntz/UserLogic.h> (see the include block above),
+//     so the "two worlds" are in the same TU in every file that includes Grunt.h.
+//   * Grunt.h and UserLogic.h define no class in common, so no C2011 is even possible, and a
+//     TU including UserLogic.h + the CGrunt-HUD sprite headers compiles clean under the real
+//     MSVC 5.0.
+// The split cost real structure: it was the stated reason for the AnimWorkerSpriteLeaves.h
+// size-views and the GruntIndicatorWorkerHandlers.cpp TU split (both now dissolved).
+//
+// The +0x18 EngStr link is the SHARED CUserBaseLink (<Gruntz/UserBaseLink.h>), torn down via
+// the identical ~EngStr (0x16d2a0).
 // size 0x18
 
 // size 0x30

@@ -19,8 +19,11 @@
 // The zErrHandling / CButeNodeEntry / zPTree / CButeNode family shapes.
 #include <Bute/PTreeNode.h>
 // CButeValue + ButeType - the typed value record the per-value teardown frees. The one
-// canonical shape, shared with <Bute/ButeMgr.h> (which is NOT pulled in here: its
-// <Bute/ButeStore.h> CButeStore would clash with this TU's own store class below).
+// canonical shape, shared with <Bute/ButeMgr.h> (not pulled in here - it is simply not
+// needed). STALE CLAIM REMOVED (2026-07-13): the old reason ("its <Bute/ButeStore.h>
+// CButeStore would clash with this TU's own store class below") is imaginary - ButeStore.h
+// is included RIGHT BELOW, and the local CButeStoreCopy174d DERIVES from that same canonical
+// CButeStore. Adding #include <Bute/ButeMgr.h> here compiles clean under the real MSVC 5.0.
 #include <Bute/ButeValue.h>
 #include <Bute/ButeStore.h> // the canonical CButeStore (real bases; INLINE dtor)
 #include <Gruntz/String.h>  // CString - the kButeString payload the teardown destructs
