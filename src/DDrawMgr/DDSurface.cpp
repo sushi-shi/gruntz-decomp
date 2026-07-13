@@ -717,37 +717,20 @@ void CDDSurface::Clear(i32 white) {
 // Flip pushes ONE arg here, slot 0x48), so it is modeled as a minimal own-vtable view -
 // distinct from CDDSurface (whose Flip is 0x13e850). Placeholder identity, RVA-adjacent
 // to CDDSurface::Clear. Re-homed from src/Stub/BoundaryUpper.cpp.
-struct IDDS_ee30 { // real polymorphic; Flip is slot 18 (+0x48)
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual u32 __stdcall Flip(i32); // slot 18 (+0x48)
-};
-SIZE_UNKNOWN(IDDS_ee30);
-struct B_13ee30 {
-    char _0[8];
-    IDDS_ee30* m_8; // 0x8
-    void WaitFlip();
-};
-SIZE_UNKNOWN(B_13ee30);
+// 0x13ee30 - CDDSurface::WaitFlip: spin until the held surface's pending flip retires.
+// The IDDS_ee30 (18 filler slots) + B_13ee30 views that stood here are GONE - they are
+// the REAL <ddraw.h> IDirectDrawSurface and THIS class:
+//   * "Flip at slot 18 (+0x48)" IS IDirectDrawSurface::GetFlipStatus - slot 18 of the
+//     real DX surface vtable (QI/AddRef/Release/AddAttachedSurface/AddOverlayDirtyRect/
+//     Blt/BltBatch/BltFast/DeleteAttachedSurface/EnumAttachedSurfaces/EnumOverlayZOrders/
+//     Flip/GetAttachedSurface/GetBltStatus/GetCaps/GetClipper/GetColorKey/GetDC/
+//     GetFlipStatus). Its argument 2 is DDGFS_ISFLIPDONE and the compared 0x8876021c is
+//     DDERR_WASSTILLDRAWING - the spin is textbook "wait for the flip".
+//   * B_13ee30's m_8 @+0x08 IS CDDSurface::m_8, the same held IDirectDrawSurface every
+//     other method in this TU already dispatches on.
 RVA(0x0013ee30, 0x29)
-void B_13ee30::WaitFlip() {
-    while (m_8->Flip(2) == 0x8876021c) {
+void CDDSurface::WaitFlip() {
+    while (m_8->GetFlipStatus(DDGFS_ISFLIPDONE) == DDERR_WASSTILLDRAWING) {
     }
 }
 

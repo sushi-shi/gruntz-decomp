@@ -31,7 +31,7 @@ i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)
 SIZE_UNKNOWN(WorkerHolder);
 struct WorkerHolder {
     char m_pad00[0x10];
-    CDDrawWorkerRegistry* m_imageReg; // +0x10
+    CWorkerVtableView* m_imageReg; // +0x10  (the canonical image/worker registry)
     char m_pad14[0x1c - 0x14];
     CDDrawPtrCollections* m_ptrCollections; // +0x1c
     char m_pad20[0x28 - 0x20];
@@ -114,13 +114,13 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
     if (node == 0) {
         return 0;
     }
-    if (self->m_workerHolder->m_imageReg->HasKeyEqual("GAME") == 0) {
+    if (((CDDrawWorkerRegistry*)self->m_workerHolder->m_imageReg)->HasKeyEqual_155550("GAME") == 0) {
         void* img = self->m_symParser->ResolvePath("GAME_IMAGEZ");
         if (img == 0) {
             return 0;
         }
         g_resourceInstallActive = 1;
-        self->m_workerHolder->m_imageReg->LoadTree(img, "GAME", "_");
+        self->m_workerHolder->m_imageReg->InstallTree(img, "GAME", "_");
         g_resourceInstallActive = 0;
     }
     if (self->m_workerHolder->m_soundScan->HasKeyEqual_1583c0("GAME") == 0) {

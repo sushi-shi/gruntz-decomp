@@ -25,32 +25,12 @@
 // / RemoveKeysEqual_157c70) so the reloc pairs with the definitions in DDrawSubMgrLeafScan.cpp.
 #include <DDrawMgr/DDrawSubMgrLeafScan.h>
 
-// GRUNTZ_/GAME image worker registry (owner+0x10): 18 vtable slots then the
-// virtual LoadTree at +0x48; plus the non-virtual key probe + direct-load.
-class CDDrawWorkerRegistry {
-public:
-    virtual void s00();
-    virtual void s04();
-    virtual void s08();
-    virtual void s0c();
-    virtual void s10();
-    virtual void s14();
-    virtual void s18();
-    virtual void s1c();
-    virtual void s20();
-    virtual void s24();
-    virtual void s28();
-    virtual void s2c();
-    virtual void s30();
-    virtual void s34();
-    virtual void s38();
-    virtual void s3c();
-    virtual void s40();
-    virtual void s44();
-    virtual void LoadTree(void* tree, const char* prefix, const char* sep); // +0x48
-    i32 HasKeyEqual(const char* key);                                       // 0x155550
-    void LoadTreeDirect(const char* prefix, const char* sep);               // 0x155360
-};
+// The GRUNTZ_/GAME image worker registry (owner+0x10) is the canonical
+// CWorkerVtableView (<DDrawMgr/DDrawWorkerRegistry.h>): same object, same slot 18
+// (+0x48) tree install, and the same non-virtual key probe (HasKeyEqual_155550 @
+// 0x155550) / direct load (0x155360). The 18-filler twin that stood here is dissolved -
+// it was the 2nd of FIVE definitions of this one class.
+#include <DDrawMgr/DDrawWorkerRegistry.h>
 
 // GRUNTZ_/GAME aniz sub-manager (owner+0x2c): prefix probe + tree scan.
 class CDDrawSubMgrAni {
