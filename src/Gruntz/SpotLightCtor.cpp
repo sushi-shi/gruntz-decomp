@@ -342,7 +342,7 @@ i32 CSpotLight::Tick_0b1af0() {
                 name.Format(s_LEVEL_UFOHAZARDLASER, laser);
                 CSndHost* obj = reg->m_world->m_28; // the name->cue map host
                 if (obj->m_emitGate == 0) {
-                    CObject* out = 0;
+                    void* out = 0;
                     if (obj->m_10.Lookup(name, out) && out != 0
                         && g_sndEnabled != 0) {
                         SoundPlay_1360d0((i32)out, 0, 0, g_sndCueTag);

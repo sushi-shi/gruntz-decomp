@@ -70,7 +70,7 @@ void CCheckpointDlg::OnToggleCheckpointPrompts() {
 // 0x0238d0 / 0x023960 - the two module dynamic-initializers that construct the pair of
 // command recycle-list globals (g_singleCmdList @0x62b5d0, g_multiCmdList @0x62b640; the
 // canonical CGruntzCmdList == an MFC CPtrList) with block size 0xa via the NAFXCW CPtrList
-// block-size ctor (0x1b4867 == ??0CObList@@QAE@H@Z, reloc-masked). __cdecl free fns.
+// block-size ctor (0x1b4867 == ??0CPtrList@@QAE@H@Z, reloc-masked). __cdecl free fns.
 // Re-homed from src/Stub/BoundaryMisc.cpp. The DIR32 for each global's address binds to
 // the tree-winning ?g_singleCmdList/?g_multiCmdList@CGruntzCmdList symbol (DATA home
 // GruntzCmdMgr.cpp) - the old TU-local CPtrList g_container62b5d0/g_container62b640 views

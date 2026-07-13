@@ -71,7 +71,7 @@ i32 CTileTriggerSwitchLogic::Vf2() {
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
         CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
         if (h->m_emitGate == 0) {
-            CObject* spr_ob = 0;
+            void* spr_ob = 0;
             h->m_10.Lookup("GAME_SWITCHDOWN", spr_ob);
             LeafCue* spr = (LeafCue*)spr_ob;
             if (spr) {
@@ -111,7 +111,7 @@ i32 CTileTriggerSwitchLogic::Vf3() {
         && py < g_gameReg->m_viewOriginB && py >= g_gameReg->m_viewOriginT) {
         CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
         if (h->m_emitGate == 0) {
-            CObject* spr_ob = 0;
+            void* spr_ob = 0;
             h->m_10.Lookup("GAME_SWITCHUP", spr_ob);
             LeafCue* spr = (LeafCue*)spr_ob;
             if (spr) {

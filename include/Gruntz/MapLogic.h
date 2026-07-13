@@ -41,19 +41,11 @@
 extern FreeNodePool g_coordPool;
 
 // ---------------------------------------------------------------------------
-// CObArray-like MFC pointer array embedded at CMapLogic+0x7c. The CObject-derived
-// MFC array layout: {vtable@+0, m_pData@+4, m_nSize@+8, m_nMaxSize@+0xc,
-// m_nGrowBy@+0x10} = 0x14 bytes. SetSize @0x1b4f75 (__thiscall, ret 8) is called
-// on it with ecx = &m_arr. Modeled with a no-body SetSize so the call reloc-masks.
-SIZE_UNKNOWN(CMapPtrArray);
-struct CMapPtrArray {
-    void SetSize(i32 n, i32 growBy); // 0x1b4f75 (__thiscall)
-    char _vft0[4];  // +0x00 foreign/base object vptr (reduced view; not owned/dispatched)
-    void** m_pData; // +0x04  the pointer array body
-    i32 m_nSize;    // +0x08  element count
-    i32 m_nMaxSize; // +0x0c
-    i32 m_nGrowBy;  // +0x10
-};
+// (The CMapPtrArray VIEW is DISSOLVED: the +0x7c array IS the MFC ::CPtrArray.  The
+// SetSize it calls, 0x1b4f75, lies in [0x1b4f0b, 0x1b527e) - the band whose head ctor
+// 0x1b4f0b DIR32s ??_7CPtrArray@@6B@ (0x1ec2dc).  The FID row that named it CDWordArray
+// is AMBIG: the four MFC array classes are byte-identical.  See
+// `python -m gruntz.analysis.mfc_class 0x1b4f75`.)
 
 // ---------------------------------------------------------------------------
 // CMapLogic : CUserLogic - the terrain/influence grid leaf. Field names are
@@ -96,7 +88,7 @@ public:
     // grid/array members (offsets from the field stores; the CUserLogic base owns
     // +0x00..+0x3f). Only the touched offsets are named.
     char m_pad40[0x7c - 0x40];
-    CMapPtrArray m_arr; // +0x7c  CObArray (m_pData@+0x80, m_nSize@+0x84)
+    CPtrArray m_arr;    // +0x7c  ::CPtrArray (m_pData@+0x80, m_nSize@+0x84)
     i32 m_90;           // +0x90  scratch dword the node serializer streams
 };
 

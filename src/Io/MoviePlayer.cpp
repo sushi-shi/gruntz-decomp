@@ -45,7 +45,6 @@ i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 SIZE_UNKNOWN(CMovieDecodeStore);
 SIZE_UNKNOWN(CMoviePlayer);
-SIZE_UNKNOWN(CMovieByteArray);
 SIZE_UNKNOWN(CMovieFile);
 
 // ============================================================================

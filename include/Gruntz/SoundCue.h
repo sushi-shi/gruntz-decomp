@@ -17,7 +17,7 @@ struct LeafCue; // folded CSndEmitter
 
 #include <Ints.h>
 #include <rva.h>
-// The +0x10 cue registry IS the MFC CMapStringToOb (Lookup @0x1b8438 is the NAFXCW
+// The +0x10 cue registry IS the MFC CMapStringToPtr (Lookup @0x1b8438 is the NAFXCW
 // library routine itself), so this header needs the real MFC collections. <Mfc.h> is a
 // superset of <Win32.h> (afx.h first, then the same windows.h), so the handful of
 // Win32-umbrella TUs that reach this header transitively just switch umbrella - the
@@ -26,7 +26,7 @@ struct LeafCue; // folded CSndEmitter
 #include <Gruntz/SoundCueMgr.h> // CSoundCueMgr (the play-object; ConfigureItem @0x1360d0)
 
 struct CSprite; // the frame-data value the +0x10 map ALSO yields (Sprite.h); the +0x28
-                // registry's CMapStringToOb stores both cue emitters and sprites by key.
+                // registry's CMapStringToPtr stores both cue emitters and sprites by key.
                 // Fwd-declared (not #included) to keep this light header (pulled into the
                 // ~60-TU GameRegistry.h) free of the sprite graph.
 
@@ -54,18 +54,26 @@ struct SoundStream : SoundDevice {
 };
 SIZE_UNKNOWN(SoundStream);
 
-// The named-cue registry embedded at CSndHost+0x10 (the engine CMapStringToOb, Lookup
-// @0x1b8438); Lookup fills an out-param. The map stores CObject-derived values, so the
-// out-ptr overloads type the found value cast-free per key: a cue emitter (the sound
-// cues) or a frame-data sprite (the status-bar HUD cues, formerly CStatusBarHolder's
-// CMapStringToOb view). Same reloc-masked call either way (`add ecx,0x10`).
-// (The ex-`CSndFinder` view is DISSOLVED: its `Lookup` was a fake alias of the MFC
-// library ?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z at 0x1b8438 - disasm-proven, it
-// tail-calls CMapStringToOb::GetAssocAt@0x1b83de and reuses the `key` arg slot as the
-// out-nHash local - so every call through the view bound to nothing. The member below is
-// the real CMapStringToOb, whose 0x1c bytes exactly fill +0x10..+0x2c; callers now get the
-// library symbol and link. The out-value is CObject* because that is what the container's
-// own API types it - the values are CObject-derived cue emitters / frame-data sprites.)
+// The named-cue registry embedded at CSndHost+0x10 (the engine ::CMapStringToPtr, Lookup
+// @0x1b8438); Lookup fills an out-param.
+//
+// IT IS CMapStringToPtr, NOT CMapStringToOb (mfc_class, 2026-07-12).  0x1b8438 lies in
+// [0x1b8247, 0x1b85b1) - the .obj whose head ctor 0x1b8247 DIR32s ??_7CMapStringToPtr@@6B@
+// (0x1eb014), i.e. the class stamps its own vtable and so names itself.  CMapStringToOb's
+// .obj is [0x1b7e17, 0x1b8247) and ITS Lookup is 0x1b8008 - a DIFFERENT body.  There is no
+// COMDAT fold: MSVC5 has no /OPT:ICF.  The two classes are merely code-identical, which is
+// why every FID row in those bands is AMBIG and the tree had guessed wrong.  The GetAssocAt
+// this Lookup tail-calls, 0x1b83de, is in the same CMapStringToPtr band - corroboration.
+//     python -m gruntz.analysis.mfc_class 0x1b8438
+//
+// The value slot is therefore void*, and the (LeafCue*)/(CSprite*) casts at the use sites
+// are the devs' own - CMapStringToPtr IS a void* container.
+// (The ex-`CSndFinder` view is DISSOLVED: its `Lookup` was a fake alias of the MFC library
+// ?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z at 0x1b8438 - disasm-proven, it tail-calls
+// CMapStringToPtr::GetAssocAt@0x1b83de and reuses the `key` arg slot as the out-nHash
+// local - so every call through the view bound to nothing. The member below is the real
+// ::CMapStringToPtr, whose 0x1c bytes exactly fill +0x10..+0x2c; callers now get the
+// library symbol and link.)
 
 // Holds the finder (+0x10 embedded), a DirectSound stream (+0x2c) and an emit gate
 // (+0x30, must be 0 to emit). This IS the +0x28 status-bar cue holder every HUD/
@@ -74,7 +82,7 @@ SIZE_UNKNOWN(SoundStream);
 // the audio-kill sound stream (+0x2c) and the live-surface/emit gate (+0x30).
 struct CSndHost {
     char m_pad00[0x10];
-    CMapStringToOb m_10; // +0x10  the real name->cue/sprite map (0x1c bytes -> +0x2c)
+    CMapStringToPtr m_10; // +0x10  the real name->cue/sprite map (0x1c bytes -> +0x2c)
     SoundStream* m_2c;         // +0x2c  DirectSound stream (Stop / audio-kill PurgeVoiceList)
     i32 m_emitGate;            // +0x30  live-surface / emit gate (must be 0 to emit)
     // Resolve a cue name to its emitter via the +0x10 finder (@0x05b7e0, thunk

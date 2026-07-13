@@ -265,7 +265,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
                 }
                 ++n;
                 elem += set->GetStride(); // vtable +0x24 stride advance
-                m_imageSets.SetAtGrow(j, (DWORD)set);
+                m_imageSets.SetAtGrow(j, (CObject*)set);
                 ++j;
             }
             result = n;
@@ -2323,7 +2323,7 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
         }
         n++;
         cursor += set->GetStride();
-        m_imageSets.SetAtGrow(i, (DWORD)set);
+        m_imageSets.SetAtGrow(i, (CObject*)set);
     }
     return n;
 }
@@ -2374,7 +2374,7 @@ i32 CGameLevel::MovePlane(i32 from, i32 to) {
         CLevelPlane* el = (from < m_planes.GetSize()) ? (CLevelPlane*)m_planes[from] : 0;
         if (el != 0) {
             m_planes.RemoveAt(from, 1);
-            m_planes.InsertAt(to, (DWORD)el, 1);
+            m_planes.InsertAt(to, (CObject*)el, 1);
             if (el == m_mainPlane) {
                 m_mainIndex = to;
             }

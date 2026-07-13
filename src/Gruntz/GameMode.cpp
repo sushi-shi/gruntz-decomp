@@ -445,7 +445,7 @@ i32 CBootyState::LevelMsgHudDriver() {
                 if (shown == 0) {
                     CSndHost* host = ((CSndSubMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_emitGate == 0) {
-                        CObject* cue_ob = 0;
+                        void* cue_ob = 0;
                         host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
                         LeafCue* cue = (LeafCue*)cue_ob;
                         if (cue != 0) {
@@ -514,7 +514,7 @@ i32 CBootyState::LevelMsgHudDriver() {
             m_slot++;
             CSndHost* host = ((CSndSubMgr*)g_gameReg->m_world)->m_28;
             if (host->m_emitGate == 0) {
-                CObject* cue_ob = 0;
+                void* cue_ob = 0;
                 host->m_10.Lookup("GAME_EXPLOSION1", cue_ob);
                 LeafCue* cue = (LeafCue*)cue_ob;
                 if (cue != 0 && g_sndEnabled != 0

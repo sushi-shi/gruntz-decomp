@@ -137,9 +137,12 @@ i32 CMenuItem::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
         m_state = 1;
     }
     if (!OnInit()) {
-        void* slot = 0;
-        // real MFC CMapStringToPtr::Lookup (COMDAT-folded with CMapStringToOb::Lookup
-        // to 0x1b8008); the reloc names ?Lookup@CMapStringToPtr@@... (a library row).
+        CObject* slot = 0;
+        // ?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z @0x1b8008.  NOT a COMDAT fold
+        // with CMapStringToPtr::Lookup - MSVC5 has no /OPT:ICF, and CMapStringToPtr's
+        // Lookup is its own body at 0x1b8438 in a different .obj band.  The two classes
+        // are code-identical, which is why every FID row there is AMBIG; the binary
+        // names them itself (mfc_class 0x1b8008).
         m_owner->m_10->m_10.Lookup((const char*)a2, slot);
         m_sprite = slot;
         if (!slot) {
@@ -289,7 +292,7 @@ i32 CMenuItem2::Init(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5) {
     m_70 = 0x64;
 
     char name[0x80];
-    void* sprite;
+    CObject* sprite; // CMapStringToOb's value slot (Lookup @0x1b8008 takes CObject*&)
 
     sprintf(name, "%s_NORMAL", (const char*)a2);
     sprite = 0;

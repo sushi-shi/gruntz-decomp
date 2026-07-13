@@ -24,7 +24,7 @@
 #ifndef GRUNTZ_CMOVIEPLAYER_H
 #define GRUNTZ_CMOVIEPLAYER_H
 
-#include <Mfc.h>      // MFC CFile/CByteArray (the movie file + decode-buffer dtors)
+#include <Mfc.h>      // MFC CFile/CDWordArray (the movie file + decode-buffer dtors)
 #include <afxtempl.h> // MFC CArray - the +0x868c playlist embed's REAL template class
 #include <Ints.h>
 #include <rva.h>          // OVERRIDE / VTBL / SIZE macros
@@ -48,17 +48,15 @@ struct CMovieFile {
     }
 };
 
-// An MFC CByteArray-shaped member: dtor -> the reloc-masked engine ~CByteArray
-// (0x1b4b76).
-struct CMovieByteArray {
-    // Dtor_1b4b76 @0x1b4b76 IS CByteArray::~CByteArray; cast below.
-    ~CMovieByteArray() {
-        ((CByteArray*)this)->~CByteArray();
-    }
-};
+// (The CMovieByteArray VIEW is DISSOLVED: the +0x138 member is the MFC ::CDWordArray.
+// Its dtor, 0x1b4b76, lies in [0x1b4b43, 0x1b4f0b) - the band whose ctor 0x1b4b43
+// DIR32s ??_7CDWordArray@@6B@ (0x1ec29c).  CByteArray's dtor is 0x1b52b1 (band head
+// 0x1b527e, vtable 0x1ed28c) and retail never calls it here; the FID rows in the array
+// region are all AMBIG because the four classes are byte-identical.  Ask the binary:
+// `python -m gruntz.analysis.mfc_class 0x1b4b76`.)
 
 // The decode store embedded at worker+0x540. Abort() (0x17b570) tears down the
-// active decode; the CFile/CByteArray members destruct after it.
+// active decode; the CFile/CDWordArray members destruct after it.
 struct CMovieDecodeStore {
     // +0x00 active-decode flag: NOT a vptr (Abort disasm: `cmp [this],0` gate +
     // `mov [this],0` clear - compared and stored, never dispatched through).
@@ -66,8 +64,8 @@ struct CMovieDecodeStore {
     char m_pad4[0x124 - 0x04];
     CMovieFile m_124; // +0x124  decode CFile
     char m_pad125[0x138 - 0x125];
-    CMovieByteArray m_138; // +0x138  decode CByteArray
-    char m_pad139[0x200 - 0x139];
+    CDWordArray m_138; // +0x138  decode ::CDWordArray (ctor 0x1b4b43 / dtor 0x1b4b76)
+    char m_pad14c[0x200 - 0x14c];
 
     // Begin @0x17b510 IS CPageStore17b510::Init; cast at the call.
     // OpenA @0x17b5f0 IS CFecFile::ReadArchive; cast at the call.

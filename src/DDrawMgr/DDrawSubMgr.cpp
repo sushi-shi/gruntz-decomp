@@ -33,7 +33,7 @@
 #include <Wap32/Object.h>
 #include <rva.h>
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
-#include <Mfc.h>            // real MFC CMapStringToOb / CString / POSITION
+#include <Mfc.h>            // real MFC CMapStringToPtr / CString / POSITION
 #include <Bute/SymTab.h>    // CSymTab (ProbeWorkerKey's probe chain)
 #include <string.h>
 #include <DDrawMgr/DirectDrawMgr.h>
@@ -73,9 +73,9 @@ SIZE_UNKNOWN(FamilyMapBase);
 struct CDDrawChildGroupDtorHost : public FamilyMapBase {
     ~CDDrawChildGroupDtorHost(); // 0x157630
     void* ScalarDtor(u32 flags); // 0x157610 (the ??_G; runs ~ then RezFree)
-    CMapStringToOb m_10;         // +0x10
-    CMapStringToOb m_2c;         // +0x2c
-    CMapStringToOb m_48;         // +0x48
+    CMapStringToPtr m_10;         // +0x10
+    CMapStringToPtr m_2c;         // +0x2c
+    CMapStringToPtr m_48;         // +0x48
     i32 m_64;                    // +0x64
 };
 SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
@@ -85,7 +85,7 @@ SIZE_UNKNOWN(CDDrawChildGroupDtorHost);
 struct CDDrawRegistryDtorHost : public FamilyMapBase {
     ~CDDrawRegistryDtorHost();   // 0x156e10
     void* ScalarDtor(u32 flags); // 0x156df0
-    CMapStringToOb m_10;         // +0x10
+    CMapStringToPtr m_10;         // +0x10
 };
 SIZE_UNKNOWN(CDDrawRegistryDtorHost);
 
@@ -161,7 +161,7 @@ extern "C" u32 g_killCueClock; // 0x2bf3c0
 // DDrawSubMgrLeafScan.cpp - a sibling sub-manager of the tomalla-named
 // CDDrawSubMgrLeaf family (a CDirectDrawMgr surface/page sub-manager in the
 // "DDraw surface manager" group; see docs/ddraw-family-names.md). This is
-// the keyed-asset CACHE variant: it owns a CMapStringToOb at +0x10 keyed by
+// the keyed-asset CACHE variant: it owns a CMapStringToPtr at +0x10 keyed by
 // const char* strings, a busy/loading guard at +0x30, plus the shared base
 // fields (status word at +0x04, parent/root handle at +0x0c).
 //
@@ -175,11 +175,11 @@ extern "C" u32 g_killCueClock; // 0x2bf3c0
 //
 // Field names are placeholders (m_<hexoffset>); only the OFFSETS + emitted code
 // bytes are load-bearing (campaign doctrine). All the engine callees (the MFC
-// CMapStringToOb/CString thunks, sprintf/strncmp, the file-iteration API, the
+// CMapStringToPtr/CString thunks, sprintf/strncmp, the file-iteration API, the
 // per-element ConfigureItem) are reloc-masked external calls.
 // ---------------------------------------------------------------------------
 
-// <Mfc.h> brings real MFC CObject / CMapStringToOb / CString / POSITION; afx-first
+// <Mfc.h> brings real MFC CObject / CMapStringToPtr / CString / POSITION; afx-first
 // so it precedes any <windows.h>/DirectX header.
 
 // Real DSound types so MatchSub_1584f0's GetFormat / SetPrimaryFormat calls
@@ -341,7 +341,7 @@ void operator delete(void* p);
 // LeafScanValue / LeafScanSoundArg) are forward-declared in the header and fully
 // defined above so the method bodies below can dereference them.
 
-// Read the map count at parent+0x1c (inside the CMapStringToOb's internal area,
+// Read the map count at parent+0x1c (inside the CMapStringToPtr's internal area,
 // its m_nCount). A separate inline so its read schedules before the handle read,
 // matching the factory's register assignment.
 static inline i32 LeafReadMapCount(const CDDrawSubMgrLeafScan* p) {
@@ -404,7 +404,7 @@ i32 CDDrawSubMgrLeafScan::RefreshAsset_114120(const char* key) {
     if (m_30 != 0) {
         return 0;
     }
-    CObject* val = 0;
+    void* val = 0;
     m_10.Lookup(key, val);
     if (val == 0) {
         return 0;
@@ -459,7 +459,7 @@ fail:
 
 // ~CDDrawWorkerMapSmall (0x156d20, __thiscall, /GX): REAL virtual dtor. cl stamps
 // ??_7CDDrawWorkerMapSmall (masks 0x5efcc8) at entry, runs the map teardown
-// (DestroyAll, T obj), then destructs the three CMapStringToOb members (reverse
+// (DestroyAll, T obj), then destructs the three CMapStringToPtr members (reverse
 // decl order, descending trylevels) and the grand-base.
 // @early-stop
 // vptr-position wall (~94%, twin of CDDrawWorker::~CDDrawWorker): every
@@ -502,7 +502,7 @@ void* CDDrawRegistryDtorHost::ScalarDtor(u32 flags) {
 
 // ---------------------------------------------------------------------------
 // 0x156e10: member-teardown ~ of the 1-map sibling CDDrawRegistryDtorHost (vtable
-// 0x5efd28). Runs the cleanup helper (0x154ac0), then the CMapStringToOb member
+// 0x5efd28). Runs the cleanup helper (0x154ac0), then the CMapStringToPtr member
 // and the FamilyMapBase grand-base auto-destruct. /GX member-teardown frame.
 // @early-stop
 // vptr-position wall (~95%, family twin): grand-base vptr re-stamp position + the
@@ -858,7 +858,7 @@ void* CDDrawSubMgrLeafScan::ScalarDtor(u32 flags) {
 // vptr-position wall (~95%, twin of CDDrawWorker/CDDrawSubMgrLeaf): every code
 // byte matches retail EXCEPT the grand-base re-stamp position (cl emits it before the
 // m_04/m_08/m_0c resets; the implicit base transition forces stamp-first, retail sinks
-// it after) + the reloc-masked EH unwind / VM18 / ~CMapStringToOb / vtable symbol
+// it after) + the reloc-masked EH unwind / VM18 / ~CMapStringToPtr / vtable symbol
 // names. objdiff-reloc-scoring.
 RVA(0x00157570, 0x68)
 CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
@@ -866,7 +866,7 @@ CDDrawSubMgrLeafScan::~CDDrawSubMgrLeafScan() {
     // virtual call on `this` inside the dtor devirtualizes to the retail direct
     // rel32, so no view cast is needed.
     ClearContext();
-    // m_10 (CMapStringToOb) member dtor auto-fires here, then the LeafScanBase
+    // m_10 (CMapStringToPtr) member dtor auto-fires here, then the LeafScanBase
     // destructor resets +0x04/+0x08/+0x0c and restamps the grand-base vtable.
 }
 
@@ -902,7 +902,7 @@ void* CDDrawChildGroupDtorHost::ScalarDtor(u32 flags) {
 // ---------------------------------------------------------------------------
 // 0x157630: member-teardown ~ of the 3-map sibling CDDrawChildGroupDtorHost
 // (vtable 0x5efdc0). Runs the cleanup helper (0x1591e0), then the three
-// CMapStringToOb members and the FamilyMapBase grand-base auto-destruct (reverse
+// CMapStringToPtr members and the FamilyMapBase grand-base auto-destruct (reverse
 // decl order + field resets + the grand-base ??_7 re-stamp). /GX frame.
 // @early-stop
 // vptr-position wall (~95%, family twin): every instruction matches retail except
@@ -927,7 +927,7 @@ i32 CDDrawSubMgr::OnDestroy() {
 
 // The real member-teardown destructor (0x157720, /GX): cl stamps
 // ??_7CDDrawWorkerCache (masks 0x5efd00) at entry, runs the map teardown (the
-// shared DestroyAll @0x165210), then destructs the CMapStringToOb member and the
+// shared DestroyAll @0x165210), then destructs the CMapStringToPtr member and the
 // grand-base. /GX member-teardown frame from the destructible map.
 // @early-stop
 // vptr-position wall (~95%, twin of CDDrawSubMgrLeaf/CDDrawWorker): every
@@ -936,7 +936,7 @@ i32 CDDrawSubMgr::OnDestroy() {
 RVA(0x00157720, 0x68)
 CDDrawWorkerCache::~CDDrawWorkerCache() {
     DestroyAll();
-    // implicit: ~m_10 (CMapStringToOb), then the grand-base field resets + the
+    // implicit: ~m_10 (CMapStringToPtr), then the grand-base field resets + the
     // ??_7 re-stamp - reproduces retail's teardown order.
 }
 
@@ -976,7 +976,7 @@ CDDrawSubMgrLeaf::~CDDrawSubMgrLeaf() {
     // retail's dtor calls the non-virtual map teardown (0x152720) DIRECTLY, not the
     // virtual Cleanup slot (0x152650, which merely tail-calls it) - bind to 0x152720.
     FreeAll_152720();
-    // implicit: ~m_10 (CMapStringToOb), then ~CDDrawSubMgrGrandBase (resets the three
+    // implicit: ~m_10 (CMapStringToPtr), then ~CDDrawSubMgrGrandBase (resets the three
     // header fields + restamps the base vtable) - reproduces retail's teardown order.
 }
 
@@ -1112,7 +1112,7 @@ void CSoundResMap::RemoveByValue(CSoundRes* p) {
 // FreeAll_152720). docs/patterns/zero-register-pinning.md.
 RVA(0x00157bc0, 0xa2)
 void CDDrawSubMgrLeafScan::ClearMap() {
-    CObject* val = 0;
+    void* val = 0;
     POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile i32*)&pos != 0) {
@@ -1129,13 +1129,13 @@ void CDDrawSubMgrLeafScan::ClearMap() {
 // ---------------------------------------------------------------------------
 // @identity-TODO: 0x1581b0 has NO reference anywhere in the retail image (dead /
 // inlined-away), owning class unrecovered. `this` is a CDDrawSurfaceMgr-family
-// child: a parent back-pointer @+0x0c, a CMapStringToOb of named CAniBlitTriggers
+// child: a parent back-pointer @+0x0c, a CMapStringToPtr of named CAniBlitTriggers
 // @+0x10, and a gate flag @+0x30. NOT CDDrawChildGroup (whose +0x10 is the
 // WalkDispatch CObList). Byte-reconstructed; offsets load-bearing.
 struct CAniTriggerMap_1581b0 {
     char m_pad00[0x0c];
     char* m_parent;         // +0x0c
-    CMapStringToOb m_map10; // +0x10  named CAniBlitTrigger map
+    CMapStringToPtr m_map10; // +0x10  named CAniBlitTrigger map
     char m_pad2c[0x30 - 0x2c];
     i32 m_gate30; // +0x30
     i32 Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2);
@@ -1153,7 +1153,7 @@ i32 CDDrawSubMgrLeafScan::RemoveKeysEqual_157c70(const char* base, const char* s
     match = str;
     i32 len = match.GetLength();
     CString key;
-    CObject* val = 0;
+    void* val = 0;
     POSITION pos = m_10.GetStartPosition();
     i32 n = 0;
     while (pos != 0) {
@@ -1195,7 +1195,7 @@ LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry_157d70(const char* key, void* 
         delete e; // virtual scalar-deleting dtor (vtbl[1](1))
         return 0;
     }
-    m_10[key] = (CObject*)e;
+    m_10[key] = e;
     e->m_18 = m_34; // +0x18 = redraw arg
     return e;
 }
@@ -1224,7 +1224,7 @@ LeafElementObj* CDDrawSubMgrLeafScan::CreateEntry2_157e00(const char* key, void*
         delete e; // virtual scalar-deleting dtor (vtbl[1](1))
         return 0;
     }
-    m_10[key] = (CObject*)e;
+    m_10[key] = e;
     e->m_18 = m_34; // +0x18 = redraw arg
     return e;
 }
@@ -1245,11 +1245,11 @@ LeafElementObj* CDDrawSubMgrLeafScan::AddFromSource_157e90(CParseSource* src) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x157ec0: insert a pre-built element into the map under `key` (CMapStringToOb::
+// 0x157ec0: insert a pre-built element into the map under `key` (CMapStringToPtr::
 // operator[]) and stamp its redraw arg (elem->m_18 = m_34). 2 stack args (ret 8).
 RVA(0x00157ec0, 0x20)
 void CDDrawSubMgrLeafScan::AddEntry_157ec0(LeafElementObj* elem, const char* key) {
-    m_10[key] = (CObject*)elem;
+    m_10[key] = elem;
     elem->m_18 = m_34;
 }
 
@@ -1293,7 +1293,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
                     } else {
                         strcpy(buf, fn->m_name);
                     }
-                    CObject* val = 0;
+                    void* val = 0;
                     m_10.Lookup(buf, val);
                     if (val == 0) {
                         if (CreateEntry_157d70(buf, fn) != 0) {
@@ -1328,7 +1328,7 @@ i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
         return 0;
     }
     CString key;
-    CObject* val = 0;
+    void* val = 0;
     POSITION pos = m_10.GetStartPosition();
     i32 sum = 0;
     while (pos != 0) {
@@ -1347,7 +1347,7 @@ RVA(0x001581b0, 0x5b)
 i32 CAniTriggerMap_1581b0::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2) {
     char* p24 = *(char**)(m_parent + 0x24);
     if (p24 != 0 && *(char**)(p24 + 0x5c) != 0 && m_gate30 == 0) {
-        CObject* val = 0;
+        void* val = 0;
         m_map10.Lookup(key, val);
         if (val != 0) {
             return ((CAniBlitTrigger*)val)->TriggerBlit_1587f0(pos, -1, range1, range2);
@@ -1372,7 +1372,7 @@ LeafScanValue* CDDrawSubMgrLeafScan::GetFirstValue_158210() {
     if (pos == 0) {
         return 0;
     }
-    CObject* val = 0;
+    void* val = 0;
     CString key;
     m_10.GetNextAssoc(pos, key, val);
     return (LeafScanValue*)val;
@@ -1396,11 +1396,11 @@ LeafScanValue* CDDrawSubMgrLeafScan::NextValueAfter_1582c0(LeafScanValue* target
     if (pos == 0) {
         return 0;
     }
-    CObject* val = 0;
+    void* val = 0;
     CString key;
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
-        if (val == (CObject*)target) {
+        if (val == (void*)target) {
             if (pos == 0) {
                 return 0;
             }
@@ -1420,7 +1420,7 @@ RVA(0x001583c0, 0xdc)
 i32 CDDrawSubMgrLeafScan::HasKeyEqual_1583c0(const char* str) {
     i32 len = strlen(str);
     CString key;
-    CObject* val = 0;
+    void* val = 0;
     POSITION pos = m_10.GetStartPosition();
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
@@ -1494,11 +1494,11 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue* target) {
     if (target == 0) {
         return key;
     }
-    CObject* val = 0;
+    void* val = 0;
     POSITION pos = m_10.GetStartPosition();
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
-        if (val == (CObject*)target) {
+        if (val == (void*)target) {
             return key;
         }
     }

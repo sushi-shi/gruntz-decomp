@@ -334,11 +334,15 @@ void EngStr_DrawText(
 // in this very file already used the canonical LeafCue for). CCueEmitter was LeafCue::m_10,
 // i.e. CSoundCueMgr, whose ConfigureItem @0x1360d0 the comment already named.)
 // The embedded registry/bute object at (m_c->m_28 + 0x10); Lookup @0x1b8438.
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
-// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
+// (The ex-view is DISSOLVED: the member is the real map.)  It is ::CMapStringToPtr,
+// not CMapStringToOb: its Lookup is 0x1b8438.  There is NO COMDAT fold - MSVC5 has no /OPT:ICF.  CMapStringToOb's .obj is
+// [0x1b7e17, 0x1b8247) (its ctor stamps ??_7CMapStringToOb@@6B@ @0x1eafd4; Lookup
+// 0x1b8008); CMapStringToPtr's is [0x1b8247, 0x1b85b1) (ctor stamps 0x1eb014; Lookup
+// 0x1b8438).  Two classes, identical code - which is why every FID row there is AMBIG.
+// The binary names them itself: `python -m gruntz.analysis.mfc_class 0x1b8438`.
 struct CNetCfgSub { // m_c->m_28
     char m_pad0[0x10];
-    CMapStringToOb m_10;       // +0x10  embedded registry/bute (Lookup 0x1b8438)
+    CMapStringToPtr m_10;      // +0x10  embedded registry/bute (Lookup 0x1b8438)
     char m_pad11[0x30 - 0x11]; // to +0x30
     i32 m_30;                  // +0x30
 };
@@ -948,7 +952,7 @@ CNetSession::~CNetSession() {
 
 // ---------------------------------------------------------------------------
 // 0x0b62a0: ~CNetCmdSlot. Runs ResetAll (0xc0bb0) then tears down the +0x20 CObList
-// member (m_cmds). The /GX frame + ResetAll call + member ~CObList fall out of the
+// member (m_cmds). The /GX frame + ResetAll call + member ~CPtrList fall out of the
 // destructible member (eh-dtor-model-members-as-destructible.md). 100%.
 RVA(0x000b62a0, 0x4a)
 CNetCmdSlot::~CNetCmdSlot() {
@@ -2078,7 +2082,7 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
         Sub386e();
     } else {
         if (m_c->m_28->m_30 == 0) {
-            CObject* rec_ob = 0;
+            void* rec_ob = 0;
             m_c->m_28->m_10.Lookup(s_GameKey, rec_ob);
             LeafCue* rec = (LeafCue*)rec_ob;
             if (rec != 0) {
@@ -2730,7 +2734,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (host->m_emitGate != 0) {
                 break;
             }
-            CObject* e_ob = 0;
+            void* e_ob = 0;
             host->m_10.Lookup("GAME_CHAT", e_ob);
             LeafCue* e = (LeafCue*)e_ob;
             if (e == 0) {
@@ -3152,7 +3156,7 @@ i32 CMulti::LoadMenuSelectSprite(void* evp) {
         }
         CSndHost* host = ((CSndSubMgr*)m_c)->m_28;
         if (host->m_emitGate == 0) {
-            CObject* out = 0;
+            void* out = 0;
             host->m_10.Lookup("GAME_MENUS_SELECT", out);
             LeafCue* e = (LeafCue*)out;
             if (e != 0) {
@@ -4052,7 +4056,7 @@ i32 CMulti::CreateSession() {
 
 // ---------------------------------------------------------------------------
 // CNetCmdSlot::CNetCmdSlot  (__thiscall; /GX EH frame).
-// Constructs the queued-command list (CObList m_cmds, default nBlockSize 10),
+// Constructs the queued-command list (CPtrList m_cmds, default nBlockSize 10),
 // then resets the slot to its empty state: zero the scalar header, drain the
 // queue (ClearCmds), zero the command fields and splat both command ranges.
 // The CObList member's dtor pulls in the /GX EH frame.

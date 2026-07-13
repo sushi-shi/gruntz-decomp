@@ -72,14 +72,17 @@ struct CChatAnim {
 // The key->record map (CMapWordToOb-style Lookup at 0x1b8008 / 0x1b8438). The
 // value type differs per instance (CChatAnim for the rows, CChatTimer for scroll),
 // so the out-param is generic. __thiscall.
-// The key->node map is an MFC CMapStringToOb (Lookup @0x1b8438); cast at each call.
-// (ex-`CMapStringToOb`: empty phantom aliasing MFC CMapStringToOb::Lookup @0x1b8438 - real map now.)
+// The key->node map is an MFC ::CMapStringToPtr (its Lookup is 0x1b8438).  There is NO COMDAT fold - MSVC5 has no /OPT:ICF.  CMapStringToOb's .obj is
+// [0x1b7e17, 0x1b8247) (its ctor stamps ??_7CMapStringToOb@@6B@ @0x1eafd4; Lookup
+// 0x1b8008); CMapStringToPtr's is [0x1b8247, 0x1b85b1) (ctor stamps 0x1eb014; Lookup
+// 0x1b8438).  Two classes, identical code - which is why every FID row there is AMBIG.
+// The binary names them itself: `python -m gruntz.analysis.mfc_class 0x1b8438`.
 
 // The on-screen catalog reached through CChatPage::m_10; the key->node map lives
 // at +0x10 inside it (the `add ecx,0x10` in the row-advance lookups).
 struct CChatCatalog {
     char pad0[0x10];
-    CMapStringToOb m_10map;
+    CMapStringToPtr m_10map;
     char pad14[0x64 - 0x14];
     i32 m_64; // current frame/index, read straight through the lookup result
 };
@@ -120,7 +123,7 @@ struct CChatTimer {
 // +0x10 and a "busy" gate at +0x30.
 struct CChatRoster {
     char pad0[0x10];
-    CMapStringToOb m_10; // +0x10 key->timer map
+    CMapStringToPtr m_10; // +0x10 key->timer map (Lookup 0x1b8438)
     char pad14[0x30 - 0x14];
     i32 m_30; // +0x30 busy gate
 };
@@ -367,7 +370,7 @@ i32 CChatBox::AdvanceRow0(void* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
-    CObject* a_ob = 0;
+    void* a_ob = 0;
     m_page->m_10->m_10map.Lookup((const char*)key, a_ob);
     CChatAnim* a = (CChatAnim*)a_ob;
     m_row0Anim = a;
@@ -391,7 +394,7 @@ i32 CChatBox::AdvanceRow1(void* key, i32 x, i32 y) {
     if (!m_page) {
         return 0;
     }
-    CObject* a_ob = 0;
+    void* a_ob = 0;
     m_page->m_10->m_10map.Lookup((const char*)key, a_ob);
     CChatAnim* a = (CChatAnim*)a_ob;
     m_row1Anim = a;
@@ -503,7 +506,7 @@ i32 CChatBox::ScrollRow0() {
     if (roster->m_30) {
         return 0;
     }
-    CObject* t_ob = 0;
+    void* t_ob = 0;
     roster->m_10.Lookup((const char*)m_row0Key, t_ob);
     CChatTimer* t = (CChatTimer*)t_ob;
     if (!t) {
@@ -536,7 +539,7 @@ i32 CChatBox::ScrollRow1() {
     if (roster->m_30) {
         return 0;
     }
-    CObject* t_ob = 0;
+    void* t_ob = 0;
     roster->m_10.Lookup((const char*)m_row1Key, t_ob);
     CChatTimer* t = (CChatTimer*)t_ob;
     if (!t) {

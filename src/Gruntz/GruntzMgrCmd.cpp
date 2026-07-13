@@ -135,7 +135,7 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd
 #define PLAYCUE_MAP(TAG)                                                                           \
     if (m_world->m_28->m_emitGate == 0) {                                                          \
         LeafCue* _c = 0;                                                                           \
-        m_world->m_28->m_10.Lookup(TAG, (CObject*&)_c);                                            \
+        m_world->m_28->m_10.Lookup(TAG, (void*&)_c); /* CMapStringToPtr (0x1b8438) */           \
         if (_c)                                                                                    \
             _c->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);                                        \
     }
@@ -678,7 +678,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                     case 0x8247: {
                         g_explosionz ^= 1;
                         if (m_world->m_28->m_emitGate == 0) {
-                            CObject* _c_ob = 0;
+                            void* _c_ob = 0;
                             m_world->m_28->m_10.Lookup("GAME_MAJORCHEAT", _c_ob);
                             LeafCue* _c = (LeafCue*)_c_ob;
                             if (_c && g_sndEnabled) {

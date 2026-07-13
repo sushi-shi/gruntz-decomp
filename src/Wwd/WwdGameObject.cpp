@@ -563,10 +563,10 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     m_19c = 0;
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
-        CObject* found = 0;
+        void* found = 0;
         WwdMgr* mgr = m_mgr;
         mgr->m_28->m_10.Lookup(name, found);
-        m_19c = found;
+        m_19c = (CObject*)found;
     }
     return 1;
 }

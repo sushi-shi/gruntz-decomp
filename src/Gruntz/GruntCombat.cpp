@@ -240,11 +240,15 @@ struct CombatCue {
     i32 m_14;           // +0x14 last-fire clock
     i32 m_18;           // +0x18 cooldown window
 };
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom whose only "method" was a fake
-// alias of the MFC library CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
+// (The ex-view is DISSOLVED: the member is the real map.)  It is ::CMapStringToPtr,
+// not CMapStringToOb: its Lookup is 0x1b8438.  There is NO COMDAT fold - MSVC5 has no /OPT:ICF.  CMapStringToOb's .obj is
+// [0x1b7e17, 0x1b8247) (its ctor stamps ??_7CMapStringToOb@@6B@ @0x1eafd4; Lookup
+// 0x1b8008); CMapStringToPtr's is [0x1b8247, 0x1b85b1) (ctor stamps 0x1eb014; Lookup
+// 0x1b8438).  Two classes, identical code - which is why every FID row there is AMBIG.
+// The binary names them itself: `python -m gruntz.analysis.mfc_class 0x1b8438`.
 struct CombatSprInner {
     char m_pad0[0x10];
-    CMapStringToOb m_10; // +0x10 the launch-sound lookup map
+    CMapStringToPtr m_10; // +0x10 the launch-sound lookup map (Lookup 0x1b8438)
 };
 struct CombatSprCat {
     char m_pad0[0x28];
@@ -352,7 +356,7 @@ static const char s_gruntSec[] = "Grunt";
 #define LK(key)                                                                                    \
     do {                                                                                           \
         CombatCue* out = 0;                                                                        \
-        reg->m_world->m_28->m_10.Lookup((key), (CObject*&)out);                                    \
+        reg->m_world->m_28->m_10.Lookup((key), (void*&)out);                                    \
         cue = out;                                                                                 \
     } while (0)
 
@@ -593,7 +597,7 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
     CGruntSndSlot* slot = m_158->m_c->m_28;
     if (slot->m_30 == 0) {
         GruntSoundEntry* sout = 0;
-        ((CMapStringToOb*)((char*)slot + 0x10))->Lookup(s_GAME_ATTACK, (CObject*&)sout);
+        ((CMapStringToPtr*)((char*)slot + 0x10))->Lookup(s_GAME_ATTACK, (void*&)sout);
         if (sout != 0) {
             PlayIfElapsed(g_sndCueTag, 0, 0, 0);
         }
@@ -2121,9 +2125,9 @@ CGrunt* CGrunt::FindGridNeighbor(i32 validate) {
 // class is now declared via <DDrawMgr/DDrawSubMgrLeafScan.h> (added above).
 RVA(0x0005b7e0, 0x23)
 CObject* CDDrawSubMgrLeafScan::Lookup_05b7e0(const char* key) {
-    CObject* val = 0;
-    m_10.Lookup(key, val);
-    return val;
+    void* val = 0;
+    m_10.Lookup(key, val); // CMapStringToPtr::Lookup @0x1b8438 (void*& out-param)
+    return (CObject*)val;
 }
 
 // ==== GruntSpawnPump @0x5baf0 (ex GruntSpawnPump.cpp; a worker-pump handler whose leaf is CGrunt) ====

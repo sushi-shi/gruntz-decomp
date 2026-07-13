@@ -1412,7 +1412,7 @@ i32 CProjectile::LaunchSound(const char* key) {
     if (reg->m_soundEnabled == 0) {
         return 0;
     }
-    CObject* entry_ob = 0;
+    void* entry_ob = 0;
     reg->m_world->m_28->m_10.Lookup(key, entry_ob);
     LeafCue* entry = (LeafCue*)entry_ob;
     if (entry == 0) {

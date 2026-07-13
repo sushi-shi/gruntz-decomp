@@ -2232,7 +2232,7 @@ i32 CGruntzMgr::CheatRevealTreasures() {
 RVA(0x00091250, 0x100)
 void CGruntzMgr::CheatSkeletonToggle() {
     if (m_curState && m_curState->Update() == 3 && m_world) {
-        CObject* found = 0;
+        void* found = 0;
         ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("Gruntz", (void*&)found);
         CImageSet* set = (CImageSet*)found;
         if (set) {
@@ -2289,7 +2289,7 @@ void CGruntzMgr::CheatSkeletonToggle() {
 RVA(0x00091390, 0x11d)
 void CGruntzMgr::CheatEclipseToggle() {
     if (m_curState && m_curState->Update() == 3 && m_world) {
-        CObject* found = 0;
+        void* found = 0;
         ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("Gruntz", (void*&)found);
         CImageSet* set = (CImageSet*)found;
         if (set) {

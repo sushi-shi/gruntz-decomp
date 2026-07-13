@@ -1449,7 +1449,7 @@ i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
             ((CStatzTabSub*)m[idx + 0x18c / 4])->Toggle(m[0], one);
             CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
             if (h->m_emitGate == 0) {
-                CObject* spr_ob = 0;
+                void* spr_ob = 0;
                 h->m_10.Lookup("GAME_STATZTABTOGGLE", spr_ob);
                 LeafCue* spr = (LeafCue*)spr_ob;
                 if (spr) {
@@ -1503,7 +1503,7 @@ void CStatusBarMgr::UpdateGruntOvenStatusBar() {
                 frame = 0x1a;
                 CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
                 if (h->m_emitGate == 0) {
-                    CObject* spr_ob = 0;
+                    void* spr_ob = 0;
                     h->m_10.Lookup("GAME_COOKINGCOMPLETE", spr_ob);
                     LeafCue* spr = (LeafCue*)spr_ob;
                     if (spr) {
@@ -1566,7 +1566,7 @@ void CStatusBarMgr::UpdateChipGrinderStatusBar() {
                 if (m[0x10c / 4] == 3 && m[0] != 2) {
                     CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
                     if (h->m_emitGate == 0) {
-                        CObject* spr_ob = 0;
+                        void* spr_ob = 0;
                         h->m_10.Lookup("GAME_REZGRINDING", spr_ob);
                         LeafCue* spr = (LeafCue*)spr_ob;
                         if (spr) {
@@ -1642,7 +1642,7 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
     i32* m = (i32*)this;
     m[0x3c / 4] = a0;
 
-    CObject* spr_ob = 0;
+    void* spr_ob = 0;
     i32 n = phase + 1;
     ((CRegHolder*)g_gameReg->m_world)
         ->m_statusBar->m_10.Lookup("GAME_STATUSBAR_TABZ_GAMETAB_WARP", spr_ob);
@@ -1693,7 +1693,7 @@ i32 EngineLabelBacklog::UpdateWarpStoneStatusBar(i32 a0, i32 phase, i32 srcX, i3
 
     CSndHost* h = ((CRegHolder*)g_gameReg->m_world)->m_statusBar;
     if (h->m_emitGate == 0) {
-        CObject* fly_ob = 0;
+        void* fly_ob = 0;
         h->m_10.Lookup("GAME_WARPSTONEFLY", fly_ob);
         LeafCue* fly = (LeafCue*)fly_ob;
         if (fly) {

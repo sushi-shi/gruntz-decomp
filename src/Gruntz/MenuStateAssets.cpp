@@ -179,9 +179,9 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     ((MenuHudObj*)m_1b4)->m_48 = "MENU_ACTIVATE";
 
     MenuSndEntry* e;
-    ((MenuAssetMgr*)m_c)->m_28->m_10.Lookup("MENU_ACTIVATE", (CObject*&)e);
+    ((MenuAssetMgr*)m_c)->m_28->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
     if (e != 0) {
-        ((MenuAssetMgr*)m_c)->m_28->m_10.Lookup("MENU_ACTIVATE", (CObject*&)e);
+        ((MenuAssetMgr*)m_c)->m_28->m_10.Lookup("MENU_ACTIVATE", (void*&)e);
         m_1b8 = e->m_10->m_28;
     } else {
         m_1b8 = 0;
@@ -193,7 +193,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
 
     MenuSndEntry* fm;
     ((CDDrawSubMgrLeafScan*)g_menuMgrSettings->m_world->m_28)
-        ->m_10.Lookup("MENU_MENU", (CObject*&)fm);
+        ->m_10.Lookup("MENU_MENU", (void*&)fm);
     m_1bc = (CMenuMusic*)fm;
     return 1;
 }

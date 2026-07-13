@@ -107,6 +107,17 @@ def main() -> None:
     print(f"[fid] wrote {OUT.relative_to(REPO)} ({len(rows)} rows). "
           "Diff against the committed copy to confirm the reconstruction.")
 
+    # 6. CRuntimeClass disambiguation of the MFC container bands.
+    #
+    # A byte-signature matcher CANNOT name MFC's containers: CObArray/CPtrArray/
+    # CDWordArray/CUIntArray are byte-identical, CObList/CPtrList are byte-identical,
+    # the map families are byte-identical - so EVERY row stage 3/4 emits in those bands
+    # is a coin flip, and it flipped wrong for roughly half of them.  The binary names
+    # them itself (vtable slot 0 -> GetRuntimeClass -> CRuntimeClass -> the class-name
+    # string), so re-class those rows from the binary before the CSV is trusted.
+    # See gruntz.analysis.mfc_class.
+    sh(sys.executable, "-m", "gruntz.analysis.mfc_class", "--relabel", "--write")
+
 
 if __name__ == "__main__":
     main()

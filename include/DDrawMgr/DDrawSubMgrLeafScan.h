@@ -17,7 +17,15 @@
 // the ??_G/IsReady/ClearMap bodies stay in DDrawSubMgrLeaf.cpp. Field names are
 // placeholders; only OFFSETS + emitted code bytes are load-bearing (campaign doctrine).
 
-#include <Mfc.h> // real MFC CObject / CMapStringToOb / CString / POSITION
+// THE +0x10 MAP IS CMapStringToPtr, NOT CMapStringToOb (mfc_class --audit, 2026-07-12):
+// every map rva retail calls from these methods - Lookup 0x1b8438, RemoveKey 0x1b84de,
+// GetNextAssoc 0x1b8546, ~map 0x1b8322 - lies in [0x1b8247, 0x1b85b1), the band whose
+// ctor stamps ??_7CMapStringToPtr@@6B@ (0x1eb014).  CMapStringToOb's band is
+// [0x1b7e17, 0x1b8247) (Lookup 0x1b8008) and NOTHING here enters it.  The two classes
+// are byte-identical, so the FID rows are all AMBIG and the tree had guessed wrong;
+// `python -m gruntz.analysis.mfc_class 0x1b8438` asks the binary.  (A sibling map -
+// CDDrawWorkerRegistry::m_map - really IS CMapStringToOb, so this is per-site.)
+#include <Mfc.h> // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <Ints.h>
 #include <rva.h>
 
@@ -56,7 +64,7 @@ inline LeafScanBase::~LeafScanBase() {
 }
 
 // ---------------------------------------------------------------------------
-// The cache sub-manager. Map at +0x10 (CMapStringToOb, 0x1c bytes -> ends at +0x2c).
+// The cache sub-manager. Map at +0x10 (CMapStringToPtr, 0x1c bytes -> ends at +0x2c).
 // m_2c is the held DSound device, m_30 the busy guard, m_34 a redraw arg.
 // ---------------------------------------------------------------------------
 class CDDrawSubMgrLeafScan : public LeafScanBase {
@@ -106,7 +114,7 @@ public:
     // non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern) so the body emits.
     void* ScalarDtor(u32 flags); // 0x157550
 
-    CMapStringToOb m_10; // +0x10  keyed asset cache (ends +0x2c)
+    CMapStringToPtr m_10; // +0x10  keyed asset cache (ends +0x2c)
     SoundDevice* m_2c;   // +0x2c  held DSound device
     i32 m_30;            // +0x30  busy/loading guard
     i32 m_34;            // +0x34  redraw arg

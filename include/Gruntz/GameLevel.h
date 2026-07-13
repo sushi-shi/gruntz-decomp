@@ -21,15 +21,27 @@
 
 // The ctor builds three growable MFC arrays (+0x20/+0x34/+0x48; afxcoll, layout 0x14).
 // The ctor builds three MFC arrays at +0x20/+0x34/+0x48; the retail ctor/dtor
-// construct/destroy all three via the SAME out-of-line CByteArray ctor/dtor (COMDAT-
-// folded in the retail image). +0x20 (m_array20) is a CByteArray; +0x34 m_planes and
-// +0x48 m_imageSets are the DWORD-array-of-pointers the devs used - genuine CDWordArrays
+// construct/destroy all three via the SAME out-of-line array ctor/dtor.
+//
+// ALL THREE ARE ::CObArray (mfc_class, 2026-07-12 - this OVERTURNS the earlier
+// "genuine CDWordArray" reading).  The ctor @0x15ccd0 is `lea ecx,[esi+0x20] / call
+// 0x1b55e9`, then +0x34, then +0x48 - the SAME callee three times; the dtor @0x1611e0
+// calls 0x1b561c three times.  0x1b55e9's body DIR32s ??_7CObArray@@6B@ (0x1ed494) -
+// CObArray's own vtable - so 0x1b55e9 IS ??0CObArray@@QAE@XZ.  CDWordArray's ctor is
+// 0x1b4b43 (vtable 0x1ec29c), CByteArray's is 0x1b527e (0x1ed28c), CPtrArray's is
+// 0x1b4f0b (0x1ec2dc); retail calls NONE of them here.  The four array classes are
+// byte-identical, so every FID row in that region is AMBIG and the earlier
+// CTypedPtrArray<CPtrArray> experiment (which dropped the ctor 89.5% -> 72%) only
+// proved the array was not CPtrArray - not that it was CDWordArray.  The (CObject*)
+// casts at the use sites are the devs' own: CObArray stores CObject*, and CLevelPlane
+// /CImageSet are not CObject-derived.  Ask the binary:
+//     python -m gruntz.analysis.mfc_class 0x1b55e9
 // storing CLevelPlane*/CImageSet* cast to DWORD (afxcoll layout {DWORD* m_pData; int
 // m_nSize; int m_nMaxSize; int m_nGrowBy}). A typed CArray<T*>/CTypedPtrArray<CPtrArray>
 // inlines its template ctor and diverges the CGameLevel ctor/dtor codegen; the plain
 // CDWordArray is the byte-exact shape, so the (CLevelPlane*)/(DWORD) casts at the use
 // sites are the devs' authentic pointer<->DWORD storage casts (they stay).
-#include <Mfc.h> // CByteArray, CDWordArray (afxcoll)
+#include <Mfc.h> // CObArray (afxcoll)
 
 // ---------------------------------------------------------------------------
 // CImageSet - the per-plane image-set descriptor the level builds from the WWD
@@ -459,9 +471,9 @@ public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the
     // CLoadable members (m_04/m_08/m_0c); the plane-read ctx begins at +0x10.
     LevelCoordRect m_planeCtx; // +0x10  plane-read ctx / coord record (LoadWwd 3rd arg)
-    CByteArray m_array20;      // +0x20  (built by the ctor; EH state 0)
-    CDWordArray m_planes; // +0x34  CLevelPlane* as DWORD (m_size@+0x3c == m_planeCount; EH state 1)
-    CDWordArray m_imageSets;       // +0x48  CImageSet* as DWORD (EH state 2)
+    CObArray m_array20;   // +0x20  ::CObArray (ctor 0x1b55e9; EH state 0)
+    CObArray m_planes;    // +0x34  ::CObArray of CLevelPlane* (m_size@+0x3c == m_planeCount; EH state 1)
+    CObArray m_imageSets; // +0x48  ::CObArray of CImageSet* (EH state 2)
     CLevelPlane* m_mainPlane;      // +0x5C  (typed full plane view; same object as CPlane)
     i32 m_mainIndex;               // +0x60
     i32 m_maxStepX;                // +0x64  per-frame max move step (MoveToward; 0x40)

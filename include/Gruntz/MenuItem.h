@@ -54,11 +54,14 @@ struct CMenuItemHost {
 };
 SIZE_UNKNOWN(CMenuItemHost);
 
-// The string->item catalog reached through m_4->m_10->m_10 (CMapStringToPtr::Lookup,
+// The string->item catalog reached through m_4->m_10->m_10 (CMapStringToOb::Lookup,
 // 0x1b8008) - the same two-hop the page uses (m_0 -> +0x10 ptr -> +0x10 map base).
 struct CMenuItemCatalog {
     char pad0[0x10];
-    CMapStringToPtr m_10; // +0x10 the string->item map base (real MFC)
+    // ::CMapStringToOb - retail's Lookup here is 0x1b8008, which lies in
+    // [0x1b7e17, 0x1b8247), the band whose ctor stamps ??_7CMapStringToOb@@6B@.
+    // (There is NO fold: CMapStringToPtr's Lookup is a SEPARATE body at 0x1b8438.)
+    CMapStringToOb m_10;  // +0x10 the string->item map base (real MFC)
 };
 SIZE_UNKNOWN(CMenuItemCatalog);
 struct CMenuItemHostOwner {

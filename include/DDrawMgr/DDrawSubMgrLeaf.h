@@ -10,10 +10,18 @@
 //
 // Layout (offsets/sizes load-bearing; field NAMES are placeholders):
 //   +0x00  vptr (CObject-derived)  +0x04 m_04 (-1 inactive)  +0x08 m_08
-//   +0x0c  m_0c (parent/root)      +0x10 m_10 (CMapStringToOb, keyed by name)
+//   +0x0c  m_0c (parent/root)      +0x10 m_10 (CMapStringToPtr, keyed by name)
 
 #include <Ints.h>
-#include <Mfc.h> // real MFC CObject / CMapStringToOb / CString / POSITION
+// THE +0x10 MAP IS CMapStringToPtr, NOT CMapStringToOb (mfc_class --audit, 2026-07-12):
+// every map rva retail calls from these methods - Lookup 0x1b8438, RemoveKey 0x1b84de,
+// GetNextAssoc 0x1b8546, ~map 0x1b8322 - lies in [0x1b8247, 0x1b85b1), the band whose
+// ctor stamps ??_7CMapStringToPtr@@6B@ (0x1eb014).  CMapStringToOb's band is
+// [0x1b7e17, 0x1b8247) (Lookup 0x1b8008) and NOTHING here enters it.  The two classes
+// are byte-identical, so the FID rows are all AMBIG and the tree had guessed wrong;
+// `python -m gruntz.analysis.mfc_class 0x1b8438` asks the binary.  (A sibling map -
+// CDDrawWorkerRegistry::m_map - really IS CMapStringToOb, so this is per-site.)
+#include <Mfc.h> // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <rva.h>
 #include <Wap32/Object.h>
 
@@ -69,7 +77,7 @@ public:
     CString KeyOfValue_152d30(CObject* target);
     virtual ~CDDrawSubMgrLeaf() OVERRIDE; // slot 1 (real ~ @0x1577e0; cl auto ??_G @0x1577c0)
 
-    CMapStringToOb m_10; // +0x10  m_map
+    CMapStringToPtr m_10; // +0x10  m_map
 };
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);
 VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)

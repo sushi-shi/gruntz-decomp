@@ -50,11 +50,14 @@
 // (Free360/Free6d0 device-leaf teardowns re-homed onto CDeviceConfigB/CDeviceConfigC
 // below; the DevCfg placeholder view is dissolved.)
 
-// m_devices is the real MFC CPtrArray (DirectInputMgr2.h). Its SetSize/SetAtGrow are
-// reached through a (CDWordArray*) sibling cast so the byte-identical array-family
-// methods emit the FID-bound CDWordArray library names (?SetSize@CDWordArray@@QAEXHH@Z
-// @0x1b4f75 / ?SetAtGrow@CDWordArray@@QAEXHK@Z @0x1b5144) - the CPtrArray-named
-// variants are not FID-labelled. CDWordArray comes from the real <afxcoll.h>.
+// m_devices is the real MFC CPtrArray (DirectInputMgr2.h), and it is called AS a
+// CPtrArray.  The old `(CDWordArray*)` sibling cast was a WRONG-SYMBOL BINDING adopted
+// only because FID had labelled those bodies CDWordArray: the rvas it named -
+// SetSize 0x1b4f75, SetAtGrow 0x1b5144 - lie in [0x1b4f0b, 0x1b527e), the band whose
+// head ctor (0x1b4f0b) DIR32s ??_7CPtrArray@@6B@ (0x1ec2dc).  CDWordArray's band is
+// [0x1b4b43, 0x1b4f0b).  The four MFC array classes are byte-identical, so EVERY FID
+// row there is AMBIG - a signature matcher cannot choose, and this one chose wrong.
+//     python -m gruntz.analysis.mfc_class 0x1b4f75
 
 // The DInput SDK constants (DIRECTINPUT_VERSION / DIDEVTYPE_JOYSTICK / DIEDFL_* /
 // DISCL_* / DIPROP_RANGE / DIPROP_DEADZONE / DIERR_*) now come from the real
@@ -271,7 +274,7 @@ void DirectInputMgr2::Shutdown() {
             delete d;
         }
     }
-    ((CDWordArray*)&m_devices)->SetSize(0, -1);
+    m_devices.SetSize(0, -1);
     FreeDeviceList();
     m_directInput->Release();
     m_directInput = 0;
@@ -382,7 +385,7 @@ i32 __stdcall DinEnumDevicesCallback(const void* instance, void* ref) {
         return 1;
     }
     if (dev != 0) {
-        ((CDWordArray*)&mgr->m_devices)->SetAtGrow(mgr->m_devices.GetSize(), (u32)dev);
+        mgr->m_devices.SetAtGrow(mgr->m_devices.GetSize(), dev);
     }
     return 1;
 }

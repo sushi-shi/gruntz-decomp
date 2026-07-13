@@ -111,7 +111,7 @@ struct RegArea {
     do {                                                                                           \
         CSndHost* _s = (CSndHost*)P(P(base, 0x30), 0x28);                                          \
         if (_s->m_emitGate == 0) {                                                                 \
-            CObject* found = 0;                                                                    \
+            void* found = 0;                                                                    \
             _s->m_10.Lookup("GAME_TABHIGHLIGHT1", found);                                          \
             if (found != 0)                                                                        \
                 FreeHintSprite(g_sndCueTag, 0, 0, 0);                                              \
@@ -359,7 +359,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         }
         void* s = P(P(P(self, 0x4), 0x30), 0x28);
         if (M(s, 0x30) == 0) {
-            CObject* found = 0;
+            void* found = 0;
             ((CSndHost*)s)->m_10.Lookup("GAME_TABHIGHLIGHT1", found);
             if (found != 0) {
                 FreeHintSprite(g_sndCueTag, 0, 0, 0);

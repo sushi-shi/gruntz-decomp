@@ -191,18 +191,20 @@ SIZE_UNKNOWN(CEventLoadRec);
 // ---------------------------------------------------------------------------
 // 0x09cab0 (spatially re-homed from src/Stub/BoundaryLowerMethods.cpp; adjacent to
 // CEventLoadRec at 0x09c650). Out-param wrapper: call the +0x10 name->ptr map's
-// Lookup (the real MFC CMapStringToPtr::Lookup @0x1b8008, COMDAT-folded with
-// CMapStringToOb::Lookup) with a zeroed local and return the filled local.
+// Lookup (the real MFC CMapStringToOb::Lookup @0x1b8008) with a zeroed local and
+// return the filled local.  0x1b8008 is CMapStringToOb's, NOT CMapStringToPtr's:
+// there is no COMDAT fold (MSVC5 has no /OPT:ICF) - CMapStringToPtr::Lookup is a
+// separate body at 0x1b8438.  See `mfc_class 0x1b8008`.
 // @orphan (owning registry class unrecovered; only the +0x10 map is modeled).
 struct C9cab0 {
     char pad0[0x10];
-    CMapStringToPtr m_10; // +0x10  name->ptr map (real MFC; Lookup @0x1b8008)
+    CMapStringToOb m_10; // +0x10  name->object map (real MFC; Lookup @0x1b8008)
     i32 LookupPtr(i32 arg);
 };
 RVA(0x0009cab0, 0x23)
 i32 C9cab0::LookupPtr(i32 arg) {
     i32 local = 0;
-    m_10.Lookup((const char*)arg, (void*&)local);
+    m_10.Lookup((const char*)arg, (CObject*&)local);
     return local;
 }
 SIZE_UNKNOWN(C9cab0);

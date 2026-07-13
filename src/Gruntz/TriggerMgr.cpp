@@ -2360,7 +2360,7 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
     switch (state) {
         case 1:
             if (m_288 != 2) {
-                CObject* p_ob = 0;
+                void* p_ob = 0;
                 m_22c->m_28->m_10.Lookup("GAME\\FINISHLEVEL", p_ob);
                 LeafCue* p = (LeafCue*)p_ob;
                 m_298 = p->m_10->m_28 + 500;
@@ -2370,7 +2370,7 @@ void CFinishLevelState::LoadFinishLevelSprite(i32 state) {
                 CSndHost* h28 = m_22c->m_28;
                 if (h28->m_emitGate == 0) {
                     p = 0;
-                    h28->m_10.Lookup("GAME\\FINISHLEVEL", (CObject*&)p);
+                    h28->m_10.Lookup("GAME\\FINISHLEVEL", (void*&)p);
                     if (p != 0 && g_sndEnabled != 0
                         && (u32)(g_killCueClock - p->m_14) >= (u32)p->m_18) {
                         p->m_14 = g_killCueClock;

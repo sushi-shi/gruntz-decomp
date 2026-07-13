@@ -102,15 +102,15 @@ i32 MapSerializeCurve(CSerialArchive* ar, i32 mode) {
 // @data-symbol: ?Reset@CMapLogic@@QAEXXZ 0x00001a91
 RVA(0x00085480, 0x52)
 void CMapLogic::FreeNodes() {
-    for (i32 i = 0; i < m_arr.m_nSize; i++) {
-        void* elem = m_arr.m_pData[i];
+    for (i32 i = 0; i < m_arr.GetSize(); i++) {
+        void* elem = m_arr.GetData()[i];
         if (elem != 0) {
             void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
             *node = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
-    ((CObArray*)&m_arr)->SetSize(0, -1);
+    m_arr.SetSize(0, -1);
     Reset();
 }
 
@@ -141,16 +141,16 @@ i32 CMapLogic::SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
             ar->Read(&m_90, 4);
             i32 count;
             ar->Read(&count, 4);
-            for (i32 fi = 0; fi < m_arr.m_nSize; fi++) {
-                void* elem = m_arr.m_pData[fi];
+            for (i32 fi = 0; fi < m_arr.GetSize(); fi++) {
+                void* elem = m_arr.GetData()[fi];
                 if (elem != 0) {
                     void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
                     *node = g_coordPool.m_freeHead;
                     g_coordPool.m_freeHead = node;
                 }
             }
-            ((CObArray*)&m_arr)->SetSize(0, -1);
-            ((CObArray*)&m_arr)->SetSize(count, -1);
+            m_arr.SetSize(0, -1);
+            m_arr.SetSize(count, -1);
             for (u32 ri = 0; ri < (u32)count; ri++) {
                 void** node = (void**)g_coordPool.m_freeHead;
                 void* elem = 0;
@@ -159,17 +159,17 @@ i32 CMapLogic::SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
                     g_coordPool.m_freeHead = *node;
                 }
                 ar->Read(elem, 8);
-                m_arr.m_pData[ri] = elem;
+                m_arr.GetData()[ri] = elem;
             }
             break;
         }
         case 4: {
             // write-out: m_90, the count (a local copy of m_84), each node body.
             ar->Write(&m_90, 4);
-            i32 wn = m_arr.m_nSize;
+            i32 wn = m_arr.GetSize();
             ar->Write(&wn, 4);
             for (u32 wi = 0; wi < (u32)wn; wi++) {
-                void* elem = m_arr.m_pData[wi];
+                void* elem = m_arr.GetData()[wi];
                 if (elem == 0) {
                     return 0;
                 }

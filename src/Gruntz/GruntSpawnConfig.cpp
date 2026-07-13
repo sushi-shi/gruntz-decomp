@@ -444,7 +444,7 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
     m_18.SetSize(0, -1);
     m_18.SetAtGrow(0, 0);
     for (i32 i = 1; i < 0x4b0; i++) {
-        m_18.SetAtGrow(i, (DWORD)BuildVoiceSoundList(i));
+        m_18.SetAtGrow(i, BuildVoiceSoundList(i));
     }
     return 1;
 }
@@ -457,8 +457,9 @@ BOOL CGruntSpawnConfig::BuildVoiceList() {
 // and append it to the list (AddTail). The by-value CString param + the inner
 // copy construct the /GX frame. EXACT once the flag is passed through (the
 // earlier "frame-size wall" was really the dropped 2nd ctor arg - a `push flag`).
-// The (CObject*) cast is language-forced: CPtrList stores raw non-CObject records
-// here exactly as retail does.
+// The list is a CPtrList (retail calls 0x1b4867/0x1b4991, the CPtrList band - see
+// SpawnList.h), so AddTail takes the record straight: the old `(CObject*)` cast was
+// forced by the WRONG container type, not by the language.
 RVA(0x0011c560, 0x91)
 void CSpawnList::AddVoiceSound(CString s, i32 flag) {
     CSpawnEntry* node = new CSpawnEntry(s, flag);

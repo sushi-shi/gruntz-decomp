@@ -13,7 +13,7 @@
 #include <rva.h>
 #include <Gruntz/ParseSource.h> // CParseSource (GetEntryTag) - keep BEFORE any
 // header that fwd-declares `class CParseSource` (MSVC5 default-access quirk)
-#include <Mfc.h>                          // real MFC CObject / CMapStringToOb / CString / POSITION
+#include <Mfc.h>                          // real MFC CObject / CMapStringToPtr / CString / POSITION
 #include <DDrawMgr/DDrawSubMgrLeaf.h>     // CDDrawSubMgrLeaf + CCatalogNode (hoisted)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // THE canonical CDDrawSubMgrLeafScan (sibling class)
 #include <Gruntz/AniElement.h>            // canonical CAniElement (the 0x28 'ANI' element)
@@ -55,7 +55,7 @@ public:
     i32 m_04;            // +0x04  status word
     i32 m_08;            // +0x08
     void* m_0c;          // +0x0c  owning CDirectDrawMgr / CDDrawSurfaceMgr manager
-    CMapStringToOb m_10; // +0x10  keyed animation catalog
+    CMapStringToPtr m_10; // +0x10  keyed animation catalog
 };
 
 // Read the owning manager's +0x28 sub-manager slot (forwarded to Configure).
@@ -68,9 +68,9 @@ static inline void* AniMgrSubObject(void* mgr) {
 // COMDAT-at-usage exile kept at the 0x6bxxx obj (file-head position).
 RVA(0x0006b2a0, 0x23)
 CObject* CDDrawSubMgrLeaf::LookupValue_06b2a0(const char* key) {
-    CObject* val = 0;
-    m_10.Lookup(key, val);
-    return val;
+    void* val = 0;
+    m_10.Lookup(key, val); // CMapStringToPtr::Lookup @0x1b8438 (void*& out-param)
+    return (CObject*)val;
 }
 
 // The leaf vtable slots 6/7 (S2-resident tiny virtuals, out-of-line like retail).
@@ -102,10 +102,10 @@ void CDDrawSubMgrLeaf::RemoveValue_152660(CCatalogNode* target) {
     }
     POSITION pos = m_10.GetStartPosition();
     CString key;
-    CObject* val = 0;
+    void* val = 0;
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
-        if ((CObject*)target == val) {
+        if ((void*)target == val) {
             m_10.RemoveKey(key);
             delete target;
             break;
@@ -125,7 +125,7 @@ void CDDrawSubMgrLeaf::RemoveValue_152660(CCatalogNode* target) {
 // sibling source matched 100% elsewhere. docs/patterns/zero-register-pinning.md.
 RVA(0x00152720, 0xa2)
 void CDDrawSubMgrLeaf::FreeAll_152720() {
-    CObject* val = 0;
+    void* val = 0;
     POSITION pos = (POSITION)(m_10.GetCount() != 0 ? -1 : 0);
     CString key;
     if (*(volatile i32*)&pos != 0) {
@@ -155,7 +155,7 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual_1527d0(const char* base, const char* str) 
     match = str;
     i32 len = match.GetLength();
     CString key;
-    CObject* val = 0;
+    void* val = 0;
     POSITION pos = m_10.GetStartPosition();
     i32 n = 0;
     while (pos != 0) {
@@ -196,7 +196,7 @@ CAniElement* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* entry
         delete el;
         return 0;
     }
-    m_10[key] = (CObject*)el;
+    m_10[key] = el;
     return el;
 }
 
@@ -218,7 +218,7 @@ CAniElement* CDDrawSubMgrAni::CreateAniEntry2_1529b0(const char* key, void* entr
         delete el;
         return 0;
     }
-    m_10[key] = (CObject*)el;
+    m_10[key] = el;
     return el;
 }
 
@@ -276,7 +276,7 @@ RVA(0x00152c50, 0xdc)
 i32 CDDrawSubMgrLeaf::HasKeyPrefix_152c50(const char* str) {
     i32 len = strlen(str);
     CString key;
-    CObject* val = 0;
+    void* val = 0;
     POSITION pos = m_10.GetStartPosition();
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);
@@ -297,7 +297,7 @@ CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
     if (target == 0) {
         return key;
     }
-    CObject* val = 0;
+    void* val = 0;
     POSITION pos = m_10.GetStartPosition();
     while (pos != 0) {
         m_10.GetNextAssoc(pos, key, val);

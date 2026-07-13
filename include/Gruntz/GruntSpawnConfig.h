@@ -25,7 +25,7 @@
 #include <rva.h>
 
 #include <Ints.h>
-#include <Mfc.h> // CDWordArray + <windows.h>
+#include <Mfc.h> // CPtrArray + <windows.h>
 
 #include <Gruntz/GameRegistry.h>  // WwdGameReg / g_gameReg
 #include <Gruntz/SpawnList.h>     // canonical CSpawnList / CSpawnEntry (voice lists)
@@ -123,7 +123,9 @@ public:
     CGruntVoice* m_0c;  // +0x0c
     CSpawnStream* m_10; // +0x10  owned voice-stream pair
     CSpawnStream* m_14; // +0x14
-    CDWordArray m_18;   // +0x18  (vptr@0x18, m_pData@0x1c, m_nSize@0x20) - 0x14 bytes
+    // ::CPtrArray, not CDWordArray: retail's ctor/SetSize calls land in [0x1b4f0b,
+    // 0x1b527e), whose head stamps ??_7CPtrArray@@6B@ (mfc_class --audit).
+    CPtrArray m_18;     // +0x18  (vptr@0x18, m_pData@0x1c, m_nSize@0x20) - 0x14 bytes
     i32 m_2c;           // +0x2c  = 0x64
 };
 
