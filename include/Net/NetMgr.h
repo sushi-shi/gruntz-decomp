@@ -1030,7 +1030,7 @@ struct CNetCreateCtx {
     char m_pad0[0x74];
     void* m_74; // +0x74  the group-enumeration record
 };
-SIZE_UNKNOWN(CNetCreateCtx);        // create-context view (only +0x74 pinned); retail size TBD
+SIZE_UNKNOWN(CNetCreateCtx); // create-context view (only +0x74 pinned); retail size TBD
 // (g_648cf4 moved to its only user, Multi.cpp, so it can carry the DATA() binding a
 //  header cannot - declared here it was bound to no retail address at all.)
 

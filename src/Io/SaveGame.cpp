@@ -68,7 +68,7 @@ CImagePool* g_previewMgr; // 0x64c814
 DATA(0x0024c864)
 i32 g_slotState;
 DATA(0x0024c868)
-void* g_previewImage;  // 0x64c868  (CRezImage* previewed DIB)
+void* g_previewImage;                              // 0x64c868  (CRezImage* previewed DIB)
 i32 __stdcall CloseTempFile_e5550(SaveTempRec* r); // defined below (0x0e5550)
 // The SetDlgItemTextA helper (0x0e4850) + the title builder (0x0e44e0), defined below.
 void winapi_0e4850_SetDlgItemTextA(HWND hWnd, void* gate, char* item);

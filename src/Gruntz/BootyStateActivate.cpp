@@ -122,10 +122,10 @@ extern "C" i32 g_bootyLetterCoords[];
 // re-declared as extern "C" symbols that NOTHING defines (unresolvable at link, and
 // invisible to objdiff because the references are reloc-masked). The devs wrote the
 // literals; so do we. cl emits the identical pool entries and the identical fsub/fmul.
-static const float kGlitterPhaseBias = -225.0f;    // was g_5e93b4 (fsub'd, hence negative)
-static const double kDegToRad = 0.017453292;       // was g_5e93b8 (pi/180)
-static const double kGlitterShrinkRate = 0.002;    // was g_5e93c0
-static const double kGlitterStartRadius = 350.0;   // was g_5e93c8
+static const float kGlitterPhaseBias = -225.0f;  // was g_5e93b4 (fsub'd, hence negative)
+static const double kDegToRad = 0.017453292;     // was g_5e93b8 (pi/180)
+static const double kGlitterShrinkRate = 0.002;  // was g_5e93c0
+static const double kGlitterStartRadius = 350.0; // was g_5e93c8
 
 // (the CBootyBonusState view is GONE - there is no "bonus state object". +0x2f8 holds the
 // BOOTY_PERFECT CGameObject sprite (CBootyState::m_bootyPerfectSprite), and the view's two
@@ -297,15 +297,15 @@ void CMultiBootyState::StepGlitterAnim() {
     m_scratchX = (i32)(sin(ang) * r + (float)g_bootyLetterCoords[idx * 2]);
     m_1e8 = (i32)(cos(ang) * r + (float)g_bootyLetterCoords[idx * 2 + 1]);
     m_angleStep = step + 5;
-    m_radius = (i32)(kGlitterStartRadius
-                     - (float)(step + 5) * kGlitterShrinkRate * kGlitterStartRadius);
+    m_radius =
+        (i32)(kGlitterStartRadius - (float)(step + 5) * kGlitterShrinkRate * kGlitterStartRadius);
 
     // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
     i32 i = 0;
     CGameObject** arr1ec = (CGameObject**)((char*)this + 0x1ec);
     if (idx > 0) {
-        i32* tbl = g_bootyLetterCoords + 1;   // ecx: tbl[-1]=x, tbl[0]=y
-        CGameObject** ap = arr1ec; // eax
+        i32* tbl = g_bootyLetterCoords + 1; // ecx: tbl[-1]=x, tbl[0]=y
+        CGameObject** ap = arr1ec;          // eax
         do {
             CGameObject* e = *ap;
             i++;
@@ -615,21 +615,36 @@ CString* GetColorName(CString* out);
 
 // The per-column source-rect tables (RECT[] in .data). Indexed by player/category.
 DATA(0x001e9178)
-RECT g_col1Rects[4] = {{200, 415, 284, 465}, {316, 415, 400, 465}, {432, 415, 516, 465}, {548, 415, 632, 465}};
+RECT g_col1Rects[4] =
+    {{200, 415, 284, 465}, {316, 415, 400, 465}, {432, 415, 516, 465}, {548, 415, 632, 465}};
 DATA(0x001e91b8)
-RECT g_col2Rects[4] = {{200, 372, 284, 422}, {316, 372, 400, 422}, {432, 372, 516, 422}, {548, 372, 632, 422}};
+RECT g_col2Rects[4] =
+    {{200, 372, 284, 422}, {316, 372, 400, 422}, {432, 372, 516, 422}, {548, 372, 632, 422}};
 DATA(0x001e91f8)
-RECT g_col3Rects[4] = {{200, 329, 284, 379}, {316, 329, 400, 379}, {432, 329, 516, 379}, {548, 329, 632, 379}};
+RECT g_col3Rects[4] =
+    {{200, 329, 284, 379}, {316, 329, 400, 379}, {432, 329, 516, 379}, {548, 329, 632, 379}};
 DATA(0x001e9238)
-RECT g_col4Rects[4] = {{200, 286, 284, 336}, {316, 286, 400, 336}, {432, 286, 516, 336}, {548, 286, 632, 336}};
+RECT g_col4Rects[4] =
+    {{200, 286, 284, 336}, {316, 286, 400, 336}, {432, 286, 516, 336}, {548, 286, 632, 336}};
 DATA(0x001e9278)
-RECT g_col5Rects[4] = {{200, 243, 284, 293}, {316, 243, 400, 293}, {432, 243, 516, 293}, {548, 243, 632, 293}};
+RECT g_col5Rects[4] =
+    {{200, 243, 284, 293}, {316, 243, 400, 293}, {432, 243, 516, 293}, {548, 243, 632, 293}};
 DATA(0x001e92b8)
-RECT g_col6Rects[4] = {{200, 200, 284, 250}, {316, 200, 400, 250}, {432, 200, 516, 250}, {548, 200, 632, 250}};
+RECT g_col6Rects[4] =
+    {{200, 200, 284, 250}, {316, 200, 400, 250}, {432, 200, 516, 250}, {548, 200, 632, 250}};
 DATA(0x001e92f8)
-RECT g_colorRects[4] = {{50, 87, 390, 115}, {166, 87, 506, 115}, {282, 87, 622, 115}, {398, 87, 738, 115}};
+RECT g_colorRects[4] =
+    {{50, 87, 390, 115}, {166, 87, 506, 115}, {282, 87, 622, 115}, {398, 87, 738, 115}};
 DATA(0x001e9338)
-RECT g_labelRects[7] = {{45, 155, 175, 215}, {50, 198, 180, 258}, {34, 241, 172, 301}, {55, 284, 172, 344}, {66, 327, 174, 387}, {0, 370, 172, 430}, {38, 413, 172, 473}};
+RECT g_labelRects[7] = {
+    {45, 155, 175, 215},
+    {50, 198, 180, 258},
+    {34, 241, 172, 301},
+    {55, 284, 172, 344},
+    {66, 327, 174, 387},
+    {0, 370, 172, 430},
+    {38, 413, 172, 473}
+};
 
 // The per-player stat block reached through the singleton's m_scoreHud (+0x7c);
 // SumWinRow (0x1230) folds the win-row totals for a player.

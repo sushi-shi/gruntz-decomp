@@ -6,7 +6,7 @@
 //
 // Field names are placeholders; only the field offsets + code bytes are load-bearing.
 #include <rva.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>   // CDDrawWorkerRegistry (name map + AnyValueMatches_155630)
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (reader/writer; Read @ +0x2c / Write @ +0x30)
@@ -135,7 +135,7 @@ i32 CGruntStateRec::Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     if (strlen(buf) != 0) {                                                                        \
         i32 i = idx;                                                                               \
         out = 0;                                                                                   \
-        reg->m_10->m_map.Lookup(buf, out);                                                          \
+        reg->m_10->m_map.Lookup(buf, out);                                                         \
         CRegTypeTable* tt = (CRegTypeTable*)out;                                                   \
         void* r;                                                                                   \
         if (tt != 0 && i >= tt->m_lowerBound && i <= tt->m_upperBound) {                           \
@@ -152,7 +152,7 @@ i32 CGruntStateRec::Load(CSerialArchive* s, i32 mode, i32 a2, i32 a3) {
     s->Read(buf, 0x80);                                                                            \
     if (strlen(buf) != 0) {                                                                        \
         out = 0;                                                                                   \
-        reg->m_10->m_map.Lookup(buf, out);                                                          \
+        reg->m_10->m_map.Lookup(buf, out);                                                         \
         field = out;                                                                               \
     } else {                                                                                       \
         field = 0;                                                                                 \

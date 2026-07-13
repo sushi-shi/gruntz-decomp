@@ -34,8 +34,8 @@ namespace modeinit {
     // CStatusBarMgr has its real inline ctor, the COMPILER emits those helpers itself
     // (??_L / ??_H / ??_M, the eh-vector-ctor / vector-ctor / eh-vector-dtor iterators,
     // all real NAFXCW symbols) with the real element ctor/dtor pointers.)
-    extern "C" void* RezAlloc(u32 sz);                                                // 0x001b9b46
-    extern "C" void RezFree(void* p);                                                 // 0x001b9b82
+    extern "C" void* RezAlloc(u32 sz); // 0x001b9b46
+    extern "C" void RezFree(void* p);  // 0x001b9b82
 
     // The 0x1c control block owned at this->m_2e0 IS the canonical CChatBoxOwner
     // (Attach @0x3e77->0x204e0 / Deactivate @0x285b->0x20510 / Configure @0x171c->

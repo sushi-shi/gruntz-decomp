@@ -14,8 +14,8 @@
 #include <Gruntz/GameRegistry.h> // canonical *0x24556c singleton (light-grid via m_68)
 
 extern "C" unsigned g_frameDelta; // 0x645584 frame delta
-extern CButeTree g_buteTree;  // 0x6bf620
-extern char s_codeA[];        // 0x60a454 "A"
+extern CButeTree g_buteTree;      // 0x6bf620
+extern char s_codeA[];            // 0x60a454 "A"
 
 struct SpotM10 {
     char pad[0x114];

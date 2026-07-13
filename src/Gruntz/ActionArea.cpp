@@ -5,7 +5,7 @@
 // the projactregistry block and BETWEEN PulseHighlight's Tick@0x8440 / Serialize@
 // 0x8600; the interval's flags row is uniformly /GX). Field names are placeholders;
 // only OFFSETS + code bytes are load-bearing.
-#include <Mfc.h>                    // real MFC CString (the type-name record's +0x00 member)
+#include <Mfc.h>        // real MFC CString (the type-name record's +0x00 member)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActionArea.h>
@@ -52,12 +52,12 @@ extern CProjReg g_projReg;
 // real definitions live here (DATA-pinned); the single extern is in <Globals.h>.
 DATA(0x0022938c)
 CVariantSlot* g_projRegColl2; // 0x62938c (Insert dispatcher)
-i32 g_projRegLo; // 0x629390
-i32 g_projRegHi; // 0x629394
-char* g_projRegBase; // 0x629398
-R3Entry* g_projRegCur; // 0x62939c
-i32 g_projRegStride; // 0x6293a0
-i32 g_projRegScratch; // 0x6293a8
+i32 g_projRegLo;              // 0x629390
+i32 g_projRegHi;              // 0x629394
+char* g_projRegBase;          // 0x629398
+R3Entry* g_projRegCur;        // 0x62939c
+i32 g_projRegStride;          // 0x6293a0
+i32 g_projRegScratch;         // 0x6293a8
 
 // The shared alloc-cache pair + the alloc helper the rebuild path drives.
 DATA(0x002bf464)

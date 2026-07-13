@@ -1,4 +1,4 @@
-#include <Mfc.h> // real MFC CString/CObArray/CMapStringToOb (NAFXCW, reloc-masked)
+#include <Mfc.h>        // real MFC CString/CObArray/CMapStringToOb (NAFXCW, reloc-masked)
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/BoundaryUpperViews.h>
 #include <DDrawMgr/DDSurface.h>
@@ -1286,7 +1286,7 @@ CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
     //                        with CDDrawWorker::InsertFrame (slot 14, the SAME rva 0x151f00 -
     //                        worth a look on its own), so retyping it ripples through that
     //                        vtable. Deferred, not bodged.
-    CImage* worker = new CImage(n, m_c); // real frame ctor (vptr interleaved)
+    CImage* worker = new CImage(n, m_c);              // real frame ctor (vptr interleaved)
     if (!worker->Resolve((CParseSource*)src, mode)) { // slot 11 @+0x2c  CImage::Resolve
         if (worker) {
             delete worker; // slot 1 @+0x04  scalar-deleting dtor

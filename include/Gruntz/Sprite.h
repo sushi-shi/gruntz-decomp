@@ -59,7 +59,7 @@ class CImageParent; // the parent context handed to each frame worker (== CImage
 SIZE_UNKNOWN(CSprite);
 struct CSprite {
     char m_pad00[0xc];
-    CImageParent* m_c;        // +0x0c  parent context handed to each frame worker (CImage frame m_parent)
+    CImageParent* m_c; // +0x0c  parent context handed to each frame worker (CImage frame m_parent)
     CFrameArray m_frames;     // +0x10  frame CObArray (m_pData @+0x14, m_nSize @+0x18)
     char m_name[0x64 - 0x24]; // +0x24  registry/config name (the sprite's lookup key)
     i32 m_firstFrame;         // +0x64  first valid frame number

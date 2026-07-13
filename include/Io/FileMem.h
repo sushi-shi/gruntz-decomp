@@ -73,7 +73,7 @@ VTBL(CFileMemBase, 0x001efe68);
 // ---------------------------------------------------------------------------
 class CFileMem : public CFileMemBase {
 public:
-    virtual ~CFileMem() OVERRIDE;  // slot 0  0x00157980 (real ~ / ??_G 0x157a20)
+    virtual ~CFileMem() OVERRIDE;          // slot 0  0x00157980 (real ~ / ??_G 0x157a20)
     virtual void Slot02_157910() OVERRIDE; // slot 2  (0x157a70)
     RVA(0x00157a50, 0x16)
     virtual void Reset() OVERRIDE {

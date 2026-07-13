@@ -18,7 +18,7 @@
 //
 // Flags: eh (/GX) - the interval carries EH-registration evidence
 // (TU_MIGRATION hard error: 0x110430-0x1140e2, 1 EH site).
-#include <string.h> // memcpy -> the /Oi `rep movsd` in BuildSmall
+#include <string.h>     // memcpy -> the /Oi `rep movsd` in BuildSmall
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Mfc.h>
 #include <rva.h>
@@ -449,8 +449,8 @@ void CPlayLevelLoad::LoadPyramidBridge(i32 spriteType) {
             || srcId == 0x67) {
             transId = 0;
         } else {
-            CGameObject* trig =
-                ((CSpriteFactory*)PB_PTR(map, 0x8))->CreateSprite(0, sx, sy, 0, "TileTriggerTransition", 0x40003);
+            CGameObject* trig = ((CSpriteFactory*)PB_PTR(map, 0x8))
+                                    ->CreateSprite(0, sx, sy, 0, "TileTriggerTransition", 0x40003);
             if (trig == 0) {
                 goto done;
             }

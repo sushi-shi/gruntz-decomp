@@ -166,15 +166,15 @@ i32 g_chanStat422_id; // 0x246fdc
 DATA(0x00246fe0)
 i32 g_chanStat422_val; // 0x246fe0
 DATA(0x00248d04)
-i32 g_pauseGuard;  // 0x248d04  OnMultiPause reentrancy guard
+i32 g_pauseGuard; // 0x248d04  OnMultiPause reentrancy guard
 DATA(0x00248d08)
-i32 g_optionzGuard;  // 0x248d08  OnMultiOptionz reentrancy guard
+i32 g_optionzGuard; // 0x248d08  OnMultiOptionz reentrancy guard
 DATA(0x00248d0c)
-i32 g_syncToggle;  // 0x248d0c  FrameSyncWait alternating low-bit flag
+i32 g_syncToggle; // 0x248d0c  FrameSyncWait alternating low-bit flag
 DATA(0x00248d10)
-i32 g_dropGuard;  // 0x248d10  OnDropPlayer reentrancy guard
+i32 g_dropGuard; // 0x248d10  OnDropPlayer reentrancy guard
 DATA(0x00248d14)
-u32 g_648d14;  // 0x248d14  drop-throttle deadline
+u32 g_648d14; // 0x248d14  drop-throttle deadline
 
 // Non-worklist siblings referenced here (shared / homed elsewhere): kept as plain
 // extern refs carrying their DATA fallback (no private definition of them here).

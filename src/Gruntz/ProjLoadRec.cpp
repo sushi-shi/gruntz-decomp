@@ -7,7 +7,7 @@
 //
 // Field names are placeholders; only the field offsets + code bytes are load-bearing.
 #include <rva.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Rez/RezList.h>         // CRezList / CRezListNode (CPtrList::AddTail @0x1b4991)
 #include <Gruntz/SerialObjRef.h> // CSerialArchive, CDDrawSubMgrLeaf (KeyOfValue), CSerialObj
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_world)

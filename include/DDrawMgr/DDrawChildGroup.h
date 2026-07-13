@@ -26,8 +26,8 @@
 
 #include <rva.h>
 #include <Ints.h>
-#include <Mfc.h>           // CMapPtrToPtr - the +0x2c / +0x48 collections (real MFC)
-#include <Wap32/WapObj.h>  // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
+#include <Mfc.h>            // CMapPtrToPtr - the +0x2c / +0x48 collections (real MFC)
+#include <Wap32/WapObj.h>   // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
 #include <Gruntz/StateId.h> // StateId - the slot-8 GetStateId tag space
 
 struct CDDrawChildWorker; // CDDrawGroupChild+0x7c worker (WalkChildWorkers callback host)
@@ -48,8 +48,8 @@ public:
     virtual void ReleaseSubs();  // slot 7  @0x15b5d0 (family base body)
     // slot 8 - the per-kind type tag (`mov eax,<id>; ret`: E=0, C=6, F=0x16, B=0x1b;
     // Find_15a8c0 / FindByWorker probe ==5). == the family's GetTypeId.
-    virtual i32 GetTypeId();          // slot 8  +0x20
-    virtual i32 Slot24_164790();      // slot 9  @0x164790 (family shared helper)
+    virtual i32 GetTypeId();                             // slot 8  +0x20
+    virtual i32 Slot24_164790();                         // slot 9  @0x164790 (family shared helper)
     virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10  the 4-arg build dispatch
     // slots 11-14: the per-object render + dirty-rect blit hooks the group walkers
     // broadcast (args kept i32 in this view; the family types them

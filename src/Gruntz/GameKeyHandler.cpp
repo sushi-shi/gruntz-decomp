@@ -33,8 +33,8 @@
 // ---------------------------------------------------------------------------
 // Named globals (so their DIR32 operands reloc-mask in objdiff).
 // ---------------------------------------------------------------------------
-extern "C" void* g_gameReg;      // 0x64556c  _g_mgrSettings (game-mgr singleton)
-extern i32 g_sndCueTag;          // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
+extern "C" void* g_gameReg; // 0x64556c  _g_mgrSettings (game-mgr singleton)
+extern i32 g_sndCueTag;     // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
 // g_devState was a SECOND NAME for g_spawnConfig (0x245578) - same address,
 // so nothing ever defined it. Unified onto the canonical.
 extern "C" void* g_spawnConfig;

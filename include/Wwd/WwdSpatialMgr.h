@@ -27,8 +27,8 @@
 #include <rva.h>
 #include <Gruntz/WwdGridIter.h> // CWwdGridIter - the embedded cursor member (+0x70)
 
-class CWwdObjMgr; // the master object manager (+0x00)
-class CWwdGrid;   // one plane's spatial bucket index (each TU supplies its own def)
+class CWwdObjMgr;     // the master object manager (+0x00)
+class CWwdGrid;       // one plane's spatial bucket index (each TU supplies its own def)
 class CWwdGameObject; // the engine sprite the grids hold (the canonical managed object)
 
 SIZE(CWwdSpatialMgr, 0xb8); // RebuildPlanes' `operator new(0xb8)`
@@ -72,7 +72,7 @@ struct CWwdSpatialMgr {
     i32 GetSize(); // 0x168430
     i32 CountInRect(CWwdGrid* grid);
     i32 Relocate(i32 newX, i32 newY);
-    i32 PruneCount();                   // 0x1688b0
+    i32 PruneCount();                       // 0x1688b0
     void RemoveObject(CWwdGameObject* obj); // 0x1688f0
     i32 FlushAll();
     i32 FlushGrid(CWwdGrid* grid);

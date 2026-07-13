@@ -67,7 +67,7 @@ struct WwdSub : public CObject {
 #define WORKER_FREE(p)                                                                             \
     do {                                                                                           \
         if (p) {                                                                                   \
-            delete (p);                                                                    \
+            delete (p);                                                                            \
             (p) = 0;                                                                               \
         }                                                                                          \
     } while (0)
@@ -132,10 +132,10 @@ public:
     // Derived game-object slots 5-15 (the shared CWwdGameObject interface; slot RVAs
     // are the 0x5f0020 table's ground truth). Declared-only so A/F/C inherit the
     // full 16-slot shape and cl emits the sized ??_7; reloc-masked.
-    virtual i32 IsLoaded() OVERRIDE; // slot 5  @0x15b370 (m_7c && m_0c && m_04 != -1)
-    virtual i32 IsReady() OVERRIDE;  // slot 6  @0x001c08 (the CWapObj default thunk)
-    virtual void ReleaseSubs();      // slot 7  @0x15b5d0
-    virtual i32 GetTypeId();         // slot 8  @0x154a00 (`return 0`; per-kind type tag)
+    virtual i32 IsLoaded() OVERRIDE;       // slot 5  @0x15b370 (m_7c && m_0c && m_04 != -1)
+    virtual i32 IsReady() OVERRIDE;        // slot 6  @0x001c08 (the CWapObj default thunk)
+    virtual void ReleaseSubs();            // slot 7  @0x15b5d0
+    virtual i32 GetTypeId();               // slot 8  @0x154a00 (`return 0`; per-kind type tag)
     virtual i32 SetPosition(i32 x, i32 y); // slot 9  @0x164790 (pos + draw-state reseed)
     // slot 10 - the 4-arg record build/setup (the factories' `call [eax+0x28]`
     // dispatch pushes exactly four args; base body 0x150d60 == the flat model's
@@ -149,8 +149,11 @@ public:
     BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b); // slot 12 @0x11fec0 (__purecall)
     virtual void
     BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 13 @0x11fec0 (__purecall)
-    virtual void BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
-        ; // slot 14 @0x11fec0 (__purecall)
+    virtual void BltDirtyRegions(
+        CDDrawSurfacePair* a,
+        CDDrawSurfacePair* b,
+        i32 c
+    ); // slot 14 @0x11fec0 (__purecall)
     // slot 15 - the 4-arg play/serialize dispatch (`call [eax+0x3c]`; the manager's
     // ForEach/Deserialize walkers push (archive, mode, arg, self)); base body
     // 0x151150 == the flat model's Play.
@@ -248,7 +251,7 @@ public:
 // the whole chain polymorphic). Restamps its vftable then tail-calls the base
 // CResolveNode teardown (0x429b). Owns the +0x04..+0x5c fields; folded LAST.
 struct WwdBResolve : public CWapObj { // CObject slots 0/2/3/4 + CWapObj 5/6; dtor=slot1
-    virtual ~WwdBResolve() OVERRIDE;   // slot 1
+    virtual ~WwdBResolve() OVERRIDE;  // slot 1
     void DtorBase();                  // 0x429b
     i32 m_04;                         // +0x04
     i32 m_08;                         // +0x08
@@ -261,10 +264,10 @@ struct WwdBResolve : public CWapObj { // CObject slots 0/2/3/4 + CWapObj 5/6; dt
     i32 m_5c;               // +0x5c
     char _p60[0x7c - 0x60]; // pad so WwdBMid's m_7c lands at +0x7c
     // Slots 5-9 of the 0x5efbc0 table (slot RVAs are the table's ground truth):
-    virtual i32 IsLoaded() OVERRIDE; // slot 5  @0x154a10 (m_0c && m_04 != -1)
-    virtual i32 IsReady() OVERRIDE;  // slot 6  @0x001c08 (the CWapObj default thunk)
-    virtual void DisarmDirtyRects(); // slot 7  @0x154a80 (reset m_5c/m_20/m_38 sentinels)
-    virtual i32 GetTypeId();         // slot 8  @0x154a00 (`return 0`)
+    virtual i32 IsLoaded() OVERRIDE;       // slot 5  @0x154a10 (m_0c && m_04 != -1)
+    virtual i32 IsReady() OVERRIDE;        // slot 6  @0x001c08 (the CWapObj default thunk)
+    virtual void DisarmDirtyRects();       // slot 7  @0x154a80 (reset m_5c/m_20/m_38 sentinels)
+    virtual i32 GetTypeId();               // slot 8  @0x154a00 (`return 0`)
     virtual i32 SetPosition(i32 x, i32 y); // slot 9  @0x164790 (shared family body)
 };
 inline WwdBResolve::~WwdBResolve() {
@@ -374,8 +377,8 @@ public:
     // slot 16 - the C kind's 5-arg build (the 0x159250 factory's `call [eax+0x40]`
     // pushes five args; body 0x15c1d0 == the flat SetupFlagged(a1..a4, flag)).
     virtual i32 SetupFlagged16(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag); // slot 16 @0x15c1d0
-    virtual u8 GetDotColor();          // slot 17 @0x15c030 (`mov al,[this+0x18c]`)
-    virtual void SetDotColor(u8 c8);   // slot 18 @0x15c040 (byte store to +0x18c)
+    virtual u8 GetDotColor();        // slot 17 @0x15c030 (`mov al,[this+0x18c]`)
+    virtual void SetDotColor(u8 c8); // slot 18 @0x15c040 (byte store to +0x18c)
 
     char _pe0[0x18c - 0xe0];
     u8 m_18c; // 0x18c (byte flag)

@@ -20,7 +20,7 @@
 // is in PlayDtor.cpp. Field names are placeholders (m_<hexoffset>); only OFFSETS
 // + emitted code bytes are load-bearing (campaign doctrine).
 #include <Gruntz/Demo.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>       // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr / CGameMgr::m_gameWnd -> CGameWnd::m_hwnd (Render's exit post)
 #include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view
 #include <fstream.h> // the REAL CRT ifstream/ofstream/ios (their dtors ARE in the CRT libs)

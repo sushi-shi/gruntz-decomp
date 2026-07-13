@@ -80,7 +80,7 @@ i32 g_imageCacheIndex = 0; // 0x653c90
 // (0x673ca0) - SUBSUMED, no separate bank symbols. DEFINED here (owner TU), reference
 // extern stays in <Globals.h>. (REHOME DD-G / DD-Drain-1)
 DATA(0x00253c9e)
-u8 g_clut[0x30000];  // 0x653c9e
+u8 g_clut[0x30000]; // 0x653c9e
 
 // Global image-cache in-place reconstruction (0x13e070): mov ecx,&g_imageCache; jmp
 // ??0CPtrArray@@QAE@XZ (0x1b4f0b). This is the in-place re-construct of the CPtrArray

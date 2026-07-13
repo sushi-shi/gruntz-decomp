@@ -56,7 +56,7 @@ extern "C" {
 }
 DATA(0x00245cc8)
 extern "C" {
-CGMVerRect g_645cc8; // .bss - zero at load
+    CGMVerRect g_645cc8; // .bss - zero at load
 }
 
 // ===========================================================================

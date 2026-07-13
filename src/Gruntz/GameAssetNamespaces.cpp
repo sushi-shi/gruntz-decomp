@@ -18,7 +18,7 @@ extern i32 g_resourceInstallActive;
 
 // The build number the version string embeds (owner-TU def; .bss, VA 0x651614).
 DATA(0x00251614)
-i32 g_buildNumber;  // 0x651614  sprintf("... Build %i ...", g_buildNumber)
+i32 g_buildNumber; // 0x651614  sprintf("... Build %i ...", g_buildNumber)
 
 // CSymParser (ResolvePath 0x13c030) is the shared <Bute/SymParser.h> shape.
 

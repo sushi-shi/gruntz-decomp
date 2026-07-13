@@ -75,7 +75,7 @@ VTBL(zDArray, 0x001f04d4); // ~zDArray-entry vtable (0x5f04d4)
 // g_defaultProjActSize + GetCallerRetAddr come from <Wap32/zBitVec.h>.)
 // ===========================================================================
 DATA(0x002bf468)
-u8 g_zArrayTag;  // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zArrayTag)
+u8 g_zArrayTag; // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zArrayTag)
 // @identity-TODO INTERIOR-OFFSET CLUSTER - do NOT "fix" these by defining them.
 // g_typeColl (0x6bf650) and the eight scalars around it are ONE object, not nine globals:
 //     g_typeColl +0x00   g_typeColl.m_errSink +0x04  g_typeColl.m_lo  +0x08  g_typeColl.m_hi    +0x0c
@@ -94,7 +94,7 @@ u8 g_zArrayTag;  // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zA
 // The bad-argument / bad-character diagnostic name cell the zBitVec parser reports
 // through (distinct from g_projActName @0x6bf454; this one @0x6bf45c). Reloc-masked.
 DATA(0x002bf45c)
-void* g_projActName2;  // 0x6bf45c
+void* g_projActName2; // 0x6bf45c
 
 // g_containerName (0x2bf408, char[] in <Wap32/zBitVec.h>) - the CContainerErr base-ctor
 // name arg the zBitVec ctors pass. Bound via @data-symbol (the char[] extern mangles
@@ -179,7 +179,7 @@ extern Rec23 g_recs23[];
 // enabled" gate is just `count != 0`.)
 extern "C" {
     DATA(0x002bf618)
-i32 g_recCount23;
+    i32 g_recCount23;
 }
 // (The `g_keyArray` / `g_keyCount` aliases are GONE. They were a second, flat i32-view of
 //  these very globals - declared, never defined, so ?g_keyArray@@3PAHA / ?g_keyCount@@3HA

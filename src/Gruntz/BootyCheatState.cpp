@@ -44,7 +44,7 @@ extern "C" char g_emptyString[];
 // sentinel g_cheatTableEnd (0x62aef0). .bss (built at runtime); DEFINED here (owner
 // TU), reference externs stay in <Globals.h>. (REHOME DD-G)
 char g_cheatTable[0xfa0]; // 0x629f50  (25 entries x 0xa0 stride)
-char g_cheatTableEnd[4]; // 0x62aef0  (loop end sentinel = &g_cheatTable[0xfa0])
+char g_cheatTableEnd[4];  // 0x62aef0  (loop end sentinel = &g_cheatTable[0xfa0])
 // First-run guard (DAT_0062af10): 0 until the cheat table is built. DEFINED here
 // (owner TU); a plain `extern` stays in Globals.h.
 DATA(0x0022af10)

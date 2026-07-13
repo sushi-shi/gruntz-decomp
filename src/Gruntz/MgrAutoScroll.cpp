@@ -76,9 +76,9 @@ DATA(0x0024cfb0)
 i64 g_scrollAccum;
 // Last-frame scroll position (owner-TU defs; .bss, VA 0x64cfd0/0x64cfd4).
 DATA(0x0024cfd0)
-i32 g_lastScrollX;  // 0x64cfd0
+i32 g_lastScrollX; // 0x64cfd0
 DATA(0x0024cfd4)
-i32 g_lastScrollY;  // 0x64cfd4
+i32 g_lastScrollY; // 0x64cfd4
 
 // State singletons owned by the camera auto-scroll manager (.bss, zero-init),
 // RVA-ascending. Referenced by CGruntzMgr / CmdScrollApply too; the reference

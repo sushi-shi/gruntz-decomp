@@ -4,7 +4,7 @@
 // A shared serialize helper with no recovered caller; homed with the g_629a50 scratch
 // buffer it owns and the EnterModalUI reporter it drives. Same "eh" flags; byte-neutral.
 #include <Mfc.h>                  // wsprintfA (USER32, reloc-masked)
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>           // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (g_gameReg->EnterModalUI)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (arc->Read @+0x2c / Write @+0x30)
 #include <rva.h>

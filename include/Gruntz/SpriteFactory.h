@@ -49,28 +49,28 @@ struct CSpriteInner; // GruntObjEntry's +0x7c inner object (grunt world)
 SIZE_UNKNOWN(GruntObjEntry);
 class GruntObjEntry {
 public:
-    virtual void GetRuntimeClass();        // [0]  CObject slot (0x1bef01)
-    virtual void* Delete(i32 flag);        // [1]  scalar-deleting dtor
-    virtual void Serialize();              // [2]  CObject slot (0x0028ec)
-    virtual void AssertValid();            // [3]  CObject slot (0x00106e)
-    virtual void Dump();                   // [4]  CObject slot (0x004034)
-    virtual i32 IsLoaded();                // [5]  0x15b370 (worker-gate)
-    virtual i32 IsReady();                 // [6]  0x001c08 (CWapObj default)
-    virtual void ReleaseSubs();            // [7]  0x15b5d0
-    virtual i32 GetTypeId();               // [8]  +0x20  per-kind type tag (==5 probe;
-                                           //      was this view's "Kind()")
+    virtual void GetRuntimeClass(); // [0]  CObject slot (0x1bef01)
+    virtual void* Delete(i32 flag); // [1]  scalar-deleting dtor
+    virtual void Serialize();       // [2]  CObject slot (0x0028ec)
+    virtual void AssertValid();     // [3]  CObject slot (0x00106e)
+    virtual void Dump();            // [4]  CObject slot (0x004034)
+    virtual i32 IsLoaded();         // [5]  0x15b370 (worker-gate)
+    virtual i32 IsReady();          // [6]  0x001c08 (CWapObj default)
+    virtual void ReleaseSubs();     // [7]  0x15b5d0
+    virtual i32 GetTypeId();        // [8]  +0x20  per-kind type tag (==5 probe;
+                                    //      was this view's "Kind()")
     char m_pad04[0x7c - 0x04];
     CSpriteInner* m_7c; // +0x7c  inner object (== CGameObjAux / the anim worker)
     // Slots 9-17 of the family table, declared-only (canonical names):
-    virtual i32 SetPosition(i32 x, i32 y);                                 // [9]  0x164790
-    virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4);                   // [10] 0x150d60
-    virtual void Render(void* ctx);                                        // [11]
-    virtual void BltDirty(void* a, void* b);                               // [12]
-    virtual void BltDirtyEx(void* a, void* b, i32 c);                      // [13]
-    virtual void BltDirtyRegions(void* a, void* b, i32 c);                 // [14]
-    virtual i32 Play3C(i32 ar, i32 mode, i32 a3, void* self);              // [15] 0x151150
-    virtual i32 Vfunc40();                                                 // [16] 0x1bef01
-    virtual u8 GetDotColor();                                              // [17] (C kind)
+    virtual i32 SetPosition(i32 x, i32 y);                    // [9]  0x164790
+    virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4);      // [10] 0x150d60
+    virtual void Render(void* ctx);                           // [11]
+    virtual void BltDirty(void* a, void* b);                  // [12]
+    virtual void BltDirtyEx(void* a, void* b, i32 c);         // [13]
+    virtual void BltDirtyRegions(void* a, void* b, i32 c);    // [14]
+    virtual i32 Play3C(i32 ar, i32 mode, i32 a3, void* self); // [15] 0x151150
+    virtual i32 Vfunc40();                                    // [16] 0x1bef01
+    virtual u8 GetDotColor();                                 // [17] (C kind)
 };
 SIZE_UNKNOWN(GruntObjMap);
 // MFC CMapPtrToPtr (the serialize-time key->object map). Lookup @0x1b8760 is

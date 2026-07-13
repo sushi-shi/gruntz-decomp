@@ -303,8 +303,8 @@ public:
     // Slots 39/40: the same duplicate-declaration defect (RTTI names them DrawWorldFrame
     // / DrawWorldFrames; the vtable's ILT thunks 0x15eb / 0x311b jmp to 0xc9c20 /
     // 0xc9cc0, which are exactly those two methods' bodies in this TU).
-    virtual void DrawWorldFrame(); // slot 39 (+0x9c) 0x0c9c20 (ex "RenderSlow")
-    virtual i32 DrawWorldFrames(); // slot 40 (+0xa0) 0x0c9cc0 (ex "RenderFast")
+    virtual void DrawWorldFrame();            // slot 39 (+0x9c) 0x0c9c20 (ex "RenderSlow")
+    virtual i32 DrawWorldFrames();            // slot 40 (+0xa0) 0x0c9cc0 (ex "RenderFast")
     virtual i32 BuildMusicCategoryTable(i32); // slot 41 (+0xa4) 0x0dba30 (== the MIDIZ installer)
     virtual i32 BuildWorldLevelPath(i32);     // slot 42 (+0xa8) -> CWorldState::BuildWorldLevelPath
 
@@ -582,8 +582,8 @@ public:
     i32 SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x0d7520
     // SyncState's own reloc-masked CPlay-thiscall leaves (external, no body):
     i32 HeaderSerialize(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x4016 thunk
-    i32 SyncWrite19fb(CSerialArchive* ar); // 0x19fb thunk (mode-4)
-    i32 SyncRead2f7c(CSerialArchive* ar);  // 0x2f7c thunk (mode-7)
+    i32 SyncWrite19fb(CSerialArchive* ar);                             // 0x19fb thunk (mode-4)
+    i32 SyncRead2f7c(CSerialArchive* ar);                              // 0x2f7c thunk (mode-7)
 
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch
@@ -767,13 +767,13 @@ struct StateMgrBZ {
 };
 
 extern "C" {
-    extern u32 g_645580;         // g_lastNow  (-> mirror g_killCueClock)
-    extern u32 g_frameDelta;         // g_lastDelta
-    extern u32 g_frameTime;         // g_accumMs (the running game clock)
+    extern u32 g_645580;              // g_lastNow  (-> mirror g_killCueClock)
+    extern u32 g_frameDelta;          // g_lastDelta
+    extern u32 g_frameTime;           // g_accumMs (the running game clock)
     extern StateMgrBZ* g_spawnConfig; // the dev/render-state singleton (DispatchHudClick)
-    extern "C" i32 g_curPlayer;  // a default cue/message wParam
-    extern u32 g_killCueClock;   // draw-clock mirror
-    extern u32 g_engineFrameDelta;         // draw-delta mirror
+    extern "C" i32 g_curPlayer;       // a default cue/message wParam
+    extern u32 g_killCueClock;        // draw-clock mirror
+    extern u32 g_engineFrameDelta;    // draw-delta mirror
 }
 
 #endif // SRC_GRUNTZ_CPLAY_H

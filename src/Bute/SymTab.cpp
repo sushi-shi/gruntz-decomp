@@ -1444,7 +1444,7 @@ DATA(0x0021a0a0)
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
 // in between get swallowed). Inline the literal at its use site instead.
 extern const char g_wildcard[]; // 0x61a0a0  "*.*"
-extern const char g_dotDot[];                                 // 0x5ee8ec  ".."
+extern const char g_dotDot[];   // 0x5ee8ec  ".."
 DATA(0x0020cf90)
 // @undefined-data: a char[] datum here is a STRING (or a run of them); its
 // extent is not boundable from the named-symbol gaps (the unnamed $SG literals

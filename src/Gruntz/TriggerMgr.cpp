@@ -22,7 +22,7 @@
 // donor view - the canonical-CGameRegistry fold that unifies them is deferred
 // cleanup work.
 #include <Gruntz/TriggerMgr.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/RockBreakMgr.h> // canonical CRockBreakMgr (body below)
 
 #include <Gruntz/ActionOptionsMenuBar.h>
@@ -47,10 +47,10 @@
 extern "C" CGruntzMgr* g_gameReg;
 
 // Merged-donor headers (the dossier-10b one-TU merge):
-#include <Gruntz/Play.h>              // CWorld::WorldTimeline (HudRect @0x78060) + CPlay
-#include <Gruntz/GameLevel.h>         // CLevelPlane (PositionUpdate @0x788d0 tail call)
-#include <Gruntz/GameRegistry.h>      // canonical singleton view (icon/selection donors)
-#include <Gruntz/Grunt.h>             // CGruntTileMgr (CombatCue @0x7b930) + g_gameReg
+#include <Gruntz/Play.h>         // CWorld::WorldTimeline (HudRect @0x78060) + CPlay
+#include <Gruntz/GameLevel.h>    // CLevelPlane (PositionUpdate @0x788d0 tail call)
+#include <Gruntz/GameRegistry.h> // canonical singleton view (icon/selection donors)
+#include <Gruntz/Grunt.h>        // CGruntTileMgr (CombatCue @0x7b930) + g_gameReg
 #include <Gruntz/String.h>
 #include <Gruntz/PickupType.h>      // the shared pickup/toy/tool id space (0x7c620)
 #include <Gruntz/IconLoaderViews.h> // EngineLabelBacklog (the four icon loaders)
@@ -72,7 +72,7 @@ extern "C" CGruntzMgr* g_gameReg;
 // TriggerMgrViews.h - a header cannot carry the DATA() binding, so it had none.
 DATA(0x00244ca4)
 extern i32 g_groupSentinel;
- // the shared CTm* views + singleton externs
+// the shared CTm* views + singleton externs
 
 // 0x77f80: FindNearestInRow(g) - the grunt-to-cell proximity probe: scan the 15 cells
 // of grid row g->m_tileOwnerHi for the live cell whose display object (cell->m_10) is nearest g's

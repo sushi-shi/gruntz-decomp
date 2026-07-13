@@ -53,9 +53,9 @@ struct AnimWorkerObj : public CObject {
     // worker, NOT a vtable dispatch); zero-stamped at worker build = "no callback".
     // (Name migrated from the ex-CAnimWorker view in <Gruntz/UserLogic.h>.)
     i32 (*m_collideNotify)(struct CGameObject* obj); // +0x10
-    void* m_14;               // +0x14  = 0  owned buffer (RezFree'd in Clear)
+    void* m_14;      // +0x14  = 0  owned buffer (RezFree'd in Clear)
     CUserBase* m_18; // +0x18  = 0  the owned bound-logic leaf (deleted in Clear)
-    i32 m_1c;                 // +0x1c  = 0
+    i32 m_1c;        // +0x1c  = 0
     char m_pad20[0x170 - 0x20];
     i32 m_170; // +0x170 = 0
     i32 m_174; // +0x174 = 0

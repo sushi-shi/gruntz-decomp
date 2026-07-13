@@ -509,7 +509,7 @@ public:
     // ILT 0x3913) - see the signature-defect note at the definition: the slot decl
     // below (`virtual i32 UserLogicVfunc3()`) has a DROPPED PARAMETER and a wrong
     // return type, which is why the two cannot yet be spelled as one method.
-    void FinalizeStep(i32 unused); // 0x8b90
+    void FinalizeStep(i32 unused);                                         // 0x8b90
     i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4c1c4
     void Arm(const char* lighting, const char* cursor, i32 kind, i32 one); // 0x4e517
 

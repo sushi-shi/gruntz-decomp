@@ -74,14 +74,14 @@ CRollingBallActReg g_rollingBallActReg; // 0x6461b0 (owner-TU definition; its 0x
 extern "C" void* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 // (g_buteMgr comes from <Bute/ButeMgr.h> via UserLogic.h; Update reaches it only
 //  through RbGetDwordDef, so no direct extern is needed here.)
-extern "C" i32 g_frameTime;    // DAT_00645588 @0x645588 (world clock ms)
-extern "C" i32 g_frameDelta;    // DAT_00645584 @0x645584 (frame delta ms)
+extern "C" i32 g_frameTime;  // DAT_00645588 @0x645588 (world clock ms)
+extern "C" i32 g_frameDelta; // DAT_00645584 @0x645584 (frame delta ms)
 // (g_5ea3e8 was NOT a global: it is MSVC's literal-pool entry for the 1000.0 in the
 //  expression below - an fp constant a previous pass re-declared as an extern "C"
 //  symbol that NOTHING defines. The dev wrote the literal; cl emits the same
 //  reloc-masked .rdata entry and the identical fdiv.)
 static const double kMsPerSecond = 1000.0; // ms -> tiles/second divisor
-extern "C" u32 g_engineFrameDelta;    // _g_6bf3bc @0x6bf3bc (the per-frame draw-delta; Advance arg)
+extern "C" u32 g_engineFrameDelta; // _g_6bf3bc @0x6bf3bc (the per-frame draw-delta; Advance arg)
 
 // ---------------------------------------------------------------------------
 // Engine helpers reached through reloc-masked thunks (no body).

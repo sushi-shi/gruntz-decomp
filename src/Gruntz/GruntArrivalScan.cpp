@@ -209,7 +209,8 @@ i32 CGrunt::ResolveArrivalReposition() {
     {
         u32 dwell = *(u32*)&m_dwell;
         if (dwell > 0x3e8 && m_resetApplied == 0 && m_318 != 0 && dwell > 0xbb8) {
-            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
+            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo
+                >= *(i64*)&m_arrivalRerollWindowLo) {
                 goto L8b5;
             }
             CGruntHud* h = m_10;
@@ -1009,8 +1010,8 @@ i32 CGrunt::UpdateArrival() {
                 }
             }
             if (this->m_resetApplied == 0 && this->m_318 != 0 && (u32)this->m_dwell > 3000) {
-                i32 cmp =
-                    -(i32)((u32)g_frameTime < (u32)this->m_arrivalRerollLo) - this->m_arrivalRerollHi;
+                i32 cmp = -(i32)((u32)g_frameTime < (u32)this->m_arrivalRerollLo)
+                          - this->m_arrivalRerollHi;
                 if (this->m_arrivalRerollWindowHi < cmp
                     || (this->m_arrivalRerollWindowHi <= cmp
                         && (u32)this->m_arrivalRerollWindowLo
@@ -1893,7 +1894,8 @@ i32 CGrunt::StepArrivalDefense() {
             if ((u32)m_dwell <= 0xbb8) {
                 return 1;
             }
-            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
+            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo
+                >= *(i64*)&m_arrivalRerollWindowLo) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollLo = 0;
                 m_arrivalRerollWindowLo = 0;
@@ -2791,7 +2793,8 @@ i32 CGrunt::StepArrivalDefenseLean() {
             if ((u32)m_dwell <= 0xbb8) {
                 return 1;
             }
-            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo >= *(i64*)&m_arrivalRerollWindowLo) {
+            if ((i64)(u32)g_frameTime - *(i64*)&m_arrivalRerollLo
+                >= *(i64*)&m_arrivalRerollWindowLo) {
                 ResetEntranceAnimation(1, 1, 0);
                 m_arrivalRerollWindowLo = GruntRand() % 0x7530 + 0x7530;
                 m_arrivalRerollWindowHi = 0;

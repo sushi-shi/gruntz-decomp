@@ -43,10 +43,10 @@ public:
     CBlitXform* m_xform; // +0x3c  origin transform
     i32 m_mode;          // +0x40  RenderImage selector: bit 1=cull, bit 2/4=flip axes,
                          //        bit 8=animate, bit 0x10000000=live gate
-    u32 m_44;            // +0x44  animation counter (clamped against the draw-delta g_engineFrameDelta)
-    u32 m_48;            // +0x48  m_44 reset value (loaded on wrap)
-    i32 m_notifyArg1;    // +0x4c  shade pre-notify arg (Notify 2nd)
-    i32 m_notifyArg0;    // +0x50  shade pre-notify arg (Notify 1st)
+    u32 m_44; // +0x44  animation counter (clamped against the draw-delta g_engineFrameDelta)
+    u32 m_48; // +0x48  m_44 reset value (loaded on wrap)
+    i32 m_notifyArg1; // +0x4c  shade pre-notify arg (Notify 2nd)
+    i32 m_notifyArg0; // +0x50  shade pre-notify arg (Notify 1st)
     char _54[0x58 - 0x54];
     i32 m_notify;     // +0x58  shade pre-notify gate
     i32 m_drawX;      // +0x5c  draw x

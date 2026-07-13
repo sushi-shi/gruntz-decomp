@@ -17,7 +17,7 @@
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <ddraw.h> // real IDirectDraw2 (FlipToGDISurface @slot 10) - the m_ptrColl device
+#include <ddraw.h>      // real IDirectDraw2 (FlipToGDISurface @slot 10) - the m_ptrColl device
 // The REAL MFC CDialog (ExitModalUI's argument - proof in <Gruntz/GruntzMgr.h>). afx.h
 // arrives first via <Mfc.h>, so there is no windows.h-first C1189 here. The afxwin*.inl
 // bodies are skipped for the clang LABEL step only (they carry an implicit-int
@@ -508,9 +508,9 @@ CString RunCustomWorldDialog(i32 hwnd, CString* out);
 // stored into the game-side mirror g_645580/g_frameDelta); g_killCueClock/g_engineFrameDelta are the
 // draw-clock pair (extern "C" -> the _g_* C symbols). All reloc-masked DATA refs.
 extern "C" {
-    extern u32 g_645580; // game-side now mirror (DAT_00645580)
-    extern u32 g_frameDelta; // game-side delta mirror (DAT_00645584)
-    extern u32 g_frameTime; // game-side abs clock (DAT_00645588)
+    extern u32 g_645580;           // game-side now mirror (DAT_00645580)
+    extern u32 g_frameDelta;       // game-side delta mirror (DAT_00645584)
+    extern u32 g_frameTime;        // game-side abs clock (DAT_00645588)
     extern u32 g_engineFrameDelta; // draw-clock delta (cleared) - g_killCueClock is g_killCueClock
     // The chat-message sprintf scratch buffer (owner-TU .bss definition; canonical
     // extern in <Globals.h>). RVA-ascending: 0x2452d8 precedes g_645600 below.
@@ -518,7 +518,7 @@ extern "C" {
     // The clock/scroll-state globals ResetClockGlobals zeroes (reloc-masked); bound
     // here (their VA-typo'd C++ ?g_...@@3HA twins in gruntzmgrcmd are a separate defect).
     DATA(0x00245600)
-u32 g_645600;  // DAT_00645600 (owner-TU definition, .bss)
+    u32 g_645600; // DAT_00645600 (owner-TU definition, .bss)
     DATA(0x002455b0)
     u32 g_traitorMode;
     DATA(0x002455a4)

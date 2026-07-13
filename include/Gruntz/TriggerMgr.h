@@ -504,11 +504,11 @@ public:
     CTmLevel* m_level;     // +0x22c  the active level object (SetLevel)
     // +0x230: the multiplayer armed gate (ex-CMultiSub68 view's m_armed) ==
     // the companion state word cleared by SetLevel; serialized at 0x1339/0x1545.
-    i32 m_armed;           // +0x230
-    i32 m_recX;            // +0x234  active-record x
-    i32 m_recY;            // +0x238  active-record y
-    CTmGoal* m_goal;       // +0x23c  the goal object
-    CPtrList m_recList;    // +0x240  record list (per-cell undo/record nodes)
+    i32 m_armed;                      // +0x230
+    i32 m_recX;                       // +0x234  active-record x
+    i32 m_recY;                       // +0x238  active-record y
+    CTmGoal* m_goal;                  // +0x23c  the goal object
+    CPtrList m_recList;               // +0x240  record list (per-cell undo/record nodes)
     CActionOptionsMenuBar* m_overlay; // +0x25c  the allocated overlay sub-object (0x40 B)
     CByteArray m_byteArr;             // +0x260  byte-table array
     char m_274[0x10];                 // +0x274  serialized 16-byte region

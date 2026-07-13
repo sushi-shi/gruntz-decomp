@@ -66,8 +66,8 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
-#include <Gruntz/AreaMgr.h>              // CAreaMgr (g_61139c; CPlayLevelLoad::LoadByMode, waveP)
+#include <Io/FileMem.h>     // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Gruntz/AreaMgr.h> // CAreaMgr (g_61139c; CPlayLevelLoad::LoadByMode, waveP)
 #include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader (BuildAssetNamespacePrefixes, waveP)
 // The GRUNTZ_/GAME image worker registry (owner+0x10): 18 vtable slots then the
 // virtual LoadTree at +0x48; plus the non-virtual key probe + direct-load (same shape
@@ -430,8 +430,8 @@ i32 CPlay::Render() {
         // =================================================================
         // ---- MAIN in-game frame ----
         // =================================================================
-        StepInputA();                // cursor draw (BltFast)
-        StepWorldB();                // world/camera sub-step B
+        StepInputA();                    // cursor draw (BltFast)
+        StepWorldB();                    // world/camera sub-step B
         StepGridWalk((i32)g_frameDelta); // 0x2e2d  frame-grid advance (was fake "PreStep")
 
         g_killCueClock = g_645580; // mirror the draw clock
@@ -473,9 +473,9 @@ i32 CPlay::Render() {
             return 1; // no view -> bail
         }
 
-        m_frameMarker->Tick((i32)g_frameDelta);     // 0x3710  CTimer::Tick
-        m_frameMarker->Draw(0, (i32)g_frameDelta);  // 0x27a2  CTimer::Draw
-        m_c->m_drawTarget->m_10->m_2c->Flip(0); // 0x13e850  CDDSurface::Flip
+        m_frameMarker->Tick((i32)g_frameDelta);    // 0x3710  CTimer::Tick
+        m_frameMarker->Draw(0, (i32)g_frameDelta); // 0x27a2  CTimer::Draw
+        m_c->m_drawTarget->m_10->m_2c->Flip(0);    // 0x13e850  CDDSurface::Flip
         UpdateMgrScroll((CGruntzMgr*)g_gameReg, (i32*)m_guts, m_region0Gate); // 0x2356
         winapi_0d0b30_CopyRect((i32)m_c->m_drawTarget->m_14); // 0x1519 (was fake "PostStep")
         return 1;                                             // -> draw tail
@@ -498,7 +498,7 @@ i32 CPlay::Render() {
     {
         CWorld* w = m_4w();
         m_frameMarker->Tick((i32)g_frameDelta); // m_frameMarker begin
-        Eng_FrameTimerStep(w->m_6c, 0);     // m_4->m_6c step (carcass; unresolved callee)
+        Eng_FrameTimerStep(w->m_6c, 0);         // m_4->m_6c step (carcass; unresolved callee)
 
         if (m_levelId == CURSOR_FLAILINGGRUNT) { // booty/flailing-grunt one-shot
             u32 elapsed = g_frameTime - (u32)m_bootyTimerLo;
@@ -2704,8 +2704,10 @@ void CPlay::DrawWorldFrame() {
     }
     g_killCueClock = g_645580;
     g_engineFrameDelta = g_frameDelta;
-    ((CRenderer*)m_c->m_8)->BeginScene(0);                // m_c->m_8->vtbl[+0x24](0)
-    m_4w()->m_68->LoadTeleporterGooConfig((i32)g_frameDelta); // 0x3017 -> 0x6eb80 per-frame grid step
+    ((CRenderer*)m_c->m_8)->BeginScene(0); // m_c->m_8->vtbl[+0x24](0)
+    m_4w()->m_68->LoadTeleporterGooConfig(
+        (i32)g_frameDelta
+    ); // 0x3017 -> 0x6eb80 per-frame grid step
     if (g_gameReg->m_134 == 3) {
         // 0x933e0 == CGruntzMgr::AdvanceOptionsCycle (rel32 via ILT 0x2d33; was the
         // `PerFrameCue` phantom - same object, RTTI-true name).
@@ -2841,9 +2843,9 @@ i32 CPlay::ProfileDeltaFrame() {
 // g_profAccA the camera draw-B duration - read next frame at ProfLog time.
 extern "C" {
     DATA(0x0024c284)
-i32 g_profAccA;
+    i32 g_profAccA;
     DATA(0x0024c288)
-i32 g_profAccB;
+    i32 g_profAccB;
 }
 
 // ===========================================================================
@@ -3725,7 +3727,7 @@ CString GetDifficultyName(i32 diffIdx, i32 upper) {
 // Owner-TU definition of the channel-slot table (canonical extern in <Globals.h>).
 extern "C" {
     DATA(0x0024c3f0)
-i32 g_64c3f0[17];
+    i32 g_64c3f0[17];
 }
 
 // Reset every slot to "free" (1).

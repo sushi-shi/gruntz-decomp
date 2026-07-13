@@ -43,10 +43,10 @@ public:
     // `mov ecx,esi` / `mov edx,[ecx]`..`[ecx+0xc]` off arg2). The swap - not regalloc -
     // was the "~72% wall".
     i32 MeasureLabel(HDC hdc, RECT* rect); // 0x00021f20 (RenderInputText reaches it
-                                                // via ILT 0x258b; the old separate
-                                                // "Draw258b" decl was a phantom
-                                                // duplicate of this same function)
-    i32 RenderInputText(HDC hdc, i32 maxWidth, RECT* rect); // 0x00022160
+                                           // via ILT 0x258b; the old separate
+                                           // "Draw258b" decl was a phantom
+                                           // duplicate of this same function)
+    i32 RenderInputText(HDC hdc, i32 maxWidth, RECT* rect);               // 0x00022160
     i32 DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format); // 0x00022770
     i32 Draw3DText(
         const CString* strSrc,

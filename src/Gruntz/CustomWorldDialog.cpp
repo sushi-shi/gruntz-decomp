@@ -254,21 +254,21 @@ namespace m4 {
     // for 0x24556c that nothing could ever define. Plain lookup finds ::g_gameReg.
 
     // The custom-level glob + display-name format + "already loaded" strings.
-DATA(0x0020cf94)
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-extern char g_customGlob[]; // 0x0060cf94
-DATA(0x0020cf90)
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-extern char g_customDone[]; // 0x0060cf90
-DATA(0x0020c5b8)
-// @undefined-data: a char[] datum here is a STRING (or a run of them); its
-// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
-// in between get swallowed). Inline the literal at its use site instead.
-extern char g_nameFmt[]; // 0x0060c5b8
+    DATA(0x0020cf94)
+    // @undefined-data: a char[] datum here is a STRING (or a run of them); its
+    // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+    // in between get swallowed). Inline the literal at its use site instead.
+    extern char g_customGlob[]; // 0x0060cf94
+    DATA(0x0020cf90)
+    // @undefined-data: a char[] datum here is a STRING (or a run of them); its
+    // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+    // in between get swallowed). Inline the literal at its use site instead.
+    extern char g_customDone[]; // 0x0060cf90
+    DATA(0x0020c5b8)
+    // @undefined-data: a char[] datum here is a STRING (or a run of them); its
+    // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+    // in between get swallowed). Inline the literal at its use site instead.
+    extern char g_nameFmt[]; // 0x0060c5b8
 
     // @early-stop
     // regalloc + frame-layout wall. Complete correct reconstruction: the listbox

@@ -134,7 +134,7 @@ struct CGMVerRect {
     i32 a, b, c, d;
 };
 extern "C" CGMVerRect g_645cc8; // (the 4-int source @c8/cc/d0/d4)
-extern "C" u32 g_frameDelta;        // (last-frame delta, fed to Step)
+extern "C" u32 g_frameDelta;    // (last-frame delta, fed to Step)
 
 // (g_60ce90 / g_60ce74 were NOT globals: they are the .rdata STRING LITERALS
 //  "CREDITZ" and "MONOLITH" - the credits cue/sound names - re-declared by a previous

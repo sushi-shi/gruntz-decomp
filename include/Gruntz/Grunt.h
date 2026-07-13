@@ -1687,7 +1687,7 @@ public:
     i32 m_888;          // +0x888
     i32 m_88c;          // +0x88c
     i32 m_wingzClockLo; // +0x890 (wingz timer: anchor clock lo = g_frameTime; i64 w/ m_wingzClockHi)
-    i32 m_wingzClockHi; // +0x894 (wingz timer: anchor clock hi = 0)
+    i32 m_wingzClockHi;    // +0x894 (wingz timer: anchor clock hi = 0)
     i32 m_wingzDurationLo; // +0x898 (wingz timer: duration lo = (long)(m_wingzTime*scale-bias))
     i32 m_wingzDurationHi; // +0x89c (wingz timer: duration hi = 0)
     i32 m_8a0;             // +0x8a0 (sub-ser record base, SerializeMove)

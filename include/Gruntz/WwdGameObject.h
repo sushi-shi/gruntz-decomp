@@ -4,7 +4,7 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Mfc.h> // real MFC CObject (the object's grand-base) + CObList (m_subList @+0x1dc)
-#include <Wap32/WapObj.h> // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
+#include <Wap32/WapObj.h>            // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
 #include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam - the real +0x1a0 command sub-object
 #include <Gruntz/WwdGridIter.h>      // WwdGridNode - the embedded +0x9c region node
 

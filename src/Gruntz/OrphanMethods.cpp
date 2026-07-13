@@ -92,8 +92,8 @@ i32 CState95::Step(i32 arg) {
 // has elapsed (which clears the latch), then seed the bound sprite's anim state
 // (m_4c frame / m_50 = 7 / m_58 = 1). Always runs the trailing helper, returns 0.
 DATA(0x00245588)
-extern "C" u32 g_frameTime;   // tick
-extern i32 g_strikeThresh; // 0x645598
+extern "C" u32 g_frameTime; // tick
+extern i32 g_strikeThresh;  // 0x645598
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg; // 0x64556c
 extern "C" void Helper2914();        // 0x2914 (ILT thunk)

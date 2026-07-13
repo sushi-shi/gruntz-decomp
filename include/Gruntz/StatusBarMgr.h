@@ -587,14 +587,14 @@ public:
     i32 m_2a4; // +0x2a4
     i32 m_2a8; // +0x2a8
     i32 m_2ac; // +0x2ac
-    i32 m_2b0;                     // +0x2b0  (multiplayer/battlez reset block)
-    i32 m_2b4;                     // +0x2b4
-    i32 m_2b8;                     // +0x2b8
-    i32 m_2bc;                     // +0x2bc
+    i32 m_2b0; // +0x2b0  (multiplayer/battlez reset block)
+    i32 m_2b4; // +0x2b4
+    i32 m_2b8; // +0x2b8
+    i32 m_2bc; // +0x2bc
     // +0x2c0: group-A 24-byte slot records. CSbiHlRow, NOT CSbiSlot - it shares the
     // out-of-line element ctor 0xc86d0 with m_hlGrid (the vector-ctor iterator takes
     // that one function pointer for BOTH arrays). Layout is unchanged.
-    CSbiHlRow m_groupSlots[3]; // +0x2c0
+    CSbiHlRow m_groupSlots[3];     // +0x2c0
     CSbiSlotPtr* m_groupNotify[3]; // +0x308  group-A notify pointers
     char m_pad314[0x318 - 0x314];
     i32 m_hudRectB_x;          // +0x318  HUD-rect group B (x0)
@@ -963,13 +963,13 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_hudRectA_clockHi = 0;
     m_hudRectA_z = 0;
     m_hudRectA_zHi = 0;
-    m_beltLast = 0;              // +0x4d0  (64-bit)
-    m_beltInterval = 0;          // +0x4d8  (64-bit)
-    m_fallLast = 0;              // +0x4f0
+    m_beltLast = 0;     // +0x4d0  (64-bit)
+    m_beltInterval = 0; // +0x4d8  (64-bit)
+    m_fallLast = 0;     // +0x4f0
     m_fallLastHi = 0;
     m_fallDelay = 0;
     m_fallDelayHi = 0;
-    m_destructWarnLast = 0;      // +0x560
+    m_destructWarnLast = 0; // +0x560
     m_destructWarnLastHi = 0;
     m_destructWarnDelay = 0;
     m_destructWarnDelayHi = 0;
@@ -991,44 +991,44 @@ inline CStatusBarMgr::CStatusBarMgr() {
     m_tabSprite12 = 0;
     m_tabSprite13 = 0;
     m_tabSprite14 = 0;
-    m_8 = 0;                     // +0x08
-    m_c = 0;                     // +0x0c
-    m_rect14.m_c = 0;            // +0x20  (the rect block's 4th int; only this one)
-    m_activeTab = 0;             // +0x10c
-    m_hitTestDisabled = 0;       // +0x354
-    m_tabsBuilt = 0;             // +0x358
-    m_toggleActive = 0;          // +0x550
-    m_toggleHandle = 0;          // +0x554
-    m_barFrameGate = 0x1e0;      // +0x614
-    m_tabCycle = 0;              // +0x62c
-    memset(m_statFlags, 0, sizeof(m_statFlags));   // +0x114 (0xf dwords, rep stosd)
-    memset(m_hitRects, 0, sizeof(m_hitRects));     // +0x150 (0xf, rep stosd)
-    memset(m_statObj, 0, sizeof(m_statObj));       // +0x18c (0xf, rep stosd)
+    m_8 = 0;                                     // +0x08
+    m_c = 0;                                     // +0x0c
+    m_rect14.m_c = 0;                            // +0x20  (the rect block's 4th int; only this one)
+    m_activeTab = 0;                             // +0x10c
+    m_hitTestDisabled = 0;                       // +0x354
+    m_tabsBuilt = 0;                             // +0x358
+    m_toggleActive = 0;                          // +0x550
+    m_toggleHandle = 0;                          // +0x554
+    m_barFrameGate = 0x1e0;                      // +0x614
+    m_tabCycle = 0;                              // +0x62c
+    memset(m_statFlags, 0, sizeof(m_statFlags)); // +0x114 (0xf dwords, rep stosd)
+    memset(m_hitRects, 0, sizeof(m_hitRects));   // +0x150 (0xf, rep stosd)
+    memset(m_statObj, 0, sizeof(m_statObj));     // +0x18c (0xf, rep stosd)
     memset(m_slotNotify, 0, sizeof(m_slotNotify)); // +0x204 (5, unrolled)
     memset(m_hlNotify, 0, sizeof(m_hlNotify));     // +0x498 (0xc, rep stosd)
-    m_groupNotify[0] = 0;        // +0x308 x3 (individual stores)
+    m_groupNotify[0] = 0;                          // +0x308 x3 (individual stores)
     m_groupNotify[1] = 0;
     m_groupNotify[2] = 0;
-    m_61c[0] = 0;                // +0x61c x4 (individual stores)
+    m_61c[0] = 0; // +0x61c x4 (individual stores)
     m_61c[1] = 0;
     m_61c[2] = 0;
     m_61c[3] = 0;
-    m_notify0 = 0;               // +0x364..+0x370, in retail's 364/36c/370/368 order
+    m_notify0 = 0; // +0x364..+0x370, in retail's 364/36c/370/368 order
     m_notify2 = 0;
     m_notify3 = 0;
     m_notify1 = 0;
-    m_extraNotify0 = 0;          // +0x4e0
-    m_extraNotify1 = 0;          // +0x500
-    m_348 = 0;                   // +0x348
-    m_modeNotify = 0;            // +0x570
-    m_gaugeNotify = 0;           // +0x218
-    m_gaugeSink = 0;             // +0x21c
-    m_gaugeTarget = 0;           // +0x29c  (stored BEFORE m_gauge in retail)
-    m_gauge = 0;                 // +0x298
-    m_544 = 1;                   // +0x544
-    m_hlBusy = 0;                // +0x548
-    m_retabNotify = 0;           // +0x54c
-    m_modeArmed = 0;             // +0x574
+    m_extraNotify0 = 0; // +0x4e0
+    m_extraNotify1 = 0; // +0x500
+    m_348 = 0;          // +0x348
+    m_modeNotify = 0;   // +0x570
+    m_gaugeNotify = 0;  // +0x218
+    m_gaugeSink = 0;    // +0x21c
+    m_gaugeTarget = 0;  // +0x29c  (stored BEFORE m_gauge in retail)
+    m_gauge = 0;        // +0x298
+    m_544 = 1;          // +0x544
+    m_hlBusy = 0;       // +0x548
+    m_retabNotify = 0;  // +0x54c
+    m_modeArmed = 0;    // +0x574
 }
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

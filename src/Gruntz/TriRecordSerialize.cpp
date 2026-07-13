@@ -7,7 +7,7 @@
 // CTriRecord::Serialize @0x3c8f0 re-homed to Demo.cpp (dossier #16: its birth
 // position is inside the demo obj's weave).
 #include <Gruntz/SerialObjRef.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>          // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <rva.h>
 #include <Gruntz/SerialRecords.h>
 

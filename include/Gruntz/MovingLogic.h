@@ -47,7 +47,7 @@ extern const double g_movingLogicMax; // 0x5f04b8 (2147483646.0)
 // The 1-arg ctor's velocity/scale seeds: g_frameTime (spawn seed int, scaled by the
 // .rdata double g_5eaa88) and g_5f04e8 (the default-Z int). Read unsigned -> the
 // fild {lo,0} idiom.
-extern "C" u32 g_frameTime;      // 0x645588
+extern "C" u32 g_frameTime;   // 0x645588
 extern const double g_5eaa88; // 0x5eaa88
 extern u32 g_5f04e8;          // 0x5f04e8
 

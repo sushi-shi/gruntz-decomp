@@ -133,7 +133,7 @@ public:
     // round-trips the fill/rect fields + two frame handles by name+index, and (mode 8)
     // re-resolves the goo surface + rebinds the frames' shade nodes.
     i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x0e64c0
-    i32 SerializeChain(void* arc, i32 mode, i32 a3, i32 a4);             // 0x0e6e40 (base leg)
+    i32 SerializeChain(void* arc, i32 mode, i32 a3, i32 a4);      // 0x0e6e40 (base leg)
 
     // vtable slot 3 (0x104c80): release the owned goo source surface through the
     // cached manager's (+0x24) surface pool, then clear it.

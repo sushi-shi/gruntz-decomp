@@ -6,7 +6,7 @@
 // SBI_ImageSetAni.cpp); the 0xe6020 stub to SBI_WellGoo.cpp (slot 2). Only the
 // four timed-play leaf methods remain - see <Gruntz/AniPlayer.h> (@identity-TODO).
 #include <Gruntz/AniPlayer.h>
-#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
+#include <Io/FileMem.h>    // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/ResMgr.h> // canonical g_gameReg->m_world view (CResMgr + CDrawTarget)
 #include <Image/CImage.h>  // the cel/frame record (RenderFrame @0x153790)
 #include <Mfc.h>           // CMapStringToPtr (the config-host lookup)
