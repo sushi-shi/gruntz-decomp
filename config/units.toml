@@ -352,11 +352,6 @@ source = "src/Gruntz/BrickzLoad.cpp"
 flags = "base"
 
 [[unit]]
-unit = "gruntzmgrtransition"
-source = "src/Gruntz/GruntzMgrTransition.cpp"
-flags = "eh"
-
-[[unit]]
 unit = "bootycheatstate"
 source = "src/Gruntz/BootyCheatState.cpp"
 flags = "eh"

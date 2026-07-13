@@ -109,7 +109,19 @@ VTBL(CBattlezDlg, 0x001e8bac); // vtable_names -> code (RTTI game class)
 class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent);
-    virtual ~CBattlezDlg() OVERRIDE; // 0x14c90 (destroy CString m_6c, chain ~CDialog)
+    // NO DECLARED DESTRUCTOR - and that is a binary fact, not laziness. Retail's
+    // ??1CBattlezDlg (0x14c90, 71 B) destroys the CString m_6c and chains ~CDialog with NO
+    // `mov [esi],??_7CBattlezDlg` vptr re-stamp at entry. cl only emits that stamp for a
+    // USER-WRITTEN dtor body (so a virtual call inside the body would dispatch to THIS
+    // class); a compiler-generated one has no body and needs no stamp. Declaring it
+    // out-of-line here cost the 6-byte stamp (94.4% wall) AND split the class in two: the
+    // save-as dialog TU (GruntzMgr.cpp) had to keep a private twin with an implicit dtor,
+    // because retail's CGruntzMgr::SaveGameAs INLINES the teardown at the stack local's
+    // scope exit (`lea ecx,[esp+0x78]; call ~CString` / `lea ecx,[esp+0xc]; call ~CDialog`,
+    // no `call ??1CBattlezDlg` anywhere) - which cl only does for an implicit dtor. Two
+    // definitions, two byte-shapes, ONE mangled name: an ODR landmine that the implicit
+    // dtor removes. The out-of-line COMDAT is still emitted (the vtable slot needs its
+    // address) and is bound to 0x14c90 by @rva-symbol in src/Gruntz/Dialogs.cpp.
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
     virtual i32 OnInitDialog() OVERRIDE;                      // slot 49  OnInitDialog (0x160d0)
@@ -225,7 +237,12 @@ VTBL(CBattlezDlgCustom, 0x001e8ee4); // vtable_names -> code (RTTI game class)
 class CBattlezDlgCustom : public CDialog {
 public:
     CBattlezDlgCustom(CWnd* pParent);
-    virtual ~CBattlezDlgCustom() OVERRIDE; // 0x17140 (destroy CString m_customName, chain ~CDialog)
+    // No declared dtor - same fingerprint as CBattlezDlg above: retail's ??1CBattlezDlgCustom
+    // (0x17140) destroys m_customName and chains ~CDialog with NO vptr re-stamp at entry, and
+    // so does the copy CBattlezDlg::ShowCustomDlg inlines at its stack local. cl emits that
+    // stamp for a user-written body only, so the dtor is compiler-generated. The COMDAT is
+    // still emitted (the vtable slot takes its address) and bound by @rva-symbol in
+    // src/Gruntz/Dialogs.cpp.
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)
 
@@ -431,7 +448,11 @@ VTBL(CCheckpointDlg, 0x001e9504); // vtable_names -> code (RTTI game class)
 class CCheckpointDlg : public CDialog {
 public:
     CCheckpointDlg(CWnd* pParent);
-    virtual ~CCheckpointDlg() OVERRIDE; // slot 1
+    // No declared dtor - same reason as CBattlezDlg above. The declared-only
+    // `virtual ~CCheckpointDlg()` that used to sit here had a body in NO obj (a guaranteed
+    // unresolved external) and would have forced a `call ??1CCheckpointDlg` at the stack
+    // local in CGruntzMgr::OnCheckpointReached, where retail inlines the teardown
+    // (`call ??1CDialog` @0x1ba51d, nothing else). Implicit is both correct and linkable.
     // MFC GetMessageMap override (see CBattlezDlgColors): returns the static map.
     virtual const AFX_MSGMAP* GetMessageMap() const OVERRIDE; // slot 12 (real MFC sig)
     virtual void DoDataExchange(CDataExchange* pDX) OVERRIDE; // slot 35 (was WndVsl35)

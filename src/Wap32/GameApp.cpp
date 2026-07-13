@@ -443,15 +443,15 @@ void CGameApp::ReportError(WPARAM wParam, LPARAM lParam) {
 // ~CGameApp is now inline in Wap32.h (CloseResources() + counter dec); it is
 // still emitted in this TU (the vtable's scalar-deleting dtor references it).
 
-// CGameMgr vtable anchors (~CGameMgr is now inline in Wap32.h; the three
-// otherwise-unmatched virtuals anchor here).
-i32 WAP32::CGameMgr::Wap32GameMgrVfunc3() {
-    return 0;
-}
-void WAP32::CGameMgr::PerFrameTick() {}
-i32 WAP32::CGameMgr::HandleCommand(i32, i32, i32) {
-    return 0;
-}
+// (the three "CGameMgr vtable anchor" stubs that used to sit here are GONE. They were not
+// anchors, they were a SECOND definition of functions this tree already reconstructs at
+// their retail rvas in src/Gruntz/GruntzMgr.cpp - Wap32GameMgrVfunc3 @0x85560,
+// PerFrameTick, HandleCommand @0x85580 - and the Vfunc3 stub was WRONG: it returned a
+// constant 0 where retail returns `m_gameWnd != 0` (`mov edx,[ecx+4]; xor eax,eax;
+// test edx,edx; setne al; ret`). One mangled name, two byte-shapes, and MSVC5 keeps exactly
+// one COMDAT - so the linker could have handed every caller in this tree the stub that says
+// "no game window is ever bound". Declared-only in <Wap32/Wap32.h> is all this TU needs:
+// the vtable slot's reloc binds to the real body at link.)
 
 // -------------------------------------------------------------------------
 // CGameMgr::CGameMgr()  (__thiscall, returns this in EAX; vftable @0x5e9b8c)

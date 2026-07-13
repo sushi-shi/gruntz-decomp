@@ -872,6 +872,19 @@ def cmd_audit(aud):
             n_new = max(0, len(slots) - nB)
         own = n_ovr + n_new
         n_virt, n_macro = _body_counts(aud.bodies.get(name, []))
+        # IMPLICIT VIRTUAL DESTRUCTOR. _body_counts greps the `virtual` keyword, but a
+        # compiler-generated dtor occupies its vtable slot without ever being spelled: if the
+        # binary gives this class a dtor slot (dtor_i) and the source declares no ~Name, cl
+        # synthesised the override. That is a MODELLED slot, not an unmodelled one - and for
+        # several classes it is the ONLY correct model, because a user-written dtor body makes
+        # cl emit a `mov [this],&??_7Class` vptr re-stamp at entry that retail does not have
+        # (??1CBattlezDlg @0x14c90 / ??1CBattlezDlgCustom @0x17140 carry no such store, and
+        # both went byte-EXACT the moment the declaration was dropped). Requiring the
+        # declaration here would force a wrong body. Credit the slot, and credit the macro
+        # too: an implicit override cannot carry OVERRIDE.
+        implicit_dtor = 1 if (dtor_i is not None and not declares_dtor) else 0
+        n_virt += implicit_dtor
+        n_macro += implicit_dtor
         loc = "%s:%d" % aud.where[name]
         # (1) INCORRECT INHERITANCE: our source's WRITTEN base != the binary-true base.
         # A deeper `truth` (e.g. CObject) does NOT make source wrong when source derives a

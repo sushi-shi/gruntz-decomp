@@ -664,9 +664,12 @@ void CMultiStartDlg::OnColorSlot3() {
     }
 }
 
-// inlines OnCustomWorld's teardown (member ~CString m_customName + base ~CDialog as
-// separate calls) exactly as retail did - the out-of-line ??1 call misses that shape.
-inline CBattlezDlgCustom::~CBattlezDlgCustom() {}
+// (the local `inline CBattlezDlgCustom::~CBattlezDlgCustom() {}` that used to sit here is
+// GONE. It was written to force /Ob1 to inline OnCustomWorld's teardown - which it did, but
+// at the cost of a `mov [..],??_7CBattlezDlgCustom` vptr re-stamp retail does not have. The
+// dtor is COMPILER-GENERATED in the real source (see <Gruntz/Dialogs.h>): cl inlines an
+// implicit dtor at a stack local's scope exit AND omits the stamp, which is exactly the
+// shape retail emits. Nothing to define here.)
 
 // ---------------------------------------------------------------------------
 // OnCustomWorld (0xc3cb0): double-click the world combo (0x4ff). Host-only: run the
@@ -674,10 +677,11 @@ inline CBattlezDlgCustom::~CBattlezDlgCustom() {}
 // into the combo's edit child and commit it as the game's custom world/host name.
 // ---------------------------------------------------------------------------
 // @early-stop
-// Same wall family as the sibling CBattlezDlg::ShowCustomDlg (Dialogs.cpp, ~92.9%):
-// the inlined ~CBattlezDlgCustom teardown, /GX EH trylevel numbering (retail 0/1/2/-1
-// vs 0/1/-1), the child!=0 branch polarity, and an esi-save shrink-wrap our newer
-// codegen does that MSVC5 didn't - none source-steerable. Body byte-faithful. ~86.5%.
+// Same wall family as the sibling CBattlezDlg::ShowCustomDlg (Dialogs.cpp): /GX EH trylevel
+// numbering (retail 0/1/2/-1 vs 0/1/-1), the child!=0 branch polarity, and an esi-save
+// shrink-wrap our newer codegen does that MSVC5 didn't - none source-steerable. The
+// vptr-restamp part of the old wall is GONE (~CBattlezDlgCustom is compiler-generated now,
+// which is what the binary says and what took the dtor COMDAT to 100%). Body byte-faithful.
 RVA(0x000c3cb0, 0x128)
 void CMultiStartDlg::OnCustomWorld() {
     if (g_64bd5c->m_isHost == 0) {

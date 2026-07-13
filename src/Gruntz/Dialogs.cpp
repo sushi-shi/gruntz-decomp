@@ -12,7 +12,7 @@
 // -> SlotComboFill.cpp.
 //
 // Built /GX: three of the four ctors construct embedded MFC C++ objects (CString /
-// CPtrList) and so carry an fs:0 EH frame (push -1 / push handler / mov fs:0,esp) to
+// CObList) and so carry an fs:0 EH frame (push -1 / push handler / mov fs:0,esp) to
 // unwind a half-built object if a member ctor throws. (CBattlezDlgColors has NO
 // embedded C++ member, so its body carries no EH frame even under /GX.)
 //
@@ -53,17 +53,18 @@ CBattlezDlg::CBattlezDlg(i32 a0, CWnd* pParent) : CDialog(0xc0, pParent) {
     m_customNameFlag = 0;
 }
 
-// ~CBattlezDlg @0x14c90 - destroy the CString member m_6c, then chain the NAFXCW
-// ~CDialog base dtor (both reloc-masked). The /GX EH frame unwinds the half-torn
-// object across the member dtor.
-// @early-stop
-// vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md): the
-// /GX frame + member ~CString + base ~CDialog chain are byte-exact, but our
-// polymorphic model emits one extra `mov [esi],&??_7CBattlezDlg` re-stamp at entry
-// that retail elided (its vtable already equals the base through the dtor). Not
-// source-steerable; ~94.4%.
-RVA(0x00014c90, 0x47)
-CBattlezDlg::~CBattlezDlg() {}
+// ~CBattlezDlg @0x14c90 - destroy the CString member m_6c, then chain the NAFXCW ~CDialog
+// base dtor (both reloc-masked), under a /GX EH frame that unwinds the half-torn object
+// across the member dtor.
+//
+// IT IS COMPILER-GENERATED, so there is no definition here to hang an RVA() on - the class
+// declares no dtor (see <Gruntz/Dialogs.h>) and cl emits the COMDAT because the vtable slot
+// needs its address. That is not a workaround, it is what the bytes say: retail's 71-byte
+// body has NO `mov [esi],??_7CBattlezDlg` re-stamp at entry, and cl emits that stamp for
+// every user-written dtor body. Declaring the dtor cost exactly those 6 bytes (the old
+// "vptr-restamp-presence wall", ~94.4%) and forced GruntzMgr.cpp to carry a second
+// definition of the class under the same name. Both are gone.
+// @rva-symbol: ??1CBattlezDlg@@UAE@XZ 0x00014c90 0x47
 
 // @confidence: low
 // @source: winapi:GetWindow;GetWindowLongA;SetWindowLongA
@@ -110,13 +111,13 @@ RVA(0x00018030, 0x56)
 CBattlezDlgCustom::CBattlezDlgCustom(CWnd* pParent) : CDialog(0xc3, pParent) {}
 
 // ~CBattlezDlgCustom @0x17140 - destroy the CString member m_customName, then chain the
-// NAFXCW ~CDialog base dtor. /GX EH frame for the member unwind.
-// @early-stop
-// vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md): same
-// as ~CBattlezDlg - one extra most-derived vptr re-stamp our polymorphic model emits
-// that retail elided; chain otherwise byte-exact. ~94.4%.
-RVA(0x00017140, 0x47)
-inline CBattlezDlgCustom::~CBattlezDlgCustom() {}
+// NAFXCW ~CDialog base dtor, under a /GX EH frame for the member unwind. COMPILER-GENERATED
+// (see <Gruntz/Dialogs.h>), so there is no definition to hang an RVA() on: retail's body
+// carries no `mov [esi],??_7CBattlezDlgCustom` re-stamp, and cl only emits that for a
+// user-written dtor body. Declaring it (even `inline ... {}`) added exactly that stamp -
+// the old "vptr-restamp-presence wall" that capped both this body (~94.4%) and the copy
+// ShowCustomDlg inlines (~92.9%).
+// @rva-symbol: ??1CBattlezDlgCustom@@UAE@XZ 0x00017140 0x47
 
 // The shared empty-string literal (0x6293f4; homed in NetMgrReportError.cpp).
 extern "C" char g_emptyString[];
@@ -149,13 +150,16 @@ extern "C" i32 CALLBACK WndProc_15a10(HWND hWnd, UINT msg, WPARAM wParam, LPARAM
 // ~CBattlezDlgCustom `inline` is what makes /Ob1 inline the teardown here (retail
 // inlined it too - separate ~CString + ~CDialog calls, not one ??1 call).
 // @early-stop
-// vptr-restamp-presence wall (docs/patterns/eh-dtor-vptr-restamp-presence.md): the
-// inlined ~CBattlezDlgCustom teardown emits one extra `mov [esp+4],&??_7CBattlezDlgCustom`
-// vptr re-stamp before ~CString that retail elided (its vtable already equals the base
-// through the dtor). The ctor/DoModal/GetLength/MakeUpper/GetDlgItem/GetWindow/FromHandle/
-// SetWindowText chain + the /GX frame are byte-exact; the restamp shifts the tail and its
-// EH trylevel numbering (retail 0/1/2/-1 vs 0/1/-1) + the child!=0 branch polarity. Same
-// wall the out-of-line ~CBattlezDlgCustom (0x17140) hits; not source-steerable. ~92.9%.
+// EH-TRYLEVEL wall (~90.7%). The vptr-restamp half of this wall is FIXED: making
+// ~CBattlezDlgCustom compiler-generated (the binary's own evidence - retail's dtor carries
+// no re-stamp, and the out-of-line COMDAT is now byte-EXACT) removed the spurious
+// `mov [esp+4],&??_7CBattlezDlgCustom`. What remains is the /GX bookkeeping around the
+// inlined teardown: retail numbers its trylevels 0/1/2/-1 where cl emits 0/1/-1, and the
+// `child != 0` branch polarity flips with it. The ctor/DoModal/GetLength/MakeUpper/
+// GetDlgItem/GetWindow/FromHandle/SetWindowText chain is byte-exact. (Score moved 92.9 ->
+// 90.7 when the stamp went: the extra instruction had been padding the alignment of the
+// tail it now no longer shifts - a scoring artifact, not a regression; the dtor it shares
+// with 0x17140 went 94.4 -> 100.) Not source-steerable; final sweep.
 RVA(0x00017030, 0xc1)
 void CBattlezDlg::ShowCustomDlg() {
     CBattlezDlgCustom dlg(0);
