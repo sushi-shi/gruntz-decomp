@@ -4,8 +4,8 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Mfc.h> // real MFC CObject (the object's grand-base) + CObList (m_subList @+0x1dc)
-#include <Wap32/WapObj.h>            // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
-#include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam - the real +0x1a0 command sub-object
+#include <Wap32/WapObj.h> // CWapObj - the IsLoaded/IsReady (slots 5/6) intermediate base
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor - the real +0x1a0 anim/command cursor
 #include <Gruntz/WwdGridIter.h>      // WwdGridNode - the embedded +0x9c region node
 
 // CWwdGameObject - a runtime "plane object" deserialized from WWD level data.
@@ -41,11 +41,11 @@ class LeafScanValue;
 // CLogicRecord kill-cue view (Consume / Dispatch / the +0x24 refcount) onto it.
 #include <DDrawMgr/AnimWorkerObj.h>
 
-// The +0x1a0 command-dispatch sub-object is the real CDDrawBlitParam
-// (<DDrawMgr/DDrawBlitParam.h>, 0x3c bytes): Construct 0x15c290 (1 arg = owner),
-// Find 0x15c900 (4 args). The former per-TU `CmdMap` char-blob view is dissolved
-// onto it - m_cmdMap.Find()/Construct() lower to `lea ecx,[this+0x1a0]; call`
-// with no cast.
+// The +0x1a0 command-dispatch sub-object is the real CAniAdvanceCursor
+// (<Gruntz/AniAdvanceCursor.h>, 0x3c bytes; the ex-CDDrawBlitParam view is folded
+// onto it): Construct 0x15c290 (1 arg = owner), Find 0x15c900 (4 args). The
+// former per-TU `CmdMap` char-blob view is dissolved too - m_cmdMap.Find()/
+// Construct() lower to `lea ecx,[this+0x1a0]; call` with no cast.
 
 // (The +0x1dc member is the real MFC CObList, folded below - the former
 // WwdSubList/WwdSubNode/WwdSubDel views are dissolved. ResetAndSetup walks it with
@@ -241,7 +241,7 @@ public:
     // +0x19c is the resolved sound-cue value: ReadState hands it straight to
     // CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue*), which is its type.
     LeafScanValue* m_19c;     // +0x19c  resolved leaf-scan value (was void*)
-    CDDrawBlitParam m_cmdMap; // +0x1a0  command-dispatch sub-object (real class)
+    CAniAdvanceCursor m_cmdMap; // +0x1a0  anim/command cursor sub-object (real class)
     CObList m_subList;        // +0x1dc  MFC CObList of owned sub-objects
 };
 

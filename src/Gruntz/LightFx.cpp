@@ -1,7 +1,7 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
-#include <DDrawMgr/DDrawBlitParam.h>
+#include <Gruntz/AniAdvanceCursor.h> // (ex DDrawBlitParam - folded onto CAniAdvanceCursor)
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype
 #include <Gruntz/LightFx.h>
 #include <Gruntz/XferArchive.h> // the real 0x16e4f0 = ProjTypeXfer(CXferArchive*)
@@ -218,7 +218,7 @@ i32 CLightFx::Activate(i32 spec, i32 anchorA, i32 effect, i32 anchorB) {
         ((CMapStringToPtr*)&((LfxObj*)m_38)->m_0c->m_2c->m_10)
             ->Lookup((const char*)effect, (void*&)node);
         m_layerBase = ((LfxObj*)m_38)->m_1b4;
-        ((CDDrawBlitParam*)&((LfxObj*)m_38)->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)node);
+        ((CAniAdvanceCursor*)&((LfxObj*)m_38)->m_1a0)->Setup_15c2d0((CAniElement*)node);
         RebindNode();
     }
     return 0;

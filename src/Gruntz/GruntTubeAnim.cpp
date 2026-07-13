@@ -21,7 +21,7 @@
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Gruntz/AssetNamespaceLoader.h>
-#include <DDrawMgr/DDrawBlitParam.h>
+#include <Gruntz/AniAdvanceCursor.h> // (ex DDrawBlitParam - folded onto CAniAdvanceCursor)
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/GameRegistry.h>
 
@@ -141,7 +141,7 @@ i32 CGruntTube::SetupTubeAnim(i32 isWater) {
         char* buf = m_470[idx].name.GetBuffer(0);
         ((CGameObject*)m_154)->ApplyName(buf); // 0x150540 (real owner CGameObject)
         m_15c = m_154->m_1b4;
-        ((CDDrawBlitParam*)&m_154->m_1a0)->Setup_15c2d0((CDDrawBlitParamSrc*)m_394);
+        ((CAniAdvanceCursor*)&m_154->m_1a0)->Setup_15c2d0((CAniElement*)m_394);
         return 1;
     }
     ResetGate136b(0, 0, 1);

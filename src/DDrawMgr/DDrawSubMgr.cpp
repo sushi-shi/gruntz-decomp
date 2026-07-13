@@ -39,7 +39,7 @@
 #include <string.h>
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawSurfacePair.h>    // single-source CDDrawSurfacePair
-#include <DDrawMgr/DDrawBlitParam.h>      // single-source CDDrawBlitParam
+#include <Gruntz/AniAdvanceCursor.h>      // CAniAdvanceCursor (ex CDDrawBlitParam view)
 #include <Gruntz/SerialArchive.h>         // the shared CSerialArchive stream
 #include <DDrawMgr/DDrawSurfaceMgr.h>     // canonical CDDrawSurfaceMgr
 #include <DDrawMgr/DDrawSubMgrPages.h>    // single-source CDDrawSubMgrPages (surface ops)
@@ -127,17 +127,8 @@ SIZE_UNKNOWN(CDDrawSubMgr);
 // so the member-dtor CALL binds to ??1CDDrawSubMgrFar. The prior @rva-symbol pinned
 // this local class's empty-dtor ??_G here, leaving that call UNBOUND (misattribution).
 
-// The small per-frame blit-param source (Setup/SelectCue's +0x14 resolved source).
-class CDDrawBlitParamSrc {
-public:
-    char m_pad00[0x0c]; // +0x00 .. +0x0b
-    // authentic: worker-node-like element ptr; only ever raw-offset read.
-    void* m_elements; // +0x0c -> worker node
-    i32 m_count;      // +0x10 count
-    char m_pad14[0x20 - 0x14];
-    float m_scale; // +0x20
-};
-SIZE_UNKNOWN(CDDrawBlitParamSrc);
+// (The former CDDrawBlitParamSrc source view is DISSOLVED onto the real
+// CAniElement - see <Gruntz/AniAdvanceCursor.h>.)
 
 // The sound-cue enable flag, a float pan/volume scale constant, and the cue tag.
 // g_sndEnabled / g_sndCueTag are DEFINED in src/Gruntz/GruntzMgr.cpp (the owner TU);
@@ -1007,8 +998,8 @@ CFileMem::~CFileMem() {
 // require the cue present and its +0x78 set; cache it at m_2c (m_30 = present?
 // 0 : 1), tag the global cue, and report success. __thiscall, 1 arg (ret 0x4).
 RVA(0x00157a80, 0x51)
-i32 CDDrawBlitParam::SelectCue_157a80(void* force) {
-    char* mgr = (char*)m_worker;
+i32 CAniAdvanceCursor::SelectCue_157a80(void* force) {
+    char* mgr = (char*)m_0c; // the +0x0c owner (cue-role: the sub-manager)
     if (mgr == 0) {
         return 0;
     }
@@ -1022,9 +1013,9 @@ i32 CDDrawBlitParam::SelectCue_157a80(void* force) {
         }
     }
     if (cue == 0) {
-        m_30 = 1;
+        m_pendingDraw = 1; // +0x30 (cue-role: cue-absent flag)
     } else {
-        m_30 = 0;
+        m_pendingDraw = 0;
     }
     m_2c = (i32)cue;
     g_sndCueTag = 0x64;

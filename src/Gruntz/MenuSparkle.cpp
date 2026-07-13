@@ -13,13 +13,8 @@
 // The global bute store the ctor interns "A" in (?g_buteTree@@3VCButeTree@@A @0x6bf620).
 extern CButeTree g_buteTree;
 
-// The +0x1a0 anim sub-object's blit-param facet (Recompute @0x15c320, __thiscall) -
-// the SAME embedded object CAniAdvanceCursor advances, viewed as CDDrawBlitParam for
-// the recompute call (the documented per-leaf +0x1a0 dual-view; call reloc-masks).
-class CDDrawBlitParam {
-public:
-    void Recompute_15c320(i32 x); // 0x15c320
-};
+// (The local CDDrawBlitParam facet view is GONE: Recompute_15c320 lives on the
+// one CAniAdvanceCursor class - the ex dual-view is a single class now.)
 
 // The frame delta / tick globals the sparkle handler drives (DATA-bound elsewhere:
 // g_frameDelta in Attract.cpp, g_engineFrameDelta in the pump cluster); declared extern so the
@@ -73,7 +68,7 @@ i32 CMenuSparkle::AdvanceAnim() {
     i32 active = m_38->m_1c8;
     if (active != 0 && anim->m_20 == 0) {
         if (anim != 0) {
-            ((CDDrawBlitParam*)anim)->Recompute_15c320(1);
+            anim->Recompute_15c320(1);
         }
         *(i32*)((char*)m_3c + 0x20) = rand() % 0xfa1 + 0x3e8;
     }
@@ -81,4 +76,3 @@ i32 CMenuSparkle::AdvanceAnim() {
 }
 
 #include <rva.h>
-SIZE_UNKNOWN(CDDrawBlitParam);

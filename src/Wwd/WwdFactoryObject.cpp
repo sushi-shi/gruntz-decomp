@@ -23,7 +23,7 @@
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (ctor/dtor/Advance)
 #include <DDrawMgr/AniAdvance.h>     // CAniRenderCtx/CAniDesc/CAniBlitTrigger satellites
 #include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
-#include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam (the +0x1a0 command sub-object)
+// (DDrawBlitParam.h dissolved onto <Gruntz/AniAdvanceCursor.h>, included above)
 #include <Gruntz/SerialArchive.h>    // the shared CSerialArchive stream (Read/Write)
 #include <Wwd/WwdFactoryObject.h>    // CWwdFactoryObject/CDDrawRect
 #include <Wwd/WwdGameObjCtor.h>      // WwdCtorBase/CWwdGameObj15b390/WwdAnimWorker
@@ -41,23 +41,15 @@ extern i32 g_sndEnabled;    // 0x61ab20
 extern float g_sndPanScale; // 0x5eff2c
 extern i32 g_aniCueItem;    // 0x61ab24
 
-// The small per-frame blit-param source (the +0x14 resolved source of
-// CDDrawBlitParam). Field +0x0c points at a worker-node-like object; +0x10 is a
-// count; +0x20 a float scale.
-class CDDrawBlitParamSrc {
-public:
-    char m_pad00[0x0c]; // +0x00 .. +0x0b
-    // authentic: worker-node-like element ptr; only ever raw-offset read ([+0x34]
-    // flag, [0]->[+0x1c]), exact node class unproven from these sites - kept void*.
-    void* m_elements; // +0x0c -> worker node
-    i32 m_count;      // +0x10 count
-    char m_pad14[0x20 - 0x14];
-    float m_scale; // +0x20
-};
-SIZE_UNKNOWN(CDDrawBlitParamSrc);
+// (The former CDDrawBlitParamSrc view of the resolved +0x14 source is DISSOLVED
+// onto the real CAniElement (<Gruntz/AniElement.h>): its "+0x0c elements/+0x10
+// count" are m_records.m_pData/m_nSize and its +0x20 the same float m_scale.)
+#include <Gruntz/AniElement.h>
 
-// The worker held at CDDrawBlitParam+0x0c: holds a sub-object at +0x2c whose
-// 0x152d30 method returns a CString (the label written by Serialize).
+// The worker held at the cursor's +0x0c owner slot (CLoadable::m_0c): holds a
+// sub-object at +0x2c whose 0x152d30 method returns a CString (the label written
+// by Serialize). @identity-TODO: the owner's concrete class (CDDrawSurfaceMgr-
+// family) is not settled from these sites.
 class CDDrawBlitLabelSource;
 class CDDrawBlitWorker {
 public:
@@ -71,7 +63,7 @@ SIZE_UNKNOWN(CDDrawBlitWorker);
 // CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 class CDDrawBlitLabelSource {
 public:
-    CString GetLabel_152d30(CDDrawBlitParamSrc* a);
+    CString GetLabel_152d30(CAniElement* a);
     char m_pad00[0x10];        // +0x00..+0x0f
     CMapStringToOb m_labelMap; // +0x10 label -> worker map
 };
@@ -257,7 +249,7 @@ void CWwdFactoryObject::Notify_15b650(void* p) {
 // onto the real class so the vptr stamp binds to ??_7CAniAdvanceCursor@@6B@ (was RELOC_VTBL).
 RVA(0x0015b6d0, 0x5b)
 CAniAdvanceCursor::~CAniAdvanceCursor() {
-    ((CDDrawBlitParam*)this)->Reset_15c2c0();
+    Unload(); // devirtualized in the dtor -> direct call to 0x15c2c0
     m_04 = -1;
     m_08 = 0;
     m_0c = 0;
@@ -272,7 +264,7 @@ CAniAdvanceCursor::CAniAdvanceCursor(i32 owner, i32 field04, i32 field08)
     : CLoadable(owner, field04, field08) {
     m_10 = 0;
     m_14 = 0;
-    m_18 = 0;
+    m_element = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -552,45 +544,48 @@ void CWwdFactoryObject::ReleaseSubsClearKey_15c200() {
 // constant `1` in eax, our cl swaps them (eax<->edx phase shift), a regalloc
 // coin-flip with no source lever (docs/patterns/zero-register-pinning.md).
 RVA(0x0015c290, 0x2f)
-void CDDrawBlitParam::Construct(void* srcv) {
-    CDDrawBlitParamSrc* src = (CDDrawBlitParamSrc*)srcv;
-    m_10 = (i32)src;
+void CAniAdvanceCursor::Construct(void* srcv) {
+    // role-dependent src: the owning wide object (game path) or a worker source
+    CAniElement* src = (CAniElement*)srcv;
+    m_10 = (CAniRenderCtx*)src;
     m_28 = 1;
-    m_srcRef = 0;
+    m_14 = 0;
     m_scale = 1.0f;
     m_24 = 1;
-    m_2c = *(i32*)((char*)src->m_elements + 0x34) & 0x40;
+    m_2c = *(i32*)((char*)src->m_records.m_pData + 0x34) & 0x40;
 }
 
-// CDDrawBlitParam::Reset_15c2c0 (0x15c2c0): clear the param source refs.
+// CAniAdvanceCursor::Unload (0x15c2c0, vtable slot 7; the ex Reset_15c2c0):
+// clear the bound source refs. Returns 0 (retail xor eax,eax).
 RVA(0x0015c2c0, 0xc)
-void CDDrawBlitParam::Reset_15c2c0() {
+i32 CAniAdvanceCursor::Unload() {
     m_10 = 0;
-    m_srcRef = 0;
+    m_14 = 0;
     m_element = 0;
+    return 0;
 }
 
 // 0x15c2d0: blit-param setup from a worker source.
 RVA(0x0015c2d0, 0x45)
-void CDDrawBlitParam::Setup_15c2d0(CDDrawBlitParamSrc* src) {
-    char* e;
+void CAniAdvanceCursor::Setup_15c2d0(CAniElement* src) {
+    CAniDesc* e;
     i32 v;
-    m_srcRef = src;
+    m_14 = src;
     if (!src) {
         return;
     }
     m_index = 0;
-    if (src->m_count > 0) {
-        e = *(char**)src->m_elements;
+    if (src->m_records.m_nSize > 0) {
+        e = (CAniDesc*)src->m_records.m_pData[0];
     } else {
         e = 0;
     }
     m_element = e;
     m_20 = 0;
     m_28 = 0;
-    v = *(i32*)(e + 0x1c);
-    m_30 = v;
-    m_34 = v;
+    v = e->m_drawValue;
+    m_pendingDraw = v;
+    m_curDraw = v;
     {
         float f = src->m_scale;
         m_scale = f;
@@ -601,24 +596,24 @@ void CDDrawBlitParam::Setup_15c2d0(CDDrawBlitParamSrc* src) {
 // Setup twin that keeps m_srcRef, fixes the scale to 1.0f, and only clears m_20
 // when `a1` is set).
 RVA(0x0015c320, 0x40)
-void CDDrawBlitParam::Recompute_15c320(i32 a1) {
-    CDDrawBlitParamSrc* src = m_srcRef;
+void CAniAdvanceCursor::Recompute_15c320(i32 a1) {
+    CAniElement* src = m_14;
     if (src == 0) {
         return;
     }
     m_index = 0;
-    char* e;
-    if (src->m_count > 0) {
-        e = *(char**)src->m_elements;
+    CAniDesc* e;
+    if (src->m_records.m_nSize > 0) {
+        e = (CAniDesc*)src->m_records.m_pData[0];
     } else {
         e = 0;
     }
     m_element = e;
     m_28 = 0;
-    i32 v = *(i32*)(e + 0x1c);
+    i32 v = e->m_drawValue;
     m_scale = 1.0f;
-    m_30 = v;
-    m_34 = v;
+    m_pendingDraw = v;
+    m_curDraw = v;
     if (a1 != 0) {
         m_20 = 0;
     }
@@ -667,7 +662,7 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
 
     if (m_28 == 0) {
         CAniRenderCtx* ctx = m_10;
-        CAniDesc* d = m_18;
+        CAniDesc* d = m_element;
 
         // --- step the active frame sequence one step (7-way on d->m_stepMode) --------
         switch (d->m_stepMode - 1) {
@@ -773,7 +768,7 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
         ctx = m_10;
         ctx->m_posModeX = 0;
         ctx->m_posModeY = 0;
-        d = m_18;
+        d = m_element;
         switch (d->m_posMode) {
             case 1:
                 m_10->m_posModeX = d->m_posDX;
@@ -806,13 +801,13 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
         // --- per-frame draw/sound trigger -------------------------------------
         CAniRenderCtx* c = m_10;
         i32 fire = 1;
-        if (!(c->m_flags & 0x2000000) && !(m_18->m_flags & 0x8)) {
+        if (!(c->m_flags & 0x2000000) && !(m_element->m_flags & 0x8)) {
             if (c->m_anchor == -1) {
                 fire = 0;
             }
         }
         if (fire) {
-            CAniDesc* dd = m_18;
+            CAniDesc* dd = m_element;
             if (dd->m_flags & 0x4) {
                 i32 cue = c->m_screenX;
                 i32* tbl;
@@ -842,12 +837,12 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
         }
 
         // --- reload the per-frame timer (optionally float-scaled) -------------
-        CAniDesc* rd = m_18;
+        CAniDesc* rd = m_element;
         i32 reload = rd->m_frameTime;
         m_20 = reload;
         m_24 = (~rd->m_flags) & 1;
-        if (m_speed != 0x3f800000) {
-            m_20 = (i32)((double)(u32)reload * (*(float*)&m_speed));
+        if (*(i32*)&m_scale != 0x3f800000) { // raw-bits compare vs 1.0f (retail int cmp)
+            m_20 = (i32)((double)(u32)reload * m_scale);
         }
 
         // --- select the NEXT descriptor (10-way loop-mode on rd->m_loopMode) --------
@@ -865,45 +860,45 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                 break;
             case 8: { // reset to the first descriptor and unscaled timing
                 if (m_14 != 0) {
-                    m_1c = 0;
-                    m_18 = (CAniDesc*)m_14->AtChecked_06b270(0);
+                    m_index = 0;
+                    m_element = (CAniDesc*)m_14->AtChecked_06b270(0);
                     m_28 = 0;
-                    m_speed = 0x3f800000;
-                    m_pendingDraw = m_18->m_drawValue;
-                    m_curDraw = m_18->m_drawValue;
+                    m_scale = 1.0f;
+                    m_pendingDraw = m_element->m_drawValue;
+                    m_curDraw = m_element->m_drawValue;
                 }
                 break;
             }
-            case 7: { // hold on the first two descriptors (m_1c = 1 then 0)
-                m_1c = 1;
-                m_18 = (CAniDesc*)m_14->AtChecked_06b270(1);
-                if (m_18 == 0) {
-                    m_1c = 0;
-                    m_18 = (CAniDesc*)m_14->AtChecked_06b270(0);
+            case 7: { // hold on the first two descriptors (m_index = 1 then 0)
+                m_index = 1;
+                m_element = (CAniDesc*)m_14->AtChecked_06b270(1);
+                if (m_element == 0) {
+                    m_index = 0;
+                    m_element = (CAniDesc*)m_14->AtChecked_06b270(0);
                 }
-                if (m_18 != 0) {
+                if (m_element != 0) {
                     m_28 = 0;
                     m_20 = 0;
                     m_curDraw = m_pendingDraw;
-                    m_pendingDraw = m_18->m_drawValue;
+                    m_pendingDraw = m_element->m_drawValue;
                 }
                 break;
             }
             case 1: { // advance only when the cursor's frame reached the descriptor param
                 CAniRenderCtx* c2 = m_10;
-                if (c2->m_frameCursor == m_18->m_param) {
+                if (c2->m_frameCursor == m_element->m_param) {
                     if (modeWord != 9) {
                         CAniElement* a = m_14;
-                        i32 j = m_1c + 1;
-                        m_1c = j;
-                        m_18 = (CAniDesc*)a->AtChecked_06b270(j);
-                        if (m_18 == 0) {
-                            m_1c = 0;
-                            m_18 = (CAniDesc*)a->AtChecked_06b270(0);
+                        i32 j = m_index + 1;
+                        m_index = j;
+                        m_element = (CAniDesc*)a->AtChecked_06b270(j);
+                        if (m_element == 0) {
+                            m_index = 0;
+                            m_element = (CAniDesc*)a->AtChecked_06b270(0);
                         }
-                        if (m_18 != 0) {
+                        if (m_element != 0) {
                             m_curDraw = m_pendingDraw;
-                            m_pendingDraw = m_18->m_drawValue;
+                            m_pendingDraw = m_element->m_drawValue;
                         }
                     }
                 }
@@ -937,21 +932,21 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
             loop_restart:
                 if (modeWord != 9) {
                     arr = m_14;
-                    i = m_1c + 1;
-                    m_1c = i;
+                    i = m_index + 1;
+                    m_index = i;
                     if (i >= 0 && i < arr->m_records.m_nSize) {
                         nd = (CAniDesc*)arr->m_records.m_pData[i];
                     } else {
                         nd = 0;
                     }
-                    m_18 = nd;
+                    m_element = nd;
                     if (nd == 0) {
-                        m_1c = 0;
-                        m_18 = (CAniDesc*)arr->AtChecked_06b270(0);
+                        m_index = 0;
+                        m_element = (CAniDesc*)arr->AtChecked_06b270(0);
                     }
-                    if (m_18 != 0) {
+                    if (m_element != 0) {
                         m_curDraw = m_pendingDraw;
-                        m_pendingDraw = m_18->m_drawValue;
+                        m_pendingDraw = m_element->m_drawValue;
                     }
                 }
                 break;
@@ -961,17 +956,17 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                 if (c2->m_frameCursor == seq->m_lastFrame - 1) {
                     if (modeWord != 9) {
                         CAniElement* a = m_14;
-                        i32 j = m_1c + 1;
-                        m_1c = j;
+                        i32 j = m_index + 1;
+                        m_index = j;
                         CAniDesc* p;
                         if (j >= 0 && j < a->m_records.m_nSize) {
                             p = (CAniDesc*)a->m_records.m_pData[j];
                         } else {
                             p = 0;
                         }
-                        m_18 = p;
+                        m_element = p;
                         if (p == 0) {
-                            m_1c = 0;
+                            m_index = 0;
                             i32 cnt = a->m_records.m_nSize;
                             CAniDesc* first;
                             if (cnt > 0) {
@@ -979,11 +974,11 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
                             } else {
                                 first = 0;
                             }
-                            m_18 = first;
+                            m_element = first;
                         }
-                        if (m_18 != 0) {
+                        if (m_element != 0) {
                             m_curDraw = m_pendingDraw;
-                            m_pendingDraw = m_18->m_drawValue;
+                            m_pendingDraw = m_element->m_drawValue;
                         }
                     }
                 }
@@ -1020,7 +1015,7 @@ i32 CAniAdvanceCursor::Advance_15c360(u32 elapsed) {
 // jump table, but MSVC5 folds our empty cases into a cmp/je-subtract chain.
 // Not source-steerable. docs/patterns/switch-cmpje-tree-vs-jumptable.md.
 RVA(0x0015c900, 0x42)
-i32 CDDrawBlitParam::Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4) {
+i32 CAniAdvanceCursor::Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4) {
     if (ar == 0) {
         return 0;
     }
@@ -1060,7 +1055,7 @@ i32 CDDrawBlitParam::Find(CSerialArchive* ar, i32 type, i32 a3, i32 a4) {
 // strcpy all byte-exact; the only residual is the NRVO-temp addressing of the
 // returned CString. Entropy tail; no source lever.
 RVA(0x0015c970, 0xfe)
-i32 CDDrawBlitParam::Serialize_15c970(CSerialArchive* ar) {
+i32 CAniAdvanceCursor::Serialize_15c970(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -1069,15 +1064,16 @@ i32 CDDrawBlitParam::Serialize_15c970(CSerialArchive* ar) {
     ar->Write(&m_24, 4);
     ar->Write(&m_28, 4);
     ar->Write(&m_2c, 4);
-    ar->Write(&m_30, 4);
-    ar->Write(&m_34, 4);
+    ar->Write(&m_pendingDraw, 4);
+    ar->Write(&m_curDraw, 4);
     ar->Write(&m_scale, 4);
     char buf[0x80];
     for (i32 i = 0; i < 0x20; ++i) {
         ((i32*)buf)[i] = 0;
     }
-    if (m_srcRef != 0) {
-        CString label = m_worker->m_labelSource->GetLabel_152d30(m_srcRef);
+    if (m_14 != 0) {
+        // the +0x0c owner (CLoadable::m_0c) carries the label source at +0x2c
+        CString label = ((CDDrawBlitWorker*)m_0c)->m_labelSource->GetLabel_152d30(m_14);
         strcpy(buf, label);
     }
     ar->Write(buf, 0x80);
@@ -1096,7 +1092,7 @@ i32 CDDrawBlitParam::Serialize_15c970(CSerialArchive* ar) {
 // (frame 0x94) and rotates eax/ebp through the eight reads + the index tail.
 // docs/patterns/pin-local-for-callee-saved-reg.md / zero-register-pinning.md.
 RVA(0x0015ca70, 0x15b)
-i32 CDDrawBlitParam::Deserialize_15ca70(CSerialArchive* ar) {
+i32 CAniAdvanceCursor::Deserialize_15ca70(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -1105,32 +1101,32 @@ i32 CDDrawBlitParam::Deserialize_15ca70(CSerialArchive* ar) {
     ar->Read(&m_24, 4);
     ar->Read(&m_28, 4);
     ar->Read(&m_2c, 4);
-    ar->Read(&m_30, 4);
-    ar->Read(&m_34, 4);
+    ar->Read(&m_pendingDraw, 4);
+    ar->Read(&m_curDraw, 4);
     ar->Read(&m_scale, 4);
     char buf[0x80];
     ar->Read(buf, 0x80);
     if (strlen(buf) == 0) {
-        m_srcRef = 0;
+        m_14 = 0;
     } else {
         CObject* out_ob = 0;
-        m_worker->m_labelSource->m_labelMap.Lookup(buf, out_ob);
+        ((CDDrawBlitWorker*)m_0c)->m_labelSource->m_labelMap.Lookup(buf, out_ob);
         void* out = (void*)out_ob;
-        m_srcRef = (CDDrawBlitParamSrc*)out;
+        m_14 = (CAniElement*)out;
     }
-    CDDrawBlitParamSrc* w = m_srcRef;
+    CAniElement* w = m_14;
     if (w != 0) {
-        char* e;
-        if (m_index >= 0 && m_index < w->m_count) {
-            e = ((char**)w->m_elements)[m_index];
+        CAniDesc* e;
+        if (m_index >= 0 && m_index < w->m_records.m_nSize) {
+            e = (CAniDesc*)w->m_records.m_pData[m_index];
         } else {
             e = 0;
         }
         m_element = e;
         if (e == 0) {
             m_index = 0;
-            if (w->m_count > 0) {
-                e = *(char**)w->m_elements;
+            if (w->m_records.m_nSize > 0) {
+                e = (CAniDesc*)w->m_records.m_pData[0];
             } else {
                 e = 0;
             }
@@ -1139,8 +1135,8 @@ i32 CDDrawBlitParam::Deserialize_15ca70(CSerialArchive* ar) {
         if (m_element != 0) {
             m_20 = 0;
             m_28 = 0;
-            m_34 = m_30;
-            m_30 = *(i32*)(m_element + 0x1c);
+            m_curDraw = m_pendingDraw;
+            m_pendingDraw = m_element->m_drawValue;
         }
     }
     return 1;

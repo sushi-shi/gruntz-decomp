@@ -5,7 +5,7 @@
 #include <DDrawMgr/DDrawSurfacePair.h> // Slot30/34/38 render targets (held surface @+0x2c)
 #include <Win32.h>                     // windows.h base types (ddraw.h needs them first)
 #include <ddraw.h>                     // IDirectDrawSurface::Unlock for the pixel plots
-#include <DDrawMgr/DDrawBlitParam.h>
+#include <Gruntz/AniAdvanceCursor.h> // (ex DDrawBlitParam - folded onto CAniAdvanceCursor)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawGroupChild/Node - the broadcast child interface
 #include <rva.h>
 #include <string.h>               // inlined memset / strcpy (rep stos / repne scas + rep movs)
@@ -191,7 +191,7 @@ static inline void StampWorkerVtbl(AnimWorkerObj* w) {
 // ===========================================================================
 RVA(0x00058b60, 0x2d)
 void CGameObject::ApplyGeometryDirect(i32 srcSprite, i32 applyDefault) {
-    ((CDDrawBlitParam*)((char*)this + 0x1a0))->Setup_15c2d0((CDDrawBlitParamSrc*)srcSprite);
+    ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Setup_15c2d0((CAniElement*)srcSprite);
     if (applyDefault) {
         ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     }
@@ -261,7 +261,7 @@ i32 CGameObject::ApplyLookupGeometry(const char* name, i32 applyDefault) {
         return 0;
     }
     // +0x1a0 is the per-class anim sub-object (raw offset by CGameObject convention).
-    ((CDDrawBlitParam*)((char*)this + 0x1a0))->Setup_15c2d0((CDDrawBlitParamSrc*)(i32)spr);
+    ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Setup_15c2d0((CAniElement*)(i32)spr);
     if (applyDefault) {
         ((CAniAdvanceCursor*)((char*)this + 0x1a0))->Advance_15c360(g_engineFrameDelta);
     }

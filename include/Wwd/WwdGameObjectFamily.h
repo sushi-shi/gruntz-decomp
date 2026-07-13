@@ -32,7 +32,7 @@
 #include <Mfc.h> // CString / CObList / POSITION / CObject
 #include <rva.h>
 #include <Wap32/Object.h>             // the shared WAP CObject grand-base
-#include <DDrawMgr/DDrawBlitParam.h>  // CDDrawBlitParam (the +0x1a0 command sub-object)
+#include <Gruntz/AniAdvanceCursor.h>  // CAniAdvanceCursor (the +0x1a0 anim/command cursor)
 #include <DDrawMgr/DDrawChildGroup.h> // CDDrawGroupChild/Node (B's broadcast list)
 #include <DDrawMgr/AnimWorkerObj.h>   // AnimWorkerObj - the owned +0x7c..+0x90 workers
 
@@ -56,7 +56,7 @@ struct WwdName {
 // teardown. Mirrors WwdSubA.
 struct WwdSub : public CObject {
     virtual ~WwdSub() OVERRIDE {
-        ((CDDrawBlitParam*)this)->Reset_15c2c0();
+        ((CAniAdvanceCursor*)this)->Unload();
     }
     i32 m_04; // 0x1a4
     i32 m_08; // 0x1a8
@@ -118,7 +118,7 @@ struct WwdSubA : public CObject {
     WwdEdgeB m_04; // +0x04 (0x1a4/0x1a8/0x1ac)
 };
 inline WwdSubA::~WwdSubA() {
-    ((CDDrawBlitParam*)this)->Reset_15c2c0();
+    ((CAniAdvanceCursor*)this)->Unload();
 }
 
 // ---------------------------------------------------------------------------

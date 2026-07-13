@@ -3,7 +3,7 @@
 // only OFFSETS + code bytes are load-bearing. Engine callees are external/no-body.
 #include <Ints.h>
 #include <Gruntz/Effect6b.h>
-#include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam::Setup_15c2d0 (0x15c2d0) - +0x1a0 geo setter
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) - +0x1a0 geo setter
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360) - +0x1a0 advance
 #include <DDrawMgr/DDrawSubMgrPages.h>
 #include <Gruntz/GruntzMgr.h>
@@ -43,7 +43,7 @@ RVA(0x0006b2e0, 0x39)
 void CEffect6b::Apply(i32 a, i32 b) {
     char* anim = (char*)m_4 + 0x1a0;
     m_c = m_4->m_1b4;
-    ((CDDrawBlitParam*)anim)->Setup_15c2d0((CDDrawBlitParamSrc*)a);
+    ((CAniAdvanceCursor*)anim)->Setup_15c2d0((CAniElement*)a);
     if (b != 0) {
         ((CAniAdvanceCursor*)anim)->Advance_15c360((i32)g_engineFrameDelta);
     }

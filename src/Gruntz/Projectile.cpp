@@ -39,7 +39,7 @@
 #include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00) on the +0x34 sub-object
 #include <Gruntz/ActName.h>       // CActName (shared)
 #include <Gruntz/ActReg.h>        // CLogicActTable::ResolveEntry (0xade60 dispatcher's real table)
-#include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam::Setup_15c2d0 (0x15c2d0) for the m_1a0 forwarder
+#include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Setup_15c2d0 (0x15c2d0) for the m_1a0 forwarder
 
 // The CProjAnim/CProjRenderObj facet methods forward (out-of-line, defined here so the
 // shared Projectile.h stays light) to the canonical engine classes: the +0x1a0 anim
@@ -48,7 +48,7 @@
 // ApplyLookupGeometry -> CGameObject::ApplyName / ApplyLookupGeometry. All calls
 // reloc-mask, so no phantom symbol is emitted and the sites stay cast-free.
 void CProjAnim::SetGeometry(void* src) {
-    ((CDDrawBlitParam*)this)->Setup_15c2d0((CDDrawBlitParamSrc*)src);
+    ((CAniAdvanceCursor*)this)->Setup_15c2d0((CAniElement*)src);
 }
 i32 CProjAnim::Advance_15c360(u32 clock) {
     return ((CAniAdvanceCursor*)this)->Advance_15c360(clock);
