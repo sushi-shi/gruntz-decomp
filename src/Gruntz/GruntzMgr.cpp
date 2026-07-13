@@ -124,33 +124,7 @@ void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member tear
 // Cached Win32/WINMM API entry points the engine calls through game-owned global
 // fn-ptr slots (`call ds:[ptr]` / `mov reg,ptr; call reg`), NOT the IAT. Each is a
 // typed fn-ptr global pinned by its DATA() RVA (the indirect-call displacement
-// reloc-masks; the DATA pin pairs the named slot). Same model as g_pShowCursor.
-extern "C" {
-    DATA(0x002c4650)
-    extern u32(WINAPI* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
-    DATA(0x002c44a4)
-    extern i32(WINAPI* g_pSendMessageA)(
-        i32 hwnd,
-        u32 msg,
-        i32 wp,
-        i32 lp
-    ); // PTR_SendMessageA_006c44a4
-    DATA(0x002c44c8)
-    extern i32(WINAPI* g_pPostMessageA)(
-        i32 hwnd,
-        u32 msg,
-        i32 wp,
-        i32 lp
-    ); // PTR_PostMessageA_006c44c8
-    DATA(0x002c4550)
-    extern i32(WINAPI* g_pDialogBoxParamA)(
-        i32 hInst,
-        const char* tmpl,
-        i32 hwnd,
-        void* dlgProc,
-        i32 param
-    ); // PTR_DialogBoxParamA_006c4550
-}
+// reloc-masks; the DATA pin pairs the named slot). Same model as ::ShowCursor.
 
 // Game-clock/registry globals reached by AccrueScoreTime / Close.
 extern "C" {
@@ -354,7 +328,6 @@ extern "C" CGruntzMgr* g_gameReg;
 // The engine reaches the USER32 cursor through a stored function pointer at
 // 0x6c44c4 (`mov edi,ds:...; call edi`), not a direct IAT call; model it as a
 // typed global fn-ptr so the indirect call shape (`call reg`) falls out.
-extern "C" i32(WINAPI* g_pShowCursor)(i32); // PTR_ShowCursor_006c44c4
 
 // A free helper that flushes/forces a redraw of one map index (reloc-masked).
 void RedrawMapIndex(i32 idx); // FUN_00558c70
@@ -1863,7 +1836,7 @@ i32 CGruntzMgr::CaptureWorldFile() {
     m_strWorldFile = name;
     m_12c = 0;
     m_128 = 0;
-    g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x8005, 0);
+    ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x8005, 0);
     return 1;
 }
 
@@ -2263,7 +2236,7 @@ RVA(0x00090220, 0x2f)
 void CGruntzMgr::Post(i32 code) {
     if (code > 0 && code <= 0x29) {
         i32 v = (code == 0x29) ? 1 : code;
-        g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x807f, v);
+        ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x807f, v);
     }
 }
 
@@ -2503,7 +2476,7 @@ i32 CGruntzMgr::WarpCheat() {
                     ReportError(0x8005, 0x43b);
                     return 0;
                 }
-                g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80ca, 0);
+                ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80ca, 0);
                 return 1;
             }
         } else {
@@ -2976,7 +2949,7 @@ i32 CGruntzMgr::ResetWorldState(i32 notify) {
         m_curState = 0;
     }
 
-    i32(WINAPI * show)(i32) = g_pShowCursor;
+int(WINAPI * show)(BOOL) = ::ShowCursor;
     while (show(1) < 0) {
     }
 
@@ -3043,7 +3016,7 @@ i32 CGruntzMgr::SetAssetRoot(char* path) {
         return 0;
     }
     g_assetRoot = path;
-    g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80ab, 0);
+    ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80ab, 0);
     return 1;
 }
 
@@ -3056,7 +3029,7 @@ i32 CGruntzMgr::PostSlotCommandB1(i32 slot) {
     if (slot < 0 || slot >= 4) {
         return 0;
     }
-    g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80b1, slot);
+    ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80b1, slot);
     return 1;
 }
 
@@ -3068,7 +3041,7 @@ i32 CGruntzMgr::PostSlotCommandB6(i32 slot) {
     if (slot < 0 || slot >= 4) {
         return 0;
     }
-    g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80b6, slot);
+    ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80b6, slot);
     return 1;
 }
 
@@ -3373,7 +3346,7 @@ i32 CGruntzMgr::Quicksave() {
 // CGruntzMgr::Quickload (0x092710) - the quickload counterpart of Quicksave (above).
 // Bails (0) with no save sink; otherwise flushes the timer, and on a valid quicksave
 // record (m_saveInfoRec bit 0) loads it via the sink (SaveSink58::Check @0xe52c0),
-// notifies the window (WM_COMMAND 0x807e via g_pPostMessageA) and logs "Game
+// notifies the window (WM_COMMAND 0x807e via ::PostMessageA) and logs "Game
 // Quickloaded successfully." into the chat log; if no valid record, falls back to
 // RunLoadGameDialog (0x092500). Re-homed from the ApiCaller stubs at 100%.
 RVA(0x00092710, 0x77)
@@ -3391,7 +3364,7 @@ i32 CGruntzMgr::Quickload() {
         if (((CSaveGame*)m_saveSink)->VerifySlot((SaveSlot*)m_saveInfoRec) == 0) {
             return 1;
         }
-        g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
+        ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x807e, 0);
         m_chatLog->AddItem("Game Quickloaded successfully.", 0, 0x11);
         return 1;
     }
@@ -3988,7 +3961,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
         d->Slot0a();
     }
 
-    i32(WINAPI * show)(i32) = g_pShowCursor;
+int(WINAPI * show)(BOOL) = ::ShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
@@ -4032,7 +4005,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
         d->Slot0a();
     }
 
-    i32(WINAPI * show)(i32) = g_pShowCursor;
+int(WINAPI * show)(BOOL) = ::ShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
@@ -4499,7 +4472,7 @@ void CGruntzMgr::AccrueScoreTime() {
         return;
     }
     CBattlezData* hud = ((GameRegHudView*)g_gameReg)->m_7c;
-    u32 now = g_pTimeGetTime();
+    u32 now = ::timeGetTime();
     hud->m_score += (now - g_648ce8);
     TransitionState(0x12, 1, 0, 0);
 }
@@ -4516,7 +4489,7 @@ void CGruntzMgr::OnCheckpointReached() {
     }
     CCheckpointDlg dlg(0);
     if (ExitModalUI(&dlg, 0) == 1) {
-        g_pSendMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80cf, 0);
+        ::SendMessageA(m_gameWnd->m_hwnd, 0x111, 0x80cf, 0);
     }
 }
 
@@ -4548,7 +4521,7 @@ void CGruntzMgr::DelayedQuit() {
     } else {
         base = 0;
     }
-    u32(WINAPI * tgt)() = g_pTimeGetTime;
+DWORD(WINAPI * tgt)(void) = ::timeGetTime;
     u32 deadline = base + tgt();
     while (tgt() < deadline) {
     }
@@ -4556,7 +4529,7 @@ void CGruntzMgr::DelayedQuit() {
         m_owner->m_running = 0;
     }
     if (m_gameWnd) {
-        g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x10, 0, 0);
+        ::PostMessageA(m_gameWnd->m_hwnd, 0x10, 0, 0);
     }
 }
 
@@ -4636,14 +4609,14 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
         d->Slot0a();
     }
 
-    i32(WINAPI * show)(i32) = g_pShowCursor;
+int(WINAPI * show)(BOOL) = ::ShowCursor;
     i32 shown = show(1);
     while (show(1) < 0) {
     }
 
     m_modalBusy = 1;
     i32 result =
-        g_pDialogBoxParamA((i32)m_owner->m_hInstance, tmpl, (i32)m_gameWnd->m_hwnd, dlgProc, 0);
+        ::DialogBoxParamA(m_owner->m_hInstance, tmpl, m_gameWnd->m_hwnd, (DLGPROC)dlgProc, 0);
     g_64557c = 0;
     m_modalBusy = 0;
     if (m_curState && flag) {
@@ -4710,7 +4683,7 @@ i32 CGruntzMgr::SaveGameAs() {
     if (m_strWorldFile.GetLength() == 0) {
         return 0;
     }
-    g_pPostMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80e3, 0);
+    ::PostMessageA(m_gameWnd->m_hwnd, 0x111, 0x80e3, 0);
     return 1;
 }
 
@@ -5077,7 +5050,7 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     if (!SvmApply(w, h, m_colorDepth)) {
         return 0;
     }
-    while (g_pShowCursor(0) >= 0) {
+    while (::ShowCursor(0) >= 0) {
     }
     m_modeW = w;
     m_modeH = h;

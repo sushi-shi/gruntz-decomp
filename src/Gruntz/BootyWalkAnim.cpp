@@ -38,10 +38,6 @@ DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // 0x6bf3c0
 DATA(0x0020a454)
 extern char s_codeA[]; // "A" (0x60a454)
-extern "C" {
-    DATA(0x002c4650)
-    extern u32(WINAPI* g_pTimeGetTime)(); // PTR_timeGetTime_006c4650
-}
 
 // The per-player secret-letter table "WARP" (0x5e93a8); CString::Format @0x1b2cf5.
 DATA(0x001e93a8)
@@ -278,7 +274,7 @@ i32 CBootyState::UpdateBootyWalkingGruntz() {
                     u32 x;
                     if (!(g_randSeeded & 1)) {
                         g_randSeeded |= 1;
-                        x = g_pTimeGetTime();
+                        x = ::timeGetTime();
                     } else {
                         x = g_randSeed;
                     }

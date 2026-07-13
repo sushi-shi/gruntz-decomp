@@ -1185,10 +1185,8 @@ SIZE_UNKNOWN(CLevelSync);
 SIZE_UNKNOWN(CLevelSyncChild);
 SIZE_UNKNOWN(SyncSub);
 
-// The ?g_pCopyRect@@3P6GXPAUtagRECT@@PBU1@@ZA global fn-pointer (VA 0x6c44bc): a
-// __stdcall RECT copier called `call ds:[g_pCopyRect]` (ex SBI_TabzDialogEh.cpp).
-DATA(0x002c44bc)
-extern void(WINAPI* g_pCopyRect)(RECT* dst, const RECT* src);
+// The ?::CopyRect@@3P6GXPAUtagRECT@@PBU1@@ZA global fn-pointer (VA 0x6c44bc): a
+// __stdcall RECT copier called `call ds:[::CopyRect]` (ex SBI_TabzDialogEh.cpp).
 
 // ===========================================================================
 // EngineLabelBacklog::LoadStatzTabToggleSprite @0x104e60
@@ -1965,7 +1963,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
 
     RECT src = m_c->m_24->m_10;
     RECT dst;
-    g_pCopyRect(&dst, &src);
+    ::CopyRect(&dst, &src);
     i32 cx = dst.left + (dst.right - dst.left) / 2;
     i32 cy = dst.top + (dst.bottom - dst.top) / 2;
 
@@ -3475,7 +3473,6 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
 // The inlined game RNG (shared with BootyWalkAnim / CGruntSpawnConfig): the LCG
 // seed + the seed-init flag (bit 0) + the timeGetTime entry pointer. Bound (DATA)
 // by BootyWalkAnim / m5_SoundTickCtor; referenced here as reloc-masked externs.
-extern "C" u32(WINAPI* g_pTimeGetTime)(); // 0x6c4650
 
 // MSVC-style LCG rand() (x = x*214013 + 2531011), lazily seeded from timeGetTime.
 // The range test is first so the divisor is proven non-zero (no idiv guard) and
@@ -3486,7 +3483,7 @@ static __inline i32 WapRand(i32 range) {
     if (range == 0) {
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
-            x = g_pTimeGetTime();
+            x = ::timeGetTime();
         } else {
             x = g_randSeed;
         }
@@ -3495,7 +3492,7 @@ static __inline i32 WapRand(i32 range) {
     }
     if (!(g_randSeeded & 1)) {
         g_randSeeded |= 1;
-        x = g_pTimeGetTime();
+        x = ::timeGetTime();
     } else {
         x = g_randSeed;
     }
@@ -3515,7 +3512,7 @@ static __inline i32 WapRand(i32 range) {
 // stub at CGruntSpawnConfig::PickWeighted 0x11bee0). Logic + the whole three-tier
 // tree + the LCG lea-chain are byte-faithful (verified llvm-objdump -dr). Residual
 // is a callee-saved-reg CSE pick: retail caches g_randSeeded in bl (a 4th push ebx)
-// and the g_pTimeGetTime ptr in edi (mov edi,[ptr]; call edi), while cl emits a
+// and the ::timeGetTime ptr in edi (mov edi,[ptr]; call edi), while cl emits a
 // 3-register solution (flag in cl, call [ptr] indirect) and a `mov ecx,[m_134];cmp`
 // vs retail's `cmp [m_134],1` direct memory compare. Plus the ?g_gameReg vs
 // _g_mgrSettings shared-global DIR32 naming tail. Not source-steerable under /O2.
@@ -3813,10 +3810,6 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
 
 // The cached PostMessageA entry point (game-owned fn pointer; the highlight
 // dispatcher posts WM_COMMAND via it, not the direct import).
-extern "C" {
-    DATA(0x002c44c8)
-    extern i32(WINAPI* g_pPostMessageA)(void*, u32, i32, i32); // 0x6c44c8
-}
 
 // Play GAME_TABHIGHLIGHT1 immediately (no clock gate) - variant 1: the record is
 // resolved by a direct FindCue on the host (returns the record) and played.
@@ -3861,7 +3854,7 @@ static __inline void HiCueTimed() {
 
 // Post WM_COMMAND(cmdId) to the game window via the cached PostMessageA pointer.
 static __inline void HiPost(i32 cmdId) {
-    g_pPostMessageA(((CSbiWndHost*)g_gameReg->m_gameWnd)->m_4, 0x111, cmdId, 0);
+    ::PostMessageA(g_gameReg->m_gameWnd->m_hwnd, 0x111, cmdId, 0);
 }
 
 // 0xfe910 - UpdateStatusBarTabHighlight(a1, a2, a3). Resolve the hit tab-highlight
@@ -3879,7 +3872,7 @@ static __inline void HiPost(i32 cmdId) {
 // source-steerable; (2) the ~15 inlined cue-play blocks + PostMessage tails
 // tail-merge/schedule differently. Logic is byte-faithful; deferred to the final
 // sweep. (The shared-global DIR32 operands -- g_gameReg/g_sndCueTag/
-// g_pPostMessageA/GAME_TABHIGHLIGHT1 $SG -- are RELOC-MASKED by objdiff, so their
+// ::PostMessageA/GAME_TABHIGHLIGHT1 $SG -- are RELOC-MASKED by objdiff, so their
 // symbol names are scoring-neutral; the singleton at 0x24556c is now referenced by
 // its canonical extern-C _g_mgrSettings, not the colliding ?g_gameReg@@ alias that
 // also names the real g_gameReg at 0x245460. The residual is purely the code bytes.)
