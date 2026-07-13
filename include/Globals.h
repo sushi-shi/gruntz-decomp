@@ -165,37 +165,23 @@ extern CActEntry* g_actCur;
 extern i32 g_actStride;
 extern i32 g_actScratch;
 class CVariantSlot; // Bute/ButeTree.h (Set @0x16d850)
-extern CVariantSlot* g_actReg4Coll2;
-extern i32 g_actReg4Lo;
-extern i32 g_actReg4Hi;
-extern char* g_actReg4Base;
-extern struct R4Entry* g_actReg4Cur;
-extern i32 g_actReg4Stride;
-extern i32 g_actReg4Scratch;
-extern CVariantSlot* g_partColl2;
-extern i32 g_partLo;
-extern i32 g_partHi;
-extern char* g_partBase;
-extern CPartEntry* g_partCur;
-extern i32 g_partStride;
-extern i32 g_partScratch;
+// (g_actReg4 @0x6446d8 is ONE 0x24 CActReg object, DEFINED in
+//  src/Gruntz/GruntStartingPoint.cpp and private to it; 0x6446dc..0x6446f8 are its
+//  interior fields, not globals.)
+// (g_partColl @0x644870 is ONE 0x24 CActReg object, DEFINED in src/Gruntz/FortressFlag.cpp
+//  and private to it; 0x644874..0x644890 are its interior fields, not globals.)
 extern i32 g_jitterX;
 extern i32 g_jitterY;
 extern "C" char g_msgScratch[];
 extern i32 g_panMinX;
 extern i32 g_panMaxX;
 extern "C" i32 g_64553c;
-extern i32 g_poolScratch645548;
+// (0x645548 is g_coordPool.m_count (+0x08) - an interior field, not a global.)
 extern "C" i32 g_cdPromptResult;
 extern "C" i32 g_6455f0;
 extern u8 g_debugFlags;
-extern CVariantSlot* g_kslimeColl2;
-extern i32 g_kslimeLo;
-extern i32 g_kslimeHi;
-extern char* g_kslimeBase;
-extern CKSlimeEntry* g_kslimeCur;
-extern i32 g_kslimeStride;
-extern i32 g_kslimeScratch;
+// (g_kslimeColl @0x646228 is ONE 0x24 CActReg object, DEFINED in src/Gruntz/KitchenSlime.cpp
+//  and private to it; 0x64622c..0x646248 are its interior fields, not globals.)
 extern i32 g_dlgResultSink;
 extern "C" i32 g_648cec;
 extern u32 g_648d14; // 0x648d14  DEFINED in src/Gruntz/Multi.cpp (owner TU)
@@ -214,13 +200,8 @@ extern unsigned char gA_e08;
 extern unsigned char gA_data;
 extern i32 g_poolCount;
 extern i32 g_64bdc0;
-extern CVariantSlot* g_dropColl2;
-extern i32 g_dropLo;
-extern i32 g_dropHi;
-extern char* g_dropBase;
-extern CDropEntry* g_dropCur;
-extern i32 g_dropStride;
-extern i32 g_dropScratch;
+// (g_dropColl @0x64bed8 is ONE 0x24 CActReg object, DEFINED in src/Gruntz/DroppedObject.cpp
+//  and private to it; 0x64bedc..0x64bef8 are its interior fields, not globals.)
 extern ScrollView* g_backView;
 extern "C" i32 g_64c3f0[17];
 extern CVariantSlot* g_projActColl2;

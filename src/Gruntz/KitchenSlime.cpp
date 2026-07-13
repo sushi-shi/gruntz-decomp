@@ -2,6 +2,7 @@
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>
+#include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype (g_kslimeColl)
 #include <Bute/ButeTree.h>
 #include <rva.h>
 #include <math.h>   // floor (0x120580) / ceil (0x120480) / fabs (inline d9 e1)
@@ -133,8 +134,16 @@ extern i32 g_slimeTick; // VA 0x6bf3bc
 struct CKSlimeEntry;       // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
+// SHREDDED-OBJECT FIX: g_kslimeColl is ONE 0x24-byte CActReg object, not eight globals -
+// 0x64622c..0x646248 are its INTERIOR FIELDS (m_coll2/m_lo/m_hi/m_base/m_cur/m_stride/
+// m_scratch), which this TU used to declare as seven separate DATA()-pinned scalars, and
+// the hand-inlined KSlimeLookup over them was CActReg::ResolveEntry spelled out.
+// DEFINED here (owner TU) as zero-init .bss with NO ctor - what retail has: the CRT
+// dynamic-init table (30 entries @0x2096e4) has no initializer for 0x646228, and the
+// address is past .data's raw extent, so the loader zero-fills it. Construct (0x408710)
+// ctors it in place at runtime; hence the (_zvec*) cast at the engine call sites.
 DATA(0x00246228)
-extern CTypeKeyColl g_kslimeColl;
+CActReg g_kslimeColl;
 DATA(0x002bf464)
 extern void* g_projActCache;
 extern void* g_retAddrBreadcrumb;
@@ -148,36 +157,10 @@ struct CKSlimeEntry {
     KSlimeHandler m_fn; // [entry]
 };
 
-// The inlined coordinate->Entry* lookup FireActivation folds in twice.
-// g_kslime* registry-field globals (referenced only from this TU): real
-// definitions DATA-pinned here; the single extern is in <Globals.h>.
-DATA(0x0024622c)
-CVariantSlot* g_kslimeColl2;
-DATA(0x00246230)
-i32 g_kslimeLo;
-DATA(0x00246234)
-i32 g_kslimeHi;
-DATA(0x00246238)
-char* g_kslimeBase;
-DATA(0x0024623c)
-CKSlimeEntry* g_kslimeCur;
-DATA(0x00246240)
-i32 g_kslimeStride;
-DATA(0x00246248)
-i32 g_kslimeScratch;
-
+// The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
+// inline, typed to this registry's entry.
 static inline CKSlimeEntry* KSlimeLookup(i32 coord) {
-    g_kslimeScratch = 0;
-    if (coord >= g_kslimeLo && coord <= g_kslimeHi) {
-        return (CKSlimeEntry*)(g_kslimeBase + (coord - g_kslimeLo) * g_kslimeStride);
-    }
-    if ((i32)((_zvec*)&g_kslimeColl)->GrowTo(coord, 0)) {
-        return (CKSlimeEntry*)(g_kslimeBase + (coord - g_kslimeLo) * g_kslimeStride);
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_kslimeColl2->Set(&g_kslimeColl, (i32)item, 0xc);
-    return g_kslimeCur;
+    return (CKSlimeEntry*)g_kslimeColl.ResolveEntry(coord);
 }
 
 // CKitchenSlime::~CKitchenSlime @0x013100 - the leaf adds no destructible members

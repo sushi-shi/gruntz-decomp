@@ -69,10 +69,12 @@ extern i32 g_645584;
 // Externs the reconstructed projectile methods reference (reloc-masked).
 // ---------------------------------------------------------------------------
 // The global node free-list the dtor / hit-scan recycle tracked-hit nodes onto.
-DATA(0x00245544)
-extern void* g_freeList;
-DATA(0x0024554c)
-extern i32 g_freeListNodeBias;
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 
 // The draw-clock delta global fed to the render object's anim Tick on detach.
 DATA(0x002bf3bc)
@@ -276,9 +278,9 @@ CProjectile::~CProjectile() {
         CObject* data = m_hitList.GetNext(pos);
         if (data != 0) {
             // authentic: freelist recycle - bias the node back to its list-link header
-            void** node = (void**)((char*)data - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
+            void** node = (void**)((char*)data - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
         }
     }
     m_hitList.RemoveAll();
@@ -1012,13 +1014,13 @@ void CProjectile::ScanTargets(i32 impact) {
             }
             // fresh hit: pull a key node off the free-list, record + deliver.
             CHitKey* slot = 0;
-            CHitKey* p = (CHitKey*)g_freeList; // authentic: freelist head is void*
+            CHitKey* p = (CHitKey*)g_coordPool.m_freeHead; // authentic: freelist head is void*
             if (p->m_0 != 0) {
                 slot =
                     (CHitKey*)&p->m_4; // authentic: node payload overlays +4 (past the link word)
                 slot->m_0 = keyX;
                 slot->m_4 = keyY;
-                g_freeList = (void*)p->m_0;
+                g_coordPool.m_freeHead = (void*)p->m_0;
             }
             m_hitList.AddTail((CObject*)slot); // authentic: MFC AddTail takes CObject*
             g->StepCombatReaction(m_kind, 1, m_srcRow, m_srcCol, m_targetId, m_ownerId, 1, 0);

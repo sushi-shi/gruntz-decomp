@@ -314,7 +314,7 @@ struct CombatCoordList {
     void AddHead(void* node); // 0x1b4967
     void RemoveAll();         // 0x1b48a6
 };
-// g_freeList / g_freeListNodeBias are declared above (PathScan section).
+// g_coordPool.m_freeHead / g_coordPool.m_linkOffset are declared above (PathScan section).
 
 // The kill-clock + sound-enable + cue-tag globals.
 extern "C" i32 g_killCueClock; // _g_killCueClock @0x6bf3c0
@@ -442,8 +442,12 @@ void CGrunt::EntranceTileOffset(i32* out) {
 // ==== PathScan57db0 @0x57db0 (ex GruntPathScan.cpp) ====
 // (g_gameReg is the WwdGameReg* view declared at the top of this TU; byte-view uses cast it)
 
-extern void* g_freeList;       // ?g_freeList@@3PAXA (0x645544)
-extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA (0x64554c)
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 
 // --- local grid/scratch-list views (not the canonical CGrunt; the tile-plane's dirty-rect
 // view is richer than GruntBoard, and CScanList is the /GX-forcing stack CObList) ---
@@ -503,9 +507,9 @@ namespace ApiMisc {
 
 #define FREELIST_PUSH(elem)                                                                        \
     {                                                                                              \
-        void** node = (void**)((char*)(elem) - g_freeListNodeBias);                                \
-        *node = g_freeList;                                                                        \
-        g_freeList = node;                                                                         \
+        void** node = (void**)((char*)(elem) - g_coordPool.m_linkOffset);                                \
+        *node = g_coordPool.m_freeHead;                                                                        \
+        g_coordPool.m_freeHead = node;                                                                         \
     }
 
 // @early-stop
@@ -754,7 +758,11 @@ i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
 // freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
-FreeNodePool g_coordPool;          // DAT_00645540
+extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
+                                   // src/Gruntz/GameText.cpp (the pool's owner TU).
+                                   // It used to be DEFINED here too: six .cpp files each
+                                   // defined it, i.e. six .bss objects for one global
+                                   // (LNK2005). Only the owner defines; everyone externs.
 CAnimScratchString* g_animScratch; // DAT_006bf66c
 i32 g_animScratchCount;            // DAT_006bf670
 void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
@@ -1048,9 +1056,9 @@ extern "C" void H_4036f2();
 // large grunt path-cell scan reconstruction (final-sweep candidate): the /GX EH frame
 // from the scratch CObList local, the m_coordCount gate, the 5x5 dirty box + IntersectRect
 // clamp, the tracked-coord scan loop firing Probe20f4 (m_arrivalFlags|0x20000000 / m_24c)
-// capped at five hits, the g_freeList pop/push + g_coordPool recycle drains, the 9x9
+// capped at five hits, the g_coordPool.m_freeHead pop/push + g_coordPool recycle drains, the 9x9
 // neighbour re-scan (flag 0x20040002) and the plane dirty-rect recompute are byte-shaped
-// and the DATA refs (g_gameReg / g_freeList family / g_coordPool / IntersectRect) pair.
+// and the DATA refs (g_gameReg / g_coordPool.m_freeHead family / g_coordPool / IntersectRect) pair.
 // Residual walls: the overlapping stack-slot schedule of the box/coord temps, the
 // per-iteration CObList EH-state stamps and the 8-arg Probe20f4 push ordering diverge from
 // retail's regalloc - re-attack leaf-first in the sweep.
@@ -1129,12 +1137,12 @@ i32 CGrunt::PathScan57db0() {
         while (node != 0) {
             GruntCoordNode* cur = node;
             node = node->m_next;
-            if (g_freeList != 0) {
+            if (g_coordPool.m_freeHead != 0) {
                 GruntCoord* co = cur->m_coord;
-                void** fn = (void**)g_freeList;
+                void** fn = (void**)g_coordPool.m_freeHead;
                 fn[0] = (void*)co->m_x;
                 fn[1] = (void*)co->m_y;
-                g_freeList = *fn;
+                g_coordPool.m_freeHead = *fn;
                 SCAN_LIST()->Add1b4991(fn);
             }
         }
@@ -1851,11 +1859,11 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
             i32* node = 0;
             i32 rx = F(this, 0x17c) >> 5;
             i32 ry = F(this, 0x180) >> 5;
-            if (*(void**)g_freeList != 0) {
-                node = (i32*)((char*)g_freeList + 4);
+            if (*(void**)g_coordPool.m_freeHead != 0) {
+                node = (i32*)((char*)g_coordPool.m_freeHead + 4);
                 node[0] = rx;
                 node[1] = ry;
-                g_freeList = *(void**)g_freeList;
+                g_coordPool.m_freeHead = *(void**)g_coordPool.m_freeHead;
             }
             m_31c.AddHead(node);
         }
@@ -1875,16 +1883,16 @@ i32 CGruntCombat::LoadGruntCombatAnimations(
         if (F(this, 0x328) != 0) {
             void** node = (void**)P(this, 0x320);
             if (node != 0) {
-                void* fl = g_freeList;
+                void* fl = g_coordPool.m_freeHead;
                 do {
                     void** cur = node;
                     node = (void**)*node;
                     void* data = *(void**)((char*)cur + 8);
                     if (data != 0) {
-                        void** slot = (void**)((char*)data - g_freeListNodeBias);
+                        void** slot = (void**)((char*)data - g_coordPool.m_linkOffset);
                         *slot = fl;
                         fl = slot;
-                        g_freeList = fl;
+                        g_coordPool.m_freeHead = fl;
                     }
                 } while (node != 0);
             }

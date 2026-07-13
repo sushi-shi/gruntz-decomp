@@ -91,7 +91,7 @@ i32 MapSerializeCurve(CSerialArchive* ar, i32 mode) {
 // CMapLogic::FreeNodes  (0x085480) - __thiscall
 // ===========================================================================
 // Tear-down helper: walk the +0x7c CObArray's pointer body, push each non-null
-// element's node (element - g_freeListNodeBias) back onto the global g_freeList,
+// element's node (element - g_coordPool.m_linkOffset) back onto the global g_coordPool.m_freeHead,
 // then shrink the array to empty (SetSize(0, -1)) and run the grid Reset (0x9ec30).
 //
 // The trailing Reset() call: retail routes the rel32 through the ILT jmp-thunk 0x1a91
@@ -105,9 +105,9 @@ void CMapLogic::FreeNodes() {
     for (i32 i = 0; i < m_arr.m_nSize; i++) {
         void* elem = m_arr.m_pData[i];
         if (elem != 0) {
-            void** node = (void**)((char*)elem - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
+            void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
         }
     }
     ((CObArray*)&m_arr)->SetSize(0, -1);
@@ -121,8 +121,8 @@ void CMapLogic::FreeNodes() {
 // dword through `ar` keyed by `mode`, then tail-dispatch the polymorphic Visit
 // probe (0x9f7f0) with the archive. mode 4 = write-out (slot +0x30): write m_90,
 // the count, then each non-null node body (size 8). mode 7 = read-in (slot +0x2c):
-// read m_90, the new count, push every existing node back onto g_freeList, resize
-// the array to empty then to count, and pull a fresh node off g_freeList per slot
+// read m_90, the new count, push every existing node back onto g_coordPool.m_freeHead, resize
+// the array to empty then to count, and pull a fresh node off g_coordPool.m_freeHead per slot
 // (body = node+4), reading each (size 8). Returns the Visit probe's bool.
 // @early-stop
 // stack-slot coalescing entropy tail (~96%): instruction selection + block order
@@ -137,26 +137,26 @@ i32 CMapLogic::SerializeNodes(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
     switch (mode) {
         case 7: {
             // read-in: m_90, the new count; recycle every existing node onto
-            // g_freeList; resize empty->count; pull a fresh node per slot.
+            // g_coordPool.m_freeHead; resize empty->count; pull a fresh node per slot.
             ar->Read(&m_90, 4);
             i32 count;
             ar->Read(&count, 4);
             for (i32 fi = 0; fi < m_arr.m_nSize; fi++) {
                 void* elem = m_arr.m_pData[fi];
                 if (elem != 0) {
-                    void** node = (void**)((char*)elem - g_freeListNodeBias);
-                    *node = g_freeList;
-                    g_freeList = node;
+                    void** node = (void**)((char*)elem - g_coordPool.m_linkOffset);
+                    *node = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = node;
                 }
             }
             ((CObArray*)&m_arr)->SetSize(0, -1);
             ((CObArray*)&m_arr)->SetSize(count, -1);
             for (u32 ri = 0; ri < (u32)count; ri++) {
-                void** node = (void**)g_freeList;
+                void** node = (void**)g_coordPool.m_freeHead;
                 void* elem = 0;
                 if (*node != 0) {
                     elem = (char*)node + 4;
-                    g_freeList = *node;
+                    g_coordPool.m_freeHead = *node;
                 }
                 ar->Read(elem, 8);
                 m_arr.m_pData[ri] = elem;

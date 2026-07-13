@@ -97,7 +97,13 @@ DATA(0x0024be90)
 CSiblingActReg g_dropperActReg; // 0x64be90 (owner TU: real definition; interior
                                 // fields 0x24be94..0x24beb0 are this object's members)
 DATA(0x0024bed8)
-extern CTypeKeyColl g_dropColl; // 0x64bed8
+CSiblingActReg g_dropColl; // 0x64bed8 (owner TU: real definition; interior fields
+                           // 0x24bedc..0x24bef8 are this object's members - it used to
+                           // be shredded into seven separate scalar globals, unlike its
+                           // two siblings above/below. Zero-init .bss, no ctor: the CRT
+                           // dynamic-init table (30 entries @0x2096e4) has no initializer
+                           // for it and the address is past .data's raw extent; Construct
+                           // (0x408710) ctors it in place at runtime.)
 DATA(0x0024bf00)
 CSiblingActReg g_shadowActReg; // 0x64bf00 (owner TU: real definition; interior
                                // fields 0x24bf04..0x24bf20 are this object's members)
@@ -157,35 +163,10 @@ typedef void (CDroppedObject::*DropHandler)();
 struct CDropEntry {
     DropHandler m_fn; // [entry]
 };
-// g_drop* registry-field globals (referenced only from this TU): real
-// definitions DATA-pinned here; the single extern is in <Globals.h>.
-DATA(0x0024bedc)
-CVariantSlot* g_dropColl2;
-DATA(0x0024bee0)
-i32 g_dropLo;
-DATA(0x0024bee4)
-i32 g_dropHi;
-DATA(0x0024bee8)
-char* g_dropBase;
-DATA(0x0024beec)
-CDropEntry* g_dropCur;
-DATA(0x0024bef0)
-i32 g_dropStride;
-DATA(0x0024bef8)
-i32 g_dropScratch;
-
+// The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
+// inline (the seven g_drop* scalars it used to run over ARE g_dropColl's fields).
 static inline CDropEntry* DropLookup(i32 coord) {
-    g_dropScratch = 0;
-    if (coord >= g_dropLo && coord <= g_dropHi) {
-        return (CDropEntry*)(g_dropBase + (coord - g_dropLo) * g_dropStride);
-    }
-    if ((i32)((_zvec*)&g_dropColl)->GrowTo(coord, 0)) {
-        return (CDropEntry*)(g_dropBase + (coord - g_dropLo) * g_dropStride);
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_dropColl2->Set(&g_dropColl, (i32)item, 0xc);
-    return g_dropCur;
+    return (CDropEntry*)g_dropColl.ResolveEntry(coord);
 }
 
 // The default case's shared type-keyed record serializer (0x16e4f0, owned +

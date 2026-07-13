@@ -18,7 +18,7 @@
 #include <Gruntz/Boomerang.h> // CBoomerang : CProjectile (+return-trajectory fields, sizeof 0x260)
 #include <Gruntz/Grunt.h>     // CGrunt (launcher grunt return-record) + CGruntArchive
 #include <Gruntz/GameRegistry.h> // g_gameReg (m_world gate, m_cmdGrid launcher-cell grid)
-#include <Globals.h>             // g_projPhase0, g_freeList, g_freeListNodeBias, g_645588
+#include <Globals.h>             // g_projPhase0, g_coordPool.m_freeHead, g_coordPool.m_linkOffset, g_645588
 #include <rva.h>
 
 // @confidence: high
@@ -41,8 +41,12 @@ extern "C" CGameRegistry* g_gameReg;
 
 // Shared free-list globals (recycle the launcher grunt's occupied-coord payloads);
 // DATA-pinned in Projectile.cpp, so extern-only here (no duplicate DATA binding).
-extern void* g_freeList;       // 0x245544
-extern i32 g_freeListNodeBias; // 0x24554c
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 extern "C" u32 g_645588;       // 0x245588  running game clock (return-record base)
 
 // The boomerang return-trajectory constants (.rdata doubles). DATA-pinned here (the
@@ -101,9 +105,9 @@ i32 CBoomerang::LoadProjectileSprites(i32 kind, i32 a, i32 b, i32 sx, i32 sy, i3
                 GruntCoordNode* next = n->m_next;
                 GruntCoord* data = n->m_coord;
                 if (data != 0) {
-                    void** p = (void**)((char*)data - g_freeListNodeBias);
-                    *p = g_freeList;
-                    g_freeList = p;
+                    void** p = (void**)((char*)data - g_coordPool.m_linkOffset);
+                    *p = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = p;
                 }
                 n = next;
             }

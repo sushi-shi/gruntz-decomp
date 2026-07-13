@@ -6,8 +6,8 @@
 // `this` (esi) is a >0x500-byte PLAY-state object; it reads the game-mgr
 // singleton g_gameReg (*0x64556c), the dev/render-state g_devState
 // (*0x645578, its +0x18 flags byte gated by 0x20 = "cheats enabled"), the area
-// index g_areaIdx (0x644c54), the recycled-node free list g_freeList /
-// g_freeListNodeBias, and a set of cheat-enable globals (g_cheatA/B/C/D); it
+// index g_areaIdx (0x644c54), the recycled-node free list g_coordPool.m_freeHead /
+// g_coordPool.m_linkOffset, and a set of cheat-enable globals (g_cheatA/B/C/D); it
 // posts WM_COMMAND (0x111) to the host window via PostMessageA. Every callee is
 // an engine method reached through a reloc-masked __thiscall ILT thunk; the only
 // string it clears before most actions is "GAME_TABHIGHLIGHT1" (the hint sprite:
@@ -37,8 +37,12 @@ extern "C" void* g_gameReg;    // 0x64556c  _g_mgrSettings (game-mgr singleton)
 extern i32 g_sndCueTag;        // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
 extern void* g_devState;       // 0x645578  DAT_00645578 (dev/render state; +0x18 flags)
 extern i32 g_areaIdx;          // 0x644c54  _g_644c54 (current area index)
-extern void* g_freeList;       // 0x645544  ?g_freeList@@3PAXA (recycled-node free list head)
-extern i32 g_freeListNodeBias; // 0x64554c  ?g_freeListNodeBias@@3HA
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 extern i32 g_cheatA;           // 0x6455a4  DAT_006455a4
 extern i32 g_cheatB;           // 0x6455a8  DAT_006455a8
 extern i32 g_cheatC;           // 0x6455ac  DAT_006455ac
@@ -393,11 +397,11 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             i32 v1 = M(obj, 0x88);
             i32* slot;
             if (M(self, 0x490) < 4) {
-                void* head = g_freeList;
+                void* head = g_coordPool.m_freeHead;
                 void* nx = P(head, 0);
                 if (nx != 0) {
                     slot = (i32*)((char*)head + 4);
-                    g_freeList = nx;
+                    g_coordPool.m_freeHead = nx;
                 } else {
                     slot = 0;
                 }
@@ -452,9 +456,9 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         }
         void* node = P(P(self, 0x48c), cur * 4);
         ((CDWordArray*)((char*)self + 0x488))->RemoveAt(cur, 1);
-        node = (char*)node - g_freeListNodeBias;
-        P(node, 0) = g_freeList;
-        g_freeList = node;
+        node = (char*)node - g_coordPool.m_linkOffset;
+        P(node, 0) = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = node;
         i32 c = M(self, 0x49c) - 1;
         M(self, 0x49c) = c;
         if (c != -1) {

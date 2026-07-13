@@ -30,7 +30,7 @@
 // AUTHENTIC-FLOOR NOTE (cast audit): this is a deliberate raw-offset reconstruction
 // of the Battlez grid/spawn state machine, so nearly every (char*) cast is intentional
 // and NOT reducible without re-modeling engine sub-objects that are only stride-walked:
-//   * freelist recycle - `(void**)((char*)coord - g_freeListNodeBias)`: the global
+//   * freelist recycle - `(void**)((char*)coord - g_coordPool.m_linkOffset)`: the global
 //     intrusive coord-node freelist (bias to the list-link header). Authentic.
 //   * grid-record stride - `(char*)m_ctx + cell * 0x238 (+field)`: m_ctx fronts the
 //     0x238-byte CGruntSpawnLevel record array; index*stride is raw byte arithmetic.
@@ -190,7 +190,7 @@ struct GridUnit {
 
     // 0x0343f0 (re-homed from the CBattlezMapConfig cluster - it is a __thiscall ON a
     // GridUnit, not the spawn mgr): recycle every occupied-coord node's payload onto
-    // g_freeList, then RemoveAll the +0x31c CObList. Defined out-of-line (retail RVA below).
+    // g_coordPool.m_freeHead, then RemoveAll the +0x31c CObList. Defined out-of-line (retail RVA below).
     void RecycleCoords(); // 0x0343f0
 
     // The unit-side tile-switch/place: retail's Method_035550 calls this __thiscall
@@ -393,13 +393,15 @@ struct GruntSpawnCtx {
 // The intrusive freelist head: a singly-linked list of recycled coord-pair nodes
 // (node->next at +0). Shared with CBattlezMapConfig's allocator (which pulls nodes
 // off it); FreeArrays pushes them back. Referenced as data (DIR32).
-DATA(0x00245544)
-extern void* g_freeList;
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 
 // The element<->node bias subtracted from a stored element pointer to recover its
 // freelist node header (the allocator hands out node + bias; recycle reverses it).
-DATA(0x0024554c)
-extern i32 g_freeListNodeBias;
 
 // The CGameRegistry singleton (?g_gameReg@@3PAUWwdGameReg@@A @ VA 0x64556c).
 DATA(0x0024556c)
@@ -474,7 +476,7 @@ extern i32 g_stepTimer;
 // The remaining cluster giants - logic NOT yet reconstructed. Each owns its RVA
 // here (moved out of src/Stub/) and links so its sibling callers resolve; the
 // bodies are placeholders for the final sweep. They share the I/G/L/P/J/C/R
-// anim-name dispatch (g_typeColl) + the g_freeList/coord recycling +
+// anim-name dispatch (g_typeColl) + the g_coordPool.m_freeHead/coord recycling +
 // FindPath/CObList path-swap idioms already modeled above.
 // ===========================================================================
 
@@ -729,11 +731,11 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     for (CLevelObj* cur = ListGetFirst(lvl->m_objList->m_8); cur != 0;
          cur = ListGetNext(lvl->m_objList->m_8)) {
         if (cur->m_7c->m_10 == (i32)&CreateGruntCreationPoint && cur->m_124 == id) {
-            CCoordPair* p = (CCoordPair*)g_freeList;
+            CCoordPair* p = (CCoordPair*)g_coordPool.m_freeHead;
             i32* slot = 0;
             if (p->m_0 != 0) {
                 slot = &p->m_4;
-                g_freeList = p->m_0;
+                g_coordPool.m_freeHead = p->m_0;
             }
             slot[0] = cur->m_5c / 32;
             slot[1] = cur->m_60 / 32;
@@ -757,11 +759,11 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     for (CLevelObj* cur3 = ListGetFirst(lvl->m_objList->m_8); cur3 != 0;
          cur3 = ListGetNext(lvl->m_objList->m_8)) {
         if (cur3->m_7c->m_10 == (i32)&CreateWayPoint && cur3->m_124 == id) {
-            CCoordPair* p = (CCoordPair*)g_freeList;
+            CCoordPair* p = (CCoordPair*)g_coordPool.m_freeHead;
             i32* slot = 0;
             if (p->m_0 != 0) {
                 slot = &p->m_4;
-                g_freeList = p->m_0;
+                g_coordPool.m_freeHead = p->m_0;
             }
             slot[0] = cur3->m_5c >> 5;
             slot[1] = cur3->m_60 >> 5;
@@ -885,7 +887,7 @@ i32 CBattlezMapConfig::Method_025c20() {
 // ===========================================================================
 // CBattlezMapConfig::FreeArrays  @0x025ca0
 // For each non-null element of the two CPtrArrays (+0xdc, +0xf0), recover its
-// freelist node (element - bias), push it onto g_freeList. Loop 1 guards on a
+// freelist node (element - bias), push it onto g_coordPool.m_freeHead. Loop 1 guards on a
 // non-null element; loop 2 does not (the retail asymmetry). Then SetSize(0,-1)
 // empties all four arrays and m_13c is cleared.
 // ===========================================================================
@@ -895,17 +897,17 @@ void CBattlezMapConfig::FreeArrays() {
     for (i = 0; i < m_candArray.GetSize(); i++) {
         void* p = m_candArray[i];
         if (p != 0) {
-            void** node = (void**)((char*)p - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
+            void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
         }
     }
     m_candArray.SetSize(0, -1);
 
     for (i = 0; i < m_0f0.GetSize(); i++) {
-        void** node = (void**)((char*)m_0f0[i] - g_freeListNodeBias);
-        *node = g_freeList;
-        g_freeList = node;
+        void** node = (void**)((char*)m_0f0[i] - g_coordPool.m_linkOffset);
+        *node = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = node;
     }
     m_0f0.SetSize(0, -1);
 
@@ -921,13 +923,13 @@ void CBattlezMapConfig::FreeArrays() {
 // then scan the current cell-row for the one eligible unit (passes the cached-
 // cell + clear-flags guards and is NOT one of the I/G/L/P/J/C/R type codes) whose
 // countdown reached 0, transition it (state 0/5 + SetState), and on a 0x12/0x16
-// mode recycle its coord nodes onto g_freeList. Decrement every mode-3 unit's
+// mode recycle its coord nodes onto g_coordPool.m_freeHead. Decrement every mode-3 unit's
 // countdown and advance the bundle's timers by g_tickDelta. Returns 1.
 // ===========================================================================
 // @early-stop
 // large-state-machine plateau: the timer/budget head, the I/G/L/P/J/C/R anim-name
 // dispatch (shared with Method_034460), the eligibility guards, the state
-// transition + g_freeList recycle, and the post-loop countdown decrement are all
+// transition + g_coordPool.m_freeHead recycle, and the post-loop countdown decrement are all
 // reconstructed. Residual is the regalloc across the three 15-slot scans + the
 // chosen-unit override local, and the foreign unit/level chains modeled by raw
 // offset. Deferred to the final sweep.
@@ -1076,9 +1078,9 @@ i32 CBattlezMapConfig::Method_025d90() {
                         CoordNode* cur = n;
                         n = n->m_next;
                         if (cur->m_coord != 0) {
-                            void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                            *node = g_freeList;
-                            g_freeList = node;
+                            void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                            *node = g_coordPool.m_freeHead;
+                            g_coordPool.m_freeHead = node;
                         }
                     }
                     ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -1308,7 +1310,7 @@ i32 CUserLogic::IsAtSavedScreenPos() {
 // @early-stop
 // two-scratch reconstruction plateau (23.8% loose one-tile approx -> 58.4% faithful).
 // The whole control-flow graph, the two tile-record stack copies (rep stos/movs), the
-// arm bit dispatch, and the per-arm recyclers (g_coordPool.Push vs raw g_freeList +
+// arm bit dispatch, and the per-arm recyclers (g_coordPool.Push vs raw g_coordPool.m_freeHead +
 // RemoveAt/RemoveAll) are byte-faithful; the permuter confirms 58.4% is the operand-
 // permutation ceiling for this shape. Residual is genuine codegen/regalloc: (1) frame
 // 0x5c vs retail 0x58 - one extra spill slot MSVC picks for the head; (2) the tile-
@@ -1505,9 +1507,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                             CoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
-                                void** fn = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                                *fn = g_freeList;
-                                g_freeList = fn;
+                                void** fn = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                                *fn = g_coordPool.m_freeHead;
+                                g_coordPool.m_freeHead = fn;
                                 coordList->RemoveAt((POSITION)cur);
                             }
                         }
@@ -1640,9 +1642,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                             CoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
-                                void** fn = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                                *fn = g_freeList;
-                                g_freeList = fn;
+                                void** fn = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                                *fn = g_coordPool.m_freeHead;
+                                g_coordPool.m_freeHead = fn;
                             }
                         }
                         coordList->RemoveAll();
@@ -1687,13 +1689,13 @@ recycleBail:
 // tile (or its own tail coord); for such a node build the FindPath flag word from
 // the unit's 0x12/0x16/0xe anim modes and ask CBrickzGrid::FindPath (flags 0x2000098f) for
 // a route into a local CObList. On a route: recycle the route head + the unit's old
-// coords onto g_freeList/g_coordPool, empty its coord list, AddTail the new route,
+// coords onto g_coordPool.m_freeHead/g_coordPool, empty its coord list, AddTail the new route,
 // re-clamp the board dirty-rect, stamp the unit's packed coord from the new tail, and
 // return 1. Exhausting the three nodes re-clamps the board dirty-rect and returns 0.
 // ===========================================================================
 // @early-stop
 // EH-frame + FindPath reroute plateau: the 13x13 box clamp, the 3-node blocked-tile
-// scan, the 0x12/0x16/0xe FindPath-flag build, CObList(10)/FindPath, the g_freeList +
+// scan, the 0x12/0x16/0xe FindPath-flag build, CObList(10)/FindPath, the g_coordPool.m_freeHead +
 // g_coordPool recycles, the AddTail path-swap, and both dirty-rect re-clamps are
 // reconstructed in shape + order (same family as Method_030b20 / Method_0302c0).
 // Residual is the /GX cond-temp EH state machine (shared `je <unwind>` cleanup vs
@@ -1775,9 +1777,9 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
             && list.GetCount() != 0) {
             void* head = list.RemoveHead();
             if (head != 0) {
-                void** n = (void**)((char*)head - g_freeListNodeBias);
-                *n = g_freeList;
-                g_freeList = n;
+                void** n = (void**)((char*)head - g_coordPool.m_linkOffset);
+                *n = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = n;
             }
             if (list.GetCount() != 0) {
                 // Recycle the unit's current path coords onto g_coordPool, empty it.
@@ -2176,14 +2178,14 @@ i32 CBattlezMapConfig::Serialize_02b420(void* arArg) {
 // archive through its Read(buf,count) vtable slot (+0x2c), then the four growable
 // arrays + the inline 4-dword block. The two CDWordArrays read a count then that
 // many dwords; the two CPtrArrays first recycle their current element nodes onto
-// g_freeList, resize, then allocate one fresh node per element (8-byte payload).
+// g_coordPool.m_freeHead, resize, then allocate one fresh node per element (8-byte payload).
 // ===========================================================================
 // @early-stop
 // 99.5% - regalloc/scheduling wall in the two freelist-pop alloc loops. Retail
-// emits `mov edx,ecx; lea ebx,[eax+4]; mov g_freeList,edx` (store the popped
+// emits `mov edx,ecx; lea ebx,[eax+4]; mov g_coordPool.m_freeHead,edx` (store the popped
 // *node via an edx copy, AFTER the payload lea) and picks ecx for the m_pData
 // reload; every source spelling tried lowers to the equivalent direct
-// `mov g_freeList,ecx` (no copy) + eax for m_pData. The two forms are pure
+// `mov g_coordPool.m_freeHead,ecx` (no copy) + eax for m_pData. The two forms are pure
 // register-scheduling noise - proven by CTriggerMgr's own two structurally
 // identical alloc loops compiling to BOTH (0x7ad40 direct-ecx vs 0x7ad9b
 // edx-copy). ~8 residual bytes across 1299; all logic byte-exact otherwise.
@@ -2274,20 +2276,20 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     for (j = 0; j < m_0f0.GetSize(); j++) {
         void* q = m_0f0[j];
         if (q != 0) {
-            void** node = (void**)((char*)q - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
+            void** node = (void**)((char*)q - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
         }
     }
     m_0f0.SetSize(0, -1);
     ar->Read(&count, 4);
     m_0f0.SetSize(count, -1);
     for (i = 0; i < (u32)count; i++) {
-        void* node = g_freeList;
+        void* node = g_coordPool.m_freeHead;
         void* payload = 0;
         if (*(void**)node != 0) {
             payload = (char*)node + 4;
-            g_freeList = *(void**)node;
+            g_coordPool.m_freeHead = *(void**)node;
         }
         ar->Read(payload, 8);
         m_0f0[i] = payload;
@@ -2296,20 +2298,20 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
     for (j = 0; j < m_candArray.GetSize(); j++) {
         void* q = m_candArray[j];
         if (q != 0) {
-            void** node = (void**)((char*)q - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
+            void** node = (void**)((char*)q - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
         }
     }
     m_candArray.SetSize(0, -1);
     ar->Read(&count, 4);
     m_candArray.SetSize(count, -1);
     for (i = 0; i < (u32)count; i++) {
-        void* node = g_freeList;
+        void* node = g_coordPool.m_freeHead;
         void* payload = 0;
         if (*(void**)node != 0) {
             payload = (char*)node + 4;
-            g_freeList = *(void**)node;
+            g_coordPool.m_freeHead = *(void**)node;
         }
         ar->Read(payload, 8);
         m_candArray[i] = payload;
@@ -2616,7 +2618,7 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
 // unit, waveP - TU_MIGRATION MOVE row `0x02c690 ResolveArrival@CArriveMgr
 // gruntarriveresolve -> 0x29a30 battlezmapconfig`; CArriveMgr IS CBattlezMapConfig's
 // run-phase reinterpretation, xref-proven). The grunt arrival/tile-effect resolver;
-// g_freeList / g_freeListNodeBias / g_coordPool reuse this TU's decls, CTriggerMgr is
+// g_coordPool.m_freeHead / g_coordPool.m_linkOffset / g_coordPool reuse this TU's decls, CTriggerMgr is
 // this TU's local view (ApplyTriggerA added). The CArrive* sub-object views are local.
 // ===========================================================================
 // --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
@@ -2726,7 +2728,7 @@ static __inline i32 arrCell(CArriveGrid* grid, i32 col, i32 row) {
 //       reload per cluster (base grows), netting -0.8% - not worth it.
 //   (2) DOOR-OPEN transform (off the common path, own recheck-DCE wall): retail's 0x1ad..0x46e
 //       block is 3x GetTilePos + QuadIntRecord + IntersectRect + a per-cell CString-EH nested
-//       loop (SearchEdge 0x20f4 / RemoveHead / g_freeList push) + a 0x2d31b cleanup tail. It
+//       loop (SearchEdge 0x20f4 / RemoveHead / g_coordPool.m_freeHead push) + a 0x2d31b cleanup tail. It
 //       contains a dead stack-address null-recheck (`lea edx,[esp+0x38]; test edx,edx; je`) our
 //       stronger MSVC5 DCE eliminates (cf. docs/patterns/dead-unreachable-recheck-block-dce.md),
 //       so it can't reach byte-exact regardless. Reconstructed as a structural CString-EH loop
@@ -2782,7 +2784,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
     if ((dest.m_0 & 0x400) && g->m_defenderState == 3 && type != 8) {
         if (own.m_0 & 0x4000) {
             // door-open transform: build a search rect from the grunt pos, then a per-cell
-            // CString-EH loop recycling edge nodes onto g_freeList. (Byte-walled: retail
+            // CString-EH loop recycling edge nodes onto g_coordPool.m_freeHead. (Byte-walled: retail
             // emits a dead stack-address null-recheck our MSVC5 DCEs - see @early-stop.)
             GruntTilePos da;
             g->GetTilePos(&da);
@@ -2792,9 +2794,9 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
                     if (!(m_c->m_8[drow][dcol].m_0 & 0x20000000)) {
                         void* h = cs.RemoveHead();
                         if (h != 0) {
-                            void** node = (void**)((char*)h - g_freeListNodeBias);
-                            *node = g_freeList;
-                            g_freeList = node;
+                            void** node = (void**)((char*)h - g_coordPool.m_linkOffset);
+                            *node = g_coordPool.m_freeHead;
+                            g_coordPool.m_freeHead = node;
                         }
                     }
                 }
@@ -3060,7 +3062,7 @@ SIZE_UNKNOWN(CArriveSub10b);
 
 // @early-stop
 // recursive flood-fill plateau: the global-flag loop, both FindPath arms (0x4903 /
-// 0x4003), the special anim-id set test, the commit (g_stepRun/Col/Row + g_freeList
+// 0x4003), the special anim-id set test, the commit (g_stepRun/Col/Row + g_coordPool.m_freeHead
 // recycle), the 0x20000 visited-mark, and the 8-neighbour self-recursion are
 // reconstructed in shape + order. Residual: the eight unrolled neighbour blocks
 // each pin the (col-1/col+1/row-1/row+1) operands in a different reg than retail,
@@ -3127,9 +3129,9 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                         while (n != 0) {
                             CoordNode* cur = n;
                             n = n->m_next;
-                            void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                            *node = g_freeList;
-                            g_freeList = node;
+                            void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                            *node = g_coordPool.m_freeHead;
+                            g_coordPool.m_freeHead = node;
                         }
                     }
                 }
@@ -3174,9 +3176,9 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                     while (n != 0) {
                         CoordNode* cur = n;
                         n = n->m_next;
-                        void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                        *node = g_freeList;
-                        g_freeList = node;
+                        void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                        *node = g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = node;
                     }
                 }
             }
@@ -3638,7 +3640,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
 // resolver + EH + regalloc plateau: the coord-scan head, the Method_0305b0 collision
 // + Method_030530 block checks, the seven-way I/G/L/P/J/C/R GetRecord setcc dispatch
 // (docs/patterns/strcmp-eq-bool-local-setcc.md), the distance<=0x190 best scan, the
-// 0x16/0x12 flag build, CObList(10)/GetCoord/FindPath, and the g_coordPool/g_freeList
+// 0x16/0x12 flag build, CObList(10)/GetCoord/FindPath, and the g_coordPool/g_coordPool.m_freeHead
 // path-swap are reconstructed in shape + order. Residual is the 15-slot scan regalloc
 // (retail pins the slot index in [esp+0x4c] and the candidate in ebp) plus the /GX
 // cleanup epilogue funnel; foreign chains modeled by raw offset. Final sweep.
@@ -3696,9 +3698,9 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 CoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
-                    void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                    *node = g_freeList;
-                    g_freeList = node;
+                    void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                    *node = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = node;
                 }
             }
             ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -3845,9 +3847,9 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                                 // Recycle the unit's old path coords onto g_coordPool.
                                 void* head = list.RemoveHead();
                                 if (head != 0) {
-                                    void** node = (void**)((char*)head - g_freeListNodeBias);
-                                    *node = g_freeList;
-                                    g_freeList = node;
+                                    void** node = (void**)((char*)head - g_coordPool.m_linkOffset);
+                                    *node = g_coordPool.m_freeHead;
+                                    g_coordPool.m_freeHead = node;
                                 }
                                 if (unit->m_coordCount != 0) {
                                     CoordNode* nn = unit->m_coordHead;
@@ -3856,9 +3858,9 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                                         nn = nn->m_next;
                                         if (cur->m_coord != 0) {
                                             void** fn =
-                                                (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                                            *fn = g_freeList;
-                                            g_freeList = fn;
+                                                (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                                            *fn = g_coordPool.m_freeHead;
+                                            g_coordPool.m_freeHead = fn;
                                         }
                                     }
                                     ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -3899,14 +3901,14 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
 // bands; within each band roll a second value against an ascending probability-
 // threshold table to choose an anim/state index, then apply it via SetState - the
 // mode==3 arm instead reseeds idle units in the current cell-row, and the 0x12/
-// 0x16 modes recycle the unit's occupied-coord nodes onto g_freeList. Returns 1.
+// 0x16 modes recycle the unit's occupied-coord nodes onto g_coordPool.m_freeHead. Returns 1.
 // ===========================================================================
 // @early-stop
 // large-state-machine plateau (~49%): the four guards, the seven-way I/G/L/P/J/C/R
 // anim-name dispatch (the inline-strcmp setcc form via `bool eq`, see
 // docs/patterns/strcmp-eq-bool-local-setcc.md), the three banded threshold-table
 // cascades, all three SetState arms, the mode-3 row reseed loop, and the 0x12/0x16
-// g_freeList recycle are reconstructed in shape + order, and the prologue/setcc
+// g_coordPool.m_freeHead recycle are reconstructed in shape + order, and the prologue/setcc
 // strcmp byte stream now matches retail. Two coupled residuals: (1) the scratch
 // CString teardown loop - retail copies the count, decrements, tests the original,
 // and recovers the trip via `lea edi,[eax+1]` where MSVC5 here just `mov edi,eax`s
@@ -4133,9 +4135,9 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                         CoordNode* curn = n;
                         n = n->m_next;
                         if (curn->m_coord != 0) {
-                            void** node = (void**)((char*)curn->m_coord - g_freeListNodeBias);
-                            *node = g_freeList;
-                            g_freeList = node;
+                            void** node = (void**)((char*)curn->m_coord - g_coordPool.m_linkOffset);
+                            *node = g_coordPool.m_freeHead;
+                            g_coordPool.m_freeHead = node;
                         }
                     }
                     ((CObList*)&u->m_coordList)->RemoveAll();
@@ -4160,9 +4162,9 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                     CoordNode* curn = n;
                     n = n->m_next;
                     if (curn->m_coord != 0) {
-                        void** node = (void**)((char*)curn->m_coord - g_freeListNodeBias);
-                        *node = g_freeList;
-                        g_freeList = node;
+                        void** node = (void**)((char*)curn->m_coord - g_coordPool.m_linkOffset);
+                        *node = g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = node;
                     }
                 }
                 ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -4174,9 +4176,9 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                     CoordNode* curn = n;
                     n = n->m_next;
                     if (curn->m_coord != 0) {
-                        void** node = (void**)((char*)curn->m_coord - g_freeListNodeBias);
-                        *node = g_freeList;
-                        g_freeList = node;
+                        void** node = (void**)((char*)curn->m_coord - g_coordPool.m_linkOffset);
+                        *node = g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = node;
                     }
                 }
                 ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -4252,7 +4254,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
 // ===========================================================================
 // @early-stop
 // EH-frame + regalloc plateau (~63%): logic + every call (FindPath, RemoveHead,
-// the two CObList walks, the g_coordPool/g_freeList recycles) is byte-exact and
+// the two CObList walks, the g_coordPool/g_coordPool.m_freeHead recycles) is byte-exact and
 // in the right order. Two coupled walls: (1) retail pins `unit` in ebp and arg2
 // in edi, loading arg3 lazily between the two head compares, where MSVC5 here
 // pins `unit` in ebx and reads arg3 early; (2) retail funnels all `return 0`
@@ -4276,9 +4278,9 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
     }
     void* head = list.RemoveHead();
     if (head != 0) {
-        void** node = (void**)((char*)head - g_freeListNodeBias);
-        *node = g_freeList;
-        g_freeList = node;
+        void** node = (void**)((char*)head - g_coordPool.m_linkOffset);
+        *node = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = node;
     }
     if (list.GetCount() == 0) {
         return 0;
@@ -4318,15 +4320,15 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
 // unit is already at the goal (its GetCoord (>>5) == (gx, gy)) bail; scan its path
 // for a node already on the goal; ask the board's A* (FindPath) for a route into a
 // local CObList; recycle the route's head + (when the goal was already queued) the
-// path-list base + the unit's existing coord nodes onto g_freeList; then AddTail
+// path-list base + the unit's existing coord nodes onto g_coordPool.m_freeHead; then AddTail
 // every new route node onto the unit's path list. Returns 1 on a route, 0 otherwise.
 // ===========================================================================
 // @early-stop
 // EH-frame + regalloc plateau: logic + every call (the two GetCoords, FindPath,
-// RemoveHead, the g_freeList recycles, AddTail, the ~CObList unwind) is reconstructed
+// RemoveHead, the g_coordPool.m_freeHead recycles, AddTail, the ~CObList unwind) is reconstructed
 // in shape + order. Two walls: (1) the /GX cond-temp EH state machine (shared
 // `je <unwind>` cleanup vs cl's per-return duplication, same as Method_0300c0); (2)
-// the matched-node g_freeList recycle in the middle compiles to a degenerate
+// the matched-node g_coordPool.m_freeHead recycle in the middle compiles to a degenerate
 // loop-invariant `do/while` in retail (the path-segment recycle) that no source
 // spelling reproduces. Foreign unit chains modeled by raw offset. Final sweep.
 RVA(0x000302c0, 0x1ec)
@@ -4364,29 +4366,29 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
     }
     void* head = list.RemoveHead();
     if (head != 0) {
-        void** node = (void**)((char*)head - g_freeListNodeBias);
-        *node = g_freeList;
-        g_freeList = node;
+        void** node = (void**)((char*)head - g_coordPool.m_linkOffset);
+        *node = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = node;
     }
     if (list.GetCount() == 0) {
         return 0;
     }
     // The matched-path-segment recycle (degenerate in retail).
     if (match != 0 && unit->m_coordHead != 0) {
-        void** node = (void**)((char*)&unit->m_coordList - g_freeListNodeBias);
-        *node = g_freeList;
-        g_freeList = node;
+        void** node = (void**)((char*)&unit->m_coordList - g_coordPool.m_linkOffset);
+        *node = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = node;
     }
-    // Recycle the unit's existing coord nodes onto g_freeList, then empty its path.
+    // Recycle the unit's existing coord nodes onto g_coordPool.m_freeHead, then empty its path.
     if (unit->m_coordCount != 0) {
         CoordNode* p = unit->m_coordHead;
         while (p != 0) {
             CoordNode* cur4 = p;
             p = p->m_next;
             if (cur4->m_coord != 0) {
-                void** node = (void**)((char*)cur4->m_coord - g_freeListNodeBias);
-                *node = g_freeList;
-                g_freeList = node;
+                void** node = (void**)((char*)cur4->m_coord - g_coordPool.m_linkOffset);
+                *node = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = node;
             }
         }
         ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -4657,12 +4659,12 @@ i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
 // nearest (min squared-distance) to the unit's level coord. If one is found and is
 // reachable, build the FindPath flag word from the unit's 0x16/0x12 anim modes,
 // ask CBrickzGrid::FindPath for a route into a local CObList, then swap the unit's path
-// (recycle old coord nodes onto g_freeList, AddTail the new ones, stamp the packed
+// (recycle old coord nodes onto g_coordPool.m_freeHead, AddTail the new ones, stamp the packed
 // target coord + state 5). Returns 1 on a reroute, 0 otherwise.
 // ===========================================================================
 // @early-stop
 // EH-frame + regalloc plateau (~69%): logic + every call (QueryA/QueryB,
-// Method_0305b0, the 0x16/0x12 flag build, CObList(10)/FindPath, the g_freeList
+// Method_0305b0, the 0x16/0x12 flag build, CObList(10)/FindPath, the g_coordPool.m_freeHead
 // recycle + AddTail path-swap, ~CObList) is reconstructed in shape + order. Residual
 // is the head's instruction scheduling (retail interleaves the goalX/goalY >>5 with
 // the tile lookup and pins the cell base in edi where MSVC5 here computes the goal
@@ -4772,23 +4774,23 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     }
     void* head = list.RemoveHead();
     if (head != 0) {
-        void** node = (void**)((char*)head - g_freeListNodeBias);
-        *node = g_freeList;
-        g_freeList = node;
+        void** node = (void**)((char*)head - g_coordPool.m_linkOffset);
+        *node = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = node;
     }
     if (list.GetCount() == 0) {
         return 0;
     }
-    // Recycle the unit's current path-coord nodes onto g_freeList, empty its list.
+    // Recycle the unit's current path-coord nodes onto g_coordPool.m_freeHead, empty its list.
     if (unit->m_coordCount != 0) {
         CoordNode* n = unit->m_coordHead;
         while (n != 0) {
             CoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
-                void** fn = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                *fn = g_freeList;
-                g_freeList = fn;
+                void** fn = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                *fn = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = fn;
             }
         }
         ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -5136,7 +5138,7 @@ GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
 // CBattlezMapConfig::winapi_031ca0_IntersectRect  @0x031ca0
 // The queued-unit arrival resolver. For a unit with a live target cell
 // (m_targetX/m_targetY != -1) locate the unit at that cell (grid[m_targetX][m_targetY]); if it is
-// gone, reset the unit (mode 4 / -1 coords) recycling its path onto g_freeList.
+// gone, reset the unit (mode 4 / -1 coords) recycling its path onto g_coordPool.m_freeHead.
 // If the target cell is already occupied (CGrunt::Occupied on the target's
 // level coord), recycle the unit's path onto g_coordPool, clear the target coord
 // and hand off to winapi_02ae00. Otherwise clamp the board dirty-rect to the board
@@ -5146,7 +5148,7 @@ GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
 // ===========================================================================
 // @early-stop
 // 80.6% - head regalloc wall: logic + every call (CGrunt::Occupied, the
-// CoordListWalk/g_coordPool + raw-walk/g_freeList recycles, IntersectRect, the
+// CoordListWalk/g_coordPool + raw-walk/g_coordPool.m_freeHead recycles, IntersectRect, the
 // Method_4b320 place, winapi_02ae00) is byte-exact in shape + order (the whole body
 // matches). Residual is the m_targetX/m_targetY head: retail keeps the -1 as an immediate
 // (cmp eax,0xffffffff) and spills tx/ty to [esp+0x10]/[esp+0x14], where MSVC5 here
@@ -5204,7 +5206,7 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
             return 1;
         }
         // The target unit is gone: reset it (mode 4 / -1 coords), recycle its path
-        // onto g_freeList.
+        // onto g_coordPool.m_freeHead.
         unit->m_targetX = -1;
         unit->m_targetY = -1;
         unit->m_goalX = -1;
@@ -5214,16 +5216,16 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
         if (unit->m_coordCount != 0) {
             CoordNode* n = unit->m_coordHead;
             if (n != 0) {
-                void* head = g_freeList;
+                void* head = g_coordPool.m_freeHead;
                 do {
                     CoordNode* cur = n;
                     n = n->m_next;
                     void* coord = cur->m_coord;
                     if (coord != 0) {
-                        void** slot = (void**)((char*)coord - g_freeListNodeBias);
+                        void** slot = (void**)((char*)coord - g_coordPool.m_linkOffset);
                         *slot = head;
                         head = slot;
-                        g_freeList = head;
+                        g_coordPool.m_freeHead = head;
                     }
                 } while (n != 0);
             }
@@ -5267,13 +5269,13 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
 //   7 -> clamp the board dirty-rect to the board bounds and place at the band's queued
 //        point (Place, flags 0x987).
 // A unit that DOES hold coords (m_coordCount != 0) only advances mode 6 -> 7 once within range,
-// recycling its coords onto g_freeList. Returns 1.
+// recycling its coords onto g_coordPool.m_freeHead. Returns 1.
 // ===========================================================================
 // @early-stop
 // large no-EH state-machine plateau (same family as winapi_02e3a0): the m_targetBand band-pick
 // (signed rand()%4 with the m_curCell skip), the m_state 0/6/7 dispatch with all three re-place
 // arms + the m_pathState state-code walk, the box clamp, both FindPath-flag else-if chains, and
-// all four coord recyclers (g_coordPool via CoordListWalk::Advance / g_freeList inline) are
+// all four coord recyclers (g_coordPool via CoordListWalk::Advance / g_coordPool.m_freeHead inline) are
 // reconstructed in shape + order. Residual is the register-relative record-address regalloc
 // (cl strength-reduces the band*0x238 lea-chain + folds the +0x170/+0x188/+0x258 sub-offsets
 // differently per arm, the documented Method_0358a0 record-address wall) + the box-stack-slot
@@ -5340,7 +5342,7 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         i32 gx = unit->m_goalX;
         i32 gy = unit->m_goalY;
         if (gx == -1 || gy == -1) {
-            // Reset the goal: recycle the unit's coords onto g_freeList.
+            // Reset the goal: recycle the unit's coords onto g_coordPool.m_freeHead.
             unit->m_state = 0;
             if (unit->m_coordCount != 0) {
                 CoordNode* n = unit->m_coordHead;
@@ -5348,9 +5350,9 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                     CoordNode* cur = n;
                     n = n->m_next;
                     if (cur->m_coord != 0) {
-                        void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                        *node = g_freeList;
-                        g_freeList = node;
+                        void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                        *node = g_coordPool.m_freeHead;
+                        g_coordPool.m_freeHead = node;
                     }
                 }
                 ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -5370,9 +5372,9 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
             CoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
-                void** node = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                *node = g_freeList;
-                g_freeList = node;
+                void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                *node = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = node;
             }
         }
         ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -5556,14 +5558,14 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
 
 // ===========================================================================
 // GridUnit::RecycleCoords  @0x0343f0  (re-homed off the CBattlezMapConfig cluster;
-// __thiscall on a GridUnit). Recycle each occupied-coord node's payload onto g_freeList (head
+// __thiscall on a GridUnit). Recycle each occupied-coord node's payload onto g_coordPool.m_freeHead (head
 // cached in a register across the loop, written each iteration), then tail into the
 // +0x31c CObList's RemoveAll. Skips everything when the count (m_coordCount) is zero.
 // ===========================================================================
 // @early-stop
 // 99.78% - the SAME freelist-store register-scheduling coin-flip as Deserialize_02b950's
-// recycle loops: retail's `g_freeList = head` store reads esi (head's callee-saved home,
-// which also holds slot after `head=slot`); our cl folds it to `mov g_freeList,eax`
+// recycle loops: retail's `g_coordPool.m_freeHead = head` store reads esi (head's callee-saved home,
+// which also holds slot after `head=slot`); our cl folds it to `mov g_coordPool.m_freeHead,eax`
 // (slot's register). 1-byte residual (89 35 vs a3), pure operand selection - proven a
 // coin-flip by CTriggerMgr's twin alloc loops (0x7ad40 direct vs 0x7ad9b copy). All
 // logic byte-exact. Deferred to the final sweep.
@@ -5574,16 +5576,16 @@ void GridUnit::RecycleCoords() {
     }
     CoordNode* n = m_coordHead;
     if (n != 0) {
-        void* head = g_freeList;
+        void* head = g_coordPool.m_freeHead;
         do {
             CoordNode* cur = n;
             n = n->m_next;
             void* coord = cur->m_coord;
             if (coord != 0) {
-                void** slot = (void**)((char*)coord - g_freeListNodeBias);
+                void** slot = (void**)((char*)coord - g_coordPool.m_linkOffset);
                 *slot = head;
                 head = slot;
-                g_freeList = head;
+                g_coordPool.m_freeHead = head;
             }
         } while (n != 0);
     }
@@ -5756,12 +5758,12 @@ void ZErrTarget::Report(i32 sentinel, i32 code) {
 // per-level budget (m_idleTimer) exceeds this->m_reserveBudget - on a successful place clear m_idleTimer,
 // otherwise fall to the "give up" path; if the tile is free, give up directly. The
 // give-up path marks the unit mode 4, recycles its coord nodes (onto the coord pool
-// for the reserved-tile branch, onto g_freeList for the free-tile branch), empties
+// for the reserved-tile branch, onto g_coordPool.m_freeHead for the free-tile branch), empties
 // its coord list, and resets its target coord (-1,-1) + state. Returns 1.
 // ===========================================================================
 // @early-stop
 // deep-chain regalloc plateau: the board-tile lookup, the budget gate, the
-// Method_4b320 spawn, both coord-recycle loops (coord-pool vs g_freeList) and the
+// Method_4b320 spawn, both coord-recycle loops (coord-pool vs g_coordPool.m_freeHead) and the
 // reset block are reconstructed in shape + order, but retail pins the unit in edi /
 // the zero const in ebx and the tile-index math (m_targetX*7, m_targetY row) spills to
 // different stack slots than MSVC5 here. Foreign unit/board chains modeled by raw
@@ -5803,9 +5805,9 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
                 CoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
-                    void** slot = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-                    *slot = g_freeList;
-                    g_freeList = slot;
+                    void** slot = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                    *slot = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = slot;
                 }
             }
             ((CObList*)&unit->m_coordList)->RemoveAll();
@@ -5932,7 +5934,7 @@ i32 CBattlezMapConfig::Method_035550(i32 unitArg) {
 // retargets to a random band (m_targetX == -1, idle timer past m_moveBudget) or re-places at its
 // band's default coord (timer past 0x7d0); when it DOES hold coords it despawns
 // (recycling them onto g_coordPool) if both band slots are clear, else keeps the unit
-// only when it is within 6 tiles of a band candidate (recycling onto g_freeList).
+// only when it is within 6 tiles of a band candidate (recycling onto g_coordPool.m_freeHead).
 // m_ctx indexes the per-band records at stride 0x238; the +0x150/+0x188 sub-objects'
 // candidate vectors live at +0xf4 (array) / +0xf8 (count) / +0xd0,+0xd4 (default coord).
 // ===========================================================================
@@ -5947,7 +5949,7 @@ struct ProbePair {
 // 0x2d6 (726 B) no-EH grid policy step: the body reproduces all four arms (random-band
 // retarget, fixed-band re-place, despawn-recycle, near-band keep) incl. the signed
 // rand()%4 / idiv rand()%cnt modulo idioms and both coord recyclers (g_coordPool vs
-// g_freeList). The plateau is the documented register-relative record-address regalloc
+// g_coordPool.m_freeHead). The plateau is the documented register-relative record-address regalloc
 // wall (cl strength-reduces the idx*0x238 lea-chain + folds the band sub-object offsets
 // differently across the four arms) and the dead saved-m_targetX reload; logic complete.
 RVA(0x000358a0, 0x2d6)
@@ -6056,9 +6058,9 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
         CoordNode* cur = n;
         n = n->m_next;
         if (cur->m_coord != 0) {
-            void** slot = (void**)((char*)cur->m_coord - g_freeListNodeBias);
-            *slot = g_freeList;
-            g_freeList = slot;
+            void** slot = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+            *slot = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = slot;
         }
     }
     ((CObList*)&unit->m_coordList)->RemoveAll();

@@ -99,16 +99,28 @@ DATA(0x0024556c)
 extern "C" WwdGameReg* g_gameReg;
 
 // ---------------------------------------------------------------------------
-// CParticlez's per-coordinate activation registry (@0x644870) - the SAME
-// archetype as CTimeBomb::FireActivation's, but CParticlez's OWN instance. A
-// coordinate maps to an Entry* either directly (fast [g_partLo, g_partHi] range)
-// via g_partBase + (coord-lo)*stride, or by a slow Find in the collection
-// (0x16da80), which on miss rebuilds (GetRetAddr 0x16d990 -> g_projActCache, Insert
-// 0x16d850) and yields g_partCur. All globals unnamed BSS (DATA-pinned so the
-// loads reloc-mask); the collection methods external/no-body.
-struct CPartEntry; // an entry: first dword is the registered handler
+// CParticlez's per-coordinate activation registry (@0x644870) - ONE 0x24-byte
+// CActReg object, the SAME archetype every CUserLogic leaf reuses (<Gruntz/ActReg.h>).
+//
+// SHREDDED-OBJECT FIX: 0x644874..0x644890 are this object's INTERIOR FIELDS
+// (m_coll2 / m_lo / m_hi / m_base / m_cur / m_stride / m_scratch), and this TU used
+// to declare them as seven separate DATA()-pinned scalar globals - seven .bss
+// variables where retail has one object. The hand-inlined PartLookup over those
+// scalars was CActReg::ResolveEntry spelled out; it is the archetype inline now.
+//
+// DEFINED here (the owner TU) as zero-init .bss with NO constructor - which is what
+// retail has, proven twice over: (1) the CRT dynamic-init table (30 entries, rva
+// 0x2096e4..0x20975c, NULL-bounded) holds no initializer for 0x644870 - it lists only
+// 0x653c88 / 0x683ec8 / 0x6bf408 / 0x6bf430 / 0x6bf468 / 0x6bf480 / 0x6bf620 (g_buteTree)
+// / 0x6bf650 (g_typeColl) / 0x6bf848; and (2) the address lies past .data's raw extent
+// (file-backed only through rva 0x229400), so the loader zero-fills it. The object is
+// ctor'd IN PLACE at runtime by InitActReg below (Construct 0x408710 -> the real
+// CTypeKeyColl ctor 0x16dda0, then the live-vtable stamp) - which is exactly why the
+// engine call sites cast it to (_zvec*): the storage type and the runtime class differ
+// in retail itself. Declaring it `CTypeKeyColl` instead would be unbuildable (no default
+// ctor) and would fabricate a 31st CRT initializer the binary does not have.
 DATA(0x00244870)
-extern CTypeKeyColl g_partColl;
+CActReg g_partColl;
 
 // The entry's first dword is a pointer-to-member-function of CParticlez (single
 // inheritance -> 4-byte code pointer); FireActivation invokes it on `this`,
@@ -126,36 +138,10 @@ struct CPartEntryI32 {
     PartHandlerI32 m_fn;
 };
 
-// The inlined coordinate->Entry* lookup FireActivation folds in twice.
-// g_part* registry-field globals (referenced only from this TU): real
-// definitions DATA-pinned here; the single extern is in <Globals.h>.
-DATA(0x00244874)
-CVariantSlot* g_partColl2;
-DATA(0x00244878)
-i32 g_partLo;
-DATA(0x0024487c)
-i32 g_partHi;
-DATA(0x00244880)
-char* g_partBase;
-DATA(0x00244884)
-CPartEntry* g_partCur;
-DATA(0x00244888)
-i32 g_partStride;
-DATA(0x00244890)
-i32 g_partScratch;
-
+// The coordinate->Entry* lookup FireActivation folds in twice: the shared archetype
+// inline, typed to this registry's entry.
 static inline CPartEntry* PartLookup(i32 coord) {
-    g_partScratch = 0;
-    if (coord >= g_partLo && coord <= g_partHi) {
-        return (CPartEntry*)(g_partBase + (coord - g_partLo) * g_partStride);
-    }
-    if ((i32)((_zvec*)&g_partColl)->GrowTo(coord, 0)) {
-        return (CPartEntry*)(g_partBase + (coord - g_partLo) * g_partStride);
-    }
-    void* item = g_projActCache; // canonical bound alloc-scratch (0x2bf464, from ActColl.h)
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_partColl2->Set(&g_partColl, (i32)item, 0xc);
-    return g_partCur;
+    return (CPartEntry*)g_partColl.ResolveEntry(coord);
 }
 
 // The CExplosion class dispatch table (@0x6447f8), constructed by

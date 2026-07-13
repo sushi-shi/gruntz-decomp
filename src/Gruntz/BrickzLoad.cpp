@@ -98,11 +98,14 @@ struct BzFreeNode {
     i32 m_4;         // +0x04  col
     i32 m_8;         // +0x08  row
 };
-// ?g_freeList@@3PAXA (0x645544) / ?g_freeListNodeBias@@3HA (0x64554c).
-DATA(0x00245544)
-extern BzFreeNode* g_freeList;
-DATA(0x0024554c)
-extern i32 g_freeListNodeBias;
+// The free-list head (0x645544) and node bias (0x64554c) are NOT globals: they are the
+// INTERIOR FIELDS m_freeHead (+0x04) / m_linkOffset (+0x0c) of the coord-node pool
+// g_coordPool @0x645540 (DEFINED in src/Gruntz/GameText.cpp). This TU used to redeclare
+// the head under its own BzFreeNode* type - a divergent second symbol for the same slot.
+// The pool's head is genuinely void* (it recycles nodes of several element types), so the
+// BzFreeNode view is a cast at the use sites, which is what retail does.
+#include <Gruntz/FreeNodePool.h>
+extern FreeNodePool g_coordPool;
 
 // CPtrArray helpers on the container's +0x7c footprint array (m_80 = data,
 // m_84 = count). SetAtGrow (0x1b5144, __thiscall ret 8), SetSize (0x1b4f75,
@@ -468,11 +471,11 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
             for (i32 xo = -1; xo < 2; xo++) {
                 for (i32 yo = -1; yo < 2; yo++) {
                     BzFreeNode* node = 0;
-                    if (*(void**)g_freeList != 0) {
-                        node = g_freeList;
+                    if (*(void**)g_coordPool.m_freeHead != 0) {
+                        node = (BzFreeNode*)g_coordPool.m_freeHead;
                         node->m_4 = tileX + xo;
                         node->m_8 = tileY + yo;
-                        g_freeList = g_freeList->m_0;
+                        g_coordPool.m_freeHead = node->m_0;
                     }
                     m_footprint.SetAtGrow(m_84, node);
                 }
@@ -482,9 +485,9 @@ i32 CBrickz::LoadAttributes(i32 width, i32 height) {
                 if (node != 0 && (u32)node->m_4 < (u32)m_c && (u32)node->m_8 < (u32)m_10) {
                     m_4[node->m_8 * m_c + node->m_4].m_0 = 0x10;
                     m_4[node->m_8 * m_c + node->m_4].m_c = 0;
-                    BzFreeNode* rec = (BzFreeNode*)((char*)node - g_freeListNodeBias);
-                    rec->m_0 = g_freeList;
-                    g_freeList = rec;
+                    BzFreeNode* rec = (BzFreeNode*)((char*)node - g_coordPool.m_linkOffset);
+                    rec->m_0 = (BzFreeNode*)g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = rec;
                 }
             }
             m_footprint.SetSize(0, -1);

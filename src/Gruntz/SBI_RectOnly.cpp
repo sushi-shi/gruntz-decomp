@@ -85,10 +85,12 @@ extern i32 g_serialCounter;
 
 // The engine free-list head + the node-pointer bias (raw subtrahend), shared with
 // Projectile/TriggerMgr. The teardown returns each pooled element to this list.
-DATA(0x00245544)
-extern void* g_freeList;
-DATA(0x0024554c)
-extern i32 g_freeListNodeBias;
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 
 // ---------------------------------------------------------------------------
 // The /GX members collapsed from SBI_RectOnlyEh.cpp (the split companion TU was
@@ -652,9 +654,9 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     for (i32 t = 0; t < m_ptrCount; t++) {
         void* pp = m_ptrTable[t];
         if (pp) {
-            void** node = (void**)((char*)pp - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
+            void** node = (void**)((char*)pp - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
         }
     }
     ((CPtrArray*)&m_ptrPool)->SetSize(0, -1);
@@ -663,11 +665,11 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     s->Read(&count, 4);
     ((CPtrArray*)&m_ptrPool)->SetSize(count, -1);
     for (u32 n = 0; n < (u32)count; n++) {
-        char* head = (char*)g_freeList;
+        char* head = (char*)g_coordPool.m_freeHead;
         void* node = 0;
         if (*(i32*)head != 0) {
             node = head + 4;
-            g_freeList = *(void**)head;
+            g_coordPool.m_freeHead = *(void**)head;
         }
         s->Read(node, 8);
         m_ptrTable[n] = node;
@@ -1053,9 +1055,9 @@ void CStatusBarMgr::Teardown() {
     for (i32 i = 0; i < m_ptrCount; i++) {
         void* p = m_ptrTable[i];
         if (p) {
-            void** node = (void**)((char*)p - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
+            void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
         }
     }
     // The +0x530 head is an MFC CPtrArray (m_ptrTable/m_ptrCount are its m_pData/m_nSize);
@@ -2932,13 +2934,13 @@ i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
 // reaches append via an extra jmp. Not source-steerable; deferred to the final sweep.
 RVA(0x00108410, 0x8e)
 i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
-    CSbiFreeNode* head = (CSbiFreeNode*)g_freeList;
+    CSbiFreeNode* head = (CSbiFreeNode*)g_coordPool.m_freeHead;
     CSbiFreeNode* node = 0;
     if (head->m_0 != 0) {
         node = (CSbiFreeNode*)&head->m_4;
         node->m_0 = a;
         node->m_4 = b;
-        g_freeList = (void*)((CSbiFreeNode*)g_freeList)->m_0;
+        g_coordPool.m_freeHead = (void*)((CSbiFreeNode*)g_coordPool.m_freeHead)->m_0;
     }
     i32 n = m_ptrCount;
     i32 i = 0;
@@ -3199,9 +3201,9 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
         if (m_ptrCount > 0) {
             void* p = m_ptrTable[0];
             result = *(i32*)p;
-            void** node = (void**)((char*)p - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
+            void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
             ((CSbiPtrColl2*)&m_ptrPool)->RemoveAt(0, 1);
         } else {
             result = 0;
@@ -4579,9 +4581,9 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     for (i32 j = 0; j < m_ptrCount; j++) {
         void* p = m_ptrTable[j];
         if (p) {
-            void** node = (void**)((char*)p - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
+            void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
         }
     }
     ((CPtrArray*)&m_ptrPool)->SetSize(0, -1);

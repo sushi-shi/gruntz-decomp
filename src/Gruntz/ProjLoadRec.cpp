@@ -3,7 +3,7 @@
 // family dual-mode record loader; its retail .text sits at 0x0e0d40 - far from the
 // CEventLoadRec main block (0x09c650) - a separate obj. Interleaver home (RVA-
 // neighbour caller unit): src/Gruntz/Projectile.cpp (the projectile family owns
-// g_freeList + g_gameReg); homing there is deferred (cross-TU class decl).
+// g_coordPool.m_freeHead + g_gameReg); homing there is deferred (cross-TU class decl).
 //
 // Field names are placeholders; only the field offsets + code bytes are load-bearing.
 #include <rva.h>
@@ -21,10 +21,14 @@ extern "C" CGameRegistry* g_gameReg;
 DATA(0x00229ad0)
 extern i32 g_serialCounter;
 
-// The g_freeList node allocator (?g_freeList@@3PAXA): the head is a node whose first
+// The g_coordPool.m_freeHead node allocator (?g_coordPool.m_freeHead@@3PAXA): the head is a node whose first
 // dword is the next pointer; a non-empty pop advances the head and yields node+4.
-DATA(0x00245544)
-extern void* g_freeList;
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 
 // ===========================================================================
 // CProjLoadRec::Load (0x0e0d40) - a CProjectile/CTimeBomb-family dual-mode record
@@ -32,7 +36,7 @@ extern void* g_freeList;
 // registry sub-object (g_gameReg->m_world) is absent. Mode 7 = READ: a fixed run
 // of raw fields, a 7-entry name-ref loop (CMapStringToOb::Lookup @0x1b8438 through
 // reg->m_2c->m_10), a single CMapPtrToPtr::Lookup @0x1b8760 (through reg->m_8->m_48)
-// gated on the looked-up object's type code (virtual +0x20 == 5), then a g_freeList
+// gated on the looked-up object's type code (virtual +0x20 == 5), then a g_coordPool.m_freeHead
 // node-splice loop appending 8-byte payloads onto m_204 (CObList::AddTail @0x1b4991).
 // Mode 4 = WRITE: re-derives each ref's name via reg->m_2c->KeyOfValue_152d30 and
 // writes it back. Either way it tail-chains the base loader (0x16f4a0), then runs an
@@ -133,7 +137,7 @@ struct CProjLoadRec {
 // @early-stop
 // scratch-slot scheduling tail (same family as CTriggerLoadRec/CEventLoadRec/
 // CGruntStateRec): the dual-mode switch, every Read/Write field+size, the 7-entry
-// name-ref loop, the type-code-gated CMapPtrToPtr lookup, the g_freeList splice +
+// name-ref loop, the type-code-gated CMapPtrToPtr lookup, the g_coordPool.m_freeHead splice +
 // AddTail, the inline strlen/strcpy KeyOfValue temps, the g_serialCounter bumps, the
 // base tail-chain and the embedded +0x150 sub-record are byte-faithful; residual is
 // the MSVC5 scratch-buffer slot assignment + outparam zero-init store positions. Not
@@ -203,10 +207,10 @@ i32 CProjLoadRec::Load(CSerialArchive* s, i32 mode, i32 a2, CSerialObj* a3) {
             i32 cnt;
             s->Read(&cnt, 4);
             for (i32 ci = 0; ci < cnt; ci++) {
-                CProjNode* node = (CProjNode*)g_freeList;
+                CProjNode* node = (CProjNode*)g_coordPool.m_freeHead;
                 void* payload = 0;
                 if (node->m_next != 0) {
-                    g_freeList = node->m_next;
+                    g_coordPool.m_freeHead = node->m_next;
                     payload = &node->m_04;
                 }
                 s->Read(payload, 8);

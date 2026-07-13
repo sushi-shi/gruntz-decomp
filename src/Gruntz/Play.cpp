@@ -3487,10 +3487,10 @@ i32 CPlay::ClearPlacedObjects() {
                 }
                 rec->RemoveAt(i, 1);
                 // return the placed-object node to the MFC free list (the node
-                // header sits g_freeListNodeBias bytes before the payload).
-                void* node = (char*)obj - g_freeListNodeBias;
-                *(void**)node = g_freeList;
-                g_freeList = node;
+                // header sits g_coordPool.m_linkOffset bytes before the payload).
+                void* node = (char*)obj - g_coordPool.m_linkOffset;
+                *(void**)node = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = node;
                 return -1;
             }
             if (*(i32*)((char*)result + 0x124) != 0x14) {
@@ -6785,10 +6785,12 @@ i32 CPlay::ResetPlayState() {
 // every per-level allocation (the m_startMarkers/m_3a4[4]/m_488 pointer arrays) back onto
 // the global node free list, then reset the per-grunt-type config rows.
 // __thiscall, no args, no return. Self-contained view.
-DATA(0x00245544)
-extern void* g_freeList;
-DATA(0x0024554c)
-extern i32 g_freeListNodeBias;
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 
 // The CRtArr timeline arrays are MFC CObArrays (SetSize @0x1b4f75 = CObArray::SetSize,
 // reached via a CObArray cast at each call; CObArray is already visible transitively here).
@@ -6937,9 +6939,9 @@ void CPlay::FreeListTeardown() {
     for (i = 0; i < self->m_startMarkers.m_count; i++) {
         void* node = self->m_startMarkers.m_data[i];
         if (node != 0) {
-            void** p = (void**)((char*)node - g_freeListNodeBias);
-            *p = g_freeList;
-            g_freeList = p;
+            void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
+            *p = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = p;
         }
     }
     ((CObArray*)&self->m_startMarkers)->SetSize(0, -1);
@@ -6947,9 +6949,9 @@ void CPlay::FreeListTeardown() {
         for (i = 0; i < self->m_3a4[k].m_count; i++) {
             void* node = self->m_3a4[k].m_data[i];
             if (node != 0) {
-                void** p = (void**)((char*)node - g_freeListNodeBias);
-                *p = g_freeList;
-                g_freeList = p;
+                void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
+                *p = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = p;
             }
         }
         ((CObArray*)&self->m_3a4[k])->SetSize(0, -1);
@@ -6957,9 +6959,9 @@ void CPlay::FreeListTeardown() {
     for (i = 0; i < self->m_488.m_count; i++) {
         void* node = self->m_488.m_data[i];
         if (node != 0) {
-            void** p = (void**)((char*)node - g_freeListNodeBias);
-            *p = g_freeList;
-            g_freeList = p;
+            void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
+            *p = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = p;
         }
     }
     ((CObArray*)&self->m_488)->SetSize(0, -1);
@@ -7105,9 +7107,9 @@ void CPlay::CPlayDtorBody() {
     for (i = 0; i < self->m_startMarkers.m_count; i++) {
         void* node = self->m_startMarkers.m_data[i];
         if (node != 0) {
-            void** p = (void**)((char*)node - g_freeListNodeBias);
-            *p = g_freeList;
-            g_freeList = p;
+            void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
+            *p = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = p;
         }
     }
     ((CObArray*)&self->m_startMarkers)->SetSize(0, -1);
@@ -7115,9 +7117,9 @@ void CPlay::CPlayDtorBody() {
         for (i = 0; i < self->m_3a4[k].m_count; i++) {
             void* node = self->m_3a4[k].m_data[i];
             if (node != 0) {
-                void** p = (void**)((char*)node - g_freeListNodeBias);
-                *p = g_freeList;
-                g_freeList = p;
+                void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
+                *p = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = p;
             }
         }
         ((CObArray*)&self->m_3a4[k])->SetSize(0, -1);
@@ -7125,9 +7127,9 @@ void CPlay::CPlayDtorBody() {
     for (i = 0; i < self->m_488.m_count; i++) {
         void* node = self->m_488.m_data[i];
         if (node != 0) {
-            void** p = (void**)((char*)node - g_freeListNodeBias);
-            *p = g_freeList;
-            g_freeList = p;
+            void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
+            *p = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = p;
         }
     }
     self->m_49c = -1;

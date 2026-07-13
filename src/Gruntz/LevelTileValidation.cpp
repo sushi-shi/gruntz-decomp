@@ -164,10 +164,14 @@ struct WwdStartPlayer {
 DATA(0x0024556c)
 extern "C" WwdGameReg* g_gameReg;
 
-// The recycled-node free-list head (?g_freeList@@3PAXA) and a tile-id constant
+// The recycled-node free-list head (?g_coordPool.m_freeHead@@3PAXA) and a tile-id constant
 // (DAT_00644c54) the 0x4017e4 case compares against.
-DATA(0x00245544) // was VA-typo'd 0x00645544 (canonical binding is 0x245544)
-extern void* g_freeList;
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 extern i32 g_tileKindMagic;
 
 // The "Bad <kind> at: x=%d, y=%d" diagnostic format strings ($SG .rdata).
@@ -703,11 +707,11 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (who == (void*)0x4017e4) {
             if (obj->m_kind == g_tileKindMagic) {
-                void** cell = (void**)g_freeList;
+                void** cell = (void**)g_coordPool.m_freeHead;
                 void* slot = 0;
                 if (*cell != 0) {
                     slot = (void*)(cell + 1);
-                    g_freeList = *cell;
+                    g_coordPool.m_freeHead = *cell;
                 }
                 if (slot != 0) {
                     ((i32*)slot)[0] = (obj->m_worldX & ~0x1f) + 0x10;
@@ -777,9 +781,9 @@ i32 CPlay::ValidateLevelTiles() {
             }
         } else if (who == (void*)0x401f0a) {
             if (g_gameReg->m_134 != ok) {
-                void** cell = (void**)g_freeList;
+                void** cell = (void**)g_coordPool.m_freeHead;
                 if (*cell != 0) {
-                    g_freeList = *cell;
+                    g_coordPool.m_freeHead = *cell;
                 }
             }
         }

@@ -179,9 +179,9 @@ i32 CTriggerMgr::RemoveCellRecord(i32 x, i32 y, i32 fromSelection) {
                 n = n->m_next;
                 i32* p = cur->m_payload;
                 if (p[0] == x && p[1] == y) {
-                    void** slot = (void**)((char*)p - g_freeListNodeBias);
-                    *slot = g_freeList;
-                    g_freeList = slot;
+                    void** slot = (void**)((char*)p - g_coordPool.m_linkOffset);
+                    *slot = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = slot;
                     list->RemoveAt((POSITION)cur);
                 }
             }
@@ -224,9 +224,9 @@ found:
     if (ov != 0 && ov->m_gridX == p[0] && ov->m_gridY == p[1]) {
         OverlayTick();
     }
-    void** slot = (void**)((char*)p - g_freeListNodeBias);
-    *slot = g_freeList;
-    g_freeList = slot;
+    void** slot = (void**)((char*)p - g_coordPool.m_linkOffset);
+    *slot = g_coordPool.m_freeHead;
+    g_coordPool.m_freeHead = slot;
     m_recList.RemoveAt((POSITION)cur);
     return 1;
 }
@@ -239,7 +239,7 @@ found:
 // ->99.39, /GX EH-state artifact), later recovered; the wave2-G dossier-10b
 // one-TU merge re-flipped it: the residual is `add ecx,eax` vs `add eax,ecx` on
 // the idx = payload[1]+15*payload[0] sum plus an ecx->edx coloring of the
-// g_freeList load - pure /O2 environment sensitivity (same source scored 100 in
+// g_coordPool.m_freeHead load - pure /O2 environment sensitivity (same source scored 100 in
 // the smaller TU). Operand-commutation respell is canonicalized away; the
 // permuter finds no better spelling (FINAL 99.024, no change). The same merges
 // IMPROVED siblings (DestroyGroup 64.8->66.4, ToggleRegionA 68.9->75.4,
@@ -267,9 +267,9 @@ void CTriggerMgr::ResetAll() {
             if (cell != 0) {
                 ((CGrunt*)cell)
                     ->ClearAllSprites(); // CTmCell IS CGrunt (0x4b240); bridge-cast, see note
-                void** slot = (void**)((char*)payload - g_freeListNodeBias);
-                *slot = g_freeList;
-                g_freeList = slot;
+                void** slot = (void**)((char*)payload - g_coordPool.m_linkOffset);
+                *slot = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = slot;
             }
         } while (n != 0);
     }
@@ -384,7 +384,7 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
 
 // 0x78880: ClearRecords - drain the record list (+0x244) back to the free list,
 // then RemoveAll the +0x240 MFC pointer list. The free-list head is cached in a
-// register across the loop (g_freeList read once, written each iteration).
+// register across the loop (g_coordPool.m_freeHead read once, written each iteration).
 // @early-stop
 // prologue scheduling wall: the drain loop body is byte-exact, but retail batches
 // `push edi; push esi` then loads esi=head/edi=bias; our cl interleaves the loads
@@ -393,15 +393,15 @@ RVA(0x00078880, 0x3c)
 void CTriggerMgr::ClearRecords() {
     CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
     if (n != 0) {
-        i32 bias = g_freeListNodeBias;
-        void* head = g_freeList;
+        i32 bias = g_coordPool.m_linkOffset;
+        void* head = g_coordPool.m_freeHead;
         do {
             CTmNode* cur = n;
             n = n->m_next;
             void** slot = (void**)((char*)cur->m_payload - bias);
             *slot = head;
             head = slot;
-            g_freeList = head;
+            g_coordPool.m_freeHead = head;
         } while (n != 0);
     }
     m_recList.RemoveAll();
@@ -1431,11 +1431,11 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     ar->Read(&count, 4);
     CObList* rec = &m_recList;
     for (ci = 0; ci < (u32)count; ci++) {
-        char* fl = (char*)g_freeList;
+        char* fl = (char*)g_coordPool.m_freeHead;
         void* node = 0;
         if (*(void**)fl != 0) {
             node = fl + 4;
-            g_freeList = *(void**)fl;
+            g_coordPool.m_freeHead = *(void**)fl;
         }
         ar->Read(node, 8);
         rec->AddTail((CObject*)node);
@@ -1447,11 +1447,11 @@ i32 CTriggerMgr::Load(CSerialArchive* ar) {
     do {
         ar->Read(&count, 4);
         for (ci = 0; ci < (u32)count; ci++) {
-            char* fl = (char*)g_freeList;
+            char* fl = (char*)g_coordPool.m_freeHead;
             void* node = 0;
             if (*(void**)fl != 0) {
                 node = fl + 4;
-                g_freeList = *(void**)fl;
+                g_coordPool.m_freeHead = *(void**)fl;
             }
             ar->Read(node, 8);
             sel->AddTail((CObject*)node);
@@ -2660,16 +2660,16 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
     CObList* sel = &m_selLists[idx];
     CTmNode* n = (CTmNode*)m_selLists[idx].GetHeadPosition();
     if (n != 0) {
-        void* head = g_freeList;
+        void* head = g_coordPool.m_freeHead;
         do {
             CTmNode* cur = n;
             n = n->m_next;
             i32* payload = cur->m_payload;
             if (payload != 0) {
-                void** slot = (void**)((char*)payload - g_freeListNodeBias);
+                void** slot = (void**)((char*)payload - g_coordPool.m_linkOffset);
                 *slot = head;
                 head = slot;
-                g_freeList = head;
+                g_coordPool.m_freeHead = head;
             }
         } while (n != 0);
     }
@@ -2679,12 +2679,12 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
         CTmNode* cur = rec;
         rec = rec->m_next;
         i32* src = cur->m_payload;
-        void** fh = (void**)g_freeList;
+        void** fh = (void**)g_coordPool.m_freeHead;
         void* nextFree = *fh;
         i32* dst = 0;
         if (nextFree != 0) {
             dst = (i32*)((char*)fh + 4);
-            g_freeList = nextFree;
+            g_coordPool.m_freeHead = nextFree;
         }
         dst[0] = src[0];
         dst[1] = src[1];
@@ -2703,7 +2703,7 @@ i32 CTriggerMgr::RebuildSelectionList(i32 idx) {
 // the slot list is empty).
 // @early-stop
 // regalloc wall (~87%): logic + offsets + all reloc-masked externs (ResetAll/OverlayTick/
-// ResetCell/RemoveAt/Center/g_freeList*/g_gameReg) byte-exact, but retail pins this=ebp,
+// ResetCell/RemoveAt/Center/g_coordPool.m_freeHead*/g_gameReg) byte-exact, but retail pins this=ebp,
 // node=esi, y=edi (a perfect 5-reg fit); our cl swaps this/node into esi/ebp and spills
 // `this` to the stack, reusing esi for y. Same systematic esi<->ebp swap the rest of this
 // TU exhibits; not source-steerable. topic:wall.
@@ -2750,9 +2750,9 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
                 }
             }
         } else {
-            void** node = (void**)((char*)payload - g_freeListNodeBias);
-            *node = g_freeList;
-            g_freeList = node;
+            void** node = (void**)((char*)payload - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
             m_selLists[slot].RemoveAt((POSITION)cur);
         }
     } while (n != 0);
@@ -2902,16 +2902,16 @@ void CTriggerMgr::ClearSelections() {
     do {
         CTmNode* n = (CTmNode*)list->GetHeadPosition();
         if (n != 0) {
-            void* head = g_freeList;
+            void* head = g_coordPool.m_freeHead;
             do {
                 CTmNode* cur = n;
                 n = n->m_next;
                 i32* payload = cur->m_payload;
                 if (payload != 0) {
-                    void** slot = (void**)((char*)payload - g_freeListNodeBias);
+                    void** slot = (void**)((char*)payload - g_coordPool.m_linkOffset);
                     *slot = head;
                     head = slot;
-                    g_freeList = head;
+                    g_coordPool.m_freeHead = head;
                 }
             } while (n != 0);
         }

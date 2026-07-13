@@ -164,8 +164,9 @@ extern double g_scale6256f0;
 // g_msgScratch DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
 DATA(0x0024553c)
 extern "C" i32 g_64553c;
-DATA(0x00245548)
-extern i32 g_poolScratch645548; // 0x645548 (new pin)
+// (0x645548 is g_coordPool.m_count (+0x08), an interior field of the pool object at
+//  0x645540 - not a global. The fabricated `g_poolScratch645548` scalar that used to be
+//  pinned here was referenced by nothing at all.)
 DATA(0x002455ec)
 extern "C" i32 g_cdPromptResult; // 0x6455ec
 DATA(0x002455f0)

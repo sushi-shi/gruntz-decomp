@@ -41,11 +41,12 @@ extern CTypeKeyColl g_typeColl;
 
 DATA(0x00245588)
 extern u32 g_clock; // game clock (g_645588)
-DATA(0x00245544)    // canonical binding 0x245544
-extern void* g_freeList;
-DATA(0x0024554c) // canonical binding 0x24554c
-extern i32 g_freeListBias;
-extern i32 g_freeListNodeBias; // second name for 0x24554c (PhaseStep), reloc-masked extern
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 
 // The former `g_dropList` was a SECOND name for 0x245540 - the same FreeNodePool the
 // rest of the tree calls g_coordPool (<Gruntz/Grunt.h>); its DATA pin here was the one
@@ -98,9 +99,9 @@ SIZE_UNKNOWN(CGruntPtAcc);
             GruntCoordNode* next = n->m_next;                                                      \
             void* pay = n->m_coord;                                                                \
             if (pay != 0) {                                                                        \
-                void** slot = (void**)((char*)pay - g_freeListNodeBias);                           \
-                *slot = g_freeList;                                                                \
-                g_freeList = slot;                                                                 \
+                void** slot = (void**)((char*)pay - g_coordPool.m_linkOffset);                           \
+                *slot = g_coordPool.m_freeHead;                                                                \
+                g_coordPool.m_freeHead = slot;                                                                 \
             }                                                                                      \
             n = next;                                                                              \
         }                                                                                          \
@@ -674,16 +675,16 @@ i32 CGrunt::WanderStep() {
             if (F(this, 0x328) != 0) {
                 void* node = P(this, 0x320);
                 if (node != 0) {
-                    i32 prev = (i32)g_freeList;
+                    i32 prev = (i32)g_coordPool.m_freeHead;
                     do {
                         void* cur = node;
                         node = *(void**)node;
                         i32 data = *(i32*)((char*)cur + 8);
                         if (data != 0) {
-                            i32* fslot = (i32*)(data - g_freeListBias);
+                            i32* fslot = (i32*)(data - g_coordPool.m_linkOffset);
                             *fslot = prev;
                             prev = (i32)fslot;
-                            g_freeList = fslot;
+                            g_coordPool.m_freeHead = fslot;
                         }
                     } while (node != 0);
                 }
@@ -1109,15 +1110,15 @@ i32 CGrunt::UpdateArrival() {
             SetEntrancePos(1, 1);
             if (this->m_coordCount != 0) {
                 void* p = (void*)this->m_320;
-                void* prev = g_freeList;
+                void* prev = g_coordPool.m_freeHead;
                 while (p != 0) {
                     void* next = *(void**)p;
                     i32* link = (i32*)((char*)p + 8);
                     p = next;
                     if (*link != 0) {
-                        g_freeList = (void*)(*link - g_freeListBias);
-                        *(void**)g_freeList = prev;
-                        prev = g_freeList;
+                        g_coordPool.m_freeHead = (void*)(*link - g_coordPool.m_linkOffset);
+                        *(void**)g_coordPool.m_freeHead = prev;
+                        prev = g_coordPool.m_freeHead;
                     }
                 }
                 m_31c.RemoveAll();

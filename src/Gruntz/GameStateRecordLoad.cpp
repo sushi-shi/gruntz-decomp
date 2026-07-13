@@ -28,8 +28,12 @@
 
 // Engine globals (reloc-masked; names match the delinked symbols).
 extern i32 g_serialCounter;    // 0x629ad0  per-object load serial
-extern void* g_freeList;       // 0x645544  engine node free-list head
-extern i32 g_freeListNodeBias; // 0x64554c  free-list node header bias
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
+// declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
+// globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
+// why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
+extern FreeNodePool g_coordPool;
 extern CButeMgr g_buteMgr;     // 0x6453d8  the global bute manager
 
 // The two bute tag/key literals the tail GetIntDef reads.
@@ -338,15 +342,15 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
     if (*(void**)(p + 0x328) != 0) {
         void* node = *(void**)(p + 0x320);
         if (node != 0) {
-            void* fl = g_freeList;
+            void* fl = g_coordPool.m_freeHead;
             do {
                 void* next = *(void**)node;
                 char* buf = *(char**)((char*)node + 8);
                 if (buf != 0) {
-                    buf -= g_freeListNodeBias;
+                    buf -= g_coordPool.m_linkOffset;
                     *(void**)buf = fl;
                     fl = buf;
-                    g_freeList = buf;
+                    g_coordPool.m_freeHead = buf;
                 }
                 node = next;
             } while (node != 0);
@@ -358,12 +362,12 @@ i32 CGameStateRecord::Load(CSerialArchive* ar) {
     i32 count;
     ar->Read(&count, 4);
     for (i32 a = 0; a < count; ++a) {
-        char* slot = (char*)g_freeList;
+        char* slot = (char*)g_coordPool.m_freeHead;
         void* nf = *(void**)slot;
         char* item = 0;
         if (nf != 0) {
             item = slot + 4;
-            g_freeList = nf;
+            g_coordPool.m_freeHead = nf;
         }
         ar->Read(item, 8);
         ((CObList*)(p + 0x31c))->AddTail((CObject*)item);

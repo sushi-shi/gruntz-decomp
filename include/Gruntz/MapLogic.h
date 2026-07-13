@@ -35,8 +35,10 @@
 // The intrusive free-list node allocator the +0x84 pointer-array serializer pulls
 // nodes from (shared with Projectile.cpp / BattlezMapConfig.cpp). The node body
 // pointer is recovered as (slot - g_freeListNodeBias).
-extern void* g_freeList;       // ?g_freeList@@3PAXA            (VA 0x645544)
-extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA      (VA 0x64554c)
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// g_freeList / g_freeListNodeBias were g_coordPool's interior fields
+// (+0x04 / +0x0c), not globals. The pool is DEFINED in GameText.cpp.
+extern FreeNodePool g_coordPool;
 
 // ---------------------------------------------------------------------------
 // CObArray-like MFC pointer array embedded at CMapLogic+0x7c. The CObject-derived

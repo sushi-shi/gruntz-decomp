@@ -23,6 +23,7 @@
 #include <Wap32/ZDArrayDerived.h> // Construct(lo, hi) - the default-range registrar entry
 #include <Wap32/ZVec.h>
 #include <rva.h>
+#include <Gruntz/ActReg.h>      // the shared CActReg coordinate-registry archetype (g_actReg4)
 #include <Gruntz/TypeKeyColl.h> // the REAL registry class at 0x6bf650 (its fields were the shredded g_type* globals)
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
@@ -67,13 +68,21 @@ CGruntStartingPoint::CGruntStartingPoint(CGameObject* obj) : CUserLogic(obj) {
 }
 
 // ---------------------------------------------------------------------------
-// The R4 per-class activation table (g_actReg4 @0x6446d8 is the collection; the
-// lo/hi/base/cur/stride/scratch fields are separate DATA-pinned BSS globals).
-// Dual-view note: the collection is read as _zvec (GrowTo) by the lookups and as
-// CZDArrayDerived (Construct) by the range registrar - one object, reconciliation
-// of the zDArray family deferred.
+// The R4 per-class activation table @0x6446d8 - ONE 0x24-byte CActReg object.
+//
+// SHREDDED-OBJECT FIX: the lo/hi/base/cur/stride/scratch "globals" this TU used to
+// DATA()-pin separately at 0x6446dc..0x6446f8 are this object's INTERIOR FIELDS, and
+// the hand-inlined R4Lookup over them was CActReg::ResolveEntry spelled out.
+//
+// This also resolves the old dual-view note (read as _zvec by the lookups, as
+// CZDArrayDerived by the range registrar): the STORAGE is a 0x24 zero-init .bss cell
+// and the runtime CLASS is the zDArray family ctor'd into it in place by Construct
+// (0x408710) - a duality retail genuinely has, which is why both call sites cast.
+// Defining it as a _zvec/CTypeKeyColl object instead would fabricate a CRT initializer:
+// the dynamic-init table (30 entries @0x2096e4) has none for 0x6446d8, and the address
+// sits past .data's raw extent, so the loader zero-fills it.
 DATA(0x002446d8)
-extern _zvec g_actReg4;
+CActReg g_actReg4;
 struct R4Entry {
     void* m_fn;
 };
@@ -125,35 +134,10 @@ struct StartActEntry {
 };
 SIZE_UNKNOWN(StartActEntry);
 
-// g_actReg4* R4-registry-field globals (referenced only from this TU): real
-// definitions DATA-pinned here; the single extern is in <Globals.h>.
-DATA(0x002446dc)
-CVariantSlot* g_actReg4Coll2;
-DATA(0x002446e0)
-i32 g_actReg4Lo;
-DATA(0x002446e4)
-i32 g_actReg4Hi;
-DATA(0x002446e8)
-char* g_actReg4Base;
-DATA(0x002446ec)
-R4Entry* g_actReg4Cur;
-DATA(0x002446f0)
-i32 g_actReg4Stride;
-DATA(0x002446f8)
-i32 g_actReg4Scratch;
-
+// The coordinate->R4Entry* lookup: the shared archetype inline (the seven g_actReg4*
+// scalars it used to run over ARE g_actReg4's fields).
 static inline R4Entry* R4Lookup(i32 coord) {
-    g_actReg4Scratch = 0;
-    if (coord >= g_actReg4Lo && coord <= g_actReg4Hi) {
-        return (R4Entry*)(g_actReg4Base + (coord - g_actReg4Lo) * g_actReg4Stride);
-    }
-    if (g_actReg4.GrowTo(coord, 0)) {
-        return (R4Entry*)(g_actReg4Base + (coord - g_actReg4Lo) * g_actReg4Stride);
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_actReg4Coll2->Set(&g_actReg4, (i32)item, 0xc);
-    return g_actReg4Cur;
+    return (R4Entry*)g_actReg4.ResolveEntry(coord);
 }
 
 // CGruntStartingPoint::UserLogicVfunc2 / FireActivation (0x3e1a0), vtable slot 4 -

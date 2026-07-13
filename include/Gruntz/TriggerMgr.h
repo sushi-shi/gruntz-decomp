@@ -24,8 +24,10 @@
 // The global free-list of recycled list nodes (an intrusive singly-linked stack)
 // and its node-bias constant, shared across the manager's list churn. Stored as
 // raw void*/int (the engine's real ?g_freeList@@3PAXA / ?g_freeListNodeBias@@3HA).
-extern void* g_freeList;       // ?g_freeList@@3PAXA        @0x645544
-extern i32 g_freeListNodeBias; // ?g_freeListNodeBias@@3HA  @0x64554c
+#include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
+// g_freeList / g_freeListNodeBias were g_coordPool's interior fields
+// (+0x04 / +0x0c), not globals. The pool is DEFINED in GameText.cpp.
+extern FreeNodePool g_coordPool;
 
 // operator delete (static CRT, reloc-masked); operator new comes from <Mfc.h>.
 void operator delete(void*);

@@ -57,11 +57,14 @@ struct BrickzFreeRec {
     i32 m_8; // +0x08  path row
 };
 
-// The intrusive free-list the search nodes recycle into when a goal node is
-// reached (shared global pool; modeled extern + DATA() so the load reloc-masks).
-// ?g_freeList@@3PAXA at VA 0x645544.
-DATA(0x00245544)
-extern BrickzFreeRec* g_brickzFreeList;
+// The intrusive free-list the search nodes recycle into when a goal node is reached.
+// 0x645544 is NOT a global of its own: it is m_freeHead (+0x04) of the coord-node pool
+// g_coordPool @0x645540 (DEFINED in src/Gruntz/GameText.cpp). This TU used to redeclare
+// that one slot under a third name/type (g_brickzFreeList, BrickzFreeRec*) - a divergent
+// symbol for a field. The head is genuinely void* (the pool recycles several node types),
+// so BrickzFreeRec is a cast at the use sites.
+#include <Gruntz/FreeNodePool.h>
+extern FreeNodePool g_coordPool;
 
 // ===========================================================================
 // CMapArrayA (embedded at CMapMgr+0x30; element stride 0x24).
@@ -431,13 +434,13 @@ i32 CBrickzGrid::Search(
 reached:
     BrickzNode* p = node;
     do {
-        BrickzFreeRec* rec = (BrickzFreeRec*)g_brickzFreeList;
+        BrickzFreeRec* rec = (BrickzFreeRec*)g_coordPool.m_freeHead;
         i32* slot = 0;
         if (rec->m_0 != 0) {
             slot = &rec->m_4;
             rec->m_4 = p->m_0;
             rec->m_8 = p->m_4;
-            g_brickzFreeList = (BrickzFreeRec*)rec->m_0;
+            g_coordPool.m_freeHead = (void*)rec->m_0;
         }
         ((CRezList*)list)->AddHead((CRezListNode*)slot);
         p = (BrickzNode*)p->m_1c;
