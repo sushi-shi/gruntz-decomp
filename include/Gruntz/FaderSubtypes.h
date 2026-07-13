@@ -220,9 +220,11 @@ public:
     virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x17fc60 (overrides CFader pure)
     virtual i32 v2() OVERRIDE;       // slot 2 -> 0x17fda0 (overrides CFader pure)
 
-    void* operator new(u32) {
-        return ::operator new(0x5c);
-    }
+    // (The `operator new(u32) { return ::operator new(0x5c); }` override is gone - the same
+    // masking hack CFaderShape carried: it hard-coded the allocation size to paper over a
+    // class body that only reached 0x54. With m_54/m_58 declared, sizeof IS 0x5c and the
+    // default `new CFaderRadial` pushes 0x5c on its own - which is what the retail factory
+    // at 0x17d9c0 does.)
     i32 ApplyInit(CFaderInit* src); // 0x17fa40 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x17fa40 (same method; copy from the pInit descriptor)
     void FreeBuffer17fc40();        // 0x17fc40 (dtor: `if(m_50) RezFree(m_50)`; reloc-masked)
@@ -233,6 +235,12 @@ public:
     i32 m_48;                 // +0x48
     char _pad4c[0x50 - 0x4c]; // +0x4c
     i32 m_50;                 // +0x50
+    // +0x54/+0x58 were MISSING: v1 (0x17fc60) reads both off `this` (`mov esi,ecx` then
+    // `mov eax,[esi+0x54]` / `mov ecx,[esi+0x58]`), and they are what carries the object to
+    // its retail size 0x5c. Without them the class computed 0x54 and every `new CFaderRadial`
+    // would have pushed 0x54 - the operator-new override above hid exactly that.
+    i32 m_54; // +0x54
+    i32 m_58; // +0x58
 };
 
 // ===========================================================================
