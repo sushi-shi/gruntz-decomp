@@ -2798,12 +2798,12 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
     }
     i32 bx = m_10;
     i32 by = m_rect14.m_0;
-    i32 code = m_c;
+    CSbiConfigHost* code = m_c;
     CStatusBarItem* it;
 
     // ---- rect-only sub-widget A (id 0x259) ----
     it = new CSbiRectSub;
-    if (!it->Setup((i32)this, code, 0x259, 0, SbiRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9), 0, -1)) {
+    if (!it->Setup((i32)this, (i32)code, 0x259, 0, SbiRect(bx + 0x7c, by + 0xad, bx + 0x88, by + 0xb9), 0, -1)) {
         if (it) {
             delete it;
         }
@@ -2813,7 +2813,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
 
     // ---- rect-only sub-widget B (id 0x25a) ----
     it = new CSbiRectSub;
-    if (!it->Setup((i32)this, code, 0x25a, 0, SbiRect(bx + 0x8a, by + 0xb9, bx + 0x96, by + 0xc7), 0, -1)) {
+    if (!it->Setup((i32)this, (i32)code, 0x25a, 0, SbiRect(bx + 0x8a, by + 0xb9, bx + 0x96, by + 0xc7), 0, -1)) {
         if (it) {
             delete it;
         }
@@ -2823,7 +2823,7 @@ i32 CStatusBarMgr::BuildStatusBarTabs() {
 
     // ---- rect-only sub-widget C (id 0x25b) ----
     it = new CSbiRectSub;
-    if (!it->Setup((i32)this, code, 0x25b, 0, SbiRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7), 0, -1)) {
+    if (!it->Setup((i32)this, (i32)code, 0x25b, 0, SbiRect(bx + 0x83, by + 0xbb, bx + 0x8f, by + 0xc7), 0, -1)) {
         if (it) {
             delete it;
         }
@@ -3098,7 +3098,7 @@ i32 CStatusBarMgr::winapi_107d00_SetRect() {
 // steerable under /O2; deferred to the final sweep.
 RVA(0x000fdc00, 0x5c2)
 i32 CStatusBarMgr::LoadBattlezItemConfig(i32 arg) {
-    m_c = arg;
+    m_c = (CSbiConfigHost*)arg;
     m_4 = 0;
     m_position = 0;
     i32 vx = g_gameReg->m_modeW;

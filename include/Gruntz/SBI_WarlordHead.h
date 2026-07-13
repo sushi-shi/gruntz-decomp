@@ -76,28 +76,31 @@ SIZE_UNKNOWN(CWhRect);
 // under head-specific names spanning all four base levels.
 class CSBI_WarlordHead : public CSBI_ImageSet {
 public:
+    // tag 0xb (the multiplayer WARLORDHEAD slot).
+    CSBI_WarlordHead() {
+        m_30 = 0;
+        m_8 = 0xb;
+        m_34 = 0;
+    }
     // Real vtable shape (sema class: vtbl@0x1ead24, 13 slots; overrides 0/1/5/11).
     // The out-of-line ~ (0x104a00, calls DtorReset) lives in SBI_WarlordHead.cpp via
     // the CHAIN-DTOR device (see StatusBarItem.h).
     virtual ~CSBI_WarlordHead() OVERRIDE; // slot 0
     virtual i32 SbiVfunc0() OVERRIDE;     // slot 1 (the Serialize below)
     virtual void SbiSlot5() OVERRIDE;     // slot 5 (the Render below)
-    // slot 11 override of CSBI_Image::SetupImage; the out-of-line body is the
-    // non-virtual SetupImage overload below (0xeb6b0). The vtable slot reloc-masks, so
-    // this declared-only override just pins the slot in the model (was in the retired
-    // SbiDtorChain.h). Distinct overload (CSbiConfigHost* vs i32) from the impl decl.
+    // slot 11 (0xeb6b0), the CSBI_Image::SetupImage override. This USED to be split in
+    // two: a body-less `virtual` declared purely to pin the slot, plus the real body as a
+    // separate NON-virtual overload distinguished only by `i32 host` vs `CSbiConfigHost*`.
+    // One function, one slot - the real body IS the override.
     virtual i32 SetupImage(
-        i32,
-        CSbiConfigHost*,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32
+        CStatusBarMgr* owner,
+        CSbiConfigHost* host,
+        i32 a3,
+        i32 a4,
+        SbRect rc,
+        const char* key,
+        i32 a10,
+        i32 a11
     ) OVERRIDE; // slot 11
     // Member teardown = the INHERITED CSBI_ImageSet::ResetCounters (0xe7400); retail's
     // ~CSBI_WarlordHead calls it at its own level and again at the folded ImageSet level
@@ -109,24 +112,9 @@ public:
     // serialize formerly claimed here at 0xe7cd0 was CSBI_ImageSetAni's - re-homed
     // to SBI_ImageSetAni.cpp; warlord's own slot 1 is 0xeb970, thunk 0x3cd8.)
     i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);
-    // vtable slot 11 (0xeb6b0): forward all 11 args to the ImageSet base setup; on
-    // success latch the initial state (SetState(0)) and report 1.
-    i32 SetupImage(
-        i32 a1,
-        i32 host,
-        i32 a3,
-        i32 a4,
-        i32 r0,
-        i32 r1,
-        i32 r2,
-        i32 r3,
-        i32 key,
-        i32 a10,
-        i32 a11
-    );
-    // The base ImageSet SetupImage (0xe72f0, vtable slot 11): the rect block is one
-    // by-value aggregate so the temp-struct stage matches.
-    i32 BaseSetupImage(i32 a1, i32 host, i32 a3, i32 a4, CWhRect rect, i32 key, i32 a10, i32 a11);
+    // (The `BaseSetupImage` declared here was a fake alias of CSBI_ImageSet::SetupImage
+    // (0xe72f0) - the real base slot. With the real chain modeled, ~SetupImage just calls
+    // the base qualified, so the alias is gone.)
 
     // 0xeb740: drive the show/hide of the two anchor frames (frame table slots 1/2).
     i32 ShowFrames(i32 show, ShadeDescr* palDescr);

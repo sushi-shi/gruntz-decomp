@@ -48,38 +48,35 @@ extern i32 g_serialCounter;
 // addressing-mode/scheduling wall, not steerable from C; deferred.
 RVA(0x000e72f0, 0xc4)
 i32 CSBI_ImageSet::SetupImage(
-    i32 sub,
+    CStatusBarMgr* owner,
     CSbiConfigHost* host,
     i32 cmd,
     i32 obj,
-    i32 r0,
-    i32 r1,
-    i32 r2,
-    i32 r3,
-    i32 key,
+    SbRect rect,
+    const char* key,
     i32 frame,
     i32 extra
 ) {
     (void)extra;
-    if (host == 0 || sub == 0) {
+    if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = sub;
+    m_2c = (i32)owner;
     m_10 = obj;
     i32* rc = (i32*)&m_rect14;
     m_24 = (i32)host;
     m_28 = 0;
     m_4 = 1;
-    rc[0] = r0;
-    rc[1] = r1;
-    rc[2] = r2;
-    rc[3] = r3;
+    rc[0] = rect.left;
+    rc[1] = rect.top;
+    rc[2] = rect.right;
+    rc[3] = rect.bottom;
     m_c = cmd;
     if (key == 0) {
         return 0;
     }
     CSbiConfigRecord* rec = 0;
-    ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup((const char*)key, (void*&)rec);
+    ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup(key, (void*&)rec);
     m_34 = (CSprite*)rec;
     if (rec == 0) {
         return 0;

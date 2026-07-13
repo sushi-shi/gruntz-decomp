@@ -20,6 +20,12 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/StatusBarItem.h> // CStatusBarItem base
+#include <Gruntz/SbRect.h>        // BuildResourceTabStatusBar's by-value geometry rect
+
+// BuildResourceTabStatusBar's owner/config-host pair (pointers only - fwd-decl).
+// `class` vs `struct` is load-bearing for the mangling; both match their real defs.
+class CStatusBarMgr;
+struct CSbiConfigHost;
 
 #include <Image/CImage.h> // the canonical frame-record class (CImage::RenderFrame @0x153790)
 
@@ -57,6 +63,14 @@ SIZE_UNKNOWN(CGmConfig);
 // names that CStatusBarItem models as the m_rect14 aggregate.
 class CSBI_GruntMachine : public CStatusBarItem {
 public:
+    // tag 9 (the Resource-tab MACHINE widget). Built through BuildResourceTabStatusBar.
+    CSBI_GruntMachine() {
+        m_8 = 9;
+        m_34 = 0;
+        m_3c = 0;
+        m_44 = 0;
+        m_30 = 0;
+    }
     // Real vtable shape (sema class: vtbl@0x1eadbc, 11 slots; overrides 0/1/3/4/5).
     // The out-of-line ~ (0x104ce0, calls Reset) lives in SBI_GruntMachine.cpp via the
     // CHAIN-DTOR device (see StatusBarItem.h).
@@ -65,6 +79,24 @@ public:
     virtual void SbiSlot3() OVERRIDE;      // slot 3 (the Reset below)
     virtual void SbiSlot4() OVERRIDE;      // slot 4
     virtual void SbiSlot5() OVERRIDE;      // slot 5 (the Render below)
+
+    // 0xe8a70: the machine widget's own "configure" (the Resource tab's MACHINE item is
+    // built through this, not through the CSBI_Image SetupImage slot - CSBI_GruntMachine
+    // derives straight from CStatusBarItem and has no slot 11). `owner`/`host` are the
+    // same pair SetupImage takes (owner -> m_2c, config host -> m_24, deref'd at +0x10).
+    // Was defined as `CSbTab::BuildResourceTabStatusBar` - a view that CONFLATED this
+    // class with CSBI_StatzTabGruntBar - while the caller referenced it on the fabricated
+    // CSbConfigItem base, so the call resolved to NO definition (an unresolved external).
+    i32 BuildResourceTabStatusBar(
+        CStatusBarMgr* owner,
+        CSbiConfigHost* host,
+        i32 p3,
+        i32 p4,
+        SbRect g,
+        const char* key,
+        i32 idxA,
+        i32 idxB
+    ); // 0xe8a70
 
     // vtable slot 3 (0xe8c70): drop the standalone frame handle + the two resolved
     // frame records (also reached by the destructor as the member teardown). Out-of-line

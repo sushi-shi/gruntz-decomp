@@ -72,17 +72,13 @@ namespace StatusBarTabBuilders {
     // class's own helpers, modeled no-body so their calls reloc-mask. Only the
     // structural fields (parent/owner/image sets/geometry) carry a recovered name;
     // the rest are opaque per-tab config slots left as m_<hexoffset>.
+    // (BuildResourceTabStatusBar / BuildMultiplayerTabStatusBar were declared here too.
+    // They are re-homed onto their REAL classes - CSBI_GruntMachine (0xe8a70) and
+    // CSBI_StatzTabGruntBar (0xea1f0) - which is what the `new` at each call site proves.
+    // This view CONFLATED those two classes: one 0x88 struct standing in for a 0x48 and an
+    // 0x88 class. What remains here is BuildStatzTabStatusBar + its two helpers, whose
+    // owner is still unproven - an @identity-TODO, not a keep.)
     struct CSbTab {
-        i32 BuildResourceTabStatusBar(
-            CSbParent* parent,
-            CSbOwner* statusbar,
-            i32 p3,
-            i32 p4,
-            CSbGeom g,
-            char* key,
-            i32 idxA,
-            i32 idxB
-        );
         i32 BuildStatzTabStatusBar(
             CSbParent* parent,
             CSbOwner* statusbar,
@@ -97,17 +93,6 @@ namespace StatusBarTabBuilders {
             i32 p11,
             i32 p12,
             i32 onLeft
-        );
-        i32 BuildMultiplayerTabStatusBar(
-            CSbParent* parent,
-            CSbOwner* statusbar,
-            i32 p3,
-            i32 p4,
-            CSbGeom g,
-            char* key,
-            i32 p10,
-            i32 p11,
-            i32 selMode
         );
         i32 BuildHandle();
         void Update();

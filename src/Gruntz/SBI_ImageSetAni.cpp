@@ -34,35 +34,32 @@ extern "C" CGameRegistry* g_gameReg;
 // docs/patterns/shrink-wrapped-callee-save-push.md, zero-register-pinning.md).
 RVA(0x000e7980, 0x109)
 i32 CSBI_ImageSetAni::Init(
-    i32 cfg,
+    CStatusBarMgr* owner,
     CSbiConfigHost* host,
     i32 a2,
     i32 a3,
-    i32 r0,
-    i32 r1,
-    i32 r2,
-    i32 r3,
-    i32 key,
+    SbRect rc,
+    const char* key,
     i32 b0,
     i32 b1,
     i32 b2,
     i32 b3,
     i32 b4
 ) {
-    if (host != 0 && cfg != 0) {
-        m_2c = cfg;
+    if (host != 0 && owner != 0) {
+        m_2c = (i32)owner;
         m_10 = a3;
         m_24 = (i32)host;
         m_28 = 0;
         m_4 = 1;
-        m_rect14.m_0 = r0;
-        m_rect14.m_4 = r1;
-        m_rect14.m_8 = r2;
-        m_rect14.m_c = r3;
+        m_rect14.m_0 = rc.left;
+        m_rect14.m_4 = rc.top;
+        m_rect14.m_8 = rc.right;
+        m_rect14.m_c = rc.bottom;
         m_c = a2;
         if (key != 0) {
             CSbiConfigRecord* tbl = 0;
-            ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup((const char*)key, (void*&)tbl);
+            ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup(key, (void*&)tbl);
             m_34 = (CSprite*)tbl;
             if (tbl != 0) {
                 m_3c = b2;

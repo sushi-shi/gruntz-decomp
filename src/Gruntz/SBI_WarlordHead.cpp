@@ -47,24 +47,16 @@ extern "C" CGameRegistry* g_gameReg;
 // the final sweep (whole-hierarchy model).
 RVA(0x000eb6b0, 0x67)
 i32 CSBI_WarlordHead::SetupImage(
-    i32 a1,
-    i32 host,
+    CStatusBarMgr* owner,
+    CSbiConfigHost* host,
     i32 a3,
     i32 a4,
-    i32 r0,
-    i32 r1,
-    i32 r2,
-    i32 r3,
-    i32 key,
+    SbRect rc,
+    const char* key,
     i32 a10,
     i32 a11
 ) {
-    CWhRect rect;
-    rect.m_0 = r0;
-    rect.m_4 = r1;
-    rect.m_8 = r2;
-    rect.m_c = r3;
-    if (BaseSetupImage(a1, host, a3, a4, rect, key, a10, a11) == 0) {
+    if (CSBI_ImageSet::SetupImage(owner, host, a3, a4, rc, key, a10, a11) == 0) {
         return 0;
     }
     SetState(0);

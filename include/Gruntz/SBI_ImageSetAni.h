@@ -17,6 +17,15 @@
 
 class CSBI_ImageSetAni : public CSBI_ImageSet {
 public:
+    // tag 8 + the ani window seeded (m_3c = 0x64 interval); the `new CSBI_ImageSetAni`
+    // ctor leg the Resource-tab conveyor builders fold at each new-site.
+    CSBI_ImageSetAni() {
+        m_30 = 0;
+        m_8 = 8;
+        m_34 = 0;
+        m_44 = 0;
+        m_3c = 0x64;
+    }
     // Real vtable shape (sema class: vtbl@0x1ead6c, 15 slots; overrides 0/1/4/5,
     // news 13/14). The out-of-line ~ (0x1047f0) lives in SBI_ImageSetAni.cpp via
     // the CHAIN-DTOR device (see StatusBarItem.h).
@@ -24,8 +33,28 @@ public:
     virtual i32 SbiVfunc0() OVERRIDE;     // slot 1 (the Serialize below)
     virtual void SbiSlot4() OVERRIDE;     // slot 4
     virtual void SbiSlot5() OVERRIDE;     // slot 5
-    virtual void AniInit();               // slot 13 (new)
-    virtual void AniSetRange();           // slot 14 (new; 0xe7c30 SetRange)
+    // Slots 13/14 ARE Init and SetRange - the ILT thunks prove it (0x3b48 -> jmp 0xe7980
+    // = Init; 0x3bde -> jmp 0xe7c30 = SetRange). They used to be declared here TWICE: as
+    // two body-less placeholder virtuals `AniInit`/`AniSetRange` (invented only to pad the
+    // vtable out to 15 slots, and left as unresolved externals the vtable pointed at) and
+    // again as the real non-virtual bodies below. One function, one slot: the real bodies
+    // ARE the virtuals.
+    virtual i32 Init( // slot 13 (new)  0xe7980
+        CStatusBarMgr* owner,
+        CSbiConfigHost* host,
+        i32 a3,
+        i32 a4,
+        SbRect rc,
+        const char* key,
+        i32 b0,
+        i32 b1,
+        i32 b2,
+        i32 b3,
+        i32 b4
+    );
+    // slot 14 (new) 0xe7c30: re-arm with a new frame window without re-resolving the
+    // record. The Statz-arrow direction setters below drive exactly this slot.
+    virtual void SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i32 interval);
     // Member teardown = the INHERITED CSBI_ImageSet::ResetCounters (0xe7400); retail's
     // ~CSBI_ImageSetAni calls it at its own level and again at the folded ImageSet level
     // (two `call 0xe7400`). The old declared-only DtorImageSetAni alias was a fake view
@@ -35,31 +64,9 @@ public:
     // the stream's Read/WriteBytes, then chain the CSBI_ImageSet base serialize.
     i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4);
 
-    // slot-13 body (vtbl 0x1ead6c slot [13], thunk 0x3b48 -> 0xe7980): seed the item
-    // from a config host + rect + record key; 14 args (the caller passes the host as
-    // BOTH arg0 and arg1). Ex CAniPlayer::Init (dossier #16 identity fold).
-    i32 Init(
-        i32 cfg,
-        CSbiConfigHost* host,
-        i32 a2,
-        i32 a3,
-        i32 r0,
-        i32 r1,
-        i32 r2,
-        i32 r3,
-        i32 key,
-        i32 b0,
-        i32 b1,
-        i32 b2,
-        i32 b3,
-        i32 b4
-    ); // 0xe7980
     // slot-5 body (vtbl 0x1ead6c slot [5], thunk 0x2dfb): the timeGetTime-driven cel
     // advance within [m_4c, m_50]. Ex CAniPlayer::Tick (dossier #16 identity fold).
     i32 Tick(); // 0xe7b00
-    // slot-14 body (vtbl 0x1ead6c slot [14], thunk 0x3bde): re-arm with a new frame
-    // window without re-resolving the record. Ex CAniPlayer::SetRange (dossier #16).
-    void SetRange_0e7c30(i32 start, i32 end, i32 step, i32 loop, i32 interval); // 0xe7c30
 
     i32 m_3c; // +0x3c  persistent serialized ints (Serialize save/load block)
     i32 m_40; // +0x40
@@ -88,12 +95,29 @@ inline CSBI_ImageSetAni::~CSBI_ImageSetAni() {
 // lives in SBI_StatzTabArrowEh.cpp via the CHAIN-DTOR device. This is the FRAMELESS/chain view;
 // the builder-facet view (CSbConfigItem base) is in <Gruntz/StatusBarMgrBuilders.h> (the SBI
 // two-view split, never co-included).
-struct CSBI_StatzTabArrow : CSBI_ImageSetAni {
+class CSBI_StatzTabArrow : public CSBI_ImageSetAni {
+public:
+    // tag 5 (the Statz per-grunt arrow); same ani window seed as the base.
+    CSBI_StatzTabArrow() {
+        m_8 = 5;
+    }
     // Its /GX dtor's member teardown is the INHERITED CSBI_ImageSet::ResetCounters
     // (0xe7400), called three times: own level + the folded ImageSetAni + ImageSet
     // levels. (DtorStatzTabArrow was a declared-only fake view of that function.)
     virtual ~CSBI_StatzTabArrow() OVERRIDE;
+
+    // The two direction setters (0xea0f0 / 0xea170): pick one of four frame-window
+    // tuples from the two selectors and forward to the slot-14 SetRange virtual. Owner
+    // pinned by the call site - CStatusBarMgr::LoadTabSprites calls them on a freshly
+    // `new CSBI_StatzTabArrow` (Statz per-grunt row); slot 14 exists from CSBI_ImageSetAni
+    // down, so the arrow is the deepest class both callers agree on. Bodies live in
+    // StatusBarTabBuilders.cpp. (They were methods of the fabricated CSbConfigItem.)
+    void SetDirection(i32 a, i32 b);    // 0x0ea0f0
+    void SetDirectionAlt(i32 a1, i32 a2); // 0x0ea170
+    // The m_114-gated 2-arg arrow mode sink (reloc `M`).
+    void SetArrowMode(i32 a, i32 b);
 };
-SIZE_UNKNOWN(CSBI_StatzTabArrow);
+SIZE(CSBI_StatzTabArrow, 0x54);
+VTBL(CSBI_StatzTabArrow, 0x001eac94); // vtable_names -> code (RTTI game class)
 
 #endif // GRUNTZ_SBI_IMAGESETANI_H

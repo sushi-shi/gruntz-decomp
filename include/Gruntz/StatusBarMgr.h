@@ -468,7 +468,11 @@ public:
     i32 m_position; // +0x00  status-bar side/position selector (registry "StatusBar Position")
     i32 m_4;        // +0x04
     i32 m_8;        // +0x08
-    i32 m_c;        // +0x0c  the widget-Configure `code` arg
+    // +0x0c: the config host every widget-setup call takes as arg2. Typed from the retail
+    // callee: CSBI_Image::SetupImage (0xe6c80) DEREFERENCES this arg at +0x10
+    // (`mov eax,[esp+8]` ... `mov ecx,[eax+0x10]`) to reach the lookup map - it is a
+    // CSbiConfigHost*, not the `i32 code` the builders used to pass it as.
+    CSbiConfigHost* m_c; // +0x0c
     i32 m_10;       // +0x10  tab base x
     // +0x14..0x23: a 4-int block. The tab builder reads m_rect14.m_0 as the tab base y.
     SbiRect m_rect14; // +0x14

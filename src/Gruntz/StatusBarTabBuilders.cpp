@@ -21,7 +21,9 @@
 #include <Image/CImage.h>            // the frame handles ARE CImage (RenderFrame @0x153790)
 #include <Gruntz/SBI_GruntMachine.h> // canonical CSBI_GruntMachine (vtable @0x5eadbc)
 #include <Gruntz/SBI_SideTab.h>      // canonical CSBI_SideTab (vtable @0x5eae3c) + referent views
-#include <Gruntz/SbConfigItem.h>     // the builder-facet base (SetDirection/SetDirectionAlt sink)
+#include <Gruntz/SbiConfig.h>        // canonical CSbiConfigHost (the builders' arg2 config host)
+#include <Gruntz/SBI_ImageSetAni.h>  // canonical CSBI_StatzTabArrow (SetDirection/SetDirectionAlt)
+#include <Gruntz/SBI_StatzTabGruntBar.h> // canonical CSBI_StatzTabGruntBar (BuildMultiplayerTab..)
 
 // The name maps are the real MFC CMapStringToPtr (Lookup @0x1b8008, from <Mfc.h>); no local view.
 #include <Gruntz/StatusBarTabBuildersViews.h> // CSbGeom/CSbOwner/.../CSbTab (namespace views)
@@ -30,8 +32,8 @@
 // The g_gameReg singleton (VA 0x64556c), shared by the CSBI_GruntMachine /
 // CSBI_SideTab methods below: the render chain m_world (+0x30, CResMgr) ->
 // m_drawTarget (+0x04) -> m_14 surface context, and the side-tab unit table
-// m_68. The ONE decl in this TU (the CSideTabGameReg view from <Gruntz/SBI_SideTab.h>);
-// DEFINED in GruntzMgr.cpp. extern "C" -> the single C symbol _g_gameReg.
+// m_68. One TU-wide decl (the CSideTabGameReg view from <Gruntz/SBI_SideTab.h>;
+// the builders' namespace-scoped CGameRegistry decl below is its own symbol).
 DATA(0x0024556c)
 extern "C" CSideTabGameReg* g_gameReg;
 
@@ -41,107 +43,112 @@ namespace StatusBarTabBuilders {
     // CSpriteRefTable/CSbWorldSlot/CSbTab views live in
     // <Gruntz/StatusBarTabBuildersViews.h>.
 
-    // The namespaced `extern CGameRegistry* g_gameReg` that used to sit here was a
-    // C++-linkage decl, so it emitted ?g_gameReg@StatusBarTabBuilders@@3PAUCGameRegistry@@A
-    // - a SECOND symbol for 0x24556c that no obj and no .LIB could ever define. It bought
-    // a compile-time convenience (two typed views in one TU without an extern "C" type
-    // clash) at the price of a guaranteed `unresolved external symbol`. Gone: the file-
-    // scope extern "C" decl above is the only one, and the CGameRegistry-view derefs cast
-    // at the site.
-    //
-    // The cast is honest and it is TELLING THE TRUTH: CSideTabGameReg is a narrow VIEW of
-    // CGameRegistry (both put m_world at +0x30; CSideTabGameReg's `m_68` unit table is
-    // CGameRegistry's +0x68 m_cmdGrid == the ONE CTriggerMgr, whose +0x1c grid is the
-    // 15-column table indexed here). Dissolving the view is the deferred CGameRegistry
-    // fold, not this lane's - so the type stays fake and the cast stays visible.
+    // The game registry / settings singleton (*0x24556c) - the canonical
+    // CGameRegistry view. The namespace owner (+0x30 -> CSbOwner), sprite-ref table
+    // (+0x74 -> CSpriteRefTable) and per-world slot array (+0x138, stride 0x238 ->
+    // CSbWorldSlot) are cast locally at the deref sites. C++-namespaced (its OWN symbol,
+    // distinct from the file-scope extern "C" _g_gameReg above) so the two typed views of
+    // *0x24556c coexist in one TU without an extern "C" type clash (clang -emit-llvm).
+    extern CGameRegistry* g_gameReg;
     extern "C" i32
         g_curPlayer; // the current world index (canonical DATA(0x00244c54) in sbi_rectonly)
 
-    // ===========================================================================
-    // CSbTab::BuildResourceTabStatusBar  (0xe8a70)
-    // ===========================================================================
-    // @early-stop
-    // identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md,
-    // topic:wall): prologue + body are byte-exact (the geometry block groups via the struct-copy
-    // idiom, struct-copy-block-store-base-reg.md; the variable-index range checks now emit retail's
-    // `cmp idx,[hi]; jg` after spelling them `idx > m_idxHi` instead of `m_idxHi < idx`). Residual:
-    // (1) the 3 mid `return 0` guards inline `jne;pop;pop;ret` in retail (eax already 0) but my
-    // compile tail-merges all 5 guards into one shared `pop;xor;pop;ret`; (2) the final range-check
-    // lands m_imageSet/m_frameIdx in the opposite regs (eax<->ecx free-list coin-flip). ~80.4%; both
-    // residuals are documented non-steerable walls. Logic complete.
-    RVA(0x000e8a70, 0x18c)
-    i32 CSbTab::BuildResourceTabStatusBar(
-        CSbParent* parent,
-        CSbOwner* statusbar,
-        i32 p3,
-        i32 p4,
-        CSbGeom g,
-        char* key,
-        i32 idxA,
-        i32 idxB
-    ) {
-        if (statusbar == 0 || parent == 0) {
-            return 0;
-        }
-        CSbOwner* owner = statusbar;
-        m_parent = parent;
-        m_10 = p4;
-        m_owner = owner;
-        m_28 = 0;
-        m_04 = 1;
-        m_geom = g;
-        statusbar = 0;
-        m_0c = p3;
-        ((CMapStringToPtr*)&owner->m_mapHost->m_map)
-            ->Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", (void*&)statusbar);
-        CSbImageSet* n = (CSbImageSet*)statusbar;
-        i32 spr;
-        if (n == 0 || n->m_idxLo > 1 || n->m_idxHi < 1) {
-            spr = 0;
-        } else {
-            spr = n->m_formats[1];
-        }
-        m_44 = spr;
-        if (spr == 0) {
-            return 0;
-        }
-        statusbar = 0;
-        ((CMapStringToPtr*)&m_owner->m_mapHost->m_map)->Lookup(key, (void*&)statusbar);
-        m_imageSet = (CSbImageSet*)statusbar;
-        if (statusbar == 0) {
-            return 0;
-        }
-        m_38 = idxA;
-        m_frameIdx = idxB;
-        i32 s;
-        if (idxA < m_imageSet->m_idxLo || idxA > m_imageSet->m_idxHi) {
-            s = 0;
-        } else {
-            s = m_imageSet->m_formats[idxA];
-        }
-        m_34 = s;
-        if (s == 0) {
-            return 0;
-        }
-        i32 sel =
-            ((CSpriteRefTable*)((CGameRegistry*)g_gameReg)->m_spriteFactory)
-                ->GetSel(((CSbWorldSlot*)((char*)g_gameReg + 0x138))[g_curPlayer].m_toolId, 0);
-        if (sel == 0) {
-            sel = ((CSpriteRefTable*)((CGameRegistry*)g_gameReg)->m_spriteFactory)->GetSel(1, 0);
-        }
-        ((CImageSet*)m_imageSet)->SetAllTypes(10);
-        ((CImageSet*)m_imageSet)->SetAllFormats(sel);
-        i32 val;
-        if (m_frameIdx < m_imageSet->m_idxLo || m_frameIdx > m_imageSet->m_idxHi) {
-            val = 0;
-        } else {
-            val = m_imageSet->m_formats[m_frameIdx];
-        }
-        m_3c = val;
-        return val != 0;
-    }
-
 } // namespace StatusBarTabBuilders
+
+// ---------------------------------------------------------------------------
+// CSBI_GruntMachine::BuildResourceTabStatusBar (0xe8a70) - the machine widget's own
+// configure. Re-homed off the `CSbTab` view, which CONFLATED this class with
+// CSBI_StatzTabGruntBar (one 0x88 struct standing in for a 0x48 and an 0x88 class) and
+// whose mangled name matched NO call site: LoadTabSprites called it on the fabricated
+// CSbConfigItem base, so the reference resolved to nothing at link. The `this` is proven
+// by the call site (`new CSBI_GruntMachine` immediately before) and the field map is
+// exact: m_parent/m_owner/m_geom ARE the CStatusBarItem base slots m_2c/m_24/m_rect14,
+// and the view's CSbImageSet is the canonical CGmConfig (m_14 table + m_64/m_68 gates).
+// @early-stop
+// identical-return-epilogue tail-merge wall (docs/patterns/identical-return-epilogue-tailmerge.md,
+// topic:wall): prologue + body are byte-exact (the geometry block groups via the struct-copy
+// idiom, struct-copy-block-store-base-reg.md; the variable-index range checks emit retail's
+// `cmp idx,[hi]; jg` from spelling them `idx > m_68`). Residual: (1) the 3 mid `return 0`
+// guards inline `jne;pop;pop;ret` in retail (eax already 0) but my compile tail-merges all 5
+// guards into one shared `pop;xor;pop;ret`; (2) the final range-check lands m_30/m_40 in the
+// opposite regs (eax<->ecx free-list coin-flip). Both are non-steerable walls; logic complete.
+RVA(0x000e8a70, 0x18c)
+i32 CSBI_GruntMachine::BuildResourceTabStatusBar(
+    CStatusBarMgr* owner,
+    CSbiConfigHost* host,
+    i32 p3,
+    i32 p4,
+    SbRect g,
+    const char* key,
+    i32 idxA,
+    i32 idxB
+) {
+    if (host == 0 || owner == 0) {
+        return 0;
+    }
+    CSbiConfigHost* h = host;
+    m_2c = (i32)owner;
+    m_10 = p4;
+    m_24 = (i32)h;
+    m_28 = 0;
+    m_4 = 1;
+    m_rect14.m_0 = g.left;
+    m_rect14.m_4 = g.top;
+    m_rect14.m_8 = g.right;
+    m_rect14.m_c = g.bottom;
+    CGmConfig* rec = 0;
+    m_c = p3;
+    h->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_RESOURCETAB_MACHINEBACKGROUND", (void*&)rec);
+    CImage* spr;
+    if (rec == 0 || rec->m_64 > 1 || rec->m_68 < 1) {
+        spr = 0;
+    } else {
+        spr = rec->m_14[1];
+    }
+    m_44 = spr;
+    if (spr == 0) {
+        return 0;
+    }
+    CGmConfig* cfg = 0;
+    ((CSbiConfigHost*)m_24)->m_10->m_10map.Lookup(key, (void*&)cfg);
+    m_30 = cfg;
+    if (cfg == 0) {
+        return 0;
+    }
+    m_38 = idxA;
+    m_40 = idxB;
+    CImage* s;
+    if (idxA < m_30->m_64 || idxA > m_30->m_68) {
+        s = 0;
+    } else {
+        s = m_30->m_14[idxA];
+    }
+    m_34 = s;
+    if (s == 0) {
+        return 0;
+    }
+    i32 sel =
+        ((CSpriteRefTable*)StatusBarTabBuilders::g_gameReg->m_spriteFactory)
+            ->GetSel(
+                ((StatusBarTabBuilders::CSbWorldSlot*)((char*)StatusBarTabBuilders::g_gameReg
+                                                       + 0x138))[StatusBarTabBuilders::g_curPlayer]
+                    .m_toolId,
+                0
+            );
+    if (sel == 0) {
+        sel = ((CSpriteRefTable*)StatusBarTabBuilders::g_gameReg->m_spriteFactory)->GetSel(1, 0);
+    }
+    ((CImageSet*)m_30)->SetAllTypes(10);
+    ((CImageSet*)m_30)->SetAllFormats(sel);
+    CImage* val;
+    if (m_40 < m_30->m_64 || m_40 > m_30->m_68) {
+        val = 0;
+    } else {
+        val = m_30->m_14[m_40];
+    }
+    m_3c = val;
+    return val != 0;
+}
 
 // ---------------------------------------------------------------------------
 // vtable slot 3 (0xe8c70): drop the standalone frame handle + the two resolved frame
@@ -283,7 +290,7 @@ namespace StatusBarTabBuilders {
         m_54 = onLeft;
         if (onLeft == 0) {
             void* out = 0;
-            ((CMapStringToPtr*)&((CSbOwner*)((CGameRegistry*)g_gameReg)->m_world)->m_mapHost->m_map)
+            ((CMapStringToPtr*)&((CSbOwner*)g_gameReg->m_world)->m_mapHost->m_map)
                 ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONRIGHT", (void*&)out);
             CSbImageSet* n = (CSbImageSet*)out;
             i32 v;
@@ -297,7 +304,7 @@ namespace StatusBarTabBuilders {
             m_48 = (p7 - p5) / 2 + parent->m_18;
         } else {
             void* out = 0;
-            ((CMapStringToPtr*)&((CSbOwner*)((CGameRegistry*)g_gameReg)->m_world)->m_mapHost->m_map)
+            ((CMapStringToPtr*)&((CSbOwner*)g_gameReg->m_world)->m_mapHost->m_map)
                 ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_TABONLEFT", (void*&)out);
             CSbImageSet* n = (CSbImageSet*)out;
             i32 v;
@@ -438,170 +445,176 @@ i32 Gap_0e9a30(void) {
 }
 
 // ===========================================================================
-// CSbConfigItem::SetDirection  (0x0ea0f0) - re-homed from StatusBarMgr.cpp
+// CSBI_StatzTabArrow::SetDirection  (0x0ea0f0) - re-homed from StatusBarMgr.cpp
 // (interval dossier seam: positioned between the side-tab block and
 // BuildMultiplayerTabStatusBar; the config-item setters used by the builders).
 // ===========================================================================
-// Two boolean selectors (a,b) pick one of four direction tuples, forwarded to
-// the +0x38 virtual. Reached via thunk 0x1573 from LoadTabSprites + FUN_00504f90.
+// Two boolean selectors (a,b) pick one of four frame-window tuples, forwarded to the
+// slot-14 virtual. That slot is SetRange (thunk 0x3bde -> jmp 0xe7c30), introduced by
+// CSBI_ImageSetAni; the owner is the ARROW because LoadTabSprites calls both setters on
+// a freshly `new CSBI_StatzTabArrow` (Statz per-grunt row). They used to be members of
+// the fabricated 15-slot CSbConfigItem, forwarding to a body-less `ApplyDir` placeholder.
+// Reached via thunk 0x1573 from LoadTabSprites + FUN_00504f90.
 RVA(0x000ea0f0, 0x5c)
-void CSbConfigItem::SetDirection(i32 a, i32 b) {
+void CSBI_StatzTabArrow::SetDirection(i32 a, i32 b) {
     if (a == 0) {
         if (b == 0) {
-            ApplyDir(4, -1, 0, 0, -1);
+            SetRange_0e7c30(4, -1, 0, 0, -1);
         } else {
-            ApplyDir(-1, -1, 1, 0, -1);
+            SetRange_0e7c30(-1, -1, 1, 0, -1);
         }
     } else {
         if (b == 0) {
-            ApplyDir(1, -1, 0, 0, -1);
+            SetRange_0e7c30(1, -1, 0, 0, -1);
         } else {
-            ApplyDir(-1, -1, -1, 0, -1);
+            SetRange_0e7c30(-1, -1, -1, 0, -1);
         }
     }
 }
 
 // ---------------------------------------------------------------------------
-// 0x0ea170: the mirror sibling of SetDirection: the same four ApplyDir (+0x38
-// virtual, slot 14) tuples, re-keyed on (a1,a2). RTTI-confirmed CSbConfigItem
-// (slots 0-13 + ApplyDir @+0x38 match).
+// 0x0ea170: the mirror sibling of SetDirection: the same four SetRange tuples, re-keyed
+// on (a1,a2).
 RVA(0x000ea170, 0x5c)
-void CSbConfigItem::SetDirectionAlt(i32 a1, i32 a2) {
+void CSBI_StatzTabArrow::SetDirectionAlt(i32 a1, i32 a2) {
     if (a1 == 0) {
         if (a2 == 0) {
-            ApplyDir(1, -1, 0, 0, -1);
+            SetRange_0e7c30(1, -1, 0, 0, -1);
         } else {
-            ApplyDir(-1, -1, -1, 0, -1);
+            SetRange_0e7c30(-1, -1, -1, 0, -1);
         }
     } else {
         if (a2 == 0) {
-            ApplyDir(4, -1, 0, 0, -1);
+            SetRange_0e7c30(4, -1, 0, 0, -1);
         } else {
-            ApplyDir(-1, -1, 1, 0, -1);
+            SetRange_0e7c30(-1, -1, 1, 0, -1);
         }
     }
 }
 
-namespace StatusBarTabBuilders {
-
-    // ===========================================================================
-    // CSbTab::BuildMultiplayerTabStatusBar  (0xea1f0)
-    // ===========================================================================
-    // @early-stop
-    // identical-return-epilogue tail-merge wall (topic:wall): prologue + body byte-exact
-    // (geometry block grouped via the struct-copy idiom), residual is the many fail-path
-    // `return 0` sites tail-merging to one shared epilogue. ~78%. Logic complete.
-    RVA(0x000ea1f0, 0x1fa)
-    i32 CSbTab::BuildMultiplayerTabStatusBar(
-        CSbParent* parent,
-        CSbOwner* statusbar,
-        i32 p3,
-        i32 p4,
-        CSbGeom g,
-        char* key,
-        i32 p10,
-        i32 p11,
-        i32 selMode
-    ) {
-        if (statusbar == 0) {
-            return 0;
-        }
-        if (parent == 0) {
-            return 0;
-        }
-        CSbOwner* owner = statusbar;
-        m_parent = parent;
-        m_10 = p4;
-        m_owner = owner;
-        m_28 = 0;
-        m_04 = 1;
-        m_geom = g;
-        statusbar = 0;
-        m_0c = p3;
-        ((CMapStringToPtr*)&owner->m_mapHost->m_map)->Lookup(key, (void*&)statusbar);
-        CSbImageSet* head = (CSbImageSet*)statusbar;
-        m_headImage = head;
-        if (statusbar == 0) {
-            return 0;
-        }
-        i32 v;
-        if (head->m_idxLo > 0x21 || head->m_idxHi < 0x21) {
-            v = 0;
-        } else {
-            v = head->m_formats[0x21];
-        }
-        m_imageSet = (CSbImageSet*)v;
-        if (v == 0) {
-            return 0;
-        }
-        i32 w;
-        if (head->m_idxLo > 0x22 || head->m_idxHi < 0x22) {
-            w = 0;
-        } else {
-            w = head->m_formats[0x22];
-        }
-        m_3c = w;
-        if (w == 0) {
-            return 0;
-        }
-        i32 val;
-        if (selMode == 0) {
-            statusbar = 0;
-            ((CMapStringToPtr*)&m_owner->m_mapHost->m_map)
-                ->Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", (void*&)statusbar);
-            m_68 = (i32)statusbar;
-            if (statusbar == 0) {
-                return 0;
-            }
-            if (m_headImage->m_idxLo > 0x23 || m_headImage->m_idxHi < 0x23) {
-                val = 0;
-            } else {
-                val = m_headImage->m_formats[0x23];
-            }
-        } else {
-            statusbar = 0;
-            ((CMapStringToPtr*)&m_owner->m_mapHost->m_map)
-                ->Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", (void*&)statusbar);
-            m_68 = (i32)statusbar;
-            if (statusbar == 0) {
-                return 0;
-            }
-            i32 x;
-            if (m_headImage->m_idxLo > 0x23 || m_headImage->m_idxHi < 0x23) {
-                x = 0;
-            } else {
-                x = m_headImage->m_formats[0x23];
-            }
-            m_54 = x;
-            if (x == 0) {
-                return 0;
-            }
-            if (m_headImage->m_idxLo > 0x22 || m_headImage->m_idxHi < 0x22) {
-                val = 0;
-            } else {
-                val = m_headImage->m_formats[0x22];
-            }
-        }
-        m_48 = val;
-        if (val == 0) {
-            return 0;
-        }
-        m_60 = p10;
-        m_64 = p11;
-        m_70 = -1;
-        m_50 = -1;
-        m_44 = -1;
-        m_38 = -1;
-        m_5c = 0;
-        m_78 = 0;
-        m_80 = 0;
-        m_7c = 0;
-        m_84 = 0;
-        Update();
-        return 1;
+// ---------------------------------------------------------------------------
+// CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar (0xea1f0) - the stat bar's own
+// configure. Re-homed off the `CSbTab` view (the same conflation that held
+// BuildResourceTabStatusBar; `this` is proven by the call site's `new
+// CSBI_StatzTabGruntBar`). The view's CSbImageSet is the canonical CStatzGlyphMap.
+// @early-stop
+// identical-return-epilogue tail-merge wall (topic:wall): prologue + body byte-exact
+// (geometry block grouped via the struct-copy idiom), residual is the many fail-path
+// `return 0` sites tail-merging to one shared epilogue. ~78%. Logic complete.
+RVA(0x000ea1f0, 0x1fa)
+i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
+    CStatusBarMgr* owner,
+    CSbiConfigHost* host,
+    i32 p3,
+    i32 p4,
+    SbRect g,
+    const char* key,
+    i32 p10,
+    i32 p11,
+    i32 selMode
+) {
+    if (host == 0) {
+        return 0;
     }
-
-} // namespace StatusBarTabBuilders
+    if (owner == 0) {
+        return 0;
+    }
+    CSbiConfigHost* h = host;
+    m_2c = (i32)owner;
+    m_10 = p4;
+    m_24 = (i32)h;
+    m_28 = 0;
+    m_4 = 1;
+    m_rect14.m_0 = g.left;
+    m_rect14.m_4 = g.top;
+    m_rect14.m_8 = g.right;
+    m_rect14.m_c = g.bottom;
+    CStatzGlyphMap* head = 0;
+    m_c = p3;
+    h->m_10->m_10map.Lookup(key, (void*&)head);
+    m_glyphMap = head;
+    if (head == 0) {
+        return 0;
+    }
+    CImage* v;
+    if (head->m_minIndex > 0x21 || head->m_maxIndex < 0x21) {
+        v = 0;
+    } else {
+        v = head->m_glyphs[0x21];
+    }
+    m_statusGlyph = v;
+    if (v == 0) {
+        return 0;
+    }
+    CImage* w;
+    if (head->m_minIndex > 0x22 || head->m_maxIndex < 0x22) {
+        w = 0;
+    } else {
+        w = head->m_glyphs[0x22];
+    }
+    m_abilityGlyph = w;
+    if (w == 0) {
+        return 0;
+    }
+    CImage* val;
+    if (selMode == 0) {
+        CStatzGlyphMap* sel = 0;
+        ((CSbiConfigHost*)m_24)
+            ->m_10->m_10map.Lookup(
+                "GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR",
+                (void*&)sel
+            );
+        m_timerGlyphMap = sel;
+        if (sel == 0) {
+            return 0;
+        }
+        if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
+            val = 0;
+        } else {
+            val = m_glyphMap->m_glyphs[0x23];
+        }
+    } else {
+        CStatzGlyphMap* sel = 0;
+        ((CSbiConfigHost*)m_24)
+            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_STATZTAB_SELECTEDBAR", (void*&)sel);
+        m_timerGlyphMap = sel;
+        if (sel == 0) {
+            return 0;
+        }
+        CImage* x;
+        if (m_glyphMap->m_minIndex > 0x23 || m_glyphMap->m_maxIndex < 0x23) {
+            x = 0;
+        } else {
+            x = m_glyphMap->m_glyphs[0x23];
+        }
+        m_selectKey = x;
+        if (x == 0) {
+            return 0;
+        }
+        if (m_glyphMap->m_minIndex > 0x22 || m_glyphMap->m_maxIndex < 0x22) {
+            val = 0;
+        } else {
+            val = m_glyphMap->m_glyphs[0x22];
+        }
+    }
+    m_overrideGlyph = val;
+    if (val == 0) {
+        return 0;
+    }
+    m_unitRow = p10;
+    m_unitCol = p11;
+    m_timerValue = -1;
+    m_overrideValue = -1;
+    m_abilityValue = -1;
+    m_statusValue = -1;
+    m_selectValue = 0;
+    m_timerAnchorLo = 0;
+    m_timerWindowLo = 0;
+    m_timerAnchorHi = 0;
+    m_timerWindowHi = 0;
+    Update();
+    return 1;
+}
 
 // ---------------------------------------------------------------------------
 // ~CSBI_GruntMachine (0x104ce0): the /GX chain destructor - stamp

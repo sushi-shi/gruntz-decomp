@@ -44,40 +44,37 @@
 // Deferred to the final sweep.
 RVA(0x000e6c80, 0xc3)
 i32 CSBI_Image::SetupImage(
-    i32 a1,
+    CStatusBarMgr* owner,
     CSbiConfigHost* host,
     i32 a3,
     i32 a4,
-    i32 a5,
-    i32 a6,
-    i32 a7,
-    i32 a8,
-    i32 key,
+    SbRect rc,
+    const char* key,
     i32 a10,
     i32 a11
 ) {
     if (host == 0) {
         return 0;
     }
-    if (a1 == 0) {
+    if (owner == 0) {
         return 0;
     }
-    m_2c = a1;
+    m_2c = (i32)owner;
     m_10 = a4;
     m_24 = (i32)host;
     m_28 = 0;
     m_4 = 0;
-    m_rect14.m_0 = a5;
-    m_rect14.m_4 = a6;
-    m_rect14.m_8 = a7;
-    m_rect14.m_c = a8;
+    m_rect14.m_0 = rc.left;
+    m_rect14.m_4 = rc.top;
+    m_rect14.m_8 = rc.right;
+    m_rect14.m_c = rc.bottom;
     m_c = a3;
     if (key == 0) {
         m_30 = 0;
         return 0 != 0;
     }
     CSbiConfigRecord* rec = 0;
-    ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup((const char*)key, (void*&)rec);
+    ((CMapStringToPtr*)&host->m_10->m_10map)->Lookup(key, (void*&)rec);
     if (rec == 0 || rec->m_64 > 1 || rec->m_68 < 1) {
         m_30 = 0;
         return 0 != 0;

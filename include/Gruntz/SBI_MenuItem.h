@@ -125,40 +125,30 @@ public:
     virtual void SbiSlot3() OVERRIDE;  // slot 3 (the ClearFrame2 below)
     virtual void SbiSlot4() OVERRIDE;  // slot 4 (the DecCounter below)
     virtual void SbiSlot5() OVERRIDE;  // slot 5
-    // slot 11 override of CSBI_Image::SetupImage; the out-of-line body is InitItem
-    // (0xe80e0, declared below) - the vtable slot reloc-masks, so this declared-only
-    // override just pins the slot in the model (was in the retired SbiDtorChain.h).
+    // slot 11 (0xe80e0), the CSBI_Image::SetupImage override. This USED to be split in two:
+    // a body-less `virtual` here to pin the slot, plus the real body as a separate
+    // non-virtual `InitItem`. Its arg model looked different (it called arg9 `obj` and
+    // arg10 `key`) but is the SAME: arg1 owner, arg2 host, arg3 cmd, arg4 -> m_10,
+    // args5..8 the rect, and its `ResolveFrame(obj, key)` is really
+    // ResolveFrame(<asset key>, <frame index>) - i.e. arg9 IS the key and arg10 the frame,
+    // exactly as the base and CSBI_ImageSet have it. One function, one slot.
     virtual i32 SetupImage(
-        i32,
-        CSbiConfigHost*,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32
-    ) OVERRIDE; // slot 11
+        CStatusBarMgr* owner,
+        CSbiConfigHost* host,
+        i32 cmd,
+        i32 a4,
+        SbRect rc,
+        const char* key,
+        i32 frame,
+        i32 unused
+    ) OVERRIDE; // slot 11  0xe80e0
 
     // ----- reconstructed methods (RVA-ascending) -----
     // (0xe6d90 ClearFrame + 0xe6e40 SerializeChain are the real CSBI_Image slot-3/
     // slot-1 bodies - re-attributed to SBI_Image.h/.cpp, dossier #16.)
     void ClearFrame2(); // 0xe81a0 (out-of-line)
-    i32 InitItem(
-        i32 cfg,
-        i32 host,
-        i32 cmd,
-        i32 r0,
-        i32 r1,
-        i32 r2,
-        i32 r3,
-        i32 r4,
-        void* obj,
-        i32 key,
-        i32 unused
-    );                                               // 0xe80e0  (vtable slot 11)
+    // (InitItem was the real 0xe80e0 body under a second name - it IS the slot-11
+    // SetupImage override declared above.)
     i32 ResolveFrame(i32 key, i32 a);                // 0xe81e0
     i32 DecCounter();                                // 0xe82a0  decrement-and-blit
     i32 SetState(i32 state, i32 a);                  // 0xe8310

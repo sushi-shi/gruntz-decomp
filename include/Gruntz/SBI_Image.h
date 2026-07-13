@@ -21,11 +21,15 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/SbRect.h>        // SetupImage args 5..8 - ONE by-value geometry rect
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base
 
 // The +0x24 config host is the shared canonical CSbiConfigHost (SbiConfig.h, pulled
 // in the .cpp); only a pointer is needed here, so forward-declare it.
 struct CSbiConfigHost;
+// SetupImage arg1 is the owning status-bar manager (latched into the base m_2c slot);
+// only a pointer is needed here. `class` (not `struct`) - the mangling depends on it.
+class CStatusBarMgr;
 
 // CSBI_RectOnly - the empty intermediate between CStatusBarItem and CSBI_Image
 // (RTTI: CSBI_Image : CSBI_RectOnly : CStatusBarItem). In retail it overrides only
@@ -67,24 +71,34 @@ inline CSBI_RectOnly::~CSBI_RectOnly() {
 // CStatusBarItem::Setup @0x100660 storing arg1 there); adds only the latched-value m_30.
 class CSBI_Image : public CSBI_RectOnly {
 public:
+    // The type tag (m_8 = 3) is CSBI_Image's own ctor leg: every `new CSBI_Image` in the
+    // tab builders (CStatusBarMgr::LoadTabSprites, CGameMenuMgr::BuildGameMenu) produces
+    // tag 3 with m_30 cleared, on top of the out-of-line CSBI_RectOnly base ctor (0x101fa0)
+    // retail calls first. Inline, so the builders fold it at the new-site like retail.
+    CSBI_Image() {
+        m_8 = 3;
+        m_30 = 0;
+    }
     virtual ~CSBI_Image() OVERRIDE;   // slot 0
     virtual i32 SbiVfunc0() OVERRIDE; // slot 1
     virtual void SbiSlot3() OVERRIDE; // slot 3
     virtual void SbiSlot4() OVERRIDE; // slot 4
     virtual void SbiSlot5() OVERRIDE; // slot 5
-    // vtable slot 11 (0xe6c80): the 11-arg image setup; arg1 = id, arg2 = config
-    // host, args 3..8 = the rect block, arg9 = the lookup key (args 10/11 unused).
+    // vtable slot 11 (0xe6c80): the image setup, 11 dwords of args. The RETAIL BODY pins
+    // the arg types (disasm 0xe6c80): entry `mov eax,[esp+8]` reads arg2 and later
+    // `mov ecx,[eax+0x10]` DEREFERENCES it => arg2 is the CSbiConfigHost*; arg1 is only
+    // null-tested and stored (m_2c = owner), and every call site passes the building
+    // manager's `this`. Args 5..8 are ONE by-value rect (the builders fill an SbRect and
+    // pass it), arg9 the asset key string. This is the ONE signature: the tab builders
+    // used to call it through a fabricated 15-slot `CSbConfigItem::Configure` view, which
+    // made cl emit a 60 B ??_7CSBI_Image@@6B@ in statusbarmgr against retail's 48 B.
     virtual i32 SetupImage( // slot 11 (new)
-
-        i32 a1,
+        CStatusBarMgr* owner,
         CSbiConfigHost* host,
         i32 a3,
         i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8,
-        i32 key,
+        SbRect rc,
+        const char* key,
         i32 a10,
         i32 a11
     );

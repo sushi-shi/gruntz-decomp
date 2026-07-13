@@ -76,39 +76,37 @@ extern i32 g_serialCounter;
 // only the last two); the recompile writes the fields directly + shares one fail
 // tail. Not steerable from C; deferred to the final sweep.
 RVA(0x000e80e0, 0x8c)
-i32 CSBI_MenuItem::InitItem(
-    i32 cfg,
-    i32 host,
+i32 CSBI_MenuItem::SetupImage(
+    CStatusBarMgr* owner,
+    CSbiConfigHost* host,
     i32 cmd,
-    i32 r0,
-    i32 r1,
-    i32 r2,
-    i32 r3,
-    i32 r4,
-    void* obj,
-    i32 key,
+    i32 a4,
+    SbRect rc,
+    const char* key,
+    i32 frame,
     i32 unused
 ) {
-    if (obj == 0) {
+    (void)unused;
+    if (key == 0) {
         return 0;
     }
-    if (host == 0 || cfg == 0) {
+    if (host == 0 || owner == 0) {
         return 0;
     }
-    m_2c = cfg;  // owning tab host (CMiTabHost view at the deref sites)
-    m_24 = host; // config host (CSbiConfigHost, cast at the deref sites)
-    m_10 = r0;
+    m_2c = (i32)owner; // owning tab host (CMiTabHost view at the deref sites)
+    m_24 = (i32)host;  // config host (CSbiConfigHost, cast at the deref sites)
+    m_10 = a4;
     m_8 = 2;
     m_30 = 0;
-    m_rect14.m_0 = r1;
+    m_rect14.m_0 = rc.left;
     m_28 = 0;
-    m_rect14.m_4 = r2;
-    m_rect14.m_8 = r3;
-    m_rect14.m_c = r4;
+    m_rect14.m_4 = rc.top;
+    m_rect14.m_8 = rc.right;
+    m_rect14.m_c = rc.bottom;
     m_c = cmd;
     m_34 = 1;
     m_4 = 1;
-    return ResolveFrame((i32)obj, key) != 0;
+    return ResolveFrame((i32)key, frame) != 0;
 }
 
 // ---------------------------------------------------------------------------

@@ -26,32 +26,28 @@ extern "C" u32 g_645588;
 // CSBI_ImageSetAni::Init); on success record the timed-play window (start clock
 // @+0x58 = g_645588, duration @+0x60 = the play interval m_3c), then return 1.
 // Returns 0 if Init fails.
-// @early-stop
-// ~77%: logic byte-correct (the 14-arg forward, the timer stamp). Residue is the
-// arg-marshaling idiom: retail groups the four rect args (r0..r3) into a 16-byte
-// stack block (`sub esp,0x10; mov [eax+N]`), which strongly implies Init/Start's
-// real signature takes a by-VALUE 4-int rect struct there rather than four scalars -
-// but Init (0xe7980) is modeled + banked with four scalar r-args, so changing it is a
-// cross-function re-model deferred to the final sweep. Plus a swapped ecx/edx in the
-// timer-stamp tail (regalloc). Not steerable without the Init re-model.
+//
+// The rect IS by value. This function's own residual said so: retail groups the four rect
+// args into a 16-byte stack block (`sub esp,0x10; mov [eax+N]`), which "strongly implies
+// Init/Start's real signature takes a by-VALUE 4-int rect struct there rather than four
+// scalars" - and it was parked because re-modeling Init was a cross-function change. The
+// CSbConfigItem fold did exactly that re-model (the fabricated base's ConfigureEx took the
+// rect by value all along, and it IS this Init, slot 13), so Start now forwards it whole.
 RVA(0x000e5ad0, 0x84)
 i32 CAniPlayer::Start(
-    i32 cfg,
+    CStatusBarMgr* owner,
     CSbiConfigHost* host,
     i32 a2,
     i32 a3,
-    i32 r0,
-    i32 r1,
-    i32 r2,
-    i32 r3,
-    i32 key,
+    SbRect rc,
+    const char* key,
     i32 b0,
     i32 b1,
     i32 b2,
     i32 b3,
     i32 b4
 ) {
-    if (Init(cfg, host, a2, a3, r0, r1, r2, r3, key, b0, b1, b2, b3, b4) == 0) {
+    if (Init(owner, host, a2, a3, rc, key, b0, b1, b2, b3, b4) == 0) {
         return 0;
     }
     m_60 = m_3c;

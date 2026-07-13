@@ -48,12 +48,20 @@ SIZE_UNKNOWN(CImageSetStream);
 // name) on top of CSBI_Image (its real RTTI base). Offsets are load-bearing.
 class CSBI_ImageSet : public CSBI_Image {
 public:
+    // tag 4 + the resolved-record slot cleared (the `new CSBI_ImageSet` ctor leg the tab
+    // builders fold at each new-site, over the out-of-line CSBI_RectOnly base ctor).
+    CSBI_ImageSet() {
+        m_30 = 0;
+        m_8 = 4;
+        m_34 = 0;
+    }
     virtual ~CSBI_ImageSet() OVERRIDE; // slot 0
     virtual i32 SbiVfunc0() OVERRIDE;  // slot 1
     virtual void SbiSlot3() OVERRIDE;  // slot 3
     virtual void SbiSlot4() OVERRIDE;  // slot 4
     virtual void SbiSlot5() OVERRIDE;  // slot 5
-    virtual i32 SetupImage(i32, CSbiConfigHost*, i32, i32, i32, i32, i32, i32, i32, i32, i32)
+    virtual i32
+    SetupImage(CStatusBarMgr*, CSbiConfigHost*, i32, i32, SbRect, const char*, i32, i32)
         OVERRIDE;                                                // slot 11
     virtual void SbiSlot12();                                    // slot 12 (new)
     i32 Serialize(CImageSetStream* s, i32 mode, i32 a3, i32 a4); // vslot 1 (0xe74f0)

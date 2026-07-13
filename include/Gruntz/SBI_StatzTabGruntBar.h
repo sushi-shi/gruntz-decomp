@@ -20,7 +20,12 @@
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/StatusBarItem.h> // canonical frameless CStatusBarItem base (real RTTI base)
+#include <Gruntz/SbRect.h>        // BuildMultiplayerTabStatusBar's by-value geometry rect
 #include <Image/CImage.h>         // the glyph handles ARE CImage (RenderFrame @0x153790)
+
+// BuildMultiplayerTabStatusBar's owner/config-host pair (pointers only - fwd-decl).
+class CStatusBarMgr;
+struct CSbiConfigHost;
 
 // ---------------------------------------------------------------------------
 // Shared engine views (modeled minimally; only the touched members/methods are
@@ -113,11 +118,55 @@ SIZE_UNKNOWN(CStatzGlyphMap);
 // CStatusBarItem (vtable @0x5eace4).
 class CSBI_StatzTabGruntBar : public CStatusBarItem {
 public:
+    // tag 6 (the Statz/Multiplayer per-grunt stat bar). The four tracked values start
+    // "unset" (-1) so the first Update latches them. Store order preserved from the
+    // retail new-site ctor fold.
+    CSBI_StatzTabGruntBar() {
+        m_timerAnchorLo = 0;
+        m_timerWindowLo = 0;
+        m_timerAnchorHi = 0;
+        m_timerWindowHi = 0;
+        m_8 = 6;
+        m_statusGlyphLatched = 0;
+        m_abilityGlyphLatched = 0;
+        m_overrideGlyphLatched = 0;
+        m_selectGlyph = 0;
+        m_glyphMap = 0;
+        m_statusGlyph = 0;
+        m_abilityGlyph = 0;
+        m_overrideGlyph = 0;
+        m_selectKey = 0;
+        m_overrideValue = -1;
+        m_abilityValue = -1;
+        m_statusValue = -1;
+        m_selectValue = 0;
+        m_timerGlyphMap = 0;
+        m_timerValue = -1;
+        m_timerGlyph = 0;
+    }
     virtual ~CSBI_StatzTabGruntBar() OVERRIDE; // slot 0
     virtual i32 SbiVfunc0() OVERRIDE;          // slot 1
     virtual void SbiSlot3() OVERRIDE;          // slot 3
     virtual void SbiSlot4() OVERRIDE;          // slot 4
     virtual void SbiSlot5() OVERRIDE;          // slot 5
+
+    // 0xea1f0: the stat bar's own "configure" (it derives straight from CStatusBarItem,
+    // so there is no slot-11 SetupImage to override). Same owner/config-host pair as
+    // SetupImage. Was `CSbTab::BuildMultiplayerTabStatusBar` - a view CONFLATING this
+    // class with CSBI_GruntMachine - while the caller referenced it on the fabricated
+    // CSbConfigItem base, so the call resolved to NO definition.
+    i32 BuildMultiplayerTabStatusBar(
+        CStatusBarMgr* owner,
+        CSbiConfigHost* host,
+        i32 p3,
+        i32 p4,
+        SbRect g,
+        const char* key,
+        i32 p10,
+        i32 p11,
+        i32 selMode
+    ); // 0xea1f0
+
     void Reset();      // 0xea470  drop the five tracked values (also the dtor teardown)
     i32 Poll(i32 arg); // 0xea4b0  Update + conditional vfunc-10 redraw (arg unused)
     i32 Blit();        // 0xea4e0  draw the tab's background + value glyphs (slot +0x14)

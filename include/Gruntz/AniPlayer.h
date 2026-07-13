@@ -28,16 +28,16 @@
 
 class CAniPlayer : public CSBI_ImageSetAni {
 public:
+    // Forwards all 14 dwords to the base CSBI_ImageSetAni::Init (slot 13), then stamps the
+    // timed-play window. The rect is by VALUE - retail builds it as one 16-byte block in
+    // the outgoing frame (see the note on the body).
     i32 Start(
-        i32 cfg,
+        CStatusBarMgr* owner,
         CSbiConfigHost* host,
         i32 a2,
         i32 a3,
-        i32 r0,
-        i32 r1,
-        i32 r2,
-        i32 r3,
-        i32 key,
+        SbRect rc,
+        const char* key,
         i32 b0,
         i32 b1,
         i32 b2,

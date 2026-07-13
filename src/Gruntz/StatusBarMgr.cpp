@@ -14,10 +14,13 @@
 //     (+0x204..+0x520, +0x61c..+0x62c) it stashes the created widgets into.
 //   - tab keys are all GAME_STATUSBAR_TABZ_* / GAME_INGAMEICONZ_* assets.
 //
-// The created widgets are REAL polymorphic subclasses (CSBI_Image / CSBI_ImageSet /
-// CSBI_WellGoo, derived from the CSbConfigItem base): `new CSBI_Image` makes MSVC
-// auto-stamp the retail ??_7CSBI_Image@@6B@ vtable (0x5eac0c, catalogued in
-// config/vtable_names.csv), so no manual vtable-pointer stamp is needed.
+// The created widgets are the CANONICAL polymorphic SBI classes (<Gruntz/SBI_*.h>):
+// `new CSBI_Image` makes MSVC auto-stamp the retail ??_7CSBI_Image@@6B@ vtable (0x5eac0c,
+// catalogued in config/vtable_names.csv), so no manual vtable-pointer stamp is needed.
+// This TU used to build them from a PARALLEL hierarchy rooted at a fabricated 15-slot base
+// (CSbConfigItem), which made cl emit 60 B vtables here against retail's 48/52 - the same
+// mangled name at two byte-lengths, one of which the linker silently discarded. See the
+// header note in <Gruntz/StatusBarMgrBuilders.h>.
 //
 // Switch case -> tab (from the jump table at VA 0x504020):
 //   m_activeTab==1 -> Statz   m_activeTab==2 -> Gruntz   m_activeTab==3 -> Resource
@@ -28,23 +31,12 @@
 
 #include <Mfc.h>
 
-#include <Gruntz/SbRect.h>         // the by-value geometry rect the Configure virtuals take
+#include <Gruntz/SbRect.h>         // the by-value geometry rect the setup virtuals take
 #include <Gruntz/SpriteRefTable.h> // g_gameReg->m_spriteFactory->GetSel (GRUNTOVEN palette)
-// The retail out-of-line base-ctor call raises the /GX frame; with the esi-relative cache
-// stores below giving retail's register pressure, this now lands this->esi/Order-A.
-#define CSBCONFIGITEM_OUTOFLINE_CTOR
-#include <Gruntz/StatusBarMgrBuilders.h> // CSbConfigItem builder-facet + SBI leaves + CStatusBarMgr
+#include <Gruntz/StatusBarMgrBuilders.h> // canonical CStatusBarMgr + the canonical SBI leaves
 
 // The cmd-grid probed by the warlord-head builders is a CTriggerMgr; ByteTableHas @0x79b30.
-// TU-local decl, cast at each call.
 #include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (ByteTableHas)
-
-// ---------------------------------------------------------------------------
-// The builder-facet base CSbConfigItem, its concrete SBI leaves (CSBI_Image /
-// CSBI_ImageSet / CSBI_WellGoo), the icon/factory helpers (CSbItemHelp / CSbFactory
-// / CSbIconSet) and the CStatusBarMgr class moved to
-// <Gruntz/StatusBarMgrBuilders.h>.
-// ---------------------------------------------------------------------------
 
 // The game registry: factory at +0x68/+0x74, a per-player icon table at +0x158
 // (stride for the per-player block: 71*8; per-icon stride inside it: 0x238).
@@ -95,10 +87,20 @@ extern "C" i32 g_curPlayer; // DAT_00644c54
 // All are matcher.md regalloc/scheduling walls; logic + offsets + call shape are exact.
 RVA(0x00102250, 0x1dcd)
 i32 CStatusBarMgr::LoadTabSprites() {
-    i32 code = m_c; // the Configure `code` arg (saved to [esp+0x10] in retail)
-    i32 bx = m_10;     // base x
-    i32 by = m_rect14.m_0;     // base y
-    CSbConfigItem* it;
+    CSbiConfigHost* code = m_c; // the setup arg2 config host (spilled to [esp+0x10] in retail)
+    i32 bx = m_10;              // base x
+    i32 by = m_rect14.m_0;      // base y
+    // The item locals are typed by what each leaf actually IS. `it` covers every widget
+    // that has the slot-11 setup (CSBI_ImageSet / WellGoo / WarlordHead all derive from
+    // CSBI_Image); the four below do not fit that base and used to be reached by casting
+    // through the fabricated CSbConfigItem: CSBI_GruntMachine and CSBI_StatzTabGruntBar
+    // derive straight from CStatusBarItem (no slot 11 at all), and the ani/arrow pair need
+    // slots 13/14 that CSBI_Image does not have.
+    CSBI_Image* it;
+    CSBI_ImageSetAni* ani;
+    CSBI_StatzTabArrow* arrow;
+    CSBI_GruntMachine* mach;
+    CSBI_StatzTabGruntBar* bar;
     SbRect r;
     i32 i;
 
@@ -113,7 +115,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xaf;
             r.right = bx + 0x70;
             r.bottom = by + 0xbe;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x25c,
@@ -144,7 +146,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     r.top = y - 0x32;
                     r.right = bx + 0x39;
                     r.bottom = y;
-                    if (!it->Configure(
+                    if (!it->SetupImage(
                             this,
                             code,
                             0x64 + i,
@@ -168,8 +170,8 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     if (sel == 0) {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
                     }
-                    ((CSBI_ImageSet*)it)->m_34->SetAllTypes(10);
-                    ((CSBI_ImageSet*)it)->m_34->SetAllFormats(sel);
+                    ((CImageSet*)((CSBI_ImageSet*)it)->m_34)->SetAllTypes(10);
+                    ((CImageSet*)((CSBI_ImageSet*)it)->m_34)->SetAllFormats(sel);
                     aptr++;
                     bptr += 6;
                     y += 0x36;
@@ -180,7 +182,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xc8;
             r.right = bx + 0x97;
             r.bottom = by + 0x1cd;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x69,
@@ -202,7 +204,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xc4;
             r.right = bx + 0x3d;
             r.bottom = by + 0xcd;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x6b,
@@ -223,7 +225,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x1cf;
             r.right = bx + 0x87;
             r.bottom = by + 0x1d8;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x6c,
@@ -244,7 +246,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xf8;
             r.right = bx + 0xef;
             r.bottom = by + 0x1b3;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x6a,
@@ -269,7 +271,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xaf;
             r.right = bx + 0x70;
             r.bottom = by + 0xbe;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x25c,
@@ -290,7 +292,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x135;
             r.right = bx + 0x9f;
             r.bottom = by + 0x1be;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0xc8,
@@ -312,7 +314,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xfb;
             r.right = bx + 0x9f;
             r.bottom = by + 0x134;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0xc9,
@@ -334,7 +336,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xd3;
             r.right = bx + 0x67;
             r.bottom = by + 0xf3;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0xca,
@@ -358,7 +360,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x11c;
             r.right = bx + 0x3c;
             r.bottom = by + 0x130;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0xcb,
@@ -380,7 +382,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x11c;
             r.right = bx + 0x63;
             r.bottom = by + 0x130;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0xcc,
@@ -402,7 +404,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x11c;
             r.right = bx + 0x8b;
             r.bottom = by + 0x130;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0xcd,
@@ -426,7 +428,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = m_itemRectT + by;
             r.right = m_itemRectR + bx;
             r.bottom = m_itemRectB + by;
-            if (!it->Configure(this, code, 0xdf, 3, r, "GAME_INGAMEICONZ_GREYCHIPZ", m_extraNotifyArg0, 0)) {
+            if (!it->SetupImage(this, code, 0xdf, 3, r, "GAME_INGAMEICONZ_GREYCHIPZ", m_extraNotifyArg0, 0)) {
                 if (it) {
                     delete it;
                 }
@@ -452,7 +454,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     r.top = y - 0x17;
                     r.right = bx + 0x34;
                     r.bottom = y;
-                    if (!it->Configure(
+                    if (!it->SetupImage(
                             this,
                             code,
                             c - 4,
@@ -474,7 +476,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     r.top = y - 0x17;
                     r.right = bx + 0x5c;
                     r.bottom = y;
-                    if (!it->Configure(
+                    if (!it->SetupImage(
                             this,
                             code,
                             c,
@@ -496,7 +498,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     r.top = y - 0x17;
                     r.right = bx + 0x84;
                     r.bottom = y;
-                    if (!it->Configure(
+                    if (!it->SetupImage(
                             this,
                             code,
                             c + 4,
@@ -522,12 +524,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
             // MACHINE: a CSBI_GruntMachine built through BuildResourceTabStatusBar
             // (its retail ctor inlines the base -> manual vptr stamp), cross-configured
             // from the two idx sources m_hudRectA_y/m_hudRectB_y.
-            it = (CSbConfigItem*)new CSBI_GruntMachine;
+            mach = new CSBI_GruntMachine;
             r.left = bx;
             r.top = by + 0xc8;
             r.right = bx + 0x9f;
             r.bottom = by + 0xfa;
-            if (!it->BuildResourceTabStatusBar(
+            if (!mach->BuildResourceTabStatusBar(
                     this,
                     code,
                     0xd1,
@@ -537,20 +539,20 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     m_hudRectA_y,
                     m_hudRectB_y
                 )) {
-                if (it) {
-                    delete it;
+                if (mach) {
+                    delete mach;
                 }
                 return 0;
             }
-            m_348 = (CSbiMachineDisplay*)it;
-            m_tabLists[3].AddTail(it);
+            m_348 = (CSbiMachineDisplay*)mach;
+            m_tabLists[3].AddTail(mach);
             // Machine foreground: a CSBI_Image whose retail ctor is inlined at the site.
-            it = (CSbConfigItem*)new CSBI_ImageInline;
+            it = new CSBI_Image;
             r.left = bx;
             r.top = by + 0x1a6; // @refine: retail reads a precomputed slot here
             r.right = bx + 0x9f;
             r.bottom = by + 0x1df;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0xd2,
@@ -567,13 +569,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
             }
             m_tabLists[3].AddTail(it);
             m_notify1 = (CSbiSlotPtr*)it;
-            // Conveyor top (CSBI_ImageSetAni via ConfigureEx).
-            it = new CSBI_ImageSetAni;
+            // Conveyor top (CSBI_ImageSetAni via its slot-13 Init).
+            ani = new CSBI_ImageSetAni;
             r.left = bx;
             r.top = by + 0x1bf;
             r.right = bx + 0x9f;
             r.bottom = by + 0x1cc;
-            if (!it->ConfigureEx(
+            if (!ani->Init(
                     this,
                     code,
                     0xce,
@@ -586,19 +588,19 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     1,
                     1
                 )) {
-                if (it) {
-                    delete it;
+                if (ani) {
+                    delete ani;
                 }
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            m_tabLists[3].AddTail(ani);
             // Machine chip well (CSBI_ImageSet, rect from cached m_fallRectL..m_510, cache m_500).
             it = new CSBI_ImageSet;
             r.left = m_fallRectL + bx;
             r.top = m_fallRectT + by;
             r.right = m_fallRectR + bx;
             r.bottom = m_fallRectB + by;
-            if (!it->Configure(this, code, 0xe0, 3, r, "GAME_INGAMEICONZ_NORMCHIPZ", m_extraNotifyArg1, 0)) {
+            if (!it->SetupImage(this, code, 0xe0, 3, r, "GAME_INGAMEICONZ_NORMCHIPZ", m_extraNotifyArg1, 0)) {
                 if (it) {
                     delete it;
                 }
@@ -607,13 +609,13 @@ i32 CStatusBarMgr::LoadTabSprites() {
             m_tabLists[3].AddTail(it);
             m_extraNotify1 = (CSbiSlotPtr*)it;
             it->m_4 = 0;
-            // Conveyor bottom (CSBI_ImageSetAni via ConfigureEx).
-            it = new CSBI_ImageSetAni;
+            // Conveyor bottom (CSBI_ImageSetAni via its slot-13 Init).
+            ani = new CSBI_ImageSetAni;
             r.left = bx;
             r.top = by + 0x1c7;
             r.right = bx + 0x9f;
             r.bottom = by + 0x1df;
-            if (!it->ConfigureEx(
+            if (!ani->Init(
                     this,
                     code,
                     0xd0,
@@ -626,12 +628,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     1,
                     1
                 )) {
-                if (it) {
-                    delete it;
+                if (ani) {
+                    delete ani;
                 }
                 return 0;
             }
-            m_tabLists[3].AddTail(it);
+            m_tabLists[3].AddTail(ani);
             return 1;
 
         case 4: // ---- Multiplayer tab ----
@@ -640,7 +642,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xaf;
             r.right = bx + 0x70;
             r.bottom = by + 0xbe;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x25c,
@@ -662,7 +664,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xcf;
             r.right = bx + 0x8e;
             r.bottom = by + 0x10a;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x190,
@@ -684,7 +686,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x112;
             r.right = bx + 0x8e;
             r.bottom = by + 0x14d;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x191,
@@ -706,7 +708,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x155;
             r.right = bx + 0x8e;
             r.bottom = by + 0x190;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x192,
@@ -728,7 +730,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0x197;
             r.right = bx + 0x8e;
             r.bottom = by + 0x1d2;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x193,
@@ -760,13 +762,16 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             0
                         );
                         if (pi == m_tabCycle) {
-                            ((CSbConfigItem*)*slot)->SetState(1);
+                            ((CSBI_WarlordHead*)*slot)->SetState(1);
                         }
                     } else {
                         sel = g_gameReg->m_spriteFactory->GetSel(1, 0);
-                        ((CSbConfigItem*)*slot)->SetState(2);
+                        ((CSBI_WarlordHead*)*slot)->SetState(2);
                     }
-                    ((CSbConfigItem*)*slot)->ShowFrames(0xa, sel);
+                    // The cached m_61c slots ARE the four CSBI_WarlordHead items created
+                    // just above; SetState/ShowFrames are that class's own helpers
+                    // (0xeb830 / 0xeb740), not the fabricated base's.
+                    ((CSBI_WarlordHead*)*slot)->ShowFrames(0xa, (ShadeDescr*)sel);
                     slot++;
                     pi++;
                     off += 0x238;
@@ -781,12 +786,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32 by52 = bx + 0x52;
                 i32 y = by + 0xd9;
                 for (i = 0; i < 15; i++) {
-                    it = (CSbConfigItem*)new CSBI_StatzTabGruntBar;
+                    bar = new CSBI_StatzTabGruntBar;
                     r.left = by17;
                     r.top = y - 0x11;
                     r.right = by52;
                     r.bottom = y;
-                    if (!it->BuildMultiplayerTabStatusBar(
+                    if (!bar->BuildMultiplayerTabStatusBar(
                             this,
                             code,
                             0x13b + i,
@@ -797,12 +802,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             i,
                             0
                         )) {
-                        if (it) {
-                            delete it;
+                        if (bar) {
+                            delete bar;
                         }
                         return 0;
                     }
-                    m_tabLists[4].AddTail(it);
+                    m_tabLists[4].AddTail(bar);
                     y += 0x12;
                 }
             }
@@ -814,7 +819,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xaf;
             r.right = bx + 0x70;
             r.bottom = by + 0xbe;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x25c,
@@ -849,12 +854,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 i32* p = m_statFlags;                // +0x114 (p[0x1e] reaches m_statObj)
                 for (i = 0; i < 15; i++) {
                     i32 id = 0x13b + i;
-                    it = new CSBI_StatzTabArrow;
+                    arrow = new CSBI_StatzTabArrow;
                     r.left = arrowL;
                     r.top = y - 0x11;
                     r.right = arrowR;
                     r.bottom = y;
-                    if (!it->ConfigureEx(
+                    if (!arrow->Init(
                             this,
                             code,
                             id - 0xf,
@@ -867,24 +872,24 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             0,
                             0
                         )) {
-                        if (it) {
-                            delete it;
+                        if (arrow) {
+                            delete arrow;
                         }
                         return 0;
                     }
-                    m_tabLists[1].AddTail(it);
-                    p[0x1e] = (i32)it;
+                    m_tabLists[1].AddTail(arrow);
+                    p[0x1e] = (i32)arrow;
                     if (p[0] != 0) {
-                        it->SetArrowMode(m_position, 0);
+                        arrow->SetArrowMode(m_position, 0);
                     } else {
-                        it->SetDirection(m_position, 0);
+                        arrow->SetDirection(m_position, 0);
                     }
-                    it = (CSbConfigItem*)new CSBI_StatzTabGruntBar;
+                    bar = new CSBI_StatzTabGruntBar;
                     r.left = bx + 0x28;
                     r.top = y - 0x11;
                     r.right = bx + 0x77;
                     r.bottom = y;
-                    if (!it->BuildMultiplayerTabStatusBar(
+                    if (!bar->BuildMultiplayerTabStatusBar(
                             this,
                             code,
                             id,
@@ -895,12 +900,12 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             i,
                             1
                         )) {
-                        if (it) {
-                            delete it;
+                        if (bar) {
+                            delete bar;
                         }
                         return 0;
                     }
-                    m_tabLists[1].AddTail(it);
+                    m_tabLists[1].AddTail(bar);
                     p++;
                     y += 0x12;
                 }
@@ -913,7 +918,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by + 0xaf;
             r.right = bx + 0x70;
             r.bottom = by + 0xbe;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x25c,
@@ -935,7 +940,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
             r.top = by;
             r.right = bx + 0x9f;
             r.bottom = by + 0x7f;
-            if (!it->Configure(
+            if (!it->SetupImage(
                     this,
                     code,
                     0x2bc,
@@ -957,7 +962,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                 r.top = by + 0xe;
                 r.right = bx + 0x52;
                 r.bottom = by + 0x44;
-                if (!it->Configure(
+                if (!it->SetupImage(
                         this,
                         code,
                         0x2bd,
@@ -979,7 +984,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                     r.top = by + 0xf;
                     r.right = bx + 0x87;
                     r.bottom = by + 0x3e;
-                    if (!it->Configure(
+                    if (!it->SetupImage(
                             this,
                             code,
                             0x2be,
@@ -1001,7 +1006,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                         r.top = by + 0x3b;
                         r.right = bx + 0x52;
                         r.bottom = by + 0x71;
-                        if (!it->Configure(
+                        if (!it->SetupImage(
                                 this,
                                 code,
                                 0x2bf,
@@ -1023,7 +1028,7 @@ i32 CStatusBarMgr::LoadTabSprites() {
                             r.top = by + 0x35;
                             r.right = bx + 0x89;
                             r.bottom = by + 0x74;
-                            if (!it->Configure(
+                            if (!it->SetupImage(
                                     this,
                                     code,
                                     0x2c0,
