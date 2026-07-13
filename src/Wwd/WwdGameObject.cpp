@@ -1,4 +1,5 @@
 #include <Mfc.h> // real MFC CString/CObArray/CMapStringToOb (NAFXCW, reloc-masked)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/BoundaryUpperViews.h>
 #include <DDrawMgr/DDSurface.h>
 #include <DDrawMgr/DDrawSurfacePair.h> // Slot30/34/38 render targets (held surface @+0x2c)

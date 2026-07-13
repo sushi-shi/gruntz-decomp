@@ -4,6 +4,7 @@
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/SerialObjRef.h>    // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/LogicTypeTableInline.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // CGuardPoint::GetTypeTag (0x00010350) is now an inline member in the class header.
 

@@ -10,6 +10,7 @@
 //
 // original TU: filename unknown (@identity-TODO - no __FILE__ anchor).
 #include <Mfc.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <rva.h>
 #include <Ints.h>
 #include <string.h>                  // strcpy/strlen (blit-param label buffer)

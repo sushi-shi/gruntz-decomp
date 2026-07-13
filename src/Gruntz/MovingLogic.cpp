@@ -22,6 +22,7 @@
 // engine emits both an inlined copy (folded into leaves) and this standalone.
 #define CMOVINGLOGIC_STANDALONE_CTOR
 #include <Gruntz/MovingLogic.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicSerial.h> // CButeText/CMovingLogicBase + the serialize helpers
 #include <Gruntz/GameLevel.h>         // CGameLevel::MoveToward (the level hop in Update)
 #include <Globals.h>                  // Update: g_5f04f0 / g_motionNegHalf / g_645588

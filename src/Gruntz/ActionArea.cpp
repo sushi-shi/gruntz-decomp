@@ -6,6 +6,7 @@
 // 0x8600; the interval's flags row is uniformly /GX). Field names are placeholders;
 // only OFFSETS + code bytes are load-bearing.
 #include <Mfc.h>                    // real MFC CString (the type-name record's +0x00 member)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/ActionArea.h>
 #include <Image/ImageSet.h> // CImageSet::SetAllTypes (0x152480) / SetAllField18 (0x1524d0)

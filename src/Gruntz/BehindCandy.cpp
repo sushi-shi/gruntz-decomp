@@ -60,3 +60,4 @@ CBehindCandy::CBehindCandy(CGameObject* obj) : CUserLogic(obj) {
 }
 
 #include <rva.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

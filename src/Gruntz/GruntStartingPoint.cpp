@@ -101,6 +101,7 @@ DATA(0x002bf650)
 // CTypeColl was a fake view of the REAL CTypeKeyColl at 0x6bf650 - and it mangled to a
 // DIFFERENT symbol, so these three TUs were emitting a divergent name for the same object.
 #include <Gruntz/TypeKeyColl.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 DATA(0x0021aea8)
 extern i32 g_typeCounter;

@@ -9,6 +9,7 @@
 // 0x5e70b4 vptr and tears down the +0x18 link via ~EngStr @0x16d2a0), NOT a
 // ctor - identical in shape to ~CTimeBomb @0x012a70 / ~CInGameIcon @0x011d00.
 #include <Gruntz/GruntSelectedSprite.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)

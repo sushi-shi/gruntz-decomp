@@ -27,6 +27,7 @@
 //
 // Only offsets / code bytes are load-bearing; names are placeholders.
 #include <Gruntz/ActNameRegistry.h> // g_buteTree / s_codeA / g_typeCounter / g_typeColl* / ActNameLookup
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>

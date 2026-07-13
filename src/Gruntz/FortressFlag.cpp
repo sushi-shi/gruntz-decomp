@@ -641,6 +641,7 @@ void RegisterXLogic_6447f8() {
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 SIZE_UNKNOWN(CFortressFlagActEntry);
 SIZE_UNKNOWN(CFortressFlagActReg);
 SIZE_UNKNOWN(WwdRefSlot);

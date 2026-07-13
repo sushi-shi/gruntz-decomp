@@ -1,4 +1,5 @@
 #include <Gruntz/ActionOptionsMenuBar.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/Grunt.h>
 #include <Wwd/WwdFile.h>

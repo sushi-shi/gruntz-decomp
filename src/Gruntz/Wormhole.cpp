@@ -33,6 +33,7 @@
 // 0x7d810 interval next to the gruntselectedsprite frag run; it stays in
 // GruntPuddle.cpp with an @identity-TODO note.)
 #include <Gruntz/Wormhole.h>        // the shared CWormhole class (object logic + acts)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/GruntPuddle.h>     // CGruntPuddle (+ InGameIcon.h: CGameRegistry/g_gameReg)
 #include <Gruntz/Teleporter.h>      // CTeleporter (+ g_6bf3bc/g_645588/g_iconBute/geo keys)

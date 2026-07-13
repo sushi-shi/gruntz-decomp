@@ -5,6 +5,7 @@
 // flags="base" while SBI_RectOnly.cpp is flags="eh" (/GX). A TU is compiled with ONE
 // flag set, so a "base" obj cannot live inside an "eh" TU without changing its codegen.
 #include <Mfc.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Ints.h>
 #include <rva.h>
 #include <Gruntz/MgrSettings.h>

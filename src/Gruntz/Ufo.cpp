@@ -8,6 +8,7 @@
 // The base folds the whole CUserLogic init + constructs the throwing CUserBaseLink,
 // so the leaf emits the /GX EH frame. Functions in ascending retail-RVA order.
 #include <Gruntz/Ufo.h> // CUFO : CPathHazard (canonical; pulls PathHazard.h -> GameRegistry.h)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/SpriteFactory.h>   // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/SpotLight.h>       // CSpotLight - the spawned spotlight's bound logic leaf

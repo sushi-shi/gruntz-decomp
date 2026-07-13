@@ -21,6 +21,13 @@
 #include <rva.h>
 #include <Gruntz/SBI_Image.h> // CSBI_Image base
 
+// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
+// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
+// silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
+
 // ---------------------------------------------------------------------------
 // The per-frame draw handles (m_40/m_3c) ARE the RTTI CImage (CImage::RenderFrame
 // @0x153790); the owned blitter m_38 IS the CDDrawShadeBlit (CDDrawShadeBlit::Blit
@@ -125,7 +132,7 @@ public:
     // (0xe6e40, the CSBI_Image leg the delinker labels CSBI_MenuItem::SerializeChain),
     // round-trips the fill/rect fields + two frame handles by name+index, and (mode 8)
     // re-resolves the goo surface + rebinds the frames' shade nodes.
-    i32 Serialize(struct CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x0e64c0
+    i32 Serialize(CSerialArchive* arc, i32 mode, i32 a3, i32 a4); // 0x0e64c0
     i32 SerializeChain(void* arc, i32 mode, i32 a3, i32 a4);             // 0x0e6e40 (base leg)
 
     // vtable slot 3 (0x104c80): release the owned goo source surface through the

@@ -23,7 +23,11 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>   // CUserLogic base (CTeleporter : CUserLogic)
 
-struct CSerialArchive; // <Gruntz/SerialArchive.h> (Serialize's archive param)
+// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
+// re-declare a distinct class and silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
 
 // The +0x1a0 animation sub-mgr the bring-up advances once each frame (Advance
 // 0x15c360, __thiscall ret 4, takes the g_6bf3bc draw-delta). Its +0x20/+0x28

@@ -17,6 +17,7 @@
 // call CBrickz::Insert/Find/Unlink/CellPop) - see Brickz.cpp. (0x9356c is a thin
 // Serialize wrapper over MapSerializeCurve + the +0x7c sub-object serializer.)
 #include <Mfc.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/MapLogic.h>
 

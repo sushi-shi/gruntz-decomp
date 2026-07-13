@@ -40,7 +40,11 @@ struct BrickzNode;
 struct CSpriteFactoryHolder; // the +0x78 world/asset holder (ex the BrickzAttrMgr view)
 struct tagRECT;
 
-struct CSerialArchive; // Save/Load stream through it (Read @+0x2c / Write @+0x30)
+// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
+// re-declare a distinct class and silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
 
 // The arrays link their blocks in with the global ::operator new (??2@YAPAXI@Z
 // @0x1b9b46) / ::operator delete (??3@YAXPAX@Z @0x1b9b82) - the real NAFXCW CRT

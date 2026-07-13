@@ -1,4 +1,5 @@
 #include <Gruntz/ActNameRegistry.h> // the shared activation-name registry archetype
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <DDrawMgr/DDrawBlitParam.h>
 #include <Gruntz/ActReg.h> // the shared CActReg coordinate-registry archetype

@@ -124,5 +124,6 @@ void CSingleFrameMessage::RegisterActs() {
 #include <rva.h>
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 SIZE_UNKNOWN(CSingleFrameActEntry);
 SIZE_UNKNOWN(CSingleFrameActReg);

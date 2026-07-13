@@ -25,6 +25,7 @@
 // (its RVA is inside the 0x110430 interval). Definitions in strict ascending
 // retail-RVA order (the ~dtor 0xc8640 is the lone COMDAT-at-usage outlier).
 #include <Mfc.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <rva.h>
 #include <new> // Rez heap throwing operator new / nothrow delete (0x1b9b46 / 0x1b9b82)
 

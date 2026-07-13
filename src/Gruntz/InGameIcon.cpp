@@ -10,6 +10,7 @@
 // the game-manager singleton (g_gameReg) + the icon factory/records from the
 // class header. Engine callees are reloc-masked (no body).
 #include <Mfc.h> // real MFC CMapStringToOb (the icon registry map's Lookup @0x1b8438)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/InGameIcon.h>
 #include <Gruntz/InGameText.h>     // CInGameText + g_textDispatch (its TU folds in below, wave3-J)

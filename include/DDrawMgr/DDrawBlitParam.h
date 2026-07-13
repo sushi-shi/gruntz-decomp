@@ -6,7 +6,11 @@
 #include <Ints.h>
 
 class CDDrawBlitParamSrc;
-struct CSerialArchive; // the shared serialize stream (Read @+0x2c / Write @+0x30)
+// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
+// re-declare a distinct class and silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
 class CDDrawBlitWorker;
 
 class CDDrawBlitParam {

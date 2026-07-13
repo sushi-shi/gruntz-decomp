@@ -5,6 +5,7 @@
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/SerialObjRef.h>    // the shared serialized-object-reference (Chain @0x8c00)
 #include <Gruntz/LogicTypeTableInline.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // The global bute store (g_buteTree @0x6bf620; Find 0x16d190 __thiscall ret 4);
 // pinned in src/Gruntz/UserLogic.cpp, re-declared so the "A" node lookup masks.

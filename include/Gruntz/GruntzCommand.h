@@ -45,7 +45,11 @@ struct CGruntzCmdTarget {
 
 // The network (de)serialization stream the base command Save/Load drive: the shared
 // WAP32 archive interface (Read @+0x2c / Write @+0x30), forward-declared here.
-struct CSerialArchive;
+// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
+// re-declare a distinct class and silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
 
 // ---------------------------------------------------------------------------
 // CGruntzCommand - the abstract base command.

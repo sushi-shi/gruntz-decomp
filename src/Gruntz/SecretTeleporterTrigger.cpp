@@ -31,6 +31,7 @@
 #include <Gruntz/SerialObjRef.h>            // CSerialObjRef::Chain (0x8c00) - the +0x34 round-trip
 #include <Globals.h>                        // g_actLo/Hi/Base/Stride/Scratch/Cur/Coll2 (fast range)
 #include <rva.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // The global game registry both trigger families poll (the canonical
 // CGameRegistry view of *0x64556c; the ex-teleporter-side WwdGameReg extern is

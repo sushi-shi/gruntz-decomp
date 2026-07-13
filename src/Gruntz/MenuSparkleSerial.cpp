@@ -5,6 +5,7 @@
 // vtbl[0x2c]). Plain /O2 leaf (no /GX). The base/sub serialize + the archive
 // Read/Write are reloc-masked.
 #include <Gruntz/MenuSparkleSerial.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - the real slot-1 base serialize
 #include <Globals.h>
 

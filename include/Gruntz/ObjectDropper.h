@@ -10,6 +10,13 @@
 #include <Gruntz/LogicTypeId.h> // LogicTypeId (GetTypeTag return type)
 #include <Gruntz/UserLogic.h>
 
+// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
+// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
+// silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
+
 class CObjectDropper : public CUserLogic {
 public:
     TILE_LOGIC_TAIL
@@ -37,7 +44,7 @@ public:
     static void RegisterActs(); // 0xc60e0
     // The slot-1 serialize impl (modeled as a plain method so its ?Serialize name + RVA
     // pin; the vtable slot is reloc-masked, like CRollingBall::Serialize).
-    i32 Serialize(struct CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc6680
+    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc6680
 
     i32 m_geomId; // +0x40  geometry id (m_38->m_1b4 snapshot)
     char m_pad44[0x58 - 0x44];

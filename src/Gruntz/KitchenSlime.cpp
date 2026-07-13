@@ -1,4 +1,5 @@
 #include <Mfc.h>                    // real MFC CString (direction-name match temp; reloc-masked)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/TypeKeyColl.h>
 #include <Wap32/ZVec.h>

@@ -22,6 +22,7 @@
 
 // CStatusBarSprite comes from <Gruntz/StatusBarSprite.h> (folded; ctor 0x10c230 below).
 #include <Gruntz/StatusBarSprite.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // The handler entry the per-class registry yields: its first dword receives the
 // per-frame handler PMF (AdvanceAnim, a 4-byte code ptr on this single-inheritance

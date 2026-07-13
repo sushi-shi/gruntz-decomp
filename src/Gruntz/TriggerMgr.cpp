@@ -22,6 +22,7 @@
 // donor view - the canonical-CGameRegistry fold that unifies them is deferred
 // cleanup work.
 #include <Gruntz/TriggerMgr.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/RockBreakMgr.h> // canonical CRockBreakMgr (body below)
 
 #include <Gruntz/ActionOptionsMenuBar.h>

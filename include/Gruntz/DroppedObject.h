@@ -21,6 +21,13 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h> // CUserLogic base (CDroppedObject : CUserLogic)
 
+// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
+// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
+// silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
+
 class CDroppedObject : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -40,7 +47,7 @@ public:
     virtual ~CDroppedObject() OVERRIDE; // 0x0125b0 (folds the CUserLogic teardown)
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
     // slot reloc-masked, like CRollingBall::Serialize).
-    i32 Serialize(struct CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc73a0
+    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc73a0
 
     i32 m_savedGeoId; // +0x40  m_38->m_geoId snapshot
     char m_pad44[0x58 - 0x44];

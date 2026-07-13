@@ -18,6 +18,7 @@
 // no destructible locals (the CString targets are members, the text buffer is a
 // trivial char[]).
 #include <Gruntz/GruntDataRecord.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/SpriteRefTable.h>
 #include <Bute/ButeMgr.h>         // CButeMgr (GetIntDef) + CString
 #include <Gruntz/GruntzMgr.h>     // CGruntzMgr (the game-manager singleton; one true shape)

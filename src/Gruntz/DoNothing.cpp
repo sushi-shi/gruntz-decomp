@@ -22,6 +22,7 @@
 
 #include <Ints.h>
 #include <rva.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // CDoNothing::GetTypeTag (0x0000f6b0) is now an inline member in the class header.
 

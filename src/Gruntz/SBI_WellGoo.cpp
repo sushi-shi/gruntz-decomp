@@ -1,5 +1,6 @@
 #define SBI_DTOR_CHAIN // enable the inline base-dtor bodies (see StatusBarItem.h)
 #include <rva.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Mfc.h>
 #include <Ints.h>
 #include <Gruntz/SBI_WellGoo.h>

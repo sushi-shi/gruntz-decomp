@@ -1,43 +1,34 @@
-// SerialArchive.h - the shared WAP32 serialization/archive stream interface driven
-// by every CUserLogic-derived Serialize override (CMenuSparkle, CMovingLogic,
-// CMgrSettings, CSerialObjRef, ...). A polymorphic CArchive-like stream whose vtable
-// holds the general read slot @ +0x2c (mode 7) and write slot @ +0x30 (mode 4).
+// SerialArchive.h - the shared WAP32 serialization stream every CUserLogic-derived
+// Serialize override is handed (CMenuSparkle, CMovingLogic, CMgrSettings,
+// CSerialObjRef, ...).
 //
-// Modeled declared-only real-virtual (11 padder slots then Read/Write, never defined
-// here -> no ??_7 emitted) so `arc->Read(buf,n)` lowers to the exact
-// `mov eax,[arc]; push n; push buf; mov ecx,arc; call [eax+0x2c]` __thiscall
-// dispatch. This is the single shared model that replaces every former per-TU typed-PMF
-// / placeholder archive view (CMsSerialArchiveVtbl / CMgrArchiveVtbl / CMlSerialArchiveVtbl
-// / CSerialArchiveVtbl, and the folded-in Serializer / CSerializerZ / SyncStream /
-// CWwdArchive / CRecReader / CHazardStream / WwdReader / Archive / CRbArchive / DataWriter
-// / CTimerArchive / CStreamReader / CTileActionArchive / BattlezStream / CTextArchive /
-// CMiArchive / CMapArchive / GzStream / TgcStream / CSbiStream views). The archive object is
-// created elsewhere (passed in as a param), so this is a dispatch interface, not an
-// own-class vtable stamp. Field/method names are placeholders; only offsets + emitted
-// bytes are load-bearing (campaign doctrine).
+// IT IS THE REAL CFileMemBase (<Io/FileMem.h>, VTBL 0x1efe68) - the abstract
+// memory/file stream base whose slot 11 (+0x2c) Read and slot 12 (+0x30) Write are
+// exactly the two slots every Serialize body dispatches (both __purecall in the base:
+// an interface, which is why the archive is only ever passed in, never constructed).
+//
+// PROOF (the TU disproved its own view): CDDrawSurfaceMgr::SnapshotChildren
+// (0x156020) builds ONE stack-local stream and, in the SAME function, drives it as a
+// CFileMem - Reset (0x157a50), SetName (0x165e30), Open (0x165e60), Write (0x165f50),
+// Read (0x165f00), Ready (0x165ef0), every one of them CFileMem/CFileMemBase's own
+// slot RVA - and then passes `(CSerialArchive*)&S` straight into
+// ForEachSerialize_15b020. One object, two names.
+//
+// So the 13-slot `CSerialArchive` placeholder (11 filler slots + Read/Write) is
+// dissolved onto the canonical class; the ~20 per-TU archive views it had already
+// absorbed (CMsSerialArchiveVtbl / CMgrArchiveVtbl / Serializer / SyncStream /
+// CWwdArchive / CRecReader / ...) land on the real stream with it.
 #ifndef GRUNTZ_SERIALARCHIVE_H
 #define GRUNTZ_SERIALARCHIVE_H
 
-#include <Ints.h>
-#include <rva.h>
-
-SIZE_UNKNOWN(CSerialArchive);
-struct CSerialArchive {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual void Slot28();
-    virtual void Read(void* buf, i32 n);  // +0x2c  (mode 7)
-    virtual void Write(void* buf, i32 n); // +0x30  (mode 4)
-};
-
-// --- vtable catalog ---
+// Pointer-only for most includers, so this stays a fwd decl + typedef: pulling the
+// real <Io/FileMem.h> (-> Mfc.h + FileStream.h) into all ~119 archive TUs is a large
+// decl-count ripple for nothing. The ~40 TUs that DISPATCH on the stream
+// (`ar->Read/Write`) include <Io/FileMem.h> themselves.
+// NB: never fwd-declare this under the OLD placeholder name - an elaborated
+// `struct CSerialArchive;` re-declares a DISTINCT class and silently out-ranks the
+// typedef under MSVC5 (no C2371 at the use site; the typedef just loses).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
 
 #endif // GRUNTZ_SERIALARCHIVE_H

@@ -15,6 +15,7 @@
 // The manager destructor (0x085bd0) carries a /GX EH frame (the inline CPtrList
 // teardown is the destructible sub-object); this TU is built flags="eh".
 #include <Mfc.h> // afx-first umbrella (windows.h for the 0x92ab0 DialogProc; BoundaryTailViews needs MFC)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/GruntzCommand.h>
 #include <Gruntz/SerialArchive.h>     // the shared archive stream (Read @+0x2c / Write @+0x30)

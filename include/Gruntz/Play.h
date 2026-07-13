@@ -191,6 +191,13 @@ struct Edge {
 // drives; the 0x8107 timer cheat (HandleCommand) zeroes its accum/expiry/
 // running/current block ("Ah, who needed that stupid timer anyway?").
 #include <Gruntz/Timer.h>
+
+// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
+// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
+// silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
 // NOTE: this header deliberately does NOT declare `g_gameReg`. The *0x24556c
 // singleton is ONE object (the real CGruntzMgr); a header-level decl forces ONE
 // view's type on every includer, which is exactly what kept the CGameRegistry ==
@@ -572,11 +579,11 @@ public:
     // state's 64-bit timer blocks + three child sync sub-objects (guts / frame
     // marker / begin marker); mode 8 (re)inits the ambient-sound cue. mode 4 =
     // write (archive vtbl[0x30]), mode 7 = read (archive vtbl[0x2c]).
-    i32 SyncState(struct CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x0d7520
+    i32 SyncState(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x0d7520
     // SyncState's own reloc-masked CPlay-thiscall leaves (external, no body):
-    i32 HeaderSerialize(struct CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x4016 thunk
-    i32 SyncWrite19fb(struct CSerialArchive* ar); // 0x19fb thunk (mode-4)
-    i32 SyncRead2f7c(struct CSerialArchive* ar);  // 0x2f7c thunk (mode-7)
+    i32 HeaderSerialize(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // 0x4016 thunk
+    i32 SyncWrite19fb(CSerialArchive* ar); // 0x19fb thunk (mode-4)
+    i32 SyncRead2f7c(CSerialArchive* ar);  // 0x2f7c thunk (mode-7)
 
     // ---- CPlay-specific members (offsets pinned by the Render disasm) ----
     i32 m_inputWarmup1; // +0x1a8  StepInputA first-frame one-shot latch

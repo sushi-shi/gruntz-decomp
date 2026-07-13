@@ -16,6 +16,7 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <ddraw.h> // real IDirectDraw2 (FlipToGDISurface @slot 10) - the m_ptrColl device
 // The REAL MFC CDialog (ExitModalUI's argument - proof in <Gruntz/GruntzMgr.h>). afx.h
 // arrives first via <Mfc.h>, so there is no windows.h-first C1189 here. The afxwin*.inl

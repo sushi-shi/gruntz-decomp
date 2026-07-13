@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/Grunt.h>
 #include <Image/CImage.h>
 #include <string.h> // inlined memset / strcpy in CTimer::Serialize (rep stos / rep movs)

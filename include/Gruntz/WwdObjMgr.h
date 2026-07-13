@@ -50,7 +50,11 @@ struct CWwdNode {
     CWwdGameObject* m_obj; // +0x08
 };
 SIZE_UNKNOWN(CWwdNode);
-struct CSerialArchive; // the shared serialize stream (Read @+0x2c / Write @+0x30)
+// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it); an elaborated fwd decl of the OLD placeholder name here
+// would re-declare a DISTINCT class and silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
 
 class CWwdObjMgr {
 public:

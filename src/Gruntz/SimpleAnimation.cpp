@@ -231,3 +231,4 @@ i32 CSimpleAnimation::AdvanceAnim() {
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
 #include <rva.h>
 #include <Wap32/ZDArrayDerived.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)

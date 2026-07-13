@@ -10,6 +10,7 @@
 // (docs/patterns/scope-cstring-temp-to-elide-eh-frame.md). The 0x80-byte key buffer
 // + strlen/strcpy are inline CRT idioms (docs/patterns/inline-mem-ops-rep-movs.md).
 #include <Gruntz/SerialObjRef.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <rva.h>
 

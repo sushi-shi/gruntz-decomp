@@ -55,6 +55,7 @@
 #include <stdlib.h> // abs (/Oi intrinsic: |goal-cur| lowers to cdq/xor/sub, not jns)
 
 #include <Gruntz/Brickz.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // MapSerializeCurve (0x0ec230) - declared 4-arg __cdecl here: the Serialize
 // wrapper forwards all four of its args unchanged (the callee only reads the first

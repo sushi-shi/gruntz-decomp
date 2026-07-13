@@ -24,6 +24,13 @@
 #include <Gruntz/MapMgr.h> // the ONE real CMapMgr base (was duplicated in this header)
 #include <rva.h>
 
+// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
+// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
+// silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
+
 // The engine CMapMgr base (~CMapMgr @0x135c). Out-of-line virtual dtor so cl emits
 // a CALL (reloc-masks against retail's base dtor) rather than inlining it. This is
 // the reduced-vtable model of the CMapMgr in MapMgr.h: here CMapMgr's dtor is the

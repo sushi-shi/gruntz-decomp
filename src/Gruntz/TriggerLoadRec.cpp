@@ -9,6 +9,7 @@
 //
 // Field names are placeholders; only the field offsets + code bytes are load-bearing.
 #include <rva.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>   // CDDrawWorkerRegistry (name map + AnyValueMatches)
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (reader; Read @ +0x2c)

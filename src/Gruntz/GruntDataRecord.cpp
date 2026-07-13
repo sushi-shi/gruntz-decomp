@@ -5,6 +5,7 @@
 // zero-padded fields (memset + strcpy inline to rep stos / repne scas + rep movs
 // at /O2 /Oi); the four trailing fixed blocks are written verbatim.
 #include <Gruntz/GruntDataRecord.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <rva.h>
 #include <string.h> // memset / strcpy (inlined to rep stos / rep movs at /O2 /Oi)
 

@@ -42,6 +42,7 @@
 // numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
 // ---------------------------------------------------------------------------
 #include <Gruntz/TileTriggerLogic.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Grunt.h>

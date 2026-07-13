@@ -1,4 +1,5 @@
 #include <Mfc.h> // afx-first umbrella (wave1-E one-TU merge: CByteArray/CPtrList consumers below)
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/StatusBarMgr.h>        // canonical CStatusBarMgr (the 0x630 host) + referent views
 #include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
 #include <Gruntz/LevelSync.h>           // CLevelSync + its referents (was a TU-local view)

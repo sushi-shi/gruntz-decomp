@@ -56,6 +56,13 @@ class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declare
 // (+0x228) is carried over onto the real class.
 #include <Gruntz/GruntzPlayer.h>
 
+// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
+// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
+// silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
+
 // A typed VIEW of the state-stack array at CGruntzMgr +0xd8. The member itself
 // stays a destructible CByteArray (so the ctor/dtor's EH-state numbering is
 // unchanged); the accessor methods reinterpret &m_stateStack as this CObArray-shaped
@@ -315,8 +322,8 @@ public:
     i32 ExitModalUI(class CDialog* dlg, i32 notify); // @0x0903f0
     i32 FinishLevel(i32 full, i32 stopBank);         // @0x08e980
     i32 FillSaveInfo(SaveInfo* dst, void* snapshot); // @0x0927b0
-    i32 SaveState(struct CSerialArchive* ar);        // @0x093620 (shared CSerialArchive)
-    i32 LoadState(struct CSerialArchive* ar);        // @0x093920 (deserialize counterpart)
+    i32 SaveState(CSerialArchive* ar);               // @0x093620 (shared CSerialArchive)
+    i32 LoadState(CSerialArchive* ar);               // @0x093920 (deserialize counterpart)
     // @0x08e3a0 - the level/viewport text rect (default 640x480, else the active
     // world view's rect at m_world->m_24 + 0x10) written to *out. Was the fake
     // `RectQuery_08e3a0` view in GruntzMgr.cpp AND the phantom CGameRegistry::GetRect:
@@ -418,13 +425,23 @@ public:
                                        //        new's it (0x94) + ParseBuffer's the rez row;
                                        //        LevelRezPath's ResolvePath runs on it)
     Utils::RegistryHelper* m_settings; // +0x38  settings/registry writer (SetValueDword)
-    CObject* m_3c;                     // +0x3c  CObject-derived engine sub-object (identity
-                                       //        unrecovered; torn down via `delete` slot 1)
-    EngObj* m_40;                      // +0x40  engine sub-object (teardown-only)
-    HudGuard44* m_hudGuard;            // +0x44  HUD first-frame seed guard (+0x124)
-    CGruntzSoundZ* m_sound;            // +0x48  sound/bank object (StopBank/StopAll)
-    i32 m_4c;                          // +0x4c
-    EngObj* m_50;                      // +0x50  engine sub-object (teardown-only)
+    // +0x3c  CObject-derived engine sub-object, torn down via `delete` (vtable slot 1).
+    // @identity-TODO - the NEW-SITE DOES NOT EXIST IN THE RECONSTRUCTED CODE. Searched
+    // (2026-07-13): every one of the 131 RVA-bound CGruntzMgr-family functions
+    // (GruntzMgr/GruntzMgr2/GruntzMgrCmd/RezSync) disassembled and scanned for a
+    // `mov [this+0x3c], <reg>` store - the ONLY two writes in the whole family are the
+    // ctor's zero (0x083030) and Close's zero (0x0855e0). RezSync's Init news every
+    // neighbour (m_30/m_34/m_40/m_44/m_48/m_54/m_58/m_5c/m_60/m_68/m_6c/m_70/m_78/m_7c)
+    // and skips this slot. Its producer is therefore an UNRECONSTRUCTED function; the
+    // identity cannot be recovered until that body lands. (The two other +0x3c stores
+    // the sweep found are red herrings: the 0x44-byte CFontConfig sub-object's inline
+    // ctor in RezSync's Init, and TransitionState's zero-init of a NEW state object.)
+    CObject* m_3c;
+    EngObj* m_40;           // +0x40  engine sub-object (teardown-only)
+    HudGuard44* m_hudGuard; // +0x44  HUD first-frame seed guard (+0x124)
+    CGruntzSoundZ* m_sound; // +0x48  sound/bank object (StopBank/StopAll)
+    i32 m_4c;               // +0x4c
+    EngObj* m_50;           // +0x50  engine sub-object (teardown-only)
     // +0x54..+0x78 sub-controllers (real engine sub-object pointers reached through
     // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):
     CWorldSoundSet* m_inputState; // +0x54  active-level sound object (Deactivate/Resume/

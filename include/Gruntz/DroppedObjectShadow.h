@@ -11,6 +11,13 @@
 #include <rva.h>
 #include <Gruntz/UserLogic.h>
 
+// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
+// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
+// silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
+
 class CDroppedObjectShadow : public CUserLogic {
 public:
     virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
@@ -25,7 +32,7 @@ public:
     virtual ~CDroppedObjectShadow() OVERRIDE; // 0x12670 (folds the CUserLogic teardown)
     // The slot-1 serialize impl (plain method: ?Serialize name + RVA pin, vtable
     // slot reloc-masked, like CDroppedObject::Serialize).
-    i32 Serialize(struct CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc7b40
+    i32 Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d); // 0xc7b40
     // The activation-registry facet (ex ActRegSiblings.cpp's "CSiblingActorB" -
     // identity recovered: its registry construct 0xc76d0 sits right after this
     // class's ctor, and its per-frame Advance spawns the "DroppedObject" sprite

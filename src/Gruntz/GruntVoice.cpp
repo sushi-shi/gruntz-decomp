@@ -28,6 +28,7 @@
 #include <Wap32/ZVec.h>
 #include <Wap32/ZDArrayDerived.h>
 #include <Globals.h>
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // The global running game clock (DAT_00645588); the value-load reloc-masks.
 DATA(0x00245588)

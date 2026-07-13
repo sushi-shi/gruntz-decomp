@@ -28,6 +28,7 @@
 // a shared header first (it is that TU's local class); deferred.
 // Field names are placeholders; only OFFSETS + code bytes matter.
 #include <Gruntz/String.h> // MFC CString (the title-roll formats into one); MFC-first
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/GruntzMgr.h>
 #include <Bute/ButeMgr.h> // canonical CButeMgr (one shape)
 #include <Gruntz/Attract.h>

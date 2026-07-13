@@ -130,6 +130,7 @@ CGruntCreationPoint::CGruntCreationPoint(CGameObject* obj) : CUserLogic(obj) {
 extern "C" i32 ChannelSlots_FindFree();
 
 #include <Gruntz/SerialObjRef.h> // the +0x34 sub-object's serialize chain
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // CGruntCreationPoint::Serialize @0x03e7a0 - chain the shared CUserLogic serialize
 // helper, then the +0x34 sub-object's chain; on the post-load tag (tag == 8),

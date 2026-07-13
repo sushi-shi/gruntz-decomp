@@ -6,6 +6,7 @@
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Gruntz/LogicTypeTableInline.h> // unrolled built-in logic-type registration
 #include <Gruntz/SerialObjRef.h>         // CSerialObjRef::Chain (0x8c00) for SerializeMove
+#include <Gruntz/SerialArchive.h> // the serialize stream (== the real CFileMemBase)
 
 // CLevelTime::~CLevelTime @0x00011a50 - folds the bare CUserLogic teardown: store
 // the CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded

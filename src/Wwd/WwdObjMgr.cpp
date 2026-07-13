@@ -13,6 +13,7 @@
 //
 // Field names are placeholders; only OFFSETS + emitted bytes are load-bearing.
 #include <rva.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
 #include <Gruntz/WwdObjMgr.h>     // the shared object-collection manager class
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (level reader, Read @+0x2c)

@@ -24,7 +24,11 @@
 #include <Gruntz/UserLogic.h>  // CUserLogic : CUserBase, EngStr, CGameObject
 #include <Gruntz/InGameIcon.h> // CGameReg / g_gameReg / CIconFactory / CIconTileGrid
 
-struct CSerialArchive; // <Gruntz/SerialObjRef.h> (Serialize's archive param)
+// The serialize stream is the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it); a fwd decl of the OLD placeholder name here would
+// re-declare a distinct class and silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
 
 // The bute store the place/set paths query (mov ecx,&g_buteTree; call Find).
 // Declared extern in <Gruntz/InGameIcon.h>'s sibling; redeclared here so the

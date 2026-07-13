@@ -1,4 +1,5 @@
 #include <rva.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 // DDrawSurfaceMgr.cpp - root object of the tomalla-named DDraw surface/page-manager
 // family. CDDrawSurfaceMgr is the owner stored off CGruntzMgr
 // +0x30; it holds one child manager pointer per slot and a pair of global draw
@@ -301,20 +302,13 @@ i32 CDDrawSurfaceMgr::PlayDefaultSound() {
 // blit-op calls) / m_resolveSubMgr (cast CGameLevel*) / m_callback; the local view + its
 // SnapRunCallback dissolve onto the canonical HP_Callback. Engine callees reloc-masked.
 // ===========================================================================
-class CFileMemBase {
-public:
-    virtual i32 SetName(const char* n, i32 a, i32 b);
-};
-class CFileMem {
-public:
-    virtual void Reset();
-    virtual ~CFileMem();
-    virtual i32 Open();
-    virtual i32 Read(void* b, i32 l);
-    virtual i32 Write(const void* b, i32 l);
-    virtual i32 Ready();
-};
-struct CSerialArchive;
+// (The local CFileMem / CFileMemBase / CSerialArchive views are GONE - they ARE the
+// canonical <Io/FileMem.h> classes, and THIS function is what proves the archive's
+// identity: it drives ONE stack-local stream through CFileMem's own slot RVAs
+// (Reset 0x157a50 / SetName 0x165e30 / Open 0x165e60 / Write 0x165f50 / Read 0x165f00
+// / Ready 0x165ef0) and then hands the SAME object to ForEachSerialize as a
+// `CSerialArchive*`. One object, two names -> CSerialArchive == CFileMemBase.)
+typedef CFileMemBase CSerialArchive;
 
 struct SnapStream {
     void Init(); // 0x1befd7  CFileIO()

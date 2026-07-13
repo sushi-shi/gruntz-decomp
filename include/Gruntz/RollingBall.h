@@ -25,6 +25,13 @@
 
 #include <Gruntz/SerialObjRef.h> // the shared +0x34 serialized-object-reference (Chain @0x8c00)
 
+// The serialize stream: the REAL CFileMemBase (<Gruntz/SerialArchive.h> typedefs
+// CSerialArchive onto it). Pointer-only here, so the fwd decl + typedef suffice;
+// an elaborated `struct CSerialArchive*` would re-declare a DISTINCT class and
+// silently out-rank the typedef (MSVC5).
+class CFileMemBase;
+typedef CFileMemBase CSerialArchive;
+
 // The CArchive-like serializer the record is streamed through (Serialize's arg1) is
 // the shared WAP32 CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), pulled in via
 // <Gruntz/SerialObjRef.h> above - the former local `CRbArchive` view is folded away.

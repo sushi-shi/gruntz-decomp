@@ -13,6 +13,7 @@
 // load-bearing. The shared registry views (CRegSub30 / CRegTypeTable) live in
 // <Gruntz/SerialRecView.h>.
 #include <rva.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/MgrSettings.h>   // CDDrawWorkerRegistry (the name map at g_gameReg->m_world +0x10)
 #include <Gruntz/GameRegistry.h>  // CGameRegistry (g_gameReg->m_world)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (reader; Read @ vtable +0x2c)

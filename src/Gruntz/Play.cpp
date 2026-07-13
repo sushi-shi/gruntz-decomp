@@ -66,6 +66,7 @@
 // ============================================================================
 
 #include <Gruntz/Play.h>
+#include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 #include <Gruntz/AreaMgr.h>              // CAreaMgr (g_61139c; CPlayLevelLoad::LoadByMode, waveP)
 #include <Gruntz/AssetNamespaceLoader.h> // CNamespaceLoader (BuildAssetNamespacePrefixes, waveP)
 // The GRUNTZ_/GAME image worker registry (owner+0x10): 18 vtable slots then the
