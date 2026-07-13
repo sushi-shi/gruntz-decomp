@@ -38,13 +38,13 @@ public:
     // build/unpack halves of the archive (CFile-local file + CDWordArray offset index).
     // The dtor (Close + the member teardown) is DEFINED in the movie TU
     // (src/Io/MoviePlayer.cpp) at 0x0390a0; ~CMoviePlayer (same retail TU) inlines it.
-    ~CFecFile(); // 0x0390a0  { Close(); } + ~CDWordArray(+0x138) + ~CFile(+0x124)
-    i32 Init();                          // 0x17b510  reset + arm (open-gate -> 1)
-    void Close();                        // 0x17b570  teardown (OnFail + reset + gate -> 0)
-    i32 Lookup(u32 idx);                 // 0x17b840  resolve entry idx (1-based) -> m_128
-    i32 CreateArchive(const char* name); // 0x17b8a0
-    i32 ReadArchive(const char* name);   // 0x17b5f0
-    i32 OnFail();                        // 0x17b5a0
+    ~CFecFile();         // 0x0390a0  { Close(); } + ~CDWordArray(+0x138) + ~CFile(+0x124)
+    i32 Init();          // 0x17b510  reset + arm (open-gate -> 1)
+    void Close();        // 0x17b570  teardown (OnFail + reset + gate -> 0)
+    i32 Lookup(u32 idx); // 0x17b840  resolve entry idx (1-based) -> m_128
+    i32 CreateArchive(const char* name);                                // 0x17b8a0
+    i32 ReadArchive(const char* name);                                  // 0x17b5f0
+    i32 OnFail();                                                       // 0x17b5a0
     i32 AddFile(const char* name, i32* pCancel, void* pProgress);       // 0x17b950
     i32 ExtractArchive(const char* dir, i32* pCancel, void* pProgress); // 0x17bcd0
 

@@ -99,7 +99,8 @@ i32 LayerBlitFrame(CResMgr* host, CImage* src, i32 x, i32 y, i32 useFront, i32 m
     // their target surface at +0x2c (SurfaceA's Surface2c* is used as a CDDSurface here).
     CDDrawSurfacePair* node;
     if (useFront) {
-        node = host->m_drawTarget->m_10; // same class as m_14 - the old SurfaceA->SurfaceB cast is gone
+        node = host->m_drawTarget
+                   ->m_10; // same class as m_14 - the old SurfaceA->SurfaceB cast is gone
         if (!node) {
             return 0;
         }

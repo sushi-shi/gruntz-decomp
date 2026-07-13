@@ -26,7 +26,7 @@
 #include <Gruntz/GameMode.h>  // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
 #include <Gruntz/GruntzMgr.h> // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
-#include <DDrawMgr/DDrawChildGroup.h> // CDDrawChildGroup - holder+0x08 (DestroyChildren_159ef0)
+#include <DDrawMgr/DDrawChildGroup.h>     // CDDrawChildGroup - holder+0x08 (DestroyChildren_159ef0)
 
 // BcRegSet::Register @0x13c030 IS CSymParser::ResolvePath (canonical <Bute/SymParser.h>).
 

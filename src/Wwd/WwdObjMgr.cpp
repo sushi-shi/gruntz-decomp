@@ -15,7 +15,7 @@
 #include <rva.h>
 #include <Io/FileMem.h> // the serialize stream (CSerialArchive == the real CFileMemBase)
 
-#include <Gruntz/WwdObjMgr.h>     // the shared object-collection manager class
+#include <Gruntz/WwdObjMgr.h>          // the shared object-collection manager class
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (DrawObjectCounts m_pages->m_backPair)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (level reader, Read @+0x2c)
 #include <Mfc.h> // CPtrList, CMapPtrToPtr (real afxcoll, for the m_10/m_2c/m_48 layout)

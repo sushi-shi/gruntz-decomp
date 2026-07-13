@@ -112,7 +112,7 @@ public:
     // override all six stream slots; every retail call into the family dispatches
     // (no direct .text callers of any slot body - xref-verified).
     virtual void Slot00_13c530(); // [0] 0x13c530 (empty body; original role unrecovered)
-    virtual ~CRezItmBase(); // [1] ??1 0x13c520 (clears m_parent)
+    virtual ~CRezItmBase();       // [1] ??1 0x13c520 (clears m_parent)
     virtual i32 Read(i32 off, i32 base, u32 count, void* buf) = 0;  // [2]
     virtual i32 Write(i32 base, i32 off, u32 count, void* buf) = 0; // [3]
     virtual i32 Open(char* name, i32 readonly, i32 write) = 0;      // [4]

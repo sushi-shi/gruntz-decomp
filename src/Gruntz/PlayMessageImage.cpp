@@ -16,9 +16,9 @@
 #include <Gruntz/GameLevel.h> // canonical CGameLevel (m_24: planeCtx viewport rect) // CPlay + CSpriteFactoryHolder/CImageRegistry/CDrawTarget (m_c->m_10/m_24/m_drawTarget)
 #include <Image/ImageSet.h>   // CImageSet::GetAt (m_frames/m_minIndex/m_maxIndex) + CImageFrame
 #include <Image/CImage.h>     // CImage::RenderFrame (0x153790)
-#include <DDrawMgr/DDSurface.h>       // CDDSurface::Flip (0x13e850)
+#include <DDrawMgr/DDSurface.h>        // CDDSurface::Flip (0x13e850)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
-#include <Globals.h>            // s_GameMessagez ("GAME_MESSAGEZ" @0x611ab8)
+#include <Globals.h>                   // s_GameMessagez ("GAME_MESSAGEZ" @0x611ab8)
 
 // The shared __cdecl layer-blit helper (0x115300, in src/Gruntz/GlyphStringDraw.cpp):
 // blit a CImage frame into the active draw-target layer. `m_c` is a CSpriteFactoryHolder,

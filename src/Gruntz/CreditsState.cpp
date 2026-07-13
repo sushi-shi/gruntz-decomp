@@ -39,7 +39,7 @@
 #include <ddraw.h> // real IDirectDrawSurface (credits-scroll DC + Render input surface)
 #include <rva.h>
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
-#include <stdio.h> // sprintf (InitAttractTitle STATEZ_ATTRACT/TITLE%d keys)
+#include <stdio.h>                     // sprintf (InitAttractTitle STATEZ_ATTRACT/TITLE%d keys)
 // Real MFC CRgn/CGdiObject for the credits clip region (CCreditsState::m_1e8).
 // GameMode.h pulled <Mfc.h>->afx.h (defines _AFX_ENABLE_INLINES); skip afxwin*.inl for
 // the clang label step only (implicit-int CMenu::op==); wine cl keeps the inlines.
@@ -250,7 +250,9 @@ i32 CCreditsState::Render() {
     // draw: cache m_c->m_drawTarget (the target keeps it in esi for the three derefs).
     CDrawTarget* v4 = m_c->m_drawTarget;
     v4->m_10->m_surface->Draw(0);
-    v4->m_14->BltSelf(v4->m_18); // SurfaceB::Blit WAS CDDrawSurfacePair::BltSelf @0x3a1d0 (thunk 0x1564)
+    v4->m_14->BltSelf(
+        v4->m_18
+    ); // SurfaceB::Blit WAS CDDrawSurfacePair::BltSelf @0x3a1d0 (thunk 0x1564)
 
     if (!m_1b4 && Owner(this)->m_14) {
         Owner(this)->m_48->Play("CREDITZ", 1);

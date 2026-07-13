@@ -156,8 +156,8 @@ struct CSpriteFactoryHolder {
     // +0x0c  renderer B: the real CDDrawWorkerList (per-frame worker pump; "Present"
     // == its slot-13 PruneWorkers; ClearWorkers is the leaf-state teardown).
     CDDrawWorkerList* m_rendererB;
-    CImageRegistry* m_10;   // +0x10  image/name registry (real ResMgr.h class: Install/Has/
-                            //         Register/Release/LoadNamespace + the m_10map hash)
+    CImageRegistry* m_10; // +0x10  image/name registry (real ResMgr.h class: Install/Has/
+                          //         Register/Release/LoadNamespace + the m_10map hash)
     // +0x14..+0x1c: the DDraw-side children (names from the CDDrawSurfaceMgr
     // canonical; the Init decode 0x155900 news each).
     struct CDDrawWorkerCache* m_workerCache; // +0x14  string-keyed worker cache

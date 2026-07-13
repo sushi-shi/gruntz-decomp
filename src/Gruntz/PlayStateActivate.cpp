@@ -23,14 +23,14 @@
 #include <Gruntz/WwdGameReg.h> // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/ResMgr.h>     // canonical CImageRegistry (+0x10 image registrar) + CDrawTarget
 #include <rva.h>
-#include <Globals.h>                    // g_gameReg / shared globals
-#include <Gruntz/GameLevel.h>           // canonical CGameLevel (VisitVisible)
-#include <DinMgr2/DirectInputMgr2.h>    // canonical DirectInputMgr2 (ReadAll)
-#include <DDrawMgr/DDrawSubMgrPages.h>  // canonical CDDrawSubMgrPages (Method_158e90)
-#include <DDrawMgr/DDrawSurfacePair.h>  // the CDrawTarget pages (m_surface Fill target)
-#include <DDrawMgr/DDrawWorkerList.h>   // renderer B (PruneWorkers - the "present")
-#include <DDrawMgr/DDSurface.h>         // CDDSurface::Fill (0x13e760)
-#include <Gruntz/StatusBarMgr.h>        // canonical CStatusBarMgr (m_guts Deactivate/Load...)
+#include <Globals.h>                   // g_gameReg / shared globals
+#include <Gruntz/GameLevel.h>          // canonical CGameLevel (VisitVisible)
+#include <DinMgr2/DirectInputMgr2.h>   // canonical DirectInputMgr2 (ReadAll)
+#include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (Method_158e90)
+#include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (m_surface Fill target)
+#include <DDrawMgr/DDrawWorkerList.h>  // renderer B (PruneWorkers - the "present")
+#include <DDrawMgr/DDSurface.h>        // CDDSurface::Fill (0x13e760)
+#include <Gruntz/StatusBarMgr.h>       // canonical CStatusBarMgr (m_guts Deactivate/Load...)
 
 // 0xface0: the shared image-load activate gate = CState::InputVirtual (slot-8 base
 // virtual, SYMBOL-bound in Attract.cpp), called qualified (direct) on `this` - the same

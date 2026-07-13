@@ -26,7 +26,7 @@
 #include <rva.h>
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Gruntz/ObList.h>
-#include <DDrawMgr/DDrawWorkerNode.h>   // CDDrawWorkerBase/A/B (the spawned elements)
+#include <DDrawMgr/DDrawWorkerNode.h>  // CDDrawWorkerBase/A/B (the spawned elements)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair - PruneWorkers' two render targets
 
 struct CDDrawFrameSource; // the frame table view (def rides the workers G section)
@@ -75,8 +75,8 @@ SIZE_UNKNOWN(CDDrawWorkerItem);
 class WorkerListSibBase : public CObject {
 public:
     virtual ~WorkerListSibBase() OVERRIDE; // slot 1 (deleting dtor -> cl-emitted ??_G)
-    i32 m_status;                   // +0x04  initialized to -1 when inactive
-    i32 m_08;                       // +0x08
+    i32 m_status;                          // +0x04  initialized to -1 when inactive
+    i32 m_08;                              // +0x08
     CDDrawWorkerCtx* m_pSurfaceMgr; // +0x0c  the owning surface mgr (copied into worker m_ctx)
     WorkerListSibBase() {}
 };
@@ -100,10 +100,15 @@ public:
     virtual StateId GetStateId(); // slot 8  0x156f20 (G obj; 0x11)
     // slots 9-12 - the worker factories (G obj bodies; NO direct retail callers:
     // reached only through these slots).
-    virtual void* CreateWorkerA(i32 a1, i32 a2, i32 a3);               // slot 9  0x156fd0
+    virtual void* CreateWorkerA(i32 a1, i32 a2, i32 a3);                // slot 9  0x156fd0
     virtual void* CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead); // slot 10 0x1573e0
-    virtual void* CreateWorkerB2C(i32 a1, i32 a2, CDDrawFrameSource* a3, i32 a4,
-                                  i32 addHead); // slot 11 0x157330
+    virtual void* CreateWorkerB2C(
+        i32 a1,
+        i32 a2,
+        CDDrawFrameSource* a3,
+        i32 a4,
+        i32 addHead
+    ); // slot 11 0x157330
     virtual void* CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4,
                                   i32 addHead); // slot 12 0x157150
     // slot 13 - the per-frame worker pump the play states "present" through
@@ -123,7 +128,7 @@ public:
     // dev idiom (MFC CObject* container), not a removable view cast.
     CObList m_workers;
 };
-SIZE(CDDrawWorkerList, 0x2c); // new(0x2c) in CDDrawSurfaceMgr::Init @0x1559d1
+SIZE(CDDrawWorkerList, 0x2c);       // new(0x2c) in CDDrawSurfaceMgr::Init @0x1559d1
 VTBL(CDDrawWorkerList, 0x001efd88); // ??_7CDDrawWorkerList@@6B@ (14-slot vtable)
 
 #endif // GRUNTZ_DDRAWMGR_DDRAWWORKERLIST_H

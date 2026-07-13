@@ -193,12 +193,28 @@ public:
     // The three init-tail slots. xref-proven REAL virtuals (zero direct callers -
     // each body is reached ONLY through this vtable); bodies in DDrawPtrCollections.cpp
     // (were misbound as CDDSurface:: non-virtual base methods).
-    virtual i32 ResolveEx(void* surf, void* buf, i32 type, u32 size, i32 ctrl,
-                          i32 trans); // slot 9  0x148890 (decode buf into the surface)
-    virtual i32 LoadByExt(CDDrawPtrCollections* info, char* path, i32 flags,
-                          i32 key); // slot 10 0x148940 (pick loader by file extension)
-    virtual i32 LoadKeyed(void* surf, i32 width, i32 height, i32 a4, i32 a5,
-                          i32 key); // slot 11 0x148840 (blit + install colour key)
+    virtual i32 ResolveEx(
+        void* surf,
+        void* buf,
+        i32 type,
+        u32 size,
+        i32 ctrl,
+        i32 trans
+    ); // slot 9  0x148890 (decode buf into the surface)
+    virtual i32 LoadByExt(
+        CDDrawPtrCollections* info,
+        char* path,
+        i32 flags,
+        i32 key
+    ); // slot 10 0x148940 (pick loader by file extension)
+    virtual i32 LoadKeyed(
+        void* surf,
+        i32 width,
+        i32 height,
+        i32 a4,
+        i32 a5,
+        i32 key
+    ); // slot 11 0x148840 (blit + install colour key)
 };
 
 // CFileImage's own surface vtable lives at VA 0x5ef7f0 - the SHARED 9-slot base vtable

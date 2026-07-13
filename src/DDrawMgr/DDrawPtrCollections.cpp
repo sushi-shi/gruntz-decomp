@@ -292,7 +292,15 @@ i32 CPoolItemAB8::InstallColorFormat() {
 // descriptor-fill scheduling wall (~85%): mirror of CPoolItemA88::Blit7 (7-arg / mode 0x47).
 // Same stack-local-descriptor load/store scheduling divergence. Logic complete.
 RVA(0x00148c40, 0x75)
-i32 CPoolItemAE8::Blit47(CDDrawPtrCollections* info, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+i32 CPoolItemAE8::Blit47(
+    CDDrawPtrCollections* info,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    i32 a5,
+    i32 a6,
+    i32 a7
+) {
     (void)a6;
     u32 desc[(0x7c - 0x10) / 4]; // 0x6c-byte DDSURFACEDESC scratch
     memset(desc, 0, 0x6c);

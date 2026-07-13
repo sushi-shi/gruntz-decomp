@@ -1419,12 +1419,8 @@ void CMulti::PumpB() {
     CSpriteFactoryHolder* mgr = m_c;
     if (m_594 == 0 && Mgr()->m_frameGate != 0) {
         StepInputA();
-        ((CGameLevel*)mgr->m_24)
-            ->VisitVisible(mgr->m_drawTarget->m_14, (CGameObjChain*)mgr->m_8);
-        mgr->m_rendererB->PruneWorkers(
-            mgr->m_drawTarget->m_14,
-            mgr->m_drawTarget->m_18
-        );
+        ((CGameLevel*)mgr->m_24)->VisitVisible(mgr->m_drawTarget->m_14, (CGameObjChain*)mgr->m_8);
+        mgr->m_rendererB->PruneWorkers(mgr->m_drawTarget->m_14, mgr->m_drawTarget->m_18);
         m_guts->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_14;
         if (h == 0) {
@@ -1456,12 +1452,8 @@ void CMulti::PumpB() {
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();
     } else {
-        ((CGameLevel*)mgr->m_24)
-            ->VisitVisible(mgr->m_drawTarget->m_14, (CGameObjChain*)mgr->m_8);
-        mgr->m_rendererB->PruneWorkers(
-            mgr->m_drawTarget->m_14,
-            mgr->m_drawTarget->m_18
-        );
+        ((CGameLevel*)mgr->m_24)->VisitVisible(mgr->m_drawTarget->m_14, (CGameObjChain*)mgr->m_8);
+        mgr->m_rendererB->PruneWorkers(mgr->m_drawTarget->m_14, mgr->m_drawTarget->m_18);
     }
     m_guts->LoadMainStatusBarSprite();
     if (m_lightFx != 0) {

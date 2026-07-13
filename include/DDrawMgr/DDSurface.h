@@ -90,11 +90,11 @@ SIZE(CDDSurface, 0xc0);
 // a bare `mov eax,<kind>; ret` (byte-dumped 2026-07-14). Enumerators name the PROVEN
 // owning class of each value; the tag's consumers are unreconstructed engine code.
 typedef enum DDSurfacePoolKind {
-    POOLKIND_PLAIN = 0,      // CDDSurface base default        (0x141300: xor eax,eax)
-    POOLKIND_MODE = 1,       // CPoolItemAB8 device/mode page  (0x143cd0)
-    POOLKIND_FILEIMAGE = 2,  // CFileImageSurface              (0x143cc0)
-    POOLKIND_BLIT7 = 3,      // CPoolItemA88 "Blit7" pocket    (0x143cb0)
-    POOLKIND_BLIT47 = 4,     // CPoolItemAE8 "Blit47" pocket   (0x143ce0)
+    POOLKIND_PLAIN = 0,     // CDDSurface base default        (0x141300: xor eax,eax)
+    POOLKIND_MODE = 1,      // CPoolItemAB8 device/mode page  (0x143cd0)
+    POOLKIND_FILEIMAGE = 2, // CFileImageSurface              (0x143cc0)
+    POOLKIND_BLIT7 = 3,     // CPoolItemA88 "Blit7" pocket    (0x143cb0)
+    POOLKIND_BLIT47 = 4,    // CPoolItemAE8 "Blit47" pocket   (0x143ce0)
 } DDSurfacePoolKind;
 
 VTBL(CDDSurface, 0x001ef7f0); // ??_7CDDSurface@@6B@ (9-slot base surface vtable)
@@ -126,8 +126,8 @@ public:
     virtual i32 IsValid(); // slot 5  0x1412d0  (surface present + positive w/h)
     // slot 6 - the per-class POOL-KIND tag: every body is `mov eax,<kind>; ret`
     // (base 0x141300 -> 0; the pool subclasses return 1..4 - see DDSurfacePoolKind).
-    virtual i32 GetPoolKind();     // slot 6  0x141300 (POOLKIND_PLAIN)
-    virtual i32 RestoreLost(); // slot 7  0x13f960  (restore-this-lost-surface retry)
+    virtual i32 GetPoolKind();         // slot 6  0x141300 (POOLKIND_PLAIN)
+    virtual i32 RestoreLost();         // slot 7  0x13f960  (restore-this-lost-surface retry)
     virtual i32 BlitIntoDesc(void* a); // slot 8  0x13e2e0  (the surface's own blit-into-desc)
 
     // --- non-virtual __thiscall DirectDraw thunks (DIRSURF.CPP) ----------------

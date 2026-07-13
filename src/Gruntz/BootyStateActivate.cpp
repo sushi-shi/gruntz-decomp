@@ -24,7 +24,7 @@
 #include <DDrawMgr/DDrawWorkerRegistry.h> // RemoveKeysEqual_155360 (CBootyState::ReleaseResources)
 #include <DDrawMgr/DDSurface.h> // CMultiBootyState::Render: CDDSurface Flip/BltFast on the frame surfaces
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
-#include <Mfc.h>                // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
+#include <Mfc.h>   // ShowCursor (reloc-masked); GameMode.h needs the afx umbrella
 #include <ddraw.h> // CMultiBootyState::Render: real IDirectDrawSurface::IsLost dispatch (slot 24)
 #include <math.h>  // sin/cos (StepGlitterAnim sine spiral)
 

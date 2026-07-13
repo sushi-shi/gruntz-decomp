@@ -28,15 +28,15 @@
 #include <Mfc.h> // real MFC CString (default ctor 0x1b9b93 / dtor 0x1b9cde / += 0x1ba0c8) + windows.h
 #include <ddraw.h> // real IDirectDrawSurface (the debug-overlay DC host: GetDC/ReleaseDC)
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/Play.h> // the real CPlay : CState (the method owner)
-#include <Gruntz/View.h> // the CSpriteFactoryHolder chain (render state, draw surface)
+#include <Gruntz/Play.h>              // the real CPlay : CState (the method owner)
+#include <Gruntz/View.h>              // the CSpriteFactoryHolder chain (render state, draw surface)
 #include <DDrawMgr/DDrawChildGroup.h> // renderer A - the real CDDrawChildGroup (m_count @+0x1c)
 #include <Gruntz/GameLevel.h>   // canonical CGameLevel/CLevelPlane (the m_24 level + scroll origin)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface; +0x08 held COM surface)
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (m_surface)
-#include <Gruntz/GruntzMgr.h>   // CGruntzMgr (base CGameMgr::m_fps @+0x18)
-#include <stdio.h>              // engine sprintf (reloc-masked)
-#include <string.h>             // inline strcat/strlen intrinsics (/O2)
+#include <Gruntz/GruntzMgr.h>          // CGruntzMgr (base CGameMgr::m_fps @+0x18)
+#include <stdio.h>                     // engine sprintf (reloc-masked)
+#include <string.h>                    // inline strcat/strlen intrinsics (/O2)
 
 #include <rva.h>
 #include <Globals.h>

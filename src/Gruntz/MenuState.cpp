@@ -32,7 +32,7 @@
 #include <rva.h>
 #include <DDrawMgr/DDrawSurfacePair.h> // the CDrawTarget pages (real class of m_10/m_14/m_18)
 #include <DDrawMgr/DDrawWorkerList.h>  // renderer B - the real CDDrawWorkerList (ClearWorkers)
-#include <Win32.h> // IsDlgButtonChecked + HWND (real USER32 header)
+#include <Win32.h>                     // IsDlgButtonChecked + HWND (real USER32 header)
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------

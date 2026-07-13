@@ -28,8 +28,8 @@
 #include <Mfc.h>      // MFC CFile/CDWordArray (the movie file + decode-buffer dtors)
 #include <afxtempl.h> // MFC CArray - the +0x868c playlist embed's REAL template class
 #include <Ints.h>
-#include <rva.h>            // OVERRIDE / VTBL / SIZE macros
-#include <Wap32/Object.h>   // CObject - the scratch embed's polymorphic grand-base
+#include <rva.h>             // OVERRIDE / VTBL / SIZE macros
+#include <Wap32/Object.h>    // CObject - the scratch embed's polymorphic grand-base
 #include <Crypto/FecCrypt.h> // CFecFile - the +0x540 embedded decode store
 
 struct SmackTag;           // the RAD Smacker stream handle (<smack.h>'s `Smack` typedef tag)
@@ -127,11 +127,11 @@ public:
     char _518[0x520 - 0x518];
     i32 m_520; // +0x520  palette-mode state (8 => snapshot on new palette)
     char _524[0x534 - 0x524];
-    void* m_rezBuffer;       // +0x534  Rez buffer
-    i32 m_useDS;             // +0x538
-    CWnd* m_videoWnd; // +0x53c  the video window (real MFC CWnd)
-    CFecFile m_540;   // +0x540  embedded decode store - the canonical CFecFile
-                      //         (0x814c B; ends exactly at the +0x868c playlist)
+    void* m_rezBuffer;     // +0x534  Rez buffer
+    i32 m_useDS;           // +0x538
+    CWnd* m_videoWnd;      // +0x53c  the video window (real MFC CWnd)
+    CFecFile m_540;        // +0x540  embedded decode store - the canonical CFecFile
+                           //         (0x814c B; ends exactly at the +0x868c playlist)
     CMoviePlaylist m_868c; // +0x868c  Rez-owned playlist (CArray<PLAYLISTINFOSTRUCT*>, 0x14 B)
     i32 m_loopCount;       // +0x86a0  loop counter
 };
