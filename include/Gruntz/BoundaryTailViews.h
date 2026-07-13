@@ -106,7 +106,9 @@ struct Entry_bdd0 {
 };
 SIZE_UNKNOWN(Entry_bdd0);
 // (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
-// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
+// CMapStringToPtr::Lookup @0x1b8438 - the member is the real map. The class named here
+// was inverted; 0x1b8438 is CMapStringToPtr's, 0x1b8008 is CMapStringToOb's. The
+// declaration below was already right.)
 struct Arg1_bdd0 {
     char _0[0x10];
     CMapStringToPtr m_10; // 0x10  ::CMapStringToPtr (its Lookup is 0x1b8438; mfc_class)

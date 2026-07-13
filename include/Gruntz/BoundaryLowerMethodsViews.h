@@ -58,8 +58,9 @@
 //                the class holding that vbase - unmodeled).
 //   CTypeColl464 <- RegisterWarlordActions/RegisterActs_* (a CZArray2D-derived act/proj
 //                type collection; the exact sibling class of CTypeKeyColl unrecovered).
-//   C9cab0   registry Lookup (m_10 sub's Get @0x1b8008 = CMapStringToPtr::Lookup);
-//                the registry class identity is unrecovered (NOT the 0x1b8438 one).
+//   C9cab0   registry Lookup (m_10 sub's Get @0x1b8008 = CMapStringToOb::Lookup - the
+//                0x1b8438 one is CMapStringToPtr; mfc_class. This pair was recorded
+//                INVERTED here, which is what made the registry look unidentifiable).
 //   Cbd450   no direct caller (c:\gruntz.log opener init; owner unrecovered).
 //   Ccef50   <- Gap_0b63f0/Gap_0c8b80 (~CLobbySlot/CPlay teardown; owner unrecovered).
 //   Cdb200   <- CNetMgr::DispatchRecvMsg but this==eax (a returned net sub-object, NOT
@@ -126,7 +127,9 @@ SIZE_UNKNOWN(CTypeColl464);
 
 // 0x09cab0 - out-param wrapper over the +0x10 sub's method (0x1b8008).
 struct CSub9cab0 {
-    // Get @0x1b8008 IS CMapStringToPtr::Lookup; cast at the call.
+    // Get @0x1b8008 IS CMapStringToOb::Lookup (band [0x1b7e17,0x1b8247); mfc_class).
+    // This said CMapStringToPtr - inverted. CMapStringToPtr's Lookup is 0x1b8438, and
+    // retail never calls it here. => this empty view is a real ::CMapStringToOb.
 };
 SIZE_UNKNOWN(CSub9cab0);
 struct C9cab0 {
