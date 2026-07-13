@@ -90,38 +90,45 @@ DATA(0x0020aac8)
 extern i32 g_desc60aac8;
 DATA(0x0020b588)
 extern u8 g_dat60b588; // 0x60b588 (new pin)
+// The single-character bute key literals (0x60beb8..0x60df94 in retail's .rdata). Each is
+// a one-char string - read straight out of the image, not guessed - and they are DEFINED
+// here, with storage. They used to be `DATA(0x..) extern char s_codeX[];` - a DATA()
+// binding on a bare `extern`, which pins a name to an rva but never gives it storage, so
+// every one of the ~16 was an unresolved external referenced from a dozen grunt TUs.
+// (?s_codeD@@3PADA and ?k_60cca4@@3PADA are the SAME address, 0x60cca4 = "D": two TUs each
+// invented a name for one literal. One definition now serves both.)
 DATA(0x0020beb8)
-extern char s_codeP[];
+char s_codeP[] = "P";
 DATA(0x0020bebc)
-extern char k_60bebc[];
+char k_60bebc[] = "R";
 DATA(0x0020cc90)
-extern char k_60cc90[];
+char k_60cc90[] = "C";
 DATA(0x0020cc94)
-extern char s_codeJ[]; // "J"
+char s_codeJ[] = "J";
 DATA(0x0020cc98)
-extern char s_codeL[];
+char s_codeL[] = "L";
 DATA(0x0020cc9c)
-extern char s_codeG[];
+char s_codeG[] = "G";
 DATA(0x0020cca0)
-extern char s_codeI[];
+char s_codeI[] = "I";
 DATA(0x0020cca4)
-extern char s_codeD[]; // "D"
+char s_codeD[] = "D";
 DATA(0x0020d2e8)
-extern char s_codeF[];
+char s_codeF[] = "F";
 DATA(0x0020d2ec)
-extern char s_codeE[]; // "E"
+char s_codeE[] = "E";
 DATA(0x0020d7f4)
-extern char s_codeM[];
+char s_codeM[] = "M";
 DATA(0x0020d7fc)
-extern char s_codeH[];
+char s_codeH[] = "H";
 DATA(0x0020dc04)
-extern char s_codeN[];
+char s_codeN[] = "N";
 DATA(0x0020dc08)
-extern char s_codeQ[];
+char s_codeQ[] = "Q";
 DATA(0x0020dc0c)
-extern char s_codeO[];
+char s_codeO[] = "O";
 DATA(0x0020df94)
-extern char k_60df94[];
+char k_60df94[] = "S";
 // g_id0_613dff..g_id3_613e02 (the 4 unpacked device-id bytes) are DEFINED at their
 // REAL rvas 0x213dff..0x213e02 in their owning TU src/Gruntz/SFSelectDevice.cpp; the
 // prior DATA(0x0020dfff..0x0020e002) here MISBOUND them to 0x60dfff (inside a string
