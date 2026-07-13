@@ -289,17 +289,17 @@ i32 CGameObject::LookupAnimSprite(const char* name) {
 
 // ---------------------------------------------------------------------------
 // 0x150660 (vtable slot 12): snapshot the live 9-dword dirty-rect record (0x18..0x3c)
-// into the shadow block (0xb8..0xdc); then, if the live record is armed (m_20.b !=
+// into the shadow block (0xb8..0xdc); then, if the live record is armed (m_38 !=
 // -1), BltFast the source pair's surface onto the target pair's at the record's
 // (left, top) with the record as the source rect + colorkey/wait, and disarm the
 // record. __thiscall, 2 args (ret 8).
 RVA(0x00150660, 0x49)
 void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    memcpy(&m_b8, &m_18, 36);
-    if (m_20.b != -1) {
+    memcpy(&m_b8, &m_lastX, 36);
+    if (m_38 != -1) {
         RECT* r = (RECT*)&m_20;
         a->m_surface->BltFast(r->left, r->top, b->m_surface, r, 0x10);
-        m_20.b = -1;
+        m_38 = -1;
     }
 }
 
@@ -319,7 +319,7 @@ void CWwdGameObjectA::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 RVA(0x001506b0, 0x1ec)
 void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     i32 rc[4]; // reused src+dst blit rect buffer
-    if (m_20.b != -1 && m_d8 != -1) {
+    if (m_38 != -1 && m_d8 != -1) {
         RECT ir;
         if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
             UnionRect(&ir, (RECT*)&m_20, (RECT*)&m_c0);
@@ -331,10 +331,10 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
             rc[3] = ir.top + h;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
         } else {
-            rc[0] = m_18;
-            rc[1] = m_1c;
-            rc[2] = m_18 + m_20.m_w;
-            rc[3] = m_1c + m_20.m_h;
+            rc[0] = m_lastX;
+            rc[1] = m_lastY;
+            rc[2] = m_lastX + m_dirtyW;
+            rc[3] = m_lastY + m_dirtyH;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
             rc[0] = m_b8;
             rc[1] = m_bc;
@@ -342,11 +342,11 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
             rc[3] = m_bc + m_d4;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
         }
-    } else if (m_20.b != -1) {
-        rc[0] = m_18;
-        rc[1] = m_1c;
-        rc[2] = m_18 + m_20.m_w;
-        rc[3] = m_1c + m_20.m_h;
+    } else if (m_38 != -1) {
+        rc[0] = m_lastX;
+        rc[1] = m_lastY;
+        rc[2] = m_lastX + m_dirtyW;
+        rc[3] = m_lastY + m_dirtyH;
         a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
     } else if (m_d8 != -1) {
         rc[0] = m_b8;
@@ -372,7 +372,7 @@ void CWwdGameObjectA::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
 // Permuter found no operand-order gain. docs/patterns/zero-register-pinning.md.
 RVA(0x001508a0, 0x117)
 void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    if (m_20.b != -1 && m_d8 != -1) {
+    if (m_38 != -1 && m_d8 != -1) {
         RECT ir;
         if (IntersectRect(&ir, (RECT*)&m_20, (RECT*)&m_c0)) {
             UnionRect(&ir, (RECT*)&m_20, (RECT*)&m_c0);
@@ -384,11 +384,11 @@ void CWwdGameObjectA::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
             pos[1] = ir.top;
             a->BlitDirtyRect_164650(b, pos, size);
         } else {
-            a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record
+            a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record
             a->BlitDirtyRect_164650(b, &m_b8, &m_d0);     // shadow record
         }
-    } else if (m_20.b != -1) {
-        a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record only
+    } else if (m_38 != -1) {
+        a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record only
     } else if (m_d8 != -1) {
         a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only
     }

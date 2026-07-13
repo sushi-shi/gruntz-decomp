@@ -879,7 +879,7 @@ i32 CResolveNode::Init(
     m_4c = 0;
     m_58 = 0;
     m_50 = 1;
-    Resolve(resolveX, resolveY); // virtual slot 9 (0x164790)
+    SetPosition(resolveX, resolveY); // virtual slot 9 (0x164790)
     m_40 = field40;
     return 1;
 }

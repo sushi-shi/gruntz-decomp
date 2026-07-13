@@ -32,58 +32,27 @@
 
 struct AnimWorkerObj; // the +0x7c worker/logic record (<DDrawMgr/AnimWorkerObj.h>)
 
-// The child object dispatched per list node - the WIDE game object (the
-// CWwdGameObject / CWwdGameObjectE factory family, vtables 0x5f0020/0x5f00a8/...):
-// +0x78 is its CObList POSITION cache (== CWwdGameObject::m_posCache), +0x7c its
-// 0x17c anim worker (AnimWorkerObj), +0xd8 its shadow dirty-rect flag
-// (CWwdGameObjectE::m_d8), and the dispatched slots are the family's own (slot
-// names/RVAs = the 0x5f0020 table's ground truth). Kept as the DDraw-side dispatch
-// VIEW pending the wide-object unification pass (@identity-TODO:
-// CDDrawGroupChild == CWwdGameObject == CGameObject (UserLogic.h) - one class).
-// Slots 0-4 come from CObject and 5/6 (IsLoaded/IsReady) from CWapObj - inherited,
-// never redeclared. Declarations only - never defined, so no ??_7 is emitted.
-class CDDrawGroupChild : public CWapObj {
-public:
-    virtual ~CDDrawGroupChild(); // slot 1 (deleting dtor -> the family ??_G, e.g. 0x15b790)
-    virtual void ReleaseSubs();  // slot 7  @0x15b5d0 (family base body)
-    // slot 8 - the per-kind type tag (`mov eax,<id>; ret`: E=0, C=6, F=0x16, B=0x1b;
-    // Find_15a8c0 / FindByWorker probe ==5). == the family's GetTypeId.
-    virtual i32 GetTypeId();                             // slot 8  +0x20
-    virtual i32 Slot24_164790();                         // slot 9  @0x164790 (family shared helper)
-    virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10  the 4-arg build dispatch
-    // slots 11-14: the per-object render + dirty-rect blit hooks the group walkers
-    // broadcast (args kept i32 in this view; the family types them
-    // WwdRenderCtx* / CDDrawSurfacePair* - same 4-byte pushes).
-    virtual void Render(i32 a1);                          // slot 11 +0x2c
-    virtual void BltDirty(i32 a1, i32 a2);                // slot 12 +0x30
-    virtual void BltDirtyEx(i32 a1, i32 a2, i32 a3);      // slot 13 +0x34
-    virtual void BltDirtyRegions(i32 a1, i32 a2, i32 a3); // slot 14 +0x38
-
-    // vtable pointer at +0x00 (4 B); m_78 caches the child's CObList POSITION when it
-    // is linked into a broadcast list (CWwdGameObjectB Add/RemoveChild); m_d8 written
-    // by ResetChildD8.
-    char m_pad04[0x78 - 4];
-    i32 m_78;            // +0x78  cached CObList POSITION
-    AnimWorkerObj* m_7c; // +0x7c  the canonical 0x17c worker (its m_notify is the
-                         //        per-child callback WalkChildWorkers_166880 fires)
-    char m_pad80[0xd8 - 0x80];
-    i32 m_d8; // +0xd8
-};
+// (The former CDDrawGroupChild dispatch view of the wide game object is
+// DISSOLVED onto the real family (<Wwd/WwdGameObjectFamily.h>, base
+// CWwdGameObjectE): its ReleaseSubs was slot-7 Unload, its GetTypeId slot-8
+// GetClassId, its m_78/m_7c/m_d8 the family m_posCache/m_7c/m_d8.)
+class CWwdGameObjectE;
 
 // One node of the intrusive list at +0x14 (the +0x10 CObList's CNode: pNext @0,
-// pPrev @4, data @8). The object is read two ways pending the wide-object
-// unification (@identity-TODO: CDDrawGroupChild == CWwdGameObject == CGameObject,
-// one class): the DDraw walkers dispatch it as CDDrawGroupChild, the game-side
-// warlord/grunt loaders (Play.cpp) read it as CGameObject - same pointer, union'd
-// (the CSpriteFactoryHolder pattern). The former View.h CWarlordListHead/
-// CWarlordListNode duplicate of this node shape is dissolved here (2026-07-14).
+// pPrev @4, data @8). The object is read two ways pending the FLAT-view merge
+// (@identity-TODO: CGameObject (UserLogic.h flat view) == CWwdGameObjectA - one
+// class): the DDraw walkers dispatch it as the real family (CWwdGameObjectE),
+// the game-side warlord/grunt loaders (Play.cpp) read it as CGameObject - same
+// pointer, union'd (the CSpriteFactoryHolder pattern). The former View.h
+// CWarlordListHead/CWarlordListNode duplicate of this node shape is dissolved
+// here (2026-07-14).
 struct CGameObject; // <Gruntz/UserLogic.h> (game-side reading of the same object)
 struct CDDrawGroupNode {
     CDDrawGroupNode* m_next; // +0x00
     i32 m_04;                // +0x04  (pPrev; not walked)
     union {
-        CDDrawGroupChild* m_obj; // +0x08  DDraw-side dispatch view
-        CGameObject* m_gameObj;  // +0x08  game-side reading (UserLogic.h)
+        CWwdGameObjectE* m_obj; // +0x08  the wide game object (any kind; real family)
+        CGameObject* m_gameObj; // +0x08  game-side reading (UserLogic.h flat view)
     };
 };
 
@@ -137,7 +106,6 @@ public:
 };
 
 SIZE_UNKNOWN(CDDrawChildGroup);
-SIZE_UNKNOWN(CDDrawGroupChild);
 VTBL(CDDrawChildGroup, 0x001efdc0); // ??_7CDDrawChildGroup@@6B@ (17-slot vtable)
 SIZE_UNKNOWN(CDDrawGroupNode);
 

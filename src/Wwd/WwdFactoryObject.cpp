@@ -160,56 +160,31 @@ CWwdGameObj15b390::CWwdGameObj15b390(int a, int b, int c) : WwdCtorBase(a, b, c)
 }
 
 // ---------------------------------------------------------------------------
-// 0x15b4f0 - the base ~CWwdGameObject ("Mid"): vtable 0x5f0020. Frees the four
-// workers, clears m_c0/m_d8 + the EdgeA shadow (groupX), then the CString member
-// dtor, then folds EdgeA, EdgeB and the wap-object grand base.
+// 0x154a50 - ~CResolveNode: disarm the live dirty-rect sentinels; ~CLoadable
+// (m_04/m_08/m_0c reset) + the CObject grand-base restamp fold in. Defined in
+// THIS TU so the family dtors below fold its content (retail ~E/~A/~F/~C tails);
+// the ResolveNode.cpp pocket's ??_G calls it (retail 0x154a30 -> 0x154a50).
+// @early-stop
+// sentinel-seed store-scheduling wall (docs/patterns/sentinel-seed-ctor-store-schedule.md):
+// byte-identical EXCEPT the single immediate vptr restamp store position.
+RVA(0x00154a50, 0x23)
+CResolveNode::~CResolveNode() {
+    m_5c = (i32)0x80000000;
+    m_20 = (i32)0x80000000;
+    m_38 = -1;
+}
+
+// ---------------------------------------------------------------------------
+// 0x15b4f0 - ~CWwdGameObjectE (vtable 0x5f0020): { Unload(); } - the inline E
+// release pass folds, then the CString member dtor, then the inline
+// ~CResolveNode + ~CLoadable + CObject-grand-base restamp fold in (retail tail).
 // @early-stop
 // zero-register-pinning regalloc wall (docs/patterns/zero-register-pinning.md):
 // logic + /GX trylevel chain (3->2) byte-exact, residual is the callee-saved
 // zero/0x80000000/-1 register coloring (edi/ebx/ebp vs retail ebp/edi/ebx).
 RVA(0x0015b4f0, 0xde)
 CWwdGameObjectE::~CWwdGameObjectE() {
-    WORKER_FREE(m_7c);
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_c0 = (i32)0x80000000;
-    m_d8 = -1;
-    m_20.c = (i32)0x80000000; // 0x5c
-    m_20.a = (i32)0x80000000; // 0x20
-    m_20.b = -1;              // 0x38
-    // m_dc (CString) destroyed as a member; then EdgeA, EdgeB, base fold in.
-}
-
-// ---------------------------------------------------------------------------
-// 0x15b5d0: drop the four +0x7c/+0x80/+0x88/+0x90 sub-objects (each via its
-// scalar-dtor virtual, delete flag) and re-seed the status fields (+0xc0/+0x5c/
-// +0x20 = 0x80000000, +0xd8/+0x38 = -1). No geometry reset. __thiscall, ret 0.
-RVA(0x0015b5d0, 0x7c)
-void CWwdFactoryObject::ReleaseSubs_15b5d0() {
-    char* o = (char*)this;
-    CWwdFactoryObject* s;
-    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        delete s;
-        *(i32*)(o + 0x7c) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        delete s;
-        *(i32*)(o + 0x80) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        delete s;
-        *(i32*)(o + 0x88) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        delete s;
-        *(i32*)(o + 0x90) = 0;
-    }
-    *(i32*)(o + 0xc0) = (i32)0x80000000;
-    *(i32*)(o + 0xd8) = -1;
-    *(i32*)(o + 0x5c) = (i32)0x80000000;
-    *(i32*)(o + 0x20) = (i32)0x80000000;
-    *(i32*)(o + 0x38) = -1;
+    Unload(); // devirtualized in the dtor -> the inline E pass
 }
 
 // ---------------------------------------------------------------------------
@@ -223,7 +198,7 @@ void CWwdFactoryObject::ReleaseSubs_15b5d0() {
 // vs retail `testb mem`) and the budget subtract (mem-operand vs reg-load first).
 // Entropy-tail / zero-register-pinning wall.
 RVA(0x0015b650, 0x4d)
-void CWwdFactoryObject::Notify_15b650(void* p) {
+void CWwdGameObjectE::Notify_15b650(void* p) {
     char* o = (char*)this;
     if (*(unsigned char*)(o + 0x8) & 0x8) {
         i32 d = *(i32*)(o + 0x128) - *(i32*)((char*)p + 0x120);
@@ -276,20 +251,9 @@ CAniAdvanceCursor::CAniAdvanceCursor(i32 owner, i32 field04, i32 field08)
 // const register coloring across the two worker passes.
 RVA(0x0015b790, 0x1a6)
 CWwdGameObjectA::~CWwdGameObjectA() {
-    m_18c = -1;
-    m_190 = -1;
-    m_198 = 0;
-    m_194 = 0;
-    WORKER_FREE(m_7c);
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_d8 = -1;
-    m_c0 = (i32)0x80000000;
-    m_20.c = (i32)0x80000000; // 0x5c
-    m_20.b = -1;              // 0x38
-    m_20.a = (i32)0x80000000; // 0x20
-    // m_1a0 (WwdSubA) member destroyed; then Mid (E) folds.
+    Unload(); // devirtualized -> the inline A pass (geometry cache + E release)
+    // m_1a0 (CAniAdvanceCursor) member-destroys inline (the 0x5f0128 restamp),
+    // then ~E folds (second worker pass + ~CString + the CResolveNode tail).
 }
 
 // ---------------------------------------------------------------------------
@@ -303,41 +267,6 @@ i32 CWwdGameObject::Init(i32 a1, i32 a2, i32 a3, i32 a4) {
 }
 
 // ---------------------------------------------------------------------------
-// CWwdGameObject reset (0x15b980): drop the four sub-objects at +0x7c/+0x80/
-// +0x88/+0x90 via their scalar-dtor virtual (slot 1, delete flag), null the
-// geometry cache (+0x18c..+0x198), then re-seed the status fields. __thiscall.
-RVA(0x0015b980, 0x96)
-void CWwdFactoryObject::Reset_15b980() {
-    char* o = (char*)this;
-    *(i32*)(o + 0x18c) = -1;
-    *(i32*)(o + 0x190) = -1;
-    *(i32*)(o + 0x198) = 0;
-    *(i32*)(o + 0x194) = 0;
-    CWwdFactoryObject* s;
-    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        delete s;
-        *(i32*)(o + 0x7c) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        delete s;
-        *(i32*)(o + 0x80) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        delete s;
-        *(i32*)(o + 0x88) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        delete s;
-        *(i32*)(o + 0x90) = 0;
-    }
-    *(i32*)(o + 0xd8) = -1;
-    *(i32*)(o + 0xc0) = (i32)0x80000000;
-    *(i32*)(o + 0x5c) = (i32)0x80000000;
-    *(i32*)(o + 0x20) = (i32)0x80000000;
-    *(i32*)(o + 0x38) = -1;
-}
-
-// ---------------------------------------------------------------------------
 // 0x15bad0 - the 0x159440-final variant: thin derived class (vtable 0x5f0060) on top
 // of Mid. Re-runs the worker pass + groupX, then folds Mid + wap-object base.
 // @early-stop
@@ -345,51 +274,13 @@ void CWwdFactoryObject::Reset_15b980() {
 // trylevel chain reproduced; residual is callee-saved const register coloring.
 RVA(0x0015bad0, 0x153)
 CWwdGameObjectF::~CWwdGameObjectF() {
-    WORKER_FREE(m_7c);
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_c0 = (i32)0x80000000;
-    m_d8 = -1;
-    m_20.c = (i32)0x80000000; // 0x5c
-    m_20.a = (i32)0x80000000; // 0x20
-    m_20.b = -1;              // 0x38
-    // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + base-vtable stamp.
+    Unload(); // devirtualized -> the inline F pass (the E release copy)
 }
 
 // CWwdGameObject::SetupDeferred (0x15bc30): Setup with a1/a2 zeroed. Out-of-line.
 RVA(0x0015bc30, 0x16)
 i32 CWwdGameObject::SetupDeferred(i32 a3, i32 a4) {
     return CWwdGameObject::Setup(0, 0, a3, a4);
-}
-
-// ---------------------------------------------------------------------------
-// 0x15bc50: identical instantiation of ReleaseSubs_15b5d0 in a sibling subclass.
-RVA(0x0015bc50, 0x7c)
-void CWwdFactoryObject::ReleaseSubs_15bc50() {
-    char* o = (char*)this;
-    CWwdFactoryObject* s;
-    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        delete s;
-        *(i32*)(o + 0x7c) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        delete s;
-        *(i32*)(o + 0x80) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        delete s;
-        *(i32*)(o + 0x88) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        delete s;
-        *(i32*)(o + 0x90) = 0;
-    }
-    *(i32*)(o + 0xc0) = (i32)0x80000000;
-    *(i32*)(o + 0xd8) = -1;
-    *(i32*)(o + 0x5c) = (i32)0x80000000;
-    *(i32*)(o + 0x20) = (i32)0x80000000;
-    *(i32*)(o + 0x38) = -1;
 }
 
 // ---------------------------------------------------------------------------
@@ -404,62 +295,9 @@ void CWwdFactoryObject::ReleaseSubs_15bc50() {
 // variants) - not source-steerable.
 RVA(0x0015bd10, 0x1ef)
 CWwdGameObjectB::~CWwdGameObjectB() {
-    Clear_166810(); // 0x166810; same-class call, no cast-to-view of this
-    WORKER_FREE(m_7c);
-    m_1f8 = 0;
-    m_18c = -1;
-    m_190 = -1;
-    m_198 = 0;
-    m_194 = 0;
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_d8 = -1;
-    m_c0 = (i32)0x80000000;
-    m_5c = (i32)0x80000000;
-    m_20 = (i32)0x80000000;
-    m_38 = -1;
-    // m_1dc (CObList) auto-destroyed (DtorList), then ~WwdBLevel2 folds.
-}
-
-// ---------------------------------------------------------------------------
-// CWwdGameObject reset (0x15bf00): the deeper-reset twin - first run the base
-// reset (Reload_166810), clear +0x1f8, then the identical sub-object teardown +
-// status re-seed as Reset_15b980. __thiscall, ret 0.
-RVA(0x0015bf00, 0xa1)
-void CWwdFactoryObject::Reset_15bf00() {
-    char* o = (char*)this;
-    // 0x166810 is CWwdGameObjectB::Clear_166810 (the wide object's base reset); this
-    // CWwdFactoryObject is the same wide object under a second view, so call the real
-    // method (reloc binds to ?Clear_166810@CWwdGameObjectB@@QAEXXZ).
-    ((CWwdGameObjectB*)this)->Clear_166810();
-    *(i32*)(o + 0x1f8) = 0;
-    *(i32*)(o + 0x18c) = -1;
-    *(i32*)(o + 0x190) = -1;
-    *(i32*)(o + 0x198) = 0;
-    *(i32*)(o + 0x194) = 0;
-    CWwdFactoryObject* s;
-    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        delete s;
-        *(i32*)(o + 0x7c) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        delete s;
-        *(i32*)(o + 0x80) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        delete s;
-        *(i32*)(o + 0x88) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        delete s;
-        *(i32*)(o + 0x90) = 0;
-    }
-    *(i32*)(o + 0xd8) = -1;
-    *(i32*)(o + 0xc0) = (i32)0x80000000;
-    *(i32*)(o + 0x5c) = (i32)0x80000000;
-    *(i32*)(o + 0x20) = (i32)0x80000000;
-    *(i32*)(o + 0x38) = -1;
+    Unload(); // devirtualized -> the inline B pass (Clear_166810 + geometry + E release)
+    // m_1dc (CObList) member-destroys, then ~A folds (retail: the A-phase spills
+    // to `call 0x15b5d0` and the bottom keeps the 0x5efbc0 stamp + `call 0x429b`).
 }
 
 // 0x15bfb0: rect-overlap predicate (RECT a, RECT b): true iff a.left <= b.right,
@@ -487,17 +325,7 @@ i32 __stdcall RectsOverlap_15bfb0(CDDrawRect* a, CDDrawRect* b) {
 // worker pass + trylevel chain reproduced; residual is callee-saved const coloring.
 RVA(0x0015c070, 0x159)
 CWwdGameObjectC::~CWwdGameObjectC() {
-    m_18c = 0;
-    WORKER_FREE(m_7c);
-    WORKER_FREE(m_80);
-    WORKER_FREE(m_88);
-    WORKER_FREE(m_90);
-    m_c0 = (i32)0x80000000;
-    m_d8 = -1;
-    m_20.c = (i32)0x80000000; // 0x5c
-    m_20.a = (i32)0x80000000; // 0x20
-    m_20.b = -1;              // 0x38
-    // Mid (CWwdGameObjectE) folds the CString member + EdgeA/EdgeB + base-vtable stamp.
+    Unload(); // devirtualized -> the inline C pass (byte clear + E release)
 }
 
 // CWwdGameObject::SetupFlagged (0x15c1d0): stash the dot-color flag byte then Setup.
@@ -505,37 +333,6 @@ RVA(0x0015c1d0, 0x26)
 i32 CWwdGameObject::SetupFlagged(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag) {
     *(char*)&m_dotColor = (char)flag;
     return CWwdGameObject::Setup(a1, a2, a3, a4);
-}
-
-// ---------------------------------------------------------------------------
-// 0x15c200: the +0x18c-clearing twin - clear the byte at +0x18c first, then the
-// identical sub-object release + status re-seed. __thiscall, ret 0.
-RVA(0x0015c200, 0x82)
-void CWwdFactoryObject::ReleaseSubsClearKey_15c200() {
-    char* o = (char*)this;
-    *(char*)(o + 0x18c) = 0;
-    CWwdFactoryObject* s;
-    if ((s = *(CWwdFactoryObject**)(o + 0x7c)) != 0) {
-        delete s;
-        *(i32*)(o + 0x7c) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x80)) != 0) {
-        delete s;
-        *(i32*)(o + 0x80) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x88)) != 0) {
-        delete s;
-        *(i32*)(o + 0x88) = 0;
-    }
-    if ((s = *(CWwdFactoryObject**)(o + 0x90)) != 0) {
-        delete s;
-        *(i32*)(o + 0x90) = 0;
-    }
-    *(i32*)(o + 0xc0) = (i32)0x80000000;
-    *(i32*)(o + 0xd8) = -1;
-    *(i32*)(o + 0x5c) = (i32)0x80000000;
-    *(i32*)(o + 0x20) = (i32)0x80000000;
-    *(i32*)(o + 0x38) = -1;
 }
 
 // 0x15c290: blit-param init.

@@ -12,39 +12,11 @@
 #include <Ints.h>
 #include <rva.h>
 
-class CWwdFactoryObject {
-public:
-    virtual void Vs00();
-    virtual ~CWwdFactoryObject(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Vs08();
-    virtual void Vs0C();
-    virtual void Vs10();
-    virtual void Vs14();
-    virtual void Vs18();
-    virtual void Vs1C();
-    virtual i32 Vs20(); // slot 8 (@+0x20) - object type tag (== 5 in Find_15a8c0)
-    virtual void Vs24();
-    virtual i32 Build(i32 a, i32 b, i32 c, i32 d); // +0x28 deserialize/build
-
-    // Reset/clear the wide object: release the four +0x7c..0x90 sub-objects and
-    // reset the geometry/status fields. Documented raw-offset access. (I obj.)
-    void Reset_15b980(); // 0x15b980
-    void Reset_15bf00(); // 0x15bf00
-    // 0x166810 base reset is CWwdGameObjectB::Clear_166810 (same wide object; called
-    // through a CWwdGameObjectB* view in Reset_15bf00) - no fake local placeholder.
-
-    // Release the four +0x7c..0x90 sub-objects + re-seed status (the dtor's
-    // shared "drop members" helper; two identical instantiations + a +0x18c
-    // variant). Raw-offset access (documented). (I obj.)
-    void ReleaseSubs_15b5d0();
-    void ReleaseSubs_15bc50();
-    void ReleaseSubsClearKey_15c200();
-    // 0x15b650: tick/notify - under flag 0x8 decrement the +0x128 budget (latch
-    // the +0x7c sub-object's error on underflow); else hand `p` to the +0x80
-    // notifier's +0x10 cdecl callback. (I obj.)
-    void Notify_15b650(void* p);
-};
-SIZE_UNKNOWN(CWwdFactoryObject);
+// (The former CWwdFactoryObject dispatch view of the wide object is DISSOLVED
+// onto the real family (<Wwd/WwdGameObjectFamily.h>): its Vs20 was slot-8
+// GetClassId, its Build slot-10 Setup28, and its Reset_/ReleaseSubs_ method set
+// the per-kind Unload overrides (0x15b5d0/0x15b980/0x15bf00/0x15bc50/0x15c200);
+// Notify_15b650 is CWwdGameObjectE::Notify_15b650.)
 
 // (The former CWwdNotifier view of the +0x80/+0x88 notifier is DISSOLVED onto
 // the canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>): its "+0x10 cdecl

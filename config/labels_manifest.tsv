@@ -57,7 +57,7 @@ colorhsv	1
 connslotlist	3
 creditsstate	33
 creditzassets	1
-cremusnode	2
+cremusnode	1
 cspawnentry	1
 cursorsnapactreg	2
 cursorsnapsprite	6
@@ -375,7 +375,7 @@ worldlevelpath	2
 worldsoundset	32
 wormhole	28
 wormholeacts	3
-wwdfactoryobject	32
+wwdfactoryobject	33
 wwdfile	3
 wwdgameobject	43
 wwdgameobjectrender	15

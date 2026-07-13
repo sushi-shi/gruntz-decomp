@@ -18,6 +18,7 @@
 #include <Wwd/WwdGameObjectFamily.h>   // the CWwdGameObjectE/A/F/B/C hierarchy
 #include <Gruntz/WwdGameObject.h>      // canonical CWwdGameObject
 #include <DDrawMgr/AnimWorkerObj.h>    // the canonical +0x7c worker (m_notify fire callback)
+#include <DDrawMgr/DDrawChildGroup.h> // CDDrawGroupNode (the broadcast child-list node)
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CWwdObjMgrL::m_0c owner
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 
@@ -159,7 +160,7 @@ reject:
 // the this/pixel spill choice. docs/patterns/zero-register-pinning.md.
 RVA(0x001661d0, 0xc2)
 void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
-    memcpy(&m_b8, &m_18, 36);
+    memcpy(&m_b8, &m_lastX, 36);
     if (m_d8 != -1) {
         i32 x = m_b8;
         i32 y = m_bc;
@@ -178,7 +179,7 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
             base2[sa->m_b0 * x + sa->m_pitch * y] = pixel;
             sa->m_8->Unlock(0);
         }
-        m_20.b = -1; // m_38
+        m_38 = -1; // m_38
     }
 }
 
@@ -203,14 +204,14 @@ void CWwdGameObjectC::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
 RVA(0x001662a0, 0x1fa)
 void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     i32 rc[4];                        // one reused src+dst rect buffer
-    if (m_20.b != -1 && m_d8 != -1) { // both armed
-        i32 dx = abs(m_18 - m_b8) + 1;
-        i32 dy = abs(m_1c - m_bc) + 1;
+    if (m_38 != -1 && m_d8 != -1) { // both armed
+        i32 dx = abs(m_lastX - m_b8) + 1;
+        i32 dy = abs(m_lastY - m_bc) + 1;
         if (dx > 0x20 || dy > 0x20) {
-            rc[0] = m_18;
-            rc[1] = m_1c;
-            rc[2] = m_18 + m_20.m_w;
-            rc[3] = m_1c + m_20.m_h;
+            rc[0] = m_lastX;
+            rc[1] = m_lastY;
+            rc[2] = m_lastX + m_dirtyW;
+            rc[3] = m_lastY + m_dirtyH;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
             rc[0] = m_b8;
             rc[1] = m_bc;
@@ -218,19 +219,19 @@ void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
             rc[3] = m_bc + m_d4;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
         } else {
-            i32 left = m_18 < m_b8 ? m_18 : m_b8;
-            i32 top = m_1c < m_bc ? m_1c : m_bc;
+            i32 left = m_lastX < m_b8 ? m_lastX : m_b8;
+            i32 top = m_lastY < m_bc ? m_lastY : m_bc;
             rc[0] = left;
             rc[1] = top;
             rc[2] = left + dx;
             rc[3] = top + dy;
             a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
         }
-    } else if (m_20.b != -1) {
-        rc[0] = m_18;
-        rc[1] = m_1c;
-        rc[2] = m_18 + m_20.m_w;
-        rc[3] = m_1c + m_20.m_h;
+    } else if (m_38 != -1) {
+        rc[0] = m_lastX;
+        rc[1] = m_lastY;
+        rc[2] = m_lastX + m_dirtyW;
+        rc[3] = m_lastY + m_dirtyH;
         a->m_surface->BltEx(rc, b->m_surface, rc, 0x1000000, 0);
     } else if (m_d8 != -1) {
         rc[0] = m_b8;
@@ -256,15 +257,15 @@ void CWwdGameObjectC::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32
 // no source spelling that flips the pair. docs/patterns/zero-register-pinning.md.
 RVA(0x001664a0, 0x133)
 void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
-    if (m_20.b != -1 && m_d8 != -1) { // both armed -> combined region
-        i32 dx = abs(m_18 - m_b8) + 1;
-        i32 dy = abs(m_1c - m_bc) + 1;
+    if (m_38 != -1 && m_d8 != -1) { // both armed -> combined region
+        i32 dx = abs(m_lastX - m_b8) + 1;
+        i32 dy = abs(m_lastY - m_bc) + 1;
         if (dx > 0x20 || dy > 0x20) {
-            a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record
+            a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record
             a->BlitDirtyRect_164650(b, &m_b8, &m_d0);     // shadow record
         } else {
-            i32 left = m_18 < m_b8 ? m_18 : m_b8; // min x
-            i32 top = m_1c < m_bc ? m_1c : m_bc;  // min y
+            i32 left = m_lastX < m_b8 ? m_lastX : m_b8; // min x
+            i32 top = m_lastY < m_bc ? m_lastY : m_bc;  // min y
             i32 pos[2];
             i32 size[2];
             size[1] = dy;
@@ -273,8 +274,8 @@ void CWwdGameObjectC::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b
             pos[0] = left;
             a->BlitDirtyRect_164650(b, pos, size);
         }
-    } else if (m_20.b != -1) {
-        a->BlitDirtyRect_164650(b, &m_18, &m_20.m_w); // live record only
+    } else if (m_38 != -1) {
+        a->BlitDirtyRect_164650(b, &m_lastX, &m_dirtyW); // live record only
     } else if (m_d8 != -1) {
         a->BlitDirtyRect_164650(b, &m_b8, &m_d0); // shadow record only
     }
@@ -375,7 +376,7 @@ CWwdObjMgrL::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name
 // its returned POSITION in child->m_78. Rejects a null child or a failed insert.
 // __thiscall, 1 arg (ret 4).
 RVA(0x001667e0, 0x2f)
-i32 CWwdGameObjectB::AddChild_1667e0(CDDrawGroupChild* child) {
+i32 CWwdGameObjectB::AddChild_1667e0(CWwdGameObjectE* child) {
     if (child == 0) {
         return 0;
     }
@@ -383,7 +384,7 @@ i32 CWwdGameObjectB::AddChild_1667e0(CDDrawGroupChild* child) {
     if (pos == 0) {
         return 0;
     }
-    child->m_78 = (i32)pos;
+    child->m_posCache = (i32)pos;
     return 1;
 }
 
@@ -410,11 +411,11 @@ void CWwdGameObjectB::Clear_166810() {
 // (CObList::RemoveAt). Rejects a null child or an unlinked one (m_78 == 0).
 // __thiscall, 1 arg (ret 4).
 RVA(0x00166850, 0x29)
-i32 CWwdGameObjectB::RemoveChild_166850(CDDrawGroupChild* child) {
+i32 CWwdGameObjectB::RemoveChild_166850(CWwdGameObjectE* child) {
     if (child == 0) {
         return 0;
     }
-    POSITION pos = (POSITION)child->m_78;
+    POSITION pos = (POSITION)child->m_posCache;
     if (pos == 0) {
         return 0;
     }
@@ -433,7 +434,7 @@ i32 CWwdGameObjectB::WalkChildWorkers_166880() {
     for (CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition(); n != 0;) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
-        CDDrawGroupChild* o = cur->m_obj;
+        CWwdGameObjectE* o = cur->m_obj;
         o->m_7c->m_notify((CGameObject*)o);
         count++;
     }
@@ -445,46 +446,46 @@ i32 CWwdGameObjectB::WalkChildWorkers_166880() {
 // the +0x1e0 child list, dispatching each child's matching broadcast virtual with the
 // forwarded args. No post-loop dispatch. __thiscall.
 RVA(0x001668b0, 0x26)
-void CWwdGameObjectB::Slot11_1668b0(i32 a1) {
+void CWwdGameObjectB::Render(WwdRenderCtx* ctx) {
     CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->Render(a1);
+            cur->m_obj->Render(ctx);
         } while (n != 0);
     }
 }
 RVA(0x001668e0, 0x2d)
-void CWwdGameObjectB::Slot12_1668e0(i32 a1, i32 a2) {
+void CWwdGameObjectB::BltDirty(CDDrawSurfacePair* a, CDDrawSurfacePair* b) {
     CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->BltDirty(a1, a2);
+            cur->m_obj->BltDirty(a, b);
         } while (n != 0);
     }
 }
 RVA(0x00166910, 0x34)
-void CWwdGameObjectB::Slot13_166910(i32 a1, i32 a2, i32 a3) {
+void CWwdGameObjectB::BltDirtyEx(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->BltDirtyEx(a1, a2, a3);
+            cur->m_obj->BltDirtyEx(a, b, c);
         } while (n != 0);
     }
 }
 RVA(0x00166950, 0x34)
-void CWwdGameObjectB::Slot14_166950(i32 a1, i32 a2, i32 a3) {
+void CWwdGameObjectB::BltDirtyRegions(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c) {
     CDDrawGroupNode* n = (CDDrawGroupNode*)m_1dc.GetHeadPosition();
     if (n != 0) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->BltDirtyRegions(a1, a2, a3);
+            cur->m_obj->BltDirtyRegions(a, b, c);
         } while (n != 0);
     }
 }

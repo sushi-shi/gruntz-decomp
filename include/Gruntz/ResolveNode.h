@@ -1,15 +1,18 @@
 #ifndef GRUNTZ_GRUNTZ_RESOLVENODE_H
 #define GRUNTZ_GRUNTZ_RESOLVENODE_H
 
-// ResolveNode.h - CResolveNode, the 0x68-byte CLoadable leaf node of the DDraw
-// surface/page-manager family (own primary vftable @0x1efbc0 = ??_7CResolveNode;
-// the shared WwdBResolve grand-base of the CWwdGameObject factory objects).
+// ResolveNode.h - CResolveNode, the 0x68-byte CLoadable node (own primary
+// vftable @0x1efbc0 = ??_7CResolveNode) that is BOTH the DDraw surface/page-
+// manager leaf AND the direct base of the wide game-object family
+// (CWwdGameObjectE : CResolveNode - proven by the family ctor 0x15b390 stamping
+// 0x5efbc0 for its base subobject and every family dtor folding this class's
+// teardown; the former WwdBResolve duplicate of this class is DISSOLVED).
 // Hoisted from ResolveNode.cpp (wave4-L) so the split method set can live in its
-// retail objs: default ctor/dtor pocket (D, ResolveNode.cpp), the 3-arg ctor
+// retail objs: default ctor pocket (D, ResolveNode.cpp), the 3-arg ctor
 // (I obj, WwdFactoryObject.cpp), Init (T obj, DDrawSurfacePair.cpp).
 //
-// Layout recovered from the ctor/dtor/Init stores; only OFFSETS + emitted code
-// bytes are load-bearing (campaign doctrine).
+// Layout recovered from the ctor/dtor/Init/SetPosition stores + the wide-object
+// dirty-rect blits; only OFFSETS + emitted code bytes are load-bearing.
 
 #include <Gruntz/Loadable.h> // canonical CLoadable : CWapObj : CObject (9-slot base)
 #include <Ints.h>
@@ -19,35 +22,63 @@ class CResolveNode : public CLoadable {
 public:
     // Re-based onto the canonical 9-slot CLoadable: the m_04/m_08/m_0c header +
     // slots 5..8 come from CLoadable. This node OVERRIDES slot 5 (IsLoaded
-    // @0x154a10) and slot 7 (Unload/reset @0x154a80), INHERITS slot 6 (IsReady
-    // @0x001c08) and slot 8 (GetClassId @0x154a00). Resolve (slot 9) is the
-    // node's own new virtual.
-    i32 IsLoaded() OVERRIDE;       // [5] 0x154a10  (checks m_04!=-1 && m_0c)
-    i32 Unload() OVERRIDE;         // [7] 0x154a80  reset/reload hook
-    virtual i32 Resolve(i32, i32); // [9] 0x164790  CResolveNode's own new virtual
+    // @0x154a10) and slot 7 (Unload/reset @0x154a80); slots 6/8 carry the
+    // CWapObj/CLoadable default bodies (0x001c08 / 0x154a00) and are redeclared
+    // per the CLoadable-family convention (the binary audit diffs src-only
+    // tables vs CObject). SetPosition (slot 9) is the node's own new virtual.
+    virtual i32 IsLoaded() OVERRIDE;   // [5] 0x154a10  (checks m_04!=-1 && m_0c)
+    virtual i32 IsReady() OVERRIDE;    // [6] 0x001c08  (the CWapObj default)
+    virtual i32 Unload() OVERRIDE;     // [7] 0x154a80  disarm the dirty-rect sentinels
+    virtual i32 GetClassId() OVERRIDE; // [8] 0x154a00  (the CLoadable default)
+    // slot 9 (new): set position + reset the draw state (x->m_5c, y->m_60, zero
+    // the clip/plot fields, reseed m_48=0x32/m_50=1, cache owner->m_24). Body
+    // 0x164790 (T obj); shared by the whole wide-object family (never overridden).
+    virtual i32 SetPosition(i32 x, i32 y); // [9] 0x164790
 
     CResolveNode();                                    // 0x1549d0 (D pocket)
     CResolveNode(i32 owner, i32 field04, i32 field08); // 0x15b2c0 (I obj)
-    virtual ~CResolveNode() OVERRIDE;                  // 0x154a50 (D pocket)
     i32 Init(i32 owner, i32 field04, i32 resolveX, i32 resolveY, i32 field40, i32 field08);
     // ^ 0x1647e0 (T obj)
 
-    // vptr @+0x00 + m_04/m_08/m_0c inherited from CLoadable; own scratch from +0x10.
-    char _pad10[0x20 - 0x10]; // +0x10..+0x1f
-    i32 m_20;                 // +0x20  = 0x80000000
-    char _pad24[0x38 - 0x24]; // +0x24..+0x37
-    i32 m_38;                 // +0x38  = -1
+    // Dtor: disarm the live dirty-rect sentinels, then ~CLoadable (m_04/-1,
+    // m_08/m_0c zero) + the CObject grand-base restamp fold in. Defined
+    // OUT-OF-LINE in WwdFactoryObject.cpp (0x154a50) - the SAME TU as the
+    // wide-object family dtors, so cl folds its content into ~E/~A/~F/~C
+    // exactly as retail does, while the ResolveNode.cpp pocket's ??_G emits
+    // retail's `call 0x154a50` against the extern (an inline def here would
+    // make cl fold the body INTO that ??_G, which retail did not).
+    virtual ~CResolveNode() OVERRIDE; // 0x154a50 (WwdFactoryObject.cpp)
+
+    // vptr @+0x00 + m_04/m_08/m_0c inherited from CLoadable; own fields from +0x10.
+    // (Names merged from the wide-object family's proven readers - the ex
+    // WwdEdgeA/WwdEdgeB RAII scaffolding and the flat views' +0x10..+0x64 block.)
+    i32 m_10; // +0x10  (SetPosition zeroes; plot state)
+    i32 m_14; // +0x14  (SetPosition zeroes)
+    // +0x18/+0x1c: the live dirty-rect / last-drawn position (RenderDot caches the
+    // drawn column/row here; the 9-dword +0x18..+0x3c block is snapshotted to +0xb8).
+    i32 m_lastX;              // +0x18
+    i32 m_lastY;              // +0x1c
+    i32 m_20;                 // +0x20  live dirty-rect left (INT_MIN = disarmed corner)
+    i32 m_24;                 // +0x24  live dirty-rect top
+    char _pad28[0x30 - 0x28]; // +0x28..+0x2f
+    // +0x30/+0x34: live dirty-rect size (a RenderDot dot plot sets 1x1; the
+    // A/C blit slots read them as the rect extent).
+    i32 m_dirtyW;             // +0x30
+    i32 m_dirtyH;             // +0x34
+    i32 m_38;                 // +0x38  live dirty-rect armed flag (-1 == disarmed)
     i32 m_3c;                 // +0x3c  = 0
-    i32 m_40;                 // +0x40
-    char _pad44[0x4c - 0x44]; // +0x44..+0x4b
-    i32 m_4c;                 // +0x4c
-    i32 m_50;                 // +0x50
+    i32 m_40;                 // +0x40  (SetPosition zeroes)
+    i32 m_44;                 // +0x44  (SetPosition zeroes)
+    i32 m_48;                 // +0x48  (SetPosition reseeds 0x32)
+    i32 m_4c;                 // +0x4c  (SetPosition zeroes)
+    i32 m_50;                 // +0x50  (SetPosition reseeds 1)
     char _pad54[0x58 - 0x54]; // +0x54..+0x57
-    i32 m_58;                 // +0x58
-    i32 m_5c;                 // +0x5c  = 0x80000000
-    char _pad60[0x64 - 0x60]; // +0x60..+0x63
-    i32 m_64;                 // +0x64  = 0x80000000
+    i32 m_58;                 // +0x58  (SetPosition zeroes)
+    i32 m_5c;                 // +0x5c  screen/position X (INT_MIN = unset)
+    i32 m_60;                 // +0x60  screen/position Y
+    i32 m_64;                 // +0x64  = INT_MIN (clip-rect left sentinel)
 };
 SIZE_UNKNOWN(CResolveNode);
+VTBL(CResolveNode, 0x001efbc0); // ??_7CResolveNode@@6B@ (10 slots; ex WwdBResolve dup)
 
 #endif // GRUNTZ_GRUNTZ_RESOLVENODE_H

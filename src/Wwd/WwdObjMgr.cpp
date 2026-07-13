@@ -148,7 +148,7 @@ void CDDrawChildGroup::DestroyChildren() {
     while (n != 0) {
         CDDrawGroupNode* cur = n;
         n = n->m_next;
-        CDDrawGroupChild* obj = cur->m_obj;
+        CWwdGameObjectE* obj = cur->m_obj;
         if (obj != 0) {
             delete obj;
         }
@@ -443,7 +443,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_1598d0(int a1, int a2, int a3, int a4, 
     } else {
         result = 0;
     }
-    if (result->Slot10_1665e0(a2, a3, a4, a5) == 0) {
+    if (result->Setup28(a2, a3, a4, a5) == 0) {
         if (result != 0) {
             delete result; // virtual scalar-deleting dtor (slot 1)
         }
@@ -568,7 +568,7 @@ void CDDrawChildGroup::WalkDispatch2C(i32 a1) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->Render(a1);
+            cur->m_obj->Render((WwdRenderCtx*)a1);
         } while (n != 0);
     }
 }
@@ -580,7 +580,7 @@ void CDDrawChildGroup::WalkDispatch30(i32 a1, i32 a2) {
         do {
             CDDrawGroupNode* cur = n;
             n = n->m_next;
-            cur->m_obj->BltDirty(a1, a2);
+            cur->m_obj->BltDirty((CDDrawSurfacePair*)a1, (CDDrawSurfacePair*)a2);
         } while (n != 0);
     }
 }
@@ -590,7 +590,7 @@ void CDDrawChildGroup::WalkDispatch34(i32 a1, i32 a2, i32 a3) {
     CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
-            n->m_obj->BltDirtyEx(a1, a2, a3);
+            n->m_obj->BltDirtyEx((CDDrawSurfacePair*)a1, (CDDrawSurfacePair*)a2, a3);
             n = n->m_next;
         } while (n != 0);
     }
@@ -602,7 +602,7 @@ void CDDrawChildGroup::WalkDispatch38(i32 a1, i32 a2, i32 a3) {
     CDDrawGroupNode* n = m_head;
     if (n != 0) {
         do {
-            n->m_obj->BltDirtyRegions(a1, a2, a3);
+            n->m_obj->BltDirtyRegions((CDDrawSurfacePair*)a1, (CDDrawSurfacePair*)a2, a3);
             n = n->m_next;
         } while (n != 0);
     }
@@ -805,7 +805,7 @@ void CDDrawChildGroup::CollideBroadcast() {
                         }
                     }
                     if (mask1b) {
-                        ((CWwdFactoryObject*)oj)->Notify_15b650(oi);
+                        ((CWwdGameObjectE*)oj)->Notify_15b650(oi);
                     }
                 }
             }
@@ -1086,7 +1086,7 @@ void* CWwdObjMgr::Find_15a8c0(i32 id, const char* key) {
     do {
         char* obj = *(char**)(node + 8);
         node = *(char**)node;
-        i32 tag = ((CWwdFactoryObject*)obj)->Vs20();
+        i32 tag = ((CWwdGameObjectE*)obj)->GetClassId(); // vtable slot 8 (the type tag)
         if (tag == 5 && *(i32*)(obj + 4) == id
             && *(i32*)(*(char**)(obj + 0x7c) + 0x10) == *(i32*)(fp + 0x10)) {
             return obj;
