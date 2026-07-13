@@ -8,11 +8,25 @@
 // through the inherited 16-slot vtable, so the leaf type is used ONLY for the new-size +
 // ctor target.
 //
-// These live in a dedicated header (not per-.cpp views) because the canonical class
-// headers (GruntStaminaSprite.h / GruntWingzTimeSprite.h) pull the Grunt.h world, which
-// cannot coexist with the canonical UserLogic.h this pump TU already uses (the documented
-// CUserLogic true-0x30 vs fat-0x40 two-world ODR split). Only the sizeof (the retail
-// operator-new argument) + the ctor call are load-bearing.
+// @identity-TODO THE "CANNOT COEXIST" WALL BELOW IS FALSE - FALSIFIED 2026-07-13, DO NOT
+// RE-INHERIT IT. The note used to read: "these live in a dedicated header because the
+// canonical class headers (GruntStaminaSprite.h / GruntWingzTimeSprite.h) pull the Grunt.h
+// world, which cannot coexist with the canonical UserLogic.h this pump TU already uses (the
+// documented CUserLogic true-0x30 vs fat-0x40 two-world ODR split)."
+//
+// Two independent refutations:
+//   1. Grunt.h and UserLogic.h define NO class in common, so no C2011 redefinition can
+//      arise between them (a C2011 needs the SAME class defined twice).
+//   2. Decisive: a TU that includes <Mfc.h> + <Gruntz/UserLogic.h> +
+//      <Gruntz/GruntStaminaSprite.h> + <Gruntz/GruntWingzTimeSprite.h> COMPILES CLEAN under
+//      the real MSVC 5.0 (cl /c /O2 /GX produced the .obj, zero diagnostics).
+//
+// So these six size-views are unnecessary and should be DISSOLVED onto the canonical
+// classes: include the real headers in the pump TUs and delete this file. The one thing a
+// folder must check is that each canonical class's sizeof still equals the retail
+// operator-new immediate recorded here (0x5c / 0x60 / 0x64 / ...) - if it does not, that is
+// a REAL layout bug in the canonical class (run gruntz.analysis.stale_walls), not a reason
+// to keep the view. Not folded here only for want of budget, NOT because of a wall.
 #ifndef GRUNTZ_ANIMWORKERSPRITELEAVES_H
 #define GRUNTZ_ANIMWORKERSPRITELEAVES_H
 

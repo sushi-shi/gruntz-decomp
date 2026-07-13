@@ -249,6 +249,10 @@ def reconstructed_sizes():
 
 def scan_sources():
     files, sizes, unknown, defined, includes = {}, {}, set(), set(), {}
+    # class -> the files that DEFINE it. A C2011 needs a class with >= 2 definitions; the
+    # includer count of a header is irrelevant to that (see T3).
+    defs_by_class = {}
+    defs_by_file = {}
     for g in SRC_GLOBS:
         for f in glob.glob(str(REPO / g), recursive=True):
             rel = os.path.relpath(f, REPO)
@@ -258,11 +262,15 @@ def scan_sources():
                 sizes[m.group(1)] = int(m.group(2), 16 if m.group(2).startswith("0x") else 10)
             for m in SIZE_UNK_RE.finditer(t):
                 unknown.add(m.group(1))
-            defined.update(DEF_RE.findall(t))
+            here = set(DEF_RE.findall(t))
+            defined.update(here)
             defined.update(TYPEDEF_RE.findall(t))
+            defs_by_file[os.path.basename(rel)] = here
+            for c in here:
+                defs_by_class.setdefault(c, set()).add(rel)
             for h in INCLUDE_RE.findall(t):
                 includes.setdefault(os.path.basename(h), set()).add(rel)
-    return files, sizes, unknown, defined, includes
+    return files, sizes, unknown, defined, includes, defs_by_class, defs_by_file
 
 
 # ---------------------------------------------------------------------------
@@ -280,6 +288,13 @@ CLASS_TOK = re.compile(r"\b((?:C[A-Z]\w+|z[A-Z]\w+|_z\w+))\b")
 RVA_TOK = re.compile(r"\b0x0*([0-9a-f]{4,6})\b", re.I)
 HDR_TOK = re.compile(r"<([\w/]+\.h)>|\b(\w+\.h)\b")
 SIZE_PREMISE = re.compile(r"SIZE_UNKNOWN|size (?:is )?(?:not|un)known|unknown size|size TBD", re.I)
+# A note that ALREADY records a wall as dead/corrected is not a live claim. Without this the
+# tool re-flags its own fix notes forever ("STALE-WALL NOTE, corrected: ... the wall is DEAD"),
+# which is the fastest way to teach people to ignore it.
+RESOLVED_RE = re.compile(
+    r"is DEAD|was false|STALE-WALL NOTE|now folded|is folded|Do not resurrect|no longer holds",
+    re.I,
+)
 SLOT_PREMISE = re.compile(r"(vtable|vtbl|slot)[^.\n]{0,40}(member|field|size)", re.I)
 
 
@@ -316,7 +331,7 @@ def near(blk, premise_re, token, window=140):
 
 def audit(img, opnew):
     rva2name, _n2r = load_symbols()
-    files, sizes, unknown, defined, includes = scan_sources()
+    files, sizes, unknown, defined, includes, defs_by_class, defs_by_file = scan_sources()
     libcls = library_classes()
     oracle = allocation_oracle(img, opnew, rva2name)
 
@@ -363,15 +378,33 @@ def audit(img, opnew):
                         "STALE phantom premise: %s no longer exists in the tree" % c
                     )
 
-            # T3 - a C2011 / "can never coexist" premise about a header with <=1 includer.
-            if re.search(r"C2011|coexist|would clash|would collide|walled out", blk, re.I):
+            # T3 - a C2011 / "can never coexist" premise that no duplicate definition backs.
+            #
+            # This used to ask "does the cited header have <= 1 includer?" and call the wall
+            # stale if so. That inference is UNSOUND and it cried wolf: a C2011 fires when TWO
+            # DEFINITIONS of one class meet in ONE TU, so what matters is whether a duplicate
+            # definition exists at all - the header's includer COUNT says nothing about it. (It
+            # mislabelled the live CUserLogic true-0x30/fat-0x40 ODR walls as dead.)
+            #
+            # The sound test: the premise is dead only if NO class defined by the cited header
+            # is defined anywhere else in the tree - then there is nothing to redefine, and
+            # including it cannot raise C2011.
+            if RESOLVED_RE.search(blk):
+                pass  # the note already records the wall as dead/corrected - not a live claim
+            elif re.search(r"C2011|coexist|would clash|would collide|walled out", blk, re.I):
                 for a, b in HDR_TOK.findall(blk):
                     h = os.path.basename(a or b)
-                    inc = includes.get(h, set())
-                    if len(inc) <= 1:
+                    hdr_classes = defs_by_file.get(h)
+                    if not hdr_classes:
+                        continue  # we do not have the header's defs -> cannot judge; stay quiet
+                    dupes = sorted(c for c in hdr_classes if len(defs_by_class.get(c, ())) > 1)
+                    if not dupes:
                         hits.append(
-                            "STALE C2011/coexist premise: %s has %d includer(s) - a collision "
-                            "needs two" % (h, len(inc))
+                            "STALE C2011/coexist premise: %s defines %d class(es) and NOT ONE is "
+                            "defined anywhere else - there is nothing to redefine, so it cannot "
+                            "raise C2011. (Necessary, not sufficient: confirm by actually "
+                            "compiling the co-inclusion before removing the wall.)"
+                            % (h, len(hdr_classes))
                         )
 
             # T4 - "RVA is not a function start / unclaimed", but it thunk-resolves to a

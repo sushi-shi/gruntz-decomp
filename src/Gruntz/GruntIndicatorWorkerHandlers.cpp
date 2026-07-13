@@ -2,8 +2,14 @@
 // grunt-HUD indicator sprites (selected-highlight / health / toy / stamina / toy-time /
 // wingz-time / powerup). One contiguous retail /Gy object (0x7db20..0x7e2a0), split out
 // of AnimWorkerHandlers.cpp (matcher-1) - it needs the sprite-leaf size-views
-// (AnimWorkerSpriteLeaves.h), whose canonical class headers pull the Grunt.h world that
-// cannot coexist with the trigger/point leaf headers the sibling TU uses.
+// (AnimWorkerSpriteLeaves.h).
+//
+// @identity-TODO the reason this file was SPLIT OFF ("the canonical class headers pull the
+// Grunt.h world that cannot coexist with the trigger/point leaf headers the sibling TU
+// uses") is FALSE - falsified 2026-07-13: Grunt.h and UserLogic.h define no class in common,
+// and a TU including UserLogic.h + GruntStaminaSprite.h + GruntWingzTimeSprite.h compiles
+// clean under the real MSVC 5.0. See the note atop <Gruntz/AnimWorkerSpriteLeaves.h>. The
+// split (and the size-views) can be dissolved; the wall is not real.
 //
 // Each handler is a __cdecl FREE function byte-identical to the trigger/point handlers
 // in AnimWorkerHandlers.cpp bar the CUserLogic leaf it `new`s on worker-state 0 (the
