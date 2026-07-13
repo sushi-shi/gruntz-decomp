@@ -160,7 +160,7 @@ struct EngObj; // teardown-only sub-object (Teardown())
 class CGruntSpawnConfig;
 class CGameLevel;
 class CLightFxMgr;  // +0x78 light-FX/shade-table pump (Reset teardown @0x9dc80)
-class CWorldDelete; // +0x3c world sub-object torn down via vtable slot 1
+
 // +0x34 is the REAL CSymParser (<Bute/SymParser.h>; SIZE 0x94 == the size retail
 // operator-new's at it) and +0x38 the REAL Utils::RegistryHelper - the CRezSurface94 /
 // CSettingsWriter shells that stood for them were fake views over the same rvas.
@@ -447,7 +447,8 @@ public:
                                        //        new's it (0x94) + ParseBuffer's the rez row;
                                        //        LevelRezPath's ResolvePath runs on it)
     Utils::RegistryHelper* m_settings; // +0x38  settings/registry writer (SetValueDword)
-    CWorldDelete* m_3c;                // +0x3c  engine sub-object (vtable-slot-1 teardown)
+    CObject* m_3c;                     // +0x3c  CObject-derived engine sub-object (identity
+                                       //        unrecovered; torn down via `delete` slot 1)
     EngObj* m_40;                      // +0x40  engine sub-object (teardown-only)
     HudGuard44* m_hudGuard;            // +0x44  HUD first-frame seed guard (+0x124)
     CGruntzSoundZ* m_sound;            // +0x48  sound/bank object (StopBank/StopAll)

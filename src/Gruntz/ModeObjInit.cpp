@@ -18,7 +18,6 @@
 #include <Gruntz/StatusBarMgr.h>           // canonical CStatusBarMgr (m_guts; LoadBattlezItemConfig/Teardown)
 #include <Gruntz/ChatBoxOwner.h>           // canonical CChatBoxOwner (m_hitTest; Attach/Deactivate/Configure)
 #include <Gruntz/UserLogic.h>              // canonical CGameObject (m_scrollSink; m_stateFlags bit0)
-#include <Net/NetMgr.h>                    // CNetGameMgr field view of a1 (m_channels[0] gates)
 #include <Gruntz/TileTriggerContainer.h>   // canonical CTileTriggerContainer (m_beginMarker; dtor 0xc8640)
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (GetFlag74)
 
@@ -60,7 +59,8 @@ namespace modeinit {
     // (+0x90, 0xd0030 - a bare `ret` empty body). Setup43a9 @0x43a9 IS
     // CState::LoadGameAssetNamespaces (0xf9ea0); IsModeReady @0x35da IS
     // CPlay::LoadCursorSprites (0xd0120). The Parent view was CGruntzMgr (m_chatLog/
-    // m_saveInfoRec/m_114), Arg1 the CNetGameMgr field view (m_channels[0] gates),
+    // m_saveInfoRec/m_114), Arg1 the CGruntzMgr singleton (m_options[0] gates m_020/
+    // m_014 - the ex-CNetChannel m_active/m_14 view of the same +0x150 record),
     // Peer the CGameObject m_scrollSink (m_stateFlags bit0), Ctl1c the CChatBoxOwner,
     // Rec78 the CTileTriggerContainer, Rec50 the CTimer - all dissolved onto the
     // canonicals; only Worker630 (the manual CStatusBarMgr-ctor emulation the /GX
@@ -149,17 +149,19 @@ namespace modeinit {
 RVA(0x000c7ec0, 0x5f5)
 i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
     using namespace modeinit;
-    CNetGameMgr* a1 = (CNetGameMgr*)a1_i; // a1 IS the game-manager singleton (field view)
+    // a1 IS the CGruntzMgr singleton (the one cast is the mangling-locked i32 arg;
+    // CState::Vfunc1's HHH signature cannot be retyped).
+    CGruntzMgr* a1 = (CGruntzMgr*)a1_i;
     {
         if (a1 == 0) {
             return 0;
         }
-        CNetChannel* sub = a1->m_channels; // &a1->m_150 (never null; the null-check is emitted)
+        GruntzPlayer* sub = a1->m_options; // &a1->m_150 (never null; the null-check is emitted)
         if (sub == 0) {
             return 0;
         }
-        sub->m_active = 1;
-        sub->m_14 = 1;
+        sub->m_020 = 1; // live gate  (== the ex-CNetChannel::m_active view)
+        sub->m_014 = 1; // armed gate (== the ex-CNetChannel::m_14 view)
         m_region0Gate = 0;
         m_region1Gate = 0;
         m_region2Gate = 0;
@@ -350,7 +352,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         m_40 = 0; // the retail DWORD store (the ex-view's u8 was the noted bug)
         m_1c0 = 0;
         memset(&m_1d0, 0, 0x40 * 4); // clears +0x1d0..+0x2d0
-        ((CGruntzMgr*)a1)->ResetClockGlobals(); // retail ecx = the A1 arg slot (a1 IS the mgr)
+        a1->ResetClockGlobals(); // retail ecx = the A1 arg slot (a1 IS the mgr)
         m_savedClock = 0;
         m_rngSeed = timeGetTime();
         m_lightFx = 0;

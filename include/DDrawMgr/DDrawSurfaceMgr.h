@@ -81,8 +81,13 @@ public:
     // SetDimensions/SetHwnd/InvokeCallback occupy NO retail slot -> plain methods.
     virtual ~CDDrawSurfaceMgr() OVERRIDE; // slot 1  0x1558b0 (scalar-del ??_G 0x155890)
     virtual i32 IsReady();                // slot 5  0x155f00
-    virtual void Init();                  // slot 6  0x155900 (the 5-arg SurfaceMgr Init; @stub)
-    virtual void Cleanup_155e20();        // slot 7  0x155e20 (owned-child teardown; ~ calls it)
+    // slot 6  0x155900 (@stub): the display/video-mode bring-up - heap-allocate the 11
+    // owned sub-managers, validate each (m_lastError 0x3e9..0x3f1) and configure the
+    // display. Retail `ret 0x14` = FIVE args (the old no-arg decl under-declared it);
+    // CGruntzMgr::LoadWorldMode dispatches it as its "SetVideoMode" (slot 6, +0x18).
+    virtual i32 Init(void* hWnd, i32 w, i32 h, i32 bpp, i32 flags);
+    virtual void Cleanup_155e20(); // slot 7  0x155e20 (owned-child teardown; ~ calls it;
+                                   //         LoadWorldMode's pre-Init "Notify" dispatch)
 
     // Non-virtual methods (census-proven OFF the retail vtable - plain, not slots):
     void FreeContext();                                           // 0x155fc0

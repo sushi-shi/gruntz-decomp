@@ -38,7 +38,17 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
         m_spatialWorker->PruneCount();
     }
     if (m_spatialWorker != 0) {
-        delete m_spatialWorker;
+        // retail INLINES ~CWwdSpatialMgr here (`delete m_spatialWorker` with the full
+        // class visible): its own null check (the double cmp), EH state, call FreeGrids
+        // (0x1682f0), the +0x70 ~m_iter ??_7CObject stamp (not reproducible from the
+        // reduced view without a manual vptr write - deliberately omitted), then the
+        // class operator delete == RezFree. Spelled explicitly so the call relocs bind
+        // to retail's own targets (a decl-only-dtor `delete` would mis-bind to 0x163a40).
+        CWwdSpatialMgr* w = m_spatialWorker;
+        if (w != 0) {
+            w->FreeGrids();
+            RezFree(w);
+        }
     }
     if (m_buffer0 != 0) {
         RezFree(m_buffer0);

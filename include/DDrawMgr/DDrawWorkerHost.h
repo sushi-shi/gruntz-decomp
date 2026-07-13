@@ -23,18 +23,19 @@
 // WwdSpatialMgr.cpp's real definitions.)
 struct CWwdSpatialMgr {
     char _vft0[4];             // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    char m_pad04[0x70 - 0x04]; // +0x04..+0x6f
-    void* m_baseVtbl;          // +0x70  base/secondary vtable restamped on teardown
+    char m_pad04[0x70 - 0x04]; // +0x04..+0x6f  (canonical: grids/origins/bbox/scroll)
+    void* m_baseVtbl;          // +0x70  the m_iter member's vptr (CWwdGridIter : CObject;
+                               //        the ??_7CObject stamp retail emits on teardown)
     i32 PruneCount();          // 0x1688b0  (reloc-masked external)
     i32 GetSize();             // 0x168430  (reloc-masked external; serialized-size accessor)
-    void FreeGrids();          // 0x1682f0  (reloc-masked external scalar-dtor body)
-    ~CWwdSpatialMgr();         // inline: FreeGrids() then restamp m_baseVtbl
+    void FreeGrids();          // 0x1682f0  (reloc-masked external teardown body)
+    // The out-of-line complete dtor (0x163a40; body with the canonical class in
+    // WwdSpatialMgr.cpp): FreeGrids + the compiler's ~m_iter. DECLARED-ONLY here so an
+    // explicit `p->~CWwdSpatialMgr()` (LevelPlane's CImageSet3::Cleanup) emits the
+    // retail out-of-line call. ~CDDrawWorkerHost instead reproduces retail's INLINED
+    // copy explicitly (FreeGrids + RezFree - see DDrawWorkerHost.cpp).
+    ~CWwdSpatialMgr();
 };
-
-inline CWwdSpatialMgr::~CWwdSpatialMgr() {
-    FreeGrids();
-    // +0x70 secondary-base vptr restamp dropped (MI; manual stamp removed, % ok)
-}
 
 class CDDrawWorkerHost : public CObject {
 public:

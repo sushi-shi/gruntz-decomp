@@ -42,16 +42,11 @@
 // plane TU. Local view duplicated from that TU (@identity-TODO: the grid-owner's
 // name-conflation with the Gruntz CImageSet3 variant record is unresolved).
 // The +0xb0 spatial grid is a CWwdSpatialMgr (canonical, <DDrawMgr/DDrawWorkerHost.h>).
-// CImageSet3::Cleanup prunes it (PruneCount 0x1688b0), runs its OUT-OF-LINE /GX dtor
-// (C163a40::~C163a40 @0x163a40 - the wwdspatialmgr placeholder for the class's out-of-
-// line complete dtor; its most-derived vptr is not at offset 0, so it is a distinct
-// symbol from the class's inline dtor), then ::operator delete (0x1b9b82) frees it.
+// CImageSet3::Cleanup prunes it (PruneCount 0x1688b0), runs its OUT-OF-LINE /GX
+// complete dtor (~CWwdSpatialMgr @0x163a40, body in WwdSpatialMgr.cpp; the ex-C163a40
+// placeholder identity is dissolved), then ::operator delete (0x1b9b82) frees it.
 // GetSize (0x168430) is the serialized-size accessor (WwdSpatialMgr.cpp defines it).
 // All reloc-masked __thiscall callees (no body).
-struct C163a40 {
-    ~C163a40(); // 0x163a40  CWwdSpatialMgr out-of-line /GX dtor (body in WwdSpatialMgr.cpp)
-};
-SIZE_UNKNOWN(C163a40);
 
 class CImageSet3 {
 public:
@@ -208,7 +203,7 @@ void CImageSet3::Cleanup_161bf0() {
     }
     CWwdSpatialMgr* g = m_b0;
     if (g != 0) {
-        ((C163a40*)g)->~C163a40();
+        g->~CWwdSpatialMgr(); // the out-of-line complete dtor (0x163a40)
         ::operator delete(g);
     }
     if (m_20 != 0) {

@@ -162,16 +162,13 @@ extern "C" {
 // canonicals (FUN_005b8438 == RVA 0x1b8438 == CSndFinder::Lookup; the "menu node"
 // is the LeafCue whose m_10 CSoundCueMgr carries the +0x28 cue duration).
 
-// Close's teardown vocabulary. m_30/m_3c are torn down through their own vtable slot 1
-// (a flagged scalar-delete), m_settings is the settings/registry writer (WriteInt per
-// named key), and g_645578 is zeroed field-by-field before delete. Each engine
-// entrypoint is out-of-line / reloc-masked. (The dead `EngObj` shell that used to sit
-// here had ZERO uses left - the teardown legs all call ~CTriggerMgr directly.)
-class CWorldDelete {
-public:
-    virtual void s0();            // slot 0 (+0x00)
-    virtual void Slot1(i32 flag); // slot 1 (+0x04) flagged scalar-delete
-};
+// Close's teardown vocabulary. m_30/m_3c are torn down through vtable slot 1 - the MFC
+// CObject-family flagged scalar-deleting destructor (`delete p` on the polymorphic
+// class): m_30 (m_world) IS the CDDrawSurfaceMgr (slot map: CObject slots 0-4 with the
+// ??_G override @1), m_3c an unidentified CObject-derived engine sub-object. m_settings
+// is the settings/registry writer (WriteInt per named key), and g_645578 is zeroed
+// field-by-field before delete. Each engine entrypoint is out-of-line / reloc-masked.
+// (The former CWorldDelete 2-slot placeholder view is retired.)
 // The settings store open/close brackets around the WriteInt block (reloc-masked
 // __cdecl free fns; no this).
 void OpenSettingsStore();  // FUN_005158f0
@@ -441,20 +438,12 @@ extern "C" void RezFree(void* p); // _RezFree (operator delete wrapper, __cdecl)
 // The +0x54 object is the real CWorldSoundSet (<Gruntz/WorldSoundSet.h>) - the same
 // object the ambient-sound TU reads; its +0x08 is that class's CPtrList voice list.
 
-// The world's polymorphic mode-set vtable (slot 7 = +0x1c notify; slot 6 = +0x18
-// SetVideoMode(hwnd, w, h, depth, flag)). MSVC5 forbids __thiscall on a fn-ptr,
-// so model it as a typed polymorphic class with anchor slots.
-class CWorldModeIface {
-public:
-    virtual void s00();
-    virtual void s01();
-    virtual void s02();
-    virtual void s03();
-    virtual void s04();
-    virtual void s05();
-    virtual i32 SetVideoMode(i32 hwnd, i32 w, i32 h, i32 depth, i32 flag); // slot 6 (+0x18)
-    virtual void Notify();                                                 // slot 7 (+0x1c)
-};
+// [The former CWorldModeIface 8-slot placeholder view is retired: the world IS the
+// polymorphic CDDrawSurfaceMgr (slot 6 +0x18 = the 5-arg Init "SetVideoMode",
+// slot 7 +0x1c = Cleanup_155e20 the pre-Init "Notify" teardown) - the same class
+// this TU already reaches via the SetHwnd casts. The full CWorldZ==CDDrawSurfaceMgr
+// field-view fold (m_4==m_pages, m_8==m_childGroup, m_24==m_resolveSubMgr/CGameLevel,
+// m_28==m_leafScan, m_38==m_lastError) is the deferred reconciliation.]
 // The mode-reset callback registration reached during LoadWorldMode: a non-virtual
 // thiscall on the world with a code-address callback (LAB_00403193) handed in. The
 // callback is an external function whose pushed address reloc-masks.
@@ -2430,10 +2419,9 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
         g_enableHiColor = 1;
     }
 
-    ((CWorldModeIface*)m_world)->Notify();
+    ((CDDrawSurfaceMgr*)m_world)->Cleanup_155e20(); // slot 7: pre-mode-change teardown
     i32 kind = (g_disableAudio == 0) ? 1 : 5;
-    if (((CWorldModeIface*)m_world)
-            ->SetVideoMode((i32)m_gameWnd->m_hwnd, 0x280, 0x1e0, m_colorDepth, kind)
+    if (((CDDrawSurfaceMgr*)m_world)->Init(m_gameWnd->m_hwnd, 0x280, 0x1e0, m_colorDepth, kind)
         == 0) {
         ReportWorldStatus(0x43f);
         return 0;
@@ -3994,7 +3982,7 @@ void CGruntzMgr::Close() {
         m_timer = 0;
     }
     if (m_world) {
-        ((CWorldDelete*)m_world)->Slot1(1);
+        delete (CDDrawSurfaceMgr*)m_world; // virtual ~ -> the flagged slot-1 ??_G dispatch
         m_world = 0;
     }
     if (m_recolorSurface) {
@@ -4007,7 +3995,7 @@ void CGruntzMgr::Close() {
         m_settings = 0;
     }
     if (m_3c) {
-        m_3c->Slot1(1);
+        delete m_3c; // CObject-derived: virtual ~ -> the flagged slot-1 ??_G dispatch
         m_3c = 0;
     }
     if (m_50) {
@@ -4731,8 +4719,6 @@ SIZE_UNKNOWN(CPlayStateView);
 SIZE_UNKNOWN(CRezSurface94);
 SIZE_UNKNOWN(CBattlezDlg);
 SIZE_UNKNOWN(CWorldCoordResolver);
-SIZE_UNKNOWN(CWorldDelete);
-SIZE_UNKNOWN(CWorldModeIface);
 SIZE_UNKNOWN(CmdSink);
 SIZE_UNKNOWN(PlayStatusSlot);
 SIZE_UNKNOWN(RegScoreHud);

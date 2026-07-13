@@ -127,6 +127,11 @@ struct CWwdSpatialMgr {
     CWwdGridIter m_iter;  // +0x70  embedded cursor for the GetFirst/GetNext API
     CWwdGrid* m_curGrid;  // +0xb4  which grid the embedded cursor is walking
 
+    // The out-of-line complete dtor (0x163a40): FreeGrids, then the compiler
+    // destructs m_iter (the CObject-derived member at +0x70 - the ??_7CObject
+    // stamp retail emits there) under the /GX frame.
+    ~CWwdSpatialMgr();
+
     void FreeGrids();
     i32 ScrollTo(i32 dx, i32 dy);
     i32 GetSize(); // 0x168430
@@ -142,20 +147,15 @@ struct CWwdSpatialMgr {
     CWwdObject* GetNextObject();
 };
 
-// 0x163a40 (re-homed from src/Stub/BoundaryUpperEh.cpp): a /GX dtor whose destructible
-// CObject base subobject lives at +0x70 and whose member teardown is CWwdSpatialMgr::
-// FreeGrids on `this` - i.e. it destructs a CWwdSpatialMgr. Co-located here next to
-// FreeGrids; kept a distinct placeholder identity (C163a40, most-derived vptr not at
-// offset 0) since it is not the same symbol as the class's inline dtor.
-struct C163a40 {
-    char _0[0x70];
-    CObject m_70; // +0x70  destructible CObject base subobject (vptr-stamp ??_7CObject @0x1e8cb4)
-    ~C163a40();
-};
-SIZE_UNKNOWN(C163a40);
+// 0x163a40 (re-homed from src/Stub/BoundaryUpperEh.cpp): the class's out-of-line
+// complete dtor. [The former C163a40 placeholder identity is dissolved: the "+0x70
+// destructible CObject subobject" is the m_iter member (CWwdGridIter : CObject at
+// +0x70) - a MEMBER, not an MI base - and the teardown IS ~CWwdSpatialMgr:
+// FreeGrids() then the compiler's inline ~m_iter (its own empty dtor's derived
+// stamp dead-store-elided, leaving the base ??_7CObject stamp retail shows).]
 RVA(0x00163a40, 0x41)
-C163a40::~C163a40() {
-    ((CWwdSpatialMgr*)this)->FreeGrids();
+CWwdSpatialMgr::~CWwdSpatialMgr() {
+    FreeGrids();
 }
 
 // ===========================================================================

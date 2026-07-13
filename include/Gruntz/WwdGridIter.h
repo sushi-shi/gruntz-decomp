@@ -87,12 +87,13 @@ inline CWwdGridIter::CWwdGridIter() {
     m_grid = 0;
     m_cur = 0;
 }
-// Non-trivial dtor: the engine release that, under /GX, registers the unwind
-// funclet (handler 0x5e2518) and gives its users their EH frame.
-extern "C" void WwdGridIter_Release_191c70(CWwdGridIter* it);
-inline CWwdGridIter::~CWwdGridIter() {
-    WwdGridIter_Release_191c70(this);
-}
+// The dtor body is EMPTY - retail's own out-of-line ??1CWwdGridIter (0x163a10) is
+// `mov [ecx], ??_7CObject; ret` (the elided-derived-stamp + inline ~CObject and
+// nothing else). [The former `WwdGridIter_Release_191c70(this)` body was a
+// fabricated symbol pointing INTO THE INTERIOR of GetNext (0x191c30+0x40) - a hack
+// to force users' /GX frames; the user-declared dtor alone already forces the
+// frame (a destructible local => fs:0 registration).]
+inline CWwdGridIter::~CWwdGridIter() {}
 
 SIZE_UNKNOWN(WwdGridNode);
 SIZE_UNKNOWN(WwdRect);

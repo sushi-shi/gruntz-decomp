@@ -119,7 +119,9 @@ CDDrawSurfaceMgr::~CDDrawSurfaceMgr() {
 // @source: tomalla
 // @stub
 RVA(0x00155900, 0x519)
-void CDDrawSurfaceMgr::Init() {}
+i32 CDDrawSurfaceMgr::Init(void* /*hWnd*/, i32 /*w*/, i32 /*h*/, i32 /*bpp*/, i32 /*flags*/) {
+    return 0;
+}
 
 // ---------------------------------------------------------------------------
 // CDDrawSurfaceMgr::Cleanup_155e20() (0x155e20, __thiscall)
