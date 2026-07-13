@@ -308,9 +308,13 @@ SIZE_UNKNOWN(CEntranceAnimSub);
 class CEntranceAnimSub {
 public:
     void SetGeometry(i32 srcSprite); // FUN_0055c2d0 (this = player+0x1a0, ret 4)
-    // The geometry-source ready probe (0x15c360, ret 4; formerly reached by a per-TU
-    // CAniAdvanceCursor facet cast on &player->m_1a0). External/reloc-masked.
-    i32 Advance_15c360(unsigned int i);
+    // (`Advance_15c360` used to be declared HERE too, mangling to
+    // ?Advance_15c360@CEntranceAnimSub@@QAEHI@Z - a symbol nothing defines. The body at
+    // 0x15c360 is CAniAdvanceCursor::Advance_15c360, already reconstructed in
+    // wwdfactoryobject, and that is what retail's bytes call at every one of these sites.
+    // The 13 call sites now cast &player->m_1a0 to CAniAdvanceCursor, exactly as the other
+    // ~30 sites in the tree already did. The member cannot simply be RETYPED because a real
+    // CAniAdvanceCursor is 0x3c bytes and would overrun this player's own m_1a4/m_1b4.)
     // The geometry-state setter LoadEntranceConfig calls on entry; returns 1 when
     // the player is ready (FUN_0055c360, __thiscall ret 4 = 1 stack arg). Same
     // engine fn as SpriteResource's SetGeoSource, but the int return is used here.
@@ -630,10 +634,19 @@ struct CGruntLiveNode {
     char* m_entry; // +0x08  live-grunt entry (raw offsets col/row/busy at +0x54/58/5c)
 };
 
+// @identity-TODO: this view IS the real CTriggerMgr (<Gruntz/TriggerMgr.h>) - the same
+// object the registry holds at g_gameReg->m_68. PROVEN for two of its methods by reading
+// retail's own bytes at the call sites (assert_relocs --fake-targets): what this view
+// called `SetTile` is ?CellDispatch@CTriggerMgr@@QAEHHHHH@Z (0x6bcb0) and what it called
+// `CommitArrivalMove` is ?WireTileSwitchLogic@CTileWireLogic@@QAEHPAXHH@Z (0x6c130) - both
+// already reconstructed in triggermgrgrid. Those two fabricated declarations are GONE (they
+// were unresolved externals); their call sites now go through the real classes. The other
+// ~24 methods below still have no recovered identity, so the view (and m_tileMgr's type)
+// stays until each is traced - folding them onto CTriggerMgr now would only relabel 24
+// phantom symbols as "backlog" and hide them from link_defects.
 SIZE_UNKNOWN(CGruntTileMgr);
 class CGruntTileMgr {
 public:
-    void SetTile(i32 a, i32 b, i32 c, i32 d);   // thunk_FUN_0046bcb0
     void ClaimTile(i32 a, i32 b, i32 c, i32 d); // thunk_FUN_0046bfd0
     i32 ReleaseTile(i32 a, i32 b);              // thunk_FUN_004784d0
     void PostWire();                            // WireTileSwitchLogic (0-arg)
@@ -651,9 +664,9 @@ public:
     // reach two more operations, both already modeled above under other names (same
     // reloc-masked targets): FindGrunt (thunk 0x253b -> 0x477df0) IS GetOccupant, and
     // Scatter (thunk 0x14bf -> 0x6dae0) IS CommitTileSlot2. No new methods needed.
-    // UpdateEntranceAnim's arrival-commit: thunk_0x3dfa (0x6c130), __thiscall on the
-    // tile-mgr, the grunt + its last-tile pixel coords as args. Reloc-masked.
-    void CommitArrivalMove(CGrunt* g, i32 x, i32 y);
+    // (UpdateEntranceAnim's arrival-commit at 0x6c130 used to be declared here as
+    // `CommitArrivalMove`. It IS CTileWireLogic::WireTileSwitchLogic - see the note above -
+    // so the call sites cast the tile-mgr to CTileWireLogic and call the real body.)
     // ClaimSwitchTile's tile-mgr apply (thunk_0x26df -> 0x6d300 ApplySwitch),
     // __thiscall(grunt, lastX, lastY) ret 0xc. External/reloc-masked.
     void ApplyTileSwitch(CGrunt* g, i32 x, i32 y);

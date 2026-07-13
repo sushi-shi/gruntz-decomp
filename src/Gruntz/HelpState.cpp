@@ -28,7 +28,8 @@
 #include <Gruntz/Attract.h>     // CMenuRoot chain (m_c): Render's busy surface + attract registrar
 #include <DDrawMgr/DDSurface.h> // CDDSurface::m_8 (the held IDirectDrawSurface, Render's busy gate)
 #include <ddraw.h>              // IDirectDrawSurface::IsLost (slot 24) - Render's busy poll
-#include <Globals.h>            // g_6111b0 (RunTitleSeq title buffer) + g_actorList (Render)
+#include <Globals.h>              // g_6111b0 (RunTitleSeq title buffer)
+#include <Gruntz/AttractActor.h> // the shared AttractActor/AttractActorList + g_actorList
 #include <rva.h>
 
 // The 11 overridden CState slots (vtbl@0x1e9dfc; the other slots inherited). The
@@ -70,25 +71,10 @@ i32 CHelpState::LoadAssets(i32 a1, i32 a2, i32 a3) {
     return 1;
 }
 
-// The per-frame attract-actor list (global DAT_00645574): m_count at +0x4, an inline
-// array of actor pointers at +0x8. Each actor's slot-4 (+0x10) is its per-frame Update;
-// its +0x2ac flags word raises an exit request. Same shape Attract.cpp models (the shared
-// g_actorList); TODO fold both views onto one shared header.
-class AttractActor {
-public:
-    virtual void Vslot00();
-    virtual void Vslot01();
-    virtual void Vslot02();
-    virtual void Vslot03();
-    virtual void Update(); // slot 4 (+0x10)
-    char m_pad04[0x2ac - 0x4];
-    i32 m_2ac; // +0x2ac flags
-};
-struct AttractActorList {
-    char m_pad00[0x4];
-    i32 m_count;             // +0x04
-    AttractActor* m_data[1]; // +0x08  inline pointer array
-};
+// (The per-frame attract-actor list + element class used to be re-declared HERE, a third
+// identical copy of the shape <Gruntz/AttractActor.h> already carries - the file's own TODO
+// said "fold both views onto one shared header". Done: the header is included above, and
+// g_actorList is its single extern-"C" declaration, DEFINED in MenuState.cpp.)
 // The attract registrar's pooled resource: its Stop IS SoundDevice::PurgeVoiceList
 // (SoundDevice now from <Gruntz/SoundCue.h>, pulled via GruntzMgr.h->GameRegistry.h).
 

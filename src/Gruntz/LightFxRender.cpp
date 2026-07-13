@@ -245,7 +245,7 @@ i32 CLightFxRender::AllocSurface() {
     if (m_surface == 0) {
         return 0;
     }
-    m_surface->Init0(0);
+    m_surface->Clear(0); // 0x13edb0 - was a duplicate decl `Init0` of this same body
     return 1;
 }
 

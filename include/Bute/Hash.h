@@ -34,28 +34,19 @@
 extern "C" void* RezAlloc(u32 size);
 extern "C" void RezFree(void* p);
 
-// The MSVC `'eh vector destructor iterator'` runtime (0x11f640 = ??_M): run `dtor`
-// over `count` elements of `stride` bytes from `base`, descending, under an EH frame.
-// __stdcall (callee-cleanup: retail has no `add esp,0x10` after the call); the reloc
-// to it is masked. A compiler/CRT helper (LIBCMT carve-out); our name Tm_DestroyArray
-// stands in for the un-spellable ??_M and is library-labelled at 0x11f640 so the
-// reloc site is EXEMPT (config/library_labels.csv).
-void __stdcall Tm_DestroyArray(void* base, i32 stride, u32 count, void (*dtor)()); // 0x11f640
+// (The `'eh vector destructor iterator'` (0x11f640 = ??_M) used to be declared here as a
+// hand-rolled `Tm_DestroyArray`, on the belief that ??_M is "un-spellable". It is not: it
+// is what cl emits for a plain `delete[]` of an object array, and ??_M@YGXPAXIHP6EX0@Z@Z
+// is in the CRT libs. ?Tm_DestroyArray@@YGXPAXHIP6AXXZ@Z, by contrast, was defined nowhere
+// - a guaranteed unresolved external. CHashBase::RemoveAll now says `delete[] m_buckets`
+// and CWwdGrid::FreeBuckets `delete[] m_buckets`; both lower to retail's exact bytes.)
 
-// The MSVC `'eh vector constructor iterator'` runtime (0x11f5a0): run `ctor` over
-// `count` elements of `stride` bytes from `base` under an EH frame (rolling back
-// with `dtor` on a throw). __stdcall, args (base, stride, count, ctor, dtor); the
-// reloc is masked. Emitted for CHashBase::Construct's bucket-array element build.
-void __stdcall
-Tm_ConstructArray(void* base, i32 stride, i32 count, void (*ctor)(), void (*dtor)()); // 0x11f5a0
-
-// The no-op per-element bucket-slot destructor (0x184a30, a bare `ret`); its address
-// is passed to the array-delete. DEFINED with RVA() in RezColl.cpp (its true band), so
-// the DIR32 &CHashSlot_Dtor reloc binds to 0x184a30.
-void CHashSlot_Dtor(); // 0x184a30 (retail no-op element dtor)
-// The per-element bucket-slot constructor (0x584a20 == CHashSlot::CHashSlot); its
-// address is passed to the ehvec constructor iterator (a function-ptr, so `void()`).
-void CHashSlot_Ctor(); // 0x584a20 (CHashSlot ctor, as a bare fn-ptr for the iterator)
+// (The `'eh vector constructor iterator'` (0x11f5a0 = ??_P) was likewise hand-declared as
+// `Tm_ConstructArray`, with the CHashSlot ctor/dtor passed to it as bare `void()` fn-ptrs
+// named CHashSlot_Ctor / CHashSlot_Dtor. All three were fabricated symbols. CHashBase::
+// Construct is simply `m_buckets = new CHashSlot[count]`: cl emits the ??_P call, both
+// element ctor/dtor addresses and the /GX EH frame by itself. 0x184a20 is
+// CHashSlot::CHashSlot and 0x184a30 is CHashSlot::~CHashSlot - see the class below.)
 
 // The intrusive doubly-linked chain node threaded through each stored element at
 // element+0x04 (next@+0, prev@+4). Chains store &element->m_link; the element is
@@ -89,6 +80,13 @@ struct CHashSlot {
     // ctor (0x184a20): zero the intrusive {head,tail} chain head; the two opaque
     // words at +0x00 are left uninitialised (RezAlloc'd array).
     CHashSlot(); // 0x184a20
+    // The empty dtor (0x184a30 - a bare 1-byte `ret`). DECLARED here, DEFINED out-of-line
+    // in RezColl.cpp, and that is load-bearing: given an inline `~CHashSlot() {}` cl SEES
+    // the teardown is a no-op and elides the whole vector-dtor loop from `delete[]`, so no
+    // ??_M call is emitted at all. Retail's RemoveAll DOES call ??_M, which means the dtor
+    // was opaque to it - i.e. out-of-line, exactly as here. (It used to be modelled as a
+    // free function CHashSlot_Dtor whose address was passed by hand.)
+    ~CHashSlot();
 
     char m_pad00[0x8];     // +0x00
     CHashSlotList m_chain; // +0x08  { head, tail }

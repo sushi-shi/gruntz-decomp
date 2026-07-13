@@ -34,4 +34,15 @@ struct AttractActorList {
 };
 SIZE_UNKNOWN(AttractActorList);
 
+// THE global (0x645574): a pointer to the live list. ONE declaration, ONE linkage.
+//
+// It used to exist under two names with two different types and NO definition at all:
+// `AttractActorList* g_actorList` (C++ linkage -> ?g_actorList@@3PAUAttractActorList@@A,
+// referenced by demo/helpstate/attractstate/attract) and `CGMEntityList* g_645574`
+// (extern "C" -> _g_645574, referenced by menustate/splashstate/creditsstate). Both were
+// unresolved externals; the two element types were the same class modelled twice (same
+// vtable slots, same +0x2ac flag word) - GameMode.h now typedefs onto these. extern "C"
+// keeps the one symbol unmangled; DEFINED (with storage) in MenuState.cpp.
+extern "C" AttractActorList* g_actorList;
+
 #endif // GRUNTZ_GRUNTZ_ATTRACTACTOR_H

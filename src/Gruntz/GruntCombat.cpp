@@ -46,6 +46,7 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
+#include <Gruntz/TileWireLogic.h> // CTileWireLogic::WireTileSwitchLogic (0x6c130) - the arrival commit
 #include <new>
 #pragma intrinsic(strcmp, sqrt)
 
@@ -2002,7 +2003,7 @@ i32 CGrunt::CommitNeighbor(i32 a, i32 b, i32 c, i32 d) {
 
     // The shared combat finalize.
     if (m_arrivalPending != 0) {
-        m_tileMgr->CommitArrivalMove(this, m_10->m_5c, m_10->m_60);
+        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_10->m_5c, m_10->m_60);
         m_arrivalPending = 0;
     }
     m_poweredUp = 1;

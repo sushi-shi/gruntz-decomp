@@ -186,7 +186,6 @@ extern i32 g_panMinX;
 extern i32 g_panMaxX;
 extern "C" i32 g_64553c;
 extern i32 g_poolScratch645548;
-extern AttractActorList* g_actorList;
 extern "C" i32 g_cdPromptResult;
 extern "C" i32 g_6455f0;
 extern u8 g_debugFlags;

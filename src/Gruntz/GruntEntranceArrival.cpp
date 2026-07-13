@@ -464,7 +464,7 @@ i32 CGrunt::UpdateGruntStatus() {
         return 0;
     }
 
-    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
 
     if (m_stamina >= 0x64) {
         if (m_neighborValid == 0) {
@@ -716,7 +716,7 @@ extern WarpPostFn g_pPostMessageA;
 RVA(0x00061cb0, 0x34a)
 i32 CGruntFireView::Update() {
     i32 flag = 0;
-    if (m_154->m_1a0.Advance_15c360((i32)g_6bf3bc) == 2) {
+    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((i32)g_6bf3bc) == 2) {
         switch (m_toolKind) {
             case 9:
             case 10:
@@ -1122,7 +1122,7 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
 // coord list / update the arrival.
 RVA(0x00062840, 0x25d)
 i32 CGrunt::StepEntranceRelatchA() {
-    i32 ready = m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
         if (m_arrived != 0) {
@@ -1146,7 +1146,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         }
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
-            m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+            ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
             return 0;
         }
         CGruntHud* h = m_10;
@@ -1436,7 +1436,7 @@ void CGrunt::ResolveEntranceArrival() {
         }
     }
 
-    i32 ready = m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
 
     if ((i64)(u32)g_645588 - *(i64*)&m_idleTimerLo >= *(i64*)&m_idleWindowLo) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
@@ -1609,7 +1609,7 @@ i32 CGrunt::StepEntranceReinit() {
 // cue operands. Correct shape + control flow; a codegen wall.
 RVA(0x00063b60, 0x1cf)
 i32 CGrunt::StepArrivalReroll() {
-    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
     i64 diff = (i64)(u32)g_645588 - *(i64*)&m_8c0;
     u32 elapsed;
     if (diff >= 0) {
@@ -1735,7 +1735,7 @@ static const char s_GRUNTZ_BIGWHEELGRUNT[] = "GRUNTZ_BIGWHEELGRUNT_BIGWHEELGRUNT
 // (the documented regalloc tail).
 RVA(0x00063db0, 0x32f)
 void CGrunt::LoadVehicleGruntAnimations() {
-    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
 
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
@@ -1760,7 +1760,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         }
         if (flags & 0x80) {
             SetEntrancePos(1, 1);
-            m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+            ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         }
         return;
     }
@@ -2019,11 +2019,11 @@ i32 CGrunt::StepCombatReaction(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeO) == 0) {
         ApplySetState1(1);
-        m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         goto tail;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeQ) == 0) {
-        m_tileMgr->SetTile(m_tileOwnerHi, m_tileOwnerLo, 6, a2);
+        ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 6, a2);
         return 0;
     }
     if (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeJ) == 0) {
@@ -2198,14 +2198,14 @@ tail:
 // reset the geometry.
 RVA(0x00065300, 0x148)
 i32 CGrunt::StepArrivalCommitA() {
-    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;
     }
     if (m_health <= 0) {
         m_entranceCommitted = 0;
-        m_tileMgr->SetTile(m_tileOwnerHi, m_tileOwnerLo, 1, m_370);
+        ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, m_370);
         return 0;
     }
     m_entranceActive = 0;
@@ -2221,7 +2221,7 @@ i32 CGrunt::StepArrivalCommitA() {
     }
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
-        m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         return 0;
     }
     if (m_358 == 0 && m_35c != 0) {
@@ -2453,7 +2453,7 @@ i32 CGruntBehaviorLeaf::LoadWandGruntItemConfig() {
 // PlaceAt / cue operands. A register-allocation/scheduling wall, not a shape error.
 RVA(0x00065c20, 0x1d5)
 i32 CGrunt::StepEntranceRelatchB() {
-    i32 ready = m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    i32 ready = ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
     if (ready > 0) {
         m_tileMgr->Load6(
             m_tileOwnerHi,

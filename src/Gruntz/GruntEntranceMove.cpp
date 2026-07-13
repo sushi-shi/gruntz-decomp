@@ -19,7 +19,8 @@
 #include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360)
-#include <Gruntz/TriggerMgr.h>       // CTriggerMgr::NotifyCell (0x79fb0)
+#include <Gruntz/TriggerMgr.h>       // CTriggerMgr::NotifyCell (0x79fb0) + CellDispatch (0x6bcb0)
+#include <Gruntz/TileWireLogic.h>    // CTileWireLogic::WireTileSwitchLogic (0x6c130)
 #include <Gruntz/FreeNodePool.h>
 #include <Gruntz/SerialRecords.h>
 #include <Gruntz/MovingLogicSerial.h>
@@ -230,7 +231,7 @@ static const char s_WG_IDLE5[] = "GRUNTZ_WINGZGRUNT_IDLE5";
 // gate branch ordering, and the cross-arm regalloc. Deferred to the final sweep.
 RVA(0x00067850, 0x214)
 i32 CGrunt::RunEntranceMove() {
-    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
     // The geometry sub-player @m_154+0x1a0: m_20/m_28 live past its own m_1b4, so
     // read via raw offsets off &player->m_1a0 (keeps cl on one base).
     i32* sub = (i32*)((char*)m_154 + 0x1a0);
@@ -480,7 +481,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
 // edx/ecx coin-flip; no source lever flips it (an explicit `int z=0;` did not pin).
 RVA(0x00067f80, 0x313)
 void CGrunt::LoadEntranceConfig() {
-    if (m_154->m_1a0.Advance_15c360((u32)g_6bf3bc) == 1) {
+    if (((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc) == 1) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         CGruntHud* h = m_10;
         CTileGrid* grid = g->m_tileGrid;
@@ -504,7 +505,7 @@ void CGrunt::LoadEntranceConfig() {
             i32 b = (owner >> 8) & 0xff;
             i32 a = owner & 0xff;
             if (m_tileOwnerHi != b || m_tileOwnerLo != a) {
-                m_tileMgr->SetTile(b, a, 2, m_tileOwnerHi);
+                ((CTriggerMgr*)m_tileMgr)->CellDispatch(b, a, 2, m_tileOwnerHi);
             }
         }
 
@@ -591,7 +592,7 @@ void CGrunt::LoadEntranceConfig() {
 // as ResetGeometry @0x616e0) - no source lever flips it. ~88.5%.
 RVA(0x00068370, 0x14c)
 void CGrunt::RearmEntranceDrop() {
-    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
 
     if (*(i32*)((char*)m_154 + 0x1a0 + 0x28) != 0 && *(i32*)((char*)m_154 + 0x1a0 + 0x20) == 0) {
         m_22c = 0;
@@ -617,8 +618,8 @@ void CGrunt::RearmEntranceDrop() {
         i32 b;
         m_entranceCommitted = 0;
         if (m_tileMgr->LookupTile(m_10->m_5c, m_10->m_60, &a, &b, 0) != 0) {
-            m_tileMgr->SetTile(a, b, 0xb, -1);
-            m_tileMgr->SetTile(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+            ((CTriggerMgr*)m_tileMgr)->CellDispatch(a, b, 0xb, -1);
+            ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         } else {
             m_entranceCommitted = 1;
         }
@@ -898,7 +899,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
 // that whole referent set is a final-sweep task.
 RVA(0x000690a0, 0x1c5)
 i32 CGrunt::UpdateEntranceAnim() {
-    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
     char* sub = (char*)m_154 + 0x1a0;
     if (*(i32*)(sub + 0x28) == 0 || *(i32*)(sub + 0x20) != 0) {
         return 0;
@@ -949,7 +950,7 @@ i32 CGrunt::UpdateEntranceAnim() {
 
     if (flags & 0x80) {
         SetEntrancePos(1, 1);
-        m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         return 0;
     }
 
@@ -1016,7 +1017,7 @@ i32 CGrunt::StepArrivalCommit() {
         if (m_entranceReason != 1) {
             goto finalize;
         }
-        m_tileMgr->SetTile(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+        ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
         return 0;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeG) == 0);
@@ -1034,7 +1035,7 @@ i32 CGrunt::StepArrivalCommit() {
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeO) == 0);
     if (eq) {
         SnapToLastTile(1);
-        m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+        ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
         goto finalize;
     }
     eq = (strcmp(*g_typeColl.GetNameRecord(m_14->m_1c), s_codeJ) == 0);
@@ -1092,7 +1093,7 @@ i32 CGrunt::StepArrivalCommit() {
         GruntScratchTeardown();
         eq = (strcmp(prev, s_codeM) == 0);
         if (eq) {
-            m_tileMgr->SetTile(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
+            ((CTriggerMgr*)m_tileMgr)->CellDispatch(m_tileOwnerHi, m_tileOwnerLo, 1, -1);
             return 0;
         }
         goto finalize;
@@ -1214,7 +1215,7 @@ finalize:
 // cascade (~87.4%). Logic complete; deferred to the final sweep.
 RVA(0x00069d60, 0x1e1)
 i32 CGrunt::LoadFreezeSpellAssets() {
-    m_154->m_1a0.Advance_15c360((u32)g_6bf3bc);
+    ((CAniAdvanceCursor*)&m_154->m_1a0)->Advance_15c360((u32)g_6bf3bc);
     char* sub = (char*)&m_154->m_1a0;
     if (*(i32*)(sub + 0x28) != 0 && *(i32*)(sub + 0x20) == 0) {
         if (m_freezeUnfrozen != 0) {
@@ -1224,7 +1225,7 @@ i32 CGrunt::LoadFreezeSpellAssets() {
             LoadAnimNameTable(0, 0);
             ResetEntranceAnimation(1, 0, 0);
             if (s_TileFlags(g_gameReg->m_tileGrid, m_lastTilePxX >> 5, m_lastTilePxY >> 5) & 0x80) {
-                m_tileMgr->CommitArrivalMove(this, m_lastTilePxX, m_lastTilePxY);
+                ((CTileWireLogic*)m_tileMgr)->WireTileSwitchLogic(this, m_lastTilePxX, m_lastTilePxY);
             }
             return 0;
         }

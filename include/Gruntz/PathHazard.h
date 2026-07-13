@@ -60,10 +60,10 @@ extern "C" u32 g_pathTick;
 DATA(0x00245584)
 extern i32 g_pathStepSeed; // VA 0x645584
 
-// A bute-type tag (g_645588 = .data int) stashed into +0x108 when a new leg with
-// remaining segments begins.
-DATA(0x00245588)
-extern i32 g_pathLegTag; // VA 0x645588
+// (The +0x108 new-leg seed at 0x645588 is the running game clock. It used to be
+// re-declared here as `g_pathLegTag` under C++ linkage - a third name for a datum whose
+// ONE definition is Projectile.cpp's extern-"C" g_645588, so ?g_pathLegTag@@3HA was an
+// unresolved external. PathHazard.cpp now reads g_645588 directly.)
 
 // 0.0 (the velocity-sign comparand). Already g_slimeZero in KitchenSlime.cpp.
 DATA(0x001ea400)

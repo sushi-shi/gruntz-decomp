@@ -99,27 +99,23 @@ CHash::CHash() {
 // C++ ctor; the derived CHash/CHashB sized ctors delegate to it. Was the CSymList::
 // Construct stub (wave5-F1). xref: built by every symbol-table/parser hash member
 // (CSymRec 0x139bf0/0x139c80, CSymTab 0x139de0, CSymParser 0x13ab00/0x13aa10).
-// @early-stop
-// /GX-frame wall (61.5%, was a `return this;` stub): the alloc + cookie store + the
-// ehvec constructor-iterator call + the m_buckets store are all byte-faithful. The
-// residual is the implicit /GX EH try-frame retail wraps the throwing ehvec in
-// (push -1/handler/mov fs:0 at entry + fs:0 restore/add esp,0xc at exit) plus the
-// frame-relative [esp+N] shift it induces - cl emits that frame ONLY for a real
-// `new CHashSlot[count]` array-new construct, not for this hand-written ehvec extern
-// call. Reproducing the array-new would require homing CHashSlot's rollback dtor at
-// the cross-unit RVA 0x584a30 (currently the free CHashSlot_Dtor RemoveAll shares) -
-// out of this obj's band. Logic complete; parked for the final sweep.
+// (The former "/GX-frame wall" @early-stop here is RETIRED: it said the implicit EH frame
+// "cl emits ONLY for a real `new CHashSlot[count]` array-new construct" could not be had
+// because CHashSlot's rollback dtor was not homed. It is now - see ~CHashSlot in Hash.h -
+// so the array-new is written directly below and cl emits the frame itself.)
 RVA(0x00184960, 0x70)
 CHashBase* CHashBase::Construct(i32 count) {
     m_count = count;
-    void* buf = ::operator new((count << 4) + 4);
-    CHashSlot* buckets = 0;
-    if (buf) {
-        *(i32*)buf = count;
-        buckets = (CHashSlot*)((char*)buf + 4);
-        Tm_ConstructArray(buckets, 0x10, count, &CHashSlot_Ctor, &CHashSlot_Dtor);
-    }
-    m_buckets = buckets;
+    // The real array-new. cl emits exactly retail's sequence: operator new(count*0x10 + 4),
+    // store the count cookie at [0], then the CRT `'eh vector constructor iterator'` ??_P
+    // (0x11f5a0) over the elements with &CHashSlot::CHashSlot (0x184a20) and the rollback
+    // &CHashSlot::~CHashSlot (0x184a30) - and, because the iterator can throw, the /GX EH
+    // try-frame retail wraps it in. It used to be hand-written as a call to three fabricated
+    // symbols (Tm_ConstructArray / CHashSlot_Ctor / CHashSlot_Dtor), none of which anything
+    // defines. The old @early-stop said this could not be regenerated without "homing
+    // CHashSlot's rollback dtor at 0x584a30" - that is now done (CHashSlot has its real
+    // ~CHashSlot, @rva-symbol'd below), so the construct IS expressible.
+    m_buckets = new CHashSlot[count];
     return this;
 }
 
@@ -145,26 +141,22 @@ CHashSlot::CHashSlot() {
     m_chain.m_tail = 0;
 }
 
-// CHashSlot_Dtor (0x184a30): the no-op element destructor (a CHashSlot has trivial
-// teardown). A bare 1-byte `ret` taken by address and handed to the vector-dtor
-// iterator (Tm_DestroyArray/??_M) as the per-element dtor. Real function in this obj's
-// band (was declared-only in Hash.h); defining it here binds the &CHashSlot_Dtor
-// fn-ptr reloc in RemoveAll to its true RVA.
+// CHashSlot::~CHashSlot (0x184a30): the empty destructor - a bare 1-byte `ret` (a
+// CHashSlot has trivial teardown). OUT-OF-LINE on purpose (declared, not defined, in
+// Hash.h): that is what makes cl emit the real vector-dtor/-ctor iterator calls in
+// RemoveAll/Construct instead of proving the loop away. It was modelled as a free
+// function CHashSlot_Dtor whose address the hand-written iterator calls passed.
 RVA(0x00184a30, 1)
-void CHashSlot_Dtor() {}
+CHashSlot::~CHashSlot() {}
 
-// RemoveAll (0x184a40): array-delete the bucket array. The count cookie sits one
-// word before m_buckets (the operator-new header); each 16-byte slot's dtor is the
-// no-op above; operator delete the cookie. The cookie read is a deliberate alloc-
-// header offset. Tm_DestroyArray is the CRT `` `eh vector destructor iterator' ``
-// (??_M @0x11f640); operator delete is the scalar ??3 (0x1b9b82).
+// RemoveAll (0x184a40): array-delete the bucket array. cl lowers `delete[]` to exactly
+// retail's bytes - null-check, read the array-cookie count at [m_buckets-4], call the CRT
+// `'eh vector destructor iterator'` ??_M(m_buckets, 0x10, count, &~CHashSlot) (0x11f640,
+// __stdcall/callee-clean, hence no `add esp,0x10`), then operator delete(m_buckets-4)
+// (the scalar ??3 @0x1b9b82).
 RVA(0x00184a40, 0x27)
 void CHashBase::RemoveAll() {
-    if (m_buckets) {
-        u32* cookie = (u32*)((char*)m_buckets - 4);
-        Tm_DestroyArray(m_buckets, 0x10, *cookie, &CHashSlot_Dtor);
-        ::operator delete(cookie);
-    }
+    delete[] m_buckets;
 }
 
 // Insert (0x184a70): ask the element for its bucket index (the slot-0 virtual

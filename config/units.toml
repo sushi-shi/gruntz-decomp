@@ -1729,7 +1729,12 @@ flags = "base"
 [[unit]]
 unit = "rezcoll"
 source = "src/Rez/RezColl.cpp"
-flags = "base"
+# /GX: retail's RemoveAll CALLS ??_M (the `eh vector destructor iterator') and Construct
+# calls ??_P + carries the EH try-frame those throwing iterators need. cl only emits the
+# ??_M/??_P forms under /GX - without it, an array delete/new lowers to a plain inline
+# loop (no EH frame), which is what this unit used to produce. So retail compiled this TU
+# with exception handling on.
+flags = "eh"
 
 [[unit]]
 unit = "ddrawblterrthunk"

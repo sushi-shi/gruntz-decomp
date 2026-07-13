@@ -60,7 +60,6 @@ extern "C" PostMessageFn g_pPostMessageA;
 
 // The per-frame attract actor list (DAT_00645574; bound in Globals.cpp) and the
 // per-frame time delta (DAT_00645584; bound in Attract.cpp). Extern here (reloc-masked).
-extern AttractActorList* g_actorList;
 extern "C" u32 g_645584;
 
 // The ButeFileStream `defaults` arg CButeMgr::Parse hands the stream ctor (owner-TU

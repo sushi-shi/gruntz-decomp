@@ -45,8 +45,15 @@ extern "C" {
 // The Render menu-entity list (aliases g_actorList @0x245574) and the version-string
 // RECT source (aliases g_versionRectL @0x245cc8). Declared in GameMode.h; the DATA
 // binding lives here (the .cpp) so Render's absolute loads reloc-bind to the real RVAs.
-DATA(0x00245574)
-extern "C" CGMEntityList* g_645574;
+// DEFINED here (with storage), not merely declared: 0x645574 had NO definition anywhere
+// under EITHER of its two former names (?g_actorList@@3PAUAttractActorList@@A from
+// demo/helpstate/attractstate, _g_645574 from here/splashstate/creditsstate), so every
+// reference to it was an unresolved external. One symbol, one definition; the shared decl
+// is in <Gruntz/AttractActor.h>.
+extern "C" {
+    DATA(0x00245574)
+    AttractActorList* g_actorList = 0;
+}
 DATA(0x00245cc8)
 extern "C" CGMVerRect g_645cc8;
 
@@ -320,49 +327,49 @@ i32 CMenuState::FrameSlot28(i32) {
 //      m_1b4->Post();   return 1;
 RVA(0x000a0750, 0x1d0)
 i32 CMenuState::Render() {
-    CGMEntityList* L = g_645574;
+    CGMEntityList* L = g_actorList;
 
     // per-entity Update pass (re-reads count each iter, like the target)
     for (i32 i = 0; i < L->m_count; i++) {
-        L->m_elems[i]->Update();
+        L->m_data[i]->Update();
     }
 
     // six prioritized entity-flag scans, each firing a distinct UI handler
     i32 c;
-    L = g_645574;
+    L = g_actorList;
     i32 n = L->m_count;
     for (c = 0; c < n; c++) {
-        if ((u32)L->m_elems[c]->m_2ac & 0x80000000) {
+        if ((u32)L->m_data[c]->m_2ac & 0x80000000) {
             m_1b4->OnFlag80000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if ((u32)L->m_elems[c]->m_2ac & 0x40000000) {
+        if ((u32)L->m_data[c]->m_2ac & 0x40000000) {
             m_1b4->OnFlag40000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if ((u32)L->m_elems[c]->m_2ac & 0x20000000) {
+        if ((u32)L->m_data[c]->m_2ac & 0x20000000) {
             m_1b4->OnFlag20000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if ((u32)L->m_elems[c]->m_2ac & 0x10000000) {
+        if ((u32)L->m_data[c]->m_2ac & 0x10000000) {
             m_1b4->OnFlag10000000();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (L->m_elems[c]->m_2ac & 0x3) {
+        if (L->m_data[c]->m_2ac & 0x3) {
             m_1b4->OnFlag00000003();
             goto tail;
         }
     }
     for (c = 0; c < n; c++) {
-        if (L->m_elems[c]->m_2ac & 0x100) {
+        if (L->m_data[c]->m_2ac & 0x100) {
             if (!m_1b4->OnFlag00000100()) {
                 PostMessageA(Owner(this)->m_4->m_4, 0x111, 0x8036, 0);
             }

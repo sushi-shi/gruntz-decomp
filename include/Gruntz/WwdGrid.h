@@ -47,7 +47,11 @@ struct BucketHead : DSoundList { // {m_head,m_tail} + InsertHead/Unlink inherite
         m_head = 0;
         m_tail = 0;
     }
-    ~BucketHead() {}
+    // DECLARED here, DEFINED out-of-line in WwdGrid.cpp (0x191d10, a bare `ret`). That is
+    // load-bearing: with an inline `~BucketHead() {}` cl sees the teardown is a no-op and
+    // elides the vector-dtor loop from `delete[]` entirely - no ??_M call. Retail's
+    // FreeBuckets DOES call ??_M, so the dtor was opaque to it, i.e. out-of-line.
+    ~BucketHead();
 };
 
 // The CObject engine base (CObject-like, vtable @0x5e8cb4): the implicit vptr

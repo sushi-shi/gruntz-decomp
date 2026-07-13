@@ -232,12 +232,17 @@ struct CCreditsDrawRoot {
     CCreditsDrawView* m_4; // +0x04
 };
 
-// DrawScrollingCredits reseed constants + clip gate (extern-loaded so the /O2 constant
-// fold is blocked -> fld/fdiv/ftol like retail).
 extern "C" i32 g_62bf74; // clip-region enable gate
-extern double g_5e96f8;  // 480.0 (screen height)
-extern double g_5e96f0;  // 0.025 (scroll rate)
-extern double g_5e9708;  // scroll-step scale (SetupTitle's m_200 reseed)
+
+// The credits-scroll reseed constants (0x5e96f8 / 0x5e96f0 / 0x5e9708 in retail's
+// .rdata). They were `extern double g_5e96f8;`-style DECLARATIONS with no definition
+// anywhere - fabricated symbols, guaranteed unresolved externals. They are ordinary
+// file-scope constants: MSVC5 keeps a `const double` in memory (it does NOT fold FP
+// constant expressions the way it folds integer ones), so `kScreenH / kScrollRate`
+// still lowers to retail's `fld QWORD PTR [c1]; fdiv QWORD PTR [c2]; call __ftol`.
+static const double kScreenH = 480.0;     // 0x5e96f8  screen height
+static const double kScrollRate = 0.025;  // 0x5e96f0  scroll rate
+static const double kStepScale = 1000.0;  // 0x5e9708  scroll-step scale (m_200 reseed)
 
 // ===========================================================================
 // CCreditsState methods, ascending retail-RVA order.
@@ -372,18 +377,18 @@ i32 CCreditsState::Render() {
 
     // per-entity Update pass
     {
-        CGMEntityList* L = g_645574;
+        CGMEntityList* L = g_actorList;
         for (i32 i = 0; i < L->m_count; i++) {
-            L->m_elems[i]->Update();
+            L->m_data[i]->Update();
         }
     }
 
     // message scan: first flagged entity posts a WM_COMMAND
     {
-        CGMEntityList* L = g_645574;
+        CGMEntityList* L = g_actorList;
         i32 n = L->m_count;
         for (i32 j = 0; j < n; j++) {
-            if (L->m_elems[j]->m_2ac & 0xffffff) {
+            if (L->m_data[j]->m_2ac & 0xffffff) {
                 // wParam = (m_24==5) ? 0x8023 : 0x8027. The init+conditional-override
                 // keeps the cmp+jne branch (docs body comment in the credits Render).
                 u32 wp = 0x8027;
@@ -594,7 +599,7 @@ i32 CCreditsState::DrawScrollingCredits() {
     if (self->m_dst.bottom < 0) {
         self->m_1f8 = 0.0;
         self->m_dst = self->m_src;
-        self->m_1f4 = (i32)(g_5e96f8 / g_5e96f0);
+        self->m_1f4 = (i32)(kScreenH / kScrollRate);
     }
 
     HDC hdc = 0;
@@ -666,8 +671,8 @@ i32 CCreditzOwner::SetupTitle() {
         prov->m_8->ReleaseDC(hdc);
     }
     m_1f8 = 0.0;
-    m_1f4 = (i32)(g_5e96f8 / g_5e96f0);
-    m_200 = (g_5e96f8 * g_5e9708) / (double)(unsigned)m_1f4;
+    m_1f4 = (i32)(kScreenH / kScrollRate);
+    m_200 = (kScreenH * kStepScale) / (double)(unsigned)m_1f4;
     return 1;
 }
 

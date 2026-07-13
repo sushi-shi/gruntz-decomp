@@ -19,10 +19,8 @@
 // rename, deferred.
 #include <Net/KeyedList.h>
 
-struct CNetThing : public CObList {
-    ~CNetThing();
-};
-SIZE_UNKNOWN(CNetThing); // dtor-only view; retail size TBD
+#include <Net/NetThing.h> // THE shared CNetThing (was defined locally here AND, with a
+                          // divergent non-polymorphic shape, in MultiStartDlgRoster.cpp)
 
 RVA(0x000c5280, 0x49)
 CNetThing::~CNetThing() {

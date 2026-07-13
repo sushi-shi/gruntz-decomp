@@ -56,29 +56,19 @@
 // WM_COMMAND to the owner HWND; the owner's HWND member is typed HWND below).
 #include <Mfc.h>
 
-// A per-frame entity (g_entityList element). Render iterates it (slot +0x10 =
-// Update) and the message scans test its flag word m_2ac.
-SIZE_UNKNOWN(CGMEntity);
-struct CGMEntity {
-    virtual void Gv0();
-    virtual void Gv1();
-    virtual void Gv2();
-    virtual void Gv3();
-    virtual void Update(); // slot 4 (+0x10) - per-entity per-frame step
-    char m_pad4[0x2ac - 0x4];
-    i32 m_2ac; // +0x2ac flag word (scanned with a bit mask)
-};
+// A per-frame entity (the g_actorList element) and the list itself. These WERE defined
+// here as CGMEntity/CGMEntityList - a second, byte-identical model of the classes
+// <Gruntz/AttractActor.h> already carries as AttractActor/AttractActorList (same vtable
+// slots, same +0x2ac flag word, same {pad,count,ptr-array} list at the same global). One
+// class, two names, and the global they hang off had no definition under EITHER name.
+// Unified: the shape lives in AttractActor.h and the old names are aliases of it.
+#include <Gruntz/AttractActor.h> // AttractActor / AttractActorList / g_actorList
+typedef AttractActor CGMEntity;
+typedef AttractActorList CGMEntityList;
 
-// The per-frame entity set: count @+0x4, element-ptr array @+0x8. The global
-// The global is a POINTER to this structure (the Render loops load it first:
-// `mov reg,[0x645574]; mov cnt,[reg+4]; elems = reg+8`).
-SIZE_UNKNOWN(CGMEntityList);
-struct CGMEntityList {
-    void* m_0;             // +0x00
-    i32 m_count;           // +0x04
-    CGMEntity* m_elems[1]; // +0x08 (the entity-ptr array)
-};
-extern "C" CGMEntityList* g_645574; // (a pointer to the list)
+// (The list's element array is m_data[] on AttractActorList; the Render loops load the
+// global first: `mov reg,[0x645574]; mov cnt,[reg+4]; elems = reg+8`. The old spelling
+// `g_645574` is gone - the one symbol is g_actorList, declared in AttractActor.h.)
 
 // The input/anim sub-object the credits poll reaches (m_c->m_4->m_10->m_2c->m_8).
 // Its slot +0x60 is a fn-ptr the object is passed to as the explicit STACK arg

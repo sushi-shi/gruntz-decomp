@@ -18,6 +18,7 @@
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr::FindOptionsSlot (0x92e80, the m_host FindOptionsSlot callee)
 #include <Gruntz/GameRegistry.h> // the canonical g_gameReg spine (CGameRegistry, VA 0x64556c)
 #include <Net/NetSessHost.h>     // CNetSessHost::SelectColor (0xc4b60), the +0x5c facet
+#include <Net/NetThing.h>        // THE shared CNetThing (its dtor 0xc5280 is virtual - CObList base)
 #include <Net/NetMgr.h>          // CNetMgr::BroadcastChatLine (0xbb190), the chat-broadcast facet
 #include <rva.h>
 #include <string.h> // strcat (inline CRT, reloc-masked)
@@ -1235,9 +1236,10 @@ void CMultiStartDlg::ToggleReady(i32 idx) {
 // unidentified per-session net object: release+free the +0x60 CNetThing child,
 // then run the final Destroy_1bbb7c. @orphan (class identity unrecovered; its Init
 // sibling homes to src/Net/NetCmdSlot.cpp).
-struct CNetThing { // TU-local view of the header-less CNetThing (netthingdtor unit)
-    ~CNetThing();  // dtor @0xc5280 (Release IS ~CNetThing)
-};
+// (The TU-local `struct CNetThing { ~CNetThing(); }` view is gone - it was a
+// NON-polymorphic shape of a class that really derives MFC CObList, so its teardown call
+// bound to ??1CNetThing@@QAE@XZ while the one definition emits ??1CNetThing@@UAE@XZ. The
+// real shape is <Net/NetThing.h>, included at the top.)
 struct CCluster0c {
     char pad00[0x60];
     CNetThing* m_60; // +0x60 owned child
@@ -1250,7 +1252,7 @@ RVA(0x000c5240, 0x2c)
 void CCluster0c::Cleanup() {
     CNetThing* p = m_60;
     if (p) {
-        p->~CNetThing();
+        p->CNetThing::~CNetThing();
         ::operator delete(p); // 0x1b9b82 == ??3@YAXPAX@Z (reloc-masked/exempt)
         m_60 = 0;
     }
@@ -1262,7 +1264,6 @@ void CCluster0c::Cleanup() {
     ((CWnd*)this)->CWnd::DestroyWindow();
 }
 SIZE_UNKNOWN(CCluster0c);
-SIZE_UNKNOWN(CNetThing);
 
 // EchoLatencySettings (0xc52f0): print the current session CmdDelay (m_5a4) and
 // ResendDelay (m_drainReload) to the chat log via wsprintfA into a stack buffer.

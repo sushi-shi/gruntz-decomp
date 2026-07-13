@@ -159,8 +159,6 @@ DATA(0x0024553c)
 extern "C" i32 g_64553c;
 DATA(0x00245548)
 extern i32 g_poolScratch645548; // 0x645548 (new pin)
-DATA(0x00245574)
-extern AttractActorList* g_actorList;
 DATA(0x002455ec)
 extern "C" i32 g_cdPromptResult; // 0x6455ec
 DATA(0x002455f0)

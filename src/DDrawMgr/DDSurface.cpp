@@ -2123,6 +2123,25 @@ i32 CDDSurface::IsValid() {
 }
 
 // ---------------------------------------------------------------------------
+// 0x141310 / 0x141320: the geometry accessors the run-decoders call out-of-line
+// (DecodeRun8/DecodeRun24 in this unit; also LightFxRender/WarpTextureBlit). Four
+// bytes each - `mov eax,[ecx+0x1c] / ret` and `mov eax,[ecx+0x18] / ret` - i.e. the
+// embedded DDSURFACEDESC's dwWidth (+0x1c) and dwHeight (+0x18). They were DECLARED
+// in DDSurface.h and never defined: every caller emitted a reloc to a symbol nothing
+// in the tree defines (a guaranteed unresolved external; objdiff masks it).
+// Out-of-line here on purpose: retail calls them (cl /O2 = /Ob1, so a non-inline
+// definition in the same TU is NOT inlined into DecodeRun8/24 - matching retail).
+RVA(0x00141310, 4)
+i32 CDDSurface::GetWidth() {
+    return m_width;
+}
+
+RVA(0x00141320, 4)
+i32 CDDSurface::GetHeight() {
+    return m_height;
+}
+
+// ---------------------------------------------------------------------------
 // CDDSurface::~CDDSurface
 // The virtual destructor: MSVC stamps the vptr (compiler-implicit, stamp-first),
 // runs the shared surface teardown (FreeSurfaces: release the held DirectDraw

@@ -727,7 +727,7 @@ i32 CGrunt::StepCompassMove() {
             } else {
                 owner = ((i32*)board->m_8[mty])[mtx * 7 + 1];
             }
-            m_tileMgr->SetTile((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
+            ((CTriggerMgr*)m_tileMgr)->CellDispatch((owner >> 8) & 0xff, owner & 0xff, 2, m_tileOwnerHi);
         }
         goto commit;
     }
