@@ -18,6 +18,7 @@
 // this TU only hosts the bodies (strictly RVA-ascending). The tile-probe macro +
 // tile-code defines are duplicated file-local from GameLevel.cpp (both TUs inline
 // the same retail copy-paste probe).
+#include <Wwd/SubWidget168080.h> // the 0x44 sub-widget (dtor in WwdGrid.cpp)
 #include <Mfc.h>
 #include <Gruntz/GameLevel.h>
 #include <Wap32/Object.h>     // CObject grand-base (SubWidget_168080's base)
@@ -716,23 +717,8 @@ struct Pt_168080 {
     i32 m_4; // +0x04
 };
 SIZE_UNKNOWN(Pt_168080);
-// REAL-POLYMORPHIC: the 6-slot sub-widget vtable @0x5f0310 is cl-emitted
-// (??_7SubWidget_168080@@6B@, bound via VTBL below); the inline ctor AUTO-stamps the
-// vptr, so `new SubWidget_168080` keeps the retail `operator new(0x44); if (p) { stamp
-// vptr; m_4=0 }` shape. Slots 0/2/3/4 come from the CObject grand-base; slot 1 is the
-// class's own 0x168280 scalar dtor, slot 5 the 0x168060 new virtual (declared-only).
-struct SubWidget_168080 : public CObject {
-    virtual ~SubWidget_168080() OVERRIDE; // [1] +0x04 0x168280 scalar-deleting dtor
-    virtual void s14();                   // [5] 0x168060
-    i32 m_4;                              // +0x04
-    char m_pad8[0x44 - 8];
-    i32 Setup(RECT rc, i32 a, i32 b); // 0x1915c0 (reloc-masked)
-    SubWidget_168080() {
-        m_4 = 0; // cl auto-stamps &??_7SubWidget_168080 first
-    }
-};
-SIZE(SubWidget_168080, 0x44);
-VTBL(SubWidget_168080, 0x001f0310); // ??_7SubWidget_168080 (was g_subVtbl_5f0310)
+// SubWidget_168080 is the shared canonical <Wwd/SubWidget168080.h> (its dtor body lives
+// in the WwdGrid obj - the vtable-owner probe binds ??_7 @0x1f0310 slot 1 to 0x1682a0).
 struct Builder_168080 {
     void* m_0;             // +0x00
     SubWidget_168080* m_4; // +0x04

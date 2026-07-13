@@ -25,15 +25,12 @@
 DATA(0x002bf620)
 extern CButeTree g_buteTree;
 
-// The leaf game-object whose dtor opens the projactregistry block. A CUserLogic leaf:
-// its only destructible member is the inherited +0x18 EngStr link, so the dtor folds
-// the bare CUserLogic teardown (the established /GX leaf-dtor archetype).
-class CProjActOwner : public CUserLogic {
-public:
-    TILE_LOGIC_TAIL
-public:
-    virtual ~CProjActOwner() OVERRIDE;
-};
+// (The CProjActOwner placeholder is GONE: the vtable-owner probe proves the dtor that
+// opens the projactregistry block IS ~CActionArea - ??_7CActionArea @0x1e7004 (RTTI-named)
+// slot 0 -> ILT thunk -> the scalar-deleting dtor 0x7fa0 -> the body at 0x7fd0. There was
+// never a second class: two byte-identical CUserLogic leaf teardowns cannot be two COMDAT
+// copies of one dtor - MSVC5 keeps one COMDAT per name - so the "folded twin" story was
+// wrong in the other direction: it is ONE dtor, and it belongs to CActionArea.)
 
 // The global registry object at VA 0x629388. SetActiveRange reaches it through an
 // ILT thunk (0x3742) -> modeled NO-body so the call reloc-masks. Find (0x16da80)
@@ -219,16 +216,11 @@ CActionArea::CActionArea(CGameObject* obj) : CUserLogic(obj) {
 // CUserLogic teardown (store CUserLogic vptr, inline-destruct the +0x18 link via
 // ~EngStr, store CUserBase vptr; the /GX leaf-dtor archetype). Declaring the virtual
 // dtor gives CActionArea its own most-derived vftable so the ctor stamps it (3rd
-// vptr) like retail. The out-of-line copy is COMDAT-folded onto the byte-identical
-// ~CProjActOwner @0x7fd0 (RVA-pinned below), so it is left UN-annotated here to avoid
-// a duplicate-RVA (the folded-leaf-dtor convention, cf. CSecretLevelTrigger).
-CActionArea::~CActionArea() {}
-
-// 0x7fd0: ~CProjActOwner - the bare CUserLogic leaf teardown: store the CUserLogic
-// vptr (0x5e705c), inline-destruct the +0x18 link (~EngStr @0x16d2a0), store the
-// CUserBase vptr (0x5e70b4). The destructible link forces the /GX EH frame.
+// vptr) like retail. IDENTITY (vtable-owner probe): ??_7CActionArea @0x1e7004 slot 0 ->
+// ILT thunk -> the scalar-deleting dtor 0x7fa0 -> THIS body. (It used to be RVA-pinned on
+// the fake CProjActOwner twin while this definition went un-annotated.)
 RVA(0x00007fd0, 0x44)
-CProjActOwner::~CProjActOwner() {}
+CActionArea::~CActionArea() {}
 
 // 0x8060: register the default projectile-action id range [0x7d0, 0x7da] on the
 // global registry.
@@ -369,8 +361,6 @@ i32 CPulseHighlight::Serialize(CSerialArchive* ar, i32 tag, i32 c, i32 d) {
 }
 
 SIZE_UNKNOWN(CProjActObj);
-SIZE_UNKNOWN(CProjActOwner);
-RELOC_VTBL(CProjActOwner, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 SIZE_UNKNOWN(CProjReg);
 SIZE_UNKNOWN(R3Entry);
 SIZE_UNKNOWN(CPulseAnim);

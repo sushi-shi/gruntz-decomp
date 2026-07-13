@@ -343,6 +343,20 @@ def cmd_build(args) -> None:
             "(python -m gruntz.match.vtable_coverage --list)")
     else:
         log((rc.stdout + rc.stderr).strip().splitlines()[-1])
+    # Vtable OWNERSHIP: for every class with an RVA()-bound destructor, the BINARY says which
+    # vtable dispatches to it (??_7 slot -> ILT thunk -> scalar-deleting dtor -> the ??1). If
+    # src's VTBL() names a different rva, that binding is a wrong-dispatch bug - and neither
+    # VTBL-uniqueness nor vtable-coverage can see it, because both are satisfied by any
+    # self-consistent lie. This gate re-derives every binding from the image. FATAL.
+    ro = subprocess.run([sys.executable, "-m", "gruntz.analysis.vtable_owner", "--audit"],
+                        cwd=str(REPO), capture_output=True, text=True, env=_pkg_env())
+    if ro.returncode != 0:
+        for ln in (ro.stdout + ro.stderr).splitlines():
+            print(ln, file=sys.stderr)
+        die("vtable-owner: a VTBL() binding contradicts the vtable that actually dispatches "
+            "to the class's destructor (python -m gruntz.analysis.vtable_owner --audit)")
+    else:
+        log((ro.stdout + ro.stderr).strip().splitlines()[-1])
     # Vtable VIRTUALITY: every VTBL(Name,rva) must bind a REAL class whose virtuals model
     # the vtable's slots (not a fabricated name, not a de-virtualized shell). FATAL gate.
     rv = subprocess.run([sys.executable, "-m", "gruntz.match.vtable_virtuality"],

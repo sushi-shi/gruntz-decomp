@@ -60,7 +60,19 @@ struct CMapPtrArray {
 // past it.
 // ---------------------------------------------------------------------------
 SIZE_UNKNOWN(CMapLogic);
-RELOC_VTBL(CMapLogic, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
+// IDENTITY PROVEN (vtable-owner probe): this class IS CBrickz. Its dtor (0x113c0) is
+// dispatched from ??_7CBrickz @0x1e7c54 (RTTI-named, bound in <Gruntz/CBrickz.h>) slot 0
+// via the scalar-deleting dtor 0x11390, and that vtable's slot 2 is CBrickz::GetTypeTag
+// (0x11300 -> LOGIC_BRICKZ). The header note above even guessed it ("the trace grouped
+// these under CBrickz") and then talked itself out of it - the binary says yes.
+// The old RELOC_VTBL pointed at 0x1e705c (CUserLogic's vtable): a MISBINDING, corrected
+// here to the true rva.
+// @identity-TODO: CMapLogic == CBrickz. The FOLD is blocked on a layout conflict that
+// must be settled by the ALLOCATION SITE, not by either header's guess: CBrickz.h asserts
+// SIZE 0x54 while this view reads +0x7c/+0x90 - so at least one is wrong, and neither is
+// evidence (a class's size is bounded only by `push <n>; call ??2@YAPAXI@Z` at its
+// new-site; CBrickz's 1-arg ctor 0x10e800 is declared-only, so the oracle has no row yet).
+RELOC_VTBL(CMapLogic, 0x001e7c54); // == ??_7CBrickz (true rva; fold pending the size oracle)
 class CMapLogic : public CUserLogic {
 public:
     TILE_LOGIC_TAIL

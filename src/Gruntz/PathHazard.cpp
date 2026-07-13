@@ -12,6 +12,7 @@
 // code bytes are load-bearing; names are placeholders for the recovered engine
 // identities.
 #include <Gruntz/PathHazard.h>
+#include <Gruntz/RainCloud.h> // CRainCloud (its dtor 0x13340 lives in this obj)
 #include <Gruntz/ActReg.h> // CActReg coordinate registry (ResolveEntry) for RunAct
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/AniAdvanceCursor.h>
@@ -40,35 +41,11 @@
 // pair: m_118 the strike-armed gate, the (m_120,m_124) i64 strike deadline and
 // (m_128,m_12c) i64 window. Only offsets / code bytes are load-bearing.
 // ---------------------------------------------------------------------------
-// Derives from CUserLogic directly (NOT CPathHazard, whose dtor is out-of-line):
-// the leaf dtor must fold the bare CUserLogic teardown inline to match 0x13280,
-// which an out-of-line CPathHazard base dtor would block. It shares CPathHazard's
-// vtable/layout only at the byte level (Tick reads the vtable raw).
-class CLightningHazard : public CUserLogic {
-public:
-    virtual i32 SerializeMove(CGruntArchive*, i32, i32, i32) OVERRIDE; // slot 1
-    virtual LogicTypeId GetTypeTag() OVERRIDE;                         // slot 2
-    virtual i32 UserLogicVfunc2() OVERRIDE;                            // slot 4
-    TILE_LOGIC_TAIL
-public:
-    // Real virtuals at CUserLogic slots 16..20 (+0x40..+0x50), mirroring CPathHazard;
-    // BeginLeg/HitTest were previously read raw via the CLightVtbl lens.
-    virtual i32 SiblingTick();            // slot 16 (+0x40) 0x0b43f0
-    virtual void VSlot17();               // slot 17 (+0x44) filler
-    virtual void VSlot18();               // slot 18 (+0x48) filler
-    virtual i32 BeginLeg();               // slot 19 (+0x4c)
-    virtual i32 HitTest(i32 a, i32 b);    // slot 20 (+0x50)
-    i32 ArmStrike(i32, i32);              // 0x0b4640 (arm the strike window + kill cue)
-    virtual ~CLightningHazard() OVERRIDE; // 0x013280 (folds the CUserLogic teardown)
-
-    char m_pad40[0x108 - 0x40];
-    i64 m_legDeadline; // +0x108 leg start-clock deadline (i64)
-    i64 m_legWindow;   // +0x110 leg window duration      (i64)
-    i32 m_strikeArmed; // +0x118 strike-armed gate
-    char m_pad11c[0x120 - 0x11c];
-    i64 m_strikeDeadline; // +0x120 strike start-clock deadline (i64)
-    i64 m_strikeWindow;   // +0x128 strike window duration      (i64)
-};
+// (The CLightningHazard class is GONE: the vtable-owner probe proves it IS CPathHazard -
+// its dtor 0x13280 is dispatched from ??_7CPathHazard @0x1e7394 slot 0 (via the sdd
+// 0x13250), and its SiblingTick 0xb43f0 is that same vtable's slot 17. It was a duplicate
+// view of the canonical class; its methods are folded onto CPathHazard, which also fixes
+// the layout - the leg/strike timers are real i64s, not split i32 lo/hi pairs.)
 
 // The strike-clock + threshold globals the timer windows poll.
 DATA(0x00245588)
@@ -114,32 +91,33 @@ extern CButeTree g_buteTree;
 // the pool is linker-COMDAT-separated, NOT foreign conflation. Rule (a): leave in place.)
 RVA(0x00013170, 0x7b)
 CPathHazard::CPathHazard() {
-    m_legTag = 0;
-    m_legSegs = 0;
-    m_legTagHi = 0;
-    m_legSegsHi = 0;
+    m_legDeadline = 0;
+    m_legWindow = 0;
     m_strikeDeadline = 0;
     m_strikeWindow = 0;
-    m_strikeDeadlineHi = 0;
-    m_strikeWindowHi = 0;
 }
 
-// CLightningHazard::~ @0x013280 - byte-identical to ~CPathHazard (the bare
-// CUserLogic leaf teardown); the empty body is enough for cl. (Distinct EH
-// handler funclet from 0x13340, but that is reloc-masked.)
-RVA(0x00013280, 0x44)
-CLightningHazard::~CLightningHazard() {}
+// CPathHazard::~CPathHazard @0x013280 - the leaf adds no destructible members beyond
+// CUserLogic, so its dtor folds the bare CUserLogic teardown: store the CUserLogic vptr
+// (0x5e705c), inline-destruct the +0x18 link (the embedded ~EngStr call 0x16d2a0), store
+// the CUserBase vptr (0x5e70b4). The destructible link forces the /GX EH frame.
+// IDENTITY (vtable-owner probe): ??_7CPathHazard @0x1e7394 slot 0 -> ILT thunk -> the
+// scalar-deleting dtor 0x13250 -> THIS body. It was misbound as ~CLightningHazard, while
+// ~CPathHazard was misbound to 0x13340 (which is really ~CRainCloud - see below): the
+// whole family was shifted by one, because N byte-identical empty leaf dtors were being
+// assigned by proximity instead of by the vtable that dispatches them.
+// @rva-symbol: ??1CPathHazard@@UAE@XZ 0x00013280 0x44
 
 // CPathHazard::GetTypeTag (0x000132f0) is now an inline member in the class header.
 
-// CPathHazard::~CPathHazard @0x013340 - the leaf adds no destructible members
-// beyond CUserLogic, so its dtor folds the bare CUserLogic teardown: store the
-// CUserLogic vptr (0x5e705c), inline-destruct the +0x18 link (the embedded
-// ~EngStr call 0x16d2a0), store the CUserBase vptr (0x5e70b4). The destructible
-// link forces the /GX EH frame. Byte-identical in shape to ~CTimeBomb
-// (0x012a70) / ~CKitchenSlime (0x013100); the empty body is enough for cl.
+// CRainCloud::~CRainCloud @0x013340 - the CPathHazard-derived rain-cloud leaf's dtor
+// (byte-identical to ~CPathHazard above: no destructible members of its own, so it folds
+// the same bare CUserLogic teardown). IDENTITY (vtable-owner probe): ??_7CRainCloud
+// @0x1e7324 (RTTI-named, bound in <Gruntz/RainCloud.h>) slot 0 -> ILT thunk -> the sdd
+// 0x13310 -> THIS body. It was misbound as ~CPathHazard; ~CRainCloud was declared and
+// never defined.
 RVA(0x00013340, 0x44)
-CPathHazard::~CPathHazard() {}
+CRainCloud::~CRainCloud() {}
 
 // The bound CGameObject viewed by the ctor: it reads the screen position (m_5c/
 // m_60), the layer key (m_74), the flags (m_08), and the raw waypoint coordinate
@@ -186,10 +164,10 @@ struct CPathCtorObj {
 RVA(0x000b35a0, 0x401)
 CPathHazard::CPathHazard(CGameObject* obj) : CUserLogic(obj) {
     TILE_LOGIC_SEED(obj);
-    *(i64*)&m_legTag = 0;
-    *(i64*)&m_legSegs = 0;
-    *(i64*)&m_strikeDeadline = 0;
-    *(i64*)&m_strikeWindow = 0;
+    m_legDeadline = 0;
+    m_legWindow = 0;
+    m_strikeDeadline = 0;
+    m_strikeWindow = 0;
 
     m_38->m_flags |= 0x2000002;
 
@@ -347,10 +325,8 @@ i32 CPathHazard::Tick() {
             this->Arrive(); // virtual slot 18 (+0x48)
             i32 segs = m_object->m_120;
             if (segs > 0) {
-                m_legSegs = segs;
-                m_legSegsHi = 0;
-                m_legTag = g_pathLegTag;
-                m_legTagHi = 0;
+                m_legWindow = segs;
+                m_legDeadline = (u32)g_pathLegTag;
                 m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = g_buteTree.Find(g_iconBute);
                 return 0;
@@ -392,7 +368,7 @@ i32 CPathHazard::Tick() {
     return 0;
 }
 
-// CLightningHazard::SiblingTick @0x0b43f0 (virtual slot 16 override) - the timed
+// CPathHazard::SiblingTick @0x0b43f0 (virtual slot 17) - the timed
 // striking hazard's per-frame driver. When armed (m_118), check the strike window:
 // if the i64 (clock - deadline) is past the window OR the strike-threshold gate
 // expired, disarm and pick the "spent" sprite frame; otherwise pick the active
@@ -409,7 +385,7 @@ i32 CPathHazard::Tick() {
 // `>=` window compares lay the expire/check branches in a different order than
 // retail's hi-dword `jg/jl; cmp lo; jae` materialization. Logic correct; deferred.
 RVA(0x000b43f0, 0x1c7)
-i32 CLightningHazard::SiblingTick() {
+i32 CPathHazard::SiblingTick() {
     if (m_strikeArmed != 0) {
         i32 sel = 5;
         i64 elapsed = (i64)(u32)g_strikeClock - m_strikeDeadline;
@@ -469,7 +445,7 @@ i32 CLightningHazard::SiblingTick() {
     return 0;
 }
 
-// CLightningHazard::ArmStrike @0x0b4640 - arm the strike-window timer (deadline =
+// CPathHazard::ArmStrike @0x0b4640 - arm the strike-window timer (deadline =
 // now, window = bute RainCloudFlashTime), fire the cue gate, and play the
 // "LEVEL_CLOUDHAZARDKILL" positional sound on the bound object when it is on-screen
 // and the per-emitter cooldown has elapsed.  Integer-only; returns 1.  __thiscall,
@@ -478,11 +454,11 @@ i32 CLightningHazard::SiblingTick() {
 // ~95%: code bytes byte-exact; residual is the same TU-wide reloc-naming artifact
 // SiblingTick carries (the obj names g_gameReg as _g_mgrSettings and
 // g_strikeClock as _g_645588). Logic byte-for-byte correct.
-// @interleaver CLightningHazard::ArmStrike emitted-in <boundary: PathHazardActReg.cpp
+// @interleaver CPathHazard::ArmStrike emitted-in <boundary: PathHazardActReg.cpp
 // RegisterActs_646250 @0xb3cc0 (before) + Ufo.cpp Method_b4cb0 @0xb4cb0 (after)>. A /Gy
 // first-use COMDAT the linker scattered between OTHER units, not this TU's body run.
 RVA(0x000b4640, 0x104)
-i32 CLightningHazard::ArmStrike(i32 a, i32 b) {
+i32 CPathHazard::ArmStrike(i32 a, i32 b) {
     m_strikeArmed = 1;
     m_strikeWindow = (i64)(u32)g_buteMgr.GetDwordDef("Hazardz", "RainCloudFlashTime", 0x7d0);
     m_strikeDeadline = (i64)(u32)g_strikeClock;
@@ -592,8 +568,6 @@ void CPathHazard::ForwardTick() {
 #include <rva.h>
 extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from header)
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(CLightningHazard);
-RELOC_VTBL(CLightningHazard, 0x001e705c); // aliases CUserLogic (dtor-stamp verified)
 SIZE_UNKNOWN(CPathCtorObj);
 SIZE_UNKNOWN(CPathCtorSub);
 SIZE_UNKNOWN(CPathEntity);

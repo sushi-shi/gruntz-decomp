@@ -122,7 +122,11 @@ public:
     // emits the real 21-slot ??_7CPathHazard@@6B@ (CRainCloud/CUFO derive it). Tick
     // and BeginLeg carry bodies; slots 17/18/20 are declared-only (reloc-masked).
     virtual i32 Tick();        // slot 16 (body 0xb4020): the per-frame driver.
-    virtual i32 SiblingTick(); // slot 17 (body 0xb43f0, ?SiblingTick@CLightningHazard@@QAEHXZ)
+    virtual i32 SiblingTick(); // slot 17 (body 0xb43f0 - the timed strike driver)
+    // Arm the strike-window timer (deadline = now, window = the RainCloudFlashTime bute),
+    // fire the cue gate + the positional kill sound. Non-virtual. (Was the duplicate
+    // CLightningHazard view's method.)
+    i32 ArmStrike(i32 a, i32 b); // 0x0b4640
     // Arrive (slot 18, body 0xb47a0): advance to the next waypoint, wrapping the
     // index back to 0 once the path is exhausted. Returns 1.
     virtual i32 Arrive(); // slot 18
@@ -133,7 +137,13 @@ public:
     // ForwardTick (0xb5070): a thin non-virtual forwarder to virtual slot 16 (Tick).
     // Tail-jumps `this->vtbl[16]()` through the raw vtable view (kept indirect).
     void ForwardTick();              // 0x0b5070 (out-of-line: tail-jump to Tick(), virtual slot 16)
-    virtual ~CPathHazard() OVERRIDE; // 0x13340 (folds the CUserLogic teardown; slot 0)
+    // INLINE (like ~CUserLogic): the derived leaves (CRainCloud/CUFO) must FOLD this
+    // teardown into their own dtors - retail's ~CRainCloud @0x13340 is a flat CUserLogic
+    // teardown, byte-identical to ~CPathHazard, with every intermediate vptr stamp
+    // dead-store-eliminated. An out-of-line base dtor would emit `call ??1CPathHazard`
+    // there instead. The out-of-line COMDAT the vtable dispatches to (0x13280) is pinned
+    // by @rva-symbol in PathHazard.cpp (an inline dtor cannot hang an RVA()).
+    virtual ~CPathHazard() OVERRIDE {} // slot 0 (COMDAT @0x13280)
 
     i32 m_savedGeoId; // +0x40  saved m_38->m_1b4 geometry id (before GAME_CYCLE100)
     char m_pad44[0x58 - 0x44];
@@ -149,15 +159,15 @@ public:
     i32 m_wpX;              // +0xfc  current waypoint X (int)
     i32 m_wpY;              // +0x100 current waypoint Y (int)
     i32 m_wpCount;          // +0x104 waypoint count (path length)
-    i32 m_legTag;           // +0x108 leg bute tag (i64 lo)
-    i32 m_legTagHi;         // +0x10c          (i64 hi)
-    i32 m_legSegs;          // +0x110 leg segments remaining (i64 lo)
-    i32 m_legSegsHi;        // +0x114          (i64 hi)
-    char m_pad118[0x120 - 0x118];
-    i32 m_strikeDeadline;   // +0x120 strike deadline (i64 lo; used by CLightningHazard view)
-    i32 m_strikeDeadlineHi; // +0x124          (i64 hi)
-    i32 m_strikeWindow;     // +0x128 strike window (i64 lo)
-    i32 m_strikeWindowHi;   // +0x12c          (i64 hi)
+    // The leg/strike timers are REAL i64s (the strike gate compares them with signed
+    // 64-bit arithmetic - see SiblingTick). The old split-i32 lo/hi spelling was the
+    // artifact of the CLightningHazard dual-view, now folded in.
+    i64 m_legDeadline; // +0x108 leg start-clock deadline
+    i64 m_legWindow;   // +0x110 leg window duration
+    i32 m_strikeArmed; // +0x118 strike-armed gate
+    char m_pad11c[0x120 - 0x11c];
+    i64 m_strikeDeadline; // +0x120 strike start-clock deadline
+    i64 m_strikeWindow;   // +0x128 strike window duration
 };
 SIZE(CPathHazard, 0x130);
 VTBL(CPathHazard, 0x001e7394); // vtable_names -> code (RTTI game class)

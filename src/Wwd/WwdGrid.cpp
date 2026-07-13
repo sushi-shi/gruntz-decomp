@@ -5,6 +5,7 @@
 #include <Mfc.h>
 
 #include <Gruntz/WwdGrid.h>
+#include <Wwd/SubWidget168080.h> // the sibling 0x44 grid (its dtor 0x1682a0 lives in this obj)
 #include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor - Start/Init/GetNext bodies live
                                 // here (0x191ad0..0x191c30, same obj as CWwdGrid); shared
                                 // with WwdSpatialMgr.cpp (its GetFirst/GetNext API driver)
@@ -34,25 +35,27 @@ extern "C" double pow(double, double);
 // ENTRY state (stamp-first, == retail), then FreeBuckets, then the ~CObject
 // grand-base re-stamp folds in. /GX frame from the destructible base subobject.
 // (eh-dtor-implicit-vptr-stamp-first.md.)
+// SubWidget_168080::~SubWidget_168080 @0x1682a0 - the SIBLING grid class's dtor (its own
+// 6-slot vtable ??_7SubWidget_168080 @0x1f0310; class in <Wwd/SubWidget168080.h>). Same
+// shape as ~CWwdGrid: stamp own vptr, free the bucket array, fold the CObject grand-base.
+// IDENTITY (vtable-owner probe): ??_7 @0x1f0310 slot 1 -> the sdd 0x168280 -> THIS body.
+// It was misbound as CWwdGrid::~CWwdGrid, which pushed the REAL ~CWwdGrid (0x168c10) onto
+// a fake "second COMDAT copy" placeholder (C168c10) - an impossible story, since MSVC5
+// keeps exactly ONE COMDAT per mangled name. Two grids, two vtables, two dtors.
+// The FreeBuckets cast is the honest residue of the sibling's still-unmodelled layout
+// (it runs the same bucket-array teardown on the same offsets).
 RVA(0x001682a0, 0x46)
-CWwdGrid::~CWwdGrid() {
-    FreeBuckets();
+SubWidget_168080::~SubWidget_168080() {
+    ((CWwdGrid*)this)->FreeBuckets();
 }
 
-// 0x168c10 - a SECOND, un-COMDAT-folded copy of ~CWwdGrid (byte-identical to 0x1682a0:
-// stamp 0x5f0328, FreeBuckets, fold CObject) that retail emitted from a different TU
-// (MSVC5 has no ICF). Co-located with CWwdGrid; kept a distinct placeholder identity
-// (C168c10) because name-injectivity forbids two CWwdGrid::~CWwdGrid at two RVAs
-// (one-source/N-COMDAT wall). The grand-base fold @0x168c44 is the REAL ??_7CObject
-// (0x5e8cb4, disasm-verified), so C168c10 derives from the real CObject - no Sev shell.
-struct C168c10 : CObject {
-    virtual ~C168c10() OVERRIDE;
-};
-SIZE_UNKNOWN(C168c10);
-RELOC_VTBL(C168c10, 0x001f0328); // duplicate ~CWwdGrid copy; stamp reloc-masks 0x1f0328
+// 0x168c10 - the REAL CWwdGrid::~CWwdGrid: stamp ??_7CWwdGrid (0x5f0328), free the bucket
+// array, then the ~CObject grand-base re-stamp folds in. /GX frame from the destructible
+// base subobject. IDENTITY (vtable-owner probe): ??_7CWwdGrid @0x1f0328 slot 1 -> the sdd
+// 0x168bf0 -> THIS body. (eh-dtor-implicit-vptr-stamp-first.md.)
 RVA(0x00168c10, 0x46)
-C168c10::~C168c10() {
-    ((CWwdGrid*)this)->FreeBuckets();
+CWwdGrid::~CWwdGrid() {
+    FreeBuckets();
 }
 
 // ===========================================================================
