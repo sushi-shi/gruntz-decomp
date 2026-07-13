@@ -32,9 +32,9 @@
 #include <Mfc.h> // RECT (CDrawSurface::SetClipRect / m_viewport)
 #include <rva.h>
 
-// The per-frame input object the credits poll reaches (m_4->m_10->m_2c->m_8); its
-// full vtable layout lives in GameMode.h (the only TU that polls it).
-struct CGMInputObj;
+// (The per-frame "input object" the credits poll reaches (m_4->m_10->m_2c->m_8) is
+// the real IDirectDrawSurface - the poll is IsLost, COM slot 24; the dispatching TUs
+// pull <ddraw.h>. The former CGMInputObj fake-vtable view is dissolved.)
 
 // The render-flip surface at CDrawTarget::SurfaceB::m_2c: the real CDDSurface
 // (<DDrawMgr/DDSurface.h>; Fill @0x13e760, Restore @0x13e7d0 - ret 8, two args -

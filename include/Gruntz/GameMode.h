@@ -77,40 +77,12 @@ typedef AttractActorList CGMEntityList;
 // global first: `mov reg,[0x645574]; mov cnt,[reg+4]; elems = reg+8`. The old spelling
 // `g_645574` is gone - the one symbol is g_actorList, declared in AttractActor.h.)
 
-// The input/anim sub-object the credits poll reaches (m_c->m_4->m_10->m_2c->m_8).
-// Its slot +0x60 is a fn-ptr the object is passed to as the explicit STACK arg
-// (NOT in ecx) and the CALLEE cleans the stack (no `add esp,4` at the call site)
-// -> __stdcall: `mov ecx,[obj]; push obj; call [ecx+0x60]`.
-// Real polymorphic view: Poll is slot 24 (+0x60), a real __stdcall virtual (24
-// fillers); in->Poll() lowers to the same call [eax+0x60].
-SIZE_UNKNOWN(CGMInputObj);
-struct CGMInputObj {
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual void Slot18();
-    virtual void Slot19();
-    virtual void Slot20();
-    virtual void Slot21();
-    virtual void Slot22();
-    virtual void Slot23();
-    virtual i32 __stdcall Poll(); // +0x60 (slot 24)
-};
+// (The former CGMInputObj "input/anim sub-object" view - a 24-filler fake vtable
+// with a __stdcall "Poll" at slot 24 (+0x60) - is GONE. The object at
+// m_c->m_drawTarget->m_10->m_2c->m_8 is the game's real IDirectDrawSurface and the
+// "poll" is IDirectDrawSurface::IsLost (COM slot 24, +0x60, __stdcall) - exactly how
+// CreditsState.cpp / SplashState.cpp already dispatch the same path via <ddraw.h>.
+// Nothing referenced the view anymore.)
 
 // The owner back-ptr (CState+0x4) the Render path dereferences. +0x4->+0x4 = the
 // OS HWND (PostMessageA target); +0x8 a sub-object (m_244 cleared); +0x14 a view
