@@ -66,14 +66,8 @@ SIZE_UNKNOWN(CDDrawSubMgr);
 // m_7c(worker)/m_188(map key) are the flat class's members at the same offsets,
 // its slot-8 probe is Vfunc20, and its +0x3c dispatch is Slot3C (== Play).
 // ===========================================================================
-// CPtrList CNode shape (pNext@0, pPrev@4, data@8); the list head node is at
-// CWwdObjMgr+0x14 (= m_10.m_pNodeHead).
-struct CWwdNode {
-    CWwdNode* m_next;      // +0x00
-    CWwdNode* m_prev;      // +0x04  (CPtrList node pPrev; not walked here)
-    CWwdGameObject* m_obj; // +0x08
-};
-SIZE_UNKNOWN(CWwdNode);
+// (CWwdNode - the typed CObList node the walkers step - lives in
+// <Gruntz/WwdObjMgr.h> next to the list it walks, like the container's TtcNode.)
 
 // The object reached via m_parent->+0x24->+0x5c is the plane/grid-owner
 // CDDrawWorkerHost (ex a CImageSet3 mis-attribution - the 0x1628d0 body reads

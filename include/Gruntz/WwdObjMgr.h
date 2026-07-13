@@ -41,6 +41,15 @@ SIZE_UNKNOWN(WwdObjDesc);
 
 class CWwdGameObject;  // the managed wide objects (<Gruntz/WwdGameObject.h>; the
                        // ex-CWwdObject element view is dissolved onto it)
+
+// Typed intrusive-node access for the m_10 walkers: the MFC CObList node shape
+// (pNext@0, pPrev@4, data@8); the head node is m_10.m_pNodeHead (+0x14).
+struct CWwdNode {
+    CWwdNode* m_next;      // +0x00
+    CWwdNode* m_prev;      // +0x04  (CPtrList node pPrev; not walked)
+    CWwdGameObject* m_obj; // +0x08
+};
+SIZE_UNKNOWN(CWwdNode);
 struct CSerialArchive; // the shared serialize stream (Read @+0x2c / Write @+0x30)
 
 class CWwdObjMgr {
