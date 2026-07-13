@@ -185,6 +185,15 @@ source = "src/Gruntz/SBI_RectOnly.cpp"
 flags = "eh"
 
 [[unit]]
+# CTabzBuilder::BuildTabzDialog (0x10a340) - its own retail obj, un-merged back out of
+# SBI_RectOnly.cpp. It needs the OUT-OF-LINE CStatusBarItem base ctor (retail emits
+# `call ??0CStatusBarItem`) while SBI_RectOnly.cpp's builders need the INLINE one, and
+# MSVC5 has exactly one base-ctor spelling per TU - so they cannot share a TU.
+unit = "sbi_tabzdialog_eh"
+source = "src/Gruntz/SBI_TabzDialogEh.cpp"
+flags = "eh"
+
+[[unit]]
 unit = "sbi_image"
 source = "src/Gruntz/SBI_Image.cpp"
 flags = "eh"

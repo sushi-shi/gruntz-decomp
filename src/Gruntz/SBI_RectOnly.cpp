@@ -1,11 +1,3 @@
-// UNBLOCKED BY THE HOST SPLIT (2026-07-12): take the OUT-OF-LINE CStatusBarItem ctor, so
-// the `new CSBI_X` sites in this TU's builders emit a base-ctor CALL (??0CStatusBarItem
-// @0x1005d0) - which is what retail's BuildTabzDialog does. This knob used to be
-// unusable here: the TU also defined ??0CSBI_RectOnly (0x101fa0), whose retail spelling
-// INLINES the base ctor, so switching it cratered that 100% function to 25.5%. The split
-// moved ??0CSBI_RectOnly out to SBI_RectOnlyBase.cpp (where the macro is off and it still
-// inlines the base = 100%), so the conflict is gone and BuildTabzDialog gets its call back.
-#define SBI_ITEM_OWN_CTOR
 #include <Mfc.h> // afx-first umbrella (wave1-E one-TU merge: CByteArray/CObList consumers below)
 #include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
 #include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
@@ -39,7 +31,6 @@
 #include <Gruntz/Sprite.h>                 // CSprite (frame-data value) + CSpriteHashTable
 #include <Gruntz/SbiSideTabBuildViews.h>   // CSBI_SideTab (ctor view) + CStatzTabBuilder
 #include <Gruntz/MgrSettings.h>            // CMgrSettings + the g_gameReg/g_serialCount externs
-#include <Gruntz/SbiTabzDialogViews.h>     // CSbDialogItem leaves + CTabzBuilder (TABZ_DIALOG)
 #include <Rez/RezMgr.h>                    // RezFree (the per-frame warpstone overlay free)
 #include <math.h>   // sqrt - intrinsified to inline fsqrt under VC5 /O2 (warpstone fly)
 #include <string.h> // strlen / memset (inlined repne scas / rep stos; CMgrSettings::Serialize)
@@ -1949,319 +1940,10 @@ i32 CWarpStoneFly::Draw() {
     return 1;
 }
 
-// ===========================================================================
-// CTabzBuilder::BuildTabzDialog  @0x10a340
-// ===========================================================================
-RVA(0x0010a340, 0xbcb)
-i32 CTabzBuilder::BuildTabzDialog() {
-    if (m_550 == 0) {
-        return 1;
-    }
-
-    RECT src = m_c->m_24->m_10;
-    RECT dst;
-    ::CopyRect(&dst, &src);
-    i32 cx = dst.left + (dst.right - dst.left) / 2;
-    i32 cy = dst.top + (dst.bottom - dst.top) / 2;
-
-    if (m_554 != 0) {
-        // ---- confirm dialog: AREYOUSURE + YES/NO ----
-        CSBI_Image* areYouSure = new CSBI_Image;
-        if (!areYouSure->Setup(
-                this,
-                m_c,
-                0x321,
-                6,
-                SbRect(cx - 0x5e, cy - 0x3c, cx + 0x5e, cy + 0x3d),
-                "GAME_STATUSBAR_TABZ_DIALOG_AREYOUSURE",
-                -1,
-                0
-            )) {
-            delete areYouSure;
-            return 0;
-        }
-        m_d4.AddTail((CObject*)areYouSure);
-
-        CSBI_MenuItemDlg* yes = new CSBI_MenuItemDlg;
-        if (!yes->Setup(
-                this,
-                m_c,
-                0x327,
-                6,
-                SbRect(cx - 0x45, cy + 0x11, cx - 0x12, cy + 0x28),
-                "GAME_STATUSBAR_TABZ_DIALOG_YES",
-                -1,
-                0
-            )) {
-            delete yes;
-            return 0;
-        }
-        m_d4.AddTail((CObject*)yes);
-        m_1fc = yes;
-
-        CSBI_MenuItemDlg* no = new CSBI_MenuItemDlg;
-        if (!no->Setup(
-                this,
-                m_c,
-                0x328,
-                6,
-                SbRect(cx + 0xd, cy + 0x11, cx + 0x40, cy + 0x28),
-                "GAME_STATUSBAR_TABZ_DIALOG_NO",
-                -1,
-                0
-            )) {
-            delete no;
-            return 0;
-        }
-        m_d4.AddTail((CObject*)no);
-        m_200 = no;
-        return 1;
-    }
-
-    // ---- main tabz dialog: DIALOG then a mission/mode decision tree ----
-    CSBI_Image* dialog = new CSBI_Image;
-    if (!dialog->Setup(
-            this,
-            m_c,
-            0x321,
-            6,
-            SbRect(cx - 0x8e, cy - 0x48, cx + 0x8e, cy + 0x48),
-            "GAME_STATUSBAR_TABZ_DIALOG",
-            -1,
-            0
-        )) {
-        delete dialog;
-        return 0;
-    }
-    m_d4.AddTail((CObject*)dialog);
-
-    i32 reason = ((TabzGmFactory*)g_gameReg->m_cmdGrid)->m_3ec;
-
-    if (((TabzGmFactory*)g_gameReg->m_cmdGrid)->m_288 == 1) {
-        // mission accomplished
-        CSBI_ImageSet* status = new CSBI_ImageSet;
-        if (!status->Setup(
-                this,
-                m_c,
-                0x322,
-                6,
-                SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
-                "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
-                1,
-                0
-            )) {
-            delete status;
-            return 0;
-        }
-        m_d4.AddTail((CObject*)status);
-
-        CSBI_ImageSet* rsn = new CSBI_ImageSet;
-        if (!rsn->Setup(
-                this,
-                m_c,
-                0x326,
-                6,
-                SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
-                "GAME_STATUSBAR_TABZ_DIALOG_REASON",
-                reason,
-                0
-            )) {
-            delete rsn;
-            return 0;
-        }
-        m_d4.AddTail((CObject*)rsn);
-
-        if (g_gameReg->m_134 == 1) {
-            CSBI_MenuItemDlg* next = new CSBI_MenuItemDlg;
-            if (!next->Setup(
-                    this,
-                    m_c,
-                    0x324,
-                    6,
-                    SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
-                    "GAME_STATUSBAR_TABZ_DIALOG_PLAYNEXTLEVEL",
-                    -1,
-                    0
-                )) {
-                delete next;
-                return 0;
-            }
-            m_d4.AddTail((CObject*)next);
-            m_1f4 = next;
-
-            CSBI_MenuItemDlg* quit = new CSBI_MenuItemDlg;
-            if (!quit->Setup(
-                    this,
-                    m_c,
-                    0x325,
-                    6,
-                    SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
-                    "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
-                    -1,
-                    0
-                )) {
-                delete quit;
-                return 0;
-            }
-            m_d4.AddTail((CObject*)quit);
-            m_1f8 = quit;
-        } else {
-            CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
-            if (!statz->Setup(
-                    this,
-                    m_c,
-                    0x325,
-                    6,
-                    SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
-                    "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
-                    -1,
-                    0
-                )) {
-                delete statz;
-                return 0;
-            }
-            m_d4.AddTail((CObject*)statz);
-            m_1f8 = statz;
-        }
-        return 1;
-    }
-
-    // mission not complete
-    CSBI_ImageSet* status = new CSBI_ImageSet;
-    if (!status->Setup(
-            this,
-            m_c,
-            0x322,
-            6,
-            SbRect(cx - 0x8e, cy - 0x31, cx + 0x8d, cy - 0x16),
-            "GAME_STATUSBAR_TABZ_DIALOG_MISSIONSTATUS",
-            2,
-            0
-        )) {
-        delete status;
-        return 0;
-    }
-    m_d4.AddTail((CObject*)status);
-
-    CSBI_ImageSet* rsn = new CSBI_ImageSet;
-    if (!rsn->Setup(
-            this,
-            m_c,
-            0x326,
-            6,
-            SbRect(cx - 0x7c, cy - 0x11, cx + 0x73, cy + 0x4),
-            "GAME_STATUSBAR_TABZ_DIALOG_REASON",
-            reason,
-            0
-        )) {
-        delete rsn;
-        return 0;
-    }
-    m_d4.AddTail((CObject*)rsn);
-
-    if (g_gameReg->m_134 == 1) {
-        CSBI_MenuItemDlg* replay = new CSBI_MenuItemDlg;
-        if (!replay->Setup(
-                this,
-                m_c,
-                0x324,
-                6,
-                SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
-                "GAME_STATUSBAR_TABZ_DIALOG_REPLAYLEVEL",
-                -1,
-                0
-            )) {
-            delete replay;
-            return 0;
-        }
-        m_d4.AddTail((CObject*)replay);
-        m_1f4 = replay;
-
-        CSBI_MenuItemDlg* quit = new CSBI_MenuItemDlg;
-        if (!quit->Setup(
-                this,
-                m_c,
-                0x325,
-                6,
-                SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
-                "GAME_STATUSBAR_TABZ_DIALOG_QUITTOMAINMENU",
-                -1,
-                0
-            )) {
-            delete quit;
-            return 0;
-        }
-        m_d4.AddTail((CObject*)quit);
-        m_1f8 = quit;
-        return 1;
-    }
-
-    // count active players (m_178!=0 && m_17c==0 && m_174==0) over the 4 slots.
-    i32 count = 0;
-    for (i32 i = 0; i < 4; i++) {
-        if (((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_178 != 0
-            && ((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_17c == 0
-            && ((TabzPlayer*)((char*)g_gameReg + 0x174))[i].m_174 == 0) {
-            count++;
-        }
-    }
-
-    if (count >= 2) {
-        CSBI_MenuItemDlg* observe = new CSBI_MenuItemDlg;
-        if (!observe->Setup(
-                this,
-                m_c,
-                0x324,
-                6,
-                SbRect(cx - 0x7d, cy + 0x17, cx - 0xe, cy + 0x32),
-                "GAME_STATUSBAR_TABZ_DIALOG_OBSERVE",
-                -1,
-                0
-            )) {
-            delete observe;
-            return 0;
-        }
-        m_d4.AddTail((CObject*)observe);
-        m_1f4 = observe;
-        m_578 = 1;
-
-        CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
-        if (!statz->Setup(
-                this,
-                m_c,
-                0x325,
-                6,
-                SbRect(cx, cy + 0x17, cx + 0x6f, cy + 0x32),
-                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
-                -1,
-                0
-            )) {
-            delete statz;
-            return 0;
-        }
-        m_d4.AddTail((CObject*)statz);
-        m_1f8 = statz;
-    } else {
-        m_578 = 0;
-        CSBI_MenuItemDlg* statz = new CSBI_MenuItemDlg;
-        if (!statz->Setup(
-                this,
-                m_c,
-                0x325,
-                6,
-                SbRect(cx - 0x39, cy + 0x17, cx + 0x36, cy + 0x32),
-                "GAME_STATUSBAR_TABZ_DIALOG_STATZ",
-                -1,
-                0
-            )) {
-            delete statz;
-            return 0;
-        }
-        m_d4.AddTail((CObject*)statz);
-        m_1f8 = statz;
-    }
-    return 1;
-}
+// (CTabzBuilder::BuildTabzDialog @0x10a340 moved OUT to src/Gruntz/SBI_TabzDialogEh.cpp -
+// its own retail obj. It needs the OUT-OF-LINE base ctor (retail `call ??0CStatusBarItem`)
+// while this TU's builders need the INLINE one, and MSVC5 allows only one spelling per TU.
+// Un-merging is what lets both be right; see that file's banner.)
 
 // ===========================================================================
 // EngineLabelBacklog::UpdateDestructButtonStatusBar @0x10b320
@@ -3330,19 +3012,10 @@ void CStatusBarMgr::ReportTab(i32 tab) {
 // that spelling is not the source shape; REVERTED rather than banked. Whoever picks this up
 // should start from the caller bytes, not from my guess. The struct-copy is real; the
 // signature that produces it is not yet known.
-// @early-stop
-// MERGED-TU CTOR-SPELLING CONFLICT (67.34%; was 71.58 before the SBI_ITEM_OWN_CTOR knob).
-// Retail INLINES the CStatusBarItem base ctor at this function's `new CSbiRectSub` /
-// `new CSBI_MenuItem` sites, but CALLS it out-of-line at BuildTabzDialog's `new CSBI_Image`
-// sites. Those were two different retail objs; the wave1-E merge put both in this one TU,
-// and MSVC5 has exactly one base-ctor spelling per TU - so one of the two must be wrong.
-// Measured both ways: knob OFF = this fn 71.58 / BuildTabzDialog 75.39; knob ON = this fn
-// 67.34 / BuildTabzDialog 83.72 (its recorded max). ON is the better total (+4.09) and is
-// what is in effect. THE REAL FIX IS THE UN-MERGE: move CTabzBuilder::BuildTabzDialog back
-// to its own TU (SBI_TabzDialogEh.cpp) with the knob ON there and OFF here - then BOTH
-// functions get their retail spelling and this 4.24% comes back. The host split already
-// removed the old blocker (??0CSBI_RectOnly no longer lives in this TU), so the un-merge is
-// now unobstructed. Not the class-split's job; left as the next step.
+// The merged-TU ctor-spelling conflict that used to cap this function is RESOLVED: retail
+// INLINES the CStatusBarItem base ctor at this function's `new` sites, and BuildTabzDialog
+// (which needs the out-of-line CALL) has been un-merged back to its own TU. This TU now
+// leaves SBI_ITEM_OWN_CTOR off, so the base ctor inlines here - the retail spelling.
 RVA(0x000ffde0, 0x5b1)
 i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
@@ -3743,6 +3416,15 @@ i32 CStatusBarMgr::LoadBattlezItemConfig(i32 arg) {
 // SECOND TRIGGER (wave1-E one-TU merge): absorbing the updater/warpstone/serialize
 // cluster into this TU re-fired the same stack-store/arg-block reshuffle
 // (95.6% -> 88.6% again, no source change here). Accepted per the merge mandate.
+// THIRD TRIGGER (2026-07-13, the BuildTabzDialog un-merge): REMOVING the 3019-byte
+// CTabzBuilder::BuildTabzDialog + <Gruntz/SbiTabzDialogViews.h> from this TU fired the
+// SAME 95.6% -> 88.6% reshuffle a third time - again with no source change here. Isolated
+// by A/B: it is NOT the SBI_ITEM_OWN_CTOR knob (with the knob forced back ON and the
+// un-merge in place this function stays at 88.55, while BuildStatusBarTabs falls to 67.34),
+// so the trigger is purely this TU's changed /O2 budget. That this exact pair of numbers
+// recurs on any TU-content change confirms the documented cross-function codegen leak.
+// It should settle once this mega-TU (0xc8980-0x10bc14, still interleaving four other
+// units) is un-merged the rest of the way. Accepted; do NOT revert the un-merge for it.
 RVA(0x000fe6b0, 0x145)
 i32 CStatusBarMgr::LoadMainStatusBarSprite() {
     if (m_position != kSubtypeTag) {

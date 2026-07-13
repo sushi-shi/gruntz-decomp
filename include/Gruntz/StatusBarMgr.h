@@ -509,9 +509,15 @@ public:
     // lea edx,[ecx+edx*8]; mov [edx+0x220],0; mov [edx+0x224],1` => base 0x220, stride
     // 0x18, five elements ending exactly at m_gauge (0x220 + 5*0x18 == 0x298).
     CSbiSlot m_slots[5]; // +0x220 .. +0x298
-    i32 m_gauge;         // +0x298  gauge current (the tab builder reads it as the
-                         //         WELLGOO config-d source - one slot, two roles)
-    i32 m_gaugeTarget;   // +0x29c  gauge target
+    // +0x298 - SETTLED (it is ONE role, not the two the split-era comment hedged over).
+    // TickGauge (0x105480) eases m_gauge one step per tick toward m_gaugeTarget, latches on
+    // `m_gauge == 100`, and pushes the value into m_gaugeSink->m_44: a 0..100 percentage.
+    // LoadTabSprites hands that SAME field to Configure() for the
+    // "GAME_STATUSBAR_TABZ_GRUNTZTAB_WELLGOO" widget - i.e. it seeds the goo-well gauge
+    // widget with the current fill level. The builder's "WELLGOO config-d source" reading
+    // was just the construction-side view of the gauge. This IS the goo-well gauge.
+    i32 m_gauge;       // +0x298  goo-well gauge, 0..100 (current)
+    i32 m_gaugeTarget; // +0x29c  goo-well gauge target (TickGauge eases m_gauge to it)
     char m_pad2a0[0x2b0 - 0x2a0];
     i32 m_2b0;                     // +0x2b0  (multiplayer/battlez reset block)
     i32 m_2b4;                     // +0x2b4
