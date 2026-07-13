@@ -770,18 +770,30 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     // (2) interface object - a CChatBoxOwner (the CNetIface view is gone)
     CChatBoxOwner* iface = new CChatBoxOwner();
     TF(0x2e0) = (i32)iface;
-    // CChatBoxOwner::Attach is void (QAEX): no failure signal, so no failure branch (the
-    // reconstruction's `== 0` guard was an artifact - the real shape just attaches + proceeds).
-    iface->Attach(m_c, (CChatBoxTextHost*)NetGameMgr()->m_5c);
+    // CChatBoxOwner::Attach RETURNS i32 (constant 1), and retail TESTS it here - VERIFIED
+    // at 0xb5460+0x349: `call 0x3e77; test eax,eax; jne <continue>` with the same
+    // Deactivate+RezFree+return-0 teardown CPlay::Vfunc1 has. The note that once stood
+    // here ("Attach is void (QAEX): no failure signal, so the `== 0` guard was an
+    // artifact") was exactly backwards: the guard is REAL - it was the void decl that
+    // was wrong (see ChatBoxOwner.cpp).
+    if (iface->Attach(m_c, NetGameMgr()->m_5c) == 0) {
+        CChatBoxOwner* io = (CChatBoxOwner*)TF(0x2e0);
+        if (io == 0) {
+            return 0;
+        }
+        io->Deactivate();
+        ::operator delete(io);
+        TF(0x2e0) = 0;
+        return 0;
+    }
     ((CChatBoxOwner*)TF(0x2e0))->m_10 = 0;
     ((CChatBoxOwner*)TF(0x2e0))->Configure(1);
 
     // (3) session - the 0x630 CStatusBarMgr (the CNetSess view is gone). The two
-    // non-default stamps sit at the site because the class's real ~400-byte inline
-    // ctor init is not yet recovered.
-    CStatusBarMgr* sess = new CStatusBarMgr();
-    sess->m_barFrameGate = 0x1e0;
-    sess->m_544 = 1;
+    // out-of-band stamps that used to sit here (m_barFrameGate = 0x1e0; m_544 = 1) are
+    // GONE: they are ctor initialisers, and CStatusBarMgr now has its real inline ctor
+    // (<Gruntz/StatusBarMgr.h>), which this `new` expands exactly as retail does.
+    CStatusBarMgr* sess = new CStatusBarMgr;
     TF(0x2dc) = (i32)sess;
     if (sess->LoadBattlezItemConfig(m_c) == 0) {
         CStatusBarMgr* so = (CStatusBarMgr*)TF(0x2dc);
@@ -830,7 +842,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     g_645580 = 0;
     g_645588 = 0;
     TF(0x1cc) = 0;
-    ((CFontConfig*)NetGameMgr()->m_5c)->FreeNodes();
+    NetGameMgr()->m_5c->FreeNodes();
     TF(0x580) = 1;
     return 1;
 
@@ -989,7 +1001,7 @@ i32 CMulti::FrameSlot28(i32 arg) {
     m_4w()->m_60->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
     m_savedClock = (i32)g_645588;
     if (m_40) {
-        Method_cef50();
+        QuitToMenu();
     }
     if (arg == 9) {
         return 1;

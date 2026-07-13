@@ -1,5 +1,7 @@
 #include <Mfc.h> // real MFC CMapStringToOb (the logic-name map's Lookup @0x1b8438)
 #include <rva.h>
+#include <Gruntz/Grunt.h>     // CAnimLookupNode (the m_14 aux the guard reads at +0x1c)
+#include <Gruntz/UserLogic.h> // CUserLogic - the real owner of 0x8b90 (ex CFinalize8b90)
 // LogicTypeTable.cpp - CLogicTypeBuilder::BuildLogicTypeTable. A one-shot
 // registrar that ensures three built-in tile-logic
 // types ("LogicHit", "LogicAttack", "LogicBump") are present in the engine's
@@ -110,41 +112,53 @@ void __stdcall BuildLogicTypeTable(CLogicTypeBuilder* obj) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x008b90 - a finalize/teardown that fires up to two registered __thiscall
-// callbacks (m_4, m_8) passing `this`, the m_8 one guarded by m_14->m_1c == m_28,
-// nulls each fired slot, and resets m_28 to 0x3e9 (1001). __thiscall, one unused
-// stack arg (ret 4). Self-contained (the callbacks are indirect). RVA-homed here.
-// @orphan: only caller is Gap_05ecd0 (an engine_label_stubs placeholder); `this`
-// class genuinely unrecovered.
+// CUserLogic::FinalizeStep (0x008b90) - fire up to two registered __thiscall callbacks
+// (m_04, m_08) with `this`, the m_08 one guarded by m_14->m_1c == m_28, null each fired
+// slot, and reset m_28 to 0x3e9 (1001). __thiscall(i32) - retail `ret 4` - and the arg
+// is genuinely unused.
+//
+// IDENTITY RECOVERED (2026-07-13, Fable lane; found by gruntz.analysis.thunk_alias_dups):
+// this ONE body had THREE source names, two of them phantoms.
+//   * `CFinalize8b90::Finalize` - the fake class it was defined under here, with an
+//     invented PMF-holder layout. DISSOLVED: its m_0/m_4/m_8/m_14/m_28 land EXACTLY on
+//     CUserLogic's m_00/m_04/m_08/m_14/m_28 (the m_14 union is already the
+//     CAnimLookupNode* whose +0x1c this guards against m_28).
+//   * `CGrunt::FinalizeStep` (Grunt.h) - a decl with NO definition anywhere, i.e. a
+//     guaranteed unresolved external; its one call site (GruntEntranceArrival.cpp) runs
+//     it on a CGrunt `this`, which INHERITS this CUserLogic method. Phantom killed: the
+//     call now resolves here, cast-free, and CGrunt's duplicate decl is deleted.
+//   * `?UserLogicVfunc3@CUserLogic@@UAEHXZ` - the vtable SLOT-5 binding (an @rva-symbol
+//     on ILT thunk 0x3913, which jmps straight here). STILL OPEN, and it is a genuine
+//     SIGNATURE defect rather than a naming one: the slot is `void f(i32)` (retail
+//     `ret 4`), but UserLogic.h declares `virtual i32 UserLogicVfunc3()` - a DROPPED
+//     PARAMETER plus a wrong return type. Grunt.h:1945 already records the fallout
+//     ("the no-arg UserLogicVfunc3() base placeholder blocks the OVERRIDE spelling"),
+//     which is exactly why CGrunt's real slot-5 override (0x5ecd0, also `ret 4`) has to
+//     be spelled as the plain method RunPositionInterpStep(i32). Correcting the virtual
+//     migrates three headers (UserLogic.h / Grunt.h / MovingLogic.h) and first needs
+//     0x5ecd0's and CMovingLogic's override RETURN types settled from disasm - NOT
+//     guessed. Left for a dedicated pass; reported, not fabricated.
+//
+// The two callback slots stay i32 IN THE HEADER on purpose: a pointer-to-member typed
+// inside its own (still-incomplete) class makes MSVC pick the most-general PMF
+// representation, which is LARGER than 4 bytes and would silently shift every field
+// after it (docs/patterns/pmf-complete-class-4byte.md). The PMF type is therefore formed
+// HERE, where CUserLogic is complete, and applied at the two call sites - language-
+// forced, not a modeling shortcut.
 // ---------------------------------------------------------------------------
-struct CFinalizeSub8b90 {
-    char m_pad0[0x1c];
-    i32 m_1c; // +0x1c
-};
-SIZE_UNKNOWN(CFinalizeSub8b90);
-struct CFinalize8b90 {
-    typedef void (CFinalize8b90::*PMF)(); // single-inheritance, non-virtual -> 4 bytes
-    void* m_0;                            // +0x00
-    PMF m_4;                              // +0x04  callback (called with `this`)
-    PMF m_8;                              // +0x08  callback (guarded)
-    char m_pad0c[0x14 - 0x0c];
-    CFinalizeSub8b90* m_14; // +0x14
-    char m_pad18[0x28 - 0x18];
-    i32 m_28; // +0x28
-    void Finalize(i32 arg);
-};
-SIZE_UNKNOWN(CFinalize8b90);
+typedef void (CUserLogic::*UserLogicCallback)(); // 4 bytes (complete class, single inheritance)
+
 RVA(0x00008b90, 0x40)
-void CFinalize8b90::Finalize(i32 arg) {
-    if (m_4 == 0) {
+void CUserLogic::FinalizeStep(i32 /*unused*/) {
+    if (m_04 == 0) {
         return;
     }
-    if (m_8 != 0 && m_14->m_1c == m_28) {
-        (this->*m_8)();
-        m_8 = 0;
+    if (m_08 != 0 && (i32)m_14->m_1c == m_28) {
+        (this->*(UserLogicCallback&)m_08)();
+        m_08 = 0;
     }
-    (this->*m_4)();
-    m_4 = 0;
+    (this->*(UserLogicCallback&)m_04)();
+    m_04 = 0;
     m_28 = 0x3e9;
 }
 

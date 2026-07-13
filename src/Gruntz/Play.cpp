@@ -364,7 +364,7 @@ i32 CPlay::FrameSlot28(i32 arg) {
     m_4w()->m_60->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
     m_savedClock = (i32)g_645588;
     if (m_40) {
-        Method_cef50();
+        QuitToMenu();
     }
     if (arg == 9) {
         return 1;
@@ -419,7 +419,7 @@ i32 CPlay::Render() {
     // --- frame entry: clear the per-frame flag, then a `this`-virtual begin. ---
     // (the m_drewThisFrame=0 store is scheduled INTO the BeginFrameClear arg setup.)
     m_drewThisFrame = 0;
-    BeginFrameClear(0, m_cursorX, m_cursorY); // this->vtbl[+0x7c](0, m_cursorX, m_cursorY)
+    HandleDragMove(0, m_cursorX, m_cursorY); // slot 31: this->vtbl[+0x7c](0, cursorX, cursorY)
 
     if (m_renderDisabled != 0) {
         return 1; // hard early-out
@@ -556,9 +556,9 @@ i32 CPlay::Render() {
         {
             u32 dt = g_645584;
             if (dt > 0x12 && dt < 0xc8) {
-                RenderFast(); // call [eax+0xa0]
+                DrawWorldFrames(); // call [eax+0xa0] (slot 40; ex "RenderFast")
             } else {
-                RenderSlow(); // call [edx+0x9c]
+                DrawWorldFrame(); // call [edx+0x9c] (slot 39; ex "RenderSlow")
             }
         }
 
@@ -1140,7 +1140,7 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     }
     LoadLoadingBarSprite(); // 0x32d3 -> 0xd7440
     BuildHelpReveal(0);
-    Vslot21(); // vtable +0x84 (CPlay slot 33)
+    FreeListTeardown(); // vtable +0x84 (CPlay slot 33; ex the "Vslot21" placeholder)
     if (savedThis != 0) {
         ((CMulti*)savedThis)->AckJoinFailure(); // AckJoinFailure placeholder (0x35e4 on saved obj)
     }
@@ -1506,7 +1506,7 @@ fail0:
 RVA(0x000cb400, 0x58)
 void CPlay::OnExit() {
     ForwardReady();
-    Vslot21();
+    FreeListTeardown();
     if (m_c) {
         ((CDDrawSubMgrPages*)m_c->m_8)->Method_159ef0();
     }
@@ -2798,9 +2798,9 @@ i32 CPlay::ProfileDeltaFrame() {
     u32 t0 = tg();
     u32 d = g_645584;
     if (d > 0x12 && d < 0xc8) {
-        updates = RenderFast();
+        updates = DrawWorldFrames();
     } else {
-        RenderSlow();
+        DrawWorldFrame();
     }
     i32 renderMs = (i32)(tg() - t0);
     m_4w()->m_54->Retune( // 0x1a7d -> CWorldSoundSet::Retune (positional audio)
@@ -4499,7 +4499,7 @@ drag_path: {
         FlushPendingOps();
         return m_guts->UpdateStatusBarTabHighlight(a, xr, y);
     }
-    if (m_hitTest->HitTest43e0(xr, y)) {
+    if (m_hitTest->HitTest(xr, y)) { // via ILT 0x43e0 (ex the thunk-alias dup decl "HitTest43e0")
         return 1;
     }
 }
@@ -4914,9 +4914,9 @@ i32 CPlay::ResumeGame() {
 // +0x04 is the CState owner back-ptr (CGruntzMgr), +0x0c the CState holder
 // (whose +0x04 draw target doubles as the CDDrawSubMgrPages worker manager,
 // the same facet EnterMode drives) and +0x1c0 is CPlay::m_1c0, the Dispatch
-// level-quiesce latch. FrameSlot28 calls it as Method_cef50 (thunk 0x21cb).)
+// level-quiesce latch. FrameSlot28 calls it as QuitToMenu (thunk 0x21cb).)
 RVA(0x000cef50, 0x46)
-i32 CPlay::Method_cef50() {
+i32 CPlay::QuitToMenu() {
     // The +0xc8 call both prior passes guessed as a list dtor (~CPtrList / ~CObList)
     // is NEITHER: retail calls 0x1b9c69 == ?Empty@CString@@QAEXXZ (NAFXCW, anchored).
     // It clears the manager's world-file name - CGruntzMgr::m_strWorldFile @+0xc8.
@@ -6517,7 +6517,7 @@ void CPlay::CPlayDtorBody() {
         ::operator delete(m_lightFx);
         m_lightFx = 0;
     }
-    Vslot20(); // slot 32 (+0x80) - the real CPlay virtual (ex "CallVfunc80")
+    OnExit(); // slot 32 (+0x80) - the real CPlay virtual (ex the "Vslot20" placeholder)
     if (m_4) {
         m_4w()->m_128 = 0;
         m_4->m_strWorldFile.Empty(); // 0x1b9c69 CString::Empty (world-file name clear)

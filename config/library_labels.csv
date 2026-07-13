@@ -8,6 +8,7 @@ rva,name,lib,confidence,source
 0x007b30,__inc,LIBCMT,LOW,anchored
 0x007b80,__inc,LIBCMT,LOW,anchored
 0x007bd0,__inc,LIBCMT,LOW,anchored
+0x7c20,??_H@YGXPAXIHP6EX0@Z@Z,NAFXCW,HIGH,vector-ctor-iterator
 0x007fa0,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x008090,___inittime,LIBCMT,LOW,anchored
 0x008780,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
@@ -779,7 +780,6 @@ rva,name,lib,confidence,source
 0x0c7e20,__inc,LIBCMT,LOW,anchored
 0x0c7e70,__inc,LIBCMT,LOW,anchored
 0x0cee30,_DllMain@12,LIBCMT,LOW,anchored
-0x0d0030,__fpclear,LIBCMT,LOW,anchored
 0x0d5da0,?length@charNode@@UBEHXZ,LIBCMT,LOW,anchored
 0x0d5e50,??_G__non_rtti_object@@UAEPAXI@Z,LIBCMT,AMBIG,anchored
 0x0da4c0,__inc,LIBCMT,LOW,anchored
@@ -2305,7 +2305,7 @@ rva,name,lib,confidence,source
 0x1b7ea0,?RemoveAll@CMapStringToOb@@QAEXXZ,NAFXCW,CRUNTIME,anchored
 0x1b7ef2,??1CMapStringToOb@@UAE@XZ,NAFXCW,CRUNTIME,anchored
 0x1b7f25,?NewAssoc@CMapStringToOb@@IAEPAUCAssoc@1@XZ,NAFXCW,CRUNTIME,anchored
-0x1b7f85,?FreeNode@CMapStringToOb@@IAEXPAUCNode@1@@Z,NAFXCW,CRUNTIME,anchored
+0x1b7f85,?FreeAssoc@CMapStringToOb@@IAEXPAUCAssoc@1@@Z,NAFXCW,CRUNTIME,anchored
 0x1b7fae,?GetAssocAt@CMapStringToOb@@IBEPAUCAssoc@1@PBDAAI@Z,NAFXCW,CRUNTIME,anchored
 0x1b8008,?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z,NAFXCW,CRUNTIME,anchored
 0x1b802a,?Lookup@CMapStringToOb@@QBEHPBDAAPAVCObject@@@Z,NAFXCW,CRUNTIME,anchored
@@ -2319,7 +2319,7 @@ rva,name,lib,confidence,source
 0x1b82d0,?RemoveAll@CMapStringToPtr@@QAEXXZ,NAFXCW,CRUNTIME,anchored
 0x1b8322,??1CMapStringToPtr@@UAE@XZ,NAFXCW,CRUNTIME,anchored
 0x1b8355,?NewAssoc@CMapStringToPtr@@IAEPAUCAssoc@1@XZ,NAFXCW,CRUNTIME,anchored
-0x1b83b5,?FreeNode@CMapStringToPtr@@IAEXPAUCNode@1@@Z,NAFXCW,CRUNTIME,anchored
+0x1b83b5,?FreeAssoc@CMapStringToPtr@@IAEXPAUCAssoc@1@@Z,NAFXCW,CRUNTIME,anchored
 0x1b83de,?GetAssocAt@CMapStringToPtr@@IBEPAUCAssoc@1@PBDAAI@Z,NAFXCW,CRUNTIME,anchored
 0x1b8438,?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z,NAFXCW,CRUNTIME,anchored
 0x1b845a,?Lookup@CMapStringToPtr@@QBEHPBDAAPAX@Z,NAFXCW,CRUNTIME,anchored
@@ -2332,7 +2332,7 @@ rva,name,lib,confidence,source
 0x1b863a,?RemoveAll@CMapPtrToPtr@@QAEXXZ,NAFXCW,CRUNTIME,anchored
 0x1b8665,??1CMapPtrToPtr@@UAE@XZ,NAFXCW,CRUNTIME,anchored
 0x1b8698,?NewAssoc@CMapPtrToPtr@@IAEPAUCAssoc@1@XZ,NAFXCW,CRUNTIME,anchored
-0x1b86e2,?FreeNode@CMapPtrToPtr@@IAEXPAUCNode@1@@Z,NAFXCW,CRUNTIME,anchored
+0x1b86e2,?FreeAssoc@CMapPtrToPtr@@IAEXPAUCAssoc@1@@Z,NAFXCW,CRUNTIME,anchored
 0x1b86fb,?GetAssocAt@CMapPtrToPtr@@IBEPAUCAssoc@1@PAXAAI@Z,NAFXCW,CRUNTIME,anchored
 0x1b872d,?GetValueAt@CMapPtrToPtr@@QBEPAXPAX@Z,NAFXCW,CRUNTIME,anchored
 0x1b8760,?Lookup@CMapPtrToPtr@@QBEHPAXAAPAX@Z,NAFXCW,CRUNTIME,anchored
@@ -2362,7 +2362,6 @@ rva,name,lib,confidence,source
 0x1b9f81,??H@YG?AVCString@@ABV0@PBD@Z,NAFXCW,HIGH,anchored
 0x1b9ff5,??H@YG?AVCString@@PBDABV0@@Z,NAFXCW,HIGH,anchored
 0x1ba069,?ConcatInPlace@CString@@IAEXHPBD@Z,NAFXCW,HIGH,anchored
-0x1ba0c8,??4CString@@QAEABV0@PBD@Z,NAFXCW,AMBIG,anchored
 0x1ba0ef,??YCString@@QAEABV0@D@Z,NAFXCW,AMBIG,anchored
 0x1ba104,??YCString@@QAEABV0@ABV0@@Z,NAFXCW,HIGH,anchored
 0x1ba11c,?GetBuffer@CString@@QAEPADH@Z,NAFXCW,HIGH,anchored
@@ -2714,7 +2713,7 @@ rva,name,lib,confidence,source
 0x1c564f,??_GCWinApp@@UAEPAXI@Z,NAFXCW,AMBIG,anchored
 0x1c566b,?DeleteTempMap@CWnd@@SGXXZ,NAFXCW,AMBIG,anchored
 0x1c567f,?afxMapHDC@@YAPAVCHandleMap@@H@Z,NAFXCW,HIGH,anchored
-0x1c56ef,?FromHandle@CImageList@@SGPAV1@PAU_IMAGELIST@@@Z,NAFXCW,AMBIG,anchored
+0x1c56ef,?FromHandle@CDC@@SGPAV1@PAUHDC__@@@Z,NAFXCW,HIGH,anchored
 0x1c5705,?Attach@CDC@@QAEHPAUHDC__@@@Z,NAFXCW,HIGH,anchored
 0x1c573c,?Detach@CDC@@QAEPAUHDC__@@XZ,NAFXCW,HIGH,anchored
 0x1c5783,??1CDC@@UAE@XZ,NAFXCW,HIGH,anchored
@@ -2752,7 +2751,7 @@ rva,name,lib,confidence,source
 0x1c5f91,?ExcludeClipRect@CDC@@QAEHPBUtagRECT@@@Z,NAFXCW,AMBIG,anchored
 0x1c5fdd,?OffsetClipRgn@CDC@@QAEHHH@Z,NAFXCW,AMBIG,anchored
 0x1c601b,?OffsetClipRgn@CDC@@QAEHHH@Z,NAFXCW,AMBIG,anchored
-0x1c6059,?SetViewportOrg@CDC@@UAE?AVCPoint@@HH@Z,NAFXCW,AMBIG,anchored
+0x1c6059,?MoveTo@CDC@@QAE?AVCPoint@@HH@Z,NAFXCW,HIGH,anchored
 0x1c60a5,?LineTo@CDC@@QAEHHH@Z,NAFXCW,HIGH,anchored
 0x1c60da,?SetTextAlign@CDC@@QAEII@Z,NAFXCW,HIGH,anchored
 0x1c610e,?OffsetClipRgn@CDC@@QAEHHH@Z,NAFXCW,AMBIG,anchored
@@ -2784,7 +2783,7 @@ rva,name,lib,confidence,source
 0x1c69ef,?FromHandle@CImageList@@SGPAV1@PAU_IMAGELIST@@@Z,NAFXCW,AMBIG,anchored
 0x1c6a05,?Attach@CImageList@@QAEHPAU_IMAGELIST@@@Z,NAFXCW,AMBIG,anchored
 0x1c6a32,?Detach@CImageList@@QAEPAU_IMAGELIST@@XZ,NAFXCW,AMBIG,anchored
-0x1c6a5c,?DeleteImageList@CImageList@@QAEHXZ,NAFXCW,AMBIG,anchored
+0x1c6a5c,?DeleteObject@CGdiObject@@QAEHXZ,NAFXCW,HIGH,anchored
 0x1c6a72,??0CPen@@QAE@HHK@Z,NAFXCW,HIGH,anchored
 0x1c6ac2,??0CPen@@QAE@HHPBUtagLOGBRUSH@@HPBK@Z,NAFXCW,HIGH,anchored
 0x1c6b18,??0CBrush@@QAE@K@Z,NAFXCW,HIGH,anchored
@@ -3402,11 +3401,11 @@ rva,name,lib,confidence,source
 0x1d4722,??1CNoTrackObject@@UAE@XZ,NAFXCW,MED,derecon-waveO
 0x1d4c0c,_$E_afxData,NAFXCW,MED,derecon-waveO
 0x1bae1f,_$E_com652f00,NAFXCW,HIGH,derecon-waveO
-0x1ce95f,?ModuleStateField30@@YAHXZ,NAFXCW,LOW,derecon-waveO
-0x1d047f,?GetActive@CDdeView@@QAEHXZ,NAFXCW,LOW,derecon-waveO
+0x1ce95f,?AfxOleGetUserCtrl@@YGHXZ,NAFXCW,HIGH,derecon-waveO
+0x1d047f,?GetActiveView@CFrameWnd@@QBEPAVCView@@XZ,NAFXCW,HIGH,derecon-waveO
 0x1bae5d,_$E_652e80,NAFXCW,HIGH,derecon-waveO
-0x1bf577,?Run@LibHost_1bf577@@QAEXXZ,NAFXCW,LOW,derecon-waveO
-0x1c09de,?FreeHandle@GlobalHandleOwner@@QAEXXZ,NAFXCW,LOW,derecon-waveO
+0x1bf577,??1AFX_COM@@QAE@XZ,NAFXCW,HIGH,derecon-waveO
+0x1c09de,??1CDialogTemplate@@QAE@XZ,NAFXCW,HIGH,derecon-waveO
 0x1b4867,??0CPtrList@@QAE@H@Z,NAFXCW,CRUNTIME,reloc-R21
 0x1b48c6,??1CPtrList@@UAE@XZ,NAFXCW,CRUNTIME,reloc-R21
 0x1b4a27,?RemoveTail@CPtrList@@QAEPAXXZ,NAFXCW,CRUNTIME,reloc-R34
@@ -3420,12 +3419,12 @@ rva,name,lib,confidence,source
 0x1b4f75,?SetSize@CPtrArray@@QAEXHH@Z,NAFXCW,CRUNTIME,reloc-R21
 0x1b5144,?SetAtGrow@CPtrArray@@QAEXHPAX@Z,NAFXCW,CRUNTIME,reloc-R53
 0x1915b4,_DirectDrawEnumerateA@8,DDRAW,HIGH,reloc-R21
-0x1befd7,??0CFileIO@@QAE@XZ,NAFXCW,HIGH,reloc-R23
-0x1bf200,?Open@CFileIO@@UAEHPBDIPAX@Z,NAFXCW,HIGH,reloc-R23
-0x1bf121,??1CFileIO@@UAE@XZ,NAFXCW,HIGH,reloc-R23
-0x1bf505,?GetLength@CFileIO@@UAEIXZ,NAFXCW,HIGH,reloc-R23
-0x1bf328,?Read@CFileIO@@UAEIPAXI@Z,NAFXCW,HIGH,reloc-R23
-0x1bf426,?Close@CFileIO@@UAEXXZ,NAFXCW,HIGH,reloc-R40
+0x1befd7,??0CFile@@QAE@XZ,NAFXCW,HIGH,reloc-R23
+0x1bf200,?Open@CFile@@UAEHPBDIPAVCFileException@@@Z,NAFXCW,HIGH,reloc-R23
+0x1bf121,??1CFile@@UAE@XZ,NAFXCW,HIGH,reloc-R23
+0x1bf505,?GetLength@CFile@@UBEKXZ,NAFXCW,HIGH,reloc-R23
+0x1bf328,?Read@CFile@@UAEIPAXI@Z,NAFXCW,HIGH,reloc-R23
+0x1bf426,?Close@CFile@@UAEXXZ,NAFXCW,HIGH,reloc-R40
 0x1b9b46,_RezAlloc,NAFXCW,HIGH,reloc-R23
 0x1b9b82,_RezFree,NAFXCW,HIGH,reloc-R57
 0x1ba0c8,??YCString@@QAEABV0@PBD@Z,NAFXCW,HIGH,reloc-R23-append
@@ -3435,6 +3434,4 @@ rva,name,lib,confidence,source
 0x1b8322,??1CMapStringToPtr@@UAE@XZ,NAFXCW,CRUNTIME,reloc-R24
 0x1b8322,??1CMapStringToPtr@@UAE@XZ,NAFXCW,CRUNTIME,reloc-R45
 0x177660,_DirectPlayLobbyCreateA@20,DPLAYX,HIGH,reloc-R24
-0x1ba51d,??1CCheckpointDlg@@QAE@XZ,NAFXCW,HIGH,reloc-R44
-0x1ba51d,??1CSaveDlgBase@@UAE@XZ,NAFXCW,HIGH,reloc-R44
-0x1b9c69,?Reset@Sub_08f480@@QAEXXZ,NAFXCW,HIGH,reloc-R44
+0x1ba51d,??1CDialog@@UAE@XZ,NAFXCW,HIGH,reloc-R44

@@ -263,21 +263,41 @@ public:
     // body in Play.cpp; ex the .cpp-local `CPlayLevelLoad : CPlay` facet - `this` IS
     // this CPlay). PROVEN virtual: retail slot 30 -> ILT 0x3337 -> 0x0ca200.
     virtual i32 LoadByMode(i32 level, i32 unused);
-    virtual void BeginFrameClear(i32, i32, i32); // slot 31 (+0x7c)
-    virtual void Vslot20();
-    virtual void Vslot21();
-    virtual void Vslot22();
+    // Slots 31..34 were each declared TWICE: once as a body-less placeholder virtual
+    // holding the slot, and once as the real non-virtual method carrying the body. The
+    // RTTI slot map (vtable_hierarchy) names each slot's real function, and the ILT
+    // thunk in the vtable jmps straight to it - so the placeholder name was a phantom
+    // (nothing defined it) AND a duplicate identity. Merged 2026-07-13:
+    //   slot 31 (+0x7c) BeginFrameClear -> HandleDragMove   (ILT 0x3756 -> 0x0d0db0)
+    //   slot 32 (+0x80) Vslot20         -> OnExit           (ILT 0x3f30 -> 0x0cb400)
+    //   slot 33 (+0x84) Vslot21         -> FreeListTeardown (ILT 0x36ca -> 0x0cb480)
+    //   slot 34 (+0x88) Vslot22         -> ModeCleanup      (ILT 0x292d -> 0x0cb740)
+    virtual i32 HandleDragMove(i32 a, i32 x, i32 y); // slot 31 (+0x7c) 0x0d0db0
+    virtual void OnExit();                           // slot 32 (+0x80) 0x0cb400
+    virtual void FreeListTeardown();                 // slot 33 (+0x84) 0x0cb480
+    virtual void ModeCleanup();                      // slot 34 (+0x88) 0x0cb740
     // slot 35 (+0x8c): present the GAME_MESSAGEZ overlay image for the state's
     // Update() id (frame 3, or 4 when Update()==7): render it centered on the
     // draw surface then flip. Body in PlayMessageImage.cpp.
     virtual i32 Vslot23();
-    virtual void Vslot24();
+    // slot 36 (+0x90): a genuine retail NO-OP - 0xd0030 is a lone `ret` (raw bytes
+    // verified; a Ghidra recovery gap, so it is reachable only through ILT 0x1d9d
+    // from the CPlay/CDemo/CMulti vtables). CPlay::Vfunc1 calls it (no args, result
+    // unused) between the slot-29 and slot-30 init hooks. Defining it inline both
+    // matches retail and un-phantoms the vtable reloc. (The FID row that claimed
+    // 0xd0030 was LIBCMT `__fpclear` was a LOW false positive - pruned; the
+    // library-overlap gate flagged the double-claim.)
+    RVA(0x000d0030, 0x1)
+    virtual void Vslot24() {}
     // slot 37 (+0x94): per-draw text-attr setup (debug HUD hands it the live HDC;
     // void* keeps this widely-included header windows.h-neutral).
     virtual void PostSetup(void* dc);
     virtual void Vslot26();
-    virtual void RenderSlow(); // slot 39 (+0x9c)
-    virtual i32 RenderFast();  // slot 40 (+0xa0)  (the profiled frames read its update count)
+    // Slots 39/40: the same duplicate-declaration defect (RTTI names them DrawWorldFrame
+    // / DrawWorldFrames; the vtable's ILT thunks 0x15eb / 0x311b jmp to 0xc9c20 /
+    // 0xc9cc0, which are exactly those two methods' bodies in this TU).
+    virtual void DrawWorldFrame(); // slot 39 (+0x9c) 0x0c9c20 (ex "RenderSlow")
+    virtual i32 DrawWorldFrames(); // slot 40 (+0xa0) 0x0c9cc0 (ex "RenderFast")
     virtual i32 BuildMusicCategoryTable(i32); // slot 41 (+0xa4) 0x0dba30 (== the MIDIZ installer)
     virtual i32 BuildWorldLevelPath(i32);     // slot 42 (+0xa8) -> CWorldState::BuildWorldLevelPath
 
@@ -361,8 +381,6 @@ public:
     i32 ResetViewport(); // 0x0d8c60 (thiscall on this)
     // CPlay state-exit teardown (THIS TU): ready-gate, slot-21 notify, renderer
     // refresh, then clear the registry's per-frame words + run its +0x70 teardown.
-    void OnExit();      // 0x0cb400
-    void ModeCleanup(); // 0x0cb740  vtable slot 0x22 mode/state-exit teardown
     // CPlay state-activation (vtable slot 8; body in PlayStateActivate.cpp): chain
     // the base activate, register the level TILEZ/IMAGEZ namespaces, run the level-
     // specific init chain, kick the state timer. Reached directly by CTriggerMgr.
@@ -391,8 +409,6 @@ public:
 
     // --- the trace-discovered CPlay sub-steps reconstructed in this TU ---
     void ApplyGameOptions(); // 0x036be0 (options-dialogs TU: VideoConfig.cpp)
-    void DrawWorldFrame();   // 0x0c9c20 (THIS TU)
-    i32 DrawWorldFrames();   // 0x0c9cc0 (THIS TU)
     // The two timeGetTime-instrumented frame variants (the dev profiler builds the
     // "Delta=.." / "Input=.." timing lines via the cached g_pTimeGetTime fn-ptr).
     i32 ProfileDeltaFrame(); // 0x0ca0a0 (THIS TU)
@@ -404,7 +420,6 @@ public:
     i32 DispatchHudClick(i32, i32, i32);                // 0x0ce530 (THIS TU)
     i32 BeginGridWalk(const char*, i32, i32, i32, i32); // 0x0d0920 (THIS TU)
     i32 StepGridWalk(i32 dt);                           // 0x0d0a60 (THIS TU)
-    i32 HandleDragMove(i32 a, i32 x, i32 y);            // 0x0d0db0 (THIS TU)
     i32 ResetGoals(i32, i32);                           // 0x0d5f00 (THIS TU)
     // The status-bar HUD (SBI_RectOnly) reaches these on the current play-state
     // (g_gameReg->m_curState downcast to CPlay); reloc-masked, bodies out-of-line.
@@ -452,10 +467,13 @@ public:
     i32 PauseGame();  // 0x0cee90
     i32 ResumeGame(); // 0x0cef00
     // FrameSlot28's own-this reloc-masked callee (external body elsewhere; invoked
-    // with ecx=this in the status/pause overlay). Method_cef50 (0x0cef50, no-arg notify
+    // with ecx=this in the status/pause overlay). QuitToMenu (0x0cef50, no-arg notify
     // when the m_40 latch is set). (0x0fa8f0 is CState::RetireScene - the status-message
     // ticker, inherited from the CState base, called cast-free; no CPlay decl.)
-    i32 Method_cef50(); // 0x0cef50 (defined in this TU; the ex-Ccef50::Teardown orphan)
+    // QuitToMenu (0x0cef50, ex "Method_cef50"): clear the manager's world-file name and,
+    // when the level-quiesce latch m_1c0 is set, close the DDraw worker manager and ask
+    // the game manager for state 3 (the menu). Name is evidenced by the body, not invented.
+    i32 QuitToMenu(); // 0x0cef50
     // The HandleCommand cheat receivers (reloc-masked; reached via the play-state
     // lookup PickPlayOrPausedState): SetCursorFrame gives the selected grunt item
     // `item` (the 0x80e5..0x8104 ITEMCHEAT family; thunk 0x17a8); Flip returns the
@@ -520,7 +538,6 @@ public:
     i32 FindStartPointAt(i32 x, i32 y, i32* outX, i32* outY); // 0x0d5f90
     // FreeListTeardown (0x0cb480): release the per-level allocations back onto the
     // global free list (m_374[]/m_3ac[]/m_48c[] arrays + the per-type config rows).
-    void FreeListTeardown(); // 0x0cb480
     // CPlayDtorBody (0x0c8700): the ~CPlay teardown body - free the per-frame
     // workers (m_320/m_guts/m_hitTest/m_beginMarker/m_frameMarker), clear the four g_gameReg config
     // rows, flush the m_startMarkers/m_3a4[4]/m_488 free-list arrays, then run the base dtor.

@@ -1950,7 +1950,9 @@ public:
     // tile using the per-cell velocity records (m_cells[base] +0x48..+0x60 doubles),
     // clamping on overshoot, and mark the HUD scroll dirty.
     i32 RunPositionInterpStep(i32 arg);
-    void FinalizeStep(i32 a); // @0x8b90 (thunk 0x3913; run on `this`)
+    // (FinalizeStep is GONE from here - it was a PHANTOM duplicate: nothing ever
+    //  defined ?FinalizeStep@CGrunt@@, and 0x8b90 is CUserLogic::FinalizeStep, which
+    //  CGrunt INHERITS. Its call site resolves to the base method, cast-free.)
 
     // --- entrance/arrival per-tick steps (RunAct-dispatched; GruntEntranceArrival.cpp) ---
     // Each advances the entrance geometry sub-player (m_154->m_1a0.Advance_15c360),

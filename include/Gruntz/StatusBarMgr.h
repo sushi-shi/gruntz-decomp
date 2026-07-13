@@ -71,24 +71,60 @@ class CSBI_MenuItem;
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/StatusBarItem.h>
 
-// A 24-byte (0x18) slot record: the +0x208 array element.
-// m_state: 0 = armed, 2 = ready (see kSlotArmed/kSlotReady).
-struct CSbiSlot {
-    i32 m_state; // +0x00 (rel +0x208)
-    i32 m_value; // +0x04 (rel +0x20c)
-    i32 m_8;     // +0x08 (gauge-span hi / used by the SetGaugeSpan inline)
-    i32 m_c;     // +0x0c
-    char m_pad10[0x18 - 0x10];
-};
-SIZE_UNKNOWN(CSbiSlot);
+// The 0x18-byte slot record. SIX dwords - the trailing "pad" is really m_10/m_14,
+// recovered from the element default ctor, which zeroes +0x08/+0x10/+0x0c/+0x14 in
+// exactly that store order (and leaves m_state/m_value alone - ArmSlot seeds those).
+//
+// TWO CLASSES, and the split is BINARY-EVIDENCED, not a modeling choice: retail
+// constructs m_slots[5] (+0x220) with an INLINED 5-iteration zero loop, but hands
+// m_groupSlots[3] (+0x2c0) and m_hlGrid[12] (+0x378) to the vector-ctor iterator with
+// a POINTER to the out-of-line COMDAT ctor 0xc86d0 (`mov eax,ecx; xor ecx,ecx; mov
+// [eax+8],ecx; mov [eax+0x10],ecx; mov [eax+0xc],ecx; mov [eax+0x14],ecx; ret`).
+// One class cannot have both ctor linkages, so the element type whose ctor is inline
+// (CSbiSlot) is distinct from the one whose ctor is out-of-line (CSbiHlRow) - even
+// though their LAYOUTS are identical.
+//
+// THE FOLD 0xc86d0 PROVES (2026-07-13): m_groupSlots and m_hlGrid are ONE class - they
+// share that single out-of-line ctor. m_groupSlots was CSbiSlot here; it is CSbiHlRow.
+// (m_slots is NOT part of this fold - see the ctor-linkage evidence above.)
 
-// A 24-byte highlight-row record (the +0x378 array element).
-struct CSbiHlRow {
-    i32 m_state;  // +0x00 state
-    i32 m_handle; // +0x04 handle value passed to the notify pointer
-    char m_pad8[0x18 - 0x8];
+// m_state: 0 = armed, 2 = ready (see kSlotArmed/kSlotReady).
+SIZE(CSbiSlot, 0x18);
+struct CSbiSlot {
+    // Inline default ctor (retail inlines it as the 5-iteration loop at +0x228).
+    CSbiSlot() {
+        m_8 = 0;
+        m_10 = 0;
+        m_c = 0;
+        m_14 = 0;
+    }
+    i32 m_state; // +0x00 (rel +0x208)
+    i32 m_value; // +0x04 (rel +0x20c)  the value handed to the slot's notify sink
+    i32 m_8;     // +0x08 (gauge-span lo / the 64-bit timer with m_c)
+    i32 m_c;     // +0x0c
+    i32 m_10;    // +0x10 (was pad; the ctor zeroes it)
+    i32 m_14;    // +0x14 (was pad; the ctor zeroes it)
 };
-SIZE_UNKNOWN(CSbiHlRow);
+
+// The out-of-line-ctor twin (m_groupSlots[3] @+0x2c0 and m_hlGrid[12] @+0x378).
+SIZE(CSbiHlRow, 0x18);
+struct CSbiHlRow {
+    CSbiHlRow(); // 0x0c86d0 (the address-taken COMDAT; def in ModeObjInit.cpp)
+    i32 m_state; // +0x00 state
+    // +0x04: ONE field, two proven names - the hl-grid code calls it the handle it
+    // hands to the notify pointer, the group-slot code calls it the value it hands to
+    // the same notify pointer. Same role, same offset. The anonymous union keeps BOTH
+    // names live (name-preserving fold; layout unchanged) rather than silently dropping
+    // one side's knowledge.
+    union {
+        i32 m_handle;
+        i32 m_value;
+    };
+    i32 m_8;  // +0x08
+    i32 m_c;  // +0x0c
+    i32 m_10; // +0x10
+    i32 m_14; // +0x14
+};
 
 // The CSBI serialization stream (archive) is the shared WAP32 CSerialArchive (Read @
 // vtable +0x2c / Write @ +0x30 - the store/transfer slot), now the one modeled class in
@@ -317,6 +353,24 @@ const i32 kSetTabErrTag = 0x44a;
 // ---------------------------------------------------------------------------
 class CStatusBarMgr {
 public:
+    // The REAL inline default ctor (2026-07-13). Retail has no out-of-line ??0: it
+    // INLINES this whole body at both `new`-sites (CPlay::Vfunc1 0xc7fea and
+    // CMulti::SetupMultiplayerSession 0xb5931, both `push 0x630; call ??2`). Body is
+    // below the class (it needs the complete type). This replaces the ~100 raw
+    // `*(i32*)(p + 0xNN) = ...` stores that BOTH call sites used to hand-roll through a
+    // local `Worker630` view - the last view in ModeObjInit.cpp - and the two
+    // out-of-band stamps Multi.cpp had to bolt on after `new` (m_barFrameGate/m_544).
+    CStatusBarMgr();
+
+    // The REAL inline destructor: Teardown() then the compiler-generated member
+    // teardown, in reverse declaration order - ~CPtrArray on m_ptrPool, then the
+    // eh-vector-dtor over the eight m_tabLists CPtrLists. PROVEN at CPlay::Vfunc1's
+    // fail path (0xc82b6), where `delete` inlines exactly that sequence under /GX
+    // states 3/2.
+    ~CStatusBarMgr() {
+        Teardown();
+    }
+
     // ----- the per-tab widget builders (the ex-"CStatusBarMgr" view's own methods) ---
     i32 LoadTabSprites(); // 0x102250
     void BuildGameMenu(); // 0x101580 (the GAMETAB menu builder; called at the Game-tab tail)
@@ -527,12 +581,20 @@ public:
     // was just the construction-side view of the gauge. This IS the goo-well gauge.
     i32 m_gauge;       // +0x298  goo-well gauge, 0..100 (current)
     i32 m_gaugeTarget; // +0x29c  goo-well gauge target (TickGauge eases m_gauge to it)
-    char m_pad2a0[0x2b0 - 0x2a0];
+    // +0x2a0..+0x2ac: NOT padding - the ctor zeroes these four dwords, and they are the
+    // head of the same 8-dword multiplayer/battlez reset block as m_2b0..m_2bc below.
+    i32 m_2a0; // +0x2a0
+    i32 m_2a4; // +0x2a4
+    i32 m_2a8; // +0x2a8
+    i32 m_2ac; // +0x2ac
     i32 m_2b0;                     // +0x2b0  (multiplayer/battlez reset block)
     i32 m_2b4;                     // +0x2b4
     i32 m_2b8;                     // +0x2b8
     i32 m_2bc;                     // +0x2bc
-    CSbiSlot m_groupSlots[3];      // +0x2c0  group-A 24-byte slot records
+    // +0x2c0: group-A 24-byte slot records. CSbiHlRow, NOT CSbiSlot - it shares the
+    // out-of-line element ctor 0xc86d0 with m_hlGrid (the vector-ctor iterator takes
+    // that one function pointer for BOTH arrays). Layout is unchanged.
+    CSbiHlRow m_groupSlots[3]; // +0x2c0
     CSbiSlotPtr* m_groupNotify[3]; // +0x308  group-A notify pointers
     char m_pad314[0x318 - 0x314];
     i32 m_hudRectB_x;          // +0x318  HUD-rect group B (x0)
@@ -859,6 +921,115 @@ public:
     i32 m_10; // +0x10  widget kind (outer switch key, 0..6)
 };
 SIZE_UNKNOWN(CSbiHiWidget);
+
+// ---------------------------------------------------------------------------
+// CStatusBarMgr::CStatusBarMgr - the real inline default ctor, transplanted from the
+// hand-rolled ~100-store block the two `new`-sites used to open-code (2026-07-13).
+//
+// The MEMBER CONSTRUCTIONS the compiler now emits are exactly retail's, in declaration
+// (== ascending offset) order:
+//   m_tabLists[8]  @+0x2c   -> __ehvec_ctor (0x11f5a0): CPtrList has a dtor, so the EH
+//                              vector-ctor iterator runs (retail: push ??1CPtrList /
+//                              push ??_FCPtrList / 8 / 0x1c / base). EH states 0/1.
+//   m_slots[5]     @+0x220  -> the inline CSbiSlot ctor, unrolled as retail's loop.
+//   m_groupSlots[3]@+0x2c0  -> vector-ctor iterator (0x7c20) + &CSbiHlRow::CSbiHlRow
+//   m_hlGrid[12]   @+0x378  -> the SAME iterator + the SAME ctor pointer (0xc86d0)
+//   m_ptrPool      @+0x530  -> ??0CPtrArray (0x1b4f0b)
+// then the scalar body below. Retail's /O2 scheduler interleaves the stores with the
+// array-ctor calls; that interleave is the compiler's, not the source's.
+// ---------------------------------------------------------------------------
+inline CStatusBarMgr::CStatusBarMgr() {
+    // Scalar body, in retail's source order. NOTE what is DELIBERATELY absent: the
+    // ctor does NOT initialise m_position/m_4/m_10/m_24/m_28/m_itemKind,
+    // m_activeSlot/m_pendingHlRow, m_machinePhase, m_extraNotifyArg0/1, the
+    // m_fall*/m_item* rects, m_rezActive/m_rezTick, m_578/m_battlezPct,
+    // m_destructWarnActive/m_modeState or m_34c/m_350. That is the BINARY, not an
+    // omission - the 0x630 block comes from the Rez heap and the devs seeded only the
+    // fields whose zero/one value is load-bearing. Do NOT "complete" this list; every
+    // extra store is a byte of drift.
+    m_2a0 = 0; // +0x2a0..+0x2bc  the multiplayer/battlez reset block (8 dwords)
+    m_2a4 = 0;
+    m_2a8 = 0;
+    m_2ac = 0;
+    m_2b0 = 0;
+    m_2b4 = 0;
+    m_2b8 = 0;
+    m_2bc = 0;
+    m_hudRectB_clock = 0; // +0x320  HUD-rect group B 64-bit clock + z
+    m_hudRectB_clockHi = 0;
+    m_hudRectB_z = 0;
+    m_hudRectB_zHi = 0;
+    m_hudRectA_clock = 0; // +0x338  HUD-rect group A
+    m_hudRectA_clockHi = 0;
+    m_hudRectA_z = 0;
+    m_hudRectA_zHi = 0;
+    m_beltLast = 0;              // +0x4d0  (64-bit)
+    m_beltInterval = 0;          // +0x4d8  (64-bit)
+    m_fallLast = 0;              // +0x4f0
+    m_fallLastHi = 0;
+    m_fallDelay = 0;
+    m_fallDelayHi = 0;
+    m_destructWarnLast = 0;      // +0x560
+    m_destructWarnLastHi = 0;
+    m_destructWarnDelay = 0;
+    m_destructWarnDelayHi = 0;
+    // +0x1c8..+0x200: the fifteen per-tab sprite widgets, as FIFTEEN INDIVIDUAL stores
+    // (retail schedules the m_destructButton store between m_tabSprite10/m_tabSprite11).
+    m_tabSprite0 = 0;
+    m_tabSprite1 = 0;
+    m_tabSprite2 = 0;
+    m_tabSprite3 = 0;
+    m_tabSprite4 = 0;
+    m_tabSprite5 = 0;
+    m_tabSprite6 = 0;
+    m_tabSprite7 = 0;
+    m_tabSprite8 = 0;
+    m_tabSprite9 = 0;
+    m_tabSprite10 = 0;
+    m_destructButton = 0; // +0x618
+    m_tabSprite11 = 0;
+    m_tabSprite12 = 0;
+    m_tabSprite13 = 0;
+    m_tabSprite14 = 0;
+    m_8 = 0;                     // +0x08
+    m_c = 0;                     // +0x0c
+    m_rect14.m_c = 0;            // +0x20  (the rect block's 4th int; only this one)
+    m_activeTab = 0;             // +0x10c
+    m_hitTestDisabled = 0;       // +0x354
+    m_tabsBuilt = 0;             // +0x358
+    m_toggleActive = 0;          // +0x550
+    m_toggleHandle = 0;          // +0x554
+    m_barFrameGate = 0x1e0;      // +0x614
+    m_tabCycle = 0;              // +0x62c
+    memset(m_statFlags, 0, sizeof(m_statFlags));   // +0x114 (0xf dwords, rep stosd)
+    memset(m_hitRects, 0, sizeof(m_hitRects));     // +0x150 (0xf, rep stosd)
+    memset(m_statObj, 0, sizeof(m_statObj));       // +0x18c (0xf, rep stosd)
+    memset(m_slotNotify, 0, sizeof(m_slotNotify)); // +0x204 (5, unrolled)
+    memset(m_hlNotify, 0, sizeof(m_hlNotify));     // +0x498 (0xc, rep stosd)
+    m_groupNotify[0] = 0;        // +0x308 x3 (individual stores)
+    m_groupNotify[1] = 0;
+    m_groupNotify[2] = 0;
+    m_61c[0] = 0;                // +0x61c x4 (individual stores)
+    m_61c[1] = 0;
+    m_61c[2] = 0;
+    m_61c[3] = 0;
+    m_notify0 = 0;               // +0x364..+0x370, in retail's 364/36c/370/368 order
+    m_notify2 = 0;
+    m_notify3 = 0;
+    m_notify1 = 0;
+    m_extraNotify0 = 0;          // +0x4e0
+    m_extraNotify1 = 0;          // +0x500
+    m_348 = 0;                   // +0x348
+    m_modeNotify = 0;            // +0x570
+    m_gaugeNotify = 0;           // +0x218
+    m_gaugeSink = 0;             // +0x21c
+    m_gaugeTarget = 0;           // +0x29c  (stored BEFORE m_gauge in retail)
+    m_gauge = 0;                 // +0x298
+    m_544 = 1;                   // +0x544
+    m_hlBusy = 0;                // +0x548
+    m_retabNotify = 0;           // +0x54c
+    m_modeArmed = 0;             // +0x574
+}
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 

@@ -11,10 +11,11 @@
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FontConfig.h> // CFontConfig - the +0x14 text host; owns 0x20ef0 (see below)
 
-// (The `m4::PwdHost` view is DISSOLVED: Render22160 @0x22160 is a real CFontConfig
-// method - <Gruntz/FontConfig.h>, already included above - and m_14 was ALREADY
-// documented in ChatBoxOwner.h as "IS a CFontConfig". The downcast below is the
-// authentic one: m_14 is declared CChatBoxTextHost*, the class's other facet.)
+// (The `m4::PwdHost` view is DISSOLVED: RenderInputText @0x22160 is a real CFontConfig
+// method - <Gruntz/FontConfig.h>, already included above. The CChatBoxTextHost view of
+// m_14 is dissolved too (2026-07-13): m_14 IS the CFontConfig - typed so in
+// ChatBoxOwner.h - and its +0x34 dirty flag is CFontConfig::m_34, so the downcasts at
+// the two render sites fell out with it.)
 
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
@@ -51,16 +52,16 @@ struct CChatBoxCtx { // arg1 points here
 // 0x153790 (__stdcall): renders the chatbox frame into the looked-up set.
 void __stdcall RenderChatBoxFrame(i32 ctx, void* a, void* b, i32 z);
 
-// Attach - latch the source registry root + text host, raise active.
-// @early-stop
-// constant-materialization wall: retail emits `mov eax,1; ...; mov [m_c],eax`
-// (1 register-materialized, stored last) where our cl folds the direct immediate
-// `mov [m_c],1`; logic + offsets exact, residual is the last store's form/order.
+// Attach - latch the world holder + text host, raise active, return TRUE.
+// The old "constant-materialization wall" (retail's `mov eax,1` register-materialized
+// and stored last) was a misread WRONG RETURN TYPE: eax=1 is the RETURN VALUE, live at
+// the `ret` - CPlay::Vfunc1 (0xc7ec0) TESTs it. `return m_c = 1;` is the retail shape
+// (materialize into a reg, store, keep it in eax).
 RVA(0x000204e0, 0x19)
-void CChatBoxOwner::Attach(CSpriteFactoryHolder* world, CChatBoxTextHost* host) {
+i32 CChatBoxOwner::Attach(CSpriteFactoryHolder* world, CFontConfig* host) {
     m_18 = world;
     m_14 = host;
-    m_c = 1;
+    return m_c = 1;
 }
 
 // Deactivate (0x00020510) - lower the active flag.
@@ -279,20 +280,20 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         rect[2] = (void*)(self->m_0 + 0x267);
         rect[1] = (void*)(self->m_4 + 0x2b);
         rect[3] = (void*)(self->m_4 + 0x37);
-        ((CFontConfig*)self->m_14)->Render22160(hdc, 0x21b, (RECT*)rect);
+        self->m_14->RenderInputText(hdc, 0x21b, (RECT*)rect);
     } else {
         rect[0] = (void*)(self->m_0 + 0x4c);
         rect[2] = (void*)(self->m_0 + 0x1c7);
         rect[1] = (void*)(self->m_4 + 0x2b);
         rect[3] = (void*)(self->m_4 + 0x37);
-        ((CFontConfig*)self->m_14)->Render22160(hdc, 0x17b, (RECT*)rect);
+        self->m_14->RenderInputText(hdc, 0x17b, (RECT*)rect);
     }
     host->m_8->ReleaseDC(hdc);
     return 1;
 }
 
-// SIZE metadata for the .cpp-local engine views (CChatBoxOwner + CChatBoxTextHost
-// live in ChatBoxOwner.h).
+// SIZE metadata for the .cpp-local engine views (CChatBoxOwner lives in
+// ChatBoxOwner.h; its SIZE 0x1c is proven by the two alloc sites).
 SIZE_UNKNOWN(CChatBoxCtx);
 SIZE_UNKNOWN(CChatBoxDcHost);
 SIZE_UNKNOWN(CChatBoxFrame);

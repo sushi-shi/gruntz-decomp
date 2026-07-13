@@ -42,11 +42,13 @@ public:
     // RECT* as arg2 (0x21f20: `add ecx,0x1c; call ??0CString@@QAE@ABV0@@Z`, then
     // `mov ecx,esi` / `mov edx,[ecx]`..`[ecx+0xc]` off arg2). The swap - not regalloc -
     // was the "~72% wall".
-    i32 MeasureLabel21f20(HDC hdc, RECT* rect);         // 0x00021f20
-    void Draw258b(HDC hdc, RECT* rect);                 // 0x0000258b (caret; extern)
-    i32 Render22160(HDC hdc, i32 maxWidth, RECT* rect); // 0x00022160
-    i32 DrawWithFont22770(const char* text, HDC hdc, RECT* rect, UINT format); // 0x00022770
-    i32 Draw3DText22810(
+    i32 MeasureLabel(HDC hdc, RECT* rect); // 0x00021f20 (RenderInputText reaches it
+                                                // via ILT 0x258b; the old separate
+                                                // "Draw258b" decl was a phantom
+                                                // duplicate of this same function)
+    i32 RenderInputText(HDC hdc, i32 maxWidth, RECT* rect); // 0x00022160
+    i32 DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format); // 0x00022770
+    i32 Draw3DText(
         const CString* strSrc,
         HDC hdc,
         RECT* dst,
@@ -65,7 +67,7 @@ public:
     u32 m_highScrollThreshold; // +0x28  threshold used for >3 items
     i32 m_inputScrollTotal;    // +0x2c  accumulated scroll while input is active
     i32 m_inputActive;         // +0x30  input accumulation flag
-    char m_pad34[4];           // +0x34
+    i32 m_34;                  // +0x34  dirty/redraw flag (CChatBoxOwner::Configure raises it)
     HFONT m_arialFont;         // +0x38  the ARIAL UI font
     HFONT m_trainingFont;      // +0x3c  the TrainingFont
     HFONT m_messageFont;       // +0x40  the MessageFont

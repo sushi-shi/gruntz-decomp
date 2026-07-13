@@ -33,6 +33,13 @@
 // <Mfc.h> brings <windows.h> (GDI32: CreateFontA / DeleteObject; USER32
 // DrawTextA) and the MFC CPtrList / CString collection types from <afxcoll.h>.
 #include <Mfc.h>
+// Real MFC CDC / CPen / CGdiObject (the caret stroke below). Skip the afxwin*.inl
+// bodies for the CLANG LABEL STEP only (implicit-int inlines clang rejects); wine cl
+// keeps the inlines. docs/patterns/afxwin-clang-label-step-skip-inl.md.
+#ifdef __clang__
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h>
 #include <Gruntz/FontConfig.h>
 #include <rva.h>
 
@@ -87,26 +94,30 @@ struct FontItem {
 //              HIGH-confidence. It was never anything but an MFC CString.
 //   RectSrc -> DELETED, it was a FICTION. Same ctor rva (the CString copy ctor) but
 //              its "RECT* m_rect" re-read the copied string's data pointer as a rect.
-//              See MeasureLabel21f20's note: retail passes the RECT in as arg2.
+//              See MeasureLabel's note: retail passes the RECT in as arg2.
 //
-// STILL VIEWS (Fable hand-off, NOT touched here): SevWorker2 / ImgHolder2 /
-// DrawScratch / TextRenderer / CImageList. Their real identities are the MFC GDI
-// classes - DrawScratch's 3-arg ctor 0x1c6a72 is ??0CPen@@QAE@HHK@Z (CPen(style=0,
-// width=2, black)), its dtor 0x1c6a5c is the CGdiObject::DeleteObject twin the FID
-// labels AMBIG as CImageList::DeleteImageList, and TextRenderer is a CDC (0x1c56ef
-// FromHandle, 0x1c58ea SelectObject(CPen*), 0x1c6059 MoveTo, 0x1c60a5 LineTo - the
-// MoveTo/LineTo pair strokes the caret). Dissolving them means adopting MFC's real
-// CObject -> CGdiObject -> CPen INHERITANCE and deleting a hand-rolled virtual-dtor
-// hierarchy, which is the vtable/inheritance lane - out of scope for this pass.
+// DISSOLVED (2026-07-13, Fable lane): SevWorker2 / ImgHolder2 / DrawScratch /
+// TextRenderer / CImageList were hand-rolled stand-ins for the REAL MFC GDI classes
+// (<afxwin.h>, statically-linked NAFXCW): the caret scratch pen IS a stack ::CPen
+// (ctor 0x1c6a72 == ??0CPen@@QAE@HHK@Z, HIGH FID; its destruction is the standard
+// MSVC inlined ~CPen chain - vptr restamps to ??_7CGdiObject @0x1e8cd4 then
+// ??_7CObject @0x1e8cb4, both already in config/vtable_names.csv, around a direct
+// call to 0x1c6a5c == ?DeleteObject@CGdiObject@@QAEHXZ, whose body is the exact
+// `if (!m_hObject) return 0; ::DeleteObject(Detach())` shape - the old
+// "CImageList::DeleteImageList" FID row was the AMBIG GDI/ImageList twin, as
+// Dialogs.cpp / GameMode.h already concluded). The device context IS a ::CDC:
+// 0x1c56ef == ?FromHandle@CDC@@SGPAV1@PAUHDC__@@@Z (body walks the HDC handle map),
+// 0x1c58ea == ?SelectObject@CDC@@QAEPAVCPen@@PAV2@@Z (HIGH FID), 0x1c6059 ==
+// ?MoveTo@CDC@@QAE?AVCPoint@@HH@Z (body: MoveToEx on both m_hDC/m_hAttribDC
+// returning the old CPoint through the hidden slot; the old "SetViewportOrg" row
+// was the AMBIG twin - SetViewportOrg would call SetViewportOrgEx), and 0x1c60a5 ==
+// ?LineTo@CDC@@QAEHHH@Z (the MFC shape: MoveToEx(m_hAttribDC,..,NULL) then
+// ::LineTo(m_hDC,..)). All five real names verified present in NAFXCWD.LIB; the
+// three wrong library_labels.csv rows are corrected in the same change. The fake
+// SevWorker2<-ImgHolder2<-DrawScratch virtual-dtor hierarchy (a fabricated vtable
+// chain) is deleted outright - MFC's real CObject -> CGdiObject -> CPen supplies
+// the true one.
 // ---------------------------------------------------------------------------
-
-// ImgHolder2::Release1c6a5c @0x1c6a5c IS the MFC CGdiObject::DeleteObject twin
-// (FID labels it CImageList::DeleteImageList - AMBIG); minimal local decl.
-SIZE_UNKNOWN(CImageList);
-class CImageList {
-public:
-    void DeleteImageList();
-};
 
 namespace m4 {
 
@@ -114,28 +125,6 @@ namespace m4 {
     extern i32 g_62b434;
 
     // DrawTextA through the game Win32 pointer table (RVA 0x2c454c) -> reloc-masked.
-
-    // The GDI pen scratch (really MFC CPen : CGdiObject : CObject - see the note
-    // above): inline dtor chain, 3-arg out-of-line ctor.
-    struct SevWorker2 {
-        virtual ~SevWorker2() {}
-    };
-    struct ImgHolder2 : SevWorker2 {
-        virtual ~ImgHolder2() OVERRIDE {
-            ((CImageList*)this)->DeleteImageList();
-        }
-    };
-    struct DrawScratch : ImgHolder2 {
-        DrawScratch(i32 a, i32 b, i32 c); // 0x001c6a72  == CPen(style, width, colour)
-    };
-
-    // The device context the caret is stroked into (really MFC CDC).
-    struct TextRenderer {
-        i32 Push1c58ea(void* obj);                  // 0x001c58ea  == CDC::SelectObject(CPen*)
-        void MoveTo1c6059(void* out, i32 x, i32 y); // 0x001c6059  == CDC::MoveTo (CPoint by value)
-        void Draw1c60a5(i32 x, i32 y);              // 0x001c60a5  == CDC::LineTo
-    };
-    TextRenderer* Bind1c56ef(HDC hdc); // 0x001c56ef  == CDC::FromHandle
 
     // The game's Win32 pointer table entries (0x6c44xx/0x6c3exx) -> reloc-masked.
 
@@ -429,7 +418,7 @@ void CFontConfig::EndInput() {
 }
 
 // ---------------------------------------------------------------------------
-// CFontConfig::MeasureLabel21f20 - measure m_inputText into the caller's rect
+// CFontConfig::MeasureLabel - measure m_inputText into the caller's rect
 // (DrawTextA, DT_CALCRECT|DT_SINGLELINE flags 0x420), clamp the used width into
 // g_62b434, then stroke the 12px insertion caret at that offset with a 2px pen.
 //
@@ -441,14 +430,13 @@ void CFontConfig::EndInput() {
 // it reads left/top/right/bottom from at [ecx]..[ecx+0xc]. The old "~72% regalloc
 // wall" was this wrong shape, not regalloc: fixing the swap took it 72.46 -> 85.98.
 // @early-stop
-// The remaining ~14% is the caret tail, and it is BLOCKED ON THE VIEWS ABOVE, not on
-// codegen: TextRenderer/DrawScratch are still hand-rolled stand-ins for MFC CDC/CPen,
-// so the SelectObject/MoveTo/LineTo calls carry this TU's invented mangled names and
-// the pen's dtor chain is a fabricated virtual hierarchy rather than
-// CPen : CGdiObject : CObject. Dissolving them is the vtable/inheritance lane
-// (Fable hand-off); expect this to close when it lands.
+// The caret tail is now the REAL MFC CDC/CPen (views dissolved 2026-07-13, Fable
+// lane; 85.98 -> 86.86). The residual is the DT_CALCRECT measure block's RECT-copy
+// + argument scheduling (retail interleaves `push 0x420` with the four field copies
+// and walks them through one register; cl copies then pushes - same instruction
+// multiset, /O2 scheduling) - a codegen residual for the final sweep, no view left.
 RVA(0x00021f20, 0x162)
-i32 CFontConfig::MeasureLabel21f20(HDC hdc, RECT* rect) {
+i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (hdc == 0) {
         return 0;
     }
@@ -469,21 +457,24 @@ i32 CFontConfig::MeasureLabel21f20(HDC hdc, RECT* rect) {
             m4::g_62b434 = textW;
         }
     }
-    m4::TextRenderer* tr = m4::Bind1c56ef(hdc);
-    if (tr != 0) {
-        m4::DrawScratch scratch(0, 2, 0);
-        i32 pen;
-        i32 saved = tr->Push1c58ea(&pen);
-        i32 origin;
-        tr->MoveTo1c6059(&origin, rect->left + m4::g_62b434, rect->top);
-        tr->Draw1c60a5(rect->left + m4::g_62b434, rect->top + 0xc);
-        tr->Push1c58ea((void*)saved);
+    // Stroke the 12px insertion caret with the real MFC GDI objects: a stack CPen
+    // (PS_SOLID, width 2, black) selected into the CDC, MoveTo/LineTo, restore.
+    // The pen's scope-end destruction inlines the ~CPen chain (vptr restamps to
+    // ??_7CGdiObject/??_7CObject around CGdiObject::DeleteObject @0x1c6a5c),
+    // exactly as retail's 0x21fda..0x22040 tail does.
+    CDC* dc = CDC::FromHandle(hdc);
+    if (dc != 0) {
+        CPen pen(PS_SOLID, 2, RGB(0, 0, 0));
+        CPen* saved = dc->SelectObject(&pen);
+        dc->MoveTo(rect->left + m4::g_62b434, rect->top);
+        dc->LineTo(rect->left + m4::g_62b434, rect->top + 0xc);
+        dc->SelectObject(saved);
     }
     return 1;
 }
 
 // ---------------------------------------------------------------------------
-// CFontConfig::Render22160 - the edit-control render path. Copies m_inputText and,
+// CFontConfig::RenderInputText - the edit-control render path. Copies m_inputText and,
 // when Ctrl is held, masks every char with '*'; runs a blink countdown (g_62b438)
 // toggling g_62b43c; then (unless blinked-off + empty) selects m_arialFont,
 // DrawTextA-measures the masked text, right-aligns it if it overflows maxWidth, and
@@ -498,7 +489,7 @@ i32 CFontConfig::MeasureLabel21f20(HDC hdc, RECT* rect) {
 // Residual is MSVC5 pinning the shared zero in edi + reusing dead arg slots for the
 // CString/RECT locals differently, shifting the [esp+N] operands and EH scope addend.
 RVA(0x00022160, 0x18e)
-i32 CFontConfig::Render22160(HDC hdc, i32 maxWidth, RECT* rect) {
+i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     if (hdc == 0) {
         return 0;
     }
@@ -520,14 +511,14 @@ i32 CFontConfig::Render22160(HDC hdc, i32 maxWidth, RECT* rect) {
         m4::g_62b43c ^= 1;
     }
     if (m4::g_62b43c != 0 && text.GetLength() == 0) {
-        Draw258b(hdc, rect);
+        MeasureLabel(hdc, rect); // via ILT 0x258b (ex the phantom "Draw258b" duplicate decl)
     } else {
         HGDIOBJ prev = 0;
         if (m_arialFont) {
             prev = ::SelectObject(hdc, m_arialFont);
         }
         if (m4::g_62b43c) {
-            Draw258b(hdc, rect);
+            MeasureLabel(hdc, rect); // via ILT 0x258b (ex the phantom "Draw258b" duplicate decl)
         }
         int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = ::DrawTextA;
         RECT rc;
@@ -558,12 +549,12 @@ i32 CFontConfig::winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32
 }
 
 // -------------------------------------------------------------------------
-// CFontConfig::DrawWithFont22770 (0x22770): draw a plain C string with the ARIAL UI
+// CFontConfig::DrawWithFont (0x22770): draw a plain C string with the ARIAL UI
 // font. Null-guard hdc/text/rect, select m_arialFont (saving the prior), DrawTextA
 // the strlen(text) into rect with the caller's format, then restore the font. ret 1.
 // (ex m4::PwdHost.)
 RVA(0x00022770, 0x7d)
-i32 CFontConfig::DrawWithFont22770(const char* text, HDC hdc, RECT* rect, UINT format) {
+i32 CFontConfig::DrawWithFont(const char* text, HDC hdc, RECT* rect, UINT format) {
     if (hdc == 0) {
         return 0;
     }
@@ -585,7 +576,7 @@ i32 CFontConfig::DrawWithFont22770(const char* text, HDC hdc, RECT* rect, UINT f
 }
 
 // -------------------------------------------------------------------------
-// CFontConfig::Draw3DText22810 - a centered "3D" text renderer. Selects the Message
+// CFontConfig::Draw3DText - a centered "3D" text renderer. Selects the Message
 // or Training font, sets transparent bk, copies the source CString, DT_CALCRECT-
 // measures it centered in the dst rect, and draws it centered - first a black
 // shadow pass offset by (dx,dy) when the shadow flag is set, then the RGB(r,g,b)
@@ -600,7 +591,7 @@ i32 CFontConfig::DrawWithFont22770(const char* text, HDC hdc, RECT* rect, UINT f
 // temporaries across ebx/ebp/esi/edi vs retail and reusing dead arg slots for the
 // rc + selPrev locals differently, shifting the [esp+N] operands - not steerable.
 RVA(0x00022810, 0x22a)
-i32 CFontConfig::Draw3DText22810(
+i32 CFontConfig::Draw3DText(
     const CString* strSrc,
     HDC hdc,
     RECT* dst,

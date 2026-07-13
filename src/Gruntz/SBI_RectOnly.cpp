@@ -123,9 +123,24 @@ void SbiList_Dtor(); // 0x5b48c6
 // push base) all match retail. But the whole /GX SEH frame (push -1 / push handler / mov
 // fs:0,esp) and the descending [esp+0x10]=1/0/-1 trylevel stamps are MISSING: MSVC only
 // emits them for a real `~Class()` whose VALUE members have non-trivial dtors. 0xc8980 is
-// a standalone teardown HELPER (not the C++ destructor - that slot is 0x100700), so the
-// member-as-destructible steering can't apply. Documented wall (docs/patterns/
-// eh-dtor-model-members-as-destructible.md). Deferred to the final sweep (whole-class model).
+// a standalone teardown HELPER. THAT DIAGNOSIS IS NOW SETTLED, AND SO IS THE TRADE-OFF
+// (2026-07-13, Fable lane): 0xc8980 IS the out-of-line COMDAT copy of the real
+// ~CStatusBarMgr, which now exists in <Gruntz/StatusBarMgr.h> as `{ Teardown(); }` plus
+// the compiler-generated member teardown - PROVEN by CPlay::Vfunc1's fail path at 0xc82b6,
+// where `delete` INLINES exactly this sequence (Teardown / ~CPtrArray on m_ptrPool /
+// __ehvec_dtor over m_tabLists[8]) under /GX states 3/2. So the fix is known: spell this
+// AS the destructor and the frame + trylevels fall out.
+// IT WAS DELIBERATELY NOT TAKEN, because it is a TWO-SITE codegen trade, not a free win:
+//   * CPlayDtorBody (0xc8700, ~99%) calls this teardown OUT-OF-LINE from a frameless
+//     context (call 0x1438 -> here). Re-pointing that call at an in-class inline dtor
+//     invites MSVC5 to inline this ~100-byte body INTO CPlayDtorBody - cratering a 99%
+//     function to buy this one.
+//   * Emitting the dtor out-of-line while `delete` ALSO inlines it at 0xc82b6 is exactly
+//     what retail does, but which MSVC5 picks is driven by the inlining budget of
+//     whichever TU instantiates it first - not steerable from this file alone.
+// It is ONE decision across both sites, so it belongs to the recovery pass - with this
+// note, not a re-derivation. Documented wall (docs/patterns/
+// eh-dtor-model-members-as-destructible.md).
 RVA(0x000c8980, 0x64)
 void CStatusBarMgr::DtorMembers() {
     Teardown();
@@ -3978,7 +3993,7 @@ void CStatusBarMgr::LoadRezMachineConfig() {
                         5,
                         g_buteMgr.GetIntDef("StatusBar", "RightMachineRunningDelay", 0x7d)
                     );
-                    CSbiSlot* s = m_groupSlots;
+                    CSbiHlRow* s = m_groupSlots;
                     for (i32 i = 0; i < 3; i++) {
                         s->m_state = 1;
                         s->m_value = 1;

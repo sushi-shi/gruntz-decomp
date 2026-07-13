@@ -1591,11 +1591,6 @@ source = "src/Net/NetSession.cpp"
 flags = "base"
 
 [[unit]]
-unit = "applyrange"
-source = "src/Utils/ApplyRange.cpp"
-flags = "base"
-
-[[unit]]
 unit = "zdarrayderived"
 source = "src/Gruntz/ZDArrayDerived.cpp"
 flags = "base"

@@ -484,6 +484,13 @@ public:
     // (CTriggerMgr::SpawnGrunt / ResetGroup on the created sprite's CGameObjAux::m_logic):
     // Place @0x4c1c4 (the grunt/puddle placement driver), Arm @0x4e517 (the target-cursor
     // lighting/config arm). Reloc-masked leaf bodies.
+    // FinalizeStep (0x8b90, body in LogicTypeTable.cpp): fire the two registered
+    // __thiscall callbacks in m_04/m_08 and reset m_28. __thiscall(i32) - the arg is
+    // unused (retail `ret 4`). It is ALSO the body the vtable's slot 5 reaches (via
+    // ILT 0x3913) - see the signature-defect note at the definition: the slot decl
+    // below (`virtual i32 UserLogicVfunc3()`) has a DROPPED PARAMETER and a wrong
+    // return type, which is why the two cannot yet be spelled as one method.
+    void FinalizeStep(i32 unused); // 0x8b90
     i32 Place(i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32, i32); // 0x4c1c4
     void Arm(const char* lighting, const char* cursor, i32 kind, i32 one); // 0x4e517
 

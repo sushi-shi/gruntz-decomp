@@ -900,14 +900,14 @@ struct CNetCtrlMsg {
 };
 SIZE_UNKNOWN(CNetCtrlMsg); // packed control-record view (3 dwords pinned); size TBD
 
-// The +0x4 sub-object viewed for OnPlayerLeft: it owns the per-player records
-// (FindPlayer maps a DirectPlay id -> the GruntzPlayer slot, FUN_00492e80) and a
-// chat/text display at +0x5c (a CFontConfig the message text is appended to).
-// Both helpers are external (incremental-link thunks); modeled no-body so the
-// `call rel32` reloc-masks. CFontConfig::AddItem (0x00421c60) is reached as
-// m_4->m_5c->AddItem(text, 0x20, 0x11).
-struct CNetChatLog {};
-SIZE_UNKNOWN(CNetChatLog); // method-only chat-display view; retail size TBD
+// (CNetChatLog is GONE - 2026-07-13. It was an EMPTY placeholder view of the +0x5c
+// chat/text display, and this very comment already said what it is: "a CFontConfig the
+// message text is appended to". Same slot, same object: CNetGameMgr IS the *0x24556c
+// game-manager singleton, and <Gruntz/GruntzMgr.h> types ITS +0x5c as
+// `CFontConfig* m_chatLog`. Every use here was already casting through -
+// `((CFontConfig*)NetGameMgr()->m_5c)->FreeNodes()`, `...->AddItem(text, 0x20, 0x11)`
+// (0x21c60) - so the slot is now typed CFontConfig* and the casts fall out.)
+class CFontConfig; // <Gruntz/FontConfig.h> (the deref TUs include the real header)
 
 // The window object at CNetGameMgr+0x4: its own +0x4 holds the engine HWND. The
 // message handlers post through m_4->m_4->m_4 (game-mgr -> window -> HWND); this
@@ -963,7 +963,7 @@ struct CNetGameMgr {
     // AMBIENT%d cue through it; it was reached via a `WaitLogic` +0x48 view.
     class CGruntzSoundZ* m_sound; // +0x48
     char m_pad4c[0x5c - 0x4c];
-    CNetChatLog* m_5c; // +0x5c  the chat/text display
+    CFontConfig* m_5c; // +0x5c  the chat/text display (the real class; ex-CNetChatLog view)
     char m_pad60[0x6c - 0x60];
     CGruntzCmdMgr* m_6c; // +0x6c  the grunt command manager (Dispatch/EnqueueCommand)
     char m_pad70[0x150 - 0x70];
