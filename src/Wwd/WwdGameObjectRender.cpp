@@ -18,6 +18,8 @@
 #include <Wwd/WwdGameObjectFamily.h> // the CWwdGameObjectE/A/F/B/C hierarchy
 #include <Gruntz/WwdGameObject.h>    // canonical CWwdGameObject
 #include <Gruntz/WwdWorker.h>        // the shared per-object worker (+0x7c; Kick at vtbl+0x10)
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical CWwdObjMgrL::m_0c owner
+#include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 
 // The render context RenderDot (0x1660f0) plots into: a clip extent at +0x10/
 // +0x14 and the destination surface at +0x2c.
@@ -43,12 +45,11 @@ struct CWwdGameObj15b390 {
     CWwdGameObj15b390(int a, int b, int c); // 0x15b390
 };
 
-// The level-file handle CWwdObjMgrL::m_0c points at: the name->value resolve map
-// (a CMapStringToPtr) sits at m_14 + 0x10.
-struct WwdFile {
-    char m_pad0[0x14];
-    char* m_14; // +0x14  fronts the string-resolve map (CMapStringToPtr @ +0x10)
-};
+// CWwdObjMgrL::m_0c is the canonical CDDrawSurfaceMgr (same chain as CWwdObjMgr::
+// m_0c - `[this+0xc] -> [+0x14] -> +0x10 -> call 0x1b8008` read off CreateNamed_166780's
+// retail bytes); the former local `WwdFile` view is dissolved. The (CMapStringToPtr*)
+// cast at the call preserves the FID-HIGH retail Lookup shape - the m_10 element-class
+// (Ob vs Ptr) is an open conflict the binary cannot settle (see WwdObjMgr.cpp).
 
 // The wide object's polymorphic interface (cast-only; declared-only virtuals so
 // cl emits no ??_7): Build slot +0x28 (4 args), scalar-deleting dtor at +0x04.
@@ -75,7 +76,7 @@ public:
     CWwdGameObject*
     CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6); // 0x166780
     char m_pad00[0x0c];
-    WwdFile* m_0c; // +0x0c parent file handle (name-resolve map at m_14 + 0x10)
+    CDDrawSurfaceMgr* m_0c; // +0x0c owning surface manager (name map at m_workerCache->m_10)
     char m_pad10[0x1dc - 0x10];
     CObList m_1dc; // +0x1dc published-objects list (real MFC, main's fold)
 };
@@ -373,7 +374,7 @@ RVA(0x00166780, 0x57)
 CWwdGameObject*
 CWwdObjMgrL::CreateNamed_166780(int a1, int a2, int a3, int a4, const char* name, int a6) {
     void* val = 0;
-    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
+    ((CMapStringToPtr*)&m_0c->m_workerCache->m_10)->Lookup(name, val);
     if (val == 0) {
         return 0;
     }

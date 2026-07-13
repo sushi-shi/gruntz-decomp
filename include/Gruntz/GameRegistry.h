@@ -29,7 +29,7 @@
 // WITHOUT a per-site cast: m_2c (CState* current game-state), m_30 (the resource
 // manager - CSpriteFactoryHolder, the retail CResMgr: draw target + sprite factory
 // + image registry + view + sound/anim), m_60 (cue sink), m_70 (tile grid). Sub-
-// object TYPES defined in <Gruntz/ResMgr.h>/<Gruntz/Viewport.h> are forward-
+// object TYPES defined in <Gruntz/ResMgr.h>/<Wwd/WwdFile.h> are forward-
 // declared (not included) to keep this ~60-TU-wide header light.
 //
 // RESOLVED: +0x74 is CSpriteRefTable* (<Gruntz/SpriteRefTable.h>) - one object,
@@ -78,7 +78,7 @@ class CWorldSoundSet;  // +0x54 active-level input/spatial-sound object (WorldSo
 class CTriggerMgr;
 class CBattlezData;    // +0x7c the HUD/score accumulator (BattlezData.h completes it)
 // Sub-objects of the +0x30 resource manager, defined in <Gruntz/ResMgr.h> /
-// <Gruntz/Viewport.h>; forward-declared here so consumers reach them typed
+// <Wwd/WwdFile.h> (CPlaneRender); forward-declared here so consumers reach them typed
 // (no per-site cast) without pulling those headers into this ~60-TU-wide view.
 struct CDrawTarget;    // +0x30->+0x04 active draw surface (m_drawContext at +0x14)
 struct CImageRegistry; // +0x30->+0x10 image/tile registry (name->sprite map)
@@ -233,17 +233,22 @@ struct CFocusSlot {
 struct CGameRegistry {
     // The entrance-reset cue-prep call (thunk_FUN_0040cd00, __thiscall ret 0): run
     // once before the focused-grunt cue test. External/no-body (reloc-masked).
+    // KNOWN-UNDECIDABLE OWNER (do not force): the body @0x40cd00 never touches
+    // `this`, so a no-arg __thiscall member and a __cdecl free fn are byte-identical
+    // and the callers disagree; see the Rand note below. Still a PHANTOM name.
     void CuePrep();
-    // The mode-3 per-frame cue step (thunk_FUN_004933e0, __thiscall): run each
-    // world-draw frame when m_134==3. External/no-body (reloc-masked).
-    void PerFrameCue();
-    class CString
-    QueryLevelName(); // 0x928c0 via ILT 0x2531 (level rez path; == CGruntzMgr::GetWorldFileName, same object)
+    // (RETIRED PHANTOMS - resolved to the RTTI-true CGruntzMgr methods by reading
+    //  each call site's rel32 through its ILT thunk:
+    //    PerFrameCue            -> CGruntzMgr::AdvanceOptionsCycle @0x933e0 (ILT 0x2d33)
+    //    QueryLevelName         -> CGruntzMgr::GetWorldFileName    @0x928c0 (ILT 0x2531)
+    //    ReportError(const char*)-> CGruntzMgr::EnterModalUI       @0x8ef10 (ILT 0x417e)
+    //  Their callers (play, playplanescan) now call the real names.)
     // Registry service methods some TUs call directly on the singleton
     // (external/no-body, reloc-masked rel32 callees).
-    i32 Rand();                                                 // game-mgr RNG
-    i32 RandRange(i32 lo, i32 hi);                              // game-mgr RNG range
-    void ReportError(const char* msg); // plane/scan error notifier
+    // Rand: KNOWN-UNDECIDABLE OWNER (do not force) - the LCG body reads only the
+    // g_ seed globals, so __thiscall-member vs __cdecl-free is byte-undecidable.
+    i32 Rand();                    // game-mgr RNG
+    i32 RandRange(i32 lo, i32 hi); // game-mgr RNG range
     // (The FOUR names `Ack` / `EmitEvent` / `Report` / `ReportError(i32,i32)` that used
     //  to be declared on this view were ONE real function: CGruntzMgr::ReportError
     //  @0x8dc60 - PROVEN by disassembling each call site's rel32 (the tile-switch ack,

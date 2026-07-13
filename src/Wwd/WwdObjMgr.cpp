@@ -29,8 +29,10 @@
 #include <Wwd/WwdGameObjCtor.h>        // WwdCtorBase/CWwdGameObj15b390/WwdAnimWorker (ctor cluster)
 #include <DDrawMgr/DDrawChildGroup.h>  // CDDrawChildGroup (the walk dispatchers; IDENTITY == this)
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (Method_159ef0 tail-forward)
+#include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical m_0c owner (InvokeCallback + m_workerCache)
+#include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 #include <Gruntz/ObList.h>
-#include <Gruntz/Viewport.h>        // CViewport (m_parent->m_24->m_5c world transform)
+#include <Wwd/WwdFile.h> // CPlaneRender (m_parent->m_24->m_5c world transform)
 #include <Gruntz/ResLoadersViews.h> // ResLoaders::DrawHost_164380 (counter draw)
 #include <Win32.h>                  // SetRect + RECT
 
@@ -123,13 +125,15 @@ struct WwdObjDesc {
 };
 SIZE_UNKNOWN(WwdObjDesc);
 
-// The level-file object (this->m_0c): m_14 fronts the string-resolve map (+0x10);
-// BuildChild spawns a sub-record for the object. External, reloc-masked.
-struct WwdFile {
-    char m_pad0[0x14];
-    char* m_14;                                                      // +0x14
-    i32 BuildChild(void* reader, i32 tag, i32 selector, void** out); // 0x156a90
-};
+// The +0x0c owner is the canonical CDDrawSurfaceMgr (<DDrawMgr/DDrawSurfaceMgr.h>):
+// the former local `WwdFile` view's BuildChild @0x156a90 IS CDDrawSurfaceMgr::
+// InvokeCallback (100% EXACT), and its `m_14 + 0x10` map is m_workerCache->m_10.
+// NOTE (unsettled Ob-vs-Ptr): the retail Lookup rel32 here is 0x1b8008, FID HIGH
+// ?Lookup@CMapStringToPtr@@ - but the m_10 member is declared CMapStringToOb
+// (DDrawWorkerCache.h) and CreateWorker's operator[] call FIDs as CMapStringToOb
+// (AMBIG; the two classes' method bytes are identical, so the binary cannot settle
+// the element class). The (CMapStringToPtr*) cast below preserves the FID-HIGH
+// retail call shape and MARKS the open conflict - do not silently retype either way.
 
 // The created game object as LoadObjects reads it: +0x7c is its aux record, whose
 // +0x18 receives the child built in the merge tail.
@@ -337,7 +341,7 @@ RVA(0x001593e0, 0x53)
 CWwdGameObject*
 CWwdObjMgr::CreateNamed_1593e0(int a1, int a2, int a3, int a4, const char* name, int a6, int a7) {
     void* val = 0;
-    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
+    ((CMapStringToPtr*)&m_0c->m_workerCache->m_10)->Lookup(name, val);
     return CreateObject_159250(a1, a2, a3, a4, (int)val, a6, a7);
 }
 
@@ -399,7 +403,7 @@ CWwdGameObject* CWwdObjMgr::CreateObject_159440(int a1, int a2, int a3, int a4) 
 RVA(0x001595b0, 0x44)
 CWwdGameObject* CWwdObjMgr::CreateNamed_1595b0(int a1, int a2, const char* name, int a4) {
     void* val = 0;
-    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
+    ((CMapStringToPtr*)&m_0c->m_workerCache->m_10)->Lookup(name, val);
     return CreateObject_159440(a1, a2, (int)val, a4);
 }
 
@@ -606,7 +610,7 @@ RVA(0x00159a10, 0x57)
 CWwdGameObject*
 CWwdObjMgr::CreateNamed_159a10(int a1, int a2, int a3, int a4, const char* name, int a6) {
     void* val = 0;
-    ((CMapStringToPtr*)(m_0c->m_14 + 0x10))->Lookup(name, val);
+    ((CMapStringToPtr*)&m_0c->m_workerCache->m_10)->Lookup(name, val);
     if (val == 0) {
         return 0;
     }
@@ -1008,7 +1012,7 @@ i32 __stdcall BoxesOverlap_15a130(CWwdBox* a1, CWwdBox* a2) {
 // 0x15a210 (1074 B) = a CDDrawChildGroup-family debug OVERLAY, twin of
 // DrawObjectCounts_15a650 (same subsystem, both dead-in-retail). __thiscall, gated
 // on a +0x08 debug flag; walks the +0x14 child list and per object draws debug
-// geometry via CViewport::WrapCoord: CDDrawSurfacePair::DrawBox(RECT*,color) x3,
+// geometry via CPlaneRender::WrapCoord: CDDrawSurfacePair::DrawBox(RECT*,color) x3,
 // DrawCross(x,y), ResLoaders::DrawHost2_164420::DrawLabel(RECT*,char*) (falling
 // back to "???" @0x1f0a94). Draws gated by g_dbg61ab28/2c/30. Held pending
 // reconstruction (>512 B, novel per-object geometry).
@@ -1037,7 +1041,7 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
     CDDrawGroupNode* node = m_head;
     ResLoaders::DrawHost_164380* drawHost =
         *(ResLoaders::DrawHost_164380**)(*(char**)(mgr + 4) + 0x14);
-    CViewport* view = *(CViewport**)(*(char**)(mgr + 0x24) + 0x5c);
+    CPlaneRender* view = *(CPlaneRender**)(*(char**)(mgr + 0x24) + 0x5c);
     if (node == 0) {
         return;
     }
@@ -1055,32 +1059,32 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
         i32 wt = box.top;
         i32 fl = view->m_flags;
         if (fl & 4) {
-            i32 w = view->m_worldWidth;
+            i32 w = view->m_wrapW;
             if (box.left < 0) {
                 wl = box.left + w;
             } else if (box.left >= w) {
                 wl = box.left - w;
             }
-            i32 farEdge = view->m_edgeR;
-            if (farEdge >= w && wl < view->m_edgeL && wl <= farEdge - w) {
+            i32 farEdge = view->m_extentX;
+            if (farEdge >= w && wl < view->m_originX && wl <= farEdge - w) {
                 wl += w;
             }
         }
         if (fl & 8) {
-            i32 h = view->m_worldHeight;
+            i32 h = view->m_wrapH;
             if (box.top < 0) {
                 wt = box.top + h;
             } else if (box.top >= h) {
                 wt = box.top - h;
             }
-            i32 farEdge = view->m_edgeB;
-            if (farEdge >= h && wt < view->m_edgeT && wt <= farEdge - h) {
+            i32 farEdge = view->m_extentY;
+            if (farEdge >= h && wt < view->m_originY && wt <= farEdge - h) {
                 wt += h;
             }
         }
-        rc.left = wl - view->m_edgeL + view->m_scrollX;
-        rc.top = wt - view->m_edgeT + view->m_scrollY;
-        view->WrapCoord(&rc.right, &rc.bottom);
+        rc.left = wl - view->m_originX + view->m_viewX;
+        rc.top = wt - view->m_originY + view->m_viewY;
+        view->WrapCoord((i32*)&rc.right, (i32*)&rc.bottom); // LONG*->i32* (same width; PAH sig)
         drawHost->DrawCount(&rc, *(i32*)(obj + 0x74));
     } while (node != 0);
 }
@@ -1506,7 +1510,7 @@ i32 CWwdObjMgr::LoadObjects(CSerialArchive* reader, u32 count, i32 unused) {
         switch (desc.m_08) {
             case 5: {
                 void* val;
-                ((CMapStringToPtr*)(m_0c->m_14 + 0x10))
+                ((CMapStringToPtr*)&m_0c->m_workerCache->m_10)
                     ->Lookup((const char*)desc.m_14, (void*&)val);
                 if (val != 0) {
                     createdObj = CreateObject_159600(
@@ -1522,14 +1526,14 @@ i32 CWwdObjMgr::LoadObjects(CSerialArchive* reader, u32 count, i32 unused) {
             }
             case 0x16: {
                 void* val;
-                ((CMapStringToPtr*)(m_0c->m_14 + 0x10))
+                ((CMapStringToPtr*)&m_0c->m_workerCache->m_10)
                     ->Lookup((const char*)desc.m_14, (void*&)val);
                 createdObj = CreateObject_159440(desc.m_00, desc.m_9c, (i32)val, 0);
                 break;
             }
             case 0x1b: {
                 void* val;
-                ((CMapStringToPtr*)(m_0c->m_14 + 0x10))
+                ((CMapStringToPtr*)&m_0c->m_workerCache->m_10)
                     ->Lookup((const char*)desc.m_14, (void*&)val);
                 if (val != 0) {
                     createdObj = CreateObject_1598d0(
@@ -1545,7 +1549,7 @@ i32 CWwdObjMgr::LoadObjects(CSerialArchive* reader, u32 count, i32 unused) {
             }
             case 0x1c: {
                 void* rec = 0;
-                if (m_0c->BuildChild(reader, 0xa, desc.m_0c, &rec) == 0) {
+                if (m_0c->InvokeCallback(reader, 0xa, desc.m_0c, (i32)&rec) == 0) {
                     return 0;
                 }
                 if (rec == 0) {
@@ -1571,7 +1575,7 @@ i32 CWwdObjMgr::LoadObjects(CSerialArchive* reader, u32 count, i32 unused) {
         }
         if (desc.m_10 != 0) {
             void* child = 0;
-            if (m_0c->BuildChild(reader, 9, desc.m_10, &child) == 0) {
+            if (m_0c->InvokeCallback(reader, 9, desc.m_10, (i32)&child) == 0) {
                 return 0;
             }
             if (child == 0) {

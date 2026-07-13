@@ -17,7 +17,7 @@
 
 #include <Ints.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/Viewport.h>      // shared world tile-grid geometry (the active layer)
+#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (the active layer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created InGameText sprite)
@@ -29,12 +29,12 @@
 extern "C" u32 g_645588;
 
 // The active tile layer (flat cell array + per-row base-offset table, cell (x,y) =
-// m_cells[m_rowBase[y] + x]) is the shared CViewport.
+// m_tileGrid[m_colOffsets[y] + x]) is the shared CPlaneRender.
 
 // The tile map: m_5c is the active layer.
 struct TgcMap {
     char _pad00[0x5c];
-    CViewport* m_5c; // +0x5c  active layer
+    CPlaneRender* m_5c; // +0x5c  active layer
 };
 SIZE_UNKNOWN(TgcMap);
 

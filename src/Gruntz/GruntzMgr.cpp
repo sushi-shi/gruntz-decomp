@@ -46,7 +46,7 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <Gruntz/GameRegistry.h>
-#include <Gruntz/Viewport.h>      // the shared world-plane object (was local CWorldLayer)
+#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (was local CWorldLayer)
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (m_cmdGrid; was the CCmdGrid view)
@@ -521,11 +521,11 @@ struct OptionsSlot {
 // its ~CGruntzMapMgr @0x85d10 is the teardown Close() calls (retail thunk 0x35b7). The former
 // invented `CmdSinkV` class that stood here is GONE - see the note in <Gruntz/GruntzMgr.h>.
 
-// The world's layer/plane object is the shared CViewport (<Gruntz/Viewport.h>): an
+// The world's layer/plane object is the canonical CPlaneRender (<Wwd/WwdFile.h>): an
 // element of the active view's +0x38 layer array AND the object its +0x5c distinguished-
 // layer slot points at (same memory, so one type). Its visibility flag word (+0x08),
 // height grid (value grid +0x20, per-column base table +0x24), playable field limits
-// (+0x30/+0x34) and edge origins (+0x40..+0x4c) all live in the folded CViewport - each
+// (+0x30/+0x34) and edge origins (+0x40..+0x4c) all live in the folded CPlaneRender - each
 // caller reads only the facet it needs.
 
 // The active world view held at m_world->m_24. One object; each manager method reads a
@@ -619,7 +619,7 @@ extern "C" {
 
 // -------------------------------------------------------------------------
 // The world's +0x24 view (CWorldView, defined above) exposes a layer array (+0x38
-// base, +0x3c count) plus a distinguished sub-layer (+0x5c); each layer (CViewport)
+// base, +0x3c count) plus a distinguished sub-layer (+0x5c); each layer (CPlaneRender)
 // carries a flag word at +0x8 whose bit 1 (0x2) is a visibility toggle the level-cycle
 // / debug methods flip.
 
@@ -1714,7 +1714,7 @@ i32 CGruntzMgr::ToggleObjectLayer() {
             // `if(idx==4)idx--;idx--;` form regresses to 88% (view in edx). The
             // fold is the constant-CSE tiebreak, not source-steerable.
             i32 idx = (count == 4 ? count - 1 : count) - 1;
-            CViewport* layer = (idx < 0 || idx >= count) ? 0 : (CViewport*)view->m_planes[idx];
+            CPlaneRender* layer = (idx < 0 || idx >= count) ? 0 : (CPlaneRender*)view->m_planes[idx];
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -1726,14 +1726,14 @@ i32 CGruntzMgr::ToggleObjectLayer() {
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::ToggleHeightLayer (0x08f060; ret). Visibility toggle for the world
-// view's distinguished sub-layer ((CViewport*)m_world->m_24->m_mainPlane) - flipped unconditionally
+// view's distinguished sub-layer ((CPlaneRender*)m_world->m_24->m_mainPlane) - flipped unconditionally
 // (no lock check). Active-gated + world/view guarded like ToggleObjectLayer.
 RVA(0x0008f060, 0x35)
 i32 CGruntzMgr::ToggleHeightLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
         CGameLevel* view = m_world->m_24;
         if (view) {
-            CViewport* layer = (CViewport*)view->m_mainPlane;
+            CPlaneRender* layer = (CPlaneRender*)view->m_mainPlane;
             if (layer) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -1752,7 +1752,7 @@ i32 CGruntzMgr::ToggleBaseLayer() {
     if (Wap32GameMgrVfunc3() && m_world) {
         CGameLevel* view = m_world->m_24;
         if (view) {
-            CViewport* layer = (view->m_planes.GetSize() > 0) ? (CViewport*)view->m_planes[0] : 0;
+            CPlaneRender* layer = (view->m_planes.GetSize() > 0) ? (CPlaneRender*)view->m_planes[0] : 0;
             if (layer && !(layer->m_flags & 1)) {
                 layer->m_flags ^= 2;
                 return 1;
@@ -3597,10 +3597,10 @@ void CGruntzMgr::RecomputeViewScale() {
     if (v->m_mainPlane == 0) {
         return;
     }
-    m_viewOriginL = ((CViewport*)v->m_mainPlane)->m_edgeL - 0x60;
-    m_viewOriginT = ((CViewport*)m_world->m_24->m_mainPlane)->m_edgeT - 0x60;
-    m_viewOriginR = ((CViewport*)m_world->m_24->m_mainPlane)->m_edgeR + 0x60;
-    m_viewOriginB = ((CViewport*)m_world->m_24->m_mainPlane)->m_edgeB + 0x60;
+    m_viewOriginL = ((CPlaneRender*)v->m_mainPlane)->m_originX - 0x60;
+    m_viewOriginT = ((CPlaneRender*)m_world->m_24->m_mainPlane)->m_originY - 0x60;
+    m_viewOriginR = ((CPlaneRender*)m_world->m_24->m_mainPlane)->m_extentX + 0x60;
+    m_viewOriginB = ((CPlaneRender*)m_world->m_24->m_mainPlane)->m_extentY + 0x60;
 }
 
 // -------------------------------------------------------------------------
@@ -4993,7 +4993,7 @@ INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, 
 // CGruntzMgr::SetVideoMode (0x08df00; ret 0xc). Switch the display to (w,h) at
 // the current bit depth (m_colorDepth). No-op if already at (w,h). When the live state is
 // playable (Update() in {3,0x11}) and the new size exceeds the loaded map's
-// playable field (((CViewport*)m_world->m_24->m_mainPlane)->{m_30,m_34}), it refuses: pokes the HUD
+// playable field (((CPlaneRender*)m_world->m_24->m_mainPlane)->{m_30,m_34}), it refuses: pokes the HUD
 // guts subsystem (m_2dc) and surfaces the "map too small" modal, returning 0.
 // Otherwise it applies the mode through the engine, re-hides the cursor, stamps
 // m_modeW/m_modeH (+ the saved pair when arg3 is set), re-pokes the guts, runs the
@@ -5001,7 +5001,7 @@ INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, 
 //
 // The SetVideoMode symbol pairs the @early-stop CheckDisplayBoundsA/B and the
 // RestoreVideoMode/CheckSavedMode call sites (previously the Boundary_08df00 stub).
-// The loaded map's playable extent ((CViewport*)m_world->m_24->m_mainPlane) is the shared CViewport;
+// The loaded map's playable extent ((CPlaneRender*)m_world->m_24->m_mainPlane) is the shared CPlaneRender;
 // SetVideoMode reads its +0x30/+0x34 field width/height limits.
 // The engine display-mode apply (0x155f60, __stdcall(w,h,depth) -> nonzero ok).
 extern "C" i32 __stdcall SvmApply(i32 w, i32 h, i32 depth);
@@ -5026,9 +5026,9 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
     }
     if (m_curState->Update() == 3 || m_curState->Update() == 0x11) {
         if (m_world->m_24 != 0) {
-            CViewport* f = (CViewport*)m_world->m_24->m_mainPlane;
+            CPlaneRender* f = (CPlaneRender*)m_world->m_24->m_mainPlane;
             if (f != 0) {
-                if (w > f->m_worldWidth || h > f->m_worldHeight) {
+                if (w > f->m_wrapW || h > f->m_wrapH) {
                     CPlay* st = (CPlay*)m_curState;
                     st->ResetViewport();
                     if (st->m_guts != 0) {

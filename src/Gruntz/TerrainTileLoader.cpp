@@ -33,7 +33,7 @@
 //
 // @early-stop  (1.1% -> 7.9%: return type corrected to int [retail materialises
 // eax=1 before each ret]; reconstructed the always-run prologue - the action
-// descriptor, the grid-cell type resolve [level->m_24->m_5c CViewport clamp +
+// descriptor, the grid-cell type resolve [level->m_24->m_5c CPlaneRender clamp +
 // cells[rowBase[y]+x] + tile-class GetTypeId], the pixel snap - the 0x4771bc
 // byte-indexed outer switch mapped to actionTypes {3,5,7,0xd,0xf,0x12}, and the
 // DIRT arm [actionType 0xd] with its a5 {-1,2,0x63} sub-dispatch + Particlez
@@ -53,7 +53,7 @@
 
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created Particlez sprite)
-#include <Gruntz/Viewport.h>      // the shared tile-grid geometry (cell lookup)
+#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (cell lookup)
 #include <Gruntz/TileGridCommand.h> // real CTileTriggerContainer (map+0x2e4) + CTileTriggerLogic (the found set)
 #include <rva.h>
 
@@ -82,7 +82,7 @@ extern "C" CGameRegistry* g_gameReg;
 // ===========================================================================
 // CTerrainTileLoader::Load (0x075e90) - the per-tile terrain-action loader.
 // Prologue (always run): resolve the tile cell's type id from the level grid
-// (level->m_24->m_5c CViewport: clamp tile coords, cells[rowBase[y]+x], tile-class
+// (level->m_24->m_5c CPlaneRender: clamp tile coords, cells[rowBase[y]+x], tile-class
 // GetTypeId), snap (tileX,tileY) to a pixel centre, then dispatch on
 // (actionType - 3) through the 0x4771bc byte-indexed jump table. The DIRT arm
 // (actionType 0xd) registers the "Particlez"/LEVEL_DIRT/GAME_DIRT eye-candy set
@@ -105,26 +105,26 @@ i32 CTerrainTileLoader::Load(
     void* level = PTR(self, 0x22c);
     void* map = PTR(g_gameReg, 0x2c);
     void* grid = PTR(level, 0x24);
-    CViewport* g = *(CViewport**)((char*)grid + 0x5c);
+    CPlaneRender* g = *(CPlaneRender**)((char*)grid + 0x5c);
 
     // clamp the tile coords to the grid (tile-space bounds at +0x28/+0x2c)
     i32 cx = tileX;
     if (tileX < 0) {
         cx = 0;
-    } else if (tileX >= g->m_tileWidth) {
-        cx = g->m_tileWidth - 1;
+    } else if (tileX >= g->m_gridW) {
+        cx = g->m_gridW - 1;
     }
     i32 cy;
     if (tileY < 0) {
         cy = 0;
-    } else if (tileY >= g->m_tileHeight) {
-        cy = g->m_tileHeight - 1;
+    } else if (tileY >= g->m_gridH) {
+        cy = g->m_gridH - 1;
     } else {
         cy = tileY;
     }
 
     i32 cellType;
-    i32 cell = g->m_cells[g->m_rowBase[cy] + cx];
+    i32 cell = g->m_tileGrid[g->m_colOffsets[cy] + cx];
     if (cell == (i32)0xeeeeeeee || cell == -1) {
         cellType = 0;
     } else {

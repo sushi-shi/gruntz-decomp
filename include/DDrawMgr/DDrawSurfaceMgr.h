@@ -59,8 +59,10 @@ typedef struct HWND__* HWND;
 // The owned child sub-managers (polymorphic; shared child base with the scalar-
 // deleting destructor at vtable slot 1). Pointer members only here.
 class CDDrawSubMgr;
-class CDDrawSubMgrPages; // +0x04 the page/child factory (front/back/overlay surfaces)
-class CDDrawChildGroup;  // +0x08 the broadcast child-group (intrusive list + 2 maps)
+class CDDrawSubMgrPages;  // +0x04 the page/child factory (front/back/overlay surfaces)
+class CDDrawChildGroup;   // +0x08 the broadcast child-group (intrusive list + 2 maps)
+class CDDrawWorkerCache;  // +0x14 the string-keyed worker cache (its +0x10 map is the
+                          //       name->value resolve map the CWwdObjMgr factories read)
 struct CDDrawSubMgrLeafScan;
 struct CDDrawPtrCollections; // the +0x1c surface pool (heap object)
 struct SoundStream;          // the +0x20 foreign Dsndmgr sound stream
@@ -98,7 +100,7 @@ public:
     CDDrawChildGroup* m_childGroup;   // +0x08  broadcast child-group
     CDDrawSubMgr* m_workerList;       // +0x0c  CDDrawWorkerList
     CDDrawSubMgr* m_surfaceDesc;      // +0x10  CDDrawSurfaceDesc submgr
-    CDDrawSubMgr* m_workerCache;      // +0x14  CDDrawWorkerCache
+    CDDrawWorkerCache* m_workerCache; // +0x14  the string-keyed worker cache (real type)
     CDDrawSubMgr* m_workerMap;        // +0x18  CDDrawWorkerMapSmall
     CDDrawPtrCollections* m_ptrColl;  // +0x1c  surface pool
     SoundStream* m_soundStream;       // +0x20  foreign Dsndmgr sound stream

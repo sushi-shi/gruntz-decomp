@@ -42,7 +42,7 @@
                                  // (PositionBridgeToggle @0x0d5b20 is homed onto it below)
 #include <Gruntz/GruntzMgr.h>    // ::CGruntzMgr - CState::m_4's real class (m_modeW/m_modeH);
                                  // Play.h only forward-declares it. This TU is already MFC.
-#include <Gruntz/Viewport.h>     // the shared world tile-grid geometry
+#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (tile grid + transform)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
@@ -197,13 +197,13 @@ struct TileClass {
     virtual void Slot7();
     virtual i32 GetTypeId(i32 a, i32 b); // +0x20 (slot 8)
 };
-// The world tile-grid geometry is the shared CViewport (<Gruntz/Viewport.h>).
+// The world tile-grid geometry is the canonical CPlaneRender (<Wwd/WwdFile.h>).
 struct TileGrid {
     char m_pad00[0x24];
     char m_pad24[0x4c - 0x24];
     TileClass** m_4c; // +0x4c
     char m_pad50[0x5c - 0x50];
-    CViewport* m_5c; // +0x5c
+    CPlaneRender* m_5c; // +0x5c
 };
 struct PlayMgrRenderer {
     char m_pad00[0x10]; // +0x10  the embedded tile-obj list (reached by cast)
@@ -261,22 +261,22 @@ struct LvBridgePoint; // this+0x3f4  bridge-toggle screen point (defined below)
 // coords, resolve the tile-class through the row/cell tables, and call its
 // +0x20 type virtual. Returns 0 for an empty/out-of-range cell.
 static inline i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
-    CViewport* g = grid->m_5c;
+    CPlaneRender* g = grid->m_5c;
     if (x < 0) {
         x = 0;
-    } else if (x >= g->m_worldWidth) {
-        x = g->m_worldWidth - 1;
+    } else if (x >= g->m_wrapW) {
+        x = g->m_wrapW - 1;
     }
     if (y < 0) {
         y = 0;
-    } else if (y >= g->m_worldHeight) {
-        y = g->m_worldHeight - 1;
+    } else if (y >= g->m_wrapH) {
+        y = g->m_wrapH - 1;
     }
     i32 tx = x >> g->m_shiftX;
     i32 ty = y >> g->m_shiftY;
     i32 subX = x - (tx << g->m_shiftX);
     i32 subY = y - (ty << g->m_shiftY);
-    i32 cell = g->GetCell(tx, ty);
+    i32 cell = g->GetTileHandle(tx, ty);
     if (cell == (i32)0xeeeeeeee || cell == -1) {
         return 0;
     }

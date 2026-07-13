@@ -5,7 +5,7 @@
 // separate retail object. Split here (same class, same "eh" flags) so each src TU
 // maps to one contiguous retail .text region. Byte-neutral TU cut.
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr / CWorldZ / CGameLevel (m_world->m_24) / CGruntzMapMgr
-#include <Gruntz/Viewport.h>  // CViewport (the world plane; m_cells / m_rowBase height grid)
+#include <Wwd/WwdFile.h> // CPlaneRender (the world plane; m_tileGrid / m_colOffsets height grid)
 #include <rva.h>
 
 // operator-delete wrapper (RezFree, __cdecl; reloc-masked).
@@ -17,8 +17,8 @@ extern "C" void RezFree(void* p);
 // Then forwards (row, col, value) to the +0x70 notify object (reloc-masked).
 RVA(0x00111ec0, 0x37)
 void CGruntzMgr::SetCellHeight(i32 row, i32 col, i32 value) {
-    CViewport* grid = (CViewport*)m_world->m_24->m_mainPlane;
-    i32 idx = grid->m_rowBase[col] + row;
-    grid->m_cells[idx] = value;
+    CPlaneRender* grid = (CPlaneRender*)m_world->m_24->m_mainPlane;
+    i32 idx = grid->m_colOffsets[col] + row;
+    grid->m_tileGrid[idx] = value;
     RezFree((void*)m_tileGrid);
 }

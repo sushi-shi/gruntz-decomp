@@ -2886,7 +2886,9 @@ void CPlay::DrawWorldFrame() {
     ((CRenderer*)m_c->m_8)->BeginScene(0); // m_c->m_8->vtbl[+0x24](0)
     m_4w()->m_68->Step((i32)g_645584);     // m_4->m_68 frame-timer step
     if (g_gameReg->m_134 == 3) {
-        g_gameReg->PerFrameCue();
+        // 0x933e0 == CGruntzMgr::AdvanceOptionsCycle (rel32 via ILT 0x2d33; was the
+        // `PerFrameCue` phantom - same object, RTTI-true name).
+        ((CGruntzMgr*)g_gameReg)->AdvanceOptionsCycle();
     }
     m_guts->Step((i32)g_645584); // m_guts guts step
 }
@@ -2936,7 +2938,7 @@ i32 CPlay::DrawWorldFrames() {
             ((CRenderer*)m_c->m_8)->BeginScene(0);
             m_4w()->m_68->Step((i32)g_645584);
             if (g_gameReg->m_134 == 3) {
-                g_gameReg->PerFrameCue();
+                ((CGruntzMgr*)g_gameReg)->AdvanceOptionsCycle(); // 0x933e0 (was PerFrameCue)
             }
             m_guts->Step((i32)g_645584);
             i++;
@@ -3421,9 +3423,9 @@ i32 GruntInfoTextHost::winapi_0d95f0_wsprintfA() {
         s1.Format(g_emptyString);
     }
 
-    if (g_gameReg->QueryLevelName().GetLength() != 0) {
+    if (((CGruntzMgr*)g_gameReg)->GetWorldFileName().GetLength() != 0) {
         char buf[128];
-        wsprintfA(buf, g_gameReg->QueryLevelName());
+        wsprintfA(buf, ((CGruntzMgr*)g_gameReg)->GetWorldFileName());
         if (strchr(buf, '.')) {
             *strchr(buf, '.') = 0;
         }
@@ -7357,8 +7359,7 @@ struct AgThis {
     AgResMgr* m_c; // +0x0c
 };
 
-extern "C" i32 g_curPlayer;                      // 0x644c54 placeholder token
-void AgLog(CGameRegistry* reg, const char* msg); // 0x417e
+extern "C" i32 g_curPlayer; // 0x644c54 placeholder token
 
 // @early-stop
 // /GX list-walk wall: the registration loop + CString error log are faithful, but
@@ -7400,7 +7401,10 @@ i32 CPlay::AddLevelGruntz() {
         if (r == -1) {
             CString msg;
             msg.Format("Could not add Grunt: Player=%d", g->m_124, y, x);
-            AgLog(g_gameReg, msg); // CString -> LPCTSTR (implicit)
+            // `mov ecx,[0x64556c]; push msg; call 0x417e` (read off the retail site):
+            // a __thiscall on the singleton - CGruntzMgr::EnterModalUI @0x8ef10 (ILT
+            // 0x417e), NOT the 2-arg __cdecl `AgLog` the old decl faked.
+            ((CGruntzMgr*)g_gameReg)->EnterModalUI(msg); // CString -> LPCTSTR (implicit)
             return 0;
         }
         g->m_08 |= 0x10000;

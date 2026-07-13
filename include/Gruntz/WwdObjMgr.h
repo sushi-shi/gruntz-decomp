@@ -3,10 +3,13 @@
 // factories in CWwdObjMgrFactories.cpp + CDDrawSubMgr.cpp, the list/map ops in
 // CDDrawSubMgr.cpp, and the spatial routing in WwdSpatialMgr.cpp).
 //
-// Layout: a parent file handle at +0x0c, a sorted CPtrList at +0x10, and two
-// CMapPtrToPtr key->object maps at +0x2c (primary) and +0x48 (active-set dedup).
-// The +0x0c handle is a WwdFile* (LoadObjects dereferences it via ->BuildChild /
-// ->m_14; the factories read it as a raw int handle passed to each object's ctor).
+// Layout: a parent surface-manager pointer at +0x0c, a sorted CPtrList at +0x10, and
+// two CMapPtrToPtr key->object maps at +0x2c (primary) and +0x48 (active-set dedup).
+// The +0x0c owner is the CANONICAL CDDrawSurfaceMgr, not a local "WwdFile" view -
+// PROVEN by the call sites' rel32: the former view's `BuildChild` @0x156a90 IS
+// ?InvokeCallback@CDDrawSurfaceMgr@@QAEHPAXHHH@Z (100% EXACT), and its `m_14 + 0x10`
+// string-resolve map IS m_workerCache (+0x14, CDDrawWorkerCache) -> m_10 (the +0x10
+// CMapStringToOb). The factories read the pointer as a raw int handle per object ctor.
 // Field names are placeholders; only offsets + code bytes are load-bearing.
 #ifndef GRUNTZ_GRUNTZ_CWWDOBJMGR_H
 #define GRUNTZ_GRUNTZ_CWWDOBJMGR_H
@@ -18,7 +21,7 @@
 // The managed object types + the level reader/file; each TU supplies the full
 // definition it needs (only pointer/handle uses appear in this interface). The level
 // reader is the shared CSerialArchive stream (Read @+0x2c), used to read descriptors.
-struct WwdFile;
+class CDDrawSurfaceMgr; // +0x0c owner (InvokeCallback + the m_workerCache name map)
 class CWwdGameObject;
 class CWwdObject;
 struct CSerialArchive; // the shared serialize stream (Read @+0x2c / Write @+0x30)
@@ -32,7 +35,7 @@ public:
     CWwdGameObject* CreateObject_1598d0(int a1, int a2, int a3, int a4, int a5, int a6);
 
     // Name-resolving factory front-ends (bodies: CWwdObjMgrFactories.cpp): resolve
-    // `name` through the level string->value map (m_0c->m_14 + 0x10) to a numeric id,
+    // `name` through the owner's worker-cache name map (m_0c->m_workerCache->m_10) to an id,
     // then forward it as the matching CreateObject argument.
     CWwdGameObject* CreateNamed_1593e0(
         int a1,
@@ -77,8 +80,8 @@ public:
     i32 CountByKind_15aa60(i32 kind);              // 0x15aa60 count of objs with m_04==kind
     i32 SumWeighted_15aaf0();                      // 0x15aaf0 sum i*(m_5c+m_74+m_60+m_04)
 
-    char m_pad00[0x0c]; // +0x00..0x0b
-    WwdFile* m_0c;      // +0x0c parent file handle (read as a raw int by the factories)
+    char m_pad00[0x0c];        // +0x00..0x0b
+    CDDrawSurfaceMgr* m_0c;    // +0x0c owning surface manager (raw int handle to the factories)
     CObList m_10;       // +0x10 sorted object list (MFC CObList - stores CObject*;
                         // RemoveAt/AddTail/InsertBefore = 0x1b5c2c/0x1b5af6/0x1b5bb0)
     CMapPtrToPtr m_2c;  // +0x2c key -> object (primary)

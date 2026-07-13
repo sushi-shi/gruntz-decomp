@@ -935,26 +935,21 @@ SIZE_UNKNOWN(CNetGameWnd); // window view (only +0x4 HWND pinned); retail size T
 // CNetMgr::ResolveLocalPlayer; cast at that call. The full type-identity merge of the
 // sub-object fields into CGruntzMgr is a separate reconciliation - see the report.)
 struct CNetGameMgr {
-    // (CountReadyOptionsSlots @0x92e30 was a fake alias of the real
-    // CGruntzMgr::CountReadyOptionsSlots at the same rva - dropped; Multi.cpp now calls the
-    // canonical method through CMulti::Mgr(). The rest of this view is the same object
-    // (*0x64556c) seen through its network facet; folding it onto CGruntzMgr is deferred
-    // work for the GruntzMgr lane - see <Gruntz/Multi.h>.)
-    void ResetClockGlobals(); // 0x08f4f0
-    void ClearOptionsSlots();                 // 0x092ec0
-    i32 InitializeLobbyConnectionSettings();  // 0x08eca0
-    CString GetWorldFileName();               // 0x0928c0
-    // Resolve the local player slot on the game mgr (looks the local id up in the peer
-    // list, returns the GruntzPlayer). Declared here so callers use m_4->FindPlayer()
-    // instead of the (GruntzPlayer*)((CNetMgr*)m_4)->ResolveLocalPlayer() cross-cast;
-    // reloc-masked (same routine as CNetMgr::ResolveLocalPlayer at that call site).
-    GruntzPlayer* FindPlayer();
-    // Level-name / rez-path builder and the modal reporter this same *0x64556c object
-    // exposes (the former per-TU CGameSettings view, now folded here): the net verify
-    // path calls g_gameReg->BuildRezPath / ->ShowModal. Reloc-masked externs.
-    void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
-    // (ShowModal @0x8ef10 was a fake alias of the real CGruntzMgr::EnterModalUI at the same
-    //  rva - dropped; the verify-level reporters call the canonical method.)
+    // (METHOD-FREE VIEW: every method once declared here was a phantom alias of a real
+    // CGruntzMgr method, resolved by reading each call site's rel32 through its ILT:
+    //   CountReadyOptionsSlots @0x92e30 -> CGruntzMgr::CountReadyOptionsSlots
+    //   ResetClockGlobals      @0x8f4f0 -> CGruntzMgr::ResetClockGlobals
+    //   ClearOptionsSlots      @0x92ec0 -> CGruntzMgr::ClearOptionsSlots
+    //   InitializeLobbyConnectionSettings @0x8eca0 -> CGruntzMgr's (same name)
+    //   GetWorldFileName       @0x928c0 -> CGruntzMgr::GetWorldFileName
+    //   BuildRezPath           @0x93d40 -> CGruntzMgr::BuildLevelRezPath
+    //   ShowModal              @0x8ef10 -> CGruntzMgr::EnterModalUI
+    //   FindPlayer  (ILT 0x2e00) @0x92e80 -> CGruntzMgr::FindOptionsSlot(i32) - and the
+    //     no-arg FindPlayer decl had DROPPED the i32 arg retail pushes at EVERY site.
+    // Callers (Multi.cpp / MultiStartDlgRoster.cpp) now call the canonical methods
+    // through CMulti::Mgr() / a CGruntzMgr cast of the singleton. Only the FIELD view
+    // remains; folding these fields onto CGruntzMgr (m_channels == m_options, the
+    // 5-name 0x238 record knot) is the record-merge TODO - see <Gruntz/Multi.h>.)
     char m_pad0[4];                                                   // +0x00
     CNetGameWnd* m_wnd; // +0x04  the window (its +0x4 is the engine HWND)
     char m_pad8[0x38 - 8];

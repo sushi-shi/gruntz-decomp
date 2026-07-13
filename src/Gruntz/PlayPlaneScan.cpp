@@ -11,8 +11,8 @@
 #include <Gruntz/SBI_Image.h>
 #include <Gruntz/StatusBarMgr.h> // InsertPtr is a method of the 0x630 host, not the SBI leaf
 #include <Ints.h>
-#include <Gruntz/Play.h> // canonical CPlay (one shape)
-#include <Gruntz/GameRegistry.h>
+#include <Gruntz/Play.h>      // canonical CPlay (one shape)
+#include <Gruntz/GruntzMgr.h> // CGruntzMgr (the RTTI-true *g_gameReg type; EnterModalUI)
 #include <rva.h>
 #include <Gruntz/String.h>
 
@@ -141,11 +141,13 @@ struct ObjSink2e4 {
     );
 };
 
-// The global game-manager singleton (*g_gameReg) whose ReportError the error
-// paths call, and the error-formatting free helper.
+// The global game-manager singleton (*g_gameReg) at its RTTI-true type. The error
+// paths call CGruntzMgr::EnterModalUI(const char*) @0x8ef10 (ILT 0x417e) - read off
+// both call sites' rel32 (`mov ecx,[0x64556c]; push msg; call 0x417e`); the former
+// `?ReportError@CGameRegistry@@QAEXPBD@Z` was a phantom alias of it.
 extern "C" {
     DATA(0x0024556c)
-    extern "C" CGameRegistry* g_gameReg;
+    extern "C" CGruntzMgr* g_gameReg;
 }
 
 // The two plane-type discriminators the scans compare m_desc->m_typeId against
@@ -155,9 +157,11 @@ extern "C" {
     void PlaneType_Covered(); // 0x403d0f
 }
 
-// (CByteArrayV is GONE: it WAS MFC ::CByteArray - ctor 0x1b527e / ~ctor 0x1b52b1 /
-//  SetAtGrow 0x1b5485 / RemoveAt 0x1b5525, all NAFXCW.  Its hand layout was also wrong:
-//  it started at m_pData@+0x00, but CByteArray derives from CObject, so +0x00 is the vptr.)
+// The byte array ScanShuffleQuads shuffles is the REAL MFC CByteArray (<Mfc.h> ->
+// afxcoll.h): the four out-of-line ops the scan calls are NAFXCW library code
+// (??0 @0x1b527e, ??1 @0x1b52b1, SetAtGrow @0x1b5485, RemoveAt @0x1b5525 - all
+// FID-confirmed CByteArray). The former `CByteArrayV` view was a phantom AND laid
+// out wrong (no vptr, fields 4 low); the real class has vptr@0, m_pData@+4.
 
 // The six plane-type discriminators ScanShuffleQuads compares against.
 extern "C" {
@@ -235,7 +239,7 @@ i32 CPlay::ScanBuildTiles() {
                 == 0) {
                 CString s;
                 s.Format("Bad rock at: x=%d, y=%d", p->m_x, p->m_y);
-                g_gameReg->ReportError(s);
+                g_gameReg->EnterModalUI(s);
                 return 0;
             }
             if (p->m_11c == 0x32) {
@@ -297,7 +301,7 @@ i32 CPlay::ScanBuildTiles() {
                 == 0) {
                 CString s;
                 s.Format("Bad covered powerup at: x=%d, y=%d", p->m_x, p->m_y);
-                g_gameReg->ReportError(s);
+                g_gameReg->EnterModalUI(s);
                 return 0;
             }
             if (p->m_11c == 0x32) {
@@ -392,7 +396,6 @@ i32 CPlay::ScanShuffleQuads() {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(DrawSurf);
 SIZE_UNKNOWN(GridGeom);
 SIZE_UNKNOWN(ObjSink2dc);

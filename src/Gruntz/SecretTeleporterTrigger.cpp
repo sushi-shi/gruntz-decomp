@@ -18,7 +18,6 @@
 #include <Gruntz/TriggerMgr.h>      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
 #include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
 #include <Gruntz/Trigger.h>          // CTrigger (point-probe result, its m_10 HUD sprite)
-#include <Gruntz/Viewport.h>         // CViewport (visible-rect base at +0x5c)
 #include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (m_world/m_cmdGrid/
                                      // m_cueSink/m_scoreHud typed; CSpriteFactoryHolder)
 #include <Gruntz/SpriteFactory.h>    // the ONE CSpriteFactory (CreateSprite @0x1597b0)

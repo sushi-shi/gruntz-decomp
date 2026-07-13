@@ -773,8 +773,8 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     }
 
     MF(0x114) = 0;
-    NetGameMgr()->ResetClockGlobals();
-    NetGameMgr()->ClearOptionsSlots();
+    Mgr()->ResetClockGlobals();
+    Mgr()->ClearOptionsSlots();
     ChannelSlots_InitAll();
 
     // (1) peer CNetMgr
@@ -783,7 +783,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     g_groupEnumMgr = (CNetMgr*)peer;
 
     MF(0xac) = 1;
-    if (NetGameMgr()->InitializeLobbyConnectionSettings() != 0) {
+    if (Mgr()->InitializeLobbyConnectionSettings() != 0) {
         if (StartTitle() != 0) {
             MF(0xac) = 0;
             (((CNetMgr*)this)->*(((CNetConnectSlotView*)*(void**)this)->Abort))();
@@ -836,7 +836,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
         MF(0x12c) = 1;
         *(CString*)((char*)NetGameMgr() + 0xc8) = ((CNetMgr*)this)->GetConfigNameA();
     }
-    if (NetGameMgr()->GetWorldFileName().GetLength() == 0) {
+    if (Mgr()->GetWorldFileName().GetLength() == 0) {
         return 0;
     }
 
@@ -2373,17 +2373,17 @@ i32 CMulti::VerifyCustomLevel(void* h, i32 playerTok) {
         return 0;
     }
 
-    void* token;
+    i32 token;
     if (m_5b0 != 0) {
         CString b = ((CNetMgr*)this)->GetConfigNameB();
-        token = ((CNetGameMgr*)g_gameReg)->BuildRezPath(0, (void*)m_5b0, 0, 0, b);
+        token = ((CGruntzMgr*)g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, b);
     } else {
         CString a = ((CNetMgr*)this)->GetConfigNameA();
-        token = ((CNetGameMgr*)g_gameReg)->BuildRezPath(0, (void*)m_5b0, 0, 0, a);
+        token = ((CGruntzMgr*)g_gameReg)->BuildLevelRezPath(0, m_5b0, 0, 0, a);
     }
 
     g_connectRptMgr->m_levelVerifyResult = 0;
-    if (g_connectRptMgr->Poll((i32)token) == 0) {
+    if (g_connectRptMgr->Poll(token) == 0) {
         m_530 = 0;
         ((CGruntzMgr*)(void*)g_gameReg)
             ->EnterModalUI("Unable to verify custom level with other players");
@@ -2733,7 +2733,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = NetGameMgr()->FindPlayer();
+            GruntzPlayer* player = (GruntzPlayer*)Mgr()->FindOptionsSlot(sender);
             if (player == 0) {
                 return 1;
             }
@@ -2749,7 +2749,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = NetGameMgr()->FindPlayer();
+            GruntzPlayer* player = (GruntzPlayer*)Mgr()->FindOptionsSlot(sender);
             if (player == 0) {
                 return 1;
             }
@@ -2769,7 +2769,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected == 0) {
                 break;
             }
-            GruntzPlayer* player = NetGameMgr()->FindPlayer();
+            GruntzPlayer* player = (GruntzPlayer*)Mgr()->FindOptionsSlot(sender);
             if (player == 0) {
                 return 1;
             }
@@ -2849,7 +2849,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_connected != 0) {
                 break;
             }
-            GruntzPlayer* player = NetGameMgr()->FindPlayer();
+            GruntzPlayer* player = (GruntzPlayer*)Mgr()->FindOptionsSlot(msg->m_14);
             if (player == 0) {
                 return 0;
             }
@@ -2899,7 +2899,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             i32 stamp = msg->m_8;
             u32 now = timeGetTime();
             i32 delta = now - stamp;
-            GruntzPlayer* player = ((CNetGameMgr*)g_gameReg)->FindPlayer();
+            GruntzPlayer* player = (GruntzPlayer*)((CGruntzMgr*)g_gameReg)->FindOptionsSlot(sender);
             if (player == 0) {
                 return 1;
             }
@@ -2914,7 +2914,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (m_isHost == 0) {
                 break;
             }
-            GruntzPlayer* player = ((CNetGameMgr*)g_gameReg)->FindPlayer();
+            GruntzPlayer* player = (GruntzPlayer*)((CGruntzMgr*)g_gameReg)->FindOptionsSlot(sender);
             if (player == 0) {
                 return 1;
             }
@@ -2933,7 +2933,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             return 1;
 
         case 0x41c: {
-            GruntzPlayer* player = ((CNetGameMgr*)g_gameReg)->FindPlayer();
+            GruntzPlayer* player = (GruntzPlayer*)((CGruntzMgr*)g_gameReg)->FindOptionsSlot(sender);
             if (player == 0) {
                 return 1;
             }
@@ -3089,8 +3089,7 @@ i32 CMulti::OnPlayerLeft(i32 playerId) {
         return 0;
     }
 
-    CNetGameMgr* gm = NetGameMgr();
-    GruntzPlayer* slot = gm->FindPlayer();
+    GruntzPlayer* slot = (GruntzPlayer*)Mgr()->FindOptionsSlot(playerId);
     if (slot == 0) {
         return 0;
     }
@@ -3659,8 +3658,8 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
 
     char line[0x12c];
     if (toChat != 0) {
-        GruntzPlayer* player = NetGameMgr()->FindPlayer();
-        CString name = ((CNetMgr*)player)->GetName();
+        GruntzPlayer* player = (GruntzPlayer*)Mgr()->FindOptionsSlot(LocalPlayer()->m_4);
+        CString name = player->GetName();
         sprintf(line, "%s: %s", (const char*)name, text);
     } else {
         strcpy(line, text);
@@ -3670,7 +3669,7 @@ i32 CMulti::BroadcastChatLine(char* text, i32 toChat, i32 showWnd, void* hWnd) {
         if (hWnd != 0) {
             ShowChatLine(hWnd, line);
         } else {
-            GruntzPlayer* player = NetGameMgr()->FindPlayer();
+            GruntzPlayer* player = (GruntzPlayer*)Mgr()->FindOptionsSlot(m_hostIndex);
             if (player != 0) {
                 ((CFontConfig*)NetGameMgr()->m_5c)->AddItem(line, 0x30, player->m_008);
             }

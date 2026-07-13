@@ -22,6 +22,7 @@
 // Functions in retail-RVA order; shared views/externs in
 // <Gruntz/TriggerMgrViews.h>. /GX unit (ApplySwitch owns a CString temp).
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/Play.h> // canonical CPlay (m_curState real class: ArmSnapshot et al.)
 
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -32,7 +33,7 @@
 #include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Gruntz/Viewport.h>      // shared world tile-grid geometry (dims here)
+#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (dims here)
 #include <Gruntz/Grunt.h>         // real CGrunt (the grid cells) + CGruntTileMgr (FindAtPixel)
 #include <Globals.h>
 
@@ -272,8 +273,8 @@ i32 CTriggerMgr::ClearGridRange(i32 startRow) {
 RVA(0x0006be30, 0x47)
 void* CTriggerMgr::ScreenToCell(i32 sx, i32 sy, i32* outRow, i32* outCol, i32 startRow) {
     CTmLevelView* view = m_level->m_24;
-    i32 px = view->m_5c->m_edgeL - view->m_10 + sx;
-    i32 py = view->m_5c->m_edgeT - view->m_14 + sy;
+    i32 px = view->m_5c->m_originX - view->m_10 + sx;
+    i32 py = view->m_5c->m_originY - view->m_14 + sy;
     return CellHitTest(px, py, outRow, outCol, startRow);
 }
 
@@ -732,7 +733,7 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     sub->m_34 = 0;
     sub->m_48 = 0;
     sub->m_4c = 0;
-    world->SetStat(0, 0xbb7);
+    ((CPlay*)world)->ArmSnapshot(0, 0xbb7); // 0xd9240 (was the SetStat phantom)
     world->m_2dc->SetMode(1);
     this->ClearMagic(g_curPlayer);
 }

@@ -23,7 +23,7 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Gruntz/Viewport.h>      // shared world tile-grid geometry (dims here)
+#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (dims here)
 #include <rva.h>
 
 // The pending-fx sprite-id base: a cell's logic kind maps to its pending overlay-fx sprite
@@ -102,17 +102,17 @@ struct CTmScoreSub {
     i32 m_4c; // +0x4c
 };
 
-// The active game-state (g_gameReg->m_curState, a CPlay/CState) as the leaves view it: one
-// unified shape. LoadCursorSprites (== the retail's StopFx, 0xd0120) loads/clears the pending
-// cursor fx; the rest are the world refresh / stat / scroll / fx hooks. Reloc-masked.
+// The active game-state (g_gameReg->m_curState) FIELD view. METHOD-FREE: every method
+// once declared here was a phantom alias of a real CPlay method (each call site's rel32
+// read through its ILT): LoadCursorSprites==CPlay::LoadCursorSprites @0xd0120 (and the
+// "StopFx2 @0xd0b3a" decl was the SAME callee - 0xd0b3a was never a function start);
+// SetStat==CPlay::ArmSnapshot @0xd9240; Center==CPlay::ResetGoals @0xd5f00; the 3-arg
+// "Place2" was ALSO ResetGoals - the view had fabricated a third arg (retail pushes 2);
+// OnRegion4==CPlay::OnRegion4 @0xd8bc0; Refresh==CPlay::FlushPendingOps @0xda2d0.
+// Callers now cast to the canonical CPlay (<Gruntz/Play.h>) and call the real names.
+// Folding these FIELDS onto CPlay (m_2dc==m_guts, +0x384 anchors into m_pad384,
+// m_3f4 vs m_frameMarker/CTimer, m_504 vs m_dragEndNotify) is the remaining fold-TODO.
 struct CTmWorld {
-    void LoadCursorSprites(i32 kind, i32 flag); // 0xd0120
-    void Refresh();                             // 0xda2d0
-    void SetStat(i32 a, i32 b);                 // 0xd9240
-    void Center(i32 cx, i32 cy);                // 0xd5f00 (scroll-center on a tile)
-    void StopFx2(i32 a, i32 b);                 // 0xd0b3a
-    i32 OnRegion4(i32 z);                       // 0xd8bc0
-    void Place2(i32 a, i32 b, i32 c);           // ReinitGroup state place (reloc-masked)
     char p0[0x2dc];
     CStatusBarMgr* m_2dc; // +0x2dc  status-bar item (real class, no per-site cast)
     char p2e0[0x384 - 0x2e0];
@@ -126,12 +126,12 @@ struct CTmWorld {
     i32 m_504; // +0x504  pending-fx flag (only null-tested)
 };
 // The level/plane grid the active-selection center reads its dims from: the chain
-// g_gameReg->m_world->m_24->m_5c lands on the shared CViewport
-// (<Gruntz/Viewport.h>) whose m_worldWidth/m_worldHeight are the (cols,rows) read here.
+// g_gameReg->m_world->m_24->m_5c lands on the shared CPlaneRender
+// (<Wwd/WwdFile.h>) whose m_wrapW/m_wrapH are the (cols,rows) read here.
 struct CTmGridHolder {
     void Snap(i32* outR, i32* outC); // ReinitGroup snap-to-cell (reloc-masked)
     char p0[0x5c];
-    CViewport* m_5c; // +0x5c  the grid object
+    CPlaneRender* m_5c; // +0x5c  the grid object
 };
 struct CTmRegSub30 {
     char p0[0x24];
@@ -183,7 +183,7 @@ struct CTmLevelView {
     char p18[0x4c - 0x18];
     void** m_4c; // +0x4c  tile-class object table (cell id -> type object; PlaceObjectFull)
     char p50[0x5c - 0x50];
-    CViewport* m_5c; // +0x5c  the plane viewport (real CViewport: tile grid + edge/scroll origin)
+    CPlaneRender* m_5c; // +0x5c  the plane viewport (real CPlaneRender: tile grid + edge/scroll origin)
 };
 
 // The level object stored at CTriggerMgr+0x22c (set by SetLevel): its +0x8 is the sprite

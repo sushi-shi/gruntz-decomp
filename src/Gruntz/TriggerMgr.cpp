@@ -33,7 +33,7 @@
 #include <Gruntz/UserLogic.h>     // canonical CUserLogic (switch/trigger logic virtuals)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
-#include <Gruntz/Viewport.h>      // shared world tile-grid geometry (dims here)
+#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (dims here)
 #include <stdlib.h>               // rand (0x11fee0, reloc-masked)
 #include <Globals.h>
 
@@ -552,7 +552,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
         ov->Forward(x, y);
         return 1;
     }
-    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
+    CPlay* world = (CPlay*)g_gameReg->m_curState;
     if (m_pendingFxKind == 0) {
         // bridge-cast (as ClearAllSprites above): CTmCell IS CGrunt, so this binds to the
         // REAL ?CanShowStamina@CGrunt@@QAEHXZ (0x514a0). Declared on CTmCell it mangled to
@@ -570,22 +570,22 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     // Resolve the tile-cell's type object from the level viewport (result discarded:
     // the virtual GetTypeId dispatch is kept for its side effect).
     CTmLevelView* view = m_level->m_24;
-    CViewport* grid = view->m_5c;
+    CPlaneRender* grid = view->m_5c;
     i32 tx = x >> 5;
     i32 ty = y >> 5;
     i32 cx = tx;
     if (tx < 0) {
         cx = 0;
-    } else if (tx >= grid->m_tileWidth) {
-        cx = grid->m_tileWidth - 1;
+    } else if (tx >= grid->m_gridW) {
+        cx = grid->m_gridW - 1;
     }
     i32 cy = ty;
     if (ty < 0) {
         cy = 0;
-    } else if (ty >= grid->m_tileHeight) {
-        cy = grid->m_tileHeight - 1;
+    } else if (ty >= grid->m_gridH) {
+        cy = grid->m_gridH - 1;
     }
-    i32 cval = grid->m_cells[grid->m_rowBase[cy] + cx];
+    i32 cval = grid->m_tileGrid[grid->m_colOffsets[cy] + cx];
     if (cval != (i32)0xeeeeeeee && cval != -1) {
         void* tc = view->m_4c[cval & 0xffff];
         (*(i32(**)(void*, i32, i32))(*(void***)tc + 8))(tc, 0, 0);
@@ -652,7 +652,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         } else if (hit == cell) {
             // toggle off the pending-fx and rewind
             m_pendingFxKind = 0;
-            ((CTmWorld*)g_gameReg->m_curState)->StopFx2(0, 0);
+            ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(0, 0); // ILT 0x35da (was the StopFx2 phantom)
             CGruntHud* o = hit->m_10;
             this->PlaceA(o->m_5c, o->m_60, a18, a14);
             return 1;
@@ -807,7 +807,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     i32 hy = row;
     if (hy >= *(i32*)((char*)g_gameReg + 0x144) || hy < *(i32*)((char*)g_gameReg + 0x13c)
         || hx >= *(i32*)((char*)g_gameReg + 0x148) || hx < *(i32*)((char*)g_gameReg + 0x140)) {
-        ((CTmWorld*)lvl)->Place2(hy, hx, 0);
+        ((CPlay*)lvl)->ResetGoals(hy, hx); // ILT 0x2e28 (was the 3-arg Place2 phantom)
     }
     CTmGridHolder* plane = (CTmGridHolder*)*(char**)(*(char**)((char*)g_gameReg + 0x30) + 0x24);
     i32 outR = col;
@@ -1571,7 +1571,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
         i32* rec = ((CTmNode*)m_recList.GetHeadPosition())->m_payload;
         cell = m_grid[rec[1] + rec[0] * 15];
     }
-    CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
+    CPlay* world = (CPlay*)g_gameReg->m_curState;
     i32 kind = this->Classify(x, y);
     if (kind == 2) {
         i32 alt = cell->m_entranceReason;
@@ -1589,7 +1589,7 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     } else if (kind != 0) {
         i32 v = kind + kPendingFxIdBase;
         m_pendingFxKind = v;
-        world->StopFx2(v, 0);
+        world->LoadCursorSprites(v, 0); // ILT 0x35da @0x7b2f4 (was the StopFx2 phantom)
     }
     this->Refresh2();
     this->Record2(x, y);
@@ -2285,7 +2285,7 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
                             g->m_1f8 = g->m_1f4_moveIcon;
                         }
                         ((CGrunt*)g)->SelectMoveIcon(t); // -> ?SelectMoveIcon@CGrunt@@ (0x57800)
-                        ((CTmWorld*)g_gameReg->m_curState)->OnRegion4(1);
+                        ((CPlay*)g_gameReg->m_curState)->OnRegion4(1);
                     } else if (g->m_1f8 != -1) {
                         ((CGrunt*)g)->SelectMoveIcon(g->m_1f8); // -> CGrunt (0x57800)
                         g->m_1f8 = -1;
@@ -2715,9 +2715,9 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
     }
     i32 maxX = 0;
     i32 maxY = 0;
-    CViewport* grid = (CViewport*)g_gameReg->m_world->m_24->m_mainPlane;
-    i32 minX = grid->m_worldWidth - 1;
-    i32 minY = grid->m_worldHeight - 1;
+    CPlaneRender* grid = (CPlaneRender*)g_gameReg->m_world->m_24->m_mainPlane;
+    i32 minX = grid->m_wrapW - 1;
+    i32 minY = grid->m_wrapH - 1;
     do {
         CTmNode* cur = n;
         n = n->m_next;
@@ -2751,8 +2751,8 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
         }
     } while (n != 0);
     if (m_selSentinel == slot) {
-        ((CTmWorld*)g_gameReg->m_curState)
-            ->Center(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
+        ((CPlay*)g_gameReg->m_curState)
+            ->ResetGoals(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2); // 0xd5f00 (was Center)
         m_selSentinel = -1;
         return 1;
     }
@@ -2775,10 +2775,10 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
 // ===========================================================================
 // The view-centre helper reached as ((CTmWorld*)g_gameReg->m_curState)->Center(x, y) (0x2e28 thunk).
 // The map dimensions grid (gameReg->m_world->m_24->m_5c) is the shared
-// CViewport (<Gruntz/Viewport.h>); only its m_worldWidth/m_worldHeight are read here.
+// CPlaneRender (<Wwd/WwdFile.h>); only its m_wrapW/m_wrapH are read here.
 struct CMapHolderB {
     char m_pad00[0x5c];
-    CViewport* m_5c; // +0x5c
+    CPlaneRender* m_5c; // +0x5c
 };
 struct CMapHolderA {
     char m_pad00[0x24];
@@ -2838,9 +2838,9 @@ i32 CGroupSel::CenterOnGroup(i32 doSelect) {
     if (n == 0) {
         return 0;
     }
-    CViewport* dims = (CViewport*)g_gameReg->m_world->m_24->m_mainPlane;
-    i32 minX = dims->m_worldWidth - 1;
-    i32 minY = dims->m_worldHeight - 1;
+    CPlaneRender* dims = (CPlaneRender*)g_gameReg->m_world->m_24->m_mainPlane;
+    i32 minX = dims->m_wrapW - 1;
+    i32 minY = dims->m_wrapH - 1;
     i32 maxX = 0;
     i32 maxY = 0;
     i32 count = 0;
@@ -3087,7 +3087,7 @@ RVA(0x0007d450, 0x112)
 i32 CTriggerMgr::ToggleRegionA() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
-        ((CTmWorld*)g_gameReg->m_curState)->LoadCursorSprites(0, 0);
+        ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(0, 0);
         return 0;
     }
     m_pendingFxKind = 0;
@@ -3122,7 +3122,7 @@ i32 CTriggerMgr::ToggleRegionA() {
         return 1;
     }
     m_pendingFxKind = v + kPendingFxIdBase;
-    ((CTmWorld*)g_gameReg->m_curState)->LoadCursorSprites(v + kPendingFxIdBase, 0);
+    ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(v + kPendingFxIdBase, 0);
     OverlayTick();
     return 1;
 }
@@ -3137,7 +3137,7 @@ RVA(0x0007d5c0, 0xdc)
 i32 CTriggerMgr::ToggleRegionB() {
     if (m_pendingFxKind != 0) {
         m_pendingFxKind = 0;
-        ((CTmWorld*)g_gameReg->m_curState)->LoadCursorSprites(0, 0);
+        ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(0, 0);
         return 0;
     }
     m_pendingFxKind = 0;
@@ -3170,7 +3170,7 @@ i32 CTriggerMgr::ToggleRegionB() {
         return 1;
     }
     m_pendingFxKind = kind + kPendingFxIdBase;
-    ((CTmWorld*)g_gameReg->m_curState)->LoadCursorSprites(kind + kPendingFxIdBase, 0);
+    ((CPlay*)g_gameReg->m_curState)->LoadCursorSprites(kind + kPendingFxIdBase, 0);
     OverlayTick();
     return 1;
 }

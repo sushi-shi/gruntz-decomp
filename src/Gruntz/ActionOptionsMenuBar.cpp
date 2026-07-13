@@ -21,7 +21,7 @@
 // ---------------------------------------------------------------------------
 #include <Gruntz/GameRegistry.h>  // g_gameReg singleton (0x24556c) canonical view
 #include <Gruntz/SerialArchive.h> // the shared archive stream (Serialize's Write @+0x30)
-#include <Gruntz/Viewport.h>      // shared world->screen transform
+#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (world->screen transform)
 #include <Gruntz/ResMgr.h>
 #include <Gruntz/Sprite.h>
 
@@ -32,8 +32,8 @@ public:
     void Method_155630(i32 h, char* t, i32* o);
 }; // 0x155550/0x155360/0x155630
 
-// CViewport (world->screen transform, g_gameReg->m_world->m_24->m_5c) is the shared
-// <Gruntz/Viewport.h> class: m_worldWidth (+0x30) clamps the bar position;
+// CPlaneRender (world->screen transform, g_gameReg->m_world->m_24->m_5c) is the shared
+// <Wwd/WwdFile.h> class: m_wrapW (+0x30) clamps the bar position;
 // WrapCoord is NO-body so its __thiscall `call 0xa000` reloc-masks
 // (WwdFile::WwdFile_00a000).
 
@@ -149,7 +149,7 @@ void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        i32 limit = ((CViewport*)g_gameReg->m_world->m_24->m_5c)->m_worldWidth;
+        i32 limit = ((CPlaneRender*)g_gameReg->m_world->m_24->m_5c)->m_wrapW;
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }
@@ -473,4 +473,4 @@ SIZE_UNKNOWN(CActionOptionsMenuBar);
 SIZE_UNKNOWN(CDrawTarget);
 SIZE_UNKNOWN(CMenuBarFrame);
 SIZE_UNKNOWN(CSpriteMgr);
-SIZE_UNKNOWN(CViewport);
+SIZE_UNKNOWN(CPlaneRender);

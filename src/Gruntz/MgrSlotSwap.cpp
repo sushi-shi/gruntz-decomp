@@ -1,22 +1,22 @@
 // MgrSlotSwap.cpp - 0x1128b0 (__thiscall) on a small game object holding a token at
 // +0x34 plus the (group m_08, index m_0c) coordinates. If the token is live it swaps
 // the token currently parked in the global registry's plane table
-// (((RegM30*)g_gameReg->m_world)->m_24->m_5c->m_cells[ m_rowBase[m_0c] + m_08 ]) with its own, notifies
+// (((RegM30*)g_gameReg->m_world)->m_24->m_5c->m_tileGrid[ m_colOffsets[m_0c] + m_08 ]) with its own, notifies
 // the registry's m_70 sub-manager, and adopts the previously-parked token. An empty
 // token reports the 0x8009/0x451 diagnostic and returns 0. Every callee + the global
 // are reloc-masked.
 #include <Gruntz/Brickz.h>
 #include <Ints.h>
 #include <Gruntz/GruntzMgr.h> // the REAL singleton class
-#include <Gruntz/Viewport.h> // shared world-plane grid (the registry plane)
+#include <Wwd/WwdFile.h> // CPlaneRender - the canonical plane (the registry plane)
 #include <rva.h>
 
 // The registry plane table (g_gameReg->m_world->m_24->m_5c) is the shared
-// world-plane CViewport: value plane m_cells indexed by offset plane m_rowBase.
+// world-plane CPlaneRender: value plane m_tileGrid indexed by offset plane m_colOffsets.
 
 struct RegLevel { // g_gameReg->m_world->m_24
     char m_pad0[0x5c];
-    CViewport* m_5c; // +0x5c
+    CPlaneRender* m_5c; // +0x5c
 };
 
 struct RegM30 {
@@ -68,9 +68,9 @@ i32 CSlotHolder::DoSwap() {
     i32 idx = this->m_0c;
     i32 newTok =
         ((RegM30*)mgr->m_world)
-            ->m_24->m_5c->m_cells[((RegM30*)mgr->m_world)->m_24->m_5c->m_rowBase[idx] + grp];
+            ->m_24->m_5c->m_tileGrid[((RegM30*)mgr->m_world)->m_24->m_5c->m_colOffsets[idx] + grp];
     ((RegM30*)g_gameReg->m_world)
-        ->m_24->m_5c->m_cells[((RegM30*)g_gameReg->m_world)->m_24->m_5c->m_rowBase[idx] + grp] =
+        ->m_24->m_5c->m_tileGrid[((RegM30*)g_gameReg->m_world)->m_24->m_5c->m_colOffsets[idx] + grp] =
         oldTok;
     ((CBrickzGrid*)mgr->m_tileGrid)->ComputeCellFlags(grp, idx, oldTok);
     this->m_34 = newTok;

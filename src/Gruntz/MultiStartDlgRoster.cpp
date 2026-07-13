@@ -85,16 +85,7 @@ struct ChannelSlot {
 };
 SIZE_UNKNOWN(ChannelSlot);
 
-// The game-settings singleton (CGruntzMgr) used to resolve the level + show modals -
-// the settings facet of the 0x64556c dual-view (a REQUIRED CGameRegistry/CGruntzMgr
-// split; not unified here). Only the two touched methods are modeled.
-struct CGameSettings {
-    void* BuildRezPath(i32 a, void* name, i32 c, i32 d, CString cap); // 0x93d40
-    // (ShowModal @0x8ef10 was a fake alias of the real CGruntzMgr::EnterModalUI at the same
-    //  rva - dropped; the two reporters below call the canonical method.)
-};
 extern "C" CGameRegistry* g_gameReg; // _g_mgrSettings (0x64556c)
-SIZE_UNKNOWN(CGameSettings);
 DATA(0x0024bdb0)
 extern CString g_64bdb0[]; // 0x64bdb0 per-channel label table
 
@@ -902,7 +893,7 @@ i32 CMultiStartDlg::UpdatePlayers(i32 force) {
 // reuse this TU's canonical decls.
 // ===========================================================================
 // The game-registry slot array (*0x64556c + 0x150, stride 0x238/slot) viewed for the
-// three fields this watchdog reads; g_gameReg is this TU's CGameSettings* (cast).
+// three fields this watchdog reads (a WatchReg cast of the CGameRegistry singleton).
 struct WatchRegSlot {
     char m_pad00[0x14];
     i32 m_14; // +0x14 present flag
@@ -1089,16 +1080,16 @@ void CMultiStartDlg::VerifyCustomLevel() {
         return;
     }
     mgr->SendStatFlag(0x3fc, 1);
-    void* token;
+    i32 token;
     if (g_64bd5c->m_5b0 != 0) {
         CString b = GetConfigNameB();
-        token = ((CNetGameMgr*)g_gameReg)->BuildRezPath(0, (void*)g_64bd5c->m_5b0, 0, 0, b);
+        token = ((CGruntzMgr*)g_gameReg)->BuildLevelRezPath(0, g_64bd5c->m_5b0, 0, 0, b);
     } else {
         CString a = GetConfigNameA();
-        token = ((CNetGameMgr*)g_gameReg)->BuildRezPath(0, (void*)g_64bd5c->m_5b0, 0, 0, a);
+        token = ((CGruntzMgr*)g_gameReg)->BuildLevelRezPath(0, g_64bd5c->m_5b0, 0, 0, a);
     }
     g_64bd5c->m_53c = 0;
-    if (g_64bd5c->Poll((i32)token) == 0) {
+    if (g_64bd5c->Poll(token) == 0) {
         g_64bd5c->m_530 = 0;
         EnableWindow(0);
         ((CGruntzMgr*)(void*)g_gameReg)
