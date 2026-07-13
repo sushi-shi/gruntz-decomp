@@ -572,7 +572,10 @@ struct GruntSoundEntry {
 SIZE_UNKNOWN(GruntSoundInner);
 struct GruntSoundInner {
     char m_pad0[0x10];
-    CMapStringToOb m_10; // +0x10  the lookup map (call this->m_10.Lookup)
+    // ::CMapStringToPtr - retail's Lookup is 0x1b8438, in [0x1b8247, 0x1b85b1), the band
+    // whose ctor stamps ??_7CMapStringToPtr@@6B@.  CMapStringToOb's Lookup is 0x1b8008,
+    // a separate body (no COMDAT fold - MSVC5 has no /OPT:ICF).  `mfc_class 0x1b8438`.
+    CMapStringToPtr m_10; // +0x10  the lookup map (call this->m_10.Lookup)
 };
 
 // The intrusive coord-node freelist the grunt machines recycle occupied-coord

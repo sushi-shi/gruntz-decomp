@@ -42,7 +42,7 @@ extern "C" CGameRegistry* g_gameReg; // *0x24556c canonical singleton
 //  is a DIFFERENT class, CMapPtrToPtr @0x1b8760 - do not conflate them.)
 struct CIconMapHolder {
     char m_pad00[0x10];
-    CMapStringToOb m_10map; // +0x10  the lookup table
+    CMapStringToPtr m_10map; // +0x10  the lookup table (Lookup 0x1b8438 = CMapStringToPtr)
 };
 struct CGameRegMapHolder {
     char m_pad00[0x28];

@@ -283,8 +283,8 @@ i32 CBootyState::Vslot09(i32) {
 // pointers; not steerable.
 RVA(0x00018e40, 0x81)
 i32 CBootyState::FrameSlot28(i32) {
-    CObject* obj = 0;
-    CMapStringToOb* map = (CMapStringToOb*)((char*)m_c->m_28 + 0x10);
+    void* obj = 0;
+    CMapStringToPtr* map = (CMapStringToPtr*)((char*)m_c->m_28 + 0x10); // Lookup 0x1b8438
     map->Lookup("BOOTY_LOOP", obj);
     LeafCue* found = (LeafCue*)obj;
     if (found && ((DirectSoundMgr*)found->m_10)->IsPlaying()) {
@@ -512,8 +512,8 @@ i32 CBootyState::CheckPerfectBonus() {
         i32 item = BOOTY_REG->m_11c;
         CBootyMusicHost::M28* m28 = host->m_28;
         if (m28->m_30 == 0) {
-            CObject* found = 0;
-            CMapStringToOb* map = (CMapStringToOb*)((char*)m28 + 0x10);
+            void* found = 0;
+            CMapStringToPtr* map = (CMapStringToPtr*)((char*)m28 + 0x10); // Lookup 0x1b8438
             map->Lookup("BOOTY_PERFECT", found);
             if (found && g_sndEnabled != 0) {
                 CBootyFound* p = (CBootyFound*)found;
@@ -622,8 +622,8 @@ i32 CMultiBootyState::Vslot09(i32) {
     i32 item = BOOTY_REG->m_11c;
     CBootyMusicHost::M28* m28 = host->m_28;
     if (m28->m_30 == 0) {
-        CObject* found = 0;
-        CMapStringToOb* map = (CMapStringToOb*)((char*)m28 + 0x10);
+        void* found = 0;
+        CMapStringToPtr* map = (CMapStringToPtr*)((char*)m28 + 0x10); // Lookup 0x1b8438
         map->Lookup("BOOTY_LOOP", found);
         if (found && g_sndEnabled != 0) {
             CBootyFound* p = (CBootyFound*)found;
@@ -643,8 +643,8 @@ i32 CMultiBootyState::Vslot09(i32) {
 // same regalloc esi<->edi coin-flip wall as CBootyState::FrameSlot28 (0x18e40).
 RVA(0x0001e660, 0x81)
 i32 CMultiBootyState::FrameSlot28(i32) {
-    CObject* obj = 0;
-    CMapStringToOb* map = (CMapStringToOb*)((char*)m_c->m_28 + 0x10);
+    void* obj = 0;
+    CMapStringToPtr* map = (CMapStringToPtr*)((char*)m_c->m_28 + 0x10); // Lookup 0x1b8438
     map->Lookup("BOOTY_LOOP", obj);
     LeafCue* found = (LeafCue*)obj;
     if (found && ((DirectSoundMgr*)found->m_10)->IsPlaying()) {

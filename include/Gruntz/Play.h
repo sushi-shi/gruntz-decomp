@@ -696,10 +696,15 @@ public:
     i32 m_tileClickY;     // +0x364  tile-click snapped Y (HandleTileClick)
     i32 m_dragInhibit1;   // +0x368  drag/select inhibit gate
     i32 m_dragInhibit2;   // +0x36c  drag/select inhibit gate
-    // +0x370: a CByteArray/CPtrArray of start-point markers (the 2nd destructible
-    // member); FindStartPointAt reads its data(+4)/count(+8) via markerData()/
-    // markerCount(). +0x3a4: a CByteArray[4] (the 3rd..? member, one ??_M vector fold).
-    CByteArray m_startMarkers; // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
+    // +0x370: a ::CPtrArray of start-point markers (the 2nd destructible member);
+    // FindStartPointAt reads its data(+4)/count(+8) via markerData()/markerCount().
+    // It is CPtrArray, NOT CByteArray: ~CPlay (0x08c830) does `lea ecx,[esi+0x370] /
+    // call 0x1b4f3e`, and 0x1b4f3e lies in [0x1b4f0b, 0x1b527e) - the band whose head
+    // ctor 0x1b4f0b DIR32s ??_7CPtrArray@@6B@ (0x1ec2dc).  CByteArray's dtor is 0x1b52b1
+    // (band head 0x1b527e, vtable 0x1ed28c) and retail never calls it here.  The four
+    // MFC array classes are byte-identical, so every FID row there is AMBIG.
+    //     python -m gruntz.analysis.mfc_class 0x1b4f3e
+    CPtrArray m_startMarkers;  // +0x370  (data@+4 = marker-ptr array, count@+8 = marker count)
     char m_pad384[0x3a4 - 0x384];
     // +0x3a4: the 4 placed-object record arrays. CPtrArray (not CByteArray):
     // ClearPlacedObjects (0xda030) reads the elements as CPlacedObj* and retail
@@ -726,7 +731,8 @@ public:
     i32 m_region3Gate;   // +0x47c  region-3 gate (OnRegion4)
     i32 m_viewMode;      // +0x480  StepC/OnRegion view-mode discriminator (0=idle/1/2)
     i32 m_hudSuppressed; // +0x484  HUD-suppress gate (DispatchHudClick early-out)
-    CByteArray m_488;    // +0x488  5th destructible member (0x14 bytes)
+    // ::CPtrArray (same proof: ~CPlay does `lea ecx,[esi+0x488] / call 0x1b4f3e`).
+    CPtrArray m_488;     // +0x488  5th destructible member (0x14 bytes)
     char m_pad49c[0x4a0 - 0x49c];
     i32 m_snapBaseLo, m_snapBaseHi, m_snapDur,
         m_snapDurHi;        // +0x4a0  snapshot 64-bit base + duration

@@ -26,15 +26,21 @@
 // CGdiObject::DeleteObject.)
 
 // 0x0390a0 - /GX dtor: explicit cleanup (0x17b570 == CPageStore17b510::Close), then fold the
-// two owned members at +0x138 (dtor 0x1b4b76 == ~CByteArray, MFC) and +0x124 (dtor 0x1bf121 ==
-// ~CFile, MFC) in reverse. Owns an MFC CFile (+0x124) + CByteArray (+0x138); the "CCredits"
-// class name is unconfirmed (a file/page loader).
+// two owned members at +0x138 (dtor 0x1b4b76) and +0x124 (dtor 0x1bf121 == ~CFile, MFC) in
+// reverse. Owns an MFC CFile (+0x124) + a ::CDWordArray (+0x138); the "CCredits" class name
+// is unconfirmed (a file/page loader).
+//
+// +0x138 is CDWordArray, NOT CByteArray: 0x1b4b76 lies in [0x1b4b43, 0x1b4f0b), the band
+// whose head ctor 0x1b4b43 DIR32s ??_7CDWordArray@@6B@ (0x1ec29c).  CByteArray's dtor is
+// 0x1b52b1 (band head 0x1b527e, vtable 0x1ed28c).  The four MFC array classes are
+// byte-identical, so every FID row there is AMBIG - `mfc_class 0x1b4b76` asks the binary.
+// (Same object as CMovieDecodeStore::m_138 in <Io/MoviePlayer.h>, which agrees.)
 struct CCredits390a0 {
     char pad4[0x124];  // +0x00 .. +0x123
     CFile m_124;       // +0x124  real MFC CFile (dtor ??1CFile@@UAE@XZ @0x1bf121)
     char m_124tail[4]; // +0x134  retail's CFile is 0x14 B (BOOL m_bCloseOnDelete); the
                        //         toolchain's is 0x10 B (BYTE) - pad to hold m_138 @+0x138
-    CByteArray m_138;  // +0x138  real MFC CByteArray (dtor ??1CByteArray@@UAE@XZ @0x1b4b76)
+    CDWordArray m_138; // +0x138  real MFC ::CDWordArray (dtor ??1CDWordArray@@UAE@XZ @0x1b4b76)
     ~CCredits390a0();
 };
 SIZE_UNKNOWN(CCredits390a0);

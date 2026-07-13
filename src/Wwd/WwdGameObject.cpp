@@ -60,7 +60,7 @@ struct CMapStringToObLite { // MFC CMapPtrToPtr (Lookup @0x1b8760)
 struct CDDrawWorkerRegistry {
     CString FindKeyOfValue_165360(CImageSet* obj); // 0x165360  __thiscall -> CString (by value)
     char m_pad00[0x10];
-    CMapStringToPtr m_map; // +0x10  name -> object (0x1b8008)
+    CMapStringToOb m_map; // +0x10  name -> object (Lookup 0x1b8008 IS CMapStringToOb's)
 };
 
 // mgr+0x08 sub-object: holds the per-frame kill-cue name map at +0x48.
@@ -71,7 +71,7 @@ struct WwdMgrSub08 {
 // mgr+0x10 sub-object: a name->object resolver (lookup map at +0x10).
 struct WwdMgrSub10 {
     char m_pad00[0x10];
-    CMapStringToPtr m_map; // +0x10  (0x1b8008)
+    CMapStringToOb m_map; // +0x10  (Lookup 0x1b8008 IS CMapStringToOb's)
 };
 // The visibility-test chain (CWwdGameObject::Test @0x1509c0): the object's sprite
 // extent (from m_198) plus the manager's spatial-grid limits (+0x04) and camera rect
@@ -545,7 +545,7 @@ i32 CWwdGameObject::Sub150c30(i32 src) {
     char name[0x100];
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
-        void* found = 0;
+        CObject* found = 0;
         WwdMgr* mgr = m_mgr;
         mgr->m_10->m_map.Lookup(name, found);
         m_194 = found;
@@ -1040,7 +1040,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
-        void* found = 0;
+        CObject* found = 0;
         m_mgr->m_14->m_map.Lookup(name, found);
         if (((CGameObject*)this)->EnsureWorker80((CGameObject*)found) == 0) {
             return 0;
@@ -1049,7 +1049,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
-        void* found = 0;
+        CObject* found = 0;
         m_mgr->m_14->m_map.Lookup(name, found);
         if (((CGameObject*)this)->EnsureWorker88((CGameObject*)found) == 0) {
             return 0;
@@ -1058,7 +1058,7 @@ i32 CWwdGameObject::Sub151780(i32 arParam) {
 
     ar->Read(name, 0x80);
     if (strlen(name) != 0) {
-        void* found = 0;
+        CObject* found = 0;
         m_mgr->m_14->m_map.Lookup(name, found);
         if (((CGameObject*)this)->EnsureWorker90((CGameObject*)found) == 0) {
             return 0;

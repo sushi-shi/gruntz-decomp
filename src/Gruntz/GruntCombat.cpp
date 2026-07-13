@@ -891,7 +891,7 @@ void CGrunt::EnsureStruckSlot(const char* key) {
     if (*(i32*)((char*)g_gameReg + 0x10) == 0) {
         return;
     }
-    CObject* entry_ob = 0;
+    void* entry_ob = 0;
     g_gameReg->m_world->m_28->m_10.Lookup(key, entry_ob);
     GruntSoundEntry* entry = (GruntSoundEntry*)entry_ob;
     if (entry == 0) {
@@ -938,7 +938,7 @@ void CGrunt::EnsureStruckVoice(const char* key) {
     if (sample != 0) {
         return;
     }
-    CObject* entry_ob = 0;
+    void* entry_ob = 0;
     g_gameReg->m_world->m_28->m_10.Lookup(key, entry_ob);
     GruntSoundEntry* entry = (GruntSoundEntry*)entry_ob;
     if (entry == 0) {

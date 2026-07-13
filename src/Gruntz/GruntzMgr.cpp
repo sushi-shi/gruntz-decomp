@@ -405,7 +405,9 @@ extern "C" {
 // carries a column index (+0x64) into its value table (+0x14). The recolor sink
 // passed in by the caller shares the same row layout (value table at +0x14,
 // column range [+0x64..+0x68]). Each engine call is reloc-masked.
-// MFC CMapStringToPtr (Lookup @0x1b8008); cast at each call.
+// MFC ::CMapStringToOb - 0x1b8008 IS CMapStringToOb::Lookup, in [0x1b7e17, 0x1b8247),
+// the band whose ctor stamps ??_7CMapStringToOb@@6B@.  CMapStringToPtr::Lookup is a
+// SEPARATE body at 0x1b8438 (no COMDAT fold - MSVC5 has no /OPT:ICF).  Cast at each call.
 struct CColorLookup {};
 struct CColorRow {
     char m_pad0[0x14];
@@ -675,8 +677,8 @@ i32 PumpIdleFrame() {
 // table's 0x08b8c0-0x093ce7 group gruntzmgr+playdtor+appdialogs is ONE obj,
 // GruntzMgr.cpp, __FILE__-anchored). Uses the ONE canonical CPlay
 // (<Gruntz/Play.h>): its five destructible MFC members are typed there (CString
-// m_1b4, CByteArray m_startMarkers, CByteArray m_3a4[4], CString m_cueText,
-// CByteArray m_488), so the dtor's /GX member-teardown machinery + the
+// m_1b4, CPtrArray m_startMarkers, CPtrArray m_3a4[4], CString m_cueText,
+// CPtrArray m_488), so the dtor's /GX member-teardown machinery + the
 // most-derived vptr stamp fall out from cl. The members fold in reverse decl
 // (= reverse offset) order under descending /GX trylevels:
 //   +0x488  CByteArray   state 4
@@ -2189,8 +2191,8 @@ i32 CGruntzMgr::CheatRevealTreasures() {
     if (m_world == 0) {
         return 0;
     }
-    void* found = 0;
-    ((CMapStringToPtr*)&m_world->m_10->m_10)->Lookup("GAME_DEVHEADS", found);
+    CObject* found = 0;
+    ((CMapStringToOb*)&m_world->m_10->m_10)->Lookup("GAME_DEVHEADS", found);
     void* out = found;
     if (out == 0) {
         return 0;

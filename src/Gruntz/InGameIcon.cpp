@@ -1258,7 +1258,7 @@ i32 CInGameText::Serialize(CSerialArchive* ar, i32 tag, i32 a, i32 b) {
 // (after)>. A /Gy first-use COMDAT the linker scattered between two OTHER units.
 RVA(0x00099b10, 0x36)
 void CInGameIcon::SetField54(i32 v) {
-    CObject* found = 0;
+    void* found = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
     if (v != 0) {
         found = 0;
         ((CGameRegMapHolder*)g_gameReg->m_world)->m_28->m_10map.Lookup((const char*)v, found);

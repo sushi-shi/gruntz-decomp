@@ -109,7 +109,7 @@ SIZE_UNKNOWN(Entry_bdd0);
 // CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
 struct Arg1_bdd0 {
     char _0[0x10];
-    CMapStringToOb m_10; // 0x10 (CMapStringToOb)
+    CMapStringToPtr m_10; // 0x10  ::CMapStringToPtr (its Lookup is 0x1b8438; mfc_class)
 };
 SIZE_UNKNOWN(Arg1_bdd0);
 // (CObj_bdd0 dissolved: its Dispatch (0xbdd0) is CRandomAmbientSound::Dispatch and

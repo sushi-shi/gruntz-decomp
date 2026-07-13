@@ -513,7 +513,7 @@ void* CRandomAmbientSound::Dispatch(
     AmbientBox* box,
     i32 a6
 ) {
-    CObject* out_ob = 0;
+    void* out_ob = 0; // CMapStringToPtr's value slot (Lookup 0x1b8438 takes void*&)
     a1->m_10.Lookup(key, out_ob);
     Entry_bdd0* out = (Entry_bdd0*)out_ob;
     if (out == 0) {
