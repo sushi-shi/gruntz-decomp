@@ -6179,11 +6179,7 @@ i32 CPlay::BuildAnizKeyTable(CMulti* notify) {
 // The trace-discovered CPlay __thiscall cluster (analyzed; this TU).
 // ===========================================================================
 
-// The "ShowCursor" Win32 import slot, reused verbatim from the engine
-// (?g_ShowCursor@@3P6GHH@ZA, an indirect `i32 __stdcall(i32)` fn-ptr global).
-typedef i32(WINAPI* ShowCursorFn)(i32);
-DATA(0x002c44c4)
-extern ShowCursorFn g_ShowCursor;
+// ShowCursor is the real USER32 import (<Mfc.h>); its IAT slot @0x6c44c4.
 
 // ResetForMode (0x0c8a10) - capture the live cursor position into the
 // BeginFrameClear args (m_cursorX/m_cursorY), force the cursor hidden, enter the
@@ -6193,12 +6189,13 @@ RVA(0x000c8a10, 0x119)
 i32 CPlay::ResetForMode(i32 mode) {
     POINT pt;
     GetCursorPos(&pt);
-    ShowCursorFn showCursor = g_ShowCursor;
+    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
+    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
     m_cursorX = pt.x;
     m_cursorY = pt.y;
-    if (showCursor(0) >= 0) {
+    if (ShowCursor(0) >= 0) {
         do {
-        } while (showCursor(0) >= 0);
+        } while (ShowCursor(0) >= 0);
     }
     if (mode == 9) {
         g_frameTime = m_savedClock;
@@ -6211,9 +6208,9 @@ i32 CPlay::ResetForMode(i32 mode) {
             return 0;
         }
     }
-    if (showCursor(0) >= 0) {
+    if (ShowCursor(0) >= 0) {
         do {
-        } while (showCursor(0) >= 0);
+        } while (ShowCursor(0) >= 0);
     }
     m_dragSnapActive = 0;
     m_dragInProgress = 0;

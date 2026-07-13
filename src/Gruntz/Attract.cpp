@@ -83,10 +83,7 @@ extern "C" i32 g_attractStateCount; // DEFINED in RezSync.cpp (the producer)
 DATA(0x0024e360)
 i32 g_suppress_64e360 = 0; // 0x24e360
 
-// The "ShowCursor" Win32 import slot (PTR_ShowCursor_006c44c4).
-typedef i32(WINAPI* ShowCursorFn)(i32);
-DATA(0x002c44c4)
-extern ShowCursorFn g_ShowCursor;
+// ShowCursor is the real USER32 import (<Mfc.h>); its IAT slot @0x6c44c4.
 
 // Source string literals (objdiff matches these .data relocations by value).
 #define s_STATEZ_ATTRACT "STATEZ_ATTRACT"
@@ -192,10 +189,11 @@ i32 CAttract::LoadTitleConfig(i32 mode) {
         0,
         1
     ); // 0xfa8f0 CState::RetireScene (was fake CAttract::BuildMenuPage)
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(1) < 0) {
+    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
+    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    if (ShowCursor(1) < 0) {
         do {
-        } while (showCursor(1) < 0);
+        } while (ShowCursor(1) < 0);
     }
     CommitStage();
     return 1;
@@ -251,10 +249,11 @@ i32 CAttract::Activate() {
         0,
         1
     ); // 0xfa8f0 CState::RetireScene (was fake CAttract::BuildMenuPage)
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(1) < 0) {
+    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
+    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    if (ShowCursor(1) < 0) {
         do {
-        } while (showCursor(1) < 0);
+        } while (ShowCursor(1) < 0);
     }
     return 1;
 }
@@ -739,8 +738,9 @@ i32 CMgrPersistObj::Init() {
     if (m_levelData == 0) {
         return 0;
     }
-    ShowCursorFn sc = g_ShowCursor;
-    while (sc(0) >= 0)
+    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
+    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    while (ShowCursor(0) >= 0)
         ;
     if (m_levelData->m_ready->Method_158bc0() == 0) {
         return 0;
@@ -754,7 +754,7 @@ i32 CMgrPersistObj::Init() {
         sp.m_14 = 0;
         EngStr_DrawText(m_levelData, &sp, &sp.m_04, 0x78, 1, 0xff, 0, 0xff, 1);
     }
-    while (sc(0) >= 0)
+    while (ShowCursor(0) >= 0)
         ;
     g_64e35c = 0;
     char* path = (char*)m_rezLocator->ResolvePath("GAME_IMAGEZ");

@@ -56,10 +56,7 @@ extern "C" CGameRegistry* g_gameReg;
 // `multi`); the ex C++-mangled g_attractStateCount lost the per-rva keep-last dedup.
 extern "C" i32 g_attractStateCount;
 
-// The "ShowCursor" Win32 import slot (PTR_ShowCursor_006c44c4).
-typedef i32(WINAPI* ShowCursorFn)(i32);
-DATA(0x002c44c4)
-extern ShowCursorFn g_ShowCursor;
+// ShowCursor is the real USER32 import (<Mfc.h>); its IAT slot @0x6c44c4.
 
 // PostMessageA reached through the IAT slot (matches the engine's ff15 indirect).
 // extern "C" so the reloc emits `_g_pPostMessageA` - the canonical name bound at
@@ -108,10 +105,11 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
         return 0;
     }
 
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(0) >= 0) {
+    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
+    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    if (ShowCursor(0) >= 0) {
         do {
-        } while (showCursor(0) >= 0);
+        } while (ShowCursor(0) >= 0);
     }
 
     owner()->RestoreVideoMode(0);
@@ -130,9 +128,9 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
     ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)
         ->ScanTree_157ee0((CSymTab*)sound, s_ATTRACT, s_UNDERSCORE);
 
-    if (showCursor(0) >= 0) {
+    if (ShowCursor(0) >= 0) {
         do {
-        } while (showCursor(0) >= 0);
+        } while (ShowCursor(0) >= 0);
     }
 
     if (mode == 3) {
@@ -180,10 +178,11 @@ void CAttract::ReleaseResources() {
 // Deferred to the final sweep.
 RVA(0x00014120, 0x1a9)
 i32 CAttract::Vslot09(i32 arg) {
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(0) >= 0) {
+    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
+    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    if (ShowCursor(0) >= 0) {
         do {
-        } while (showCursor(0) >= 0);
+        } while (ShowCursor(0) >= 0);
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
@@ -317,10 +316,11 @@ i32 CAttract::InputVirtual() {
     if (((CDDrawSubMgrPages*)menuRoot()->m_04)->Method_158bc0() == 0) {
         return 0;
     }
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(0) >= 0) {
+    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
+    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    if (ShowCursor(0) >= 0) {
         do {
-        } while (showCursor(0) >= 0);
+        } while (ShowCursor(0) >= 0);
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
@@ -335,10 +335,11 @@ i32 CAttract::Vslot06() {
     if (Vfunc3() == 0) {
         return 0;
     }
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(0) >= 0) {
+    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
+    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    if (ShowCursor(0) >= 0) {
         do {
-        } while (showCursor(0) >= 0);
+        } while (ShowCursor(0) >= 0);
     }
     i32 idx = g_gameReg->m_numRuns % g_attractStateCount + 1;
     CString s;
@@ -380,10 +381,11 @@ i32 CAttract::Vslot07() {
     if (!CState::Vslot07()) {
         return 0;
     }
-    ShowCursorFn showCursor = g_ShowCursor;
-    if (showCursor(0) >= 0) {
+    // ShowCursor: real USER32 import (<Mfc.h>); called 2x/body -> cl caches the __imp__
+    // slot in a reg (the ex-g_ShowCursor fn-ptr global hand-modeled that exact idiom).
+    if (ShowCursor(0) >= 0) {
         do {
-        } while (showCursor(0) >= 0);
+        } while (ShowCursor(0) >= 0);
     }
     menuRoot()->m_04->m_10->m_2c->Flip(0);
     menuRoot()->m_04->BlitFrom(menuRoot()->m_04->m_14);

@@ -164,11 +164,10 @@ namespace ApiCallerStubs {
     i32 winapi_036ec0_GetDlgItem_GetScrollInfo(HWND hDlg, i32 id);                    // 0x036ec0
 } // namespace ApiCallerStubs
 
-// The cached CheckDlgButton import pointer (VA 0x6c44b4) DialogInit37870 loads once
-// and calls for both checkboxes.
-typedef int(WINAPI* PFN_CheckDlgButton)(void* hwnd, int id, unsigned check);
-DATA(0x002c44b4)
-extern PFN_CheckDlgButton p_CheckDlgButton;
+// CheckDlgButton is the real USER32 import (its IAT slot @0x6c44b4); called twice in
+// DialogInit37870, cl caches the __imp__ pointer in a reg once - the exact
+// `mov edi,ds:[__imp]; call edi` idiom the ex-`p_CheckDlgButton` fn-ptr global
+// hand-modeled. Same treatment as this TU's IsDlgButtonChecked (<Win32.h>/afx).
 
 // 0x363a0: GetResolutionCode - map the live backbuffer (width,height) to the
 // resolution combo index (1024x768 -> 3, 800x600 -> 2, else 1).
@@ -801,9 +800,8 @@ void DialogInit37870(HWND hDlg) {
     if (g_gameReg == 0) {
         return;
     }
-    PFN_CheckDlgButton fn = p_CheckDlgButton; // retail caches the import ptr in edi
-    fn(hDlg, 0x46f, g_gameReg->m_isHighDetail);
-    fn(hDlg, 0x4d5, g_gameReg->m_isEffectsEnabled);
+    CheckDlgButton(hDlg, 0x46f, g_gameReg->m_isHighDetail);
+    CheckDlgButton(hDlg, 0x4d5, g_gameReg->m_isEffectsEnabled);
 }
 
 // 0x378c0: SaveVideoCheckboxes(hDlg) - latch the two video option checkboxes
