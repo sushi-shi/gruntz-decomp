@@ -29,6 +29,7 @@
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/Multi.h>
+
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr - the REAL CState::m_4 game mgr (ex-CMultiMgr view)
 #include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig - CGruntzMgr::m_timer (+0x60; DtorBody)
 #include <Gruntz/Dialogs.h> // CMultiStartDlg (stack-constructed by ShowMultiStartDlg @0xb86c0)
@@ -82,6 +83,12 @@ extern CString g_6473d8; // 0x6473d8
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Net/NetMgr.h>
+
+// The DirectPlay create-context singleton (0x648cf4). Homed here from <Net/NetMgr.h>:
+// a header cannot carry a DATA() binding, so it had none. Name kept honest - the only
+// proven fact is its TYPE (CNetCreateCtx*, +0x74 pinned); its role is unrecovered.
+DATA(0x00248cf4)
+extern "C" CNetCreateCtx* g_648cf4;
 #include <Net/NetPackets.h> // the fixed-layout stat-0x3f9 / stat-0x416 wire structs
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)

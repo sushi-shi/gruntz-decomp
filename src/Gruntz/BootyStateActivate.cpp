@@ -109,13 +109,23 @@ extern "C" u32 g_killCueClock; // wrap-safe draw clock
 void operator delete(void*);
 
 // The packed {x,y} spawn-coordinate table StepGlitterAnim indexes by m_letterIdx
-// (DAT_005e8fe8; x via [tbl], y via [tbl+4], stride 8), + the trig constants
-// (deg->rad, -225.0f phase bias, the 350.0-step*0.002*350.0 shrink curve).
-extern "C" i32 g_5e8fe8[];
-extern "C" float g_5e93b4;  // -225.0f  (phase bias, fsub'd)
-extern "C" double g_5e93b8; // 0.017453292  (pi/180)
-extern "C" double g_5e93c0; // 0.002
-extern "C" double g_5e93c8; // 350.0
+// (x via [tbl], y via [tbl+4], stride 8). A GENUINE read-only global: bound to the RVA
+// its name asserts (VA 0x5e8fe8 -> RVA 0x1e8fe8), so the delinker can resolve the
+// references instead of leaving them dangling. Declared-only: the table's CONTENTS live
+// in retail .rdata and are not reconstructed here (the reference is what matters).
+DATA(0x001e8fe8)
+extern "C" i32 g_bootyLetterCoords[];
+
+// THE OTHER FOUR "g_" NAMES HERE WERE NOT GLOBALS (2026-07-13). g_5e93b4/b8/c0/c8 are
+// MSVC's FLOATING-POINT LITERAL POOL entries - the .rdata constants cl emits for the fp
+// immediates in this very expression - which a previous pass mistook for game data and
+// re-declared as extern "C" symbols that NOTHING defines (unresolvable at link, and
+// invisible to objdiff because the references are reloc-masked). The devs wrote the
+// literals; so do we. cl emits the identical pool entries and the identical fsub/fmul.
+static const float kGlitterPhaseBias = -225.0f;    // was g_5e93b4 (fsub'd, hence negative)
+static const double kDegToRad = 0.017453292;       // was g_5e93b8 (pi/180)
+static const double kGlitterShrinkRate = 0.002;    // was g_5e93c0
+static const double kGlitterStartRadius = 350.0;   // was g_5e93c8
 
 // (the CBootyBonusState view is GONE - there is no "bonus state object". +0x2f8 holds the
 // BOOTY_PERFECT CGameObject sprite (CBootyState::m_bootyPerfectSprite), and the view's two
@@ -259,7 +269,7 @@ RVA(0x000196c0, 0x1d3)
 void CMultiBootyState::StepGlitterAnim() {
     if (m_1b4) {
         if (m_letterIdx >= 0) {
-            i32* tbl = g_5e8fe8 + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
+            i32* tbl = g_bootyLetterCoords + 1; // walks: tbl[-1]=x, tbl[0]=y; advances by 2
             CGameObject** ap = (CGameObject**)((char*)this + 0x1ec); // walks arr1ec by 1
             for (i32 i = 0; i <= m_letterIdx; i++) {
                 CGameObject* e = *ap;
@@ -275,25 +285,26 @@ void CMultiBootyState::StepGlitterAnim() {
                 tbl += 2;
             }
         }
-        m_cursorLetter->m_screenX = g_5e8fe8[m_letterIdx * 2];
-        m_cursorLetter->m_screenY = g_5e8fe8[m_letterIdx * 2 + 1];
+        m_cursorLetter->m_screenX = g_bootyLetterCoords[m_letterIdx * 2];
+        m_cursorLetter->m_screenY = g_bootyLetterCoords[m_letterIdx * 2 + 1];
         return;
     }
 
     i32 step = m_angleStep;
     i32 idx = m_letterIdx;
     double r = (float)m_radius; // load (float)m_radius first; shared across sin/cos terms
-    double ang = ((float)step - g_5e93b4) * g_5e93b8;
-    m_scratchX = (i32)(sin(ang) * r + (float)g_5e8fe8[idx * 2]);
-    m_1e8 = (i32)(cos(ang) * r + (float)g_5e8fe8[idx * 2 + 1]);
+    double ang = ((float)step - kGlitterPhaseBias) * kDegToRad;
+    m_scratchX = (i32)(sin(ang) * r + (float)g_bootyLetterCoords[idx * 2]);
+    m_1e8 = (i32)(cos(ang) * r + (float)g_bootyLetterCoords[idx * 2 + 1]);
     m_angleStep = step + 5;
-    m_radius = (i32)(g_5e93c8 - (float)(step + 5) * g_5e93c0 * g_5e93c8);
+    m_radius = (i32)(kGlitterStartRadius
+                     - (float)(step + 5) * kGlitterShrinkRate * kGlitterStartRadius);
 
     // Snap the leading sprites (0..m_letterIdx-1) to their static table coords (pointer walk).
     i32 i = 0;
     CGameObject** arr1ec = (CGameObject**)((char*)this + 0x1ec);
     if (idx > 0) {
-        i32* tbl = g_5e8fe8 + 1;   // ecx: tbl[-1]=x, tbl[0]=y
+        i32* tbl = g_bootyLetterCoords + 1;   // ecx: tbl[-1]=x, tbl[0]=y
         CGameObject** ap = arr1ec; // eax
         do {
             CGameObject* e = *ap;

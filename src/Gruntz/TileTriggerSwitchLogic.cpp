@@ -354,8 +354,10 @@ i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
 // mangling is base-independent and the body is all raw this+offset). g_gameReg is this
 // TU's 0x64556c singleton. /GX (two CString sprite-key temps).
 // ===========================================================================
-// The "TileTriggerTransition" class-name string (the CreateSprite lookup key).
-extern char g_60a848[]; // s_TileTriggerTransition_0060a848
+// ("TileTriggerTransition" was NOT a global: it is the .rdata STRING LITERAL
+//  "TileTriggerTransition" - the CreateSprite lookup key - which a previous pass
+//  re-declared as an extern char[] that nothing defines. Written as the literal at
+//  its use site now; cl emits the same reloc-masked $SG entry.)
 
 // Engine helpers reached through reloc-masked __thiscall ILT thunks (no body).
 i32 PbCellClass(void* cell);                                // cell vtable +0x20 -> class id
@@ -448,7 +450,7 @@ void CPlayLevelLoad::LoadPyramidBridge(i32 spriteType) {
             transId = 0;
         } else {
             CGameObject* trig =
-                ((CSpriteFactory*)PB_PTR(map, 0x8))->CreateSprite(0, sx, sy, 0, g_60a848, 0x40003);
+                ((CSpriteFactory*)PB_PTR(map, 0x8))->CreateSprite(0, sx, sy, 0, "TileTriggerTransition", 0x40003);
             if (trig == 0) {
                 goto done;
             }

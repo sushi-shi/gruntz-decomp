@@ -76,7 +76,11 @@ extern "C" void* g_gameReg; // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 //  through RbGetDwordDef, so no direct extern is needed here.)
 extern "C" i32 g_645588;    // DAT_00645588 @0x645588 (world clock ms)
 extern "C" i32 g_645584;    // DAT_00645584 @0x645584 (frame delta ms)
-extern "C" double g_5ea3e8; // DAT_005ea3e8 @0x5ea3e8 (1000.0 ms->tiles divisor)
+// (g_5ea3e8 was NOT a global: it is MSVC's literal-pool entry for the 1000.0 in the
+//  expression below - an fp constant a previous pass re-declared as an extern "C"
+//  symbol that NOTHING defines. The dev wrote the literal; cl emits the same
+//  reloc-masked .rdata entry and the identical fdiv.)
+static const double kMsPerSecond = 1000.0; // ms -> tiles/second divisor
 extern "C" u32 g_6bf3bc;    // _g_6bf3bc @0x6bf3bc (the per-frame draw-delta; Advance arg)
 
 // ---------------------------------------------------------------------------
@@ -470,7 +474,7 @@ i32 CRollingBall::Update() {
             RbApplyLookup(PTR(self, 0x38), fall, 0);
             if (obj == 4) {
                 i32 t = RbGetDwordDef("Hazardz", "RollingBallTimePerTile", 0x3e8);
-                DBL(self, 0x58) = g_5ea3e8 / (double)t;
+                DBL(self, 0x58) = kMsPerSecond / (double)t;
             }
         }
     }

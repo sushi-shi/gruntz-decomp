@@ -136,9 +136,10 @@ struct CGMVerRect {
 extern "C" CGMVerRect g_645cc8; // (the 4-int source @c8/cc/d0/d4)
 extern "C" u32 g_645584;        // (last-frame delta, fed to Step)
 
-// The two cue/sound-name string constants the credits one-shot FX reference.
-extern "C" char g_60ce90[]; // "CREDITZ" (PlaySound name)
-extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
+// (g_60ce90 / g_60ce74 were NOT globals: they are the .rdata STRING LITERALS
+//  "CREDITZ" and "MONOLITH" - the credits cue/sound names - re-declared by a previous
+//  pass as extern char[] symbols that nothing defines. The literals are written at
+//  their use sites in CreditsState.cpp; cl emits the same reloc-masked $SG entries.)
 
 // ---------------------------------------------------------------------------
 // CState - the base game-state class. One canonical definition, shared via

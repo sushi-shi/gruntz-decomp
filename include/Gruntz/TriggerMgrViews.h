@@ -147,7 +147,9 @@ struct CTmRegSub30 {
 // the int-with-default getter (0x1721e0) is reloc-masked __thiscall.
 extern CButeMgr g_buteMgr;
 extern "C" u32 g_645588; // DAT_00645588 (the level base score / id sentinel)
-extern i32 g_644ca4;     // DAT_00644ca4 (the secondary group sentinel; serialized by ScanGroup)
+// (g_644ca4 moved to its only user, TriggerMgr.cpp, where it can carry the DATA()
+//  binding a header cannot: a DATA() in a header is ignored by the label pass, so
+//  declaring it here bound it to NO retail address at all.)
 
 // The DAT_006bf650 config-name registry (its method maps a sprite-type id to a config-name
 // string; @0x6bf66c/@0x6bf670 are its node array + count). Reloc-masked.

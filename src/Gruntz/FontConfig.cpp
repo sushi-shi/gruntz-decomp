@@ -119,22 +119,33 @@ struct FontItem {
 // the true one.
 // ---------------------------------------------------------------------------
 
-namespace m4 {
+// ---------------------------------------------------------------------------
+// This TU's own file-scope globals - HOMED HERE (2026-07-13), because this is the only
+// TU that touches them, and BOUND to the RVAs their old hex names asserted.
+//
+// They were four `extern` declarations inside a `namespace m4 {}` with NO DATA()
+// anywhere, which is three defects at once: (a) an extern with no definition in the
+// whole tree is an unresolvable symbol at link; (b) with no DATA() the delinker has no
+// retail address to bind the references to; and (c) the C++ namespace MANGLED them
+// (?g_62b434@m4@@3HA) into names retail never had. All three are gone: real definitions,
+// real bindings, extern "C" linkage, and names that say what they do.
+//
+// Names are evidenced by the two functions that use them (MeasureLabel 0x21f20 and
+// RenderInputText 0x22160 - the chat/edit text layer):
+DATA(0x0022b434)
+extern "C" i32 g_chatTextWidth = 0; // 0x62b434: DT_CALCRECT-measured text width, clamped
+                                    // to the provided rect; the caret's x offset reads it
+DATA(0x0022b438)
+extern "C" i32 g_caretBlinkMs = 0; // 0x62b438: caret blink countdown in ms - the frame
+                                   // delta is subtracted each render, and on reaching 0 it
+                                   // re-arms to 200 (0xc8) and toggles g_caretBlinkOn
+DATA(0x0022b43c)
+extern "C" i32 g_caretBlinkOn = 0; // 0x62b43c: caret blink phase (XOR 1 each expiry)
+DATA(0x0020c7a8)
+extern "C" i32 g_lastDrawTextFormat = 0; // 0x60c7a8: last DrawTextA format flags used
 
-    // Cached measured text width (0x0062b434), read by the caller after measure.
-    extern i32 g_62b434;
-
-    // DrawTextA through the game Win32 pointer table (RVA 0x2c454c) -> reloc-masked.
-
-    // The game's Win32 pointer table entries (0x6c44xx/0x6c3exx) -> reloc-masked.
-
-    // Password blink timer + last-format cache (reached by address).
-    extern "C" i32 g_645584; // 0x00645584 elapsed-time delta
-    extern i32 g_62b438;     // 0x0062b438 blink countdown
-    extern i32 g_62b43c;     // 0x0062b43c blink on/off state
-    extern i32 g_60c7a8;     // 0x0060c7a8 last DrawText format
-
-} // namespace m4
+// The shared frame-delta clock (defined in its own owner TU; one extern, no DATA here).
+extern "C" i32 g_645584; // 0x00645584 elapsed-time delta (ms)
 
 // ---------------------------------------------------------------------------
 // CFontConfig::LoadFontConfig
@@ -442,7 +453,7 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     }
     CString text(m_inputText);
     if (text.GetLength() == 0) {
-        m4::g_62b434 = 0;
+        g_chatTextWidth = 0;
     } else {
         RECT rc;
         rc.left = rect->left;
@@ -452,9 +463,9 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
         ::DrawTextA(hdc, text, text.GetLength(), &rc, 0x420);
         i32 textW = rc.right - rc.left;
         i32 provW = rect->right - rect->left;
-        m4::g_62b434 = provW;
+        g_chatTextWidth = provW;
         if (provW >= textW) {
-            m4::g_62b434 = textW;
+            g_chatTextWidth = textW;
         }
     }
     // Stroke the 12px insertion caret with the real MFC GDI objects: a stack CPen
@@ -466,8 +477,8 @@ i32 CFontConfig::MeasureLabel(HDC hdc, RECT* rect) {
     if (dc != 0) {
         CPen pen(PS_SOLID, 2, RGB(0, 0, 0));
         CPen* saved = dc->SelectObject(&pen);
-        dc->MoveTo(rect->left + m4::g_62b434, rect->top);
-        dc->LineTo(rect->left + m4::g_62b434, rect->top + 0xc);
+        dc->MoveTo(rect->left + g_chatTextWidth, rect->top);
+        dc->LineTo(rect->left + g_chatTextWidth, rect->top + 0xc);
         dc->SelectObject(saved);
     }
     return 1;
@@ -500,24 +511,24 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         }
     }
     i32 t;
-    if ((u32)m4::g_645584 < (u32)m4::g_62b438) {
-        t = m4::g_62b438 - m4::g_645584;
+    if ((u32)g_645584 < (u32)g_caretBlinkMs) {
+        t = g_caretBlinkMs - g_645584;
     } else {
         t = 0;
     }
-    m4::g_62b438 = t;
+    g_caretBlinkMs = t;
     if (t == 0) {
-        m4::g_62b438 = 0xc8;
-        m4::g_62b43c ^= 1;
+        g_caretBlinkMs = 0xc8;
+        g_caretBlinkOn ^= 1;
     }
-    if (m4::g_62b43c != 0 && text.GetLength() == 0) {
+    if (g_caretBlinkOn != 0 && text.GetLength() == 0) {
         MeasureLabel(hdc, rect); // via ILT 0x258b (ex the phantom "Draw258b" duplicate decl)
     } else {
         HGDIOBJ prev = 0;
         if (m_arialFont) {
             prev = ::SelectObject(hdc, m_arialFont);
         }
-        if (m4::g_62b43c) {
+        if (g_caretBlinkOn) {
             MeasureLabel(hdc, rect); // via ILT 0x258b (ex the phantom "Draw258b" duplicate decl)
         }
         int(WINAPI * pDraw)(HDC, LPCSTR, int, LPRECT, UINT) = ::DrawTextA;
@@ -528,7 +539,7 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
         rc.bottom = rect->bottom;
         pDraw(hdc, text, text.GetLength(), &rc, 0x420);
         i32 fmt = ((rc.right - rc.left) <= maxWidth) ? 0x20 : 0x22;
-        m4::g_60c7a8 = fmt;
+        g_lastDrawTextFormat = fmt;
         pDraw(hdc, text, text.GetLength(), rect, fmt);
         if (prev) {
             ::SelectObject(hdc, prev);

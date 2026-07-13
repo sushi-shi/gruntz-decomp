@@ -67,7 +67,13 @@ extern "C" CGruntzMgr* g_gameReg;
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (rock-break)
 #include <Gruntz/TileGridCommand.h>        // canonical CTileTriggerLogic (rock-break)
 
-#include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
+#include <Gruntz/TriggerMgrViews.h>
+
+// The secondary group sentinel (0x644ca4; ScanGroup serializes it). Homed here from
+// TriggerMgrViews.h - a header cannot carry the DATA() binding, so it had none.
+DATA(0x00244ca4)
+extern i32 g_groupSentinel;
+ // the shared CTm* views + singleton externs
 
 // 0x77f80: FindNearestInRow(g) - the grunt-to-cell proximity probe: scan the 15 cells
 // of grid row g->m_tileOwnerHi for the live cell whose display object (cell->m_10) is nearest g's
@@ -1344,7 +1350,7 @@ i32 CTriggerMgr::ScanGroup(CSerialArchive* ar) {
     ar->Write(&m_3ec, 4);
     ar->Write(&m_groupFlag, 4);
     ar->Write(&g_curPlayer, 4);
-    ar->Write(&g_644ca4, 4);
+    ar->Write(&g_groupSentinel, 4);
     ar->Write(&m_pendingFxKind, 4);
     ar->Write(&m_selSentinel, 4);
     return 1;

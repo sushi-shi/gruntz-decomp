@@ -1031,7 +1031,8 @@ struct CNetCreateCtx {
     void* m_74; // +0x74  the group-enumeration record
 };
 SIZE_UNKNOWN(CNetCreateCtx);        // create-context view (only +0x74 pinned); retail size TBD
-extern "C" CNetCreateCtx* g_648cf4; // 0x648cf4
+// (g_648cf4 moved to its only user, Multi.cpp, so it can carry the DATA() binding a
+//  header cannot - declared here it was bound to no retail address at all.)
 
 // CNetMgr derives from the shared CObject grand-base (Wap32/Object.h): its own
 // vtable (??_7CNetMgr@@6B@, 0x1ea42c) overrides only slot 1 (the dtor); slots 0/2/3/4

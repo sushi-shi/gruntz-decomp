@@ -77,7 +77,8 @@ extern "C" i32 g_attractStateCount;
 // ret nonzero while more frames remain (PTR__SmackGoto@8). Reloc-masked.
 extern "C" i32 __stdcall Eng_SmackStep(void* handle, i32 frame);
 
-extern "C" i32 g_62bf74; // clip-region enable gate
+DATA(0x0022bf74)
+extern "C" i32 g_clipRegionEnabled; // 0x62bf74 - gates the credits CRgn clip
 
 // The credits-scroll reseed constants (0x5e96f8 / 0x5e96f0 / 0x5e9708 in retail's
 // .rdata). They were `extern double g_5e96f8;`-style DECLARATIONS with no definition
@@ -251,12 +252,12 @@ i32 CCreditsState::Render() {
     v4->m_14->Blit((i32)v4->m_18);
 
     if (!m_1b4 && Owner(this)->m_14) {
-        Owner(this)->m_48->Play(g_60ce90, 1);
+        Owner(this)->m_48->Play("CREDITZ", 1);
         m_1b4 = 1;
     }
 
     if (m_1c4) {
-        i32 s = Owner(this)->m_48->Find(g_60ce74);
+        i32 s = Owner(this)->m_48->Find("MONOLITH");
         if (s && !((CGMSoundEntry*)s)->Query()) {
             Sub3();
         }
@@ -448,7 +449,7 @@ i32 CCreditsState::DrawScrollingCredits() {
     prov->m_8->GetDC(&hdc);
     if (hdc != 0) {
         i32 oldBk = SetBkMode(hdc, TRANSPARENT);
-        if (g_62bf74 != 0) {
+        if (g_clipRegionEnabled != 0) {
             SelectClipRgn(hdc, m_1e8); // CRgn -> HRGN via CGdiObject::operator HRGN
         }
         i32 oldColor = SetTextColor(hdc, FlashColor());
@@ -461,7 +462,7 @@ i32 CCreditsState::DrawScrollingCredits() {
             DrawTextA(hdc, s, -1, &r, 0x75); // CString -> LPCTSTR (implicit)
             SetTextColor(hdc, oldColor2);
         }
-        if (g_62bf74 != 0) {
+        if (g_clipRegionEnabled != 0) {
             SelectClipRgn(hdc, 0);
         }
         SetBkMode(hdc, oldBk);

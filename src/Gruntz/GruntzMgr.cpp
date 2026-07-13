@@ -254,7 +254,9 @@ extern i32 g_jitterY; // ?g_jitterY@@3HA @0x2452cc (was g_6452cc)
 extern i32 g_panMinX; // ?g_panMinX@@3HA @0x245508 (was g_645508)
 extern i32 g_panMaxX; // ?g_panMaxX@@3HA @0x24550c (was g_64550c)
 extern "C" {
-    extern i32 g_64557c; // DAT_0064557c  (modal/cursor-busy gate)
+    // 0x64557c - the modal/cursor-busy gate (set 0 on both modal-dialog exits).
+    DATA(0x0024557c)
+    extern i32 g_modalBusy;
     // The clock/scroll/warp globals SaveState streams through the archive.
     extern "C" i32 g_64558c; // DAT_0064558c
     extern i32 g_645590;     // DAT_00645590
@@ -3541,7 +3543,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 
     m_modalBusy = 1;
     app->RunModal(msg, m_gameWnd->m_hwnd);
-    g_64557c = 0;
+    g_modalBusy = 0;
     m_modalBusy = 0;
     if (shown <= 0) {
         while (show(0) >= 0) {
@@ -3584,7 +3586,7 @@ i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
 
     m_modalBusy = 1;
     i32 result = dlg->DoModal(); // vtable slot 48 (+0xc0) - see the proof in GruntzMgr.h
-    g_64557c = 0;
+    g_modalBusy = 0;
     m_modalBusy = 0;
     if (m_curState && notify) {
         m_curState->Vslot06();
@@ -4188,7 +4190,7 @@ i32 CGruntzMgr::RunModalDialog(const char* tmpl, void* dlgProc, i32 flag) {
     m_modalBusy = 1;
     i32 result =
         ::DialogBoxParamA(m_owner->m_hInstance, tmpl, m_gameWnd->m_hwnd, (DLGPROC)dlgProc, 0);
-    g_64557c = 0;
+    g_modalBusy = 0;
     m_modalBusy = 0;
     if (m_curState && flag) {
         m_curState->Vslot06();

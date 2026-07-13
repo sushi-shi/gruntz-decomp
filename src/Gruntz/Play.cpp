@@ -790,15 +790,20 @@ extern "C" {
     u32 g_killCueClock = 0; // 0x2bf3c0  draw-CLOCK mirror (= g_645580 / g_lastNow)
 }
 
-extern "C" i32 g_645270; // DAT_00645270 (area page size)
+DATA(0x00245270)
+extern "C" i32 g_areaPageSize; // 0x645270 (area page size)
 // extern "C" to hit the definition's C-linkage name _g_645570 (GruntzMgr.cpp, typed
 // DirectInputMgr2*); a plain C++ extern emitted ?g_645570@@3PAXA - unresolved.
 extern "C" void* g_645570;          // DAT_00645570
 extern "C" i32 g_64558c;            // DAT_0064558c
 extern "C" i32 g_64e35c;            // DAT_0064e35c
 extern i32 g_resourceInstallActive; // ?g_resourceInstallActive@@3HA @0x6bf37c
-extern void* g_612618;              // DAT_00612618 (last-level cache)
-extern void* g_61139c;              // PTR_DAT_0061139c
+DATA(0x00212618)
+extern void* g_lastLevelCache; // 0x612618 (last-level cache)
+// 0x61139c: bound, but NOT renamed - the only evidence is that it is a pointer read
+// by the level loader. An invented name would be worse than the honest address.
+DATA(0x0021139c)
+extern void* g_61139c;
 
 // ---------------------------------------------------------------------------
 // RESIDUAL carcass (9 classes already folded onto their real canonical headers:
@@ -1071,38 +1076,38 @@ i32 CPlay::LoadByMode(i32 level, i32) {
         i32 page = I32(self, 0x20) - 1;
         switch ((u32)page) {
             case 0:
-                g_645270 = 4;
+                g_areaPageSize = 4;
                 break;
             case 1:
-                g_645270 = 0;
+                g_areaPageSize = 0;
                 g_64553c = 0;
                 break;
             case 2:
-                g_645270 = 8;
+                g_areaPageSize = 8;
                 g_64553c = 0;
                 break;
             case 3:
-                g_645270 = 8;
+                g_areaPageSize = 8;
                 g_64553c = 0xf;
                 break;
             case 4:
-                g_645270 = 5;
+                g_areaPageSize = 5;
                 g_64553c = 9;
                 break;
             case 5:
-                g_645270 = 4;
+                g_areaPageSize = 4;
                 g_64553c = 0xb;
                 break;
             case 6:
-                g_645270 = 0xe;
+                g_areaPageSize = 0xe;
                 g_64553c = 0xb;
                 break;
             case 7:
-                g_645270 = 4;
+                g_areaPageSize = 4;
                 g_64553c = 0;
                 break;
             default:
-                g_645270 = 4;
+                g_areaPageSize = 4;
                 g_64553c = 0;
                 break;
         }
@@ -1153,14 +1158,14 @@ i32 CPlay::LoadByMode(i32 level, i32) {
 
     // the warp-stone / last-level cache comparison (612618 / 61139c)
     {
-        void* cached = g_612618;
+        void* cached = g_lastLevelCache;
         i32 eq = ((CAreaMgr*)g_61139c)->SameGroup((i32)cached); // 0x2f2c
         reload = (eq == 0) ? 1 : 0;
-        i32 diff = (level != (i32)g_612618) ? 1 : 0;
+        i32 diff = (level != (i32)g_lastLevelCache) ? 1 : 0;
         if (g_61139c == 0) {
             return 0;
         }
-        g_612618 = (void*)level;
+        g_lastLevelCache = (void*)level;
 
         BuildHelpReveal(0);
         if (savedThis != 0) {
