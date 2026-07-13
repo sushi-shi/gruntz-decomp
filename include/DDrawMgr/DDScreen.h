@@ -34,7 +34,11 @@ public:
     void Snapshot(HWND hWnd); // 0x17cd90 (PaletteSnapshot.cpp; system palette -> +0x108)
     i32 BlitRegion(i32 col, i32 row, i32 nCols, i32 nRows);        // 0x17cdf0
     i32 Configure(i32 mode, i32 flags, POINT* origin, RECT* rect); // 0x17cfc0
-    i32 CheckGrid();                                               // 0x17cbe0 (sibling, external)
+    // CheckGrid (0x17cbe0, ImageProbe.cpp): (re)create the tile SOURCE surface -
+    // fill m_srcDesc (0x6c, CAPS|HEIGHT|WIDTH, OFFSCREENPLAIN|SYSTEMMEMORY, the
+    // m_tileInfo dims), CreateSurface -> m_28, QI IDirectDrawSurface3 -> m_srcSurf,
+    // and for 8bpp SetPalette(m_palette) on it.
+    i32 CheckGrid();      // 0x17cbe0
     void UploadPalette(); // 0x17ca10 (palette re-realize on 8bpp restore; body in PaletteCopy.cpp)
     // 0x17c3f0 (body in DDPageMgr.cpp): the borrowed-interface mode bring-up - snapshot
     // the system palette, create+attach the 8bpp palette (or validate 16bpp / reject
@@ -83,10 +87,11 @@ public:
     IDirectDraw* m_dd;             // +0x18   IDirectDraw
     IDirectDrawSurface* m_primary; // +0x1c   primary surface
     IDirectDrawSurface* m_20;      // +0x20   surface (only Release'd; role unproven)
-    IDirectDrawSurface* m_srcSurf; // +0x24   blit source surface
-    IDirectDrawSurface* m_28;      // +0x28   surface (only Release'd; role unproven)
+    IDirectDrawSurface* m_srcSurf; // +0x24   blit source surface (the Surface3 QI of m_28)
+    IDirectDrawSurface* m_28;      // +0x28   raw tile source surface (CheckGrid's CreateSurface out)
     IDirectDrawPalette* m_palette; // +0x2c
-    char m_pad30[0x108 - 0x30];
+    char m_pad30[0x9c - 0x30];
+    DDSURFACEDESC m_srcDesc; // +0x9c  tile-source surface request (CheckGrid fills; 0x6c B)
     // +0x108  256 * 4-byte PALETTEENTRY slots (4th byte kept). Two views: ResetPalette/
     // UploadPalette walk it byte-wise (m_colorSlots); Snapshot fills it as a real
     // PALETTEENTRY[256] from GetSystemPaletteEntries (m_palEntries).
