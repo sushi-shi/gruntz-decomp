@@ -12,7 +12,51 @@ description: Byte-matches one function / TU of Gruntz against retail GRUNTZ.EXE 
 > fewer functions and report the rest as not-done — do NOT delegate. (A matcher that
 > fanned out once blew the whole session token limit.)**
 
-## Phase note: STRUCTURE RECOVERY (2026-07-11, current)
+## SCOPE — SIMPLE VIEW DISSOLUTION, AND NOTHING ELSE (2026-07-13, current)
+
+**Your entire job this phase:** take a fake view (a `.cpp`-local class/struct, or a
+placeholder class, that does not exist in retail), **prove by XREF which real class it
+actually is**, replace it with that real class, and **delete the view.** That is it.
+
+**THE MECHANISM IS XREFS.** A view exists because someone needed a shape and did not know
+whose it was. The callers/callees/globals that touch the view tell you the owner: who else
+passes this pointer, what is called on it, which real class's methods take it, which global
+holds it. Follow those edges to a class that **already exists in the tree**, include its
+real header, use the real type. If the xrefs do not converge on an existing class, **that
+view is not simple — leave it and report it.**
+
+### HARD PROHIBITIONS — these belong to the Fable lane, not to you
+
+Do **not**, for any reason, in any file:
+
+- **Vtables.** Do not add, remove, reorder, or re-length virtual method tables. Do not
+  touch `VTBL()` / `RELOC_VTBL` / vptr stamps.
+- **Virtual methods and overrides.** Do not add or delete `virtual`. Do not add or delete
+  `OVERRIDE`. Do not add placeholder/dummy slots — ever, for any reason.
+- **Inheritance.** Do not add a base class, remove a base class, or change a base class.
+- **RTTI.** Do not read, cite, derive from, or reason about RTTI / COL / hierarchy
+  descriptors. Not as evidence, not as a check. It is not your instrument this phase.
+- **Link-defect buckets.** PHANTOM / UNDEFINED-DATA / DIVERGENT / ODR are **not your work**
+  this phase. Do not chase them, do not report on them.
+
+**If dissolving a view appears to REQUIRE any of the above → STOP. Do not do it. Report it
+in one line as a Fable item and move to the next view.** A view you correctly leave alone is
+a success; a view you dissolve by inventing a vtable is the crash bug we already shipped once.
+
+### The only metric that counts this phase
+
+**View cleanliness**, driven to 0: `placeholder classes` · `.cpp-local views` ·
+`void* m_` members · `)this` casts · `)m_` casts.
+
+**% IS ALLOWED TO DROP, AND IT WILL.** Structure comes first; **once every view is gone we
+do a dedicated pass to recover the structure and the points.** Do not defend a number, do
+not A/B a drop, do not revert a correct dissolution because it cost you points, do not
+`@early-stop` over it. One line in the report; move on.
+
+**Casts are a symptom, never a target.** Fix the TYPE (`void* m_` → the real class), and the
+cast falls out on its own. Deleting a cast without fixing the type just relocates the lie.
+
+## Phase note: STRUCTURE RECOVERY (2026-07-11, background)
 
 The campaign is past pure matching — it is recovering the ORIGINAL TU structure
 (rehoming functions/globals to their true files, dissolving fake views, binding

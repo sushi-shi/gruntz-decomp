@@ -355,5 +355,5 @@ void __stdcall Blowfish_InitKey(u8* key) {
     InitializeBlowfish(key, 4);
 }
 
-// Copy_16f6e0 (0x16f6e0) lives in its own TU (BlowfishCopy.cpp) so its <iostream.h>
+// BitStreamBlowfishEncode (0x16f6e0) lives in its own TU (BlowfishCopy.cpp) so its <iostream.h>
 // dependency does not perturb Blowfish_decipher's fragile mirror schedule in this unit.

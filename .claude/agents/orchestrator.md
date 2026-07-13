@@ -136,9 +136,30 @@ Steps 1–2 take seconds; step 3 takes minutes. Never let step 3 block step 2.
 you have *first*, then reset and dispatch them all from the fresh HEAD, so no agent starts
 on a stale tree. Batch the integrations, not the refills.
 
-**Keep exactly one Fable agent running at all times, always on the hardest available work**
-(RELOC_VTBLs; then the largest unidentified phantom family; then whatever is genuinely
-hardest). Do not leave the Fable slot idle just because its current category is finished.
+**Keep exactly one Fable agent running at all times, always on the hardest available work.**
+Do not leave the Fable slot idle just because its current category is finished.
+
+### The Fable/matcher split — ENFORCE IT IN EVERY BRIEF
+
+**Fable holds an EXCLUSIVE licence on the four dangerous instruments:**
+**vtables · virtual methods & overrides · inheritance · RTTI.**
+Nobody else touches them. Also Fable's: RELOC_VTBLs, the placeholder-vtable-slot backlog,
+and the largest unidentified phantom families.
+
+**Standard matchers do exactly ONE thing: dissolve simple fake views, via XREFS.** Prove the
+view's real class from its callers/callees/globals, swap in the real type, delete the view.
+If a view can't be dissolved without a vtable / virtual / base-class / RTTI move, the matcher
+**stops and hands it to Fable.**
+
+Rationale, measured: **every crash-class bug this campaign produced came from a standard
+matcher improvising in those four areas** — the fabricated 15-slot base, the 4-byte vtable
+against retail's 44, the body-less padded slots. Fencing them off is not caution, it is the
+fix. And matchers were burning budget hand-deriving slot maps that `vtable_hierarchy` prints.
+
+**Match % is ALLOWED TO DROP in the view phase** — structure first, then a dedicated recovery
+pass once views hit 0. Never brief a matcher to protect a number this phase. Never brief a
+matcher on link-defect buckets (PHANTOM/UNDEFINED-DATA/DIVERGENT) this phase; the metric that
+counts is **view cleanliness**.
 
 ### Deferrals and reuse
 

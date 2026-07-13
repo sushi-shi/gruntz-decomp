@@ -1,4 +1,5 @@
-// BlowfishCopy.cpp - Copy_16f6e0 (0x16f6e0), the key-file record encipher loop.
+// BlowfishCopy.cpp - BitStreamBlowfishEncode (0x16f6e0), the encode half of the
+// BitStreamBlowfish encode/decode pair (decode is 0x16f760, the very next COMDAT).
 //
 // Split out of Blowfish.cpp into its own TU: it needs the CRT <iostream.h> istream/
 // ostream, and pulling that header into the Blowfish.cpp unit destabilises the mirror
@@ -25,7 +26,7 @@ void Blowfish_encipher(u32* xl, u32* xr);
 // re-zeros the record buffer with a fresh `xor edx` inside the loop, while cl tests with
 // an immediate `$1` and hoists the zero into ebx outside the loop. ~84.9%.
 RVA(0x0016f6e0, 0x76)
-void __stdcall Copy_16f6e0(istream* src, ostream* dst) {
+void __stdcall BitStreamBlowfishEncode(istream* src, ostream* dst) {
     i32 last = 0;
     while (!src->eof()) {
         unsigned int rec[2];
