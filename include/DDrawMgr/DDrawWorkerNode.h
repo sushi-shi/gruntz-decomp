@@ -114,7 +114,9 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
     virtual void PlotMarker_165fa0(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
     // m_04..m_74 + Helper_164790 inherited from CDDrawWorkerBase.
     CDDrawWorkerA() {}
-    CDDrawWorkerA(CDDrawWorkerCtx* ctx) : CDDrawWorkerBase(ctx) { m_78 = 0; }
+    CDDrawWorkerA(CDDrawWorkerCtx* ctx) : CDDrawWorkerBase(ctx) {
+        m_78 = 0;
+    }
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3); // [11] 0x157110
 
     char m_78; // +0x78 (BYTE frame)
@@ -137,7 +139,9 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
     virtual void Slot10_1660b0(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
     // m_04..m_74 + Helper_164790 inherited from CDDrawWorkerBase.
     CDDrawWorkerB() {}
-    CDDrawWorkerB(CDDrawWorkerCtx* ctx) : CDDrawWorkerBase(ctx) { m_78 = 0; }
+    CDDrawWorkerB(CDDrawWorkerCtx* ctx) : CDDrawWorkerBase(ctx) {
+        m_78 = 0;
+    }
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                         // [11] 0x1572f0
     virtual i32 Vfunc30(i32 a1, i32 a2, CDDrawFrameSource* src, i32 a4); // [12] 0x1572b0
     virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4);                 // [13] 0x157280
