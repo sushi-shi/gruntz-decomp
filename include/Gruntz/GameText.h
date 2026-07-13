@@ -21,49 +21,12 @@
 #include <rva.h>
 #include <Gruntz/String.h>
 
-// ---------------------------------------------------------------------------
-// CContainerErr - the Monolith container-library exception object (vtable
-// ??_7CContainerErr@@6B@ @0x5f04cc). This is the SAME class the canonical
-// <Wap32/zBitVec.h> models (as zBitVec's polymorphic base); GameText.h and
-// zBitVec.h are ONE class expressed twice, a byte-forced DUAL-VIEW exactly like
-// the CGruntzMgr/CGameRegistry MFC/Win32 split (a required ODR split - the two
-// headers never coexist in one TU). zBitVec.h is the RTTI-true VIRTUAL view
-// (virtual dtor + 6 declared engine virtuals); THIS view is the NON-virtual
-// spelling the ctor's byte layout forces.
-//
-// WHY NON-VIRTUAL HERE (byte-proven CLASS-MODEL WALL, not a rogue view - a
-// real-class virtual spelling does NOT reproduce the bytes): the ctor at
-// 0x16d9c0 stores the message at +0x04 FIRST, then the vptr at +0x00 LAST:
-//     mov  ecx,DWORD PTR [esp+0x4]      ; ecx = msg arg
-//     test ecx,ecx / jne .. / mov ecx,0x6bf430   ; default msg
-//     mov  DWORD PTR [eax+0x4],ecx      ; m_msg   (+0x04 stored FIRST)
-//     mov  DWORD PTR [eax],0x5f04cc     ; vptr    (+0x00 stored LAST)
-// A `virtual` decl makes MSVC emit the implicit vptr store at ctor ENTRY (before
-// m_msg), inverting that order. Empirically confirmed (vtable-conversion-log.md
-// 2026-07-01 + the disasm above): the real-virtual spelling regresses this ctor
-// 100%->non-exact. So the non-virtual model with an explicit m_vtbl member is the
-// only byte-exact spelling; it is retained as a documented class-model wall (per
-// the matcher doctrine's allowance for a byte-proven CLASS wall).
-//   +0x00  m_vtbl : void*        - the vtable pointer (stamped LAST by the ctor).
-//   +0x04  m_msg  : const char*  - the message string (ctor stores the arg or the
-//          default here). NAME DIVERGENCE FLAG: zBitVec.h names this same +0x04
-//          field `CVariantSlot* m_errSink` (an error-sink pointer, from its
-//          Set 0x16d850 / Remove 0x16e360 usage). The CTOR evidence (a const char*
-//          message stored here) backs `m_msg`; the two are unreconciled - endgame
-//          to prove whether +0x04 is the message or a sink (or the sink reads the
-//          message through it). Not renamed either way pending disasm of Set/Remove.
-// ---------------------------------------------------------------------------
-
-SIZE_UNKNOWN(CContainerErr);
-VTBL(CContainerErr, 0x001f04cc); // ??_7CContainerErr@@6B@ (1-slot deleting-dtor vtable)
-class CContainerErr {
-public:
-    CContainerErr(const char* msg);
-
-public:
-    virtual void
-    VSlot0(); // +0x00  the vtable pointer (stamped LAST - see wall note above)  // real polymorphic vptr @+0x00 (was m_vtbl)
-    const char* m_msg; // +0x04  the error message this instance carries
-};
+// CContainerErr - the Monolith container-library exception base. THE DUPLICATE VIEW
+// THAT LIVED HERE IS GONE: it was a second model of the class <Wap32/zBitVec.h> already
+// owns (same class, same one-slot vtable ??_7CContainerErr@@6B@ @0x1f04cc). It was kept
+// as a "byte-forced dual-view / required ODR split", but that wall does not exist - this
+// header has exactly ONE includer (GameText.cpp), so nothing ever saw both models. The
+// canonical class is included instead, and GameText.cpp defines its ctor (0x16d9c0) on it.
+#include <Wap32/zBitVec.h>
 
 #endif // SRC_GRUNTZ_GAMETEXT_H

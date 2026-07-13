@@ -122,6 +122,23 @@ RVA_SYMBOL_RE = re.compile(
 # pairs and can flip to byte-exact. Emitted with kind=data (checked vs all_syms).
 DATA_SYMBOL_RE = re.compile(
     r"@data-symbol:\s*(\S+)\s+(0x[0-9a-fA-F]+)(?:\s+(0x[0-9a-fA-F]+|\d+))?")
+
+
+def resolve_pool_id(sym, all_syms):
+    """`_s_fmtNotFound$S*` -> the one base-obj symbol with that prefix.
+
+    cl decorates every file-scope static / function-local static with `$S<n>`, where <n>
+    is a per-OBJECT CodeView symbol counter: it walks every symbol the TU emits, so the
+    ids SHIFT whenever the TU gains or loses ANY symbol. Pinning a literal id therefore
+    rots on the next edit to that .cpp, silently unbinding every reloc that pointed at it
+    (this bit the ButeMgr string pool twice). A `$S*` pin is matched by prefix instead, so
+    it survives the churn. Ambiguous or unmatched -> return as-is and let the caller's
+    authority check report the miss."""
+    if "$S*" not in sym or not all_syms:
+        return sym
+    pref = sym.replace("$S*", "$S")
+    cands = [s for s in all_syms if s.startswith(pref) and s[len(pref):].isdigit()]
+    return cands[0] if len(cands) == 1 else sym
 # Annotation strings carried in @llvm.global.annotations (emitted by src/rva.h).
 ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?$")
 ANN_SYM_RE = re.compile(r"^symbol:(\S+)$")
@@ -997,6 +1014,7 @@ def main():
             rva = int(rva_s, 16)
             size = (int(size_s, 16) if size_s and size_s.lower().startswith("0x")
                     else int(size_s) if size_s else None)
+            sym = resolve_pool_id(sym, all_syms)  # `...$S*` -> the emitted `...$S<n>`
             if all_syms is None or sym in all_syms:
                 rows.append((rva, sym, unit, size, "data"))
             else:

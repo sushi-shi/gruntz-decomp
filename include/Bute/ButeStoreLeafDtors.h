@@ -1,60 +1,40 @@
-// ButeStoreLeafDtors.h - the two out-of-line /GX destructors homed in ButeMgr.cpp at
-// 0x21310 / 0x21570. INCLUDED ONLY BY src/Bute/ButeMgr.cpp (it pulls <Wap32/zBitVec.h>
-// for the REAL CContainerErr, which must not spread into the widely-shared ButeStore.h).
+// ButeStoreLeafDtors.h - the OTHER TWO COPIES of the keyed store's inline destructor,
+// the ones the linker placed in butemgr's block (0x21310 and 0x21570).
+// INCLUDED ONLY BY src/Bute/ButeMgr.cpp.
 //
-// RTTI-proven identities (matcher R54, vtable-slot + xref):
-//   0x21310 = zPTree::~zPTree           (??_7zPTree@@6B@ 0x1e94ac slot0 -> ??_G 0x212e0 -> here)
-//   0x21570 = CBSecStream::~CBSecStream (??_7CBSecStream 0x1f0510 slot0 -> ??_G 0x174d30 -> here)
-// Both are byte-identical to CButeStore::~CButeStore (0x174d70, butenode): they stamp the two
-// base vtables (0x5e94ac @+0 / 0x5e949c @+8), run the recursive keyed-node free (0x16e070),
-// then auto-fold the second base (0x16dfc0, MI this-adjust null guard) and the first base
-// (0x16da60). The two non-trivial bases are what earn the /GX frame.
+// All three copies (these two plus 0x174d70 in butenode) are BYTE-IDENTICAL and stamp
+// the SAME vtable pair (0x1e94ac / 0x1e949c). That is the signature of MSVC5 without
+// /Gy: an inline member function is emitted as a per-object-file STATIC (so every obj
+// that needs it keeps its own copy), while the vftable stays a COMDAT (so the linker
+// folds it to one). Hence ONE vtable but THREE destructors - they are one retail class,
+// <Bute/ButeStore.h>'s CButeStore, whose destructor is declared inline there.
 //
-// The real derived classes zPTree / CBSecStream are modeled in <Bute/PTreeNode.h> /
-// <Bute/ButeSection.h>, but those pull PTreeNode.h's real `zPTree`, which ODR-clashes with
-// ButeMgr.h's regalloc-frozen `zPTree` stand-in (the documented dual-model split). So the two
-// leaves are homed here over the retail base sub-objects that ARE reachable in this TU.
+// C++ cannot give one symbol three RVAs, so each copy is anchored on a thin subclass
+// that adds nothing; the inline ~CButeStore expands into each one and reproduces the
+// retail body exactly: stamp both most-derived vptrs, ClearRecursive(0), then fold the
+// +0x08 base (~CButeNodeEntry 0x16dfc0, MI `this ? this+8 : 0` adjust) and the +0x00
+// base (~CContainerErr 0x16da60).
 //
-// VTABLES: the two vptr stamps reloc-mask the ONE proper vtbl each already carries -
-// VTBL(zPTree, 0x1e94ac) and VTBL(CButeStore, 0x1e949c) (both in ButeMgr.h). The leaves add
-// no per-class vtbl annotation (a second VTBL/@data-symbol on those rvas would collide -
-// one-name-per-rva - and evict zPTree/CButeStore/butenode; RELOC_VTBL alias shells removed).
+// This replaces the former CButeStoreZPTree / CButeStoreSection / CButeNodeSecondBase
+// stand-ins, which each declared their OWN ClearRecursive - a method defined nowhere in
+// the tree, i.e. a guaranteed unresolved external at link. Inheriting the real one binds
+// all three copies to the single ?ClearRecursive@CButeStore@@ at 0x16e070.
 #ifndef SRC_BUTE_BUTESTORELEAFDTORS_H
 #define SRC_BUTE_BUTESTORELEAFDTORS_H
 
 #include <rva.h>
-#include <Wap32/zBitVec.h>  // REAL CContainerErr - the +0 container-error base (dtor 0x16da60)
-#include <Bute/PTreeNode.h> // REAL CButeNodeEntry - the +8 second base (dtor 0x16dfc0)
-#include <Bute/ButeStore.h> // CButeStoreNode - the recursive-clear node argument
+#include <Bute/ButeStore.h> // the canonical CButeStore (real bases + the inline dtor)
 
-// (The `CButeNodeSecondBase` phantom is GONE. Its real identity is CButeNodeEntry
-//  (<Bute/PTreeNode.h>) - the +0x08 sub-object the whole store/config-node family
-//  multiply-inherits - proven by its destructor at 0x16dfc0, whose 7 bytes are exactly
-//  `mov [ecx],offset ??_7CButeNodeEntry@@6B@ (0x5f04d8); ret`. That dtor is now DEFINED
-//  (src/Bute/TypeKeyColl.cpp), so the two leaf destructors' +8 base-dtor calls bind.
-//  The old "PTreeNode.h is walled out of a ButeMgr.h TU" note was stale - ButeMgr.h
-//  includes PTreeNode.h directly now, so the real class is simply used.)
-
-// 0x21310 - a CContainerErr(+0), CButeNodeEntry(+8) store leaf.
-// @identity-TODO: this and its twin below are, by the bytes, the SAME retail class as
-// butenode's CButeStore (all three stamp the one vtable pair 0x1e94ac / 0x1e949c, which
-// RTTI names ??_7zPTree). Retail carries three copies of that one destructor; C++ cannot
-// give one symbol three RVAs, so the three keep distinct names here and, per rva, only
-// one vptr-stamp reloc can name-bind. Likewise ClearRecursive: it is
-// ?ClearRecursive@CButeStore@@ @0x16e070 (7 external callers pin that name), so under
-// this leaf's own name the call stays reloc-masked/positional. Folding the family onto
-// `zPTree` is the real fix and is reported as cross-lane deferred work.
-struct CButeStoreZPTree : public CContainerErr, public CButeNodeEntry {
-    void ClearRecursive(CButeStoreNode*); // 0x16e070
-    ~CButeStoreZPTree();                  // 0x21310 (overrides CContainerErr's virtual ~)
+// 0x21310 - the second copy of ~CButeStore.
+struct CButeStoreCopy21310 : public CButeStore {
+    ~CButeStoreCopy21310();
 };
-SIZE_UNKNOWN(CButeStoreZPTree);
+SIZE(CButeStoreCopy21310, 0x2c); // adds nothing to CButeStore
 
-// 0x21570 - same shape as the twin above (the third copy of the one store destructor).
-struct CButeStoreSection : public CContainerErr, public CButeNodeEntry {
-    void ClearRecursive(CButeStoreNode*); // 0x16e070
-    ~CButeStoreSection();                 // 0x21570
+// 0x21570 - the third copy of ~CButeStore.
+struct CButeStoreCopy21570 : public CButeStore {
+    ~CButeStoreCopy21570();
 };
-SIZE_UNKNOWN(CButeStoreSection);
+SIZE(CButeStoreCopy21570, 0x2c); // adds nothing to CButeStore
 
 #endif // SRC_BUTE_BUTESTORELEAFDTORS_H

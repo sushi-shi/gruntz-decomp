@@ -21,6 +21,7 @@
 #define GRUNTZ_WAP32_ZVEC_H
 
 #include <Ints.h>
+#include <Wap32/zBitVec.h> // the canonical CContainerErr - _zvec's real {vptr, sink} head
 #include <rva.h>
 
 // (The empty zErrHandling placeholder that lived here - the stand-in base
@@ -35,22 +36,28 @@
 struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call sites)
 
 // The dynamic-vector base; `zDArray<T>` adds the per-element relocation override.
-// REAL-POLYMORPHIC (implicit vptr@0): the virtual dtor drains the manual vptr field.
-class _zvec {
+//
+// Its head {vptr@0, err-sink@4} IS the container-error base - RTTI spells the chain
+// `zDArray<T> : _zdvec : _zvec : zErrHandling`, and zErrHandling is the class
+// <Wap32/zBitVec.h> models as CContainerErr. _zvec used to redeclare that head itself,
+// with its own `virtual ~_zvec()` "at 0x16da60" - but 0x16da60 is ~CContainerErr, and
+// ??1_zvec was defined nowhere, so ~zDArray's chained base-dtor call dangled. Derive the
+// real base instead: _zvec adds no destructible state, so its implicit dtor folds away
+// and ~zDArray chains straight to ~CContainerErr - which is exactly what retail does.
+class _zvec : public CContainerErr {
 public:
     void* GrowTo(i32 idx, i32 at); // 0x16da80
     i32 IndexToPtr(i32 idx);       // 0x312a0  (the plain base accessor)
-    virtual ~_zvec();              // 0x16da60 (base scalar dtor, external TU; implicit vptr@0)
 
-    // vptr @+0x00 (implicit, polymorphic)
-    CVariantSlot* m_err; // +0x04
-    i32 m_lo;            // +0x08
-    i32 m_hi;            // +0x0c
-    i32 m_base;          // +0x10
-    i32 m_spare;         // +0x14
-    i32 m_stride;        // +0x18
-    i32 m_alloc;         // +0x1c
-    i32 m_grown;         // +0x20
+    // vptr @+0x00 and the error sink @+0x04 come from CContainerErr (which names the
+    // sink m_errSink; this class's code still reads it under that name).
+    i32 m_lo;     // +0x08
+    i32 m_hi;     // +0x0c
+    i32 m_base;   // +0x10
+    i32 m_spare;  // +0x14
+    i32 m_stride; // +0x18
+    i32 m_alloc;  // +0x1c
+    i32 m_grown;  // +0x20
 };
 
 // zDArray<int (CUserLogic::*)(void)>: the derived vector whose elements are

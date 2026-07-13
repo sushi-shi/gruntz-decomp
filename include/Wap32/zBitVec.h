@@ -54,25 +54,29 @@ void* GetCallerRetAddr(); // 0x16e0f0
 // (m_errSink is a pointer); the TUs that CALL its methods include <Bute/ButeTree.h>.
 struct CVariantSlot;
 
-// The container-error reporting base. REAL polymorphic: the virtual dtor (0x16da60)
-// lets cl emit ??_7CContainerErr and auto-stamp the implicit vptr; slots 1..6 are
-// declared-only engine virtuals living in other TUs (reloc-masked references). The
-// const-char* ctor (0x16d9c0) is declared-only here (defined non-virtually in
-// gametext). The destructible base is what forces zBitVec's /GX ctor-unwind frame.
-SIZE_UNKNOWN(CContainerErr);
+// The container-error reporting base - the ONE canonical model of the class (the former
+// <Gruntz/GameText.h> duplicate view is folded in; nothing else models it).
+//
+// EXACTLY ONE VIRTUAL. ??_7CContainerErr@@6B@ @0x1f04cc is a ONE-SLOT vtable (its slot 0
+// is the ??_G at 0x16da40). The six "Slot04_16dde0 .. Slot18_16ea20" virtuals that used
+// to be declared here were FABRICATED: 0x1f04d0 / 0x1f04d4 / 0x1f04d8 / 0x1f04dc /
+// 0x1f04e0 / 0x1f04e4 are not this vtable's slots 1..6 - they are the NEIGHBOURING
+// classes' own one-slot vtables (CTypeKeyColl, zDArray, CButeNodeEntry, ...), read as if
+// they were a 7-slot table. Declaring them inflated every derived class's vtable.
+//
+// +0x04 IS AN OBJECT POINTER, not a message string: the destructor (0x16da60) does
+//     push 0 / mov [ecx],??_7CContainerErr / push ecx / mov ecx,[ecx+4] / call 0x16e360
+// i.e. it loads +0x04 into ecx as the `this` of a __thiscall (the error-sink's Remove,
+// registering/unregistering this object). So the ctor argument is the SINK to report
+// through - the legacy `const char* msg` typing was the mis-model. Typed void* here: the
+// call sites pass a sink global by address and no longer need a cast.
+SIZE(CContainerErr, 0x8); // { vptr @0, m_errSink @4 }
 class CContainerErr {
 public:
-    CContainerErr(const char* msg); // 0x16d9c0 (??0CContainerErr@@QAE@PBD@Z)
-    virtual ~CContainerErr();       // [0] 0x16da40 (??_G slot); real ~ at 0x16da60
+    CContainerErr(void* errSink); // 0x16d9c0 (defined in src/Gruntz/GameText.cpp)
+    virtual ~CContainerErr();     // [0] the ONLY slot (??_G 0x16da40; real ~ at 0x16da60)
 
-    virtual void Slot04_16dde0(); // [1] 0x16dde0 (declared-only)
-    virtual void Slot08_16df20(); // [2] 0x16df20 (declared-only)
-    virtual void Slot0C_16dfa0(); // [3] 0x16dfa0 (declared-only)
-    virtual void Slot10_16ea80(); // [4] 0x16ea80 (declared-only)
-    virtual void Slot14_16e9c0(); // [5] 0x16e9c0 (declared-only)
-    virtual void Slot18_16ea20(); // [6] 0x16ea20 (declared-only)
-
-    CVariantSlot* m_errSink; // +0x04  the registered error handler / sink
+    CVariantSlot* m_errSink; // +0x04  the error sink this object registers with
 };
 
 // zBitVec - the derived small-buffer bit-vector: capacity in bits @+0x08, the DWORD
@@ -104,6 +108,7 @@ public:
 // 98.7% -> 85.3%). EngStr.cpp needs only the container classes above.
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
+VTBL(CContainerErr, 0x001f04cc); // ??_7CContainerErr@@6B@ - ONE slot (the dtor)
 VTBL(zBitVec, 0x001f04c8);
 
 #endif // WAP32_ZBITVEC_H

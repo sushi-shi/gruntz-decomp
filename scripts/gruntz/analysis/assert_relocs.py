@@ -258,12 +258,14 @@ def _lib_symbols():
 LIBS = None
 
 
-def is_fake(sym, data, s):
+def is_fake(sym, data, s, defined=()):
     """A '?'-mangled symbol that resolves to NEITHER CodeView, NOR a DATA() global, NOR any
     toolchain .LIB is FABRICATED: declared, never defined. We compile but never link, so nothing
     else in the pipeline catches it - it is a guaranteed `unresolved external symbol`."""
     if s.startswith("_") or s.startswith("??_C@") or s.startswith("$SG") or not s.startswith("?"):
         return False  # CRT / import / string / local -> outside CodeView, fine
+    if s in defined:
+        return False  # the obj defines it itself (a cl-emitted vftable) -> it links
     if resolve(sym, data, "DIR32", s, 0) is not None:
         return False
     global LIBS
@@ -282,6 +284,35 @@ def _addend(insn):
 
 
 IMAGE_END = IMAGE_BASE + 0x400000  # generous upper bound on the mapped image
+
+
+def defined_syms(obj):
+    """Every symbol the object FILE ITSELF defines (COFF symbol table, section > 0).
+
+    A reloc onto one of these resolves at link time no matter what it is called: cl emits a
+    class's ??_7 vftable straight into the obj that needs it, so a vftable reference is
+    never an unresolved external even when its name is not one we bound to a retail RVA.
+    Without this, the FAKE check reports every compiler-emitted vftable as a guaranteed link
+    break - the opposite of true. (Read from the COFF directly; llvm-objdump -t does not
+    render these symbol tables.)"""
+    b = open(obj, "rb").read()
+    symptr = struct.unpack_from("<I", b, 8)[0]
+    nsym = struct.unpack_from("<I", b, 12)[0]
+    strtab = symptr + nsym * 18
+    out, i = set(), 0
+    while i < nsym:
+        base = symptr + i * 18
+        if struct.unpack_from("<I", b, base)[0] == 0:
+            off = struct.unpack_from("<I", b, base + 4)[0]
+            e = b.index(b"\0", strtab + off)
+            nm = b[strtab + off:e].decode("latin1")
+        else:
+            nm = b[base:base + 8].split(b"\0")[0].decode("latin1")
+        sec = struct.unpack_from("<h", b, base + 12)[0]
+        if sec > 0:
+            out.add(nm)
+        i += 1 + b[base + 17]
+    return out
 
 
 def parse_obj(obj):
@@ -398,10 +429,10 @@ def _tvas(sym, data, dups, tgt_relocs, tgt_raw=()):
     return tvas, tstrs
 
 
-def check_fn(sym, data, dups, unit, name, base_relocs, tgt_relocs, tgt_raw=()):
+def check_fn(sym, data, dups, unit, name, base_relocs, tgt_relocs, tgt_raw=(), defined=()):
     probs = []
     for r in base_relocs:  # (1) fabricated function/data symbol -> would be an unresolved external
-        if is_fake(sym, data, r[1]) and (unit, name, r[1]) not in ALLOWLIST:
+        if is_fake(sym, data, r[1], defined) and (unit, name, r[1]) not in ALLOWLIST:
             probs.append("FAKE ref '%s' - in neither CodeView nor a DATA() global" % r[1])
     tvas, tstrs = _tvas(sym, data, dups, tgt_relocs, tgt_raw)
     bvas, va_sym = Counter(), {}
@@ -452,7 +483,8 @@ def review(rva):
                 print("  %s: no COMDAT on one side" % nm)
                 return 0
             print("%s  %s  (fuzzy %.2f%%)" % (u["name"], nm, f.get("fuzzy_match_percent", 0)))
-            for p in check_fn(sym, data, dups, u["name"], nm, bf[nm], tf[nm], tr.get(nm, [])):
+            for p in check_fn(sym, data, dups, u["name"], nm, bf[nm], tf[nm],
+                              tr.get(nm, []), defined_syms(base_obj)):
                 print("  !! " + p)
             print("  base relocs=%d  target relocs=%d" % (len(bf[nm]), len(tf[nm])))
             return 0
@@ -486,11 +518,13 @@ def main():
         if not (os.path.exists(base_obj) and os.path.exists(tgt_obj)):
             continue
         (bf, _br), (tf, tr) = parse_obj(base_obj), parse_obj(tgt_obj)
+        bdef = defined_syms(base_obj)
         for name in sorted(near):
             if name not in bf or name not in tf:
                 continue
             seen += 1
-            for p in check_fn(sym, data, dups, unit, name, bf[name], tf[name], tr.get(name, [])):
+            for p in check_fn(sym, data, dups, unit, name, bf[name], tf[name],
+                              tr.get(name, []), bdef):
                 bad.append((unit, name, p))
     for unit, name, p in bad:
         print("  %-22s %-46s %s" % (unit, name[:46], p))

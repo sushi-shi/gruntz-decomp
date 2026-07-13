@@ -22,15 +22,8 @@
 // canonical shape, shared with <Bute/ButeMgr.h> (which is NOT pulled in here: its
 // <Bute/ButeStore.h> CButeStore would clash with this TU's own store class below).
 #include <Bute/ButeValue.h>
-// The REAL container-error base: its destructor IS the 0x16da60 this store's dtor
-// chains to. zBitVec.h's `CContainerErr` and PTreeNode.h's `zErrHandling` are the SAME
-// engine class under two reconstruction names, but only CContainerErr's dtor is
-// DEFINED (in typekeycoll), so the store below derives THAT one and its primary
-// base-dtor call name-binds instead of dangling on the undefined ??1zErrHandling.
-// (@identity-TODO: the 3-way CContainerErr / zErrHandling / GameText.h-view split is a
-//  real fold, but it is blocked outside this lane - see the ~CButeStore note below.)
-#include <Wap32/zBitVec.h>
-#include <Gruntz/String.h> // CString - the kButeString payload the teardown destructs
+#include <Bute/ButeStore.h> // the canonical CButeStore (real bases; INLINE dtor)
+#include <Gruntz/String.h>  // CString - the kButeString payload the teardown destructs
 
 // ===========================================================================
 // ButeValueTeardown (0x174df0) - the keyed store's __cdecl per-value teardown
@@ -105,52 +98,35 @@ void __cdecl ButeValueTeardown(void* pValue) {
 // name sorts last and wins the per-rva dedup). BOTH TUs that build a CButeNode - this
 // one and butemgr's ParseTagLine (which inlines the ctor) - now emit these same two
 // names, so both bind. (@data-symbol is read from the .cpp only, never from a header.)
-// @data-symbol: ??_7CButeNode@@6BzErrHandling@@@ 0x001f051c
+// @data-symbol: ??_7CButeNode@@6BCContainerErr@@@ 0x001f051c
 // The +0x08 second-base-in-derived vtable @0x5f0518 (the `mov [esi+0x8],0x5f0518` stamp).
 // @data-symbol: ??_7CButeNode@@6BCButeNodeEntry@@@ 0x001f0518 0x4
 // ===========================================================================
 RVA(0x00174d00, 0x25)
-CButeNode::CButeNode(i32 kind) : zPTree((void*)&ButeValueTeardown, kind) {}
+CButeNode::CButeNode(i32 kind) : zPTree(&ButeValueTeardown, kind) {}
 
 // ---------------------------------------------------------------------------
-// CButeStore @0x174d70 - the keyed store's multiple-inheritance /GX destructor. The
-// most-derived class re-stamps its primary vptr (+0, 0x5e94ac) and its secondary base
-// vptr (+8, 0x5e949c) at entry, runs ClearRecursive(0) (0x16e070), then destructs its
-// bases in reverse declaration order: the secondary base @+8 (~CButeNodeEntry 0x16dfc0,
-// with the `this ? this+8 : 0` MI adjust) then the primary base @+0 (~CContainerErr
-// 0x16da60). Real-polymorphic MI model, so cl emits both implicit vptr stamps and both
-// base-dtor CALLs (all reloc-masked). The two non-trivial bases earn the /GX frame.
+// CButeStore @0x174d70 - ONE OF THE THREE COPIES of the store's inline destructor.
 //
-// PROVEN bases (sema disasm): primary @+0 = the container-error base (its dtor 0x16da60
-// re-stamps its own vtable 0x5f04cc); secondary @+8 = CButeNodeEntry (its dtor 0x16dfc0
-// is a one-instruction `mov [ecx],offset ??_7CButeNodeEntry(0x5f04d8); ret` - now
-// DEFINED in typekeycoll, so this call binds).
-//
-// @identity-TODO - THE STORE/zPTree CONFLATION. This dtor and its two byte-identical
-// twins in butemgr (0x21310 / 0x21570) ALL stamp the SAME vtable pair (0x1e94ac /
-// 0x1e949c), which RTTI names ??_7zPTree. Three destructors sharing one vtable pair
-// means the three are ONE retail class (the store IS zPTree), duplicated across objs.
-// Our tree must give them three distinct C++ names (one symbol cannot own three RVAs),
-// so per rva only ONE of the vptr-stamp relocs can name-bind (one-name-per-rva). The
-// clean fix is to rename the whole store family to `zPTree` and move ClearRecursive +
-// the vtables onto it - but ?ClearRecursive@CButeStore@@ has 7 external callers
-// (chatboxowner / rezsync / demo / ...) outside this lane, so it is reported as
-// cross-lane deferred work rather than half-done here.
-// ---------------------------------------------------------------------------
-struct CButeStore : CContainerErr, CButeNodeEntry {
-    virtual ~CButeStore() OVERRIDE;              // 0x174d70
-    void ClearRecursive(struct CButeStoreNode*); // 0x16e070 (0 = null -> the root)
-    i32 m_child18;                               // +0x18  tree root / child link
-    char m_pad1c[0x28 - 0x1c];
-    i32 m_child28; // +0x28  child link
+// The class is now the canonical <Bute/ButeStore.h> CButeStore (CContainerErr @0 +
+// CButeNodeEntry @8), whose destructor is INLINE. Retail carries three byte-identical
+// copies of it - 0x174d70 here, 0x21310 and 0x21570 in butemgr - because MSVC5 (no /Gy)
+// emits an inline member as a per-object-file static while folding the vftable COMDAT,
+// which is exactly why all three copies stamp the ONE vtable pair (0x1e94ac / 0x1e949c).
+// C++ cannot give one symbol three RVAs, so each copy is anchored on its own thin
+// subclass; the inline ~CButeStore expands into each, reproducing the retail body:
+// stamp both vptrs, ClearRecursive(0) (now the REAL ?ClearRecursive@CButeStore@@ at
+// 0x16e070 - it used to be a per-copy fake declared nowhere), then fold the +0x08 base
+// (~CButeNodeEntry 0x16dfc0) and the +0x00 base (~CContainerErr 0x16da60).
+struct CButeStoreCopy174d : public CButeStore {
+    ~CButeStoreCopy174d(); // 0x174d70
 };
-SIZE(CButeStore, 0x2c); // MI: CContainerErr @0 (8B) + CButeNodeEntry @8 (0x10B) + child links
-// The dtor's +0x08 secondary vptr-store: cl names CButeStore's OWN CButeNodeEntry-base
-// vtable ??_7CButeStore@@6BCButeNodeEntry@@@ (0x1e949c; the through-base name sorts last
-// and wins the per-rva dedup). The +0x00 primary stamp @0x1e94ac is the shared
-// (conflated) zPTree vtable and stays bound under ??_7zPTree@@6B@ - see the TODO above.
-// @data-symbol: ??_7CButeStore@@6BCButeNodeEntry@@@ 0x001e949c
+SIZE(CButeStoreCopy174d, 0x2c); // adds nothing to CButeStore
+
+// zPTree's OWN two most-derived vtables (== the store's): the pair every copy of the
+// destructor stamps, and which zPTree's ctor (0x16dff0) stamps too. cl spells them through
+// the ultimate polymorphic base.
+// @data-symbol: ??_7zPTree@@6BCContainerErr@@@ 0x001e94ac
+// @data-symbol: ??_7zPTree@@6BCButeNodeEntry@@@ 0x001e949c 0x4
 RVA(0x00174d70, 0x70)
-CButeStore::~CButeStore() {
-    ClearRecursive(0);
-}
+CButeStoreCopy174d::~CButeStoreCopy174d() {}

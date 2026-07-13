@@ -25,10 +25,11 @@
 // global DIR32 stores reloc-mask in objdiff. Field names are placeholders; only
 // OFFSETS + code bytes are load-bearing (campaign doctrine).
 #include <Mfc.h>
-#include <Bute/ButeTree.h>       // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
-#include <Bute/PTreeNode.h>      // zErrHandling / CButeNodeEntry / zPTree (the .bute node family)
-#include <Bute/ButeStore.h>      // CButeStore / CButeStoreNode (the keyed-store family)
-#include <Wap32/zBitVec.h>       // CContainerErr / zBitVec + the container-error globals
+#include <iostream.h>       // the REAL istream the config reader is (operator>> @0x191fe0/0x191f30)
+#include <Bute/ButeTree.h>  // canonical CButeTree / CVariantSlot / CButeTreeNode (one shape)
+#include <Bute/PTreeNode.h> // zErrHandling / CButeNodeEntry / zPTree (the .bute node family)
+#include <Bute/ButeStore.h> // CButeStore / CButeStoreNode (the keyed-store family)
+#include <Wap32/zBitVec.h>  // CContainerErr / zBitVec + the container-error globals
 #include <Gruntz/UserBaseLink.h> // CUserBaseLink (the +0x18 link sub-object; embeds a zBitVec)
 #include <rva.h>
 #include <ctype.h>  // isspace (0x12f8a0) / isdigit (0x12f840) - as FUNCTION calls
@@ -159,18 +160,26 @@ struct CKeyFinder {
 // @0x6bf618 doubles as Set's probe-enable gate (three names, one datum each).
 SIZE_UNKNOWN(Rec23);
 struct Rec23 {
-    void* m_0; // key
-    void* m_4; // value
+    i32 m_key; // +0x00  the key (CKeyFinder::Find subtracts the probe key from it)
+    void* m_4; // +0x04  value
     short m_8; // flag
     short m_a;
 };
 DATA(0x002bf498)
 extern Rec23 g_recs23[];
-extern i32 g_keyArray[]; // == g_recs23 viewed flat (Find's stride-3 scan)
-DATA(0x002bf618)
-extern i32 g_keyCount;
-DATA(0x002bf618)
-extern int g_recCount23; // == g_keyCount (Add's alias)
+// The live record count @0x6bf618. It had THREE names for the one datum (g_keyCount,
+// g_recCount23, g_varProbeEnabled) - and the DATA() sat on an `extern`, i.e. a
+// declaration, so none of them was actually a defined global. Defined once, here, in the
+// TU that owns the table; every reader uses this name. (CVariantSlot::Set's "probe
+// enabled" gate is just `count != 0`.)
+extern "C" {
+    DATA(0x002bf618)
+    i32 g_recCount23;
+}
+// (The `g_keyArray` / `g_keyCount` aliases are GONE. They were a second, flat i32-view of
+//  these very globals - declared, never defined, so ?g_keyArray@@3PAHA / ?g_keyCount@@3HA
+//  were two guaranteed unresolved externals. CKeyFinder::Find walks the real records: its
+//  stride-3 i32 scan IS g_recs23[mid].m_key, the array's 12-byte stride.)
 
 // The slot's resolved-index dispatch table (12-byte stride): a __cdecl fn at +0,
 // a word slot at +4. == (char*)g_recs23 + 4. Reloc-masked DATA extern.
@@ -183,7 +192,6 @@ struct CVarTableEntry {
 DATA(0x002bf49c)
 extern CVarTableEntry g_varTable[]; // 0x6bf49c
 DATA(0x002bf618)
-extern void* g_varProbeEnabled; // 0x6bf618 (== the record count; nonzero -> probe)
 
 // The slot label formatter (__cdecl(buf, value, cap)).
 extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
@@ -198,45 +206,47 @@ extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0
 // (reloc-alias rows). @identity-TODO: fold CConfigReader onto the real istream once a
 // safe include path exists (renaming LoadConfigFields' RVA-tracked mangled name).
 // ===========================================================================
-SIZE_UNKNOWN(CConfigReader);
-class CConfigReader {
-public:
-    void ReadDouble(void* field); // 0x191fe0  istream::operator>>(double&)
-    void ReadInt(void* field);    // 0x191f30  istream::operator>>(int&)
-};
-
+// The reader is the CRT's `istream`, not a class of ours: 0x191fe0 is
+// istream::operator>>(double&) and 0x191f30 is istream::operator>>(int&). The
+// `CConfigReader` view that used to stand in for it declared two methods
+// (ReadDouble / ReadInt) that exist nowhere in the tree or in any library - 32
+// guaranteed unresolved externals. Using the real istream makes every one of them the
+// real, statically-linked library operator.
+// (`d` stays a byte cursor: the 0x108-byte config record it walks has an irregular
+//  layout - doubles at 0x00..0x50 and 0x70..0x100 with an int at 0xb8 - and its field
+//  identities are not recovered yet. @identity-TODO: model the record.)
 RVA(0x0016d000, 0x189)
-CConfigReader* LoadConfigFields(CConfigReader* r, char* d) {
-    r->ReadDouble(d + 0x00);
-    r->ReadDouble(d + 0x08);
-    r->ReadDouble(d + 0x10);
-    r->ReadDouble(d + 0x18);
-    r->ReadDouble(d + 0x20);
-    r->ReadDouble(d + 0x28);
-    r->ReadDouble(d + 0x30);
-    r->ReadDouble(d + 0x38);
-    r->ReadDouble(d + 0x40);
-    r->ReadDouble(d + 0x48);
-    r->ReadDouble(d + 0x50);
-    r->ReadDouble(d + 0x70);
-    r->ReadDouble(d + 0x78);
-    r->ReadDouble(d + 0x80);
-    r->ReadDouble(d + 0x88);
-    r->ReadDouble(d + 0x90);
-    r->ReadDouble(d + 0x98);
-    r->ReadDouble(d + 0xa0);
-    r->ReadDouble(d + 0xa8);
-    r->ReadDouble(d + 0xb0);
-    r->ReadInt(d + 0xb8);
-    r->ReadDouble(d + 0xc0);
-    r->ReadDouble(d + 0xc8);
-    r->ReadDouble(d + 0xd0);
-    r->ReadDouble(d + 0xd8);
-    r->ReadDouble(d + 0xe0);
-    r->ReadDouble(d + 0xe8);
-    r->ReadDouble(d + 0xf0);
-    r->ReadDouble(d + 0xf8);
-    r->ReadDouble(d + 0x100);
+istream* LoadConfigFields(istream* r, char* d) {
+    *r >> *(double*)(d + 0x00);
+    *r >> *(double*)(d + 0x08);
+    *r >> *(double*)(d + 0x10);
+    *r >> *(double*)(d + 0x18);
+    *r >> *(double*)(d + 0x20);
+    *r >> *(double*)(d + 0x28);
+    *r >> *(double*)(d + 0x30);
+    *r >> *(double*)(d + 0x38);
+    *r >> *(double*)(d + 0x40);
+    *r >> *(double*)(d + 0x48);
+    *r >> *(double*)(d + 0x50);
+    *r >> *(double*)(d + 0x70);
+    *r >> *(double*)(d + 0x78);
+    *r >> *(double*)(d + 0x80);
+    *r >> *(double*)(d + 0x88);
+    *r >> *(double*)(d + 0x90);
+    *r >> *(double*)(d + 0x98);
+    *r >> *(double*)(d + 0xa0);
+    *r >> *(double*)(d + 0xa8);
+    *r >> *(double*)(d + 0xb0);
+    *r >> *(int*)(d + 0xb8);
+    *r >> *(double*)(d + 0xc0);
+    *r >> *(double*)(d + 0xc8);
+    *r >> *(double*)(d + 0xd0);
+    *r >> *(double*)(d + 0xd8);
+    *r >> *(double*)(d + 0xe0);
+    *r >> *(double*)(d + 0xe8);
+    *r >> *(double*)(d + 0xf0);
+    *r >> *(double*)(d + 0xf8);
+    *r >> *(double*)(d + 0x100);
     return r;
 }
 
@@ -259,7 +269,7 @@ void* CButeTree::Find(const char* key) {
     if (key == 0) {
         void* name = g_projActName;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errorSink->Set(this, (i32)name, 0x16);
+        m_errSink->Set(this, (i32)name, 0x16);
         return 0;
     }
     CButeTreeNode* root = m_root;
@@ -565,7 +575,7 @@ void CVariantSlot::Set(void* key, i32 arg2, i32 arg3) {
         return;
     }
     i32 idx;
-    if (g_varProbeEnabled != 0) {
+    if (g_recCount23 != 0) {
         idx = ((CKeyFinder*)this)->Find((i32)key);
     } else {
         idx = -1;
@@ -621,7 +631,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
         p = realloc((void*)m_base, (m_hi - (idx - at) + 1) * m_stride);
         if (!p) {
             g_retAddrBreadcrumb = GetCallerRetAddr();
-            m_err->Set((void*)this, (u32)s_out_of_memory, 0x22);
+            m_errSink->Set((void*)this, (u32)s_out_of_memory, 0x22);
             return 0;
         }
         i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
@@ -638,7 +648,7 @@ void* _zvec::GrowTo(i32 idx, i32 at) {
     p = realloc((void*)m_base, (hinew - m_lo + 1) * m_stride);
     if (!p) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_err->Set((void*)this, (u32)s_out_of_memory, 0x22);
+        m_errSink->Set((void*)this, (u32)s_out_of_memory, 0x22);
         return 0;
     }
     i32 oldbytes = (m_hi - m_lo + 1) * m_stride;
@@ -675,7 +685,7 @@ RVA(0x0016db90, 0x206)
 void* CButeTree::Insert(const char* key, void* value) {
     if (m_lookupPending == 0) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errorSink->Set(this, (i32) "No prior lookup", 0x16);
+        m_errSink->Set(this, (i32) "No prior lookup", 0x16);
         return 0;
     }
     i32 newbit = m_keyBitLength - 7;
@@ -684,7 +694,7 @@ void* CButeTree::Insert(const char* key, void* value) {
     if (key == 0 || value == 0) {
         void* name = g_projActName;
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        m_errorSink->Set(this, (i32)name, 0x16);
+        m_errSink->Set(this, (i32)name, 0x16);
         return 0;
     }
 
@@ -767,7 +777,7 @@ void* CButeTree::Insert(const char* key, void* value) {
 
     void* cache = g_projActCache;
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    m_errorSink->Set(this, (i32)cache, 0xc);
+    m_errSink->Set(this, (i32)cache, 0xc);
     return 0;
 }
 
@@ -857,8 +867,8 @@ zDArray::~zDArray() {
 // implicit ??_7 vptr stamp to FIRST; the hand-rolled last-store cannot be sunk in
 // MSVC5 (same mechanism as CZArray2D). Converted per the ALL-VTABLES mandate.
 RVA(0x0016df70, 0x22)
-CButeNodeEntry::CButeNodeEntry(i32 n, void* desc) {
-    m_desc = desc;
+CButeNodeEntry::CButeNodeEntry(i32 n, void(__cdecl* teardown)(void*)) {
+    m_teardown = teardown;
     m_kind = (i16)n;
     m_nodeCount = 0;
 }
@@ -889,7 +899,8 @@ CButeNodeEntry::~CButeNodeEntry() {}
 // auto-stamps both vptrs FIRST, shifting the stamp schedule vs the hand-rolled
 // last-stores. Logic byte-faithful; converted per the ALL-VTABLES mandate.
 RVA(0x0016dff0, 0x73)
-zPTree::zPTree(void* desc, i32 n) : zErrHandling(&g_buteNodeErrMsg), CButeNodeEntry(n, desc) {
+zPTree::zPTree(void(__cdecl* teardown)(void*), i32 n)
+    : CContainerErr(&g_buteNodeErrMsg), CButeNodeEntry(n, teardown) {
     m_root = 0;
     m_lookupPending = 0;
 }
@@ -906,24 +917,24 @@ zPTree::zPTree(void* desc, i32 n) : zErrHandling(&g_buteNodeErrMsg), CButeNodeEn
 // frame even under this TU's eh flags.
 // ===========================================================================
 RVA(0x0016e070, 0x7b)
-void CButeStore::ClearRecursive(CButeStoreNode* node) {
-    CButeStoreNode* n = node;
+void CButeStore::ClearRecursive(CButeTreeNode* node) {
+    CButeTreeNode* n = node;
     if (n == 0) {
-        n = m_root18;
+        n = m_root;
         if (n == 0) {
             return;
         }
     }
-    if (n->m_left != 0 && n->m_left->m_key > n->m_key) {
-        ClearRecursive(n->m_left);
+    if (n->m_child[0] != 0 && n->m_child[0]->m_bit > n->m_bit) {
+        ClearRecursive(n->m_child[0]);
     }
-    if (n->m_right != 0 && n->m_right->m_key > n->m_key) {
-        ClearRecursive(n->m_right);
+    if (n->m_child[1] != 0 && n->m_child[1]->m_bit > n->m_bit) {
+        ClearRecursive(n->m_child[1]);
     }
-    ::operator delete(n->m_str);
-    if (m_flags & 2) {
-        m_cb(n->m_val);
-        ::operator delete(n->m_val);
+    ::operator delete(n->m_key);
+    if (m_kind & 2) {
+        m_teardown(n->m_value);
+        ::operator delete(n->m_value);
     }
     ::operator delete(n);
 }
@@ -982,13 +993,13 @@ CKeyFinder::CKeyFinder(void* owner) {
 
 RVA(0x0016e1d0, 0x4b)
 i32 CKeyFinder::Find(i32 key) {
-    i32 hi = g_keyCount - 1;
+    i32 hi = g_recCount23 - 1;
     i32 lo = 0;
     if (hi >= 0) {
         do {
             i32 mid = (lo + hi) / 2;
             m_index = mid;
-            i32 d = g_keyArray[mid * 3] - key;
+            i32 d = g_recs23[mid].m_key - key;
             if (d < 0) {
                 lo = mid + 1;
             } else if (d <= 0) {
@@ -1127,7 +1138,7 @@ void* CKeyFinder::Add(void* key, void* val) {
         );
     }
     g_recs23[m_index].m_4 = val;
-    g_recs23[m_index].m_0 = key;
+    g_recs23[m_index].m_key = (i32)key;
     g_recCount23 = g_recCount23 + 1;
     g_recs23[m_index].m_8 = 0;
     return 0;

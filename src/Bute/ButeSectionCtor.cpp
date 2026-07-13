@@ -27,7 +27,7 @@
 // base (zErrHandling), NOT the simple ??_7CBSecStream@@6B@ that VTBL() emits, so the
 // ctor's vptr-store reloc needs the through-base name. Same datum as CBSecStream's
 // VTBL (its own vtable); the through-base name sorts last and wins the per-rva dedup.
-// @data-symbol: ??_7CBSecStream@@6BzErrHandling@@@ 0x001f0510
+// @data-symbol: ??_7CBSecStream@@6BCContainerErr@@@ 0x001f0510
 
 // CBSecObj10f's ctor (0x16f680, a 3-byte `mov eax,ecx; ret` - empty __thiscall ctor
 // returning `this`) lives in a foreign .text band (<this obj's 0x170210), an orphan

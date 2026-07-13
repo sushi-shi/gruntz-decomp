@@ -287,10 +287,11 @@ public:
 };
 SIZE(CButeMgr, 0x110); // fields through the +0x10f embedded tail object
 
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
-VTBL(CButeStore, 0x001e949c);
-// (g_buteTree's runtime +0x08 secondary @0x5f04dc is bound to this same class's
-// emitted ??_7CButeStore@@6BCButeStoreSecond@@ via @data-symbol in ButeMgr.cpp.)
+// (The store's two vtables are zPTree's - CButeStore IS zPTree, see <Bute/ButeStore.h> -
+//  and they are pinned on their real emitted names in src/Bute/ButeNode.cpp. The old
+//  VTBL(CButeStore, 0x1e949c) here bound them to a class that no longer exists, and the
+//  0x5f04dc pin named a fabricated CButeStoreSecond base; 0x1f04dc is really an
+//  unrecovered container class, now catalogued in config/library_vtables.csv.)
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 

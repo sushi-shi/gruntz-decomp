@@ -1,27 +1,25 @@
-// ButeStoreClear.cpp - the OUT-OF-LINE CButeStore::Reset (0x212a0), the non-inlined
-// twin CChatBoxOwner::ProcessCheatInput calls (C:\Proj\Bute). The real CButeStore::Reset
-// is INLINE in <Bute/ButeStore.h> (folds into CButeMgr::Parse - MUST stay inline; a
-// decl-only Reset craters Parse -22%), so a member is inline XOR out-of-line: this
-// out-of-line twin keeps a distinct host view (CButeStore212a0) beside its class. The
-// recursive free (ClearRecursive @0x16e070) is the REAL CButeStore method (merged
-// container obj src/Gruntz/TypeKeyColl.cpp), reached by casting `this` to CButeStore so
-// its call binds to the retail RVA (byte-neutral: CButeStore's primary base is at +0).
-#include <Bute/ButeMgr.h> // shared CButeStore / CButeStoreNode
+// ButeStoreClear.cpp - the copy of CButeStore::Reset the linker placed at 0x212a0.
+//
+// Same phenomenon as the store's destructor (three copies, see <Bute/ButeStoreLeafDtors.h>):
+// Reset is an INLINE member (<Bute/ButeStore.h>), and MSVC5 without /Gy emits an inline
+// member as a per-object-file static, so a standalone copy exists here as well as inlined
+// into CButeMgr::Parse. It is anchored on a thin subclass that adds nothing, so the inline
+// Reset expands into it verbatim: ClearRecursive(0), then zero the root / the +0x28 field /
+// the node count.
+//
+// The former CButeStore212a0 stand-in (a hand-laid `char m_pad0[0x14]` shell that reached
+// the real method by casting `this` to CButeStore) is gone - that cast existed only because
+// the shell was not actually a CButeStore.
+#include <Bute/ButeStore.h> // the canonical CButeStore (real bases; ClearRecursive; Reset)
 #include <rva.h>
 
-struct CButeStore212a0 {
-    char m_pad0[0x14];
-    void* m_14; // +0x14
-    i32 m_18;   // +0x18  tree root
-    char m_pad1c[0x28 - 0x1c];
-    i32 m_28; // +0x28
-    void Reset();
+// The 0x212a0 copy of the inline Reset (the one CChatBoxOwner::ProcessCheatInput calls).
+struct CButeStoreResetCopy212a0 : public CButeStore {
+    void ResetCopy(); // 0x212a0
 };
-SIZE_UNKNOWN(CButeStore212a0);
+SIZE(CButeStoreResetCopy212a0, 0x2c); // adds nothing to CButeStore
+
 RVA(0x000212a0, 0x21)
-void CButeStore212a0::Reset() {
-    ((CButeStore*)this)->ClearRecursive(0); // real 0x16e070 (this+0 == CButeStore primary base)
-    m_18 = 0;
-    m_28 = 0;
-    m_14 = 0;
+void CButeStoreResetCopy212a0::ResetCopy() {
+    Reset();
 }

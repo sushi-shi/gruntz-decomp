@@ -72,7 +72,7 @@ i32 zDArray::IndexToPtr(i32 i) {
     } else {
         i32 sentinel = (i32)g_projActCache;
         g_retAddrBreadcrumb = GetRetAddr();
-        m_err->Set((void*)this, sentinel, 0xc);
+        m_errSink->Set((void*)this, sentinel, 0xc);
         r = m_spare;
     }
     char* slot = (char*)m_alloc;
@@ -113,7 +113,7 @@ i32 _zvec::IndexToPtr(i32 idx) {
     }
     i32 sentinel = (i32)g_projActCache;
     g_retAddrBreadcrumb = GetRetAddr();
-    m_err->Set((void*)this, sentinel, 0xc);
+    m_errSink->Set((void*)this, sentinel, 0xc);
     return m_spare;
 }
 

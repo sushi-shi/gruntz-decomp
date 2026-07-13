@@ -263,17 +263,18 @@ static char* g_errMsg_Exists;
 static char* g_errMsg_NullArg;
 static char* g_errMsg_BadArg;
 
-// @interleaver CContainerErr::CContainerErr emitted-in typekeycoll - blocked: dual-view
-// wall. Retail emits this ctor COMDAT just before typekeycoll's block, where its sibling
-// ~CContainerErr @0x16da60 lives (getretaddr @0x16d990 is the lone fn before it). Homing
-// to TypeKeyColl.cpp is BLOCKED because that TU models CContainerErr via <Wap32/zBitVec.h>'s
-// vptr-LAST view, and GameText.h (vptr-FIRST ctor view) + zBitVec.h never coexist in one
-// TU (documented wall, see TypeKeyColl.cpp header). Needs the CContainerErr view unification
-// first. Kept-in-place (GameText.h view) + flagged.
+// @interleaver CContainerErr::CContainerErr emitted-in typekeycoll. Retail emits this ctor
+// COMDAT just before typekeycoll's block, where its sibling ~CContainerErr @0x16da60 lives
+// (getretaddr @0x16d990 is the lone fn before it). The old "dual-view wall" that blocked
+// homing it there is GONE - GameText.h's duplicate CContainerErr view is dissolved and this
+// TU now models the class through the canonical <Wap32/zBitVec.h>, so the two headers no
+// longer conflict. Re-homing the body to TypeKeyColl.cpp is now unblocked (follow-up).
 RVA(0x0016d9c0, 0x75)
-CContainerErr::CContainerErr(const char* msg) {
-    m_msg = msg ? msg : g_defaultErrMsg; // +0x04 stored first
-    // vptr install dropped -> compiler-emitted vtable (% ok per drive-to-0)        // +0x00 vtable stored after m_msg
+CContainerErr::CContainerErr(void* errSink) {
+    // +0x04 stored first, the vptr after it (cl's implicit stamp). The arg is the sink to
+    // register with, not a string: ~CContainerErr loads +0x04 into ecx as a __thiscall
+    // `this` (see <Wap32/zBitVec.h>). The default-sink buffer is taken by address.
+    m_errSink = (CVariantSlot*)(errSink ? errSink : g_defaultErrMsg);
 
     if (g_errMsg_OutOfMem == 0) {
         g_errMsg_OutOfMem = "Out of memory";
