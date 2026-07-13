@@ -126,7 +126,13 @@ struct CGameViewport {
     // helpers via (m_5c + 0x40), cast to CViewport by the menu bar, and to this by the
     // render TUs). +0x40 is the on-screen visible rect; +0x84/+0x88 the world blit src.
     struct CameraGeom {
-        char p0[0x40];
+        char p0[0x30];
+        // +0x30/+0x34: the world's pixel extent. CObjectDropper::Update wraps its
+        // drifting double position against them (`m_posX >= (double)geom->m_worldW ->
+        // m_posX = 0.0`), reached as holder->m_24->m_5c->m_worldW.
+        i32 m_worldW; // +0x30  world width  (screen px)
+        i32 m_worldH; // +0x34  world height (screen px)
+        char p38[0x40 - 0x38];
         i32 m_originX; // +0x40
         i32 m_originY; // +0x44
         char p48[0x84 - 0x48];

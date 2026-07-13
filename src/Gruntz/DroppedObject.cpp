@@ -43,6 +43,9 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/SerialObjRef.h>  // CSerialObjRef::Chain (0x8c00)
+#include <Gruntz/UserLogic.h>     // canonical CGameObject / CGameObjLayer (the bound object)
+#include <Gruntz/Brickz.h>        // canonical BrickzCell (the 0x1c-byte tile-grid cell)
+#include <Gruntz/State.h>         // canonical CState (g_gameReg->m_curState; m_levelType @+0x20)
 #include <Globals.h>
 
 #include <string.h> // inline strcmp for the direction-name match
@@ -179,109 +182,55 @@ static inline CDropEntry* DropLookup(i32 coord) {
 // the touched offsets are modeled; see each note).
 // ---------------------------------------------------------------------------
 
-// The bound object's +0x198 geometry/footprint descriptor: the per-frame Update
-// polls its half-extents (+0x18, +0x1c) to build the wander box.
-SIZE_UNKNOWN(DropperLayer);
-struct DropperLayer {
-    char m_pad00[0x18];
-    i32 m_halfWidth;  // +0x18 half-width  (tiles)
-    i32 m_halfHeight; // +0x1c half-height (tiles)
-};
+// The bound-object / registry facet views are GONE. Every one of them was a per-TU
+// re-model of a class this TU ALREADY holds by its real type, and the file disproved
+// them itself - `m_38`/`m_object` are declared `CGameObject*`, and the SAME three-field
+// write appears twice, once through the canonical names and once through the view:
+//     canonical (0xc7a10): o->m_drawActive = 1; o->m_drawFillArg = fill;
+//                          o->m_drawFillCmd = 7;
+//     view      (0xc59f0): o->m_active     = 1; o->m_spriteRef   = sel;
+//                          o->m_state      = 7;
+// and likewise `m_object->m_latchedAnimId != 0xcf851 -> m_flags |= 0x20000` vs the
+// view's `o->m_layerKey != 0xcf851 -> ...`. Same offsets, same logic, two names.
+//
+//   CObjDropObj -> CGameObject       (<Gruntz/UserLogic.h>; m_38/m_object are already
+//                  typed as it. The old note claimed the base "treats +0x194 as padding"
+//                  so the fold was impossible - that is FALSE: UserLogic.h carries
+//                  `char* m_194 // object source-def record (class-name string at +0x24)`,
+//                  exactly the field the view called m_nameRec. It also already has
+//                  m_layer @+0x198 and m_geoId @+0x1b4.)
+//   DropperLayer -> CGameObjLayer    (m_halfWidth/m_halfHeight @+0x18/+0x1c)
+//   DropperFound -> CTmCell (= CGrunt)  the REAL return type of CTriggerMgr::FindGruntAt
+//                  (<Gruntz/TriggerMgr.h>); its +0x10 is CUserLogic::m_object, the bound
+//                  CGameObject - so `found->m_obj` is just `found->m_object`.
+//   DropperBox   -> RECT             FindGruntAt already takes `RECT* span, RECT* src`.
+//   DropperMgr   -> CSpriteFactoryHolder  g_gameReg->m_world is ALREADY declared as it
+//                  (GameRegistry.h); its m_8 is the canonical CSpriteFactory. The Update
+//                  path called CreateSprite through the view while the ActA path (0xc7090)
+//                  already called it cast-free off the real type.
+//   DropperLevel -> CGameViewport    (holder->m_24)
+//   DropperWorld -> CGameViewport::CameraGeom  (the m_5c camera/scroll object; its
+//                  +0x30/+0x34 world bounds are named there now)
+//   DropperTile  -> BrickzCell       (the canonical 0x1c-byte grid cell, <Gruntz/Brickz.h>;
+//                  its m_0 is the packed terrain-flags dword MapMgr.h points at)
+//   DropperAnim  -> dead (an empty comment-holder; the +0x1a0 embedded per-leaf anim
+//                  sub-object is reached by address, which UserLogic.h documents as the
+//                  authentic idiom for that slot)
+//   DropReg2c    -> CState           g_gameReg->m_curState is ALREADY declared CState*;
+//                  its +0x20 is m_levelType (the level terrain-class id CProjectile
+//                  switches on with the same 4/5/8 arms).
 
-// The bound CGameObject viewed by the ctor (m_10 == m_38). A divergent local
-// model of CGameObject (it has a name record at +0x194 the base header treats as
-// padding), so it can't fold onto <Gruntz/UserLogic.h>'s CGameObject without
-// editing that shared base - kept as a local view. Only touched offsets modeled.
-SIZE_UNKNOWN(CObjDropObj);
-struct CObjDropObj {
-    char m_pad00[0x08];
-    i32 m_flags; // +0x08 flags
-    char m_pad0c[0x4c - 0x0c];
-    i32 m_spriteRef; // +0x4c sprite-ref handle
-    i32 m_state;     // +0x50 state
-    char m_pad54[0x58 - 0x54];
-    i32 m_active;  // +0x58 active flag
-    i32 m_screenX; // +0x5c screen X
-    i32 m_screenY; // +0x60 screen Y
-    char m_pad64[0x74 - 0x64];
-    i32 m_layerKey; // +0x74 layer key
-    char m_pad78[0x12c - 0x78];
-    i32 m_travelDir; // +0x12c travel direction (1..4)
-    char m_pad130[0x144 - 0x130];
-    i32 m_144; // +0x144 rect base (probe RECT; L/T/R/B ordering unproven)
-    i32 m_148; // +0x148
-    i32 m_14c; // +0x14c
-    i32 m_150; // +0x150
-    char m_pad154[0x194 - 0x154];
-    char*
-        m_nameRec; // +0x194 the sprite/name record (dir name at +0x24); char* like CGameObject::m_194
-    DropperLayer* m_footprint; // +0x198 footprint descriptor (wander-box half-extents)
-    char m_pad19c[0x1b4 - 0x19c];
-    i32 m_cycleGeomId; // +0x1b4 cycle-geometry id
-};
-
-// The dropper's facet of the registry resource holder (g_gameReg->m_world, an
-// authentic per-mode downcast of the reused +0x30 slot; see CGameRegistry.h):
-// the HUD sprite factory (m_spriteFactory->CreateSprite @0x1597b0, __thiscall) +
-// the level/world tile bounds (m_level->m_world width @0x30 / height @0x34).
-SIZE_UNKNOWN(DropperWorld);
-struct DropperWorld {
-    char m_pad00[0x30];
-    i32 m_widthTiles;  // +0x30 world width  (tiles)
-    i32 m_heightTiles; // +0x34 world height (tiles)
-};
-SIZE_UNKNOWN(DropperLevel);
-struct DropperLevel {
-    char m_pad00[0x5c];
-    DropperWorld* m_world; // +0x5c
-};
-SIZE_UNKNOWN(DropperMgr);
-struct DropperMgr { // (DropperMgr*)g_gameReg->m_world
-    char m_pad00[0x08];
-    CSpriteFactory* m_spriteFactory; // +0x8  HUD sprite factory (canonical, @0x1597b0)
-    char m_pad0c[0x24 - 0xc];
-    DropperLevel* m_level; // +0x24 level bounds
-};
-// The wander RECT the destination probe searches {left, top, right, bottom}.
-SIZE_UNKNOWN(DropperBox);
-struct DropperBox {
-    i32 left;
-    i32 top;
-    i32 right;
-    i32 bottom;
-};
-// The probe result (a tile-logic object): +0x10 -> its bound render object.
-SIZE_UNKNOWN(DropperFound);
-struct DropperFound {
-    char m_pad00[0x10];
-    CObjDropObj* m_obj; // +0x10
-};
-// The world tile map is g_gameReg->m_cmdGrid (the +0x68 CTriggerMgr slot): the drop
-// destination probe IS CTriggerMgr::FindGruntAt @0x75c60 (__thiscall, 0x32ce ILT
-// thunk) - it picks the reachable destination tile in the wander box and returns the
-// CTmCell it lands on. Called cast-free on the real CTriggerMgr (<Gruntz/TriggerMgr.h>).
-// One terrain-plane cell of the registry's tile grid (g_gameReg->m_tileGrid, the
-// canonical CTileGrid): a 0x1c-byte (7-dword) record; dword 0 holds the flags.
-// Reached as ((DropperTile*)grid->m_8[row])[col] - the authentic CTileGrid cell
-// idiom (grid->m_8 is the row-pointer table, cells 0x1c B apart; see CTileGrid.h).
-SIZE_UNKNOWN(DropperTile);
-struct DropperTile {
-    u32 m_flags; // +0x0 terrain flags (bit 1 = blocked)
-    char m_pad04[0x1c - 0x4];
-};
-
-// The bound object's +0x1a0 per-frame animator (Advance_15c360 @0x55c360).
-SIZE_UNKNOWN(DropperAnim);
-struct DropperAnim {
-    // Advance @0x15c360 IS CAniAdvanceCursor::Advance_15c360; cast at the call.
-};
-
-// The +0x20 fx-mode selector facet of g_gameReg->m_curState (the "A" handler's
-// splash switch key).
-struct DropReg2c { // g_gameReg->m_curState
-    char m_pad00[0x20];
-    i32 m_20; // +0x20  fx-mode selector (the splash switch key)
-};
+// The dropper's travel direction, stashed in the bound object's +0x12c. All four arms
+// are PROVEN: each is written under an exact strcmp against its own name literal in
+// CObjectDropper::LoadAttributes, and the matching (dx,dy) unit vector is assigned
+// beside it. The base field itself stays i32 - it is a per-leaf reused CGameObject slot
+// (CSpotLight puts an unrelated scale gate there), so only the VALUES are typed here.
+typedef enum DropperDir {
+    DROPDIR_NORTH = 1, // "LEVEL_OBJECTDROPPER_NORTH", (dx,dy) = ( 0,-1)
+    DROPDIR_EAST = 2,  // "LEVEL_OBJECTDROPPER_EAST",  (dx,dy) = ( 1, 0)
+    DROPDIR_SOUTH = 3, // "LEVEL_OBJECTDROPPER_SOUTH", (dx,dy) = ( 0, 1)
+    DROPDIR_WEST = 4   // "LEVEL_OBJECTDROPPER_WEST",  (dx,dy) = (-1, 0)
+} DropperDir;
 
 // ===========================================================================
 // The three low-band /GX leaf dtors (the 0x124f0..0x126b4 ctor-band pocket).
@@ -457,37 +406,37 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
     m_objAux->m_1c = g_buteTree.Find("A");
     m_38->m_flags |= 0x2000002;
 
-    CObjDropObj* o = (CObjDropObj*)m_object;
+    CGameObject* o = m_object;
     i32 snapX = (o->m_screenX & ~0x1f) + 0x10;
     i32 snapY = (o->m_screenY & ~0x1f) + 0x10;
     o->m_screenX = snapX;
     m_posX = (double)snapX;
     o->m_screenY = snapY;
     m_posY = (double)snapY;
-    if (o->m_layerKey != 0xcf851) {
-        o->m_layerKey = 0xcf851;
+    if (o->m_latchedAnimId != 0xcf851) {
+        o->m_latchedAnimId = 0xcf851;
         o->m_flags |= 0x20000;
     }
 
-    CObjDropObj* obj38 = (CObjDropObj*)m_38;
-    if (obj38->m_nameRec != 0) {
+    CGameObject* obj38 = m_38;
+    if (obj38->m_194 != 0) {
         CString name;
-        name = obj38->m_nameRec + 0x24;
+        name = obj38->m_194 + 0x24;
         const char* s = name;
         if (strcmp(s, "LEVEL_OBJECTDROPPER_NORTH") == 0) {
-            o->m_travelDir = 1;
+            o->m_12c = DROPDIR_NORTH;
             m_travelDx = 0;
             m_travelDy = -1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_EAST") == 0) {
-            o->m_travelDir = 2;
+            o->m_12c = DROPDIR_EAST;
             m_travelDx = 1;
             m_travelDy = 0;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_SOUTH") == 0) {
-            o->m_travelDir = 3;
+            o->m_12c = DROPDIR_SOUTH;
             m_travelDx = 0;
             m_travelDy = 1;
         } else if (strcmp(s, "LEVEL_OBJECTDROPPER_WEST") == 0) {
-            o->m_travelDir = 4;
+            o->m_12c = DROPDIR_WEST;
             m_travelDx = -1;
             m_travelDy = 0;
         }
@@ -502,15 +451,15 @@ CObjectDropper::CObjectDropper(CGameObject* obj) : CUserLogic(obj) {
         m_scrollMode = 1;
     }
     i32 sel = (i32)g_gameReg->m_logicPump->m_tables[5];
-    o->m_active = 1;
-    o->m_state = 7;
-    o->m_spriteRef = sel;
+    o->m_drawActive = 1;
+    o->m_drawFillCmd = 7;
+    o->m_drawFillArg = sel;
     m_lastDropTime = 0;
     m_dropInterval = 0;
-    o->m_144 = 1;
-    o->m_14c = 1;
-    o->m_148 = 1;
-    o->m_150 = 1;
+    o->m_areaL = 1;
+    o->m_areaR = 1;
+    o->m_areaT = 1;
+    o->m_areaB = 1;
 }
 
 // CObjectDropper::InitActReg @0xc5f00 (ex the roster-parked "NetConfigureBe90") -
@@ -580,26 +529,21 @@ RVA(0x000c62e0, 0x2dd)
 i32 CObjectDropper::Update() {
     if ((i64)g_645588 - m_lastDropTime >= m_dropInterval) {
         if (g_gameReg->m_isEasyMode == 0 || g_gameReg->m_134 != 1) {
-            CObjDropObj* o = (CObjDropObj*)m_object;
-            DropperBox box;
-            box.left = o->m_screenX - o->m_footprint->m_halfWidth + 7;
-            box.right = o->m_screenX + o->m_footprint->m_halfWidth - 7;
-            box.top = o->m_screenY - o->m_footprint->m_halfHeight + 7;
-            box.bottom = o->m_screenY + o->m_footprint->m_halfHeight - 7;
+            CGameObject* o = m_object;
+            RECT box;
+            box.left = o->m_screenX - o->m_layer->m_halfWidth + 7;
+            box.right = o->m_screenX + o->m_layer->m_halfWidth - 7;
+            box.top = o->m_screenY - o->m_layer->m_halfHeight + 7;
+            box.bottom = o->m_screenY + o->m_layer->m_halfHeight - 7;
             i32 tx;
             i32 ty;
-            DropperFound* found = (DropperFound*)g_gameReg->m_cmdGrid->FindGruntAt(
-                o->m_screenX,
-                o->m_screenY,
-                (RECT*)&o->m_144,
-                &tx,
-                &ty,
-                (RECT*)&box
-            );
+            CTmCell* found =
+                g_gameReg->m_cmdGrid
+                    ->FindGruntAt(o->m_screenX, o->m_screenY, (RECT*)&o->m_areaL, &tx, &ty, &box);
             if (found != 0) {
                 if (m_lastDropTileX != tx || m_lastDropTileY != ty) {
                     if (m_scrollMode == 0 || tx == 0) {
-                        CObjDropObj* fo = found->m_obj;
+                        CGameObject* fo = found->m_object;
                         i32 fx = fo->m_screenX;
                         i32 fy = fo->m_screenY;
                         CTileGrid* plane = g_gameReg->m_tileGrid;
@@ -609,11 +553,14 @@ i32 CObjectDropper::Update() {
                         if ((u32)cx >= (u32)plane->m_c || (u32)cy >= (u32)plane->m_10) {
                             flags = 1;
                         } else {
-                            flags = ((DropperTile*)plane->m_8[cy])[cx].m_flags;
+                            // the row table is typed i32** on CMapMgr; the row's cells are
+                            // the canonical 0x1c-byte BrickzCell (its m_0 = packed terrain
+                            // flags). @fold-TODO in MapMgr.h tracks retyping m_8 to
+                            // BrickzCell** tree-wide.
+                            flags = (u32)((BrickzCell*)plane->m_8[cy])[cx].m_0;
                         }
                         if ((flags & 2) == 0) {
-                            ((DropperMgr*)g_gameReg->m_world)
-                                ->m_spriteFactory
+                            g_gameReg->m_world->m_8
                                 ->CreateSprite(0, fx, fy, 0, "DroppedObjectShadow", 0x40003);
                             m_lastDropTileX = tx;
                             m_lastDropTileY = ty;
@@ -632,7 +579,8 @@ i32 CObjectDropper::Update() {
     double drift = (double)g_645584 * m_speed;
     if (m_travelDx > 0) {
         m_posX += drift;
-        if (m_posX >= (double)((DropperMgr*)g_gameReg->m_world)->m_level->m_world->m_widthTiles) {
+        if (m_posX
+            >= (double)((CGameViewport::CameraGeom*)g_gameReg->m_world->m_24->m_5c)->m_worldW) {
             m_posX = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -640,15 +588,16 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDx < 0) {
         m_posX -= drift;
         if (m_posX < 0.0) {
-            m_posX =
-                (double)(((DropperMgr*)g_gameReg->m_world)->m_level->m_world->m_widthTiles - 1);
+            m_posX = (double)(((CGameViewport::CameraGeom*)g_gameReg->m_world->m_24->m_5c)->m_worldW
+                              - 1);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }
     }
     if (m_travelDy > 0) {
         m_posY += drift;
-        if (m_posY > (double)((DropperMgr*)g_gameReg->m_world)->m_level->m_world->m_heightTiles) {
+        if (m_posY
+            > (double)((CGameViewport::CameraGeom*)g_gameReg->m_world->m_24->m_5c)->m_worldH) {
             m_posY = 0.0;
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
@@ -656,8 +605,8 @@ i32 CObjectDropper::Update() {
     } else if (m_travelDy < 0) {
         m_posY -= drift;
         if (m_posY < 0.0) {
-            m_posY =
-                (double)(((DropperMgr*)g_gameReg->m_world)->m_level->m_world->m_heightTiles - 1);
+            m_posY = (double)(((CGameViewport::CameraGeom*)g_gameReg->m_world->m_24->m_5c)->m_worldH
+                              - 1);
             m_lastDropTileX = -1;
             m_lastDropTileY = -1;
         }
@@ -886,7 +835,7 @@ i32 CDroppedObject::ActA() {
                 if (cell == 0x40) {
                     m_38->m_flags |= 0x10000;
                 } else {
-                    switch (((DropReg2c*)g_gameReg->m_curState)->m_20) {
+                    switch (g_gameReg->m_curState->m_levelType) {
                         case 4:
                         case 5:
                         case 8:
@@ -1114,4 +1063,3 @@ SIZE_UNKNOWN(CShadowActEntry);
 SIZE_UNKNOWN(CDroppedObject);
 SIZE_UNKNOWN(DropAnimSink);
 SIZE_UNKNOWN(CGameRegistry);
-SIZE_UNKNOWN(DropReg2c);

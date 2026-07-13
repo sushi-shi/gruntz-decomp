@@ -295,10 +295,10 @@ i32 CPathHazard::Tick() {
     // screen position, inset by the layer base (m_198->m_18/m_1c, re-read each
     // component as retail does) and a 7px margin.
     i32 rect[4];
-    rect[0] = obj->m_screenX - obj->m_layer->m_baseX + 7;
-    rect[2] = obj->m_layer->m_baseX + obj->m_screenX - 7;
-    rect[1] = obj->m_screenY - obj->m_layer->m_1c + 7;
-    rect[3] = obj->m_layer->m_1c + obj->m_screenY - 7;
+    rect[0] = obj->m_screenX - obj->m_layer->m_halfWidth + 7;
+    rect[2] = obj->m_layer->m_halfWidth + obj->m_screenX - 7;
+    rect[1] = obj->m_screenY - obj->m_layer->m_halfHeight + 7;
+    rect[3] = obj->m_layer->m_halfHeight + obj->m_screenY - 7;
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
@@ -410,10 +410,10 @@ i32 CPathHazard::SiblingTick() {
 
     CGameObject* obj = m_object;
     i32 rect[4];
-    rect[0] = obj->m_screenX - obj->m_layer->m_baseX + 7;
-    rect[2] = obj->m_layer->m_baseX + obj->m_screenX - 7;
-    rect[1] = obj->m_screenY - obj->m_layer->m_1c + 7;
-    rect[3] = obj->m_layer->m_1c + obj->m_screenY - 7;
+    rect[0] = obj->m_screenX - obj->m_layer->m_halfWidth + 7;
+    rect[2] = obj->m_layer->m_halfWidth + obj->m_screenX - 7;
+    rect[1] = obj->m_screenY - obj->m_layer->m_halfHeight + 7;
+    rect[3] = obj->m_layer->m_halfHeight + obj->m_screenY - 7;
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {

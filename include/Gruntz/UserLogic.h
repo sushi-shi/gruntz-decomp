@@ -101,10 +101,18 @@ struct CGameObjLayer {
     char m_pad00[0x10];
     i32 m_zClampLo; // +0x10  z-clamp bound (eyecandy)
     i32 m_zClampHi; // +0x14  z-clamp bound (eyecandy)
-    i32 m_baseX;    // +0x18  layer base X (path/dropper screen-rect origin)
-    i32 m_1c;       // +0x1c  layer base Y / base offset
-    i32 m_20;       // +0x20  layer screen-offset X (CGruntVoice::Update bubble placement)
-    i32 m_24;       // +0x24  layer screen-offset Y (CGruntVoice::Update bubble placement)
+    // +0x18/+0x1c are the object's HALF-EXTENTS, not a base origin (the old
+    // m_baseX/"layer base X" name was a misreading; renamed via sema rename).
+    // Three independent consumers agree, all building a box SYMMETRICALLY around the
+    // object's screen position:
+    //   PathHazard::0x298    rect = (sx - m_halfWidth + 7, sy - m_halfHeight + 7,
+    //                                sx + m_halfWidth - 7, sy + m_halfHeight - 7)
+    //   CObjectDropper::Update  the identical +-7 wander box
+    //   TileLogicPump/FrontCandyAni  z-sort key = sy + m_halfHeight (the bottom/feet edge)
+    i32 m_halfWidth;  // +0x18  half-width  (screen px)
+    i32 m_halfHeight; // +0x1c  half-height (screen px)
+    i32 m_20;         // +0x20  layer screen-offset X (CGruntVoice::Update bubble placement)
+    i32 m_24;         // +0x24  layer screen-offset Y (CGruntVoice::Update bubble placement)
 };
 
 // The logic-handler name map reached through the object's world context

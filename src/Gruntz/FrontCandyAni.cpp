@@ -142,7 +142,7 @@ CEyeCandyAni::CEyeCandyAni(CGameObject* obj) : CUserLogic(obj) {
     }
     CGameObject* o = m_object;
     if (o->m_latchedAnimId == 0 && o->m_layer != 0) {
-        i32 v = o->m_layer->m_1c + o->m_screenY + 0x186a0;
+        i32 v = o->m_layer->m_halfHeight + o->m_screenY + 0x186a0;
         if (o->m_latchedAnimId != v) {
             o->m_latchedAnimId = v;
             o->m_flags |= 0x20000;

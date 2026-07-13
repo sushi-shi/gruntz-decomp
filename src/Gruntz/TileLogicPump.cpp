@@ -651,7 +651,7 @@ CCheckpointTrigger::CCheckpointTrigger(CGameObject* obj) : CUserLogic(obj) {
     m_objAux->m_1c = g_buteTree.Find(s_codeA);
     m_38->m_flags |= 2;
     m_38->m_flags |= 1;
-    i32 zk = m_object->m_layer->m_1c + m_object->m_screenY + 0x186a0;
+    i32 zk = m_object->m_layer->m_halfHeight + m_object->m_screenY + 0x186a0;
     if (m_object->m_latchedAnimId != zk) {
         m_object->m_latchedAnimId = zk;
         m_object->m_flags |= 0x20000;
