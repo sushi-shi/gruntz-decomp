@@ -121,6 +121,12 @@ struct CImageSet3 : CObject {
     virtual i32 ScanRightGate_166ff0(i32 x, i32 y, i32 val, i32* outX); // [15] 0x166ff0
     virtual i32 ScanDown_167050(i32 x, i32 y, i32* outY, i32* outVal);  // [16] 0x167050
     virtual i32 ScanDownGate_1670d0(i32 x, i32 y, i32 val, i32* outY);  // [17] 0x1670d0
+    // Declared-only (body 0x1633e0, LevelPlane.cpp): forward the grid's serialized size
+    // when present. Added here so Play.cpp can call it on the real class instead of on
+    // the fabricated `Eng` conflation (byte-neutral: the call reloc-masks either way,
+    // but only this spelling binds to the symbol retail actually calls).
+    i32 GetSize_1633e0(); // 0x1633e0
+
     CImageSet3() {
         m_width = 0; // cl auto-stamps &??_7CImageSet3 first
         m_pixels = 0;

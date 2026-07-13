@@ -148,7 +148,22 @@ public:
 // The zoned sound-bank manager (CWorld::m_48); RegionEnter/RegionLeave pause +
 // resume the currently-playing zoned sound via its real (named) methods.
 #include <Dsndmgr/GruntzSoundZ.h>
+// The real owners of the ex-`Eng` conflation (see the note below): each was reached by
+// casting a pointer to a fabricated `Eng` and calling a fabricated method on it.
+#include <Gruntz/Multi.h>              // CMulti::AckJoinFailure  (was Eng::Teardown)
+#include <Gruntz/CBrickz.h>            // CBrickz::LoadAttributes (was Eng::LoadAttributes)
+#include <Gruntz/Brickz.h>             // CBrickzGrid::UpdateDiagonals
+#include <Gruntz/ParseSource.h>        // CParseSource::BeginParse/EndParse
+#include <Gruntz/ImageSets.h>         // CImageSet3::GetSize_1633e0 (was Eng::GetSize)
+#include <DinMgr2/DirectInputMgr2.h>   // DirectInputMgr2::ReadAll (was Eng::HideMenu)
 #include <Globals.h>
+
+// Placement new: the team-slot "reset" at 0x40a7 is retail RE-CONSTRUCTING a GruntzPlayer
+// in place (`mov ecx,<slot>; push 0; call ??0GruntzPlayer@@QAE@H@Z`). No allocation, so it
+// is matching-neutral - it just runs the real ctor on the existing storage.
+inline void* operator new(u32, void* p) {
+    return p;
+}
 
 // The grid cell / selectable object picked at a screen point (OnMouseUp's marker/
 // select dispatch) - the facet of the real CTriggerMgr::CTmCell returned by
@@ -758,29 +773,19 @@ extern void* g_61139c;              // PTR_DAT_0061139c
 //   (d) @identity-TODO - genuinely unrecovered (no xref/header): ObListInit 0x1b48a6,
 //       ButeStore 0x1b5485, GetBool 0x1bedde, CImageSet3::GetSize 0x1633e0 (no header).
 // ---------------------------------------------------------------------------
-struct Eng {
-    void Teardown();                           // 0x137a80  (grid)
-    void Reset0();                             // 0x138530  (m_4->m_48)
-    void WorkerReset(i32 a);                   // 0x40a7    (team)
-    void BattlezInit();                        // 0x2e3c    CBattlezData::Init (g_gameReg->m_7c)
-    void ObListInit();                         // 0x1b48a6  (g_gameReg->m_6c+0x1c)
-    void ClearList();                          // 0x2c11    (g_gameReg->m_6c)
-    i32 BeginParse();                          // 0x139960  CParseSource (set)
-    i32 EndParse();                            // 0x1399d0  CParseSource (set)
-    i32 LoadAttributes(i32 a, i32 b);          // 0x3d19    CBrickz (m_4->m_70)
-    i32 UpdateDiagonals(void* a);              // 0x3562    CBrickzGrid (m_4->m_70)
-    i32 InstallLightFx(void* mgr, i32 id);     // 0x3bf2    CLightFxRender (ctx)
-    i32 BuildLightShape(i32 a);                // 0x3bca    CLightFxRender (ctx)
-    i32 GetSize();                             // 0x1633e0/0x163300 CImageSet3
-    void ClearTiles(i32 n);                    // 0x130c    CSBI_RectOnly (m_2dc)
-    void PostMap();                            // 0x26a3    CSBI_RectOnly (m_2dc)
-    void HideMenu();                           // 0x133110  (g_645570)
-    void ShadeRect(i32 a, void* rect);         // 0x13f460  CDDSurface (map surface)
-    i32 TimerEqSet(i32 a, i32 b);              // 0x2eaa    CTimer::LoadTimerSprite (m_3f4)
-    void TimerReset();                         // 0x14ce    CTimer::Reset (m_3f4)
-    i32 GetBool(i32 key, void* out, i32 dflt); // 0x1bedde  GetBool (bute)
-    void ButeStore(void* key, void* val);      // 0x1b5485  (g_gameReg->m_68+0x260)
-};
+// (`struct Eng` is GONE - it was a CONFLATION, not a class: 21 fabricated methods
+// standing in for 21 functions on ~15 DIFFERENT real classes, every one of which was
+// already reconstructed and RVA-bound elsewhere in the tree. Every call went through
+// `E(p)` - a cast of some unrelated pointer to the fake type - so all 21 symbols were
+// PHANTOM (?Xxx@Eng@@...): referenced by `play`, owned by a class with no retail
+// address, and therefore unlinkable. Worse, ONE fake name covered TWO different real
+// functions (Eng::Teardown was used both for SoundStream::Stop @0x137a80 and for
+// CMulti::AckJoinFailure @0xbc420), so even a hypothetical binding could only ever have
+// been right for one of them. Each call site now names its real class + real method, so
+// the rel32 binds to the symbol retail actually calls. Resolved by chasing each ILT
+// thunk to its body and reading the name off symbol_names (gruntz.analysis.vtable_owner
+// / sema disasm). The two still-unresolved ones are marked below.)
+
 
 // ---------------------------------------------------------------------------
 // Genuine __cdecl engine helpers (reloc-masked rel32).
@@ -797,7 +802,6 @@ void EngStr_DrawText(                                         // 0x1c5d  YAX...
 
 #define I32(p, off) (*(i32*)((char*)(p) + (off)))
 #define PTR(p, off) (*(void**)((char*)(p) + (off)))
-#define E(p) ((Eng*)(p))
 
 // ---------------------------------------------------------------------------
 // The PLAY-state level loader (`this`). Its own init-chain steps are __thiscall
@@ -879,9 +883,9 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     // tear down the old grid (self->m_c->m_28->m_2c) / map / sound sub-objects
     void* grid = PTR(PTR(PTR(self, 0xc), 0x28), 0x2c);
     if (grid != 0) {
-        E(grid)->Teardown();
+        ((SoundStream*)grid)->Stop();
     }
-    E(PTR(PTR(self, 0x4), 0x48))->Reset0();
+    ((CGruntzSoundZ*)PTR(PTR(self, 0x4), 0x48))->StopAndFlush();
     ((CWorldSoundSet*)PTR(PTR(self, 0x4), 0x54))->Teardown();
     ((CGruntSpawnConfig*)PTR(PTR(self, 0x4), 0x60))->DtorBody();
     ((CGruntSpawnConfig*)PTR(PTR(self, 0x4), 0x60))->ClearSprites();
@@ -918,7 +922,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
         gameReg = g_gameReg;
         void* team = (char*)hostBase + t * 0x48 * 8 - t * 8 + 0x150; // [edx+ecx*8+0x150]
         if (I32(gameReg, 0x134) == 1) {
-            E(team)->WorkerReset(0);
+            new ((void*)team) GruntzPlayer(0);
             if (t == 0) {
                 I32(team, 0x20) = 1;
                 I32(team, 0x28) = 1;
@@ -947,9 +951,9 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
     g_resourceInstallActive = 0;
     Cmd_ResetScroll();
-    E(PTR(g_gameReg, 0x7c))->BattlezInit();
-    E((char*)PTR(g_gameReg, 0x6c) + 0x1c)->ObListInit();
-    E(PTR(g_gameReg, 0x6c))->ClearList();
+    ((CBattlezData*)PTR(g_gameReg, 0x7c))->Init();
+    ((CObList*)((char*)PTR(g_gameReg, 0x6c) + 0x1c))->RemoveAll();
+    ((CGruntzCmdMgr*)PTR(g_gameReg, 0x6c))->DrainBase();
     g_64558c = 0;
     I32(self, 0x1bc) = 0;
     I32(PTR(self, 0x4), 0x130) = 0;
@@ -971,7 +975,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
             if (ins == 0) {
                 return 0;
             }
-            void* desc = (void*)E(set)->BeginParse();
+            void* desc = (void*)((CParseSource*)set)->BeginParse();
             if (desc == 0) {
                 goto fail0;
             }
@@ -986,7 +990,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
                 break;
             }
             i32 num = atoi(p);
-            E(set)->EndParse();
+            ((CParseSource*)set)->EndParse();
             level = num;
         } else if (I32(host, 0x12c) != 0) {
             // MULTI: same digit resolve off "GAME_MULTI".
@@ -1002,7 +1006,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
             if (ins == 0) {
                 return 0;
             }
-            void* desc = (void*)E(set)->BeginParse();
+            void* desc = (void*)((CParseSource*)set)->BeginParse();
             if (desc == 0) {
                 goto fail0;
             }
@@ -1017,7 +1021,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
                 break;
             }
             i32 num = atoi(p);
-            E(set)->EndParse();
+            ((CParseSource*)set)->EndParse();
             level = num;
         } else {
             // default: bute-driven level number (ValidateMainBlock(CString)).
@@ -1119,7 +1123,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     BuildHelpReveal(0);
     Vslot21(); // vtable +0x84 (CPlay slot 33)
     if (savedThis != 0) {
-        E(savedThis)->Teardown(); // AckJoinFailure placeholder (0x35e4 on saved obj)
+        ((CMulti*)savedThis)->AckJoinFailure(); // AckJoinFailure placeholder (0x35e4 on saved obj)
     }
     RegisterInputBindings();
 
@@ -1140,13 +1144,13 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
 
         BuildHelpReveal(0);
         if (savedThis != 0) {
-            E(savedThis)->Teardown();
+            ((CMulti*)savedThis)->AckJoinFailure();
         }
         RegisterInputBindings();
 
         BuildHelpReveal(0);
         if (savedThis != 0) {
-            E(savedThis)->Teardown();
+            ((CMulti*)savedThis)->AckJoinFailure();
         }
         RegisterInputBindings();
 
@@ -1158,7 +1162,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     // a tail of paired BeginStep(0)/EndStep brackets around the real init steps.
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (modeFlag != 0 && I32(g_gameReg, 0x134) == 1) {
@@ -1171,7 +1175,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!StepC(1)) {
@@ -1179,7 +1183,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!StepD((i32)savedThis)) {
@@ -1192,7 +1196,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!StepF(1)) {
@@ -1200,7 +1204,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!StepG(0)) {
@@ -1208,12 +1212,12 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     StepH();
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!StepI(1)) {
@@ -1221,7 +1225,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!StepJ(1)) {
@@ -1229,7 +1233,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     if (!BuildWorldLevelPath(1)) { // vtable +0xa8 (CPlay slot 42)
@@ -1237,21 +1241,21 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
 
     // finalize the world planes
     ((CGruntzMgr*)PTR(self, 0x4))->RecomputeViewScale();
     if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-        E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
+        ((CImageSet3*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
     }
     if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-        E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
+        ((CImageSet3*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
 
@@ -1259,11 +1263,11 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     {
         void* g5c = PTR(PTR(PTR(self, 0xc), 0x24), 0x5c);
         void* host70 = PTR(PTR(self, 0x4), 0x70);
-        if (!E(host70)->LoadAttributes(I32(g5c, 0x28), I32(g5c, 0x2c))) {
+        if (!((CBrickz*)host70)->LoadAttributes(I32(g5c, 0x28), I32(g5c, 0x2c))) {
             goto fail0;
         }
     }
-    if (!E(PTR(PTR(self, 0x4), 0x70))->UpdateDiagonals(PTR(self, 0x4))) {
+    if (!((CBrickzGrid*)PTR(PTR(self, 0x4), 0x70))->UpdateDiagonals((i32)PTR(self, 0x4))) {
         goto fail0;
     }
 
@@ -1283,11 +1287,11 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
             ctx = 0;
         }
         I32(self, 0x320) = (i32)ctx;
-        if (!E(ctx)->InstallLightFx(PTR(self, 0x4), 0xfa)) {
+        if (!((CLightFxRender*)ctx)->Init((LfxMgr*)PTR(self, 0x4), 0xfa)) {
             goto fail0;
         }
     }
-    if (!E(PTR(self, 0x320))->BuildLightShape(I32(self, 0x20))) {
+    if (!((CLightFxRender*)PTR(self, 0x320))->BuildShape(I32(self, 0x20))) {
         goto fail0;
     }
 
@@ -1296,7 +1300,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
     if (I32(gameReg, 0x134) != 1) {
         CString warp; // [esp+0x14]
         i32 same = 0;
-        if (E(&warp)->GetBool(0x81ab, &warp, 2)) {
+        if (warp.LoadString(0x81ab)) {
             char* a = (char*)(const char*)((CGruntzMgr*)g_gameReg)->GetWorldFileName();
             char* b = (char*)(const char*)warp;
             i32 eq = 1;
@@ -1334,10 +1338,10 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
             key.Format("Level%i", i);
             void* bm = PTR(g_gameReg, 0x68);
             i32 v = g_buteMgr.GetInt((const char*)key, "WarpStone");
-            E((char*)bm + 0x260)->ButeStore(PTR(bm, 0x268), (void*)v);
+            ((CByteArray*)((char*)bm + 0x260))->SetAtGrow((i32)PTR(bm, 0x268), (u8)v);
         }
     }
-    E(PTR(self, 0x2dc))->ClearTiles(I32(self, 0x1c));
+    ((CSBI_RectOnly*)PTR(self, 0x2dc))->LoadMultiplayerBattlezConfig(I32(self, 0x1c));
 
     // ---- CursorSnapSprite registration (factory at [self+0xc]->m_8) ----
     set = ((CSpriteFactory*)PTR(PTR(self, 0xc), 0x8))
@@ -1350,10 +1354,10 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
             // empty cursor-snap set -> reset the resource-install flag
             void* tiles = PTR(self, 0x2dc);
             i32 id = (I32(tiles, 0) == 0) ? 0x1a9 : 0x249;
-            if (!E(PTR(self, 0x3f4))->TimerEqSet(id, 0x1ca)) {
+            if (!((CTimer*)PTR(self, 0x3f4))->LoadTimerSprite(id, 0x1ca)) {
                 void* spr = PTR(self, 0x3f4);
                 if (spr != 0) {
-                    E(spr)->TimerReset();
+                    ((CTimer*)spr)->Reset();
                     RezFree(spr);
                     I32(self, 0x3f4) = 0;
                 }
@@ -1364,20 +1368,20 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
                 && LoadStep3()) {
                 void* host8b = PTR(PTR(self, 0xc), 0x8);
                 (*(void (**)(void*, i32))((char*)*(void**)host8b + 0x24))(host8b, 0);
-                E(PTR(self, 0x2dc))->PostMap();
-                E(g_645570)->HideMenu();
+                ((CSBI_RectOnly*)PTR(self, 0x2dc))->winapi_107d00_SetRect();
+                ((DirectInputMgr2*)g_645570)->ReadAll();
                 while (ShowCursor(0) >= 0)
                     ;
                 ((CGruntzMgr*)PTR(self, 0x4))->CGruntzMgr::PerFrameTick();
                 if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-                    E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
+                    ((CImageSet3*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
                 }
                 if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-                    E(PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize();
+                    ((CImageSet3*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
                 }
                 BuildHelpReveal(0);
                 if (savedThis != 0) {
-                    E(savedThis)->Teardown();
+                    ((CMulti*)savedThis)->AckJoinFailure();
                 }
                 RegisterInputBindings();
                 if (BuildMusicCategoryTable(reload)) { // vtable +0xa4 (CPlay slot 41)
@@ -1391,19 +1395,19 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
 okContinue:
     BuildHelpReveal(0);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
     RegisterInputBindings();
     BuildHelpReveal(1);
     ActiveWait(0x64);
     if (savedThis != 0) {
-        E(savedThis)->Teardown();
+        ((CMulti*)savedThis)->AckJoinFailure();
     }
 
     gameReg = g_gameReg;
     if (I32(gameReg, 0x114) == 0) {
         void* mapHost = PTR(PTR(PTR(PTR(self, 0xc), 0x4), 0x10), 0x2c);
-        E(mapHost)->ShadeRect(0x32, 0);
+        ((CDDSurface*)mapHost)->ShadeRect(0x32, 0);
         gameReg = g_gameReg;
     }
 
@@ -1417,7 +1421,7 @@ okContinue:
         rect[1] = 0;
         rect[2] = 0x280;
         rect[3] = 0x1e0;
-        if (E(&scr)->GetBool(0x8128, &scr, 4)) {
+        if (scr.LoadString(0x8128)) {
             EngStr_DrawText(PTR(self, 0xc), rect, (char*)nameBuf + 0x4, 0x78, 1, 0xff, 0xff, 0, 1);
         }
     } else {
@@ -5981,15 +5985,12 @@ i32 CPlay::LoadGameAnims(i32 force) {
 // the game) as 'XMI' resources and, if the resolved entry loads, installs it under
 // its name. The arg (force flag) is unused. __thiscall, ret 4.
 // ===========================================================================
-// A resolved music-category entry (CSymTab::Insert result): +0xc install key + a
-// BeginParse() loader. CParseSource::BeginParse @0x139960 loads the entry (the entry
-// IS the parse source); header-less local decl. The level/game MIDIZ banks are the
-// real CState::m_levelBank/m_gameBank CSymTab members (read directly, no view).
-struct CParseSource {
-    char p0[0xc];
-    void* m_c;        // +0xc  install key
-    i32 BeginParse(); // 0x139960
-};
+// The resolved music-category entry (CSymTab::Insert result) IS the canonical
+// CParseSource (<Gruntz/ParseSource.h>) - the entry IS the parse source, and its
+// BeginParse @0x139960 loads it. The local re-declaration is dissolved; its "+0xc install
+// key" was a MIS-NAMING of the canonical m_length: the call it feeds is
+// CreateBank(buffer, LENGTH, name), so +0x0c is the byte length, exactly as the stream
+// methods (SetPos/Read) already read it.
 // The destination category table is the CGruntzSoundZ manager at m_4->m_48
 // (StopAndFlush @0x138530, CreateBank @0x138670; GruntzSoundZ.h).
 struct CMusicOwner {
@@ -6013,28 +6014,28 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "AMBIENT0");
+                self->m_4->m_48->CreateBank(res, e->m_length, "AMBIENT0");
             }
         }
         e = (CParseSource*)levelSet->Insert("AMBIENT1", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "AMBIENT1");
+                self->m_4->m_48->CreateBank(res, e->m_length, "AMBIENT1");
             }
         }
         e = (CParseSource*)levelSet->Insert("INTRO0", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "INTRO0");
+                self->m_4->m_48->CreateBank(res, e->m_length, "INTRO0");
             }
         }
         e = (CParseSource*)levelSet->Insert("INTRO1", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "INTRO1");
+                self->m_4->m_48->CreateBank(res, e->m_length, "INTRO1");
             }
         }
     }
@@ -6045,21 +6046,21 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "POWERUP");
+                self->m_4->m_48->CreateBank(res, e->m_length, "POWERUP");
             }
         }
         e = (CParseSource*)gameSet->Insert("CURSE", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "CURSE");
+                self->m_4->m_48->CreateBank(res, e->m_length, "CURSE");
             }
         }
         e = (CParseSource*)gameSet->Insert("MONOLITH", (void*)MUSIC_TAG_XMI);
         if (e) {
             void* res = (void*)e->BeginParse();
             if (res) {
-                self->m_4->m_48->CreateBank(res, (u32)e->m_c, "MONOLITH");
+                self->m_4->m_48->CreateBank(res, e->m_length, "MONOLITH");
             }
         }
     }
@@ -6074,12 +6075,9 @@ i32 CPlay::BuildMusicCategoryTable(i32) {
 // ===========================================================================
 // The per-namespace load-notify sink (arg): OnLoaded() probes its ready flags and
 // posts a progress message. External/reloc-masked.
-// The load-notify sink IS a CMulti; OnLoaded @0xbc420 = CMulti::AckJoinFailure. Minimal local decl.
-SIZE_UNKNOWN(CMulti);
-class CMulti {
-public:
-    void AckJoinFailure();
-};
+// The load-notify sink IS a CMulti (OnLoaded @0xbc420 = CMulti::AckJoinFailure); the
+// canonical class comes from <Gruntz/Multi.h>, now included at the top - the minimal
+// local re-declaration is dissolved.
 
 RVA(0x000dd830, 0x1e3)
 i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
