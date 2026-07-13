@@ -192,7 +192,6 @@ struct CVarTableEntry {
 };
 DATA(0x002bf49c)
 extern CVarTableEntry g_varTable[]; // 0x6bf49c
-DATA(0x002bf618)
 
 // The slot label formatter (__cdecl(buf, value, cap)).
 extern "C" void Format_18d0f0(char* buf, i32 value, i32 cap); // 0x18d0f0

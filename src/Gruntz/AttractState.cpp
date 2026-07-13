@@ -82,8 +82,6 @@ DATA(0x002293f4)
 extern char g_emptyString[];
 DATA(0x0021ab20)
 extern i32 g_sndEnabled;
-DATA(0x002c4650)
-DATA(0x002c44c0)
 
 // Source string literals (objdiff matches these .data relocations by value).
 #define s_STATEZ_ATTRACT "STATEZ_ATTRACT"

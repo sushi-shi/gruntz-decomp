@@ -25,7 +25,6 @@
 // The cursor-show counter, cached in a game-owned function pointer (ff 15).
 // reloc-fidelity: RVA 0x2c44c4 (was the VA 0x6c44c4 = 0x400000+RVA typo, which
 // keep-last-wins poisoned the shared ?::ShowCursor binding for `play`/apphelpers).
-DATA(0x002c44c4)
 
 // ---------------------------------------------------------------------------
 // CImageState - a CState-derived front-end state whose slot-8 loader installs the "MENU"

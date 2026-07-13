@@ -11,7 +11,6 @@
 #include <Gruntz/Wnd.h>
 
 // SendMessageA is reached through a game-owned function pointer (ff 15).
-DATA(0x002c44a4)
 
 class CBattlezDlg {
 public:

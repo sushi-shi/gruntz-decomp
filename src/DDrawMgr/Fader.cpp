@@ -462,7 +462,6 @@ SIZE(PalEntry, 0x4);          // 4-byte palette record (256-entry array stride)
 SIZE(CShadeTableCache, 0x18); // RE'd heap-alloc size (CGruntzMgr +0x50)
 
 // PtInRect reached through a game-owned function pointer (ff 15).
-DATA(0x002c456c)
 
 struct Surf {
     char m_pad00[0x18];
@@ -944,7 +943,6 @@ struct FxMeshBuffer {
 
 // The OffsetRect import (reached via the global function pointer at 0x6c4490) and
 // the two .rdata float constants the projection compares/biases against.
-DATA(0x002c4490)
 
 // Rez heap for the buffer grow (reloc-masked). Param unified to i32 across the
 // merged sections (extern "C" cannot overload; 32-bit push is width-neutral).

@@ -1183,13 +1183,47 @@ def main():
         for tu in no_ir:
             log(f"ERROR {tu}: label pass produced NO IR - the TU compiles under cl but "
                 f"clang rejected it, so ALL of its functions would silently vanish from "
-                f"{args.out}. (Common cause: an MFC header inline clang rejects - see the "
+                f"{args.out}. (Causes seen: an ORPHAN `DATA(0x..)` with no declaration "
+                f"under it - see the orphan-annotation gate below, which usually fires "
+                f"first; or an MFC header inline clang rejects - the "
                 f"`#undef _AFX_ENABLE_INLINES` guard in docs/build-system.md.)")
         for tu in no_rows:
             log(f"ERROR {tu}: carries rva.h macros but labelled NOTHING - its functions "
                 f"would silently vanish from {args.out}.")
         log(f"{len(no_ir) + len(no_rows)} TU(s) contributed no labels; refusing to write "
             f"{args.out}. A TU that compiles MUST contribute.")
+        return 1
+
+    # ------------------------------------------------------------------
+    # ORPHAN-ANNOTATION GATE. A `DATA(0x..)` / `RVA(..)` line with NO declaration under it
+    # is not a no-op: DATA() is a clang annotate attribute, so clang attaches it to
+    # whatever declaration comes NEXT and binds THAT name to the orphan's rva. cl expands
+    # the macro to nothing, so the unit still compiles and nobody notices.
+    #
+    # This shipped silently: deleting a declaration but leaving its DATA() line above put
+    # THREE rows in symbol_names.csv for ?g_faderHalf@@3MB - its real 0x1f0828 plus
+    # 0x2c4490 and 0x2c456c, the OffsetRect and PtInRect IAT slots whose decls had been
+    # removed. The reference is reloc-masked, so no metric moved. Thirteen of these were
+    # found tree-wide, two of them pre-dating the change that exposed the pattern.
+    # (When the orphan lands inside an `extern "C" { }` block it instead leaves an EMPTY
+    # block and clang dies with "extraneous closing brace" - that path is the no-IR error
+    # above, which is how this was finally caught.)
+    # ------------------------------------------------------------------
+    orphans = []
+    for tu in args.tu:
+        try:
+            lines = Path(tu).read_text(encoding="latin-1").split("\n")
+        except OSError:
+            continue
+        for i, ln in enumerate(lines[:-1]):
+            if re.match(r"\s*(?:DATA|RVA)\([^)]*\)\s*$", ln) and not lines[i + 1].strip():
+                orphans.append((tu, i + 1, ln.strip()))
+    if orphans:
+        for tu, n, txt in orphans:
+            log(f"ERROR {tu}:{n}: ORPHAN `{txt}` - no declaration under it. clang will "
+                f"attach this annotation to the NEXT declaration and bind that symbol to "
+                f"the wrong rva. Delete it, or put its declaration back.")
+        log(f"{len(orphans)} orphan annotation(s); refusing to write {args.out}.")
         return 1
 
     # Finalize + write the CSV via the shared helper (cross-TU dup-RVA guard,

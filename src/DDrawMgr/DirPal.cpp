@@ -733,12 +733,6 @@ i32 CDDPalette::CaptureSystemPalette() {
 // The engine's cached GDI/USER fn-ptr table (0x6c3e18..0x6c4408): the palette
 // blackout reaches GDI through these globals (`call ds:[0x6c44xx]`), not through
 // the import thunks. DATA arg = retail VA - image base (0x400000).
-DATA(0x002c4404)
-DATA(0x002c4408)
-DATA(0x002c3e18)
-DATA(0x002c3f04)
-DATA(0x002c3e1c)
-DATA(0x002c3ec0)
 
 // BlackoutSystemPalette (0x148720, __cdecl) - build an all-black 256-entry
 // PC_NOCOLLAPSE logical palette, select+realize it into the screen DC (driving

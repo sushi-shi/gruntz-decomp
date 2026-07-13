@@ -101,7 +101,6 @@
 // vptr (&??_7CGameLevel, bound @0x5f0150 via VTBL below) after the three array
 // members are constructed. The only remaining manual vtable store is the grand-base
 // teardown vftable ~CLoadable restamps after the member dtors run (@0x5e8cb4).
-DATA(0x001e8cb4)
 
 // The "unset" sentinel the ctor writes into the coord record's min corner; the
 // readiness predicate (IsLoaded) tests for it and Unload restores it.

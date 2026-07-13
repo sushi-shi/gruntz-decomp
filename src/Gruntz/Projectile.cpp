@@ -1126,7 +1126,6 @@ extern i32 g_typeCounter;
 DATA(0x0020a454)
 extern char s_codeA[];
 #include <Gruntz/TypeKeyColl.h> // the REAL class at 0x6bf650 (its fields were the shredded g_type* globals)
-DATA(0x002bf650)
 
 // The shared bute store the key is interned in (?g_buteTree@@3VCButeTree@@A
 // @0x6bf620, pulled via UserLogic.h; named by mangled symbol so Find/Insert

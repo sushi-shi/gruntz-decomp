@@ -62,7 +62,6 @@ DATA(0x00283eb4)
 i32 g_bDown; // 0x683eb4  (== ex g_bDown)
 
 // The engine RECT-copier fn-ptr (0x6c44bc), used by ShadeBlt to snapshot the rects.
-DATA(0x002c44bc)
 
 // The global image cache the new item is filed into: a real MFC CPtrArray holding
 // the 0xc0 CRezSurfaceItem surface items the 0x13e9a0 factory below builds. Stored

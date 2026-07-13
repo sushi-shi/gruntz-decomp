@@ -697,7 +697,6 @@ CString* GetColorName(CString* out);
 
 // CopyRect USER32 import hoisted through a data fn-ptr global (retail loads it once
 // into ebp and calls it ~13x).
-DATA(0x002c44bc)
 
 // The per-column source-rect tables (RECT[] in .data). Indexed by player/category.
 DATA(0x001e9178)

@@ -97,8 +97,6 @@ DATA(0x00248cf0) // RVA (was VA-typo 0x648cf0, which shadowed multi's canonical 
 extern i32 g_isHost_648cf0;
 DATA(0x002c44c0)
 extern i32(__cdecl* g_pwsprintfA)(char*, const char*, ...);
-DATA(0x002c44c4)
-DATA(0x002c44c8)
 
 // The two brick-display strings the 0x8068/0x806f cheats clear (real CStrings;
 // the "brick text" debug overlay renders them).
