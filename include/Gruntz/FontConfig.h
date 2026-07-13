@@ -26,6 +26,39 @@ public:
     virtual ~CFontConfig() OVERRIDE;
     i32 winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32);
 
+    // The GDI text/edit-control renderers, re-homed here from the FontConfig.cpp
+    // `m4::DrawHost` / `m4::PwdHost` / `m4::TextHost` views (2026-07-13). The three
+    // were ALREADY proven to be CFontConfig by member-layout identity (their +0x1c is
+    // m_inputText, +0x38/+0x3c/+0x40 are the three cached HFONTs) - the dossier said so
+    // and the views were parked as an "@identity-TODO ... fold in a follow-up". This is
+    // that follow-up; ChatBoxOwner.cpp (the only external caller) already included this
+    // header and called its +0x14 "the CFontConfig text host" through the view.
+    //
+    // Measure m_inputText into `rect` (DT_CALCRECT), clamp the used width into the
+    // 0x62b434 cache, then stroke the 12px insertion caret at that offset.
+    // NOTE THE ARG ORDER: the old view declared this (HDC, const char* text) and
+    // conjured the rect out of the CString copy via a fake `RectSrc`. Retail is the
+    // OTHER WAY ROUND - it copy-constructs THIS->m_inputText as the text and takes the
+    // RECT* as arg2 (0x21f20: `add ecx,0x1c; call ??0CString@@QAE@ABV0@@Z`, then
+    // `mov ecx,esi` / `mov edx,[ecx]`..`[ecx+0xc]` off arg2). The swap - not regalloc -
+    // was the "~72% wall".
+    i32 MeasureLabel21f20(HDC hdc, RECT* rect);         // 0x00021f20
+    void Draw258b(HDC hdc, RECT* rect);                 // 0x0000258b (caret; extern)
+    i32 Render22160(HDC hdc, i32 maxWidth, RECT* rect); // 0x00022160
+    i32 DrawWithFont22770(const char* text, HDC hdc, RECT* rect, UINT format); // 0x00022770
+    i32 Draw3DText22810(
+        const CString* strSrc,
+        HDC hdc,
+        RECT* dst,
+        i32 fontFlag,
+        i32 r,
+        i32 g,
+        i32 b,
+        i32 shadow,
+        i32 dx,
+        i32 dy
+    ); // 0x00022810
+
     CString m_inputText;       // +0x1c  scratch input string
     u32 m_scrollOffset;        // +0x20  running offset (unsigned: thresholds compare jb)
     u32 m_lowScrollThreshold;  // +0x24  threshold used for <=3 items

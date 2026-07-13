@@ -62,18 +62,20 @@ typedef i32 (CWarpStonePad::*WarpStonePadHandler)();
 struct CWarpStonePadActEntry {
     WarpStonePadHandler m_fn;
 };
-struct CWarpStonePadActReg : public CActReg {};
+// (CWarpStonePadActReg dissolved: it was an EMPTY subclass of CActReg whose only job was
+// to give this global a distinct type name. The variable name already makes the mangled
+// symbol unique, and DATA() rebinds it - so the archetype IS the type.)
 DATA(0x0024e6a0)
-CWarpStonePadActReg g_warpStonePadActReg; // 0x64e6a0
+CActReg g_warpStonePadActReg; // 0x64e6a0
 
 // CTileTriggerSwitch's registry (@0x64e798).
 typedef i32 (CTileTriggerSwitch::*TileTriggerSwitchHandler)();
 struct CTileTriggerSwitchActEntry {
     TileTriggerSwitchHandler m_fn;
 };
-struct CTileTriggerSwitchActReg : public CActReg {};
+// (CTileTriggerSwitchActReg dissolved - empty CActReg alias, see above.)
 DATA(0x0024e798)
-CTileTriggerSwitchActReg g_tileTriggerSwitchActReg; // 0x64e798
+CActReg g_tileTriggerSwitchActReg; // 0x64e798
 
 // CCheckpointTrigger's registry (@0x64e7c0; CCheckpointActReg from <Gruntz/ActReg.h>).
 struct CCheckpointActEntry {
@@ -83,11 +85,11 @@ DATA(0x0024e7c0)
 CCheckpointActReg g_checkpointActReg; // 0x64e7c0
 
 // CTileTrigger / CTileSecretTrigger's registries (@0x64e810 / @0x64e7e8).
-struct CLeafActReg : public CActReg {};
+// (CLeafActReg dissolved - empty CActReg alias, see above.)
 DATA(0x0024e810)
-CLeafActReg g_tileTriggerActReg; // 0x64e810
+CActReg g_tileTriggerActReg; // 0x64e810
 DATA(0x0024e7e8)
-CLeafActReg g_tileSecretTriggerActReg; // 0x64e7e8
+CActReg g_tileSecretTriggerActReg; // 0x64e7e8
 typedef i32 (CTileTrigger::*TileTriggerHandler)();
 struct CTileTriggerActEntry {
     TileTriggerHandler m_fn;
@@ -107,9 +109,9 @@ extern "C" u32 g_6bf3bc;
 // [0x7d0, 0x7da] (== [2000, 2010]) range built by the shared registry ctor (0x408710).
 // TileActReg is the shared <Gruntz/ActReg.h> CActReg archetype; it keeps its own placeholder
 // name so the DATA-pinned global symbol is unchanged.
-struct TileActReg : public CActReg {};
+// (TileActReg dissolved - empty CActReg alias, see above.)
 DATA(0x0024e720)
-TileActReg g_tileActReg;
+CActReg g_tileActReg;
 
 // CTileTriggerTransition - the CUserLogic leaf the state machine (StepController) builds.
 // Layout is plain CUserLogic (0x40) + the leaf tail; it is a .cpp-local view of the leaf
@@ -898,13 +900,9 @@ i32 CTileTriggerTransition::Handler_110110() {
 }
 
 SIZE_UNKNOWN(CWarpStonePadActEntry);
-SIZE_UNKNOWN(CWarpStonePadActReg);
 SIZE_UNKNOWN(CTileTriggerSwitchActEntry);
-SIZE_UNKNOWN(CTileTriggerSwitchActReg);
 SIZE_UNKNOWN(CCheckpointActEntry);
 SIZE_UNKNOWN(CCheckpointActReg);
-SIZE_UNKNOWN(CLeafActReg);
 SIZE_UNKNOWN(CTileTriggerActEntry);
 SIZE_UNKNOWN(CTileSecretTriggerActEntry);
-SIZE_UNKNOWN(TileActReg);
 SIZE_UNKNOWN(TileActEntry);

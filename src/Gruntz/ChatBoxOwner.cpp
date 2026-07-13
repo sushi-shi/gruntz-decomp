@@ -10,18 +10,10 @@
 #include <Gruntz/ChatBoxOwner.h>
 #include <Gruntz/FontConfig.h> // CFontConfig - the +0x14 text host; owns 0x20ef0 (see below)
 
-// The text-stamp host's StampText @0x1cd0 IS m4::PwdHost::Render22160 (header-less DrawText unit);
-// TU-local decl, cast at each call.
-namespace m4 {
-    class PwdHost {
-    public:
-        i32 Render22160(
-            void* hdc,
-            i32 maxWidth,
-            RECT* rect
-        ); // real @0x22160 arg is void* (Ghidra sym PAX)
-    };
-} // namespace m4
+// (The `m4::PwdHost` view is DISSOLVED: Render22160 @0x22160 is a real CFontConfig
+// method - <Gruntz/FontConfig.h>, already included above - and m_14 was ALREADY
+// documented in ChatBoxOwner.h as "IS a CFontConfig". The downcast below is the
+// authentic one: m_14 is declared CChatBoxTextHost*, the class's other facet.)
 
 DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
@@ -294,13 +286,13 @@ i32 CChatBoxOwner::LoadChatBoxSprite(i32 arg1) {
         rect[2] = (void*)(self->m_0 + 0x267);
         rect[1] = (void*)(self->m_4 + 0x2b);
         rect[3] = (void*)(self->m_4 + 0x37);
-        ((m4::PwdHost*)self->m_14)->Render22160(hdc, 0x21b, (RECT*)rect);
+        ((CFontConfig*)self->m_14)->Render22160(hdc, 0x21b, (RECT*)rect);
     } else {
         rect[0] = (void*)(self->m_0 + 0x4c);
         rect[2] = (void*)(self->m_0 + 0x1c7);
         rect[1] = (void*)(self->m_4 + 0x2b);
         rect[3] = (void*)(self->m_4 + 0x37);
-        ((m4::PwdHost*)self->m_14)->Render22160(hdc, 0x17b, (RECT*)rect);
+        ((CFontConfig*)self->m_14)->Render22160(hdc, 0x17b, (RECT*)rect);
     }
     host->m_8->ReleaseDC(hdc);
     return 1;

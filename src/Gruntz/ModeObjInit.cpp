@@ -15,22 +15,14 @@
 #include <string.h>
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ResetClockGlobals)
 #include <Gruntz/Play.h>      // canonical CPlay: 0xc7ec0 IS CPlay::Vfunc1 (slot 1)
-class CStatusBarMgr {
-public:
-    i32 LoadBattlezItemConfig(i32 a);
-    void Teardown();
-};
-struct CChatBoxTextHost;
-class CChatBoxOwner {
-public:
-    void Deactivate();
-    void Attach(void* a, CChatBoxTextHost* b);
-    void Configure(i32 a);
-};
-#include <Gruntz/TileTriggerContainer.h>   // canonical CTileTriggerContainer (dtor 0xc8640)
+// The two decl-only SHADOWS of CStatusBarMgr / CChatBoxOwner are DISSOLVED (2026-07-13):
+// both are real canonical classes and every call in this body already cast to them.
+#include <Gruntz/ChatBoxOwner.h>         // canonical CChatBoxOwner (Attach/Deactivate/Configure)
+#include <Gruntz/StatusBarMgr.h>         // canonical CStatusBarMgr (LoadBattlezItemConfig/Teardown)
+#include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (dtor 0xc8640)
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (GetFlag74)
 
-// Rec50::Init286f @0x286f IS CTimer::Init (canonical <Gruntz/Timer.h>).
+// The 0x50 record's Init286f @0x286f IS CTimer::Init (canonical <Gruntz/Timer.h>).
 #include <Gruntz/Timer.h>
 
 namespace modeinit {
@@ -44,38 +36,34 @@ namespace modeinit {
     extern "C" void* RezAlloc(u32 sz);                                                // 0x001b9b46
     extern "C" void RezFree(void* p);                                                 // 0x001b9b82
 
-    // The 0x1c control block owned at this->m_2e0.
-    struct Ctl1c {
-        i32 m_0, m_4, m_8, m_c, m_10, m_14, m_18; // +0x00..+0x18
-        // Init3e77 @0x3e77 IS CChatBoxOwner::Attach; cast at the call.
-        // Dtor285b @0x285b IS CChatBoxOwner::Deactivate; cast at the call.
-        // SetModeFlag @0x171c IS CChatBoxOwner::Configure; cast at the call.
+    // DISSOLVED (2026-07-13), by retyping ModeObj's member pointers to the classes
+    // this body ALREADY cast to at every single call site - the views were nothing but
+    // placeholder pointees:
+    //   Ctl1c     (0x1c, +0x2e0) -> CChatBoxOwner  (<Gruntz/ChatBoxOwner.h>): the real
+    //             class carries exactly m_0..m_18, and Attach/Deactivate/Configure ARE
+    //             the "Init3e77/Dtor285b/SetModeFlag" calls. == CPlay::m_hitTest.
+    //   Worker630 (0x630, +0x2dc) -> CStatusBarMgr (<Gruntz/StatusBarMgr.h>): the
+    //             0x630-byte guts/UI host, LoadBattlezItemConfig/Teardown. It had NO
+    //             members at all - the ctor writes go through a raw `char* p`.
+    //             == CPlay::m_guts.
+    //   Rec50     (0x50, +0x3f4) -> CTimer (<Gruntz/Timer.h>): Init286f IS CTimer::Init.
+    //             == CPlay::m_frameMarker.
+    //
+    // Worker630's +0x530 sub-object is the MFC ::CPtrArray that CStatusBarMgr already
+    // models there (StatusBarMgr.h: ctor 0x1b4f0b stamps the vtable MFC's CRuntimeClass
+    // names "CPtrArray"; 0x1b4f3e is its dtor). Kept as a decl-only ctor/dtor thunk pair
+    // below: realizing it as a placement-new CPtrArray is a VPTR-STAMP change, which is
+    // the vtable lane - not this pass.
+    struct CPtrArrayAt530 {
+        void Ctor1b4f0b(); // 0x001b4f0b  == ??0CPtrArray@@QAE@XZ
+        void Dtor1b4f3e(); // 0x001b4f3e  == ??1CPtrArray@@UAE@XZ
     };
 
-    // A CString-like record element (out-of-line ctor/dtor -> reloc-masked).
-
-    // The 0x630 worker owned at this->m_2dc.
-    struct Worker630 {
-        // Init10b4 IS CStatusBarMgr::LoadBattlezItemConfig; cast at the call.
-        // PreDtor248c IS CStatusBarMgr::Teardown; cast at the call.
-        // ModePostInit IS CGruntzMgr::ResetClockGlobals; cast at the call.
-        // one owned sub-object at +0x530 (ctor 0x1b4f0b, dtor 0x1b4f3e)
-        struct Sub530 {
-            void Ctor1b4f0b(); // 0x001b4f0b
-            void Dtor1b4f3e(); // 0x001b4f3e
-        };
-    };
-
-    // The 0x78 four-CString record owned at this->m_2e4.
-    struct Rec78 {
-        // Init403e @0x403e IS CTileTriggerSwitchLogic::GetFlag74; cast at the call.
-        // Dtor1cad @0x1cad IS ~CTileTriggerContainer; cast at the call.
-    };
-
-    // The 0x50 record owned at this->m_3f4.
-    struct Rec50 {
-        // Init286f @0x286f IS CTimer::Init; cast at the call.
-    };
+    // The 0x78 four-CString record owned at this->m_2e4. NOT DISSOLVED - the two calls
+    // on it name two DIFFERENT classes (GetFlag74 @0x403e is CTileTriggerSwitchLogic's,
+    // the dtor @0x1cad is ~CTileTriggerContainer's) and I could not prove which one owns
+    // the object, or that one derives from the other. Reported, not guessed.
+    struct Rec78 {};
 
     // The owner's parent object (this->m_4).
     struct Parent {
@@ -161,14 +149,14 @@ namespace modeinit {
         i32 m_1cc;       // +0x1cc
         i32 m_1d0[0x40]; // +0x1d0
         char m_pad2d0[0x2d8 - (0x1d0 + 0x40 * 4)];
-        i32 m_2d8;        // +0x2d8
-        Worker630* m_2dc; // +0x2dc
-        Ctl1c* m_2e0;     // +0x2e0
-        Rec78* m_2e4;     // +0x2e4
+        i32 m_2d8;            // +0x2d8
+        CStatusBarMgr* m_2dc; // +0x2dc  == CPlay::m_guts
+        CChatBoxOwner* m_2e0; // +0x2e0  == CPlay::m_hitTest
+        Rec78* m_2e4;         // +0x2e4
         char m_pad2e8[0x320 - 0x2e8];
         i32 m_320; // +0x320
         char m_pad324[0x3f4 - 0x324];
-        Rec50* m_3f4; // +0x3f4
+        CTimer* m_3f4; // +0x3f4  == CPlay::m_frameMarker
         char m_pad3f8[0x470 - 0x3f8];
         i32 m_470, m_474, m_478, m_47c, m_480, m_484; // +0x470..
         char m_pad488[0x49c - 0x488];
@@ -301,7 +289,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             return 0;
         }
 
-        Ctl1c* ctl = (Ctl1c*)modeinit::RezAlloc(0x1c);
+        CChatBoxOwner* ctl = (CChatBoxOwner*)modeinit::RezAlloc(0x1c);
         if (ctl) {
             ctl->m_18 = 0;
             ctl->m_14 = 0;
@@ -314,19 +302,18 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             ctl = 0;
         }
         t->m_2e0 = ctl;
-        if ((((CChatBoxOwner*)t->m_2e0)->Attach((void*)t->m_c, (CChatBoxTextHost*)t->m_4->m_5c),
-             0)) {
+        if ((t->m_2e0->Attach((void*)t->m_c, (CChatBoxTextHost*)t->m_4->m_5c), 0)) {
             if (t->m_2e0) {
-                ((CChatBoxOwner*)t->m_2e0)->Deactivate();
+                t->m_2e0->Deactivate();
                 modeinit::RezFree(t->m_2e0);
             }
             t->m_2e0 = 0;
             return 0;
         }
         t->m_2e0->m_10 = 0;
-        ((CChatBoxOwner*)t->m_2e0)->Configure(1);
+        t->m_2e0->Configure(1);
 
-        Worker630* wk = (Worker630*)modeinit::RezAlloc(0x630);
+        CStatusBarMgr* wk = (CStatusBarMgr*)modeinit::RezAlloc(0x630);
         if (wk) {
             char* p = (char*)wk;
             i32 i;
@@ -340,7 +327,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             }
             VecCtor(p + 0x2c0, 0x18, 3, (void*)ElemCtor403a3a);
             VecCtor(p + 0x378, 0x18, 12, (void*)ElemCtor403a3a);
-            ((Worker630::Sub530*)(p + 0x530))->Ctor1b4f0b();
+            ((CPtrArrayAt530*)(p + 0x530))->Ctor1b4f0b();
             i32* w = (i32*)p;
             w[0x228 / 4] = 0;
             w[0x22c / 4] = 0;
@@ -419,10 +406,10 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             wk = 0;
         }
         t->m_2dc = wk;
-        if (((CStatusBarMgr*)t->m_2dc)->LoadBattlezItemConfig((i32)t->m_c) == 0) {
+        if (t->m_2dc->LoadBattlezItemConfig((i32)t->m_c) == 0) {
             if (t->m_2dc) {
-                ((CStatusBarMgr*)t->m_2dc)->Teardown();
-                ((Worker630::Sub530*)((char*)t->m_2dc + 0x530))->Dtor1b4f3e();
+                t->m_2dc->Teardown();
+                ((CPtrArrayAt530*)((char*)t->m_2dc + 0x530))->Dtor1b4f3e();
                 EhVecCtor(
                     (char*)t->m_2dc + 0x2c,
                     0,
@@ -457,9 +444,9 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             return 0;
         }
 
-        Rec50* r50 = (Rec50*)modeinit::RezAlloc(0x50);
+        CTimer* r50 = (CTimer*)modeinit::RezAlloc(0x50);
         if (r50) {
-            ((CTimer*)r50)->Init();
+            r50->Init();
         } else {
             r50 = 0;
         }

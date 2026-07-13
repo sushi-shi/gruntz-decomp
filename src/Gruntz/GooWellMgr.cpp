@@ -21,19 +21,16 @@
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
-#include <Bute/ButeMgr.h>        // CButeMgr (g_buteMgr.GetDwordDef)
-#include <Gruntz/GameRegistry.h> // g_gameReg singleton (0x24556c) canonical view
+#include <Bute/ButeMgr.h>                // CButeMgr (g_buteMgr.GetDwordDef)
+#include <Gruntz/GameRegistry.h>         // g_gameReg singleton (0x24556c) canonical view
+#include <Gruntz/ActionOptionsMenuBar.h> // the real +0x25c overlay (Activate @0x9300)
+#include <Gruntz/LeafCue.h>       // the name-map VALUE (its +0x10 CSoundCueMgr plays the cue)
+#include <Gruntz/Multi.h>         // CMulti : CPlay - the +0x594 battlez gate is ITS member
+#include <Gruntz/Play.h>          // the real CPlay (EnterOverlayDrag / ClearPlacedObjects)
+#include <Gruntz/SoundCue.h>      // CSndHost - the world holder's +0x28 named-cue registry
+#include <Gruntz/SpriteFactory.h> // CSpriteFactory + GruntObjEntry - the +0x08 id->object map
 
 struct CGooWellMgr;
-struct CGameObj2c;
-struct CGaugeObj;
-struct CMgrHolderX;
-struct CResHolder;
-struct CResHolder2;
-struct CLookObj;
-struct CObj7c;
-struct CGrunt;
-struct CSoundHandle;
 
 // The free-running game clock (DAT_00645588), read as an unsigned 32-bit tick and
 // zero-extended into the 64-bit countdown subtracts.
@@ -49,92 +46,51 @@ DATA(0x002453d8)
 extern CButeMgr g_buteMgr;
 
 // ---------------------------------------------------------------------------
-// The looked-up resource record (returned through CMapStringToOb / CMap...To...
-// Lookup out-params): its +0x10 is a sound factory, its +0x7c a host whose +0x18
-// drives the per-grunt animation resolve.
-struct CObj7c {
-    char _0[0x18];
-    CGrunt* m_anim; // +0x18
-};
-struct CLookObj {
-    char _0[0x10];
-    CSoundCueMgr* m_soundFactory; // +0x10
-    char _14[0x7c - 0x14];
-    CObj7c* m_host; // +0x7c
-};
-
-// The two keyed stores reached through g_gameReg->m_world: a name->record map at
-// (->m_nameMap + 0x10) and an id->record map at (->m_idMap + 0x48).
-// (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
-// CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
-struct CResMapInt {}; // MFC CMapPtrToPtr (Lookup @0x1b8760); cast at each call
-struct CResHolder {
-    char _0[0x10];
-    CMapStringToOb m_map10; // +0x10
-};
-struct CResHolder2 {
-    char _0[0x48];
-    CResMapInt m_map48; // +0x48
-};
-struct CMgrHolderX {
-    char _0[8];
-    CResHolder2* m_idMap; // +0x8
-    char _c[0x28 - 0xc];
-    CResHolder* m_nameMap; // +0x28
-};
-
-// The gauge/HUD sub-object (g_gameReg->m_curState->m_gauge) the respawn timers poke.
-struct CGaugeObj {
-    char _0[0x550];
-    i32 m_550; // +0x550
-    i32 m_554; // +0x554
-};
-
-// The active game-mode object (g_gameReg->m_curState).
-struct CGameObj2c {
-    char _0[0x2dc];
-    CGaugeObj* m_gauge; // +0x2dc
-    char _2e0[0x4f4 - 0x2e0];
-    i32 m_4f4; // +0x4f4
-    char _4f8[0x594 - 0x4f8];
-    i32 m_594; // +0x594
-    // EnterOverlayDrag @0xd6440 / ClearPlacedObjects @0xda030 are both CPlay
-    // methods (the ex-"CGameModeObj" view folded onto CPlay, wave3-J); cast at
-    // each call. Local decl-only view of the real CPlay (Play.h is too heavy here).
-};
-class CPlay {
-public:
-    i32 EnterOverlayDrag(i32);
-    i32 ClearPlacedObjects();
-};
-
-// A per-player overlay the tail re-activates (g_gameReg->m_68->m_overlay).
-// The +0x25c overlay is a CActionOptionsMenuBar (Activate @0x9300); TU-local decl.
-class CActionOptionsMenuBar {
-public:
-    i32 Activate(i32);
-};
-
-// The battlez score tracker (g_gameReg->m_7c).
+// THE VIEWS ARE DISSOLVED (2026-07-13). Every hop this TU used to re-model as a
+// private struct already had a canonical class, and three sibling TUs write the
+// IDENTICAL chains through them:
+//
+//   CMgrHolderX  -> CSpriteFactoryHolder  (<Gruntz/GameRegistry.h>). Its "m_idMap"
+//        (+0x08) is the typed CSpriteFactory* m_8 and its "m_nameMap" (+0x28) is the
+//        typed CSndHost* m_28. g_gameReg->m_world was ALREADY declared as this class -
+//        the lateral view was re-deriving two members the canonical holder had.
+//   CResHolder   -> CSndHost              (<Gruntz/SoundCue.h>): its +0x10 IS the map.
+//   CResHolder2  -> CSpriteFactory        (<Gruntz/SpriteFactory.h>): m_objMap @+0x48.
+//   CResMapInt   -> GruntObjMap           (same header; the MFC CMapPtrToPtr @+0x48).
+//   CLookObj     -> was a CONFLATION of the two maps' value types, which are different
+//        classes: the NAME map yields a LeafCue (+0x10 CSoundCueMgr, <Gruntz/LeafCue.h>),
+//        the ID map yields a GruntObjEntry (+0x7c inner, <Gruntz/SpriteFactory.h>).
+//   CObj7c       -> CSpriteInner          (<Gruntz/Grunt.h>): its +0x18 is the bound
+//        CUserLogic leaf, downcast to CGrunt for the animation resolve.
+//   CGaugeObj    -> CStatusBarMgr         (<Gruntz/StatusBarMgr.h>): +0x550 m_toggleActive,
+//        +0x554 m_toggleHandle. The file already CAST this member to CStatusBarMgr to call
+//        AdvanceGauge/UpdateRezMachineWakeStatusBar - it disproved its own view.
+//   CGameObj2c   -> CPlay                 (<Gruntz/Play.h>): +0x2dc m_guts, +0x4f4
+//        m_winLoseBanner. The "Play.h is too heavy here" note was false - it includes fine.
+//        Its +0x594 is NOT a CPlay member: it is CMulti::m_594 (<Gruntz/Multi.h>,
+//        CMulti : CPlay), and the store is guarded by the m_134 == 2 mode test.
+//   CPlay / CActionOptionsMenuBar (TU-local decl-only shadows) -> the real headers.
+//
+// The id->object lookup below is verbatim the chain GruntzMgrCmd.cpp's 0x8106 cheat
+// already writes cast-free through the canonicals (m_world->m_8->m_objMap ->
+// GruntObjEntry::m_7c->m_18 -> CGrunt::ResolveDeathAnimation).
+//
+// THE MAP CLASS WAS INVERTED: the +0x10 registry's Lookup @0x1b8438 is
+// ?Lookup@CMapStringToPtr@@ (python -m gruntz.analysis.mfc_class 0x1b8438; CMapStringToOb's
+// is the DIFFERENT body at 0x1b8008). The old `CMapStringToOb m_map10` bound every call
+// here to the wrong library routine. CMapStringToPtr is a void* container, so the
+// (LeafCue*) at the use site is the devs' own cast.
+// ---------------------------------------------------------------------------
 
 // One player slot is CFocusSlot, the g_gameReg->m_focusSlots[] element
 // (<Gruntz/GameRegistry.h>): m_28 joined, m_2c done, m_24 the "already cleared
 // this round" mark, m_0c the row's sound id.
 
 // The game-registry singleton, canonical CGameRegistry view. The slots this TU
-// walks are typed there; the local casts below are AUTHENTIC view/downcasts, not
-// squeeze-hacks:
-//   +0x2c  m_2c is CState* (current game-state); CGameObj2c is the concrete
-//          battlez play-mode DOWNCAST (its gauge/placement/overlay methods).
-//   +0x30  m_30 is the typed CSpriteFactoryHolder resource mgr; CMgrHolderX is
-//          this TU's LATERAL view of its two keyed-lookup facets (the sound name
-//          map at +0x28->+0x10 and the id map at +0x08->+0x48, both engine Lookup
-//          helpers). The canonical holder keeps those facets untyped so the loader
-//          cluster's CreateSprite/FindByKey shapes stay byte-exact; unifying the
-//          inner map types into CSpriteFactoryHolder is a follow-up matcher.
+// walks are typed there; the casts that remain are AUTHENTIC view/downcasts:
+//   +0x2c  m_2c is CState*; CPlay/CMulti are the concrete play-mode DOWNCASTs.
 //   +0x68  m_68 is a genuinely REUSED slot (placement/cue grid in single-player,
 //          this CGooWellMgr in battlez) - a real per-mode object downcast.
-//   +0x7c  m_7c is the score/HUD sink; CBzData is its battlez MarkFlag facet.
 // The m_10/m_11c/m_134 scalars match, and the per-player slot array at +0x150
 // (stride 0x238) is reached via raw offset.
 DATA(0x0024556c)
@@ -186,12 +142,11 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         // LEVEL_ROLLINGBALL loop (m_rollingballLoop), wanted by m_rollingballWanted.
         if (m_rollingballWanted) {
             if (!m_rollingballLoop) {
-                CObject* out_ob = 0;
-                ((CMgrHolderX*)g_gameReg->m_world)
-                    ->m_nameMap->m_map10.Lookup("LEVEL_ROLLINGBALL", out_ob);
-                CLookObj* out = (CLookObj*)out_ob;
-                if (out && out->m_soundFactory) {
-                    m_rollingballLoop = (DirectSoundMgr*)out->m_soundFactory->GetItem();
+                void* out_v = 0;
+                g_gameReg->m_world->m_28->m_10.Lookup("LEVEL_ROLLINGBALL", out_v);
+                LeafCue* out = (LeafCue*)out_v;
+                if (out && out->m_10) {
+                    m_rollingballLoop = (DirectSoundMgr*)out->m_10->GetItem();
                     if (m_rollingballLoop) {
                         m_rollingballLoop->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
                     }
@@ -204,12 +159,11 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         // GAME_TELEPORTLOOP loop (m_teleportLoop), wanted by m_teleportWanted.
         if (m_teleportWanted) {
             if (!m_teleportLoop) {
-                CObject* out_ob = 0;
-                ((CMgrHolderX*)g_gameReg->m_world)
-                    ->m_nameMap->m_map10.Lookup("GAME_TELEPORTLOOP", out_ob);
-                CLookObj* out = (CLookObj*)out_ob;
-                if (out && out->m_soundFactory) {
-                    m_teleportLoop = (DirectSoundMgr*)out->m_soundFactory->GetItem();
+                void* out_v = 0;
+                g_gameReg->m_world->m_28->m_10.Lookup("GAME_TELEPORTLOOP", out_v);
+                LeafCue* out = (LeafCue*)out_v;
+                if (out && out->m_10) {
+                    m_teleportLoop = (DirectSoundMgr*)out->m_10->GetItem();
                     if (m_teleportLoop) {
                         m_teleportLoop->ApplyAndPlay(g_gameReg->m_inputFlag, 0, 0, 1);
                     }
@@ -232,8 +186,8 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
             count++;
         }
     }
-    if (count <= 1 && m_phase == 2 && ((CGameObj2c*)g_gameReg->m_curState)->m_gauge->m_550 == 0
-        && ((CGameObj2c*)g_gameReg->m_curState)->m_gauge->m_554 == 0 && m_2a0 == 0) {
+    if (count <= 1 && m_phase == 2 && ((CPlay*)g_gameReg->m_curState)->m_guts->m_toggleActive == 0
+        && ((CPlay*)g_gameReg->m_curState)->m_guts->m_toggleHandle == 0 && m_2a0 == 0) {
         if ((i64)g_645588 - m_countdownBase >= m_countdownLength) {
             ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
         }
@@ -249,7 +203,9 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         }
         if ((i64)g_645588 - m_countdownBase >= m_countdownLength) {
             if (g_gameReg->m_134 == 2) {
-                ((CGameObj2c*)g_gameReg->m_curState)->m_594 = 1;
+                // +0x594 lives past CPlay's tail: it is CMulti::m_594 (CMulti : CPlay),
+                // and the m_134 == 2 arm is exactly the mode where m_curState is a CMulti.
+                ((CMulti*)g_gameReg->m_curState)->m_594 = 1;
             }
             ((CPlay*)g_gameReg->m_curState)->EnterOverlayDrag(0);
             m_countdownActive = 0;
@@ -271,9 +227,9 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
     }
 
     {
-        CGameObj2c* obj = (CGameObj2c*)g_gameReg->m_curState;
+        CPlay* obj = (CPlay*)g_gameReg->m_curState;
         if (g_gameReg->m_134 != 1) {
-            i32 idx = ((CPlay*)obj)->ClearPlacedObjects();
+            i32 idx = obj->ClearPlacedObjects();
             if (idx != -1) {
                 CFocusSlot* lastSlot = pslot;
                 i32 i;
@@ -285,13 +241,12 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                         CFocusSlot* slot = (CFocusSlot*)((char*)g_gameReg + 0x150 + off);
                         if (slot && slot->m_28 && !slot->m_2c && !slot->m_24) {
                             slot->m_24 = 1;
-                            CLookObj* out = 0;
-                            if (((CMapPtrToPtr*)&((CMgrHolderX*)g_gameReg->m_world)
-                                     ->m_idMap->m_map48)
+                            GruntObjEntry* out = 0;
+                            if (((CMapPtrToPtr*)&g_gameReg->m_world->m_8->m_objMap)
                                     ->Lookup((void*)slot->m_0c, (void*&)out)
                                 && out) {
-                                if (out->m_host->m_anim) {
-                                    out->m_host->m_anim->ResolveDeathAnimation();
+                                if (out->m_7c->m_18) {
+                                    ((CGrunt*)out->m_7c->m_18)->ResolveDeathAnimation();
                                 }
                             }
                             ClearRowAndRefresh(i);
@@ -301,13 +256,12 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
                             ((CGooWellMgr*)g_gameReg->m_cmdGrid)->Notify(2);
                         }
                         if (lastSlot && lastSlot->m_28 && !lastSlot->m_2c && !lastSlot->m_24) {
-                            CLookObj* out = 0;
-                            if (((CMapPtrToPtr*)&((CMgrHolderX*)g_gameReg->m_world)
-                                     ->m_idMap->m_map48)
+                            GruntObjEntry* out = 0;
+                            if (((CMapPtrToPtr*)&g_gameReg->m_world->m_8->m_objMap)
                                     ->Lookup((void*)lastSlot->m_0c, (void*&)out)
                                 && out) {
-                                if (out->m_host->m_anim) {
-                                    out->m_host->m_anim->ResolveAnimation();
+                                if (out->m_7c->m_18) {
+                                    ((CGrunt*)out->m_7c->m_18)->ResolveAnimation();
                                 }
                             }
                             ClearRow(i);
@@ -324,7 +278,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
             m_overlay->Activate(off);
         }
         if (g_gameReg->m_134 == 3) {
-            if (obj->m_4f4 != 0 && m_playerFlag[g_curPlayer] == 0) {
+            if (obj->m_winLoseBanner != 0 && m_playerFlag[g_curPlayer] == 0) {
                 Notify(4);
                 return 0;
             }
@@ -333,7 +287,7 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
             if (m_playerFlag[g_curPlayer] != 0) {
                 goto done;
             }
-            if (obj->m_4f4 != 0) {
+            if (obj->m_winLoseBanner != 0) {
                 Notify(4);
             } else {
                 Notify(3);
@@ -342,13 +296,13 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         }
         // Goo respawn timer.
         if ((i64)g_645588 - m_gooTimerBase >= m_gooInterval) {
-            ((CStatusBarMgr*)obj->m_gauge)->AdvanceGauge(1);
+            obj->m_guts->AdvanceGauge(1);
             m_gooInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerGoo", 0x258);
             m_gooTimerBase = g_645588;
         }
         // Resource respawn timer.
         if ((i64)g_645588 - m_resourceTimerBase >= m_resourceInterval) {
-            ((CStatusBarMgr*)obj->m_gauge)->UpdateRezMachineWakeStatusBar();
+            obj->m_guts->UpdateRezMachineWakeStatusBar();
             m_resourceInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerResource", 0x7530);
             m_resourceTimerBase = g_645588;
         }
@@ -368,16 +322,4 @@ done:
     return 0;
 }
 
-SIZE_UNKNOWN(CObj7c);
-SIZE_UNKNOWN(CSoundHandle);
-SIZE_UNKNOWN(CSoundFactory);
-SIZE_UNKNOWN(CLookObj);
-SIZE_UNKNOWN(CResMapInt);
-SIZE_UNKNOWN(CResHolder);
-SIZE_UNKNOWN(CResHolder2);
-SIZE_UNKNOWN(CMgrHolderX);
-SIZE_UNKNOWN(CGaugeObj);
-SIZE_UNKNOWN(CGameObj2c);
-SIZE_UNKNOWN(CActionOptionsMenuBar);
-SIZE_UNKNOWN(CBzData);
 SIZE_UNKNOWN(CGooWellMgr);
