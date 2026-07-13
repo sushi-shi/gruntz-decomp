@@ -114,6 +114,15 @@ public:
     // non-virtual + RVA pin (the CFileImageSurface::ScalarDelete pattern) so the body emits.
     void* ScalarDtor(u32 flags); // 0x157550
 
+    // 0x1581b0: fire the named CAniBlitTrigger held in the cache, gated on the parent
+    // (m_0c) being live and this sub-manager not busy (m_30 == 0). It has NO caller in
+    // the retail image (dead / inlined away), which is why it was long parked under the
+    // placeholder class name `CAniTriggerMap_1581b0`; the BYTES name it though - it reads
+    // m_0c/+0x30 and Lookups m_10 (`add ecx,0x10; call 0x1b8438`), and it sits between
+    // this class's RemoveKeysEqual_157c70 and GetFirstValue_158210 (which begins at
+    // 0x158210, exactly where this body ends).
+    i32 Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2); // 0x1581b0
+
     CMapStringToPtr m_10; // +0x10  keyed asset cache (ends +0x2c)
     SoundDevice* m_2c;    // +0x2c  held DSound device
     i32 m_30;             // +0x30  busy/loading guard

@@ -1127,22 +1127,6 @@ void CDDrawSubMgrLeafScan::ClearMap() {
 }
 
 // ---------------------------------------------------------------------------
-// @identity-TODO: 0x1581b0 has NO reference anywhere in the retail image (dead /
-// inlined-away), owning class unrecovered. `this` is a CDDrawSurfaceMgr-family
-// child: a parent back-pointer @+0x0c, a CMapStringToPtr of named CAniBlitTriggers
-// @+0x10, and a gate flag @+0x30. NOT CDDrawChildGroup (whose +0x10 is the
-// WalkDispatch CObList). Byte-reconstructed; offsets load-bearing.
-struct CAniTriggerMap_1581b0 {
-    char m_pad00[0x0c];
-    char* m_parent;          // +0x0c
-    CMapStringToPtr m_map10; // +0x10  named CAniBlitTrigger map
-    char m_pad2c[0x30 - 0x2c];
-    i32 m_gate30; // +0x30
-    i32 Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2);
-};
-SIZE_UNKNOWN(CAniTriggerMap_1581b0);
-
-// ---------------------------------------------------------------------------
 // 0x157c70: remove every map entry whose key strncmp-equals `str` (over its full
 // length), destroying each removed value via its scalar dtor; returns the count.
 // The compare string is a CString built from `base` then assigned `str`. Twin of
@@ -1343,12 +1327,28 @@ i32 CDDrawSubMgrLeafScan::SumField_1580b0(const char* str) {
     }
     return sum;
 }
+// 0x1581b0: fire the named CAniBlitTrigger from the cache, gated on the parent being
+// live and the sub-manager not busy.
+//
+// The placeholder `CAniTriggerMap_1581b0` view is GONE - `this` is the canonical
+// CDDrawSubMgrLeafScan. The old note said the owning class was "unrecovered" because
+// 0x1581b0 has no caller in the image (dead/inlined-away), but the caller graph was
+// never the evidence that mattered:
+//   - the retail bytes read `[ecx+0x0c]` (LeafScanBase::m_0c, the parent/root handle),
+//     `[ecx+0x30]` (m_30, the busy guard) and `add ecx,0x10; call 0x1b8438` - the
+//     CMapStringToPtr::Lookup on m_10, at the very rva mfc_class pins to
+//     CMapStringToPtr. That is CDDrawSubMgrLeafScan's layout, member for member.
+//   - it is bracketed by this class's own methods: RemoveKeysEqual_157c70,
+//     HasKeyEqual_1583c0, and GetFirstValue_158210 - which starts at 0x158210, i.e.
+//     immediately after this body ends (0x1581b0 + 0x5b = 0x15820b) and dispatches on
+//     the SAME m_10/m_30 members.
+// A dead function still belongs to a class; here its own neighbours name it.
 RVA(0x001581b0, 0x5b)
-i32 CAniTriggerMap_1581b0::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2) {
-    char* p24 = *(char**)(m_parent + 0x24);
-    if (p24 != 0 && *(char**)(p24 + 0x5c) != 0 && m_gate30 == 0) {
+i32 CDDrawSubMgrLeafScan::Fire_1581b0(const char* key, i32 pos, i32 range1, i32 range2) {
+    char* p24 = *(char**)((char*)m_0c + 0x24);
+    if (p24 != 0 && *(char**)(p24 + 0x5c) != 0 && m_30 == 0) {
         void* val = 0;
-        m_map10.Lookup(key, val);
+        m_10.Lookup(key, val);
         if (val != 0) {
             return ((CAniBlitTrigger*)val)->TriggerBlit_1587f0(pos, -1, range1, range2);
         }
