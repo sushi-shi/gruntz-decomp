@@ -15,6 +15,7 @@
 // code bytes are load-bearing.
 #include <Gruntz/FaderMgr.h>
 #include <Gruntz/FaderSubtypes.h>
+#include <Gruntz/FxModeT1.h> // the REAL default-init descriptors (ex-CFaderInit::BuildDefaultInit*)
 
 #include <rva.h>
 #include <Mfc.h>
@@ -111,8 +112,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
-                CFaderInit init;
-                init.BuildDefaultInit0();
+                CFxModeT1 init;
                 if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
@@ -132,8 +132,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
-                CFaderInit init;
-                init.BuildDefaultInit1();
+                CFxModeT2 init;
                 if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
@@ -153,8 +152,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
-                CFaderInit init;
-                init.BuildDefaultInit2();
+                CFxModeT3 init;
                 if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
@@ -174,8 +172,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
-                CFaderInit init;
-                init.BuildDefaultInit3();
+                CFxModeT4 init;
                 if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
@@ -195,8 +192,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
-                CFaderInit init;
-                init.BuildDefaultInit4();
+                CFxModeT5 init;
                 if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }
@@ -216,8 +212,7 @@ CFader* CFaderMgr::Add(i32 nFaderType, CFader* pInit) {
             f->SetTimers(m_timerArgA, m_timerArgB);
             f->Set2c(m_sharedSet2cArg);
             if (!pInit) {
-                CFaderInit init;
-                init.BuildDefaultInit5();
+                CFxModeT6 init;
                 if (!f->ApplyInit(&init)) {
                     goto badinit;
                 }

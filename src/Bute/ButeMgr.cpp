@@ -837,46 +837,31 @@ struct CButeValueNode {
 };
 SIZE(CButeValueNode, 0x8); // { type, pValue }
 
-// CString::operator+= one char (__thiscall(receiver, char)):
-// appends the char to the value-text accumulator. Modeled as an external
-// (no-body) __thiscall on a tiny receiver class so the `mov ecx,recv; call`
-// shape falls out reloc-masked.
+// (the ex-`CButeText` view is GONE. It was the statically-linked CRT **ostream**, and
+// its own comment already suspected as much - but it named the class MFC CString and
+// invented method names on top. Proven against the real LIBCIMT .LIB export table; every
+// one of its six PHANTOMs is an ostream::operator<< overload, selected purely by the
+// ARGUMENT TYPE:
+//   operator+=(const char*) 0x16be60 -> ??6ostream@@QAEAAV0@PBD@Z   << (const char*)
+//   AppendInt               0x191d20 -> ??6ostream@@QAEAAV0@H@Z     << (int)
+//   AppendDouble            0x191df0 -> ??6ostream@@QAEAAV0@N@Z     << (double)
+//   AppendElem              0x192120 -> ??6ostream@@QAEAAV0@J@Z     << (long)
+//   AppendDword             0x1921e0 -> ??6ostream@@QAEAAV0@K@Z     << (unsigned long)
+//   AppendChar / Trim       0x192060 -> ??6ostream@@QAEAAV0@E@Z     << (unsigned char)
 //
-// The other overloads ParseAttributeFile's write-back path drives off the same
-// accumulator (each __thiscall, reloc-masked external/no-body): the value-text
-// reconstruction `accum += "<" += d0 += ", " += d1 += ">"` chains them. The
-// `operator+=(const char*)` returns CButeText& so the chains fold to the
-// `call; mov ecx,eax; call` shape; the typed appends consume the chain result.
-class CButeText {
-public:
-    void AppendChar(char c);
-    // 0x16be60  CString::operator+=(const char*) -> CString&
-    CButeText& operator+=(const char* s);
-    // Each formatted-append returns &accum so the write-back value reconstruction
-    // chains `accum += "(" .AppendElem(a) += ", " .AppendElem(b) ...`.
-    // 0x191d20  formatted-append signed int
-    CButeText& AppendInt(i32 v);
-    // 0x1921e0  formatted-append DWORD
-    CButeText& AppendDword(DWORD v);
-    // 0x191df0  formatted-append double
-    CButeText& AppendDouble(double v);
-    // 0x192120  formatted-append signed int (the point/rect element appender)
-    CButeText& AppendElem(i32 v);
-    // 0x192060  truncate/release helper (takes a char count: the quote-strip in
-    // the string write-back path passes 0x22 = '"').
-    void Trim(i32 n);
-};
-SIZE_UNKNOWN(CButeText); // (was covered by MovingLogic's shared annotation, now
-                         // dissolved to the real CRT ostream there; home it here)
-
-// The object m_pText points at: the value-text accumulator (a CButeText / MFC
-// CString) lives at +0xc inside it. Parse reaches it as m_pText->accum so the
-// `mov ecx,[esi+0xa4]; add ecx,0xc; call` shape falls out (no raw-offset cast).
+// AppendChar and Trim were TWO FAKE NAMES FOR ONE FUNCTION: Parse's `AppendChar` call
+// site is literally `call 0x192060`, the same unsigned-char inserter. And "Trim" never
+// trimmed anything - it INSERTS the byte it is given: Trim(0x20) writes a space and
+// Trim(0x22) writes the `"` that quotes a string value. The name was invented from a
+// misread of the constant.
+//
+// The accumulator is therefore a real ostream sub-object embedded at +0xc of the object
+// m_pText points at (Parse reaches it as `mov ecx,[esi+0xa4]; add ecx,0xc; call`).
 struct CButeTextBuf {
     char m_pad00[0xc]; // +0x00
-    CButeText accum;   // +0x0c  the appended value text
+    ostream accum;     // +0x0c  the value-text accumulator (the real CRT ostream)
 };
-SIZE(CButeTextBuf, 0x10); // pad + the +0xc value-text accumulator (CString)
+SIZE_UNKNOWN(CButeTextBuf); // an embedded ostream - not the old fabricated 0x10
 
 // The token-length counter (file-scope signed WORD, read with movsx).
 static i16 g_tokenLen;
@@ -1540,7 +1525,7 @@ bool CButeMgr::Parse() {
                 kind = ReadValue(kind, m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum.AppendChar(m_curChar);
+                    m_pText->accum << (unsigned char)m_curChar;
                 }
                 NextChar();
                 break;
@@ -1548,7 +1533,7 @@ bool CButeMgr::Parse() {
             case 2: // value char: scan, echo only, advance, loop
                 kind = ReadValue(kind, m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum.AppendChar(m_curChar);
+                    m_pText->accum << (unsigned char)m_curChar;
                 }
                 NextChar();
                 break;
@@ -1557,7 +1542,7 @@ bool CButeMgr::Parse() {
                 ReadIdent(kind, m_curChar);
                 m_token[g_tokenLen++] = m_curChar;
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum.AppendChar(m_curChar);
+                    m_pText->accum << (unsigned char)m_curChar;
                 }
                 NextChar();
                 if (m_tokType == 0) {
@@ -1569,7 +1554,7 @@ bool CButeMgr::Parse() {
             case 4: // identifier: scan, echo only, advance, recurse, terminate
                 ReadIdent(kind, m_curChar);
                 if (m_captureText != 0 && m_curChar != 0) {
-                    m_pText->accum.AppendChar(m_curChar);
+                    m_pText->accum << (unsigned char)m_curChar;
                 }
                 NextChar();
                 if (m_tokType == 0) {
@@ -1650,7 +1635,7 @@ bool ButeMgr::ParseAttributeFile() {
         return false;
     }
     if (m_writeMode) {
-        m_pText->accum.Trim(0x20);
+        m_pText->accum << (unsigned char)0x20;
         m_captureText = 0;
     }
     if (!Parse()) {
@@ -1662,7 +1647,7 @@ bool ButeMgr::ParseAttributeFile() {
         case 6: { // signed int -> type 0
             vi = atoi(m_token);
             if (m_writeMode) {
-                m_pText->accum.AppendInt(GetInt(m_tagName, m_str104));
+                m_pText->accum << (int)GetInt(m_tagName, m_str104);
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1685,8 +1670,8 @@ bool ButeMgr::ParseAttributeFile() {
             }
             vd = ButeRead_Dword(m_token, 0, 10);
             if (m_writeMode) {
-                m_pText->accum += s_strDword;
-                m_pText->accum.AppendDword(GetDword(m_tagName, m_str104));
+                m_pText->accum << s_strDword;
+                m_pText->accum << (unsigned long)GetDword(m_tagName, m_str104);
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1709,7 +1694,7 @@ bool ButeMgr::ParseAttributeFile() {
             }
             vf = (float)ButeRead_Float(m_token);
             if (m_writeMode) {
-                (m_pText->accum += s_strFloat).AppendDouble(GetFloat(m_tagName, m_str104));
+                (m_pText->accum << s_strFloat) << (double)GetFloat(m_tagName, m_str104);
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1729,8 +1714,8 @@ bool ButeMgr::ParseAttributeFile() {
         case 15: { // float ('f'-tagged) -> type 3
             vf = (float)ButeRead_Float(m_token);
             if (m_writeMode) {
-                (m_pText->accum).AppendDouble(GetFloat(m_tagName, m_str104));
-                m_pText->accum += s_strFloatSuffix;
+                m_pText->accum << (double)GetFloat(m_tagName, m_str104);
+                m_pText->accum << s_strFloatSuffix;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1750,7 +1735,7 @@ bool ButeMgr::ParseAttributeFile() {
         case 7: { // double -> type 2
             double dv = ButeRead_Float(m_token);
             if (m_writeMode) {
-                m_pText->accum.AppendDouble(GetDouble(m_tagName, m_str104));
+                m_pText->accum << (double)GetDouble(m_tagName, m_str104);
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1772,11 +1757,11 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtPoint4, &a, &b, &c, &d);
             if (m_writeMode) {
                 CButeRef5* r = GetRef5(m_tagName, m_str104);
-                (m_pText->accum += s_strOpen).AppendElem((i32)r->a);
-                (m_pText->accum += s_strComma).AppendElem((i32)r->b);
-                (m_pText->accum += s_strComma).AppendElem((i32)r->c);
-                (m_pText->accum += s_strComma).AppendElem((i32)r->d);
-                m_pText->accum += s_strClose;
+                (m_pText->accum << s_strOpen) << (long)r->a;
+                (m_pText->accum << s_strComma) << (long)r->b;
+                (m_pText->accum << s_strComma) << (long)r->c;
+                (m_pText->accum << s_strComma) << (long)r->d;
+                m_pText->accum << s_strClose;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1801,9 +1786,9 @@ bool ButeMgr::ParseAttributeFile() {
             sscanf(m_token, s_fmtPoint2, &a, &b);
             if (m_writeMode) {
                 CButeRef6* r = GetRef6(m_tagName, m_str104);
-                (m_pText->accum += s_strOpen).AppendElem((i32)r->a);
-                (m_pText->accum += s_strComma).AppendElem((i32)r->b);
-                m_pText->accum += s_strClose;
+                (m_pText->accum << s_strOpen) << (long)r->a;
+                (m_pText->accum << s_strComma) << (long)r->b;
+                m_pText->accum << s_strClose;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1829,10 +1814,10 @@ bool ButeMgr::ParseAttributeFile() {
                 double dx = *(double*)&r->a;
                 double dy = *(double*)&r->c;
                 double dz = *(double*)&r->e;
-                (m_pText->accum += s_strLt).AppendDouble(dx);
-                (m_pText->accum += s_strComma).AppendDouble(dy);
-                (m_pText->accum += s_strComma).AppendDouble(dz);
-                m_pText->accum += s_strGt;
+                (m_pText->accum << s_strLt) << (double)dx;
+                (m_pText->accum << s_strComma) << (double)dy;
+                (m_pText->accum << s_strComma) << (double)dz;
+                m_pText->accum << s_strGt;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1858,9 +1843,9 @@ bool ButeMgr::ParseAttributeFile() {
                 CButeRef8* r = GetRef8(m_tagName, m_str104);
                 double dx = *(double*)&r->a;
                 double dy = *(double*)&r->c;
-                (m_pText->accum += s_strLBrack).AppendDouble(dx);
-                (m_pText->accum += s_strComma).AppendDouble(dy);
-                m_pText->accum += s_strRBrack;
+                (m_pText->accum << s_strLBrack) << (double)dx;
+                (m_pText->accum << s_strComma) << (double)dy;
+                m_pText->accum << s_strRBrack;
             } else if (!bDup) {
                 CButeValueNode* n = (CButeValueNode*)operator new(8);
                 if (n) {
@@ -1881,9 +1866,9 @@ bool ButeMgr::ParseAttributeFile() {
         case 8: { // quoted string -> type 4
             if (m_writeMode) {
                 CString tmp(GetString(m_tagName, m_str104));
-                m_pText->accum.Trim(0x22);
-                m_pText->accum += tmp.GetBuffer(0);
-                m_pText->accum.Trim(0x22);
+                m_pText->accum << (unsigned char)0x22;
+                m_pText->accum << tmp.GetBuffer(0);
+                m_pText->accum << (unsigned char)0x22;
             } else if (!bDup) {
                 CString s(m_token);
                 CButeValueNode* n = (CButeValueNode*)operator new(8);

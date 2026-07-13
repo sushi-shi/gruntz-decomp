@@ -42,26 +42,23 @@
 // m_10(intensity); CFaderMesh casts to its local FxTransDesc view of the same offsets.
 // +0x00 is the type discriminator. Was a per-TU FxDesc_17fe00 view + a FaderMgr.cpp-
 // local blob; folded to this one canonical shape.
-SIZE_UNKNOWN(CFaderInit);
-struct CFaderInit {
-    i32 m_00;      // +0x00  type discriminator
-    i32 m_04;      // +0x04  src override (FaderSrc*, else this->m_timerA)
-    i32 m_08;      // +0x08  alt/dst override (else this->m_timerB)
-    i32 m_0c;      // +0x0c  count/param -> m_40
-    i32 m_10;      // +0x10  intensity (Sine) / gate (Mesh)
-    i32 m_14;      // +0x14
-    i32 m_18;      // +0x18
-    i32 m_1c;      // +0x1c
-    i32 m_20;      // +0x20
-    CString m_str; // +0x24  destructible member (forces /GX)
-
-    void BuildDefaultInit0(); // 0x17e7c0  fader type 0
-    void BuildDefaultInit1(); // 0x17e840  fader type 1
-    void BuildDefaultInit2(); // 0x17e880  fader type 2
-    void BuildDefaultInit3(); // 0x17e8b0  fader type 3
-    void BuildDefaultInit4(); // 0x17e8e0  fader type 4
-    void BuildDefaultInit5(); // 0x17e910  fader type 5
-};
+// (the ex-`CFaderInit` view is GONE. Its six "BuildDefaultInit0..5" PHANTOMs were fake
+// names for the CONSTRUCTORS of six REAL classes THAT ARE ALREADY IN THE TREE, matched,
+// at exactly those addresses:
+//   BuildDefaultInit0 0x17e7c0 -> ??0CFxModeT1@@QAE@XZ   (100% EXACT in `fader`)
+//   BuildDefaultInit1 0x17e840 -> ??0CFxModeT2@@QAE@XZ
+//   BuildDefaultInit2 0x17e880 -> ??0CFxModeT3@@QAE@XZ   (100% EXACT)
+//   BuildDefaultInit3 0x17e8b0 -> ??0CFxModeT4@@QAE@XZ   (100% EXACT)
+//   BuildDefaultInit4 0x17e8e0 -> ??0CFxModeT5@@QAE@XZ   (100% EXACT)
+//   BuildDefaultInit5 0x17e910 -> ??0CFxModeT6@@QAE@XZ   (100% EXACT)
+// Fader.cpp's own comment already said so ("CFaderMgr builds via CFxModeT6::CFxModeT6
+// (0x17e910) / CFaderInit::BuildDefaultInit5") - the alias was documented and never
+// dissolved. CFaderInit was a fabricated SUPERSET of the six variants: its layout
+// (m_00..m_20 + a CString at +0x24) is literally CFxModeT1 (SIZE 0x2c). So
+// `CFaderInit init; init.BuildDefaultInitN();` is just `CFxModeT<N+1> init;` - the ctor
+// IS the builder. The descriptor the ApplyInit methods take is the shared base,
+// CFxModeDesc; the subtypes that need more downcast to their variant.)
+#include <Gruntz/FxModeDesc.h>
 
 // Animation frame source (the CFaderSine/Flat active src/dst box): +0x18 the frame
 // count, +0x1c the per-frame element count. Was FxSrc_17fe00 / a Fader.cpp-local view.
@@ -93,7 +90,7 @@ public:
         return ::operator new(0x6c);
     }
     i32 ApplyInit(
-        CFaderInit* src
+        CFxModeDesc* src
     ); // 0x17ea00 (apply the transition descriptor; body in CFaderMeshApply.cpp)
     i32 CopyFrom(CFader* src); // 0x17ea00 (same method; copy from the pInit descriptor)
 
@@ -126,7 +123,7 @@ public:
     void* operator new(u32) {
         return ::operator new(0x7d5c);
     }
-    i32 ApplyInit(CFaderInit* src); // 0x17fe00 (apply the built default init; body in Fader.cpp)
+    i32 ApplyInit(CFxModeDesc* src); // 0x17fe00 (apply the built default init; body in Fader.cpp)
     i32 CopyFrom(CFader* src);      // 0x17fe00 (same method; copy from the pInit descriptor)
 
     // ApplyInit latches the source boxes + geometry, range-checks the 0..100 intensity,
@@ -161,7 +158,7 @@ public:
     void* operator new(u32) {
         return ::operator new(0x50);
     }
-    i32 ApplyInit(CFaderInit* src); // 0x17f5e0 (apply the built default init)
+    i32 ApplyInit(CFxModeDesc* src); // 0x17f5e0 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x17f5e0 (same method; copy from the pInit descriptor)
 
     char _pad38[0x3c - 0x38]; // +0x38..+0x3b
@@ -189,7 +186,7 @@ public:
     void* operator new(u32) {
         return ::operator new(0x206c);
     }
-    i32 ApplyInit(CFaderInit* src); // 0x1804a0 (apply the built default init)
+    i32 ApplyInit(CFxModeDesc* src); // 0x1804a0 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x1804a0 (same method; copy from the pInit descriptor)
     void SubFree180630();           // 0x180630 (dtor member teardown; reloc-masked)
 
@@ -225,7 +222,7 @@ public:
     // class body that only reached 0x54. With m_54/m_58 declared, sizeof IS 0x5c and the
     // default `new CFaderRadial` pushes 0x5c on its own - which is what the retail factory
     // at 0x17d9c0 does.)
-    i32 ApplyInit(CFaderInit* src); // 0x17fa40 (apply the built default init)
+    i32 ApplyInit(CFxModeDesc* src); // 0x17fa40 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x17fa40 (same method; copy from the pInit descriptor)
     void FreeBuffer17fc40();        // 0x17fc40 (dtor: `if(m_50) RezFree(m_50)`; reloc-masked)
 
@@ -259,7 +256,7 @@ public:
     // hard-coded the allocation size to paper over a class that only computed 0x490. With
     // m_490 declared below, sizeof IS 0x494 and the default `new CFaderShape` pushes 0x494
     // on its own - which is what retail's new-site at 0x17da14 does.)
-    i32 ApplyInit(CFaderInit* src); // 0x1817e0 (apply the built default init)
+    i32 ApplyInit(CFxModeDesc* src); // 0x1817e0 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x1817e0 (same method; copy from the pInit descriptor)
 
     char _pad38[0x44 - 0x38];    // +0x38..+0x43

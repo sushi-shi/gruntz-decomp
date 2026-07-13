@@ -1083,18 +1083,17 @@ SIZE_UNKNOWN(CAniSource);
 extern "C" void* RezAlloc(u32 size); // 0x1b9b46
 extern "C" void RezFree(void* p);    // 0x1b9b82
 
-// The stack-local file reader: ctor opens nothing, Open binds a path, GetSize/Read
-// pull the bytes, the dtor closes/releases.  Non-trivial ctor+dtor so MSVC emits
-// the destructible-local /GX frame (docs/patterns/gx-frame-destructible-local.md).
-// All reloc-masked external __thiscall callees (no body).
-class CAniFileReader {
-public:
-    CAniFileReader();                   // 0x1befd7
-    ~CAniFileReader();                  // 0x1bf121
-    i32 Open(void* name, i32 a, i32 b); // 0x1bf200  nonzero on success
-    i32 GetSize();                      // 0x1bf505
-    i32 Read(void* buf, i32 len);       // 0x1bf328  nonzero on success
-};
+// (the ex-`CAniFileReader` view is GONE: it was MFC's CFile, proven against the real
+// NAFXCW .LIB export table -
+//   ctor  0x1befd7 -> ??0CFile@@QAE@XZ
+//   dtor  0x1bf121 -> ??1CFile@@UAE@XZ                       (virtual)
+//   Open  0x1bf200 -> ?Open@CFile@@UAEHPBDIPAVCFileException@@@Z
+//   "GetSize" 0x1bf505 -> ?GetLength@CFile@@UBEKXZ           (returns DWORD, not i32)
+//   Read  0x1bf328 -> ?Read@CFile@@UAEIPAXI@Z                (returns UINT, not i32)
+// - so all five were declared-and-never-defined PHANTOMs standing in for a library
+// class we already link. The file's own comment at LoadFile_165620 already said
+// "retail's reader is CFileIO"; it is the plain MFC CFile. Using the real class also
+// restores its virtual dtor, which is what raises the destructible-local /GX frame.)
 
 // ---------------------------------------------------------------------------
 // 0x165620: load + build the element from a file.  Open the reader on `filename`;
@@ -1110,11 +1109,11 @@ public:
 // eh-frame-size.md.
 RVA(0x00165620, 0x101)
 i32 CAniElement::LoadFile_165620(void* ctx, void* filename, i32 a3) {
-    CAniFileReader fr;
-    if (fr.Open(filename, 0, 0) == 0) {
+    CFile fr;
+    if (fr.Open((const char*)filename, 0, 0) == 0) {
         return 0;
     }
-    i32 size = fr.GetSize();
+    u32 size = fr.GetLength();
     void* buf = RezAlloc(size);
     if (fr.Read(buf, size) == 0) {
         RezFree(buf);
@@ -1124,8 +1123,6 @@ i32 CAniElement::LoadFile_165620(void* ctx, void* filename, i32 a3) {
     RezFree(buf);
     return r;
 }
-
-SIZE_UNKNOWN(CAniFileReader);
 
 // ===========================================================================
 // 0x165730 - DeleteAll: delete every owned record via its scalar-deleting dtor

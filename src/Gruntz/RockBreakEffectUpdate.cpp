@@ -16,13 +16,8 @@
 #include <rva.h>
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/GameRegistry.h> // CGameRegistry (g_gameReg->m_cmdGrid)
+#include <Gruntz/RockBreakMgr.h> // canonical CRockBreakMgr (was a duplicate .cpp-local view)
 
-// The rock-break particle spawner (canonical body in RockBreakParticles.cpp); reached
-// through the registry's +0x68 command-grid slot in this effect context.
-class CRockBreakMgr {
-public:
-    i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4); // 0x7b440
-};
 
 extern "C" u32 g_6bf3bc;             // 0x6bf3bc  per-frame draw delta (advance ctx)
 extern "C" CGameRegistry* g_gameReg; // *0x64556c the game-registry singleton

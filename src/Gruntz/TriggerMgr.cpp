@@ -22,6 +22,7 @@
 // donor view - the canonical-CGameRegistry fold that unifies them is deferred
 // cleanup work.
 #include <Gruntz/TriggerMgr.h>
+#include <Gruntz/RockBreakMgr.h> // canonical CRockBreakMgr (body below)
 
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/GruntzCmdMgr.h>
@@ -1736,14 +1737,7 @@ extern i32 g_sndCueTag; // ?g_sndCueTag@@3HA
 DATA(0x002bf3c0)
 extern "C" u32 g_killCueClock; // _g_killCueClock (wrap-safe draw clock)
 
-class CRockBreakMgr {
-public:
-    void Prepare(i32 cx, i32 cy, i32 r, i32, i32); // FUN @ 0x400c __thiscall
-    i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4);
-
-    char m_pad00[0x22c];
-    RockMapHost* m_22c; // +0x22c
-};
+// (CRockBreakMgr is the canonical <Gruntz/RockBreakMgr.h> class - was a .cpp-local view here.)
 
 // @source: string-xref
 // @early-stop

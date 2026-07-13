@@ -8,6 +8,8 @@
 // __thiscall externs. g_645588 = running ms clock. Only offsets / code bytes are
 // load-bearing.
 #include <Gruntz/GruntBehaviorLeaf.h>
+#include <Gruntz/TriggerMgr.h>       // the real owner of NotifyCell/SpawnPuddle (the +0x260 slot)
+#include <Gruntz/RockBreakMgr.h>     // the real owner of BuildRockBreakParticles
 #include <Image/ImageSet.h> // CImageSet::SetAllTypes (m_drawState->m_194)
 #include <Bute/ButeTree.h>  // CButeTree::Find (the "R" animset key)
 #include <Bute/ButeMgr.h>   // CButeMgr getters (Grunt/DecayTime, WANDGRUNT/HealthLoss)
@@ -32,9 +34,10 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
     }
     if (m_drawState->m_1a0.Advance_15c360(g_6bf3bc) == 1) {
         if (m_gruntSubState == 1 && m_gruntMode != 5) {
-            m_animCtrl->DrawAnimAt(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
+            ((CRockBreakMgr*)m_260)
+                ->BuildRockBreakParticles(m_object->m_screenX, m_object->m_screenY, 1, m_animArg0);
         } else {
-            m_animCtrl->PlayAnimEx(
+            ((CTriggerMgr*)m_260)->SpawnPuddle(
                 m_object->m_screenX,
                 m_object->m_screenY,
                 m_animArg0,
@@ -56,7 +59,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
         m_prevAnimSetNode = m_objAux->m_1c;
         m_objAux->m_1c = g_buteTree.Find(k_60bebc);
         if (m_animSuppress == 0) {
-            m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
+            ((CTriggerMgr*)m_260)->NotifyCell(m_animArg0, m_animArg1, 0);
         }
         i32 dt = (i32)g_buteMgr.GetDwordDef("Grunt", "DecayTime", 0xbb8);
         if (m_object->m_drawFillCmd == 0xb) {
@@ -79,7 +82,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig() {
         return 0;
     }
     if (m_animSuppress == 0) {
-        m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
+        ((CTriggerMgr*)m_260)->NotifyCell(m_animArg0, m_animArg1, 0);
     }
     m_drawState->m_8 |= 0x10000;
     return 0;
@@ -99,7 +102,7 @@ i32 CGruntBehaviorLeaf::LoadGruntDecayConfig2() {
         m_drawState->m_40 |= 1;
         m_drawState->m_194->SetAllTypes(1);
         if (m_animSuppress == 0) {
-            m_animCtrl->Anim2a72(m_animArg0, m_animArg1, 0);
+            ((CTriggerMgr*)m_260)->NotifyCell(m_animArg0, m_animArg1, 0);
         }
         m_drawState->m_8 |= 0x10000;
         return 0;

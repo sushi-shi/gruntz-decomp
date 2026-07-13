@@ -367,7 +367,7 @@ void ScatterSamples(i32* arr, i32, i32, i32); // 0x182940 ?ScatterSamples@@YAXPA
 // llvm-objdump -dr base vs target - the only mnemonic-level diffs are the ebx/edi
 // register columns.
 RVA(0x0017fe00, 0x12d)
-i32 CFaderSine::ApplyInit(CFaderInit* desc) {
+i32 CFaderSine::ApplyInit(CFxModeDesc* desc) {
     i32 w;
     i32 p;
     i32 i;
@@ -971,7 +971,7 @@ extern "C" void RezFree(void* p); // 0x1b9b82
 // -> CFaderMesh::ApplyInit) is byte-neutral/positive: only the mangled symbol name
 // changes (paired by RVA), not the algorithm.
 RVA(0x0017ea00, 0x4fc)
-i32 CFaderMesh::ApplyInit(CFaderInit* descOpaque) {
+i32 CFaderMesh::ApplyInit(CFxModeDesc* descOpaque) {
     // The arg is the CFxMode transition descriptor; m_58 is this fader's growable
     // mesh buffer. Both are typed views onto the real (opaque) shapes.
     FxTransDesc* cfg = (FxTransDesc*)descOpaque;

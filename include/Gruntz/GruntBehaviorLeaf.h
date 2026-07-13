@@ -27,14 +27,21 @@ struct CDecayMgr { // m_154 - the bound draw-state manager
     CAniAdvanceCursor m_1a0; // +0x1a0
 };
 
-SIZE_UNKNOWN(CDecayAnim);
-struct CDecayAnim {                                               // m_260 - anim/sprite controller
-    void Anim2a72(i32 a, i32 b, i32 c);                           // 0x2a72
-    void DrawAnimAt(i32 a, i32 b, i32 c, i32 d);                  // 0x1073
-    void PlayAnimEx(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);    // 0x3003
-    void SetAnim(i32 a, i32 b, i32 c, i32 d);                     // 0x2e96
-    void PlayStateAnim(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x3945
-};
+// (the ex-`CDecayAnim` view is GONE. It was not an anim controller at all - it was five
+// fabricated method names standing in for functions on THREE DIFFERENT REAL CLASSES, all
+// already reconstructed in the tree. Every one of its "RVAs" was an ILT jmp-thunk; chased
+// through to the real bodies they are:
+//   Anim2a72      thunk 0x2a72 -> 0x79fb0  CTriggerMgr::NotifyCell(row,col,z)      [void]
+//   SetAnim       thunk 0x2e96 -> 0x6bcb0  CTriggerMgr::CellDispatch(row,col,k,arg)
+//   PlayAnimEx    thunk 0x3003 -> 0x7a180  CTriggerMgr::SpawnPuddle(x,y,...)
+//   DrawAnimAt    thunk 0x1073 -> 0x7b440  CRockBreakMgr::BuildRockBreakParticles(...)
+//   PlayStateAnim thunk 0x3945 -> 0x75e90  CTerrainTileLoader::Load(...)
+// Four of the five really return i32; the view declared them all `void`, throwing away the
+// eax retail's callers consume. +0x260 is therefore not one object: it is the same
+// per-mode-reused manager slot GruntSteps.cpp already reaches as ((CTriggerMgr*)m_260) /
+// ((CTileWireLogic*)m_260) - a PROVEN-heterogeneous slot (three different concrete classes
+// at one member across code paths), so it is a documented void* with the real class named
+// at each site, not a fake unifying type.)
 
 SIZE_UNKNOWN(CGruntBehaviorLeaf);
 class CGruntBehaviorLeaf : public CUserLogic {
@@ -66,7 +73,7 @@ public:
     char m_pad1f8[0x258 - 0x1f8];
     i32 m_typeDisc; // +0x258 type discriminator (0x3b = no-downtime)
     char m_pad25c[0x260 - 0x25c];
-    CDecayAnim* m_animCtrl; // +0x260 anim controller
+    void* m_260; // +0x260 per-mode manager slot (heterogeneous - see the note above)
     char m_pad264[0x360 - 0x264];
     i32 m_gruntMode; // +0x360 grunt mode
     char m_pad364[0x36c - 0x364];

@@ -49,6 +49,7 @@
 
 #include <Mfc.h> // PtInRect (via <windows.h>), the CString diagnostic temp
 #include <Gruntz/GruntzMgr.h>
+#include <Gruntz/TerrainTileLoader.h> // canonical CTerrainTileLoader (was a .cpp-local view)
 
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created Particlez sprite)
@@ -76,13 +77,7 @@ extern "C" CGameRegistry* g_gameReg;
 // ---------------------------------------------------------------------------
 // The level/map owner (`this`). Raw-offset access.
 // ---------------------------------------------------------------------------
-class CTerrainTileLoader {
-public:
-    // __thiscall member (retail passes `this` in ecx: `mov esi,ecx` prologue), returns
-    // 1 on every handled path (retail materialises eax=1 before each `ret`).
-    i32 Load(i32 actionIndex, i32 a1, i32 tileX, i32 tileY, i32 actionType, i32 a5);
-    char m_pad[4];
-};
+// (CTerrainTileLoader is the canonical <Gruntz/TerrainTileLoader.h> class.)
 
 // ===========================================================================
 // CTerrainTileLoader::Load (0x075e90) - the per-tile terrain-action loader.
