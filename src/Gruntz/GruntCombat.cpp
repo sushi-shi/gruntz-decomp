@@ -1,3 +1,4 @@
+#include <Mfc.h> // the REAL MFC CPtrList - CScanList was a fake view of it
 // GruntCombat.cpp - the THIRD original grunt TU (retail text 0x56f80-0x5d084):
 // the grunt combat / struck-voice / attack / ability-tuning / spawn family,
 // carved out of the conflated Grunt.cpp (wave3-I grunt-region partition).
@@ -217,7 +218,6 @@ enum SpellzEffect {
     SPELLZ_ROLLINGBALL = 6,  // RollingBallzSpeed/Time (spawns 4 directional ballz)
 };
 
-SIZE_UNKNOWN(CScanList);
 SIZE_UNKNOWN(CScanPlane);
 
 // ==== LoadGruntCombatAnimations @0x597a0 (ex GruntCombatAnim.cpp; its 15 private .data cells + the
@@ -446,18 +446,20 @@ void CGrunt::EntranceTileOffset(i32* out) {
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 extern FreeNodePool g_coordPool;
 
-// --- local grid/scratch-list views (not the canonical CGrunt; the tile-plane's dirty-rect
-// view is richer than GruntBoard, and CScanList is the /GX-forcing stack CObList) ---
-struct CScanList {             // scratch CObList (block size 10) - forces /GX; also the
-    CScanList(i32 blockSize);  // 0x1b4867     view under which this+0x31c is walked/recycled
-    ~CScanList();              // 0x1b48c6
-    void* Head1b4a03();        // 0x1b4a03
-    void Add1b4991(void* p);   // 0x1b4991
-    void RemoveAll1b48a6();    // 0x1b48a6
-    void* Find1de8(void** it); // 0x1de8
-    char _00[0x18];
-    i32 m_18; // +0x18 trigger out-slot
-};
+// --- local grid view (the tile-plane's dirty-rect view is richer than GruntBoard) ---
+// The scratch list is the REAL MFC CPtrList (a stack instance forces the /GX EH frame).
+// It was a fake `CScanList` view whose methods were declared-only -> 6 PHANTOM externals.
+// The FID library tables name every one of its RVAs with HIGH, reloc-anchored confidence:
+//   0x1b4867 ??0CPtrList@@QAE@H@Z          0x1b48c6 ??1CPtrList@@UAE@XZ
+//   0x1b48a6 ?RemoveAll@CPtrList@@QAEXXZ   0x1b4991 ?AddTail@CPtrList@@...
+//   0x1b4a03 ?RemoveHead@CPtrList@@QAEPAXXZ
+// (The CObList rows at those same RVAs are AMBIG - CObList/CPtrList are COMDAT-identical.
+//  CPtrList wins on two counts: the HIGH/reloc-anchored FID rows, and the element type -
+//  every element stored here is a raw void*/GruntCoord*, which is CPtrList's element type;
+//  CObList would force (CObject*) casts that this code does not have.)
+// Find1de8 was never a method at all: 0x1de8 is an ILT thunk to 0x29a30, the free __stdcall
+// ListNodeAdvance(void**) already defined in BattlezMapConfig.cpp.
+void* __stdcall ListNodeAdvance(void** pos); // 0x29a30 (thunk 0x1de8)
 struct CScanCell { // 0x1c bytes/cell
     char _00[3];
     u8 m_3; // +0x03 flag byte
@@ -482,7 +484,7 @@ namespace ApiMisc {
 
 // The this+0x31c CObList reinterpreted as the scratch-list view (same object as the
 // canonical GruntListSub m_31c; one reinterpret at the address, no cast at the uses).
-#define SCAN_LIST() ((CScanList*)&m_31c)
+#define SCAN_LIST() ((CPtrList*)&m_31c) // m_31c IS the grunt's CPtrList (see Grunt.h)
 
 // Recompute the plane dirty rect (m_60) as {0,0,w,h} intersected with a copy.
 #define SCAN_BOUNDS(grid)                                                                          \
@@ -1096,20 +1098,22 @@ i32 CGrunt::PathScan57db0() {
                 fire = (co->m_x == tcol && co->m_y == trow) ? 1 : 0;
             }
             if (fire) {
-                CScanList s(0xa);
+                CPtrList s(0xa);
+                i32 scanHit = 0; // SearchEdge's out-slot (NOT a list field: `s` is
+                                 // never passed to it - only this cell's address is)
                 i32 res = ((CBrickzGrid*)grid)
                               ->SearchEdge(
                                   c,
                                   r,
                                   co->m_x,
                                   co->m_y,
-                                  &s.m_18,
+                                  &scanHit,
                                   1,
                                   m_arrivalFlags | 0x20000000,
                                   m_24c
                               );
                 if (res != 0) {
-                    if (s.m_18 != 0) {
+                    if (scanHit != 0) {
                         hitFound = 1;
                         break;
                     }
@@ -1134,24 +1138,24 @@ i32 CGrunt::PathScan57db0() {
                 fn[0] = (void*)co->m_x;
                 fn[1] = (void*)co->m_y;
                 g_coordPool.m_freeHead = *fn;
-                SCAN_LIST()->Add1b4991(fn);
+                SCAN_LIST()->AddTail(fn);
             }
         }
         if (m_coordCount != 0) {
             GruntCoordNode* nd = m_320;
             while (nd != 0) {
-                void* r = SCAN_LIST()->Find1de8((void**)&nd);
+                void* r = ListNodeAdvance((void**)&nd);
                 if (*(i32*)r != 0) {
                     g_coordPool.Push((void*)*(i32*)r);
                 }
             }
-            SCAN_LIST()->RemoveAll1b48a6();
+            SCAN_LIST()->RemoveAll();
         }
-        void* elem = SCAN_LIST()->Head1b4a03();
+        void* elem = SCAN_LIST()->RemoveHead();
         if (elem != 0) {
             FREELIST_PUSH(elem);
         }
-        SCAN_LIST()->RemoveAll1b48a6();
+        SCAN_LIST()->RemoveAll();
         SCAN_BOUNDS(grid);
         return 1;
     }
@@ -1178,20 +1182,22 @@ i32 CGrunt::PathScan57db0() {
                 if (((m_arrivalFlags | 0x20040002) & cf) != 0 && (m_24c & cf) == 0) {
                     continue;
                 }
-                CScanList s(0xa);
+                CPtrList s(0xa);
+                i32 scanHit = 0; // SearchEdge's out-slot (NOT a list field: `s` is
+                                 // never passed to it - only this cell's address is)
                 i32 res = ((CBrickzGrid*)grid)
                               ->SearchEdge(
                                   col5,
                                   row5,
                                   col5,
                                   row5,
-                                  &s.m_18,
+                                  &scanHit,
                                   1,
                                   m_arrivalFlags | 0x20040002,
                                   m_24c
                               );
-                if (res != 0 && s.m_18 != 0) {
-                    void* elem = s.Head1b4a03();
+                if (res != 0 && scanHit != 0) {
+                    void* elem = s.RemoveHead();
                     if (elem != 0) {
                         FREELIST_PUSH(elem);
                     }
