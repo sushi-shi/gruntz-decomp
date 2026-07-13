@@ -389,6 +389,47 @@ The mandate is the OPPOSITE of chasing %: **reduce all views to real `struct`/`c
   as a proper method of its real class and put every type it touches in a shared header with a real
   identity **before** you commit. Never move a view from stub into the main tree — that trades a free
   backlog view for a counted one. Both numbers must not go UP when you home; they only ratchet down.
+- **VTABLES: READ THE SLOT MAP. NEVER PAD WITH PLACEHOLDER VIRTUALS.**
+  **The per-slot ground truth already exists — you do not derive it.** Run:
+
+      python -m gruntz.analysis.vtable_hierarchy --class <Class>     # one class
+      python -m gruntz.analysis.vtable_hierarchy --csv slots.csv     # every class
+
+  It reads **RTTI** (each vtable's Complete Object Locator at `vtable-4` → base-class array →
+  the exact class graph), aligns the class's vtable slot-by-slot against its primary base, and
+  tags **every slot** `inherited` / `override` / `new`, with the **origin class** for each:
+
+      CSBI_Image : CSBI_RectOnly  [rtti] vtbl@0x1eac0c  12 slots  (1 new, 5 override, 6 inherited)
+          [ 2] inherited Setup                  (origin CStatusBarItem)
+          [ 3] override  ClearFrame             (origin CStatusBarItem)
+          [11] new       SetupImage
+
+  **Transcribe it. The disposition is mechanical:**
+  | tag | what you write |
+  |---|---|
+  | `inherited` | **NOTHING.** Do not redeclare it — the compiler re-emits the base's slot. |
+  | `override` | the real method with the **`OVERRIDE`** macro |
+  | `new` | the real method as a plain **`virtual`** |
+
+  **THE ANTI-PATTERN THIS KILLS.** If you hand-count slots off the disassembly you will not know
+  which are *inherited*, so the only way to land a real method at slot *N* is to **pad** — insert
+  `dummy4`/`v08`/`Slot12`/`vfunc7` body-less virtuals to push it down. Then the next matcher sees
+  the base already supplies those slots, deletes the padding, everything shifts, and it re-pads
+  differently. **That oscillation is the single largest source of churn in this codebase**, and its
+  residue is the `placeholder vtable slots` metric (~817, concentrated in `Image.h`, `UserLogic.h`,
+  `WwdFile.h`, `GameMode.h`, `DDPageMgr.cpp`).
+
+  It is not cosmetic. Measured 2026-07-13: a fabricated **15-slot base with ELEVEN body-less
+  placeholder virtuals** — whose only job was to push one real method to slot +0x2c — made cl emit
+  **60-byte vtables where RTTI says 12–13 slots**, and caused a **live crash**: a non-polymorphic
+  view was cast to that base and slot 11 dispatched through an object **whose vptr was never
+  stamped**. Every "placeholder" it declared had the **real function sitting beside it as a
+  non-virtual**, arity matching exactly.
+
+  ⇒ **A body-less placeholder virtual is never the answer.** If a slot seems to need one, you are
+  missing an `inherited` tag — go read the slot map. If the map itself is wrong, that is a finding:
+  report it, do not paper over it. Related gates (all FATAL, keep them at zero): `vtable_owner
+  --audit` (every `VTBL()` binding vs RTTI), `vtable_hierarchy --audit`, `vtable_bans`.
 - **CASTS ARE A SYMPTOM, NEVER A TARGET. Do not force-remove a cast.** A `((SomeView*)this)->x` or
   `(CFoo*)m_54` cast exists because the **type above it is wrong** — it is how a fake view propagates.
   There are exactly two root causes, and they are the things you actually fix:
