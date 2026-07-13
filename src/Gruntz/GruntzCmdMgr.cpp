@@ -24,12 +24,6 @@
 #include <Gruntz/BoundaryTailViews.h> // CObj23d90 (fuzzy-identity 0x23d90 grid-snap blit)
 #include <rva.h>
 
-// CGruntzCmdTarget::Exec IS CCmdHandler::Dispatch @0xd1b60 (7 args); local decl.
-class CCmdHandler {
-public:
-    i32 Dispatch(u32 a, u32 b, u32 c, u32 d, u32 e, u32 f, u32 g);
-};
-
 // The game registry singleton (canonical <Gruntz/WwdGameReg.h>). The command
 // Save/Load paths and the manager's IsActive/IsActive2 predicates all gate on its
 // +0x30 active-game slot (m_world) being non-null; this TU only null-tests it, so
@@ -443,7 +437,9 @@ i32 CGruntzCommand::ApplyOne(CGruntzCmdTarget* p) {
     if (!p) {
         return 0;
     }
-    return ((CCmdHandler*)p)->Dispatch(m_4, m_10, m_5, m_8, m_a, m_11, m_6);
+    // Exec's narrow (char/i16) params reproduce retail's mov al/mov dx member
+    // loads; the ex-CCmdHandler view's u32 params made cl widen (movzx/movsx).
+    return p->Exec(m_4, m_10, m_5, m_8, m_a, m_11, m_6);
 }
 
 // ---------------------------------------------------------------------------
@@ -459,7 +455,7 @@ i32 CGruntzCommand::ApplyMask(CGruntzCmdTarget* p) {
     i32 ok = 1;
     for (i32 i = 0; i < 16; i++) {
         if (g_cmdBitTable[i] & *(u16*)&m_10) {
-            if (!((CCmdHandler*)p)->Dispatch(m_4, (char)i, m_5, m_8, m_a, 0, m_6)) {
+            if (!p->Exec(m_4, (char)i, m_5, m_8, m_a, 0, m_6)) {
                 ok = 0;
             }
         }
