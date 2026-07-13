@@ -89,28 +89,12 @@ struct CNetSession;     // the +0x520 command-session facet (Session() accessor)
 // reinterpret at the (9) use sites in Multi.cpp; once GruntzMgr.h types them, the facets
 // fold away too.
 
-// CGruntzMgr::m_options[i]'s inner slot-config sub-object (+0x38). StartSession drives it
-// per-slot through three thiscall entry points (ecx = &m_inner; out-of-line ->
-// reloc-masked); only the +0x38 offset + 0x200 span are load-bearing.
-class CSlotConfig {
-public:
-    char m_pad[0x238 - 0x38];
-};
-
-// The multiplayer facet of one CGruntzMgr::m_options[] entry (+0x150, stride 0x238).
-// The session-start path arms each entry's inner sub-object (+0x38) and conditionally
-// pokes it; placeholder offsets, only the stride/offsets are load-bearing. (m_10/m_14 are
-// the same fields GruntzMgr.cpp's OptionsSlot names; deferred fold - see the note above.)
-class CMultiMgrOptions {
-public:
-    char m_pad00_10[0x10];
-    i32 m_10; // +0x10  passed to CSlotConfig::Load
-    i32 m_14; // +0x14
-    char m_pad18_20[0x20 - 0x18];
-    i32 m_20; // +0x20
-    char m_pad24_38[0x38 - 0x24];
-    CSlotConfig m_inner; // +0x38  inner slot-config sub-object
-};
+// (CSlotConfig + CMultiMgrOptions are GONE - two more names for one class. The entry is
+// the real GruntzPlayer (<Gruntz/GruntzPlayer.h>) and its "inner slot-config sub-object"
+// at +0x38 is that class's real CBattlezMapConfig member: the three thiscalls the
+// session-start path drove on &m_inner are LoadConfig / FreeArrays / Clear_02ade0, which
+// is exactly the CBattlezMapConfig interface every other consumer already cast to. See
+// the 6-way conflation proof in GruntzPlayer.h.)
 
 // The +0x6c list head's element type (CObList node, removed via RemoveHead).
 class CMultiLogicNode {
@@ -225,6 +209,9 @@ public:
     // CPlay/CState restamps are realized via local dtor-view classes in CMulti.cpp.
     // Tick dispatches through vtbl() (reads the vptr as a CMultiSlotView*), preserving
     // its +0x7c/+0x98 indirect-call bytes.
+    // Constructed by CGruntzMgr::TransitionState (`new CMulti`, state id 17, `push 0x660`);
+    // defined out-of-line in GruntzMgr.cpp, the only TU that builds one.
+    CMulti();
     virtual ~CMulti() OVERRIDE; // slot 0  0x08d270 (most-derived /GX dtor; the ~CPlay->~CState
                                 // base chain tears the CPlay/CState sub-objects)
     // The 13 vtable slots CMulti overrides on CState/CPlay (RTTI vtbl 0x1e9fe4, 43 slots).

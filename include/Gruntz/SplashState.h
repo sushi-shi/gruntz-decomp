@@ -10,6 +10,11 @@
 
 class CSplashState : public CState {
 public:
+    // Constructed by CGruntzMgr::TransitionState (`new CSplashState`, state id 14,
+    // `push 0x1bc`); cl inlines this body at the new-site exactly as retail does.
+    CSplashState() {
+        m_1b4 = 0;
+    }
     // The 11 overridden CState slots (vtbl@0x1e9d74; the other 15 inherited). The
     // vtable is emitted by whichever TU defines slot-0 (~CSplashState @0x08d000, in
     // HelpState.cpp); the loader TU never defines a virtual body, so cl emits no
@@ -30,8 +35,10 @@ public:
     // The base asset-namespace loader (0x43a9 ILT thunk -> 0xf9ea0) is inherited from
     // CState now (LoadSounds calls it cast-free on `this`).
 
-    char m_pad1a8[0x1b8 - 0x1a8];
+    char m_pad1a8[0x1b4 - 0x1a8];
+    i32 m_1b4; // +0x1b4 zeroed by the ctor (the state's own one-shot gate)
     i32 m_1b8; // +0x1b8 splash-title countdown timer (frame-delta decremented, clamped 0)
+    // ENDS AT 0x1bc - the allocation-proven size (TransitionState: `push 0x1bc`).
 };
 SIZE_UNKNOWN(CSplashState);
 

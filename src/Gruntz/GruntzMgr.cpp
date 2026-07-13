@@ -38,6 +38,9 @@
 #include <Gruntz/Play.h>
 #include <Gruntz/Demo.h> // canonical CDemo (the CPlay-derived demo state; its dtor lives in this obj)
 #include <Gruntz/Attract.h>   // canonical CAttract (was a reduced local ODR-landmine twin)
+#include <Gruntz/GameMode.h>  // canonical CMenuState / CCreditsState / CBootyState / CMultiBootyState
+#include <Gruntz/SplashState.h> // canonical CSplashState
+#include <Gruntz/Multi.h>     // canonical CMulti (: CPlay : CState)
 #include <Gruntz/HelpState.h> // canonical CHelpState (same; extracted out of HelpState.cpp)
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Gruntz/GruntzPlayer.h> // GruntzPlayer::Reset (0xda9e0) - the options slots ARE GruntzPlayer
@@ -132,24 +135,17 @@ extern "C" {
     extern i32 g_648ce8; // DAT_00648ce8  (timeGetTime base stamp)
 }
 
-// AccrueScoreTime's engine views. g_gameReg->m_7c is the registry's HUD/score
-// accumulator (Refresh at the 0x1884 thunk; a running total at +0x10). The live
-// state carries a tally id at +0x1c and a 64-bit level clock pointer at +0x3f4
-// (->m_38). m_cmdGrid carries a "scored" flag at +0x288.
-struct GameRegHudView {
-    char m_pad0[0x7c];
-    CBattlezData* m_7c; // +0x7c
-};
-struct LevelClock {
-    char m_pad0[0x38];
-    i64 m_38; // +0x38  64-bit elapsed clock
-};
-struct StateScoreView {
-    char m_pad0[0x1c];
-    i32 m_1c; // +0x1c  tally id
-    char m_pad20[0x3f4 - 0x20];
-    LevelClock* m_3f4; // +0x3f4
-};
+// AccrueScoreTime's objects are all CANONICAL now - the three views that stood here
+// (GameRegHudView / StateScoreView / LevelClock) were duplicates of classes this TU
+// already includes:
+//   * GameRegHudView(+0x7c)  == CGruntzMgr::m_scoreHud (CBattlezData*) - g_gameReg IS
+//     the CGruntzMgr (this TU DEFINES the singleton at its real type), so the view was
+//     casting the class back out of its own singleton.
+//   * StateScoreView(+0x1c / +0x3f4) == CState::m_levelIndex + CPlay::m_frameMarker.
+//     The +0x3f4 read only happens on the m_134==3 ("won") arm, where the live state IS
+//     the PLAY state - a plain derived downcast, not a reinterpret.
+//   * LevelClock(+0x38, 64-bit) == CTimer's +0x38:+0x3c level-start stamp
+//     (<Gruntz/Timer.h>) - read 64-bit the way the timer's other clock pairs already are.
 // (m_cmdGrid's scored flag +0x288 is CTriggerMgr::m_288.)
 
 // DelayedQuit's menu lookup goes through the world's CSndHost (+0x28): the former
@@ -157,15 +153,11 @@ struct StateScoreView {
 // canonicals (FUN_005b8438 == RVA 0x1b8438 == CSndFinder::Lookup; the "menu node"
 // is the LeafCue whose m_10 CSoundCueMgr carries the +0x28 cue duration).
 
-// Close's teardown vocabulary. Most owned sub-objects share a parameterless
-// thiscall teardown then operator delete (modeled as one EngObj type - the per-call
-// displacement reloc-masks). m_30/m_3c are torn down through their own vtable slot 1
+// Close's teardown vocabulary. m_30/m_3c are torn down through their own vtable slot 1
 // (a flagged scalar-delete), m_settings is the settings/registry writer (WriteInt per
 // named key), and g_645578 is zeroed field-by-field before delete. Each engine
-// entrypoint is out-of-line / reloc-masked.
-struct EngObj {
-    // Teardown @0x3b1b IS ~CTriggerMgr; cast at each call.
-};
+// entrypoint is out-of-line / reloc-masked. (The dead `EngObj` shell that used to sit
+// here had ZERO uses left - the teardown legs all call ~CTriggerMgr directly.)
 class CWorldDelete {
 public:
     virtual void s0();            // slot 0 (+0x00)
@@ -297,13 +289,11 @@ DATA(0x0021ab24)
 i32 g_sndCueTag = 0;           // 0x61ab24  the cue-item id played through PlayIfElapsed
 extern "C" u32 g_killCueClock; // DAT_006bf3c0 (wrap-safe draw clock)
 
-// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A), modeled here with
-// the offsets UpdateScoreHud touches (a per-TU view; the DATA pin reloc-masks the
-// `mov eax,ds:g_gameReg` load against the already-named symbol).
-struct ScoreSub2c { // g_gameReg->m_curState
-    char m_pad0[0x1c];
-    i32 m_1c; // +0x1c  cumulative score
-};
+// The game registry singleton (?g_gameReg@@3PAUWwdGameReg@@A). The `ScoreSub2c` view that
+// used to sit here (a +0x1c slice of g_gameReg->m_curState) was the SAME field as
+// StateScoreView's - CState::m_levelIndex (<Gruntz/State.h>, +0x1c) - reached through the
+// canonical CState* member; the "cumulative score" name it carried was wrong (every use
+// below feeds it to a "Level %i ..." sprintf / the level spinner). Both views are gone.
 // DEFINED here (owner = the class TU of the object it points at). ~50 TUs reference this
 // singleton and NONE defined it. Its producer is CGruntzMgr::Init (RezSync.cpp), which
 // self-registers with `g_gameReg = this` - that is what proves 0x24556c holds the
@@ -486,24 +476,14 @@ void CreateWorldObjects(void* world);
 void BeginWaitCursor(); // 0x1beafb
 void EndWaitCursor();   // 0x1beb10
 
-// One element of the 4-entry options array embedded at CGruntzMgr +0x150 (each
-// 0x238 bytes). AdvanceOptionsCycle reads its arm flag (+0x14) + loaded flag
-// (+0x20) and ticks the +0x38 sub-object (reloc-masked thiscall); BroadcastCmd
-// forwards the 4-arg command into the slot itself.
-struct OptionsSlot {
-    char m_pad0[0x4];
-    CString m_name; // +0x04  per-slot name/config string (LoadOptionsSlotName target)
-    char m_pad8[0x10 - 0x8];
-    i32 m_10; // +0x10  per-slot config id
-    i32 m_14; // +0x14  arm flag
-    i32 m_18; // +0x18  slot key (FindOptionsSlot match)
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_20; // +0x20  loaded flag
-    char m_pad24[0x38 - 0x24];
-    CBattlezMapConfig m_38; // +0x38
-    // Command @0x4250 IS CTriggerMgr::RebuildOverlay; cast at the call.
-    i32 Reset(); // 0xda9e0 (external; reloc-masked) - clear/rewind the slot
-};
+// The 4-entry options array embedded at CGruntzMgr +0x150 (each 0x238 bytes) is
+// GruntzPlayer m_options[4] (<Gruntz/GruntzPlayer.h> via GruntzMgr.h). The `OptionsSlot`
+// view that stood here was the fifth name for that one class - its every field lined up
+// (m_name @+0x04, m_010 config id, m_014 arm, m_018 key, m_020 loaded, the +0x38
+// CBattlezMapConfig) and its declared-only `Reset() // 0xda9e0` was a PHANTOM
+// (?Reset@OptionsSlot@@QAEHXZ, a name no obj and no .LIB defines) standing in for the
+// real ?Reset@GruntzPlayer@@QAEHXZ at that very rva. The methods below now call it
+// directly, so the reference binds.
 
 // The downstream command sinks BroadcastCmd fans the 4-arg command out to: the
 // +0x68 grid (CTriggerMgr), the live source object (via GetSaveSource), the +0x6c
@@ -602,15 +582,14 @@ extern "C" {
     StateMgrBZ* g_645578 = 0; // DAT_00245578 (canonical binding; also decl'd in Play.h)
 }
 
-// The embedded options object's ctor/dtor are out-of-line helpers whose real bodies
-// (FUN_0051f5a0 / FUN_0051f640) live in another TU. CGruntzMgr's ctor/dtor pass their
-// addresses to the __ehvec ctor/dtor iterators building m_options[4]; the retail /
-// INCREMENTAL link routes those address-of pushes through the element ctor/dtor ILT
-// thunks (0x2a7c ctor, 0x1465 dtor). Declared-only here (no body) so the references
-// are undefined externals bound to the thunk rvas below (binding the empty-body
-// definitions would make objdiff compare them against the thunk bytes).
-// @data-symbol: ??0CGruntzMgrOptions@@QAE@XZ 0x00002a7c
-// @data-symbol: ??1CGruntzMgrOptions@@QAE@XZ 0x00001465
+// CGruntzMgr's ctor/dtor pass the m_options[4] element ctor/dtor to the __ehvec
+// iterators through the retail /INCREMENTAL ILT thunks 0x2a7c (ctor) / 0x1465 (dtor).
+// Those thunks chase to 0x0da790 / 0x083260 == GruntzPlayer's default ctor + dtor, which
+// are DEFINED in src/Gruntz/GruntSpawnLevel.cpp under their real names - so the two
+// @data-symbol lines that used to bind the thunk rvas to the invented
+// ??0CGruntzMgrOptions / ??1CGruntzMgrOptions mangled names are gone with the class.
+// (Neither name was ever referenced by any obj; they were a fake identity, not a
+// binding.)
 //
 // The base WAP32::CGameMgr vtable (0x1e9b8c): the CGruntzMgr dtor + its scalar-deleting
 // ??_G restore the base subobject's vptr to it during teardown. Namespaced vtable, so
@@ -741,68 +720,20 @@ void ForceEmitCStateDtor() {
 // unit, waveP -> 0x8b8c0 gruntzmgr). The /GX game-state factory; the CState leaf views
 // are reduced local layouts stamping the retail vtables by hand, CPlay is the canonical
 // Play.h class, g_645570 reuses this TU's local DirectInputMgr2 (ReadAll added).
-struct CTsState {
-    virtual void VDtor(u32 flags);                         // slot 0  scalar-deleting dtor
-    virtual i32 Activate(CGruntzMgr* mgr, i32 a2, i32 a3); // slot 1  activate
-    virtual void VSlot2();
-    virtual void VSlot3();
-    virtual i32 Id(); // slot 4  id/update
-    virtual void VSlot5();
-    virtual void VSlot6();
-    virtual void VSlot7();
-    virtual void VSlot8();
-    virtual i32 Slot9(i32 a);  // slot 9
-    virtual i32 Slot10(i32 a); // slot 10 (+0x28)
-    char m_pad2c[0x1c - 0x0c]; // (kept exactly)
-    i32 m_1c;                  // sub-object saved on teardown
-    void CallDtor(u32 flags) {
-        VDtor(flags);
-    }
-    i32 CallActivate(CGruntzMgr* mgr, i32 a2, i32 a3) {
-        return Activate(mgr, a2, a3);
-    }
-    i32 CallId() {
-        return Id();
-    }
-    i32 CallSlot9(i32 a) {
-        return Slot9(a);
-    }
-    i32 CallSlot10(i32 a) {
-        return Slot10(a);
-    }
-    virtual void VtSlotFill0();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill6();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill7();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill8();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill9();  // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill10(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill11(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill12(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill13(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill14(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill15(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill16(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill17(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill18(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill19(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill20(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill21(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill22(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill23(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill24(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill25(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill26(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill27(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill28(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill29(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill30(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill31(); // vtable-slot filler (real slot; declared-only)
-};
+// The state object the factory drives IS the canonical CState (<Gruntz/State.h>, already
+// included). The `CTsState` shell that stood here - a 43-slot re-declaration of CState's
+// vtable with 32 nameless `VtSlotFill` placeholder slots and a `m_1c` twin of
+// CState::m_levelIndex - was a pure duplicate; every one of its 14 call sites cast a
+// CState* to it and back. Its five "Call*" trampolines map 1:1 onto the real virtuals:
+//   CallDtor(1) = slot 0  -> `delete st` (the scalar-deleting dtor, flag 1)
+//   CallActivate = slot 1 -> Vfunc1      CallId  = slot 4 -> Update()
+//   CallSlot9    = slot 9 -> Vslot09     CallSlot10 = slot 10 -> FrameSlot28
+// OPEN DEFECT (handed off, not fixed here): CState::Vfunc1's FIRST parameter is typed
+// i32 but is really a CGruntzMgr* - proven twice, (a) retail's TransitionState passes
+// `this` into it, and (b) CPlay::Vfunc1 (ModeObjInit.cpp) casts that arg to a view whose
+// +0x164 / +0x170 fields ARE m_options[0].m_014 / m_020 of the game manager. Retyping it
+// touches CState/CPlay/CDemo/CBootyState + ~40 OVERRIDE decls, so it is left for the
+// owner of State.h; until then this one site converts the pointer at the call.
 
 // The minimal destructible MFC members that force the per-object EH-state ladder;
 // their ctors/dtors are the reloc-masked NAFXCW bodies (0x1b9b93 / 0x1b4f0b ...).
@@ -818,297 +749,40 @@ struct CTsState {
 // are NON-polymorphic sized layouts: +0x00 is an explicit vptr slot the derived leaf
 // stamps by hand from its g_st<Class>Vtbl extern (no compiler-emitted ??_7 here).
 
-// Two extra member sub-objects the credits state (param 8) builds (a small ctor
-// @0x8c3b0 and the two 4-arg Set @0x8c380 initializers).
-struct CTsSub45 {
-    CTsSub45(); // 0x8c3b0
-    char m_pad[8];
-};
-void Ts_Set(void* self, i32 a, i32 b, i32 c, i32 d); // 0x8c380 (member Set, 4 args)
+// (CTsSub45 and Ts_Set are gone. CTsSub45 - "a small ctor @0x8c3b0" - was the credits
+// state's REAL MFC CRgn member (RTTI .?AVCRgn@@; 0x8c3b0 IS the ??0CRgn COMDAT), which the
+// canonical CCreditsState already types. The 4-arg Set @0x8c380 on its two rect
+// sub-objects moved to <Gruntz/GameMode.h> next to the ctor that calls it.)
 
-// The ten retail state vtables, referenced by RELOC-MASKED EXTERNAL reference. Each
-// leaf ctor stamps `m_vptr = &g_st<Class>Vtbl`; the extern's address IS the retail
-// ??_7<Class>, but its DIFFERENT name (+ no DATA() binding) means cl emits no local
-// vtable and the delinker keeps the RVA bound to the real class's TU (noted). The
-// switch key is the state id TransitionState is asked for.
-// (CPlay uses the canonical `class CPlay : public CState` - cl auto-stamps
-// ??_7CPlay in its ctor, so no g_stCPlayVtbl manual-stamp extern is needed.)
-
-// ---- the CState-derived state objects (reduced local layouts of the real classes;
-// the retail vtable is stamped by hand from the externals above) ----------------
+// ---- the CState-derived game states this factory builds ------------------------
+// ALL SIX are the CANONICAL classes now (<Gruntz/GameMode.h> CMenuState / CCreditsState /
+// CBootyState / CMultiBootyState, <Gruntz/SplashState.h> CSplashState, <Gruntz/Multi.h>
+// CMulti - alongside CAttract / CDemo / CHelpState / CPlay / CState, which already were).
+// The six "reduced local layouts" that stood here are gone.
 //
-// EVERY LEAF BELOW DECLARES ITS DTOR OUT-OF-LINE (declaration only, no body). This is
-// load-bearing, not style. Left IMPLICIT, cl5 synthesises a per-TU inline dtor for each
-// leaf and emits it as a COMDAT under the leaf's REAL mangled name (??1CAttract@@UAE@XZ
-// ...). Because CState::~CState is inline in <Gruntz/State.h>, that synthesised body
-// inlines the base dtor, and /O2 dead-stores away the derived vptr write that precedes
-// it - leaving a 16-byte stub:
-//     mov dword ptr [ecx], offset ??_7CState@@6B@
-//     jmp  ?BaseCleanup@CGameModeBase@@QAEXXZ
-// which is an ODR-DIVERGENT DUPLICATE of the real 96-byte /GX chain dtor that the leaf's
-// own TU (attractstate/menustate/helpstate/bootystateactivate/creditsstate/multi/dialogs)
-// defines at its retail rva. cl5 keeps ONE COMDAT per name and picks arbitrarily, so the
-// linker could bind every `delete state` to the stub and skip the real teardown. It also
-// made reloc_fidelity score the STUB's relocs against retail's real body - the phantom
-// "MISBOUND ??_7CState@@6B@ @+0x2 / ?BaseCleanup @+0x7" rows, which were never a defect
-// in the state TUs at all (their bodies match retail byte-for-byte).
-// Declared-only => no definition is emitted here, so each reference binds to the one real
-// body. The classes are polymorphic already (CState's dtor is virtual), so this changes
-// no layout and no vtable slot - it is byte-neutral.
-// CAttract is the CANONICAL <Gruntz/Attract.h> class (included above). The reduced local
-// twin is GONE: its all-CState-base-slot ??_7CAttract@@6B@ was an ODR landmine, and the
-// canonical class emits the vtable attractstate emits. This fold needed Attract.h's
-// CAttract::Update to be UN-INLINED first (an RVA() on an inline header body is claimed
-// by every TU that emits the COMDAT - see the note on Update in Attract.h).
-// NOT foldable onto the canonical <Gruntz/GameMode.h> `CMenuState : CState` (Bucket-C
-// base-fold wall): a canonical polymorphic CMenuState would make cl emit + stamp a
-// LOCAL ??_7CMenuState here (the ctor references its own vtable), claiming the retail
-// vtable RVA 0x5e9e84 that gamemode already owns. This non-poly shell + manual g_st*
-// stamp is the deliberate whole-family pattern (see file header); the loader-view fold
-// happened in MenuStateAssets.cpp, which does not construct the class.
-// EVERY leaf below RE-DECLARES ITS CANONICAL VIRTUAL OVERRIDES. This is the ODR fix, not
-// decoration. A `new CX` here forces cl to emit ??_7CX@@6B@ in THIS obj (the ctor is
-// inlined at the new-site and stamps the vptr - see retail 0x8bacf..). When the leaf
-// declared no overrides, that emitted vtable was 26 CState BASE slots - byte-different
-// from the real vtable its own TU emits. cl5 keeps ONE vtable COMDAT per name and picks
+// They were the single worst thing in this file: a SECOND, ODR-divergent DEFINITION of six
+// real classes (the file's own note admitted "cl5 keeps ONE vtable COMDAT per name and picks
 // arbitrarily, so the linker could bind every CMenuState/CBootyState/... to a vtable that
-// dispatches straight to CState: a silent, shipping-severity mis-dispatch that costs 0%
-// in objdiff (vtable contents are reloc-masked). Declaring the same overrides in the same
-// slot order makes this obj's vtable byte-identical to the leaf TU's, so the duplicate is
-// benign. Bodies stay in the leaf TU (declared-only here => reloc-masked references).
-struct CMenuState : CState { // param 5, 0x1c0
-    i32 m_1b4;               // +0x1b4
-    char m_pad1b8[0x1c0 - 0x1b8];
-    CMenuState() {
-        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-        m_1b4 = 0;
-    }
-    virtual ~CMenuState() OVERRIDE;              // 0x0008ce60 (MenuState.cpp)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot06() OVERRIDE;              // slot 6
-    virtual i32 Vslot07() OVERRIDE;              // slot 7
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8
-    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
-    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
-    virtual i32 Vslot10(i32, i32, i32) OVERRIDE; // slot 16
-    virtual i32 Vslot14(i32, i32, i32) OVERRIDE; // slot 20
-};
-// CHelpState is the canonical <Gruntz/HelpState.h> class (included above) - the reduced
-// local twin is GONE (its all-base-slot ??_7CHelpState was the same ODR landmine).
-struct CSplashState : CState { // param 14, 0x1bc
-    i32 m_1b4;                 // +0x1b4
-    char m_pad1b8[0x1bc - 0x1b8];
-    CSplashState() {
-        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-        m_1b4 = 0;
-    }
-    virtual ~CSplashState() OVERRIDE;            // 0x0008d000 (HelpState.cpp)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot06() OVERRIDE;              // slot 6
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8
-    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
-    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
-};
-// CDemo is the canonical <Gruntz/Demo.h> class (included below); its ctor + the
-// `new CDemo` factory case + CDemo::Vslot15 (0x3c030) live in this TU.
-struct CMultiBootyState : CState { // param 18, 0x244
-    i32 m_1b4;                     // +0x1b4
-    i32 m_1b8;                     // +0x1b8
-    char m_pad1bc[0x244 - 0x1bc];
-    CMultiBootyState() {
-        // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-        m_1b4 = 0;
-        m_1b8 = 0x64;
-    }
-    virtual ~CMultiBootyState() OVERRIDE;        // 0x0008d510 (BootyStateActivate.cpp)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot06() OVERRIDE;              // slot 6
-    virtual i32 Vslot07() OVERRIDE;              // slot 7
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8
-    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
-    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
-    virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17
-};
-struct CBootyState : CState { // param 10, 0x320
-    i32 m_1b4;                // +0x1b4
-    i32 m_1b8;                // +0x1b8
-    i32 m_1bc;                // +0x1bc
-    i32 m_1c0;                // +0x1c0
-    i32 m_1c4;                // +0x1c4
-    i32 m_1c8;                // +0x1c8
-    i32 m_1cc;                // +0x1cc
-    i32 m_1d0;                // +0x1d0
-    i32 m_1d4;                // +0x1d4
-    char m_pad1d8[0x1ec - 0x1d8];
-    i32 m_1ec; // +0x1ec
-    i32 m_1f0; // +0x1f0
-    i32 m_1f4; // +0x1f4
-    i32 m_1f8; // +0x1f8
-    char m_pad1fc[0x200 - 0x1fc];
-    i32 m_200; // +0x200
-    char m_pad204[0x284 - 0x204];
-    i32 m_284[8]; // +0x284
-    i32 m_2a4[8]; // +0x2a4
-    i32 m_2c4;    // +0x2c4
-    char m_pad2c8[0x2e8 - 0x2c8];
-    i32 m_2e8; // +0x2e8
-    i32 m_2ec; // +0x2ec
-    i32 m_2f0; // +0x2f0
-    i32 m_2f4; // +0x2f4
-    char m_pad2f8[0x320 - 0x2f8];
-    CBootyState();
-    virtual ~CBootyState() OVERRIDE;             // 0x0008d440 (BootyStateActivate.cpp)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot06() OVERRIDE;              // slot 6
-    virtual i32 Vslot07() OVERRIDE;              // slot 7
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8
-    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
-    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
-    virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17
-};
-// NOTE for matcher-4 (the vtbl-stamp owner of this file): the canonical
-// CCreditsState : CState EXISTS in <Gruntz/GameMode.h> (RTTI vtbl@0x1e9c64) and
-// CreditzAssets.cpp now folds onto it. This local shell + its g_stCCreditsStateVtbl
-// ctor stamp is the SAME Bucket-C whole-family pattern documented on CMenuState
-// above; when the family converts, union THIS view's field knowledge into the
-// canonical (m_1c8/m_1d8 rect subs; m_1e8's CTsSub45 ctor 0x8c3b0 is the canonical
-// CCreditsImageList's; m_1f0 == m_caption; m_208/m_210 == m_videoPlaying/
-// m_videoHandle - offsets agree, no conflation).
-struct CCreditsState : CState { // param 8, 0x218
-    i32 m_1b4;                  // +0x1b4
-    i32 m_1b8;                  // +0x1b8
-    i32 m_1bc;                  // +0x1bc
-    i32 m_1c0;                  // +0x1c0
-    i32 m_1c4;                  // +0x1c4
-    char m_1c8[0x10];           // +0x1c8  Set-initialized rect sub-object
-    char m_1d8[0x10];           // +0x1d8  Set-initialized rect sub-object
-    CTsSub45 m_1e8;             // +0x1e8
-    CString m_1f0;              // +0x1f0
-    i32 m_1f4;                  // +0x1f4
-    i32 m_1f8;                  // +0x1f8
-    i32 m_1fc;                  // +0x1fc
-    i32 m_200;                  // +0x200
-    i32 m_204;                  // +0x204
-    i32 m_208;                  // +0x208
-    i32 m_20c;                  // +0x20c
-    i32 m_210;                  // +0x210
-    char m_pad214[0x218 - 0x214];
-    CCreditsState();
-    virtual ~CCreditsState() OVERRIDE;           // 0x0008d5e0 (CreditsState.cpp)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
-    virtual void ReleaseResources() OVERRIDE;    // slot 2
-    virtual GameStateId Update() OVERRIDE;       // slot 4
-    virtual i32 Render() OVERRIDE;               // slot 5
-    virtual i32 Vslot06() OVERRIDE;              // slot 6
-    virtual i32 InputVirtual() OVERRIDE;         // slot 8
-    virtual i32 Vslot09(i32) OVERRIDE;           // slot 9
-    virtual i32 FrameSlot28(i32) OVERRIDE;       // slot 10
-    virtual i32 Vslot0c(i32, i32) OVERRIDE;      // slot 12
-    virtual i32 Vslot0e(i32, i32, i32) OVERRIDE; // slot 14
-};
-// CPlay (param 3, 0x520) is the canonical `class CPlay : public CState` from
-// <Gruntz/Play.h>; its five destructible MFC members + CState base give the same
-// inline-construction shape the factory needs, and its ctor (defined below) stamps
-// ??_7CPlay via cl (no manual g_stCPlayVtbl stamp).
-struct CMulti : CPlay { // param 17, 0x660
-    i32 m_520;          // +0x520
-    i32 m_524;          // +0x524
-    char m_pad528[0x590 - 0x528];
-    i32 m_590; // +0x590
-    char m_pad594[0x598 - 0x594];
-    CString m_598, m_59c, m_5a0; // +0x598/+0x59c/+0x5a0
-    char m_pad5a4[0x5b0 - 0x5a4];
-    i32 m_5b0;            // +0x5b0
-    CString m_5b4, m_5b8; // +0x5b4/+0x5b8
-    char m_pad5bc[0x600 - 0x5bc];
-    i32 m_600;        // +0x600
-    CByteArray m_604; // +0x604
-    char m_pad618[0x660 - 0x618];
-    CMulti();
-    virtual ~CMulti() OVERRIDE;                 // 0x0008d270 (Multi.cpp)
-    virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1  (CState)
-    virtual void ReleaseResources() OVERRIDE;   // slot 2  (CState)
-    virtual GameStateId Update() OVERRIDE;      // slot 4  (CState)
-    virtual i32 Render() OVERRIDE;              // slot 5  (CState)
-    virtual i32 Vslot09(i32) OVERRIDE;          // slot 9  (CState)
-    virtual i32 FrameSlot28(i32) OVERRIDE;      // slot 10 (CState)
-    virtual i32 Vslot0b(i32, i32) OVERRIDE;     // slot 11 (CState)
-    virtual i32 Vslot15() OVERRIDE;             // slot 21 (CState)
-    virtual i32 Vslot1a() OVERRIDE;             // slot 26 (CPlay)
-    virtual i32 GetFrame() OVERRIDE;            // slot 27 (CPlay)
-    virtual i32 Vslot1e(i32, i32) OVERRIDE;     // slot 30 (CPlay)
-    virtual void Vslot20() OVERRIDE;            // slot 32 (CPlay)
-    virtual void Vslot26() OVERRIDE;            // slot 38 (CPlay)
-};
+// dispatches straight to CState: a silent, shipping-severity mis-dispatch that costs 0% in
+// objdiff"). Re-declaring the overrides made the duplicate benign; DELETING the duplicate
+// makes it impossible. The claimed "Bucket-C base-fold wall" (that including the canonical
+// would make cl emit + stamp a local ??_7CMenuState here and fight gamemode for the retail
+// vtable rva) is REFUTED by construction: the shells were already polymorphic and already
+// emitted those vtable COMDATs - the include changes nothing about which obj emits what, it
+// only removes the divergent second definition.
+//
+// Each leaf's ctor moved to its canonical header (inline, as retail has it: cl folds it into
+// the new-expression at the new-site), and the field knowledge the shells carried was merged
+// into the canonicals - CCreditsState gained its two +0x1c8/+0x1d8 screen rects and the
+// +0x1f4..+0x20c scroll block, CSplashState its +0x1b4 gate. The shells' `CTsSub45 m_1e8`
+// (ctor 0x8c3b0) is the canonical's REAL MFC CRgn (RTTI .?AVCRgn@@) - same ctor COMDAT.
+// The dtors stay declared-only in the canonicals, so each `delete state` still binds to the
+// one real /GX body in the leaf's own TU.
 
 // Field-heavy leaf ctors defined out-of-line for readability (still inline-folded
 // into the factory's new-expressions). The manual vptr stamp leads each body (the
 // ctor body runs after the base + member sub-object ctors, matching the retail
 // position of the `mov [this],offset ??_7<Class>` store).
-CBootyState::CBootyState() {
-    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-    m_1c0 = 0;
-    m_1c8 = 0;
-    m_1c4 = 0;
-    m_1cc = 0;
-    m_1b8 = 0;
-    m_1bc = 0x64;
-    m_2c4 = 0;
-    m_2e8 = 0;
-    m_2ec = 0;
-    m_2f0 = 0;
-    m_1b4 = 0;
-    m_2f4 = 0;
-    m_200 = 0;
-    m_1d0 = 0;
-    m_1d4 = 0;
-    m_1ec = 0;
-    m_1f0 = 0;
-    m_1f4 = 0;
-    m_1f8 = 0;
-    for (i32 i = 0; i < 8; i++) {
-        m_284[i] = 0;
-        m_2a4[i] = 0;
-    }
-}
-CCreditsState::CCreditsState() {
-    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-    m_1b8 = 0;
-    m_1bc = 0;
-    m_1c0 = 0;
-    m_1c4 = 0;
-    m_1f4 = 0;
-    m_1f8 = 0;
-    m_1fc = 0;
-    m_200 = 0;
-    m_204 = 0;
-    Ts_Set(m_1c8, 0, 0, 0x280, 0x1e0);
-    Ts_Set(m_1d8, 0, 0, 0x280, 0x1e0);
-    m_20c = 1;
-    m_210 = 0;
-    m_208 = 0;
-    m_1b4 = 0;
-}
 CPlay::CPlay() {
     // cl runs the CState base ctor + the five member ctors, then auto-stamps
     // ??_7CPlay, then this field-init body (matching the retail inlined construction).
@@ -1157,10 +831,12 @@ CPlay::CPlay() {
     *(i32*)(p + 0x2ec) = 0;
     *(i32*)(p + 0x504) = 0;
 }
+// CMulti (state id 17, 0x660) - the canonical <Gruntz/Multi.h> class. cl runs the CPlay
+// base ctor (which runs CState's + the five MFC members'), auto-stamps ??_7CMulti, then
+// this field seed - exactly the retail inlined construction at the new-site.
 CMulti::CMulti() {
-    // foreign/base vptr install dropped (compiler-managed / not C++-nameable; % ok per drive-to-0)
-    m_520 = 0;
-    m_524 = 0;
+    m_session = 0;
+    m_netGate = 0;
     m_590 = 1;
     m_5b0 = 0;
     m_600 = 1;
@@ -1181,19 +857,19 @@ CMulti::CMulti() {
 RVA(0x0008b960, 0x7c4)
 i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
     (void)a4;
-    CTsState* cur = (CTsState*)m_curState;
+    CState* cur = m_curState;
     i32 local10 = 0;
     if (cur != 0) {
-        local10 = cur->CallId();
-        i32 savedSub = cur->m_1c;
-        cur->CallSlot10(stateId);
+        local10 = cur->Update();
+        i32 savedSub = cur->m_levelIndex;
+        cur->FrameSlot28(stateId);
         if (keepCurrent != 0) {
             PushState(m_curState);
             a2 = savedSub; // retail reuses the arg2 stack slot as scratch for cur->m_1c
             m_curState = 0;
         } else {
             if (m_curState != 0) {
-                ((CTsState*)m_curState)->CallDtor(1);
+                delete m_curState;
             }
             m_curState = 0;
             FlushStateStack();
@@ -1214,42 +890,42 @@ i32 CGruntzMgr::TransitionState(i32 stateId, i32 a2, i32 keepCurrent, i32 a4) {
         return 1;
     }
 
-    CTsState* obj;
+    CState* obj;
     switch (stateId) {
         case 2:
-            obj = (CTsState*)new CAttract;
+            obj = new CAttract;
             break;
         case 3:
-            obj = (CTsState*)new CPlay;
+            obj = new CPlay;
             break;
         case 5:
-            obj = (CTsState*)new CMenuState;
+            obj = new CMenuState;
             break;
         case 7:
-            obj = (CTsState*)new CDemo;
+            obj = new CDemo;
             break;
         case 8:
-            obj = (CTsState*)new CCreditsState;
+            obj = new CCreditsState;
             break;
         case 9:
-            obj = (CTsState*)new CHelpState;
+            obj = new CHelpState;
             break;
         case 10:
-            obj = (CTsState*)new CBootyState;
+            obj = new CBootyState;
             break;
         case 14:
-            obj = (CTsState*)new CSplashState;
+            obj = new CSplashState;
             break;
         case 17:
-            obj = (CTsState*)new CMulti;
+            obj = new CMulti;
             break;
         case 18:
-            obj = (CTsState*)new CMultiBootyState;
+            obj = new CMultiBootyState;
             break;
         default:
             goto install;
     }
-    m_curState = (CState*)obj;
+    m_curState = obj;
 
 install:
     if (m_curState == 0) {
@@ -1258,17 +934,17 @@ install:
     }
     PerFrameTick();
     {
-        CTsState* st = (CTsState*)m_curState;
-        i32 ok = st->CallActivate(this, a2, local10);
-        st = (CTsState*)m_curState;
+        CState* st = m_curState;
+        i32 ok = st->Vfunc1((i32)this, a2, local10);
+        st = m_curState;
         if (ok == 0) {
             if (st != 0) {
-                st->CallDtor(1);
+                delete st;
             }
             m_curState = 0;
             return 0;
         }
-        st->CallSlot9(local10);
+        st->Vslot09(local10);
         *(i32*)(*(char**)((char*)this + 0x8) + 0x244) = 1;
         g_645570->ReadAll();
         PerFrameTick();
@@ -1287,8 +963,6 @@ SIZE_UNKNOWN(CMultiBootyState);
 SIZE_UNKNOWN(CSplashState);
 SIZE_UNKNOWN(CState);
 SIZE_UNKNOWN(CPlay);
-SIZE_UNKNOWN(CTsState);
-SIZE_UNKNOWN(CTsSub45);
 
 VTBL(CPlay, 0x001ea0bc);
 
@@ -3410,7 +3084,7 @@ i32 CGruntzMgr::DebugJumpLevel() {
 // -------------------------------------------------------------------------
 // CGruntzMgr::LoadOptionsSlotName (0x092d50; ret 0x1c). When in a play-ish state
 // (CheckPlayState) and the indexed options slot has not yet been loaded
-// (slot->m_20 == 0), assign its per-slot name CString from `val`. Returns 0. Only
+// (slot->m_020 == 0), assign its per-slot name CString from `val`. Returns 0. Only
 // the slot index (arg0) + the value string (arg5) are used; the rest are ignored.
 RVA(0x00092d50, 0x3c)
 i32 CGruntzMgr::LoadOptionsSlotName(
@@ -3427,9 +3101,9 @@ i32 CGruntzMgr::LoadOptionsSlotName(
         // field displacements (+0x170 = m_20, +0x154 = m_name), so cl emits the
         // slot lea with disp 0; naming via &m_options[slot] shifts the lea base
         // and drops the match (verified -3%). Kept raw.
-        OptionsSlot* s = (OptionsSlot*)((char*)this + slot * 0x238);
-        if (*(i32*)((char*)s + 0x170) == 0) {    // s->m_20 (options base +0x150 +0x20)
-            *(CString*)((char*)s + 0x154) = val; // s->m_name (options base +0x150 +0x04)
+        char* s = (char*)this + slot * 0x238;
+        if (*(i32*)(s + 0x170) == 0) {    // slot.m_020  (options base +0x150 +0x20)
+            *(CString*)(s + 0x154) = val; // slot.m_name (options base +0x150 +0x04)
         }
     }
     return 0;
@@ -3443,15 +3117,15 @@ i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
     if ((u32)idx >= 4) {
         return 0;
     }
-    OptionsSlot* s = (OptionsSlot*)&m_options[idx];
+    GruntzPlayer* s = &m_options[idx];
     if (s == 0) {
         return 0;
     }
-    if (s->m_20 == 0) {
+    if (s->m_020 == 0) {
         return 0;
     }
     // The options slot IS a GruntzPlayer; Reset == GruntzPlayer::Reset (0xda9e0).
-    return ((GruntzPlayer*)s)->Reset();
+    return s->Reset();
 }
 
 // -------------------------------------------------------------------------
@@ -3459,12 +3133,12 @@ i32 CGruntzMgr::ResetOptionsSlot(i32 idx) {
 // unconditionally (each guarded by a non-null check).
 RVA(0x00092df0, 0x24)
 void CGruntzMgr::ResetAllOptionsSlots() {
-    OptionsSlot* s = (OptionsSlot*)&m_options[0];
+    GruntzPlayer* s = &m_options[0];
     for (i32 d = 4; d != 0; d--) {
         if (s != 0) {
-            ((GruntzPlayer*)s)->Reset(); // options slot IS GruntzPlayer (Reset 0xda9e0)
+            s->Reset(); // options slot IS GruntzPlayer (Reset 0xda9e0)
         }
-        s = (OptionsSlot*)((char*)s + 0x238);
+        s = (GruntzPlayer*)((char*)s + 0x238);
     }
 }
 
@@ -3497,15 +3171,15 @@ i32 CGruntzMgr::CountReadyOptionsSlots(i32 anyState) {
 // the inc/add tail order. No source spelling flips MSVC's register pick here;
 // zero-register-pinning family (docs/patterns/zero-register-pinning.md).
 RVA(0x00092e80, 0x25)
-OptionsSlot* CGruntzMgr::FindOptionsSlot(i32 x) {
-    OptionsSlot* slot = (OptionsSlot*)m_options;
+GruntzPlayer* CGruntzMgr::FindOptionsSlot(i32 x) {
+    GruntzPlayer* slot = m_options;
     i32 i = 0;
     do {
-        if (slot && slot->m_18 == x) {
+        if (slot && slot->m_018 == x) {
             return slot;
         }
         i++;
-        slot = (OptionsSlot*)((char*)slot + 0x238);
+        slot = (GruntzPlayer*)((char*)slot + 0x238);
     } while (i < 4);
     return 0;
 }
@@ -3641,12 +3315,12 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
             break;
     }
 
-    OptionsSlot* slot = (OptionsSlot*)m_options;
+    GruntzPlayer* slot = m_options;
     for (i32 i = 0; i < 4; i++) {
         if (slot == 0 || ((CTriggerMgr*)slot)->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
             return 0;
         }
-        slot = (OptionsSlot*)((char*)slot + 0x238);
+        slot = (GruntzPlayer*)((char*)slot + 0x238);
     }
 
     if (m_cmdGrid->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
@@ -3691,7 +3365,7 @@ void CGruntzMgr::UpdateScoreHud() {
     if (g_gameReg->m_134 != 1) {
         return;
     }
-    ScoreSub2c* sub = (ScoreSub2c*)g_gameReg->m_curState;
+    CState* sub = g_gameReg->m_curState;
 
     m_scoreHud->m_1c += m_cmdGrid->m_rowStateB[g_curPlayer];
     m_scoreHud->m_20 += m_cmdGrid->m_rowStateC[g_curPlayer];
@@ -3703,12 +3377,12 @@ void CGruntzMgr::UpdateScoreHud() {
     }
 
     if (m_hudGuard->m_124 == 0) {
-        m_scoreHud->FillRecord(sub->m_1c, 0);
-        ((CSaveGame*)g_gameReg->m_saveSink)->SetCurLevel(sub->m_1c);
-        ((CSaveGame*)g_gameReg->m_saveSink)->SetMaxLevel((sub->m_1c % 0x28) + 1);
+        m_scoreHud->FillRecord(sub->m_levelIndex, 0);
+        ((CSaveGame*)g_gameReg->m_saveSink)->SetCurLevel(sub->m_levelIndex);
+        ((CSaveGame*)g_gameReg->m_saveSink)->SetMaxLevel((sub->m_levelIndex % 0x28) + 1);
         ((CSaveGame*)g_gameReg->m_saveSink)->Save(0, 0x81a6);
     }
-    m_scoreHud->SetCount(sub->m_1c);
+    m_scoreHud->SetCount(sub->m_levelIndex);
     m_scoreHud->m_08 = 0;
 }
 
@@ -4183,9 +3857,9 @@ i32 CGruntzMgr::AdvanceOptionsCycle() {
     i32 cursor = (g_6455fc + 1) & 3;
     g_6455fc = cursor;
     for (i32 i = 0; i < m_optionsCount + 1; i++) {
-        OptionsSlot* slot = (OptionsSlot*)&m_options[i];
-        if (cursor == i && slot->m_14 == 0 && slot->m_20 != 0) {
-            slot->m_38.Method_025d90();
+        GruntzPlayer* slot = &m_options[i];
+        if (cursor == i && slot->m_014 == 0 && slot->m_020 != 0) {
+            slot->m_038.Method_025d90();
             cursor = g_6455fc;
         }
     }
@@ -4224,9 +3898,9 @@ i32 CGruntzMgr::SyncOptionsState() {
     g_6455fc = 0;
 
     i32 idx = 0;
-    CBattlezMapConfig* tick = &((OptionsSlot*)m_options)->m_38;
-    i32* cfgp = &((OptionsSlot*)m_options)->m_10;
-    i32* arm = &((OptionsSlot*)m_options)->m_14;
+    CBattlezMapConfig* tick = &m_options[0].m_038;
+    i32* cfgp = &m_options[0].m_010;
+    i32* arm = &m_options[0].m_014;
     for (i32 i = 0; i < m_optionsCount; i++) {
         i32 cfg;
         if (idx == g_curPlayer) {
@@ -4285,8 +3959,7 @@ i32 CGruntzMgr::SyncOptionsState() {
 // big mechanical teardown (~512 named-extern set): the control flow + the WriteInt
 // settings block + the per-member delete ladder are reconstructed. The residual is
 // the long run of reloc-masked teardown thiscalls (each owned sub-object's Teardown
-// is a distinct engine address modeled as one shared EngObj symbol, so those relocs
-// stay fuzzy until each is named) - the documented reloc-typing wall, not a code diff.
+// is a distinct engine address) - the documented reloc-typing wall, not a code diff.
 RVA(0x000855e0, 0x448)
 void CGruntzMgr::Close() {
     if (m_world) {
@@ -4473,15 +4146,17 @@ void CGruntzMgr::AccrueScoreTime() {
         TransitionState(0xa, 1, 0, 0);
         return;
     }
-    ((GameRegHudView*)g_gameReg)->m_7c->SetCount(((StateScoreView*)st)->m_1c);
+    g_gameReg->m_scoreHud->SetCount(st->m_levelIndex);
     if (m_134 == 3) {
-        LevelClock* clk = ((StateScoreView*)st)->m_3f4;
-        i64 d = (i64)g_645588 - clk->m_38;
-        ((GameRegHudView*)g_gameReg)->m_7c->m_score += (d < 0) ? 0 : (i32)d;
+        // m_134 == 3 is the "won" arm - the live state IS the PLAY state, so the
+        // +0x3f4 frame-marker CTimer is reached by a plain derived downcast.
+        CTimer* clk = ((CPlay*)st)->m_frameMarker;
+        i64 d = (i64)g_645588 - *(i64*)&clk->m_38; // the +0x38:+0x3c start stamp
+        g_gameReg->m_scoreHud->m_score += (d < 0) ? 0 : (i32)d;
         TransitionState(0x12, 1, 0, 0);
         return;
     }
-    CBattlezData* hud = ((GameRegHudView*)g_gameReg)->m_7c;
+    CBattlezData* hud = g_gameReg->m_scoreHud;
     u32 now = ::timeGetTime();
     hud->m_score += (now - g_648ce8);
     TransitionState(0x12, 1, 0, 0);
@@ -4882,13 +4557,13 @@ RECT* CGruntzMgr::GetRect(RECT* out) {
 // reads the two edit fields back, stores them, and - if checkbox 0x410 is set -
 // persists them to the registry as the warp target.
 //
-// The procs reach three registry slots through AUTHENTIC per-site downcasts
-// (their concrete class lives in other clusters, so CGameRegistry keeps the
-// base/void* type and the consumer casts):
-//   ((ScoreSub2c*)g_gameReg->m_curState)->m_1c  read here as the CURRENT LEVEL
-//                        NUMBER (the "Level %i Warp X/Y" key + the go-to-level
-//                        seed) - the same +0x1c state slot UpdateScoreHud reads
-//                        as the score accumulator (name reconciliation TODO).
+// The procs reach the registry slots through the canonical members:
+//   g_gameReg->m_curState->m_levelIndex - the CURRENT LEVEL NUMBER (the "Level %i
+//                        Warp X/Y" registry key + the go-to-level seed). RECONCILED:
+//                        UpdateScoreHud reads the SAME +0x1c slot, and this is what it
+//                        is - a level index, not the "score accumulator" the old
+//                        ScoreSub2c view called it (it is fed to FillRecord /
+//                        SetCurLevel / `% 0x28 + 1` MaxLevel).
 //   ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(...)
 //   ((CGameRegWarp*)g_gameReg->m_world->m_24->m_5c)->m_84 / ->m_88  seed X/Y
 struct CGameRegWarp { // reinterpret view of the m_5c viewport (+0x84/+0x88 seed X/Y)
@@ -4925,14 +4600,14 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
                 g_warpX = valX;
                 g_warpY = valY;
                 if (IsDlgButtonChecked(hDlg, 0x410)) {
-                    sprintf(szValue, "Level %i Warp X", ((ScoreSub2c*)g_gameReg->m_curState)->m_1c);
+                    sprintf(szValue, "Level %i Warp X", g_gameReg->m_curState->m_levelIndex);
                     ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(szValue, valX);
-                    sprintf(szValue, "Level %i Warp Y", ((ScoreSub2c*)g_gameReg->m_curState)->m_1c);
+                    sprintf(szValue, "Level %i Warp Y", g_gameReg->m_curState->m_levelIndex);
                     ((Utils::RegistryHelper*)g_gameReg->m_settings)->SetValueDword(szValue, valY);
                     ((Utils::RegistryHelper*)g_gameReg->m_settings)
                         ->SetValueDword(
                             "Last Warp Level",
-                            ((ScoreSub2c*)g_gameReg->m_curState)->m_1c
+                            g_gameReg->m_curState->m_levelIndex
                         );
                 }
                 EndDialog(hDlg, 1);
@@ -4953,7 +4628,7 @@ RVA(0x0008e7c0, 0x86)
 INT_PTR CALLBACK LevelNumberDialogProc8e7c0(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            SetDlgItemInt(hDlg, 0x40c, ((ScoreSub2c*)g_gameReg->m_curState)->m_1c, 0);
+            SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, 0);
             return 1;
         case WM_COMMAND:
             if (wParam == 2) {
@@ -4973,7 +4648,7 @@ RVA(0x0008e8c0, 0x86)
 INT_PTR CALLBACK LevelNumberDialogProc8e8c0(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
         case WM_INITDIALOG:
-            SetDlgItemInt(hDlg, 0x40c, ((ScoreSub2c*)g_gameReg->m_curState)->m_1c, 0);
+            SetDlgItemInt(hDlg, 0x40c, g_gameReg->m_curState->m_levelIndex, 0);
             return 1;
         case WM_COMMAND:
             if (wParam == 2) {
@@ -5162,16 +4837,10 @@ SIZE_UNKNOWN(CWorldLookupHolder);
 SIZE_UNKNOWN(CWorldModeIface);
 SIZE_UNKNOWN(CmdSink);
 SIZE_UNKNOWN(DirectInputMgr2);
-SIZE_UNKNOWN(EngObj);
-SIZE_UNKNOWN(GameRegHudView);
-SIZE_UNKNOWN(LevelClock);
-SIZE_UNKNOWN(OptionsSlot);
 SIZE_UNKNOWN(PlayStatusSlot);
 SIZE_UNKNOWN(RegScoreHud);
 SIZE_UNKNOWN(ScoreNotifier);
-SIZE_UNKNOWN(ScoreSub2c);
 SIZE_UNKNOWN(StateMgrBZ);
-SIZE_UNKNOWN(StateScoreView);
 SIZE_UNKNOWN(SvmGuts);
 SIZE_UNKNOWN(SvmStateView);
 SIZE_UNKNOWN(TimerObj);

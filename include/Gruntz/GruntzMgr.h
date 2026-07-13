@@ -48,19 +48,13 @@ class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declare
                      // regalloc butterfly (cost 1 exact fn when measured). TUs that DEREFERENCE
                      // m_cmdSubMgr include <Gruntz/GruntzCmdMgr.h> themselves.
 
-// The 0x238-byte options/registry-backed sub-object embedded at +0x150. Its
-// ctor (FUN_0051f5a0) takes (this, 0x238, 4, &thunk_FUN_00431250, &LoadOptions)
-// and its dtor (FUN_0051f640) takes (this, 0x238, 4, &LoadOptions); both are
-// out-of-line so the calls reloc-mask. Only the size (0x238) + that it is a
-// destructible member (EH state 4) are load-bearing.
-SIZE_UNKNOWN(CGruntzMgrOptions);
-struct CGruntzMgrOptions {
-    CGruntzMgrOptions();
-    ~CGruntzMgrOptions();
-    char m_pad0[0x228];
-    i32 m_comboSel; // +0x228  battlez-dialog dropdown selection (+1) for this slot
-    char m_pad22c[0x238 - 0x22c];
-};
+// The 0x238-byte per-player options record embedded four times at +0x150 IS the real
+// GruntzPlayer (<Gruntz/GruntzPlayer.h>). The `CGruntzMgrOptions` shell that stood here
+// is folded away: CGruntzMgr's ctor/dtor hand the __ehvec iterators this element's ctor
+// and dtor through ILT thunks 0x2a7c / 0x1465, and those chase to 0x0da790 / 0x083260 -
+// GruntzPlayer's default ctor + dtor (see the proof block in GruntzPlayer.h). m_comboSel
+// (+0x228) is carried over onto the real class.
+#include <Gruntz/GruntzPlayer.h>
 
 // A typed VIEW of the state-stack array at CGruntzMgr +0xd8. The member itself
 // stays a destructible CByteArray (so the ctor/dtor's EH-state numbering is
@@ -406,7 +400,7 @@ public:
     // its name CString. 7 raw args (only the slot index + the value string used).
     i32 LoadOptionsSlotName(i32 slot, i32 a2, i32 a3, i32 a4, i32 a5, const char* val, i32 a7);
     i32 CountReadyOptionsSlots(i32 anyState);   // @0x092e30 (count loaded/armed slots)
-    struct OptionsSlot* FindOptionsSlot(i32 x); // @0x092e80 (slot whose m_18 == x)
+    GruntzPlayer* FindOptionsSlot(i32 x); // @0x092e80 (slot whose m_18 == x)
     i32 ResetOptionsSlot(i32 idx);              // @0x092da0 (reset slot idx if loaded)
     void ResetAllOptionsSlots();                // @0x092df0 (reset all 4 slots)
     i32 IsStandardMode();                       // @0x08f980 (mode == 640x480)
@@ -500,7 +494,7 @@ public:
     i32 m_viewOriginL, m_viewOriginT, m_viewOriginR,
         m_viewOriginB;              // +0x13c..+0x148  view-edge origins
     char m_pad14c[0x150 - 0x14c];   // +0x14c..+0x150 gap
-    CGruntzMgrOptions m_options[4]; // +0x150 (4x0x238 options array; EH state 4) -> 0xa30
+    GruntzPlayer m_options[4]; // +0x150 (4x0x238 per-player records; EH state 4) -> 0xa30
 };
 
 #endif // GRUNTZ_GRUNTZ_GRUNTZMGR_H

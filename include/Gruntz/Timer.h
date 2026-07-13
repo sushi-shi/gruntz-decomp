@@ -51,8 +51,14 @@ public:
     i32 m_baseTimeHi; // +0x2c base (limit) time hi
     i32 m_accumLo;    // +0x30 accumulated added-time lo (0x8107 cheat zeroes)
     i32 m_accumHi;    // +0x34 accumulated added-time hi (0x8107 cheat zeroes)
-    i32 m_38;         // +0x38  (serialized 64-bit pair m_38:m_3c; role unproven)
-    i32 m_3c;         // +0x3c
+    // +0x38:+0x3c is the level/lap START STAMP - a 64-bit game-clock value held as two
+    // dword halves (CGruntzMgr::AccrueScoreTime subtracts the pair from the 64-bit clock
+    // with a sub/sbb; CTimer::HandleEvent streams it as one 8-byte field). It stays two
+    // i32s because CTimer::Init INTERLEAVES the halves with the +0x40 pair
+    // (m_38, m_40, m_3c, m_44) - a single i64 member cannot emit that store order. Read
+    // it 64-bit the way the +0x30 pair already is: `*(i64*)&t->m_38`.
+    i32 m_38;  // +0x38  level/lap start stamp, lo
+    i32 m_3c;  // +0x3c  ... hi
     i32 m_40;         // +0x40  (serialized 64-bit pair m_40:m_44; cleared on expiry
     i32 m_44;         // +0x44   and by the 0x8107 cheat)
     i32 m_running;    // +0x48 running flag (0x8107 cheat zeroes)

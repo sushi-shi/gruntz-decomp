@@ -204,6 +204,11 @@ struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 lett
 SIZE_UNKNOWN(CMenuState);
 class CMenuState : public CState {
 public:
+    // Constructed by CGruntzMgr::TransitionState (`new CMenuState`, state id 5,
+    // `push 0x1c0`); cl inlines this body at the new-site exactly as retail does.
+    CMenuState() {
+        m_1b4 = 0;
+    }
     virtual i32 Vslot06() OVERRIDE;              // slot 6
     virtual i32 Vfunc1(i32, i32, i32) OVERRIDE;  // slot 1
     virtual i32 Vslot07() OVERRIDE;              // slot 7
@@ -282,8 +287,33 @@ VTBL(CMenuState, 0x1e9e84);
 // -> per-entity Update loop -> message scan -> two sub-steps -> draw -> two
 // latched one-shot FX.
 SIZE_UNKNOWN(CCreditsState);
+// The 4-arg `Set` the credits ctor calls on each of its two +0x1c8/+0x1d8 rect
+// sub-objects (0x08c380, __thiscall on the sub-object; reloc-masked, no body here).
+void CreditsRectSet(void* rect, i32 l, i32 t, i32 r, i32 b); // 0x08c380
+
 class CCreditsState : public CState {
 public:
+    // Constructed by CGruntzMgr::TransitionState (`new CCreditsState`, state id 8,
+    // `push 0x218`); cl inlines this body at the new-site exactly as retail does (the
+    // CRgn + CString members are constructed first, then the ??_7CCreditsState stamp,
+    // then these field seeds).
+    CCreditsState() {
+        m_1b8 = 0;
+        m_1bc = 0;
+        m_1c0 = 0;
+        m_1c4 = 0;
+        m_1f4 = 0;
+        m_1f8 = 0;
+        m_1fc = 0;
+        m_200 = 0;
+        m_204 = 0;
+        CreditsRectSet(m_screenRectA, 0, 0, 0x280, 0x1e0);
+        CreditsRectSet(m_screenRectB, 0, 0, 0x280, 0x1e0);
+        m_20c = 1;
+        m_videoHandle = 0;
+        m_videoPlaying = 0;
+        m_1b4 = 0;
+    }
     virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
     // Own vtable slots (RTTI vtbl@0x5e9c64, 26 slots; slot order anchored by
     // CState). Out-of-line dtor (0x8d5e0, GameMode.cpp): runs ReleaseResources then
@@ -333,12 +363,20 @@ public:
     i32 m_1bc; // +0x1bc flash re-roll timer
     i32 m_1c0; // +0x1c0 fade countdown ms (LoadCreditzAssets arms 3000 on the rising edge)
     i32 m_1c4; // +0x1c4 conditional-FX gate / credits-music toggle
-    char m_pad1c8[0x1e8 - 0x1c8];
+    // The two 0x10-byte rect sub-objects the ctor Set-initialises to the full 640x480
+    // screen (Set @0x08c380, 4 args). They were the local shell's `char m_1c8[0x10]` /
+    // `char m_1d8[0x10]` - the same 0x20 the pad here used to swallow.
+    char m_screenRectA[0x10]; // +0x1c8  Set(0, 0, 0x280, 0x1e0)
+    char m_screenRectB[0x10]; // +0x1d8  Set(0, 0, 0x280, 0x1e0)
     CRgn m_1e8;        // +0x1e8 embedded GDI region (RTTI .?AVCRgn@@; freed by ~CCreditsState)
     CString m_caption; // +0x1f0 credits caption CString (freed by ~CCreditsState)
-    char m_pad1f4[0x208 - 0x1f4];
+    i32 m_1f4;         // +0x1f4  (ctor-zeroed scroll/roll state block)
+    i32 m_1f8;         // +0x1f8
+    i32 m_1fc;         // +0x1fc
+    i32 m_200;         // +0x200
+    i32 m_204;         // +0x204
     i32 m_videoPlaying; // +0x208 video playing gate
-    char m_pad20c[0x210 - 0x20c];
+    i32 m_20c;          // +0x20c  = 1 in the ctor (video-enabled gate)
     CMoviePlayer* m_videoHandle; // +0x210 Smacker video player (real CMoviePlayer)
     // Tail padding to the TRUE retail object size. Ground truth is the operator-new size
     // in CGruntzMgr::TransitionState (0x8b960): `push 0x218; call ??2@YAPAXI@Z` @0x8bf7f,
@@ -360,6 +398,32 @@ VTBL(CCreditsState, 0x001e9c64);
 SIZE_UNKNOWN(CBootyState);
 class CBootyState : public CState {
 public:
+    // Constructed by CGruntzMgr::TransitionState (`new CBootyState`, state id 10,
+    // `push 0x320`); cl inlines this body at the new-site exactly as retail does.
+    CBootyState() {
+        m_1c0 = 0;
+        m_1c8 = 0;
+        m_1c4 = 0;
+        m_1cc = 0;
+        m_1b8 = 0;
+        m_activation = 0x64;
+        m_slot = 0;
+        m_stepIndex = 0;
+        m_walkStarted = 0;
+        m_soundStarted = 0;
+        m_initGate = 0;
+        m_secretGate = 0;
+        m_levelCompleteGate = 0;
+        m_initOnce = 0;
+        m_secretBannerOnce = 0;
+        for (i32 t = 0; t < 4; t++) {
+            m_trailSprites[t] = 0;
+        }
+        for (i32 i = 0; i < 8; i++) {
+            m_readyFlags[i] = 0;
+            m_templateFlags[i] = 0;
+        }
+    }
     virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
     // Own vtable slots (RTTI vtbl@0x5e9cec, 26 slots; slot order anchored by CState).
     // CBootyState shares many slot bodies with its siblings CMultiBootyState /
@@ -541,6 +605,12 @@ VTBL(CBootyState, 0x001e9cec);
 SIZE_UNKNOWN(CMultiBootyState);
 class CMultiBootyState : public CState {
 public:
+    // Constructed by CGruntzMgr::TransitionState (`new CMultiBootyState`, state id 18,
+    // `push 0x244`); cl inlines this body at the new-site exactly as retail does.
+    CMultiBootyState() {
+        m_1b4 = 0;
+        m_1b8 = 0x64;
+    }
     virtual i32 Vfunc1(i32, i32, i32) OVERRIDE; // slot 1
     // Own vtable slots (RTTI vtbl@0x5e9bdc, 26 slots; slot order anchored by CState).
     // The EH-framed `??1` (slot 0, @0x8d510) re-stamps the CMultiBootyState vtable,

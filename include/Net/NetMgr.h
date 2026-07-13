@@ -954,7 +954,12 @@ struct CNetGameMgr {
     CNetGameWnd* m_wnd; // +0x04  the window (its +0x4 is the engine HWND)
     char m_pad8[0x38 - 8];
     Utils::RegistryHelper* m_configStore; // +0x38  registry/config store (Service/Player_Name/...)
-    char m_pad3c[0x5c - 0x3c];
+    char m_pad3c[0x48 - 0x3c];
+    // +0x48: the sound/bank object - the SAME slot <Gruntz/GruntzMgr.h> types
+    // CGruntzSoundZ* m_sound (CNetGameMgr IS *g_gameReg). CMulti's join wait plays the
+    // AMBIENT%d cue through it; it was reached via a `WaitLogic` +0x48 view.
+    class CGruntzSoundZ* m_sound; // +0x48
+    char m_pad4c[0x5c - 0x4c];
     CNetChatLog* m_5c; // +0x5c  the chat/text display
     char m_pad60[0x6c - 0x60];
     CGruntzCmdMgr* m_6c; // +0x6c  the grunt command manager (Dispatch/EnqueueCommand)

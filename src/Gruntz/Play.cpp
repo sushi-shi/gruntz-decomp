@@ -3658,7 +3658,7 @@ GruntzPlayer::GruntzPlayer(i32 index) {
     m_010 = 0;
     m_220 = 0;
     m_224 = 0;
-    m_228 = 0xf;
+    m_comboSel = 0xf;
     m_02c = 0;
     m_030 = 0;
     m_22c = 0;
@@ -3666,20 +3666,22 @@ GruntzPlayer::GruntzPlayer(i32 index) {
 }
 
 // ===========================================================================
-// GruntzPlayer::GruntzPlayer()  @0x0da960
-// Frameless default ctor: empty name, the scalar config block zeroed (with the
-// sentinel -1 / 1 / -2 / 0xf seeds).
+// GruntzPlayer::Clear  @0x0da960
+// The frameless field-seed helper: re-empty the name CString (op=, the member is
+// already constructed) and re-seed the scalar block (-1 / 1 / -2 / 0xf sentinels).
+// The default ctor (0x0da790, GruntSpawnLevel.cpp) and the dtor (0x083260) both
+// call it after / before the member ctor/dtor run.
+//
+// THIS IS NOT A CONSTRUCTOR. It was bound as ??0GruntzPlayer@@QAE@XZ, and that
+// mis-binding WAS the documented "MFC-version wall": modeled as a ctor, cl has to
+// default-construct the CString member first, which drags in the out-of-line
+// ??0CString + a /GX EH frame that retail's 0x5b body does not have. As a plain
+// method the member is already live, no CString() is emitted, and the frame is gone.
+// The real default ctor is 0x0da790 - it constructs m_name AND the m_038
+// CBattlezMapConfig (0x24dc0), which a 0x5b frameless body plainly cannot do.
 // ===========================================================================
-// @early-stop
-// MFC-version wall (cstring-empty-init-version-divergence.md): all field stores +
-// the m_name = g_emptyString op= are byte-correct, but the packaged MFC's
-// out-of-line CString::CString() default-ctor call ALSO drags in a /GX EH frame
-// (the member becomes throwing-destructible during construction) that retail lacks
-// entirely - retail's inline CString() folds to nothing and the ctor is frameless,
-// so our base is larger than retail's 0x5b and objdiff can't align it. Static-MFC
-// build artifact, not source-steerable. Deferred to the final sweep.
 RVA(0x000da960, 0x5b)
-GruntzPlayer::GruntzPlayer() {
+void GruntzPlayer::Clear() {
     m_playerIndex = -1;
     m_name = g_emptyString;
     m_018 = -2;
@@ -3689,7 +3691,7 @@ GruntzPlayer::GruntzPlayer() {
     m_010 = 0;
     m_220 = 0;
     m_224 = 0;
-    m_228 = 0xf;
+    m_comboSel = 0xf;
     m_02c = 0;
     m_030 = 0;
     m_22c = 0;
@@ -3719,7 +3721,7 @@ i32 GruntzPlayer::Reset() {
     m_010 = 0;
     m_220 = 0;
     m_224 = 0;
-    m_228 = 0xf;
+    m_comboSel = 0xf;
     m_02c = 0;
     m_030 = 0;
     m_22c = 0;
@@ -3826,7 +3828,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
             m_name = tmp;
             ar->Read(&m_220, 4);
             ar->Read(&m_224, 4);
-            ar->Read(&m_228, 4);
+            ar->Read(&m_comboSel, 4);
         }
     } else {
         // Save.
@@ -3846,7 +3848,7 @@ i32 GruntzPlayer::Serialize(void* arArg, i32 kind, i32 a3, i32 a4) {
         ar->Write(tmp, 0x80);
         ar->Write(&m_220, 4);
         ar->Write(&m_224, 4);
-        ar->Write(&m_228, 4);
+        ar->Write(&m_comboSel, 4);
     }
     return ((CBattlezMapConfig*)&m_038)->Method_02bfc0((i32)ar, (void*)kind, a3, a4) != 0;
 }
@@ -3927,34 +3929,38 @@ void ChannelSlots_InitAll() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x0db200. Swap the +0x08 holder to `arg`: no-op when already equal, else
-// validate (0x11f9), toggle old off / new on (0x3bbb), and store.
-// @identity-TODO (owner unrecovered - +0x08-only evidence; the neighbors are
-// GruntzPlayer whose m_008 the int-seeded ctor writes an INDEX into, so the
-// holder-pointer reading here cannot be pinned onto it without more xrefs).
+// 0x0db200 - GruntzPlayer::SwapChannel. Move this player onto sound/voice channel
+// `channel`: no-op when already there, else - if the target channel is free - release
+// the old one, claim the new one, and store it in m_008.
+//
+// IDENTITY RECOVERED (the old @identity-TODO "owner unrecovered - +0x08-only evidence"
+// is CLOSED). The xref settles it: the one and only call site is CMulti's stat-0x3fa
+// handler (src/Gruntz/Multi.cpp), which does
+//     GruntzPlayer* player = NetGameMgr()->FindPlayer();
+//     if (player->SwapChannel(msg->m_c[1]) == 0) { msg->m_c[1] = (char)player->m_008; }
+// - it holds a GruntzPlayer, and it reads BACK the very same +0x08 field this method
+// writes. So the class is GruntzPlayer (whose 0x0da790..0x0db2f0 RVA band this body sits
+// inside) and +0x08 is m_008. The "holder pointer" reading that blocked the earlier
+// attribution was an artifact of the fake view's `void*`: the caller passes a zero-
+// extended BYTE (`(u8)msg->m_c[1]`), so the parameter is an i32 channel index, exactly
+// what the int-seeded ctor writes into m_008.
 // Swap's probes are the channel-slot free fns (defined below): the slot read
 // (ChannelSlots_Get @0xdb2d0) and the slot set (ChannelSlots_Set @0xdb2b0).
 i32 ChannelSlots_Get(i32 i);         // 0xdb2d0
 void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
-struct Cdb200 {
-    char pad0[8];
-    void* m_8; // +0x08
-    i32 Swap(void* arg);
-};
 RVA(0x000db200, 0x51)
-i32 Cdb200::Swap(void* arg) {
-    if (m_8 == arg) {
+i32 GruntzPlayer::SwapChannel(i32 channel) {
+    if (m_008 == channel) {
         return 1;
     }
-    if (ChannelSlots_Get((i32)arg)) {
-        ChannelSlots_Set((i32)m_8, 1);
-        ChannelSlots_Set((i32)arg, 0);
-        m_8 = arg;
+    if (ChannelSlots_Get(channel)) {
+        ChannelSlots_Set(m_008, 1);
+        ChannelSlots_Set(channel, 0);
+        m_008 = channel;
         return 1;
     }
     return 0;
 }
-SIZE_UNKNOWN(Cdb200);
 
 // Return the index of the first free (non-zero) slot, else 0.
 RVA(0x000db280, 0x1b)

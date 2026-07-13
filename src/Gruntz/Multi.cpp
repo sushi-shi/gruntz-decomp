@@ -65,10 +65,10 @@ extern CString g_6473d8; // 0x6473d8
 // (former NetMgrGame.cpp preamble - the game-side CNetMgr protocol context)
 // ===========================================================================
 #include <Net/InterfaceObject.h> // the shared DirectPlay group-node class (Find/predicates)
-class Cdb200 {
-public:
-    i32 M(void* p);
-}; // 0xdb200
+// (`Cdb200` is gone. Its ONE call site below holds a GruntzPlayer* and reads back the very
+// +0x08 field the method writes, so 0xdb200 IS GruntzPlayer::SwapChannel - the xref that
+// closes Play.cpp's @identity-TODO. Its `M(void*)` was a PHANTOM (?M@Cdb200@@QAEHPAX@Z,
+// defined by no obj); the call now binds to the real ?SwapChannel@GruntzPlayer@@QAEHH@Z.)
 #include <Gruntz/LeafCue.h>
 #include <Bute/SymParser.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
@@ -77,6 +77,7 @@ public:
 #include <Utils/RegistryHelper.h>
 #include <Gruntz/StatusBarMgr.h>
 #include <Net/NetMgr.h>
+#include <Net/NetPackets.h> // the fixed-layout stat-0x3f9 / stat-0x416 wire structs
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)
 #include <stdio.h>  // sprintf (the chat-line formatter)
@@ -253,25 +254,8 @@ extern "C" u32(WINAPI* g_pGetDlgItemTextA)(HWND, i32, char*, i32);  // 0x6c448c
 extern "C" i32(WINAPI* g_pMessageBeep)(u32);                        // 0x6c4534
 extern "C" CGameRegistry* g_gameReg; // 0x64556c (the same *0x64556c object as m_4)
 
-// The 0x28-byte "player joined" announce packet CreateLocalPlayer builds and ships
-// as stat 0x3f9: a flag byte, the stat id, a small fixed config block, the local
-// player id, then the 0x14-byte name buffer.
-struct CNetJoinPacket {
-    u8 m_0; // +0x00  flag byte (bit7)
-    char m_pad1[3];
-    i32 m_4;         // +0x04  stat id (0x3f9)
-    u8 m_8;          // +0x08
-    u8 m_9;          // +0x09
-    u8 m_a;          // +0x0a
-    u8 m_b;          // +0x0b
-    u8 m_c;          // +0x0c
-    u8 m_d;          // +0x0d
-    u8 m_e;          // +0x0e
-    char m_padf;     // +0x0f
-    i32 m_10;        // +0x10  local player id (m_localPlayerId)
-    char m_14[0x14]; // +0x14  player name (strcpy)
-};
-SIZE(CNetJoinPacket, 0x28); // fully-known fixed stat-0x3f9 announce packet
+// (CNetJoinPacket moved to <Net/NetPackets.h> - a fully-known wire struct has no
+// business being DEFINED in a .cpp.)
 
 // --- re-homed stray context (dossier #4b seam ledger) ---
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages (CMulti::Open m_c->m_drawTarget)
@@ -330,46 +314,25 @@ void EngStr_DrawText(
     i32 a8
 ); // 0x115440
 
-// --- WaitForOtherPlayers CMulti-family sub-objects (this object carries a lobby /
-// vote layout CNetMgr models differently at these offsets; reached through views so
-// the this-relative loads + reloc-masked thiscall/DIR32 referents fall out). ---
-struct WaitDWordArr {               // this+0x604 (a CDWordArray of per-slot votes)
-    void SetSize(i32 n, i32 grow);  // 0x1b4bad
-    void SetAtGrow(i32 idx, i32 v); // 0x1b4d7c
-    char m_pad0[8];
-    i32 m_8; // +0x8
-};
-SIZE_UNKNOWN(WaitDWordArr); // CDWordArray view (only +0x8 pinned); size TBD
-struct WaitLogic {          // this->m_4
-    char m_pad0[0x48];
-    CGruntzSoundZ* m_48; // +0x48  ambient sound sub-mgr
-};
-SIZE_UNKNOWN(WaitLogic); // logic view (only +0x48 pinned); size TBD
-struct WaitSettings {    // g_gameReg (0x64556c)
-    char m_pad0[0x14];
-    i32 m_ambientEnabled; // +0x14  ambient-enabled gate
-    char m_pad18[0x30 - 0x18];
-    void* m_world; // +0x30  status-text render surface
-    char m_pad34[0x8c - 0x34];
-    i32 m_modeW; // +0x8c  screen width
-    i32 m_modeH; // +0x90  screen height
-};
-SIZE_UNKNOWN(WaitSettings); // settings view (only touched offsets pinned); size TBD
-// The cue emitter held at record+0x10; Trigger @0x1360d0 (__thiscall, 4 args).
-struct CCueEmitter {
-    // Trigger @0x1360d0 IS CSoundCueMgr::ConfigureItem; cast at the call.
-};
-// The FindRec / registry-lookup record. Only the touched fields are named.
-struct CNetCueRec {
-    char m_pad0[8];
-    i32 m_8; // +0x08
-    char m_padc[0x10 - 0xc];
-    CCueEmitter* m_10; // +0x10
-    i32 m_14;          // +0x14  last-fire clock
-    i32 m_18;          // +0x18  min interval
-    char m_pad1c[0x20 - 0x1c];
-    i32 m_20; // +0x20
-};
+// --- WaitForOtherPlayers' three views are dissolved onto real classes ---
+//   * WaitDWordArr (this+0x604, "SetSize @0x1b4bad / SetAtGrow @0x1b4d7c") IS the MFC
+//     CDWordArray it always said it was. Its two declared-only methods mangled as
+//     ?SetSize@WaitDWordArr@@... - PHANTOMS no obj and no .LIB defines; the real
+//     CDWordArray binds them out of NAFXCW, and its inline GetSize() is the same single
+//     load the fake +0x8 field was.
+//   * WaitLogic (this->m_4, "+0x48 ambient sound sub-mgr") IS CNetGameMgr - m_4's real
+//     type - whose +0x48 is now the typed m_sound member (the same CGruntzSoundZ* slot
+//     <Gruntz/GruntzMgr.h> calls CGruntzMgr::m_sound; CNetGameMgr IS *g_gameReg).
+//   * WaitSettings (g_gameReg) IS CGameRegistry, already the declared type of the
+//     singleton in this TU: m_14 / m_30 / m_modeW / m_modeH are its own members, so the
+//     view was casting the class out of its own singleton.
+// (CCueEmitter + CNetCueRec are gone too - see the two call sites. CNetCueRec was a
+// CONFLATION of two unrelated classes at one name: at ShowMultiStartDlg's first use it is
+// the GruntzPlayer that FindOptionsSlot returns (+0x08 / +0x20 = m_008 / m_020), and at
+// its second it is the LeafCue a CMapStringToOb::Lookup hands back (+0x10 CSoundCueMgr* /
+// +0x14 clock / +0x18 interval - literally LeafCue's field set, which the OTHER cue site
+// in this very file already used the canonical LeafCue for). CCueEmitter was LeafCue::m_10,
+// i.e. CSoundCueMgr, whose ConfigureItem @0x1360d0 the comment already named.)
 // The embedded registry/bute object at (m_c->m_28 + 0x10); Lookup @0x1b8438.
 // (The ex-`CMapStringToOb` view is DISSOLVED: an empty phantom aliasing the MFC library
 // CMapStringToOb::Lookup @0x1b8438 - the member is the real map.)
@@ -472,13 +435,9 @@ public:
 // The engine's global free (0x1b9b82) IS MFC's ::operator delete (??3@YAXPAX@Z,
 // library-labelled); call it directly so the reloc binds (no fake RezFree view).
 
-// CState's base teardown (the dtor tail-calls it after stamping the CState
-// vtable) - reloc-masked thiscall; modeled on a tiny helper so `mov ecx,esi; call`
-// falls out with no stack cleanup.
-class CMultiStateBase {
-public:
-    void BaseCleanup(); // 0x00403f53
-};
+// (CMultiStateBase is gone - a DEAD view with zero uses left. Its "BaseCleanup
+// @0x403f53" is the ILT thunk 0x3f53 -> 0x0fa150 == ?BaseCleanup@CGameModeBase@@QAEXXZ,
+// the canonical <Gruntz/GameModeBase.h> method CState's inline dtor already calls.)
 
 // MFC member sub-object destructors (out-of-line NAFXCW; reloc-masked). Declared
 // as the exact thiscall shapes so clang emits the right `mov ecx; call` bytes;
@@ -1114,16 +1073,16 @@ i32 CMulti::StartSession(i32 mode, i32 unused) {
         return 0;
     }
     for (i32 i = 0; i < 4; ++i) {
-        CMultiMgrOptions* e = (CMultiMgrOptions*)&Mgr()->m_options[i];
+        GruntzPlayer* e = &Mgr()->m_options[i];
         if (e == 0) {
             return 0;
         }
-        ((CBattlezMapConfig*)&e->m_inner)->FreeArrays();
-        if (((CBattlezMapConfig*)&e->m_inner)->LoadConfig((CLevelInfo*)Mgr(), i, e->m_10) == 0) {
+        e->m_038.FreeArrays();
+        if (e->m_038.LoadConfig((CLevelInfo*)Mgr(), i, e->m_010) == 0) {
             return 0;
         }
-        if (e->m_14 && e->m_20) {
-            ((CBattlezMapConfig*)&e->m_inner)->Clear_02ade0();
+        if (e->m_014 && e->m_020) {
+            e->m_038.Clear_02ade0();
         }
     }
     this->RefreshSlotTable();
@@ -1965,10 +1924,8 @@ i32 CMulti::JoinSession() {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CCueEmitter);
 SIZE_UNKNOWN(CNetCfg);
 SIZE_UNKNOWN(CNetCfgSub);
-SIZE_UNKNOWN(CNetCueRec);
 SIZE_UNKNOWN(CNetMgrLite);
 SIZE_UNKNOWN(CMulti);
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
@@ -1979,7 +1936,6 @@ SIZE_UNKNOWN(CMultiLogicList);
 SIZE_UNKNOWN(CMultiLogicNode);
 SIZE_UNKNOWN(CMultiPlayer);
 SIZE_UNKNOWN(CMultiReportGate);
-SIZE_UNKNOWN(CMultiStateBase);
 SIZE_UNKNOWN(CMultiSub68);
 SIZE_UNKNOWN(CMultiSubDC);
 SIZE_UNKNOWN(CMultiSubTick);
@@ -2104,12 +2060,12 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
     g_sharedFlag = 0;
     if (r != 1) {
         if (m_528 != 0) {
-            CNetCueRec* rec = (CNetCueRec*)m_4->FindOptionsSlot(m_5c0);
+            GruntzPlayer* rec = m_4->FindOptionsSlot(m_5c0);
             if (rec == 0) {
                 return 0;
             }
-            rec->m_20 = 0;
-            NetCueReset_3bbb(rec->m_8, 1);
+            rec->m_020 = 0;
+            NetCueReset_3bbb(rec->m_008, 1);
             Sub1d70(0);
         }
         if (m_528 == 0 && m_538 == 0) {
@@ -2124,7 +2080,7 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
         if (m_c->m_28->m_30 == 0) {
             CObject* rec_ob = 0;
             m_c->m_28->m_10.Lookup(s_GameKey, rec_ob);
-            CNetCueRec* rec = (CNetCueRec*)rec_ob;
+            LeafCue* rec = (LeafCue*)rec_ob;
             if (rec != 0) {
                 i32 snd = g_sndEnabled;
                 i32 cue = g_sndCueTag;
@@ -2132,7 +2088,7 @@ i32 CNetMgrLite::ShowMultiStartDlg() {
                     i32 clk = g_killCueClock;
                     if ((u32)(clk - rec->m_14) >= (u32)rec->m_18) {
                         rec->m_14 = clk;
-                        ((CSoundCueMgr*)rec->m_10)->ConfigureItem(cue, 0, 0, 0);
+                        rec->m_10->ConfigureItem(cue, 0, 0, 0);
                     }
                 }
             }
@@ -2647,12 +2603,8 @@ i32 ChannelSlots_Get(i32 i);         // 0xdb2d0
 i32 ChannelSlots_FindFree();         // 0xdb280
 void ChannelSlots_Set(i32 i, i32 v); // 0xdb2b0
 
-// The per-player channel/color holder (Cdb200 @0xdb200): swap the held slot to `c`
-// (returns 1 when accepted). External __thiscall -> reloc-masked.
-SIZE_UNKNOWN(CNetColorHolder);
-struct CNetColorHolder {
-    // SwapColor @0xdb200 IS Cdb200::M; cast at the call.
-};
+// (CNetColorHolder is gone - a DEAD comment-only view with zero uses, and the TENTH name
+// pinned on 0xdb200. That rva is GruntzPlayer::SwapChannel; see the fold note at the top.)
 
 // LeafCue::PlayIfElapsed (0x1f940, __thiscall): plays the positional sound cue when
 // the kill-cue clock throttle has elapsed. Reached as a bare call - the caller's
@@ -2853,7 +2805,7 @@ i32 CMulti::DispatchRecvMsg(i32 sender, char* buf, i32 size) {
             if (player == 0) {
                 return 0;
             }
-            if (((Cdb200*)player)->M((void*)(u8)msg->m_c[1]) == 0) {
+            if (player->SwapChannel((u8)msg->m_c[1]) == 0) {
                 msg->m_c[1] = (char)player->m_008;
                 SendStatTo(pd, 0x419, 1);
             }
@@ -3850,10 +3802,10 @@ void CNetMgr::RecordDropPlayer2(i32 a, i32 id) {
 //       zero-register/regalloc wall as Poll. Logic + control flow are byte-faithful.
 RVA(0x000bb700, 0x265)
 i32 CNetMgr::WaitForOtherPlayers() {
-    WaitDWordArr* votes = (WaitDWordArr*)((char*)this + 0x604);
+    CDWordArray* votes = (CDWordArray*)((char*)this + 0x604);
     votes->SetSize(0, -1);
     for (i32 k = 3; k != 0; k--) {
-        votes->SetAtGrow(votes->m_8, 0);
+        votes->SetAtGrow(votes->GetSize(), 0);
     }
     if (m_peer->m_peerReady == 1) {
         m_534 = 1;
@@ -3874,7 +3826,7 @@ i32 CNetMgr::WaitForOtherPlayers() {
 
     SendStatFlag(0x3ed, 1);
     CString waitStr("Waiting for other playerz...");
-    WaitSettings* g = (WaitSettings*)g_gameReg;
+    CGameRegistry* g = g_gameReg;
     RECT rc;
     rc.left = 0;
     rc.top = 0;
@@ -3920,10 +3872,10 @@ i32 CNetMgr::WaitForOtherPlayers() {
     }
 
     g_648ce8 = timeGetTime();
-    if (g->m_ambientEnabled != 0) {
+    if (g->m_14 != 0) {
         char buf[0x40];
         wsprintfA(buf, "AMBIENT%d", GetAmbientId());
-        ((WaitLogic*)m_4)->m_48->PlayByName(buf, 1);
+        m_4->m_sound->PlayByName(buf, 1);
     }
     return 1;
 }
@@ -4599,19 +4551,7 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // The 0x11c-byte command-timing config blob SaveConfig builds and ships as stat
 // 0x416 (the inverse of LoadConfig): a flag byte, the stat id, the config word,
 // the two config-name strings (wsprintf'd in), then the four timing dwords.
-struct CNetConfigBlob {
-    u8 m_0; // +0x000  flag byte (bit7)
-    char m_pad1[3];
-    i32 m_4;            // +0x004  stat id (0x416)
-    i32 m_8;            // +0x008  m_5b0
-    char m_nameA[0x80]; // +0x00c  config name A
-    char m_nameB[0x80]; // +0x08c  config name B
-    i32 m_10c;          // +0x10c  m_cmdDelay
-    i32 m_110;          // +0x110  m_resend
-    i32 m_114;          // +0x114  m_600
-    i32 m_118;          // +0x118  m_2d8
-};
-SIZE(CNetConfigBlob, 0x11c); // fully-known fixed stat-0x416 config blob
+// (CNetConfigBlob moved to <Net/NetPackets.h>.)
 
 // ---------------------------------------------------------------------------
 // CNetMgr::SaveConfig  (__thiscall; ret 4; /GX EH frame).
