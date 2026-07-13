@@ -651,39 +651,18 @@ i32 CState::Vslot07() {
 DATA(0x0024e35c)
 extern i32 g_64e35c; // 0x64e35c "splash drawn" latch
 
-// The image-set the object loads into (m_levelData->m_imageSet). This is a FOREIGN
-// engine class: its ??_7 and slots 0..18 are unreconstructed engine code, so the
-// honest model is the ONE dispatched slot - Load at vtable slot 19 (+0x4c),
-// declared-only. obj->Load() -> call [eax+0x4c].
-struct CMgrImageSet {
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot16();
-    virtual void Slot17();
-    virtual void Slot18();
-    virtual i32 Load(char* path, const char* a, const char* b); // slot 19 (+0x4c)
-};
+// (The former CMgrImageSet 20-slot fake-vtable view is GONE: the +0x10 object the
+// GAME_IMAGEZ load dispatches into is the REAL CImageRegistry (<Gruntz/ResMgr.h>,
+// included above) - the same world+0x10 registry CWorldZ models - and its "Load at
+// slot 19 (+0x4c)" IS CImageRegistry::LoadNamespace, the very slot the game-state
+// activators (CBootyState/CMenuState/CPlay slot-8 loaders) already reach.)
 
 // The level-data object (m_levelData) and the renderer it owns.
 struct CLevelData {
     char pad00[4];
     CDDrawSubMgrPages* m_ready; // +0x04 (the Method_158bc0 readiness gate)
     char pad08[0x10 - 0x08];
-    CMgrImageSet* m_imageSet; // +0x10
+    CImageRegistry* m_imageSet; // +0x10  the real image/name registry
 };
 
 // The display owner (m_displayMgr): its m_8c/m_90 are blitted into the splash params.
@@ -781,7 +760,7 @@ i32 CMgrPersistObj::Init() {
     if (path == 0) {
         return 0;
     }
-    if (m_levelData->m_imageSet->Load(path, "GAME", "_") == -1) {
+    if (m_levelData->m_imageSet->LoadNamespace(path, "GAME", "_") == -1) {
         return 0;
     }
     m_1a8 = 0;
@@ -954,7 +933,6 @@ SIZE_UNKNOWN(CSoundFxEmitter);
 SIZE_UNKNOWN(CDDrawSurfacePair);
 SIZE_UNKNOWN(FxResource);
 SIZE_UNKNOWN(CDisplayMgr);
-SIZE_UNKNOWN(CMgrImageSet);
 SIZE_UNKNOWN(CLevelData);
 SIZE_UNKNOWN(CMgrPersistObj);
 SIZE_UNKNOWN(CRezLocator);
