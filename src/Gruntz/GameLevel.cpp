@@ -39,7 +39,7 @@
 #include <Gruntz/UserLogic.h>   // canonical CGameObject (the movement target) + world chain types
 #include <Io/FileStream.h>      // CFileIO (Open/Read/GetLength/ctor/dtor reloc-masked)
 #include <Gruntz/ImageSets.h>   // CImageSet1/2/3 variant records + RezAlloc/RezFree
-#include <DDrawMgr/DDrawWorkerHost.h> // the REAL plane class (CPlane == CDDrawWorkerHost)
+#include <DDrawMgr/DDrawWorkerHost.h>  // the REAL plane class (CPlane == CDDrawWorkerHost)
 #include <Gruntz/CustomWorldInfoDlg.h> // WwdLevelInfoSrc (0x160530 IsValidWwd is its method)
 #include <rva.h>
 

@@ -31,8 +31,8 @@ RVA(0x0017cbe0, 0x97)
 i32 CDDScreen::CheckGrid() {
     memset(&m_srcDesc, 0, 0x6c);
     m_srcDesc.dwSize = 0x6c;
-    m_srcDesc.dwFlags = 7;                // DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH
-    m_srcDesc.ddsCaps.dwCaps = 0x840;     // DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY
+    m_srcDesc.dwFlags = 7;            // DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH
+    m_srcDesc.ddsCaps.dwCaps = 0x840; // DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY
     m_srcDesc.dwHeight = m_tileInfo->m_height;
     m_srcDesc.dwWidth = m_tileInfo->m_width;
     if (m_dd2->CreateSurface(&m_srcDesc, &m_28, 0) != 0) {

@@ -50,19 +50,19 @@ public:
     // at m_obArray[index], or null on a miss.
     void RegisterNamed(char index, const char* key);
 
-    i32 m_04;    // +0x04  (merged CLoadable base field; ctor arg2)
-    u32 m_flags; // +0x08  plane flags (ctor arg3): bit0 = MAIN/origin-fixed plane,
-                 //        bit1 hidden, bit2/3 = wrap X/Y (CPlane/CPlaneRender views)
-    i32 m_0c;    // +0x0c  owner context (ctor arg1; merged CLoadable base field)
-    char m_pad10[0x18 - 0x10];       // +0x10..+0x17 (scaledX/scaledY in the plane views)
-    float m_18;                      // +0x18  X parallax scale (=1.0f)
-    float m_1c;                      // +0x1c  Y parallax scale (=1.0f)
-    char* m_buffer0;                 // +0x20  owned buffer (the tile-handle grid; RezFree'd)
-    char* m_buffer1;                 // +0x24  owned buffer (the per-column offsets; RezFree'd)
-    char m_pad28[0x50 - 0x28];       // +0x28..+0x4f
-    i32 m_50;                        // +0x50  (=-1)
-    char m_pad54[0x9c - 0x54];       // +0x54..+0x9b
-    ::CObArray m_obArray;            // +0x9c  owned-pointer array (ctor 0x1b55e9 / ~ 0x1b561c)
+    i32 m_04;                  // +0x04  (merged CLoadable base field; ctor arg2)
+    u32 m_flags;               // +0x08  plane flags (ctor arg3): bit0 = MAIN/origin-fixed plane,
+                               //        bit1 hidden, bit2/3 = wrap X/Y (CPlane/CPlaneRender views)
+    i32 m_0c;                  // +0x0c  owner context (ctor arg1; merged CLoadable base field)
+    char m_pad10[0x18 - 0x10]; // +0x10..+0x17 (scaledX/scaledY in the plane views)
+    float m_18;                // +0x18  X parallax scale (=1.0f)
+    float m_1c;                // +0x1c  Y parallax scale (=1.0f)
+    char* m_buffer0;           // +0x20  owned buffer (the tile-handle grid; RezFree'd)
+    char* m_buffer1;           // +0x24  owned buffer (the per-column offsets; RezFree'd)
+    char m_pad28[0x50 - 0x28]; // +0x28..+0x4f
+    i32 m_50;                  // +0x50  (=-1)
+    char m_pad54[0x9c - 0x54]; // +0x54..+0x9b
+    ::CObArray m_obArray;      // +0x9c  owned-pointer array (ctor 0x1b55e9 / ~ 0x1b561c)
     CWwdSpatialMgr* m_spatialWorker; // +0xb0  spatial-grid worker subobject
     char m_padB4[0xf4 - 0xb4];       // +0xb4..+0xf3
     i32 m_pool[0x19];                // +0xf4..+0x157  (25 dwords; memset 0 then m_pool[0]=100)

@@ -80,7 +80,7 @@ public:
     // downgraded to 0 under the 0x400 target flag; 3 = hard-blocking; 4 = special).
     // The movement/scroll steppers scan tiles pixel-by-pixel through this slot.
     virtual i32 GetCollisionAt(i32 x, i32 y); // slot 8 (+0x20)
-    virtual i32 GetStride(); // slot 9 (+0x24)  record byte length (cursor advance)
+    virtual i32 GetStride();                  // slot 9 (+0x24)  record byte length (cursor advance)
 
     i32 m_width; // +0x04  tile/column width (ClampSpan span extent; == CImageSet3::m_width)
 };

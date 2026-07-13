@@ -88,7 +88,7 @@ public:
     IDirectDrawSurface* m_primary; // +0x1c   primary surface
     IDirectDrawSurface* m_20;      // +0x20   surface (only Release'd; role unproven)
     IDirectDrawSurface* m_srcSurf; // +0x24   blit source surface (the Surface3 QI of m_28)
-    IDirectDrawSurface* m_28;      // +0x28   raw tile source surface (CheckGrid's CreateSurface out)
+    IDirectDrawSurface* m_28; // +0x28   raw tile source surface (CheckGrid's CreateSurface out)
     IDirectDrawPalette* m_palette; // +0x2c
     char m_pad30[0x9c - 0x30];
     DDSURFACEDESC m_srcDesc; // +0x9c  tile-source surface request (CheckGrid fills; 0x6c B)

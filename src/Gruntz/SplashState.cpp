@@ -26,8 +26,8 @@
 #include <DDrawMgr/DDrawSubMgrPages.h> // CDDrawSubMgrPages::Method_158bc0 (m_c->m_04 page gate)
 #include <DDrawMgr/DDSurface.h>        // the frame surface CDDSurface (m_10->m_2c->m_8 IsLost poll)
 
-#include <Gruntz/BankMgr.h> // CBankMgr::Lookup / CResSource::LoadGroup (m_8/m_2c)
-#include <Gruntz/GameMode.h> // CGMEntity/CGMEntityList/g_actorList/GM_SimpleAnim (Render spine)
+#include <Gruntz/BankMgr.h>      // CBankMgr::Lookup / CResSource::LoadGroup (m_8/m_2c)
+#include <Gruntz/GameMode.h>     // CGMEntity/CGMEntityList/g_actorList/GM_SimpleAnim (Render spine)
 #include <Gruntz/State.h>        // CState base (m_4/m_8/m_c/m_2c owner/view/bank facets)
 #include <Gruntz/View.h>         // CState::m_c render sub-object facets
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (the m_c holder)

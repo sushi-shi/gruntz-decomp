@@ -31,7 +31,7 @@
 #include <DDrawMgr/DDSurface.h>       // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <DDrawMgr/DDrawWorkerHost.h> // canonical CDDrawWorkerHost (ctor + RegisterNamed here)
 #include <Io/FileMem.h> // the REAL serialize-stream base CFileMemBase (Save/Load's Read@+0x2c/Write@+0x30)
-#include <DDrawMgr/DDrawWorkerCtx.h>  // shared CDDrawWorkerCtx (RegisterNamed's map chain)
+#include <DDrawMgr/DDrawWorkerCtx.h> // shared CDDrawWorkerCtx (RegisterNamed's map chain)
 #include <rva.h>
 
 #include <stdio.h>  // sprintf (ValidateTiles diagnostics)
