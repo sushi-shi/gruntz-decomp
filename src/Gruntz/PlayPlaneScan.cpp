@@ -9,6 +9,7 @@
 // untouched. /GX EH frame: CPlay_0d53d0 has a stack CString error temp, and
 // CPlay_0d9290 has a stack CByteArray shuffle temp - both destructible.
 #include <Gruntz/SBI_Image.h>
+#include <Gruntz/StatusBarMgr.h> // InsertPtr is a method of the 0x630 host, not the SBI leaf
 #include <Ints.h>
 #include <Gruntz/Play.h> // canonical CPlay (one shape)
 #include <Gruntz/GameRegistry.h>
@@ -253,7 +254,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_11c == 0x32) {
-                ((CSBI_RectOnly*)m_guts)->InsertPtr(p->m_118, p->m_114);
+                ((CStatusBarMgr*)m_guts)->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
         } else if (vf == PlaneType_Covered) {
@@ -315,7 +316,7 @@ i32 CPlay::ScanBuildTiles() {
                 return 0;
             }
             if (p->m_11c == 0x32) {
-                ((CSBI_RectOnly*)m_guts)->InsertPtr(p->m_118, p->m_114);
+                ((CStatusBarMgr*)m_guts)->InsertPtr(p->m_118, p->m_114);
             }
             p->m_flags |= 0x10000;
         }

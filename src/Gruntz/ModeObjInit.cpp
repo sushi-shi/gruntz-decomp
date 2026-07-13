@@ -15,7 +15,7 @@
 #include <string.h>
 #include <Gruntz/GruntzMgr.h> // canonical CGruntzMgr (ResetClockGlobals)
 #include <Gruntz/Play.h>      // canonical CPlay: 0xc7ec0 IS CPlay::Vfunc1 (slot 1)
-class CSBI_RectOnly {
+class CStatusBarMgr {
 public:
     i32 LoadBattlezItemConfig(i32 a);
     void Teardown();
@@ -56,8 +56,8 @@ namespace modeinit {
 
     // The 0x630 worker owned at this->m_2dc.
     struct Worker630 {
-        // Init10b4 IS CSBI_RectOnly::LoadBattlezItemConfig; cast at the call.
-        // PreDtor248c IS CSBI_RectOnly::Teardown; cast at the call.
+        // Init10b4 IS CStatusBarMgr::LoadBattlezItemConfig; cast at the call.
+        // PreDtor248c IS CStatusBarMgr::Teardown; cast at the call.
         // ModePostInit IS CGruntzMgr::ResetClockGlobals; cast at the call.
         // one owned sub-object at +0x530 (ctor 0x1b4f0b, dtor 0x1b4f3e)
         struct Sub530 {
@@ -419,9 +419,9 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             wk = 0;
         }
         t->m_2dc = wk;
-        if (((CSBI_RectOnly*)t->m_2dc)->LoadBattlezItemConfig((i32)t->m_c) == 0) {
+        if (((CStatusBarMgr*)t->m_2dc)->LoadBattlezItemConfig((i32)t->m_c) == 0) {
             if (t->m_2dc) {
-                ((CSBI_RectOnly*)t->m_2dc)->Teardown();
+                ((CStatusBarMgr*)t->m_2dc)->Teardown();
                 ((Worker630::Sub530*)((char*)t->m_2dc + 0x530))->Dtor1b4f3e();
                 EhVecCtor(
                     (char*)t->m_2dc + 0x2c,

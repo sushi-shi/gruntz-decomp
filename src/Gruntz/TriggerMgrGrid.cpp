@@ -25,7 +25,7 @@
 
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/GruntzCmdMgr.h>
-#include <Gruntz/SBI_RectOnly.h>
+#include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/BattlezData.h> // CBattlezData - the REAL +0x7c HUD/score board (was CTmScoreBoard)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)

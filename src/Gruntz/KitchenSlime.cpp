@@ -493,7 +493,7 @@ i32 CKitchenSlime::Tick() {
 // The serialization stream is the shared CSerialArchive: slot +0x2c (index 11) Read
 // reads n bytes into a buffer, slot +0x30 (index 12) Write transfers n bytes (was
 // the per-TU CSlimeStream view; only the slot offsets are load-bearing, the virtual
-// call is reloc-masked, as in CSBI_RectOnly::Serialize).
+// call is reloc-masked, as in CStatusBarMgr::Serialize).
 
 // The +0x34 serializable sub-object the slime chains into after the shared
 // CUserLogic::SerializeChain is the shared CSerialObjRef (Chain @0x8c00 via the

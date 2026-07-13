@@ -19,7 +19,7 @@
 #include <Gruntz/TriggerMgr.h> // CTriggerMgr + CTrigPoint (+ <Mfc.h> CObList/CByteArray)
 
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr (the +0x6c command/report sub-mgr)
-#include <Gruntz/SBI_RectOnly.h>  // CSBI_RectOnly (the world's +0x2dc status-bar item)
+#include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr (the world's +0x2dc status-bar item)
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/TileGrid.h>      // canonical CTileGrid (the registry's +0x70 tile grid)
 #include <Bute/ButeMgr.h>         // canonical CButeMgr (one shape)
@@ -83,11 +83,11 @@ extern "C" i32 g_curPlayer;
 
 // The global game-registry singleton (?g_gameReg@@3PAUWwdGameReg@@A @0x64556c). Only
 // the +0x2c world back-ptr is read here; the world's hooks are reloc-masked.
-// The status-bar item at world->m_2dc is the real CSBI_RectOnly (<Gruntz/SBI_RectOnly.h>,
+// The status-bar item at world->m_2dc is the real CStatusBarMgr (<Gruntz/StatusBarMgr.h>,
 // included above): SetMode @0x10bb90, TryActivate/Reset/Place/Run; the reset path reads its
 // offset-0 subtype tag (*(i32*)), sub-state (m_activeTab @0x10c), busy flag (m_hlBusy @0x548)
 // and frees its retab notifier (m_retabNotify @0x54c). The former CTmStatusItem flat view is
-// gone - m_2dc is typed CSBI_RectOnly* so the method calls need no per-site cast.
+// gone - m_2dc is typed CStatusBarMgr* so the method calls need no per-site cast.
 
 // The booty/score sub-object at world->m_3f4 (booty & trigger modes): a running i64 score
 // tally (m_38) plus the per-column status counters HitTestApply zeroes.
@@ -114,7 +114,7 @@ struct CTmWorld {
     i32 OnRegion4(i32 z);                       // 0xd8bc0
     void Place2(i32 a, i32 b, i32 c);           // ReinitGroup state place (reloc-masked)
     char p0[0x2dc];
-    CSBI_RectOnly* m_2dc; // +0x2dc  status-bar item (real class, no per-site cast)
+    CStatusBarMgr* m_2dc; // +0x2dc  status-bar item (real class, no per-site cast)
     char p2e0[0x384 - 0x2e0];
     struct Anchor {
         i32 m_x;

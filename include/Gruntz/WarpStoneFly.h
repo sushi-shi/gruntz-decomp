@@ -1,5 +1,5 @@
 // WarpStoneFly.h - Gruntz CWarpStoneFly (C:\Proj\Gruntz), the flying-warpstone
-// status-bar overlay. Allocated (new 0x40) and owned by a CSBI_RectOnly at its
+// status-bar overlay. Allocated (new 0x40) and owned by a CStatusBarMgr at its
 // +0x54c (the back-pointer m_owner points to that owner); the owner's
 // UpdateWarpStoneStatusBar/m_warpStoneFly teardown drive it. No vtable
 // (m_arrivalMode is a mode int, not a vptr), so no RTTI for this leaf class.
@@ -18,7 +18,7 @@
 #include <Ints.h>
 #include <rva.h>
 
-// The CSBI_RectOnly owner reached through m_owner. Only the members the three
+// The CStatusBarMgr owner reached through m_owner. Only the members the three
 // frameless methods touch are modeled; every call through it goes via the ILT and
 // is reloc-masked regardless of name.
 SIZE_UNKNOWN(CWsfOwner);
@@ -56,7 +56,7 @@ public:
     double m_xDirection;    // +0x28  x direction/sign gate
     double m_yDirection;    // +0x30  y direction/sign gate
     CWsfSprite* m_sprite;   // +0x38  the drawn sprite
-    CWsfOwner* m_owner;     // +0x3c  back-pointer to the owning CSBI_RectOnly
+    CWsfOwner* m_owner;     // +0x3c  back-pointer to the owning CStatusBarMgr
 };
 
 #endif // GRUNTZ_GRUNTZ_WARPSTONEFLY_H

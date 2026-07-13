@@ -24,7 +24,7 @@
 #include <Gruntz/GameLevel.h>          // canonical CGameLevel (VisitVisible)
 #include <DinMgr2/DirectInputMgr2.h>   // canonical DirectInputMgr2 (ReadAll)
 #include <DDrawMgr/DDrawSubMgrPages.h> // canonical CDDrawSubMgrPages (Method_158e90/159ef0)
-class CSBI_RectOnly {
+class CStatusBarMgr {
 public:
     i32 LoadMainStatusBarSprite();
     i32 Deactivate();
@@ -76,8 +76,8 @@ struct GLSAssetRoot { // this->m_c (== CSpriteFactoryHolder, View.h)
     GLSObj24* m_24; // +0x24
 };
 struct GLSMapMgr { // this->m_2dc
-    // Finalize @0x125d IS CSBI_RectOnly::Deactivate; cast at the call.
-    // Activate2 @0x21b7 IS CSBI_RectOnly::LoadMainStatusBarSprite; cast at the call.
+    // Finalize @0x125d IS CStatusBarMgr::Deactivate; cast at the call.
+    // Activate2 @0x21b7 IS CStatusBarMgr::LoadMainStatusBarSprite; cast at the call.
 };
 // The +0xc4 reset manager is the DirectInputMgr2 input singleton g_645570
 // (DAT_00245570, bound extern "C" in GruntzMgr.cpp): ReadAll (@0x133110) polls devices.
@@ -158,8 +158,8 @@ i32 CPlay::OnActivate() {
         p->m_c->m_c->Present(p->m_c->m_4->m_14, p->m_c->m_4->m_18);
     }
 
-    ((CSBI_RectOnly*)p->m_2dc)->Deactivate();
-    ((CSBI_RectOnly*)p->m_2dc)->LoadMainStatusBarSprite();
+    ((CStatusBarMgr*)p->m_2dc)->Deactivate();
+    ((CStatusBarMgr*)p->m_2dc)->LoadMainStatusBarSprite();
     p->m_510 = 2;
     ((CDDrawSubMgrPages*)p->m_c->m_4)->Method_158e90();
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited by CPlay, cast-free)

@@ -34,20 +34,21 @@ struct CSbiConfigHost;
 // deriving CStatusBarItem directly (matching-neutral) while recovering the real level.
 class CSBI_RectOnly : public CStatusBarItem {
 public:
+    CSBI_RectOnly();                   // 0x00101fa0 (SBI_RectOnlyBase.cpp) - m_8 = 1
     virtual ~CSBI_RectOnly() OVERRIDE; // slot 0
+    // (NO slot-1 override: sema class says vtbl 0x1eab8c slot [1] is INHERITED
+    // (CStatusBarItem::SerializeFields, thunk 0x1848). The `SbiVfunc0` the old merged TU
+    // defined under this class name belonged to the host's fabricated vtable, not here.)
     // slot 2 (0xe86e0). Args 5..8 are ONE by-value SbRect - see StatusBarItem.h.
     virtual i32 Setup(i32 a1, i32 a2, i32 a3, i32 a4, SbiRect rc, i32 a9, i32 a10) OVERRIDE;
     virtual void SbiSlot3() OVERRIDE; // slot 3
     virtual void SbiSlot4() OVERRIDE; // slot 4
-    i32 InsertPtr(i32 a, i32 b);      // 0x108410 (i32 ret, matches SBI_RectOnly.h + retail)
-    // Tab-group helpers defined in SBI_RectOnly.cpp on the 0x570 HOST that wears the
-    // same CSBI_RectOnly name (a known conflation - see CSbiRectSub in SBI_RectOnly.h).
-    // Declared here so callers (SBI_MenuItem.cpp SetState) mangle the identical
-    // ?...@CSBI_RectOnly@@ symbols without a per-TU view; decl-only = byte-neutral.
-    void ClearTabGroup(); // 0x100b00
-    i32 Deactivate();     // 0x100cb0
     // Member teardown run by the CHAIN-DTOR device (see StatusBarItem.h).
     void DtorRect(); // 0xe8760
+    // (InsertPtr 0x108410 / ClearTabGroup 0x100b00 / Deactivate 0x100cb0 were declared
+    // here on the strength of the old CSBI_RectOnly/CStatusBarMgr name conflation. They
+    // are methods of the 0x630 status-bar HOST (CStatusBarMgr) and moved there with the
+    // split - this thin sub-widget never had them.)
 };
 SIZE_UNKNOWN(CSBI_RectOnly);
 VTBL(CSBI_RectOnly, 0x001eab8c); // vtable_names -> code (RTTI game class)

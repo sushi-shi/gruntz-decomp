@@ -638,9 +638,9 @@ public:
         void StepBracketL(); // 0x4fe460  ('[')
         void StepMinus();    // 0x4fe600  ('-')
         // The EnterOverlayDrag/PauseGame/ResumeGame/OnKeyCommand guts sub-steps are the
-        // real CSBI_RectOnly widget methods (RefreshState/SetTab/SetTabState/Deactivate/
+        // real CStatusBarMgr widget methods (RefreshState/SetTab/SetTabState/Deactivate/
         // BuildGameTab*/ResetWidgets/TryActivate @0xfe670/0x100xxx/0x102xxx) - reached via
-        // ((CSBI_RectOnly*)m_guts)->... at the call sites (SBI_RectOnly.h), not local decls.
+        // ((CStatusBarMgr*)m_guts)->... at the call sites (SBI_RectOnly.h), not local decls.
         // HandleTileClick HUD hit-test dispatch (thiscall, reloc-masked):
         i32 HitTest3ad5(i32 x, i32 y); // -> slot index or -1
         void Apply3ebd(i32 idx);       // apply the hit slot

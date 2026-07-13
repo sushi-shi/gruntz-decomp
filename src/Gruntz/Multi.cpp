@@ -13,7 +13,7 @@
 // only the OFFSETS + the per-method call/branch structure are load-bearing.
 #include <rva.h>
 #include <Gruntz/BattlezMapConfig.h>
-#include <Gruntz/SBI_RectOnly.h>
+#include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
@@ -75,7 +75,7 @@ public:
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/ChatBoxOwner.h>
 #include <Utils/RegistryHelper.h>
-#include <Gruntz/SBI_RectOnly.h>
+#include <Gruntz/StatusBarMgr.h>
 #include <Net/NetMgr.h>
 #include <rva.h>
 #include <string.h> // memset (inlined rep stosl for the version packet)
@@ -545,7 +545,7 @@ void ConstructFileIOGlobal() {
 // CNetMgr::SetupMultiplayerSession  (0xb5460, __thiscall, /GX 18-EH-state) - the multiplayer
 // connect/init DRIVER, reconstructed LEAF-FIRST. It operator-new's four objects
 // (the 0x8c peer CNetMgr + 3 CObLists, the 0x1c interface object, the 0x630
-// CSBI_RectOnly session, the 0x78 command manager); each `new`+ctor below is a
+// CStatusBarMgr session, the 0x78 command manager); each `new`+ctor below is a
 // file-local view whose members drive the exact /GX EH-state chain (peer 1..3,
 // level-path CStrings 4..6, session 7..0xa, cmd-mgr 0xb..0x12).
 //
@@ -652,7 +652,7 @@ struct CNetIface {
     }
 };
 
-// (3) the 0x630 session = CSBI_RectOnly (a cross-module Gruntz class): 8 CPtrList
+// (3) the 0x630 session = CStatusBarMgr (a cross-module Gruntz class): 8 CPtrList
 // notify lists (vector-ctor 0x11f5a0), a CByteArray at +0x530. Its ~400-byte scalar
 // init is that class's OWN leaf (a separate TU), not reproduced here - only the two
 // notable non-zero fields are set. ~CNetSess (Teardown + member dtors) drives the
@@ -669,7 +669,7 @@ struct CNetSess {
         *(i32*)((char*)this + 0x544) = 1;
     }
     ~CNetSess() {
-        ((CSBI_RectOnly*)this)->Teardown();
+        ((CStatusBarMgr*)this)->Teardown();
     }
 };
 
@@ -692,9 +692,9 @@ struct CNetSess {
 //     FINAL stamp 0x5ea42c stays manual (it is CNetMgr's own, un-catalogued vtable
 //     that cl cannot re-emit here). A residual /GX state-numbering delta remains
 //     around that manual final stamp until CNetMgr's own vtable is catalogued.
-//  3. The 0x630 session is a cross-module CSBI_RectOnly whose ~400-byte scalar ctor
+//  3. The 0x630 session is a cross-module CStatusBarMgr whose ~400-byte scalar ctor
 //     init (3 stride-0x18 sub-loops + 3 rep-stos regions) is that class's own leaf,
-//     not reproduced inline. Final sweep: needs the real CSBI_RectOnly + a catalogued
+//     not reproduced inline. Final sweep: needs the real CStatusBarMgr + a catalogued
 //     CNetMgr vtable (which would also close walls 2/3).
 RVA(0x000b5460, 0x914)
 i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
@@ -836,10 +836,10 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     ((CNetIface*)TF(0x2e0))->m_10 = 0;
     ((CChatBoxOwner*)TF(0x2e0))->Configure(1);
 
-    // (3) session (CSBI_RectOnly)
+    // (3) session (CStatusBarMgr)
     CNetSess* sess = new CNetSess();
     TF(0x2dc) = (i32)sess;
-    if (((CSBI_RectOnly*)sess)->LoadBattlezItemConfig((i32)((CSndSubMgr*)m_c)) == 0) {
+    if (((CStatusBarMgr*)sess)->LoadBattlezItemConfig((i32)((CSndSubMgr*)m_c)) == 0) {
         CNetSess* so = (CNetSess*)TF(0x2dc);
         if (so == 0) {
             return 0;
@@ -1415,7 +1415,7 @@ i32 CMulti::PumpA() {
     ((McHost*)m_c)->m_8->CallSlot24();
     ((McHost*)m_c)->m_8->CallSlot40();
     ((CMultiSub68*)Mgr()->m_cmdGrid)->Step3017(g_645584);
-    ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->LoadDestructButtonSprite(g_645584);
+    ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadDestructButtonSprite(g_645584);
     CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_c + 0x20);
     if (win) {
         i32 now = timeGetTime();
@@ -1505,7 +1505,7 @@ void CMulti::PumpB() {
         StepInputA();
         mgr->m_24->VisitVisible(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
-        ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
+        ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
         CDDrawSurfacePair* h = mgr->m_4->m_14;
         if (h == 0) {
             return;
@@ -1519,7 +1519,7 @@ void CMulti::PumpB() {
     StepC();
     if (m_region0Gate != 0) {
         mgr->m_4->m_14->m_surface->Fill(0);
-        ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->Deactivate();
+        ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->Deactivate();
     }
     if (m_worldReady == 0) {
         if (((CMultiSub68*)Mgr()->m_cmdGrid)->m_armed != 0) {
@@ -1539,7 +1539,7 @@ void CMulti::PumpB() {
         mgr->m_24->VisitVisible(mgr->m_4->m_14, mgr->m_8);
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
     }
-    ((CSBI_RectOnly*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
+    ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
     if (m_overlayActive != 0) {
         CMultiSubDC* fx = ((CMultiSubDC*)m_guts);
         if (fx->m_0 != 2 && fx->m_mode != 5) {

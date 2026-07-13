@@ -14,7 +14,7 @@
 #include <rva.h>
 #include <Ints.h>
 
-#include <Gruntz/SBI_RectOnly.h>     // CSBI_RectOnly (ClearStat, the side-tab owner slot)
+#include <Gruntz/StatusBarMgr.h>     // CStatusBarMgr (ClearStat, the side-tab owner slot)
 #include <Gruntz/GameRegistry.h>     // canonical CGameRegistry (the builders' singleton view)
 #include <Gruntz/ResMgr.h>           // canonical CResMgr + CDrawTarget + CImageRegistry
 #include <Gruntz/StatusBarItem.h>    // canonical frameless CStatusBarItem base (real RTTI base)
@@ -354,7 +354,7 @@ i32 CSBI_SideTab::BuildHandle() {
     }
     CSideTabGruntRec* unit = g_gameReg->m_68->m_units[m_40 + 15 * m_3c];
     if (unit == 0) {
-        ((CSBI_RectOnly*)m_2c)->ClearStat(m_40);
+        ((CStatusBarMgr*)m_2c)->ClearStat(m_40);
         return 0;
     }
     i32 val;

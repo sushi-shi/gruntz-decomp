@@ -25,7 +25,7 @@
 
 #include <Gruntz/ActionOptionsMenuBar.h>
 #include <Gruntz/GruntzCmdMgr.h>
-#include <Gruntz/SBI_RectOnly.h>
+#include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
@@ -244,6 +244,16 @@ found:
 // permuter finds no better spelling (FINAL 99.024, no change). The same merges
 // IMPROVED siblings (DestroyGroup 64.8->66.4, ToggleRegionA 68.9->75.4,
 // BuildRockBreakParticles 81.1->83.9). Accepted per the migration mandate.
+// @early-stop
+// 99.39% (was 100.00) - HEADER-SHAPE RIPPLE from the CSBI_RectOnly/CStatusBarMgr host split
+// (2026-07-12). Not one line of this function changed. What changed is the class this TU
+// includes for world->m_2dc: the 0x630 status-bar host stopped pretending to be a
+// polymorphic CStatusBarItem (vptr at +0) and took its true non-polymorphic shape - an i32
+// at +0 and eight REAL MFC CPtrList members at +0x2c. CPtrList is a full class with
+// virtuals, so pulling its definition into the host's body moves MSVC5's per-TU /O2
+// inlining budget, which recolours registers here (and costs TriggerCell -7.10 /
+// CenterOnGroup -4.04 the same way). Residual is one scheduling pair; logic byte-identical.
+// Correct shape, accepted cost - do NOT revert to recover the 0.61%.
 RVA(0x00078430, 0x7f)
 void CTriggerMgr::ResetAll() {
     CTmNode* n = (CTmNode*)m_recList.GetHeadPosition();
@@ -802,7 +812,7 @@ i32 CTriggerMgr::ReinitGroup(i32 col, i32 row) {
     i32 outR = col;
     i32 outC = row;
     plane->Snap(&outR, &outC);
-    CSBI_RectOnly* sbi = (CSBI_RectOnly*)*(char**)((char*)lvl + 0x2dc);
+    CStatusBarMgr* sbi = (CStatusBarMgr*)*(char**)((char*)lvl + 0x2dc);
     if (sbi->m_hlBusy == 0) {
         if (*(i32*)sbi == 2) {
             sbi->Reset();
@@ -841,7 +851,7 @@ void CTriggerMgr::ResetSpawnState() {
         return;
     }
     CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
-    CSBI_RectOnly* st = world->m_2dc;
+    CStatusBarMgr* st = world->m_2dc;
     if (st->m_retabNotify != 0) {
         operator delete(st->m_retabNotify);
         st->m_retabNotify = 0;
@@ -849,7 +859,7 @@ void CTriggerMgr::ResetSpawnState() {
     world->m_2dc->m_hlBusy = 0;
     if (m_byteArr.GetSize() > 0) {
         m_byteArr.RemoveAt(m_byteArr.GetSize() - 1, 1);
-        CSBI_RectOnly* ctx = world->m_2dc;
+        CStatusBarMgr* ctx = world->m_2dc;
         if (*(i32*)ctx != 2 && ctx->m_activeTab == 5) {
             Eng_BuildNotifyA(0);
             world->m_2dc->TryActivate();
@@ -1139,7 +1149,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
     CPlay* world = (CPlay*)g_gameReg->m_curState;
     world->FlushPendingOps();
     world->ArmSnapshot(0, 0xbb7);
-    ((CSBI_RectOnly*)world->m_guts)->SetMode(1);
+    ((CStatusBarMgr*)world->m_guts)->SetMode(1);
     return 1;
 }
 

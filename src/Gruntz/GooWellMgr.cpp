@@ -17,7 +17,7 @@
 // reloc-masks.
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Grunt.h>
-#include <Gruntz/SBI_RectOnly.h>
+#include <Gruntz/StatusBarMgr.h>
 #include <Dsndmgr/DirectSoundMgr.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <rva.h>
@@ -342,13 +342,13 @@ i32 CGooWellMgr::LoadTeleporterGooConfig(i32 off) {
         }
         // Goo respawn timer.
         if ((i64)g_645588 - m_gooTimerBase >= m_gooInterval) {
-            ((CSBI_RectOnly*)obj->m_gauge)->AdvanceGauge(1);
+            ((CStatusBarMgr*)obj->m_gauge)->AdvanceGauge(1);
             m_gooInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerGoo", 0x258);
             m_gooTimerBase = g_645588;
         }
         // Resource respawn timer.
         if ((i64)g_645588 - m_resourceTimerBase >= m_resourceInterval) {
-            ((CSBI_RectOnly*)obj->m_gauge)->UpdateRezMachineWakeStatusBar();
+            ((CStatusBarMgr*)obj->m_gauge)->UpdateRezMachineWakeStatusBar();
             m_resourceInterval = g_buteMgr.GetDwordDef("Multiplayer", "TimePerResource", 0x7530);
             m_resourceTimerBase = g_645588;
         }

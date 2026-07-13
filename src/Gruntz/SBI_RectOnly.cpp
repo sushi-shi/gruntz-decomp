@@ -1,6 +1,15 @@
+// UNBLOCKED BY THE HOST SPLIT (2026-07-12): take the OUT-OF-LINE CStatusBarItem ctor, so
+// the `new CSBI_X` sites in this TU's builders emit a base-ctor CALL (??0CStatusBarItem
+// @0x1005d0) - which is what retail's BuildTabzDialog does. This knob used to be
+// unusable here: the TU also defined ??0CSBI_RectOnly (0x101fa0), whose retail spelling
+// INLINES the base ctor, so switching it cratered that 100% function to 25.5%. The split
+// moved ??0CSBI_RectOnly out to SBI_RectOnlyBase.cpp (where the macro is off and it still
+// inlines the base = 100%), so the conflict is gone and BuildTabzDialog gets its call back.
+#define SBI_ITEM_OWN_CTOR
 #include <Mfc.h> // afx-first umbrella (wave1-E one-TU merge: CByteArray/CObList consumers below)
-#include <Gruntz/SBI_RectOnly.h>  // canonical CSBI_RectOnly + engine-referent views
-#include <Gruntz/SpriteFactory.h> // real CSpriteFactory::CreateSprite (0x1597b0); 0x104dd0
+#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (the 0x630 host) + referent views
+#include <Gruntz/StatusBarTabWidgets.h> // the tab-widget leaves this TU's builders `new`
+#include <Gruntz/SpriteFactory.h>       // real CSpriteFactory::CreateSprite (0x1597b0); 0x104dd0
 #include <Gruntz/WarpStoneFly.h>
 #include <Gruntz/SoundCueMgr.h>
 #include <Rez/RezList.h>
@@ -34,17 +43,17 @@
 #include <Rez/RezMgr.h>                    // RezFree (the per-frame warpstone overlay free)
 #include <math.h>   // sqrt - intrinsified to inline fsqrt under VC5 /O2 (warpstone fly)
 #include <string.h> // strlen / memset (inlined repne scas / rep stos; CMgrSettings::Serialize)
-// SBI_RectOnly.cpp - Gruntz CSBI_RectOnly (C:\Proj\Gruntz).
+// SBI_RectOnly.cpp - Gruntz CStatusBarMgr (C:\Proj\Gruntz).
 // The constructor is matched byte-exact.
 //
-// CSBI_RectOnly derives from CStatusBarItem. The retail ctor inlines the base
+// CStatusBarMgr derives from CStatusBarItem. The retail ctor inlines the base
 // ctor (zeroing m_4/m_24/m_28; the base's m_8=0 store is dropped as dead because
 // the derived ctor sets m_8=1), then stores its own vptr, then m_8=1. That fold
 // is exactly why CStatusBarItem's ctor is inline in the shared header (MSVC 5.0
 // will not fold an out-of-line base ctor).
 
-// CSBI_RectOnly + all its engine-referent views (CSbiSlot/CSbiRect/...) and the
-// slot-state enum/consts now live in the canonical shared header <Gruntz/SBI_RectOnly.h>
+// CStatusBarMgr + all its engine-referent views (CSbiSlot/CSbiRect/...) and the
+// slot-state enum/consts now live in the canonical shared header <Gruntz/StatusBarMgr.h>
 // (included above); the serialize stream is the shared CSerialArchive. Only the
 // RVA-keyed method bodies and the DATA()-bound globals remain in this TU.
 
@@ -58,7 +67,7 @@ extern "C" i32 g_curPlayer;
 
 // CMapStringToOb/CSbiCueRecord/CSoundCueMgr/CSbiMusicHost/CSbiGameMgr/CSbiSubMgr/
 // CSbiTile*/CSbiActiveObj/CSbiLogger/CSbiWndHost/CGameReg moved to
-// <Gruntz/SBI_RectOnly.h>.
+// <Gruntz/StatusBarMgr.h>.
 // 0x24556c: the game-mgr singleton, typed as the REAL class (CGruntzMgr, the RTTI-true
 // owner of the object `new`'d at 0x080a20 with size 0xa30) rather than the Win32-safe
 // CGameRegistry view. This TU is already MFC (<Mfc.h> above), so it can see the real
@@ -102,7 +111,7 @@ void Tm_DestroyArray(void* base, i32 stride, i32 count, void* dtor); // 0x11f640
 // the vector-destroy iterator for the eight +0x2c notify lists.
 void SbiList_Dtor(); // 0x5b48c6
 
-// 0xc8980: CSBI_RectOnly member teardown - the /GX dtor body that drains the pooled
+// 0xc8980: CStatusBarMgr member teardown - the /GX dtor body that drains the pooled
 // state (Teardown), destructs the +0x530 CByteArray, then runs the eh-vector-destroy
 // iterator over the eight +0x2c notify lists (stride 0x1c, ~CPtrList per element). The
 // three teardown stages each carry their own descending /GX trylevel.
@@ -117,7 +126,7 @@ void SbiList_Dtor(); // 0x5b48c6
 // member-as-destructible steering can't apply. Documented wall (docs/patterns/
 // eh-dtor-model-members-as-destructible.md). Deferred to the final sweep (whole-class model).
 RVA(0x000c8980, 0x64)
-void CSBI_RectOnly::DtorMembers() {
+void CStatusBarMgr::DtorMembers() {
     Teardown();
     ((CByteArray*)((char*)this + 0x530))
         ->CByteArray::~CByteArray(); // +0x530 real CByteArray teardown
@@ -149,25 +158,16 @@ i32 CStatusBarItem::SbiSlot9(i32, i32, i32) {
     return 0;
 }
 
-// ---------------------------------------------------------------------------
-// CSBI_RectOnly::CSBI_RectOnly()
-// Inlines the CStatusBarItem base ctor (the dead m_8=0 store is elided), stores
-// its own vptr, then sets m_8 = 1.
-RVA(0x00101fa0, 0x1b)
-CSBI_RectOnly::CSBI_RectOnly() {
-    m_8 = 1;
-}
-
-i32 CSBI_RectOnly::SbiVfunc0() {
-    return 1;
-}
-
-// (0xe86e0 Setup -> SBI_RectOnlyBase.cpp (the thin chain CSBI_RectOnly's own obj);
+// (0x101fa0 ??0CStatusBarMgr + its slot-1 SbiVfunc0 -> SBI_RectOnlyBase.cpp. They are
+// the THIN polymorphic sub-widget's members, not this host's: the ctor stamps
+// ??_7CStatusBarMgr@@6B@ and this class has no vtable at all. They lived here only
+// because the two classes shared one name before the split.)
+// (0xe86e0 Setup -> SBI_RectOnlyBase.cpp (the thin chain CStatusBarMgr's own obj);
 // 0xe7400 ResetCounters -> SBI_ImageSet.cpp (vtbl 0x1eac4c slot [3]) - dossier #16.)
 
 // Reset slots 0..4, then m_activeSlot = -1.
 RVA(0x00105520, 0x21)
-void CSBI_RectOnly::ResetSlots() {
+void CStatusBarMgr::ResetSlots() {
     for (i32 i = 0; i < 5; i++) {
         ArmSlot(i);
     }
@@ -176,7 +176,7 @@ void CSBI_RectOnly::ResetSlots() {
 
 // Arm slot[idx]: state = armed, value = 1; notify the slot's pointer (vfunc 0x30).
 RVA(0x00105560, 0x33)
-void CSBI_RectOnly::ArmSlot(i32 idx) {
+void CStatusBarMgr::ArmSlot(i32 idx) {
     m_slots[idx].m_state = kSlotArmed;
     m_slots[idx].m_value = 1;
     if (m_slotNotify[idx]) {
@@ -186,7 +186,7 @@ void CSBI_RectOnly::ArmSlot(i32 idx) {
 
 // Probe slots 0..4; return 1 on first hit, else 0.
 RVA(0x00105710, 0x23)
-i32 CSBI_RectOnly::AnySlotActive() {
+i32 CStatusBarMgr::AnySlotActive() {
     for (i32 i = 0; i < 5; i++) {
         if (LoadGooCookingSprite(i)) {
             return 1;
@@ -197,7 +197,7 @@ i32 CSBI_RectOnly::AnySlotActive() {
 
 // m_gaugeTarget = min(m_gauge + delta, 100).
 RVA(0x00105750, 0x1f)
-void CSBI_RectOnly::AdvanceGauge(i32 delta) {
+void CStatusBarMgr::AdvanceGauge(i32 delta) {
     i32 v = m_gauge + delta;
     if (v >= 100) {
         v = 100;
@@ -207,7 +207,7 @@ void CSBI_RectOnly::AdvanceGauge(i32 delta) {
 
 // m_gaugeTarget = m_gauge = value.
 RVA(0x001057d0, 0x13)
-void CSBI_RectOnly::SetGauge(i32 value) {
+void CStatusBarMgr::SetGauge(i32 value) {
     m_gaugeTarget = value;
     m_gauge = value;
 }
@@ -225,7 +225,7 @@ void CSBI_RectOnly::SetGauge(i32 value) {
 // pair (weighted heavily on a short function). g_curPlayer + the ILT call thunks already
 // pair. A TU-wide g_gameReg rename, not a per-function fix; matcher.md reloc artifact.
 RVA(0x00105800, 0x9e)
-i32 CSBI_RectOnly::PlaceCursorTarget(i32 row, i32 commit) {
+i32 CStatusBarMgr::PlaceCursorTarget(i32 row, i32 commit) {
     i32 col = g_curPlayer;
     if (g_gameReg->m_cmdGrid->ResetCell(col, row, 0, 0) == 0) {
         return 0;
@@ -249,7 +249,7 @@ i32 CSBI_RectOnly::PlaceCursorTarget(i32 row, i32 commit) {
 
 // Run the seven per-stat refresh updaters in sequence.
 RVA(0x001058d0, 0x34)
-void CSBI_RectOnly::RefreshAll() {
+void CStatusBarMgr::RefreshAll() {
     UpdateGruntOvenStatusBar();
     TickGauge();
     UpdateRezConveyorStatusBar();
@@ -261,7 +261,7 @@ void CSBI_RectOnly::RefreshAll() {
 
 // Clear the gauge, zero m_gauge/m_gaugeTarget, run two updaters, set toggle flags.
 RVA(0x00105920, 0x47)
-void CSBI_RectOnly::Reset() {
+void CStatusBarMgr::Reset() {
     ResetSlots();
     m_gaugeTarget = 0;
     m_gauge = 0;
@@ -274,7 +274,7 @@ void CSBI_RectOnly::Reset() {
 
 // Toggle stat[idx]: if already set, clear it; else set it on.
 RVA(0x00107aa0, 0x23)
-void CSBI_RectOnly::ToggleStat(i32 idx) {
+void CStatusBarMgr::ToggleStat(i32 idx) {
     if (m_statFlags[idx]) {
         ClearStat(idx);
     } else {
@@ -288,7 +288,7 @@ void CSBI_RectOnly::ToggleStat(i32 idx) {
 // materializes the point-in-rect predicate via `mov ecx,1 / xor ecx,ecx / test`;
 // MSVC5 folds our `&&` chain into direct control flow (~80%). Logic byte-correct.
 RVA(0x00105280, 0x61)
-i32 CSBI_RectOnly::HitTest(i32 x, i32 y) {
+i32 CStatusBarMgr::HitTest(i32 x, i32 y) {
     if (m_hitTestDisabled == 0) {
         for (i32 i = 0; i < 15; i++) {
             CSbiRect* p = m_hitRects[i];
@@ -306,7 +306,7 @@ i32 CSBI_RectOnly::HitTest(i32 x, i32 y) {
 
 // Reset the three group-A slots (arm state=0/value=1) and notify each pointer.
 RVA(0x00106610, 0x3b)
-void CSBI_RectOnly::ResetGroupA() {
+void CStatusBarMgr::ResetGroupA() {
     for (i32 i = 0; i < 3; i++) {
         m_groupSlots[i].m_state = kSlotArmed;
         m_groupSlots[i].m_value = 1;
@@ -322,7 +322,7 @@ void CSBI_RectOnly::ResetGroupA() {
 // reorders the m_hudRectA_clockHi/m_hudRectA_clock zero+global pair vs retail; ~72%, not steerable from
 // C (see docs/patterns/u64-store-clock-hi-zero.md, statement-schedule-faithful).
 RVA(0x001066f0, 0x3b)
-void CSBI_RectOnly::SetHudRectA(i32 y0, i32 x0, i32 z) {
+void CStatusBarMgr::SetHudRectA(i32 y0, i32 x0, i32 z) {
     m_hudRectA_y = y0;
     m_hudRectA_x = x0;
     m_hudRectA_z = z;
@@ -335,7 +335,7 @@ void CSBI_RectOnly::SetHudRectA(i32 y0, i32 x0, i32 z) {
 // @early-stop
 // scheduling wall: same store-reorder as SetHudRectA; ~72%.
 RVA(0x00106740, 0x3b)
-void CSBI_RectOnly::SetHudRectB(i32 y0, i32 x0, i32 z) {
+void CStatusBarMgr::SetHudRectB(i32 y0, i32 x0, i32 z) {
     m_hudRectB_y = y0;
     m_hudRectB_x = x0;
     m_hudRectB_z = z;
@@ -347,7 +347,7 @@ void CSBI_RectOnly::SetHudRectB(i32 y0, i32 x0, i32 z) {
 // Commit the active slot: either re-arm it, or push the cooked commit level and
 // notify its pointer; then clear the active-slot index.
 RVA(0x00106790, 0x62)
-void CSBI_RectOnly::CommitSlot(i32 active) {
+void CStatusBarMgr::CommitSlot(i32 active) {
     if (active) {
         ArmSlot(m_activeSlot);
         m_activeSlot = -1;
@@ -362,7 +362,7 @@ void CSBI_RectOnly::CommitSlot(i32 active) {
 
 // Clear highlight-grid cell [row,group] (state + handle = 0), then re-notify.
 RVA(0x001069c0, 0x2e)
-void CSBI_RectOnly::ClearHlCell(i32 row, i32 group) {
+void CStatusBarMgr::ClearHlCell(i32 row, i32 group) {
     i32 idx = group + row * 4;
     m_hlGrid[idx].m_state = 0;
     m_hlGrid[idx].m_handle = 0;
@@ -373,7 +373,7 @@ void CSBI_RectOnly::ClearHlCell(i32 row, i32 group) {
 // 0x106af0 - map a handle to its highlight-grid tier row (>=0x22 -> 2, >=0x17 -> 1,
 // else 0), then arm that cell via SetHlCell.
 RVA(0x00106af0, 0x37)
-i32 CSBI_RectOnly::SetHlCellByTier(i32 handle, i32 group) {
+i32 CStatusBarMgr::SetHlCellByTier(i32 handle, i32 group) {
     i32 row;
     if (handle >= 0x22) {
         row = 2;
@@ -384,7 +384,7 @@ i32 CSBI_RectOnly::SetHlCellByTier(i32 handle, i32 group) {
 }
 
 RVA(0x00106b40, 0x44)
-i32 CSBI_RectOnly::SetHlCell(i32 row, i32 handle, i32 group) {
+i32 CStatusBarMgr::SetHlCell(i32 row, i32 handle, i32 group) {
     i32 idx = group + row * 4;
     if (m_hlGrid[idx].m_state) {
         return 0;
@@ -398,7 +398,7 @@ i32 CSBI_RectOnly::SetHlCell(i32 row, i32 handle, i32 group) {
 // Fire every live slot's notifier: the four singletons, the 3x4 group grid
 // (each pointer notified with its row's handle), then two trailing singletons.
 RVA(0x00106a00, 0xbf)
-void CSBI_RectOnly::NotifyAllSlots() {
+void CStatusBarMgr::NotifyAllSlots() {
     if (m_notify0) {
         m_notify0->Refresh();
     }
@@ -448,7 +448,7 @@ void CSBI_RectOnly::NotifyAllSlots() {
 // recompile spills the inner counter and reserves 3 via `sub esp,0xc`). Not
 // steerable from C (docs/patterns regalloc/scheduling walls); deferred.
 RVA(0x001090a0, 0x38f)
-i32 CSBI_RectOnly::Serialize(CSerialArchive* s) {
+i32 CStatusBarMgr::Serialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
@@ -544,9 +544,9 @@ i32 CSBI_RectOnly::Serialize(CSerialArchive* s) {
     return 1;
 }
 
-// CSbiSeqMap/CSbiSeqObj moved to <Gruntz/SBI_RectOnly.h>.
+// CSbiSeqMap/CSbiSeqObj moved to <Gruntz/StatusBarMgr.h>.
 
-// CSBI_RectOnly::Deserialize - the load/restore counterpart of Serialize. Pulls
+// CStatusBarMgr::Deserialize - the load/restore counterpart of Serialize. Pulls
 // the full rect-only item state from the archive via stream slot 0x2c (Read);
 // resolves the base m_8 sequence holder from the streamed seq id through the
 // game-manager's object map (validated by the looked-up object's type tag == 5);
@@ -561,7 +561,7 @@ i32 CSBI_RectOnly::Serialize(CSerialArchive* s) {
 // frame-size regalloc choice (plus the free-list induction wall shared with
 // Teardown/InsertPtr) caps it below 100%. Not steerable from C; deferred.
 RVA(0x00109520, 0x44c)
-i32 CSBI_RectOnly::Deserialize(CSerialArchive* s) {
+i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
@@ -691,14 +691,14 @@ i32 CSBI_RectOnly::Deserialize(CSerialArchive* s) {
 // advance the 4-state cursor (forward wraps 4->0; the `reverse` path only guards
 // the signed-overflow wrap), then refresh the widgets and re-arm.
 RVA(0x0010b4f0, 0xaa)
-void CSBI_RectOnly::AdvanceTab(i32 reverse) {
+void CStatusBarMgr::AdvanceTab(i32 reverse) {
     if (m_hlBusy != 0) {
         return;
     }
     if (g_gameReg->m_134 == 1) {
         return;
     }
-    if (*(i32*)this == kSubtypeTag) {
+    if (m_position == kSubtypeTag) {
         RefreshState();
     }
     if (m_activeTab != 4) {
@@ -733,7 +733,7 @@ void CSBI_RectOnly::AdvanceTab(i32 reverse) {
 // reloc-symbol-naming scoring tail (DIR32 to differently-named globals/the cue
 // string vs retail's REL32). Not a wall - matcher.md reloc-typing artifact.
 RVA(0x0010b5d0, 0xdd)
-i32 CSBI_RectOnly::HlClickGroup0(i32 row) {
+i32 CStatusBarMgr::HlClickGroup0(i32 row) {
     if (((CPlay*)g_gameReg->m_curState)->m_4f0 == 0 && m_hlGrid[row].m_state == 1) {
         i32 handle = m_hlGrid[row].m_handle;
         i32* slot = &m_hlGrid[row].m_handle;
@@ -769,7 +769,7 @@ i32 CSBI_RectOnly::HlClickGroup0(i32 row) {
 // @early-stop
 // ~94.2%: code byte-exact; reloc-symbol-naming tail only (see HlClickGroup0).
 RVA(0x0010b6f0, 0xdd)
-i32 CSBI_RectOnly::HlClickGroup1(i32 row) {
+i32 CStatusBarMgr::HlClickGroup1(i32 row) {
     if (((CPlay*)g_gameReg->m_curState)->m_4f0 == 0 && m_hlGrid[row + 4].m_state == 1) {
         i32 handle = m_hlGrid[row + 4].m_handle;
         i32* slot = &m_hlGrid[row + 4].m_handle;
@@ -804,7 +804,7 @@ i32 CSBI_RectOnly::HlClickGroup1(i32 row) {
 // @early-stop
 // ~94.2%: code byte-exact; reloc-symbol-naming tail only (see HlClickGroup0).
 RVA(0x0010b810, 0xdd)
-i32 CSBI_RectOnly::HlClickGroup2(i32 row) {
+i32 CStatusBarMgr::HlClickGroup2(i32 row) {
     if (((CPlay*)g_gameReg->m_curState)->m_4f0 == 0 && m_hlGrid[row + 8].m_state == 1) {
         i32 handle = m_hlGrid[row + 8].m_handle;
         i32* slot = &m_hlGrid[row + 8].m_handle;
@@ -845,7 +845,7 @@ i32 CSBI_RectOnly::HlClickGroup2(i32 row) {
 // block (retail keeps the gauge value in eax + loads the vtable into edx; the
 // recompile uses edx for the value). Not steerable from C; deferred.
 RVA(0x00105480, 0x7d)
-void CSBI_RectOnly::TickGauge() {
+void CStatusBarMgr::TickGauge() {
     i32 changed = 0;
     i32 g = m_gauge;
     i32 t = m_gaugeTarget;
@@ -876,7 +876,7 @@ noChange:;
 
 // Find the first slot whose state is ready; re-arm it and report found.
 RVA(0x00109a90, 0x25)
-i32 CSBI_RectOnly::FindReadySlot() {
+i32 CStatusBarMgr::FindReadySlot() {
     for (i32 i = 0; i < 5; i++) {
         if (m_slots[i].m_state == kSlotReady) {
             ArmSlot(i);
@@ -891,7 +891,7 @@ i32 CSBI_RectOnly::FindReadySlot() {
 // and forward the three args to its Init. /GX frames the new+ctor span (collapsed
 // from SBI_RectOnlyEh.cpp; this fn is one of the interval's EH-site proofs).
 RVA(0x00109ad0, 0xa9)
-i32 CSBI_RectOnly::EnsureSub(i32 a, i32 b, i32 c) {
+i32 CStatusBarMgr::EnsureSub(i32 a, i32 b, i32 c) {
     if (m_retabNotify) {
         return 0;
     }
@@ -905,7 +905,7 @@ i32 CSBI_RectOnly::EnsureSub(i32 a, i32 b, i32 c) {
 
 // Release the per-tab sprite widgets for the given tab group (idx, with -1 = all).
 RVA(0x00101420, 0x110)
-i32 CSBI_RectOnly::ClearTabSprites(i32 idx) {
+i32 CStatusBarMgr::ClearTabSprites(i32 idx) {
     if (idx == -1 || idx == 0) {
         if (m_tabSprite0) {
             m_tabSprite0->Blit();
@@ -972,8 +972,8 @@ i32 CSBI_RectOnly::ClearTabSprites(i32 idx) {
 // `lea` into fresh regs; the recompile loads into ecx and uses `sub` in place).
 // Not steerable from C - logic byte-correct; deferred to the final sweep.
 RVA(0x00100cb0, 0x8b)
-i32 CSBI_RectOnly::Deactivate() {
-    if (*(i32*)this == kSubtypeTag) {
+i32 CStatusBarMgr::Deactivate() {
+    if (m_position == kSubtypeTag) {
         CGruntzMgr* g = g_gameReg;
         i32 a = g->m_modeW;
         i32 b = g->m_modeH;
@@ -984,27 +984,25 @@ i32 CSBI_RectOnly::Deactivate() {
         SetCursorRect(x, y);
     }
 
-    char* B = (char*)this;
-    CSbiNotifyNode* n = *(CSbiNotifyNode**)(B + 0x30);
+    POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
-        CSbiNotifyNode* cur = n;
-        n = n->m_next;
-        if (cur->m_payload) {
-            ((CSbiSlotPtr*)cur->m_payload)->Refresh();
+        CSbiSlotPtr* cur = (CSbiSlotPtr*)m_tabLists[0].GetNext(n);
+        if (cur) {
+            cur->Refresh();
         }
     }
 
-    CSbiNotifyNode* m = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
+    CPtrList& tab = m_tabLists[m_activeTab];
+    POSITION m = tab.GetHeadPosition();
     while (m) {
-        CSbiNotifyNode* cur = m;
-        m = m->m_next;
-        if (cur->m_payload) {
-            ((CSbiSlotPtr*)cur->m_payload)->Refresh();
+        CSbiSlotPtr* cur = (CSbiSlotPtr*)tab.GetNext(m);
+        if (cur) {
+            cur->Refresh();
         }
     }
 
     ClearTabSprites(-1);
-    *(i32*)(B + 0x20) = 2;
+    m_rect14.m_c = 2;
     return 1;
 }
 
@@ -1012,19 +1010,18 @@ i32 CSBI_RectOnly::Deactivate() {
 // otherwise notify the per-tab list, clear it, drop the tab-5 sprites, latch the
 // new tab, and re-probe. On probe failure report the error and bail.
 RVA(0x001020a0, 0xae)
-i32 CSBI_RectOnly::SetTab(i32 tab, i32 flag) {
+i32 CStatusBarMgr::SetTab(i32 tab, i32 flag) {
     if (tab == m_activeTab && flag == 0) {
         return 1;
     }
-    CSbiNotifyNode* n = m_listB8.m_head;
+    POSITION n = m_tabLists[5].GetHeadPosition();
     while (n) {
-        CSbiNotifyNode* cur = n;
-        n = n->m_next;
-        if (cur->m_payload) {
-            cur->m_payload->Notify(1);
+        CSbiNotifyTarget* cur = (CSbiNotifyTarget*)m_tabLists[5].GetNext(n);
+        if (cur) {
+            cur->Notify(1);
         }
     }
-    ((CPtrList*)&m_listB8)->RemoveAll();
+    m_tabLists[5].RemoveAll();
     m_tabSprite5 = 0;
     m_tabSprite6 = 0;
     m_tabSprite7 = 0;
@@ -1038,9 +1035,9 @@ i32 CSBI_RectOnly::SetTab(i32 tab, i32 flag) {
     // silently-wrong callee. LoadTabSprites is modeled on CStatusBarMgr (StatusBarMgr.cpp),
     // reached by the cast SBI_MenuItem.cpp:208 already uses. (The cast is itself a smell -
     // SetTab @0x1020a0 and LoadTabSprites @0x102250 are adjacent and run on the SAME `this`,
-    // so CSBI_RectOnly and CStatusBarMgr are very likely one class - an identity fold for a
+    // so CStatusBarMgr and CStatusBarMgr are very likely one class - an identity fold for a
     // later pass, not something to fabricate here.)
-    if (!((CStatusBarMgr*)this)->LoadTabSprites()) {
+    if (!LoadTabSprites()) {
         g_gameReg->ReportError(kActivateErrId, kSetTabErrTag);
         return 0;
     }
@@ -1058,9 +1055,9 @@ i32 CSBI_RectOnly::SetTab(i32 tab, i32 flag) {
 // free-list head in edx; the recompile strength-reduces to a walking pointer +
 // pins the head in a callee-saved edi). Regalloc/induction wall; deferred.
 RVA(0x000fe350, 0x6d)
-void CSBI_RectOnly::Teardown() {
+void CStatusBarMgr::Teardown() {
     ((Utils::RegistryHelper*)g_gameReg->m_settings)
-        ->SetValueDword("StatusBar Position", *(i32*)this);
+        ->SetValueDword("StatusBar Position", m_position);
     ResetWidgets(0);
     for (i32 i = 0; i < m_ptrCount; i++) {
         void* p = m_ptrTable[i];
@@ -1077,13 +1074,13 @@ void CSBI_RectOnly::Teardown() {
 
 // Activate the rect-only item; gate on the offset-0 subtype tag and a probe.
 RVA(0x00104d60, 0x48)
-i32 CSBI_RectOnly::TryActivate() {
+i32 CStatusBarMgr::TryActivate() {
     // Offset-0 read: in retail this object's slot 0 holds a small integer
     // subtype tag (the manual-vtable-stamp tag device shared with CStatusBarMgr),
     // not a real C++ vptr. We model the vtable via `virtual`,
     // so slot 0 cannot also be a named field here without dropping the vtable;
     // the raw `*(int*)this` read is the faithful model. See report (flagged).
-    if (*(i32*)this == kSubtypeTag) {
+    if (m_position == kSubtypeTag) {
         return Activate();
     }
     if (!BuildStatusBarTabs()) {
@@ -1095,9 +1092,9 @@ i32 CSBI_RectOnly::TryActivate() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x104dd0 - CSBI_RectOnly::Activate: lazily create the status-bar sprite. Both
+// 0x104dd0 - CStatusBarMgr::Activate: lazily create the status-bar sprite. Both
 // SetState (subtype-2 probe) and TryActivate call it with `mov ecx,this` (proven:
-// ecx==this in both call-sites' disasm), so `this` IS the CSBI_RectOnly - not the
+// ecx==this in both call-sites' disasm), so `this` IS the CStatusBarMgr - not the
 // former StatusBarSpriteHolder @orphan view. Its m_8/m_c/m_24/m_28 are the base
 // CStatusBarItem fields reused here as sprite/factory-holder/x/y (a proven-
 // heterogeneous slot set: Setup args on other paths, sprite state on this one).
@@ -1105,7 +1102,7 @@ i32 CSBI_RectOnly::TryActivate() {
 // scheduling wall: retail computes m_8c-0x22 via lea eax,[ecx-0x22] and loads m_x
 // late; cl uses sub + an earlier m_x load. Clamp logic, factory call and literal faithful.
 RVA(0x00104dd0, 0x6b)
-i32 CSBI_RectOnly::Activate() {
+i32 CStatusBarMgr::Activate() {
     if (m_8 != 0) {
         return 0;
     }
@@ -1207,10 +1204,10 @@ SIZE_UNKNOWN(SyncSub);
 // registers and emits the 1 as inline immediates instead. Already spelled with a
 // shared `i32 one=1` local, which MSVC5 declines to keep in a register - a regalloc
 // pressure coin-flip, not source-steerable; deferred to the final sweep.
-// reloc-fidelity: 0x104e60 IS CSBI_RectOnly::LoadStatzTabToggleSprite (ToggleStat calls
+// reloc-fidelity: 0x104e60 IS CStatusBarMgr::LoadStatzTabToggleSprite (ToggleStat calls
 // it unqualified on `this`); SYMBOL exports it under the canonical name so that call
 // binds. The EngineLabelBacklog view is the recovered-symbol placeholder (fold deferred).
-SYMBOL(?LoadStatzTabToggleSprite@CSBI_RectOnly@@QAEXHH@Z)
+SYMBOL(?LoadStatzTabToggleSprite@CStatusBarMgr@@QAEXHH@Z)
 RVA(0x00104e60, 0xed)
 i32 EngineLabelBacklog::LoadStatzTabToggleSprite(i32 value, i32 idx) {
     i32* m = (i32*)this;
@@ -1318,7 +1315,7 @@ i32 CStatzTabBuilder::Build() {
 // cl here is MORE optimized than retail's exact MSVC5 build. A toolchain-microversion
 // codegen wall, not source-steerable; deferred to the final sweep.
 RVA(0x00105310, 0x11a)
-void CSBI_RectOnly::UpdateGruntOvenStatusBar() {
+void CStatusBarMgr::UpdateGruntOvenStatusBar() {
     // The 5 grunt-oven cooking tabs ARE this class's own +0x220 slot records
     // (m_slots, CSbiSlot) with their +0x204 notifier array (m_slotNotify): the
     // slot's m_value (+4) is the animation frame, m_8/m_c (+8/+c) the 64-bit
@@ -1382,7 +1379,7 @@ void CSBI_RectOnly::UpdateGruntOvenStatusBar() {
 // ebp - a 1-instr phase shift cascading through every `mov [field],0` store. A
 // regalloc coin-flip, not source-steerable; deferred to the final sweep.
 RVA(0x001076a0, 0x1f3)
-void CSBI_RectOnly::UpdateChipGrinderStatusBar() {
+void CStatusBarMgr::UpdateChipGrinderStatusBar() {
     i32* m = (i32*)this;
     if (m[0x4e8 / 4] == 0) {
         return;
@@ -1733,9 +1730,9 @@ CWarpStoneFly::CWarpStoneFly() {
 // temp (eax) and branch-selects into edi in retail, where this toolchain fuses the
 // load directly into edi (`mov edi,[ecx+4*edi]`). Same select-register-fusion family
 // as the 64-bit clamp; not source-steerable; deferred to the final sweep.
-// reloc-fidelity: 0x109bd0 IS CWarpStoneFly::Init - CSBI_RectOnly::EnsureSub news a
+// reloc-fidelity: 0x109bd0 IS CWarpStoneFly::Init - CStatusBarMgr::EnsureSub news a
 // CWarpStoneFly and calls o->Init(this,a,b,c) on it; SYMBOL exports it under the
-// canonical CWarpStoneFly::Init name so that call binds (a0 is the CSBI_RectOnly owner).
+// canonical CWarpStoneFly::Init name so that call binds (a0 is the CStatusBarMgr owner).
 // The EngineLabelBacklog view is the recovered-symbol placeholder (fold deferred).
 SYMBOL(?Init@CWarpStoneFly@@QAEHPAXHHH@Z)
 RVA(0x00109bd0, 0x1b5)
@@ -1901,8 +1898,8 @@ i32 CWarpStoneFly::Tick(i32 dt) {
         ((CByteArray*)arr)->SetAtGrow(arr->m_index, (BYTE)m_arrivalMode);
         m_owner->m_busy = 0;
         if (m_owner->m_mode != 2 && m_owner->m_activeTabId == 5) {
-            ((CSBI_RectOnly*)m_owner)->ResetWidgets(0);
-            ((CSBI_RectOnly*)m_owner)->TryActivate();
+            ((CStatusBarMgr*)m_owner)->ResetWidgets(0);
+            ((CStatusBarMgr*)m_owner)->TryActivate();
         }
         if (m_owner->m_warpStoneFly != 0) {
             RezFree(m_owner->m_warpStoneFly);
@@ -2284,7 +2281,7 @@ i32 CTabzBuilder::BuildTabzDialog() {
 // and an inlined widget test; neither pins the store order. Not source-steerable;
 // deferred to the final sweep.
 RVA(0x0010b320, 0x167)
-void CSBI_RectOnly::UpdateDestructButtonStatusBar() {
+void CStatusBarMgr::UpdateDestructButtonStatusBar() {
     // The destruct-warning block is this class's own +0x558 state machine:
     // m_destructWarnActive (+0x558) = 3-state (0 idle / 1 warn-down / 2 warn-up),
     // m_modeState (+0x55c) = the warning frame counter, m_destructWarnLast/Delay
@@ -2335,7 +2332,7 @@ void CSBI_RectOnly::UpdateDestructButtonStatusBar() {
 
 // Enter mode: latch m_modeArmed, conditionally reset the toggle pair, notify m_modeNotify.
 RVA(0x0010bb90, 0x3f)
-void CSBI_RectOnly::SetMode(i32 mode) {
+void CStatusBarMgr::SetMode(i32 mode) {
     m_modeArmed = 1;
     if (mode && m_modeState != 7) {
         m_destructWarnActive = 0;
@@ -2390,12 +2387,10 @@ SIZE_UNKNOWN(C10bbe0);
 // same regalloc coin-flip as ResetWidgets/ClearTabGroup, not source-steerable. Logic
 // byte-correct; deferred to the final sweep.
 RVA(0x000ffcb0, 0xe2)
-CSbiRect* CSBI_RectOnly::HitTestRects(i32 x, i32 y) {
-    CSbiNotifyNode* n = *(CSbiNotifyNode**)((char*)this + 0x30);
+CSbiRect* CStatusBarMgr::HitTestRects(i32 x, i32 y) {
+    POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
-        CSbiNotifyNode* cur = n;
-        n = n->m_next;
-        CSbiRect* r = (CSbiRect*)cur->m_payload;
+        CSbiRect* r = (CSbiRect*)m_tabLists[0].GetNext(n);
         if (r && r->m_enabled) {
             i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
             if (hit) {
@@ -2403,11 +2398,10 @@ CSbiRect* CSBI_RectOnly::HitTestRects(i32 x, i32 y) {
             }
         }
     }
-    n = *(CSbiNotifyNode**)((char*)this + m_activeTab * 0x1c + 0x30);
+    CPtrList& tab = m_tabLists[m_activeTab];
+    n = tab.GetHeadPosition();
     while (n) {
-        CSbiNotifyNode* cur = n;
-        n = n->m_next;
-        CSbiRect* r = (CSbiRect*)cur->m_payload;
+        CSbiRect* r = (CSbiRect*)tab.GetNext(n);
         if (r && r->m_enabled) {
             i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
             if (hit) {
@@ -2415,11 +2409,9 @@ CSbiRect* CSBI_RectOnly::HitTestRects(i32 x, i32 y) {
             }
         }
     }
-    n = m_listD4.m_head;
+    n = m_tabLists[6].GetHeadPosition();
     while (n) {
-        CSbiNotifyNode* cur = n;
-        n = n->m_next;
-        CSbiRect* r = (CSbiRect*)cur->m_payload;
+        CSbiRect* r = (CSbiRect*)m_tabLists[6].GetNext(n);
         if (r && r->m_enabled) {
             i32 hit = x < r->m_xHi && x >= r->m_xLo && y < r->m_yHi && y >= r->m_yLo;
             if (hit) {
@@ -2434,7 +2426,7 @@ CSbiRect* CSBI_RectOnly::HitTestRects(i32 x, i32 y) {
 // thunk (CSE'd into one load), clear the four highlight-grid groups, latch flags,
 // reset the pending-row index.
 RVA(0x00106900, 0x8d)
-void CSBI_RectOnly::InitTabRects() {
+void CStatusBarMgr::InitTabRects() {
     for (i32 i = 0; i < 4; i++) {
         ClearHlCell(0, i);
         ClearHlCell(1, i);
@@ -2455,7 +2447,7 @@ void CSBI_RectOnly::InitTabRects() {
 // and no hit-test is disabled, play the GAME_TABHIGHLIGHT1 cue on the draw-clock
 // window, then forward the offset command id.
 RVA(0x000ff9f0, 0xe4)
-i32 CSBI_RectOnly::ClickToggle(i32 x, i32 y, i32 z) {
+i32 CStatusBarMgr::ClickToggle(i32 x, i32 y, i32 z) {
     CSbiRect* r = HitTestRects(x, y);
     if (r == 0) {
         ClearTabSprites(-1);
@@ -2491,7 +2483,7 @@ i32 CSBI_RectOnly::ClickToggle(i32 x, i32 y, i32 z) {
     return 1;
 }
 
-// CSbiResetHost moved to <Gruntz/SBI_RectOnly.h>.
+// CSbiResetHost moved to <Gruntz/StatusBarMgr.h>.
 
 // Reset every per-tab widget list (8 notify lists at +0x2c, stride 0x1c) - notify
 // each payload, then RemoveAll - then (when keepHost is set) flag the +0x8 host as
@@ -2503,16 +2495,15 @@ i32 CSBI_RectOnly::ClickToggle(i32 x, i32 y, i32 z) {
 // the same regalloc register-naming coin-flip as ClearTabGroup. Not steerable
 // from C; documented regalloc wall, deferred to the final sweep.
 RVA(0x00100930, 0x16c)
-void CSBI_RectOnly::ResetWidgets(i32 keepHost) {
+void CStatusBarMgr::ResetWidgets(i32 keepHost) {
     char* B = (char*)this;
     char* list = B + 0x2c;
     for (i32 outer = 8; outer != 0; outer--) {
-        CSbiNotifyNode* n = *(CSbiNotifyNode**)(list + 4);
+        POSITION n = ((CPtrList*)list)->GetHeadPosition();
         while (n) {
-            CSbiNotifyNode* cur = n;
-            n = n->m_next;
-            if (cur->m_payload) {
-                cur->m_payload->Notify(1);
+            CSbiNotifyTarget* cur = (CSbiNotifyTarget*)((CPtrList*)list)->GetNext(n);
+            if (cur) {
+                cur->Notify(1);
             }
         }
         ((CPtrList*)list)->RemoveAll();
@@ -2585,19 +2576,18 @@ void CSBI_RectOnly::ResetWidgets(i32 keepHost) {
 // active tab (when no handle is pending and the game is not over) or just clear
 // the hit-test flag; finish through Deactivate.
 RVA(0x0010b210, 0xc5)
-void CSBI_RectOnly::ExitMode() {
+void CStatusBarMgr::ExitMode() {
     if (m_toggleActive == 0) {
         return;
     }
-    CSbiNotifyNode* n = m_listD4.m_head;
+    POSITION n = m_tabLists[6].GetHeadPosition();
     while (n) {
-        CSbiNotifyNode* cur = n;
-        n = n->m_next;
-        if (cur->m_payload) {
-            cur->m_payload->Notify(1);
+        CSbiNotifyTarget* cur = (CSbiNotifyTarget*)m_tabLists[6].GetNext(n);
+        if (cur) {
+            cur->Notify(1);
         }
     }
-    ((CPtrList*)&m_listD4)->RemoveAll();
+    m_tabLists[6].RemoveAll();
     i32 handle = m_toggleHandle;
     m_tabSprite11 = 0;
     m_tabSprite12 = 0;
@@ -2605,7 +2595,7 @@ void CSBI_RectOnly::ExitMode() {
     m_tabSprite14 = 0;
     m_hlBusy = 0;
     if (handle == 0 && g_gameReg->m_134 != 1) {
-        if (*(i32*)this == 2) {
+        if (m_position == 2) {
             RefreshState();
         }
         if (m_activeTab != 5) {
@@ -2631,17 +2621,17 @@ void CSBI_RectOnly::ExitMode() {
 // recompile uses esi/ebx (4 pushes) - a regalloc register-naming coin-flip not
 // steerable from C. Documented regalloc wall; deferred to the final sweep.
 RVA(0x00100b00, 0x139)
-void CSBI_RectOnly::ClearTabGroup() {
+void CStatusBarMgr::ClearTabGroup() {
     char* B = (char*)this;
     if (m_activeTab == 0) {
         return;
     }
-    CSbiNotifyNode* n = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
+    CPtrList& tab = m_tabLists[m_activeTab];
+    POSITION n = tab.GetHeadPosition();
     while (n) {
-        CSbiNotifyNode* cur = n;
-        n = n->m_next;
-        if (cur->m_payload) {
-            cur->m_payload->Notify(1);
+        CSbiNotifyTarget* cur = (CSbiNotifyTarget*)tab.GetNext(n);
+        if (cur) {
+            cur->Notify(1);
         }
     }
     ((CPtrList*)(B + m_activeTab * 0x1c + 0x2c))->RemoveAll();
@@ -2714,7 +2704,7 @@ void CSBI_RectOnly::ClearTabGroup() {
 // and bank-B tails) which the recompile duplicates per case instead. A
 // scheduling/tail-merge wall on a big switch; not steerable from C. Deferred.
 RVA(0x00100d70, 0x519)
-i32 CSBI_RectOnly::SetTabState(i32 tab, i32 state) {
+i32 CStatusBarMgr::SetTabState(i32 tab, i32 state) {
     if (m_tabSprite0 == 0 || m_tabSprite1 == 0 || m_tabSprite2 == 0 || m_tabSprite3 == 0
         || m_tabSprite4 == 0) {
         return 0;
@@ -2871,7 +2861,7 @@ i32 CSBI_RectOnly::SetTabState(i32 tab, i32 state) {
 // row below it down by one (inserting at the top), or (arg0 == 0) just latch the
 // handle into row m_pendingHlRow's cell. Always re-notify and reset m_pendingHlRow.
 RVA(0x00106820, 0xa8)
-void CSBI_RectOnly::EnterHlRow(i32 shift, i32 key) {
+void CStatusBarMgr::EnterHlRow(i32 shift, i32 key) {
     if (m_pendingHlRow == -1) {
         return;
     }
@@ -2912,7 +2902,7 @@ void CSBI_RectOnly::EnterHlRow(i32 shift, i32 key) {
 // the tab via `dec; jne` where the recompile uses `cmp 1; jne`. Logic correct,
 // deferred to the final sweep.
 RVA(0x000ff850, 0x121)
-i32 CSBI_RectOnly::ClickHilite(i32 a, i32 x, i32 y) {
+i32 CStatusBarMgr::ClickHilite(i32 a, i32 x, i32 y) {
     CSbiRect* r = HitTestRects(x, y);
     if (r == 0) {
         return 1;
@@ -2949,13 +2939,13 @@ i32 CSBI_RectOnly::ClickHilite(i32 a, i32 x, i32 y) {
 // (tab 1) screen notify the stat object and play the GAME_STATZTABTOGGLE cue on
 // the draw-clock window; then clear the stat flag. Returns 1.
 RVA(0x00104f90, 0xa8)
-i32 CSBI_RectOnly::ClearStat(i32 idx) {
+i32 CStatusBarMgr::ClearStat(i32 idx) {
     CSbiRect* r = m_hitRects[idx];
     if (r != 0) {
         *(i32*)((char*)r + 0x44) = 0;
         r->m_enabled = 0;
         if (m_activeTab == 1) {
-            ((CSBI_RectOnly*)m_statObj[idx])->ResetGroupA();
+            ((CStatusBarMgr*)m_statObj[idx])->ResetGroupA();
             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
             if (host->m_30 == 0) {
                 void* found = 0;
@@ -2990,7 +2980,7 @@ i32 CSBI_RectOnly::ClearStat(i32 idx) {
 // RECT-staging the optimizer half-removed). MSVC DCEs any unread local I add, so
 // the spills are not reproducible from C - a dead-store/scheduling wall; deferred.
 RVA(0x00107920, 0xb7)
-i32 CSBI_RectOnly::SetFallRect(i32 x, i32 y, i32 item) {
+i32 CStatusBarMgr::SetFallRect(i32 x, i32 y, i32 item) {
     char* B = (char*)this;
     if (m_pendingHlRow == -1) {
         return 0;
@@ -3029,7 +3019,7 @@ i32 CSBI_RectOnly::SetFallRect(i32 x, i32 y, i32 item) {
 // tail-merge where retail inlines them, flipping the busy-gate je/jne) plus a
 // one-instruction eager read in the find-slot loop. Documented walls; deferred.
 RVA(0x0010b930, 0x1a7)
-i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
+i32 CStatusBarMgr::ActivateSlot(i32 idx) {
     if (((CPlay*)g_gameReg->m_curState)->m_4f0 != 0) {
         return 0;
     }
@@ -3099,7 +3089,7 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
     return 1;
 }
 
-// CSbiLayer/CSbiRenderObj/CSbiPtrColl2/CSbiFreeNode moved to <Gruntz/SBI_RectOnly.h>.
+// CSbiLayer/CSbiRenderObj/CSbiPtrColl2/CSbiFreeNode moved to <Gruntz/StatusBarMgr.h>.
 
 // 0xfe3e0 - SetState(state): if the mode gate (m_hlBusy) is up, no-op (return 1);
 // if already in `state`, return 1. For the subtype-2 cursor state, run the
@@ -3107,11 +3097,11 @@ i32 CSBI_RectOnly::ActivateSlot(i32 idx) {
 // otherwise fire the plain notify. Then latch the new state into slot 0 and tell
 // the highlight sub-manager (new, old). Returns 1.
 RVA(0x000fe3e0, 0x55)
-i32 CSBI_RectOnly::SetState(i32 state) {
+i32 CStatusBarMgr::SetState(i32 state) {
     if (m_hlBusy != 0) {
         return 1;
     }
-    i32 old = *(i32*)this;
+    i32 old = m_position;
     if (old == state) {
         return 1;
     }
@@ -3119,12 +3109,12 @@ i32 CSBI_RectOnly::SetState(i32 state) {
         if (Activate() == 0) { // 0x104dd0 - the subtype-2 lazy sprite-create probe
             return 0;
         }
-        m_4 = *(i32*)this;
+        m_4 = m_position;
     } else {
         Deactivate();
     }
-    old = *(i32*)this;
-    *(i32*)this = state;
+    old = m_position;
+    m_position = state;
     ((CPlay*)g_gameReg->m_curState)->PositionBridgeToggle(state, old);
     return 1;
 }
@@ -3134,8 +3124,8 @@ i32 CSBI_RectOnly::SetState(i32 state) {
 // 0xa0-wide x full-height rect and SetState(1). Was the ScreenRegionMgr::Open fake-view
 // (interleaved in this .text at 0x0fe4xx; the ScreenRegionMgr class was our invention).
 RVA(0x000fe460, 0x83)
-i32 CSBI_RectOnly::RefreshA() {
-    if (m_hlBusy == 0 && *(i32*)this != 1) {
+i32 CStatusBarMgr::RefreshA() {
+    if (m_hlBusy == 0 && m_position != 1) {
         ResetWidgets(1);
         SetRect((LPRECT)&m_10, 0, 0, 0xa0, 0x1e0);
         SetState(1);
@@ -3155,11 +3145,11 @@ i32 CSBI_RectOnly::RefreshA() {
 // the highlight sub-manager, then probe-and-apply (m_10c). On probe failure log
 // the placement error and bail. Returns 1.
 RVA(0x000fe520, 0xa9)
-i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
+i32 CStatusBarMgr::winapi_0fe520_SetRect() {
     if (m_hlBusy != 0) {
         return 1;
     }
-    if (*(i32*)this == 0) {
+    if (m_position == 0) {
         return 1;
     }
     ResetWidgets(1);
@@ -3185,8 +3175,8 @@ i32 CSBI_RectOnly::winapi_0fe520_SetRect() {
 // Was the ScreenRegionMgr::Reset fake-view (interleaved in this .text; reached via an
 // ILT jmp-thunk, no direct in-TU caller).
 RVA(0x000fe600, 0x49)
-i32 CSBI_RectOnly::HideRect() {
-    if (m_hlBusy == 0 && *(i32*)this != 2) {
+i32 CStatusBarMgr::HideRect() {
+    if (m_hlBusy == 0 && m_position != 2) {
         ResetWidgets(1);
         SetRect((LPRECT)&m_10, -1, -1, -1, -1);
         SetState(2);
@@ -3199,11 +3189,11 @@ i32 CSBI_RectOnly::HideRect() {
 // (return 1 when not cursor); for the cursor subtype, tail-call the armed (m_4==1)
 // or idle refresh path.
 RVA(0x000fe670, 0x2b)
-i32 CSBI_RectOnly::RefreshState() {
+i32 CStatusBarMgr::RefreshState() {
     if (m_hlBusy != 0) {
         return 1;
     }
-    if (*(i32*)this != 2) {
+    if (m_position != 2) {
         return 1;
     }
     if (m_4 == 1) {
@@ -3220,7 +3210,7 @@ i32 CSBI_RectOnly::RefreshState() {
 // retail keeps `y` unloaded until after the m_8 reload (y in edx, m_8 in esi),
 // while the recompile parks y in esi loaded early. Not source-steerable; deferred.
 RVA(0x000fe860, 0x2d)
-i32 CSBI_RectOnly::SetSpritePos(i32 x, i32 y) {
+i32 CStatusBarMgr::SetSpritePos(i32 x, i32 y) {
     CSbiRenderObj* r = (CSbiRenderObj*)m_8;
     if (r == 0) {
         return 0;
@@ -3236,7 +3226,7 @@ i32 CSBI_RectOnly::SetSpritePos(i32 x, i32 y) {
 // rect - origin (m_198->m_10/m_14) plus the position-relative inset
 // (m_198->m_18/m_1c offset by m_5c/m_60). Returns 1 inside, 0 outside.
 RVA(0x000fe8a0, 0x4e)
-i32 CSBI_RectOnly::HitTestLayer(i32 x, i32 y) {
+i32 CStatusBarMgr::HitTestLayer(i32 x, i32 y) {
     CSbiRenderObj* r = (CSbiRenderObj*)m_8;
     CSbiLayer* L = r->m_198;
     i32 xlo = r->m_5c - L->m_18;
@@ -3259,7 +3249,7 @@ i32 CSBI_RectOnly::HitTestLayer(i32 x, i32 y) {
 // (jl loop), while the recompile colors the head into eax, loads `a` late, and
 // reaches append via an extra jmp. Not source-steerable; deferred to the final sweep.
 RVA(0x00108410, 0x8e)
-i32 CSBI_RectOnly::InsertPtr(i32 a, i32 b) {
+i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
     CSbiFreeNode* head = (CSbiFreeNode*)g_freeList;
     CSbiFreeNode* node = 0;
     if (head->m_0 != 0) {
@@ -3289,7 +3279,7 @@ i32 CSBI_RectOnly::InsertPtr(i32 a, i32 b) {
 // 0x10bb50 - ReportTab(tab): log the tab with the (0x4f, 0x1b3) id pair, then
 // apply it on `this` as (1, tab). Both helpers are reloc-masked siblings.
 RVA(0x0010bb50, 0x24)
-void CSBI_RectOnly::ReportTab(i32 tab) {
+void CStatusBarMgr::ReportTab(i32 tab) {
     UpdateFallingItemStatusBar(tab, 0x4f, 0x1b3);
     EnterHlRow(1, tab);
 }
@@ -3298,7 +3288,7 @@ void CSBI_RectOnly::ReportTab(i32 tab) {
 // Engine-label backlog stubs.
 // -------------------------------------------------------------------------
 // SbiTabRect/CSbiTab/CSbiRectSub/CSBI_MenuItem/SbiTabFrame*/CTabList moved to
-// <Gruntz/SBI_RectOnly.h>.
+// <Gruntz/StatusBarMgr.h>.
 
 // 0xffde0 - build the five top-level status-bar tabs (STATZ/GRUNTZ/RESOURCE/
 // MULTIPLAYER/GAMETAB) plus three rect-only sub-widgets, once (m_tabsBuilt gate). Each
@@ -3317,7 +3307,7 @@ void CSBI_RectOnly::ReportTab(i32 tab) {
 // inlined and its setup call is a delete-on-throw region; modeled here with real
 // polymorphic sub-widget classes (CSbiRectSub / CSBI_MenuItem, whose ctors MSVC
 // auto-stamps - no manual vtable stamp), cl's EH bookkeeping + the by-value rect arg
-// scheduling diverge, shifting the frame. The rect sub-widget's true class CSBI_RectOnly
+// scheduling diverge, shifting the frame. The rect sub-widget's true class CStatusBarMgr
 // collides with the HOST name so its vtable stays reloc-masked; the CSBI_MenuItem vtable
 // is now correctly named. Logic complete; deferred to the final sweep (re-attack once
 // the CSBI_* item ctors land and the frame can be reproduced).
@@ -3340,8 +3330,21 @@ void CSBI_RectOnly::ReportTab(i32 tab) {
 // that spelling is not the source shape; REVERTED rather than banked. Whoever picks this up
 // should start from the caller bytes, not from my guess. The struct-copy is real; the
 // signature that produces it is not yet known.
+// @early-stop
+// MERGED-TU CTOR-SPELLING CONFLICT (67.34%; was 71.58 before the SBI_ITEM_OWN_CTOR knob).
+// Retail INLINES the CStatusBarItem base ctor at this function's `new CSbiRectSub` /
+// `new CSBI_MenuItem` sites, but CALLS it out-of-line at BuildTabzDialog's `new CSBI_Image`
+// sites. Those were two different retail objs; the wave1-E merge put both in this one TU,
+// and MSVC5 has exactly one base-ctor spelling per TU - so one of the two must be wrong.
+// Measured both ways: knob OFF = this fn 71.58 / BuildTabzDialog 75.39; knob ON = this fn
+// 67.34 / BuildTabzDialog 83.72 (its recorded max). ON is the better total (+4.09) and is
+// what is in effect. THE REAL FIX IS THE UN-MERGE: move CTabzBuilder::BuildTabzDialog back
+// to its own TU (SBI_TabzDialogEh.cpp) with the knob ON there and OFF here - then BOTH
+// functions get their retail spelling and this 4.24% comes back. The host split already
+// removed the old blocker (??0CSBI_RectOnly no longer lives in this TU), so the un-merge is
+// now unobstructed. Not the class-split's job; left as the next step.
 RVA(0x000ffde0, 0x5b1)
-i32 CSBI_RectOnly::BuildStatusBarTabs() {
+i32 CStatusBarMgr::BuildStatusBarTabs() {
     if (m_tabsBuilt != 0) {
         return 1;
     }
@@ -3361,7 +3364,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
+    m_tabLists[0].AddTail(it);
 
     // ---- rect-only sub-widget B (id 0x25a) ----
     it = new CSbiRectSub;
@@ -3371,7 +3374,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
+    m_tabLists[0].AddTail(it);
 
     // ---- rect-only sub-widget C (id 0x25b) ----
     it = new CSbiRectSub;
@@ -3381,7 +3384,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
+    m_tabLists[0].AddTail(it);
 
     // ---- STATZTAB (menu item, type 1) ----
     it = new CSBI_MenuItem;
@@ -3392,7 +3395,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
+    m_tabLists[0].AddTail(it);
     m_tabSprite0 = (CSBI_MenuItem*)it;
 
     // ---- GRUNTZTAB (menu item, type 2) ----
@@ -3404,7 +3407,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
+    m_tabLists[0].AddTail(it);
     m_tabSprite2 = (CSBI_MenuItem*)it;
 
     // ---- RESOURCETAB (menu item, type 3) ----
@@ -3416,7 +3419,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
+    m_tabLists[0].AddTail(it);
     m_tabSprite1 = (CSBI_MenuItem*)it;
 
     // ---- MULTIPLAYERTAB (menu item, type 4) ----
@@ -3428,7 +3431,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
+    m_tabLists[0].AddTail(it);
     m_tabSprite3 = (CSBI_MenuItem*)it;
     if (g_gameReg->m_134 == 1) {
         CSBI_MenuItem* mp = (CSBI_MenuItem*)it;
@@ -3454,7 +3457,7 @@ i32 CSBI_RectOnly::BuildStatusBarTabs() {
         }
         return 0;
     }
-    ((CRezList*)((char*)this + 0x2c))->AddTail((CRezListNode*)it);
+    m_tabLists[0].AddTail(it);
     m_tabSprite4 = (CSBI_MenuItem*)it;
 
     if (Probe2e69() == 0) {
@@ -3517,7 +3520,7 @@ static __inline i32 WapRand(i32 range) {
 // vs retail's `cmp [m_134],1` direct memory compare. Plus the ?g_gameReg vs
 // _g_mgrSettings shared-global DIR32 naming tail. Not source-steerable under /O2.
 RVA(0x00107d00, 0x591)
-i32 CSBI_RectOnly::winapi_107d00_SetRect() {
+i32 CStatusBarMgr::winapi_107d00_SetRect() {
     i32 result;
     if (g_gameReg->m_134 == 1) {
         if (m_ptrCount > 0) {
@@ -3649,10 +3652,10 @@ i32 CSBI_RectOnly::winapi_107d00_SetRect() {
 // (ff 15 -> __imp_SetRect vs PTR_SetRect) + g_gameReg DIR32 naming. Not source-
 // steerable under /O2; deferred to the final sweep.
 RVA(0x000fdc00, 0x5c2)
-i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
+i32 CStatusBarMgr::LoadBattlezItemConfig(i32 arg) {
     m_c = arg;
     m_4 = 0;
-    *(i32*)this = 0;
+    m_position = 0;
     i32 vx = g_gameReg->m_modeW;
     i32 vy = g_gameReg->m_modeH;
     SetRect((LPRECT)((char*)this + 0x10), vx - 0xa0, 0, vx, 0x1e0);
@@ -3718,7 +3721,7 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
 }
 
 // CSbiMainSetup/CSbiMainL2/CSbiMainL1/CSbiFrameEntry/CSbiMainBarCfg + the
-// MainBarDrawFrame decl moved to <Gruntz/SBI_RectOnly.h>.
+// MainBarDrawFrame decl moved to <Gruntz/StatusBarMgr.h>.
 
 // 0xfe6b0 - drive the main status-bar sprite. For the non-cursor subtype, when the
 // countdown (+0x20) is live, tick it; if the frame gate (m_barFrameGate) exceeds the screen
@@ -3741,8 +3744,8 @@ i32 CSBI_RectOnly::LoadBattlezItemConfig(i32 arg) {
 // cluster into this TU re-fired the same stack-store/arg-block reshuffle
 // (95.6% -> 88.6% again, no source change here). Accepted per the merge mandate.
 RVA(0x000fe6b0, 0x145)
-i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
-    if (*(i32*)this != kSubtypeTag) {
+i32 CStatusBarMgr::LoadMainStatusBarSprite() {
+    if (m_position != kSubtypeTag) {
         if (m_rect14.m_c > 0) {
             m_rect14.m_c--;
             i32 v = m_barFrameGate;
@@ -3772,20 +3775,19 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
         }
 
         char* B = (char*)this;
-        CSbiNotifyNode* n = *(CSbiNotifyNode**)(B + 0x30);
+        POSITION n = m_tabLists[0].GetHeadPosition();
         while (n) {
-            CSbiNotifyNode* cur = n;
-            n = n->m_next;
-            if (cur->m_payload) {
-                ((CSbiNotifyPayload*)cur->m_payload)->Tick();
+            CSbiNotifyPayload* cur = (CSbiNotifyPayload*)m_tabLists[0].GetNext(n);
+            if (cur) {
+                cur->Tick();
             }
         }
-        CSbiNotifyNode* m = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
+        CPtrList& tab = m_tabLists[m_activeTab];
+        POSITION m = tab.GetHeadPosition();
         while (m) {
-            CSbiNotifyNode* cur = m;
-            m = m->m_next;
-            if (cur->m_payload) {
-                ((CSbiNotifyPayload*)cur->m_payload)->Tick();
+            CSbiNotifyPayload* cur = (CSbiNotifyPayload*)tab.GetNext(m);
+            if (cur) {
+                cur->Tick();
             }
         }
         if (m_retabNotify) {
@@ -3793,11 +3795,9 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
         }
     }
 
-    CSbiNotifyNode* k = m_listD4.m_head;
+    POSITION k = m_tabLists[6].GetHeadPosition();
     while (k) {
-        CSbiNotifyNode* cur = k;
-        k = k->m_next;
-        CSbiNotifyPayload* p = (CSbiNotifyPayload*)cur->m_payload;
+        CSbiNotifyPayload* p = (CSbiNotifyPayload*)m_tabLists[6].GetNext(k);
         if (p) {
             p->Refresh();
             p->Tick();
@@ -3806,7 +3806,7 @@ i32 CSBI_RectOnly::LoadMainStatusBarSprite() {
     return 1;
 }
 
-// CSbiHiWidget moved to <Gruntz/SBI_RectOnly.h>.
+// CSbiHiWidget moved to <Gruntz/StatusBarMgr.h>.
 
 // The cached PostMessageA entry point (game-owned fn pointer; the highlight
 // dispatcher posts WM_COMMAND via it, not the direct import).
@@ -3877,7 +3877,7 @@ static __inline void HiPost(i32 cmdId) {
 // its canonical extern-C _g_mgrSettings, not the colliding ?g_gameReg@@ alias that
 // also names the real g_gameReg at 0x245460. The residual is purely the code bytes.)
 RVA(0x000fe910, 0xb8e)
-i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
+i32 CStatusBarMgr::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
     CSbiHiWidget* w = HiResolve(a2, a3);
     if (w == 0) {
         return 1;
@@ -4125,7 +4125,7 @@ i32 CSBI_RectOnly::UpdateStatusBarTabHighlight(i32 a1, i32 a2, i32 a3) {
 // GAME_DESTRUCT $SG string; every other reloc (Lookup/Build/Configure/Release/RefreshHost/
 // Notify0/TabCommit) is a reloc-masked REL32. TU-wide rename, matcher.md reloc artifact.
 RVA(0x000ffb20, 0x13a)
-i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
+i32 CStatusBarMgr::LoadDestructButtonSprite(i32 arg) {
     if (g_gameReg->m_soundEnabled != 0) {
         if (m_destructWarnActive != 0 && m_modeArmed == 0) {
             if (m_destructButton == 0) {
@@ -4153,28 +4153,26 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
     RefreshHost();
 
     char* B = (char*)this;
-    CSbiNotifyNode* n = *(CSbiNotifyNode**)(B + 0x30);
+    POSITION n = m_tabLists[0].GetHeadPosition();
     while (n) {
-        CSbiNotifyNode* cur = n;
-        n = n->m_next;
-        if (cur->m_payload) {
-            ((CSbiNotifyPayload*)cur->m_payload)->Poll(arg);
+        CSbiNotifyPayload* cur = (CSbiNotifyPayload*)m_tabLists[0].GetNext(n);
+        if (cur) {
+            cur->Poll(arg);
         }
     }
-    CSbiNotifyNode* m = *(CSbiNotifyNode**)(B + m_activeTab * 0x1c + 0x30);
+    CPtrList& tab = m_tabLists[m_activeTab];
+    POSITION m = tab.GetHeadPosition();
     while (m) {
-        CSbiNotifyNode* cur = m;
-        m = m->m_next;
-        if (cur->m_payload) {
-            ((CSbiNotifyPayload*)cur->m_payload)->Poll(arg);
+        CSbiNotifyPayload* cur = (CSbiNotifyPayload*)tab.GetNext(m);
+        if (cur) {
+            cur->Poll(arg);
         }
     }
-    CSbiNotifyNode* k = m_listD4.m_head;
+    POSITION k = m_tabLists[6].GetHeadPosition();
     while (k) {
-        CSbiNotifyNode* cur = k;
-        k = k->m_next;
-        if (cur->m_payload) {
-            ((CSbiNotifyPayload*)cur->m_payload)->Poll(arg);
+        CSbiNotifyPayload* cur = (CSbiNotifyPayload*)m_tabLists[6].GetNext(k);
+        if (cur) {
+            cur->Poll(arg);
         }
     }
     if (m_retabNotify) {
@@ -4189,8 +4187,8 @@ i32 CSBI_RectOnly::LoadDestructButtonSprite(i32 arg) {
 // then (if the RESUME slot exists) configure it with the RESUME asset key, commit, and
 // refresh it. Latch the show-RESUME gate (m_354 = 1).
 RVA(0x00102180, 0x5f)
-void CSBI_RectOnly::BuildGameTabResumeButton(i32 show) {
-    if (*(i32*)this == kSubtypeTag) {
+void CStatusBarMgr::BuildGameTabResumeButton(i32 show) {
+    if (m_position == kSubtypeTag) {
         RefreshState();
     }
     if (show && m_activeTab != 5) {
@@ -4207,7 +4205,7 @@ void CSBI_RectOnly::BuildGameTabResumeButton(i32 show) {
 // 0x102200 - build the PAUSE game-tab button. If the RESUME/PAUSE slot exists, configure
 // it with the PAUSE asset key, commit, and refresh it. Clear the show-RESUME gate.
 RVA(0x00102200, 0x37)
-void CSBI_RectOnly::BuildGameTabPauseButton() {
+void CStatusBarMgr::BuildGameTabPauseButton() {
     if (m_tabSprite5) {
         m_tabSprite5->ResolveFrame((i32) "GAME_STATUSBAR_TABZ_GAMETAB_PAUSE", 1);
         Deactivate();
@@ -4230,13 +4228,13 @@ void CSBI_RectOnly::BuildGameTabPauseButton() {
 // ... / _g_killCueClock (+ the GAME_GOOCOOKING1 $SG string), so those DIR32 operands
 // don't pair. A TU-wide rename, not a per-function fix; matcher.md reloc artifact.
 RVA(0x001055b0, 0x109)
-i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
+i32 CStatusBarMgr::LoadGooCookingSprite(i32 idx) {
     CSbiSlot* sp = &m_slots[idx];
     if (sp->m_state != 0) {
         return 0;
     }
     if (g_gameReg->m_134 == 1 && m_hlBusy == 0) {
-        if (*(i32*)this == kSubtypeTag) {
+        if (m_position == kSubtypeTag) {
             RefreshState();
         }
         if (m_activeTab != 2) {
@@ -4250,7 +4248,7 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
     g->m_c = 0;
     g->m_state = g_dat645588;
     g->m_value = 0;
-    if (m_activeTab == 2 && *(i32*)this != 2) {
+    if (m_activeTab == 2 && m_position != 2) {
         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
         if (host->m_30 == 0) {
             void* found = 0;
@@ -4283,7 +4281,7 @@ i32 CSBI_RectOnly::LoadGooCookingSprite(i32 idx) {
 // zero/1-register pinning across the 3-slot loop + the shared-global DIR32 naming
 // (g_gameReg/g_dat645588/g_sndEnabled...); documented regalloc/scheduling walls.
 RVA(0x00105990, 0x398)
-void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
+void CStatusBarMgr::UpdateRezConveyorStatusBar() {
     i32 count = 3;
     CSbiSlotPtr** notify = m_groupNotify;
     SbiPhaseSlot* ph = (SbiPhaseSlot*)m_groupSlots;
@@ -4343,7 +4341,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                 break;
             case 6:
                 if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
-                    if (m_activeTab == 3 && *(i32*)this != 2) {
+                    if (m_activeTab == 3 && m_position != 2) {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
@@ -4364,7 +4362,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
                 break;
             case 7:
                 if ((i64)(u32)g_dat645588 - ph->m_last >= ph->m_interval) {
-                    if (m_activeTab == 3 && *(i32*)this != 2) {
+                    if (m_activeTab == 3 && m_position != 2) {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
@@ -4404,7 +4402,7 @@ void CSBI_RectOnly::UpdateRezConveyorStatusBar() {
 // tail-merge of the shared GetIntDef/SetStatBar sequences + zero-register pinning +
 // shared-global DIR32 naming (g_gameReg/g_dat645588/g_buteMgr/g_sndEnabled). Walls.
 RVA(0x00105e40, 0x62c)
-void CSBI_RectOnly::LoadRezMachineConfig() {
+void CStatusBarMgr::LoadRezMachineConfig() {
     SbiPhaseSlot* pA = (SbiPhaseSlot*)&m_hudRectB_x;
     SbiPhaseSlot* pB = (SbiPhaseSlot*)&m_hudRectA_x;
     SbiPhaseSlot* g = (SbiPhaseSlot*)m_groupSlots;
@@ -4470,7 +4468,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                     m_machinePhase = 2;
                     m_beltInterval = g_buteMgr.GetIntDef("StatusBar", "NextItemDelay", 0x64);
                     m_beltLast = (u32)g_dat645588;
-                    if (m_activeTab == 3 && *(i32*)this != 2) {
+                    if (m_activeTab == 3 && m_position != 2) {
                         CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                         if (host->m_30 == 0) {
                             void* found = 0;
@@ -4528,7 +4526,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                     if (found) {
                         g[col].m_state = 4;
                         g[col].m_counter = 0x13;
-                        if (m_activeTab == 3 && *(i32*)this != 2) {
+                        if (m_activeTab == 3 && m_position != 2) {
                             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
@@ -4547,7 +4545,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
                     } else {
                         g[col].m_state = 2;
                         g[col].m_counter = 0xa;
-                        if (m_activeTab == 3 && *(i32*)this != 2) {
+                        if (m_activeTab == 3 && m_position != 2) {
                             CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                             if (host->m_30 == 0) {
                                 void* fnd = 0;
@@ -4592,7 +4590,7 @@ void CSBI_RectOnly::LoadRezMachineConfig() {
 // gauge span, refresh the snooze display object (if present) from the HUD-rect A/B
 // y-coords, then clear the snooze/wake state pair.
 RVA(0x00106660, 0x68)
-void CSBI_RectOnly::UpdateRezMachineSnoozeStatusBar() {
+void CStatusBarMgr::UpdateRezMachineSnoozeStatusBar() {
     SetHudRectA(1, 1, g_buteMgr.GetDwordDef("StatusBar", "LeftMachineSnoozingDelay", 100));
     SetHudRectB(0x2b, 0, 0x7fffffff);
     if (m_348) {
@@ -4614,7 +4612,7 @@ void CSBI_RectOnly::UpdateRezMachineSnoozeStatusBar() {
 // tail-merge of the shared GetSpeed/GetIntDef sequences and the two flag-set tails +
 // zero-register pinning + jump-table reloc typing + shared-global DIR32 naming. Walls.
 RVA(0x00106bb0, 0x7bc)
-void CSBI_RectOnly::LoadChipMachineConfig() {
+void CStatusBarMgr::LoadChipMachineConfig() {
     i32 refreshFlag = 0;
     i32 rectFlag = 0;
     switch (m_machinePhase) {
@@ -4649,7 +4647,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
         case 4:
             if ((i64)(u32)g_dat645588 - m_beltLast >= m_beltInterval) {
                 m_machinePhase = 5;
-                if (m_activeTab == 3 && *(i32*)this != 2) {
+                if (m_activeTab == 3 && m_position != 2) {
                     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
@@ -4680,7 +4678,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                 m_itemRectB = 0x11c;
                 m_itemRectT = 0x104;
                 rectFlag = 1;
-                if (m_activeTab == 3 && *(i32*)this != 2) {
+                if (m_activeTab == 3 && m_position != 2) {
                     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
@@ -4751,7 +4749,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
                 }
             }
             if (m_itemRectT >= row * 0x20 + 0x13e) {
-                if (m_activeTab == 3 && *(i32*)this != 2) {
+                if (m_activeTab == 3 && m_position != 2) {
                     CSbiMusicHost* host = ((CSbiGameMgr*)g_gameReg->m_world)->m_28;
                     if (host->m_30 == 0) {
                         void* found = 0;
@@ -4801,7 +4799,7 @@ void CSBI_RectOnly::LoadChipMachineConfig() {
 // spill) and stores 0/2/1/3. A register-assignment coin-flip (compute-all-then-store
 // spelling regressed it to 69%); not steerable from C. Deferred to the final sweep.
 RVA(0x00107590, 0xc4)
-i32 CSBI_RectOnly::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
+i32 CStatusBarMgr::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
     m_extraNotifyArg1 = a1;
     m_fallActive = 1;
     m_fallDelay = g_buteMgr.GetIntDef("StatusBar", "FallingItemDelay", 0x32);
@@ -4839,7 +4837,7 @@ i32 CSBI_RectOnly::UpdateFallingItemStatusBar(i32 a1, i32 a2, i32 a3) {
 // here reuses eax (mov eax,1; mov [esi+0x528],eax). A store-imm-vs-register-reuse
 // regalloc coin-flip on the shared return constant; no C-level lever. Deferred.
 RVA(0x00107a10, 0x62)
-i32 CSBI_RectOnly::UpdateRezMachineWakeStatusBar() {
+i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
     if (m_rezActive == 0) {
         if (m_extraNotifyArg0 == 0) {
             return 0;
@@ -4866,9 +4864,9 @@ i32 CSBI_RectOnly::UpdateRezMachineWakeStatusBar() {
 // and (2) the g_gameReg + StartingGruntz/Multiplayer/Battlez string DIR32 naming. Not
 // source-steerable; deferred to the final sweep.
 RVA(0x00107ae0, 0x1aa)
-void CSBI_RectOnly::LoadMultiplayerBattlezConfig(i32) {
+void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
     PrepMultiReset();
-    if (*(i32*)this == kSubtypeTag) {
+    if (m_position == kSubtypeTag) {
         RefreshState();
     }
     if (m_activeTab != 5) {

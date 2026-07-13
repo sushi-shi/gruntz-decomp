@@ -52,7 +52,7 @@ extern i32 g_cheatD;           // 0x6455f8  DAT_006455f8
 // but the SYMBOL is now the real class method (defined in its own unit) - the call
 // links and EO is gone. Heavy real headers are avoided (CARCASS doctrine); the
 // mangled names match by class+method+signature.
-struct CSBI_RectOnly {
+struct CStatusBarMgr {
     i32 RefreshState();
     i32 Deactivate();
     void CommitSlot(i32 a);
@@ -487,13 +487,13 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             return 1;
         }
         if (M(lv, 0) == 2) {
-            ((CSBI_RectOnly*)(lv))->RefreshState();
+            ((CStatusBarMgr*)(lv))->RefreshState();
         }
         if (M(lv, 0x10c) != 2) {
-            ((CSBI_RectOnly*)(lv))->SetTabState(2, 3);
-            ((CSBI_RectOnly*)(lv))->Deactivate();
+            ((CStatusBarMgr*)(lv))->SetTabState(2, 3);
+            ((CStatusBarMgr*)(lv))->Deactivate();
         } else {
-            ((CSBI_RectOnly*)(lv))->Deactivate();
+            ((CStatusBarMgr*)(lv))->Deactivate();
         }
         return 1;
     }
@@ -513,13 +513,13 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             return 1;
         }
         if (M(lv, 0) == 2) {
-            ((CSBI_RectOnly*)(lv))->RefreshState();
+            ((CStatusBarMgr*)(lv))->RefreshState();
         }
         if (M(lv, 0x10c) != 3) {
-            ((CSBI_RectOnly*)(lv))->SetTabState(3, 3);
-            ((CSBI_RectOnly*)(lv))->Deactivate();
+            ((CStatusBarMgr*)(lv))->SetTabState(3, 3);
+            ((CStatusBarMgr*)(lv))->Deactivate();
         } else {
-            ((CSBI_RectOnly*)(lv))->Deactivate();
+            ((CStatusBarMgr*)(lv))->Deactivate();
         }
         return 1;
     }
@@ -534,13 +534,13 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             return 1;
         }
         if (M(lv, 0) == 2) {
-            ((CSBI_RectOnly*)(lv))->RefreshState();
+            ((CStatusBarMgr*)(lv))->RefreshState();
         }
         if (M(lv, 0x10c) != 1) {
-            ((CSBI_RectOnly*)(lv))->SetTabState(1, 3);
-            ((CSBI_RectOnly*)(lv))->Deactivate();
+            ((CStatusBarMgr*)(lv))->SetTabState(1, 3);
+            ((CStatusBarMgr*)(lv))->Deactivate();
         } else {
-            ((CSBI_RectOnly*)(lv))->Deactivate();
+            ((CStatusBarMgr*)(lv))->Deactivate();
         }
         return 1;
     }
@@ -553,7 +553,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             return 1;
         }
         CLEAR_TAB_HINT(host);
-        ((CSBI_RectOnly*)(P(self, 0x2dc)))->AdvanceTab(M(g_devState, 0x18) & 1);
+        ((CStatusBarMgr*)(P(self, 0x2dc)))->AdvanceTab(M(g_devState, 0x18) & 1);
         return 1;
     }
     // G (cc986)
@@ -567,13 +567,13 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             return 1;
         }
         if (M(lv, 0) == 2) {
-            ((CSBI_RectOnly*)(lv))->RefreshState();
+            ((CStatusBarMgr*)(lv))->RefreshState();
         }
         if (M(lv, 0x10c) != 5) {
-            ((CSBI_RectOnly*)(lv))->SetTabState(5, 3);
+            ((CStatusBarMgr*)(lv))->SetTabState(5, 3);
         }
-        ((CSBI_RectOnly*)(lv))->SetTab(5, 1);
-        ((CSBI_RectOnly*)(lv))->Deactivate();
+        ((CStatusBarMgr*)(lv))->SetTab(5, 1);
+        ((CStatusBarMgr*)(lv))->Deactivate();
         return 1;
     }
 
@@ -773,7 +773,7 @@ recorder_place:
         }
         if (M(self, 0x368) != 0) {
             M(self, 0x368) = 0;
-            ((CSBI_RectOnly*)(P(self, 0x2dc)))->CommitSlot(0);
+            ((CStatusBarMgr*)(P(self, 0x2dc)))->CommitSlot(0);
             this->Fn17a8(0);
             if (key != 0x2d) {
                 goto tail_default;
@@ -912,70 +912,70 @@ tail_default2:
         void* lv = P(self, 0x2dc);
         switch (key) {
             case 0x0c:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup1(2);
+                ((CStatusBarMgr*)(lv))->HlClickGroup1(2);
                 return 1;
             case 0x21:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup2(1);
+                ((CStatusBarMgr*)(lv))->HlClickGroup2(1);
                 return 1;
             case 0x22:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup2(3);
+                ((CStatusBarMgr*)(lv))->HlClickGroup2(3);
                 return 1;
             case 0x23:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup0(3);
+                ((CStatusBarMgr*)(lv))->HlClickGroup0(3);
                 return 1;
             case 0x24:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup0(1);
+                ((CStatusBarMgr*)(lv))->HlClickGroup0(1);
                 return 1;
             case 0x25:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup0(2);
+                ((CStatusBarMgr*)(lv))->HlClickGroup0(2);
                 return 1;
             case 0x26:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup1(1);
+                ((CStatusBarMgr*)(lv))->HlClickGroup1(1);
                 return 1;
             case 0x27:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup2(2);
+                ((CStatusBarMgr*)(lv))->HlClickGroup2(2);
                 return 1;
             case 0x28:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup1(3);
+                ((CStatusBarMgr*)(lv))->HlClickGroup1(3);
                 return 1;
             case 0x2d:
-                ((CSBI_RectOnly*)(lv))->ActivateSlot(-1);
+                ((CStatusBarMgr*)(lv))->ActivateSlot(-1);
                 return 1;
             case 0x61:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup0(3);
+                ((CStatusBarMgr*)(lv))->HlClickGroup0(3);
                 return 1;
             case 0x62:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup1(3);
+                ((CStatusBarMgr*)(lv))->HlClickGroup1(3);
                 return 1;
             case 0x63:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup2(3);
+                ((CStatusBarMgr*)(lv))->HlClickGroup2(3);
                 return 1;
             case 0x64:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup0(2);
+                ((CStatusBarMgr*)(lv))->HlClickGroup0(2);
                 return 1;
             case 0x65:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup1(2);
+                ((CStatusBarMgr*)(lv))->HlClickGroup1(2);
                 return 1;
             case 0x66:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup2(2);
+                ((CStatusBarMgr*)(lv))->HlClickGroup2(2);
                 return 1;
             case 0x67:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup0(1);
+                ((CStatusBarMgr*)(lv))->HlClickGroup0(1);
                 return 1;
             case 0x68:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup1(1);
+                ((CStatusBarMgr*)(lv))->HlClickGroup1(1);
                 return 1;
             case 0x69:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup2(1);
+                ((CStatusBarMgr*)(lv))->HlClickGroup2(1);
                 return 1;
             case 0x6a:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup2(0);
+                ((CStatusBarMgr*)(lv))->HlClickGroup2(0);
                 return 1;
             case 0x6f:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup1(0);
+                ((CStatusBarMgr*)(lv))->HlClickGroup1(0);
                 return 1;
             case 0x90:
-                ((CSBI_RectOnly*)(lv))->HlClickGroup0(0);
+                ((CStatusBarMgr*)(lv))->HlClickGroup0(0);
                 return 1;
         }
     }

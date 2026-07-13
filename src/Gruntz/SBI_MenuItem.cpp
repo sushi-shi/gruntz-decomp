@@ -204,10 +204,10 @@ i32 CSBI_MenuItem::SetState(i32 state, i32 a) {
     }
     CMiTabHost* host = (CMiTabHost*)m_2c;
     if (state == 3) {
-        ((CSBI_RectOnly*)host)->ClearTabGroup();
+        ((CStatusBarMgr*)host)->ClearTabGroup();
         host->m_10c = m_c;
         ((CStatusBarMgr*)host)->LoadTabSprites();
-        ((CSBI_RectOnly*)host)->Deactivate();
+        ((CStatusBarMgr*)host)->Deactivate();
     } else if (state == 2 && a) {
         // The +0x28 sound object viewed as its cue host (multi-view cast on m_28; the
         // cue facet's map @+0x10 differs from CSoundRegistry's install map).

@@ -12,6 +12,20 @@
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
+// CSBI_RectOnly::CSBI_RectOnly (0x101fa0) - the thin sub-widget's ctor. Inlines the
+// CStatusBarItem base ctor (the base's dead m_8=0 store is elided by /O2), stamps
+// ??_7CSBI_RectOnly@@6B@ (0x5eab8c) and sets the subtype tag m_8 = 1.
+//
+// HOMED HERE BY THE SPLIT (2026-07-12): this ctor used to live in SBI_RectOnly.cpp,
+// the 0x630 status-bar HOST's TU, because that TU's main class wore the CSBI_RectOnly
+// name. It never belonged to the host - the host is non-polymorphic and stamps no
+// vtable. See the banner of <Gruntz/StatusBarMgr.h>.
+RVA(0x00101fa0, 0x1b)
+CSBI_RectOnly::CSBI_RectOnly() {
+    m_8 = 1;
+}
+
+// ---------------------------------------------------------------------------
 // CSBI_RectOnly::Setup - vtable slot 2 (0xe86e0). The 10-arg config setter (the
 // last two args are accepted by the ABI but unused). Bails (returns 0) if either
 // the object id (a2) or the owner (a1) is null; otherwise stores the eight live

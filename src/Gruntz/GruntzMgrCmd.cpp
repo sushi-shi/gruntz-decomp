@@ -25,7 +25,7 @@
 // Grid cells are CGrunt (m_tileOwnerHi/Lo @+0x1ec/+0x1f0, LoadPickupSprites
 // @0x65e80, LoadGruntAbilityTuning @0x57100); the CTmCell==CGrunt retype in
 // TriggerMgr.h is deferred (owned by a parallel worker) - the two casts below
-// carry the evidence. CPlay::m_guts' concrete type is CSBI_RectOnly
+// carry the evidence. CPlay::m_guts' concrete type is CStatusBarMgr
 // (UpdateDestructButton @0x10bc30 / AdvanceGauge @0x105750) - the member retype
 // is deferred to the Play.cpp reconciliation.
 #include <Ints.h>
@@ -43,7 +43,7 @@
 #include <Gruntz/Multi.h>         // CMulti (Connect; state 0x11)
 #include <Gruntz/TriggerMgr.h>    // CTriggerMgr (m_cmdGrid)
 #include <Gruntz/Grunt.h>         // CGrunt (grid cells) + GruntObjEntry (death chain)
-#include <Gruntz/SBI_RectOnly.h>  // CSBI_RectOnly (the play state's +0x2dc guts receiver)
+#include <Gruntz/StatusBarMgr.h>  // CStatusBarMgr (the play state's +0x2dc guts receiver)
 #include <Dsndmgr/GruntzSoundZ.h> // CGruntzSoundZ (m_sound)
 #include <Gruntz/WorldSoundSet.h> // CWorldSoundSet (m_inputState @+0x54; Stop/Resume)
 
@@ -581,9 +581,9 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         if (!_g) {
                             return 0;
                         }
-                        // the guts/UI subsystem's concrete methods are CSBI_RectOnly's (@0x10bc30) -
+                        // the guts/UI subsystem's concrete methods are CStatusBarMgr's (@0x10bc30) -
                         // retype CPlay::m_guts pending the Play.cpp reconciliation
-                        ((CSBI_RectOnly*)_g->m_guts)->UpdateDestructButton(0x1387);
+                        ((CStatusBarMgr*)_g->m_guts)->UpdateDestructButton(0x1387);
                         AppendChatMessage(
                             "My name is Kevin Lambert.  You typed in my cheat "
                             "code.  Prepare to die."
@@ -604,7 +604,7 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                         if (!_g->m_guts) {
                             return 0;
                         }
-                        ((CSBI_RectOnly*)_g->m_guts)->AdvanceGauge(0x64); // +100 goo
+                        ((CStatusBarMgr*)_g->m_guts)->AdvanceGauge(0x64); // +100 goo
                         PLAYCUE("GAME_MAJORCHEAT");
                         AppendChatMessage("May your Wellz be full of Goo!");
                         return 1;

@@ -289,8 +289,8 @@ sbi_image	5
 sbi_imageset	5
 sbi_imagesetani	5
 sbi_menuitem	12
-sbi_rectonly	90
-sbi_rectonlybase	2
+sbi_rectonly	89
+sbi_rectonlybase	3
 sbi_rectonlydtor_eh	2
 sbi_statztabarrow_eh	1
 sbi_statztabgruntbar	5

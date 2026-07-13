@@ -128,7 +128,7 @@ public:
 #include <Gruntz/GruntzCmdMgr.h> // CGruntzCmdMgr::Spawn (HandleMousePress, waveP)
 #include <Gruntz/LeafCue.h>      // LeafCue::PlayIfElapsed_01f940 (HandleMousePress tab cue)
 #include <Gruntz/ChatBoxOwner.h>
-#include <Gruntz/SBI_RectOnly.h>
+#include <Gruntz/StatusBarMgr.h>
 #include <Gruntz/WwdObjMgr.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/Timer.h>
@@ -762,7 +762,7 @@ extern void* g_61139c;              // PTR_DAT_0061139c
 // grouped by why they aren't folded yet (all reloc-masked, so byte-neutral):
 //   (a) cross-module canonical header + retype (SoundStream Dsndmgr[Teardown/grid];
 //       CGruntzSoundZ Dsndmgr[Reset0]; CGruntzCmdMgr Net[ClearList]; DirectInputMgr2
-//       StateMgrBZ[HideMenu]; CDDSurface ResMgr[ShadeRect]; CSBI_RectOnly SBI_Image
+//       StateMgrBZ[HideMenu]; CDDSurface ResMgr[ShadeRect]; CStatusBarMgr SBI_Image
 //       [ClearTiles/PostMap]);
 //   (b) needs a byte-neutral declared-only method added to its Gruntz header first
 //       (CParseSource CImage.h[BeginParse/EndParse]; CBrickz/CBrickzGrid[LoadAttributes/
@@ -1341,7 +1341,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
             ((CByteArray*)((char*)bm + 0x260))->SetAtGrow((i32)PTR(bm, 0x268), (u8)v);
         }
     }
-    ((CSBI_RectOnly*)PTR(self, 0x2dc))->LoadMultiplayerBattlezConfig(I32(self, 0x1c));
+    ((CStatusBarMgr*)PTR(self, 0x2dc))->LoadMultiplayerBattlezConfig(I32(self, 0x1c));
 
     // ---- CursorSnapSprite registration (factory at [self+0xc]->m_8) ----
     set = ((CSpriteFactory*)PTR(PTR(self, 0xc), 0x8))
@@ -1368,7 +1368,7 @@ i32 CPlayLevelLoad::LoadByMode(i32 level, i32) {
                 && LoadStep3()) {
                 void* host8b = PTR(PTR(self, 0xc), 0x8);
                 (*(void (**)(void*, i32))((char*)*(void**)host8b + 0x24))(host8b, 0);
-                ((CSBI_RectOnly*)PTR(self, 0x2dc))->winapi_107d00_SetRect();
+                ((CStatusBarMgr*)PTR(self, 0x2dc))->winapi_107d00_SetRect();
                 ((DirectInputMgr2*)g_645570)->ReadAll();
                 while (ShowCursor(0) >= 0)
                     ;
@@ -1687,7 +1687,7 @@ i32 CPlay::OnKeyCommand(i32 key, i32 flag) {
         return 1;
     }
     if (key == 0x3d || key == 0x2b) {
-        ((CSBI_RectOnly*)m_guts)->RefreshState();
+        ((CStatusBarMgr*)m_guts)->RefreshState();
         m_hitTest->Configure(m_guts->m_state == 1 ? 2 : 1);
         return 1;
     }
@@ -3519,9 +3519,9 @@ i32 CPlay::ClearPlacedObjects() {
 // by m_dragInhibit1/m_dragInhibit2 (each running a guts step + a cursor-frame
 // reset), then clear the trigger grid's pending overlay-fx kind and reset the
 // drag boxes. Returns 1 if any of the three was pending, else 0.
-// The +0x2dc guts object is reached as CSBI_RectOnly for CommitSlot/EnterHlRow
+// The +0x2dc guts object is reached as CStatusBarMgr for CommitSlot/EnterHlRow
 // (the GutsSubsystem view's CommitSlot142e/EnterHlRow213f thunk names mirror
-// exactly these CSBI_RectOnly methods - the guts==CSBI_RectOnly unification is
+// exactly these CStatusBarMgr methods - the guts==CStatusBarMgr unification is
 // a flagged reconciliation TODO).
 RVA(0x000da2d0, 0xa5)
 i32 CPlay::FlushPendingOps() {
@@ -3530,7 +3530,7 @@ i32 CPlay::FlushPendingOps() {
     }
     i32 changed = 0;
     if (m_dragInhibit1 != 0) {
-        CSBI_RectOnly* worker = (CSBI_RectOnly*)m_guts;
+        CStatusBarMgr* worker = (CStatusBarMgr*)m_guts;
         m_dragInhibit1 = 0;
         worker->CommitSlot(0);
         SetCursorFrame(0); // via the 0x17a8 ILT thunk in retail
@@ -3538,7 +3538,7 @@ i32 CPlay::FlushPendingOps() {
     }
     if (m_dragInhibit2 != 0) {
         i32 spr = m_cursorFrame;
-        CSBI_RectOnly* worker = (CSBI_RectOnly*)m_guts;
+        CStatusBarMgr* worker = (CStatusBarMgr*)m_guts;
         m_dragInhibit2 = 0;
         worker->EnterHlRow(0, spr);
         SetCursorFrame(0);
@@ -4155,7 +4155,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
         return 1;
     }
     if (m_overlayDrag != 0 || g_sbiMgr->m_68->m_400 == 0) {
-        return ((CSBI_RectOnly*)m_guts)->ClickHilite(msg, x, y);
+        return ((CStatusBarMgr*)m_guts)->ClickHilite(msg, x, y);
     }
     if (m_dragInhibit1 != 0 || m_dragInhibit2 != 0) {
         return this->Vslot0e(msg, x, y); // base handler at vtable slot +0x38
@@ -4171,7 +4171,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
                 e->PlayIfElapsed_01f940(g_sndCueTag, 0, 0, 0);
             }
         }
-        ((CSBI_RectOnly*)m_guts)->RefreshState();
+        ((CStatusBarMgr*)m_guts)->RefreshState();
         if (((SbiChild*)m_guts)->m_0 == 1) {
             m_hitTest->Configure(2);
         } else {
@@ -4180,9 +4180,9 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
         return 1;
     }
 
-    i32 idx = ((CSBI_RectOnly*)m_guts)->HitTest(x, y);
+    i32 idx = ((CStatusBarMgr*)m_guts)->HitTest(x, y);
     if (idx != -1) {
-        ((CSBI_RectOnly*)m_guts)->PlaceCursorTarget(idx, 1);
+        ((CStatusBarMgr*)m_guts)->PlaceCursorTarget(idx, 1);
         return 1;
     }
 
@@ -4192,13 +4192,13 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
     i32 rr = rc->right;
     i32 rb = rc->bottom;
     if (x < rl || x > rr || y < rt || y > rb) {
-        return ((CSBI_RectOnly*)m_guts)->ClickHilite(msg, x, y);
+        return ((CStatusBarMgr*)m_guts)->ClickHilite(msg, x, y);
     }
 
     i32 outArea;
     i32 outVal;
     if (((SbiHost*)m_4)->m_68->ScreenToCell(x, y, &outArea, &outVal, 5) && g_curPlayer == outArea) {
-        ((CSBI_RectOnly*)m_guts)->ToggleStat(outVal);
+        ((CStatusBarMgr*)m_guts)->ToggleStat(outVal);
         return 1;
     }
 
@@ -4225,7 +4225,7 @@ i32 CPlay::HandleMousePress(i32 msg, i32 x, i32 y) {
         RECT er;
         SetRect(&er, e->m_0 - 0x10, e->m_4 - 0x10, e->m_0 + 0x10, e->m_4 + 0x10);
         if (px < er.right && px >= er.left && py < er.bottom && py >= er.top) {
-            if (!((CSBI_RectOnly*)m_guts)->FindReadySlot()) {
+            if (!((CStatusBarMgr*)m_guts)->FindReadySlot()) {
                 return 1;
             }
             char ab = (char)g_curPlayer;
@@ -5057,22 +5057,22 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
     if (arg == 0) {
         GutsSubsystem* g = m_guts;
         if (g->m_state == 2) {
-            ((CSBI_RectOnly*)g)->RefreshState();
+            ((CStatusBarMgr*)g)->RefreshState();
         }
         if (g->m_mode != 5) {
-            ((CSBI_RectOnly*)g)->SetTabState(5, 3);
+            ((CStatusBarMgr*)g)->SetTabState(5, 3);
         }
-        ((CSBI_RectOnly*)g)->SetTab(0x1fb, 1);
-        ((CSBI_RectOnly*)g)->Deactivate();
+        ((CStatusBarMgr*)g)->SetTab(0x1fb, 1);
+        ((CStatusBarMgr*)g)->Deactivate();
     }
-    ((CSBI_RectOnly*)m_guts)->BuildGameTabResumeButton(1);
+    ((CStatusBarMgr*)m_guts)->BuildGameTabResumeButton(1);
     GutsSubsystem* g = m_guts;
     g->m_busyA = 1;
     g->m_busyB = arg;
-    ((CSBI_RectOnly*)g)->ResetWidgets(0);
-    ((CSBI_RectOnly*)g)->TryActivate();
+    ((CStatusBarMgr*)g)->ResetWidgets(0);
+    ((CStatusBarMgr*)g)->TryActivate();
     g->m_548 = 1;
-    ((CSBI_RectOnly*)g)->Deactivate();
+    ((CStatusBarMgr*)g)->Deactivate();
     m_savedClock = g_645588;
     return 1;
 }
@@ -5086,7 +5086,7 @@ i32 CPlay::EnterOverlayDrag(i32 arg) {
 RVA(0x000d6560, 0x45)
 i32 CPlay::ReleaseLevelOverlay(i32) {
     if (m_overlayDrag != 0) {
-        CSBI_RectOnly* worker = (CSBI_RectOnly*)m_guts;
+        CStatusBarMgr* worker = (CStatusBarMgr*)m_guts;
         m_overlayDrag = 0;
         worker->ExitMode();
         if (g_gameReg->m_134 != 2) {
@@ -5112,9 +5112,9 @@ RVA(0x000cee90, 0x49)
 i32 CPlay::PauseGame() {
     FlushPendingOps();
     if (m_paused) {
-        ((CSBI_RectOnly*)m_guts)->BuildGameTabResumeButton(0);
+        ((CStatusBarMgr*)m_guts)->BuildGameTabResumeButton(0);
     } else {
-        ((CSBI_RectOnly*)m_guts)->BuildGameTabResumeButton(1);
+        ((CStatusBarMgr*)m_guts)->BuildGameTabResumeButton(1);
     }
     m_worldReady = 0;
     m_dragSnapActive = 0;
@@ -5127,11 +5127,11 @@ i32 CPlay::PauseGame() {
 // is live) run its resume sub-step. Migrated from engine_boundary (CPlay).
 RVA(0x000cef00, 0x39)
 i32 CPlay::ResumeGame() {
-    ((CSBI_RectOnly*)m_guts)->BuildGameTabPauseButton();
+    ((CStatusBarMgr*)m_guts)->BuildGameTabPauseButton();
     g_645588 = m_savedClock;
     m_paused = 0;
     if (m_guts != 0) {
-        ((CSBI_RectOnly*)m_guts)->Deactivate();
+        ((CStatusBarMgr*)m_guts)->Deactivate();
     }
     return 1;
 }
@@ -6875,7 +6875,7 @@ struct CRtThis { // view-of-this
     char p8[0xc - 0x8];
     CRtResMgr* m_c; // +0x0c
     char p10[0x2dc - 0x10];
-    CSBI_RectOnly* m_guts; // +0x2dc  guts subsystem
+    CStatusBarMgr* m_guts; // +0x2dc  guts subsystem
     char p2e0[0x2e4 - 0x2e0];
     CTileTriggerContainer* m_beginMarker; // +0x2e4  begin marker
     char p2e8[0x370 - 0x2e8];
@@ -7039,7 +7039,7 @@ struct CDtorThis {
     char p8[0x1d0 - 0x8];
     i32 m_1d0; // +0x1d0
     char p1d4[0x2dc - 0x1d4];
-    CSBI_RectOnly* m_guts;                // +0x2dc
+    CStatusBarMgr* m_guts;                // +0x2dc
     CChatBoxOwner* m_hitTest;             // +0x2e0
     CTileTriggerContainer* m_beginMarker; // +0x2e4
     char p2e8[0x320 - 0x2e8];
@@ -7221,8 +7221,8 @@ RVA(0x000d6fa0, 0x1fa)
 i32 CPlay::EnterMode(i32 mode) {
     EmThis* self = (EmThis*)this;
     ((CGruntzMgr*)g_gameReg)->CheckSavedMode();
-    ((CSBI_RectOnly*)self->m_guts)->Deactivate();
-    ((CSBI_RectOnly*)self->m_guts)->LoadDestructButtonSprite(0);
+    ((CStatusBarMgr*)self->m_guts)->Deactivate();
+    ((CStatusBarMgr*)self->m_guts)->LoadDestructButtonSprite(0);
     ((CGruntzMgr*)self->m_4)->PerFrameTick();
 
     if (self->m_1c4 != 0) {
@@ -7235,8 +7235,8 @@ i32 CPlay::EnterMode(i32 mode) {
             self->m_c->m_24->VisitVisible(self->m_c->m_4->m_14, (CGameObjChain*)self->m_c->m_8);
             self->m_c->m_c->Present(self->m_c->m_4->m_14, self->m_c->m_4->m_18);
         }
-        ((CSBI_RectOnly*)self->m_guts)->Deactivate();
-        ((CSBI_RectOnly*)self->m_guts)->LoadMainStatusBarSprite();
+        ((CStatusBarMgr*)self->m_guts)->Deactivate();
+        ((CStatusBarMgr*)self->m_guts)->LoadMainStatusBarSprite();
     } else {
         if (self->m_474 != 0) {
             NotifyVisibleEntities();
@@ -7244,8 +7244,8 @@ i32 CPlay::EnterMode(i32 mode) {
             self->m_c->m_24->VisitVisible(self->m_c->m_4->m_14, (CGameObjChain*)self->m_c->m_8);
             self->m_c->m_c->Present(self->m_c->m_4->m_14, self->m_c->m_4->m_18);
         }
-        ((CSBI_RectOnly*)self->m_guts)->Deactivate();
-        ((CSBI_RectOnly*)self->m_guts)->LoadMainStatusBarSprite();
+        ((CStatusBarMgr*)self->m_guts)->Deactivate();
+        ((CStatusBarMgr*)self->m_guts)->LoadMainStatusBarSprite();
         if (mode == 9) {
             if (((CDDrawSubMgrPages*)self->m_c->m_4)->Method_158d20() != 0) {
                 goto finish;
@@ -7279,7 +7279,7 @@ finish:
     if (mode == 9) {
         g_645588_clk = self->m_savedClock;
     }
-    ((CSBI_RectOnly*)self->m_guts)->Deactivate();
+    ((CStatusBarMgr*)self->m_guts)->Deactivate();
     RegisterInputBindings();
     self->m_484 = 0;
     return 1;
