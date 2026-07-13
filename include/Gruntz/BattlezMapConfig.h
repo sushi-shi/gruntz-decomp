@@ -52,9 +52,9 @@
 // `CMapDims` views are dissolved onto CLevelInfo / CTriggerMgr / CMapMgr.
 class CTriggerMgr;
 class CTileTriggerSwitchLogic; // FindChild's element type
-class CTileTriggerContainer;   // +0x14 the tile-trigger container (FindChild/FindByField0C receiver)
-class CGrunt;                  // <Gruntz/Grunt.h> - the grid units the spawn machine drives
-#include <Gruntz/LevelInfo.h>  // the canonical CLevelInfo (the LoadConfig arg AND m_ctx)
+class CTileTriggerContainer;  // +0x14 the tile-trigger container (FindChild/FindByField0C receiver)
+class CGrunt;                 // <Gruntz/Grunt.h> - the grid units the spawn machine drives
+#include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (the LoadConfig arg AND m_ctx)
 
 SIZE(CBattlezMapConfig, 0x1e8);
 class CBattlezMapConfig {
@@ -131,74 +131,74 @@ public:
     union {
         // Run-phase (spawn state-machine) view.
         struct {
-            i32 m_active;                         // +0x000  active gate (methods bail when 0)
-            CLevelInfo* m_ctx;                    // +0x004  the level (== the LoadConfig `lvl` arg)
-            CTriggerMgr* m_triggerMgr;            // +0x008  the level's CTriggerMgr (4x15 grid)
-            CBrickzGrid* m_board;                 // +0x00c  the CBrickz pathfinding-grid / tile-map
-            i32 m_010;                            // +0x010  (untouched by run ctor)
+            i32 m_active;                       // +0x000  active gate (methods bail when 0)
+            CLevelInfo* m_ctx;                  // +0x004  the level (== the LoadConfig `lvl` arg)
+            CTriggerMgr* m_triggerMgr;          // +0x008  the level's CTriggerMgr (4x15 grid)
+            CBrickzGrid* m_board;               // +0x00c  the CBrickz pathfinding-grid / tile-map
+            i32 m_010;                          // +0x010  (untouched by run ctor)
             CTileTriggerContainer* m_cellQuery; // +0x014  the level's tile-trigger container
                                                 //         (LoadConfig-seeded from m_10->m_2e4;
                                                 //         run phase drives FindChild/
                                                 //         FindByField0C on it)
-            i32 m_curCell;                        // +0x018  current cell index (=0)
-            i32 m_01c;                            // +0x01c  = 1
-            i32 m_020;                            // +0x020  = 0x40
-            i32 m_024;                            // +0x024  = 0x40
-            i32 m_028;                            // +0x028  = 0x40
-            i32 m_02c;                            // +0x02c  = 0x32
-            i32 m_spawnPct;                       // +0x030  = 0x32
-            i32 m_034;                            // +0x034
-            i32 m_038;                            // +0x038
-            i32 m_03c;                            // +0x03c
-            i32 m_040;                            // +0x040
-            i32 m_044;                            // +0x044
-            i32 m_spawnInterval;                  // +0x048  = 0
-            i32 m_spawnTimer;                     // +0x04c  = 0
-            i32 m_spawnLastFire;                  // +0x050  = 0
-            i32 m_repickInterval;                 // +0x054  = 0
-            i32 m_repickLastFire;                 // +0x058  = 0
-            i32 m_repickTimer;                    // +0x05c  = 0
-            i32 m_060;                            // +0x060
-            i32 m_064;                            // +0x064
-            i32 m_068;                            // +0x068
-            i32 m_06c;                            // +0x06c
-            i32 m_070;                            // +0x070
-            i32 m_budgetMul;                      // +0x074  = 0x19
-            i32 m_scratch78;                      // +0x078  = 0
-            i32 m_scratch7c;                      // +0x07c  = 0
-            i32 m_scratch80;                      // +0x080  = 0
-            i32 m_scratch84;                      // +0x084  = 0
-            i32 m_088;                            // +0x088  = 0x32
-            i32 m_08c;                            // +0x08c  = 5
-            i32 m_090;                            // +0x090  = 5
-            i32 m_094;                            // +0x094  = 8
-            i32 m_098;                            // +0x098  = 8
-            i32 m_09c;                            // +0x09c  = 0x7d0
-            i32 m_0a0;                            // +0x0a0  = 0x7d0
-            i32 m_0a4;                            // +0x0a4  = 6
-            i32 m_0a8;                            // +0x0a8  = 0x32
-            i32 m_0ac;                            // +0x0ac  = 8
-            i32 m_0b0;                            // +0x0b0  = 8
-            i32 m_reserveBudget;                  // +0x0b4  = 0x3e8
-            i32 m_0b8;                            // +0x0b8  = 0x7d0
-            i32 m_moveBudget;                     // +0x0bc  = 0x3e8
-            i32 m_0c0;                            // +0x0c0  = 0xa
-            i32 m_repathBudget;                   // +0x0c4  = 0xbb8
-            i32 m_0c8;                            // +0x0c8  = 0x7530
-            i32 m_0cc;                            // +0x0cc  = 0xbb8
-            i32 m_0d0;                            // +0x0d0  (8 B with m_0d4)
-            i32 m_0d4;                            // +0x0d4
-            i32 m_0d8;                            // +0x0d8
+            i32 m_curCell;                      // +0x018  current cell index (=0)
+            i32 m_01c;                          // +0x01c  = 1
+            i32 m_020;                          // +0x020  = 0x40
+            i32 m_024;                          // +0x024  = 0x40
+            i32 m_028;                          // +0x028  = 0x40
+            i32 m_02c;                          // +0x02c  = 0x32
+            i32 m_spawnPct;                     // +0x030  = 0x32
+            i32 m_034;                          // +0x034
+            i32 m_038;                          // +0x038
+            i32 m_03c;                          // +0x03c
+            i32 m_040;                          // +0x040
+            i32 m_044;                          // +0x044
+            i32 m_spawnInterval;                // +0x048  = 0
+            i32 m_spawnTimer;                   // +0x04c  = 0
+            i32 m_spawnLastFire;                // +0x050  = 0
+            i32 m_repickInterval;               // +0x054  = 0
+            i32 m_repickLastFire;               // +0x058  = 0
+            i32 m_repickTimer;                  // +0x05c  = 0
+            i32 m_060;                          // +0x060
+            i32 m_064;                          // +0x064
+            i32 m_068;                          // +0x068
+            i32 m_06c;                          // +0x06c
+            i32 m_070;                          // +0x070
+            i32 m_budgetMul;                    // +0x074  = 0x19
+            i32 m_scratch78;                    // +0x078  = 0
+            i32 m_scratch7c;                    // +0x07c  = 0
+            i32 m_scratch80;                    // +0x080  = 0
+            i32 m_scratch84;                    // +0x084  = 0
+            i32 m_088;                          // +0x088  = 0x32
+            i32 m_08c;                          // +0x08c  = 5
+            i32 m_090;                          // +0x090  = 5
+            i32 m_094;                          // +0x094  = 8
+            i32 m_098;                          // +0x098  = 8
+            i32 m_09c;                          // +0x09c  = 0x7d0
+            i32 m_0a0;                          // +0x0a0  = 0x7d0
+            i32 m_0a4;                          // +0x0a4  = 6
+            i32 m_0a8;                          // +0x0a8  = 0x32
+            i32 m_0ac;                          // +0x0ac  = 8
+            i32 m_0b0;                          // +0x0b0  = 8
+            i32 m_reserveBudget;                // +0x0b4  = 0x3e8
+            i32 m_0b8;                          // +0x0b8  = 0x7d0
+            i32 m_moveBudget;                   // +0x0bc  = 0x3e8
+            i32 m_0c0;                          // +0x0c0  = 0xa
+            i32 m_repathBudget;                 // +0x0c4  = 0xbb8
+            i32 m_0c8;                          // +0x0c8  = 0x7530
+            i32 m_0cc;                          // +0x0cc  = 0xbb8
+            i32 m_0d0;                          // +0x0d0  (8 B with m_0d4)
+            i32 m_0d4;                          // +0x0d4
+            i32 m_0d8;                          // +0x0d8
         };
         // Load-phase (LoadConfig) view.
         struct {
-            i32 m_0;                       // +0x00  = 1
-            CLevelInfo* m_levelInfo;       // +0x04  = lvl  (the SAME slot + object as m_ctx)
-            CTriggerMgr* m_8;              // +0x08  = lvl->m_triggerMgr  (== m_triggerMgr)
-            CMapMgr* m_dims;               // +0x0c  = lvl->m_dims        (== m_board)
-            CLevelSpawnInfo* m_10;         // +0x10  = lvl->m_spawnInfo
+            i32 m_0;                     // +0x00  = 1
+            CLevelInfo* m_levelInfo;     // +0x04  = lvl  (the SAME slot + object as m_ctx)
+            CTriggerMgr* m_8;            // +0x08  = lvl->m_triggerMgr  (== m_triggerMgr)
+            CMapMgr* m_dims;             // +0x0c  = lvl->m_dims        (== m_board)
+            CLevelSpawnInfo* m_10;       // +0x10  = lvl->m_spawnInfo
             CTileTriggerContainer* m_14; // +0x14 = m_10->m_2e4   (== m_cellQuery)
-            i32 m_ownerId;                 // +0x18  = id (owner/team id)
+            i32 m_ownerId;               // +0x18  = id (owner/team id)
             char m_pad1c[0x30 - 0x1c];
             DWORD m_defenderChance; // +0x30  DefenderChance
             char m_pad34[0x48 - 0x34];

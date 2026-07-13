@@ -295,7 +295,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             wk = 0;
         }
         m_guts = (CStatusBarMgr*)wk;
-        if (m_guts->LoadBattlezItemConfig((i32)m_c) == 0) {
+        if (m_guts->LoadBattlezItemConfig(m_c) == 0) {
             if (m_guts) {
                 m_guts->Teardown();
                 ((Worker630::Sub530*)((char*)m_guts + 0x530))->Dtor1b4f3e();
@@ -319,7 +319,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             r78 = 0;
         }
         m_beginMarker = r78;
-        if (((CTileTriggerSwitchLogic*)m_beginMarker)->GetFlag74() == 0) {
+        if (m_beginMarker->GetFlag74() == 0) {
             if (m_beginMarker) {
                 m_beginMarker->~CTileTriggerContainer();
                 modeinit::RezFree(m_beginMarker);

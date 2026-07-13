@@ -21,8 +21,8 @@
 
 // The owning container; back-stamped into the list elements (m_14 / m_20 / m_24).
 class CTileTriggerContainer;
-class CTileTriggerLogic; // the per-id logic leaf AddLogic news (def in TileTriggerLogic.h)
-class CGiantRockLogic;   // the 0xc8 m_list1 rock element (def in TileTriggerLogic.h)
+class CTileTriggerLogic;       // the per-id logic leaf AddLogic news (def in TileTriggerLogic.h)
+class CGiantRockLogic;         // the 0xc8 m_list1 rock element (def in TileTriggerLogic.h)
 class CTileTriggerSwitchLogic; // the 0x8c m_base element family (def in TileTriggerSwitchLogic.h)
 
 // The Rez heap alloc/free (RVA 0x1b9b46 _RezAlloc / 0x1b9b82 _RezFree);

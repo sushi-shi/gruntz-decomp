@@ -20,19 +20,19 @@ class CTileTriggerContainer; // owner, back-stamped into m_20 (fwd; def in TileT
 // switch. Ids 1/2/5 all build the base CTileTriggerSwitchLogic (their gameplay
 // distinction is unrecovered, so they keep numeric suffixes, not invented roles).
 typedef enum TrigLogicId {
-    TRIGID_SWITCH_1           = 1,    // CTileTriggerSwitchLogic
-    TRIGID_SWITCH_2           = 2,    // CTileTriggerSwitchLogic
-    TRIGID_MULTI_SWITCH_3     = 3,    // CTileMultiTriggerSwitchLogic
+    TRIGID_SWITCH_1 = 1,              // CTileTriggerSwitchLogic
+    TRIGID_SWITCH_2 = 2,              // CTileTriggerSwitchLogic
+    TRIGID_MULTI_SWITCH_3 = 3,        // CTileMultiTriggerSwitchLogic
     TRIGID_EXCLUSIVE_SWITCH_4 = 4,    // CTileExclusiveTriggerSwitchLogic (Broadcast's filter)
-    TRIGID_SWITCH_5           = 5,    // CTileTriggerSwitchLogic
-    TRIGID_SECRET_SWITCH_6    = 6,    // CTileSecretTriggerSwitchLogic
-    TRIGID_TIME_SWITCH_7      = 7,    // CTileTimeTriggerSwitchLogic
+    TRIGID_SWITCH_5 = 5,              // CTileTriggerSwitchLogic
+    TRIGID_SECRET_SWITCH_6 = 6,       // CTileSecretTriggerSwitchLogic
+    TRIGID_TIME_SWITCH_7 = 7,         // CTileTimeTriggerSwitchLogic
     TRIGID_CHECKPOINT_SWITCH_8 = 8,   // CCheckpointTriggerSwitchLogic (VerifyBlockLinks filter)
-    TRIGID_TILE_TRIGGER_21    = 0x15, // CTileTriggerLogic (the id-21 board-latch arm)
-    TRIGID_GIANT_ROCK_22      = 0x16, // CGiantRockLogic - THE rock discriminant
-    TRIGID_TIME_TRIGGER_23    = 0x17, // CTileTimeTriggerLogic (AddLogic routes to m_list2)
-    TRIGID_TILE_TRIGGER_24    = 0x18, // CTileTriggerLogic
-    TRIGID_SECRET_TRIGGER_25  = 0x19, // CTileSecretTriggerLogic
+    TRIGID_TILE_TRIGGER_21 = 0x15,    // CTileTriggerLogic (the id-21 board-latch arm)
+    TRIGID_GIANT_ROCK_22 = 0x16,      // CGiantRockLogic - THE rock discriminant
+    TRIGID_TIME_TRIGGER_23 = 0x17,    // CTileTimeTriggerLogic (AddLogic routes to m_list2)
+    TRIGID_TILE_TRIGGER_24 = 0x18,    // CTileTriggerLogic
+    TRIGID_SECRET_TRIGGER_25 = 0x19,  // CTileSecretTriggerLogic
     TRIGID_COVERED_POWERUP_26 = 0x1a, // CCoveredPowerupLogic (SetCell's fallback probe tag)
 } TrigLogicId;
 
@@ -50,13 +50,13 @@ typedef enum TrigErrClass {
 // The per-site diagnostic tags (arg2) of the trigger-link validators - one per
 // PROVEN report site.
 typedef enum TrigErrSite {
-    TRIGSITE_ROCK_SCAN_MISS  = 0x403, // TriggerMgr rock-break: no giant rock around (x,y)
+    TRIGSITE_ROCK_SCAN_MISS = 0x403,  // TriggerMgr rock-break: no giant rock around (x,y)
     TRIGSITE_LINKSB_NO_OWNER = 0x44d, // VerifyBlockLinksB: no m_list1 child claims this switch
     TRIGSITE_LINKSB_KEY_MISS = 0x44e, // VerifyBlockLinksB: block key unresolved (id-3 filter)
-    TRIGSITE_BCAST_KEY_MISS  = 0x44f, // Broadcast: block key unresolved (id-4 filter)
-    TRIGSITE_BCAST_NO_CLAIM  = 0x450, // Broadcast: no m_list1 child claims the sibling
-    TRIGSITE_LINKS_NO_OWNER  = 0x452, // VerifyBlockLinks: no m_list1 child claims this switch
-    TRIGSITE_LINKS_KEY_MISS  = 0x453, // VerifyBlockLinks: block key unresolved (id-8 filter)
+    TRIGSITE_BCAST_KEY_MISS = 0x44f,  // Broadcast: block key unresolved (id-4 filter)
+    TRIGSITE_BCAST_NO_CLAIM = 0x450,  // Broadcast: no m_list1 child claims the sibling
+    TRIGSITE_LINKS_NO_OWNER = 0x452,  // VerifyBlockLinks: no m_list1 child claims this switch
+    TRIGSITE_LINKS_KEY_MISS = 0x453,  // VerifyBlockLinks: block key unresolved (id-8 filter)
 } TrigErrSite;
 
 // ---------------------------------------------------------------------------

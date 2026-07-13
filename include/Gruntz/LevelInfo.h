@@ -22,9 +22,9 @@
 
 #include <Gruntz/QueueDrainHost.h> // CQueueDrainHost - the walked object collection
 
-class CMapMgr;                 // <Gruntz/MapMgr.h>   (== CBrickzGrid) the tile/path grid
-class CTriggerMgr;             // <Gruntz/TriggerMgr.h>
-struct CGameObject;            // <Gruntz/UserLogic.h>
+class CMapMgr;               // <Gruntz/MapMgr.h>   (== CBrickzGrid) the tile/path grid
+class CTriggerMgr;           // <Gruntz/TriggerMgr.h>
+struct CGameObject;          // <Gruntz/UserLogic.h>
 class CTileTriggerContainer; // <Gruntz/TileTriggerContainer.h>
 
 // The spawn-info handle at +0x2c. Its +0x2e4 is the level's tile-trigger CONTAINER

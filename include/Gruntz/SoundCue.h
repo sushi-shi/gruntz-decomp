@@ -48,7 +48,8 @@ SIZE_UNKNOWN(LeafCue);
 // DEFINED here was an ODR duplicate of the REAL class in <Dsndmgr/SoundStream.h> (same
 // base, same Stop/DestroyVoice/OpenStream rvas). Pull the real one - it also carries
 // TickSubManagers (0x137ac0), the per-frame tick CPlay/CMulti drive on this member.
-#include <Dsndmgr/SoundStream.h> // the REAL SoundStream (: SoundDevice)
+#include <Dsndmgr/SoundStream.h>          // the REAL SoundStream (: SoundDevice)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // the canonical class behind CSndHost (see below)
 
 // The named-cue registry embedded at CSndHost+0x10 (the engine ::CMapStringToPtr, Lookup
 // @0x1b8438); Lookup fills an out-param.
@@ -71,30 +72,19 @@ SIZE_UNKNOWN(LeafCue);
 // ::CMapStringToPtr, whose 0x1c bytes exactly fill +0x10..+0x2c; callers now get the
 // library symbol and link.)
 
-// Holds the finder (+0x10 embedded), a DirectSound stream (+0x2c) and an emit gate
-// (+0x30, must be 0 to emit). This IS the +0x28 status-bar cue holder every HUD/
-// preview/finish-level driver reaches through the world holder (== the former
-// StatusBarCueHolder.h CStatusBarHolder, folded here): the name->object map (+0x10),
-// the audio-kill sound stream (+0x2c) and the live-surface/emit gate (+0x30).
-struct CSndHost {
-    char m_pad00[0x10];
-    CMapStringToPtr m_10; // +0x10  the real name->cue/sprite map (0x1c bytes -> +0x2c)
-    SoundStream* m_2c;    // +0x2c  DirectSound stream (Stop / audio-kill PurgeVoiceList)
-    i32 m_emitGate;       // +0x30  live-surface / emit gate (must be 0 to emit)
-    // Resolve a cue name to its emitter via the +0x10 finder (@0x05b7e0, thunk
-    // 0x2cca): a real CSndHost __thiscall - `push ecx` out-slot, `add ecx,0x10`,
-    // tail into the +0x10 map's Lookup (0x1b8438), return the emitter (0 on
-    // miss). Reloc-masked (no body). Was mis-modeled as an extern "C" __stdcall
-    // free fn (the bytes matched only because ecx was coincidentally the host at
-    // every call site).
-    // Register a level asset-namespace key into the finder (@0x1580b0; reloc-masked;
-    // called by CGruntzMgr's level-asset-key register step with a null / prefix key).
-    i32 RegisterKey(const char* key); // 0x1580b0
-};
-SIZE_UNKNOWN(CSndHost);
+// SETTLED (Fable lane, 2026-07-13): CSndHost IS the canonical CDDrawSubMgrLeafScan
+// (<DDrawMgr/DDrawSubMgrLeafScan.h>) - PROVEN by shared method RVAs (both classes
+// declared Lookup @0x05b7e0 and 0x1580b0 - the latter's reconstructed body is
+// SumField_1580b0, a map-count query, so the old "RegisterKey" reading was wrong),
+// the same CMapStringToPtr @+0x10, the same +0x2c sound stream and the same +0x30
+// emit/busy gate. The class IS polymorphic (LeafScanBase : CObject; the old
+// "non-polymorphic so RTTI gives no names" note was wrong - it simply has no RTTI).
+// This one class is: the +0x28 world sound/cue registry, the status-bar cue holder,
+// AND CDDrawSurfaceMgr's m_leafScan child (new(0x38) @Init, vtbl 0x5efca0).
+typedef CDDrawSubMgrLeafScan CSndHost;
 
-// (The ex-`CSndSubMgr` facet is DISSOLVED (2026-07-13, Fable lane): the "+0x28
-// cue host" object is the world holder CSpriteFactoryHolder itself
-// (<Gruntz/GameRegistry.h>), whose m_28 is already the CSndHost declared above.)
+// (The ex-`CSndSubMgr` facet is DISSOLVED (Fable lane, 2026-07-13): the "+0x28 cue host"
+// object is the world holder CSpriteFactoryHolder itself (<Gruntz/GameRegistry.h>), whose
+// m_28 is already the CSndHost typedef'd above. It was never a separate class.)
 
 #endif // GRUNTZ_SOUNDCUE_H

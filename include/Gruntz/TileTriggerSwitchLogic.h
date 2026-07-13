@@ -34,7 +34,6 @@ class CTileTriggerContainer; // the owning 4-list container (m_owner back-pointe
 // [esi+0x24],ebp` for the 0x8c switch family vs `mov [esi+0x20],ebp` for the 0x9c family).
 class CTileTriggerSwitchLogic {
 public:
-
     // The 4 retail vtable slots (0x5eae8c). Real virtuals now -> cl emits the
     // ??_7 vftable + the implicit ctor vptr-stamp (replaces the manual struct
     // stamp). Bodies live in unmatched engine TUs; declared-only here, named on
@@ -43,16 +42,8 @@ public:
     // build signature is corroborated by CheckpointSwitchBuild.cpp's BaseBuild view.
     // arg0 is the owning CONTAINER (Vf0 stamps it into m_owner - the same object
     // LoadElement stamps there).
-    virtual i32 Vf0(
-        CTileTriggerContainer* owner,
-        i32 a1,
-        i32 a2,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7
-    );
+    virtual i32
+    Vf0(CTileTriggerContainer* owner, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
     // slot 1 -> 0x0022e8 (body in an unmatched engine TU). Its real signature is recovered
     // from the ONE reconstructed override, CCheckpointTriggerSwitchLogic::BuildSmall
     // (0x112a50, `sema class` says slot 1, origin CTileTriggerSwitchLogic): 9 args, returns
@@ -118,7 +109,6 @@ public:
     // mov ecx,esi / call 0x1d39), ValidateByType on a 0x9c CTileTriggerLogic (0x117aa7).
     // They live in TileTriggerLogic.h now. SerializeMatrix reaches this+0xc0/+0xc4, which an
     // 0x8c object cannot hold - that overrun was the "m_block[37]/[38]" contradiction.
-
 
     // +0x00  implicit vptr (real virtuals above; was an explicit m_vptr struct stamp)
     i32 m_04;       // +0x04  type id (the factory switch id 1..8; LoadElement stamps it,

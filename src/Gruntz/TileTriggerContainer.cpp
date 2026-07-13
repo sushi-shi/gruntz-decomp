@@ -367,7 +367,8 @@ CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6
 // byte-identical (scores above the no-switch twin AddToList3 at 43%).
 // See docs/patterns/rezalloc-placement-new-no-eh-frame.md
 RVA(0x00116b80, 0x105)
-CTileActionEvent* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type) {
+CTileActionEvent*
+CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type) {
     CTileActionEvent* m = new CTileActionEvent;
     if (m == 0) {
         return 0;
