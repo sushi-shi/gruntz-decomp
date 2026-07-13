@@ -35,7 +35,8 @@
 #include <Gruntz/UserLogic.h>       // CGameObject - the real class of the AABB pair
                                     // BoxesOverlap_15a130 tests (was the CWwdBox view)
 #include <Wwd/WwdFile.h>            // CPlaneRender (m_parent->m_24->m_5c world transform)
-#include <Gruntz/ResLoadersViews.h> // ResLoaders::DrawHost_164380 (counter draw)
+#include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (DrawCount - ex the DrawHost_164380 view)
+#include <Gruntz/GameLevel.h>           // CGameLevel (m_parent->m_resolveSubMgr) + CLevelPlane
 #include <Win32.h>                  // SetRect + RECT
 
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
@@ -256,9 +257,11 @@ void CDDrawChildGroup::ForwardTo3C() {
 // destructor, then RemoveAll the +0x10 list and the +0x2c / +0x48 collections.
 RVA(0x001591f0, 0x54)
 void CDDrawChildGroup::DestroyChildren() {
-    void* p = *(void**)((char*)m_parent + 0x24);
+    CGameLevel* p = m_parent->m_resolveSubMgr;
     if (p != 0) {
-        CDDrawWorkerHost* q = *(CDDrawWorkerHost**)((char*)p + 0x5c);
+        // m_mainPlane IS the plane/grid-owner CDDrawWorkerHost (the plane-family
+        // unification: slots 9/10 of ??_7CDDrawWorkerHost are CLevelPlane methods).
+        CDDrawWorkerHost* q = (CDDrawWorkerHost*)p->m_mainPlane;
         if (q != 0) {
             q->Prune_1628d0();
         }
@@ -1029,11 +1032,9 @@ void CDDrawChildGroup::DrawObjectCounts_15a650() {
     if (!(m_flags08 & 0x200000)) {
         return;
     }
-    char* mgr = (char*)m_parent;
     CDDrawGroupNode* node = m_head;
-    ResLoaders::DrawHost_164380* drawHost =
-        *(ResLoaders::DrawHost_164380**)(*(char**)(mgr + 4) + 0x14);
-    CPlaneRender* view = *(CPlaneRender**)(*(char**)(mgr + 0x24) + 0x5c);
+    CDDrawSurfacePair* drawHost = m_parent->m_pages->m_backPair;
+    CPlaneRender* view = (CPlaneRender*)m_parent->m_resolveSubMgr->m_mainPlane;
     if (node == 0) {
         return;
     }

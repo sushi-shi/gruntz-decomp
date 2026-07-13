@@ -78,6 +78,14 @@ class CDDrawSurfacePair
 public:
     virtual i32 IsLoaded();  // slot 5 (was CWapObj)
     virtual i32 IsReady();   // slot 6 (was CWapObj)
+    // The debug counter-draw pair (bodies in DDrawSurfacePair.cpp, retail birth-
+    // positioned dead-center in this class's .text block; ex the fake
+    // ResLoaders::DrawHost_164380/DrawHost2_164420 views - their +0x2c "counter
+    // window" IS this class's m_surface CDDSurface, whose +0x08 is the DC-capable
+    // IDirectDrawSurface). Print n / text centred into rc via GetDC/ReleaseDC.
+    void DrawCount(RECT* rc, i32 n);      // 0x00164380
+    void DrawLabel(RECT* rc, char* text); // 0x00164420
+
     i32 m_status;            // +0x04 (from merged CSurfacePairBase)
     i32 m_flags;             // +0x08
     CDDrawSurfaceMgr* m_mgr; // +0x0c (from merged CSurfacePairBase)

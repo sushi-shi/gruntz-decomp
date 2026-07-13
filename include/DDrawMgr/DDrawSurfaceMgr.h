@@ -109,7 +109,9 @@ public:
     CDDrawSubMgr* m_workerMap;        // +0x18  CDDrawWorkerMapSmall
     CDDrawPtrCollections* m_ptrColl;  // +0x1c  surface pool
     SoundStream* m_soundStream;       // +0x20  foreign Dsndmgr sound stream
-    CDDrawSubMgr* m_resolveSubMgr;    // +0x24  CDDrawResolveSubMgr / CGameLevel
+    // +0x24: "CDDrawResolveSubMgr" IS the canonical CGameLevel - PROVEN: Init news
+    // it with new(0x6d4) + ctor 0x15ccd0 == SIZE(CGameLevel, 0x6d4) + ??0CGameLevel.
+    class CGameLevel* m_resolveSubMgr;
     CDDrawSubMgrLeafScan* m_leafScan; // +0x28  CDDrawSubMgrLeafScan
     CDDrawSubMgr* m_leaf;             // +0x2c  CDDrawSubMgrLeaf
     HWND m_hWnd;                      // +0x30  bound window / device handle

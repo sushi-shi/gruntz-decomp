@@ -112,7 +112,9 @@ public:
 
     i32 m_status;              // +0x04  initialized to -1 when inactive
     i32 m_flags08;             // +0x08  flags (bit 0x200000 = draw per-object debug counts)
-    i32 m_parent;              // +0x0c  parent/root handle
+    // +0x0c  the owning CDDrawSurfaceMgr (the world/display root; its +0x24 is the
+    // CGameLevel and +0x04 the pages sub-manager).
+    class CDDrawSurfaceMgr* m_parent;
     char m_pad10[0x14 - 0x10]; // +0x10..0x13 (the +0x10 CObList's vptr)
     CDDrawGroupNode* m_head;   // +0x14  the +0x10 CObList's node-head (intrusive walk)
     char m_pad18[0x2c - 0x18]; // +0x18..0x2b (rest of the +0x10 CObList)
