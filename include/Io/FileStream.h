@@ -51,64 +51,38 @@ struct CFileIODispatch {
 SIZE_UNKNOWN(CFileIODispatch); // reinterpret dispatch view (never constructed)
 
 // ---------------------------------------------------------------------------
-// CFileIO - the KERNEL32 file-stream wrapper (CObject-derived; the base ctor
-// stores the CObject vtable, the CFileIO ctor then overwrites it - two-phase
-// construction, both stores reloc-masked). The implicit vptr at +0x00 keeps
-// m_handle at +0x04.
-// ---------------------------------------------------------------------------
-SIZE(CFileIO, 0x10);       // vptr + m_handle + m_open + CString
-VTBL(CFileIO, 0x001ed15c); // ??_7CFileIO@@6B@, stamped by the ctor 0x1befd7
-// CFileIO IS MFC CFile (RTTI at 0x1ed15c == CFile): a faithful reconstruction of the
-// statically-linked NAFXCW CFile. Modeled `: public CObject` (NOT `: public CFile`),
-// with CFile's full 18-virtual interface declared HERE, because the class IS CFile -
-// its ctor/dtor (0x1befd7/0x1bf121) INLINE the CObject-base vptr stamp with NO
-// `call CFile::CFile`, so deriving from the real MFC CFile would wrongly emit a
-// base-ctor call and break the 100% ctor/dtor. Declaring CFile's virtuals directly
-// reproduces the 23-slot ??_7CFileIO vtable (CObject's 5 slots + CFile's 18) from
-// cl's own emission: the reconstructed slots (dtor/GetPosition/Open/Seek/GetLength/
-// Read/Write/Close) bind to our bodies; the un-reconstructed CFile-library slots
-// (GetFileName/.../GetBufferPtr) are declared-only (external NAFXCW, reloc-masked).
-// Slot order is CFile's declaration order (afx.h) - load-bearing.
-class CFileIO : public CObject {
+// CFileIO IS the statically-linked NAFXCW MFC CFile - the RTTI at 0x1ed15c IS CFile, and
+// its ctor/dtor/Open/Seek/GetPosition/GetLength/Read/Write/Close ARE the library bodies at
+// 0x1befd7..0x1bf505. So it is not "a CFile work-alike": it is CFile, and it is now spelled
+// that way. `CFileIO` survives ONLY as an alias, so the ~20 consumer TUs read unchanged.
+//
+// WHY THIS HAD TO CHANGE (assert_relocs --fake-targets): the old model re-DECLARED CFile's
+// whole interface on a class of its own name and left every body undefined "because the
+// library owns them". That is fine for objdiff (relocs are masked) but it is a LINK BREAK:
+// the calls mangled as ?Open@CFileIO@@UAEHPBDIPAX@Z / ??0CFileIO@@QAE@XZ / ??1CFileIO@@UAE@XZ,
+// and NAFXCW.LIB defines ?Open@CFile@@... / ??0CFile@@... - 42 guaranteed `unresolved external
+// symbol`s. Aliasing the REAL class makes every one of them resolve, and is codegen-identical
+// because it is the same class: same 0x10 layout, same 23-slot vtable, same slot order.
+// (Exactly the CTmObList->CObList / CTmByteArray->CByteArray fold.)
+//
+// No SIZE()/VTBL() annotation any more: the layout and the ??_7 belong to the library now.
+typedef CFile CFileIO;
+
+// The two GENUINE engine helpers that live in this TU (0xbd3e0 / 0xbd450). They drive the
+// shared global file object and IGNORE `this` entirely, so their host carries no data and no
+// vtable - only the __thiscall convention and the mangled name are load-bearing, and nothing
+// outside FileStream.cpp calls them. They used to hang off CFileIO; they cannot hang off the
+// real CFile (that is MFC's class), so they get a data-less host of their own.
+class CFileLog {
 public:
-    CFileIO();
-    CFileIO(HANDLE hFile);
-    virtual CRuntimeClass* GetRuntimeClass() const OVERRIDE; // [0] afx CObject slot 0
-    virtual ~CFileIO() OVERRIDE; // [1] 0x1bf121 (overrides CObject dtor slot)
-
-    // --- CFile virtual interface, vtable slots [5..22] in CFile declaration order --
-    virtual LONG GetPosition();                                                   // [5]  0x1bf3dc
-    virtual CString GetFileName() const;                                          // [6]  extern
-    virtual CString GetFileTitle() const;                                         // [7]  extern
-    virtual CString GetFilePath() const;                                          // [8]  extern
-    virtual void SetFilePath(const char* lpszNewName);                            // [9]  extern
-    virtual BOOL Open(const char* lpszFileName, u32 nOpenFlags, void* pError);    // [10] 0x1bf200
-    virtual CFile* Duplicate() const;                                             // [11] extern
-    virtual LONG Seek(LONG lOff, i32 nFrom);                                      // [12] 0x1bf3ad
-    virtual void SetLength(u32 dwNewLen);                                         // [13] extern
-    virtual u32 GetLength();                                                      // [14] 0x1bf505
-    virtual u32 Read(void* lpBuf, u32 nCount);                                    // [15] 0x1bf328
-    virtual void Write(const void* lpBuf, u32 nCount);                            // [16] 0x1bf362
-    virtual void LockRange(u32 dwPos, u32 dwCount);                               // [17] extern
-    virtual void UnlockRange(u32 dwPos, u32 dwCount);                             // [18] extern
-    virtual void Abort();                                                         // [19] extern
-    virtual void Flush();                                                         // [20] extern
-    virtual void Close();                                                         // [21] 0x1bf426
-    virtual u32 GetBufferPtr(u32 nCmd, u32 nCount, void** ppStart, void** ppMax); // [22] extern
-
-    HANDLE m_handle; // +0x04  (CFile::m_hFile)
-    i32 m_open;      // +0x08  (CFile::m_bCloseOnDelete)
-    CString m_name;  // +0x0c  (CFile::m_strFileName)
-
-    // Reopen the shared global file object (0x646778) around a close: open(path,
-    // 0x1000), close, open(path, 1). Static-like (ignores `this`). Non-virtual.
-    void ReopenSharedFile(char* path);
-
-    // Close the shared global file then reopen it on the fixed "c:\gruntz.log" debug
-    // path (0xbd450): CloseFileIOGlobal() + ReopenSharedFile). `this` is forwarded to
-    // ReopenSharedFile (which ignores it). Non-virtual.
-    void OpenGruntzLog();
+    // Reopen the shared file object (0x646778) around a close: open(path, 0x1000), close,
+    // open(path, 1). `this` unused.
+    void ReopenSharedFile(char* path); // 0x0bd3e0
+    // Close the shared global file, then reopen it on the fixed "c:\gruntz.log" debug path.
+    // `this` is forwarded to ReopenSharedFile, which ignores it. __thiscall, no args.
+    void OpenGruntzLog(); // 0x0bd450
 };
+SIZE_UNKNOWN(CFileLog); // data-less __thiscall host (never constructed)
 
 // --- vtable catalog ---
 

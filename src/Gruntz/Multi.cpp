@@ -544,7 +544,7 @@ void InitStr6473d8() {
 extern CFileIO g_obj646778;
 RVA(0x000b5400, 0xa)
 void ConstructFileIOGlobal() {
-    g_obj646778.CFileIO::CFileIO();
+    g_obj646778.CFile::CFile();
 }
 
 // -------------------------------------------------------------------------

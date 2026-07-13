@@ -19,7 +19,7 @@
 // rename, deferred.
 #include <Net/KeyedList.h>
 
-struct CNetThing : GzObList {
+struct CNetThing : public CObList {
     ~CNetThing();
 };
 SIZE_UNKNOWN(CNetThing); // dtor-only view; retail size TBD

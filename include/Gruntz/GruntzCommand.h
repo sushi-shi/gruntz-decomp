@@ -18,6 +18,7 @@
 #ifndef SRC_GRUNTZ_GRUNTZCOMMAND_H
 #define SRC_GRUNTZ_GRUNTZCOMMAND_H
 
+#include <Mfc.h> // the REAL MFC CObList (CGruntzCmdList IS CObList; see the note below)
 #include <rva.h>
 #include <Ints.h>
 
@@ -28,10 +29,10 @@ void* operator new(gz_size_t);
 // list). Only RemoveTail() is reached (a __thiscall returning the recycled
 // node). The leaf allocator: if the list is non-empty, tail-call RemoveTail();
 // else operator new(0x14) the object + stamp its vftable.
-SIZE_UNKNOWN(CGruntzCmdList);
-struct CGruntzCmdList {
-    void* RemoveTail();
-};
+// CGruntzCmdList IS the MFC CObList too: its RemoveTail is ?RemoveTail@CObList@@QAEPAVCObject@@XZ
+// @0x1b4a27 (NAFXCW). Declaring it on our own name emitted ?RemoveTail@CGruntzCmdList@@QAEPAXXZ,
+// which nothing defines - 4 unresolved externals. Alias the real class (see GruntzCmdMgr.h).
+typedef CObList CGruntzCmdList;
 
 // The "apply" target each Apply*() passes the unpacked command params to (the
 // big CPlay command-executor at 0x0d1b60, ret 0x1c => 7 __thiscall args). It is

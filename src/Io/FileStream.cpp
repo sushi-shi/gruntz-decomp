@@ -23,7 +23,7 @@
 DATA(0x00246778)
 extern CFileIO g_obj646778;
 
-// CFileIO::ReopenSharedFile - reopen the shared file object around a close. Ignores
+// CFileLog::ReopenSharedFile - reopen the shared file object around a close. Ignores
 // `this`; the single stack arg is the path.
 // @early-stop
 // regalloc-tiebreak wall: both `path` (3x push arg) and `&g_obj646778` (3x ecx) are
@@ -31,7 +31,7 @@ extern CFileIO g_obj646778;
 // immediate each call, cl pins the global address in esi + re-pushes path from the
 // stack. Same code shape, opposite callee-saved pick; not source-steerable (~79%).
 RVA(0x000bd3e0, 0x34)
-void CFileIO::ReopenSharedFile(char* path) {
+void CFileLog::ReopenSharedFile(char* path) {
     g_obj646778.Open(path, 0x1000, 0);
     g_obj646778.Close();
     g_obj646778.Open(path, 1, 0);
@@ -47,13 +47,13 @@ void CloseFileIOGlobal() {
 }
 
 // -------------------------------------------------------------------------
-// CFileIO::OpenGruntzLog (0x0bd450, re-homed from src/Stub/BoundaryLowerMethods.cpp):
+// CFileLog::OpenGruntzLog (0x0bd450, re-homed from src/Stub/BoundaryLowerMethods.cpp):
 // close the shared global file then reopen it on the fixed "c:\gruntz.log" debug path.
 // The two calls resolve (via ILT thunks 0x3625/0x1983) to the real CloseFileIOGlobal
 // (0xbd430) + CFileIO::ReopenSharedFile (0xbd3e0) above; `this` is forwarded to
 // ReopenSharedFile, which ignores it. __thiscall, no args.
 RVA(0x000bd450, 0x16)
-void CFileIO::OpenGruntzLog() {
+void CFileLog::OpenGruntzLog() {
     CloseFileIOGlobal();
     ReopenSharedFile("c:\\gruntz.log");
 }

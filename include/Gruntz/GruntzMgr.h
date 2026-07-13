@@ -69,17 +69,15 @@ struct CGruntzMgrOptions {
 // stored elements are CState* (the pushed game states) whose Update() (slot 4,
 // +0x10) reports the state id; SetSize/SetAtGrow/RemoveAt are the out-of-line
 // NAFXCW helpers (reloc-masked).
-SIZE_UNKNOWN(CStateStackZ);
-struct CStateStackZ {
-    char _vft0[4];    // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    CState** m_pData; // +0x04 element store
-    i32 m_nSize;      // +0x08 live count
-    i32 m_nMaxSize;   // +0x0c
-    i32 m_nGrowBy;    // +0x10
-    void SetSize(i32 n, i32 growBy);     // @0x5b4f75  (clear via SetSize(0, -1))
-    void SetAtGrow(i32 i, CState* elem); // @0x5b5144
-    void RemoveAt(i32 i, i32 n);         // @0x5b5200
-};
+// The +0xd8 state stack is the MFC CPtrArray (<Mfc.h>). The old `CStateStackZ` reinterpret
+// view declared SetSize/SetAtGrow/RemoveAt on a class of its own name, so they mangled as
+// ?SetSize@CStateStackZ@@QAEXHH@Z etc. - symbols NAFXCW does NOT define (3 unresolved
+// externals, assert_relocs --fake-targets). Their rvas (0x1b4f75 / 0x1b5144 / 0x1b5200) are
+// FID-AMBIG across MFC's 4-byte-element arrays because the linker COMDAT-folds their bodies;
+// the elements here are CState* (NOT CObject-derived), so the honest class is CPtrArray.
+// NOTE the member below was typed CByteArray, which is simply WRONG: CByteArray::SetSize is
+// 0x1b52e8, a different body entirely. Raw m_pData/m_nSize are MFC-protected, so the leaves
+// now use the inline GetAt()/GetSize() accessors (identical single loads, not calls).
 // The level/world object held at CGruntzMgr +0x30 (the loaded map + its active
 // CWorld view). Reached as `m_world->...`; every method is reloc-masked. +0x24 is
 // the active world view (the scroll/camera holder the FP scaler reads); +0x28 the
@@ -464,23 +462,24 @@ public:
     char m_driveLetter;               // +0xd0  cached CD drive letter
     char m_padD1[3];                  // +0xd1
     i32 m_driveLetterProbed;          // +0xd4  drive-letter probed flag
-    CByteArray m_stateStack;          // +0xd8  CState* push-down stack (0x14 bytes; EH state 1)
-    CString m_strEC;                  // +0xec  (EH state 2)
-    CString m_strMoviePath;           // +0xf0  resolved movie path (EH state 3)
-    i32 m_f4;                         // +0xf4  (=1 in ctor)
-    i32 m_f8, m_fc;                   // +0xf8, +0xfc
-    i32 m_isVoiceEnabled;             // +0x100  "Voice"      enable (=1 in ctor)
-    i32 m_isAmbientEnabled;           // +0x104  "Ambient"    enable (=1 in ctor)
-    i32 m_isInterlaced;               // +0x108  "Interlaced" flag
-    i32 m_isHighDetail;               // +0x10c  "High_Detail" flag (=1 in ctor)
-    i32 m_isEffectsEnabled;           // +0x110  "Effects"    enable (=1 in ctor)
-    i32 m_114;                        // +0x114
-    i32 m_isEasyMode;                 // +0x118  "Easy_Mode" flag
-    i32 m_inputFlag;                  // +0x11c  StoreInputFlag target
-    i32 m_inputStateVal;              // +0x120  StoreInputState target
-    i32 m_scrollSpeed;                // +0x124  "Scroll_Speed"
-    i32 m_128, m_12c, m_130, m_134;   // +0x128..+0x134  (m_134==3 -> "won"; FillSaveInfo)
-    i32 m_optionsCount;               // +0x138  options-cycle high index (=3 in ctor -> 4 slots)
+    CPtrArray m_stateStack; // +0xd8  CState* push-down stack (0x14 B; EH state 1). CPtrArray,
+                            //        not CByteArray - see the note above.
+    CString m_strEC;        // +0xec  (EH state 2)
+    CString m_strMoviePath; // +0xf0  resolved movie path (EH state 3)
+    i32 m_f4;               // +0xf4  (=1 in ctor)
+    i32 m_f8, m_fc;         // +0xf8, +0xfc
+    i32 m_isVoiceEnabled;   // +0x100  "Voice"      enable (=1 in ctor)
+    i32 m_isAmbientEnabled; // +0x104  "Ambient"    enable (=1 in ctor)
+    i32 m_isInterlaced;     // +0x108  "Interlaced" flag
+    i32 m_isHighDetail;     // +0x10c  "High_Detail" flag (=1 in ctor)
+    i32 m_isEffectsEnabled; // +0x110  "Effects"    enable (=1 in ctor)
+    i32 m_114;              // +0x114
+    i32 m_isEasyMode;       // +0x118  "Easy_Mode" flag
+    i32 m_inputFlag;        // +0x11c  StoreInputFlag target
+    i32 m_inputStateVal;    // +0x120  StoreInputState target
+    i32 m_scrollSpeed;      // +0x124  "Scroll_Speed"
+    i32 m_128, m_12c, m_130, m_134; // +0x128..+0x134  (m_134==3 -> "won"; FillSaveInfo)
+    i32 m_optionsCount;             // +0x138  options-cycle high index (=3 in ctor -> 4 slots)
     i32 m_viewOriginL, m_viewOriginT, m_viewOriginR,
         m_viewOriginB;              // +0x13c..+0x148  view-edge origins
     char m_pad14c[0x150 - 0x14c];   // +0x14c..+0x150 gap

@@ -23,6 +23,7 @@
 #ifndef GRUNTZ_GRUNTZCMDMGR_H
 #define GRUNTZ_GRUNTZCMDMGR_H
 
+#include <Mfc.h> // the REAL MFC CObList (GzObList IS CObList; see the note below)
 #include <rva.h>
 #include <Ints.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @+0x2c / Write @+0x30)
@@ -33,21 +34,17 @@
 //   m_4  head node (CObList m_pNodeHead)
 //   m_8  tail node (CObList m_pNodeTail)
 //   m_c  m_nCount (the queue length the loops test)
-SIZE_UNKNOWN(GzObList);
-struct GzObList {
-    char m_pad0[4]; // +0x00
-    void* m_4;      // +0x04  head node
-    void* m_8;      // +0x08  tail node
-    i32 m_c;        // +0x0c  node count
-    char m_pad10[0x1c - 0x10];
-
-    ~GzObList();                // 0x1b48c6  ~CObList (auto member teardown)
-    void RemoveAll();           // 0x1b48a6
-    void AddTail(void* node);   // 0x1b4991
-    void* RemoveTail();         // 0x1b4a27  (CGruntzCmdList::RemoveTail)
-    void* FindIndex(i32 index); // 0x1b4afe  -> POSITION (a node*)
-    void RemoveAt(void* pos);   // 0x1b4ac7
-};
+// GzObList IS the MFC CObList (<Mfc.h>) - every one of its methods was already annotated with
+// the NAFXCW library rva: RemoveAll @0x1b48a6, ~CObList @0x1b48c6, AddTail @0x1b4991, RemoveTail
+// @0x1b4a27, RemoveAt @0x1b4ac7, FindIndex @0x1b4afe. Declaring them on a class of OUR name
+// mangled them as ?RemoveAll@GzObList@@QAEXXZ / ??1GzObList@@QAE@XZ / ... - symbols NAFXCW does
+// NOT define (it defines ?RemoveAll@CObList@@QAEXXZ / ??1CObList@@UAE@XZ), i.e. 9 guaranteed
+// `unresolved external symbol`s (assert_relocs --fake-targets). Aliasing the REAL class binds
+// them all and is layout-identical (0x1c). The raw m_4/m_8/m_c fields the leaves walked are
+// MFC-protected, so they now go through CObList's PUBLIC accessors GetHeadPosition()/GetCount(),
+// which are _AFXCOLL_INLINE and lower to the identical single member load - not a call.
+// (The same CTmObList->CObList / CFileIO->CFile fold.)
+typedef CObList GzObList;
 
 class GzStateProvider; // defined below; Select() takes the +0x38 state sub-object
 

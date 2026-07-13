@@ -104,8 +104,8 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
     table[2] = 0;
     table[3] = 0;
     i32 i;
-    for (i = 0; i < m_base.m_c; i++) {
-        void* pos = m_base.FindIndex(i);
+    for (i = 0; i < m_base.GetCount(); i++) {
+        POSITION pos = m_base.FindIndex(i);
         GzTargetObj* obj = *(GzTargetObj**)((char*)pos + 8);
         i32 flags = obj->m_c;
         if (!(flags & 2)) {
@@ -146,8 +146,8 @@ i32 CGruntzCmdMgr::ScanTargets(i32 param) {
 // ---------------------------------------------------------------------------
 RVA(0x00023b40, 0x53)
 void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
-    for (i32 i = 0; i < m_base.m_c; i++) {
-        void* pos = m_base.FindIndex(i);
+    for (i32 i = 0; i < m_base.GetCount(); i++) {
+        POSITION pos = m_base.FindIndex(i);
         GzTargetObj* obj = *(GzTargetObj**)((char*)pos + 8);
         if (obj->m_6 == (u8)typeByte && obj->m_4 == (u8)indexByte) {
             m_base.RemoveAt(pos);
@@ -163,7 +163,7 @@ void CGruntzCmdMgr::RemoveMatchingTarget(char indexByte, char typeByte) {
 // ---------------------------------------------------------------------------
 RVA(0x00023bc0, 0x25)
 void CGruntzCmdMgr::DrainBase() {
-    while (m_base.m_c) {
+    while (m_base.GetCount()) {
         GzTargetObj* obj = (GzTargetObj*)m_base.RemoveTail();
         if (obj) {
             obj->Deselect();
@@ -240,9 +240,9 @@ void CGruntzCmdMgr::EnqueueCommand(i32 flag, void* cmd) {
         } else if (m_38->m_2c->GetStateId() == 0x11) {
             ((CGruntzCommand*)cmd)->m_submitted = 4; // submit-context = ready
         }
-        m_1c.AddTail(cmd);
+        m_1c.AddTail((CObject*)cmd);
     }
-    m_base.AddTail(cmd);
+    m_base.AddTail((CObject*)cmd);
 }
 
 // ---------------------------------------------------------------------------
@@ -750,9 +750,11 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
         if (!IsActive((i32)stream)) {
             return 0;
         }
-        i32 count = m_base.m_c;
+        i32 count = m_base.GetCount();
         stream->Write(&count, 4);
-        GzCmdNode* node = (GzCmdNode*)m_base.m_4;
+        GzCmdNode* node =
+            (GzCmdNode*)
+                m_base.GetHeadPosition(); // MFC-protected m_pNodeHead via the inline accessor
         while (node) {
             GzSerCmd* cmd = node->m_8;
             node = node->m_0;
@@ -792,7 +794,7 @@ i32 CGruntzCmdMgr::Serialize(CSerialArchive* stream, i32 mode, i32 a3, i32 a4) {
         if (!cmd->Serialize(stream, 7, a3, a4)) {
             return 0;
         }
-        m_base.AddTail(cmd);
+        m_base.AddTail((CObject*)cmd);
         idx++;
     } while (idx < (u32)count);
     return 1;

@@ -2238,11 +2238,11 @@ i32 CGruntzMgr::RunFromState() {
 // stack is empty).
 RVA(0x00090980, 0x18)
 CState* CGruntzMgr::TopState() {
-    CStateStackZ* st = (CStateStackZ*)&m_stateStack;
-    if (st->m_nSize <= 0) {
+    CPtrArray* st = &m_stateStack;
+    if (st->GetSize() <= 0) {
         return 0;
     }
-    return st->m_pData[st->m_nSize - 1];
+    return (CState*)st->GetAt(st->GetSize() - 1);
 }
 
 // -------------------------------------------------------------------------
@@ -2253,8 +2253,8 @@ void CGruntzMgr::PushState(CState* s) {
     if (!s) {
         return;
     }
-    CStateStackZ* st = (CStateStackZ*)&m_stateStack;
-    st->SetAtGrow(st->m_nSize, s);
+    CPtrArray* st = &m_stateStack;
+    st->SetAtGrow(st->GetSize(), (void*)s);
 }
 
 // -------------------------------------------------------------------------
@@ -2266,12 +2266,12 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
     if (!s) {
         return 0;
     }
-    i32 n = ((CStateStackZ*)&m_stateStack)->m_nSize;
+    i32 n = m_stateStack.GetSize();
     if (n <= 0) {
         return 0;
     }
-    CState* top = ((CStateStackZ*)&m_stateStack)->m_pData[n - 1];
-    ((CStateStackZ*)&m_stateStack)->RemoveAt(n - 1, 1);
+    CState* top = (CState*)m_stateStack.GetAt(n - 1);
+    m_stateStack.RemoveAt(n - 1, 1);
     return top == s;
 }
 
@@ -2281,13 +2281,13 @@ i32 CGruntzMgr::PopTopIfMatches(CState* s) {
 // (+0xe0/+0xdc) so the array base is not hoisted into a register.
 RVA(0x00090a50, 0x40)
 void CGruntzMgr::ClearStateStack() {
-    for (i32 i = 0; i < ((CStateStackZ*)&m_stateStack)->m_nSize; i++) {
-        CState* s = ((CStateStackZ*)&m_stateStack)->m_pData[i];
+    for (i32 i = 0; i < m_stateStack.GetSize(); i++) {
+        CState* s = (CState*)m_stateStack.GetAt(i);
         if (s) {
             delete s;
         }
     }
-    ((CStateStackZ*)&m_stateStack)->SetSize(0, -1);
+    m_stateStack.SetSize(0, -1);
 }
 
 // -------------------------------------------------------------------------
@@ -3301,9 +3301,9 @@ CState* CGruntzMgr::FindStateById(i32 id) {
     if (m_curState && m_curState->Update() == id) {
         return m_curState;
     }
-    CStateStackZ* st = (CStateStackZ*)&m_stateStack;
-    for (i32 i = 0; i < st->m_nSize; i++) {
-        CState* s = st->m_pData[i];
+    CPtrArray* st = &m_stateStack;
+    for (i32 i = 0; i < st->GetSize(); i++) {
+        CState* s = (CState*)st->GetAt(i);
         if (s && s->Update() == id) {
             return s;
         }
