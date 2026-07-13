@@ -111,27 +111,17 @@ extern "C" void* __stdcall PosSoundSpawn(void* layer, i32 a2, void* outPt, i32 a
 void SpawnPosSound(PosSoundObj* obj);
 
 // ---------------------------------------------------------------------------
-// 0x87b0 / 0xb940 (re-homed from src/Stub/BoundaryMisc.cpp): the CUserBase base-dtor
-// family. CUserBase (the game-object base of CAmbientSound in this TU) has an INLINE
-// ~CUserBase in <Gruntz/UserLogic.h> that folds into leaf dtors, so these OUT-OF-LINE
-// instances keep distinct placeholder identities. 0xb940 is RVA-inside this TU's band.
-
-// 0x87b0 - the empty final-base out-of-line ~CUserBase: stamp ??_7CUserBase (0x5e70b4)
-// and return (7-byte `mov [ecx],offset ??_7 + ret`). 3 vtable slots (0xc).
-struct CUserBase87b0 {
-    virtual ~CUserBase87b0(); // 0x87b0  slot 0 (+0x00)
-    virtual void s1();
-    virtual void s2();
-};
-SIZE_UNKNOWN(CUserBase87b0);
-// Its OWN vtable, binary-proven (NOT CUserBase's 0x1e70b4 - that one's slot 0 holds the
-// sdd 0x8810, a different dtor): ??_7CUserBase87b0 @0x1e70fc holds, at slot 0, an ILT
-// thunk to the sdd 0x8780, whose body calls this dtor (0x87b0). A distinct 3-slot
-// CUserBase-shaped class. @identity-TODO: RTTI name unrecovered (its slots 1/2 are NULL,
-// so it carries no GetTypeTag tag to name it by).
-VTBL(CUserBase87b0, 0x001e70fc);
-RVA(0x000087b0, 0x7)
-CUserBase87b0::~CUserBase87b0() {}
+// 0x87b0 IS ??1CUserBase@@UAE@XZ - the out-of-line COMDAT copy of the INLINE
+// ~CUserBase (<Gruntz/UserLogic.h>), now bound by @rva-symbol in ActionArea.cpp
+// (RVA-adjacent; its obj emits the COMDAT). The former placeholder here
+// (`CUserBase87b0`, VTBL'd at 0x1e70fc) was a CONFLATION built on a broken thunk
+// chase: 0x1e70fc's slot-0 sdd (0x8780) calls thunk 0x2ea5 -> 0x8750 (the zDArray
+// dtor), NOT 0x87b0 - and 0x1e70fc's RTTI COL names
+// .?AV?$zDArray@P8CUserLogic@@AEHXZ@@ (the PMF zDArray instantiation), so binding
+// it to any plain-identifier class was wrong by construction. 0x87b0's real
+// identity is proven by its ~150 EH-unwind-funclet callers (every CUserBase-family
+// ctor's partial-unwind calls it via thunk 0x1343) + its body: stamp ??_7CUserBase
+// (0x5e70b4, RTTI .?AVCUserBase@@) and return.
 
 // @early-stop
 // 0x8860 IS ??1CUserLogic - PROVEN from the binary: ??_7CUserLogic @0x1e705c slot 0 holds

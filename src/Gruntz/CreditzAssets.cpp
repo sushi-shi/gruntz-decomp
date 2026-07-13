@@ -11,16 +11,11 @@
 // 0x64556c singleton global - the same object, both reads authentic retail.
 #include <rva.h>
 
-#include <Dsndmgr/GruntzSoundZ.h>           // canonical CGruntzSoundZ / CGruntzSoundInnerZ
-#include <Gruntz/GameMode.h>                // canonical CCreditsState : CState
-#include <Gruntz/GruntzMgr.h>               // CGruntzMgr (m_4 / the singleton; m_sound @+0x48)
-#include <Gruntz/BoundaryLowerDtorsViews.h> // CWorker39f20 (the 0x39f20 /GX leaf dtor)
+#include <Dsndmgr/GruntzSoundZ.h> // canonical CGruntzSoundZ / CGruntzSoundInnerZ
+#include <Gruntz/GameMode.h>      // canonical CCreditsState : CState
+#include <Gruntz/GruntzMgr.h>     // CGruntzMgr (m_4 / the singleton; m_sound @+0x48)
 
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c (the CGruntzMgr singleton)
-
-// The Rez heap free (0x1b9b82, __cdecl); canonical extern "C" decl (creditzassets is
-// base-profile, so the /GX throwing-ness the dtor TU relied on is moot here).
-extern "C" void RezFree(void* p); // 0x1b9b82
 
 RVA(0x00039dc0, 0x10b)
 void CCreditsState::LoadCreditzAssets() {
@@ -55,18 +50,7 @@ void CCreditsState::LoadCreditzAssets() {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 0x039f20 - ~CWorker39f20 (/GX): stamp the derived vtable (0x5e971c), RezFree the
-// +0x04 heap buffer, then fold the CObject base subobject (restamp the base dtor
-// vtable 0x5e8cb4). Byte-shape identical to ~CRezBufferObject. __thiscall. RVA-homed
-// here (RVA-contiguous with CCreditsState::LoadCreditzAssets @0x39dc0).
-// @identity-TODO: the derived vtable 0x5e971c is ??_7?$CArray@PAUPLAYLISTINFOSTRUCT@@..
-// (config/vtable_names.csv) - a standalone out-of-line dtor of the CArray<
-// PLAYLISTINFOSTRUCT*> template; the owning STATE object that holds this CArray member
-// is unrecovered, so the placeholder CWorker39f20 stays.
-RVA(0x00039f20, 0x51)
-CWorker39f20::~CWorker39f20() {
-    if (m_4) {
-        RezFree(m_4);
-    }
-}
+// (0x039f20 is ??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ - the movie/creditz
+// playlist template dtor, RTTI-proven by the COL at its vtable 0x1e971c. The former
+// placeholder `CWorker39f20` dtor here is dissolved; the real template COMDAT is
+// instantiated + pinned in src/Gruntz/ArraySerialize.cpp.)

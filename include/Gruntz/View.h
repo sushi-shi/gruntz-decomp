@@ -76,60 +76,11 @@ struct CRenderer {
     virtual void v11();
     virtual void v12();
     virtual void Present(void* a, void* b); // slot 13 (+0x34)
-    virtual void v14();                     // slot 14
-    virtual void v15();                     // slot 15
-    virtual void v16();                     // slot 16
-    virtual void v17();                     // slot 17
-    virtual void v18();                     // slot 18
-    virtual void v19();                     // slot 19
-    virtual void v20();                     // slot 20
-    virtual void v21();                     // slot 21
-    virtual void v22();                     // slot 22
-    virtual void v23();                     // slot 23
-    virtual void v24();                     // slot 24
-    virtual void v25();                     // slot 25
-    virtual void v26();                     // slot 26
-    virtual void v27();                     // slot 27
-    virtual void v28();                     // slot 28
-    virtual void v29();                     // slot 29
-    virtual void v30();                     // slot 30
-    virtual void v31();                     // slot 31
-    virtual void v32();                     // slot 32
-    virtual void v33();                     // slot 33
-    virtual void v34();                     // slot 34
-    virtual void v35();                     // slot 35
-    virtual void v36();                     // slot 36
-    virtual void v37();                     // slot 37
-    virtual void v38();                     // slot 38
-    virtual void v39();                     // slot 39
-    virtual void v40();                     // slot 40
-    virtual void v41();                     // slot 41
-    virtual void v42();                     // slot 42
-    virtual void v43();                     // slot 43
-    virtual void v44();                     // slot 44
-    virtual void v45();                     // slot 45
-    virtual void v46();                     // slot 46
-    virtual void v47();                     // slot 47
-    virtual void v48();                     // slot 48
-    virtual void v49();                     // slot 49
-    virtual void v50();                     // slot 50
-    virtual void v51();                     // slot 51
-    virtual void v52();                     // slot 52
-    virtual void v53();                     // slot 53
-    virtual void v54();                     // slot 54
-    virtual void v55();                     // slot 55
-    virtual void v56();                     // slot 56
-    virtual void v57();                     // slot 57
-    virtual void v58();                     // slot 58
-    virtual void v59();                     // slot 59
-    virtual void v60();                     // slot 60
-    virtual void v61();                     // slot 61
-    virtual void v62();                     // slot 62
-    virtual void v63();                     // slot 63
-    virtual void v64();                     // slot 64
-    virtual void v65();                     // slot 65
-    virtual void v66();                     // slot 66
-    virtual void v67();                     // slot 67
+    // (Slots 14..67 were FABRICATED: the old model copied the 68-slot count from
+    // the vtable at 0x1ee1c4 it was then VTBL()-bound to - which RTTI proves is
+    // the real MFC ??_7CView@@6B@ (library vtable; config/library_vtables.csv), an
+    // unrelated class. Only the two dispatched slots above are evidence-backed;
+    // dispatch codegen depends on slot OFFSET, not on trailing slot count.)
     // Non-virtual leaf the play-exit path runs on renderer A (reloc-masked).
     void Refresh(); // 0x159ef0 (thiscall, no arg)
     // Renderer B (+0x0c) is also the resource-facet worker holder the leaf-state
@@ -161,7 +112,15 @@ struct CRenderer {
 // The one class kept here (CRenderer) needs the polymorphic renderer vtable; it stays
 // in this afx-pulling header (the ResMgr.h + GameRegistry.h classes are afx-neutral).
 
-// --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-VTBL(CRenderer, 0x001ee1c4);
+// NO VTBL here. The old VTBL(CRenderer, 0x001ee1c4) was an RTTI-refuted MISBINDING:
+// 0x1ee1c4 carries RTTI .?AVCView@@ at base_off 0 - it is the real MFC ??_7CView@@6B@
+// (abstract; stamped only by MFC's own CView ctor/dtor @0x1c8e08/0x1c8e3a), catalogued
+// in config/library_vtables.csv. CRenderer is dispatch-only here (never instantiated,
+// no ??_7 emitted), and its true vtable rva is UNRECOVERED.
+// @identity-TODO: recover the renderer's real class - chase the writer of
+// CSpriteFactoryHolder::m_8/m_c (the engine setup that news renderer A/B) to its ctor
+// and read the vptr stamp. A slot-scan over the sprite-factory band (0x158000..0x165000)
+// shortlists non-RTTI vtables 0x1efdc0/0x1eff30/0x1f0150/0x1f0198 (each >=14 slots with
+// slot-9/13 bodies in-band) but none is pinned by a creation-site edge yet.
 
 #endif // GRUNTZ_GRUNTZ_CVIEW_H

@@ -986,8 +986,8 @@ i32 CMoviePlayer::PlayList(i32 loops) {
     }
     i32 iter = 1;
     do {
-        for (i32 i = 0; i < m_868c.m_nSize; i++) {
-            CMovieClip* clip = m_868c.m_pData[i];
+        for (i32 i = 0; i < m_868c.GetSize(); i++) {
+            PLAYLISTINFOSTRUCT* clip = m_868c[i]; // inline CArray::operator[] == m_pData[i]
             if (clip->m_src == 0) {
                 return 0;
             }
@@ -1008,7 +1008,7 @@ i32 CMoviePlayer::PlayList(i32 loops) {
                     return 0;
                 }
             }
-            CMovieClip* c2 = m_868c.m_pData[i];
+            PLAYLISTINFOSTRUCT* c2 = m_868c[i];
             i32 result = Pump(c2->m_flags, c2->m_count);
             if (result != 0x11111111) {
                 CloseSmacker();

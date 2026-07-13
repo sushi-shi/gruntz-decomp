@@ -144,7 +144,13 @@ ANN_RVA_RE = re.compile(r"^rva:(0x[0-9a-fA-F]+)(?:\s+size:(0x[0-9a-fA-F]+|\d+))?
 ANN_SYM_RE = re.compile(r"^symbol:(\S+)$")
 # Macro annotation markers (presence of any -> a migrated TU; functions/SYMBOL
 # come from IR for these). A TU with none falls back to the legacy comment path.
-MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL)\s*\(")
+# A TU "carries labels" if it invokes an rva.h macro OR carries standalone
+# `// @rva-symbol:` / `// @data-symbol:` pins - a pin-only TU (e.g. an explicit
+# template-instantiation host whose every function is a compiler-emitted COMDAT,
+# like ArraySerialize.cpp's CArray<PLAYLISTINFOSTRUCT*>) has no macro to invoke,
+# and without this alternation it silently fell through to the vendored-C path
+# and contributed ZERO rows.
+MACRO_RE = re.compile(r"\b(?:RVA|DATA|SYMBOL)\s*\(|@(?:rva|data)-symbol:")
 
 # Static rva->symbol table for vendored C TUs whose source carries no labels.
 LABEL_CONFIG = REPO / "config/zlib_labels.csv"

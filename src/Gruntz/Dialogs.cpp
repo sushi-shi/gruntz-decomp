@@ -1,7 +1,7 @@
 // Dialogs.cpp - the Battlez multiplayer setup dialog retail .obj (one contiguous
 // .text block, 0x14b30..0x18086): CBattlezDlg / CBattlezDlgCustom /
-// CBattlezDlgColors and the small CImgHolder image-list helper hierarchy compiled
-// alongside them. Each ctor chains the NAFXCW CDialog(UINT, CWnd*) base ctor
+// CBattlezDlgColors, plus the MFC CObject/CGdiObject/CBrush COMDAT pool this TU
+// first-instantiated (OnDrawItem's stack CDC/CBrush). Each ctor chains the NAFXCW CDialog(UINT, CWnd*) base ctor
 // (reloc-masked), stores its own derived vftable, default-constructs its embedded
 // MFC members, and zero/inits the scalar members it touches.
 //
@@ -29,13 +29,14 @@
 // option handlers persist per-slot dropdowns into its m_options array.
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
-// CImgHolder::DeleteImageList @0x1c6a5c IS MFC CImageList::DeleteImageList (afxcmn;
-// ?DeleteImageList@CImageList@@QAEHXZ - returns BOOL); minimal local decl (links from MFC).
-SIZE_UNKNOWN(CImageList);
-class CImageList {
-public:
-    i32 DeleteImageList();
-};
+// (The old "CImgHolder image-list holder hierarchy" here was a fake-view nest,
+// RTTI-refuted: 0x1e8cb4/0x1e8cd4/0x1e8cf4 carry RTTI .?AVCObject@@/.?AVCGdiObject@@/
+// .?AVCBrush@@ - they are the real MFC vtables, COMDAT-kept from THIS game TU (the
+// first CBrush user in link order; MSVC5 keeps the first COMDAT per name). The
+// "DeleteImageList" callee 0x1c6a5c is CGdiObject::DeleteObject - its Detach
+// (0x1c6a32) calls afxMapHGDIOBJ (0x1c697f, FID HIGH) and the indirect call goes
+// through the GDI32.dll DeleteObject IAT slot (0x2c3ec0), not comctl32. The FID
+// row ?DeleteImageList@CImageList (AMBIG) was the GDI/ImageList twin collision.)
 
 // ---------------------------------------------------------------------------
 // 0x14b10 (first fn in the TU): a message-map handler that runs MFC's default
@@ -83,59 +84,26 @@ i32 __stdcall BattlezSetupDlgInit(i32) {
 }
 
 // ---------------------------------------------------------------------------
-// Small CImageList-holder helper hierarchy compiled into the dialogs TU (its code
-// lands between the CBattlezDlg ctor and CBattlezDlgCustom). A trivial CObject-ish
-// grand-base (vtable @0x5e8cb4) whose out-of-line destructor is the standalone
-// base-vptr stamp the binary keeps at 0x16410, and a derived holder (vtable
-// @0x5e8cd4) that owns a CImageList its dtor frees. The class names are placeholders
-// (only offsets + code bytes are load-bearing). Real-virtual model (twin of
-// CHolder8c400 in BoundaryLowerDtors.cpp): NO manual `*(void**)this = &g_*Vtbl`
-// store, NO g_*Vtbl extern - cl emits the implicit ??_7 stamps, which reloc-mask.
-// ---------------------------------------------------------------------------
-
-// CImgHolderBase - the polymorphic CObject-ish grand-base. Its EMPTY virtual dtor
-// folds in as the LAST store of ~CImgHolder (retail's stamp-after-teardown order)
-// and, being virtual, is ALSO emitted standalone: the 7-byte `mov [ecx],&??_7; ret`
-// the binary keeps at 0x16410 (the ??_7CImgHolderBase reloc-masking the shared
-// 0x5e8cb4 vtable). The non-trivial base subobject earns the leaf's /GX EH frame.
-// Real-virtual model: cl emits the implicit grand-base re-stamp - no manual
-// `*(void**)this = &g_*Vtbl`; RVA() pins the cl-emitted ??1 standalone to 0x16410.
-// (Keeping the dtor INLINE is what makes ~CImgHolder fold its teardown; an
-// out-of-line base dtor would instead emit a `call ??1CImgHolderBase` and break the
-// fold.)
-struct CImgHolderBase {
-    RVA(0x00016410, 0x7)
-    virtual ~CImgHolderBase() {}
-};
-
-// CImgHolder2 (RVA-homed from src/Stub/DiscoveredEh.cpp, was the synthetic CU55) - a
-// SECOND byte-identical dialog image-holder: a derived holder whose /GX dtor frees an
-// embedded CImageList (DeleteImageList 0x1c6a5c) between the implicit own vptr stamp
-// (0x5e8cd4) and the folded CImgHolderBase re-stamp (0x5e8cb4). The RTTI name is
-// unrecovered (Ghidra ClassUnknown_55), but the shape is exactly CImgHolder's, so it
-// dissolves onto the same CImgHolderBase grand-base + shared CImageList shim above.
-struct CImgHolder2 : CImgHolderBase {
-    void DeleteImageList();          // 0x1c6a5c (NAFXCW CImageList::DeleteImageList)
-    virtual ~CImgHolder2() OVERRIDE; // 0x016460
-};
-RVA(0x00016460, 0x46)
-CImgHolder2::~CImgHolder2() {
-    ((CImageList*)this)->DeleteImageList();
-}
-
-// CImgHolder - the derived holder. Its virtual dtor's implicit vptr stamp lands
-// stamp-first, frees the embedded image list (CImageList::DeleteImageList @0x1c6a5c,
-// reloc-masked), then the folded base teardown re-stamps the base vtable. The /GX EH
-// frame guards the base teardown if DeleteImageList throws.
-struct CImgHolder : CImgHolderBase {
-    void DeleteImageList();         // 0x1c6a5c (NAFXCW CImageList::DeleteImageList, reloc-masked)
-    virtual ~CImgHolder() OVERRIDE; // 0x016500
-};
-
-RVA(0x00016500, 0x46)
-CImgHolder::~CImgHolder() {
-    ((CImageList*)this)->DeleteImageList(); // 0x1c6a5c
-}
+// The MFC GDI COMDAT pool this TU emits (its code lands between the CBattlezDlg
+// ctor and CBattlezDlgCustom). OnDrawItem's stack CDC/CBrush make cl instantiate
+// the inline MFC dtors out-of-line for the vtables + /GX unwind funclets, and the
+// linker kept THIS TU's copies (first CBrush user in link order; MSVC5 keeps one
+// COMDAT per mangled name). RTTI ground truth for the vtables they stamp:
+//   0x1e8cb4 = ??_7CObject@@6B@      0x1e8cd4 = ??_7CGdiObject@@6B@
+//   0x1e8cf4 = ??_7CBrush@@6B@       (auto-named via config/vtable_names.csv when
+// this obj emits the ??_7 COMDATs). Byte-proof: a scratch /GX+/O2 TU with a stack
+// CBrush reproduces every body below exactly (mod relocs). The former fake
+// CImgHolderBase/CImgHolder2/CImgHolder hierarchy (+ the "CImageList holder"
+// story) is dissolved - it was RTTI-refuted (see the header note above).
+// @rva-symbol: ??_GCObject@@UAEPAXI@Z 0x000163e0 0x1e
+// @rva-symbol: ??1CObject@@UAE@XZ 0x00016410 0x7
+// @rva-symbol: ??_GCGdiObject@@UAEPAXI@Z 0x00016430 0x1e
+// @rva-symbol: ??1CGdiObject@@UAE@XZ 0x00016460 0x46
+// @rva-symbol: ??1CBrush@@UAE@XZ 0x00016500 0x46
+// (??_GCBrush @0x164d0 + ??_7CBrush @0x1e8cf4 are pinned in FlashRect.cpp: they
+// are forced by the INLINE CBrush default ctor, which in this split of the retail
+// TU lives in FlashRect160f0's scratch brush - our CBrush(COLORREF) ctor here is
+// the out-of-line MFC one, so this obj emits ??1CBrush but not the ??_G/??_7.)
 
 // ---------------------------------------------------------------------------
 RVA(0x00018030, 0x56)
@@ -648,45 +616,16 @@ void CBattlezDlg::OnMeasureItem(i32 nIDCtl, MEASUREITEMSTRUCT* lpmis) {
     CWnd::OnMeasureItem(nIDCtl, lpmis);
 }
 
-// The game's FillRect fn-ptr global (the .idata IAT slot, reloc-masked indirect
-// call). Twin of FlashRect's g_pFillRect; DATA-bound here.
-DATA(0x002c44e0)
-extern int(WINAPI* g_pFillRectDlg)(HDC, const RECT*, HBRUSH);
-
-// A minimal MFC CDC wrapper for the owner-draw swatch fill: vptr + the two device
-// contexts. The dialog Attach()es the DRAWITEMSTRUCT hDC, fills, then Detach()es
-// so ~CDC does not release the borrowed DC. All four members are NAFXCW bodies
-// reached by call-rel32 (external/no-body -> reloc-masked).
-SIZE_UNKNOWN(CDlgDC);
-struct CDlgDC {
-    char m_vfptr[4];    // +0x00  (CDC::CDC stamps the CObject vptr here; opaque slot)
-    HDC m_hDC;          // +0x04
-    HDC m_hAttribDC;    // +0x08
-    i32 m_0c;           // +0x0c  (CDC::CDC zero-inits it; keeps the 0x10-byte size)
-    CDlgDC();           // 0x1c563b  CDC::CDC
-    void Attach(HDC h); // 0x1c5705  CDC::Attach
-    void Detach();      // 0x1c573c  CDC::Detach
-    ~CDlgDC();          // 0x1c5783  CDC::~CDC
-};
-
-// The owner-draw fill brush: a game GDI-object holder on the CImgHolderBase grand-
-// base (twin of FlashRect's ImgHolder). Constructed from a COLORREF (0x1c6b18 ==
-// CreateSolidBrush + attach; external/reloc-masked); its /GX inline virtual dtor
-// stamps its own vtable, releases the brush (DeleteObject @0x1c6a5c), then folds in
-// the CImgHolderBase re-stamp. SafeBrush NULL-guards the receiver (retail keeps the
-// neg/sbb/and select even for the stack object).
-struct CDrawBrush : CImgHolderBase {
-    HBRUSH m_hObject;      // +0x04
-    CDrawBrush(u32 color); // 0x1c6b18 (external)
-    void Release1c6a5c();  // 0x1c6a5c (external)
-    virtual ~CDrawBrush() OVERRIDE {
-        Release1c6a5c();
-    }
-    HBRUSH SafeBrush() {
-        return this ? m_hObject : (HBRUSH)0;
-    }
-};
-SIZE_UNKNOWN(CDrawBrush);
+// The owner-draw swatch fill uses the REAL MFC classes (afxwin.h, already pulled
+// by <Gruntz/Dialogs.h>): a stack CDC Attach()ed to the DRAWITEMSTRUCT hDC (ctor
+// 0x1c563b / Attach 0x1c5705 / Detach 0x1c573c / ~CDC 0x1c5783, all NAFXCW,
+// reloc-masked), a stack CBrush built from the COLORREF (??0CBrush@@QAE@K@Z
+// 0x1c6b18), and a direct ::FillRect import call (FF15 through the IAT). Passing
+// `brush` to the HBRUSH parameter runs the inline CBrush::operator HBRUSH() -
+// MFC's `this == NULL ? NULL : m_hObject` guard is exactly retail's neg/sbb/and
+// select (the former fake CDlgDC/CDrawBrush views reproduced these same bytes
+// under invented names; the real classes make this TU emit the real CBrush/
+// CGdiObject/CObject COMDAT families pinned above).
 
 // CBattlezDlg::OnDrawItem (0x165a0): owner-draw the four team-color swatch static
 // controls (0x501/0x503/0x505/0x507). Each maps to slot index 0..3; if the
@@ -968,10 +907,10 @@ void CBattlezDlg::OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis) {
             break;
     }
     if (bDraw) {
-        CDlgDC dc;
+        CDC dc;
         dc.Attach(lpdis->hDC);
-        CDrawBrush brush(color);
-        g_pFillRectDlg(dc.m_hDC, &lpdis->rcItem, brush.SafeBrush());
+        CBrush brush(color);
+        ::FillRect(dc.m_hDC, &lpdis->rcItem, brush);
         dc.Detach();
     }
     CWnd::OnDrawItem(nIDCtl, lpdis);
@@ -1039,29 +978,10 @@ void CBattlezDlg::OnOkCommand() {
     OnOK();
 }
 
-SIZE_UNKNOWN(CImgHolderBase);
-SIZE_UNKNOWN(CImgHolder);
-SIZE_UNKNOWN(CImgHolder2);
-// EACH holder owns a DISTINCT retail vtable - binary-proven by the vtable-slot chase
-// (a vtable's slot 1 holds an ILT thunk to the class's scalar-deleting dtor, which calls
-// the ??1 below). They are NOT twins/aliases of one class: MSVC5 keeps exactly ONE COMDAT
-// per mangled name, so three byte-identical `DeleteImageList()` dtors can only be three
-// DIFFERENT classes (three image-list-owning game classes; their RTTI names stay
-// @identity-TODO - all three vtables are CObject-shaped with no naming slot).
-//   ??_7CImgHolder2  @0x1e8cd4 slot1 -> thunk 0x1ef6  -> sdd 0x16430 -> ??1 0x16460
-//   ??_7CImgHolder   @0x1e8cf4 slot1 -> thunk 0x3a26  -> sdd 0x164d0 -> ??1 0x16500
-//   ??_7CHolder8c400 @0x1ea2a4 slot1 -> thunk 0x373d  -> sdd 0x8c3d0 -> ??1 0x8c400
-// (The old model bound 0x1e8cd4 to CImgHolder and RELOC_VTBL'd the other two onto it -
-// exactly backwards: 0x1e8cd4 is CImgHolder2's.) The base re-stamp -> ??_7CObject@@6B@
-// (0x1e8cb4) stays a compiler-model wall (cl emits ??_7CImgHolderBase for the inline-empty
-// base, not CObject) - the one remaining RELOC_VTBL here.
-VTBL(CImgHolder2, 0x001e8cd4);
-VTBL(CImgHolder, 0x001e8cf4);
-// The polymorphic grand-base's re-stamp target: cl emits ??_7CImgHolderBase@@6B@ for the
-// empty inline-dtor base, but retail's base vtable IS the shared CObject vtable @0x1e8cb4
-// (MSVC5 has no ICF; the base subobject's vtable equals CObject's). Bind the emitted
-// ??_7CImgHolderBase symbol to that rva so the ~CImgHolderBase/~CImgHolder2/~CImgHolder
-// base re-stamp DIR32s are reloc-CORRECT (was UNBOUND - the 0x1e8cb4 row is ??_7CObject).
-RELOC_VTBL(CImgHolderBase, 0x001e8cb4);
-
-// --- vtable catalog (reduced-view classes share their base vtable rva) ---
+// (The old "three DISTINCT image-holder classes" story here was RTTI-refuted: the
+// vtables 0x1e8cb4/0x1e8cd4/0x1e8cf4/0x1ea2a4 carry RTTI COLs naming CObject/
+// CGdiObject/CBrush/CRgn - the real MFC GDI family, whose ??1/??_G/??_7 COMDATs
+// this TU (and the rect/creditz TUs for CRgn) first-instantiated. The VTBL/
+// RELOC_VTBL rows are gone; the ??_7 datums auto-name from config/vtable_names.csv
+// when this obj emits the real COMDATs, and the function COMDATs are pinned by the
+// @rva-symbol block above.)

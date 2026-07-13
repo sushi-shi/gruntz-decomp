@@ -1874,9 +1874,11 @@ unit = "colorhsv"
 source = "src/DDrawMgr/ColorHsv.cpp"
 flags = "base"
 [[unit]]
+# eh: the retail-kept ??1?$CArray@PAUPLAYLISTINFOSTRUCT... COMDAT (0x39f20) carries a
+# /GX EH frame (push -1 / push 0x5d9b08 / fs:0), so the instantiation host compiles /GX.
 unit = "arrayserialize"
 source = "src/Gruntz/ArraySerialize.cpp"
-flags = "base"
+flags = "eh"
 [[unit]]
 unit = "circleshadeblit"
 source = "src/DDrawMgr/CircleShadeBlit.cpp"

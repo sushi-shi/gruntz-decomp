@@ -55,6 +55,13 @@
 // <Mfc.h> brings <windows.h> USER32: PostMessageA (the per-frame message scan posts
 // WM_COMMAND to the owner HWND; the owner's HWND member is typed HWND below).
 #include <Mfc.h>
+// CRgn (the CCreditsState +0x1e8 embed) - RTTI .?AVCRgn@@ @0x1ea2a4. Skip the
+// afxwin*.inl bodies for the CLANG LABEL STEP only (implicit-int CMenu::op==);
+// wine cl keeps the inlines. docs/patterns/afxwin-clang-label-step-skip-inl.md.
+#ifdef __clang__
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h>
 
 // A per-frame entity (the g_actorList element) and the list itself. These WERE defined
 // here as CGMEntity/CGMEntityList - a second, byte-identical model of the classes
@@ -260,27 +267,15 @@ public:
 };
 VTBL(CMenuState, 0x1e9e84);
 
-// CImgHolder - the MFC image-list holder embedded at CCreditsState+0x1e8. Its virtual
-// dtor stamps the derived ??_7CImgHolder (0x1e8cd4), frees the image list
-// (CImageList::DeleteImageList @0x1c6a5c, MFC), then the REAL CObject grand-base restamps
-// ??_7CObject (0x1e8cb4). Deriving from the real CObject (not a fake CCreditsImgBase view)
-// is what binds ~CCreditsState's inlined m_1e8 teardown to the real ??_7CObject /
-// ??_7CImgHolder / CImageList::DeleteImageList (all reloc-FAITHFUL). Twin of Dialogs'
-// CImgHolder (shared-header consolidation with the dialogs TU deferred).
-SIZE_UNKNOWN(CImageList);
-class CImageList { // minimal decl of the MFC class (absent from the vc50 headers)
-public:
-    i32 DeleteImageList(); // 0x1c6a5c (MFC CImageList::DeleteImageList)
-};
-SIZE_UNKNOWN(CImgHolder);
-struct CImgHolder : CObject {
-    // Inline so ~CCreditsState folds the stamp/DeleteImageList/base-restore teardown
-    // (retail inlines it; an out-of-line ??1 would emit a `call` and shrink the frame).
-    virtual ~CImgHolder() OVERRIDE {
-        ((CImageList*)this)->DeleteImageList(); // 0x1c6a5c
-    }
-    void* m_hImageList; // +0x04
-};
+// The +0x1e8 embed is a REAL MFC CRgn (afxwin.h) - RTTI-proven: the vtable its
+// out-of-line ctor COMDAT (??0CRgn @0x8c3b0, called by CGruntzMgr::TransitionState
+// when it builds the credits state) stamps is 0x1ea2a4, whose COL names .?AVCRgn@@.
+// ~CCreditsState's inlined member teardown is the inlined ~CRgn chain with the
+// CRgn own-stamp dead-store-elided: stamp ??_7CGdiObject (0x1e8cd4), call
+// CGdiObject::DeleteObject (0x1c6a5c - the former "CImageList::DeleteImageList"
+// misname; its Detach calls afxMapHGDIOBJ and the indirect call goes through the
+// GDI32 DeleteObject IAT slot), restamp ??_7CObject (0x1e8cb4). The former fake
+// `CImgHolder : CObject` view + its local CImageList decl are dissolved.
 
 // CCreditsState - the credits state. Render
 // is the canonical Render spine: input poll -> input-virtual bail -> cursor anim
@@ -339,7 +334,7 @@ public:
     i32 m_1c0; // +0x1c0 fade countdown ms (LoadCreditzAssets arms 3000 on the rising edge)
     i32 m_1c4; // +0x1c4 conditional-FX gate / credits-music toggle
     char m_pad1c8[0x1e8 - 0x1c8];
-    CImgHolder m_1e8;  // +0x1e8 embedded image list (freed by ~CCreditsState)
+    CRgn m_1e8;        // +0x1e8 embedded GDI region (RTTI .?AVCRgn@@; freed by ~CCreditsState)
     CString m_caption; // +0x1f0 credits caption CString (freed by ~CCreditsState)
     char m_pad1f4[0x208 - 0x1f4];
     i32 m_videoPlaying; // +0x208 video playing gate

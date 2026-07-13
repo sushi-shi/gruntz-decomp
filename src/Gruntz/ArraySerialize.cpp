@@ -1,77 +1,31 @@
-// ArraySerialize.cpp - CMovieScratch::Serialize (0x39fa0), the movie/creditz playlist
-// array's MFC CArray<CMovieClip*>::Serialize (vtable slot 2 of ??_7?$CArray@... @0x1e971c,
-// modeled as CMovieScratch). __thiscall, dispatched only through the MFC CArchive Serialize
-// mechanism (reached via the uncalled ILT thunk 0x1e56 = CMovieScratch vtable slot 2), so it
-// has no rel32 caller. Kept in its own TU (its retail COMDAT sits far from the movie cluster).
+// ArraySerialize.cpp - the CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*>
+// instantiation host: the movie/creditz playlist array (worker+0x868c,
+// <Io/MoviePlayer.h> CMoviePlaylist) is the REAL MFC template - RTTI-proven by the
+// COL at its vtable 0x1e971c (.?AV?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@). The
+// explicit instantiation below makes THIS obj emit the full member COMDAT family
+// under the exact retail mangled names, and the @rva-symbol pins bind the
+// retail-kept copies:
+//   ??1  @0x39f20 (0x51)  - the /GX dtor (`if (m_pData) delete[]` + inline ~CObject;
+//                           formerly the fake `CWorker39f20` dtor in CreditzAssets.cpp)
+//   ??_G @0x3a1a0 (0x1e)  - the scalar-deleting dtor (vtable slot 1 via thunk 0x40f7)
+//   ?Serialize @0x39fa0 (0x188) - vtable slot 2 (the former hand-rolled
+//                           CMovieScratch::Serialize reconstruction here - MFC's real
+//                           afxtempl source replaces it)
+//   ??0  @0x94340         - the default ctor (called out-of-line by the state builder
+//                           that constructs the playlist embed; stamp @0x94346 -> 0x5e971c)
+// The vtable datum 0x1e971c auto-names from config/vtable_names.csv when this obj's
+// ??_7 COMDAT lands. delete[] lowers to ??3@YAXPAX@Z @0x1b9b82 (== _RezFree; FID
+// carries both names - the game's Rez free IS operator delete).
 //
-// The MFC CArray<T>::Serialize shape with SetSize inlined: when storing, write the element
-// count then the raw block; when loading, read the count, (re)size the buffer (alloc /
-// grow-with-copy / shrink-in-place per the MFC grow heuristic m_nSize/8 clamped to [4,0x400]),
-// then read the raw block. The formerly-local ArcSer/TArray views are dissolved onto the
-// canonical MfcArchive (the reloc-masked CArchive accessor) and CMovieScratch (the real
-// array class in <Io/MoviePlayer.h>). Field names are placeholders; offsets + code bytes
-// are the load-bearing fact.
+// @rva-symbol: ??1?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAE@XZ 0x00039f20 0x51
+// @rva-symbol: ??_G?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEPAXI@Z 0x0003a1a0 0x1e
+// @rva-symbol: ?Serialize@?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@UAEXAAVCArchive@@@Z 0x00039fa0 0x188
+// @rva-symbol: ??0?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@QAE@XZ 0x00094340
 #include <Ints.h>
 #include <rva.h>
-#include <string.h>          // memcpy/memset -> rep movs/stos at /O2 /Oi
-#include <Wap32/MfcArchive.h> // MfcArchive - the reloc-masked CArchive transfer accessor
-#include <Io/MoviePlayer.h>   // CMovieScratch (CArray<CMovieClip*>) + CArchive
 
-// @early-stop
-// regalloc/scheduling wall (~73%): the SetSize-inlined load/grow/shrink logic is
-// byte-faithful, but MSVC pins this->ebx / arg->esi (mine lands ebp/edi) and
-// interleaves the prologue push/mov differently; not source-steerable.
-RVA(0x00039fa0, 0x188)
-void CMovieScratch::Serialize(CArchive& ar) {
-    MfcArchive* a = (MfcArchive*)&ar;
-    if ((a->m_nMode & 1) == 0) {
-        i32 n = a->ReadCount();
-        if (n == 0) {
-            if (m_pData != 0) {
-                ::operator delete(m_pData);
-                m_pData = 0;
-            }
-            m_nMaxSize = 0;
-            m_nSize = 0;
-        } else if (m_pData == 0) {
-            m_pData = (CMovieClip**)::operator new(n * 4);
-            memset(m_pData, 0, n * 4);
-            m_nMaxSize = n;
-            m_nSize = n;
-        } else if (n <= m_nMaxSize) {
-            if (n > m_nSize) {
-                memset(m_pData + m_nSize, 0, (n - m_nSize) * 4);
-            }
-            m_nSize = n;
-        } else {
-            i32 grow = m_nGrowBy;
-            if (grow == 0) {
-                grow = m_nSize / 8;
-                if (grow < 4) {
-                    grow = 4;
-                } else if (grow > 0x400) {
-                    grow = 0x400;
-                }
-            }
-            i32 newcap = m_nMaxSize + grow;
-            if (n >= newcap) {
-                newcap = n;
-            }
-            CMovieClip** nd = (CMovieClip**)::operator new(newcap * 4);
-            memcpy(nd, m_pData, m_nSize * 4);
-            memset(nd + m_nSize, 0, (n - m_nSize) * 4);
-            ::operator delete(m_pData);
-            m_pData = nd;
-            m_nSize = n;
-            m_nMaxSize = newcap;
-        }
-    } else {
-        a->WriteCount(m_nSize);
-    }
+#include <Io/MoviePlayer.h> // CMoviePlaylist typedef + the full PLAYLISTINFOSTRUCT
 
-    if (a->m_nMode & 1) {
-        a->WriteData(m_pData, m_nSize * 4);
-    } else {
-        a->ReadData(m_pData, m_nSize * 4);
-    }
-}
+// Instantiate every member of the playlist CArray (MSVC5 emits each as a COMDAT;
+// the linker-kept retail copies are the pinned rvas above).
+template class CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*>;

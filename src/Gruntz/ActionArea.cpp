@@ -185,6 +185,14 @@ i32 Gap_007c60(void) {
     return 0;
 }
 
+// 0x87b0 - ??1CUserBase@@UAE@XZ: the out-of-line COMDAT copy of the inline
+// ~CUserBase (<Gruntz/UserLogic.h>), landed in the COMDAT pool right after this
+// TU's block. cl auto-emits it here (this obj's /GX ctors need it for the
+// partial-unwind funclets - retail shows ~150 unwind funclets calling it via
+// thunk 0x1343); the body is the single dead-store-collapsed own-vptr stamp
+// `mov [ecx],offset ??_7CUserBase; ret`. @rva-symbol NAMES the retail copy.
+// @rva-symbol: ??1CUserBase@@UAE@XZ 0x000087b0 0x7
+
 // CActionArea::CActionArea (0x7da0) - fold the shared CUserLogic(obj) init, then
 // name the bound object "GAME_ACTIONAREA_RED", bind the "A" bute node, lock the
 // draw order to 6, seed the leaf state (+0x54=1) and flag the sub-object.

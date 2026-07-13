@@ -41,6 +41,7 @@ import sys
 from pathlib import Path
 
 from gruntz.analysis import vtable_scan as vs
+from gruntz.build.labels import blank_comments
 
 
 def _find_repo():
@@ -159,10 +160,14 @@ def _src_files():
 
 
 def src_claims():
-    """({class: (rva, kind, file:line)}, {class: (dtor_rva, file:line)})"""
+    """({class: (rva, kind, file:line)}, {class: (dtor_rva, file:line)})
+
+    Comments are BLANKED first: a `VTBL(...)` quoted in prose (e.g. "the old
+    VTBL(CButeStore, ..) bound them to a class that no longer exists") is not a
+    claim, and labels.py's own scan blanks comments the same way."""
     vtbl, dtor = {}, {}
     for p in _src_files():
-        txt = p.read_text(errors="ignore")
+        txt = blank_comments(p.read_text(errors="ignore"))
         for m in _VTBL_RE.finditer(txt):
             kind = "RELOC_VTBL" if m.group(1) else "VTBL"
             line = txt.count("\n", 0, m.start()) + 1
@@ -214,13 +219,69 @@ def explain(rva, vtbl_by_class):
             print("      src binds this rva: (nothing)")
 
 
+def rtti_leaf(decorated):
+    """Leaf class identifier of a decorated TypeDescriptor name: ".?AVCFoo@@" ->
+    "CFoo", ".?AVCGameMgr@WAP32@@" -> "CGameMgr" (namespaces follow the leaf),
+    ".?AV?$CArray@..." -> "?$CArray" (a template - matchable by NO plain
+    identifier, so any VTBL(ident, ..) on it is wrong by construction)."""
+    s = decorated
+    for pre in (".?AV", ".?AU", ".?AW", ".?AT"):
+        if s.startswith(pre):
+            s = s[len(pre):]
+            break
+    return s.split("@", 1)[0]
+
+
+def rtti_check(vtbl):
+    """RTTI cross-check: for every VTBL/RELOC_VTBL claim whose rva carries an RTTI
+    Complete Object Locator, the COL's class name is GROUND TRUTH. A VTBL(cls, rva)
+    whose RTTI leaf differs from `cls` - or whose COL says base_off != 0 (an MI
+    secondary vtable, whose mangled name embeds the base and can never be the plain
+    ??_7cls@@6B@ that VTBL emits) - is a MISBINDING the dtor-based audit cannot see
+    when the class has no RVA()-bound destructor (the CWorker39f20/CMovieScratch
+    conflation at 0x1e971c == CArray<PLAYLISTINFOSTRUCT*> was exactly this).
+    RELOC_VTBL disagreements are reported informationally: that macro DOCUMENTS an
+    alias onto another class's datum, so the RTTI naturally names the other class."""
+    bad = 0
+    notes = []
+    for cls, (rva, kind, where) in sorted(vtbl.items(), key=lambda kv: kv[1][0]):
+        v = vs.vtable_at(rva)
+        dec = v["decorated"] if v else None
+        if not dec:
+            continue
+        leaf = rtti_leaf(dec)
+        boff = v["base_off"]
+        if leaf == cls and boff == 0:
+            continue
+        why = ("RTTI names %r (leaf %s)" % (dec, leaf)) if leaf != cls else \
+              ("RTTI base_off=%d: an MI secondary vtable (its mangled name embeds "
+               "the base; a plain ??_7%s@@6B@ row is the wrong symbol)" % (boff, cls))
+        if kind == "VTBL":
+            bad += 1
+            print("  RTTI-MISBOUND %s" % cls)
+            print("      src : VTBL(0x%06x)   %s" % (rva, where))
+            print("      rtti: %s" % why)
+        else:
+            notes.append("  (reloc-alias) %-24s -> 0x%06x  RTTI: %s  %s"
+                         % (cls, rva, leaf, where))
+    if notes:
+        print("  RELOC_VTBL aliases whose target RTTI names another class (expected"
+              " for a\n  documented alias; listed so no fold hides behind silence):")
+        for n in notes:
+            print(n)
+    return bad
+
+
 def audit(show_all=False):
     """Re-derive every src VTBL()/RELOC_VTBL() binding from the binary.
 
     For a class that owns an RVA()-bound destructor, the binary KNOWS which vtable
     dispatches to it. If src binds that class to a different rva, the binding is a
     MISBINDING - a wrong-dispatch bug that VTBL-uniqueness + vtable-coverage both pass,
-    because both are satisfied by any self-consistent lie."""
+    because both are satisfied by any self-consistent lie.
+
+    Second gate (RTTI): where the bound rva carries an RTTI COL, the COL's class
+    name must agree with the VTBL class name (see rtti_check)."""
     vtbl, dtor = src_claims()
     bad = agree = unprovable = 0
     for cls, (drva, dwhere) in sorted(dtor.items()):
@@ -252,10 +313,11 @@ def audit(show_all=False):
         if owner:
             print("      (0x%06x is currently bound to %s - one of the two is wrong)"
                   % (owner[1], owner[0]))
+    rtti_bad = rtti_check(vtbl)
     print()
-    print("vtable-owner audit: %d MISBOUND, %d agree, %d unprovable (dtor in no vtable)"
-          % (bad, agree, unprovable))
-    return bad
+    print("vtable-owner audit: %d MISBOUND, %d RTTI-MISBOUND, %d agree, "
+          "%d unprovable (dtor in no vtable)" % (bad, rtti_bad, agree, unprovable))
+    return bad + rtti_bad
 
 
 def main():

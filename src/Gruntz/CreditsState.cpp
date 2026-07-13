@@ -743,10 +743,20 @@ i32 CCreditsState::FlashColor() {
 }
 
 // CCreditsState::~CCreditsState (`??1`, 0x8d5e0): stamp the CCreditsState vptr, run
-// ReleaseResources, then cl auto-destroys the m_caption CString + the m_1e8 image list in
+// ReleaseResources, then cl auto-destroys the m_caption CString + the m_1e8 CRgn in
 // reverse-declaration order before chaining ~CState. /GX EH frame for the member unwind.
 // This EH-framed `??1` (with the CState ctor) anchors the CCreditsState vtable +
 // inline-virtual (Update) emission in this TU.
+//
+// The inlined ~CRgn teardown (CRgn own-stamp dead-store-elided: stamp ??_7CGdiObject,
+// call CGdiObject::DeleteObject, restamp ??_7CObject) makes this TU emit the
+// out-of-line ??1CRgn COMDAT; the retail-kept copy is the 0x8c400 body the fake
+// `CHolder8c400` used to claim (RTTI at its vtable 0x1ea2a4 = .?AVCRgn@@).
+// (??0CRgn @0x8c3b0 / ??_GCRgn @0x8c3d0 stay unbound: they were kept from the retail
+// gruntzmgr obj, whose TransitionState calls ??0CRgn out-of-line - our TransitionState
+// still reaches it through the declared-only CTsSub45 ctor, reloc-masked to the same
+// rva, and no TU of ours emits those two COMDATs yet.)
+// @rva-symbol: ??1CRgn@@UAE@XZ 0x0008c400 0x46
 RVA(0x0008d5e0, 0x8b)
 CCreditsState::~CCreditsState() {
     ReleaseResources();

@@ -8,8 +8,9 @@
 // claim was disproven at the byte level. CMoviePlayer+0x00 and the decode store's
 // +0x00 are plain DATA flags (Abort `cmp [this],0 / mov [this],0` - compared and
 // zeroed, never dispatched; the /GX dtor 0x38fc0 stamps NO whole-object vptr).
-// Only the +0x868c scratch embed is genuinely polymorphic (real dtor stamps
-// 0x5e971c/0x5e8cb4) - realized below as CMovieScratch : CObject.
+// Only the +0x868c playlist embed is genuinely polymorphic (real dtor stamps
+// 0x5e971c/0x5e8cb4) - realized below as the REAL MFC
+// CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> (RTTI-proven).
 // Offsets + emitted bytes are the load-bearing fact; field names are placeholders.
 //
 // Reconstructed across two units (separate retail TUs):
@@ -23,7 +24,8 @@
 #ifndef GRUNTZ_CMOVIEPLAYER_H
 #define GRUNTZ_CMOVIEPLAYER_H
 
-#include <Mfc.h> // MFC CFile/CByteArray (the movie file + decode-buffer dtors)
+#include <Mfc.h>      // MFC CFile/CByteArray (the movie file + decode-buffer dtors)
+#include <afxtempl.h> // MFC CArray - the +0x868c playlist embed's REAL template class
 #include <Ints.h>
 #include <rva.h>          // OVERRIDE / VTBL / SIZE macros
 #include <Wap32/Object.h> // CObject - the scratch embed's polymorphic grand-base
@@ -74,10 +76,12 @@ struct CMovieDecodeStore {
     ~CMovieDecodeStore();
 };
 
-// One movie-clip descriptor the playlist array (CMovieScratch) holds by pointer.
-// PlayList walks the array opening + pumping each clip. m_src==0 aborts the run;
-// m_openArg==0 selects the OpenLo path, else the full Open path.
-struct CMovieClip {
+// One movie-clip descriptor the playlist array holds by pointer. PLAYLISTINFOSTRUCT
+// is the RETAIL struct name - the RTTI COL at the playlist vtable 0x1e971c reads
+// .?AV?$CArray@PAUPLAYLISTINFOSTRUCT@@PAU1@@@. PlayList walks the array opening +
+// pumping each clip. m_src==0 aborts the run; m_openArg==0 selects the OpenLo path,
+// else the full Open path.
+struct PLAYLISTINFOSTRUCT {
     i32 m_src;     // +0x00  source handle (0 => stop the run / invalid entry)
     i32 m_openArg; // +0x04  0 => OpenLo, else Open's second arg
     i32 m_08;      // +0x08
@@ -87,32 +91,19 @@ struct CMovieClip {
     i32 m_flags;   // +0x18  Pump flags
     i32 m_count;   // +0x1c  Pump loop count
 };
-SIZE(CMovieClip, 0x20);
+SIZE(PLAYLISTINFOSTRUCT, 0x20);
 
-// The Rez-owned scratch embed at worker+0x868c: REAL polymorphic (ALL-VTABLES).
-// Retail vtable 0x5e971c is the 5-slot CObject shape with two own slots -
-// slot 1 dtor (thunk 0x4040f7) + slot 2 override (thunk 0x401e56); slots 0/3/4
-// inherited (0x5bef01/0x40106e/0x404034, == the grand-base's). Deriving
-// CObject makes cl emit the dtor's own-vtable stamp at entry and the
-// grand-base restamp (masks 0x5e8cb4) at exit - the exact retail stamp pair the
-// old manual `m_vptr = &g_*Vtbl` stores hand-rolled. Slot 2 is declared-only
-// (unreconstructed body behind the 0x401e56 thunk; reloc-masked slot).
-//
-// The real MFC CArray<CMovieClip*> playlist (RTTI ??_7?$CArray@PAUPLAYLISTINFOSTRUCT
-// @0x1e971c; proven by PlayList @0x17d720 reading m_pData + count/maxsize/growby, and by
-// Serialize @0x39fa0 = vtable slot 2). Full 0x14 layout: the growable-array fields
-// (nSize/nMaxSize/nGrowBy) are members of THIS class - retail places them at worker
-// +0x8694.., i.e. immediately past m_pData in the embed. The ~CMoviePlayer /GX dtor only
-// touches m_pData (RezFree), so the extra int members are teardown-neutral.
-struct CMovieScratch : public CObject {
-    virtual ~CMovieScratch() OVERRIDE;             // slot 1 override (retail thunk 0x4040f7)
-    virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2  0x039fa0 (ArraySerialize.cpp)
-
-    CMovieClip** m_pData; // +0x04 (worker+0x8690)  Rez-owned clip-pointer array
-    i32 m_nSize;          // +0x08 (worker+0x8694)  live clip count
-    i32 m_nMaxSize;       // +0x0c (worker+0x8698)  allocated capacity
-    i32 m_nGrowBy;        // +0x10 (worker+0x869c)  grow increment (0 => auto)
-};
+// The Rez-owned playlist embed at worker+0x868c: the REAL MFC template
+// CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> (afxtempl.h) - RTTI-proven
+// (COL at 0x1e971c). Its 5-slot vtable is the CObject shape with two own slots:
+// slot 1 ??_G (thunk 0x4040f7 -> sdd 0x3a1a0 -> ??1 0x39f20) + slot 2 Serialize
+// (thunk 0x401e56 -> 0x39fa0); slots 0/3/4 inherited from CObject. The retail-kept
+// COMDAT copies are pinned in src/Gruntz/ArraySerialize.cpp (the explicit
+// instantiation host). Layout: vptr +0x00 / m_pData +0x04 (worker+0x8690, Rez-owned
+// clip-pointer array) / m_nSize +0x08 / m_nMaxSize +0x0c / m_nGrowBy +0x10.
+// (The former hand-rolled `CMovieScratch : CObject` twin of this layout is
+// dissolved onto the real template.)
+typedef CArray<PLAYLISTINFOSTRUCT*, PLAYLISTINFOSTRUCT*> CMoviePlaylist;
 
 class CMoviePlayer {
 public:
@@ -167,8 +158,8 @@ public:
     CWnd* m_videoWnd;        // +0x53c  the video window (real MFC CWnd)
     CMovieDecodeStore m_540; // +0x540  embedded decode store
     char m_pad740[0x868c - (0x540 + 0x200)];
-    CMovieScratch m_868c; // +0x868c  Rez-owned scratch embed (CArray<CMovieClip*>, 0x14 B)
-    i32 m_loopCount;      // +0x86a0  loop counter
+    CMoviePlaylist m_868c; // +0x868c  Rez-owned playlist (CArray<PLAYLISTINFOSTRUCT*>, 0x14 B)
+    i32 m_loopCount;       // +0x86a0  loop counter
 };
 
 #endif // GRUNTZ_CMOVIEPLAYER_H

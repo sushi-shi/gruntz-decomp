@@ -147,6 +147,9 @@ public:
     // (GetCtrlB(index)->GetWindowText), then measure it. /GX EH frame unwinds the
     // half-built local CString.
     void ReadCtrlBText(i32 index);
+    // FlashCtrlD (0x160f0; body in FlashRect.cpp): flash the four GetCtrlD swatch
+    // controls with a random-gray (enabled) / fixed gray (disabled) CBrush fill.
+    void FlashCtrlD();
 
     // ShowCustomDlg (0x17030): run a CBattlezDlgCustom modally; on IDOK, uppercase
     // its (non-empty) custom-name string and push it into the 0x4ff control's child.
@@ -396,6 +399,9 @@ public:
     // (0x501/0x503/0x505/0x507) - the exact twin of CBattlezDlg::OnDrawItem, over the
     // m_host slot array's per-slot color index. Chains the base CWnd owner-draw default.
     void OnDrawItem(i32 nIDCtl, DRAWITEMSTRUCT* lpdis);
+    // FlashCtrlD (0xc2e20; body in FlashRect.cpp): flash the four GetCtrlD swatch
+    // controls - the CBattlezDlg::FlashCtrlD twin, no rect-deflate, returns 1.
+    i32 FlashCtrlD();
 
     // The GetSafeHwnd-style accessor the builders fold inline: (this != 0) ?
     // (handle @ +0x1c) : 0. Inline member so MSVC inlines it and keeps the null
