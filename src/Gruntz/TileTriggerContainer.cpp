@@ -41,7 +41,7 @@ extern "C" CGameRegistry* g_gameReg;
 
 // The mode gate over a container element (defined in TileTriggerSwitchLogic.cpp,
 // its RVA 0x113860 sits in that TU's interval); reloc-masked rel32 callee of
-// SerializeApplyA/B + CTileTriggerFactory::Build.
+// SerializeApplyA/B + CTileTriggerContainer::LoadElement.
 i32 __stdcall Gate113860(void* obj, i32 mode, i32 a3, i32 a4);
 
 // The list1/list2 command element: its data is compared against an arg by the
@@ -978,7 +978,7 @@ SIZE_UNKNOWN(CTrigMgr);
 // and now named for it (the tag/New* pairs below -> CTileTriggerSwitchLogic /
 // CTileMultiTriggerSwitchLogic / ... / CGiantRockLogic, defs in
 // TileTriggerDerivedCtors.cpp + the two base ctors 0x110430/0x1107f0).
-struct CTileTriggerFactory; // the owning factory (this); back-stamped into m_20/m_24
+// The owning container (`this`) is back-stamped into the built object's m_20/m_24.
 
 struct CTrigLogic {
     struct TileTriggerSwitchLogicTag {};
@@ -998,8 +998,8 @@ struct CTrigLogic {
     i32 m_08; // +0x08  (id 21: board x)
     i32 m_0c; // +0x0c  (id 21: board y)
     char m_pad10[0x20 - 0x10];
-    CTileTriggerFactory* m_20; // +0x20  owner (1abe / 1d39 group)
-    CTileTriggerFactory* m_24; // +0x24  owner (277f group)
+    CTileTriggerContainer* m_20; // +0x20  owner (1abe / 1d39 group)
+    CTileTriggerContainer* m_24; // +0x24  owner (277f group)
     char m_pad28[0x74 - 0x28]; // +0x28..+0x73 (folds the unused +0x70 owner slot)
 
     // Each thunk (ILT 0xNNNN -> the real leaf ctor RVA) constructs one RTTI class;
@@ -1080,19 +1080,17 @@ struct CTrigLogicC8 : public CTrigLogic {
 };
 SIZE_UNKNOWN(CTrigLogicC8);
 
-// The factory container (this): the built object's owner; id 21 latches the object
-// into this->m_70.
-struct CTileTriggerFactory {
-    char m_pad00[0x70];
-    CTrigLogic* m_70; // +0x70  id-21 latches the built object here
-
-    void* Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a3); // 0x117800
-};
-SIZE_UNKNOWN(CTileTriggerFactory);
+// DE-VIEW (2026-07-13): the `CTileTriggerFactory` view was CTileTriggerContainer - this
+// very class. Proof, all already in the tree: (1) <Gruntz/TileTriggerContainer.h> ALREADY
+// declares `void* LoadElement(CSerialArchive*, i32, i32, i32); // 0x117800` - the exact RVA
+// the view's Build defined, so 0x117800 was double-claimed and the container's own decl was
+// a phantom; (2) the view's only field, +0x70, is the container's `CTileTriggerLogic* m_70`
+// (same offset, same id-21 latch role); (3) the object it builds back-stamps the factory
+// into its owner slot, and CTileTriggerLogic::m_20 is typed `CTileTriggerContainer*`.
 
 // Build the 277f-group object: alloc 0x8c, run `ctor`, register, stamp owner+id.
 static void* Reg277fTail(
-    CTileTriggerFactory* self,
+    CTileTriggerContainer* self,
     CTrigLogic* obj,
     CSerialArchive* reader,
     i32 a2,
@@ -1109,7 +1107,7 @@ static void* Reg277fTail(
 
 // Build the 1abe-group object tail: register, stamp owner+id.
 static void* Reg1abeTail(
-    CTileTriggerFactory* self,
+    CTileTriggerContainer* self,
     CTrigLogic* obj,
     CSerialArchive* reader,
     i32 a2,
@@ -1133,7 +1131,7 @@ static void* Reg1abeTail(
 // MSVC tail-merges differently from the helper-factored spelling here) + the differently
 // -named ctor/register reloc operands. Logic complete; byte-match parked for the final sweep.
 RVA(0x00117800, 0x47f)
-void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a3) {
+void* CTileTriggerContainer::LoadElement(CSerialArchive* reader, i32 kind, i32 a2, i32 a3) {
     if (reader == 0) {
         return 0;
     }
@@ -1201,7 +1199,7 @@ void* CTileTriggerFactory::Build(CSerialArchive* reader, i32 kind, i32 a2, i32 a
                 type = board->m_4c[tile & 0xffff]->TypeId();
             }
             if (type == 0x67 || type == 0x68) {
-                this->m_70 = obj;
+                this->m_70 = (CTileTriggerLogic*)obj;
             }
             return obj;
         }
