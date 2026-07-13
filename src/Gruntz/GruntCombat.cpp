@@ -44,6 +44,9 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Gruntz/ScanRectInit.h>  // the PathScan dirty-rect Set34a4 helper
 #include <Gruntz/Brickz.h>        // canonical CBrickzGrid (SearchEdge)
 #include <Gruntz/TypeKeyColl.h>
+extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
+                                // WERE the fake g_animScratch / g_animScratchCount
+                                // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/LightFx.h> // CLightFx::Activate (spell LightFx sprites; folded CSpriteRegistrar)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan::Lookup_05b7e0 (rehomed here)
 #include <Gruntz/TileWireLogic.h> // CTileWireLogic::WireTileSwitchLogic (0x6c130) - the arrival commit
@@ -87,8 +90,6 @@ static const char s_keyA[] = "A";
 static const char s_keyF[] = "F";
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
-CEntranceAnimSrc g_entranceAnimSrc; // DAT_006bf620
-i32 g_focusedGruntSentinel;         // DAT_00644c54
 
 // AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
 //   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
@@ -98,7 +99,7 @@ i32 g_focusedGruntSentinel;         // DAT_00644c54
 //     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
 //   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
 //     m_poseIdle/m_poseToy* are i32 handles used dually as null-compared ints and pointers.
-//   * grunt freelist recycle - (void**)((char*)node - g_gruntFreeListBias / g_freePoolBase).
+//   * grunt freelist recycle - (void**)((char*)node - g_coordPool.m_linkOffset / g_coordPool.m_linkOffset).
 //   * MFC CString -> char* - (char*)(const char*)m_animSetName for char*-taking bute APIs.
 //   * tiny-method-view over this - ((CGruntUpdateThis/CVtSlot9*)this)->M() for reloc-masked
 //     external __thiscall engine methods.
@@ -116,7 +117,7 @@ static char s_CombatTimeout[] = "CombatTimeout";               // s_CombatTimeou
 
 // A global enable flag the neighbor-combat gate reads when the candidate IS self
 // (DAT_006455b0, reloc-masked).
-i32 g_6455b0;
+extern i32 g_6455b0; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 
 // The global running game clock (DAT_00645588) snapshotted into m_entranceClockLo.
 extern "C" u32 g_645588;
@@ -144,11 +145,11 @@ static void GruntScratchTeardown();
 // giant ~0x46c layout tractable.
 
 // The scratch CString teardown the GetNameRecords reject paths run (Release each
-// non-null slot, g_animScratchCount times). The shared loop-strength-reduction
+// non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
 // wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntScratchTeardown() {
-    CAnimScratchString* slot = g_animScratch;
-    i32 cnt = g_animScratchCount;
+    CAnimScratchString* slot = ((CAnimScratchString*)g_typeColl.m_alloc);
+    i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             ((CString*)slot)->~CString();
@@ -299,10 +300,6 @@ extern "C" CombatConvCue* CombatConvLookup(const char* key); // 0x2cca (__cdecl,
 
 // The active-anim-set type-name registry: ((_zvec*)&g_typeColl)->IndexToPtr(node) -> record whose
 // first field is the name string; g_typeColl.m_alloc[0..g_typeColl.m_grown) each get Reset.
-extern CTypeKeyColl g_typeColl; // ?g_typeColl@@3VCTypeKeyColl@@A @0x6bf650
-
-// The keyed config tree (canonical CButeTree, include/Bute/ButeTree.h): Find
-// (0x16d190) is reloc-masked __thiscall.
 extern CButeTree g_buteTree; // ?g_buteTree@@3VCButeTree@@A @0x6bf620
 // The bute-config manager (canonical CButeMgr): GetDwordDef (0x1721e0) is
 // reloc-masked __thiscall.
@@ -750,23 +747,17 @@ i32 CGrunt::LoadGruntAbilityTuning(i32 forced) {
 
 // The global free-list pool the name caches recycle into (head @0x645544, base
 // subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-void** g_freePoolHead; // DAT_00645544
-i32 g_freePoolBase;    // DAT_0064554c (raw subtrahend)
-i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
+extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
-// freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
+// freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
                                    // src/Gruntz/GameText.cpp (the pool's owner TU).
                                    // It used to be DEFINED here too: six .cpp files each
                                    // defined it, i.e. six .bss objects for one global
                                    // (LNK2005). Only the owner defines; everyone externs.
-CAnimScratchString* g_animScratch; // DAT_006bf66c
-i32 g_animScratchCount;            // DAT_006bf670
-void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
-i32 g_gruntFreeListBias;           // DAT_0064554c (same as g_freePoolBase)
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
@@ -1377,7 +1368,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     }
     {
         i32 coord = (i32)m_14->m_1c;
-        g_animScratchCount = 0;
+        g_typeColl.m_grown = 0;
         i32 rec;
         if (coord < g_cellLo || coord > g_cellHi) {
             if (g_typeColl.MapCellIndex(coord, 0) != 0) {
@@ -1398,7 +1389,7 @@ i32 CGrunt::ArrivalRecycle(i32 a, i32 b, i32 mode, i32 d, i32 e) {
     }
     {
         i32 coord = (i32)m_14->m_1c;
-        g_animScratchCount = 0;
+        g_typeColl.m_grown = 0;
         i32 rec;
         if (coord < g_cellLo || coord > g_cellHi) {
             if (g_typeColl.MapCellIndex(coord, 0) != 0) {

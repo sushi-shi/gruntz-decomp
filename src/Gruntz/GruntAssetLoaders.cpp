@@ -8,6 +8,11 @@
 // The per-direction entrance-cell records live at CGrunt+0x470, stride 0x68, two
 // CString fields each (+0 and +4). They predate the named m_474 member, so they are
 // reached by raw offset (the documented naming-independent-codegen exception).
+#include <Bute/ButeTree.h>
+#include <Gruntz/TypeKeyColl.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
+extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
+                                // WERE the fake g_animScratch / g_animScratchCount
+                                // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Grunt.h>
 #include <Gruntz/AniElement.h>
@@ -30,12 +35,10 @@ extern "C" u32 g_645588;
 // The global manager pointer (the object at *0x64556c; reloc-masked).
 extern "C" CGameRegistry* g_gameReg;
 // The scratch CString[] the ScratchResolve reject paths tear down (reloc-masked).
-extern CAnimScratchString* g_animScratch;
-extern i32 g_animScratchCount;
 
 static void GruntScratchTeardown() {
-    CAnimScratchString* slot = g_animScratch;
-    i32 cnt = g_animScratchCount;
+    CAnimScratchString* slot = ((CAnimScratchString*)g_typeColl.m_alloc);
+    i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             ((CString*)slot)->~CString();

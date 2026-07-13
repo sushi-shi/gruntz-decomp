@@ -21,8 +21,12 @@
 // single and MovingSlot16 @0x5f310, OUTSIDE this obj's text; the owning original
 // TU is unrecovered (@identity-TODO), it stays here pending that partition.
 //
+#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
+extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
+                                // WERE the fake g_animScratch / g_animScratchCount
+                                // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor (value member of the warp/decay views)
@@ -67,12 +71,12 @@ extern double s_fpZero; // 0x5e9a68
 // The scratch-branch anim type code the position step latches on (reloc-masked).
 extern const char k_60df94[]; // 0x60df94
 
-// The g_animScratch[] CString teardown the scratch-resolve reject path runs (Release
-// each non-null slot, g_animScratchCount times). The shared loop-strength-reduction
+// The ((CAnimScratchString*)g_typeColl.m_alloc)[] CString teardown the scratch-resolve reject path runs (Release
+// each non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
 // wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntPosScratchTeardown() {
-    CAnimScratchString* slot = g_animScratch;
-    i32 cnt = g_animScratchCount;
+    CAnimScratchString* slot = ((CAnimScratchString*)g_typeColl.m_alloc);
+    i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             ((CString*)slot)->~CString();
@@ -85,26 +89,6 @@ static void GruntPosScratchTeardown() {
 // ==== the 13 CGrunt fns of this obj (ex Grunt.cpp) + their support decls ====
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
-CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
-extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view; DATA in TypeKeyColl.cpp)
-i32 g_focusedGruntSentinel;           // DAT_00644c54
-
-// AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
-//   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
-//     the per-anim CString bags at +0x468/+0x46c/+0x470/+0x000 are 8-byte-strided arrays.
-//   * grid/record stride - (const char*)((zDArray*)((char*)this + (3*col+row+0xb)*0x68)),
-//     ((CFocusSlot*)((char*)g + 0x150 + owner*0x238)), (double*)((char*)this + 0x4b0)
-//     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
-//   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
-//     m_poseIdle/m_poseToy* are i32 handles used dually as null-compared ints and pointers.
-//   * grunt freelist recycle - (void**)((char*)node - g_gruntFreeListBias / g_freePoolBase).
-//   * MFC CString -> char* - (char*)(const char*)m_animSetName for char*-taking bute APIs.
-//   * tiny-method-view over this - ((CGruntUpdateThis/CVtSlot9*)this)->M() for reloc-masked
-//     external __thiscall engine methods.
-//   * DELIBERATELY-raw member writes - ar->Write((char*)this + 0x400/0x408/0x410, 8): the
-//     m_400/408/410 doubles are modeled but kept raw because &m_400 shifts a neighbor's
-//     regalloc (tested-and-reverted; see the inline m_400 note).
-// numeric-conversion casts ((u32)m_dwell / (i32)m_14->m_1c / (double)...) document width and stay.
 extern CButeMgr g_buteMgr;
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
@@ -160,11 +144,11 @@ static __inline i32 s_TileFlags(GruntBoard* b, i32 tx, i32 ty) {
 // giant ~0x46c layout tractable.
 
 // The scratch CString teardown the GetNameRecords reject paths run (Release each
-// non-null slot, g_animScratchCount times). The shared loop-strength-reduction
+// non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
 // wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntScratchTeardown() {
-    CAnimScratchString* slot = g_animScratch;
-    i32 cnt = g_animScratchCount;
+    CAnimScratchString* slot = ((CAnimScratchString*)g_typeColl.m_alloc);
+    i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             ((CString*)slot)->~CString();
@@ -185,23 +169,17 @@ static void GruntScratchTeardown() {
 
 // The global free-list pool the name caches recycle into (head @0x645544, base
 // subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-void** g_freePoolHead; // DAT_00645544
-i32 g_freePoolBase;    // DAT_0064554c (raw subtrahend)
-i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
+extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
-// freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
+// freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
                                    // src/Gruntz/GameText.cpp (the pool's owner TU).
                                    // It used to be DEFINED here too: six .cpp files each
                                    // defined it, i.e. six .bss objects for one global
                                    // (LNK2005). Only the owner defines; everyone externs.
-CAnimScratchString* g_animScratch; // DAT_006bf66c
-i32 g_animScratchCount;            // DAT_006bf670
-void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
-i32 g_gruntFreeListBias;           // DAT_0064554c (same as g_freePoolBase)
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
@@ -950,9 +928,9 @@ i32 CGrunt::UpdateArrival(i32 a1, i32 a2) {
                 void* next = node[0];
                 void* buf = node[2];
                 if (buf != 0) {
-                    void** sp = (void**)((char*)buf - g_freePoolBase);
-                    *sp = g_freePoolHead;
-                    g_freePoolHead = sp;
+                    void** sp = (void**)((char*)buf - g_coordPool.m_linkOffset);
+                    *sp = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = sp;
                 }
                 node = (void**)next;
             }
@@ -1333,7 +1311,7 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
         if (cue != 0) {
             CGameRegistry* g = (CGameRegistry*)g_gameReg;
             g->CuePrep();
-            i32 focused = (m_tileOwnerHi == g_focusedGruntSentinel);
+            i32 focused = (m_tileOwnerHi == g_curPlayer);
             if (focused && idx > 0x5a) {
                 if (CueVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
                     g->m_cueSink->Cue((i32)this, 4, -1, -1, -1);
@@ -1448,12 +1426,12 @@ void CGrunt::ResolveEntranceArrival() {
             CFocusSlot* slot = &g->m_focusSlots[m_tileOwnerHi];
             if (slot != 0 && slot->m_14 != 0) {
                 if (m_tileClaimed == 0 && m_arrivalNotified == 0 && mode == 2
-                    && g_focusedGruntSentinel == m_tileOwnerHi && m_arrived == 0) {
+                    && g_curPlayer == m_tileOwnerHi && m_arrived == 0) {
                     m_tileMgr->NotifyArrival(m_tileOwnerHi, m_tileOwnerLo);
                     m_arrivalNotified = 1;
                     goto tail;
                 }
-                if (mode != 2 && g_focusedGruntSentinel == m_tileOwnerHi && m_arrived == 0
+                if (mode != 2 && g_curPlayer == m_tileOwnerHi && m_arrived == 0
                     && m_tileClaimed != 1) {
                     m_arrivalRerollLo = 0;
                     m_arrivalRerollWindowLo = 0;

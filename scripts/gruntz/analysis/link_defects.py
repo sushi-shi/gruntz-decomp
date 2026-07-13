@@ -32,7 +32,31 @@ Retail LINKED, so none of them can exist in the real source.
                       its rel32 reloc-masks. NOT a modelling defect; it resolves for
                       free the day someone reconstructs the body.
 
-  (2) DIVERGENT   one mangled name DEFINED in >1 obj with DIFFERENT bytes -> an ODR
+  (2) MULTIPLY-DEFINED
+                  one name DEFINED, in a NON-COMDAT section, by more than one obj ->
+                  `LNK2005: already defined`. The link FAILS. Full stop - whether or
+                  not the bytes agree.
+
+                  This bucket exists because DIVERGENT (below) structurally COULD NOT
+                  SEE it: DIVERGENT requires >1 distinct byte SHAPE, so N *identical*
+                  definitions of the same global sailed straight through. g_coordPool
+                  was defined SIX times (GameText, Grunt, GruntCombat, GruntSteps,
+                  GruntEntranceMove, GruntEntranceArrival) - six .bss objects for one
+                  global - and nothing in the tree counted it. A whole class of link
+                  failure was uncounted.
+
+                  COMDATs are EXCLUDED, and that exclusion is what makes the bucket
+                  usable: C++ deliberately emits inline/member functions, vtables,
+                  template instantiations and string literals as COMDATs from every TU
+                  that uses them, and the linker keeps exactly one. Flagging those
+                  would bury the real defects under thousands of legal duplicates.
+                  A COMMON (tentative def, sec==0/val==size) is likewise merged by the
+                  linker, so it is not a definition either. See Coff.is_comdat().
+
+                  Fix = ONE definition in the xref-proven owner TU; every other TU
+                  externs it (and drops its DATA()/RVA() pin with the declaration).
+
+  (3) DIVERGENT   one mangled name DEFINED in >1 obj with DIFFERENT bytes -> an ODR
                   landmine. MSVC keeps ONE COMDAT copy per name, chosen arbitrarily
                   (first-seen), so the linker may pick a 5-byte `jmp <view-dtor>`
                   stub OVER the real teardown body. Typical cause: a class whose dtor
@@ -98,11 +122,15 @@ class Coff:
         opt = struct.unpack_from("<H", b, 16)[0]
         self.strtab = self.symptr + self.nsym * 18
         self.secs = []
+        self.comdat = set()  # 1-based section numbers that are COMDATs
         for i in range(self.nsec):
             o = 20 + opt + i * 40
             rawsize, rawptr = struct.unpack_from("<II", b, o + 16)
             relptr = struct.unpack_from("<I", b, o + 24)[0]
             nrel = struct.unpack_from("<H", b, o + 32)[0]
+            chars = struct.unpack_from("<I", b, o + 36)[0]
+            if chars & 0x00001000:  # IMAGE_SCN_LNK_COMDAT
+                self.comdat.add(i + 1)
             self.secs.append((relptr, nrel, rawptr, rawsize))
 
     def name(self, idx):
@@ -146,7 +174,11 @@ class Coff:
 
     def symbols(self):
         """(defined {name: section}, undefined {names}). scl==2 is EXTERNAL; section 0
-        with a nonzero value is a COMMON, with zero value an undefined import."""
+        with a nonzero value is a COMMON, with zero value an undefined import.
+
+        A COMMON (sec==0, val==size) is a TENTATIVE definition: the linker merges any
+        number of them into one, so it is neither a definition to report nor an
+        unresolved reference. It is deliberately in neither set."""
         defined, undef = {}, set()
         i = 0
         while i < self.nsym:
@@ -160,6 +192,12 @@ class Coff:
                     undef.add(nm)
             i += 1 + naux
         return defined, undef
+
+    def is_comdat(self, sec):
+        """Is this section a COMDAT? A COMDAT symbol may legally be emitted by MANY objs
+        (inline/member fns, vtables, template instantiations, string literals): the linker
+        keeps ONE and discards the rest. Duplicates of a NON-COMDAT symbol are LNK2005."""
+        return sec in self.comdat
 
 
 def current_unit_objs():
@@ -367,12 +405,15 @@ def main():
 
     defined = defaultdict(list)     # name -> [(unit, shape_hash, size)]
     referenced = defaultdict(set)   # name -> {units}
+    hard_defs = defaultdict(list)   # name -> [unit] for NON-COMDAT definitions only
     for unit, path in objs:
         c = Coff(path)
         d, u = c.symbols()
         for nm, sec in d.items():
             h, sz = c.shape(sec)
             defined[nm].append((unit, h, sz))
+            if not c.is_comdat(sec):
+                hard_defs[nm].append(unit)
         for nm in u:
             referenced[nm].add(unit)
 
@@ -391,6 +432,17 @@ def main():
         cls = owning_class(nm)
         (unresolved if (cls and cls not in real) else backlog).append((nm, sorted(units)))
 
+    # (2b) MULTIPLY-DEFINED: one name, defined NON-COMDAT by >1 obj. This is LNK2005, full
+    # stop - whether or not the bytes agree. It is NOT the DIVERGENT bucket: that one needs
+    # >1 distinct byte SHAPE, so N identical definitions of the same global slipped straight
+    # through it (g_coordPool was defined SIX times - six .bss objects for one global - and
+    # nothing counted it). A COMDAT may legally be emitted by many objs (inline/member fns,
+    # vtables, templates, literals): the linker keeps one. Only NON-COMDAT dupes are errors.
+    multi_def = []
+    for nm, units in sorted(hard_defs.items()):
+        if len(units) > 1:
+            multi_def.append((nm, sorted(units)))
+
     # (2) DIVERGENT: one name, >1 obj, >1 distinct byte shape.
     divergent = []
     for nm, defs in sorted(defined.items()):
@@ -408,6 +460,7 @@ def main():
         unresolved = [r for r in unresolved if args.unit in r[1]]
         backlog = [r for r in backlog if args.unit in r[1]]
         undef_data = [r for r in undef_data if args.unit in r[1]]
+        multi_def = [m for m in multi_def if args.unit in m[1]]
         divergent = [d for d in divergent
                      if any(args.unit in us for _sz, us in d[1])]
 
@@ -437,10 +490,13 @@ def main():
         for nm, units in unresolved:
             w.write('UNRESOLVED,%s,%s,"referenced by: %s"\n'
                     % (nm, owning_class(nm), " ".join(units)))
+        for nm, units in multi_def:
+            w.write('MULTIPLY_DEFINED,%s,%s,"defined non-COMDAT in: %s"\n'
+                    % (nm, owning_class(nm), " ".join(units)))
         for nm, variants in divergent:
             det = " | ".join("%dB in %s" % (sz, ",".join(us)) for sz, us in variants)
             w.write('DIVERGENT,%s,%s,"%s"\n' % (nm, owning_class(nm), det))
-        return 1 if (unresolved or divergent or undef_data) else 0
+        return 1 if (unresolved or divergent or undef_data or multi_def) else 0
 
     print("link-defect scan over %d current-unit objs (%d lib symbols resolvable)\n"
           % (len(objs), len(libs)))
@@ -482,7 +538,20 @@ def main():
 
     print()
     print("=" * 78)
-    print("(3) DIVERGENT DUPLICATE COMDATs - one name, different bytes in >1 obj")
+    print("(3) MULTIPLY-DEFINED - one name, defined NON-COMDAT by >1 obj -> LNK2005")
+    print("    -> the link FAILS: N .bss/.data objects for one global. Fix = ONE")
+    print("       definition in the owner TU; every other TU externs it. %d symbol(s)."
+          % len(multi_def))
+    print("=" * 78)
+    for nm, units in multi_def[:40]:
+        print("  %-46s %-10s  defined in %d objs: %s"
+              % (nm[:46], rva_of.get(nm, ""), len(units), ",".join(units)[:44]))
+    if len(multi_def) > 40:
+        print("  ... %d more (--csv for the full list)" % (len(multi_def) - 40))
+
+    print()
+    print("=" * 78)
+    print("(4) DIVERGENT DUPLICATE COMDATs - one name, different bytes in >1 obj")
     print("    -> ODR landmine: the linker may pick the stub over the real body.")
     print("       %d symbol(s)." % len(divergent))
     print("=" * 78)
@@ -491,13 +560,17 @@ def main():
         for sz, us in variants:
             print("      %5d B  %s" % (sz, ",".join(us)))
 
-    # The headline. UNDEFINED-DATA is counted HERE, not hidden in `backlog`: every one of
-    # them is an `unresolved external symbol` today, exactly like a PHANTOM. Folding them
-    # into the backlog made the number look ~450 better than the link actually is.
-    print("\nTOTAL: %d PHANTOM, %d UNDEFINED-DATA, %d DIVERGENT  (target: 0 / 0 / 0)"
-          % (len(unresolved), len(undef_data), len(divergent)))
-    print("       unresolved externals at link = %d  [+%d backlog fns, not defects]"
-          % (len(unresolved) + len(undef_data), len(backlog)))
+    # The headline: every bucket here is a defect that PREVENTS A SUCCESSFUL LINK.
+    # UNDEFINED-DATA is counted HERE, not hidden in `backlog`: every one is an `unresolved
+    # external symbol` today, exactly like a PHANTOM. MULTIPLY-DEFINED is counted here too -
+    # it is an LNK2005 that the DIVERGENT bucket structurally could not see (that one needs
+    # >1 byte SHAPE, so N *identical* definitions of one global were invisible). Both
+    # additions make the number WORSE and TRUE; that is the point of the number.
+    print("\nTOTAL: %d PHANTOM, %d UNDEFINED-DATA, %d MULTIPLY-DEFINED, %d DIVERGENT"
+          "  (target: 0 / 0 / 0 / 0)"
+          % (len(unresolved), len(undef_data), len(multi_def), len(divergent)))
+    print("       defects that PREVENT A SUCCESSFUL LINK = %d  [+%d backlog fns, not defects]"
+          % (len(unresolved) + len(undef_data) + len(multi_def), len(backlog)))
     return 0
 
 

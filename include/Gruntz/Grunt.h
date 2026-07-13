@@ -409,13 +409,20 @@ void __stdcall EntranceApplyFrame(const char* keyStr, i32 frameNum);
 // and returns the new active-anim-set node that gets latched into m_14->m_1c.
 // External/no-body (reloc-masked); the `push key; mov ecx, &g_entranceAnimSrc;
 // call` is the load-bearing shape.
-SIZE_UNKNOWN(CEntranceAnimSrc);
-class CEntranceAnimSrc {
-public:
-    i32 LookupAnimSet(const char* key); // FUN_0056d190 (ret 4)
-};
-extern CEntranceAnimSrc g_entranceAnimSrc; // DAT_006bf620
-#define EntranceLookupAnimSet(k) (((CButeTree*)&g_entranceAnimSrc)->Find(k))
+// 0x6bf620 IS g_buteTree - the global bute tree. `CEntranceAnimSrc` was a fake one-method
+// view of it (its LookupAnimSet @0x56d190 is the ILT thunk for CButeTree::Find @0x16d190),
+// and the macro below always cast it back to CButeTree* anyway: the cast was telling the
+// truth. The view's global was also DEFINED in all five grunt TUs (LNK2005) while the real
+// g_buteTree stayed undefined. Talk to the real object; expanders include <Bute/ButeTree.h>.
+// 0x644c54 is g_curPlayer - the current local player index. The grunt TUs used to declare
+// and DEFINE the same cell as "g_focusedGruntSentinel" (five .bss objects, LNK2005): every
+// use compares it against m_tileOwnerHi (the grunt's owner), i.e. "is this grunt mine",
+// which is exactly how Wormhole/StatusBar use g_curPlayer. One cell, one name.
+extern "C" i32 g_curPlayer; // 0x644c54 (DATA-pinned in StatusBarMgr.cpp)
+
+class CButeTree;
+extern CButeTree g_buteTree; // 0x6bf620 (dynamic-init'd by retail's initializer @0x16e690)
+#define EntranceLookupAnimSet(k) (g_buteTree.Find(k))
 
 // The grunt's current-anim-name resolver is the shared global g_typeColl @0x6bf650
 // (RTTI CTypeKeyColl, <Gruntz/TypeKeyColl.h>). The former CAnimNameResolver /
@@ -424,12 +431,12 @@ extern CEntranceAnimSrc g_entranceAnimSrc; // DAT_006bf620
 // the canonical CTypeKeyColl, and the consuming grunt TUs reference `g_typeColl`
 // (extern CTypeKeyColl, DATA 0x002bf650) directly. GetNameRecord (thunk 0x4310f0)
 // maps an anim-set node to a record whose +0 is the anim-name char*; GetNameRecords
-// (thunk 0x4312a0) resolves into the g_animScratch CString[] (torn down per reject,
+// (thunk 0x4312a0) resolves into the ((CAnimScratchString*)g_typeColl.m_alloc) CString[] (torn down per reject,
 // the loop-strength-reduction wall from docs/patterns).
 
 // The resolver's coordinate-range fields (consecutive globals at 0x6bf654..0x6bf664;
 // the cell-resolve path reads them by name - separate externs, reloc-masked - the same
-// way g_animScratch/g_animScratchCount are aliased rather than embedded).
+// way ((CAnimScratchString*)g_typeColl.m_alloc)/g_typeColl.m_grown are aliased rather than embedded).
 extern i32 g_cellLo;    // DAT_006bf658
 extern i32 g_cellHi;    // DAT_006bf65c
 extern i32 g_cellBase;  // DAT_006bf660
@@ -468,8 +475,6 @@ struct CAnimScratchString {
     char* m_str; // +0x00  (4-byte stride)
     // Release @0x1b9b93 IS CString::~CString; cast at each call.
 };
-extern CAnimScratchString* g_animScratch; // DAT_006bf66c
-extern i32 g_animScratchCount;            // DAT_006bf670
 
 // The single-letter anim type-code literals the grunt dispatch machines compare
 // the current anim name against (each a 1-char .rodata string, reloc-masked).
@@ -497,7 +502,7 @@ extern const char g_codeH[]; // 0x60d7fc "H"  (arrival-recycle reject code)
 
 // ---------------------------------------------------------------------------
 // The WwdGameReg per-level registry singleton
-// (see the duplicate g_focusedGruntSentinel below; declared once at block end)
+// (see the duplicate g_curPlayer below; declared once at block end)
 // --------------------------------------------------------------------------- (?g_gameReg @0x64556c). The grunt
 // movement/arrival machines reach the level board via g_gameReg->m_tileGrid (a Board*),
 // whose m_8 is the row-pointer table (rows[y][x] -> a 0x1c-byte tile record whose
@@ -570,15 +575,19 @@ struct GruntSoundInner {
 };
 
 // The intrusive coord-node freelist the grunt machines recycle occupied-coord
-// nodes onto (head @0x645544, bias @0x64554c) - the SAME pool g_freePoolHead/Base
+// nodes onto (head @0x645544, bias @0x64554c) - the SAME pool g_coordPool.m_freeHead/Base
 // front; aliased here under the names the movement machines read. Reloc-masked.
-extern void* g_gruntFreeList;   // DAT_00645544
-extern i32 g_gruntFreeListBias; // DAT_0064554c
 
 // The coord-node free pool (DAT_00645540): Recycle(elem) (FUN_004311b0, thunk
 // 0x163b) pushes (elem - bias) onto the freelist headed at this->m_04. Reloc-masked
 // DATA; modeled as a tiny object so `mov ecx,0x645540; push elem; call` falls out.
 SIZE_UNKNOWN(GruntCoordPool);
+// The recycled-node free-list head + node bias are NOT globals: they are the INTERIOR
+// FIELDS m_freeHead (+0x04) and m_linkOffset (+0x0c) of the coord-node pool g_coordPool
+// @0x645540 (DEFINED once, in src/Gruntz/GameText.cpp). This TU used to DEFINE them under
+// FOUR names for TWO slots - g_freePoolHead/g_gruntFreeList both 0x645544 and
+// g_freePoolBase/g_gruntFreeListBias both 0x64554c - in all five grunt TUs, i.e. 20 .bss
+// objects for two fields (LNK2005; caught by link_defects' new MULTIPLY-DEFINED bucket).
 extern FreeNodePool g_coordPool; // DAT_00645540 (folded GruntCoordPool)
 
 // A grunt occupied-coord list node: ->next at +0, ->coord at +8 (an {x,y} pair).
@@ -596,7 +605,6 @@ struct GruntCoordNode {
 
 // The "focused grunt" sentinel the on-screen flag compares m_tileOwnerHi against
 // (DAT_00644c54, reloc-masked).
-extern i32 g_focusedGruntSentinel; // DAT_00644c54
 
 // The level board-dimension path the area cues read off the tile-mgr's +0x22c
 // registry: m_22c -> m_24 -> m_5c -> {m_28 = width, m_2c = height}.
@@ -820,7 +828,7 @@ class CArchive; // (unused MFC fwd; Save uses CGruntArchive)
 // The CObArray-family collections it rebuilds (this+0x370, the 4x stride-0x14
 // group at this+0x3a4, this+0x488). Each is the engine CObArray {vtbl, m_data,
 // m_count, m_max, m_grow} (0x14 bytes); SetSize/SetAtGrow are external (reloc-
-// masked). The recycled nodes ride the same g_gruntFreeList pool as the movement
+// masked). The recycled nodes ride the same g_coordPool.m_freeHead pool as the movement
 // machines (node usable area = head+4; head[0] = next).
 SIZE_UNKNOWN(GruntLoadColl);
 // SetSize @0x1b4f75 / SetAtGrow @0x1b5144 ARE MFC CPtrArray's; cast at each call.
@@ -991,8 +999,6 @@ SIZE_UNKNOWN(CGruntList);
 void GruntNode_Delete(void* p);
 
 // The global free-list pool the name caches recycle into.
-extern void** g_freePoolHead; // DAT_00645544
-extern i32 g_freePoolBase;    // DAT_0064554c (raw subtrahend)
 
 // ---------------------------------------------------------------------------
 // CGrunt::PlayMoveSound(x, y) @0x511b0 - the directional grunt-voice dispatcher.

@@ -70,8 +70,12 @@
 // grunt's sprite collection (sprite->m_7c->m_18 . Add*(args)). On a failed
 // register: OR 0x10000 into the registrar's m_38->m_8 flag word, null the slot,
 // return 0; else return 1.
+#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
+extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
+                                // WERE the fake g_animScratch / g_animScratchCount
+                                // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/GruntHealthSprite.h>  // CGruntHealthSprite::SetHealthGlyph (health/stamina/toytime/wingz)
 #include <Gruntz/GruntToySprite.h>      // CGruntToySprite::SetCell
 #include <Gruntz/GruntPowerupSprite.h>  // CGruntPowerupSprite::SetCell
@@ -149,13 +153,6 @@ CAnimLookupTree g_animLookupTree;
 i32 g_movingSeed;
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
-CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
-extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view; DATA in TypeKeyColl.cpp)
-i32 g_focusedGruntSentinel;           // DAT_00644c54
-
-// The global CButeMgr config singleton + the tuning keys this TU reads. Minimal
-// local decl (the full ButeMgr.h redefines CString, already pulled in by this
-// TU), with only the typed getter the functions call.
 #include <Bute/ButeMgr.h>
 // The former per-TU CDDrawBlitParam / CAniAdvanceCursor facet views (the +0x1a0
 // geometry sub-player setters/probe) are folded onto CEntranceAnimSub / CGruntAnimSub
@@ -173,7 +170,7 @@ i32 g_focusedGruntSentinel;           // DAT_00644c54
 //     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
 //   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
 //     m_poseIdle/m_poseToy* are i32 handles used dually as null-compared ints and pointers.
-//   * grunt freelist recycle - (void**)((char*)node - g_gruntFreeListBias / g_freePoolBase).
+//   * grunt freelist recycle - (void**)((char*)node - g_coordPool.m_linkOffset / g_coordPool.m_linkOffset).
 //   * MFC CString -> char* - (char*)(const char*)m_animSetName for char*-taking bute APIs.
 //   * tiny-method-view over this - ((CGruntUpdateThis/CVtSlot9*)this)->M() for reloc-masked
 //     external __thiscall engine methods.
@@ -204,7 +201,9 @@ static char s_RunningTimePerTile[] = "RunningTimePerTile"; // 0x60e264
 
 // A global enable flag the neighbor-combat gate reads when the candidate IS self
 // (DAT_006455b0, reloc-masked).
-i32 g_6455b0;
+DATA(0x002455b0)
+i32 g_6455b0; // 0x6455b0 - DEFINED once here; GruntCombat.cpp defined it too (LNK2005),
+              // and neither definition carried an rva pin, so the symbol was unbound.
 
 // The single-char anim-set keys the entrance reads/looks-up (reloc-masked
 // .rodata; DAT_0060a454 = "A" = the idle anim key, DAT_0060d7f8 = "K" =
@@ -285,14 +284,6 @@ struct CAnimSetNode {
 // The 8 compass grunt-voice records (3 DWORDs each, runtime-filled .data) +
 // PlaySound (the @0x4ac10 entrance handler, external/reloc-masked). TU-local
 // definitions so each `mov ds:addr` reloc-masks against retail.
-i32 g_voiceN[3];
-i32 g_voiceS[3];
-i32 g_voiceE[3];
-i32 g_voiceW[3];
-i32 g_voiceSE[3];
-i32 g_voiceNW[3];
-i32 g_voiceNE[3];
-i32 g_voiceSW[3];
 
 // ===========================================================================
 // The 5 grunt movement / anim-name dispatch state machines (formerly the
@@ -319,20 +310,20 @@ void GruntRecycleCoords(CGrunt* g) {
         GruntCoordNode* cur = n;
         n = n->m_next;
         if (cur->m_coord != 0) {
-            void** node = (void**)((char*)cur->m_coord - g_gruntFreeListBias);
-            *node = g_gruntFreeList;
-            g_gruntFreeList = node;
+            void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+            *node = g_coordPool.m_freeHead;
+            g_coordPool.m_freeHead = node;
         }
     }
     ((CObList*)&g->m_31c)->RemoveAll();
 }
 
 // The scratch CString teardown the GetNameRecords reject paths run (Release each
-// non-null slot, g_animScratchCount times). The shared loop-strength-reduction
+// non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
 // wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntScratchTeardown() {
-    CAnimScratchString* slot = g_animScratch;
-    i32 cnt = g_animScratchCount;
+    CAnimScratchString* slot = ((CAnimScratchString*)g_typeColl.m_alloc);
+    i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             ((CString*)slot)->~CString();
@@ -575,23 +566,21 @@ CGrunt::CGrunt(void* owner) : CGruntMovingBase((CGameObject*)owner) {
 
 // The global free-list pool the name caches recycle into (head @0x645544, base
 // subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-void** g_freePoolHead; // DAT_00645544
-i32 g_freePoolBase;    // DAT_0064554c (raw subtrahend)
-i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
+// The save-record serial counter. DEFINED here (owner TU); all five grunt TUs used to
+// define it -> five .bss objects for one global (LNK2005). The DATA() pin lives on the
+// DEFINITION, per the data-def method; GameSave.cpp now just externs it.
+DATA(0x00229ad0)
+i32 g_serialCounter;
 
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
-// freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
+// freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
                                    // src/Gruntz/GameText.cpp (the pool's owner TU).
                                    // It used to be DEFINED here too: six .cpp files each
                                    // defined it, i.e. six .bss objects for one global
                                    // (LNK2005). Only the owner defines; everyone externs.
-CAnimScratchString* g_animScratch; // DAT_006bf66c
-i32 g_animScratchCount;            // DAT_006bf670
-void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
-i32 g_gruntFreeListBias;           // DAT_0064554c (same as g_freePoolBase)
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
@@ -600,7 +589,7 @@ i32 g_gruntFreeListBias;           // DAT_0064554c (same as g_freePoolBase)
 
 // @early-stop
 // reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified
-// llvm-objdump), but the two free-pool globals (g_freePoolHead/Base) and the
+// llvm-objdump), but the two free-pool globals (g_coordPool.m_freeHead/Base) and the
 // three engine calls (Coll::Reset, List::RemoveHead, node deleter) are unnamed,
 // so their DIR32/REL32 operands pair to differently named retail symbols and
 // score fuzzy. Naming the whole referent set is a final-sweep task.
@@ -618,9 +607,9 @@ i32 CGrunt::UserLogicVfunc9() {
                 void* next = node[0];
                 void* buf = node[2];
                 if (buf) {
-                    void** slot = (void**)((char*)buf - g_freePoolBase);
-                    *slot = g_freePoolHead;
-                    g_freePoolHead = slot;
+                    void** slot = (void**)((char*)buf - g_coordPool.m_linkOffset);
+                    *slot = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = slot;
                 }
                 node = (void**)next;
             } while (node);
@@ -1192,9 +1181,9 @@ i32 CGrunt::StepGruntMovement() {
         GruntCoord* co = m_31c.RemoveHead();
         coordX = co->m_x;
         coordY = co->m_y;
-        void** p = (void**)((char*)co - g_gruntFreeListBias);
-        *p = g_gruntFreeList;
-        g_gruntFreeList = p;
+        void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
+        *p = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = p;
     } else {
         GruntCoord* co = m_320->m_coord;
         coordX = co->m_x;
@@ -1310,10 +1299,10 @@ i32 CGrunt::StepGruntMovement() {
     }
     {
         void* node = 0;
-        void** head = (void**)g_gruntFreeList;
+        void** head = (void**)g_coordPool.m_freeHead;
         if (*head != 0) {
             node = (char*)head + 4;
-            g_gruntFreeList = *head;
+            g_coordPool.m_freeHead = *head;
         }
         ((i32*)node)[0] = tgtTileX;
         ((i32*)node)[1] = tgtTileY;
@@ -1382,9 +1371,9 @@ i32 CGrunt::StepGruntMovement() {
             return 0;
         }
         GruntCoord* co2 = m_31c.RemoveHead();
-        void** p = (void**)((char*)co2 - g_gruntFreeListBias);
-        *p = g_gruntFreeList;
-        g_gruntFreeList = p;
+        void** p = (void**)((char*)co2 - g_coordPool.m_linkOffset);
+        *p = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = p;
         goto label_4c6e4;
     }
 
@@ -1402,9 +1391,9 @@ label_4c68b:
 label_4c6e4:
     if (m_arrivalState == 0x11 && m_coordCount != 0) {
         GruntCoord* co = m_31c.RemoveHead();
-        void** p = (void**)((char*)co - g_gruntFreeListBias);
-        *p = g_gruntFreeList;
-        g_gruntFreeList = p;
+        void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
+        *p = g_coordPool.m_freeHead;
+        g_coordPool.m_freeHead = p;
     }
     if (flagHead & 0x80) {
         m_entranceActive = 1;
@@ -1462,9 +1451,9 @@ label_4c6e4:
         if (m_coordCount != 0 && m_arrivalState != 0x11) {
             GruntCoord* co = m_31c.RemoveHead();
             if (co->m_x == btx && co->m_y == bty) {
-                void** p = (void**)((char*)co - g_gruntFreeListBias);
-                *p = g_gruntFreeList;
-                g_gruntFreeList = p;
+                void** p = (void**)((char*)co - g_coordPool.m_linkOffset);
+                *p = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = p;
             } else {
                 m_31c.AddHead(co);
             }
@@ -1647,7 +1636,7 @@ label_ret1:
 
 // @early-stop
 // reloc-masked-symbol plateau: instruction stream byte-exact vs retail (verified
-// llvm-objdump), residual is the two unnamed free-pool globals (g_freePoolHead/
+// llvm-objdump), residual is the two unnamed free-pool globals (g_coordPool.m_freeHead/
 // Base) + the Coll::Reset call pairing to differently named retail symbols.
 // CGrunt::SetEntrancePos(a, b) @0x4d060 - records the grunt's current tile as
 // its committed entrance position (m_174/m_178 = m_lastTilePxX/m_lastTilePxY), clears the
@@ -1670,9 +1659,9 @@ void CGrunt::SetEntrancePos(i32 a, i32 b) {
                 void* next = node[0];
                 void* buf = node[2];
                 if (buf) {
-                    void** slot = (void**)((char*)buf - g_freePoolBase);
-                    *slot = g_freePoolHead;
-                    g_freePoolHead = slot;
+                    void** slot = (void**)((char*)buf - g_coordPool.m_linkOffset);
+                    *slot = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = slot;
                 }
                 node = (void**)next;
             } while (node);

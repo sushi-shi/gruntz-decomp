@@ -14,8 +14,12 @@
 //   * 1 EH site in the interval -> /GX (flags "eh").
 // In-interval fold: LoadWingzGruntSprites @0x68880 (ex GruntAssetLoaders.cpp -
 // its 31 private cells sit inside this TU's band).
+#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
+extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
+                                // WERE the fake g_animScratch / g_animScratchCount
+                                // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/AniAdvanceCursor.h> // CAniAdvanceCursor::Advance_15c360 (0x15c360)
@@ -42,26 +46,6 @@ DATA(0x001e9a48)
 double g_wingzScale = 100.0; // 0x5e9a48
 DATA(0x001e9a50)
 double g_wingzBias = -0.5; // 0x5e9a50
-CEntranceAnimSrc g_entranceAnimSrc;   // DAT_006bf620
-extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view; DATA in TypeKeyColl.cpp)
-i32 g_focusedGruntSentinel;           // DAT_00644c54
-
-// AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
-//   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
-//     the per-anim CString bags at +0x468/+0x46c/+0x470/+0x000 are 8-byte-strided arrays.
-//   * grid/record stride - (const char*)((zDArray*)((char*)this + (3*col+row+0xb)*0x68)),
-//     ((CFocusSlot*)((char*)g + 0x150 + owner*0x238)), (double*)((char*)this + 0x4b0)
-//     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
-//   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
-//     m_poseIdle/m_poseToy* are i32 handles used dually as null-compared ints and pointers.
-//   * grunt freelist recycle - (void**)((char*)node - g_gruntFreeListBias / g_freePoolBase).
-//   * MFC CString -> char* - (char*)(const char*)m_animSetName for char*-taking bute APIs.
-//   * tiny-method-view over this - ((CGruntUpdateThis/CVtSlot9*)this)->M() for reloc-masked
-//     external __thiscall engine methods.
-//   * DELIBERATELY-raw member writes - ar->Write((char*)this + 0x400/0x408/0x410, 8): the
-//     m_400/408/410 doubles are modeled but kept raw because &m_400 shifts a neighbor's
-//     regalloc (tested-and-reverted; see the inline m_400 note).
-// numeric-conversion casts ((u32)m_dwell / (i32)m_14->m_1c / (double)...) document width and stay.
 extern CButeMgr g_buteMgr;
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
@@ -117,23 +101,17 @@ static void GruntScratchTeardown();
 
 // The global free-list pool the name caches recycle into (head @0x645544, base
 // subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-void** g_freePoolHead; // DAT_00645544
-i32 g_freePoolBase;    // DAT_0064554c (raw subtrahend)
-i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
+extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
-// freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
+// freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
                                    // src/Gruntz/GameText.cpp (the pool's owner TU).
                                    // It used to be DEFINED here too: six .cpp files each
                                    // defined it, i.e. six .bss objects for one global
                                    // (LNK2005). Only the owner defines; everyone externs.
-CAnimScratchString* g_animScratch; // DAT_006bf66c
-i32 g_animScratchCount;            // DAT_006bf670
-void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
-i32 g_gruntFreeListBias;           // DAT_0064554c (same as g_freePoolBase)
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
@@ -171,11 +149,11 @@ void CGrunt::ApplyMoveKind(i32 v) {} // thunk_0x3c29 (0x57100); external/reloc-m
 // giant ~0x46c layout tractable.
 
 // The scratch CString teardown the GetNameRecords reject paths run (Release each
-// non-null slot, g_animScratchCount times). The shared loop-strength-reduction
+// non-null slot, g_typeColl.m_grown times). The shared loop-strength-reduction
 // wall (docs/patterns; cl `mov edi,count` vs retail `lea edi,[eax+1]`).
 static void GruntScratchTeardown() {
-    CAnimScratchString* slot = g_animScratch;
-    i32 cnt = g_animScratchCount;
+    CAnimScratchString* slot = ((CAnimScratchString*)g_typeColl.m_alloc);
+    i32 cnt = g_typeColl.m_grown;
     while (cnt != 0) {
         if (slot != 0) {
             ((CString*)slot)->~CString();
@@ -405,7 +383,7 @@ void CGrunt::BuildEntranceAnimation(i32 mode) {
                 i32 off = a * 15 + b;
                 focus = ((CEntranceAnimPlayer**)slot)[off + 0x1c / 4];
             }
-            if (this == (CGrunt*)focus && m_tileOwnerHi == g_focusedGruntSentinel) {
+            if (this == (CGrunt*)focus && m_tileOwnerHi == g_curPlayer) {
                 onScreen = 1;
             }
         }
@@ -551,7 +529,7 @@ void CGrunt::LoadEntranceConfig() {
         p->m_c->m_2c->m_10map.Lookup(s_GRUNTZ_ENTRANCEZ_DROP, found_ob);
         CSprite* found = (CSprite*)found_ob;
         if ((void*)found == cached) {
-            if (m_tileOwnerHi == g_focusedGruntSentinel) {
+            if (m_tileOwnerHi == g_curPlayer) {
                 g_gameReg->m_cueSink->CueA(this, 0x33f, -1, 0, -1, -1);
             }
             m_tileMgr->ClaimTile(m_tileOwnerHi, m_tileOwnerLo, 0, 0);
@@ -1521,7 +1499,7 @@ i32 CGrunt::LoadGruntMovingDeathConfig() {
 #undef MV_SW
 
     m_prevAnimSetNode = m_14->m_1c;
-    m_14->m_1c = (void*)((CButeTree*)&g_entranceAnimSrc)->Find(s_animKeyS);
+    m_14->m_1c = (void*)g_buteTree.Find(s_animKeyS);
     return 1;
 }
 

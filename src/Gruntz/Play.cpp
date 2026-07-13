@@ -2154,9 +2154,9 @@ i32 CGrunt::Load(CGruntArchive* ar) {
         for (i32 i = 0; i < coll->m_count; i++) {
             void* node = coll->m_data[i];
             if (node) {
-                void** p = (void**)((char*)node - g_gruntFreeListBias);
-                *p = g_gruntFreeList;
-                g_gruntFreeList = p;
+                void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
+                *p = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = p;
             }
         }
         ((CPtrArray*)coll)->SetSize(0, -1);
@@ -2164,11 +2164,11 @@ i32 CGrunt::Load(CGruntArchive* ar) {
         ar->Read(&n, 4);
         for (u32 j = 0; j < (u32)n; j++) {
             void* node = 0;
-            void** head = (void**)g_gruntFreeList;
+            void** head = (void**)g_coordPool.m_freeHead;
             void* next = *head;
             if (next) {
                 node = (char*)head + 4;
-                g_gruntFreeList = next;
+                g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
             ((CPtrArray*)coll)->SetAtGrow(coll->m_count, node);
@@ -2187,9 +2187,9 @@ i32 CGrunt::Load(CGruntArchive* ar) {
             for (i32 i = 0; i < coll->m_count; i++) {
                 void* node = coll->m_data[i];
                 if (node) {
-                    void** p = (void**)((char*)node - g_gruntFreeListBias);
-                    *p = g_gruntFreeList;
-                    g_gruntFreeList = p;
+                    void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
+                    *p = g_coordPool.m_freeHead;
+                    g_coordPool.m_freeHead = p;
                 }
             }
             ((CPtrArray*)coll)->SetSize(0, -1);
@@ -2197,11 +2197,11 @@ i32 CGrunt::Load(CGruntArchive* ar) {
             ar->Read(&n, 4);
             for (u32 j = 0; j < (u32)n; j++) {
                 void* node = 0;
-                void** head = (void**)g_gruntFreeList;
+                void** head = (void**)g_coordPool.m_freeHead;
                 void* next = *head;
                 if (next) {
                     node = (char*)head + 4;
-                    g_gruntFreeList = next;
+                    g_coordPool.m_freeHead = next;
                 }
                 ar->Read(node, 8);
                 ((CPtrArray*)coll)->SetAtGrow(coll->m_count, node);
@@ -2301,20 +2301,20 @@ i32 CGrunt::Load(CGruntArchive* ar) {
         for (i32 i = 0; i < coll->m_count; i++) {
             void* node = coll->m_data[i];
             if (node) {
-                void** p = (void**)((char*)node - g_gruntFreeListBias);
-                *p = g_gruntFreeList;
-                g_gruntFreeList = p;
+                void** p = (void**)((char*)node - g_coordPool.m_linkOffset);
+                *p = g_coordPool.m_freeHead;
+                g_coordPool.m_freeHead = p;
             }
         }
         ((CPtrArray*)coll)->SetSize(0, -1);
         ((CPtrArray*)coll)->SetSize(n488, -1);
         for (u32 j = 0; j < (u32)n488; j++) {
             void* node = 0;
-            void** head = (void**)g_gruntFreeList;
+            void** head = (void**)g_coordPool.m_freeHead;
             void* next = *head;
             if (next) {
                 node = (char*)head + 4;
-                g_gruntFreeList = next;
+                g_coordPool.m_freeHead = next;
             }
             ar->Read(node, 8);
             coll->m_data[j] = node;

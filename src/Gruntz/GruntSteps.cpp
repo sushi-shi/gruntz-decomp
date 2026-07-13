@@ -18,8 +18,12 @@
 // is text-contained (between 0x50ca0 and 0x511b0 - contiguity-forced).
 // GruntTubeAnim.cpp (0x50a50, gap 139 before 0x50ca0) is a PROBABLE head of this
 // TU but stays split (no privates/frags to prove it; noted there).
+#include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
+extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
+                                // WERE the fake g_animScratch / g_animScratchCount
+                                // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/ActReg.h>      // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
@@ -44,26 +48,6 @@ extern "C" WwdGameReg* g_gameReg; // 0x64556c (the WwdGameReg view, as in Grunt.
 #include <Gruntz/TriggerMgr.h>           // CTriggerMgr::ApplySwitch
 
 // Entrance-animation globals (reloc-masked; see Grunt.h).
-CEntranceAnimSrc g_entranceAnimSrc; // DAT_006bf620
-extern CTypeKeyColl g_typeColl; // 0x6bf650 (folded CAnimNameResolver view; DATA in TypeKeyColl.cpp)
-i32 g_focusedGruntSentinel;     // DAT_00644c54
-
-// AUTHENTIC-FLOOR NOTE (cast audit): the casts remaining in this TU are intentional -
-//   * CString-array stride access - GruntStrGetBuffer((char*)this + idx*8 + 0x4NN):
-//     the per-anim CString bags at +0x468/+0x46c/+0x470/+0x000 are 8-byte-strided arrays.
-//   * grid/record stride - (const char*)((zDArray*)((char*)this + (3*col+row+0xb)*0x68)),
-//     ((CFocusSlot*)((char*)g + 0x150 + owner*0x238)), (double*)((char*)this + 0x4b0)
-//     [0x78-stride]: raw byte arithmetic into stride records, not 2D pointer arrays.
-//   * int-as-pointer pose handles - ((CAnimSetNode*)m_poseToyN)->m_10 / (void*)m_poseIdle[0]:
-//     m_poseIdle/m_poseToy* are i32 handles used dually as null-compared ints and pointers.
-//   * grunt freelist recycle - (void**)((char*)node - g_gruntFreeListBias / g_freePoolBase).
-//   * MFC CString -> char* - (char*)(const char*)m_animSetName for char*-taking bute APIs.
-//   * tiny-method-view over this - ((CGruntUpdateThis/CVtSlot9*)this)->M() for reloc-masked
-//     external __thiscall engine methods.
-//   * DELIBERATELY-raw member writes - ar->Write((char*)this + 0x400/0x408/0x410, 8): the
-//     m_400/408/410 doubles are modeled but kept raw because &m_400 shifts a neighbor's
-//     regalloc (tested-and-reverted; see the inline m_400 note).
-// numeric-conversion casts ((u32)m_dwell / (i32)m_14->m_1c / (double)...) document width and stay.
 extern CButeMgr g_buteMgr;
 static char s_TimePerTile[] = "TimePerTile";
 static char s_Grunt[] = "Grunt";                               // s_Grunt_0060a9ec
@@ -239,23 +223,17 @@ void CGrunt::LoadTypeTableClearMove(i32 typeId) {
 
 // The global free-list pool the name caches recycle into (head @0x645544, base
 // subtrahend @0x64554c). Defined TU-local (reloc-masked); shared in retail.
-void** g_freePoolHead; // DAT_00645544
-i32 g_freePoolBase;    // DAT_0064554c (raw subtrahend)
-i32 g_serialCounter;   // DAT_00629ad0 (Save's per-record counter)
+extern i32 g_serialCounter; // DEFINED in src/Gruntz/Grunt.cpp (owner TU)
 
 // The grunt movement / anim-name dispatch state machines' reloc-masked data.
 // All TU-local definitions (reloc-masked against the retail symbols); the grunt
-// freelist aliases the same g_freePoolHead/Base pool (0x645544 / 0x64554c).
+// freelist aliases the same g_coordPool.m_freeHead/Base pool (0x645544 / 0x64554c).
 extern "C" WwdGameReg* g_gameReg;  // ?g_gameReg@@3PAUWwdGameReg@@A @0x64556c
 extern FreeNodePool g_coordPool;   // DAT_00645540 - DEFINED once, in
                                    // src/Gruntz/GameText.cpp (the pool's owner TU).
                                    // It used to be DEFINED here too: six .cpp files each
                                    // defined it, i.e. six .bss objects for one global
                                    // (LNK2005). Only the owner defines; everyone externs.
-CAnimScratchString* g_animScratch; // DAT_006bf66c
-i32 g_animScratchCount;            // DAT_006bf670
-void* g_gruntFreeList;             // DAT_00645544 (same pool as g_freePoolHead)
-i32 g_gruntFreeListBias;           // DAT_0064554c (same as g_freePoolBase)
 
 // The single-letter anim type-code literals live ONCE in retail .rdata and are shared by
 // every TU that compares against them (s_codeA..s_codeQ, declared in <Gruntz/Grunt.h>,
