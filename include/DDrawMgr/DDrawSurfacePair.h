@@ -76,8 +76,8 @@ VTBL(CDDrawSurfacePair, 0x001eff30);
 class CDDrawSurfacePair
     : public CObject { // was : CSurfacePairBase:CWapObj (merged, CWapObj slots as own)
 public:
-    virtual i32 IsLoaded();  // slot 5 (was CWapObj)
-    virtual i32 IsReady();   // slot 6 (was CWapObj)
+    virtual i32 IsLoaded(); // slot 5 (was CWapObj)
+    virtual i32 IsReady();  // slot 6 (was CWapObj)
     // The debug counter-draw pair (bodies in DDrawSurfacePair.cpp, retail birth-
     // positioned dead-center in this class's .text block; ex the fake
     // ResLoaders::DrawHost_164380/DrawHost2_164420 views - their +0x2c "counter

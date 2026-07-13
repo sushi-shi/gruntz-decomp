@@ -110,8 +110,8 @@ public:
     virtual void Slot3C();                         // +0x3c  (referenced by +0x1c thunk)
     virtual void Slot40();                         // +0x40  0x159f00 (slot 16)
 
-    i32 m_status;              // +0x04  initialized to -1 when inactive
-    i32 m_flags08;             // +0x08  flags (bit 0x200000 = draw per-object debug counts)
+    i32 m_status;  // +0x04  initialized to -1 when inactive
+    i32 m_flags08; // +0x08  flags (bit 0x200000 = draw per-object debug counts)
     // +0x0c  the owning CDDrawSurfaceMgr (the world/display root; its +0x24 is the
     // CGameLevel and +0x04 the pages sub-manager).
     class CDDrawSurfaceMgr* m_parent;

@@ -32,12 +32,12 @@
 #include <DDrawMgr/DDrawSurfaceMgr.h>  // canonical m_0c owner (InvokeCallback + m_workerCache)
 #include <DDrawMgr/DDrawWorkerCache.h> // m_workerCache full type (the +0x10 name map)
 #include <Gruntz/ObList.h>
-#include <Gruntz/UserLogic.h>       // CGameObject - the real class of the AABB pair
-                                    // BoxesOverlap_15a130 tests (was the CWwdBox view)
-#include <Wwd/WwdFile.h>            // CPlaneRender (m_parent->m_24->m_5c world transform)
+#include <Gruntz/UserLogic.h>          // CGameObject - the real class of the AABB pair
+                                       // BoxesOverlap_15a130 tests (was the CWwdBox view)
+#include <Wwd/WwdFile.h>               // CPlaneRender (m_parent->m_24->m_5c world transform)
 #include <DDrawMgr/DDrawSurfacePair.h> // CDDrawSurfacePair (DrawCount - ex the DrawHost_164380 view)
-#include <Gruntz/GameLevel.h>           // CGameLevel (m_parent->m_resolveSubMgr) + CLevelPlane
-#include <Win32.h>                  // SetRect + RECT
+#include <Gruntz/GameLevel.h>          // CGameLevel (m_parent->m_resolveSubMgr) + CLevelPlane
+#include <Win32.h>                     // SetRect + RECT
 
 // Engine heap allocator (operator new / RezAlloc). Reloc-masked __cdecl extern.
 extern "C" void* RezAlloc(unsigned int size); // 0x1b9b46

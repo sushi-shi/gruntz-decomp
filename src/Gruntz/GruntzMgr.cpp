@@ -51,7 +51,7 @@
 #include <Gruntz/BattlezMapConfig.h>
 #include <DDrawMgr/DDrawSurfaceMgr.h>
 #include <DDrawMgr/DDrawSubMgrPages.h>    // m_world->m_pages (ex CWorldSub4; Method_158c70 pause)
-#include <DDrawMgr/DDrawSubMgrLeafScan.h>  // m_world->m_28 (CSndHost == the leaf-scan registry)
+#include <DDrawMgr/DDrawSubMgrLeafScan.h> // m_world->m_28 (CSndHost == the leaf-scan registry)
 #include <DDrawMgr/DDrawPtrCollections.h> // m_world->m_ptrColl (GetCapsChecked / the held IDirectDraw2)
 #include <Gruntz/GameRegistry.h>
 #include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (was local CWorldLayer)
@@ -1290,7 +1290,7 @@ RVA(0x0008ee70, 0x7c)
 i32 CGruntzMgr::ShowMessageBox(const char* text, u32 type) {
     if (m_world) {
         CDDrawSubMgrPages* pages = m_world->m_pages;
-        pages->Method_158c70(pages->m_backPair); // pause the back pair (ex "PausePages")
+        pages->Method_158c70(pages->m_backPair);         // pause the back pair (ex "PausePages")
         m_world->m_ptrColl->m_surf0->FlipToGDISurface(); // IDirectDraw2 slot 10 (+0x28)
     }
     i32 wasShown = ShowCursor(1);

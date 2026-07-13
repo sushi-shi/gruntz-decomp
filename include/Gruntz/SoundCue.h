@@ -48,7 +48,7 @@ SIZE_UNKNOWN(LeafCue);
 // DEFINED here was an ODR duplicate of the REAL class in <Dsndmgr/SoundStream.h> (same
 // base, same Stop/DestroyVoice/OpenStream rvas). Pull the real one - it also carries
 // TickSubManagers (0x137ac0), the per-frame tick CPlay/CMulti drive on this member.
-#include <Dsndmgr/SoundStream.h> // the REAL SoundStream (: SoundDevice)
+#include <Dsndmgr/SoundStream.h>          // the REAL SoundStream (: SoundDevice)
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // the canonical class behind CSndHost (see below)
 
 // The named-cue registry embedded at CSndHost+0x10 (the engine ::CMapStringToPtr, Lookup

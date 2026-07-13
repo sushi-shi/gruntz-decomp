@@ -143,9 +143,9 @@ struct CSpriteFactoryHolder {
         CSpriteFactory* m_8;
         struct CDDrawChildGroup* m_childGroup;
     };
-    CRenderer* m_rendererB;    // +0x0c  renderer B (present) / resource worker holder (View.h)
-    CImageRegistry* m_10;      // +0x10  image/name registry (real ResMgr.h class: Install/Has/
-                               //         Register/Release/LoadNamespace + the m_10map hash)
+    CRenderer* m_rendererB; // +0x0c  renderer B (present) / resource worker holder (View.h)
+    CImageRegistry* m_10;   // +0x10  image/name registry (real ResMgr.h class: Install/Has/
+                            //         Register/Release/LoadNamespace + the m_10map hash)
     // +0x14..+0x1c: the DDraw-side children (names from the CDDrawSurfaceMgr
     // canonical; the Init decode 0x155900 news each).
     struct CDDrawWorkerCache* m_workerCache; // +0x14  string-keyed worker cache
@@ -164,8 +164,8 @@ struct CSpriteFactoryHolder {
                       //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate.
     CAnimRegistry* m_animRegistry; // +0x2c  anim/third registry (real ResMgr.h class;
                                    //         == CDDrawSurfaceMgr::m_leaf)
-    void* m_hWnd30;  // +0x30  bound window / device handle (CDDrawSurfaceMgr::m_hWnd)
-    i32 m_flags34;   // +0x34  caps flags
+    void* m_hWnd30;                // +0x30  bound window / device handle (CDDrawSurfaceMgr::m_hWnd)
+    i32 m_flags34;                 // +0x34  caps flags
     // +0x38  last-error / world load-status code (ReportWorldStatus maps it to a
     // message id; Init stores 0x3e9..0x3f1). u32 alias = the old CWorldZ::m_38.
     union {

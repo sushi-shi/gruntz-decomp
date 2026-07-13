@@ -129,7 +129,7 @@ struct EngObj; // teardown-only sub-object (Teardown())
 // defined by the <Gruntz/SpriteRefTable.h> include above.
 class CGruntSpawnConfig;
 class CGameLevel;
-class CLightFxMgr;  // +0x78 light-FX/shade-table pump (Reset teardown @0x9dc80)
+class CLightFxMgr; // +0x78 light-FX/shade-table pump (Reset teardown @0x9dc80)
 
 // +0x34 is the REAL CSymParser (<Bute/SymParser.h>; SIZE 0x94 == the size retail
 // operator-new's at it) and +0x38 the REAL Utils::RegistryHelper - the CRezSurface94 /

@@ -6,7 +6,7 @@
 // maps to one contiguous retail .text region. Byte-neutral TU cut.
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (m_world's real class)
-#include <Gruntz/GameLevel.h>    // CGameLevel (m_world->m_24) + CLevelPlane // CGruntzMgr / CWorldZ / CGameLevel (m_world->m_24) / CGruntzMapMgr
+#include <Gruntz/GameLevel.h> // CGameLevel (m_world->m_24) + CLevelPlane // CGruntzMgr / CWorldZ / CGameLevel (m_world->m_24) / CGruntzMapMgr
 #include <Wwd/WwdFile.h> // CPlaneRender (the world plane; m_tileGrid / m_colOffsets height grid)
 #include <rva.h>
 

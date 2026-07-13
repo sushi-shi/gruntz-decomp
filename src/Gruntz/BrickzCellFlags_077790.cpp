@@ -310,4 +310,3 @@ GridCell_77df0* Grid_77df0::FindNearest(GridWorld_77df0* w) {
     }
     return best;
 }
-

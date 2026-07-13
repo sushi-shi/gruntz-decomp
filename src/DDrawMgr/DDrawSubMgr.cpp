@@ -20,10 +20,10 @@
 #include <Gruntz/ParseSource.h>     // canonical CParseSource - MUST precede the Leaf headers
 #include <Dsndmgr/DirectSoundMgr.h> // real DSound types (MatchSub GetFormat/SetPrimaryFormat)
 #include <Dsndmgr/SoundDevice.h>
-#include <Dsndmgr/SoundStream.h> // the +0x2c held stream full def (base SoundDevice methods)
-#include <stdio.h>                        // sprintf (the %s%s%s path walkers)
-#include <DDrawMgr/DDrawWorkerNode.h>     // CDDrawWorkerBase/A/B (the list-spawned workers)
-#include <DDrawMgr/DDrawWorkerList.h>     // CDDrawWorkerList (hoisted; factories here)
+#include <Dsndmgr/SoundStream.h>      // the +0x2c held stream full def (base SoundDevice methods)
+#include <stdio.h>                    // sprintf (the %s%s%s path walkers)
+#include <DDrawMgr/DDrawWorkerNode.h> // CDDrawWorkerBase/A/B (the list-spawned workers)
+#include <DDrawMgr/DDrawWorkerList.h> // CDDrawWorkerList (hoisted; factories here)
 #include <DDrawMgr/DDrawWorkerMapSmall.h> // CDDrawWorkerMapSmall (hoisted; quartet here)
 #include <DDrawMgr/DDrawWorkerCache.h>    // CDDrawWorkerCache (dtor here)
 #include <DDrawMgr/DDrawPtrCollections.h> // the surface pool (CreateChildren children)

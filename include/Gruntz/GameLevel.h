@@ -134,16 +134,16 @@ public:
     u8 pad_4[0x4]; // +0x04
     u32 m_flags;   // +0x08  bit0 = MAIN/origin-fixed; bit2/3 = wrap X/Y
     u8 pad_c[0x10 - 0xc];
-    float m_scaledX;           // +0x10  scroll origin X (RecomputePlaneCoords wrap target)
-    float m_scaledY;           // +0x14  scroll origin Y
-    float m_scaleX;            // +0x18  X parallax factor
-    float m_scaleY;            // +0x1c  Y parallax factor
-    i32* m_tileGrid;           // +0x20  tile-id grid (row-indexed)
-    i32* m_colOffsets;         // +0x24  per-row column base offsets
-    i32 m_width;               // +0x28  tile-grid width (LookupTile clamp)
-    i32 m_height;              // +0x2c  tile-grid height
-    i32 m_wrapW;               // +0x30  tile count across (wrap/clamp modulus)
-    i32 m_wrapH;               // +0x34  tile count down
+    float m_scaledX;   // +0x10  scroll origin X (RecomputePlaneCoords wrap target)
+    float m_scaledY;   // +0x14  scroll origin Y
+    float m_scaleX;    // +0x18  X parallax factor
+    float m_scaleY;    // +0x1c  Y parallax factor
+    i32* m_tileGrid;   // +0x20  tile-id grid (row-indexed)
+    i32* m_colOffsets; // +0x24  per-row column base offsets
+    i32 m_width;       // +0x28  tile-grid width (LookupTile clamp)
+    i32 m_height;      // +0x2c  tile-grid height
+    i32 m_wrapW;       // +0x30  tile count across (wrap/clamp modulus)
+    i32 m_wrapH;       // +0x34  tile count down
     // 0x077dc0 (body in BrickzCellFlags_077790.cpp; ex BrickzGridDesc::SetCell -
     // that view IS this plane): m_tileGrid[m_colOffsets[y] + x] = id.
     void SetCell(i32 x, i32 y, i32 id);

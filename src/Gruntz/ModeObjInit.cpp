@@ -13,12 +13,12 @@
 #include <Ints.h>
 #include <rva.h>
 #include <string.h>
-#include <Gruntz/GruntzMgr.h>              // canonical CGruntzMgr (ResetClockGlobals; the a1 arg)
-#include <Gruntz/Play.h>                   // canonical CPlay: 0xc7ec0 IS CPlay::Vfunc1 (slot 1)
-#include <Gruntz/StatusBarMgr.h>           // canonical CStatusBarMgr (m_guts; LoadBattlezItemConfig/Teardown)
-#include <Gruntz/ChatBoxOwner.h>           // canonical CChatBoxOwner (m_hitTest; Attach/Deactivate/Configure)
-#include <Gruntz/UserLogic.h>              // canonical CGameObject (m_scrollSink; m_stateFlags bit0)
-#include <Gruntz/TileTriggerContainer.h>   // canonical CTileTriggerContainer (m_beginMarker; dtor 0xc8640)
+#include <Gruntz/GruntzMgr.h>    // canonical CGruntzMgr (ResetClockGlobals; the a1 arg)
+#include <Gruntz/Play.h>         // canonical CPlay: 0xc7ec0 IS CPlay::Vfunc1 (slot 1)
+#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (m_guts; LoadBattlezItemConfig/Teardown)
+#include <Gruntz/ChatBoxOwner.h> // canonical CChatBoxOwner (m_hitTest; Attach/Deactivate/Configure)
+#include <Gruntz/UserLogic.h>    // canonical CGameObject (m_scrollSink; m_stateFlags bit0)
+#include <Gruntz/TileTriggerContainer.h> // canonical CTileTriggerContainer (m_beginMarker; dtor 0xc8640)
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (GetFlag74)
 
 // Rec50::Init286f @0x286f IS CTimer::Init (canonical <Gruntz/Timer.h>).
@@ -299,13 +299,8 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
             if (m_guts) {
                 m_guts->Teardown();
                 ((Worker630::Sub530*)((char*)m_guts + 0x530))->Dtor1b4f3e();
-                EhVecCtor(
-                    (char*)m_guts + 0x2c,
-                    0,
-                    0,
-                    0,
-                    0
-                ); // __ehvec_dtor 0x11f640 (reloc-masked)
+                EhVecCtor((char*)m_guts + 0x2c, 0, 0, 0,
+                          0); // __ehvec_dtor 0x11f640 (reloc-masked)
                 modeinit::RezFree(m_guts);
             }
             m_guts = 0;
@@ -352,7 +347,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         m_40 = 0; // the retail DWORD store (the ex-view's u8 was the noted bug)
         m_1c0 = 0;
         memset(&m_1d0, 0, 0x40 * 4); // clears +0x1d0..+0x2d0
-        a1->ResetClockGlobals(); // retail ecx = the A1 arg slot (a1 IS the mgr)
+        a1->ResetClockGlobals();     // retail ecx = the A1 arg slot (a1 IS the mgr)
         m_savedClock = 0;
         m_rngSeed = timeGetTime();
         m_lightFx = 0;
@@ -362,7 +357,7 @@ i32 CPlay::Vfunc1(i32 a1_i, i32 a2, i32 a3) {
         if (!LoadImageBanks()) { // slot 29 (+0x74) virtual dispatch
             return 0;
         }
-        Vslot24(); // slot 36 (+0x90) virtual dispatch (retail body: bare ret)
+        Vslot24();                // slot 36 (+0x90) virtual dispatch (retail body: bare ret)
         if (!LoadByMode(a2, 1)) { // slot 30 (+0x78) virtual dispatch
             return 0;
         }

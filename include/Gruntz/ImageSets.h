@@ -100,6 +100,7 @@ struct CImageSet2 : CObject {
     i32 m_1c; // +0x1c
     i32 m_20; // +0x20
 };
+SIZE_UNKNOWN(CImageSet3);
 struct CImageSet3 : CObject {
     virtual ~CImageSet3() OVERRIDE; // slot 1 (CObject dtor)
     // slots 0-4 inherited from CObject (slot 1 = its virtual dtor).

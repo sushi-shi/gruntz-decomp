@@ -11,9 +11,9 @@
 // class is unrecovered (a small placeholder). Both __cdecl.
 #include <Ints.h>
 
-#include <Gruntz/GruntzMgr.h>            // the real CGruntzMgr (a2's true class) + m_world chain
-#include <Gruntz/GameRegistry.h>          // CSpriteFactoryHolder (m_world's real class)
-#include <DDrawMgr/DDrawSubMgrPages.h>    // m_pages (the ex-CWorldSub4 +0x4 child)
+#include <Gruntz/GruntzMgr.h>          // the real CGruntzMgr (a2's true class) + m_world chain
+#include <Gruntz/GameRegistry.h>       // CSpriteFactoryHolder (m_world's real class)
+#include <DDrawMgr/DDrawSubMgrPages.h> // m_pages (the ex-CWorldSub4 +0x4 child)
 
 #include <rva.h>
 

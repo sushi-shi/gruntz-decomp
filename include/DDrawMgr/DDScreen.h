@@ -74,10 +74,10 @@ public:
         i32 a31
     );
 
-    HWND m_window;      // +0x00  owner window (InitMode stores it)
-    i32 m_initialized;  // +0x04  "initialized" flag (InitMode sets 1; cf. CDDPageMgr +0x04)
-    void* m_8;          // +0x08  cleared by InitMode (role unproven)
-    i32 m_0c; // +0x0c   ==0 gates full DDraw-stack teardown (owns-vs-borrows, unproven)
+    HWND m_window;     // +0x00  owner window (InitMode stores it)
+    i32 m_initialized; // +0x04  "initialized" flag (InitMode sets 1; cf. CDDPageMgr +0x04)
+    void* m_8;         // +0x08  cleared by InitMode (role unproven)
+    i32 m_0c;          // +0x0c   ==0 gates full DDraw-stack teardown (owns-vs-borrows, unproven)
     CTileInfo* m_tileInfo;         // +0x10
     IDirectDraw2* m_dd2;           // +0x14   IDirectDraw2
     IDirectDraw* m_dd;             // +0x18   IDirectDraw
@@ -94,11 +94,11 @@ public:
         u8 m_colorSlots[0x400];
         PALETTEENTRY m_palEntries[0x100];
     };
-    i32 m_508; // +0x508   InitMode stores its a31 pass-through scalar (role unproven)
-    i32 m_50c; // +0x50c   reset to 0 by Configure
-    i32 m_510; // +0x510   cleared by InitMode after the 8bpp palette attach (role unproven)
-    i32 m_514;            // +0x514  set in mode-2 fallback (unproven)
-    u32 m_screenWidth;    // +0x518
+    i32 m_508;         // +0x508   InitMode stores its a31 pass-through scalar (role unproven)
+    i32 m_50c;         // +0x50c   reset to 0 by Configure
+    i32 m_510;         // +0x510   cleared by InitMode after the 8bpp palette attach (role unproven)
+    i32 m_514;         // +0x514  set in mode-2 fallback (unproven)
+    u32 m_screenWidth; // +0x518
     u32 m_screenHeight;   // +0x51c
     i32 m_bpp;            // +0x520
     i32 m_tilesAcross;    // +0x524

@@ -178,19 +178,19 @@ struct CGameObject {
     i32 m_70;            // +0x70  (WwdFile record clipRect bottom)
     i32 m_latchedAnimId; // +0x74
     char m_pad78[0x7c - 0x78];
-    CGameObjAux* m_7c; // +0x7c
+    CGameObjAux* m_7c;   // +0x7c
     AnimWorkerObj* m_80; // +0x80  lazily-built worker (EnsureWorker80)
     char m_pad84[0x88 - 0x84];
     AnimWorkerObj* m_88; // +0x88  lazily-built worker (EnsureWorker88)
     char m_pad8c[0x90 - 0x8c];
     AnimWorkerObj* m_collideWorker; // +0x90  lazily-built worker (EnsureWorker90); its
-                                  //        m_collideNotify is fired by BroadPhase
-    CGameObject* m_hitOther;      // +0x94  the other party of the pending collision
-                                  //        (stored just before m_collideNotify fires)
-    CGameObject* m_carrier;       // +0x98  latched carrier (a category-0x80 platform
-                                  //        object; StepAxisAlt stores it + sets flags
-                                  //        bit4; CMovingLogic::Update then advances
-                                  //        m_screenX/Y by the carrier's m_deltaX/Y)
+                                    //        m_collideNotify is fired by BroadPhase
+    CGameObject* m_hitOther;        // +0x94  the other party of the pending collision
+                                    //        (stored just before m_collideNotify fires)
+    CGameObject* m_carrier;         // +0x98  latched carrier (a category-0x80 platform
+                                    //        object; StepAxisAlt stores it + sets flags
+                                    //        bit4; CMovingLogic::Update then advances
+                                    //        m_screenX/Y by the carrier's m_deltaX/Y)
     char m_pad9c[0xe4 - 0x9c];
     // +0xe4  movement-resolution mode (CGameLevel::DispatchMove kinds 1..8):
     // 7 = direct set (no tile collision; CProjectile seeds it), 1/2/5 -> handler A,

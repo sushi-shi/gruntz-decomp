@@ -121,10 +121,10 @@
 #include <Dsndmgr/GruntzSoundZ.h>
 // The real owners of the ex-`Eng` conflation (see the note below): each was reached by
 // casting a pointer to a fabricated `Eng` and calling a fabricated method on it.
-#include <Gruntz/Multi.h>            // CMulti::AckJoinFailure  (was Eng::Teardown)
-#include <Gruntz/CBrickz.h>          // CBrickz::LoadAttributes (was Eng::LoadAttributes)
-#include <Gruntz/Brickz.h>           // CBrickzGrid::UpdateDiagonals
-#include <Gruntz/ParseSource.h>      // CParseSource::BeginParse/EndParse
+#include <Gruntz/Multi.h>       // CMulti::AckJoinFailure  (was Eng::Teardown)
+#include <Gruntz/CBrickz.h>     // CBrickz::LoadAttributes (was Eng::LoadAttributes)
+#include <Gruntz/Brickz.h>      // CBrickzGrid::UpdateDiagonals
+#include <Gruntz/ParseSource.h> // CParseSource::BeginParse/EndParse
 #include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost::GetSize_1633e0 (the plane/grid-owner; ex a CImageSet3 mis-attribution)
 #include <DinMgr2/DirectInputMgr2.h> // DirectInputMgr2::ReadAll (was Eng::HideMenu)
 #include <Globals.h>

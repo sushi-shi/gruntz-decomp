@@ -21,7 +21,7 @@
 
 #include <DDrawMgr/DirectDrawMgr.h>
 #include <DDrawMgr/DDrawPtrCollections.h> // the palette/pool context the decoders read
-#include <Image/Image.h> // CFileImageElement / CFileImageSrc
+#include <Image/Image.h>                  // CFileImageElement / CFileImageSrc
 #include <ddraw.h> // real DirectDraw SDK (IDirectDrawSurface, DDBLTFX, DDCOLORKEY, DDERR_*/DDBD_*/DDSCAPS_*)
 #include <rva.h>
 #include <stdio.h>

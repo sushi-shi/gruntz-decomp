@@ -10,10 +10,10 @@
 // call shape are load-bearing; names are placeholders.
 #include <rva.h>
 
-#include <Mfc.h> // afx-first umbrella (DDrawPtrCollections.h needs MFC CPtrList) + windows.h
+#include <Mfc.h>   // afx-first umbrella (DDrawPtrCollections.h needs MFC CPtrList) + windows.h
 #include <ddraw.h> // real IDirectDraw2 (GetCaps @slot 11) + LPDDCAPS
-#include <DDrawMgr/DirectDrawMgr.h>        // CDirectDrawMgr::GetErrorString (the DDraw error reporter)
-#include <DDrawMgr/DDrawPtrCollections.h>  // the canonical owner (ex the DDrawBltHost view)
+#include <DDrawMgr/DirectDrawMgr.h> // CDirectDrawMgr::GetErrorString (the DDraw error reporter)
+#include <DDrawMgr/DDrawPtrCollections.h> // the canonical owner (ex the DDrawBltHost view)
 #include <Ints.h>
 
 // [SETTLED (Fable lane, 2026-07-13): the "DDrawBltHost/DDrawBltSurface" views WERE
