@@ -755,6 +755,24 @@ SIZE_UNKNOWN(SbiTabRect);
 // The inline base ctor zeroes the base fields the retail base ctor cleared. Slot 0 is
 // the scalar-deleting dtor used by the throw/fail cleanup's `delete it`. Fields end at
 // +0x30 (the rect-widget size); the menu-item's m_30/m_34/m_38 live in CSBI_MenuItem.
+//
+// @identity-TODO: CSbiTab IS NOT A TYPE - it is a fabricated stand-in for the canonical
+// CStatusBarItem (<Gruntz/StatusBarItem.h>), and it is the single biggest self-contained
+// PHANTOM cluster left: all 13 of its virtuals are declared-only, so cl emits a vtable
+// referencing 13 bodies NO obj and NO .LIB defines - 13 guaranteed unresolved externals,
+// every one referenced from this one unit (`sbi_rectonly`).
+//   RTTI: CSBI_RectOnly : CStatusBarItem, vtbl@0x1eab8c, 11 slots (0 new, 4 override,
+//   7 inherited). CStatusBarItem itself: vtbl@0x1eabcc, 11 slots, all real bodies.
+// THE FOLD IS NOT A RENAME, WHICH IS WHY IT IS NOT DONE HERE. The view declares THIRTEEN
+// slots against the real base's ELEVEN, so two of them (Configure @11, Activate @12) are
+// slots that do not exist in retail's vtable at all. Slots 0-5 line up cleanly
+// (~dtor / Serialize==SbiVfunc0 / Setup / ClearFrame==SbiSlot3 / Poll==SbiSlot4 /
+// Tick==SbiSlot5) - and the Setup arg shapes agree exactly once SbiTabRect is expanded
+// (owner,objid,code,z + 4 rect ints + a9,a10 = the base's 10 args). But HitHandlerA..D
+// (no args) cannot be SbiSlot6..9 (three args each), so the tail needs a slot-by-slot
+// remap driven off the real 0x1eab8c/0x1eabcc vtable contents, not a search-and-replace.
+// Emitting a 13-slot vtable where retail has 11 would silently corrupt every dispatch in
+// the unit, so this wants doing properly, in one pass, by someone with the budget for it.
 class CSbiTab {
 public:
     CSbiTab() {
