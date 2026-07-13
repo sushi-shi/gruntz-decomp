@@ -2783,7 +2783,7 @@ i32 CPlay::DrawWorldFrames() {
 extern "C" {
     // The profiler line sink (a global text buffer; its ADDRESS is the logger arg).
     DATA(0x00245524)
-    extern i32 g_profSink; // DAT_00645524
+    i32 g_profSink;
     // The variadic profiler logger (cdecl). 0x1b2cf5.
     void ProfLog(void* sink, const char* fmt, ...);
 }

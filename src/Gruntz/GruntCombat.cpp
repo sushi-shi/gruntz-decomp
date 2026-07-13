@@ -1000,14 +1000,22 @@ extern char s_actKeyB[];     // 0x60d1bc "B"
 DATA(0x002bf650)
 extern CLookupColl g_nameRegColl; // 0x6bf650  (name registry)
 DATA(0x00244af0)
-extern CLookupColl g_reg_644af0; // 0x644af0  (CGrunt's per-class activation table)
+CLookupColl g_reg_644af0;
 
 // The 19 action-key strings (s_codeA/B above; the rest are .rdata string
 // constants named by address, declared in <Globals.h> or here).
-extern char k_60cca4[];
-extern char k_60d2ec[];
-extern char k_60cc94[];
-extern char k_60d7f8[];
+// k_60cca4 was a SECOND NAME for s_codeD (0x20cca4) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern char s_codeD[];
+// k_60d2ec was a SECOND NAME for s_codeE (0x20d2ec) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern char s_codeE[];
+// k_60cc94 was a SECOND NAME for s_codeJ (0x20cc94) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern char s_codeJ[];
+// k_60d7f8 was a SECOND NAME for s_codeK (0x20d7f8) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern char s_codeK[];
 
 // The 19 per-action handler entries (ILT thunks), referenced by address.
 extern "C" void H_402ac2();
@@ -2182,14 +2190,14 @@ void RegisterActs_644af0() {
     REGISTER_KEY_644AF0(s_codeA, &H_402ac2);
     REGISTER_KEY_644AF0(s_actKeyB, &H_4013cf);
     REGISTER_KEY_644AF0(k_60cc90, &H_402888);
-    REGISTER_KEY_644AF0(k_60cca4, &H_402491);
-    REGISTER_KEY_644AF0(k_60d2ec, &H_403de6);
+    REGISTER_KEY_644AF0(s_codeD, &H_402491);
+    REGISTER_KEY_644AF0(s_codeE, &H_403de6);
     REGISTER_KEY_644AF0(s_codeF, &H_402211);
     REGISTER_KEY_644AF0(s_codeG, &H_403bc5);
     REGISTER_KEY_644AF0(s_codeH, &H_4040f2);
     REGISTER_KEY_644AF0(s_codeI, &H_403e3b);
-    REGISTER_KEY_644AF0(k_60cc94, &H_401005);
-    REGISTER_KEY_644AF0(k_60d7f8, &H_403edb);
+    REGISTER_KEY_644AF0(s_codeJ, &H_401005);
+    REGISTER_KEY_644AF0(s_codeK, &H_403edb);
     REGISTER_KEY_644AF0(s_codeL, &H_40165e);
     REGISTER_KEY_644AF0(s_codeM, &H_40321a);
     REGISTER_KEY_644AF0(s_codeN, &H_4030f3);

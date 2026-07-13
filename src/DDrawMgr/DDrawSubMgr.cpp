@@ -145,7 +145,7 @@ SIZE_UNKNOWN(CDDrawBlitParamSrc);
 // DECLARATIONS are gone - a pin on an extern is not a definition, and it was competing
 // with LevelPreview.cpp's extern-"C" pin at the same rvas.
 DATA(0x001eff2c)
-extern float g_sndPanScale; // 0x5eff2c
+float g_sndPanScale = 0.009999999776482582f;
 
 // The shared empty-string datum (labeled by netmgrerror; declared-only here).
 extern char g_emptyString[]; // 0x2293f4

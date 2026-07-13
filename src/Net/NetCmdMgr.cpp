@@ -15,7 +15,7 @@
 // latch and the ReportVersionMsg chat-error method (0xb7e30) reached off it are both
 // CMulti's (xref: the CNetMgr::ShowError label was a heuristic mis-attribution).
 DATA(0x0024bd5c)
-extern CMulti* g_64bd5c;
+CMulti* g_64bd5c;
 
 // The shared channel/color-slot array accessors (Play.cpp, __cdecl). The
 // multiplayer color picker reads/stamps a player's slot through them.

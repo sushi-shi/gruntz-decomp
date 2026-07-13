@@ -26,7 +26,7 @@ extern "C" {
     DATA(0x00283ea4)
     extern i32 g_683ea4; // green low-bit shift
     DATA(0x00283ea8)
-    extern i32 g_683ea8; // blue  low-bit shift
+    i32 g_683ea8;
     DATA(0x00283eac)
     extern i32 g_683eac; // red   8-minus-count
     DATA(0x00283eb0)

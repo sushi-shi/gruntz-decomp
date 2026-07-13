@@ -133,7 +133,7 @@ void operator delete(void*); // ??3@YAXPAX@Z (FUN_005b9b82) - scalar/member tear
 // Game-clock/registry globals reached by AccrueScoreTime / Close.
 extern "C" {
     DATA(0x00248ce8)
-    extern i32 g_648ce8; // DAT_00648ce8  (timeGetTime base stamp)
+    i32 g_648ce8;
 }
 
 // AccrueScoreTime's objects are all CANONICAL now - the three views that stood here
@@ -265,7 +265,7 @@ extern "C" {
     extern i32 g_64559c; // DAT_0064559c
     extern i32 g_6455a0; // DAT_006455a0
     DATA(0x002455e8)
-    extern i32 g_monologoShown; // (the MONOLITH logo is on screen)
+    i32 g_monologoShown;
 }
 
 extern "C" {
@@ -380,15 +380,15 @@ extern "C" {
 // C globals pinned by their DATA() RVA so the DIR32 reloc pairs.
 extern "C" {
     DATA(0x00283ea0)
-    extern i32 g_683ea0; // DAT_00683ea0  (red shift-up)
+    i32 g_683ea0;
     DATA(0x00283ea4)
-    extern i32 g_683ea4; // DAT_00683ea4  (green shift-up)
+    i32 g_683ea4;
     DATA(0x00283eac)
-    extern i32 g_683eac; // DAT_00683eac  (red shift-down)
+    i32 g_683eac;
     DATA(0x00283eb0)
-    extern i32 g_683eb0; // DAT_00683eb0  (green shift-down)
+    i32 g_683eb0;
     DATA(0x00283eb4)
-    extern i32 g_683eb4; // DAT_00683eb4  (blue shift-down)
+    i32 g_683eb4;
     // The world-mode reload globals LoadWorldMode resets (reloc-masked).
 }
 
@@ -521,15 +521,15 @@ extern "C" {
     DATA(0x00245600)
     u32 g_645600; // DAT_00645600 (owner-TU definition, .bss)
     DATA(0x002455b0)
-    extern u32 g_traitorMode; // ("Traitor Mode" cheat toggle)
+    u32 g_traitorMode;
     DATA(0x002455a4)
-    extern u32 g_gruntDestruction; // ("Grunt destruction" cheat toggle)
+    u32 g_gruntDestruction;
     DATA(0x002455a8)
-    extern u32 g_gruntCreation; // ("Grunt creation" cheat toggle)
+    u32 g_gruntCreation;
     DATA(0x002455ac)
-    extern u32 g_gooPuddlez; // ("Goo puddlez" cheat toggle)
+    u32 g_gooPuddlez;
     DATA(0x002455f8)
-    extern u32 g_explosionz; // ("Explosionz" cheat toggle)
+    u32 g_explosionz;
     // g_debugFlags (0x6455f4, the u8 debug-overlay byte) comes from <Globals.h>;
     // ResetClockGlobals over-wide dword-zeroes it via `*(u32*)&g_debugFlags`, which
     // reloc-binds the real ?g_debugFlags@@3EA symbol while keeping the dword store.
@@ -1047,6 +1047,10 @@ void CGruntzMgr::XorLiveObjectFlags(i32 mask) {
 }
 
 // The asset-namespace key at 0x60ba44 (an unlabeled .rdata datum; reloc-masked).
+DATA(0x0020ba44)
+// @undefined-data: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
 extern const char s_assetKeyBa44[]; // 0x60ba44
 
 // -------------------------------------------------------------------------
@@ -1282,6 +1286,9 @@ i32 CGruntzMgr::InitializeLobbyConnectionSettings() {
 // push eax; call`) - modeled as CWorldSub4::PausePages, not the old free __stdcall.
 // The shared caption buffer (DAT_0060aac8) passed as the MessageBoxA title.
 DATA(0x0020aac8)
+// @undefined-data: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
 extern char g_msgCaption[];
 // @early-stop
 // regalloc free-list-pick wall (98.89%): every instruction matches one-for-one; the

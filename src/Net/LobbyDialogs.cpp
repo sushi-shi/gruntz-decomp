@@ -62,7 +62,7 @@ namespace NetLobby {
     // --- cluster-local globals (DATA home is HERE) ---
     // DAT_0064557c: the active modeless dialog HWND, cached on entry/init.
     DATA(0x0024557c)
-    extern HWND g_curDlg_64557c; // DAT_0064557c (shared; homed elsewhere - not TU-private)
+    HWND g_curDlg_64557c;
 
     // Owner-TU DEFINITIONS (private to this dialog TU), ascending by RVA (.bss/zero).
     DATA(0x002487e0)
@@ -108,7 +108,7 @@ namespace NetLobby {
     // drop-in name through this CString's LPCTSTR (m_pszData, the char* at 0x249618) -
     // one DATA home, no separate g_playerName_* char* alias.
     DATA(0x00249618)
-    extern CString g_str649618;
+    CString g_str649618;
     RVA(0x000bd7f0, 0xa)
     void InitPlayerNameStr() {
         g_str649618.CString::CString();

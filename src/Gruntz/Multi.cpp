@@ -47,7 +47,7 @@
 // retail .data addresses so the DIR32 operands reloc-mask).
 // ---------------------------------------------------------------------------
 DATA(0x002455fc)
-extern "C" i32 g_6455fc; // 0x6455fc  cleared at session start
+extern "C" i32 g_6455fc = 0;
 DATA(0x00244c54)
 extern "C" i32 g_curPlayer; // 0x644c54  default cue wParam (= *host)
 DATA(0x00245580)
@@ -276,7 +276,7 @@ extern "C" CGameRegistry* g_gameReg; // 0x64556c (the same *0x64556c object as m
 // The DirectPlay application GUID (DAT_0060fab8) lives at 0x20fab8 as g_dplayAppGuid
 // (i32[4], bound in Globals.cpp); the Open path casts it to GUID for InitFromProvider.
 DATA(0x00248cf0)
-extern i32 g_isHost_648cf0; // DAT_00648cf0: nonzero when hosting
+i32 g_isHost_648cf0;
 
 // (The former NetSessionHolder / NetSessionOpener this-cast views are dissolved: Open is
 //  CMulti::Open @0xb77a0, and its +0xc holder is the inherited CState::m_c

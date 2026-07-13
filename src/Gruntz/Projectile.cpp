@@ -508,13 +508,14 @@ DATA(0x002bf650)
 // fields, not globals.)
 #include <Gruntz/TypeKeyColl.h>
 extern CTypeKeyColl g_typeColl; // 0x6bf650
-DATA(0x0021aea8)
-extern i32 g_projTypeCounter; // 0x61aea8 (global type counter)
+// g_projTypeCounter was a SECOND NAME for g_typeCounter (0x21aea8 shared type counter) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern i32 g_typeCounter;
 
 // R2 - the projectile's per-coordinate activation table (@0x64c758).
 struct CProjActEntry;
 DATA(0x0024c758)
-extern CActColl g_projActColl;
+CActColl g_projActColl;
 
 // The projectile activation-registry field globals (referenced only from this TU):
 // real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.
@@ -610,8 +611,8 @@ RVA(0x000dfb00, 0x18d)
 void CProjectile::RegisterType() {
     i32 id = (i32)g_buteTree.Find("A");
     if (id == 0) {
-        g_buteTree.Insert("A", (void*)g_projTypeCounter);
-        i32 key = g_projTypeCounter;
+        g_buteTree.Insert("A", (void*)g_typeCounter);
+        i32 key = g_typeCounter;
         id = key;
         CTypeNameEntry* slot = ProjTypeLookup(key);
         i32 cnt = g_typeColl.m_grown;
@@ -625,7 +626,7 @@ void CProjectile::RegisterType() {
             } while (--cnt);
         }
         slot->m_name = "A";
-        g_projTypeCounter++;
+        g_typeCounter++;
     }
     *(void**)ProjActLookup(id) = (void*)&ProjActivationHandler;
 }
@@ -1059,7 +1060,7 @@ struct CTBombEntry;        // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024c780)
-extern CCoordColl g_tbombColl;
+CCoordColl g_tbombColl;
 
 // The timebomb activation-registry field globals (referenced only from this TU):
 // real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.

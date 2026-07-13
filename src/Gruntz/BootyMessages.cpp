@@ -47,9 +47,9 @@ extern i32 g_sndCueTag; // 0x61ab24 (?g_sndCueTag@@3HA)
 DATA(0x00229ef8)
 extern CString g_levelMsgStrings[8]; // 0x629ef8
 DATA(0x0020b838)
-extern RECT g_levelMsgRectsA[8]; // 0x60b838
+RECT g_levelMsgRectsA[8] = {{105, 106, 190, 155}, {26, 149, 182, 199}, {72, 192, 187, 240}, {87, 238, 185, 288}, {94, 281, 185, 332}, {31, 324, 182, 374}, {89, 360, 181, 411}, {59, 400, 180, 449}};
 DATA(0x0020b8f8)
-extern RECT g_levelMsgRectsB[8]; // 0x60b8f8
+RECT g_levelMsgRectsB[8] = {{245, 92, 417, 162}, {245, 135, 417, 205}, {245, 180, 417, 250}, {245, 227, 417, 297}, {245, 266, 417, 340}, {245, 310, 417, 380}, {245, 351, 417, 421}, {245, 392, 417, 462}};
 
 // The secret-bonus message tables: a "+0x3d"-encoded buffer pair (decoded in place
 // by the SetAt cipher) for the single-record banner, plus the per-row table indexed

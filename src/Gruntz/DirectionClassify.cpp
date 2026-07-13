@@ -22,13 +22,13 @@ extern DirDesc g_dirDescTable[9];
 
 // The slope thresholds (.rdata doubles): +-0.5 and +-2.0.
 DATA(0x001e9750)
-extern const double g_slopeNegHalf; // 0x5e9750 (-0.5)
+const double g_slopeNegHalf = -0.5;
 DATA(0x001e9758)
-extern const double g_slopePosHalf; // 0x5e9758 (0.5)
+const double g_slopePosHalf = 0.5;
 DATA(0x001e9760)
-extern const double g_slopePosTwo; // 0x5e9760 (2.0)
+const double g_slopePosTwo = 2.0;
 DATA(0x001e9768)
-extern const double g_slopeNegTwo; // 0x5e9768 (-2.0)
+const double g_slopeNegTwo = -2.0;
 
 SIZE_UNKNOWN(MotionEntity);
 struct MotionEntity {

@@ -68,7 +68,8 @@ extern i32 g_randSeed;  // 0x6c1288 (32-bit LCG state)
 // The per-tick draw-clock delta the position interpolation scales by (reloc-masked).
 extern "C" u32 g_645584; // 0x645584
 // The FP sign threshold (0.0) the overshoot clamp compares the per-cell velocity to.
-extern double s_fpZero; // 0x5e9a68
+DATA(0x001e9a68)
+double s_fpZero = 0.0; // 0x5e9a68
 // The scratch-branch anim type code the position step latches on (reloc-masked).
 extern const char k_60df94[]; // 0x60df94
 

@@ -19,7 +19,10 @@ extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 // DEFINED here (owner TU) with C linkage (_g_629a50).
 extern "C" {
     DATA(0x00229a50)
-    char g_629a50[128] = {0};
+    // @undefined-data: a char[] datum here is a STRING (or a run of them); its
+    // extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+    // in between get swallowed). Inline the literal at its use site instead.
+    extern char g_629a50[];
 }
 
 // SerializeSyncMarker (0x13610, __cdecl): the WAP32 serialize round validator every

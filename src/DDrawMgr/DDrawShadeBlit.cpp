@@ -42,7 +42,7 @@ u8 g_scratch[1280]; // 0x6bed08 (0x500 B, up to g_shadeDescr208@0x6bf208; a 640-
 // The secondary palette/format descriptor (DAT_006bf218) used by the 16-bit alpha
 // path (case 7); its +0x8 LUT base is read as u16*. Reloc-masked.
 DATA(0x002bf218)
-extern ShadeDescr* g_blendDescr; // 0x6bf218
+ShadeDescr* g_blendDescr;
 
 // The three 2048-byte-strided translucency LUT banks selected by the light level.
 //

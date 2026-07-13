@@ -49,7 +49,7 @@ public:
 // thunk (0x99c00) are the file-scope-definition machinery of THIS TU.
 // ---------------------------------------------------------------------------
 DATA(0x002459b0)
-extern CAreaMgr g_areaMgr;
+CAreaMgr g_areaMgr;
 
 // TokenMgrReset99b80 @0x099b80 - the singleton-init body the $E frag @0x99b60 calls:
 // retail tail-jmps the CAreaMgr ctor @0x99ba0 (through ILT 0x3bac) to re-construct

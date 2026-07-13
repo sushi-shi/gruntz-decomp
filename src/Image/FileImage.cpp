@@ -26,7 +26,7 @@
 
 // The app HINSTANCE used as the RT_BITMAP resource module (DAT_00683ee0).
 DATA(0x00283ee0)
-extern HINSTANCE g_resModule;
+HINSTANCE g_resModule;
 
 // Per-decoder 256-entry RGBQUAD palette buffers (file-scope BSS, reloc-masked).
 // Each decoder builds its own when the source carries an inline/trailing palette;

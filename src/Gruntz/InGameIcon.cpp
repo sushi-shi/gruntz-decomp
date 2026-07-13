@@ -75,9 +75,9 @@ SIZE_UNKNOWN(IconLevelState);
 // 0x7da].  Shared shape: <Gruntz/LogicFnTable.h>.
 // ===========================================================================
 DATA(0x002458b0)
-extern LogicFnTable g_iconActionTable; // 0x6458b0
+extern LogicFnTable g_iconActionTable;
 DATA(0x00245928)
-extern LogicFnTable g_iconStateTable; // 0x645928
+extern LogicFnTable g_iconStateTable;
 
 // --- the shared registration infrastructure (mirror of CInGameText's) --------
 // The zvec error globals the inlined accessors touch on a bounds miss.
@@ -97,10 +97,14 @@ extern "C" u32 g_645588;
 // DATA binding lives here in the .cpp (a header DATA() is not scanned by labels.py);
 // the sub-field DIR32s (base+0x4.. +0x20) reloc-mask via the base symbol + addend.
 DATA(0x00245950)
+// @undefined-data: needs storage here, but zDArray has no default ctor (retail's
+// static-init thunk calls the 4-arg 0x16de30 ctor on the .bss object). Blocked on
+// settling zDArray's default-ctor form - same wall as the LogicFnTable globals.
 extern zDArray g_textDispatch;
 
-DATA(0x0021aea8)
-extern i32 g_iconRegCounter; // 0x61aea8  (running registration index)
+// g_iconRegCounter was a SECOND NAME for g_typeCounter (0x21aea8 shared type counter) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern i32 g_typeCounter;
 
 // The scratch name-vec (zDArray<CString> @ 0x6bf650): the registration path
 // IndexToPtr's it (growing + CString-constructing fresh slots) to stash the key.
@@ -109,10 +113,12 @@ DATA(0x002bf650)
 extern NameVec g_buteNameVec; // 0x6bf650
 
 // The two registration key strings (.data constants).
-DATA(0x0020a454)
-extern const char s_iconKeyA[]; // 0x60a454
-DATA(0x0020d1bc)
-extern const char s_iconKeyB[]; // 0x60d1bc
+// s_iconKeyA was a SECOND NAME for s_codeA (0x20a454) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern char s_codeA[];
+// s_iconKeyB was a SECOND NAME for s_actKeyB (0x20d1bc) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern char s_actKeyB[];
 
 // The handler member functions loaded into the dispatch slots (FUN_004023d3 /
 // 0x403c06 into the action table; 0x40370b into the state table). Referenced by
@@ -247,7 +253,7 @@ CInGameIcon::CInGameIcon(CGameObject* obj) : CUserLogic(obj) {
     // swap the aux bute node (save old into m_30) + seed the cycle geometry
     CGameObjAux* aux = m_objAux;
     m_prevAnimSetNode = aux->m_1c;
-    aux->m_1c = g_buteTree.Find(s_iconKeyA);
+    aux->m_1c = g_buteTree.Find(s_codeA);
     m_savedGeoId = m_38->m_geoId;
     m_38->ApplyLookupGeometry("GAME_CYCLE100", 0);
 
@@ -659,22 +665,22 @@ void InitIconActionTable() {
 // correct; the register assignment is not source-steerable.
 RVA(0x000979e0, 0x2ac)
 void RegisterIconActions() {
-    i32 idxA = (i32)g_buteTree.Find(s_iconKeyA);
+    i32 idxA = (i32)g_buteTree.Find(s_codeA);
     if (idxA == 0) {
-        g_buteTree.Insert(s_iconKeyA, (void*)g_iconRegCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_iconRegCounter);
-        *(CString*)slot = s_iconKeyA;
-        g_iconRegCounter++;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        *(CString*)slot = s_codeA;
+        g_typeCounter++;
     }
     i32 dslotA = ResolveSlot(&g_iconActionTable, idxA);
     *(void**)dslotA = (void*)&IconAction_4023d3;
 
-    i32 idxB = (i32)g_buteTree.Find(s_iconKeyB);
+    i32 idxB = (i32)g_buteTree.Find(s_actKeyB);
     if (idxB == 0) {
-        g_buteTree.Insert(s_iconKeyB, (void*)g_iconRegCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_iconRegCounter);
-        *(CString*)slot = s_iconKeyB;
-        g_iconRegCounter++;
+        g_buteTree.Insert(s_actKeyB, (void*)g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        *(CString*)slot = s_actKeyB;
+        g_typeCounter++;
     }
     i32 dslotB = ResolveSlot(&g_iconActionTable, idxB);
     *(void**)dslotB = (void*)&IconAction_403c06;
@@ -717,12 +723,12 @@ void CInGameIcon::RunState(i32 id) {
 // source-steerable. Logic + find/insert + the fn-ptr store correct.
 RVA(0x00097f40, 0x18d)
 void RegisterIconState() {
-    i32 idx = (i32)g_buteTree.Find(s_iconKeyA);
+    i32 idx = (i32)g_buteTree.Find(s_codeA);
     if (idx == 0) {
-        g_buteTree.Insert(s_iconKeyA, (void*)g_iconRegCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_iconRegCounter);
-        *(CString*)slot = s_iconKeyA;
-        g_iconRegCounter++;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        *(CString*)slot = s_codeA;
+        g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_iconStateTable, idx);
     *(void**)dslot = (void*)&IconState_40370b;
@@ -1025,7 +1031,7 @@ i32 CInGameIcon::Reposition() {
         CGameObject* r = m_38;
         r->m_stateFlags &= ~1;
         m_prevAnimSetNode = m_objAux->m_1c;
-        m_objAux->m_1c = g_buteTree.Find(s_iconKeyA);
+        m_objAux->m_1c = g_buteTree.Find(s_codeA);
 
         CGameRegistry* reg = g_gameReg;
         CGameObject* obj = m_object;
@@ -1098,7 +1104,7 @@ i32 CInGameIcon::Serialize(CArchive*, i32, i32, i32) {
 // 0x99110..0x99a30 | icon SetField54 @0x99b10) and the private initialized-
 // .data extents are contiguous (icon 0x2111b8..0x21136c, text 0x21137c). The
 // shared registration identifiers unify onto this TU's names (the ex
-// g_textRegCounter/s_textLogicKey duplicates == g_iconRegCounter/s_iconKeyA).
+// g_textRegCounter/s_textLogicKey duplicates == g_typeCounter/s_codeA).
 // ===========================================================================
 
 // The member function the text dispatch slot is loaded with (FUN_00402013, a
@@ -1207,12 +1213,12 @@ void CInGameText::Dispatch(i32 idx) {
 // correct; the register assignment is not source-steerable.
 RVA(0x000995c0, 0x18d)
 void RegisterTextLogic() {
-    i32 idx = (i32)g_buteTree.Find(s_iconKeyA);
+    i32 idx = (i32)g_buteTree.Find(s_codeA);
     if (idx == 0) {
-        g_buteTree.Insert(s_iconKeyA, (void*)g_iconRegCounter);
-        i32 slot = ResolveNameSlot(&g_buteNameVec, g_iconRegCounter);
-        *(CString*)slot = s_iconKeyA;
-        g_iconRegCounter++;
+        g_buteTree.Insert(s_codeA, (void*)g_typeCounter);
+        i32 slot = ResolveNameSlot(&g_buteNameVec, g_typeCounter);
+        *(CString*)slot = s_codeA;
+        g_typeCounter++;
     }
     i32 dslot = ResolveSlot(&g_textDispatch, idx);
     *(void**)dslot = (void*)&TextLogic_402013;

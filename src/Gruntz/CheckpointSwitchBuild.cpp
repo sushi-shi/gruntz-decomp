@@ -39,8 +39,9 @@ struct CStatzGameReg {
     char m_pad0[0x30];
     CStatzFactoryHolder* m_world; // +0x30
 };
-DATA(0x0024556c)
-extern CStatzGameReg* g_statzGameReg; // *0x64556c
+// g_statzGameReg was a SECOND NAME for g_gameReg (0x24556c the game registry) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" CGameRegistry* g_gameReg;
 DATA(0x0020aa34)
 char g_statzTabSpriteName[] = "BehindCandy"; // CreateSprite name buffer
 DATA(0x0020f928)
@@ -87,7 +88,7 @@ i32 CCheckpointTriggerSwitchLogic::BuildSmall(
         return 1;
     }
     CGameObject* spr =
-        g_statzGameReg->m_world->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
+        g_gameReg->m_world->m_8->CreateSprite(0, px, py, 0, g_statzTabSpriteName, 0x40001);
     if (!spr) {
         return 0;
     }

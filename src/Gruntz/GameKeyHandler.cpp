@@ -4,10 +4,10 @@
 // key code to its game/cheat action.
 //
 // `this` (esi) is a >0x500-byte PLAY-state object; it reads the game-mgr
-// singleton g_gameReg (*0x64556c), the dev/render-state g_devState
+// singleton g_gameReg (*0x64556c), the dev/render-state g_645578
 // (*0x645578, its +0x18 flags byte gated by 0x20 = "cheats enabled"), the area
-// index g_areaIdx (0x644c54), the recycled-node free list g_coordPool.m_freeHead /
-// g_coordPool.m_linkOffset, and a set of cheat-enable globals (g_cheatA/B/C/D); it
+// index g_curPlayer (0x644c54), the recycled-node free list g_coordPool.m_freeHead /
+// g_coordPool.m_linkOffset, and a set of cheat-enable globals (g_gruntDestruction/B/C/D); it
 // posts WM_COMMAND (0x111) to the host window via PostMessageA. Every callee is
 // an engine method reached through a reloc-masked __thiscall ILT thunk; the only
 // string it clears before most actions is "GAME_TABHIGHLIGHT1" (the hint sprite:
@@ -35,18 +35,30 @@
 // ---------------------------------------------------------------------------
 extern "C" void* g_gameReg;      // 0x64556c  _g_mgrSettings (game-mgr singleton)
 extern i32 g_sndCueTag;          // 0x61ab24  ?g_sndCueTag@@3HA (hint-sprite free tag)
-extern void* g_devState;         // 0x645578  DAT_00645578 (dev/render state; +0x18 flags)
-extern i32 g_areaIdx;            // 0x644c54  _g_644c54 (current area index)
+// g_devState was a SECOND NAME for g_645578 (0x245578) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" void* g_645578;
+// g_areaIdx was a SECOND NAME for g_curPlayer (0x244c54 current player index) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" i32 g_curPlayer;
 #include <Gruntz/FreeNodePool.h> // the coord-node pool object @0x645540
 // The pool's INTERIOR FIELDS - m_freeHead (+0x04) and m_linkOffset (+0x0c) - used to be
 // declared here as the standalone globals g_coordPool.m_freeHead / g_coordPool.m_linkOffset. They are not
 // globals: they are fields of g_coordPool (DEFINED in src/Gruntz/GameText.cpp), which is
 // why the free-list push/pop code reads exactly [pool+4] and [pool+0xc].
 extern FreeNodePool g_coordPool;
-extern i32 g_cheatA; // 0x6455a4  DAT_006455a4
-extern i32 g_cheatB; // 0x6455a8  DAT_006455a8
-extern i32 g_cheatC; // 0x6455ac  DAT_006455ac
-extern i32 g_cheatD; // 0x6455f8  DAT_006455f8
+// g_cheatA was a SECOND NAME for g_gruntDestruction (0x2455a4 cheat toggle) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" i32 g_gruntDestruction;
+// g_cheatB was a SECOND NAME for g_gruntCreation (0x2455a8 cheat toggle) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" i32 g_gruntCreation;
+// g_cheatC was a SECOND NAME for g_gooPuddlez (0x2455ac cheat toggle) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" i32 g_gooPuddlez;
+// g_cheatD was a SECOND NAME for g_explosionz (0x2455f8 cheat toggle) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" i32 g_explosionz;
 
 // External engine receiver handle: every method is declared (no body) so its
 // `call rel32` reloc-masks. Receivers are passed via the (EO*) cast so each
@@ -294,7 +306,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
 
     // ---- letter cheats (cc21b) ---------------------------------------------
-    void* dev = g_devState;
+    void* dev = g_645578;
     // Tab (cc221): cycle the active area to the next non-empty
     if (key == 0x9) {
         i32 idx = M(self, 0x514);
@@ -340,7 +352,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // H (cc30b): jump to the current area's default cue
     if (key == 0x48) {
-        RegArea* a = &((RegArea*)((char*)g_gameReg + 0x150))[g_areaIdx];
+        RegArea* a = &((RegArea*)((char*)g_gameReg + 0x150))[g_curPlayer];
         if (a == 0) {
             return 1;
         }
@@ -557,7 +569,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
             return 1;
         }
         CLEAR_TAB_HINT(host);
-        ((CStatusBarMgr*)(P(self, 0x2dc)))->AdvanceTab(M(g_devState, 0x18) & 1);
+        ((CStatusBarMgr*)(P(self, 0x2dc)))->AdvanceTab(M(g_645578, 0x18) & 1);
         return 1;
     }
     // G (cc986)
@@ -613,14 +625,14 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // I (ccbe3): teleport marker place
     if (key == 0x49) {
-        if (g_cheatB == 0) {
+        if (g_gruntCreation == 0) {
             return 1;
         }
-        RegArea* a = &((RegArea*)((char*)g_gameReg + 0x150))[g_areaIdx];
+        RegArea* a = &((RegArea*)((char*)g_gameReg + 0x150))[g_curPlayer];
         if (a == 0) {
             return 1;
         }
-        if (M(P(g_gameReg, 0x68), g_areaIdx * 4 + 0x10c) >= M(a, 0x228)) {
+        if (M(P(g_gameReg, 0x68), g_curPlayer * 4 + 0x10c) >= M(a, 0x228)) {
             return 1;
         }
         void* h = P(self, 0x4);
@@ -634,13 +646,13 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         if (mx >= x1 || mx < x0 || my >= y1 || my < y0) {
             return 1;
         }
-        ((CObj23d90*)(P(h, 0x6c)))->Blit(1, g_areaIdx, W(self, 0x150), W(self, 0x154), 0);
+        ((CObj23d90*)(P(h, 0x6c)))->Blit(1, g_curPlayer, W(self, 0x150), W(self, 0x154), 0);
         return 1;
     }
     // P (ccca9): on bounds-fail or after the action, fall through to the x
     // handler (retail's `jge ccd39` / no return after Fn3003), not return.
     if (key == 0x50) {
-        if (g_cheatC == 0) {
+        if (g_gooPuddlez == 0) {
             return 1;
         }
         if (M(g_gameReg, 0x134) == 2) {
@@ -664,7 +676,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // x (ccd39): teleport
     if (key == 0x78) {
-        if (g_cheatD == 0) {
+        if (g_explosionz == 0) {
             return 1;
         }
         void* h = P(self, 0x4);
@@ -678,7 +690,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // K (ccda8)
     if (key == 0x4b) {
-        if (g_cheatA == 0) {
+        if (g_gruntDestruction == 0) {
             return 1;
         }
         i32 outA = 0;
@@ -693,7 +705,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
     }
     // digit cheats 1-9 (cce0f)
     if (key == 0x31) {
-        if (M(g_devState, 0x18) & 0x20) {
+        if (M(g_645578, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(1);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(1);
@@ -701,7 +713,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x32) {
-        if (M(g_devState, 0x18) & 0x20) {
+        if (M(g_645578, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(2);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(2);
@@ -709,7 +721,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x33) {
-        if (M(g_devState, 0x18) & 0x20) {
+        if (M(g_645578, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(3);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(3);
@@ -717,7 +729,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x34) {
-        if (M(g_devState, 0x18) & 0x20) {
+        if (M(g_645578, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(4);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(4);
@@ -725,7 +737,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x35) {
-        if (M(g_devState, 0x18) & 0x20) {
+        if (M(g_645578, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(5);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(5);
@@ -733,7 +745,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x36) {
-        if (M(g_devState, 0x18) & 0x20) {
+        if (M(g_645578, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(6);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(6);
@@ -741,7 +753,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x37) {
-        if (M(g_devState, 0x18) & 0x20) {
+        if (M(g_645578, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(7);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(7);
@@ -749,7 +761,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x38) {
-        if (M(g_devState, 0x18) & 0x20) {
+        if (M(g_645578, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(8);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(8);
@@ -757,7 +769,7 @@ i32 CGamePlayInput::DispatchKey(i32 vk, i32 lparam) {
         return 1;
     }
     if (key == 0x39) {
-        if (M(g_devState, 0x18) & 0x20) {
+        if (M(g_645578, 0x18) & 0x20) {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->RebuildSelectionList(9);
         } else {
             ((CTriggerMgr*)(P(g_gameReg, 0x68)))->CenterSelectionGroup(9);

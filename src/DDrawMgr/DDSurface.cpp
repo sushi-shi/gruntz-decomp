@@ -68,7 +68,7 @@ i32 g_bDown; // 0x683eb4  (== ex g_bDown)
 // in retail .data at 0x653c88; DATA-referenced (reloc-masked), so declared extern.
 class CRezSurfaceItem;
 DATA(0x00253c88)
-extern CPtrArray g_imageCache; // 0x653c88
+CPtrArray g_imageCache;
 // g_imageCacheIndex (the next-free slot, an i32 right after the 8-byte CPtrArray)
 // DEFINED here (owner ddsurface.obj's .bss, zero-init) - REHOME DD-D, extern-only.
 DATA(0x00253c90)

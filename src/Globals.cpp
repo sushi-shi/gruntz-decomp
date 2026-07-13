@@ -55,17 +55,17 @@ extern void* g_buteTreeArg; // 0x56ea10 (ctor argument)
 DATA(0x00174de0)
 extern u8 g_streamTag; // 0x574de0
 DATA(0x001e8d10)
-extern const i32 g_msgmap_CBattlezDlgColors;
+const i32 g_msgmap_CBattlezDlgColors = 6205544;
 DATA(0x001e8e98)
 extern void* g_5e8e98;
 DATA(0x001e9068)
-extern i32 g_idleSpriteIds[4]; // 0x5e9068
+i32 g_idleSpriteIds[4] = {420, 475, 530, 585};
 DATA(0x001e94b8)
-extern const i32 g_msgmap_CCheckpointDlg;
+const i32 g_msgmap_CCheckpointDlg = 6205544;
 DATA(0x001ea3e0)
-extern const double g_slimeSpeedNum; // VA 0x5ea3e0
+const double g_slimeSpeedNum = 32.0;
 DATA(0x001eaae8)
-extern const double g_projPhase0;
+const double g_projPhase0 = 3.1415927;
 DATA(0x001ef698)
 extern const double c_volScale = 100.0; // 0x5ef698  v / c_volScale, and the final * c_volScale
 DATA(0x001ef6a0)
@@ -79,7 +79,7 @@ extern const double c_acosNorm = 2.0; // 0x5ef6b0  acos() normalizer arg
 // Write-only (no reader); the "ActAlloc"/"ProjActAlloc"/"zvecErr" names were misnomers.
 // Single DATA home for the cell (VA 0x6bf428); TUs carry a plain extern.
 DATA(0x002bf428)
-extern void* g_retAddrBreadcrumb; // 0x6bf428
+void* g_retAddrBreadcrumb;
 DATA(0x001f0464)
 extern u32 g_zvecErrSentinel; // 0x6bf464
 DATA(0x001f04f8)
@@ -89,7 +89,7 @@ char g_wormholeSpawnKey[] = "Wormhole"; // "Wormhole" @ 0x60a7ac
 DATA(0x0020aac8)
 extern i32 g_desc60aac8;
 DATA(0x0020b588)
-extern u8 g_dat60b588; // 0x60b588 (new pin)
+u8 g_dat60b588 = 95;
 // The single-character bute key literals (0x60beb8..0x60df94 in retail's .rdata). Each is
 // a one-char string - read straight out of the image, not guessed - and they are DEFINED
 // here, with storage. They used to be `DATA(0x..) extern char s_codeX[];` - a DATA()
@@ -137,7 +137,7 @@ char k_60df94[] = "S";
 // g_dplayAppGuid (0x20fab8) / g_611d88 (0x211d88) / s_GameKey (0x211ec4) DEFINED in
 // src/Gruntz/Multi.cpp (owner TU). Reference externs stay in <Globals.h> / <Net/NetMgr.h>.
 DATA(0x002111b0)
-extern u8 g_6111b0; // 0x6111b0
+u8 g_6111b0 = 72;
 DATA(0x00211ab8)
 char s_GameMessagez[] = "GAME_MESSAGEZ"; // s_GAME_MESSAGEZ_00611ab8 (image-set name literal)
 // g_warpX / g_warpY DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
@@ -163,27 +163,27 @@ extern double g_scale6256f0;
 // g_part* fields DEFINED in src/Gruntz/FortressFlag.cpp (owner TU).
 // g_msgScratch DEFINED in src/Gruntz/GruntzMgr.cpp (owner TU).
 DATA(0x0024553c)
-extern "C" i32 g_64553c;
+extern "C" i32 g_64553c = 0;
 // (0x645548 is g_coordPool.m_count (+0x08), an interior field of the pool object at
 //  0x645540 - not a global. The fabricated `g_poolScratch645548` scalar that used to be
 //  pinned here was referenced by nothing at all.)
 DATA(0x002455ec)
-extern "C" i32 g_cdPromptResult; // 0x6455ec
+extern "C" i32 g_cdPromptResult = 0;
 DATA(0x002455f0)
-extern "C" i32 g_6455f0; // 0x6455f0
+extern "C" i32 g_6455f0 = 0;
 DATA(0x002455f4)
-extern u8 g_debugFlags; // 0x6455f4  debug-overlay flag bits
+u8 g_debugFlags;
 // g_kslime* fields DEFINED in src/Gruntz/KitchenSlime.cpp (owner TU).
 // 0x248ce0 was ALSO bound here as `g_dlgResultSink` while Multi.cpp bound it as
 // `g_sharedFlag` - one cell, two symbols, no storage. Folded onto g_sharedFlag, which
 // Multi.cpp (owner) now DEFINES. Binding + declaration removed together.
 DATA(0x00248cec)
-extern "C" i32 g_648cec; // 0x648cec
+extern "C" i32 g_648cec = 0;
 // g_648d14 (0x248d14) DEFINED in src/Gruntz/Multi.cpp (owner TU); ref extern in <Globals.h>.
 // g_649858 (0x249858) + gA_*/gB_* command-slot fields (0x24a058.., 0x24a8a8..)
 // DEFINED in src/Net/NetCmdSlot.cpp (owner TU). Reference externs stay in <Globals.h>.
 DATA(0x0024acb4)
-extern i32 g_poolCount; // 0x64acb4 (g_pool.m_count)
+i32 g_poolCount;
 // g_drop* fields DEFINED in src/Gruntz/DroppedObject.cpp (owner TU).
 // g_64c3f0[17] DEFINED in src/Gruntz/Play.cpp (owner TU).
 // g_projAct*/g_tbomb* fields DEFINED in src/Gruntz/Projectile.cpp (owner TU).
@@ -219,7 +219,7 @@ extern i32 g_poolCount; // 0x64acb4 (g_pool.m_count)
 // in their owning TU src/DDrawMgr/ShadeDescrTable.cpp (shadedescrtable.obj's .bss);
 // the reference externs stay in <Globals.h>.
 DATA(0x002bf454)
-extern void* g_projActName; // 0x6bf454 (the bad-arg diagnostic record cell)
+void* g_projActName;
 // g_zArrayTag (0x6bf468) DEFINED in src/Bute/TypeKeyColl.cpp (owner TU).
 // g_hr/g_code/g_szCode/g_szMsg (0x2bf6f8..0x2bf840) are DEFINED in their owning TU
 // src/Net/NetMgrReportError.cpp (netmgrerror.obj's .bss); the DATA() binding lives on
@@ -228,9 +228,9 @@ extern void* g_projActName; // 0x6bf454 (the bad-arg diagnostic record cell)
 // g_zeroF (0x5eab40, shared 0.0f .rdata const) DEFINED in src/Gruntz/BattlezData.cpp.
 // g_colorNames / g_difficultyNames DEFINED in src/Gruntz/Play.cpp (owner TU).
 DATA(0x0021ab14)
-extern "C" u32 g_61ab14;
+extern "C" u32 g_61ab14 = 1;
 DATA(0x00244ca4)
-extern void* g_renderCtx; // g_644ca4
+void* g_renderCtx;
 // g_645570 (the DirectInputMgr2 reset singleton @0x245570) is bound canonically in
 // GruntzMgr.cpp; the former g_glsResetMgr view (VA-typo'd 0x645570, mis-typed
 // GLSResetMgr*) was folded onto it (PlayStateActivate uses g_645570 directly).

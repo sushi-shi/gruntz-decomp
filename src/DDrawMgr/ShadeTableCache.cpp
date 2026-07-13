@@ -171,7 +171,7 @@ float g_lumaB = 0.109375f; // 0x5efb54
 DATA(0x001efb58)
 float g_inv255 = 0.003921568859368563f; // 0x5efb58  (1/255, exact float)
 DATA(0x001efb5c)
-extern float g_negone; // -1.0
+float g_negone = -1.0f;
 
 // ===========================================================================
 // 0x14df40 - FlashTable: a 256 x (nA+nB)-byte per-palette brightness-pulse ramp.

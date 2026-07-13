@@ -64,14 +64,16 @@ DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 DATA(0x002453d8)
 extern CButeMgr g_buteMgr; // VA 0x6453d8 -> RVA 0x2453d8
-DATA(0x00245588)
-extern u32 g_frameTime; // 0x645588
-DATA(0x00245584)
-extern u32 g_frameDelta; // 0x645584
+// g_frameTime was a SECOND NAME for g_645588 (0x245588 frame clock) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" u32 g_645588;
+// g_frameDelta was a SECOND NAME for g_645584 (0x245584 per-frame delta) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" u32 g_645584;
 DATA(0x0024cfc0)
-extern u32 g_scrollClock; // 0x64cfc0
+u32 g_scrollClock;
 DATA(0x0024cfb0)
-extern i64 g_scrollAccum; // 0x64cfb0 (64-bit)
+i64 g_scrollAccum;
 // Last-frame scroll position (owner-TU defs; .bss, VA 0x64cfd0/0x64cfd4).
 DATA(0x0024cfd0)
 i32 g_lastScrollX; // 0x64cfd0
@@ -119,9 +121,9 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
     i32 scrollX = v->m_curScrollX;
     i32 scrollY = v->m_curScrollY;
 
-    if (g_scrollClock > g_frameTime) {
-        if (g_frameDelta < g_scrollTimer) {
-            g_scrollTimer -= g_frameDelta;
+    if (g_scrollClock > g_645588) {
+        if (g_645584 < g_scrollTimer) {
+            g_scrollTimer -= g_645584;
         } else {
             g_scrollTimer = 0;
         }
@@ -182,7 +184,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
             nx = (i32)((float)nx - (float)deltaX * -0.05f);
             ny = (i32)((float)ny - (float)deltaY * -0.05f);
         }
-        if ((i64)g_frameTime - g_scrollAccum >= g_scrollLimit) {
+        if ((i64)g_645588 - g_scrollAccum >= g_scrollLimit) {
             nx += g_buteMgr.GetDword("BackPlane", "ScrollDistX");
             ny += g_buteMgr.GetDword("BackPlane", "ScrollDistY");
             ScrollView* g2 = g_backView;
@@ -196,7 +198,7 @@ void UpdateMgrScroll(CGruntzMgr* pm, i32* pMode, i32 snapFlag) {
             g2->m_scrollY = fy;
             RecomputePlaneCoords();
             g_scrollLimit = g_buteMgr.GetDword("BackPlane", "ScrollTime");
-            g_scrollAccum = g_frameTime;
+            g_scrollAccum = g_645588;
         }
     }
 

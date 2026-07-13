@@ -32,8 +32,10 @@ extern CButeTree g_buteTree;
 
 // The two .rdata scale doubles the per-tick rate folds in (0x5ea3f0 numerator /
 // 0x5ea3f8 multiplier). Reloc-masked; the literal value is irrelevant to the match.
-extern const double g_spotRateNum; // 0x5ea3f0
-extern const double g_spotRateMul; // 0x5ea3f8
+DATA(0x001ea3f0)
+const double g_spotRateNum = 3.1415927; // 0x5ea3f0
+DATA(0x001ea3f8)
+const double g_spotRateMul = -1.0; // 0x5ea3f8
 
 // The per-frame light-color table is the spotlight facet of the canonical
 // registry's reused +0x78 slot ((CSpotMgrTable*)g_gameReg->m_78; see
@@ -280,6 +282,10 @@ extern "C" u32 g_645584; // frame-time delta
 // The activation-key "B" the update re-resolves through the bute tree.
 extern char s_actKeyB[]; // 0x60d1bc "B"
 // The laser-sound format string + the sound-play gate globals.
+DATA(0x00211c54)
+// @undefined-data: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
 extern char s_LEVEL_UFOHAZARDLASER[]; // 0x611c54 "LEVEL_UFOHAZARDLASER%d"
 extern i32 g_sndEnabled;              // 0x61ab20
 extern i32 g_sndCueTag;               // 0x61ab24

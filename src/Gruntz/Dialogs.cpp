@@ -125,7 +125,7 @@ extern "C" char g_emptyString[];
 // DATA; the installer snapshots it via GetWindowLongA). Twin of MultiStartDlgWorld's
 // g_64bdc0.
 DATA(0x00229d10)
-extern i32 g_629d10;
+i32 g_629d10;
 
 // WndProc_15a10 (0x15a10) - the subclass window-proc installed on a read-only combo
 // edit child (twin of WndProc_c1a10): swallow an empty WM_SETTEXT (keeps the shown

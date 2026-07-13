@@ -49,7 +49,10 @@
 // The activation key "B" (0x60d1bc) CTileSecretTrigger's second registration interns;
 // s_codeA/g_buteTree/g_typeCounter come from <Gruntz/ActNameRegistry.h>.
 DATA(0x0020d1bc)
-extern char s_actKeyB[]; // "B"
+// @undefined-data: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
+extern char s_actKeyB[];
 
 // The game registry singleton the warp ctor polls for the play sub-mode (m_134).
 extern "C" CGameRegistry* g_gameReg;

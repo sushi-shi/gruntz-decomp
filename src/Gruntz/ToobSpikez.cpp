@@ -112,7 +112,7 @@ struct CToobColl {
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024e978)
-extern CToobColl g_toobColl;
+CToobColl g_toobColl;
 DATA(0x002bf464)
 extern void* g_projActCache;
 extern void* g_retAddrBreadcrumb;

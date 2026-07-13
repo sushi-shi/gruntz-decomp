@@ -58,9 +58,9 @@ extern "C" i32 g_rasterEdgeR[]; // 0x6856f8
 
 // The rasterizer global scratch (all reloc-masked DATA).
 DATA(0x002a2ce8)
-extern "C" i32 g_rasterDestRow; // 0x6a2ce8  (current dest scanline base)
+extern "C" i32 g_rasterDestRow = 0;
 DATA(0x002becf4)
-extern "C" i32 g_rasterDestPtr; // 0x6becf4  (current dest pixel ptr)
+extern "C" i32 g_rasterDestPtr = 0;
 
 // The per-span texture-walk accumulators/steps. Owned by this TU; DEFINED here
 // (warptextureblit.obj's .bss, zero-init), DATA()-pinned; reference externs kept in
@@ -82,9 +82,9 @@ i16 g_warpColorkey = 0; // 0x6becfc
 
 // The fixed-point scale constants (0x5efb18, 0x5efb1c = its negation).
 DATA(0x001efb18)
-extern "C" const float g_rasterScale; // 0x5efb18
+extern "C" const float g_rasterScale = 16384.0f;
 DATA(0x001efb1c)
-extern "C" const float g_rasterScaleNeg; // 0x5efb1c
+extern "C" const float g_rasterScaleNeg = -16384.0f;
 
 static i32 warpFtol(double v) {
     return (i32)v;

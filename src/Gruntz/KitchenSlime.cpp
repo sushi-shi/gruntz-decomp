@@ -100,16 +100,18 @@ struct CSlimeEntity {
 
 // Per-frame scroll/scale factor (.data int) Tick multiplies into m_speed to get the
 // per-frame pixel step.
-DATA(0x00245584)
-extern i32 g_slimeFrameScale; // VA 0x645584
+// g_slimeFrameScale was a SECOND NAME for g_645584 (0x245584 per-frame delta) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" u32 g_645584;
 
 // 0.0 (the velocity-sign comparand for the movement integrator).
 DATA(0x001ea400)
-extern const double g_slimeZero; // VA 0x5ea400
+const double g_slimeZero = 0.0;
 
 // A frame/tick counter (BSS) the anim sub-mgr Advance consumes.
-DATA(0x002bf3bc)
-extern i32 g_slimeTick; // VA 0x6bf3bc
+// g_slimeTick was a SECOND NAME for g_6bf3bc (0x2bf3bc per-frame delta (wwd)) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" u32 g_6bf3bc;
 
 // CKitchenSlime : CUserLogic is modeled in <Gruntz/KitchenSlime.h> (canonical
 // header, included below). The CUserLogic base gives the +0x18 destructible link,
@@ -397,7 +399,7 @@ void CKitchenSlime::FireActivation(i32 coord) {
 // schedule. Logic byte-for-byte correct; ~95%, above the documented 60-75% range.
 RVA(0x000b2ca0, 0x29c)
 i32 CKitchenSlime::Tick() {
-    Anim()->m_1a0.Advance_15c360((i32)g_slimeTick);
+    Anim()->m_1a0.Advance_15c360((i32)g_6bf3bc);
 
     CGameRegistry* reg = g_gameReg;
     if (reg->m_isEasyMode == 0 || reg->m_134 != 1) {
@@ -417,7 +419,7 @@ i32 CKitchenSlime::Tick() {
         return 0;
     }
 
-    double step = (double)(i64)(u64)(u32)g_slimeFrameScale * m_speed;
+    double step = (double)(i64)(u64)(u32)g_645584 * m_speed;
     double* m88d = (double*)&m_stepMag;
 
     i32 newX;

@@ -84,7 +84,7 @@ extern "C" {
     IDirectDraw2* g_DirectDraw = 0; // 0x683ee8
 }
 DATA(0x00283ec8)
-extern CPtrArray g_modeArray; // 0x683ec8 (real MFC CPtrArray of 0x6c-byte mode records)
+CPtrArray g_modeArray;
 DATA(0x00283ee4)
 void* g_ddCreateCtx = 0; // 0x683ee4
 

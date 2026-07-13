@@ -58,15 +58,18 @@ namespace NetLobby {
 // this obj's .CRT$XC init statics (FreeGlobal62c25c/InitStr62c264/FreeLevelStr), so
 // a real `CString g_x;` definition here would emit a duplicate dynamic initializer.
 DATA(0x0022c00c)
-char g_mapNamePre[4] = {0}; // 0x62c00c  GetMapBaseName: NUL-at-len-4 via the preceding slot
+// @undefined-data: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
+extern char g_mapNamePre[]; // 0x62c00c  GetMapBaseName: NUL-at-len-4 via the preceding slot
 DATA(0x0022c010)
 char g_mapNameBuf[0x200] = {0}; // 0x62c010  GetMapBaseName filename scratch
 DATA(0x0022c25c)
-extern CString g_pathStr; // 0x62c25c  selected world's full path (returned by value)
+CString g_pathStr;
 DATA(0x0022c260)
-extern CString g_levelStr; // 0x62c260  the popup's level name
+CString g_levelStr;
 DATA(0x0022c264)
-extern CString g_str62c264; // 0x62c264  source name copied back to the out-param
+CString g_str62c264;
 DATA(0x0022c268)
 i32 g_dat62c268 = 0; // 0x62c268  the manager's world slot, seeded for the popup
 DATA(0x0022c26c)
@@ -252,9 +255,21 @@ namespace m4 {
     // for 0x24556c that nothing could ever define. Plain lookup finds ::g_gameReg.
 
     // The custom-level glob + display-name format + "already loaded" strings.
-    extern char g_customGlob[]; // 0x0060cf94
-    extern char g_customDone[]; // 0x0060cf90
-    extern char g_nameFmt[];    // 0x0060c5b8
+DATA(0x0020cf94)
+// @undefined-data: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
+extern char g_customGlob[]; // 0x0060cf94
+DATA(0x0020cf90)
+// @undefined-data: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
+extern char g_customDone[]; // 0x0060cf90
+DATA(0x0020c5b8)
+// @undefined-data: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
+extern char g_nameFmt[]; // 0x0060c5b8
 
     // @early-stop
     // regalloc + frame-layout wall. Complete correct reconstruction: the listbox

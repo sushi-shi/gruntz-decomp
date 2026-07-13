@@ -49,7 +49,7 @@ struct CMgr6451a8 {
 };
 SIZE_UNKNOWN(CMgr6451a8);
 DATA(0x002451a8)
-extern CMgr6451a8 g_mgr6451a8;
+CMgr6451a8 g_mgr6451a8;
 RVA(0x00082aa0, 0x10)
 void Register82aa0() {
     ((CZDArrayDerived*)&g_mgr6451a8)->Construct((i32)(void*)&g_desc60aac8, 0);
@@ -92,11 +92,11 @@ void InitResButeMgr82b20() {
 // never bound.
 extern "C" CString g_profSink; // 0x645524 (_g_profSink; pinned in Play.cpp)
 DATA(0x00245528)
-extern CString g_str645528; // 0x645528 (== GruntzMgrCmd's g_brickText2)
+CString g_str645528;
 DATA(0x0024552c)
-extern CString g_str64552c; // 0x64552c
+CString g_str64552c;
 DATA(0x00245530)
-extern CString g_str645530; // 0x645530
+CString g_str645530;
 
 RVA(0x00082ba0, 0xa)
 void InitStr645524() {
@@ -125,13 +125,13 @@ void InitStr645530() {
 // CString in place (`mov ecx,&g; jmp CString::CString()` @0x1b9b93, reloc-masked).
 // ---------------------------------------------------------------------------
 DATA(0x00245514)
-extern CString g_str645514; // 0x645514
+CString g_str645514;
 DATA(0x00245518)
-extern CString g_str645518; // 0x645518
+CString g_str645518;
 DATA(0x0024551c)
-extern CString g_str64551c; // 0x64551c
+CString g_str64551c;
 DATA(0x00245520)
-extern CString g_str645520; // 0x645520
+CString g_str645520;
 
 RVA(0x00082da0, 0xa)
 void InitStr645514() {

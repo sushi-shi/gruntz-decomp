@@ -650,7 +650,7 @@ i32 CState::Vslot07() {
 // ===========================================================================
 
 DATA(0x0024e35c)
-extern i32 g_64e35c; // 0x64e35c "splash drawn" latch
+i32 g_64e35c;
 
 // (The former CMgrImageSet 20-slot fake-vtable view is GONE: the +0x10 object the
 // GAME_IMAGEZ load dispatches into is the REAL CImageRegistry (<Gruntz/ResMgr.h>,

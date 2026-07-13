@@ -57,7 +57,9 @@ struct CStepOwner { // g->m_14
 extern CTypeKeyColl g_typeColl; // 0x6bf650
 
 // The single-char type keys pooled in .rdata (named in Globals.cpp).
-extern char k_60cc94[]; // "J"
+// k_60cc94 was a SECOND NAME for s_codeJ (0x20cc94) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern char s_codeJ[];
 
 // (the ApiMisc::ClipHost_02b340 shell + the CStepGrid view are GONE - XREF-settled, both of
 // them, and they were the same object. The 0x43ea thunk lands on
@@ -233,7 +235,7 @@ i32 CStepMgr::Step33520(CGrunt* g) {
                     ((CTypeNode*)((zDArray*)&g_typeColl)->IndexToPtr(((CStepOwner*)g->m_14)->m_1c))
                         ->m_0;
                 if (strcmp(nm, s_codeI) != 0 && strcmp(nm, s_codeG) != 0 && strcmp(nm, s_codeL) != 0
-                    && strcmp(nm, s_codeP) != 0 && strcmp(nm, k_60cc94) != 0
+                    && strcmp(nm, s_codeP) != 0 && strcmp(nm, s_codeJ) != 0
                     && strcmp(nm, k_60cc90) != 0 && strcmp(nm, k_60bebc) != 0) {
                     Finish3e4f(g, cur);
                 }

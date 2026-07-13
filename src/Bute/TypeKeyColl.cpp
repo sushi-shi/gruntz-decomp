@@ -93,7 +93,8 @@ u8 g_zArrayTag; // 0x6bf468 (owner-TU def; the CZArrayRoot base-tag byte, &g_zAr
 
 // The bad-argument / bad-character diagnostic name cell the zBitVec parser reports
 // through (distinct from g_projActName @0x6bf454; this one @0x6bf45c). Reloc-masked.
-extern void* g_projActName2; // 0x6bf45c
+DATA(0x002bf45c)
+void* g_projActName2; // 0x6bf45c
 
 // g_containerName (0x2bf408, char[] in <Wap32/zBitVec.h>) - the CContainerErr base-ctor
 // name arg the zBitVec ctors pass. Bound via @data-symbol (the char[] extern mangles
@@ -105,6 +106,9 @@ extern void* g_projActName2; // 0x6bf45c
 
 // The container OOM message the _zvec grow path reports (0x61adf4).
 DATA(0x0021adf4)
+// @undefined-data: a char[] datum here is a STRING (or a run of them); its
+// extent is not boundable from the named-symbol gaps (the unnamed $SG literals
+// in between get swallowed). Inline the literal at its use site instead.
 extern const char s_out_of_memory[]; // 0x61adf4
 
 // The deeper-base ctor argument (a data tag global at 0x6bf468).

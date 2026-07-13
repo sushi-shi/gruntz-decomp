@@ -109,7 +109,7 @@ struct CHaznEntry;         // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
 DATA(0x0024e3d0)
-extern CCoordColl g_haznColl;
+CCoordColl g_haznColl;
 
 // ConstructHaznRange @0x0fbb70 - the static initializer that builds g_haznColl's fast
 // [0x7d0, 0x7da] id range (CZDArrayDerived::Construct). Re-homed from

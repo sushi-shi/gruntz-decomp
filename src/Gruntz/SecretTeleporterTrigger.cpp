@@ -68,7 +68,7 @@ struct CViewRect {
 // is a PMF of the trigger class; a nonzero entry's handler is called __thiscall
 // on `this`. g_actColl (0x644688) is the teleporter's own collection singleton.
 DATA(0x00244688)
-extern CActColl g_actColl;
+CActColl g_actColl;
 
 // The entry's first dword is a pointer-to-member-function of the trigger class
 // (single inheritance -> a 4-byte code pointer); FireActivation invokes it on

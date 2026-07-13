@@ -615,21 +615,21 @@ CString* GetColorName(CString* out);
 
 // The per-column source-rect tables (RECT[] in .data). Indexed by player/category.
 DATA(0x001e9178)
-extern RECT g_col1Rects[]; // 0x5e9178
+RECT g_col1Rects[4] = {{200, 415, 284, 465}, {316, 415, 400, 465}, {432, 415, 516, 465}, {548, 415, 632, 465}};
 DATA(0x001e91b8)
-extern RECT g_col2Rects[]; // 0x5e91b8
+RECT g_col2Rects[4] = {{200, 372, 284, 422}, {316, 372, 400, 422}, {432, 372, 516, 422}, {548, 372, 632, 422}};
 DATA(0x001e91f8)
-extern RECT g_col3Rects[]; // 0x5e91f8
+RECT g_col3Rects[4] = {{200, 329, 284, 379}, {316, 329, 400, 379}, {432, 329, 516, 379}, {548, 329, 632, 379}};
 DATA(0x001e9238)
-extern RECT g_col4Rects[]; // 0x5e9238
+RECT g_col4Rects[4] = {{200, 286, 284, 336}, {316, 286, 400, 336}, {432, 286, 516, 336}, {548, 286, 632, 336}};
 DATA(0x001e9278)
-extern RECT g_col5Rects[]; // 0x5e9278
+RECT g_col5Rects[4] = {{200, 243, 284, 293}, {316, 243, 400, 293}, {432, 243, 516, 293}, {548, 243, 632, 293}};
 DATA(0x001e92b8)
-extern RECT g_col6Rects[]; // 0x5e92b8
+RECT g_col6Rects[4] = {{200, 200, 284, 250}, {316, 200, 400, 250}, {432, 200, 516, 250}, {548, 200, 632, 250}};
 DATA(0x001e92f8)
-extern RECT g_colorRects[]; // 0x5e92f8 (4 team-colour rects)
+RECT g_colorRects[4] = {{50, 87, 390, 115}, {166, 87, 506, 115}, {282, 87, 622, 115}, {398, 87, 738, 115}};
 DATA(0x001e9338)
-extern RECT g_labelRects[]; // 0x5e9338 (7 category-label rects)
+RECT g_labelRects[7] = {{45, 155, 175, 215}, {50, 198, 180, 258}, {34, 241, 172, 301}, {55, 284, 172, 344}, {66, 327, 174, 387}, {0, 370, 172, 430}, {38, 413, 172, 473}};
 
 // The per-player stat block reached through the singleton's m_scoreHud (+0x7c);
 // SumWinRow (0x1230) folds the win-row totals for a player.

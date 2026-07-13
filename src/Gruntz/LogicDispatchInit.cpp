@@ -24,7 +24,7 @@
 
 // The per-class dispatch table (zDArray<methodptr> in .data).
 DATA(0x00246060)
-extern LogicFnTable g_logicDispatch_646060; // 0x646060  (proximity: CEyeCandy | CFrontCandyAni)
+extern LogicFnTable g_logicDispatch_646060;
 
 // construct the dispatch table at 0x646060 over [0x7d0, 0x7da].
 RVA(0x000acb30, 0x15)

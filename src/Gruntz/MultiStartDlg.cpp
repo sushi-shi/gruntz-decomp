@@ -103,7 +103,7 @@ namespace m4 {
 // NAFXCW). The former EngStrAssign::operator= view mis-named that ctor and reloc-masked
 // UNBOUND; a real CString ctor call binds it to the library symbol.
 DATA(0x0024bdb0)
-extern CString g_gruntNames[4];
+CString g_gruntNames[4];
 // The saved original window proc of the roster child (GWL_WNDPROC), private to this
 // dialog; DEFINED here (owner TU), a plain `extern` stays in Globals.h.
 DATA(0x0024bdc0)

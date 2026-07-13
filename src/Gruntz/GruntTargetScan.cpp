@@ -143,7 +143,9 @@ struct CScanReg {
     CScanGrid* m_tileGrid; // +0x70 the board grid (dims)
 };
 extern "C" CScanReg* g_gameReg; // _g_mgrSettings @0x64556c
-extern "C" u32 g_clock;         // _g_645588 @0x645588 running game clock
+// g_clock was a SECOND NAME for g_645588 (0x245588 frame clock) - same address,
+// so nothing ever defined it. Unified onto the canonical.
+extern "C" u32 g_645588;
 
 // __cdecl board rect predicate (0x401127): point-in-board-rect.
 extern "C" i32 BoardTest(char* board, i32 x, i32 y); // 0x401127
@@ -357,10 +359,10 @@ i32 CGruntScan::ScanNearestTarget() {
             if (F(this, 0x244) != 0 || F(this, 0x318) == 0 || (u32)F(this, 0x2ec) <= 0xbb8) {
                 return 1;
             }
-            // 64-bit elapsed = g_clock - {m_308:m_30c}; compare with window {m_310:m_314}.
+            // 64-bit elapsed = g_645588 - {m_308:m_30c}; compare with window {m_310:m_314}.
             {
-                i32 lo = (i32)g_clock - F(this, 0x308);
-                i32 hi = 0 - F(this, 0x30c) - ((u32)(i32)g_clock < (u32)F(this, 0x308) ? 1 : 0);
+                i32 lo = (i32)g_645588 - F(this, 0x308);
+                i32 hi = 0 - F(this, 0x30c) - ((u32)(i32)g_645588 < (u32)F(this, 0x308) ? 1 : 0);
                 i32 winHi = F(this, 0x314);
                 if (hi > winHi || (hi == winHi && (u32)lo >= (u32)F(this, 0x310))) {
                     // window elapsed: re-arm the idle timer with a fresh rand()%0x7530+0x7530.
@@ -371,7 +373,7 @@ i32 CGruntScan::ScanNearestTarget() {
                     F(this, 0x314) = 0;
                     F(this, 0x310) = rand() % 0x7530 + 0x7530;
                     F(this, 0x314) = 0;
-                    F(this, 0x308) = (i32)g_clock;
+                    F(this, 0x308) = (i32)g_645588;
                     F(this, 0x30c) = 0;
                 } else {
                     // not elapsed: jitter to a random nearby board cell.

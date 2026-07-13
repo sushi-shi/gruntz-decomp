@@ -28,7 +28,7 @@ extern "C" PolyVtx g_rasterVtxA[]; // 0x6a1708
 DATA(0x002a21f8)
 extern "C" PolyVtx g_rasterVtxB[]; // 0x6a21f8
 DATA(0x002becf8)
-extern "C" i32 g_rasterVtxCount; // 0x6becf8
+extern "C" i32 g_rasterVtxCount = 0;
 
 // ===========================================================================
 // PolyIsConvexCW (0x145e30, __cdecl) - winding-consistency test over a `count`-

@@ -64,7 +64,7 @@ public:
 // members g_6bf850 (the +0x8 CRangeSet) and g_6bf8dc (the +0x94 mode word), which this
 // TU also reaches as free globals.
 DATA(0x002bf848)
-extern CDebugConfig g_debugConfig;
+CDebugConfig g_debugConfig;
 
 // 0x184b70 - re-initialise the debug config from %DPRINTF% (tail-forward to InitFromEnv
 // on the singleton). Free __cdecl wrapper. (Re-homed from src/Stub/BoundaryUpper2.cpp;

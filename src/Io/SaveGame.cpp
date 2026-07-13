@@ -57,7 +57,7 @@ char* g_areaNames[8]; // 0x6454e8
 DATA(0x0024556c)
 extern "C" CGruntzMgr* g_gameReg;
 DATA(0x00213a9c)
-extern i32 g_savedMenuCmd; // DAT_00613a9c  pending deferred save-menu command
+i32 g_savedMenuCmd = -1;
 // The level-preview image pool + previewed DIB (.bss). DEFINED here (owner TU),
 // reference externs stay in <Globals.h>. (REHOME DD-G)
 DATA(0x0024c814)
@@ -67,7 +67,7 @@ CImagePool* g_previewMgr; // 0x64c814
 // info dialog - ONE datum, so the ex `g_dlgInfoText` char* view folds onto g_slotState
 // (the tree winner; the C++-mangled g_dlgInfoText lost the per-rva dedup).
 DATA(0x0024c864)
-extern i32 g_slotState; // DAT_0064c864 (== the ex g_dlgInfoText)
+i32 g_slotState;
 DATA(0x0024c868)
 void* g_previewImage;                              // 0x64c868  (CRezImage* previewed DIB)
 i32 __stdcall CloseTempFile_e5550(SaveTempRec* r); // defined below (0x0e5550)
