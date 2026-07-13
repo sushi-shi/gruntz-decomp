@@ -94,11 +94,16 @@ namespace Rng {
     // empty (hi==lo-1) it coin-flips between the endpoints on bit 0x10000.
     // @interleaver Rng - own-namespace LCG helper COMDAT scattered at 0x19f50 (the Rng
     // helpers are each their own tiny COMDAT); RVA-placement artifact, kept together here.
+    // @early-stop
+    // 14% -> 94% by ordering the span==0 (coin-flip) arm FIRST so it falls through and
+    // the modulo arm is the jumped-to block, matching retail's `jne`. Residual is pure
+    // /O2 scheduling: cl(g_randSeeded) hoisted early vs retail's late load, and `inc esi`
+    // vs retail's `lea esi,[eax+1]` span materialization. Logic byte-for-byte otherwise.
     RVA(0x00019f50, 0xb2)
     i32 __stdcall RangeStd(i32 lo, i32 hi) {
         i32 span = hi - lo + 1;
         i32 seed;
-        if (span != 0) {
+        if (span == 0) {
             if (!(g_randSeeded & 1)) {
                 g_randSeeded |= 1;
                 seed = timeGetTime();
@@ -106,7 +111,10 @@ namespace Rng {
                 seed = g_randSeed;
             }
             g_randSeed = seed * 214013 + 2531011;
-            return lo + ((g_randSeed >> 0x10) & 0x7fff) % span;
+            if (g_randSeed & 0x10000) {
+                return lo;
+            }
+            return hi;
         }
         if (!(g_randSeeded & 1)) {
             g_randSeeded |= 1;
@@ -115,10 +123,7 @@ namespace Rng {
             seed = g_randSeed;
         }
         g_randSeed = seed * 214013 + 2531011;
-        if (g_randSeed & 0x10000) {
-            return lo;
-        }
-        return hi;
+        return lo + ((g_randSeed >> 0x10) & 0x7fff) % span;
     }
 
     // __thiscall coin-flip: deterministic ((m_1c+1)%2) in replay mode, otherwise a
