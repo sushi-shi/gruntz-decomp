@@ -65,23 +65,30 @@ public:
     // virtuals - declaring them would make MSVC emit a divergent ??_7 vtable.
     ~CLogicRecord(); // 0x151da0 (/GX)
 
-    i32 Init(void* pData, i32 frame);                // 0x151e20
-    i32 Consume(i32 amount);                         // 0x15b340
-    i32 Dispatch(i32 a, i32 mode, void* c, void* d); // 0x164830
-    i32 CacheTargetId(void* a);                      // 0x164920 (Dispatch case 3)
-    i32 Load(LogicArchive* ar);                      // 0x164960
-    i32 Save(LogicArchive* ar);                      // 0x164d80 (external here)
-    i32 ResolveTarget(void* a);                      // 0x1651b0 (Dispatch case 8)
+    i32 Init(void(__cdecl* callback)(void*), i32 frame); // 0x151e20 (binds m_10)
+    i32 Consume(i32 amount);                             // 0x15b340
+    i32 Dispatch(i32 a, i32 mode, void* c, void* d);     // 0x164830
+    i32 CacheTargetId(void* a);                          // 0x164920 (Dispatch case 3)
+    i32 Load(LogicArchive* ar);                          // 0x164960
+    i32 Save(LogicArchive* ar);                          // 0x164d80 (external here)
+    i32 ResolveTarget(void* a);                          // 0x1651b0 (Dispatch case 8)
 
     // --- layout (offsets confirmed from ctor 0x150eb0 + Load 0x164960) ---
     char _vft0[4];      // +0x00 foreign object vptr (reduced view; not owned/dispatched)
     i32 m_04;           // 0x04
     i32 m_08;           // 0x08  set by Init (frame), copied from owner+0x0c in ctor
     LogicContext* m_0c; // 0x0c  owner context (grid resolver at m_08+0x48)
-    void* m_10;         // 0x10  primary data pointer (Init arg / zeroed by dtor)
-    void* m_14;         // 0x14  owned heap block (freed in dtor)
-    LogicSub* m_18;     // 0x18  owned polymorphic sub-record (destroyed in dtor)
-    i32 m_1c;           // 0x1c  state/type tag (switch key)
+    // +0x10  the record's fire callback - a plain __cdecl fn ptr taking the owning
+    // object. PROVEN by its two live consumers: CWwdObjMgr::TickKillCues /
+    // CSpriteFactory::AttachSprite call it directly (`call [rec+0x10]`), and the
+    // CAnimWorker view of this same 0x17c object types the same slot m_collideNotify
+    // (CGameLevel::BroadPhase fires it). Init's stored arg IS this callback; the
+    // dtor zeroes it. (Was `void* m_10` - the untyped slot forced (KillCueFn) casts
+    // at every fire site.)
+    void(__cdecl* m_10)(void* owner);
+    void* m_14;                           // 0x14  owned heap block (freed in dtor)
+    LogicSub* m_18;                       // 0x18  owned polymorphic sub-record (destroyed in dtor)
+    i32 m_1c;                             // 0x1c  state/type tag (switch key)
     i32 m_serial[(0x164 - 0x20) / 4 + 1]; // 0x20..0x164 flat serialized block
     i32 m_168;                            // 0x168 (zeroed by Init)
     i32 m_16c;                            // 0x16c (zeroed by Init)

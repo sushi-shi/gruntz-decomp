@@ -125,9 +125,8 @@ inline void* WwdKey(CWwdGameObject* o) {
     return (void*)o->m_188;
 }
 
-// The per-object cue callback fired when a cue expires (obj+0x7c +0x10; __cdecl,
-// one arg = the owning object).
-typedef void(__cdecl* KillCueFn)(void*);
+// (The per-object expiry callback at worker+0x10 is now TYPED on the record -
+// CLogicRecord::m_10 - so the old KillCueFn cast-at-fire-site is gone.)
 
 // ---------------------------------------------------------------------------
 // CDDrawChildGroup::ForwardTo3C (0x1591e0): forward to Slot3C.
@@ -424,7 +423,7 @@ i32 CSpriteFactory::AttachSprite(
     ((CWwdObjMgr*)this)->InsertSorted_159e40(obj, 1);
     if (flags & 0x200000) {
         // the worker's +0x10 callback slot - the same one TickKillCues fires
-        ((KillCueFn)obj->m_killCue->m_10)(obj);
+        obj->m_killCue->m_10(obj);
     }
     return 1;
 }
@@ -528,7 +527,7 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
             if (*refc != 0) {
                 --*refc;
             } else {
-                ((KillCueFn)rec->m_10)(obj);
+                rec->m_10(obj);
             }
         }
         i32 flags = obj->m_flags;
@@ -545,7 +544,7 @@ void CWwdObjMgr::TickKillCues_159a70(i32 advance) {
         if (obj->m_flags & 0x80000) {
             CLogicRecord* rec = obj->m_killCue;
             rec->m_1c = 0x1d;
-            ((KillCueFn)rec->m_10)(obj);
+            rec->m_10(obj);
         }
         if (obj->m_flags & 0x800) {
             if (obj != 0) {

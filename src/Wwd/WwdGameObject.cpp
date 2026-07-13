@@ -1212,14 +1212,14 @@ CLogicRecord::~CLogicRecord() {
 }
 
 // ---------------------------------------------------------------------------
-// CLogicRecord::Init (0x151e20, __thiscall). Bind the primary data pointer (m_10)
-// and the frame stamp (m_08), zeroing the working fields. Returns 0 if pData null.
+// CLogicRecord::Init (0x151e20, __thiscall). Bind the fire callback (m_10) and
+// the frame stamp (m_08), zeroing the working fields. Returns 0 if callback null.
 RVA(0x00151e20, 0x46)
-i32 CLogicRecord::Init(void* pData, i32 frame) {
-    if (pData == 0) {
+i32 CLogicRecord::Init(void(__cdecl* callback)(void*), i32 frame) {
+    if (callback == 0) {
         return 0;
     }
-    m_10 = pData;
+    m_10 = callback;
     m_08 = frame;
     m_14 = 0;
     m_18 = 0;
