@@ -93,19 +93,22 @@ public:
     void WalkDispatch38(i32 a1, i32 a2, i32 a3);
 
     // Slots 0/2/3/4 inherited from CObject (base thunks). Own slots below:
-    virtual ~CDDrawChildGroup() OVERRIDE;        // slot 1  scalar-deleting dtor (0x157610)
-    virtual void Slot14();                       // +0x14  slot 5
-    virtual void Slot18();                       // +0x18
-    virtual void ForwardTo3C();                  // 0x1591e0 (out-of-line)
-    virtual void Slot20();                       // +0x20
-    virtual void Slot24();                       // +0x24
-    virtual void WalkDispatch2C(i32 a1);         // +0x28
-    virtual void WalkDispatch30(i32 a1, i32 a2); // +0x2c
-    virtual void Slot30();                       // +0x30
-    virtual void Slot34();                       // +0x34
-    virtual void ResetChildD8();                 // +0x38
-    virtual void Slot3C();                       // +0x3c  (referenced by +0x1c thunk)
-    virtual void Slot40();                       // +0x40  0x159f00 (17th slot)
+    virtual ~CDDrawChildGroup() OVERRIDE; // slot 1  scalar-deleting dtor (0x157610)
+    virtual void Slot14();                // +0x14  slot 5
+    virtual void Slot18();                // +0x18
+    virtual void ForwardTo3C();           // 0x1591e0 (out-of-line)
+    virtual void Slot20();                // +0x20
+    // +0x24 (slot 9) = the per-frame kill-cue tick (0x159a70, ret 4 = 1 arg; body on
+    // CWwdObjMgr in WwdObjMgr.cpp - same class). CMulti/CPlay's frame pump dispatches
+    // it here with the frame delta, then slot 16 below.
+    virtual void TickKillCues_159a70(i32 advance); // +0x24  slot 9
+    virtual void WalkDispatch2C(i32 a1);           // +0x28
+    virtual void WalkDispatch30(i32 a1, i32 a2);   // +0x2c
+    virtual void Slot30();                         // +0x30
+    virtual void Slot34();                         // +0x34
+    virtual void ResetChildD8();                   // +0x38
+    virtual void Slot3C();                         // +0x3c  (referenced by +0x1c thunk)
+    virtual void Slot40();                         // +0x40  0x159f00 (slot 16)
 
     i32 m_status;              // +0x04  initialized to -1 when inactive
     i32 m_flags08;             // +0x08  flags (bit 0x200000 = draw per-object debug counts)

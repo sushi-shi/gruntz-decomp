@@ -24,6 +24,7 @@
 #include <Dsndmgr/SoundStream.h>  // SoundStream : SoundDevice - the REAL m_c->m_soundStream (+0x20)
 #include <Gruntz/SoundCue.h>      // CSndHost - the REAL m_c->m_28 (name->cue map + emit gate)
 #include <DDrawMgr/DDrawSurfacePair.h>
+#include <DDrawMgr/DDrawChildGroup.h> // the m_c->m_8 object manager (was the McObj/McHost views)
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/WorldSoundSet.h>
 #include <Gruntz/ChatBoxOwner.h>
@@ -1244,42 +1245,18 @@ extern "C" u32 g_64559c; // 0x64559c  stat timer 4
 DATA(0x002455a0)
 extern "C" u32 g_6455a0; // 0x6455a0  stat timer 5
 
-// The FOREIGN redraw vfn host at (CMulti::m_view)->m_8: two thiscall slots pumped
-// each frame; the rest are unreconstructed engine code. Honest model = a manual vptr
-// into a typed vtable struct naming ONLY the two dispatched slots as 4-byte thiscall
-// PMFs + char pad[], NO fake virtuals; each dispatch is ecx=this, no push (same as
-// the pure-virtual form).
-// Real polymorphic view: the two dispatched slots are real virtuals at their retail
-// offsets (+0x24 = slot 9, +0x40 = slot 16); declared-only, so no vtable is emitted.
-struct McObj {
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot24(); // +0x24 (slot 9)
-    virtual void Slot10();
-    virtual void Slot11();
-    virtual void Slot12();
-    virtual void Slot13();
-    virtual void Slot14();
-    virtual void Slot15();
-    virtual void Slot40(); // +0x40 (slot 16)
-    void CallSlot24() {
-        Slot24();
-    }
-    void CallSlot40() {
-        Slot40();
-    }
-};
-struct McHost { // CMulti::m_view
-    char m_pad0[8];
-    McObj* m_8; // +0x08
-};
+// [McObj (17 padded slots) + McHost DISSOLVED 2026-07-13. The per-frame pump
+// dispatches m_c->m_8's slot 9 (+0x24, ONE arg = the frame delta) then slot 16
+// (+0x40, no arg). The class whose RTTI slot map (vtbl 0x1efdc0, 17 slots) carries
+// BOTH - at those exact offsets, with those exact arities - is CDDrawChildGroup ==
+// CWwdObjMgr: slot 9 = TickKillCues_159a70 (0x159a70, ret 4) and slot 16 = Slot40
+// (0x159f00, ret 0). Both bodies already exist in the tree. No new slot was needed
+// (the earlier "CRenderer has no slot 16" blocker read the dispatch off the WRONG
+// member - it is the object-manager at +0x08, not the renderer at +0x0c).
+// The remaining `(CDDrawChildGroup*)` cast at the site is the visible symptom of the
+// KNOWN m_8 3-way conflation (CSpriteFactory / "renderer A" / CWwdObjMgr are one
+// physical class under three names - see <Gruntz/GameRegistry.h> m_8). Fixing that
+// member's type is the next fold; casting here does not lie about the dispatch.]
 
 // Per-frame receivers (thiscall, out-of-line -> reloc-masked).
 // CGruntzMgr::m_sound (+0x48) IS the real CGruntzSoundZ (<Dsndmgr/GruntzSoundZ.h>): the former
@@ -1373,8 +1350,8 @@ i32 CMulti::PumpA() {
     } else {
         g_6455a0 = 0;
     }
-    ((McHost*)m_c)->m_8->CallSlot24();
-    ((McHost*)m_c)->m_8->CallSlot40();
+    ((CDDrawChildGroup*)m_c->m_8)->TickKillCues_159a70(g_645584);
+    ((CDDrawChildGroup*)m_c->m_8)->Slot40();
     ((CMultiSub68*)Mgr()->m_cmdGrid)->Step3017(g_645584);
     ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadDestructButtonSprite(g_645584);
     SoundStream* win = m_c->m_soundStream;
@@ -1403,44 +1380,26 @@ i32 CMulti::PumpA() {
 // CMulti.h are reached through dedicated view structs / documented offsets.
 // ---------------------------------------------------------------------------
 
-// The per-pane render target hung off m_view->m_4->{m_10,m_14}->m_2c (thiscall).
-// A render pane (m_view->m_4->m_10 / ->m_14). m_14 also owns the palette blit.
-// The +0xc vfn host: dispatched through vtable slot +0x34 (index 13).
-class PBVfnHost {
-public:
-    virtual void s00();
-    virtual void s01();
-    virtual void s02();
-    virtual void s03();
-    virtual void s04();
-    virtual void s05();
-    virtual void s06();
-    virtual void s07();
-    virtual void s08();
-    virtual void s09();
-    virtual void s10();
-    virtual void s11();
-    virtual void s12();
-    virtual void Blit34(void* a, void* b); // +0x34
-};
-// The m_view->m_24 chain and its +0x5c compositor target.
-// The m_view manager sub-object tree.
-class PBSub4 { // m_view->m_4
-public:
-    char m_pad00_10[0x10];
-    CDDrawSurfacePair* m_10; // +0x10
-    CDDrawSurfacePair* m_14; // +0x14
-    void* m_18;              // +0x18
-};
-class PBMgr { // CMulti::m_view
-public:
-    void* m_0;
-    PBSub4* m_4;        // +0x04
-    CGameObjChain* m_8; // +0x08  world object chain (VisitVisible arg)
-    PBVfnHost* m_c;     // +0x0c
-    char m_pad10_24[0x24 - 0x10];
-    CGameLevel* m_24; // +0x24
-};
+// [PBVfnHost / PBSub4 / PBMgr DISSOLVED 2026-07-13 onto the canonical classes:
+//   PBMgr      == CSpriteFactoryHolder (<Gruntz/GameRegistry.h>) - it IS CState::m_c,
+//                 already typed there; every member lines up (m_4 draw target, m_8
+//                 object factory/manager, m_c renderer B, m_24 level/view).
+//   PBVfnHost  == CRenderer (<Gruntz/View.h>) - its "Blit34" (+0x34) IS CRenderer::
+//                 Present, slot 13, already modeled at that offset with the same
+//                 2-arg thiscall shape.
+//   PBSub4     == CDrawTarget (<Gruntz/ResMgr.h>) - the +0x10/+0x14/+0x18 page triple.
+// TWO CONFLATIONS remain visible as casts at the sites below, and they are REAL
+// (do not paper over them):
+//   (1) CDrawTarget types +0x10/+0x14/+0x18 as its own SurfaceA*/SurfaceB* nested
+//       pages, while this TU's uses (->m_surface Flip/Fill, the VisitVisible target)
+//       are CDDrawSurfacePair* operations. Both readings agree on the OFFSETS and on
+//       a +0x2c CDDSurface; they disagree on the page CLASS. Settling that needs the
+//       page ctor/new-site (unreconstructed), so the pages keep the pair type here
+//       via cast and the disagreement is reported, not guessed away.
+//   (2) CSpriteFactoryHolder::m_24 is typed CGameViewport there but is used as
+//       CGameLevel here (VisitVisible / m_mainPlane) - the same +0x24 slot, two
+//       names; CDDrawSurfaceMgr's slot map says +0x24 is the level. Same fold.]
+
 // The output sink hung off CGruntzMgr::m_inputState (+0x54; thiscall 2-arg blit).
 // (The +0x68 FX-driver view PBSub68 is folded into CMultiSub68 above.)
 class PBSub320 { // CMulti::m_attractOverlay (attract-mode overlay)
@@ -1461,25 +1420,29 @@ extern "C" void PumpBRefresh2356(void* reg, void* fx, i32 flag);
 // - not steerable from source. Sibling of the PumpA (~88%) wall.
 RVA(0x000b6e90, 0x34d)
 void CMulti::PumpB() {
-    PBMgr* mgr = (PBMgr*)m_c;
+    CSpriteFactoryHolder* mgr = m_c;
     if (m_594 == 0 && Mgr()->m_frameGate != 0) {
         StepInputA();
-        mgr->m_24->VisitVisible(mgr->m_4->m_14, mgr->m_8);
-        mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
+        ((CGameLevel*)mgr->m_24)
+            ->VisitVisible((CDDrawSurfacePair*)mgr->m_drawTarget->m_14, (CGameObjChain*)mgr->m_8);
+        mgr->m_rendererB->Present(
+            (CDDrawSurfacePair*)mgr->m_drawTarget->m_14,
+            (CDDrawSurfacePair*)mgr->m_drawTarget->m_18
+        );
         ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
-        CDDrawSurfacePair* h = mgr->m_4->m_14;
+        CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_14;
         if (h == 0) {
             return;
         }
         StepGridWalk(g_645584);
         CopyRect(h);
-        mgr->m_4->m_10->m_surface->Flip(0);
+        ((CDDrawSurfacePair*)mgr->m_drawTarget->m_10)->m_surface->Flip(0);
         return;
     }
     StepInputA();
     StepC();
     if (m_region0Gate != 0) {
-        mgr->m_4->m_14->m_surface->Fill(0);
+        ((CDDrawSurfacePair*)mgr->m_drawTarget->m_14)->m_surface->Fill(0);
         ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->Deactivate();
     }
     if (m_worldReady == 0) {
@@ -1491,14 +1454,18 @@ void CMulti::PumpB() {
     }
     StepScroll();
     Mgr()->m_inputState->Retune(
-        ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_84,
-        ((CPlaneRender*)mgr->m_24->m_mainPlane)->m_88
+        ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->m_84,
+        ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->m_88
     );
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();
     } else {
-        mgr->m_24->VisitVisible(mgr->m_4->m_14, mgr->m_8);
-        mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
+        ((CGameLevel*)mgr->m_24)
+            ->VisitVisible((CDDrawSurfacePair*)mgr->m_drawTarget->m_14, (CGameObjChain*)mgr->m_8);
+        mgr->m_rendererB->Present(
+            (CDDrawSurfacePair*)mgr->m_drawTarget->m_14,
+            (CDDrawSurfacePair*)mgr->m_drawTarget->m_18
+        );
     }
     ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
     if (m_lightFx != 0) {
@@ -1515,11 +1482,11 @@ void CMulti::PumpB() {
             }
             PBSub320* ov = (PBSub320*)m_lightFx;
             ov->Tick1fa0(g_645584, 0);
-            ov->Render14dd(mgr->m_4->m_14, &rc);
+            ov->Render14dd(mgr->m_drawTarget->m_14, &rc);
         }
     }
     Mgr()->m_chatLog->Scroll(g_645584);
-    CDDrawSurfacePair* h = mgr->m_4->m_14;
+    CDDrawSurfacePair* h = (CDDrawSurfacePair*)mgr->m_drawTarget->m_14;
     if (h == 0) {
         return;
     }
@@ -1531,10 +1498,10 @@ void CMulti::PumpB() {
     if (m_worldReady != 0) {
         h->DrawBox((i32*)&m_hudRect, 0xff);
     }
-    mgr->m_4->m_10->m_surface->Flip(0);
+    ((CDDrawSurfacePair*)mgr->m_drawTarget->m_10)->m_surface->Flip(0);
     PumpBRefresh2356(g_gameReg, ((CMultiSubDC*)m_guts), m_region0Gate);
-    if (mgr->m_24->m_mainPlane != 0) {
-        ((CPlaneRender*)mgr->m_24->m_mainPlane)->CenterScrollB();
+    if (((CGameLevel*)mgr->m_24)->m_mainPlane != 0) {
+        ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->CenterScrollB();
     }
     if (m_region0Gate != 0) {
         if ((i64)g_645588 - *(i64*)&m_region0TimerLo >= *(i64*)&m_region0Interval) {
@@ -1921,13 +1888,8 @@ SIZE_UNKNOWN(CMultiSub68);
 SIZE_UNKNOWN(CMultiSubDC);
 SIZE_UNKNOWN(CMultiSlotView);
 SIZE_UNKNOWN(CRefresh21bd0);
-SIZE_UNKNOWN(McHost);
-SIZE_UNKNOWN(McObj);
 SIZE_UNKNOWN(PBListSink);
-SIZE_UNKNOWN(PBMgr);
 SIZE_UNKNOWN(PBSub320);
-SIZE_UNKNOWN(PBSub4);
-SIZE_UNKNOWN(PBVfnHost);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
 
