@@ -88,14 +88,35 @@ CDDrawWorkerHost::CDDrawWorkerHost(CPlaneMapData* mapData, i32 field04, i32 flag
 
 // 0x161640 (930 B) = the plane-block reader, CDDrawWorkerHost vtable slot 10
 // (??_7CDDrawWorkerHost @0x1f0270+0x28) - the slot CGameLevelPlanes::ReadPlane
-// dispatches. __thiscall(a1 plane-source record, a2 buffer offset, a3
-// LevelCoordRect* bounds), ret 0xc. Parses a token stream, copies a1->this geometry,
-// SetTileSize, then steps 6-9 byte-identical to CDDrawWorkerHost::InitGeometry_1619f0.
-// (Was the free-fn stub Gap_161640; now the REAL virtual so the emitted vtable's
-// slot 10 binds to a defined symbol.) Body deferred pending SetTileSize/
-// RebuildPlanes/SetAtGrow declared on the unified plane class.
+// dispatches. __thiscall(planeData record, blockBase, LevelCoordRect* bounds), ret 0xc.
+//
+// DECODED STRUCTURE (retail-verified 2026-07-13; every callee named):
+//   1. Guard: `if (planeData[0] != 0xa0) return 0;` - the WwdPlaneHeader stride.
+//   2. Tokenizer over the record's trailing imageset-NAME LIST: base = blockBase +
+//      planeData[+0x88], length = planeData[+0x7c]. It walks bytes, treating any char
+//      OUTSIDE [0x30, 0x80) (and NUL) as a separator, and copies each token into a
+//      0x80-byte stack buffer at [esp+0x28].
+//   3. Per token: `m_mapData->...->Lookup(token, out)` (0x1b8008 == CMapStringToOb::
+//      Lookup - the SAME name->object registry RegisterNamed resolves through), then
+//      `m_frameSets.SetAtGrow(i, out)` (0x1b5822 == CObArray::SetAtGrow) - i.e. it
+//      populates the +0x9c frame-set array the Draw loop indexes by handle>>16.
+//   4. Copies the record's geometry into `this`, calls SetTileSize (0x161f00), the
+//      g_pCopyRect fn-ptr (0x6c44bc) for the bounds rect, and the DAT_005f02a0 float
+//      scale - then steps 6-9 are BYTE-IDENTICAL to InitGeometry_1619f0 (two
+//      operator_new allocations: the tile grid + the column-offset table, then the
+//      tail-call to RecomputePlaneCoords 0x161c90).
+//   5. Finally drives RebuildPlanes (0x1628f0) for the object block.
+//
+// WHAT BLOCKS IT (not a model wall - a cost/plateau judgment): its steps 6-9 ARE
+// InitGeometry_1619f0, and that sibling is itself parked at 78.33% on the documented
+// zero-register-pinning wall (docs/patterns/zero-register-pinning.md - retail's
+// arg->register rotation over the ~20 field seeds is not source-steerable). A faithful
+// 930-B reconstruction here would inherit that same plateau over its largest span, and
+// a PARTIAL body is worse than a stub (it under-counts AND diverges the TU's regalloc).
+// The honest sequencing is leaf-first: crack InitGeometry_1619f0's register pinning,
+// then this body follows mechanically from the structure above.
 // @confidence: high
-// @source: vtable_hierarchy-slot-map+ReadPlane-dispatch
+// @source: vtable_hierarchy-slot-map+ReadPlane-dispatch+full-disasm-decode
 // @stub
 RVA(0x00161640, 0x3a2)
 i32 CDDrawWorkerHost::Read(void* planeData, void* blockBase, void* bounds) {
@@ -784,15 +805,14 @@ i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
 }
 
 // @early-stop
-// non-ctor factory-stamp wall: this is a factory, not a ??0 ctor - the 0x1dc game
-// object and its +0x1A0 sub-object are brought up by the EXTERNAL engine ctors
-// (Construct 0x15b390 / 0x156cb0, unmatched), then their derived vtables are
-// re-stamped by address (g_wwdObjVtbl @0x5f00a8 = ??_7CWwdGameObjectA / g_wwdSubVtbl
-// @0x5f0128 = ??_7CAniAdvanceCursor, both realized real-polymorphic in their own
-// TUs but ORPHAN-bound to those g_ DATA symbols). A `new`-based rewrite is
-// impossible here (the construction is external engine code), and a VTBL on the
-// realized classes would dup-DATA the factory's bound g_ symbols -> the manual
-// re-stamp is the only expressible form (compiler-model wall). Logic byte-faithful.
+// RE-TESTED 2026-07-13: the recorded "non-ctor factory-stamp wall" is STALE. It
+// described a manual `*(void**)obj = &g_wwdObjVtbl` re-stamp pair - and there is no
+// such stamp in this body any more (they were dropped in the all-vtables-real batch;
+// only the three "vptr install dropped" comments remain). Nothing here is parked on a
+// vtable model at all. What IS left is ordinary residue of a 2054-byte factory whose
+// two object ctors (0x15b390 / 0x156cb0) are unmatched engine code: the /GX frame over
+// four destructible CString temps + the reloc-masked ctor/Load/Apply* call chain.
+// Logic byte-faithful; deferred to the final sweep on size, not on a model wall.
 RVA(0x00162af0, 0x806)
 i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     if (src == 0) {
