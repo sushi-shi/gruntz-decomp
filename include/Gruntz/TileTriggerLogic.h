@@ -11,6 +11,54 @@
 
 class CTileTriggerContainer; // owner, back-stamped into m_20 (fwd; def in TileTriggerContainer.h)
 
+// The tile-trigger factory/serialize type-id space: the id CTileTriggerContainer::
+// LoadElement (0x117800) switches on and stamps into the element (switch family
+// m_04 / logic family m_typeTag), re-read by the serialize dispatchers
+// (SerializeApplyA: 1..8; SerializeApplyB: 0x15..0x1a), AddLogic (0x116610:
+// 0x15..0x1a) and the container finders (FindChild id filter, FindInLists12 tag).
+// PROVEN arms only - each value's class is pinned by its `new` in the retail
+// switch. Ids 1/2/5 all build the base CTileTriggerSwitchLogic (their gameplay
+// distinction is unrecovered, so they keep numeric suffixes, not invented roles).
+typedef enum TrigLogicId {
+    TRIGID_SWITCH_1           = 1,    // CTileTriggerSwitchLogic
+    TRIGID_SWITCH_2           = 2,    // CTileTriggerSwitchLogic
+    TRIGID_MULTI_SWITCH_3     = 3,    // CTileMultiTriggerSwitchLogic
+    TRIGID_EXCLUSIVE_SWITCH_4 = 4,    // CTileExclusiveTriggerSwitchLogic (Broadcast's filter)
+    TRIGID_SWITCH_5           = 5,    // CTileTriggerSwitchLogic
+    TRIGID_SECRET_SWITCH_6    = 6,    // CTileSecretTriggerSwitchLogic
+    TRIGID_TIME_SWITCH_7      = 7,    // CTileTimeTriggerSwitchLogic
+    TRIGID_CHECKPOINT_SWITCH_8 = 8,   // CCheckpointTriggerSwitchLogic (VerifyBlockLinks filter)
+    TRIGID_TILE_TRIGGER_21    = 0x15, // CTileTriggerLogic (the id-21 board-latch arm)
+    TRIGID_GIANT_ROCK_22      = 0x16, // CGiantRockLogic - THE rock discriminant
+    TRIGID_TIME_TRIGGER_23    = 0x17, // CTileTimeTriggerLogic (AddLogic routes to m_list2)
+    TRIGID_TILE_TRIGGER_24    = 0x18, // CTileTriggerLogic
+    TRIGID_SECRET_TRIGGER_25  = 0x19, // CTileSecretTriggerLogic
+    TRIGID_COVERED_POWERUP_26 = 0x1a, // CCoveredPowerupLogic (SetCell's fallback probe tag)
+} TrigLogicId;
+
+// The two CGruntzMgr::ReportError classes the trigger-link validators raise
+// (arg1 of ReportError(class, site)). PROVEN arms only: every 0x80dd site in the
+// tree reports a lookup that came back empty (FindChild key miss, the rock-scan
+// miss @TriggerMgr 0x403), every 0x80de site a resolved link that failed
+// validation (no claiming child). The wider 0x80xx space belongs to CGruntzMgr -
+// unproven arms are left unenumerated.
+typedef enum TrigErrClass {
+    TRIGERR_LOOKUP_MISS = 0x80dd, // a FindChild/registry lookup returned nothing
+    TRIGERR_LINK_BROKEN = 0x80de, // a link validation failed (no child claims the switch)
+} TrigErrClass;
+
+// The per-site diagnostic tags (arg2) of the trigger-link validators - one per
+// PROVEN report site.
+typedef enum TrigErrSite {
+    TRIGSITE_ROCK_SCAN_MISS  = 0x403, // TriggerMgr rock-break: no giant rock around (x,y)
+    TRIGSITE_LINKSB_NO_OWNER = 0x44d, // VerifyBlockLinksB: no m_list1 child claims this switch
+    TRIGSITE_LINKSB_KEY_MISS = 0x44e, // VerifyBlockLinksB: block key unresolved (id-3 filter)
+    TRIGSITE_BCAST_KEY_MISS  = 0x44f, // Broadcast: block key unresolved (id-4 filter)
+    TRIGSITE_BCAST_NO_CLAIM  = 0x450, // Broadcast: no m_list1 child claims the sibling
+    TRIGSITE_LINKS_NO_OWNER  = 0x452, // VerifyBlockLinks: no m_list1 child claims this switch
+    TRIGSITE_LINKS_KEY_MISS  = 0x453, // VerifyBlockLinks: block key unresolved (id-8 filter)
+} TrigErrSite;
+
 // ---------------------------------------------------------------------------
 // CTileTriggerLogic
 //   vftable (0x5eaea4, ONE slot). size 0x9c. ctor:
@@ -113,6 +161,13 @@ public:
 class CGiantRockLogic : public CTileTriggerLogic {
 public:
     CGiantRockLogic(); // 0x112210 (ILT 0x2c3e)
+
+    // The rock-break tile-effect loader (0x1122a0): writes the m_matrix 3x3 back
+    // into the level plane, fires the effect + optional InGameText, plays the cue.
+    // OWNER SETTLED 2026-07-13: `this` reaches +0x9c..+0xc4 (m_matrix/m_c0/m_c4) -
+    // only THIS 0xc8 class holds them; the old CTileTriggerSwitchLogic filing was a
+    // Ghidra rtti-vptr guess an 0x8c object cannot satisfy.
+    void BuildRockBreakInGameText(); // 0x1122a0
 
     i32 ApplyByType(void* archive, i32 type, i32 a3, i32 a4); // 0x113d40 (ILT 0x1d39)
     i32 SerializeMatrix(CSerialArchive* s);                   // 0x113dd0 (type-4 save)

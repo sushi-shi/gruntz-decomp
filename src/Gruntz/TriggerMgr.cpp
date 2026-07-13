@@ -1739,28 +1739,24 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
 
             if (type != 0x1e && type != 0x1f) {
                 if (type == 0x21) {
-                    CTileTriggerSwitchLogic* gr =
-                        (CTileTriggerSwitchLogic*)((CTileTriggerSwitchLogic*)root->m_2e4)
-                            ->ScanNeighborhood(tx, ty);
+                    CGiantRockLogic* gr = root->m_2e4->ScanNeighborhood(tx, ty);
                     if (gr == 0) {
                         CString msg;
                         FormatStr(&msg, "No giant rock logic found around: x=%d, y=%d", cx, cy);
                         g_gameReg->EnterModalUI(msg);
-                        g_gameReg->ReportError(0x80dd, 0x403);
+                        g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_ROCK_SCAN_MISS);
                         return 0;
                     }
                     gr->BuildRockBreakInGameText();
-                    ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)gr);
+                    root->m_2e4->DelFromList1(gr);
                     continue;
                 }
                 if (type != 0x97 && type != 0x98 && type != 0x99) {
                     continue;
                 }
-                CTileTriggerSwitchLogic* o =
-                    (CTileTriggerSwitchLogic*)((CTileTriggerSwitchLogic*)root->m_2e4)
-                        ->FindByField0C(ty + (tx << 8));
-                if (((CTileActionEvent*)o)->Process(0)) {
-                    ((CTileTriggerContainer*)root->m_2e4)->DelFromList3((void*)o);
+                CTileActionEvent* o = root->m_2e4->FindByField0C(ty + (tx << 8));
+                if (o->Process(0)) {
+                    root->m_2e4->DelFromList3(o);
                 }
                 continue;
             }

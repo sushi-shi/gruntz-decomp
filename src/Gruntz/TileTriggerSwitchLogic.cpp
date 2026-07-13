@@ -24,6 +24,7 @@
 
 #include <Gruntz/GruntzMgr.h> // the REAL singleton class
 #include <Gruntz/TileTriggerSwitchLogic.h>
+#include <Gruntz/TileTriggerContainer.h> // the owner container (m_owner; TtcNode/TtcHead)
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileGridCommand.h>
 #include <Gruntz/TileActionEvent.h>
@@ -179,32 +180,13 @@ extern CImpactSound* Eng_FindSound(const char* name);
 // trigger-data record. Reached through the per-version Load dispatcher (0x513860,
 // sub-selector 4) under the outer Serialize switch (0x517636). It pulls a fixed
 // run of dword fields off the archive (virtual Read @ vtable byte 0x30) once the
-// game registry's m_30 sub-manager is live. Names are placeholders; the field
-// offsets + the emitted Read sequence are load-bearing.
-// (The former local 13-slot CSerialArchive view is folded onto the shared
-// <Gruntz/SerialArchive.h> model: the +0x30 slot this record streams through is
-// the shared WRITE slot - LoadV4 is the mode-4 SAVE-side check Gate113860
-// dispatches (Func4499), the "Load" name is a historical misnomer.)
-// The tile trigger-data record being loaded. Reads land at +0x08..+0x20, +0x28
-// (NB: +0x24 is skipped), then a 24-dword run from +0x2c.
-class CTileTriggerData {
-public:
-    virtual void Slot0();           // vptr @+0x00 (real polymorphic; declared-only)
-    i32 LoadV4(CSerialArchive* ar); // 0x1138b0
-
-    i32 m_04;     // +0x04
-    i32 m_08;     // +0x08
-    i32 m_0c;     // +0x0c
-    i32 m_10;     // +0x10
-    i32 m_14;     // +0x14
-    i32 m_18;     // +0x18
-    i32 m_1c;     // +0x1c
-    i32 m_20;     // +0x20
-    i32 m_24;     // +0x24 (not read here)
-    i32 m_28;     // +0x28
-    i32 m_2c[24]; // +0x2c..+0x88
-};
-SIZE_UNKNOWN(CTileTriggerData);
+// game registry's m_30 sub-manager is live.
+// DE-VIEW (2026-07-13, Fable lane): the `CTileTriggerData` record view is GONE -
+// it was CTileTriggerSwitchLogic itself. 0x1138b0 streams the EXACT field list
+// LoadState (0x1139a0) reads back - m_08, m_key0c, m_key1, m_linkGate, m_18,
+// m_1c, m_20, m_28, then m_block[24] from +0x2c, skipping the +0x24 owner - so
+// it is the WRITE mirror, now CTileTriggerSwitchLogic::SaveState (the mode-4 arm
+// its own ValidateByType @0x113860 dispatches).
 
 // TileTriggerDerivedCtors.cpp - the 18-byte derived tile-trigger logic ctors
 // (C:\Proj\Gruntz), homed from src/Stub/. Each is the canonical logic-ctor
@@ -255,8 +237,17 @@ CTileTriggerSwitchLogic::CTileTriggerSwitchLogic() {
 // 9-arg slot-1 signature recovered from the checkpoint override.
 // ---------------------------------------------------------------------------
 RVA(0x00110460, 0x64)
-i32 CTileTriggerSwitchLogic::
-    BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, const i32* rect, i32 a7, i32 a8, i32 a9) {
+i32 CTileTriggerSwitchLogic::BuildSmall(
+    CTileTriggerContainer* owner,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    i32 a5,
+    const i32* rect,
+    i32 a7,
+    i32 a8,
+    i32 a9
+) {
     if (m_20 != 0) {
         return 0;
     }
@@ -264,7 +255,7 @@ i32 CTileTriggerSwitchLogic::
         return 0;
     }
     memcpy(m_block, rect, sizeof(m_block));
-    return Vf0(a1, a2, a3, a4, a5, a7, a8, a9);
+    return Vf0(owner, a2, a3, a4, a5, a7, a8, a9);
 }
 
 // Vf2/Vf3 stay DECLARED-ONLY on the base (bodies live in unmatched engine TUs); cl still
@@ -279,7 +270,16 @@ i32 CTileTriggerSwitchLogic::
 // (was the Init8_1104f0 placeholder view; xref: vtable slot +0x0 via thunk 0x1749).
 // ---------------------------------------------------------------------------
 RVA(0x001104f0, 0x56)
-i32 CTileTriggerSwitchLogic::Vf0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
+i32 CTileTriggerSwitchLogic::Vf0(
+    CTileTriggerContainer* owner,
+    i32 a1,
+    i32 a2,
+    i32 a3,
+    i32 a4,
+    i32 a5,
+    i32 a6,
+    i32 a7
+) {
     if (m_20) {
         return 0;
     }
@@ -287,12 +287,12 @@ i32 CTileTriggerSwitchLogic::Vf0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5,
     m_08 = a2;
     m_key0c = a3;
     m_key1 = a4;
-    m_owner = (CTileTriggerSwitchLogic*)a0;
+    m_owner = owner;
     m_18 = a6;
     m_28 = a7;
     m_1c = 0;
     m_linkGate = a5;
-    m_20 = (ChildNode*)1;
+    m_20 = 1;
     return 1;
 }
 
@@ -531,22 +531,25 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
     if (m_linkGate == 0) {
         return 0;
     }
-    ChildNode* node = m_owner->m_20;
+    // walk the owner CONTAINER's m_list1 (head @ container+0x20) - the 0x9c
+    // CTileTriggerLogic children live there (the old "m_owner->m_20 child list"
+    // reading was the same load through the switch-logic mis-typing).
+    TtcNode* node = TtcHead(m_owner->m_list1);
     i32 found = 0;
     CTileTriggerLogic* child = 0;
     while (node != 0) {
         if (found != 0) {
             break;
         }
-        ChildNode* cur = node;
+        TtcNode* cur = node;
         node = node->m_next;
-        child = cur->m_data;
+        child = (CTileTriggerLogic*)cur->m_data;
         if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
             found = 1;
         }
     }
     if (found == 0) {
-        g_gameReg->ReportError(0x80de, 0x44d);
+        g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_LINKSB_NO_OWNER);
         return 0;
     }
     i32* p = &child->m_block[0]; // child+0x3c (the child is a 0x9c CTileTriggerLogic)
@@ -555,9 +558,9 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         if (key == 0) {
             return 1;
         }
-        CTileTriggerSwitchLogic* c = m_owner->FindChild(key, 3);
+        CTileTriggerSwitchLogic* c = m_owner->FindChild(key, TRIGID_MULTI_SWITCH_3);
         if (c == 0) {
-            g_gameReg->ReportError(0x80dd, 0x44e);
+            g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_LINKSB_KEY_MISS);
             return 0;
         }
         if (c->m_linkGate == 0) {
@@ -570,6 +573,65 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
 
 RVA(0x00112050, 0x12)
 CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
+
+// ---------------------------------------------------------------------------
+// CTileTriggerSwitchLogic::Broadcast (0x112080) - walk this switch's m_block key
+// array; each key must resolve (owner->FindChild(key, 4), acking 0x44f on a miss)
+// to a sibling switch; for a resolved sibling that is not THIS switch and is
+// link-gated, run its slot-3 virtual, then Tick every m_list1 logic child that
+// claims it (FindIndexByKey), acking 0x450 if none does.
+// RE-HOMED from GroupOps.cpp (the whole `CGroupBroadcast`/`CFindNode`/
+// `CBcastMember`/`CBcastListNode` view cluster is dissolved onto the real
+// classes: same layout field-for-field, and this RVA sits inside THIS TU's
+// interval 0x110430..0x1140e2 - first-link contiguity says it was defined here).
+// ---------------------------------------------------------------------------
+// @early-stop
+// 84% - regalloc wall: the 0-terminated key-array walk, per-key map Find, the
+// inner match/destroy list loop and both diagnostic exits are byte-faithful; the
+// residual is loop-induction / counter register colouring.  No EH frame.
+RVA(0x00112080, 0x138)
+i32 CTileTriggerSwitchLogic::Broadcast() {
+    // retail: a DIRECT `call 0x2e0f` (the slot-2 body's ILT thunk) - a qualified,
+    // devirtualized call, so spell it qualified.
+    CTileTriggerSwitchLogic::Vf2();
+    i32 counter = 0;
+    i32* p = &m_block[0];
+    i32 i = 0;
+    i32 done = 0;
+    do {
+        if (i >= 0x18) {
+            return 1;
+        }
+        CTileTriggerSwitchLogic* node = m_owner->FindChild(*p, TRIGID_EXCLUSIVE_SWITCH_4);
+        if (node == 0) {
+            g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_BCAST_KEY_MISS);
+            return 0;
+        }
+        if (node->m_key1 != m_key1 && node->m_linkGate != 0) {
+            node->Vf3(); // virtual slot 3 (the old view's "Prepare")
+            i32 any = 0;
+            for (TtcNode* it = TtcHead(m_owner->m_list1); it != 0; it = it->m_next) {
+                CTileTriggerLogic* o = (CTileTriggerLogic*)it->m_data;
+                if (o != 0 && o->FindIndexByKey(node->m_key1)) {
+                    o->Tick(); // slot 0 (the old view's "Destroy")
+                    counter++;
+                    any = 1;
+                }
+            }
+            if (any == 0) {
+                g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_BCAST_NO_CLAIM);
+                return 0;
+            }
+        }
+        i32 next = p[1];
+        p++;
+        i++;
+        if (next == 0) {
+            done = 1;
+        }
+    } while (!done);
+    return 1;
+}
 
 // --- CTileTriggerLogic family (base = 1 virtual) ---------------------------
 // Class shapes now live in <Gruntz/TileTriggerLogic.h> (shared with the AddLogic
@@ -586,13 +648,13 @@ CTileTimeTriggerLogic::CTileTimeTriggerLogic() {}
 // ---------------------------------------------------------------------------
 // BuildRockBreakInGameText - the rock-break tile-effect loader (RVA 0x1122a0).
 //
-// MISLABELED: the delinker filed this __thiscall(void) under CTileTriggerSwitchLogic
-// (Ghidra RTTI-vptr guess), but xref shows its real callers are CTerrainTileLoader::
-// Load (0x75e90) and CRockBreakMgr::BuildRockBreakParticles (0x7b440), and `this` is
-// a tile-command object whose +0x8/+0xc are the tile (x, y) and +0x9c a 9-cell value
-// block. The RVA is locked to this class name (moving it craters the delinker pack),
-// so it is reconstructed here by raw this+offset - only the offsets/bytes are load-
-// bearing. It: (1) gates on whether the tile center sits inside the view rect;
+// OWNER SETTLED (2026-07-13, Fable lane): `this` is the 0xc8 CGiantRockLogic - the
+// +0x8/+0xc tile (x, y) are its m_08/m_0c coords, the +0x9c 9-cell value block is
+// its m_matrix[9], +0xc0/+0xc4 its m_c0/m_c4 - every touched offset is a
+// CGiantRockLogic member, and the receiver TriggerMgr's rock-break driver passes is
+// the ScanNeighborhood(tag 0x16 == giant rock) hit. The old CTileTriggerSwitchLogic
+// filing was a Ghidra rtti-vptr guess (an 0x8c object cannot even hold +0x9c).
+// It: (1) gates on whether the tile center sits inside the view rect;
 // (2) walks the 3x3 neighborhood writing each saved cell value back into the level
 // plane + notifying the tile grid (and, when in-rect, spawning a Particlez/
 // LEVEL_ROCKBREAK sprite per cell); (3) fires the command-grid effect at the tile
@@ -613,10 +675,9 @@ extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
 // are dissolved onto them (same offsets + RVAs, xref-confirmed: Lookup 0x1b8438,
 // ConfigureItem 0x1360d0).
 
-// `this` stays in esi; tile (x, y) are re-read from +0x8/+0xc at each use (retail
-// caches neither, so caching them here would spill the frame from 0x14 to 0x38).
-#define TX (*(i32*)(self + 0x8))
-#define TY (*(i32*)(self + 0xc))
+// `this` stays in esi; the tile coords are re-read from m_08/m_0c at each use
+// (retail caches neither, so caching them in locals would spill the frame from
+// 0x14 to 0x38) - direct member reads reproduce exactly that.
 
 // @early-stop
 // loop-body regalloc wall (~69%): complete + correct reconstruction - the frame
@@ -631,38 +692,37 @@ extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
 // i->edi / j->ebx spill-and-reload assignment unmoved - a non-steerable regalloc pick
 // inside the hottest block. Deferred to the final sweep.
 RVA(0x001122a0, 0x241)
-void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
-    char* self = (char*)this;
-    // The world at +0x30 IS the CSpriteFactoryHolder (ex-CWorldZ, dissolved): the two fields this
+void CGiantRockLogic::BuildRockBreakInGameText() {
+    // CWorldZ IS the CSpriteFactoryHolder view (one object at +0x30): the two fields this
     // fn reads - the sprite factory at +0x08 and the sound host at +0x28 - are declared
     // IDENTICALLY on both, so reading through the real class is a pure rename.
-    CSpriteFactoryHolder* gameMgr = g_gameReg->m_world; // cached only for the loop sprite
+    CWorldZ* gameMgr = g_gameReg->m_world; // cached only for the loop sprite
 
     // (1) in-rect gate: is the tile center inside the view rect (+0x13c)?
     i32 inRect = 0;
     POINT pt;
-    pt.y = (TY << 5) + 0x10;
-    pt.x = (TX << 5) + 0x10;
+    pt.y = (m_0c << 5) + 0x10;
+    pt.x = (m_08 << 5) + 0x10;
     if (PtInRect((const RECT*)&g_gameReg->m_viewOriginL, pt)) {
         inRect = 1;
     }
 
     // (2) 3x3 neighborhood: write each saved cell value into the level plane + notify
     // the tile grid; when in-rect, spawn a Particlez/LEVEL_ROCKBREAK sprite per cell.
-    i32* cursor = (i32*)(self + 0x9c);
+    i32* cursor = &m_matrix[0];
     for (i32 j = 0; j <= 2; j++) {
         for (i32 i = 0; i <= 2; i++) {
             i32 value = *cursor;
-            i32 px = i + TX - 1;
-            i32 py = j + TY - 1;
+            i32 px = i + m_08 - 1;
+            i32 py = j + m_0c - 1;
             CPlaneRender* plane = (CPlaneRender*)g_gameReg->m_world->m_24->m_mainPlane;
             plane->m_tileGrid[plane->m_colOffsets[py] + px] = value;
             g_gameReg->m_tileGrid->Notify(px, py, value);
             if (inRect) {
                 CGameObject* spr = gameMgr->m_8->CreateSprite(
                     0,
-                    ((i + TX) << 5) - 0x10,
-                    ((j + TY) << 5) - 0x10,
+                    ((i + m_08) << 5) - 0x10,
+                    ((j + m_0c) << 5) - 0x10,
                     0xcf84f,
                     "Particlez",
                     0x40003
@@ -677,24 +737,25 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
     }
 
     // (3) fire the command-grid effect at the tile center (cx/cy reused by step 4).
-    i32 cx = (TX << 5) + 0x10;
-    i32 cy = (TY << 5) + 0x10;
-    g_gameReg->m_cmdGrid->FireCommand(*(i32*)(self + 0xc0), cx, cy, *(i32*)(self + 0x30), 1, 0);
+    i32 cx = (m_08 << 5) + 0x10;
+    i32 cy = (m_0c << 5) + 0x10;
+    g_gameReg->m_cmdGrid->FireCommand(m_c0, cx, cy, (i32)m_30, 1, 0);
 
     // (4) when +0xc4 is set, spawn an InGameText sprite carrying it.
-    if (*(i32*)(self + 0xc4) != 0) {
+    if (m_c4 != 0) {
         CGameObject* txt =
             g_gameReg->m_world->m_8->CreateSprite(0, cx, cy, 0x17318, "InGameText", 0x40003);
         if (txt == 0) {
             return;
         }
-        txt->m_124 = *(i32*)(self + 0xc4);
+        txt->m_124 = m_c4;
     }
 
     // (5) on-screen + no active override -> play the LEVEL_ROCKBREAK cue.
-    if ((TX << 5) + 0x10 >= g_gameReg->m_viewOriginR || (TX << 5) + 0x10 < g_gameReg->m_viewOriginL
-        || (TY << 5) + 0x10 >= g_gameReg->m_viewOriginB
-        || (TY << 5) + 0x10 < g_gameReg->m_viewOriginT) {
+    if ((m_08 << 5) + 0x10 >= g_gameReg->m_viewOriginR
+        || (m_08 << 5) + 0x10 < g_gameReg->m_viewOriginL
+        || (m_0c << 5) + 0x10 >= g_gameReg->m_viewOriginB
+        || (m_0c << 5) + 0x10 < g_gameReg->m_viewOriginT) {
         return;
     }
     CSndHost* sreg = gameMgr->m_28; // m_28 typed CSndHost* on the canonical holder (GameRegistry.h)
@@ -717,9 +778,6 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
     out->m_14 = kc;
     out->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
 }
-
-#undef TX
-#undef TY
 
 // ---------------------------------------------------------------------------
 // CTileTriggerLogic::ApplyMove
@@ -975,22 +1033,25 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
     if (m_linkGate == 0) {
         return 0;
     }
-    ChildNode* node = m_owner->m_20;
+    // walk the owner CONTAINER's m_list1 (head @ container+0x20) - the 0x9c
+    // CTileTriggerLogic children live there (the old "m_owner->m_20 child list"
+    // reading was the same load through the switch-logic mis-typing).
+    TtcNode* node = TtcHead(m_owner->m_list1);
     i32 found = 0;
     CTileTriggerLogic* child = 0;
     while (node != 0) {
         if (found != 0) {
             break;
         }
-        ChildNode* cur = node;
+        TtcNode* cur = node;
         node = node->m_next;
-        child = cur->m_data;
+        child = (CTileTriggerLogic*)cur->m_data;
         if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
             found = 1;
         }
     }
     if (found == 0) {
-        g_gameReg->ReportError(0x80de, 0x452);
+        g_gameReg->ReportError(TRIGERR_LINK_BROKEN, TRIGSITE_LINKS_NO_OWNER);
         return 0;
     }
     i32* p = &child->m_block[0]; // child+0x3c (the child is a 0x9c CTileTriggerLogic)
@@ -999,9 +1060,9 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         if (key == 0) {
             return 1;
         }
-        CTileTriggerSwitchLogic* c = m_owner->FindChild(key, 8);
+        CTileTriggerSwitchLogic* c = m_owner->FindChild(key, TRIGID_CHECKPOINT_SWITCH_8);
         if (c == 0) {
-            g_gameReg->ReportError(0x80dd, 0x453);
+            g_gameReg->ReportError(TRIGERR_LOOKUP_MISS, TRIGSITE_LINKS_KEY_MISS);
             return 0;
         }
         if (c->m_linkGate == 0) {
@@ -1012,12 +1073,14 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
     return 0;
 }
 
-// ResetFlag (0x112d80): zero the m_10 flag word, return this. Out-of-line (retail
-// emits it standalone; the inline member folded into its callers and never emitted).
+// ??0CTileActionEvent (0x112d80): the constructor - zero the m_10 live flag.
+// Was misread as a "ResetFlag" method: its only retail callers are the three
+// new-sites in TileTriggerContainer.cpp (AddToList3 / AddToList3Switch /
+// Serialize op-7), each with the compiler's guarded-ctor `alloc ? ctor : 0`
+// shape, and it returns this in eax exactly as a __thiscall ctor does.
 RVA(0x00112d80, 0xa)
-CTileActionEvent* CTileActionEvent::ResetFlag() {
+CTileActionEvent::CTileActionEvent() {
     m_10 = 0;
-    return this;
 }
 
 // ===========================================================================
@@ -1459,30 +1522,28 @@ i32 CTileActionEvent::MorphByTool(i32 toolId, i32 playerSlot) {
     return 1;
 }
 
-// 0x113860 - Gate113860: mode gate over a container element - validate `obj`
-// against the mode (4 -> the write-check 0x4499, 7 -> the read-check 0x1893, both
-// TileTriggerSwitchLogic-family helpers), passing through otherwise. __stdcall,
-// ret 0x10. The __stdcall helper SerializeApplyA / CTileTriggerFactory::Build call.
-// Re-homed from src/Stub/BoundaryLowerMethods.cpp (was the Gate113860 placeholder).
-extern i32 __stdcall Func1893(void* p); // 0x1893 -> 0x1139a0
-extern i32 __stdcall Func4499(void* p); // 0x4499 -> 0x1138b0
-// @early-stop
-// regalloc wall (~93%): retail keeps obj in eax (so the obj==0 return 0 is free); cl
-// pins it in ecx and adds xor eax. switch(mode) recovers the case layout; the eax vs
-// ecx pick is not source-steerable.
+// 0x113860 - CTileTriggerSwitchLogic::ValidateByType: the 0x8c family's save/load
+// dispatcher (mode 4 -> SaveState @0x1138b0, 7 -> LoadState @0x1139a0), the exact
+// twin of CTileTriggerLogic::ValidateByType below. __thiscall, ret 0x10.
+// DE-VIEW (2026-07-13, Fable lane): was the "__stdcall Gate113860(obj,...)" free
+// function - a mis-model. Retail's callers (SerializeApplyA 0x117630, LoadElement
+// 0x117800) do `mov ecx,<element>` before `call 0x277f`, and the body passes ecx
+// UNTOUCHED through to the two __thiscall state helpers (it loads the archive arg
+// into eax, never ecx) - i.e. `this` is the element, the first stack arg the
+// archive. The old model dropped the receiver and named the archive "obj".
 RVA(0x00113860, 0x3b)
-i32 __stdcall Gate113860(void* obj, i32 mode, i32 a3, i32 a4) {
-    if (obj == 0) {
+i32 CTileTriggerSwitchLogic::ValidateByType(CSerialArchive* s, i32 mode, i32 a3, i32 a4) {
+    if (s == 0) {
         return 0;
     }
     switch (mode) {
         case 4:
-            if (!Func4499(obj)) {
+            if (!SaveState(s)) {
                 return 0;
             }
             break;
         case 7:
-            if (!Func1893(obj)) {
+            if (!LoadState(s)) {
                 return 0;
             }
             break;
@@ -1491,13 +1552,14 @@ i32 __stdcall Gate113860(void* obj, i32 mode, i32 a3, i32 a4) {
 }
 
 // ===========================================================================
-// 0x1138b0 - stream the trigger-data block through the archive's +0x30 (write)
-// slot. Bails if the archive is null or the registry sub-manager (m_30) is not
-// yet live; otherwise streams the eight scalar fields then the 24-dword tail
-// run, returning 1.
+// 0x1138b0 - CTileTriggerSwitchLogic::SaveState: the write mirror of LoadState
+// (0x1139a0) - the SAME eight scalar fields (skipping the +0x24 owner) then the
+// 24-dword m_block run, through the archive's +0x30 (write) slot. Bails if the
+// archive is null or the registry sub-manager (m_30) is not yet live.
+// (Was the "CTileTriggerData::LoadV4" view - a second model of this class.)
 // ===========================================================================
 RVA(0x001138b0, 0xb4)
-i32 CTileTriggerData::LoadV4(CSerialArchive* ar) {
+i32 CTileTriggerSwitchLogic::SaveState(CSerialArchive* ar) {
     if (ar == 0) {
         return 0;
     }
@@ -1505,14 +1567,14 @@ i32 CTileTriggerData::LoadV4(CSerialArchive* ar) {
         return 0;
     }
     ar->Write(&m_08, 4);
-    ar->Write(&m_0c, 4);
-    ar->Write(&m_10, 4);
-    ar->Write(&m_14, 4);
+    ar->Write(&m_key0c, 4);
+    ar->Write(&m_key1, 4);
+    ar->Write(&m_linkGate, 4);
     ar->Write(&m_18, 4);
     ar->Write(&m_1c, 4);
     ar->Write(&m_20, 4);
     ar->Write(&m_28, 4);
-    i32* p = m_2c;
+    i32* p = m_block;
     i32 n = 24;
     do {
         ar->Write(p, 4);

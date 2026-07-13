@@ -811,11 +811,14 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
         return 0;
     }
 
-    // (4) command manager
-    CTileTriggerSwitchLogic* cmd = new CTileTriggerSwitchLogic();
+    // (4) command manager - the tile-trigger CONTAINER (retail: `push 0x78; call
+    // ??2` + four inlined CPtrList(0xa) ctors at +0x00/+0x1c/+0x38/+0x54 +
+    // `[+0x74]=0`; the old `new CTileTriggerSwitchLogic` was the wrong class AND
+    // the wrong size, 0x8c vs 0x78).
+    CTileTriggerContainer* cmd = new CTileTriggerContainer();
     TF(0x2e4) = (i32)cmd;
     if (cmd->GetFlag74() == 0) {
-        CTileTriggerSwitchLogic* co = (CTileTriggerSwitchLogic*)TF(0x2e4);
+        CTileTriggerContainer* co = (CTileTriggerContainer*)TF(0x2e4);
         if (co == 0) {
             return 0;
         }

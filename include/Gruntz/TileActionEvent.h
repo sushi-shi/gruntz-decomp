@@ -25,10 +25,21 @@
 // CSerialArchive (Read @ vtable +0x2c / Write @ +0x30), now the one modeled class in
 // <Gruntz/SerialArchive.h> - the former local `CTileActionArchive` view is folded away.
 
+class CTileTriggerContainer; // owner container (back-stamped into m_14)
+
 class CTileActionEvent {
 public:
-    // Reset the m_10 flag word to 0 (returns this). 0x112d80.
-    CTileActionEvent* ResetFlag(); // 0x112d80 (out-of-line: m_10 = 0; return this)
+    // The constructor (0x112d80): zero the m_10 live flag. Was misread as a
+    // "ResetFlag" method - its ONLY retail callers are the three new-sites
+    // (AddToList3 / AddToList3Switch / Serialize op-7 in TileTriggerContainer.cpp),
+    // each with the compiler's `alloc ? ctor(alloc) : 0` guarded-ctor shape, and it
+    // returns this in eax exactly as a __thiscall ctor does.
+    CTileActionEvent(); // 0x112d80
+    // The inline dtor the container walkers inline before RezFree: clear the live
+    // flag (no vtable, so no vptr stamp - retail's "clear +0x10, no stamp" delete).
+    ~CTileActionEvent() {
+        m_10 = 0;
+    }
 
     // Set m_actionCode from the action code, then fold a duplicate-action lookup
     // against the per-player active flags / the level grid, returning 0 if the
@@ -60,14 +71,18 @@ public:
     // the archive). 0x113f60.
     i32 SerializeFields(void* ar);
 
-    i32 m_actionCode;     // +0x00  action-type code (0x12d..0x149)
-    i32 m_tileX;          // +0x04  tile X
-    i32 m_tileY;          // +0x08  tile Y
-    i32 m_c;              // +0x0c
-    i32 m_10;             // +0x10  flag word (ResetFlag zeroes it)
-    i32 m_14;             // +0x14  (NOT serialized)
+    i32 m_actionCode; // +0x00  action-type code (0x12d..0x149)
+    i32 m_tileX;      // +0x04  tile X
+    i32 m_tileY;      // +0x08  tile Y
+    i32 m_c;          // +0x0c  cell key ((x<<8)|y; CTileTriggerContainer::FindByField0C match)
+    i32 m_10;         // +0x10  live flag (ctor zeroes; AddToList3 sets 1; dtor clears)
+    // +0x14  the owning CTileTriggerContainer (AddToList3/Serialize back-stamp it;
+    // NOT serialized - which is exactly why the field skips the stream).
+    CTileTriggerContainer* m_14;
     i32 m_playerFlags[4]; // +0x18..+0x24  per-player seen/active flags [0..3]
 };
-SIZE_UNKNOWN(CTileActionEvent);
+// 0x28: proven at all three retail new-sites (`push 0x28; call ??2` in AddToList3
+// 0x116a40 / AddToList3Switch 0x116b80 / CTileTriggerContainer::Serialize 0x117280).
+SIZE(CTileActionEvent, 0x28);
 
 #endif // GRUNTZ_TILEACTIONEVENT_H

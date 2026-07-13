@@ -25,16 +25,18 @@
 class CMapMgr;                 // <Gruntz/MapMgr.h>   (== CBrickzGrid) the tile/path grid
 class CTriggerMgr;             // <Gruntz/TriggerMgr.h>
 struct CGameObject;            // <Gruntz/UserLogic.h>
-class CTileTriggerSwitchLogic; // <Gruntz/TileTriggerSwitchLogic.h>
+class CTileTriggerContainer; // <Gruntz/TileTriggerContainer.h>
 
-// The spawn-info handle at +0x2c. Its +0x2e4 is the level's tile-trigger/cell-record
-// query object - LoadConfig copies it into CBattlezMapConfig::m_14, and the run phase
-// fires FindChild (0x116ee0) / FindByField0C (0x1171d0) on it (`mov ecx,[this+0x14]`).
+// The spawn-info handle at +0x2c. Its +0x2e4 is the level's tile-trigger CONTAINER
+// (settled 2026-07-13: ModeObjInit/Multi construct it as the 4-CPtrList + m_74
+// container; FindChild @0x116ee0 / FindByField0C @0x1171d0 are container methods) -
+// LoadConfig copies it into CBattlezMapConfig::m_14, and the run phase fires
+// FindChild / FindByField0C on it (`mov ecx,[this+0x14]`).
 // Was TWO .cpp-local views of one object (CLevelSpawnInfo + CArriveSub10b).
 SIZE_UNKNOWN(CLevelSpawnInfo);
 struct CLevelSpawnInfo {
     char m_pad00[0x2e4];
-    CTileTriggerSwitchLogic* m_2e4; // +0x2e4  the tile-trigger/cell-record query object
+    CTileTriggerContainer* m_2e4; // +0x2e4  the level's tile-trigger container
 };
 
 // The level object-list ROOT (CLevelInfo::m_objList, +0x30). m_coll is the collection

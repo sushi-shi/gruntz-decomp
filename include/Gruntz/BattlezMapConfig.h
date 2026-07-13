@@ -51,7 +51,8 @@
 // SAME CTriggerMgr the run ctor caches at +0x08. The old `GruntSpawnCtx` / `Board` /
 // `CMapDims` views are dissolved onto CLevelInfo / CTriggerMgr / CMapMgr.
 class CTriggerMgr;
-class CTileTriggerSwitchLogic; // +0x14 cell-record query (the FindChild/FindByField0C receiver)
+class CTileTriggerSwitchLogic; // FindChild's element type
+class CTileTriggerContainer;   // +0x14 the tile-trigger container (FindChild/FindByField0C receiver)
 class CGrunt;                  // <Gruntz/Grunt.h> - the grid units the spawn machine drives
 #include <Gruntz/LevelInfo.h>  // the canonical CLevelInfo (the LoadConfig arg AND m_ctx)
 
@@ -135,9 +136,10 @@ public:
             CTriggerMgr* m_triggerMgr;            // +0x008  the level's CTriggerMgr (4x15 grid)
             CBrickzGrid* m_board;                 // +0x00c  the CBrickz pathfinding-grid / tile-map
             i32 m_010;                            // +0x010  (untouched by run ctor)
-            CTileTriggerSwitchLogic* m_cellQuery; // +0x014  cell-record query object
-                                                  //         (LoadConfig-seeded from m_10->m_2e4;
-                                                  //         run phase dispatches FindChild on it)
+            CTileTriggerContainer* m_cellQuery; // +0x014  the level's tile-trigger container
+                                                //         (LoadConfig-seeded from m_10->m_2e4;
+                                                //         run phase drives FindChild/
+                                                //         FindByField0C on it)
             i32 m_curCell;                        // +0x018  current cell index (=0)
             i32 m_01c;                            // +0x01c  = 1
             i32 m_020;                            // +0x020  = 0x40
@@ -195,7 +197,7 @@ public:
             CTriggerMgr* m_8;              // +0x08  = lvl->m_triggerMgr  (== m_triggerMgr)
             CMapMgr* m_dims;               // +0x0c  = lvl->m_dims        (== m_board)
             CLevelSpawnInfo* m_10;         // +0x10  = lvl->m_spawnInfo
-            CTileTriggerSwitchLogic* m_14; // +0x14 = m_10->m_2e4   (== m_cellQuery)
+            CTileTriggerContainer* m_14; // +0x14 = m_10->m_2e4   (== m_cellQuery)
             i32 m_ownerId;                 // +0x18  = id (owner/team id)
             char m_pad1c[0x30 - 0x1c];
             DWORD m_defenderChance; // +0x30  DefenderChance

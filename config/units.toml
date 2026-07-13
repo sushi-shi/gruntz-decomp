@@ -1841,10 +1841,6 @@ flags = "eh"
 
 
 [[unit]]
-unit = "groupops"
-source = "src/Gruntz/GroupOps.cpp"
-flags = "base"
-[[unit]]
 unit = "butesectionctor"
 source = "src/Bute/ButeSectionCtor.cpp"
 # The CButeSection ctor (0x170210) has 8 destructible embedded members (CString +

@@ -15,12 +15,15 @@
 #include <Mfc.h> // MFC CPtrList (the m_base/m_list1-3 sub-object list methods)
 #include <Ints.h>
 #include <Gruntz/SerialArchive.h> // the shared CSerialArchive stream (Read @ +0x2c / Write @ +0x30)
+#include <Gruntz/TileActionEvent.h>   // CTileActionEvent - the 0x28 m_list3 element (was TtcMark)
 #include <Gruntz/TileTriggerWiring.h> // CTrigParam / CTrigSourceRecord (AddLogic marshaling blocks)
 #include <rva.h>                      // SIZE_UNKNOWN class-metadata macros used below
 
-// The owning container; back-stamped into the list elements (m_14 / m_20).
+// The owning container; back-stamped into the list elements (m_14 / m_20 / m_24).
 class CTileTriggerContainer;
 class CTileTriggerLogic; // the per-id logic leaf AddLogic news (def in TileTriggerLogic.h)
+class CGiantRockLogic;   // the 0xc8 m_list1 rock element (def in TileTriggerLogic.h)
+class CTileTriggerSwitchLogic; // the 0x8c m_base element family (def in TileTriggerSwitchLogic.h)
 
 // The Rez heap alloc/free (RVA 0x1b9b46 _RezAlloc / 0x1b9b82 _RezFree);
 // reloc-masked rel32 callees.
@@ -29,22 +32,6 @@ extern "C" void RezFree(void* p);
 
 // The running game clock (DAT_00645588); reloc-masked DIR32 datum.
 extern "C" u32 g_645588;
-
-// A list element (command) object's vftable, stamped into the element by the
-// inlined element-destructor before RezFree.  Reloc-masked DIR32 datum.
-
-// The base-list element vftable (the +0x00 list's elements, cleared at elem+0x20
-// before free).  Reloc-masked DIR32 datum.
-
-// A keyed element found by SetCell's lookup: a 4-slot state-flag array at
-// +0x18..+0x24 and a slot-0 Notify (called with its own vtable pointer).
-// __thiscall callee.
-struct TtcKeyedElem {
-    virtual void Slot0(); // vptr @+0x00 (real polymorphic; declared-only)
-    char _pad04[0x18 - 0x04];
-    i32 m_flags[4]; // +0x18..+0x24  state flags [0..3]
-};
-SIZE_UNKNOWN(TtcKeyedElem);
 
 // A singly-walked CPtrList node: next@+0x00, data@+0x08 (MFC CList layout, the
 // +0x04 prev slot unused by these walkers).
@@ -72,90 +59,50 @@ inline TtcNode* TtcHead(const ::CPtrList& l) {
     return (TtcNode*)l.GetHeadPosition();
 }
 
-// The list3 (m_list3, +0x54) element: a 0x28-byte record initialised from the
-// AddToList3 args, notified, then appended.  m_10 gates the init (1 = live).
-struct TtcMark {
-    // Per-mark (de)serialize-and-fill helper used by the big serialize walk
-    // (0x117280): reads the mark's fields from the stream and validates them.
-    // __thiscall, returns nonzero on success.  Reloc-masked rel32 callee (0x113f10).
-    i32 m_00;
-    i32 m_04;
-    i32 m_08;
-    i32 m_0c;
-    i32 m_10;                    // +0x10  init flag
-    CTileTriggerContainer* m_14; // +0x14  owning container
-    i32 m_18;
-    i32 m_1c;
-    i32 m_20;
-    i32 m_24;
-};
-SIZE_UNKNOWN(TtcMark);
-// The mark allocator/ctor: RezAlloc(0x28) then the __thiscall ctor (0x1e1a).
-extern "C" TtcMark* TtcMarkCtor(TtcMark* p); // 0x1e1a (reloc-masked)
-
-// The list1 (m_list1, +0x1c) element: a 0xc8-byte command record initialised from
-// the AddToList1 args (incl. a 9-dword rep-movs block at +0x9c), a type tag 0x16
-// at +0x04, two game-clock snapshots at +0x24.  m_1c gates the init.
-struct TtcBaseElem {
-    i32 m_00;
-    i32 m_04; // +0x04  type tag (0x16)
-    i32 m_08;
-    i32 m_0c;
-    i32* m_10; // +0x10  the 9-dword source block (AddToList1's block9 arg)
-    i32 m_14;
-    i32 m_18;
-    i32 m_1c;                    // +0x1c  init flag
-    CTileTriggerContainer* m_20; // +0x20  owning container
-    i32 m_24;                    // +0x24  clock snapshot
-    i32 m_28;
-    i32 m_2c;
-    i32 m_30;
-    i32 m_34;
-    i32 m_38;
-    char _pad3c[0x9c - 0x3c];
-    i32 m_9c[9]; // +0x9c  9-dword block (rep movs)
-    i32 m_c0;    // +0xc0
-    i32 m_c4;    // +0xc4
-};
-SIZE_UNKNOWN(TtcBaseElem);
-extern "C" TtcBaseElem* TtcBaseElemCtor(TtcBaseElem* p); // 0x2c3e (reloc-masked)
-
-// The serialize helpers operate on the factory-built trigger-logic element - a
-// CTrigLogic (the object CTileTriggerFactory::Build @0x117800 Rez-allocates,
-// constructs, and registers).  Its +0x04 is the serialized type TAG that drives the
-// dispatch below; the appliers reached here are CTrigLogic's OWN register thunks
-// Reg277f (0x277f) / Reg1d39 (0x1d39) / Reg1abe (0x1abe) - the very thunks the
-// factory calls (confirmed by the caller graph: each of 0x277f / 0x1d39 / 0x1abe is
-// called by both 0x117630 / 0x117710 here AND 0x117800 Build).  Reloc-masked
-// __thiscall callees returning nonzero on success.
-//
-// Modeled as an honest local view (NOT CTileTriggerSwitchLogic - a different class /
-// layout, vtable 0x5eae8c; the earlier TtcSwitchObj->CTileTriggerSwitchLogic fold was
-// a mis-attribution).  Correctness-not-artifacts: an honest placeholder named for its
-// true CTrigLogic identity beats a wrong class name.
-struct TtcTrigElem {
-    // Reg277f @0x277f IS Gate113860 (free __stdcall); call it, drop the receiver.
-    // Reg1d39 @0x277f IS Gate113860 (free __stdcall); call it, drop the receiver.
-    // Reg1abe @0x277f IS Gate113860 (free __stdcall); call it, drop the receiver.
-    i32 m_00; // +0x00
-    i32 m_04; // +0x04  serialized type tag (the factory's switch id)
-};
-SIZE_UNKNOWN(TtcTrigElem);
+// The former local element views are DISSOLVED onto the real classes:
+//   TtcMark     -> CTileActionEvent   (<Gruntz/TileActionEvent.h>; 0x28 bytes; the
+//                  "TtcMarkCtor @0x1e1a" is ??0CTileActionEvent @0x112d80)
+//   TtcBaseElem -> CGiantRockLogic    (<Gruntz/TileTriggerLogic.h>; 0xc8 bytes; the
+//                  "TtcBaseElemCtor @0x2c3e" is ??0CGiantRockLogic @0x112210 -
+//                  SAME ILT thunk; every field matched: type tag 0x16 == factory id
+//                  22, m_matrix @+0x9c, m_c0/m_c4, init gate m_1c, owner m_20)
+//   TtcKeyedElem-> CTileActionEvent   (the m_playerFlags[4] @+0x18..+0x24 record
+//                  FindByField0C returns)
+//   TtcTrigElem -> the two real element families. The register thunks resolve to
+//                  THREE different targets (retail ILT jmps): 0x277f -> 0x113860 =
+//                  CTileTriggerSwitchLogic::ValidateByType, 0x1abe -> 0x113a90 =
+//                  CTileTriggerLogic::ValidateByType, 0x1d39 -> 0x113d40 =
+//                  CGiantRockLogic::ApplyByType. All __thiscall on the ELEMENT
+//                  (retail: `mov ecx,edi` before each call) - the old "all three
+//                  are Gate113860, drop the receiver" comment was wrong.
 
 // The two tag-dispatched serialize-and-apply helpers of 117280.  __stdcall free
-// functions: stream the element's tag, then dispatch to its register thunks.
+// functions: stream the element's tag, then dispatch its family's serializer.
+// ApplyA serves the m_base 0x8c switch-logic family (tags 1..8); ApplyB serves
+// the m_list1/m_list2 CTileTriggerLogic family (tags 0x15..0x1a).
 i32 __stdcall
-SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrigElem* o); // 0x117630
+SerializeApplyA(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerSwitchLogic* o); // 0x117630
 i32 __stdcall
-SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, TtcTrigElem* o); // 0x117710
+SerializeApplyB(CSerialArchive* s, i32 a2, i32 a3, i32 a4, CTileTriggerLogic* o); // 0x117710
 
 class CTileTriggerContainer {
 public:
-    i32 DelFromList1(void* data);      // 0x116e60
-    void* FindInLists12(i32 a, i32 b); // 0x116f20
-    i32 FilterList2(void* arg);        // 0x1170b0
-    i32 MoveList1ToList2(void* data);  // 0x117150
-    i32 DelFromList3(void* data);      // 0x117200
+    // Inline ctor: the four CPtrList members construct (each `push 0xa; call
+    // ??0CPtrList`) and the m_74 latch zeroes - exactly the inlined sequence at
+    // BOTH retail construction sites (CMulti::SetupMultiplayerSession 0xb5460:
+    // `push 0x78; call ??2` + 4x CPtrList(0xa) + `[esi+0x74]=0`; CPlay::Vfunc1
+    // 0xc7ec0 likewise). m_70 is NOT initialized there - follow the bytes.
+    CTileTriggerContainer() {
+        m_74 = 0;
+    }
+
+    i32 DelFromList1(void* data); // 0x116e60
+    // Scan m_list1 then m_list2 for the logic element with m_10 == a and
+    // (b == 0 || m_typeTag == b).
+    CTileTriggerLogic* FindInLists12(i32 a, i32 b); // 0x116f20
+    i32 FilterList2(void* arg);                     // 0x1170b0
+    i32 MoveList1ToList2(void* data);               // 0x117150
+    i32 DelFromList3(void* data);                   // 0x117200
 
     // The /GX dtor: runs DtorBase then destroys m_list3 / m_list2 / m_list1 /
     // m_base (auto member teardown, reverse declaration order).
@@ -188,21 +135,41 @@ public:
     // 0x1164a0: forward with the five ids + six CTrigParam blocks from a source record.
     void AddLogicFromRecord(i32 type, i32 a2, CTrigSourceRecord* rec);
 
-    // Allocates a 0x28-byte mark, initialises it from the call args, notifies it,
-    // and appends it to m_list3 (the +0x54 list).  /GX (the mark is a stack-tracked
-    // partial during ctor).
-    TtcMark* AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8); // 0x116a40
+    // Allocates a 0x28-byte CTileActionEvent, initialises it from the call args,
+    // notifies it, and appends it to m_list3 (the +0x54 list).  /GX (the mark is a
+    // stack-tracked partial during ctor).
+    CTileActionEvent*
+    AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7, i32 a8); // 0x116a40
 
-    // Allocates a 0xc8-byte element, fills it (incl. a 9-dword rep-movs block) and
-    // appends it to m_list1 (the +0x1c list).  /GX.
-    TtcBaseElem*
+    // Allocates a 0xc8-byte CGiantRockLogic (type tag 0x16 == factory id 22), fills
+    // it (incl. the 9-dword rep-movs m_matrix block) and appends it to m_list1 (the
+    // +0x1c list).  /GX.
+    CGiantRockLogic*
     AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i32 a6, i32 a7); // 0x116cf0
 
-    // Twin of AddToList3 (0x116a40): allocates+constructs a 0x28-byte mark, and
+    // Twin of AddToList3 (0x116a40): allocates+constructs a 0x28-byte event, and
     // (when its init flag is clear) fills it from the args plus four state flags
     // chosen by a switch on `type` (0..5), notifies it, and appends it to m_list3.
-    // Returns the mark, or 0 on alloc/double-init failure.  /GX.
-    TtcMark* AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type); // 0x116b80
+    // Returns the event, or 0 on alloc/double-init failure.  /GX.
+    CTileActionEvent* AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4, i32 type); // 0x116b80
+
+    // --- the walkers the thiscall-only tracer misfiled under CTileTriggerSwitchLogic ---
+    // (their receiver is THIS container: ModeObjInit 0xc7ec0 builds it - four in-place
+    // CPtrList ctors at +0x00/+0x1c/+0x38/+0x54 + [+0x74]=0 - and calls GetFlag74 on it;
+    // TriggerMgr/BattlezMapConfig drive the finders and then DelFromList1/3 on the SAME
+    // pointer; SetCell's "FindByKey @0x2838" / "AddMark @0x21df" / "RunFallback @0x377e"
+    // ILT thunks resolve to FindByField0C / FindInLists12 / ScanNeighborhood.)
+    i32 GetFlag74();                  // 0x115f00  test-and-set the m_74 latch
+    i32 RemoveByKeys(i32 k1, i32 k2); // 0x116320  m_base: delete the (k1,k2) element
+    // Scan m_base (the 0x8c switch-logic elements) for m_key1==k1 && (k2==0 || m_04==k2).
+    CTileTriggerSwitchLogic* FindChild(i32 k1, i32 k2); // 0x116ee0
+    // Scan m_list3 (the CTileActionEvent records) for m_c == key.
+    CTileActionEvent* FindByField0C(i32 key); // 0x1171d0
+    // 3x3 neighborhood probe around (x,y): FindInLists12((x'<<8)+y', 0x16) per
+    // cell - tag 0x16 is the giant rock, so a hit IS a CGiantRockLogic.
+    CGiantRockLogic* ScanNeighborhood(i32 x, i32 y); // 0x117ec0
+    // The AddSwitchLogic factory stub (news a 0x8c CTileTriggerSwitchLogic; backlog).
+    void AddSwitchLogic_115f60(); // 0x115f60
 
     // The big save/load serialize walk (0x117280).  op 4 = save: writes each list's
     // count and serialize-applies every element across m_base/m_list1/m_list2/m_list3
@@ -215,9 +182,8 @@ public:
     // and returns it (reloc-masked rel32 callee, 0x117800).  __thiscall on this.
     void* LoadElement(CSerialArchive* s, i32 op, i32 a3, i32 a4); // 0x117800
 
-    // The serialize-walk pre/post hooks (reloc-masked rel32 callees).  LoadFlag74
-    // closes the load (op 7); TransferFlag74 closes the save (op 4).  __thiscall.
-    // (Real fn: CTileTriggerSwitchLogic::LoadFlag74 / ::TransferFlag74; called on this.)
+    // The serialize-walk pre/post hooks: stream the m_74 latch. LoadFlag74 closes
+    // the load (op 7, read slot +0x2c); TransferFlag74 the save (op 4, write +0x30).
     i32 LoadFlag74(CSerialArchive* s);     // 0x117e70
     i32 TransferFlag74(CSerialArchive* s); // 0x117e20
 
@@ -225,13 +191,10 @@ public:
     // element, then clears m_70.  Invoked by DtorBase when m_74 is set.
     void RemoveAll(); // 0x116fa0
 
-    // Looks up the keyed element for cell (a,b); if present flags one (or all)
-    // of its +0x18..+0x24 state words and notifies it; else registers a new mark
-    // (helper 0x21df) or runs the fallback (helper 0x377e).  Returns 1/0.
+    // Looks up the CTileActionEvent for cell (a,b) via FindByField0C; if present
+    // flags one (or all) of its m_playerFlags and re-commits it; else probes for a
+    // covered-powerup command (FindInLists12 tag 0x1a) or scans the neighborhood.
     i32 SetCell(i32 a, i32 b, i32 verb); // 0x117f60
-    TtcKeyedElem* FindByKey(i32 key);    // 0x2838 (reloc-masked)
-    void* AddMark(i32 key, i32 kind);    // 0x21df (reloc-masked)
-    i32 RunFallback(i32 a, i32 b);       // 0x377e (reloc-masked)
 
     // The base sub-object's own destructor; runs RemoveAll then clears +0x74.
     void DtorBase(); // 0x115f30
