@@ -56,7 +56,7 @@ RVA(0x001128b0, 0x88)
 i32 CSlotHolder::DoSwap() {
     i32 oldTok = this->m_34;
     if (oldTok == 0) {
-        g_gameReg->Report(0x8009, 0x451);
+        g_gameReg->ReportError(0x8009, 0x451);
         return 0;
     }
     CGameRegistry* mgr = g_gameReg;

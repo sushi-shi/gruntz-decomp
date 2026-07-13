@@ -229,14 +229,18 @@ struct CGameRegistry {
     QueryLevelName(); // 0x928c0 via ILT 0x2531 (level rez path; == CGruntzMgr::GetWorldFileName, same object)
     // Registry service methods some TUs call directly on the singleton
     // (external/no-body, reloc-masked rel32 callees).
-    void Ack(i32 line, i32 code);                               // 0x8dc60 switch-logic ack
     i32 BuildLevelRezPath(i32 isEmpty, i32 hi, i32 lo, i32 id); // save-game rez-path builder
     void LogError(const char* msg);                             // 0x404178 save-game error notifier
-    void EmitEvent(i32 a, i32 b);                               // hazard event emitter
     i32 Rand();                                                 // game-mgr RNG
     i32 RandRange(i32 lo, i32 hi);                              // game-mgr RNG range
-    i32 Report(i32 a, i32 b);          // diagnostic reporter (return often discarded)
     void ReportError(const char* msg); // plane/scan error notifier
+    // (The FOUR names `Ack` / `EmitEvent` / `Report` / `ReportError(i32,i32)` that used
+    //  to be declared on this view were ONE real function: CGruntzMgr::ReportError
+    //  @0x8dc60 - PROVEN by disassembling each call site's rel32 (the tile-switch ack,
+    //  the hazard event, the group-broadcast report and the status-bar fail report all
+    //  land on 0x8dc60, whose src claim is ?ReportError@CGruntzMgr@@QAEXIJ@Z, 100% exact).
+    //  Four fake names for one function is the Eng::Teardown defect in mirror image, so
+    //  they are collapsed onto the single real name below.)
     i32 RunModalDialog(const char* tmpl, void* proc, i32 flag); // modal dialog runner
     void* GetRect(void* buf); // dev-stats bounds query (RECT* buf/ret)
     // The status-bar HUD reaches these score/level methods on the singleton (== the

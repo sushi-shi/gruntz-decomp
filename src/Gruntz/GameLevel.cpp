@@ -2740,7 +2740,16 @@ SIZE(CImageSet2, 0x24);
 // reconstruction computes exactly that. Pinned so no future note can claim it unknown.
 SIZE(CGameLevel, 0x6d4);
 SIZE_UNKNOWN(CImageSet);
-RELOC_VTBL(CImageSet, 0x001eaa2c); // vtable reloc-masks a bound datum (dtor-stamp verified)
+// NO VTBL: the tile-descriptor CImageSet (<Gruntz/GameLevel.h>) is a DISPATCH-ONLY
+// base - never instantiated (ReadImageSet `new`s CImageSet1/2/3, whose own vtables
+// are VTBL'd above), so cl emits no ??_7CImageSet in ANY form (verified with llvm-nm
+// over every base obj) and the class owns no vtable datum. The old
+// RELOC_VTBL(CImageSet, 0x001eaa2c) was a FALSE claim on two counts: 0x1eaa2c carries
+// RTTI .?AVCImage@@ (it is CImage's 18-slot vtable, VTBL'd in <Image/CImage.h>), and
+// nothing here reloc-masks it. @identity-TODO: this class NAME is also a conflation
+// with the unrelated <Image/ImageSet.h> CImageSet (the 0x6c frame collection, vtable
+// 0x1efbe8 == CDDrawWorker) - two different engine classes carrying one placeholder
+// name; they never meet in one TU today, so the split is a naming task, not a bug.
 
 // tile-collision code names (file-local; see the block near the top of this TU).
 #undef kTilePassable

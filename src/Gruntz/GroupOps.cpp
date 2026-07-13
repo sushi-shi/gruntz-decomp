@@ -23,9 +23,11 @@
 // ===========================================================================
 // Broadcast (0x112080)
 // ===========================================================================
-// The diagnostics sink reached as g_gameReg->Report(id, line) (0x346d thunk).
+// The singleton itself (0x64556c) - the "g_gameRegDiag diagnostics sink" was a second
+// NAME for it (and a C++-mangled one that nothing defines: an undefined-data defect on
+// top of the phantom method). One object, one symbol: the extern "C" g_gameReg.
 DATA(0x0024556c)
-extern CGameRegistry* g_gameRegDiag; // 0x64556c
+extern "C" CGameRegistry* g_gameReg; // 0x64556c
 
 // A resolved map node (FOREIGN engine object): only vtable slot 3 (+0x0c, Prepare)
 // is dispatched; slots 0/1/2 are unreconstructed engine code, declared structurally
@@ -80,7 +82,7 @@ i32 CGroupBroadcast::Broadcast() {
         }
         CFindNode* node = (CFindNode*)m_24->FindChild(*p, 4);
         if (node == 0) {
-            g_gameRegDiag->Report(0x80dd, 0x44f);
+            g_gameReg->ReportError(0x80dd, 0x44f);
             return 0;
         }
         if (node->m_10 != m_10 && node->m_14 != 0) {
@@ -95,7 +97,7 @@ i32 CGroupBroadcast::Broadcast() {
                 }
             }
             if (any == 0) {
-                g_gameRegDiag->Report(0x80de, 0x450);
+                g_gameReg->ReportError(0x80de, 0x450);
                 return 0;
             }
         }

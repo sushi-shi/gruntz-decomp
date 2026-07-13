@@ -466,8 +466,17 @@ struct ButeFileStream : virtual ButeIos {
     void Sync();                                                    // 0x16a3b0
     virtual ~ButeFileStream() OVERRIDE; // external; the delete runs the vbase vtable's slot-0
 };
-SIZE(ButeFileStream, 0x5c);             // vbptr + 2 dwords + the ios virtual base @0xc
-RELOC_VTBL(ButeFileStream, 0x001f03c4); // IS CRT ifstream (FID-labeled iostream methods)
+SIZE(ButeFileStream, 0x5c); // vbptr + 2 dwords + the ios virtual base @0xc
+// NO VTBL: its ctor/dtor are declared-only (the CRT bodies), so cl emits no ??_7 for
+// this class in ANY form - not the plain ??_7ButeFileStream@@6B@ and not a through-base
+// ??_7ButeFileStream@@6BButeIos@@@ (llvm-nm over every base obj). The old
+// RELOC_VTBL(ButeFileStream, 0x001f03c4) therefore masked nothing, and the rva it named
+// is not even a primary vtable: 0x1f03c4 carries RTTI .?AVifstream@@ at **base_off 12**,
+// i.e. the ios VIRTUAL-BASE secondary table of the CRT ifstream - whose mangled name
+// embeds the base and can never be a plain ??_7<class>@@6B@ row.
+// @identity-TODO: ButeFileStream IS the CRT `ifstream` (FID-labelled iostream methods;
+// the +0x14/+0xc/+0x8 constants in the users are vbase adjustments, not member offsets).
+// Folding it onto the real <fstream.h> class is the remaining work.
 
 // @early-stop
 // 98.84% - logic + instruction-selection byte-exact (verified base-vs-target

@@ -805,57 +805,59 @@ void* CButeTree::Insert(const char* key, void* value) {
 // ===========================================================================
 RVA(0x0016dda0, 0x3c)
 CTypeKeyColl::CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch)
-    : CZArray2D(stride, lo, hi, scratch) {
-    m_cursor = m_buf;
-    m_count = m_hi - m_lo + 1;
+    : zDArray(stride, lo, hi, scratch) {
+    m_alloc = m_base;              // +0x1c  the fresh band base (was the m_cursor view)
+    m_grown = m_hi - m_lo + 1;     // +0x20  its slot count (was the m_count view)
 }
 
 // ===========================================================================
-// CZArray2D::CZArray2D (0x16de30) - the allocating zDArray base ctor. Builds the
-// deeper root (the CZArrayRoot base subobject), records the [lo, hi] bounds +
-// element stride, allocates the (hi-lo+1)*stride element buffer (+ a scratch
-// element when none was supplied), and reports a fatal "Inconsistent bounds" /
-// "out of memory" through the owner sink on failure. cl emits the implicit
-// ??_7CZArray2D vptr stamp (was `*(void**)this = &g_zArray2DVtbl`) and the /GX
-// unwind frame (the partially-built CZArrayRoot subobject must be destroyed if a
-// later allocation throws).
+// zDArray::zDArray (0x16de30) - the allocating vector ctor (this body was modelled
+// as `CZArray2D::CZArray2D` until the fold: CZArray2D IS zDArray, one class under two
+// names - its vtable 0x1f04d4 is the datum VTBL(zDArray) binds and its ??1 0x16df40 is
+// ~zDArray, both right here in this TU). Builds the CContainerErr base (0x16d9c0, was
+// the duplicate `CZArrayRoot` model), records the [lo, hi] bounds + element stride,
+// allocates the (hi-lo+1)*stride element band (+ a scratch element when none was
+// supplied), and reports a fatal "Inconsistent bounds" / "out of memory" through the
+// inherited error sink. cl emits the implicit ??_7zDArray vptr stamp and the /GX unwind
+// frame (the partially-built CContainerErr subobject must be destroyed if a later
+// allocation throws).
 //
 // @early-stop
 // vptr-position wall (~96%, up from 67% as a plain method). Modeling this as a
-// real ctor over a destructible CZArrayRoot base recovered the whole /GX state
+// real ctor over a destructible error-sink base recovered the whole /GX state
 // frame (push -1 / push handler / fs:0 chain / trylevel write) that the plain
 // method could not emit - the bulk of the old gap. Residue: cl schedules the
-// implicit ??_7CZArray2D stamp BEFORE the m_lo/m_hi/m_buf/m_stride stores, but
-// retail sinks it AFTER them, plus a minor regalloc swap in the lo/hi/stride/
-// scratch load sequence. Not source-steerable; deferred to the final sweep.
+// implicit ??_7 stamp BEFORE the m_lo/m_hi/m_base/m_stride stores, but retail
+// sinks it AFTER them, plus a minor regalloc swap in the lo/hi/stride/scratch
+// load sequence. Not source-steerable; deferred to the final sweep.
 RVA(0x0016de30, 0xe7)
-CZArray2D::CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch)
-    : CZArrayRoot(&g_zArrayTag) { // 0x16d9c0
-    m_buf2 = scratch;
+zDArray::zDArray(i32 stride, i32 lo, i32 hi, void* scratch)
+    : _zvec(&g_zArrayTag) { // -> the CContainerErr base ctor @0x16d9c0
+    m_spare = (i32)scratch;         // +0x14  scratch element (was the m_buf2 view)
     m_lo = lo;
     m_hi = hi;
-    m_buf = 0;
+    m_base = 0; // +0x10  element band (was the m_buf view)
     m_stride = stride;
     if (lo > hi) {
         g_retAddrBreadcrumb = GetCallerRetAddr();
-        ((CVariantSlot*)m_owner)->Set((void*)this, (i32) "Inconsistent bounds", 0x16);
+        m_errSink->Set((void*)this, (i32) "Inconsistent bounds", 0x16);
         return;
     }
     i32 total = (hi - lo + 1) * stride;
     void* buf = malloc(total);
-    m_buf = buf;
+    m_base = (i32)buf;
     if (buf != 0) {
         memset(buf, 0, total);
-        if (m_buf2 != 0) {
+        if (m_spare != 0) {
             return;
         }
-        m_buf2 = malloc(m_stride);
-        if (m_buf2 != 0) {
+        m_spare = (i32)malloc(m_stride);
+        if (m_spare != 0) {
             return;
         }
     }
     g_retAddrBreadcrumb = GetCallerRetAddr();
-    ((CVariantSlot*)m_owner)->Set((void*)this, (i32) "out of memory", 0xc);
+    m_errSink->Set((void*)this, (i32) "out of memory", 0xc);
 }
 
 // ===========================================================================

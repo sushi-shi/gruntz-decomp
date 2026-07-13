@@ -285,7 +285,7 @@ CStaticHazard::CStaticHazard(CGameObject* obj) : CUserLogic(obj) {
     if (entry != 0) {
         m_activeWindow = g_buteMgr.GetIntDef("Hazardz", "AniPad", 0x64) + entry->m_aniPadBias;
     } else {
-        g_gameReg->EmitEvent(0x8009, 0x461);
+        g_gameReg->ReportError(0x8009, 0x461);
     }
     if (m_object->m_120 == 0) {
         m_idleWindow = m_activeWindow;

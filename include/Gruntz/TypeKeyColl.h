@@ -14,56 +14,18 @@
 
 #include <rva.h>
 
-// The error sink the array ctor reports a fatal alloc/bounds failure to (the owner
-// stored at +0x04, set by the root ctor). __thiscall(this; arr, msg, code) 0x16d850.
-SIZE_UNKNOWN(CZErrSink);
-struct CZErrSink {};
+#include <Wap32/ZVec.h> // the REAL container hierarchy: CContainerErr <- _zvec <- zDArray
 
-// The zDArray construction hierarchy CZArrayRoot <- CZArray2D <- CTypeKeyColl. Each
-// level is a REAL polymorphic class: its retail vtable (0x5f04cc/0x5f04d4/0x5f04d0)
-// holds exactly one slot - its virtual scalar-deleting destructor (??_G 0x16da40/
-// 0x16df20/0x16dde0, calling ??1 0x16da60/0x16df40/0x16de00; all in unmatched TUs,
-// so the dtors are declared-only). cl emits the implicit ??_7 vptr stamp in each
-// ctor (the retail manual `*(void**)this = &g_*Vtbl`). Giving CZArrayRoot a virtual
-// dtor is also what gives CZArray2D's allocating ctor its /GX unwind frame.
-
-// The deepest base (0x16d9c0 ctor, external): stows the error-sink owner (+0x04)
-// from the data tag and one-time-inits the global tables.
-SIZE_UNKNOWN(CZArrayRoot);
-// Its OWN vtable is 0x1f04cc (the family's three 1-slot vtables are 0x1f04cc CZArrayRoot /
-// 0x1f04d4 CZArray2D / 0x1f04d0 CTypeKeyColl - each holds only its virtual scalar-deleting
-// dtor). The old RELOC_VTBL pointed this base at 0x1f04d4, the DERIVED class's vtable - a
-// MISBINDING, now corrected to the true rva. It stays RELOC_VTBL (not VTBL) because
-// 0x1f04cc is already bound by VTBL(CContainerErr) in <Wap32/zBitVec.h>:
-// @identity-TODO: CZArrayRoot == CContainerErr (one class, two names - the zErrHandling
-// error-sink base; fold is a TypeKeyColl/zBitVec merge, both sides carry matched bodies).
-RELOC_VTBL(CZArrayRoot, 0x001f04cc); // == ??_7CContainerErr (true rva; fold pending)
-class CZArrayRoot {
-public:
-    CZArrayRoot(void* tag); // 0x16d9c0 (external no-body)
-    virtual ~CZArrayRoot(); // [0] ??_G 0x16da40 (external no-body)
-    CZErrSink* m_owner;     // +0x04  error-sink / owner
-};
-
-// The allocating zDArray base (0x16de30 ctor): records [lo,hi] + element stride,
-// allocates the element buffer (+ a scratch element) and reports a fatal failure
-// through the owner sink. /GX EH frame (unwinds the CZArrayRoot base on throw).
-SIZE_UNKNOWN(CZArray2D);
-// @identity-TODO: CZArray2D's own vtable IS 0x1f04d4 - the same datum VTBL(zDArray) binds
-// in TypeKeyColl.cpp (its ??_G 0x16df20 / ??1 0x16df40 are that vtable's slot 0). i.e.
-// CZArray2D and zDArray are ONE class under two names; the fold is a TypeKeyColl/ZVec
-// merge (both models carry matched bodies), so the alias is recorded, not invented.
-RELOC_VTBL(CZArray2D, 0x001f04d4); // == ??_7zDArray (one class, two names - fold pending)
-class CZArray2D : public CZArrayRoot {
-public:
-    CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30
-    virtual ~CZArray2D() OVERRIDE;                        // [0] ??_G 0x16df20 (external)
-    i32 m_lo;                                             // +0x08  index low bound
-    i32 m_hi;                                             // +0x0c  index high bound
-    void* m_buf;                                          // +0x10  primary element buffer
-    void* m_buf2;                                         // +0x14  scratch element
-    i32 m_stride;                                         // +0x18  element size
-};
+// The CZErrSink / CZArrayRoot / CZArray2D trio that used to live here is DISSOLVED -
+// it was a second model of the canonical WAP32 container hierarchy:
+//   CZErrSink   == CVariantSlot   (the +0x04 error sink; <Bute/ButeTree.h>)
+//   CZArrayRoot == CContainerErr  (ctor 0x16d9c0, 1-slot vtable 0x1f04cc; <Wap32/zBitVec.h>)
+//   CZArray2D   == zDArray        (ctor 0x16de30, vtable 0x1f04d4, ??1 0x16df40; <Wap32/ZVec.h>)
+// Offsets agree field-for-field (m_buf==_zvec::m_base @+0x10, m_buf2==m_spare @+0x14,
+// m_owner==CContainerErr::m_errSink @+0x04), and BOTH models' vtable annotations named
+// the SAME two rvas - so the two RELOC_VTBL aliases here were the "one class, two names"
+// tell, not a wall. The emitted vptr stamp in the 0x16de30 ctor now binds to the real
+// ??_7zDArray instead of reloc-masking it under a fabricated ??_7CZArray2D.
 
 // The anim-name record the registry resolves an anim-set node to: its +0 is the
 // anim-name char* the grunt dispatch machines strcmp against the type codes.
@@ -81,7 +43,7 @@ public:
 // node), Resolve (thunk 0x437c -> interned anim-code name). Declared-only ->
 // reloc-masked.
 VTBL(CTypeKeyColl, 0x001f04d0); // leaf ??_7CTypeKeyColl @0x5f04d0 (1-slot dtor vtable)
-class CTypeKeyColl : public CZArray2D {
+class CTypeKeyColl : public zDArray {
 public:
     CTypeKeyColl(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16dda0
     virtual ~CTypeKeyColl() OVERRIDE;                        // [0] ??_G 0x16dde0 (external)
@@ -106,8 +68,10 @@ public:
     i32 MapCellRecord2(i32 base, i32 size);      // 0x56d850 (ret 0xc; block-2 fallback)
     i32 PinCellIndex();                          // 0x56d990 (ret 0; pop/push/ret stub)
 
-    void* m_cursor; // +0x1c  (== m_buf)
-    i32 m_count;    // +0x20  (== m_hi - m_lo + 1)
+    // NO OWN FIELDS: the "m_cursor @+0x1c / m_count @+0x20" this class used to declare
+    // ARE the inherited _zvec::m_alloc / _zvec::m_grown at those exact offsets - the ctor
+    // seeds them with the fresh band base and its slot count, which is precisely what an
+    // initial allocation leaves in the vector's alloc/grown pair.
 };
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

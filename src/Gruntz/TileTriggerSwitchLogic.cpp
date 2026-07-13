@@ -549,7 +549,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         }
     }
     if (found == 0) {
-        g_gameReg->Ack(0x80de, 0x44d);
+        g_gameReg->ReportError(0x80de, 0x44d);
         return 0;
     }
     i32* p = &child->m_block[0]; // child+0x3c (the child is a 0x9c CTileTriggerLogic)
@@ -560,7 +560,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         }
         CTileTriggerSwitchLogic* c = m_owner->FindChild(key, 3);
         if (c == 0) {
-            g_gameReg->Ack(0x80dd, 0x44e);
+            g_gameReg->ReportError(0x80dd, 0x44e);
             return 0;
         }
         if (c->m_linkGate == 0) {
@@ -990,7 +990,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         }
     }
     if (found == 0) {
-        g_gameReg->Ack(0x80de, 0x452);
+        g_gameReg->ReportError(0x80de, 0x452);
         return 0;
     }
     i32* p = &child->m_block[0]; // child+0x3c (the child is a 0x9c CTileTriggerLogic)
@@ -1001,7 +1001,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         }
         CTileTriggerSwitchLogic* c = m_owner->FindChild(key, 8);
         if (c == 0) {
-            g_gameReg->Ack(0x80dd, 0x453);
+            g_gameReg->ReportError(0x80dd, 0x453);
             return 0;
         }
         if (c->m_linkGate == 0) {

@@ -61,10 +61,18 @@ enum LoadableClassId {
 };
 
 SIZE(CLoadable, 0x10);
-RELOC_VTBL(
-    CLoadable,
-    0x001efc30
-); // shares CDDrawSubMgr vtable, COMDAT-folded (slot-fn RVAs match its vtable)
+// This RELOC_VTBL is reloc-CORRECT and stays (it is doing real work, unlike the four
+// no-op aliases deleted this batch): our `new CDDrawWorker` emits a real ??_7CLoadable
+// base-subobject vptr stamp (ddrawworkerregistry.obj, MakeWorker) and retail's
+// corresponding stamp writes 0x5efc30 - the very rva bound here - before the derived
+// 0x5efbe8 stamp. 0x1efc30 has no RTTI COL, is 9 slots, and is ALSO bound by
+// VTBL(CDDrawSubMgr) in <DDrawMgr/DDrawSubMgr.h>; MSVC5 has no /OPT:ICF, so ONE datum
+// cannot be two classes' vtables:
+// @identity-TODO: CLoadable == CDDrawSubMgr (one class, two names - the 9-slot
+// CWapObj-derived loadable base). Same species as the CZArray2D==zDArray fold done this
+// batch; the merge is a real refactor across every CDDrawSubMgr-derived leaf, so the
+// alias is recorded with its evidence rather than half-done.
+RELOC_VTBL(CLoadable, 0x001efc30); // == ??_7CDDrawSubMgr (the shared 9-slot base vtable)
 class CLoadable : public CWapObj {
 public:
     // slot 5 IsLoaded: CLoadable's own default @0x155700 (distinct from CWapObj's

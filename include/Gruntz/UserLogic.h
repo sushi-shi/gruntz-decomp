@@ -121,7 +121,12 @@ class CLogicHandlerMap {
 // (@0x159600) news 0x1dc for every created instance, and WwdFile's ReadPlaneObjects
 // manually `operator new(0x1dc)`s + runs the same engine ctor (0x15b390).
 SIZE(CGameObject, 0x1dc);
-RELOC_VTBL(CGameObject, 0x001efb80); // vtable reloc-masks a bound datum (dtor-stamp verified)
+// NO VTBL: this struct declares no virtual at all, so it has no vtable datum and cl
+// emits no ??_7CGameObject anywhere (llvm-nm over every base obj). The old
+// RELOC_VTBL(CGameObject, 0x001efb80) was pure noise - 0x1efb80 is ??_7AnimWorkerObj
+// (VTBL'd in <DDrawMgr/AnimWorkerObj.h>), one of the THREE vtables the engine ctor
+// 0x15b390 stamps (0x5efbc0 WwdBResolve / 0x5f0020 CWwdGameObjectE / 0x5efb80
+// AnimWorkerObj), i.e. an EMBEDDED sub-object's vtable, never this class's.
 struct CGameObject {
     void Construct(void* owner, i32 id, i32 z); // 0x15b390  the engine ctor (base subobject)
     void AddLogicHit(char* key);                // 0x150f50

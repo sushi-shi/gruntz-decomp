@@ -46,6 +46,11 @@ struct CVariantSlot; // fwd (pointer member m_err; full def at the overflow call
 // and ~zDArray chains straight to ~CContainerErr - which is exactly what retail does.
 class _zvec : public CContainerErr {
 public:
+    // Pass-through to the error-sink base ctor (0x16d9c0): retail's allocating ctor
+    // opens with exactly that one base call, so this stays inline (no _zvec body of
+    // its own exists in the image).
+    _zvec(void* errSink) : CContainerErr(errSink) {}
+
     void* GrowTo(i32 idx, i32 at); // 0x16da80
     i32 IndexToPtr(i32 idx);       // 0x312a0  (the plain base accessor)
 
@@ -62,8 +67,20 @@ public:
 
 // zDArray<int (CUserLogic::*)(void)>: the derived vector whose elements are
 // member-function pointers; its accessor override fixes up freshly-grown slots.
+//
+// The former <Gruntz/TypeKeyColl.h> `CZArray2D` was a SECOND model of THIS class
+// (one class, two names - now folded): its vtable 0x1f04d4 is the datum VTBL(zDArray)
+// binds, its ctor 0x16de30 is the allocating ctor below, and its ??1 0x16df40 is
+// ~zDArray. Field mapping (offsets identical): m_buf==m_base, m_buf2==m_spare,
+// m_owner==CContainerErr::m_errSink. Likewise `CZArrayRoot` was a second model of
+// CContainerErr (ctor 0x16d9c0, vtable 0x1f04cc) - also folded.
 class zDArray : public _zvec {
 public:
+    // The allocating ctor (0x16de30, body in src/Bute/TypeKeyColl.cpp): records
+    // [lo,hi] + the element stride, allocates the (hi-lo+1)*stride band (+ a scratch
+    // element when none is supplied) and reports a fatal bounds/OOM through the
+    // inherited error sink. /GX (the half-built CContainerErr base unwinds).
+    zDArray(i32 stride, i32 lo, i32 hi, void* scratch);
     i32 Destroy();               // 0x8750  (re-stamp live vtable + run ~zDArray)
     i32 IndexToPtr(i32 i);       // 0x310f0 (base accessor + per-slot member-ptr init)
     virtual ~zDArray() OVERRIDE; // 0x16df40 (cl auto-stamps ??_7zDArray at entry)
