@@ -277,12 +277,38 @@ const i32 kSetTabErrTag = 0x44a;
 // two are different classes. The ctor 0x101fa0 + the base slots below belong to the
 // THIN class; the ~70 tab/gauge/slot/hit-rect methods belong to the HOST.
 //
-// Freeing the CSBI_RectOnly name (so the tab sub-widgets below - CSbiRectSub / the
-// CSbiTab-based CSBI_MenuItem view - can dissolve onto the real CSBI_RectOnly / real
-// CSBI_MenuItem) requires renaming this HOST class + its ~70 methods. That is a
-// CROSS-LANE refactor: the host methods are referenced by CGruntzMgr/CPlay/GooWellMgr/
-// KitchenSlime/DestructButton/ModeObjInit (out of the SBI lane's scope), so it is
-// DEFERRED work for a coordinated pass, not a within-lane fold.
+// @identity-TODO: THIS IS A SPLIT, NOT A RENAME - AND THE HOST HALF CANNOT BE NAMED.
+// I went to rename the host and the binary said the job is a different one. Evidence:
+//
+//  1. THE HOST IS NOT POLYMORPHIC. Its object is built by CPlay::Vfunc1 (0xc7ec0):
+//     `push 0x630; call ??2@YAPAXI@Z` -> stored at CPlay+0x2dc. The ctor is INLINED there,
+//     and it contains NO vptr store (`mov [esi],<vtable>`) and the whole function carries
+//     NO ??_7 relocation at all. The host has no vtable.
+//  2. THEREFORE ITS NAME IS NOT IN THE BINARY. RTTI type descriptors hang off vtables; a
+//     class with no vtable has no RTTI record. There is nothing to recover the host's real
+//     name FROM. (CStatusBarMgr, the obvious suspect, is not an RTTI class at all -
+//     `sema class CStatusBarMgr` finds nothing. Suspect eliminated, not confirmed.)
+//     So I did NOT rename it. Inventing a class name here would plant a lie in a header
+//     that six other TUs include.
+//  3. IT IS 0x630 BYTES, not the 0x54c previously believed (the alloc site above).
+//  4. AND IT IS NOT A CStatusBarItem. Its +0x2c is an ARRAY of 8 x 0x1c records
+//     (`lea edx,[esi+0x2c]; push 0x1c; push 8; call 0x11f5a0`), not the base's scalar
+//     m_2c - which is exactly why the host code below has to cast
+//     `((CRezList*)((char*)this + 0x2c))` to reach it. The cast was the symptom; the
+//     fabricated base is the cause.
+//  5. THE TWO HALVES ARE PROVABLY DIFFERENT CLASSES, MERGED HERE. The ctor this class
+//     binds (0x101fa0) stamps ??_7CSBI_RectOnly@@6B@ (0x5eab8c) and zeroes m_4/m_24/m_28 -
+//     that is the REAL, polymorphic, 0x3c sub-widget's ctor, and SBI_Image.h already
+//     declares that same class properly. So `CSBI_RectOnly` here = the real 0x3c
+//     polymorphic sub-widget (ctor 0x101fa0, Setup 0xe86e0) MERGED WITH a 0x630
+//     non-polymorphic host (~70 tab/gauge/slot methods) that has no name in the binary.
+//
+// The fix is therefore to SPLIT the host out (it keeps a flagged placeholder identity,
+// because the binary genuinely cannot name it) and let the sub-widget half dissolve onto
+// SBI_Image.h's real CSBI_RectOnly. The host's ~70 methods are referenced by
+// CGruntzMgr/CPlay/GooWellMgr/KitchenSlime/DestructButton/ModeObjInit, so the split
+// touches those too. Not attempted here: a half-finished split of a class six TUs include
+// is worse than an honest TODO, and I would rather hand over the proof than a mess.
 // -------------------------------------------------------------------------
 // base vftable (CStatusBarItem) anchored out-of-line in this TU.
 class CSBI_RectOnly : public CStatusBarItem {
