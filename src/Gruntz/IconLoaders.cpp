@@ -28,6 +28,7 @@
 // docs/exe-map/interval-dossiers.md). The EngineLabelBacklog holder view they
 // share now lives in <Gruntz/IconLoaderViews.h>.
 #include <Gruntz/IconLoaderViews.h>
+#include <Gruntz/GameMode.h> // CBootyState - the REAL owner of BuildBootyPerfectAnimation
 
 // The game-manager singleton (g_gameReg, *0x64556c), canonical view.
 DATA(0x0024556c)
@@ -45,7 +46,7 @@ extern CButeMgr g_buteMgr;
 // geometry. __thiscall (this @ esi). Stores the sprite at this+0x2f8.
 
 RVA(0x0001c070, 0x59)
-i32 EngineLabelBacklog::BuildBootyPerfectAnimation() {
+i32 CBootyState::BuildBootyPerfectAnimation() {
     CGameObject* spr =
         g_gameReg->m_world->m_8->CreateSprite(0, (i32)0xffffff7e, 0xf0, 0x64, "SimpleAnimation", 3);
     m_bootyPerfectSprite = spr;

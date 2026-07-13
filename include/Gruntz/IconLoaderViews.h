@@ -23,7 +23,8 @@ public:
     i32 LoadExplosionSprites(i32 geoB, i32 geoA, i32 variant, i32 dummy);
     i32 LoadCameraSprite();
     i32 LoadToyBoxIcon(i32 x, i32 y, i32 a3, i32 a4, i32 a5);
-    i32 BuildBootyPerfectAnimation();
+    // (BuildBootyPerfectAnimation @0x1c070 is GONE from here - it is CBootyState::, proven
+    // by its sole caller 0x18830 = CBootyState vtable slot 1. Its sprite lives at +0x2f8.)
 
     char m_pad00[0x22c];                   // +0x000
     CSpriteFactoryHolder* m_factoryHolder; // +0x22c  sprite-factory holder

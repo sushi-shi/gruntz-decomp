@@ -25,6 +25,7 @@
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite)
 #include <Mfc.h>                  // CString (the /GX directional-name temps) + Win32
+#include <Gruntz/GameMode.h>      // the REAL owner: CBootyState (was the CGruntSprintAnim view)
 
 #include <rva.h>
 
@@ -46,15 +47,12 @@ extern "C" CGameRegistry* g_gameReg; // *0x64556c (canonical _g_mgrSettings view
 // geometry; the loader stamps its draw-fill block (m_drawFillArg/m_drawFillCmd/
 // m_drawActive) and screen position. Both setters reloc-masked __thiscall.
 
-// The owning sprite-collection (best-guess name; RTTI owner reloc-masked).
-class CGruntSprintAnim {
-public:
-    i32 BuildGruntSprintAnimation();                    // 0x019920
-    void PerDirGeometry(i32 dir, i32* outX, i32* outY); // 0x019cd0 (thunk 0x3869)
-
-    char m_pad0[0x204];
-    CGameObject* m_sprintSprites[8]; // +0x204  the 8 directional sprint sprites
-};
+// (the CGruntSprintAnim view is GONE - it WAS CBootyState. 0x19920's ONLY caller is
+// 0x18830, CBootyState's own vtable slot 1, calling it with `mov ecx,esi` - its own `this`.
+// Its m_sprintSprites[8] @+0x204 fills exactly what was padding in that class, 8 pointers
+// ending at 0x224 where the level-message bomb sprites begin.)
+// (PerDirGeometry @0x19cd0 was a fabricated alias of GenMenuRandPos - the SAME rva. It is
+// a CBootyState member (declared in GameMode.h), so the member call below is the real one.)
 
 // ===========================================================================
 // BuildGruntSprintAnimation @0x019920
@@ -78,7 +76,7 @@ public:
 // walls. See docs/patterns/pin-local-for-callee-saved-reg.md +
 // jumptable-data-overlap.md + zero-register-pinning.md.
 RVA(0x00019920, 0x1c2)
-i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
+i32 CBootyState::BuildGruntSprintAnimation() {
     i32 h = ((CSpriteRefTable*)g_gameReg->m_spriteFactory)->GetSel(0, 0);
     if (!h) {
         return 0;
@@ -126,13 +124,13 @@ i32 CGruntSprintAnim::BuildGruntSprintAnimation() {
         m_sprintSprites[i - 1]->m_drawFillArg = h;
 
         i32 outX, outY;
-        PerDirGeometry(i, &outX, &outY);
+        GenMenuRandPos(i, &outX, &outY);
         m_sprintSprites[i - 1]->m_screenX = outX;
         m_sprintSprites[i - 1]->m_screenY = outY;
     }
     return 1;
 }
 
-SIZE_UNKNOWN(CGruntSprintAnim);
+
 SIZE_UNKNOWN(CGameRegistry);
 SIZE_UNKNOWN(CGsSoundTable);

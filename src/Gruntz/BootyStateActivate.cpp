@@ -303,19 +303,22 @@ i32 CBootyState::FrameSlot28(i32) {
     return 1;
 }
 
-// CMultiBootyState::BuildWarpStoneGlitterAnimation (0x19540): build 4 "DoNothing" warp-
+// CBootyState::BuildWarpStoneGlitterAnimation (0x19540): build 4 "DoNothing" warp-
 // letter animations through the glitter factory (g_gameReg viewed as CGlitterMgr:
-// m_world->m_8), stash them in the +0x1ec ptr array, set/clear their active bit, then
+// m_world->m_8), stash them in the +0x1ec sprite array, set/clear their active bit, then
 // build the trailing "SimpleAnimation" glitter sprite.
+// RE-HOMED from CMultiBootyState, which is a SIBLING of CBootyState (both derive from
+// CState) - so it could never have been called, as it is, on a CBootyState's own `this`.
+// Its ONLY caller is 0x18830 = CBootyState's vtable slot 1, via `mov ecx,esi`.
 // @early-stop
 // 88.1%: logic byte-faithful. Residual is the branchless-select codegen for the per-letter
 // `(i != m_letterIdx) ? 1 : 3` kind + the per-iteration g_gameReg reload scheduling.
 RVA(0x00019540, 0x12a)
-i32 CMultiBootyState::BuildWarpStoneGlitterAnimation() {
+i32 CBootyState::BuildWarpStoneGlitterAnimation() {
     CGlitterMgr* reg = (CGlitterMgr*)g_gameReg;
-    // The +0x1ec and +0x204 arrays overlap; reach the letter-sprite array by offset
-    // (naming-independent, campaign doctrine) - the rest are real CMultiBootyState members.
-    CGameObject** slot = (CGameObject**)((char*)this + 0x1ec);
+    // The +0x1ec array is CBootyState::m_trailSprites - a real, typed member now, so the
+    // `(CGameObject**)((char*)this + 0x1ec)` offset-reach is gone.
+    CGameObject** slot = m_trailSprites;
     m_radius = 0xc8;
     m_letterIdx = (reg->m_7c->m_4 - 1) % 4;
     m_angleStep = 0;

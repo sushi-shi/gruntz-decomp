@@ -23,7 +23,9 @@
 
 #include <string.h> // inline strcpy intrinsic (/O2) for the cheat-table copy
 #include <Globals.h>
-#include <Gruntz/ResMgr.h> // canonical CImageRegistry (the +0x10 image registrar)
+#include <Gruntz/ResMgr.h>   // canonical CImageRegistry (the +0x10 image registrar)
+#include <Gruntz/GameMode.h> // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
+#include <Gruntz/GruntzMgr.h> // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
 class DirNode;
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 class CDDrawSubMgrPages {
@@ -58,68 +60,26 @@ i32 g_bootyCheatBuilt = 0; // 0x22af10
 DATA(0x00245588)
 extern i32 g_645588;
 
-// ---------------------------------------------------------------------------
-// The registered namespace object (Register result): FindSub resolves a named
-// child set, ResolvePath resolves a namespaced path (both reloc-masked
-// __thiscall, no body).
-struct BcRegSet { // this->m_8
-    // Register @0x13c030 IS CSymParser::ResolvePath; cast at each call.
-};
-struct BcSoundRegistry { // this->m_c->m_28
-    // Install @0x157ee0 IS CDDrawSubMgrLeafScan::ScanTree_157ee0; cast at each call.
-};
-// The image registrar reached via m_c->m_10 is the canonical CImageRegistry
-// (ResMgr.h): Install is its slot-18 (+0x48) virtual. Uses the real class - no local
-// registrar view.
-struct BcAssetCore { // this->m_c->m_8
-    // Prepare @0x159ef0 IS CDDrawSubMgrPages::Method_159ef0; cast at the call.
-};
-struct BcAssetRoot { // this->m_c
-    char m_pad00[0x8];
-    BcAssetCore* m_8; // +0x08
-    char m_pad0c[0x10 - 0xc];
-    CImageRegistry* m_10; // +0x10  the image/tile registry (Install slot 18)
-    char m_pad14[0x28 - 0x14];
-    BcSoundRegistry* m_28; // +0x28
-};
-struct BcPumpHost { // this->m_4->m_4
-};
-struct BcStateRoot { // this->m_4
-    void Reset(i32); // FUN_...34ef __thiscall on m_4
-    char m_pad00[0x4];
-    BcPumpHost* m_4; // +0x04
-};
+// (the six Bc* sub-views are GONE too - each was a facet of a class CState already names:
+//    BcStateRoot   -> CState::m_4  is CGruntzMgr*, and its "Reset(0)" @thunk 0x34ef is
+//                     really CGruntzMgr::RestoreVideoMode (0x8ddd0) - a real method.
+//    BcPumpHost    -> CGruntzMgr::m_4 (+0x04), the movie/pump host.
+//    BcRegSet      -> CState::m_8 is CBankMgr*; its Register @0x13c030 IS
+//                     CSymParser::ResolvePath.
+//    BcAssetRoot   -> CState::m_c is CSpriteFactoryHolder*, whose +0x08/+0x10/+0x28 are
+//    BcAssetCore /  the sprite factory, the CImageRegistry and the CSndHost.
+//    BcSoundRegistry
+// The casts that remain below are the honest ones: those three CSpriteFactoryHolder slots
+// are genuinely multi-faceted (the header already documents the render facet reaching m_8
+// as CRenderer and m_28 as CSoundRegistry), and CBankMgr-vs-CSymParser is unproven.)
 
-class CBootyCheatState {
-public:
-    i32 LoadAssets(i32 a1, i32 a2, i32 a3);     // 0x18830
-    i32 LoadGameAssetNamespaces(i32, i32, i32); // base loader FUN_000043a9 -> 0xf9ea0
-                                                // (declared-only; this local view is not
-                                                // CState-derived + this fn isn't byte-exact)
-
-    // The five-stage tail init chain (__thiscall(this), reloc-masked).
-    i32 Init1(); // FUN_...11c2
-    i32 Init2(); // FUN_...39c7
-    i32 Init3(); // FUN_...3b8e
-    i32 Init4(); // FUN_...1681
-    i32 Init5(); // FUN_...2d83
-
-    char m_pad00[0x4];
-    BcStateRoot* m_4; // +0x04
-    BcRegSet* m_8;    // +0x08
-    BcAssetRoot* m_c; // +0x0c
-    char m_pad10[0x2c - 0x10];
-    CSymTab* m_2c; // +0x2c  STATEZ_BOOTY
-    CSymTab* m_30; // +0x30  GRUNTZ
-    CSymTab* m_34; // +0x34  GAME
-    char m_pad38[0x1b8 - 0x38];
-    i32 m_1b8; // +0x1b8
-    char m_pad1bc[0x1c0 - 0x1bc];
-    i32 m_1c0; // +0x1c0
-    i32 m_1c4; // +0x1c4
-    i32 m_1c8; // +0x1c8
-    i32 m_1cc; // +0x1cc
-};
+// (the CBootyCheatState `this`-view is GONE - it WAS CBootyState, and "CBootyCheatState"
+// is not a type at all: 0x18830 is DATA-REFERENCED at ??_7CBootyState@@6B@+0x4, i.e. it is
+// CBootyState's own vtable SLOT 1 (CState::Vfunc1, the asset/state loader). Every field the
+// view modeled is a CState or CBootyState member at the same offset - m_4/m_8/m_c are
+// CState's own +0x04/+0x08/+0x0c (CGruntzMgr / CBankMgr / CSpriteFactoryHolder), m_2c/m_30/
+// m_34 its three bank slots, and m_1b8 / m_1c0..m_1cc land in CBootyState pads. The whole
+// Bc* sub-view nest went with it. See <Gruntz/GameMode.h> for the proof.)
 
 // @source: string-xref
 // @early-stop
@@ -137,8 +97,8 @@ public:
 // is the allocator's block-layout decision, not source-steerable. See
 // docs/patterns/identical-return-epilogue-tailmerge.md (reverse direction).
 RVA(0x00018830, 0x380)
-i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
-    if (!LoadGameAssetNamespaces(a1, a2, a3)) {
+i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
+    if (!LoadGameAssetNamespaces(a1, a2, a3)) { // CState base loader (0xf9ea0), inherited
         goto fail;
     }
 
@@ -162,38 +122,38 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         g_bootyCheatBuilt = 1;
     }
 
-    m_4->Reset(0);
+    m_4->RestoreVideoMode(0); // thunk 0x34ef -> CGruntzMgr::RestoreVideoMode (0x8ddd0)
 
-    m_2c = (CSymTab*)((CSymParser*)m_8)->ResolvePath("STATEZ_BOOTY");
+    m_2c = (CResSource*)((CSymParser*)m_8)->ResolvePath("STATEZ_BOOTY");
     if (!m_2c) {
         goto fail;
     }
-    m_34 = (CSymTab*)((CSymParser*)m_8)->ResolvePath("GAME");
-    if (!m_34) {
+    m_gameBank = (CSymTab*)((CSymParser*)m_8)->ResolvePath("GAME");
+    if (!m_gameBank) {
         goto fail;
     }
-    m_30 = (CSymTab*)((CSymParser*)m_8)->ResolvePath("GRUNTZ");
-    if (!m_30) {
+    m_gruntzBank = (CSymTab*)((CSymParser*)m_8)->ResolvePath("GRUNTZ");
+    if (!m_gruntzBank) {
         goto fail;
     }
 
     ((CDDrawSubMgrPages*)m_c->m_8)->Method_159ef0();
 
     {
-        void* soundz = m_2c->FindSub("SOUNDZ");
+        void* soundz = SymTab2c()->FindSub("SOUNDZ");
         if (!soundz) {
             goto fail;
         }
         ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)soundz, "BOOTY", "_");
 
-        void* wand = m_30->ResolvePath("SOUNDZ_WANDGRUNT");
+        void* wand = m_gruntzBank->ResolvePath("SOUNDZ_WANDGRUNT");
         if (!wand) {
             goto fail;
         }
         ((CDDrawSubMgrLeafScan*)m_c->m_28)
             ->ScanTree_157ee0((DirNode*)wand, "GRUNTZ_WANDGRUNT", "_");
 
-        void* imagez = m_2c->FindSub("IMAGEZ");
+        void* imagez = SymTab2c()->FindSub("IMAGEZ");
         if (!imagez) {
             goto fail;
         }
@@ -206,22 +166,29 @@ i32 CBootyCheatState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         }
     }
 
-    ((CMoviePlayer*)m_4->m_4)->Pump(0x100, 0x40);
+    // The pump host is CGruntzMgr's +0x04, i.e. the CGameWnd it inherits from
+    // WAP32::CGameMgr (m_gameWnd). The (CMoviePlayer*) cast is honest and STAYS: Pump's
+    // owning class is unproven - CGameWnd is what sits at that offset, CMoviePlayer is
+    // where the Pump(msgLo, msgHi) message-burst method is currently modeled. That is a
+    // real identity question, not something to paper over by inventing a member.
+    ((CMoviePlayer*)m_4->m_gameWnd)->Pump(0x100, 0x40);
 
     m_1b8 = 0;
-    if (!Init1()) {
+    // The five-stage build chain - all real, rva-bound methods of THIS class now (the
+    // Init1..Init5 declared-only aliases they used to hide behind are gone).
+    if (!BuildWarpStoneGlitterAnimation()) { // 0x19540
         goto fail;
     }
-    if (!Init2()) {
+    if (!BuildGruntSprintAnimation()) { // 0x19920
         goto fail;
     }
-    if (!Init3()) {
+    if (!LoadGruntEffectSprites()) { // 0x1a040
         goto fail;
     }
-    if (!Init4()) {
+    if (!BuildBootyWalkingGruntz()) { // 0x1b450
         goto fail;
     }
-    if (!Init5()) {
+    if (!BuildBootyPerfectAnimation()) { // 0x1c070
         goto fail;
     }
 
@@ -235,10 +202,3 @@ fail:
     return 0;
 }
 
-SIZE_UNKNOWN(BcAssetCore);
-SIZE_UNKNOWN(BcAssetRoot);
-SIZE_UNKNOWN(BcPumpHost);
-SIZE_UNKNOWN(BcRegSet);
-SIZE_UNKNOWN(BcSoundRegistry);
-SIZE_UNKNOWN(BcStateRoot);
-SIZE_UNKNOWN(CBootyCheatState);

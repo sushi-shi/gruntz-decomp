@@ -435,22 +435,63 @@ public:
     i32 LevelMsgHudDriver();                   // 0x1a700  per-frame level-message HUD driver
     void FormatHudText(CString* buf, i32 sel); // 0x1af70  the 960-B stat-line formatter
 
+    // --- the slot-1 asset loader's four-stage build chain, RE-HOMED here ---
+    // Vfunc1 (slot 1) IS 0x18830 - data-referenced at ??_7CBootyState@@6B@+0x4. It was
+    // defined as `CBootyCheatState::LoadAssets` on a .cpp-local view class that does not
+    // exist as a type, and its build chain was five DECLARED-ONLY aliases (Init1..Init5) of
+    // real, already-defined functions - fabricated symbols nothing could link. Every one is
+    // called on this `this` (`mov ecx,esi`), and each of the three below has 0x18830 as its
+    // ONLY caller, so all three are CBootyState methods. Two of the five needed no move
+    // (LoadGruntEffectSprites, BuildBootyWalkingGruntz were already here) and the base
+    // loader is CState::LoadGameAssetNamespaces (inherited).
+    //   Init1 -> 0x19540 - was ?BuildWarpStoneGlitterAnimation@CMultiBootyState@@, a SIBLING
+    //            class: a CBootyState method cannot call a sibling's method on its own this.
+    //   Init2 -> 0x19920 - was ?BuildGruntSprintAnimation@CGruntSprintAnim@@ (a view class).
+    //   Init5 -> 0x1c070 - was ?BuildBootyPerfectAnimation@EngineLabelBacklog@@ (a stub class).
+    i32 BuildWarpStoneGlitterAnimation(); // 0x19540  the 4 warp-letter glitter anims
+    i32 BuildGruntSprintAnimation();      // 0x19920  the 8 directional sprint sprites
+    i32 BuildBootyPerfectAnimation();     // 0x1c070  the BOOTY_PERFECT celebration sprite
+
+    // 0x19cd0 - the per-selector (1..8) random edge spawn position BuildGruntSprintAnimation
+    // uses for each compass direction. It is a MEMBER of this class, not the free __stdcall
+    // it was modeled as: its body never touches ecx, but its ONLY caller (0x19920) sets
+    // `mov ecx,ebp` (its own `this`) right before the call - that `mov` only exists if the
+    // original source called it as a member. A member whose body ignores `this` compiles
+    // byte-identically to __stdcall (same [esp+4..0xc] args, same `ret 0xc`), so the callee
+    // cannot tell you - only the CALL SITE can, and it says member.
+    void GenMenuRandPos(i32 sel, i32* outX, i32* outY);
+
     // --- CBootyState members (offsets are the ctor ground truth; folded from the
     // former BzState view). m_activation@+0x1bc doubles as the overlay/animation state
     // id (0xc7/0xc8/-2 in the idle-anim tick, ==200 -> secret-bonus toast in slot 8).
     // The +0xc HUD sink the booty toasts read IS the inherited CState::m_c holder.
     char m_pad1a8[0x1b4 - 0x1a8];
     i32 m_initGate; // +0x1b4  init/step gate (armed flag)
-    char m_pad1b8[0x1bc - 0x1b8];
+    i32 m_1b8;      // +0x1b8  cleared by the slot-1 loader before the build chain
     i32 m_activation; // +0x1bc  activation / overlay-animation state id
-    char m_pad1c0[0x1d0 - 0x1c0];
+    // +0x1c0..+0x1d0: the four mode words the slot-1 loader stamps last
+    // (m_1c8 = 0x21, m_1cc = 0, m_1c0 = g_645588, m_1c4 = 0).
+    i32 m_1c0;
+    i32 m_1c4;
+    i32 m_1c8;
+    i32 m_1cc;
     i32 m_initOnce;         // +0x1d0  init-once gate
     i32 m_secretBannerOnce; // +0x1d4  secret-banner once gate
-    char m_pad1d8[0x1ec - 0x1d8];
-    CGameObject* m_trailSprites[4]; // +0x1ec  trailing idle sprites
-    char m_pad1fc[0x200 - 0x1fc];
-    i32 m_levelCompleteGate; // +0x200  level-complete gate
-    char m_pad204[0x224 - 0x204];
+    // +0x1d8..+0x1ec: the warp-stone glitter block BuildWarpStoneGlitterAnimation drives
+    // (it landed in what was pure padding here; the same names its old CMultiBootyState
+    // attribution used, which declares a parallel block at these very offsets).
+    i32 m_letterIdx;                // +0x1d8  active letter count / index
+    i32 m_radius;                   // +0x1dc  sine-spiral radius (loaded (float) for sin/cos)
+    i32 m_angleStep;                // +0x1e0  spiral angle/step counter (advances by 5)
+    i32 m_scratchX;                 // +0x1e4  computed scratch X
+    i32 m_1e8;                      // +0x1e8  computed scratch Y
+    CGameObject* m_trailSprites[4]; // +0x1ec  the 4 warp-letter glitter / trailing idle sprites
+                                    //         (the `(char*)this + 0x1ec` array of 0x19540)
+    CGameObject* m_cursorLetter;    // +0x1fc  the trailing/cursor letter sprite
+    i32 m_levelCompleteGate;        // +0x200  level-complete gate
+    // +0x204..+0x224: the 8 directional sprint sprites BuildGruntSprintAnimation builds -
+    // exactly filling what was padding (8 pointers = 0x20 bytes).
+    CGameObject* m_sprintSprites[8]; // +0x204
     // The level-message HUD sprite banks (folded in from the CEffLoaderSelf view; each
     // lands in what was pure padding here, so no declared field moved).
     CGameObject* m_bomb[8];   // +0x224  bomb-grunt sprites (slide left)
@@ -467,8 +508,15 @@ public:
     i32 m_stepIndex;               // +0x2e8  active-player step index
     i32 m_walkStarted;             // +0x2ec  walk-animation-started gate
     i32 m_soundStarted;            // +0x2f0  sound-started gate
-    i32 m_secretGate;              // +0x2f4  secret-message gate
-    char m_pad2f8[0x2fc - 0x2f8];
+    i32 m_secretGate; // +0x2f4  secret-message gate
+    // +0x2f8  the BOOTY_PERFECT celebration sprite BuildBootyPerfectAnimation creates.
+    // This is the LAST hole in the class, and it closes the third out-of-bounds
+    // @identity-TODO: CMultiBootyState also declares a `m_bonusState` here, but that class
+    // is allocation-proven 0x244 - +0x2f8 is 0xb4 bytes past its end. The "bonus state
+    // object (m_5c phase / m_8 flags)" IS this sprite: CGameObject's m_flags (+0x08) and
+    // m_screenX (+0x5c) - the scroll "phase" is literally the sprite's screen x, wrapping
+    // off-screen left at -0x82. Same object, two names.
+    CGameObject* m_bootyPerfectSprite;
     // +0x2fc  the eight in-game effect icons LoadGruntEffectSprites populates
     // ([0]=stopwatch [1]=exit [2]=deathtwitch [3]=gauntletz [4]=beachballz [5]=roidz
     //  [6]=coin [7]=wormhole/teleporter); LevelMsgHudDriver indexes them by m_slot.
@@ -515,7 +563,10 @@ public:
     virtual i32 Vslot11(i32, i32, i32) OVERRIDE; // slot 17 (+0x44) 0x01f900 (declared-only)
 
     // Non-virtual behavioral methods (the rel32 thunks dispatched with mov ecx,this).
-    i32 BuildWarpStoneGlitterAnimation(); // 0x19540 - build the 4 warp-letter glitter anims
+    // (BuildWarpStoneGlitterAnimation @0x19540 is GONE from here - it is a CBootyState
+    // method. Its ONLY caller is 0x18830, CBootyState's own vtable slot 1, calling it with
+    // `mov ecx,esi` - its own `this`. CMultiBootyState is a SIBLING of CBootyState, not a
+    // base, so a CBootyState method could never have called it on itself.)
     void StepGlitterAnim();               // 0x196c0 - the trig glitter/spawn positioner
     void MoveLettersByDir();              // 0x19b90 - the 8-direction letter walk (jump-table)
     i32 CheckPerfectBonus();              // 0x1c0f0 - "BOOTY_PERFECT" cue + scroll advance

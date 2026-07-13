@@ -11,7 +11,7 @@
 // are load-bearing.
 //
 // Functions in this TU (ascending retail-RVA order):
-//   GenMenuRandPos            @0x019cd0 - free __stdcall edge-spawn RNG helper.
+//   CBootyState::GenMenuRandPos @0x019cd0 - the per-selector edge-spawn RNG helper.
 //   CState::LoadGruntEffectSprites @0x01a040 - preload the in-game effect sprite set.
 //   CState::LevelMsgHudDriver @0x01a700 - the per-frame level-message HUD + explosion driver.
 //   CGameModeBase::ResetPreview @0x0de140 (@interleaver -> levelpreview) / ::Reset
@@ -92,7 +92,10 @@ extern CEffGeomRow g_effGeom[8]; // 0x60b8fc
 // were the symptom, fell out. See <Gruntz/GameMode.h> for the full proof.)
 
 // ===========================================================================
-// GenMenuRandPos (0x19cd0): a free __stdcall helper (no `this`). Generates a random
+// CBootyState::GenMenuRandPos (0x19cd0): a MEMBER whose body never touches `this` (so the
+// callee is byte-identical to a __stdcall) - but its ONLY caller, BuildGruntSprintAnimation
+// (0x19920), sets `mov ecx,ebp` right before the call, which only a member call emits.
+// Generates a random
 // {x,y} spawn position by edge, selected by `sel` (1..8). Rand() = signed game RNG;
 // RandRange(0,N) = uniform [0,N).
 // @early-stop
@@ -103,7 +106,7 @@ extern CEffGeomRow g_effGeom[8]; // 0x60b8fc
 // allocator coin-flip that doc flags as the zero-register-pinning.md wall.
 // ===========================================================================
 RVA(0x00019cd0, 0x1df)
-void __stdcall GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
+void CBootyState::GenMenuRandPos(i32 sel, i32* outX, i32* outY) {
     if (!outX || !outY) {
         return;
     }
