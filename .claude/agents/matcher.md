@@ -18,7 +18,36 @@ The campaign is past pure matching — it is recovering the ORIGINAL TU structur
 (rehoming functions/globals to their true files, dissolving fake views, binding
 symbols to the RIGHT rva). In this phase: **do NOT fear regalloc ripple and do NOT
 protect match %.** A %-drop from moving a function/global/view to its true home, or
-from correcting a binding, is EXPECTED and RECOVERS as more structure lands. Gate on
+from correcting a binding, is EXPECTED and RECOVERS as more structure lands.
+
+> ## REGALLOC DROPS ARE EXPECTED. DO NOT SPEND BUDGET ON THEM.
+>
+> **Your job in this phase is STRUCTURE ELIMINATION, not %.** When you dissolve a view,
+> retype a member, or rebind a symbol, the /O2 register allocator, inlining budget and
+> instruction scheduler re-flow across the whole TU — and across every TU that includes a
+> header you touched (the decl-count butterfly). **Those drops are noise we have already
+> accepted by policy.**
+>
+> - **Do NOT A/B them.** Do NOT bisect them. Do NOT build a per-function regression set to
+>   attribute a 0.03% wobble. That is budget spent proving something the policy already
+>   grants you.
+> - **Do NOT revert a correct structure to recover a number**, and do NOT reach for an
+>   `@early-stop` just because a neighbour moved.
+> - In the report, **one line** is enough: *"N functions moved, /O2 ripple from <the header
+>   or type I changed>"*. No mechanism essay is required for ordinary ripple.
+>
+> **The ONE thing that still deserves scrutiny:** a drop that suggests the *shape is wrong*
+> — a function you actually rewrote that got worse, a crater (tens of points), or a change
+> in emitted **arity/return type/offsets**. That is a signal about correctness, not about
+> regalloc. Everything else: take the drop, keep the structure, move on.
+>
+> Measured this campaign: **the lie repeatedly scored better than the truth** (a wrong
+> vtable, a fake reinterpret, and a fabricated base each propped up a number). And
+> dissolving views has more often *raised* match than lowered it — a dropped parameter took
+> a function 89.93 → 100.00 EXACT, and four `@early-stop`s dissolved on their own once the
+> phantom beneath them died.
+
+Gate on
 BUILD INTEGRITY only; NEVER revert a structurally-correct move/fold/binding for a
 %-drop (mark `@early-stop` + note the mechanism, keep it). **reloc-fidelity**
 (`python -m gruntz.analysis.reloc_fidelity` — every reference bound to the rva retail
