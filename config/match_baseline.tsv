@@ -2157,7 +2157,7 @@ gruntzmgr	?CountReadyOptionsSlots@CGruntzMgr@@QAEHH@Z	100.0000	100.0000	3	76df7c
 gruntzmgr	?DebugJumpLevel@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	5a1770cef8a8	0x8e780
 gruntzmgr	?DelayedQuit@CGruntzMgr@@QAEXXZ	3.5246	3.5246	8	7271daf176b0	0x8f530
 gruntzmgr	?EnterModalUI@CGruntzMgr@@QAEXPBD@Z	93.0159	93.0159	1	79acbc90a417	0x8ef10
-gruntzmgr	?ExitModalUI@CGruntzMgr@@QAEHPAVCModalScreen@@H@Z	99.5745	99.5745	1	4972fe13a8f3	0x903f0
+gruntzmgr	?ExitModalUI@CGruntzMgr@@QAEHPAVCDialog@@H@Z	99.5745	99.5745	1	fad7be80df5d	0x903f0
 gruntzmgr	?FillSaveInfo@CGruntzMgr@@QAEHPAUSaveInfo@@PAX@Z	100.0000	100.0000	12	bb5494f30ed8	0x927b0
 gruntzmgr	?FindOptionsSlot@CGruntzMgr@@QAEPAUOptionsSlot@@H@Z	82.6923	82.6923	3	ec793a289245	0x92e80
 gruntzmgr	?FindStateById@CGruntzMgr@@QAEPAVCState@@H@Z	100.0000	100.0000	5	72acae9e9da0	0x92900
@@ -2194,7 +2194,7 @@ gruntzmgr	?NotifyState11@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	29e55fd41189	
 gruntzmgr	?NotifyState12@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	a8c72ed65037	0x8db60
 gruntzmgr	?NotifyState13@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	a882a07ae45a	0x8dba0
 gruntzmgr	?NotifyState14@CGruntzMgr@@QAEHHHH@Z	100.0000	100.0000	4	cbab4079ef74	0x8dbe0
-gruntzmgr	?OnCheckpointReached@CGruntzMgr@@QAEXXZ	100.0000	100.0000	6	6a0efadffc96	0x8e6c0
+gruntzmgr	?OnCheckpointReached@CGruntzMgr@@QAEXXZ	100.0000	100.0000	7	158bc7a5a9d8	0x8e6c0
 gruntzmgr	?PassClickToPlayState@CGruntzMgr@@QAEHHHH@Z	84.8594	84.8594	3	eb2eaaca8087	0x8d780
 gruntzmgr	?PerFrameTick@CGruntzMgr@@UAEXXZ	100.0000	100.0000	2	97abd1ffbbad	0x8f620
 gruntzmgr	?PickPausedThenPlayState@CGruntzMgr@@QAEPAVCState@@XZ	100.0000	100.0000	2	9a76e16102b1	0x929b0
@@ -2223,11 +2223,11 @@ gruntzmgr	?RunDebugGruntTypeDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	98ad97
 gruntzmgr	?RunFromState@CGruntzMgr@@QAEHXZ	100.0000	100.0000	1	7974b91adbd8	0x90200
 gruntzmgr	?RunLoadGameDialog@CGruntzMgr@@QAEHXZ	100.0000	100.0000	2	88d70d7b6912	0x92500
 gruntzmgr	?RunModalDialog@CGruntzMgr@@QAEHPBDPAXH@Z	98.0252	98.0252	9	afa5bb647b2f	0x90260
-gruntzmgr	?SaveGameAs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	5	8a97d151dc55	0x92f00
+gruntzmgr	?SaveGameAs@CGruntzMgr@@QAEHXZ	100.0000	100.0000	6	6143d1954a99	0x92f00
 gruntzmgr	?SaveState@CGruntzMgr@@QAEHPAUCSerialArchive@@@Z	100.0000	100.0000	5	a74b628e2afc	0x93620
 gruntzmgr	?ScalarDeletingDtor@CGruntzMgr@@QAEPAXI@Z	100.0000	100.0000	2	1b45a17ddd70	0x83330
 gruntzmgr	?ScanObjectsInRadius@CGruntzMgr@@QAEHHHHHHH@Z	100.0000	100.0000	1	8edfe9cae001	0x92180
-gruntzmgr	?ScanObjectsInRect@CGruntzMgr@@QAEHHHHHHH@Z	84.5844	84.5844	1	44c2cd2830d6	0x92250
+gruntzmgr	?ScanObjectsInRect@CGruntzMgr@@QAEHHHHHHH@Z	81.7403	81.7403	1	44c2cd2830d6	0x92250
 gruntzmgr	?SetAssetRoot@CGruntzMgr@@QAEHPAD@Z	100.0000	100.0000	1	bbf278e29150	0x92060
 gruntzmgr	?SetColorDepth@CGruntzMgr@@QAEHH@Z	82.8298	82.8298	3	aeeed6876e09	0x91170
 gruntzmgr	?SetGameClock@CGruntzMgr@@QAEXHHH@Z	100.0000	100.0000	4	574d2c4737f5	0x8f7b0
@@ -2847,7 +2847,7 @@ multi	?SendStatValue@CMulti@@QAEHHHHH@Z	100.0000	100.0000	1	576e45f60299	0xb9570
 multi	?SetupMultiplayerSession@CMulti@@QAEHHHH@Z	62.7583	62.7583	3	ef241183a97d	0xb5460
 multi	?SetupServices@CMulti@@QAEHXZ	98.2243	98.2243	1	2a32838d41cc	0xb78b0
 multi	?SetupTcpIpConfig@CMulti@@QAEHXZ	71.9573	71.9573	1	e88646aab0e5	0xbc460
-multi	?ShowMultiStartDlg@CNetMgrLite@@QAEHXZ	84.2015	84.2015	3	d44ba543de0a	0xb86c0
+multi	?ShowMultiStartDlg@CNetMgrLite@@QAEHXZ	84.2015	84.2015	4	b6216cf8b5f7	0xb86c0
 multi	?StartSession@CMulti@@QAEHHH@Z	98.4571	98.4571	7	e77075f52788	0xb6580
 multi	?StartTitle@CMulti@@QAEHXZ	35.7440	35.7440	7	af602fa53e90	0xb72c0
 multi	?Teardown@CMulti@@QAEXXZ	100.0000	100.0000	8	f7bb935498c5	0xb6110
