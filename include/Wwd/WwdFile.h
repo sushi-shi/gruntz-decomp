@@ -289,10 +289,10 @@ public:
     // 4-char extension dropped, via the shared 0x62c010 scratch buffer. Empty or
     // <= 4-char paths come back unchanged.
     static CString GetMapBaseName(CString path);
-    i32 ReadPlaneObjects(const i32* src);
-    // 0x1628f0: free the old +0xb0 plane-render worker, allocate+init a fresh one
-    // from the level header geometry, then ReadPlaneObjects `count` times.
-    i32 RebuildPlanes(i32 base, i32 count);
+    // (RebuildPlanes @0x1628f0 + ReadPlaneObjects @0x162af0 are GONE from here: their
+    // `this` IS the plane - they read m_mapData@+0x0c, m_wrapW/m_wrapH@+0x30/+0x34 and
+    // the spatial worker @+0xb0 off it - so they are CDDrawWorkerHost methods now. This
+    // class keeps only its two genuinely-static WWD helpers.)
 };
 
 // --- vtable catalog ---

@@ -4,6 +4,7 @@
 // reloc-masked engine externs (no bodies here).
 #include <Gruntz/WwdObjMgr.h>     // the shared object-collection manager class
 #include <Gruntz/WwdGameObject.h> // canonical CWwdGameObject (the managed sprites)
+#include <Wwd/WwdSpatialMgr.h>    // the canonical class (was defined locally here)
 #include <Gruntz/WwdGridIter.h>   // CWwdGridIter cursor + WwdGridNode + WwdRect (shared;
                                   // the cursor's Start/Init/GetNext bodies live in WwdGrid.cpp)
 #include <Mfc.h>
@@ -95,43 +96,8 @@ public:
 
 // --- the cluster class -----------------------------------------------------
 
-struct CWwdSpatialMgr {
-    CWwdObjMgr* m_mgr; // +0x00
-    CWwdGrid* m_grid0; // +0x04
-    CWwdGrid* m_grid1; // +0x08
-    CWwdGrid* m_grid2; // +0x0c
-    char m_pad10[0x40 - 0x10];
-    i32 m_org0x, m_org0y; // +0x40 / +0x44  grid0 scroll origin
-    i32 m_org1x, m_org1y; // +0x48 / +0x4c  grid1 scroll origin
-    i32 m_org2x, m_org2y; // +0x50 / +0x54  grid2 scroll origin
-    i32 m_bbMinX;         // +0x58
-    i32 m_bbMinY;         // +0x5c
-    i32 m_bbMaxX;         // +0x60
-    i32 m_bbMaxY;         // +0x64
-    i32 m_scrollX;        // +0x68
-    i32 m_scrollY;        // +0x6c
-    CWwdGridIter m_iter;  // +0x70  embedded cursor for the GetFirst/GetNext API
-    CWwdGrid* m_curGrid;  // +0xb4  which grid the embedded cursor is walking
-
-    // The out-of-line complete dtor (0x163a40): FreeGrids, then the compiler
-    // destructs m_iter (the CObject-derived member at +0x70 - the ??_7CObject
-    // stamp retail emits there) under the /GX frame.
-    ~CWwdSpatialMgr();
-
-    void FreeGrids();
-    i32 ScrollTo(i32 dx, i32 dy);
-    i32 GetSize(); // 0x168430
-    i32 CountInRect(CWwdGrid* grid);
-    i32 Relocate(i32 newX, i32 newY);
-    i32 PruneCount();
-    void RemoveObject(CWwdGameObject* obj);
-    i32 FlushAll();
-    i32 FlushGrid(CWwdGrid* grid);
-    i32 ForEach(void(__cdecl* cb)(CWwdGameObject*));
-    i32 ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdGameObject*));
-    CWwdGameObject* GetFirstObject();
-    CWwdGameObject* GetNextObject();
-};
+// (The class definition moved to the shared <Wwd/WwdSpatialMgr.h> - it was defined
+// twice: here and as the plane headers' "CPlaneScroll" scroll-rect view. One class.)
 
 // 0x163a40 (re-homed from src/Stub/BoundaryUpperEh.cpp): the class's out-of-line
 // complete dtor. [The former C163a40 placeholder identity is dissolved: the "+0x70

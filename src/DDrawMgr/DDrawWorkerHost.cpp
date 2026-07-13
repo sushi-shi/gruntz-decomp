@@ -12,6 +12,7 @@
 #include <Mfc.h> // /GX EH-frame helpers
 
 #include <DDrawMgr/DDrawWorkerHost.h>
+#include <Wwd/WwdSpatialMgr.h> // the canonical spatial/scroll worker (m_scroll)
 
 // The host's own primary vtable (0x5f0270) is now the cl-emitted
 // ??_7CDDrawWorkerHost (real-polymorphic CLoadable-derived class; VTBL at

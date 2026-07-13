@@ -38,46 +38,12 @@ struct LevelCoordRect {
 SIZE_UNKNOWN(PlaneBlitScratch);
 struct PlaneBlitScratch {};
 
-// The camera/scroll + spatial-grid worker at plane+0xb0. ONE class, formerly two
-// views: WwdFile.h's CPlaneScroll (the scroll rects/centers/target + SetTargetA/B
-// @0x168340/0x168500) and this header's CWwdSpatialMgr (PruneCount/GetSize/FreeGrids
-// @0x1688b0/0x168430/0x1682f0 - the same 0x168xxx method band; real class defined in
-// src/Gruntz/WwdSpatialMgr.cpp). Its FreeGrids body runs on teardown, then operator
-// delete frees it.
-SIZE_UNKNOWN(CWwdSpatialMgr);
-struct CWwdSpatialMgr {
-    char pad_0[0x10];                                         // +0x00 vptr + head words
-    i32 m_rectALeft, m_rectATop, m_rectARight, m_rectABottom; // +0x10
-    i32 m_rectCLeft, m_rectCTop, m_rectCRight, m_rectCBottom; // +0x20
-    i32 m_rectBLeft, m_rectBTop, m_rectBRight, m_rectBBottom; // +0x30
-    i32 m_centerAX, m_centerAY;                               // +0x40
-    i32 m_centerBX, m_centerBY;                               // +0x48
-    i32 m_centerCX, m_centerCY;                               // +0x50
-    char pad_58[0x68 - 0x58];
-    i32 m_targetX, m_targetY; // +0x68
-    void* m_baseVtbl; // +0x70  the m_iter MEMBER's vptr (CWwdGridIter : CObject) - the
-                      //        ??_7CObject stamp retail emits on teardown. NOT a
-                      //        secondary base: the "+0x70 => multiple inheritance"
-                      //        premise behind the ex-C163a40 placeholder was WRONG.
-
-    i32 SetTargetA(i32 a, i32 b); // 0x168340
-    i32 SetTargetB(i32 a, i32 b); // 0x168500
-    // Init from (src, six geometry-pair pointers) - the RebuildPlanes bring-up
-    // (ex the WwdPlaneRender view's Init; allocation-proven 0xb8 B).
-    i32 Init(void* src, i32* p0, i32* p1, i32* p2, i32* p3, i32* p4, i32* p5); // 0x168080
-    i32 PruneCount(); // 0x1688b0  (reloc-masked external)
-    i32 GetSize();    // 0x168430  (reloc-masked external; serialized-size accessor)
-    void FreeGrids(); // 0x1682f0  (reloc-masked external teardown body; the
-                      //  ex-WwdPlaneRender "DtorBody" - same RVA)
-    void ListDtor();  // 0x163a10  the m_iter member teardown
-    // The out-of-line COMPLETE dtor (0x163a40; body with the canonical class in
-    // WwdSpatialMgr.cpp): FreeGrids + the compiler's ~m_iter. DECLARED-ONLY - an
-    // explicit `p->~CWwdSpatialMgr()` (Cleanup_161bf0) then emits the retail
-    // out-of-line call, while ~CDDrawWorkerHost reproduces retail's INLINED copy
-    // explicitly (a decl-only-dtor `delete` there would mis-bind to 0x163a40).
-    ~CWwdSpatialMgr();
-};
-typedef CWwdSpatialMgr CPlaneScroll; // the WwdFile.h spelling
+// The camera/scroll + spatial-grid worker at plane+0xb0: the canonical
+// CWwdSpatialMgr (<Wwd/WwdSpatialMgr.h>) - ONE class now (the ex-CPlaneScroll
+// scroll-rect view and the WwdSpatialMgr.cpp canonical were the same object, and
+// every offset agreed). A pointer member here, so a forward decl suffices; the two
+// TUs that dispatch on it (LevelPlane.cpp / DDrawWorkerHost.cpp) include the header.
+struct CWwdSpatialMgr;
 
 // Support types the method signatures reference (full defs in <Wwd/WwdFile.h> /
 // <Image/ImageSet.h> / <Io/FileMem.h> - pointer-only here).
@@ -134,20 +100,26 @@ public:
     // view IS this plane, proven by the parallel Brickz fold):
     // m_tileGrid[m_colOffsets[y] + x] = id.
     void SetCell(i32 x, i32 y, i32 id);
-    void RecomputePlaneCoords(); // 0x161c90 wrap/clamp scaled coords
-    void Build(LevelCoordRect* coords);              // 0x161e80 re-place + recompute one plane
-    void SetTileSize(i32 tileW, i32 tileH);          // 0x161f00 derive wrap dims/fill/shifts
-    void SetTileSizeFromImageSet(CImageSet* set);    // 0x161fa0 seed tile size from a frame
-    void Draw(CPlaneDrawCtx* ctx);                   // 0x162010 the tile-grid render (ex "Sync")
-    i32 Prune_1628d0();                              // 0x1628d0 forward the grid's Prune
-    i32 CenterScrollA();                             // 0x163300 (ex "QueryA")
-    i32 CenterScrollB();                             // 0x163370 (ex "QueryB")
-    i32 GetSize_1633e0();                            // 0x1633e0 forward the grid's GetSize
-    void InitScrollRects();                          // 0x163420 seed the scroll rects (ex "Notify")
-    i32 ValidateTiles(char* errOut);                 // 0x163510 scan the tile grid for bad refs
-    void ResolveColorKey();                        // 0x163670 pack +0x144 to RGB565 (ex "Refresh")
-    i32 Save(CFileMemBase* s);                     // 0x163780 serialize out
-    i32 Load(CFileMemBase* s);                     // 0x1638c0 serialize in
+    void RecomputePlaneCoords();                  // 0x161c90 wrap/clamp scaled coords
+    void Build(LevelCoordRect* coords);           // 0x161e80 re-place + recompute one plane
+    void SetTileSize(i32 tileW, i32 tileH);       // 0x161f00 derive wrap dims/fill/shifts
+    void SetTileSizeFromImageSet(CImageSet* set); // 0x161fa0 seed tile size from a frame
+    void Draw(CPlaneDrawCtx* ctx);                // 0x162010 the tile-grid render (ex "Sync")
+    i32 Prune_1628d0();                           // 0x1628d0 forward the grid's Prune
+    i32 CenterScrollA();                          // 0x163300 (ex "QueryA")
+    i32 CenterScrollB();                          // 0x163370 (ex "QueryB")
+    i32 GetSize_1633e0();                         // 0x1633e0 forward the grid's GetSize
+    void InitScrollRects();                       // 0x163420 seed the scroll rects (ex "Notify")
+    i32 ValidateTiles(char* errOut);              // 0x163510 scan the tile grid for bad refs
+    void ResolveColorKey();                       // 0x163670 pack +0x144 to RGB565 (ex "Refresh")
+    i32 Save(CFileMemBase* s);                    // 0x163780 serialize out
+    i32 Load(CFileMemBase* s);                    // 0x1638c0 serialize in
+    // 0x1628f0 / 0x162af0 (ex WwdFile:: + its WwdLevelLoader `this`-view): free the old
+    // spatial worker, allocate + Init a fresh one from the map-data geometry, then read
+    // `count` object records. `this` IS the plane - the view read m_mapData@+0x0c and
+    // (as "grid extents") m_wrapW/m_wrapH@+0x30/+0x34, and the worker slot IS m_scroll.
+    i32 RebuildPlanes(i32 base, i32 count);
+    i32 ReadPlaneObjects(const i32* src);
     void WrapCoord(i32* px, i32* py);              // 0x00a000 wrap+transform a world coord
     void SnapToTileCenter(i32* out, i32 x, i32 y); // 0x0311e0 snap world (x,y) to tile centre
     i32 GetTileHandle(i32 row, i32 col);           // 0x0d53a0 m_tileGrid[m_colOffsets[col]+row]

@@ -31,6 +31,7 @@
 #include <DDrawMgr/DDSurface.h>       // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <DDrawMgr/DDrawWorkerHost.h> // canonical CDDrawWorkerHost (ctor + RegisterNamed here)
 #include <Io/FileMem.h> // the REAL serialize-stream base CFileMemBase (Save/Load's Read@+0x2c/Write@+0x30)
+#include <Wwd/WwdSpatialMgr.h>       // the canonical spatial/scroll worker (m_scroll)
 #include <DDrawMgr/DDrawWorkerCtx.h> // shared CDDrawWorkerCtx (RegisterNamed's map chain)
 #include <rva.h>
 
@@ -624,13 +625,10 @@ void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
 // pinned (offsets are the load-bearing thing): m_assetOwner (the map/asset owner), and
 // m_gridWidth/m_gridHeight (the grid extents the object x/y are range-checked against). m_assetOwner is
 // read both as the ctor's owner arg and for the image-set CMapStringToOb lookup.
-struct WwdLevelLoader {
-    char pad_0[0xc];
-    void* m_assetOwner; // +0x0C  asset/map owner (ctor arg; holds the imageset map)
-    char pad_10[0x30 - 0x10];
-    i32 m_gridWidth;  // +0x30  grid width  (object x must be in [0, m_gridWidth))
-    i32 m_gridHeight; // +0x34  grid height (object y must be in [0, m_gridHeight))
-};
+// (The WwdLevelLoader `this`-view is GONE: `this` IS the plane. Its m_assetOwner
+// @+0x0c is the plane's m_mapData (the same owner/context object RegisterNamed
+// resolves names through), and its "grid extents" @+0x30/+0x34 are m_wrapW/m_wrapH -
+// the TILE counts the record's tile-space x/y are range-checked against.)
 
 // WwdFile::ReadPlaneObjects deserializes each WWD plane record into a freshly
 // `operator new(0x1dc)`d shared CGameObject (<Gruntz/UserLogic.h>) - the SAME
@@ -701,11 +699,6 @@ struct WwdObjAnimInit {
 // here so RebuildPlanes' inline +0x70 embedded-cursor stamp reloc-masks against the
 // real ??_7 (the manual g_planeRenderVtbl DATA placeholder is drained).
 
-// authentic: documented offset access into WwdFile's own wide layout (the +0xb0
-// plane-render worker slot + the +0xc reg-owner slot); only the offset is
-// load-bearing, and RebuildPlanes is @early-stop, so the raw-offset form is kept.
-#define WLOADER(t, off) (*(t*)((char*)this + (off)))
-
 // ---------------------------------------------------------------------------
 // 0x1628d0: forward the grid's Prune when present (else 0).  __thiscall tail call.
 RVA(0x001628d0, 0x12)
@@ -727,12 +720,12 @@ i32 CDDrawWorkerHost::Prune_1628d0() {
 // polymorphic outer object), so a plain `new CWwdSpatialMgr` cannot express this; the
 // embedded-object-at-offset re-stamp is the only expressible form (wall).
 RVA(0x001628f0, 0x1fc)
-i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
+i32 CDDrawWorkerHost::RebuildPlanes(i32 base, i32 count) {
     if (base == 0) {
         return 0;
     }
 
-    CWwdSpatialMgr*& worker = WLOADER(CWwdSpatialMgr*, 0xb0);
+    CWwdSpatialMgr*& worker = m_scroll;
     if (worker) {
         worker->FreeGrids();
         worker->ListDtor();
@@ -740,7 +733,7 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
         worker = 0;
     }
 
-    CPlaneMapData* reg = WLOADER(CPlaneMapData*, 0xc);
+    CPlaneMapData* reg = m_mapData;
     void* src = reg->m_8;
     if (src == 0) {
         return 0;
@@ -770,7 +763,7 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
     }
     worker = nw;
     if (nw->Init(src, p0, p1, p2, p3, p4, p5) == 0) {
-        CWwdSpatialMgr* w = WLOADER(CWwdSpatialMgr*, 0xb0);
+        CWwdSpatialMgr* w = m_scroll;
         if (w) {
             w->FreeGrids();
             // base-subobject vptr restore is compiler-managed via the CObject base; manual g_wapObjectDtorVtbl stamp dropped (% ok)
@@ -801,12 +794,10 @@ i32 WwdFile::RebuildPlanes(i32 base, i32 count) {
 // realized classes would dup-DATA the factory's bound g_ symbols -> the manual
 // re-stamp is the only expressible form (compiler-model wall). Logic byte-faithful.
 RVA(0x00162af0, 0x806)
-i32 WwdFile::ReadPlaneObjects(const i32* src) {
+i32 CDDrawWorkerHost::ReadPlaneObjects(const i32* src) {
     if (src == 0) {
         return 0;
     }
-
-    WwdLevelLoader* loader = (WwdLevelLoader*)this;
 
     i32 id = src[0];
     u32 nameLen = (u32)src[1];
@@ -823,13 +814,13 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
         return 0;
     }
 
-    obj->Construct(loader->m_assetOwner, id, 0);
+    obj->Construct(m_mapData, id, 0);
 
     // Construct the embedded sub-object at +0x1A0, then re-stamp both vtables (the
     // base ctors leave a base vtable; ReadPlaneObjects promotes both to their
     // derived types) and zero the trailing fields the derived layout adds.
     WwdObjAnimInit* subInit = (WwdObjAnimInit*)((char*)obj + 0x1a0);
-    new (subInit) CDDrawSubMgr((CDDrawSurfaceMgr*)loader->m_assetOwner, id, 0);
+    new (subInit) CDDrawSubMgr((CDDrawSurfaceMgr*)m_mapData, id, 0);
     // factory ctor vptr install dropped (model as compiler-emitted vtable; % ok per drive-to-0)
     subInit->z10 = 0;
     subInit->z14 = 0;
@@ -882,7 +873,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 
     // Grid bounds check on x/y; failure deletes the object and returns the bytes
     // consumed so far (so the caller still advances over the bad record).
-    if (x < 0 || x >= loader->m_gridWidth || y < 0 || y >= loader->m_gridHeight) {
+    if (x < 0 || x >= m_wrapW || y < 0 || y >= m_wrapH) {
         obj->Delete(1);
         return (i32)(strCursor - (const char*)src);
     }
@@ -891,7 +882,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
     i32 loaded = 1;
     if (imageSet.GetLength() != 0) {
         void* found = 0;
-        CMapStringToPtr* map = (CMapStringToPtr*)((char*)loader->m_assetOwner + 0x14 + 0x10);
+        CMapStringToPtr* map = (CMapStringToPtr*)((char*)m_mapData + 0x14 + 0x10);
         loaded = map->Lookup((const char*)imageSet, found);
     }
 
@@ -1032,7 +1023,11 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
         obj->m_strideY = (i32)h; // +0xfc
     }
 
-    ((CObList*)((char*)loader + 0xb0))->AddTail((CObject*)obj);
+    // Retail: `mov ecx,[this+0xb0]; call 0x1688f0` - it LOADS the spatial worker and
+    // registers the object with it. (The old view took the ADDRESS of +0xb0 and called
+    // CObList::AddTail on it - a `lea` where retail emits a `mov`, and a mis-bound
+    // NAFXCW symbol; +0xb0 holds a POINTER, as RebuildPlanes' `new(0xb8)` store proves.)
+    m_scroll->RemoveObject((CWwdObject*)obj);
 
     return (i32)(strCursor - (const char*)src);
 }
@@ -1140,32 +1135,32 @@ void CDDrawWorkerHost::InitScrollRects() {
     i32 dc = g->m_rectCHeight;
 
     CPlaneScroll* s = m_scroll;
-    s->m_rectALeft = 0;
-    s->m_rectATop = 0;
-    s->m_rectARight = c8 - 1;
-    s->m_rectABottom = cc - 1;
-    s->m_centerAX = c8 / 2;
-    s->m_centerAY = cc / 2;
+    s->m_rect0Left = 0;
+    s->m_rect0Top = 0;
+    s->m_rect0Right = c8 - 1;
+    s->m_rect0Bottom = cc - 1;
+    s->m_org0x = c8 / 2;
+    s->m_org0y = cc / 2;
 
     s = m_scroll;
-    s->m_rectBLeft = 0;
-    s->m_rectBTop = 0;
-    s->m_rectBRight = d0 - 1;
-    s->m_rectBBottom = d4 - 1;
-    s->m_centerBX = d0 / 2;
-    s->m_centerBY = d4 / 2;
+    s->m_rect1Left = 0;
+    s->m_rect1Top = 0;
+    s->m_rect1Right = d0 - 1;
+    s->m_rect1Bottom = d4 - 1;
+    s->m_org1x = d0 / 2;
+    s->m_org1y = d4 / 2;
 
     s = m_scroll;
-    s->m_rectCLeft = 0;
-    s->m_rectCTop = 0;
-    s->m_rectCRight = d8 - 1;
-    s->m_rectCBottom = dc - 1;
-    s->m_centerCX = d8 / 2;
-    s->m_centerCY = dc / 2;
+    s->m_rect2Left = 0;
+    s->m_rect2Top = 0;
+    s->m_rect2Right = d8 - 1;
+    s->m_rect2Bottom = dc - 1;
+    s->m_org2x = d8 / 2;
+    s->m_org2y = dc / 2;
 
     s = m_scroll;
-    s->m_targetX = -22222;
-    s->m_targetY = -22222;
+    s->m_scrollX = -22222;
+    s->m_scrollY = -22222;
 }
 
 // ---------------------------------------------------------------------------
@@ -1403,7 +1398,6 @@ i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
 // bodies; keep the completeness typedefs after the last function).
 // ===========================================================================
 // --- local views moved with their bodies from src/Wwd/WwdFile.cpp ---
-SIZE_UNKNOWN(WwdLevelLoader);
 SIZE_UNKNOWN(CStringAssign); // +0xdc CString::operator= helper (WwdGameObj folded to CGameObject)
 SIZE_UNKNOWN(WwdSubMgrCtor);
 SIZE_UNKNOWN(WwdObjAnimInit);
