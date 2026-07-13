@@ -26,6 +26,7 @@
 #include <rva.h>
 
 #include <Gruntz/Fader.h> // the polymorphic base (SetTimers/Set2c/virtual dtor)
+#include <Rez/RezBufferObject.h> // CRezBufferObject - CFaderMesh's +0x58 mesh buffer
 
 // The default-init descriptor built on the CFaderMgr::Add stack when pInit is null:
 // an embedded CString (~CString on every exit forces the /GX frame) plus the
@@ -73,27 +74,11 @@ struct FaderSrc {
 class CDDSurface; // the DDraw surface CFaderLight's overlay-pool members point at (matcher-7)
 
 // ===========================================================================
-// CFaderMesh (ctor 0x17e940, size 0x6c): embeds a nested polymorphic sub-object
-// at +0x58 (own vftable 0x5f07d8). See CFader.cpp for the ctor/member-order notes.
+// CFaderMesh (ctor 0x17e940, size 0x6c): embeds the REAL growable mesh buffer
+// CRezBufferObject at +0x58 (its own vftable ??_7CRezBufferObject @0x1f07d8; the
+// CObArray-of-RezElem40 from <Rez/RezBufferObject.h>). See Fader.cpp for the
+// ctor/member-order notes. (The former CFaderMeshSub member view is dissolved.)
 // ===========================================================================
-SIZE_UNKNOWN(CFaderMeshSub);
-struct CFaderMeshSub { // nested sub-object at +0x58 (own vftable 0x5f07d8)
-    virtual void v0(); // one virtual -> its own vtable (reloc-masks 0x5f07d8)
-    i32 m_04;          // +0x5c
-    i32 m_08;          // +0x60
-    i32 m_0c;          // +0x64
-    i32 m_10;          // +0x68
-    CFaderMeshSub() {
-        m_04 = 0;
-        m_10 = 0;
-        m_0c = 0;
-        m_08 = 0;
-    }
-};
-// The member sub-object's cl-emitted ??_7CFaderMeshSub reloc-masks the retail vtable
-// at 0x1f07d8 (== ??_7CRezBufferObject, owned by RezBufferObjectDtor.cpp's VTBL) - the
-// ctor's member vptr-store binds to the real rva. reloc-fidelity (R45).
-RELOC_VTBL(CFaderMeshSub, 0x001f07d8);
 
 SIZE(CFaderMesh, 0x6c);
 VTBL(CFaderMesh, 0x001f07c0);
@@ -123,7 +108,7 @@ public:
     i32 m_4c;           // +0x4c  record-order flag
     i32 m_50;           // +0x50  columns
     i32 m_54;           // +0x54  rows
-    CFaderMeshSub m_58; // +0x58..+0x6b  growable mesh buffer (member vptr + 4 fields)
+    CRezBufferObject m_58; // +0x58..+0x6b  growable mesh buffer (the real CObArray-of-RezElem40)
 };
 
 // ===========================================================================

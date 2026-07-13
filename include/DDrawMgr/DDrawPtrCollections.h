@@ -40,25 +40,11 @@ struct IDirectDraw2; // <ddraw.h> in the dispatching TU
 // (DirectDrawMgr.cpp) while the pocket slot bodies live in the 0x148840-pocket obj
 // (DDrawPtrCollections.cpp).
 //
-// vtable 0x5efa58: overrides the dtor (??_G 0x142340 / ~ 0x142360) and slot 6
-// (0x143cc0); adds three init tail slots (9 = 0x148890, 10 = 0x148940, 11 = 0x148840).
-// This a58 subclass is the SAME class the Image side models as CFileImageSurface: its
-// ??_G/~ COMDAT (0x142340/0x142360) is emitted under the CFileImageSurface name
-// (?ScalarDelete@CFileImageSurface + ??1CFileImageSurface); here it is declared-only.
-// See docs/patterns/surface-pool-comdat-dtors.md.
-class CPoolItemA : public CDDSurface {
-public:
-    virtual ~CPoolItemA() OVERRIDE; // slot 0  ~ 0x142360 (image copy)
-    virtual i32 v18() OVERRIDE;     // slot 6  0x143cc0
-    virtual i32 v24(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 9  0x148890
-    virtual i32 v28(CDDrawPtrCollections*, i32, i32, i32);           // slot 10 0x148940
-    virtual i32 v2c(CDDrawPtrCollections*, i32, i32, i32, i32, i32); // slot 11 0x148840
-};
-SIZE(CPoolItemA, 0xc0);
-RELOC_VTBL(
-    CPoolItemA,
-    0x001efa58
-); // reduced/derived view aliases CFileImageSurface (slot-RVA verified)
+// vtable 0x5efa58: the "a58" subclass IS CFileImageSurface (<Image/Image.h>, the
+// canonical def: overrides the dtor ??_G 0x142340 / ~ 0x142360 + slot 6 0x143cc0,
+// adds the three init tail slots 9/10/11 = 0x148890/0x148940/0x148840). The former
+// local alias CPoolItemA (RELOC_VTBL) is dissolved; DirectDrawMgr.cpp's factories
+// `new CFileImageSurface` directly. See docs/patterns/surface-pool-comdat-dtors.md.
 
 // vtable 0x5efa88: overrides the dtor (??_G 0x142800 / ~ 0x142820) and slot 6 (0x143cb0);
 // adds two init tail slots (9 = 0x148a50, 10 = 0x148ac0).
@@ -176,7 +162,7 @@ public:
                            //         tail); flagged for a canonical-class unification.
     IDirectDraw* m_surf4;  // +0x04 - the raw pre-QI DirectDraw device (Release on Clear)
     char _pad008[0x47c - 0x08];
-    CPtrList m_poolA;  // +0x47c  (block size 0xa) - CPoolItemA*
+    CPtrList m_poolA;  // +0x47c  (block size 0xa) - CFileImageSurface* (pool-A items)
     CPtrList m_poolB;  // +0x498  (block size 0xa) - CDDPalette*
     CPtrArray m_array; // +0x4b4  (default ctor); m_pData@+0x4b8 / m_nSize@+0x4bc
     char _pad4C8[0x534 - 0x4c8];

@@ -1129,9 +1129,9 @@ CSymParser::~CSymParser() {
     if (m_parseArmed) {
         Clear(0);
     }
-    CObjNode* p;
-    for (p = m_list.m_head; p != 0; p = m_list.m_head) {
-        m_list.Remove(p);
+    CSymObjNode* p;
+    for (p = (CSymObjNode*)m_list.m_head; p != 0; p = (CSymObjNode*)m_list.m_head) {
+        m_list.Remove((CObjNode*)p);
         m_list.m_count--;
         if (p) {
             p->Delete(1);
@@ -1184,18 +1184,18 @@ CSymParser::~CSymParser() {
 
 // The two concrete reader nodes ParseBuffer builds (text @0x13c940 ctor(this, m_2c),
 // binary @0x13c540 ctor(this)). Both __thiscall on a freshly allocated reader block.
-// Reloc-masked externs. Each is a real CObjNode leaf (the intrusive-list-node base:
+// Reloc-masked externs. Each is a real CSymObjNode leaf (the intrusive-list-node base:
 // vptr + next/prev at +0..+0xb, the Read/ReadRaw reader vtable), so `new T(...)` is a
-// plain CObjNode* upcast (base @ offset 0) - no reinterpret cast, and the list-Link /
+// plain CSymObjNode* upcast (base @ offset 0) - no reinterpret cast, and the list-Link /
 // Read / ReadRaw dispatches fall out of the inherited base.
-struct CTextReaderInit : public CObjNode {
+struct CTextReaderInit : public CSymObjNode {
     CTextReaderInit(CSymParser* p, i32 a); // 0x13c940
-    char m_body[0x38 - 0xc];               // own text-reader state (past the CObjNode base)
+    char m_body[0x38 - 0xc];               // own text-reader state (past the CSymObjNode base)
 };
 SIZE(CTextReaderInit, 0x38); // text-reader alloc block (operator new)
-struct CBinReaderInit : public CObjNode {
+struct CBinReaderInit : public CSymObjNode {
     CBinReaderInit(CSymParser* p); // 0x13c540
-    char m_body[0x24 - 0xc];       // own binary-reader state (past the CObjNode base)
+    char m_body[0x24 - 0xc];       // own binary-reader state (past the CSymObjNode base)
 };
 SIZE(CBinReaderInit, 0x24); // binary-reader alloc block (operator new)
 
@@ -1225,7 +1225,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         if (m_40 == 0) {
             return 0;
         }
-        CObjNode* reader = new CTextReaderInit(this, m_2c);
+        CSymObjNode* reader = new CTextReaderInit(this, m_2c);
         if (reader == 0) {
             ::operator delete(m_cachedSourceBuffer);
             m_cachedSourceBuffer = 0;
@@ -1253,7 +1253,7 @@ i32 CSymParser::ParseBuffer(void* buf, i32 a, i32 b) {
         return 1;
     }
     // binary stream
-    CObjNode* reader = new CBinReaderInit(this);
+    CSymObjNode* reader = new CBinReaderInit(this);
     if (reader == 0) {
         ::operator delete(m_cachedSourceBuffer);
         m_cachedSourceBuffer = 0;
@@ -1533,16 +1533,16 @@ RVA(0x0013b850, 0xa8)
 void* CSymParser::Clear(i32 final) {
     (void) final;
     void* r = m_activeNode->Detach();
-    m_list.Remove(m_activeNode);
+    m_list.Remove((CObjNode*)m_activeNode);
     m_list.m_count--;
     if (m_activeNode) {
         m_activeNode->Delete(1);
     }
     m_activeNode = 0;
-    CObjNode* p;
-    for (p = m_list.m_head; p != 0; p = m_list.m_head) {
+    CSymObjNode* p;
+    for (p = (CSymObjNode*)m_list.m_head; p != 0; p = (CSymObjNode*)m_list.m_head) {
         p->Detach();
-        m_list.Remove(p);
+        m_list.Remove((CObjNode*)p);
         m_list.m_count--;
         if (p) {
             p->Delete(1);
@@ -1634,7 +1634,7 @@ void __stdcall UnpackTag(u32 tag, char* dst) {
 RVA(0x0013ba20, 0x27)
 i32 CSymParser::CheckNodes() {
     i32 ok = 1;
-    for (CObjNode* n = m_list.m_head; n != 0; n = n->m_next) {
+    for (CSymObjNode* n = (CSymObjNode*)m_list.m_head; n != 0; n = n->m_next) {
         if (n->Slot1c() == 0) {
             ok = 0;
         }

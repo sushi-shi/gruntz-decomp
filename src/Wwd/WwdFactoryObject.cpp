@@ -1,6 +1,6 @@
 // WwdFactoryObject.cpp - the 0x15b2c0-0x15ccc8 original TU (wave4-L dossier #15,
 // block I): the wwd object-lifecycle obj - the base-object ctors (CResolveNode
-// 3-arg / WorkerFull / CWwdGameObj15b390 / CAniAdvanceCursor), the five
+// 3-arg / AnimWorkerObj 3-arg / CWwdGameObj15b390 / CAniAdvanceCursor), the five
 // ??1CWwdGameObject[A-F] /GX destructors, the CWwdFactoryObject Release/Reset
 // pass + Notify, CDDrawBlitParam (init/setup/serialize), the animation Advance
 // cursor + its Clamp pair, and the Init/SetupDeferred/SetupFlagged out-of-lines.
@@ -18,7 +18,7 @@
 #include <Gruntz/LogicRecord.h>      // CLogicRecord (Consume @0x15b340)
 #include <Gruntz/Sprite.h>           // CSprite (GetFrame @0x15cc30 + the Clamp pair)
 #include <Gruntz/ResolveNode.h>      // canonical CResolveNode (3-arg ctor @0x15b2c0)
-#include <Gruntz/AnimWorkerFull.h>   // WorkerFull (the 0x17c worker ctor @0x15b300)
+#include <DDrawMgr/AnimWorkerObj.h>  // AnimWorkerObj (the 0x17c worker; 3-arg ctor @0x15b300)
 #include <Gruntz/AniAdvanceCursor.h> // canonical CAniAdvanceCursor (ctor/dtor/Advance)
 #include <DDrawMgr/AniAdvance.h>     // CAniRenderCtx/CAniDesc/CAniBlitTrigger satellites
 #include <Gruntz/AniElement.h>       // CAniElement (the descriptor playlist full def)
@@ -97,15 +97,16 @@ CResolveNode::CResolveNode(i32 owner, i32 field04, i32 field08) {
 }
 
 // ---------------------------------------------------------------------------
-// 0x15b300 - the out-of-line 3-arg anim-worker constructor (the body the 0x150eb0
-// factory / CreateWorker24 inlines). The arg-store order (b,c,a into
-// m_04/m_08/m_0c) is load-bearing.
+// 0x15b300 - AnimWorkerObj's out-of-line 3-arg seed constructor (the body the
+// 0x150eb0 factory / CreateWorker24 inlines). The arg-store order (b,c,a into
+// m_04/m_08/m_0c) is load-bearing. (Was the WorkerFull view - folded onto the
+// canonical AnimWorkerObj, whose ??_7 @0x1efb80 this ctor stamps.)
 // @early-stop
 // vptr-last wall: retail stamps the vptr AFTER m_04/m_08/m_0c, but a real-virtual
 // class forces cl's implicit vptr-first store at ctor entry. Field-store order
 // preserved; only the vptr position diverges (mandate: convert anyway).
 RVA(0x0015b300, 0x40)
-WorkerFull::WorkerFull(i32 a, i32 b, i32 c) {
+AnimWorkerObj::AnimWorkerObj(i32 a, i32 b, i32 c) {
     m_04 = b;
     m_08 = c;
     m_0c = a;
@@ -117,8 +118,6 @@ WorkerFull::WorkerFull(i32 a, i32 b, i32 c) {
     m_174 = 0;
     m_178 = 0;
 }
-SIZE_UNKNOWN(WorkerFull);
-RELOC_VTBL(WorkerFull, 0x001efb80); // vtable reloc-masks a bound datum (dtor-stamp verified)
 
 // ---------------------------------------------------------------------------
 // CLogicRecord::Consume (0x15b340, __thiscall). Draw `amount` from the

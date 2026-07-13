@@ -1,39 +1,52 @@
 // RezFile.cpp - the Rez archive-container file-system family, carved out of
 // src/Rez/RezMgr.cpp (holding-TU drain, 2026-07-11). ONE contiguous retail .text obj
-// spanning 0x13c4e0-0x13ceec: the CRezItmBase/CRezItm/CRezDir/CRezParseNode directory-
-// tree nodes AND the CRezFile/CRezFileMgr LRU-managed open-file wrapper (ex RezFile
-// unit). Proven ONE file by the shared private fopen-mode literals 0x21a0a4 ("r+b") /
-// 0x21a0a8 ("w+b"), referenced ONLY by Open@CRezItm + Open@CRezFile, and the text
-// A-B-A weave (CloseAllOpen@CRezFileMgr @0x13ca80 inside the CRezItm run).
+// spanning 0x13c4d0-0x13ceec: the CRezItmBase/CRezItm/CRezDir directory-tree nodes
+// AND the CRezFile managed open-file node (the dir doubles as the LRU handle cache;
+// the former separate "CRezFileMgr"/"CRezParseNode" identities were CRezDir/CRezFile
+// under second names - the vtable own-stamps prove it: ctor 0x13cac0 and dtor
+// 0x13cb80 both stamp 0x5ef7d0 (=??_7CRezFile), ctor 0x13c940 and dtor 0x13c9b0
+// both stamp 0x5ef7a8 (=??_7CRezDir)). Proven ONE file by the shared private
+// fopen-mode literals 0x21a0a4 ("r+b") / 0x21a0a8 ("w+b"), referenced ONLY by
+// Open@CRezItm + OpenFile@CRezFile, and the text A-B-A weave (CRezDir::Close
+// @0x13ca80 inside the CRezItm run).
 //
 // Both node ctors share the base ctor CRezItmBase::CRezItmBase (stores the base vtable
 // and the parent pointer @+0xc), then overwrite the vtable with the derived one
 // (two-phase construction; all vtable stores reloc-masked). `operator new` sizes 0x24
-// (leaf) / 0x38 (dir) confirm the layouts.
+// (leaf) / 0x38 (dir) / 0x1c (file) confirm the layouts.
 //
 // OpenSub is NOT matched here: it runs on a THIRD, distinct node layout (uses +0x1c as
 // a child COUNT and +0x10 as a list-append target, conflicting with both the 0x38
 // CRezDir ctor's vtable stores and CRezDirNode's +0x10 size / +0x18 source - so the
 // three "CRezDir"-labeled functions are actually three different classes).
 #include <Rez/RezMgr.h>
-#include <Rez/RezFile.h> // CRezFile/CRezFileMgr (this TU's own classes; shared decls)
+#include <Rez/RezFile.h> // CRezFile (this TU's own class; shared decls)
 #include <Rez/RezList.h> // CRezList AddHead (0x1851e0) - owner child-list enroll
 #include <rva.h>
 
-// The two private fopen-mode literals referenced ONLY by Open@CRezItm + Open@CRezFile.
-// cl mangles the `extern const char[]` reference with the `P` storage class, which a
-// DATA() label (clang's `Q` mangledName) misses; @data-symbol names the exact cl
-// mangling and is authority-checked against rezfile.obj's undefined externals. (s_rb
-// @0x20b668 is bound by DirectSoundMgr.cpp, which shares it.)
+// The two private fopen-mode literals referenced ONLY by Open@CRezItm + OpenFile@
+// CRezFile. cl mangles the `extern const char[]` reference with a `P` storage class,
+// which a DATA() label (clang's `Q` mangledName) misses; @data-symbol names the exact
+// cl mangling and is authority-checked against rezfile.obj's undefined externals.
+// (s_rb @0x20b668 is bound by DirectSoundMgr.cpp, which shares it.)
 // @data-symbol: ?s_rPlusB@@3PBDB 0x0021a0a4
 // @data-symbol: ?s_wPlusB@@3PBDB 0x0021a0a8
 
-// NOTE: the three RELOC_VTBL placeholder ??_7 vptr-stores below (CAbstract13ca30 /
-// CRezParseNode / CRezDir13cb80 -> retail 0x1ef760=CObjListBase, 0x1ef7d0=CVtEmit_1ef7d0)
-// stay reloc-UNBOUND: the symbol_names per-rva dedup keeps ONE name per address, so a
-// fiction alias at an already-canonically-bound vtable rva cannot bind. These become
-// faithful only when the placeholder's real identity is recovered (@identity-TODO on
-// each RELOC_VTBL) so cl references the canonical ??_7 directly - not an alias job.
+// The four cl-auto scalar-deleting destructors (vtable slot 1 of each class; the
+// compiler generates them from the virtual dtors - no source symbol to RVA()-pin,
+// so @rva-symbol pairs the retail copies with the auto-emitted base COMDATs).
+// @rva-symbol: ??_GCRezItmBase@@UAEPAXI@Z 0x0013c500 0x1e
+// @rva-symbol: ??_GCRezItm@@UAEPAXI@Z 0x0013c570 0x1e
+// @rva-symbol: ??_GCRezDir@@UAEPAXI@Z 0x0013c990 0x1e
+// @rva-symbol: ??_GCRezFile@@UAEPAXI@Z 0x0013cb60 0x1e
+
+// ---------------------------------------------------------------------------
+// CRezList::V0 (0x13c4d0, vtable slot 0 - the CObjListBase pure-slot override):
+// an empty body (bare ret). The original method's role is unrecovered; the slot's
+// EXISTENCE + emptiness is the binary truth (retail ??_7CRezList @0x1ef7c8 is
+// exactly this one slot; the sibling parser-list's empty slot-0 copy is 0x13c4c0).
+RVA(0x0013c4d0, 0x1)
+void CRezList::V0() {}
 
 // ---------------------------------------------------------------------------
 // CRezItmBase::CRezItmBase(parent)
@@ -56,6 +69,13 @@ RVA(0x0013c520, 0xe)
 CRezItmBase::~CRezItmBase() {
     m_parent = 0;
 }
+
+// ---------------------------------------------------------------------------
+// CRezItmBase::Slot00 (0x13c530, vtable slot 0): an empty body (bare ret). The
+// base's concrete slot-0 default; CRezFile carries its own identical empty copy
+// (0x13cef0), CRezItm/CRezDir inherit this one.
+RVA(0x0013c530, 0x1)
+void CRezItmBase::Slot00() {}
 
 // ---------------------------------------------------------------------------
 // CRezItm::CRezItm(parent)
@@ -128,7 +148,7 @@ i32 CRezItm::Read(i32 off, i32 base, u32 count, void* buf) {
 }
 
 // ---------------------------------------------------------------------------
-// CRezItm::Write(base, off, count, buf)
+// CRezItm::Write(base, off, count, buf)  (vtable slot 3)
 // The write counterpart of Read: invalidate the cursor (m_pos = -1), seek to the
 // absolute position (base+off) recovering through the owner's Retry() gate on a
 // seek failure, then fwrite `count` bytes from buf, retrying the write through
@@ -167,11 +187,11 @@ i32 CRezItm::Write(i32 base, i32 off, u32 count, void* buf) {
 }
 
 // ---------------------------------------------------------------------------
-// CRezItm::Open(filename, readonly, write)
+// CRezItm::Open(filename, readonly, write)  (vtable slot 4)
 // Pick the fopen mode from the readonly/write flags (write+readonly is invalid),
 // (re)open the FILE* recovering through the owner's Retry() gate, then stash the
 // readonly flag (m_18), keep a RezAlloc'd copy of the filename (m_readBuf) and
-// reset the position cursor. Same mode ladder as CRezFile::Open.
+// reset the position cursor. Same mode ladder as CRezFile::OpenFile.
 RVA(0x0013c760, 0xc1)
 i32 CRezItm::Open(char* filename, i32 readonly, i32 write) {
     for (;;) {
@@ -248,13 +268,13 @@ i32 CRezItm::Close() {
 }
 
 // ---------------------------------------------------------------------------
-// CRezItm::Scan()  (vtable slot 6; re-homed from src/Stub/BoundaryUpper.cpp)
+// CRezItm::Flush()  (vtable slot 6; re-homed from src/Stub/BoundaryUpper.cpp)
 // Reset the position cursor, then (if a FILE* is open) fflush the stream, retrying
 // through the owner's Retry() gate until the flush succeeds (fflush==0). Returns 1
 // once flushed, 0 if no FILE* or the gate gave up. (The 0x125b50 callee is the CRT
 // fflush; a prior reconstruction reloc-masked it under the fake name RezItmProbe.)
 RVA(0x0013c8a0, 0x45)
-i32 CRezItm::Scan() {
+i32 CRezItm::Flush() {
     m_pos = -1;
     if (m_fp) {
         i32 found;
@@ -281,14 +301,10 @@ extern "C" i32 RezDirLookup(void* fp); // 0x18ccd0
 // ---------------------------------------------------------------------------
 // CRezItm::Check()  (vtable slot 7; re-homed from src/Stub/BoundaryUpper.cpp)
 // Reset the cursor, look the FILE* up in the open-file registry; if still registered
-// return 1, else re-Open from the stored filename/flags and normalize to bool.
-// @early-stop
-// slot-4-devirt wall: the retail slot-7 body dispatches the Open self-call VIRTUALLY
-// (`mov eax,[this]; call [eax+0x10]` = vtable slot 4). CRezItm still models its stream
-// methods non-virtual, so Open resolves here as a direct `call 0x13c760` - byte-exact
-// everywhere except that one call encoding. Closes fully once CRezItm/CRezItmBase are
-// converted to real virtuals in retail slot order (Slot00,dtor,Read,Write,Open,Close,
-// Scan,Check) - a shared-base vtable conversion larger than this leaf move.
+// return 1, else re-Open from the stored filename/flags and normalize to bool. The
+// Open self-call dispatches through vtable slot 4 (`mov eax,[this]; call [eax+0x10]`)
+// exactly as retail - the former "slot-4-devirt wall" was the non-virtual model, now
+// dissolved by the real CRezItmBase 8-slot interface.
 RVA(0x0013c8f0, 0x41)
 i32 CRezItm::Check() {
     m_pos = -1;
@@ -302,150 +318,143 @@ i32 CRezItm::Check() {
 }
 
 // ---------------------------------------------------------------------------
-// CRezDir::CRezDir(parent, rezMgr)
+// CRezDir::CRezDir(parent, maxOpen)
 // Base ctor, then the two embedded child-collection list members auto-construct
-// (each stamps ??_7CRezDirList @0x1ef7c8 and zeroes head/tail), the derived vtbl
-// is stamped, then m_28=0, m_34=0, m_rezMgr=rezMgr, m_30=1.
+// (each stamps ??_7CRezList @0x1ef7c8 and zeroes head/tail), the derived vtbl
+// is stamped, then m_openCount=0, m_write=0, m_maxOpen=maxOpen, m_readonly=1.
 // @early-stop
 // vptr-schedule wall (ALL-VTABLES): real-polymorphic list members auto-stamp their
-// vptr FIRST (vptr,head,tail) and the compiler zeroes m_28/m_34 after the derived
-// vptr, vs retail's head,tail,vtbl store order + pre-vptr field zeroing. The two
-// child collections + the CRezItmBase base are byte-faithful; converted per the
+// vptr FIRST (vptr,head,tail) and the compiler zeroes m_openCount/m_write after the
+// derived vptr, vs retail's head,tail,vtbl store order + pre-vptr field zeroing. The
+// two child collections + the CRezItmBase base are byte-faithful; converted per the
 // ALL-VTABLES mandate (was the hand-rolled child-collection double-stamp).
 RVA(0x0013c940, 0x46)
-CRezDir::CRezDir(void* parent, void* rezMgr) : CRezItmBase(parent) {
-    m_28 = 0;
-    m_34 = 0;
-    m_rezMgr = rezMgr;
-    m_30 = 1;
+CRezDir::CRezDir(void* parent, i32 maxOpen) : CRezItmBase(parent) {
+    m_openCount = 0;
+    m_write = 0;
+    m_maxOpen = maxOpen;
+    m_readonly = 1;
 }
 
 // ---------------------------------------------------------------------------
-// The two CRezDir-family /GX destructors (re-homed from src/Stub/BoundaryUpper2Eh.cpp),
-// co-located next to CRezDir. Their derived vtables (0x1ef760/0x1ef7d0) are CObjListBase-
-// family; the shared out-of-line base subobject dtor is 0x13c520 == CRezItmBase's dtor,
-// so both derive from the real CRezItmBase (which binds the base-subobject dtor call to
-// ??1CRezItmBase). Kept distinct placeholder identities (CRezDir13c9b0/CRezDir13cb80)
-// since they are not the same symbol as CRezDir's inline dtor.
-// ---------------------------------------------------------------------------
-struct RezListNode {
-    virtual void v0();
-    virtual void Delete(i32); // slot 1 (+0x4)
-};
-SIZE_UNKNOWN(RezListNode);
-struct CRezDir13c9b0 : CRezItmBase {
-    void* m_10;        // +0x10
-    RezListNode* m_14; // +0x14
-    i32 _18;           // +0x18
-    void* m_1c;        // +0x1c
-    RezListNode* m_20; // +0x20
-    virtual ~CRezDir13c9b0() OVERRIDE;
-};
-SIZE_UNKNOWN(CRezDir13c9b0);
-RELOC_VTBL(CRezDir13c9b0, 0x001ef760); // aliases CObjListBase (dtor-stamp verified)
+// CRezDir::~CRezDir (0x13c9b0; was the CRezDir13c9b0 placeholder - its own-vtable
+// stamp 0x5ef7a8 == the ctor's, one class): delete every child node in the open
+// then the closed list (each `delete` dispatches the node's slot-1 scalar-deleting
+// dtor: `mov eax,[node]; push 1; call [eax+4]`, and each Close/dtor unlinks the
+// node so the head re-reads advance). Then the two CRezList members destruct
+// (inlined: /O2 dead-store-eliminates their own-vtable re-stamp into the single
+// shared ??_7CObjListBase store retail shows - `mov eax,0x5ef760; mov [esi+0x1c],
+// eax; mov [esi+0x10],eax`, reverse member order) and ~CRezItmBase folds. /GX
+// frame with the two member states (retail trylevel 2).
 RVA(0x0013c9b0, 0x7f)
-CRezDir13c9b0::~CRezDir13c9b0() {
-    while (m_14) {
-        m_14->Delete(1);
+CRezDir::~CRezDir() {
+    // Typed intrusive-list access: the children are CRezItmBase-derived nodes
+    // (each `delete` dispatches the node's slot-1 scalar-deleting dtor).
+    while (m_openList.m_head != 0) {
+        delete (CRezItmBase*)m_openList.m_head;
     }
-    while (m_20) {
-        m_20->Delete(1);
+    while (m_closedList.m_head != 0) {
+        delete (CRezItmBase*)m_closedList.m_head;
     }
 }
 
-// 0x13ca30 - an abstract-base vptr-restore dtor thunk (RVA-adjacent): cl's implicit
-// vptr-restore stamps the 0x5ef760 pure-call vtable (the same CObjListBase-aliasing
-// vtable CRezDir13c9b0 above uses) into [this] and returns (7-byte
-// `mov [ecx],offset ??_7 + ret`). Placeholder polymorphic class; an empty virtual dtor
-// emits exactly the stamp+ret. Re-homed from src/Stub/BoundaryThunks.cpp.
-struct CAbstract13ca30 {
-    virtual ~CAbstract13ca30();
-};
-SIZE_UNKNOWN(CAbstract13ca30);
-RELOC_VTBL(CAbstract13ca30, 0x001ef760); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x0013ca30, 0x7)
-CAbstract13ca30::~CAbstract13ca30() {}
+// 0x13ca30 - the standalone out-of-line COMDAT copy of ~CRezList (inline in
+// <Rez/RezList.h>), emitted in this obj because ~CRezDir's EH unwind funclets
+// (0x1e0cb8/0x1e0cc3, the two member states) take the dtor's address. 7 bytes:
+// the own-vtable stamp is dead-store-eliminated into the inlined ~CObjListBase
+// base stamp (`mov [ecx],??_7CObjListBase; ret`). (Was the fake placeholder
+// CAbstract13ca30, a RELOC_VTBL alias.)
+// @rva-symbol: ??1CRezList@@QAE@XZ 0x0013ca30 0x7
 
-// CloseAllOpen (0x13ca80): drain the open-handle list. The list head sits at
-// CRezFileMgr+0x14 (m_openList.m_head); Close() each file until the list empties
-// (each Close moves the node off the open list, advancing the head). Returns 1.
+// ---------------------------------------------------------------------------
+// CRezDir::Read/Write (0x13ca40/0x13ca50, vtable slots 2/3): a directory is not a
+// byte stream - both stubs return 0.
+RVA(0x0013ca40, 0x5)
+i32 CRezDir::Read(i32 off, i32 base, u32 count, void* buf) {
+    return 0;
+}
+RVA(0x0013ca50, 0x5)
+i32 CRezDir::Write(i32 base, i32 off, u32 count, void* buf) {
+    return 0;
+}
+
+// CRezDir::Open (0x13ca60, vtable slot 4): latch the readonly/write mode flags
+// the children's lazy OpenFile selects the fopen mode by; the name is unused.
+RVA(0x0013ca60, 0x14)
+i32 CRezDir::Open(char* name, i32 readonly, i32 write) {
+    m_readonly = readonly;
+    m_write = write;
+    return 1;
+}
+
+// CRezDir::Close (0x13ca80, vtable slot 5): drain the open-handle list - CloseFile()
+// each child until the list empties (each CloseFile moves the node off the open
+// list, advancing the head). Returns 1. (Was misattributed as a separate
+// "CRezFileMgr::CloseAllOpen"; the vtable places it as CRezDir's slot 5.)
 RVA(0x0013ca80, 0x1d)
-i32 CRezFileMgr::CloseAllOpen() {
+i32 CRezDir::Close() {
     // The list stores CRezFile nodes; retrieve the head as its concrete type (the
     // typed intrusive-list access - CRezFile's node base is at offset 0, so this is a
-    // zero-offset static downcast, matching-neutral). Close() is a direct call.
+    // zero-offset static downcast, matching-neutral). CloseFile() is a direct call.
     while (m_openList.m_head != 0) {
-        ((CRezFile*)m_openList.m_head)->Close();
+        ((CRezFile*)m_openList.m_head)->CloseFile();
     }
     return 1;
 }
 
+// CRezDir::Flush/Check (0x13caa0/0x13cab0, vtable slots 6/7): trivial successes.
+RVA(0x0013caa0, 0x6)
+i32 CRezDir::Flush() {
+    return 1;
+}
+RVA(0x0013cab0, 0x6)
+i32 CRezDir::Check() {
+    return 1;
+}
+
 // -------------------------------------------------------------------------
-// CRezParseNode::CRezParseNode(parent, nameSrc, owner)  (0x13cac0; class in
-// RezMgr.h). Base-ctors CRezItmBase(parent), stamps its distinct derived vtable
-// (0x1ef7d0), records the owner @+0x18, heap-copies the name into +0x10, and links
-// itself into the owner's embedded child list (a CRezList at owner+0x1c) via
-// AddHead. Real-polymorphic (CRezItmBase-derived) so the base-ctor call +
-// derived-vptr stamp + /GX base-cleanup frame fall out; the derived vtable stays a
-// reloc-masked COMDAT here (retail datum 0x1ef7d0 emitted by FinalVtables).
+// CRezFile::CRezFile(parent, nameSrc, dir)  (0x13cac0; was the fake identity
+// "CRezParseNode" - the ctor stamps 0x5ef7d0, the same own vtable as the dtor
+// 0x13cb80). Base-ctors CRezItmBase(parent), stamps the derived vtable, records
+// the owning dir @+0x18, heap-copies the filename into +0x10, and enrolls itself
+// into the dir's closed list via CRezList::AddHead. Real-polymorphic so the
+// base-ctor call + derived-vptr stamp + /GX base-cleanup frame fall out.
 RVA(0x0013cac0, 0x9b)
-CRezParseNode::CRezParseNode(void* parent, char* nameSrc, void* owner) : CRezItmBase(parent) {
-    m_18 = owner;
-    m_14 = 0;
+CRezFile::CRezFile(void* parent, char* nameSrc, CRezDir* dir) : CRezItmBase(parent) {
+    m_dir = dir;
+    m_handle = 0;
     // operator new returns void*; char* needed for strcpy (language-forced).
     char* buf = (char*)::operator new(strlen(nameSrc) + 1);
-    m_10 = buf;
+    m_name = buf;
     strcpy(buf, nameSrc);
-    // Enroll into the owner's child list. The owner (m_18) is a foreign parser
-    // object whose embedded CRezList sits at +0x1c - documented offset access (the
-    // codegen reloads it from this+0x18: `mov ecx,[ebx+0x18]; add ecx,0x1c`). The
-    // node cast is the generic intrusive-list insertion (CRezList links any node
-    // type by its +4/+8 slots, which CRezItmBase carries).
-    CRezList* kids = (CRezList*)((char*)m_18 + 0x1c);
-    kids->AddHead((CRezListNode*)this);
+    // Enroll into the dir's closed list (new files start closed). The node param
+    // is the type-erased CRezListNode view (AddHead links any node by its +4/+8
+    // words, which CRezItmBase carries at the same offsets).
+    m_dir->m_closedList.AddHead((CRezListNode*)this);
 }
 
-// ===========================================================================
-// Class-metadata annotations for the RezMgr.h classes. Hosted at EOF of this TU
-// (not in the header): RezMgr.h is pulled into the /O2-sensitive Image.cpp for
-// RezAlloc/RezFree, where any header-injected typedef reschedules DecodePcxData
-// (verified). Placed after all function bodies so this TU is unperturbed too.
-// ===========================================================================
-SIZE(RezFindRec, 0x24);     // RE'd WIN32-find-style fixed record
-SIZE_UNKNOWN(CRezItmOwner); // abstract Retry-gate interface (no storage/vtable here)
-
-struct RezOwner18 {
-    i32 _0[0x1c / 4];
-    CObjList m_1c; // +0x1c
-};
-SIZE_UNKNOWN(RezOwner18);
-// Real base is CRezItmBase (0x10-byte node base; its out-of-line subobject dtor is
-// 0x13c520). Deriving from it binds the derived dtor's base-subobject call to
-// ??1CRezItmBase (0x13c520) instead of the fake RezDirBase placeholder.
-struct CRezDir13cb80 : CRezItmBase {
-    void* m_10;       // +0x10
-    i32 m_14;         // +0x14
-    RezOwner18* m_18; // +0x18
-    virtual ~CRezDir13cb80() OVERRIDE;
-};
-SIZE_UNKNOWN(CRezDir13cb80);
-RELOC_VTBL(CRezDir13cb80, 0x001ef7d0); // vtable reloc-masks a bound datum (dtor-stamp verified)
+// ---------------------------------------------------------------------------
+// CRezFile::~CRezFile (0x13cb80; was the CRezDir13cb80 placeholder): close the
+// handle if open (CloseFile, direct call 0x13ce70), free the heap filename, then
+// unlink from the dir's closed list (CloseFile just moved it there) and fold the
+// CRezItmBase base. /GX frame from the destructible base subobject.
 RVA(0x0013cb80, 0x72)
-CRezDir13cb80::~CRezDir13cb80() {
-    if (m_14) {
-        ((CRezFile*)this)->Close();
+CRezFile::~CRezFile() {
+    if (m_handle) {
+        CloseFile();
     }
-    if (m_10) {
-        ::operator delete(m_10);
+    if (m_name) {
+        ::operator delete(m_name);
     }
-    m_18->m_1c.Remove((CObjNode*)this);
+    m_dir->m_closedList.Remove((CObjNode*)this);
 }
 
-// Read (0x13cc00): ensure the handle is open, seek to `pos` (retrying through the
-// manager's gate), then fread `count` bytes into buf (retrying short reads through
-// the same gate). Returns the bytes read (== count) or 0. `a` is the base-class
-// signature's unused leading param. The `count <= 0` guard (unsigned) lowers to
-// retail's `test;jbe` (docs/patterns/unsigned-zero-guard-le-not-eq.md).
+// Read (0x13cc00, vtable slot 2): ensure the handle is open, seek to `pos`
+// (retrying through the dir's gate), then fread `count` bytes into buf (retrying
+// short reads through the same gate). Returns the bytes read (== count) or 0.
+// `a` is the base signature's unused leading param. The `count <= 0` guard
+// (unsigned) lowers to retail's `test;jbe` (docs/patterns/
+// unsigned-zero-guard-le-not-eq.md).
 RVA(0x0013cc00, 0x9f)
 i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
     (void)a;
@@ -453,16 +462,16 @@ i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
         return 0;
     }
     if (m_handle == 0) {
-        Open();
+        OpenFile();
     }
     while (fseek(m_handle, pos, 0) != 0) {
-        if (m_mgr->m_gate->Retry() == 0) {
+        if (m_dir->m_parent->Retry() == 0) {
             return 0;
         }
     }
     u32 got = fread(buf, 1, count, m_handle);
     while (got != count) {
-        if (m_mgr->m_gate->Retry() == 0) {
+        if (m_dir->m_parent->Retry() == 0) {
             return 0;
         }
         got = fread(buf, 1, count, m_handle);
@@ -470,8 +479,8 @@ i32 CRezFile::Read(i32 a, i32 pos, u32 count, void* buf) {
     return got;
 }
 
-// Write (0x13cca0): the write counterpart of Read (RezFWrite for RezFRead); same
-// open/seek/retry gating. Returns the bytes written (== count) or 0.
+// Write (0x13cca0, vtable slot 3): the write counterpart of Read (RezFWrite for
+// RezFRead); same open/seek/retry gating. Returns the bytes written (== count) or 0.
 RVA(0x0013cca0, 0x9f)
 i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
     (void)a;
@@ -479,16 +488,16 @@ i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
         return 0;
     }
     if (m_handle == 0) {
-        Open();
+        OpenFile();
     }
     while (fseek(m_handle, pos, 0) != 0) {
-        if (m_mgr->m_gate->Retry() == 0) {
+        if (m_dir->m_parent->Retry() == 0) {
             return 0;
         }
     }
     u32 put = fwrite(buf, 1, count, m_handle);
     while (put != count) {
-        if (m_mgr->m_gate->Retry() == 0) {
+        if (m_dir->m_parent->Retry() == 0) {
             return 0;
         }
         put = fwrite(buf, 1, count, m_handle);
@@ -496,15 +505,27 @@ i32 CRezFile::Write(i32 a, i32 pos, u32 count, void* buf) {
     return put;
 }
 
-// Flush (0x13cd60): fflush the handle, retrying through the manager's gate on
-// failure. Returns 1 (no handle / flushed) or 0 (the gate gave up). Same clean
-// `(fflush == 0)` neg/sbb/inc bool-normalize as Close (no list/handle teardown).
+// CRezFile::Open/Close (0x13cd40/0x13cd50, vtable slots 4/5): trivial refusals -
+// the managed file opens/closes ONLY through the non-virtual lazy OpenFile/
+// CloseFile cache path, never through the generic stream slots.
+RVA(0x0013cd40, 0x5)
+i32 CRezFile::Open(char* name, i32 readonly, i32 write) {
+    return 0;
+}
+RVA(0x0013cd50, 0x3)
+i32 CRezFile::Close() {
+    return 0;
+}
+
+// Flush (0x13cd60, vtable slot 6): fflush the handle, retrying through the dir's
+// gate on failure. Returns 1 (no handle / flushed) or 0 (the gate gave up). Same
+// clean `(fflush == 0)` neg/sbb/inc bool-normalize as CloseFile.
 RVA(0x0013cd60, 0x49)
 i32 CRezFile::Flush() {
     if (m_handle != 0) {
         i32 ok = (fflush(m_handle) == 0);
         while (!ok) {
-            if (m_mgr->m_gate->Retry() == 0) {
+            if (m_dir->m_parent->Retry() == 0) {
                 return 0;
             }
             ok = (fflush(m_handle) == 0);
@@ -514,31 +535,39 @@ i32 CRezFile::Flush() {
     return 1;
 }
 
-// Open (0x13cdc0): lazily (re)open the handle. If already open, return 1. If the
-// cache is over its cap, evict the LRU (the open-list tail) via Close(). Then fopen
-// with the flag-selected mode ("w+b"/"rb"/"r+b"), retrying through the manager's
-// gate on failure; on success move the node from the closed list to the open list
-// and bump the open count. Returns 1 (opened) / 0 (gave up or an invalid w+ro mix).
+// CRezFile::Check (0x13cdb0, vtable slot 7): trivial refusal (the cache node has
+// no re-acquire probe; contrast CRezItm::Check's registry lookup).
+RVA(0x0013cdb0, 0x3)
+i32 CRezFile::Check() {
+    return 0;
+}
+
+// OpenFile (0x13cdc0, non-virtual): lazily (re)open the handle. If already open,
+// return 1. If the cache is over its cap, evict the LRU (the open-list tail) via
+// CloseFile. Then fopen with the flag-selected mode ("w+b"/"rb"/"r+b"), retrying
+// through the dir's gate on failure; on success move the node from the closed
+// list to the open list and bump the open count. Returns 1 (opened) / 0 (gave up
+// or an invalid w+ro mix).
 RVA(0x0013cdc0, 0xad)
-i32 CRezFile::Open() {
+i32 CRezFile::OpenFile() {
     if (m_handle != 0) {
         return 1;
     }
-    if (m_mgr->m_openCount > m_mgr->m_maxOpen) {
+    if (m_dir->m_openCount > m_dir->m_maxOpen) {
         // Typed intrusive-list access: the LRU eviction candidate (the open list's
-        // tail) is a CRezFile (zero-offset static downcast; see CloseAllOpen).
-        CRezFile* lru = (CRezFile*)m_mgr->m_openList.m_tail;
+        // tail) is a CRezFile (zero-offset static downcast; see CRezDir::Close).
+        CRezFile* lru = (CRezFile*)m_dir->m_openList.m_tail;
         if (lru != 0) {
-            lru->Close();
+            lru->CloseFile();
         }
     }
     for (;;) {
-        if (m_mgr->m_write) {
-            if (m_mgr->m_readonly) {
+        if (m_dir->m_write) {
+            if (m_dir->m_readonly) {
                 return 0;
             }
             m_handle = fopen(m_name, s_wPlusB);
-        } else if (m_mgr->m_readonly) {
+        } else if (m_dir->m_readonly) {
             m_handle = fopen(m_name, s_rb);
         } else {
             m_handle = fopen(m_name, s_rPlusB);
@@ -546,42 +575,48 @@ i32 CRezFile::Open() {
         if (m_handle != 0) {
             break;
         }
-        if (m_mgr->m_gate->Retry() == 0) {
+        if (m_dir->m_parent->Retry() == 0) {
             return 0;
         }
         if (m_handle != 0) {
             break;
         }
     }
-    m_mgr->m_closedList.Remove(this);
-    m_mgr->m_openList.AddHead(this);
-    m_mgr->m_openCount++;
+    m_dir->m_closedList.Remove((CObjNode*)this);
+    m_dir->m_openList.AddHead((CRezListNode*)this);
+    m_dir->m_openCount++;
     return 1;
 }
 
-// Close (0x13ce70): fclose the handle (retrying through the manager's gate); then
-// drop the open count, move the node back to the closed list, and null the handle.
-// Returns 1 (no handle / closed) or 0 (the gate gave up). BYTE-EXACT (100%): the
-// anticipated esi<->edi coin-flip did not materialize here - MSVC5 pins the same
-// registers as retail, so this method needs no early-stop marker.
+// CloseFile (0x13ce70, non-virtual): fclose the handle (retrying through the dir's
+// gate); then drop the open count, move the node back to the closed list, and null
+// the handle. Returns 1 (no handle / closed) or 0 (the gate gave up). BYTE-EXACT
+// (100%): the anticipated esi<->edi coin-flip did not materialize here - MSVC5 pins
+// the same registers as retail, so this method needs no early-stop marker.
 RVA(0x0013ce70, 0x7c)
-i32 CRezFile::Close() {
+i32 CRezFile::CloseFile() {
     if (m_handle == 0) {
         return 1;
     }
     i32 ok = (fclose(m_handle) == 0);
     while (!ok) {
-        if (m_mgr->m_gate->Retry() == 0) {
+        if (m_dir->m_parent->Retry() == 0) {
             return 0;
         }
         ok = (fclose(m_handle) == 0);
     }
-    m_mgr->m_openCount--;
-    m_mgr->m_openList.Remove(this);
-    m_mgr->m_closedList.AddHead(this);
+    m_dir->m_openCount--;
+    m_dir->m_openList.Remove((CObjNode*)this);
+    m_dir->m_closedList.AddHead((CRezListNode*)this);
     m_handle = 0;
     return ok;
 }
+
+// CRezFile::Slot00 (0x13cef0, vtable slot 0): the class's own empty copy of the
+// slot-0 default (retail emits it standalone; the base's identical copy is
+// 0x13c530 - MSVC5 has no ICF, so both bodies survive).
+RVA(0x0013cef0, 0x1)
+void CRezFile::Slot00() {}
 
 // (RezMgr::UpdateClock @0x13ddc0, SpinWaitUntil @0x13dec0, SetFrameRate
 // @0x13dee0, TrySetFrameRate @0x13df00 and ::WaitKeyEdge @0x13df30 moved to
@@ -600,14 +635,13 @@ i32 CRezFile::Close() {
 // Class-metadata annotations for the Rez file-system classes (EOF-hosted; the Rez
 // headers are pulled into /O2-sensitive TUs, so the headers stay untouched).
 // ===========================================================================
-SIZE(CRezItmBase, 0x10);               // "16 bytes" base (derived fields start at +0x10)
-VTBL(CRezItmBase, 0x001ef768);         // base vtable stamp from ctor 0x13c4e0
-SIZE(CRezItm, 0x24);                   // operator new leaf size 0x24
-VTBL(CRezItm, 0x001ef788);             // derived vtable stamp from ctor 0x13c540
-SIZE(CRezDirList, 0xc);                // embedded child-collection list {vptr,head,tail}
-SIZE(CRezDir, 0x38);                   // verified: ParseBuffer `push 0x38; new; call 0x13c940`
-SIZE(CRezParseNode, 0x1c);             // verified: ParseRecords `push 0x1c; new; call 0x13cac0`
-RELOC_VTBL(CRezParseNode, 0x001ef7d0); // vtable reloc-masks a bound datum (dtor-stamp verified)
-SIZE_UNKNOWN(RezStream);               // abstract slot-view (pure virtuals, no vtable)
-SIZE_UNKNOWN(RezSrc);                  // partial view of the foreign archive-source object
-SIZE_UNKNOWN(CRezDirNode);             // partial view of the loader's recursive dir node
+SIZE(CRezItmBase, 0x10);       // "16 bytes" base (derived fields start at +0x10)
+VTBL(CRezItmBase, 0x001ef768); // base vtable stamp from ctor 0x13c4e0
+SIZE(RezFindRec, 0x24);        // RE'd WIN32-find-style fixed record
+SIZE_UNKNOWN(CRezItmOwner);    // abstract Retry-gate interface (no storage/vtable here)
+SIZE(CRezItm, 0x24);           // operator new leaf size 0x24
+VTBL(CRezItm, 0x001ef788);     // derived vtable stamp from ctor 0x13c540
+SIZE(CRezDir, 0x38);           // verified: ParseBuffer `push 0x38; new; call 0x13c940`
+SIZE_UNKNOWN(RezStream);       // abstract slot-view (pure virtuals, no vtable)
+SIZE_UNKNOWN(RezSrc);          // partial view of the foreign archive-source object
+SIZE_UNKNOWN(CRezDirNode);     // partial view of the loader's recursive dir node

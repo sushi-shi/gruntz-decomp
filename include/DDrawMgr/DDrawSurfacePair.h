@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 // CDDrawSurfacePair - a surface-backed drawing region in the DDrawMgr image
 // family (own vtable ??_7CDDrawSurfacePair@@6B@ @0x5eff30, 15 slots). It owns ONE
-// held DDraw surface (a CPoolItemA, the CDDSurface wrapper) borrowed from the
+// held DDraw surface (a CFileImageSurface, the CDDSurface wrapper) borrowed from the
 // parent CDirectDrawMgr's surface pool, plus a cached pixel geometry (width @+0x10
 // / height @+0x14 / bpp @+0x18) and an x/y offset window @+0x1c.
 //
@@ -41,7 +41,7 @@
 // chains out of this widely-included header (the owner TU includes their full defs).
 // ---------------------------------------------------------------------------
 
-class CDDSurface;       // +0x2c held surface (CPoolItemA); <DDrawMgr/DDSurface.h>
+class CDDSurface;       // +0x2c held surface (CFileImageSurface); <DDrawMgr/DDSurface.h>
 class CDDrawSurfaceMgr; // +0x0c parent manager (surface pool at +0x1c)
 struct CParseSource;    // LoadImage_163e50 arg (the 0x139xxx byte-reader)
 
@@ -122,7 +122,7 @@ public:
     i32 m_height;          // +0x14  height
     i32 m_bpp;             // +0x18  bits-per-pixel (8/16/24/32)
     i32 m_srcRect[4];      // +0x1c  x/y offset window {x,y,w,h} (src RECT)
-    CDDSurface* m_surface; // +0x2c  the held surface (CPoolItemA)
+    CDDSurface* m_surface; // +0x2c  the held surface (CFileImageSurface)
     i32 m_ownsSurface;     // +0x30  "owns surface" flag (free on teardown)
 };
 

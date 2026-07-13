@@ -216,57 +216,22 @@ CFxModeT6::CFxModeT6() {
 RVA(0x0017e940, 0x27)
 CFaderMesh::CFaderMesh() {}
 
-// 0x17e990 (re-homed from src/Stub/BoundaryUpperEh.cpp): a /GX leaf dtor that aliases
-// CFaderMesh's vtable (0x5f07c0) and destructs an embedded sub-object at +0x58 (own
-// vtable 0x5f07d8, owned buffer at +0x5c). Kept a DISTINCT placeholder identity
-// (C17e990) rather than folded onto ~CFaderMesh: the real CFaderMeshSub (m_58) is
-// modeled with a non-destructible int layout, and giving it a buffer-freeing virtual
-// dtor would change CFaderMeshSub's vtable and crater the matched CFaderMesh ctor
-// (0x17e940). Members destruct before the CFader base. The owned buffer is freed via
-// ::operator delete (0x1b9b82, reloc-masked, C++ linkage -> potentially-throwing ->
-// cl keeps the /GX base-subobject unwind frame).
-//
-// The vtable stamps here (??_7EmbedBase17e990/??_7EmbedSub17e990/??_7C17e990) stay
-// placeholder-named: 0x17e990 IS the real ~CFaderMesh, but reproducing its INLINED
-// member teardown (the retail dtor inlines ~CRezBufferObject's stamp+free rather than
-// calling the out-of-line 0x17f330) needs ~CRezBufferObject made inline in the Rez
-// lane's <Rez/RezBufferObject.h> - a cross-lane change. Deferred to that coordination;
-// the real ??_7CFaderMesh/??_7CRezBufferObject/??_7CObject are already bound (VTBL
-// catalog) at 0x1f07c0/0x1f07d8/0x1e8cb4, so a VTBL alias here would keep-last-collide.
-struct EmbedBase17e990 {
-    virtual ~EmbedBase17e990();
-};
-SIZE_UNKNOWN(EmbedBase17e990);
-inline EmbedBase17e990::~EmbedBase17e990() {}
-// The dtor-side sub-object views reloc-mask the real retail vtables: EmbedBase17e990's
-// ??_7 masks 0x1e8cb4 (== ??_7CObject, catalog-bound), EmbedSub17e990's masks 0x1f07d8
-// (== ??_7CRezBufferObject, VTBL-bound in RezBufferObjectDtor.cpp). reloc-fidelity (R45).
-RELOC_VTBL(EmbedBase17e990, 0x001e8cb4);
-struct EmbedSub17e990 : EmbedBase17e990 {
-    char* m_4; // +0x4 (outer +0x5c)
-    virtual ~EmbedSub17e990() OVERRIDE;
-};
-SIZE_UNKNOWN(EmbedSub17e990);
-RELOC_VTBL(EmbedSub17e990, 0x001f07d8);
-inline EmbedSub17e990::~EmbedSub17e990() {
-    if (m_4) {
-        ::operator delete(m_4);
-    }
-}
-// The base subobject IS the real CFader (its ~CFader @0x17e4a0 is bound in this unit) -
-// so the base-dtor teardown call binds to ??1CFader instead of a placeholder. C17e990
-// stays a dtor-side view of CFaderMesh (m_58 modeled destructible; the ctor-side
-// CFaderMesh models m_58 non-destructible - the split fold onto CFaderMesh needs the
-// cross-lane inline ~CRezBufferObject). reloc-fidelity (R45).
-struct C17e990 : CFader {
-    char _pad38[0x58 - 0x38];
-    EmbedSub17e990 m_58; // +0x58
-    virtual ~C17e990() OVERRIDE;
-};
-SIZE_UNKNOWN(C17e990);
-RELOC_VTBL(C17e990, 0x001f07c0); // aliases CFaderMesh (dtor-stamp verified)
+// 0x17e990 - ~CFaderMesh (the real class dtor; was the C17e990 placeholder trio
+// EmbedBase17e990/EmbedSub17e990/C17e990, three RELOC_VTBL fake views). Empty body:
+// cl stamps ??_7CFaderMesh (masks 0x5f07c0), destroys the m_58 CRezBufferObject
+// member, then chains ~CFader (0x17e4a0). /GX frame from the destructible member
+// + base.
+// @early-stop
+// out-of-line member-dtor wall: retail INLINES ~CRezBufferObject's teardown here
+// (stamp 0x5f07d8 into +0x58, free +0x5c, restamp ??_7CObject) - byte-shape
+// `mov [edi],vt; mov eax,[edi+4]; test; push; call delete` - while our canonical
+// ??1CRezBufferObject stays out-of-line (RezBufferObjectDtor.cpp @0x17f330, itself
+// 100%-matched), so this dtor emits `lea ecx,[esi+0x58]; call ??1CRezBufferObject`
+// instead. The CALL reloc binds to the real dtor (reloc-faithful); inlining it here
+// would require the header-inline move that unbinds the 0x17f330 emission. A
+// deliberate structure-over-% trade.
 RVA(0x0017e990, 0x6b)
-C17e990::~C17e990() {}
+CFaderMesh::~CFaderMesh() {}
 
 // ===========================================================================
 // 0x17ef00 - CFaderMesh::v1(frame): the mesh-warp blit. Prime the dest surface
@@ -291,10 +256,10 @@ void CFaderMesh::v1(i32 frame) {
     } else {
         dst->Clear(0);
     }
-    if (m_58.m_08 > 0) {
+    if (m_58.m_nSize > 0) {
         float ff = (float)frame;
-        char* pData = (char*)m_58.m_04;
-        for (i32 i = 0; i < m_58.m_08; i++) {
+        char* pData = (char*)m_58.m_pData;
+        for (i32 i = 0; i < m_58.m_nSize; i++) {
             i32* rec = (i32*)(pData + i * 0x28);
             i32 r0 = rec[0], r1 = rec[1], r2 = rec[2], r3 = rec[3];
             i32 r4 = rec[4], r5 = rec[5], r6 = rec[6], r7 = rec[7];

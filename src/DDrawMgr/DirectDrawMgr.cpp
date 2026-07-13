@@ -632,16 +632,16 @@ CDDSurface* CDDrawPtrCollections::Create7f0_1(i32 a) {
 }
 
 // ---------------------------------------------------------------------------
-// CreateA (0x142260).  new 0xc0 item, ctor (CPoolItemA shell @+0x94 / vtbl 0x5efa58),
+// CreateA (0x142260).  new 0xc0 item, ctor (CFileImageSurface @+0x94 / vtbl 0x5efa58),
 // dispatch vtbl[0x24]; on success register via AddItemA, else virtual-delete. /GX.
 // ---------------------------------------------------------------------------
 // @early-stop
-// EH-state wall: real-polymorphic `new CPoolItemA` emits the /GX frame; residue is the
+// EH-state wall: real-polymorphic `new CFileImageSurface` emits the /GX frame; residue is the
 // global __ehfuncinfo state-index push (per-TU) + the redundant base-then-derived vptr
 // stamp order. Body byte-faithful. Deferred to the final sweep.
 RVA(0x00142260, 0xd2)
 CDDSurface* CDDrawPtrCollections::CreateA(i32 a, i32 b, i32 c, i32 d, i32 e) {
-    CPoolItemA* item = new CPoolItemA;
+    CFileImageSurface* item = new CFileImageSurface;
     if (item->v24(this, a, b, c, d, e)) {
         AddItemA(item);
         return item;
@@ -685,7 +685,7 @@ CFileImageSurface::~CFileImageSurface() {}
 // residue. Deferred to the final sweep.
 RVA(0x001423c0, 0xd2)
 CDDSurface* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
-    CPoolItemA* item = new CPoolItemA;
+    CFileImageSurface* item = new CFileImageSurface;
     if (item->v2c(this, a, b, c, d, e)) {
         AddItemA(item);
         return item;
@@ -702,7 +702,7 @@ CDDSurface* CDDrawPtrCollections::CreateB(i32 a, i32 b, i32 c, i32 d, i32 e) {
 // EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x001424a0, 0xbe)
 CDDSurface* CDDrawPtrCollections::Createa58_1(i32 a) {
-    CPoolItemA* item = new CPoolItemA;
+    CFileImageSurface* item = new CFileImageSurface;
     if (item->Init1(this, a)) {
         AddItemA(item);
         return item;
@@ -719,7 +719,7 @@ CDDSurface* CDDrawPtrCollections::Createa58_1(i32 a) {
 // EH-state wall (real-polymorphic; body byte-faithful, /GX state-index residue).
 RVA(0x00142560, 0xc8)
 CDDSurface* CDDrawPtrCollections::Createa58_3(i32 a, i32 b, i32 c) {
-    CPoolItemA* item = new CPoolItemA;
+    CFileImageSurface* item = new CFileImageSurface;
     if (item->v28(this, a, b, c)) {
         AddItemA(item);
         return item;

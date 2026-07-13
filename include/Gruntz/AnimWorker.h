@@ -3,7 +3,8 @@
 // GruntIndicatorWorkerHandlers.cpp = the grunt-HUD indicator-sprite handlers).
 //
 // The worker held at owner->m_7c is the same foreign-vtable-0x5efb80 object whose
-// full 3-arg ctor (WorkerFull) lives in AnimWorkerCtor.cpp; `Worker` here is the
+// full 3-arg ctor lives on the canonical AnimWorkerObj (<DDrawMgr/AnimWorkerObj.h>,
+// ctor @0x15b300 in WwdFactoryObject.cpp); `Worker` here is the
 // reduced message-pump view (state tag + live sub-record). Unifying the two views
 // into one class is deferred: the ctor is @early-stop on a vptr-last wall and the
 // two facets sit in different TUs, so the union is a follow-up.

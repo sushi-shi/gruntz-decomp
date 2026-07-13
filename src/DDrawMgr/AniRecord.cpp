@@ -35,6 +35,7 @@
 #include <DDrawMgr/DDSurface.h>     // CDDSurface::SetPalette (Slot13_168fd0, reloc-masked)
 #include <DDrawMgr/DirectDrawMgr.h> // canonical CDDPalette (the +0x10 work buffer's real class)
 #include <DDrawMgr/DDrawPtrCollections.h> // CDDrawPtrCollections - the real +0x1c pool allocator
+#include <DDrawMgr/AniRecordBase2.h>      // the canonical secondary/base facet (dtor 0x165dd0 here)
 #include <string.h>                       // strlen (inline repnz scas)
 #include <Globals.h>
 
@@ -116,24 +117,15 @@ struct CAniMapOwner {
 // +0x10 work buffer (FreeBuf), resets the CObject header (m_04=-1, m_08=0, m_0c=0), then
 // the implicit grand-base re-stamp (masks 0x5e8cb4) folds LAST. The 9 extra slots (5..13)
 // are declared-only (reloc-masked); the buffer (de)allocation virtuals live as the regular
-// CAniRecord methods below (slots 7/10/11/12 = FreeBuf/Alloc168ee0/Alloc168ea0/Alloc168f60).
-struct CAniRecordBase2 : public CObject { // was : CAniRecordObjBase (merged intermediate)
-    i32 m_04, m_08, m_0c; // +0x04..0x0f CObject-header fields (from merged CAniRecordObjBase)
-    virtual ~CAniRecordBase2() OVERRIDE; // [1] overrides; UAE
-    virtual void Slot05_165d90();        // [5] 0x165d90
-    virtual void IsValidImage();         // [6] 0x001c08
-    virtual void Slot07_168fb0(); // [7] 0x168fb0 (FreeBuf, bound as CAniRecord method - other slot)
-    virtual void Slot08_165da0(); // [8] 0x165da0
-    virtual void Slot09_168f20(); // [9] 0x168f20
-    virtual void Alloc168ee0();   // [10] 0x168ee0 (= CAniRecordView::Alloc168ee0)
-    virtual void Alloc168ea0();   // [11] 0x168ea0 (= CAniRecordView::Alloc168ea0)
-    virtual void Alloc168f60();   // [12] 0x168f60 (= CAniRecordView::Alloc168f60)
-    virtual void Slot13_168fd0(); // [13] 0x168fd0
+// CAniRecordView methods below (slots 7/10/11/12 = FreeBuf/Alloc168ee0/Alloc168ea0/
+// Alloc168f60). The class def is the SHARED canonical <DDrawMgr/AniRecordBase2.h>
+// (also the CDDrawWorkerMapSmall keyed "map worker" - one class, one vtable).
 
-    void FreeBuf_168fb0() {
-        ((CAniRecordView*)this)->FreeBuf_168fb0();
-    }
-};
+// The dtor's member teardown reaches the CAniRecordView-bound body 0x168fb0.
+// Inline (odr-used only by the dtor below, folds into it - no extra symbol).
+inline void CAniRecordBase2::FreeBuf_168fb0() {
+    ((CAniRecordView*)this)->FreeBuf_168fb0();
+}
 
 // ---------------------------------------------------------------------------
 // 0x1657a0: the PRIMARY base (g_aniRecordVtbl @0x5f02c0, 5 slots == the grand-base
@@ -386,11 +378,11 @@ i32 CAniRecordView::Slot13_168fd0() {
 }
 
 SIZE_UNKNOWN(CAniMapOwner);
-SIZE_UNKNOWN(CAniRecordBase2);
 SIZE_UNKNOWN(CAniRecordOwner);
 
-VTBL(CAniRecordBase2, 0x001f02d8); // ??_7 (14 slots)
-VTBL(CAniRecordView, 0x001f02c0);  // ??_7CAniRecordPrimary@@6B@ (5-slot CObject-derived)
+// (CAniRecordBase2's SIZE/VTBL rows live with the canonical def in
+// <DDrawMgr/AniRecordBase2.h>.)
+VTBL(CAniRecordView, 0x001f02c0); // ??_7CAniRecordPrimary@@6B@ (5-slot CObject-derived)
 
 // @identity-TODO (matcher-5): 0x16b230 (503 B, __thiscall, ret 0x20, 8 args) == a PLANE
 // geometry Init on a CLevelPlane/CPlaneRender (the RecomputePlaneCoords @0x161c90 CLevelPlane

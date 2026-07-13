@@ -15,44 +15,10 @@
 #include <Wap32/Object.h>
 #include <Gruntz/StateId.h> // StateId (GetStateId return type)
 #include <Gruntz/MapStringToOb.h>
-
-// The worker virtual interface. Slots laid out so the dispatched methods land at
-// the byte offsets the target uses: +0x04 scalar-deleting dtor, +0x28/+0x2c the
-// two factory siblings. Declarations only - never defined, so no ??_7 emitted.
-class CDDrawMapWorker {
-public:
-    virtual void GetRuntimeClass();              // [0] 0x1bef01
-    virtual ~CDDrawMapWorker();                  // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Serialize();                    // [2] 0x0028ec
-    virtual void AssertValid();                  // [3] 0x00106e
-    virtual void Dump();                         // [4] 0x004034
-    virtual void Slot05_165d90();                // [5] 0x165d90
-    virtual void IsValidImage();                 // [6] 0x001c08
-    virtual void FreeBuf_168fb0();               // [7] 0x168fb0 (= CAniRecord::FreeBuf_168fb0)
-    virtual void Slot08_165da0();                // [8] 0x165da0
-    virtual void Slot09_168f20();                // [9] 0x168f20
-    virtual i32 Vfunc28(i32 a1, i32 a3);         // [10] 0x168ee0
-    virtual i32 Vfunc2C(i32 a1, i32 a3);         // [11] 0x168ea0
-    virtual i32 Vfunc30(i32 a1, i32 a2, i32 a3); // [12] +0x30
-};
-SIZE_UNKNOWN(CDDrawMapWorker);
-RELOC_VTBL(
-    CDDrawMapWorker,
-    0x001f02d8
-); // shares CAniRecordBase2 vtable, COMDAT-folded (slot-fn RVAs match its vtable)
-
-// The 0x14-byte worker layout. Only the seeded offsets are load-bearing.
-// Real polymorphic: `new CDDrawMapWorkerObj` makes cl auto-emit ??_7CDDrawMapWorkerObj
-// (masks the retail vtable 0x5f02d8 = CAniRecordBase2) and stamp the vptr in the ctor
-// (ALL-VTABLES mandate).
-struct CDDrawMapWorkerObj : public CDDrawMapWorker {
-    CDDrawMapWorkerObj() {}
-    i32 m_04; // +0x04  = parent->m_1c (an internal field of map1)
-    i32 m_08; // +0x08  = 0
-    i32 m_0c; // +0x0c  = parent->m_0c (the CDDrawSurfaceMgr handle)
-    i32 m_10; // +0x10  = 0
-}; // 0x14
-SIZE(CDDrawMapWorkerObj, 0x14);
+// The keyed "map worker" the factories allocate IS the canonical CAniRecordBase2
+// (14-slot vtable @0x1f02d8; 0x14-byte allocation). The former local view pair
+// CDDrawMapWorker (RELOC_VTBL alias) + CDDrawMapWorkerObj is dissolved onto it.
+#include <DDrawMgr/AniRecordBase2.h>
 
 // The surface/resource arg passed to the two elaborate factories (0x1658c0/0x165a90):
 // a __thiscall Lock/Unlock, a format-id probe, a +0x0c key handle, and a name at

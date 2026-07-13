@@ -42,12 +42,14 @@ extern "C" char g_emptyString[]; // 0x6293f4
 // also real polymorphic now (??_7CObjList @0x5ef760); the ctor/dtor vptr stamps
 // reloc-mask against it.
 
-// A polymorphic list node: { vptr@+0, next@+4, prev@+8 }. Its vtable carries a
-// scalar-deleting dtor at slot 1 (+0x4, a delete-flag arg) and a teardown/detach
+// A polymorphic reader/list node: { vptr@+0, next@+4, prev@+8 }. Its vtable carries
+// a scalar-deleting dtor at slot 1 (+0x4, a delete-flag arg) and a teardown/detach
 // method at slot 5 (+0x14). Modeled as a polymorphic class (like CNetPlayerObj) so
 // `n->Delete(1)` / `n->Detach()` lower to the __thiscall virtual dispatch; the
-// virtuals are never defined here, so no vtable is emitted in this TU.
-class CObjNode {
+// virtuals are never defined here, so no vtable is emitted in this TU. (Renamed
+// from "CObjNode" - that name is the Rez list family's type-erased node base in
+// <Rez/RezList.h>, a DIFFERENT class; this is the parser's reader-node interface.)
+class CSymObjNode {
 public:
     virtual void Slot00();                                 // +0x00
     virtual void Delete(i32 flag);                         // +0x04  slot 1 (scalar-deleting dtor)
@@ -58,10 +60,10 @@ public:
     virtual void Slot18();                                 // +0x18  slot 6
     virtual i32 Slot1c();                                  // +0x1c  slot 7 (CheckNodes probe)
 
-    CObjNode* m_next; // +0x04
-    CObjNode* m_prev; // +0x08
+    CSymObjNode* m_next; // +0x04
+    CSymObjNode* m_prev; // +0x08
 };
-SIZE(CObjNode, 0xc); // base subobject { vptr, next, prev }
+SIZE(CSymObjNode, 0xc); // base subobject { vptr, next, prev }
 
 // CObjListBase - the abstract list-interface base whose vtable (0x1ef760, one
 // __purecall slot) is the DESTRUCTION vtable of the +0x10 CObjList sub-object: the
@@ -69,32 +71,30 @@ SIZE(CObjNode, 0xc); // base subobject { vptr, next, prev }
 // as a standalone abstract class (NOT wired as CObjList's C++ base) so the delicate
 // CSymParser ctor/dtor codegen is untouched; the pair-of-vtables collapse to
 // CObjList's own single ??_7 in our model (the dtor stamp reloc-masks).
-SIZE(CObjListBase, 0x4);
-VTBL(CObjListBase, 0x001ef760);
-struct CObjListBase {
-    virtual void V0() = 0; // slot 0 (__purecall)
-};
+// (Def extracted to <Bute/ObjListBase.h> so the Rez list family can derive it.)
+#include <Bute/ObjListBase.h>
 
-// The CObjList sub-object embedded at +0x10: an intrusive doubly-linked list of
-// polymorphic nodes. Its Remove (0x1852e0, __thiscall on the list head) unlinks a
-// node from the {head@+4, tail@+8} pair. REAL POLYMORPHIC (ALL-VTABLES): the +0x00
-// list-interface vtable is the implicit vptr (virtual dtor). The enclosing CSymParser
-// ctor auto-stamps the vptr `mov [esi+0x10],0x5ef75c` (CObjList's OWN vtable, slot0
-// sub_13c4c0); its /GX dtor's last member-destruct stamps the abstract base vtable
-// 0x5ef760 (see CObjListBase) - both reloc-mask against ??_7CObjList.
-VTBL(CObjList, 0x001ef75c);
-struct CObjList {
-    virtual ~CObjList() {} // +0x00 (this+0x10): list-interface vptr (slot0 sub_13c4c0)
-    CObjNode* m_head;      // +0x04 (this+0x14)
-    CObjNode* m_tail;      // +0x08 (this+0x18)
-    i32 m_count;           // +0x0c (this+0x1c)
+// The parser's list sub-object embedded at +0x10: an intrusive doubly-linked list
+// of polymorphic reader nodes, PLUS a count word. It derives the SHARED middle base
+// CObjList (<Rez/RezList.h>: {vptr,head,tail} + the one bound Remove @0x1852e0 -
+// deleting the former duplicate CObjList definition here) and adds m_count + its
+// own 1-slot vtable (retail ??_7 @0x1ef75c: [0] = the empty fn 0x13c4c0, a sibling
+// of CRezList's 0x13c4d0). The enclosing CSymParser ctor auto-stamps the member
+// vptr `mov [esi+0x10],0x5ef75c`; its /GX dtor's member-destruct inlines the dtor
+// chain, dead-store-eliminating down to the ??_7CObjListBase base stamp
+// (`mov [esi+0x10],0x5ef760`) - the retail shape.
+#include <Rez/RezList.h>
+VTBL(CParserObjList, 0x001ef75c);
+struct CParserObjList : public CObjList {
+    virtual void V0() OVERRIDE; // [0] 0x13c4c0 (empty body; declared-only, reloc-masked)
+    ~CParserObjList() {}
+    i32 m_count; // +0x0c (this+0x1c)
 
-    // Remove(node): unlink a node from the chain (0x1852e0).
-    void Remove(CObjNode* node);
-    // Link(node): splice a freshly-built reader node onto the list (0x1851e0).
+    // Link(node): splice a freshly-built reader node onto the list (0x1851e0 - the
+    // same body as CRezList::AddHead; alias decl, reloc-masked).
     void Link(void* node);
 };
-SIZE(CObjList, 0x10); // { vptr, head, tail, count }
+SIZE(CParserObjList, 0x10); // { vptr, head, tail, count }
 
 // The parse-slot record block CSlotNode owns (an array of n*0x3c-byte slots);
 // full definition in SymParser.cpp.
@@ -221,8 +221,8 @@ public:
     char* m_delims;
     i32 m_08;                   // +0x08  (=1)
     i32 m_parseArmed;           // +0x0c  Clear guard (0/1 flag)
-    CObjList m_list;            // +0x10  (+0x10..+0x1c)
-    CObjNode* m_activeNode;     // +0x20  detached+removed+deleted first in Clear
+    CParserObjList m_list;      // +0x10  (+0x10..+0x1c)
+    CSymObjNode* m_activeNode;  // +0x20  detached+removed+deleted first in Clear
     i32 m_24;                   // +0x24
     i32 m_nextGeneratedFileKey; // +0x28
     i32 m_2c;                   // +0x2c

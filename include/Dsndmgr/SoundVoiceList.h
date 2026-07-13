@@ -51,6 +51,14 @@ struct PureSoundElem {
     virtual i32 Tick(i32 now) = 0; // +0x00  slot 0  __purecall (per-frame update)
     virtual i32 Stop() = 0;        // +0x04  slot 1  __purecall
     void operator delete(void* p); // Rez-heap free (RezFree, 0x1b9b82)
+    // NON-virtual dtor (the 2-slot vtable holds no dtor). Inline+empty so every
+    // `delete (PureSoundElem*)e` keeps the retail inlined teardown (vptr reset to
+    // ??_7PureSoundElem + RezFree). Retail also carries ONE standalone out-of-line
+    // COMDAT copy at 0x137330 (7 B: `mov [ecx],??_7PureSoundElem; ret`), emitted in
+    // the DSndMgSR.cpp obj because its EH unwind funclet (0x1e0950) takes the
+    // dtor's address; SoundStream.cpp's @rva-symbol names that retail copy (was
+    // the fake placeholder class CAbstract137330).
+    ~PureSoundElem() {}
 };
 inline void PureSoundElem::operator delete(void* p) {
     RezFree(p);

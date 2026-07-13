@@ -55,7 +55,15 @@ struct CAniSource {
 
 class CAniElement : public CObject {
 public:
-    virtual ~CAniElement() OVERRIDE;          // 0x152e30 (CAniElementCollection.cpp)
+    // Inline ctor (retail inlines it at the CDDrawSubMgrAni factory new-sites:
+    // base stamp, m_records CObArray-construct @+0x08 via the NAFXCW ctor, own
+    // stamp, zero m_flags/m_name). Was the DDrawSubMgrLeaf.cpp-local ctor-shape
+    // view CAniElementObj (m_04/CAniElemSub/m_1c) - one class, one def.
+    CAniElement() {
+        m_flags = 0;
+        m_name = 0;
+    }
+    virtual ~CAniElement() OVERRIDE;          // 0x152e30 (DDrawSubMgrLeaf.cpp)
     ::CObject* AtChecked_06b270(i32 i) const; // 0x06b270 (MFC ::CObject array element)
     i32 Build_165460(void* ctx, CAniSource* src, i32 flags); // 0x165460
     i32 Configure_1655c0(void* ctx, void* entry, i32 flags); // 0x1655c0
@@ -68,6 +76,8 @@ public:
     float m_scale;             // +0x20
     i32 m_total;               // +0x24
 }; // size = 0x28
+SIZE(CAniElement, 0x28);
+VTBL(CAniElement, 0x001efba8); // ??_7 (5 slots; slot 1 = cl-auto ??_G @0x152e10)
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---
 

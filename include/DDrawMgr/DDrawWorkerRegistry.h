@@ -22,7 +22,8 @@
 #include <Ints.h>
 #include <rva.h>
 
-struct CDDrawWorker; // 0x6c-byte keyed worker (defined in the owning .cpp); struct-key
+class CDDrawWorker; // 0x6c-byte keyed worker (canonical def <DDrawMgr/DDrawWorker.h>);
+                    // class-key MUST match the definition (mangling: PAV vs PAU)
                      // is load-bearing: it keeps the PAU (not PAV) tag in the Forward*/
                      // RemoveWorker method manglings that take CDDrawWorker*.
 class CImageSet;
@@ -87,15 +88,14 @@ public:
     i32 Forward2C(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
     i32 Forward30(i32 a1, i32 a2, CDDrawWorker* worker, i32 a4, i32 a5);
     i32 DispatchKeyed30(i32 a1, i32 a2, const char* key, i32 a4, i32 a5);
-    i32 Forward38(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4);
-    i32 DispatchKeyed38(i32 a1, const char* key, i32 a3, i32 a4);
+    i32 Forward38(void* rec, CDDrawWorker* worker, i32 a3, i32 a4);
+    i32 DispatchKeyed38(void* rec, const char* key, i32 a3, i32 a4);
     i32 Forward34(i32 a1, CDDrawWorker* worker, i32 a3, i32 a4);
     i32 DispatchKeyed34(i32 a1, const char* key, i32 a3, i32 a4);
     void RemoveWorker(CDDrawWorker* worker);
     void RemoveByKey(const char* key);
     void DestroyAll();
     void MapTeardown_1552b0();
-    i32 StringCopy_155810(const char* src);
 
     // Map-scan helpers (non-virtual; direct-called from the worker code region).
     i32 RemoveKeysEqual_155360(const char* base, const char* str);

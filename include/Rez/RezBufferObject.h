@@ -22,6 +22,15 @@ struct CRezBufferObject : public CObject {
     i32 m_nSize;        // +0x08
     i32 m_nMaxSize;     // +0x0c
     i32 m_nGrowBy;      // +0x10
+    // Inline ctor (the CObArray-default shape): retail inlines the vptr stamp +
+    // the four zero stores at the embedding ctor (CFaderMesh @0x17e940). Store
+    // order (m_pData, m_nGrowBy, m_nMaxSize, m_nSize) is the retail one.
+    CRezBufferObject() {
+        m_pData = 0;
+        m_nGrowBy = 0;
+        m_nMaxSize = 0;
+        m_nSize = 0;
+    }
     virtual ~CRezBufferObject() OVERRIDE;          // 0x17f330
     virtual void Serialize(CArchive& ar) OVERRIDE; // slot 2  0x17f130
 };

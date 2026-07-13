@@ -7,9 +7,9 @@
 // inline ctor here). It also carries the two __thiscall XMIDI master-volume helpers
 // (0x138950/0x1389c0), reached as m_sound-> methods off CGruntzMgr +0x48.
 //
-// CGruntzSoundZ adds no virtuals, so it reuses CMapStringToOb's vftable (no
-// ??_7CGruntzSoundZ is emitted); the scalar destructor at 0x086040 runs Shutdown
-// then the inherited ~CMapStringToOb (an out-of-line NAFXCW thunk, reloc-masked).
+// CGruntzSoundZ is non-polymorphic and CONTAINS its CMapStringToOb at +0x00 (no
+// ??_7CGruntzSoundZ exists in retail); the destructor at 0x086040 runs Shutdown
+// then the m_map member ~CMapStringToOb (an out-of-line NAFXCW thunk, reloc-masked).
 // Its local destructible CString in StopAndFlush forces the /GX EH frame, so this
 // unit is built with the "eh" flag profile; the plain AIL leaf methods carry no EH
 // state (no destructible locals) even under /GX.
@@ -40,18 +40,12 @@ DATA(0x00253c64)
 HMDIDRIVER g_ailDriver64 = 0; // 0x653c64  cached driver handle passed to Init
 
 // ---------------------------------------------------------------------------
-// ~CGruntzSoundZ scalar destructor: stop/flush everything via Shutdown, then the
-// inherited ~CMapStringToOb fires from the destructor epilogue. The destructible
-// base forces the /GX EH state machine (state 0 across Shutdown, -1 after).
-// @early-stop
-// vptr-restamp wall (~91.6%) - complete & correct: the /GX EH frame, the trylevel
-// 0/-1 stamps, the Shutdown call, and the trailing base ~CMapStringToOb call are
-// all byte-exact. The only divergence is one extra `mov [esi],&??_7CGruntzSoundZ`
-// re-stamp our polymorphic model emits at dtor entry that retail elided (the body
-// makes no virtual call on `this`, so cl's /GX EH machine dropped the dead store).
-// The polymorphic CMapStringToOb base is REQUIRED (it supplies the EH frame +
-// base-dtor call); no source spelling flips the re-stamp presence.
-// See docs/patterns/eh-dtor-vptr-restamp-presence.md.
+// ~CGruntzSoundZ destructor: stop/flush everything via Shutdown, then the m_map
+// member ~CMapStringToOb fires from the destructor epilogue. The destructible
+// member forces the /GX EH state machine (state 0 across Shutdown, -1 after).
+// Non-polymorphic containment (see the header note): retail emits NO own-vptr
+// restamp here, which the old derived model could not reproduce (was @early-stop
+// at ~91.6% on the extra ??_7CGruntzSoundZ entry stamp).
 RVA(0x00086040, 0x49)
 CGruntzSoundZ::~CGruntzSoundZ() {
     Shutdown();
@@ -103,18 +97,18 @@ void CGruntzSoundZ::StopAndFlush() {
     if (m_pCurrent != 0) {
         m_pCurrent->Stop();
     }
-    POSITION pos = (POSITION)(GetCount() != 0 ? -1 : 0);
+    POSITION pos = (POSITION)(m_map.GetCount() != 0 ? -1 : 0);
     if (pos != (POSITION)0) {
         do {
             CString key;
             CObject* val = 0;
-            GetNextAssoc(pos, key, val);
+            m_map.GetNextAssoc(pos, key, val);
             if (val != 0) {
                 delete (CGruntzSoundInnerZ*)val;
             }
         } while (pos != (POSITION)0);
     }
-    RemoveAll();
+    m_map.RemoveAll();
     m_pCurrent = 0;
 }
 
@@ -169,7 +163,7 @@ void CGruntzSoundZ::Insert(CGruntzSoundInnerZ* inner) {
     if (m_enabled == 0) {
         return;
     }
-    (*this)[inner->m_name] = (CObject*)inner;
+    m_map[inner->m_name] = (CObject*)inner;
     if (m_pCurrent == 0) {
         m_pCurrent = inner;
     }
@@ -189,7 +183,7 @@ CGruntzSoundInnerZ* CGruntzSoundZ::FindBank(const char* key) {
         return 0;
     }
     CObject* result = 0;
-    return Lookup(key, result) ? (CGruntzSoundInnerZ*)result : 0;
+    return m_map.Lookup(key, result) ? (CGruntzSoundInnerZ*)result : 0;
 }
 
 // ---------------------------------------------------------------------------

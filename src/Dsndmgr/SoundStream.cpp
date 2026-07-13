@@ -16,8 +16,8 @@
 //   * SoundDevice::TickSubManagers (0x137ac0) - a SoundDevice method the devs
 //     defined in the STREAM file: its body is pure stream machinery (walks the
 //     StreamVoice instance list pumping StreamFeeder). Dossier seam re-home.
-//   * ??1PureSoundElem (0x137330, the "CAbstract137330" stamp dtor) - the
-//     out-of-line pure-base dtor this obj's EH funclet forces. First fn of the obj.
+//   * ??1PureSoundElem (0x137330) - the out-of-line copy of the canonical inline
+//     dtor (<Dsndmgr/SoundVoiceList.h>) this obj's EH funclet forces. First fn of the obj.
 //   * SetDSoundReportModes + DirectSoundMgr::GetErrorString (0x138120/0x138150) -
 //     the error-reporting tail: they sit AFTER the StreamFeeder block in retail,
 //     past the 0x137330 boundary, so they belong to this obj (dossier: weak - could
@@ -75,21 +75,16 @@ inline void* operator new(u32, void* p) {
 // the hand-declared scalar-dtor) - now a compiler artifact with no source symbol.
 
 // ---------------------------------------------------------------------------
-// 0x137330 - PureSoundElem's standalone base-object destructor (retail ??1PureSoundElem):
-// cl's implicit vptr-restore stamps the ??_7PureSoundElem pure-call vtable (0x5ef6c8)
-// into [this] and returns (7-byte `mov [ecx],offset ??_7 + ret`). Modeled as an empty
-// virtual dtor (emits exactly the stamp+ret). REQUIRED-SPLIT from the inline
-// `delete (PureSoundElem*)e` sites (0x136f60/e20/ed0, DSNDMGR.CPP side) which inline
-// the teardown - this standalone COMDAT is forced only by the EH unwind funclet
-// @0x1e0950 that references it out-of-line, so the two models coexist. First fn of
-// the DSndMgSR.cpp obj (the 0x137330 file boundary; see interval-dossiers.md).
-struct CAbstract137330 {
-    virtual ~CAbstract137330();
-};
-SIZE_UNKNOWN(CAbstract137330);
-RELOC_VTBL(CAbstract137330, 0x001ef6c8); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x00137330, 0x7)
-CAbstract137330::~CAbstract137330() {}
+// 0x137330 - ??1PureSoundElem, the standalone out-of-line COMDAT copy of the
+// canonical inline dtor (<Dsndmgr/SoundVoiceList.h>): 7-byte `mov [ecx],
+// ??_7PureSoundElem; ret`. The inline `delete (PureSoundElem*)e` sites
+// (0x136f60/e20/ed0, DSNDMGR.CPP side) inline the same teardown; retail's DSndMgSR
+// obj additionally emits this copy because its EH unwind funclet (0x1e0950) takes
+// the dtor's address (an EH shape this TU does not yet reproduce, so the retail fn
+// is target-side-named only). First fn of the DSndMgSR.cpp obj (the 0x137330 file
+// boundary; see interval-dossiers.md). Was the fake placeholder CAbstract137330
+// (RELOC_VTBL alias) - dissolved onto the real class.
+// @rva-symbol: ??1PureSoundElem@@QAE@XZ 0x00137330 0x7
 
 // ---------------------------------------------------------------------------
 // StreamFeeder::SeedWindow (__thiscall, 3 args). Arm the data window

@@ -24,35 +24,25 @@ struct AnimWorkerKillable {
 };
 SIZE_UNKNOWN(AnimWorkerKillable);
 
-// The worker virtual interface. Slots laid out so the dispatched method lands
-// at byte offset +0x24. Declarations only - never defined, so no ??_7 emitted.
-class AnimWorker : public CObject {
-public:
-    virtual ~AnimWorker() OVERRIDE; // slot 1 (deleting dtor); slots 0/2/3/4 inherited from CObject
-    virtual void Slot05_151d60();   // [5] 0x151d60
-    virtual void IsValidImage();    // [6] 0x001c08
-    virtual void Clear();           // [7] 0x151e70 = Clear (B_151e70)
-    virtual void Slot08_151d70();   // [8] 0x151d70
-    virtual i32 Vfunc24(i32 a1, i32 a3); // [9] 0x151e20 (Init)
-};
-SIZE_UNKNOWN(AnimWorker);
-RELOC_VTBL(
-    AnimWorker,
-    0x001efb80
-); // shares AnimWorkerObj vtable, COMDAT-folded (slot-fn RVAs match its vtable)
-
 // The 0x17c-byte worker layout. Only the seeded offsets are load-bearing.
 // Real polymorphic: `new AnimWorkerObj` makes cl auto-emit ??_7AnimWorkerObj
 // (masks the retail vtable 0x5efb80) and stamp the vptr in the ctor - no manual
-// vptr store (ALL-VTABLES mandate).
-struct AnimWorkerObj : public AnimWorker {
-    virtual ~AnimWorkerObj() OVERRIDE;            // slot 1  0x151d80
-    virtual void Slot05_151d60() OVERRIDE;        // slot 5  0x151d60
-    virtual void IsValidImage() OVERRIDE;         // slot 6  0x001c08
-    virtual void Clear() OVERRIDE;                // slot 7  0x151e70
-    virtual void Slot08_151d70() OVERRIDE;        // slot 8  0x151d70
-    virtual i32 Vfunc24(i32 a1, i32 a3) OVERRIDE; // slot 9  0x151e20
+// vptr store (ALL-VTABLES mandate). ONE class: the former declared-only
+// `AnimWorker` dispatch-interface base (a fake intermediate whose implicit-ctor
+// ??_7AnimWorker aliased this same vtable, RELOC_VTBL) and the former `WorkerFull`
+// view (<Gruntz/AnimWorkerFull.h>, the 3-arg seed ctor @0x15b300) are BOTH folded
+// in here - retail has a single class with the single vtable 0x5efb80.
+struct AnimWorkerObj : public CObject {
+    virtual ~AnimWorkerObj() OVERRIDE;   // slot 1  0x151d80 (deleting dtor; slots 0/2/3/4 CObject)
+    virtual void Slot05_151d60();        // slot 5  0x151d60
+    virtual void IsValidImage();         // slot 6  0x001c08
+    virtual void Clear();                // slot 7  0x151e70
+    virtual void Slot08_151d70();        // slot 8  0x151d70
+    virtual i32 Vfunc24(i32 a1, i32 a3); // slot 9  0x151e20 (Init)
     AnimWorkerObj() {}
+    // The full 3-arg seed ctor (0x15b300, WwdFactoryObject.cpp): m_04=b, m_08=c,
+    // m_0c=a, zero the rest (was the WorkerFull view's ctor).
+    AnimWorkerObj(i32 a, i32 b, i32 c);
     i32 m_04;                 // +0x04  = parent->m_1c
     i32 m_08;                 // +0x08  = 0
     i32 m_0c;                 // +0x0c  = parent->m_0c

@@ -35,45 +35,21 @@ void* operator new(u32 n);
 // explicit path-buffer free at the walker tail both call it.
 void operator delete(void*);
 
-// The +0x08 "CObject subobject" embedded in the ani element (0x14 bytes): a real
-// member whose (potentially throwing) ctor is 0x1b55e9 (a __thiscall on element+0x8,
-// the NAFXCW CObArray default ctor). Modeling it as a member auto-runs its ctor
-// during CAniElementObj construction (after the CObject base, before the body) -
-// reproducing retail's base-stamp / CObject-construct / primary-stamp / field-zero order.
-struct CAniElemSub {
-    CAniElemSub();       // 0x1b55e9 (reloc-masked rel32 callee)
-    char _vft0[4];       // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    char _pad[0x14 - 4]; // +0x04..+0x13
-};
-SIZE_UNKNOWN(CAniElemSub);
-
-// The 0x28-byte animation element (primary vftable @0x5efba8) under its ctor-shape
-// view: a real MFC ::CObject leaf (5 slots; slot 1 = the cl-auto ??_G scalar-deleting
-// dtor @0x152e10). IDENTITY: the same 0x28 object as the canonical CAniElement
-// (<Gruntz/AniElement.h>); this view models the CTOR-in-flight EH shape (the +0x08
-// member's throwing ctor), the canonical models the record array. One class, two
-// method-set views (dossier #15).
-struct CAniElementObj : public CObject {
-    CAniElementObj() {
-        m_04 = 0;
-        m_1c = 0;
-    }
-    virtual ~CAniElementObj() OVERRIDE; // [1] 0x152e10, declared-only (cl-auto ??_G)
-
-    i32 m_04;         // +0x04 = 0
-    CAniElemSub m_08; // +0x08..+0x1b  embedded CObject subobject
-    i32 m_1c;         // +0x1c = 0
-}; // size = 0x28
-SIZE(CAniElementObj, 0x28);
-VTBL(CAniElementObj, 0x001efba8); // ??_7CAniElementObj (was g_aniElemVtbl, 5 slots)
+// The 0x28-byte animation element is the ONE canonical CAniElement
+// (<Gruntz/AniElement.h>, primary vftable ??_7CAniElement @0x5efba8, 5 slots;
+// slot 1 = the cl-auto ??_G scalar-deleting dtor @0x152e10). Its inline ctor
+// reproduces retail's ctor-in-flight EH shape at the factory new-sites (the
+// +0x08 m_records CObArray member's potentially-throwing NAFXCW ctor @0x1b55e9).
+// (The former ctor-shape view pair CAniElemSub + CAniElementObj is dissolved
+// onto the canonical - one class, one def, one vtable.)
 
 // ---------------------------------------------------------------------------
 // The ANI catalog sub-manager. Map at +0x10; the owning manager at +0x0c.
 // ---------------------------------------------------------------------------
 class CDDrawSubMgrAni : public CObject {
 public:
-    CAniElementObj* CreateAniEntry_1528d0(const char* key, void* entry);
-    CAniElementObj* CreateAniEntry2_1529b0(const char* key, void* entry);
+    CAniElement* CreateAniEntry_1528d0(const char* key, void* entry);
+    CAniElement* CreateAniEntry2_1529b0(const char* key, void* entry);
     i32 ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix);
 
     i32 m_04;            // +0x04  status word
@@ -204,18 +180,18 @@ i32 CDDrawSubMgrLeaf::RemoveKeysEqual_1527d0(const char* base, const char* str) 
 // 2 stack args (ret 8). Returns the element (or 0).
 // @early-stop
 // ~99.99% - modeling the +0x08 subobject as a real CObject member (CAniElemSub, ctor
-// 0x1b55e9) + deriving CAniElementObj from real ::CObject reproduces the ctor-in-flight
+// 0x1b55e9) + the canonical CAniElement : ::CObject reproduces the ctor-in-flight
 // frame exactly. The whole body (new-merge null shape + failure-path scalar-deleting
 // dtor dispatch) is byte-identical to retail; the sole residue is the appended
 // exception-cleanup unwind funclet (retail section-splits it out of the delinked
 // range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
 RVA(0x001528d0, 0xdd)
-CAniElementObj* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* entry) {
-    CAniElementObj* el = new CAniElementObj;
+CAniElement* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* entry) {
+    CAniElement* el = new CAniElement;
     if (el == 0) {
         return 0;
     }
-    if (((CAniElement*)el)->Configure_1655c0(AniMgrSubObject(m_0c), entry, 0) == 0) {
+    if (el->Configure_1655c0(AniMgrSubObject(m_0c), entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;
@@ -232,12 +208,12 @@ CAniElementObj* CDDrawSubMgrAni::CreateAniEntry_1528d0(const char* key, void* en
 // exception-cleanup unwind funclet (retail section-splits it out of the delinked
 // range). docs/patterns/new-throwing-ctor-unwind-funclet-appended.md.
 RVA(0x001529b0, 0xdd)
-CAniElementObj* CDDrawSubMgrAni::CreateAniEntry2_1529b0(const char* key, void* entry) {
-    CAniElementObj* el = new CAniElementObj;
+CAniElement* CDDrawSubMgrAni::CreateAniEntry2_1529b0(const char* key, void* entry) {
+    CAniElement* el = new CAniElement;
     if (el == 0) {
         return 0;
     }
-    if (((CAniElement*)el)->LoadFile_165620(AniMgrSubObject(m_0c), entry, 0) == 0) {
+    if (el->LoadFile_165620(AniMgrSubObject(m_0c), entry, 0) == 0) {
         // Virtual scalar-deleting dtor dispatch (mov eax,[el]; call [eax+4]).
         delete el;
         return 0;
@@ -343,6 +319,9 @@ CString CDDrawSubMgrLeaf::KeyOfValue_152d30(CObject* target) {
 // the ENTRY state (stamp-first, == retail), then DeleteAll, then the member
 // ~CAniRecordArray (trylevel 0) and ~CObject grand-base re-stamp fold in.
 // (eh-dtor-implicit-vptr-stamp-first.md.)
+// The cl-auto scalar-deleting destructor (vtable slot 1; generated from the
+// virtual dtor below - @rva-symbol pairs the retail copy with the base COMDAT).
+// @rva-symbol: ??_GCAniElement@@UAEPAXI@Z 0x00152e10 0x1e
 RVA(0x00152e30, 0x53)
 CAniElement::~CAniElement() {
     DeleteAll();

@@ -1,11 +1,11 @@
 // GruntzSoundZ.h - a positional/zoned sound bank manager in the Dsndmgr module
 // (the 0x138xxx region, adjacent to the AIL/DirectSound subsystem).
 //
-// CGruntzSoundZ derives from MFC CMapStringToOb (the map sits at offset 0; its
-// base ~CMapStringToOb is called directly from the scalar destructor, and the
-// StopAll teardown iterates the map via GetNextAssoc with `this` = the map). It
-// adds NO virtuals, so it reuses CMapStringToOb's vftable - no ??_7CGruntzSoundZ
-// is emitted. Past the 0x1c-byte base it holds:
+// CGruntzSoundZ is a NON-polymorphic class CONTAINING an MFC CMapStringToOb at
+// offset 0 (binary-proven: the retail dtor 0x86040 performs NO own-vptr restamp
+// before calling ~CMapStringToOb on this+0 - a derived polymorphic class would
+// restamp; containment is the only shape that emits none). No ??_7CGruntzSoundZ
+// exists in retail. Past the 0x1c-byte map member it holds:
 //   +0x1c  m_pCurrent  - the currently-playing inner sound (vtable-dispatched)
 //   +0x20  m_digHandle - the AIL/digital driver handle (passed to inner->Play)
 //   +0x24  m_mdiHandle - the AIL MIDI driver handle (mirrored to a .data global)
@@ -87,9 +87,9 @@ public:
 SIZE(CGruntzSoundInnerZ, 0x60);       // allocated 0x60 bytes (inner sound object)
 VTBL(CGruntzSoundInnerZ, 0x001ef700); // cl-emitted ??_7CGruntzSoundInnerZ@@6B@ (16-slot)
 
-class CGruntzSoundZ : public CMapStringToOb {
+class CGruntzSoundZ {
 public:
-    virtual ~CGruntzSoundZ() OVERRIDE; // body at RVA 0x086040
+    ~CGruntzSoundZ(); // body at RVA 0x086040 (non-virtual; no own vtable in retail)
     // AIL driver bring-up: cache the digital/MIDI handles, optionally open the MIDI-out driver.
     i32 Init(i32 mdiHandle, i32 digHandle, i32 skipInit); // RVA 0x138490
     void Shutdown();     // RVA 0x1384f0 - StopAndFlush + AIL_shutdown teardown
@@ -111,12 +111,12 @@ public:
     i32 StopBank(i32 bank);
     i32 IsPlaying(); // RVA 0x138920 (out-of-line: m_pCurrent ? m_pCurrent->Stop() : 0)
 
+    CMapStringToOb m_map;           // +0x00  name -> CGruntzSoundInnerZ* bank map (0x1c bytes)
     CGruntzSoundInnerZ* m_pCurrent; // +0x1c
     i32 m_digHandle;                // +0x20
     i32 m_mdiHandle;                // +0x24
     i32 m_enabled;                  // +0x28
 };
-SIZE(CGruntzSoundZ, 0x2c);             // 0x1c CMapStringToOb base + 4 dwords
-RELOC_VTBL(CGruntzSoundZ, 0x001ef700); // vtable reloc-masks a bound datum (dtor-stamp verified)
+SIZE(CGruntzSoundZ, 0x2c); // 0x1c CMapStringToOb member + 4 dwords
 
 #endif // GRUNTZ_DSNDMGR_CGRUNTZSOUNDZ_H

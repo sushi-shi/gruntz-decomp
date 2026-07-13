@@ -1,37 +1,39 @@
-// RezFile.h - CRezFile, the WAP32 "RezMgr" open-file wrapper: a single archive
-// FILE* whose lifetime is managed by a file-handle cache (CRezFileMgr) that bounds
-// the number of concurrently-open handles with an LRU eviction list. Distinct from
-// CRezItm (RezMgr.h): CRezItm is the buffered leaf reader (FILE* @+0x10, owner via
-// CRezItmBase::m_parent @+0xc); CRezFile keeps the filename @+0x10, the FILE*
-// @+0x14, and its manager @+0x18, and lazily (re)opens the handle on demand.
+// RezFile.h - CRezFile, the WAP32 "RezMgr" managed archive FILE*: one open-file
+// node whose lifetime is managed by its owning CRezDir (the directory node IS the
+// file-handle cache - see <Rez/RezMgr.h>): the dir bounds the number of
+// concurrently-open handles with an LRU eviction list, and CRezFile lazily
+// (re)opens its handle on demand.
 //
-// Recovered from the four methods at 0x13cc00 (Read), 0x13cca0 (Write), 0x13cdc0
-// (Open/lazy-open) and 0x13ce70 (Close). Only OFFSETS + code bytes are load-bearing
-// (campaign doctrine); unproven roles keep m_<hex>.
+// CRezFile : CRezItmBase (0x1c bytes; own 8-slot vtable ??_7CRezFile @0x1ef7d0:
+// [0] 0x13cef0 empty, [1] ??_G 0x13cb60 / ??1 0x13cb80, [2] Read 0x13cc00,
+// [3] Write 0x13cca0, [4] Open-stub 0x13cd40, [5] Close-stub 0x13cd50,
+// [6] Flush 0x13cd60, [7] Check-stub 0x13cdb0). The meaty handle open/close are
+// the NON-virtual OpenFile (0x13cdc0) / CloseFile (0x13ce70); the slot-4/5/7
+// overrides are trivial stubs (retail: return 0). The ctor (0x13cac0) heap-copies
+// the filename and enrolls the node into the dir's closed list; the dtor
+// (0x13cb80) closes the handle, frees the name and unlinks from the closed list.
+// (This class was previously split across TWO fake identities: "CRezParseNode"
+// (RezMgr.h; the ctor) and "CRezDir13cb80" (the dtor placeholder) - both stamp
+// the SAME own vtable 0x1ef7d0, i.e. one class.)
 //
 //   CRezFile (this):
-//     +0x10  m_name   : char*  - the filename passed to fopen.
+//     +0x10  m_name   : char*  - the filename passed to fopen (heap copy).
 //     +0x14  m_handle : FILE*  - the open stdio handle (0 = closed).
-//     +0x18  m_mgr    : CRezFileMgr* - the owning handle cache.
-//
-//   CRezFileMgr (m_mgr):
-//     +0x0c  m_gate     : CRezItmOwner* - the recover/keep-going gate polled on an
-//                         I/O failure (slot-2 Retry, like CRezItm's owner).
-//     +0x10  m_openList : CObjList {vtbl,head,tail} - the open-handle LRU; its tail
-//                         (+0x18) is the eviction candidate.
-//     +0x1c  m_closedList: CObjList {vtbl,head,tail} - the idle/closed list.
-//     +0x28  m_openCount: i32 - currently-open handles.
-//     +0x2c  m_maxOpen  : i32 - cap; when openCount > maxOpen, Open evicts the LRU.
-//     +0x30  m_readonly : i32 - mode flag (read).
-//     +0x34  m_write    : i32 - mode flag (write).
+//     +0x18  m_dir    : CRezDir* - the owning directory / handle cache.
 #ifndef SRC_REZ_REZFILE_H
 #define SRC_REZ_REZFILE_H
 
 #include <rva.h>
 
-// The shared intrusive list hierarchy: CObjNode / CRezListNode nodes, CObjList base
-// (Remove 0x1852e0) and CRezList : public CObjList (AddHead 0x1851e0). CRezFile is one
-// of the stored nodes; the manager's open/closed lists are CRezList.
+// CRezItmBase (the 8-slot stream-node interface) + CRezDir (the owning handle
+// cache: gate @m_parent, open/closed lists, count/cap/mode flags).
+#include <Rez/RezMgr.h>
+
+// The shared intrusive list ops: CObjList::Remove (0x1852e0) / CRezList::AddHead
+// (0x1851e0) unlink/enroll a node by its +4/+8 links. The dir's embedded lists
+// are CRezDirList (RezMgr.h); the ops are reached through the CRezList view (the
+// list-family name unification is a flagged follow-up - the helpers only touch
+// the {head,tail}/{next,prev} words both shapes share).
 #include <Rez/RezList.h>
 
 // The buffered-FILE stdio + heap helpers (statically-linked CRT in retail; external
@@ -44,7 +46,7 @@ extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp); // 0x18cb40
 extern "C" i32 Eng_fflush(void* fp);                            // 0x125b50
 extern "C" void RezFree(void* p);
 
-// The three fopen mode strings the lazy-open selects by the manager's flags:
+// The three fopen mode strings the lazy-open selects by the dir's flags:
 //   s_rb     "rb"  (read-only:  m_write==0 && m_readonly!=0)  - shared w/ SoundDevice
 //   s_rPlusB "r+b" (read/write: m_write==0 && m_readonly==0)
 //   s_wPlusB "w+b" (write:      m_write!=0 && m_readonly==0)
@@ -57,70 +59,53 @@ extern const char s_rb[];
 extern const char s_rPlusB[];
 extern const char s_wPlusB[];
 
-// The recover/keep-going gate (CRezItmBase's owner shape): slot-2 Retry returns
-// nonzero to retry an I/O op, zero to give up.
-#include <Rez/RezItmOwner.h>
-
-class CRezFile;
-
-// The file-handle cache that owns + bounds the open CRezFile handles. The open/closed
-// LRU lists at +0x10 / +0x1c are the shared CRezList (: public CObjList): AddHead
-// (0x1851e0) enrols a CRezFile, the inherited CObjList::Remove (0x1852e0) unlinks it.
-// The stored nodes are CRezFile (which derives CRezListNode : CObjNode), so
-// CloseAllOpen / Open retrieve the head/tail as CRezFile* (the typed intrusive-list
-// access). Both list ops are external no-body, so the `lea/add ecx,&list; push node;
-// call` shapes reloc-mask.
-struct CRezFileMgr {
-    char m_pad0[0x0c];
-    CRezItmOwner* m_gate;  // +0x0c
-    CRezList m_openList;   // +0x10  (0x10..0x1b; tail @+0x18)
-    CRezList m_closedList; // +0x1c  (0x1c..0x27)
-    i32 m_openCount;       // +0x28
-    i32 m_maxOpen;         // +0x2c
-    i32 m_readonly;        // +0x30
-    i32 m_write;           // +0x34
-
-    // Close every currently-open handle (0x13ca80): walk the open list (its head
-    // @+0x14), Close()-ing each until the list drains. Returns 1.
-    i32 CloseAllOpen();
-};
-SIZE_UNKNOWN(CRezFileMgr); // >= 0x38 (fields to +0x34); full alloc size not pinned here
-
 // ---------------------------------------------------------------------------
-// CRezFile - one managed archive FILE*.
+// CRezFile - one managed archive FILE* (a CRezDir child node).
 // ---------------------------------------------------------------------------
-class CRezFile : public CRezListNode {
+VTBL(CRezFile, 0x001ef7d0);
+class CRezFile : public CRezItmBase {
 public:
+    // 0x13cac0: base-ctor CRezItmBase(parent), record the owning dir, heap-copy
+    // the filename, enroll into the dir's closed list (CRezList::AddHead).
+    CRezFile(void* parent, char* nameSrc, CRezDir* dir);
+    // 0x13cb80: close the handle if open (CloseFile), free the name copy, unlink
+    // from the dir's closed list (CObjList::Remove), then ~CRezItmBase folds.
+    virtual ~CRezFile() OVERRIDE; // [1]; ??_G 0x13cb60
+
+    virtual void Slot00() OVERRIDE; // [0] 0x13cef0 (empty body, own copy)
+
     // Read `count` bytes at `pos` into buf, ensuring the handle is open and
-    // recovering through the manager's gate on seek/short-read failure (0x13cc00).
-    i32 Read(i32 a, i32 pos, u32 count, void* buf);
+    // recovering through the dir's gate on seek/short-read failure (0x13cc00).
+    virtual i32 Read(i32 a, i32 pos, u32 count, void* buf) OVERRIDE; // [2]
 
     // Write `count` bytes from buf at `pos`, same gating (0x13cca0); the write
     // counterpart of Read (RezFWrite instead of RezFRead).
-    i32 Write(i32 a, i32 pos, u32 count, void* buf);
+    virtual i32 Write(i32 a, i32 pos, u32 count, void* buf) OVERRIDE; // [3]
 
-    // Flush the handle (0x13cd60): fflush retrying through the manager's gate.
+    virtual i32 Open(char* name, i32 readonly, i32 write) OVERRIDE; // [4] 0x13cd40 -> 0
+    virtual i32 Close() OVERRIDE;                                   // [5] 0x13cd50 -> 0
+
+    // Flush the handle (0x13cd60, slot 6): fflush retrying through the dir's gate.
     // Returns 1 (no handle / flushed) or 0 (the gate gave up).
-    i32 Flush();
+    virtual i32 Flush() OVERRIDE; // [6]
 
-    // Lazily (re)open the handle (0x13cdc0): evict the LRU if over the cap, fopen
-    // with the flag-selected mode, retrying through the gate; on success move from
-    // the closed list to the open list and bump the open count. Returns 1 (already
-    // open / opened) or 0 (gave up / invalid mode combo).
-    i32 Open();
+    virtual i32 Check() OVERRIDE; // [7] 0x13cdb0 -> 0
 
-    // Close the handle (0x13ce70): fclose retrying through the gate, then drop the
-    // open count, move back to the closed list, and null the handle. Returns 1
-    // (no handle / closed) or 0 (the gate gave up).
-    i32 Close();
+    // Lazily (re)open the handle (0x13cdc0, non-virtual): evict the LRU if over
+    // the cap, fopen with the flag-selected mode, retrying through the gate; on
+    // success move from the closed list to the open list and bump the open count.
+    // Returns 1 (already open / opened) or 0 (gave up / invalid mode combo).
+    i32 OpenFile();
 
-    // CRezListNode (: CObjNode) supplies the intrusive links: element base @+0x00,
-    // next @+0x04, prev @+0x08 (written by CRezList::AddHead / CObjList::Remove).
-    char m_pad0c[0x10 - 0x0c]; // +0x0c
-    char* m_name;              // +0x10  filename passed to fopen
-    FILE* m_handle;            // +0x14  CRT FILE* (0 = closed); passed to fseek/fread/... by value
-    CRezFileMgr* m_mgr;        // +0x18  owning handle cache
+    // Close the handle (0x13ce70, non-virtual): fclose retrying through the gate,
+    // then drop the open count, move back to the closed list, and null the handle.
+    // Returns 1 (no handle / closed) or 0 (the gate gave up).
+    i32 CloseFile();
+
+    char* m_name;   // +0x10  filename passed to fopen (heap copy; freed by the dtor)
+    FILE* m_handle; // +0x14  CRT FILE* (0 = closed); passed to fseek/fread/... by value
+    CRezDir* m_dir; // +0x18  owning directory / handle cache
 };
-SIZE_UNKNOWN(CRezFile); // >= 0x1c; the cache's alloc size is not pinned here
+SIZE(CRezFile, 0x1c); // verified: CSymParser::ParseRecords `push 0x1c; new; ctor 0x13cac0`
 
 #endif // SRC_REZ_REZFILE_H

@@ -37,7 +37,7 @@
 //   +0x18  ..tail  : 0        (collection tail)
 //   +0x1c  listB   : (embedded child collection #2: vptr,head,tail)
 //   +0x28  m_28    : 0
-//   +0x2c  m_rezMgr : ctor arg2 (the owning-manager back-pointer)
+//   +0x2c  m_maxOpen : ctor arg2 (the open-handle cap; the dir IS the handle cache)
 //   +0x30  m_30    : 1        ("valid"/initialized flag)
 //   +0x34  m_34    : 0
 #ifndef SRC_REZ_REZMGR_H
@@ -105,22 +105,28 @@ extern "C" i32 RezStricmp(const char* a, const char* b);
 class CRezItmBase {
 public:
     CRezItmBase(void* parent);
-    virtual ~CRezItmBase();
+
+    // The 8-slot stream-node interface (ground truth = the retail ??_7CRezItmBase
+    // @0x1ef768: [0] 0x13c530 concrete empty, [1] the ??_G/??1 dtor pair
+    // 0x13c500/0x13c520, [2..7] __purecall). CRezItm / CRezDir / CRezFile each
+    // override all six stream slots; every retail call into the family dispatches
+    // (no direct .text callers of any slot body - xref-verified).
+    virtual void Slot00();  // [0] 0x13c530 (empty body; original role unrecovered)
+    virtual ~CRezItmBase(); // [1] ??1 0x13c520 (clears m_parent)
+    virtual i32 Read(i32 off, i32 base, u32 count, void* buf) = 0;  // [2]
+    virtual i32 Write(i32 base, i32 off, u32 count, void* buf) = 0; // [3]
+    virtual i32 Open(char* name, i32 readonly, i32 write) = 0;      // [4]
+    virtual i32 Close() = 0;                                        // [5]
+    virtual i32 Flush() = 0;                                        // [6]
+    virtual i32 Check() = 0;                                        // [7]
 
     // +0x04/+0x08 are the node's intrusive sibling links, written by
     // CRezList::AddHead (0x1851e0) when the node is enrolled in an owner's child
-    // list (see CRezParseNode below). The ctors here never touch them; typed as
-    // the node base rather than left as raw void*.
-    CRezItmBase* m_next;        // +0x04
-    CRezItmBase* m_prev;        // +0x08
-    CRezItmOwner* m_parent;     // +0x0c  owning object CRezItm polls via Retry()
-    virtual void VtSlotFill0(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5(); // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill6(); // vtable-slot filler (real slot; declared-only)
+    // list (see CRezFile in <Rez/RezFile.h>). The ctors here never touch them;
+    // typed as the node base rather than left as raw void*.
+    CRezItmBase* m_next;    // +0x04
+    CRezItmBase* m_prev;    // +0x08
+    CRezItmOwner* m_parent; // +0x0c  owning object CRezItm polls via Retry()
 };
 
 // ---------------------------------------------------------------------------
@@ -132,41 +138,39 @@ public:
 class CRezItm : public CRezItmBase {
 public:
     CRezItm(void* parent);
-    virtual ~CRezItm() OVERRIDE;
+    virtual ~CRezItm() OVERRIDE; // [1] 0x13c590
 
     // Read `count` bytes at file position (off+base) into buf, recovering through
     // the owner's Retry() gate on seek/short-read failure. Returns bytes read
-    // (== count) or 0; updates the +0x20 position cursor. (vtable slot 2)
-    i32 Read(i32 off, i32 base, u32 count, void* buf);
+    // (== count) or 0; updates the +0x20 position cursor. (0x13c600, slot 2)
+    virtual i32 Read(i32 off, i32 base, u32 count, void* buf) OVERRIDE;
 
     // Write `count` bytes from buf at file position (base+off), recovering through
-    // the owner's Retry() gate on seek/short-write failure (0x13c6c0). The position
-    // cursor is invalidated (-1); the write counterpart of Read.
-    i32 Write(i32 base, i32 off, u32 count, void* buf);
-
-    // Close the FILE*, free the read buffer, reset the position cursor. Retries
-    // fclose through the owner's gate. Returns 1 on success, 0 if no FILE*/gave up.
-    // (vtable slot 5)
-    i32 Close();
-
-    // Poll the FILE* for a readable byte, retrying through the owner's Retry() gate
-    // (0x13c8a0, vtable slot 6). Resets the position cursor first; returns 1 once a
-    // byte is available, 0 if no FILE* or the gate gave up. Non-virtual here (the real
-    // slot is filled by the reloc-masked cl vtable; the body dispatches through it).
-    i32 Scan();
-
-    // Re-acquire check (0x13c8f0, vtable slot 7): reset the cursor, look the FILE* up in
-    // the open-file registry (RezDirLookup); if absent, re-Open from the stored filename
-    // (m_readBuf) + readonly flag (m_18). Returns 1 if open/reopened, else 0. Retail
-    // dispatches the Open self-call through slot 4; modeled as a direct call here until
-    // CRezItm's stream methods are converted to real virtuals.
-    i32 Check();
+    // the owner's Retry() gate on seek/short-write failure (0x13c6c0, slot 3). The
+    // position cursor is invalidated (-1); the write counterpart of Read.
+    virtual i32 Write(i32 base, i32 off, u32 count, void* buf) OVERRIDE;
 
     // (Re)open the FILE* with an fopen mode picked from the readonly/write flags
     // (write+readonly is rejected), recovering through the owner's Retry() gate;
     // stashes the readonly flag in m_18 and a RezAlloc'd copy of the filename in
-    // m_readBuf, then resets the cursor. (0x13c760)
-    i32 Open(char* filename, i32 readonly, i32 write);
+    // m_readBuf, then resets the cursor. (0x13c760, slot 4)
+    virtual i32 Open(char* filename, i32 readonly, i32 write) OVERRIDE;
+
+    // Close the FILE*, free the read buffer, reset the position cursor. Retries
+    // fclose through the owner's gate. Returns 1 on success, 0 if no FILE*/gave up.
+    // (0x13c830, slot 5)
+    virtual i32 Close() OVERRIDE;
+
+    // fflush the FILE*, retrying through the owner's Retry() gate (0x13c8a0,
+    // slot 6). Resets the position cursor first; returns 1 once flushed, 0 if no
+    // FILE* or the gate gave up. (Was named Scan; the slot's semantic is flush.)
+    virtual i32 Flush() OVERRIDE;
+
+    // Re-acquire check (0x13c8f0, slot 7): reset the cursor, look the FILE* up in
+    // the open-file registry (RezDirLookup); if absent, re-Open from the stored
+    // filename (m_readBuf) + readonly flag (m_18) - dispatched through slot 4
+    // exactly as retail. Returns 1 if open/reopened, else 0.
+    virtual i32 Check() OVERRIDE;
 
     // <Mfc.h> (included above) already pulls <stdio.h>, so FILE is in scope here; the
     // handle is the real CRT FILE* (a pointer-type change is matching-neutral - void*
@@ -176,12 +180,6 @@ public:
     i32 m_18;        // +0x18  readonly flag (Open stores its readonly arg here)
     i32 m_1c;        // +0x1c  (set by the virtual load, not this TU; role unproven)
     i32 m_pos;       // +0x20  position cursor (= -1)
-    virtual void VtSlotFill0() OVERRIDE; // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1() OVERRIDE; // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2() OVERRIDE; // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3() OVERRIDE; // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4() OVERRIDE; // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5() OVERRIDE; // vtable-slot filler (real slot; declared-only)
 };
 
 // The buffered-FILE stdio helpers CRezItm's stream methods call (statically linked
@@ -201,26 +199,35 @@ extern "C" u32 RezFWrite(void* buf, u32 size, u32 n, void* fp); // 0x18cb40
 // matching-neutral.
 // ---------------------------------------------------------------------------
 // The embedded child collection sub-object CRezDir carries twice (an intrusive
-// {vptr,head,tail} list at +0x10 and +0x1c). REAL POLYMORPHIC (ALL-VTABLES): each
-// is a polymorphic list whose implicit vptr the CRezDir ctor auto-stamps (both
-// resolve to the same child-collection vtable 0x1ef7c8). The default ctor zeroes
-// the head/tail links.
-VTBL(CRezDirList, 0x001ef7c8);
-struct CRezDirList {
-    CRezDirList() {
-        m_head = 0;
-        m_tail = 0;
-    }
-    virtual ~CRezDirList(); // +0x00  vptr (external no-body dtor)
-    CRezItmBase* m_head;    // +0x04  child chain head (CRezItmBase-derived nodes)
-    CRezItmBase* m_tail;    // +0x08  child chain tail
-};
+// {vptr,head,tail} list at +0x10 open, +0x1c closed) is the ONE concrete CRezList
+// (<Rez/RezList.h>, own vtable ??_7CRezList @0x1ef7c8 - the dir ctor stamps it
+// into both members; the dtor chain dead-store-eliminates down to the single
+// ??_7CObjListBase base stamp retail shows). The former "CRezDirList" name was
+// this same class.
+#include <Rez/RezList.h>
 
+// ---------------------------------------------------------------------------
+// CRezDir : CRezItmBase (exactly 0x38 bytes; ctor 0x13c940) - a directory node
+// that IS ALSO the open-file-handle cache managing its CRezFile children (the
+// former separate "CRezFileMgr" model was THIS class under a second name - the
+// layouts are identical field-for-field: gate @+0x0c == CRezItmBase::m_parent,
+// open/closed lists @+0x10/+0x1c, count/cap/mode flags @+0x28..+0x34).
+// Its slot 4 Open (0x13ca60) latches the readonly/write mode flags; slot 5 Close
+// (0x13ca80) drains the open list by CloseFile()-ing each child; the dtor
+// (0x13c9b0) deletes every child in both lists.
+// ---------------------------------------------------------------------------
 VTBL(CRezDir, 0x001ef7a8);
 class CRezDir : public CRezItmBase {
 public:
-    CRezDir(void* parent, void* rezMgr);
-    virtual ~CRezDir() OVERRIDE {}
+    CRezDir(void* parent, i32 maxOpen);
+    virtual ~CRezDir() OVERRIDE; // [1] 0x13c9b0 (delete all children; RezFile.cpp)
+
+    virtual i32 Read(i32 off, i32 base, u32 count, void* buf) OVERRIDE;  // [2] 0x13ca40 -> 0
+    virtual i32 Write(i32 base, i32 off, u32 count, void* buf) OVERRIDE; // [3] 0x13ca50 -> 0
+    virtual i32 Open(char* name, i32 readonly, i32 write) OVERRIDE; // [4] 0x13ca60 latch flags
+    virtual i32 Close() OVERRIDE; // [5] 0x13ca80 close all open children
+    virtual i32 Flush() OVERRIDE; // [6] 0x13caa0 -> 1
+    virtual i32 Check() OVERRIDE; // [7] 0x13cab0 -> 1
 
     i32 FindEntry(char* name);
     // OpenSub is NOT matched in this TU - see RezMgr.cpp note.
@@ -229,39 +236,18 @@ public:
     // call 0x13c940`). The +0x38..+0x64 "runtime" fields that an earlier model kept
     // here actually belong to CRezDirNode (a distinct class walked by Load/OpenSub -
     // see the RezMgr.cpp note); this TU only touches the ctor-set members below.
-    // --- ctor-initialized embedded child collection (+0x10..+0x27) ---
-    CRezDirList m_listA; // +0x10  {vptr,head,tail}
-    CRezDirList m_listB; // +0x1c  {vptr,head,tail}
-    i32 m_28;            // +0x28  (= 0; role unproven)
-    void* m_rezMgr;      // +0x2c  (= ctor arg2; owning-manager back-ptr, stored only)
-    i32 m_30;            // +0x30  (= 1; "valid"/initialized flag)
-    i32 m_34;            // +0x34  (= 0; role unproven)
-    virtual void VtSlotFill0() OVERRIDE; // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill1() OVERRIDE; // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill2() OVERRIDE; // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill3() OVERRIDE; // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill4() OVERRIDE; // vtable-slot filler (real slot; declared-only)
-    virtual void VtSlotFill5() OVERRIDE; // vtable-slot filler (real slot; declared-only)
+    // --- ctor-initialized embedded child collections + handle-cache state ---
+    CRezList m_openList;   // +0x10  open CRezFile children (LRU; tail evicted)
+    CRezList m_closedList; // +0x1c  idle/closed children (ctor enrolls here)
+    i32 m_openCount;       // +0x28  currently-open handles (= 0)
+    i32 m_maxOpen;         // +0x2c  open-handle cap (= ctor arg2)
+    i32 m_readonly;        // +0x30  mode flag (= 1; slot-4 Open re-latches)
+    i32 m_write;           // +0x34  mode flag (= 0)
 };
 
-// ---------------------------------------------------------------------------
-// CRezParseNode : CRezItmBase (0x1c bytes; ctor 0x13cac0) - a .rez parse-tree
-// node, the third CRezItmBase-derived class alongside CRezItm/CRezDir. Built by
-// CSymParser::ParseRecords (`push 0x1c; new; ctor`); base-ctors CRezItmBase(parent),
-// heap-copies its name into +0x10, records the owner @+0x18 and links itself into
-// the owner's child list (a CRezList embedded at owner+0x1c) via AddHead. Real
-// polymorphic (its own derived vtable 0x1ef7d0, whose datum FinalVtables.cpp
-// binds as CVtEmit_1ef7d0; the reloc-masked vptr store here matches whichever symbol
-// names that address, so this class carries no VTBL of its own).
-class CRezParseNode : public CRezItmBase {
-public:
-    CRezParseNode(void* parent, char* nameSrc, void* owner);
-    virtual void v0(); // new virtual - forces the distinct derived vtable (+0x1ef7d0)
-
-    char* m_10; // +0x10  heap-copied name
-    i32 m_14;   // +0x14  (= 0; role unproven)
-    void* m_18; // +0x18  owner (its child list is the CRezList at owner+0x1c)
-};
+// (The former "CRezParseNode" class here was CRezFile under a fake identity: its
+// ctor 0x13cac0 / dtor 0x13cb80 stamp CRezFile's own vtable 0x1ef7d0. Folded onto
+// the canonical CRezFile in <Rez/RezFile.h>.)
 
 // ---------------------------------------------------------------------------
 // CRezDirNode - the directory-tree node that Load is a method of.

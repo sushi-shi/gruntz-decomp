@@ -79,6 +79,15 @@ class CSymTab; // Bute/SymTab.h - the name->record table slots 10/15 iterate
 class CDDrawWorker : public CLoadable {
 public:
     virtual ~CDDrawWorker() OVERRIDE; // slot 1 (scalar-deleting dtor)
+    // slots 5/7/8: CDDrawWorker's own overrides of the CLoadable defaults (ground
+    // truth = the retail 0x1efbe8 vtable): IsLoaded @0x155750, Unload -> the frame
+    // teardown (retail slot fn 0x151eb0 == the non-virtual DeleteAll below, bound
+    // in wwdgameobject; declared-only here so the slot reloc masks it), GetClassId
+    // @0x155770 -> CLASSID_WORKER. Slot 6 IsReady stays inherited (0x001c08).
+    virtual i32 IsLoaded() OVERRIDE;   // [5] @0x155750  m_0c && m_04 != -1
+    virtual i32 IsReady() OVERRIDE;    // [6] @0x001c08  own slot (the CWapObj-default shape)
+    virtual i32 Unload() OVERRIDE;     // [7] @0x151eb0  == DeleteAll (declared-only)
+    virtual i32 GetClassId() OVERRIDE; // [8] @0x155770  -> CLASSID_WORKER
     // slots 9-16: the 8 new virtuals CDDrawWorker adds over CLoadable's 9-slot base.
     // Declared-only => cl emits the full 17-slot ??_7CDDrawWorker @0x1efbe8 (this
     // realizes the vtable per the all-vtables mandate; was a bare VTBL() manual ref).
@@ -86,7 +95,7 @@ public:
     // and 15 (0x1522b0, @early-stop regalloc wall) are HOMED in DDrawWorker.cpp: they
     // walk a CSymTab scope and self-dispatch InsertFrame (slot 14) / Slot40_1523b0
     // (slot 16). m_0c is the owning CDDrawSurfaceMgr (single-frame flag m_flags&0x100).
-    virtual i32 SymValue_155810(void* rec);                // slot 9  @0x155810
+    virtual i32 SetKey_155810(const char* key);            // slot 9  @0x155810 (key copy)
     virtual i32 BuildFramesFromSymTab(CSymTab* tab);       // slot 10 @0x1521f0
     virtual i32 CreateFrame24(i32 a, i32 b, i32 c, i32 d); // slot 11 @0x152110
     virtual i32 CreateFrame28(i32 a, i32 b, i32 c, i32 d); // slot 12 @0x152060
@@ -97,10 +106,11 @@ public:
     void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
     void AddFrameAt_1521c0(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 
-    CWorkerObArray m_items;    // +0x10  owned-pointer array (m_pData@+0x14, m_nSize@+0x18)
-    char m_pad24[0x64 - 0x24]; // +0x24..+0x63 (the family's per-node scratch block)
-    i32 m_64;                  // +0x64  cached-index sentinel (DeleteAll seeds 99999)
-    i32 m_68;                  // +0x68
+    CWorkerObArray m_items; // +0x10  owned-pointer array (m_pData@+0x14, m_nSize@+0x18)
+    char m_key[0x40];       // +0x24  registry key buffer (SetKey_155810 strncpy's it,
+                            //        NUL @+0x63; CDDrawWorkerRegistry removes by it)
+    i32 m_64;               // +0x64  cached-index sentinel (DeleteAll seeds 99999)
+    i32 m_68;               // +0x68
 };
 VTBL(CDDrawWorker, 0x001efbe8); // ??_7CDDrawWorker@@6B@ (17-slot CLoadable-derived vtable)
 

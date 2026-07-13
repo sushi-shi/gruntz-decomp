@@ -1,5 +1,5 @@
 // DDrawSurfacePair.cpp - a surface-backed drawing region in the DDrawMgr
-// DDrawMgr image family. It owns one held DDraw surface (a CPoolItemA, the
+// DDrawMgr image family. It owns one held DDraw surface (a CFileImageSurface, the
 // CDDSurface wrapper) borrowed from the parent CDirectDrawMgr's surface pool,
 // plus a cached pixel geometry (width @+0x10 / height @+0x14 / bpp @+0x18) and an
 // x/y offset window @+0x1c. Its own vtable is @0x5eff30; the grand-base dtor
@@ -1060,8 +1060,6 @@ i32 CAniElement::Configure_1655c0(void* ctx, void* entry, i32 flags) {
     return r;
 }
 
-SIZE_UNKNOWN(CAniElement);
-RELOC_VTBL(CAniElement, 0x001efba8); // aliases CAniElementObj (dtor-stamp verified)
 SIZE_UNKNOWN(CAniRecordArray);
 SIZE_UNKNOWN(CAniRecordView);
 SIZE_UNKNOWN(CAniSource);
@@ -1162,8 +1160,8 @@ static inline i32 MapReadField1c(const CDDrawWorkerMapSmall* p) {
 // each factory. The parent fields are read INSIDE the init (after the null check).
 // RESIDUE (~99.74%): the two interchangeable parent loads get the OPPOSITE
 // register pair vs the target (ecx<->edx coin-flip); all else byte-exact.
-static inline CDDrawMapWorkerObj* MakeMapWorker(const CDDrawWorkerMapSmall* parent) {
-    CDDrawMapWorkerObj* w = new CDDrawMapWorkerObj;
+static inline CAniRecordBase2* MakeMapWorker(const CDDrawWorkerMapSmall* parent) {
+    CAniRecordBase2* w = new CAniRecordBase2;
     if (w != 0) {
         i32 surfaceMgr = parent->m_0c;
         w->m_04 = MapReadField1c(parent);
@@ -1186,7 +1184,7 @@ void CDDrawWorkerMapSmall::DestroyAll() {
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                delete ((CDDrawMapWorker*)val);
+                delete ((CAniRecordBase2*)val);
             }
         } while (pos != 0);
     }
@@ -1206,14 +1204,14 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
     if (data == 0) {
         return 0;
     }
-    CDDrawMapWorkerObj* w = new CDDrawMapWorkerObj;
+    CAniRecordBase2* w = new CAniRecordBase2;
     if (w != 0) {
         w->m_08 = 0;
         w->m_10 = 0;
         w->m_04 = MapReadField1c(this);
         w->m_0c = m_0c;
     }
-    if (w->Vfunc28(data, a3) == 0) {
+    if (w->Alloc168ee0(data, a3) == 0) {
         ((CParseSource*)a1)->EndParse();
         if (w != 0) {
             delete w;
@@ -1231,8 +1229,8 @@ void* CDDrawWorkerMapSmall::Factory_1658c0(CDDrawSurfaceSource* a1, const char* 
 // Allocate + construct a worker, call its +0x28 virtual with (arg1, arg3).
 RVA(0x00165990, 0x77)
 void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
-    CDDrawMapWorkerObj* w = MakeMapWorker(this);
-    if (w->Vfunc28(a1, a3) == 0) {
+    CAniRecordBase2* w = MakeMapWorker(this);
+    if (w->Alloc168ee0(a1, a3) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -1245,8 +1243,8 @@ void* CDDrawWorkerMapSmall::CreateWorker28(i32 a1, const char* key, i32 a3) {
 // As CreateWorker28 but dispatches the worker's +0x2c virtual.
 RVA(0x00165a10, 0x77)
 void* CDDrawWorkerMapSmall::CreateWorker2C(i32 a1, const char* key, i32 a3) {
-    CDDrawMapWorkerObj* w = MakeMapWorker(this);
-    if (w->Vfunc2C(a1, a3) == 0) {
+    CAniRecordBase2* w = MakeMapWorker(this);
+    if (w->Alloc168ea0(a1, a3) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -1270,14 +1268,14 @@ void* CDDrawWorkerMapSmall::Factory_165a90(CDDrawSurfaceSource* a1, i32 a2, i32 
         return 0;
     }
     const char* keyHandle = a1->m_0c;
-    CDDrawMapWorkerObj* w = new CDDrawMapWorkerObj;
+    CAniRecordBase2* w = new CAniRecordBase2;
     if (w != 0) {
         w->m_04 = MapReadField1c(this);
         w->m_08 = 0;
         w->m_0c = m_0c;
         w->m_10 = 0;
     }
-    if (w->Vfunc30(data, (i32)a1, a3) == 0) {
+    if (w->Alloc168f60(data, (i32)a1, a3) == 0) {
         if (w != 0) {
             delete w;
         }
@@ -1303,7 +1301,7 @@ void CDDrawWorkerMapSmall::ResetSlots() {
         do {
             m_map1.GetNextAssoc(pos, key, val);
             if (val != 0) {
-                delete ((CDDrawMapWorker*)val);
+                delete ((CAniRecordBase2*)val);
             }
         } while (pos != 0);
     }
@@ -1325,7 +1323,7 @@ i32 CDDrawWorkerMapSmall::RemoveByValue(CObject* obj) {
         if (val == obj) {
             m_map1.RemoveKey(key);
             if (obj != 0) {
-                delete ((CDDrawMapWorker*)obj);
+                delete ((CAniRecordBase2*)obj);
             }
             return 1;
         }
@@ -1345,7 +1343,7 @@ i32 CDDrawWorkerMapSmall::RemoveByKey(const char* key) {
     if (val == 0) {
         return 0;
     }
-    CDDrawMapWorker* w = (CDDrawMapWorker*)val;
+    CAniRecordBase2* w = (CAniRecordBase2*)val;
     if (m_64 == (i32)w) {
         m_64 = 0;
     }

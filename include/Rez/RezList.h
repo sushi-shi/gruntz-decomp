@@ -32,21 +32,41 @@ SIZE_UNKNOWN(CObjNode); // a view of the (variably-sized) list elements
 struct CRezListNode : public CObjNode {};
 SIZE_UNKNOWN(CRezListNode);
 
-// The base intrusive list header: polymorphic (implicit vptr @+0), head at +4, tail
-// at +8. Remove(CObjNode*) @0x1852e0 unlinks a node from the {head,tail} pair
-// (defined in Bute/SymParser.cpp; external no-body here so its call reloc-masks).
-struct CObjList {
-    virtual ~CObjList();         // +0x00  vptr (external no-body dtor)
+// The base intrusive list header: derives the abstract list-interface grand-base
+// CObjListBase (vtable 0x1ef760, one __purecall slot - the DESTRUCTION vtable the
+// inlined dtor chains of every derived list restamp); head at +4, tail at +8.
+// Remove(CObjNode*) @0x1852e0 unlinks a node from the {head,tail} pair. The dtor
+// is NON-virtual (no retail list vtable carries a dtor slot) and inline+empty so
+// an embedding class's dtor inlines the chain down to the single ??_7CObjListBase
+// stamp (/O2 dead-store-eliminates the intermediates - the retail shape).
+#include <Bute/ObjListBase.h>
+struct CObjList : public CObjListBase {
+    // V0 (slot 0) stays pure here - CObjList is only ever a base in the Rez model.
+    ~CObjList() {}
     CObjNode* m_head;            // +0x04
     CObjNode* m_tail;            // +0x08
     void Remove(CObjNode* node); // 0x1852e0
 };
 SIZE_UNKNOWN(CObjList); // {vptr,head,tail}=0xc header; full engine size unproven
 
-// CRezList : public CObjList - adds the front/back inserts. AddHead re-reads the
-// head/tail member after writing the node's links (the node may alias the header, so
-// MSVC cannot cache the field across the store). Leaf pointer-shuffles, no callees.
+// CRezList : public CObjList - THE concrete Rez list (own 1-slot vtable
+// ??_7CRezList @0x1ef7c8: [0] = the empty V0 override 0x13c4d0). Adds the
+// front/back inserts. AddHead re-reads the head/tail member after writing the
+// node's links (the node may alias the header, so MSVC cannot cache the field
+// across the store). Leaf pointer-shuffles, no callees. (The former RezMgr.h
+// "CRezDirList" - CRezDir's two embedded child lists - was THIS class under a
+// second name: the dir ctor stamps 0x5ef7c8 into both members.)
+VTBL(CRezList, 0x001ef7c8);
 struct CRezList : public CObjList {
+    CRezList() {
+        m_head = 0;
+        m_tail = 0;
+    }
+    virtual void V0() OVERRIDE; // [0] 0x13c4d0 (empty body; RezFile.cpp)
+    // NON-virtual inline dtor: embedding dtors (~CRezDir) inline the chain; the
+    // EH-funclet-referenced standalone COMDAT copy is retail 0x13ca30 (bound by
+    // RezFile.cpp's @rva-symbol).
+    ~CRezList() {}
     void AddHead(CRezListNode* node); // 0x1851e0
     void AddTail(CRezListNode* node); // 0x185210
     // Positional inserts: splice `node` after/before `pos` (null pos -> AddHead /
@@ -55,6 +75,6 @@ struct CRezList : public CObjList {
     void InsertAfter(CRezListNode* pos, CRezListNode* node);  // 0x185240
     void InsertBefore(CRezListNode* pos, CRezListNode* node); // 0x185290
 };
-SIZE_UNKNOWN(CRezList); // {vptr,head,tail}=0xc header; full engine size unproven
+SIZE(CRezList, 0xc); // {vptr,head,tail}
 
 #endif // REZ_REZLIST_H

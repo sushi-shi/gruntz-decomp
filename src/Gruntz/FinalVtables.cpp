@@ -27,33 +27,11 @@
 #include <Wap32/WapObj.h> // CWapObj : CObject - adds IsLoaded(5)/IsReady(6) defaults
 #include <rva.h>
 
-// ---------------------------------------------------------------------------
-// 0x5ef7d0 (RVA 0x1ef7d0) - 8 slots. A Rez-family node vtable (0x13cxxx range);
-// NOT CObject-style (no 0x1bef01 thunk): slot 0 is a real method, slot 1 the
-// scalar-deleting dtor (0x13cb60). Slots 2/3/6 = CRezFile Read/Write/Flush.
-// ---------------------------------------------------------------------------
-struct CVtEmit_1ef7d0 {
-    virtual void Slot00_13cef0(); // [0] 0x13cef0
-    virtual ~CVtEmit_1ef7d0();    // [1] 0x13cb60 scalar-deleting dtor (anchor)
-    virtual void Read();          // [2] 0x13cc00 = CRezFile::Read
-    virtual void Write();         // [3] 0x13cca0 = CRezFile::Write
-    virtual void Slot04_13cd40(); // [4] 0x13cd40
-    virtual void Slot05_13cd50(); // [5] 0x13cd50
-    virtual void Flush();         // [6] 0x13cd60 = CRezFile::Flush
-    virtual void Slot07_13cdb0(); // [7] 0x13cdb0
-    i32 m_0;
-    i32 Anchor();
-};
-i32 CVtEmit_1ef7d0::Anchor() {
-    return m_0 != 0;
-}
-CVtEmit_1ef7d0::~CVtEmit_1ef7d0() {
-    if (Anchor()) {
-        m_0 = 0;
-    }
-}
-SIZE_UNKNOWN(CVtEmit_1ef7d0);
-VTBL(CVtEmit_1ef7d0, 0x001ef7d0);
+// NOTE: 0x1ef7d0 is now bound by its REAL class CRezFile (<Rez/RezFile.h>, VTBL
+// there): the vtable audit + the ctor/dtor own-stamps (0x13cac0/0x13cb80) proved
+// this 8-slot vtable IS CRezFile's own ([0] 0x13cef0 Slot00, [1] ??_G 0x13cb60,
+// [2] Read, [3] Write, [4/5/7] the Open/Close/Check stubs, [6] Flush), so the
+// CVtEmit_1ef7d0 tracking shim was a redundant placeholder and is removed.
 
 // NOTE: 0x1efc58 is now bound by its REAL class CDDrawSurfaceMgr (DDrawSurfaceMgr.cpp,
 // VTBL there): the per-slot vtable audit proved this 8-slot vtable IS CDDrawSurfaceMgr's
