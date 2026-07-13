@@ -10,16 +10,15 @@
 #define GRUNTZ_GRUNTZ_CTILEGRID_H
 
 #include <Ints.h>
+#include <Gruntz/MapMgr.h>
 
-struct CTileGrid {
-    // The tile-system notifier facet (registry +0x70 viewed by the status-bar
-    // updaters): flags a cell dirty/updated. NO-body -> the call reloc-masks.
-    void Notify(i32 x, i32 y, i32 state);
-
-    char m_pad0[0x8];
-    i32** m_8; // +0x08  row-pointer table (cell = (i32*)m_8[tileY] + tileX*7)
-    i32 m_c;   // +0x0c  width in tiles
-    i32 m_10;  // +0x10  height in tiles
-};
+// CTileGrid IS CMapMgr (RTTI .?AVCMapMgr@@, vtable 0x1ea3b4): the registry's +0x70 object
+// is a CGruntzMapMgr whose CMapMgr base carries exactly the fields this view described -
+// the row-pointer table at +0x08 (now typed i32** on the real class), the tile width at
+// +0x0c and the height at +0x10 - and the view's `Notify` is a real CMapMgr method. The
+// struct is dissolved; the NAME stays as a typedef so the ~26 consumers keep reading, and
+// the phantom ?Notify@CTileGrid@@ (a method of a class owning no retail address, hence
+// unlinkable) is gone with it.
+typedef CMapMgr CTileGrid;
 
 #endif // GRUNTZ_GRUNTZ_CTILEGRID_H

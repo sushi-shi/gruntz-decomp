@@ -7,7 +7,7 @@
 // are reloc-masked.
 #include <Gruntz/Brickz.h>
 #include <Ints.h>
-#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzMgr.h> // the REAL singleton class
 #include <Gruntz/Viewport.h> // shared world-plane grid (the registry plane)
 #include <rva.h>
 
@@ -24,9 +24,13 @@ struct RegM30 {
     RegLevel* m_24; // +0x24
 };
 
-extern "C" CGameRegistry* g_gameReg;
+// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
+// the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms.
+// Now possible because its +0x70 sub-object folded: CGruntzMgr::m_tileGrid is a
+// CGruntzMapMgr*, and the CTileGrid this TU reads IS its CMapMgr base (one class, two
+// names) - so the read is a plain upcast, no cast needed.
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_gameReg; // ?g_gameReg (VA 0x64556c)
+extern "C" CGruntzMgr* g_gameReg;
 
 // The owning object: group/index coordinates + the parked token.
 struct CSlotHolder {
@@ -59,7 +63,7 @@ i32 CSlotHolder::DoSwap() {
         g_gameReg->ReportError(0x8009, 0x451);
         return 0;
     }
-    CGameRegistry* mgr = g_gameReg;
+    CGruntzMgr* mgr = g_gameReg;
     i32 grp = this->m_08;
     i32 idx = this->m_0c;
     i32 newTok =

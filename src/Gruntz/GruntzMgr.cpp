@@ -331,7 +331,7 @@ struct ScoreSub2c { // g_gameReg->m_curState
     i32 m_1c; // +0x1c  cumulative score
 };
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_gameReg;
+extern "C" CGruntzMgr* g_gameReg;
 
 // The +0x68 world command-grid object is the ONE CTriggerMgr (<Gruntz/TriggerMgr.h>,
 // included above) - the former CCmdGrid facet view is dissolved onto it, thunk-proven:
@@ -660,9 +660,11 @@ i32 g_warpX = -1;
 DATA(0x00212614)
 i32 g_warpY = -1;
 
-// The game-manager singleton (*0x64556c) - the CGruntzMgr (MFC) view of the datum the
-// engine TUs see as CGameRegistry* g_gameReg; same _g_mgrSettings symbol.
-extern "C" CGameRegistry* g_gameReg;
+// The game-manager singleton (*0x64556c). Declared at its REAL type here - this is
+// CGruntzMgr's OWN TU, and declaring it as the CGameRegistry view was what made this file
+// emit the phantom ?ReportError@CGameRegistry@@QAEXHH@Z (an unlinkable name) AND cast its
+// own class back out of it (`(CGruntzMgr*)g_gameReg`) three times below.
+extern "C" CGruntzMgr* g_gameReg;
 
 // -------------------------------------------------------------------------
 // PumpIdleFrame (0x08b8c0; ret) - the deferred per-frame pump. When the pending flag is
@@ -682,7 +684,7 @@ i32 PumpIdleFrame() {
     if (g_pendingFrame == 0) {
         return 0;
     }
-    CGruntzMgr* mgr = (CGruntzMgr*)g_gameReg;
+    CGruntzMgr* mgr = g_gameReg;
     g_pendingFrame = 0;
     if (mgr == 0) {
         return 0;
@@ -701,7 +703,7 @@ i32 PumpIdleFrame() {
         g_gameReg->ReportError(0x8006, 0x435);
         return 0;
     }
-    ((CGruntzMgr*)g_gameReg)->PerFrameTick();
+    g_gameReg->PerFrameTick();
     g_pendingFrame = 1;
     return 1;
 }
@@ -3673,7 +3675,11 @@ i32 CGruntzMgr::BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3) {
     if (((CTriggerMgr*)m_cmdSubMgr)->RebuildOverlay((void*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
-    if (m_tileGrid->MapCommand(a0, cmd, a2, a3) == 0) {
+    // slot 1 (0x82430 = the derived "SerializeNodes"): the base's Visit slot, whose base
+    // body (CMapMgr::Visit @0x9f7f0) proves the first arg is the CSerialArchive* it hands
+    // to its own Save/Load slots. BroadcastCmd carries it as an i32 - hence the cast; the
+    // arg's REAL type is the archive.
+    if (m_tileGrid->Visit((CSerialArchive*)a0, cmd, a2, a3) == 0) {
         return 0;
     }
     if (CmdHook(a0, cmd, a2, a3) == 0) {
@@ -3952,7 +3958,7 @@ i32 CGruntzMgr::FinishLevel(i32 full, i32 stopBank) {
 // used by the modal reporters below. (SerializeSyncMarker, the free 0x13610 serialize
 // validator that also used this, is split out to SerializeSyncMarker.cpp.)
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_gameReg; // 0x64556c
+extern "C" CGruntzMgr* g_gameReg; // 0x64556c
 
 // -------------------------------------------------------------------------
 // CGruntzMgr::EnterModalUI (0x08ef10; ret 4). Suspends the in-game world for a
@@ -4915,7 +4921,9 @@ INT_PTR CALLBACK WarpDialogProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
     switch (msg) {
         case WM_INITDIALOG: {
-            CGameRegWarp* warp = (CGameRegWarp*)g_gameReg->m_world->m_24->m_5c;
+            // the view's `m_24->m_5c` IS CGameLevel::m_mainPlane (+0x5c) - the field exists
+            // on the real class under its real name; only the fake view lacked it.
+            CGameRegWarp* warp = (CGameRegWarp*)g_gameReg->m_world->m_24->m_mainPlane;
             i32 seedX = warp->m_84;
             i32 seedY = warp->m_88;
             SetDlgItemInt(hDlg, 0x40e, seedX, 0);

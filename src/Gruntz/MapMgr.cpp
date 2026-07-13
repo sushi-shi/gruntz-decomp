@@ -39,7 +39,6 @@
 #include <Gruntz/MapMgr.h>
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Gruntz/Brickz.h>        // CBrickzGrid (the pathfinding core homed here)
-#include <Gruntz/MapLogic.h>      // CMapVisitTarget (the 0x9f7f0 seam probe)
 #include <Gruntz/GameMode.h>      // canonical CGMVerRect g_645cc8 (SetVersionRect's version RECT)
 #include <Rez/RezList.h>          // CRezList::AddHead (Search's result hand-off)
 #include <rva.h>
@@ -848,25 +847,27 @@ void CBrickzGrid::CellPop(BrickzNode* node, i32 flag) {
 }
 
 // ===========================================================================
-// CMapVisitTarget::Visit (0x09f7f0, dossier seam: maplogic -> this TU; the single
-// fn between the CBrickzGrid block and CMapMgr::Save/Load) - __thiscall.
-// Probe the visited object through its own vtable: mode 4 calls slot +0x08, mode 7
-// calls slot +0x0c, each with the buffer arg. Returns 1 unless the probe returned
-// non-zero (then the slot's truthiness short-circuits to a 0 return). A null buffer
-// returns 0; any other mode returns 1.
+// CMapMgr::Visit (0x09f7f0) - slot 1 of ??_7CMapMgr (0x1ea3b4). OWNER RECOVERED: the
+// "CMapVisitTarget" class (MapLogic.h) that used to own this was a fabrication, and so
+// were the Slot00/Slot04/Slot08/Slot0C virtuals it dispatched through - those ARE THIS
+// CLASS'S OWN SLOTS. The dispatch is `mov eax,[this]; call [eax+8]` / `call [eax+0xc]`,
+// and CMapMgr's vtable holds Save @+0x08 (slot 2, 0x9f840) and Load @+0x0c (slot 3,
+// 0x9f9a0) - both taking a CSerialArchive*. So this is the archive dispatcher on the map
+// manager itself: mode 4 = Save, mode 7 = Load, `this` is the map, and the "buffer" is
+// the archive. A null archive returns 0; any other mode returns 1.
 RVA(0x0009f7f0, 0x3b)
-i32 CMapVisitTarget::Visit(void* buf, i32 mode, i32 a2, i32 a3) {
-    if (buf == 0) {
+i32 CMapMgr::Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3) {
+    if (ar == 0) {
         return 0;
     }
     switch (mode) {
         case 4:
-            if (Slot08(buf) == 0) {
+            if (Save(ar) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (Slot0C(buf) == 0) {
+            if (Load(ar) == 0) {
                 return 0;
             }
             break;
@@ -944,12 +945,9 @@ i32 CMapMgr::Load(CSerialArchive* ar) {
     return 1;
 }
 
-// Out-of-line stubs so the vftable is emitted in this TU.
-// Not matched / not in symbol_names.csv; present only to anchor the vftable
-// relocation that the ctor stores (the CGameWnd vftable-in-TU idiom).
-void CMapMgr::Vfunc1() {}
-void CMapMgr::Vfunc4() {}
-void CMapMgr::Vfunc5() {}
+// (The three "vftable-anchor" stubs Vfunc1/Vfunc4/Vfunc5 are GONE: they were fabricated
+//  empty bodies for slots that hold REAL functions - 0x9f7f0 / 0x9eca0 / 0x853f0 - two of
+//  which are defined right here in this TU. See the slot table in <Gruntz/MapMgr.h>.)
 
 SIZE_UNKNOWN(MapElemA);
 SIZE_UNKNOWN(MapElemB);

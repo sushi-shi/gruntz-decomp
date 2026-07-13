@@ -19,7 +19,8 @@
 #include <Gruntz/AniAdvanceCursor.h>
 #include <Gruntz/TriggerMgr.h>
 #include <Gruntz/StaticHazard.h>
-#include <Gruntz/GameRegistry.h>
+#include <Gruntz/GruntzMgr.h> // the REAL singleton class
+#include <Gruntz/TileGrid.h> // CTileGrid == CMapMgr (the +0x70 board's real class)
 #include <Gruntz/SerialObjRef.h>  // SerialRef34()->Chain (0x8c00)
 #include <Gruntz/SerialArchive.h> // CSerialArchive (Read @+0x2c / Write @+0x30)
 #include <Bute/ButeMgr.h>         // CButeMgr (g_buteMgr GetIntDef), CButeTree (g_buteTree)
@@ -88,8 +89,13 @@ struct HazSndRoot {
     char m_pad00[0x2c];
     HazSndCat* m_cat; // +0x2c
 };
+// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed, vftable 0x5e9b64) - declared at
+// the REAL class so its methods emit DEFINED symbols instead of CGameRegistry phantoms.
+// Now possible because its +0x70 sub-object folded: CGruntzMgr::m_tileGrid is a
+// CGruntzMapMgr*, and the CTileGrid this TU reads IS its CMapMgr base (one class, two
+// names) - so the read is a plain upcast, no cast needed.
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_gameReg;
+extern "C" CGruntzMgr* g_gameReg;
 
 // ===========================================================================
 // FireActivation's per-coordinate activation registry (CStaticHazard's OWN
@@ -353,7 +359,7 @@ void CStaticHazard::RegisterActs() {
 // ~98%. Parked for the final sweep.
 RVA(0x000fc0b0, 0xb2)
 i32 CStaticHazard::LoadAttributes2() {
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     if (reg->m_isEasyMode != 0 && reg->m_134 == 1) {
         return 0;
     }

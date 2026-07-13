@@ -22,6 +22,7 @@
 #include <Mfc.h>
 #include <rva.h>
 
+#include <Gruntz/GruntzMgr.h> // the REAL singleton class
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileGridCommand.h>
@@ -106,8 +107,13 @@ struct CTileEventSink {
 };
 SIZE_UNKNOWN(CTileEventSink);
 
+// The 0x64556c singleton IS CGruntzMgr (RTTI-confirmed). Declared at the REAL class: its
+// ReportError (@0x8dc60) then emits a DEFINED symbol instead of the unlinkable phantom
+// ?ReportError@CGameRegistry@@QAEXHH@Z. The sub-object chain reads through the real
+// classes too - CWorldZ::m_24 is the CGameLevel whose +0x5c IS m_mainPlane (the field the
+// fake view called `m_5c`; it was there all along, under its real name).
 DATA(0x0024556c)
-extern "C" CGameRegistry* g_gameReg;
+extern "C" CGruntzMgr* g_gameReg;
 
 // The shared global at DAT_00644c54 (VA 0x644c54): used here as the per-player /
 // active-slot index into m_playerFlags[]. Already named g_tileKindMagic by the
@@ -636,7 +642,10 @@ extern i32 g_sndCueTag;        // ?g_sndCueTag@@3HA  @0x61ab24
 RVA(0x001122a0, 0x241)
 void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
     char* self = (char*)this;
-    CSpriteFactoryHolder* gameMgr = g_gameReg->m_world; // cached only for the loop sprite
+    // CWorldZ IS the CSpriteFactoryHolder view (one object at +0x30): the two fields this
+    // fn reads - the sprite factory at +0x08 and the sound host at +0x28 - are declared
+    // IDENTICALLY on both, so reading through the real class is a pure rename.
+    CWorldZ* gameMgr = g_gameReg->m_world; // cached only for the loop sprite
 
     // (1) in-rect gate: is the tile center inside the view rect (+0x13c)?
     i32 inRect = 0;
@@ -655,7 +664,7 @@ void CTileTriggerSwitchLogic::BuildRockBreakInGameText() {
             i32 value = *cursor;
             i32 px = i + TX - 1;
             i32 py = j + TY - 1;
-            CViewport* plane = (CViewport*)g_gameReg->m_world->m_24->m_5c;
+            CViewport* plane = (CViewport*)g_gameReg->m_world->m_24->m_mainPlane;
             plane->m_cells[plane->m_rowBase[py] + px] = value;
             g_gameReg->m_tileGrid->Notify(px, py, value);
             if (inRect) {
@@ -736,32 +745,32 @@ RVA(0x00112590, 0x166)
 i32 CTileTriggerLogic::ApplyMove(i32 verb) {
     i32 v;
     if (m_34 != 0) {
-        CGameRegistry* reg = g_gameReg;
-        CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+        CGruntzMgr* reg = g_gameReg;
+        CViewport* L = (CViewport*)reg->m_world->m_24->m_mainPlane;
         L->m_cells[L->m_rowBase[m_0c] + m_08] = m_34;
         v = m_34;
         ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
     } else {
         switch (verb) {
             case 0x22: {
-                CGameRegistry* reg = g_gameReg;
-                CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                CGruntzMgr* reg = g_gameReg;
+                CViewport* L = (CViewport*)reg->m_world->m_24->m_mainPlane;
                 v = L->m_cells[L->m_rowBase[m_0c] + m_08] + 1;
-                CViewport* L2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                CViewport* L2 = (CViewport*)reg->m_world->m_24->m_mainPlane;
                 L2->m_cells[L2->m_rowBase[m_0c] + m_08] = v;
                 ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, v);
                 break;
             }
             case 0x1f: {
-                CGameRegistry* reg = g_gameReg;
-                CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                CGruntzMgr* reg = g_gameReg;
+                CViewport* L = (CViewport*)reg->m_world->m_24->m_mainPlane;
                 L->m_cells[L->m_rowBase[m_0c] + m_08] = 0x5b;
                 ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5b);
                 break;
             }
             case 0x1e: {
-                CGameRegistry* reg = g_gameReg;
-                CViewport* L = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+                CGruntzMgr* reg = g_gameReg;
+                CViewport* L = (CViewport*)reg->m_world->m_24->m_mainPlane;
                 L->m_cells[L->m_rowBase[m_0c] + m_08] = 0x5a;
                 ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_0c, 0x5a);
                 break;
@@ -770,7 +779,7 @@ i32 CTileTriggerLogic::ApplyMove(i32 verb) {
                 break;
         }
     }
-    CGameRegistry* reg = g_gameReg;
+    CGruntzMgr* reg = g_gameReg;
     i32 py = (m_0c << 5) + 0x10;
     i32 px = (m_08 << 5) + 0x10;
     ((EngineLabelBacklog*)reg->m_cmdGrid)->LoadPowerupIconSprites(m_28, px, py, m_30, 1, 0);
@@ -925,10 +934,10 @@ ret1:
 // uses scale-1, propagating through both cell accesses.
 RVA(0x00112b70, 0x5a)
 i32 CCheckpointTriggerSwitchLogic::Vf2() {
-    CGameRegistry* reg = g_gameReg;
-    CViewport* layer = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+    CGruntzMgr* reg = g_gameReg;
+    CViewport* layer = (CViewport*)reg->m_world->m_24->m_mainPlane;
     i32 v = layer->m_cells[m_08 + layer->m_rowBase[m_key0c]] + 1;
-    CViewport* layer2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+    CViewport* layer2 = (CViewport*)reg->m_world->m_24->m_mainPlane;
     layer2->m_cells[m_08 + layer2->m_rowBase[m_key0c]] = v;
     ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
     m_linkGate = 1;
@@ -943,10 +952,10 @@ i32 CCheckpointTriggerSwitchLogic::Vf2() {
 // stores; the shift vs scaled-index pick is not steerable.
 RVA(0x00112bf0, 0x5e)
 i32 CCheckpointTriggerSwitchLogic::Vf3() {
-    CGameRegistry* reg = g_gameReg;
-    CViewport* layer = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+    CGruntzMgr* reg = g_gameReg;
+    CViewport* layer = (CViewport*)reg->m_world->m_24->m_mainPlane;
     i32 v = layer->m_cells[m_08 + layer->m_rowBase[m_key0c]] - 1;
-    CViewport* layer2 = ((TgcGameMgr*)reg->m_world)->m_24->m_5c;
+    CViewport* layer2 = (CViewport*)reg->m_world->m_24->m_mainPlane;
     layer2->m_cells[m_08 + layer2->m_rowBase[m_key0c]] = v;
     ((CBrickzGrid*)reg->m_tileGrid)->ComputeCellFlags(m_08, m_key0c, v);
     m_linkGate = 0;
@@ -1069,7 +1078,7 @@ i32 CTileActionEvent::SetActionCode(i32 code) {
         }
     }
     {
-        CViewport* grid = (CViewport*)g_gameReg->m_world->m_24->m_5c;
+        CViewport* grid = (CViewport*)g_gameReg->m_world->m_24->m_mainPlane;
         i32* cell = &grid->m_cells[grid->m_rowBase[m_tileY] + m_tileX];
         if (*cell == code) {
             return 0;

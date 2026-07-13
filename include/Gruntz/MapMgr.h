@@ -101,17 +101,36 @@ public:
     CMapMgr();
     ~CMapMgr();
 
-    // The six virtual slots. Slot 0 (Reset), slot 2 (Save) and slot 3 (Load) are
-    // matched; slots 1/4/5 are out-of-line stubs that anchor the vftable.
-    virtual void Reset();              // slot 0
-    virtual void Vfunc1();             // slot 1
-    virtual i32 Save(CSerialArchive*); // slot 2  0x09f840
-    virtual i32 Load(CSerialArchive*); // slot 3  0x09f9a0
-    virtual void Vfunc4();             // slot 4
-    virtual void Vfunc5();             // slot 5
+    // The six virtual slots, ALL REAL - read off the retail vtable @0x1ea3b4 (RTTI
+    // .?AVCMapMgr@@). Slots 1/4/5 were modelled as `Vfunc1/Vfunc4/Vfunc5` EMPTY STUBS
+    // "to anchor the vftable"; that was a fabrication - each slot holds a real function
+    // that this tree already reconstructs under a FAKE class name:
+    //   [1] 0x09f7f0 = ?Visit@CMapVisitTarget@@       (MapMgr.cpp - same TU!)
+    //   [4] 0x09eca0 = ?Search@CBrickzGrid@@          (MapMgr.cpp - same TU!)
+    //   [5] 0x0853f0 = ?IsCellClear@CBrickzGrid@@     (Brickz.cpp - other TU)
+    // Slots 2/3 (Save/Load) are bit-identical in CGruntzMapMgr's vtable @0x1e9bb4, and
+    // slot 5 there is the SAME 0x853f0 body - so CMapMgr / CBrickzGrid / CMapVisitTarget
+    // are ONE class under three names. Slots 1 and 4 are folded here; IsCellClear stays
+    // declared-only until CBrickzGrid's whole method set folds (@identity-TODO).
+    virtual void Reset();                                    // slot 0  0x09ec30
+    virtual i32 Visit(CSerialArchive* ar, i32 mode, i32 a2, i32 a3); // [1] 0x09f7f0
+    virtual i32 Save(CSerialArchive*);                       // slot 2  0x09f840
+    virtual i32 Load(CSerialArchive*);                       // slot 3  0x09f9a0
+    // Slots 4/5 are declared-only HERE: their bodies (0x09eca0 / 0x0853f0) are written
+    // against CBrickzGrid's member set (m_rows / Insert / PopFront / Expand / CellPush),
+    // so they keep that name until the whole CBrickzGrid method set folds onto this class.
+    // @identity-TODO: CBrickzGrid == CMapMgr (its Search/IsCellClear ARE these two slots).
+    virtual i32
+    Search(i32 x1, i32 y1, i32 x2, i32 y2, void* list, i32 maskA, i32 maskB, i32 maskC); // [4]
+    virtual i32 IsCellClear(i32 x, i32 y);                                               // [5]
+
+    // The tile-system notify the +0x70 consumers drive (was the fake CTileGrid::Notify -
+    // a method of a class that owns no retail address, i.e. an unlinkable phantom).
+    void Notify(i32 x, i32 y, i32 state);
 
     MapCell* m_4;      // +0x04  cell grid (heap ptr; Reset frees it)
-    void* m_8;         // +0x08  (heap ptr; Reset frees it)
+    i32** m_8;         // +0x08  row-pointer table (cell = (i32*)m_8[tileY] + tileX*7;
+                       //        the type the CTileGrid view proved; Reset frees it)
     u32 m_c;           // +0x0c  grid dim 1 (outer count)
     u32 m_10;          // +0x10  grid dim 2 (inner count)
     i32 m_14;          // +0x14  (not ctor-written)
