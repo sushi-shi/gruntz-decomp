@@ -79,18 +79,19 @@ extern i32 g_cdPromptResult;
 
 // Mode-lock gates (@0x6455b4/bc/c0): when set they grey out option groups AND gate the
 // option commits. FABRICATED-SYMBOL FIX (assert_relocs --fake-targets): these were declared
-// with C++ linkage, so they mangled to ?g_optLockAll@@3HA etc. - symbols NOTHING defines
+// with C++ linkage, so they mangled to ?g_disableAudio@@3HA etc. - symbols NOTHING defines
 // (the storage is the extern-"C" global the rest of the tree already binds), i.e. three
 // guaranteed `unresolved external symbol`s. extern "C" makes them the SAME datum. The old
 // hex names (g_gate_2455b4/bc/c0, Globals.h + LevelPreview.cpp) were renamed to these
 // semantic ones rather than the reverse - best name wins.
-// g_optLockAudio (0x2455bc) / g_optLockSpeech (0x2455c0) are CONSOLIDATED globals: they come
+// g_disableSound (0x2455bc) / g_disableMusic (0x2455c0) are CONSOLIDATED globals: they come
 // from <Globals.h> (included above), inside its extern-"C" block. Re-declaring them here would
 // re-proliferate them (the labels gate refuses it). Only 0x2455b4 is not consolidated.
-extern "C" {
-    DATA(0x002455b4)
-    extern i32 g_optLockAll;
-}
+// The [Config] gate band (0x6455b4..0x6455e4) is DEFINED in its owner TU
+// src/Rez/RezSync.cpp (RezSync::Init loads all twelve from the .bute [Config] keys
+// that name them); the reference externs live in <Globals.h>. DATA() belongs on the
+// DEFINITION only - these used to carry a DATA() on a bare `extern`, which binds a
+// name to an rva without ever giving it storage.
 
 // The options-dialog staging cells (0x22bd64..0x22bdd4): a snapshot of the live
 // settings LoadGameOptionsToDialog captures so IDCANCEL/Apply can restore/commit
@@ -291,7 +292,7 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                     EnableWindow(g_optHwndEasy, g_cdPromptResult == 0);
                 }
             }
-            if (g_optLockAll) {
+            if (g_disableAudio) {
                 EnableWindow(g_optHwndMusic, 0);
                 EnableWindow(g_optHwndCk7, 0);
                 EnableWindow(g_optHwndVoice, 0);
@@ -299,13 +300,13 @@ BOOL CALLBACK GameOptionsDlgProc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lPar
                 EnableWindow(g_optHwndSpeech, 0);
                 EnableWindow(g_optHwndCk6, 0);
             }
-            if (g_optLockAudio) {
+            if (g_disableSound) {
                 EnableWindow(g_optHwndMusic, 0);
                 EnableWindow(g_optHwndCk7, 0);
                 EnableWindow(g_optHwndVoice, 0);
                 EnableWindow(g_optHwndCk8, 0);
             }
-            if (g_optLockSpeech != 0 || g_gameReg->m_sound->m_enabled == 0) {
+            if (g_disableMusic != 0 || g_gameReg->m_sound->m_enabled == 0) {
                 EnableWindow(g_optHwndSpeech, 0);
                 EnableWindow(g_optHwndCk6, 0);
             }
@@ -394,8 +395,8 @@ void ReadMenuOptionsDialog(HWND hDlg) {
     if (res >= 0 && res <= 100) {
         g_videoResolutionMode = res;
     }
-    if (g_optLockAll == 0) {
-        if (g_optLockAudio == 0) {
+    if (g_disableAudio == 0) {
+        if (g_disableSound == 0) {
             g_gameReg->SetRunState(IsDlgButtonChecked(hDlg, 0x46d));
             i32 mv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x470);
             if (mv >= 0 && mv <= 100) {
@@ -407,7 +408,7 @@ void ReadMenuOptionsDialog(HWND hDlg) {
                 g_gameReg->StoreInputState(sv);
             }
         }
-        if (g_optLockAll == 0 && g_optLockSpeech == 0
+        if (g_disableAudio == 0 && g_disableMusic == 0
             && g_gameReg->m_sound->m_enabled != 0) {
             g_gameReg->SetSoundLevelState(IsDlgButtonChecked(hDlg, 0x471));
             i32 pv = ApiCallerStubs::winapi_036ec0_GetDlgItem_GetScrollInfo(hDlg, 0x472);
@@ -445,14 +446,14 @@ void CPlay::ApplyGameOptions() {
     }
     g_gameReg->m_isEasyMode = g_opt_22bd70;
     g_videoResolutionMode = g_opt_22bdc8;
-    if (g_optLockAll == 0) {
-        if (g_optLockAudio == 0) {
+    if (g_disableAudio == 0) {
+        if (g_disableSound == 0) {
             g_gameReg->SetRunState(g_opt_22bd84);
             g_gameReg->StoreInputFlag(g_opt_22bd6c);
             g_gameReg->m_isVoiceEnabled = g_opt_22bdd4;
             g_gameReg->StoreInputState(g_opt_22bdc4);
         }
-        if (g_optLockAll == 0 && g_optLockSpeech == 0
+        if (g_disableAudio == 0 && g_disableMusic == 0
             && g_gameReg->m_sound->m_enabled != 0) {
             g_gameReg->SetSoundLevelState(g_opt_22bdd0);
             g_gameReg->m_sound->SetXMidiVolume(g_opt_22bdcc);

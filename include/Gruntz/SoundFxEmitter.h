@@ -3,7 +3,7 @@
 // unidentified by RTTI; modeled here under a placeholder name since names are
 // matching-neutral. Each method: walk the resource chain to a DirectDraw channel,
 // build a CFxModeT2/T3 transition descriptor on the stack, register it with the
-// CFaderMgr (Add), then - gated on g_fxDirectGate - either apply the channel op
+// CFaderMgr (Add), then - gated on g_disableFades - either apply the channel op
 // immediately (ActiveWait + Fill/Blt) or defer it through the fresh fader; finally
 // Remove the fader. The chain/channel and the bank-stop helpers are reloc-masked
 // engine externs reached through the recovered offsets.
@@ -19,10 +19,13 @@
 #include <Gruntz/FaderMgr.h>   // CFaderMgr::Add / Remove + the minimal CFader
 #include <Gruntz/FxModeDesc.h> // CFxModeT2 / CFxModeT3 transition descriptors
 
-// Gate global (VA 0x6455c4 = RVA 0x2455c4): nonzero => apply the channel op
-// directly this frame; zero => defer it through the freshly-allocated fader.
-DATA(0x002455c4)
-extern i32 g_fxDirectGate;
+// The "Disable Fades" [Config] gate (VA 0x6455c4): nonzero => apply the channel op
+// directly this frame; zero => defer it through the freshly-allocated fader. It is one of
+// the twelve gates RezSync::Init loads from the .bute [Config] section - DEFINED there
+// (the owner TU), declared in <Globals.h>. (This header used to carry a DATA() on the
+// bare `extern`, which the label pass ignores in a header anyway, and under a C++-linkage
+// name - ?g_fxDirectGate@@3HA - that nothing defined.)
+extern "C" i32 g_disableFades;
 
 // Reloc-masked engine externs (real mangled names so the relocs pair by symbol;
 // no body - defined in their own TUs):

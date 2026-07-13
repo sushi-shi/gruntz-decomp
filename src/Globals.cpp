@@ -238,15 +238,7 @@ extern "C" {
     // g_opt_22bd64..g_opt_22bdd4 (the options-dialog staging cells, 0x22bd64..0x22bdd4)
     // are DEFINED in their owning TU src/Gruntz/VideoConfig.cpp (videoconfig.obj's .bss);
     // the reference externs stay in <Globals.h>.
-    DATA(0x002455bc)
-    extern i32 g_optLockAudio;
-    DATA(0x002455c0)
-    extern i32 g_optLockSpeech;
-    DATA(0x002455c8)
-    extern i32 g_6455c8; // DAT_006455c8  (joystick-disable flag)
-    DATA(0x002455dc)
-    extern i32 g_6455dc; // DAT_006455dc
-    DATA(0x002455e0)
-    extern i32 g_6455e0; // DAT_006455e0
+    // The [Config] gate band (0x6455b4..0x6455e4) is DEFINED in src/Rez/RezSync.cpp
+    // (its owner: Init loads all twelve from the .bute keys that name them).
     // g_profAccA/g_profAccB DEFINED in src/Gruntz/Play.cpp (owner TU).
 }

@@ -59,8 +59,51 @@ extern u32 g_startTick;            // 0x645580
 extern i32 g_645584;               // 0x645584
 extern i32 g_653c5c;               // 0x653c5c
 extern i32 g_sndEnabled;           // 0x61ab20
-extern i32 g_2455b4, g_2455bc, g_2455c0, g_2455c4, g_2455c8, g_2455cc;
-extern i32 g_2455d0, g_2455d4, g_2455d8, g_2455dc, g_2455e0, g_2455e4;
+// ---------------------------------------------------------------------------
+// The [Config] gate band, 0x6455b4..0x6455e4 - DEFINED HERE (storage), declared in
+// <Globals.h>.
+//
+// Nothing in the tree defined any of these twelve. They were `extern`-only under THREE
+// different namings - this TU's C++-linkage `g_2455b4..` (-> ?g_2455b4@@3HA), Globals.h's
+// `g_optLock*` / `g_6455xx`, and Attract's `g_fxDirectGate` - so every reference was an
+// unresolved external (objdiff masks the DIR32, the linker would not).
+//
+// OWNER: this TU. RezSync::Init is the sole initializer of the whole band - it reads
+// every one of the twelve straight out of the .bute [Config] section, and those KEY
+// NAMES are what name them (no invention; see the assignments in Init below).
+//
+// The old names `g_optLockAudio` (0x2455bc) / `g_optLockSpeech` (0x2455c0) were simply
+// WRONG, and three independent sites agree on the correction:
+//   * Init loads 0x2455bc from "Disable Sound" and 0x2455c0 from "Disable Music";
+//   * VideoConfig gates the XMidi *music* control on 0x2455c0 (not speech);
+//   * GruntzMgr writes SetValueDword("Disable_Joystick", <0x2455c8>) - confirming c8.
+extern "C" {
+    DATA(0x002455b4)
+    i32 g_disableAudio = 0; // "Disable Audio"        master audio kill
+    DATA(0x002455bc)
+    i32 g_disableSound = 0; // "Disable Sound"        sound FX
+    DATA(0x002455c0)
+    i32 g_disableMusic = 0; // "Disable Music"        XMidi music
+    DATA(0x002455c4)
+    i32 g_disableFades = 0; // "Disable Fades"        (was Attract's g_fxDirectGate)
+    DATA(0x002455c8)
+    i32 g_disableJoystick = 0; // "Disable Joystick"
+    DATA(0x002455cc)
+    i32 g_disableSoundFonts = 0; // "Disable SoundFonts"
+    DATA(0x002455d0)
+    i32 g_disableDirectVideo = 0; // "Disable Direct Video Access"
+    DATA(0x002455d4)
+    i32 g_disableHqMovie = 0; // "Disable High Quality Movie"
+    DATA(0x002455d8)
+    i32 g_enableTriple = 0; // "Enable Triple"        triple buffering
+    DATA(0x002455dc)
+    i32 g_enableHiColor = 0; // "Enable HiColor"
+    DATA(0x002455e0)
+    i32 g_enableTrueColor = 0; // "Enable TrueColor"
+    DATA(0x002455e4)
+    i32 g_enableEmulation = 0; // "Enable Emulation"
+}
+
 extern i32 g_64526c, g_6452d0, g_645268, g_645568, g_645538, g_6451a4;
 extern i32 g_6452d4, g_6452a8, g_645558, g_645560, g_64555c, g_645564;
 extern i32 g_645210, g_645534;
@@ -323,20 +366,20 @@ i32 RezSync::Init(void* a1, char* a2) {
     m_height = 0x1e0;
     m_numRuns = m_38->GetValueDword("Num Runs", 0);
     m_numMovies = m_38->GetValueDword("Num Movies", 0);
-    g_2455d4 = m_38->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
-    g_2455b4 = m_38->GetValueDword("Disable Audio", 0);
-    g_2455bc = m_38->GetValueDword("Disable Sound", 0);
-    g_2455c0 = m_38->GetValueDword("Disable Music", 0);
-    g_2455c4 = m_38->GetValueDword("Disable Fades", 0);
-    g_2455d0 = m_38->GetValueDword("Disable Direct Video Access", 0);
-    g_2455c8 = m_38->GetValueDword("Disable Joystick", 0);
-    g_2455cc = m_38->GetValueDword("Disable SoundFonts", 0);
-    g_2455d8 = m_38->GetValueDword("Enable Triple", 0);
-    g_2455dc = m_38->GetValueDword("Enable HiColor", 0);
-    g_2455e0 = m_38->GetValueDword("Enable TrueColor", 0);
-    g_2455e4 = m_38->GetValueDword("Enable Emulation", 0);
+    g_disableHqMovie = m_38->GetValueDword("Disable High Quality Movie", 0) ? 1 : 0;
+    g_disableAudio = m_38->GetValueDword("Disable Audio", 0);
+    g_disableSound = m_38->GetValueDword("Disable Sound", 0);
+    g_disableMusic = m_38->GetValueDword("Disable Music", 0);
+    g_disableFades = m_38->GetValueDword("Disable Fades", 0);
+    g_disableDirectVideo = m_38->GetValueDword("Disable Direct Video Access", 0);
+    g_disableJoystick = m_38->GetValueDword("Disable Joystick", 0);
+    g_disableSoundFonts = m_38->GetValueDword("Disable SoundFonts", 0);
+    g_enableTriple = m_38->GetValueDword("Enable Triple", 0);
+    g_enableHiColor = m_38->GetValueDword("Enable HiColor", 0);
+    g_enableTrueColor = m_38->GetValueDword("Enable TrueColor", 0);
+    g_enableEmulation = m_38->GetValueDword("Enable Emulation", 0);
     m_checkpointPrompts = m_38->GetValueDword("Checkpoint Prompts", 1);
-    g_2455dc = 1;
+    g_enableHiColor = 1;
     g_64526c = 0;
     g_6452d0 = 0;
     g_645268 = 0;
@@ -379,9 +422,9 @@ i32 RezSync::Init(void* a1, char* a2) {
     m_voiceVolume = vVoiVol;
     m_musicVolume = vMusVol + 1;
     m_numRuns = m_numRuns + 1;
-    if (g_2455d0 != 0) {
-        g_2455c4 = 1;
-        g_2455e4 = 1;
+    if (g_disableDirectVideo != 0) {
+        g_disableFades = 1;
+        g_enableEmulation = 1;
     }
     m_ac = 0;
     m_b0 = 0;
@@ -453,8 +496,8 @@ i32 RezSync::Init(void* a1, char* a2) {
     Fn1d3eff(*(i32*)((char*)m_08 + 0xc), 0, dpBuf, 1);
     ((Mfc*)&m_c8)->C_1b9c69();
     m_30 = new CDDrawSurfaceMgr;
-    i32 flags = (g_2455b4 || g_2455bc) ? 0xe5 : 0xe1;
-    if (g_2455e4) {
+    i32 flags = (g_disableAudio || g_disableSound) ? 0xe5 : 0xe1;
+    if (g_enableEmulation) {
         flags |= 0x10;
     }
     m_88 = 0x10;
@@ -517,7 +560,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         Error2(0x800a, 0x40b);
         return 0;
     }
-    if (g_2455b4 == 0 && g_2455cc == 0) {
+    if (g_disableAudio == 0 && g_disableSoundFonts == 0) {
         if (Fn262b()) {
             if (!Fn2423cdecl(Fn4214())) {
                 Fn129e();
@@ -532,7 +575,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         Error2(0x800a, 0x40c);
         return 0;
     }
-    if (g_2455b4 == 0 && g_2455c0 == 0) {
+    if (g_disableAudio == 0 && g_disableMusic == 0) {
         m_48->SetXMidiVolume(vMusic);
     } else {
         m_48->m_enabled = 0;

@@ -359,11 +359,23 @@ extern "C" {
     extern i32 g_opt_22bdcc;
     extern i32 g_opt_22bdd0;
     extern i32 g_opt_22bdd4;
-    extern i32 g_optLockAudio;
-    extern i32 g_optLockSpeech;
-    extern i32 g_6455c8;
-    extern i32 g_6455dc;
-    extern i32 g_6455e0;
+    // The .bute [Config] gate band, 0x6455b4..0x6455e4. DEFINED (storage) in the owner TU
+    // src/Rez/RezSync.cpp - RezSync::Init loads all twelve from the [Config] keys quoted
+    // here, which is also where the names come from. They used to be `extern`-only under
+    // three different namings and NO definition anywhere, so every reference to them was
+    // an unresolved external.
+    extern i32 g_disableAudio;       // "Disable Audio"
+    extern i32 g_disableSound;       // "Disable Sound"
+    extern i32 g_disableMusic;       // "Disable Music"
+    extern i32 g_disableFades;       // "Disable Fades"
+    extern i32 g_disableJoystick;    // "Disable Joystick"
+    extern i32 g_disableSoundFonts;  // "Disable SoundFonts"
+    extern i32 g_disableDirectVideo; // "Disable Direct Video Access"
+    extern i32 g_disableHqMovie;     // "Disable High Quality Movie"
+    extern i32 g_enableTriple;       // "Enable Triple"
+    extern i32 g_enableHiColor;      // "Enable HiColor"
+    extern i32 g_enableTrueColor;    // "Enable TrueColor"
+    extern i32 g_enableEmulation;    // "Enable Emulation"
     extern i32 g_profAccA;
     extern i32 g_profAccB;
 }

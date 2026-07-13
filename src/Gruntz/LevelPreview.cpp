@@ -90,12 +90,11 @@ public:
     i32 m_1c0;     // +0x1c0  preview counter
 };
 
-// The first menu-mode gate global the enter path polls (g_optLockAudio + g_dat60b588
-// are consolidated in Globals.h; 0x2455b4 is not, so it is pinned here).
-extern "C" {
-    DATA(0x002455b4)
-    extern i32 g_optLockAll;
-}
+// The [Config] gate band (0x6455b4..0x6455e4) is DEFINED in its owner TU
+// src/Rez/RezSync.cpp (RezSync::Init loads all twelve from the .bute [Config] keys
+// that name them); the reference externs live in <Globals.h>. DATA() belongs on the
+// DEFINITION only - these used to carry a DATA() on a bare `extern`, which binds a
+// name to an rva without ever giving it storage.
 
 // CPreviewState::Enter (0x0de030) - the level-preview screen's command-entry: load
 // the game asset namespaces (bail on failure), hide the mouse cursor fully, resolve
@@ -113,7 +112,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
     if (m_2c == 0) {
         return 0;
     }
-    if (g_optLockAll == 0 && g_optLockAudio == 0) {
+    if (g_disableAudio == 0 && g_disableSound == 0) {
         void* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != 0) {
             ((CDDrawSubMgrLeafScan*)((CRegHolder*)m_c)->m_statusBar)

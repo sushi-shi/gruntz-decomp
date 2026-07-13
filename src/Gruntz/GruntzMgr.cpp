@@ -428,8 +428,6 @@ extern "C" {
     DATA(0x00283eb4)
     extern i32 g_683eb4; // DAT_00683eb4  (blue shift-down)
     // The world-mode reload globals LoadWorldMode resets (reloc-masked).
-    DATA(0x002455b4)
-    extern i32 g_6455b4; // DAT_006455b4  (alt-flag, reload kind 1/5)
 }
 
 // SetGruntColor reaches a keyed lookup table embedded at +0x10 within the object
@@ -2852,14 +2850,14 @@ i32 CGruntzMgr::LoadWorldMode(i32 mode) {
     m_recolorSurface = 0;
 
     m_colorDepth = mode;
-    g_6455e0 = 0;
-    g_6455dc = 0;
+    g_enableTrueColor = 0;
+    g_enableHiColor = 0;
     if (m_colorDepth == 0x10) {
-        g_6455dc = 1;
+        g_enableHiColor = 1;
     }
 
     ((CWorldModeIface*)m_world)->Notify();
-    i32 kind = (g_6455b4 == 0) ? 1 : 5;
+    i32 kind = (g_disableAudio == 0) ? 1 : 5;
     if (((CWorldModeIface*)m_world)
             ->SetVideoMode((i32)m_gameWnd->m_hwnd, 0x280, 0x1e0, m_colorDepth, kind)
         == 0) {
@@ -4317,7 +4315,7 @@ void CGruntzMgr::Close() {
         ((Utils::RegistryHelper*)cfg)->SetValueDword("Interlaced", m_isInterlaced);
         ((Utils::RegistryHelper*)cfg)->SetValueDword("High_Detail", m_isHighDetail);
         ((Utils::RegistryHelper*)cfg)->SetValueDword("Effects", m_isEffectsEnabled);
-        ((Utils::RegistryHelper*)cfg)->SetValueDword("Disable_Joystick", g_6455c8);
+        ((Utils::RegistryHelper*)cfg)->SetValueDword("Disable_Joystick", g_disableJoystick);
         if (m_sound) {
             ((Utils::RegistryHelper*)cfg)->SetValueDword("Music_Volume", m_sound->GetXMidiVolume());
         }

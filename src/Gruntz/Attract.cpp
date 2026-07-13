@@ -75,10 +75,8 @@ extern "C" CGameRegistry* g_gameReg;
 DATA(0x00245534)
 extern i32 g_attractStateCount;
 
-// The fx direct/deferred gate the CSoundFxEmitter methods poll (0x2455c4, no other
-// owner); binding it here ties the emitters' g_fxDirectGate DIR32 to the real RVA.
-DATA(0x002455c4)
-extern i32 g_fxDirectGate;
+// The "Disable Fades" [Config] gate the CSoundFxEmitter methods poll (0x2455c4).
+// DEFINED in src/Rez/RezSync.cpp (owner); declared in <Globals.h>.
 
 // The present-suppress latch (DAT_0064e360), private to the attract loop; DEFINED
 // here (owner TU), a plain `extern` stays in Globals.h.
@@ -357,7 +355,7 @@ i32 CState::RunTitleSeq(const char* name, i32 a, i32 b, i32 c, i32 d) {
 // (0xfa410, 0xfa550, 0xfa790, 0xfa8f0, 0xfaa60). See CSoundFxEmitter.h for the
 // recovered class/chain layout. Each: gate on the resource chain, fill a
 // CFxModeT2/T3 transition descriptor on the stack, register it with the CFaderMgr,
-// then - per g_fxDirectGate - apply the channel op now or defer it through the new
+// then - per g_disableFades - apply the channel op now or defer it through the new
 // fader, and finally Remove the fader. All callees are reloc-masked externs.
 // ---------------------------------------------------------------------------
 
@@ -388,7 +386,7 @@ i32 CSoundFxEmitter::Method_fa410(i32 a1, i32 a2, i32 a3, i32 a4) {
     }
 
     m_gameMgr->StopBankIfActive();
-    if (g_fxDirectGate != 0) {
+    if (g_disableFades != 0) {
         ActiveWait(a3);
         m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
     } else {
@@ -435,7 +433,7 @@ i32 CSoundFxEmitter::Method_fa550(i32 a1, i32 a2, i32 a3, i32 a4) {
     }
 
     m_gameMgr->StopBankIfActive();
-    if (g_fxDirectGate != 0) {
+    if (g_disableFades != 0) {
         ActiveWait(a3);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
@@ -512,7 +510,7 @@ i32 CSoundFxEmitter::Method_fa790(i32 a1, i32 a2, i32 a3) {
     }
 
     m_gameMgr->StopBankIfActive();
-    if (g_fxDirectGate != 0) {
+    if (g_disableFades != 0) {
         ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
@@ -568,7 +566,7 @@ i32 CState::RetireScene(i32 a1, i32 a2, i32 a3, i32 a4) {
         return 0;
     }
 
-    if (g_fxDirectGate != 0) {
+    if (g_disableFades != 0) {
         ActiveWait(a2);
         fxRes()->m_worker->m_frontPair->m_surface->Blt(chanB);
     } else {
@@ -604,7 +602,7 @@ i32 CSoundFxEmitter::Method_faa60(i32 a1, i32 a2, i32 a3) {
     }
 
     m_gameMgr->StopBankIfActive();
-    if (g_fxDirectGate != 0) {
+    if (g_disableFades != 0) {
         ActiveWait(a2);
         m_resChain->m_worker->m_frontPair->m_surface->Fill(0);
     } else {
