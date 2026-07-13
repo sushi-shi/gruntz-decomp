@@ -37,13 +37,13 @@ public:
     }
     virtual i32 TileLogicVfunc0(); // slot 0 (0x110c10 via ILT thunk 0x402072)
 
-    i32 m_04; // +0x04
-    i32 m_08; // +0x08
-    i32 m_0c; // +0x0c
-    i32 m_10; // +0x10
-    i32 m_14; // +0x14
-    i32 m_18; // +0x18
-    i32 m_1c; // +0x1c  init flag (zeroed by ctor AFTER m_block)
+    i32 m_04;                    // +0x04
+    i32 m_08;                    // +0x08
+    i32 m_0c;                    // +0x0c
+    i32 m_10;                    // +0x10
+    i32 m_14;                    // +0x14
+    i32 m_18;                    // +0x18
+    i32 m_1c;                    // +0x1c  init flag (zeroed by ctor AFTER m_block)
     CTileTriggerContainer* m_20; // +0x20  owning container
     u32 m_24;                    // +0x24  game-clock snapshot (g_645588)
     i32 m_28;                    // +0x28
@@ -71,14 +71,18 @@ class CCoveredPowerupLogic : public CTileTriggerLogic {
 public:
     CCoveredPowerupLogic(); // 0x112240 (ILT 0x2a4f)
 };
-SIZE_UNKNOWN(CCoveredPowerupLogic);
+// Size PROVEN from the allocation site (push 0x9c; call ??2 -> the ctor), and our
+// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
+SIZE(CCoveredPowerupLogic, 0x9c);
 VTBL(CCoveredPowerupLogic, 0x001eaef4); // vtable_names -> code (RTTI game class)
 
 class CTileTimeTriggerLogic : public CTileTriggerLogic {
 public:
     CTileTimeTriggerLogic(); // 0x112270 (ILT 0x18de)
 };
-SIZE_UNKNOWN(CTileTimeTriggerLogic);
+// Size PROVEN from the allocation site (push 0x9c; call ??2 -> the ctor), and our
+// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
+SIZE(CTileTimeTriggerLogic, 0x9c);
 VTBL(CTileTimeTriggerLogic, 0x001eaf04); // vtable_names -> code (RTTI game class)
 
 class CTileSecretTriggerLogic : public CTileTriggerLogic {
@@ -86,7 +90,9 @@ class CTileSecretTriggerLogic : public CTileTriggerLogic {
 public:
     CTileSecretTriggerLogic(); // 0x112760 (ILT 0x310c)
 };
-SIZE_UNKNOWN(CTileSecretTriggerLogic);
+// Size PROVEN from the allocation site (push 0x9c; call ??2 -> the ctor), and our
+// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
+SIZE(CTileSecretTriggerLogic, 0x9c);
 VTBL(CTileSecretTriggerLogic, 0x001eaf14); // vtable_names -> code (RTTI game class)
 
 #endif // TILETRIGGERLOGIC_H

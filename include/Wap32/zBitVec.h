@@ -20,8 +20,10 @@
 // NOTE - the CContainerErr CTOR (0x16d9c0) is DEFINED (byte-exact) in gametext.cpp
 // under a deliberately NON-virtual dual-view (its ctor must store the vptr LAST, so a
 // real `virtual` would regress it - vtable-conversion-log.md). That is a required
-// ODR split (like CGameRegistry/CGruntzMgr); GameText.h and this header never coexist
-// in one TU. Here the ctor is declared-only, so derived base-ctor calls reloc-mask.
+// (STALE-WALL NOTE, corrected: this used to say "GameText.h and this header never coexist
+// in one TU". That was false - GameText.h had exactly ONE includer, so the collision it
+// warned about could not happen. Its duplicate CContainerErr view is folded in and gone;
+// GameText.h now includes THIS header. Do not resurrect the split.)
 #ifndef WAP32_ZBITVEC_H
 #define WAP32_ZBITVEC_H
 

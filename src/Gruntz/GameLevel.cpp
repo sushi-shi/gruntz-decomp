@@ -154,7 +154,7 @@ static inline void StampParamBlock(CGameLevel* o) {
 // so our two `??0CDWordArray@@QAE@XZ` calls + the `push $handler` funcinfo mask against
 // retail's folded names; (2) the tail store scheduling - cl parks the 0xfa immediate in
 // eax and stamps the ??_7CGameLevel vptr before the m_b4/m_c0 stores, while retail keeps
-// 0xfa in ecx and floats the vptr stamp later (matching-patterns.md §entropy: an
+// 0xfa in ecx and floats the vptr stamp later (matching-patterns.md Â§entropy: an
 // independent immediate-to-memory store has no dep to pin its slot). Logic + offsets +
 // CFG + EH frame exact.
 RVA(0x0015ccd0, 0x118)
@@ -2736,7 +2736,9 @@ VTBL(CImageSet2, 0x001f01e0); // ??_7CImageSet2 (was g_imageSet2Vtbl)
 VTBL(CImageSet3, 0x001f0228); // ??_7CImageSet3 (was g_imageSet3Vtbl)
 SIZE(CImageSet1, 0x10);
 SIZE(CImageSet2, 0x24);
-SIZE_UNKNOWN(CGameLevel);
+// Size PROVEN from the allocation site (push 0x6d4; call ??2 -> the ctor), and our
+// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
+SIZE(CGameLevel, 0x6d4);
 SIZE_UNKNOWN(CImageSet);
 RELOC_VTBL(CImageSet, 0x001eaa2c); // vtable reloc-masks a bound datum (dtor-stamp verified)
 

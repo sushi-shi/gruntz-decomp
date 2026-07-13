@@ -1707,6 +1707,8 @@ SIZE_UNKNOWN(CDdEnumVtbl);
 SIZE_UNKNOWN(CDdPoolItem);
 SIZE_UNKNOWN(CDdPoolSub);
 SIZE_UNKNOWN(CPtrListNode);
-SIZE_UNKNOWN(CDDrawPtrCollections);
+// Size PROVEN from the allocation site (push 0x948; call ??2 -> the ctor), and our
+// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
+SIZE(CDDrawPtrCollections, 0x948);
 
 // --- vtable catalog ---

@@ -16,7 +16,8 @@
 //
 // STILL ELSEWHERE (documented walls): the CContainerErr/zErrHandling ctor
 // (0x16d9c0) stays in GameText.cpp - it needs the deliberately NON-virtual
-// vptr-LAST dual-view (zBitVec.h's note; GameText.h and zBitVec.h never coexist
+// (the old "GameText.h and zBitVec.h never coexist" wall is DEAD - GameText.h had one
+//  includer; its duplicate CContainerErr view is folded onto zBitVec.h's)
 // in one TU). The CZArrayRoot/zErrHandling/CContainerErr and CZArray2D/zDArray
 // dual models are a known pending dedup (one real class each).
 //

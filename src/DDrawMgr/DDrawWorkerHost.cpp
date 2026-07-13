@@ -54,7 +54,9 @@ CDDrawWorkerHost::~CDDrawWorkerHost() {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CDDrawWorkerHost);
+// Size PROVEN from the allocation site (push 0x158; call ??2 -> the ctor), and our
+// reconstruction computes exactly that. Pinned so no future note can claim it unknown.
+SIZE(CDDrawWorkerHost, 0x158);
 // ??_7CDDrawWorkerHost (was g_ddrawWorkerHostVtbl @0x5f0270, Vtbl_1f0270 /
 // vtbl-cluster-56). cl auto-emits it from the real-polymorphic host;
 // retail's 12-slot datum is reloc-masked -> matching-neutral catalog tracking.

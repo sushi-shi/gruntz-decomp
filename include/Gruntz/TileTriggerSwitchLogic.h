@@ -85,7 +85,16 @@ public:
     ListNode* m_20; // +0x20  child-list head (owner) / cleared before delete
     CTileTriggerSwitchLogic* m_owner; // +0x24  back-pointer to the owning switch-logic
     i32 m_28;                         // +0x28  (serialized in LoadState)
-    i32 m_block[40];                  // +0x2c..0xcb  (first 24 zeroed in ctor)
+    // @layout-BUG (found by gruntz.analysis.stale_walls, unresolved - do NOT guess-fix):
+    // the ALLOCATION SITE says this object is 0x8c bytes (`push 0x8c; call ??2` before the
+    // ctor - and the same for all four derived switch-logics), but this array runs to +0xcc,
+    // and TileTriggerSwitchLogic.cpp's Save/Load reach m_block[37]/[38] (+0xc0/+0xc4) - past
+    // the end of what retail allocated. m_block[24] would land sizeof exactly on 0x8c (and
+    // the ctor zeroes exactly 24), but that would put those Save/Load writes out of bounds,
+    // so ONE of the two is mis-attributed and the disasm has to say which. Shrinking the
+    // array to make the number match would be exactly the kind of unverified guess that
+    // produced the "+0x120 gap". Left as-is, flagged, with the contradiction written down.
+    i32 m_block[40]; // +0x2c..0xcb  (first 24 zeroed in ctor)
 
     // Linked-list node: next@0x00, data@0x08.  Encapsulated inline.
     struct ListNode {
