@@ -646,6 +646,11 @@ public:
     // base, so a CBootyState method could never have called it on itself.)
     void StepGlitterAnim();  // 0x196c0 - the trig glitter/spawn positioner
     void MoveLettersByDir(); // 0x19b90 - the 8-direction letter walk (jump-table)
+    // 0x1ed30 - the BATTLE-STATZ scoreboard draw (was the fake class CBattleStatsView,
+    // whose lone field `m_c @+0x0c` is CState::m_c at the same offset). Both call sites
+    // (Render 0x1f480 / InputVirtual 0x1f6f0) invoke it with `mov ecx,this` on their own
+    // CMultiBootyState `this`, and no other caller exists (sema xref: only its ILT thunk).
+    void DrawBattleStats();
     // (CheckPerfectBonus @0x1c0f0 is GONE from here - it is CBootyState::, proven by its
     // [this+0x2f8] reads and its sole caller CBootyState::Render.)
     i32 QueryGruntSlots(); // 0x1ecf0 - scan 4 reg records for an empty slot
