@@ -1972,7 +1972,7 @@ i32 CGruntzMgr::LoadMonologoSprite() {
         }
         spr->m_frameSets.SetAtGrow(0, (CObject*)rec);
         spr->m_flags |= 0xc;
-        spr->m_80 = 0xf4241;
+        spr->m_zBound = 0xf4241; // z bound above every object -> logo always draws
         i32 parity = 1;
         for (i32 i = 0; i < spr->m_gridH; i++) {
             for (i32 j = 0; j < spr->m_gridW; j++) {

@@ -1584,7 +1584,7 @@ i32 CGrunt::StepArrivalDefenseAlt() {
                 i32 x = h->m_5c;
                 i32 y = h->m_60;
                 i32* rect =
-                    &g_gameReg->m_world->m_24->m_mainPlane->m_tileOriginX; // the +0x40 visible rect
+                    &g_gameReg->m_world->m_24->m_mainPlane->m_originX; // the +0x40 visible rect
                 if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
                     g_gameReg->m_cueSink->CueA(this, 0x366, -1, 0, -1, -1);
                 }
@@ -2315,7 +2315,7 @@ state0: {
         goto common;
     }
     if (GruntPointVisible(
-            (i32)&g_gameReg->m_world->m_24->m_mainPlane->m_tileOriginX,
+            (i32)&g_gameReg->m_world->m_24->m_mainPlane->m_originX,
             m_10->m_5c,
             m_10->m_60
         )

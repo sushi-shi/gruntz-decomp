@@ -1452,8 +1452,8 @@ void CMulti::PumpB() {
     }
     StepScroll();
     Mgr()->m_inputState->Retune(
-        ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->m_84,
-        ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->m_88
+        ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->m_snappedX,
+        ((CPlaneRender*)((CGameLevel*)mgr->m_24)->m_mainPlane)->m_snappedY
     );
     if (m_region1Gate != 0) {
         NotifyVisibleEntities();

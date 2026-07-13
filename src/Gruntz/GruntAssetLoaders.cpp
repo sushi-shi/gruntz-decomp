@@ -116,7 +116,7 @@ enum GruntDeathType {
     do {                                                                                           \
         CGameRegistry* _g = g_gameReg;                                                             \
         if (GruntPointVisible(                                                                     \
-                (i32) & _g->m_world->m_24->m_mainPlane->m_tileOriginX,                             \
+                (i32) & _g->m_world->m_24->m_mainPlane->m_originX,                                 \
                 m_10->m_5c,                                                                        \
                 m_10->m_60                                                                         \
             )) {                                                                                   \
@@ -398,7 +398,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_154->CacheFirstFrame(*(char**)&m_44c);
             {
                 CGameRegistry* g = g_gameReg;
-                CCueRect* r = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_tileOriginX;
+                CCueRect* r = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_originX;
                 i32 x = m_10->m_5c;
                 i32 y = m_10->m_60;
                 if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
@@ -418,7 +418,7 @@ pathA:
     {
         CGameRegistry* g = g_gameReg;
         if (GruntPointVisible(
-                (i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX,
+                (i32)&g->m_world->m_24->m_mainPlane->m_originX,
                 m_10->m_5c,
                 m_10->m_60
             )) {

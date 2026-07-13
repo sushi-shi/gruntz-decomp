@@ -295,8 +295,8 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
         mp->RecomputePlaneCoords();
 
         // Re-derive the start coords from the main plane's origin for the rest.
-        i32 ox = m_mainPlane->m_originX;
-        i32 oy = m_mainPlane->m_originY;
+        i32 ox = m_mainPlane->m_snappedX;
+        i32 oy = m_mainPlane->m_snappedY;
         i32 i2 = 0;
         while (i2 < m_planes.GetSize()) // GetSize() == the plane count
         {
@@ -658,7 +658,7 @@ RVA(0x0015d9a0, 0xdc)
 CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7) {
     CPlane* plane = new CPlane(m_field0c, m_planeCount, 0);
 
-    if (plane->ReadObjects(a1, a2, a3, a4, a5, a6, &m_planeCtx, a7) == 0) {
+    if (plane->InitGeometry_1619f0(a1, a2, a3, a4, a5, a6, &m_planeCtx, (char*)a7) == 0) {
         if (plane) {
             delete plane; // the virtual scalar-deleting dtor (vtable +0x4, flag 1)
         }
@@ -1124,7 +1124,8 @@ void CGameLevel::VisitVisible(void* visitor, CGameObjChain* ctx) {
     CGameObjChain::List* chain = &ctx->m_list;
 
     if ((m_08 & 1) && chain != 0 && (m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0) != 0) {
-        ((CLevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))->Sync(visitor);
+        ((CLevelPlane*)(m_planes.GetSize() > 0 ? m_planes.GetData()[0] : 0))
+            ->Draw((CPlaneDrawCtx*)visitor);
         CGameObjNode* node = chain->head;
 
         i32 i = 1;
@@ -1145,7 +1146,7 @@ void CGameLevel::VisitVisible(void* visitor, CGameObjChain* ctx) {
                         blocked = 1;
                     }
                 }
-                ((CLevelPlane*)m_planes.GetData()[i])->Sync(visitor);
+                ((CLevelPlane*)m_planes.GetData()[i])->Draw((CPlaneDrawCtx*)visitor);
                 ++i;
             } while (i < m_planes.GetSize());
         }
@@ -1162,7 +1163,7 @@ void CGameLevel::VisitVisible(void* visitor, CGameObjChain* ctx) {
     i32 idx = 0;
     if (m_mainIndex >= 0) {
         do {
-            ((CLevelPlane*)m_planes.GetData()[idx])->Sync(visitor);
+            ((CLevelPlane*)m_planes.GetData()[idx])->Draw((CPlaneDrawCtx*)visitor);
             ++idx;
         } while (idx <= m_mainIndex);
     }
@@ -1170,7 +1171,7 @@ void CGameLevel::VisitVisible(void* visitor, CGameObjChain* ctx) {
     i32 j = m_mainIndex + 1;
     if (j < m_planes.GetSize()) {
         do {
-            ((CLevelPlane*)m_planes.GetData()[j])->Sync(visitor);
+            ((CLevelPlane*)m_planes.GetData()[j])->Draw((CPlaneDrawCtx*)visitor);
             ++j;
         } while (j < m_planes.GetSize());
     }

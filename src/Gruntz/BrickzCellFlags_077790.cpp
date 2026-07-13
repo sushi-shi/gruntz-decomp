@@ -217,7 +217,7 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
 // level->m_24 -> m_mainPlane). __thiscall(x, y, id). Ex BrickzGridDesc::SetCell -
 // the grid descriptor IS the CLevelPlane.
 RVA(0x00077dc0, 0x1d)
-void CLevelPlane::SetCell(i32 x, i32 y, i32 id) {
+void CDDrawWorkerHost::SetCell(i32 x, i32 y, i32 id) {
     m_tileGrid[m_colOffsets[y] + x] = id;
 }
 

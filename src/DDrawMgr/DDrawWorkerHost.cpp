@@ -34,31 +34,31 @@ extern "C" void RezFree(void* p);
 // state writes), same wall class as the entry-list dtor. Logic complete.
 RVA(0x00163af0, 0xcd)
 CDDrawWorkerHost::~CDDrawWorkerHost() {
-    if (m_spatialWorker != 0) {
-        m_spatialWorker->PruneCount();
+    if (m_scroll != 0) {
+        m_scroll->PruneCount();
     }
-    if (m_spatialWorker != 0) {
-        // retail INLINES ~CWwdSpatialMgr here (`delete m_spatialWorker` with the full
+    if (m_scroll != 0) {
+        // retail INLINES ~CWwdSpatialMgr here (`delete m_scroll` with the full
         // class visible): its own null check (the double cmp), EH state, call FreeGrids
         // (0x1682f0), the +0x70 ~m_iter ??_7CObject stamp (not reproducible from the
         // reduced view without a manual vptr write - deliberately omitted), then the
         // class operator delete == RezFree. Spelled explicitly so the call relocs bind
         // to retail's own targets (a decl-only-dtor `delete` would mis-bind to 0x163a40).
-        CWwdSpatialMgr* w = m_spatialWorker;
+        CWwdSpatialMgr* w = m_scroll;
         if (w != 0) {
             w->FreeGrids();
             RezFree(w);
         }
     }
-    if (m_buffer0 != 0) {
-        RezFree(m_buffer0);
-        m_buffer0 = 0;
+    if (m_tileGrid != 0) {
+        RezFree(m_tileGrid);
+        m_tileGrid = 0;
     }
-    if (m_buffer1 != 0) {
-        RezFree(m_buffer1);
-        m_buffer1 = 0;
+    if (m_colOffsets != 0) {
+        RezFree(m_colOffsets);
+        m_colOffsets = 0;
     }
-    // m_obArray.~CWorkerObArray() (0x1b561c) + ~CLoadable() (field resets + grand-base
+    // m_frameSets.~CWorkerObArray() (0x1b561c) + ~CLoadable() (field resets + grand-base
     // vtable restore) fold here under the /GX frame.
 }
 

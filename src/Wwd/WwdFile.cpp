@@ -1,9 +1,9 @@
 // WwdFile.cpp - the far-flung CPlaneRender strays (3 leaves, strictly
 // RVA-ascending; each sits OUTSIDE the level-load region and awaits its own
 // birth-position attribution):
-//   CPlaneRender::WrapCoord        0x0000a000
-//   CPlaneRender::SnapToTileCenter 0x000311e0
-//   CPlaneRender::GetTileHandle    0x000d53a0
+//   CDDrawWorkerHost::WrapCoord        0x0000a000
+//   CDDrawWorkerHost::SnapToTileCenter 0x000311e0
+//   CDDrawWorkerHost::GetTileHandle    0x000d53a0
 //
 // WwdFile::ValidateMainBlock (0x3b470) + GetMapBaseName (0x3bb50) re-homed to
 // CustomWorldDialog.cpp (dossier #16: their birth positions are woven into the
@@ -24,7 +24,7 @@
 #include <Globals.h>
 
 // ---------------------------------------------------------------------------
-// CPlaneRender::WrapCoord (__thiscall, ret 0x8). Maps a world coordinate
+// CDDrawWorkerHost::WrapCoord (__thiscall, ret 0x8). Maps a world coordinate
 // (*px, *py) into the plane's local draw space: wrap each axis into its pixel
 // modulus (when the plane wraps on that axis: flag bit2=X, bit3=Y), pull it back
 // near the visible origin, then subtract the plane origin and add the scroll
@@ -37,7 +37,7 @@
 // A whole-function regalloc/scheduling choice (which physical reg holds py); not
 // source-steerable. Documented scheduling wall (matching-patterns.md §entropy).
 RVA(0x0000a000, 0xac)
-void CPlaneRender::WrapCoord(i32* px, i32* py) {
+void CDDrawWorkerHost::WrapCoord(i32* px, i32* py) {
     if (m_flags & 0x4) { // wrap X
         i32 x = *px;
         if (x < 0) {
@@ -69,7 +69,7 @@ void CPlaneRender::WrapCoord(i32* px, i32* py) {
 }
 
 // ---------------------------------------------------------------------------
-// CPlaneRender::SnapToTileCenter (__thiscall, ret 0xc). Floor each axis to its
+// CDDrawWorkerHost::SnapToTileCenter (__thiscall, ret 0xc). Floor each axis to its
 // tile boundary (>>shift <<shift) and add half a tile (signed /2).
 // @early-stop
 // ~51%, logic byte-exact (same sar/shl/cltd/sub/sar/add selection). Residual is a
@@ -77,14 +77,14 @@ void CPlaneRender::WrapCoord(i32* px, i32* py) {
 // caller-saved eax/edx (3 callee-saved pushes) and stores both results last; this
 // build colors a shift count into ebx (a 4th push, ebp) and flips the axis order.
 // Not source-steerable (member-load scheduling / coloring; matching-patterns.md).
-// @interleaver CPlaneRender::SnapToTileCenter emitted-in <boundary: unreconstructed>
+// @interleaver CDDrawWorkerHost::SnapToTileCenter emitted-in <boundary: unreconstructed>
 // (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are freenodepool
 // FreeNodePool::Push @0x311b0 (before) + ddrawsubmgr CQueueDrainHost::Drain @0x31250
 // (after), NOT one reconstructed host both sides. Home hint battlezmapconfig is a
 // scattered god-TU (proximity only). This is one of WwdFile.cpp's 3 far-flung
 // CPlaneRender strays awaiting individual birth-position attribution; leave + flag.)
 RVA(0x000311e0, 0x4c)
-void CPlaneRender::SnapToTileCenter(i32* out, i32 x, i32 y) {
+void CDDrawWorkerHost::SnapToTileCenter(i32* out, i32 x, i32 y) {
     i32 sx = m_shiftX;
     i32 sy = m_shiftY;
     i32 rx = ((x >> sx) << sx) + m_tilePxW / 2;
@@ -96,14 +96,14 @@ void CPlaneRender::SnapToTileCenter(i32* out, i32 x, i32 y) {
 // GetTileHandle (0x0d53a0): index the tile-handle grid by (row, col) -
 // m_tileGrid[m_colOffsets[col] + row]. Out-of-line (retail emits it standalone;
 // the inline member folded into its callers and never emitted).
-// @interleaver CPlaneRender::GetTileHandle emitted-in <boundary: unreconstructed>
+// @interleaver CDDrawWorkerHost::GetTileHandle emitted-in <boundary: unreconstructed>
 // (REHOME D10 not-homeable: BOUNDARY COMDAT - retail neighbours are leveltilevalidation
 // CLevelValidator::ValidateLevelTiles @0xd2dd0 (before) + playplanescan CPlay::ScanBuildTiles
 // @0xd53d0 (after), NOT one reconstructed host both sides. Home hint play is a scattered
 // god-TU (proximity only, not locally adjacent). One of WwdFile.cpp's 3 CPlaneRender strays;
 // leave + flag until the 0xd53xx obj boundary is pinned.)
 RVA(0x000d53a0, 0x19)
-i32 CPlaneRender::GetTileHandle(i32 row, i32 col) {
+i32 CDDrawWorkerHost::GetTileHandle(i32 row, i32 col) {
     return m_tileGrid[m_colOffsets[col] + row];
 }
 
@@ -121,13 +121,11 @@ i32 CPlaneRender::GetTileHandle(i32 row, i32 col) {
 SIZE(WwdHeader, 0x5f4);     // on-disk WWD header (RE'd 0x5F4 bytes)
 SIZE(WwdInputStream, 0x10); // 16-byte file-stream object (full layout to +0xc)
 SIZE_UNKNOWN(CPlaneGeom);   // WwdFile's plane-geom (CPlay.h's render-geom facet is CPlayPlaneGeom)
-SIZE_UNKNOWN(CPlaneScroll);
 SIZE_UNKNOWN(CPlaneSurfDesc);
 SIZE_UNKNOWN(CPlaneSurf);
 SIZE_UNKNOWN(CPlanePalArr);
 SIZE_UNKNOWN(CPlanePalOwner);
 SIZE_UNKNOWN(CPlanePalHost);
 SIZE_UNKNOWN(CPlaneMapData);
-SIZE_UNKNOWN(CPlaneRender);
 SIZE_UNKNOWN(CGameLevelPlanes);
 SIZE_UNKNOWN(WwdFile); // namespace-class (method-only)

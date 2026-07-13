@@ -63,24 +63,24 @@
 // g_loadableVtbl 0x5efc30 -- then m_04=a2/m_08=a3/m_0c=a1), constructs the
 // +0x9c ::CObArray member (0x1b55e9; its destructible-member trylevel supplies
 // the EH frame), stamps the own vftable (0x5f0270), then arms the scalar fields
-// (buffers/worker = 0, m_18/m_1c = 1.0f, m_50 = -1) and zero-fills the +0xf4 pool
+// (grid/scroll = 0, scaleX/Y = 1.0f, +0x50 = -1) and zero-fills the +0xf4 pool
 // (25 dwords) with m_pool[0] = 100. Byte-exact (100%): the retail intermediate base
 // stamp 0x5efc30 is reloc-masked, so the compiler-emitted ??_7CLoadable stamp
 // matches at the byte level; the CLoadable ctor arg-order (m_04=a2/m_08=a3/
 // m_0c=a1) + body store order reproduce the schedule exactly.
 // ===========================================================================
 RVA(0x001615a0, 0x9a)
-CDDrawWorkerHost::CDDrawWorkerHost(i32 owner, i32 field04, i32 field08) {
+CDDrawWorkerHost::CDDrawWorkerHost(CPlaneMapData* mapData, i32 field04, i32 flags) {
     m_04 = field04;
-    m_flags = field08;
-    m_0c = owner; // (merged CLoadable ctor)
-    // m_obArray (::CObArray) default-constructed here (0x1b55e9).
-    m_buffer0 = 0;
-    m_buffer1 = 0;
-    m_spatialWorker = 0;
-    m_18 = 1.0f;
-    m_1c = 1.0f;
-    m_50 = -1;
+    m_flags = flags;
+    m_mapData = mapData; // (merged CLoadable ctor)
+    // m_frameSets (::CObArray) default-constructed here (0x1b55e9).
+    m_tileGrid = 0;
+    m_colOffsets = 0;
+    m_scroll = 0;
+    m_scaleX = 1.0f;
+    m_scaleY = 1.0f;
+    m_viewX = -1; // (ex m_50; the two +0x50 readings are unreconciled)
     memset(m_pool, 0, sizeof(m_pool));
     m_pool[0] = 100;
 }
@@ -89,7 +89,7 @@ CDDrawWorkerHost::CDDrawWorkerHost(i32 owner, i32 field04, i32 field08) {
 // (??_7CDDrawWorkerHost @0x1f0270+0x28) - the slot CGameLevelPlanes::ReadPlane
 // dispatches. __thiscall(a1 plane-source record, a2 buffer offset, a3
 // LevelCoordRect* bounds), ret 0xc. Parses a token stream, copies a1->this geometry,
-// SetTileSize, then steps 6-9 byte-identical to CLevelPlane::InitGeometry_1619f0.
+// SetTileSize, then steps 6-9 byte-identical to CDDrawWorkerHost::InitGeometry_1619f0.
 // (Was the free-fn stub Gap_161640; now the REAL virtual so the emitted vtable's
 // slot 10 binds to a defined symbol.) Body deferred pending SetTileSize/
 // RebuildPlanes/SetAtGrow declared on the unified plane class.
@@ -101,12 +101,12 @@ i32 CDDrawWorkerHost::Read(void* planeData, void* blockBase, void* bounds) {
     return 0;
 }
 
-// CLevelPlane::InitGeometry_1619f0 (0x1619f0, CDDrawWorkerHost vtable slot +0x24):
+// CDDrawWorkerHost::InitGeometry_1619f0 (0x1619f0, CDDrawWorkerHost vtable slot +0x24):
 // seed tile/wrap/origin/shift fields from the 8 args, log2 the tile shifts, strcpy
 // the name, alloc the tile grid + column-offset table, tail-call RecomputePlaneCoords.
 // __thiscall, 8 args (ret 0x20), returns 1.
 // @early-stop
-// 78.3% codegen wall (twin of CLevelPlane::Build): logic/fields/offsets/CFG/args
+// 78.3% codegen wall (twin of CDDrawWorkerHost::Build): logic/fields/offsets/CFG/args
 // byte-faithful (the two log2 shift loops, the strcpy inline rep-movs, the
 // CopyRect IAT call + m_bounds50 re-derive, the fild/fmul/__ftol float scale, the
 // two operator-new allocations and the column-offset fill all match).  Residual is
@@ -115,7 +115,7 @@ i32 CDDrawWorkerHost::Read(void* planeData, void* blockBase, void* bounds) {
 // with the m_30/m_34 products differently.  Same values, same stores; no source
 // lever picks the arg->register map (docs/patterns/zero-register-pinning.md).
 RVA(0x001619f0, 0x1f7)
-i32 CLevelPlane::InitGeometry_1619f0(
+i32 CDDrawWorkerHost::InitGeometry_1619f0(
     i32 w,
     i32 h,
     i32 tileW,
@@ -135,12 +135,12 @@ i32 CLevelPlane::InitGeometry_1619f0(
     m_bounds50.maxY = bounds->maxY;
     m_94 = depthX;
     m_98 = depthY;
-    m_60 = 0;
-    m_64 = 0;
-    m_6c = tileH;
+    m_fillRect.left = 0;
+    m_fillRect.top = 0;
+    m_fillRect.bottom = tileH;
     m_wrapW = tileW * w;
     m_wrapH = tileH * h;
-    m_68 = tileW;
+    m_fillRect.right = tileW;
     i32 pw = m_bounds50.maxX - m_bounds50.minX + 1;
     i32 ph = m_bounds50.maxY - m_bounds50.minY + 1;
     m_viewW = pw;
@@ -196,29 +196,29 @@ i32 CLevelPlane::InitGeometry_1619f0(
 // it (no null-out), then free the two RezAlloc'd buffers at +0x20/+0x24 (nulled).
 RVA(0x00161bf0, 0x5e)
 void CDDrawWorkerHost::Cleanup_161bf0() {
-    if (m_spatialWorker != 0) {
-        m_spatialWorker->PruneCount();
+    if (m_scroll != 0) {
+        m_scroll->PruneCount();
     }
-    CWwdSpatialMgr* g = m_spatialWorker;
+    CWwdSpatialMgr* g = m_scroll;
     if (g != 0) {
         g->~CWwdSpatialMgr(); // the out-of-line complete dtor (0x163a40)
         ::operator delete(g);
     }
-    if (m_buffer0 != 0) {
-        ::operator delete(m_buffer0);
-        m_buffer0 = 0;
+    if (m_tileGrid != 0) {
+        ::operator delete(m_tileGrid);
+        m_tileGrid = 0;
     }
-    if (m_buffer1 != 0) {
-        ::operator delete(m_buffer1);
-        m_buffer1 = 0;
+    if (m_colOffsets != 0) {
+        ::operator delete(m_colOffsets);
+        m_colOffsets = 0;
     }
 }
 
 // ===========================================================================
 // 0x161c50 - RegisterNamed(index, key): resolve `key` to a named object through the
-// owner context's map (m_0c -> sub-manager -> +0x10 CMapStringToOb) and cache the
-// result (or null on a miss) at m_obArray[index] (SetAtGrow). __thiscall, ret 8.
-// Same lookup chain as CDDrawWorkerB::Helper_166040. m_0c is the CLoadable base's
+// owner context's map (m_mapData -> sub-manager -> +0x10 CMapStringToOb) and cache the
+// result (or null on a miss) at m_frameSets[index] (SetAtGrow). __thiscall, ret 8.
+// Same lookup chain as CDDrawWorkerB::Helper_166040. m_mapData is the CLoadable base's
 // +0x0c owner context (declared i32; the reinterpret is the CLoadable ctx handle).
 // ===========================================================================
 // @early-stop
@@ -231,19 +231,19 @@ void CDDrawWorkerHost::Cleanup_161bf0() {
 RVA(0x00161c50, 0x3f)
 void CDDrawWorkerHost::RegisterNamed(char index, const char* key) {
     CObject* val = 0;
-    ((CDDrawWorkerCtx*)m_0c)->m_10->m_10.Lookup(key, val);
-    m_obArray.SetAtGrow(index, val);
+    ((CDDrawWorkerCtx*)m_mapData)->m_10->m_10.Lookup(key, val);
+    m_frameSets.SetAtGrow(index, val);
 }
 
 // ---------------------------------------------------------------------------
-// CLevelPlane::RecomputePlaneCoords - recompute one plane's scaled scroll origin
+// CDDrawWorkerHost::RecomputePlaneCoords - recompute one plane's scaled scroll origin
 // and visible-tile extents from its (already-scaled) float coords. __thiscall
 // with `this` = the plane (ecx); reloc-masks only the float 0.0 constant and the
 // CRT __ftol helper (the (int)float casts). X and Y are computed identically:
 // wrap (flags bit set) folds the coord modulo the tile count into [0, count);
 // else it clamps to [0, count-1].
 RVA(0x00161c90, 0x1e4)
-void CLevelPlane::RecomputePlaneCoords() {
+void CDDrawWorkerHost::RecomputePlaneCoords() {
     CLevelPlane* p = this;
     u32 flags = p->m_flags;
     i32 wrapX = flags & 4;
@@ -295,49 +295,49 @@ void CLevelPlane::RecomputePlaneCoords() {
 
     // --- snap to integer + derive the tile origin ----------------------------
     i32 ix = (i32)p->m_scaledX;
-    p->m_originX = ix;
+    p->m_snappedX = ix;
     i32 iy = (i32)p->m_scaledY;
-    p->m_originY = iy;
+    p->m_snappedY = iy;
 
     i32 ox = ix - p->m_anchorX;
-    p->m_tileOriginX = ox;
+    p->m_originX = ox;
     if (ox < 0) {
         if (wrapX) {
-            p->m_tileOriginX = p->m_wrapW + ox;
+            p->m_originX = p->m_wrapW + ox;
         } else {
-            p->m_tileOriginX = 0;
+            p->m_originX = 0;
         }
     }
 
     i32 oy = iy - p->m_anchorY;
-    p->m_tileOriginY = oy;
+    p->m_originY = oy;
     if (oy < 0) {
         if (wrapY) {
-            p->m_tileOriginY = p->m_wrapH + oy;
+            p->m_originY = p->m_wrapH + oy;
         } else {
-            p->m_tileOriginY = 0;
+            p->m_originY = 0;
         }
     }
 
     // --- derive the far tile extents (clamped, unless wrapping) ---------------
-    i32 ex = p->m_viewW + p->m_tileOriginX - 1;
-    i32 ey = p->m_viewH + p->m_tileOriginY - 1;
-    p->m_tileExtentX = ex;
-    p->m_tileExtentY = ey;
+    i32 ex = p->m_viewW + p->m_originX - 1;
+    i32 ey = p->m_viewH + p->m_originY - 1;
+    p->m_extentX = ex;
+    p->m_extentY = ey;
     if (ex >= p->m_wrapW && wrapX == 0) {
         i32 over = ex - p->m_wrapW + 1;
-        p->m_tileExtentX = ex - over;
-        p->m_tileOriginX = p->m_tileOriginX - over;
+        p->m_extentX = ex - over;
+        p->m_originX = p->m_originX - over;
     }
     if (ey >= p->m_wrapH && wrapY == 0) {
         i32 over = ey - p->m_wrapH + 1;
-        p->m_tileExtentY = ey - over;
-        p->m_tileOriginY = p->m_tileOriginY - over;
+        p->m_extentY = ey - over;
+        p->m_originY = p->m_originY - over;
     }
 }
 
 // ===========================================================================
-// CLevelPlane::Build (0x161e80) - re-place one plane from the level coord rect.
+// CDDrawWorkerHost::Build (0x161e80) - re-place one plane from the level coord rect.
 // Unless the rect is unset (minX == INT_MIN sentinel), copy it into the plane's
 // +0x50 bounds, derive the view size (w/h = max-min+1) and the half-size anchor,
 // then RecomputePlaneCoords. CGameLevel::SetExtentsAndBuildAll / BuildAllPlanes
@@ -349,7 +349,7 @@ void CLevelPlane::RecomputePlaneCoords() {
 // scheduling of the width/height derivation. Complete + correct logic.
 // ===========================================================================
 RVA(0x00161e80, 0x79)
-void CLevelPlane::Build(LevelCoordRect* coords) {
+void CDDrawWorkerHost::Build(LevelCoordRect* coords) {
     if (coords->minX != (i32)0x80000000) {
         LevelCoordRect local;
         CopyRect((RECT*)&local, (RECT*)coords);
@@ -365,7 +365,7 @@ void CLevelPlane::Build(LevelCoordRect* coords) {
 }
 
 // ===========================================================================
-// CPlaneRender::SetTileSize (__thiscall, ret 8) - given the tile pixel
+// CDDrawWorkerHost::SetTileSize (__thiscall, ret 8) - given the tile pixel
 // size (tileW, tileH), derive the plane's pixel-wrap dims (grid count * tile px),
 // the tile px size, the (0,0,tileW,tileH) default fill rect, and the two log2
 // shift amounts. The retail code derives BOTH shifts from tileW (the shiftY loop
@@ -378,7 +378,7 @@ void CLevelPlane::Build(LevelCoordRect* coords) {
 // Operand-order swaps don't move it; not source-steerable.
 // ===========================================================================
 RVA(0x00161f00, 0x75)
-void CPlaneRender::SetTileSize(i32 tileW, i32 tileH) {
+void CDDrawWorkerHost::SetTileSize(i32 tileW, i32 tileH) {
     m_wrapW = m_gridW * tileW;
     m_tilePxH = tileH;
     m_fillRect.bottom = tileH;
@@ -398,12 +398,12 @@ void CPlaneRender::SetTileSize(i32 tileW, i32 tileH) {
 }
 
 // ---------------------------------------------------------------------------
-// CPlaneRender::SetTileSizeFromImageSet (0x161fa0, __thiscall, ret 0x4): linear-scan
+// CDDrawWorkerHost::SetTileSizeFromImageSet (0x161fa0, __thiscall, ret 0x4): linear-scan
 // the image set for the first populated frame (GetAt returns null outside
 // [minIndex, maxIndex]); on the first hit, drive SetTileSize with that frame's pixel
 // dimensions and stop. An empty set leaves the tile size unchanged.
 RVA(0x00161fa0, 0x6c)
-void CPlaneRender::SetTileSizeFromImageSet(CImageSet* set) {
+void CDDrawWorkerHost::SetTileSizeFromImageSet(CImageSet* set) {
     for (i32 i = 0; i < set->m_count; i++) {
         if (set->GetAt(i) != 0) {
             CImage* f = set->GetAt(i);
@@ -414,7 +414,7 @@ void CPlaneRender::SetTileSizeFromImageSet(CImageSet* set) {
 }
 
 // ===========================================================================
-// CPlaneRender::Draw (__thiscall, ret 0x4) - the toroidally-wrapped tile-grid
+// CDDrawWorkerHost::Draw (__thiscall, ret 0x4) - the toroidally-wrapped tile-grid
 // renderer. Takes one context arg (the blit destination owner) at +0xA8; ebp =
 // ctx->m_2c is the target CDDSurface (the BltEx/BltFast `this`). If the plane is
 // hidden (flag bit1) it returns immediately.
@@ -476,7 +476,7 @@ void CPlaneRender::SetTileSizeFromImageSet(CImageSet* set) {
 // slot numbering also diverge. Logic + offsets + CFG byte-faithful; a leaf-first
 // regalloc grind is deferred to the final sweep.
 RVA(0x00162010, 0x8bd)
-void CPlaneRender::Draw(CPlaneDrawCtx* ctx) {
+void CDDrawWorkerHost::Draw(CPlaneDrawCtx* ctx) {
     if ((m_flags & 2) != 0) {
         return;
     }
@@ -723,10 +723,10 @@ struct WwdPlaneRender {
 // 0x1628d0: forward the grid's Prune when present (else 0).  __thiscall tail call.
 RVA(0x001628d0, 0x12)
 i32 CDDrawWorkerHost::Prune_1628d0() {
-    if (m_spatialWorker == 0) {
+    if (m_scroll == 0) {
         return 0;
     }
-    return m_spatialWorker->PruneCount();
+    return m_scroll->PruneCount();
 }
 
 // @early-stop
@@ -1051,7 +1051,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 }
 
 // ---------------------------------------------------------------------------
-// CPlaneRender::CenterScrollA / CenterScrollB (__thiscall, returns int). Compute
+// CDDrawWorkerHost::CenterScrollA / CenterScrollB (__thiscall, returns int). Compute
 // a scroll target for the plane's camera sub-object (+0xB0) and hand it to the
 // camera's SetTarget (returning its result). When the plane wraps an axis (flag
 // bit2=X, bit3=Y) the target is the (int) scroll origin (m_scaledX/Y); otherwise
@@ -1068,7 +1068,7 @@ i32 WwdFile::ReadPlaneObjects(const i32* src) {
 // source operand order. Documented prologue/member-load scheduling wall. See
 // docs/patterns/shrink-wrapped-callee-save-push.md.
 RVA(0x00163300, 0x70)
-i32 CPlaneRender::CenterScrollA() {
+i32 CDDrawWorkerHost::CenterScrollA() {
     CPlaneScroll* scroll = m_scroll;
     if (scroll == 0) {
         return 0;
@@ -1095,7 +1095,7 @@ i32 CPlaneRender::CenterScrollA() {
 // @early-stop
 // 87.9%, same shrink-wrapped-push / member-load scheduling wall as CenterScrollA.
 RVA(0x00163370, 0x70)
-i32 CPlaneRender::CenterScrollB() {
+i32 CDDrawWorkerHost::CenterScrollB() {
     CPlaneScroll* scroll = m_scroll;
     if (scroll == 0) {
         return 0;
@@ -1124,19 +1124,19 @@ i32 CPlaneRender::CenterScrollB() {
 // CWwdSpatialMgr::GetSize 0x168430; an inline member folds away and never emits).
 RVA(0x001633e0, 0x12)
 i32 CDDrawWorkerHost::GetSize_1633e0() {
-    if (m_spatialWorker == 0) {
+    if (m_scroll == 0) {
         return 0;
     }
-    return m_spatialWorker->GetSize();
+    return m_scroll->GetSize();
 }
 
 // ---------------------------------------------------------------------------
-// CPlaneRender::InitScrollRects (__thiscall, no args). Seed three (0,0,w-1,h-1)
+// CDDrawWorkerHost::InitScrollRects (__thiscall, no args). Seed three (0,0,w-1,h-1)
 // rects + their centers (w/2, h/2) into the scroll sub-object from the plane
 // geometry's three dimension pairs (m_mapData->m_geometry), then park
 // the scroll target at (-22222, -22222) so the first SetTarget always moves.
 RVA(0x00163420, 0xf0)
-void CPlaneRender::InitScrollRects() {
+void CDDrawWorkerHost::InitScrollRects() {
     if (m_scroll == 0) {
         return;
     }
@@ -1196,7 +1196,7 @@ DATA(0x00283eb4)
 extern i32 g_bDown; // 0x683eb4
 
 // ---------------------------------------------------------------------------
-// CPlaneRender::ValidateTiles (__thiscall, ret 0x4). When the plane is loaded
+// CDDrawWorkerHost::ValidateTiles (__thiscall, ret 0x4). When the plane is loaded
 // (vtable +0x14), walk the row-major tile grid: each handle (skipping the -1 and
 // 0xEEEEEEEE sentinels) must resolve to a non-null plane frame (m_planeArray
 // [handle>>16]) and an in-range tile value; on a bad ref, if `errOut` is non-null,
@@ -1209,10 +1209,8 @@ extern i32 g_bDown; // 0x683eb4
 // match retail). Residual is the MSVC5 inlined-sprintf/strcpy register scheduling
 // across the two error sites - a documented entropy/scheduling tail.
 RVA(0x00163510, 0x156)
-i32 CPlaneRender::ValidateTiles(char* errOut) {
-    // The plane's real vtable slot 5 (??_7CDDrawWorkerHost+0x14, 0x163a90); the cast
-    // is the CPlaneRender-view -> real-class hop until the 5-view unification lands.
-    if (((CDDrawWorkerHost*)this)->IsLoaded() == 0) {
+i32 CDDrawWorkerHost::ValidateTiles(char* errOut) {
+    if (IsLoaded() == 0) { // the class's own vtable slot 5 (+0x14, 0x163a90)
         return 0;
     }
 
@@ -1267,7 +1265,7 @@ i32 CPlaneRender::ValidateTiles(char* errOut) {
 }
 
 // ---------------------------------------------------------------------------
-// CPlaneRender::ResolveColorKey (__thiscall, no args). For a 16bpp plane only
+// CDDrawWorkerHost::ResolveColorKey (__thiscall, no args). For a 16bpp plane only
 // (skip 8bpp), pack the RGB888 palette entry at index m_colorKey (m_mapData's
 // palette chain) into a screen-native RGB565 word and store it back in place at
 // m_colorKey.
@@ -1281,7 +1279,7 @@ i32 CPlaneRender::ValidateTiles(char* errOut) {
 // rgb/index come from memory rather than register locals). docs/patterns/
 // zero-register-pinning.md family.
 RVA(0x00163670, 0x95)
-void CPlaneRender::ResolveColorKey() {
+void CDDrawWorkerHost::ResolveColorKey() {
     i32 format = m_mapData->m_surface->m_desc->m_format;
     if (format == 8) {
         return;
@@ -1321,8 +1319,8 @@ void CPlaneRender::ResolveColorKey() {
 // EditDispatch, passing the stream as the lone stack arg - so a member call would emit
 // the wrong ecx setup). (Re-homed from src/Stub/BoundaryUpper2.cpp; physically between
 // ResolveColorKey 0x163670 and Save 0x163780 in this CPlaneRender TU.)
-extern i32 __stdcall PlaneSaveVia(void* stream); // 0x163780 == CPlaneRender::Save entry
-extern i32 __stdcall PlaneLoadVia(void* stream); // 0x1638c0 == CPlaneRender::Load entry
+extern i32 __stdcall PlaneSaveVia(void* stream); // 0x163780 == CDDrawWorkerHost::Save entry
+extern i32 __stdcall PlaneLoadVia(void* stream); // 0x1638c0 == CDDrawWorkerHost::Load entry
 // @early-stop
 // jump-table-shape wall (~84%): retail lowers the kind switch (cases 3..8, only 4 and 7
 // active) to a dense `jmp [eax*4+table]`; MSVC here folds the 4 default-equal cases and
@@ -1349,23 +1347,23 @@ i32 __stdcall PlaneSerializeDispatch(void* stream, i32 kind, i32, i32) {
 }
 
 // ---------------------------------------------------------------------------
-// CPlaneRender::Save (__thiscall, ret 0x4). Serialize the plane to a binary
+// CDDrawWorkerHost::Save (__thiscall, ret 0x4). Serialize the plane to a binary
 // stream: the scroll origin/dims block, the origin/extent rect, four shift/log
 // fields, the tile grid (size-prefixed), and the fixed 0x80-byte name field.
 RVA(0x00163780, 0x134)
-i32 CPlaneRender::Save(CFileMemBase* s) {
+i32 CDDrawWorkerHost::Save(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
 
     s->Write(&m_scaledX, 4);
     s->Write(&m_scaledY, 4);
-    s->Write(&m_18, 4);
-    s->Write(&m_1c, 4);
+    s->Write(&m_scaleX, 4);
+    s->Write(&m_scaleY, 4);
     s->Write(&m_originX, 0x10);
-    s->Write(&m_80, 4);
-    s->Write(&m_84, 4);
-    s->Write(&m_88, 4);
+    s->Write(&m_zBound, 4);
+    s->Write(&m_snappedX, 4);
+    s->Write(&m_snappedY, 4);
     s->Write(&m_94, 4);
     s->Write(&m_98, 4);
 
@@ -1381,22 +1379,22 @@ i32 CPlaneRender::Save(CFileMemBase* s) {
 }
 
 // ---------------------------------------------------------------------------
-// CPlaneRender::Load (__thiscall, ret 0x4). Inverse of Save: read back the same
+// CDDrawWorkerHost::Load (__thiscall, ret 0x4). Inverse of Save: read back the same
 // field sequence; the size-prefix must equal gridW*gridH*4 or the load aborts.
 RVA(0x001638c0, 0x140)
-i32 CPlaneRender::Load(CFileMemBase* s) {
+i32 CDDrawWorkerHost::Load(CFileMemBase* s) {
     if (s == 0) {
         return 0;
     }
 
     s->Read(&m_scaledX, 4);
     s->Read(&m_scaledY, 4);
-    s->Read(&m_18, 4);
-    s->Read(&m_1c, 4);
+    s->Read(&m_scaleX, 4);
+    s->Read(&m_scaleY, 4);
     s->Read(&m_originX, 0x10);
-    s->Read(&m_80, 4);
-    s->Read(&m_84, 4);
-    s->Read(&m_88, 4);
+    s->Read(&m_zBound, 4);
+    s->Read(&m_snappedX, 4);
+    s->Read(&m_snappedY, 4);
     s->Read(&m_94, 4);
     s->Read(&m_98, 4);
 
@@ -1426,4 +1424,3 @@ SIZE_UNKNOWN(WwdObjList);
 SIZE_UNKNOWN(WwdPlaneHdr);
 SIZE_UNKNOWN(WwdRegOwner);
 SIZE_UNKNOWN(WwdPlaneRender);
-SIZE_UNKNOWN(CLevelPlane);

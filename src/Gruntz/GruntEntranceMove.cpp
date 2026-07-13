@@ -776,7 +776,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32 y = m_10->m_60;
         i32 x = m_10->m_5c;
-        CCueRect* r = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_tileOriginX;
+        CCueRect* r = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_originX;
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
         }

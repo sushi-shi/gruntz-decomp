@@ -802,7 +802,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     CGameRegistry* g = (CGameRegistry*)g_gameReg;
     i32 x = m_10->m_5c;
     i32 y = m_10->m_60;
-    CCueRect* rc = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_tileOriginX;
+    CCueRect* rc = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_originX;
     if (x < rc->right && x >= rc->left && y < rc->bottom && y >= rc->top) {
         g->m_cueSink->CueSpawn(this, 0xe, -1, -1, -1);
     }
@@ -1220,14 +1220,14 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 y = m_10->m_60;
         if (c < 5) {
             CGameRegistry* g = (CGameRegistry*)g_gameReg;
-            i32* vr = &g->m_world->m_24->m_mainPlane->m_tileOriginX;
+            i32* vr = &g->m_world->m_24->m_mainPlane->m_originX;
             if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
                 g->m_cueSink->CueA(this, 0x370, -1, 0, -1, -1);
             }
             return;
         }
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = &g->m_world->m_24->m_mainPlane->m_tileOriginX;
+        i32* vr = &g->m_world->m_24->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x371, -1, 0, -1, -1);
         } else {
@@ -1240,7 +1240,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_10->m_5c;
         i32 y = m_10->m_60;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = &g->m_world->m_24->m_mainPlane->m_tileOriginX;
+        i32* vr = &g->m_world->m_24->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x320, -1, 0, -1, -1);
         }
@@ -1250,7 +1250,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_10->m_5c;
         i32 y = m_10->m_60;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = &g->m_world->m_24->m_mainPlane->m_tileOriginX;
+        i32* vr = &g->m_world->m_24->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x321, -1, 0, -1, -1);
         }
@@ -1261,7 +1261,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 y = m_10->m_60;
         m_struckCount = 0;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = &g->m_world->m_24->m_mainPlane->m_tileOriginX;
+        i32* vr = &g->m_world->m_24->m_mainPlane->m_originX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x322, -1, 0, -1, -1);
         }

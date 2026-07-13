@@ -9,7 +9,10 @@
 #include <Ints.h>
 #include <Image/CImage.h> // BlitRect (the {left,top,right,bottom} rect)
 
-class CPlaneRender; // 0xa000 WrapCoord (world-coord wrap/transform); pointer-only here
+// 0xa000 WrapCoord (world-coord wrap/transform); pointer-only here. CPlaneRender is a
+// typedef of the canonical plane class now, so the fwd decl names the class itself.
+class CDDrawWorkerHost;
+typedef CDDrawWorkerHost CPlaneRender;
 
 // The origin-remap target reached through info->m_xform->m_planeRender (bit 0x40000):
 // CSpritePlaneRender::WrapCoord (0xa000, via the 0x295a ILT thunk; reloc-masked).

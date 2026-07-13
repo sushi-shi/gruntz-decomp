@@ -411,7 +411,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             CGameRegistry* g = g_gameReg;
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
-            CViewRect* rc = (CViewRect*)&g->m_world->m_24->m_mainPlane->m_tileOriginX;
+            CViewRect* rc = (CViewRect*)&g->m_world->m_24->m_mainPlane->m_originX;
             if (ex < rc->m_right && ex >= rc->m_left && ey < rc->m_bottom && ey >= rc->m_top) {
                 ((CGruntSpawnConfig*)g->m_cueSink)
                     ->SpawnVoiceDriver((i32)hit, 0x3fc, -1, 0, -1, -1);

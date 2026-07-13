@@ -3233,7 +3233,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
             CGameObject* lvl = unit->m_object;
             // On-screen test against the main plane's tile origin/extent quad
             // (+0x40..+0x4c), overlaid as a RECT (the sanctioned int-quad read).
-            RECT* hit = (RECT*)&g_gameReg->m_world->m_24->m_mainPlane->m_tileOriginX;
+            RECT* hit = (RECT*)&g_gameReg->m_world->m_24->m_mainPlane->m_originX;
             if (lvl->m_screenX < hit->right && lvl->m_screenX >= hit->left
                 && lvl->m_screenY < hit->bottom && lvl->m_screenY >= hit->top) {
                 ((CGruntSpawnConfig*)(void*)g_gameReg->m_cueSink)

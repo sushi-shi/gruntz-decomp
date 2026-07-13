@@ -6,26 +6,16 @@
 #ifndef SRC_WWD_WWDFILE_H
 #define SRC_WWD_WWDFILE_H
 
-struct CWwdSpatialMgr; // folded CPlaneScroll
-class CImageSet;       // Image/ImageSet.h - SetTileSizeFromImageSet's frame source
+class CImageSet; // Image/ImageSet.h - SetTileSizeFromImageSet's frame source
 
 #include <Mfc.h> // real MFC CString (the WwdFile members take it by value)
 #include <Ints.h>
 #include <rva.h>
 
-struct CPlaneScroll {
-    char pad_0[0x10];
-    i32 m_rectALeft, m_rectATop, m_rectARight, m_rectABottom; // +0x10
-    i32 m_rectCLeft, m_rectCTop, m_rectCRight, m_rectCBottom; // +0x20
-    i32 m_rectBLeft, m_rectBTop, m_rectBRight, m_rectBBottom; // +0x30
-    i32 m_centerAX, m_centerAY;                               // +0x40
-    i32 m_centerBX, m_centerBY;                               // +0x48
-    i32 m_centerCX, m_centerCY;                               // +0x50
-    char pad_58[0x68 - 0x58];
-    i32 m_targetX, m_targetY;     // +0x68
-    i32 SetTargetA(i32 a, i32 b); // 0x168340
-    i32 SetTargetB(i32 a, i32 b); // 0x168500
-};
+// The plane object + its camera/scroll worker are the canonical
+// CDDrawWorkerHost / CWwdSpatialMgr now (<DDrawMgr/DDrawWorkerHost.h>, included
+// below); the CPlane/CPlaneRender/CPlaneScroll spellings this header used to
+// define are typedefs of those canonicals.
 
 typedef u8 Bytef;
 typedef u32 uLong;
@@ -90,28 +80,13 @@ private:
 // CPlane - the in-memory plane object ReadPlane constructs (one per WWD plane).
 // IT IS the real polymorphic CDDrawWorkerHost: the "reloc-masked engine ctor"
 // ReadPlane news (0x1615a0, size 0x158 - the +0xf4 pool ends exactly at +0x158)
-// is ??0CDDrawWorkerHost@@QAE@HHH@Z (LevelPlane.cpp), stamping ??_7CDDrawWorkerHost
-// (0x1f0270, 12 slots). The dispatched slots live on the canonical class now:
-// slot 1 the virtual scalar-deleting dtor (`delete plane`), slot 9 (+0x24)
-// ReadObjects, slot 10 (+0x28) Read; m_flags@+0x08 (bit0 = MAIN) is canonical.
-// The former 11-slot dummy-filler view here is dissolved; the CPlane alias (a
-// typedef in <DDrawMgr/DDrawWorkerHost.h>) keeps the plane-side spelling.
-// (CPlaneRender below and GameLevel.h's CLevelPlane are further VIEWS of this
-// same class - the full member-set unification is deferred structural work.)
+// stamps ??_7CDDrawWorkerHost (0x1f0270, 12 slots). The full unified class - the
+// union of the CPlane/CPlaneRender/CLevelPlane facet views - plus PlaneBlitScratch
+// and the CPlaneScroll==CWwdSpatialMgr scroll worker live in the canonical header:
 // ---------------------------------------------------------------------------
-class CDDrawWorkerHost;
-typedef CDDrawWorkerHost CPlane;
-
-// ---------------------------------------------------------------------------
-// PlaneBlitScratch - the DDBLTFX-ish blit-param scratch the plane embeds at +0xF4
-// (its ADDRESS is passed into CDDSurface::BltEx by CPlaneRender::Draw). It is NOT
-// the engine CDDSurface wrapper (the canonical class - the real BltEx/BltFast
-// `this` reached via ctx->m_2c - lives in <DDrawMgr/DDSurface.h>); this is only a
-// zero-size marker so the +0xF4 field lands in CPlane without pulling the real
-// 0xc0-byte surface into the plane layout. Draw is still a deferred stub, so no
-// surface methods are referenced from this TU yet.
-SIZE_UNKNOWN(PlaneBlitScratch);
-struct PlaneBlitScratch {};
+#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost (+ CPlane/CPlaneRender/
+                                      // CLevelPlane/CPlaneScroll typedefs,
+                                      // LevelCoordRect, PlaneBlitScratch)
 
 // The real engine draw surface (BltEx/BltFast `this`); defined in
 // <DDrawMgr/DDSurface.h> and reached via the Draw ctx's +0x2c.
@@ -220,67 +195,12 @@ class CFileMemBase;
 // class HAS been real-polymorphic in <DDrawMgr/DDrawWorkerHost.h> since the
 // all-vtables-real batch.)
 
-class CPlaneRender {
-public:
-    void Draw(CPlaneDrawCtx* ctx);          // 0x162010  the tile-grid render
-    void SetTileSize(i32 tileW, i32 tileH); // 0x161f00  derive wrap dims/fill/shifts
-    // 0x161fa0: scan an image set for its first populated frame (in [minIndex,
-    // maxIndex]) and seed the tile size from that frame's pixel dims (width/height).
-    void SetTileSizeFromImageSet(CImageSet* set);
-    void WrapCoord(i32* px, i32* py); // 0x00a000  wrap+transform a world coord
-    i32 CenterScrollA();              // 0x163300
-    i32 CenterScrollB();              // 0x163370
-    void InitScrollRects();           // 0x163420  seed the scroll sub-object rects
-    i32 ValidateTiles(char* errOut);  // 0x163510  scan the tile grid for bad refs
-    void ResolveColorKey();           // 0x163670  pack the +0x144 index to RGB565
-    i32 Save(CFileMemBase* s);        // 0x163780  serialize out
-    i32 Load(CFileMemBase* s);        // 0x1638c0  serialize in
-    // 0x0d53a0 (__thiscall, ret 8): index the tile-handle grid by (row, col):
-    //   m_tileGrid[m_colOffsets[col] + row].
-    i32 GetTileHandle(i32 row, i32 col); // 0x0d53a0 (m_tileGrid[m_colOffsets[col]+row])
-    // 0x0311e0 (__thiscall, ret 0xc): snap a world (x,y) to its tile centre:
-    //   out = (floor-to-tile) + half a tile, per-axis.
-    void SnapToTileCenter(i32* out, i32 x, i32 y);
-
-    u8 pad_0[0x08];
-    u32 m_flags; // +0x08
-    CPlaneMapData* m_mapData;
-    float m_scaledX; // +0x10
-    float m_scaledY; // +0x14
-    i32 m_18, m_1c;
-    i32* m_tileGrid;   // +0x20
-    i32* m_colOffsets; // +0x24
-    i32 m_gridW;       // +0x28
-    i32 m_gridH;       // +0x2c
-    i32 m_wrapW;       // +0x30
-    i32 m_wrapH;       // +0x34
-    i32 m_tilePxW;     // +0x38
-    i32 m_tilePxH;     // +0x3c
-    i32 m_originX;     // +0x40
-    i32 m_originY;     // +0x44
-    i32 m_extentX;     // +0x48
-    i32 m_extentY;     // +0x4c
-    i32 m_viewX;       // +0x50
-    i32 m_viewY;       // +0x54
-    u8 pad_58[0x60 - 0x58];
-    RECT m_fillRect; // +0x60  default full-tile src rect {0,0,tilePxW,tilePxH}
-    u8 pad_70[0x80 - 0x70];
-    i32 m_80, m_84, m_88; // +0x80..+0x88
-    i32 m_shiftX;         // +0x8c
-    i32 m_shiftY;         // +0x90
-    i32 m_94, m_98;       // +0x94..+0x98
-    // +0x9c..+0xb0 is a real MFC CObArray (exactly 0x14 B): its m_pData (+0xa0) IS
-    // the CPlaneFrame** the draw loop indexes by handle>>16, and its m_nSize/m_nMaxSize/
-    // m_nGrowBy fill the old pad_a4. Proven by CGruntzMgr::LoadMonologoSprite (0x090d10),
-    // which drives `lea ecx,[plane+0x9c]; push set; push 0; call 0x1b5822`
-    // (CObArray::SetAtGrow) to install the MONOLITH logo's image set as element 0.
-    CObArray m_frameSets;       // +0x9c  frame-set array (elements: CPlaneFrame*)
-    CPlaneScroll* m_scroll;     // +0xb0
-    char m_name[0xf4 - 0xb4];   // +0xb4  plane name (serialized as a fixed 0x80 field)
-    PlaneBlitScratch m_surface; // +0xf4  blit-param scratch (empty marker, sizeof 1)
-    u8 pad_f5[0x144 - 0xf5];
-    i32 m_colorKey; // +0x144  the color-key palette index, packed in place to RGB565
-};
+// (The CPlaneRender render-facet class that stood here - Draw/SetTileSize/scroll/
+// serialize over the +0x08..+0x144 layout - is DISSOLVED onto the canonical
+// CDDrawWorkerHost: same ctor-proven object, same offsets. Its +0x9c CObArray
+// (m_frameSets - proven by CGruntzMgr::LoadMonologoSprite's SetAtGrow at
+// [plane+0x9c]), the +0xb0 scroll worker and the +0xf4 blit scratch/color key all
+// live on the canonical class; CPlaneRender is a typedef of it now.)
 
 // ---------------------------------------------------------------------------
 // CGameLevel - the level-load orchestrator (a.k.a. CDDrawLevelData). ReadPlane is a
@@ -303,10 +223,11 @@ public:
     CPlane* ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6, i32 a7);
 
     u8 pad_0[0x0c];
-    i32 m_field0c;              // +0x0C  (the CPlane/CDDrawWorkerHost ctor's 1st arg)
-    u8 m_planeCtx[0x34 - 0x10]; // +0x10  (&m_planeCtx -> CPlane::Read)
-    u8 m_planes[0x3c - 0x34];   // +0x34  CArray<CPlane*>
-    i32 m_planeCount;           // +0x3C
+    CPlaneMapData* m_field0c;  // +0x0C  (the plane ctor's 1st arg - the shared map-data owner)
+    LevelCoordRect m_planeCtx; // +0x10  (&m_planeCtx -> CPlane::Read / InitGeometry bounds)
+    u8 pad_20[0x34 - 0x20];    // +0x20
+    u8 m_planes[0x3c - 0x34];  // +0x34  CArray<CPlane*>
+    i32 m_planeCount;          // +0x3C
     u8 pad_40[0x5c - 0x40];
     CPlane* m_mainPlane; // +0x5C
     i32 m_mainIndex;     // +0x60
