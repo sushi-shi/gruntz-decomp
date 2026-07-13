@@ -15,6 +15,7 @@
 
 //     dossier 10b - it abuts CTriggerMgr::CenterSelectionGroup in the one
 //     0x77f80 TU; only Broadcast remains here.)
+#include <Gruntz/TileTriggerLogic.h> // CTileTriggerLogic::FindIndexByKey (the 0x9c family)
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <rva.h>
 #include <Gruntz/GameRegistry.h>
@@ -87,7 +88,7 @@ i32 CGroupBroadcast::Broadcast() {
             i32 any = 0;
             for (CBcastListNode* it = (CBcastListNode*)m_24->m_20; it != 0; it = it->m_next) {
                 CBcastMember* o = it->m_8;
-                if (o != 0 && ((CTileTriggerSwitchLogic*)o)->FindIndexByKey(node->m_10)) {
+                if (o != 0 && ((CTileTriggerLogic*)o)->FindIndexByKey(node->m_10)) {
                     o->Destroy();
                     counter++;
                     any = 1;

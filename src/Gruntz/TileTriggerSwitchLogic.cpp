@@ -42,10 +42,9 @@
 // from RTTI by gruntz.analysis.vtable_scan) whenever the base obj emits the
 // ??_7. No source annotation is needed - naming is a byproduct of the inventory.
 
-// Per-type validators used by ValidateByType (reloc-masked rel32 callees; both
-// callee-cleanup taking the object pointer).
-i32 __stdcall TileSwitchCheckType4(void* obj);
-i32 __stdcall TileSwitchCheckType7(void* obj);
+// (The former `__stdcall TileSwitchCheckType4/7(void*)` free-function externs are gone:
+// they are CTileTriggerLogic::Serialize / ::Deserialize, __thiscall on `this` - see
+// ValidateByType below.)
 
 // The engine-label backlog host reached through the command grid: the
 // powerup-icon and explosion sprite loaders (the two donor TUs' local hosts,
@@ -256,7 +255,7 @@ i32 CTileTriggerSwitchLogic::Vf0(i32 a0, i32 a1, i32 a2, i32 a3, i32 a4, i32 a5,
     m_28 = a7;
     m_1c = 0;
     m_linkGate = a5;
-    m_20 = (ListNode*)1;
+    m_20 = (ChildNode*)1;
     return 1;
 }
 
@@ -285,18 +284,22 @@ CTileTriggerLogic::CTileTriggerLogic() {
 // is a normal inherited virtual, not a per-class ??_G.)
 
 // ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::FindIndexByKey
+// CTileTriggerLogic::FindIndexByKey
 // Linear scan of the 24-dword m_block; returns 1 on a hit, 0 otherwise.
+//
+// RE-HOMED from CTileTriggerSwitchLogic (which is 0x8c and cannot hold this): retail is
+// `add ecx,0x3c` + 24 iterations = this+0x3c..+0x9b, exactly CTileTriggerLogic::m_block.
+// On the old owner it had to be spelled m_block[i + 4] to reach +0x3c - that "+4" fudge WAS
+// the misattribution. Same bytes, now with the base index and no fudge.
 // ---------------------------------------------------------------------------
-// @interleaver CTileTriggerSwitchLogic::FindIndexByKey emitted-in <boundary:
+// @interleaver CTileTriggerLogic::FindIndexByKey emitted-in <boundary:
 // StatusBarUpdaters.cpp LoadSwitchUpSprite @0x1106b0 (before) + BridgeMoveSprites.cpp
 // LoadBridgeMove @0x110860 (after)>. A /Gy first-use COMDAT the linker scattered
 // between two OTHER units inside this woven interval.
 RVA(0x00110820, 0x23)
-i32 CTileTriggerSwitchLogic::FindIndexByKey(i32 key) {
-    // Scans the 24-dword array that begins at +0x3c (== &m_block[4]).
+i32 CTileTriggerLogic::FindIndexByKey(i32 key) {
     for (i32 i = 0; i < 24; i++) {
-        if (m_block[i + 4] == key) {
+        if (m_block[i] == key) {
             return 1;
         }
     }
@@ -464,12 +467,9 @@ done:
 #undef PB_PTR
 
 // --- CTileTriggerSwitchLogic family (base = 4 virtuals) --------------------
-class CTileMultiTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-public:
-    CTileMultiTriggerSwitchLogic();
-};
-SIZE_UNKNOWN(CTileMultiTriggerSwitchLogic);
-VTBL(CTileMultiTriggerSwitchLogic, 0x001eaeb4); // vtable_names -> code (RTTI game class)
+// The five derived switch logics now live in <Gruntz/TileTriggerSwitchLogic.h> (they were
+// .cpp-local views; CCheckpointTriggerSwitchLogic has to be shared with CheckpointSwitchBuild.cpp,
+// and all five are allocated at 0x8c = sizeof(base), so none adds a data member).
 RVA(0x00111f10, 0x12)
 CTileMultiTriggerSwitchLogic::CTileMultiTriggerSwitchLogic() {}
 
@@ -494,14 +494,14 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
     if (m_linkGate == 0) {
         return 0;
     }
-    ListNode* node = m_owner->m_20;
+    ChildNode* node = m_owner->m_20;
     i32 found = 0;
-    CTileTriggerSwitchLogic* child = this;
+    CTileTriggerLogic* child = 0;
     while (node != 0) {
         if (found != 0) {
             break;
         }
-        ListNode* cur = node;
+        ChildNode* cur = node;
         node = node->m_next;
         child = cur->m_data;
         if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
@@ -512,7 +512,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
         g_gameReg->Ack(0x80de, 0x44d);
         return 0;
     }
-    i32* p = &child->m_block[4]; // child+0x3c
+    i32* p = &child->m_block[0]; // child+0x3c (the child is a 0x9c CTileTriggerLogic)
     for (i32 i = 0; i < 24; i++) {
         i32 key = *p;
         if (key == 0) {
@@ -531,14 +531,6 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinksB() {
     return 0;
 }
 
-class CTileExclusiveTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-
-    virtual i32 Vf2() OVERRIDE; // slot 2
-public:
-    CTileExclusiveTriggerSwitchLogic();
-};
-SIZE_UNKNOWN(CTileExclusiveTriggerSwitchLogic);
-VTBL(CTileExclusiveTriggerSwitchLogic, 0x001eaecc); // vtable_names -> code (RTTI game class)
 RVA(0x00112050, 0x12)
 CTileExclusiveTriggerSwitchLogic::CTileExclusiveTriggerSwitchLogic() {}
 
@@ -755,37 +747,12 @@ RVA(0x00112760, 0x12)
 CTileSecretTriggerLogic::CTileSecretTriggerLogic() {}
 
 // --- CTileTriggerSwitchLogic family (base = 4 virtuals), upper RVAs --------
-class CTileSecretTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-
-    virtual i32 Vf2() OVERRIDE; // slot 2
-public:
-    CTileSecretTriggerSwitchLogic();
-};
-SIZE_UNKNOWN(CTileSecretTriggerSwitchLogic);
-VTBL(CTileSecretTriggerSwitchLogic, 0x001eaf24); // vtable_names -> code (RTTI game class)
 RVA(0x00112790, 0x12)
 CTileSecretTriggerSwitchLogic::CTileSecretTriggerSwitchLogic() {}
 
-class CTileTimeTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-
-    virtual i32 Vf2() OVERRIDE; // slot 2
-    virtual i32 Vf3() OVERRIDE; // slot 3
-public:
-    CTileTimeTriggerSwitchLogic();
-};
-SIZE_UNKNOWN(CTileTimeTriggerSwitchLogic);
-VTBL(CTileTimeTriggerSwitchLogic, 0x001eaf3c); // vtable_names -> code (RTTI game class)
 RVA(0x001127c0, 0x12)
 CTileTimeTriggerSwitchLogic::CTileTimeTriggerSwitchLogic() {}
 
-class CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual i32 Vf2() OVERRIDE; // slot 2
-    virtual i32 Vf3() OVERRIDE; // slot 3
-public:
-    CCheckpointTriggerSwitchLogic();
-};
-SIZE_UNKNOWN(CCheckpointTriggerSwitchLogic);
-VTBL(CCheckpointTriggerSwitchLogic, 0x001eaf54); // vtable_names -> code (RTTI game class)
 RVA(0x001127f0, 0x12)
 CCheckpointTriggerSwitchLogic::CCheckpointTriggerSwitchLogic() {}
 
@@ -966,14 +933,14 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
     if (m_linkGate == 0) {
         return 0;
     }
-    ListNode* node = m_owner->m_20;
+    ChildNode* node = m_owner->m_20;
     i32 found = 0;
-    CTileTriggerSwitchLogic* child = this;
+    CTileTriggerLogic* child = 0;
     while (node != 0) {
         if (found != 0) {
             break;
         }
-        ListNode* cur = node;
+        ChildNode* cur = node;
         node = node->m_next;
         child = cur->m_data;
         if (child != 0 && child->FindIndexByKey(m_key1) != 0) {
@@ -984,7 +951,7 @@ i32 CTileTriggerSwitchLogic::VerifyBlockLinks() {
         g_gameReg->Ack(0x80de, 0x452);
         return 0;
     }
-    i32* p = &child->m_block[4]; // child+0x3c
+    i32* p = &child->m_block[0]; // child+0x3c (the child is a 0x9c CTileTriggerLogic)
     for (i32 i = 0; i < 24; i++) {
         i32 key = *p;
         if (key == 0) {
@@ -1543,27 +1510,34 @@ i32 CTileTriggerSwitchLogic::LoadState(CSerialArchive* s) {
 }
 
 // ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::ValidateByType
-// Returns 0 if obj is null; for type 4 / 7 defers to the matching validator
-// (returns 0 on its failure); any other type passes (returns 1).
+// CTileTriggerLogic::ValidateByType - the 0x9c family's save/load dispatcher.
+// Returns 0 if the archive is null; type 4 saves (Serialize), type 7 loads
+// (Deserialize); any other type passes (returns 1).
+//
+// RE-HOMED from CTileTriggerSwitchLogic (0x8c): CTileTriggerFactory::Build calls it
+// (ILT 0x1abe) at 0x117aa7 on a freshly-`new`ed 0x9c CTileTriggerLogic. Its two callees
+// were modeled as `__stdcall TileSwitchCheckType4/7(void* obj)` free functions - but retail
+// emits `push eax; call <rel32>` with ECX UNTOUCHED, i.e. they are __thiscall methods run on
+// `this` (0x291e -> Serialize @0x113ae0, 0x3102 -> Deserialize @0x113c10). Same bytes; the
+// free-function spelling only matched because `this` happened to still be live in ecx.
 // ---------------------------------------------------------------------------
 // @early-stop
-// regalloc wall (~93%): switch-case ordering + validator calls match; retail
-// keeps arg1 in eax (returns it as the null-zero, push eax for validators) vs
-// our ecx + explicit xor in the null block. Entry-block register only.
+// regalloc wall (~93%): switch-case ordering + the two calls match; retail keeps arg1 in eax
+// (returns it as the null-zero, push eax for the callees) vs our ecx + explicit xor in the
+// null block. Entry-block register only.
 RVA(0x00113a90, 0x3b)
-i32 CTileTriggerSwitchLogic::ValidateByType(void* obj, i32 type, i32 a3, i32 a4) {
-    if (obj == 0) {
+i32 CTileTriggerLogic::ValidateByType(void* archive, i32 type, i32 a3, i32 a4) {
+    if (archive == 0) {
         return 0;
     }
     switch (type) {
         case 4:
-            if (TileSwitchCheckType4(obj) == 0) {
+            if (Serialize((CSerialArchive*)archive) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (TileSwitchCheckType7(obj) == 0) {
+            if (Deserialize((CSerialArchive*)archive) == 0) {
                 return 0;
             }
             break;
@@ -1572,13 +1546,18 @@ i32 CTileTriggerSwitchLogic::ValidateByType(void* obj, i32 type, i32 a3, i32 a4)
 }
 
 // ---------------------------------------------------------------------------
-// CTileGridCommand::Serialize
+// CTileTriggerLogic::Serialize  (the type-4 save ValidateByType dispatches to)
 // Returns 0 if the stream is null or the active game-manager (g_gameReg+0x30) is
-// null; otherwise transfers the command's scalar fields then a 24-dword grid
-// block through the stream's Transfer (vtable slot 12) and returns 1.
+// null; otherwise transfers the scalar fields then the 24-dword m_block through
+// the stream's Write slot and returns 1.
+//
+// RE-HOMED off the invented `CTileGridCommand` (see TileGridCommand.h @identity-TODO):
+// ValidateByType reaches it with `this` in ecx, and that `this` is a 0x9c CTileTriggerLogic
+// straight off the allocation site. Fields are the same offsets under this class's names
+// (m_grid -> m_block, m_dutyOn kept).
 // ---------------------------------------------------------------------------
 RVA(0x00113ae0, 0xe8)
-i32 CTileGridCommand::Serialize(CSerialArchive* s) {
+i32 CTileTriggerLogic::Serialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
@@ -1597,7 +1576,7 @@ i32 CTileGridCommand::Serialize(CSerialArchive* s) {
     s->Write(&m_34, 4);
     s->Write(&m_dutyOn, 4);
     s->Write(&m_24, 4);
-    i32* p = m_grid;
+    i32* p = m_block;
     for (i32 i = 0; i < 24; i++) {
         s->Write(p, 4);
         p++;
@@ -1606,13 +1585,13 @@ i32 CTileGridCommand::Serialize(CSerialArchive* s) {
 }
 
 // ---------------------------------------------------------------------------
-// CTileGridCommand::Deserialize
+// CTileTriggerLogic::Deserialize  (the type-7 load ValidateByType dispatches to)
 // The read counterpart of Serialize: same null/registry guard, same field list,
 // but each transfer goes through the stream's read slot (+0x2c) instead of the
-// write slot (+0x30). Reads the 12 scalar fields then the 24-dword grid block.
+// write slot (+0x30). Reads the 12 scalar fields then the 24-dword m_block.
 // ---------------------------------------------------------------------------
 RVA(0x00113c10, 0xe8)
-i32 CTileGridCommand::Deserialize(CSerialArchive* s) {
+i32 CTileTriggerLogic::Deserialize(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
@@ -1631,7 +1610,7 @@ i32 CTileGridCommand::Deserialize(CSerialArchive* s) {
     s->Read(&m_34, 4);
     s->Read(&m_dutyOn, 4);
     s->Read(&m_24, 4);
-    i32* p = m_grid;
+    i32* p = m_block;
     for (i32 i = 0; i < 24; i++) {
         s->Read(p, 4);
         p++;
@@ -1640,26 +1619,29 @@ i32 CTileGridCommand::Deserialize(CSerialArchive* s) {
 }
 
 // ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::ApplyByType
-// Returns 0 if obj is null or the base apply fails; for type 4 / 7 defers to the
-// matching per-type apply (returns 0 on its failure); otherwise returns 1.
+// CGiantRockLogic::ApplyByType - the giant rock's save/load dispatcher: run the base
+// (0x9c) family's ValidateByType first, then stream this leaf's own +0x9c..+0xc4 tail.
+//
+// RE-HOMED from CTileTriggerSwitchLogic (0x8c). CTileTriggerFactory::Build proves the owner:
+//   117b49: push 0xc8 / call ??2 / mov ecx,eax / call ??0CGiantRockLogic / mov esi,eax
+//   117b7b: mov ecx,esi / call 0x1d39    <- THIS function, on the fresh 0xc8 rock
 // ---------------------------------------------------------------------------
 RVA(0x00113d40, 0x6f)
-i32 CTileTriggerSwitchLogic::ApplyByType(void* obj, i32 type, i32 a3, i32 a4) {
-    if (obj == 0) {
+i32 CGiantRockLogic::ApplyByType(void* archive, i32 type, i32 a3, i32 a4) {
+    if (archive == 0) {
         return 0;
     }
-    if (ValidateByType(obj, type, a3, a4) == 0) {
+    if (ValidateByType(archive, type, a3, a4) == 0) {
         return 0;
     }
     switch (type) {
         case 4:
-            if (SerializeMatrix((CSerialArchive*)obj) == 0) {
+            if (SerializeMatrix((CSerialArchive*)archive) == 0) {
                 return 0;
             }
             break;
         case 7:
-            if (DeserializeMatrix((CSerialArchive*)obj) == 0) {
+            if (DeserializeMatrix((CSerialArchive*)archive) == 0) {
                 return 0;
             }
             break;
@@ -1668,26 +1650,30 @@ i32 CTileTriggerSwitchLogic::ApplyByType(void* obj, i32 type, i32 a3, i32 a4) {
 }
 
 // ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::SerializeMatrix
-// Streams two header dwords (+0xc0, +0xc4) then a 3x3 dword matrix (+0x9c..) via
-// the stream's Transfer.  Returns 0 if the stream or the active game-manager
+// CGiantRockLogic::SerializeMatrix
+// Streams two header dwords (+0xc0, +0xc4) then the 3x3 dword matrix (+0x9c..) via
+// the stream's Write slot.  Returns 0 if the stream or the active game-manager
 // (g_gameReg+0x30) is null, else 1.
+//
+// RE-HOMED from CTileTriggerSwitchLogic. These +0xc0/+0xc4 writes are what made the old
+// owner's array run to m_block[38] and overrun its 0x8c allocation - the contradiction that
+// blocked the layout fix. They are CGiantRockLogic's own tail (0x9c base + 0x24 matrix + 8).
 // ---------------------------------------------------------------------------
 // @early-stop
 // regalloc wall (~95%): whole body byte-identical; retail pins this->esi /
 // stream->edi (pushes all 4 callee regs, then loads args) vs our this->edi /
 // stream->esi (arg load interleaved with the pushes). Reg-pair swap only.
 RVA(0x00113dd0, 0x7b)
-i32 CTileTriggerSwitchLogic::SerializeMatrix(CSerialArchive* s) {
+i32 CGiantRockLogic::SerializeMatrix(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Write(&m_block[37], 4); // +0xc0
-    s->Write(&m_block[38], 4); // +0xc4
-    i32* p = &m_block[28];     // +0x9c
+    s->Write(&m_c0, 4);
+    s->Write(&m_c4, 4);
+    i32* p = m_matrix;
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
             s->Write(p, 4);
@@ -1698,26 +1684,24 @@ i32 CTileTriggerSwitchLogic::SerializeMatrix(CSerialArchive* s) {
 }
 
 // ---------------------------------------------------------------------------
-// CTileTriggerSwitchLogic::DeserializeMatrix (0x113e70) - the READ mirror of
-// SerializeMatrix: streams two header dwords (+0xc0, +0xc4) then a 3x3 dword matrix
-// (+0x9c..) via the stream's Read slot. Returns 0 if the stream or the active
-// game-manager (g_gameReg+0x30) is null, else 1. This is the type-7 (load) apply
-// ApplyByType dispatches to as ApplyType7 (thunk 0x3cd3). Re-homed from
-// src/Stub/BoundaryLowerMethods.cpp (was the C113e70 placeholder view).
+// CGiantRockLogic::DeserializeMatrix (0x113e70) - the READ mirror of SerializeMatrix:
+// streams two header dwords (+0xc0, +0xc4) then the 3x3 dword matrix (+0x9c..) via the
+// stream's Read slot. Returns 0 if the stream or the active game-manager (g_gameReg+0x30)
+// is null, else 1. This is the type-7 (load) apply ApplyByType dispatches to (thunk 0x3cd3).
 // @early-stop
 // esi/edi regalloc wall (~95%, same as SerializeMatrix): whole body byte-identical;
 // retail pins this->esi / stream->edi vs our this->edi / stream->esi. Reg-pair swap.
 RVA(0x00113e70, 0x7b)
-i32 CTileTriggerSwitchLogic::DeserializeMatrix(CSerialArchive* s) {
+i32 CGiantRockLogic::DeserializeMatrix(CSerialArchive* s) {
     if (s == 0) {
         return 0;
     }
     if (g_gameReg->m_world == 0) {
         return 0;
     }
-    s->Read(&m_block[37], 4); // +0xc0
-    s->Read(&m_block[38], 4); // +0xc4
-    i32* p = &m_block[28];    // +0x9c
+    s->Read(&m_c0, 4);
+    s->Read(&m_c4, 4);
+    i32* p = m_matrix;
     for (i32 r = 0; r < 3; r++) {
         for (i32 c = 0; c < 3; c++) {
             s->Read(p, 4);

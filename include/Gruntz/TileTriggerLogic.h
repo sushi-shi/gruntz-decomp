@@ -7,6 +7,8 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/SerialArchive.h> // CSerialArchive (Read @ +0x2c / Write @ +0x30)
+
 class CTileTriggerContainer; // owner, back-stamped into m_20 (fwd; def in TileTriggerContainer.h)
 
 // ---------------------------------------------------------------------------
@@ -37,6 +39,20 @@ public:
     }
     virtual i32 TileLogicVfunc0(); // slot 0 (0x110c10 via ILT thunk 0x402072)
 
+    // Linear scan of the 24-dword m_block; 1 on a hit. RE-HOMED from
+    // CTileTriggerSwitchLogic (0x8c), where it could not fit: retail does `add ecx,0x3c`
+    // then 24 iterations -> this+0x3c..+0x9b, i.e. exactly m_block[0..23] of THIS class.
+    // VerifyBlockLinks calls it (ILT 0x1fa5) on the child it then scans at child+0x3c.
+    i32 FindIndexByKey(i32 key); // 0x110820
+
+    // The 0x9c family's serialize dispatcher (type 4 = save, 7 = load), and the pair it
+    // forwards `this` to. RE-HOMED from CTileTriggerSwitchLogic: CTileTriggerFactory::Build
+    // calls ValidateByType (ILT 0x1abe) at 0x117aa7 on a freshly-`new`ed 0x9c
+    // CTileTriggerLogic (`push 0x9c; call ??2; mov ecx,eax; call ??0CTileTriggerLogic`).
+    i32 ValidateByType(void* archive, i32 type, i32 a3, i32 a4); // 0x113a90
+    i32 Serialize(CSerialArchive* s);                            // 0x113ae0
+    i32 Deserialize(CSerialArchive* s);                          // 0x113c10
+
     i32 m_04;                    // +0x04
     i32 m_08;                    // +0x08
     i32 m_0c;                    // +0x0c
@@ -50,7 +66,8 @@ public:
     i32 m_2c;                    // +0x2c
     i32 m_30;                    // +0x30
     i32 m_34;                    // +0x34
-    i32 m_38;                    // +0x38
+    i32 m_dutyOn;                // +0x38  duty-cycle on/off latch (name kept from the folded
+                                 //        CTileGridCommand view, which shares this layout)
     i32 m_block[24];             // +0x3c..0x9b  (rep stosl, 24 dwords)
 };
 
@@ -60,11 +77,27 @@ public:
 // via its CTrigLogic9c size-bucket. Their ctors are defined (RVA-bound) in
 // TileTriggerSwitchLogic.cpp - the header carries only the declarations so both TUs
 // share one class shape (dissolved from the old TileTriggerSwitchLogic.cpp-local defs).
+// CGiantRockLogic is the ONE leaf of this family that adds data. sizeof = 0xc8, PROVEN from
+// the allocation site (CTileTriggerFactory::Build @0x117b49: `push 0xc8; call ??2; mov ecx,eax;
+// call ??0CGiantRockLogic`, and again at 0x116d10). The 0x2c it adds over the 0x9c base is
+// EXACTLY what SerializeMatrix streams, with zero slack:
+//     base 0x9c + m_matrix[9] (0x24) + m_c0 + m_c4 = 0xc8
+// Retail hands this object to ApplyByType right after that ctor (`mov ecx,esi; call 0x1d39`),
+// which is why ApplyByType/SerializeMatrix/DeserializeMatrix - reaching this+0x9c..+0xc4 -
+// belong HERE and not on the 0x8c CTileTriggerSwitchLogic they were filed under.
 class CGiantRockLogic : public CTileTriggerLogic {
 public:
     CGiantRockLogic(); // 0x112210 (ILT 0x2c3e)
+
+    i32 ApplyByType(void* archive, i32 type, i32 a3, i32 a4); // 0x113d40 (ILT 0x1d39)
+    i32 SerializeMatrix(CSerialArchive* s);                   // 0x113dd0 (type-4 save)
+    i32 DeserializeMatrix(CSerialArchive* s);                 // 0x113e70 (type-7 load)
+
+    i32 m_matrix[9]; // +0x9c..0xbf  3x3, streamed as a nested 3x3 loop
+    i32 m_c0;        // +0xc0        streamed FIRST (before the matrix)
+    i32 m_c4;        // +0xc4        streamed SECOND; the object ends at 0xc8
 };
-SIZE_UNKNOWN(CGiantRockLogic);
+SIZE(CGiantRockLogic, 0xc8);
 VTBL(CGiantRockLogic, 0x001eaee4); // vtable_names -> code (RTTI game class)
 
 class CCoveredPowerupLogic : public CTileTriggerLogic {

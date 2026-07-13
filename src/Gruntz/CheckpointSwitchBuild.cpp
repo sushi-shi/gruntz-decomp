@@ -3,31 +3,30 @@
 // CStatzTabSmall::BuildSmall).
 //
 // Vtable-proven: 0x112a50 is slot 1 (+0x4) of ??_7CCheckpointTriggerSwitchLogic@@6B@,
-// adjacent to the class ctor at 0x1127f0 (TileTriggerDerivedCtors.cpp). Modeled here
-// with a local non-polymorphic view (slot 0 = the reloc-masked base builder = the
-// inherited CTileTriggerSwitchLogic slot-0 "build" virtual) so its codegen is
-// preserved; the ctor's real polymorphic model lives in the ctor TU (now derives the
-// real CTileTriggerSwitchLogic). Only offsets / code bytes are load-bearing; helpers
-// are reloc-masked externals.
+// adjacent to the class ctor at 0x1127f0.
 //
-// INHERITANCE HELD (final-sweep note): this local view is NOT re-based onto
-// CTileTriggerSwitchLogic because (1) BuildSmall calls slot 0 with an 8-arg build
-// signature the base header's placeholder Vf0 does not carry (would need a base
-// re-signature); (2) the +0x2c region is heterogeneous - an int m_block for the
-// switch family vs the CStatzRect60 here (needs a documented overlay/union); and
-// (3) including <Gruntz/TileTriggerSwitchLogic.h> would pull g_gameReg at RVA
-// 0x24556c, colliding with the local g_statzGameReg dual-view (a REQUIRED split,
-// [[vtable-realization-ctor-boundary]]).  BuildSmall is @early-stop on a codegen
-// wall, so re-basing yields zero match benefit.
+// THE LOCAL VIEW IS GONE (2026-07-13). It used to derive from the real
+// CTileTriggerSwitchLogic and then RE-DECLARE the base's fields on top of it
+// (m_pad04 / m_20 / m_pad24 / m_2c), which appended them AFTER the 0xcc base: sizeof blew
+// out to 0x154 and every access in BuildSmall moved by 0xc8 (m_20 -> +0xe8, the rect ->
+// +0xf4). Retail says otherwise, in the bytes:
+//     mov ecx,[eax+0x20]   <- the BASE m_20 gate
+//     lea edi,[eax+0x2c]   <- the BASE m_block
+//     mov ecx,0x18 ; rep movsd
+// so the "CStatzRect60" IS m_block[24] (24 dwords at +0x2c), the class adds NO data, and
+// sizeof = 0x8c - exactly what the allocation site pushes. All three reasons the old note
+// gave for keeping the view are dead: (1) the base's slot-1 virtual carries BuildSmall's
+// signature (that is how it is recovered - `sema class` says slot 1, origin
+// CTileTriggerSwitchLogic); (2) the +0x2c region is NOT heterogeneous - both spellings are
+// the same 24 dwords; (3) the "g_gameReg collision" cannot have been real - this file
+// already includes <Gruntz/TileTriggerSwitchLogic.h>.
+#include <string.h>               // memcpy -> the /Oi `rep movsd` that copies rect into m_block
 #include <Gruntz/SpriteFactory.h> // the ONE CSpriteFactory (CreateSprite @0x1597b0)
 #include <Gruntz/UserLogic.h>     // CGameObject (the created sprite) + CGameObjAux
 #include <rva.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 
-SIZE_UNKNOWN(CStatzRect60);
-struct CStatzRect60 {
-    i32 d[0x18]; // 0x60 bytes
-};
+// (CStatzRect60 is gone: the 0x60 block is the base's m_block[24] at +0x2c.)
 // The factory (m_world->m_8) is the canonical CSpriteFactory (<Gruntz/SpriteFactory.h>);
 // CreateSprite @0x1597b0 returns the created CGameObject (ApplyLookupSprite @0x1504d0
 // configures it; the +0x7c CGameObjAux Init runs post-create; m_layer gates success).
@@ -47,47 +46,30 @@ extern char g_statzTabSpriteName[]; // CreateSprite name buffer
 DATA(0x0020f928)
 extern char g_statzTabCfgTag[]; // Configure tag global
 
-SIZE_UNKNOWN(CCheckpointTriggerSwitchLogic);
-struct CCheckpointTriggerSwitchLogic : public CTileTriggerSwitchLogic {
-    virtual void Vf1() OVERRIDE; // slot 1 (BuildSmall)
-    virtual i32 Vf2() OVERRIDE; // slot 2 (BumpCell)
-    virtual i32 Vf3() OVERRIDE; // slot 3 (M)
-    i32 BaseBuild(
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32,
-        i32
-    ); // slot 0 (inherited Vf0; non-virtual view)
-    i32
-    BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7, i32 a8, i32 a9);
-    char m_pad04[0x20 - 0x4];
-    i32 m_20; // +0x20  already-built gate
-    char m_pad24[0x2c - 0x24];
-    CStatzRect60 m_2c; // +0x2c  rect block
-};
-
+// The class itself now lives in <Gruntz/TileTriggerSwitchLogic.h> (real derived class, no
+// data members, sizeof 0x8c). BuildSmall is its slot-1 override; the base's slot-0 "build"
+// virtual (Vf0) is the 8-arg builder it chains to.
 // @early-stop
-// regalloc/tail-merge wall (~62%): instruction selection, calls and constants are
-// byte-correct, but retail pins arg3->ebp / arg4->ebx via prologue-interleaved
-// arg-loads and tail-merges the early `return 0` exits into the shared post-BaseBuild
-// epilogue; our /O2 build pins different args + emits inline epilogues, cascading the
-// whole register allocation. Logic complete; not source-steerable. See
-// docs/patterns/identical-return-epilogue-tailmerge.md + pin-local-for-callee-saved-reg.md.
+// tail-merge + prologue-scheduling wall (~62%). The LAYOUT is now byte-correct and verified
+// against retail: `mov ecx,[this+0x20]` (the m_20 gate), `lea edi,[this+0x2c]` (m_block) and
+// `mov ecx,0x18; rep movsd` all appear on BOTH sides of the objdiff. What is left is not
+// source-steerable: retail tail-merges both early `return 0` exits into ONE shared epilogue
+// (`jmp`), while our /O2 emits an inline `pop/pop/pop/pop; ret 0x24` at each, and it loads
+// the ebx/ebp args inside the prologue push run. See
+// docs/patterns/identical-return-epilogue-tailmerge.md.
+// (The pre-existing @early-stop blamed the same wall but was measuring WRONG code: the old
+// .cpp-local view shadowed the base's fields, so every access here was 0xc8 too high.)
 RVA(0x00112a50, 0xdd)
 i32 CCheckpointTriggerSwitchLogic::
-    BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, CStatzRect60* a6, i32 a7, i32 a8, i32 a9) {
+    BuildSmall(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, const i32* rect, i32 a7, i32 a8, i32 a9) {
     if (m_20 != 0) {
         return 0;
     }
-    if (a2 == 4 && a6->d[0] == 0) {
+    if (a2 == 4 && rect[0] == 0) {
         return 0;
     }
-    m_2c = *a6;
-    if (!BaseBuild(a1, a2, a3, a4, a5, a7, a8, a9)) {
+    memcpy(m_block, rect, sizeof(m_block)); // rep movsd, ecx=0x18 -> this+0x2c
+    if (!Vf0(a1, a2, a3, a4, a5, a7, a8, a9)) {
         return 0;
     }
     i32 px = (a3 << 5) + 0x10;

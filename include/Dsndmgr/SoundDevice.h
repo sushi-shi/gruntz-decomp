@@ -134,9 +134,14 @@ public:
     i32 m_coopLevel;                     // +0x88  cooperative level
     u32 m_bufferFlags;                   // +0x8c  buffer-desc flags
     i32 m_force8Bit;                     // +0x90  force-8-bit downconvert flag (Acquire reads)
-    DSoundLink* m_instanceHead;          // +0x94  derived instance-list head (SoundStream)
+    // The device ENDS at 0x94. m_instanceHead (+0x94) used to be declared here and was even
+    // commented "derived instance-list head (SoundStream)" - a member parked in the wrong
+    // class. It pushed SoundStream's voice list to +0x98 and its sizeof to 0xa0, but retail
+    // allocates SoundStream at 0x9c and its ctor (0x1376d0) zeroes +0x94 AND +0x98 - one
+    // two-dword {head,tail} list at +0x94, owned by SoundStream. No SoundDevice method
+    // touches +0x94, and every m_instanceHead use in the tree was in SoundStream.cpp.
 };
-SIZE(SoundDevice, 0x98);       // device base (SoundStream's first own member is at +0x98)
+SIZE(SoundDevice, 0x94);       // device base; SoundStream's own list starts at +0x94
 VTBL(SoundDevice, 0x001ef6c4); // cl-emitted ??_7SoundDevice@@6B@ (virtual dtor)
 
 #endif // DSNDMGR_SOUNDDEVICE_H

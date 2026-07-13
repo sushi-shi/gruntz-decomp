@@ -79,8 +79,18 @@ public:
     virtual void Tick();
 
     void RecordMove();                  // 0x112880
-    i32 Serialize(CSerialArchive* s);   // 0x113ae0
-    i32 Deserialize(CSerialArchive* s); // 0x113c10
+    // Serialize (0x113ae0) / Deserialize (0x113c10) moved to CTileTriggerLogic
+    // (<Gruntz/TileTriggerLogic.h>): retail reaches them ONLY through
+    // CTileTriggerLogic::ValidateByType, which passes its own `this` in ecx, and Build
+    // proves that `this` is a freshly-`new`ed 0x9c CTileTriggerLogic.
+    //
+    // @identity-TODO CTileGridCommand is an INVENTED name - the string does not occur
+    // anywhere in GRUNTZ.EXE, while CTileTriggerLogic / CGiantRockLogic /
+    // CTileTriggerSwitchLogic all do (RTTI). Its layout is field-for-field identical to
+    // CTileTriggerLogic (0x9c, m_20 = CTileTriggerContainer*, 24-dword block at +0x3c), and
+    // the ecx passthrough above proves the two names denote ONE object at runtime. The
+    // remaining methods (Tick/RecordMove/Classify/BumpCell/ApplyMove) should fold onto
+    // CTileTriggerLogic; not done here to keep the layout fix reviewable.
 
     // Time-driven duty-cycle classifier: returns +1 while inside the on/off span,
     // 0 on the rising edge of a one-shot, -1 on the falling edge.  __thiscall.

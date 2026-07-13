@@ -247,9 +247,10 @@ public:
     virtual void v1(i32 f) OVERRIDE; // slot 1 -> 0x181b00 (overrides CFader pure)
     virtual i32 v2() OVERRIDE;       // slot 2 -> 0x182900 (overrides CFader pure)
 
-    void* operator new(u32) {
-        return ::operator new(0x494);
-    }
+    // (The `operator new(u32) { return ::operator new(0x494); }` override is gone: it
+    // hard-coded the allocation size to paper over a class that only computed 0x490. With
+    // m_490 declared below, sizeof IS 0x494 and the default `new CFaderShape` pushes 0x494
+    // on its own - which is what retail's new-site at 0x17da14 does.)
     i32 ApplyInit(CFaderInit* src); // 0x1817e0 (apply the built default init)
     i32 CopyFrom(CFader* src);      // 0x1817e0 (same method; copy from the pInit descriptor)
 
@@ -267,6 +268,13 @@ public:
     char _pad47c[0x488 - 0x47c]; // +0x47c..+0x487
     i32 m_488;                   // +0x488
     i32 m_48c;                   // +0x48c
+    // +0x490: the object ENDS at 0x494 (the new-site at 0x17da14 pushes 0x494, and 0x494 is
+    // not 8-aligned, so the class aligns to 4 and cannot have been padded up to it - the last
+    // member really does end at 0x494). ROLE UNRECOVERED: an exhaustive scan of .text for a
+    // +0x490 disp32 finds NOTHING in the fader band, and the ctor (0x1816c0) never writes it,
+    // so no reconstructed or unreconstructed code in the image touches this field. Declared
+    // with a placeholder name so the SIZE is honest; do not invent a meaning for it.
+    i32 m_490; // +0x490
 };
 
 // --- vtable catalog (reduced-view classes share their base vtable rva) ---

@@ -289,12 +289,12 @@ i32 SoundStream::PlaySoundDefaulted(void* hWnd, i32 flag) {
 
 // ---------------------------------------------------------------------------
 // SoundStream::Free (0x137740) - drain the owned per-stream voice list (DestroyVoice
-// pops the head each pass, so m_instanceHead is re-read every iteration), then run
+// pops the head each pass, so m_voices.m_head is re-read every iteration), then run
 // the inherited SoundDevice::Shutdown. (Was the soundstreamfree singleton unit.)
 RVA(0x00137740, 0x3e)
 void SoundStream::Free() {
-    for (StreamVoice* p = elemOf<StreamVoice>(m_instanceHead); p != 0;
-         p = elemOf<StreamVoice>(m_instanceHead)) {
+    for (StreamVoice* p = elemOf<StreamVoice>(m_voices.m_head); p != 0;
+         p = elemOf<StreamVoice>(m_voices.m_head)) {
         DestroyVoice(p);
     }
     Shutdown();
@@ -454,7 +454,7 @@ StreamVoice* SoundStream::PlayStream(CParseSource* src, i32 a2, i32 a3, i32 a4) 
 // SoundDevice::StopAll. (Was the soundstreamteardown singleton unit.)
 RVA(0x00137a80, 0x3d)
 void SoundStream::Stop() {
-    StreamVoice* node = elemOf<StreamVoice>(m_instanceHead);
+    StreamVoice* node = elemOf<StreamVoice>(m_voices.m_head);
     while (node != 0) {
         node->m_feeder.Pause();
         node = elemOf<StreamVoice>(node->m_link.m_next);
@@ -464,7 +464,7 @@ void SoundStream::Stop() {
 
 // -------------------------------------------------------------------------
 // SoundStream::TickSubManagers @0x137ac0 - per-frame stream-voice tick. Walk the
-// instance list (m_instanceHead threads StreamVoice+4 links); per voice: pump the
+// instance list (m_voices.m_head threads StreamVoice+4 links); per voice: pump the
 // embedded feeder (StreamFeeder::Tick @0x137e30), poll the per-stream buffer
 // wrapper's IsPlaying (feeder->m_buffer, i.e. voice+0x74); when it just went idle,
 // reprime the feeder (TickPump(-1) @0x1380d0) if m_stopWhenIdle and/or retire the
@@ -476,7 +476,7 @@ i32 SoundStream::TickSubManagers(i32 time) {
     if (time == -1) {
         time = (i32)g_pTimeGetTime();
     }
-    DSoundLink* head = m_instanceHead;
+    DSoundLink* head = m_voices.m_head;
     StreamVoice* o = elemOf<StreamVoice>(head);
     while (o) {
         StreamVoice* next = elemOf<StreamVoice>(o->m_link.m_next);

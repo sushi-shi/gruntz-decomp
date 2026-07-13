@@ -292,7 +292,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
             obj->m_34 = a6;
             obj->m_24 = g_645588;
             obj->m_2c = a8;
-            obj->m_38 = 0;
+            obj->m_dutyOn = 0;
             obj->m_28 = a7;
             obj->m_30 = a9;
             if (logicType != 0x1a && a9 == 0) {

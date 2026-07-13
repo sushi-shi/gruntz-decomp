@@ -41,6 +41,7 @@
 //   * MFC `(Coord**)m_candArray.GetData()`: CPtrArray::GetData() returns void**.
 // numeric-conversion casts ((u8)/(u32)/(i32)/(double)) document width/int<->float and stay.
 // ---------------------------------------------------------------------------
+#include <Gruntz/TileTriggerLogic.h>
 #include <Gruntz/TileTriggerSwitchLogic.h>
 #include <Gruntz/UserLogic.h>
 #include <Gruntz/Grunt.h>

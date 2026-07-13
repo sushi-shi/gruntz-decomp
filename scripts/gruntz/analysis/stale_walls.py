@@ -376,7 +376,21 @@ def audit(img, opnew):
 
             # T4 - "RVA is not a function start / unclaimed", but it thunk-resolves to a
             #      body we already claim (this recovered 4 of 8 leaf hooks).
-            UNBIND_RE = re.compile(r"not a function start|unclaimed|no body|nothing defines", re.I)
+            #
+            # "no body" alone is NOT evidence of an unbindable premise: across this tree it is
+            # overwhelmingly the ordinary phrase for a DECLARED-ONLY extern ("all engine callees
+            # are reloc-masked (no body)"), which says nothing about whether an RVA is claimed.
+            # Left in, it fired on every reloc-masked-callee note that happened to mention an RVA
+            # within 100 chars - two such false hits in TileTriggerSwitchLogic.cpp alone. A tool
+            # that cries wolf gets ignored, so "no body" only counts when it is NOT the
+            # declared-only idiom.
+            UNBIND_RE = re.compile(r"not a function start|unclaimed|nothing defines", re.I)
+            NO_BODY_RE = re.compile(r"no body", re.I)
+            DECL_ONLY_RE = re.compile(r"reloc-masked|declared[- ]only|extern|no body\)", re.I)
+            if NO_BODY_RE.search(blk) and not DECL_ONLY_RE.search(blk):
+                UNBIND_RE = re.compile(
+                    r"not a function start|unclaimed|no body|nothing defines", re.I
+                )
             if UNBIND_RE.search(blk):
                 for r in RVA_TOK.findall(blk):
                     if not near(blk, UNBIND_RE, "0x" + r, 100) and not near(
