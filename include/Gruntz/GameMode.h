@@ -177,7 +177,8 @@ extern "C" char g_60ce74[]; // "MONOLITH" (FindSound name)
 // cast). Each is a pointer slot, so the typing is codegen-neutral.
 struct CMenuMusic;       // CMenuState::m_1bc       - menu music controller
 class CMoviePlayer;      // CCreditsState::m_videoHandle - real Smacker video player
-struct CBootyBonusState; // CMultiBootyState::m_bonusState - bonus scroll/flags object
+// (CBootyBonusState is GONE - there was never a "bonus state object": +0x2f8 holds the
+// BOOTY_PERFECT CGameObject sprite, and its "phase" is that sprite's own m_screenX.)
 struct CGameObject; // CMultiBootyState::m_cursorLetter + the +0x1ec/+0x204 letter-sprite arrays
                     // (the created "SimpleAnimation" sprite - the shared CGameObject; the booty
                     //  draw walks the same objects as position/flag records)
@@ -451,6 +452,12 @@ public:
     i32 BuildWarpStoneGlitterAnimation(); // 0x19540  the 4 warp-letter glitter anims
     i32 BuildGruntSprintAnimation();      // 0x19920  the 8 directional sprint sprites
     i32 BuildBootyPerfectAnimation();     // 0x1c070  the BOOTY_PERFECT celebration sprite
+    // 0x1c0f0 - scroll that same sprite in from off-screen left (x = -0x82, the very value
+    // BuildBootyPerfectAnimation spawns it at) by 0xa a frame, cueing BOOTY_PERFECT on the
+    // frame it appears and latching the done bit past x >= 0x302. RE-HOMED from
+    // CMultiBootyState (0x244), which cannot hold the [this+0x2f8] it reads off its own
+    // `this`; its only caller is this class's Render (slot 5).
+    i32 CheckPerfectBonus();
 
     // 0x19cd0 - the per-selector (1..8) random edge spawn position BuildGruntSprintAnimation
     // uses for each compass direction. It is a MEMBER of this class, not the free __stdcall
@@ -569,7 +576,8 @@ public:
     // base, so a CBootyState method could never have called it on itself.)
     void StepGlitterAnim();               // 0x196c0 - the trig glitter/spawn positioner
     void MoveLettersByDir();              // 0x19b90 - the 8-direction letter walk (jump-table)
-    i32 CheckPerfectBonus();              // 0x1c0f0 - "BOOTY_PERFECT" cue + scroll advance
+    // (CheckPerfectBonus @0x1c0f0 is GONE from here - it is CBootyState::, proven by its
+    // [this+0x2f8] reads and its sole caller CBootyState::Render.)
     i32 QueryGruntSlots();                // 0x1ecf0 - scan 4 reg records for an empty slot
 
     // Own booty-title tail helpers reached via ILT thunks (reloc-masked self-calls;
@@ -610,15 +618,14 @@ public:
     i32 m_1e8;       // +0x1e8 computed scratch Y (cos(ang)*r + tableY)
     char m_pad1ec[0x1fc - 0x1ec];
     CGameObject* m_cursorLetter; // +0x1fc the trailing/cursor letter sprite
-    char m_pad200[0x2f8 - 0x200];
-    // @identity-TODO: OUT OF BOUNDS, same shape as CMenuState::m_liveGame above.
-    // CMultiBootyState is 0x244 - binary-proven by TransitionState's `push 0x244; call ??2`
-    // @0x8c056 followed by the ??_7CMultiBootyState (0x5e9bdc) stamp. +0x2f8 is 0xb4 bytes
-    // past the end, so the BootyStateActivate.cpp methods that read m_bonusState are running
-    // on a bigger object than a CMultiBootyState (CBootyState @0x320 is the obvious
-    // candidate - it is the sibling in the same TU - but that is NOT proven, so nothing is
-    // re-homed). Do not trust this field's placement as CMultiBootyState's.
-    CBootyBonusState* m_bonusState; // +0x2f8 the bonus state object (m_5c phase / m_8 flags)
+    // ENDS AT 0x244 - the allocation-proven size (TransitionState @0x8c056:
+    // `push 0x244; call ??2@YAPAXI@Z`, then the ??_7CMultiBootyState (0x5e9bdc) stamp).
+    // The out-of-bounds `m_bonusState` @+0x2f8 that used to sit here is GONE, and so is its
+    // reader (CheckPerfectBonus @0x1c0f0): both were CBootyState's. That body reads
+    // [this+0x2f8] off its own `this`, 0xb4 bytes past this class's end, and its only caller
+    // is CBootyState::Render. This class is whole again - the fourth and last of the
+    // out-of-bounds @identity-TODOs to close by the allocation-site bound.
+    char m_pad200[0x244 - 0x200];
 };
 VTBL(CMultiBootyState, 0x001e9bdc);
 

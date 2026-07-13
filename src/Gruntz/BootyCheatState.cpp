@@ -17,7 +17,6 @@
 // header that reaches windows.h, so it comes first.
 #include <Bute/ButeMgr.h>
 #include <Bute/SymParser.h> // canonical CSymParser (pulls CSymTab)
-#include <Io/MoviePlayer.h>
 
 #include <rva.h>
 
@@ -63,7 +62,8 @@ extern i32 g_645588;
 // (the six Bc* sub-views are GONE too - each was a facet of a class CState already names:
 //    BcStateRoot   -> CState::m_4  is CGruntzMgr*, and its "Reset(0)" @thunk 0x34ef is
 //                     really CGruntzMgr::RestoreVideoMode (0x8ddd0) - a real method.
-//    BcPumpHost    -> CGruntzMgr::m_4 (+0x04), the movie/pump host.
+//    BcPumpHost    -> CGruntzMgr's +0x04 == the CGameWnd it inherits from WAP32::CGameMgr
+//                     (m_gameWnd), and its "Pump" is CGameWnd::PumpMessages (0x13d4e0).
 //    BcRegSet      -> CState::m_8 is CBankMgr*; its Register @0x13c030 IS
 //                     CSymParser::ResolvePath.
 //    BcAssetRoot   -> CState::m_c is CSpriteFactoryHolder*, whose +0x08/+0x10/+0x28 are
@@ -166,12 +166,16 @@ i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
         }
     }
 
-    // The pump host is CGruntzMgr's +0x04, i.e. the CGameWnd it inherits from
-    // WAP32::CGameMgr (m_gameWnd). The (CMoviePlayer*) cast is honest and STAYS: Pump's
-    // owning class is unproven - CGameWnd is what sits at that offset, CMoviePlayer is
-    // where the Pump(msgLo, msgHi) message-burst method is currently modeled. That is a
-    // real identity question, not something to paper over by inventing a member.
-    ((CMoviePlayer*)m_4->m_gameWnd)->Pump(0x100, 0x40);
+    // The cast is GONE - the binary settled it. This call was bound to
+    // CMoviePlayer::Pump (0x17c790), which 0x18830 does not call at all: retail does
+    //     mov eax,[esi+0x4]   ; this->m_4      (CGruntzMgr)
+    //     push 0x40 / push 0x100
+    //     mov ecx,[eax+0x4]   ; m_4->m_gameWnd (+0x04)
+    //     call 0x13d4e0       ; ?PumpMessages@CGameWnd@@QAEXIH@Z
+    // so the callee is CGameWnd::PumpMessages - the real method of the class that actually
+    // sits at that offset, already reconstructed in the `gamewnd` unit. Wrong callee AND a
+    // wrong cast; naming the true owner dissolved both.
+    m_4->m_gameWnd->PumpMessages(0x100, 0x40);
 
     m_1b8 = 0;
     // The five-stage build chain - all real, rva-bound methods of THIS class now (the

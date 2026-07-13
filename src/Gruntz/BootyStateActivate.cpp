@@ -169,14 +169,10 @@ extern "C" double g_5e93b8; // 0.017453292  (pi/180)
 extern "C" double g_5e93c0; // 0.002
 extern "C" double g_5e93c8; // 350.0
 
-// The bonus state object (CMultiBootyState+0x2f8): flags @+0x8, a scroll phase @+0x5c.
-SIZE_UNKNOWN(CBootyBonusState);
-struct CBootyBonusState {
-    char m_pad00[0x8];
-    i32 m_8; // +0x08 flags
-    char m_pad0c[0x5c - 0xc];
-    i32 m_5c; // +0x5c scroll phase
-};
+// (the CBootyBonusState view is GONE - there is no "bonus state object". +0x2f8 holds the
+// BOOTY_PERFECT CGameObject sprite (CBootyState::m_bootyPerfectSprite), and the view's two
+// fields were simply that sprite's own: m_8 == CGameObject::m_flags (+0x08), m_5c ==
+// CGameObject::m_screenX (+0x5c). The "scroll phase" is literally its screen x.)
 
 // The draw object (g_gameReg+0x7c) the frame-ready gate runs on (FrameReady @0xfcd70
 // IS CBattlezData::InBounds; cast at the call).
@@ -491,17 +487,27 @@ void CMultiBootyState::MoveLettersByDir() {
     }
 }
 
-// CMultiBootyState::CheckPerfectBonus() (0x1c0f0): once the frame-ready gate fires,
-// drive the bonus state's scroll phase (m_bonusState->m_5c): on the wrap value (-0x82)
-// play the "BOOTY_PERFECT" cue on the draw-clock window; past 0x302 latch the done flag
-// (m_8 |= 0x10000); otherwise advance the phase by 0xa. Returns 1.
+// CBootyState::CheckPerfectBonus() (0x1c0f0): once the frame-ready gate fires, SCROLL the
+// BOOTY_PERFECT sprite across the screen - it is not a "bonus state" with a "phase" at all.
+// RE-HOMED from CMultiBootyState, which is allocation-proven 0x244 while this body reads
+// [this+0x2f8] off its OWN `this` three times (`mov ebx,ecx` at 0x1c0f9) - 0xb4 bytes past
+// that class's end. Its ONLY caller is CBootyState::Render (slot 5, 0x1c210), which invokes
+// it with `mov ecx,esi` - its own `this`. CBootyState (0x320) holds +0x2f8. Same bound that
+// re-homed FormatHudText, LevelMsgHudDriver and the slot-1 build chain; this is the fourth.
+//
+// And the object AT +0x2f8 is just the sprite: the "bonus state (m_5c phase / m_8 flags)"
+// view was CGameObject all along - m_5c is m_screenX, m_8 is m_flags. The proof is the
+// sentinel: BuildBootyPerfectAnimation (0x1c070, also this class) creates the sprite at
+// x = 0xffffff7e, and that is EXACTLY the -0x82 "wrap value" tested below. The sprite spawns
+// off-screen left, this cues BOOTY_PERFECT on the frame it appears, then walks it right by
+// 0xa a frame until x >= 0x302, where it latches the done bit. Returns 1.
 RVA(0x0001c0f0, 0xd5)
-i32 CMultiBootyState::CheckPerfectBonus() {
+i32 CBootyState::CheckPerfectBonus() {
     if (!((CBattlezData*)BOOTY_REG->m_7c)->InBounds(-1)) {
         return 1;
     }
-    CBootyBonusState* st = m_bonusState;
-    i32 phase = st->m_5c;
+    CGameObject* st = m_bootyPerfectSprite;
+    i32 phase = st->m_screenX;
     if (phase == (i32)0xffffff7e) {
         CBootyMusicHost* host = BOOTY_REG->m_30;
         i32 item = BOOTY_REG->m_11c;
@@ -520,10 +526,10 @@ i32 CMultiBootyState::CheckPerfectBonus() {
         }
     }
     if (phase >= 0x302) {
-        m_bonusState->m_8 |= 0x10000;
+        m_bootyPerfectSprite->m_flags |= 0x10000;
         return 1;
     }
-    m_bonusState->m_5c = phase + 0xa;
+    m_bootyPerfectSprite->m_screenX = phase + 0xa;
     return 1;
 }
 
