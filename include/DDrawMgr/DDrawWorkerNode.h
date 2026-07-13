@@ -80,6 +80,24 @@ public:
     char _pad68[0x74 - 0x68];
     i32 m_74; // +0x74  state
     CDDrawWorkerBase() {}
+
+    // The worker-seed ctor: CDDrawWorkerList's CreateWorkerA/B* factories all build a
+    // worker with this SAME 9-field base seed (m_ctx = parent->m_pSurfaceMgr, the rest
+    // constants). The derived CDDrawWorkerA/B ctors delegate here and add m_78. Modeled
+    // as a real base ctor (body assignments) so cl emits the base seed, then the DERIVED
+    // vptr, then m_78 - matching retail's store order + vptr position; see
+    // docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
+    CDDrawWorkerBase(CDDrawWorkerCtx* ctx) {
+        m_04 = 0;
+        m_ctx = ctx;
+        m_08 = 0;
+        m_20 = (i32)0x80000000;
+        m_38 = -1;
+        m_5c = (i32)0x80000000;
+        m_64 = (i32)0x80000000;
+        m_3c = 0;
+        m_40 = 0;
+    }
 };
 SIZE(CDDrawWorkerBase, 0x78);
 
@@ -96,6 +114,7 @@ struct CDDrawWorkerA : public CDDrawWorkerBase {
     virtual void PlotMarker_165fa0(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
     // m_04..m_74 + Helper_164790 inherited from CDDrawWorkerBase.
     CDDrawWorkerA() {}
+    CDDrawWorkerA(CDDrawWorkerCtx* ctx) : CDDrawWorkerBase(ctx) { m_78 = 0; }
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3); // [11] 0x157110
 
     char m_78; // +0x78 (BYTE frame)
@@ -118,6 +137,7 @@ struct CDDrawWorkerB : public CDDrawWorkerBase {
     virtual void Slot10_1660b0(CDDrawSurfacePair* a, CDDrawSurfacePair* b);
     // m_04..m_74 + Helper_164790 inherited from CDDrawWorkerBase.
     CDDrawWorkerB() {}
+    CDDrawWorkerB(CDDrawWorkerCtx* ctx) : CDDrawWorkerBase(ctx) { m_78 = 0; }
     virtual i32 Vfunc2C(i32 a1, i32 a2, i32 a3);                         // [11] 0x1572f0
     virtual i32 Vfunc30(i32 a1, i32 a2, CDDrawFrameSource* src, i32 a4); // [12] 0x1572b0
     virtual i32 Vfunc34(i32 a1, i32 a2, i32 a3, i32 a4);                 // [13] 0x157280

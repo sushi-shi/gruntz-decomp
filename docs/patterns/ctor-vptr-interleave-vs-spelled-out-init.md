@@ -40,11 +40,25 @@ mov  [eax+0xc],ecx            ; m_parent = parent
 mov  [eax],offset ??_7CImage  ; <-- retail schedules the vptr store 4th
 mov  [eax+0x10],ebp           ; m_width = 0 ...
 ```
-STEERABLE (the big win: regalloc) with a RESIDUAL WALL (the vptr position). The real ctor
-recovers retail's register roles and lifts the family ~65→99% (CImageSet::CreateFrame24/28/30
-0x151fb0/152060/152110 65→99.4, CSprite::InsertFrame 0x151f00 84→99.4, CDDrawWorkerMapSmall
-CreateWorker28/2C 0x165990/165a10 62→96.7, Factory_1658c0/165a90 →92–96). The ONLY residual
-is the vptr store POSITION: cl stamps `mov [obj],??_7` at ctor entry (1st) while retail
-schedules it 4th (after the first 3 member stores) — no source form tried (body-order,
-member-init-list) sinks it, so ~99% not 100. Safe to add a ctor only when you own every
-`new Class` site (grep first) and keep any existing default ctor.
+STEERABLE (the big win: regalloc). The real ctor recovers retail's register roles and lifts
+the family ~65→99% (CImageSet::CreateFrame24/28/30 0x151fb0/152060/152110 65→99.4,
+CSprite::InsertFrame 0x151f00 84→99.4, CDDrawWorkerMapSmall CreateWorker28/2C 0x165990/165a10
+62→96.7, Factory_1658c0/165a90 →92–96).
+
+**Vptr position — where the last ~1% lives, and how to get it (→ 100 EXACT):** the residual is
+the vptr store POSITION. A ctor stamps the DERIVED vptr *between the base-ctor body and the
+derived-ctor body*. So look at which fields retail sets BEFORE the single vptr store:
+
+- **pre-vptr fields are in the BASE class** → give the BASE a real ctor and DELEGATE
+  (`Derived(args) : Base(args) { m_derivedField = …; }`). cl emits: base seed, derived vptr,
+  derived field — retail's exact order. **This reaches 100 EXACT** (CDDrawWorkerList
+  CreateWorkerA/B28/B2C/B30 0x156fd0/1573e0/157330/157150, 55–61→**100**: the 9 pre-vptr fields
+  are all CDDrawWorkerBase's, only m_78 is derived).
+- **pre-vptr fields are the DERIVED class's own** → a single derived ctor sets them AFTER the
+  derived vptr (cl won't sink the vptr past them), so vptr lands 1st not Nth → ~99, not 100
+  (CImage: m_status/m_08/m_parent are CImage's own). Moving them to a base is a layout change
+  (Fable) — take the 99%.
+
+Base-ctor delegation via `: Base(args)` is REQUIRED syntax (not the member-init-list to avoid).
+Safe to add a ctor only when you own every `new Class` site (grep first) and keep any existing
+default ctor.

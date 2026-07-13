@@ -583,51 +583,17 @@ i32 CDDrawWorkerList::IsReadyPredicate() {
     return 1;
 }
 
-// Inline worker constructors. Each new's the raw block, and on success seeds the
-// fields THROUGH the allocation register and returns it. Defined inline so they
-// fold into each factory, reproducing the target's "init via eax, commit to esi
-// only at the merge" register schedule.
-static inline CDDrawWorkerB* MakeWorkerB(const CDDrawWorkerList* parent) {
-    CDDrawWorkerB* w = new CDDrawWorkerB;
-    if (w != 0) {
-        CDDrawWorkerCtx* surfaceMgr = parent->m_pSurfaceMgr;
-        w->m_04 = 0;
-        w->m_ctx = surfaceMgr;
-        w->m_08 = 0;
-        w->m_20 = (i32)0x80000000;
-        w->m_38 = -1;
-        w->m_5c = (i32)0x80000000;
-        w->m_64 = (i32)0x80000000;
-        w->m_3c = 0;
-        w->m_40 = 0;
-        w->m_78 = 0;
-    }
-    return w;
-}
-
-static inline CDDrawWorkerA* MakeWorkerA(const CDDrawWorkerList* parent) {
-    CDDrawWorkerA* w = new CDDrawWorkerA;
-    if (w != 0) {
-        CDDrawWorkerCtx* surfaceMgr = parent->m_pSurfaceMgr;
-        w->m_04 = 0;
-        w->m_ctx = surfaceMgr;
-        w->m_08 = 0;
-        w->m_20 = (i32)0x80000000;
-        w->m_38 = -1;
-        w->m_5c = (i32)0x80000000;
-        w->m_64 = (i32)0x80000000;
-        w->m_3c = 0;
-        w->m_40 = 0;
-        w->m_78 = 0;
-    }
-    return w;
-}
+// The worker construction is now the real CDDrawWorkerBase(ctx) base ctor + the derived
+// CDDrawWorkerA/B(ctx) ctors (DDrawWorkerNode.h). The former MakeWorkerA/B `static inline`
+// helpers were NOT inlined by cl (they emitted a `call`), capping the factories at 55-61%;
+// `new CDDrawWorkerA(m_pSurfaceMgr)` folds the base seed + derived vptr + m_78 in with
+// retail's store order - see docs/patterns/ctor-vptr-interleave-vs-spelled-out-init.md.
 
 // Allocates a BYTE-flag worker, constructs it, calls its +0x2c virtual with
 // (a1,a2,a3). On success appends it to the list (AddTail) and returns it.
 RVA(0x00156fd0, 0x8b)
 void* CDDrawWorkerList::CreateWorkerA(i32 a1, i32 a2, i32 a3) {
-    CDDrawWorkerA* w = MakeWorkerA(this);
+    CDDrawWorkerA* w = new CDDrawWorkerA(m_pSurfaceMgr);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
             delete w;
@@ -685,7 +651,7 @@ i32 CDDrawWorkerA::Vfunc2C(i32 a1, i32 a2, i32 a3) {
 // Int-flag worker; calls the worker's +0x34 virtual with (a1,a2,a3,a4).
 RVA(0x00157150, 0xa5)
 void* CDDrawWorkerList::CreateWorkerB30(i32 a1, i32 a2, i32 a3, i32 a4, i32 addHead) {
-    CDDrawWorkerB* w = MakeWorkerB(this);
+    CDDrawWorkerB* w = new CDDrawWorkerB(m_pSurfaceMgr);
     if (w->Vfunc34(a1, a2, a3, a4) == 0) {
         if (w != 0) {
             delete w;
@@ -759,7 +725,7 @@ void* CDDrawWorkerList::CreateWorkerB2C(
     i32 a4,
     i32 addHead
 ) {
-    CDDrawWorkerB* w = MakeWorkerB(this);
+    CDDrawWorkerB* w = new CDDrawWorkerB(m_pSurfaceMgr);
     if (w->Vfunc30(a1, a2, a3, a4) == 0) {
         if (w != 0) {
             delete w;
@@ -777,7 +743,7 @@ void* CDDrawWorkerList::CreateWorkerB2C(
 // As CreateWorkerA but the int-flag worker; trailing bool selects AddHead/AddTail.
 RVA(0x001573e0, 0xa0)
 void* CDDrawWorkerList::CreateWorkerB28(i32 a1, i32 a2, i32 a3, i32 addHead) {
-    CDDrawWorkerB* w = MakeWorkerB(this);
+    CDDrawWorkerB* w = new CDDrawWorkerB(m_pSurfaceMgr);
     if (w->Vfunc2C(a1, a2, a3) == 0) {
         if (w != 0) {
             delete w;
