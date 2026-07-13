@@ -170,21 +170,12 @@ extern "C" u32 g_engineFrameDelta; // 0x2bf3bc
 // <DDrawMgr/DDrawShadeBlit.h>.)
 
 // The frame ctor CreateFrame24/28/30 inline (vptr stamp + field init at the new-site).
-// The frame IS a CImage, so this is `new CImage` + the same 7 field stores, spelled out
-// at each new-site (NewFrame below) rather than as a CImage ctor: CImage.h is included
-// tree-wide and its own comment warns that touching the class is a heavy /O2 butterfly
-// for no binding gain, and the explicit stores emit the identical code.
-static inline CImage* NewFrame(void* owner, i32 index) {
-    CImage* nf = new CImage;
-    nf->m_status = index; // +0x04  frame index (see CImage.h @name-conflict)
-    nf->m_08 = 0;
-    nf->m_parent = (CImageParent*)owner; // honest cast: CImageSet::m_owner is still void*
-    nf->m_width = 0;
-    nf->m_height = 0;
-    nf->m_surface = 0;
-    nf->m_owned = 0;
-    return nf;
-}
+// The frame IS a CImage, so retail spells out `new CImage` + the same 7 field stores
+// INLINE at each new-site (a CImage ctor call would emit a `call`; a `static inline`
+// NewFrame helper is NOT inlined by MSVC5 either - it emits a call). CImage.h is
+// included tree-wide and its own comment warns that touching the class (e.g. adding a
+// parameterized ctor) is a heavy /O2 butterfly for no binding gain, so the construction
+// is duplicated at each site to match retail's inline shape.
 
 // Stamp helper retired: the worker builds are real `new`-less inline constructions
 // whose vptr install is dropped (compiler-emitted vtable; % ok per drive-to-0).
@@ -1325,13 +1316,27 @@ CImage* CSprite::InsertFrame(void* src, i32 n, i32 mode) {
 // +0x30, insert it (SetAtGrow at `index`) and widen the populated index range.
 // The (CImageFrameDesc*) casts on a0 are honest: CreateFrame*'s `i32 a0` params are
 // still the fake type (the callers hand in a descriptor pointer as an int).
+// @early-stop
+// vptr-position + regalloc wall: the inline new(0x34)+field-init now matches retail's
+// shape, but `new CImage` runs the (implicit default) ctor's vptr stamp BEFORE the field
+// assignments, so cl emits vptr first; retail schedules the vptr store 4th (interleaved
+// with the field stores), which only comes from a real parameterized CImage ctor - a
+// tree-wide /O2 butterfly the class header forbids. The this/index/nf register roles
+// (esi/edi/ebx retail vs edi/ebx/esi here) cascade off that. ~66%.
 RVA(0x00151fb0, 0xa4)
 CImage* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
     if (index < m_count && m_frames[index] != 0) {
         return 0;
     }
 
-    CImage* nf = NewFrame(m_owner, index);
+    CImage* nf = new CImage; // inline new(0x34) + field init (retail spells this out inline)
+    nf->m_status = index;
+    nf->m_08 = 0;
+    nf->m_parent = (CImageParent*)m_owner;
+    nf->m_width = 0;
+    nf->m_height = 0;
+    nf->m_surface = 0;
+    nf->m_owned = 0;
 
     if (nf->Create((CImageFrameDesc*)a0, a2) == 0) { // slot 12 @+0x30  CImage::Create
         if (nf != 0) {
@@ -1352,13 +1357,22 @@ CImage* CImageSet::CreateFrame30(i32 a0, i32 index, i32 a2) {
 
 // CreateFrame28 (__thiscall, ret 0x10). As CreateFrame30, but the loader
 // virtual is at slot +0x28 and takes (a0, a1, a3, 1).
+// @early-stop
+// Same vptr-position + regalloc wall as CreateFrame30 (see there). ~67%.
 RVA(0x00152060, 0xab)
 CImage* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
     if (index < m_count && m_frames[index] != 0) {
         return 0;
     }
 
-    CImage* nf = NewFrame(m_owner, index);
+    CImage* nf = new CImage; // inline new(0x34) + field init (retail spells this out inline)
+    nf->m_status = index;
+    nf->m_08 = 0;
+    nf->m_parent = (CImageParent*)m_owner;
+    nf->m_width = 0;
+    nf->m_height = 0;
+    nf->m_surface = 0;
+    nf->m_owned = 0;
 
     // slot 10 @+0x28  CImage::LoadDispatch
     if (nf->LoadDispatch((CImageFrameDesc*)a0, (u32)a1, (void*)a3, 1) == 0) {
@@ -1380,13 +1394,22 @@ CImage* CImageSet::CreateFrame28(i32 a0, i32 a1, i32 index, i32 a3) {
 
 // CreateFrame24 (__thiscall, ret 0x10). As CreateFrame30, but the loader
 // virtual is at slot +0x24 and takes (a0, a1, a3).
+// @early-stop
+// Same vptr-position + regalloc wall as CreateFrame30 (see there). ~67%.
 RVA(0x00152110, 0xa9)
 CImage* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
     if (index < m_count && m_frames[index] != 0) {
         return 0;
     }
 
-    CImage* nf = NewFrame(m_owner, index);
+    CImage* nf = new CImage; // inline new(0x34) + field init (retail spells this out inline)
+    nf->m_status = index;
+    nf->m_08 = 0;
+    nf->m_parent = (CImageParent*)m_owner;
+    nf->m_width = 0;
+    nf->m_height = 0;
+    nf->m_surface = 0;
+    nf->m_owned = 0;
 
     if (nf->Create24((CImageFrameDesc*)a0, a1, a3) == 0) { // slot 9 @+0x24  CImage::Create24
         if (nf != 0) {
