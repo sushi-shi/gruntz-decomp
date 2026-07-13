@@ -36,72 +36,70 @@
 #include <Gruntz/GruntzCmdMgr.h>
 #include <Gruntz/TriggerMgr.h>
 
-#include <Gruntz/WwdGameReg.h>   // the canonical WwdGameReg singleton (g_gameReg)
 #include <Gruntz/ChatBoxOwner.h> // CChatBoxOwner (this->m_2e0; Configure @0x20530)
 #include <Gruntz/Play.h>         // ::CPlay - the REAL class of this TU's CLevelValidator view
                                  // (PositionBridgeToggle @0x0d5b20 is homed onto it below)
-#include <Gruntz/GruntzMgr.h>    // ::CGruntzMgr - CState::m_4's real class (m_modeW/m_modeH);
-                                 // Play.h only forward-declares it. This TU is already MFC.
-#include <Wwd/WwdFile.h>         // CPlaneRender - the canonical plane (tile grid + transform)
+#include <Gruntz/GruntzMgr.h>    // ::CGruntzMgr - the RTTI-true *0x24556c singleton AND
+                                 // CState::m_4 (m_cmdGrid/m_cmdSubMgr/m_tileGrid/m_options)
+#include <Gruntz/UserLogic.h>    // CGameObject + CGameObjAux - the objects being validated
+#include <Gruntz/SpriteFactory.h> // CSpriteFactory + CSpriteListNode - the live-object list
+#include <Gruntz/GameLevel.h>     // CGameLevel - the +0x24 level (image sets @+0x48, plane @+0x5c)
+#include <Gruntz/ImageSets.h>     // CImageSet1 - the tile-attrib class (GetCollisionAt, slot 8)
+#include <Wwd/WwdFile.h>          // CPlaneRender - the canonical plane (tile grid + transform)
 #include <rva.h>
 
 // ---------------------------------------------------------------------------
-// The level tile-logic object iterated by the validator (esi). A CUserLogic-
-// family map object; only the read fields are modeled.
-// ---------------------------------------------------------------------------
-struct GameObjAux7c; // the +0x7c identity sub-object
-
-struct TileLogicObj {
-    TileLogicObj* m_00; // +0x00  (data slot in the list node view)
-    i32 m_key;          // +0x04  object key/index
-    i32 m_flags;        // +0x08  flags (the 0x10000 "validated" bit is OR'd in)
-    char m_pad0c[0x5c - 0x0c];
-    i32 m_worldX; // +0x5c  world x (pixels)
-    i32 m_worldY; // +0x60  world y (pixels)
-    RECT m_64;
-    char m_pad74[0x7c - 0x74];
-    GameObjAux7c* m_7c; // +0x7c  identity sub-object
-    char m_pad80[0x114 - 0x80];
-    i32 m_114;  // +0x114
-    i32 m_118;  // +0x118
-    i32 m_11c;  // +0x11c
-    i32 m_120;  // +0x120
-    i32 m_kind; // +0x124  switch kind / tile kind
-    i32 m_128;  // +0x128
-    i32 m_12c;  // +0x12c
-    char m_pad130[0x134 - 0x130];
-    RECT m_134;    // +0x134
-    RECT m_144;    // +0x144
-    RECT m_154;    // +0x154
-    i32 m_tileCol; // +0x164  tile col
-    i32 m_tileRow; // +0x168  tile row
-};
-
-// The list node is an MFC CPtrList node: pNext@+0x00, pPrev@+0x04, data@+0x08.
-// (Retail iterates via GetNext: obj = pos->data [+8]; pos = pos->pNext [+0].)
-struct TileObjNode {
-    TileObjNode* m_next;     // +0x00  pNext
-    char m_pad04[0x8 - 0x4]; // +0x04  pPrev
-    TileLogicObj* m_data;    // +0x08  data
-};
-struct TileObjList {
-    char m_pad00[0x4];
-    TileObjNode* m_04; // +0x04  head node
-};
-
-// The +0x7c identity sub-object. Retail reads the class identity with TWO loads
-// (`mov eax,[obj+0x7c]; mov eax,[eax+0x10]`) - i.e. m_7c is a pointer whose +0x10
-// field directly holds the per-class identity fn-address the validator compares
-// against (NOT a vtable double-deref). The two trailing rects at +0xf0/+0x100 are
-// copied by value as switch args.
-struct GameObjAux7c {
-    char m_pad00[0x10];
-    void* m_id; // +0x10  per-class identity fn-address (read as a data field)
-    char m_pad14[0xf0 - 0x14];
-    RECT m_f0;  // +0xf0
-    RECT m_100; // +0x100
-};
-
+// WHAT THE VALIDATOR ACTUALLY WALKS (the whole object web, xref-recovered - every
+// former local view here is dissolved onto the real class):
+//
+//   CState::m_c            == CSpriteFactoryHolder   (the resource holder; was `PlayMgr`)
+//     ->m_8                == CSpriteFactory          (was `PlayMgrRenderer`)
+//        ->m_liveObjects   == CSpriteListNode*        (was `TileObjNode`/`StartNode`; the
+//                                                      head of the CPtrList embedded at
+//                                                      factory+0x10, head node @+0x14 - the
+//                                                      SAME list CGruntzMgr::XorLiveObjectFlags
+//                                                      / CTriggerMgr / CPlay already walk)
+//           ->m_sprite     == CGameObject*            (was `TileLogicObj` - every offset the
+//                                                      validator touches (+0x04/+0x08/+0x5c/
+//                                                      +0x60/+0x64/+0x7c/+0x114..+0x12c/
+//                                                      +0x134/+0x144/+0x154/+0x164/+0x168) is
+//                                                      a declared CGameObject member, and the
+//                                                      list's element type says so outright)
+//              ->m_7c      == CGameObjAux*            (was `GameObjAux7c`)
+//                 ->Init   == the +0x10 FN-PTR        (was the `m_id` "identity fn-address":
+//                                                      it IS CGameObjAux::Init, the per-leaf
+//                                                      post-create driver the creating TUs
+//                                                      call as `spr->m_7c->Init(spr)`. The
+//                                                      constants below (0x401799, 0x4017e4,
+//                                                      0x4024a5, ...) are those leaves' Init
+//                                                      thunks - the validator dispatches on
+//                                                      WHICH leaf class built the object.)
+//     ->m_24               == CGameLevel              (was `TileGrid`: its +0x4c is the
+//                                                      m_imageSets CObArray's data pointer
+//                                                      (+0x48 array, data @+0x4c) and its
+//                                                      +0x5c is m_mainPlane)
+//        ->m_imageSets[i]  == CImageSet1              (was `TileClass` + its 8 fabricated
+//                                                      placeholder virtuals: the +0x20 slot-8
+//                                                      virtual IS CImageSet1::GetCollisionAt
+//                                                      (x, y) @0x161380 - "per-pixel
+//                                                      collision-kind query", which is exactly
+//                                                      what the (subX, subY) call asks for)
+//   CState::m_4            == CGruntzMgr              (the *0x24556c singleton itself; its
+//                                                      m_cmdGrid (+0x68) / m_cmdSubMgr (+0x6c)
+//                                                      / m_tileGrid (+0x70, a CGruntzMapMgr :
+//                                                      CMapMgr - rows @+0x08, w @+0x0c, h
+//                                                      @+0x10, i.e. the whole `WwdGameGrid`
+//                                                      view) / m_options[4] (+0x150, stride
+//                                                      0x238 - the `WwdStartPlayer` view) are
+//                                                      all canonical members)
+//
+// NOTE (deferred, not a wall): CSpriteFactoryHolder::m_24 is typed CGameViewport* in
+// GameRegistry.h while CWorldZ::m_24 (the same physical slot of the same object) is typed
+// CGameLevel* in GruntzMgr.h - a known dual-view divergence. The +0x4c/+0x5c reads here
+// only make sense as CGameLevel, so the level is reached with ONE cast at the top of each
+// body; the reconciliation belongs to the 0x24556c/holder identity pass. Likewise
+// CLevelPlane (GameLevel.h) and CPlaneRender (WwdFile.h) are the same object under two
+// names - m_mainPlane is cast to the render facet that owns GetTileHandle.
 // ---------------------------------------------------------------------------
 // The trigger registrar reached through this->m_2e4 (a CTileTriggerSwitchLogic):
 // RegisterSwitchLogic (0x115f60) builds the appropriate switch logic for a tag.
@@ -137,32 +135,17 @@ struct PlayfieldMgr {
     void Bridge1d2f(i32 a, i32 b);                            // 0x508410 (via 0x1d2f)
 };
 
-// The coarse-cell tile grid the pressure-pad stamp reaches via g_gameReg->m_tileGrid
-// (the level-validation facet of the +0x70 board). Reloc-masked DIR32.
-struct WwdGameGrid {
-    char m_pad00[0x8];
-    void** m_08; // +0x08  cell-row base
-    i32 m_0c;    // +0x0c  width
-    i32 m_10;    // +0x10  height
-};
-// The trigger-grid manager (g_gameReg->m_68 = CTriggerMgr): PlaceObject builds and
-// registers a tile object, returning its grid index or -1 on failure. 0x6b6d0,
-// __thiscall, reloc-masked.
-// The command queue (g_gameReg->m_6c = CGruntzCmdMgr): EnqueueSingle broadcasts a
-// single placed-grunt op. 0x23c30, __thiscall, reloc-masked.
-// A per-player start record in the g_gameReg+0x150 array (stride 568 = 0x238); its
-// +0x228 is the cap on start gruntz to place for that player.
-struct WwdStartPlayer {
-    char m_pad00[0x228];
-    i32 m_228; // +0x228  start-grunt cap
-    char m_pad22c[0x238 - 0x22c];
-};
-// The game registry singleton (canonical <Gruntz/WwdGameReg.h>). This TU reaches
-// its level-validation facet: m_68/m_6c downcast to PlaceGridMgr*/StartCmdMgr*,
-// m_tileGrid downcast to WwdGameGrid*, and the per-player start records in the
-// m_options block at +0x150 by raw offset (the established 0x150-region idiom).
+// The game-manager singleton, at its RTTI-true type. The three views this TU used to
+// reach it through are all canonical members now:
+//   the coarse-cell board (`WwdGameGrid`) IS m_tileGrid, a CGruntzMapMgr : CMapMgr whose
+//     row table / width / height sit at exactly the +0x08/+0x0c/+0x10 the view described;
+//   the trigger grid (`PlaceGridMgr`)     IS m_cmdGrid   (CTriggerMgr,   PlaceObject 0x6b6d0);
+//   the command queue (`StartCmdMgr`)     IS m_cmdSubMgr (CGruntzCmdMgr, EnqueueSingle 0x23c30);
+//   the per-player start record (`WwdStartPlayer`, stride 0x238) IS m_options[k]
+//     (GruntzPlayer) - its +0x228 is the start-grunt cap this TU reads (the same field the
+//     battlez roster calls m_comboSel; one field, two readers).
 DATA(0x0024556c)
-extern "C" WwdGameReg* g_gameReg;
+extern "C" CGruntzMgr* g_gameReg;
 
 // The recycled-node free-list head (?g_coordPool.m_freeHead@@3PAXA) and a tile-id constant
 // (DAT_00644c54) the 0x4017e4 case compares against.
@@ -177,57 +160,6 @@ extern i32 g_tileKindMagic;
 // The "Bad <kind> at: x=%d, y=%d" diagnostic format strings ($SG .rdata).
 static char s_BadSwitch[] = "Bad switch at: x=%d, y=%d\n";
 static char s_BadMulti[] = "Bad multi switch at: x=%d, y=%d\n";
-
-// ---------------------------------------------------------------------------
-// The tile grid resolved through this->m_0c->m_08->m_10. Its +0x5c geometry
-// holds the bounds (+0x30/+0x34), shift/stride (+0x8c/+0x90), the row offset
-// table (+0x24) and the cell table (+0x20); +0x4c is the tile-class table whose
-// entries carry the +0x20 "tile type id" virtual.
-// Real polymorphic tile-class entry: the +0x20 "tile type id" is slot 8, a real
-// virtual (8 filler slots precede it). Declared-only; tc->GetTypeId() lowers to the
-// same call [eax+0x20].
-struct TileClass {
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual i32 GetTypeId(i32 a, i32 b); // +0x20 (slot 8)
-};
-// The world tile-grid geometry is the canonical CPlaneRender (<Wwd/WwdFile.h>).
-struct TileGrid {
-    char m_pad00[0x24];
-    char m_pad24[0x4c - 0x24];
-    TileClass** m_4c; // +0x4c
-    char m_pad50[0x5c - 0x50];
-    CPlaneRender* m_5c; // +0x5c
-};
-struct PlayMgrRenderer {
-    char m_pad00[0x10]; // +0x10  the embedded tile-obj list (reached by cast)
-};
-struct PlayMgr {
-    char m_pad00[0x8];
-    PlayMgrRenderer* m_08; // +0x08  render host (tile-obj list embedded at +0x10)
-    char m_pad0c[0x24 - 0xc];
-    TileGrid* m_24; // +0x24  the world tile grid
-};
-
-// The placed-object list node embedded at PlayMgrRenderer+0x10 (head at +0x14). An
-// MFC CPtrList node: pNext@+0, pPrev@+4, data@+8.
-struct StartNode {
-    StartNode* m_next;    // +0x00  pNext
-    char m_pad04[0x4];    // +0x04  pPrev
-    TileLogicObj* m_data; // +0x08  the placed tile/start object
-};
-// The list view overlaid on PlayMgrRenderer+0x10: +0x0 aliases the tile-grid ptr,
-// +0x4 is the placed-object list head.
-struct StartList {
-    void* m_0;         // +0x00 (= renderer+0x10)
-    StartNode* m_head; // +0x04 (= renderer+0x14)
-};
 
 // The "Could not add Grunt..." diagnostic for a failed start placement ($SG .rdata).
 static char s_CouldNotAdd[] = "Could not add Grunt: Player=%d, x=%d, y=%d";
@@ -257,11 +189,20 @@ struct LvBridgePoint; // this+0x3f4  bridge-toggle screen point (defined below)
 // those four sub-object classes with CState::m_c / CPlay::m_guts / CPlay::m_beginMarker is the
 // remaining @identity-TODO here; the OWNER class is no longer in doubt.
 
-// The level tile-id lookup: clamp (x,y) to the grid bounds, shift to tile
-// coords, resolve the tile-class through the row/cell tables, and call its
-// +0x20 type virtual. Returns 0 for an empty/out-of-range cell.
-static inline i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
-    CPlaneRender* g = grid->m_5c;
+// The +0x24 slot of the CState::m_c resource holder IS the CGameLevel (its +0x4c image-set
+// array data pointer and its +0x5c main plane are what this TU reads). GameRegistry.h types
+// that slot CGameViewport* (the render facet's view of the same object) - the ONE place that
+// dual-view divergence is bridged is here, not scattered through the bodies.
+static inline CGameLevel* LevelOf(CSpriteFactoryHolder* holder) {
+    return (CGameLevel*)holder->m_24;
+}
+
+// The level tile-id lookup: clamp (x,y) to the plane bounds, shift to tile coords,
+// resolve the tile's image-set through the plane's cell table, and ask that image set
+// what kind of tile pixel (subX, subY) is (CImageSet1::GetCollisionAt, slot 8 / +0x20).
+// Returns 0 for an empty/out-of-range cell.
+static inline i32 LookupTileType(CGameLevel* level, i32 x, i32 y) {
+    CPlaneRender* g = (CPlaneRender*)level->m_mainPlane; // +0x5c (CLevelPlane == CPlaneRender)
     if (x < 0) {
         x = 0;
     } else if (x >= g->m_wrapW) {
@@ -280,8 +221,11 @@ static inline i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
     if (cell == (i32)0xeeeeeeee || cell == -1) {
         return 0;
     }
-    TileClass* tc = grid->m_4c[cell & 0xffff];
-    return tc->GetTypeId(subX, subY);
+    // +0x4c is m_imageSets' data pointer (the CObArray sits at +0x48). The array holds the
+    // CImageSet1/2/3 variants; all three declare GetCollisionAt at slot 8, so the dispatch
+    // (`call [eax+0x20]`) is the same whichever kind the cell names.
+    CImageSet1* tc = (CImageSet1*)level->m_imageSets.GetAt(cell & 0xffff);
+    return tc->GetCollisionAt(subX, subY);
 }
 
 // ===========================================================================
@@ -303,17 +247,19 @@ static inline i32 LookupTileType(TileGrid* grid, i32 x, i32 y) {
 RVA(0x000d2b20, 0x21f)
 i32 CPlay::PlaceStartGruntz() {
     // CPlay slot aliases (see the fold note above): SAME names, so the body below is unchanged.
-    WwdGameReg* m_gameReg = (WwdGameReg*)m_4;                                // +0x04
-    PlayMgr* m_playMgr = (PlayMgr*)m_c;                                      // +0x0c
     PlayfieldMgr* m_playfieldMgr = (PlayfieldMgr*)m_guts;                    // +0x2dc
     TriggerRegistrar* m_triggerRegistrar = (TriggerRegistrar*)m_beginMarker; // +0x2e4
     CTimer* m_bridgePoint = m_frameMarker;                                   // +0x3f4
-    StartList* list = (StartList*)((char*)m_playMgr->m_08 + 0x10);
+    // Retail lea's the live-object CPtrList embedded at factory+0x10 and null-tests it (a
+    // vacuous guard). CSpriteFactory exposes only that list's HEAD node (m_liveObjects,
+    // +0x14), so the guard addresses the head; folding the real CPtrList into the factory
+    // is a SpriteFactory.h item (see CGruntzMgr::XorLiveObjectFlags, same wall).
+    CSpriteListNode** list = &m_c->m_8->m_liveObjects;
     if (list == 0) {
         return 0;
     }
-    WwdGameReg* reg = m_gameReg;
-    StartNode* node = list->m_head;
+    CGruntzMgr* reg = m_4;
+    CSpriteListNode* node = *list;
     i32 result = 1;
     i32 counter = 0;
     i32 flag14 = 0;
@@ -324,55 +270,55 @@ i32 CPlay::PlaceStartGruntz() {
         return result;
     }
     do {
-        TileLogicObj* obj = node->m_data;
-        StartNode* next = node->m_next;
+        CGameObject* obj = node->m_sprite;
+        CSpriteListNode* next = node->next;
         if (obj != 0) {
-            char* aux = (char*)obj->m_7c;
-            void* who = *(void**)(aux + 0x10);
+            CGameObjAux* aux = obj->m_7c;
+            void* who = (void*)aux->Init; // +0x10: WHICH leaf class built this object
             if (who == (void*)0x4024a5) {
-                i32 idx = ((CTriggerMgr*)reg->m_68)
-                              ->PlaceObject(
-                                  obj->m_kind,
-                                  (obj->m_worldX & ~0x1f) + 0x10,
-                                  (obj->m_worldY & ~0x1f) + 0x10,
-                                  100000,
-                                  flag14,
-                                  obj->m_114,
-                                  obj->m_11c,
-                                  obj->m_120,
-                                  obj->m_118,
-                                  obj->m_12c,
-                                  *(i32*)(aux + 0x2c),
-                                  *(i32*)(aux + 0x30),
-                                  (i32)&obj->m_134
-                              );
+                i32 idx = reg->m_cmdGrid->PlaceObject(
+                    obj->m_124,
+                    (obj->m_screenX & ~0x1f) + 0x10,
+                    (obj->m_screenY & ~0x1f) + 0x10,
+                    100000,
+                    flag14,
+                    obj->m_114,
+                    obj->m_11c,
+                    obj->m_120,
+                    obj->m_118,
+                    obj->m_12c,
+                    aux->m_2c,
+                    aux->m_30,
+                    (i32)&obj->m_extentL
+                );
                 if (idx == -1) {
                     CString s;
                     s.Format(
                         s_CouldNotAdd,
-                        obj->m_kind,
-                        (obj->m_worldX & ~0x1f) + 0x10,
-                        (obj->m_worldY & ~0x1f) + 0x10
+                        obj->m_124,
+                        (obj->m_screenX & ~0x1f) + 0x10,
+                        (obj->m_screenY & ~0x1f) + 0x10
                     );
-                    g_gameReg->LogTileError((const char*)(LPCSTR)s);
+                    g_gameReg->EnterModalUI((const char*)(LPCSTR)s); // 0x8ef10 (was LogTileError)
                     return 0;
                 }
                 obj->m_flags |= 0x10000;
             } else if (g_gameReg->m_134 != 1 && who == (void*)0x4017e4
-                       && obj->m_kind == g_tileKindMagic) {
-                WwdStartPlayer* e = &((WwdStartPlayer*)((char*)g_gameReg + 0x150))[g_tileKindMagic];
-                if (e != 0 && counter < e->m_228) {
-                    ((CGruntzCmdMgr*)reg->m_6c)
-                        ->EnqueueSingle(
-                            result,
-                            (char)obj->m_kind,
-                            0,
-                            0,
-                            (obj->m_worldX & ~0x1f) + 0x10,
-                            (obj->m_worldY & ~0x1f) + 0x10,
-                            0,
-                            0
-                        );
+                       && obj->m_124 == g_tileKindMagic) {
+                // The per-player start record: m_options[k] (+0x150, stride 0x238); +0x228 is
+                // the cap on start gruntz for that player (the roster's m_comboSel field).
+                GruntzPlayer* e = &g_gameReg->m_options[g_tileKindMagic];
+                if (e != 0 && counter < e->m_comboSel) {
+                    reg->m_cmdSubMgr->EnqueueSingle(
+                        result,
+                        (char)obj->m_124,
+                        0,
+                        0,
+                        (obj->m_screenX & ~0x1f) + 0x10,
+                        (obj->m_screenY & ~0x1f) + 0x10,
+                        0,
+                        0
+                    );
                     counter++;
                 }
             }
@@ -388,8 +334,6 @@ i32 CPlay::PlaceStartGruntz() {
 RVA(0x000d2dd0, 0x1de4)
 i32 CPlay::ValidateLevelTiles() {
     // CPlay slot aliases (see the fold note above): SAME names, so the body below is unchanged.
-    WwdGameReg* m_gameReg = (WwdGameReg*)m_4;                                // +0x04
-    PlayMgr* m_playMgr = (PlayMgr*)m_c;                                      // +0x0c
     PlayfieldMgr* m_playfieldMgr = (PlayfieldMgr*)m_guts;                    // +0x2dc
     TriggerRegistrar* m_triggerRegistrar = (TriggerRegistrar*)m_beginMarker; // +0x2e4
     CTimer* m_bridgePoint = m_frameMarker;                                   // +0x3f4
@@ -400,43 +344,45 @@ i32 CPlay::ValidateLevelTiles() {
     counts[2] = 0;
     counts[3] = 0;
 
-    // The tile-object list is embedded at renderer+0x10 (MFC CPtrList: head @+0x4).
-    TileObjList* list = (TileObjList*)((char*)m_playMgr->m_08 + 0x10);
+    // The live-object list (the CPtrList embedded at factory+0x10; head node @+0x14).
+    CSpriteListNode** list = &m_c->m_8->m_liveObjects;
     if (list == 0) {
         return 0;
     }
-    TileObjNode* node = list->m_04;
+    CSpriteListNode* node = *list;
     if (node == 0) {
         return 1;
     }
 
     i32 ok = 1;
     do {
-        TileLogicObj* obj = node->m_data; // GetNext: data @+0x08
-        node = node->m_next;              //          pNext @+0x00
+        CGameObject* obj = node->m_sprite; // GetNext: data @+0x08
+        node = node->next;                 //          pNext @+0x00
         if (obj == 0) {
             continue;
         }
 
-        void* who = obj->m_7c->m_id; // 2-load class identity ([obj+0x7c]->+0x10)
+        // 2-load leaf identity: [obj+0x7c] -> +0x10 == CGameObjAux::Init (the per-leaf
+        // post-create driver fn-ptr). The constants are those leaves' Init thunks.
+        void* who = (void*)obj->m_7c->Init;
 
         if (who == (void*)0x401799) {
-            TileGrid* grid = m_playMgr->m_24; // recomputed per-arm (retail spills it)
-            i32 type = LookupTileType(m_playMgr->m_24, obj->m_worldX, obj->m_worldY);
+            CGameLevel* grid = LevelOf(m_c); // recomputed per-arm (retail spills it)
+            i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
             if (type == 0x21) {
                 // 3x3 neighbour scan around the tile: find an adjacent registered
                 // switch (LookupKind tag 0x16), then re-resolve the tile-class type
                 // at the hit cell (rel index into hit+0xac).
                 void* hit = 0;
-                i32 col = obj->m_tileCol - 1;
+                i32 col = obj->m_164 - 1;
                 i32 colOff = col << 8;
-                i32 row = obj->m_tileRow - 1;
-                while (col < obj->m_tileCol + 2) {
-                    row = obj->m_tileRow - 1;
+                i32 row = obj->m_168 - 1;
+                while (col < obj->m_164 + 2) {
+                    row = obj->m_168 - 1;
                     if (hit != 0) {
                         break;
                     }
-                    while (row < obj->m_tileRow + 2) {
+                    while (row < obj->m_168 + 2) {
                         void* r = m_triggerRegistrar->LookupKind(row + colOff, 0x16);
                         if (r != 0) {
                             hit = r;
@@ -455,17 +401,17 @@ i32 CPlay::ValidateLevelTiles() {
                 if (hit == 0) {
                     return 0;
                 }
-                i32 rel = (obj->m_tileRow - row) * 3 - col + obj->m_tileCol;
+                i32 rel = (obj->m_168 - row) * 3 - col + obj->m_164;
                 i32 tcidx = *(i32*)((char*)hit + rel * 4 + 0xac);
                 if (tcidx == 0) {
                     return 0;
                 }
-                type = grid->m_4c[tcidx]->GetTypeId(0, 0);
+                type = ((CImageSet1*)grid->m_imageSets.GetAt(tcidx))->GetCollisionAt(0, 0);
             }
             if (type == 0x1e || type == 0x1f || type == 0x22 || type == 0x23) {
                 // toy tile: re-resolve the underlying tile-class type through the
                 // trigger registrar's tag-0x1a record (+0x34 = tile-class index).
-                void* r = m_triggerRegistrar->LookupKind(obj->m_key, 0x1a);
+                void* r = m_triggerRegistrar->LookupKind(obj->m_04, 0x1a);
                 if (r == 0) {
                     return 0;
                 }
@@ -473,29 +419,29 @@ i32 CPlay::ValidateLevelTiles() {
                 if (tcidx == 0) {
                     return 0;
                 }
-                type = grid->m_4c[tcidx]->GetTypeId(0, 0);
+                type = ((CImageSet1*)grid->m_imageSets.GetAt(tcidx))->GetCollisionAt(0, 0);
             }
             switch (type - 0x33) {
                 case 4: // 0x37
                 case 5: // 0x38
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
                             3,
-                            obj->m_tileCol,
-                            obj->m_tileRow,
-                            obj->m_key,
-                            obj->m_134,
-                            obj->m_144,
-                            obj->m_154,
-                            obj->m_64,
-                            obj->m_7c->m_f0,
-                            obj->m_7c->m_100,
+                            obj->m_164,
+                            obj->m_168,
+                            obj->m_04,
+                            *(RECT*)&obj->m_extentL,
+                            *(RECT*)&obj->m_areaL,
+                            *(RECT*)&obj->m_154,
+                            *(RECT*)&obj->m_64,
+                            *(RECT*)&obj->m_7c->m_f0,
+                            *(RECT*)&obj->m_7c->m_100,
                             type == 0x38,
                             obj->m_120,
                             0
                         )) {
                         CString s;
-                        s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
-                        g_gameReg->LogTileError((LPCSTR)s);
+                        s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -505,22 +451,22 @@ i32 CPlay::ValidateLevelTiles() {
                 case 9: // 0x3c
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
                             4,
-                            obj->m_tileCol,
-                            obj->m_tileRow,
-                            obj->m_key,
-                            obj->m_134,
-                            obj->m_144,
-                            obj->m_154,
-                            obj->m_64,
-                            obj->m_7c->m_f0,
-                            obj->m_7c->m_100,
+                            obj->m_164,
+                            obj->m_168,
+                            obj->m_04,
+                            *(RECT*)&obj->m_extentL,
+                            *(RECT*)&obj->m_areaL,
+                            *(RECT*)&obj->m_154,
+                            *(RECT*)&obj->m_64,
+                            *(RECT*)&obj->m_7c->m_f0,
+                            *(RECT*)&obj->m_7c->m_100,
                             type == 0x3c,
                             obj->m_120,
                             0
                         )) {
                         CString s;
-                        s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
-                        g_gameReg->LogTileError((LPCSTR)s);
+                        s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -530,22 +476,22 @@ i32 CPlay::ValidateLevelTiles() {
                 case 0xb: // 0x3e
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
                             6,
-                            obj->m_tileCol,
-                            obj->m_tileRow,
-                            obj->m_key,
-                            obj->m_134,
-                            obj->m_144,
-                            obj->m_154,
-                            obj->m_64,
-                            obj->m_7c->m_f0,
-                            obj->m_7c->m_100,
+                            obj->m_164,
+                            obj->m_168,
+                            obj->m_04,
+                            *(RECT*)&obj->m_extentL,
+                            *(RECT*)&obj->m_areaL,
+                            *(RECT*)&obj->m_154,
+                            *(RECT*)&obj->m_64,
+                            *(RECT*)&obj->m_7c->m_f0,
+                            *(RECT*)&obj->m_7c->m_100,
                             type == 0x3e,
                             obj->m_120,
                             0
                         )) {
                         CString s;
-                        s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
-                        g_gameReg->LogTileError((LPCSTR)s);
+                        s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -555,22 +501,22 @@ i32 CPlay::ValidateLevelTiles() {
                 case 0xd: // 0x40
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
                             7,
-                            obj->m_tileCol,
-                            obj->m_tileRow,
-                            obj->m_key,
-                            obj->m_134,
-                            obj->m_144,
-                            obj->m_154,
-                            obj->m_64,
-                            obj->m_7c->m_f0,
-                            obj->m_7c->m_100,
+                            obj->m_164,
+                            obj->m_168,
+                            obj->m_04,
+                            *(RECT*)&obj->m_extentL,
+                            *(RECT*)&obj->m_areaL,
+                            *(RECT*)&obj->m_154,
+                            *(RECT*)&obj->m_64,
+                            *(RECT*)&obj->m_7c->m_f0,
+                            *(RECT*)&obj->m_7c->m_100,
                             type == 0x40,
                             obj->m_120,
                             0
                         )) {
                         CString s;
-                        s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
-                        g_gameReg->LogTileError((LPCSTR)s);
+                        s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -580,22 +526,22 @@ i32 CPlay::ValidateLevelTiles() {
                 case 0xf: // 0x42
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
                             8,
-                            obj->m_tileCol,
-                            obj->m_tileRow,
-                            obj->m_key,
-                            obj->m_134,
-                            obj->m_144,
-                            obj->m_154,
-                            obj->m_64,
-                            obj->m_7c->m_f0,
-                            obj->m_7c->m_100,
+                            obj->m_164,
+                            obj->m_168,
+                            obj->m_04,
+                            *(RECT*)&obj->m_extentL,
+                            *(RECT*)&obj->m_areaL,
+                            *(RECT*)&obj->m_154,
+                            *(RECT*)&obj->m_64,
+                            *(RECT*)&obj->m_7c->m_f0,
+                            *(RECT*)&obj->m_7c->m_100,
                             type == 0x42,
                             obj->m_120,
-                            obj->m_kind
+                            obj->m_124
                         )) {
                         CString s;
-                        s.Format(s_BadSwitch, obj->m_worldX, obj->m_worldY);
-                        g_gameReg->LogTileError((LPCSTR)s);
+                        s.Format(s_BadSwitch, obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -605,22 +551,22 @@ i32 CPlay::ValidateLevelTiles() {
                 case 1: // 0x34
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
                             1,
-                            obj->m_tileCol,
-                            obj->m_tileRow,
-                            obj->m_key,
-                            obj->m_134,
-                            obj->m_144,
-                            obj->m_154,
-                            obj->m_64,
-                            obj->m_7c->m_f0,
-                            obj->m_7c->m_100,
+                            obj->m_164,
+                            obj->m_168,
+                            obj->m_04,
+                            *(RECT*)&obj->m_extentL,
+                            *(RECT*)&obj->m_areaL,
+                            *(RECT*)&obj->m_154,
+                            *(RECT*)&obj->m_64,
+                            *(RECT*)&obj->m_7c->m_f0,
+                            *(RECT*)&obj->m_7c->m_100,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
                             obj->m_120,
                             0
                         )) {
                         CString s;
-                        s.Format(s_BadMulti, obj->m_worldX, obj->m_worldY);
-                        g_gameReg->LogTileError((LPCSTR)s);
+                        s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -630,22 +576,22 @@ i32 CPlay::ValidateLevelTiles() {
                 case 3: // 0x36
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
                             2,
-                            obj->m_tileCol,
-                            obj->m_tileRow,
-                            obj->m_key,
-                            obj->m_134,
-                            obj->m_144,
-                            obj->m_154,
-                            obj->m_64,
-                            obj->m_7c->m_f0,
-                            obj->m_7c->m_100,
+                            obj->m_164,
+                            obj->m_168,
+                            obj->m_04,
+                            *(RECT*)&obj->m_extentL,
+                            *(RECT*)&obj->m_areaL,
+                            *(RECT*)&obj->m_154,
+                            *(RECT*)&obj->m_64,
+                            *(RECT*)&obj->m_7c->m_f0,
+                            *(RECT*)&obj->m_7c->m_100,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
                             obj->m_120,
                             0
                         )) {
                         CString s;
-                        s.Format(s_BadMulti, obj->m_worldX, obj->m_worldY);
-                        g_gameReg->LogTileError((LPCSTR)s);
+                        s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -655,22 +601,22 @@ i32 CPlay::ValidateLevelTiles() {
                 case 7: // 0x3a
                     if (!m_triggerRegistrar->RegisterSwitchLogic(
                             5,
-                            obj->m_tileCol,
-                            obj->m_tileRow,
-                            obj->m_key,
-                            obj->m_134,
-                            obj->m_144,
-                            obj->m_154,
-                            obj->m_64,
-                            obj->m_7c->m_f0,
-                            obj->m_7c->m_100,
+                            obj->m_164,
+                            obj->m_168,
+                            obj->m_04,
+                            *(RECT*)&obj->m_extentL,
+                            *(RECT*)&obj->m_areaL,
+                            *(RECT*)&obj->m_154,
+                            *(RECT*)&obj->m_64,
+                            *(RECT*)&obj->m_7c->m_f0,
+                            *(RECT*)&obj->m_7c->m_100,
                             type == 0x34 || type == 0x36 || type == 0x3a || type == 0x3e,
                             obj->m_120,
                             0
                         )) {
                         CString s;
-                        s.Format(s_BadMulti, obj->m_worldX, obj->m_worldY);
-                        g_gameReg->LogTileError((LPCSTR)s);
+                        s.Format(s_BadMulti, obj->m_screenX, obj->m_screenY);
+                        g_gameReg->EnterModalUI((LPCSTR)s); // 0x8ef10 (was the phantom LogTileError)
                         return 0;
                     }
                     validCount++;
@@ -680,15 +626,15 @@ i32 CPlay::ValidateLevelTiles() {
                     break;
             }
         } else if (who == (void*)0x403bfc) {
-            i32 type = LookupTileType(m_playMgr->m_24, obj->m_worldX, obj->m_worldY);
+            i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
             (void)type;
             obj->m_flags |= 0x10000;
         } else if (who == (void*)0x4037b0) {
-            i32 type = LookupTileType(m_playMgr->m_24, obj->m_worldX, obj->m_worldY);
+            i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
             (void)type;
             obj->m_flags |= 0x10000;
         } else if (who == (void*)0x401b09) {
-            if (m_bridgePoint != 0 && obj->m_kind != 2 && g_gameReg->m_isEasyMode != 0
+            if (m_bridgePoint != 0 && obj->m_124 != 2 && g_gameReg->m_isEasyMode != 0
                 && g_gameReg->m_134 == ok) {
                 i32 a = obj->m_118;
                 i32 b = obj->m_114;
@@ -702,11 +648,11 @@ i32 CPlay::ValidateLevelTiles() {
             }
             obj->m_flags |= 0x10000;
         } else if (who == (void*)0x40288d) {
-            if (obj->m_kind == 0x32) {
+            if (obj->m_124 == 0x32) {
                 m_playfieldMgr->PlacePuddle(obj, 0);
             }
         } else if (who == (void*)0x4017e4) {
-            if (obj->m_kind == g_tileKindMagic) {
+            if (obj->m_124 == g_tileKindMagic) {
                 void** cell = (void**)g_coordPool.m_freeHead;
                 void* slot = 0;
                 if (*cell != 0) {
@@ -714,12 +660,12 @@ i32 CPlay::ValidateLevelTiles() {
                     g_coordPool.m_freeHead = *cell;
                 }
                 if (slot != 0) {
-                    ((i32*)slot)[0] = (obj->m_worldX & ~0x1f) + 0x10;
-                    ((i32*)slot)[1] = (obj->m_worldY & ~0x1f) + 0x10;
+                    ((i32*)slot)[0] = (obj->m_screenX & ~0x1f) + 0x10;
+                    ((i32*)slot)[1] = (obj->m_screenY & ~0x1f) + 0x10;
                 }
             }
         } else if (who == (void*)0x4019bf) {
-            i32 type = LookupTileType(m_playMgr->m_24, obj->m_worldX, obj->m_worldY);
+            i32 type = LookupTileType(LevelOf(m_c), obj->m_screenX, obj->m_screenY);
             (void)type;
             obj->m_flags |= 0x10000;
         } else if (who == (void*)0x402a68) {
@@ -729,8 +675,8 @@ i32 CPlay::ValidateLevelTiles() {
             // of the 3 rows and 3 columns around the object's coarse cell, bounds-
             // check against the registry grid, tally the per-kind counter, and OR
             // a per-kind flag bit (0x100000 << kind) into the grid cell.
-            i32 col = obj->m_worldX >> 5;
-            i32 rowBase = obj->m_worldY >> 5;
+            i32 col = obj->m_screenX >> 5;
+            i32 rowBase = obj->m_screenY >> 5;
             i32 stride = (col << 3) - col; // col*7
             i32 ebp = stride * 4 - 0x1c;
             for (i32 dy = -1; dy < 2; dy++, ebp += 0x1c) {
@@ -739,11 +685,11 @@ i32 CPlay::ValidateLevelTiles() {
                 for (i32 k = 3; k != 0; k--, ofs += 4, row++) {
                     i32 gx = dy + col;
                     i32 gyy = row - 1;
-                    WwdGameGrid* gg = (WwdGameGrid*)g_gameReg->m_tileGrid;
-                    if ((u32)gx >= (u32)gg->m_0c || (u32)gyy >= (u32)gg->m_10) {
+                    CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
+                    if ((u32)gx >= gg->m_c || (u32)gyy >= gg->m_10) {
                         continue;
                     }
-                    i32 kind = obj->m_kind;
+                    i32 kind = obj->m_124;
                     i32 bit;
                     if ((u32)kind > 3) {
                         bit = 0; // fall through with last ebx (matches retail)
@@ -764,19 +710,19 @@ i32 CPlay::ValidateLevelTiles() {
                         }
                     }
                     counts[kind]++;
-                    gg = (WwdGameGrid*)g_gameReg->m_tileGrid;
-                    if ((u32)gx >= (u32)gg->m_0c || (u32)gyy >= (u32)gg->m_10) {
+                    gg = g_gameReg->m_tileGrid;
+                    if ((u32)gx >= gg->m_c || (u32)gyy >= gg->m_10) {
                         continue;
                     }
-                    i32* cellRow = (i32*)((char*)gg->m_08[0] + ofs);
+                    i32* cellRow = (i32*)((char*)gg->m_8[0] + ofs);
                     *(i32*)((char*)cellRow + ebp) |= bit;
                 }
             }
         } else if (who == (void*)0x40182a) {
-            WwdGameGrid* gg = (WwdGameGrid*)g_gameReg->m_tileGrid;
-            i32 cy = obj->m_worldX >> 5;
-            i32 cx = obj->m_worldY >> 5;
-            if ((u32)cy < (u32)gg->m_0c && (u32)cx < (u32)gg->m_10) {
+            CGruntzMapMgr* gg = g_gameReg->m_tileGrid;
+            i32 cy = obj->m_screenX >> 5;
+            i32 cx = obj->m_screenY >> 5;
+            if ((u32)cy < gg->m_c && (u32)cx < gg->m_10) {
                 // poke the cell
             }
         } else if (who == (void*)0x401f0a) {
@@ -793,24 +739,10 @@ i32 CPlay::ValidateLevelTiles() {
 }
 
 // ===========================================================================
-// The world/level object (this->m_4): the bridge-toggle reads its viewport-clamp
-// limits (+0x8c/+0x90) and, through the per-frame timeline (+0x68), the active
-// goal object (+0x23c). Modeled locally (offsets only).
+// (The LvWorld / LvTimeline / LvGoal views are GONE - dead scaffolding. The body below
+// already walks the real classes: LvWorld WAS ::CGruntzMgr (+0x8c/+0x90 = m_modeW/m_modeH,
+// +0x68 = m_cmdGrid), LvTimeline WAS ::CTriggerMgr and LvGoal WAS ::CTmGoal.)
 // ---------------------------------------------------------------------------
-struct LvWorld {
-    char m_pad00[0x68];
-    struct LvTimeline {
-        void GoalTail(); // 0x... (thiscall, no arg)  reloc-masked ILT thunk
-        char m_pad00[0x23c];
-        struct LvGoal {
-            char m_pad00[0x8];
-            i32 m_8; // +0x8  flags (the 0x10000 "released" bit)
-        }* m_23c;    // +0x23c  active goal object
-    }* m_68;         // +0x68
-    char m_pad6c[0x8c - 0x6c];
-    i32 m_8c; // +0x8c  viewport-clamp horizontal limit
-    i32 m_90; // +0x90  viewport-clamp vertical limit
-};
 // The this->m_2e0 sub-object is the REAL CChatBoxOwner (<Gruntz/ChatBoxOwner.h>): the
 // three branch-calls are CChatBoxOwner::Configure(mode) @0x20530 (thunk 0x171c), NOT a
 // recursive PositionBridgeToggle - the old `((CLevelValidator*)m_2e0)->Position...`
@@ -901,22 +833,7 @@ done:
     return 1;
 }
 
-SIZE_UNKNOWN(GameObjAux7c);
-SIZE_UNKNOWN(LvBridgePoint);
-SIZE_UNKNOWN(LvBridgeUi);
-SIZE_UNKNOWN(LvWorld);
-SIZE_UNKNOWN(PlayMgr);
-SIZE_UNKNOWN(PlayMgrRenderer);
 SIZE_UNKNOWN(PlayfieldMgr);
-SIZE_UNKNOWN(StartList);
-SIZE_UNKNOWN(StartNode);
-SIZE_UNKNOWN(TileClass);
-SIZE_UNKNOWN(TileGrid);
-SIZE_UNKNOWN(TileLogicObj);
-SIZE_UNKNOWN(TileObjList);
-SIZE_UNKNOWN(TileObjNode);
 SIZE_UNKNOWN(TriggerRegistrar);
-SIZE_UNKNOWN(WwdGameGrid);
-SIZE_UNKNOWN(WwdStartPlayer);
 
 // --- vtable catalog ---

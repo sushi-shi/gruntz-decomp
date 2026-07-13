@@ -362,9 +362,22 @@ struct CGameObjAux {
                          //         pumps, a bute-tree animset node ptr in StaticHazard
                          //         (a genuine int|ptr union - no union per the toolchain,
                          //         so kept void*; the int uses reinterpret at the site)
-    char m_pad20[0xbc - 0x20];
+    char m_pad20[0x2c - 0x20];
+    // +0x2c/+0x30: two config words the level-load validator forwards to the trigger
+    // grid's PlaceObject (CPlay::PlaceStartGruntz, LevelTileValidation.cpp).
+    i32 m_2c; // +0x2c
+    i32 m_30; // +0x30
+    char m_pad34[0xbc - 0x34];
     i32 m_bc; // +0xbc  per-tile time (teleporter reads the bound object's clock here)
-    char m_padc0[0x130 - 0xc0];
+    char m_padc0[0xf0 - 0xc0];
+    // +0xf0/+0x100: two 4-dword quads (L/T/R/B rects) the tile-switch registrar takes BY
+    // VALUE - CPlay::ValidateLevelTiles pushes both, 16 bytes each, into every
+    // RegisterSwitchLogic call. (Named as the raw dwords: the members either side are
+    // plain ints, so the by-value push site overlays them as a RECT - the sanctioned
+    // int-quad-as-struct read, not a retype of the class.)
+    i32 m_f0, m_f4, m_f8, m_fc;     // +0xf0
+    i32 m_100, m_104, m_108, m_10c; // +0x100
+    char m_pad110[0x130 - 0x110];
     i32 m_130; // +0x130
 };
 
