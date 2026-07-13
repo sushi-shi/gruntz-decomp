@@ -1132,7 +1132,7 @@ void BlitHost::Show(i32 arg) {
     RECT src = *(RECT*)(m_c->m_24 + 0x10);
     RECT dst;
     CopyRect(&dst, &src);
-    m_4->m_5c->winapi_022360_DrawTextA_SelectObject_SetTextColor(8, arg, (i32)&dst, 0x10);
+    m_4->m_5c->DrawTextLines(8, (HDC)arg, &dst, 0x10);
 }
 
 // Class-metadata annotations (EOF-hosted).

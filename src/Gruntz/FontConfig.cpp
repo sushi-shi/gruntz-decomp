@@ -548,15 +548,146 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
     return 1;
 }
 
+// item->type bit flags (the two DrawTextLines reads).
+typedef enum FontItemFlag {
+    FONTITEM_COLORED = 0x10, // item->data is a TextColorId palette index
+    FONTITEM_SHADOW  = 0x20, // stroke a 1px black drop shadow first
+} FontItemFlag;
+
+// The type&0x10 text palette: item->data indexes it. Retail's 0x00422654 jump
+// table maps these 17 ids to the COLORREFs below; id 7 / out-of-range -> black.
+typedef enum TextColorId {
+    TEXTCOLOR_ORANGE  = 0,  TEXTCOLOR_GREEN   = 1,  TEXTCOLOR_BLUE   = 2,
+    TEXTCOLOR_RED     = 3,  TEXTCOLOR_PURPLE  = 4,  TEXTCOLOR_YELLOW = 5,
+    TEXTCOLOR_ROSE    = 6,  TEXTCOLOR_BLACK   = 7,  TEXTCOLOR_NAVY   = 8,
+    TEXTCOLOR_DKGREEN = 9,  TEXTCOLOR_TEAL    = 10, TEXTCOLOR_MAROON = 11,
+    TEXTCOLOR_MAGENTA = 12, TEXTCOLOR_OLIVE   = 13, TEXTCOLOR_GRAY   = 14,
+    TEXTCOLOR_CYAN    = 15, TEXTCOLOR_WHITE   = 16,
+} TextColorId;
+
+// The COLORREF (0x00BBGGRR) each TextColorId strokes glyphs in.
+typedef enum TextColorRef {
+    TCLR_ORANGE  = 0x0080ff, TCLR_GREEN  = 0x00ff00, TCLR_BLUE    = 0xff0000,
+    TCLR_RED     = 0x0000ff, TCLR_PURPLE = 0x800080, TCLR_YELLOW  = 0x00ffff,
+    TCLR_ROSE    = 0x8000ff, TCLR_BLACK  = 0x000000, TCLR_NAVY    = 0x800000,
+    TCLR_DKGREEN = 0x008000, TCLR_TEAL   = 0x808000, TCLR_MAROON  = 0x000080,
+    TCLR_MAGENTA = 0xff00ff, TCLR_OLIVE  = 0x008080, TCLR_GRAY    = 0x808080,
+    TCLR_CYAN    = 0xffff00, TCLR_WHITE  = 0xffffff,
+} TextColorRef;
+
 // -------------------------------------------------------------------------
-// Engine-label backlog stub (owned by this class here).
+// Draw the list's items as `count` stacked text lines into hdc. Trim the list
+// to `count` (RemoveHead + delete), then per line: optional 1px black drop
+// shadow (type&0x20), a palette color when type&0x10 (else white), a DT_CALCRECT
+// measure into `calc`, the real DrawTextA, then advance `cur.top` to the measured
+// bottom so the next line stacks below. Text color is reset to white each line.
 // -------------------------------------------------------------------------
-// @confidence: low
-// @source: winapi:DrawTextA;SelectObject;SetTextColor
-// @stub
+// @early-stop
+// Complete, correct reconstruction (0% stub -> 78% fuzzy). Body/control-flow align.
+// Residual is codegen shape, not logic: (1) the GDI calls bind __imp__{DrawTextA,
+// SelectObject,SetTextColor} while retail calls through the game's own fn-ptr
+// globals g_p*@m4 (0x6c454c/0x6c3ec4/0x6c3eb4) - the import-linking plateau the
+// campaign is resolving globally (see recent link(imports) commits); (2) retail
+// sinks the color `push` into each switch arm, cl here stores to `color` and pushes
+// once at the merge; (3) cl DSE'd the dead pre-loop `work=*rect` copy retail keeps;
+// (4) the min-branch is emitted with inverted sense. All logically equivalent.
 RVA(0x00022360, 0x2f4)
-i32 CFontConfig::winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32) {
-    return 0;
+i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
+    if (hdc == 0) {
+        return 0;
+    }
+    if (count <= 0) {
+        return 0;
+    }
+    if (GetCount() <= 0) {
+        return 0;
+    }
+    while (GetCount() > count) {
+        FontItem* dead = (FontItem*)RemoveHead();
+        if (dead != 0) {
+            dead->name.Empty();
+            delete dead;
+        }
+    }
+    i32 n = (count >= GetCount()) ? GetCount() : count;
+    if (n <= 0) {
+        return 0;
+    }
+    RECT cur;
+    RECT work;
+    RECT calc;
+    cur.left = rect->left;
+    cur.top = rect->top;
+    cur.right = rect->right;
+    cur.bottom = rect->bottom;
+    work.left = rect->left;
+    work.top = rect->top;
+    work.right = rect->right;
+    work.bottom = rect->bottom;
+    for (i32 i = 0; i < n; i++) {
+        HGDIOBJ savedFont = 0;
+        if (m_arialFont) {
+            savedFont = SelectObject(hdc, m_arialFont);
+        }
+        FontItem* item = (FontItem*)GetAt(FindIndex(i));
+        if (item != 0) {
+            if (item->type & FONTITEM_SHADOW) {
+                SetTextColor(hdc, TCLR_BLACK);
+                work.left = cur.left + 1;
+                work.right = cur.right + 1;
+                work.top = cur.top + 1;
+                work.bottom = cur.bottom + 1;
+                DrawTextA(hdc, item->name, strlen(item->name), &work, format);
+            }
+            COLORREF color;
+            if (item->type & FONTITEM_COLORED) {
+                switch (item->data) {
+                    case TEXTCOLOR_NAVY:    color = TCLR_NAVY;    break;
+                    case TEXTCOLOR_DKGREEN: color = TCLR_DKGREEN; break;
+                    case TEXTCOLOR_TEAL:    color = TCLR_TEAL;    break;
+                    case TEXTCOLOR_MAROON:  color = TCLR_MAROON;  break;
+                    case TEXTCOLOR_PURPLE:  color = TCLR_PURPLE;  break;
+                    case TEXTCOLOR_OLIVE:   color = TCLR_OLIVE;   break;
+                    case TEXTCOLOR_GRAY:    color = TCLR_GRAY;    break;
+                    case TEXTCOLOR_BLUE:    color = TCLR_BLUE;    break;
+                    case TEXTCOLOR_GREEN:   color = TCLR_GREEN;   break;
+                    case TEXTCOLOR_CYAN:    color = TCLR_CYAN;    break;
+                    case TEXTCOLOR_RED:     color = TCLR_RED;     break;
+                    case TEXTCOLOR_MAGENTA: color = TCLR_MAGENTA; break;
+                    case TEXTCOLOR_YELLOW:  color = TCLR_YELLOW;  break;
+                    case TEXTCOLOR_WHITE:   color = TCLR_WHITE;   break;
+                    case TEXTCOLOR_ORANGE:  color = TCLR_ORANGE;  break;
+                    case TEXTCOLOR_ROSE:    color = TCLR_ROSE;    break;
+                    default:                color = TCLR_BLACK;   break;
+                }
+            } else {
+                color = TCLR_WHITE;
+            }
+            SetTextColor(hdc, color);
+            calc.left = cur.left;
+            calc.right = cur.right;
+            calc.bottom = cur.bottom;
+            calc.top = cur.top;
+            DrawTextA(hdc, item->name, strlen(item->name), &calc, format | DT_CALCRECT);
+            DrawTextA(hdc, item->name, strlen(item->name), &cur, format);
+            i32 measuredBottom = calc.bottom;
+            i32 measuredLeft = calc.left;
+            i32 rr = rect->right;
+            i32 rb = rect->bottom;
+            calc.top = measuredBottom;
+            calc.bottom = rb;
+            calc.right = rr;
+            cur.left = measuredLeft;
+            cur.top = measuredBottom;
+            cur.right = rr;
+            cur.bottom = rb;
+            SetTextColor(hdc, TCLR_WHITE);
+        }
+        if (savedFont) {
+            SelectObject(hdc, savedFont);
+        }
+    }
+    return 1;
 }
 
 // -------------------------------------------------------------------------

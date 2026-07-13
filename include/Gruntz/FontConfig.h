@@ -24,7 +24,12 @@ public:
     CString GetInputText(); // 0x00020ef0 (def: src/Gruntz/ChatBoxOwner.cpp)
     void EndInput();
     virtual ~CFontConfig() OVERRIDE;
-    i32 winapi_022360_DrawTextA_SelectObject_SetTextColor(i32, i32, i32, i32);
+    // 0x00022360: draw up to `count` list items as stacked text lines into hdc.
+    // Trims the list to `count` (RemoveHead), then per line: optional 1px black
+    // shadow (type&0x20), a color from the type&0x10 palette switch (else white),
+    // a DT_CALCRECT measure, the real draw, and advances the rect down by the
+    // measured height. Args proven by the SaveGame caller: (8, hdc, &rect, 0x10).
+    i32 DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format); // 0x00022360
 
     // The GDI text/edit-control renderers, re-homed here from the FontConfig.cpp
     // `m4::DrawHost` / `m4::PwdHost` / `m4::TextHost` views (2026-07-13). The three
