@@ -67,7 +67,7 @@ public:
 // 0x1615a0 - CDDrawWorkerHost(a1,a2,a3): the /GX EH ctor. cl inlines the
 // CLoadable base ctor (vptr stamp -- reloc-masks the retail intermediate
 // g_loadableVtbl 0x5efc30 -- then m_04=a2/m_08=a3/m_0c=a1), constructs the
-// +0x9c CWorkerObArray member (0x1b55e9; its destructible-member trylevel supplies
+// +0x9c ::CObArray member (0x1b55e9; its destructible-member trylevel supplies
 // the EH frame), stamps the own vftable (0x5f0270), then arms the scalar fields
 // (buffers/worker = 0, m_18/m_1c = 1.0f, m_50 = -1) and zero-fills the +0xf4 pool
 // (25 dwords) with m_pool[0] = 100. Byte-exact (100%): the retail intermediate base
@@ -80,7 +80,7 @@ CDDrawWorkerHost::CDDrawWorkerHost(i32 owner, i32 field04, i32 field08) {
     m_04 = field04;
     m_08 = field08;
     m_0c = owner; // (merged CLoadable ctor)
-    // m_obArray (CWorkerObArray) default-constructed here (0x1b55e9).
+    // m_obArray (::CObArray) default-constructed here (0x1b55e9).
     m_buffer0 = 0;
     m_buffer1 = 0;
     m_spatialWorker = 0;

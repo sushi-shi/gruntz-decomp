@@ -42,30 +42,11 @@ struct CWorkerElement {
     virtual i32 Query34(i32 a, i32 b); // +0x34  slot 13 (range-query predicate)
 };
 
-// The owned-pointer array embedded at +0x10 (engine CObArray; vtbl 0x5ed494).
-// m_pData@+0x04 (= node+0x14), m_nSize@+0x08 (= node+0x18). Real member destructor
-// calls the reloc-masked engine ~CObArray (0x1b561c) so the /GX member-teardown
-// trylevel falls out (eh-dtor-model-members-as-destructible).
-struct CWorkerObArray {
-    char _vft0[4];            // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    CWorkerElement** m_pData; // +0x04
-    i32 m_nSize;              // +0x08
-    i32 m_nMaxSize;           // +0x0c
-    i32 m_nGrowBy;            // +0x10
-    CWorkerObArray();         // 0x1b55e9 CObArray default ctor (reloc-masked rel32 callee)
-    void Dtor_1b561c();       // ~CObArray (reloc-masked rel32 callee)
-    ~CWorkerObArray() {
-        Dtor_1b561c();
-    }
-    // The array is a CDWordArray under this reduced view (elements are CWorkerElement*
-    // stored as DWORDs); SetSize @0x1b5653 (RemoveAll = SetSize(0,-1)) and SetAtGrow
-    // @0x1b5822 are the real CDWordArray library bodies. WwdGameObject reaches them by
-    // casting `&m_items` to CDWordArray* so the reloc binds to the NAFXCW symbol; the
-    // legacy declared-only shims below stay for the other includers (levelplane) that
-    // still call through the view (their reloc-fidelity is homed in their own lane).
-    void SetSize(i32 newSize, i32 growBy);    // -> cast to CDWordArray to bind (0x1b5653)
-    void SetAtGrow(i32 index, void* element); // -> cast to CDWordArray to bind (0x1b5822)
-};
+// (CWorkerObArray is GONE: the +0x10 owned-pointer array IS MFC ::CObArray.  PROVEN from
+//  the binary - its ctor 0x1b55e9 stamps vtable 0x1ed494, whose MFC CRuntimeClass names it
+//  "CObArray".  The old view reached SetSize 0x1b5653 / SetAtGrow 0x1b5822 by casting to
+//  CDWordArray*, which bound those relocs to the WRONG library symbol - CDWordArray lives
+//  at [0x1b4b43, 0x1b4f0b), while both of those addresses are in the CObArray band.)
 
 // The grand-base (CObject-like) dtor vtable, restamped manually by CWwdSpatialMgr's
 // teardown (CDDrawWorkerHost.h). Same datum as ??_7CObject @0x5e8cb4.
@@ -117,7 +98,7 @@ public:
     void DeleteAll(); // 0x151eb0  delete every owned element, RemoveAll, seed sentinels
     void AddFrameAt_1521c0(void* elem, i32 index); // 0x1521c0  SetAtGrow + widen [m_64,m_68]
 
-    CWorkerObArray m_items; // +0x10  owned-pointer array (m_pData@+0x14, m_nSize@+0x18)
+    ::CObArray m_items; // +0x10  owned-pointer array (0x14: m_pData@+0x14, m_nSize@+0x18)
     char m_key[0x40];       // +0x24  registry key buffer (SetKey_155810 strncpy's it,
                             //        NUL @+0x63; CDDrawWorkerRegistry removes by it)
     i32 m_64;               // +0x64  cached-index sentinel (DeleteAll seeds 99999)

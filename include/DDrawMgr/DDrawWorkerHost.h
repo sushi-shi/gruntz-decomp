@@ -3,7 +3,8 @@
 // CDDrawWorker it derives from the CLoadable grand-base (m_04/m_08/m_0c
 // reset on teardown, then the grand-base dtor vtable g_wapObjectDtorVtbl
 // @0x5e8cb4 restored). It owns two raw buffers (+0x20/+0x24, RezFree'd), a
-// CByteArray (+0x9c, ~ via 0x1b561c, modeled as CWorkerObArray), and a
+// CObArray (+0x9c, ~ via 0x1b561c - 0x1b561c is ~CObArray, NOT ~CByteArray: that was a
+// FID AMBIG mislabel; the ctor 0x1b55e9 stamps the vtable CRuntimeClass-named CObArray), and a
 // CWwdSpatialMgr worker subobject (+0xb0). Only the offsets + emitted bytes are
 // load-bearing; names are placeholders.
 #ifndef GRUNTZ_CDDRAWWORKERHOST_H
@@ -11,7 +12,7 @@
 
 #include <Ints.h>
 #include <Wap32/Object.h>
-#include <DDrawMgr/DDrawWorker.h> // CWorkerObArray, CLoadable
+#include <DDrawMgr/DDrawWorker.h> // CLoadable (m_obArray is the real MFC ::CObArray)
 
 // The spatial-grid worker subobject at +0xb0 is a CWwdSpatialMgr (its real class,
 // defined in src/Gruntz/WwdSpatialMgr.cpp - the same object CImageSet3 owns at +0xb0).
@@ -52,7 +53,7 @@ public:
     char m_pad28[0x50 - 0x28];       // +0x28..+0x4f
     i32 m_50;                        // +0x50  (=-1)
     char m_pad54[0x9c - 0x54];       // +0x54..+0x9b
-    CWorkerObArray m_obArray;        // +0x9c  owned-pointer array (ctor 0x1b55e9 / ~ 0x1b561c)
+    ::CObArray m_obArray;            // +0x9c  owned-pointer array (ctor 0x1b55e9 / ~ 0x1b561c)
     CWwdSpatialMgr* m_spatialWorker; // +0xb0  spatial-grid worker subobject
     char m_padB4[0xf4 - 0xb4];       // +0xb4..+0xf3
     i32 m_pool[0x19];                // +0xf4..+0x157  (25 dwords; memset 0 then m_pool[0]=100)

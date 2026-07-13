@@ -1256,13 +1256,13 @@ void AnimWorkerObj::Clear() {
 // ===========================================================================
 RVA(0x00151eb0, 0x43)
 void CDDrawWorker::DeleteAll() {
-    for (i32 i = 0; i < m_items.m_nSize; i++) {
-        CWorkerElement* el = m_items.m_pData[i];
+    for (i32 i = 0; i < m_items.GetSize(); i++) {
+        CWorkerElement* el = (CWorkerElement*)m_items.GetAt(i);
         if (el != 0) {
             el->Delete(1);
         }
     }
-    ((CObArray*)&m_items)->SetSize(0, -1); // CObArray::SetSize @0x1b5653 - the m_items
+    m_items.SetSize(0, -1); // CObArray::SetSize @0x1b5653 - the m_items
     // vtable (0x1ed494) CRuntimeClass-names it CObArray; the old (CDWordArray*) cast bound
     // this reloc to the WRONG library symbol (CDWordArray lives at [0x1b4b43,0x1b4f0b)).
     m_64 = 99999;
@@ -1408,7 +1408,7 @@ CImage* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 // ===========================================================================
 RVA(0x001521c0, 0x2b)
 void CDDrawWorker::AddFrameAt_1521c0(void* elem, i32 index) {
-    ((CObArray*)&m_items)->SetAtGrow(index, (CObject*)elem); // CObArray::SetAtGrow @0x1b5822
+    m_items.SetAtGrow(index, (CObject*)elem); // CObArray::SetAtGrow @0x1b5822
     if (index < m_64) {
         m_64 = index;
     }
@@ -1473,14 +1473,14 @@ i32 CDDrawWorker::ValidateFramesFromSymTab(CSymTab* tab) {
     i32 matched = 0;
     i32 liveFrames;
     liveFrames = 0;
-    i32 n = m_items.m_nSize;
+    i32 n = m_items.GetSize();
     if (n > 0) {
         i32 cnt;
         cnt = 0;
         for (i32 i = 0; i < n; i++) {
             CWorkerElement* el;
             if (i >= m_64 && i <= m_68) {
-                el = m_items.m_pData[i];
+                el = (CWorkerElement*)m_items.GetAt(i);
             } else {
                 el = 0;
             }
@@ -1525,7 +1525,7 @@ RVA(0x001523b0, 0x3b)
 i32 CDDrawWorker::Slot40_1523b0(i32 rec, i32 n, i32 flag) {
     CWorkerElement* el;
     if (n >= m_64 && n <= m_68) {
-        el = m_items.m_pData[n];
+        el = (CWorkerElement*)m_items.GetAt(n);
     } else {
         el = 0;
     }
@@ -1674,5 +1674,4 @@ SIZE_UNKNOWN(WwdMgrSub10);
 SIZE_UNKNOWN(WwdSnapshot);
 SIZE_UNKNOWN(CObject);
 SIZE_UNKNOWN(CDDrawWorker);
-SIZE_UNKNOWN(CWorkerObArray);
 SIZE_UNKNOWN(CWorkerElement);

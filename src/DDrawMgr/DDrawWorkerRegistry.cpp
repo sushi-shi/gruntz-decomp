@@ -228,7 +228,7 @@ i32 CDDrawWorkerRegistry::InsertWorkerKey(CSymTab* dir, const char* sub, const c
             return 0;
         }
         w->BuildFramesFromSymTab(dir);
-        if (w->m_items.m_nSize == 0) {
+        if (w->m_items.GetSize() == 0) {
             ((CWorkerVtableView*)this)->Vfunc54(sub);
         } else {
             ++count;
@@ -277,7 +277,7 @@ i32 CDDrawWorkerRegistry::LookupWorkerKey(CSymTab* dir, const char* sub, const c
                 operator delete(buf);
                 return -1;
             }
-            if (w->m_items.m_nSize > 0) {
+            if (w->m_items.GetSize() > 0) {
                 ++count;
             }
         }
@@ -456,7 +456,7 @@ i32 CDDrawWorker::GetClassId() {
 RVA(0x001557a0, 0x68)
 CDDrawWorker::~CDDrawWorker() {
     DeleteAll(); // retail's devirtualized slot-7 call == CDDrawWorker::DeleteAll (0x151eb0)
-    // m_items.~CWorkerObArray() (trylevel 0) + ~CLoadable() (field resets +
+    // m_items.~::CObArray() (trylevel 0) + ~CLoadable() (field resets +
     // grand-base vtable stamp) fold here.
 }
 
