@@ -25,7 +25,6 @@
 #include <Gruntz/ResMgr.h>    // canonical CImageRegistry (the +0x10 image registrar)
 #include <Gruntz/GameMode.h>  // the REAL owner: CBootyState (0x18830 IS its vtable slot 1)
 #include <Gruntz/GruntzMgr.h> // CState::m_4 is CGruntzMgr (RestoreVideoMode @0x8ddd0)
-class DirNode;
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 class CDDrawSubMgrPages {
 public:
@@ -143,14 +142,14 @@ i32 CBootyState::Vfunc1(i32 a1, i32 a2, i32 a3) {
         if (!soundz) {
             goto fail;
         }
-        ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)soundz, "BOOTY", "_");
+        ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((CSymTab*)soundz, "BOOTY", "_");
 
         void* wand = m_gruntzBank->ResolvePath("SOUNDZ_WANDGRUNT");
         if (!wand) {
             goto fail;
         }
         ((CDDrawSubMgrLeafScan*)m_c->m_28)
-            ->ScanTree_157ee0((DirNode*)wand, "GRUNTZ_WANDGRUNT", "_");
+            ->ScanTree_157ee0((CSymTab*)wand, "GRUNTZ_WANDGRUNT", "_");
 
         void* imagez = SymTab2c()->FindSub("IMAGEZ");
         if (!imagez) {

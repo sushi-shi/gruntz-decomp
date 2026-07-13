@@ -14,6 +14,22 @@
 #include <Ints.h>
 #include <rva.h>
 
+// The parse-source entry format tag: the first dword of the keyed-store entry (what
+// GetEntryTag() returns) - a packed 3-char fourcc spelled LOW BYTE FIRST, so the
+// literal is the file extension reversed ("VAW" -> .WAV). Only the arms proven by a
+// live compare in the tree are listed; do not extend by guessing.
+//
+// Values only: GetEntryTag()'s return type stays i32, so its mangled name - and the
+// RVA(0x00139800) binding - is untouched. Enumerators lower to the same immediates.
+//
+// NOTE: CImage.cpp carries a sibling `ImageFormatTag` (IMGTAG_PMB/XCP/DIR/DIP) over the
+// SAME GetEntryTag() dword - the image arms of this one family. The two want merging
+// into this enum; left alone here only to avoid churning a file another lane owns.
+typedef enum ParseEntryTag {
+    PARSETAG_VAW = 0x574156, // "VAW" -> .WAV  sound entry (CDDrawSubMgrLeafScan::ScanTree gate)
+    PARSETAG_INA = 0x414e49, // "INA" -> .ANI  animation entry (the sibling Leaf/SurfacePair gate)
+} ParseEntryTag;
+
 // The +0x10 mapped-source object: m_baseOffset is its base file offset, m_mapping the
 // live mapping pointer (0 when not mapped). External shape, accessed by offset.
 struct ParseMappedSource {

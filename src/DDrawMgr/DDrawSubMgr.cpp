@@ -312,22 +312,17 @@ inline LeafElementObj::LeafElementObj(i32 count, i32 handle) {
 }
 
 // ----- The recursive directory walker (ScanTree_157ee0) -----
-// The tree node is recursive: each subdir returned by FirstSubdir is itself a tree
-// the walker recurses into. m_name (+0x00) is the entry name; GetTag (0x139800)
-// reads the type tag (0x574156 == 'WAV' is the asset gate); the subdir/file
-// iterators are __thiscall externals. All reloc-masked.
-class DirNode {
-public:
-    // FirstSub @0x13a260 IS CSymTab::FirstSub; cast at each call.
-    // NextSubdir @0x13a280 IS CSymTab::NextSub; cast at each call.
-    // FirstFile @0x13a2b0 IS CSymTab::FirstSym; cast at each call.
-    // NextFile @0x13a2d0 IS CSymTab::NextSym; cast at each call.
-    // FirstEntry @0x13a2f0 IS CSymTab::NextSym2; cast at each call.
-    // NextEntry @0x13a310 IS CSymTab::NextSym3; cast at each call.
-    // GetTag @0x139800 IS CParseSource::GetEntryTag; cast at each call.
-
-    const char* m_name; // +0x00
-};
+// The former `DirNode` view is DISSOLVED (2026-07-13). Its own comment block already
+// named every method it "declared" as a CSymTab method, and the body cast `(CSymTab*)
+// tree` at all six call sites - the view was a shape nobody had connected to its owner.
+// It also CONFLATED two classes at one name:
+//   - the scope nodes (tree / the FirstSub-NextSub subdir chain) are Bute CSymTab
+//     (<Bute/SymTab.h>): m_name @+0x00, and each subdir is recursed into AS a tree.
+//   - the leaf records (the NextSym2/NextSym3 chain) are CParseSource
+//     (<Gruntz/ParseSource.h>): m_name @+0x00 AND GetEntryTag @0x139800 (the 'WAV'
+//     tag gate) - and NextSym3 advances via the node at rec+0x1c, which is exactly
+//     CParseSource::m_node1c. That +0x1c node pins the leaf type independently.
+// Both are real, already-modeled classes; the walker now uses them directly.
 // The buffer freed at the walker's tail (::operator delete, ??3 @0x1b9b82).
 // Global operator new/delete (engine NAFXCW, operator_new @0x1b9b46); external/
 // no-body. `delete e` on the polymorphic element routes through operator delete.
@@ -337,9 +332,10 @@ void operator delete(void* p);
 // The canonical CDDrawSubMgrLeafScan + its LeafScanBase grand-base now live in the
 // shared <DDrawMgr/DDrawSubMgrLeafScan.h> (included above): the class def is the
 // single-source union of this TU's method set and the sibling CDDrawSubMgrLeaf TU's
-// ??_G/IsReady/ClearMap. The body-only dep types (LeafElementObj / DirNode /
-// LeafScanValue / LeafScanSoundArg) are forward-declared in the header and fully
-// defined above so the method bodies below can dereference them.
+// ??_G/IsReady/ClearMap. The body-only dep types (LeafElementObj / LeafScanValue /
+// LeafScanSoundArg) are forward-declared in the header and fully defined above so the
+// method bodies below can dereference them. (ScanTree's tree/leaf types are no longer
+// among them: they are the real CSymTab / CParseSource from their own headers.)
 
 // Read the map count at parent+0x1c (inside the CMapStringToPtr's internal area,
 // its m_nCount). A separate inline so its read schedules before the handle read,
@@ -1246,7 +1242,7 @@ void CDDrawSubMgrLeafScan::AddEntry_157ec0(LeafElementObj* elem, const char* key
 // the cache element, counting successes. Frees the buffer and returns the count.
 // 3 stack args (ret 0xc).
 RVA(0x00157ee0, 0x1c6)
-i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, const char* suffix) {
+i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(CSymTab* tree, const char* prefix, const char* suffix) {
     if (m_30 != 0) {
         return 0;
     }
@@ -1256,7 +1252,7 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
         return 0;
     }
     buf[0] = 0;
-    DirNode* node = (DirNode*)((CSymTab*)tree)->FirstSub();
+    CSymTab* node = (CSymTab*)tree->FirstSub();
     while (node != 0) {
         if (prefix != 0 && *prefix != 0) {
             sprintf(buf, "%s%s%s", prefix, suffix, node->m_name);
@@ -1264,14 +1260,17 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
             strcpy(buf, node->m_name);
         }
         count += ScanTree_157ee0(node, buf, suffix);
-        node = (DirNode*)((CSymTab*)tree)->NextSub(node);
+        node = (CSymTab*)tree->NextSub(node);
     }
-    void* file = ((CSymTab*)tree)->FirstSym();
+    // `file` stays void*: the outer leaf-table record has its next-link at +0x04 (NextSym)
+    // and its entry chain at +0x24 (NextSym2) - neither offset is CParseSource's, so this
+    // record's class is NOT proven here. Left honest rather than guessed.
+    void* file = tree->FirstSym();
     if (file != 0) {
         do {
-            DirNode* fn = (DirNode*)((CSymTab*)tree)->NextSym2(file);
+            CParseSource* fn = (CParseSource*)tree->NextSym2(file);
             while (fn != 0) {
-                if (((CParseSource*)fn)->GetEntryTag() == 0x574156) {
+                if (fn->GetEntryTag() == PARSETAG_VAW) {
                     if (prefix != 0 && *prefix != 0) {
                         sprintf(buf, "%s%s%s", prefix, suffix, fn->m_name);
                     } else {
@@ -1285,9 +1284,9 @@ i32 CDDrawSubMgrLeafScan::ScanTree_157ee0(DirNode* tree, const char* prefix, con
                         }
                     }
                 }
-                fn = (DirNode*)((CSymTab*)tree)->NextSym3(fn);
+                fn = (CParseSource*)tree->NextSym3(fn);
             }
-            file = ((CSymTab*)tree)->NextSym(file);
+            file = tree->NextSym(file);
         } while (file != 0);
     }
     ::operator delete(buf);
@@ -1506,7 +1505,6 @@ CString CDDrawSubMgrLeafScan::FindKeyOfValue_158570(LeafScanValue* target) {
     return key;
 }
 
-SIZE_UNKNOWN(DirNode);
 SIZE_UNKNOWN(LeafCuePlayer);
 SIZE_UNKNOWN(LeafElementBase);
 SIZE(LeafElementObj, 0x1c);

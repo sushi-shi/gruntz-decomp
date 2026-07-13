@@ -30,7 +30,6 @@ extern "C" i32 SpawnNameCmp(const char* a, const char* b, i32 n); // 0x120440
 // The sound/anim object registries dispatch each op to a distinct real class (verified by RVA);
 // TU-local decls with the exact pointer arg types (load-bearing for the mangled names).
 #include <Dsndmgr/SoundResMap.h> // canonical CSoundResMap (RemoveByValue @0x157b00) + CSoundRes
-class DirNode;
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree_157ee0)
 class CCatalogNode;
 class CDDrawSubMgrLeaf {
@@ -616,7 +615,7 @@ i32 CAreaMgr::LoadObjectSoundResources(ObjSpawnEntry* entry, CSymTab* src) {
                 return 0;
             }
             ((CDDrawSubMgrLeafScan*)entry->m_28)
-                ->ScanTree_157ee0((DirNode*)handle, (char*)(LPCTSTR)e->GetName(), "");
+                ->ScanTree_157ee0((CSymTab*)handle, (char*)(LPCTSTR)e->GetName(), "");
             e->m_flag = 1;
         }
         if (b->m_cursor == 0) {

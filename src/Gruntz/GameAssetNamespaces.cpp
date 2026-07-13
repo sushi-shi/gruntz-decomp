@@ -128,7 +128,7 @@ i32 CState::LoadGameAssetNamespaces(i32 mgrArg, i32 areaArg, i32 a3) {
         if (snd == 0) {
             return 0;
         }
-        self->m_workerHolder->m_soundScan->ScanTree_157ee0((DirNode*)snd, "GAME", "_");
+        self->m_workerHolder->m_soundScan->ScanTree_157ee0((CSymTab*)snd, "GAME", "_");
     }
     if (self->m_workerHolder->m_aniScan->HasKeyPrefix("GAME") == 0) {
         void* aniz = self->m_symParser->ResolvePath("GAME_ANIZ");

@@ -139,7 +139,7 @@ i32 CMenuState::LoadAssets(i32 a1, i32 a2, i32 a3) {
         if (set == 0) {
             return 0;
         }
-        ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)set, "MENU", "_");
+        ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((CSymTab*)set, "MENU", "_");
     }
 
     if (!((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158d20()) {

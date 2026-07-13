@@ -840,7 +840,7 @@ i32 RezSync::Init(void* a1, char* a2) {
         if (!sz) {
             return 0;
         }
-        m_30->m_28->ScanTree_157ee0((DirNode*)sz, "GAME", "_");
+        m_30->m_28->ScanTree_157ee0((CSymTab*)sz, "GAME", "_");
     }
     {
         void* mv = 0;

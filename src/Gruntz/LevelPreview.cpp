@@ -116,7 +116,7 @@ i32 CPreviewState::Enter(void* mgr, i32 a1, i32 a2) {
         void* set = SymTab2c()->FindSub("SOUNDZ");
         if (set != 0) {
             ((CDDrawSubMgrLeafScan*)((CRegHolder*)m_c)->m_statusBar)
-                ->ScanTree_157ee0((DirNode*)set, "PREVIEW", (const char*)&g_dat60b588);
+                ->ScanTree_157ee0((CSymTab*)set, "PREVIEW", (const char*)&g_dat60b588);
         }
     }
     m_1bc = "PREVIEW0";

@@ -51,7 +51,6 @@
 // real <Dsndmgr/SoundDevice.h>, pulled through <Gruntz/SoundCue.h> (via GameRegistry.h).
 
 // The attract-cue registrar IS a CDDrawSubMgrLeafScan (header-less); local decl (exact arg types).
-class DirNode;
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // canonical CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
 
 // ---------------------------------------------------------------------------

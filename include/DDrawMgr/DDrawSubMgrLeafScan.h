@@ -33,7 +33,7 @@
 // class declaration, so a forward decl suffices and keeps lean consumers lean).
 class SoundDevice;      // +0x2c held DSound device (SoundStream : SoundDevice at the site)
 struct LeafElementObj;  // 0x1c cache element (CreateEntry factory output)
-class DirNode;          // recursive directory node (ScanTree walker)
+class CSymTab;          // <Bute/SymTab.h> - the scope node ScanTree walks (was the DirNode view)
 class LeafScanValue;    // a looked-up map value (scalar-dtor slot + held sound-arg)
 class LeafScanSoundArg; // MatchSub arg (its m_10 is the real DirectSoundMgr wrapper)
 class CParseSource;     // the element's draw-source (BeginParse/EndParse)
@@ -93,7 +93,11 @@ public:
     LeafElementObj* CreateEntry2_157e00(const char* key, void* arg2);
     LeafElementObj* AddFromSource_157e90(CParseSource* src);     // 0x157e90
     void AddEntry_157ec0(LeafElementObj* elem, const char* key); // 0x157ec0
-    i32 ScanTree_157ee0(DirNode* tree, const char* prefix, const char* suffix);
+    // The recursive asset-tree walker. `tree` is a Bute CSymTab scope: the walker calls
+    // FirstSub/NextSub (child scopes) and FirstSym/NextSym/NextSym2/NextSym3 (leaf parse
+    // records) on it, and every subdir it recurses into is itself a CSymTab. The leaf
+    // records it tags-and-caches are CParseSource. (Both were formerly one `DirNode` view.)
+    i32 ScanTree_157ee0(CSymTab* tree, const char* prefix, const char* suffix);
 
     CObject* Lookup_05b7e0(const char* key);
     i32 RemoveKeysEqual_157c70(const char* base, const char* str);

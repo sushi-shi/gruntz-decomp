@@ -40,7 +40,6 @@
 #include <Globals.h> // Vslot09: g_randSeeded / g_randSeed
 
 // The attract-cue registrar IS a CDDrawSubMgrLeafScan (header-less); local decl.
-class DirNode;
 #include <DDrawMgr/DDrawSubMgrLeafScan.h> // CDDrawSubMgrLeafScan (ScanTree/RemoveKeysEqual)
 
 // ---------------------------------------------------------------------------
@@ -129,7 +128,7 @@ i32 CAttract::EnterAttractMode(i32 a, i32 b, i32 mode) {
     }
 
     ((CDDrawSubMgrLeafScan*)menuRoot()->m_28)
-        ->ScanTree_157ee0((DirNode*)sound, s_ATTRACT, s_UNDERSCORE);
+        ->ScanTree_157ee0((CSymTab*)sound, s_ATTRACT, s_UNDERSCORE);
 
     if (showCursor(0) >= 0) {
         do {

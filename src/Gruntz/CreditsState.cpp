@@ -122,7 +122,7 @@ i32 CCreditsState::LoadCreditzStateAssets(i32 a1, i32 a2, i32 a3) {
     if (!sounds) {
         return 0;
     }
-    ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)sounds, "CREDITZ", "_");
+    ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((CSymTab*)sounds, "CREDITZ", "_");
 
     CSymTab* midiz = (CSymTab*)SymTab2c()->ResolvePath("MIDIZ");
     if (midiz) {

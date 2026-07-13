@@ -5561,7 +5561,7 @@ i32 CPlay::LoadLevelSounds(i32 force) {
     if (!sounds) {
         return 0;
     }
-    ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->ScanTree_157ee0((DirNode*)sounds, "LEVEL", "_");
+    ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->ScanTree_157ee0((CSymTab*)sounds, "LEVEL", "_");
     return 1;
 }
 
@@ -5666,7 +5666,7 @@ i32 CPlay::LoadGameSounds(i32 force) {
     if (!sounds) {
         return 0;
     }
-    ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->ScanTree_157ee0((DirNode*)sounds, "GAME", "_");
+    ((CDDrawSubMgrLeafScan*)self->m_c->m_28)->ScanTree_157ee0((CSymTab*)sounds, "GAME", "_");
     return 1;
 }
 
@@ -5797,28 +5797,28 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_NORMALGRUNT");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
-                ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_NORMALGRUNT", "_");
+                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_NORMALGRUNT", "_");
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_DEATHZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_DEATHZ");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
-                ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_DEATHZ", "_");
+                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_DEATHZ", "_");
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_ENTRANCEZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_ENTRANCEZ");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
-                ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_ENTRANCEZ", "_");
+                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_ENTRANCEZ", "_");
         }
     }
     if (!((CDDrawSubMgrLeafScan*)self->m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_EXITZ")) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_EXITZ");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
-                ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_EXITZ", "_");
+                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_EXITZ", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
@@ -5828,7 +5828,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_GRUNTPUDDLE");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
-                ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_GRUNTPUDDLE", "_");
+                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_GRUNTPUDDLE", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
@@ -5838,7 +5838,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_PICKUPS");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
-                ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_PICKUPS", "_");
+                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_PICKUPS", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
@@ -5848,7 +5848,7 @@ i32 CPlay::LoadGruntSoundNamespaces(CMulti* notify) {
         void* s = (self->m_gruntzBank)->ResolvePath("SOUNDZ_BOMBGRUNT");
         if (s) {
             ((CDDrawSubMgrLeafScan*)self->m_c->m_28)
-                ->ScanTree_157ee0((DirNode*)s, "GRUNTZ_BOMBGRUNT", "_");
+                ->ScanTree_157ee0((CSymTab*)s, "GRUNTZ_BOMBGRUNT", "_");
         }
         if (notify) {
             notify->AckJoinFailure();
@@ -5926,7 +5926,9 @@ i32 CNamespaceLoader::BuildAssetNamespacePrefixes(
         if (((CDDrawSubMgrLeafScan*)m_c->m_28)->HasKeyEqual_1583c0("GRUNTZ_" + name) == 0) {
             void* tree = m_30->ResolvePath("SOUNDZ_" + name);
             if (tree != 0) {
-                ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((DirNode*)tree, "GRUNTZ_" + name, "_");
+                // the m_28 cast stays until the CSndHost/CDDrawSubMgrLeafScan conflation is settled (Fable);
+                // `tree` is the real CSymTab - DirNode was a view of it.
+                ((CDDrawSubMgrLeafScan*)m_c->m_28)->ScanTree_157ee0((CSymTab*)tree, "GRUNTZ_" + name, "_");
             }
         }
         if (((CDDrawSubMgrLeaf*)m_c->m_animRegistry)->HasKeyPrefix_152c50("GRUNTZ_" + name) == 0) {
