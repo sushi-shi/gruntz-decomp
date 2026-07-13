@@ -25,25 +25,15 @@
 // teardown story was the FID AMBIG GDI/ImageList twin - 0x1c6a5c is
 // CGdiObject::DeleteObject.)
 
-// 0x0390a0 - /GX dtor: explicit cleanup (0x17b570 == CPageStore17b510::Close), then fold the
-// two owned members at +0x138 (dtor 0x1b4b76) and +0x124 (dtor 0x1bf121 == ~CFile, MFC) in
-// reverse. Owns an MFC CFile (+0x124) + a ::CDWordArray (+0x138); the "CCredits" class name
-// is unconfirmed (a file/page loader).
-//
-// +0x138 is CDWordArray, NOT CByteArray: 0x1b4b76 lies in [0x1b4b43, 0x1b4f0b), the band
-// whose head ctor 0x1b4b43 DIR32s ??_7CDWordArray@@6B@ (0x1ec29c).  CByteArray's dtor is
-// 0x1b52b1 (band head 0x1b527e, vtable 0x1ed28c).  The four MFC array classes are
-// byte-identical, so every FID row there is AMBIG - `mfc_class 0x1b4b76` asks the binary.
-// (Same object as CMovieDecodeStore::m_138 in <Io/MoviePlayer.h>, which agrees.)
-struct CCredits390a0 {
-    char pad4[0x124];  // +0x00 .. +0x123
-    CFile m_124;       // +0x124  real MFC CFile (dtor ??1CFile@@UAE@XZ @0x1bf121)
-    char m_124tail[4]; // +0x134  retail's CFile is 0x14 B (BOOL m_bCloseOnDelete); the
-                       //         toolchain's is 0x10 B (BYTE) - pad to hold m_138 @+0x138
-    CDWordArray m_138; // +0x138  real MFC ::CDWordArray (dtor ??1CDWordArray@@UAE@XZ @0x1b4b76)
-    ~CCredits390a0();
-};
-SIZE_UNKNOWN(CCredits390a0);
+// (0x0390a0 - identity RECOVERED 2026-07-13: the former `CCredits390a0` placeholder
+// IS ??1CFecFile@@QAE@XZ - the canonical CFecFile's destructor (Close @0x17b570 +
+// ~CDWordArray m_index @+0x138 + ~CFile m_stream @+0x124), defined in
+// src/Io/MoviePlayer.cpp (same retail TU as ~CMoviePlayer @0x38fc0, which is why /O2
+// also inlines the body there). The old "retail CFile is 0x14 B" pad theory was a
+// mis-read of CFecFile::m_134, the write-path entry counter - toolchain sizeof(CFile)
+// == 0x10 is byte-proven (Lookup returns m_stream.m_hFile @+0x128 at 100%%). The
+// CDWordArray-not-CByteArray band proof (`mfc_class 0x1b4b76`) lives on in
+// <Crypto/FecCrypt.h>. View dissolved.)
 
 // 0x08d000 - CSplashState::~CSplashState (/GX): the out-of-line splash-state dtor.
 // Identity recovered (its derived vtable @0x1e9d74 IS ??_7CSplashState); modeled as

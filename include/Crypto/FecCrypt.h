@@ -14,41 +14,20 @@
 #include <Mfc.h> // CDWordArray, CFile, MSG/PeekMessageA (windows.h)
 
 // The stream subobject at CFecFile+0x124 is the embedded MFC CFile (recovered identity):
-//   - CMoviePlayer::~CMoviePlayer (0x38fc0) and CCredits390a0::~ (0x390a0) both run
-//     ~CFile in-place on +0x124 (see src/Io/MoviePlayer.cpp);
-//   - its virtual-dispatch slots Open@+0x28 / Seek@+0x30 / Read@+0x3c / Write@+0x40 /
-//     Close@+0x50 / Abort@+0x54 are exactly MFC CFile's vtable (cf. the local CFile in
-//     AddFile whose non-virtual Open/Seek/Read are 0x1bf200/0x1bf3ad/0x1bf328).
-// It is modeled here as a DECLARED-ONLY polymorphic proxy (not a concrete `CFile m_stream`
-// member) on purpose: the archive methods reach it through a CFile* handle and dispatch
-// VIRTUALLY (`call [eax+0x28]`), whereas an exact-type `CFile` member devirtualizes to
-// direct library calls - binary-disproven (it would regress every archive method). The
-// declared-only virtuals are the load-bearing device that forces retail's vtable dispatch.
-class FecStream {
-public:
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual void Slot20();
-    virtual void Slot24();
-    virtual i32 Open(const char* name, i32 a2, i32 a3); // +0x28  CFile::Open
-    virtual void Slot2C();                              // +0x2c
-    virtual i32 Seek(i32 off, i32 origin);              // +0x30  CFile::Seek
-    virtual void Slot34();
-    virtual void Slot38();
-    virtual i32 Read(void* buf, i32 size);        // +0x3c  CFile::Read
-    virtual i32 Write(const void* buf, i32 size); // +0x40  CFile::Write
-    virtual void Slot44();
-    virtual void Slot48();
-    virtual void Slot4C();
-    virtual void Close(); // +0x50  CFile::Close
-    virtual void Abort(); // +0x54  CFile::Abort (OnFail drops the active stream through this)
-};
+//   - ~CFecFile (0x390a0) runs ~CFile in-place on +0x124, and ~CMoviePlayer (0x38fc0)
+//     inlines that same dtor for its m_540 store (see src/Io/MoviePlayer.cpp);
+//   - the archive methods dispatch exactly MFC CFile's vtable slots (RTTI-backed retail
+//     vtable @0x1ed15c): Open@+0x28 / Seek@+0x30 / Read@+0x3c / Write@+0x40 /
+//     Flush@+0x50 / Close@+0x54 (the pre-2026-07-13 model misread +0x50/+0x54 as
+//     Close/Abort - the real afx.h declaration order puts Flush at 20 and Close at 21);
+//   - the layout fits byte-exactly: sizeof(CFile)==0x10 {vptr, m_hFile @+4,
+//     m_bCloseOnDelete @+8, m_strFileName @+0xc}, so the old "+0x128 Lookup success
+//     result" member IS m_stream.m_hFile - Lookup returns the raw Win32 file HANDLE.
+// Modeled as a concrete `CFile` member: MSVC5 does NOT devirtualize member-object
+// virtual calls (measured - OnFail/Init were byte-exact with virtual dispatch through
+// the member), so `m_stream.Read(...)` lowers to the same `mov eax,[this+0x124];
+// call [eax+0x3c]` retail has. (The former `FecStream` declared-only proxy - and its
+// devirtualization fear - is dissolved; the fear was disproven by the same measurement.)
 
 class CFecFile {
 public:
@@ -57,6 +36,9 @@ public:
     // Close tears it down, Lookup resolves an entry offset. OnFail (0x17b5a0) is the
     // read-fail teardown ReadArchive/Close both call. AddFile/ExtractArchive are the
     // build/unpack halves of the archive (CFile-local file + CDWordArray offset index).
+    // The dtor (Close + the member teardown) is DEFINED in the movie TU
+    // (src/Io/MoviePlayer.cpp) at 0x0390a0; ~CMoviePlayer (same retail TU) inlines it.
+    ~CFecFile(); // 0x0390a0  { Close(); } + ~CDWordArray(+0x138) + ~CFile(+0x124)
     i32 Init();                          // 0x17b510  reset + arm (open-gate -> 1)
     void Close();                        // 0x17b570  teardown (OnFail + reset + gate -> 0)
     i32 Lookup(u32 idx);                 // 0x17b840  resolve entry idx (1-based) -> m_128
@@ -66,16 +48,16 @@ public:
     i32 AddFile(const char* name, i32* pCancel, void* pProgress);       // 0x17b950
     i32 ExtractArchive(const char* dir, i32* pCancel, void* pProgress); // 0x17bcd0
 
-    i32 m_00;           // +0x00  open-gate (must be nonzero)
-    i32 m_04;           // +0x04  read-open flag
-    i32 m_08;           // +0x08  write-open flag
-    i32 m_0c;           // +0x0c  version major (12-byte header word 0)
-    i32 m_10;           // +0x10  version minor
-    i32 m_14;           // +0x14  entry count
-    char m_18[0x10c];   // +0x18  per-entry record (index/m_1c namelen/m_1e name/m_11e/m_120)
-    FecStream m_stream; // +0x124
-    i32 m_128;          // +0x128  Lookup's success result
-    i32 _pad12c[(0x134 - 0x12c) / 4];
+    i32 m_00;         // +0x00  open-gate (must be nonzero)
+    i32 m_04;         // +0x04  read-open flag
+    i32 m_08;         // +0x08  write-open flag
+    i32 m_0c;         // +0x0c  version major (12-byte header word 0)
+    i32 m_10;         // +0x10  version minor
+    i32 m_14;         // +0x14  entry count
+    char m_18[0x10c]; // +0x18  per-entry record (index/m_1c namelen/m_1e name/m_11e/m_120)
+    // +0x124  the embedded MFC CFile (0x10 B: vptr, m_hFile @+0x128, m_bCloseOnDelete
+    // @+0x12c, m_strFileName @+0x130). Lookup's "+0x128 success result" is m_stream.m_hFile.
+    CFile m_stream;
     i32 m_134;           // +0x134  running entry counter (write path); cleared by Init/OnFail
     CDWordArray m_index; // +0x138  per-entry offset table (m_pData @+0x13c, m_nSize @+0x140)
     char m_14c[0x8000];  // +0x14c  32 KB streaming copy buffer

@@ -16,7 +16,7 @@
 #include <stdlib.h> // rand (0x17bf60, obfuscation padding)
 #include <direct.h> // _getcwd / _chdir (ExtractArchive dir save/restore)
 
-#include <Crypto/FecCrypt.h> // the unified CFecFile / FecStream / CDWordArray shape
+#include <Crypto/FecCrypt.h> // the unified CFecFile (embedded MFC CFile stream) shape
 
 // The alternating-byte name cipher (defined below at 0x17bf70 / 0x17bfe0); AddFile
 // encodes the entry name and ExtractArchive decodes it.
@@ -59,12 +59,12 @@ void CFecFile::Close() {
     m_00 = 0;
 }
 
-// 0x17b5a0 - OnFail: drop the active stream (m_stream.Abort, slot 0x54) and clear the
+// 0x17b5a0 - OnFail: drop the active stream (CFile::Close, slot +0x54) and clear the
 // open flags when the store is armed and open; returns whether it did work. __thiscall.
 RVA(0x0017b5a0, 0x48)
 i32 CFecFile::OnFail() {
     if (m_00 && (m_04 || m_08)) {
-        m_stream.Abort();
+        m_stream.Close();
         m_04 = 0;
         m_08 = 0;
         m_134 = 0;
@@ -146,14 +146,14 @@ fail:
 
 // 0x17b840 - Lookup: resolve the 1-based entry `idx` (must be in [1, m_14] with the
 // store armed+open). Seek the stream to that entry's recorded offset (m_13c[idx-1]); if
-// the seek lands exactly there, return the cached result m_128, else 0. __thiscall.
+// the seek lands exactly there, return the raw file handle (m_stream.m_hFile), else 0. __thiscall.
 // (== CMovieDecodeStore::OpenB.)
 RVA(0x0017b840, 0x53)
 i32 CFecFile::Lookup(u32 idx) {
     if (m_04 && m_00 && idx <= (u32)m_14 && idx != 0) {
         i32* slot = (i32*)&m_index.GetData()[idx - 1];
         if (m_stream.Seek(*slot, 0) == *slot) {
-            return m_128;
+            return m_stream.m_hFile; // +0x128 - the Win32 file HANDLE
         }
     }
     return 0;
@@ -182,7 +182,7 @@ i32 CFecFile::CreateArchive(const char* name) {
         m_0c = 1;
         m_10 = 1;
         m_stream.Write(&m_0c, 0xc);
-        m_stream.Close();
+        m_stream.Flush(); // +0x50 CFile::Flush (flush the header write)
         return 1;
     }
     return 0;
@@ -282,7 +282,7 @@ i32 CFecFile::AddFile(const char* name, i32* pCancel, void* pProgress) {
 
     m_stream.Seek(0xb, 0);
     m_stream.Write(&m_134, 4);
-    m_stream.Close();
+    m_stream.Flush(); // +0x50 CFile::Flush (flush the appended entry)
     return 1;
 }
 
@@ -407,7 +407,6 @@ void __stdcall FecDecode(const char* src, char* dst, unsigned short len) {
     dst[len] = 0;
 }
 
-SIZE_UNKNOWN(FecStream);
 SIZE(CFecFile, 0x814c);
 
 // --- vtable catalog ---

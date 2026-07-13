@@ -2,7 +2,8 @@
 // codename placeholder; Ghidra FUN_0017c6f0 cluster). A large (>0x8694 B) movie/stream
 // decode object: its main cluster (0x17b500..0x17c790) wraps DirectDrawCreate,
 // ShowCursor and the Smacker decoder around an embedded decode store at +0x540
-// (CFile @ +0x124, CByteArray @ +0x138) and a Rez-owned scratch embed at +0x868c.
+// (the canonical CFecFile: CFile @ +0x124, CDWordArray @ +0x138) and a Rez-owned
+// scratch embed at +0x868c.
 //
 // VPTR AUDIT (all-vtables-die batch 3): the former "manual-vtable-stamp device"
 // claim was disproven at the byte level. CMoviePlayer+0x00 and the decode store's
@@ -27,8 +28,9 @@
 #include <Mfc.h>      // MFC CFile/CDWordArray (the movie file + decode-buffer dtors)
 #include <afxtempl.h> // MFC CArray - the +0x868c playlist embed's REAL template class
 #include <Ints.h>
-#include <rva.h>          // OVERRIDE / VTBL / SIZE macros
-#include <Wap32/Object.h> // CObject - the scratch embed's polymorphic grand-base
+#include <rva.h>            // OVERRIDE / VTBL / SIZE macros
+#include <Wap32/Object.h>   // CObject - the scratch embed's polymorphic grand-base
+#include <Crypto/FecCrypt.h> // CFecFile - the +0x540 embedded decode store
 
 struct SmackTag;           // the RAD Smacker stream handle (<smack.h>'s `Smack` typedef tag)
 struct IDirectDrawSurface; // <ddraw.h> in the dispatching TUs; pointer-only here
@@ -38,41 +40,15 @@ struct HWND__;             // strong HWND tag (windows.h STRICT)
 // The Rez heap free (reloc-masked rel32 callee, __cdecl 1 arg). 0x1b9b82.
 extern "C" void RezFree(void* p);
 
-// An MFC CFile-shaped member: its non-trivial dtor is the reloc-masked engine
-// ~CFile (0x1bf121) so the /GX member-teardown trylevel falls out
-// (eh-dtor-model-members-as-destructible).
-struct CMovieFile {
-    // Dtor_1bf121 @0x1bf121 IS CFile::~CFile; cast below.
-    ~CMovieFile() {
-        ((CFile*)this)->~CFile();
-    }
-};
-
-// (The CMovieByteArray VIEW is DISSOLVED: the +0x138 member is the MFC ::CDWordArray.
-// Its dtor, 0x1b4b76, lies in [0x1b4b43, 0x1b4f0b) - the band whose ctor 0x1b4b43
-// DIR32s ??_7CDWordArray@@6B@ (0x1ec29c).  CByteArray's dtor is 0x1b52b1 (band head
-// 0x1b527e, vtable 0x1ed28c) and retail never calls it here; the FID rows in the array
-// region are all AMBIG because the four classes are byte-identical.  Ask the binary:
-// `python -m gruntz.analysis.mfc_class 0x1b4b76`.)
-
-// The decode store embedded at worker+0x540. Abort() (0x17b570) tears down the
-// active decode; the CFile/CDWordArray members destruct after it.
-struct CMovieDecodeStore {
-    // +0x00 active-decode flag: NOT a vptr (Abort disasm: `cmp [this],0` gate +
-    // `mov [this],0` clear - compared and stored, never dispatched through).
-    i32 m_open;
-    char m_pad4[0x124 - 0x04];
-    CMovieFile m_124; // +0x124  decode CFile
-    char m_pad125[0x138 - 0x125];
-    CDWordArray m_138; // +0x138  decode ::CDWordArray (ctor 0x1b4b43 / dtor 0x1b4b76)
-    char m_pad14c[0x200 - 0x14c];
-
-    // Begin @0x17b510 IS CPageStore17b510::Init; cast at the call.
-    // OpenA @0x17b5f0 IS CFecFile::ReadArchive; cast at the call.
-    // Abort @0x17b570 IS CPageStore17b510::Close; cast at each call.
-    // OpenB @0x17b840 IS CPageStore17b510::Lookup; cast at the call.
-    ~CMovieDecodeStore();
-};
+// (The CMovieFile + CMovieDecodeStore VIEWS are DISSOLVED: the +0x540 decode store
+// is the ONE canonical CFecFile (<Crypto/FecCrypt.h>) - same +0x00 open gate,
+// +0x124 embedded MFC CFile (dtor 0x1bf121), +0x138 ::CDWordArray index (ctor
+// 0x1b4b43 / dtor 0x1b4b76; the four MFC array classes are byte-identical, so the
+// FID rows are AMBIG - `python -m gruntz.analysis.mfc_class 0x1b4b76` asked the
+// binary). sizeof(CFecFile)==0x814c puts the playlist embed at
+// 0x540+0x814c == +0x868c EXACTLY - the old 0x200-byte store view + pad were a
+// mis-split of the same span. ~CFecFile (0x0390a0, defined in MoviePlayer.cpp)
+// is the store teardown; ~CMoviePlayer inlines it (same retail TU).)
 
 // One movie-clip descriptor the playlist array holds by pointer. PLAYLISTINFOSTRUCT
 // is the RETAIL struct name - the RTTI COL at the playlist vtable 0x1e971c reads
@@ -153,9 +129,9 @@ public:
     char _524[0x534 - 0x524];
     void* m_rezBuffer;       // +0x534  Rez buffer
     i32 m_useDS;             // +0x538
-    CWnd* m_videoWnd;        // +0x53c  the video window (real MFC CWnd)
-    CMovieDecodeStore m_540; // +0x540  embedded decode store
-    char m_pad740[0x868c - (0x540 + 0x200)];
+    CWnd* m_videoWnd; // +0x53c  the video window (real MFC CWnd)
+    CFecFile m_540;   // +0x540  embedded decode store - the canonical CFecFile
+                      //         (0x814c B; ends exactly at the +0x868c playlist)
     CMoviePlaylist m_868c; // +0x868c  Rez-owned playlist (CArray<PLAYLISTINFOSTRUCT*>, 0x14 B)
     i32 m_loopCount;       // +0x86a0  loop counter
 };

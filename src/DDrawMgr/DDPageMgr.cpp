@@ -461,7 +461,7 @@ i32 CMoviePlayer::CloseSmacker() {
     if (!m_streamOpen) {
         return 0;
     }
-    ((CFecFile*)&m_540)->Close();
+    m_540.Close();
     if (!m_smackHandle) {
         return 0;
     }

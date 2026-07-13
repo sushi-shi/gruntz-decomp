@@ -2,7 +2,7 @@
 #include <Io/MoviePlayer.h>
 #include <Mfc.h>             // /GX EH-frame helpers
 #include <Crypto/FecCrypt.h> // the +0x540 decode store IS a CFecFile (Init/ReadArchive/Lookup/Close)
-#include <Gruntz/BoundaryLowerDtorsViews.h> // CCredits390a0 (the 0x390a0 /GX leaf dtor)
+
 // MoviePlayer.cpp - the frameless slice of the DDrawMgr "DDraw worker"
 // movie/stream decode object (placeholder name; see include/Io/MoviePlayer.h).
 // One reconstructed method from the 0x17b500..0x17c790 cluster:
@@ -22,20 +22,20 @@ i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
     if (m_active == 0) {
         return 0;
     }
-    if (!((CFecFile*)&m_540)->Init()) {
+    if (!m_540.Init()) {
         return 0;
     }
-    if (!((CFecFile*)&m_540)->ReadArchive((const char*)a1)) {
-        ((CFecFile*)&m_540)->Close();
+    if (!m_540.ReadArchive((const char*)a1)) {
+        m_540.Close();
         return 0;
     }
-    i32 hi = ((CFecFile*)&m_540)->Lookup((unsigned int)a2);
+    i32 hi = m_540.Lookup((unsigned int)a2);
     if (!hi) {
-        ((CFecFile*)&m_540)->Close();
+        m_540.Close();
         return 0;
     }
     if (!OpenHi(hi, a3, a4, a5, a6)) {
-        ((CFecFile*)&m_540)->Close();
+        m_540.Close();
         return 0;
     }
     return 1;
@@ -43,9 +43,7 @@ i32 CMoviePlayer::Open(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6) {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CMovieDecodeStore);
 SIZE_UNKNOWN(CMoviePlayer);
-SIZE_UNKNOWN(CMovieFile);
 
 // ============================================================================
 // merged from MoviePlayerEh.cpp (the /GX EH-frame sibling; unit flags -> eh)
@@ -69,43 +67,32 @@ SIZE_UNKNOWN(CMovieFile);
 // config/vtable_names.csv when the instantiating objs emit the ??_7 COMDAT; the
 // old VTBL(CMovieScratch, 0x001e971c) fabrication is gone.
 
-// The decode store (worker+0x540) teardown: abort the active decode, then the
-// CFile/CByteArray members destruct (reverse declaration order). Inline so the
-// worker dtor folds it.
-inline CMovieDecodeStore::~CMovieDecodeStore() {
-    ((CFecFile*)this)->Close();
-}
-
 // ===========================================================================
 // 0x038fc0 - ~CMoviePlayer: run the worker Teardown, then the two embedded
-// subobjects destruct in reverse declaration order (the +0x868c scratch embed,
-// then the +0x540 decode store). /GX frames the whole walk.
+// subobjects destruct in reverse declaration order (the +0x868c playlist embed,
+// then the +0x540 CFecFile decode store - whose inline ~CFecFile below /O2-folds
+// in: Close + ~CDWordArray + ~CFile with EH states 1/2/4/3/-1). /GX frames the walk.
+// (The former "eh-dtor-inline-member-vtable-stamp-thisadjust wall" @early-stop
+// (~55.6-73.5%) was a MISDIAGNOSED FAKE VIEW: with m_540 typed as the real CFecFile
+// and its dtor defined `inline` in this TU, the edi cache, the member-this frame
+// slots and the EH-state numbering all fall out - 100.00 EXACT, 2026-07-13.)
 // ===========================================================================
-// @early-stop
-// eh-dtor-inline-member-vtable-stamp-thisadjust wall: the teardown logic is byte-faithful
-// (Teardown, the embed stamp/RezFree/restore, the store Abort + ~CByteArray + ~CFile in
-// the right order at the right offsets), but retail's /GX frame caches `&m_868c` in edi
-// and writes the inline-member `this` into a frame slot ([esp+0xc]) per subobject, with EH
-// states 1/2/4/3/-1; our model destroys the members in place (no edi cache, no member-this
-// re-point). docs/patterns/eh-dtor-inline-member-vtable-stamp-thisadjust.md.
-// CLEAN-ROOM % NOTE: dissolving the local CPageStore17b510/CFecFile views onto the unified
-// CFecFile (the +0x540 store's real class) shifted this /GX dtor's EH-state numbering
-// (~73.5% -> ~55.6%). Accepted per the model-the-class mandate: the store Abort now calls
-// the canonical CFecFile::Close; the residual is still the frame-slot/EH-state shape.
 RVA(0x00038fc0, 0xa5)
 CMoviePlayer::~CMoviePlayer() {
     Teardown();
-    // ~m_868c (scratch embed) then ~m_540 (decode store) fold here.
+    // ~m_868c (playlist embed) then ~m_540 (CFecFile decode store) fold here.
 }
 
 // ---------------------------------------------------------------------------
-// 0x0390a0 - ~CCredits390a0 (/GX): run the explicit cleanup (0x17b570 ==
-// CFecFile::Close), then let the two owned members at +0x138 (~CByteArray) and +0x124
-// (~CFile) fold in reverse declaration order. __thiscall. RVA-homed here (RVA-contiguous
-// with ~CMoviePlayer @0x38fc0; a page/file store that owns an MFC CFile+CByteArray).
-// @identity-TODO: the "CCredits" class name is unconfirmed (a file/page loader whose
-// state owner is unrecovered); its cleanup casts through the canonical CFecFile.
+// 0x0390a0 - ~CFecFile (/GX): the decode store's real destructor - the explicit
+// cleanup (Close @0x17b570), then the two owned members fold in reverse declaration
+// order: ~CDWordArray m_index (+0x138, 0x1b4b76) and ~CFile m_stream (+0x124,
+// 0x1bf121). __thiscall; RVA-contiguous with ~CMoviePlayer @0x38fc0 (same retail TU,
+// which is why /O2 also INLINES this body into 0x38fc0's m_540 teardown).
+// (Identity recovered 2026-07-13: the former "CCredits390a0" placeholder - and the
+// CMovieDecodeStore/CMovieFile views - were all this one class; the old note's
+// "retail CFile is 0x14 B" was a mis-read of CFecFile::m_134, the entry counter.)
 RVA(0x000390a0, 0x5d)
-CCredits390a0::~CCredits390a0() {
-    ((CFecFile*)this)->Close();
+inline CFecFile::~CFecFile() {
+    Close();
 }
