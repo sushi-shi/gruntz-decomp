@@ -77,6 +77,24 @@ struct CTmGoal {
 struct CTmPendingFx; // the pending-fx sub-object (+0x2a0); completed in each TU
 class CActionOptionsMenuBar;
 
+// The ELEMENT type of the base object list (m_baseList, +0x000): the battlez spawn
+// machine's "grid candidate" - a grid (x,y) at +0x54/+0x58 and an occupied flag at
+// +0x5c. Retail proof (Method_035210 @0x35210, byte-exact): `[[this+4]+0x68]` (the
+// level's trigger mgr) `-> [+0x4]` (the list's head slot) then, per node, `[node+8]`
+// and `cmp [elem+0x54],x / cmp [elem+0x58],y / mov [elem+0x5c]`.
+// @identity-TODO: the RTTI class is NOT recovered - the element carries no vptr store
+// on any path this TU sees, and it is NOT a CGrunt (whose +0x54 is a CString body) nor
+// a CGameObject (whose +0x54..+0x5c are the draw-fill triple). It was BattlezMapConfig
+// .cpp's local `GridCand`; promoted here (onto the list that owns it) rather than kept
+// as a per-TU view. Its cells are plain MFC CPtrList nodes (no separate node type).
+SIZE_UNKNOWN(CTmCandidate);
+struct CTmCandidate {
+    char m_pad00[0x54];
+    i32 m_gridX;    // +0x54  grid x
+    i32 m_gridY;    // +0x58  grid y
+    i32 m_occupied; // +0x5c  occupied flag (the spawn scan skips a set one)
+};
+
 // The embedded MFC containers are the REAL MFC classes from <Mfc.h> (CPtrList 0x1c B,
 // CByteArray 0x14 B) - the former hand-rolled CTmObList/CTmByteArray views are GONE.
 // They were a fake-view bug with a link-fatal symptom: their decl-only methods/dtors
@@ -417,6 +435,29 @@ public:
     // iconloaders unit); declared-only here so consumer self/method calls mangle onto this
     // class and reloc-mask. No body/RVA in this TU.
     i32 FireCommand(i32 cmd, i32 x, i32 y, i32 slot, i32 a5, i32 a6);
+
+    // 0x46b6d0: the screen-coord -> cell-index probe the battlez spawn machine fires on
+    // this grid (two arg shapes at the same body; Ghidra leaves it class-unattributed).
+    // Declared-only (reloc-masked). These two are all that BattlezMapConfig.cpp's
+    // DUPLICATE `class CTriggerMgr` added - a second, divergent definition of THIS class
+    // inside a .cpp (its "m_objListHead @+0x04" is m_baseList's list head, its
+    // "m_grid[0x3c] @+0x1c" is m_grid). That view is dissolved.
+    i32 Probe(
+        i32 cell,
+        i32 sx,
+        i32 sy,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 a7,
+        i32 a8,
+        i32 a9,
+        i32 a10,
+        i32 a11,
+        i32 a12
+    );
+    i32 ProbeCell(i32 a0, i32 a1, void* a2, i32 a3, void* a4, i32 a5, i32 a6, i32 a7, i32 a8);
 
     // --- data layout (recovered from the raw this+offset field reads across both TUs) ---
     // The three embedded MFC containers (base CPtrList @0, record CPtrList @0x240, byte-table

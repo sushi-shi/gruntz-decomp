@@ -221,6 +221,9 @@ public:
     // +0x60..+0x6c IS a RECT - the board bound-rect (Clip/AllocGrid take its address and
     // hand it straight to Win32 IntersectRect). The "serialized 0x10 block" the CMapMgr
     // model saw and the bound rect the CBrickzGrid model saw are the same 16 bytes.
+    // (This header is included tree-wide and deliberately does NOT pull windows.h, so the
+    // rect stays spelled as its four edges; the Win32 IntersectRect / rect-assign sites
+    // reinterpret &m_originX as the RECT* it authentically is.)
     i32 m_originX;            // +0x60  bound rect left   (grid origin x)
     i32 m_originY;            // +0x64  bound rect top    (grid origin y)
     i32 m_boundRight;         // +0x68  bound rect right

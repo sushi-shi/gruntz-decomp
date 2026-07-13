@@ -78,6 +78,14 @@ public:
     CContainerErr(void* errSink); // 0x16d9c0 (defined in src/Gruntz/GameText.cpp)
     virtual ~CContainerErr();     // [0] the ONLY slot (??_G 0x16da40; real ~ at 0x16da60)
 
+    // 0x034960: the OUTLINED overflow/OOM report path (defined in BattlezMapConfig.cpp,
+    // where it sits in retail RVA order). Body = `g_retAddrBreadcrumb = GetRetAddr();
+    // m_errSink->Set(this, sentinel, code);` - the exact tail of the inlined grow-on-miss
+    // fast path (CActReg::ResolveEntry spells the same two statements). It was modeled as a
+    // .cpp-local `ZErrTarget` view {vptr@0, m_err@+0x04}: that IS this class's layout
+    // (vptr@0, m_errSink@+0x04), so the view is dissolved onto CContainerErr.
+    void Report(i32 sentinel, i32 code); // 0x034960
+
     CVariantSlot* m_errSink; // +0x04  the error sink this object registers with
 };
 

@@ -1302,6 +1302,12 @@ public:
     // sweep (a register-relative rect-walk regalloc wall - cl folds this+const to
     // absolute loads, overshooting 0x165 B). Called external/reloc-masked here.
     i32 RectContains(i32 x, i32 y);
+
+    // 0x343f0: recycle every occupied-coord node's payload onto g_coordPool's freelist,
+    // then RemoveAll the +0x31c CPtrList. A __thiscall ON a grunt - it was homed as the
+    // .cpp-local view `GridUnit::RecycleCoords`, and GridUnit IS CGrunt, so it lands here.
+    // Body lives in src/Gruntz/BattlezMapConfig.cpp (its retail RVA slot).
+    void RecycleCoords(); // 0x343f0
     i32
     RectContainsGated(i32 x, i32 y); // @0x51a20 (ret 8) sibling; m_198 gate, rects +0x2b0/+0x2c0
     i32 CommitNeighbor(i32 a, i32 b, i32 c, i32 d); // @0x5b050 (ret 0x10)
@@ -2035,9 +2041,10 @@ bool CGrunt_IsSameType(CGrunt* a, CGrunt* b);
 // CGrunt::TileSwitch(...) @0x4b320 - a 6-arg (__stdcall, ret 0x18) passthrough
 // that scales the first two args to tile pixel coords (*0x20+0x10) and forwards
 // all six to an engine helper. External callee reloc-masks.
-void GruntRecycleCoords(
-    CGrunt* g
-); // 0x343f0 coord-recycle (GridUnit::RecycleCoords is the matched view-named twin)
+// The free-function spelling of the same 0x343f0 coord-recycle (the receiver is loaded
+// into ecx but the free-form call sites drop it); the __thiscall body is
+// CGrunt::RecycleCoords, defined at that rva in BattlezMapConfig.cpp.
+void GruntRecycleCoords(CGrunt* g); // 0x343f0
 i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 // The engine tile-switch helper TileSwitch forwards to (__stdcall ret 0x18).
 i32 __stdcall GruntTileSwitchImpl(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);

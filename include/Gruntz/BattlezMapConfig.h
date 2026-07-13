@@ -45,23 +45,15 @@
 
 #include <Mfc.h> // CPtrArray, CDWordArray (real afxcoll, 0x14 layout); DWORD
 
-// ---- Run-phase engine object pointers (spawn view) --------------------------
-// The three TU-shared pointer members (m_ctx/m_triggerMgr/m_board) point at real
-// engine objects, modeled as the file-local views defined in the BattlezMapConfig RUN-phase unit:
-//   m_ctx        = the level/game spawn context (CTriggerMgr@+0x68 + per-band
-//                  records, 0x238 stride);
-//   m_triggerMgr = the level's CTriggerMgr (the 4x15 cell grid);
-//   m_board      = the CBrickz pathfinding-grid container.
+// ---- The head pointers are REAL engine classes ------------------------------
+// m_ctx (+0x04) IS the CLevelInfo LoadConfig was handed: retail Method_035210 reads
+// `[this+4] -> [+0x68] -> [+0x4]`, i.e. ctx->m_triggerMgr's list head - reaching the
+// SAME CTriggerMgr the run ctor caches at +0x08. The old `GruntSpawnCtx` / `Board` /
+// `CMapDims` views are dissolved onto CLevelInfo / CTriggerMgr / CMapMgr.
 class CTriggerMgr;
-class CTileTriggerSwitchLogic; // +0x14 cell-record query (run-phase FindChild receiver)
-struct GruntSpawnCtx;
-struct Board;
-// ---- Load-phase engine object pointers (config view) ------------------------
-// The same three slots hold level-info-derived handles during LoadConfig (the
-// object is filled from a CLevelInfo before the run phase reinterprets the slots).
-#include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (LoadConfig arg)
-struct CMapDims;
-struct CLevelSpawnInfo;
+class CTileTriggerSwitchLogic; // +0x14 cell-record query (the FindChild/FindByField0C receiver)
+class CGrunt;                  // <Gruntz/Grunt.h> - the grid units the spawn machine drives
+#include <Gruntz/LevelInfo.h>  // the canonical CLevelInfo (the LoadConfig arg AND m_ctx)
 
 SIZE(CBattlezMapConfig, 0x1e8);
 class CBattlezMapConfig {
@@ -112,12 +104,34 @@ public:
     i32 winapi_031ca0_IntersectRect(i32);
     i32 winapi_032060_IntersectRect(i32);
 
+    // ---- run phase, formerly modeled as the two SEPARATE .cpp-local views
+    // `CArriveMgr` and `CGruntMover` -----------------------------------------
+    // Both were views of THIS object: each names +0x08 the CTriggerMgr, +0x0c the
+    // CBrickzGrid/CMapMgr, +0x14 the cell-record query and +0x18 the band index -
+    // the exact head of the run view below. Their methods land here (RVA order), so
+    // the `this` casts and the duplicate layouts are gone.
+    i32 ResolveArrival(CGrunt* g); // 0x02c690  (was CArriveMgr::ResolveArrival)
+    i32 Step(CGrunt* g);           // 0x031610  (was CGruntMover::Step)
+
+    // The reloc-masked engine siblings both views dispatched on `this` (unreconstructed;
+    // declared-only so the __thiscall rel32 masks). Named by their ILT thunk rva.
+    i32 Gate1a14(CGrunt* g);                                     // thunk 0x1a14
+    void Effect374c(CGrunt* g, i32 kind);                        // thunk 0x374c
+    i32 Probe1a4b(CGrunt* g, i32 a, i32 b);                      // thunk 0x1a4b
+    void Impact25e5(CGrunt* g, i32 a, i32 b, i32 c);             // thunk 0x25e5
+    void SelfImpact2b58(CGrunt* g, i32 a, i32 b, i32 c);         // thunk 0x2b58
+    i32 Ready27ed(CGrunt* g);                                    // thunk 0x27ed
+    CGrunt* QueryTile4098(i32 x, i32 y, i32 dx, i32 dy);         // thunk 0x4098
+    void Commit42e1(CGrunt* g);                                  // thunk 0x42e1
+    void Plan293c(CGrunt* g, i32 x, i32 y, i32 a, i32 b, i32 c); // thunk 0x293c
+    void Finish3e4f(CGrunt* g, CGrunt* a);                       // thunk 0x3e4f
+
     // ---- head block 0x000..0xdc: two phase-views of the same bytes ---------
     union {
         // Run-phase (spawn state-machine) view.
         struct {
             i32 m_active;                         // +0x000  active gate (methods bail when 0)
-            GruntSpawnCtx* m_ctx;                 // +0x004  the level/game spawn context
+            CLevelInfo* m_ctx;                    // +0x004  the level (== the LoadConfig `lvl` arg)
             CTriggerMgr* m_triggerMgr;            // +0x008  the level's CTriggerMgr (4x15 grid)
             CBrickzGrid* m_board;                 // +0x00c  the CBrickz pathfinding-grid / tile-map
             i32 m_010;                            // +0x010  (untouched by run ctor)
@@ -177,11 +191,11 @@ public:
         // Load-phase (LoadConfig) view.
         struct {
             i32 m_0;                 // +0x00  = 1
-            CLevelInfo* m_levelInfo; // +0x04  = lvl
-            void* m_8;               // +0x08  = lvl->m_68
-            CMapDims* m_dims;        // +0x0c  = lvl->m_70
-            CLevelSpawnInfo* m_10;   // +0x10  = lvl->m_2c
-            i32 m_14;                // +0x14  = m_10->m_2e4
+            CLevelInfo* m_levelInfo; // +0x04  = lvl  (the SAME slot + object as m_ctx)
+            CTriggerMgr* m_8;        // +0x08  = lvl->m_triggerMgr  (== m_triggerMgr)
+            CMapMgr* m_dims;         // +0x0c  = lvl->m_dims        (== m_board)
+            CLevelSpawnInfo* m_10;   // +0x10  = lvl->m_spawnInfo
+            CTileTriggerSwitchLogic* m_14; // +0x14 = m_10->m_2e4   (== m_cellQuery)
             i32 m_ownerId;           // +0x18  = id (owner/team id)
             char m_pad1c[0x30 - 0x1c];
             DWORD m_defenderChance; // +0x30  DefenderChance

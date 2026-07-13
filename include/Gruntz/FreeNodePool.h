@@ -11,6 +11,20 @@
 #include <Ints.h>
 #include <rva.h>
 
+#include <Gruntz/CoordNode.h> // Coord - the {x,y} the pool's nodes carry inline
+
+// The pool's OWN node (the block is sizeof 0xc, m_linkOffset == 4): an intrusive free
+// link at +0x00 and the {x,y} payload INLINE at +0x04..+0x0b. The allocator hands out
+// &node->m_coord (node+4), which is why Push subtracts m_linkOffset to get back to the
+// node - and why a recycled Coord* minus 4 is its node. Distinct from CoordNode (the
+// MFC CObList cell: next@0, prev@4, data@8) that the grunts' occupied-coord lists use
+// to POINT at one of these payloads. Was the .cpp-local `CCoordPair` view.
+SIZE(CoordPoolNode, 0xc);
+struct CoordPoolNode {
+    CoordPoolNode* m_next; // +0x00  free-list link
+    Coord m_coord;         // +0x04  the {x,y} payload handed to the caller
+};
+
 // The real method (RTTI-named ?Push@FreeNodePool) is generic over the element type -
 // void* so the CoordNode*/payload call sites convert implicitly (no per-site cast);
 // the body reinterprets to char* for the m_c link-offset subtraction.

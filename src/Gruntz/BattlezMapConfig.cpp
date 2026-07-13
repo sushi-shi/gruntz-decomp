@@ -54,6 +54,11 @@
 #include <Gruntz/CoordNode.h>    // the shared coord-list node
 #include <Gruntz/FreeNodePool.h> // canonical coord free-pool (g_coordPool)
 #include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/TriggerMgr.h>     // the ONE CTriggerMgr (the local dup class is gone)
+#include <Gruntz/MapMgr.h>         // CBrickzGrid == CMapMgr (the board / tile grid)
+#include <Gruntz/QueueDrainHost.h> // the level's game-object collection + its cells
+#include <Wap32/zBitVec.h>         // CContainerErr (the zvec error-report target)
+#include <Gruntz/ActColl.h>        // GetRetAddr + g_retAddrBreadcrumb (the report breadcrumb)
 #include <Gruntz/LevelInfo.h> // the canonical CLevelInfo (LoadConfig arg1)
 #include <Bute/ButeMgr.h>     // CButeMgr (LoadConfig reads the g_buteMgr singleton)
 #include <Gruntz/GameRegistry.h>
@@ -61,7 +66,7 @@
 #include <Globals.h>
 
 #include <stdlib.h> // rand (0x11fee0, grid-scan neighbour pick); abs (branchless cdq/xor/sub)
-#include <math.h>   // sqrt (CGruntMover::Step board-distance, waveP)
+#include <math.h>   // sqrt (CBattlezMapConfig::Step board-distance, waveP)
 #pragma intrinsic(sqrt)
 #include <string.h>     // strcmp (anim-name dispatch -> inline sbb/sbb byte compare)
 #include <new>          // placement new (CRect in-place ctor)
@@ -76,234 +81,57 @@ void* __stdcall ListNodeAdvance(void** pos);
 // CGruntSpawnLevel sub-objects); only the two fields Method_025c20 reads
 // are named. Reloc-masked DATA. A struct (mangles `U`) gives the retail name.
 
-// The FOREIGN argument object of Method_02bfc0: a polymorphic unit whose vtable
-// carries two dispatched pair-emit slots at +0x2c (index 11) / +0x30 (index 12); the
-// rest are unreconstructed engine code. The slot call is a __thiscall indirect
-// (mov eax,[obj]; call [eax+slot]). Honest model = a manual vptr into a typed vtable
-// struct naming ONLY the two used slots as 4-byte thiscall PMFs + char pad[], NO fake
-// virtuals (the PMF is __thiscall by default, sidestepping the unspellable-keyword
-// issue in docs/patterns/dummy-virtual-slots.md).
-// Real polymorphic view: the compiler emits the vptr at +0x00; the two used slots
-// are real virtuals at their retail offsets (11 filler slots precede them). Declared-
-// only (no bodies, no ctor here) so no vtable is emitted - EmitArg is only ever cast
-// onto an engine object. `this->Emit2c(...)` lowers to the same `call [eax+0x2c]`.
-struct EmitArg {
-    virtual void Slot00();
-    virtual void Slot01();
-    virtual void Slot02();
-    virtual void Slot03();
-    virtual void Slot04();
-    virtual void Slot05();
-    virtual void Slot06();
-    virtual void Slot07();
-    virtual void Slot08();
-    virtual void Slot09();
-    virtual void Slot10();
-    virtual void Emit2c(void* coord, i32 count); // +0x2c (slot 11)
-    virtual void Emit30(void* coord, i32 count); // +0x30 (slot 12)
-    void CallEmit2c(void* coord, i32 count) {
-        Emit2c(coord, count);
-    }
-    void CallEmit30(void* coord, i32 count) {
-        Emit30(coord, count);
-    }
-};
+// Method_02bfc0's `obj` argument IS the shared CSerialArchive stream (<Gruntz/
+// SerialArchive.h>, included below): the two slots it dispatches - +0x2c (index 11)
+// and +0x30 (index 12) - are exactly that interface's Read (mode 7) / Write (mode 4),
+// and the two kind validators it gates on are this class's own Deserialize_02b950
+// (kind 7) / Serialize_02b420 (kind 4). The former `CSerialArchive` view (11 nameless filler
+// virtuals + Emit2c/Emit30) was a second, identical model of it - dissolved.
 
-// The serializer/archive the Serialize/Deserialize methods drive: the shared WAP32
-// CSerialArchive stream interface (Read @ vtable +0x2c / Write @ +0x30), now the one
-// modeled class in <Gruntz/SerialArchive.h> - the former local `Serializer` view is
-// folded away. Return values are unused; only the +0x2c/+0x30 dispatch bytes bind.
+// The unit's type/anim sub-object (grunt->m_objAux, +0x14) is the real CGameObjAux
+// (<Gruntz/UserLogic.h>): its +0x1c is the anim-name index g_typeColl resolves. The
+// former `CGameObjAux` view is dissolved onto it.
 
-// Method_02bfc0's two kind validators are CBattlezMapConfig siblings (thiscall on
-// `this`): kind-7 -> Deserialize_02b950 @0x2b950 (via ILT thunk 0x146a), kind-4 ->
-// Serialize_02b420 @0x2b420 (via ILT thunk 0x204a). Declared in the class header;
-// the former Validate_01146a/Kind4Validator fake decls (guessed the thunk rva) are
-// dissolved and the calls retargeted cast-free to the real bound siblings.
 
-struct UnitLevel;    // +0x10 board geometry (defined below; m_worldX/m_worldY)
-struct GridCandNode; // the candidate-list node (m_triggerMgr->m_objListHead)
+// The grid units ARE ::CGrunt (<Gruntz/Grunt.h>, included above) - the former
+// `CGrunt` view was a 40-field second model of it, and the file already had to cast
+// `((CGrunt*)unit)->RectContains(...)` to reach the real class. Every one of the view's
+// offsets lands on a CGrunt field at the IDENTICAL offset (m_entranceReason +0x170,
+// m_entrancePxX/Y +0x174/+0x178, m_lastTilePxX/Y +0x17c/+0x180, m_tileOwnerHi/Lo
+// +0x1ec/+0x1f0, m_gruntKind +0x258, m_defenderState +0x2d4, m_arrivalCol/Row
+// +0x2f0/+0x2f4, and the occupied-coord list at +0x31c), and its +0x10/+0x14 "level
+// geometry"/"anim" sub-objects are CUserLogic::m_object (CGameObject) / m_objAux
+// (CGameObjAux). Dissolved. The view's four hand-declared list fields
+// (m_31c/m_320/m_324/m_coordCount) are the INTERIOR of CGrunt's real MFC CPtrList
+// m_31c, so they are gone: this TU now reads the list through the real member and
+// through main's inline accessors (CoordHead/CoordTail/CoordCount).
+//
+// The level's CTriggerMgr is likewise the canonical class (<Gruntz/TriggerMgr.h>): the
+// view's "m_objListHead @+0x04" is m_baseList's head slot (an MFC CPtrList is
+// {vptr, pHead@+4, pTail@+8, count@+0xc, ...}) and its "m_grid[0x3c] @+0x1c" is
+// m_grid. Its candidate payloads are CTmCandidate (promoted to TriggerMgr.h).
 
-// The unit's type/anim sub-object (held at unit+0x14): its +0x1c is a name index
-// resolved through g_typeColl.
-struct UnitAnim {
-    char m_pad00[0x1c];
-    i32 m_1c; // +0x1c  anim-name index
-};
-SIZE_UNKNOWN(UnitAnim);
-
-// A CGrunt unit (the huge game-object the grid stores). Modeled by raw offset:
-// it is a separate, far larger class; only the offsets these methods touch are
-// named. m_state = a state slot, m_mode = a mode, m_targetX/m_targetY = a target coord.
-struct GridUnit {
-    char m_pad000[0x10];
-    UnitLevel* m_level; // +0x010  board geometry
-    UnitAnim* m_anim;   // +0x014  the unit's type/anim sub-object (m_1c = a name index)
-    char m_pad018[0x170 - 0x18];
-    i32 m_animPrim; // +0x170  primary anim/state id
-    i32 m_packedX;  // +0x174  packed x ((grid<<5)+0x10)
-    i32 m_packedY;  // +0x178  packed y ((grid<<5)+0x10)
-    i32 m_cachedX;  // +0x17c  cached level x (compared to lvl->m_worldX)
-    i32 m_cachedY;  // +0x180  cached level y (compared to lvl->m_worldY)
-    char m_pad184[0x194 - 0x184];
-    i32 m_queuedAnim;     // +0x194  band-C queued anim
-    i32 m_trigMode;       // +0x198  trigger-event mode (0=off, 0x1e=special)
-    i32 m_animSec;        // +0x19c  secondary anim/state id (used when m_animPrim > 0x16)
-    i32 m_queuedSentinel; // +0x1a0  band-C queued-coord sentinel (-1)
-    char m_pad1a4[0x1e4 - 0x1a4];
-    i32 m_guard1e4; // +0x1e4  eligibility guard (must be 0 to dispatch; role unproven)
-    char m_pad1e8[0x1ec - 0x1e8];
-    i32 m_trigA; // +0x1ec  trigger arg A (-> ApplyTriggerB / Commit)
-    i32 m_trigB; // +0x1f0  trigger arg B
-    char m_pad1f4[0x1fc - 0x1f4];
-    i32 m_1fc; // +0x1fc  eligibility guard (must be nonzero to dispatch; role unproven)
-    char m_pad200[0x220 - 0x200];
-    i32 m_220; // +0x220  eligibility guard (must be 0 to dispatch; role unproven)
-    char m_pad224[0x250 - 0x224];
-    i32 m_pathCfg;   // +0x250  path config word (0xd87 / g_spawnCfg)
-    i32 m_pathState; // +0x254  path state code (walked 0x40/0x248/...)
-    i32 m_kind;      // +0x258  kind/type code (0x36 = special)
-    char m_pad25c[0x2d0 - 0x25c];
-    i32 m_2d0;   // +0x2d0  spawn-seed anim/state (set 0x11; role unproven)
-    i32 m_state; // +0x2d4  primary state (0/2/3/5)
-    i32 m_mode;  // +0x2d8  spawn mode (0/3/4/0xb)
-    char m_pad2dc[0x2e0 - 0x2dc];
-    i32 m_countdown;  // +0x2e0  state-3 countdown
-    i32 m_claimAnim;  // +0x2e4  claimed anim/mode value
-    i32 m_targetBand; // +0x2e8  target band index (-1 = unset)
-    i32 m_idleTimer;  // +0x2ec  idle/cooldown timer (ms)
-    i32 m_targetX;    // +0x2f0  queued target cell x (-1 = none)
-    i32 m_targetY;    // +0x2f4  queued target cell y (-1 = none)
-    i32 m_2f8;        // +0x2f8  secondary target x (set -1; role unproven)
-    i32 m_2fc;        // +0x2fc  secondary target y (set -1; role unproven)
-    i32 m_goalX;      // +0x300  path goal x (-1 = none)
-    i32 m_goalY;      // +0x304  path goal y (-1 = none)
-    char m_pad308[0x31c - 0x308];
-    char m_coordList[0x320 - 0x31c]; // +0x31c  occupied-coords CPtrList base
-    CoordNode* m_coordHead;          // +0x320  list head (node->next at +0)
-    CoordNode* m_coordTail;          // +0x324  list tail node
-    i32 m_coordCount;                // +0x328  list count/flag
-    char m_pad32c[0x364 - 0x32c];
-    i32 m_busy; // +0x364  busy flag (0 = idle/available)
-    i32 m_368;  // +0x368  eligibility guard (must be 0 to dispatch; role unproven)
-    char m_pad36c[0x390 - 0x36c];
-    i32 m_arrived; // +0x390  "arrived" latch
-
-    // 0x0343f0 (re-homed from the CBattlezMapConfig cluster - it is a __thiscall ON a
-    // GridUnit, not the spawn mgr): recycle every occupied-coord node's payload onto
-    // g_coordPool.m_freeHead, then RemoveAll the +0x31c CPtrList. Defined out-of-line (retail RVA below).
-    void RecycleCoords(); // 0x0343f0
-
-    // The unit-side tile-switch/place: retail's Method_035550 calls this __thiscall
-    // spelling (it emits `mov ecx,unit; push 6; call thunk 0x1640` - the dead ecx the
-    // free-form __stdcall sites drop), so byte-faithfulness needs the method form. The
-    // rel32 targets the ILT jmp-thunk 0x1640 (-> 0x04b320 = ?CGrunt_TileSwitch, bound in
-    // grunt). The resolved 0x4b320 can't take a 2nd func label (dup-RVA guard vs
-    // CGrunt_TileSwitch), so bind THIS alias to the THUNK the call literally targets;
-    // reloc_fidelity thunk-resolves both sides to 0x4b320 -> CORRECT (no cross-cast).
-    // @data-symbol: ?TileSwitch@GridUnit@@QAEHHHHHHH@Z 0x00001640
-    i32 TileSwitch(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5); // thunk 0x1640 -> 0x04b320
-};
-
-// The level's CTriggerMgr, held at this->m_triggerMgr (the real class, <Gruntz/TriggerMgr.h>:
-// ?ApplyTriggerB@CTriggerMgr@@ @0x06e120). This is the file-local view of only what
-// this TU touches - the base object-list head at +0x04 (the candidate list) and the
-// 4x15 placed-cell grid at +0x1c (stride 4, GridUnit* cells, indexed [band*15 + k]).
-// ApplyTriggerB / Probe / ProbeCell are its __thiscall methods (Probe/ProbeCell =
-// FUN_46b6d0, Ghidra class-unattributed - the screen-coord -> cell-index probe called
-// on the trigger-mgr `this` in a 13-arg and a 9-arg form). Declared-only, reloc-masked.
-class CTriggerMgr {
-public:
-    char m_pad00[0x04];
-    GridCandNode* m_objListHead; // +0x04  base object-list head (the candidate list)
-    char m_pad08[0x1c - 0x08];
-    GridUnit* m_grid[0x3c]; // +0x1c  the 4x15 placed-cell grid (stride 4), indexed [band*15 + k]
-    i32 ApplyTriggerA(
-        i32 col,
-        i32 row,
-        i32 a24,
-        i32 a28
-    ); // (CArriveMgr::ResolveArrival tile-trigger, waveP)
-    i32 ApplyTriggerB(i32 a, i32 b, i32 x, i32 y); // 0x06e120 (CTriggerMgr::ApplyTriggerB, i32 ret)
-    i32 Probe(
-        i32 cell,
-        i32 sx,
-        i32 sy,
-        i32 a3,
-        i32 a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8,
-        i32 a9,
-        i32 a10,
-        i32 a11,
-        i32 a12
-    ); // 0x46b6d0
-    i32 ProbeCell(
-        i32 a0,
-        i32 a1,
-        void* a2,
-        i32 a3,
-        void* a4,
-        i32 a5,
-        i32 a6,
-        i32 a7,
-        i32 a8
-    ); // 0x46b6d0
-};
-
-// A {x, y} coordinate pair (a list node's +0x8 payload).
-struct Coord {
-    i32 m_x; // +0x00
-    i32 m_y; // +0x04
-};
-
-// One occupied-coord list node (CoordNode) is defined in <Gruntz/CoordNode.h>:
-// ->m_next at +0, ->m_coord at +8.
-
-// A candidate spawn-point node: {x, y} at +0 / +4. Lives in the per-level
-// record's candidate array (rec->m_04[r]).
-struct Candidate {
-    i32 m_x; // +0x00
-    i32 m_y; // +0x04
-};
-
-// A map tile: 0x1c-byte record (7 dwords). Its first dword is a flags word
-// (bits: 0x2/0x4/0x8/0x20/0x40/0x100/0x200/0x800/0x8000/0x20000000); the low byte
-// carries the coarse blocked/special code ((u8)==1 => blocked).
-struct Tile {
-    i32 m_flags;   // +0x00  flags word
-    i32 m_rest[6]; // +0x04..0x1c
-};
-
-// The grid candidate list (m_triggerMgr->m_objListHead): each node holds the
-// candidate sub-object (its level coord at +0x54 / +0x58, an "occupied" flag at
-// +0x5c) at +0x8. Defined here (used by Method_029b40's kind-7 arm below and by
-// Method_0350d0 further down).
-struct GridCandNode {
-    GridCandNode* m_next; // +0x00
-    char m_pad04[0x04];
-    char* m_payload; // +0x08
-};
-// The candidate sub-object reached via node->m_8: m_54/m_58 carry its grid (>>5)
-// coordinate, m_5c is a nonzero "already occupied" flag.
-struct GridCand {
-    char m_pad00[0x54];
-    i32 m_gridX;    // +0x54  grid x
-    i32 m_gridY;    // +0x58  grid y
-    i32 m_occupied; // +0x5c  occupied flag (skip when set)
-};
+// The {x,y} pair is the canonical Coord (<Gruntz/CoordNode.h>); the tile record is
+// the canonical BrickzCell (<Gruntz/Brickz.h>, the 0x1c-byte cell: m_0 flags word,
+// m_10 bute type code). The four identical local pair views (Coord / Candidate /
+// CCoordXY / ProbePair) and the two tile views (Tile / CArriveCell) are dissolved.
+//
+// The trigger-mgr's candidate list is m_baseList - a real MFC CPtrList (RTTI-proven:
+// the [0x1b4867, 0x1b4b43) band's ctor stamps ??_7CPtrList@@6B@). Its cells are walked
+// with GetHeadPosition()/GetNext() (both _AFXCOLL_INLINE - the identical
+// `mov eax,pos; mov pos,[eax]; mov eax,[eax+8]` the raw node view emitted), and the
+// payloads are CTmCandidate (<Gruntz/TriggerMgr.h>).
 
 // The board/tile map held at this->m_board is the canonical CBrickzGrid
-// (<Gruntz/Brickz.h>). m_rows is a row-pointer table; a row is a Tile array indexed
+// (<Gruntz/Brickz.h>). m_rows is a row-pointer table; a row is a BrickzCell array indexed
 // by x. m_width / m_height are the in-bounds limits, m_originX.. is the board dirty
 // rect (left/top/right/bottom) recomputed by the IntersectRect-clamp idiom, with the
 // derived span at m_gridW / m_gridH. FindPath and Clip are its real methods, dispatched
 // __thiscall on m_board; CBrickzGrid::Clip (0x02b340) lives in src/Gruntz/Brickz.cpp.
 
-// A GridUnit __thiscall helper (RVA 0x029a50, thunk 0x036c0) that copies the
-// unit's level geometry (m_level->m_5c, m_level->m_60) into an out coord pair.
-// Modeled as a method on GridUnit so the `mov ecx,unit; push &out; call` lowers
+// A CGrunt __thiscall helper (RVA 0x029a50, thunk 0x036c0) that copies the
+// unit's level geometry (m_object->m_5c, m_object->m_60) into an out coord pair.
+// Modeled as a method on CGrunt so the `mov ecx,unit; push &out; call` lowers
 // cleanly. External, reloc-masked (no body).
 // The coord-node free pool (?DAT_00645540): an intrusive-list allocator whose
 // Push(elem) (RVA 0x0311b0, thunk 0x0163b) pushes (elem - this->m_0c) onto the
@@ -311,14 +139,9 @@ struct GridCand {
 DATA(0x00245540)
 extern FreeNodePool g_coordPool;
 
-// The coord-list node-advance helper (RVA 0x029a30, thunk 0x01de8): a __thiscall
-// on the +0x31c CPtrList (the `this` is ignored) taking the address of a POSITION;
-// it returns &node->data (node+8) and advances *pos to node->next. The g_coordPool
-// recycle loops iterate through it (`coord = *(void**)Advance(&pos)`). External,
-// reloc-masked (no body).
-struct CoordListWalk {
-    // Advance @0x29a30 IS the free __stdcall ListNodeAdvance (receiver dropped); see decl above.
-};
+// The coord-list node-advance helper (RVA 0x29a30) is the free __stdcall
+// ListNodeAdvance declared at the top (the empty `CoordListWalk` shell that used to
+// wrap it is gone).
 
 // The shared rect-init helper (RVA 0x029ac0, thunk 0x034a4): a __thiscall that
 // fills a RECT (left/top/right/bottom from the four args) and returns it. Ghidra/
@@ -331,63 +154,20 @@ struct CoordListWalk {
 // taking a packed (x,y) pair; nonzero => the cell is occupied. Used by the grid
 // state-machines below. External, reloc-masked (no body).
 // The per-unit spawn/place hook (RVA 0x04b320, thunk 0x01640): a __thiscall on the
-// GridUnit taking (x, y, a2, flags, a4, a5); nonzero on a successful placement.
+// CGrunt taking (x, y, a2, flags, a4, a5); nonzero on a successful placement.
 // External, reloc-masked (no body).
 // Place @0x04b320 (thunk 0x1640) is the free __stdcall CGrunt_TileSwitch(6 args: x/y = tile
 // coords); the unit receiver is loaded into ecx but ignored, so it is dropped at each site.
 i32 __stdcall CGrunt_TileSwitch(i32 x, i32 y, i32 a2, i32 flags, i32 a4, i32 a5);
 
-// A level/board geometry object held on a unit at +0x10: its +0x5c / +0x60 carry
-// a packed (x<<5)/(y<<5) coordinate.
-struct UnitLevel {
-    char m_pad00[0x5c];
-    i32 m_worldX; // +0x5c  packed world x (>>5 = grid x)
-    i32 m_worldY; // +0x60  packed world y (>>5 = grid y)
-};
-
-// The deep render/view object reached via m_ctx->m_scene->m_24->m_5c. Its
-// WorldToScreen (RVA 0x0311e0, thunk 0x03585) is a __thiscall taking
-// (Coord* out, i32 wx, i32 wy) that maps a world coordinate to a screen pixel.
-// External, reloc-masked (no body).
-
-// The level/game spawn context held at this->m_ctx: the object the spawn state
-// machine drives. Its header sub-objects are named members below; the per-band
-// records (0x238 stride) are reached by raw offset ((char*)m_ctx + band*0x238 +
-// field) since their fields overlap past the nominal stride. QueryA/QueryB
-// (0x0516f20 / 0x0516ee0) are its __thiscall cell/record lookups; the cell-index
-// probe (ProbeCell @0x046b6d0) is dispatched on its m_68 CTriggerMgr. Real class
-// undetermined (Ghidra FUN_ for the queries); file-local view of what this TU touches.
-struct SceneColl; // the scene-object collection (scene->m_8; defined below)
-
-// The scene/surface manager held at ctx+0x30: its +0x08 is the scene-object
-// collection, and +0x24->+0x5c is the ViewMapper (world->screen).
-struct SceneView24 {
-    char m_pad00[0x5c];
-    CPlaneRender* m_5c; // +0x5c
-};
-SIZE_UNKNOWN(SceneView24);
-struct Scene {
-    char m_pad00[0x08];
-    SceneColl* m_8; // +0x08  scene-object collection
-    char m_pad0c[0x24 - 0x0c];
-    SceneView24* m_24; // +0x24  (->m_5c = the ViewMapper)
-};
-SIZE_UNKNOWN(Scene);
-
-struct GruntSpawnCtx {
-    char m_pad00[0x10];
-    UnitLevel* m_level;                      // +0x10  the level geometry object
-    CTileTriggerSwitchLogic* m_cellResolver; // +0x14  the cell resolver
-    char m_pad18[0x30 - 0x18];
-    Scene* m_scene; // +0x30  the scene/surface mgr (m_8 = scene collection,
-                    //         m_24->m_5c = the ViewMapper)
-    char m_pad34[0x68 - 0x34];
-    CTriggerMgr* m_triggerMgr; // +0x68  the level's CTriggerMgr (cell probe / trigger applier)
-    char m_pad6c[0x70 - 0x6c];
-    char* m_cellTable; // +0x70  the direct cell table (0x67-marker fast path)
-    // QueryA @0x116f20 IS CTileTriggerContainer::FindInLists12; cast at the call.
-    // QueryB @0x116ee0 IS CTileTriggerSwitchLogic::FindChild; cast at each call.
-};
+// The level itself: `m_ctx` (CBattlezMapConfig+0x04) IS the CLevelInfo LoadConfig was
+// handed - retail Method_035210 walks `[this+4] -> [+0x68] -> [+0x4]`, i.e.
+// ctx->m_triggerMgr->m_baseList, reaching the SAME CTriggerMgr the ctor caches at
+// +0x08. So the `CLevelInfo` view was a second model of CLevelInfo; its +0x30
+// "scene" is CLevelInfo::m_objList (CLevelList: m_coll = the walked object collection,
+// m_view->m_5c = the world->screen mapper), and its +0x10 is the level's active
+// CGameObject. All folded into <Gruntz/LevelInfo.h>. (The view's "m_cellResolver"
+// @+0x14 was a PHANTOM - see the receiver note in BattlezMapConfig.h.)
 
 // ---- Reloc-masked engine globals --------------------------------------------
 // The intrusive freelist head: a singly-linked list of recycled coord-pair nodes
@@ -435,14 +215,14 @@ DATA(0x00245584)
 extern i32 g_tickDelta;
 
 // The unit-side state mutator (RVA 0x065e80, thunk 0x03c6a): a __thiscall on a
-// GridUnit taking (value, 0, 0, 1, 1). External, reloc-masked (no body).
+// CGrunt taking (value, 0, 0, 1, 1). External, reloc-masked (no body).
 // The difficulty/spawn scale factor (?g_diffScale@@3MB, a `const float` @ VA
 // 0x5e96ec; owner-TU def). Read by the fild/fmul spawn-budget computation.
 DATA(0x001e96ec)
 const float g_diffScale = 0.01f; // 0x5e96ec
 
 // The two runtime-config globals the spawn state machine copies into the unit's
-// m_pathCfg/m_pathState slots (DAT_0060ccc0 = 0x98f, DAT_0062b7ec = a state code). Reloc-
+// m_250/m_254 slots (DAT_0060ccc0 = 0x98f, DAT_0062b7ec = a state code). Reloc-
 // masked DATA (VA - 0x400000). The per-level records are the shared m_ctx-indexed
 // 0x238-stride block (the m_ctx-indexed 0x238-stride records); the fields the spawn state
 // machine reaches (+0x170/+0x174 ready-flags, +0x188 edge sub-object, +0x258/+0x25c
@@ -463,7 +243,7 @@ DATA(0x0022b7ec)
 i32 g_spawnState;
 
 // The global step timer (?g_stepTimer, DAT_00645588 @ VA 0x645588): the 32-bit
-// tick counter the m_arrived latch debounces against the bundle's m_scratch78..m_084 pair.
+// tick counter the m_390 latch debounces against the bundle's m_scratch78..m_084 pair.
 DATA(0x00245588)
 extern i32 g_stepTimer;
 
@@ -479,14 +259,6 @@ extern i32 g_stepTimer;
 // anim-name dispatch (g_typeColl) + the g_coordPool.m_freeHead/coord recycling +
 // FindPath/CPtrList path-swap idioms already modeled above.
 // ===========================================================================
-
-// The unit-side state mutator at this+? (RVA 0x06dae0, thunk 0x014bf): a __thiscall
-// (push2-arg) on the m_ctx->m_8 sub-object. And a coord-occupancy query (RVA
-// 0x051850, thunk 0x03c4c) a __thiscall on `this` taking a packed (x,y) pair.
-// External, reloc-masked (no body).
-struct UnitMutator2 {
-    void Apply(i32 a, i32 b); // 0x06dae0
-};
 
 // ===========================================================================
 // CBattlezMapConfig::LoadConfig  @0x025020  (config phase; /GX-neutral)
@@ -506,7 +278,7 @@ extern CButeMgr g_buteMgr;
 extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 
 // The three engine RTTI type-descriptor records the marker filters key off. Each
-// loop's type test is `obj->m_7c->m_10 == (typeId)`, where the engine encodes the
+// loop's type test is `obj->m_7c->Init == (void (*)(CGameObject*)) (typeId)`, where the engine encodes the
 // type id as `descriptor_address + 5`: the compiled `cmp $5, [rtti+0x10]` carries a
 // DIR32 reloc to the descriptor on its immediate (imm32 = &descN + 5). Modeling the
 // RHS as `(int)(&descN + 5)` reproduces that relocation byte-for-byte. The records
@@ -518,102 +290,48 @@ extern "C" void __stdcall SetAtGrow(i32 arrayHandle, void* node);
 // The difficulty-tier sink the rescale stamps (5 Hard / 10 Normal / 20 Easy).
 
 // ---------------------------------------------------------------------------
-// The level object-list node + the per-tag store the loops walk.
-//   CLevelNode  - a list cell: m_0 next, m_8 payload object.
-//   CLevelObj   - a walked object: +0x10 type-id (via its +0x7c RTTI record),
-//                 +0x5c/+0x60 marker coords, +0x124 map id, +0x8 flags.
-//   CLevelList  - the list head: +0x14 first, +0x64 GetNext cursor.
+// The three marker loops walk the level's game-object collection
+// (lvl->m_objList->m_coll, <Gruntz/QueueDrainHost.h>): cells are CQueueProbeNode
+// {next@+0, data@+8}, payloads are real ::CGameObject (m_flags +0x08, m_screenX/Y
+// +0x5c/+0x60, m_7c the CGameObjAux whose +0x10 holds the object's FACTORY fn-ptr -
+// the type key the filters compare - and m_124 the per-map id). The former CQueueProbeNode
+// / CGameObject / CGameObjAux / CLevelList / CBrickzGrid / CLevelSpawnInfo views are dissolved
+// onto those real classes (CBrickzGrid was the CBrickzGrid; its "+0xc" is m_width).
 // ---------------------------------------------------------------------------
-// The object hung off CLevelInfo::m_2c: only its +0x2e4 word is read (into m_14).
-struct CLevelSpawnInfo {
-    char m_pad00[0x2e4];
-    i32 m_2e4; // +0x2e4  read into CBattlezMapConfig::m_14
-};
-
-struct CLevelObj; // defined below
-struct CMapDims;  // defined below
-struct CLevelNode {
-    CLevelNode* m_0; // +0x00  next cell
-    char m_pad04[4];
-    CLevelObj* m_8; // +0x08  payload object
-};
-
-// The +0x7c RTTI record: +0x10 is the engine type-id word the filter compares against
-// the object type's registered FACTORY function pointer (RegisterType stores the create-fn
-// pointer as the type key). The three marker loops match the GruntCreationPoint / ExitTrigger
-// / WayPoint types, so they compare against &Create{GruntCreationPoint,ExitTrigger,WayPoint}
-// (their ILT thunks 0x17e4/0x192e/0x1087, @data-symbol-bound in GameObjectFactory.cpp) - the
-// real factory addresses, not the ex-`g_typeDescN + 5` stand-in (unbound; R63 identified them).
+// The +0x7c aux's +0x10 slot holds the object type's registered FACTORY function
+// pointer (RegisterType stores the create-fn there), so each marker loop's type test is
+// `obj->m_7c->Init == &Create<Type>` - a DIR32 on the ILT thunk.
 extern "C" {
     void* CreateGruntCreationPoint(); // ILT thunk 0x17e4 (GameObjectFactory.cpp)
     void* CreateExitTrigger();        // ILT thunk 0x192e
     void* CreateWayPoint();           // ILT thunk 0x1087
 }
-struct CRttiRec {
-    char m_pad00[0x10];
-    i32 m_10;
-};
 
-struct CLevelObj {
-    char m_pad00[0x8];
-    i32 m_8; // +0x08  flags (loop 2 ors in 0x10000)
-    char m_pad0c[0x5c - 0xc];
-    i32 m_5c; // +0x5c  marker X (scaled into the coord pair)
-    i32 m_60; // +0x60  marker Y
-    char m_pad64[0x7c - 0x64];
-    CRttiRec* m_7c; // +0x7c  RTTI object whose +0x10 holds the type-id
-    char m_pad80[0x124 - 0x80];
-    i32 m_124; // +0x124 per-map id (matched against the map-id local)
-};
+// The coord-pair node LoadConfig pops off the pool freelist is the pool's own
+// CoordPoolNode (<Gruntz/FreeNodePool.h>): {next@+0x00, {x,y}@+0x04} - which is why
+// the pool's m_linkOffset is 4 and the handed-out slot is &node->m_coord.
 
-struct CLevelList {
-    char m_pad00[0x8];
-    CLevelList* m_8; // +0x08  the actual object list ListGetFirst/Next walk
-    char m_pad0c[0x14 - 0xc];
-    CLevelNode* m_14; // +0x14  list first
-    char m_pad18[0x64 - 0x18];
-    CLevelNode* m_64; // +0x64  GetNext cursor
-};
-
-// The source level-info object (arg1) is the canonical CLevelInfo
-// (<Gruntz/LevelInfo.h>, included above): m_spawnInfo(+0x2c)/m_objList(+0x30)/
-// m_68(+0x68)/m_dims(+0x70) are the load-bearing reads here.
-
-// The 2-int coord-pair node pulled off the freelist (the slot the SetAtGrow array
-// stores). The freelist links through node->m_0; the usable pair is m_4/m_8.
-struct CCoordPair {
-    void* m_0; // +0x00  freelist next
-    i32 m_4;   // +0x04  X
-    i32 m_8;   // +0x08  Y
-};
-
-// The dims object m_c points at: its +0xc word drives the /3 and >>2 fields.
-struct CMapDims {
-    char m_pad00[0xc];
-    u32 m_c;
-};
-
-// The list GetFirst/GetNext cursor idiom the three marker loops share. GetFirst
-// seeds the cursor (m_64) from the head (m_14) and returns the first payload;
-// GetNext advances the cursor (m_64 = node->m_0) and returns node->m_8. Both
-// return 0 at the end. Marked inline so the bodies fold into each loop.
-static inline CLevelObj* ListGetFirst(CLevelList* list) {
-    CLevelNode* n = list->m_14;
-    list->m_64 = n;
+// The list GetFirst/GetNext cursor idiom the three marker loops share, on the level's
+// game-object collection (<Gruntz/QueueDrainHost.h>). GetFirst seeds the +0x64 cursor
+// from the head (+0x14) and returns the first payload; GetNext advances it. Both return
+// 0 at the end. Marked inline so the bodies fold into each loop.
+static inline CGameObject* ListGetFirst(CQueueDrainHost* list) {
+    CQueueProbeNode* n = list->m_head;
+    list->m_cursor = n;
     if (n == 0) {
         return 0;
     }
-    list->m_64 = n->m_0;
-    return n->m_8;
+    list->m_cursor = n->m_next;
+    return n->m_data;
 }
 
-static inline CLevelObj* ListGetNext(CLevelList* list) {
-    CLevelNode* n = list->m_64;
+static inline CGameObject* ListGetNext(CQueueDrainHost* list) {
+    CQueueProbeNode* n = list->m_cursor;
     if (n == 0) {
         return 0;
     }
-    list->m_64 = n->m_0;
-    return n->m_8;
+    list->m_cursor = n->m_next;
+    return n->m_data;
 }
 
 // CBattlezMapConfig is defined once in <Gruntz/BattlezMapConfig.h> (included above).
@@ -707,7 +425,7 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
     m_5c = 0;
     m_levelInfo = lvl;
     m_ownerId = id;
-    m_8 = lvl->m_68;
+    m_8 = lvl->m_triggerMgr;
     m_dims = lvl->m_dims;
     m_10 = lvl->m_spawnInfo;
     m_14 = m_10->m_2e4;
@@ -726,49 +444,49 @@ i32 CBattlezMapConfig::LoadConfig(CLevelInfo* lvl, i32 id, i32 diff) {
 
     // --- loop 1: append EVERY type-1 start marker to the +0xdc array. The marker
     //     coords are scaled by signed /32 (round-toward-zero) into a freelist pair.
-    //     The list is re-derived (lvl->m_objList->m_8) and advanced via the GetNext
+    //     The list is re-derived (lvl->m_objList->m_coll) and advanced via the GetNext
     //     cursor idiom on every step. ---
-    for (CLevelObj* cur = ListGetFirst(lvl->m_objList->m_8); cur != 0;
-         cur = ListGetNext(lvl->m_objList->m_8)) {
-        if (cur->m_7c->m_10 == (i32)&CreateGruntCreationPoint && cur->m_124 == id) {
-            CCoordPair* p = (CCoordPair*)g_coordPool.m_freeHead;
+    for (CGameObject* cur = ListGetFirst(lvl->m_objList->m_coll); cur != 0;
+         cur = ListGetNext(lvl->m_objList->m_coll)) {
+        if (cur->m_7c->Init == (void (*)(CGameObject*))&CreateGruntCreationPoint && cur->m_124 == id) {
+            CoordPoolNode* p = (CoordPoolNode*)g_coordPool.m_freeHead;
             i32* slot = 0;
-            if (p->m_0 != 0) {
-                slot = &p->m_4;
-                g_coordPool.m_freeHead = p->m_0;
+            if (p->m_next != 0) {
+                slot = &p->m_coord.m_x;
+                g_coordPool.m_freeHead = p->m_next;
             }
-            slot[0] = cur->m_5c / 32;
-            slot[1] = cur->m_60 / 32;
+            slot[0] = cur->m_screenX / 32;
+            slot[1] = cur->m_screenY / 32;
             SetAtGrow(m_candArray.GetSize(), slot);
         }
     }
 
     // --- loop 2: find the FIRST type-2 marker, stamp m_markerX/m_markerY with its /32 coords,
     //     and stop (fall straight into loop 3). ---
-    for (CLevelObj* cur2 = ListGetFirst(lvl->m_objList->m_8); cur2 != 0;
-         cur2 = ListGetNext(lvl->m_objList->m_8)) {
-        if (cur2->m_7c->m_10 == (i32)&CreateExitTrigger && cur2->m_124 == id) {
-            m_markerX = cur2->m_5c / 32;
-            m_markerY = cur2->m_60 / 32;
+    for (CGameObject* cur2 = ListGetFirst(lvl->m_objList->m_coll); cur2 != 0;
+         cur2 = ListGetNext(lvl->m_objList->m_coll)) {
+        if (cur2->m_7c->Init == (void (*)(CGameObject*))&CreateExitTrigger && cur2->m_124 == id) {
+            m_markerX = cur2->m_screenX / 32;
+            m_markerY = cur2->m_screenY / 32;
             break;
         }
     }
 
     // --- loop 3: append EVERY type-3 marker to the +0xf0 array, scaled by >>5
     //     (arithmetic floor), and set bit 0x10000 in the matched object's flags. ---
-    for (CLevelObj* cur3 = ListGetFirst(lvl->m_objList->m_8); cur3 != 0;
-         cur3 = ListGetNext(lvl->m_objList->m_8)) {
-        if (cur3->m_7c->m_10 == (i32)&CreateWayPoint && cur3->m_124 == id) {
-            CCoordPair* p = (CCoordPair*)g_coordPool.m_freeHead;
+    for (CGameObject* cur3 = ListGetFirst(lvl->m_objList->m_coll); cur3 != 0;
+         cur3 = ListGetNext(lvl->m_objList->m_coll)) {
+        if (cur3->m_7c->Init == (void (*)(CGameObject*))&CreateWayPoint && cur3->m_124 == id) {
+            CoordPoolNode* p = (CoordPoolNode*)g_coordPool.m_freeHead;
             i32* slot = 0;
-            if (p->m_0 != 0) {
-                slot = &p->m_4;
-                g_coordPool.m_freeHead = p->m_0;
+            if (p->m_next != 0) {
+                slot = &p->m_coord.m_x;
+                g_coordPool.m_freeHead = p->m_next;
             }
-            slot[0] = cur3->m_5c >> 5;
-            slot[1] = cur3->m_60 >> 5;
+            slot[0] = cur3->m_screenX >> 5;
+            slot[1] = cur3->m_screenY >> 5;
             SetAtGrow(m_0f0.GetSize(), slot);
-            cur3->m_8 |= 0x10000;
+            cur3->m_flags |= 0x10000;
         }
     }
 
@@ -947,19 +665,19 @@ i32 CBattlezMapConfig::Method_025d90() {
     }
     // Level off the mode-3 countdowns: find the minimum, subtract it from each.
     i32 mn = 0x10;
-    GridUnit** row = &m_triggerMgr->m_grid[m_curCell * 15];
+    CGrunt** row = &m_triggerMgr->m_grid[m_curCell * 15];
     for (i32 s = 15; s != 0; s--) {
-        GridUnit* u = *row;
-        if (u != 0 && u->m_state == 3 && u->m_countdown < mn) {
-            mn = u->m_countdown;
+        CGrunt* u = *row;
+        if (u != 0 && u->m_defenderState == 3 && u->m_2e0 < mn) {
+            mn = u->m_2e0;
         }
         row++;
     }
     if (mn != 0 && mn != 0x10) {
         for (i32 k = 0; k < 15; k++) {
-            GridUnit* u = m_triggerMgr->m_grid[m_curCell * 15 + k];
-            if (u != 0 && u->m_state == 3) {
-                u->m_countdown -= mn;
+            CGrunt* u = m_triggerMgr->m_grid[m_curCell * 15 + k];
+            if (u != 0 && u->m_defenderState == 3) {
+                u->m_2e0 -= mn;
             }
         }
     }
@@ -967,19 +685,19 @@ i32 CBattlezMapConfig::Method_025d90() {
     // ready mode-3 it becomes the forced first candidate of the scan, otherwise
     // (2/3 chance) kick its idle behaviour.
     i32 forced = 0;
-    GridUnit* forcedUnit = 0;
+    CGrunt* forcedUnit = 0;
     if (m_repickTimer - m_repickLastFire > m_repickInterval) {
         i32 r = rand() % 15;
-        GridUnit* u = m_triggerMgr->m_grid[m_curCell * 15 + r];
+        CGrunt* u = m_triggerMgr->m_grid[m_curCell * 15 + r];
         forcedUnit = u;
         forced = 0;
-        if (u != 0 && u->m_state == 3 && u->m_countdown == 0) {
+        if (u != 0 && u->m_defenderState == 3 && u->m_2e0 == 0) {
             forced = 1;
         }
         if (!forced) {
             if (rand() % 10 != 0) {
                 i32 r2 = rand() % 15;
-                GridUnit* u2 = m_triggerMgr->m_grid[m_curCell * 15 + r2];
+                CGrunt* u2 = m_triggerMgr->m_grid[m_curCell * 15 + r2];
                 if (u2 != 0) {
                     Method_02f620((i32)u2);
                 }
@@ -990,80 +708,92 @@ i32 CBattlezMapConfig::Method_025d90() {
         } else {
             // The eligibility scan: walk the row (the forced unit overrides slot 0).
             for (i32 b = 0; b < 15; b++) {
-                GridUnit* unit = m_triggerMgr->m_grid[m_curCell * 15 + b];
+                CGrunt* unit = m_triggerMgr->m_grid[m_curCell * 15 + b];
                 if (forced) {
                     unit = forcedUnit;
                 }
                 if (unit == 0) {
                     continue;
                 }
-                UnitLevel* lvl = unit->m_level;
-                if (lvl->m_worldX != unit->m_cachedX) {
+                CGameObject* lvl = unit->m_object;
+                if (lvl->m_screenX != unit->m_lastTilePxX) {
                     continue;
                 }
-                if (lvl->m_worldY != unit->m_cachedY) {
+                if (lvl->m_screenY != unit->m_lastTilePxY) {
                     continue;
                 }
-                if (unit->m_1fc == 0) {
+                if (unit->m_entranceCommitted == 0) {
                     continue;
                 }
-                if (unit->m_368 != 0) {
+                if (unit->m_deathAnimStarted != 0) {
                     continue;
                 }
-                if (unit->m_guard1e4 != 0) {
+                if (unit->m_entranceActive != 0) {
                     continue;
                 }
-                if (unit->m_220 != 0) {
+                if (unit->m_poweredUp != 0) {
                     continue;
                 }
-                i32 idx = unit->m_anim->m_1c;
+                i32 idx = (i32)unit->m_objAux->m_1c;
                 i32 eq;
                 eq = (strcmp((*g_typeColl.GetNameRecord((void*)(idx))), "I") == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "G") == 0);
+                eq =
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "G")
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "L") == 0);
+                eq =
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "L")
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "P") == 0);
+                eq =
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "P")
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "J") == 0);
+                eq =
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "J")
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "C") == 0);
+                eq =
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "C")
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "R") == 0);
+                eq =
+                    (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "R")
+                     == 0);
                 if (eq) {
                     continue;
                 }
-                if (unit->m_state != 3) {
+                if (unit->m_defenderState != 3) {
                     continue;
                 }
-                if (unit->m_countdown != 0) {
+                if (unit->m_2e0 != 0) {
                     continue;
                 }
                 // Eligible: transition + (mode 0x12/0x16) recycle its coord nodes.
-                i32 mode = unit->m_claimAnim;
+                i32 mode = unit->m_2e4;
                 if (Method_030530((i32)unit) != 0) {
-                    unit->m_state = 5;
+                    unit->m_defenderState = 5;
                 } else {
-                    unit->m_state = 0;
+                    unit->m_defenderState = 0;
                 }
-                ((CGrunt*)unit)->LoadPickupSprites(unit->m_claimAnim, 0, 0, 1, 1);
-                if (mode == 0x12 || (mode == 0x16 && unit->m_coordCount != 0)) {
-                    CoordNode* n = unit->m_coordHead;
+                ((CGrunt*)unit)->LoadPickupSprites(unit->m_2e4, 0, 0, 1, 1);
+                if (mode == 0x12 || (mode == 0x16 && unit->CoordCount() != 0)) {
+                    GruntCoordNode* n = unit->CoordHead();
                     while (n != 0) {
-                        CoordNode* cur = n;
+                        GruntCoordNode* cur = n;
                         n = n->m_next;
                         if (cur->m_coord != 0) {
                             void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
@@ -1071,7 +801,7 @@ i32 CBattlezMapConfig::Method_025d90() {
                             g_coordPool.m_freeHead = node;
                         }
                     }
-                    ((CPtrList*)&unit->m_coordList)->RemoveAll();
+                    unit->m_31c.RemoveAll();
                 }
                 break;
             }
@@ -1101,10 +831,10 @@ i32 CBattlezMapConfig::Method_025d90() {
 // byte-exact in shape. Residual is pure register allocation: retail pins the row
 // count in edx and the candidate index in ebp where MSVC5 here picks esi/eax, and
 // the choice cascades through the two 15-slot scans' operands. The foreign render/
-// level chains (m_ctx->m_scene->m_24->m_5c) are modeled by raw offset. Final sweep.
+// level chains (m_ctx->m_objList->m_24->m_5c) are modeled by raw offset. Final sweep.
 RVA(0x00026470, 0x29d)
 i32 CBattlezMapConfig::Method_026470(i32) {
-    GridUnit** row = &m_triggerMgr->m_grid[m_curCell * 15];
+    CGrunt** row = &m_triggerMgr->m_grid[m_curCell * 15];
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
         if (*row != 0) {
@@ -1129,7 +859,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         cand = cands[i];
         i32 usable = 1;
         if (cand != 0) {
-            i32* tilePtr = (i32*)&((Tile*)(m_board)->m_rows[cand->m_y])[cand->m_x];
+            i32* tilePtr = (i32*)&((BrickzCell*)(m_board)->m_rows[cand->m_y])[cand->m_x];
             for (i32 t = 0; t < 7; t++) {
                 tileRec[t] = tilePtr[t];
             }
@@ -1152,7 +882,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
         }
     }
     Coord screen;
-    m_ctx->m_scene->m_24->m_5c->SnapToTileCenter((i32*)&screen, cand->m_x << 5, cand->m_y << 5);
+    m_ctx->m_objList->m_view->m_5c->SnapToTileCenter((i32*)&screen, cand->m_x << 5, cand->m_y << 5);
     i32 cell;
     if (slot38 != 0) {
         cell = m_ctx->m_triggerMgr
@@ -1164,16 +894,16 @@ i32 CBattlezMapConfig::Method_026470(i32) {
     if (cell == -1) {
         return 0;
     }
-    GridUnit* unit = ((GridUnit**)(m_ctx->m_triggerMgr))[cell * 3 + m_curCell * 3];
+    CGrunt* unit = ((CGrunt**)(m_ctx->m_triggerMgr))[cell * 3 + m_curCell * 3];
     if (unit == 0) {
         return 0;
     }
     slot38 = rand() % 100;
     i32 freeCount = 0;
-    GridUnit** r2 = &m_triggerMgr->m_grid[m_curCell * 15];
+    CGrunt** r2 = &m_triggerMgr->m_grid[m_curCell * 15];
     for (i32 k = 15; k != 0; k--) {
-        GridUnit* g = *r2;
-        if (g != 0 && g->m_mode == 0) {
+        CGrunt* g = *r2;
+        if (g != 0 && g->m_2d8 == 0) {
             freeCount++;
         }
         r2++;
@@ -1181,23 +911,23 @@ i32 CBattlezMapConfig::Method_026470(i32) {
     i32 budget = (i32)((double)*(i32*)((char*)m_ctx + m_curCell * 0x238 + 0x378)
                        * (double)m_budgetMul * g_diffScale);
     if (slot38 >= m_spawnPct || freeCount >= budget) {
-        unit->m_mode = 4;
+        unit->m_2d8 = 4;
     } else {
-        unit->m_mode = 0;
+        unit->m_2d8 = 0;
     }
-    unit->m_2d0 = 0x11;
-    unit->m_state = 0;
-    unit->m_targetX = -1;
+    unit->m_arrivalState = 0x11;
+    unit->m_defenderState = 0;
+    unit->m_arrivalCol = -1;
     unit->m_2f8 = -1;
-    unit->m_goalX = -1;
-    unit->m_targetY = -1;
+    unit->m_defenderX = -1;
+    unit->m_arrivalRow = -1;
     unit->m_2fc = -1;
-    unit->m_goalY = -1;
-    unit->m_targetBand = -1;
-    unit->m_claimAnim = 0;
-    unit->m_countdown = 0;
-    unit->m_idleTimer = 0;
-    unit->m_arrived = 1;
+    unit->m_defenderY = -1;
+    unit->m_2e8 = -1;
+    unit->m_2e4 = 0;
+    unit->m_2e0 = 0;
+    unit->m_dwell = 0;
+    unit->m_390 = 1;
     return 1;
 }
 
@@ -1208,7 +938,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 // artifact - there is no reconstruction here yet to be mis-scored.
 //
 // STRUCTURE (mapped from the retail disasm; reconstructable, just very large): the
-// master per-unit AI dispatch tick. `esi` is the GridUnit (the same CGrunt-family
+// master per-unit AI dispatch tick. `esi` is the CGrunt (the same CGrunt-family
 // object Method_029b40 drives - reads m_1fc/m_220/m_1e4/m_368 eligibility guards,
 // m_14->m_1c type key, m_308/30c/314/310/320/328/280 geometry). The body is:
 //   * head (0x267c0..0x2690b): a screen-rect / board-rect intersect + PtInRect-style
@@ -1216,7 +946,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 //     that heuristically named this fn) + a first type-name probe.
 //   * the CORE is a long, highly REGULAR chain of eligibility-gated type-dispatch
 //     arms, each of the shape:
-//        if (unit->m_1fc == 0) goto handler;            // + m_368/m_1e4/m_220 guards
+//        if (unit->m_entranceCommitted == 0) goto handler;            // + m_368/m_1e4/m_220 guards
 //        name = *g_typeColl.IndexToPtr(unit->m_14->m_1c);   // CTypeKeyColl lookup
 //        if (strcmp(name, "<CODE>") == 0) goto handler;     // MSVC5-inlined strcmp
 //     over ~9 distinct type-code string constants (?s_codeA / ?s_codeJ / s_codeI /
@@ -1234,7 +964,7 @@ i32 CBattlezMapConfig::Method_026470(i32) {
 // @early-stop
 // deferred - SIZE wall, not an idiom/regalloc wall. A faithful reconstruction is
 // tractable (the arm pattern is regular; every callee + type is already modeled - the
-// GridUnit/g_typeColl/CBrickzGrid views used by Method_029b40 above cover it), but at
+// CGrunt/g_typeColl/CBrickzGrid views used by Method_029b40 above cover it), but at
 // 10269 B it is a dedicated multi-session leaf-first job, not a single-matcher batch.
 // objdiff scores the WHOLE function's alignment, so any sub-complete partial (even a
 // 1-2 KB faithful head) still scores ~0 and diverges its own regalloc - reconstructing
@@ -1308,14 +1038,14 @@ i32 CUserLogic::IsAtSavedScreenPos() {
 // push where MSVC5 sinks it post-push; (4) deep arm regalloc. Final sweep / permuter.
 RVA(0x00029b40, 0x813)
 i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    CPtrList* coordList = (CPtrList*)&unit->m_coordList;
-    if (unit->m_coordCount == 0) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    CPtrList* coordList = &unit->m_31c;
+    if (unit->CoordCount() == 0) {
         return 0;
     }
     // --- geometry-drift head: recycle-and-bail if the unit's stored first coord and
     //     its live screen cell have drifted >= 2 cells apart. ---
-    Coord* c0 = unit->m_coordHead->m_coord;
+    GruntCoord* c0 = unit->CoordHead()->m_coord;
     i32 ux = c0->m_x;
     i32 uy = c0->m_y;
     Coord pt;
@@ -1334,17 +1064,17 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         // tile0: is the unit's own coord cell blocked (low flag byte == 1)?
         i32 tile0;
         if ((u32)ux < (u32)board->m_width && (u32)uy < (u32)board->m_height) {
-            tile0 = ((Tile*)board->m_rows[uy])[ux].m_flags;
+            tile0 = ((BrickzCell*)board->m_rows[uy])[ux].m_0;
         } else {
             tile0 = 1;
         }
         if ((u8)tile0 == 1) {
-            if (unit->m_coordCount == 0) {
+            if (unit->CoordCount() == 0) {
                 return 0;
             }
-            CoordNode* n = unit->m_coordHead;
+            GruntCoordNode* n = unit->CoordHead();
             while (n != 0) {
-                CoordNode* cur = n;
+                GruntCoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
                     g_coordPool.Push(cur->m_coord);
@@ -1360,21 +1090,21 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         i32 cx = c0->m_x;
         i32 cy = c0->m_y;
         ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt);
-        Tile scratchA;
-        const Tile* srcA;
+        BrickzCell scratchA;
+        const BrickzCell* srcA;
         if ((u32)cx < (u32)board->m_width && (u32)cy < (u32)board->m_height) {
-            srcA = &((Tile*)board->m_rows[cy])[cx];
+            srcA = &((BrickzCell*)board->m_rows[cy])[cx];
         } else {
             memset(&scratchA, 1, sizeof(scratchA));
             srcA = &scratchA;
         }
-        if (unit->m_coordCount == 0) {
+        if (unit->CoordCount() == 0) {
             return 0;
         }
         scratchA = *srcA;
-        i32 prim = unit->m_animPrim;
+        i32 prim = unit->m_entranceReason;
         if (prim > 0x16) {
-            prim = unit->m_animSec;
+            prim = unit->m_19c;
         }
         // --- scratchB: the tile record under the unit's LIVE screen cell (secondary
         //     gate). Retail reads the y from the first probe and the x from the second. ---
@@ -1383,10 +1113,10 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         i32 sgy = pt2.m_y >> 5;
         ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt);
         i32 sgx = pt.m_x >> 5;
-        Tile scratchB;
-        const Tile* srcB;
+        BrickzCell scratchB;
+        const BrickzCell* srcB;
         if ((u32)sgx < (u32)board->m_width && (u32)sgy < (u32)board->m_height) {
-            srcB = &((Tile*)board->m_rows[sgy])[sgx];
+            srcB = &((BrickzCell*)board->m_rows[sgy])[sgx];
         } else {
             memset(&scratchB, 1, sizeof(scratchB));
             srcB = &scratchB;
@@ -1395,18 +1125,18 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         // --- reroute arm: scratchB blocked-bit (0x4) + unit not already in mode 0xb.
         //     If the live cell resolves to a kind-2 cell record, drop the unit's path
         //     and latch it into mode 0xb. ---
-        if ((scratchB.m_flags & 0x4) && unit->m_mode != 0xb) {
+        if ((scratchB.m_0 & 0x4) && unit->m_2d8 != 0xb) {
             ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt);
             i32 rx = pt.m_x >> 5;
             ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&pt2);
             i32 ry = pt2.m_y >> 5;
             CTileTriggerSwitchLogic* rec = m_cellQuery->FindChild((rx << 8) + ry, 0);
             if (rec->m_04 == 2) {
-                unit->m_state = 0;
-                if (unit->m_coordCount != 0) {
-                    CoordNode* n = unit->m_coordHead;
+                unit->m_defenderState = 0;
+                if (unit->CoordCount() != 0) {
+                    GruntCoordNode* n = unit->CoordHead();
                     while (n != 0) {
-                        CoordNode* cur = n;
+                        GruntCoordNode* cur = n;
                         n = n->m_next;
                         if (cur->m_coord != 0) {
                             g_coordPool.Push(cur->m_coord);
@@ -1414,43 +1144,43 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                     }
                     coordList->RemoveAll();
                 }
-                unit->m_mode = 0xb;
-                unit->m_idleTimer = 0;
+                unit->m_2d8 = 0xb;
+                unit->m_dwell = 0;
                 return 0;
             }
         }
         // --- prim==0x11 arm: with two occupied coords, if the second's tile is a
         //     0x20 cell and the first's is not a 0x2 cell, fire the coord trigger. ---
-        i32 p11 = unit->m_animPrim;
+        i32 p11 = unit->m_entranceReason;
         if (p11 > 0x16) {
-            p11 = unit->m_animSec;
+            p11 = unit->m_19c;
         }
-        if (p11 == 0x11 && unit->m_coordCount >= 2) {
-            CoordNode* node = unit->m_coordHead;
-            Coord* ca = node->m_coord;
-            CoordNode* nn = node->m_next;
+        if (p11 == 0x11 && unit->CoordCount() >= 2) {
+            GruntCoordNode* node = unit->CoordHead();
+            GruntCoord* ca = node->m_coord;
+            GruntCoordNode* nn = node->m_next;
             i32 ax = ca->m_x;
-            Coord* cb = nn->m_coord;
+            GruntCoord* cb = nn->m_coord;
             i32 ay = ca->m_y;
             i32 bx = cb->m_x;
             i32 by = cb->m_y;
             i32 tB;
             if ((u32)bx < (u32)board->m_width && (u32)by < (u32)board->m_height) {
-                tB = ((Tile*)board->m_rows[by])[bx].m_flags;
+                tB = ((BrickzCell*)board->m_rows[by])[bx].m_0;
             } else {
                 tB = 1;
             }
             if (tB & 0x20) {
                 i32 tA2;
                 if ((u32)ax < (u32)board->m_width && (u32)ay < (u32)board->m_height) {
-                    tA2 = ((Tile*)board->m_rows[ay])[ax].m_flags;
+                    tA2 = ((BrickzCell*)board->m_rows[ay])[ax].m_0;
                 } else {
                     tA2 = 1;
                 }
                 if (!(tA2 & 0x2)) {
                     m_triggerMgr->ApplyTriggerB(
-                        unit->m_trigA,
-                        unit->m_trigB,
+                        unit->m_tileOwnerHi,
+                        unit->m_tileOwnerLo,
                         ax * 0x20 + 0x10,
                         ay * 0x20 + 0x10
                     );
@@ -1460,23 +1190,23 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         }
         // --- 0x8000 arms: scratchB 0x8000 clears an in-progress state-3; scratchA
         //     0x8000 gates a commit (mode 0xa) or a Method_030530 hand-off. ---
-        if ((scratchB.m_flags & 0x8000) && unit->m_state == 3) {
-            unit->m_state = 0;
+        if ((scratchB.m_0 & 0x8000) && unit->m_defenderState == 3) {
+            unit->m_defenderState = 0;
         }
-        i32 sA = scratchA.m_flags;
+        i32 sA = scratchA.m_0;
         if (sA & 0x8000) {
-            if (prim == 3 && unit->m_mode == 0xa) {
+            if (prim == 3 && unit->m_2d8 == 0xa) {
                 m_triggerMgr->ApplyTriggerB(
-                    unit->m_trigA,
-                    unit->m_trigB,
+                    unit->m_tileOwnerHi,
+                    unit->m_tileOwnerLo,
                     cx * 0x20 + 0x10,
                     cy * 0x20 + 0x10
                 );
-                unit->m_state = 0;
-                if (unit->m_coordCount != 0) {
-                    CoordNode* n = unit->m_coordHead;
+                unit->m_defenderState = 0;
+                if (unit->CoordCount() != 0) {
+                    GruntCoordNode* n = unit->CoordHead();
                     while (n != 0) {
-                        CoordNode* cur = n;
+                        GruntCoordNode* cur = n;
                         n = n->m_next;
                         if (cur->m_coord != 0) {
                             g_coordPool.Push(cur->m_coord);
@@ -1486,17 +1216,16 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
                 }
                 return 0;
             }
-            if (Method_030530((i32)unit) == 0 && unit->m_state == 7) {
-                CoordNode* head = unit->m_coordHead;
+            if (Method_030530((i32)unit) == 0 && unit->m_defenderState == 7) {
+                GruntCoordNode* head = unit->CoordHead();
                 if (head != 0) {
-                    CoordNode* n = head->m_next;
+                    GruntCoordNode* n = head->m_next;
                     if (n != 0) {
                         while (n != 0) {
-                            CoordNode* cur = n;
+                            GruntCoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
-                                void** fn =
-                                    (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                                void** fn = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
                                 *fn = g_coordPool.m_freeHead;
                                 g_coordPool.m_freeHead = fn;
                                 coordList->RemoveAt((POSITION)cur);
@@ -1509,9 +1238,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         }
         // --- 0x2a024: main scratchA bit dispatch ---
         if (sA & 0x200) {
-            i32 p = unit->m_animPrim;
+            i32 p = unit->m_entranceReason;
             if (p > 0x16) {
-                p = unit->m_animSec;
+                p = unit->m_19c;
             }
             if (p != 0x16) {
                 return 0;
@@ -1520,16 +1249,16 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         if (sA & 0x8) {
             i32 hi = sA & 0x100;
             if (hi) {
-                i32 p = unit->m_animPrim;
+                i32 p = unit->m_entranceReason;
                 if (p > 0x16) {
-                    p = unit->m_animSec;
+                    p = unit->m_19c;
                 }
                 if (p == 0x16) {
                     return 1;
                 }
-                i32 p2 = unit->m_animPrim;
+                i32 p2 = unit->m_entranceReason;
                 if (p2 > 0x16) {
-                    p2 = unit->m_animSec;
+                    p2 = unit->m_19c;
                 }
                 if (p2 == 0x12) {
                     return 1;
@@ -1537,9 +1266,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             }
             i32 lo2 = sA & 0x2;
             if (lo2) {
-                i32 p = unit->m_animPrim;
+                i32 p = unit->m_entranceReason;
                 if (p > 0x16) {
-                    p = unit->m_animSec;
+                    p = unit->m_19c;
                 }
                 if (p == 0x16) {
                     return 1;
@@ -1548,16 +1277,16 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             if (Method_030b20((i32)unit, cx, cy) != 0) {
                 return 1;
             }
-            i32 sB = scratchB.m_flags;
+            i32 sB = scratchB.m_0;
             if ((sB & 0x200) || (sB & 0x8)) {
                 return 0;
             }
-            if (hi && unit->m_state != 3) {
+            if (hi && unit->m_defenderState != 3) {
                 i32 pick = (rand() % 5) != 0 ? 0x12 : 0x16;
                 Method_02c0a0((i32)unit, pick);
             }
             if (lo2) {
-                if (unit->m_state == 3) {
+                if (unit->m_defenderState == 3) {
                     return 0;
                 }
                 Method_02c0a0((i32)unit, 0x16);
@@ -1566,22 +1295,22 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         }
         // --- sA & 0x8 == 0 ---
         if ((sA & 0x20) && prim != 5 && prim != 0x11 && prim != 1) {
-            if (unit->m_state == 3) {
+            if (unit->m_defenderState == 3) {
                 return 0;
             }
             Method_02c0a0((i32)unit, 5);
             return 0;
         }
         if (sA & 0x40) {
-            i32 p = unit->m_animPrim;
+            i32 p = unit->m_entranceReason;
             if (p > 0x16) {
-                p = unit->m_animSec;
+                p = unit->m_19c;
             }
             if (p != 0x16) {
                 if (prim == 0xd) {
                     return 0;
                 }
-                if (unit->m_state == 3) {
+                if (unit->m_defenderState == 3) {
                     return 0;
                 }
                 Method_02c0a0((i32)unit, 0xd);
@@ -1589,9 +1318,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             }
         }
         if (sA & 0x2) {
-            i32 p = unit->m_animPrim;
+            i32 p = unit->m_entranceReason;
             if (p > 0x16) {
-                p = unit->m_animSec;
+                p = unit->m_19c;
             }
             if (p == 0x16) {
                 return 0;
@@ -1601,9 +1330,9 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
             winapi_02a570_IntersectRect((i32)unit);
             return 0;
         }
-        i32 pk = unit->m_animPrim;
+        i32 pk = unit->m_entranceReason;
         if (pk > 0x16) {
-            pk = unit->m_animSec;
+            pk = unit->m_19c;
         }
         if (pk != 0x7) {
             return 1;
@@ -1611,28 +1340,26 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         // --- kind-7 arm: scan the grid candidate list for an unoccupied cell that
         //     falls inside the unit's reach rect; on a hit, fire the trigger, recycle
         //     the unit's path, advance the spawn timer, and return 1. ---
-        GridCandNode* onode = m_triggerMgr->m_objListHead;
-        while (onode != 0) {
-            GridCand* cand = (GridCand*)onode->m_payload;
-            onode = onode->m_next;
+        POSITION opos = m_triggerMgr->m_baseList.GetHeadPosition();
+        while (opos != 0) {
+            CTmCandidate* cand = (CTmCandidate*)m_triggerMgr->m_baseList.GetNext(opos);
             if (cand->m_occupied == 0) {
                 i32 ox = cand->m_gridX;
                 i32 oy = cand->m_gridY;
                 if (((CGrunt*)unit)->RectContains(ox * 0x20 + 0x10, oy * 0x20 + 0x10) != 0) {
                     m_triggerMgr->ApplyTriggerB(
-                        unit->m_trigA,
-                        unit->m_trigB,
+                        unit->m_tileOwnerHi,
+                        unit->m_tileOwnerLo,
                         ox * 0x20 + 0x10,
                         oy * 0x20 + 0x10
                     );
-                    if (unit->m_coordCount != 0) {
-                        CoordNode* n = unit->m_coordHead;
+                    if (unit->CoordCount() != 0) {
+                        GruntCoordNode* n = unit->CoordHead();
                         while (n != 0) {
-                            CoordNode* cur = n;
+                            GruntCoordNode* cur = n;
                             n = n->m_next;
                             if (cur->m_coord != 0) {
-                                void** fn =
-                                    (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
+                                void** fn = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
                                 *fn = g_coordPool.m_freeHead;
                                 g_coordPool.m_freeHead = fn;
                             }
@@ -1647,13 +1374,13 @@ i32 CBattlezMapConfig::Method_029b40(i32 unitArg) {
         return 1;
     }
 recycleBail:
-    if (unit->m_coordCount == 0) {
+    if (unit->CoordCount() == 0) {
         return 0;
     }
     {
-        CoordNode* n = unit->m_coordHead;
+        GruntCoordNode* n = unit->CoordHead();
         while (n != 0) {
-            CoordNode* cur = n;
+            GruntCoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 g_coordPool.Push(cur->m_coord);
@@ -1668,7 +1395,7 @@ recycleBail:
 // that satisfied the step). Reloc-masked DATA; the recursive flood-fill clears
 // g_stepRun and stamps g_stepCol / g_stepRow when it commits.
 
-// The query object held at this->m_anim: ResolveCell (RVA 0x011171d0... thunk
+// The query object held at this->m_objAux: ResolveCell (RVA 0x011171d0... thunk
 // 0x02838) maps a packed (col<<8|row) to its cell record. __thiscall, reloc-masked.
 
 // ===========================================================================
@@ -1694,11 +1421,11 @@ recycleBail:
 // Foreign unit/board chains modeled by raw offset. Deferred to the final sweep.
 RVA(0x0002a570, 0x4c6)
 i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if (unit->m_coordCount == 0) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if (unit->CoordCount() == 0) {
         return 1;
     }
-    void* pos = unit->m_coordHead;
+    void* pos = unit->CoordHead();
     Coord center;
     ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&center);
     CBrickzGrid* board = m_board;
@@ -1716,15 +1443,15 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
     }
     board->m_gridW = board->m_boundRight - board->m_originX;
     board->m_gridH = board->m_boundBottom - board->m_originY;
-    Coord* tailCoord = (Coord*)(unit->m_coordTail)->m_coord;
+    GruntCoord* tailCoord = (unit->CoordTail())->m_coord;
     i32 tx = tailCoord->m_x;
     i32 ty = tailCoord->m_y;
     i32 iter = 0;
-    CoordNode* node = *(CoordNode**)pos;
+    GruntCoordNode* node = *(GruntCoordNode**)pos;
     while (node != 0 && iter < 3) {
-        CoordNode* cur = node;
+        GruntCoordNode* cur = node;
         node = node->m_next;
-        Coord* coord = cur->m_coord;
+        GruntCoord* coord = cur->m_coord;
         if (coord == 0) {
             continue;
         }
@@ -1742,23 +1469,23 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
         }
         CPtrList list(10);
         i32 flags = 0;
-        i32 prim = unit->m_animPrim;
+        i32 prim = unit->m_entranceReason;
         if (prim > 0x16) {
-            prim = unit->m_animSec;
+            prim = unit->m_19c;
         }
         if (prim == 0x12) {
             flags = 0x100;
         }
-        prim = unit->m_animPrim;
+        prim = unit->m_entranceReason;
         if (prim > 0x16) {
-            prim = unit->m_animSec;
+            prim = unit->m_19c;
         }
         if (prim == 0x16) {
             flags = 0x942;
         }
-        prim = unit->m_animPrim;
+        prim = unit->m_entranceReason;
         if (prim > 0x16) {
-            prim = unit->m_animSec;
+            prim = unit->m_19c;
         }
         if (prim == 0xe) {
             flags = 0x1000;
@@ -1773,24 +1500,24 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
             }
             if (list.GetCount() != 0) {
                 // Recycle the unit's current path coords onto g_coordPool, empty it.
-                if (unit->m_coordCount != 0) {
-                    CoordNode* p = unit->m_coordHead;
+                if (unit->CoordCount() != 0) {
+                    GruntCoordNode* p = unit->CoordHead();
                     while (p != 0) {
-                        CoordNode* c2 = p;
+                        GruntCoordNode* c2 = p;
                         p = p->m_next;
                         if (c2->m_coord != 0) {
                             g_coordPool.Push(c2->m_coord);
                         }
                     }
-                    ((CPtrList*)&unit->m_coordList)->RemoveAll();
+                    unit->m_31c.RemoveAll();
                 }
                 // AddTail every route node's coord onto the unit's coord list.
-                CoordNode* q = (CoordNode*)list.GetHeadPosition();
+                GruntCoordNode* q = (GruntCoordNode*)list.GetHeadPosition();
                 while (q != 0) {
-                    CoordNode* c3 = q;
+                    GruntCoordNode* c3 = q;
                     q = q->m_next;
                     if (c3->m_coord != 0) {
-                        ((CPtrList*)&unit->m_coordList)->AddTail(c3->m_coord);
+                        unit->m_31c.AddTail(c3->m_coord);
                     }
                 }
                 // Re-clamp the board dirty-rect to the board bounds.
@@ -1808,9 +1535,9 @@ i32 CBattlezMapConfig::winapi_02a570_IntersectRect(i32 unitArg) {
                 }
                 board->m_gridW = board->m_boundRight - board->m_originX;
                 board->m_gridH = board->m_boundBottom - board->m_originY;
-                Coord* nt = (Coord*)(unit->m_coordTail)->m_coord;
-                unit->m_packedX = (nt->m_x << 5) + 0x10;
-                unit->m_packedY = (nt->m_y << 5) + 0x10;
+                GruntCoord* nt = (unit->CoordTail())->m_coord;
+                unit->m_entrancePxX = (nt->m_x << 5) + 0x10;
+                unit->m_entrancePxY = (nt->m_y << 5) + 0x10;
                 list.RemoveAll();
                 return 1;
             }
@@ -1857,29 +1584,29 @@ i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 hal
     rect.right = cx + halfW;
     rect.top = cy - halfH;
     rect.bottom = cy + halfH;
-    GridUnit* best = 0;
+    CGrunt* best = 0;
     i32 bestDist = 0x7fffffff;
     for (i32 band = 0; band < 4; band++) {
         if (band == m_curCell) {
             continue;
         }
         for (i32 i = 0; i < 15; i++) {
-            GridUnit* u = m_triggerMgr->m_grid[band * 15 + i];
+            CGrunt* u = m_triggerMgr->m_grid[band * 15 + i];
             if (u == 0) {
                 continue;
             }
-            if (u->m_busy != 0) {
+            if (u->m_entranceDropActive != 0) {
                 continue;
             }
-            UnitLevel* lvl = u->m_level;
-            POINT pt;
-            pt.x = lvl->m_worldX >> 5;
-            pt.y = lvl->m_worldY >> 5;
-            if (!PtInRect(&rect, pt)) {
+            CGameObject* lvl = u->m_object;
+            POINT wpt;
+            wpt.x = lvl->m_screenX >> 5;
+            wpt.y = lvl->m_screenY >> 5;
+            if (!PtInRect(&rect, wpt)) {
                 continue;
             }
             i32 keep = 1;
-            if (u->m_kind == 0x36) {
+            if (u->m_gruntKind == 0x36) {
                 if (rand() % 100 > 5) {
                     keep = 0;
                 }
@@ -1887,14 +1614,14 @@ i32 CBattlezMapConfig::winapi_02ab80_PtInRect(i32 cx, i32 cy, i32 halfW, i32 hal
             if (keep == 0) {
                 continue;
             }
-            lvl = u->m_level;
-            i32 dx = abs((lvl->m_worldX >> 5) - cx);
-            i32 dy = abs((lvl->m_worldY >> 5) - cy);
+            lvl = u->m_object;
+            i32 dx = abs((lvl->m_screenX >> 5) - cx);
+            i32 dy = abs((lvl->m_screenY >> 5) - cy);
             i32 dist = dx + dy;
             if (dist >= bestDist) {
                 continue;
             }
-            if (u->m_220 != 0) {
+            if (u->m_poweredUp != 0) {
                 rand();
             }
             best = u;
@@ -1929,10 +1656,10 @@ void* CBattlezMapConfig::Method_02ad40(i32) {
     }
     band = band % 4;
     i32 cell = rand() % 15;
-    GridUnit** row = &m_triggerMgr->m_grid[band * 15];
+    CGrunt** row = &m_triggerMgr->m_grid[band * 15];
     for (i32 i = 0; i < 15; i++) {
-        GridUnit* u = *row;
-        if (u != 0 && u->m_busy == 0) {
+        CGrunt* u = *row;
+        if (u != 0 && u->m_entranceDropActive == 0) {
             return u;
         }
         cell = (cell + 1) % 15;
@@ -1950,10 +1677,10 @@ void* CBattlezMapConfig::Method_02ad40(i32) {
 // ===========================================================================
 // CBattlezMapConfig::winapi_02ae00_IntersectRect  @0x02ae00
 // Coord hand-off from `unit` to the target `tgt`. Reject unless `unit` is eligible
-// (m_1fc set, its anim name is none of J/C/R/G/L, m_kind != 0x36, m_364 clear). Then,
-// when tgt is armed (m_trigMode != 0) with a 1/4 roll and tgt gates in `unit`'s level
+// (m_1fc set, its anim name is none of J/C/R/G/L, m_gruntKind != 0x36, m_364 clear). Then,
+// when tgt is armed (m_198 != 0) with a 1/4 roll and tgt gates in `unit`'s level
 // coord (RectContainsGated), fire the grid trigger (ApplyTriggerB) at tgt's coord
-// (m_trigMode==0x1e) or unit's coord and return. Otherwise commit the neighbour
+// (m_198==0x1e) or unit's coord and return. Otherwise commit the neighbour
 // (CommitNeighbor) and, when tgt's prim anim is 0x11, clamp the board dirty-rect to
 // an 11x11 box around tgt (IntersectRect copy-back) and re-path tgt to a random
 // nearby cell (Method_0300c0, flags 0x20000d87). Returns 1 (0 on the eligibility rejects).
@@ -1975,74 +1702,74 @@ void CBattlezMapConfig::Clear_02ade0() {
 
 RVA(0x0002ae00, 0x42e)
 i32 CBattlezMapConfig::winapi_02ae00_IntersectRect(i32 unitArg, i32 targetArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if (unit->m_1fc == 0) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if (unit->m_entranceCommitted == 0) {
         return 0;
     }
     bool eq;
-    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "J") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "J") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "C") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "C") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "R") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "R") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "G") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "G") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "L") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "L") == 0);
     if (eq) {
         return 0;
     }
-    if (unit->m_kind == 0x36) {
+    if (unit->m_gruntKind == 0x36) {
         return 0;
     }
-    if (unit->m_busy != 0) {
+    if (unit->m_entranceDropActive != 0) {
         return 0;
     }
-    GridUnit* tgt = (GridUnit*)targetArg;
+    CGrunt* tgt = (CGrunt*)targetArg;
     i32 roll = rand() % 4;
-    if (tgt->m_trigMode != 0 && roll == 0) {
-        UnitLevel* ul = unit->m_level;
-        if (((CGrunt*)tgt)->RectContainsGated(ul->m_worldX, ul->m_worldY) != 0) {
-            if (tgt->m_trigMode == 0x1e) {
-                UnitLevel* tl = tgt->m_level;
-                m_triggerMgr->ApplyTriggerB(tgt->m_trigA, tgt->m_trigB, tl->m_worldX, tl->m_worldY);
+    if (tgt->m_198 != 0 && roll == 0) {
+        CGameObject* ul = unit->m_object;
+        if (((CGrunt*)tgt)->RectContainsGated(ul->m_screenX, ul->m_screenY) != 0) {
+            if (tgt->m_198 == 0x1e) {
+                CGameObject* tl = tgt->m_object;
+                m_triggerMgr->ApplyTriggerB(tgt->m_tileOwnerHi, tgt->m_tileOwnerLo, tl->m_screenX, tl->m_screenY);
             } else {
-                UnitLevel* ul2 = unit->m_level;
+                CGameObject* ul2 = unit->m_object;
                 m_triggerMgr
-                    ->ApplyTriggerB(tgt->m_trigA, tgt->m_trigB, ul2->m_worldX, ul2->m_worldY);
+                    ->ApplyTriggerB(tgt->m_tileOwnerHi, tgt->m_tileOwnerLo, ul2->m_screenX, ul2->m_screenY);
             }
             return 1;
         }
     }
-    UnitLevel* ul3 = unit->m_level;
-    ((CGrunt*)tgt)->CommitNeighbor(unit->m_trigA, unit->m_trigB, ul3->m_worldX, ul3->m_worldY);
-    i32 prim = tgt->m_animPrim;
+    CGameObject* ul3 = unit->m_object;
+    ((CGrunt*)tgt)->CommitNeighbor(unit->m_tileOwnerHi, unit->m_tileOwnerLo, ul3->m_screenX, ul3->m_screenY);
+    i32 prim = tgt->m_entranceReason;
     if (prim > 0x16) {
-        prim = tgt->m_animSec;
+        prim = tgt->m_19c;
     }
     if (prim != 0x11) {
         return 1;
     }
     // Clamp the board dirty-rect to an 11x11 box around tgt, then re-path tgt to a
     // random nearby cell.
-    UnitLevel* tl = tgt->m_level;
-    i32 ycoord = (tl->m_worldY >> 5) + rand() % 10 - 5;
+    CGameObject* tl = tgt->m_object;
+    i32 ycoord = (tl->m_screenY >> 5) + rand() % 10 - 5;
     i32 r2 = rand() % 10;
-    UnitLevel* tl2 = tgt->m_level;
-    i32 left = (tl2->m_worldX >> 5) - 5;
-    i32 xcoord = (tl->m_worldX >> 5) + r2 - 5;
-    i32 right = (tl2->m_worldX >> 5) + 5;
+    CGameObject* tl2 = tgt->m_object;
+    i32 left = (tl2->m_screenX >> 5) - 5;
+    i32 xcoord = (tl->m_screenX >> 5) + r2 - 5;
+    i32 right = (tl2->m_screenX >> 5) + 5;
     CBrickzGrid* board = m_board;
-    i32 bottom = (tl2->m_worldY >> 5) + 5;
-    i32 top = (tl2->m_worldY >> 5) - 5;
+    i32 bottom = (tl2->m_screenY >> 5) + 5;
+    i32 top = (tl2->m_screenY >> 5) - 5;
     RECT box;
     box.left = left;
     box.top = top;
@@ -2311,7 +2038,7 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
 
 // ===========================================================================
 // CBattlezMapConfig::Method_02bfc0  @0x02bfc0
-// Validate an EmitArg by kind (4 or 7): the kind's validator must return NONZERO to
+// Validate an CSerialArchive by kind (4 or 7): the kind's validator must return NONZERO to
 // proceed (zero => bail with 0). On a valid arg, dispatch through the arg's vtable to
 // emit a {x,y} pair into the bundle's m_scratch78/m_scratch80 scratch via slot +0x30
 // (kind 4) or +0x2c (kind 7). Two 2-sparse-case switches (NOT if-ladders): MSVC5 emits
@@ -2321,7 +2048,7 @@ i32 CBattlezMapConfig::Deserialize_02b950(void* arArg) {
 // `je;xor eax,eax` in place of retail's `jne emit`, together capping it at ~81%.)
 RVA(0x0002bfc0, 0x8a)
 i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
-    EmitArg* obj = (EmitArg*)objArg;
+    CSerialArchive* obj = (CSerialArchive*)objArg;
     i32 kind = (i32)(i32)kindArg;
     switch (kind) {
         case 4:
@@ -2338,14 +2065,14 @@ i32 CBattlezMapConfig::Method_02bfc0(i32 objArg, void* kindArg, i32, i32) {
     char* scratch = (char*)&m_scratch78;
     switch (kind) {
         case 4:
-            obj->CallEmit30(scratch, 8);
+            obj->Write(scratch, 8);
             scratch += 8;
-            obj->CallEmit30(scratch, 8);
+            obj->Write(scratch, 8);
             break;
         case 7:
-            obj->CallEmit2c(scratch, 8);
+            obj->Read(scratch, 8);
             scratch += 8;
-            obj->CallEmit2c(scratch, 8);
+            obj->Read(scratch, 8);
             break;
     }
     return 1;
@@ -2365,71 +2092,32 @@ i32 CBattlezMapConfig::Method_02c080(i32) {
 
 RVA(0x0002c0a0, 0x78)
 i32 CBattlezMapConfig::Method_02c0a0(i32 unitArg, i32 value) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if (unit->m_state == 3) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if (unit->m_defenderState == 3) {
         return 1;
     }
     m_claimTimer = 0;
-    unit->m_state = 3;
-    unit->m_claimAnim = value;
-    GridUnit** units = m_triggerMgr->m_grid + m_curCell * 15;
+    unit->m_defenderState = 3;
+    unit->m_2e4 = value;
+    CGrunt** units = m_triggerMgr->m_grid + m_curCell * 15;
     i32 count = 0;
     for (i32 k = 0; k < 15; k++) {
-        GridUnit* p = units[k];
-        if (p != 0 && unit != p && p->m_state == 3) {
+        CGrunt* p = units[k];
+        if (p != 0 && unit != p && p->m_defenderState == 3) {
             count++;
         }
     }
-    unit->m_countdown = count;
+    unit->m_2e0 = count;
     return 1;
 }
 
-// The scene-object collection reached via this->m_ctx->m_scene->m_8: an intrusive
-// list whose cursor (m_68) GetNext() (RVA 0x031250, thunk 0x02a77) pops nodes off
-// m_68 until it finds one whose payload's GetType() (vtable slot 8, +0x20) is 5;
-// the scan is reset by stamping m_68 = m_14 (the list head). External, reloc-masked.
-struct SceneObj;
-struct SceneNode {
-    SceneNode* m_next; // +0x00
-    char m_pad04[0x04];
-    SceneObj* m_obj; // +0x08
-};
-// GetNext @0x031250 IS CQueueDrainHost::Drain_031250 (header-less ddrawsubmgr class); local decl.
-class CQueueDrainHost {
-public:
-    void* Drain_031250();
-};
-struct SceneColl {
-    char m_pad00[0x14];
-    SceneNode* m_head; // +0x14  list head
-    char m_pad18[0x68 - 0x18];
-    SceneNode* m_cursor; // +0x68  iterator cursor
-    // GetNext @0x031250 IS CQueueDrainHost::Drain_031250; cast at the call.
-};
-// The scene object the grid iterates: GetType() is vtable slot 8 (+0x20), m_40 a
-// flag byte, m_5c/m_60 the level coordinate, m_7c a runtime-class sub-object (its
-// +0x10 handler fn ptr identifies the class), m_124 the anim id. Real virtuals so
-// the __thiscall GetType dispatch falls out (see docs/patterns/dummy-virtual-slots.md).
-struct SceneObj {
-    virtual void v0();
-    virtual void v1();
-    virtual void v2();
-    virtual void v3();
-    virtual void v4();
-    virtual void v5();
-    virtual void v6();
-    virtual void v7();
-    virtual i32 GetType(); // slot 8 (+0x20)
-    char m_pad04[0x40 - 0x04];
-    u8 m_flags; // +0x40  flags (bit 0)
-    char m_pad41[0x5c - 0x41];
-    i32 m_worldX; // +0x5c  level x
-    i32 m_worldY; // +0x60  level y
-    char m_pad64[0x7c - 0x64];
-    void** m_rtClass; // +0x7c  runtime-class sub-obj (m_rtClass[4] = +0x10 handler)
-    char m_pad80[0x124 - 0x80];
-    i32 m_animId; // +0x124  anim id
-};
+// The scene-object collection reached via ctx->m_objList->m_coll IS the level's
+// game-object collection (<Gruntz/QueueDrainHost.h>): CQueueDrainHost, whose +0x68 scan
+// cursor Drain_031250 (RVA 0x31250) pops until a payload's GetTypeId() (vtable slot 8,
+// +0x20) yields 5; the scan restarts by stamping m_scan = m_head. Its cells are
+// CQueueProbeNode and its payloads real ::CGameObject - the CQueueDrainHost / CQueueProbeNode /
+// CGameObject / CQueueDrainHost views were four models of those three classes.
+
 // The class-identity handler (a code label at VA 0x40288d, inside 0x0267c0): a
 // scene object is the grid's kind only when its m_7c handler slot equals it.
 // Referenced as a relocated immediate (reloc-masked compare).
@@ -2437,9 +2125,9 @@ extern "C" void Handler_0040288d(void);
 
 // ===========================================================================
 // CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect  @0x02c140
-// For an idle unit (m_kind==0, prim anim clear) clamp the board dirty-rect to an 8x8
+// For an idle unit (m_gruntKind==0, prim anim clear) clamp the board dirty-rect to an 8x8
 // box centered on the unit (four GetCoord corner reads + the IntersectRect copy-back
-// idiom), then iterate the scene collection (m_ctx->m_scene->m_8) for a kind-matching
+// idiom), then iterate the scene collection (m_ctx->m_objList->m_coll) for a kind-matching
 // (m_7c handler == 0x40288d), non-flagged (m_40&1), in-box unit; on the first such
 // unit re-path this unit toward it (Method_0300c0, flags 0x2000098b), re-clamp the
 // dirty-rect, and return 1. Exhausting the collection tails into board Clip + return 0.
@@ -2455,13 +2143,13 @@ extern "C" void Handler_0040288d(void);
 // winapi_02dfa0). Foreign scene/board chains modeled by raw offset. Deferred to the final sweep.
 RVA(0x0002c140, 0x3e7)
 i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if (unit->m_kind != 0) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if (unit->m_gruntKind != 0) {
         return 0;
     }
-    i32 prim = unit->m_animPrim;
+    i32 prim = unit->m_entranceReason;
     if (prim > 0x16) {
-        prim = unit->m_animSec;
+        prim = unit->m_19c;
     }
     if (prim != 0) {
         return 0;
@@ -2494,13 +2182,13 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
     board->m_gridW = board->m_boundRight - board->m_originX;
     board->m_gridH = board->m_boundBottom - board->m_originY;
     // Iterate the scene collection for kind-matching units inside the box.
-    SceneColl* coll = m_ctx->m_scene->m_8;
-    coll->m_cursor = coll->m_head;
-    SceneObj* g = (SceneObj*)((CQueueDrainHost*)coll)->Drain_031250();
+    CQueueDrainHost* coll = m_ctx->m_objList->m_coll;
+    coll->m_scan = coll->m_head;
+    CGameObject* g = (CGameObject*)coll->Drain_031250();
     while (g != 0) {
-        if (g->m_rtClass[4] == (void*)Handler_0040288d && (g->m_flags & 1) == 0) {
+        if (g->m_7c->Init == (void (*)(CGameObject*))Handler_0040288d && (g->m_stateFlags & 1) == 0) {
             i32 special = 0;
-            switch (g->m_animId) {
+            switch (g->m_124) {
                 case 0x33:
                 case 0x34:
                 case 0x35:
@@ -2518,13 +2206,13 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                     special = 1;
                     break;
             }
-            i32 gx = g->m_worldX >> 5;
-            i32 gy = g->m_worldY >> 5;
-            POINT pt;
-            pt.x = gx;
-            pt.y = gy;
-            if (PtInRect(&box, pt)) {
-                if (special != 0 && unit->m_kind == 0) {
+            i32 gx = g->m_screenX >> 5;
+            i32 gy = g->m_screenY >> 5;
+            POINT wpt;
+            wpt.x = gx;
+            wpt.y = gy;
+            if (PtInRect(&box, wpt)) {
+                if (special != 0 && unit->m_gruntKind == 0) {
                     if (Method_0300c0(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
                         CBrickzGrid* bd = m_board;
                         RECT mb;
@@ -2547,9 +2235,9 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
                         return 1;
                     }
                 } else {
-                    i32 p2 = unit->m_animPrim;
+                    i32 p2 = unit->m_entranceReason;
                     if (p2 > 0x16) {
-                        p2 = unit->m_animSec;
+                        p2 = unit->m_19c;
                     }
                     if (p2 == 0) {
                         if (Method_0300c0(unitArg, gx, gy, 0x2000098b, 0, 0) != 0) {
@@ -2575,16 +2263,16 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
             }
         }
         // Back-edge: the inlined first GetNext pop, tail-continuing via the helper.
-        SceneColl* c = m_ctx->m_scene->m_8;
+        CQueueDrainHost* c = m_ctx->m_objList->m_coll;
         g = 0;
-        if (c->m_cursor != 0) {
-            SceneNode* nd = c->m_cursor;
-            c->m_cursor = nd->m_next;
-            SceneObj* pp = nd->m_obj;
-            if (pp->GetType() == 5) {
+        if (c->m_scan != 0) {
+            CQueueProbeNode* nd = c->m_scan;
+            c->m_scan = nd->m_next;
+            CGameObject* pp = nd->m_data;
+            if (pp->GetTypeId() == 5) {
                 g = pp;
             } else {
-                g = (SceneObj*)((CQueueDrainHost*)c)->Drain_031250();
+                g = (CGameObject*)c->Drain_031250();
             }
         }
     }
@@ -2597,85 +2285,55 @@ i32 CBattlezMapConfig::winapi_02c140_IntersectRect_PtInRect(i32 unitArg) {
 // The flood-fill board step. While g_stepRun is set, examine the tile at
 // (col,row): a 0x800000-bit tile tries a direct CBrickzGrid::FindPath (flags 0x4903) and,
 // on a route, recycles the path + returns; a 0x400000-bit tile resolves the cell
-// (m_anim->ResolveCell), and when the cell's anim id is in the special set
+// (m_objAux->ResolveCell), and when the cell's anim id is in the special set
 // {0x12f..0x149} runs FindPath (flags 0x4003) twice (state 1/2), committing the
 // step (clear g_stepRun, stamp g_stepCol/g_stepRow, recycle the path). Otherwise it
 // marks the tile 0x20000-visited and RECURSES into the 8 neighbours (each gated by
 // the visited bit + a 0xc0000/0x9a passability test), then loops on g_stepRun.
 // ===========================================================================
 // ===========================================================================
-// CArriveMgr::ResolveArrival (0x02c690; re-homed from the former gruntarriveresolve
-// unit, waveP - TU_MIGRATION MOVE row `0x02c690 ResolveArrival@CArriveMgr
-// gruntarriveresolve -> 0x29a30 battlezmapconfig`; CArriveMgr IS CBattlezMapConfig's
+// CBattlezMapConfig::ResolveArrival (0x02c690; re-homed from the former gruntarriveresolve
+// unit, waveP - TU_MIGRATION MOVE row `0x02c690 ResolveArrival@CBattlezMapConfig
+// gruntarriveresolve -> 0x29a30 battlezmapconfig`; CBattlezMapConfig IS CBattlezMapConfig's
 // run-phase reinterpretation, xref-proven). The grunt arrival/tile-effect resolver;
 // g_coordPool.m_freeHead / g_coordPool.m_linkOffset / g_coordPool reuse this TU's decls, CTriggerMgr is
 // this TU's local view (ApplyTriggerA added). The CArrive* sub-object views are local.
 // ===========================================================================
-// --- offset-faithful views (offsets + called methods load-bearing; reloc-masked) ---
-// The arriving grunt (arg) is the real CGrunt; its head pending-coord list nodes are
-// GruntCoordNode (+0x08 GruntCoord*) and the tile-coord pairs are GruntTilePos - all
-// from <Gruntz/Grunt.h>. (The former CArriveGrunt/CArriveCoord/CArriveNode/CArriveList
-// views are dissolved onto those real classes.)
-struct CArriveCell { // 0x1c bytes/cell
-    i32 m_0;         // +0x00 flags
-    char _04[0x10 - 4];
-    i32 m_10; // +0x10 type
-    char _14[0x1c - 0x14];
-};
-struct CArriveQuad {                                  // QuadIntRecord (0x34a4) target
-    i32 left, top, right, bottom;                     // +0x00..+0x0c
-    CArriveQuad* Set34a4(i32 a, i32 b, i32 c, i32 d); // 0x34a4 (__thiscall, returns this)
-};
-struct CArriveGrid { // this->m_c
-    char _00[8];
-    CArriveCell** m_8; // +0x08 rows
-    i32 m_c, m_10;     // +0x0c width, +0x10 height
-    char _14[0x60 - 0x14];
-    CArriveQuad m_60; // +0x60 clip region (left/top/right/bottom)
-    i32 m_70, m_74;   // +0x70 width, +0x74 height of clip
-};
-struct CArriveFind { // FindByField0C (0x2838) result
-    i32 m_0;         // +0x00
-    char _04[0x18 - 4];
-    i32 m_arr[1]; // +0x18 indexed by this->m_18
-};
-struct CArriveFind2 { // Find1c21 result
-    i32 _00;
-    i32 m_4; // +0x04
-};
-struct CArriveSub10b { // this->m_10
-    char _00[0x2e4];
-    CTileTriggerContainer* m_2e4; // +0x2e4
-};
-// (The scratch block is a real MFC CPtrList - a stack instance forces the /GX EH frame.)
-struct CArriveFinder { // this->m_14
-};
-struct CArriveMgr {                                      // this (the CBattlezMapConfig board)
-    i32 Gate1a14(CGrunt* g);                             // 0x1a14
-    void Effect374c(CGrunt* g, i32 kind);                // 0x374c
-    i32 Probe1a4b(CGrunt* g, i32 a, i32 b);              // 0x1a4b
-    void Impact25e5(CGrunt* g, i32 a, i32 b, i32 c);     // 0x25e5
-    void SelfImpact2b58(CGrunt* g, i32 a, i32 b, i32 c); // 0x2b58
-    i32 Ready27ed(CGrunt* g);                            // 0x27ed
+// --- every object this resolver touches is a real class ---------------------
+// The arriving grunt (arg) is ::CGrunt; the board (this->m_board) is CBrickzGrid ==
+// CMapMgr (rows m_rows, extents m_width/m_height, bound rect m_originX..m_boundBottom,
+// clipped span m_gridW/m_gridH) and its cells are BrickzCell; the trigger grid
+// (this->m_triggerMgr) is CTriggerMgr; the cell-record query (this->m_cellQuery) is the
+// FindChild/FindByField0C receiver; the band index is m_curCell. That IS the head of
+// CBattlezMapConfig's run view (+0x08/+0x0c/+0x14/+0x18), so `CBattlezMapConfig` was a view of
+// THIS class - ResolveArrival is now its method and the seven CArrive* sub-views are
+// dissolved. (CRect was the canonical CRect; CArriveFinder was empty.)
 
-    char _00[8];
-    CTriggerMgr* m_8;    // +0x08
-    CArriveGrid* m_c;    // +0x0c grid
-    CArriveSub10b* m_10; // +0x10
-    CArriveFinder* m_14; // +0x14
-    i32 m_18;            // +0x18 index
-    char _1c[0x5c - 0x1c];
-    i32 m_5c, m_60; // +0x5c, +0x60 origin coords (raw px)
-
-    i32 ResolveArrival(CGrunt* g);
+// @identity-TODO - the ONE thing here that is NOT recovered: the record FindByField0C
+// (0x1171d0) / FindChild (0x116ee0) RETURN. Retail walks the receiver's node list at
+// [this+0x58], matches [elem+0x0c] against the key, and ResolveArrival then reads
+// `mov edx,[elem]` and compares it against the ANIM ids 0x13e/0x140/0x143, plus the
+// 4-slot flag array at [elem+0x18+4*m_curCell]. So the element's +0x00 is a dword ID,
+// NOT a vptr - it CANNOT be a CTileTriggerSwitchLogic (that class has a real vtable
+// @0x5eae8c), even though the tree currently declares those two finders as returning
+// one. Modeled here by its proven shape; the finders' owner/return type is the
+// follow-up (it is TileTriggerContainer.cpp's +0x54 list, not the sibling list).
+struct CTileTriggerRecord {
+    i32 m_id; // +0x00  anim/type id (compared against 0x13e/0x140/0x143)
+    i32 m_04; // +0x04  state code (compared against 2)
+    char _pad08[0x0c - 0x08];
+    i32 m_key0c; // +0x0c  the key FindByField0C/FindChild match on
+    char _pad10[0x18 - 0x10];
+    i32 m_flags[4]; // +0x18  per-band state flags (indexed by m_curCell)
 };
+SIZE_UNKNOWN(CTileTriggerRecord);
 
-// Recycle the grunt's pending-coord list onto g_coordPool (guarded by m_coordCount).
-// The occupied-coord CPtrList head is g->CoordHead() (GruntCoordNode); its +0x08 GruntCoord*
-// is the recycled coord-node handle Drop takes (as its i32 arg).
+// Recycle the grunt's pending-coord list onto g_coordPool (guarded by its count).
+// The occupied-coord CPtrList's head is g->CoordHead() (a GruntCoordNode); its +0x08
+// GruntCoord* is the recycled coord-node handle Drop takes (as its i32 arg).
 #define ARR_RECYCLE(g)                                                                             \
     if ((g)->CoordCount() != 0) {                                                                  \
-        GruntCoordNode* nd = (g)->CoordHead();                                                     \
+        GruntCoordNode* nd = (g)->CoordHead();                                                           \
         while (nd != 0) {                                                                          \
             GruntCoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
@@ -2687,9 +2345,9 @@ struct CArriveMgr {                                      // this (the CBattlezMa
     }
 
 // cell flags at (col,row), out-of-bounds -> 0x01010101.
-static __inline i32 arrCell(CArriveGrid* grid, i32 col, i32 row) {
-    if ((u32)col < (u32)grid->m_c && (u32)row < (u32)grid->m_10) {
-        return grid->m_8[row][col].m_0;
+static __inline i32 arrCell(CBrickzGrid* grid, i32 col, i32 row) {
+    if ((u32)col < (u32)grid->m_width && (u32)row < (u32)grid->m_height) {
+        return grid->m_rows[row][col].m_0;
     }
     return 1;
 }
@@ -2705,7 +2363,7 @@ static __inline i32 arrCell(CArriveGrid* grid, i32 col, i32 row) {
 // 0x8000-tf(FindByField0C+Impact/Move)/0x20-t5(SetCell/Impact/Move)/0x40(td Move / Effect0xd)/
 // the neighbour-pick fallback (SelfImpact+Ready, rand()%3 origin scan + Trigger1640). Every
 // callee owner corrected: this==g->m_10 (grid=this->m_c, Move via this->m_8, Find via this->
-// m_14, Effect/Probe/Impact/Ready on this; origin g->m_10->m_5c/m_60). The CArriveMgr view had
+// m_14, Effect/Probe/Impact/Ready on this; origin g->m_object->m_screenX/m_60). The CBattlezMapConfig view had
 // a missing char _00[8] (all this-> offsets were 8 low) - fixed.
 //
 // Residual is TWO walls, both proven with `sema disasm --base/--target`:
@@ -2713,7 +2371,7 @@ static __inline i32 arrCell(CArriveGrid* grid, i32 col, i32 row) {
 //       [esp+0x10]; our MSVC5 colours this->ebp and g->edi. Identical instruction stream +
 //       logic, but every g-member/this-member ref uses the opposite base register (ebp<->edi),
 //       so the modrm bytes differ throughout. Same allocator wall documented for
-//       CGruntMover::Step (GruntMoveStep.cpp) - "no source spelling reassigns the callee-saved
+//       CBattlezMapConfig::Step (GruntMoveStep.cpp) - "no source spelling reassigns the callee-saved
 //       register". Routing the board through g->m_10 DOES flip g->ebp but adds an [ebp+0x10]
 //       reload per cluster (base grows), netting -0.8% - not worth it.
 //   (2) DOOR-OPEN transform (off the common path, own recheck-DCE wall): retail's 0x1ad..0x46e
@@ -2724,7 +2382,7 @@ static __inline i32 arrCell(CArriveGrid* grid, i32 col, i32 row) {
 //       so it can't reach byte-exact regardless. Reconstructed as a structural CString-EH loop
 //       (forces the /GX frame); the exact 700-B transform + tail are a dedicated final-sweep job.
 RVA(0x0002c690, 0xdb4)
-i32 CArriveMgr::ResolveArrival(CGrunt* g) {
+i32 CBattlezMapConfig::ResolveArrival(CGrunt* g) {
     if (Gate1a14(g)) {
         return 1;
     }
@@ -2745,10 +2403,10 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
     i32 bx = b.m_x >> 5;
 
     // destination cell = grid[gy][bx]; OOB fills the dest buffer itself (self-copy).
-    CArriveCell dest;
-    CArriveCell* dsrc;
-    if ((u32)bx < (u32)m_c->m_c && (u32)gy < (u32)m_c->m_10) {
-        dsrc = &m_c->m_8[gy][bx];
+    BrickzCell dest;
+    BrickzCell* dsrc;
+    if ((u32)bx < (u32)m_board->m_width && (u32)gy < (u32)m_board->m_height) {
+        dsrc = &m_board->m_rows[gy][bx];
     } else {
         memset(&dest, 1, 0x1c);
         dsrc = &dest;
@@ -2757,10 +2415,10 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
     (void)gx;
 
     // own cell = grid[fcy][fcx], the grunt's head pending coordinate.
-    CArriveCell own;
-    CArriveCell* osrc;
-    if ((u32)fcx < (u32)m_c->m_c && (u32)fcy < (u32)m_c->m_10) {
-        osrc = &m_c->m_8[fcy][fcx];
+    BrickzCell own;
+    BrickzCell* osrc;
+    if ((u32)fcx < (u32)m_board->m_width && (u32)fcy < (u32)m_board->m_height) {
+        osrc = &m_board->m_rows[fcy][fcx];
     } else {
         memset(&own, 1, 0x1c);
         osrc = &own;
@@ -2778,10 +2436,10 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
             // emits a dead stack-address null-recheck our MSVC5 DCEs - see @early-stop.)
             GruntTilePos da;
             g->GetTilePos(&da);
-            for (i32 drow = m_c->m_60.top; drow < m_c->m_60.bottom; drow++) {
-                for (i32 dcol = m_c->m_60.left; dcol < m_c->m_60.right; dcol++) {
-                    CPtrList cs; // real MFC CPtrList block (default ctor -> block size 0xa)
-                    if (!(m_c->m_8[drow][dcol].m_0 & 0x20000000)) {
+            for (i32 drow = m_board->m_originY; drow < m_board->m_boundBottom; drow++) {
+                for (i32 dcol = m_board->m_originX; dcol < m_board->m_boundRight; dcol++) {
+                    CPtrList cs(0xa); // a real MFC CPtrList (the stack instance forces /GX)
+                    if (!(m_board->m_rows[drow][dcol].m_0 & 0x20000000)) {
                         void* h = cs.RemoveHead();
                         if (h != 0) {
                             void** node = (void**)((char*)h - g_coordPool.m_linkOffset);
@@ -2793,30 +2451,29 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
             }
         }
         // recompute the grid clip region (IntersectRect with the full-grid rect)
-        CArriveQuad full, corners;
-        full.Set34a4(0, 0, m_c->m_c, m_c->m_10);
-        CArriveQuad* cr = corners.Set34a4(0, 0, m_c->m_c, m_c->m_10);
-        CArriveQuad tmp;
-        tmp.left = cr->left;
-        tmp.top = cr->top;
-        tmp.right = cr->right;
-        tmp.bottom = cr->bottom;
-        if (!IntersectRect((RECT*)&m_c->m_60, (RECT*)&tmp, (RECT*)&corners)) {
-            m_c->m_60 = tmp;
+        CRect full(0, 0, m_board->m_width, m_board->m_height);
+        CRect corners(0, 0, m_board->m_width, m_board->m_height);
+        RECT tmp;
+        tmp.left = corners.left;
+        tmp.top = corners.top;
+        tmp.right = corners.right;
+        tmp.bottom = corners.bottom;
+        if (!IntersectRect((RECT*)&m_board->m_originX, (RECT*)&tmp, (RECT*)&corners)) {
+            *(RECT*)&m_board->m_originX = tmp;
         }
-        m_c->m_70 = m_c->m_60.right - m_c->m_60.left;
-        m_c->m_74 = m_c->m_60.bottom - m_c->m_60.top;
+        m_board->m_gridW = m_board->m_boundRight - m_board->m_originX;
+        m_board->m_gridH = m_board->m_boundBottom - m_board->m_originY;
     }
 
     // ---- door body flag (dest.flags & 4) ----
     if ((dest.m_0 & 4) && g->m_2d8 != 0xb) {
         GruntTilePos tp;
-        i32 keyHi = g->m_10->m_5c >> 5;
+        i32 keyHi = g->m_object->m_screenX >> 5;
         g->GetTilePos(&tp);
         i32 key = (keyHi << 8) + (tp.m_y >> 5);
         (void)(tp.m_x >> 5);
-        CArriveFind2* r = (CArriveFind2*)((CTileTriggerSwitchLogic*)m_14)->FindChild(key, 0);
-        if (r->m_4 == 2) {
+        CTileTriggerRecord* r = (CTileTriggerRecord*)m_cellQuery->FindChild(key, 0);
+        if (r->m_04 == 2) {
             g->m_defenderState = 0;
             ARR_RECYCLE(g);
             g->m_2d8 = 0xb;
@@ -2827,7 +2484,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
 
     // ---- 0x8000 gate, type 3 ----
     if ((maskFlags & 0x8000) && type == 3 && g->m_2d8 == 0xa) {
-        m_8->ApplyTriggerA(
+        m_triggerMgr->ApplyTriggerA(
             g->m_tileOwnerHi,
             g->m_tileOwnerLo,
             (fcx << 5) + 0x10,
@@ -2839,8 +2496,8 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
 
     // ---- 0x4000 gate, type 3 ----
     if ((maskFlags & 0x4000) && type == 3 && g->m_2d8 == 0xa) {
-        if (m_c->m_8[fcy][fcx].m_10 != 0x99) {
-            m_8->ApplyTriggerA(
+        if (m_board->m_rows[fcy][fcx].m_10 != 0x99) {
+            m_triggerMgr->ApplyTriggerA(
                 g->m_tileOwnerHi,
                 g->m_tileOwnerLo,
                 (fcx << 5) + 0x10,
@@ -2869,7 +2526,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 1 || t == 0x11) {
             if (t == 1) {
-                m_8->ApplyTriggerA(
+                m_triggerMgr->ApplyTriggerA(
                     g->m_tileOwnerHi,
                     g->m_tileOwnerLo,
                     (fcx << 5) + 0x10,
@@ -2880,13 +2537,13 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
             // t == 0x11: scan the 3x3 neighbourhood for the first in-bounds cell
             for (i32 row = fcy - 1; row < fcy + 2; row++) {
                 for (i32 col = fcx - 1; col < fcx + 2; col++) {
-                    if ((u32)col < (u32)m_c->m_c && (u32)row < (u32)m_c->m_10) {
-                        i32 cf = arrCell(m_c, col, row);
+                    if ((u32)col < (u32)m_board->m_width && (u32)row < (u32)m_board->m_height) {
+                        i32 cf = arrCell(m_board, col, row);
                         if (cf & 0x939) {
                             return 1;
                         }
                         if (g->IsInCombatRange((col << 5) + 0x10, (row << 5) + 0x10) != 0) {
-                            m_8->ApplyTriggerA(
+                            m_triggerMgr->ApplyTriggerA(
                                 g->m_tileOwnerHi,
                                 g->m_tileOwnerLo,
                                 (col << 5) + 0x10,
@@ -2904,15 +2561,14 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
     if (maskFlags & 0x4000) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 0xf) {
-            CArriveFind* r =
-                (CArriveFind*)((CTileTriggerSwitchLogic*)m_14)->FindByField0C((fcx << 8) + fcy);
+            CTileTriggerRecord* r = (CTileTriggerRecord*)m_cellQuery->FindByField0C((fcx << 8) + fcy);
             if (r != 0) {
-                if (r->m_arr[m_18] != 0) {
+                if (r->m_flags[m_curCell] != 0) {
                     ARR_RECYCLE(g);
                     Impact25e5(g, fcx, fcy, 1);
                     return 1;
                 }
-                m_8->ApplyTriggerA(
+                m_triggerMgr->ApplyTriggerA(
                     g->m_tileOwnerHi,
                     g->m_tileOwnerLo,
                     (fcx << 5) + 0x10,
@@ -2938,22 +2594,21 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
         i32 t = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
         if (t == 5) {
             if (maskFlags & 0x4000) {
-                CArriveFind* r =
-                    (CArriveFind*)((CTileTriggerSwitchLogic*)m_14)->FindByField0C((fcx << 8) + fcy);
+                CTileTriggerRecord* r = (CTileTriggerRecord*)m_cellQuery->FindByField0C((fcx << 8) + fcy);
                 if (r != 0) {
-                    i32 k = r->m_0;
-                    if (r->m_arr[m_18] != 0) {
+                    i32 k = r->m_id;
+                    if (r->m_flags[m_curCell] != 0) {
                         if (k == 0x13e || k == 0x140 || k == 0x143) {
                             Impact25e5(g, fcx, fcy, 0);
                         }
                     } else {
                         if (k == 0x13e || k == 0x140 || k == 0x143) {
-                            m_10->m_2e4->SetCell(fcx, fcy, m_18);
+                            ((CTileTriggerContainer*)m_cellQuery)->SetCell(fcx, fcy, m_curCell);
                         }
                     }
                 }
             }
-            m_8->ApplyTriggerA(
+            m_triggerMgr->ApplyTriggerA(
                 g->m_tileOwnerHi,
                 g->m_tileOwnerLo,
                 (fcx << 5) + 0x10,
@@ -2984,7 +2639,7 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
         if (t != 0x16) {
             i32 t2 = (g->m_entranceReason > 0x16) ? g->m_19c : g->m_entranceReason;
             if (t2 == 0xd) {
-                m_8->ApplyTriggerA(
+                m_triggerMgr->ApplyTriggerA(
                     g->m_tileOwnerHi,
                     g->m_tileOwnerLo,
                     (fcx << 5) + 0x10,
@@ -3009,15 +2664,15 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
         }
     }
     {
-        i32 oy = g->m_10->m_60 >> 5;
-        i32 ox = g->m_10->m_5c >> 5;
+        i32 oy = g->m_object->m_screenY >> 5;
+        i32 ox = g->m_object->m_screenX >> 5;
         i32 row = rand() % 3 + oy - 1;
         i32 col = rand() % 3 + ox - 1;
-        if ((u32)col >= (u32)m_c->m_c || (u32)row >= (u32)m_c->m_10) {
+        if ((u32)col >= (u32)m_board->m_width || (u32)row >= (u32)m_board->m_height) {
             return 1;
         }
-        i32 c0 = arrCell(m_c, col, row);
-        i32 c1 = arrCell(m_c, col, row);
+        i32 c0 = arrCell(m_board, col, row);
+        i32 c1 = arrCell(m_board, col, row);
         if ((c1 & 0x987) & 0x20000000) {
             return 1;
         }
@@ -3039,15 +2694,6 @@ i32 CArriveMgr::ResolveArrival(CGrunt* g) {
     return 1;
 }
 
-SIZE_UNKNOWN(CArriveCell);
-SIZE_UNKNOWN(CArriveFind);
-SIZE_UNKNOWN(CArriveFind2);
-SIZE_UNKNOWN(CArriveFinder);
-SIZE_UNKNOWN(CArriveGrid);
-SIZE_UNKNOWN(CArriveMgr);
-SIZE_UNKNOWN(CArriveMover);
-SIZE_UNKNOWN(CArriveQuad);
-SIZE_UNKNOWN(CArriveSub10b);
 #undef ARR_RECYCLE
 
 // @early-stop
@@ -3070,10 +2716,10 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
         i32 word = *tile;
         if (word & 0x800000) {
             CPtrList list(10);
-            UnitLevel* lvl = m_ctx->m_level;
+            CGameObject* lvl = m_ctx->m_10;
             if ((m_board)->SearchEdge(
-                    lvl->m_worldX >> 5,
-                    lvl->m_worldY >> 5,
+                    lvl->m_screenX >> 5,
+                    lvl->m_screenY >> 5,
                     col,
                     row,
                     &list,
@@ -3089,7 +2735,7 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
             list.RemoveAll();
         }
         if (word & 0x400000) {
-            void* cell = m_ctx->m_cellResolver->FindByField0C((col << 8) + row);
+            void* cell = m_cellQuery->FindByField0C((col << 8) + row);
             if (m_curCell != 0) {
                 if (cell == 0) {
                     break;
@@ -3098,10 +2744,10 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                     break;
                 }
                 CPtrList list2(10);
-                UnitLevel* lvl = m_ctx->m_level;
+                CGameObject* lvl = m_ctx->m_10;
                 if ((m_board)->SearchEdge(
-                        lvl->m_worldX >> 5,
-                        lvl->m_worldY >> 5,
+                        lvl->m_screenX >> 5,
+                        lvl->m_screenY >> 5,
                         col,
                         row,
                         &list2,
@@ -3115,9 +2761,9 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                     g_stepCol = col;
                     g_stepRow = row;
                     if (head != 0) {
-                        CoordNode* n = (CoordNode*)head;
+                        GruntCoordNode* n = (GruntCoordNode*)head;
                         while (n != 0) {
-                            CoordNode* cur = n;
+                            GruntCoordNode* cur = n;
                             n = n->m_next;
                             void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
                             *node = g_coordPool.m_freeHead;
@@ -3145,10 +2791,10 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 break;
             }
             CPtrList list3(10);
-            UnitLevel* lvl = m_ctx->m_level;
+            CGameObject* lvl = m_ctx->m_10;
             if ((m_board)->SearchEdge(
-                    lvl->m_worldX >> 5,
-                    lvl->m_worldY >> 5,
+                    lvl->m_screenX >> 5,
+                    lvl->m_screenY >> 5,
                     col,
                     row,
                     &list3,
@@ -3162,9 +2808,9 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
                 g_stepCol = col;
                 g_stepRow = row;
                 if (head != 0) {
-                    CoordNode* n = (CoordNode*)head;
+                    GruntCoordNode* n = (GruntCoordNode*)head;
                     while (n != 0) {
-                        CoordNode* cur = n;
+                        GruntCoordNode* cur = n;
                         n = n->m_next;
                         void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
                         *node = g_coordPool.m_freeHead;
@@ -3279,11 +2925,11 @@ i32 CBattlezMapConfig::Method_02d800(i32 a4, i32 col, i32 row, i32 a5) {
 // offset. Deferred to the final sweep.
 RVA(0x0002dfa0, 0x325)
 i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, i32 a3) {
-    GridUnit* unit = (GridUnit*)unitArg;
+    CGrunt* unit = (CGrunt*)unitArg;
     g_stepRun = 1;
     // Build a 17x17 box (corner reads via three GetCoords).
-    UnitLevel* lvl = unit->m_level;
-    i32 bottom = (lvl->m_worldY >> 5) + 8;
+    CGameObject* lvl = unit->m_object;
+    i32 bottom = (lvl->m_screenY >> 5) + 8;
     Coord g0;
     ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&g0);
     i32 right = (g0.m_x >> 5) + 8;
@@ -3308,10 +2954,10 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
     board->m_gridH = board->m_boundBottom - board->m_originY;
     Method_02d800(unitArg, a1, a2, a3);
     if (g_stepRun == 0) {
-        i32 savedX = unit->m_packedX;
-        i32 savedY = unit->m_packedY;
-        i32 col = unit->m_packedX >> 5;
-        i32 row = unit->m_packedY >> 5;
+        i32 savedX = unit->m_entrancePxX;
+        i32 savedY = unit->m_entrancePxY;
+        i32 col = unit->m_entrancePxX >> 5;
+        i32 row = unit->m_entrancePxY >> 5;
         i32 tile0;
         if ((u32)col < (u32)board->m_width && (u32)row < (u32)board->m_height) {
             tile0 = ((i32*)board->m_rows[row])[col * 7];
@@ -3319,8 +2965,8 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
             tile0 = 1;
         }
         i32 flag = (tile0 >> 2) & 1;
-        if (unit->m_coordCount != 0) {
-            Coord* c = (unit->m_coordTail)->m_coord;
+        if (unit->CoordCount() != 0) {
+            GruntCoord* c = (unit->CoordTail())->m_coord;
             i32 cx = c->m_x;
             i32 cy = c->m_y;
             i32 tile1;
@@ -3337,8 +2983,8 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
         }
         CGrunt_TileSwitch(g_stepCol, g_stepRow, 0, 0x9c3, 1, 0);
         if (flag != 0) {
-            unit->m_packedX = savedX;
-            unit->m_packedY = savedY;
+            unit->m_entrancePxX = savedX;
+            unit->m_entrancePxY = savedY;
         }
     }
     // Clear bit 0x2 across the board dirty region.
@@ -3379,28 +3025,28 @@ i32 CBattlezMapConfig::winapi_02dfa0_IntersectRect(i32 unitArg, i32 a1, i32 a2, 
 // The nearest-idle-neighbour retarget. Build a 15x15 box (half-extent 7) around
 // the arg unit's screen coord (4 GetCoord corners), then scan the four cell-bands
 // (15 units each, skipping the current band m_curCell) for the eligible (m_1fc set,
-// m_368/m_bandADiv/m_220 clear, anim name not C/R/J/G/L, m_kind != 0x36) unit whose
+// m_368/m_bandADiv/m_220 clear, anim name not C/R/J/G/L, m_gruntKind != 0x36) unit whose
 // grid coord is inside the box, keeping the manhattan-distance-squared nearest.
-// If one is found (and the arg unit's m_idleTimer cooldown > 0x64), clamp the board
+// If one is found (and the arg unit's m_dwell cooldown > 0x64), clamp the board
 // dirty-rect to that box, build the FindPath flag word from the unit's 0x12/0x16/
 // 0xe anim modes, and re-path the unit toward it (Method_0300c0, flags 0x1000d8f).
-// On a route, debounce the m_arrived latch (a g_stepTimer window against m_scratch78..m_084,
+// On a route, debounce the m_390 latch (a g_stepTimer window against m_scratch78..m_084,
 // firing the scene hit when the unit's level coord is on-screen), re-clamp the
-// board dirty-rect, and return 1. No candidate latches m_arrived and returns 0.
+// board dirty-rect, and return 1. No candidate latches m_390 and returns 0.
 // ===========================================================================
 // @early-stop
 // box-stack-slot + EH/regalloc plateau (same family as winapi_02a570/02dfa0): the
 // 4-corner box build, the band scan with the five inline-strcmp C/R/J/G/L rejects
 // (setne bool form) + PtInRect + dist^2 min-keep, the box clamp with the dead
 // maybe-null branch retail emits, the 0x12/0x16/0xe FindPath-flag build, the
-// Method_0300c0 re-path, the m_arrived 64-bit-timer debounce + scene-hit, and both
+// Method_0300c0 re-path, the m_390 64-bit-timer debounce + scene-hit, and both
 // dirty-rect re-clamps are reconstructed in shape + order. Residual is the
 // compiler's stack colouring of the 6 transient Coord/box slots (the >>5 corners
 // alias the later dist temporaries) + the /GX cond-temp EH state; foreign
 // unit/board/g_gameReg chains modeled by raw offset. Not source-steerable.
 RVA(0x0002e3a0, 0x7e1)
 i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
+    CGrunt* unit = (CGrunt*)unitArg;
     // Four GetCoord corners -> a 15x15 box (half-extent 7) around the unit.
     RECT box;
     Coord cA;
@@ -3422,59 +3068,59 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&cD);
     box.left = (cD.m_x >> 5) - 7;
 
-    GridUnit* best = 0;
+    CGrunt* best = 0;
     i32 bestDist = 0x7fffffff;
     for (i32 band = 0; band < 4; band++) {
         if (band == m_curCell) {
             continue;
         }
         for (i32 i = 0; i < 15; i++) {
-            GridUnit* u = m_triggerMgr->m_grid[band * 15 + i];
+            CGrunt* u = m_triggerMgr->m_grid[band * 15 + i];
             if (u == 0) {
                 continue;
             }
-            if (u->m_1fc == 0) {
+            if (u->m_entranceCommitted == 0) {
                 continue;
             }
-            if (u->m_368 != 0) {
+            if (u->m_deathAnimStarted != 0) {
                 continue;
             }
-            if (u->m_guard1e4 != 0) {
+            if (u->m_entranceActive != 0) {
                 continue;
             }
-            if (u->m_220 != 0) {
+            if (u->m_poweredUp != 0) {
                 continue;
             }
             bool ne;
-            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_anim->m_1c))), "C") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_objAux->m_1c))), "C") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_anim->m_1c))), "R") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_objAux->m_1c))), "R") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_anim->m_1c))), "J") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_objAux->m_1c))), "J") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_anim->m_1c))), "G") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_objAux->m_1c))), "G") != 0;
             if (!ne) {
                 continue;
             }
-            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_anim->m_1c))), "L") != 0;
+            ne = strcmp((*g_typeColl.GetNameRecord((void*)(u->m_objAux->m_1c))), "L") != 0;
             if (!ne) {
                 continue;
             }
-            if (u->m_kind == 0x36) {
+            if (u->m_gruntKind == 0x36) {
                 continue;
             }
             Coord c;
             ((CUserLogic*)u)->GetScreenPos((CUserLogic::ScreenPoint*)&c);
-            POINT pt;
-            pt.x = c.m_x >> 5;
-            pt.y = c.m_y >> 5;
-            if (!PtInRect(&box, pt)) {
+            POINT wpt;
+            wpt.x = c.m_x >> 5;
+            wpt.y = c.m_y >> 5;
+            if (!PtInRect(&box, wpt)) {
                 continue;
             }
             Coord a1;
@@ -3496,10 +3142,10 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         }
     }
     if (best == 0) {
-        unit->m_arrived = 1;
+        unit->m_390 = 1;
         return 0;
     }
-    if ((u32)unit->m_idleTimer <= 0x64) {
+    if ((u32)unit->m_dwell <= 0x64) {
         return 1;
     }
     CBrickzGrid* board = m_board;
@@ -3527,23 +3173,23 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     board->m_gridH = board->m_boundBottom - board->m_originY;
     // FindPath flag word from the unit's 0x12 / 0x16 / 0xe anim modes.
     i32 flags = 0;
-    i32 prim = unit->m_animPrim;
+    i32 prim = unit->m_entranceReason;
     i32 t = prim;
     if (prim > 0x16) {
-        t = unit->m_animSec;
+        t = unit->m_19c;
     }
     if (t == 0x12) {
         flags = 0x100;
     }
     t = prim;
     if (prim > 0x16) {
-        t = unit->m_animSec;
+        t = unit->m_19c;
     }
     if (t == 0x16) {
         flags = 0x942;
     }
     if (prim > 0x16) {
-        prim = unit->m_animSec;
+        prim = unit->m_19c;
     }
     if (prim == 0xe) {
         flags = 0x1000;
@@ -3569,22 +3215,22 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         }
         board->m_gridW = board->m_boundRight - board->m_originX;
         board->m_gridH = board->m_boundBottom - board->m_originY;
-        unit->m_idleTimer = 0;
+        unit->m_dwell = 0;
         return 0;
     }
-    if (unit->m_state != 3) {
-        unit->m_state = 0;
-        unit->m_pathState = 0;
+    if (unit->m_defenderState != 3) {
+        unit->m_defenderState = 0;
+        unit->m_254 = 0;
     }
-    if (unit->m_arrived != 0) {
+    if (unit->m_390 != 0) {
         __int64 elapsed = (__int64)(u32)g_stepTimer - *(__int64*)&m_scratch78;
         if (elapsed >= *(__int64*)&m_scratch80) {
-            unit->m_arrived = 0;
-            UnitLevel* lvl = unit->m_level;
+            unit->m_390 = 0;
+            CGameObject* lvl = unit->m_object;
             char* chain = (char*)g_gameReg->m_world->m_24->m_5c;
             RECT* hit = (RECT*)(chain + 0x40);
-            if (lvl->m_worldX < hit->right && lvl->m_worldX >= hit->left
-                && lvl->m_worldY < hit->bottom && lvl->m_worldY >= hit->top) {
+            if (lvl->m_screenX < hit->right && lvl->m_screenX >= hit->left
+                && lvl->m_screenY < hit->bottom && lvl->m_screenY >= hit->top) {
                 ((CGruntSpawnConfig*)(void*)g_gameReg->m_cueSink)
                     ->SpawnVoiceDriver((i32)unit, 0x366, -1, 0, -1, -1);
             }
@@ -3610,7 +3256,7 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
     }
     board->m_gridW = board->m_boundRight - board->m_originX;
     board->m_gridH = board->m_boundBottom - board->m_originY;
-    unit->m_idleTimer = 0;
+    unit->m_dwell = 0;
     return 1;
 }
 
@@ -3642,8 +3288,8 @@ i32 CBattlezMapConfig::Method_02ed90(i32) {
 
 RVA(0x0002edb0, 0x6b4)
 i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if (unit->m_coordCount == 0) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if (unit->CoordCount() == 0) {
         return 0;
     }
     i32 tx = 0;
@@ -3655,13 +3301,13 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
         found = 1;
     } else {
         // Find the unit's first occupied coord that sits on a blocked tile.
-        CoordNode* n = unit->m_coordHead;
+        GruntCoordNode* n = unit->CoordHead();
         while (n != 0) {
-            CoordNode* cur = n;
+            GruntCoordNode* cur = n;
             n = n->m_next;
-            Coord* c = cur->m_coord;
+            GruntCoord* c = cur->m_coord;
             if (c != 0) {
-                Tile* row = (Tile*)(m_board)->m_rows[c->m_y];
+                BrickzCell* row = (BrickzCell*)(m_board)->m_rows[c->m_y];
                 if (((i32*)&row[c->m_x])[0] & 4) {
                     tx = c->m_x;
                     ty = c->m_y;
@@ -3674,7 +3320,7 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
     if (found == 0) {
         return 0;
     }
-    if (unit->m_state == 3) {
+    if (unit->m_defenderState == 3) {
         return 1;
     }
     if (found == 0) {
@@ -3682,10 +3328,10 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
     }
     if (Method_0305b0(unitArg, tx, ty) != 0) {
         // Already colliding there: recycle the unit's path + reset state.
-        if (unit->m_coordCount != 0) {
-            CoordNode* n = unit->m_coordHead;
+        if (unit->CoordCount() != 0) {
+            GruntCoordNode* n = unit->CoordHead();
             while (n != 0) {
-                CoordNode* cur = n;
+                GruntCoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
                     void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
@@ -3693,9 +3339,9 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                     g_coordPool.m_freeHead = node;
                 }
             }
-            ((CPtrList*)&unit->m_coordList)->RemoveAll();
+            unit->m_31c.RemoveAll();
         }
-        unit->m_state = 0;
+        unit->m_defenderState = 0;
         return 1;
     }
     if (found == 0) {
@@ -3703,13 +3349,13 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
     }
     if (Method_030530(unitArg) != 0) {
         // Path is blocked: a reserved-tile bit on the first path coord aborts.
-        if (unit->m_coordCount != 0) {
-            CoordNode* p = unit->m_coordHead;
-            Coord* c = ((CoordNode*)p)->m_coord;
+        if (unit->CoordCount() != 0) {
+            GruntCoordNode* p = unit->CoordHead();
+            GruntCoord* c = p->m_coord;
             i32 word;
             CBrickzGrid* b = m_board;
             if ((u32)c->m_x < (u32)b->m_width && (u32)c->m_y < (u32)b->m_height) {
-                word = ((i32*)&((Tile*)b->m_rows[c->m_y])[c->m_x])[0];
+                word = ((i32*)&((BrickzCell*)b->m_rows[c->m_y])[c->m_x])[0];
             } else {
                 word = 1;
             }
@@ -3726,24 +3372,25 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
     i32 r = rand() % 15;
     i32 scanned = 0;
     for (;;) {
-        GridUnit* cand = m_triggerMgr->m_grid[m_curCell * 15 + r];
+        CGrunt* cand = m_triggerMgr->m_grid[m_curCell * 15 + r];
         if (cand != 0) {
-            UnitLevel* lvl = cand->m_level;
-            if (lvl->m_worldX == cand->m_cachedX && lvl->m_worldY == cand->m_cachedY
-                && cand->m_1fc != 0 && cand->m_368 == 0 && cand->m_guard1e4 == 0
-                && cand->m_220 == 0) {
+            CGameObject* lvl = cand->m_object;
+            if (lvl->m_screenX == cand->m_lastTilePxX && lvl->m_screenY == cand->m_lastTilePxY
+                && cand->m_entranceCommitted != 0 && cand->m_deathAnimStarted == 0 && cand->m_entranceActive == 0
+                && cand->m_poweredUp == 0) {
                 bool eq;
                 eq =
                     (strcmp(
-                         (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim + 0x1c)))),
+                         (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                                                                            + 0x1c)))),
                          "I"
                      )
                      == 0);
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                        + 0x1c)))),
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                                                                                + 0x1c)))),
                              "G"
                          )
                          == 0);
@@ -3751,8 +3398,8 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                        + 0x1c)))),
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                                                                                + 0x1c)))),
                              "L"
                          )
                          == 0);
@@ -3760,8 +3407,8 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                        + 0x1c)))),
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                                                                                + 0x1c)))),
                              "P"
                          )
                          == 0);
@@ -3769,8 +3416,8 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                        + 0x1c)))),
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                                                                                + 0x1c)))),
                              "J"
                          )
                          == 0);
@@ -3778,8 +3425,8 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                        + 0x1c)))),
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                                                                                + 0x1c)))),
                              "C"
                          )
                          == 0);
@@ -3787,32 +3434,32 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                 if (!eq) {
                     eq =
                         (strcmp(
-                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_anim
-                                                                        + 0x1c)))),
+                             (*g_typeColl.GetNameRecord((void*)(*(i32*)((char*)cand->m_objAux
+                                                                                + 0x1c)))),
                              "R"
                          )
                          == 0);
                 }
-                if (!eq && cand != unit && cand->m_state != 3 && cand->m_state != 5) {
-                    UnitLevel* ul = unit->m_level;
-                    UnitLevel* cl = cand->m_level;
-                    i32 dx = (ul->m_worldX >> 5) - (cl->m_worldX >> 5);
-                    i32 dy = (ul->m_worldY >> 5) - (cl->m_worldY >> 5);
+                if (!eq && cand != unit && cand->m_defenderState != 3 && cand->m_defenderState != 5) {
+                    CGameObject* ul = unit->m_object;
+                    CGameObject* cl = cand->m_object;
+                    i32 dx = (ul->m_screenX >> 5) - (cl->m_screenX >> 5);
+                    i32 dy = (ul->m_screenY >> 5) - (cl->m_screenY >> 5);
                     dx = abs(dx);
                     dy = abs(dy);
                     if (dx * dx + dy * dy <= 0x190) {
                         // Found a donor: build the FindPath flags + swap its path.
                         i32 flags = 0x4020;
-                        i32 sec = unit->m_animPrim;
+                        i32 sec = unit->m_entranceReason;
                         if (sec > 0x16) {
-                            sec = unit->m_animSec;
+                            sec = unit->m_19c;
                         }
                         if (sec == 0x16) {
                             flags = 0x4962;
                         }
-                        i32 prim = unit->m_animPrim;
+                        i32 prim = unit->m_entranceReason;
                         if (prim > 0x16) {
-                            prim = unit->m_animSec;
+                            prim = unit->m_19c;
                         }
                         if (prim == 0x12) {
                             flags |= 0x100;
@@ -3820,12 +3467,12 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                         CPtrList list(10);
                         Coord oc;
                         ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&oc);
-                        UnitLevel* dl = cand->m_level;
+                        CGameObject* dl = cand->m_object;
                         if ((m_board)->SearchEdge(
                                 oc.m_x >> 5,
                                 oc.m_y >> 5,
-                                dl->m_worldX >> 5,
-                                dl->m_worldY >> 5,
+                                dl->m_screenX >> 5,
+                                dl->m_screenY >> 5,
                                 &list,
                                 1,
                                 0x98b,
@@ -3840,28 +3487,28 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
                                     *node = g_coordPool.m_freeHead;
                                     g_coordPool.m_freeHead = node;
                                 }
-                                if (unit->m_coordCount != 0) {
-                                    CoordNode* nn = unit->m_coordHead;
+                                if (unit->CoordCount() != 0) {
+                                    GruntCoordNode* nn = unit->CoordHead();
                                     while (nn != 0) {
-                                        CoordNode* cur = nn;
+                                        GruntCoordNode* cur = nn;
                                         nn = nn->m_next;
                                         if (cur->m_coord != 0) {
-                                            void** fn = (void**)((char*)cur->m_coord
-                                                                 - g_coordPool.m_linkOffset);
+                                            void** fn =
+                                                (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
                                             *fn = g_coordPool.m_freeHead;
                                             g_coordPool.m_freeHead = fn;
                                         }
                                     }
-                                    ((CPtrList*)&unit->m_coordList)->RemoveAll();
+                                    unit->m_31c.RemoveAll();
                                 }
-                                CoordNode* p = (CoordNode*)list.GetHeadPosition();
+                                GruntCoordNode* p = (GruntCoordNode*)list.GetHeadPosition();
                                 while (p != 0) {
-                                    CoordNode* cur = p;
+                                    GruntCoordNode* cur = p;
                                     p = p->m_next;
-                                    ((CPtrList*)&unit->m_coordList)->AddTail(cur->m_coord);
+                                    unit->m_31c.AddTail(cur->m_coord);
                                 }
-                                cand->m_state = 0;
-                                unit->m_state = 5;
+                                cand->m_defenderState = 0;
+                                unit->m_defenderState = 5;
                             }
                             list.RemoveAll();
                             return 1;
@@ -3906,24 +3553,24 @@ i32 CBattlezMapConfig::Method_02edb0(i32 unitArg, i32 useArg, i32 ax, i32 ay) {
 // value in edx, the band divisors in esi). Deferred to the final sweep.
 RVA(0x0002f620, 0x871)
 i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if (unit->m_1fc == 0) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if (unit->m_entranceCommitted == 0) {
         return 0;
     }
-    if (unit->m_368 != 0) {
+    if (unit->m_deathAnimStarted != 0) {
         return 0;
     }
-    if (unit->m_guard1e4 != 0) {
+    if (unit->m_entranceActive != 0) {
         return 0;
     }
-    if (unit->m_220 != 0) {
+    if (unit->m_poweredUp != 0) {
         return 0;
     }
     // I (resolved directly via GetRecord). The compare result is materialized as a
     // setcc'd bool (the `bool eq` local, not the inline neg/sbb form) - see
     // docs/patterns/strcmp-eq-bool-local-setcc.md.
     bool eq;
-    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "I") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "I") == 0);
     if (eq) {
         return 0;
     }
@@ -3932,7 +3579,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
     CString* slot;
     i32 cnt;
 
-    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_objAux->m_1c));
     slot = (CString*)g_typeColl.m_alloc;
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -3947,7 +3594,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_objAux->m_1c));
     slot = (CString*)g_typeColl.m_alloc;
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -3962,7 +3609,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_objAux->m_1c));
     slot = (CString*)g_typeColl.m_alloc;
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -3977,7 +3624,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_objAux->m_1c));
     slot = (CString*)g_typeColl.m_alloc;
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -3992,7 +3639,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_objAux->m_1c));
     slot = (CString*)g_typeColl.m_alloc;
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4007,7 +3654,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_objAux->m_1c));
     slot = (CString*)g_typeColl.m_alloc;
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -4030,10 +3677,10 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         band = rand() % m_bandDiv + 1;
     }
     if (band <= m_bandSplitA) {
-        // Band A: the unit must currently be idle (m_animPrim/m_animSec clear).
-        i32 cur = unit->m_animPrim;
+        // Band A: the unit must currently be idle (m_entranceReason/m_19c clear).
+        i32 cur = unit->m_entranceReason;
         if (cur > 0x16) {
-            cur = unit->m_animSec;
+            cur = unit->m_19c;
         }
         if (cur != 0) {
             return 1;
@@ -4093,11 +3740,11 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
         }
         if (mode == 3) {
             // Reseed: count idle units in the current cell-row; bail if 2+ already.
-            GridUnit** row = &m_triggerMgr->m_grid[m_curCell * 15];
+            CGrunt** row = &m_triggerMgr->m_grid[m_curCell * 15];
             i32 nIdle = 0;
             for (i32 s = 15; s != 0; s--) {
-                GridUnit* u = *row;
-                if (u != 0 && u->m_mode == 3) {
+                CGrunt* u = *row;
+                if (u != 0 && u->m_2d8 == 3) {
                     nIdle++;
                 }
                 row++;
@@ -4106,22 +3753,22 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                 return 1;
             }
             for (i32 b = 0; b < 15; b++) {
-                GridUnit* u = m_triggerMgr->m_grid[m_curCell * 15 + b];
+                CGrunt* u = m_triggerMgr->m_grid[m_curCell * 15 + b];
                 if (u == 0) {
                     continue;
                 }
-                if (u->m_mode != 0) {
+                if (u->m_2d8 != 0) {
                     continue;
                 }
-                if (u->m_220 != 0) {
+                if (u->m_poweredUp != 0) {
                     continue;
                 }
                 ((CGrunt*)u)->LoadPickupSprites(3, 1, 0, 0, 1);
-                u->m_mode = 3;
-                if (u->m_coordCount != 0) {
-                    CoordNode* n = u->m_coordHead;
+                u->m_2d8 = 3;
+                if (u->CoordCount() != 0) {
+                    GruntCoordNode* n = u->CoordHead();
                     while (n != 0) {
-                        CoordNode* curn = n;
+                        GruntCoordNode* curn = n;
                         n = n->m_next;
                         if (curn->m_coord != 0) {
                             void** node = (void**)((char*)curn->m_coord - g_coordPool.m_linkOffset);
@@ -4129,26 +3776,26 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                             g_coordPool.m_freeHead = node;
                         }
                     }
-                    ((CPtrList*)&u->m_coordList)->RemoveAll();
+                    u->m_31c.RemoveAll();
                 }
             }
             return 1;
         }
         // Non-3 band-A mode: if the unit is idle, apply directly; otherwise recycle
         // the unit's coord nodes for the 0x12 / 0x16 modes.
-        i32 cur2 = unit->m_animPrim;
+        i32 cur2 = unit->m_entranceReason;
         if (cur2 > 0x16) {
-            cur2 = unit->m_animSec;
+            cur2 = unit->m_19c;
         }
         if (cur2 == 0) {
             ((CGrunt*)unit)->LoadPickupSprites(mode, 1, 0, 0, 1);
             return 1;
         }
         if (mode == 0x12) {
-            if (unit->m_coordCount != 0) {
-                CoordNode* n = unit->m_coordHead;
+            if (unit->CoordCount() != 0) {
+                GruntCoordNode* n = unit->CoordHead();
                 while (n != 0) {
-                    CoordNode* curn = n;
+                    GruntCoordNode* curn = n;
                     n = n->m_next;
                     if (curn->m_coord != 0) {
                         void** node = (void**)((char*)curn->m_coord - g_coordPool.m_linkOffset);
@@ -4156,13 +3803,13 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                         g_coordPool.m_freeHead = node;
                     }
                 }
-                ((CPtrList*)&unit->m_coordList)->RemoveAll();
+                unit->m_31c.RemoveAll();
             }
         } else if (mode == 0x16) {
-            if (unit->m_coordCount != 0) {
-                CoordNode* n = unit->m_coordHead;
+            if (unit->CoordCount() != 0) {
+                GruntCoordNode* n = unit->CoordHead();
                 while (n != 0) {
-                    CoordNode* curn = n;
+                    GruntCoordNode* curn = n;
                     n = n->m_next;
                     if (curn->m_coord != 0) {
                         void** node = (void**)((char*)curn->m_coord - g_coordPool.m_linkOffset);
@@ -4170,7 +3817,7 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
                         g_coordPool.m_freeHead = node;
                     }
                 }
-                ((CPtrList*)&unit->m_coordList)->RemoveAll();
+                unit->m_31c.RemoveAll();
             }
         }
         return 1;
@@ -4223,8 +3870,8 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
             mode = 0x26;
         }
         if (mode >= 0x22) {
-            unit->m_queuedAnim = mode;
-            unit->m_queuedSentinel = -1;
+            unit->m_194 = mode;
+            unit->m_moveMode = -1;
         }
         return 1;
     }
@@ -4253,12 +3900,12 @@ i32 CBattlezMapConfig::Method_02f620(i32 unitArg) {
 RVA(0x000300c0, 0x190)
 i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5, i32 a6) {
     CPtrList list(10);
-    GridUnit* unit = (GridUnit*)unitArg;
-    UnitLevel* lvl = unit->m_level;
-    if ((lvl->m_worldX >> 5) == gx && (lvl->m_worldY >> 5) == gy) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    CGameObject* lvl = unit->m_object;
+    if ((lvl->m_screenX >> 5) == gx && (lvl->m_screenY >> 5) == gy) {
         return 0;
     }
-    if ((m_board)->SearchEdge(lvl->m_worldX >> 5, lvl->m_worldY >> 5, gx, gy, &list, a6, a4, a5)
+    if ((m_board)->SearchEdge(lvl->m_screenX >> 5, lvl->m_screenY >> 5, gx, gy, &list, a6, a4, a5)
         == 0) {
         return 0;
     }
@@ -4276,30 +3923,30 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
     }
     // Recycle the unit's current path-coord nodes onto the coord pool, empty its
     // path list.
-    if (unit->m_coordCount != 0) {
-        CoordNode* n = unit->m_coordHead;
+    if (unit->CoordCount() != 0) {
+        GruntCoordNode* n = unit->CoordHead();
         while (n != 0) {
-            CoordNode* cur = n;
+            GruntCoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 g_coordPool.Push(cur->m_coord);
             }
         }
-        ((CPtrList*)&unit->m_coordList)->RemoveAll();
+        unit->m_31c.RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
-    CoordNode* p = (CoordNode*)list.GetHeadPosition();
+    GruntCoordNode* p = (GruntCoordNode*)list.GetHeadPosition();
     while (p != 0) {
-        CoordNode* cur = p;
+        GruntCoordNode* cur = p;
         p = p->m_next;
         if (cur->m_coord != 0) {
-            ((CPtrList*)&unit->m_coordList)->AddTail(cur->m_coord);
+            unit->m_31c.AddTail(cur->m_coord);
         }
     }
     list.RemoveAll();
-    Coord* tail = (Coord*)(unit->m_coordTail)->m_coord;
-    unit->m_packedX = (tail->m_x << 5) + 0x10;
-    unit->m_packedY = (tail->m_y << 5) + 0x10;
+    GruntCoord* tail = (unit->CoordTail())->m_coord;
+    unit->m_entrancePxX = (tail->m_x << 5) + 0x10;
+    unit->m_entrancePxY = (tail->m_y << 5) + 0x10;
     return 1;
 }
 
@@ -4323,7 +3970,7 @@ i32 CBattlezMapConfig::Method_0300c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
 RVA(0x000302c0, 0x1ec)
 i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5) {
     CPtrList list(10);
-    GridUnit* unit = (GridUnit*)unitArg;
+    CGrunt* unit = (CGrunt*)unitArg;
     Coord cur;
     ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&cur);
     if ((cur.m_x >> 5) == gx) {
@@ -4334,19 +3981,19 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
         }
     }
     // Scan the unit's path for a node already on the goal (match = the node after it).
-    CoordNode* match = 0;
-    CoordNode* n = unit->m_coordHead;
+    GruntCoordNode* match = 0;
+    GruntCoordNode* n = unit->CoordHead();
     while (n != 0) {
-        CoordNode* cur3 = n;
+        GruntCoordNode* cur3 = n;
         n = n->m_next;
-        Coord* coord = cur3->m_coord;
+        GruntCoord* coord = cur3->m_coord;
         if (coord != 0 && coord->m_x == gx && coord->m_y == gy) {
             match = n;
             break;
         }
     }
-    UnitLevel* lvl = unit->m_level;
-    if ((m_board)->SearchEdge(lvl->m_worldX >> 5, lvl->m_worldY >> 5, gx, gy, &list, 0, a5, a5)
+    CGameObject* lvl = unit->m_object;
+    if ((m_board)->SearchEdge(lvl->m_screenX >> 5, lvl->m_screenY >> 5, gx, gy, &list, 0, a5, a5)
         == 0) {
         return 0;
     }
@@ -4363,16 +4010,16 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
         return 0;
     }
     // The matched-path-segment recycle (degenerate in retail).
-    if (match != 0 && unit->m_coordHead != 0) {
-        void** node = (void**)((char*)&unit->m_coordList - g_coordPool.m_linkOffset);
+    if (match != 0 && unit->CoordHead() != 0) {
+        void** node = (void**)((char*)&unit->m_31c - g_coordPool.m_linkOffset);
         *node = g_coordPool.m_freeHead;
         g_coordPool.m_freeHead = node;
     }
     // Recycle the unit's existing coord nodes onto g_coordPool.m_freeHead, then empty its path.
-    if (unit->m_coordCount != 0) {
-        CoordNode* p = unit->m_coordHead;
+    if (unit->CoordCount() != 0) {
+        GruntCoordNode* p = unit->CoordHead();
         while (p != 0) {
-            CoordNode* cur4 = p;
+            GruntCoordNode* cur4 = p;
             p = p->m_next;
             if (cur4->m_coord != 0) {
                 void** node = (void**)((char*)cur4->m_coord - g_coordPool.m_linkOffset);
@@ -4380,15 +4027,15 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
                 g_coordPool.m_freeHead = node;
             }
         }
-        ((CPtrList*)&unit->m_coordList)->RemoveAll();
+        unit->m_31c.RemoveAll();
     }
     // AddTail every new route node's coord onto the unit's path list.
-    CoordNode* q = (CoordNode*)list.GetHeadPosition();
+    GruntCoordNode* q = (GruntCoordNode*)list.GetHeadPosition();
     while (q != 0) {
-        CoordNode* cur5 = q;
+        GruntCoordNode* cur5 = q;
         q = q->m_next;
         if (cur5->m_coord != 0) {
-            ((CPtrList*)&unit->m_coordList)->AddTail(cur5->m_coord);
+            unit->m_31c.AddTail(cur5->m_coord);
         }
     }
     list.RemoveAll();
@@ -4402,22 +4049,22 @@ i32 CBattlezMapConfig::Method_0302c0(i32 unitArg, i32 gx, i32 gy, i32 a4, i32 a5
 // ===========================================================================
 RVA(0x00030530, 0x56)
 i32 CBattlezMapConfig::Method_030530(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if (unit->m_coordCount == 0) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if (unit->CoordCount() == 0) {
         return 0;
     }
-    CoordNode* node = unit->m_coordHead;
+    GruntCoordNode* node = unit->CoordHead();
     if (node == 0) {
         return 0;
     }
-    Tile** rows = (Tile**)(m_board)->m_rows;
+    BrickzCell** rows = (BrickzCell**)(m_board)->m_rows;
     while (node != 0) {
-        CoordNode* cur = node;
+        GruntCoordNode* cur = node;
         node = node->m_next;
-        Coord* c = cur->m_coord;
+        GruntCoord* c = cur->m_coord;
         i32 y = c->m_y;
         i32 x = c->m_x;
-        if (rows[y][x].m_flags & 4) {
+        if (rows[y][x].m_0 & 4) {
             return 1;
         }
     }
@@ -4428,8 +4075,8 @@ i32 CBattlezMapConfig::Method_030530(i32 unitArg) {
 // CBattlezMapConfig::Method_0305b0  @0x0305b0
 // Scan the current cell-row for any OTHER unit that occupies coordinate
 // (arg1, arg2): either via a "blocked tile" hit on the unit's occupied-coord
-// list, via the unit's own packed coord (m_packedX/m_packedY >> 5), or via its level
-// geometry (m_level->m_5c/m_60 >> 5). Returns 1 on the first hit, else 0.
+// list, via the unit's own packed coord (m_entrancePxX/m_entrancePxY >> 5), or via its level
+// geometry (m_object->m_5c/m_60 >> 5). Returns 1 on the first hit, else 0.
 // ===========================================================================
 // @early-stop
 // regalloc wall (~46%): logic byte-exact at the head (prologue + the three
@@ -4440,25 +4087,25 @@ i32 CBattlezMapConfig::Method_030530(i32 unitArg) {
 // spelling found. Deferred to the final sweep.
 RVA(0x000305b0, 0x121)
 i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
-    GridUnit** units = m_triggerMgr->m_grid + m_curCell * 15;
+    CGrunt** units = m_triggerMgr->m_grid + m_curCell * 15;
     for (i32 i = 0; i < 15; i++) {
-        GridUnit* unit = units[i];
+        CGrunt* unit = units[i];
         if (unit == 0) {
             continue;
         }
-        if (unit == (GridUnit*)selfUnit) {
+        if (unit == (CGrunt*)selfUnit) {
             continue;
         }
-        if (unit->m_mode == 0xb) {
+        if (unit->m_2d8 == 0xb) {
             continue;
         }
-        if (unit->m_coordCount != 0 && unit->m_coordHead != 0) {
+        if (unit->CoordCount() != 0 && unit->CoordHead() != 0) {
             CBrickzGrid* board = m_board;
-            CoordNode* node = unit->m_coordHead;
+            GruntCoordNode* node = unit->CoordHead();
             while (node != 0) {
-                CoordNode* cur = node;
+                GruntCoordNode* cur = node;
                 node = node->m_next;
-                Coord* c = cur->m_coord;
+                GruntCoord* c = cur->m_coord;
                 i32 x = c->m_x;
                 i32 y = c->m_y;
                 i32 tile;
@@ -4472,11 +4119,11 @@ i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
                 }
             }
         }
-        if ((unit->m_packedX >> 5) == qx && (unit->m_packedY >> 5) == qy) {
+        if ((unit->m_entrancePxX >> 5) == qx && (unit->m_entrancePxY >> 5) == qy) {
             return 1;
         }
-        UnitLevel* lvl = unit->m_level;
-        if ((lvl->m_worldX >> 5) == qx && (lvl->m_worldY >> 5) == qy) {
+        CGameObject* lvl = unit->m_object;
+        if ((lvl->m_screenX >> 5) == qx && (lvl->m_screenY >> 5) == qy) {
             return 1;
         }
     }
@@ -4489,7 +4136,7 @@ i32 CBattlezMapConfig::Method_0305b0(i32 selfUnit, i32 qx, i32 qy) {
 // the CURRENT cell-row (m_curCell) and, for each candidate whose mode is 3 (or a
 // 2/3-of-the-time random pick) and whose per-level record lands within distance
 // 0x19 of the candidate's geometry, claim it - mark mode 3 / state 2, stamp the
-// target coord (cellX,cellY) and seed m_pathCfg = 0xd87.
+// target coord (cellX,cellY) and seed m_250 = 0xd87.
 // ===========================================================================
 // @early-stop
 // regalloc wall (~88%): logic byte-exact. Retail pins `this` in edi and SPILLS a
@@ -4506,36 +4153,36 @@ i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
     if (cellX == m_curCell) {
         return 1;
     }
-    GridUnit* src = m_triggerMgr->m_grid[cellX * 15 + cellY];
+    CGrunt* src = m_triggerMgr->m_grid[cellX * 15 + cellY];
     if (src == 0) {
         return 0;
     }
-    if (src->m_kind == 0x36) {
+    if (src->m_gruntKind == 0x36) {
         return 0;
     }
-    if (src->m_mode == 4) {
-        i32 sx = src->m_targetX;
-        i32 sy = src->m_targetY;
+    if (src->m_2d8 == 4) {
+        i32 sx = src->m_arrivalCol;
+        i32 sy = src->m_arrivalRow;
         if (sx == m_curCell) {
             return 0;
         }
     }
     for (i32 i = 0; i < 15; i++) {
-        GridUnit* u = m_triggerMgr->m_grid[m_curCell * 15 + i];
+        CGrunt* u = m_triggerMgr->m_grid[m_curCell * 15 + i];
         if (u == 0) {
             continue;
         }
         i32 ok = 1;
-        if (u->m_mode == 3) {
-            i32 ux = u->m_targetX;
-            i32 uy = u->m_targetY;
+        if (u->m_2d8 == 3) {
+            i32 ux = u->m_arrivalCol;
+            i32 uy = u->m_arrivalRow;
             if (ux == cellX && uy == cellY) {
                 ok = 0;
             }
         }
-        if (u->m_mode == 3) {
-            i32 ux = u->m_targetX;
-            i32 uy = u->m_targetY;
+        if (u->m_2d8 == 3) {
+            i32 ux = u->m_arrivalCol;
+            i32 uy = u->m_arrivalRow;
             if (!(ux == cellX && uy == cellY) && (rand() % 3) != 0) {
                 ok = 0;
             }
@@ -4543,11 +4190,11 @@ i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
         if (ok == 0) {
             continue;
         }
-        UnitLevel* lvl = u->m_level;
-        i32 lx = lvl->m_worldX >> 5;
-        i32 ly = lvl->m_worldY >> 5;
-        if (u->m_mode == 4 && u->m_targetBand != -1) {
-            char* rec = (char*)m_ctx + u->m_targetBand * 0x238;
+        CGameObject* lvl = u->m_object;
+        i32 lx = lvl->m_screenX >> 5;
+        i32 ly = lvl->m_screenY >> 5;
+        if (u->m_2d8 == 4 && u->m_2e8 != -1) {
+            char* rec = (char*)m_ctx + u->m_2e8 * 0x238;
             i32 dx = *(i32*)(rec + 0x258) - lx;
             i32 dy = *(i32*)(rec + 0x25c) - ly;
             dx = abs(dx);
@@ -4559,12 +4206,12 @@ i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
         if (ok == 0) {
             continue;
         }
-        u->m_targetX = cellX;
-        u->m_mode = 3;
-        u->m_targetY = cellY;
-        u->m_state = 2;
-        u->m_pathCfg = 0xd87;
-        u->m_pathState = 0;
+        u->m_arrivalCol = cellX;
+        u->m_2d8 = 3;
+        u->m_arrivalRow = cellY;
+        u->m_defenderState = 2;
+        u->m_250 = 0xd87;
+        u->m_254 = 0;
     }
     return 1;
 }
@@ -4589,7 +4236,7 @@ i32 CBattlezMapConfig::Method_030730(i32 cellX, i32 cellY, i32, i32) {
 // docs/patterns/zero-register-pinning.md). Deferred to the final sweep.
 RVA(0x00030990, 0x11b)
 i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
-    GridUnit** row = &m_triggerMgr->m_grid[m_curCell * 15];
+    CGrunt** row = &m_triggerMgr->m_grid[m_curCell * 15];
     i32 occupied = 0;
     for (i32 c = 15; c != 0; c--) {
         if (*row != 0) {
@@ -4619,24 +4266,24 @@ i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
     if (cell == -1) {
         return 0;
     }
-    GridUnit* unit = m_ctx->m_triggerMgr->m_grid[cell + m_curCell * 15];
+    CGrunt* unit = m_ctx->m_triggerMgr->m_grid[cell + m_curCell * 15];
     if (unit == 0) {
         return 0;
     }
-    unit->m_targetX = -1;
+    unit->m_arrivalCol = -1;
     unit->m_2f8 = -1;
-    unit->m_goalX = -1;
-    unit->m_2d0 = 0x11;
-    unit->m_targetY = -1;
-    unit->m_targetBand = -1;
+    unit->m_defenderX = -1;
+    unit->m_arrivalState = 0x11;
+    unit->m_arrivalRow = -1;
+    unit->m_2e8 = -1;
     unit->m_2fc = -1;
-    unit->m_state = 0;
-    unit->m_goalY = -1;
-    unit->m_claimAnim = 0;
-    unit->m_countdown = 0;
-    unit->m_idleTimer = 0;
-    unit->m_arrived = 1;
-    unit->m_mode = 4;
+    unit->m_defenderState = 0;
+    unit->m_defenderY = -1;
+    unit->m_2e4 = 0;
+    unit->m_2e0 = 0;
+    unit->m_dwell = 0;
+    unit->m_390 = 1;
+    unit->m_2d8 = 4;
     return 1;
 }
 
@@ -4661,16 +4308,16 @@ i32 CBattlezMapConfig::Method_030990(i32 ax, i32 ay) {
 // chains are modeled by raw offset. Deferred to the final sweep.
 RVA(0x00030b20, 0x328)
 i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    UnitLevel* lvl = unit->m_level;
-    i32 goalX = lvl->m_worldX >> 5;
-    i32 goalY = lvl->m_worldY >> 5;
+    CGrunt* unit = (CGrunt*)unitArg;
+    CGameObject* lvl = unit->m_object;
+    i32 goalX = lvl->m_screenX >> 5;
+    i32 goalY = lvl->m_screenY >> 5;
     // The cell record for (col,row): a direct table slot when its tile marker is
     // 0x67, else resolved through QueryA on the packed coordinate.
-    Tile* tile = &((Tile*)(m_board)->m_rows[row])[col];
+    BrickzCell* tile = &((BrickzCell*)(m_board)->m_rows[row])[col];
     char* cell;
     if (*(i32*)((char*)tile + 0x10) == 0x67) {
-        cell = m_ctx->m_cellTable;
+        cell = (char*)m_ctx->m_dims; // ctx+0x70 IS the board (== this->m_board)
     } else {
         cell = (char*)((CTileTriggerContainer*)m_ctx)->FindInLists12((col << 8) + row, 0);
     }
@@ -4683,7 +4330,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         while ((i32)(((char*)scan - cell - 0x3c) & ~3) < 0x60) {
             void* node = *scan;
             if (node != 0) {
-                void* rec = ((CTileTriggerSwitchLogic*)m_ctx)->FindChild((i32)node, 0);
+                void* rec = m_cellQuery->FindChild((i32)node, 0);
                 if (rec != 0) {
                     i32 cx = *(i32*)((char*)rec + 0x8);
                     i32 cy = *(i32*)((char*)rec + 0xc);
@@ -4699,7 +4346,7 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         while ((i32)(((char*)scan2 - cell - 0x3c) & ~3) < 0x60) {
             void* node = *scan2;
             if (node != 0) {
-                void* rec = ((CTileTriggerSwitchLogic*)m_ctx)->FindChild((i32)node, 0);
+                void* rec = m_cellQuery->FindChild((i32)node, 0);
                 if (rec != 0) {
                     i32 cx = *(i32*)((char*)rec + 0x8);
                     i32 cy = *(i32*)((char*)rec + 0xc);
@@ -4726,26 +4373,26 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
     }
     CPtrList list(10);
     // The FindPath flag word: 0x60 base, + 0x900/0x100 bits from the unit's
-    // 0x16 / 0x12 anim modes (primary m_animPrim, or secondary m_animSec when m_animPrim > 0x16).
+    // 0x16 / 0x12 anim modes (primary m_entranceReason, or secondary m_19c when m_entranceReason > 0x16).
     i32 flags = 0x60;
-    i32 sec = unit->m_animPrim;
+    i32 sec = unit->m_entranceReason;
     if (sec > 0x16) {
-        sec = unit->m_animSec;
+        sec = unit->m_19c;
     }
     if (sec == 0x16) {
         flags = 0x962;
     }
-    i32 prim = unit->m_animPrim;
+    i32 prim = unit->m_entranceReason;
     if (prim > 0x16) {
-        prim = unit->m_animSec;
+        prim = unit->m_19c;
     }
     if (prim == 0x12) {
         flags |= 0x100;
     }
-    UnitLevel* lvl2 = unit->m_level;
+    CGameObject* lvl2 = unit->m_object;
     if ((m_board)->SearchEdge(
-            lvl2->m_worldX >> 5,
-            lvl2->m_worldY >> 5,
+            lvl2->m_screenX >> 5,
+            lvl2->m_screenY >> 5,
             bestX,
             bestY,
             &list,
@@ -4771,10 +4418,10 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
         return 0;
     }
     // Recycle the unit's current path-coord nodes onto g_coordPool.m_freeHead, empty its list.
-    if (unit->m_coordCount != 0) {
-        CoordNode* n = unit->m_coordHead;
+    if (unit->CoordCount() != 0) {
+        GruntCoordNode* n = unit->CoordHead();
         while (n != 0) {
-            CoordNode* cur = n;
+            GruntCoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 void** fn = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
@@ -4782,19 +4429,19 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
                 g_coordPool.m_freeHead = fn;
             }
         }
-        ((CPtrList*)&unit->m_coordList)->RemoveAll();
+        unit->m_31c.RemoveAll();
     }
     // AddTail every new path node's coord onto the unit's path list.
-    CoordNode* p = (CoordNode*)list.GetHeadPosition();
+    GruntCoordNode* p = (GruntCoordNode*)list.GetHeadPosition();
     while (p != 0) {
-        CoordNode* cur = p;
+        GruntCoordNode* cur = p;
         p = p->m_next;
-        ((CPtrList*)&unit->m_coordList)->AddTail(cur->m_coord);
+        unit->m_31c.AddTail(cur->m_coord);
     }
-    Coord* tail = (Coord*)(unit->m_coordTail)->m_coord;
-    unit->m_packedX = (tail->m_x << 5) + 0x10;
-    unit->m_packedY = (tail->m_y << 5) + 0x10;
-    unit->m_state = 5;
+    GruntCoord* tail = (unit->CoordTail())->m_coord;
+    unit->m_entrancePxX = (tail->m_x << 5) + 0x10;
+    unit->m_entrancePxY = (tail->m_y << 5) + 0x10;
+    unit->m_defenderState = 5;
     return 1;
 }
 
@@ -4812,39 +4459,39 @@ i32 CBattlezMapConfig::Method_030b20(i32 unitArg, i32 col, i32 row) {
 // re-reads `unit` from the stack arg and spills the candidate count to a stack
 // slot; MSVC5 here caches `unit` and pins count in edi, which cascades the inner
 // collision loop's register operands (load-then-test vs memory-compare on
-// u->m_coordCount, cand coord regs). No steerable spelling found; final sweep.
+// u->CoordCount(), cand coord regs). No steerable spelling found; final sweep.
 RVA(0x00030f20, 0x16d)
 void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
     Coord* o = (Coord*)out;
-    GridUnit* unit = (GridUnit*)unitArg;
+    CGrunt* unit = (CGrunt*)unitArg;
     if (kind < 0 || kind >= 4) {
-        UnitLevel* lvl = unit->m_level;
-        o->m_x = lvl->m_worldX >> 5;
-        o->m_y = lvl->m_worldY >> 5;
+        CGameObject* lvl = unit->m_object;
+        o->m_x = lvl->m_screenX >> 5;
+        o->m_y = lvl->m_screenY >> 5;
         return o;
     }
     char* rec = (char*)m_ctx + kind * 0x238 + 0x278;
-    UnitLevel* lvl = unit->m_level;
-    i32 rx = lvl->m_worldX >> 5;
-    i32 ry = lvl->m_worldY >> 5;
+    CGameObject* lvl = unit->m_object;
+    i32 rx = lvl->m_screenX >> 5;
+    i32 ry = lvl->m_screenY >> 5;
     i32 count = *(i32*)(rec + 0x8);
     if (count != 0) {
         i32 r = rand() % count;
         i32 k = 0;
         if (count > 0) {
-            Candidate** arr = *(Candidate***)(rec + 0x4);
+            Coord** arr = *(Coord***)(rec + 0x4);
             CTriggerMgr* grid = m_triggerMgr;
             i32 cell = m_curCell;
             for (;;) {
-                Candidate* cand = arr[r];
+                Coord* cand = arr[r];
                 i32 cx = cand->m_x;
                 i32 cy = cand->m_y;
                 i32 ok = 1;
-                GridUnit** row = &grid->m_grid[cell * 15];
+                CGrunt** row = &grid->m_grid[cell * 15];
                 for (i32 j = 15; j != 0; j--) {
-                    GridUnit* u = *row;
-                    if (u != 0 && u->m_coordCount != 0) {
-                        i32* node = (i32*)u->m_coordTail->m_coord;
+                    CGrunt* u = *row;
+                    if (u != 0 && u->CoordCount() != 0) {
+                        i32* node = (i32*)u->CoordTail()->m_coord;
                         if (node[0] == cx && node[1] == cy) {
                             ok = 0;
                         }
@@ -4864,7 +4511,7 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
             }
         }
         r = rand() % count;
-        Candidate* cand = (*(Candidate***)(rec + 0x4))[r];
+        Coord* cand = (*(Coord***)(rec + 0x4))[r];
         rx = cand->m_x;
         ry = cand->m_y;
     }
@@ -4874,52 +4521,22 @@ void* CBattlezMapConfig::Method_030f20(void* out, i32 unitArg, i32 kind) {
 }
 
 // ===========================================================================
-// CGruntMover::Step (0x031610; re-homed from the former gruntmovestep unit, waveP -
-// TU_MIGRATION MOVE row `0x031610 Step@CGruntMover gruntmovestep -> 0x29a30
+// CBattlezMapConfig::Step (0x031610; re-homed from the former gruntmovestep unit, waveP -
+// TU_MIGRATION MOVE row `0x031610 Step@CBattlezMapConfig gruntmovestep -> 0x29a30
 // battlezmapconfig`). The per-tick grunt move-resolution step; g_coordPool reuses
 // this TU's decl, the move-grid views are local. (Sibling 0x29af0 TileSwitch29af0
 // stays in gruntmovestep - a COMDAT leaf, out of scope this batch.)
 // ===========================================================================
-// --- views (offsets + called methods load-bearing; reloc-masked, no body) ---
-struct CGruntSub10 { // grunt->m_10
-    char _00[0x5c];
-    i32 m_5c, m_60; // +0x5c, +0x60
-};
-struct CCoordXY {
-    i32 x, y;
-};
-struct CMoveGridDims { // mover->m_c
-    char _00[0xc];
-    i32 m_c, m_10; // +0x0c grid width, +0x10 grid height
-};
-
-// The mover's board (m_8): a 4x15 grunt-pointer grid at +0x1c, indexed [15*col+row].
-struct CMoveBoard {
-    char _00[0x1c];
-    CGrunt* m_grid[60]; // +0x1c
-};
-
-struct CGruntMover {                                             // this (edi)
-    i32 Step(CGrunt* g);                                         // 0x031610
-    CGrunt* QueryTile4098(i32 x, i32 y, i32 dx, i32 dy);         // 0x4098
-    void Commit42e1(CGrunt* g);                                  // 0x42e1
-    void Plan293c(CGrunt* g, i32 x, i32 y, i32 a, i32 b, i32 c); // 0x293c
-    void Finish3e4f(CGrunt* g, CGrunt* a);                       // 0x3e4f
-
-    char _00[0x8];
-    CMoveBoard* m_8;    // +0x08  board (CGrunt*[] grid at +0x1c)
-    CMoveGridDims* m_c; // +0x0c
-    char _10[0x94 - 0x10];
-    i32 m_94, m_98; // +0x94, +0x98
-    char _9c[0xac - 0x9c];
-    i32 m_ac, m_b0, m_b4, m_b8; // +0xac..+0xb8
-    char _bc[0xc0 - 0xbc];
-    i32 m_c0; // +0xc0
-};
+// --- all real classes: the mover IS this CBattlezMapConfig ------------------
+// `CBattlezMapConfig` named +0x08 the board-with-a-4x15-grid-at-+0x1c (that is CTriggerMgr)
+// and +0x0c the width/height grid (that is CBrickzGrid == CMapMgr) - the same two head
+// slots as CBattlezMapConfig and as this class's run view. Step is now its method; the four
+// sub-views (CGameObject = the grunt's CGameObject, Coord = Coord, CBrickzGrid =
+// CMapMgr, CTriggerMgr = CTriggerMgr) are dissolved.
 
 #define MOVE_RECYCLE(g)                                                                            \
     {                                                                                              \
-        GruntCoordNode* nd = (g)->CoordHead();                                                     \
+        GruntCoordNode* nd = (g)->CoordHead();                                                           \
         while (nd != 0) {                                                                          \
             GruntCoordNode* cur = nd;                                                              \
             nd = nd->m_next;                                                                       \
@@ -4941,34 +4558,34 @@ struct CGruntMover {                                             // this (edi)
 //     `fild [sum]; fsqrt; call __ftol` (the fake identity isqrt both mis-computed AND
 //     dropped the [esp] spill that sizes the frame to 0x20);
 //   * W/H read raw before GetTilePos, /3 divided after (deferred-division);
-//   * `c0.x/c0.y/c1.x/c1.y >>= 5` in place (retail stores the shifted coords back);
-//   * m_2ec vs m_b8/m_b4 are UNSIGNED compares (jbe, not jle).
+//   * `c0.m_x/c0.m_y/c1.m_x/c1.m_y >>= 5` in place (retail stores the shifted coords back);
+//   * m_2ec vs m_0b8/m_reserveBudget are UNSIGNED compares (jbe, not jle).
 // Residual ~28% is a genuine register-COLORING cascade: retail colors `this`(mover)->edi
 // and `g`(arg)->esi; this cl colors `this`->ebx, freeing one reg so it spills/reloads
 // fewer temps (base 352 insns vs retail 395 - retail re-materializes push-0/or-1 and
 // reloads spills that this cl keeps in the extra reg). No source spelling reassigns the
 // callee-saved `this` register. Final-sweep candidate.
 RVA(0x00031610, 0x501)
-i32 CGruntMover::Step(CGrunt* g) {
+i32 CBattlezMapConfig::Step(CGrunt* g) {
     if (g->CoordCount() == 0) {
         if (g->m_defenderState == 2) {
             goto inflight;
         }
 
         // ---- fresh: re-query the move grid for the target tile ----
-        i32 W = m_c->m_c;
-        i32 H = m_c->m_10;
-        CCoordXY c0;
+        i32 W = m_board->m_width;
+        i32 H = m_board->m_height;
+        Coord c0;
         g->GetScreenPos((GruntTilePos*)&c0);
-        c0.x >>= 5;
-        c0.y >>= 5;
-        CGrunt* nb = QueryTile4098(c0.x, c0.y, (i32)((u32)W / 3), (i32)((u32)H / 3));
+        c0.m_x >>= 5;
+        c0.m_y >>= 5;
+        CGrunt* nb = QueryTile4098(c0.m_x, c0.m_y, (i32)((u32)W / 3), (i32)((u32)H / 3));
         if (nb != 0) {
-            CCoordXY c1;
+            Coord c1;
             nb->GetScreenPos((GruntTilePos*)&c1);
-            c1.x >>= 5;
-            c1.y >>= 5;
-            if (CGrunt_TileSwitch(c1.x, c1.y, 0xd87, 0, 1, 0) == 0) {
+            c1.m_x >>= 5;
+            c1.m_y >>= 5;
+            if (CGrunt_TileSwitch(c1.m_x, c1.m_y, 0xd87, 0, 1, 0) == 0) {
                 return 1;
             }
             g->m_arrivalCol = nb->m_tileOwnerHi;
@@ -4979,10 +4596,10 @@ i32 CGruntMover::Step(CGrunt* g) {
             return 1;
         }
         // nb == 0: replan / drain
-        if ((u32)g->m_dwell > (u32)m_b8) {
-            CCoordXY here;
+        if ((u32)g->m_dwell > (u32)m_0b8) {
+            Coord here;
             g->GetScreenPos((GruntTilePos*)&here);
-            Plan293c(g, here.x >> 5, here.y >> 5, m_ac, m_b0, -1);
+            Plan293c(g, here.m_x >> 5, here.m_y >> 5, m_ac, m_b0, -1);
             if (g->CoordCount() > m_98 + m_94 && g->CoordCount() != 0) {
                 GruntCoordNode* nd = g->CoordHead();
                 if (nd != 0) {
@@ -5009,13 +4626,13 @@ inflight: {
     i32 col = g->m_arrivalCol;
     i32 row = g->m_arrivalRow;
     CGrunt* cur = m_8->m_grid[15 * col + row];
-    i32 W = m_c->m_c;
-    i32 H = m_c->m_10;
-    CCoordXY c0;
+    i32 W = m_board->m_width;
+    i32 H = m_board->m_height;
+    Coord c0;
     g->GetScreenPos((GruntTilePos*)&c0);
-    c0.x >>= 5;
-    c0.y >>= 5;
-    CGrunt* nb = QueryTile4098(c0.x, c0.y, (i32)((u32)W / 3), (i32)((u32)H / 3));
+    c0.m_x >>= 5;
+    c0.m_y >>= 5;
+    CGrunt* nb = QueryTile4098(c0.m_x, c0.m_y, (i32)((u32)W / 3), (i32)((u32)H / 3));
 
     if (cur == 0) {
         goto L_clear;
@@ -5029,8 +4646,8 @@ inflight: {
         g->m_defenderState = 2;
         g->m_dwell = 0;
         {
-            CGruntSub10* s = (CGruntSub10*)nb->m_10;
-            if (CGrunt_TileSwitch(s->m_5c >> 5, s->m_60 >> 5, 0xd87, 0, 0, 0) == 0) {
+            CGameObject* s = (CGameObject*)nb->m_10;
+            if (CGrunt_TileSwitch(s->m_screenX >> 5, s->m_screenY >> 5, 0xd87, 0, 0, 0) == 0) {
                 return 1;
             }
         }
@@ -5041,8 +4658,8 @@ inflight: {
         goto L_clear;
     }
     {
-        CGruntSub10* s = (CGruntSub10*)cur->m_10;
-        if (g->RectContains(s->m_5c, s->m_60) != 0) {
+        CGameObject* s = cur->m_object;
+        if (g->RectContains(s->m_screenX, s->m_screenY) != 0) {
             // arrived on this tile: latch the move
             g->m_arrivalCol = -1;
             g->m_arrivalRow = -1;
@@ -5052,18 +4669,18 @@ inflight: {
         }
     }
     // 3198f: not arrived - reroute by board distance
-    if ((u32)g->m_dwell <= (u32)m_b4) {
+    if ((u32)g->m_dwell <= (u32)m_reserveBudget) {
         return 1;
     }
     {
-        CCoordXY here;
+        Coord here;
         g->GetScreenPos((GruntTilePos*)&here);
-        i32 x5 = here.x >> 5;
-        i32 y5 = here.y >> 5;
-        CCoordXY nbpos;
+        i32 x5 = here.m_x >> 5;
+        i32 y5 = here.m_y >> 5;
+        Coord nbpos;
         cur->GetTilePos((GruntTilePos*)&nbpos);
-        i32 dx = nbpos.x - x5;
-        i32 dy = nbpos.y - y5;
+        i32 dx = nbpos.m_x - x5;
+        i32 dy = nbpos.m_y - y5;
         i32 adx = dx < 0 ? -dx : dx;
         i32 ady = dy < 0 ? -dy : dy;
         i32 dist = (i32)sqrt((double)(adx * adx + ady * ady));
@@ -5076,8 +4693,8 @@ inflight: {
         if (g->CoordCount() != 0) {
             MOVE_RECYCLE(g);
         }
-        CGruntSub10* s = (CGruntSub10*)cur->m_10;
-        if (CGrunt_TileSwitch(s->m_5c >> 5, s->m_60 >> 5, 0xd87, 0, 0, 0) != 0) {
+        CGameObject* s = cur->m_object;
+        if (CGrunt_TileSwitch(s->m_screenX >> 5, s->m_screenY >> 5, 0xd87, 0, 0, 0) != 0) {
             g->m_dwell = 0;
             return 1;
         }
@@ -5097,11 +4714,6 @@ L_clear:
 }
 }
 #undef MOVE_RECYCLE
-SIZE_UNKNOWN(CCoordXY);
-SIZE_UNKNOWN(CGruntMover);
-SIZE_UNKNOWN(CGruntSub10);
-SIZE_UNKNOWN(CMoveBoard);
-SIZE_UNKNOWN(CMoveGridDims);
 
 // CGrunt::GetTilePos (0x31c70) - write the HUD tile coords (m_10->m_5c/m_60 >> 5)
 // into the caller's {x,y} out slot and return it. Re-homed from Grunt.cpp
@@ -5126,45 +4738,45 @@ GruntTilePos* CGrunt::GetTilePos(GruntTilePos* out) {
 // ===========================================================================
 // CBattlezMapConfig::winapi_031ca0_IntersectRect  @0x031ca0
 // The queued-unit arrival resolver. For a unit with a live target cell
-// (m_targetX/m_targetY != -1) locate the unit at that cell (grid[m_targetX][m_targetY]); if it is
+// (m_arrivalCol/m_arrivalRow != -1) locate the unit at that cell (grid[m_arrivalCol][m_arrivalRow]); if it is
 // gone, reset the unit (mode 4 / -1 coords) recycling its path onto g_coordPool.m_freeHead.
 // If the target cell is already occupied (CGrunt::Occupied on the target's
 // level coord), recycle the unit's path onto g_coordPool, clear the target coord
 // and hand off to winapi_02ae00. Otherwise clamp the board dirty-rect to the board
 // bounds (the CRect / IntersectRect copy-back idiom) and, once the unit's idle
 // timer passes 0x1f4, place it at the target's level (>>5) coord (Method_4b320,
-// flags m_pathCfg). A dangling target (m_targetX/m_targetY == -1) resets via g_coordPool.
+// flags m_250). A dangling target (m_arrivalCol/m_arrivalRow == -1) resets via g_coordPool.
 // ===========================================================================
 // @early-stop
 // 80.6% - head regalloc wall: logic + every call (CGrunt::Occupied, the
 // CoordListWalk/g_coordPool + raw-walk/g_coordPool.m_freeHead recycles, IntersectRect, the
 // Method_4b320 place, winapi_02ae00) is byte-exact in shape + order (the whole body
-// matches). Residual is the m_targetX/m_targetY head: retail keeps the -1 as an immediate
+// matches). Residual is the m_arrivalCol/m_arrivalRow head: retail keeps the -1 as an immediate
 // (cmp eax,0xffffffff) and spills tx/ty to [esp+0x10]/[esp+0x14], where MSVC5 here
 // hoists -1 into edi (cmp eax,edi) and keeps tx/ty in registers - the shared-const
 // / spill recolor cascades ~0x40 head bytes. Not source-steerable; final sweep.
 RVA(0x00031ca0, 0x2f2)
 i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    i32 tx = unit->m_targetX;
-    i32 ty = unit->m_targetY;
+    CGrunt* unit = (CGrunt*)unitArg;
+    i32 tx = unit->m_arrivalCol;
+    i32 ty = unit->m_arrivalRow;
     if (tx != -1 && ty != -1) {
-        GridUnit* target = m_triggerMgr->m_grid[tx * 15 + ty];
+        CGrunt* target = m_triggerMgr->m_grid[tx * 15 + ty];
         if (target != 0) {
-            UnitLevel* lvl = target->m_level;
-            if (((CGrunt*)unit)->RectContains(lvl->m_worldX, lvl->m_worldY) != 0) {
-                if (unit->m_coordCount != 0) {
-                    void* pos = unit->m_coordHead;
+            CGameObject* lvl = target->m_object;
+            if (((CGrunt*)unit)->RectContains(lvl->m_screenX, lvl->m_screenY) != 0) {
+                if (unit->CoordCount() != 0) {
+                    void* pos = unit->CoordHead();
                     while (pos != 0) {
                         void* coord = *(void**)ListNodeAdvance(&pos);
                         if (coord != 0) {
                             g_coordPool.Push(coord);
                         }
                     }
-                    ((CPtrList*)&unit->m_coordList)->RemoveAll();
+                    unit->m_31c.RemoveAll();
                 }
-                unit->m_targetX = -1;
-                unit->m_targetY = -1;
+                unit->m_arrivalCol = -1;
+                unit->m_arrivalRow = -1;
                 winapi_02ae00_IntersectRect(unitArg, (i32)target);
                 return 1;
             }
@@ -5185,29 +4797,29 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
             }
             board->m_gridW = board->m_boundRight - board->m_originX;
             board->m_gridH = board->m_boundBottom - board->m_originY;
-            if ((u32)unit->m_idleTimer > 0x1f4 && unit->m_coordCount == 0) {
-                i32 flags = unit->m_pathCfg;
-                unit->m_pathState = 0x4268;
-                UnitLevel* tl = target->m_level;
-                CGrunt_TileSwitch(tl->m_worldX >> 5, tl->m_worldY >> 5, 0, flags, 0, 0x4268);
-                unit->m_idleTimer = 0;
+            if ((u32)unit->m_dwell > 0x1f4 && unit->CoordCount() == 0) {
+                i32 flags = unit->m_250;
+                unit->m_254 = 0x4268;
+                CGameObject* tl = target->m_object;
+                CGrunt_TileSwitch(tl->m_screenX >> 5, tl->m_screenY >> 5, 0, flags, 0, 0x4268);
+                unit->m_dwell = 0;
             }
             return 1;
         }
         // The target unit is gone: reset it (mode 4 / -1 coords), recycle its path
         // onto g_coordPool.m_freeHead.
-        unit->m_targetX = -1;
-        unit->m_targetY = -1;
-        unit->m_goalX = -1;
-        unit->m_state = 0;
-        unit->m_mode = 4;
-        unit->m_goalY = -1;
-        if (unit->m_coordCount != 0) {
-            CoordNode* n = unit->m_coordHead;
+        unit->m_arrivalCol = -1;
+        unit->m_arrivalRow = -1;
+        unit->m_defenderX = -1;
+        unit->m_defenderState = 0;
+        unit->m_2d8 = 4;
+        unit->m_defenderY = -1;
+        if (unit->CoordCount() != 0) {
+            GruntCoordNode* n = unit->CoordHead();
             if (n != 0) {
                 void* head = g_coordPool.m_freeHead;
                 do {
-                    CoordNode* cur = n;
+                    GruntCoordNode* cur = n;
                     n = n->m_next;
                     void* coord = cur->m_coord;
                     if (coord != 0) {
@@ -5218,42 +4830,42 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
                     }
                 } while (n != 0);
             }
-            ((CPtrList*)&unit->m_coordList)->RemoveAll();
+            unit->m_31c.RemoveAll();
         }
         return 1;
     }
-    // A dangling target coord (m_targetX/m_targetY == -1): reset, recycle onto g_coordPool.
-    unit->m_targetX = -1;
-    unit->m_targetY = -1;
-    unit->m_goalX = -1;
-    unit->m_state = 0;
-    unit->m_mode = 4;
-    unit->m_goalY = -1;
-    if (unit->m_coordCount != 0) {
-        void* pos = unit->m_coordHead;
+    // A dangling target coord (m_arrivalCol/m_arrivalRow == -1): reset, recycle onto g_coordPool.
+    unit->m_arrivalCol = -1;
+    unit->m_arrivalRow = -1;
+    unit->m_defenderX = -1;
+    unit->m_defenderState = 0;
+    unit->m_2d8 = 4;
+    unit->m_defenderY = -1;
+    if (unit->CoordCount() != 0) {
+        void* pos = unit->CoordHead();
         while (pos != 0) {
             void* coord = *(void**)ListNodeAdvance(&pos);
             if (coord != 0) {
                 g_coordPool.Push(coord);
             }
         }
-        ((CPtrList*)&unit->m_coordList)->RemoveAll();
+        unit->m_31c.RemoveAll();
     }
     return 1;
 }
 
 // ===========================================================================
 // CBattlezMapConfig::winapi_032060_IntersectRect  @0x032060
-// The per-unit spawn-path state machine, keyed on the unit's m_state mode. First
-// resolve the target band (m_targetBand): pick a fresh random one (avoiding the current
+// The per-unit spawn-path state machine, keyed on the unit's m_defenderState mode. First
+// resolve the target band (m_2e8): pick a fresh random one (avoiding the current
 // band m_curCell, requiring the record's +0x170 ready / +0x174 clear) when unset, or
 // re-validate the stored one (recycling the unit's coords + resetting on an invalid
-// record). Then, for a unit that holds no coords (m_coordCount == 0), dispatch on m_state:
-//   0 -> seed the goal (m_goalX/m_goalY) from the band record or a Method_030f20 re-route,
+// record). Then, for a unit that holds no coords (m_coordCount == 0), dispatch on m_defenderState:
+//   0 -> seed the goal (m_defenderX/m_defenderY) from the band record or a Method_030f20 re-route,
 //        keeping the nearer of the current vs stored goal, and advance to mode 6;
-//   6 -> if the idle timer (m_idleTimer) exceeds m_moveBudget, measure the distance to the goal:
+//   6 -> if the idle timer (m_dwell) exceeds m_moveBudget, measure the distance to the goal:
 //        arrive (mode 7) within 4 tiles, else re-place toward it (GridUnitSpawn::Place,
-//        flag word from the 0x12/0x16/0xe anim modes) and, on failure, walk the m_pathState
+//        flag word from the 0x12/0x16/0xe anim modes) and, on failure, walk the m_254
 //        state code to its next value;
 //   7 -> clamp the board dirty-rect to the board bounds and place at the band's queued
 //        point (Place, flags 0x987).
@@ -5261,9 +4873,9 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
 // recycling its coords onto g_coordPool.m_freeHead. Returns 1.
 // ===========================================================================
 // @early-stop
-// large no-EH state-machine plateau (same family as winapi_02e3a0): the m_targetBand band-pick
-// (signed rand()%4 with the m_curCell skip), the m_state 0/6/7 dispatch with all three re-place
-// arms + the m_pathState state-code walk, the box clamp, both FindPath-flag else-if chains, and
+// large no-EH state-machine plateau (same family as winapi_02e3a0): the m_2e8 band-pick
+// (signed rand()%4 with the m_curCell skip), the m_defenderState 0/6/7 dispatch with all three re-place
+// arms + the m_254 state-code walk, the box clamp, both FindPath-flag else-if chains, and
 // all four coord recyclers (g_coordPool via CoordListWalk::Advance / g_coordPool.m_freeHead inline) are
 // reconstructed in shape + order. Residual is the register-relative record-address regalloc
 // (cl strength-reduces the band*0x238 lea-chain + folds the +0x170/+0x188/+0x258 sub-offsets
@@ -5271,11 +4883,11 @@ i32 CBattlezMapConfig::winapi_031ca0_IntersectRect(i32 unitArg) {
 // schedule; foreign board/record chains modeled by raw offset. Not source-steerable.
 RVA(0x00032060, 0x7bd)
 i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if (unit->m_state == 3) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if (unit->m_defenderState == 3) {
         return 1;
     }
-    i32 band = unit->m_targetBand;
+    i32 band = unit->m_2e8;
     if (band == -1) {
         band = rand() % 4;
         if (band == m_curCell) {
@@ -5289,15 +4901,15 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         if (*(i32*)(rec + 0x170) == 0) {
             return 1;
         }
-        unit->m_targetBand = band;
-        unit->m_goalX = -1;
-        unit->m_goalY = -1;
+        unit->m_2e8 = band;
+        unit->m_defenderX = -1;
+        unit->m_defenderY = -1;
     } else {
         char* rec = (char*)m_ctx + band * 0x238;
         if (*(i32*)(rec + 0x174) != 0 || *(i32*)(rec + 0x170) == 0) {
             // Invalid record: recycle the unit's coords onto g_coordPool, reset state.
-            if (unit->m_coordCount != 0) {
-                void* pos = unit->m_coordHead;
+            if (unit->CoordCount() != 0) {
+                void* pos = unit->CoordHead();
                 if (pos != 0) {
                     do {
                         void* coord = *(void**)ListNodeAdvance(&pos);
@@ -5306,37 +4918,37 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                         }
                     } while (pos != 0);
                 }
-                ((CPtrList*)&unit->m_coordList)->RemoveAll();
+                unit->m_31c.RemoveAll();
             }
-            unit->m_targetX = -1;
-            unit->m_targetY = -1;
-            unit->m_goalX = -1;
-            unit->m_targetBand = -1;
-            unit->m_goalY = -1;
-            unit->m_state = 0;
-            unit->m_pathCfg = g_spawnCfg;
-            unit->m_pathState = g_spawnState;
+            unit->m_arrivalCol = -1;
+            unit->m_arrivalRow = -1;
+            unit->m_defenderX = -1;
+            unit->m_2e8 = -1;
+            unit->m_defenderY = -1;
+            unit->m_defenderState = 0;
+            unit->m_250 = g_spawnCfg;
+            unit->m_254 = g_spawnState;
             return 1;
         }
     }
-    band = unit->m_targetBand;
+    band = unit->m_2e8;
     char* rec = (char*)m_ctx + band * 0x238;
     i32 rx = *(i32*)(rec + 0x258);
     i32 ry = *(i32*)(rec + 0x25c);
     char* edge = rec + 0x188;
-    if (unit->m_coordCount != 0) {
-        if (unit->m_state != 6) {
+    if (unit->CoordCount() != 0) {
+        if (unit->m_defenderState != 6) {
             return 1;
         }
-        i32 gx = unit->m_goalX;
-        i32 gy = unit->m_goalY;
+        i32 gx = unit->m_defenderX;
+        i32 gy = unit->m_defenderY;
         if (gx == -1 || gy == -1) {
             // Reset the goal: recycle the unit's coords onto g_coordPool.m_freeHead.
-            unit->m_state = 0;
-            if (unit->m_coordCount != 0) {
-                CoordNode* n = unit->m_coordHead;
+            unit->m_defenderState = 0;
+            if (unit->CoordCount() != 0) {
+                GruntCoordNode* n = unit->CoordHead();
                 while (n != 0) {
-                    CoordNode* cur = n;
+                    GruntCoordNode* cur = n;
                     n = n->m_next;
                     if (cur->m_coord != 0) {
                         void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
@@ -5344,21 +4956,21 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                         g_coordPool.m_freeHead = node;
                     }
                 }
-                ((CPtrList*)&unit->m_coordList)->RemoveAll();
+                unit->m_31c.RemoveAll();
             }
-            unit->m_goalX = -1;
-            unit->m_goalY = -1;
+            unit->m_defenderX = -1;
+            unit->m_defenderY = -1;
             return 1;
         }
-        UnitLevel* lvl = unit->m_level;
-        i32 dx = abs(gx - (lvl->m_worldX >> 5));
-        i32 dy = abs(gy - (lvl->m_worldY >> 5));
+        CGameObject* lvl = unit->m_object;
+        i32 dx = abs(gx - (lvl->m_screenX >> 5));
+        i32 dy = abs(gy - (lvl->m_screenY >> 5));
         if (dx * dx + dy * dy > 0x10) {
             return 1;
         }
-        CoordNode* n = unit->m_coordHead;
+        GruntCoordNode* n = unit->CoordHead();
         while (n != 0) {
-            CoordNode* cur = n;
+            GruntCoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 void** node = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
@@ -5366,16 +4978,16 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                 g_coordPool.m_freeHead = node;
             }
         }
-        ((CPtrList*)&unit->m_coordList)->RemoveAll();
-        unit->m_state = 7;
-        unit->m_pathCfg = g_spawnCfg;
-        unit->m_pathState = 0x248;
+        unit->m_31c.RemoveAll();
+        unit->m_defenderState = 7;
+        unit->m_250 = g_spawnCfg;
+        unit->m_254 = 0x248;
         return 1;
     }
-    if (unit->m_state == 0) {
-        unit->m_pathCfg = g_spawnCfg;
-        unit->m_pathState = g_spawnState;
-        i32 gx = unit->m_goalX;
+    if (unit->m_defenderState == 0) {
+        unit->m_250 = g_spawnCfg;
+        unit->m_254 = g_spawnState;
+        i32 gx = unit->m_defenderX;
         if (gx == -1) {
             i32 x, y;
             if (*(i32*)(edge + 0xf8) != 0) {
@@ -5387,12 +4999,12 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
                 x = rx;
                 y = ry;
             }
-            unit->m_goalX = x;
-            unit->m_goalY = y;
-            unit->m_state = 6;
+            unit->m_defenderX = x;
+            unit->m_defenderY = y;
+            unit->m_defenderState = 6;
             return 1;
         }
-        i32 gy = unit->m_goalY;
+        i32 gy = unit->m_defenderY;
         Coord c1;
         ((CUserLogic*)unit)->GetScreenPos((CUserLogic::ScreenPoint*)&c1);
         i32 dxA = abs(rx - (c1.m_x >> 5));
@@ -5404,62 +5016,62 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         i32 dyB = abs(ry - gy);
         i32 distB = dxB * dxB + dyB * dyB;
         if (distA > distB) {
-            unit->m_state = 6;
+            unit->m_defenderState = 6;
         }
         return 1;
     }
-    if (unit->m_state == 6) {
-        if ((u32)unit->m_idleTimer <= (u32)m_moveBudget) {
+    if (unit->m_defenderState == 6) {
+        if ((u32)unit->m_dwell <= (u32)m_moveBudget) {
             return 1;
         }
-        i32 gx = unit->m_goalX;
-        i32 gy = unit->m_goalY;
+        i32 gx = unit->m_defenderX;
+        i32 gy = unit->m_defenderY;
         if (gx == -1 || gy == -1) {
             // Reset the goal: recycle the unit's coords onto g_coordPool.
-            unit->m_state = 0;
-            if (unit->m_coordCount != 0) {
-                CoordNode* n = unit->m_coordHead;
+            unit->m_defenderState = 0;
+            if (unit->CoordCount() != 0) {
+                GruntCoordNode* n = unit->CoordHead();
                 while (n != 0) {
-                    CoordNode* cur = n;
+                    GruntCoordNode* cur = n;
                     n = n->m_next;
                     if (cur->m_coord != 0) {
                         g_coordPool.Push(cur->m_coord);
                     }
                 }
-                ((CPtrList*)&unit->m_coordList)->RemoveAll();
+                unit->m_31c.RemoveAll();
             }
-            unit->m_goalX = -1;
-            unit->m_goalY = -1;
+            unit->m_defenderX = -1;
+            unit->m_defenderY = -1;
             return 1;
         }
-        UnitLevel* lvl = unit->m_level;
-        i32 dx = abs(gx - (lvl->m_worldX >> 5));
-        i32 dy = abs(gy - (lvl->m_worldY >> 5));
+        CGameObject* lvl = unit->m_object;
+        i32 dx = abs(gx - (lvl->m_screenX >> 5));
+        i32 dy = abs(gy - (lvl->m_screenY >> 5));
         if (dx * dx + dy * dy <= 0x10) {
-            unit->m_state = 7;
-            unit->m_pathCfg = g_spawnCfg;
-            unit->m_pathState = 0x248;
+            unit->m_defenderState = 7;
+            unit->m_250 = g_spawnCfg;
+            unit->m_254 = 0x248;
             return 1;
         }
-        i32 prim = unit->m_animPrim;
-        i32 cfg = unit->m_pathCfg;
-        i32 flags = unit->m_pathState;
+        i32 prim = unit->m_entranceReason;
+        i32 cfg = unit->m_250;
+        i32 flags = unit->m_254;
         i32 t = prim;
         if (prim > 0x16) {
-            t = unit->m_animSec;
+            t = unit->m_19c;
         }
         if (t == 0x12) {
             flags |= 0x100;
         } else {
             t = prim;
             if (prim > 0x16) {
-                t = unit->m_animSec;
+                t = unit->m_19c;
             }
             if (t == 0xe) {
                 flags |= 0x1000;
             } else {
                 if (prim > 0x16) {
-                    prim = unit->m_animSec;
+                    prim = unit->m_19c;
                 }
                 if (prim == 0x16) {
                     flags |= 0x942;
@@ -5467,29 +5079,29 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
             }
         }
         if (CGrunt_TileSwitch(gx, gy, 0, cfg, 0, flags) != 0) {
-            unit->m_pathCfg = g_spawnCfg;
-            unit->m_pathState = g_spawnState;
-            unit->m_idleTimer = 0;
+            unit->m_250 = g_spawnCfg;
+            unit->m_254 = g_spawnState;
+            unit->m_dwell = 0;
             return 1;
         }
-        i32 st = unit->m_pathState;
+        i32 st = unit->m_254;
         if (st == g_spawnState) {
-            unit->m_pathState = 0x40;
+            unit->m_254 = 0x40;
         } else if (st == 0x40) {
-            unit->m_pathState = 0x248;
+            unit->m_254 = 0x248;
         } else if (st == 0x248) {
-            unit->m_pathState = 0x20;
+            unit->m_254 = 0x20;
         } else if (st == 0x20) {
-            unit->m_pathState = 0x228;
+            unit->m_254 = 0x228;
         } else if (st == 0x228) {
-            unit->m_pathState = 0x268;
+            unit->m_254 = 0x268;
         } else if (st == 0x268) {
-            unit->m_pathState = 0x4268;
+            unit->m_254 = 0x4268;
         }
-        unit->m_idleTimer = 0;
+        unit->m_dwell = 0;
         return 1;
     }
-    if (unit->m_state != 7) {
+    if (unit->m_defenderState != 7) {
         return 1;
     }
     CBrickzGrid* board = m_board;
@@ -5510,24 +5122,24 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
     }
     board->m_gridW = board->m_boundRight - board->m_originX;
     board->m_gridH = board->m_boundBottom - board->m_originY;
-    i32 prim = unit->m_animPrim;
-    i32 flags = unit->m_pathState;
+    i32 prim = unit->m_entranceReason;
+    i32 flags = unit->m_254;
     i32 t = prim;
     if (prim > 0x16) {
-        t = unit->m_animSec;
+        t = unit->m_19c;
     }
     if (t == 0x12) {
         flags |= 0x100;
     } else {
         t = prim;
         if (prim > 0x16) {
-            t = unit->m_animSec;
+            t = unit->m_19c;
         }
         if (t == 0xe) {
             flags |= 0x1000;
         } else {
             if (prim > 0x16) {
-                prim = unit->m_animSec;
+                prim = unit->m_19c;
             }
             if (prim == 0x16) {
                 flags |= 0x942;
@@ -5535,21 +5147,21 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
         }
     }
     if (CGrunt_TileSwitch(rx, ry, 0, 0x987, 1, flags) != 0) {
-        unit->m_pathCfg = g_spawnCfg;
-        unit->m_pathState = g_spawnState;
-        unit->m_idleTimer = 0;
+        unit->m_250 = g_spawnCfg;
+        unit->m_254 = g_spawnState;
+        unit->m_dwell = 0;
         return 1;
     }
-    unit->m_idleTimer = 0;
-    unit->m_pathState = 0x4268;
+    unit->m_dwell = 0;
+    unit->m_254 = 0x4268;
     return 1;
 }
 
 // ===========================================================================
-// GridUnit::RecycleCoords  @0x0343f0  (re-homed off the CBattlezMapConfig cluster;
-// __thiscall on a GridUnit). Recycle each occupied-coord node's payload onto g_coordPool.m_freeHead (head
+// CGrunt::RecycleCoords  @0x0343f0  (re-homed off the CBattlezMapConfig cluster;
+// __thiscall on a CGrunt). Recycle each occupied-coord node's payload onto g_coordPool.m_freeHead (head
 // cached in a register across the loop, written each iteration), then tail into the
-// +0x31c CPtrList's RemoveAll. Skips everything when the count (m_coordCount) is zero.
+// +0x31c CPtrList's RemoveAll. Skips everything when the list's count is zero.
 // ===========================================================================
 // @early-stop
 // 99.78% - the SAME freelist-store register-scheduling coin-flip as Deserialize_02b950's
@@ -5559,15 +5171,15 @@ i32 CBattlezMapConfig::winapi_032060_IntersectRect(i32 unitArg) {
 // coin-flip by CTriggerMgr's twin alloc loops (0x7ad40 direct vs 0x7ad9b copy). All
 // logic byte-exact. Deferred to the final sweep.
 RVA(0x000343f0, 0x47)
-void GridUnit::RecycleCoords() {
-    if (m_coordCount == 0) {
+void CGrunt::RecycleCoords() {
+    if (CoordCount() == 0) {
         return;
     }
-    CoordNode* n = m_coordHead;
+    GruntCoordNode* n = CoordHead();
     if (n != 0) {
         void* head = g_coordPool.m_freeHead;
         do {
-            CoordNode* cur = n;
+            GruntCoordNode* cur = n;
             n = n->m_next;
             void* coord = cur->m_coord;
             if (coord != 0) {
@@ -5578,13 +5190,13 @@ void GridUnit::RecycleCoords() {
             }
         } while (n != 0);
     }
-    ((CPtrList*)&m_coordList)->RemoveAll();
+    m_31c.RemoveAll();
 }
 
 // ===========================================================================
 // CBattlezMapConfig::Method_034460  @0x034460
 // Anim-name gate: a unit is eligible for a "special" anim only when it sits on
-// its cached cell (lvl coord == m_cachedX/m_cachedY) and a block of state flags is clear.
+// its cached cell (lvl coord == m_lastTilePxX/m_lastTilePxY) and a block of state flags is clear.
 // Then resolve the unit's anim name and reject the simple type codes (I/G/L/J/C)
 // outright; for the remaining codes, run the second resolver (which fills the
 // g_typeColl.m_alloc CString array, torn down each call) and either map an in-range
@@ -5599,42 +5211,42 @@ void GridUnit::RecycleCoords() {
 // diverge from retail's. Deferred to the final sweep.
 RVA(0x00034460, 0x3fc)
 i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
+    CGrunt* unit = (CGrunt*)unitArg;
     if (unit == 0) {
         return 0;
     }
-    UnitLevel* lvl = unit->m_level;
-    if (lvl->m_worldX != unit->m_cachedX) {
+    CGameObject* lvl = unit->m_object;
+    if (lvl->m_screenX != unit->m_lastTilePxX) {
         return 0;
     }
-    if (lvl->m_worldY != unit->m_cachedY) {
+    if (lvl->m_screenY != unit->m_lastTilePxY) {
         return 0;
     }
-    if (unit->m_1fc == 0) {
+    if (unit->m_entranceCommitted == 0) {
         return 0;
     }
-    if (unit->m_368 != 0) {
+    if (unit->m_deathAnimStarted != 0) {
         return 0;
     }
-    if (unit->m_guard1e4 != 0) {
+    if (unit->m_entranceActive != 0) {
         return 0;
     }
-    if (unit->m_220 != 0) {
+    if (unit->m_poweredUp != 0) {
         return 0;
     }
     // Simple type codes resolved directly (GetRecord): I / G / L. The compare
     // result is materialized as a bool (setcc form) - see
     // docs/patterns/return-bool-via-local-setcc.md.
     i32 eq;
-    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "I") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "I") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "G") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "G") == 0);
     if (eq) {
         return 0;
     }
-    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_anim->m_1c))), "L") == 0);
+    eq = (strcmp((*g_typeColl.GetNameRecord((void*)(unit->m_objAux->m_1c))), "L") == 0);
     if (eq) {
         return 0;
     }
@@ -5644,7 +5256,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     CString* slot;
     i32 cnt;
 
-    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_objAux->m_1c));
     slot = (CString*)g_typeColl.m_alloc;
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -5659,7 +5271,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_objAux->m_1c));
     slot = (CString*)g_typeColl.m_alloc;
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -5674,7 +5286,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
         return 0;
     }
 
-    recs = g_typeColl.GetNameRecords((void*)(unit->m_anim->m_1c));
+    recs = g_typeColl.GetNameRecords((void*)(unit->m_objAux->m_1c));
     slot = (CString*)g_typeColl.m_alloc;
     cnt = g_typeColl.m_grown;
     while (cnt != 0) {
@@ -5690,7 +5302,7 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
     }
 
     // Map the candidate index, or Probe/Reserve a fresh slot.
-    i32 ci = unit->m_anim->m_1c;
+    i32 ci = (i32)unit->m_objAux->m_1c;
     i32 sel;
     g_typeColl.m_grown = 0;
     if (ci >= g_typeColl.m_lo && ci <= g_typeColl.m_hi) {
@@ -5723,28 +5335,22 @@ i32 CBattlezMapConfig::Method_034460(i32 unitArg) {
 // (((CVariantSlot*)this->m_err)->Set((void*)this, sentinel, code)). This is the inlined zvec overflow
 // path lifted out as a standalone helper.
 // ===========================================================================
-// The zvec error globals + the return-capture helper + the reporter (the same set
-// ZVec.cpp models). Declared here so the calls/stores reloc-mask.
-extern void* GetRetAddr(); // 0x16d990
-struct ZErrTarget {
-    virtual void Slot00(); // vptr at +0x00 (real polymorphic; declared-only)
-    struct ZErrReporter {
-        void Error(void* who, i32 sentinel, i32 code); // 0x16d850
-    }* m_err;                                          // +0x04
-    void Report(i32 sentinel, i32 code);               // 0x034960
-};
+// The receiver IS CContainerErr (<Wap32/zBitVec.h>): vptr @+0x00, CVariantSlot*
+// m_errSink @+0x04 - exactly the `ZErrTarget` view's two slots, and the body is the
+// verbatim tail of the inlined grow-on-miss path (CActReg::ResolveEntry). View
+// dissolved; the CVariantSlot cast falls out with it.
 RVA(0x00034960, 0x24)
-void ZErrTarget::Report(i32 sentinel, i32 code) {
+void CContainerErr::Report(i32 sentinel, i32 code) {
     g_retAddrBreadcrumb = GetRetAddr();
-    ((CVariantSlot*)m_err)->Set((void*)this, sentinel, code);
+    m_errSink->Set((void*)this, sentinel, code);
 }
 
 // ===========================================================================
 // CBattlezMapConfig::Method_034c70  @0x034c70
 // The queued-unit board-tile resolver. For a unit with no live coord list
-// (m_coordCount==0): look up its target tile (board->m_rows[m_targetY][m_targetX]); if the tile
+// (m_coordCount==0): look up its target tile (board->m_rows[m_arrivalRow][m_arrivalCol]); if the tile
 // carries the 0x20 "reserved" flag, only place (Method_4b320, flags 0xd87) when the
-// per-level budget (m_idleTimer) exceeds this->m_reserveBudget - on a successful place clear m_idleTimer,
+// per-level budget (m_dwell) exceeds this->m_reserveBudget - on a successful place clear m_dwell,
 // otherwise fall to the "give up" path; if the tile is free, give up directly. The
 // give-up path marks the unit mode 4, recycles its coord nodes (onto the coord pool
 // for the reserved-tile branch, onto g_coordPool.m_freeHead for the free-tile branch), empties
@@ -5754,44 +5360,44 @@ void ZErrTarget::Report(i32 sentinel, i32 code) {
 // deep-chain regalloc plateau: the board-tile lookup, the budget gate, the
 // Method_4b320 spawn, both coord-recycle loops (coord-pool vs g_coordPool.m_freeHead) and the
 // reset block are reconstructed in shape + order, but retail pins the unit in edi /
-// the zero const in ebx and the tile-index math (m_targetX*7, m_targetY row) spills to
+// the zero const in ebx and the tile-index math (m_arrivalCol*7, m_arrivalRow row) spills to
 // different stack slots than MSVC5 here. Foreign unit/board chains modeled by raw
 // offset. Deferred to the final sweep.
 RVA(0x00034c70, 0x133)
 i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if (unit->m_coordCount != 0) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if (unit->CoordCount() != 0) {
         return 1;
     }
-    i32 x = unit->m_targetX;
-    i32 y = unit->m_targetY;
-    Tile* tile = &((Tile*)(m_board)->m_rows[y])[x];
-    if (tile->m_flags & 0x20) {
-        if (unit->m_idleTimer <= m_reserveBudget) {
+    i32 x = unit->m_arrivalCol;
+    i32 y = unit->m_arrivalRow;
+    BrickzCell* tile = &((BrickzCell*)(m_board)->m_rows[y])[x];
+    if (tile->m_0 & 0x20) {
+        if (unit->m_dwell <= m_reserveBudget) {
             return 1;
         }
-        if (CGrunt_TileSwitch(unit->m_targetX, unit->m_targetY, 0, 0xd87, 0, 0) != 0) {
-            unit->m_idleTimer = 0;
+        if (CGrunt_TileSwitch(unit->m_arrivalCol, unit->m_arrivalRow, 0, 0xd87, 0, 0) != 0) {
+            unit->m_dwell = 0;
             return 1;
         }
-        unit->m_mode = 4;
+        unit->m_2d8 = 4;
         {
-            CoordNode* n = unit->m_coordHead;
+            GruntCoordNode* n = unit->CoordHead();
             while (n != 0) {
-                CoordNode* cur = n;
+                GruntCoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
                     g_coordPool.Push(cur->m_coord);
                 }
             }
         }
-        ((CPtrList*)&unit->m_coordList)->RemoveAll();
+        unit->m_31c.RemoveAll();
     } else {
-        unit->m_mode = 4;
-        if (unit->m_coordCount != 0) {
-            CoordNode* n = unit->m_coordHead;
+        unit->m_2d8 = 4;
+        if (unit->CoordCount() != 0) {
+            GruntCoordNode* n = unit->CoordHead();
             while (n != 0) {
-                CoordNode* cur = n;
+                GruntCoordNode* cur = n;
                 n = n->m_next;
                 if (cur->m_coord != 0) {
                     void** slot = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
@@ -5799,33 +5405,33 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
                     g_coordPool.m_freeHead = slot;
                 }
             }
-            ((CPtrList*)&unit->m_coordList)->RemoveAll();
+            unit->m_31c.RemoveAll();
         }
     }
-    unit->m_targetX = -1;
-    unit->m_targetY = -1;
-    unit->m_state = 0;
-    unit->m_idleTimer = 0;
+    unit->m_arrivalCol = -1;
+    unit->m_arrivalRow = -1;
+    unit->m_defenderState = 0;
+    unit->m_dwell = 0;
     return 1;
 }
 
 // One node of the grid object's candidate list (head at m_triggerMgr->m_4): ->next at +0,
 // the candidate sub-object (its level coord at +0x54 / +0x58, an "occupied" flag at
-// +0x5c) at +0x8. GridCandNode / GridCand are defined near the top of this TU
+// +0x5c) at +0x8. GridCandNode / CTmCandidate are defined near the top of this TU
 // (before Method_029b40's kind-7 arm, which also walks this list).
 
 // ===========================================================================
 // CBattlezMapConfig::Method_0350d0  @0x0350d0
 // Periodic re-path of `unit` toward the nearest free candidate cell. Gate on the
-// unit's m_idleTimer timer exceeding the bundle's m_repathBudget budget; otherwise walk the grid
+// unit's m_dwell timer exceeding the bundle's m_repathBudget budget; otherwise walk the grid
 // object's candidate list (head at m_triggerMgr->m_4), and among the unoccupied candidates
 // (sub->m_occupied == 0, and not already exactly on the unit's level coord) keep the one
 // nearest (min squared distance) to the unit's level (>>5) coordinate. If one is
-// found, re-path the unit to it via Method_0300c0 (flags 0xd87). Clear m_idleTimer and
+// found, re-path the unit to it via Method_0300c0 (flags 0xd87). Clear m_dwell and
 // return 1.
 // ===========================================================================
 // @early-stop
-// regalloc/spill wall (~72%): logic byte-exact - the unsigned m_idleTimer>m_0c4 gate
+// regalloc/spill wall (~72%): logic byte-exact - the unsigned m_dwell>m_0c4 gate
 // (jbe), the candidate-list walk, the m_5c-occupied + exact-coord skips, the
 // abs-distance squared min-keep, and the Method_0300c0 (flags 0xd87) re-path are all
 // reproduced in shape + instruction multiset. Retail spills BOTH the list iterator
@@ -5836,20 +5442,19 @@ i32 CBattlezMapConfig::Method_034c70(i32 unitArg) {
 // /O2; the divergence cascades through every loop register operand. Final sweep.
 RVA(0x000350d0, 0xfa)
 i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if ((u32)unit->m_idleTimer <= (u32)m_repathBudget) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if ((u32)unit->m_dwell <= (u32)m_repathBudget) {
         return 1;
     }
-    GridCand* best = 0;
+    CTmCandidate* best = 0;
     i32 bestDist = 0x7fffffff;
-    GridCandNode* node = m_triggerMgr->m_objListHead;
-    while (node != 0) {
-        GridCand* cand = (GridCand*)node->m_payload;
-        node = node->m_next;
+    POSITION pos = m_triggerMgr->m_baseList.GetHeadPosition();
+    while (pos != 0) {
+        CTmCandidate* cand = (CTmCandidate*)m_triggerMgr->m_baseList.GetNext(pos);
         if (cand->m_occupied == 0) {
-            UnitLevel* lvl = unit->m_level;
-            i32 lx = lvl->m_worldX >> 5;
-            i32 ly = lvl->m_worldY >> 5;
+            CGameObject* lvl = unit->m_object;
+            i32 lx = lvl->m_screenX >> 5;
+            i32 ly = lvl->m_screenY >> 5;
             if (cand->m_gridX != lx || cand->m_gridY != ly) {
                 i32 dx = cand->m_gridX - lx;
                 dx = abs(dx);
@@ -5866,7 +5471,7 @@ i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
     if (best != 0) {
         Method_0300c0(unitArg, best->m_gridX, best->m_gridY, 0xd87, 0, 0);
     }
-    unit->m_idleTimer = 0;
+    unit->m_dwell = 0;
     return 1;
 }
 
@@ -5878,11 +5483,10 @@ i32 CBattlezMapConfig::Method_0350d0(i32 unitArg) {
 // ===========================================================================
 RVA(0x00035210, 0x4f)
 i32 CBattlezMapConfig::Method_035210(i32 x, i32 y) {
-    GridCandNode* node = m_ctx->m_triggerMgr->m_objListHead;
-    while (node != 0) {
-        GridCandNode* cur = node;
-        node = node->m_next;
-        GridCand* cand = (GridCand*)cur->m_payload;
+    CPtrList& lst = m_ctx->m_triggerMgr->m_baseList;
+    POSITION pos = lst.GetHeadPosition();
+    while (pos != 0) {
+        CTmCandidate* cand = (CTmCandidate*)lst.GetNext(pos);
         if (cand != 0 && cand->m_gridX == x && cand->m_gridY == y && cand->m_occupied == 0) {
             return 1;
         }
@@ -5898,40 +5502,35 @@ i32 CBattlezMapConfig::Method_035210(i32 x, i32 y) {
 // ===========================================================================
 RVA(0x00035550, 0x52)
 i32 CBattlezMapConfig::Method_035550(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
-    if (unit->m_coordCount != 0) {
+    CGrunt* unit = (CGrunt*)unitArg;
+    if (unit->CoordCount() != 0) {
         return 1;
     }
-    if ((u32)unit->m_idleTimer <= (u32)m_reserveBudget) {
+    if ((u32)unit->m_dwell <= (u32)m_reserveBudget) {
         return 1;
     }
     unit->TileSwitch(
-        unit->m_targetX,
-        unit->m_targetY,
+        unit->m_arrivalCol,
+        unit->m_arrivalRow,
         0,
         0xd87,
         0,
         0
     ); // @0x4b320 (thiscall: retail's dead mov ecx)
-    unit->m_idleTimer = 0;
+    unit->m_dwell = 0;
     return 1;
 }
 
 // ===========================================================================
-// CBattlezMapConfig::Method_0358a0  @0x0358a0  (__thiscall ret 4 => 1 GridUnit* arg)
+// CBattlezMapConfig::Method_0358a0  @0x0358a0  (__thiscall ret 4 => 1 CGrunt* arg)
 // The idle-unit policy step: when the unit holds no occupied coords it either
-// retargets to a random band (m_targetX == -1, idle timer past m_moveBudget) or re-places at its
+// retargets to a random band (m_arrivalCol == -1, idle timer past m_moveBudget) or re-places at its
 // band's default coord (timer past 0x7d0); when it DOES hold coords it despawns
 // (recycling them onto g_coordPool) if both band slots are clear, else keeps the unit
 // only when it is within 6 tiles of a band candidate (recycling onto g_coordPool.m_freeHead).
 // m_ctx indexes the per-band records at stride 0x238; the +0x150/+0x188 sub-objects'
 // candidate vectors live at +0xf4 (array) / +0xf8 (count) / +0xd0,+0xd4 (default coord).
 // ===========================================================================
-// A band candidate {x, y} pair the candidate-vector entries point at.
-struct ProbePair {
-    i32 m_x; // +0x00
-    i32 m_y; // +0x04
-};
 // The unit-side place/probe (thunk 0x1640, __thiscall, 6 args) and the bundle's
 // per-unit commit (thunk 0x42e1, __thiscall on `this`, 1 arg). Reloc-masked externs.
 // @early-stop
@@ -5940,21 +5539,21 @@ struct ProbePair {
 // rand()%4 / idiv rand()%cnt modulo idioms and both coord recyclers (g_coordPool vs
 // g_coordPool.m_freeHead). The plateau is the documented register-relative record-address regalloc
 // wall (cl strength-reduces the idx*0x238 lea-chain + folds the band sub-object offsets
-// differently across the four arms) and the dead saved-m_targetX reload; logic complete.
+// differently across the four arms) and the dead saved-m_arrivalCol reload; logic complete.
 RVA(0x000358a0, 0x2d6)
 i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
-    GridUnit* unit = (GridUnit*)unitArg;
+    CGrunt* unit = (CGrunt*)unitArg;
     char* recA = 0;
     char* recB0 = 0;
-    i32 cell = unit->m_targetX;
+    i32 cell = unit->m_arrivalCol;
     if (cell >= 0 && cell < 4) {
         char* rec = (char*)m_ctx + cell * 0x238;
         recA = rec + 0x150;
         recB0 = rec + 0x188;
     }
-    if (unit->m_coordCount == 0) {
+    if (unit->CoordCount() == 0) {
         if (cell == -1) {
-            if ((u32)unit->m_idleTimer <= (u32)m_moveBudget) {
+            if ((u32)unit->m_dwell <= (u32)m_moveBudget) {
                 return 1;
             }
             i32 r = rand() % 4;
@@ -5967,65 +5566,65 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
             i32 x = *(i32*)(recB + 0xd0);
             i32 y = *(i32*)(recB + 0xd4);
             if (cnt != 0) {
-                ProbePair** arr = *(ProbePair***)(recB + 0xf4);
-                ProbePair* pair = arr[rand() % cnt];
+                Coord** arr = *(Coord***)(recB + 0xf4);
+                Coord* pair = arr[rand() % cnt];
                 x = pair->m_x;
                 y = pair->m_y;
             }
             if (CGrunt_TileSwitch(x, y, 0, 0x9cf, 0, 0x4020) != 0) {
-                unit->m_targetX = band;
-                unit->m_targetY = 0;
+                unit->m_arrivalCol = band;
+                unit->m_arrivalRow = 0;
                 ((CBattlezMapConfig*)this)->Method_02c080((i32)unit);
             }
-            unit->m_idleTimer = 0;
+            unit->m_dwell = 0;
             return 1;
         }
         char* recB = (char*)m_ctx + cell * 0x238 + 0x188;
         if (recB == 0) {
             return 1;
         }
-        if ((u32)unit->m_idleTimer <= 0x7d0) {
+        if ((u32)unit->m_dwell <= 0x7d0) {
             return 1;
         }
         i32 y = *(i32*)(recB + 0xd4);
         i32 x = *(i32*)(recB + 0xd0);
         CGrunt_TileSwitch(x, y, 0, 0x987, 0, 0x4068);
-        unit->m_idleTimer = 0;
+        unit->m_dwell = 0;
         return 1;
     }
     if (recA == 0 || recB0 == 0) {
-        unit->m_targetX = -1;
-        unit->m_targetY = -1;
+        unit->m_arrivalCol = -1;
+        unit->m_arrivalRow = -1;
         return 1;
     }
     if (*(i32*)(recA + 0x14) == 0 && *(i32*)recB0 == 0) {
-        CoordNode* n = unit->m_coordHead;
+        GruntCoordNode* n = unit->CoordHead();
         while (n != 0) {
-            CoordNode* cur = n;
+            GruntCoordNode* cur = n;
             n = n->m_next;
             if (cur->m_coord != 0) {
                 g_coordPool.Push(cur->m_coord);
             }
         }
-        ((CPtrList*)&unit->m_coordList)->RemoveAll();
-        unit->m_targetX = -1;
-        unit->m_targetY = -1;
+        unit->m_31c.RemoveAll();
+        unit->m_arrivalCol = -1;
+        unit->m_arrivalRow = -1;
         return 1;
     }
-    i32 saved = unit->m_targetX;
+    i32 saved = unit->m_arrivalCol;
     (void)saved;
-    if (unit->m_targetY == 1) {
+    if (unit->m_arrivalRow == 1) {
         return 1;
     }
-    UnitLevel* lvl = unit->m_level;
-    i32 px = lvl->m_worldX >> 5;
-    i32 py = lvl->m_worldY >> 5;
+    CGameObject* lvl = unit->m_object;
+    i32 px = lvl->m_screenX >> 5;
+    i32 py = lvl->m_screenY >> 5;
     i32 nearBand = 0;
     i32 cnt2 = *(i32*)(recB0 + 0xf8);
     if (cnt2 > 0) {
-        ProbePair** vec = *(ProbePair***)(recB0 + 0xf4);
+        Coord** vec = *(Coord***)(recB0 + 0xf4);
         for (i32 j = cnt2; j > 0; j--) {
-            ProbePair* pair = *vec;
+            Coord* pair = *vec;
             i32 dy = abs(pair->m_y - py);
             i32 dx = abs(pair->m_x - px);
             if (dx + dy <= 6) {
@@ -6037,14 +5636,14 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
     if (nearBand == 0) {
         return 1;
     }
-    unit->m_targetX = unit->m_targetX;
-    unit->m_targetY = 1;
-    if (unit->m_coordCount == 0) {
+    unit->m_arrivalCol = unit->m_arrivalCol;
+    unit->m_arrivalRow = 1;
+    if (unit->CoordCount() == 0) {
         return 1;
     }
-    CoordNode* n = unit->m_coordHead;
+    GruntCoordNode* n = unit->CoordHead();
     while (n != 0) {
-        CoordNode* cur = n;
+        GruntCoordNode* cur = n;
         n = n->m_next;
         if (cur->m_coord != 0) {
             void** slot = (void**)((char*)cur->m_coord - g_coordPool.m_linkOffset);
@@ -6052,34 +5651,9 @@ i32 CBattlezMapConfig::Method_0358a0(i32 unitArg) {
             g_coordPool.m_freeHead = slot;
         }
     }
-    ((CPtrList*)&unit->m_coordList)->RemoveAll();
+    unit->m_31c.RemoveAll();
     return 1;
 }
-SIZE_UNKNOWN(AnimNameResolver);
-SIZE_UNKNOWN(Candidate);
-SIZE_UNKNOWN(GruntSpawnCtx);
-SIZE_UNKNOWN(SceneColl);
-SIZE_UNKNOWN(SceneNode);
-SIZE_UNKNOWN(SceneObj);
-SIZE_UNKNOWN(Coord);
-SIZE_UNKNOWN(CoordListWalk);
-SIZE_UNKNOWN(EmitArg);
-SIZE_UNKNOWN(GridCand);
-SIZE_UNKNOWN(GridCandNode);
-SIZE_UNKNOWN(GridUnit);
 SIZE_UNKNOWN(CAnimNameRecord);
-SIZE_UNKNOWN(ProbePair);
-SIZE_UNKNOWN(RectInit);
-SIZE_UNKNOWN(Tile);
-SIZE_UNKNOWN(UnitLevel);
-SIZE_UNKNOWN(UnitMutator2);
-SIZE_UNKNOWN(ZErrTarget);
-SIZE_UNKNOWN(CCoordPair);
-SIZE_UNKNOWN(CLevelList);
-SIZE_UNKNOWN(CLevelNode);
-SIZE_UNKNOWN(CLevelObj);
-SIZE_UNKNOWN(CLevelSpawnInfo);
-SIZE_UNKNOWN(CMapDims);
-SIZE_UNKNOWN(CRttiRec);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---

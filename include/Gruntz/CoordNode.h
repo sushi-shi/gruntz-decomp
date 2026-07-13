@@ -8,7 +8,14 @@
 
 #include <rva.h>
 
-struct Coord; // {i32 x; i32 y;} payload; completed by the TU that reads it
+// The {x,y} payload itself. Was re-declared as five identical .cpp-local views
+// (Coord / Candidate / CCoordXY / ProbePair in BattlezMapConfig.cpp); this is the
+// single shape.
+SIZE(Coord, 0x8);
+struct Coord {
+    i32 m_x; // +0x00
+    i32 m_y; // +0x04
+};
 
 SIZE(CoordNode, 0xc);
 struct CoordNode {
