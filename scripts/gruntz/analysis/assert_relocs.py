@@ -559,6 +559,12 @@ def fake_targets():
         if not near:
             continue
         (bf, _b, _bb), (tf, _t, tb) = parse_obj(base_obj), parse_obj(tgt_obj)
+        # The obj's OWN definitions, exactly as the main audit does. Without this the
+        # worklist reports every compiler-emitted ??_7 vftable as fabricated - the obj
+        # defines it itself, so it always links (see defined_syms' docstring). That put six
+        # phantom rows ("??_7CUserBase87b0@@6B@ -> ??_7CUserBase@@6B@", ...) at the top of
+        # the list, none of which is a defect.
+        bdef = defined_syms(base_obj)
         for n in near:
             if n not in bf or n not in tf or len(bf[n]) != len(tf[n]):
                 continue  # reloc counts must line up to pair them positionally
@@ -566,7 +572,7 @@ def fake_targets():
             if fr is None:
                 continue
             for b, t in zip(bf[n], tf[n]):
-                if not is_fake(sym, data, b[1]):
+                if not is_fake(sym, data, b[1], bdef):
                     continue
                 tv = target_at(fr + t[3] - tb[n], t[0])
                 d = hits.setdefault(b[1], {})

@@ -22,6 +22,7 @@
 #include <Gruntz/Demo.h>
 #include <Gruntz/GruntzMgr.h> // CGruntzMgr / CGameMgr::m_gameWnd -> CGameWnd::m_hwnd (Render's exit post)
 #include <Gruntz/AttractActor.h> // the shared per-frame g_actorList view
+#include <fstream.h> // the REAL CRT ifstream/ofstream/ios (their dtors ARE in the CRT libs)
 #include <rva.h>
 
 #include <Bute/ButeMgr.h>         // CButeMgr (Parse @0x3cc20)
@@ -401,36 +402,36 @@ i32 Gap_03c990(void) {
 // reloc-alias convention (0x169be0/0x169d70 already bound to CButeIosSub); the shared
 // base Dtor reuses that alias, the two derived stream clears are reloc-aliased below
 // (config/library_labels.csv) - so all four rel32 calls bind to their real library rvas.
-struct CButeIosSub {
-    void Dtor(); // 0x169d70  ??1ios (shared virtual-base teardown; reloc-alias in lib)
-};
-struct CSubObjC : CButeIosSub {
-    void Clear(); // 0x16a240  ??1ifstream (input-stream member @+0x0c)
-};
-struct CSubObj8 : CButeIosSub {
-    void Clear(); // 0x16a8e0  ??1ofstream (output-stream member @+0x08)
-};
+// The comment above had the identity exactly right and then invented symbols for it
+// anyway: CButeIosSub::Dtor / CSubObjC::Clear / CSubObj8::Clear were a "reloc-alias"
+// stand-in family for ??1ios@@UAE@XZ / ??1ifstream@@UAE@XZ / ??1ofstream@@UAE@XZ. But an
+// alias is a symbol NOTHING defines (objdiff masks the reloc; the linker would not), while
+// the three REAL names are right there in the CRT libs. So call them: <fstream.h> is the
+// toolchain's own header, and the qualified `p->ifstream::~ifstream()` form emits the same
+// direct rel32 retail does. The double call (derived dtor, then the shared `ios`
+// virtual-base dtor, BOTH with ecx = this+off - retail reloads ecx from esi unchanged) is
+// MSVC's two-phase teardown of a virtual-base member; the void* launder keeps cl from
+// inserting a vbase adjustment between them.
+// `this` IS the stream object's base in both helpers - retail's `lea esi,[ecx+0xc]` /
+// `lea esi,[ecx+0x8]` are MSVC's VIRTUAL-BASE ADJUSTMENTS, not member offsets (~ifstream
+// reads its vbtable at [ecx-0xc], ~ofstream at [ecx-0x8]; the adjust is per-class). So the
+// stream sits at offset 0 and cl computes the adjusted `this` itself; the shared `ios`
+// virtual-base dtor then runs on that SAME adjusted pointer.
 struct COwnerWithSubs {
-    char _00[0x08];
-    CSubObj8 m_08; // +0x08  (ofstream sub-object)
-    char _09[0x0c - 0x09];
-    CSubObjC m_0c;   // +0x0c  (ifstream sub-object)
-    void DtorSubC(); // 0x3cbc0
-    void DtorSub8(); // 0x3cbf0  (acts on +0x08)
+    void DtorSubC(); // 0x3cbc0  (`this` is an ifstream; vbase adjust 0xc)
+    void DtorSub8(); // 0x3cbf0  (`this` is an ofstream; vbase adjust 0x8)
 };
 
 RVA(0x0003cbc0, 0x14)
 void COwnerWithSubs::DtorSubC() {
-    CSubObjC* s = &m_0c;
-    s->Clear();
-    s->Dtor();
+    ((ifstream*)(void*)this)->ifstream::~ifstream();          // 0x16a240 ??1ifstream@@UAE@XZ
+    ((ios*)(void*)((char*)this + 0xc))->ios::~ios();          // 0x169d70 ??1ios@@UAE@XZ
 }
 
 RVA(0x0003cbf0, 0x14)
 void COwnerWithSubs::DtorSub8() {
-    CSubObj8* s = &m_08;
-    s->Clear();
-    s->Dtor();
+    ((ofstream*)(void*)this)->ofstream::~ofstream();          // 0x16a8e0 ??1ofstream@@UAE@XZ
+    ((ios*)(void*)((char*)this + 0x8))->ios::~ios();          // 0x169d70 ??1ios@@UAE@XZ
 }
 
 // ---------------------------------------------------------------------------
@@ -926,7 +927,4 @@ i32 Handler03ddf0(Owner* owner) {
 SIZE_UNKNOWN(CDemoWorld);
 SIZE_UNKNOWN(CDemoSetup);
 SIZE_UNKNOWN(COwnerWithSubs);
-SIZE_UNKNOWN(CButeIosSub);
-SIZE_UNKNOWN(CSubObj8);
-SIZE_UNKNOWN(CSubObjC);
 SIZE_UNKNOWN(CTriRecord);

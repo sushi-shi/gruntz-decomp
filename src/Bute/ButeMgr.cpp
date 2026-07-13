@@ -50,6 +50,7 @@
 #include <rva.h>
 #include <Globals.h>
 
+#include <fstream.h> // the REAL CRT iostream/ios (ClearHelper tears down an embedded stream)
 #include <float.h>  // FLT_MIN / DBL_MIN - the GetFloat/GetDouble miss sentinels
 #include <stdio.h>  // vsprintf (NAFXCW varargs formatter)
 #include <stdlib.h> // atoi (0x11ffb0)
@@ -2040,38 +2041,30 @@ void* CButeMgr::InvokeCallback(void* (*fn)(CButeMgr*)) {
     return this;
 }
 
-// The embedded CRT iostream sub-object at CButeMgr+0x14 (its `ios` base). The two
-// __thiscall entry points ClearHelper drives - the compiler vbase-teardown thunk
-// (0x169be0) and the ios dtor (0x169d70) - are statically-linked library code,
-// carved out in config/library_labels.csv; this is a caller-side receiver so each
-// call lands `this+0x14` in ecx with no caller-side cleanup (reloc-masked). The
-// full ios layout is modeled where the parser reads it (ButeMgrParse.cpp: ButeIos).
-struct CButeIosSub {
-    void VbaseTeardown(); // 0x169be0  compiler vbase-teardown thunk (library)
-    void Dtor();          // 0x169d70  the ios dtor (library)
-};
-SIZE_UNKNOWN(CButeIosSub); // library receiver; real ios layout is 0x50 (ButeIos)
+// (The `CButeIosSub` receiver - VbaseTeardown @0x169be0 + Dtor @0x169d70 - is gone. It was
+// a fabricated stand-in for two REAL CRT symbols: ??1iostream@@UAE@XZ and ??1ios@@UAE@XZ,
+// both of which the CRT libs define. An alias resolves nothing at link; the real names do.)
 
 // ===========================================================================
 // CButeMgr::ClearHelper
 // ===========================================================================
-// Tear down the embedded CRT stream sub-object at this+0x14: run its vbase
-// teardown thunk, then its ios dtor (both statically-linked library entry points).
-// FLAG (raw-offset, not cleanly removable): +0x14 is also where SetErrCallback
-// stores m_errCallback and ReportError reads it. Modeling the sub-object as a real
-// embedded member at +0x14 would collide with that already-matched field, so the
-// char-offset view stays a transitional device until the sub-object-vs-callback
-// overlap is reconciled (a follow-up matcher: is m_errCallback the sub-object's
-// vptr slot, or does it start past +0x14?).
-// @early-stop
-// library-call pairing wall: the two callees are carved-out CRT library thunks;
-// their reloc-masked call operands only pair by exact symbol name, which a
-// caller-side receiver's method names can't reproduce. Body byte-faithful.
+// The two-phase teardown of an embedded CRT `iostream`: the derived dtor, then the shared
+// `ios` VIRTUAL BASE dtor, both on the same vbase-adjusted `this`.
+//
+// The old model read `this+0x14` as a MEMBER OFFSET and invented a CButeIosSub receiver
+// for the two callees, with an @early-stop declaring a "library-call pairing wall" ("their
+// reloc-masked call operands only pair by exact symbol name, which a caller-side receiver's
+// method names can't reproduce"). That wall was self-inflicted: the callees are
+// ??1iostream@@UAE@XZ (0x169be0) and ??1ios@@UAE@XZ (0x169d70), the CRT libs define BOTH,
+// and naming them exactly is all it takes. 0x14 is not a member offset at all - it is
+// MSVC's virtual-base ADJUSTMENT for iostream (probe: cl emits `lea ecx,[eax+0x14]` for
+// iostream/fstream, +0xc for istream, +0x8 for ostream; 0x169be0 reads its vbtable at
+// [ecx-0x14], which pins the class). So `this` is the stream base and cl computes the
+// adjust itself. The old FLAG about colliding with m_errCallback at +0x14 dissolves with it.
 RVA(0x00171a40, 0x14)
 void CButeMgr::ClearHelper() {
-    CButeIosSub* h = (CButeIosSub*)((char*)this + 0x14);
-    h->VbaseTeardown();
-    h->Dtor();
+    ((iostream*)(void*)this)->iostream::~iostream();   // 0x169be0  ??1iostream@@UAE@XZ
+    ((ios*)(void*)((char*)this + 0x14))->ios::~ios();  // 0x169d70  ??1ios@@UAE@XZ
 }
 
 // ===========================================================================

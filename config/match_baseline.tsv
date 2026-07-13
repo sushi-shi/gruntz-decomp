@@ -47,7 +47,7 @@ brickzload	1	0
 bridgemovesprites	1	0
 bsecobj10fctor	1	1
 buildgruntzcrcinfo	1	0
-butemgr	54	34
+butemgr	53	34
 butenode	3	2
 butesectionctor	1	1
 butestoreclear	1	1
@@ -659,7 +659,7 @@ butemgr	??1CButeStoreCopy21310@@UAE@XZ	100.0000	100.0000	1	29afd648d51d	0x21310
 butemgr	??1CButeStoreCopy21570@@UAE@XZ	100.0000	100.0000	1	f056a1ffa121	0x21570
 butemgr	??1CButeValue@@QAE@XZ	68.6364	68.6364	2	97a8aef9f785	0x172160
 butemgr	?CharClass@CButeMgr@@QAEFD@Z	100.0000	100.0000	3	61c18d639c2a	0x1703e0
-butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	7	5f0b1dee4dfd	0x171a40
+butemgr	?ClearHelper@CButeMgr@@QAEXXZ	100.0000	100.0000	8	b33b6765118d	0x171a40
 butemgr	?CopyValue@CButeValue@@QAEPAU1@PAU1@@Z	65.0865	65.0865	2	61715f92356b	0x172040
 butemgr	?Exists@CButeMgr@@QAE_NPBD0@Z	100.0000	100.0000	2	da69364648b0	0x171a60
 butemgr	?Gap_1714e0@@YAHXZ	4.5161	4.5161	1	aad2b2db3797	0x1714e0
@@ -706,7 +706,6 @@ butemgr	?SetRef7@CButeValue@@QAEPAU1@HPBUButeRef24@@@Z	100.0000	100.0000	2	275ce
 butemgr	?SetRef8@CButeValue@@QAEPAU1@HPBUButeRef16@@@Z	100.0000	100.0000	2	60b99c5f538f	0x174cb0
 butemgr	?SetString@CButeValue@@QAEPAU1@HABVCString@@@Z	100.0000	100.0000	2	bf25cc117294	0x1736a0
 butemgr	?SkipToTag@CButeMgr@@QAE_NXZ	78.1429	78.1429	3	5714a8de4dc4	0x171160
-butemgr	empty_stub	0.0000	0.0000	1	cpp:08adc88270f9	
 butenode	??0CButeNode@@QAE@H@Z	100.0000	100.0000	2	c6f073f152f3	0x174d00
 butenode	??1CButeStoreCopy174d@@UAE@XZ	100.0000	100.0000	1	8929fd703915	0x174d70
 butenode	?ButeValueTeardown@@YAXPAX@Z	69.5588	69.5588	1	b4f05ed9280a	0x174df0
@@ -1191,8 +1190,8 @@ deflate	_read_buf	100.0000	100.0000	1	b66aa815658a	0x186d30
 demo	?BuildWorldLevelKey@CWorldState@@QAEHH@Z	100.0000	100.0000	1	8a7623aa639f	0x3c0e0
 demo	?CGrunt_IsSameType@@YA_NPAVCGrunt@@0@Z	100.0000	100.0000	1	ba06582403d2	0x3c7f0
 demo	?DemoAutoScrollStep@@YAHPAUScrollOwner@@@Z	72.6786	72.6786	1	f637bdf38cbe	0x3c300
-demo	?DtorSub8@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	2	c060838957aa	0x3cbf0
-demo	?DtorSubC@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	2	d069cd576241	0x3cbc0
+demo	?DtorSub8@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	3	ddbcc8415850	0x3cbf0
+demo	?DtorSubC@COwnerWithSubs@@QAEXXZ	100.0000	100.0000	3	1bef2a80382f	0x3cbc0
 demo	?Gap_03c990@@YAHXZ	1.2069	1.2069	1	af2039b39fb7	0x3c990
 demo	?Gap_03cdd0@@YAHXZ	1.2963	1.2963	1	a3794853bc3f	0x3cdd0
 demo	?Handler03d2b0@@YAHPAUOwner@@@Z	100.0000	100.0000	1	24bff43d562d	0x3d2b0

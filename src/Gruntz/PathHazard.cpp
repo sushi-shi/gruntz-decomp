@@ -332,7 +332,7 @@ i32 CPathHazard::Tick() {
             i32 segs = m_object->m_120;
             if (segs > 0) {
                 m_legWindow = segs;
-                m_legDeadline = (u32)g_pathLegTag;
+                m_legDeadline = (u32)g_645588;
                 m_prevAnimSetNode = m_objAux->m_1c;
                 m_objAux->m_1c = g_buteTree.Find(g_iconBute);
                 return 0;

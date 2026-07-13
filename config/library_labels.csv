@@ -1910,7 +1910,6 @@ rva,name,lib,confidence,source
 0x1699c0,msc_ios_vbase_ctor_thunk_1699c0,LIBCMT,LOW,iostream-cluster-bail
 0x169c00,msc_ios_ctor_169c00,LIBCMT,LOW,iostream-cluster-bail
 0x169d70,??1ios@@UAE@XZ,LIBCMT,LOW,iostream-cluster-bail
-0x169d70,?Dtor@CButeIosSub@@QAEXXZ,LIBCMT,HIGH,reloc-alias
 0x169dd0,msc_ios_setsub_169dd0,LIBCMT,LOW,iostream-cluster-bail
 0x16b650,msc_ios_vbase_ctor_thunk_16b650,LIBCMT,LOW,iostream-cluster-bail
 0x16c0c0,msc_ios_vbase_ctor_thunk_16c0c0,LIBCMT,LOW,iostream-cluster-bail
@@ -3208,7 +3207,6 @@ rva,name,lib,confidence,source
 0x16a0c0,??0ifstream@@QAE@H@Z,LIBCIMT,HIGH,anchored
 0x16a180,??0ifstream@@QAE@HPADH@Z,LIBCIMT,HIGH,anchored
 0x16a240,??1ifstream@@UAE@XZ,LIBCIMT,AMBIG,anchored
-0x16a240,?Clear@CSubObjC@@QAEXXZ,LIBCIMT,MEDIUM,reloc-alias
 0x16a260,?setbuf@ifstream@@QAEPAVstreambuf@@PADH@Z,LIBCIMT,AMBIG,anchored
 0x16a340,?open@ifstream@@QAEXPBDHH@Z,LIBCIMT,HIGH,anchored
 0x16a3b0,?close@ifstream@@QAEXXZ,LIBCIMT,AMBIG,anchored
@@ -3219,7 +3217,6 @@ rva,name,lib,confidence,source
 0x16a760,??0ofstream@@QAE@H@Z,LIBCIMT,HIGH,anchored
 0x16a820,??0ofstream@@QAE@HPADH@Z,LIBCIMT,HIGH,anchored
 0x16a8e0,??1ofstream@@UAE@XZ,LIBCIMT,AMBIG,anchored
-0x16a8e0,?Clear@CSubObj8@@QAEXXZ,LIBCIMT,MEDIUM,reloc-alias
 0x16a900,?setbuf@ifstream@@QAEPAVstreambuf@@PADH@Z,LIBCIMT,AMBIG,anchored
 0x16a9e0,?open@ofstream@@QAEXPBDHH@Z,LIBCIMT,HIGH,anchored
 0x16aa50,?close@ifstream@@QAEXXZ,LIBCIMT,AMBIG,anchored
@@ -3362,8 +3359,8 @@ rva,name,lib,confidence,source
 0x1bade1,Thunk_1bade1,MSVC-THUNK,HIGH,asm-carveout
 0x1d3330,Thunk_1d3330,MSVC-THUNK,HIGH,asm-carveout
 0x169be0,CButeMgrHelper_FuncA,MSVC-THUNK,HIGH,asm-carveout
+0x169be0,??1iostream@@UAE@XZ,LIBCIMT,HIGH,vbase-adjust-0x14
 0x1915a8,_DirectSoundCreate@12,MSVC-THUNK,HIGH,dsound-import-thunk
-0x169be0,?VbaseTeardown@CButeIosSub@@QAEXXZ,MSVC-THUNK,HIGH,reloc-alias
 0x17f570,Dtor_17f570,GAME-ASM,HIGH,asm-carveout
 0x1d4a18,FreeLibHost_Dtor,GAME-ASM,HIGH,asm-carveout
 0x1c7e6d,Dtor_1c7e6d,GAME-ASM,HIGH,asm-carveout
@@ -3442,10 +3439,6 @@ rva,name,lib,confidence,source
 0x1b8322,??1CMapStringToPtr@@UAE@XZ,NAFXCW,HIGH,reloc-R24
 0x1b8322,??1CMapStringToOb@@UAE@XZ,NAFXCW,HIGH,reloc-R45
 0x177660,_DirectPlayLobbyCreateA@20,DPLAYX,HIGH,reloc-R24
-0x16a240,?Clear@CSubObjC@@QAEXXZ,LIBCIMT,HIGH,reloc-R44
-0x169d70,?BaseDtor@CSubObjC@@QAEXXZ,LIBCMT,HIGH,reloc-R44
-0x16a8e0,?Clear@CSubObj8@@QAEXXZ,LIBCIMT,HIGH,reloc-R44
-0x169d70,?BaseDtor@CSubObj8@@QAEXXZ,LIBCMT,HIGH,reloc-R44
 0x1b4afe,?FindIndex@GzObList@@QAEPAXH@Z,NAFXCW,HIGH,reloc-R44
 0x1b4ac7,?RemoveAt@GzObList@@QAEXPAX@Z,NAFXCW,HIGH,reloc-R44
 0x1b4a27,?RemoveTail@GzObList@@QAEPAXXZ,NAFXCW,HIGH,reloc-R44
