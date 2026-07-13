@@ -67,8 +67,8 @@ extern "C" CGruntzMgr* g_gameReg;
 #include <Gruntz/TriggerMgrViews.h> // the shared CTm* views + singleton externs
 
 // 0x77f80: FindNearestInRow(g) - the grunt-to-cell proximity probe: scan the 15 cells
-// of grid row g->m_1ec for the live cell whose display object (cell->m_10) is nearest g's
-// tile position, but only when that squared distance is below the cutoff 2*g->m_2dc.
+// of grid row g->m_tileOwnerHi for the live cell whose display object (cell->m_10) is nearest g's
+// tile position, but only when that squared distance is below the cutoff 2*g->m_defenderRadius.
 // @early-stop
 // 84->89.5: the m_5c distance term now loads BEFORE m_60 (dx declared before dy) matching
 // retail's load order. Residual (~89.5%) is the tx/ty callee-saved coloring: retail homes
@@ -77,21 +77,21 @@ extern "C" CGruntzMgr* g_gameReg;
 // register names; not source-steerable. topic:wall topic:regalloc.
 RVA(0x00077f80, 0xab)
 CTmCell* CTriggerMgr::FindNearestInRow(CTmCell* g) {
-    i32 tx = g->m_pos.x >> 5;
-    i32 rowIdx = g->m_1ec;
+    i32 tx = g->m_lastTilePxX >> 5;
+    i32 rowIdx = g->m_tileOwnerHi;
     CTmCell** cell = &m_grid[rowIdx * 15];
-    i32 ty = g->m_pos.y >> 5;
+    i32 ty = g->m_lastTilePxY >> 5;
     CTmCell* best = 0;
     i32 bestDist = 0x7fffffff;
     i32 i = 15;
     do {
         CTmCell* c = *cell;
         if (c != 0) {
-            CTmDisplay* o = c->m_10;
+            CGruntHud* o = c->m_10;
             i32 dx = (o->m_5c >> 5) - tx;
             i32 dy = (o->m_60 >> 5) - ty;
             i32 d = dx * dx + dy * dy;
-            if (d < bestDist && d < g->m_2dc * 2) {
+            if (d < bestDist && d < g->m_defenderRadius * 2) {
                 best = c;
                 bestDist = d;
             }
@@ -317,7 +317,7 @@ void CTriggerMgr::ReportRecordsA(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24) {
         CTmNode* next = n->m_next;
         u8* payload = (u8*)n->m_payload;
         CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
-        if (cell->m_1ec == g_curPlayer && cell->m_1e4 == 0) {
+        if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
             bytes[count] = payload[4];
             count++;
         }
@@ -350,7 +350,7 @@ void CTriggerMgr::ReportRecordsB(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i3
         CTmNode* next = n->m_next;
         u8* payload = (u8*)n->m_payload;
         CTmCell* cell = m_grid[*(i32*)(payload + 4) + *(i32*)payload * 15];
-        if (cell->m_1ec == g_curPlayer && cell->m_1e4 == 0) {
+        if (cell->m_tileOwnerHi == g_curPlayer && cell->m_entranceActive == 0) {
             bytes[count] = payload[4];
             count++;
         }
@@ -489,7 +489,7 @@ i32 CTriggerMgr::LoadCameraSprite() {
     CSpriteFactory* fac = m_level->m_8;
     CGameObject* spr = fac->CreateSprite(0, ax, cx, 0xf4240, "DoNothing", 1);
     m_goal = (CTmGoal*)spr;
-    spr->m_7c->Init(spr);
+    ((CTmSprite*)spr)->m_7c->Init(spr);
     ((CGameObject*)m_goal)->ApplyName("GAME_CAMERASPRITE");
     return 1;
 }
@@ -532,7 +532,7 @@ i32 CTriggerMgr::PlaceObjectFull(i32 x, i32 y) {
     if (cell == 0) {
         return 1;
     }
-    if (cell->m_1ec != g_curPlayer) {
+    if (cell->m_tileOwnerHi != g_curPlayer) {
         return 1;
     }
     // An active overlay eats the click.
@@ -633,7 +633,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         cell = m_grid[rec[1] + rec[0] * 15];
     }
     i32 sel;
-    if (cell != 0 && cell->m_1ec == g_curPlayer) {
+    if (cell != 0 && cell->m_tileOwnerHi == g_curPlayer) {
         if (a28 != 0) {
             sel = 0;
         } else if (hit == 0) {
@@ -642,7 +642,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
             // toggle off the pending-fx and rewind
             m_pendingFxKind = 0;
             ((CTmWorld*)g_gameReg->m_curState)->StopFx2(0, 0);
-            CTmDisplay* o = hit->m_10;
+            CGruntHud* o = hit->m_10;
             this->PlaceA(o->m_5c, o->m_60, a18, a14);
             return 1;
         } else {
@@ -663,7 +663,7 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
         // spawn the cursor target sprite
         CGruntzCmdMgr* rep = g_gameReg->m_cmdSubMgr;
         if (cell != 0) {
-            rep->Report1(1, cell->m_1ec, cell->m_1f0, a18, a14, 0, 0);
+            rep->Report1(1, cell->m_tileOwnerHi, cell->m_tileOwnerLo, a18, a14, 0, 0);
         } else {
             rep->Report1(1, a14, a18, 0, 0, 0, 0);
         }
@@ -685,8 +685,8 @@ i32 CTriggerMgr::ResetGroup(i32 a14, i32 a18, i32 a1c, i32 a20, i32 a24, i32 a28
     if (sprite == 0) {
         return 0;
     }
-    sprite->m_7c->Init(sprite);
-    void* logic = sprite->m_7c->m_18;
+    ((CTmSprite*)sprite)->m_7c->Init(sprite);
+    void* logic = ((CTmSprite*)sprite)->m_7c->m_18;
     ((CUserLogic*)logic)->Arm("GAME_LIGHTING_TARGETCURSOR", "GAME_TARGETCURSOR", kindArg, logicArg);
     return 1;
 }
@@ -926,10 +926,12 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     if (cell->m_36c != 0) {
         return;
     }
-    if (cell->m_1e8 == 0) {
-        this->RecallCell(cell, cell->m_pos.x, cell->m_pos.y);
+    if (cell->m_arrivalPending == 0) {
+        this->RecallCell(cell, cell->m_lastTilePxX, cell->m_lastTilePxY);
     }
-    CTrigPoint pt = cell->m_pos;
+    CTrigPoint pt;
+    pt.x = cell->m_lastTilePxX;
+    pt.y = cell->m_lastTilePxY;
     CGruntzMapMgr* tg = g_gameReg->m_tileGrid;
     i32 rowIdx = pt.y >> 5;
     i32 colByte = (pt.x >> 5) * 28; // 7-dword cell stride (the grid HitTestCell walks)
@@ -940,7 +942,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
     if (z != 0) {
         m_cellFlag[idx] = 1;
         m_rowStateB[col] += 1;
-        i32 k = cell->m_170;
+        i32 k = cell->m_entranceReason;
         if (k > 0x16) {
             k = cell->m_19c;
         }
@@ -956,7 +958,7 @@ void CTriggerMgr::NotifyCell(i32 row, i32 col, i32 z) {
         cell->m_36c = 1;
         return;
     }
-    i32 k = cell->m_170;
+    i32 k = cell->m_entranceReason;
     if (k > 0x16) {
         k = cell->m_19c;
     }
@@ -987,10 +989,10 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
         g_gameReg->ReportError(0x8009, 0x400);
         return 0;
     }
-    sprite->m_7c->Init(sprite);
-    sprite->m_124 = f124;
-    sprite->m_114 = f114;
-    sprite->m_118 = f118;
+    ((CTmSprite*)sprite)->m_7c->Init(sprite);
+    sprite->m_placeParamC = f124;
+    sprite->m_placeParamA = f114;
+    sprite->m_placeParamB = f118;
     return PlacePuddle(sprite, color);
 }
 
@@ -1004,12 +1006,12 @@ i32 CTriggerMgr::SpawnPuddle(i32 x, i32 y, i32 f124, i32 f114, i32 color, i32 f1
 // Logic + offsets + the RemoveAt/RemoveAll recycle byte-exact. topic:wall.
 RVA(0x0007a240, 0x143)
 i32 CTriggerMgr::PlacePuddle(CTmCell* sprite, i32 color) {
-    CTmPuddleTarget* tgt = (CTmPuddleTarget*)sprite->m_7c->m_18;
-    i32 d = sprite->m_118;
+    CTmPuddleTarget* tgt = (CTmPuddleTarget*)((CTmSprite*)sprite)->m_7c->m_18;
+    i32 d = sprite->m_placeParamB;
     if (d == 0) {
         d = 0x19;
     }
-    if (tgt->Place(sprite->m_124, sprite->m_114, color, d) == 0) {
+    if (tgt->Place(sprite->m_placeParamC, sprite->m_placeParamA, color, d) == 0) {
         tgt->m_38->m_8 |= 0x10000;
         g_gameReg->ReportError(0x8009, 0x401); // dual-view bridge; see SpawnPuddle
         return 0;
@@ -1120,7 +1122,7 @@ i32 CTriggerMgr::ClearRowAndRefresh(i32 startRow) {
             i32 i = 15;
             do {
                 CTmCell* c = *cell;
-                if (c != 0 && c->m_368 == 0) {
+                if (c != 0 && c->m_deathAnimStarted == 0) {
                     ((CGrunt*)c)->StartBombGruntRun(); // Recall==CGrunt::StartBombGruntRun @0x68520
                 }
                 cell++;
@@ -1561,16 +1563,16 @@ i32 CTriggerMgr::TriggerCell(i32 x, i32 y) {
     CTmWorld* world = (CTmWorld*)g_gameReg->m_curState;
     i32 kind = this->Classify(x, y);
     if (kind == 2) {
-        i32 alt = cell->m_170;
+        i32 alt = cell->m_entranceReason;
         if (alt > 0x16) {
             alt = cell->m_19c;
         }
         if (alt == 0x13) {
-            g_gameReg->m_cmdGrid->Spawn(cell->m_pos.x, cell->m_pos.y, 0, 0, 0, 2, 1);
+            g_gameReg->m_cmdGrid->Spawn(cell->m_lastTilePxX, cell->m_lastTilePxY, 0, 0, 0, 2, 1);
         }
     } else if (kind == 3) {
         if (cell->m_198 == 0x1e) {
-            CTmDisplay* o = cell->m_10;
+            CGruntHud* o = cell->m_10;
             g_gameReg->m_cmdGrid->Spawn(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
         }
     } else if (kind != 0) {
@@ -1959,7 +1961,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                                     g_gameReg->m_world->m_8
                                         ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
                                 done = 1;
-                                spr->m_7c->Init(spr);
+                                ((CTmSprite*)spr)->m_7c->Init(spr);
                                 ((CLightFx*)spr->m_7c->m_logic)
                                     ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 3, 1);
                             }
@@ -1980,7 +1982,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         CGameObject* spr =
                             g_gameReg->m_world->m_8
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
-                        spr->m_7c->Init(spr);
+                        ((CTmSprite*)spr)->m_7c->Init(spr);
                         ((CLightFx*)spr->m_7c->m_logic)
                             ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 2, 1);
                         break;
@@ -1997,7 +1999,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         CGameObject* spr =
                             g_gameReg->m_world->m_8
                                 ->CreateSprite(0, gx, gy, 0xf4240, s_LightFx, 0x40003);
-                        spr->m_7c->Init(spr);
+                        ((CTmSprite*)spr)->m_7c->Init(spr);
                         ((CLightFx*)spr->m_7c->m_logic)
                             ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 7, 1);
                         break;
@@ -2011,7 +2013,7 @@ i32 CGruntTileMgr::CombatCue(i32 x, i32 y, i32 radius, i32 tier, i32 flag) {
                         CGameObject* spr =
                             g_gameReg->m_world->m_8
                                 ->CreateSprite(0, h->m_5c, h->m_60, 0xf4240, s_LightFx, 0x40003);
-                        spr->m_7c->Init(spr);
+                        ((CTmSprite*)spr)->m_7c->Init(spr);
                         ((CLightFx*)spr->m_7c->m_logic)
                             ->Activate((i32)s_GAME_LIGHTING_FLASH, (i32)s_GAME_FLASH, 9, 1);
                         break;
@@ -2188,7 +2190,7 @@ i32 CGruntResurrector::LoadGruntResurrectTuning(i32 cx, i32 cy, i32 r) {
             Notify(node);
             CGameObject* spr =
                 g_gameReg->m_world->m_8->CreateSprite(0, px, py, 0xf4240, "LightFx", 0x40003);
-            spr->m_7c->Init(spr);
+            ((CTmSprite*)spr)->m_7c->Init(spr);
             ((CLightFx*)spr->m_7c->m_logic)
                 ->Activate((i32) "GAME_LIGHTING_FLASH", (i32) "GAME_FLASH", 8, 1);
         }
@@ -2223,27 +2225,33 @@ i32 CTriggerMgr::SpawnGrunt(i32 col, i32 row, i32 a18, i32 a1c) {
     if (free >= 15) {
         return 0;
     }
-    CTmDisplay* o = src->m_10;
+    CGruntHud* o = src->m_10;
     i32 sx = (o->m_5c & ~0x1f) + 0x10;
     i32 sy = (o->m_60 & ~0x1f) + 0x10;
-    i32 k = src->m_170;
+    i32 k = src->m_entranceReason;
     if (k > 0x16) {
         k = src->m_19c;
     }
     i32 vis = src->m_198;
     this->Reset3(col, k, vis); // prep self-call 0x7ec96
     CSpriteFactory* fac = m_level->m_8;
-    CTmCell* sprite = (CTmCell*)fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
+    CTmSprite* sprite = (CTmSprite*)fac->CreateSprite(0, sx, sy, 0x186a0, "Grunt", 0x40003);
     if (sprite == 0) {
         return 0;
     }
-    sprite->m_7c->Init(sprite);
-    void* logic = sprite->m_7c->m_18;
+    ((CTmSprite*)sprite)->m_7c->Init(sprite);
+    void* logic = ((CTmSprite*)sprite)->m_7c->m_18;
     if (((CUserLogic*)logic)->Place(col, row, vis, k, 0, 0, 0, 0, 0, 0, 0, 0) == 0) {
         *(i32*)(*(char**)((char*)logic + 0x154) + 0x8) |= 0x10000;
         return 0;
     }
-    m_grid[row * 15 + free] = sprite;
+    // @identity-TODO (a contradiction the deleted CTmCell view was hiding): the value stored
+    // in the grid here is the CreateSprite RESULT, but every other site dereferences a grid
+    // cell with CGrunt (logic) offsets - and this same sprite's logic object (desc+0x18) is
+    // what gets Place()d two lines up. So either the grid holds the logic and this store is
+    // mis-reconstructed, or the sprite and its logic share a head. Cast (byte-identical to
+    // what this stored before the fold) rather than guess.
+    m_grid[row * 15 + free] = (CGrunt*)sprite;
     m_rowCount[row] += 1;
     m_cellFlag[(row * 15 + free)] = 0;
     return 1;
@@ -2268,7 +2276,7 @@ i32 CTriggerMgr::CycleMoveIcons(i32 skipRow, i32 enable) {
                     if (enable != 0) {
                         i32 t = rand() % 0x11;
                         if (g->m_1f8 == -1) {
-                            g->m_1f8 = g->m_1f4;
+                            g->m_1f8 = g->m_1f4_moveIcon;
                         }
                         ((CGrunt*)g)->SelectMoveIcon(t); // -> ?SelectMoveIcon@CGrunt@@ (0x57800)
                         ((CTmWorld*)g_gameReg->m_curState)->OnRegion4(1);
@@ -2713,7 +2721,7 @@ i32 CTriggerMgr::CenterSelectionGroup(i32 slot) {
         if (cell != 0) {
             ResetCell(payload[0], payload[1], 1, 0);
             if (m_selSentinel == slot) {
-                CTmDisplay* disp = cell->m_10;
+                CGruntHud* disp = cell->m_10;
                 i32 x = disp->m_5c;
                 i32 y = disp->m_60;
                 if (x < minX) {
@@ -2910,7 +2918,7 @@ i32 CTriggerMgr::ClearRow(i32 row) {
     i32 i = 15;
     do {
         CTmCell* c = *cell;
-        if (c != 0 && c->m_368 == 0) {
+        if (c != 0 && c->m_deathAnimStarted == 0) {
             ((CGrunt*)c)
                 ->BuildGruntExitAnimation(); // ExitGrid==CGrunt::BuildGruntExitAnimation @0x641b0
         }
@@ -2943,8 +2951,8 @@ i32 CTriggerMgr::NearestCellDist(i32 skipRow, i32 px, i32 py) {
             CTmCell** cell = row;
             do {
                 CTmCell* g = *cell;
-                if (g != 0 && g->m_1fc != 0) {
-                    CTmDisplay* o = g->m_10;
+                if (g != 0 && g->m_entranceCommitted != 0) {
+                    CGruntHud* o = g->m_10;
                     i32 dx = (o->m_5c >> 5) - tx;
                     i32 dy = (o->m_60 >> 5) - ty;
                     i32 d = abs(dx * dx + dy * dy);
@@ -3088,19 +3096,21 @@ i32 CTriggerMgr::ToggleRegionA() {
     if (cell == 0) {
         return 1;
     }
-    if (cell->m_1ec != g_curPlayer) {
+    if (cell->m_tileOwnerHi != g_curPlayer) {
         return 1;
     }
     if (((CGrunt*)cell)->CanShowStamina() == 0) { // -> ?CanShowStamina@CGrunt@@ (0x514a0)
         OverlayTick();
         return 1;
     }
-    i32 v = cell->m_170;
+    i32 v = cell->m_entranceReason;
     if (v > 0x16) {
         v = cell->m_19c;
     }
     if (v == 0x13) {
-        CTrigPoint pt = cell->m_pos;
+        CTrigPoint pt;
+        pt.x = cell->m_lastTilePxX;
+        pt.y = cell->m_lastTilePxY;
         g_gameReg->m_cmdGrid->ResetGroup(pt.x, pt.y, 0, 0, 0, 2, 1);
         OverlayTick();
         return 1;
@@ -3135,16 +3145,16 @@ i32 CTriggerMgr::ToggleRegionB() {
     if (cell == 0) {
         return 1;
     }
-    if (cell->m_1ec != g_curPlayer) {
+    if (cell->m_tileOwnerHi != g_curPlayer) {
         return 1;
     }
-    if (cell->m_170 >= 0x17) {
+    if (cell->m_entranceReason >= 0x17) {
         OverlayTick();
         return 1;
     }
     i32 kind = cell->m_198;
     if (kind == 0x1e) {
-        CTmDisplay* o = cell->m_10;
+        CGruntHud* o = cell->m_10;
         g_gameReg->m_cmdGrid->ResetGroup(o->m_5c, o->m_60, 0, 0, 0, 3, 1);
         OverlayTick();
         return 1;
@@ -3184,7 +3194,7 @@ i32 CTriggerMgr::EnqueueGroupCells() {
             i32* p = cur->m_payload;
             x = *(char*)p;
             CTmCell* cell = m_grid[p[0] * 15 + p[1]];
-            if (cell->m_1ec == magic && cell->m_1e4 == 0) {
+            if (cell->m_tileOwnerHi == magic && cell->m_entranceActive == 0) {
                 buf[count] = ((u8*)p)[4];
                 count++;
             }

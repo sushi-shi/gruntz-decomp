@@ -125,7 +125,10 @@ struct CGruntHud {
     i32 m_14c;   // +0x14c
     void* m_150; // +0x150
     char m_pad154[0x188 - 0x154];
-    i32 m_188; // +0x188  (cue arg)
+    i32 m_188; // +0x188  (cue arg; the trigger leaves also read it as the archive/serialize id)
+    char m_pad18c[0x198 - 0x18c];
+    i32 m_198; // +0x198  clickable/hit gate (from the trigger leaves' disasm - folded in
+               //         from the deleted CTmDisplay view, which was a duplicate of this class)
 };
 
 // ---------------------------------------------------------------------------
@@ -1206,7 +1209,12 @@ inline CGruntMovingBase::CGruntMovingBase(CGameObject* owner) : CUserLogic(owner
 }
 
 // ---------------------------------------------------------------------------
-SIZE_UNKNOWN(CGrunt);
+// GROUND TRUTH from the allocation site: GruntSpawnPump @0x5baf0 does
+//   push 0x8d8 ; call ??2@YAPAXI@Z ; mov ecx,eax ; call <CGrunt ctor>
+// so sizeof(CGrunt) is 0x8d8 - measured from the binary, not inferred. Our reconstruction
+// already computes exactly 0x8d8, which is what falsified the long-standing claim that
+// CGrunt carried a phantom +0x120 gap (see <Gruntz/TriggerMgr.h>).
+SIZE(CGrunt, 0x8d8);
 class CGrunt : public CGruntMovingBase {
 public:
     // vtable overrides in slot order (see the base chain above):
@@ -1225,6 +1233,32 @@ public:
     // registry g_reg_644af0 and dispatches it as a PMF on `this`; else returns the
     // entry pointer. Same archetype as CPathHazard::RunAct.
     i32 RunAct(i32 id);
+
+    // ---- the trigger/switch leaves' per-kind hooks (folded in from the CTmCell view) ----
+    // These are the methods ApplyTriggerA and friends dispatch on a placed grid grunt. Ten
+    // of them are the REAL bodies already declared elsewhere in this class (ClearAllSprites
+    // 0x4b240, BuildGruntExitAnimation 0x641b0, LoadGruntDeathAnimations 0x60150,
+    // StartBombGruntRun 0x68520, RunMoveConfig 0x65630, RectContains 0x51850,
+    // CommitNeighbor 0x5b050, BeginAttack 0x5b570, PlayMoveSound 0x511b0,
+    // ResetEntranceAnimation 0x62e10) - the fold binds the call sites straight to them.
+    //
+    // The eight below are the ones the view could not bind. @identity-TODO, and the reason
+    // is worth recording: the RVAs the view carried for them (ResetA 0x6a40c, ResetB
+    // 0x6a2ae, ResetC 0x6c216, ResetMagic 0x6c498, Disarm 0x6f970, ApplyBox 0x6fc40,
+    // Type13Check 0x71f80, Apply13 0x70520) are NOT function starts - several are not even
+    // 4-byte aligned and none appears in Ghidra's function list, so they look like call-site
+    // operands mis-recorded as entry points. They are declared here so the call sites keep
+    // compiling, but they are still declared-never-defined: the honest fix is to recover the
+    // real entry points, not to invent addresses for them.
+    void ResetA();
+    void ResetB();
+    void ResetC();
+    i32 ResetMagic();
+    i32 Disarm(i32 a, i32 b);
+    i32 ApplyBox(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
+    i32 Type13Check();
+    void Apply13(i32 a, i32 b);
+    i32 Dispatch(i32 kind, i32 a);
     virtual i32 UserLogicVfunc3() OVERRIDE; // slot 5  (0x5ecd0)
     virtual i32 Activate() OVERRIDE;        // slot 6  @0x5caa0
     virtual i32 UserLogicVfunc6() OVERRIDE; // slot 8  (0x62b40)
@@ -1377,7 +1411,15 @@ public:
     // without shifting CGrunt's layout), so they stay raw - authentic, not a hack.
     i32 m_animResolved; // +0xa8  (resolve gate / dirty flag; == moveMinX double lo)
     i32 m_deathCueArg;  // +0xac  (cue arg; == moveMinX double hi)
-    char m_padb0[0x148 - 0xb0];
+    char m_padb0[0x114 - 0xb0];
+    // +0x114/+0x118/+0x124 - the placement params the trigger/switch leaves write when
+    // they place this grunt on the grid (recovered from those TUs' disasm; they were the
+    // CTmCell view's m_114/m_118/m_124, and they land here unshifted).
+    i32 m_placeParamA; // +0x114
+    i32 m_placeParamB; // +0x118
+    char m_pad11c[0x124 - 0x11c];
+    i32 m_placeParamC; // +0x124
+    char m_pad128[0x148 - 0x128];
     i32 m_148;                       // +0x148
     i32 m_14c;                       // +0x14c
     void* m_150;                     // +0x150
@@ -1399,16 +1441,16 @@ public:
     i32 m_commitPxX; // +0x184 (committed position snapshot X, pixel; = m_lastTilePxX after switch)
     i32 m_commitPxY; // +0x188 (committed position snapshot Y, pixel; = m_lastTilePxY after switch)
     i32 m_18c;       // +0x18c
-    i32 m_toyBlendPct;             // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
-    i32 m_194;                     // +0x194
-    i32 m_198;                     // +0x198
-    i32 m_19c;                     // +0x19c
-    i32 m_moveMode;                // +0x1a0
-    i32 m_1a4;                     // +0x1a4
-    i32 m_1a8;                     // +0x1a8 (serialized)
-    i32 m_1ac;                     // +0x1ac (serialized)
-    i32 m_1b0;                     // +0x1b0 (serialized)
-    i32 m_1b4;                     // +0x1b4 (serialized)
+    i32 m_toyBlendPct;              // +0x190 (anim-name loader: TOY1/TOY2 blend percent)
+    i32 m_194;                      // +0x194
+    i32 m_198;                      // +0x198
+    i32 m_19c;                      // +0x19c
+    i32 m_moveMode;                 // +0x1a0
+    i32 m_1a4;                      // +0x1a4
+    i32 m_1a8;                      // +0x1a8 (serialized)
+    i32 m_1ac;                      // +0x1ac (serialized)
+    i32 m_1b0;                      // +0x1b0 (serialized)
+    i32 m_1b4;                      // +0x1b4 (serialized)
     CGameObject* m_selectedSprite;  // +0x1b8  (folded CHudSprite -> CGameObject)
     CGameObject* m_toySprite;       // +0x1bc
     CString m_animSetName;          // +0x1c0  (anim-name loader: "GRUNTZ_"+m_animSetName+...)
@@ -1417,22 +1459,22 @@ public:
     CGameObject* m_toyTimeSprite;   // +0x1cc
     CGameObject* m_wingzTimeSprite; // +0x1d0
     CGameObject* m_powerupSprite;   // +0x1d4
-    i32 m_arrived;                 // +0x1d8 (entrance-arrival gate)
-    i32 m_1dc;                     // +0x1dc
-    i32 m_1e0;                     // +0x1e0
-    i32 m_entranceActive;          // +0x1e4 (entrance: set to 1)
-    i32 m_arrivalPending;          // +0x1e8 (SnapToLastTile/ClaimSwitchTile arrival-commit latch)
-    i32 m_tileOwnerHi;             // +0x1ec
-    i32 m_tileOwnerLo;             // +0x1f0
-    i32 m_1f4_moveIcon;            // +0x1f4 (SelectMoveIcon: clamped icon index, [0,0x11))
-    i32 m_1f8;                     // +0x1f8 (serialized)
-    i32 m_entranceCommitted;       // +0x1fc (entrance: cleared)
-    i32 m_neighborCol;             // +0x200 (grid-neighbor: column, -1 = none)
-    i32 m_neighborRow;             // +0x204 (grid-neighbor: row, -1 = none)
-    i32 m_208;                     // +0x208
-    i32 m_20c;                     // +0x20c
-    i32 m_210;                     // +0x210
-    i32 m_214;                     // +0x214
+    i32 m_arrived;                  // +0x1d8 (entrance-arrival gate)
+    i32 m_1dc;                      // +0x1dc
+    i32 m_1e0;                      // +0x1e0
+    i32 m_entranceActive;           // +0x1e4 (entrance: set to 1)
+    i32 m_arrivalPending;           // +0x1e8 (SnapToLastTile/ClaimSwitchTile arrival-commit latch)
+    i32 m_tileOwnerHi;              // +0x1ec
+    i32 m_tileOwnerLo;              // +0x1f0
+    i32 m_1f4_moveIcon;             // +0x1f4 (SelectMoveIcon: clamped icon index, [0,0x11))
+    i32 m_1f8;                      // +0x1f8 (serialized)
+    i32 m_entranceCommitted;        // +0x1fc (entrance: cleared)
+    i32 m_neighborCol;              // +0x200 (grid-neighbor: column, -1 = none)
+    i32 m_neighborRow;              // +0x204 (grid-neighbor: row, -1 = none)
+    i32 m_208;                      // +0x208
+    i32 m_20c;                      // +0x20c
+    i32 m_210;                      // +0x210
+    i32 m_214;                      // +0x214
     i32 m_combatActive; // +0x218 (combat/attack-active latch; set with m_poweredUp on attack, gates stamina display)
     i32 m_neighborValid;   // +0x21c (grid-neighbor: cleared on miss)
     i32 m_poweredUp;       // +0x220 (powered-up gate; 0 = run entrance reset)
@@ -1617,8 +1659,13 @@ public:
     i32 m_combatClockHi;   // +0x874 (combat timer: anchor clock hi = 0)
     i32 m_combatTimeoutLo; // +0x878 (combat timer: duration lo = CombatTimeout config)
     i32 m_combatTimeoutHi; // +0x87c (combat timer: duration hi = 0)
-    i32 m_880;             // +0x880 (timer record base, SerializeMove)
-    char m_pad884[0x890 - 0x884];
+    i32 m_880; // +0x880 (timer record base, SerializeMove; == combat timer base = game clock)
+    i32 m_884; // +0x884
+    // +0x888 - the trigger leaves read this as the combat timeout the +0x880 timer base is
+    // compared against. CGrunt already names a CombatTimeout at +0x878/+0x87c, so this one
+    // keeps its offset name until the two roles are reconciled (do not guess).
+    i32 m_888;          // +0x888
+    i32 m_88c;          // +0x88c
     i32 m_wingzClockLo; // +0x890 (wingz timer: anchor clock lo = g_645588; i64 w/ m_wingzClockHi)
     i32 m_wingzClockHi; // +0x894 (wingz timer: anchor clock hi = 0)
     i32 m_wingzDurationLo; // +0x898 (wingz timer: duration lo = (long)(m_wingzTime*scale-bias))
@@ -1960,7 +2007,6 @@ i32 __stdcall CGrunt_TileSwitch(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 i32 __stdcall GruntTileSwitchImpl(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f);
 
 // --- vtable catalog (view/base classes bound to their unit vtable rva) ---
-
 
 // The single-letter grunt/anim type-code literals ("A".."Q"), one shared copy each in
 // retail .rdata (byte-verified at the rvas below; DATA-bound in src/Globals.cpp). Declared

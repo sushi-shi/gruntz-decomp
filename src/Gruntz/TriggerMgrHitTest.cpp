@@ -19,6 +19,7 @@
 // Functions in retail-RVA order; shared views/externs in
 // <Gruntz/TriggerMgrViews.h>. /GX profile kept from the parent unit (no EH
 // temps in these leaves; byte-neutral).
+#include <Gruntz/Grunt.h> // CTmCell IS CGrunt (folded) - the cells are dereferenced here
 #include <Gruntz/TriggerMgr.h>
 
 #include <Gruntz/TileGrid.h> // canonical CTileGrid (FindGruntAt's packed owner grid)
@@ -125,11 +126,11 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
     i32 row = (attr >> 8) & 0xff;
     i32 col = attr & 0xff;
     CTmCell* cell = m_grid[col + row * 15];
-    if (cell == 0 || cell->m_1fc == 0) {
+    if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
     if (exact != 0) {
-        CTmDisplay* o = cell->m_10;
+        CGruntHud* o = cell->m_10;
         if (o->m_5c != x || o->m_60 != y) {
             return 0;
         }
@@ -141,7 +142,7 @@ i32 CTriggerMgr::HitTestCell(i32 x, i32 y, i32* outRow, i32* outCol, i32 exact) 
         }
         return 1;
     }
-    CTmDisplay* o = cell->m_10;
+    CGruntHud* o = cell->m_10;
     i32 ox = o->m_5c;
     i32 oy = o->m_60;
     if (x + 7 > ox + 14 || x - 7 < ox - 7 || y + 7 > oy + 14 || y - 7 < oy - 7) {
@@ -212,7 +213,7 @@ CTmCell* CTriggerMgr::FindGruntAt(i32 px, i32 py, RECT* span, i32* outCol, i32* 
             if (!g) {
                 continue;
             }
-            if (!g->m_1fc) {
+            if (!g->m_entranceCommitted) {
                 continue;
             }
             i32 sx = g->m_10->m_5c - 7;

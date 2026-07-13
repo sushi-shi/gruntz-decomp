@@ -47,7 +47,17 @@ SIZE_UNKNOWN(CTrigPoint);
 // DroppedObject/TriggerMgrGrid/TriggerMgrHitTest) are owned by parallel lanes, so it needs
 // its own pass - not a wall, just cross-lane. Same for the level object, sound-channel
 // helper and the two intrusive list-node shapes - each TU completes them as it needs.
-struct CTmCell;
+class CGrunt;
+// CTmCell IS ::CGrunt - PROVEN, and the fold is done: this is an alias now, so every
+// `CTmCell*` here keeps compiling while every method call on one mangles to the REAL
+// ?X@CGrunt@@ body. (The "+0x120 phantom-gap layout bug" that was said to block this does
+// NOT exist: sizeof(CGrunt) is 0x8d8 - the ground truth from its allocation site,
+// `push 0x8d8; call ??2` in GruntSpawnPump @0x5baf0 - and 35 of the view's 40 fields land
+// on a CGrunt field at the IDENTICAL offset, deep ones included (0x170, 0x1e4-0x1fc,
+// 0x218-0x220, 0x248, 0x2d0, 0x308-0x314, 0x368, 0x3e4, 0x420, 0x880). Retail's
+// SelectMoveIcon @0x57800 reads [this+0x1f4] / [this+0x170] / [this+0x10] - exactly the
+// view's offsets. A +0x120 shift would have produced zero such matches.)
+typedef CGrunt CTmCell;
 struct CTmLevel;
 class DirectSoundMgr; // Dsndmgr/DirectSoundMgr.h (StopAndRewind)
 struct CTmNode;
@@ -203,9 +213,9 @@ public:
     // bump a world stat, and re-arm the status item. ret 1.
     i32 ClearRowAndRefresh(i32 startRow);
 
-    // 0x77f80: FindNearestInRow(g) - scan the grid row g->m_1ec (15 cells) for the live
+    // 0x77f80: FindNearestInRow(g) - scan the grid row g->m_tileOwnerHi (15 cells) for the live
     // cell whose display object is nearest g's tile pos (g->m_17c/m_180 >> 5), within the
-    // squared cutoff 2*g->m_2dc; ret the nearest cell pointer or 0. (__thiscall: ret 4.)
+    // squared cutoff 2*g->m_defenderRadius; ret the nearest cell pointer or 0. (__thiscall: ret 4.)
     CTmCell* FindNearestInRow(CTmCell* g);
 
     // 0x78260: RemoveCellRecord(x,y,fromSelection) - unlink the (x,y) node from the

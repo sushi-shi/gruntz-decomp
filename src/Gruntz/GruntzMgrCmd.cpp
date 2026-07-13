@@ -253,7 +253,7 @@ void Fwd114ec0(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6); // 0x114ec0 (Fwd
 // target: AMBIENT%d wsprintf + char[128] buffer (0x8086), the inlined grid-cell
 // select for all brick pickup/ability cheats (0x808d/0x8130-0x813f), the settings/
 // CMapPtrToPtr death lookup (0x8106), the map-cue (CMapStringToOb::Lookup) warps
-// (0x8244/0x8245) + throttled-Play Explosionz (0x8247), grunt->m_2dc cheats
+// (0x8244/0x8245) + throttled-Play Explosionz (0x8247), grunt->m_defenderRadius cheats
 // (0x8246/0x81a4), the 0x8068/0x806f global-CString clears, WAWA's Play(0x64), and
 // per-cheat case order/ids/cue-strings corrected against the jump tables.  The
 // char[128] AMBIENT buffer made retail's whole-function frame emerge (sub esp,0x84

@@ -63,115 +63,14 @@ struct CTmDisplay {
     i32 m_198; // +0x198  clickable/hit gate
 };
 
-// A placed grid-cell game object (a CGrunt) as EVERY trigger/switch leaf views it - one
-// unified shape. m_grid[] holds CTmCell*. The reloc-masked __thiscall engine hooks the
-// leaves dispatch are declared here; the raw this+offset fields the leaves read are named
-// data members (recovered from usage). Config/goal/display sub-objects are typed pointers.
-// @link-defect: the methods below that are DECLARED HERE mangle as ?X@CTmCell@@... and are
-// PHANTOMS - CTmCell owns no retail address, so no obj and no .LIB can ever define them and
-// they would be unresolved externals at link. CTmCell IS CGrunt (see the note above), so the
-// cure is to type the grid as CGrunt** and let these bind to the real bodies. Three already
-// have: CanShowStamina (0x514a0), SelectMoveIcon (0x57800) and DestroyAnims (0x57d80) moved
-// to the REAL ?X@CGrunt@@ symbols and their call sites now bridge-cast (as ClearAllSprites
-// @0x4b240 already did). The rest are BLOCKED on CGrunt's known +0x120 phantom-gap layout
-// bug: this view's high offsets (m_170..m_3e4) are the ones recovered from the trigger TUs'
-// disasm and are RIGHT, while CGrunt's interior is shifted - so re-typing the grid today
-// would mis-address every field. Fix CGrunt's layout first, then this whole view deletes.
-// The real-body map for the rest (all verified against build/gen/symbol_names.csv):
-//   ExitGrid  0x641b0 = ?BuildGruntExitAnimation@CGrunt@@QAEHXZ
-//   Route     0x60150 = ?LoadGruntDeathAnimations@CGrunt@@QAEHHH@Z
-//   Recall    0x68520 = ?StartBombGruntRun@CGrunt@@QAEHXZ
-//   ClearAllSprites 0x4b240 / RunMoveConfig 0x65630 / RectContains 0x51850 /
-//   CommitNeighbor 0x5b050 / BeginAttack 0x5b570 / PlayMoveSound 0x511b0 /
-//   ResetEntranceAnimation 0x62e10  - all already claimed ?X@CGrunt@@ bodies.
-//   ResetA/B/C, ResetMagic, Disarm, ApplyBox, Type13Check, Apply13, Dispatch,
-//   ReadConfigFromButeMgr - retail rvas still UNCLAIMED (nothing to bind to yet).
-struct CTmCell {
-    void ClearAllSprites();                                 // 0x4b240
-    void ExitGrid();                                        // 0x641b0
-    void Route(i32 kind, i32 a);                            // 0x60150
-    void Recall();                                          // 0x68520 (row-recall variant)
-    void ReadConfigFromButeMgr();                           // type-tag address (DestroyAllAnims)
-    void ResetA();                                          // 0x6a40c
-    void ResetB();                                          // 0x6a2ae
-    void ResetC();                                          // 0x6c216
-    i32 ResetMagic();                                       // 0x6c498
-    i32 Disarm(i32 a, i32 b);                               // 0x6f970
-    i32 ApplyBox(i32 a, i32 b, i32 c, i32 d, i32 e, i32 f); // 0x6fc40
-    i32 Type13Check();                                      // 0x71f80
-    void Apply13(i32 a, i32 b);                             // 0x70520
-    i32 Dispatch(i32 kind, i32 a);                          // per-kind dispatch
-    // ApplyTriggerA's per-kind hooks (thunk targets resolved via sema xref; all are
-    // the placed grunt's real methods - CGrunt/CUserLogic bodies, reloc-masked):
-    void RunMoveConfig(i32 x, i32 y);                    // 0x65630 (CGrunt)
-    i32 RectContains(i32 x, i32 y);                      // 0x51850 (CGrunt)
-    i32 CommitNeighbor(i32 r, i32 c, i32 x, i32 y);      // 0x5b050 (CGrunt)
-    i32 BeginAttack(i32 x, i32 y);                       // 0x5b570 (CGrunt)
-    void PlayMoveSound(i32 x, i32 y);                    // 0x511b0 (CGrunt)
-    void ResetEntranceAnimation(i32 a, i32 b, i32 c);    // 0x62e10 (CGrunt)
-    void LoadGruntTypeTable(i32 a, i32 b, i32 c, i32 d); // 0x4dd50 (CUserLogic base)
-
-    char p0[0x10];
-    CTmDisplay* m_10;    // +0x10  display sub-object (world pos / hit gate / archive id)
-    CTmCellConfig* m_14; // +0x14  config/type object (its +0x1c is the config-name id)
-    char p18[0x7c - 0x18];
-    CTmSpriteDesc* m_7c; // +0x7c  sprite descriptor (Init hook + logic object at desc+0x18)
-    char p80[0x114 - 0x80];
-    i32 m_114; // +0x114  placement param
-    i32 m_118; // +0x118  placement param
-    char p11c[0x124 - 0x11c];
-    i32 m_124; // +0x124  placement param
-    char p128[0x154 - 0x128];
-    CTmGoal* m_154; // +0x154  goal object (its +0x8 is the flags word)
-    char p158[0x170 - 0x158];
-    i32 m_170; // +0x170  logic kind
-    char p174[0x17c - 0x174];
-    CTrigPoint m_pos; // +0x17c  world (x,y), tile-snapped - a real point pair
-                      //         (NotifyCell copies it whole)
-    char p184[0x198 - 0x184];
-    i32 m_198; // +0x198  alt kind
-    i32 m_19c; // +0x19c  remapped kind
-    char p1a0[0x1e4 - 0x1a0];
-    i32 m_1e4; // +0x1e4  pending/triggered flag (also cleared by the k=0x14 entrance reset)
-    i32 m_1e8; // +0x1e8  recall-done flag
-    i32 m_1ec; // +0x1ec  owning area index
-    i32 m_1f0; // +0x1f0  owner sub-id
-    i32 m_1f4; // +0x1f4  move-icon (stash source)
-    i32 m_1f8; // +0x1f8  stashed move-icon (-1 idle)
-    i32 m_1fc; // +0x1fc  alive flag
-    char p200[0x218 - 0x200];
-    i32 m_218; // +0x218  entrance-anim state   (ApplyTriggerA k=0x14 reset clears 218/21c/220)
-    i32 m_21c; // +0x21c  entrance-anim gate
-    i32 m_220; // +0x220  entrance-anim pending
-    char p224[0x248 - 0x224];
-    i32 m_248; // +0x248  state flags
-    char p24c[0x2d0 - 0x24c];
-    i32 m_2d0; // +0x2d0
-    char p2d4[0x2dc - 0x2d4];
-    i32 m_2dc; // +0x2dc  proximity cutoff
-    char p2e0[0x308 - 0x2e0];
-    i32 m_308; // +0x308
-    i32 m_30c; // +0x30c
-    i32 m_310; // +0x310
-    i32 m_314; // +0x314
-    char p318[0x368 - 0x318];
-    CTmNotifyHook* m_368; // +0x368  notify hook (opaque; only null-tested)
-    i32 m_36c;            // +0x36c  notified flag
-    char p370[0x384 - 0x370];
-    i32 m_384; // +0x384  applier scratch
-    char p388[0x38c - 0x388];
-    i32 m_38c; // +0x38c  fx param (the k=0x14 spawn's 5th arg)
-    char p390[0x3e4 - 0x390];
-    i32 m_3e4; // +0x3e4  fx pose x
-    i32 m_3e8; // +0x3e8  fx pose y
-    char p3ec[0x420 - 0x3ec];
-    i32 m_420; // +0x420  cleared flag
-    char p424[0x880 - 0x424];
-    i32 m_880; // +0x880  combat timer base (= game clock)
-    i32 m_884; // +0x884
-    i32 m_888; // +0x888  combat timeout config
-    i32 m_88c; // +0x88c
-};
+// (The CTmCell view is GONE. It was a second model of ::CGrunt - identity long proven -
+//  and it is now a typedef in <Gruntz/TriggerMgr.h>, so every method the leaves dispatch
+//  on a placed grid grunt binds to the REAL ?X@CGrunt@@ body instead of a phantom
+//  ?X@CTmCell@@ that nothing on earth defines. What blocked this fold was believed to be a
+//  "+0x120 phantom-gap layout bug" in CGrunt; that bug does not exist - see the note in
+//  <Gruntz/TriggerMgr.h>. The view's proven-but-unnamed offsets (0x114/0x118/0x124,
+//  0x884/0x888/0x88c) were migrated onto CGrunt, and its sub-object views folded onto
+//  CGrunt's real typed members.)
 
 // The goal object at CTriggerMgr+0x23c; ResetAll ORs 0x10000 into its +0x8 flags.
 
@@ -269,7 +168,20 @@ void Str_Free(void* node);   // CString teardown, 0x1b9b93
 // cast to this TU's placed-object view CTmCell (the unit-wide B-view; its full fold
 // onto CGameObject is deferred). The sprite carries a descriptor at +0x7c whose
 // slot-4 (+0x10) is an Init thunk run on the fresh sprite.
-struct CTmCell;
+// The object CSpriteFactory::CreateSprite hands back - a SPRITE (a CGameObject), NOT the
+// placed grunt. The deleted CTmCell view conflated the two: it typed +0x7c as a sprite
+// descriptor, but on a real CGrunt +0x7c is m_movingGeoSrc, an i32 geometry-source id
+// (Warlord.cpp passes it to SetGeometry(i32)). They are different classes that were being
+// modelled as one. The trigger code runs the descriptor's Init on the fresh sprite and then
+// Place()s the logic object hanging at desc+0x18.
+// @identity-TODO: the sprite's real class (a CGameObject-derived sprite) is not modelled
+// yet, so only the +0x7c descriptor slot it needs is declared.
+SIZE_UNKNOWN(CTmSprite);
+struct CTmSprite {
+    char p0[0x7c];
+    struct CTmSpriteDesc* m_7c; // +0x7c  sprite descriptor (Init hook + logic at desc+0x18)
+};
+
 struct CTmSpriteDesc {
     void* s0[4];
     void (*Init)(void*); // +0x10

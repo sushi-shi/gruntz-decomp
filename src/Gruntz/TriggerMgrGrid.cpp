@@ -149,8 +149,8 @@ i32 CTriggerMgr::PlaceObject(
     if (sprite == 0) {
         return -1;
     }
-    sprite->m_7c->Init(sprite);
-    void* logicTag = sprite->m_7c->m_18;
+    ((CTmSprite*)sprite)->m_7c->Init(sprite);
+    void* logicTag = ((CTmSprite*)sprite)->m_7c->m_18;
     (void)logicTag;
     // (the dense kind jump table -> internal id + the Wormhole / Entrance sub-ctors elide
     // here; reconstructed to plateau)
@@ -193,7 +193,7 @@ i32 CTriggerMgr::CellDispatch(i32 row, i32 col, i32 kind, i32 arg) {
     if (cell == 0) {
         return 0;
     }
-    if (cell->m_368 != 0) {
+    if (cell->m_deathAnimStarted != 0) {
         NotifyCell(row, col, 0);
         return 0;
     }
@@ -298,8 +298,8 @@ void* CTriggerMgr::CellHitTest(i32 px, i32 py, i32* outRow, i32* outCol, i32 sta
         CTmCell** cell = &m_grid[row * 15];
         for (i32 col = 0; col < 15; col++) {
             CTmCell* g = cell[col];
-            if (g != 0 && g->m_1fc != 0) {
-                CTmDisplay* o = g->m_10;
+            if (g != 0 && g->m_entranceCommitted != 0) {
+                CGruntHud* o = g->m_10;
                 if (o->m_198 != 0) {
                     i32 x0 = o->m_5c - 15;
                     i32 y0 = o->m_60 - 15;
@@ -332,7 +332,7 @@ RVA(0x0006bfd0, 0x106)
 i32 CTriggerMgr::ResetCell(i32 col, i32 row, i32 force, i32 keep) {
     i32 idx = col * 15 + row;
     CTmCell* cell = m_grid[idx];
-    if (cell == 0 || cell->m_1fc == 0) {
+    if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
     if (col != g_curPlayer) {
@@ -575,16 +575,16 @@ i32 __stdcall GridAction7(i32 a, i32 b) {
 RVA(0x0006dae0, 0x4b7)
 i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
     CTmCell* cell = m_grid[col * 15 + row];
-    if (cell == 0 || cell->m_1fc == 0) {
+    if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
-    CTmDisplay* o = cell->m_10;
-    if (o->m_5c != cell->m_pos.x) {
-        if (o->m_60 != cell->m_pos.y) {
+    CGruntHud* o = cell->m_10;
+    if (o->m_5c != cell->m_lastTilePxX) {
+        if (o->m_60 != cell->m_lastTilePxY) {
             return -1;
         }
     }
-    i32 k = cell->m_170;
+    i32 k = cell->m_entranceReason;
     if (k > 0x16) {
         k = cell->m_19c;
     }
@@ -611,22 +611,22 @@ i32 CTriggerMgr::ApplyTriggerA(i32 col, i32 row, i32 a24, i32 a28) {
 RVA(0x0006e120, 0x552)
 i32 CTriggerMgr::ApplyTriggerB(i32 col, i32 row, i32 a28, i32 a2c) {
     CTmCell* cell = m_grid[col * 15 + row];
-    if (cell == 0 || cell->m_1fc == 0 || cell->m_1e4 != 0) {
+    if (cell == 0 || cell->m_entranceCommitted == 0 || cell->m_entranceActive != 0) {
         return 0;
     }
-    CTmDisplay* o = cell->m_10;
-    if (o->m_5c != cell->m_pos.x) {
-        if (o->m_60 != cell->m_pos.y) {
+    CGruntHud* o = cell->m_10;
+    if (o->m_5c != cell->m_lastTilePxX) {
+        if (o->m_60 != cell->m_lastTilePxY) {
             return -1;
         }
     }
-    if (o->m_5c == cell->m_pos.x && o->m_60 == cell->m_pos.y && cell->m_198 != 0x1e
+    if (o->m_5c == cell->m_lastTilePxX && o->m_60 == cell->m_lastTilePxY && cell->m_198 != 0x1e
         && g_6455b0 == 0) {
         return 0;
     }
     i32 by = (a2c & ~0x1f) + 0x10;
     i32 bx = (a28 & ~0x1f) + 0x10;
-    cell->m_384 = 0;
+    cell->m_coordRetryCount = 0;
     i32 r = cell->ApplyBox(bx, by, row, -1, 1, 0);
     return r != 0 ? 1 : 0;
 }
@@ -652,31 +652,31 @@ RVA(0x0006e800, 0x189)
 i32 CTriggerMgr::ClearCell(i32 col, i32 row, i32 a18, i32 a1c, i32 a20) {
     i32 idx = col * 15 + row;
     CTmCell* cell = m_grid[idx];
-    if (cell == 0 || cell->m_1fc == 0) {
+    if (cell == 0 || cell->m_entranceCommitted == 0) {
         return 0;
     }
-    if (cell->m_420 == 0) {
-        cell->m_308 = 0;
-        cell->m_310 = 0;
-        cell->m_30c = 0;
-        cell->m_314 = 0;
-        cell->m_248 &= 0xe7fbfbfd;
-        cell->m_420 = 0;
-        cell->m_2d0 = 0;
+    if (cell->m_tileClaimed == 0) {
+        cell->m_arrivalRerollLo = 0;
+        cell->m_arrivalRerollWindowLo = 0;
+        cell->m_arrivalRerollHi = 0;
+        cell->m_arrivalRerollWindowHi = 0;
+        cell->m_arrivalFlags &= 0xe7fbfbfd;
+        cell->m_tileClaimed = 0;
+        cell->m_arrivalState = 0;
         cell->Disarm(1, 1);
     }
-    if (cell->m_1e4 != 0) {
+    if (cell->m_entranceActive != 0) {
         return 0;
     }
-    char* name = *g_nameReg.Lookup(cell->m_14->m_1c);
+    char* name = *g_nameReg.Lookup((i32)cell->m_14->m_1c);
     if (strcmp(name, "I") == 0) {
-        i32 px = cell->m_3e4;
-        i32 py = cell->m_3e8;
-        this->Fx(px, py, py, cell->m_170, -1, py);
+        i32 px = cell->m_moveTileX;
+        i32 py = cell->m_moveTileY;
+        this->Fx(px, py, py, cell->m_entranceReason, -1, py);
     }
     i32 by = (a20 & ~0x1f) + 0x10;
     i32 bx = (a1c & ~0x1f) + 0x10;
-    cell->m_384 = 0;
+    cell->m_coordRetryCount = 0;
     i32 r = cell->ApplyBox(bx, by, a18, -1, 1, 0);
     return r != 0 ? 1 : 0;
 }
@@ -699,12 +699,12 @@ void CTriggerMgr::HitTestApply(i32 x, i32 y, i32 kind) {
     if (cell == 0 || outCol != g_curPlayer) {
         return;
     }
-    char* name = *g_nameReg.Lookup(cell->m_14->m_1c);
+    char* name = *g_nameReg.Lookup((i32)cell->m_14->m_1c);
     bool differ = strcmp(name, "B") != 0;
     if (!differ) {
         return;
     }
-    i32 k = cell->m_170;
+    i32 k = cell->m_entranceReason;
     if (k > 0x16) {
         k = cell->m_19c;
     }
