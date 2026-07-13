@@ -551,28 +551,50 @@ i32 CFontConfig::RenderInputText(HDC hdc, i32 maxWidth, RECT* rect) {
 // item->type bit flags (the two DrawTextLines reads).
 typedef enum FontItemFlag {
     FONTITEM_COLORED = 0x10, // item->data is a TextColorId palette index
-    FONTITEM_SHADOW  = 0x20, // stroke a 1px black drop shadow first
+    FONTITEM_SHADOW = 0x20,  // stroke a 1px black drop shadow first
 } FontItemFlag;
 
 // The type&0x10 text palette: item->data indexes it. Retail's 0x00422654 jump
 // table maps these 17 ids to the COLORREFs below; id 7 / out-of-range -> black.
 typedef enum TextColorId {
-    TEXTCOLOR_ORANGE  = 0,  TEXTCOLOR_GREEN   = 1,  TEXTCOLOR_BLUE   = 2,
-    TEXTCOLOR_RED     = 3,  TEXTCOLOR_PURPLE  = 4,  TEXTCOLOR_YELLOW = 5,
-    TEXTCOLOR_ROSE    = 6,  TEXTCOLOR_BLACK   = 7,  TEXTCOLOR_NAVY   = 8,
-    TEXTCOLOR_DKGREEN = 9,  TEXTCOLOR_TEAL    = 10, TEXTCOLOR_MAROON = 11,
-    TEXTCOLOR_MAGENTA = 12, TEXTCOLOR_OLIVE   = 13, TEXTCOLOR_GRAY   = 14,
-    TEXTCOLOR_CYAN    = 15, TEXTCOLOR_WHITE   = 16,
+    TEXTCOLOR_ORANGE = 0,
+    TEXTCOLOR_GREEN = 1,
+    TEXTCOLOR_BLUE = 2,
+    TEXTCOLOR_RED = 3,
+    TEXTCOLOR_PURPLE = 4,
+    TEXTCOLOR_YELLOW = 5,
+    TEXTCOLOR_ROSE = 6,
+    TEXTCOLOR_BLACK = 7,
+    TEXTCOLOR_NAVY = 8,
+    TEXTCOLOR_DKGREEN = 9,
+    TEXTCOLOR_TEAL = 10,
+    TEXTCOLOR_MAROON = 11,
+    TEXTCOLOR_MAGENTA = 12,
+    TEXTCOLOR_OLIVE = 13,
+    TEXTCOLOR_GRAY = 14,
+    TEXTCOLOR_CYAN = 15,
+    TEXTCOLOR_WHITE = 16,
 } TextColorId;
 
 // The COLORREF (0x00BBGGRR) each TextColorId strokes glyphs in.
 typedef enum TextColorRef {
-    TCLR_ORANGE  = 0x0080ff, TCLR_GREEN  = 0x00ff00, TCLR_BLUE    = 0xff0000,
-    TCLR_RED     = 0x0000ff, TCLR_PURPLE = 0x800080, TCLR_YELLOW  = 0x00ffff,
-    TCLR_ROSE    = 0x8000ff, TCLR_BLACK  = 0x000000, TCLR_NAVY    = 0x800000,
-    TCLR_DKGREEN = 0x008000, TCLR_TEAL   = 0x808000, TCLR_MAROON  = 0x000080,
-    TCLR_MAGENTA = 0xff00ff, TCLR_OLIVE  = 0x008080, TCLR_GRAY    = 0x808080,
-    TCLR_CYAN    = 0xffff00, TCLR_WHITE  = 0xffffff,
+    TCLR_ORANGE = 0x0080ff,
+    TCLR_GREEN = 0x00ff00,
+    TCLR_BLUE = 0xff0000,
+    TCLR_RED = 0x0000ff,
+    TCLR_PURPLE = 0x800080,
+    TCLR_YELLOW = 0x00ffff,
+    TCLR_ROSE = 0x8000ff,
+    TCLR_BLACK = 0x000000,
+    TCLR_NAVY = 0x800000,
+    TCLR_DKGREEN = 0x008000,
+    TCLR_TEAL = 0x808000,
+    TCLR_MAROON = 0x000080,
+    TCLR_MAGENTA = 0xff00ff,
+    TCLR_OLIVE = 0x008080,
+    TCLR_GRAY = 0x808080,
+    TCLR_CYAN = 0xffff00,
+    TCLR_WHITE = 0xffffff,
 } TextColorRef;
 
 // -------------------------------------------------------------------------
@@ -642,23 +664,57 @@ i32 CFontConfig::DrawTextLines(i32 count, HDC hdc, RECT* rect, UINT format) {
             COLORREF color;
             if (item->type & FONTITEM_COLORED) {
                 switch (item->data) {
-                    case TEXTCOLOR_NAVY:    color = TCLR_NAVY;    break;
-                    case TEXTCOLOR_DKGREEN: color = TCLR_DKGREEN; break;
-                    case TEXTCOLOR_TEAL:    color = TCLR_TEAL;    break;
-                    case TEXTCOLOR_MAROON:  color = TCLR_MAROON;  break;
-                    case TEXTCOLOR_PURPLE:  color = TCLR_PURPLE;  break;
-                    case TEXTCOLOR_OLIVE:   color = TCLR_OLIVE;   break;
-                    case TEXTCOLOR_GRAY:    color = TCLR_GRAY;    break;
-                    case TEXTCOLOR_BLUE:    color = TCLR_BLUE;    break;
-                    case TEXTCOLOR_GREEN:   color = TCLR_GREEN;   break;
-                    case TEXTCOLOR_CYAN:    color = TCLR_CYAN;    break;
-                    case TEXTCOLOR_RED:     color = TCLR_RED;     break;
-                    case TEXTCOLOR_MAGENTA: color = TCLR_MAGENTA; break;
-                    case TEXTCOLOR_YELLOW:  color = TCLR_YELLOW;  break;
-                    case TEXTCOLOR_WHITE:   color = TCLR_WHITE;   break;
-                    case TEXTCOLOR_ORANGE:  color = TCLR_ORANGE;  break;
-                    case TEXTCOLOR_ROSE:    color = TCLR_ROSE;    break;
-                    default:                color = TCLR_BLACK;   break;
+                    case TEXTCOLOR_NAVY:
+                        color = TCLR_NAVY;
+                        break;
+                    case TEXTCOLOR_DKGREEN:
+                        color = TCLR_DKGREEN;
+                        break;
+                    case TEXTCOLOR_TEAL:
+                        color = TCLR_TEAL;
+                        break;
+                    case TEXTCOLOR_MAROON:
+                        color = TCLR_MAROON;
+                        break;
+                    case TEXTCOLOR_PURPLE:
+                        color = TCLR_PURPLE;
+                        break;
+                    case TEXTCOLOR_OLIVE:
+                        color = TCLR_OLIVE;
+                        break;
+                    case TEXTCOLOR_GRAY:
+                        color = TCLR_GRAY;
+                        break;
+                    case TEXTCOLOR_BLUE:
+                        color = TCLR_BLUE;
+                        break;
+                    case TEXTCOLOR_GREEN:
+                        color = TCLR_GREEN;
+                        break;
+                    case TEXTCOLOR_CYAN:
+                        color = TCLR_CYAN;
+                        break;
+                    case TEXTCOLOR_RED:
+                        color = TCLR_RED;
+                        break;
+                    case TEXTCOLOR_MAGENTA:
+                        color = TCLR_MAGENTA;
+                        break;
+                    case TEXTCOLOR_YELLOW:
+                        color = TCLR_YELLOW;
+                        break;
+                    case TEXTCOLOR_WHITE:
+                        color = TCLR_WHITE;
+                        break;
+                    case TEXTCOLOR_ORANGE:
+                        color = TCLR_ORANGE;
+                        break;
+                    case TEXTCOLOR_ROSE:
+                        color = TCLR_ROSE;
+                        break;
+                    default:
+                        color = TCLR_BLACK;
+                        break;
                 }
             } else {
                 color = TCLR_WHITE;
