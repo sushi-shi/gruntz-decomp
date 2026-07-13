@@ -70,9 +70,9 @@
 #include <Gruntz/GruntzCmdMgr.h>  // CGruntzCmdMgr - the REAL +0x6c sub-manager (~ @0x85bd0)
 #include <DinMgr2/DirectInputMgr2.h> // the REAL g_645570 input singleton (was a local shell)
 #include <Bute/SymParser.h>          // CSymParser - the REAL m_recolorSurface (+0x34)
-#include <Image/ImageSet.h> // the REAL CImageSet (config/color rows: m_frames/+0x14,
-                            // m_minIndex/+0x64, GetAt). GameLevel.h no longer collides on this
-                            // name - its tile-collision record is CTileImageSet now.
+#include <Image/ImageSet.h>          // the REAL CImageSet (config/color rows: m_frames/+0x14,
+// m_minIndex/+0x64, GetAt). GameLevel.h no longer collides on this
+// name - its tile-collision record is CTileImageSet now.
 #include <Net/NetMgr.h>          // the ONE CNetMgr (ReportError is its static member)
 #include <Gruntz/StatusBarMgr.h> // CStatusBarMgr - the REAL CPlay::m_guts (+0x2dc)
 #include <Gruntz/ResMgr.h>       // CImageRegistry - the REAL m_world->m_10 (was CWorldLookupHolder)

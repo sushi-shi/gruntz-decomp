@@ -564,7 +564,8 @@ i32 CSBI_StatzTabGruntBar::BuildMultiplayerTabStatusBar(
     if (selMode == 0) {
         CStatzGlyphMap* sel = 0;
         ((CSbiConfigHost*)m_24)
-            ->m_10->m_10map.Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", (CObject*&)sel);
+            ->m_10->m_10map
+            .Lookup("GAME_STATUSBAR_TABZ_MULTIPLAYERTAB_SELECTEDBAR", (CObject*&)sel);
         m_timerGlyphMap = sel;
         if (sel == 0) {
             return 0;
