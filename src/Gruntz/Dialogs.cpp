@@ -1041,17 +1041,22 @@ void CBattlezDlg::OnOkCommand() {
 
 SIZE_UNKNOWN(CImgHolderBase);
 SIZE_UNKNOWN(CImgHolder);
-// CImgHolder is the canonical owner of the shared image-holder vtable @0x1e8cd4 (the
-// same vtable the inline-dtor twins CImgHolder2 here + CHolder8c400 in
-// BoundaryLowerDtors alias); VTBL binds ??_7CImgHolder@@6B@ so its own-stamp is
-// reloc-CORRECT. The base re-stamp -> ??_7CObject@@6B@ (0x1e8cb4) stays a compiler-
-// model wall (cl emits ??_7CImgHolderBase for the inline-empty base, not CObject).
-VTBL(CImgHolder, 0x001e8cd4);
 SIZE_UNKNOWN(CImgHolder2);
-RELOC_VTBL(
-    CImgHolder2,
-    0x001e8cd4
-); // inline-dtor twin: aliases CImgHolder's vtable (dtor-stamp verified)
+// EACH holder owns a DISTINCT retail vtable - binary-proven by the vtable-slot chase
+// (a vtable's slot 1 holds an ILT thunk to the class's scalar-deleting dtor, which calls
+// the ??1 below). They are NOT twins/aliases of one class: MSVC5 keeps exactly ONE COMDAT
+// per mangled name, so three byte-identical `DeleteImageList()` dtors can only be three
+// DIFFERENT classes (three image-list-owning game classes; their RTTI names stay
+// @identity-TODO - all three vtables are CObject-shaped with no naming slot).
+//   ??_7CImgHolder2  @0x1e8cd4 slot1 -> thunk 0x1ef6  -> sdd 0x16430 -> ??1 0x16460
+//   ??_7CImgHolder   @0x1e8cf4 slot1 -> thunk 0x3a26  -> sdd 0x164d0 -> ??1 0x16500
+//   ??_7CHolder8c400 @0x1ea2a4 slot1 -> thunk 0x373d  -> sdd 0x8c3d0 -> ??1 0x8c400
+// (The old model bound 0x1e8cd4 to CImgHolder and RELOC_VTBL'd the other two onto it -
+// exactly backwards: 0x1e8cd4 is CImgHolder2's.) The base re-stamp -> ??_7CObject@@6B@
+// (0x1e8cb4) stays a compiler-model wall (cl emits ??_7CImgHolderBase for the inline-empty
+// base, not CObject) - the one remaining RELOC_VTBL here.
+VTBL(CImgHolder2, 0x001e8cd4);
+VTBL(CImgHolder, 0x001e8cf4);
 // The polymorphic grand-base's re-stamp target: cl emits ??_7CImgHolderBase@@6B@ for the
 // empty inline-dtor base, but retail's base vtable IS the shared CObject vtable @0x1e8cb4
 // (MSVC5 has no ICF; the base subobject's vtable equals CObject's). Bind the emitted

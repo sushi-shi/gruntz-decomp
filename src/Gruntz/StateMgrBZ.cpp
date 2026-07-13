@@ -74,62 +74,62 @@ i32 StateMgrBZ::Build(DirectInputMgr2* src, i32 mode) {
     m_mode = 0;
     switch ((u32)mode) {
         case 1: {
-            SbzInputDevice* d = (SbzInputDevice*)src->m_deviceA;
+            CInputDevice* d = (CInputDevice*)src->m_deviceA;
             m_keyboard = d;
             m_device = d;
             break;
         }
         case 2: {
-            SbzInputDevice* d =
-                (src->m_devices.GetSize() > 0) ? (SbzInputDevice*)src->m_devices.GetAt(0) : 0;
+            CInputDevice* d =
+                (src->m_devices.GetSize() > 0) ? (CInputDevice*)src->m_devices.GetAt(0) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 3: {
-            SbzInputDevice* d =
-                (src->m_devices.GetSize() > 1) ? (SbzInputDevice*)src->m_devices.GetAt(1) : 0;
+            CInputDevice* d =
+                (src->m_devices.GetSize() > 1) ? (CInputDevice*)src->m_devices.GetAt(1) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 4: {
-            SbzInputDevice* d =
-                (src->m_devices.GetSize() > 2) ? (SbzInputDevice*)src->m_devices.GetAt(2) : 0;
+            CInputDevice* d =
+                (src->m_devices.GetSize() > 2) ? (CInputDevice*)src->m_devices.GetAt(2) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 5: {
-            SbzInputDevice* d =
-                (src->m_devices.GetSize() > 3) ? (SbzInputDevice*)src->m_devices.GetAt(3) : 0;
+            CInputDevice* d =
+                (src->m_devices.GetSize() > 3) ? (CInputDevice*)src->m_devices.GetAt(3) : 0;
             m_joystick = d;
             m_device = d;
             break;
         }
         case 6: {
-            m_keyboard = (SbzInputDevice*)src->m_deviceA;
-            SbzInputDevice* d =
-                (src->m_devices.GetSize() > 0) ? (SbzInputDevice*)src->m_devices.GetAt(0) : 0;
+            m_keyboard = (CInputDevice*)src->m_deviceA;
+            CInputDevice* d =
+                (src->m_devices.GetSize() > 0) ? (CInputDevice*)src->m_devices.GetAt(0) : 0;
             m_joystick = d;
             m_deviceList =
                 (SbzDeviceList*)src->AddControllerArr((i32)m_keyboard, (i32)d, 0, 0, 0, 0, 0);
             break;
         }
         case 8: {
-            m_keyboard = (SbzInputDevice*)src->m_deviceA;
-            SbzInputDevice* d =
-                (src->m_devices.GetSize() > 0) ? (SbzInputDevice*)src->m_devices.GetAt(0) : 0;
+            m_keyboard = (CInputDevice*)src->m_deviceA;
+            CInputDevice* d =
+                (src->m_devices.GetSize() > 0) ? (CInputDevice*)src->m_devices.GetAt(0) : 0;
             m_joystick = d;
-            m_joystick2 = (SbzInputDevice*)src->m_deviceB;
+            m_joystick2 = (CInputDevice*)src->m_deviceB;
             m_deviceList =
                 (SbzDeviceList*)
                     src->AddControllerArr((i32)m_keyboard, (i32)d, (i32)m_joystick2, 0, 0, 0, 0);
             break;
         }
         case 7:
-            m_keyboard = (SbzInputDevice*)src->m_deviceA;
-            m_joystick2 = (SbzInputDevice*)src->m_deviceB;
+            m_keyboard = (CInputDevice*)src->m_deviceA;
+            m_joystick2 = (CInputDevice*)src->m_deviceB;
             m_deviceList =
                 (SbzDeviceList*)
                     src->AddControllerArr((i32)m_keyboard, (i32)m_joystick2, 0, 0, 0, 0, 0);
@@ -186,13 +186,13 @@ i32 StateMgrBZ::Flush() {
 // (slot 5) over m_0 or, when none, the m_10 array, then clear the latched flags.
 RVA(0x000386b0, 0x5d)
 i32 StateMgrBZ::Reset() {
-    SbzInputDevice* d = m_device;
+    CInputDevice* d = m_device;
     if (d) {
         d->ResetState();
     } else {
         SbzDeviceList* arr = m_deviceList;
         if (arr && arr->m_count > 0) {
-            SbzInputDevice** p = &arr->m_elems[0];
+            CInputDevice** p = &arr->m_elems[0];
             i32 i = 0;
             do {
                 (*p)->ResetState();

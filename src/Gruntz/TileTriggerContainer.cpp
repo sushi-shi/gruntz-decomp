@@ -309,7 +309,7 @@ CTileTriggerLogic* CTileTriggerContainer::AddLogic(
     }
 
     TtcObList* list = logicType == 0x17 ? &m_list2 : &m_list1;
-    list->AddTail(obj);
+    list->AddTail((CObject*)obj);
     if (logicType == 0x15 && (a1 == 0x67 || a1 == 0x68)) {
         m_70 = obj;
     }
@@ -352,7 +352,7 @@ CTileTriggerContainer::AddToList3(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5, i32 a6
     m->m_10 = 1;
     m->m_20 = a7;
     ((CTileActionEvent*)m)->SetActionCode((i32)a1);
-    m_list3.AddTail(m);
+    m_list3.AddTail((CObject*)m);
     return m;
 }
 
@@ -413,7 +413,7 @@ TtcMark* CTileTriggerContainer::AddToList3Switch(i32 a1, i32 a2, i32 a3, i32 a4,
     m->m_1c = c;
     m->m_24 = a;
     ((CTileActionEvent*)m)->SetActionCode((i32)a1);
-    m_list3.AddTail(m);
+    m_list3.AddTail((CObject*)m);
     return m;
 }
 
@@ -461,7 +461,7 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i
     e->m_30 = 0;
     e->m_30 = a7;
     e->m_24 = (i32)g_645588;
-    m_list1.AddTail(e);
+    m_list1.AddTail((CObject*)e);
     return e;
 }
 
@@ -477,7 +477,7 @@ CTileTriggerContainer::AddToList1(i32 a1, i32 a2, i32* block9, i32 a4, i32 a5, i
 // callee-saved esi direct-deref.  See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00116e60, 0x59)
 i32 CTileTriggerContainer::DelFromList1(void* data) {
-    TtcNode* node = m_list1.m_pNodeHead;
+    TtcNode* node = TtcHead(m_list1);
     if (node == 0) {
         return 0;
     }
@@ -491,7 +491,7 @@ i32 CTileTriggerContainer::DelFromList1(void* data) {
                 elem->m_1c = 0;
                 ::operator delete(elem);
             }
-            m_list1.RemoveAt(cur);
+            m_list1.RemoveAt((POSITION)cur);
             return 1;
         }
     } while (node != 0);
@@ -526,7 +526,7 @@ CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindChild(i32 k1, i32 k2) {
 // ---------------------------------------------------------------------------
 RVA(0x00116f20, 0x51)
 void* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
-    TtcNode* node = m_list1.m_pNodeHead;
+    TtcNode* node = TtcHead(m_list1);
     if (node != 0) {
         do {
             TtcNode* cur = node;
@@ -542,7 +542,7 @@ void* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
             }
         } while (node != 0);
     }
-    node = m_list2.m_pNodeHead;
+    node = TtcHead(m_list2);
     if (node != 0) {
         do {
             TtcNode* cur = node;
@@ -571,7 +571,7 @@ void* CTileTriggerContainer::FindInLists12(i32 a, i32 b) {
 // ---------------------------------------------------------------------------
 RVA(0x00116fa0, 0xc7)
 void CTileTriggerContainer::RemoveAll() {
-    TtcNode* node = m_list1.m_pNodeHead;
+    TtcNode* node = TtcHead(m_list1);
     while (node != 0) {
         TtcNode* cur = node;
         node = node->m_next;
@@ -583,7 +583,7 @@ void CTileTriggerContainer::RemoveAll() {
         }
     }
     m_list1.RemoveAll();
-    node = m_base.m_pNodeHead;
+    node = TtcHead(m_base);
     while (node != 0) {
         TtcNode* cur = node;
         node = node->m_next;
@@ -595,7 +595,7 @@ void CTileTriggerContainer::RemoveAll() {
         }
     }
     m_base.RemoveAll();
-    node = m_list2.m_pNodeHead;
+    node = TtcHead(m_list2);
     while (node != 0) {
         TtcNode* cur = node;
         node = node->m_next;
@@ -607,7 +607,7 @@ void CTileTriggerContainer::RemoveAll() {
         }
     }
     m_list2.RemoveAll();
-    node = m_list3.m_pNodeHead;
+    node = TtcHead(m_list3);
     while (node != 0) {
         TtcNode* cur = node;
         node = node->m_next;
@@ -634,7 +634,7 @@ void CTileTriggerContainer::RemoveAll() {
 // See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x001170b0, 0x72)
 i32 CTileTriggerContainer::FilterList2(void* arg) {
-    TtcNode* node = m_list2.m_pNodeHead;
+    TtcNode* node = TtcHead(m_list2);
     if (node != 0) {
         do {
             TtcNode* cur = node;
@@ -642,15 +642,15 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
             CTileGridCommand* elem = (CTileGridCommand*)cur->m_data;
             i32 r = elem->Classify((i32)arg);
             if (r == 0) {
-                m_list2.RemoveAt(cur);
+                m_list2.RemoveAt((POSITION)cur);
                 if (elem != 0) {
                     // vptr restore compiler-managed via CTileGridCommand's real vtable; manual stamp dropped
                     elem->m_1c = 0;
                     ::operator delete(elem);
                 }
             } else if (r == -1) {
-                m_list2.RemoveAt(cur);
-                m_list1.AddTail(elem);
+                m_list2.RemoveAt((POSITION)cur);
+                m_list1.AddTail((CObject*)elem);
             }
         } while (node != 0);
     }
@@ -668,7 +668,7 @@ i32 CTileTriggerContainer::FilterList2(void* arg) {
 // See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00117150, 0x53)
 i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
-    TtcNode* node = m_list1.m_pNodeHead;
+    TtcNode* node = TtcHead(m_list1);
     if (node == 0) {
         return 0;
     }
@@ -677,8 +677,8 @@ i32 CTileTriggerContainer::MoveList1ToList2(void* data) {
         node = node->m_next;
         void* elem = cur->m_data;
         if (elem == data) {
-            m_list1.RemoveAt(cur);
-            m_list2.AddTail(elem);
+            m_list1.RemoveAt((POSITION)cur);
+            m_list2.AddTail((CObject*)elem);
             *((i32*)elem + 14) = 0; // elem+0x38
             return 1;
         }
@@ -716,14 +716,14 @@ CTileTriggerSwitchLogic* CTileTriggerSwitchLogic::FindByField0C(i32 key) {
 // See docs/patterns/linked-list-walk-node-eax-rotation.md
 RVA(0x00117200, 0x53)
 i32 CTileTriggerContainer::DelFromList3(void* data) {
-    for (TtcNode* node = m_list3.m_pNodeHead; node != 0; node = node->m_next) {
+    for (TtcNode* node = TtcHead(m_list3); node != 0; node = node->m_next) {
         i32* elem = (i32*)node->m_data;
         if (elem == (i32*)data) {
             if (elem != 0) {
                 elem[4] = 0; // elem+0x10
                 ::operator delete(elem);
             }
-            m_list3.RemoveAt(node);
+            m_list3.RemoveAt((POSITION)node);
             return 1;
         }
     }
@@ -757,30 +757,30 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
     if (op == 4) {
         // SAVE
         TtcNode* node;
-        i32 cnt = m_base.m_0c;
+        i32 cnt = m_base.GetCount();
         s->Write(&cnt, 4);
-        for (node = m_base.m_pNodeHead; node != 0; node = node->m_next) {
+        for (node = TtcHead(m_base); node != 0; node = node->m_next) {
             if (SerializeApplyA(s, 4, a3, a4, (TtcTrigElem*)node->m_data) == 0) {
                 return 0;
             }
         }
-        cnt = m_list1.m_0c;
+        cnt = m_list1.GetCount();
         s->Write(&cnt, 4);
-        for (node = m_list1.m_pNodeHead; node != 0; node = node->m_next) {
+        for (node = TtcHead(m_list1); node != 0; node = node->m_next) {
             if (SerializeApplyB(s, 4, a3, a4, (TtcTrigElem*)node->m_data) == 0) {
                 return 0;
             }
         }
-        cnt = m_list2.m_0c;
+        cnt = m_list2.GetCount();
         s->Write(&cnt, 4);
-        for (node = m_list2.m_pNodeHead; node != 0; node = node->m_next) {
+        for (node = TtcHead(m_list2); node != 0; node = node->m_next) {
             if (SerializeApplyB(s, 4, a3, a4, (TtcTrigElem*)node->m_data) == 0) {
                 return 0;
             }
         }
-        cnt = m_list3.m_0c;
+        cnt = m_list3.GetCount();
         s->Write(&cnt, 4);
-        for (node = m_list3.m_pNodeHead; node != 0; node = node->m_next) {
+        for (node = TtcHead(m_list3); node != 0; node = node->m_next) {
             if (((CTileActionEvent*)node->m_data)->Serialize(s, 4, a3, a4) == 0) {
                 return 0;
             }
@@ -804,7 +804,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
         if (e == 0) {
             return 0;
         }
-        m_base.AddTail(e);
+        m_base.AddTail((CObject*)e);
     }
     s->Read(&n, 4);
     for (i = 0; i < n; i++) {
@@ -812,7 +812,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
         if (e == 0) {
             return 0;
         }
-        m_list1.AddTail(e);
+        m_list1.AddTail((CObject*)e);
     }
     s->Read(&n, 4);
     for (i = 0; i < n; i++) {
@@ -820,7 +820,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
         if (e == 0) {
             return 0;
         }
-        m_list2.AddTail(e);
+        m_list2.AddTail((CObject*)e);
     }
     s->Read(&n, 4);
     for (i = 0; i < n; i++) {
@@ -830,7 +830,7 @@ i32 CTileTriggerContainer::Serialize(CSerialArchive* s, i32 op, i32 a3, i32 a4) 
             return 0;
         }
         m->m_14 = this;
-        m_list3.AddTail(m);
+        m_list3.AddTail((CObject*)m);
     }
     if (LoadFlag74(s) == 0) {
         return 0;

@@ -18,36 +18,18 @@
 #define GRUNTZ_STATEMGRBZ_H
 
 class DirectInputMgr2; // folded SbzInputManager
+class CInputDevice;    // the real DinMgr2 device (<DinMgr2/DirectInputMgr2.h>)
 
 #include <Ints.h>
 #include <rva.h>
 
-// SbzInputDevice - the DinMgr2 input device (real type CInputDevice, 0x338 bytes,
-// ??_7CInputDevice@@6B@ @0x1ef628; the CInputDevRoot->CInputDevBase->CInputDevice
-// hierarchy in <DinMgr2/DirectInputMgr2.h>). Local view: only the two packed key-
-// bitflag words (+0x2ac current, +0x2b0 edge) and the head of the scan-code table
-// (+0x2b4.., dwords) StateMgrBZ touches are pinned. The 6 vtable slots are named
-// from CInputDevice's real ??_7 (declared-only, foreign -> reloc-masked, no ??_7
-// emitted here); ResetState (slot 5, +0x14) is the per-device clear StateMgrBZ calls.
-SIZE_UNKNOWN(SbzInputDevice);
-RELOC_VTBL(
-    SbzInputDevice,
-    0x001ef628
-); // aliases CInputDevice (slot-fn RVAs match its vtable, 100% majority)
-class SbzInputDevice {
-public:
-    virtual ~SbzInputDevice();      // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual i32 CreateDeviceWrap(); // slot 1  +0x04  0x134260
-    virtual void Teardown();        // slot 2  +0x08  0x133bf0
-    virtual i32 IsValid();          // slot 3  +0x0c  0x1332b0
-    virtual i32 Poll();             // slot 4  +0x10  0x133d00 per-frame poll
-    virtual i32 ResetState();       // slot 5  +0x14  0x1332c0 clear the press-edge latch
-
-    char m_pad04[0x2ac - 0x04]; // +0x04 (after the auto-emitted vptr at +0x00)
-    u32 m_currentKeys;          // +0x2ac  packed "press edges this frame" key word
-    u32 m_edgeKeys;             // +0x2b0  packed raw current-snapshot key word
-    u32 m_keyTable[6];          // +0x2b4..0x2c8  scan-code table head (slots 0..5)
-};
+// The input device StateMgrBZ latches is the REAL CInputDevice (DinMgr2, 0x338 bytes,
+// ??_7CInputDevice@@6B@ @0x1ef628; the CInputDevRoot -> CInputDevBase -> CInputDevice
+// hierarchy in <DinMgr2/DirectInputMgr2.h>, which this TU already includes). The former
+// local SbzInputDevice view - a 6-slot re-declaration whose emitted ??_7 aliased
+// CInputDevice's bound vtable (RELOC_VTBL) - is DISSOLVED: the fields it pinned
+// (m_currentKeys @+0x2ac, m_edgeKeys @+0x2b0, m_keyTable @+0x2b4) and ResetState (slot 5)
+// are the canonical class's own members under the same names, so the uses bind directly.
 
 // The DirectInputMgr2's device-pointer array, as Build() reads it: a controller-
 // pointer array (m_devices @ manager+0x18). data@+4, count@+8 of the embedded
@@ -56,7 +38,7 @@ public:
 SIZE_UNKNOWN(SbzControllerArray);
 struct SbzControllerArray {
     char _vft0[4];           // +0x00 foreign object vptr (reduced view; not owned/dispatched)
-    SbzInputDevice** m_data; // +0x04  controller storage
+    CInputDevice** m_data; // +0x04  controller storage
     i32 m_count;             // +0x08  controller count
 };
 
@@ -67,7 +49,7 @@ SIZE_UNKNOWN(SbzDeviceList);
 struct SbzDeviceList {
     void* m_00;                 // +0x00
     i32 m_count;                // +0x04
-    SbzInputDevice* m_elems[1]; // +0x08.. controller pointers
+    CInputDevice* m_elems[1]; // +0x08.. controller pointers
 };
 
 // DirectInputMgr2 as Build()/Init() use it: the source manager (real type
@@ -104,10 +86,10 @@ public:
     i32 SetDirBits(i32 flags); // 0x38770
 
     // --- layout (0x28) --------------------------------------------------------
-    SbzInputDevice* m_device;    // +0x00  primary device (single combined source)
-    SbzInputDevice* m_keyboard;  // +0x04  keyboard source (manager m_deviceA)
-    SbzInputDevice* m_joystick;  // +0x08  joystick source (controller array element)
-    SbzInputDevice* m_joystick2; // +0x0c  second joystick source (manager m_deviceB)
+    CInputDevice* m_device;    // +0x00  primary device (single combined source)
+    CInputDevice* m_keyboard;  // +0x04  keyboard source (manager m_deviceA)
+    CInputDevice* m_joystick;  // +0x08  joystick source (controller array element)
+    CInputDevice* m_joystick2; // +0x0c  second joystick source (manager m_deviceB)
     SbzDeviceList* m_deviceList; // +0x10  composite device-list node (AddControllerArr)
     i32 m_mode;                  // +0x14  control mode (Build's mode arg)
     u32 m_edgeKeys;              // +0x18  OR-folded edge-key word (consumers mask `& 0x20`)

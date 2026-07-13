@@ -307,12 +307,18 @@ i32 CTileTriggerTransition::SerializeMove(CGruntArchive* ar, i32 mode, i32 a3, i
     return SerialRef34()->Chain((CSerialArchive*)ar, mode, a3, (CSerialObj*)a4) != 0;
 }
 
-// ~CUserLogic (0x0117f0) - the out-of-line base destructor COMDAT the leaf's inline
-// ~CTileTriggerTransition folds; MSVC emits one standalone ??1CUserLogic COMDAT (called by
-// the leaf's scalar-deleting dtor) that lands at 0x117f0. An inline-defined dtor can't hang
-// an RVA() (it would also tag the synthesized ??_G -> duplicate-RVA), so it is pinned by
-// mangled name:
-// @rva-symbol: ??1CUserLogic@@UAE@XZ 0x000117f0 0x44
+// ~CTileTriggerTransition (0x0117f0) - THIS class's own out-of-line dtor COMDAT, not the
+// base's. IDENTITY PROVEN from the binary (vtable-slot chase): the class vtable
+// ??_7CTileTriggerTransition @0x1e7db4 holds, at slot 0, an ILT thunk to the scalar-
+// deleting dtor 0x117c0, which calls 0x117f0; slot 1 = 0x11750 (SerializeMove, matched
+// here) and slot 2 = 0x11730 (GetTypeTag -> LOGIC_TILETRIGGERTRANSITION, matched here).
+// So 0x117f0 is ??1CTileTriggerTransition. (It was misbound as ??1CUserLogic; the REAL
+// ??1CUserLogic is 0x8860 - ??_7CUserLogic @0x1e705c slot 0 -> sdd 0x8a10 -> 0x8860,
+// bound in WorldSoundSet.cpp. MSVC5 keeps ONE COMDAT per name, so the many byte-identical
+// empty leaf dtors CANNOT be copies of one ~CUserLogic: each is its own class's dtor.)
+// An inline-defined dtor can't hang an RVA() (it would also tag the synthesized ??_G ->
+// duplicate-RVA), so it is pinned by mangled name:
+// @rva-symbol: ??1CTileTriggerTransition@@UAE@XZ 0x000117f0 0x44
 
 // ===========================================================================
 // The class band, ascending in the 0x10cb10-0x110149 region.

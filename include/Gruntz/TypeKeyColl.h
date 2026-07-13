@@ -30,10 +30,14 @@ struct CZErrSink {};
 // The deepest base (0x16d9c0 ctor, external): stows the error-sink owner (+0x04)
 // from the data tag and one-time-inits the global tables.
 SIZE_UNKNOWN(CZArrayRoot);
-RELOC_VTBL(
-    CZArrayRoot,
-    0x001f04d4
-); // zDArray-family base (CZArray2D ctor stamps this base vtable = zDArray, RVA-verified)
+// Its OWN vtable is 0x1f04cc (the family's three 1-slot vtables are 0x1f04cc CZArrayRoot /
+// 0x1f04d4 CZArray2D / 0x1f04d0 CTypeKeyColl - each holds only its virtual scalar-deleting
+// dtor). The old RELOC_VTBL pointed this base at 0x1f04d4, the DERIVED class's vtable - a
+// MISBINDING, now corrected to the true rva. It stays RELOC_VTBL (not VTBL) because
+// 0x1f04cc is already bound by VTBL(CContainerErr) in <Wap32/zBitVec.h>:
+// @identity-TODO: CZArrayRoot == CContainerErr (one class, two names - the zErrHandling
+// error-sink base; fold is a TypeKeyColl/zBitVec merge, both sides carry matched bodies).
+RELOC_VTBL(CZArrayRoot, 0x001f04cc); // == ??_7CContainerErr (true rva; fold pending)
 class CZArrayRoot {
 public:
     CZArrayRoot(void* tag); // 0x16d9c0 (external no-body)
@@ -45,10 +49,11 @@ public:
 // allocates the element buffer (+ a scratch element) and reports a fatal failure
 // through the owner sink. /GX EH frame (unwinds the CZArrayRoot base on throw).
 SIZE_UNKNOWN(CZArray2D);
-RELOC_VTBL(
-    CZArray2D,
-    0x001f04d4
-); // zDArray-family container, shares zDArray vtable (ctor vptr-stamp verified)
+// @identity-TODO: CZArray2D's own vtable IS 0x1f04d4 - the same datum VTBL(zDArray) binds
+// in TypeKeyColl.cpp (its ??_G 0x16df20 / ??1 0x16df40 are that vtable's slot 0). i.e.
+// CZArray2D and zDArray are ONE class under two names; the fold is a TypeKeyColl/ZVec
+// merge (both models carry matched bodies), so the alias is recorded, not invented.
+RELOC_VTBL(CZArray2D, 0x001f04d4); // == ??_7zDArray (one class, two names - fold pending)
 class CZArray2D : public CZArrayRoot {
 public:
     CZArray2D(i32 stride, i32 lo, i32 hi, void* scratch); // 0x16de30

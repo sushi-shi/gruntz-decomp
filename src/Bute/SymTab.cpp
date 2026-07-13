@@ -1069,18 +1069,15 @@ CSymParser::CSymParser() {
 }
 
 // ---------------------------------------------------------------------------
-// 0x13aaf0 - an abstract-base vptr-restore dtor thunk (RVA-adjacent to the CSymParser
-// ctor above): cl's implicit vptr-restore stamps the 0x5ef760 pure-call vtable into
-// [this] and returns (7-byte `mov [ecx],offset ??_7 + ret`). Placeholder polymorphic
-// class; an empty virtual dtor emits exactly the stamp+ret. Shares the 0x5ef760
-// pure-call vtable with 0x13ca30 (RezMgr). Re-homed from src/Stub/BoundaryThunks.cpp.
-struct CAbstract13aaf0 {
-    virtual ~CAbstract13aaf0();
-};
-SIZE_UNKNOWN(CAbstract13aaf0);
-RELOC_VTBL(CAbstract13aaf0, 0x001ef760); // vtable reloc-masks a bound datum (dtor-stamp verified)
-RVA(0x0013aaf0, 0x7)
-CAbstract13aaf0::~CAbstract13aaf0() {}
+// 0x13aaf0 - ??1CParserObjList, the standalone out-of-line COMDAT copy of the parser
+// list's inline dtor (<Bute/SymParser.h>): 7 bytes, `mov [ecx],??_7CObjListBase; ret`
+// (the own-vtable re-stamp is dead-store-eliminated into the inlined ~CObjListBase base
+// stamp). It exists because CSymParser's /GX dtor unwind funclets (0x1e0b30/0x1e0b50/
+// 0x1e0b90 - xref-verified, its ONLY referents) take the member dtor's address.
+// Sibling of ??1CRezList @0x13ca30 (RezFile.cpp). An inline dtor can't hang an RVA(), so
+// it is pinned by mangled name. (Was the fake placeholder class CAbstract13aaf0, whose
+// emitted ??_7 aliased the bound ??_7CObjListBase datum - a RELOC_VTBL.)
+// @rva-symbol: ??1CParserObjList@@QAE@XZ 0x0013aaf0 0x7
 
 // 0x13ab00: the 3-arg buffer constructor. Construct the sub-object members (the +0x10
 // object list, the +0x80 hash table, the +0x88 node list) + stamp the primary vtable,

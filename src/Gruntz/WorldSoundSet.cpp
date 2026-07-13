@@ -23,13 +23,13 @@
 // Field names are placeholders; the OFFSETS + emitted code bytes are load-bearing.
 #include <Mfc.h> // MFC superset (afx-first); also pulled by WorldSoundSet.h
 #include <Gruntz/WorldSoundSet.h>
+#include <Gruntz/BoundaryLeafLogicViews.h> // L_8860 (== ~CUserLogic; fold blocked, see below)
 #include <Gruntz/AmbientSound.h>       // canonical CAmbientSound / CAmbientPosSound
 #include <Gruntz/RandomAmbientSound.h> // canonical CRandomAmbientSound
 #include <Rez/RezMgr.h>                // RezAlloc - the engine heap allocator (reloc-masked)
 #include <rva.h>
 #include <Gruntz/UserLogic.h>              // CUserBase (real base of CAmbientSound)
 #include <Gruntz/BoundaryTailViews.h>      // Arg1_bdd0/Entry_bdd0 (0xbdd0 Dispatch arg views)
-#include <Gruntz/BoundaryLeafLogicViews.h> // L_8860 (CUserLogic leaf dtor, RVA-homed here)
 #include <Globals.h>                       // g_posSoundReq
 
 #include <math.h> // sqrt intrinsic (UpdateAt's positional falloff) - inline fsqrt
@@ -124,19 +124,29 @@ struct CUserBase87b0 {
     virtual void s2();
 };
 SIZE_UNKNOWN(CUserBase87b0);
-RELOC_VTBL(CUserBase87b0, 0x001e70b4); // reloc-masks the CUserBase RTTI vtable (bound
-                                       // by VTBL(CUserBase) in <Gruntz/UserLogic.h>)
+// Its OWN vtable, binary-proven (NOT CUserBase's 0x1e70b4 - that one's slot 0 holds the
+// sdd 0x8810, a different dtor): ??_7CUserBase87b0 @0x1e70fc holds, at slot 0, an ILT
+// thunk to the sdd 0x8780, whose body calls this dtor (0x87b0). A distinct 3-slot
+// CUserBase-shaped class. @identity-TODO: RTTI name unrecovered (its slots 1/2 are NULL,
+// so it carries no GetTypeTag tag to name it by).
+VTBL(CUserBase87b0, 0x001e70fc);
 RVA(0x000087b0, 0x7)
 CUserBase87b0::~CUserBase87b0() {}
 
 // @early-stop
-// @flag: one-source/N-COMDAT residue (no MSVC5 ICF). 0x8860 IS a ~CUserLogic COMDAT
-// copy (its sdd 0x8a10 sits in ??_7CUserLogic slot 0); a SECOND byte-identical
-// ~CUserLogic copy at 0x117f0 already wears the real ??1CUserLogic@@UAE@XZ symbol
-// (TileTriggerTransition.cpp). ~CUserLogic is inline in the header (leaf dtors fold
-// the teardown), so both out-of-line copies are un-folded COMDATs; only ONE can wear
-// ??1CUserLogic. This copy therefore REQUIRES the distinct synthetic L_8860 symbol -
-// folding it onto CUserLogic would collide with 0x117f0's match. 100% byte-exact.
+// 0x8860 IS ??1CUserLogic - PROVEN from the binary: ??_7CUserLogic @0x1e705c slot 0 holds
+// an ILT thunk (0x3cfb) to the scalar-deleting dtor 0x8a10, whose body calls 0x8860. (The
+// old note claimed a rival ~CUserLogic copy at 0x117f0; that was a MISBINDING - 0x117f0's
+// sdd 0x117c0 sits in slot 0 of ??_7CTileTriggerTransition @0x1e7db4, and MSVC5 keeps
+// exactly ONE COMDAT per mangled name, so N byte-identical empty leaf dtors can never be
+// N copies of one ~CUserLogic: each is its OWN class's dtor. 0x117f0 is now correctly
+// bound as ??1CTileTriggerTransition in TileLogicPump.cpp.)
+// The fold is BLOCKED on the EMITTER, not on the identity: ~CUserLogic is inline in
+// <Gruntz/UserLogic.h> (load-bearing - ~50 leaf dtors fold it), so it can only be pinned
+// by @rva-symbol from a TU whose obj emits the COMDAT, and this TU does not odr-use
+// CUserLogic yet (retail's did - the whole CUserBase/CUserLogic base-method COMDAT pool
+// 0x87d0/0x87f0/0x8810/0x8840/0x8a10/0x8b50 lands in THIS obj's band). Keeping the
+// placeholder holds the body at 100% instead of dropping it. @identity-TODO: L_8860 == CUserLogic.
 RVA(0x00008860, 0x44)
 L_8860::~L_8860() {}
 
@@ -286,21 +296,16 @@ CAmbientPosSound* CWorldSoundSet::CreatePos6_b850(i32 a0, i32 a1, i32 a2, i32 a3
     return obj;
 }
 
-// 0xb940 - a CUserBase-derived vptr restore: stamp the CUserBase base vtable (0x5e70b4)
-// then zero members at +0x04 and +0x3c. __thiscall (no return-this).
-struct CUserBaseSubB940 {
-    i32 m_4; // +0x04
-    char m_pad8[0x3c - 0x08];
-    i32 m_3c; // +0x3c
-    virtual ~CUserBaseSubB940();
-};
-SIZE_UNKNOWN(CUserBaseSubB940);
-RELOC_VTBL(CUserBaseSubB940, 0x001e70b4); // reloc-masks the bound CUserBase vtable
+// 0xb940 - CAmbientPosSound::~CAmbientPosSound. IDENTITY PROVEN from the binary (was the
+// fake placeholder class CUserBaseSubB940, RELOC_VTBL'd onto CUserBase's vtable): the
+// class vtable ??_7CAmbientPosSound @0x1e7124 (bound in <Gruntz/AmbientSound.h>) holds at
+// slot 0 an ILT thunk to the scalar-deleting dtor 0xb910, whose body calls THIS dtor. Its
+// slots 1/2 are the SHARED CUserBase defaults (0x87d0 SerializeMove / 0x87f0 GetTypeTag
+// `xor eax,eax`) - which is why the placeholder looked like a bare "CUserBase" subobject.
+// The body zeroes the INHERITED CAmbientSound fields (m_voice @+0x04, m_listNode @+0x3c):
+// the empty leaf dtor folds ~CAmbientSound (0xb790) inline, exactly as retail.
 RVA(0x0000b940, 0xf)
-CUserBaseSubB940::~CUserBaseSubB940() {
-    m_4 = 0;
-    m_3c = 0;
-}
+CAmbientPosSound::~CAmbientPosSound() {}
 
 // CAmbientPosSound (0x48), 5-arg Init.
 RVA(0x0000b960, 0x80)

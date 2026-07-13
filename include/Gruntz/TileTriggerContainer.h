@@ -58,24 +58,19 @@ struct TtcNode {
 };
 SIZE_UNKNOWN(TtcNode);
 
-// One MFC CObList sub-object (0x1c bytes): only m_pNodeHead (+0x04) is read by
-// the walkers; RemoveAt / AddTail are the reloc-masked rel32 callees.
-class TtcObList {
-public:
-    void RemoveAt(void* pos); // 0x1b4ac7
-    void* AddTail(void* obj); // 0x1b4991
-    void RemoveAll();         // 0x1b48a6
-    void Dtor();              // 0x1b48c6  ~CObList (reloc-masked rel32 callee)
-    virtual ~TtcObList() {
-        Dtor();
-    } // real virtual subobject dtor @ vptr +0x00: drives the container's /GX frame
-    TtcNode* m_pNodeHead;     // +0x04
-    char _pad08[0x0c - 0x08]; // +0x08..0x0b
-    i32 m_0c;                 // +0x0c  element count (serialized by 117280)
-    char _pad10[0x1c - 0x10]; // +0x10..0x1b
-};
-SIZE_UNKNOWN(TtcObList);
-RELOC_VTBL(TtcObList, 0x001ed4b4); // IS MFC CObList (its methods are FID-labeled CObList members)
+// The three list sub-objects ARE the real MFC ::CObList (0x1c bytes; its methods are the
+// FID-labeled NAFXCW CObList members RemoveAt @0x1b4ac7 / AddTail @0x1b4991 / RemoveAll
+// @0x1b48a6 / ~CObList @0x1b48c6, and its vtable is the library ??_7CObList @0x1ed4b4).
+// The former local TtcObList re-declaration (whose emitted ??_7 aliased that bound library
+// vtable - a RELOC_VTBL) is DISSOLVED: the walkers reach the head through the INLINE
+// CObList::GetHeadPosition() (afxcoll.inl: `return (POSITION)m_pNodeHead;` - the identical
+// single load) and the count through the inline GetCount().
+typedef ::CObList TtcObList;
+// Typed intrusive-node access: a POSITION IS the CObList::CNode* the walkers step through
+// (MFC's CNode is protected, so the head is retrieved as a POSITION and typed here).
+inline TtcNode* TtcHead(const ::CObList& l) {
+    return (TtcNode*)l.GetHeadPosition();
+}
 
 // The list3 (m_list3, +0x54) element: a 0x28-byte record initialised from the
 // AddToList3 args, notified, then appended.  m_10 gates the init (1 = live).
