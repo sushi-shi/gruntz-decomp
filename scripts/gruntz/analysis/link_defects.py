@@ -220,7 +220,20 @@ def real_classes():
                fabricated per-TU VIEW, so this member can NEVER resolve - retail has no
                such function to bind it to. THIS is the real link-blocker (the
                ??1CSbConfigItem shape): it must be fixed by modelling the real class,
-               not by reconstructing anything."""
+               not by reconstructing anything.
+
+    A class counts as REAL only if at least one of ITS OWN METHODS is bound to a retail
+    rva in symbol_names.csv.
+
+    A VTBL() binding deliberately does NOT count, and this used to be a hole that
+    UNDERCOUNTED the metric. VTBL() only says the class's VTABLE has a retail address -
+    it says nothing about whether any given declared-only METHOD NAME corresponds to a
+    real retail function. A hand-rolled stand-in for a library class is exactly that
+    case: <Gruntz/Wnd.h>'s CWnd carries VTBL(CWnd, 0x1eb5c4) (the real MFC vtable IS at
+    that address) while every one of its ~26 methods is a fabricated WndVslN placeholder
+    that no obj and no .LIB defines and that NOTHING can ever define, because the real
+    body in NAFXCW.LIB is exported under a different mangled name. Those are phantoms in
+    the strictest sense, and the VTBL() was laundering them into the "backlog" bucket."""
     real = set()
     p = REPO / "build/gen/symbol_names.csv"
     if p.is_file():
@@ -229,14 +242,6 @@ def real_classes():
             c = owning_class(r["name"])
             if c:
                 real.add(c)
-    for pat in ("src/**/*.cpp", "src/**/*.h", "include/**/*.h"):
-        for f in glob.glob(str(REPO / pat), recursive=True):
-            try:
-                txt = open(f, "r", errors="ignore").read()
-            except OSError:
-                continue
-            for m in re.finditer(r"\b(?:VTBL|RELOC_VTBL)\s*\(\s*([\w:]+)\s*,", txt):
-                real.add(m.group(1).split("::")[-1])
     return real
 
 

@@ -2096,7 +2096,7 @@ void CMulti::ApplyCmdDelayDefaults() {
 RVA(0x000b86c0, 0x206)
 i32 CNetMgrLite::ShowMultiStartDlg() {
     CMultiStartDlg dlg((i32)m_4, 0);
-    i32 r = m_4->ExitModalUI((CModalScreen*)&dlg, 0);
+    i32 r = m_4->ExitModalUI(&dlg, 0);
     g_dlgResultSink = 0;
     if (r != 1) {
         if (m_528 != 0) {

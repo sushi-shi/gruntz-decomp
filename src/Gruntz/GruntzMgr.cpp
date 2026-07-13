@@ -16,6 +16,16 @@
 // <Mfc.h> brings <windows.h> KERNEL32 (GetCurrentDirectoryA; DWORD) and the central
 // WINMM timeGetTime decl (the per-frame draw clock).
 #include <Mfc.h>
+// The REAL MFC CDialog (ExitModalUI's argument - proof in <Gruntz/GruntzMgr.h>). afx.h
+// arrives first via <Mfc.h>, so there is no windows.h-first C1189 here. The afxwin*.inl
+// bodies are skipped for the clang LABEL step only (they carry an implicit-int
+// CMenu::operator== that clang rejects and wine cl accepts); without this the label pass
+// emits NO IR and the entire TU silently vanishes from symbol_names.csv.
+// See docs/patterns/afxwin-clang-label-step-skip-inl.md.
+#ifdef __clang__
+#undef _AFX_ENABLE_INLINES
+#endif
+#include <afxwin.h>
 #include <new>
 #include <Gruntz/LeafCue.h>
 #include <Gruntz/SpriteFactory.h> // CSpriteFactory/CSpriteListNode (m_world->m_8 live-object list)
@@ -199,10 +209,14 @@ void CloseSettingsStore(); // FUN_004f8e20
 // FUN_004234a0(this, 0) and torn down by FUN_005ba51d, handed to ExitModalUI as a
 // CModalScreen. Its ctor/dtor reloc-mask; only the size + destructibility (the /GX
 // frame) are load-bearing.
-struct CCheckpointDlg {
-    CCheckpointDlg(CWnd* a); // 0x234a0 (real ctor ??0CCheckpointDlg@@QAE@PAVCWnd@@@Z; this, null)
-    ~CCheckpointDlg();       // 0x1ba51d (unreconstructed base dtor - stays unbound)
-    char m_pad[0x5c];
+// It IS a real MFC CDialog subclass: the "dtor" the old shell declared at 0x1ba51d is
+// CDialog::~CDialog itself, and its 0x5c body is exactly sizeof(CDialog). Deriving from the
+// real base binds that teardown to ??1CDialog@@UAE@XZ in NAFXCW.LIB (it used to be an
+// UNBOUND ??1CCheckpointDlg) and lets it reach ExitModalUI CAST-FREE. The dtor stays
+// IMPLICIT so retail's inlined stack-local teardown still falls out.
+class CCheckpointDlg : public CDialog {
+public:
+    CCheckpointDlg(CWnd* a); // 0x234a0  ??0CCheckpointDlg@@QAE@PAVCWnd@@@Z
 };
 
 // The save-as name dialog SaveGameAs pops IS a CBattlezDlg (proven: its ctor @0x14b30
@@ -215,19 +229,13 @@ struct CCheckpointDlg {
 // keeps an implicit-dtor twin - a per-TU dtor-emission split, not a conflation. The
 // ctor is declared-only, so its call reloc-binds to the real 0x14b30; CSaveDlgBase
 // stands in for CDialog's reloc-masked virtual dtor (0x1ba51d).
-// @link-defect: ??1CSaveDlgBase@@UAE@XZ is a PHANTOM (no obj, no .LIB defines it) - an
-// unresolved external at link. The right base is the REAL CDialog (0x5c bytes), which
-// binds this same reloc-masked dtor call to ??1CDialog@@UAE@XZ in NAFXCW.LIB. BLOCKED
-// twice, both measured: <afxwin.h> collides with a CDialog already reaching this TU
-// transitively (C2011 redefinition), and <Gruntz/Dialogs.h> (which has its own
-// reconstructed `class CDialog : public CWnd`) would drag in its canonical CBattlezDlg,
-// whose OUT-OF-LINE dtor breaks SaveGameAs (see below). Dissolving the TU-local CDialog/
-// CModalScreen views is the prerequisite; leaving the shell until then.
-class CSaveDlgBase {
-public:
-    virtual ~CSaveDlgBase(); // 0x1ba51d  CDialog::~CDialog (virtual, reloc-masked)
-};
-class CBattlezDlg : public CSaveDlgBase {
+// RESOLVED: the base is the REAL MFC CDialog (0x5c) now. The old CSaveDlgBase shell -
+// whose ??1CSaveDlgBase@@UAE@XZ was a PHANTOM that no obj and no .LIB could ever define -
+// is deleted, and the same reloc-masked dtor call binds to ??1CDialog@@UAE@XZ in
+// NAFXCW.LIB (0x1ba51d). BOTH "measured blockers" recorded here were wrong: the C2011 was
+// OUR OWN class named CModalDialog being macro-rewritten by afxwin.h's
+// `#define CModalDialog CDialog`, and this TU never included <Gruntz/Dialogs.h> at all.
+class CBattlezDlg : public CDialog {
 public:
     CBattlezDlg(i32 a0, CWnd* pParent); // 0x14b30  ??0CBattlezDlg@@QAE@HPAVCWnd@@@Z
     // The dtor stays IMPLICIT here - do NOT declare it out-of-line. Retail's SaveGameAs
@@ -241,7 +249,7 @@ public:
     // ??1CBattlezDlg IS still an ODR-divergent duplicate (dialogs models this class as
     // `: public CDialog`, we model it as `: CSaveDlgBase`) - but the fix for THAT is to
     // unify the class shape, not to change the dtor's linkage. Reported, not bodged.
-    char m_pad04[0x68 - 0x4];
+    char m_pad5c[0x68 - 0x5c];
     i32 m_68;     // +0x68  use-custom-prefix flag (== CBattlezDlg::m_customNameFlag)
     CString m_6c; // +0x6c  entered name
 };
@@ -379,73 +387,10 @@ struct CPlayStateView {
 // The engine's out-of-line block copy (FUN_00520340). Retail calls it here (not
 // the CRT __strncpy at 0x120340 (`push n; push src; push dst; call; add esp,0xc`).
 
-// The modal dialog/screen handed to ExitModalUI. Run() is virtual slot 48
-//
-// @identity-TODO / NAME IS NOT FREE: this was called CModalScreen only because MFC OWNS the
-// obvious name - <afxwin.h> line 2671 literally does `#define CModalDialog CDialog` (the MFC
-// 1.x legacy alias). Any TU that sees afxwin.h and declares a class CModalDialog gets it
-// macro-rewritten into `class CDialog` and collides with MFC's own - which is the ENTIRE
-// cause of the C2011 that previously looked like a structural wall against pulling afxwin.h
-// into this TU. It was our misnamed class, not a real conflict.
-// Strong (but NOT yet proven) hypothesis: this placeholder IS MFC's CDialog. Every argument
-// ExitModalUI is given is a CDialog-derived game dialog (CMultiStartDlg in Multi.cpp,
-// CBattlezDlg/CCheckpointDlg here), MFC itself equates the two names, and its Run()@slot 48
-// lines up with CDialog::DoModal. Confirm the slot, then delete this view, type ExitModalUI
-// as taking a CDialog*, and the (CModalScreen*) casts at its call sites fall out on their own.
-// (+0xc0); the leading slots are anchors so the call lands at [vtbl+0xc0] as a
-// thiscall (MSVC 5.0 forbids the __thiscall keyword, so model it as a vtable).
-class CModalScreen {
-public:
-    virtual void s00();
-    virtual void s01();
-    virtual void s02();
-    virtual void s03();
-    virtual void s04();
-    virtual void s05();
-    virtual void s06();
-    virtual void s07();
-    virtual void s08();
-    virtual void s09();
-    virtual void s0a();
-    virtual void s0b();
-    virtual void s0c();
-    virtual void s0d();
-    virtual void s0e();
-    virtual void s0f();
-    virtual void s10();
-    virtual void s11();
-    virtual void s12();
-    virtual void s13();
-    virtual void s14();
-    virtual void s15();
-    virtual void s16();
-    virtual void s17();
-    virtual void s18();
-    virtual void s19();
-    virtual void s1a();
-    virtual void s1b();
-    virtual void s1c();
-    virtual void s1d();
-    virtual void s1e();
-    virtual void s1f();
-    virtual void s20();
-    virtual void s21();
-    virtual void s22();
-    virtual void s23();
-    virtual void s24();
-    virtual void s25();
-    virtual void s26();
-    virtual void s27();
-    virtual void s28();
-    virtual void s29();
-    virtual void s2a();
-    virtual void s2b();
-    virtual void s2c();
-    virtual void s2d();
-    virtual void s2e();
-    virtual void s2f();
-    virtual i32 Run(); // slot 48 (+0xc0)
-};
+// CModalScreen is GONE: it WAS MFC's CDialog. Binary proof (see GruntzMgr.h): ExitModalUI
+// (0x903f0) dispatches `call [vtbl+0xc0]` = slot 48, and CDialog's retail vtable (0x1eb174)
+// holds 0x1ba9d2 = CDialog::DoModal at slot 48 (slots 49/51 likewise = OnInitDialog 0x1bac5e
+// / OnOK 0x1bacc3). So the invented Run()@slot-48 was DoModal all along.
 
 // The +0x2dc sub-object's teardown + the active object's own finalize (both
 // reloc-masked thiscalls).
@@ -4065,7 +4010,7 @@ void CGruntzMgr::EnterModalUI(const char* msg) {
 // post-switch hook, and finalizes the freshly-activated object (+0x2dc sub +
 // self). The dialog's return value is the function's result.
 RVA(0x000903f0, 0x10c)
-i32 CGruntzMgr::ExitModalUI(CModalScreen* dlg, i32 notify) {
+i32 CGruntzMgr::ExitModalUI(CDialog* dlg, i32 notify) {
     if (m_timer) {
         m_timer->Stop();
     }
@@ -4088,7 +4033,7 @@ i32 CGruntzMgr::ExitModalUI(CModalScreen* dlg, i32 notify) {
     }
 
     m_modalBusy = 1;
-    i32 result = dlg->Run();
+    i32 result = dlg->DoModal(); // vtable slot 48 (+0xc0) - see the proof in GruntzMgr.h
     g_64557c = 0;
     m_modalBusy = 0;
     if (m_curState && notify) {
@@ -4565,7 +4510,7 @@ void CGruntzMgr::OnCheckpointReached() {
         return;
     }
     CCheckpointDlg dlg(0);
-    if (ExitModalUI((CModalScreen*)&dlg, 0) == 1) {
+    if (ExitModalUI(&dlg, 0) == 1) {
         g_pSendMessageA((i32)m_gameWnd->m_hwnd, 0x111, 0x80cf, 0);
     }
 }
@@ -4747,7 +4692,7 @@ i32 CGruntzMgr::SaveGameAs() {
         return 0;
     }
     ChannelSlots_InitAll();
-    if (ExitModalUI((CModalScreen*)&dlg, 1) != 1) {
+    if (ExitModalUI(&dlg, 1) != 1) {
         return 0;
     }
     if (dlg.m_68 != 0) {
@@ -5217,7 +5162,6 @@ SIZE_UNKNOWN(CActiveObj);
 SIZE_UNKNOWN(CActiveSub2dc);
 SIZE_UNKNOWN(CColorLookup);
 SIZE_UNKNOWN(CColorRow);
-SIZE_UNKNOWN(CModalScreen);
 SIZE_UNKNOWN(CMonoConfigHolder);
 SIZE_UNKNOWN(CMonoConfigMap);
 SIZE_UNKNOWN(CMonoConfigRec);
@@ -5229,7 +5173,6 @@ SIZE_UNKNOWN(CPlayStateView);
 SIZE_UNKNOWN(CPointXY);
 SIZE_UNKNOWN(CRezSurface94);
 SIZE_UNKNOWN(CBattlezDlg);
-SIZE_UNKNOWN(CSaveDlgBase);
 SIZE_UNKNOWN(CSettingsWriter);
 SIZE_UNKNOWN(CWorldCoordResolver);
 SIZE_UNKNOWN(CWorldDelete);

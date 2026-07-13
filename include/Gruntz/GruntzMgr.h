@@ -323,19 +323,24 @@ public:
     // @0x08ef10 - suspend the world and pop the modal message screen carrying `msg`
     // (m_owner->RunModal(msg, hwnd), which strcpy's it into the g_644ea0 message buffer).
     void EnterModalUI(const char* msg);
-    i32 ExitModalUI(class CModalScreen* dlg, i32 notify); // @0x0903f0
-    i32 FinishLevel(i32 full, i32 stopBank);              // @0x08e980
-    i32 FillSaveInfo(SaveInfo* dst, void* snapshot);      // @0x0927b0
-    i32 SaveState(struct CSerialArchive* ar);             // @0x093620 (shared CSerialArchive)
-    i32 LoadState(struct CSerialArchive* ar);             // @0x093920 (deserialize counterpart)
-    void UpdateScoreHud();                                // @0x0860b0
-    i32 BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3);    // @0x093460
-    void RecomputeViewScale();                            // @0x08f7f0
-    i32 PrepCmd4(i32 a0);                                 // reloc-masked sibling (cmd-4 arm gate)
-    i32 PrepCmd7(i32 a0);                                 // reloc-masked sibling (cmd-7 arm gate)
-    struct CActiveObj* GetActiveObj(); // reloc-masked sibling (active game object)
-    void RunWinHook();                 // reloc-masked sibling (win/level-complete hook)
-    i32 CheckLevelActive();            // reloc-masked sibling (level-active predicate)
+    // Takes the REAL MFC CDialog. BINARY-PROVEN, not assumed: ExitModalUI (0x903f0)
+    // dispatches `call [vtbl+0xc0]` = slot 48, and MFC CDialog's vtable (0x1eb174)
+    // holds 0x1ba9d2 at slot 48 - CDialog::DoModal. Slots 49/51 likewise hold
+    // OnInitDialog (0x1bac5e) / OnOK (0x1bacc3). The old CModalScreen placeholder
+    // with its `Run()` at slot 48 WAS CDialog all along.
+    i32 ExitModalUI(class CDialog* dlg, i32 notify);   // @0x0903f0
+    i32 FinishLevel(i32 full, i32 stopBank);           // @0x08e980
+    i32 FillSaveInfo(SaveInfo* dst, void* snapshot);   // @0x0927b0
+    i32 SaveState(struct CSerialArchive* ar);          // @0x093620 (shared CSerialArchive)
+    i32 LoadState(struct CSerialArchive* ar);          // @0x093920 (deserialize counterpart)
+    void UpdateScoreHud();                             // @0x0860b0
+    i32 BroadcastCmd(i32 a0, i32 cmd, i32 a2, i32 a3); // @0x093460
+    void RecomputeViewScale();                         // @0x08f7f0
+    i32 PrepCmd4(i32 a0);                              // reloc-masked sibling (cmd-4 arm gate)
+    i32 PrepCmd7(i32 a0);                              // reloc-masked sibling (cmd-7 arm gate)
+    struct CActiveObj* GetActiveObj();                 // reloc-masked sibling (active game object)
+    void RunWinHook();      // reloc-masked sibling (win/level-complete hook)
+    i32 CheckLevelActive(); // reloc-masked sibling (level-active predicate)
     // A sibling state-transition pusher reached by PassClickToPlayState's reloc-
     // masked 4-arg call (deferred body / matched elsewhere).
     i32 ChangeToPlayState(i32 a, i32 b, i32 c, i32 d);
