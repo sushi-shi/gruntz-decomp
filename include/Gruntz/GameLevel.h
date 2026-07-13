@@ -144,6 +144,9 @@ public:
     i32 m_height;              // +0x2c  tile-grid height
     i32 m_wrapW;               // +0x30  tile count across (wrap/clamp modulus)
     i32 m_wrapH;               // +0x34  tile count down
+    // 0x077dc0 (body in BrickzCellFlags_077790.cpp; ex BrickzGridDesc::SetCell -
+    // that view IS this plane): m_tileGrid[m_colOffsets[y] + x] = id.
+    void SetCell(i32 x, i32 y, i32 id);
     i32 m_tilePixW;            // +0x38  tile pixel width (log2 -> m_shiftX)
     i32 m_tilePixH;            // +0x3c  tile pixel height
     i32 m_tileOriginX;         // +0x40  out: near tile-origin X

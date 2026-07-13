@@ -69,50 +69,20 @@ struct BrickzCell {
     BrickzNode* m_head; // +0x18  bucket-list head
 };
 
-// A bute terrain object: ComputeCellFlags reads its type code through its own
-// vtable (slot +0x20, __thiscall(i32,i32)). Modeled polymorphic (the touched slot
-// only) so `mov edx,[obj]; call [edx+0x20]` falls out, no manual vtable cast.
-struct BrickzButeObj {
-    virtual void Slot00();
-    virtual void Slot04();
-    virtual void Slot08();
-    virtual void Slot0C();
-    virtual void Slot10();
-    virtual void Slot14();
-    virtual void Slot18();
-    virtual void Slot1C();
-    virtual i32 GetTypeCode(i32 a, i32 b); // +0x20  returns the 1-based type id
-};
-
-// The terrain grid descriptor reached as attr->m_5c: a flat cell-id table (m_20)
-// indexed by a per-row offset table (m_24), with width m_28 / height m_2c.
-struct BrickzGridDesc {
-    char m_pad0[0x20];
-    i32* m_20; // +0x20  flat id table (id = m_20[ rowTab[y] + x ])
-    i32* m_24; // +0x24  per-row base-offset table
-    i32 m_28;  // +0x28  width  (x clamp)
-    i32 m_2c;  // +0x2c  height (y clamp)
-    // The ACTIVE (in-play) extents, distinct from the STORAGE extents above: the
-    // rock-break driver (CRockBreakMgr::BuildRockBreakParticles @0x7b440) bounds its
-    // tile scan with these two while indexing through m_24/m_20. Recovered when its
-    // `RockGrid` view was dissolved onto this class.
-    i32 m_30; // +0x30  active cols
-    i32 m_34; // +0x34  active rows
-    // 0x077dc0 - flat cell setter: m_20[ m_24[y] + x ] = id. __thiscall(x, y, id).
-    // CTerrainTileLoader::Load reaches it via loader->m_24 (BrickzAttrMgr)->m_5c.
-    void SetCell(i32 x, i32 y, i32 id);
-};
-
-// The attribute/bute-type manager reached as this->m_78->m_24. Holds the grid
-// descriptor at +0x5c and the bute-object pointer array at +0x4c.
-struct BrickzAttrMgr {
-    char m_pad0[0x24];
-    BrickzAttrMgr* m_24; // +0x24  self/inner (chained: m_78->m_24)
-    char m_pad28[0x4c - 0x28];
-    BrickzButeObj** m_4c; // +0x4c  bute-object pointer array (indexed by id&0xffff)
-    char m_pad50[0x5c - 0x50];
-    BrickzGridDesc* m_5c; // +0x5c  the terrain grid descriptor
-};
+// [SETTLED + DISSOLVED (Fable lane, 2026-07-13): the three Brickz* views were a
+// second model of real tree classes, offset-for-offset:
+//   BrickzButeObj  -> ::CTileImageSet  (<Gruntz/GameLevel.h>; "GetTypeCode @+0x20"
+//                     IS GetCollisionAt @+0x20, same (i32,i32) arity)
+//   BrickzGridDesc -> ::CLevelPlane    (m_20/m_24/m_28/m_2c/m_30/m_34 ==
+//                     m_tileGrid/m_colOffsets/m_width/m_height/m_wrapW/m_wrapH;
+//                     SetCell @0x77dc0 is now CLevelPlane::SetCell)
+//   BrickzAttrMgr  -> the CSpriteFactoryHolder world holder chained to its
+//                     ::CGameLevel (+0x24): the "bute table @+0x4c" is CGameLevel's
+//                     m_imageSets CObArray data ptr (+0x48 array -> +0x4c m_pData of
+//                     CTileImageSet*), the "grid desc @+0x5c" its m_mainPlane.
+// Consumers (BrickzCellFlags_077790.cpp / TriggerMgr.cpp / MapMgr.h) use the real
+// classes directly; GameLevel.h is NOT included here to keep this widely-included
+// header light.]
 
 // CBrickzGrid IS CMapMgr - RTTI .?AVCMapMgr@@, vtable 0x1ea3b4, and the binary says so
 // three ways: its Search (0x09eca0) and IsCellClear (0x0853f0) ARE slots 4 and 5 of that

@@ -19,9 +19,9 @@
 //   Fwd114ec0 -> src/Gruntz/GruntzMgrCmd.cpp (the __cdecl 6-arg toolbar forwarder).
 //   C113e70  -> CTileTriggerSwitchLogic::DeserializeMatrix (thunk 0x3cd3).
 //   C104c80  -> CSBI_WellGoo::Free; ParseSerial/0xd210 -> GruntzMgrCmd.cpp.
-//   C77dc0   -> BrickzGridDesc::SetCell (src/Gruntz/Brickz.cpp): the flat grid-cell
+//   C77dc0   -> CLevelPlane::SetCell (BrickzCellFlags_077790.cpp): the flat grid-cell
 //                setter; CTerrainTileLoader::Load reaches it via loader->m_24
-//                (BrickzAttrMgr) -> m_5c. Same grid as C112bf0.
+//                (the world holder) -> m_24 -> m_mainPlane. Same grid as C112bf0.
 //   Cfa150   -> CGameModeBase::BaseCleanup (src/Gruntz/GameModeBase.cpp, own .obj):
 //                caller graph = every state ReleaseResources; +0x1c allocator is the
 //                real CDDrawPtrCollections::RemoveItemA. 94.5% (cmp-order wall).
@@ -43,7 +43,7 @@
 // must do (each stays @early-stop in place):
 //   C112bf0  IS CCheckpointTriggerSwitchLogic::M (vtbl slot 3, thunk 0x36fc); home
 //                needs the grid-access chain (g_reg->m_world->m_24->m_5c ==
-//                BrickzAttrMgr->BrickzGridDesc, C77dc0's grid) modeled on the
+//                holder->CGameLevel->m_mainPlane, C77dc0's grid) modeled on the
 //                CheckpointSwitchBuild g_statzGameReg view + 0x24556c dual-view fold.
 //   C104dd0  this == an unmodeled +0x2c status-bar-sprite holder (CSBI_RectOnly's m_2c;
 //                SetState calls `mov ecx,[ecx+0x2c]; call 0x3f8a`) - owner class unrecovered.
@@ -111,8 +111,8 @@ SIZE_UNKNOWN(CTypeColl464);
 // (0x050ca0 C50ca0::M re-homed to src/Gruntz/Grunt.cpp as
 // CGrunt::LoadTypeTableClearMove - this==CGrunt, m_1a0==m_moveMode.)
 
-// (0x077dc0 C77dc0::Set re-homed to src/Gruntz/Brickz.cpp as BrickzGridDesc::SetCell
-// - the flat grid-cell setter; reached via loader->m_24 (BrickzAttrMgr) -> m_5c.)
+// (0x077dc0 C77dc0::Set re-homed as CLevelPlane::SetCell (BrickzCellFlags_077790.cpp)
+// - the flat grid-cell setter; reached via holder->m_24 -> m_mainPlane.)
 
 // (C8e880/CState8e [0x8e880] and C915d0/CMid915 + the duplicate CGruntzSoundInnerZ
 // [0x915d0/0x91620] were views of CGruntzMgr - m_2c == m_curState (slot +0x10 ==

@@ -1665,9 +1665,9 @@ void FormatStr(CString* out, const char* fmt, ...);
 // CGameLevel's m_imageSets CObArray data ptr (+0x48 array -> +0x4c m_pData of
 // CTileImageSet*), its grid desc @+0x5c is m_mainPlane - and BrickzButeObj ("8 filler
 // slots then GetTypeCode @+0x20") is CTileImageSet (GetCollisionAt @+0x20) itself.
-// @deferred-fold: dissolve the Brickz* family (Brickz.h / MapMgr.h::m_attrMgr /
-// BrickzCellFlags_077790.cpp) onto CGameLevel/CLevelPlane/CTileImageSet; the rock-break
-// sites below keep the explicit cast until that fold lands.
+// FOLDED (Fable lane 2026-07-13): the Brickz* family (Brickz.h / MapMgr.h::m_attrMgr /
+// BrickzCellFlags_077790.cpp) is dissolved onto CGameLevel/CLevelPlane/CTileImageSet;
+// the rock-break sites below use the real classes.
 
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
@@ -1714,27 +1714,27 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (pxX < 0x10 || pxY < 0x10) {
                 continue;
             }
-            BrickzAttrMgr* board = (BrickzAttrMgr*)m_22c->m_24;
-            BrickzGridDesc* grid = board->m_5c;
-            if (tx >= grid->m_30 || ty >= grid->m_34) {
+            CGameLevel* board = m_22c->m_24; // the holder's CGameLevel (ex BrickzAttrMgr)
+            CLevelPlane* grid = board->m_mainPlane;
+            if (tx >= grid->m_wrapW || ty >= grid->m_wrapH) {
                 continue;
             }
             i32 col;
             if (pxX < 0x10) {
                 col = 0;
-            } else if (tx >= grid->m_28) {
-                col = grid->m_28 - 1;
+            } else if (tx >= grid->m_width) {
+                col = grid->m_width - 1;
             } else {
                 col = tx;
             }
-            i32 row = (ty >= grid->m_2c) ? grid->m_2c - 1 : ty;
-            i32 cell = grid->m_20[grid->m_24[row] + col];
+            i32 row = (ty >= grid->m_height) ? grid->m_height - 1 : ty;
+            i32 cell = grid->m_tileGrid[grid->m_colOffsets[row] + col];
             i32 type;
             if (cell == (i32)0xeeeeeeee || cell == -1) {
                 type = 0;
             } else {
-                BrickzButeObj* o = board->m_4c[cell & 0xffff];
-                type = o->GetTypeCode(0, 0);
+                CTileImageSet* o = (CTileImageSet*)board->m_imageSets.GetAt(cell & 0xffff);
+                type = o->GetCollisionAt(0, 0);
             }
 
             if (type != 0x1e && type != 0x1f) {
@@ -1773,13 +1773,13 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                 ((CTileTriggerLogic*)lo)->ApplyMove(type);
                 ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)lo);
             } else {
-                BrickzGridDesc* wg = (BrickzGridDesc*)g_gameReg->m_world->m_24->m_mainPlane;
-                i32 off = wg->m_24[ty];
+                CLevelPlane* wg = g_gameReg->m_world->m_24->m_mainPlane;
+                i32 off = wg->m_colOffsets[ty];
                 if (type == 0x1e) {
-                    wg->m_20[off + tx] = 0x5a;
+                    wg->m_tileGrid[off + tx] = 0x5a;
                     ((CBrickzGrid*)g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5a);
                 } else {
-                    wg->m_20[off + tx] = 0x5b;
+                    wg->m_tileGrid[off + tx] = 0x5b;
                     ((CBrickzGrid*)g_gameReg->m_tileGrid)->ComputeCellFlags(tx, ty, 0x5b);
                 }
             }

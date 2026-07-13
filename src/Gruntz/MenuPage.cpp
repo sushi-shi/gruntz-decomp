@@ -477,12 +477,12 @@ i32 CMenuPage::Switch(i32 refocus) {
 // whether focus may wrap at the page ends: never if hidden (0x2),
 // always if enabled (0x1), else defer to the host's wrap flag.
 // @early-stop
-// movb-vs-movsx peephole wall (~95%, 1 instruction): retail loads the host flag
-// with `movsx eax,byte [eax+0x20]` before `and eax,1`; MSVC5 /O2 unconditionally
-// NARROWS `signed-char & 1` to `movb al,[eax+0x20]; and eax,1` for every source
-// spelling (plain, (int) cast, int temp, inline char accessor, +0 arith - all
-// verified). The retail movsx is unreachable from a `& 1` expression in MSVC5.
-// See docs/patterns/char-and1-movb-vs-movsx.md. Logic complete; deferred.
+// @early-stop
+// movb-vs-movsx peephole wall (~95%, 1 instruction): retail sign-extends the LOW
+// BYTE of the host's i32 field (`movsx eax, byte [eax+0x20]; and eax,1`; the field
+// IS i32 - Init 0x182ab0 stores the whole DWORD). MSVC5 /O2 narrows to
+// `mov al,[...]; and eax,1` for every spelling incl. the (char)-of-i32 cast arm
+// (tested 2026-07-13). See docs/patterns/char-and1-movb-vs-movsx.md.
 RVA(0x00183e30, 0x1f)
 i32 CMenuPage::CanWrap() {
     i32 f = m_flags;
@@ -492,7 +492,7 @@ i32 CMenuPage::CanWrap() {
     if (f & 1) {
         return 1;
     }
-    return m_host->m_wrapFlag & 1; // m_host is the owning CChatBox (m_wrapFlag @+0x20)
+    return (char)m_host->m_wrapFlag & 1; // m_host is the owning CChatBox (i32 @+0x20)
 }
 
 // single-list grid layout: center each child in the page rect, place

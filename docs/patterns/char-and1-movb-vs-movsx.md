@@ -22,3 +22,9 @@ and   eax, 1
 WALL — no natural MSVC5 source produces the standalone `movsx ...; and eax,1`
 when the only use is the `& 1` mask (the peephole always narrows to `movb`); a 1-
 instruction residual. CMenuPage::CanWrap @0x183e30 plateaus ~95.4%, logic exact.
+
+2026-07-13 addendum (Fable lane): the `(char)`-of-an-`i32`-field arm is ALSO
+narrowed — `return (char)m_host->m_wrapFlag & 1;` with `i32 m_wrapFlag` (the
+field's true width: the writer 0x182ab0 stores the whole DWORD) still emits
+`mov al,[eax+0x20]; and eax,1`. The wall is spelling-independent of the FIELD
+width, not just of the char-typed-field spellings originally tested.

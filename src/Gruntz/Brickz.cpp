@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------
 // DE-FRAGMENTATION ASSESSMENT (matcher-2, 2026-07-10; Tier A since re-homed):
 // One dominant class, CBrickzGrid (non-polymorphic grid/pathfinding container,
-// all QAE), + two tiny homed helpers (BrickzGridDesc::SetCell @0x77dc0,
+// all QAE), + two tiny homed helpers (CLevelPlane::SetCell @0x77dc0,
 // Grid_77df0::FindNearest @0x77df0). Game object CBrickz is its own TU
 // (src/Gruntz/CBrickz.cpp).
 //
@@ -44,7 +44,7 @@
 // header-inline-safe); the CBrickzGrid<->CMapMgr identity reconcile (see MapMgr.cpp).
 // ---------------------------------------------------------------------------
 // CARVE (holding-TU drain, 2026-07-11): CBrickzGrid::Clip (0x02b340) and the 0x077790
-// obj (ComputeCellFlags 0x077790 + BrickzGridDesc::SetCell 0x077dc0 + Grid_77df0::
+// obj (ComputeCellFlags 0x077790 + CLevelPlane::SetCell 0x077dc0 + Grid_77df0::
 // FindNearest 0x077df0) were carved into src/Gruntz/BrickzClip_02b340.cpp and
 // src/Gruntz/BrickzCellFlags_077790.cpp - each a distinct contiguous retail .text obj
 // (CBrickzGrid methods compiled in 3 different objs). This file keeps ONLY the main

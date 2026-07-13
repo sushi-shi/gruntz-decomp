@@ -37,7 +37,7 @@
 // pointers only here, so a forward declaration is all the fold needs).
 struct BrickzCell;
 struct BrickzNode;
-struct BrickzAttrMgr;
+struct CSpriteFactoryHolder; // the +0x78 world/asset holder (ex the BrickzAttrMgr view)
 struct tagRECT;
 
 struct CSerialArchive; // Save/Load stream through it (Read @+0x2c / Write @+0x30)
@@ -230,7 +230,8 @@ public:
     i32 m_boundBottom;        // +0x6c bound rect bottom
     i32 m_gridW;              // +0x70  clipped grid width extent (cells)
     i32 m_gridH;              // +0x74  clipped grid height extent (cells)
-    BrickzAttrMgr* m_attrMgr; // +0x78  attribute/bute-type manager (ComputeCellFlags)
+    CSpriteFactoryHolder* m_attrMgr; // +0x78  the world/asset holder (its m_24 is the
+                                     //        CGameLevel; ex the BrickzAttrMgr view)
 };
 
 // CBrickzGrid IS this class - RTTI .?AVCMapMgr@@ (vtable 0x1ea3b4), proven three ways:

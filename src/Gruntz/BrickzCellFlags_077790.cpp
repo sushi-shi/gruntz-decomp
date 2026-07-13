@@ -1,9 +1,10 @@
 // BrickzCellFlags_077790.cpp - the 0x077790 obj carved out of src/Gruntz/Brickz.cpp
 // (holding-TU drain, 2026-07-11): CBrickzGrid::ComputeCellFlags (0x077790),
-// BrickzGridDesc::SetCell (0x077dc0), and Grid_77df0::FindNearest (0x077df0) - one
-// contiguous retail .text block, distinct from the main CBrickzGrid pathfinding obj
-// (0x081e10+ in Brickz.cpp). ComputeCellFlags/SetCell are real CBrickzGrid/
-// BrickzGridDesc methods; Grid_77df0 stays an @identity-TODO RVA-named view.
+// CLevelPlane::SetCell (0x077dc0, ex BrickzGridDesc::SetCell - the Brickz* views
+// are dissolved onto CGameLevel/CLevelPlane/CTileImageSet, see Brickz.h), and
+// Grid_77df0::FindNearest (0x077df0) - one contiguous retail .text block, distinct
+// from the main CBrickzGrid pathfinding obj (0x081e10+ in Brickz.cpp).
+// Grid_77df0 stays an @identity-TODO RVA-named view.
 //
 // @identity-TODO Grid_77df0 (FindNearest 0x077df0): xref (2026-07-11) - the only
 // direct caller is the ILT thunk 0x253b; the caller tree resolves to ~15 CGrunt
@@ -15,8 +16,10 @@
 // The exact class does not crack from the caller set alone (per-call-site `this`
 // typing needed); left RVA-named rather than fabricating a placeholder.
 #include <rva.h>
+#include <Mfc.h> // CObArray (CGameLevel::m_imageSets) + RECT/POINT/PtInRect (FindNearest)
 #include <Gruntz/Brickz.h>
-#include <Win32.h> // RECT/POINT + PtInRect (FindNearest)
+#include <Gruntz/GameLevel.h>    // CGameLevel / CLevelPlane / CTileImageSet (ex Brickz* views)
+#include <Gruntz/GameRegistry.h> // CSpriteFactoryHolder (CBrickzGrid::m_attrMgr's real type)
 
 // ---------------------------------------------------------------------------
 // CBrickzGrid::ComputeCellFlags (0x077790) - terrain-grid cell-flag compute.
@@ -41,26 +44,26 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     // The target cell pointer is computed first and held in a callee-saved register
     // across the whole body (retail's esi).
     BrickzCell* cell = &m_rows[y][x];
-    BrickzAttrMgr* attr = m_attrMgr->m_24;
-    // Clamp the lookup coordinate into the grid descriptor's extent.
+    CGameLevel* level = m_attrMgr->m_24; // the world holder's CGameLevel (ex BrickzAttrMgr)
+    // Clamp the lookup coordinate into the main plane's extent.
     i32 cx = x;
     if (x < 0) {
         cx = 0;
-    } else if (x >= attr->m_5c->m_28) {
-        cx = attr->m_5c->m_28 - 1;
+    } else if (x >= level->m_mainPlane->m_width) {
+        cx = level->m_mainPlane->m_width - 1;
     }
     i32 cy = y;
     if (y < 0) {
         cy = 0;
-    } else if (y >= attr->m_5c->m_2c) {
-        cy = attr->m_5c->m_2c - 1;
+    } else if (y >= level->m_mainPlane->m_height) {
+        cy = level->m_mainPlane->m_height - 1;
     }
-    i32 id = attr->m_5c->m_20[attr->m_5c->m_24[cy] + cx];
+    i32 id = level->m_mainPlane->m_tileGrid[level->m_mainPlane->m_colOffsets[cy] + cx];
     i32 typeCode;
     if (id == (i32)0xeeeeeeee || id == -1) {
         typeCode = 0;
     } else {
-        typeCode = attr->m_4c[id & 0xffff]->GetTypeCode(0, 0);
+        typeCode = ((CTileImageSet*)level->m_imageSets.GetAt(id & 0xffff))->GetCollisionAt(0, 0);
     }
     i32 oldFlags = cell->m_0;
     i32 keep = oldFlags & 0x1bf40000;
@@ -209,12 +212,13 @@ void CBrickzGrid::ComputeCellFlags(i32 x, i32 y, i32 id3) {
     }
 }
 
-// 0x077dc0 - flat cell setter: m_20[ m_24[y] + x ] = id (re-homed from
+// 0x077dc0 - flat cell setter: m_tileGrid[ m_colOffsets[y] + x ] = id (re-homed from
 // src/Stub/BoundaryLowerMethods.cpp; CTerrainTileLoader::Load reaches this via
-// loader->m_24 (BrickzAttrMgr) -> m_5c). __thiscall(x, y, id).
+// level->m_24 -> m_mainPlane). __thiscall(x, y, id). Ex BrickzGridDesc::SetCell -
+// the grid descriptor IS the CLevelPlane.
 RVA(0x00077dc0, 0x1d)
-void BrickzGridDesc::SetCell(i32 x, i32 y, i32 id) {
-    m_20[m_24[y] + x] = id;
+void CLevelPlane::SetCell(i32 x, i32 y, i32 id) {
+    m_tileGrid[m_colOffsets[y] + x] = id;
 }
 
 // ---------------------------------------------------------------------------
@@ -307,6 +311,3 @@ GridCell_77df0* Grid_77df0::FindNearest(GridWorld_77df0* w) {
     return best;
 }
 
-SIZE_UNKNOWN(BrickzAttrMgr);
-SIZE_UNKNOWN(BrickzButeObj);
-SIZE_UNKNOWN(BrickzGridDesc);

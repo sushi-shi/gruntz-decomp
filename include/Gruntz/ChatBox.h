@@ -74,11 +74,21 @@ public:
     i32 OnFlag10000000(); // 0x183130  page FocusBackwardN
     i32 OnFlag20000000(); // 0x183150  page FocusForwardN
 
-    CChatPage* m_page; // +0x00 parent/page back pointer (render set / catalog / roster)
-    i32 m_4;           // +0x04  (only ever zeroed; role unproven)
-    char m_pad8[0x20 - 0x08];
-    char m_wrapFlag; // +0x20  focus-wrap-enable flag (owned CMenuPage reads via m_host->CanWrap)
-    char m_pad21[0x24 - 0x21];
+    CChatPage* m_page; // +0x00 parent/page back pointer (render set / catalog / roster).
+                       //       [Settled identity: the page IS the CState::m_c
+                       //       CSpriteFactoryHolder (MenuRegion::Init @0x182ab0 types the
+                       //       stored arg CSpriteFactoryHolder*); the CChatPage view's
+                       //       +0x04/+0x10/+0x28 facets re-open the DDrawSubMgr-cluster
+                       //       identity knot, so the retype is deferred to that lane.]
+    i32 m_4;           // +0x04  (Init seeds it with the HWND; otherwise only zeroed)
+    // +0x08..+0x1f: the region rect + 2 scalars (retail Init @0x182ab0 CopyRects the
+    // rect arg into +0x08 and stores the two i32 args at +0x18/+0x1c).
+    RECT m_rect8; // +0x08  region rect (left/top/right/bottom)
+    i32 m_18;     // +0x18
+    i32 m_1c;     // +0x1c
+    // +0x20: focus-wrap-enable. A 4-byte field: Init stores the whole DWORD arg;
+    // CanWrap reads the low byte SIGNED (`movsx eax, byte [host+0x20]; and eax,1`).
+    i32 m_wrapFlag;
     CPtrList m_nodeList;     // +0x24 message-node list (head at +0x28)
     CMenuPage* m_activeNode; // +0x40 queued/active node slot (a CMenuPage)
     CString m_row0Key;       // +0x44 row0 font/asset key
