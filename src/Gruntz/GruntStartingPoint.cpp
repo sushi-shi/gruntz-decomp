@@ -108,7 +108,7 @@ extern void* g_typeNodes;
 DATA(0x0021aea8)
 extern i32 g_typeCounter;
 DATA(0x002bf464)
-extern void* g_projActCache;
+void* g_projActCache;
 extern void* g_retAddrBreadcrumb;
 extern void* GetRetAddr(); // 0x16d990
 

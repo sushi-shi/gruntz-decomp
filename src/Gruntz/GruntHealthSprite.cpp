@@ -20,7 +20,7 @@ extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from hea
 // only scans DATA() macros in the TU source, not in included headers, so the
 // binding must live in a .cpp that references the global.
 DATA(0x00244d80)
-extern CIndicatorActReg g_healthActReg; // 0x644d80
+CIndicatorActReg g_healthActReg; // 0x644d80
 
 // CGruntHealthSprite::~CGruntHealthSprite @0x011fb0 - the leaf adds no
 // destructible members beyond CUserLogic, so its dtor folds the bare CUserLogic

@@ -19,7 +19,7 @@
 
 // The per-logic-class activation dispatch table (.data, DATA-pinned).
 DATA(0x00246010)
-extern CLogicActTable g_logicActReg_646010; // 0x646010
+CLogicActTable g_logicActReg_646010; // 0x646010
 
 // The class activation handler (ILT thunk 0x403c10 -> 0xad2a0).
 extern "C" void LogicHandler_0ad2a0();

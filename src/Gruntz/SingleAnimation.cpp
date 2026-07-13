@@ -29,7 +29,7 @@ struct CSingleAnimActEntry {
 // the DATA-pinned global symbol is unchanged.
 struct CSingleAnimActReg : public CActReg {};
 DATA(0x00245f70)
-extern CSingleAnimActReg g_singleAnimActReg; // 0x645f70
+CSingleAnimActReg g_singleAnimActReg; // 0x645f70
 
 // The per-frame draw-delta mirror (_g_6bf3bc) the advance hands the sink; declared
 // extern "C" so the value-load reloc-masks against the already-matched symbol.

@@ -22,6 +22,7 @@
 #include <Gruntz/SerialObjRef.h> // CSerialObjRef::Chain (0x8c00) - the +0x34 sub-object round-trip
 #include <Gruntz/TypeKeyColl.h>
 #include <Gruntz/ActName.h> // CActName (shared)
+#include <Gruntz/ActReg.h> // CActReg - the ONE registry archetype (subsumes the old per-field globals)
 #include <Bute/ButeTree.h>
 #include <Dsndmgr/StreamVoice.h>
 #include <Wap32/ZVec.h>
@@ -40,23 +41,17 @@ extern "C" u32 g_645588;
 // (The "A" bute key @0x20a454 is the canonical s_codeA, bound in toobspikez and
 // declared below; the former per-TU g_voiceKeyA alias lost the per-rva dedup and is
 // folded away - all uses now reference s_codeA.)
-DATA(0x002514e0)
-extern i32 g_vactLo;
-DATA(0x002514e4)
-extern i32 g_vactHi;
-DATA(0x002514e8)
-extern char* g_vactBase;
-DATA(0x002514f0)
-extern i32 g_vactStride;
-DATA(0x002514ec)
-extern CVActEntry* g_vactCur;
-DATA(0x002514f8)
-extern i32 g_vactScratch;
-DATA(0x002514d8)
-extern CVActColl g_vactColl;
-DATA(0x002514dc)
-CVariantSlot* g_vactColl2;   // owner-TU definition (referenced only here)
-extern void* g_projActCache; // 0x2bf464 (?g_projActCache@@3PAXA), bound in GruntStartingPoint.cpp
+// INTERIOR-OFFSET TRAP, removed 2026-07-13. This TU used to declare EIGHT separate globals
+// here - g_vactColl (0x6514d8), g_vactColl2 (+4), g_vactLo (+8), g_vactHi (+0xc), g_vactBase
+// (+0x10), g_vactCur (+0x14), g_vactStride (+0x18), g_vactScratch (+0x20) - and it DEFINED
+// one of them (g_vactColl2) outright. They are not globals: those are the FIELDS of the one
+// CActReg at 0x6514d8, whose offsets they reproduce exactly (m_coll2/+4, m_lo/+8, m_hi/+0xc,
+// m_base/+0x10, m_cur/+0x14, m_stride/+0x18, m_scratch/+0x20 - see <Gruntz/ActReg.h>). The
+// same object is already DATA-pinned and DEFINED as `CActReg g_actReg_6514d8` in
+// GruntVoiceActReg.cpp, so 0x2514d8 carried TWO competing DATA() claims under two names.
+// Subsumed: one object, one definition, one name; the per-field scalars are gone.
+extern CActReg g_actReg_6514d8; // 0x6514d8 (defined in GruntVoiceActReg.cpp)
+extern void* g_projActCache;    // 0x2bf464 (?g_projActCache@@3PAXA), bound in GruntStartingPoint.cpp
 
 // The global game/manager registry singleton (*0x64556c; _g_mgrSettings - the C
 // alias of g_gameReg below; the 0x24556c DATA binding lives on the C++ name).
@@ -73,44 +68,22 @@ extern "C" CGameRegistry* g_gameReg;
 struct CVTrigEntry;        // an entry: first dword is the registered handler
 extern void* GetRetAddr(); // 0x16d990
 
-DATA(0x00251500)
-extern CTypeKeyColl g_vtrigColl;
 struct CVTrigEntry {
     void (CVoiceTrigger::*m_fn)(); // [entry]
 };
 SIZE_UNKNOWN(CVTrigEntry);
 
-// The voice-trigger activation-registry field globals (referenced only from this
-// TU): real definitions DATA-pinned here (owner TU); canonical externs in <Globals.h>.
-DATA(0x00251504)
-CVariantSlot* g_vtrigColl2;
-DATA(0x00251508)
-i32 g_vtrigLo;
-DATA(0x0025150c)
-i32 g_vtrigHi;
-DATA(0x00251510)
-char* g_vtrigBase;
-DATA(0x00251514)
-CVTrigEntry* g_vtrigCur;
-DATA(0x00251518)
-i32 g_vtrigStride;
-DATA(0x00251520)
-i32 g_vtrigScratch;
-
-// The inlined coordinate->Entry* lookup the registration resolves the slot with.
-static inline CVTrigEntry* VTrigLookup(i32 coord) {
-    g_vtrigScratch = 0;
-    if (coord >= g_vtrigLo && coord <= g_vtrigHi) {
-        return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
-    }
-    if ((i32)((_zvec*)&g_vtrigColl)->GrowTo(coord, 0)) {
-        return (CVTrigEntry*)(g_vtrigBase + (coord - g_vtrigLo) * g_vtrigStride);
-    }
-    void* item = g_projActCache;
-    g_retAddrBreadcrumb = GetRetAddr();
-    g_vtrigColl2->Set(&g_vtrigColl, (i32)item, 0xc);
-    return g_vtrigCur;
-}
+// SAME INTERIOR-OFFSET TRAP as the 0x6514d8 block above, and the old comment right here
+// spelled the shape out without drawing the conclusion: "the SAME range/cache shape as every
+// FireActivation registry: g_vtrigColl base + the lo/hi/base/stride/cur/scratch fields".
+// That IS <Gruntz/ActReg.h>'s CActReg. The seven globals this TU used to DEFINE
+// (g_vtrigColl2 +4, g_vtrigLo +8, g_vtrigHi +0xc, g_vtrigBase +0x10, g_vtrigCur +0x14,
+// g_vtrigStride +0x18, g_vtrigScratch +0x20) are its FIELDS, and VTrigLookup was
+// CActReg::ResolveEntry hand-inlined over them - identical statement for statement.
+// One object, one definition. The registry the voice trigger registers into is the CActReg
+// at 0x651500; nothing else was ever there.
+DATA(0x00251500)
+CActReg g_vtrigActReg; // 0x651500 (CVoiceTrigger's own activation registry)
 
 // The shared activation-NAME registry (the first block interns "A"). g_buteTree
 // (0x6bf620, mangled-named) doubles as the name->id map; g_typeCounter (0x61aea8)
@@ -436,7 +409,7 @@ CVoiceTrigger::CVoiceTrigger(CGameObject* obj) : CUserLogic(obj) {
 // (FUN_00408710, __thiscall ret 8). A free init thunk (no `this`); reloc-masked.
 RVA(0x00119dc0, 0x15)
 void CGruntVoice::InitActReg() {
-    ((CZDArrayDerived*)&g_vactColl)->Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_actReg_6514d8)->Construct(2000, 2010);
 }
 
 // ===========================================================================
@@ -461,7 +434,7 @@ void CGruntVoice::Dispatch(i32 coord) {
 // [2000, 2010] via the shared registry ctor (0x408710). Free init thunk.
 RVA(0x0011a320, 0x15)
 void CVoiceTrigger::InitActReg() {
-    ((CZDArrayDerived*)&g_vtrigColl)->Construct(2000, 2010);
+    ((CZDArrayDerived*)&g_vtrigActReg)->Construct(2000, 2010);
 }
 
 // CVoiceTrigger::FireActivation @0x11a3a0 - vtable slot 4. Look the activation
@@ -471,9 +444,9 @@ void CVoiceTrigger::InitActReg() {
 // CSecretTeleporterTrigger::FireActivation.
 RVA(0x0011a3a0, 0x102)
 void CVoiceTrigger::FireActivation(i32 coord) {
-    CVTrigEntry* e = VTrigLookup(coord);
+    CVTrigEntry* e = (CVTrigEntry*)g_vtrigActReg.ResolveEntry(coord);
     if (e->m_fn != 0) {
-        CVTrigEntry* e2 = VTrigLookup(coord);
+        CVTrigEntry* e2 = (CVTrigEntry*)g_vtrigActReg.ResolveEntry(coord);
         (this->*(e2->m_fn))();
     }
 }
@@ -505,7 +478,7 @@ void CVoiceTrigger::RegisterActs() {
         ((CString*)slot)->operator=(s_codeA);
         g_typeCounter++;
     }
-    *(void**)VTrigLookup(id) = (void*)&VTrigLogic_11a700;
+    *(void**)g_vtrigActReg.ResolveEntry(id) = (void*)&VTrigLogic_11a700;
 }
 
 // CVoiceTrigger::Tick @0x11a700 - query the entity under the trigger's screen

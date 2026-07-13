@@ -65,7 +65,7 @@ struct CSingleFrameActEntry {
 // unchanged.
 struct CSingleFrameActReg : public CActReg {};
 DATA(0x00245ef0)
-extern CSingleFrameActReg g_singleFrameActReg; // 0x645ef0
+CSingleFrameActReg g_singleFrameActReg; // 0x645ef0
 
 // CSingleFrameMessage::InitActReg @0x0ab530 - construct the class's activation-
 // coordinate registry singleton (g_singleFrameActReg @0x645ef0) over the fixed

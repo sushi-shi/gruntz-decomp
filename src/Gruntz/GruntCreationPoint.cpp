@@ -33,7 +33,7 @@ struct CCreationPointActEntry {
 // unchanged.
 struct CCreationPointActReg : public CActReg {};
 DATA(0x00244700)
-extern CCreationPointActReg g_creationPointActReg; // 0x644700
+CCreationPointActReg g_creationPointActReg; // 0x644700
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Defined in SpriteResource.cpp/Projectile.cpp; declared extern "C"

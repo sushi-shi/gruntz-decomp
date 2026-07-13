@@ -26,7 +26,7 @@ struct CAniCycleActEntry {
 // unchanged.
 struct CAniCycleActReg : public CActReg {};
 DATA(0x00246088)
-extern CAniCycleActReg g_aniCycleActReg; // 0x646088
+CAniCycleActReg g_aniCycleActReg; // 0x646088
 
 // CAniCycle::GetTypeTag (0x0000f450) is now an inline member in the class header.
 

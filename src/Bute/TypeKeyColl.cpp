@@ -80,6 +80,20 @@ DATA(0x002bf658)
 extern i32 g_typeLo;
 DATA(0x002bf65c)
 extern i32 g_typeHi;
+// @identity-TODO INTERIOR-OFFSET CLUSTER - do NOT "fix" these by defining them.
+// g_typeColl (0x6bf650) and the eight scalars around it are ONE object, not nine globals:
+//     g_typeColl +0x00   g_typeColl2 +0x04  g_typeLo  +0x08  g_typeHi    +0x0c
+//     g_typeBase +0x10   g_typeCur   +0x14  g_typeStride +0x18  g_typeNodes +0x1c
+//     g_typeCount +0x20
+// which is EXACTLY <Gruntz/ActReg.h>'s CActReg field map (m_coll/m_coll2/m_lo/m_hi/m_base/
+// m_cur/m_stride/pad1c/m_scratch), and GruntVoice.cpp's ActNameLookup is CActReg::ResolveEntry
+// hand-inlined over them, statement for statement. So the activation-NAME registry at
+// 0x6bf650 is a CActReg like every other one.
+// I promoted five of these to DEFINITIONS in this batch to clear them off the undefined-DATA
+// list, and that was WRONG - it fabricates five globals at interior offsets of a real object.
+// Reverted. The correct fix is to SUBSUME them onto one CActReg (as done for the two
+// registries in GruntVoice.cpp), but they are referenced by ~20 TUs, so that is its own pass -
+// not a drive-by. Left undefined and honest until then.
 DATA(0x002bf660)
 extern char* g_typeBase;
 DATA(0x002bf668)

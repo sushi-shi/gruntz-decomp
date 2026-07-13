@@ -55,6 +55,22 @@ def _declared_sizes() -> dict:
     return out
 
 
+def _stale_sources() -> list:
+    """Source files NEWER than build/gen/structs.json.
+
+    A stale structs.json is not a smaller problem than a missing one - it is a WORSE one,
+    because it answers. It reports the sizes of a tree that no longer exists, so this check
+    can both FALSE-FAIL (it flagged CSbiRectSub as emitting the wrong operator-new immediate
+    while the obj was in fact already emitting the correct 0x30) and, far worse, FALSE-PASS -
+    silently blessing the exact defect it exists to catch. `gruntz build --fast` does not
+    regenerate structs.json, so this is easy to hit. Refuse to answer instead of guessing.
+    """
+    if not _STRUCTS.is_file():
+        return []
+    ts = _STRUCTS.stat().st_mtime
+    return [p for p in source_files() if p.stat().st_mtime > ts]
+
+
 def _computed_sizes() -> dict:
     if not _STRUCTS.is_file():
         return {}
@@ -93,6 +109,14 @@ def check_correctness() -> int:
         print("class-size correctness: SKIPPED - build/gen/structs.json missing "
               "(run a build first; a stale/absent structs.json cannot be trusted)")
         return 0
+    stale = _stale_sources()
+    if stale:
+        print(f"class-size correctness: REFUSING TO ANSWER - build/gen/structs.json is STALE "
+              f"({len(stale)} source file(s) are newer, e.g. {rel(stale[0])}). It would report "
+              f"the sizes of a tree that no longer exists - which can false-FAIL and, worse, "
+              f"false-PASS the very defect this check exists to catch. Run `gruntz structs` "
+              f"(or a full `gruntz build`); `--fast` does NOT regenerate it.", file=sys.stderr)
+        return 1
     declared, ndefs, lb = _declared_sizes(), _def_counts(), _loadbearing()
     bad, partial, unverifiable = [], [], []
     for c, n in sorted(declared.items()):

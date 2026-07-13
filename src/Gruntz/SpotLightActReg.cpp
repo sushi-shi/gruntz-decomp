@@ -25,7 +25,7 @@ extern char s_actKeyB[];
 
 // CSpotLight's per-class activation registry (untyped .data named by address, typed CActReg).
 DATA(0x00246188)
-extern CActReg g_actReg_646188; // 0x646188
+CActReg g_actReg_646188; // 0x646188
 
 // The per-frame handler entries (ILT thunks) this registrar binds.
 extern "C" void Handler_4025db(); // 0x4025db

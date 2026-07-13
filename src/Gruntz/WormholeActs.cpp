@@ -39,7 +39,7 @@ struct CWormholeActEntry {
 // unchanged.
 struct CWormholeActReg : public CActReg {};
 DATA(0x002445c0)
-extern CWormholeActReg g_wormholeActReg; // 0x6445c0
+CWormholeActReg g_wormholeActReg; // 0x6445c0
 
 // CWormhole::InitActReg @0x03f210 - construct the class's activation-coordinate
 // registry singleton (g_wormholeActReg @0x6445c0) over the fixed range

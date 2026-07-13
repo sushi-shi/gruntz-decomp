@@ -34,7 +34,7 @@ struct CBehindCandyActEntry {
 // global symbol is unchanged.
 struct CBehindCandyActReg : public CActReg {};
 DATA(0x00245f98)
-extern CBehindCandyActReg g_behindCandyActReg; // 0x645f98
+CBehindCandyActReg g_behindCandyActReg; // 0x645f98
 
 // The global the advance hands the sink (_g_6bf3bc; the per-frame draw-delta
 // mirror). Declared extern "C" here so the value-load reloc-masks against the

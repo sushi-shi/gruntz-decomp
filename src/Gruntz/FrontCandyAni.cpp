@@ -250,7 +250,7 @@ struct CFrontCandyActEntry {
 // global symbol is unchanged.
 struct CFrontCandyActReg : public CActReg {};
 DATA(0x002460b0)
-extern CFrontCandyActReg g_frontCandyActReg; // 0x6460b0
+CFrontCandyActReg g_frontCandyActReg; // 0x6460b0
 
 // CFrontCandyAni::InitActReg @0x0ad130 - construct the class's activation-
 // coordinate registry singleton (g_frontCandyActReg @0x6460b0) over the fixed

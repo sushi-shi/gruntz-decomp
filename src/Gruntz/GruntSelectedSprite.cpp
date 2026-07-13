@@ -20,7 +20,7 @@ extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from hea
 // DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
 // DATA() only in TU source, not headers).
 DATA(0x00244da8)
-extern CIndicatorActReg g_selectedActReg; // 0x644da8
+CIndicatorActReg g_selectedActReg; // 0x644da8
 
 // ~CGruntSelectedSprite @0x011e80 - the leaf adds no destructible members beyond
 // CUserLogic, so its dtor folds the bare CUserLogic teardown: store the

@@ -114,7 +114,7 @@ struct CLightFxActEntry {
 // global symbol is unchanged.
 struct CLightFxActReg : public CActReg {};
 DATA(0x00245ad0)
-extern CLightFxActReg g_lightFxActReg; // 0x645ad0
+CLightFxActReg g_lightFxActReg; // 0x645ad0
 
 // CLightFx::InitActReg @0x9d140 - construct the class's activation-coordinate
 // registry singleton (g_lightFxActReg @0x645ad0) over the fixed range

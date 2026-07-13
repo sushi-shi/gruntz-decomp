@@ -21,7 +21,7 @@ extern "C" CGameRegistry* g_gameReg; // *0x24556c singleton (view moved from hea
 // DATA-bind the class registry singleton in the main_file .cpp (labels.py scans
 // DATA() only in TU source, not headers).
 DATA(0x00244d30)
-extern CIndicatorActReg g_powerupActReg; // 0x644d30
+CIndicatorActReg g_powerupActReg; // 0x644d30
 
 // The (de)serialization archive is the shared CSerialArchive (Read @ +0x2c / Write
 // @ +0x30), pulled in via the header - the former per-TU PupArchive view is folded.

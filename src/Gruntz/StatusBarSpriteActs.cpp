@@ -40,7 +40,7 @@ SIZE_UNKNOWN(CStatusBarSpriteActEntry);
 struct CStatusBarSpriteActReg : public CActReg {};
 SIZE_UNKNOWN(CStatusBarSpriteActReg);
 DATA(0x0024e670)
-extern CStatusBarSpriteActReg g_statusBarSpriteActReg; // 0x64e670
+CStatusBarSpriteActReg g_statusBarSpriteActReg; // 0x64e670
 
 // StatusBarSpriteStep @0x10c0f0 - the CStatusBarSprite worker-pump (free __cdecl,
 // /GX): the controller lives at obj->m_7c; dispatch on its state id, building the

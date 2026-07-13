@@ -20,7 +20,7 @@
 
 // CCursorSnapSprite's per-logic-class activation dispatch table (.data, DATA-pinned).
 DATA(0x0022bfa0)
-extern CLogicActTable g_logicActReg_62bfa0; // 0x62bfa0
+CLogicActTable g_logicActReg_62bfa0; // 0x62bfa0
 
 // The class activation handler (ILT thunk 0x401717 -> 0x39910).
 extern "C" void LogicHandler_039910();
