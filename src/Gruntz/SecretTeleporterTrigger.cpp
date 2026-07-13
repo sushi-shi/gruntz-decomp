@@ -15,7 +15,8 @@
 #include <Gruntz/MovingLogicBase.h> // CMovingLogicBase::Serialize (0x16e7f0) - shared serialize chain
 #include <Wap32/ZVec.h>             // _zvec::GrowTo (Find 0x16da80)
 #include <Wap32/ZDArrayDerived.h>   // CZDArrayDerived::Construct (0x408710)
-#include <Gruntz/TriggerMgr.h>      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
+#include <Gruntz/TriggerMgr.h>
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)      // CTriggerMgr::HitTestCell (0x75af0) / CellDispatch (0x6bcb0)
 #include <Gruntz/GruntSpawnConfig.h> // CGruntSpawnConfig::SpawnVoiceDriver (the cue)
 #include <Gruntz/Trigger.h>          // CTrigger (point-probe result, its m_10 HUD sprite)
 #include <Gruntz/GameRegistry.h>     // the canonical *0x24556c singleton (m_world/m_cmdGrid/
@@ -410,7 +411,7 @@ i32 CSecretTeleporterTrigger::SpawnTeleporter() {
             CGameRegistry* g = g_gameReg;
             i32 ey = eo->m_screenY;
             i32 ex = eo->m_screenX;
-            CViewRect* rc = (CViewRect*)(g->m_world->m_24->m_5c + 0x40);
+            CViewRect* rc = (CViewRect*)&g->m_world->m_24->m_mainPlane->m_tileOriginX;
             if (ex < rc->m_right && ex >= rc->m_left && ey < rc->m_bottom && ey >= rc->m_top) {
                 ((CGruntSpawnConfig*)g->m_cueSink)
                     ->SpawnVoiceDriver((i32)hit, 0x3fc, -1, 0, -1, -1);

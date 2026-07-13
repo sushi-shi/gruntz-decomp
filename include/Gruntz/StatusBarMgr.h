@@ -417,6 +417,10 @@ public:
         i32 extra
     );
     i32 ClickHilite(i32 x, i32 y, i32 z);
+    // 0xff9d0 (unbound; between ClickHilite 0xff850 and ClickToggle 0xff9f0): the
+    // HUD click-at-point dispatch CPlay::DispatchHudClick runs on m_guts (thunk
+    // 0x2559). Reloc-masked until reconstructed.
+    i32 ClickAt_ff9d0(i32 a, i32 x, i32 y);
     i32 ClickToggle(i32 x, i32 y, i32 z);
     CSbiRect* HitTestRects(i32 x, i32 y);
     void ResetWidgets(i32 keepLists);

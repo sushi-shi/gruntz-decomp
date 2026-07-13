@@ -15,6 +15,7 @@ extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x
                                 // globals (defined in 5 TUs each; LNK2005)
 #include <Gruntz/BattlezData.h>
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/AniElement.h>
 #include <rva.h>
 #include <string.h>
@@ -114,7 +115,7 @@ enum GruntDeathType {
 #define DEATH_CUE(tag)                                                                             \
     do {                                                                                           \
         CGameRegistry* _g = g_gameReg;                                                             \
-        if (GruntPointVisible(_g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {           \
+        if (GruntPointVisible((i32)&_g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {           \
             _g->m_cueSink->CueA(this, (tag), -1, 0, -1, -1);                                       \
         }                                                                                          \
     } while (0)
@@ -393,7 +394,7 @@ i32 CGrunt::LoadGruntDeathAnimations(i32 deathType, i32 a2) {
             m_154->CacheFirstFrame(*(char**)&m_44c);
             {
                 CGameRegistry* g = g_gameReg;
-                CCueRect* r = (CCueRect*)((char*)g->m_world->m_24->m_5c + 0x40);
+                CCueRect* r = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_tileOriginX;
                 i32 x = m_10->m_5c;
                 i32 y = m_10->m_60;
                 if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
@@ -412,7 +413,7 @@ pathA:
     m_154->CacheFirstFrame(*(char**)&m_44c);
     {
         CGameRegistry* g = g_gameReg;
-        if (GruntPointVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+        if (GruntPointVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
             g->m_cueSink->CueSpawn(this, 3, -1, -1, -1);
         }
     }

@@ -36,6 +36,7 @@
 #include <DDrawMgr/DirectDrawMgr.h> // CDirectDrawMgr::FindFwd/FindBack (display-mode pool)
 #include <Io/SaveGame.h>
 #include <Gruntz/Play.h>
+#include <Gruntz/StatusBarMgr.h> // canonical CStatusBarMgr (CPlay::m_guts; SetVideoMode resize hooks)
 #include <Gruntz/Demo.h> // canonical CDemo (the CPlay-derived demo state; its dtor lives in this obj)
 #include <Gruntz/Attract.h>  // canonical CAttract (was a reduced local ODR-landmine twin)
 #include <Gruntz/GameMode.h> // canonical CMenuState / CCreditsState / CBootyState / CMultiBootyState
@@ -4609,10 +4610,10 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                     CPlay* st = (CPlay*)m_curState;
                     st->ResetViewport();
                     if (st->m_guts != 0) {
-                        st->m_guts->m_614 = m_modeH;
-                        if (st->m_guts->m_state == 0) {
-                            st->m_guts->StepBracketL();
-                            st->m_guts->StepBracketR();
+                        st->m_guts->m_barFrameGate = m_modeH;
+                        if (st->m_guts->m_position == 0) {
+                            st->m_guts->RefreshA();
+                            st->m_guts->winapi_0fe520_SetRect();
                             ReportMapTooSmall(
                                 "This map is too small to be displayed under your "
                                 "desired video resolution. Default resolution will "
@@ -4620,9 +4621,9 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
                             );
                             return 0;
                         }
-                        if (st->m_guts->m_state == 1) {
-                            st->m_guts->StepBracketR();
-                            st->m_guts->StepBracketL();
+                        if (st->m_guts->m_position == 1) {
+                            st->m_guts->winapi_0fe520_SetRect();
+                            st->m_guts->RefreshA();
                         }
                     }
                     ReportMapTooSmall(
@@ -4649,13 +4650,13 @@ i32 CGruntzMgr::SetVideoMode(i32 w, i32 h, i32 flag) {
         CPlay* st = (CPlay*)m_curState;
         st->ResetViewport();
         if (st->m_guts != 0) {
-            st->m_guts->m_614 = h;
-            if (st->m_guts->m_state == 0) {
-                st->m_guts->StepBracketL();
-                st->m_guts->StepBracketR();
-            } else if (st->m_guts->m_state == 1) {
-                st->m_guts->StepBracketR();
-                st->m_guts->StepBracketL();
+            st->m_guts->m_barFrameGate = h;
+            if (st->m_guts->m_position == 0) {
+                st->m_guts->RefreshA();            // 0xfe460 (']'/'[' resize re-place pair)
+                st->m_guts->winapi_0fe520_SetRect(); // 0xfe520
+            } else if (st->m_guts->m_position == 1) {
+                st->m_guts->winapi_0fe520_SetRect();
+                st->m_guts->RefreshA();
             }
         }
     }

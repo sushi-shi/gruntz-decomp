@@ -30,6 +30,7 @@
 #include <Gruntz/GameRegistry.h>
 #include <Gruntz/Play.h> // the real CPlay : CState (the method owner)
 #include <Gruntz/View.h> // the CSpriteFactoryHolder chain (renderer A, render state, draw surface)
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (the m_24 level + scroll origin)
 #include <DDrawMgr/DDSurface.h> // the real CDDSurface (render-flip surface; +0x08 held COM surface)
 #include <Gruntz/GruntzMgr.h>   // CGruntzMgr (base CGameMgr::m_fps @+0x18)
 #include <stdio.h>              // engine sprintf (reloc-masked)
@@ -78,8 +79,8 @@ void CPlay::DrawDebugStats() {
         strcat(buf, scratch);
     }
     if (g_debugFlags & 0x4) {
-        CGameViewport::CameraGeom* p = (CGameViewport::CameraGeom*)m_c->m_24->m_5c;
-        sprintf(scratch, " Pos = %i,%i", p->m_84, p->m_88);
+        CLevelPlane* p = m_c->m_24->m_mainPlane;
+        sprintf(scratch, " Pos = %i,%i", p->m_originX, p->m_originY);
         strcat(buf, scratch);
     }
     if (g_debugFlags & 0x40) {

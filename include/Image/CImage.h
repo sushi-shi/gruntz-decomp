@@ -1,7 +1,7 @@
 #ifndef SRC_IMAGE_CIMAGE_H
 #define SRC_IMAGE_CIMAGE_H
 
-class CParseSource; // folded CImageSource
+struct CParseSource; // folded CImageSource (struct: the class-key is MANGLING-load-bearing - PAU in the CGameLevel/CImage source-taking methods)
 
 class CDDrawPtrCollections; // folded CImageSurfacePool
 

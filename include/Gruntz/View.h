@@ -42,9 +42,16 @@ struct CGMInputObj;
 // include the real header.
 class CDDSurface;
 
-// The placed-object display list the warlord-sprite loader walks (hung off
-// renderer A at +0x10; see CRenderer::m_10). Each node's +0x8 is a placed object.
-struct CWarlordListNode; // fully defined in CPlay.cpp
+// The placed-object display list the warlord-sprite loader + the visible-entity
+// notify walk (hung off renderer A at +0x10; see CRenderer::m_10). Each node's
+// +0x8 is a placed CGameObject (<Gruntz/UserLogic.h>).
+struct CGameObject;
+SIZE_UNKNOWN(CWarlordListNode);
+struct CWarlordListNode {
+    CWarlordListNode* m_0; // +0x00  next
+    char p4[0x8 - 0x4];
+    CGameObject* m_8; // +0x08  placed game object
+};
 SIZE_UNKNOWN(CWarlordListHead);
 struct CWarlordListHead {
     char p0[0x4];
@@ -94,19 +101,19 @@ struct CRenderer {
     i32 m_1c; // +0x1c  live game-object count (CPlay::DrawDebugStats "Objs = %i")
 };
 
-// The draw-surface object at m_c->m_24 is the ONE real CGameViewport
-// (<Gruntz/GameRegistry.h>) - the former per-TU CDrawSurface render-facet view is
-// folded onto it (PushView/PreStep/PostStep/SetClipRect + the SViewRect viewport +
-// the CameraGeom camera block all live there now, afx-neutral). The render TUs reach
-// m_24->m_5c's CameraGeom by cast (m_5c is a raw int base shared with the CGrunt cue
-// helpers). No separate view here.
+// The draw-surface object at m_c->m_24 is the ONE real CGameLevel
+// (<Gruntz/GameLevel.h>) - the former per-TU CDrawSurface render-facet view AND the
+// former GameRegistry.h `CGameViewport` facet are both folded onto it ("PushView" IS
+// ?VisitVisible@CGameLevel@@ @0x15dc90, "SetClipRect" IS ?BuildAllPlanes@CGameLevel@@
+// @0x15da80; the "+0x10 viewport rect" is CGameLevel::m_planeCtx, the "+0x5c camera
+// geom" is CGameLevel::m_mainPlane, a CLevelPlane). No separate view here.
 
 // The remaining shared sub-objects of CSpriteFactoryHolder are the ONE real classes,
 // NOT View.h views (all former CSpriteFactoryHolder facet views are folded away):
 //   * +0x04 render-pump / draw target -> CDrawTarget      (<Gruntz/ResMgr.h>)
 //   * +0x08 renderer A / +0x0c renderer B -> CRenderer    (below; polymorphic engine class)
 //   * +0x10 image/name registry -> CImageRegistry         (<Gruntz/ResMgr.h>)
-//   * +0x24 draw surface / viewport -> CGameViewport       (<Gruntz/GameRegistry.h>)
+//   * +0x24 draw surface / level -> CGameLevel             (<Gruntz/GameLevel.h>)
 //   * +0x28 sound registry (+0x2c pooled res) -> CSoundRegistry (<Gruntz/ResMgr.h>)
 //   * +0x2c anim registry -> CAnimRegistry                 (<Gruntz/ResMgr.h>)
 // The one class kept here (CRenderer) needs the polymorphic renderer vtable; it stays

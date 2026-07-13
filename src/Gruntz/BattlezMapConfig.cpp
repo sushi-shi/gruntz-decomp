@@ -49,6 +49,7 @@
 #include <Gruntz/Brickz.h>
 #include <Gruntz/GruntSpawnConfig.h>
 #include <Wwd/WwdFile.h>
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <rva.h>
 
 #include <Gruntz/CoordNode.h>    // the shared coord-list node
@@ -3230,8 +3231,9 @@ i32 CBattlezMapConfig::winapi_02e3a0_PtInRect(i32 unitArg) {
         if (elapsed >= *(__int64*)&m_scratch80) {
             unit->m_390 = 0;
             CGameObject* lvl = unit->m_object;
-            char* chain = (char*)g_gameReg->m_world->m_24->m_5c;
-            RECT* hit = (RECT*)(chain + 0x40);
+            // On-screen test against the main plane's tile origin/extent quad
+            // (+0x40..+0x4c), overlaid as a RECT (the sanctioned int-quad read).
+            RECT* hit = (RECT*)&g_gameReg->m_world->m_24->m_mainPlane->m_tileOriginX;
             if (lvl->m_screenX < hit->right && lvl->m_screenX >= hit->left
                 && lvl->m_screenY < hit->bottom && lvl->m_screenY >= hit->top) {
                 ((CGruntSpawnConfig*)(void*)g_gameReg->m_cueSink)

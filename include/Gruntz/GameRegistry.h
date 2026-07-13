@@ -103,51 +103,17 @@ class CLightFxMgr;
 struct CRenderer;     // +0x0c  renderer B (present) / resource worker holder (View.h)
 struct CAnimRegistry; // +0x2c  anim/third registry (ResMgr.h, real class)
 
-// The level/view object reached as g->m_30->m_24 (== CState::m_c holder's +0x24): the
-// on-screen bar RECT / viewport at +0x10, the world->screen camera geom at +0x5c
-// (WrapCoord; its +0x40 is the rect base the on-screen cue gate's visibility helper
-// reads). This is the ONE real +0x24 draw-surface/viewport class: the afx-neutral
-// menu bar / CGrunt cue path AND the MFC render TUs (CPlay Render draw chain) share it
-// - the former per-TU `CDrawSurface` render-facet view (View.h) is folded away here.
-struct CGameViewport {
-    // Render sub-steps the MFC state TUs drive (external/reloc-masked __thiscall):
-    void PushView(void* view, void* renderer); // 0x15dc90
-    void PreStep();                            // per-frame view pre-step
-    void PostStep();                           // per-frame view post-step
-    void SetClipRect(void* r);                 // 0x15da80 (ClampViewport apply-tail; RECT*)
-
-    // +0x10 viewport rect. Named two ways over the same 16 bytes: the afx-neutral menu
-    // bar reads the raw i32[4] (m_barRect); the MFC render TUs read the named
-    // {left,top,right,bottom} viewport fields.
-    struct SViewRect {
-        i32 left, top, right, bottom;
-    };
-    // +0x5c world->screen camera geom (reached as a raw int base by the CGrunt cue
-    // helpers via (m_5c + 0x40), cast to CViewport by the menu bar, and to this by the
-    // render TUs). +0x40 is the on-screen visible rect; +0x84/+0x88 the world blit src.
-    struct CameraGeom {
-        char p0[0x30];
-        // +0x30/+0x34: the world's pixel extent. CObjectDropper::Update wraps its
-        // drifting double position against them (`m_posX >= (double)geom->m_worldW ->
-        // m_posX = 0.0`), reached as holder->m_24->m_5c->m_worldW.
-        i32 m_worldW; // +0x30  world width  (screen px)
-        i32 m_worldH; // +0x34  world height (screen px)
-        char p38[0x40 - 0x38];
-        i32 m_originX; // +0x40
-        i32 m_originY; // +0x44
-        char p48[0x84 - 0x48];
-        i32 m_84; // +0x84
-        i32 m_88; // +0x88
-    };
-
-    char m_pad0[0x10];
-    union {
-        i32 m_barRect[4]; // +0x10  on-screen bar RECT (left,top,right,bottom)
-        SViewRect m_viewport;
-    };
-    char m_pad20[0x5c - 0x20];
-    i32 m_5c; // +0x5c  camera-geom base (int; cast to CameraGeom*/CViewport* at deref)
-};
+// The level/view object reached as g->m_30->m_24 (== CState::m_c holder's +0x24) IS
+// the canonical CGameLevel (<Gruntz/GameLevel.h>) - the former `CGameViewport` facet
+// here was a FAKE NAME for it, proven by the retail call targets: "PushView" is
+// ?VisitVisible@CGameLevel@@ @0x15dc90, "SetClipRect" is ?BuildAllPlanes@CGameLevel@@
+// @0x15da80 (both direct rel32, GameLevel.cpp), the "+0x10 viewport rect" is
+// CGameLevel::m_planeCtx (the LevelCoordRect the plane rebuild consumes) and the
+// "+0x5c camera geom" is CGameLevel::m_mainPlane (a CLevelPlane: tile origin at
+// +0x40/+0x44, integer scroll origin at +0x84/+0x88). The two fabricated
+// PreStep/PostStep methods (phantoms - no retail address) are gone with it.
+// Forward-declared: the deref TUs include <Gruntz/GameLevel.h>.
+class CGameLevel;
 
 // The +0x30 game resource/level manager (the retail CResMgr; ResMgr.h models the
 // same object for the loaders and CPlay). Every view of *0x24556c reaches its
@@ -170,11 +136,11 @@ struct CSpriteFactoryHolder {
     // (0x136e20) + SoundStream::TickSubManagers (0x137ac0), BOTH 100%% EXACT in the tree -
     // a sound tick, not a profiler.
     SoundStream* m_soundStream;
-    CGameViewport* m_24; // +0x24  level/view object (bar RECT + viewport); the render facet
-                         //         reaches it as the draw surface (cast to CDrawSurface)
-    CSndHost* m_28;      // +0x28  sound registry (CSndHost cue facet <Gruntz/SoundCue.h>; the
-                         //         render/resource facet reaches it as CSoundRegistry, cast).
-                         //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate.
+    CGameLevel* m_24; // +0x24  the level object (canonical CGameLevel: planeCtx rect,
+                      //         main plane, VisitVisible/BuildAllPlanes render steps)
+    CSndHost* m_28;   // +0x28  sound registry (CSndHost cue facet <Gruntz/SoundCue.h>; the
+                      //         render/resource facet reaches it as CSoundRegistry, cast).
+                      //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate.
     CAnimRegistry* m_animRegistry; // +0x2c  anim/third registry (real ResMgr.h class)
 };
 
@@ -391,8 +357,9 @@ struct CGameRegistry {
     i32 m_isEasyMode; // +0x118  "Easy_Mode" (hazard gate: m_isEasyMode && m_134==1)
     i32 m_inputFlag; // +0x11c  StoreInputFlag target (FLAG: some consumers read it as sound volume)
     i32 m_inputStateVal; // +0x120  StoreInputState target (FLAG: consumer-side role diverges)
-    i32 m_scrollSpeed;   // +0x124  "Scroll_Speed"
-    char m_pad128[0x130 - 0x128];
+    i32 m_scrollSpeed; // +0x124  "Scroll_Speed"
+    i32 m_128;         // +0x128  per-frame play word (CPlay::OnExit clears it on state exit)
+    char m_pad12c[0x130 - 0x12c];
     // +0x130  play-sub-mode gate within active play (m_134==1). Proven behavior: when 0,
     // the RNG runs deterministic/replay-style (CoinFlip), secret-level triggers initialize
     // (CSecretLevelTrigger), and per-level info text shows; when nonzero, a fixed HUD banner

@@ -14,6 +14,7 @@
 #include <rva.h>
 #include <Gruntz/BattlezMapConfig.h>
 #include <Gruntz/StatusBarMgr.h>
+#include <Gruntz/TriggerMgr.h> // canonical CTriggerMgr (CWorld::m_68; ClearGridRange)
 #include <Gruntz/FontConfig.h>
 #include <Gruntz/GameLevel.h>
 #include <Wwd/WwdFile.h>
@@ -902,13 +903,13 @@ void CMulti::Teardown() {
     }
     // The +0x320 attract overlay is destroyed via CLightFxRender::Ctor (0xa3360) - the
     // engine reuses the field-zeroing "ctor" as the pre-free cleanup - then the engine
-    // free. (Was the CLobbyObjA decl-only view; m_overlayActive is the i32 gate reused
+    // free. (Was the CLobbyObjA decl-only view; m_lightFx is the i32 gate reused
     // as the CLightFxRender* here.)
-    CLightFxRender* p320 = (CLightFxRender*)m_overlayActive;
+    CLightFxRender* p320 = m_lightFx;
     if (p320) {
         p320->Ctor();
         ::operator delete(p320);
-        m_overlayActive = 0;
+        m_lightFx = 0;
     }
     Mgr()->m_isEffectsEnabled = m_590;
     CPlayDtorBody();
@@ -998,7 +999,7 @@ void ShowHudMessage(
 // /GX RECT+CString frame-packing difference (0x14 vs retail 0x10). See Play.cpp.
 RVA(0x000b63f0, 0x11b)
 i32 CMulti::FrameSlot28(i32 arg) {
-    m_4w()->m_60->Method_11c7b0();
+    m_4w()->m_60->DtorBody(); // 0x20a4 -> CGruntSpawnConfig::DtorBody @0x11c7b0
     m_savedClock = (i32)g_645588;
     if (m_40) {
         Method_cef50();
@@ -1017,7 +1018,7 @@ i32 CMulti::FrameSlot28(i32 arg) {
     ShowHudMessage(m_c, &s, &r, 0x78, 1, 0xff, 0xff, 0, 1);
     RetireScene(0x50, 0x3e8, 0, 1); // 0xfa8f0 CState::RetireScene (inherited via CPlay, cast-free)
     if (m_4w() && m_4w()->m_68) {
-        m_4w()->m_68->Method_6bd40(5);
+        m_4w()->m_68->ClearGridRange(5); // 0x41b0 -> CTriggerMgr::ClearGridRange @0x6bd40
     }
     return 1;
 }
@@ -1500,7 +1501,7 @@ void CMulti::PumpB() {
         mgr->m_c->Blit34(mgr->m_4->m_14, mgr->m_4->m_18);
     }
     ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadMainStatusBarSprite();
-    if (m_overlayActive != 0) {
+    if (m_lightFx != 0) {
         CMultiSubDC* fx = ((CMultiSubDC*)m_guts);
         if (fx->m_0 != 2 && fx->m_mode != 5) {
             RECT rc;
@@ -1512,7 +1513,7 @@ void CMulti::PumpB() {
                 rc.top = cx;
                 SetRect(&rc, cy - 140, 5, cy - 20, 125);
             }
-            PBSub320* ov = (PBSub320*)m_overlayActive;
+            PBSub320* ov = (PBSub320*)m_lightFx;
             ov->Tick1fa0(g_645584, 0);
             ov->Render14dd(mgr->m_4->m_14, &rc);
         }

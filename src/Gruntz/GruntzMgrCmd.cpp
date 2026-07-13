@@ -1019,10 +1019,10 @@ i32 CGruntzMgr::HandleCommand(i32 p1, i32 nID, i32 p3) {
                     return 1;
                 }
                 if (ps->m_guts) {
-                    if (ps->m_guts->m_busyA) {
+                    if (ps->m_guts->m_toggleActive) {
                         return 1;
                     }
-                    if (ps->m_guts->m_busyB) {
+                    if (ps->m_guts->m_toggleHandle) {
                         return 1;
                     }
                 }

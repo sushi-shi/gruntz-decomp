@@ -70,34 +70,27 @@ DATA(0x0024556c)
 extern "C" CGameRegistry* g_gameReg;
 
 // ---------------------------------------------------------------------------
-// CLoadingBar::LoadLoadingBarSprite
+// CPlay::LoadLoadingBarSprite (ex the `CLoadingBar` view - the receiver IS CPlay:
+// its +0x0c "own CResMgr" is CState::m_c and its +0x4bc..+0x4c8 block is exactly
+// m_revealFrame + the three m_revealCap* loading-bar frame slots BuildHelpReveal
+// (the loading-bar wipe tick) blits).
 // ---------------------------------------------------------------------------
-class CLoadingBar {
-public:
-    i32 LoadLoadingBarSprite();
-
-    char m_pad00[0xc];
-    CResMgr* m_resMgr; // +0xc
-    char m_pad10[0x4bc - 0x10];
-    i32 m_loaded;  // +0x4bc loaded flag (set to 1)
-    i32* m_frame2; // +0x4c0 frame 2
-    i32* m_frame3; // +0x4c4 frame 3
-    i32* m_frame1; // +0x4c8 frame 1
-};
-
 RVA(0x000d7440, 0xad)
-i32 CLoadingBar::LoadLoadingBarSprite() {
+i32 CPlay::LoadLoadingBarSprite() {
     CObject* spr_ob = 0;
-    m_resMgr->m_10->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
+    ((CResMgr*)m_c)->m_10->m_10map.Lookup("GAME_LOADINGBAR", spr_ob);
     CSprite* spr = (CSprite*)spr_ob;
     if (!spr) {
         return 0;
     }
 
-    m_frame1 = (spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) ? spr->m_frames.m_pData[1] : 0;
-    m_frame2 = (spr->m_firstFrame <= 2 && spr->m_lastFrame >= 2) ? spr->m_frames.m_pData[2] : 0;
-    m_frame3 = (spr->m_firstFrame <= 3 && spr->m_lastFrame >= 3) ? spr->m_frames.m_pData[3] : 0;
-    m_loaded = 1;
+    m_revealCapStart =
+        (spr->m_firstFrame <= 1 && spr->m_lastFrame >= 1) ? spr->m_frames.m_pData[1] : 0;
+    m_revealCapMid =
+        (spr->m_firstFrame <= 2 && spr->m_lastFrame >= 2) ? spr->m_frames.m_pData[2] : 0;
+    m_revealCapEnd =
+        (spr->m_firstFrame <= 3 && spr->m_lastFrame >= 3) ? spr->m_frames.m_pData[3] : 0;
+    m_revealFrame = 1;
     return 1;
 }
 

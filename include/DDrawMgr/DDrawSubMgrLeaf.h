@@ -79,6 +79,28 @@ public:
 
     CMapStringToPtr m_10; // +0x10  m_map
 };
+// ---------------------------------------------------------------------------
+// The ANI catalog sub-manager (the anim registry at the CState holder's +0x2c
+// slot; == CAnimRegistry's identity in ResMgr.h). Map at +0x10; the owning
+// manager at +0x0c. ScanTree_152ad0 is the ANIZ tree installer. Promoted from
+// DDrawSubMgrLeaf.cpp so Play/AssetNamespace consumers share the one shape.
+// ---------------------------------------------------------------------------
+class CAniElement;
+class CSymTab;
+SIZE_UNKNOWN(CDDrawSubMgrAni);
+class CDDrawSubMgrAni : public CObject {
+public:
+    CAniElement* CreateAniEntry_1528d0(const char* key, void* entry);
+    CAniElement* CreateAniEntry2_1529b0(const char* key, void* entry);
+    i32 ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix);
+
+    i32 m_04;             // +0x04  status word
+    i32 m_08;             // +0x08
+    void* m_0c;           // +0x0c  owning CDirectDrawMgr / CDDrawSurfaceMgr manager
+    CMapStringToPtr m_10; // +0x10  keyed animation catalog (mfc_class 0x1b847c => Ptr:
+                          //         CreateAniEntry2's operator[] lies in the Ptr band)
+};
+
 SIZE_UNKNOWN(CDDrawSubMgrLeaf);
 VTBL(CDDrawSubMgrLeaf, 0x001efc78); // ??_7CDDrawSubMgrLeaf (was g_catalogVtbl)
 

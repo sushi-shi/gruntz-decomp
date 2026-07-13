@@ -2,6 +2,7 @@
 
 #include <Gruntz/Grunt.h>
 #include <Wwd/WwdFile.h>
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_world->m_24: planeCtx bar rect + main plane)
 #include <string.h> // inlined memset / strcpy in Serialize (rep stos / repne scas + rep movs)
 
 // ActionOptionsMenuBar.cpp - CActionOptionsMenuBar, the in-game action/option
@@ -37,8 +38,9 @@ public:
 // WrapCoord is NO-body so its __thiscall `call 0xa000` reloc-masks
 // (WwdFile::WwdFile_00a000).
 
-// The level/view object (g_gameReg->m_world->m_24) is the canonical CGameViewport
-// (<Gruntz/GameRegistry.h>): +0x10 the on-screen bar RECT, +0x5c the viewport.
+// The level/view object (g_gameReg->m_world->m_24) is the canonical CGameLevel
+// (<Gruntz/GameLevel.h>): +0x10 the m_planeCtx rect (read as the on-screen bar RECT),
+// +0x5c the main plane (the world->screen transform base).
 // CDrawTarget + CImageRegistry (the m_10 image registry) come from <Gruntz/ResMgr.h>.
 
 // The grunt/logic record stored in the level grid object table (g_gameReg->m_gridObjects);
@@ -149,7 +151,7 @@ void CActionOptionsMenuBar::Init(i32 gx, i32 a, i32 x, i32 y, i32 b, i32 gy) {
     if (x - 0x25 < 0) {
         x = 0x25;
     } else {
-        i32 limit = ((CPlaneRender*)g_gameReg->m_world->m_24->m_5c)->m_wrapW;
+        i32 limit = ((CPlaneRender*)g_gameReg->m_world->m_24->m_mainPlane)->m_wrapW;
         if (x + 0x25 >= limit) {
             x = limit - 0x26;
         }
@@ -274,10 +276,10 @@ i32 CActionOptionsMenuBar::Render() {
     }
     i32 sx = m_screenX;
     i32 sy = m_screenY;
-    ((CPlaneRender*)g_gameReg->m_world->m_24->m_5c)->WrapCoord(&sx, &sy);
+    ((CPlaneRender*)g_gameReg->m_world->m_24->m_mainPlane)->WrapCoord(&sx, &sy);
 
     i32 r[4];
-    i32* src = g_gameReg->m_world->m_24->m_barRect;
+    i32* src = (i32*)&g_gameReg->m_world->m_24->m_planeCtx;
     i32 ctx = (i32)g_gameReg->m_world->m_drawTarget->m_14;
     r[0] = src[0];
     r[1] = src[1];
@@ -286,7 +288,7 @@ i32 CActionOptionsMenuBar::Render() {
     m_frame->Draw(ctx, sy, sx, r, 0);
 
     if (m_button0Frame) {
-        i32* src2 = g_gameReg->m_world->m_24->m_barRect;
+        i32* src2 = (i32*)&g_gameReg->m_world->m_24->m_planeCtx;
         r[0] = src2[0];
         r[1] = src2[1];
         r[2] = src2[2];
@@ -294,7 +296,7 @@ i32 CActionOptionsMenuBar::Render() {
         m_frame->Draw(ctx, sy - 0xc, sx + 2, r, 0);
     }
     if (m_button1Frame) {
-        i32* src3 = g_gameReg->m_world->m_24->m_barRect;
+        i32* src3 = (i32*)&g_gameReg->m_world->m_24->m_planeCtx;
         r[0] = src3[0];
         r[1] = src3[1];
         r[2] = src3[2];

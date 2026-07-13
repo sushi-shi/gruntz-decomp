@@ -24,6 +24,7 @@
 // @0x58cd0 (userlogicctoremit), CPairRecord::Serialize @0x58ee0
 // (trirecordserialize), Lookup_05b7e0 @0x5b7e0 (ddrawsubmgrleafscan).
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/ActReg.h> // CLookupColl/CActReg::ResolveEntry
 #include <Gruntz/AniElement.h>
 #include <Gruntz/FreeNodePool.h>
@@ -801,7 +802,7 @@ i32 CGrunt::BuildGruntLoseItemAnimation() {
     CGameRegistry* g = (CGameRegistry*)g_gameReg;
     i32 x = m_10->m_5c;
     i32 y = m_10->m_60;
-    CCueRect* rc = (CCueRect*)(g->m_world->m_24->m_5c + 0x40);
+    CCueRect* rc = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_tileOriginX;
     if (x < rc->right && x >= rc->left && y < rc->bottom && y >= rc->top) {
         g->m_cueSink->CueSpawn(this, 0xe, -1, -1, -1);
     }
@@ -1219,14 +1220,14 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 y = m_10->m_60;
         if (c < 5) {
             CGameRegistry* g = (CGameRegistry*)g_gameReg;
-            i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
+            i32* vr = &g->m_world->m_24->m_mainPlane->m_tileOriginX;
             if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
                 g->m_cueSink->CueA(this, 0x370, -1, 0, -1, -1);
             }
             return;
         }
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
+        i32* vr = &g->m_world->m_24->m_mainPlane->m_tileOriginX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x371, -1, 0, -1, -1);
         } else {
@@ -1239,7 +1240,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_10->m_5c;
         i32 y = m_10->m_60;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
+        i32* vr = &g->m_world->m_24->m_mainPlane->m_tileOriginX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x320, -1, 0, -1, -1);
         }
@@ -1249,7 +1250,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 x = m_10->m_5c;
         i32 y = m_10->m_60;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
+        i32* vr = &g->m_world->m_24->m_mainPlane->m_tileOriginX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x321, -1, 0, -1, -1);
         }
@@ -1260,7 +1261,7 @@ void CGrunt::OnStruck(i32 wasHit) {
         i32 y = m_10->m_60;
         m_struckCount = 0;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
+        i32* vr = &g->m_world->m_24->m_mainPlane->m_tileOriginX;
         if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
             g->m_cueSink->CueA(this, 0x322, -1, 0, -1, -1);
         }

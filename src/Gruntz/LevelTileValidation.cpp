@@ -93,11 +93,10 @@
 //                                                      0x238 - the `WwdStartPlayer` view) are
 //                                                      all canonical members)
 //
-// NOTE (deferred, not a wall): CSpriteFactoryHolder::m_24 is typed CGameViewport* in
-// GameRegistry.h while CWorldZ::m_24 (the same physical slot of the same object) is typed
-// CGameLevel* in GruntzMgr.h - a known dual-view divergence. The +0x4c/+0x5c reads here
-// only make sense as CGameLevel, so the level is reached with ONE cast at the top of each
-// body; the reconciliation belongs to the 0x24556c/holder identity pass. Likewise
+// NOTE: CSpriteFactoryHolder::m_24 is now typed CGameLevel* in GameRegistry.h (the former
+// CGameViewport facet was a FAKE NAME for the level - PushView IS VisitVisible @0x15dc90,
+// SetClipRect IS BuildAllPlanes @0x15da80), matching CWorldZ::m_24 in GruntzMgr.h; the
+// +0x4c/+0x5c reads here are plain member reads. Likewise
 // CLevelPlane (GameLevel.h) and CPlaneRender (WwdFile.h) are the same object under two
 // names - m_mainPlane is cast to the render facet that owns GetTileHandle.
 // ---------------------------------------------------------------------------
@@ -190,11 +189,11 @@ struct LvBridgePoint; // this+0x3f4  bridge-toggle screen point (defined below)
 // remaining @identity-TODO here; the OWNER class is no longer in doubt.
 
 // The +0x24 slot of the CState::m_c resource holder IS the CGameLevel (its +0x4c image-set
-// array data pointer and its +0x5c main plane are what this TU reads). GameRegistry.h types
-// that slot CGameViewport* (the render facet's view of the same object) - the ONE place that
-// dual-view divergence is bridged is here, not scattered through the bodies.
+// array data pointer and its +0x5c main plane are what this TU reads). GameRegistry.h now
+// types that slot CGameLevel* (the former CGameViewport facet is dissolved), so this is a
+// plain accessor.
 static inline CGameLevel* LevelOf(CSpriteFactoryHolder* holder) {
-    return (CGameLevel*)holder->m_24;
+    return holder->m_24;
 }
 
 // The level tile-id lookup: clamp (x,y) to the plane bounds, shift to tile coords,

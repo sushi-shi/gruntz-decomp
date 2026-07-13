@@ -400,6 +400,21 @@ public:
     // exactly one, else EnqueueMulti. ret 1 (0 when +0x400 is clear). (__thiscall.)
     i32 EnqueueGroupCells();
 
+    // 0x78060: HudRect (TriggerMgr.cpp) - the combat-region scan CPlay's
+    // DispatchHudClick/PostHudRect drive on the world's +0x68 slot (== this mgr;
+    // ex ?HudRect@WorldTimeline@CWorld@@, the dissolved Play.h view). Screen-
+    // transform the world rect via m_level's view, then (re)arm combat state on
+    // every grunt slot whose 30x30 box hits it.
+    void HudRect(RECT r, i32 flag);
+
+    // 0x6eb80: the per-frame goo-well / win-condition grid step (thiscall(clock)).
+    // BOUND under the `CGooWellMgr` view in GooWellMgr.cpp - that struct's fields
+    // (m_playerFlag[4]@+0x10c==m_rowCount, m_overlay@+0x25c, m_phase@+0x288==m_288,
+    // +0x3f0/+0x3f4 DirectSoundMgr* == m_soundChanA/B) overlay THIS class exactly,
+    // so CGooWellMgr is another fake name for CTriggerMgr; fold TODO (this decl
+    // reloc-masks until then).
+    i32 LoadTeleporterGooConfig(i32 clock);
+
     // 0x85c50: ~CTriggerMgr - the /GX destructor (drains the lists, destructs the member
     // list arrays). Reconstructed to plateau (eh sibling TU).
     ~CTriggerMgr();

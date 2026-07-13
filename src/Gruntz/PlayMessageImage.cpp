@@ -12,7 +12,8 @@
 //
 // Kept in its own TU so the CImageSet/CImage/CDDSurface includes do not perturb the
 // matched Play.cpp regalloc. Only offsets + code bytes are load-bearing.
-#include <Gruntz/Play.h> // CPlay + CSpriteFactoryHolder/CImageRegistry/CDrawTarget (m_c->m_10/m_24/m_drawTarget)
+#include <Gruntz/Play.h>
+#include <Gruntz/GameLevel.h> // canonical CGameLevel (m_24: planeCtx viewport rect) // CPlay + CSpriteFactoryHolder/CImageRegistry/CDrawTarget (m_c->m_10/m_24/m_drawTarget)
 #include <Image/ImageSet.h>     // CImageSet::GetAt (m_frames/m_minIndex/m_maxIndex) + CImageFrame
 #include <Image/CImage.h>       // CImage::RenderFrame (0x153790)
 #include <DDrawMgr/DDSurface.h> // CDDSurface::Flip (0x13e850)
@@ -51,9 +52,9 @@ void CPlay::DrawMessageFrame(i32 index, i32 useFront) {
     if (set != 0) {
         CImage* frame = set->GetAt(index);
         if (frame != 0) {
-            CGameViewport::SViewRect& vp = m_c->m_24->m_viewport;
-            i32 cx = vp.left + (vp.right - vp.left) / 2;
-            i32 cy = vp.top + (vp.bottom - vp.top) / 2;
+            LevelCoordRect& vp = m_c->m_24->m_planeCtx;
+            i32 cx = vp.minX + (vp.maxX - vp.minX) / 2;
+            i32 cy = vp.minY + (vp.maxY - vp.minY) / 2;
             LayerBlitFrame((CResMgr*)m_c, frame, cx, cy, useFront, 1);
         }
     }

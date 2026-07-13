@@ -43,20 +43,8 @@ void operator delete(void*);
 // (The former ctor-shape view pair CAniElemSub + CAniElementObj is dissolved
 // onto the canonical - one class, one def, one vtable.)
 
-// ---------------------------------------------------------------------------
-// The ANI catalog sub-manager. Map at +0x10; the owning manager at +0x0c.
-// ---------------------------------------------------------------------------
-class CDDrawSubMgrAni : public CObject {
-public:
-    CAniElement* CreateAniEntry_1528d0(const char* key, void* entry);
-    CAniElement* CreateAniEntry2_1529b0(const char* key, void* entry);
-    i32 ScanTree_152ad0(CSymTab* tree, const char* prefix, const char* suffix);
-
-    i32 m_04;             // +0x04  status word
-    i32 m_08;             // +0x08
-    void* m_0c;           // +0x0c  owning CDirectDrawMgr / CDDrawSurfaceMgr manager
-    CMapStringToPtr m_10; // +0x10  keyed animation catalog
-};
+// (CDDrawSubMgrAni now lives in <DDrawMgr/DDrawSubMgrLeaf.h> - the one shape,
+// shared with the Play/asset-namespace consumers.)
 
 // Read the owning manager's +0x28 sub-manager slot (forwarded to Configure).
 static inline void* AniMgrSubObject(void* mgr) {
@@ -328,4 +316,4 @@ CAniElement::~CAniElement() {
     // m_records.~CAniRecordArray() (trylevel 0) + ~CObject() (grand-base restore) fold here.
 }
 
-SIZE_UNKNOWN(CDDrawSubMgrAni);
+// (SIZE_UNKNOWN(CDDrawSubMgrAni) moved to <DDrawMgr/DDrawSubMgrLeaf.h> with the class.)

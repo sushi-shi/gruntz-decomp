@@ -371,10 +371,11 @@ struct CGameObjAux {
                          //         (a genuine int|ptr union - no union per the toolchain,
                          //         so kept void*; the int uses reinterpret at the site)
     char m_pad20[0x2c - 0x20];
-    // +0x2c/+0x30: two config words the level-load validator forwards to the trigger
-    // grid's PlaceObject (CPlay::PlaceStartGruntz, LevelTileValidation.cpp).
-    i32 m_2c; // +0x2c
-    i32 m_30; // +0x30
+    // +0x2c/+0x30: two spawn-record config words. The level-load validator forwards
+    // them to the trigger grid's PlaceObject (CPlay::PlaceStartGruntz,
+    // LevelTileValidation.cpp); CPlay::AddLevelGruntz passes them as AddGrunt args 11/12.
+    i32 m_2c; // +0x2c  spawn-record param A
+    i32 m_30; // +0x30  spawn-record param B
     char m_pad34[0xbc - 0x34];
     i32 m_bc; // +0xbc  per-tile time (teleporter reads the bound object's clock here)
     char m_padc0[0xf0 - 0xc0];

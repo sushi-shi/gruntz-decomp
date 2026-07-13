@@ -122,33 +122,37 @@ extern "C" i32 g_curPlayer; // 0x644c54  local-player index
 // regalloc/CSE wall (~80% - and 0x78060 is not play's .obj, so the frame is re-scored):
 // logic + instruction selection match, but cl pins `this`->ebx (retail ebp) and CSEs
 // view->m_viewport once where retail reloads it per rect pair (a symmetric ebx<->ebp swap).
+// (ex ?HudRect@WorldTimeline@CWorld@@ - the dissolved Play.h view; the receiver IS
+// this CTriggerMgr: the "+0x1c grunt slots" are m_grid, "+0x22c viewHost" is
+// m_level, and the combat facets are the canonical CGrunt/CTmLevelView shapes.)
 RVA(0x00078060, 0x18d)
-void CWorld::WorldTimeline::HudRect(RECT r, i32 flag) {
-    CombatView* view = m_viewHost->m_view;
-    r.left += view->m_viewport->m_rect.left - view->m_originX;
-    r.top += view->m_viewport->m_rect.top - view->m_originY;
-    r.right += view->m_viewport->m_rect.left - view->m_originX;
-    r.bottom += view->m_viewport->m_rect.top - view->m_originY;
+void CTriggerMgr::HudRect(RECT r, i32 flag) {
+    CTmLevelView* view = m_level->m_24;
+    r.left += view->m_5c->m_originX - view->m_10;
+    r.top += view->m_5c->m_originY - view->m_14;
+    r.right += view->m_5c->m_originX - view->m_10;
+    r.bottom += view->m_5c->m_originY - view->m_14;
     for (i32 i = 0; i < 4; i++) {
         for (i32 j = 0; j < 15; j++) {
-            CombatGrunt* g = m_grunts[j];
+            CTmCell* g = m_grid[j];
             if (g) {
-                i32 cx = g->m_pos->m_screenX;
-                i32 cy = g->m_pos->m_screenY;
+                // the grunt's display object (CUserBase +0x10; member modeling TODO)
+                CGameObject* pos = *(CGameObject**)((char*)g + 0x10);
+                i32 cx = pos->m_screenX;
+                i32 cy = pos->m_screenY;
                 RECT box;
                 SetRect(&box, cx - 0xf, cy - 0xf, cx + 0xf, cy + 0xf);
                 if (r.left <= box.right && r.right >= box.left && r.top <= box.bottom
                     && r.bottom >= box.top) {
                     if (i == g_curPlayer) {
-                        if (flag == 0 && g->m_1fc != 0) {
-                            Method_36ed();
+                        if (flag == 0 && g->m_entranceCommitted != 0) {
+                            ResetAll(); // 0x36ed -> @0x78430
                             flag = 1;
                         }
-                        ResetCell29cd(g_curPlayer, j, 1, 1);
+                        ResetCell(g_curPlayer, j, 1, 1); // 0x29cd -> @0x6bfd0
                     } else {
                         g->CreateHealthSprite();
-                        g->m_combatTimeout =
-                            g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
+                        g->m_888 = g_buteMgr.GetDwordDef("Grunt", "CombatTimeout", 0x1388);
                         g->m_88c = 0;
                         g->m_880 = g_645588;
                         g->m_884 = 0;
@@ -1654,12 +1658,16 @@ void FormatStr(CString* out, const char* fmt, ...);
 //   RockLogicObj / RockLogicMgr -> nothing: both were EMPTY comment-only shells whose
 //                                  calls already bridge-cast to the real classes.
 //
-// @identity-TODO, left as a cast rather than invented: the +0x24 slot of the world
-// holder is claimed by TWO incompatible shapes - CGameRegistry.h's CGameViewport
-// (viewport RECT @+0x10, camera geom @+0x5c) and the terrain BrickzAttrMgr this driver
-// walks (bute table @+0x4c, grid desc @+0x5c). One of the two is wrong; settling it
-// needs the world-holder ctor, so the rock-break sites reach the terrain manager
-// through an explicit cast and CSpriteFactoryHolder::m_24 is left untouched.
+// SETTLED (was an @identity-TODO): the +0x24 slot of the world holder IS the canonical
+// CGameLevel (GameRegistry.h now types it so; the former CGameViewport facet was a fake
+// name - PushView IS VisitVisible @0x15dc90, SetClipRect IS BuildAllPlanes @0x15da80).
+// The "incompatible" BrickzAttrMgr shape is the SAME object: its bute table @+0x4c is
+// CGameLevel's m_imageSets CObArray data ptr (+0x48 array -> +0x4c m_pData of
+// CTileImageSet*), its grid desc @+0x5c is m_mainPlane - and BrickzButeObj ("8 filler
+// slots then GetTypeCode @+0x20") is CTileImageSet (GetCollisionAt @+0x20) itself.
+// @deferred-fold: dissolve the Brickz* family (Brickz.h / MapMgr.h::m_attrMgr /
+// BrickzCellFlags_077790.cpp) onto CGameLevel/CLevelPlane/CTileImageSet; the rock-break
+// sites below keep the explicit cast until that fold lands.
 
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA

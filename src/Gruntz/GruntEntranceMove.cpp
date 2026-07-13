@@ -16,6 +16,7 @@
 // its 31 private cells sit inside this TU's band).
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                 // WERE the fake g_animScratch / g_animScratchCount
@@ -775,7 +776,7 @@ i32 CGrunt::LoadWingzGruntSprites(i32 enable) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32 y = m_10->m_60;
         i32 x = m_10->m_5c;
-        CCueRect* r = (CCueRect*)((char*)g->m_world->m_24->m_5c + 0x40);
+        CCueRect* r = (CCueRect*)&g->m_world->m_24->m_mainPlane->m_tileOriginX;
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
         }

@@ -23,6 +23,7 @@
 //
 #include <Bute/ButeTree.h> // CButeTree::Find - g_buteTree @0x6bf620 (was the CEntranceAnimSrc view)
 #include <Gruntz/Grunt.h>
+#include <Gruntz/GameLevel.h> // canonical CGameLevel/CLevelPlane (m_world->m_24 visible rect)
 #include <Gruntz/TypeKeyColl.h> // g_typeColl (folded CAnimNameResolver anim registry)
 extern CTypeKeyColl g_typeColl; // 0x6bf650 - its m_alloc (+0x1c) / m_grown (+0x20)
                                 // WERE the fake g_animScratch / g_animScratchCount
@@ -473,7 +474,7 @@ i32 CGrunt::UpdateGruntStatus() {
     CGameRegistry* g = (CGameRegistry*)g_gameReg;
     i32 x = m_10->m_5c;
     i32 y = m_10->m_60;
-    i32* vr = (i32*)(g->m_world->m_24->m_5c + 0x40);
+    i32* vr = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX);
     if (x < vr[2] && x >= vr[0] && y < vr[3] && y >= vr[1]) {
         g->m_cueSink->CueSpawn(this, 2, -1, -1, -1);
     }
@@ -1158,7 +1159,7 @@ i32 CGrunt::StepEntranceRelatchA() {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32 x = h->m_5c;
         i32 y = h->m_60;
-        CCueRect* r = (CCueRect*)(g->m_world->m_24->m_5c + 0x40);
+        CCueRect* r = (CCueRect*)((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX);
         if (x < r->right && x >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueSpawn(this, 0xc, -1, -1, -1);
         }
@@ -1314,16 +1315,16 @@ void CGrunt::ResetEntranceAnimation(i32 apply, i32 cycle, i32 cue) {
             g->CuePrep();
             i32 focused = (m_tileOwnerHi == g_curPlayer);
             if (focused && idx > 0x5a) {
-                if (CueVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+                if (CueVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
                     g->m_cueSink->Cue((i32)this, 4, -1, -1, -1);
                 }
             } else if (focused || m_entranceReason != 0) {
                 if (idx == 1) {
-                    if (CueVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+                    if (CueVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
                         g->m_cueSink->Cue((i32)this, 5, -1, -1, -1);
                     }
                 } else if (idx == 2) {
-                    if (CueVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+                    if (CueVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
                         g->m_cueSink->Cue((i32)this, 6, -1, -1, -1);
                     }
                 }
@@ -1647,7 +1648,7 @@ i32 CGrunt::StepArrivalReroll() {
     i32 y = h->m_60;
     i32 xp = h->m_5c;
     CGameRegistry* g = (CGameRegistry*)g_gameReg;
-    CCueRect* r = (CCueRect*)(g->m_world->m_24->m_5c + 0x40);
+    CCueRect* r = (CCueRect*)((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX);
     if (pick > 0x19) {
         if (xp < r->right && xp >= r->left && y < r->bottom && y >= r->top) {
             g->m_cueSink->CueEvent(this, 0x15d, -1, 0, -1, -1);
@@ -1768,7 +1769,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
             CGameRegistry* g = (CGameRegistry*)g_gameReg;
             i32 x = h->m_5c;
             i32 y = h->m_60;
-            i32* rect = (i32*)(g->m_world->m_24->m_5c + 0x40);
+            i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX);
             if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
                 g->m_cueSink->CueSpawn(this, 0xc, -1, -1, -1);
                 ClearSubA();
@@ -1785,7 +1786,7 @@ void CGrunt::LoadVehicleGruntAnimations() {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32 x = h->m_5c;
         i32 y = h->m_60;
-        i32* rect = (i32*)(g->m_world->m_24->m_5c + 0x40);
+        i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX);
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
             g->m_cueSink->CueSpawn(this, 0xd, -1, -1, -1);
         }
@@ -1882,19 +1883,19 @@ i32 CGrunt::BuildGruntExitAnimation() {
     if (r > 0x140) {
         found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_ONE);
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        if (GruntPointVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+        if (GruntPointVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
             g->m_cueSink->CueA(this, 0x384, -1, 0, -1, -1);
         }
     } else if (r > 0xa0) {
         found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_TWO);
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        if (GruntPointVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+        if (GruntPointVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
             g->m_cueSink->CueA(this, 0x385, -1, 0, -1, -1);
         }
     } else {
         found = (CSprite*)m_154->m_c->m_2c->LookupValue_06b2a0(s_GRUNTZ_EXITZ_THREE);
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        if (GruntPointVisible(g->m_world->m_24->m_5c + 0x40, m_10->m_5c, m_10->m_60)) {
+        if (GruntPointVisible((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX, m_10->m_5c, m_10->m_60)) {
             g->m_cueSink->CueA(this, 0x386, -1, 0, -1, -1);
         }
     }
@@ -2295,7 +2296,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
     } else {
         CGruntHud* h = m_10;
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
-        i32* rect = (i32*)(g->m_world->m_24->m_5c + 0x40);
+        i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX);
         if (GruntPointVisible((i32)rect, h->m_5c, h->m_60)) {
             g->m_cueSink->CueSpawn(this, 8, -1, -1, -1);
         }
@@ -2347,7 +2348,7 @@ void CGrunt::RunMoveConfig(i32 a, i32 b) {
         CGameRegistry* g = (CGameRegistry*)g_gameReg;
         i32 x = h->m_5c;
         i32 y = h->m_60;
-        i32* rect = (i32*)(g->m_world->m_24->m_5c + 0x40);
+        i32* rect = (i32*)((i32)&g->m_world->m_24->m_mainPlane->m_tileOriginX);
         if (x < rect[2] && x >= rect[0] && y < rect[3] && y >= rect[1]) {
             g->m_cueSink->CueA(this, cueId, -1, 0, -1, -1);
         }
