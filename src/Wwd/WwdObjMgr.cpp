@@ -104,13 +104,12 @@ struct CWwdNode {
 };
 SIZE_UNKNOWN(CWwdNode);
 
-// The object reached via m_parent->+0x24->+0x5c is a CImageSet3 (the WWD image-set
-// collection); its Prune_1628d0 (0x1628d0) forwards to the spatial grid's Prune.
-class CImageSet3 : public CObject {
-public:
-    i32 Prune_1628d0(); // 0x1628d0 (__thiscall)
-};
-SIZE_UNKNOWN(CImageSet3);
+// The object reached via m_parent->+0x24->+0x5c is the plane/grid-owner
+// CDDrawWorkerHost (ex a CImageSet3 mis-attribution - the 0x1628d0 body reads
+// +0xb0 = m_spatialWorker, which the 0x18-byte record cannot hold); its
+// Prune_1628d0 (0x1628d0) forwards to the spatial grid's Prune. Canonical:
+// <DDrawMgr/DDrawWorkerHost.h> (included below).
+#include <DDrawMgr/DDrawWorkerHost.h>
 
 // The per-object descriptor the level reader fills (0xa0 bytes). +0x04 is the
 // dedup id, +0x08 the kind selector, +0x14 the object's name string.
@@ -259,7 +258,7 @@ RVA(0x001591f0, 0x54)
 void CDDrawChildGroup::DestroyChildren() {
     void* p = *(void**)((char*)m_parent + 0x24);
     if (p != 0) {
-        CImageSet3* q = *(CImageSet3**)((char*)p + 0x5c);
+        CDDrawWorkerHost* q = *(CDDrawWorkerHost**)((char*)p + 0x5c);
         if (q != 0) {
             q->Prune_1628d0();
         }

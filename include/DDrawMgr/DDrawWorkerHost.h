@@ -45,6 +45,18 @@ public:
     // at m_obArray[index], or null on a miss.
     void RegisterNamed(char index, const char* key);
 
+    // The grid-owner teardown/query trio (bodies in LevelPlane.cpp; formerly hosted
+    // on a LOCAL "CImageSet3" view there - WRONG identity: the bodies read +0x20/
+    // +0x24/+0xb0, which are exactly m_buffer0/m_buffer1/m_spatialWorker here, and
+    // 0x161bf0 IS this class's vtable slot 7 per the retail slot map @0x1f0270. The
+    // slot-7 VIRTUAL binding is deferred to the plane-family unification (slots 9/10
+    // of the same vtable are fns the tree still attributes to CLevelPlane -
+    // InitGeometry_1619f0 / the ReadPlaneBlock gap - so the plane IS this class);
+    // these stay non-virtual until then so the emitted vtable shape is unchanged.
+    void Cleanup_161bf0(); // 0x161bf0  prune + destroy the spatial grid, free both buffers
+    i32 Prune_1628d0();    // 0x1628d0  forward the grid's PruneCount when present
+    i32 GetSize_1633e0();  // 0x1633e0  forward the grid's serialized size when present
+
     i32 m_04, m_08, m_0c;            // +0x04..0x0f (merged CLoadable base fields)
     char m_pad10[0x18 - 0x10];       // +0x10..+0x17
     float m_18;                      // +0x18  (=1.0f)

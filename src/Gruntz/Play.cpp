@@ -125,7 +125,7 @@
 #include <Gruntz/CBrickz.h>          // CBrickz::LoadAttributes (was Eng::LoadAttributes)
 #include <Gruntz/Brickz.h>           // CBrickzGrid::UpdateDiagonals
 #include <Gruntz/ParseSource.h>      // CParseSource::BeginParse/EndParse
-#include <Gruntz/ImageSets.h>        // CImageSet3::GetSize_1633e0 (was Eng::GetSize)
+#include <DDrawMgr/DDrawWorkerHost.h> // CDDrawWorkerHost::GetSize_1633e0 (the plane/grid-owner; ex a CImageSet3 mis-attribution)
 #include <DinMgr2/DirectInputMgr2.h> // DirectInputMgr2::ReadAll (was Eng::HideMenu)
 #include <Globals.h>
 
@@ -815,7 +815,7 @@ extern void* g_61139c;              // PTR_DAT_0061139c
 //   (c) Teardown-on-savedThis is CMulti::AckJoinFailure (a cross-cast of the CPlay
 //       `this`); WorkerReset is the GruntzPlayer(int) ctor (placement-new);
 //   (d) @identity-TODO - genuinely unrecovered (no xref/header): ObListInit 0x1b48a6,
-//       ButeStore 0x1b5485, GetBool 0x1bedde, CImageSet3::GetSize 0x1633e0 (no header).
+//       ButeStore 0x1b5485, GetBool 0x1bedde, CDDrawWorkerHost::GetSize 0x1633e0.
 // ---------------------------------------------------------------------------
 // (`struct Eng` is GONE - it was a CONFLATION, not a class: 21 fabricated methods
 // standing in for 21 functions on ~15 DIFFERENT real classes, every one of which was
@@ -1267,10 +1267,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
     // finalize the world planes
     ((CGruntzMgr*)PTR(self, 0x4))->RecomputeViewScale();
     if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-        ((CImageSet3*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
+        ((CDDrawWorkerHost*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
     }
     if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-        ((CImageSet3*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
+        ((CDDrawWorkerHost*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
     }
     BuildHelpReveal(0);
     if (savedThis != 0) {
@@ -1394,10 +1394,10 @@ i32 CPlay::LoadByMode(i32 level, i32) {
                     ;
                 ((CGruntzMgr*)PTR(self, 0x4))->CGruntzMgr::PerFrameTick();
                 if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-                    ((CImageSet3*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
+                    ((CDDrawWorkerHost*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
                 }
                 if (PTR(PTR(PTR(self, 0xc), 0x24), 0x5c) != 0) {
-                    ((CImageSet3*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
+                    ((CDDrawWorkerHost*)PTR(PTR(PTR(self, 0xc), 0x24), 0x5c))->GetSize_1633e0();
                 }
                 BuildHelpReveal(0);
                 if (savedThis != 0) {

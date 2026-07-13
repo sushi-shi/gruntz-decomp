@@ -40,7 +40,7 @@
 // The grid-owner facet the old view carried (Prune/GetSize/Cleanup, m_b0@+0xb0, and the
 // CWwdGrid view) is documented in LevelPlane.cpp and was UNUSED here; its `0xb0`-sized
 // object cannot be this record anyway (a flagged conflation) - dropped rather than
-// re-stated. GetSize_1633e0 is already declared on the canonical class.
+// re-stated. GetSize_1633e0 lives on its real owner CDDrawWorkerHost (LevelPlane.cpp).
 
 // ---------------------------------------------------------------------------
 // 0x161500 - the out-of-line /GX ~CImageSet3: stamp the derived vtable (0x5f0228 ==

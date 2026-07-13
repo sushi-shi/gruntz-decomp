@@ -42,24 +42,18 @@
 // plane TU. Local view duplicated from that TU (@identity-TODO: the grid-owner's
 // name-conflation with the Gruntz CImageSet3 variant record is unresolved).
 // The +0xb0 spatial grid is a CWwdSpatialMgr (canonical, <DDrawMgr/DDrawWorkerHost.h>).
-// CImageSet3::Cleanup prunes it (PruneCount 0x1688b0), runs its OUT-OF-LINE /GX
+// CDDrawWorkerHost::Cleanup_161bf0 prunes it (PruneCount 0x1688b0), runs its OUT-OF-LINE /GX
 // complete dtor (~CWwdSpatialMgr @0x163a40, body in WwdSpatialMgr.cpp; the ex-C163a40
 // placeholder identity is dissolved), then ::operator delete (0x1b9b82) frees it.
 // GetSize (0x168430) is the serialized-size accessor (WwdSpatialMgr.cpp defines it).
 // All reloc-masked __thiscall callees (no body).
 
-class CImageSet3 {
-public:
-    i32 Prune_1628d0();    // 0x1628d0
-    i32 GetSize_1633e0();  // 0x1633e0
-    void Cleanup_161bf0(); // 0x161bf0
-
-    char m_pad00[0x20];        // +0x00 .. +0x1f (vptr + CLoadable base + pixel fields)
-    void* m_20;                // +0x20  RezAlloc'd buffer
-    void* m_24;                // +0x24  RezAlloc'd buffer
-    char m_pad28[0xb0 - 0x28]; // +0x28 .. +0xaf
-    CWwdSpatialMgr* m_b0;      // +0xb0  spatial grid (canonical CWwdSpatialMgr)
-};
+// [The local "CImageSet3" grid-owner view that sat here is DISSOLVED 2026-07-13:
+// the identity was CDDrawWorkerHost all along - the three bodies read +0x20/+0x24/
+// +0xb0 = m_buffer0/m_buffer1/m_spatialWorker, and 0x161bf0 IS CDDrawWorkerHost's
+// vtable slot 7 per the retail slot map @0x1f0270. The "@identity-TODO name-
+// conflation with the Gruntz CImageSet3 variant record" is resolved: the 0x18-byte
+// record class (<Gruntz/ImageSets.h>) cannot even hold a +0xb0 member.]
 
 // ===========================================================================
 // 0x1615a0 - CDDrawWorkerHost(a1,a2,a3): the /GX EH ctor. cl inlines the
@@ -197,22 +191,22 @@ i32 CLevelPlane::InitGeometry_1619f0(
 // 0x161bf0: tear down the owned resources.  Prune the grid, then destroy + free
 // it (no null-out), then free the two RezAlloc'd buffers at +0x20/+0x24 (nulled).
 RVA(0x00161bf0, 0x5e)
-void CImageSet3::Cleanup_161bf0() {
-    if (m_b0 != 0) {
-        m_b0->PruneCount();
+void CDDrawWorkerHost::Cleanup_161bf0() {
+    if (m_spatialWorker != 0) {
+        m_spatialWorker->PruneCount();
     }
-    CWwdSpatialMgr* g = m_b0;
+    CWwdSpatialMgr* g = m_spatialWorker;
     if (g != 0) {
         g->~CWwdSpatialMgr(); // the out-of-line complete dtor (0x163a40)
         ::operator delete(g);
     }
-    if (m_20 != 0) {
-        ::operator delete(m_20);
-        m_20 = 0;
+    if (m_buffer0 != 0) {
+        ::operator delete(m_buffer0);
+        m_buffer0 = 0;
     }
-    if (m_24 != 0) {
-        ::operator delete(m_24);
-        m_24 = 0;
+    if (m_buffer1 != 0) {
+        ::operator delete(m_buffer1);
+        m_buffer1 = 0;
     }
 }
 
@@ -724,11 +718,11 @@ struct WwdPlaneRender {
 // ---------------------------------------------------------------------------
 // 0x1628d0: forward the grid's Prune when present (else 0).  __thiscall tail call.
 RVA(0x001628d0, 0x12)
-i32 CImageSet3::Prune_1628d0() {
-    if (m_b0 == 0) {
+i32 CDDrawWorkerHost::Prune_1628d0() {
+    if (m_spatialWorker == 0) {
         return 0;
     }
-    return m_b0->PruneCount();
+    return m_spatialWorker->PruneCount();
 }
 
 // @early-stop
@@ -1125,11 +1119,11 @@ i32 CPlaneRender::CenterScrollB() {
 // (else 0). Out-of-line (retail emits it standalone, tail-forwarding to
 // CWwdSpatialMgr::GetSize 0x168430; an inline member folds away and never emits).
 RVA(0x001633e0, 0x12)
-i32 CImageSet3::GetSize_1633e0() {
-    if (m_b0 == 0) {
+i32 CDDrawWorkerHost::GetSize_1633e0() {
+    if (m_spatialWorker == 0) {
         return 0;
     }
-    return m_b0->GetSize();
+    return m_spatialWorker->GetSize();
 }
 
 // ---------------------------------------------------------------------------
