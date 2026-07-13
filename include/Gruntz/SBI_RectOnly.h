@@ -739,78 +739,30 @@ struct CSbiFreeNode {
 };
 SIZE_UNKNOWN(CSbiFreeNode);
 
-// The by-value geometry rect each tab widget's setup/configure takes (slot-2/11
-// arg5-8): the tab base coords (m_10/m_14) plus per-widget offsets.
-struct SbiTabRect {
-    i32 l;
-    i32 t;
-    i32 r;
-    i32 b;
-};
-SIZE_UNKNOWN(SbiTabRect);
 
-// A top-level status-bar tab widget base. Polymorphic so cl emits __thiscall vtable
-// dispatch (Setup at slot 2 / Configure at slot 11 / Activate at slot 12); the
-// concrete leaves below are REAL derived classes so `new` auto-stamps their vtable.
-// The inline base ctor zeroes the base fields the retail base ctor cleared. Slot 0 is
-// the scalar-deleting dtor used by the throw/fail cleanup's `delete it`. Fields end at
-// +0x30 (the rect-widget size); the menu-item's m_30/m_34/m_38 live in CSBI_MenuItem.
+// (the CSbiTab base is GONE - it was never a type. It was a fabricated stand-in for the
+// canonical CStatusBarItem (already included above), and it declared THIRTEEN virtuals
+// against a real base of ELEVEN, so cl emitted a 13-slot vtable for both leaves below
+// where retail has 11 and 12. That is not a cosmetic defect - every dispatch past the
+// divergence point would have gone to the wrong slot - and its 13 declared-only virtuals
+// were 13 guaranteed unresolved externals on top.
 //
-// @identity-TODO: CSbiTab IS NOT A TYPE - it is a fabricated stand-in for the canonical
-// CStatusBarItem (<Gruntz/StatusBarItem.h>), and it is the single biggest self-contained
-// PHANTOM cluster left: all 13 of its virtuals are declared-only, so cl emits a vtable
-// referencing 13 bodies NO obj and NO .LIB defines - 13 guaranteed unresolved externals,
-// every one referenced from this one unit (`sbi_rectonly`).
-//   RTTI: CSBI_RectOnly : CStatusBarItem, vtbl@0x1eab8c, 11 slots (0 new, 4 override,
-//   7 inherited). CStatusBarItem itself: vtbl@0x1eabcc, 11 slots, all real bodies.
-// THE FOLD IS NOT A RENAME, WHICH IS WHY IT IS NOT DONE HERE. The view declares THIRTEEN
-// slots against the real base's ELEVEN, so two of them (Configure @11, Activate @12) are
-// slots that do not exist in retail's vtable at all. Slots 0-5 line up cleanly
-// (~dtor / Serialize==SbiVfunc0 / Setup / ClearFrame==SbiSlot3 / Poll==SbiSlot4 /
-// Tick==SbiSlot5) - and the Setup arg shapes agree exactly once SbiTabRect is expanded
-// (owner,objid,code,z + 4 rect ints + a9,a10 = the base's 10 args). But HitHandlerA..D
-// (no args) cannot be SbiSlot6..9 (three args each), so the tail needs a slot-by-slot
-// remap driven off the real 0x1eab8c/0x1eabcc vtable contents, not a search-and-replace.
-// Emitting a 13-slot vtable where retail has 11 would silently corrupt every dispatch in
-// the unit, so this wants doing properly, in one pass, by someone with the budget for it.
-class CSbiTab {
-public:
-    CSbiTab() {
-        m_4 = 0;
-        m_24 = 0;
-        m_28 = 0;
-    }
-    virtual ~CSbiTab();       // slot 0
-    virtual void Serialize(); // slot 1
-    virtual i32
-    Setup(void* owner, i32 objid, i32 code, i32 z, SbiTabRect rc, i32 a9, i32 a10); // slot 2
-    virtual void ClearFrame();                                                      // slot 3
-    virtual void Poll();                                                            // slot 4
-    virtual void Tick();                                                            // slot 5
-    virtual void HitHandlerA();                                                     // slot 6
-    virtual void HitHandlerB();                                                     // slot 7
-    virtual void HitHandlerC();                                                     // slot 8
-    virtual void HitHandlerD();                                                     // slot 9
-    virtual void Refresh();                                                         // slot 10
-    virtual i32 Configure(
-        void* owner,
-        i32 code,
-        i32 type,
-        i32 idx,
-        SbiTabRect rc,
-        char* key,
-        i32 flag,
-        i32 e
-    );                            // slot 11
-    virtual void Activate(i32 a); // slot 12
-    i32 m_4;
-    i32 m_8; // type tag (1 rect / 2 menu)
-    char m_padc[0x24 - 0xc];
-    i32 m_24;
-    i32 m_28;
-    char m_pad2c[0x30 - 0x2c];
-};
-SIZE(CSbiTab, 0x30);
+// The remap, read off the real vtables (sema class) rather than guessed:
+//   retail CStatusBarItem  vtbl@0x1eabcc  11 slots (the base; all bodies real)
+//   retail CSBI_RectOnly   vtbl@0x1eab8c  11 slots  : CStatusBarItem   <- CSbiRectSub
+//   retail CSBI_Image      vtbl@0x1eac0c  12 slots  : CSBI_RectOnly  (adds slot 11)
+//   retail CSBI_MenuItem   vtbl@0x1eab4c  12 slots  : CSBI_Image      <- CSBI_MenuItem
+// So the leaves derive DIRECTLY from CStatusBarItem here (the CSBI_RectOnly/CSBI_Image
+// intermediates add no fields, so this is layout-identical), and the ONE extra slot the
+// menu item really has - slot 11, CSBI_Image::SetupImage, which this class overrides -
+// is declared on the menu item itself with the canonical signature. The old view's
+// "Configure" WAS that slot-11 call, and its "Activate" @ slot 12 was pure fabrication:
+// retail's deepest vtable here has 12 slots (0..11), and nothing ever called it.
+//
+// The CSBI_RectOnly/CSBI_Image intermediates cannot be NAMED here: <Gruntz/SBI_Image.h>
+// defines a different class under the CSBI_RectOnly name than this header's 0x570 HOST
+// does, so the two cannot be co-included. Freeing that name is the documented cross-lane
+// host rename (see the note above); it is not needed to get the slot shape right.
 
 // tag-1 rect-only sub-widget. Its TRUE retail class is CSBI_RectOnly (vtable 0x5eab8c),
 // but that name is bound in this TU to the big status-bar HOST, so the sub-widget carries
@@ -825,16 +777,22 @@ SIZE(CSbiTab, 0x30);
 // so CSBI_RectOnly = CStatusBarItem (0x30) + three words. The ctor leaves them
 // uninitialised (Setup fills them), which is why the old 0x30 guess looked self-
 // consistent: an incomplete ctor does NOT bound an object.
-class CSbiRectSub : public CSbiTab { // TRUE class CSBI_RectOnly, vtable 0x5eab8c
+// SIZE IS 0x30, NOT 0x3c - and the ALLOCATION SITE IN THIS TU says so. The three rect
+// sub-widgets BuildStatusBarTabs creates are allocated `push 0x30; call ??2@YAPAXI@Z`
+// (@0xffe46 / 0xffed5 / 0xfff4b), while the five menu items in the SAME function are
+// `push 0x3c` (@0xfffd9 / 0x100071 / 0x100105 / 0x100199 / 0x100275). So the +0x30/+0x34/
+// +0x38 trio belongs to the MENU ITEM ONLY - exactly as the old base's own comment said
+// ("fields end at +0x30 (the rect-widget size); the menu-item's m_30/m_34/m_38 live in
+// CSBI_MenuItem") before it handed them to the rect widget anyway, on the strength of a
+// DIFFERENT allocation site (0x10237d, in CStatusBarMgr::LoadTabSprites - which allocates
+// a different, larger object). We were over-allocating these by 12 bytes.
+class CSbiRectSub : public CStatusBarItem { // TRUE class CSBI_RectOnly, vtable 0x5eab8c
 public:
     CSbiRectSub() {
         m_8 = 1;
     }
-    i32 m_30; // +0x30  (ctor-uninitialised; filled by Setup)
-    i32 m_34; // +0x34
-    i32 m_38; // +0x38
 };
-SIZE(CSbiRectSub, 0x3c);
+SIZE(CSbiRectSub, 0x30);
 
 // tag-2 menu item (0x3c). vtable 0x5eab4c -> auto-named ??_7CSBI_MenuItem@@6B@.
 // The dtor is declared OUT-OF-LINE (no body): an implicit one makes cl5 emit a
@@ -842,7 +800,7 @@ SIZE(CSbiRectSub, 0x3c);
 // duplicating the real dtor (SBI_MenuItem.cpp 0x1007d0) and calling a base dtor no
 // obj defines (CSbiTab is a view) -> unresolved external at link. Declared-only =>
 // the reference binds to the one real body at its retail rva.
-class CSBI_MenuItem : public CSbiTab {
+class CSBI_MenuItem : public CStatusBarItem {
 public:
     CSBI_MenuItem() {
         m_8 = 2;
@@ -850,7 +808,32 @@ public:
         m_30 = 0;
         m_38 = 0;
     }
-    virtual ~CSBI_MenuItem(); // 0x001007d0 (SBI_MenuItem.cpp)
+    // Retail vtable shape (sema class: vtbl@0x1eab4c, TWELVE slots; overrides 0/1/3/4/5
+    // and slot 11) - mirrored EXACTLY from the canonical CSBI_MenuItem in
+    // <Gruntz/SBI_MenuItem.h>, so every entry this TU emits binds to the same symbol the
+    // canonical does. Declared-only => the references bind to the one real body per rva.
+    virtual ~CSBI_MenuItem();         // slot 0  0x1007d0 (SBI_MenuItem.cpp)
+    virtual i32 SbiVfunc0() OVERRIDE; // slot 1
+    virtual void SbiSlot3() OVERRIDE; // slot 3
+    virtual void SbiSlot4() OVERRIDE; // slot 4
+    virtual void SbiSlot5() OVERRIDE; // slot 5
+    // slot 11 - the 11-arg image setup CSBI_Image introduces and this class overrides.
+    // It is what the old view called "Configure": the tab-configure call site pushes
+    // exactly these 11 dwords. Declared with the canonical signature so it mangles to the
+    // same ?SetupImage@CSBI_MenuItem@@ symbol (out-of-line body: InitItem @0xe80e0).
+    virtual i32 SetupImage(
+        i32 a1,
+        CSbiConfigHost* host,
+        i32 a3,
+        i32 a4,
+        i32 a5,
+        i32 a6,
+        i32 a7,
+        i32 a8,
+        i32 key,
+        i32 a10,
+        i32 a11
+    ); // slot 11
     // The tab-widget drivers CSBI_RectOnly reaches through m_tabSprite* (non-virtual
     // reloc-masked call rel32; bodies + rvas bound in SBI_MenuItem.cpp). These fold
     // the former fake CSbiSprite view onto the real class: Release->Blit, Show->
