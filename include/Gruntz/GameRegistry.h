@@ -148,6 +148,7 @@ struct CGameViewport {
 // resources through this one holder: the draw surface (+0x04), the sprite/object
 // factory (+0x08, CreateSprite + key lookup), the image registry (+0x10), the
 // level/view object (+0x24) and the sound/anim registry (+0x28).
+class SoundStream; // +0x20 (Dsndmgr; the per-frame sound tick)
 struct CSpriteFactoryHolder {
     char m_pad0[0x4];
     CDrawTarget* m_drawTarget; // +0x04  active draw surface / render-flip pump (CDrawTarget:
@@ -158,12 +159,16 @@ struct CSpriteFactoryHolder {
     CImageRegistry* m_10;      // +0x10  image/name registry (real ResMgr.h class: Install/Has/
                                //         Register/Release/LoadNamespace + the m_10map hash)
     char m_pad14[0x20 - 0x14];
-    void* m_frameProfiler; // +0x20  frame profiler timer (timeGetTime x2)
-    CGameViewport* m_24;   // +0x24  level/view object (bar RECT + viewport); the render facet
-                           //         reaches it as the draw surface (cast to CDrawSurface)
-    CSndHost* m_28;        // +0x28  sound registry (CSndHost cue facet <Gruntz/SoundCue.h>; the
-                           //         render/resource facet reaches it as CSoundRegistry, cast).
-                           //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate.
+    // +0x20  the REAL SoundStream (<Dsndmgr/SoundStream.h>). Was "m_frameProfiler": the
+    // two per-frame `(obj, timeGetTime())` calls on it are SoundDevice::PurgeVoiceList
+    // (0x136e20) + SoundStream::TickSubManagers (0x137ac0), BOTH 100%% EXACT in the tree -
+    // a sound tick, not a profiler.
+    SoundStream* m_soundStream;
+    CGameViewport* m_24; // +0x24  level/view object (bar RECT + viewport); the render facet
+                         //         reaches it as the draw surface (cast to CDrawSurface)
+    CSndHost* m_28;      // +0x28  sound registry (CSndHost cue facet <Gruntz/SoundCue.h>; the
+                         //         render/resource facet reaches it as CSoundRegistry, cast).
+                         //         CSndFinder @+0x10 name->CSndEmitter map + the +0x30 emit gate.
     CAnimRegistry* m_animRegistry; // +0x2c  anim/third registry (real ResMgr.h class)
 };
 

@@ -34,34 +34,38 @@
 // CTypedPtrArray<CPtrArray> experiment (which dropped the ctor 89.5% -> 72%) only
 // proved the array was not CPtrArray - not that it was CDWordArray.  The (CObject*)
 // casts at the use sites are the devs' own: CObArray stores CObject*, and CLevelPlane
-// /CImageSet are not CObject-derived.  Ask the binary:
+// /CTileImageSet are not CObject-derived.  Ask the binary:
 //     python -m gruntz.analysis.mfc_class 0x1b55e9
-// storing CLevelPlane*/CImageSet* cast to DWORD (afxcoll layout {DWORD* m_pData; int
-// m_nSize; int m_nMaxSize; int m_nGrowBy}). A typed CArray<T*>/CTypedPtrArray<CPtrArray>
-// inlines its template ctor and diverges the CGameLevel ctor/dtor codegen; the plain
-// CDWordArray is the byte-exact shape, so the (CLevelPlane*)/(DWORD) casts at the use
-// sites are the devs' authentic pointer<->DWORD storage casts (they stay).
 #include <Mfc.h> // CObArray (afxcoll)
 
 // ---------------------------------------------------------------------------
-// CImageSet - the per-plane image-set descriptor the level builds from the WWD
-// tile-description block. UNMATCHED engine class; modeled as an external shell.
-// The factory (CGameLevel::ReadImageSet) switches on the record kind (1/2/3) and
-// `operator new`s one of three variants (0x10 / 0x24 / 0x18 bytes), stamping the
-// matching external vftable (g_imageSet1/2/3Vtbl). Slot +0x14 (Parse) is then
-// invoked with the record pointer; on a 0 result slot +0x04 (Release) frees the
-// object. Slot +0x20 (GetCollisionAt) is the per-pixel collision-kind query the tile
-// probes drive; slot +0x24 (GetStride) returns the record byte length (cursor advance).
-// dummy0/2/3/4/6/7 are the CObject-family + unused engine slots (never called by the
-// level; roles unrecovered - left as placeholders).
+// CTileImageSet - the per-tile COLLISION-DESCRIPTOR record the level builds from the
+// WWD tile-description block. A dispatch-only base: never instantiated (the factory
+// CGameLevel::ReadImageSet switches on the record kind and `new`s one of the three
+// real variants CImageSet1/2/3 - 0x10 / 0x24 / 0x18 bytes, <Gruntz/ImageSets.h>,
+// whose ??_7 are VTBL-bound in GameLevel.cpp), so cl emits no vtable for it.
+// Slot +0x14 (Parse) is invoked with the record pointer; on a 0 result slot +0x04
+// (Release) frees the object. Slot +0x20 (GetCollisionAt) is the per-pixel
+// collision-kind query the tile probes drive; slot +0x24 (GetStride) returns the
+// record byte length (cursor advance). dummy0/2/3/4/6/7 are the CObject-family +
+// unused engine slots (never called by the level; roles unrecovered).
+//
+// NAME SPLIT (was `CImageSet`): this class and <Image/ImageSet.h>'s CImageSet are two
+// UNRELATED engine classes that were both carrying that one placeholder name - and the
+// old definition here was a CONFLATION of the two, grafting the frame collection's
+// m_frames/+0x14, m_count/+0x18, m_minIndex/+0x64, m_maxIndex/+0x68, GetAt() and its
+// three SetAll* walkers onto this 0x10/0x24/0x18-byte collision record (which has none
+// of them - they would not even fit). The two never met in one TU only BECAUSE the name
+// collided; splitting it lets a TU include both headers, and the members now sit on the
+// class that actually owns them:
+//   CTileImageSet (here) - the tile collision descriptor. Users: GameLevel.cpp,
+//       GameLevelMove.cpp (Parse / Release / GetCollisionAt / GetStride / m_width).
+//   CImageSet (<Image/ImageSet.h>) - the 0x6c sparse CImage-frame collection (vtable
+//       0x1efbe8; the named sprite sets the registry resolves). Users: everyone else,
+//       incl. CPlaneRender::SetTileSizeFromImageSet (m_count + GetAt) in LevelPlane.cpp.
 // ---------------------------------------------------------------------------
-class CImage; // Image/CImage.h - the set's frame element IS the RTTI CImage (the old
-              // CImageFrame placeholder is dissolved; consumers include the real header)
-class CImageSet {
+class CTileImageSet {
 public:
-    i32 SetAllTypes(i32 type);    // real CImageSet::SetAllTypes (Image/ImageSet.cpp)
-    i32 SetAllField18(i32 value); // real CImageSet::SetAllField18 (0x1524d0)
-    i32 SetAllFormats(i32 fmt);   // real CImageSet::SetAllFormats
     virtual i32 dummy0();
     virtual void Release(i32 arg);   // +0x04  release/free hook (scalar-deleting dtor)
     virtual i32 dummy2();            // +0x08
@@ -77,23 +81,7 @@ public:
     virtual i32 GetCollisionAt(i32 x, i32 y); // +0x20
     virtual i32 GetStride();                  // +0x24  record byte length (cursor advance)
 
-    i32 m_width; // +0x04  tile/column width (ClampSpan span extent)
-    char m_pad08[0x14 - 0x08];
-    CImage** m_frames; // +0x14  frame pointer array (== Image/ImageSet.h m_frames)
-    i32 m_count;       // +0x18  frame array element count (== Image/ImageSet.h m_count)
-    char m_pad1c[0x64 - 0x1c];
-    i32 m_minIndex; // +0x64  lowest populated frame index
-    i32 m_maxIndex; // +0x68  highest populated frame index
-
-    // The bounds-checked accessor CPlaneRender::SetTileSizeFromImageSet inlines
-    // (== Image/ImageSet.h GetAt): an index outside [m_minIndex, m_maxIndex]
-    // yields a null frame. (Emitted only where called; matching-neutral here.)
-    CImage* GetAt(i32 index) {
-        if (index < m_minIndex || index > m_maxIndex) {
-            return 0;
-        }
-        return m_frames[index];
-    }
+    i32 m_width; // +0x04  tile/column width (ClampSpan span extent; == CImageSet3::m_width)
 };
 
 // The 4-int coordinate/extent record stored at CGameLevel+0x10, passed by pointer
@@ -211,7 +199,7 @@ struct CParseSource;
 //   +0x10 m_planeCtx       &m_planeCtx -> CPlane::Read 3rd arg (the shared ctx)
 //   +0x34 m_planes         CArray<CPlane*>  (m_data@+0x38, m_size@+0x3c)
 //   +0x3c m_planeCount     == m_planes.m_size (the running plane count/index)
-//   +0x48 m_imageSets      CArray<CImageSet*>
+//   +0x48 m_imageSets      CArray<CTileImageSet*>
 //   +0x5c m_mainPlane      CPlane*  (the MAIN plane, cached by ReadPlane)
 //   +0x60 m_mainIndex      index of the MAIN plane
 //   +0x6c m_levelName      char[] copy of WwdHeader::levelName
@@ -414,7 +402,7 @@ private:
     CPlane* ReadPlane(void* planeData, void* blockBase, void* unused);
 
     // The image-set factory (CGameLevel::ReadImageSet) - external.
-    CImageSet* ReadImageSet(void* record);
+    CTileImageSet* ReadImageSet(void* record);
 
     // The sibling move leaves dispatched by MoveHandlerA..D (this=this level, the
     // moving CGameObject passed explicitly). All matched in GameLevel.cpp.
@@ -471,10 +459,10 @@ public:
     // vptr@+0x00 (implicit, CGameLevel is polymorphic); +0x04..+0x0c are the
     // CLoadable members (m_04/m_08/m_0c); the plane-read ctx begins at +0x10.
     LevelCoordRect m_planeCtx; // +0x10  plane-read ctx / coord record (LoadWwd 3rd arg)
-    CObArray m_array20;        // +0x20  ::CObArray (ctor 0x1b55e9; EH state 0)
+    CObArray m_array20; // +0x20  ::CObArray (ctor 0x1b55e9; EH state 0)
     CObArray
-        m_planes; // +0x34  ::CObArray of CLevelPlane* (m_size@+0x3c == m_planeCount; EH state 1)
-    CObArray m_imageSets;          // +0x48  ::CObArray of CImageSet* (EH state 2)
+        m_planes; // +0x34  ::CObArray of CLevelPlane* (m_size293550x3c == m_planeCount; EH state 1)
+    CObArray m_imageSets; // +0x48  ::CObArray of CTileImageSet* (EH state 2)
     CLevelPlane* m_mainPlane;      // +0x5C  (typed full plane view; same object as CPlane)
     i32 m_mainIndex;               // +0x60
     i32 m_maxStepX;                // +0x64  per-frame max move step (MoveToward; 0x40)

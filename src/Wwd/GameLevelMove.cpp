@@ -85,7 +85,7 @@ extern "C" i32 __stdcall MoveSubDispatch12(CGameObject* obj, i32 a, i32 b, i32 c
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = kTilePassable;                                                              \
         } else {                                                                                   \
-            CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                             \
+            CTileImageSet* set_ = (CTileImageSet*)m_imageSets[tile_ & 0xffff];                     \
             (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
         }                                                                                          \
     } while (0)
@@ -221,7 +221,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = kTilePassable;
         } else {
-            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
             result = set->GetCollisionAt(subX, subY);
         }
     }
@@ -314,7 +314,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = kTilePassable;
         } else {
-            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
             result = set->GetCollisionAt(subX, subY);
         }
     }
@@ -407,7 +407,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = kTilePassable;
         } else {
-            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
             result = set->GetCollisionAt(subX, subY);
         }
     }
@@ -500,7 +500,7 @@ looptop: {
         if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
             result = kTilePassable;
         } else {
-            CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+            CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
             result = set->GetCollisionAt(subX, subY);
         }
     }

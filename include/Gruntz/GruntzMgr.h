@@ -83,10 +83,12 @@ class CGruntzCmdMgr; // +0x6c (real class; ~CGruntzCmdMgr @0x85bd0). FWD-declare
 struct CWorldView;
 struct CSndHost; // +0x28 sound/anim cue host (full def in <Gruntz/SoundCue.h>; was
                  // implicitly fwd-declared by the old InputState.h method signature)
-// The world's +0x10 recolor lookup holder (its own +0x10 is an embedded CColorLookup);
-// CWorldZ::m_10 is a pointer, so a forward declaration suffices - the holder's full
-// layout lives in GruntzMgr.cpp, the only TU that walks it.
-struct CWorldLookupHolder;
+// The world+0x10 image/name registry: the REAL CImageRegistry (<Gruntz/ResMgr.h>), whose
+// own +0x10 is the embedded CMapStringToOb name->object hash. A pointer here, so a fwd
+// decl suffices (GruntzMgr.cpp includes the real header). The ex-CWorldLookupHolder view
+// is dissolved: its "map-type contradiction" was an inverted tree label (0x1b8008 IS
+// CMapStringToOb::Lookup), not a binary fact.
+struct CImageRegistry;
 // A polymorphic sub-object held in the world at +0x1c, dispatched through a
 // pointer-to-pointer (`*m_1c`) then virtual slot 10 (+0x28). The full COM-interface
 // definition (real virtuals) lives in GruntzMgr.cpp - the only TU that dispatches on
@@ -97,6 +99,10 @@ struct CWorldDispatch;
 // command-context object the world-present toolbar forwarder (Fwd114f00) drills to.
 SIZE_UNKNOWN(CWorldSub4);
 struct CWorldSub4 {
+    // 0x158c70 (__thiscall): pause/park the sub-object's own +0x14 page. Retail
+    // passes THIS object's m_14 back in as the argument (ShowMessageBox 0x08ee70:
+    // `mov ecx,[world+4]; mov eax,[ecx+0x14]; push eax; call`). Reloc-masked.
+    void PausePages(i32 page); // 0x158c70
     char m_pad0[0x10];
     void* m_10; // +0x10  command-context object (its +0x2c is forwarded to 0x267b)
     i32 m_14;   // +0x14
@@ -114,7 +120,7 @@ struct CWorldZ {
     // 0x8106 death lookup). Fwd-declared; Grunt.h carries the full def.
     struct CSpriteFactory* m_8; // +0x08
     char m_padc[0x10 - 0xc];
-    CWorldLookupHolder* m_10; // +0x10  recolor lookup holder
+    CImageRegistry* m_10; // +0x10  image/name registry (its +0x10 is the CMapStringToOb hash)
     char m_pad14[0x1c - 0x14];
     CWorldDispatch** m_1c; // +0x1c
     char m_pad20[0x24 - 0x20];
@@ -153,10 +159,15 @@ struct EngObj; // teardown-only sub-object (Teardown())
 // defined by the <Gruntz/SpriteRefTable.h> include above.
 class CGruntSpawnConfig;
 class CGameLevel;
-class CLightFxMgr;      // +0x78 light-FX/shade-table pump (Reset teardown @0x9dc80)
-class CWorldDelete;     // +0x3c world sub-object torn down via vtable slot 1
-struct CRezSurface94;   // +0x34 recolor surface (Build/Apply/Teardown)
-struct CSettingsWriter; // +0x38 settings/registry writer (WriteInt/Teardown)
+class CLightFxMgr;  // +0x78 light-FX/shade-table pump (Reset teardown @0x9dc80)
+class CWorldDelete; // +0x3c world sub-object torn down via vtable slot 1
+// +0x34 is the REAL CSymParser (<Bute/SymParser.h>; SIZE 0x94 == the size retail
+// operator-new's at it) and +0x38 the REAL Utils::RegistryHelper - the CRezSurface94 /
+// CSettingsWriter shells that stood for them were fake views over the same rvas.
+class CSymParser;
+namespace Utils {
+    class RegistryHelper;
+}
 // HudGuard44 (+0x44 HUD first-frame guard) and SaveSink58 (+0x58 save-record
 // sink) are defined by the <Gruntz/SaveInfo.h> include above.
 class CFontConfig; // +0x5c chat/message log (was view CChatLog; AddItem @0x21c60 - FontConfig.h)
@@ -213,6 +224,13 @@ public:
     // capture the current world-file name from the game window into m_strWorldFile,
     // clear the score/state slots (m_128/m_12c), and PostMessageA WM_COMMAND 0x8005.
     i32 CaptureWorldFile();
+    // @0x08ee70 - suspend the world's draw pump (m_world->m_4 page-pause + the
+    // m_world->m_1c dispatch's slot 10), force the cursor visible, pop a MessageBoxA
+    // over the game window (shared caption buffer), then restore the cursor.
+    i32 ShowMessageBox(const char* text, u32 type);
+    // @0x08f480 - CaptureWorldFile's counterpart: on a playable state id (5/2/3),
+    // clear m_strWorldFile and post WM_COMMAND 0x8005; ret 1 (else 0).
+    i32 ClearWorldFile();
     i32 InitializeLobbyConnectionSettings();   // @0x08eca0 (DirectPlay lobby connect)
     CString BuildMoviePath(i32 movie);         // @0x08ff30 (per-movie path on the CD)
     virtual void PerFrameTick() OVERRIDE;      // @0x08f620 slot 4 (per-frame draw-clock tick)
@@ -269,7 +287,9 @@ public:
     void ReportWorldStatus(i32 a); // @0x090ac0 (map m_world->m_38 status to ReportError)
     i32 LoadMonologoSprite();      // @0x090d10 (PLAY-only: find/toggle/create the MONOLITH logo)
     i32 CheatRevealTreasures();    // @0x090f10 (PLAY-only: color all treasure/collectible rows)
-    i32 SetGruntColor(i32 sink, i32 key, i32 idx); // @0x0910d0 (recolor a sink cell)
+    // x0910d0 - blit one frame of `sink` over the same-named frame of the image set
+    // registered under `key` (both are real CImageSets; the copy is CImage::CopyFrom).
+    i32 SetGruntColor(class CImageSet* sink, const char* key, i32 idx);
     void CheatSkeletonToggle(); // @0x091250 (toggle the grunt "skeleton" image type + cue)
     void CheatEclipseToggle();  // @0x091390 (toggle the grunt "eclipse" image type + cue)
     i32 WarpCheat();            // @0x08eaf0 (per-level warp X/Y registry set/apply)
@@ -344,7 +364,6 @@ public:
     void RecomputeViewScale();                         // @0x08f7f0
     i32 PrepCmd4(i32 a0);                              // reloc-masked sibling (cmd-4 arm gate)
     i32 PrepCmd7(i32 a0);                              // reloc-masked sibling (cmd-7 arm gate)
-    struct CActiveObj* GetActiveObj();                 // reloc-masked sibling (active game object)
     void RunWinHook();      // reloc-masked sibling (win/level-complete hook)
     i32 CheckLevelActive(); // reloc-masked sibling (level-active predicate)
     // A sibling state-transition pusher reached by PassClickToPlayState's reloc-
@@ -357,8 +376,8 @@ public:
 
     // Reloc-masked CGruntzMgr siblings reached from LoadWorldMode (the rez-path
     // builder + the rez-row resolver that fills a CString and returns the row ptr).
-    i32 MakeRezPath();                // FUN_0049???? (this) -> path-built ok
-    i32* ResolveRezRow(CString* out); // thunk_FUN_00485500 (this, &out) -> row
+    i32 MakeRezPath();                  // FUN_0049???? (this) -> path-built ok
+    void** ResolveRezRow(CString* out); // thunk_FUN_00485500 (this, &out) -> row
 
     // Clock / global helpers.
     void SetGameClock(i32 now, i32 delta, i32 abs); // @0x08f7b0 (mirror the 5 clock globals)
@@ -422,16 +441,18 @@ public:
     i32 ChangeState_8fab0(i32 arg); // @0x08fab0 (deferred / stubbed)
 
     // --- members (offsets relative to `this`; base CGameMgr occupies 0x00..0x2c) ---
-    CState* m_curState;              // +0x2c  current game-state (Update() -> state id)
-    CWorldZ* m_world;                // +0x30  loaded world/map object (also a draw gate)
-    CRezSurface94* m_recolorSurface; // +0x34  color-depth recolor surface
-    CSettingsWriter* m_settings;     // +0x38  settings/registry writer (WriteInt)
-    CWorldDelete* m_3c;              // +0x3c  engine sub-object (vtable-slot-1 teardown)
-    EngObj* m_40;                    // +0x40  engine sub-object (teardown-only)
-    HudGuard44* m_hudGuard;          // +0x44  HUD first-frame seed guard (+0x124)
-    CGruntzSoundZ* m_sound;          // +0x48  sound/bank object (StopBank/StopAll)
-    i32 m_4c;                        // +0x4c
-    EngObj* m_50;                    // +0x50  engine sub-object (teardown-only)
+    CState* m_curState;                // +0x2c  current game-state (Update() -> state id)
+    CWorldZ* m_world;                  // +0x30  loaded world/map object (also a draw gate)
+    CSymParser* m_recolorSurface;      // +0x34  the level/rez symbol parser (LoadWorldMode
+                                       //        new's it (0x94) + ParseBuffer's the rez row;
+                                       //        LevelRezPath's ResolvePath runs on it)
+    Utils::RegistryHelper* m_settings; // +0x38  settings/registry writer (SetValueDword)
+    CWorldDelete* m_3c;                // +0x3c  engine sub-object (vtable-slot-1 teardown)
+    EngObj* m_40;                      // +0x40  engine sub-object (teardown-only)
+    HudGuard44* m_hudGuard;            // +0x44  HUD first-frame seed guard (+0x124)
+    CGruntzSoundZ* m_sound;            // +0x48  sound/bank object (StopBank/StopAll)
+    i32 m_4c;                          // +0x4c
+    EngObj* m_50;                      // +0x50  engine sub-object (teardown-only)
     // +0x54..+0x78 sub-controllers (real engine sub-object pointers reached through
     // reloc-masked thiscalls / vtable slots from GruntzMgr.cpp):
     CWorldSoundSet* m_inputState; // +0x54  active-level sound object (Deactivate/Resume/

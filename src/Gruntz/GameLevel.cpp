@@ -22,14 +22,14 @@
 //        if (!ReadPlane(cursor, block, &m_planeCtx)) goto fail;
 //   7. if (hdr->tileDescriptionsOffset) {    (image-set descriptors)
 //        for (j = 0; j < count; ++j) {
-//          CImageSet* s = ReadImageSet(cursor); if (!s) goto fail;
+//          CTileImageSet* s = ReadImageSet(cursor); if (!s) goto fail;
 //          m_imageSets.SetAtGrow(j, s); cursor += s->GetStride();
 //        }
 //      }
 //   8. recompute the scaled start coords on the main plane + every plane;
 //      free the tracked inflate buffer; return 1.
 //
-// CPlane / CImageSet / the per-plane reader / ReadImageSet / RecomputePlaneCoords /
+// CPlane / CTileImageSet / the per-plane reader / ReadImageSet / RecomputePlaneCoords /
 // InflateMainBlock / operator new/delete / SetAtGrow are reloc-masked calls.
 // <Mfc.h> brings real MFC afxcoll: CDWordArray (the engine stores the pointer arrays as DWORDs).
 #include <Mfc.h>
@@ -44,7 +44,7 @@
 
 #include <string.h> // strcpy, memset
 
-// The collision-relevant tile codes among the broad tile-type space CImageSet::
+// The collision-relevant tile codes among the broad tile-type space CTileImageSet::
 // GetCollisionAt (and the tile probes that dispatch it) returns. NOT a closed enum:
 // CGameLevel::LookupTile hands the same result to BrickzLoad as a full tile-type code
 // switched over cases up to 113, so only these low codes carry a movement-collision
@@ -90,8 +90,8 @@
 // source as `this`; declared with no body so the thiscall sites reloc-mask.
 
 // The pointer arrays hold real objects: m_planes -> CLevelPlane* (the level.s typed
-// view of the engine plane, GameLevel.h), m_imageSets -> CImageSet*. Both carry the
-// +0x04 release slot (CLevelPlane::dtor / CImageSet::Release). The per-plane object.s
+// view of the engine plane, GameLevel.h), m_imageSets -> CTileImageSet*. Both carry the
+// +0x04 release slot (CLevelPlane::dtor / CTileImageSet::Release). The per-plane object.s
 // tile grid, extents, coord-recompute outputs, tile->pixel shifts and name are all
 // named CLevelPlane members reached without a per-site cast off m_mainPlane.
 
@@ -245,7 +245,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
     // --- image-set descriptors ---------------------------------------------
     // The descriptor read is its own int-returning routine (inlined here): it
     // validates the record pointer, walks `count` descriptors appending each
-    // CImageSet, and returns the number read (or -1 on a bad pointer / failed
+    // CTileImageSet, and returns the number read (or -1 on a bad pointer / failed
     // read). count is re-read from the record header each iteration (rec is spilled).
     if (hdr->tileDescriptionsOffset != 0) {
         char* rec = block + hdr->tileDescriptionsOffset;
@@ -258,7 +258,7 @@ i32 CGameLevel::LoadWwd(WwdHeader* hdr) {
             i32 n = 0;
             i32 j = 0;
             while ((u32)j < *(u32*)(rec + 0x8)) {
-                CImageSet* set = ReadImageSet(elem);
+                CTileImageSet* set = ReadImageSet(elem);
                 if (set == 0) {
                     result = -1;
                     goto check_result;
@@ -478,7 +478,7 @@ i32 CGameLevel::Unload() {
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CImageSet* child = (CImageSet*)m_imageSets.GetData()[i];
+        CTileImageSet* child = (CTileImageSet*)m_imageSets.GetData()[i];
         if (child) {
             child->Release(1); // release/free hook (+0x04)
         }
@@ -506,7 +506,7 @@ void CGameLevel::ReleaseChildren() {
     }
     m_planes.SetSize(0, -1);
     for (i = 0; i < m_imageSets.GetSize(); i++) {
-        CImageSet* child = (CImageSet*)m_imageSets.GetData()[i];
+        CTileImageSet* child = (CTileImageSet*)m_imageSets.GetData()[i];
         if (child) {
             child->Release(1); // release/free hook (+0x04)
         }
@@ -586,20 +586,20 @@ i32 CGameLevel::SetCoords(LevelCoordRect* coords) {
 // `new`s each variant, so cl emits + VTBL-binds their vtables in this TU.
 
 RVA(0x0015d820, 0xa3)
-CImageSet* CGameLevel::ReadImageSet(void* record) {
+CTileImageSet* CGameLevel::ReadImageSet(void* record) {
     if (record == 0) {
         return 0;
     }
-    CImageSet* set;
+    CTileImageSet* set;
     switch (*(i32*)record) {
         case 1:
-            set = (CImageSet*)new CImageSet1;
+            set = (CTileImageSet*)new CImageSet1;
             break;
         case 2:
-            set = (CImageSet*)new CImageSet2;
+            set = (CTileImageSet*)new CImageSet2;
             break;
         case 3:
-            set = (CImageSet*)new CImageSet3;
+            set = (CTileImageSet*)new CImageSet3;
             break;
         default:
             return 0;
@@ -751,7 +751,7 @@ CPlane* CGameLevelPlanes::ReadObjectPlane(i32 a1, i32 a2, i32 a3, i32 a4, i32 a5
         if (tile_ == TILE_UNINIT || tile_ == TILE_CLEAR) {                                         \
             (RESULT) = kTilePassable;                                                              \
         } else {                                                                                   \
-            CImageSet* set_ = (CImageSet*)m_imageSets[tile_ & 0xffff];                             \
+            CTileImageSet* set_ = (CTileImageSet*)m_imageSets[tile_ & 0xffff];                     \
             (RESULT) = set_->GetCollisionAt(subX_, subY_);                                         \
         }                                                                                          \
     } while (0)
@@ -795,7 +795,7 @@ i32 CGameLevel::AxisProbe(i32 coord, i32 limit) {
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+    CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
     return set->GetCollisionAt(subX, subY);
 }
 
@@ -871,7 +871,7 @@ i32 CGameLevel::LookupTile(i32 x, i32 y) {
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+    CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
     return set->GetCollisionAt(0, 0); // slot +0x20, called with (0, 0)
 }
 
@@ -2035,7 +2035,7 @@ i32 CGameLevel::ClampSpan(i32 x, i32 y, i32* outLo, i32* outHi) {
     if (tile == TILE_UNINIT || tile == TILE_CLEAR) {
         return 0;
     }
-    CImageSet* set = (CImageSet*)m_imageSets[tile & 0xffff];
+    CTileImageSet* set = (CTileImageSet*)m_imageSets[tile & 0xffff];
     *outLo = alignedX;
     *outHi = alignedX + set->m_width - 1;
     return 1;
@@ -2304,7 +2304,7 @@ i32 CGameLevel::WalkColumnDown(CGameObject* t, i32 unused) {
 
 // ---------------------------------------------------------------------------
 // ReadImageSets (@0x15d790): the image-set descriptor loop (LoadWwd step 7). For
-// each of the dir[2] records, ReadImageSet(cursor) builds a CImageSet variant,
+// each of the dir[2] records, ReadImageSet(cursor) builds a CTileImageSet variant,
 // SetAtGrow it into m_imageSets, and advance the cursor by the record's GetStride.
 // Returns the count read; -1 on a null cursor/dir or a failed record.
 RVA(0x0015d790, 0x8b)
@@ -2317,7 +2317,7 @@ i32 CGameLevel::ReadImageSets(const u32* dir, char* cursor) {
     }
     i32 n = 0;
     for (i32 i = 0; (u32)i < dir[2]; i++) {
-        CImageSet* set = ReadImageSet(cursor);
+        CTileImageSet* set = ReadImageSet(cursor);
         if (set == 0) {
             return -1;
         }
@@ -2738,17 +2738,19 @@ SIZE(CImageSet2, 0x24);
 // Size PROVEN from the allocation site (push 0x6d4; call ??2 -> the ctor), and our
 // reconstruction computes exactly that. Pinned so no future note can claim it unknown.
 SIZE(CGameLevel, 0x6d4);
-SIZE_UNKNOWN(CImageSet);
-// NO VTBL: the tile-descriptor CImageSet (<Gruntz/GameLevel.h>) is a DISPATCH-ONLY
+SIZE_UNKNOWN(CTileImageSet);
+// NO VTBL: the tile-descriptor CTileImageSet (<Gruntz/GameLevel.h>) is a DISPATCH-ONLY
 // base - never instantiated (ReadImageSet `new`s CImageSet1/2/3, whose own vtables
-// are VTBL'd above), so cl emits no ??_7CImageSet in ANY form (verified with llvm-nm
+// are VTBL'd above), so cl emits no ??_7CTileImageSet in ANY form (verified with llvm-nm
 // over every base obj) and the class owns no vtable datum. The old
 // RELOC_VTBL(CImageSet, 0x001eaa2c) was a FALSE claim on two counts: 0x1eaa2c carries
 // RTTI .?AVCImage@@ (it is CImage's 18-slot vtable, VTBL'd in <Image/CImage.h>), and
-// nothing here reloc-masks it. @identity-TODO: this class NAME is also a conflation
-// with the unrelated <Image/ImageSet.h> CImageSet (the 0x6c frame collection, vtable
-// 0x1efbe8 == CDDrawWorker) - two different engine classes carrying one placeholder
-// name; they never meet in one TU today, so the split is a naming task, not a bug.
+// nothing here reloc-masks it.
+// NAME CONFLATION RESOLVED: this class used to be called `CImageSet`, colliding with the
+// UNRELATED <Image/ImageSet.h> CImageSet (the 0x6c sparse CImage-frame collection, vtable
+// 0x1efbe8 == CDDrawWorker) - and it had that class's m_frames/m_count/m_minIndex/
+// m_maxIndex/GetAt/SetAll* grafted onto it, which cannot even fit in a 0x10/0x18/0x24-byte
+// collision record. Renamed CTileImageSet + stripped; the two headers are now co-includable.
 
 // tile-collision code names (file-local; see the block near the top of this TU).
 #undef kTilePassable

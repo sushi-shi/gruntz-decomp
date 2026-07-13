@@ -44,15 +44,11 @@ SIZE_UNKNOWN(LeafCue);
 // (it only forward-declares the DirectSound COM). Folded away the per-TU SoundDevice /
 // DirectSoundMgr facet views. SoundStream's own Stop/DestroyVoice/OpenStream are declared
 // against forward-declared StreamVoice/CParseSource so this stays a light method facet.
-#include <Dsndmgr/SoundDevice.h> // the real SoundDevice base (+ DirectSoundMgr / voice list)
-struct StreamVoice;              // fwd (DestroyVoice/OpenStream arg+ret; <Dsndmgr/StreamVoice.h>)
-class CParseSource;
-struct SoundStream : SoundDevice {
-    void Stop();                       // 0x137a80 ?Stop@SoundStream@@QAEXXZ (__thiscall)
-    void DestroyVoice(StreamVoice* v); // 0x1379d0
-    StreamVoice* OpenStream(CParseSource* p, i32 a, i32 b, i32 c, i32 d, i32 e); // 0x137900
-};
-SIZE_UNKNOWN(SoundStream);
+// FOLDED: the reduced 3-method `SoundStream : SoundDevice` facet that used to be
+// DEFINED here was an ODR duplicate of the REAL class in <Dsndmgr/SoundStream.h> (same
+// base, same Stop/DestroyVoice/OpenStream rvas). Pull the real one - it also carries
+// TickSubManagers (0x137ac0), the per-frame tick CPlay/CMulti drive on this member.
+#include <Dsndmgr/SoundStream.h> // the REAL SoundStream (: SoundDevice)
 
 // The named-cue registry embedded at CSndHost+0x10 (the engine ::CMapStringToPtr, Lookup
 // @0x1b8438); Lookup fills an out-param.

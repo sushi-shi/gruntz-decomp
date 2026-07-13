@@ -10,13 +10,10 @@
 // load-bearing. Engine callees / globals are reloc-masked (no body). See the
 // header for the recovered layout + the conflated-region note.
 #include <Gruntz/GruntSpawnConfig.h>
-struct
-    StreamVoice { // struct (not class): retail OpenStream returns PAU (?OpenStream@SoundStream@@QAEPAUStreamVoice@@...)
-    i32 Configure(i32 a, i32 b, i32 c, i32 d);
-    i32 SetSource(
-        CParseSource* s
-    ); // real @0x1374c0 takes CParseSource* (src is the parse-source handle)
-};
+// StreamVoice is the REAL <Dsndmgr/StreamVoice.h> class (reached transitively via
+// SoundCue.h -> SoundStream.h): the local 2-method twin that stood here declared the
+// SAME SetSource (0x1374c0) / Configure (0x137520) rvas. Dissolved.
+#include <Dsndmgr/StreamVoice.h>
 // DirectSoundMgr (SetVolumeByIndex) now comes from the real <Dsndmgr/SoundDevice.h>,
 // pulled through <Gruntz/SoundCue.h> (via GameRegistry.h below).
 #include <Gruntz/GruntVoice.h>

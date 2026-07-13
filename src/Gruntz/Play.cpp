@@ -122,6 +122,7 @@ public:
 #include <Gruntz/FontConfig.h>
 #include <Io/SaveGame.h>
 #include <Gruntz/GameLevel.h>
+#include <Image/ImageSet.h> // the REAL CImageSet (m_grid's SetAllTypes/SetAllFormats frame walkers)
 #include <Wwd/WwdFile.h>
 #include <Gruntz/GruntzMgr.h>
 #include <Gruntz/TriggerMgr.h>
@@ -232,8 +233,6 @@ void EngStr_DrawText(
 extern "C" {
     void Eng_SurfaceFlush(void* surf, i32 z); // (begin, 0)
     void Eng_BeginScene(void* surf, i32 z);
-    void Eng_Profiler1(void* timer, u32 t);
-    void Eng_Profiler2(void* timer, u32 t);
     void Eng_HudDraw(void* hud, RECT* r, i32 c);
     void Eng_HudFlush(void* hud);
     i32 Eng_PlaySound(void* snd, const char* name, i32 flag);
@@ -414,10 +413,10 @@ i32 CPlay::Render() {
             ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_84,
             ((CGameViewport::CameraGeom*)m_c->m_24->m_5c)->m_88
         );
-        if (m_c->m_frameProfiler != 0) { // frame profiler
+        if (m_c->m_soundStream != 0) { // frame profiler
             u32 t = timeGetTime();
-            Eng_Profiler1(m_c->m_frameProfiler, t);
-            Eng_Profiler2(m_c->m_frameProfiler, t);
+            m_c->m_soundStream->PurgeVoiceList(t);  // 0x136e20 (thiscall, SoundDevice base)
+            m_c->m_soundStream->TickSubManagers(t); // 0x137ac0 (thiscall)
         }
         MarkerBegin((i32)g_645584); // m_beginMarker begin-marker
         GutsStep();                 // m_guts step
@@ -657,10 +656,10 @@ alt2:
         return 1;
     }
     {
-        if (m_c->m_frameProfiler != 0) { // cursor/frame profiler
+        if (m_c->m_soundStream != 0) { // cursor/frame profiler
             u32 t = timeGetTime();
-            Eng_Profiler1(m_c->m_frameProfiler, t);
-            Eng_Profiler2(m_c->m_frameProfiler, t);
+            m_c->m_soundStream->PurgeVoiceList(t);  // 0x136e20 (thiscall, SoundDevice base)
+            m_c->m_soundStream->TickSubManagers(t); // 0x137ac0 (thiscall)
         }
         if (m_paused != 0) {
             // ---- the paused frame: draw-only ----

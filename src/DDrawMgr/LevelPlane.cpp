@@ -21,9 +21,12 @@
 // (CGameObject). Bodies are strictly RVA-ascending; only offsets + emitted
 // bytes are load-bearing (campaign doctrine).
 #include <Mfc.h>
-#include <Gruntz/GameLevel.h>         // CLevelPlane + LevelCoordRect + CImageSet view (+ WwdFile.h)
-#include <Gruntz/UserLogic.h>         // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
-#include <Image/CImage.h>             // CImage m_width/m_height (SetTileSizeFromImageSet)
+#include <Gruntz/GameLevel.h> // CLevelPlane + LevelCoordRect + CImageSet view (+ WwdFile.h)
+#include <Gruntz/UserLogic.h> // the shared CGameObject (ReadPlaneObjects' 0x1dc object)
+#include <Image/CImage.h>     // CImage m_width/m_height (SetTileSizeFromImageSet)
+#include <Image/ImageSet.h> // the REAL CImageSet (0x6c frame collection): SetTileSizeFromImageSet's
+                            // arg. Was the GameLevel.h tile-descriptor class of the same NAME,
+// which had these frame fields grafted on; that class is CTileImageSet now.
 #include <DDrawMgr/DDSurface.h>       // CDDSurface::BltEx/BltFast (the Draw blit callees)
 #include <DDrawMgr/DDrawWorkerHost.h> // canonical CDDrawWorkerHost (ctor + RegisterNamed here)
 #include <DDrawMgr/DDrawWorkerCtx.h>  // shared CDDrawWorkerCtx (RegisterNamed's map chain)
@@ -452,7 +455,7 @@ void CPlaneRender::SetTileSizeFromImageSet(CImageSet* set) {
             dr.bottom = (yp) + ((srcp)->bottom - (srcp)->top);                                     \
             surf->BltEx(&dr, 0, 0, 0x1000400, &m_surface);                                         \
         } else if (h_ != 0xffffffff) {                                                             \
-            CPlaneFrame* fr_ = m_planeArray[h_ >> 16];                                             \
+            CPlaneFrame* fr_ = ((CPlaneFrame**)m_frameSets.GetData())[h_ >> 16];                   \
             i32 idx_ = (i32)(h_ & 0xffff);                                                         \
             CPlaneTile* e_;                                                                        \
             if (idx_ >= fr_->m_lo && idx_ <= fr_->m_hi) {                                          \
@@ -1226,7 +1229,7 @@ i32 CPlaneRender::ValidateTiles(char* errOut) {
             if (handle == -1 || (u32)handle == 0xeeeeeeee) {
                 continue;
             }
-            CPlaneFrame* frame = m_planeArray[(u32)handle >> 16];
+            CPlaneFrame* frame = ((CPlaneFrame**)m_frameSets.GetData())[(u32)handle >> 16];
             if (frame == 0) {
                 result = 0;
                 if (errOut != 0) {

@@ -19,6 +19,9 @@
 #include <Wwd/WwdFile.h>
 #include <Io/FileStream.h> // CFileIO (the static MFC CFile global at 0x646778; 0x0b5400 ctor)
 #include <DDrawMgr/DDSurface.h>
+#include <DDrawMgr/DDrawSubMgr.h> // CDDrawSubMgrPages - the REAL m_c->m_drawTarget leaf (0x158dc0)
+#include <Dsndmgr/SoundStream.h>  // SoundStream : SoundDevice - the REAL m_c->m_soundStream (+0x20)
+#include <Gruntz/SoundCue.h>      // CSndHost - the REAL m_c->m_28 (name->cue map + emit gate)
 #include <DDrawMgr/DDrawSurfacePair.h>
 #include <Dsndmgr/GruntzSoundZ.h>
 #include <Gruntz/WorldSoundSet.h>
@@ -333,44 +336,27 @@ void EngStr_DrawText(
 // +0x14 clock / +0x18 interval - literally LeafCue's field set, which the OTHER cue site
 // in this very file already used the canonical LeafCue for). CCueEmitter was LeafCue::m_10,
 // i.e. CSoundCueMgr, whose ConfigureItem @0x1360d0 the comment already named.)
-// The embedded registry/bute object at (m_c->m_28 + 0x10); Lookup @0x1b8438.
-// (The ex-view is DISSOLVED: the member is the real map.)  It is ::CMapStringToPtr,
-// not CMapStringToOb: its Lookup is 0x1b8438.  There is NO COMDAT fold - MSVC5 has no /OPT:ICF.  CMapStringToOb's .obj is
-// [0x1b7e17, 0x1b8247) (its ctor stamps ??_7CMapStringToOb@@6B@ @0x1eafd4; Lookup
-// 0x1b8008); CMapStringToPtr's is [0x1b8247, 0x1b85b1) (ctor stamps 0x1eb014; Lookup
-// 0x1b8438).  Two classes, identical code - which is why every FID row there is AMBIG.
-// The binary names them itself: `python -m gruntz.analysis.mfc_class 0x1b8438`.
-struct CNetCfgSub { // m_c->m_28
-    char m_pad0[0x10];
-    CMapStringToPtr m_10;      // +0x10  embedded registry/bute (Lookup 0x1b8438)
-    char m_pad11[0x30 - 0x11]; // to +0x30
-    i32 m_30;                  // +0x30
-};
-struct CNetCfg { // m_c
-    char m_pad0[0x28];
-    CNetCfgSub* m_28; // +0x28
-};
+// The embedded registry/bute object at (m_c->m_28 + 0x10) is the REAL CSndHost
+// (<Gruntz/SoundCue.h>): its +0x10 IS that class's name->cue map and its +0x30 the
+// m_emitGate. The two shells that stood here (CNetCfg / CNetCfgSub) were CState::m_c
+// (the canonical CSpriteFactoryHolder) and its m_28.
+//
+// That map is a ::CMapStringToPtr, NOT a CMapStringToOb - every call from a CSndHost
+// enters 0x1b8438, and `mfc_class 0x1b8438` names its band [0x1b8247, 0x1b85b1) (ctor
+// stamps ??_7CMapStringToPtr@@6B@ @0x1eb014). CMapStringToOb is the SEPARATE band
+// [0x1b7e17, 0x1b8247) whose Lookup is 0x1b8008. There is NO COMDAT fold (MSVC5 has no
+// /OPT:ICF) - two classes, identical code, which is why every FID row there is AMBIG.
+// SoundCue.h declared CMapStringToOb while its own comment cited 0x1b8438: a WRONG-CLASS
+// binding (mfc_class --audit bucket A/B) that objdiff cannot see because it reloc-masks.
+// Fixed at the member (SoundCue.h), so the out-param is a void*& now.
 // cdecl ILT-thunk helper (ActiveWait is declared with the CMulti externs above).
 void NetCueReset_3bbb(i32 a, i32 b); // 0x3bbb
 
-class CNetMgrLite {
-public:
-    char m_pad0[4];
-    CGruntzMgr* m_4; // +0x04
-    char m_pad8[0xc - 8];
-    CNetCfg* m_c; // +0x0c
-    char m_pad10[0x528 - 0x10];
-    i32 m_528; // +0x528
-    char m_pad52c[0x538 - 0x52c];
-    i32 m_538; // +0x538
-    char m_pad53c[0x5c0 - 0x53c];
-    i32 m_5c0; // +0x5c0
-
-    i32 ShowMultiStartDlg();    // 0x0b86c0
-    void Sub1d70(i32 a);        // 0x1d70   __thiscall self-call
-    void Sub2e82(i32 a, i32 b); // 0x2e82   __thiscall self-call
-    void Sub386e();             // 0x386e   __thiscall self-call
-};
+// CNetMgrLite was CMulti itself: every field it declared is a canonical member -
+// +0x04 == CState::m_4 (CGruntzMgr), +0x0c == CState::m_c, +0x528 == m_isHost,
+// +0x538 == m_538, +0x5c0 == m_hostIndex - and its three "self-call" thunks are
+// already-named CMulti methods: 0x1d70 -> BroadcastChannelTable (0xba810), 0x2e82 ->
+// SendStatFlag (0xb9240), 0x386e -> ApplyCmdDelayDefaults (0xb85a0).
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
 DATA(0x0021ab24)
@@ -394,20 +380,17 @@ public:
     char* GroupName(); // 0x004b76a0
 };
 
-// The sub-window object at m_view->m_20: two thiscall ticks in Tick's present tail.
-class CMultiTickWin {
-public:
-    void TickWinA(i32 now); // winapi_136e20
-    void TickWinB(i32 now); // winapi_137ac0
-};
+// The "sub-window" at m_c->+0x20 is the REAL SoundStream (<Dsndmgr/SoundStream.h>,
+// `class SoundStream : public SoundDevice`): its two per-frame ticks are
+// SoundDevice::PurgeVoiceList (0x136e20) and SoundStream::TickSubManagers (0x137ac0),
+// BOTH already 100%% EXACT in the tree. CSpriteFactoryHolder::m_frameProfiler now
+// carries that type, so the calls are cast-free.
 // Tick's present-finish wait (cdecl free fn). 0x0013dfe0
 extern void ActiveWait(i32 phase);
 
-// The render-sub object reached via m_view->m_24->m_5c (thiscall). FUN_00563300.
-class CMultiSubTick {
-public:
-    void SubTick(); // 0x00563300
-};
+// The render-sub object reached via m_c->m_24->m_5c is the level's MAIN PLANE, and
+// its "SubTick" (0x163300) is CPlaneRender::CenterScrollA - the same class + rva
+// GameLevel.cpp already drives on m_mainPlane.
 
 // ---------------------------------------------------------------------------
 // The CState sub-object dtor-view the most-derived ~CMulti walks: a virtual dtor
@@ -572,7 +555,7 @@ struct CNetConnectThis {
     // InitConnect IS CState::LoadGameAssetNamespaces (inherited); called cast-free.
     // StartTitle IS CMulti::StartTitle (called cast-free from SetupMultiplayerSession).
     // Open IS CMulti::Open @0xb77a0 (called cast-free; the NetSessionOpener view is gone).
-    // ShowMultiStartDlg IS CNetMgrLite::ShowMultiStartDlg; cast at the call.
+    // ShowMultiStartDlg IS CMulti::ShowMultiStartDlg (called cast-free).
     // LoadCursorSprites IS CPlay::LoadCursorSprites; cast at the call.
 };
 // The m_4 game-mgr lobby helpers (ResetClockGlobals/ClearOptionsSlots/
@@ -782,7 +765,7 @@ i32 CMulti::SetupMultiplayerSession(i32 a1, i32 a2, i32 a3) {
     if (TF(0x2c) == 0) {
         return 0;
     }
-    if (((CNetMgrLite*)this)->ShowMultiStartDlg() == 0) {
+    if (ShowMultiStartDlg() == 0) {
         return 0;
     }
     while (::ShowCursor(0) >= 0) {
@@ -1205,7 +1188,7 @@ i32 CMulti::Tick() {
     vtbl()->PostRedraw(this);
     void* sub = *(void**)((char*)*(void**)((char*)m_c + 0x24) + 0x5c);
     if (sub) {
-        ((CMultiSubTick*)sub)->SubTick(); // FUN_00563300 (thiscall on m_c->m_24->m_5c)
+        ((CPlaneRender*)sub)->CenterScrollA(); // 0x163300, the level main plane
     }
     if (fin == 0) {
         if (m_session->Verify() == 0 && m_574 == 0) { // 0xc04f0  (was IsStalled view)
@@ -1224,11 +1207,11 @@ i32 CMulti::Tick() {
     }
     PumpB();
     DropTimeout();
-    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_c + 0x20);
+    SoundStream* win = m_c->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
-        win->TickWinA(now); // winapi_136e20 (thiscall on m_c->m_20, arg now)
-        win->TickWinB(now); // winapi_137ac0 (thiscall, arg now)
+        win->PurgeVoiceList(now);  // 0x136e20 (SoundDevice base)
+        win->TickSubManagers(now); // 0x137ac0
     }
     ActiveWait(2); // FUN_0013dfe0 ActiveWait(2)
     return 1;
@@ -1393,11 +1376,11 @@ i32 CMulti::PumpA() {
     ((McHost*)m_c)->m_8->CallSlot40();
     ((CMultiSub68*)Mgr()->m_cmdGrid)->Step3017(g_645584);
     ((CStatusBarMgr*)((CMultiSubDC*)m_guts))->LoadDestructButtonSprite(g_645584);
-    CMultiTickWin* win = (CMultiTickWin*)*(void**)((char*)m_c + 0x20);
+    SoundStream* win = m_c->m_soundStream;
     if (win) {
         i32 now = timeGetTime();
-        win->TickWinA(now);
-        win->TickWinB(now);
+        win->PurgeVoiceList(now);  // 0x136e20 (SoundDevice base)
+        win->TickSubManagers(now); // 0x137ac0
     }
     ((CTileTriggerContainer*)m_beginMarker)->FilterList2((void*)g_645584);
     ((CBrickzGrid*)Mgr()->m_tileGrid)
@@ -1564,12 +1547,6 @@ void CMulti::PumpB() {
     }
 }
 
-// The m_view->m_4 view-reset target (thiscall). FUN_00558dc0.
-class CMultiViewReset {
-public:
-    void Reset(); // 0x00558dc0
-};
-
 // ===========================================================================
 // CMulti::StartTitle  @ 0x0b72c0  - /GX: pick a randomized "TITLE%d" backdrop,
 // load it, reset the view + cursor, then bind the DirectPlay host (m_netGate) to the
@@ -1605,7 +1582,9 @@ i32 CMulti::StartTitle() {
         m_2c = saved;
         return 0;
     }
-    ((CMultiViewReset*)((char*)m_c + 4))->Reset(); // (m_c->m_4)->Reset()
+    // m_c->m_drawTarget IS a CDDrawSubMgrPages (its 0x158dc0 leaf is that class's
+    // Method_158dc0); retail loads the VALUE at [m_c+4], not its address.
+    ((CDDrawSubMgrPages*)m_c->m_drawTarget)->Method_158dc0();
     void* vobj = *(void**)(*(void**)((char*)m_c + 0x1c));
     (*(void(__stdcall**)(void*))((char*)*(void**)vobj + 0x28))(vobj); // vfn +0x28(vobj)
     m_2c = saved;
@@ -1928,9 +1907,6 @@ i32 CMulti::JoinSession() {
 
 // class-metadata SIZE sweep (misc-Gruntz A-C): matching-neutral, hosted at
 // .cpp EOF (see docs/class-metadata-sweep-log.md). SIZE_UNKNOWN = size not yet pinned.
-SIZE_UNKNOWN(CNetCfg);
-SIZE_UNKNOWN(CNetCfgSub);
-SIZE_UNKNOWN(CNetMgrLite);
 SIZE_UNKNOWN(CMulti);
 SIZE_UNKNOWN(CState); // local dtor-view (stamps ??_7CState in ~CMulti)
 SIZE_UNKNOWN(CMultiLogicDesc);
@@ -1942,9 +1918,6 @@ SIZE_UNKNOWN(CMultiPlayer);
 SIZE_UNKNOWN(CMultiReportGate);
 SIZE_UNKNOWN(CMultiSub68);
 SIZE_UNKNOWN(CMultiSubDC);
-SIZE_UNKNOWN(CMultiSubTick);
-SIZE_UNKNOWN(CMultiTickWin);
-SIZE_UNKNOWN(CMultiViewReset);
 SIZE_UNKNOWN(CMultiSlotView);
 SIZE_UNKNOWN(CRefresh21bd0);
 SIZE_UNKNOWN(McHost);
@@ -2058,31 +2031,31 @@ void CMulti::ApplyCmdDelayDefaults() {
 }
 
 RVA(0x000b86c0, 0x206)
-i32 CNetMgrLite::ShowMultiStartDlg() {
+i32 CMulti::ShowMultiStartDlg() {
     CMultiStartDlg dlg((i32)m_4, 0);
     i32 r = m_4->ExitModalUI(&dlg, 0);
     g_sharedFlag = 0;
     if (r != 1) {
-        if (m_528 != 0) {
-            GruntzPlayer* rec = m_4->FindOptionsSlot(m_5c0);
+        if (m_isHost != 0) {
+            GruntzPlayer* rec = m_4->FindOptionsSlot(m_hostIndex);
             if (rec == 0) {
                 return 0;
             }
             rec->m_020 = 0;
             NetCueReset_3bbb(rec->m_008, 1);
-            Sub1d70(0);
+            BroadcastChannelTable(0); // 0xba810 (ILT 0x1d70)
         }
-        if (m_528 == 0 && m_538 == 0) {
-            Sub2e82(0x3ea, 1);
+        if (m_isHost == 0 && m_538 == 0) {
+            SendStatFlag(0x3ea, 1); // 0xb9240 (ILT 0x2e82)
         }
         return 0;
     }
     // r == 1
-    if (m_528 != 0) {
-        Sub386e();
+    if (m_isHost != 0) {
+        ApplyCmdDelayDefaults(); // 0xb85a0 (ILT 0x386e)
     } else {
-        if (m_c->m_28->m_30 == 0) {
-            void* rec_ob = 0;
+        if (m_c->m_28->m_emitGate == 0) {
+            void* rec_ob = 0; // CMapStringToPtr::Lookup takes a void*& out-param
             m_c->m_28->m_10.Lookup(s_GameKey, rec_ob);
             LeafCue* rec = (LeafCue*)rec_ob;
             if (rec != 0) {

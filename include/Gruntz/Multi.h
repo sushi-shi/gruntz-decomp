@@ -361,13 +361,19 @@ public:
     // (this CMulti): retail runs each on this=g_curMulti (a CMulti at offset 0). The
     // small real CNetMgr is reached via Peer() (+0x524). Defined in Multi.cpp.
     i32 SetupMultiplayerSession(i32 a1, i32 a2, i32 a3); // 0x0b5460
-    i32 Open();                           // 0x0b77a0  (was the NetSessionOpener this-view)
-    i32 SetupServices();                  // 0x0b78b0
-    i32 DetectConnectionConfig();         // 0x0b82e0
-    void ApplyCmdDelayDefaults();         // 0x0b85a0
-    i32 JoinAndRegisterChannel();         // 0x0b8b10
-    i32 OnJoinConfirm(void* hDlg);        // 0x0b8cf0
-    i32 PollSessionGated(i32 a1, i32 a2); // 0x0b9180
+    i32 Open();                   // 0x0b77a0  (was the NetSessionOpener this-view)
+    i32 SetupServices();          // 0x0b78b0
+    i32 DetectConnectionConfig(); // 0x0b82e0
+    void ApplyCmdDelayDefaults(); // 0x0b85a0
+    // 0x0b86c0 (/GX): pop the multiplayer-start dialog over the suspended game. On a
+    // cancel it clears the host's options slot + rebroadcasts the channel table, or
+    // ships the guest's 0x3ea abort stat; on OK it applies the cmd-delay defaults
+    // (host) or fires the GAME_KEY cue + a 250-tick active wait (guest). Was the fake
+    // CNetMgrLite view's method.
+    i32 ShowMultiStartDlg();
+    i32 JoinAndRegisterChannel();                                                // 0x0b8b10
+    i32 OnJoinConfirm(void* hDlg);                                               // 0x0b8cf0
+    i32 PollSessionGated(i32 a1, i32 a2);                                        // 0x0b9180
     i32 SendStatBuf(CNetStatPacket* pkt, i32 flag);                              // 0x0b91f0
     i32 SendStatFrom(CNetStatPacket* pkt, i32 b, i32 c);                         // 0x0b92e0
     i32 SendStatPair(CNetPlayerEntry* recipient, CNetStatPacket* pkt, i32 c);    // 0x0b9330

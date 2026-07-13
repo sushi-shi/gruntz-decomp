@@ -311,12 +311,16 @@ public:
     u8 pad_58[0x60 - 0x58];
     RECT m_fillRect; // +0x60  default full-tile src rect {0,0,tilePxW,tilePxH}
     u8 pad_70[0x80 - 0x70];
-    i32 m_80, m_84, m_88;       // +0x80..+0x88
-    i32 m_shiftX;               // +0x8c
-    i32 m_shiftY;               // +0x90
-    i32 m_94, m_98, m_9c;       // +0x94..+0x9c
-    CPlaneFrame** m_planeArray; // +0xa0
-    u8 pad_a4[0xb0 - 0xa4];
+    i32 m_80, m_84, m_88; // +0x80..+0x88
+    i32 m_shiftX;         // +0x8c
+    i32 m_shiftY;         // +0x90
+    i32 m_94, m_98;       // +0x94..+0x98
+    // +0x9c..+0xb0 is a real MFC CObArray (exactly 0x14 B): its m_pData (+0xa0) IS
+    // the CPlaneFrame** the draw loop indexes by handle>>16, and its m_nSize/m_nMaxSize/
+    // m_nGrowBy fill the old pad_a4. Proven by CGruntzMgr::LoadMonologoSprite (0x090d10),
+    // which drives `lea ecx,[plane+0x9c]; push set; push 0; call 0x1b5822`
+    // (CObArray::SetAtGrow) to install the MONOLITH logo's image set as element 0.
+    CObArray m_frameSets;       // +0x9c  frame-set array (elements: CPlaneFrame*)
     CPlaneScroll* m_scroll;     // +0xb0
     char m_name[0xf4 - 0xb4];   // +0xb4  plane name (serialized as a fixed 0x80 field)
     PlaneBlitScratch m_surface; // +0xf4  blit-param scratch (empty marker, sizeof 1)
