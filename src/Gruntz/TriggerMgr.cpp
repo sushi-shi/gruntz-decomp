@@ -60,6 +60,7 @@ extern "C" CGruntzMgr* g_gameReg;
 #include <Gruntz/LeafCue.h>         // LeafCue (the finish-level looked-up cue)
 #include <Gruntz/LightFx.h>         // CLightFx (resurrect flash Activate)
 #include <Gruntz/BattlezMapConfig.h>
+#include <Gruntz/LevelInfo.h> // CLevelSpawnInfo - the concrete state behind m_curState
 #include <Gruntz/TileTriggerContainer.h>   // canonical CTileTriggerContainer (rock-break)
 #include <Gruntz/TileActionEvent.h>        // canonical CTileActionEvent (rock-break)
 #include <Gruntz/TileTriggerSwitchLogic.h> // canonical CTileTriggerSwitchLogic (rock-break)
@@ -1638,99 +1639,28 @@ void FormatStr(CString* out, const char* fmt, ...);
 // @0x150540 / ApplyLookupGeometry @0x1505b0); the factory is the canonical
 // CSpriteFactory (m_22c->m_8; <Gruntz/SpriteFactory.h>).
 
-// The rate-limited sound cue (the shared Booty* sound-chain idiom).
-struct RockSndPlayer {
-    // Play @0x1360d0 IS CSoundCueMgr::ConfigureItem; cast at the call.
-};
-struct RockSndEntry {
-    char m_pad00[0x10];
-    RockSndPlayer* m_10; // +0x10
-    u32 m_14;            // +0x14  last-played stamp
-    u32 m_18;            // +0x18  interval
-};
-struct RockSndSet { // this->m_22c->m_28
-    char m_pad00[0x10];
-    CMapStringToOb m_10; // +0x10
-    char m_pad11[0x30 - 0x11];
-    i32 m_30; // +0x30  active guard
-};
+// Every object the rock-break driver walks is a REAL class already in the tree; the
+// eleven Rock* views were a second model of them (offsets identical field-for-field):
+//   RockSndPlayer    -> ::CSoundCueMgr   (Play @0x1360d0 IS its ConfigureItem)
+//   RockSndEntry     -> ::LeafCue        (m_10 player, m_14 last clock, m_18 interval)
+//   RockSndSet       -> ::CSndHost       (m_10 CMapStringToOb name map, m_30 emit gate)
+//   RockGrid         -> ::BrickzGridDesc (m_20 flat id table, m_24 row-base table,
+//                                         m_28/m_2c storage dims, m_30/m_34 active dims)
+//   RockCellObj      -> ::BrickzButeObj  (8 filler slots then GetTypeCode @+0x20)
+//   RockBoard        -> ::BrickzAttrMgr  (m_4c bute-object table, m_5c the grid desc)
+//   RockMapHost      -> ::CSpriteFactoryHolder (m_8 sprite factory, m_28 the CSndHost)
+//   RockSettingsRoot -> ::CState         (g_gameReg->m_curState)
+//   RockMgr          -> ::CGameRegistry  (g_gameReg itself)
+//   RockLogicObj / RockLogicMgr -> nothing: both were EMPTY comment-only shells whose
+//                                  calls already bridge-cast to the real classes.
+//
+// @identity-TODO, left as a cast rather than invented: the +0x24 slot of the world
+// holder is claimed by TWO incompatible shapes - CGameRegistry.h's CGameViewport
+// (viewport RECT @+0x10, camera geom @+0x5c) and the terrain BrickzAttrMgr this driver
+// walks (bute table @+0x4c, grid desc @+0x5c). One of the two is wrong; settling it
+// needs the world-holder ctor, so the rock-break sites reach the terrain manager
+// through an explicit cast and CSpriteFactoryHolder::m_24 is left untouched.
 
-// The level tile grid (board->m_5c): a sparse row-offset cell store.
-struct RockGrid {
-    char m_pad00[0x20];
-    i32* m_20; // +0x20  cell array (row-offset + col)
-    i32* m_24; // +0x24  per-row base index
-    i32 m_28;  // +0x28  storage cols
-    i32 m_2c;  // +0x2c  storage rows
-    i32 m_30;  // +0x30  active cols
-    i32 m_34;  // +0x34  active rows
-};
-// A cell's type object (board->m_4c[cell & 0xffff]). This is a FOREIGN engine
-// class: its ??_7 and the intermediate slots 0..7 are unreconstructed engine code,
-// so the only honest model is the ONE dispatched slot. GetType is the __thiscall
-// virtual at vtable byte offset +0x20, modeled as a 4-byte PMF loaded from the
-// vtable (`char m_pad00[0x20]` documents the un-recovered slots) so `o->GetType(0,0)`
-// emits `mov edx,[ecx]; call [edx+0x20]`. The class is COMPLETE before the T::*
-// typedef to keep the PMF 4 bytes (docs/patterns/pmf-complete-class-4byte.md).
-// Real polymorphic view: GetType is the one dispatched slot (slot 8, +0x20), a real
-// virtual (8 filler slots precede it); declared-only. o->GetType() -> call [eax+0x20].
-struct RockCellObj {
-    virtual void Slot0();
-    virtual void Slot1();
-    virtual void Slot2();
-    virtual void Slot3();
-    virtual void Slot4();
-    virtual void Slot5();
-    virtual void Slot6();
-    virtual void Slot7();
-    virtual i32 GetType(i32 a, i32 b); // +0x20 (slot 8)
-};
-struct RockBoard { // this->m_22c->m_24 (and g_gameReg->m_world->m_24)
-    char m_pad00[0x4c];
-    RockCellObj** m_4c; // +0x4c  cell type-object table
-    char m_pad50[0x5c - 0x50];
-    RockGrid* m_5c; // +0x5c
-};
-struct RockMapHost { // this->m_22c (== g_gameReg->m_world)
-    char m_pad00[0x8];
-    CSpriteFactory* m_8; // +0x08
-    char m_pad0c[0x24 - 0xc];
-    RockBoard* m_24;  // +0x24
-    RockSndSet* m_28; // +0x28
-};
-
-// The per-cell "logic object" the registry hands out.
-struct RockLogicObj {
-    // Retire @0x3af8 IS CTileTriggerSwitchLogic::BuildRockBreakInGameText; cast at the call.
-    // SetType @0x1a00 IS CTileTriggerLogic::ApplyMove; cast at the call.
-    // Reconcile @0x3adf IS CTileActionEvent::Process; cast at the call.
-};
-struct RockLogicMgr { // g_gameReg->m_curState->m_2e4
-    // FindAt IS CTileTriggerSwitchLogic::ScanNeighborhood; cast at the call.
-    // FindCell IS CTileTriggerSwitchLogic::FindByField0C; cast at the call.
-    // Acquire IS CTileTriggerContainer::FindInLists12; cast at the call.
-    // Release IS CTileTriggerContainer::DelFromList1; cast at the call.
-    // Reap IS CTileTriggerContainer::DelFromList3; cast at the call.
-};
-struct RockSettingsRoot { // g_gameReg->m_curState
-    char m_pad00[0x2e4];
-    RockLogicMgr* m_2e4; // +0x2e4
-};
-struct RockMgr { // g_gameReg (*0x64556c), this method's typed alias
-    char m_pad00[0x2c];
-    RockSettingsRoot* m_curState; // +0x2c
-    RockMapHost* m_world;         // +0x30  write-grid host
-    char m_pad34[0x70 - 0x34];
-    CBrickzGrid* m_tileGrid; // +0x70
-    char m_pad74[0x13c - 0x74];
-    RECT m_13c; // +0x13c  visible rect
-    // The two decl-only game-mgr methods this view used to declare (ReportError @0x08dc60,
-    // EnterModalUI @0x08ef10) are GONE: they are ::CGruntzMgr's, and declaring them here
-    // mangled them as ?...@RockMgr@@ / ?...@CGameRegistry@@ - symbols NOTHING defines
-    // (unbound relocs -> link failure). The call sites bridge-cast to CGruntzMgr instead.
-    // Full fold of this view onto CGruntzMgr is deferred (its RockSettingsRoot/RockMapHost
-    // sub-object views still diverge from CState/CWorldZ).
-};
 DATA(0x0021ab20)
 extern i32 g_sndEnabled; // ?g_sndEnabled@@3HA
 DATA(0x0021ab24)
@@ -1759,7 +1689,13 @@ RVA(0x0007b440, 0x3f0)
 i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
     Prepare(cx, cy, r, 6, a4);
 
-    RockSettingsRoot* root = (RockSettingsRoot*)g_gameReg->m_curState;
+    // The concrete game-state behind CGameRegistry::m_curState (the base CState is
+    // proven <= 0x1c0, so a +0x2e4 read is a DERIVED state's field). Its shape here -
+    // pad to +0x2e4, then the tile-trigger/cell container - is the SAME object
+    // CBattlezMapConfig::LoadConfig reads as lvl->m_spawnInfo (also a +0x2c slot of its
+    // owner, also +0x2e4 -> the container): <Gruntz/LevelInfo.h>'s CLevelSpawnInfo.
+    // The downcast is the honest symptom of m_curState being typed as the base.
+    CLevelSpawnInfo* root = (CLevelSpawnInfo*)g_gameReg->m_curState;
     i32 tileCx = cx >> 5;
     i32 tileCy = cy >> 5;
     i32 hiX = tileCx + r;
@@ -1770,8 +1706,8 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (pxX < 0x10 || pxY < 0x10) {
                 continue;
             }
-            RockBoard* board = m_22c->m_24;
-            RockGrid* grid = board->m_5c;
+            BrickzAttrMgr* board = (BrickzAttrMgr*)m_22c->m_24;
+            BrickzGridDesc* grid = board->m_5c;
             if (tx >= grid->m_30 || ty >= grid->m_34) {
                 continue;
             }
@@ -1789,13 +1725,13 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             if (cell == (i32)0xeeeeeeee || cell == -1) {
                 type = 0;
             } else {
-                RockCellObj* o = board->m_4c[cell & 0xffff];
-                type = o->GetType(0, 0);
+                BrickzButeObj* o = board->m_4c[cell & 0xffff];
+                type = o->GetTypeCode(0, 0);
             }
 
             if (type != 0x1e && type != 0x1f) {
                 if (type == 0x21) {
-                    RockLogicObj* gr = (RockLogicObj*)((CTileTriggerSwitchLogic*)root->m_2e4)
+                    CTileTriggerSwitchLogic* gr = (CTileTriggerSwitchLogic*)((CTileTriggerSwitchLogic*)root->m_2e4)
                                            ->ScanNeighborhood(tx, ty);
                     if (gr == 0) {
                         CString msg;
@@ -1804,14 +1740,14 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
                         g_gameReg->ReportError(0x80dd, 0x403);
                         return 0;
                     }
-                    ((CTileTriggerSwitchLogic*)gr)->BuildRockBreakInGameText();
+                    gr->BuildRockBreakInGameText();
                     ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)gr);
                     continue;
                 }
                 if (type != 0x97 && type != 0x98 && type != 0x99) {
                     continue;
                 }
-                RockLogicObj* o = (RockLogicObj*)((CTileTriggerSwitchLogic*)root->m_2e4)
+                CTileTriggerSwitchLogic* o = (CTileTriggerSwitchLogic*)((CTileTriggerSwitchLogic*)root->m_2e4)
                                       ->FindByField0C(ty + (tx << 8));
                 if (((CTileActionEvent*)o)->Process(0)) {
                     ((CTileTriggerContainer*)root->m_2e4)->DelFromList3((void*)o);
@@ -1820,13 +1756,13 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             }
 
             // type == 0x1e || type == 0x1f: rock-break marker + particle
-            RockLogicObj* lo = (RockLogicObj*)((CTileTriggerContainer*)root->m_2e4)
+            CTileTriggerSwitchLogic* lo = (CTileTriggerSwitchLogic*)((CTileTriggerContainer*)root->m_2e4)
                                    ->FindInLists12(ty + (tx << 8), 0x1a);
             if (lo != 0) {
                 ((CTileTriggerLogic*)lo)->ApplyMove(type);
                 ((CTileTriggerContainer*)root->m_2e4)->DelFromList1((void*)lo);
             } else {
-                RockGrid* wg = (RockGrid*)g_gameReg->m_world->m_24->m_mainPlane;
+                BrickzGridDesc* wg = (BrickzGridDesc*)g_gameReg->m_world->m_24->m_mainPlane;
                 i32 off = wg->m_24[ty];
                 if (type == 0x1e) {
                     wg->m_20[off + tx] = 0x5a;
@@ -1850,16 +1786,18 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
             spr->ApplyName("LEVEL_ROCKBREAK");
             spr->ApplyLookupGeometry("LEVEL_ROCKBREAK", 0);
 
-            RockSndSet* set = m_22c->m_28;
-            if (set->m_30 == 0) {
-                CObject* e_ob = 0;
+            CSndHost* set = (CSndHost*)m_22c->m_28;
+            if (set->m_emitGate == 0) {
+                // CSndHost's name map is an MFC CMapStringToPtr (RTTI-proven), so its
+                // Lookup out-param is a void*& - the payload is the cue itself.
+                void* e_ob = 0;
                 set->m_10.Lookup("LEVEL_ROCKBREAK", e_ob);
-                RockSndEntry* e = (RockSndEntry*)e_ob;
+                LeafCue* e = (LeafCue*)e_ob;
                 if (e != 0 && g_sndEnabled != 0) {
                     u32 now = g_killCueClock;
                     if (now - e->m_14 >= e->m_18) {
                         e->m_14 = now;
-                        ((CSoundCueMgr*)e->m_10)->ConfigureItem(g_sndCueTag, 0, 0, 0);
+                        e->m_10->ConfigureItem(g_sndCueTag, 0, 0, 0);
                     }
                 }
             }
@@ -1868,18 +1806,6 @@ i32 CRockBreakMgr::BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4) {
     return 1;
 }
 SIZE_UNKNOWN(CRockBreakMgr);
-SIZE_UNKNOWN(RockBoard);
-SIZE_UNKNOWN(RockCellObj);
-SIZE_UNKNOWN(RockGrid);
-SIZE_UNKNOWN(RockLogicMgr);
-SIZE_UNKNOWN(RockLogicObj);
-SIZE_UNKNOWN(RockMapHost);
-SIZE_UNKNOWN(RockMgr);
-SIZE_UNKNOWN(RockNotify);
-SIZE_UNKNOWN(RockSettingsRoot);
-SIZE_UNKNOWN(RockSndEntry);
-SIZE_UNKNOWN(RockSndPlayer);
-SIZE_UNKNOWN(RockSndSet);
 SIZE_UNKNOWN(CMapStringToOb);
 
 // ===========================================================================

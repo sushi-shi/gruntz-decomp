@@ -92,6 +92,12 @@ struct BrickzGridDesc {
     i32* m_24; // +0x24  per-row base-offset table
     i32 m_28;  // +0x28  width  (x clamp)
     i32 m_2c;  // +0x2c  height (y clamp)
+    // The ACTIVE (in-play) extents, distinct from the STORAGE extents above: the
+    // rock-break driver (CRockBreakMgr::BuildRockBreakParticles @0x7b440) bounds its
+    // tile scan with these two while indexing through m_24/m_20. Recovered when its
+    // `RockGrid` view was dissolved onto this class.
+    i32 m_30; // +0x30  active cols
+    i32 m_34; // +0x34  active rows
     // 0x077dc0 - flat cell setter: m_20[ m_24[y] + x ] = id. __thiscall(x, y, id).
     // CTerrainTileLoader::Load reaches it via loader->m_24 (BrickzAttrMgr)->m_5c.
     void SetCell(i32 x, i32 y, i32 id);

@@ -12,7 +12,11 @@
 #include <Ints.h>
 #include <rva.h>
 
-struct RockMapHost; // the write-grid host (== g_gameReg->m_world); defined in TriggerMgr.cpp
+// The write-grid host at +0x22c IS the registry world holder (g_gameReg->m_world):
+// ::CSpriteFactoryHolder (<Gruntz/GameRegistry.h>). Its m_8 is the CSpriteFactory the
+// particle spawner calls CreateSprite on, and its m_28 the CSndHost cue registry - both
+// already modeled there. The old `RockMapHost` .cpp-local view is dissolved.
+#include <Gruntz/GameRegistry.h>
 
 class CRockBreakMgr {
 public:
@@ -20,7 +24,7 @@ public:
     i32 BuildRockBreakParticles(i32 cx, i32 cy, i32 r, i32 a4); // 0x0007b440 (body: TriggerMgr.cpp)
 
     char m_pad00[0x22c];
-    RockMapHost* m_22c; // +0x22c
+    CSpriteFactoryHolder* m_22c; // +0x22c  (== g_gameReg->m_world)
 };
 SIZE_UNKNOWN(CRockBreakMgr);
 
