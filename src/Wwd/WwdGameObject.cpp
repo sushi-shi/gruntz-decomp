@@ -591,7 +591,7 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     Helper164790(a1, a2);
     m_posX = a1;
     m_posY = a2;
-    m_74 = a3;
+    m_sortKey = a3;
     m_104 = a1;
     WwdAnimWorker* w = m_worker;
     m_108 = a2;
@@ -626,9 +626,9 @@ i32 CWwdGameObject::Setup(i32 a1, i32 a2, i32 a3, i32 a4) {
     m_134 = (i32)0x80000000;
     m_144 = (i32)0x80000000;
     m_154 = (i32)0x80000000;
-    m_self = this;
-    m_ac = m_posX;
-    m_b0 = m_posY;
+    m_region.m_object = this;
+    m_region.m_x = m_posX;
+    m_region.m_y = m_posY;
     i32 wf = m_worker->m_08;
     if (wf & 1) {
         m_flags |= 0x800000;
@@ -1146,7 +1146,7 @@ i32 CWwdGameObject::WriteSnapshot(i32 dst, i32 unused) {
     rec.m_04 = m_188;
     rec.m_94 = m_posX;
     rec.m_98 = m_posY;
-    rec.m_9c = m_74;
+    rec.m_9c = m_sortKey;
     rec.m_0c = ebx;
     rec.m_10 = edi;
 

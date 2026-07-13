@@ -25,12 +25,11 @@
 #include <Ints.h>
 #include <rva.h>
 
-struct CResMgr;     // resource mgr at +0xc (m_14 = the factory's sprite-set registry)
-struct CSprite;     // frame-data template value (the lookup RESULT)
-struct CGameObject; // the created 0x1dc-byte game-sprite INSTANCE (<Gruntz/UserLogic.h>)
-// AttachSprite's already-allocated target; __single_inheritance keeps the init PMF a
-// 4-byte code pointer (else MSVC's general PMF emits a this-adjust thunk).
-struct __single_inheritance CSprite2;
+struct CResMgr;       // resource mgr at +0xc (m_14 = the factory's sprite-set registry)
+struct CSprite;       // frame-data template value (the lookup RESULT)
+struct CGameObject;   // the created 0x1dc-byte game-sprite INSTANCE (<Gruntz/UserLogic.h>)
+class CWwdGameObject; // AttachSprite's already-allocated target (<Gruntz/WwdGameObject.h>;
+                      // the ex-CSprite2 view is dissolved onto it)
 
 // An entry in the factory's live-object list (m_liveObjects): next @+0, object @+8.
 struct CSpriteListNode {
@@ -95,10 +94,11 @@ public:
     // Public entry: look the template up by class-NAME, forward to the impl. __thiscall,
     // ret 0x18. Returns the created instance (or 0 if the template is missing).
     CGameObject* CreateSprite(i32 kind, i32 geoB, i32 geoA, i32 hint, const char* name, i32 flags);
-    // The real allocator/ctor @0x159600 (external/no-body so the call reloc-masks).
-    CGameObject* CreateSpriteImpl(i32 kind, i32 geoB, i32 geoA, i32 hint, CSprite* tmpl, i32 flags);
+    // (The ex-`CreateSpriteImpl` decl was a PHANTOM second name for
+    // CWwdObjMgr::CreateObject_159600 - CreateSprite calls the real method on the
+    // shared `this`; the factory IS the object manager.)
     // Initialise an already-allocated sprite against a named template. __thiscall, ret 0x18.
-    i32 AttachSprite(CSprite2* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags);
+    i32 AttachSprite(CWwdGameObject* obj, i32 a1, i32 a2, i32 a3, const char* name, i32 flags);
     // 0x159e40 is CWwdObjMgr::InsertSorted_159e40 (the factory IS the object manager);
     // AttachSprite calls it through a CWwdObjMgr* view - no fake local placeholder.
 

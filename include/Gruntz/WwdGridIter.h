@@ -16,7 +16,7 @@
 
 class CWwdGrid;       // the grid the cursor walks (each TU supplies its own definition:
                       // canonical in WwdGrid.cpp, reduced view in WwdSpatialMgr.cpp)
-class CWwdObject;     // the owning sprite (node back-pointer @ +0x18)
+class CWwdGameObject; // the owning wide object (node back-pointer @ +0x18)
 struct WwdBucketHead; // a grid cell's {head,tail} bucket (node's cached owner @ +0x0c)
 
 // A 16-byte query rectangle passed by value into the cursor + the grid scroll.
@@ -32,10 +32,10 @@ struct WwdGridNode {
     WwdGridNode* m_next; // +0x00
     WwdGridNode* m_prev; // +0x04
     char m_pad08[0x0c - 0x08];
-    WwdBucketHead* m_bucket; // +0x0c  cached owning bucket head
-    i32 m_x;                 // +0x10
-    i32 m_y;                 // +0x14
-    CWwdObject* m_object;    // +0x18  owning sprite back-pointer
+    WwdBucketHead* m_bucket;  // +0x0c  cached owning bucket head
+    i32 m_x;                  // +0x10
+    i32 m_y;                  // +0x14
+    CWwdGameObject* m_object; // +0x18  owning wide-object back-pointer
 };
 
 // Position-iterator over a CWwdGrid: a rect-restricted cursor. REAL POLYMORPHIC:

@@ -2,9 +2,10 @@
 // <Mfc.h> brings the real CObject/CRect types. This cluster's three spatial
 // grids (tomalla-64), the master CWwdObjMgr, and the grid iterator are all
 // reloc-masked engine externs (no bodies here).
-#include <Gruntz/WwdObjMgr.h>   // the shared object-collection manager class
-#include <Gruntz/WwdGridIter.h> // CWwdGridIter cursor + WwdGridNode + WwdRect (shared;
-                                // the cursor's Start/Init/GetNext bodies live in WwdGrid.cpp)
+#include <Gruntz/WwdObjMgr.h>     // the shared object-collection manager class
+#include <Gruntz/WwdGameObject.h> // canonical CWwdGameObject (the managed sprites)
+#include <Gruntz/WwdGridIter.h>   // CWwdGridIter cursor + WwdGridNode + WwdRect (shared;
+                                  // the cursor's Start/Init/GetNext bodies live in WwdGrid.cpp)
 #include <Mfc.h>
 #include <Wap32/Object.h> // CObject - the shared engine grand-base (iterator's CObject prefix)
 
@@ -23,31 +24,16 @@
 
 // --- reloc-masked engine externs -------------------------------------------
 
-// WwdGridNode (the region sub-object @ CWwdObject+0x9c), WwdRect, and the cursor
+// WwdGridNode (the region sub-object @ CWwdGameObject+0x9c), WwdRect, and the cursor
 // CWwdGridIter now live in <Gruntz/WwdGridIter.h> (shared with WwdGrid.cpp, which
 // carries the cursor's Start/Init/GetNext bodies - same obj as CWwdGrid).
 // WwdBucketHead below is this TU's reduced-grid bucket view.
 struct WwdBucketHead;
 
-// A worker held off the sprite at +0x7c, carrying its own flag word at +0x08.
-struct CWwdObjWorker {
-    char m_pad00[0x08];
-    i32 m_flags; // +0x08
-};
-
-// CWwdObject - the engine sprite. flag word @ +0x08, callback worker @ +0x7c,
-// region cache @ +0x9c, primary-map key @ +0x188; scalar deleting dtor @ vtbl+4.
-class CWwdObject {
-public:
-    virtual void Slot00();
-    virtual ~CWwdObject(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    char m_pad04[0x08 - 0x04];
-    i32 m_flags; // +0x08  plane/active flag word
-    char m_pad0c[0x7c - 0x0c];
-    CWwdObjWorker* m_worker; // +0x7c  per-object worker (its own +0x08 flags)
-    char m_pad80[0x9c - 0x80];
-    WwdGridNode m_region; // +0x9c  embedded grid region sub-object
-};
+// The sprites ARE the canonical CWwdGameObject (<Gruntz/WwdGameObject.h>): the
+// ex-`CWwdGameObject`/`CWwdObjWorker` views' every field lands on it - m_flags
+// (+0x08), the +0x7c worker (whose +0x08 flag word is WwdAnimWorker::m_08), and
+// the embedded +0x9c WwdGridNode region (m_region).
 
 // CWwdObjMgr - master object manager (m_mgr) is the shared <Gruntz/WwdObjMgr.h>
 // class; the cluster calls InsertSorted_159e40 / AddToMap48_15aba0 / PruneOrphans_15b1d0.
@@ -138,13 +124,13 @@ struct CWwdSpatialMgr {
     i32 CountInRect(CWwdGrid* grid);
     i32 Relocate(i32 newX, i32 newY);
     i32 PruneCount();
-    void RemoveObject(CWwdObject* obj);
+    void RemoveObject(CWwdGameObject* obj);
     i32 FlushAll();
     i32 FlushGrid(CWwdGrid* grid);
-    i32 ForEach(void(__cdecl* cb)(CWwdObject*));
-    i32 ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdObject*));
-    CWwdObject* GetFirstObject();
-    CWwdObject* GetNextObject();
+    i32 ForEach(void(__cdecl* cb)(CWwdGameObject*));
+    i32 ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdGameObject*));
+    CWwdGameObject* GetFirstObject();
+    CWwdGameObject* GetNextObject();
 };
 
 // 0x163a40 (re-homed from src/Stub/BoundaryUpperEh.cpp): the class's out-of-line
@@ -247,8 +233,8 @@ i32 CWwdSpatialMgr::CountInRect(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
     for (WwdGridNode* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
-        CWwdObject* w = obj->m_object;
-        if ((w->m_flags & 0x2) || (w->m_worker->m_flags & 0x4)) {
+        CWwdGameObject* w = obj->m_object;
+        if ((w->m_flags & 0x2) || (w->m_worker->m_08 & 0x4)) {
             m_mgr->InsertSorted_159e40(w, 1);
             grid->Remove_191890(obj);
             ++count;
@@ -307,7 +293,7 @@ i32 CWwdSpatialMgr::PruneCount() {
 // from that grid's region, then fully remove it from the master manager.
 // ===========================================================================
 RVA(0x001688f0, 0x6d)
-void CWwdSpatialMgr::RemoveObject(CWwdObject* obj) {
+void CWwdSpatialMgr::RemoveObject(CWwdGameObject* obj) {
     i32 flags = obj->m_flags;
     if (flags & 0x800000) {
         m_grid1->Add((WwdRegion*)&obj->m_region);
@@ -348,7 +334,7 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
     i32 count = 0;
     CWwdGridIter it;
     for (WwdGridNode* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
-        CWwdObject* w = obj->m_object;
+        CWwdGameObject* w = obj->m_object;
         m_mgr->InsertSorted_159e40(w, 1);
         grid->Remove_191890(obj);
         ++count;
@@ -361,7 +347,7 @@ i32 CWwdSpatialMgr::FlushGrid(CWwdGrid* grid) {
 // three plane grids (via ForEachGrid), summing the counts. Null cb -> 0.
 // ===========================================================================
 RVA(0x00168a20, 0x46)
-i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CWwdObject*)) {
+i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CWwdGameObject*)) {
     if (cb == 0) {
         return 0;
     }
@@ -381,7 +367,7 @@ i32 CWwdSpatialMgr::ForEach(void(__cdecl* cb)(CWwdObject*)) {
 // byte-identical, the iterator local's frame numbers off by 4. See
 // docs/patterns/gx-scoped-local-eh-frame-size.md.
 RVA(0x00168a70, 0x73)
-i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdObject*)) {
+i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdGameObject*)) {
     i32 count = 0;
     CWwdGridIter it;
     for (WwdGridNode* obj = it.Start(grid, 0); obj != 0; obj = it.GetNext()) {
@@ -397,7 +383,7 @@ i32 CWwdSpatialMgr::ForEachGrid(CWwdGrid* grid, void(__cdecl* cb)(CWwdObject*)) 
 // return its first object, or 0 when all three are empty.
 // ===========================================================================
 RVA(0x00168af0, 0x6d)
-CWwdObject* CWwdSpatialMgr::GetFirstObject() {
+CWwdGameObject* CWwdSpatialMgr::GetFirstObject() {
     m_curGrid = m_grid0;
     WwdGridNode* n = m_iter.Start(m_grid0, 0);
     if (n) {
@@ -423,7 +409,7 @@ CWwdObject* CWwdSpatialMgr::GetFirstObject() {
 // re-seed. Returns the next object, or 0 when all grids are done.
 // ===========================================================================
 RVA(0x00168b60, 0x85)
-CWwdObject* CWwdSpatialMgr::GetNextObject() {
+CWwdGameObject* CWwdSpatialMgr::GetNextObject() {
     if (m_curGrid == 0) {
         return 0;
     }

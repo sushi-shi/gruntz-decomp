@@ -51,22 +51,10 @@ struct CWwdGameObj15b390 {
 // cast at the call preserves the FID-HIGH retail Lookup shape - the m_10 element-class
 // (Ob vs Ptr) is an open conflict the binary cannot settle (see WwdObjMgr.cpp).
 
-// The wide object's polymorphic interface (cast-only; declared-only virtuals so
-// cl emits no ??_7): Build slot +0x28 (4 args), scalar-deleting dtor at +0x04.
-class CWwdFactoryA {
-public:
-    virtual void Vs00();
-    virtual ~CWwdFactoryA(); // slot 1 (deleting dtor -> cl-emitted ??_G)
-    virtual void Vs08();
-    virtual void Vs0C();
-    virtual void Vs10();
-    virtual void Vs14();
-    virtual void Vs18();
-    virtual void Vs1C();
-    virtual void Vs20();
-    virtual void Vs24();
-    virtual int Build4(int a, int b, int c, int d); // +0x28
-};
+// The built 0x1dc object is the A kind (<Wwd/WwdGameObjectFamily.h>; the family
+// size table pins 0x166640 as CWwdGameObjectA's new-site) - its Build dispatch is
+// the family slot 10 (Setup28) and the delete its virtual slot-1 dtor. The
+// ex-CWwdFactoryA dispatch view is gone.
 
 // The manager's own published-objects list (CPtrList) at +0x1dc; AddTail returns
 // the new node pointer (stored into the object's +0x78). Reloc-masked thiscall.
@@ -326,7 +314,7 @@ i32 CWwdGameObject::ResetAndSetup(i32 a1, i32 a2, i32 a3, i32 a4) {
 RVA(0x00166640, 0x13b)
 CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4, int a5, int a6) {
     char* obj = (char*)RezAlloc(0x1dc);
-    CWwdGameObject* result;
+    CWwdGameObjectA* result;
     if (obj != 0) {
         int root = (int)m_0c;
         new (obj) CWwdGameObj15b390(root, a1, a6);
@@ -343,27 +331,27 @@ CWwdGameObject* CWwdObjMgrL::CreateObject_166640(int a1, int a2, int a3, int a4,
         *(int*)(obj + 0x198) = 0;
         *(int*)(obj + 0x194) = 0;
         *(int*)(obj + 0x19c) = 0;
-        result = (CWwdGameObject*)obj;
+        result = (CWwdGameObjectA*)obj;
     } else {
         result = 0;
     }
     if (result == 0) {
         return 0;
     }
-    if (((CWwdFactoryA*)result)->Build4(a2, a3, a4, a5) == 0) {
-        delete ((CWwdFactoryA*)result);
+    if (result->Setup28(a2, a3, a4, a5) == 0) {
+        delete result; // virtual scalar-deleting dtor (slot 1)
         return 0;
     }
-    void* node = m_1dc.AddTail((CObject*)result);
+    void* node = m_1dc.AddTail((CObject*)(void*)result);
     if (node == 0) {
-        delete ((CWwdFactoryA*)result);
+        delete result; // virtual scalar-deleting dtor (slot 1)
         return 0;
     }
     *(void**)(obj + 0x78) = node;
     if (*(int*)(obj + 8) & 0x200000) {
         ((CWwdWorker*)*(void**)(obj + 0x7c))->Kick(result);
     }
-    return result;
+    return (CWwdGameObject*)(void*)result;
 }
 
 // CreateNamed_166780 (__thiscall, ret 0x18 => 6 args). Resolve `name` -> value; if

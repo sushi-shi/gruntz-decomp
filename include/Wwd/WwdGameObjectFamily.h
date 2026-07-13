@@ -140,8 +140,11 @@ public:
     virtual void ReleaseSubs();   // slot 7  @0x15b5d0
     virtual i32 Vfunc20();        // slot 8  @0x154a00
     virtual i32 Slot24_164790();  // slot 9  @0x164790
-    virtual i32 Setup28();        // slot 10 @0x150d60
-    virtual void Slot2C();        // slot 11 @0x11fec0 (__purecall)
+    // slot 10 - the 4-arg record build/setup (the factories' `call [eax+0x28]`
+    // dispatch pushes exactly four args; base body 0x150d60 == the flat model's
+    // Setup(i32,i32,i32,i32)).
+    virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 @0x150d60
+    virtual void Slot2C();                               // slot 11 @0x11fec0 (__purecall)
     // slots 12-14: dirty-rect blit ops on the two render surface-pairs (front/back).
     virtual void
     Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b); // slot 12 @0x11fec0 (__purecall)
@@ -149,7 +152,10 @@ public:
     Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 13 @0x11fec0 (__purecall)
     virtual void
     Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c); // slot 14 @0x11fec0 (__purecall)
-    virtual i32 Play3C();                                      // slot 15 @0x151150
+    // slot 15 - the 4-arg play/serialize dispatch (`call [eax+0x3c]`; the manager's
+    // ForEach/Deserialize walkers push (archive, mode, arg, self)); base body
+    // 0x151150 == the flat model's Play.
+    virtual i32 Play3C(i32 ar, i32 mode, i32 a3, void* self); // slot 15 @0x151150
 
     WwdEdgeB m_04; // 0x04
     char _p10[0x18 - 0x10];
@@ -182,16 +188,17 @@ class CWwdGameObjectA : public CWwdGameObjectE {
 public:
     virtual ~CWwdGameObjectA() OVERRIDE; // slot 1  0x15b790
     // Overrides of the CWwdGameObjectE slots this variant re-points (0x5f00a8 table).
-    virtual void ReleaseSubs() OVERRIDE; // slot 7  @0x15b980
-    virtual i32 Vfunc20() OVERRIDE;      // slot 8  @0x15b760
-    virtual i32 Setup28() OVERRIDE;      // slot 10 @0x15b940 (Init)
-    virtual void Slot2C() OVERRIDE;      // slot 11 @0x15ba20
+    virtual void ReleaseSubs() OVERRIDE;                          // slot 7  @0x15b980
+    virtual i32 Vfunc20() OVERRIDE;                               // slot 8  @0x15b760
+    virtual i32 Setup28(i32 a1, i32 a2, i32 a3, i32 a4) OVERRIDE; // slot 10 @0x15b940 (Init)
+    virtual void Slot2C() OVERRIDE;                               // slot 11 @0x15ba20
     virtual void Slot30(CDDrawSurfacePair* a, CDDrawSurfacePair* b) OVERRIDE; // slot 12 @0x150660
     virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
         OVERRIDE; // slot 13 @0x1506b0
     virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
-        OVERRIDE;                  // slot 14 @0x1508a0
-    virtual i32 Play3C() OVERRIDE; // slot 15 @0x150a70 (Dispatch)
+        OVERRIDE; // slot 14 @0x1508a0
+    virtual i32 Play3C(i32 ar, i32 mode, i32 a3, void* self)
+        OVERRIDE; // slot 15 @0x150a70 (Dispatch)
 
     char _pe0[0x18c - 0xe0];
     i32 m_18c; // 0x18c
@@ -218,8 +225,10 @@ public:
     virtual void Slot34(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
         OVERRIDE; // slot 13 @0x15ba90
     virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
-        OVERRIDE;                  // slot 14 @0x15baa0
-    virtual void SetupDeferredV(); // slot 16 @0x15bc30 (new)
+        OVERRIDE; // slot 14 @0x15baa0
+    // slot 16 (new) - the F kind's 2-arg build (the 0x159440 factory's `call
+    // [eax+0x40]` pushes two args; body 0x15bc30 == the flat SetupDeferred(a3, a4)).
+    virtual i32 SetupDeferredV(i32 a3, i32 a4); // slot 16 @0x15bc30 (new)
 };
 
 // ---------------------------------------------------------------------------
@@ -323,10 +332,12 @@ class CWwdGameObjectB : public WwdBLevel2 {
 public:
     virtual ~CWwdGameObjectB() OVERRIDE; // 0x15bd10
     // Own vtable @0x5f00e8: overrides WwdBResolve's slots 5/7/8 + adds 10..15 (binary RVAs).
-    virtual void VtSlotFill0() OVERRIDE;                // slot 5  0x15bcd0
-    virtual void VtSlotFill2() OVERRIDE;                // slot 7  0x15bf00
-    virtual void VtSlotFill3() OVERRIDE;                // slot 8  0x15bce0
-    virtual void Slot10_1665e0();                       // slot 10 0x1665e0
+    virtual void VtSlotFill0() OVERRIDE; // slot 5  0x15bcd0
+    virtual void VtSlotFill2() OVERRIDE; // slot 7  0x15bf00
+    virtual void VtSlotFill3() OVERRIDE; // slot 8  0x15bce0
+    // slot 10 - the B kind's 4-arg build (0x1598d0's `call [eax+0x28]`; body
+    // 0x1665e0 == the flat ResetAndSetup(i32,i32,i32,i32)).
+    virtual i32 Slot10_1665e0(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 0x1665e0
     virtual void Slot11_1668b0(i32 a1);                 // slot 11 0x1668b0 (broadcast Slot2C)
     virtual void Slot12_1668e0(i32 a1, i32 a2);         // slot 12 0x1668e0 (broadcast Slot30)
     virtual void Slot13_166910(i32 a1, i32 a2, i32 a3); // slot 13 0x166910 (broadcast Vfunc34)
@@ -360,13 +371,54 @@ public:
     virtual void Slot38(CDDrawSurfacePair* a, CDDrawSurfacePair* b, i32 c)
         OVERRIDE; // slot 14 @0x1664a0
     // Slots 16-18 unique to the C variant (0x5effd0 is a 19-slot table).
-    virtual i32 SetupFlagged16(); // slot 16 @0x15c1d0
-    virtual void Slot44();        // slot 17 @0x15c030
-    virtual void Slot48();        // slot 18 @0x15c040
+    // slot 16 - the C kind's 5-arg build (the 0x159250 factory's `call [eax+0x40]`
+    // pushes five args; body 0x15c1d0 == the flat SetupFlagged(a1..a4, flag)).
+    virtual i32 SetupFlagged16(i32 a1, i32 a2, i32 a3, i32 a4, i32 flag); // slot 16 @0x15c1d0
+    virtual void Slot44();                                                // slot 17 @0x15c030
+    virtual void Slot48();                                                // slot 18 @0x15c040
 
     char _pe0[0x18c - 0xe0];
     u8 m_18c; // 0x18c (byte flag)
 };
+
+// ---------------------------------------------------------------------------
+// The embedded sub-object records the CWwdObjMgr factories placement-construct
+// (ctor bodies at 0x15b270/0x15b2a0/0x15b2b0 in WwdObjMgr.cpp). Obj15b270 is the
+// E-level SHADOW dirty-rect block at +0xb8: its m_8 (abs +0xc0) seeds the INT_MIN
+// sentinel the family dtors re-clear as m_c0, and its m_20 (abs +0xd8) the -1
+// disarm flag (m_d8). The +0x9c pair (CWwdSlot9c for the C/F kinds, Obj15b2b0
+// for the A kind) is the sibling record at +0x9c..; identity-TODO (no vtable, no
+// RTTI name - the offsets are the load-bearing fact).
+// ---------------------------------------------------------------------------
+class CWwdSlot9c {
+public:
+    char m_pad00[0x08]; // +0x00..0x07
+    i32 m_08;           // +0x08
+    i32 m_0c;           // +0x0c
+    char m_pad10[0x18 - 0x10];
+    i32 m_18;     // +0x18  -> obj+0xb4
+    CWwdSlot9c(); // 0x15b2a0
+};
+SIZE_UNKNOWN(CWwdSlot9c);
+class Obj15b270 { // the E-level shadow dirty-rect block (+0xb8)
+public:
+    Obj15b270(); // 0x15b270
+    char m_pad0[0x8];
+    i32 m_8; // abs +0xc0 == CWwdGameObjectE::m_c0 (INT_MIN sentinel)
+    char m_pad0c[0x20 - 0xc];
+    i32 m_20; // abs +0xd8 == CWwdGameObjectE::m_d8 (-1 == disarmed)
+};
+SIZE_UNKNOWN(Obj15b270);
+class Obj15b2b0 { // the A kind's +0x9c sibling record
+public:
+    Obj15b2b0(); // 0x15b2b0
+    char m_pad0[0x8];
+    i32 m_8;
+    i32 m_c;
+    char m_pad10[0x18 - 0x10];
+    i32 m_18;
+};
+SIZE_UNKNOWN(Obj15b2b0);
 
 // Exact retail object sizes from the CWwdObjMgrFactories RezAlloc(0xNN) calls:
 // A=0x166640 (0x1dc), B=0x1598d0 (0x1fc), C=0x159250 (0x190), F=0x159440 (0x18c).

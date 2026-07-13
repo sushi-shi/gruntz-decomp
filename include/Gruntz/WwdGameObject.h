@@ -5,6 +5,7 @@
 #include <rva.h>
 #include <Mfc.h> // real MFC CObject (the object's grand-base) + CObList (m_subList @+0x1dc)
 #include <DDrawMgr/DDrawBlitParam.h> // CDDrawBlitParam - the real +0x1a0 command sub-object
+#include <Gruntz/WwdGridIter.h>      // WwdGridNode - the embedded +0x9c region node
 
 // CWwdGameObject - a runtime "plane object" deserialized from WWD level data.
 // WwdFile::ReadPlaneObjects (0x162af0) constructs one per record via the ctor
@@ -29,6 +30,7 @@ struct WwdMgr;
 struct CSprite;
 struct CGameObjLayer;
 class LeafScanValue;
+class CLogicRecord; // the +0x7c worker's kill-cue API (<Gruntz/LogicRecord.h>)
 
 // Forward of the WwdAnimWorker+0x18 sub-object interface (defined in the .cpp); the
 // worker's m_18 slot is typed as this so the [m_18][+0x8] dispatch needs no cast.
@@ -95,6 +97,7 @@ struct WwdRenderCtx;
 // fabricated); unrecovered slots carry @rva. (Slot 1, the scalar-deleting dtor
 // override @0x15b4c0, is realized by the /GX CWwdGameObjectE sibling in this TU.)
 // ---------------------------------------------------------------------------
+SIZE_UNKNOWN(CWwdGameObject); // the DISPATCH model; the concrete kinds carry the sizes
 class CWwdGameObject : public CObject {
 public:
     // slots 0-4 inherited from CObject; slots 5-16 are CWwdGameObject's own:
@@ -103,12 +106,14 @@ public:
     virtual void ReleaseSubs(); // slot 7  @0x15b5d0  ReleaseSubs_15b5d0
     virtual i32 Vfunc20();      // slot 8  @0x154a00  (xor eax,eax;ret) read by WriteSnapshot
     virtual i32 Slot24();       // slot 9  @0x164790  == Helper164790 (below; foreign owner)
-    virtual i32 Slot28();       // slot 10 @0x150d60  == Setup (below)
-    virtual void Slot2C();      // slot 11 @0x11fec0  __purecall
-    virtual void Slot30();      // slot 12 @0x11fec0  __purecall
-    virtual void Slot34();      // slot 13 @0x11fec0  __purecall
-    virtual void Slot38();      // slot 14 @0x11fec0  __purecall
-    virtual i32 Slot3C();       // slot 15 @0x151150  == Play (below)
+    virtual i32 Slot28(i32 a1, i32 a2, i32 a3, i32 a4); // slot 10 @0x150d60 == Setup (below;
+                                                        // the factories' 4-arg Build dispatch)
+    virtual void Slot2C();                              // slot 11 @0x11fec0  __purecall
+    virtual void Slot30();                              // slot 12 @0x11fec0  __purecall
+    virtual void Slot34();                              // slot 13 @0x11fec0  __purecall
+    virtual void Slot38();                              // slot 14 @0x11fec0  __purecall
+    virtual i32 Slot3C(i32 ar, i32 mode, i32 a3, void* self); // slot 15 @0x151150 == Play
+                                                              // (the manager's walk dispatch)
     virtual i32
     Vfunc40(); // slot 16 @0x1bef01  const-getter (== inherited slot 0) read by WriteSnapshot
 
@@ -168,67 +173,79 @@ public:
     i32 m_clipTop;    // +0x68
     i32 m_clipRight;  // +0x6c
     i32 m_clipBottom; // +0x70
-    i32 m_74;         // +0x74
-    char m_pad78[0x7c - 0x78];
-    WwdAnimWorker* m_worker; // +0x7c  sprite-animation worker
-    void* m_80;              // +0x80  object ref (serialized by name)
-    i32 m_84;                // +0x84
-    void* m_88;              // +0x88  object ref
-    i32 m_8c;                // +0x8c
-    void* m_90;              // +0x90  object ref
-    i32 m_94;                // +0x94
-    void* m_98;              // +0x98  linked object (reads its +0x188)
-    char m_pad9c[0xac - 0x9c];
-    i32 m_ac;               // +0xac  copy of m_posX
-    i32 m_b0;               // +0xb0  copy of m_posY
-    CWwdGameObject* m_self; // +0xb4  = this
-    char m_b8[0x24];        // +0xb8  serialized state block
-    char* m_name;           // +0xdc  CString name (handle = buffer pointer)
-    i32 m_e0;               // +0xe0
-    i32 m_e4;               // +0xe4
-    i32 m_e8;               // +0xe8
-    i32 m_ec;               // +0xec
-    i32 m_f0;               // +0xf0
-    i32 m_f4;               // +0xf4
-    i32 m_f8;               // +0xf8
-    i32 m_fc;               // +0xfc
-    i32 m_100;              // +0x100
-    i32 m_104;              // +0x104
-    i32 m_108;              // +0x108
-    i32 m_10c;              // +0x10c
-    i32 m_110;              // +0x110
-    i32 m_114;              // +0x114
-    i32 m_118;              // +0x118
-    i32 m_11c;              // +0x11c
-    i32 m_120;              // +0x120
-    i32 m_124;              // +0x124
-    i32 m_128;              // +0x128
-    i32 m_12c;              // +0x12c
-    i32 m_130;              // +0x130
-    i32 m_134;              // +0x134  block head (0x80000000 sentinel)
-    i32 m_138;              // +0x138
-    i32 m_13c;              // +0x13c
-    i32 m_140;              // +0x140
-    i32 m_144;              // +0x144  block head (0x80000000 sentinel)
-    i32 m_148;              // +0x148
-    i32 m_14c;              // +0x14c
-    i32 m_150;              // +0x150
-    i32 m_154;              // +0x154  block head (0x80000000 sentinel)
-    i32 m_158;              // +0x158
-    i32 m_15c;              // +0x15c
-    i32 m_160;              // +0x160
-    i32 m_164;              // +0x164
-    i32 m_168;              // +0x168
-    i32 m_16c;              // +0x16c
-    i32 m_170;              // +0x170
-    i32 m_174;              // +0x174
-    i32 m_178;              // +0x178
-    i32 m_17c;              // +0x17c
-    i32 m_180;              // +0x180
-    i32 m_184;              // +0x184
-    i32 m_188;              // +0x188
-    i32 m_dotColor;         // +0x18c  low byte = dot color / setup flag
-    i32 m_190;              // +0x190  the cached frame NUMBER (index into m_194's frame array)
+    i32 m_sortKey;    // +0x74  the manager's z-order sort key (Setup stores its a3;
+                      //         CWwdObjMgr::InsertSorted orders the list by it)
+    i32 m_posCache;   // +0x78  CObList POSITION cache (CWwdObjMgr::InsertSorted stores the
+                      //         node; TickKillCues/RemoveAndDelete unlink through it)
+    // +0x7c  the owned 0x17c worker. ONE object, TWO APIs pending the documented
+    // vtable-reunification sweep (LogicRecord.h): the anim/play interface
+    // (WwdAnimWorker) and the kill-cue record interface (CLogicRecord: Consume /
+    // the +0x10 callback / the +0x24 refcount). The union models the dual-view at
+    // the field so BOTH consumer TUs stay cast-free.
+    union {
+        WwdAnimWorker* m_worker; // anim/play API
+        CLogicRecord* m_killCue; // kill-cue API (CWwdObjMgr::TickKillCues)
+    };
+    void* m_80; // +0x80  object ref (serialized by name)
+    i32 m_84;   // +0x84
+    void* m_88; // +0x88  object ref
+    i32 m_8c;   // +0x8c
+    void* m_90; // +0x90  object ref
+    i32 m_94;   // +0x94
+    void* m_98; // +0x98  linked object (reads its +0x188)
+    // +0x9c  the embedded spatial-grid region node (<Gruntz/WwdGridIter.h>): its
+    // m_x/m_y (+0xac/+0xb0) are the position copies Setup refreshes and its
+    // m_object (+0xb4) the self back-pointer - the old m_ac/m_b0/m_self trio.
+    // The factories' +0x9c record ctors (0x15b2a0/0x15b2b0) initialize exactly it.
+    WwdGridNode m_region; // +0x9c..+0xb7
+    char m_b8[0x24];      // +0xb8  serialized state block
+    char* m_name;         // +0xdc  CString name (handle = buffer pointer)
+    i32 m_e0;             // +0xe0
+    i32 m_e4;             // +0xe4
+    i32 m_e8;             // +0xe8
+    i32 m_ec;             // +0xec
+    i32 m_f0;             // +0xf0
+    i32 m_f4;             // +0xf4
+    i32 m_f8;             // +0xf8
+    i32 m_fc;             // +0xfc
+    i32 m_100;            // +0x100
+    i32 m_104;            // +0x104
+    i32 m_108;            // +0x108
+    i32 m_10c;            // +0x10c
+    i32 m_110;            // +0x110
+    i32 m_114;            // +0x114
+    i32 m_118;            // +0x118
+    i32 m_11c;            // +0x11c
+    i32 m_120;            // +0x120
+    i32 m_124;            // +0x124
+    i32 m_128;            // +0x128
+    i32 m_12c;            // +0x12c
+    i32 m_130;            // +0x130
+    i32 m_134;            // +0x134  block head (0x80000000 sentinel)
+    i32 m_138;            // +0x138
+    i32 m_13c;            // +0x13c
+    i32 m_140;            // +0x140
+    i32 m_144;            // +0x144  block head (0x80000000 sentinel)
+    i32 m_148;            // +0x148
+    i32 m_14c;            // +0x14c
+    i32 m_150;            // +0x150
+    i32 m_154;            // +0x154  block head (0x80000000 sentinel)
+    i32 m_158;            // +0x158
+    i32 m_15c;            // +0x15c
+    i32 m_160;            // +0x160
+    i32 m_164;            // +0x164
+    i32 m_168;            // +0x168
+    i32 m_16c;            // +0x16c
+    i32 m_170;            // +0x170
+    i32 m_174;            // +0x174
+    i32 m_178;            // +0x178
+    i32 m_17c;            // +0x17c
+    i32 m_180;            // +0x180
+    i32 m_184;            // +0x184
+    i32 m_188;            // +0x188  object id / the manager's CMapPtrToPtr key
+                          //         (g_wwdObjIdCounter stamp; m_2c/m_48 maps)
+    i32 m_dotColor;       // +0x18c  low byte = dot color / setup flag
+    i32 m_190;            // +0x190  the cached frame NUMBER (index into m_194's frame array)
     // +0x194/+0x198 are the cached sprite and the cached FRAME it resolves to. Proven by
     // Sub150c30 (0x150c30), which is CGameObject::ApplyLookupSprite spelled through offset
     // macros: it bounds-checks the frame number against the looked-up object's +0x64/+0x68
