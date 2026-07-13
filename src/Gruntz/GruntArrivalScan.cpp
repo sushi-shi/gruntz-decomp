@@ -60,17 +60,11 @@ extern "C" {
     i32 GameRand(); // 0x51fee0 (__cdecl)
 }
 
-// PhaseStep's /GX-forcing 16-border-cell point accumulator (a local CDWordArray view).
-struct CGruntPtAcc {
-    i32 m_0;
-    i32* m_4;                    // +0x04  packed-point array
-    i32 m_8;                     // +0x08  live count
-    void Ctor();                 // 0x1b4b43
-    void Add(i32 count, i32 pt); // 0x1b4d7c
-    void RemoveAt(i32 i, i32 f); // 0x1b4e38
-    // Dtor @0x1b4b76 IS CByteArray::~CByteArray; cast at the call.
-};
-SIZE_UNKNOWN(CGruntPtAcc);
+// (CGruntPtAcc is GONE: PhaseStep's /GX-forcing point accumulator IS MFC ::CDWordArray.
+//  PROVEN from the binary - its ctor 0x1b4b43 stamps vtable 0x1ec29c, whose MFC
+//  CRuntimeClass names it "CDWordArray".  The old note "Dtor @0x1b4b76 IS
+//  CByteArray::~CByteArray" was a FID AMBIG mislabel: 0x1b4b76 is inside the CDWordArray
+//  band [0x1b4b43, 0x1b4f0b), not CByteArray's [0x1b527e, 0x1b55e9).)
 
 // Recompute the grid dirty rect (m_60) as {0,0,w,h} intersected with a copy, then
 // m_70/m_74 = the resulting size (the shared GruntTileScan dirty-rect idiom).
@@ -2164,7 +2158,7 @@ L_tailc:
 // transcription can't reproduce exactly.
 RVA(0x000f60f0, 0xb30)
 i32 CGrunt::PhaseStep() {
-    CGruntPtAcc acc;
+    ::CDWordArray acc;
     GruntTilePos pa;
     GruntTilePos pb;
 
@@ -2241,26 +2235,25 @@ state2: {
         grid->m_70 = grid->m_60.right - grid->m_60.left;
         grid->m_74 = grid->m_60.bottom - grid->m_60.top;
     }
-    acc.Ctor();
-    acc.Add(acc.m_8, ((x - 2) << 16) | ((y - 2) & 0xffff));
-    acc.Add(acc.m_8, ((x - 1) << 16) | ((y - 2) & 0xffff));
-    acc.Add(acc.m_8, (x << 16) | ((y - 2) & 0xffff));
-    acc.Add(acc.m_8, ((x + 1) << 16) | ((y - 2) & 0xffff));
-    acc.Add(acc.m_8, ((x + 2) << 16) | ((y - 2) & 0xffff));
-    acc.Add(acc.m_8, ((x - 2) << 16) | ((y + 2) & 0xffff));
-    acc.Add(acc.m_8, ((x - 1) << 16) | ((y + 2) & 0xffff));
-    acc.Add(acc.m_8, (x << 16) | ((y + 2) & 0xffff));
-    acc.Add(acc.m_8, ((x + 1) << 16) | ((y + 2) & 0xffff));
-    acc.Add(acc.m_8, ((x + 2) << 16) | ((y + 2) & 0xffff));
-    acc.Add(acc.m_8, ((x - 2) << 16) | ((y - 1) & 0xffff));
-    acc.Add(acc.m_8, ((x - 2) << 16) | (y & 0xffff));
-    acc.Add(acc.m_8, ((x - 2) << 16) | ((y + 1) & 0xffff));
-    acc.Add(acc.m_8, ((x + 2) << 16) | ((y - 1) & 0xffff));
-    acc.Add(acc.m_8, ((x + 2) << 16) | (y & 0xffff));
-    acc.Add(acc.m_8, ((x + 2) << 16) | ((y + 1) & 0xffff));
-    while (acc.m_8 != 0) {
-        i32 sel = GruntRand() % acc.m_8;
-        i32 pt = acc.m_4[sel];
+    acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | ((y - 2) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x - 1) << 16) | ((y - 2) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), (x << 16) | ((y - 2) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x + 1) << 16) | ((y - 2) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | ((y - 2) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | ((y + 2) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x - 1) << 16) | ((y + 2) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), (x << 16) | ((y + 2) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x + 1) << 16) | ((y + 2) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | ((y + 2) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | ((y - 1) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | (y & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x - 2) << 16) | ((y + 1) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | ((y - 1) & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | (y & 0xffff));
+    acc.SetAtGrow(acc.GetSize(), ((x + 2) << 16) | ((y + 1) & 0xffff));
+    while (acc.GetSize() != 0) {
+        i32 sel = GruntRand() % acc.GetSize();
+        i32 pt = acc.GetAt(sel);
         i32 px = (u32)pt >> 0x10;
         i32 py = pt & 0xffff;
         CScanGrid* pl = (CScanGrid*)g_gameReg->m_tileGrid;

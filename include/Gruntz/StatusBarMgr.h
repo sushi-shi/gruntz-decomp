@@ -228,10 +228,11 @@ SIZE(CWarpStoneFly, 0x40);
 // The pooled-ptr collection embedded at +0x530 is an MFC CPtrArray whose head (vptr)
 // sits at +0x530 and whose m_pData/m_nSize are the m_ptrTable/m_ptrCount fields of
 // CSBI_RectOnly; teardown frees it via CPtrArray::SetSize(0,-1) (0x1b4f75, cast at call).
-struct CSbiPtrCollection {
-    char m_pad0[0x4]; // +0x530  CPtrArray head (vptr slot)
-};
-SIZE_UNKNOWN(CSbiPtrCollection);
+// (CSbiPtrCollection / CSbiPtrColl2 are GONE: the +0x530 pooled-ptr collection IS MFC
+//  ::CPtrArray.  PROVEN from the binary - the methods it called (0x1b5144 SetAtGrow /
+//  0x1b516b InsertAt / 0x1b5200 RemoveAt) sit in the CPtrArray band [0x1b4f0b, 0x1b527e),
+//  whose ctor 0x1b4f0b stamps a vtable the MFC CRuntimeClass names "CPtrArray"; and the
+//  hand-named m_ptrTable(+0x534) / m_ptrCount(+0x538) ARE its m_pData / m_nSize.)
 
 // The gauge notifier (m_gaugeNotify/m_gaugeSink): the value sink carries m_44 (set to the gauge
 // reading) and a refresh slot at vtable index 0x28 (slot 10).
@@ -576,10 +577,11 @@ public:
     i32 m_itemBaseX;             // +0x524
     i32 m_rezActive;             // +0x528  rez-machine snooze/wake active flag
     i32 m_rezTick;               // +0x52c  rez-machine wake tick counter
-    CSbiPtrCollection m_ptrPool; // +0x530  pooled-ptr collection (RemoveAll on teardown)
-    void** m_ptrTable;           // +0x534  pointer to the pooled-ptr table (elements streamed 8B)
-    i32 m_ptrCount;              // +0x538  count for m_ptrTable
-    char m_pad53c[0x548 - 0x53c];
+    // +0x530  the pooled-ptr collection: a REAL MFC ::CPtrArray (0x14 -> +0x530..+0x543).
+    // Its internals are the fields this header used to name by hand: m_pData @+0x534 (was
+    // m_ptrTable), m_nSize @+0x538 (was m_ptrCount), m_nMaxSize @+0x53c, m_nGrowBy @+0x540.
+    ::CPtrArray m_ptrPool;
+    char m_pad544[0x548 - 0x544];
     i32 m_hlBusy;                 // +0x548
     CWarpStoneFly* m_retabNotify; // +0x54c  a notifier object (freed on retab; Refresh()/Notify0())
     i32 m_toggleActive;           // +0x550  toggle-mode active flag
@@ -767,13 +769,6 @@ struct CSbiRenderObj {
 };
 SIZE_UNKNOWN(CSbiRenderObj);
 
-// The +0x530 pooled-ptr collection InsertPtr appends/inserts into (CObArray-style).
-struct CSbiPtrColl2 {
-    void Append(i32 idx, void* node);            // 0x1b5144 (InsertAt tail)
-    void InsertAt(i32 idx, void* node, i32 cnt); // 0x1b516b (InsertAt with count)
-    void RemoveAt(i32 idx, i32 cnt);             // 0x1b5200 (RemoveAt with count)
-};
-SIZE_UNKNOWN(CSbiPtrColl2);
 
 // A free-list node {m_0, m_4}; m_0 doubles as the link, m_4 is the sort key.
 struct CSbiFreeNode {

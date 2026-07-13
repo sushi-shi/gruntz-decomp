@@ -439,8 +439,8 @@ void CStatusBarMgr::NotifyAllSlots() {
 
 // Stream the full rect-only item state through the archive (stream slot 0x30).
 // Returns 0 if the stream or the active game-manager is null; bumps the global
-// serialize counter; ends with a variable-length loop over the m_ptrTable[] pointer
-// table (count m_ptrCount), each element streamed as 8 bytes. Field buffers are
+// serialize counter; ends with a variable-length loop over the m_ptrPool.GetData()[] pointer
+// table (count m_ptrPool.GetSize()), each element streamed as 8 bytes. Field buffers are
 // addressed by offset (the codegen is naming-independent here).
 // @early-stop
 // ~95.6%: the entire ~70-field transfer body is byte-exact; the residual is a
@@ -803,10 +803,10 @@ i32 CStatusBarMgr::Serialize(CSerialArchive* s) {
         }
     } while (--outer);
 
-    i32 count = m_ptrCount;
+    i32 count = m_ptrPool.GetSize();
     s->Write(&count, 4);
     for (u32 n = 0; n < (u32)count; n++) {
-        s->Write(m_ptrTable[n], 8);
+        s->Write(m_ptrPool.GetData()[n], 8);
     }
     return 1;
 }
@@ -817,7 +817,7 @@ i32 CStatusBarMgr::Serialize(CSerialArchive* s) {
 // the full rect-only item state from the archive via stream slot 0x2c (Read);
 // resolves the base m_8 sequence holder from the streamed seq id through the
 // game-manager's object map (validated by the looked-up object's type tag == 5);
-// reads every field back; returns each pooled m_ptrTable element to the engine
+// reads every field back; returns each pooled m_ptrPool.GetData() element to the engine
 // free-list, sizes the +0x530 collection, then reloads the pointer table from the
 // free-list. Field buffers are offset-addressed (naming-independent), mirroring
 // Serialize.
@@ -925,19 +925,19 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
         }
     } while (--outer);
 
-    for (i32 t = 0; t < m_ptrCount; t++) {
-        void* pp = m_ptrTable[t];
+    for (i32 t = 0; t < m_ptrPool.GetSize(); t++) {
+        void* pp = m_ptrPool.GetData()[t];
         if (pp) {
             void** node = (void**)((char*)pp - g_coordPool.m_linkOffset);
             *node = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
-    ((CPtrArray*)&m_ptrPool)->SetSize(0, -1);
+    m_ptrPool.SetSize(0, -1);
 
     i32 count = 0;
     s->Read(&count, 4);
-    ((CPtrArray*)&m_ptrPool)->SetSize(count, -1);
+    m_ptrPool.SetSize(count, -1);
     for (u32 n = 0; n < (u32)count; n++) {
         char* head = (char*)g_coordPool.m_freeHead;
         void* node = 0;
@@ -946,7 +946,7 @@ i32 CStatusBarMgr::Deserialize(CSerialArchive* s) {
             g_coordPool.m_freeHead = *(void**)head;
         }
         s->Read(node, 8);
-        m_ptrTable[n] = node;
+        m_ptrPool.GetData()[n] = node;
     }
     return 1;
 }
@@ -1313,12 +1313,12 @@ i32 CStatusBarMgr::SetTab(i32 tab, i32 flag) {
 }
 
 // Tear down the rect-only item: log its position tag, fire the pre-teardown
-// notify, return every pooled m_ptrTable element to the engine free-list, then
+// notify, return every pooled m_ptrPool.GetData() element to the engine free-list, then
 // RemoveAll the +0x530 collection.
 // @early-stop
 // ~84.7%: the log/notify head + the free-list return + the +0x530 RemoveAll are
 // byte-correct; the residual is the free-loop's induction-variable choice (retail
-// indexes m_ptrTable[ecx] reloading the base each iter and keeps the running
+// indexes m_ptrPool.GetData()[ecx] reloading the base each iter and keeps the running
 // free-list head in edx; the recompile strength-reduces to a walking pointer +
 // pins the head in a callee-saved edi). Regalloc/induction wall; deferred.
 RVA(0x000fe350, 0x6d)
@@ -1326,17 +1326,17 @@ void CStatusBarMgr::Teardown() {
     ((Utils::RegistryHelper*)g_gameReg->m_settings)
         ->SetValueDword("StatusBar Position", m_position);
     ResetWidgets(0);
-    for (i32 i = 0; i < m_ptrCount; i++) {
-        void* p = m_ptrTable[i];
+    for (i32 i = 0; i < m_ptrPool.GetSize(); i++) {
+        void* p = m_ptrPool.GetData()[i];
         if (p) {
             void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
             *node = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
-    // The +0x530 head is an MFC CPtrArray (m_ptrTable/m_ptrCount are its m_pData/m_nSize);
+    // The +0x530 head is an MFC CPtrArray (m_ptrPool.GetData()/m_ptrPool.GetSize() are its m_pData/m_nSize);
     // its teardown is CPtrArray::SetSize(0,-1) inlined from RemoveAll (0x1b4f75, library).
-    ((CPtrArray*)&m_ptrPool)->SetSize(0, -1);
+    m_ptrPool.SetSize(0, -1);
 }
 
 // Activate the rect-only item; gate on the offset-0 subtype tag and a probe.
@@ -2712,21 +2712,21 @@ i32 CStatusBarMgr::InsertPtr(i32 a, i32 b) {
         node->m_4 = b;
         g_coordPool.m_freeHead = (void*)((CSbiFreeNode*)g_coordPool.m_freeHead)->m_0;
     }
-    i32 n = m_ptrCount;
+    i32 n = m_ptrPool.GetSize();
     i32 i = 0;
     if (n > 0) {
-        CSbiFreeNode** t = (CSbiFreeNode**)m_ptrTable;
+        CSbiFreeNode** t = (CSbiFreeNode**)m_ptrPool.GetData();
         do {
             CSbiFreeNode* e = *t;
             if (e != 0 && b < e->m_4) {
-                ((CSbiPtrColl2*)&m_ptrPool)->InsertAt(i, node, 1);
+                m_ptrPool.InsertAt(i, node, 1);
                 return 1;
             }
             i++;
             t++;
         } while (i < n);
     }
-    ((CSbiPtrColl2*)&m_ptrPool)->Append(m_ptrCount, node);
+    m_ptrPool.SetAtGrow(m_ptrPool.GetSize(), node);
     return 1;
 }
 
@@ -2968,13 +2968,13 @@ RVA(0x00107d00, 0x591)
 i32 CStatusBarMgr::winapi_107d00_SetRect() {
     i32 result;
     if (g_gameReg->m_134 == 1) {
-        if (m_ptrCount > 0) {
-            void* p = m_ptrTable[0];
+        if (m_ptrPool.GetSize() > 0) {
+            void* p = m_ptrPool.GetData()[0];
             result = *(i32*)p;
             void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
             *node = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
-            ((CSbiPtrColl2*)&m_ptrPool)->RemoveAt(0, 1);
+            m_ptrPool.RemoveAt(0, 1);
         } else {
             result = 0;
             if (m_extraNotify0) {
@@ -4315,7 +4315,7 @@ i32 CStatusBarMgr::UpdateRezMachineWakeStatusBar() {
 // +0x54c notifier, and finish. The trailing i32 arg is ABI-accepted but unused.
 // @early-stop
 // ~90.5%: the prologue, tab-force, memset, both config loops, and the free-list return
-// loop are byte-exact (the free-loop matched once m_ptrTable was typed void**). Residual:
+// loop are byte-exact (the free-loop matched once m_ptrPool.GetData() was typed void**). Residual:
 // (1) the teardown tail reorders the m_2b0/2b8/2b4/2bc zero-block vs the m_retabNotify load / m_hlBusy
 // store (a store-vs-load MSVC scheduling coin-flip; an explicit-temp rewrite was neutral)
 // and (2) the g_gameReg + StartingGruntz/Multiplayer/Battlez string DIR32 naming. Not
@@ -4351,15 +4351,15 @@ void CStatusBarMgr::LoadMultiplayerBattlezConfig(i32) {
         }
     }
 
-    for (i32 j = 0; j < m_ptrCount; j++) {
-        void* p = m_ptrTable[j];
+    for (i32 j = 0; j < m_ptrPool.GetSize(); j++) {
+        void* p = m_ptrPool.GetData()[j];
         if (p) {
             void** node = (void**)((char*)p - g_coordPool.m_linkOffset);
             *node = g_coordPool.m_freeHead;
             g_coordPool.m_freeHead = node;
         }
     }
-    ((CPtrArray*)&m_ptrPool)->SetSize(0, -1);
+    m_ptrPool.SetSize(0, -1);
     m_2b0 = 0;
     m_2b8 = 0;
     m_2b4 = 0;

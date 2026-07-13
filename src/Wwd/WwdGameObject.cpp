@@ -1262,7 +1262,9 @@ void CDDrawWorker::DeleteAll() {
             el->Delete(1);
         }
     }
-    ((CDWordArray*)&m_items)->SetSize(0, -1); // CDWordArray::SetSize @0x1b5653 (RemoveAll inlined)
+    ((CObArray*)&m_items)->SetSize(0, -1); // CObArray::SetSize @0x1b5653 - the m_items
+    // vtable (0x1ed494) CRuntimeClass-names it CObArray; the old (CDWordArray*) cast bound
+    // this reloc to the WRONG library symbol (CDWordArray lives at [0x1b4b43,0x1b4f0b)).
     m_64 = 99999;
     m_68 = 0;
 }
@@ -1406,7 +1408,7 @@ CImage* CImageSet::CreateFrame24(i32 a0, i32 a1, i32 index, i32 a3) {
 // ===========================================================================
 RVA(0x001521c0, 0x2b)
 void CDDrawWorker::AddFrameAt_1521c0(void* elem, i32 index) {
-    ((CDWordArray*)&m_items)->SetAtGrow(index, (DWORD)elem); // CDWordArray::SetAtGrow @0x1b5822
+    ((CObArray*)&m_items)->SetAtGrow(index, (CObject*)elem); // CObArray::SetAtGrow @0x1b5822
     if (index < m_64) {
         m_64 = index;
     }
